@@ -8,7 +8,8 @@
 
 
 
-Here are some of my efforts porting GAP code to julia. I am not even sure this is a well-formed Julia package.
+Here are some of my efforts porting [GAP code](https://github.com/gap-system/gap) to julia.
+I am not even sure this is a well-formed Julia package.
 
 It contains for now permutations and permutation groups, cyclotomic numbers and  Laurent polynomials. Coming  soon are Coxeter  groups, Hecke algebras, braid groups and Garside monoids.
 
@@ -38,7 +39,7 @@ Another  Perm  constructor  is  Perm{T}(p) which converts the perm  p to a permu
 
 **Examples**
 
-```julia-repl
+```julia
 julia> p=Perm(1,2)*Perm(2,3)
 (1,3,2)
 
@@ -95,7 +96,7 @@ cycles(a::Perm) returns the non-trivial cycles of a
 
 **Example**
 
-```julia-repl
+```julia
 julia> cycles(Perm(1,2)*Perm(4,5))
 2-element Array{Array{Int64,1},1}:
  [1, 2]
@@ -112,7 +113,7 @@ cycletype(a::Perm) is the partition of degree(a) associated to the   conjugacy c
 
 **Example**
 
-```julia-repl
+```julia
 julia> cycletype(Perm(1,2)*Perm(3,4))
 2-element Array{Int64,1}:
  2
@@ -155,7 +156,7 @@ The  only  field  of  a  PermGroup  G  at  the  start  is gens, the list of gene
 
 **Examples**
 
-```julia-repl
+```julia
 julia> G=PermGroup([Perm(i,i+1) for i in 1:2])
 PermGroup((1,2),(2,3))
 
@@ -178,7 +179,7 @@ julia> orbit(G,1) # orbit of point 1 under G
  3
 
 # orbit decorated with representatives moving 1 to given point
-julia> orbit_and_representative(G,1) 
+julia> orbit_and_representative(G,1)
 Dict{Int64,Perm{Int64}} with 3 entries:
   2 => (1,2)
   3 => (1,3,2)
@@ -204,7 +205,7 @@ julia> centralizers(G) # the i-th element is the centralizer of base[1:i-1]
  PermGroup((2,3))      
 
 # i-th element is orbit_and_representive of centralizer[i] on base[i]
-julia> centralizer_orbits(G) 
+julia> centralizer_orbits(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
  Dict(2=>(1,2),3=>(1,3,2),1=>())
  Dict(2=>(),3=>(2,3))           
@@ -240,7 +241,7 @@ julia> @btime words(symmetric_group(8));
 
 
 
-The symmetric group of degree n 
+The symmetric group of degree n
 
 <a id='PermGroups.orbit' href='#PermGroups.orbit'>#</a>
 **`PermGroups.orbit`** &mdash; *Function*.
@@ -261,7 +262,7 @@ returns Dict x=>g where x runs over orbit(G,p) and g is such that x=p^g
 
 
 
-List of minimal words in the generators elements(G) 
+List of minimal words in the generators elements(G)
 
 <a id='PermGroups.elements' href='#PermGroups.elements'>#</a>
 **`PermGroups.elements`** &mdash; *Function*.
@@ -296,7 +297,7 @@ The main way to build a Cyclotomic number is to use the function `E(n,k=1)` whic
 
 **Examples**
 
-```julia-repl
+```julia
 julia> E(3)+E(4)
 E(12)^4-E(12)^7-E(12)^11
 
@@ -355,7 +356,7 @@ julia> Cyc(ans) # even less useful
 -0.4999999999999998+0.8660254037844387E(4)
 ```
 
-For more information look at the documentation of ER, quadratic, galois. 
+For more information look at the documentation of ER, quadratic, galois.
 
 <a id='Cycs.galois' href='#Cycs.galois'>#</a>
 **`Cycs.galois`** &mdash; *Function*.
@@ -366,7 +367,7 @@ galois(c::Cyc,n::Int) applies to c the galois automorphism   of Q(ζ_conductor(c
 
 **Examples**
 
-```julia-repl
+```julia
 julia> galois(1+E(4),-1) # galois(c,-1) is the same as conj(c)
 1-E(4)
 
@@ -383,7 +384,7 @@ ER(n::Int) computes as a Cyc the square root of the integer n.
 
 **Examples**
 
-```julia-repl
+```julia
 julia> ER(-3)
 E(3)-E(3)^2
 
@@ -400,7 +401,7 @@ quadratic(c::Cyc) determines if c lives in a quadratic extension of Q   it retur
 
 **Examples**
 
-```julia-repl
+```julia
 julia> quadratic(1+E(3))
 (1, 1, -3, 2)
 
@@ -422,8 +423,8 @@ An implementation of univariate Laurent polynomials.  A Pol contains two fields:
 
 **Examples**
 
-```julia-repl
-julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes. 
+```julia
+julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
 1+2x
 
 julia> Pol([1,2],-1)
@@ -470,7 +471,7 @@ The quotient and remainder from Euclidean division. Equivalent to `(div(x,y), re
 
 **Examples**
 
-```julia-repl
+```julia
 julia> divrem(3,7)
 (0, 3)
 
@@ -504,7 +505,7 @@ Greatest common (positive) divisor (or zero if `x` and `y` are both zero).
 
 **Examples**
 
-```julia-repl
+```julia
 julia> gcd(6,9)
 3
 
@@ -520,7 +521,7 @@ gcd(p::Pol, q::Pol)   the coefficients of p and q must be elements of a field fo
 
 **Examples**
 
-```julia-repl
+```julia
 julia> gcd(q+1,q^2-1)
 1.0+1.0q
 
@@ -607,14 +608,14 @@ General routine to format a table. Used for character tables.   Options:      ro
 
 
 
-the numbers less than n and prime to n 
+the numbers less than n and prime to n
 
 <a id='Util.phi' href='#Util.phi'>#</a>
 **`Util.phi`** &mdash; *Function*.
 
 
 
-the Euler function ϕ 
+the Euler function ϕ
 
 <a id='Util.primitiveroot' href='#Util.primitiveroot'>#</a>
 **`Util.primitiveroot`** &mdash; *Function*.
@@ -622,4 +623,3 @@ the Euler function ϕ
 
 
 primitiveroot(m::Integer) a primitive root mod. m,    that is it generates multiplicatively prime_residues(m).     It exists if m is of the form 4, 2p^a or p^a for p prime>2.
-
