@@ -85,11 +85,11 @@ julia> Cyc(ans) # even less useful
 -0.4999999999999998+0.8660254037844387E(4)
 ```
 
-For more information look at the documentation of ER, quadratic, galois. 
+For more information look at the documentation of ER, quadratic, galois.
 """
 module Cycs
 export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
-using Memoize,Util
+using Memoize, ..Util
 
 struct Cyc{T <: Real}<: Number  # a cyclotomic number
   n::Int
@@ -102,7 +102,7 @@ conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Int)=1
 
 #=
-  zumbasis(n::Int) returns the Zumbroich basis of Q(ζ_n) 
+  zumbasis(n::Int) returns the Zumbroich basis of Q(ζ_n)
   as the vector of i in 0:n-1 such that ``ζ_n^i`` is in the basis
 =#
 @memoize Dict function zumbasis(n::Int)::Vector{Int}
@@ -160,7 +160,7 @@ end
   z=zumbasis(n)::Vector{Int}
   i=mod(i,n)
   mp=modp(n,i)::Vector{Int}
-  if isempty(mp) 
+  if isempty(mp)
     return true=>Vector{Int}(indexin([i],z))
   end
   v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
@@ -256,7 +256,7 @@ function E(n::Integer,i::Integer=1)
 end
 
 function Base.promote(a::Cyc,b::Cyc)
-  if a.n==b.n 
+  if a.n==b.n
     ac,bc=promote(a.c,b.c)
     if typeof(ac)!=typeof(a.c) a=Cyc(a.n,ac) end
     if typeof(bc)!=typeof(b.c) b=Cyc(b.n,bc) end
@@ -291,9 +291,9 @@ function Base.:*(a::Cyc,b::Cyc)
   a,b=promote(a,b)
   res=zero(a)
   zb=zumbasis(a.n)
-  for i in eachindex(a.c), j in eachindex(b.c) 
+  for i in eachindex(a.c), j in eachindex(b.c)
     if !iszero(a.c[i]) && !iszero(b.c[j])
-      addExb!(res,zb[i]+zb[j],a.c[i]*b.c[j]) 
+      addExb!(res,zb[i]+zb[j],a.c[i]*b.c[j])
 #    res+=a.c[i]*b.c[j]*E(res.n,zb[i]+zb[j])
     end
   end
@@ -308,7 +308,7 @@ function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   zn=zumbasis(n)
   res=Cyc(n,zeros(eltype(c.c),length(zn)))
   z=zumbasis(c.n)*div(n,c.n)
-  for i in eachindex(c.c) 
+  for i in eachindex(c.c)
 @inbounds if !iszero(c.c[i]) addExb!(res,z[i],c.c[i]) end
   end
   res
@@ -323,7 +323,7 @@ function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
     m=div(n,p)
     let p=p, m=m, zb=zb
     if np>1
-      if all(z->z%p==0,zb[nz]) 
+      if all(z->z%p==0,zb[nz])
         return lower(Cyc(m,div.(zb[nz],p),c.c[nz]))
       end
     else
@@ -368,7 +368,7 @@ function galois(c::Cyc,n::Int)
   if gcd(n,c.n)!=1 error("$n should be prime to conductor($c)=$(c.n)") end
   zb=zumbasis(c.n)
   nz=findall(x->!iszero(x),c.c)
-  if isempty(nz) c 
+  if isempty(nz) c
   else let zb=zb
      sum(t->c.c[t]*E(c.n,zb[t]*n),nz)
        end
@@ -378,7 +378,7 @@ end
 Base.conj(c::Cyc)=galois(c,-1)
 
 function Base.inv(c::Cyc)
-  if c.n==1 
+  if c.n==1
     n=convert(Int,c)
     r=Cyc(1)
   else
@@ -412,7 +412,7 @@ function ER(n::Int)
   elseif n%4==3 return -E(4)*sum(k->E(n,k^2),1:n)
   else          return 2*ER(div(n,4))
   end
-end 
+end
 
 Base.Complex(c::Cyc)=sum(x->x[2]*exp(2*x[1]*im*pi/c.n),zip(zumbasis(c.n),c.c))
 
@@ -435,7 +435,7 @@ end
 
 """
   quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
-  it returns tuple (a,b,root,d) of integers such that  c=(a + b ER(root))//d 
+  it returns tuple (a,b,root,d) of integers such that  c=(a + b ER(root))//d
   or false if no such tuple exists
 # Examples
 ```julia-repl
@@ -458,7 +458,7 @@ quadratic=function(cyc::Cyc)
   v2=get(f,2,0)
 
   if v2>3 || (v2==2 && any(p->p[1]!=2 && p[2]!=1,f)) ||
-     (v2<2 && any(x->x!=1,values(f))) 
+     (v2<2 && any(x->x!=1,values(f)))
     return false
   end
 
@@ -490,7 +490,7 @@ quadratic=function(cyc::Cyc)
     d=1
   else		# v2 = 3
     root=cyc.n>>2
-    if root==2 
+    if root==2
       a=l[1];b=l[2]
       if b==l[4] root=-2 end
     else
@@ -503,7 +503,7 @@ quadratic=function(cyc::Cyc)
     end
     d=1
   end
-  
+
   if den*d*cyc!=lower(a+b*ER(root)) return false end
   return (a,b,root,den*d)
 end

@@ -4,7 +4,7 @@
 
 # Examples
 ```julia-repl
-julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes. 
+julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
 1+2x
 
 julia> Pol([1,2],-1)
@@ -41,7 +41,7 @@ see also the individual documentation of gcd.
 module Pols
 export Pol, valuation, value, cyclotomic_polynomial, divrem1
 using Memoize, Reexport
-@reexport using Util
+@reexport using ..Util
 
 const var=[:x]
 function varname(a::Symbol)
@@ -94,7 +94,7 @@ function Base.show(io::IO,p::Pol)
     deg=i+p.v-1
     mon=deg==0 ? "1" : String(var[1])*(deg==1 ? "" : "^$deg")
 #   if c isa Rational && denominator(c)==1 c=repr(Int(c))
-#   else 
+#   else
       c=repr(c)
 #   end
     if occursin(r"[+\-*/]",c[2:end]) c="($c)" end
@@ -120,7 +120,7 @@ end
 Base.:*(a::Pol, b::T) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
 Base.:*(b::T, a::Pol) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
 
-Base.:^(a::Pol, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+Base.:^(a::Pol, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                               Base.power_by_squaring(inv(a),-n)
 
 function Base.:+(a::Pol{T1}, b::Pol{T2})where T1 where T2
@@ -182,7 +182,7 @@ Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
 
 """
   gcd(p::Pol, q::Pol)
-  the coefficients of p and q must be elements of a field for 
+  the coefficients of p and q must be elements of a field for
   gcd to be type-stable
 
 # Examples
@@ -197,7 +197,7 @@ julia> gcd(q+1//1,q^2-1//1)
 function Base.gcd(p::Pol,q::Pol)
   while !iszero(q)
     q=q/q.c[end]
-    (q,p)=(divrem(p,q)[2],q) 
+    (q,p)=(divrem(p,q)[2],q)
   end
   return p/p.c[end]
 end
