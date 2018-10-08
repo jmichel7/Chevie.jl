@@ -99,7 +99,7 @@ function Perm{T}(p::Perm)where T<:Integer
 end
 
 # just for fun, to provide Perm[1 2;5 6 7;4 9]=perm"(1,2)(5,6,7)(4,9)"
-function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N}, 
+function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
   b::Vararg{Number,N} where N)
   res=Perm()
   for i in a
@@ -124,7 +124,7 @@ end
 Base.one(p::Perm{T}) where T=Perm(T[])
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 
-using Util
+using ..Util
 # extending  Util.degree  instead  of  exporting  degree is a horrible hack
 # forced  by the unpleasant Julia rules  not merging methods from different
 # modules. This way both Pols and Perms can work together only if they both
@@ -134,7 +134,7 @@ Util.degree(a::Perm)= length(a.d)
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=if n>degree(a) T(n) else a.d[n] end
 Base.:^(a::Perm, b::Perm)=inv(b)*a*b
-Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 Base.copy(p::Perm)=Perm(copy(p.d))
@@ -225,7 +225,7 @@ end
 
 order(a::Perm) = lcm(length.(cycles(a)))
 
-""" 
+"""
   cycletype(a::Perm) is the partition of degree(a) associated to the
   conjugacy class of a in the symmetric group, with ones removed
 # Example
@@ -236,7 +236,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
  2
 
 ```
-""" 
+"""
 cycletype(a::Perm) = sort([length(c) for c in cycles(a)], rev=true)
 
 " sign(a::Perm) is the signature of  the permutation a"
@@ -251,7 +251,7 @@ function Base.sign(a::Perm)
        to_visit[next]=false
        if (next^=a)==k break end
      end
-  end 
+  end
   (-1)^parity
 end
 

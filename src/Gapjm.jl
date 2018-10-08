@@ -12,10 +12,17 @@ the design are welcome.
 """
 module Gapjm
 using Reexport
-push!(LOAD_PATH, @__DIR__) # not sure if this is the right way to use modules
-@reexport using Perms
-@reexport using PermGroups
-@reexport using Cycs
-@reexport using Util
-@reexport using Pols
+
+include("Util.jl")
+include("Perms.jl")
+include("PermGroups.jl")
+include("Cycs.jl")
+include("Pols.jl")
+
+@reexport using .Util
+@reexport using .Perms
+@reexport using .PermGroups
+@reexport using .Cycs
+@reexport using .Pols
+
 end

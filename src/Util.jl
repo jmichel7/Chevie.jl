@@ -35,7 +35,7 @@ function degree end
 """
 function gets(f::Function,o,p::Symbol)
   if haskey(o.prop,p) return o.prop[p] end
-  o.prop[p]=f(o) 
+  o.prop[p]=f(o)
 end
 
 """
@@ -66,11 +66,11 @@ end
       28 => Symbol[:Feb]
       30 => Symbol[:Apr, :Jun, :Sep, :Nov]
 
-"""  
+"""
 function groupby(v::AbstractVector,l::AbstractVector)
   res=Dict{eltype(v),Vector{eltype(l)}}()
   for (k,val) in zip(v,l)
-    push!(get!(res,k,empty(l)),val) 
+    push!(get!(res,k,empty(l)),val)
   end
   res
 end
@@ -88,8 +88,8 @@ access the return type of a function
 """
 function groupby(f,l::AbstractVector)
   res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
-  for val in l[2:end] 
-    push!(get!(res,f(val),empty(l)),val) 
+  for val in l[2:end]
+    push!(get!(res,f(val),empty(l)),val)
   end
   res
 end
@@ -113,12 +113,12 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
   if l==0 return Vector{Int}[] end
   cc=collect(1:l) # cc[i]: in which block is i, initialized to different blocks
   nz=x->!iszero(x)
-  for i in 1:l, j in i+1:l 
+  for i in 1:l, j in i+1:l
     # if new relation i~j then merge components:
-    if (nz(M[i,j]) || nz(M[j,i])) && cc[i]!=cc[j] 
+    if (nz(M[i,j]) || nz(M[j,i])) && cc[i]!=cc[j]
       cj=cc[j]
-      for k in 1:l 
-         if cc[k]==cj cc[k]=cc[i] end 
+      for k in 1:l
+         if cc[k]==cj cc[k]=cc[i] end
       end
     end
   end
@@ -147,19 +147,19 @@ function Base.merge(x::SortedPairs{K,V},
   ai=bi=1
   ri=0
   while ai<=la || bi<=lb
-    if ai>la 
+    if ai>la
       res[ri+=1]=b[bi]; bi+=1
-    elseif bi>lb 
+    elseif bi>lb
       res[ri+=1]=a[ai]; ai+=1
     else
       c=cmp(a[ai][1],b[bi][1])
-      if c==1 
+      if c==1
         res[ri+=1]=b[bi]; bi+=1
-      elseif c==-1 
+      elseif c==-1
         res[ri+=1]=a[ai]; ai+=1
       else s=a[ai][2]+b[bi][2]
-        if !iszero(s) 
-          res[ri+=1]=a[ai][1]=>s 
+        if !iszero(s)
+          res[ri+=1]=a[ai][1]=>s
         end
         ai+=1; bi+=1
       end
@@ -228,8 +228,8 @@ end
      columns             show only these columns
 
 """
-function format(io::IO,t::Matrix; row_labels=axes(t,1), 
-  column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1), 
+function format(io::IO,t::Matrix; row_labels=axes(t,1),
+  column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
   columns=axes(t,2), column_repartition=nothing)
   t=string.(t[rows,columns])
   row_labels=string.(row_labels[rows])
@@ -249,9 +249,9 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   function cut(l,max) # cut Integer list l in parts of sum<max
     res=Int[];len=0;n=0
     for i in l len+=i
-      if len>=max 
+      if len>=max
         if n==0 push!(res,1);n=0;len=0
-        else push!(res,n);n=1;len=i 
+        else push!(res,n);n=1;len=i
         end
       else n+=1
       end
@@ -300,12 +300,12 @@ function phi(m::T)where T<:Integer
 end
 
 """
-  primitiveroot(m::Integer) a primitive root mod. m, 
-  that is it generates multiplicatively prime_residues(m).  
+  primitiveroot(m::Integer) a primitive root mod. m,
+  that is it generates multiplicatively prime_residues(m).
   It exists if m is of the form 4, 2p^a or p^a for p prime>2.
 """
 function primitiveroot(m::Integer)
- if m==2 return 1 
+ if m==2 return 1
  elseif m==4 return 3
  end
  f=factor(m)
@@ -327,7 +327,7 @@ end
 # better display of Rationals at the REPL
 #function Base.show(io::IO, x::Rational)
 #   show(io, numerator(x))
-#   if  get(io, :compact,true) 
+#   if  get(io, :compact,true)
 #        if denominator(x)!=1
 #           print(io,"/")
 #           show(io,denominator(x))

@@ -16,12 +16,12 @@ PermGroup((1,2),(2,3))
 
 julia> collect(G)  # PermGroups are iterators over their elements
 6-element Array{Perm{Int64},1}:
- (1,2)  
+ (1,2)
  (1,3,2)
- ()     
+ ()
  (1,2,3)
- (1,3)  
- (2,3)  
+ (1,3)
+ (2,3)
 
 julia> degree(G)  # maximum degree of an element of G
 3
@@ -33,7 +33,7 @@ julia> orbit(G,1) # orbit of point 1 under G
  3
 
 # orbit decorated with representatives moving 1 to given point
-julia> orbit_and_representative(G,1) 
+julia> orbit_and_representative(G,1)
 Dict{Int64,Perm{Int64}} with 3 entries:
   2 => (1,2)
   3 => (1,3,2)
@@ -56,31 +56,31 @@ julia> base(G) # a list of points that no element of G fixes
 julia> centralizers(G) # the i-th element is the centralizer of base[1:i-1]
 2-element Array{PermGroup{Int64},1}:
  PermGroup((1,2),(2,3))
- PermGroup((2,3))      
+ PermGroup((2,3))
 
 # i-th element is orbit_and_representive of centralizer[i] on base[i]
-julia> centralizer_orbits(G) 
+julia> centralizer_orbits(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
  Dict(2=>(1,2),3=>(1,3,2),1=>())
- Dict(2=>(),3=>(2,3))           
+ Dict(2=>(),3=>(2,3))
 
 julia> words(G)  # minimal word for each element of G
 6-element Array{Array{Int64,1},1}:
- []       
- [2]      
- [1]      
- [2, 1]   
- [1, 2]   
+ []
+ [2]
+ [1]
+ [2, 1]
+ [1, 2]
  [1, 2, 1]
 
 julia> elements(G) # elements in the same order as words
 6-element Array{Perm{Int64},1}:
- ()     
- (2,3)  
- (1,2)  
+ ()
+ (2,3)
+ (1,2)
  (1,2,3)
  (1,3,2)
- (1,3)  
+ (1,3)
 
 # finally, benchmarks
 julia> @btime collect(symmetric_group(8));
@@ -91,7 +91,7 @@ julia> @btime words(symmetric_group(8));
 ```
 """
 module PermGroups
-using Perms
+using ..Perms
 export PermGroup, orbit, orbit_and_representative, elements, words,
   symmetric_group, base, centralizer_orbits, centralizers, elts_and_words
 
@@ -114,11 +114,11 @@ function Base.show(io::IO,G::PermGroup)
   print(io,"PermGroup($(join(map(repr,G.gens),',')))")
 end
 
-using Util
+using ..Util
 function Util.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
 end
-  
+
 " The symmetric group of degree n "
 function symmetric_group(n::Int)
   PermGroup([Perm(i,i+1) for i in 1:n-1])
@@ -147,8 +147,8 @@ function schreier_vector(G::PermGroup,p)
     new=BitSet([])
     for p in n, i in eachindex(G.gens)
       q=p^(G.gens[i])
-      if res[q]==0  
-        res[q]=i 
+      if res[q]==0
+        res[q]=i
         push!(new,q)
       end
     end
@@ -180,7 +180,7 @@ end
  The input is
  -  g: an element of a PermGroup G
  -  B: a base (or partial base) of G
- -  Δ: Δ[i] is the orbit of C_G(B[1:i-1]) on B[i] 
+ -  Δ: Δ[i] is the orbit of C_G(B[1:i-1]) on B[i]
  The function returns g "stripped" of its components in all C_G(B[1:i])
 """
 function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T
@@ -195,7 +195,7 @@ function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T
   h,length(B)+1
 end
 
-""" 
+"""
   see Holt, 4.4.2
 
   This function creates in G.prop the fields base, centralizers,
@@ -280,7 +280,7 @@ end
 function Base.length(G::PermGroup)::Int
   gets(G,:length)do G prod(length,centralizer_orbits(G)) end
 end
-  
+
 " Tells whether permutation g is an element of G "
 function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),centralizer_orbits(G))
