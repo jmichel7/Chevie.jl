@@ -168,22 +168,16 @@ function Base.merge(x::SortedPairs{K,V},
   SortedPairs(resize!(res,ri))
 end
 
-function Base.iterate(x::SortedPairs)
-  a=x.v
-  if isempty(a) return nothing end
-  (a[1],1)
-end
-
-function Base.iterate(x::SortedPairs,i::Int)
-  i+=1
-  if i>length(x) return nothing end
-  (x.v[i],i)
-end
-
+Base.iterate(x::SortedPairs)=iterate(x.v)
+Base.iterate(x::SortedPairs,i::Int)=iterate(x.v,i)
 Base.length(x::SortedPairs)=length(x.v)
 Base.isempty(x::SortedPairs)=isempty(x.v)
 Base.empty(x::SortedPairs)=SortedPairs(empty(x.v))
-
+function Base.getindex(x::SortedPairs,i::Int)
+  r=searchsorted(x.v,i;by=x->x[1])
+  if r.start!=r.stop error("Bounds") end
+  x.v[r.start][2]
+end
 #--------------------------------------------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
