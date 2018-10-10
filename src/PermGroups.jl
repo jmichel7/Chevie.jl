@@ -287,10 +287,11 @@ function Base.in(g::Perm,G::PermGroup)
   isone(g)
 end
 
+# if l1,...,ln are the centralizer orbits the elements are the products
+# of one element in each li
 function Base.iterate(G::PermGroup{T})where T
   prod=one(G)
-  ll=values.(centralizer_orbits(G))
-  state=map(reverse(ll)) do l
+  state=map(reverse(values.(centralizer_orbits(G)))) do l
     u=iterate(l)
     if u==nothing  return nothing end
     prod*=u[1]::Perm{T}
@@ -300,7 +301,7 @@ function Base.iterate(G::PermGroup{T})where T
 end
 
 function Base.iterate(G::PermGroup{T},state)where T
- for i in eachindex(state)
+  for i in eachindex(state)
     u=iterate(values(centralizer_orbits(G)[i]),state[i][2])
     if u==nothing continue end
     if i==length(state)
