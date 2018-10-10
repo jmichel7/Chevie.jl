@@ -170,9 +170,7 @@ end
 
 Cyc(i::Real)=Cyc(1,[i])
 
-function Cyc(c::Complex{<:Real})
-   Cyc(4,[real(c),imag(c)])
-end
+Cyc(c::Complex{<:Real})=Cyc(4,[real(c),imag(c)])
 
 function Cyc(n::Int,ind::Vector{Int},coeff)
   zb=zumbasis(n)
@@ -217,6 +215,11 @@ Base.zero(c::Cyc)=Cyc(c.n,fill!(similar(c.c), zero(eltype(c.c))))
 Base.iszero(c::Cyc)=all(iszero,c.c)
 
 Base.:(==)(a::Cyc,b::Cyc)=(a.n==b.n) && (a.c==b.c)
+
+function Base.isless(a::Cyc,b::Cyc)
+  (a,b)=promote(a,b)
+  lexless(a.c,b.c)
+end
 
 function Base.hash(a::Cyc, h::UInt)
    b = 0x595dee0e71d271d0%UInt
@@ -270,11 +273,6 @@ function Base.:+(a::Cyc,b::Cyc)
   Cyc(a.n,a.c+b.c)
 end
 
-function Base.isless(a::Cyc,b::Cyc)
-  (a,b)=promote(a,b)
-  lexless(a.c,b.c)
-end
-
 Base.:-(a::Cyc)=Cyc(a.n,-a.c)
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
 
@@ -314,6 +312,10 @@ function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   res
 end
 
+function raise(n::Int,v::Array)
+  raise.(n,v)
+end
+
 function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
   n=c.n
   nz=findall(x->!iszero(x),c.c)
@@ -345,10 +347,6 @@ end
 function lower(v::Array)
   v=lower.(v)
   raise(conductor(v),v)
-end
-
-function raise(n::Int,v::Array)
-  raise.(n,v)
 end
 
 """

@@ -8,7 +8,8 @@ The code is divided in sections  according to semantics.
 module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
-  groupby, constant, blocks, cartesian, SortedPairs,# data structures/arrays
+  groupby, constant, blocks, cartesian, # arrays
+  SortedPairs, norm, mergesum, getvalue, # data structure
   format, TeXstrip, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
   conjugate_partition, horner
@@ -129,18 +130,13 @@ end
 SortedPairs has a similar interface to Dicts, but is 3 times faster for the
 merge operation.  Pairs are sorted by the first item (the key)
 """
-struct SortedPairs{K,V}
-  v::Vector{Pair{K,V}}
-end
+SortedPairs{K,V}=Vector{Pair{K,V}} where V where K
 
 """
 merge is like merge(+,..) for Dicts, with the difference that keys with
 value 0 are deleted
 """
-function Base.merge(x::SortedPairs{K,V},
-  y::SortedPairs{K,V})::SortedPairs{K,V} where K where V
-  a=x.v
-  b=y.v
+function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} where K where V
   la=length(a)
   lb=length(b)
   res=similar(a,la+lb)
@@ -165,18 +161,29 @@ function Base.merge(x::SortedPairs{K,V},
       end
     end
   end
-  SortedPairs(resize!(res,ri))
+  resize!(res,ri)
 end
 
-Base.iterate(x::SortedPairs)=iterate(x.v)
-Base.iterate(x::SortedPairs,i::Int)=iterate(x.v,i)
-Base.length(x::SortedPairs)=length(x.v)
-Base.isempty(x::SortedPairs)=isempty(x.v)
-Base.empty(x::SortedPairs)=SortedPairs(empty(x.v))
-function Base.getindex(x::SortedPairs,i::Int)
-  r=searchsorted(x.v,i;by=x->x[1])
+function norm(x::SortedPairs{K,V})::SortedPairs{K,V} where K where V
+  if isempty(x) return x end
+  res=sort(x,by=y->y[1])
+  ri=1
+  for j in 2:length(res)
+    if res[j][1]==res[ri][1]
+      res[ri]=res[ri][1]=>res[ri][2]+res[j][2]
+    else 
+      if !iszero(res[ri][2]) ri+=1 end
+      res[ri]=res[j]
+    end
+  end
+  if iszero(res[ri][2]) ri-=1 end
+  resize!(res,ri)
+end
+
+function getvalue(x::SortedPairs,i::Int)
+  r=searchsorted(x,i;by=x->x[1])
   if r.start!=r.stop error("Bounds") end
-  x.v[r.start][2]
+  x[r.start][2]
 end
 #--------------------------------------------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
