@@ -85,27 +85,27 @@ julia> Cyc(ans) # even less useful
 -0.4999999999999998+0.8660254037844387E(4)
 ```
 
-For more information look at the documentation of ER, quadratic, galois.
+For more information look at the documentation of ER, quadratic, galois. 
 """
-module Cycs
-export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
-using Memoize, ..Util
+#module Cycs
+#export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
 
-struct Cyc{T <: Real}<: Number  # a cyclotomic number
+using Memoize, Gapjm.Util
+
+struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
-  c::Vector{T} # coefficients on the Zumbroich basis
-               # the i-th element is the coefficient on zumbasis[i]
+  d::SortedPairs{Int,T} # coefficients on the Zumbroich basis
 end
 
 conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Int)=1
 
-#=
-  zumbasis(n::Int) returns the Zumbroich basis of Q(ζ_n)
+"""
+  zumbroich_basis(n::Int) returns the Zumbroich basis of Q(ζ_n)
   as the vector of i in 0:n-1 such that ``ζ_n^i`` is in the basis
-=#
-@memoize Dict function zumbasis(n::Int)::Vector{Int}
+"""
+function zumbroich_basis(n::Int)::Vector{Int}
   if n==1 return [0] end
   function J(k::Int, p::Int) # see [Breuer] Rem. 1 p. 283
     if k==0 if p==2 return 0:0 else return 1:p-1 end
@@ -157,112 +157,81 @@ end
     res
   end
   if n==1 return true=>[1] end
-  z=zumbasis(n)::Vector{Int}
-  i=mod(i,n)
-  mp=modp(n,i)::Vector{Int}
-  if isempty(mp)
-    return true=>Vector{Int}(indexin([i],z))
-  end
+  mp=modp(n,i)
+  if isempty(mp) return true=>[i%n] end
   v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
-  u=(i .+ v).%n
-  (length(mp)%2==0)=>Vector{Int}(indexin(u,z))
+  length(mp)%2==0=>(i .+ v).%n
 end
 
-Cyc(i::Real)=Cyc(1,[i])
+Cyc(i::Real)=Cyc(1,[0=>i])
 
-Cyc(c::Complex{<:Real})=Cyc(4,[real(c),imag(c)])
+Cyc(c::Complex{<:Real})=Cyc(4,[0=>real(c),1=>imag(c)])
 
-function Cyc(n::Int,ind::Vector{Int},coeff)
-  zb=zumbasis(n)
-  c=Cyc(n,zeros(eltype(coeff),length(zb)))
-  c.c[indexin(ind.%n,zb)]=coeff
-  c
+function Base.convert(::Type{Cyc{T}},i::Real)where T<:Real
+ Cyc(1,[0=>i])
 end
 
-function Base.convert(::Type{T},c::Cyc)where T<:Real
+function Base.convert(::Type{T},c::Cyc)where T<:Number
+  if c isa T return c end
   if iszero(c) return 0 end
   c=lower(c)
   if c.n!=1 throw(InexactError(:convert,T,c)) end
-  convert(T,c.c[1])
+  convert(T,c.d[1][2])
 end
 
-function Base.convert(::Type{Cyc{T}},a::Real)where T<:Real
-   Cyc(T(a))
-end
+#Base.copy(c::Cyc)=Cyc(c.n,c.d)
 
-function Base.promote_type(::Type{Cyc{T}},::Type{Cyc{T}})where T <: Real
-   Cyc{T}
-end
+Base.zero(c::Cyc)=Cyc(c.n,empty(c.d))
+Base.iszero(c::Cyc)=isempty(c.d)
+Base.one(c::Cyc)=E(c.n,0)
 
-function Base.promote_type(::Type{Cyc{T}},::Type{Cyc{T1}})where T where T1 <: Real
-   Cyc{promote_type(T,T1)}
-end
-
-function Base.promote_type(::Type{Cyc{T}},::Type{T1})where T where T1 <: Real
-   Cyc{promote_type(T,T1)}
-end
-
-function Base.promote_type(::Type{T1},::Type{Cyc{T}})where T where T1 <: Real
-   Cyc{promote_type(T,T1)}
-end
-
-function Base.convert(::Type{Cyc{T}},a::Cyc)where T<:Real
- if eltype(a.c)==T return a end
- Cyc(a.n,Vector{T}(a.c))
-end
-
-Base.zero(c::Cyc)=Cyc(c.n,fill!(similar(c.c), zero(eltype(c.c))))
-Base.iszero(c::Cyc)=all(iszero,c.c)
-
-Base.:(==)(a::Cyc,b::Cyc)=(a.n==b.n) && (a.c==b.c)
+Base.:(==)(a::Cyc,b::Cyc)=a.n==b.n && a.d==b.d
 
 function Base.isless(a::Cyc,b::Cyc)
   (a,b)=promote(a,b)
-  lexless(a.c,b.c)
+  isless(a.d,b.d)
 end
 
 function Base.hash(a::Cyc, h::UInt)
    b = 0x595dee0e71d271d0%UInt
-   for i in a.c
-     b = xor(b,xor(hash(i, h),h))
+   for i in a.d
+     b = xor(b,xor(hash(i[1], h),h))
+     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+     b = xor(b,xor(hash(i[2], h),h))
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
    end
    return b
 end
 
-function Base.show(io::IO,p::Cyc)
+function Base.show(io::IO, p::Cyc)
   p=lower(p)
-  e="E($(p.n))"
-  l=map(p.c,zumbasis(p.n))do v,deg
-    if v==0 return "" end
-    s="$v"
-    if occursin(r"(//|/|\+|\-|\*)",s[2:end]) s="($s)" end
-    if deg==0 t=s
-    else t=(v==1 ? "" : (v==-1 ? "-" : s))*e*(deg==1 ? "" : "^$deg")
+  if iszero(p) print(io,0)
+  else
+    start=true
+    e="E($(p.n))"
+    for (deg,v) in p.d
+      if deg==0 t=string(v)
+      else t=(v==1 ? "" : (v==-1 ? "-" : string(v)))*e*(deg==1 ? "" : "^$deg")
+      end
+      if start start=false elseif t[1]!='-' print(io,"+") end
+      print(io,t)
     end
-    (t[1]!='-' ? "+" : "")*t
-  end::Array{String,1}
-  s=join(l)
-  if s=="" print(io,"$(p.c[1])")
-  elseif  s[1]=='+' print(io,s[2:end])
-  else print(io,s) end
+  end
 end
 
 """
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 """
 function E(n::Integer,i::Integer=1)
-  (s,t)=Elist(n,mod(i,n))
-  c=Cyc(n,zero(zumbasis(n)))
-  c.c[t].=ifelse(s,1,-1)
-  c
+  (s,l)=Elist(n,mod(i,n))::Pair{Bool,Vector{Int}}
+  Cyc(n,[i=>ifelse(s,1,-1) for i in l])
 end
 
 function Base.promote(a::Cyc,b::Cyc)
   if a.n==b.n
-    ac,bc=promote(a.c,b.c)
-    if typeof(ac)!=typeof(a.c) a=Cyc(a.n,ac) end
-    if typeof(bc)!=typeof(b.c) b=Cyc(b.n,bc) end
+    ac,bc=promote(a.d,b.d)
+    if typeof(ac)!=typeof(a.d) a=Cyc(a.n,ac) end
+    if typeof(bc)!=typeof(b.d) b=Cyc(b.n,bc) end
     return (a,b) end
   l=lcm(a.n,b.n)
   return promote(raise(l,a),raise(l,b))
@@ -270,46 +239,50 @@ end
 
 function Base.:+(a::Cyc,b::Cyc)
   (a,b)=promote(a,b)
-  Cyc(a.n,a.c+b.c)
+  Cyc(a.n,mergesum(a.d,b.d))
 end
 
-Base.:-(a::Cyc)=Cyc(a.n,-a.c)
+Base.:+(a::Cyc,b::Number)=a+Cyc(b)
+Base.:+(b::Number,a::Cyc)=a+Cyc(b)
+
+Base.:-(a::Cyc)=Cyc(a.n,[k=>-v for (k,v) in a.d])
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
+Base.:-(b::Number,a::Cyc)=Cyc(b)-a
+Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
-Base.:*(a::Real,c::Cyc)=Cyc(c.n,a*c.c)
-Base.:*(c::Cyc,a::Real)=Cyc(c.n,a*c.c)
+Base.:*(a::Number,c::Cyc)=Cyc(c.n,[k=>a*v for (k,v) in c.d])
+Base.:*(c::Cyc,a::Number)=a*c
 
-function addExb!(a::Cyc,i::Int,b)  # a+=b*E(a.n,i)
-  s,t=Elist(a.n,i)
+Base.div(c::Cyc,a::Number)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])
+
+Base.://(c::Cyc,a::Number)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
+Base.://(a::Cyc,c::Cyc)=a*inv(c)
+Base.://(a::Real,c::Cyc)=a*inv(c)
+
+# add to res the contents of E(n,i)*b
+function addelist(res::SortedPairs{Int,T},n::Int,i::Int,b::T)where T
+  (s,l)=Elist(n,mod(i,n))::Pair{Bool,Vector{Int}}
   if !s b=-b end
-  @inbounds  a.c[t].+=b
+  for i in l push!(res,i=>b) end
 end
 
 function Base.:*(a::Cyc,b::Cyc)
-  a,b=promote(a,b)
-  res=zero(a)
-  zb=zumbasis(a.n)
-  for i in eachindex(a.c), j in eachindex(b.c)
-    if !iszero(a.c[i]) && !iszero(b.c[j])
-      addExb!(res,zb[i]+zb[j],a.c[i]*b.c[j])
-#    res+=a.c[i]*b.c[j]*E(res.n,zb[i]+zb[j])
-    end
+  (a,b)=promote(a,b)
+  res=empty(a.d)
+  for (i,va) in a.d, (j,vb) in b.d
+      addelist(res,a.n,i+j,va*vb) 
   end
-  res
+  Cyc(a.n,norm(res))
 end
 
-Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.c,a))
-
-function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
+function raise(n::Int,c::Cyc) # write c in Q(zeta_n) if c.n divides n
   if n==c.n return c end
   if n%c.n !=0 error("raise to $n not multiple of $(c.n)") end
-  zn=zumbasis(n)
-  res=Cyc(n,zeros(eltype(c.c),length(zn)))
-  z=zumbasis(c.n)*div(n,c.n)
-  for i in eachindex(c.c)
-@inbounds if !iszero(c.c[i]) addExb!(res,z[i],c.c[i]) end
-  end
-  res
+  res=empty(c.d)
+  if iszero(c) return Cyc(n,res) end
+  m=div(n,c.n)
+  for (k,v) in c.d addelist(res,n,k*m,v) end
+  Cyc(n,norm(res))
 end
 
 function raise(n::Int,v::Array)
@@ -318,23 +291,22 @@ end
 
 function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
   n=c.n
-  nz=findall(x->!iszero(x),c.c)
-  if length(nz)==0 return Cyc(c.c[1]) end
-  zb=zumbasis(n)
+  if n==1 return c end
+  if iszero(c) return Cyc(0) end
   for (p,np) in factor(n)
     m=div(n,p)
-    let p=p, m=m, zb=zb
-    if np>1
-      if all(z->z%p==0,zb[nz])
-        return lower(Cyc(m,div.(zb[nz],p),c.c[nz]))
+    let p=p, m=m
+    if np>1 
+     if all(k->k[1]%p==0,c.d) 
+        return lower(Cyc(m,[div(k,p)=>v for (k,v) in c.d]))
       end
     else
-      res=groupby(x->x%m,zb[nz])
+      res=groupby(x->x%m,first.(c.d))
       if all(v->length(v)==p-1,values(res))
-        kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]
-        if p==2 return lower(Cyc(m,kk,c.c[indexin((kk*p).%n,zb)]))
-        elseif all(k->constant(c.c[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
-          return lower(Cyc(m,kk,-c.c[indexin((m.+kk*p).%n,zb)]))
+        kk=Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)])
+        if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
+        elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
+          return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
         end
       end
     end
@@ -363,14 +335,8 @@ true
 ```
 """
 function galois(c::Cyc,n::Int)
-  if gcd(n,c.n)!=1 error("$n should be prime to conductor($c)=$(c.n)") end
-  zb=zumbasis(c.n)
-  nz=findall(x->!iszero(x),c.c)
-  if isempty(nz) c
-  else let zb=zb
-     sum(t->c.c[t]*E(c.n,zb[t]*n),nz)
-       end
-  end
+  if gcd(n,c.n)!=1 error("supposed to be prime") end
+  sum(t->t[2]*E(c.n,t[1]*n),c.d)
 end
 
 Base.conj(c::Cyc)=galois(c,-1)
@@ -386,10 +352,6 @@ function Base.inv(c::Cyc)
   end
   n==1 ? r : (n==-1 ? -r : r//n)
 end
-
-Base.://(a::Cyc,c::Cyc)=a*inv(c)
-Base.://(c::Cyc,a::Real)=Cyc(c.n,c.c//a)
-Base.://(a::Real,c::Cyc)=a*inv(c)
 
 """
   ER(n::Int) computes as a Cyc the square root of the integer n.
@@ -410,12 +372,12 @@ function ER(n::Int)
   elseif n%4==3 return -E(4)*sum(k->E(n,k^2),1:n)
   else          return 2*ER(div(n,4))
   end
-end
+end 
 
-Base.Complex(c::Cyc)=sum(x->x[2]*exp(2*x[1]*im*pi/c.n),zip(zumbasis(c.n),c.c))
+Base.Complex(c::Cyc)=sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
 
 function AsRootOfUnity(c::Cyc)
-  if !(all(x->x==0 || x==1,c.c) ||all(x->x==0 || x==-1,c.c))
+  if !(all(x->x[2]==1,c.d) || all(x->x[2]==-1,c.d))
     return nothing
   end
   for i in 0:c.n-1
@@ -446,10 +408,9 @@ false
 """
 quadratic=function(cyc::Cyc)
   cyc=lower(cyc)
-  den=lcm(denominator.(cyc.c))::Int
-  zb=zumbasis(cyc.n)
+  den=lcm(denominator.(map(x->x[2],cyc.d)))::Int
   l=fill(0,cyc.n)
-  l[1 .+ zb]=Int.(cyc.c*den)
+  for (k,v) in cyc.d l[k+1]=Int.(v*den) end
   if cyc.n==1 return (l[1],0,1,den) end
 
   f=factor(cyc.n)
@@ -513,4 +474,5 @@ end
 # testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
 #  return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 #end; in GAP3 takes 0.4s for testmat(12)^2, 0.3s in GAP4
-end
+#end
+#using Main.Cycs
