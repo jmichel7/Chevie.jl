@@ -87,10 +87,10 @@ julia> Cyc(ans) # even less useful
 
 For more information look at the documentation of ER, quadratic, galois. 
 """
-#module Cycs
-#export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
+module Cycs
+export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
 
-using Memoize, Gapjm.Util
+using Memoize, ..Util
 
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
@@ -474,5 +474,4 @@ end
 # testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
 #  return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 #end; in GAP3 takes 0.4s for testmat(12)^2, 0.3s in GAP4
-#end
-#using Main.Cycs
+end
