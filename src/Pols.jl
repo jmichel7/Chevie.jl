@@ -22,7 +22,7 @@ julia> p=(q+1)^2
 julia> degree(p)
 2
 
-julia> value(p,1//2)
+julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
 9//4
 
 julia> divrem(q^3+1,q+2) # changes coefficients to field elements
@@ -39,7 +39,7 @@ julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
 see also the individual documentation of gcd.
 """
 module Pols
-export Pol, valuation, value, cyclotomic_polynomial, divrem1
+export Pol, valuation, cyclotomic_polynomial, divrem1
 using Memoize, Reexport
 @reexport using ..Util
 
@@ -77,7 +77,7 @@ Util.degree(p::Pol)=length(p.c)-1+p.v
 
 valuation(p::Pol)=p.v
 
-value(p::Pol,x)=horner(x,p.c)*x^p.v
+(p::Pol)(x)=horner(x,p.c)*x^p.v
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 
