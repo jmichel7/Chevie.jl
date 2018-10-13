@@ -85,7 +85,28 @@ julia> Cyc(c) # even less useful
 -0.4999999999999998+0.8660254037844387E(4)
 ```
 
-For more information look at the documentation of ER, quadratic, galois. 
+For more information see ER, quadratic, galois. 
+
+Finally, a benchmark:
+
+```julia-repl
+julia> function testmat(p) 
+         ss=vcat([[[i,j] for j in i+1:p-1] for i in 0:p-1]...)
+         [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
+       end
+testmat (generic function with 1 method)
+
+julia> @btime testmat(12)^2;
+  271.577 ms (3012634 allocations: 290.07 MiB)
+```
+
+The equivalent in GAP:
+
+testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
+  return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
+end; 
+
+for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
 export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
@@ -179,19 +200,19 @@ function Base.convert(::Type{T},c::Cyc)where T<:Number
   convert(T,c.d[1][2])
 end
 
-#Base.copy(c::Cyc)=Cyc(c.n,c.d)
-
 Base.zero(c::Cyc)=Cyc(c.n,empty(c.d))
 Base.iszero(c::Cyc)=isempty(c.d)
 Base.one(c::Cyc)=E(c.n,0)
 
 Base.:(==)(a::Cyc,b::Cyc)=a.n==b.n && a.d==b.d
 
+" isless is necessary to put Cycs in a sorted list"
 function Base.isless(a::Cyc,b::Cyc)
   (a,b)=promote(a,b)
   isless(a.d,b.d)
 end
 
+" hash is necessary to put Cycs as keys of a Dict"
 function Base.hash(a::Cyc, h::UInt)
    b = 0x595dee0e71d271d0%UInt
    for i in a.d
@@ -259,7 +280,7 @@ Base.://(c::Cyc,a::Number)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
 
-# add to res the contents of E(n,i)*b
+# add to res the contents of E(n,i)*b -- norm needed after
 function addelist(res::SortedPairs{Int,T},n::Int,i::Int,b::T)where T
   (s,l)=Elist(n,mod(i,n))::Pair{Bool,Vector{Int}}
   if !s b=-b end
@@ -467,7 +488,7 @@ quadratic=function(cyc::Cyc)
   return (a,b,root,den*d)
 end
 
-function testmat(p) # testmat(12)^2 takes 0.31s in 1.0
+function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
   ss=vcat([[[i,j] for j in i+1:p-1] for i in 0:p-1]...)
   [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
 end
