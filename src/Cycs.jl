@@ -51,20 +51,20 @@ Int64
 julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
-julia> inv(1+E(4)) # inverses need Rationals
-(1/2)+(-1/2)E(4)
+julia> c=inv(1+E(4)) # inverses need Rationals
+1//2-1//2E(4)
 
-julia> typeof(ans)
+julia> typeof(c)
 Cyc{Rational{Int64}}
 
 julia> typeof(1+E(4))
 Cyc{Int64}
 
-ulia> Cyc(1+im) # one can convert Gaussian integers or rationals
+julia> Cyc(1+im) # one can convert Gaussian integers or rationals
 1+E(4)
 
 julia> 1//(1+E(4))
-(1/2)+(-1/2)E(4)
+1//2-1//2E(4)
 
 julia> typeof(Cyc(1//2)) # another way of building a Cyc
 Cyc{Rational{Int64}}
@@ -72,16 +72,16 @@ Cyc{Rational{Int64}}
 julia> conj(1+E(4))
 1-E(4)
 
-julia> E(9)     # an effect of the Zumbroich basis
+julia> c=E(9)     # an effect of the Zumbroich basis
 -E(9)^4-E(9)^7
 
-julia> AsRootOfUnity(ans) # but you can decide if a Cyc is a root of unity
-1/9
+julia> AsRootOfUnity(c) # but you can decide if a Cyc is a root of unity
+1//9
 
-julia> Complex(E(3))   # convert to float is probably not very useful
+julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
 
-julia> Cyc(ans) # even less useful
+julia> Cyc(c) # even less useful
 -0.4999999999999998+0.8660254037844387E(4)
 ```
 

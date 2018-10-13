@@ -191,10 +191,10 @@ Base.inv(a::Perm)=Perm(invperm(a.d))
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
-2-element Array{Array{Int64,1},1}:
+3-element Array{Array{Int64,1},1}:
  [1, 2]
  [3]
- [3, 4]
+ [4, 5]
 ```
 """
 function cycles(a::Perm{T},check::Bool=false)where T
