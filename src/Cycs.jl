@@ -89,7 +89,7 @@ For more information see ER, quadratic, galois.
 
 Finally, a benchmark:
 
-```julia-repl
+```benchmark
 julia> function testmat(p) 
          ss=vcat([[[i,j] for j in i+1:p-1] for i in 0:p-1]...)
          [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
@@ -102,9 +102,11 @@ julia> @btime testmat(12)^2;
 
 The equivalent in GAP:
 
+```
 testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
   return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 end; 
+```
 
 for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 """

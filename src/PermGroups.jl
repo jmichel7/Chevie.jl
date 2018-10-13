@@ -81,8 +81,10 @@ julia> elements(G) # elements in the same order as words
  (1,2,3)
  (1,3,2)
  (1,3)
+```
 
-# finally, benchmarks
+finally, benchmarks
+```benchmark
 julia> @btime collect(symmetric_group(8));
   10.252 ms (350529 allocations: 14.17 MiB)
 
