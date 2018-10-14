@@ -97,7 +97,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime testmat(12)^2;
-  271.577 ms (3012634 allocations: 290.07 MiB)
+  261.577 ms (3012634 allocations: 290.07 MiB)
 ```
 
 The equivalent in GAP:
@@ -146,10 +146,11 @@ function zumbroich_basis(n::Int)::Vector{Int}
 end
 
 #=
-  Elist(n,i) returns the coefficients of E(n)^i in zumbasis(n).
-  These  coeffs are all  1 or all  -1. Thus the  result is a Pair sgn=>inds
-  where  sgn is true if  coeffs are all 1  and false otherwise, and inds is
-  the list of indices in zumbasis of the nonzero coeffs.
+  Elist(n,i)  expresses ζ_n^i  in zumbroich_basis(n):  it is  a sum of some
+  ζ_n^j  with coefficients all 1 or all  -1. The result is a Pair sgn=>inds
+  where sgn is true if coefficients are all 1 and false otherwise, and inds
+  is  the  list  of  i  in  0:n-1  such  that  ζ_n^i occurs with a non-zero
+  coefficient.
 =#
 @memoize Dict function Elist(n::Int,i::Int=1)::Pair{Bool,Vector{Int}}
   function modp(n::Int,i::Int)::Vector{Int}
@@ -183,7 +184,7 @@ end
   mp=modp(n,i)
   if isempty(mp) return true=>[i%n] end
   v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
-  length(mp)%2==0=>(i .+ v).%n
+  length(mp)%2==0=>sort((i .+ v).%n)
 end
 
 Cyc(i::Real)=Cyc(1,[0=>i])

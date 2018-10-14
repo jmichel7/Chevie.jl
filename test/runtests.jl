@@ -6,6 +6,7 @@ function mytest(a::String,b::String)
   a=replace(a,r" *$"s=>"")
   a==b
 end
+@testset "Cycs.jl" begin
 @test mytest("E(3)+E(4)","E(12)^4-E(12)^7-E(12)^11")
 @test mytest("E(3,2)","E(3)^2")
 @test mytest("1+E(3,2)","-E(3)")
@@ -33,7 +34,8 @@ end
 @test mytest("ER(3)","-E(12)^7+E(12)^11")
 @test mytest("quadratic(1+E(3))","(1, 1, -3, 2)")
 @test mytest("quadratic(1+E(5))","false")
-@test mytest("quadratic(1+E(5))","false")
+end
+@testset "PermGroups.jl" begin
 @test mytest("G=PermGroup([Perm(i,i+1) for i in 1:2])","PermGroup((1,2),(2,3))")
 @test mytest("collect(G)","6-element Array{Perm{Int64},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
 @test mytest("degree(G)","3")
@@ -46,7 +48,8 @@ end
 @test mytest("centralizer_orbits(G)","2-element Array{Dict{Int64,Perm{Int64}},1}:\n Dict(2=>(1,2),3=>(1,3,2),1=>())\n Dict(2=>(),3=>(2,3))")
 @test mytest("words(G)","6-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
 @test mytest("elements(G)","6-element Array{Perm{Int64},1}:\n ()\n (2,3)\n (1,2)\n (1,2,3)\n (1,3,2)\n (1,3)")
-@test mytest("elements(G)","6-element Array{Perm{Int64},1}:\n ()\n (2,3)\n (1,2)\n (1,2,3)\n (1,3,2)\n (1,3)")
+end
+@testset "Perms.jl" begin
 @test mytest("p=Perm(1,2)*Perm(2,3)","(1,3,2)")
 @test mytest("Perm{Int8}(p)","{Int8}(1,3,2)")
 @test mytest("1^p","3")
@@ -63,7 +66,8 @@ end
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","2-element Array{Int64,1}:\n 2\n 2")
-@test mytest("cycletype(Perm(1,2)*Perm(3,4))","2-element Array{Int64,1}:\n 2\n 2")
+end
+@testset "Pols.jl" begin
 @test mytest("Pol([1,2],0)","1+2x")
 @test mytest("p=Pol([1,2],-1)","x^-1+2")
 @test mytest("valuation(p)","-1")
@@ -77,3 +81,4 @@ end
 @test mytest("cyclotomic_polynomial(24)","1-q^4+q^8")
 @test mytest("gcd(q+1,q^2-1)","1.0+1.0q")
 @test mytest("gcd(q+1//1,q^2-1//1)","(1//1)+(1//1)q")
+end
