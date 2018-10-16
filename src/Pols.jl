@@ -123,7 +123,7 @@ Base.:*(b::T, a::Pol) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
 Base.:^(a::Pol, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                               Base.power_by_squaring(inv(a),-n)
 
-function Base.:+(a::Pol{T1}, b::Pol{T2})where T1 where T2
+function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
   T=promote_type(T1,T2)
@@ -162,7 +162,7 @@ end
 """
 divrem when b unitary: does not change type
 """
-function divrem1(a::Pol{T1}, b::Pol{T2})where T1 where T2
+function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.c[end]
   if d^2!=1 throw(InexactError) end
   T=promote_type(T1,T2)

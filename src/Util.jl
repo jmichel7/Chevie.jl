@@ -130,13 +130,13 @@ end
 SortedPairs has a similar interface to Dicts, but is 3 times faster for the
 merge operation.  Pairs are sorted by the first item (the key)
 """
-SortedPairs{K,V}=Vector{Pair{K,V}} where V where K
+SortedPairs{K,V}=Vector{Pair{K,V}} where {K,V}
 
 """
 merge is like merge(+,..) for Dicts, with the difference that keys with
 value 0 are deleted
 """
-function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} where K where V
+function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} where {K,V}
   la=length(a)
   lb=length(b)
   res=similar(a,la+lb)
@@ -164,7 +164,7 @@ function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} whe
   resize!(res,ri)
 end
 
-function norm(x::SortedPairs{K,V})::SortedPairs{K,V} where K where V
+function norm(x::SortedPairs{K,V})::SortedPairs{K,V} where {K,V}
   if isempty(x) return x end
   res=sort(x,by=y->y[1])
   ri=1
