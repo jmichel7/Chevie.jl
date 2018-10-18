@@ -406,6 +406,7 @@ function AsRootOfUnity(c::Cyc)
   end
   for i in 0:c.n-1
     if c==E(c.n,i) return i//c.n end
+    if -c==E(c.n,i) return 1//2+i//c.n end
   end
   return nothing
 end
