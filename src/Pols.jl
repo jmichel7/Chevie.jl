@@ -109,7 +109,7 @@ function Base.show(io::IO,p::Pol)
   else print(io,s) end
 end
 
-function Base.:*(a::Pol{T}, b::Pol{T})where T
+function Base.:*(a::Pol{T1}, b::Pol{T2})where T1 where T2
   if iszero(a) || iszero(b) return zero(a) end
   res=map(1:length(a.c)+length(b.c)-1)do i
 @inbounds sum(j->a.c[j]*b.c[i+1-j],max(1,i-length(b.c)+1):min(i,length(a.c)))
@@ -173,12 +173,13 @@ function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
     else c=v[i]*d
          v[i-length(b.c)+1:i] .-= c .* b.c
     end
-    pushfirst!(res,c)
+    pushfirst!(res,convert(T,c))
   end
   Pol(res,a.v-b.v),Polstrip(v,a.v)
 end
 
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
+Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
 
 """
   gcd(p::Pol, q::Pol)

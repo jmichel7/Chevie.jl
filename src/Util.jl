@@ -182,7 +182,7 @@ end
 
 function getvalue(x::SortedPairs,i::Int)
   r=searchsorted(x,i;by=x->x[1])
-  if r.start!=r.stop error("Bounds") end
+  if r.start!=r.stop error("Bounds in $x") end
   x[r.start][2]
 end
 #--------------------------------------------------------------------------

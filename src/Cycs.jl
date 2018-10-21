@@ -180,19 +180,23 @@ end
     end
     res
   end
-  if n==1 return true=>[1] end
+  if n==1 return true=>[0] end
   mp=modp(n,i)
   if isempty(mp) return true=>[i%n] end
   v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
   length(mp)%2==0=>sort((i .+ v).%n)
 end
 
-Cyc(i::Real)=Cyc(1,[0=>i])
+Cyc(i::Real)=iszero(i) ? Cyc(1,empty([0=>i])) : Cyc(1,[0=>i])
 
 Cyc(c::Complex{<:Real})=Cyc(4,[0=>real(c),1=>imag(c)])
 
 function Base.convert(::Type{Cyc{T}},i::Real)where T<:Real
- Cyc(1,[0=>i])
+  Cyc(convert(T,i))
+end
+
+function Base.convert(::Type{Cyc{T}},c::Cyc)where T<:Real
+  Cyc(c.n,[i=>convert(T,c) for (i,c) in c.d])
 end
 
 function Base.convert(::Type{T},c::Cyc)where T<:Number
@@ -256,9 +260,18 @@ function Base.promote(a::Cyc,b::Cyc)
     ac,bc=promote(a.d,b.d)
     if typeof(ac)!=typeof(a.d) a=Cyc(a.n,ac) end
     if typeof(bc)!=typeof(b.d) b=Cyc(b.n,bc) end
-    return (a,b) end
+    return (a,b) 
+  end
   l=lcm(a.n,b.n)
   return promote(raise(l,a),raise(l,b))
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where T1<:Real where T2<:Real
+  Cyc{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where T1<:Real where T2<:Real
+  Cyc{promote_type(T1,T2)}
 end
 
 function Base.:+(a::Cyc,b::Cyc)
@@ -291,7 +304,7 @@ function addelist(res::SortedPairs{Int,T},n::Int,i::Int,b::T)where T
 end
 
 function Base.:*(a::Cyc,b::Cyc)
-  (a,b)=promote(a,b)
+  a,b=promote(a,b)
   res=empty(a.d)
   for (i,va) in a.d, (j,vb) in b.d
       addelist(res,a.n,i+j,va*vb) 
@@ -315,6 +328,7 @@ end
 
 function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
   n=c.n
+# println("lowering $(c.n):$(c.d)")
   if n==1 return c end
   if iszero(c) return Cyc(0) end
   for (p,np) in factor(n)
@@ -327,7 +341,7 @@ function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
     else
       res=groupby(x->x%m,first.(c.d))
       if all(v->length(v)==p-1,values(res))
-        kk=Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)])
+        kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]))
         if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
         elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
           return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
@@ -342,7 +356,7 @@ end
 # write elts of v in smallest Q(ζ_n) where all elements sit
 function lower(v::Array)
   v=lower.(v)
-  raise(conductor(v),v)
+# raise(conductor(v),v)
 end
 
 """
@@ -372,7 +386,7 @@ function Base.inv(c::Cyc)
   else
     p=prime_residues(c.n)[2:end]
     r=prod(i->galois(c,i),p)
-    n=convert(Int,c*r)
+    n=lower(c*r).d[1][2]
   end
   n==1 ? r : (n==-1 ? -r : r//n)
 end
@@ -398,7 +412,7 @@ function ER(n::Int)
   end
 end 
 
-Base.Complex(c::Cyc)=sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
+Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) : sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
 
 function AsRootOfUnity(c::Cyc)
   if !(all(x->x[2]==1,c.d) || all(x->x[2]==-1,c.d))
