@@ -28,13 +28,13 @@ which constructs ζ_n^k.
 # Examples
 ```julia-repl
 julia> E(3)+E(4)
-E(12)^4-E(12)^7-E(12)^11
+ζ₁₂⁴-ζ₁₂⁷-ζ₁₂¹¹
 
 julia> E(3,2)
-E(3)^2
+ζ₃²
 
 julia> 1+E(3,2)
--E(3)
+-ζ₃
 
 julia> a=E(4)-E(4)
 0
@@ -52,7 +52,7 @@ julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
 julia> c=inv(1+E(4)) # inverses need Rationals
-1//2-1//2E(4)
+1//2-1//2ζ₄
 
 julia> typeof(c)
 Cyc{Rational{Int64}}
@@ -61,19 +61,19 @@ julia> typeof(1+E(4))
 Cyc{Int64}
 
 julia> Cyc(1+im) # one can convert Gaussian integers or rationals
-1+E(4)
+1+ζ₄
 
 julia> 1//(1+E(4))
-1//2-1//2E(4)
+1//2-1//2ζ₄
 
 julia> typeof(Cyc(1//2)) # another way of building a Cyc
 Cyc{Rational{Int64}}
 
 julia> conj(1+E(4))
-1-E(4)
+1-ζ₄
 
 julia> c=E(9)     # an effect of the Zumbroich basis
--E(9)^4-E(9)^7
+-ζ₉⁴-ζ₉⁷
 
 julia> AsRootOfUnity(c) # but you can decide if a Cyc is a root of unity
 1//9
@@ -82,7 +82,7 @@ julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
 
 julia> Cyc(c) # even less useful
--0.4999999999999998+0.8660254037844387E(4)
+-0.4999999999999998+0.8660254037844387ζ₄
 ```
 
 For more information see ER, quadratic, galois. 
@@ -187,7 +187,7 @@ end
   length(mp)%2==0=>sort((i .+ v).%n)
 end
 
-Cyc(i::Real)=iszero(i) ? Cyc(1,empty([0=>i])) : Cyc(1,[0=>i])
+Cyc(i::T) where T<:Real=iszero(i) ? Cyc(1,Pair{Int,T}[]) : Cyc(1,[0=>i])
 
 Cyc(c::Complex{<:Real})=Cyc(4,[0=>real(c),1=>imag(c)])
 
@@ -195,14 +195,14 @@ function Base.convert(::Type{Cyc{T}},i::Real)where T<:Real
   Cyc(convert(T,i))
 end
 
-function Base.convert(::Type{Cyc{T}},c::Cyc)where T<:Real
-  Cyc(c.n,[i=>convert(T,c) for (i,c) in c.d])
+function Base.convert(::Type{Cyc{T}},c::Cyc{T1})where {T,T1}
+  if T==T1 return c end
+  Cyc(c.n,convert.(Pair{Int,T},c.d))
 end
 
-function Base.convert(::Type{T},c::Cyc)where T<:Number
-  if c isa T return c end
-  if iszero(c) return 0 end
-  c=lower(c)
+function Base.convert(::Type{T},c::Cyc)::T where T<:Real
+  if iszero(c) return T(0) end
+  if c.n!=1 c=lower(c) end
   if c.n!=1 throw(InexactError(:convert,T,c)) end
   convert(T,c.d[1][2])
 end
@@ -233,16 +233,18 @@ end
 
 function Base.show(io::IO, p::Cyc)
   p=lower(p)
+  stringexp(e)=e==1 ? "" : e<10 ? "^$e" : "^{$e}"
+  stringind(e)=e==1 ? "" : e<10 ? "_$e" : "_{$e}"
   if iszero(p) print(io,0)
   else
     start=true
-    e="E($(p.n))"
+    r="ζ"*stringind(p.n)
     for (deg,v) in p.d
       if deg==0 t=string(v)
-      else t=(v==1 ? "" : (v==-1 ? "-" : string(v)))*e*(deg==1 ? "" : "^$deg")
+      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r*stringexp(deg)
       end
       if start start=false elseif t[1]!='-' print(io,"+") end
-      print(io,t)
+      print(io,TeXstrip(t))
     end
   end
 end
@@ -255,15 +257,14 @@ function E(n::Integer,i::Integer=1)
   Cyc(n,[i=>ifelse(s,1,-1) for i in l])
 end
 
-function Base.promote(a::Cyc,b::Cyc)
-  if a.n==b.n
-    ac,bc=promote(a.d,b.d)
-    if typeof(ac)!=typeof(a.d) a=Cyc(a.n,ac) end
-    if typeof(bc)!=typeof(b.d) b=Cyc(b.n,bc) end
-    return (a,b) 
+function Base.promote(a::Cyc{T1},b::Cyc{T2})where {T1,T2}
+  if a.n!=b.n
+    l=lcm(a.n,b.n)
+    a=raise(l,a)
+    b=raise(l,b)
   end
-  l=lcm(a.n,b.n)
-  return promote(raise(l,a),raise(l,b))
+  T=promote_type(T1,T2)
+  return convert(Cyc{T},a), convert(Cyc{T},b)
 end
 
 function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where T1<:Real where T2<:Real
@@ -326,11 +327,11 @@ function raise(n::Int,v::Array)
   raise.(n,v)
 end
 
-function lower(c::Cyc) # write c in smallest Q(ζ_n) where it sits
+function lower(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
   n=c.n
 # println("lowering $(c.n):$(c.d)")
   if n==1 return c end
-  if iszero(c) return Cyc(0) end
+  if iszero(c) return zero(Cyc{T}) end
   for (p,np) in factor(n)
     m=div(n,p)
     let p=p, m=m
@@ -366,7 +367,7 @@ end
 # Examples
 ```julia-repl
 julia> galois(1+E(4),-1) # galois(c,-1) is the same as conj(c)
-1-E(4)
+1-ζ₄
 
 julia> galois(ER(5),2)==-ER(5)
 true
@@ -396,10 +397,10 @@ end
 # Examples
 ```julia-repl
 julia> ER(-3)
-E(3)-E(3)^2
+ζ₃-ζ₃²
 
 julia> ER(3)
--E(12)^7+E(12)^11
+-ζ₁₂⁷+ζ₁₂¹¹
 ```
 """
 function ER(n::Int)
@@ -434,30 +435,32 @@ end
 
 """
   quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
-  it returns tuple (a,b,root,d) of integers such that  c=(a + b ER(root))//d
-  or false if no such tuple exists
+  it  returns a named  tuple (a=a,b=b,root=root,d=d) of  integers such that
+  c=(a + b ER(root))//d or nothing if no such tuple exists
+
 # Examples
 ```julia-repl
 julia> quadratic(1+E(3))
-(1, 1, -3, 2)
+(a = 1, b = 1, root = -3, den = 2)
 
 julia> quadratic(1+E(5))
-false
+
 ```
 """
 quadratic=function(cyc::Cyc)
   cyc=lower(cyc)
   den=lcm(denominator.(map(x->x[2],cyc.d)))::Int
+  if den!=1 cyc=Cyc(cyc.n,[k=>Int(v*den) for (k,v) in cyc.d]) end
   l=fill(0,cyc.n)
-  for (k,v) in cyc.d l[k+1]=Int.(v*den) end
-  if cyc.n==1 return (l[1],0,1,den) end
+  for (k,v) in cyc.d l[k+1]=v end
+  if cyc.n==1 return (a=l[1],b=0,root=1,den=den) end
 
   f=factor(cyc.n)
   v2=get(f,2,0)
 
   if v2>3 || (v2==2 && any(p->p[1]!=2 && p[2]!=1,f)) ||
      (v2<2 && any(x->x!=1,values(f)))
-    return false
+    return nothing
   end
 
   f=keys(f)
@@ -468,8 +471,8 @@ quadratic=function(cyc::Cyc)
     let cyc=cyc
       Set(map(i->lower(galois(cyc,i)),prime_residues(cyc.n)))
     end
-    if length(gal)!=2 return false end
-    a=convert(Int,sum(gal))                # trace of 'cyc' over the rationals
+    if length(gal)!=2 return nothing end
+    a=convert(Int,sum(gal))          # trace of 'cyc' over the rationals
     if length(f)%2==0 b=2*l[2]-a
     else b=2*l[2]+a
     end
@@ -502,8 +505,8 @@ quadratic=function(cyc::Cyc)
     d=1
   end
 
-  if den*d*cyc!=lower(a+b*ER(root)) return false end
-  return (a,b,root,den*d)
+  if d*cyc!=lower(a+b*ER(root)) return nothing end
+  return (a=a,b=b,root=root,den=den*d)
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
