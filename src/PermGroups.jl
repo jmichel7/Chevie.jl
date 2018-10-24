@@ -340,7 +340,7 @@ function elts_and_words(G::PermGroup{T})where T
           push!( reps, e )
           push!( wds, we )
           append!( nelms, elements .* Ref(e))
-          append!( nwords, map(x->vcat(x,we),words) )
+          append!( nwords, vcat.(words,Ref(we)) )
         end
       end
       j+=1
@@ -349,10 +349,12 @@ function elts_and_words(G::PermGroup{T})where T
     words = nwords
 #   print("#I WordsGroup:|<elements>|=",length(elements),", $i.th generator\r")
   end
-  e=sort(eachindex(elements),by=x->elements[x])
+# e=sortperm(words,by=x->[length(words[x]),words[x]])
 # print( "#I  WordsGroup: |elements| = ", length( elements ), "\n" )
-  G.prop[:elements]=elements[e]
-  G.prop[:words]=words[e]
+# G.prop[:elements]=elements[e]
+# G.prop[:words]=words[e]
+  G.prop[:elements]=elements
+  G.prop[:words]=words
 end
 
 " List of minimal words in the generators elements(G) "
