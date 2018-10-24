@@ -392,6 +392,11 @@ function Base.inv(c::Cyc)
   n==1 ? r : (n==-1 ? -r : r//n)
 end
 
+Base.:^(a::Cyc, n::Rational)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
+                                    Base.power_by_squaring(inv(a),-Int(n))
+Base.:^(a::Cyc, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                                    Base.power_by_squaring(inv(a),-n)
+
 """
   ER(n::Int) computes as a Cyc the square root of the integer n.
 # Examples
