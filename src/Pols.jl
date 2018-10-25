@@ -97,7 +97,7 @@ function Base.show(io::IO,p::Pol)
 #   else
       c=repr(c)
 #   end
-    if occursin(r"[+\-*/]",c[2:end]) c="($c)" end
+    if occursin(r"[+\-*/]",c[nextind(c,0,2):end]) c="($c)" end
     if deg==0 res=c
     else res=(c=="1" ? "" : (c=="-1" ? "-" : c))*mon
     end

@@ -192,33 +192,13 @@ function TeXstrip(s::String)
   s=replace(s,r"\\Phi"=>"Φ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\tilde A"=>"Ã")
-  sp="⁰¹²³⁴⁵⁶⁷⁸⁹"
-  sup(x)=sp[collect(eachindex(sp))[1+Int(x-0x30)]]
-  sub(x)=x+0x2050
-  while true
-    if nothing===(m=match(r"_([0-9])",s)) break end
-    s=s[1:prevind(s,m.offset)]*map(sub,m.captures[1])*s[m.offset+2:end]
-  end
-  while true
-    if nothing===(m=match(r"\^([0-9])",s)) break end
-    s=s[1:prevind(s,m.offset)]*map(sup,m.captures[1])*s[m.offset+2:end]
-  end
-  s=replace(s,r"(_\{[0-9]*\})('*)"=>s"\2\1")
-  while true
-    if nothing===(m=match(r"_\{([0-9]*)\}",s)) break end
-    s=s[1:prevind(s,m.offset)]*map(sub,m.captures[1])*
-      s[m.offset+length(m.match):end]
-  end
-  while true
-    if nothing===(m=match(r"\^\{([0-9]*)\}",s)) break end
-    s=s[1:prevind(s,m.offset)]*map(sup,m.captures[1])*
-      s[m.offset+length(m.match):end]
-  end
-  s=replace(s,r"(_\{[0-9]*,[0-9]*\})('*)"=>s"\2\1")
-  if nothing!==(m=match(r"_\{([0-9]*),([0-9]*)\}",s))
-    s=s[1:prevind(s,m.offset)]*map(sub,m.captures[1])*"\u201A"*
-          map(sub,m.captures[2])*s[m.offset+length(m.match):end]
-  end
+  sup=Dict(zip("0123456789","⁰¹²³⁴⁵⁶⁷⁸⁹"))
+  sub=Dict(zip("0123456789,","₀₁₂₃₄₅₆₇₈₉‚"))
+  s=replace(s,r"_[0-9]"=>t->sub[t[2]])
+  s=replace(s,r"\^[0-9]"=>t->sup[t[2]])
+  s=replace(s,r"(_\{[0-9,]*\})('*)"=>s"\2\1")
+  s=replace(s,r"_\{[0-9,]*\}"=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,r"\^\{[0-9]*\}"=>t->map(x->sup[x],t[3:end-1]))
   s=replace(s,r"'''''"=>"\u2034\u2033")
   s=replace(s,r"''''"=>"\u2057")
   s=replace(s,r"'''"=>"\u2034")
