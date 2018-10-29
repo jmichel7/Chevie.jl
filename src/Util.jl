@@ -15,20 +15,6 @@ export getp, gets, # helpers for objects with a Dict of properties
   conjugate_partition, horner
 
 #--------------------------------------------------------------------------
-export degree
-"""
-This  should  not  exist:  extending  Util.degree instead of just exporting
-degree  from Pols  and Perms  is a  horrible hack  forced by the unpleasant
-Julia rules not merging methods from different modules.
-
-This  way both Pols and Perms can work together only if they both use Util.
-Otherwise they could not work together.
-
-It degree was in Base there would be no problem, both importing from Base.
-"""
-function degree end
-
-#--------------------------------------------------------------------------
 """
   a variant of get! for objects which have a Dict of properties named prop.
   If O is such an object usually called as

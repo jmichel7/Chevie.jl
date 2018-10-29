@@ -94,6 +94,7 @@ julia> @btime words(symmetric_group(8));
 """
 module PermGroups
 using ..Perms
+using ..Gapjm # for degree
 export PermGroup, orbit, orbit_and_representative, elements, words,
   symmetric_group, base, centralizer_orbits, centralizers, elts_and_words
 
@@ -116,8 +117,7 @@ function Base.show(io::IO,G::PermGroup)
   print(io,"PermGroup($(join(map(repr,G.gens),',')))")
 end
 
-using ..Util
-function Util.degree(G::PermGroup)::Int
+function Gapjm.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
 end
 

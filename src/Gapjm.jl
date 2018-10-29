@@ -13,6 +13,20 @@ the design are welcome.
 module Gapjm
 using Reexport
 
+#--------------------------------------------------------------------------
+export degree
+"""
+This  should  not  exist:  extending  Gapjm.degree instead of just exporting
+degree  from Pols  and Perms  is a  horrible hack  forced by the unpleasant
+Julia rules not merging methods from different modules.
+
+This  way both Pols and Perms can work together only as part of Gapjm.
+Otherwise they could not work together.
+
+It degree was in Base there would be no problem, both importing from Base.
+"""
+function degree end
+
 include("Util.jl")
 include("Perms.jl")
 include("PermGroups.jl")

@@ -77,6 +77,7 @@ other functions are: cycles, cycletype, sign. See individual documentation.
 module Perms
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point
+using ..Gapjm # for degree
 
 struct Perm{T<:Integer}
    d::Vector{T}
@@ -124,13 +125,7 @@ end
 Base.one(p::Perm{T}) where T=Perm(T[])
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 
-using ..Util
-# extending  Util.degree  instead  of  exporting  degree is a horrible hack
-# forced  by the unpleasant Julia rules  not merging methods from different
-# modules. This way both Pols and Perms can work together only if they both
-# use  Util. Otherwise they could not work  together. It degree was in Base
-# this could be avoided by extending Base.degree.
-Util.degree(a::Perm)= length(a.d)
+Gapjm.degree(a::Perm)= length(a.d)
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=if n>degree(a) T(n) else a.d[n] end
 Base.:^(a::Perm, b::Perm)=inv(b)*a*b

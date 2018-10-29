@@ -40,8 +40,8 @@ see also the individual documentation of gcd.
 """
 module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1
-using Memoize, Reexport
-@reexport using ..Util
+using Memoize
+using ..Gapjm # for degree
 
 const var=[:x]
 function varname(a::Symbol)
@@ -73,7 +73,7 @@ end
 Base.copy(p::Pol)=Pol(p.c,p.v)
 #Base.convert(::Type{Pol},a::Pol)=a
 
-Util.degree(p::Pol)=length(p.c)-1+p.v
+Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 
 valuation(p::Pol)=p.v
 
@@ -109,10 +109,20 @@ function Base.show(io::IO,p::Pol)
   else print(io,s) end
 end
 
-function Base.:*(a::Pol{T1}, b::Pol{T2})where T1 where T2
+#function Base.:*(a::Pol, b::Pol)
+#  if iszero(a) || iszero(b) return zero(a) end
+#  res=map(1:length(a.c)+length(b.c)-1)do i
+#@inbounds sum(j->a.c[j]*b.c[i+1-j],i+1-min(i,length(b.c)):min(i,length(a.c)))
+#  end
+#  Pol(res,a.v+b.v)
+#end
+
+# stupid code is better
+function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(a) || iszero(b) return zero(a) end
-  res=map(1:length(a.c)+length(b.c)-1)do i
-@inbounds sum(j->a.c[j]*b.c[i+1-j],max(1,i-length(b.c)+1):min(i,length(a.c)))
+  res=fill(zero(promote_type(T1,T2)),length(a.c)+length(b.c)-1)
+  for i in eachindex(a.c), j in eachindex(b.c)
+    res[i+j-1]+=a.c[i]*b.c[j]
   end
   Pol(res,a.v+b.v)
 end
@@ -127,10 +137,10 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
   T=promote_type(T1,T2)
-  c=zeros(T,max(length(a.c),d+length(b.c)))
-@inbounds  c[eachindex(a.c)].=a.c
-@inbounds  c[d.+eachindex(b.c)].+=b.c
-  Polstrip(c,a.v)
+  res=zeros(T,max(length(a.c),d+length(b.c)))
+@inbounds  res[eachindex(a.c)].=a.c
+@inbounds  res[d.+eachindex(b.c)].+=b.c
+  Polstrip(res,a.v)
 end
 
 Base.:+(a::Pol, b::T) where T=a+Pol(b)
