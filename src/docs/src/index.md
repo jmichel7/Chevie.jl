@@ -2,6 +2,8 @@
 ```@docs
 Gapjm
 ```
+```@contents
+```
 # Perms.jl Documentation
 ```@docs
 Perms

@@ -1,13 +1,17 @@
 """
-This module is a port of some GAP functionality on permutation groups.
+This module is a port of some GAP functionality on groups, in particular
+permutation groups.
 
-See Holt "Handbook of computational group theory" chap. 4 for basic algorithms.
+This  codes refers to Holt "Handbook of computational group theory" chapter
+4 for basic algorithms.
 
-The  only  field  of  a  PermGroup  G  at  the  start  is gens, the list of
-generators  of G.  To mimic  GAP records  where attributes/properties of an
-object  are computed on demand when asked for, other fields are computed on
-demand  and stored in the  field prop of the  PermGroup, which starts as an
-empty dict.
+The only field of a Group G at the start is gens, the list of generators of
+G.  To  mimic  GAP  records  where  attributes/properties  of an object are
+computed  on demand when asked for, other fields are computed on demand and
+stored in the field prop of the Group, which starts as Dict{Symbol,Any}()
+
+A  PermGroup is  a group  where gens  are Perms,  which allows  for all the
+algorithms like base, centralizer chain, etc...
 
 # Examples
 ```julia-repl
@@ -39,6 +43,16 @@ Dict{Int64,Perm{Int64}} with 3 entries:
   3 => (1,3,2)
   1 => ()
 
+# this function is general and can take any action
+julia> orbit_and_representative(G,[1,2],(x,y)->x.^Ref(y))
+Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
+  [1, 3] => (2,3)
+  [1, 2] => ()
+  [2, 3] => (1,2,3)
+  [3, 2] => (1,3)
+  [2, 1] => (1,2)
+  [3, 1] => (1,3,2)
+
 julia> Perm(1,2) in G
 true
 
@@ -67,47 +81,147 @@ julia> centralizer_orbits(G)
 julia> words(G)  # minimal word for each element of G
 6-element Array{Array{Int64,1},1}:
  []
- [2]
  [1]
- [2, 1]
+ [2]
  [1, 2]
+ [2, 1]
  [1, 2, 1]
 
 julia> elements(G) # elements in the same order as words
 6-element Array{Perm{Int64},1}:
  ()
- (2,3)
  (1,2)
- (1,2,3)
+ (2,3)
  (1,3,2)
+ (1,2,3)
  (1,3)
 ```
 
 finally, benchmarks
 ```benchmark
 julia> @btime collect(symmetric_group(8));
-  10.252 ms (350529 allocations: 14.17 MiB)
+  8.252 ms (350515 allocations: 14.17 MiB)
 
 julia> @btime words(symmetric_group(8));
-  111.824 ms (1596449 allocations: 38.64 MiB)
+  18.209 ms (122062 allocations: 15.22 MiB)
 ```
 """
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree
-export PermGroup, orbit, orbit_and_representative, elements, words,
+export Group, PermGroup, orbit, orbit_and_representative, elements, words,
   symmetric_group, base, centralizer_orbits, centralizers, elts_and_words
 
-struct PermGroup{T}
+#--------------general groups and functions for "black box groups" -------
+abstract type Group{T} end
+
+Base.one(G::Group{T}) where T=one(T)
+gens(G::Group)=G.gens
+
+" orbit(G,p) is the orbit of Int p under Group G"
+function orbit(G::Group,p::Integer,action::Function=^)
+  res=BitSet()
+  new=BitSet(p)
+  while true
+    union!(res,new)
+    n=vec([action(p,s) for p in new, s in gens(G)])
+    new=BitSet(setdiff(n,res))
+    if isempty(new) break end
+  end
+  collect(res)
+end
+
+" describe the orbit of Int p under G as a Schreier vector "
+function schreier_vector(G::Group,p::Integer,action::Function=^)
+  res=zeros(Int,degree(G))
+  res[p]=-1
+  new=BitSet([p])
+  while true
+    n=new
+    new=BitSet([])
+    for p in n, i in eachindex(G.gens)
+      q=action(p,G.gens[i])
+      if res[q]==0
+        res[q]=i
+        push!(new,q)
+      end
+    end
+    if isempty(new) break end
+  end
+  res
+end
+
+"returns Dict x=>g for x in orbit(G,p) and g is such that x=action(p,g)"
+function orbit_and_representative(G::Group,p,action::Function=^)
+  new=[p]
+  d=Dict(p=>one(G))
+  while !isempty(new)
+    old=copy(new)
+    resize!(new,0)
+    for s in G.gens, i in old
+      let s=s,i=i,e=action(i,s)
+        get!(d,e) do
+          push!(new,e)
+          d[i]*s
+        end
+      end
+    end
+  end
+  d
+end
+
+" This function creates the fields :elements and :words "
+function elts_and_words(G::Group)
+  elements=[one(G)]
+  words=[Int[]]
+  for i in eachindex(gens(G))
+    reps = [one(G)]
+    wds = [Int[]]
+    nelms=copy(elements)
+    nwords=copy(words)
+    j=1
+    while j<=length(reps)
+      for k in 1:i
+        e=reps[j]*gens(G)[k]
+        we = vcat(wds[j],[k])
+        if !(e in nelms)
+          push!( reps, e )
+          push!( wds, we )
+          append!( nelms, elements .* Ref(e))
+          append!( nwords, vcat.(words,Ref(we)) )
+        end
+      end
+      j+=1
+    end
+    elements = nelms
+    words = nwords
+#   print("#I WordsGroup:|<elements>|=",length(elements),", $i.th generator\r")
+  end
+# e=sortperm(words,by=x->[length(words[x]),words[x]])
+# print( "#I  WordsGroup: |elements| = ", length( elements ), "\n" )
+# G.prop[:elements]=elements[e]
+# G.prop[:words]=words[e]
+  G.prop[:elements]=elements
+  G.prop[:words]=words
+end
+
+" List of minimal words in the generators elements(G) "
+function words(G::Group)::Vector{Vector{Int}}
+  getp(elts_and_words,G,:words)
+end
+
+" The list of elements of G in the same order as words"
+function elements(G::Group{T})::Vector{T} where T
+  getp(elts_and_words,G,:elements)
+end
+#-------------------- now permutation groups -------------------------
+struct PermGroup{T}<:Group{Perm{T}}
   gens::Vector{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-function Base.one(G::PermGroup{T})where T
-  Perm{T}()
-end
-
-gens(G::PermGroup)=G.gens
+#function Base.one(G::PermGroup{T})where T=one(Perm{T})end
+#gens(G::PermGroup)=G.gens
 
 function PermGroup(a::Vector{Perm{T}})where T
   PermGroup(a,Dict{Symbol,Any}())
@@ -124,58 +238,6 @@ end
 " The symmetric group of degree n "
 function symmetric_group(n::Int)
   PermGroup([Perm(i,i+1) for i in 1:n-1])
-end
-
-" orbit(G,p) is the orbit of point p under PermGroup G"
-function orbit(G::PermGroup{T},p::T)where T
-  res=BitSet()
-  new=BitSet(p)
-  while true
-    union!(res,new)
-    n=vec([p^s for p in new, s in gens(G)])
-    new=BitSet(setdiff(n,res))
-    if isempty(new) break end
-  end
-  collect(res)
-end
-
-" describe the orbit of p as a Schreier vector "
-function schreier_vector(G::PermGroup,p)
-  res=zeros(Int,degree(G))
-  res[p]=-1
-  new=BitSet([p])
-  while true
-    n=new
-    new=BitSet([])
-    for p in n, i in eachindex(G.gens)
-      q=p^(G.gens[i])
-      if res[q]==0
-        res[q]=i
-        push!(new,q)
-      end
-    end
-    if isempty(new) break end
-  end
-  res
-end
-
-"returns Dict x=>g where x runs over orbit(G,p) and g is such that x=p^g"
-function orbit_and_representative(G::PermGroup,p)
-  new=[p]
-  d=Dict(p=>one(G))
-  while !isempty(new)
-    old=copy(new)
-    resize!(new,0)
-    for s in G.gens, i in old
-      let s=s,i=i,e=i^s
-        get!(d,e) do
-          push!(new,e)
-          d[i]*s
-        end
-      end
-    end
-  end
-  d
 end
 
 """
@@ -321,50 +383,5 @@ function Base.iterate(G::PermGroup{T},state)where T
 end
 
 Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
-
-" This function creates the fields :elements and :words "
-function elts_and_words(G::PermGroup{T})where T
-  elements=[one(G)]
-  words=[T[]]
-  for i in eachindex(gens(G))
-    reps = [one(G)]
-    wds = [T[]]
-    nelms=copy(elements)
-    nwords=copy(words)
-    j=1
-    while j<=length(reps)
-      for k in 1:i
-        e=reps[j]*gens(G)[k]
-        we = vcat(wds[j],[k])
-        if !(e in nelms)
-          push!( reps, e )
-          push!( wds, we )
-          append!( nelms, elements .* Ref(e))
-          append!( nwords, vcat.(words,Ref(we)) )
-        end
-      end
-      j+=1
-    end
-    elements = nelms
-    words = nwords
-#   print("#I WordsGroup:|<elements>|=",length(elements),", $i.th generator\r")
-  end
-# e=sortperm(words,by=x->[length(words[x]),words[x]])
-# print( "#I  WordsGroup: |elements| = ", length( elements ), "\n" )
-# G.prop[:elements]=elements[e]
-# G.prop[:words]=words[e]
-  G.prop[:elements]=elements
-  G.prop[:words]=words
-end
-
-" List of minimal words in the generators elements(G) "
-function words(G::PermGroup{T})::Vector{Vector{T}} where T
-  getp(elts_and_words,G,:words)
-end
-
-" The list of elements of G in the same order as words"
-function elements(G::PermGroup{T})::Vector{Perm{T}} where T
-  getp(elts_and_words,G,:elements)
-end
 
 end

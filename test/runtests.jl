@@ -41,13 +41,14 @@ end
 @test mytest("degree(G)","3")
 @test mytest("orbit(G,1)","3-element Array{Int64,1}:\n 1\n 2\n 3")
 @test mytest("orbit_and_representative(G,1)","Dict{Int64,Perm{Int64}} with 3 entries:\n  2 => (1,2)\n  3 => (1,3,2)\n  1 => ()")
+@test mytest("orbit_and_representative(G,[1,2],(x,y)->x.^Ref(y))","Dict{Array{Int64,1},Perm{Int64}} with 6 entries:\n  [1, 3] => (2,3)\n  [1, 2] => ()\n  [2, 3] => (1,2,3)\n  [3, 2] => (1,3)\n  [2, 1] => (1,2)\n  [3, 1] => (1,3,2)")
 @test mytest("Perm(1,2) in G","true")
 @test mytest("Perm(1,2,4) in G","false")
 @test mytest("base(G)","2-element Array{Int64,1}:\n 1\n 2")
 @test mytest("centralizers(G)","2-element Array{PermGroup{Int64},1}:\n PermGroup((1,2),(2,3))\n PermGroup((2,3))")
 @test mytest("centralizer_orbits(G)","2-element Array{Dict{Int64,Perm{Int64}},1}:\n Dict(2=>(1,2),3=>(1,3,2),1=>())\n Dict(2=>(),3=>(2,3))")
-@test mytest("words(G)","6-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
-@test mytest("elements(G)","6-element Array{Perm{Int64},1}:\n ()\n (2,3)\n (1,2)\n (1,2,3)\n (1,3,2)\n (1,3)")
+@test mytest("words(G)","6-element Array{Array{Int64,1},1}:\n []\n [1]\n [2]\n [1, 2]\n [2, 1]\n [1, 2, 1]")
+@test mytest("elements(G)","6-element Array{Perm{Int64},1}:\n ()\n (1,2)\n (2,3)\n (1,3,2)\n (1,2,3)\n (1,3)")
 end
 @testset "Perms.jl" begin
 @test mytest("p=Perm(1,2)*Perm(2,3)","(1,3,2)")

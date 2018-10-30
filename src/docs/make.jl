@@ -1,3 +1,3 @@
-using Documenter, Gapjm
+using Documenter, DocumenterMarkdown, Gapjm
 
-makedocs()
+makedocs(format=:markdown, modules=[Cycs,Gapjm,PermGroups,Perms,Pols,Util])
