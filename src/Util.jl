@@ -116,7 +116,7 @@ end
 SortedPairs has a similar interface to Dicts, but is 3 times faster for the
 merge operation.  Pairs are sorted by the first item (the key)
 """
-SortedPairs{K,V}=Vector{Pair{K,V}} where {K,V}
+const SortedPairs{K,V}=Vector{Pair{K,V}} where {K,V}
 
 """
 merge is like merge(+,..) for Dicts, with the difference that keys with

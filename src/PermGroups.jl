@@ -108,16 +108,15 @@ julia> @btime words(symmetric_group(8));
 """
 module PermGroups
 using ..Perms
-using ..Gapjm # for degree
-export Group, PermGroup, orbit, orbit_and_representative, elements, words,
-  symmetric_group, base, centralizer_orbits, centralizers, elts_and_words,
-  gens
+using ..Gapjm # for degree, gens, elements, words
+export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
+  base, centralizer_orbits, centralizers, elts_and_words
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
 Base.one(G::Group{T}) where T=one(T)
-gens(G::Group)=G.gens
+Gapjm.gens(G::Group)=G.gens
 
 " orbit(G,p) is the orbit of Int p under Group G"
 function orbit(G::Group,p::Integer,action::Function=^)
@@ -207,12 +206,12 @@ function elts_and_words(G::Group)
 end
 
 " List of minimal words in the generators elements(G) "
-function words(G::Group)::Vector{Vector{Int}}
+function Gapjm.words(G::Group)::Vector{Vector{Int}}
   getp(elts_and_words,G,:words)
 end
 
 " The list of elements of G in the same order as words"
-function elements(G::Group{T})::Vector{T} where T
+function Gapjm.elements(G::Group{T})::Vector{T} where T
   getp(elts_and_words,G,:elements)
 end
 #-------------------- now permutation groups -------------------------
