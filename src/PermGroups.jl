@@ -97,23 +97,24 @@ julia> elements(G) # elements in the same order as words
  (1,3)
 ```
 
-finally, benchmarks
+finally, benchmarks on julia 1.0.1
 ```benchmark
 julia> @btime collect(symmetric_group(8));
-  8.252 ms (350515 allocations: 14.17 MiB)
+  6.519 ms (350522 allocations: 14.17 MiB)
 
 julia> @btime words(symmetric_group(8));
-  18.209 ms (122062 allocations: 15.22 MiB)
+  10.477 ms (122062 allocations: 15.22 MiB)
 ```
 """
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree
 export Group, PermGroup, orbit, orbit_and_representative, elements, words,
-  symmetric_group, base, centralizer_orbits, centralizers, elts_and_words
+  symmetric_group, base, centralizer_orbits, centralizers, elts_and_words,
+  gens
 
 #--------------general groups and functions for "black box groups" -------
-abstract type Group{T} end
+abstract type Group{T} end # T is the type of elements of G
 
 Base.one(G::Group{T}) where T=one(T)
 gens(G::Group)=G.gens
@@ -139,8 +140,8 @@ function schreier_vector(G::Group,p::Integer,action::Function=^)
   while true
     n=new
     new=BitSet([])
-    for p in n, i in eachindex(G.gens)
-      q=action(p,G.gens[i])
+    for p in n, i in eachindex(gens(G))
+      q=action(p,gens(G)[i])
       if res[q]==0
         res[q]=i
         push!(new,q)
@@ -158,7 +159,7 @@ function orbit_and_representative(G::Group,p,action::Function=^)
   while !isempty(new)
     old=copy(new)
     resize!(new,0)
-    for s in G.gens, i in old
+    for s in gens(G), i in old
       let s=s,i=i,e=action(i,s)
         get!(d,e) do
           push!(new,e)
@@ -220,15 +221,12 @@ struct PermGroup{T}<:Group{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-#function Base.one(G::PermGroup{T})where T=one(Perm{T})end
-#gens(G::PermGroup)=G.gens
-
 function PermGroup(a::Vector{Perm{T}})where T
   PermGroup(a,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO,G::PermGroup)
-  print(io,"PermGroup($(join(map(repr,G.gens),',')))")
+  print(io,"PermGroup($(join(map(repr,gens(G)),',')))")
 end
 
 function Gapjm.degree(G::PermGroup)::Int
