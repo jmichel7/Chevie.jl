@@ -185,11 +185,11 @@ function TeXstrip(s::String)
   s=replace(s,r"(_\{[0-9,]*\})('*)"=>s"\2\1")
   s=replace(s,r"_\{[0-9,]*\}"=>t->map(x->sub[x],t[3:end-1]))
   s=replace(s,r"\^\{[0-9]*\}"=>t->map(x->sup[x],t[3:end-1]))
-  s=replace(s,r"'''''"=>"\u2034\u2033")
-  s=replace(s,r"''''"=>"\u2057")
-  s=replace(s,r"'''"=>"\u2034")
-  s=replace(s,r"''"=>"\u2033")
-  s=replace(s,r"'"=>"\u2032")
+  s=replace(s,r"'''''"=>"‴″")
+  s=replace(s,r"''''"=>"⁗")
+  s=replace(s,r"'''"=>"‴")
+  s=replace(s,r"''"=>"″")
+  s=replace(s,r"'"=>"′")
   s
 end
 

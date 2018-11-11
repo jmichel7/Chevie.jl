@@ -110,13 +110,17 @@ module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, elements, words
 export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
-  base, centralizer_orbits, centralizers, elts_and_words
+  base, centralizer_orbits, centralizers, elts_and_words, eltword
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
 Base.one(G::Group{T}) where T=one(T)
 Gapjm.gens(G::Group)=G.gens
+
+" element of W corresponding to a sequence of generators and their inverses"
+eltword(W::Group,w::AbstractVector{<:Integer})=length(w)==0 ? one(W) : prod(
+                 i>0 ? gens(W)[i] : inv(gens(W)[-i]) for i in w)
 
 " orbit(G,p) is the orbit of Int p under Group G"
 function orbit(G::Group,p::Integer,action::Function=^)
