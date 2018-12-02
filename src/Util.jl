@@ -122,7 +122,7 @@ const SortedPairs{K,V}=Vector{Pair{K,V}} where {K,V}
 merge is like merge(+,..) for Dicts, with the difference that keys with
 value 0 are deleted
 """
-function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} where {K,V}
+function mergesum(a::SortedPairs,b::SortedPairs)::SortedPairs
   la=length(a)
   lb=length(b)
   res=similar(a,la+lb)
@@ -150,7 +150,7 @@ function mergesum(a::SortedPairs{K,V},b::SortedPairs{K,V})::SortedPairs{K,V} whe
   resize!(res,ri)
 end
 
-function norm(x::SortedPairs{K,V})::SortedPairs{K,V} where {K,V}
+function norm(x::SortedPairs)::SortedPairs
   if isempty(x) return x end
   res=sort(x,by=y->y[1])
   ri=1

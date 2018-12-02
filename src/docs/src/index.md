@@ -34,6 +34,18 @@ divrem
 divrem1
 gcd
 ```
+# CoxGroups.jl Documentation
+```@docs
+CoxGroups
+```
+# Weyl.jl Documentation
+```@docs
+Weyl
+cartan
+two_tree
+type_cartan
+roots
+```
 # Util.jl Documentation
 ```@docs
 Util

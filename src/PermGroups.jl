@@ -99,12 +99,14 @@ julia> elements(G) # elements in the same order as words
 
 finally, benchmarks on julia 1.0.1
 ```benchmark
-julia> @btime collect(symmetric_group(8));
+julia> @btime length(collect(symmetric_group(8)))
   6.519 ms (350522 allocations: 14.17 MiB)
 
 julia> @btime words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
 ```
+
+Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms

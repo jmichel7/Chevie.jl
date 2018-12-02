@@ -14,11 +14,13 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export degree, gens, elements, words
+export degree, degrees, gens, elements, words, word
 function degree end
+function degrees end
 function gens end
 function elements end
 function words end
+function word end
 """
 This  should  not  exist:  extending  e.g.  Gapjm.degree  instead  of  just
 exporting  degree from  Pols and  Perms is  a horrible  hack forced  by the
@@ -31,15 +33,18 @@ It degree was in Base there would be no problem, both importing from Base.
 """
 
 include("Util.jl")
-include("Perms.jl")
-include("PermGroups.jl")
-include("Cycs.jl")
-include("Pols.jl")
-
 @reexport using .Util
+include("Perms.jl")
 @reexport using .Perms
+include("PermGroups.jl")
 @reexport using .PermGroups
+include("Cycs.jl")
 @reexport using .Cycs
+include("Pols.jl")
 @reexport using .Pols
+include("CoxGroups.jl")
+@reexport using .CoxGroups
+include("Weyl.jl")
+@reexport using .Weyl
 
 end
