@@ -162,21 +162,22 @@ julia> word(W,p)
 ```
 This module is mostly a port of the basic functions on Weyl groups in CHEVIE.
 The dictionary from CHEVIE is as follows:
-  * `CartanMat("A",5)`                      → `cartan(:A,5)`
-  * `CoxeterGroup("A",5)`                   → `WeylGroup(:A,5)`
-  * `Size(W)`                               → `length(W)`
-  * `ForEachElement(W,f)`                   → `for w in W f(w) end`
-  * `ReflectionDegrees(W)`                  → `degrees(W)`
-  * `IsLeftDescending(W,w,i)`               → `isleftdescent(W,w,i)`
-  * `ReflectionSubgroup`: only standard parabolics now
-  * `TwoTree(m)`                            → `twotree(m)`
-  * `FiniteCoxeterTypeFromCartanMat(m)`     → `type_cartan(m)`
-  * `RootsCartan(m)`                        → `roots(m)`
-  * `PrintDiagram(W)`                       → `diagram(W)`
-  * `Inversions`                            → `inversions`
-  * `Reflection`                            → `reflection`
-  * `W.orbitRepresentative[i]`              → `simple_representative(W,i)`
-
+```
+     CartanMat("A",5)                       →  cartan(:A,5) 
+     CoxeterGroup("A",5)                    →  WeylGroup(:A,5) 
+     Size(W)                                →  length(W) 
+     ForEachElement(W,f)                    →  for w in W f(w) end 
+     ReflectionDegrees(W)                   →  degrees(W) 
+     IsLeftDescending(W,w,i)                →  isleftdescent(W,w,i) 
+     ReflectionSubgroup : only standard parabolics now
+     TwoTree(m)                             →  twotree(m) 
+     FiniteCoxeterTypeFromCartanMat(m)      →  type_cartan(m) 
+     RootsCartan(m)                         →  roots(m) 
+     PrintDiagram(W)                        →  diagram(W) 
+     Inversions                             →  inversions 
+     Reflection                             →  reflection 
+     W.orbitRepresentative[i]               →  simple_representative(W,i) 
+```
 finally, a benchmark on julia 1.0.2
 ```benchmark
 julia> @btime length(elements(WeylGroup(:E,7)))

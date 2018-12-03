@@ -138,21 +138,22 @@ in  CHEVIE. The only Coxeter group  constructor implemented here is coxsym.
 The file Weyl.jl defines WeylGroup.
 
 The dictionary from CHEVIE is as follows:
-  * `CoxeterElements(W[,l])`                → `elements(W[,l])`
-  * `CoxeterLength(W,w)`                    → `length(W,w)`
-  * `CoxeterWord(W,w)`                      → `word(W,w)`
-  * `LongestCoxeterElement(W)`              → `longest(W)`
-  * `FirstLeftDescending(W,w)`              → `firstleftdescent(W,w)`
-  * `ReducedInRightCoset(W,w)`              → `reduced(W,w)`
-  * `ReducedRightCosetRepresentatives(W,H)` → `reduced(H,W)`
-  * `SemiSimpleRank(W)`                     → `coxrank(W)`
-  * `CoxeterGroupSymmetricGroup(n)`         → `coxsym(n)`
-  * `ReflectionSubgroup`                    only standard parabolics now
-  * `IsLeftDescending(W,w,i)`               → `isleftdescent(W,w,i)`
-  * `ReflectionDegrees(W)`                  → `degrees(W)`
-  * `ReflectionLength(W,w)`                 → `reflength(W,w)`
-  * `W.N`                                   → `nref(W)`
-
+```
+     CoxeterElements(W[,l])                → elements(W[,l])
+     CoxeterLength(W,w)                    → length(W,w)
+     CoxeterWord(W,w)                      → word(W,w)
+     LongestCoxeterElement(W)              → longest(W)
+     FirstLeftDescending(W,w)              → firstleftdescent(W,w)
+     ReducedInRightCoset(W,w)              → reduced(W,w)
+     ReducedRightCosetRepresentatives(W,H) → reduced(H,W)
+     SemiSimpleRank(W)                     → coxrank(W)
+     CoxeterGroupSymmetricGroup(n)         → coxsym(n)
+     ReflectionSubgroup                    only standard parabolics now
+     IsLeftDescending(W,w,i)               → isleftdescent(W,w,i)
+     ReflectionDegrees(W)                  → degrees(W)
+     ReflectionLength(W,w)                 → reflength(W,w)
+     W.N                                   → nref(W)
+```
 """
 module CoxGroups
 

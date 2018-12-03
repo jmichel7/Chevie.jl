@@ -2,9 +2,9 @@
 Here are some of my efforts porting GAP code to julia.
 I am not even sure this is a well-formed Julia package.
 
-It contains for now permutations and permutation groups, cyclotomic numbers
-and  Laurent polynomials. Coming  soon are Coxeter  groups, Hecke algebras,
-braid groups and Garside monoids.
+It  contains  for  now  permutations  and  permutation  groups,  cyclotomic
+numbers,  Laurent  polynomials  and  some  Weyl  groups and Coxeter groups.
+Coming soon are Hecke algebras, braid groups and Garside monoids.
 
 Even  though the code  is often competitive  with or faster  than GAP, I am
 sure there are more optimisations possible. Any comments about the code and

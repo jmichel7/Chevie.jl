@@ -43,9 +43,9 @@ CoxGroups
 Weyl
 cartan
 two_tree
-type_cartan
-roots
 ```
+#type_cartan
+#roots
 # Util.jl Documentation
 ```@docs
 Util
