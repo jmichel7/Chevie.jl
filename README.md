@@ -17,15 +17,15 @@ Even  though the code  is often competitive  with or faster  than GAP, I am sure
 
 <a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/00118ed785d536b4e530547c9eff9ed7731a9362/src/Gapjm.jl#L1-L12' class='documenter-source'>source</a><br>
 
-- [Gapjm.jl Documentation](README.md#Gapjm.jl-Documentation-1)
-- [Perms.jl Documentation](README.md#Perms.jl-Documentation-1)
-- [PermGroups.jl Documentation](README.md#PermGroups.jl-Documentation-1)
-- [Cycs.jl Documentation](README.md#Cycs.jl-Documentation-1)
-- [Pols.jl Documentation](README.md#Pols.jl-Documentation-1)
-- [CoxGroups.jl Documentation](README.md#CoxGroups.jl-Documentation-1)
-- [Weyl.jl Documentation](README.md#Weyl.jl-Documentation-1)
-- [Hecke.jl Documentation](README.md#Hecke.jl-Documentation-1)
-- [Util.jl Documentation](README.md#Util.jl-Documentation-1)
+- [Gapjm.jl Documentation](#Gapjm.jl-Documentation-1)
+- [Perms.jl Documentation](#Perms.jl-Documentation-1)
+- [PermGroups.jl Documentation](#PermGroups.jl-Documentation-1)
+- [Cycs.jl Documentation](#Cycs.jl-Documentation-1)
+- [Pols.jl Documentation](#Pols.jl-Documentation-1)
+- [CoxGroups.jl Documentation](#CoxGroups.jl-Documentation-1)
+- [Weyl.jl Documentation](#Weyl.jl-Documentation-1)
+- [Hecke.jl Documentation](#Hecke.jl-Documentation-1)
+- [Util.jl Documentation](#Util.jl-Documentation-1)
 
 
 <a id='Perms.jl-Documentation-1'></a>
