@@ -46,6 +46,11 @@ two_tree
 ```
 #type_cartan
 #roots
+# Hecke.jl Documentation
+```@docs
+Hecke
+HeckeAlgebra
+```
 # Util.jl Documentation
 ```@docs
 Util

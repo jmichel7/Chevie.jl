@@ -4,17 +4,17 @@
 
 # Examples
 ```julia-repl
+julia> Pol(:q) # define string used for printing and set variable q
+q
+
 julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
-1+2x
+1+2q
 
 julia> p=Pol([1,2],-1)
-x^-1+2
+q^-1+2
 
 julia> valuation(p)
 -1
-
-julia> Pol(:q) # change string used for printing and set variable q
-q
 
 julia> p=(q+1)^2
 1+2q+q^2

@@ -59,8 +59,8 @@ true
 julia> Perm(1,2,4) in G
 false
 
-#Elements,  appartenance test  and other  function are  computed on  G using
-#Schreier-Sims theory, that is computing the following
+# Elements,  appartenance test and  other function are  computed on G using
+# Schreier-Sims theory, that is computing the following
 
 julia> base(G) # a list of points that no element of G fixes
 2-element Array{Int64,1}:

@@ -46,6 +46,24 @@ end
 @test mytest("quadratic(1+E(3))","(a = 1, b = 1, root = -3, den = 2)")
 @test mytest("quadratic(1+E(5))","nothing")
 end
+@testset "Hecke.jl" begin
+@test mytest("W=WeylGroup(:A,2)","WeylGroup(:A,2)")
+@test mytest("H=hecke(W,0)","Hecke(WeylGroup(:A,2),0)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#8\")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 3 methods)")
+@test mytest("el=words(W)","6-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
+@test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeElt{Perm{UInt8},Int64},2}:\n T()       T(2)       T(1)       T(2,1)     T(1,2)     T(1,2,1)\n T(2)      -T(2)      T(2,1)     -T(2,1)    T(1,2,1)   -T(1,2,1)\n T(1)      T(1,2)     -T(1)      T(1,2,1)   -T(1,2)    -T(1,2,1)\n T(2,1)    T(1,2,1)   -T(2,1)    -T(1,2,1)  -T(1,2,1)  T(1,2,1)\n T(1,2)    -T(1,2)    T(1,2,1)   -T(1,2,1)  -T(1,2,1)  T(1,2,1)\n T(1,2,1)  -T(1,2,1)  -T(1,2,1)  T(1,2,1)   T(1,2,1)   -T(1,2,1)")
+@test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeElt{Perm{UInt8},Int64},2}:\n T()       T(2)       T(1)       T(2,1)     T(1,2)     T(1,2,1)\n T(2)      -T(2)      T(2,1)     -T(2,1)    T(1,2,1)   -T(1,2,1)\n T(1)      T(1,2)     -T(1)      T(1,2,1)   -T(1,2)    -T(1,2,1)\n T(2,1)    T(1,2,1)   -T(2,1)    -T(1,2,1)  -T(1,2,1)  T(1,2,1)\n T(1,2)    -T(1,2)    T(1,2,1)   -T(1,2,1)  -T(1,2,1)  T(1,2,1)\n T(1,2,1)  -T(1,2,1)  -T(1,2,1)  T(1,2,1)   T(1,2,1)   -T(1,2,1)")
+@test mytest("W=WeylGroup(:B,2)","WeylGroup(:B,2)")
+@test mytest("Pol(:q)","q")
+@test mytest("H=hecke(W,q)","Hecke(WeylGroup(:B,2),q)")
+@test mytest("[H.para,H.sqpara]","2-element Array{Array{T,1} where T,1}:\n Tuple{Pol{Int64},Pol{Int64}}[(q, -1), (q, -1)]\n Missing[missing, missing]")
+@test mytest("H=hecke(W,q^2,q)","Hecke(WeylGroup(:B,2),q^2,q)")
+@test mytest("[H.para,H.sqpara]","2-element Array{Array{T,1} where T,1}:\n Tuple{Pol{Int64},Pol{Int64}}[(q^2, -1), (q^2, -1)]\n Pol{Int64}[q, q]")
+@test mytest("H=hecke(W,[q^2,q^4],[q,q^2])","Hecke(WeylGroup(:B,2),Pol{Int64}[q^2, q^4],Pol{Int64}[q, q^2])")
+@test mytest("[H.para,H.sqpara]","2-element Array{Array{T,1} where T,1}:\n Tuple{Pol{Int64},Pol{Int64}}[(q^2, -1), (q^4, -1)]\n Pol{Int64}[q, q^2]")
+@test mytest("H=hecke(W,9,3)","Hecke(WeylGroup(:B,2),9,3)")
+@test mytest("[H.para,H.sqpara]","2-element Array{Array{T,1} where T,1}:\n Tuple{Int64,Int64}[(9, -1), (9, -1)]\n [3, 3]")
+end
 @testset "PermGroups.jl" begin
 @test mytest("G=PermGroup([Perm(i,i+1) for i in 1:2])","PermGroup((1,2),(2,3))")
 @test mytest("collect(G)","6-element Array{Perm{Int64},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
@@ -80,10 +98,10 @@ end
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","2-element Array{Int64,1}:\n 2\n 2")
 end
 @testset "Pols.jl" begin
-@test mytest("Pol([1,2],0)","1+2x")
-@test mytest("p=Pol([1,2],-1)","x^-1+2")
-@test mytest("valuation(p)","-1")
 @test mytest("Pol(:q)","q")
+@test mytest("Pol([1,2],0)","1+2q")
+@test mytest("p=Pol([1,2],-1)","q^-1+2")
+@test mytest("valuation(p)","-1")
 @test mytest("p=(q+1)^2","1+2q+q^2")
 @test mytest("degree(p)","2")
 @test mytest("p(1//2)","9//4")

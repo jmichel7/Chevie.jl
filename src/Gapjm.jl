@@ -46,5 +46,7 @@ include("CoxGroups.jl")
 @reexport using .CoxGroups
 include("Weyl.jl")
 @reexport using .Weyl
+include("Hecke.jl")
+@reexport using .Hecke
 
 end

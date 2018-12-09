@@ -488,16 +488,16 @@ function root_representatives(W::WeylGroup)
 end
 
 "for each root index of simple representative"
-function CoxGroups.simple_representative(W::WeylGroup,i)
+function CoxGroups.simple_representative(W::WeylGroup,i)::Int
   getp(root_representatives,W,:rootreps)[i]
 end
   
 "for each root element conjugative representative to root"
-function simple_conjugating_element(W::WeylGroup,i)
+function simple_conjugating_element(W::WeylGroup,i)::Perm{UInt8}
   getp(root_representatives,W,:repelms)[i]
 end
 
-function CoxGroups.reflection(W::WeylGroup,i::Integer)
+function CoxGroups.reflection(W::WeylGroup,i::Integer)::Perm{UInt8}
   getp(root_representatives,W,:reflections)[i]
 end
 
