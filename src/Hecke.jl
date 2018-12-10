@@ -198,17 +198,23 @@ function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
   HeckeAlgebra(W,para,sqpara,Dict{Symbol,Any}())
 end
 
-function hecke(W::CoxeterGroup,para::Vector{C},sqpara::Vector{C}=C[])where C
-  HeckeAlgebra(W,map(p->(p,-one(p)),para),sqpara)
+function hecke(W::CoxeterGroup,p::Vector{C},sqp::Vector{C}=C[])where C
+  HeckeAlgebra(W,map(p->(p,-one(p)),p),sqp)
 end
   
-function hecke(W::CoxeterGroup,para::Vector{Tuple{C,C}},sqpara::Vector{C}=C[])where C
-  HeckeAlgebra(W,para,sqpara)
+function hecke(W::CoxeterGroup,p::Vector{Tuple{C,C}},sqp::Vector{C}=C[])where C
+  HeckeAlgebra(W,p,sqp)
 end
   
 function hecke(W::CoxeterGroup,p::C,sqp::Union{C,Missing}=missing)where C
   HeckeAlgebra(W,fill((p,-one(p)),coxrank(W)),fill(sqp,coxrank(W)))
 end
+
+function hecke(W::CoxeterGroup,p::Tuple{C,C},sqp::Union{C,Missing}=missing)where C
+  HeckeAlgebra(W,fill(p,coxrank(W)),fill(sqp,coxrank(W)))
+end
+
+hecke(W::CoxeterGroup)=hecke(W,1,1)
 
 function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"Hecke(",H.W,",")
