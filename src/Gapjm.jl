@@ -49,5 +49,7 @@ include("Weyl.jl")
 @reexport using .Weyl
 include("Hecke.jl")
 @reexport using .Hecke
+include("KL.jl")
+@reexport using .KL
 
 end

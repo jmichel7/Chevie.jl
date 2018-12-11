@@ -32,12 +32,13 @@ considered  in  the  context  of  Kazhdan-Lusztig  theory, is `uₛ₀=√qₛ` 
 `uₛ₁=-√qₛ^{-1}`.  The general form of parameters provided is a special case
 of general cyclotomic Hecke algebras, and can be useful in many contexts.
 
-The  second form  above, or  for some  algebras the  character table in the
-first  form, require a square root of `qₛ`. We provide a way to specify it
-with  the field `.rootParameter` which can be  given when constructing the
-algebra.  If not given a root is automatically extracted when needed by the
-function `RootParameter`. Note however that sometimes an explicit choice of
-root is necessary which cannot be automatically determined.
+For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
+bases,  require a square root of `qₛ=-uₛ₀/uₛ₁`. We provide a way to specify
+it  with  the  field  `.sqpara`  which  can  be given when constructing the
+algebra. If not given a root is automatically extracted when needed (and we
+know  how to compute it) by the function `RootParameter`. Note however that
+sometimes  an  explicit  choice  of  root  is  necessary  which  cannot  be
+automatically determined.
 
 There  is a universal choice  for `R` and `uₛᵢ`:  Let `uₛᵢ:s∈ S,i∈[0,1]` be
 indeterminates   such  that  `uₛᵢ=uₜᵢ`  whenever  `mₛₜ`  is  odd,  and  let
@@ -110,7 +111,7 @@ julia> function test_w0(n)
 test_w0 (generic function with 1 method)
 
 julia> @btime test_w0(7)
-  142.737 ms (1788548 allocations: 157.37 MiB)
+  132.737 ms (178853 allocations: 157.37 MiB)
 ```
 Compare to GAP3 where the following function takes 0.92s
 ```
@@ -122,7 +123,7 @@ end;
 """
 module Hecke
 using Gapjm
-export HeckeElt, Tbasis, hecke, HeckeAlgebra
+export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt
 
 struct HeckeAlgebra{C,TW<:CoxeterGroup}
   W::TW
@@ -180,7 +181,7 @@ function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
   para=map(1:coxrank(W))do i
     j=simple_representative(W,i)
     if i<=length(para) 
-      if j<i && para[i]!=para[j] error("parameters $i and $j should be equal") end
+     if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
     elseif j<i return para[j]
     else error("parameters should be given for first reflection in a class")
@@ -189,9 +190,15 @@ function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
   sqpara=map(1:coxrank(W))do i
     j=simple_representative(W,i)
     if i<=length(sqpara) && !ismissing(sqpara[i])
-      if j<i && sqpara[i]!=sqpara[j] error("parameters $i and $j should be equal") end
+      if j<i && sqpara[i]!=sqpara[j] 
+        error("one should have sqpara[$i]==sqpara[$j]")
+      end
+      if sqpara[i]^2*para[i][2]!=-para[i][1]
+       error("one should have sqpara[$i]^2*$(para[i][2])==$(-para[i][1])")
+      end
       return sqpara[i]
-     elseif j<=length(sqpara) return sqpara[j]
+    elseif j<i return sqpara[j]
+    elseif isone(-prod(para[i])) return para[i][1]
     else return missing
     end
   end
@@ -230,30 +237,16 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,")")
 end
 
-struct HeckeElt{P,C}
-  d::SortedPairs{P,C} # has better merge performance than Dict
-  H::HeckeAlgebra{C,<:CoxeterGroup}
-end
+#--------------------------------------------------------------------------
+abstract type HeckeElt{P,C} end
 
-Base.zero(h::HeckeElt)=HeckeElt(empty(h.d),h.H)
+Base.zero(h::HeckeElt)=clone(h,empty(h.d))
 Base.iszero(h::HeckeElt)=length(h.d)==0
-function Base.one(H::HeckeAlgebra{C}) where C
-  HeckeElt([one(H.W)=>one(C)],H)
-end
-
-function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
-  function f(w::Vector{<:Integer})
-    if isempty(w) return one(H) end
-    HeckeElt([eltword(H.W,collect(w))=>one(C)],H)
-  end
-  f(w::Vararg{Integer})=f(collect(w))
-  f(w::P)=f(word(H.W,w))
-end
 
 function Base.show(io::IO, h::HeckeElt)
   if isempty(h.d) return "0" end
   s=map(h.d)do (e,c)
-    res="T("*join(map(x->"$x",word(h.H.W,e)),",")*")"
+   res=basename(h)*"("*join(map(x->"$x",word(h.H.W,e)),",")*")"
     if !isone(c)
       if c==-one(c) res="-"*res
       else res="($c)*"*res
@@ -267,11 +260,44 @@ function Base.show(io::IO, h::HeckeElt)
   print(io,s)
 end
 
-Base.:+(a::HeckeElt, b::HeckeElt)=HeckeElt(mergesum(a.d,b.d),a.H)
-Base.:-(a::HeckeElt)=HeckeElt([p=>-c for (p,c) in a.d],a.H)
+Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,mergesum(a.d,b.d))
+Base.:-(a::HeckeElt)=clone(a,[p=>-c for (p,c) in a.d])
 Base.:-(a::HeckeElt, b::HeckeElt)=a+(-b)
 
-function Base.:*(a::HeckeElt, b::HeckeElt)
+Base.:*(a::HeckeElt, b)=iszero(b) ? zero(a) : clone(a,[p=>c*b for (p,c) in a.d])
+Base.:*(a::HeckeElt, b::Pol)=iszero(b) ? zero(a) : clone(a,[p=>c*b for (p,c) in a.d])
+Base.:*(b::Pol, a::HeckeElt)=a*b
+Base.:*(b::Number, a::HeckeElt)= a*b
+
+Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+                                   Base.power_by_squaring(inv(a),-n)
+#--------------------------------------------------------------------------
+struct HeckeTElt{P,C}<:HeckeElt{P,C}
+  d::SortedPairs{P,C} # has better merge performance than Dict
+  H::HeckeAlgebra{C,<:CoxeterGroup}
+end
+
+clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
+
+basename(h::HeckeTElt)="T"
+ 
+function Base.one(H::HeckeAlgebra{C}) where C
+  HeckeTElt([one(H.W)=>one(C)],H)
+end
+
+function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
+  function f(w::Vector{<:Integer})
+    if isempty(w) return one(H) end
+    HeckeTElt([eltword(H.W,collect(w))=>one(C)],H)
+  end
+  f(w::Vararg{Integer})=f(collect(w))
+  f(w::P)=f(word(H.W,w))
+  f(h::HeckeElt)=Tbasis(h)
+end
+
+Tbasis(h::HeckeElt)=h
+
+function Base.:*(a::HeckeTElt, b::HeckeTElt)
   if iszero(a) return a end
   if iszero(b) return b end
   W=a.H.W
@@ -297,19 +323,11 @@ function Base.:*(a::HeckeElt, b::HeckeElt)
         end
       end
     end
-    HeckeElt(h,a.H)
+    HeckeTElt(h,a.H)
   end
 end
 
-Base.:*(a::HeckeElt, b)=iszero(b) ? zero(a) : HeckeElt([p=>c*b for (p,c) in a.d],a.H)
-Base.:*(a::HeckeElt, b::Pol)=iszero(b) ? zero(a) : HeckeElt([p=>c*b for (p,c) in a.d],a.H)
-Base.:*(b::Pol, a::HeckeElt)=a*b
-Base.:*(b::Number, a::HeckeElt)= a*b
-
-Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
-                                   Base.power_by_squaring(inv(a),-n)
-
-function Base.inv(a::HeckeElt)
+function Base.inv(a::HeckeTElt)
   if length(a.d)!=1 error("can only invert single T(w)") end
   w,coeff=first(a.d)
   H=a.H

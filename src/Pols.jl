@@ -39,7 +39,8 @@ julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
 see also the individual documentation of gcd.
 """
 module Pols
-export Pol, valuation, cyclotomic_polynomial, divrem1
+export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part
+
 using Memoize
 using ..Gapjm # for degree
 
@@ -78,6 +79,14 @@ Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 valuation(p::Pol)=p.v
 
 (p::Pol)(x)=horner(x,p.c)*x^p.v
+
+shift(p::Pol,s)=Pol(p.c,p.v+s)
+
+function positive_part(p::Pol)
+  v=max(0,-p.v)
+  if v==0 return p end
+  Pol(p.c[1+v:end],p.v+v)
+end
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 
