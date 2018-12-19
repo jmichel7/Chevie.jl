@@ -15,7 +15,7 @@ algebra  of `W` over `R` defined as  follows: it is the unitary associative
 ``TₛTₜTₛ…= TₜTₛTₜ…`` with `mₛₜ` factors on each side (the braid relations)
 
 If  `uₛ₀=1` and  `uₛ₁=-1` for  all `s`  then the quadratic relations become
-`Tₛ^2=1` and the deformation of the group algebra is trivial.
+`Tₛ²=1` and the deformation of the group algebra is trivial.
 
 Since  the generators `Tₛ` satisfy the  braid relations, the algebra `H` is
 in  fact a quotient of the group algebra of the braid group associated with
@@ -29,7 +29,7 @@ braid  relations do no change  (since when `mₛₜ` is  odd we have `uₛᵢ=u�
 but  the quadratic relations become  `(T′ₛ-qₛ)(T′ₛ+1)=0`. This last form is
 the  most common  form considered  in the  literature. Another common form,
 considered  in  the  context  of  Kazhdan-Lusztig  theory, is `uₛ₀=√qₛ` and
-`uₛ₁=-√qₛ^{-1}`.  The general form of parameters provided is a special case
+`uₛ₁=-√qₛ⁻¹`.  The general form of parameters provided is a special case
 of general cyclotomic Hecke algebras, and can be useful in many contexts.
 
 For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
