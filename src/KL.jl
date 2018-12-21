@@ -245,18 +245,19 @@ It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leadin
 coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
 occurs in the formula for ``μᵥ``).
 """
-function getCp(H::HeckeAlgebra,w::P)where P
+function getCp(H::HeckeAlgebra{C},w::P)where C where P
   T=Tbasis(H)
   W=H.W
   cdict=gets(H,Symbol("C'->T")) do H 
-     Dict(one(W)=>T()) end::Dict{P,HeckeTElt{P,typeof(H.sqpara[1])}}
+     Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C}}
   if haskey(cdict,w) return cdict[w] end
-  if w in coxgens(W) 
-    return inv(H.sqpara[1])*(T()+T(findfirst(isequal(w),coxgens(W))))
+  l=firstleftdescent(W,w)
+  s=coxgens(W)[l]
+  if w==s
+    return inv(H.sqpara[l])*(one(H)-inv(H.para[l][2])*T(s))
   else
-    s=coxgens(W)[firstleftdescent(W,w)]
     res=getCp(H,s)*getCp(H,s*w)
-    tmp=zero(T())
+    tmp=zero(H)
     for (e,coef) in res.d 
       if e!=w tmp+=positive_part(coef*QXHalf(H,e))*getCp(H,e) end
     end

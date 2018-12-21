@@ -285,13 +285,17 @@ function Base.one(H::HeckeAlgebra{C}) where C
   HeckeTElt([one(H.W)=>one(C)],H)
 end
 
+function Base.zero(H::HeckeAlgebra{C}) where C
+  HeckeTElt(Pair{typeof(one(H.W)),C}[],H)
+end
+
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return one(H) end
-    HeckeTElt([eltword(H.W,collect(w))=>one(C)],H)
+    HeckeTElt([eltword(H.W,w)=>one(C)],H)
   end
   f(w::Vararg{Integer})=f(collect(w))
-  f(w::P)=f(word(H.W,w))
+  f(w::P)=HeckeTElt([w=>one(C)],H)
   f(h::HeckeElt)=Tbasis(h)
 end
 
