@@ -72,6 +72,46 @@ defined on them. which perform the operations respectively ``∑_{γ∈ Γ} a_γ
 ∑_{γ∈  Γ} a_γγ⁻¹``, ``∑_{γ∈ Γ}  a_γγ↦ ∑_{γ≥ 1} a_γγ``  and ``∑_{γ∈ Γ} a_γγ↦
 ∑_{γ≤  1} a_γγ`` on  elements 'p' of  `ℤ[Γ]`. The operations  above will be
 used internally by the programs to compute Kazhdan-Lusztig bases.
+
+finally, benchmarks on julia 1.0.2
+```benchmark
+julia> function test_kl(W)
+         q=Pol([1],1); H=hecke(W,q^2,q)
+         C=Cpbasis(H); T=Tbasis(H)
+         [T(C(w)) for w in elements(W)]
+       end
+test_kl (generic function with 1 method)
+
+julia> @btime test_kl(WeylGroup(:F,4));
+2.265 s (22516606 allocations: 1.81 GiB)
+```
+Compare to GAP3 where the following function takes 11s for F4
+```
+test_kl:=function(W)local q,H,T,C;
+  q:=X(Rationals);H:=Hecke(W,q^2,q);
+  T:=Basis(H,"T");C:=Basis(H,"C'");
+  List(Elements(W),e->T(C(e)));
+end;
+```
+Another benchmark:
+```benchmark
+function test_kl2(W)
+  el=elements(W)
+  [KLPol(W,x,y) for x in el, y in el]
+end
+
+test_kl2 (generic function with 1 method)
+
+julia>@btime test_kl2(WeylGroup(:F,4));
+  8s (97455915 allocations: 6.79 GiB)
+```
+Compare to GAP3 where the following function takes 42s for F4
+```
+test_kl2:=function(W)local el;
+  el:=Elements(W);
+  List(el,x->List(el,y->KazhdanLusztigPolynomial(W,x,y)));
+end;
+```
 """
 module KL
 export KLPol, Cpbasis
@@ -103,7 +143,7 @@ julia> y=eltword(W,1:4);length(W,y)
 julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
 16
 
-julia> KLPol(W,y,w)
+julia> Pol(:x);KLPol(W,y,w)
 1+x^3
 
 julia> KLPol(W,cr,w)
@@ -211,9 +251,9 @@ function QXHalf(H::HeckeAlgebra,x::Perm)
   (-H.sqpara[1]*H.para[1][2])^length(H.W,x)
 end
 
-struct HeckeCpElt{P,C}<:HeckeElt{P,C}
+struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
-  H::HeckeAlgebra{C,<:CoxeterGroup}
+  H::HeckeAlgebra{C,G}
 end
 
 Hecke.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
@@ -245,11 +285,11 @@ It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leadin
 coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
 occurs in the formula for ``μᵥ``).
 """
-function getCp(H::HeckeAlgebra,w::P)where P
+function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   T=Tbasis(H)
   W=H.W
   cdict=gets(H,Symbol("C'->T")) do H 
-     Dict(one(W)=>T()) end::Dict{P,HeckeTElt{P,typeof(H.sqpara[1])}}
+  Dict(one(W)=>T()) end::Dict{P,HeckeTElt{P,C,G}}
   if haskey(cdict,w) return cdict[w] end
   if w in coxgens(W) 
     return inv(H.sqpara[1])*(T()+T(findfirst(isequal(w),coxgens(W))))

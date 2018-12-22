@@ -51,6 +51,12 @@ two_tree
 Hecke
 HeckeAlgebra
 ```
+# KL.jl Documentation
+```@docs
+KL
+KLPol
+Tbasis
+```
 # Util.jl Documentation
 ```@docs
 Util

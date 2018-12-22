@@ -394,7 +394,6 @@ struct WeylGroup <: CoxeterGroup{Perm{UInt8}}
   parentN::Int
   N::Int
   cartan::Array{Int8,2}
-  name::String
   weyltype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
   prop::Dict{Symbol,Any}
 end
@@ -430,8 +429,7 @@ function WeylGroup(C::Matrix{T}) where T<:Integer
     end
     n
   end
-  name=join(name,"x")
-  WeylGroup(PermGroup(gens),matgens,r,N,N,C,name,t,Dict())
+  WeylGroup(PermGroup(gens),matgens,r,N,N,C,t,Dict(:name=>join(name,"x")))
 end
 
 "Weyl group from type"
@@ -447,7 +445,7 @@ function CoxGroups.ReflectionSubgroup(W::WeylGroup,I::Vector{Int})
   roots=filter(r->all(i->i in I,findall(x->x!=0,r)),W.roots)
   WeylGroup(PermGroup(coxgens(W)[I]),W.matgens[I],roots,W.parentN,
     div(length(roots),2),
-    W.cartan[I,I],W.name*"_$I",type_cartan(W.cartan[I,I]),Dict())
+    W.cartan[I,I],type_cartan(W.cartan[I,I]),Dict(:name=>name(W)*"_$I"))
 end
 
 function Base.:*(W::WeylGroup...)
@@ -459,6 +457,8 @@ CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.parentN
 inversions(W::WeylGroup,w)=[i for i in 1:W.N if isleftdescent(W,w,i)]
 
 Base.length(W::WeylGroup,w)=count(i->isleftdescent(W,w,i),1:W.N)
+
+CoxGroups.name(W::WeylGroup)::String=W.prop[:name]
 
 """
   The reflection degrees of W

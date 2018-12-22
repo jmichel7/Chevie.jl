@@ -158,7 +158,7 @@ The dictionary from CHEVIE is as follows:
 module CoxGroups
 
 export CharTable, coxrank, CoxeterGroup, coxgens, coxsym, firstleftdescent, 
-  longest, bruhatless, reduced
+  longest, bruhatless, reduced, name
 
 export isleftdescent, nref, ReflectionSubgroup, reflection,
   simple_representative # 'virtual' methods
@@ -189,7 +189,7 @@ Base.eltype(W::CoxeterGroup)=eltype(W.G)
 coxgens(W::CoxeterGroup)=gens(W.G)
 Gapjm.gens(W::CoxeterGroup)=coxgens(W)
 coxrank(W::CoxeterGroup)=length(coxgens(W))
-Base.show(io::IO, W::CoxeterGroup)=print(io,W.name)
+Base.show(io::IO, W::CoxeterGroup)=print(io,name(W))
 function nref end
 
 """
@@ -307,16 +307,16 @@ end
 struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
   n::Int
-  name::String
   prop::Dict{Symbol,Any}
 end
 
 "The symmetric group on n letters as a Coxeter group"
 function coxsym(n::Int)
   gens=map(i->Perm{UInt8}(i,i+1),1:n-1)
-  CoxSymmetricGroup{UInt8}(PermGroup(gens),n,"coxsym($n)",Dict())
+  CoxSymmetricGroup{UInt8}(PermGroup(gens),n,Dict{Symbol,Any}(:name=>"coxsym($n)"))
 end
 
+name(W::CoxSymmetricGroup)::String=W.prop[:name]
 coxgens(W::CoxSymmetricGroup)=W.G.gens
 nref(W::CoxSymmetricGroup)=div(W.n*(W.n-1),2)
 
@@ -349,7 +349,7 @@ function ReflectionSubgroup(W::CoxSymmetricGroup,I::Vector{Int})
   if length(I)>0 n=maximum(I) 
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
-  CoxSymmetricGroup(PermGroup(coxgens(W)[I]),n+1,W.name*"_$I",Dict{Symbol,Any}())
+  CoxSymmetricGroup(PermGroup(coxgens(W)[I]),n+1,Dict{Symbol,Any}(:name=>name(W)*"_$I",))
 end
   
 simple_representative(W::CoxSymmetricGroup,i)=1

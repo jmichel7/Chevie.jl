@@ -78,7 +78,7 @@ julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(WeylGroup(:A,2),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#8")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 3 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#18")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int64,1},1}:
@@ -90,7 +90,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeElt{Perm{UInt8},Int64},2}:
+6×6 Array{HeckeTElt{Perm{UInt8},Int64,WeylGroup},2}:
  T()       T(2)       T(1)       T(2,1)     T(1,2)     T(1,2,1) 
  T(2)      -T(2)      T(2,1)     -T(2,1)    T(1,2,1)   -T(1,2,1)
  T(1)      T(1,2)     -T(1)      T(1,2,1)   -T(1,2)    -T(1,2,1)
@@ -110,7 +110,7 @@ julia> function test_w0(n)
        end
 test_w0 (generic function with 1 method)
 
-julia> @btime test_w0(7)
+julia> @btime test_w0(7);
   132.737 ms (178853 allocations: 157.37 MiB)
 ```
 Compare to GAP3 where the following function takes 0.92s
@@ -272,9 +272,9 @@ Base.:*(b::Number, a::HeckeElt)= a*b
 Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
                                    Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
-struct HeckeTElt{P,C}<:HeckeElt{P,C}
+struct HeckeTElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
-  H::HeckeAlgebra{C,<:CoxeterGroup}
+  H::HeckeAlgebra{C,G}
 end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)

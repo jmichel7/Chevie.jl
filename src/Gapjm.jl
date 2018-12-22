@@ -3,13 +3,26 @@ Here are some of my efforts porting GAP code to julia.
 I am not even sure this is a well-formed Julia package.
 
 It  contains  for  now  permutations  and  permutation  groups,  cyclotomic
-numbers, Laurent polynomials, some Weyl groups and Coxeter groups and Hecke
-algebras.  Coming soon  are Kazhdan-Lusztig  polynomials, braid  groups and
-Garside monoids.
+numbers,  Laurent polynomials, some  Weyl groups and  Coxeter groups, Hecke
+algebras  and Kazhdan-Lusztig polynomials. Coming soon are braid groups and
+Garside monoids and factorisations into cyclotomic polynomials.
 
 Even  though the code  is often competitive  with or faster  than GAP, I am
 sure there are more optimisations possible. Any comments about the code and
 the design are welcome.
+
+If you are new to julia, to install this package:
+- enter package mode with ]
+- do the command
+```
+(v1.0) pkg> add "https://github.com/jmichel7/Gapjm.jl"
+```
+- exit package mode with backspace
+do 
+```
+julia> using Gapjm
+```
+and you are set up.
 """
 module Gapjm
 using Reexport
