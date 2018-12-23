@@ -233,6 +233,23 @@ end
 
 function Base.show(io::IO, p::Cyc)
   p=lower(p)
+  if iszero(p) print(io,0)
+  else
+    start=true
+    r="E($(p.n))"
+    for (deg,v) in p.d
+      if deg==0 t=string(v)
+      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
+        t=t* (deg==1 ? "" : string(deg))
+      end
+      if start start=false elseif t[1]!='-' print(io,"+") end
+      print(io,t)
+    end
+  end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", p::Cyc)
+  p=lower(p)
   stringexp(e)=e==1 ? "" : e<10 ? "^$e" : "^{$e}"
   stringind(e)=e==1 ? "" : e<10 ? "_$e" : "_{$e}"
   if iszero(p) print(io,0)
@@ -241,7 +258,8 @@ function Base.show(io::IO, p::Cyc)
     r="ζ"*stringind(p.n)
     for (deg,v) in p.d
       if deg==0 t=string(v)
-      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r*stringexp(deg)
+      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
+        t=t*stringexp(deg)
       end
       if start start=false elseif t[1]!='-' print(io,"+") end
       print(io,TeXstrip(t))

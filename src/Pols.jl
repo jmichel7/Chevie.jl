@@ -45,9 +45,8 @@ using Memoize
 using ..Gapjm # for degree
 
 const var=[:x]
-function varname(a::Symbol)
-  var[1]=a
-end
+varname(a::Symbol)=(var[1]=a)
+varname()=var[1]
 
 struct Pol{T}
   c::Vector{T}
