@@ -249,12 +249,15 @@ function Base.show(io::IO, p::Cyc)
   end
 end
 
-"""
+const EDict=Dict((1,0)=>Cyc(1,[0=>1]))
+#=
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
-"""
+=#
 function E(n::Integer,i::Integer=1)
-  (s,l)=Elist(n,mod(i,n))::Pair{Bool,Vector{Int}}
-  Cyc(n,[i=>ifelse(s,1,-1) for i in l])
+  i=mod(i,n)
+  if haskey(EDict,(n,i)) return EDict[(n,i)] end
+  (s,l)=Elist(n,mod(i,n)) #::Pair{Bool,Vector{Int}}
+  EDict[(n,i)]=Cyc(n,[i=>ifelse(s,1,-1) for i in l])
 end
 
 function Base.promote(a::Cyc{T1},b::Cyc{T2})where {T1,T2}
@@ -288,7 +291,7 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Number,a::Cyc)=Cyc(b)-a
 Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
-Base.:*(a::Number,c::Cyc)=Cyc(c.n,[k=>a*v for (k,v) in c.d])
+Base.:*(a::Number,c::Cyc)=iszero(a) ? zero(c) : Cyc(c.n,[k=>a*v for (k,v) in c.d])
 Base.:*(c::Cyc,a::Number)=a*c
 
 Base.div(c::Cyc,a::Number)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])

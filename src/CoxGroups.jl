@@ -3,38 +3,38 @@ A  suitable  reference  for  the  general  theory of Coxeter groups is, for
 example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
 
 A *Coxeter group* is a group which has the presentation
-``W=⟨S|(st)^m(s,t)=1`` for ``s,t∈  S⟩`` for some  symmetric  integer matrix
-``m(s,t)``  called the *Coxeter matrix*, where ``m(s,t)>1`` for ``s≠t`` and
-``m(s,s)=1``.  It is  true (but  a non-trivial  theorem) that  in a Coxeter
-group  the order of ``st``  is exactly ``m(s,t)``, thus  a Coxeter group is
-the same as a *Coxeter system*, that is a pair ``(W,S)`` of a group `W` and
-a  set `S` of  involutions, such that  the group is  presented by relations
-describing the order of the product of two elements of `S`. A Coxeter group
-has  a natural representation,  its *reflection representation*,  on a real
-vector  space `V` of dimension `length(S)` (the *Coxeter rank* of W), where
-each  element  of  `S`  acts  as  a  reflection;  the  faithfulness of this
-representation  in the main argument  to prove that the  order of ``st`` is
-exactly  ``m(s,t)``. Thus  Coxeter groups  are real  reflection groups. The
-converse  need not  be true  if the  set of  reflecting hyperplanes has bad
-topological properties, but it turns out that finite Coxeter groups are the
-same  as finite real  reflection groups. The  possible Coxeter matrices for
-finite  Coxeter groups  have been  completely classified; the corresponding
-finite groups play a deep role in several areas of mathematics.
+`W=⟨S|(st)^m(s,t)=1`  for  `s,t∈  S⟩`  for  some  symmetric  integer matrix
+`m(s,t)`  called  the  *Coxeter  matrix*,  where  `m(s,t)>1`  for `s≠t` and
+`m(s,s)=1`.  It is true (but a non-trivial theorem) that in a Coxeter group
+the  order of `st` is exactly `m(s,t)`, thus a Coxeter group is the same as
+a  *Coxeter system*, that is a pair `(W,S)` of a group `W` and a set `S` of
+involutions,  such that the group is  presented by relations describing the
+order  of the product of two elements of `S`. A Coxeter group has a natural
+representation, its *reflection representation*, on a real vector space `V`
+of  dimension `length(S)` (the *Coxeter rank*  of W), where each element of
+`S`  acts as a  reflection; the faithfulness  of this representation in the
+main  argument to prove  that the order  of `st` is  exactly `m(s,t)`. Thus
+Coxeter groups are real reflection groups. The converse need not be true if
+the  set of reflecting  hyperplanes has bad  topological properties, but it
+turns out that finite Coxeter groups are the same as finite real reflection
+groups.  The possible Coxeter matrices for  finite Coxeter groups have been
+completely  classified; the corresponding finite groups play a deep role in
+several areas of mathematics.
 
 Coxeter  groups  have  a  nice  solution  to the word problem. The *length*
-``l(w)`` of an element ``w∈ W`` is the minimum number of elements of `S` of
+`l(w)`  of an element  `w∈ W` is  the minimum number  of elements of `S` of
 which it is a product (since the elements of `S` are involutions, we do not
 need inverses). An expression of `w` of minimal length is called a *reduced
 word*  for `w`. The main property of  reduced words is the *exchange lemma*
-which states that if ``s_1…s_k`` is a reduced word for `w` (thus``k=l(w)``)
-and  ``s∈ S`` is  such that ``l(sw)≤l(w)``  then one of  the ``s_i`` in the
-word for `w` can be deleted to obtain a reduced word for ``sw``. Thus given
-``s∈  S`` and ``w∈ W``, either  ``l(sw)=l(w)+1`` or ``l(sw)=l(w)-1`` and we
-say  in this last case  that `s` belongs to  the *left descent set* of `w`.
-The  computation of a reduced word for an element, and other word problems,
-are  easily done if we  know the left descent  sets. For the Coxeter groups
-that we implement, this left descent set can be easily determined (see e.g.
-'coxsym' below), so this suggests how to deal with Coxeter groups.
+which  states that if `s₁…sₖ` is a  reduced word for `w` (thus`k=l(w)`) and
+`s∈  S` is such that `l(sw)≤l(w)` then one  of the `sᵢ` in the word for `w`
+can be deleted to obtain a reduced word for `sw`. Thus given `s∈ S` and `w∈
+W`,  either `l(sw)=l(w)+1` or  `l(sw)=l(w)-1` and we  say in this last case
+that  `s` belongs to  the *left descent  set* of `w`.  The computation of a
+reduced word for an element, and other word problems, are easily done if we
+know  the left descent sets. For the Coxeter groups that we implement, this
+left  descent set  can be  easily determined  (see e.g. 'coxsym' below), so
+this suggests how to deal with Coxeter groups.
 
 The type `CoxeterGroup` is an abstact type; an actual struct which implements
 it must define a function
