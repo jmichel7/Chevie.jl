@@ -232,39 +232,27 @@ function Base.hash(a::Cyc, h::UInt)
 end
 
 function Base.show(io::IO, p::Cyc)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
   p=lower(p)
-  if iszero(p) print(io,0)
-  else
-    start=true
-    r="E($(p.n))"
-    for (deg,v) in p.d
-      if deg==0 t=string(v)
-      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
-        t=t* (deg==1 ? "" : string(deg))
+  res=join(map(p.d) do (deg,v)
+    if deg==0 t=string(v)
+    else 
+      if repl || TeX
+        r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
+        if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
+      else
+        r=(deg==1 ? "E($(p.n))" : "E($(p.n),$deg)")
       end
-      if start start=false elseif t[1]!='-' print(io,"+") end
-      print(io,t)
+      t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
     end
+    if t[1]!='-' t="+"*t end
+    t
+  end)
+  if res=="" res="0"
+  elseif res[1]=='+' res=res[2:end] 
   end
-end
-
-function Base.show(io::IO, ::MIME"text/plain", p::Cyc)
-  p=lower(p)
-  stringexp(e)=e==1 ? "" : e<10 ? "^$e" : "^{$e}"
-  stringind(e)=e==1 ? "" : e<10 ? "_$e" : "_{$e}"
-  if iszero(p) print(io,0)
-  else
-    start=true
-    r="ζ"*stringind(p.n)
-    for (deg,v) in p.d
-      if deg==0 t=string(v)
-      else t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
-        t=t*stringexp(deg)
-      end
-      if start start=false elseif t[1]!='-' print(io,"+") end
-      print(io,TeXstrip(t))
-    end
-  end
+  print(io, (repl && !TeX) ? TeXstrip(res) : res)
 end
 
 const EDict=Dict((1,0)=>Cyc(1,[0=>1]))

@@ -78,7 +78,7 @@ julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(WeylGroup(:A,2),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#18")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int64,1},1}:
@@ -91,12 +91,12 @@ julia> el=words(W)
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
 6×6 Array{HeckeTElt{Perm{UInt8},Int64,WeylGroup},2}:
- T()       T(2)       T(1)       T(2,1)     T(1,2)     T(1,2,1) 
- T(2)      -T(2)      T(2,1)     -T(2,1)    T(1,2,1)   -T(1,2,1)
- T(1)      T(1,2)     -T(1)      T(1,2,1)   -T(1,2)    -T(1,2,1)
- T(2,1)    T(1,2,1)   -T(2,1)    -T(1,2,1)  -T(1,2,1)  T(1,2,1) 
- T(1,2)    -T(1,2)    T(1,2,1)   -T(1,2,1)  -T(1,2,1)  T(1,2,1) 
- T(1,2,1)  -T(1,2,1)  -T(1,2,1)  T(1,2,1)   T(1,2,1)   -T(1,2,1)
+ T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
+ T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
+ T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
+ T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁ 
+ T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁ 
+ T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁
 
 ```
 Thus,  we work  with algebras  with arbitrary  parameters. We will see that
@@ -152,20 +152,20 @@ julia> [H.para,H.sqpara]
  Missing[missing, missing]                     
 
 julia> H=hecke(W,q^2,q)
-Hecke(WeylGroup(:B,2),q^2,q)
+Hecke(WeylGroup(:B,2),q²,q)
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
- Tuple{Pol{Int64},Pol{Int64}}[(q^2, -1), (q^2, -1)]
+ Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q², -1)]
  Pol{Int64}[q, q]                                  
 
 julia> H=hecke(W,[q^2,q^4],[q,q^2])
-Hecke(WeylGroup(:B,2),Pol{Int64}[q^2, q^4],Pol{Int64}[q, q^2])
+Hecke(WeylGroup(:B,2),Pol{Int64}[q², q⁴],Pol{Int64}[q, q²])
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
- Tuple{Pol{Int64},Pol{Int64}}[(q^2, -1), (q^4, -1)]
- Pol{Int64}[q, q^2]                                
+ Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q⁴, -1)]
+ Pol{Int64}[q, q²]
 
 julia> H=hecke(W,9,3)
 Hecke(WeylGroup(:B,2),9,3)
@@ -245,19 +245,26 @@ Base.iszero(h::HeckeElt)=length(h.d)==0
 
 function Base.show(io::IO, h::HeckeElt)
   if isempty(h.d) return "0" end
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
   s=map(h.d)do (e,c)
-   res=basename(h)*"("*join(map(x->"$x",word(h.H.W,e)),",")*")"
-    if !isone(c)
-      if c==-one(c) res="-"*res
-      else res="($c)*"*res
+    w=word(h.H.W,e)
+    res=basename(h)
+    if repl || TeX
+      if isempty(w) res*="."
+      else res*="_{"*(any(x->x>=10,w) ? join(w,",") : join(w))*"}"
       end
+    else res*="("*join(map(x->"$x",w),",")*")"
     end
+    c=sprint(show,c; context=io)
+    if !(repl || TeX) || occursin(r"[-+*]",c[nextind(c,0,2):end]) c="($c)" end
+    res= (c=="1" ? "" : (c=="-1" ? "-" : c))*res
     if res[1]!='-' res="+"*res end
     res
   end
   s=join(s)
   if  s[1]=='+' s=s[2:end] end
-  print(io,s)
+  print(io, (repl && !TeX) ? TeXstrip(s) : s)
 end
 
 Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,mergesum(a.d,b.d))

@@ -144,10 +144,10 @@ julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
 16
 
 julia> Pol(:x);KLPol(W,y,w)
-1+x^3
+1+x³
 
 julia> KLPol(W,cr,w)
-1+x^3
+1+x³
 ```julia-repl
 
 """
@@ -212,10 +212,10 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
  [1, 1, 1, 1, 1, 1, 1]           
  [1, 1, 1, 1+x, 1, 1, 1, 1]      
  [1, 1+x, 1, 1+x, 1+x, 1, 1, 1+x]
- [1, 1+x^2, 1+x, 1+x, 1, 1, 1+x] 
- [1, 1, 1+x+x^2, 1+x, 1+x]       
- [1, 1+x, 1+x^2]                 
- [1]                             
+ [1, 1+x², 1+x, 1+x, 1, 1, 1+x]  
+ [1, 1, 1+x+x², 1+x, 1+x]        
+ [1, 1+x, 1+x²]                  
+ [1]
 ```
 """
 function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
@@ -312,16 +312,16 @@ julia> W=WeylGroup(:B,3)
 WeylGroup(:B,3)
 
 julia> Pol(:v);H=hecke(W,v^2,v)
-Hecke(WeylGroup(:B,3),v^2,v)
+Hecke(WeylGroup(:B,3),v²,v)
 
 julia> C=Cpbasis(H)
 (::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{UInt8},HeckeAlgebra{Pol{Int64},WeylGroup}}) (generic function with 3 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#18")){Pol{Int64},Perm{UInt8},HeckeAlgebra{Pol{Int64},WeylGroup}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{UInt8},HeckeAlgebra{Pol{Int64},WeylGroup}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
-(v^-2)*T()+(v^-2)*T(2)+(v^-2)*T(1)+(v^-2)*T(1,2)
+v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 """
 Hecke.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
