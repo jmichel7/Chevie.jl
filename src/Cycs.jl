@@ -195,7 +195,7 @@ function Base.convert(::Type{Cyc{T}},i::Real)where T<:Real
   Cyc(convert(T,i))
 end
 
-function Base.convert(::Type{Cyc{T}},c::Cyc{T1})where {T,T1}
+function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
   Cyc(c.n,convert.(Pair{Int,T},c.d))
 end
@@ -217,17 +217,17 @@ function Base.promote(a::Cyc{T1},b::Cyc{T2})where {T1,T2}
   end
   if T1!=T2
     T=promote_rule(Cyc{T1},Cyc{T2})
-    if T1!=T a=convert(T,a) end
-    if T2!=T b=convert(T,b) end
+    a=convert(T,a)
+    b=convert(T,b)
   end
   return (a, b)#::Tuple{T,T}
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where T1<:Real where T2<:Real
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1<:Real,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where T1<:Real where T2<:Real
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1<:Real,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
 
@@ -347,7 +347,7 @@ function Base.:*(x::Cyc,y::Cyc)
   if iszero(x) return x end
   if iszero(y) return y end
   a,b=promote(x,y)
-  sumroots(a.n,yi+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
+  sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
 end
 #function Base.:*(a::Cyc,b::Cyc)
 #  a,b=promote(a,b)
