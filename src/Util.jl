@@ -9,8 +9,8 @@ module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, cartesian, # arrays
-  SortedPairs, norm, mergesum, getvalue, # data structure
-  format, TeXstrip, # formatting
+  SortedPairs, norm!, mergesum, getvalue, # data structure
+  format, TeXstrip, bracket_if_needed, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
   conjugate_partition, horner
 
@@ -150,7 +150,8 @@ function mergesum(a::SortedPairs,b::SortedPairs)::SortedPairs
   resize!(res,ri)
 end
 
-function norm(x::SortedPairs)::SortedPairs
+#function norm!(x::Vector{<:Pair})
+function norm!(x::SortedPairs{K,V}) where {K,V}
   if isempty(x) return x end
   res=sort(x,by=y->y[1])
   ri=1
@@ -192,6 +193,9 @@ function TeXstrip(s::String)
   s=replace(s,r"'"=>"′")
   s
 end
+
+bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end]) 
+ "($c)" else c end
 
 """
   format( table; options )

@@ -75,8 +75,8 @@ julia> conj(1+E(4))
 julia> c=E(9)     # an effect of the Zumbroich basis
 -ζ₉⁴-ζ₉⁷
 
-julia> AsRootOfUnity(c) # but you can decide if a Cyc is a root of unity
-1//9
+julia> Root1(c) # but you can decide if a Cyc is a root of unity
+Root1(1//9)
 
 julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
@@ -111,7 +111,7 @@ end;
 for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
-export E, ER, Cyc, conductor, lower, galois, AsRootOfUnity, quadratic
+export E, ER, Cyc, conductor, lower, galois, Root1, quadratic
 
 using Memoize, ..Util
 
@@ -184,7 +184,7 @@ end
   mp=modp(n,i)
   if isempty(mp) return true=>[i%n] end
   v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
-  length(mp)%2==0=>sort((i .+ v).%n)
+  iseven(length(mp))=>sort((i .+ v).%n)
 end
 
 Cyc(i::T) where T<:Real=iszero(i) ? Cyc(1,Pair{Int,T}[]) : Cyc(1,[0=>i])
@@ -200,14 +200,39 @@ function Base.convert(::Type{Cyc{T}},c::Cyc{T1})where {T,T1}
   Cyc(c.n,convert.(Pair{Int,T},c.d))
 end
 
+Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
+
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real
-  if iszero(c) return T(0) end
+  if iszero(c) return zero(T) end
   if c.n!=1 c=lower(c) end
   if c.n!=1 throw(InexactError(:convert,T,c)) end
   convert(T,c.d[1][2])
 end
 
+function Base.promote(a::Cyc{T1},b::Cyc{T2})where {T1,T2}
+  if a.n!=b.n
+    l=lcm(a.n,b.n)
+    a=raise(l,a)
+    b=raise(l,b)
+  end
+  if T1!=T2
+    T=promote_rule(Cyc{T1},Cyc{T2})
+    if T1!=T a=convert(T,a) end
+    if T2!=T b=convert(T,b) end
+  end
+  return (a, b)#::Tuple{T,T}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where T1<:Real where T2<:Real
+  Cyc{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where T1<:Real where T2<:Real
+  Cyc{promote_type(T1,T2)}
+end
+
 Base.zero(c::Cyc)=Cyc(c.n,empty(c.d))
+Base.zero(::Type{Cyc{T}},n::Int=1) where T=Cyc(n,Pair{Int,T}[])
 Base.iszero(c::Cyc)=isempty(c.d)
 Base.one(c::Cyc)=E(c.n,0)
 
@@ -239,12 +264,15 @@ function Base.show(io::IO, p::Cyc)
     if deg==0 t=string(v)
     else 
       if repl || TeX
+        t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
         if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
       else
+        v=bracket_if_needed(string(v))
+        t= v=="1" ? "" : v=="-1" ? "-" : v
         r=(deg==1 ? "E($(p.n))" : "E($(p.n),$deg)")
       end
-      t=(v==1 ? "" : v==-1 ? "-" : string(v))*r
+      t*=r
     end
     if t[1]!='-' t="+"*t end
     t
@@ -266,26 +294,8 @@ function E(n::Integer,i::Integer=1)
   EDict[(n,i)]=Cyc(n,[i=>ifelse(s,1,-1) for i in l])
 end
 
-function Base.promote(a::Cyc{T1},b::Cyc{T2})where {T1,T2}
-  if a.n!=b.n
-    l=lcm(a.n,b.n)
-    a=raise(l,a)
-    b=raise(l,b)
-  end
-  T=promote_type(T1,T2)
-  return convert(Cyc{T},a), convert(Cyc{T},b)
-end
-
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where T1<:Real where T2<:Real
-  Cyc{promote_type(T1,T2)}
-end
-
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where T1<:Real where T2<:Real
-  Cyc{promote_type(T1,T2)}
-end
-
-function Base.:+(a::Cyc,b::Cyc)
-  (a,b)=promote(a,b)
+function Base.:+(x::Cyc,y::Cyc)
+  (a,b)=promote(x,y)
   Cyc(a.n,mergesum(a.d,b.d))
 end
 
@@ -311,29 +321,51 @@ function addelist(res::SortedPairs{Int,T},n::Int,i::Int,b::T)where T
   (s,l)=Elist(n,mod(i,n))::Pair{Bool,Vector{Int}}
   if !s b=-b end
   for i in l push!(res,i=>b) end
+# append!(res,l.=>b)
 end
 
-function Base.:*(a::Cyc,b::Cyc)
-  a,b=promote(a,b)
-  res=empty(a.d)
-  for (i,va) in a.d, (j,vb) in b.d
-      addelist(res,a.n,i+j,va*vb) 
+function sumroots(n::Int,l::SortedPairs{Int,T})where T<:Real
+#function sumroots(n::Int,l)
+# res=empty(l)
+  res=Pair{Int,T}[]
+  for (i,b) in l
+    (s,v)=Elist(n,mod(i,n))#::Pair{Bool,Vector{Int}}
+    if !s b=-b end
+    for j in v 
+     push!(res,j=>b)#::Pair{Int,T}) 
+    end
+#   append!(res,v.=>b)
   end
-  Cyc(a.n,norm(res))
+#  print(u)
+  Cyc(n,norm!(res))
 end
 
-function raise(n::Int,c::Cyc) # write c in Q(zeta_n) if c.n divides n
+# a=-1//12E(12,4)-1//12E(12,8)+1//12E(12,11) 
+# b=-1//12E(3,2)
+#function Base.:*(x::Cyc{T1},y::Cyc{T2})where {T1<:Real,T2<:Real}
+function Base.:*(x::Cyc,y::Cyc)
+  if iszero(x) return x end
+  if iszero(y) return y end
+  a,b=promote(x,y)
+  sumroots(a.n,yi+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
+end
+#function Base.:*(a::Cyc,b::Cyc)
+#  a,b=promote(a,b)
+#  res=empty(a.d)
+#  for (i,va) in a.d for (j,vb) in b.d
+#    (s,v)=Elist(a.n,mod(i+j,a.n))#::Pair{Bool,Vector{Int}}
+#    u=va*vb
+#    if !s u=-u end
+#    for k in v push!(res,k=>u) end
+#  end end
+#  Cyc(a.n,norm!(res))
+#end
+
+function raise(n::Int,c::Cyc{T})where T # write c in Q(zeta_n) if c.n divides n
   if n==c.n return c end
-  if n%c.n !=0 error("raise to $n not multiple of $(c.n)") end
-  res=empty(c.d)
-  if iszero(c) return Cyc(n,res) end
+  if iszero(c) return zero(Cyc{T},n) end
   m=div(n,c.n)
-  for (k,v) in c.d addelist(res,n,k*m,v) end
-  Cyc(n,norm(res))
-end
-
-function raise(n::Int,v::Array)
-  raise.(n,v)
+  sumroots(n,[(i*m=>e) for (i,e) in c.d])
 end
 
 function lower(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
@@ -429,23 +461,50 @@ end
 
 Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) : sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
 
-function AsRootOfUnity(c::Cyc)
+function Base.Real(c::Cyc)
+  if iszero(c) return 0 end
+  c=lower(c)
+  if c.n==1 return c.d[1][2] end
+  if c!=conj(c) error("$c is not real") end
+  return real(Complex(c))
+end
+
+struct Root1
+ r::Rational{Int}
+ Root1(r::Rational)=new(mod(r.num,r.den)//r.den)
+end
+
+function Root1(c::Cyc)
   if !(all(x->x[2]==1,c.d) || all(x->x[2]==-1,c.d))
     return nothing
   end
   for i in 0:c.n-1
-    if c==E(c.n,i) return i//c.n end
-    if -c==E(c.n,i) return 1//2+i//c.n end
+    if c==E(c.n,i) return Root1(i//c.n) end
+    if -c==E(c.n,i) return Root1(1//2+i//c.n) end
   end
   return nothing
 end
 
-function AsRootOfUnity(c::Real)
-  if c==1 0//1
-  elseif c==-1 1//2
+function Root1(c::Real)
+  if c==1 Root1(0//1)
+  elseif c==-1 Root1(1//2)
   else nothing
   end
 end
+
+Cycs.conductor(a::Root1)=a.r.den
+Base.exponent(a::Root1)=a.r.num
+
+function Base.cmp(a::Root1,b::Root1)
+  r=cmp(conductor(a),conductor(b))
+  if !iszero(r) return r end
+  cmp(exponent(a),exponent(b))
+end
+
+Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
+
+Cycs.E(a::Root1)=E(conductor(a),exponent(a))
+
 
 """
   quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
