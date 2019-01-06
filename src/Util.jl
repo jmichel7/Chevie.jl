@@ -111,7 +111,7 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
   end
   sort(collect(values(groupby(cc,collect(1:l)))))
 end
-
+#--------------------------------------------------------------------------
 """
 SortedPairs has a similar interface to Dicts, but is 3 times faster for the
 merge operation.  Pairs are sorted by the first item (the key)
@@ -150,25 +150,27 @@ function mergesum(a::SortedPairs,b::SortedPairs)::SortedPairs
   resize!(res,ri)
 end
 
-#function norm!(x::Vector{<:Pair})
+"""
+normalize an unsorted SortedPairs -- which may occur in some computation
+"""
 function norm!(x::SortedPairs{K,V}) where {K,V}
   if isempty(x) return x end
-  res=sort(x,by=y->y[1])
+  sort!(x,by=first)
   ri=1
-  for j in 2:length(res)
-    if res[j][1]==res[ri][1]
-      res[ri]=res[ri][1]=>res[ri][2]+res[j][2]
+  for j in 2:length(x)
+    if x[j][1]==x[ri][1]
+      x[ri]=x[ri][1]=>x[ri][2]+x[j][2]
     else 
-      if !iszero(res[ri][2]) ri+=1 end
-      res[ri]=res[j]
+      if !iszero(x[ri][2]) ri+=1 end
+      x[ri]=x[j]
     end
   end
-  if iszero(res[ri][2]) ri-=1 end
-  resize!(res,ri)
+  if iszero(x[ri][2]) ri-=1 end
+  resize!(x,ri)
 end
 
-function getvalue(x::SortedPairs,i::Int)
-  r=searchsorted(x,i;by=x->x[1])
+function getvalue(x::SortedPairs,i)
+  r=searchsorted(x,i;by=first)
   if r.start!=r.stop error("Bounds in $x") end
   x[r.start][2]
 end
@@ -264,11 +266,13 @@ function prime_residues(n)
   filter(i->gcd(n,i)==1,1:n-1)
 end
 
+# make Primes.factor fast by memoizing it
 import Primes
-using Memoize
-# make Primes.factor fast by memoizing
-@memoize Dict function factor(n::Integer)::Dict{typeof(n),Int}
-   Primes.factor(Dict,n)
+const lfactor=Dict(2=>Primes.factor(2))
+function factor(n::Integer)
+  get!(lfactor,n) do 
+    Primes.factor(Dict,n) 
+  end
 end
 
 function divisors(n::Int)::Vector{Int}
@@ -310,11 +314,11 @@ end
 # better display of Rationals at the REPL
 #function Base.show(io::IO, x::Rational)
 #   show(io, numerator(x))
-#   if  get(io, :compact,true)
-#        if denominator(x)!=1
-#           print(io,"/")
-#           show(io,denominator(x))
-#        end
+#   if get(io, :limit, true)
+#       if denominator(x)!=1
+#          print(io, "/")
+#          show(io, denominator(x))
+#       end
 #   else
 #       print(io, "//")
 #       show(io, denominator(x))
@@ -329,11 +333,11 @@ end
 
 # horner scheme
 function horner(x,p::Vector)
- value=zero(x)
- for i in length(p):-1:1
-   value=x*value+p[i]
- end
- value
+  value=zero(x)
+  for i in length(p):-1:1
+    value=x*value+p[i]
+  end
+  value
 end
 
 end

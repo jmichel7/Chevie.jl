@@ -8,16 +8,16 @@ julia> Pol(:q) # define string used for printing and set variable q
 q
 
 julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
-1+2q
+2q+1
 
 julia> p=Pol([1,2],-1)
-q⁻¹+2
+2+q⁻¹
 
 julia> valuation(p)
 -1
 
 julia> p=(q+1)^2
-1+2q+q²
+q²+2q+1
 
 julia> degree(p)
 2
@@ -26,13 +26,13 @@ julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
 9//4
 
 julia> divrem(q^3+1,q+2) # changes coefficients to field elements
-(4.0-2.0q+1.0q², -7.0)
+(1.0q²-2.0q+4.0, -7.0)
 
 julia> divrem1(q^3+1,q+2) # keeps the ring, but needs second argument unitary
-(4-2q+q², -7)
+(q²-2q+4, -7)
 
 julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
-1-q⁴+q⁸
+q⁸-q⁴+1
 
 ```
 
@@ -98,9 +98,10 @@ Base.transpose(a::Pol)=a
 function Base.show(io::IO,p::Pol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  s=join(map(eachindex(p.c))do i
+  s=join(map(reverse(eachindex(p.c)))do i
     c=p.c[i]
     if iszero(c) return "" end
+    c=sprint(show,c; context=io)
     deg=i+p.v-1
     if !iszero(deg) 
       mon=String(var[1])
@@ -109,12 +110,12 @@ function Base.show(io::IO,p::Pol)
          else mon*= "^$deg"
          end
       end
+      if c=="1" c="" elseif c=="-1" c="-" end
+      c=bracket_if_needed(c) 
+      c*=mon
     end
-    c=sprint(show,c; context=io)
-    if occursin(r"[-+*]",c[nextind(c,0,2):end]) c="($c)" end
-    res= deg==0 ? c : (c=="1" ? "" : (c=="-1" ? "-" : c))*mon
-    if res[1]!='-' res="+"*res end
-    res
+    if c[1]!='-' c="+"*c end
+    c
   end)
   if s=="" s="0"
   elseif  s[1]=='+' s=s[2:end]
@@ -212,10 +213,10 @@ Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
 # Examples
 ```julia-repl
 julia> gcd(q+1,q^2-1)
-1.0+1.0q
+1.0q+1.0
 
 julia> gcd(q+1//1,q^2-1//1)
-1//1+1//1q
+(1//1)q+1//1
 ```
 """
 function Base.gcd(p::Pol,q::Pol)

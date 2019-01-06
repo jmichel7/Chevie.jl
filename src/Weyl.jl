@@ -400,7 +400,9 @@ end
 
 " the matrix of the reflection of given root and coroot"
 function CoxGroups.reflection(root::Vector,coroot::Vector)
-  I-[i*j for i in coroot, j in root]
+  root,coroot=promote(root,coroot)
+  m=[i*j for i in coroot, j in root]
+  one(m)-m
 end
 
 " Weyl group from Cartan matrix"

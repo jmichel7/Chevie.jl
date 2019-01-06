@@ -144,10 +144,10 @@ julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
 16
 
 julia> Pol(:x);KLPol(W,y,w)
-1+x³
+x³+1
 
 julia> KLPol(W,cr,w)
-1+x³
+x³+1
 ```julia-repl
 
 """
@@ -210,11 +210,11 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
  [1, 1, 1]                       
  [1, 1, 1, 1, 1]                 
  [1, 1, 1, 1, 1, 1, 1]           
- [1, 1, 1, 1+x, 1, 1, 1, 1]      
- [1, 1+x, 1, 1+x, 1+x, 1, 1, 1+x]
- [1, 1+x², 1+x, 1+x, 1, 1, 1+x]  
- [1, 1, 1+x+x², 1+x, 1+x]        
- [1, 1+x, 1+x²]                  
+ [1, 1, 1, x+1, 1, 1, 1, 1]      
+ [1, x+1, 1, x+1, x+1, 1, 1, x+1]
+ [1, x²+1, x+1, x+1, 1, 1, x+1]  
+ [1, 1, x²+x+1, x+1, x+1]        
+ [1, x+1, x²+1]                  
  [1]
 ```
 """

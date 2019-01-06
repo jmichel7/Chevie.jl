@@ -34,7 +34,7 @@ julia> using Gapjm
 and you are set up.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Gapjm.jl#L1-L26' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Gapjm.jl#L1-L26' class='documenter-source'>source</a><br>
 
 - [Gapjm.jl Documentation](README.md#Gapjm.jl-Documentation-1)
 - [Perms.jl Documentation](README.md#Perms.jl-Documentation-1)
@@ -120,7 +120,7 @@ Perms  have methods copy, hash,  ==, cmp, isless (total order)  so they can be k
 other functions are: cycles, cycletype, sign. See individual documentation.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Perms.jl#L1-L76' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Perms.jl#L1-L76' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Perms.cycles' href='#Gapjm.Perms.cycles'>#</a>
 **`Gapjm.Perms.cycles`** &mdash; *Function*.
@@ -140,7 +140,7 @@ julia> cycles(Perm(1,2)*Perm(4,5))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Perms.jl#L184-L194' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Perms.jl#L184-L194' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Perms.cycletype' href='#Gapjm.Perms.cycletype'>#</a>
 **`Gapjm.Perms.cycletype`** &mdash; *Function*.
@@ -160,7 +160,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Perms.jl#L223-L234' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Perms.jl#L223-L234' class='documenter-source'>source</a><br>
 
 <a id='Base.sign' href='#Base.sign'>#</a>
 **`Base.sign`** &mdash; *Function*.
@@ -170,7 +170,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 sign(a::Perm) is the signature of  the permutation a
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Perms.jl#L237' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Perms.jl#L237' class='documenter-source'>source</a><br>
 
 
 <a id='PermGroups.jl-Documentation-1'></a>
@@ -288,7 +288,7 @@ julia> @btime words(symmetric_group(8));
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L1-L110' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L1-L110' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.symmetric_group' href='#Gapjm.PermGroups.symmetric_group'>#</a>
 **`Gapjm.PermGroups.symmetric_group`** &mdash; *Function*.
@@ -298,7 +298,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 The symmetric group of degree n 
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L241' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L241' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.orbit' href='#Gapjm.PermGroups.orbit'>#</a>
 **`Gapjm.PermGroups.orbit`** &mdash; *Function*.
@@ -308,7 +308,7 @@ The symmetric group of degree n
 orbit(G,p) is the orbit of Int p under Group G
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L127' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L127' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.orbit_and_representative' href='#Gapjm.PermGroups.orbit_and_representative'>#</a>
 **`Gapjm.PermGroups.orbit_and_representative`** &mdash; *Function*.
@@ -318,7 +318,7 @@ orbit(G,p) is the orbit of Int p under Group G
 returns Dict x=>g for x in orbit(G,p) and g is such that x=action(p,g)
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L160' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L160' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.words' href='#Gapjm.words'>#</a>
 **`Gapjm.words`** &mdash; *Function*.
@@ -328,7 +328,7 @@ returns Dict x=>g for x in orbit(G,p) and g is such that x=action(p,g)
 List of minimal words in the generators elements(G) 
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L214' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L214' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.elements' href='#Gapjm.elements'>#</a>
 **`Gapjm.elements`** &mdash; *Function*.
@@ -338,7 +338,7 @@ List of minimal words in the generators elements(G)
 The list of elements of G in the same order as words
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/PermGroups.jl#L219' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/PermGroups.jl#L219' class='documenter-source'>source</a><br>
 
 
 <a id='Cycs.jl-Documentation-1'></a>
@@ -360,7 +360,7 @@ I  ported here Christian Stump's Sage  code, which is simpler to understand than
 
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
-Contrary   to  GAP,  I  do  not  lower  automatically  numbers  after  each computation since this is too expensive with this code. GAP also converts a Cyclotomic which is rational to a Rational, a Rational which is integral to an  Int, etc... This is tremendously useful  but needs a new type of number to be added to Julia, which requires more competent people than me.
+As in GAP, I lower automatically numbers after each computation; this makes this code about twice slower than GAP since lower is not as much optimized. GAP  also converts a Cyclotomic which is rational to a Rational, a Rational which is integral to an Int, etc... This is tremendously useful but needs a new  type of  number to  be added  to Julia,  which requires more competent people than me.
 
 The main way to build a Cyclotomic number is to use the function `E(n,k=1)` which constructs ζ_n^k.
 
@@ -379,10 +379,7 @@ julia> 1+E(3,2)
 julia> a=E(4)-E(4)
 0
 
-julia> conductor(a) # a not lowered so still in Q(ζ_4)
-4
-
-julia> conductor(lower(a)) # but now a is lowered to Q(ζ_1)=Q
+julia> conductor(a) # a is lowered to Q(ζ_1)=Q
 1
 
 julia> typeof(convert(Int,a))
@@ -392,7 +389,7 @@ julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
 julia> c=inv(1+E(4)) # inverses need Rationals
-1//2-1//2ζ₄
+1//2+(-1//2)ζ₄
 
 julia> typeof(c)
 Cyc{Rational{Int64}}
@@ -404,7 +401,7 @@ julia> Cyc(1+im) # one can convert Gaussian integers or rationals
 1+ζ₄
 
 julia> 1//(1+E(4))
-1//2-1//2ζ₄
+1//2+(-1//2)ζ₄
 
 julia> typeof(Cyc(1//2)) # another way of building a Cyc
 Cyc{Rational{Int64}}
@@ -412,11 +409,11 @@ Cyc{Rational{Int64}}
 julia> conj(1+E(4))
 1-ζ₄
 
-julia> c=E(9)     # an effect of the Zumbroich basis
+julia> c=E(9)   # an effect of the Zumbroich basis
 -ζ₉⁴-ζ₉⁷
 
-julia> AsRootOfUnity(c) # but you can decide if a Cyc is a root of unity
-1//9
+julia> Root1(c) # but you can decide whether a Cyc is a root of unity
+Root1(1//9)
 
 julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
@@ -451,7 +448,7 @@ end;
 for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Cycs.jl#L1-L112' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Cycs.jl#L1-L109' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.galois' href='#Gapjm.Cycs.galois'>#</a>
 **`Gapjm.Cycs.galois`** &mdash; *Function*.
@@ -471,7 +468,7 @@ true
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Cycs.jl#L372-L384' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Cycs.jl#L410-L422' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.ER' href='#Gapjm.Cycs.ER'>#</a>
 **`Gapjm.Cycs.ER`** &mdash; *Function*.
@@ -491,7 +488,7 @@ julia> ER(3)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Cycs.jl#L409-L419' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Cycs.jl#L444-L454' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.quadratic' href='#Gapjm.Cycs.quadratic'>#</a>
 **`Gapjm.Cycs.quadratic`** &mdash; *Function*.
@@ -511,7 +508,7 @@ julia> quadratic(1+E(5))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Cycs.jl#L450-L463' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Cycs.jl#L511-L524' class='documenter-source'>source</a><br>
 
 
 <a id='Pols.jl-Documentation-1'></a>
@@ -532,16 +529,16 @@ julia> Pol(:q) # define string used for printing and set variable q
 q
 
 julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
-1+2q
+2q+1
 
 julia> p=Pol([1,2],-1)
-q⁻¹+2
+2+q⁻¹
 
 julia> valuation(p)
 -1
 
 julia> p=(q+1)^2
-1+2q+q²
+q²+2q+1
 
 julia> degree(p)
 2
@@ -550,20 +547,20 @@ julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
 9//4
 
 julia> divrem(q^3+1,q+2) # changes coefficients to field elements
-(4.0-2.0q+1.0q², -7.0)
+(1.0q²-2.0q+4.0, -7.0)
 
 julia> divrem1(q^3+1,q+2) # keeps the ring, but needs second argument unitary
-(4-2q+q², -7)
+(q²-2q+4, -7)
 
 julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
-1-q⁴+q⁸
+q⁸-q⁴+1
 
 ```
 
 see also the individual documentation of gcd.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Pols.jl#L1-L40' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Pols.jl#L1-L40' class='documenter-source'>source</a><br>
 
 <a id='Base.divrem' href='#Base.divrem'>#</a>
 **`Base.divrem`** &mdash; *Function*.
@@ -573,7 +570,7 @@ see also the individual documentation of gcd.
 computes (p,q) such that a=p*b+q
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Pols.jl#L167-L169' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Pols.jl#L168-L170' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Pols.divrem1' href='#Gapjm.Pols.divrem1'>#</a>
 **`Gapjm.Pols.divrem1`** &mdash; *Function*.
@@ -583,7 +580,7 @@ computes (p,q) such that a=p*b+q
 divrem when b unitary: does not change type
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Pols.jl#L185-L187' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Pols.jl#L186-L188' class='documenter-source'>source</a><br>
 
 <a id='Base.gcd' href='#Base.gcd'>#</a>
 **`Base.gcd`** &mdash; *Function*.
@@ -596,14 +593,14 @@ gcd(p::Pol, q::Pol)   the coefficients of p and q must be elements of a field fo
 
 ```julia-repl
 julia> gcd(q+1,q^2-1)
-1.0+1.0q
+1.0q+1.0
 
 julia> gcd(q+1//1,q^2-1//1)
-1//1+1//1q
+(1//1)q+1//1
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Pols.jl#L207-L220' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Pols.jl#L208-L221' class='documenter-source'>source</a><br>
 
 
 <a id='CoxGroups.jl-Documentation-1'></a>
@@ -723,7 +720,7 @@ The dictionary from CHEVIE is as follows:
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/CoxGroups.jl#L1-L157' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/CoxGroups.jl#L1-L157' class='documenter-source'>source</a><br>
 
 
 <a id='Weyl.jl-Documentation-1'></a>
@@ -855,7 +852,7 @@ julia> @btime length(elements(WeylGroup(:E,7)))
 GAP3 for the same computation takes 2.2s
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Weyl.jl#L1-L187' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Weyl.jl#L1-L187' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Weyl.cartan' href='#Gapjm.Weyl.cartan'>#</a>
 **`Gapjm.Weyl.cartan`** &mdash; *Function*.
@@ -878,7 +875,7 @@ julia> cartan(:A,4)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Weyl.jl#L195-L208' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Weyl.jl#L195-L208' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Weyl.two_tree' href='#Gapjm.Weyl.two_tree'>#</a>
 **`Gapjm.Weyl.two_tree`** &mdash; *Function*.
@@ -904,7 +901,7 @@ julia> CoxGroups.two_tree(cartan(:E,8))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Weyl.jl#L222-L244' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Weyl.jl#L222-L244' class='documenter-source'>source</a><br>
 
 
 #type_cartan #roots
@@ -1002,7 +999,7 @@ end;
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Hecke.jl#L1-L123' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Hecke.jl#L1-L123' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Hecke.HeckeAlgebra' href='#Gapjm.Hecke.HeckeAlgebra'>#</a>
 **`Gapjm.Hecke.HeckeAlgebra`** &mdash; *Type*.
@@ -1054,7 +1051,7 @@ julia> [H.para,H.sqpara]
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Hecke.jl#L135-L178' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Hecke.jl#L135-L178' class='documenter-source'>source</a><br>
 
 
 <a id='KL.jl-Documentation-1'></a>
@@ -1128,7 +1125,7 @@ end;
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/KL.jl#L22-L115' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/KL.jl#L22-L115' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.KL.KLPol' href='#Gapjm.KL.KLPol'>#</a>
 **`Gapjm.KL.KLPol`** &mdash; *Function*.
@@ -1148,16 +1145,16 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
  [1, 1, 1]                       
  [1, 1, 1, 1, 1]                 
  [1, 1, 1, 1, 1, 1, 1]           
- [1, 1, 1, 1+x, 1, 1, 1, 1]      
- [1, 1+x, 1, 1+x, 1+x, 1, 1, 1+x]
- [1, 1+x², 1+x, 1+x, 1, 1, 1+x]  
- [1, 1, 1+x+x², 1+x, 1+x]        
- [1, 1+x, 1+x²]                  
+ [1, 1, 1, x+1, 1, 1, 1, 1]      
+ [1, x+1, 1, x+1, x+1, 1, 1, x+1]
+ [1, x²+1, x+1, x+1, 1, 1, x+1]  
+ [1, 1, x²+x+1, x+1, x+1]        
+ [1, x+1, x²+1]                  
  [1]
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/KL.jl#L186-L220' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/KL.jl#L186-L220' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Hecke.Tbasis' href='#Gapjm.Hecke.Tbasis'>#</a>
 **`Gapjm.Hecke.Tbasis`** &mdash; *Function*.
@@ -1182,7 +1179,7 @@ v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/KL.jl#L309-L326' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/KL.jl#L309-L326' class='documenter-source'>source</a><br>
 
 
 <a id='Util.jl-Documentation-1'></a>
@@ -1199,7 +1196,7 @@ This  module contains  various utility  functions used  in the  rest of the code
 The code is divided in sections  according to semantics.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L1-L7' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L1-L7' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.cartesian' href='#Gapjm.Util.cartesian'>#</a>
 **`Gapjm.Util.cartesian`** &mdash; *Function*.
@@ -1209,7 +1206,7 @@ The code is divided in sections  according to semantics.
 Cartesian product of list of n vectors, returned as an x-by-n matrix
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L40' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L40' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.groupby' href='#Gapjm.Util.groupby'>#</a>
 **`Gapjm.Util.groupby`** &mdash; *Function*.
@@ -1228,7 +1225,7 @@ Dict{Int64,Array{Symbol,1}} with 3 entries:
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L46-L56' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L46-L56' class='documenter-source'>source</a><br>
 
 
 group items of list l according to the values taken by function f on them
@@ -1243,7 +1240,7 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 Note:in this version l is required to be non-empty since I do not know how to access the return type of a function
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L65-L75' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L65-L75' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.constant' href='#Gapjm.Util.constant'>#</a>
 **`Gapjm.Util.constant`** &mdash; *Function*.
@@ -1253,7 +1250,7 @@ Note:in this version l is required to be non-empty since I do not know how to ac
 whether all elements in list a are equal
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L84' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L84' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.blocks' href='#Gapjm.Util.blocks'>#</a>
 **`Gapjm.Util.blocks`** &mdash; *Function*.
@@ -1265,7 +1262,7 @@ blocks(M::Matrix)
 M  should be a square matrix. Define  a graph G with vertices 1:size(M,1)   and  with an edge between i and j  if either M[i,j] or M[j,i] is not zero   or false. blocks returns a vector of vectors I such that I[1],I[2], etc..   are  the  vertices  in  each  connected  component  of G. In other words,   M[I[1],I[1]],M[I[2],I[2]],etc... are blocks of M.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L89-L97' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L89-L97' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.format' href='#Gapjm.Util.format'>#</a>
 **`Gapjm.Util.format`** &mdash; *Function*.
@@ -1277,7 +1274,7 @@ format( table; options )
 General routine to format a table. Used for character tables.   Options:      row*labels          Labels for rows      column*labels       Labels for columns      rows*label          Label for column of rowLabels      separators          line numbers after which to put a separator      column*repartition  display in pieces of sizes these numbers of cols      rows                show only these rows      columns             show only these columns
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L196-L209' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L202-L215' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.prime_residues' href='#Gapjm.Util.prime_residues'>#</a>
 **`Gapjm.Util.prime_residues`** &mdash; *Function*.
@@ -1287,7 +1284,7 @@ General routine to format a table. Used for character tables.   Options:      ro
 the numbers less than n and prime to n 
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L258' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L264' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.phi' href='#Gapjm.Util.phi'>#</a>
 **`Gapjm.Util.phi`** &mdash; *Function*.
@@ -1297,7 +1294,7 @@ the numbers less than n and prime to n
 the Euler function ϕ 
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L275' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L283' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Util.primitiveroot' href='#Gapjm.Util.primitiveroot'>#</a>
 **`Gapjm.Util.primitiveroot`** &mdash; *Function*.
@@ -1307,5 +1304,5 @@ the Euler function ϕ
 primitiveroot(m::Integer) a primitive root mod. m,   that is it generates multiplicatively prime_residues(m).   It exists if m is of the form 4, 2p^a or p^a for p prime>2.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/a1e2b4cf936d1c548c5b24b7c8890f8b354a4fd1/src/Util.jl#L281-L285' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/57612ec167d370efbf885124c241105ee7226c8f/src/Util.jl#L289-L293' class='documenter-source'>source</a><br>
 
