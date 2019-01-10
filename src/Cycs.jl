@@ -325,6 +325,9 @@ Base.div(c::Cyc,a::Real)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])
 Base.://(c::Cyc,a::Real)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
+Base.:/(c::Cyc,a::Real)=c//a
+Base.:/(a::Cyc,c::Cyc)=a//c
+Base.:/(a::Real,c::Cyc)=a//c
 
 #function sumroots(n::Int,l::SortedPairs{Int,T})where T<:Real
 function sumroots(n::Int,l)
