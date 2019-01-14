@@ -216,7 +216,7 @@ bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end])
 function format(io::IO,t::Matrix; row_labels=axes(t,1),
   column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
   columns=axes(t,2), column_repartition=nothing)
-  t=string.(t[rows,columns])
+  t=sprint.(show,t[rows,columns]; context=io)
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
   if column_labels!==nothing
