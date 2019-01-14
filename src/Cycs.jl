@@ -325,6 +325,9 @@ Base.div(c::Cyc,a::Real)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])
 Base.://(c::Cyc,a::Real)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
+Base.:/(c::Cyc,a::Real)=c//a
+Base.:/(a::Cyc,c::Cyc)=a//c
+Base.:/(a::Real,c::Cyc)=a//c
 
 #function sumroots(n::Int,l::SortedPairs{Int,T})where T<:Real
 function sumroots(n::Int,l)
@@ -345,6 +348,8 @@ end
 function Base.:*(a::Cyc,b::Cyc)
   if iszero(a) return a end
   if iszero(b) return b end
+  if a.n==1 return a.d[1][2]*b end
+  if b.n==1 return b.d[1][2]*a end
   a,b=promote(a,b)
   a,b=promote_conductor(a,b)
 # sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
@@ -429,11 +434,11 @@ Base.conj(c::Cyc)=galois(c,-1)
 
 function Base.inv(c::Cyc)
   if c.n==1
-    n=convert(Int,c)
-    r=Cyc(1)
+    r=Real(c)
+    if r^2==1 return r else return Cyc(inv(r)) end
   else
     r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
-    n=convert(Int,c*r)
+    n=Real(c*r)
   end
   n==1 ? r : (n==-1 ? -r : r//n)
 end

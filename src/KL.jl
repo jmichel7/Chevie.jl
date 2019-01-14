@@ -24,13 +24,13 @@ This  module ports Chevie functionality for Kazhdan-Lusztig polynomials and
 bases.
 
 Let  `ℋ ` be  the Iwahori-Hecke algebra  of a Coxeter  system `(W,S)`, with
-quadratic  relations `(Tₛ-uₛ₀)(Tₛ-uₛ₁)=0` for  `s∈ S`. If  `-uₛ₀/uₛ₁` has a
-square  root  `vₛ`,  we  can  scale  the  basis  `Tₛ`  to  get  a new basis
-`tₛ=Tₛ/(-vₛuₛ₁)`  with quadratic  relations `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`.  The most
-general  case when Kazhdan-Lusztig bases and  polynomials can be defined is
-when  the parameters `vₛ` belong to a totally ordered abelian group `Γ` for
-multiplication,  see Lus83. We set `Γ⁺= {γ∈ Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈
-Γ∣γ<0}`.
+quadratic  relations `(Tₛ-uₛ₀)(Tₛ-uₛ₁)=0`  for `s∈  S`. If  `-uₛ₀uₛ₁` has a
+square  root  `wₛ`,  we  can  scale  the  basis  `Tₛ`  to  get  a new basis
+`tₛ=-Tₛ/wₛ`    with   quadratic    relations   `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`   where
+`vₛ=wₛ/uₛ₁`.   The  most  general  case   when  Kazhdan-Lusztig  bases  and
+polynomials  can be defined is when the parameters `vₛ` belong to a totally
+ordered  abelian group `Γ`  for multiplication, see  Lus83. We set `Γ⁺= {γ∈
+Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈ Γ∣γ<0}`.
 
 Thus  we assume `ℋ ` defined over the ring `ℤ[Γ]`, the group algebra of `Γ`
 over  `ℤ`, and the quadratic  relations of `ℋ `  associate to each `s∈ S` a
@@ -247,9 +247,7 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-function QXHalf(H::HeckeAlgebra,x::Perm)
-  (-H.sqpara[1]*H.para[1][2])^length(H.W,x)
-end
+QXHalf(H::HeckeAlgebra,x::Perm)=H.sqpara[1]^length(H.W,x)
 
 struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
