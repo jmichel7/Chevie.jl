@@ -219,7 +219,7 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   t=sprint.(show,t[rows,columns]; context=io)
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
-  if column_labels!==nothing
+  if !isnothing(column_labels)
     column_labels=string.(column_labels[columns])
     colwidth=map(max,colwidth,textwidth.(column_labels))
     column_labels=map(lpad,column_labels,colwidth)
@@ -243,13 +243,13 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     end
     push!(res,n)
   end
-  if column_repartition===nothing
+  if isnothing(column_repartition)
      column_repartition=cut(1 .+colwidth,displaysize(io)[2]-labwidth-1)
   end
   ci=[0]
   for k in column_repartition
     ci=ci[end].+(1:k)
-    if column_labels!==nothing
+    if !isnothing(column_labels)
       print(io,rows_label,"\u2502",join(column_labels[ci]," "),"\n")
       if 0 in separators hline(ci) end
     end

@@ -215,7 +215,7 @@ reduced(W,w)
 function reduced(W::CoxeterGroup,w)
   while true
     i=firstleftdescent(W, w)
-    if i===nothing return w end
+    if isnothing(i) return w end
     w = coxgens(W)[i] * w
   end
 end

@@ -265,7 +265,7 @@ end
 function Base.show(io::IO, p::Cyc)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if get(io,:quadratic,false) && !(nothing==(q=quadratic(p)))
+  if get(io,:quadratic,false) && !isnothing(q=quadratic(p))
     if q.b==0 print(io,q.a)
     else
       if !iszero(q.a) 

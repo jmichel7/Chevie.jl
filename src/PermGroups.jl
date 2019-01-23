@@ -360,7 +360,7 @@ function Base.iterate(G::PermGroup{T})where T
   prod=one(G)
   state=map(reverse(values.(centralizer_orbits(G)))) do l
     u=iterate(l)
-    if u===nothing  return nothing end
+    if isnothing(u) return nothing end
     prod*=u[1]::Perm{T}
     (prod,u[2]::Int)
   end
@@ -370,7 +370,7 @@ end
 function Base.iterate(G::PermGroup{T},state)where T
   for i in eachindex(state)
     u=iterate(values(centralizer_orbits(G)[i]),state[i][2])
-    if u===nothing continue end
+    if isnothing(u) continue end
     if i==length(state)
       state[i]=u
     else

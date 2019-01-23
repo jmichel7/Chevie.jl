@@ -246,7 +246,7 @@ two_tree=function ( m )
   branch= function ( x )
     while true
       x=findfirst(i->m[x,i]!=0 && !(i in line),1:r)
-      if x!==nothing push!(line,x) else break end
+      if !isnothing(x) push!(line,x) else break end
     end
   end
   r=size(m,1)
@@ -274,7 +274,7 @@ function type_cartan(m::Matrix{<:Integer})
 function type_irred_cartan(m::Matrix{<:Integer})
   rank=size(m,1)
   l=two_tree(m)
-  if l==nothing return nothing end
+  if isnothing(l) return nothing end
   if l isa Tuple # types D,E
     (vertex,b1,b2,b3)=l
     if length(b2)==1 series=:D 

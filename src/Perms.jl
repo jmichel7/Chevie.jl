@@ -115,7 +115,7 @@ macro perm_str(s::String)
   res=Perm()
   while true
     m=match(r"\((\s*\d+\s*,)+\s*\d+\)",s[start:end])
-    if m===nothing break end
+    if isnothing(m) break end
     start+=m.match.ncodeunits
     res*=Perm(eval(Meta.parse(m.match))...)
   end
@@ -239,7 +239,7 @@ function Base.sign(a::Perm)
   parity = degree(a)
   to_visit = trues(parity)
   k = 1
-  while (k=findnext(to_visit, k))!==nothing
+  while !isnothing(k=findnext(to_visit, k))
      parity -= 1
      next=k
      while true

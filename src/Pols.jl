@@ -55,7 +55,7 @@ end
 
 function Polstrip(v::AbstractVector,val=0)
   b=findfirst(x->!iszero(x),v)
-  if b===nothing return Pol(eltype(v)[],0) end
+  if isnothing(b) return Pol(eltype(v)[],0) end
   l=findlast(x->!iszero(x),v)
   Pol(v[b:l],val+b-1)
 end
