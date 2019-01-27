@@ -138,7 +138,7 @@ function zumbroich_basis(n::Int)::Vector{Int}
   let J=J
     [[div(n*i,p^k) for i in J(k-1,p)] for (p,np) in nfact for k in 1:np]
   end
-  v=(cartesian(res...)*fill(1,length(res)))::Vector{Int}
+  v=sum.(vec(collect(Iterators.product(res...))))
   sort(v.%n)
 end
 
@@ -149,9 +149,9 @@ end
   is  the  list  of  i  in  0:n-1  such  that  ζ_n^i occurs with a non-zero
   coefficient.
 =#
-const ElDict=Dict((1,0)=>(true=>[0]))
+const Elist_Dict=Dict((1,0)=>(true=>[0]))
 function Elist(n::Int,i::Int=1)::Pair{Bool,Vector{Int}}
-  get!(ElDict,(n,i)) do
+  get!(Elist_Dict,(n,i)) do
     nfact=factor(n)
     mp=Int[]
     j=i
@@ -178,7 +178,7 @@ function Elist(n::Int,i::Int=1)::Pair{Bool,Vector{Int}}
       end
     end
     if isempty(mp) return true=>[i%n] end
-    v=cartesian((1:p-1 for p in mp)...)*div.(n,mp)
+    v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
     iseven(length(mp))=>sort((i .+ v).%n)
   end
 end
@@ -186,9 +186,9 @@ end
 #=
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 =#
-const EDict=Dict((1,0)=>Cyc(1,[0=>1]))
+const E_Dict=Dict((1,0)=>Cyc(1,[0=>1]))
 function E(n::Integer,i::Integer=1)::Cyc{Int}
-  get!(EDict,(n,i%n)) do
+  get!(E_Dict,(n,i%n)) do
     s,l=Elist(n,i%n) #::Pair{Bool,Vector{Int}}
     Cyc(n,l.=>ifelse(s,1,-1))
   end

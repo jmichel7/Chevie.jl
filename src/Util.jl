@@ -8,7 +8,7 @@ The code is divided in sections  according to semantics.
 module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
-  groupby, constant, blocks, cartesian, # arrays
+  groupby, constant, blocks, # arrays
   SortedPairs, norm!, mergesum, getvalue, # data structure
   format, TeXstrip, bracket_if_needed, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
@@ -16,8 +16,8 @@ export getp, gets, # helpers for objects with a Dict of properties
 
 #--------------------------------------------------------------------------
 """
-  a variant of get! for objects which have a Dict of properties named prop.
-  If O is such an object usually called as
+  a variant of get! for objects O which have a Dict of properties named prop.
+  Usually called as
     gets(O,:p) do ---code to compute property :p --- end
 """
 function gets(f::Function,o,p::Symbol)
@@ -35,14 +35,7 @@ function getp(f::Function,o,p::Symbol)
   f(o)
   o.prop[p]
 end
-
 #--------------------------------------------------------------------------
-"Cartesian product of list of n vectors, returned as an x-by-n matrix"
-function cartesian(l::Vararg{AbstractVector{T}})::Matrix{T} where T
-  v=vec(collect(Iterators.product(l...)))
-  [y[i] for y in v,i in 1:length(l)]
-end
-
 """
   group items of list l according to the corresponding values in list v
 

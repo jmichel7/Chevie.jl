@@ -44,9 +44,9 @@ export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part
 using Memoize
 using ..Gapjm # for degree
 
-const var=[:x]
-varname(a::Symbol)=(var[1]=a)
-varname()=var[1]
+const var=Ref(:x)
+varname(a::Symbol)=(var[]=a)
+varname()=var[]
 
 struct Pol{T}
   c::Vector{T}
@@ -104,7 +104,7 @@ function Base.show(io::IO,p::Pol)
     c=sprint(show,c; context=io)
     deg=i+p.v-1
     if !iszero(deg) 
-      mon=String(var[1])
+      mon=String(var[])
       if deg!=1
          if repl || TeX mon*=(1<deg<10 ? "^$deg" : "^{$deg}")
          else mon*= "^$deg"
