@@ -473,9 +473,9 @@ end
 Base.length(W::WeylGroup)=prod(degrees(W))
 
 function root_representatives(W::WeylGroup)
-  reps=fill(0,2*W.N)
-  repelts=fill(one(W),2*W.N)
-  for i in 1:coxrank(W)
+  reps=fill(0,length(W.roots))
+  repelts=fill(one(W),length(W.roots))
+  for i in eachindex(coxgens(W))
     if iszero(reps[i])
       d=orbit_and_representative(W.G,i)
       for (n,e) in d 
