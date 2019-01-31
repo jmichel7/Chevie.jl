@@ -102,7 +102,7 @@ finally, benchmarks on julia 1.0.1
 julia> @btime length(collect(symmetric_group(8)))
   6.519 ms (350522 allocations: 14.17 MiB)
 
-julia> @btime words(symmetric_group(8));
+julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
 ```
 
@@ -112,7 +112,7 @@ module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, elements, words
 export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
-  base, centralizer_orbits, centralizers, elts_and_words, eltword
+  base, centralizer_orbits, centralizers, elts_and_words, element
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -121,13 +121,13 @@ Base.one(G::Group{T}) where T=one(T)
 Gapjm.gens(G::Group)=G.gens
 
 " element of W corresponding to a sequence of generators and their inverses"
-eltword(W::Group,w::AbstractVector{<:Integer})=length(w)==0 ? one(W) : prod(
+element(W::Group,w::AbstractVector{<:Integer})=length(w)==0 ? one(W) : prod(
                  i>0 ? gens(W)[i] : inv(gens(W)[-i]) for i in w)
 
-" orbit(G,p) is the orbit of Int p under Group G"
-function orbit(G::Group,p::Integer,action::Function=^)
-  res=BitSet()
-  new=BitSet(p)
+" orbit(G,p) is the orbit of p under Group G"
+function orbit(G::Group{T},p,action::Function=^)where T
+  new=Set([p])
+  res=empty(new)
   while true
     union!(res,new)
     n=vec([action(p,s) for p in new, s in gens(G)])
@@ -135,26 +135,6 @@ function orbit(G::Group,p::Integer,action::Function=^)
     if isempty(new) break end
   end
   collect(res)
-end
-
-" describe the orbit of Int p under G as a Schreier vector "
-function schreier_vector(G::Group,p::Integer,action::Function=^)
-  res=zeros(Int,degree(G))
-  res[p]=-1
-  new=BitSet([p])
-  while true
-    n=new
-    new=BitSet([])
-    for p in n, i in eachindex(gens(G))
-      q=action(p,gens(G)[i])
-      if res[q]==0
-        res[q]=i
-        push!(new,q)
-      end
-    end
-    if isempty(new) break end
-  end
-  res
 end
 
 "returns Dict x=>g for x in orbit(G,p) and g is such that x=action(p,g)"
@@ -176,39 +156,27 @@ function orbit_and_representative(G::Group,p,action::Function=^)
   d
 end
 
-" This function creates the fields :elements and :words "
-function elts_and_words(G::Group)
-  elements=[one(G)]
-  words=[Int[]]
+" dict giving for each element of G a minimal word"
+function minimal_words(G::Group)
+  words=Dict(one(G)=>Int[])
   for i in eachindex(gens(G))
-    reps = [one(G)]
-    wds = [Int[]]
-    nelms=copy(elements)
-    nwords=copy(words)
+    rw = [one(G)=>Int[]]
     j=1
-    while j<=length(reps)
+    nwords=deepcopy(words)
+    while j<=length(rw)
       for k in 1:i
-        e=reps[j]*gens(G)[k]
-        we = vcat(wds[j],[k])
-        if !(e in nelms)
-          push!( reps, e )
-          push!( wds, we )
-          append!( nelms, elements .* Ref(e))
-          append!( nwords, vcat.(words,Ref(we)) )
+        e=rw[j][1]*gens(G)[k]
+        if !haskey(nwords,e)
+          we=vcat(rw[j][2],[k])
+          push!(rw,e=>we)
+          for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
         end
       end
       j+=1
     end
-    elements = nelms
     words = nwords
-#   print("#I WordsGroup:|<elements>|=",length(elements),", $i.th generator\r")
   end
-# e=sortperm(words,by=x->[length(words[x]),words[x]])
-# print( "#I  WordsGroup: |elements| = ", length( elements ), "\n" )
-# G.prop[:elements]=elements[e]
-# G.prop[:words]=words[e]
-  G.prop[:elements]=elements
-  G.prop[:words]=words
+  words
 end
 
 " List of minimal words in the generators elements(G) "
@@ -236,6 +204,26 @@ end
 
 function Gapjm.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
+end
+
+" describe the orbit of Int p under group G as a Schreier vector "
+function schreier_vector(G::PermGroup,p::Integer,action::Function=^)
+  res=zeros(Int,degree(G))
+  res[p]=-1
+  new=BitSet([p])
+  while true
+    n=new
+    new=BitSet([])
+    for p in n, i in eachindex(gens(G))
+      q=action(p,gens(G)[i])
+      if res[q]==0
+        res[q]=i
+        push!(new,q)
+      end
+    end
+    if isempty(new) break end
+  end
+  res
 end
 
 " The symmetric group of degree n "

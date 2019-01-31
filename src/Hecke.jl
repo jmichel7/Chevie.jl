@@ -299,7 +299,7 @@ end
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return one(H) end
-    HeckeTElt([eltword(H.W,w)=>one(C)],H)
+    HeckeTElt([element(H.W,w)=>one(C)],H)
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=HeckeTElt([w=>one(C)],H)

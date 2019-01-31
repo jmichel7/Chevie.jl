@@ -8,7 +8,7 @@ function mytest(a::String,b::String)
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=coxsym(4)","coxsym(4)")
-@test mytest("p=eltword(W,[1,3,2,1,3])","{UInt8}(1,4)")
+@test mytest("p=element(W,[1,3,2,1,3])","{UInt8}(1,4)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("word(W,longest(W))","6-element Array{Int64,1}:\n 1\n 2\n 1\n 3\n 2\n 1")
@@ -66,7 +66,7 @@ end
 @testset "KL.jl" begin
 @test mytest("W=WeylGroup(:F,4)","WeylGroup(:F,4)")
 @test mytest("w=longest(W)*coxgens(W)[1];length(W,w)","23")
-@test mytest("y=eltword(W,1:4);length(W,y)","4")
+@test mytest("y=element(W,1:4);length(W,y)","4")
 @test mytest("cr=KL.CriticalPair(W,y,w);length(W,cr)","16")
 @test mytest("Pol(:x);KLPol(W,y,w)","x³+1")
 @test mytest("KLPol(W,cr,w)","x³+1")
@@ -130,7 +130,7 @@ end
 end
 @testset "Weyl.jl" begin
 @test mytest("W=WeylGroup(:D,4)","WeylGroup(:D,4)")
-@test mytest("p=eltword(W,[1,3,2,1,3])","{UInt8}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
+@test mytest("p=element(W,[1,3,2,1,3])","{UInt8}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
 @test mytest("cartan(:A,4)","4×4 Array{Int8,2}:\n  2  -1   0   0\n -1   2  -1   0\n  0  -1   2  -1\n  0   0  -1   2")

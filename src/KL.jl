@@ -137,7 +137,7 @@ WeylGroup(:F,4)
 julia> w=longest(W)*coxgens(W)[1];length(W,w)
 23
 
-julia> y=eltword(W,1:4);length(W,y)
+julia> y=element(W,1:4);length(W,y)
 4
 
 julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
@@ -261,7 +261,7 @@ Hecke.basename(h::HeckeCpElt)="C'"
 function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return HeckeCpElt([one(H.W)=>one(C)],H) end
-    HeckeCpElt([eltword(H.W,collect(w))=>one(C)],H)
+    HeckeCpElt([element(H.W,collect(w))=>one(C)],H)
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=f(word(H.W,w))

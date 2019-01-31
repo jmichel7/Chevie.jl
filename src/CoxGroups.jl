@@ -44,7 +44,7 @@ it must define a function
 
 the other functions needed in an instance of a Coxeter group are
 - `coxgens(W)` which returns the set `S` (the list of *Coxeter generators*)
--  `nref(W)` which  returns the  number of  reflections of  `W`, if  `W` is
+- `nref(W)` which  returns the  number of  reflections of  `W`, if  `W` is
    finite or `nothing` if `W` is infinite
 
 It  should be  noted that  a Coxeter group can be
@@ -64,7 +64,7 @@ default  these labels are  given as the  index of a  generator in `S`, so a
 Coxeter  word is just  a list of  integers in `1:length(S)`. For reflection
 subgroups, the labels are indices of the reflections in the parent group.
 
-The functions 'word' and 'eltword' will do the conversion between
+The functions 'word' and 'element' will do the conversion between
 Coxeter words and elements of the group.
 
 # Examples
@@ -72,7 +72,7 @@ Coxeter words and elements of the group.
 julia> W=coxsym(4)
 coxsym(4)
 
-julia> p=eltword(W,[1,3,2,1,3])
+julia> p=element(W,[1,3,2,1,3])
 {UInt8}(1,4)
 
 julia> word(W,p)
@@ -157,8 +157,8 @@ The dictionary from CHEVIE is as follows:
 """
 module CoxGroups
 
-export CharTable, coxrank, CoxeterGroup, coxgens, coxsym, firstleftdescent, 
-  longest, bruhatless, reduced, name
+export bruhatless, CharTable, CoxeterGroup, coxgens, coxrank, coxsym,
+firstleftdescent, longest, name, reduced
 
 export isleftdescent, nref, ReflectionSubgroup, reflection,
   simple_representative # 'virtual' methods
@@ -239,45 +239,49 @@ function reduced(H::CoxeterGroup,W::CoxeterGroup)
   vcat(res)
 end
 
-function Gapjm.elements(W::CoxeterGroup, l::Int)
-  elts=gets(W,:elements)do W Dict(0=>[one(W)]) end
-  if haskey(elts,l) return Vector{typeof(one(W))}(elts[l]) end
-  elts[l]=typeof(one(W))[]
-  H=gets(W,:maxpara)do W 
-    ReflectionSubgroup(W,collect(1:length(coxgens(W))-1))
+function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
+  elts=gets(W->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
+  if haskey(elts,l) return elts[l] end
+  if coxrank(W)==1
+    if l!=1 return T[]
+    else return coxgens(W)
+    end
   end
-  rc=gets(W,:rc)do W reduced(H,W) end
+  H=gets(W->ReflectionSubgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  rc=gets(W->reduced(H,W),W,:rc)::Vector{Set{T}}
+# println("l=$l W=$W H=$H rc=$rc")
+  elts[l]=T[]
+  for i in max(0,l+1-length(rc)):l
+    for x in rc[1+l-i] append!(elts[l],elements(H,i).*Ref(x)) end
+  end
   N=nref(W)
-  for i in max(0,l+1-length(rc)):min(l,N+1-length(rc))
-    e=elements(H,i)
-    for x in rc[1+l-i], w in e push!(elts[l],w*x) end
-#   2 times slower variant
-#   for x in rc[1+l-i] append!(elts[l],e.*x) end
-  end
-  if N-l>l elts[N-l]=elts[l].*Ref(longest(W)) end
-  Vector{typeof(one(W))}(elts[l])
+  if !isnothing(N) && N-l>l elts[N-l]=elts[l].*Ref(longest(W)) end
+  elts[l]
 end
 
 function Gapjm.elements(W::CoxeterGroup)
   vcat(map(i->elements(W,i),0:nref(W))...)
 end
 
-function Gapjm.words(W::CoxeterGroup, l::Int)
-  ww=gets(W,:words)do W Dict(0=>[Int[]]) end
-  if haskey(ww,l) return Vector{Vector{Int}}(ww[l]) end
-  ww[l]=Vector{Int}[]
-  H=gets(W,:maxpara)do W ReflectionSubgroup(W,collect(1:length(coxgens(W))-1))
+function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
+  ww=gets(W->Dict(0=>[Int[]]),W,:words)::Dict{Int,Vector{Vector{Int}}}
+  if haskey(ww,l) return ww[l] end
+  if coxrank(W)==1
+    if l!=1 return Vector{Int}[]
+    else return [[1]]
+    end
   end
-  rc=gets(W->[[word(W,x) for x in y] for y in reduced(H,W)],W,:rcwords)
-  N=nref(W)
-  for i in max(0,l+1-length(rc)):min(l,N+1-length(rc))
+  H=gets(W->ReflectionSubgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  rc=gets(W->[[word(W,x) for x in y] for y in reduced(H,W)],W,
+                                     :rcwords)::Vector{Vector{Vector{Int}}}
+  ww[l]=Vector{Int}[]
+  for i in max(0,l+1-length(rc)):l
     e=words(H,i)
     for x in rc[1+l-i], w in e push!(ww[l],vcat(w,x)) end
 #   somewhat slower variant
-#   for x in rc[1+l-i] append!(ww[l],vcat.(e,(x,))) end
+#   for x in rc[1+l-i] append!(ww[l],vcat.(e,Ref(x))) end
   end
-# if N-l>l ww[N-l]=ww[l].*longest(W) end
-  Vector{Vector{Int}}(ww[l])
+  ww[l]
 end
 
 function Gapjm.words(W::CoxeterGroup)
@@ -345,7 +349,7 @@ function reflength(W::CoxSymmetricGroup,w::Perm{T})where T
 end
 
 " Only parabolics defined are I=1:m for m≤n"
-function ReflectionSubgroup(W::CoxSymmetricGroup,I::Vector{Int})
+function ReflectionSubgroup(W::CoxSymmetricGroup,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I) 
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
