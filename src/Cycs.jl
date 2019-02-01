@@ -188,8 +188,10 @@ end
 =#
 const E_Dict=Dict((1,0)=>Cyc(1,[0=>1]))
 function E(n::Integer,i::Integer=1)::Cyc{Int}
-  get!(E_Dict,(n,i%n)) do
-    s,l=Elist(n,i%n) #::Pair{Bool,Vector{Int}}
+  n=Int(n)
+  i=mod(Int(i),n)
+  get!(E_Dict,(n,i)) do
+    s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
     Cyc(n,l.=>ifelse(s,1,-1))
   end
 end

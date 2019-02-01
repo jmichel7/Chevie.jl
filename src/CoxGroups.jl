@@ -144,6 +144,7 @@ The dictionary from CHEVIE is as follows:
      CoxeterWord(W,w)                      → word(W,w)
      LongestCoxeterElement(W)              → longest(W)
      FirstLeftDescending(W,w)              → firstleftdescent(W,w)
+     LeftDescenTSet(W,w)                   → leftdescents(W,w)
      ReducedInRightCoset(W,w)              → reduced(W,w)
      ReducedRightCosetRepresentatives(W,H) → reduced(H,W)
      SemiSimpleRank(W)                     → coxrank(W)
@@ -158,7 +159,7 @@ The dictionary from CHEVIE is as follows:
 module CoxGroups
 
 export bruhatless, CharTable, CoxeterGroup, coxgens, coxrank, coxsym,
-firstleftdescent, longest, name, reduced
+firstleftdescent, leftdescents, longest, name, reduced
 
 export isleftdescent, nref, ReflectionSubgroup, reflection,
   simple_representative # 'virtual' methods
@@ -169,6 +170,10 @@ abstract type CoxeterGroup{T}<:Group{T} end
 
 function firstleftdescent(W::CoxeterGroup,w)
   findfirst(i->isleftdescent(W,w,i),eachindex(coxgens(W)))
+end
+
+function leftdescents(W::CoxeterGroup,w)
+  filter(i->isleftdescent(W,w,i),eachindex(coxgens(W)))
 end
 
 """
@@ -305,6 +310,12 @@ function bruhatless(W::CoxeterGroup,x,y)
     y=s*y
   end
   return x==y
+end
+
+function reduced_words(W::CoxeterGroup,w)
+  l=leftdescents(W,w)
+  if isempty(l) return [Int[]] end
+  vcat(map(x->vcat.(Ref([x]),reduced_words(W,gens(W)[x]*w)),l)...)
 end
 
 #--------------------- CoxSymmetricGroup ---------------------------------

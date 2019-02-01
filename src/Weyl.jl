@@ -437,6 +437,8 @@ end
 "Weyl group from type"
 WeylGroup(t::Symbol,r::Int=0)=WeylGroup(cartan(t,r))
 
+(W::WeylGroup)(x...)=element(W.G,collect(x))
+
 "diagram of Weyl group"
 diagram(W::WeylGroup)=diagram(W.weyltype)
 

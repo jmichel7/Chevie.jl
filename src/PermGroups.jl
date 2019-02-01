@@ -112,7 +112,7 @@ module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, elements, words
 export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
-  base, centralizer_orbits, centralizers, elts_and_words, element
+  base, centralizer_orbits, centralizers, minimal_words, element
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -205,6 +205,8 @@ end
 function Gapjm.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
 end
+
+(W::PermGroup)(x...)=element(W,collect(x))
 
 " describe the orbit of Int p under group G as a Schreier vector "
 function schreier_vector(G::PermGroup,p::Integer,action::Function=^)
