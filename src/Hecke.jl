@@ -81,7 +81,7 @@ julia> T=Tbasis(H)              # Create the `T` basis
 (::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 4 methods)
 
 julia> el=words(W)
-6-element Array{Array{Int64,1},1}:
+6-element Array{Array{Int8,1},1}:
  []       
  [2]      
  [1]      
@@ -243,11 +243,12 @@ abstract type HeckeElt{P,C} end
 Base.zero(h::HeckeElt)=clone(h,empty(h.d))
 Base.iszero(h::HeckeElt)=length(h.d)==0
 
+const usedict=false
 function Base.show(io::IO, h::HeckeElt)
   if isempty(h.d) return "0" end
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  s=map(h.d)do (e,c)
+  s=map(usedict ? collect(h.d) : h.d)do (e,c)
     w=word(h.H.W,e)
     res=basename(h)
     if repl || TeX
@@ -267,7 +268,18 @@ function Base.show(io::IO, h::HeckeElt)
   print(io, (repl && !TeX) ? TeXstrip(s) : s)
 end
 
+if usedict
+function weed!(a::Dict)
+  for (k,v) in a if iszero(v) delete!(a,k) end end
+  a
+end
+end
+
+if usedict
+Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,weed!(merge(+,a.d,b.d)))
+else
 Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,mergesum(a.d,b.d))
+end
 Base.:-(a::HeckeElt)=clone(a,[p=>-c for (p,c) in a.d])
 Base.:-(a::HeckeElt, b::HeckeElt)=a+(-b)
 
@@ -279,9 +291,17 @@ Base.:*(b::Number, a::HeckeElt)= a*b
 Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
                                    Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
+if usedict
+struct HeckeTElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
+  d::Dict{P,C}
+  H::HeckeAlgebra{C,G}
+end
+HeckeTElt(a::Vector{Pair{P,C}},H::HeckeAlgebra) where {P,C}=HeckeTElt(Dict(a),H)
+else
 struct HeckeTElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
   H::HeckeAlgebra{C,G}
+end
 end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
@@ -313,7 +333,7 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
   if iszero(b) return b end
   W=a.H.W
   sum(a.d) do (ea,pa)
-    h=[e=>p*pa for (e,p) in b.d]
+    h=usedict ? Dict(e=>p*pa for (e,p) in b.d) : [e=>p*pa for (e,p) in b.d]
     for i in reverse(word(W,ea))
       s=coxgens(W)[i]
       up=empty(h)
@@ -322,15 +342,23 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
         if isleftdescent(W,e,i) push!(down,e=>p) 
         else push!(up,s*e=>p) end
       end
-      h=sort!(up,by=x->x[1])
+      h=usedict ? up : sort!(up,by=x->x[1])
       if !isempty(down)
         pp=a.H.para[i]
         ss,p=(sum(pp),-prod(pp))
-        if !iszero(ss) 
-          let ss=ss; h=mergesum(h,[e=>c*ss for (e,c) in down]) end
-        end
-        if !iszero(p)  
-        let s=s, p=p; h=mergesum(h,sort!([s*e=>c*p for (e,c) in down],by=x->x[1])) end
+        if usedict
+          let ss=ss; merge!(+,h,Dict(e=>c*ss for (e,c) in down)) end
+          let s=s, p=p; merge!(+,h,Dict(s*e=>c*p for (e,c) in down)) end
+          weed!(h)
+        else
+          if !iszero(ss) 
+            let ss=ss; h=mergesum(h,[e=>c*ss for (e,c) in down]) end
+          end
+          if !iszero(p)  
+            let s=s, p=p
+              h=mergesum(h,sort!([s*e=>c*p for (e,c) in down],by=x->x[1]))
+            end
+          end
         end
       end
     end

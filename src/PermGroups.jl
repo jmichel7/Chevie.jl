@@ -32,9 +32,9 @@ julia> degree(G)  # maximum degree of an element of G
 
 julia> orbit(G,1) # orbit of point 1 under G
 3-element Array{Int64,1}:
- 1
  2
  3
+ 1
 
 # orbit decorated with representatives moving 1 to given point
 julia> orbit_and_representative(G,1)
@@ -78,23 +78,14 @@ julia> centralizer_orbits(G)
  Dict(2=>(1,2),3=>(1,3,2),1=>())
  Dict(2=>(),3=>(2,3))
 
-julia> words(G)  # minimal word for each element of G
-6-element Array{Array{Int64,1},1}:
- []
- [1]
- [2]
- [1, 2]
- [2, 1]
- [1, 2, 1]
-
-julia> elements(G) # elements in the same order as words
-6-element Array{Perm{Int64},1}:
- ()
- (1,2)
- (2,3)
- (1,3,2)
- (1,2,3)
- (1,3)
+julia> minimal_words(G)  # minimal word for each element of G
+Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
+  ()      => Int64[]
+  (2,3)   => [2]
+  (1,3,2) => [1, 2]
+  (1,3)   => [1, 2, 1]
+  (1,2)   => [1]
+  (1,2,3) => [2, 1]
 ```
 
 finally, benchmarks on julia 1.0.1
@@ -110,7 +101,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms
-using ..Gapjm # for degree, gens, elements, words
+using ..Gapjm # for degree, gens, minimal_words
 export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
   base, centralizer_orbits, centralizers, minimal_words, element
 
@@ -156,7 +147,7 @@ function orbit_and_representative(G::Group,p,action::Function=^)
   d
 end
 
-" dict giving for each element of G a minimal word"
+" dict giving for each element of G a minimal word in the generators"
 function minimal_words(G::Group)
   words=Dict(one(G)=>Int[])
   for i in eachindex(gens(G))
@@ -179,15 +170,6 @@ function minimal_words(G::Group)
   words
 end
 
-" List of minimal words in the generators elements(G) "
-function Gapjm.words(G::Group)::Vector{Vector{Int}}
-  getp(elts_and_words,G,:words)
-end
-
-" The list of elements of G in the same order as words"
-function Gapjm.elements(G::Group{T})::Vector{T} where T
-  getp(elts_and_words,G,:elements)
-end
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
   gens::Vector{Perm{T}}

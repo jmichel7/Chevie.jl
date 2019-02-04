@@ -35,6 +35,12 @@ julia> Perm{Int8}(p)
 julia> 1^p
 3
 
+julia> Matrix(p)
+3×3 Array{Int64,2}:
+ 0  0  1
+ 1  0  0
+ 0  1  0
+
 julia> p^Perm(3,10)
 (1,10,2)
 
@@ -55,18 +61,6 @@ julia> largest_moved_point(Perm(1,2)*Perm(2,3)^2)
 
 julia> smallest_moved_point(Perm(2,3))
 2
-
-julia> Matrix(p)
-3×3 Array{Float64,2}:
- 0.0  0.0  1.0
- 1.0  0.0  0.0
- 0.0  1.0  0.0
-
-julia> Matrix{Int}(p)
-3×3 Array{Int64,2}:
- 0  0  1
- 1  0  0
- 0  1  0
 ```
 
 Perms  have methods copy, hash,  ==, cmp, isless (total order)  so they can be
@@ -124,62 +118,86 @@ end
 
 Base.one(p::Perm{T}) where T=Perm(T[])
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
+Base.copy(p::Perm)=Perm(copy(p.d))
 
-Gapjm.degree(a::Perm)= length(a.d)
+@inline Gapjm.degree(a::Perm)= length(a.d)
 
-@inline Base.:^(n::Integer, a::Perm{T}) where T=if n>degree(a) T(n) else a.d[n] end
-Base.:^(a::Perm, b::Perm)=inv(b)*a*b
+@inline Base.:^(n::Integer, a::Perm{T}) where T=
+   @inbounds if n>degree(a) T(n) else a.d[n] end
+
+function Base.promote(a::Perm{T},b::Perm{T}) where T
+  da=length(a.d)
+  db=length(b.d)
+  if da<db
+    resize!(a.d,db)
+    a.d[da+1:db]=T(da+1):T(db)
+  elseif db<da
+    resize!(b.d,da)
+    b.d[db+1:da]=T(db+1):T(da)
+  end
+  (a,b)
+end
+
+function Base.:^(a::Perm, b::Perm)
+  a,b=promote(a,b)
+  r=Perm(similar(a.d))
+@inbounds for (i,v) in enumerate(a.d) r.d[b.d[i]]=b.d[v] end
+  r
+end
+
+function Base.:*(a::Perm, b::Perm)
+  a,b=promote(a,b)
+  r=Perm(similar(a.d))
+@inbounds for (i,v) in enumerate(a.d) r.d[i]=b.d[v] end
+  r
+end
+
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
-Base.copy(p::Perm)=Perm(copy(p.d))
+function Base.inv(a::Perm)
+  d=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) d[v]=i end
+  Perm(d)
+end
 
 # hash is needed for using permutations in Sets/Dicts
 function Base.hash(a::Perm, h::UInt)
-   b = 0x595dee0e71d271d0%UInt
-   for i in eachindex(a.d)
-     if i^a!=i
-       b = xor(b,xor(hash(i^a, h),h))
-       b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-     end
-   end
-   return b
+  b = 0x595dee0e71d271d0%UInt
+  for (i,v) in enumerate(a.d)
+    if v!=i
+      b = xor(b,xor(hash(v, h),h))
+      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+    end
+  end
+  b
 end
 
 # total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
-  da=degree(a)
-  db=degree(b)
+  da=length(a.d)
+  db=length(b.d)
   for i in 1:min(da,db)
 @inbounds if a.d[i]<b.d[i] return -1 end
 @inbounds if a.d[i]>b.d[i] return  1 end
   end
-  if   da<db for i in (da+1:db) b.d[i]==i || return -1 end
-  else       for i in (db+1:da) a.d[i]==i || return  1 end
+  if     da<db for i in (da+1:db) b.d[i]==i || return -1 end
+  elseif da>db for i in (db+1:da) a.d[i]==i || return  1 end
   end
   0
 end
+
+randperm(i)=Perm(sortperm(rand(1:i,i)))
 
 Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
 Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 
 " largest_moved_point(a::Perm) is the largest integer moved by a"
-largest_moved_point(a::Perm)=findlast(x->x^a!=x,a.d)
-" smallest_moved_point(a::Perm) is the largest integer moved by a"
-smallest_moved_point(a::Perm)=findfirst(k->k^a!=k,1:degree(a))
+largest_moved_point(a::Perm)=findlast(x->x^a!=x,1:degree(a))
 
-function Base.:*(b::Perm, a::Perm=one(b))
-  if degree(b)<=degree(a)
-    d=copy(a.d)
-@inbounds @simd for i in 1:degree(b) d[i]=a.d[b.d[i]] end
-  else
-@inbounds d=[i^a for i in b.d]
-  end
-  Perm(d)
-end
-
-Base.inv(a::Perm)=Perm(invperm(a.d))
+" smallest_moved_point(a::Perm) is the smallest integer moved by a"
+smallest_moved_point(a::Perm)=findfirst(x->x^a!=x,1:degree(a))
 
 """
   cycles(a::Perm) returns the non-trivial cycles of a
@@ -250,9 +268,7 @@ function Base.sign(a::Perm)
   (-1)^parity
 end
 
-using LinearAlgebra
 "Matrix(a::Perm) is the permutation matrix for a"
-Base.Matrix(a::Perm)=Matrix(1.0I,degree(a),degree(a))[a.d,:]
-Base.Matrix{T}(a::Perm) where T= Matrix(one(T)I,degree(a),degree(a))[a.d,:]
-
+Base.Matrix(a::Perm)=Int[j==i^a for i in 1:degree(a), j in 1:degree(a)]
+Base.Matrix(a::Perm,n)=Int[j==i^a for i in 1:n, j in 1:n]
 end

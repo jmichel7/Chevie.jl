@@ -17,8 +17,7 @@ PermGroups
 symmetric_group
 orbit
 orbit_and_representative
-words
-elements
+minimal_words
 ```
 # Cycs.jl Documentation
 ```@docs
@@ -60,7 +59,6 @@ Tbasis
 # Util.jl Documentation
 ```@docs
 Util
-cartesian
 groupby
 constant
 blocks

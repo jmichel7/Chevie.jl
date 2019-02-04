@@ -232,16 +232,29 @@ reduced(H,W)
 function reduced(H::CoxeterGroup,W::CoxeterGroup)
   res=[Set([one(W)])]
   while true
-    new=vcat(map(collect(res[end])) do w
-      l=filter(i->!isleftdescent(W,inv(w),i),eachindex(coxgens(W)))
-      l=filter(x->x==reduced(H,x),Ref(w).*coxgens(W)[l])
-    end...)
-    new=Set(new)
+    new=reduced(H,W,res[end])
     if isempty(new) break
     else push!(res,new)
     end
   end
   vcat(res)
+end
+
+"""
+reduced(H,W,S)
+  The elements in W which are H-reduced of length i from the set S of length i-1
+"""
+function reduced(H::CoxeterGroup,W::CoxeterGroup,S)
+  res=empty(S)
+  for w in S
+    for i in eachindex(coxgens(W))
+      if !isleftdescent(W,inv(w),i)
+        w1=w*coxgens(W)[i]
+        if w1==reduced(H,w1) push!(res,w1) end
+      end
+    end
+  end
+  res
 end
 
 function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
@@ -253,14 +266,20 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
     end
   end
   H=gets(W->ReflectionSubgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
-  rc=gets(W->reduced(H,W),W,:rc)::Vector{Set{T}}
+  rc=gets(W->[Set([one(W)])],W,:rc)::Vector{Set{T}}
+  while length(rc)<=l
+    new=reduced(H,W,rc[end])
+    if isempty(new) break
+    else push!(rc,new)
+    end
+  end
 # println("l=$l W=$W H=$H rc=$rc")
   elts[l]=T[]
   for i in max(0,l+1-length(rc)):l
     for x in rc[1+l-i] append!(elts[l],elements(H,i).*Ref(x)) end
   end
-  N=nref(W)
-  if !isnothing(N) && N-l>l elts[N-l]=elts[l].*Ref(longest(W)) end
+# N=nref(W)
+# if !isnothing(N) && N-l>l elts[N-l]=elts[l].*Ref(longest(W)) end
   elts[l]
 end
 
@@ -268,8 +287,9 @@ function Gapjm.elements(W::CoxeterGroup)
   vcat(map(i->elements(W,i),0:nref(W))...)
 end
 
+const Wtype=Vector{Int8}
 function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
-  ww=gets(W->Dict(0=>[Int[]]),W,:words)::Dict{Int,Vector{Vector{Int}}}
+ ww=gets(W->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if coxrank(W)==1
     if l!=1 return Vector{Int}[]
@@ -277,9 +297,14 @@ function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
     end
   end
   H=gets(W->ReflectionSubgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
-  rc=gets(W->[[word(W,x) for x in y] for y in reduced(H,W)],W,
-                                     :rcwords)::Vector{Vector{Vector{Int}}}
-  ww[l]=Vector{Int}[]
+  rc=gets(W->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
+  while length(rc)<=l
+    new=reduced(H,W,Set(element.(Ref(W),rc[end])))
+    if isempty(new) break
+    else push!(rc,Wtype.(word.(Ref(W),new)))
+    end
+  end
+  ww[l]=Wtype([])
   for i in max(0,l+1-length(rc)):l
     e=words(H,i)
     for x in rc[1+l-i], w in e push!(ww[l],vcat(w,x)) end
@@ -369,9 +394,9 @@ end
   
 simple_representative(W::CoxSymmetricGroup,i)=1
 
-function reflection(W::CoxSymmetricGroup,i::Int)
+function reflection(W::CoxSymmetricGroup{T},i::Int)where T
   (gets(W,:reflections)do W
-    [Perm(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
+    [Perm{T}(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
   end)[i]
 end
 

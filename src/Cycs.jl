@@ -95,7 +95,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime testmat(12)^2;
-  261.577 ms (3012634 allocations: 290.07 MiB)
+  472.964 ms (8324504 allocations: 707.18 MiB)
 ```
 The equivalent in GAP:
 
@@ -112,20 +112,31 @@ export E, ER, Cyc, conductor, galois, Root1, quadratic
 
 using ..Util
 
+const use_list=false
+if use_list
+struct Cyc{T <: Real}<: Number   # a cyclotomic number
+  n::Int
+  d::Vector{T} # coefficients on the Zumbroich basis
+               # the i-th element is the coefficient on zumbroich_basis[i]
+end
+else
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
   d::SortedPairs{Int,T} # coefficients on the Zumbroich basis
+end
 end
 
 conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Int)=1
 
+const zumdict=Dict(1=>[0])
 """
   zumbroich_basis(n::Int) returns the Zumbroich basis of Q(ζ_n)
   as the vector of i in 0:n-1 such that ``ζ_n^i`` is in the basis
 """
 function zumbroich_basis(n::Int)::Vector{Int}
+  get!(zumdict,n) do
   if n==1 return [0] end
   function J(k::Int, p::Int) # see [Breuer] Rem. 1 p. 283
     if k==0 if p==2 return 0:0 else return 1:p-1 end
@@ -140,6 +151,7 @@ function zumbroich_basis(n::Int)::Vector{Int}
   end
   v=sum.(vec(collect(Iterators.product(res...))))
   sort(v.%n)
+  end
 end
 
 #=
@@ -150,8 +162,12 @@ end
   coefficient.
 =#
 const Elist_Dict=Dict((1,0)=>(true=>[0]))
-function Elist(n::Int,i::Int=1)::Pair{Bool,Vector{Int}}
+function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
+  i=mod(i1,n)
   get!(Elist_Dict,(n,i)) do
+if use_list
+    z=zumbroich_basis(n)
+end
     nfact=factor(n)
     mp=Int[]
     j=i
@@ -177,50 +193,81 @@ function Elist(n::Int,i::Int=1)::Pair{Bool,Vector{Int}}
         if tmp[1]==0 push!(mp,p) end
       end
     end
-    if isempty(mp) return true=>[i%n] end
+    if isempty(mp) 
+      return true=> use_list ? Vector{Int}(indexin([i],z)) : [i] 
+    end
     v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
+if use_list
+    iseven(length(mp))=>Vector{Int}(indexin((i .+ v).%n,z))
+else
     iseven(length(mp))=>sort((i .+ v).%n)
+end
   end
 end
 
 #=
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 =#
-const E_Dict=Dict((1,0)=>Cyc(1,[0=>1]))
-function E(n::Integer,i::Integer=1)::Cyc{Int}
-  n=Int(n)
-  i=mod(Int(i),n)
+const E_Dict=Dict((1,0)=>Cyc(1, use_list ? [1] : [0=>1]))
+function E(n1::Integer,i1::Integer=1)::Cyc{Int}
+  n=Int(n1)
+  i=mod(Int(i1),n)
   get!(E_Dict,(n,i)) do
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
+if use_list
+    v=zeros(Int,length(zumbroich_basis(n)))
+    v[l].=ifelse(s,1,-1)
+    Cyc(n,v)
+else
     Cyc(n,l.=>ifelse(s,1,-1))
+end
   end
 end
 
 function Cyc(c::Complex{T}) where T
   if iszero(imag(c)) return Cyc(real(c)) end
+if use_list
+  if iszero(real(c)) return Cyc(4,[0,imag(c)])
+  else return Cyc(4,[real(c),imag(c)])
+  end
+else
   if iszero(real(c)) return Cyc(4,[1=>imag(c)])
   else return Cyc(4,[0=>real(c),1=>imag(c)])
   end
 end
-
-function Base.convert(::Type{Cyc{T}},i::Real)where T<:Real
-  Cyc(1,iszero(i) ? Pair{Int,T}[] : [0=>convert(T,i)])
 end
 
+if use_list
+Cyc(i::T) where T<:Real=Cyc(1,[i])
+else
 Cyc(i::T) where T<:Real=Cyc(1,iszero(i) ? Pair{Int,T}[] : [0=>i])
+end
+Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
 Cyc{T}(i::T1) where {T<:Real,T1<:Real}=convert(Cyc{T},i)
 
 function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
+if use_list
+  Cyc(c.n,convert.(T,c.d))
+else
   Cyc(c.n,convert.(Pair{Int,T},c.d))
+end
 end
 
 Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
 
+if use_list
+num(c::Cyc)=c.d[1]
+else
+num(c::Cyc)=c.d[1][2]
+end
+
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real
   if c.n!=1 throw(InexactError(:convert,T,c)) end
+if !use_list
   if iszero(c) return zero(T) end
-  convert(T,c.d[1][2])
+end
+  convert(T,num(c))
 end
 
 function promote_conductor(a::Cyc,b::Cyc)
@@ -237,9 +284,15 @@ function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1<:Real,T2<
   Cyc{promote_type(T1,T2)}
 end
 
-Base.zero(c::Cyc)=Cyc(c.n,empty(c.d))
-Base.zero(::Type{Cyc{T}},n::Int=1) where T=Cyc(n,Pair{Int,T}[])
+if use_list
+Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
+Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
+else
+Base.zero(c::Cyc)=Cyc(1,empty(c.d))
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,Pair{Int,T}[])
 Base.iszero(c::Cyc)=isempty(c.d)
+end
 Base.one(c::Cyc)=E(1,0)
 
 " isless is necessary to put Cycs in a sorted list"
@@ -255,12 +308,19 @@ Base.:(==)(a::Cyc,b::Cyc)=cmp(a,b)==0
 " hash is necessary to put Cycs as keys of a Dict"
 function Base.hash(a::Cyc, h::UInt)
    b = 0x595dee0e71d271d0%UInt
+if use_list
+   for i in a.d
+     b = xor(b,xor(hash(i, h),h))
+     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+   end
+else
    for i in a.d
      b = xor(b,xor(hash(i[1], h),h))
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
      b = xor(b,xor(hash(i[2], h),h))
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
    end
+end
    return b
 end
 
@@ -282,7 +342,15 @@ function Base.show(io::IO, p::Cyc)
     if q.den!=1 && !iszero(q.a) print(io,"//$(q.den)") end
     return
   end
-  res=join(map(p.d) do (deg,v)
+if use_list
+  it=zip(zumbroich_basis(p.n),p.d)
+else
+  it=p.d
+end
+res=join( map(it) do (deg,v)
+if use_list
+    if iszero(v) return "" end
+end
     if deg==0 t=string(v)
     else 
       if repl || TeX
@@ -306,25 +374,40 @@ function Base.show(io::IO, p::Cyc)
 end
 
 function Base.:+(x::Cyc,y::Cyc)
+  if iszero(x) return y
+  elseif iszero(y) return x
+  end
   a,b=promote(x,y)
   a,b=promote_conductor(a,b)
+if use_list
+  lower(Cyc(a.n,a.d.+b.d))
+else
   lower(Cyc(a.n,mergesum(a.d,b.d)))
+end
 end
 
 Base.:+(a::Cyc,b::Number)=a+Cyc(b)
 Base.:+(b::Number,a::Cyc)=a+Cyc(b)
 
-Base.:-(a::Cyc)=Cyc(a.n,[k=>-v for (k,v) in a.d])
+Base.:-(a::Cyc)=Cyc(a.n,use_list ? -a.d : [k=>-v for (k,v) in a.d])
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Number,a::Cyc)=Cyc(b)-a
 Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
+if use_list
+Base.:*(a::Real,c::Cyc)=Cyc(c.n,a.*c.d)
+else
 Base.:*(a::Real,c::Cyc)=iszero(a) ? zero(c) : Cyc(c.n,[k=>a*v for (k,v) in c.d])
+end
 Base.:*(c::Cyc,a::Real)=a*c
 
+if use_list
+Base.div(c::Cyc,a::Real)=Cyc(c.n,Div.(c.d,a))
+Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
+else
 Base.div(c::Cyc,a::Real)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])
-
 Base.://(c::Cyc,a::Real)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
+end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
 Base.:/(c::Cyc,a::Real)=c//a
@@ -337,7 +420,7 @@ function sumroots(n::Int,l)
   sizehint!(res,phi(n)*length(l))
 # res=Pair{Int,T}[]
   for (i,b) in l
-    (s,v)=Elist(n,mod(i,n))#::Pair{Bool,Vector{Int}}
+    (s,v)=Elist(n,i)#::Pair{Bool,Vector{Int}}
     if !s b=-b end
     for j in v 
       push!(res,j=>b)#::Pair{Int,T}) 
@@ -350,25 +433,49 @@ end
 function Base.:*(a::Cyc,b::Cyc)
   if iszero(a) return a end
   if iszero(b) return b end
-  if a.n==1 return a.d[1][2]*b end
-  if b.n==1 return b.d[1][2]*a end
+  if a.n==1 return num(a)*b end
+  if b.n==1 return num(b)*a end
   a,b=promote(a,b)
   a,b=promote_conductor(a,b)
+if use_list
+  zb=zumbroich_basis(a.n)
+  res=zero(a.d)
+  for i in eachindex(a.d), j in eachindex(b.d)
+@inbounds  c=a.d[i]*b.d[j]
+    if iszero(c) continue end
+@inbounds  res.+=c.*E(a.n,zb[i]+zb[j]).d
+  end
+  lower(Cyc(a.n,res))
+else
 # sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
   res=empty(a.d)
   sizehint!(res,length(a.d)*length(b.d)*phi(a.n))
   for (i,va) in a.d for (j,vb) in b.d
-    (s,v)=Elist(a.n,mod(i+j,a.n))#::Pair{Bool,Vector{Int}}
+    (s,v)=Elist(a.n,i+j)#::Pair{Bool,Vector{Int}}
     u=va*vb
     if !s u=-u end
     for k in v push!(res,k=>u) end
   end end
   lower(Cyc(a.n,norm!(res)))
 end
+end
 
-function raise(n::Int,c::Cyc{T})where T # write c in Q(zeta_n) if c.n divides n
+# in raise guarantee argument is not zero
+if use_list
+function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   if n==c.n return c end
-  if iszero(c) return zero(Cyc{T},n) end
+  zn=zumbroich_basis(n)
+  res=zeros(eltype(c.d),length(zn))
+  z=zumbroich_basis(c.n).*div(n,c.n)
+  for i in eachindex(c.d)
+    if iszero(c.d[i]) continue end
+    @inbounds res.+=c.d[i].*E(n,z[i]).d
+  end
+  Cyc(n,res)
+end
+else
+function raise(n::Int,c::Cyc{T})where T # write c in Q(ζ_n) if c.n divides n
+  if n==c.n return c end
   m=div(n,c.n)
 # let m=m, c=c
 # sumroots(n,[(i*m=>e) for (i,e) in c.d])
@@ -376,40 +483,87 @@ function raise(n::Int,c::Cyc{T})where T # write c in Q(zeta_n) if c.n divides n
   res=empty(c.d)
   sizehint!(res,phi(n)*length(c.d))
   for (i,u) in c.d
-    (s,v)=Elist(n,mod(i*m,n))#::Pair{Bool,Vector{Int}}
+    (s,v)=Elist(n,i*m)#::Pair{Bool,Vector{Int}}
     if !s u=-u end
     for k in v push!(res,k=>u) end
   end
   Cyc(n,norm!(res))
 end
+end
 
 function cntmod(m::Int,p::Int,c::Cyc)
   cnt=zeros(Int,m)
+if use_list
+  zb=zumbroich_basis(c.n)
+  for i in eachindex(zb) if !iszero(c.d[i]) cnt[1+(zb[i]%m)]+=1 end end
+else
   for (k,v) in c.d cnt[1+(k%m)]+=1 end
+end
   all(x->iszero(x) || x==p-1,cnt)
+end
+
+if use_list
+function Cyc(m::Int,z::Vector{Int},c::Vector{T})where T
+  zb=zumbroich_basis(m)
+  res=zeros(T,length(zb))
+  res[indexin(z,zb)]=c
+  Cyc(m,res)
+end
 end
 
 function lower(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
   n=c.n
 # println("lowering $(c.n):$(c.d)")
   if n==1 return c end
+if use_list
+  nz=findall(x->!iszero(x),c.d)
+  if length(nz)==0 return Cyc(c.d[1]) end
+  zb=zumbroich_basis(n)
+else
   if iszero(c) return zero(Cyc{T}) end
+end
   for (p,np) in factor(n)
     m=div(n,p)
+if use_list
+    let p=p, m=m, zb=zb
+    if np>1
+      if all(z->z%p==0,zb[nz])
+        return lower(Cyc(m,div.(zb[nz],p),c.d[nz]))
+      end
+    elseif cntmod(m,p,c) # if all(v->length(v)==p-1,values(res))
+      res=groupby(x->x%m,zb[nz])
+      kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]
+      if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
+      elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
+       return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
+      end
+    end
+    end
+else
     let p=p, m=m
     if np>1 
       if all(k->k[1]%p==0,c.d) 
         return lower(Cyc(m,[div(k,p)=>v for (k,v) in c.d]))
       end
     elseif cntmod(m,p,c) # if all(v->length(v)==p-1,values(res))
+if use_list
+      res=groupby(x->x%m,zb[nz])
+      kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]
+      if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
+      elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
+        return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
+      end
+else
       res=groupby(x->x%m,first.(c.d))
       kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]))
       if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
       elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
         return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
       end
+end
     end
     end
+end
   end
   c
 end
@@ -429,7 +583,17 @@ true
 """
 function galois(c::Cyc,n::Int)
   if gcd(n,c.n)!=1 error("$n should be prime to conductor($c)=$(c.n)") end
+if use_list
+  zb=zumbroich_basis(c.n)
+  nz=findall(x->!iszero(x),c.d)
+  if isempty(nz) c
+  else let zb=zb
+     sum(t->c.d[t]*E(c.n,zb[t]*n),nz)
+       end
+  end
+else
   sumroots(c.n,[(e*n)%c.n=>p for (e,p) in c.d])
+end
 end
 
 Base.conj(c::Cyc)=galois(c,-1)
@@ -469,11 +633,19 @@ function ER(n::Int)
   end
 end 
 
-Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) : sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
+if use_list
+Base.Complex(c::Cyc)=sum(x->x[2]*exp(2*x[1]*im*pi/c.n),
+                          zip(zumbroich_basis(c.n),c.d))
+else
+Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) : 
+             sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
+end
 
 function Base.Real(c::Cyc{T}) where T
+if !use_list
   if iszero(c) return zero(T) end
-  if c.n==1 return c.d[1][2] end
+end
+  if c.n==1 return num(c) end
   if c!=conj(c) error("$c is not real") end
   return real(Complex(c))
 end
@@ -484,9 +656,15 @@ struct Root1
 end
 
 function Root1(c::Cyc)
+if use_list
+  if !(all(x->x==0 || x==1,c.d) ||all(x->x==0 || x==-1,c.d))
+    return nothing
+  end
+else
   if !(all(x->x[2]==1,c.d) || all(x->x[2]==-1,c.d))
     return nothing
   end
+end
   for i in 0:c.n-1
     if c==E(c.n,i) return Root1(i//c.n) end
     if -c==E(c.n,i) return Root1(1//2+i//c.n) end
@@ -530,10 +708,17 @@ julia> quadratic(1+E(5))
 ```
 """
 quadratic=function(cyc::Cyc)
+if use_list
+  den=lcm(denominator.(cyc.d))::Int
+  zb=zumbroich_basis(cyc.n)
+  l=fill(0,cyc.n)
+  l[1 .+ zb]=Int.(cyc.d*den)
+else
   den=lcm(denominator.(map(x->x[2],cyc.d)))::Int
   if den!=1 cyc=Cyc(cyc.n,[k=>Int(v*den) for (k,v) in cyc.d]) end
   l=fill(0,cyc.n)
   for (k,v) in cyc.d l[k+1]=v end
+end
   if cyc.n==1 return (a=l[1],b=0,root=1,den=den) end
 
   f=factor(cyc.n)
