@@ -102,8 +102,9 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export Group, PermGroup, orbit, orbit_and_representative, symmetric_group, 
-  base, centralizer_orbits, centralizers, minimal_words, element
+export Group, PermGroup, orbit, orbit_and_representative, orbits,
+  base, centralizer_orbits, centralizers, minimal_words, element,
+  symmetric_group 
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -128,7 +129,7 @@ function orbit(G::Group{T},p,action::Function=^)where T
   collect(res)
 end
 
-"returns Dict x=>g for x in orbit(G,p) and g is such that x=action(p,g)"
+"returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)"
 function orbit_and_representative(G::Group,p,action::Function=^)
   new=[p]
   d=Dict(p=>one(G))
@@ -145,6 +146,16 @@ function orbit_and_representative(G::Group,p,action::Function=^)
     end
   end
   d
+end
+
+function orbits(G::Group,v::Vector,action::Function=^)
+  res=typeof(v)[]
+  while !isempty(v)
+    o=orbit(G,v[1],action)
+    push!(res,o)
+    v=setdiff(v,o)
+  end
+  res
 end
 
 " dict giving for each element of G a minimal word in the generators"

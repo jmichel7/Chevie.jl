@@ -424,20 +424,22 @@ function WeylGroup(C::Matrix{T}) where T<:Integer
   gens=perms(r,matgens)
   rank=size(C,1)
   t=type_cartan(C)
-  name=map(t)do (series,indices)
-    n="WeylGroup(:$series,"
-    if indices==collect(1:rank) n*="$rank)"
-    else n*="<"*join(indices,",")*">)"
+  name=join(map(t)do (series,indices)
+             n="W($series"*TeXstrip("_{$(length(indices))}")
+    if indices!=eachindex(indices)
+      ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
+      n*=TeXstrip("_{($ind)}")
     end
-    n
-  end
-  WeylGroup(PermGroup(gens),matgens,r,N,N,C,t,Dict(:name=>join(name,"x")))
+    n*")"
+  end,"×")
+  WeylGroup(PermGroup(gens),matgens,r,N,N,C,t,Dict(:name=>name))
 end
 
 "Weyl group from type"
 WeylGroup(t::Symbol,r::Int=0)=WeylGroup(cartan(t,r))
 
 (W::WeylGroup)(x...)=element(W.G,collect(x))
+(W::WeylGroup)(x::AbstractVector)=element(W.G,x)
 
 "diagram of Weyl group"
 diagram(W::WeylGroup)=diagram(W.weyltype)
@@ -445,11 +447,42 @@ diagram(W::WeylGroup)=diagram(W.weyltype)
 "number of reflections of W"
 CoxGroups.nref(W::WeylGroup)=W.N
 
+function matX(W::WeylGroup,w)
+  vcat(permutedims(hcat(W.roots[(1:coxrank(W)).^Ref(w)]...)))
+end
+
+function cartancoeff(W::WeylGroup, i, j )
+  v=findfirst(x->!iszero(x),W.roots[i])
+  j=W.roots[j]-W.roots[j^reflection(W,i)]
+  div(j[v],W.roots[i][v])
+end
+
 function CoxGroups.ReflectionSubgroup(W::WeylGroup,I::AbstractVector{Int})
-  roots=filter(r->all(i->i in I,findall(x->x!=0,r)),W.roots)
-  WeylGroup(PermGroup(coxgens(W)[I]),W.matgens[I],roots,W.parentN,
-    div(length(roots),2),
-    W.cartan[I,I],type_cartan(W.cartan[I,I]),Dict(:name=>name(W)*"_$I"))
+  if all(i->i in 1:coxrank(W),I)
+    roots=filter(r->all(i->i[1] in I || iszero(i[2]),enumerate(r)),W.roots)
+    n=any(i->i>=10,I) ? join(I,",") : join(I)
+    n=name(W)*TeXstrip("_{$n}")
+    WeylGroup(PermGroup(coxgens(W)[I]),W.matgens[I],roots,W.parentN,
+      div(length(roots),2),
+      W.cartan[I,I],type_cartan(W.cartan[I,I]),Dict(:name=>n))
+  else
+    G=PermGroup(map(i->reflection(W,i),I))
+    o=vcat(orbits(G,I)...)
+    sort!(o)
+    N=div(length(o),2)
+    I=filter(o[1:N]) do i
+      cnt=0
+      r=reflection(W,i)
+      for j in o[1:N]; if j!=i && j^r>W.parentN return false end end
+      return true
+    end
+    n=any(i->i>=10,I) ? join(I,",") : join(I)
+    n=name(W)*TeXstrip("_{$n}")
+    gens=reflection.(Ref(W),I)
+    C=[cartancoeff(W,i,j) for i in I, j in I]
+    WeylGroup(PermGroup(gens),matX.(Ref(W),gens),W.roots[o],W.parentN,
+      N,C,type_cartan(C),Dict(:name=>n,:inclusion=>o))
+  end
 end
 
 function Base.:*(W::WeylGroup...)
@@ -458,7 +491,10 @@ end
 
 CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.parentN
 
-inversions(W::WeylGroup,w)=[i for i in 1:W.N if isleftdescent(W,w,i)]
+inclusion(W::WeylGroup)::Vector{Int}=W.N==W.parentN ? (1:W.N) :
+  W.prop[:inclusion][1:W.N]
+
+inversions(W::WeylGroup,w)=[i for i in inclusion(W) if isleftdescent(W,w,i)]
 
 Base.length(W::WeylGroup,w)=count(i->isleftdescent(W,w,i),1:W.N)
 
