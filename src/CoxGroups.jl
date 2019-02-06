@@ -276,10 +276,10 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
 # println("l=$l W=$W H=$H rc=$rc")
   elts[l]=T[]
   for i in max(0,l+1-length(rc)):l
-    for x in rc[1+l-i] append!(elts[l],elements(H,i).*Ref(x)) end
+    for x in rc[1+l-i] append!(elts[l],elements(H,i).*x) end
   end
 # N=nref(W)
-# if !isnothing(N) && N-l>l elts[N-l]=elts[l].*Ref(longest(W)) end
+# if !isnothing(N) && N-l>l elts[N-l]=elts[l].*longest(W) end
   elts[l]
 end
 

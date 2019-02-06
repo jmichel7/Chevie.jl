@@ -187,6 +187,9 @@ function Base.cmp(a::Perm, b::Perm)
   0
 end
 
+# permutations are scalars for broadcasting
+Base.broadcastable(p::Perm)=Ref(p)
+
 randperm(i)=Perm(sortperm(rand(1:i,i)))
 
 Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
