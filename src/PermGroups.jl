@@ -148,8 +148,8 @@ function orbit_and_representative(G::Group,p,action::Function=^)
   d
 end
 
-function orbits(G::Group,v::Vector,action::Function=^)
-  res=typeof(v)[]
+function orbits(G::Group,v::AbstractVector,action::Function=^)
+  res=Vector{eltype(v)}[]
   while !isempty(v)
     o=orbit(G,v[1],action)
     push!(res,o)

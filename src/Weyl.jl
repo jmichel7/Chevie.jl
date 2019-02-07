@@ -115,10 +115,10 @@ by  the  above  list,  the  function  call  can  be  simplified. Instead of
 
 ```
 julia> W=WeylGroup(:D,4)
-WeylGroup(:D,4)
+W(D₄)
 
 julia> W.cartan
-4×4 Array{Int8,2}:
+4×4 Array{Int64,2}:
   2   0  -1   0
   0   2  -1   0
  -1  -1   2  -1
@@ -130,10 +130,10 @@ systems can be obtained as a product
 
 ```
 julia> W=WeylGroup(:A,2)*WeylGroup(:B,2)
-WeylGroup(:A,<1,2>)xWeylGroup(:B,<3,4>)
+W(A₂)×W(B₂₍₃₄₎)
 
 julia> W.cartan
-4×4 Array{Int8,2}:
+4×4 Array{Int64,2}:
   2  -1   0   0
  -1   2   0   0
   0   0   2  -2
@@ -146,10 +146,10 @@ The  same `struct`  is constructed  by applying  'WeylGroup' to  the matrix
 The elements of a Weyl group are permutations of the roots:
 ```julia-repl
 julia> W=WeylGroup(:D,4)
-WeylGroup(:D,4)
+W(D₄)
 
 julia> p=element(W,[1,3,2,1,3])
-{UInt8}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)
+(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)
 
 julia> word(W,p)
 5-element Array{Int64,1}:
@@ -187,7 +187,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export cartan, WeylGroup, diagram, inversions, simple_conjugating_element, 
+export cartan, WeylGroup, inversions, simple_conjugating_element, 
   two_tree, CharTable
 
 using Gapjm, LinearAlgebra
@@ -199,7 +199,7 @@ Cartan matrix for a Weyl group:
 
 ```julia-repl
 julia> cartan(:A,4)
-4×4 Array{Int8,2}:
+4×4 Array{Int64,2}:
   2  -1   0   0
  -1   2  -1   0
   0  -1   2  -1
@@ -207,7 +207,7 @@ julia> cartan(:A,4)
 ```
 """
 function cartan(t::Symbol,r::Int=0)
-  if t==:A return Array{Int8,2}(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
+  if t==:A return Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
   m=cartan(:A,r) 
   if t==:B m[1,2]=-2 
   elseif t==:C m[2,1]=-2 
@@ -319,48 +319,6 @@ end
   end
 end
 
-function diagram(;series::Symbol,indices::AbstractVector{Int})
-  ind=repr.(indices)
-  l=length.(ind)
-  bar(n)="\u2014"^n
-  rdarrow(n)="\u21D0"^(n-1)*" "
-  ldarrow(n)="\u21D2"^(n-1)*" "
-  tarrow(n)="\u21DB"^(n-1)*" "
-  vbar="\UFFE8" # "\u2503"
-  node="O"
-  if series==:A
-    println(join(map(l->node*bar(l),l[1:end-1])),node)
-    println(join(ind," "))
-  elseif series==:B
-    println(node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
-    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
-  elseif series==:C
-    println(node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
-    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
-  elseif series==:D
-    println(" "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
-    println(node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
-    println(ind[1]," ",join(ind[3:end]," "))
-  elseif series==:E
-    dec=2+l[1]+l[3]
-    println(" "^dec,"O $(ind[2])\n"," "^dec,vbar)
-    println(node,bar(l[1]),node,bar(l[3]),
-              join(map(l->node*bar(l),l[4:end-1])),node)
-    println(join(vcat(ind[1],ind[3:end])," "))
-  elseif series==:F
-    println(node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
-    println(ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
-  elseif series==:G
-    println(node,tarrow(max(l[1],2)),node)
-    println(ind[1]," "^max(3-l[1],1),ind[2])
-  end
-end
-
-function diagram(v::Vector{NamedTuple{(:series,:indices),
-                                      Tuple{Symbol,Vector{Int}}}})
-  for t in v diagram(;t...) end
-end
-
 """
     roots(C)
 
@@ -387,14 +345,31 @@ function roots(C::Matrix{<:Integer})
   vcat(R...)
 end
 #--------------- Weyl groups --------------------------------------------
-struct WeylGroup <: CoxeterGroup{Perm{UInt8}}
-  G::PermGroup{UInt8}
-  matgens::Vector{Matrix{Int8}}
-  roots::Vector{Vector{Int8}}
-  parentN::Int
+abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
+
+inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i)]
+
+Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
+
+CoxGroups.name(W::FiniteCoxeterGroup)::String=W.prop[:name]
+
+CoxGroups.coxtype(W::FiniteCoxeterGroup)=W.coxtype
+
+"""
+  The reflection degrees of W
+"""
+function Gapjm.degrees(W::FiniteCoxeterGroup)
+  l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
+  reverse(1 .+conjugate_partition(l))
+end
+
+struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
+  G::PermGroup{T}
+  matgens::Vector{Matrix{Int}}
+  rootdec::Vector{Vector{Int}}
   N::Int
-  cartan::Array{Int8,2}
-  weyltype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
+  cartan::Array{Int,2}
+  coxtype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
   prop::Dict{Symbol,Any}
 end
 
@@ -416,9 +391,9 @@ function WeylGroup(C::Matrix{T}) where T<:Integer
     the permutations of the roots r effected by the matrices mm
   """
   function perms(r,mm)
-    s=Perm(Vector{UInt8}(sortperm(r)))
+    s=Perm(sortperm(r))
     map(mm)do m
-      inv(Perm(Vector{UInt8}(sortperm(map(v->(v'*m)',r)))))*s
+      inv(Perm(sortperm(map(v->(v'*m)',r))))*s
     end
   end
   gens=perms(r,matgens)
@@ -432,87 +407,88 @@ function WeylGroup(C::Matrix{T}) where T<:Integer
     end
     n*")"
   end,"×")
-  WeylGroup(PermGroup(gens),matgens,r,N,N,C,t,Dict(:name=>name))
+  WeylGroup(PermGroup(gens),matgens,r,N,C,t,Dict{Symbol,Any}(:name=>name))
 end
 
 "Weyl group from type"
 WeylGroup(t::Symbol,r::Int=0)=WeylGroup(cartan(t,r))
 
+struct WeylSubGroup{T} <: FiniteCoxeterGroup{Perm{T}}
+  G::PermGroup{T}
+  inclusion::Vector{Int} # for subgroups
+  rootdec::Vector{Vector{Int}}
+  parent::WeylGroup{T}
+  N::Int
+  cartan::Array{Int,2}
+  coxtype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
+  prop::Dict{Symbol,Any}
+end
+
 (W::WeylGroup)(x...)=element(W.G,collect(x))
 (W::WeylGroup)(x::AbstractVector)=element(W.G,x)
-
-"diagram of Weyl group"
-diagram(W::WeylGroup)=diagram(W.weyltype)
+(W::WeylSubGroup)(x...)=element(W.G,collect(x))
+(W::WeylSubGroup)(x::AbstractVector)=element(W.G,x)
 
 "number of reflections of W"
-CoxGroups.nref(W::WeylGroup)=W.N
+@inline CoxGroups.nref(W::WeylGroup)=W.N
+@inline CoxGroups.nref(W::WeylSubGroup)=W.N
+
+root(W::WeylGroup,i)=W.rootdec[i]
 
 function matX(W::WeylGroup,w)
-  vcat(permutedims(hcat(W.roots[(1:coxrank(W)).^Ref(w)]...)))
+  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
 end
+matX(W::WeylSubGroup,w)=matX(W.parent,w)
 
-function cartancoeff(W::WeylGroup, i, j )
-  v=findfirst(x->!iszero(x),W.roots[i])
-  j=W.roots[j]-W.roots[j^reflection(W,i)]
-  div(j[v],W.roots[i][v])
+function cartancoeff(W::WeylGroup,i,j)
+  v=findfirst(x->!iszero(x),root(W,i))
+  j=root(W,j)-root(W,j^reflection(W,i))
+  div(j[v],root(W,i)[v])
 end
+cartancoeff(W::WeylSubGroup,i,j)=cartancoeff(W.parent,W.inclusion[i],W.inclusion[j])
 
 function CoxGroups.ReflectionSubgroup(W::WeylGroup,I::AbstractVector{Int})
+  G=PermGroup(reflection.(Ref(W),I))
+  inclusion=sort!(vcat(orbits(G,I)...))
+  N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)
-    roots=filter(r->all(i->i[1] in I || iszero(i[2]),enumerate(r)),W.roots)
-    n=any(i->i>=10,I) ? join(I,",") : join(I)
-    n=name(W)*TeXstrip("_{$n}")
-    WeylGroup(PermGroup(coxgens(W)[I]),W.matgens[I],roots,W.parentN,
-      div(length(roots),2),
-      W.cartan[I,I],type_cartan(W.cartan[I,I]),Dict(:name=>n))
+    C=W.cartan[I,I]
   else
-    G=PermGroup(map(i->reflection(W,i),I))
-    o=vcat(orbits(G,I)...)
-    sort!(o)
-    N=div(length(o),2)
-    I=filter(o[1:N]) do i
+    I=filter(inclusion[1:N]) do i
       cnt=0
       r=reflection(W,i)
-      for j in o[1:N]; if j!=i && j^r>W.parentN return false end end
+      for j in inclusion[1:N]
+        if j!=i && j^r>W.N return false end
+      end
       return true
     end
-    n=any(i->i>=10,I) ? join(I,",") : join(I)
-    n=name(W)*TeXstrip("_{$n}")
-    gens=reflection.(Ref(W),I)
+    G=PermGroup(reflection.(Ref(W),I))
     C=[cartancoeff(W,i,j) for i in I, j in I]
-    WeylGroup(PermGroup(gens),matX.(Ref(W),gens),W.roots[o],W.parentN,
-      N,C,type_cartan(C),Dict(:name=>n,:inclusion=>o))
   end
+  rootdec=roots(C)
+  inclusion=map(rootdec)do r
+    findfirst(isequal(sum(r.*W.rootdec[I])),W.rootdec)
+  end
+  n=any(i->i>=10,I) ? join(I,",") : join(I)
+  n=name(W)*TeXstrip("_{$n}")
+  WeylSubGroup(G,inclusion,rootdec,W,N,C,type_cartan(C),Dict{Symbol,Any}(:name=>n))
 end
+
+CoxGroups.ReflectionSubgroup(W::WeylSubGroup,I::AbstractVector{Int})=
+  ReflectionSubgroup(W.parent,W.inclusion[I])
 
 function Base.:*(W::WeylGroup...)
   WeylGroup(cat(map(x->x.cartan,W)...,dims=[1,2]))
 end
 
-CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.parentN
-
-inclusion(W::WeylGroup)::Vector{Int}=W.N==W.parentN ? (1:W.N) :
-  W.prop[:inclusion][1:W.N]
-
-inversions(W::WeylGroup,w)=[i for i in inclusion(W) if isleftdescent(W,w,i)]
-
-Base.length(W::WeylGroup,w)=count(i->isleftdescent(W,w,i),1:W.N)
-
-CoxGroups.name(W::WeylGroup)::String=W.prop[:name]
-
-"""
-  The reflection degrees of W
-"""
-function Gapjm.degrees(W::WeylGroup)
-  l=sort(map(length,values(groupby(sum,W.roots))),rev=true)
-  reverse(1 .+div.(conjugate_partition(l),2))
-end
+CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.N
+CoxGroups.isleftdescent(W::WeylSubGroup,w,i::Int)=W.inclusion[i]^w>W.parent.N
 
 Base.length(W::WeylGroup)=prod(degrees(W))
 
 function root_representatives(W::WeylGroup)
-  reps=fill(0,length(W.roots))
-  repelts=fill(one(W),length(W.roots))
+  reps=fill(0,2*W.N)
+  repelts=fill(one(W),2*W.N)
   for i in eachindex(coxgens(W))
     if iszero(reps[i])
       d=orbit_and_representative(W.G,i)
@@ -527,18 +503,38 @@ function root_representatives(W::WeylGroup)
   W.prop[:reflections]=map((i,p)->coxgens(W)[i]^p,reps,repelts)
 end
 
+function root_representatives(W::WeylSubGroup)
+  reps=fill(0,2*W.N)
+  repelts=fill(one(W),2*W.N)
+  for i in eachindex(coxgens(W))
+    if iszero(reps[i])
+      d=orbit_and_representative(W.G,i)
+      for (n,e) in d 
+        reps[W.restriction[n]]=i
+        repelts[W.restriction[n]]=e
+      end
+    end
+  end
+  W.prop[:rootreps]=reps
+  W.prop[:repelms]=repelts
+  W.prop[:reflections]=map((i,p)->coxgens(W)[i]^p,reps,repelts)
+end
+
 "for each root index of simple representative"
 function CoxGroups.simple_representative(W::WeylGroup,i)::Int
-  getp(root_representatives,W,:rootreps)[i]
+  sr=getp(root_representatives,W,:rootreps)::Vector{Int}
+  sr[i]
 end
   
 "for each root element conjugative representative to root"
-function simple_conjugating_element(W::WeylGroup,i)::Perm{UInt8}
-  getp(root_representatives,W,:repelms)[i]
+function simple_conjugating_element(W::WeylGroup,i)::Perm{Int}
+  rr=getp(root_representatives,W,:repelms)::Vector{Perm{Int}}
+  rr[i]
 end
 
-function CoxGroups.reflection(W::WeylGroup,i::Integer)::Perm{UInt8}
-  getp(root_representatives,W,:reflections)[i]
+function CoxGroups.reflection(W::WeylGroup,i::Integer)::Perm{Int}
+  ref=getp(root_representatives,W,:reflections)::Vector{Perm{Int}}
+  ref[i]
 end
 
 struct CharTable{T}

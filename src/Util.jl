@@ -20,10 +20,7 @@ export getp, gets, # helpers for objects with a Dict of properties
   Usually called as
     gets(O,:p) do ---code to compute property :p --- end
 """
-function gets(f::Function,o,p::Symbol)
-  if haskey(o.prop,p) return o.prop[p] end
-  o.prop[p]=f(o)
-end
+gets(f::Function,o,p::Symbol)=get!(()->f(o),o.prop,p)
 
 """
   A  variation where it is assumed that f sets key p but not assumed that f

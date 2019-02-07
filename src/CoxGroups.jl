@@ -159,9 +159,9 @@ The dictionary from CHEVIE is as follows:
 module CoxGroups
 
 export bruhatless, CharTable, CoxeterGroup, coxgens, coxrank, coxsym,
-firstleftdescent, leftdescents, longest, name, reduced
+firstleftdescent, leftdescents, longest, name, reduced, diagram
 
-export isleftdescent, nref, ReflectionSubgroup, reflection,
+export isleftdescent, nref, ReflectionSubgroup, reflection, coxtype,
   simple_representative # 'virtual' methods
 
 using Gapjm
@@ -173,7 +173,8 @@ function firstleftdescent(W::CoxeterGroup,w)
 end
 
 function leftdescents(W::CoxeterGroup,w)
-  filter(i->isleftdescent(W,w,i),eachindex(coxgens(W)))
+  # 3 times faster than filter
+  [i for i in eachindex(coxgens(W)) if isleftdescent(W,w,i)]
 end
 
 """
@@ -343,6 +344,50 @@ function reduced_words(W::CoxeterGroup,w)
   vcat(map(x->vcat.(Ref([x]),reduced_words(W,gens(W)[x]*w)),l)...)
 end
 
+function diagram(;series::Symbol,indices::AbstractVector{Int})
+  ind=repr.(indices)
+  l=length.(ind)
+  bar(n)="\u2014"^n
+  rdarrow(n)="\u21D0"^(n-1)*" "
+  ldarrow(n)="\u21D2"^(n-1)*" "
+  tarrow(n)="\u21DB"^(n-1)*" "
+  vbar="\UFFE8" # "\u2503"
+  node="O"
+  if series==:A
+    println(join(map(l->node*bar(l),l[1:end-1])),node)
+    println(join(ind," "))
+  elseif series==:B
+    println(node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
+    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+  elseif series==:C
+    println(node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
+    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+  elseif series==:D
+    println(" "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
+    println(node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
+    println(ind[1]," ",join(ind[3:end]," "))
+  elseif series==:E
+    dec=2+l[1]+l[3]
+    println(" "^dec,"O $(ind[2])\n"," "^dec,vbar)
+    println(node,bar(l[1]),node,bar(l[3]),
+              join(map(l->node*bar(l),l[4:end-1])),node)
+    println(join(vcat(ind[1],ind[3:end])," "))
+  elseif series==:F
+    println(node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
+    println(ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
+  elseif series==:G
+    println(node,tarrow(max(l[1],2)),node)
+    println(ind[1]," "^max(3-l[1],1),ind[2])
+  end
+end
+
+function diagram(v::Vector)
+  for t in v diagram(;t...) end
+end
+
+"diagram of finite Coxeter group group"
+diagram(W::CoxeterGroup)=diagram(coxtype(W))
+
 #--------------------- CoxSymmetricGroup ---------------------------------
 struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
@@ -355,6 +400,8 @@ function coxsym(n::Int)
   gens=map(i->Perm{UInt8}(i,i+1),1:n-1)
   CoxSymmetricGroup{UInt8}(PermGroup(gens),n,Dict{Symbol,Any}(:name=>"coxsym($n)"))
 end
+
+coxtype(W::CoxSymmetricGroup)=[(series=:A,indices=collect(1:W.n-1))]
 
 name(W::CoxSymmetricGroup)::String=W.prop[:name]
 coxgens(W::CoxSymmetricGroup)=W.G.gens
@@ -370,14 +417,14 @@ Base.length(W::CoxSymmetricGroup)=prod(degrees(W))
 
 function Base.length(W::CoxSymmetricGroup,w)
   l=0
-  for j in 1 .+eachindex(coxgens(W)) for i in 1:j-1 
-    l+=i^w>j^w
+  for k in 1:W.n-1 for i in 1:W.n-k
+    l+=i^w>(i+k)^w
   end end
   l
 end
 # 2.5 times longer on 1.0.2
 function length2(W::CoxSymmetricGroup,w)
-  count(i^w>j^w for j in 1 .+eachindex(coxgens(W)) for i in 1:j-1) 
+  count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 end
 
 function reflength(W::CoxSymmetricGroup,w::Perm{T})where T
@@ -395,9 +442,10 @@ end
 simple_representative(W::CoxSymmetricGroup,i)=1
 
 function reflection(W::CoxSymmetricGroup{T},i::Int)where T
-  (gets(W,:reflections)do W
+  ref=gets(W,:reflections)do W
     [Perm{T}(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
-  end)[i]
+  end::Vector{Perm{T}}
+  ref[i]
 end
 
 end

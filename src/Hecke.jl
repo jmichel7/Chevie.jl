@@ -72,13 +72,13 @@ In  the  following  example,  we  compute  the multiplication table for the
 
 ```julia-repl
 julia> W=WeylGroup(:A,2)
-WeylGroup(:A,2)
+W(A₂)
 
 julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
-Hecke(WeylGroup(:A,2),0)
+Hecke(W(A₂),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{UInt8},HeckeAlgebra{Int64,WeylGroup}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int64},HeckeAlgebra{Int64,WeylGroup{Int64}}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int8,1},1}:
@@ -90,7 +90,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{UInt8},Int64,WeylGroup},2}:
+6×6 Array{HeckeTElt{Perm{Int64},Int64,WeylGroup{Int64}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -138,13 +138,13 @@ end
 # Example
 ```julia-repl
 julia> W=WeylGroup(:B,2)
-WeylGroup(:B,2)
+W(B₂)
 
 julia> Pol(:q)
 q
 
 julia> H=hecke(W,q)
-Hecke(WeylGroup(:B,2),q)
+Hecke(W(B₂),q)
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
@@ -152,7 +152,7 @@ julia> [H.para,H.sqpara]
  Missing[missing, missing]                     
 
 julia> H=hecke(W,q^2,q)
-Hecke(WeylGroup(:B,2),q²,q)
+Hecke(W(B₂),q²,q)
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
@@ -160,7 +160,7 @@ julia> [H.para,H.sqpara]
  Pol{Int64}[q, q]                                  
 
 julia> H=hecke(W,[q^2,q^4],[q,q^2])
-Hecke(WeylGroup(:B,2),Pol{Int64}[q², q⁴],Pol{Int64}[q, q²])
+Hecke(W(B₂),Pol{Int64}[q², q⁴],Pol{Int64}[q, q²])
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
@@ -168,7 +168,7 @@ julia> [H.para,H.sqpara]
  Pol{Int64}[q, q²]
 
 julia> H=hecke(W,9,3)
-Hecke(WeylGroup(:B,2),9,3)
+Hecke(W(B₂),9,3)
 
 julia> [H.para,H.sqpara]
 2-element Array{Array{T,1} where T,1}:
