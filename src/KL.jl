@@ -313,10 +313,10 @@ julia> Pol(:v);H=hecke(W,v^2,v)
 Hecke(W(B₃),v²,v)
 
 julia> C=Cpbasis(H)
-(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int64},HeckeAlgebra{Pol{Int64},WeylGroup{Int64}}}) (generic function with 3 methods)
+(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 3 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int64},HeckeAlgebra{Pol{Int64},WeylGroup{Int64}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂

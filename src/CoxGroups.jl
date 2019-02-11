@@ -162,7 +162,7 @@ export bruhatless, CharTable, CoxeterGroup, coxgens, coxrank, coxsym,
 firstleftdescent, leftdescents, longest, name, reduced, diagram
 
 export isleftdescent, nref, ReflectionSubgroup, reflection, coxtype,
-  simple_representative # 'virtual' methods
+  simple_representatives # 'virtual' methods
 
 using Gapjm
 #-------------------------- Coxeter groups
@@ -388,6 +388,40 @@ end
 "diagram of finite Coxeter group group"
 diagram(W::CoxeterGroup)=diagram(coxtype(W))
 
+# return all subsets of S which are W-conjugate to I
+function standard_parabolic_class(W,I::Vector{Int})
+   new=[I]
+   res=empty(new)
+   while !isempty(new)
+     n=vcat(map(new) do K
+       J=map(setdiff(1:coxrank(W),K)) do i
+	 w0=longest(W,push!(copy(K),i)::Vector{Int})
+         if isnothing(w0) one(w) else w0 end 
+         # isnothing==parabolic W_I1 infinite
+       end
+       map(J) do w
+         H=gens(W)[K].^w
+         findall(x->x in H,gens(W))
+       end
+       end...)
+       res=union(res,new)
+       new=setdiff(n,res)
+   end
+   res
+end
+
+# representatives of parabolic classes
+function parabolic_representatives(W,s)
+  l=collect(combinations(1:coxrank(W),s))
+  orbits=[]
+  while !isempty(l) 
+    o=standard_parabolic_class(W,l[1])
+    push!(orbits,o)
+    l=setdiff(l,o)
+  end
+  first.(orbits)
+end
+
 #--------------------- CoxSymmetricGroup ---------------------------------
 struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
@@ -398,7 +432,9 @@ end
 "The symmetric group on n letters as a Coxeter group"
 function coxsym(n::Int)
   gens=map(i->Perm{UInt8}(i,i+1),1:n-1)
-  CoxSymmetricGroup{UInt8}(PermGroup(gens),n,Dict{Symbol,Any}(:name=>"coxsym($n)"))
+  CoxSymmetricGroup{UInt8}(PermGroup(gens),n,Dict{Symbol,Any}(:name=>
+                            #                         TeXstrip("𝔖 _{$n}")))
+                            "coxsym($n)"))
 end
 
 coxtype(W::CoxSymmetricGroup)=[(series=:A,indices=collect(1:W.n-1))]
@@ -436,10 +472,11 @@ function ReflectionSubgroup(W::CoxSymmetricGroup,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I) 
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
-  CoxSymmetricGroup(PermGroup(coxgens(W)[I]),n+1,Dict{Symbol,Any}(:name=>name(W)*"_$I",))
+  CoxSymmetricGroup(PermGroup(coxgens(W)[I]),n+1,Dict{Symbol,Any}(:name=>
+                                        TeXstrip(name(W)*"_{($(join(I)))}")))
 end
   
-simple_representative(W::CoxSymmetricGroup,i)=1
+simple_representatives(W::CoxSymmetricGroup)=fill(1,nref(W))
 
 function reflection(W::CoxSymmetricGroup{T},i::Int)where T
   ref=gets(W,:reflections)do W

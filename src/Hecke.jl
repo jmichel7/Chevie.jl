@@ -78,7 +78,7 @@ julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(W(A₂),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int64},HeckeAlgebra{Int64,WeylGroup{Int64}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,WeylGroup{Int16}}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int8,1},1}:
@@ -90,7 +90,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int64},Int64,WeylGroup{Int64}},2}:
+6×6 Array{HeckeTElt{Perm{Int16},Int64,WeylGroup{Int16}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -179,7 +179,7 @@ julia> [H.para,H.sqpara]
 function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
                       sqpara::Vector{<:Union{Missing,C}})where C
   para=map(1:coxrank(W))do i
-    j=simple_representative(W,i)
+   j=simple_representatives(W)[i]
     if i<=length(para) 
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
@@ -188,7 +188,7 @@ function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
     end
   end
   sqpara=map(1:coxrank(W))do i
-    j=simple_representative(W,i)
+    j=simple_representatives(W)[i]
     if i<=length(sqpara) && !ismissing(sqpara[i])
       if j<i && sqpara[i]!=sqpara[j] 
         error("one should have sqpara[$i]==sqpara[$j]")

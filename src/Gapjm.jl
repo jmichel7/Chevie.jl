@@ -58,6 +58,8 @@ include("Pols.jl")
 @reexport using .Pols
 include("CoxGroups.jl")
 @reexport using .CoxGroups
+include("PermRoot.jl")
+@reexport using .PermRoot
 include("Weyl.jl")
 @reexport using .Weyl
 include("Hecke.jl")

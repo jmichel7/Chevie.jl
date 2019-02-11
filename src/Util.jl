@@ -12,7 +12,8 @@ export getp, gets, # helpers for objects with a Dict of properties
   SortedPairs, norm!, mergesum, getvalue, # data structure
   format, TeXstrip, bracket_if_needed, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
-  conjugate_partition, horner
+  conjugate_partition, horner,
+  echelon, Nullspace  # linear algebra
 
 #--------------------------------------------------------------------------
 """
@@ -330,4 +331,53 @@ function horner(x,p::Vector)
   value
 end
 
+#----------- Linear algebra over Rationals/integers------------------------
+" returns: echelon form of m, indices of linearly independent rows of m"
+function echelon!(m::Matrix)
+  T=typeof(1//one(eltype(m)))
+  if T!=eltype(m) m=convert.(T,m) end
+  rk=0
+  inds=collect(axes(m,1))
+  for k in axes(m,2)
+    j=findfirst(x->!iszero(x),m[rk+1:end,k])
+    if isnothing(j) continue end
+    j+=rk
+    rk+=1
+    row=m[j,:]
+    m[j,:].=m[rk,:]
+    m[rk,:].=inv(row[k]).*row
+    inds[[j,rk]]=inds[[rk,j]]
+    for j in axes(m,1)
+      if rk!=j && !iszero(m[j,k]) m[j,:].-=m[j,k].*m[rk,:] end
+    end
+#   println(m)
+  end
+  m,inds[1:rk]
+end
+
+echelon(m::Matrix)=echelon!(copy(m))
+
+" computes right nullspace of m"
+function Nullspace(m::Matrix)
+  m=echelon(m)[1]
+  n=size(m)[2]
+  z=Int[]
+  j=0
+  lim=size(m,1)
+  for i in axes(m,1)
+    f=findfirst(x->!iszero(x),m[i,j+1:end])
+    if isnothing(f)
+      lim=i-1
+      break 
+    end
+    j+=f
+    push!(z,j)
+  end
+  println("z=$z lim=$lim")
+  zz=zeros(eltype(m),n,n)
+  zz[z,:]=m[1:lim,:]
+  nn=filter(k->iszero(zz[k,k]),1:n)
+  for i in nn zz[i,i]=-one(eltype(m)) end
+  zz[:,nn]
+end
 end

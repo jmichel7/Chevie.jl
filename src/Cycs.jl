@@ -416,8 +416,7 @@ Base.:/(a::Real,c::Cyc)=a//c
 
 #function sumroots(n::Int,l::SortedPairs{Int,T})where T<:Real
 function sumroots(n::Int,l)
-  res=empty(l)
-  sizehint!(res,phi(n)*length(l))
+  res=sizehint!(empty(l),phi(n)*length(l))
 # res=Pair{Int,T}[]
   for (i,b) in l
     (s,v)=Elist(n,i)#::Pair{Bool,Vector{Int}}
@@ -448,15 +447,15 @@ if use_list
   lower(Cyc(a.n,res))
 else
 # sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
-  res=empty(a.d)
-  sizehint!(res,length(a.d)*length(b.d)*phi(a.n))
+  res=similar(a.d,length(a.d)*length(b.d)*length(zumbroich_basis(a.n)))
+  cnt=0
   for (i,va) in a.d for (j,vb) in b.d
-    (s,v)=Elist(a.n,i+j)#::Pair{Bool,Vector{Int}}
+    (s,v)=Elist(a.n,i+j)
     u=va*vb
     if !s u=-u end
-    for k in v push!(res,k=>u) end
+    for k in v res[cnt+=1]=k=>u end
   end end
-  lower(Cyc(a.n,norm!(res)))
+  lower(Cyc(a.n,norm!(resize!(res,cnt))))
 end
 end
 
@@ -480,14 +479,14 @@ function raise(n::Int,c::Cyc{T})where T # write c in Q(ζ_n) if c.n divides n
 # let m=m, c=c
 # sumroots(n,[(i*m=>e) for (i,e) in c.d])
 # end
-  res=empty(c.d)
-  sizehint!(res,phi(n)*length(c.d))
+  res=similar(c.d,length(zumbroich_basis(n))*length(c.d))
+  j=0
   for (i,u) in c.d
-    (s,v)=Elist(n,i*m)#::Pair{Bool,Vector{Int}}
+    (s,v)=Elist(n,i*m)
     if !s u=-u end
-    for k in v push!(res,k=>u) end
+    for k in v res[j+=1]=k=>u end
   end
-  Cyc(n,norm!(res))
+  Cyc(n,norm!(resize!(res,j)))
 end
 end
 
