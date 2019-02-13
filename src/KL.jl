@@ -134,10 +134,10 @@ The significance of this construction is that `KLPol(W,y,w)==KLPol(W,z,w)`
 julia> W=WeylGroup(:F,4)
 W(F₄)
 
-julia> w=longest(W)*coxgens(W)[1];length(W,w)
+julia> w=longest(W)*gens(W)[1];length(W,w)
 23
 
-julia> y=element(W,1:4);length(W,y)
+julia> y=element(W,1:4...);length(W,y)
 4
 
 julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
@@ -152,11 +152,11 @@ x³+1
 
 """
 function CriticalPair(W::CoxeterGroup,y,w)::typeof(y)
-  Lw=filter(i->isleftdescent(W,w,i),eachindex(coxgens(W)))
-  Rw=filter(i->isleftdescent(W,inv(w),i),eachindex(coxgens(W)))
+  Lw=filter(i->isleftdescent(W,w,i),eachindex(gens(W)))
+  Rw=filter(i->isleftdescent(W,inv(w),i),eachindex(gens(W)))
   function cr(y)::typeof(y)
-    for s in Lw if !isleftdescent(W,y,s) return cr(coxgens(W)[s]*y) end end
-    for s in Rw if !isleftdescent(W,inv(y),s) return cr(y*coxgens(W)[s]) end end
+    for s in Lw if !isleftdescent(W,y,s) return cr(gens(W)[s]*y) end end
+    for s in Rw if !isleftdescent(W,inv(y),s) return cr(y*gens(W)[s]) end end
     y
   end
   cr(y)
@@ -175,7 +175,7 @@ function KLMue(W::CoxeterGroup,y,w)
   if lw==ly+1 return 1 end
   if any(s->(isleftdescent(W,w,s) && !isleftdescent(W,y,s)) 
     || (isleftdescent(W,inv(w),s) && !isleftdescent(W,inv(y),s)), 
-    eachindex(coxgens(W))) 
+    eachindex(gens(W))) 
     return 0
   end
   pol=KLPol(W,y,w)
@@ -226,8 +226,8 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   d=gets(W->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
   if haskey(d,(w,y)) return  d[(w,y)] end
   s=firstleftdescent(W,w)
-  v=coxgens(W)[s]*w
-  pol=KLPol(W,coxgens(W)[s]*y,v)+shift(KLPol(W,y,v),1)
+  v=gens(W)[s]*w
+  pol=KLPol(W,gens(W)[s]*y,v)+shift(KLPol(W,y,v),1)
   lz=lw-2
   while div(lw-lz,2)<=Pols.degree(pol)
    for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
@@ -261,7 +261,7 @@ Hecke.basename(h::HeckeCpElt)="C'"
 function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return HeckeCpElt([one(H.W)=>one(C)],H) end
-    HeckeCpElt([element(H.W,collect(w))=>one(C)],H)
+    HeckeCpElt([element(H.W,w...)=>one(C)],H)
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=f(word(H.W,w))
@@ -290,7 +290,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
   if haskey(cdict,w) return cdict[w] end
   l=firstleftdescent(W,w)
-  s=coxgens(W)[l]
+  s=gens(W)[l]
   if w==s
     return inv(H.sqpara[l])*(one(H)-inv(H.para[l][2])*T(s))
   else

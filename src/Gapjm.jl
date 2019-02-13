@@ -56,10 +56,10 @@ include("Cycs.jl")
 @reexport using .Cycs
 include("Pols.jl")
 @reexport using .Pols
-include("CoxGroups.jl")
-@reexport using .CoxGroups
 include("PermRoot.jl")
 @reexport using .PermRoot
+include("CoxGroups.jl")
+@reexport using .CoxGroups
 include("Weyl.jl")
 @reexport using .Weyl
 include("Hecke.jl")

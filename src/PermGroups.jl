@@ -112,9 +112,11 @@ abstract type Group{T} end # T is the type of elements of G
 Base.one(G::Group{T}) where T=one(T)
 Gapjm.gens(G::Group)=G.gens
 
+@inline gen(W,i)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
+
 " element of W corresponding to a sequence of generators and their inverses"
-element(W::Group,w::AbstractVector{<:Integer})=length(w)==0 ? one(W) : prod(
-                 i>0 ? gens(W)[i] : inv(gens(W)[-i]) for i in w)
+element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) : 
+    prod( gen(W,i) for i in w)
 
 " orbit(G,p) is the orbit of p under Group G"
 function orbit(G::Group{T},p,action::Function=^)where T
@@ -199,7 +201,7 @@ function Gapjm.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
 end
 
-(W::PermGroup)(x...)=element(W,collect(x))
+(W::PermGroup)(x...)=element(W,x...)
 
 " describe the orbit of Int p under group G as a Schreier vector "
 function schreier_vector(G::PermGroup,p::Integer,action::Function=^)

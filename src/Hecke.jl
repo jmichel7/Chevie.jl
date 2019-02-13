@@ -319,7 +319,7 @@ end
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return one(H) end
-    HeckeTElt([element(H.W,w)=>one(C)],H)
+    HeckeTElt([element(H.W,w...)=>one(C)],H)
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=HeckeTElt([w=>one(C)],H)
@@ -335,7 +335,7 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
   sum(a.d) do (ea,pa)
     h=usedict ? Dict(e=>p*pa for (e,p) in b.d) : [e=>p*pa for (e,p) in b.d]
     for i in reverse(word(W,ea))
-      s=coxgens(W)[i]
+      s=gens(W)[i]
       up=empty(h)
       down=empty(h)
       for (e,p)  in h

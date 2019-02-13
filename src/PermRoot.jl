@@ -1,6 +1,7 @@
 module PermRoot
 
-export PermRootGroup
+export PermRootGroup, PermRootSubGroup, ReflectionSubGroup, simple_representatives,
+simple_conjugating_element, reflections, reflection, refltype, diagram
 
 using Gapjm
 
@@ -8,15 +9,18 @@ struct PermRootGroup{T,T1<:Integer}
   matgens::Vector{Matrix{T}}
   roots::Vector{Vector{T}}
   coroots::Vector{Vector{T}}
+  cartan::Array{T,2}
   G::PermGroup{T1}
   prop::Dict{Symbol,Any}
 end
+
+function refltype end
 
 Gapjm.gens(W::PermRootGroup)=gens(W.G)
 Base.one(W::PermRootGroup)=one(W.G)
 PermGroups.orbit_and_representative(W::PermRootGroup,i)=orbit_and_representative(W.G,i)
 Base.length(W::PermRootGroup)=length(W.G)
-PermGroups.element(W::PermRootGroup,w::AbstractVector{<:Integer})=element(W.G,w)
+PermGroups.element(W::PermRootGroup,x...)=element(W.G,x...)
 
 function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
   matgens=map(reflection,r,cr)
@@ -73,7 +77,7 @@ function root_representatives(W::PermRootGroup)
 end
 
 "for each root index of simple representative"
-function CoxGroups.simple_representatives(W::PermRootGroup{T})::Vector{T} where T
+function simple_representatives(W::PermRootGroup{T})::Vector{T} where T
   getp(root_representatives,W,:rootreps)
 end
   
@@ -86,7 +90,14 @@ function reflections(W::PermRootGroup{T,T1})::Vector{Perm{T1}} where{T,T1}
   getp(root_representatives,W,:reflections)
 end
 
-function CoxGroups.reflection(W::PermRootGroup,i)
+" the matrix of the reflection of given root and coroot"
+function reflection(root::Vector,coroot::Vector)
+  root,coroot=promote(root,coroot)
+  m=[i*j for i in coroot, j in root]
+  one(m)-m
+end
+
+function reflection(W::PermRootGroup,i)
   reflections(W)[i]
 end
 
@@ -123,6 +134,40 @@ end
 
 function cartanmat(W::PermRootGroup)
   [cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in eachindex(gens(W))]
+end
+
+struct PermRootSubGroup{T}
+  G::PermGroup{T}
+  inclusion::Vector{Int}
+  restriction::Vector{Int}
+  parent::PermRootGroup{T}
+  cartan::Array{T,2}
+  type::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
+  prop::Dict{Symbol,Any}
+end
+
+cartancoeff(W::PermRootSubGroup,i,j)=cartancoeff(W.parent,W.inclusion[i],W.inclusion[j])
+Gapjm.gens(W::PermRootSubGroup)=gens(W.G)
+Base.one(W::PermRootSubGroup)=one(W.G)
+
+ReflectionSubGroup(W::PermRootSubGroup,I::AbstractVector{Int})=
+  ReflectionSubGroup(W.parent,W.inclusion[I])
+
+function root_representatives(W::PermRootSubGroup)
+  reps=fill(0,2*W.N)
+  repelts=fill(one(W),2*W.N)
+  for i in eachindex(gens(W))
+    if iszero(reps[i])
+      d=orbit_and_representative(W.G,W.inclusion[i])
+      for (n,e) in d 
+        reps[W.restriction[n]]=i
+        repelts[W.restriction[n]]=e
+      end
+    end
+  end
+  W.prop[:rootreps]=reps
+  W.prop[:repelms]=repelts
+  W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
 end
 
 end

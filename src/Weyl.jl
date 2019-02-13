@@ -148,7 +148,7 @@ The elements of a Weyl group are permutations of the roots:
 julia> W=WeylGroup(:D,4)
 W(D₄)
 
-julia> p=element(W,[1,3,2,1,3])
+julia> p=W(1,3,2,1,3)
 {Int16}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)
 
 julia> word(W,p)
@@ -169,7 +169,7 @@ The dictionary from CHEVIE is as follows:
      ForEachElement(W,f)                    →  for w in W f(w) end 
      ReflectionDegrees(W)                   →  degrees(W) 
      IsLeftDescending(W,w,i)                →  isleftdescent(W,w,i) 
-     ReflectionSubgroup : only standard parabolics now
+     ReflectionSubGroup : only standard parabolics now
      TwoTree(m)                             →  twotree(m) 
      FiniteCoxeterTypeFromCartanMat(m)      →  type_cartan(m) 
      RootsCartan(m)                         →  roots(m) 
@@ -187,8 +187,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export cartan, WeylGroup, inversions, simple_conjugating_element, 
-  two_tree, CharTable
+export cartan, WeylGroup, inversions, two_tree, CharTable
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -351,9 +350,7 @@ inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-CoxGroups.name(W::FiniteCoxeterGroup)::String=W.prop[:name]
-
-CoxGroups.coxtype(W::FiniteCoxeterGroup)=W.coxtype
+PermRoot.refltype(W::FiniteCoxeterGroup)=W.refltype
 
 """
   The reflection degrees of W
@@ -367,17 +364,11 @@ struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermRootGroup{T,T}
   rootdec::Vector{Vector{T}}
   N::Int
-  cartan::Array{T,2}
-  coxtype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
+  refltype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
   prop::Dict{Symbol,Any}
 end
 
-" the matrix of the reflection of given root and coroot"
-function CoxGroups.reflection(root::Vector,coroot::Vector)
-  root,coroot=promote(root,coroot)
-  m=[i*j for i in coroot, j in root]
-  one(m)-m
-end
+cartan(W::WeylGroup)=W.G.cartan
 
 " Weyl group from Cartan matrix"
 function WeylGroup(C::Matrix{T}) where T<:Integer
@@ -398,37 +389,35 @@ function WeylGroup(C::Matrix{T}) where T<:Integer
   gens=perms(r,matgens)
   rank=size(C,1)
   t=type_cartan(C)
-  name=join(map(t)do (series,indices)
+  G=PermRootGroup(matgens,r,r[1:rank],C,PermGroup(gens),Dict{Symbol,Any}())
+  WeylGroup(G,r,N,t,Dict{Symbol,Any}())
+end
+
+function Base.show(io::IO, W::WeylGroup)
+  print(io,join(map(refltype(W))do (series,indices)
              n="W($series"*TeXstrip("_{$(length(indices))}")
     if indices!=eachindex(indices)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
       n*=TeXstrip("_{($ind)}")
     end
     n*")"
-  end,"×")
-  G=PermRootGroup(matgens,r,r[1:rank],PermGroup(gens),Dict{Symbol,Any}())
-  WeylGroup(G,r,N,C,t,Dict{Symbol,Any}(:name=>name))
+  end,"×"))
 end
-
+  
 "Weyl group from type"
 WeylGroup{T}(t::Symbol,r::Int=0) where T<:Integer=WeylGroup(T.(cartan(t,r)))
 WeylGroup(t::Symbol,r::Int=0)=WeylGroup(Int16.(cartan(t,r)))
 
 struct WeylSubGroup{T} <: FiniteCoxeterGroup{Perm{T}}
-  G::PermGroup{T}
-  inclusion::Vector{Int} # for subgroups
+  G::PermRootSubGroup{T}
   rootdec::Vector{Vector{T}}
-  parent::WeylGroup{T}
   N::Int
-  cartan::Array{T,2}
-  coxtype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
+  parent::WeylGroup{T}
   prop::Dict{Symbol,Any}
 end
 
-(W::WeylGroup)(x...)=element(W.G,collect(x))
-(W::WeylGroup)(x::AbstractVector)=element(W.G,x)
-(W::WeylSubGroup)(x...)=element(W.G,collect(x))
-(W::WeylSubGroup)(x::AbstractVector)=element(W.G,x)
+(W::WeylGroup)(x...)=element(W.G,x...)
+(W::WeylSubGroup)(x...)=element(W.G,x...)
 
 "number of reflections of W"
 @inline CoxGroups.nref(W::WeylGroup)=W.N
@@ -443,17 +432,16 @@ matX(W::WeylSubGroup,w)=matX(W.parent,w)
 
 function cartancoeff(W::WeylGroup,i,j)
   v=findfirst(x->!iszero(x),root(W,i))
-  j=root(W,j)-root(W,j^reflection(W,i))
-  div(j[v],root(W,i)[v])
+  r=root(W,j)-root(W,j^reflection(W,i))
+  div(r[v],root(W,i)[v])
 end
-cartancoeff(W::WeylSubGroup,i,j)=cartancoeff(W.parent,W.inclusion[i],W.inclusion[j])
 
-function CoxGroups.ReflectionSubgroup(W::WeylGroup,I::AbstractVector{Int})
+function PermRoot.ReflectionSubGroup(W::WeylGroup,I::AbstractVector{Int})
   G=PermGroup(reflection.(Ref(W),I))
   inclusion=sort!(vcat(orbits(G,I)...))
   N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)
-    C=W.cartan[I,I]
+    C=cartan(W)[I,I]
   else
     I=filter(inclusion[1:N]) do i
       cnt=0
@@ -470,39 +458,29 @@ function CoxGroups.ReflectionSubgroup(W::WeylGroup,I::AbstractVector{Int})
   inclusion=map(rootdec)do r
     findfirst(isequal(sum(r.*W.rootdec[I])),W.rootdec)
   end
-  n=any(i->i>=10,I) ? join(I,",") : join(I)
-  n=name(W)*TeXstrip("_{$n}")
-  WeylSubGroup(G,inclusion,rootdec,W,N,C,type_cartan(C),Dict{Symbol,Any}(:name=>n))
+  restriction=collect(1:2*W.N)
+  restriction[inclusion]=1:length(inclusion)
+  G=PermRootSubGroup(G,inclusion,restriction,W.G,C,type_cartan(C),Dict{Symbol,Any}())
+  WeylSubGroup(G,rootdec,N,W,Dict{Symbol,Any}())
 end
 
-CoxGroups.ReflectionSubgroup(W::WeylSubGroup,I::AbstractVector{Int})=
-  ReflectionSubgroup(W.parent,W.inclusion[I])
+function Base.show(io::IO, W::WeylSubGroup)
+  I=W.inclusion[1..coxrank(W)]
+  n=any(i->i>=10,I) ? join(I,",") : join(I)
+  print(io,repr(W)*TeXstrip("_{$n}"))
+end
+  
+PermRoot.ReflectionSubGroup(W::WeylSubGroup,I::AbstractVector{Int})=
+  ReflectionSubGroup(W.parent,W.G.inclusion[I])
 
 function Base.:*(W::WeylGroup...)
   WeylGroup(cat(map(x->x.cartan,W)...,dims=[1,2]))
 end
 
 CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.N
-CoxGroups.isleftdescent(W::WeylSubGroup,w,i::Int)=W.inclusion[i]^w>W.parent.N
+CoxGroups.isleftdescent(W::WeylSubGroup,w,i::Int)=W.G.inclusion[i]^w>W.parent.N
 
 Base.length(W::WeylGroup)=prod(degrees(W))
-
-function root_representatives(W::WeylSubGroup)
-  reps=fill(0,2*W.N)
-  repelts=fill(one(W),2*W.N)
-  for i in eachindex(coxgens(W))
-    if iszero(reps[i])
-      d=orbit_and_representative(W.G,W.inclusion[i])
-      for (n,e) in d 
-        reps[W.restriction[n]]=i
-        repelts[W.restriction[n]]=e
-      end
-    end
-  end
-  W.prop[:rootreps]=reps
-  W.prop[:repelms]=repelts
-  W.prop[:reflections]=map((i,p)->coxgens(W)[i]^p,reps,repelts)
-end
 
 "for each root index of simple representative"
 CoxGroups.simple_representatives(W::WeylGroup)=simple_representatives(W.G)
