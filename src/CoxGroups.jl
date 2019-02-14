@@ -158,8 +158,8 @@ The dictionary from CHEVIE is as follows:
 """
 module CoxGroups
 
-export bruhatless, CoxeterGroup, coxrank, coxsym,
-firstleftdescent, leftdescents, longest, name, reduced, diagram
+export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, longest, reduced,
+coxsym
 
 export isleftdescent, nref # 'virtual' methods
 
@@ -338,47 +338,6 @@ function reduced_words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
   vcat(map(x->vcat.(Ref([x]),reduced_words(W,gens(W)[x]*w)),l)...)
-end
-
-function diagram(;series::Symbol,indices::AbstractVector{Int})
-  ind=repr.(indices)
-  l=length.(ind)
-  bar(n)="\u2014"^n
-  rdarrow(n)="\u21D0"^(n-1)*" "
-  ldarrow(n)="\u21D2"^(n-1)*" "
-  tarrow(n)="\u21DB"^(n-1)*" "
-  vbar="\UFFE8" # "\u2503"
-  node="O"
-  if series==:A
-    println(join(map(l->node*bar(l),l[1:end-1])),node)
-    println(join(ind," "))
-  elseif series==:B
-    println(node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
-    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
-  elseif series==:C
-    println(node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
-    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
-  elseif series==:D
-    println(" "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
-    println(node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
-    println(ind[1]," ",join(ind[3:end]," "))
-  elseif series==:E
-    dec=2+l[1]+l[3]
-    println(" "^dec,"O $(ind[2])\n"," "^dec,vbar)
-    println(node,bar(l[1]),node,bar(l[3]),
-              join(map(l->node*bar(l),l[4:end-1])),node)
-    println(join(vcat(ind[1],ind[3:end])," "))
-  elseif series==:F
-    println(node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
-    println(ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
-  elseif series==:G
-    println(node,tarrow(max(l[1],2)),node)
-    println(ind[1]," "^max(3-l[1],1),ind[2])
-  end
-end
-
-function diagram(v::Vector)
-  for t in v diagram(;t...) end
 end
 
 "diagram of finite Coxeter group"

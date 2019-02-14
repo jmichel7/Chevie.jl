@@ -97,9 +97,7 @@ function reflection(root::Vector,coroot::Vector)
   one(m)-m
 end
 
-function reflection(W::PermRootGroup,i)
-  reflections(W)[i]
-end
+reflection(W::PermRootGroup,i)=reflections(W)[i]
 
 function independent_roots(W::PermRootGroup)::Vector{Int}
   gets(W,:indeproots) do W

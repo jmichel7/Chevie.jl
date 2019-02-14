@@ -187,7 +187,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export cartan, WeylGroup, inversions, two_tree, CharTable
+export cartan, WeylGroup, inversions, two_tree, CharTable, diagram
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -241,14 +241,13 @@ julia> CoxGroups.two_tree(cartan(:E,8))
 (4, [2], [3, 1], [5, 6, 7, 8])
 ```
 """
-two_tree=function ( m )
-  branch= function ( x )
+two_tree=function(m::Matrix)
+  function branch(x)
     while true
-      x=findfirst(i->m[x,i]!=0 && !(i in line),1:r)
+      x=findfirst(i->m[x,i]!=0 && !(i in line),axes(m,2))
       if !isnothing(x) push!(line,x) else break end
     end
   end
-  r=size(m,1)
   line=[1]
   branch(1)
   l=length(line)
@@ -256,19 +255,14 @@ two_tree=function ( m )
   line=vcat(line[end:-1:l+1],line[1:l])
   l=length(line)
   if any(i->any(j->m[line[j],line[i]]!=0,1:i-2),1:l) return nothing end
+  r=size(m,1)
   if l==r return line end
   p = findfirst(x->any(i->!(i in line)&&(m[x,i]!=0),1:r),line)
   branch(line[p])
-  if length( line ) != r  return nothing end
+  if length(line)!=r return nothing end
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
-"""
-    type_cartan(C)
-
- return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
-"""
-function type_cartan(m::Matrix{<:Integer})
 " (series,rank) for an irreducible Cartan matrix"
 function type_irred_cartan(m::Matrix{<:Integer})
   rank=size(m,1)
@@ -277,9 +271,9 @@ function type_irred_cartan(m::Matrix{<:Integer})
   if l isa Tuple # types D,E
     (vertex,b1,b2,b3)=l
     if length(b2)==1 series=:D 
-      indices=vcat(b1,b2,[vertex],b3) 
+      indices=vcat(b1,b2,[vertex],b3)::Vector{Int}
     else series=:E 
-      indices=vcat([b2[2],b1[1],b2[1],vertex],b3) 
+      indices=vcat([b2[2],b1[1],b2[1],vertex],b3)::Vector{Int}
     end 
   else  # types A,B,C,F,G
     n=m[l,l] 
@@ -307,41 +301,86 @@ function type_irred_cartan(m::Matrix{<:Integer})
       else series=:C
       end  
     end 
-    indices=l 
+    indices=l::Vector{Int}
   end 
   if cartan(series,rank)!=m[indices,indices] return nothing end  # countercheck
   (series,indices)
 end
+
+"""
+    type_cartan(C)
+
+ return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
+"""
+function type_cartan(m::Matrix{<:Integer})
   map(blocks(m))do I
     (t,indices)=type_irred_cartan(m[I,I])
     (series=t,indices=I[indices])
   end
 end
 
+function diagram(;series::Symbol,indices::AbstractVector{Int})
+  ind=repr.(indices)
+  l=length.(ind)
+  bar(n)="\u2014"^n
+  rdarrow(n)="\u21D0"^(n-1)*" "
+  ldarrow(n)="\u21D2"^(n-1)*" "
+  tarrow(n)="\u21DB"^(n-1)*" "
+  vbar="\UFFE8" # "\u2503"
+  node="O"
+  if series==:A
+    println(join(map(l->node*bar(l),l[1:end-1])),node)
+    println(join(ind," "))
+  elseif series==:B
+    println(node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
+    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+  elseif series==:C
+    println(node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),node)
+    println(ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+  elseif series==:D
+    println(" "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
+    println(node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
+    println(ind[1]," ",join(ind[3:end]," "))
+  elseif series==:E
+    dec=2+l[1]+l[3]
+    println(" "^dec,"O $(ind[2])\n"," "^dec,vbar)
+    println(node,bar(l[1]),node,bar(l[3]),
+              join(map(l->node*bar(l),l[4:end-1])),node)
+    println(join(vcat(ind[1],ind[3:end])," "))
+  elseif series==:F
+    println(node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
+    println(ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
+  elseif series==:G
+    println(node,tarrow(max(l[1],2)),node)
+    println(ind[1]," "^max(3-l[1],1),ind[2])
+  end
+end
+
+function diagram(v::Vector)
+  for t in v diagram(;t...) end
+end
+
 """
     roots(C)
 
- return the set of positive roots defined by integral Cartan matrix C
+ return the set of positive roots defined by the integral Cartan matrix C
 """
-function roots(C::Matrix{<:Integer})
-  l=size(C,1)
-  Pi=one(C)
-  Pi=[Pi[i,:] for i in 1:l]
+function roots(C::Matrix{T})where T<:Integer
+  Pi=[T.(axes(C,1) .== i) for i in axes(C,1)] # fast way to get rows of one(C)
   R=typeof(Pi)[]
   old=Pi
   while length(old)!=0
-    old=union(old)
     push!(R,old)
-    new=eltype(Pi)[]
-    for r in old, j in 1:l
-      p =C[j,:]'*r
+    new=empty(Pi)
+    for r in old, j in axes(C,1)
+      p=sum(C[j,:].*r)
       if p<0 || (length(R)>p+1 && r[j]>p && (r-(p+1)*Pi[j] in R[end-p-1]))
-        push!(new,r+Pi[j])
+        if !(r+Pi[j] in new) push!(new,r+Pi[j]) end
       end
     end
     old=new
   end
-  vcat(R...)
+  vcat(R...)::Vector{Vector{T}}
 end
 #--------------- Weyl groups --------------------------------------------
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
@@ -370,27 +409,26 @@ end
 
 cartan(W::WeylGroup)=W.G.cartan
 
+WeylGroup(C)=WeylGroup(one(C),C)
+
 " Weyl group from Cartan matrix"
-function WeylGroup(C::Matrix{T}) where T<:Integer
-  r=roots(C)
-  N=length(r)
+function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
+  C=cr*permutedims(rr)
+  rootdec=roots(C)
+  N=length(rootdec)
+  r=Ref(permutedims(rr)).*rootdec
   r=vcat(r,-r)
   # the reflections defined by Cartan matrix C
-  matgens=[reflection(r[i],C[i,:]) for i in axes(C,1)]
+  matgens=[reflection(rr[i,:],cr[i,:]) for i in axes(C,1)]
   """
     the permutations of the roots r effected by the matrices mm
   """
-  function perms(r,mm)
-    s=Perm{T}(sortperm(r))
-    map(mm)do m
-      inv(Perm{T}(sortperm(map(v->(v'*m)',r))))*s
-    end
-  end
-  gens=perms(r,matgens)
+  s=Perm{T}(sortperm(r))
+  gens=map(m->inv(Perm{T}(sortperm(Ref(permutedims(m)).*r)))*s,matgens)
   rank=size(C,1)
   t=type_cartan(C)
-  G=PermRootGroup(matgens,r,r[1:rank],C,PermGroup(gens),Dict{Symbol,Any}())
-  WeylGroup(G,r,N,t,Dict{Symbol,Any}())
+  G=PermRootGroup(matgens,r,map(i->cr[i,:],1:rank),C,PermGroup(gens),Dict{Symbol,Any}())
+  WeylGroup(G,rootdec,N,t,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::WeylGroup)
@@ -436,13 +474,14 @@ function cartancoeff(W::WeylGroup,i,j)
   div(r[v],root(W,i)[v])
 end
 
-function PermRoot.ReflectionSubGroup(W::WeylGroup,I::AbstractVector{Int})
-  G=PermGroup(reflection.(Ref(W),I))
-  inclusion=sort!(vcat(orbits(G,I)...))
+function PermRoot.ReflectionSubGroup(W::WeylGroup{T},I::AbstractVector{Int})where T
+  G=PermGroup(reflection.(Ref(W),I)::Vector{Perm{T}})
+  inclusion=sort!(vcat(orbits(G,I)...))::Vector{Int}
   N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)
     C=cartan(W)[I,I]
   else
+    let N=N
     I=filter(inclusion[1:N]) do i
       cnt=0
       r=reflection(W,i)
@@ -451,8 +490,9 @@ function PermRoot.ReflectionSubGroup(W::WeylGroup,I::AbstractVector{Int})
       end
       return true
     end
-    G=PermGroup(reflection.(Ref(W),I))
-    C=[cartancoeff(W,i,j) for i in I, j in I]
+    end
+    G=PermGroup(reflection.(Ref(W),I)::Vector{Perm{T}})
+    C=T[cartancoeff(W,i,j) for i in I, j in I]
   end
   rootdec=roots(C)
   inclusion=map(rootdec)do r
@@ -465,9 +505,9 @@ function PermRoot.ReflectionSubGroup(W::WeylGroup,I::AbstractVector{Int})
 end
 
 function Base.show(io::IO, W::WeylSubGroup)
-  I=W.inclusion[1..coxrank(W)]
+  I=W.G.inclusion[1:coxrank(W)]
   n=any(i->i>=10,I) ? join(I,",") : join(I)
-  print(io,repr(W)*TeXstrip("_{$n}"))
+  print(io,repr(W.parent)*TeXstrip("_{$n}"))
 end
   
 PermRoot.ReflectionSubGroup(W::WeylSubGroup,I::AbstractVector{Int})=
@@ -489,7 +529,7 @@ CoxGroups.simple_representatives(W::WeylGroup)=simple_representatives(W.G)
 simple_conjugating_element(W::WeylGroup,i)=
    simple_conjugating_element(W.G,i)
 
-CoxGroups.reflection(W::WeylGroup,i::Integer)=reflection(W.G,i)
+PermRoot.reflection(W::WeylGroup,i::Integer)=reflection(W.G,i)
 
 struct CharTable{T}
   irr::Matrix{T}
