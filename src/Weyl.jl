@@ -187,7 +187,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export cartan, WeylGroup, inversions, two_tree, CharTable, diagram
+export WeylGroup, inversions, two_tree, CharTable, diagram
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -205,7 +205,7 @@ julia> cartan(:A,4)
   0   0  -1   2
 ```
 """
-function cartan(t::Symbol,r::Int=0)
+function PermRoot.cartan(t::Symbol,r::Int=0)
   if t==:A return Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
   m=cartan(:A,r) 
   if t==:B m[1,2]=-2 
@@ -389,7 +389,8 @@ inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-PermRoot.refltype(W::FiniteCoxeterGroup)=W.refltype
+PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}=
+   gets(W->type_cartan(cartan(W)),W,:refltype)
 
 """
   The reflection degrees of W
@@ -403,11 +404,13 @@ struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermRootGroup{T,T}
   rootdec::Vector{Vector{T}}
   N::Int
-  refltype::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}
   prop::Dict{Symbol,Any}
 end
 
-cartan(W::WeylGroup)=W.G.cartan
+PermRoot.cartan(W::WeylGroup)=cartan(W.G)
+(W::WeylGroup)(x...)=element(W.G,x...)
+"number of reflections of W"
+@inline CoxGroups.nref(W::WeylGroup)=W.N
 
 WeylGroup(C)=WeylGroup(one(C),C)
 
@@ -426,9 +429,9 @@ function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
   s=Perm{T}(sortperm(r))
   gens=map(m->inv(Perm{T}(sortperm(Ref(permutedims(m)).*r)))*s,matgens)
   rank=size(C,1)
-  t=type_cartan(C)
-  G=PermRootGroup(matgens,r,map(i->cr[i,:],1:rank),C,PermGroup(gens),Dict{Symbol,Any}())
-  WeylGroup(G,rootdec,N,t,Dict{Symbol,Any}())
+  G=PermRootGroup(matgens,r,map(i->cr[i,:],1:rank),PermGroup(gens),
+    Dict{Symbol,Any}(:cartan=>C))
+  WeylGroup(G,rootdec,N,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::WeylGroup)
@@ -454,11 +457,8 @@ struct WeylSubGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-(W::WeylGroup)(x...)=element(W.G,x...)
 (W::WeylSubGroup)(x...)=element(W.G,x...)
-
-"number of reflections of W"
-@inline CoxGroups.nref(W::WeylGroup)=W.N
+PermRoot.cartan(W::WeylSubGroup)=cartan(W.G)
 @inline CoxGroups.nref(W::WeylSubGroup)=W.N
 
 root(W::WeylGroup,i)=W.G.roots[i]
@@ -500,7 +500,7 @@ function PermRoot.ReflectionSubGroup(W::WeylGroup{T},I::AbstractVector{Int})wher
   end
   restriction=collect(1:2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  G=PermRootSubGroup(G,inclusion,restriction,W.G,C,type_cartan(C),Dict{Symbol,Any}())
+  G=PermRootSubGroup(G,inclusion,restriction,W.G,Dict{Symbol,Any}(:cartan=>C))
   WeylSubGroup(G,rootdec,N,W,Dict{Symbol,Any}())
 end
 

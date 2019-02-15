@@ -600,7 +600,7 @@ Base.conj(c::Cyc)=galois(c,-1)
 function Base.inv(c::Cyc)
   if c.n==1
     r=Real(c)
-    if r^2==1 return r else return Cyc(inv(r)) end
+    if r^2==1 return Cyc(r) else return Cyc(inv(r)) end
   else
     r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
     n=Real(c*r)
