@@ -203,6 +203,11 @@ function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
 end
 
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
+function Base.://(p::Pol,q::Pol)
+  if q^2==Pol(1) return p*q
+  else error("divsion of polynomials not implemented")
+  end
+end
 Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
 
 """

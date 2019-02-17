@@ -218,6 +218,13 @@ function PermRoot.cartan(t::Symbol,r::Int=0)
   m
 end
 
+function PermRoot.cartan(t::Dict{Symbol,Any})
+  if haskey(t,:cartantype) && t[:series]==:B &&t[:cartantype]==1
+       cartan(:C,length(t[:indices]))
+  else cartan(t[:series],length(t[:indices]))
+  end
+end
+
 """
     two_tree(m)
 
@@ -266,45 +273,46 @@ end
 " (series,rank) for an irreducible Cartan matrix"
 function type_irred_cartan(m::Matrix{<:Integer})
   rank=size(m,1)
-  l=two_tree(m)
-  if isnothing(l) return nothing end
-  if l isa Tuple # types D,E
-    (vertex,b1,b2,b3)=l
-    if length(b2)==1 series=:D 
-      indices=vcat(b1,b2,[vertex],b3)::Vector{Int}
-    else series=:E 
-      indices=vcat([b2[2],b1[1],b2[1],vertex],b3)::Vector{Int}
+  s=two_tree(m)
+  if isnothing(s) return nothing end
+  t=Dict{Symbol,Any}()
+  if s isa Tuple # types D,E
+    (vertex,b1,b2,b3)=s
+    if length(b2)==1 t[:series]=:D 
+      t[:indices]=vcat(b1,b2,[vertex],b3)::Vector{Int}
+    else t[:series]=:E 
+      t[:indices]=vcat([b2[2],b1[1],b2[1],vertex],b3)::Vector{Int}
     end 
   else  # types A,B,C,F,G
-    n=m[l,l] 
-    co=i->n[i,i+1]*n[i+1,i] 
-    function rev()
-      l=l[end:-1:1] 
-      n=m[l,l]
-    end
-    if rank==1 series=:A 
+    l=i->m[s[i],s[i+1]]
+    r=i->m[s[i+1],s[i]] 
+    function rev() s=s[end:-1:1] end
+    if rank==1 t[:series]=:A 
     elseif rank==2 
-      if co(1)==1 series=:A 
-      elseif co(1)==2 series=:B  
-        if n[1,2]==-1 rev() end # B2 preferred to C2
-      elseif co(1)==3 series=:G  
-        if n[1,2]!=-1 rev() end 
+      if l(1)*r(1)==1 t[:series]=:A 
+      elseif l(1)*r(1)==2 t[:series]=:B  
+        if l(1)==-1 rev() end # B2 preferred to C2
+        t[:cartantype]=2
+      elseif l(1)*r(1)==3 t[:series]=:G  
+        if l(1)!=-1 rev() end 
+        t[:cartantype]=1
       end
     else
-      if co(rank-1)!=1 rev() end 
-      if co(1)==1
-        if co(2)==1 series=:A 
-        else series=:F
-          if n[2,3]==-2 rev() end 
-        end 
-      elseif n[1,2]==-2 series=:B
-      else series=:C
+      if l(rank-1)*r(rank-1)!=1 rev() end 
+      if l(1)*r(1)==1
+        if l(2)*r(2)==1 t[:series]=:A 
+        else t[:series]=:F
+          if l(2)!=-1 rev() end 
+        end
+        t[:cartantype]=1
+      else t[:series]=:B
+        t[:cartantype]=-l(1)
       end  
     end 
-    indices=l::Vector{Int}
+    t[:indices]=s::Vector{Int}
   end 
-  if cartan(series,rank)!=m[indices,indices] return nothing end  # countercheck
-  (series,indices)
+  if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
+  t
 end
 
 """
@@ -312,14 +320,11 @@ end
 
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
-function type_cartan(m::Matrix{<:Integer})
-  map(blocks(m))do I
-    (t,indices)=type_irred_cartan(m[I,I])
-    (series=t,indices=I[indices])
-  end
-end
+type_cartan(m::Matrix{<:Integer})=map(I->type_irred_cartan(m[I,I]),blocks(m))
 
-function diagram(;series::Symbol,indices::AbstractVector{Int})
+function diagram(t::Dict{Symbol,Any})
+  series=t[:series]::Symbol
+  indices=t[:indices]::Vector{Int}
   ind=repr.(indices)
   l=length.(ind)
   bar(n)="\u2014"^n
@@ -356,9 +361,7 @@ function diagram(;series::Symbol,indices::AbstractVector{Int})
   end
 end
 
-function diagram(v::Vector)
-  for t in v diagram(;t...) end
-end
+diagram(v::Vector)=for t in v diagram(t) end
 
 """
     roots(C)
@@ -389,7 +392,7 @@ inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{NamedTuple{(:series,:indices),Tuple{Symbol,Vector{Int}}}}=
+PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{Dict{Symbol,Any}}=
    gets(W->type_cartan(cartan(W)),W,:refltype)
 
 """
@@ -435,8 +438,13 @@ function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
 end
 
 function Base.show(io::IO, W::WeylGroup)
-  print(io,join(map(refltype(W))do (series,indices)
-             n="W($series"*TeXstrip("_{$(length(indices))}")
+  print(io,join(map(refltype(W))do t
+    indices=t[:indices]
+    s=t[:series]
+    if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
+      s=:C
+    end
+    n="W($s"*TeXstrip("_{$(length(indices))}")
     if indices!=eachindex(indices)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
       n*=TeXstrip("_{($ind)}")
@@ -514,7 +522,7 @@ PermRoot.ReflectionSubGroup(W::WeylSubGroup,I::AbstractVector{Int})=
   ReflectionSubGroup(W.parent,W.G.inclusion[I])
 
 function Base.:*(W::WeylGroup...)
-  WeylGroup(cat(map(x->x.cartan,W)...,dims=[1,2]))
+  WeylGroup(cat(map(cartan,W)...,dims=[1,2]))
 end
 
 CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.N
@@ -541,8 +549,8 @@ end
 
 function Base.show(io::IO,ct::CharTable)
   println(io,"CharTable(",ct.identifier,")")
-  format(io,ct.irr,row_labels=map(TeXstrip,ct.charnames),
-                column_labels=map(TeXstrip,ct.classnames))
+  format(io,ct.irr,row_labels=TeXstrip.(ct.charnames),
+                column_labels=TeXstrip.(ct.classnames))
 end
 
 end

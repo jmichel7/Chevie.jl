@@ -2,7 +2,7 @@ module PermRoot
 
 export PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
 simple_representatives, simple_conjugating_element, reflections, reflection, 
-refltype, diagram, cartan
+refltype, diagram, cartan, independent_roots
 
 using Gapjm
 
@@ -102,8 +102,8 @@ prim = [
 
   r=length(independent_roots(W)) # rank of W
   s=div(length(W),factorial(r))
-  if s==r+1 return (series = :A, rank = r)
-  elseif r==1 return (series=:ST,p=s,q=1,rank=1)
+  if s==r+1 return Dict(:series => :A, :rank => r)
+  elseif r==1 return Dict(:series=>:ST,:p=>s,:q=>1,:rank=>1)
   else l=([p.^(a+m-a*r,a*r-m) for a in div(m+r-1,r):div(m,r-1)]
                        for (p,m) in factor(s))
     de=vec((x->(d=prod(first.(x)),e=prod(last.(x)))).(Iterators.product(l...)))
@@ -119,7 +119,7 @@ prim = [
     if h==de[1].e de=[de[1]]
     elseif h==2*de[2].e+2 de = [de[2]]
     elseif length(ST) != 1 || h != ST[1].h error("theory")
-    else return (series=:ST, ST=ST[1].ST, rank= r)
+    else return Dict(:series=>:ST, :ST=>ST[1].ST, :rank=> r)
     end
   end
   if length(de) > 0 && length(ST) > 0
@@ -127,28 +127,28 @@ prim = [
     if length(ST) > 1 error("theory")
     elseif length(ST) > 0
       if h == de[1].d*((r-1)*de[1].e+1) error("theory") end
-      return (series = :ST, ST =ST[1].ST, rank=r)
+      return Dict(:series => :ST, :ST =>ST[1].ST, :rank=>r)
     end
   end
   if length(de) == 0
     if length(ST) != 1 error("theory")
     elseif haskey(ST[1], :ST)
-         return (series=:ST, ST =ST[1].ST, rank = r)
-    else return (series=ST[1].series, rank = r)
+         return Dict(:series=>:ST, :ST =>ST[1].ST, :rank => r)
+    else return Dict(:series=>ST[1].series, :rank => r)
     end
   end
   de = de[1]
-  if de.d == 2 && de.e == 1 return (series=:B, rank=r) end
+  if de.d == 2 && de.e == 1 return Dict(:series=>:B, :rank=>r) end
   if de.d == 1
-      if de.e == 2 return (series=:D,rank=r)
+      if de.e == 2 return Dict(:series=>:D,:rank=>r)
       elseif r == 2
-        if de.e == 4 return (series=:B, rank=2)
-        elseif de.e == 6 return (series=:G, rank=2)
-        else return (series=:I, rank=2, bond=de[:e])
+        if de.e == 4 return Dict(:series=>:B, :rank=>2)
+        elseif de.e == 6 return Dict(:series=>:G, :rank=>2)
+        else return Dict(:series=>:I, :rank=>2, :bond=>de[:e])
         end
       end
   end
-  return (series=:ST, p=de.d * de.e, q=de.e, rank=r)
+  return Dict(:series=>:ST, :p=>de.d * de.e, :q=>de.e, :rank=>r)
 end
 
 refltype(W::AbstractPermRootGroup)=type_irred(W)
