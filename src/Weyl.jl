@@ -113,11 +113,11 @@ If one only wants to work with Cartan matrices with a labeling as specified
 by  the  above  list,  the  function  call  can  be  simplified. Instead of
 'WeylGroup(CartanMat(:D,4))' the following is also possible.
 
-```
+```julia-repl
 julia> W=WeylGroup(:D,4)
 W(D₄)
 
-julia> W.cartan
+julia> cartan(W)
 4×4 Array{Int64,2}:
   2   0  -1   0
   0   2  -1   0
@@ -128,11 +128,11 @@ julia> W.cartan
 Also,  the Weyl group struct associated to a direct sum of irreducible root
 systems can be obtained as a product
 
-```
+```julia-repl
 julia> W=WeylGroup(:A,2)*WeylGroup(:B,2)
-W(A₂)×W(B₂₍₃₄₎)
+W(A₂)×W(B₂)
 
-julia> W.cartan
+julia> cartan(W)
 4×4 Array{Int64,2}:
   2  -1   0   0
  -1   2   0   0
@@ -169,14 +169,14 @@ The dictionary from CHEVIE is as follows:
      ForEachElement(W,f)                    →  for w in W f(w) end 
      ReflectionDegrees(W)                   →  degrees(W) 
      IsLeftDescending(W,w,i)                →  isleftdescent(W,w,i) 
-     ReflectionSubGroup : only standard parabolics now
+     ReflectionSubgroup                     →  ReflectionSubGroup
      TwoTree(m)                             →  twotree(m) 
      FiniteCoxeterTypeFromCartanMat(m)      →  type_cartan(m) 
      RootsCartan(m)                         →  roots(m) 
      PrintDiagram(W)                        →  diagram(W) 
      Inversions                             →  inversions 
      Reflection                             →  reflection 
-     W.orbitRepresentative                  →  simple_representatives(W) 
+     W.orbitRepresentative[i]               →  simple_representative(W,i) 
 ```
 finally, a benchmark on julia 1.0.2
 ```benchmark
@@ -385,9 +385,10 @@ function roots(C::Matrix{T})where T<:Integer
   end
   vcat(R...)::Vector{Vector{T}}
 end
-#--------------- Weyl groups --------------------------------------------
+#--------------- Finite Coxeter groups --------------------------------------
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 
+# finite Coxeter groups have functions nref and fields rootdec
 inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i)]
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
@@ -403,6 +404,10 @@ function Gapjm.degrees(W::FiniteCoxeterGroup)
   reverse(1 .+conjugate_partition(l))
 end
 
+Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
+
+@inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+#--------------- WeylGroup --------------------------------------------
 struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermRootGroup{T,T}
   rootdec::Vector{Vector{T}}
@@ -410,14 +415,20 @@ struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-PermRoot.cartan(W::WeylGroup)=cartan(W.G)
 (W::WeylGroup)(x...)=element(W.G,x...)
 "number of reflections of W"
 @inline CoxGroups.nref(W::WeylGroup)=W.N
+root(W::WeylGroup,i)=W.G.roots[i]
+CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.N
 
+"Weyl group from type"
+WeylGroup{T}(t::Symbol,r::Int=0) where T<:Integer=WeylGroup(T.(cartan(t,r)))
+WeylGroup(t::Symbol,r::Int=0)=WeylGroup(Int16.(cartan(t,r)))
+
+" Weyl group from cartan mat"
 WeylGroup(C)=WeylGroup(one(C),C)
 
-" Weyl group from Cartan matrix"
+" Weyl group from roots and coroot"
 function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
   C=cr*permutedims(rr)
   rootdec=roots(C)
@@ -453,10 +464,30 @@ function Base.show(io::IO, W::WeylGroup)
   end,"×"))
 end
   
-"Weyl group from type"
-WeylGroup{T}(t::Symbol,r::Int=0) where T<:Integer=WeylGroup(T.(cartan(t,r)))
-WeylGroup(t::Symbol,r::Int=0)=WeylGroup(Int16.(cartan(t,r)))
+function matX(W::WeylGroup,w)
+  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
+end
 
+function cartancoeff(W::WeylGroup,i,j)
+  v=findfirst(x->!iszero(x),root(W,i))
+  r=root(W,j)-root(W,j^reflection(W,i))
+  div(r[v],root(W,i)[v])
+end
+
+function Base.:*(W::WeylGroup...)
+  WeylGroup(cat(map(cartan,W)...,dims=[1,2]))
+end
+
+"for each root index of simple representative"
+CoxGroups.simple_representatives(W::WeylGroup)=simple_representatives(W.G)
+  
+"for each root element conjugative representative to root"
+simple_conjugating_element(W::WeylGroup,i)=
+   simple_conjugating_element(W.G,i)
+
+PermRoot.reflection(W::WeylGroup,i::Integer)=reflection(W.G,i)
+
+#--------------- WeylSubGroup -----------------------------------------
 struct WeylSubGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermRootSubGroup{T}
   rootdec::Vector{Vector{T}}
@@ -466,22 +497,9 @@ struct WeylSubGroup{T} <: FiniteCoxeterGroup{Perm{T}}
 end
 
 (W::WeylSubGroup)(x...)=element(W.G,x...)
-PermRoot.cartan(W::WeylSubGroup)=cartan(W.G)
 @inline CoxGroups.nref(W::WeylSubGroup)=W.N
 
-root(W::WeylGroup,i)=W.G.roots[i]
-
-function matX(W::WeylGroup,w)
-  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
-end
 matX(W::WeylSubGroup,w)=matX(W.parent,w)
-
-function cartancoeff(W::WeylGroup,i,j)
-  v=findfirst(x->!iszero(x),root(W,i))
-  r=root(W,j)-root(W,j^reflection(W,i))
-  div(r[v],root(W,i)[v])
-end
-
 function PermRoot.ReflectionSubGroup(W::WeylGroup{T},I::AbstractVector{Int})where T
   G=PermGroup(reflection.(Ref(W),I)::Vector{Perm{T}})
   inclusion=sort!(vcat(orbits(G,I)...))::Vector{Int}
@@ -521,24 +539,9 @@ end
 PermRoot.ReflectionSubGroup(W::WeylSubGroup,I::AbstractVector{Int})=
   ReflectionSubGroup(W.parent,W.G.inclusion[I])
 
-function Base.:*(W::WeylGroup...)
-  WeylGroup(cat(map(cartan,W)...,dims=[1,2]))
-end
+@inbounds CoxGroups.isleftdescent(W::WeylSubGroup,w,i::Int)=W.G.inclusion[i]^w>W.parent.N
 
-CoxGroups.isleftdescent(W::WeylGroup,w,i::Int)=i^w>W.N
-CoxGroups.isleftdescent(W::WeylSubGroup,w,i::Int)=W.G.inclusion[i]^w>W.parent.N
-
-Base.length(W::WeylGroup)=prod(degrees(W))
-
-"for each root index of simple representative"
-CoxGroups.simple_representatives(W::WeylGroup)=simple_representatives(W.G)
-  
-"for each root element conjugative representative to root"
-simple_conjugating_element(W::WeylGroup,i)=
-   simple_conjugating_element(W.G,i)
-
-PermRoot.reflection(W::WeylGroup,i::Integer)=reflection(W.G,i)
-
+#--------------- CharTables -----------------------------------------
 struct CharTable{T}
   irr::Matrix{T}
   charnames::Vector{String}
