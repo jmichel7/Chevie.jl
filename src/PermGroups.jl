@@ -104,7 +104,7 @@ using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
 export Group, PermGroup, orbit, orbit_and_representative, orbits,
   base, centralizer_orbits, centralizers, minimal_words, element,
-  symmetric_group 
+  symmetric_group, CharTable
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -181,6 +181,21 @@ function minimal_words(G::Group)
     words = nwords
   end
   words
+end
+
+#--------------- CharTables -----------------------------------------
+struct CharTable{T}
+  irr::Matrix{T}
+  charnames::Vector{String}
+  classnames::Vector{String}
+  centralizers::Vector{Int}
+  identifier::String
+end
+
+function Base.show(io::IO,ct::CharTable)
+  println(io,"CharTable(",ct.identifier,")")
+  format(io,ct.irr,row_labels=TeXstrip.(ct.charnames),
+                column_labels=TeXstrip.(ct.classnames))
 end
 
 #-------------------- now permutation groups -------------------------

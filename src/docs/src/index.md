@@ -36,15 +36,15 @@ gcd
 # CoxGroups.jl Documentation
 ```@docs
 CoxGroups
+reduced
 ```
 # Weyl.jl Documentation
 ```@docs
 Weyl
 cartan
 two_tree
+ReflectionSubGroup
 ```
-#type_cartan
-#roots
 # Hecke.jl Documentation
 ```@docs
 Hecke

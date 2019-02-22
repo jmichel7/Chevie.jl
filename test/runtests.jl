@@ -19,6 +19,19 @@ end
 @test mytest("length(W,w0)","6")
 @test mytest("map(i->word(W,reflection(W,i)),1:nref(W))","6-element Array{Array{Int64,1},1}:\n [1]\n [2]\n [3]\n [1, 2, 1]\n [2, 3, 2]\n [1, 2, 3, 2, 1]")
 @test mytest("[length(elements(W,i)) for i in 0:nref(W)]","7-element Array{Int64,1}:\n 1\n 3\n 5\n 6\n 5\n 3\n 1")
+@test mytest("[length(elements(W,i)) for i in 0:nref(W)]","7-element Array{Int64,1}:\n 1\n 3\n 5\n 6\n 5\n 3\n 1")
+@test mytest("W=WeylGroup(:G,2)","W(G₂)")
+@test mytest("H=ReflectionSubGroup(W,[2,4])","W(G₂)₂₃")
+@test mytest("Set(word.(Ref(W),reduced.(Ref(H),elements(W))))","Set(Array{Int64,1}[[1], []])")
+@test mytest("Set(word.(Ref(W),reduced.(Ref(H),elements(W))))","Set(Array{Int64,1}[[1], []])")
+@test mytest("W=WeylGroup(:G,2)","W(G₂)")
+@test mytest("H=ReflectionSubGroup(W,[2,4])","W(G₂)₂₃")
+@test mytest("[word(W,w) for S in reduced(H,W) for w in S]","2-element Array{Array{Int64,1},1}:\n []\n [1]")
+end
+@testset "CycPols.jl" begin
+@test mytest("Pol(:q)","q")
+@test mytest("p=CycPol(q^18 + q^16 + 2*q^12 + q^8 + q^6)","(q⁸+q⁶-q⁴+q²+1)q⁶Φ₈")
+@test mytest("p*inv(CycPol(q^2+q+1))","(q⁸+q⁶-q⁴+q²+1)q⁶Φ₃⁻¹Φ₈")
 end
 @testset "Cycs.jl" begin
 @test mytest("E(3)+E(4)","ζ₁₂⁴-ζ₁₂⁷-ζ₁₂¹¹")
@@ -131,6 +144,12 @@ end
 end
 @testset "Weyl.jl" begin
 @test mytest("W=WeylGroup(:D,4)","W(D₄)")
+@test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2   0  -1   0\n  0   2  -1   0\n -1  -1   2  -1\n  0   0  -1   2")
+@test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2   0  -1   0\n  0   2  -1   0\n -1  -1   2  -1\n  0   0  -1   2")
+@test mytest("W=WeylGroup(:A,2)*WeylGroup(:B,2)","W(A₂)×W(B₂)")
+@test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
+@test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
+@test mytest("W=WeylGroup(:D,4)","W(D₄)")
 @test mytest("p=W(1,3,2,1,3)","{Int16}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
@@ -138,4 +157,18 @@ end
 @test mytest("cartan(:A,4)","4×4 Array{Int64,2}:\n  2  -1   0   0\n -1   2  -1   0\n  0  -1   2  -1\n  0   0  -1   2")
 @test mytest("CoxGroups.two_tree(cartan(:A,4))","4-element Array{Int64,1}:\n 1\n 2\n 3\n 4")
 @test mytest("CoxGroups.two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
+@test mytest("CoxGroups.two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
+@test mytest("W=WeylGroup(:G,2)","W(G₂)")
+@test mytest("Diagram(W)","O⇛ O\n1  2")
+@test mytest("H=ReflectionSubGroup(W,[2,4])","W(G₂)₂₃")
+@test mytest("Diagram(H)","O—O\n1 2")
+@test mytest("Diagram(H)","O—O\n1 2")
+@test mytest("inclusion(H)","3-element Array{Int64,1}:\n 2\n 3\n 4")
+@test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 2\n 3\n 0\n 0\n 0\n 0\n 0\n 0\n 0\n 0")
+@test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 2\n 3\n 0\n 0\n 0\n 0\n 0\n 0\n 0\n 0")
+@test mytest("word(W,H(2))","3-element Array{Int64,1}:\n 1\n 2\n 1")
+@test mytest("word(W,H(2))","3-element Array{Int64,1}:\n 1\n 2\n 1")
+@test mytest("elH=word.(Ref(H),elements(H))","6-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
+@test mytest("elW=word.(Ref(W),elements(H))","6-element Array{Array{Int64,1},1}:\n []\n [1, 2, 1]\n [2]\n [1, 2, 1, 2]\n [2, 1, 2, 1]\n [2, 1, 2, 1, 2]")
+@test mytest("map(w->H(w...),elH)==map(w->W(w...),elW)","true")
 end

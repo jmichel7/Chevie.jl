@@ -25,7 +25,7 @@ julia> using Gapjm
 and you are set up.
 """
 module Gapjm
-using Reexport
+using Reexport #, Combinatorics
 
 #--------------------------------------------------------------------------
 export degree, degrees, gens, elements, words, word
@@ -66,5 +66,10 @@ include("Hecke.jl")
 @reexport using .Hecke
 include("KL.jl")
 @reexport using .KL
-
+include("CycPols.jl")
+@reexport using .CycPols
+#include("Tbl.jl")
+#@reexport using .Tbl
+#include("HasType.jl")
+#@reexport using .HasType
 end

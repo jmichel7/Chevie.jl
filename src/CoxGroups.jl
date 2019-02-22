@@ -196,7 +196,7 @@ coxrank(W::CoxeterGroup)=length(gens(W))
 function nref end
 
 """
-The longest element of W --- never ends if W is infinite
+The longest element of ReflectionSubgroup(W,I) --- never ends if infinite
 """
 function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
   w=one(W)
@@ -213,6 +213,17 @@ end
 """
 reduced(W,w)
   The unique element in the coset W.w which stabilises the positive roots of W
+```julia-repl
+julia> W=WeylGroup(:G,2)
+W(G₂)
+
+julia> H=ReflectionSubGroup(W,[2,4])
+W(G₂)₂₃
+
+julia> Set(word.(Ref(W),reduced.(Ref(H),elements(W))))
+Set(Array{Int64,1}[[1], []])
+
+```
 """
 function reduced(W::CoxeterGroup,w)
   while true
@@ -225,6 +236,19 @@ end
 """
 reduced(H,W)
   The elements in W which are H-reduced
+```julia-repl
+julia> W=WeylGroup(:G,2)
+W(G₂)
+
+julia> H=ReflectionSubGroup(W,[2,4])
+W(G₂)₂₃
+
+julia> [word(W,w) for S in reduced(H,W) for w in S]
+2-element Array{Array{Int64,1},1}:
+ [] 
+ [1]
+
+```
 """
 function reduced(H::CoxeterGroup,W::CoxeterGroup)
   res=[Set([one(W)])]
@@ -341,7 +365,7 @@ function reduced_words(W::CoxeterGroup,w)
 end
 
 "diagram of finite Coxeter group"
-diagram(W::CoxeterGroup)=diagram(refltype(W))
+PermRoot.Diagram(W::CoxeterGroup)=Diagram(refltype(W))
 
 # return all subsets of S which are W-conjugate to I
 function standard_parabolic_class(W,I::Vector{Int})

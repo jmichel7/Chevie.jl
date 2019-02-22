@@ -2,12 +2,60 @@ module PermRoot
 
 export PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
 simple_representatives, simple_conjugating_element, reflections, reflection, 
-refltype, diagram, cartan, independent_roots
+Diagram, refltype, cartan, independent_roots, inclusion, restriction
 
 using Gapjm
 
+struct Diagram
+  types::Vector{Dict{Symbol,Any}}
+end
+
+function Base.show(io::IO,d::Diagram)
+  for t in d.types
+    series=t[:series]::Symbol
+    indices=t[:indices]::Vector{Int}
+    ind=repr.(indices)
+    l=length.(ind)
+    bar(n)="\u2014"^n
+    rdarrow(n)="\u21D0"^(n-1)*" "
+    ldarrow(n)="\u21D2"^(n-1)*" "
+    tarrow(n)="\u21DB"^(n-1)*" "
+    vbar="\UFFE8" # "\u2503"
+    node="O"
+    if series==:A
+      println(io,join(map(l->node*bar(l),l[1:end-1])),node)
+      print(io,join(ind," "))
+    elseif series==:B
+      println(io,node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),
+        node)
+      print(io,ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+    elseif series==:C
+      println(io,node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),
+        node)
+      print(io,ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+    elseif series==:D
+      println(io," "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
+      println(io,node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
+      print(io,ind[1]," ",join(ind[3:end]," "))
+    elseif series==:E
+      dec=2+l[1]+l[3]
+      println(io," "^dec,"O $(ind[2])\n"," "^dec,vbar)
+      println(io,node,bar(l[1]),node,bar(l[3]),
+                join(map(l->node*bar(l),l[4:end-1])),node)
+      print(io,join(vcat(ind[1],ind[3:end])," "))
+    elseif series==:F
+      println(io,node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
+      print(io,ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
+    elseif series==:G
+      println(io,node,tarrow(max(l[1],2)),node)
+      print(io,ind[1]," "^max(3-l[1],1),ind[2])
+    end
+  end
+end
+
 abstract type AbstractPermRootGroup{T,T1<:Integer}<:Group{Perm{T1}} end 
 
+Diagram(W::AbstractPermRootGroup)=Diagram(refltype(W))
 Gapjm.gens(W::AbstractPermRootGroup)=gens(W.G)
 Base.one(W::AbstractPermRootGroup)=one(W.G)
 PermGroups.orbit_and_representative(W::AbstractPermRootGroup,i)=orbit_and_representative(W.G,i)
@@ -259,6 +307,9 @@ struct PermRootSubGroup{T,T1}<:AbstractPermRootGroup{T,T1}
   parent::PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
+
+inclusion(W::PermRootSubGroup)=W.inclusion
+restriction(W::PermRootSubGroup)=W.restriction
 
 function ReflectionSubGroup(W::PermRootGroup,I::AbstractVector{Int})
   G=PermRootGroup(W.roots[I],W.coroots[I])
