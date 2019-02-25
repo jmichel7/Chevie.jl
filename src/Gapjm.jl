@@ -23,6 +23,9 @@ do
 julia> using Gapjm
 ```
 and you are set up.
+
+To update to the latest version, I do not know a better way that to rm
+the package and re-install it.
 """
 module Gapjm
 using Reexport #, Combinatorics

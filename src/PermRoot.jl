@@ -2,9 +2,23 @@ module PermRoot
 
 export PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
 simple_representatives, simple_conjugating_element, reflections, reflection, 
-Diagram, refltype, cartan, independent_roots, inclusion, restriction
+Diagram, refltype, cartan, independent_roots, inclusion, restriction, coroot
 
 using Gapjm
+
+# coroot for an orthogonal reflection and integral root
+function coroot(root::Vector,eigen::Int=-1)
+  d=sum(root.* conj.(root))
+  coroot=conj.(root)
+  if mod(2,d)!=0 return 2*coroot//d 
+  else return coroot*div(2,d)
+  end
+end
+
+# coroot for an orthogonal reflection
+function coroot(root::Vector,eigen::Cyc)
+  return ((1-eigen)*conj.(root))//sum(root.* conj.(root))
+end
 
 struct Diagram
   types::Vector{Dict{Symbol,Any}}
@@ -199,7 +213,16 @@ prim = [
   return Dict(:series=>:ST, :p=>de.d * de.e, :q=>de.e, :rank=>r)
 end
 
-refltype(W::AbstractPermRootGroup)=type_irred(W)
+function refltype(W::AbstractPermRootGroup)
+  gets(W,:refltype)do W
+    map(blocks(cartan(W))) do I
+      t=type_irred(ReflectionSubGroup(W,I))
+      t[:indices]=I
+      t
+    end
+  end
+end
+
 #--------------------------------------------------------------------------
 struct PermRootGroup{T,T1}<:AbstractPermRootGroup{T,T1}
   matgens::Vector{Matrix{T}}
@@ -289,8 +312,22 @@ function matX(W::PermRootGroup,w)
             X[length(ir)+1:end,:]);
 end
 
-function Base.show(io::IO, W::PermRootGroup)
-  print(io,"PermRootGroup($(length(W.roots)) roots)")
+function Base.show(io::IO, W::AbstractPermRootGroup)
+  print(io,join(map(refltype(W))do t
+    indices=t[:indices]
+    s=t[:series]
+    if s==:ST 
+      if haskey(t,:ST) n="G"*TeXstrip("_{$(t[:ST])}")
+      else n="G"*TeXstrip("_{$(t[:p]),$(t[:q]),$(t[:rank])}")
+      end
+    else n="W($s"*TeXstrip("_{$(length(indices))}")
+    end
+    if indices!=eachindex(indices)
+      ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
+      n*=TeXstrip("_{($ind)}")
+    end
+    if s==:ST n else n*")" end
+  end,"×"))
 end
 
 function cartan_coeff(W::PermRootGroup,i,j)
@@ -316,7 +353,8 @@ function ReflectionSubGroup(W::PermRootGroup,I::AbstractVector{Int})
   inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   restriction=zeros(Int,length(W.roots))
   restriction[inclusion]=1:length(inclusion)
-  PermRootSubGroup(G.G,inclusion,restriction,W,Dict{Symbol,Any}())
+  G=PermGroup(reflections(W)[I])
+  PermRootSubGroup(G,inclusion,restriction,W,Dict{Symbol,Any}())
 end
 
 cartan_coeff(W::PermRootSubGroup,i,j)=
@@ -326,8 +364,8 @@ ReflectionSubGroup(W::PermRootSubGroup,I::AbstractVector{Int})=
   ReflectionSubGroup(W.parent,W.inclusion[I])
 
 function root_representatives(W::PermRootSubGroup)
-  reps=fill(0,2*W.N)
-  repelts=fill(one(W),2*W.N)
+  reps=fill(0,length(W.inclusion))
+  repelts=fill(one(W),length(W.inclusion))
   for i in eachindex(gens(W))
     if iszero(reps[i])
       d=orbit_and_representative(W.G,W.inclusion[i])
