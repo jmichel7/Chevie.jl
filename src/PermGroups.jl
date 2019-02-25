@@ -171,9 +171,9 @@ function minimal_words(G::Group)
       for k in 1:i
         e=rw[j][1]*gens(G)[k]
         if !haskey(nwords,e)
-          we=vcat(rw[j][2],[k])
+          we=[rw[j][2];k]
           push!(rw,e=>we)
-          for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
+          for (e1,w1) in words nwords[e1*e]=[w1;we] end
         end
       end
       j+=1

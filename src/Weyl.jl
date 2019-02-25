@@ -279,9 +279,9 @@ function type_irred_cartan(m::Matrix{<:Integer})
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
     if length(b2)==1 t[:series]=:D 
-      t[:indices]=vcat(b1,b2,[vertex],b3)::Vector{Int}
+      t[:indices]=[b1;b2;vertex;b3]::Vector{Int}
     else t[:series]=:E 
-      t[:indices]=vcat([b2[2],b1[1],b2[1],vertex],b3)::Vector{Int}
+      t[:indices]=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
     end 
   else  # types A,B,C,F,G
     l=i->m[s[i],s[i+1]]

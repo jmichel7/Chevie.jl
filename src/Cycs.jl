@@ -340,7 +340,7 @@ function Base.show(io::IO, p::Cyc)
       print(io,"√$(q.root)")
       if !iszero(q.a) && q.den!=1 print(io,")") end
     end
-    if q.den!=1 && !iszero(q.a) print(io,"//$(q.den)") end
+    if q.den!=1 && !iszero(q.a) print(io,"/$(q.den)") end
     return
   end
 if use_list
@@ -599,6 +599,7 @@ end
 Base.conj(c::Cyc)=galois(c,-1)
 
 function Base.inv(c::Cyc)
+  c=lower(c)
   if c.n==1
     r=Real(c)
     if r^2==1 return Cyc(r) else return Cyc(inv(r)) end

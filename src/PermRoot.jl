@@ -42,7 +42,7 @@ function Base.show(io::IO,d::Diagram)
       println(io," "^dec,"O $(ind[2])\n"," "^dec,vbar)
       println(io,node,bar(l[1]),node,bar(l[3]),
                 join(map(l->node*bar(l),l[4:end-1])),node)
-      print(io,join(vcat(ind[1],ind[3:end])," "))
+      print(io,join(ind[[1;3:end]]," "))
     elseif series==:F
       println(io,node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
       print(io,ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
