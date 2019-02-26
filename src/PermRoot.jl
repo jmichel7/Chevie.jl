@@ -1,6 +1,6 @@
 module PermRoot
 
-export PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
+export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
 simple_representatives, simple_conjugating_element, reflections, reflection, 
 Diagram, refltype, cartan, independent_roots, inclusion, restriction, coroot
 

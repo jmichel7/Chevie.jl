@@ -204,10 +204,14 @@ end
 
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
 function Base.://(p::Pol,q::Pol)
-  if q^2==Pol(1) return p*q
-  else error("divsion of polynomials not implemented")
+  if q.c==[1] return shift(p,q.v)
+  elseif q.c==[-1] return shift(-p,q.v)
   end
+  r=divrem1(p,q)
+  if r[2]==1 return r[1] end
+  error("division $p//$q not implemented")
 end
+
 Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
 
 """

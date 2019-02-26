@@ -187,7 +187,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export WeylGroup, inversions, two_tree
+export WeylGroup, FiniteCoxeterGroup, inversions, two_tree
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -366,6 +366,8 @@ end
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
 @inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+
+Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G.G,a...)
 #--------------- WeylGroup --------------------------------------------
 struct WeylGroup{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermRootGroup{T,T}
