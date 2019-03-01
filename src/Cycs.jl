@@ -431,11 +431,11 @@ function sumroots(n::Int,l)
 end
 
 function Base.:*(a::Cyc,b::Cyc)
+  a,b=promote(a,b)
   if iszero(a) return a end
   if iszero(b) return b end
   if a.n==1 return num(a)*b end
   if b.n==1 return num(b)*a end
-  a,b=promote(a,b)
   a,b=promote_conductor(a,b)
 if use_list
   zb=zumbroich_basis(a.n)
@@ -602,7 +602,7 @@ function Base.inv(c::Cyc)
   c=lower(c)
   if c.n==1
     r=Real(c)
-    if r^2==1 return Cyc(r) else return Cyc(inv(r)) end
+    if r^2==1 return Cyc(r) else return Cyc(1//r) end
   else
     r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
     n=Real(c*r)

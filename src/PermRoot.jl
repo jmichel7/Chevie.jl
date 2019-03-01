@@ -313,21 +313,28 @@ function matX(W::PermRootGroup,w)
 end
 
 function Base.show(io::IO, W::AbstractPermRootGroup)
-  print(io,join(map(refltype(W))do t
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  n=join(map(refltype(W))do t
     indices=t[:indices]
     s=t[:series]
     if s==:ST 
-      if haskey(t,:ST) n="G"*TeXstrip("_{$(t[:ST])}")
-      else n="G"*TeXstrip("_{$(t[:p]),$(t[:q]),$(t[:rank])}")
+      if haskey(t,:ST) 
+        n=repl||TeX ? "G_{$(t[:ST])}" : "ComplexReflectionGroup($(t[:ST]))"
+      else 
+        n=repl||TeX ? "G_{$(t[:p]),$(t[:q]),$(t[:rank])}" : 
+          "ComplexReflectionGroup($(t[:p]),$(t[:q]),$(t[:rank]))"
       end
-    else n="W($s"*TeXstrip("_{$(length(indices))}")
+    else n="W($s_{$(length(indices))})"
     end
     if indices!=eachindex(indices)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
-      n*=TeXstrip("_{($ind)}")
+      n*="_{($ind)}"
     end
-    if s==:ST n else n*")" end
-  end,"×"))
+    n
+  end,"\\times")
+  if repl n=TeXstrip(n) end
+  print(io,n)
 end
 
 function cartan_coeff(W::PermRootGroup,i,j)
