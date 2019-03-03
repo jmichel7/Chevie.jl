@@ -241,7 +241,7 @@ function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
   # permutations) depends only on the Cartan matrix of g, not on the actual
   # root values.
 
-  println("# roots: ")
+# println("# roots: ")
   roots=map(x->convert.(eltype(matgens[1]),x),r)
   refls=map(x->Int[],roots)
   newroots=true
@@ -260,7 +260,7 @@ function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
 	end
       end
     end
-    println(" ",length(roots))
+#   println(" ",length(roots))
   end
   roots=map(x->convert.(eltype(matgens[1]),x),roots)
   PermRootGroup(matgens,roots,cr,PermGroup(map(Perm,refls)),

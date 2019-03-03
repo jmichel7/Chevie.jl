@@ -79,7 +79,7 @@ end
 
 function Perm{T}(x::Int...)where T<:Integer
   if isempty(x) return Perm(T[]) end
-  d=Vector{T}(collect(1:max(x...)))
+  d=T.(1:max(x...))
   for i in 1:length(x)-1
     d[x[i]]=x[i+1]
   end
@@ -111,29 +111,29 @@ macro perm_str(s::String)
     m=match(r"\((\s*\d+\s*,)+\s*\d+\)",s[start:end])
     if isnothing(m) break end
     start+=m.match.ncodeunits
-    res*=Perm(eval(Meta.parse(m.match))...)
+    res*=Perm(Meta.parse(m.match).args...)
   end
   res::Perm
 end
 
-Base.one(p::Perm{T}) where T=Perm(T[])
+Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
 @inline Gapjm.degree(a::Perm)= length(a.d)
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
-   @inbounds if n>degree(a) T(n) else a.d[n] end
+   @inbounds if n>length(a.d) T(n) else a.d[n] end
 
-function Base.promote(a::Perm{T},b::Perm{T}) where T
+function Base.promote(a::Perm,b::Perm)
   da=length(a.d)
   db=length(b.d)
   if da<db
     resize!(a.d,db)
-    a.d[da+1:db]=T(da+1):T(db)
+@inbounds    a.d[da+1:db]=da+1:db
   elseif db<da
     resize!(b.d,da)
-    b.d[db+1:da]=T(db+1):T(da)
+@inbounds    b.d[db+1:da]=db+1:da
   end
   (a,b)
 end
@@ -214,7 +214,7 @@ julia> cycles(Perm(1,2)*Perm(4,5))
 ```
 """
 function cycles(a::Perm{T},check::Bool=false)where T
-  to_visit=trues(degree(a))
+  to_visit=trues(length(a.d))
   cycles=Vector{Vector{T}}()
   for i in eachindex(to_visit)
    if !to_visit[i] continue end

@@ -219,7 +219,7 @@ if use_list
     v[l].=ifelse(s,1,-1)
     Cyc(n,v)
 else
-    Cyc(n,l.=>ifelse(s,1,-1))
+    lower(Cyc(n,l.=>ifelse(s,1,-1)))
 end
   end
 end

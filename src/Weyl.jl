@@ -320,7 +320,13 @@ end
 
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
-type_cartan(m::Matrix{<:Integer})=map(I->type_irred_cartan(m[I,I]),blocks(m))
+function type_cartan(m::Matrix{<:Integer})
+  map(blocks(m)) do I
+    t=type_irred_cartan(m[I,I])
+    t[:indices]=I[t[:indices]]
+    t
+  end
+end
 
 """
     roots(C)
@@ -410,19 +416,24 @@ function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
 end
 
 function Base.show(io::IO, W::WeylGroup)
-  print(io,join(map(refltype(W))do t
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  n=join(map(refltype(W))do t
     indices=t[:indices]
+    r=length(indices)
     s=t[:series]
     if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
       s=:C
     end
-    n="W($s"*TeXstrip("_{$(length(indices))}")
-    if indices!=eachindex(indices)
+    n=repl||TeX ? "W($(s)_{$r})" : "WeylGroup(:$s,$r)"
+    if indices!=eachindex(indices) && (repl|| TeX)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
-      n*=TeXstrip("_{($ind)}")
+      n*="_{($ind)}"
     end
-    n*")"
-  end,"×"))
+    n
+  end,repl||TeX ? "\\times " : "*")
+  if repl n=TeXstrip(n) end
+  print(io,n)
 end
   
 function matX(W::WeylGroup,w)
