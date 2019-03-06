@@ -110,7 +110,9 @@ for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 module Cycs
 export E, ER, Cyc, conductor, galois, Root1, quadratic
 
-using ..Util
+import ..Util: SortedPairs, norm!, mergesum, getvalue
+import ..Util: TeXstrip, bracket_if_needed, groupby, constant
+import ..Util: factor, prime_residues, phi
 
 const use_list=false
 if use_list

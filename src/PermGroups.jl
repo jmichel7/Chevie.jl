@@ -194,7 +194,10 @@ end
 
 function Base.show(io::IO,ct::CharTable)
   println(io,"CharTable(",ct.identifier,")")
-  format(io,ct.irr,row_labels=TeXstrip.(ct.charnames),
+  irr=map(ct.irr)do e
+   if iszero(e) "." else sprint(show,e; context=io) end
+  end
+  format(io,irr,row_labels=TeXstrip.(ct.charnames),
                 column_labels=TeXstrip.(ct.classnames))
 end
 
@@ -345,7 +348,10 @@ end
 
 " length(G::PermGroup) returns the cardinality of G "
 function Base.length(G::PermGroup)::Int
-  gets(G,:length)do G prod(length,centralizer_orbits(G)) end
+  gets(G,:length)do G 
+    o=centralizer_orbits(G)
+    isempty(o) ? 1 : prod(length,o) 
+  end
 end
 
 " Tells whether permutation g is an element of G "

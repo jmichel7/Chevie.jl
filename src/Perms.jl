@@ -69,9 +69,11 @@ keys in hashes or elements of sets.
 other functions are: cycles, cycletype, sign. See individual documentation.
 """
 module Perms
+
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point
-using ..Gapjm # for degree
+
+import ..Gapjm.degree
 
 struct Perm{T<:Integer}
    d::Vector{T}
@@ -120,7 +122,7 @@ Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
-@inline Gapjm.degree(a::Perm)= length(a.d)
+@inline degree(a::Perm)= length(a.d)
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
    @inbounds if n>length(a.d) T(n) else a.d[n] end
@@ -140,16 +142,16 @@ end
 
 function Base.:^(a::Perm, b::Perm)
   a,b=promote(a,b)
-  r=Perm(similar(a.d))
-@inbounds for (i,v) in enumerate(a.d) r.d[b.d[i]]=b.d[v] end
-  r
+  r=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) r[b.d[i]]=b.d[v] end
+  Perm(r)
 end
 
 function Base.:*(a::Perm, b::Perm)
   a,b=promote(a,b)
-  r=Perm(similar(a.d))
-@inbounds for (i,v) in enumerate(a.d) r.d[i]=b.d[v] end
-  r
+  r=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) r[i]=b.d[v] end
+  Perm(r)
 end
 
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
@@ -253,7 +255,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 
 ```
 """
-cycletype(a::Perm) = sort([length(c) for c in cycles(a)], rev=true)
+cycletype(a::Perm) = sort(length.(cycles(a)), rev=true)
 
 " sign(a::Perm) is the signature of  the permutation a"
 function Base.sign(a::Perm)

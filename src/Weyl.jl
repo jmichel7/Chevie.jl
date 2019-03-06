@@ -415,6 +415,12 @@ function WeylGroup(rr::Matrix{T},cr::Matrix{T}) where T<:Integer
   WeylGroup(G,rootdec,N,Dict{Symbol,Any}())
 end
 
+function WeylGroup()
+  G=PermRootGroup(Matrix{Int16}[],Vector{Int16}[],Vector{Int16}[],
+   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}())
+  WeylGroup(G,Vector{Int16}[],0,Dict{Symbol,Any}())
+end
+
 function Base.show(io::IO, W::WeylGroup)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
@@ -613,7 +619,7 @@ end
 function Base.show(io::IO, W::WeylSubGroup)
   I=W.G.inclusion[1:coxrank(W)]
   n=any(i->i>=10,I) ? join(I,",") : join(I)
-  print(io,repr(W.parent)*TeXstrip("_{$n}"))
+  print(io,sprint(show,W.parent; context=io)*TeXstrip("_{$n}"))
 end
   
 PermRoot.ReflectionSubGroup(W::WeylSubGroup,I::AbstractVector{Int})=

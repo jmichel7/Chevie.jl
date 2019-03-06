@@ -85,9 +85,12 @@ Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,[Pair{Root1,Int}[]])
 function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,mergesum(a.v,b.v))
 end
+Base.:*(a::CycPol,b::Number)=CycPol(a.coeff*b,a.valuation,a.v)
 
 Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff),
                            -a.valuation,[c=>-m for (c,m) in a.v])
+
+Base.://(a::CycPol,b::CycPol)=a*inv(b)
 
 const decs=Dict(
   8=>[[1,3],[2,4],[1,4],[2,3],[1,2],[3,4]],

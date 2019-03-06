@@ -98,27 +98,31 @@ Base.transpose(a::Pol)=a
 function Base.show(io::IO,p::Pol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  s=join(map(reverse(eachindex(p.c)))do i
-    c=p.c[i]
-    if iszero(c) return "" end
-    c=sprint(show,c; context=io)
-    deg=i+p.v-1
-    if !iszero(deg) 
-      mon=String(var[])
-      if deg!=1
-         if repl || TeX mon*=(1<deg<10 ? "^$deg" : "^{$deg}")
-         else mon*= "^$deg"
-         end
+  if repl||TeX
+    s=join(map(reverse(eachindex(p.c)))do i
+      c=p.c[i]
+      if iszero(c) return "" end
+      c=sprint(show,c; context=io)
+      deg=i+p.v-1
+      if !iszero(deg) 
+        mon=String(var[])
+        if deg!=1
+           if repl || TeX mon*=(1<deg<10 ? "^$deg" : "^{$deg}")
+           else mon*= "^$deg"
+           end
+        end
+        if c=="1" c="" elseif c=="-1" c="-" end
+        c=bracket_if_needed(c) 
+        c*=mon
       end
-      if c=="1" c="" elseif c=="-1" c="-" end
-      c=bracket_if_needed(c) 
-      c*=mon
+      if c[1]!='-' c="+"*c end
+      c
+    end)
+    if s=="" s="0"
+    elseif  s[1]=='+' s=s[2:end]
     end
-    if c[1]!='-' c="+"*c end
-    c
-  end)
-  if s=="" s="0"
-  elseif  s[1]=='+' s=s[2:end]
+  else
+    s="Pol($(p.c),$(p.v))"
   end
   print(io, (repl && !TeX) ? TeXstrip(s) : s)
 end

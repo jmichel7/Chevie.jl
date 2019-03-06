@@ -28,7 +28,7 @@ To update to the latest version, I do not know a better way that to rm
 the package and re-install it.
 """
 module Gapjm
-using Reexport #, Combinatorics
+using Reexport
 
 #--------------------------------------------------------------------------
 export degree, degrees, gens, elements, words, word

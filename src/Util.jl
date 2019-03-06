@@ -12,7 +12,7 @@ export getp, gets, # helpers for objects with a Dict of properties
   SortedPairs, norm!, mergesum, getvalue, # data structure
   format, TeXstrip, bracket_if_needed, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
-  conjugate_partition, horner,
+  conjugate_partition, horner, partitions, combinations, arrangements,
   echelon, Nullspace  # linear algebra
 
 #--------------------------------------------------------------------------
@@ -208,7 +208,8 @@ bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end])
 function format(io::IO,t::Matrix; row_labels=axes(t,1),
   column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
   columns=axes(t,2), column_repartition=nothing)
-  t=sprint.(show,t[rows,columns]; context=io)
+  t=t[rows,columns]
+  if eltype(t)!=String t=sprint.(show,t; context=io) end
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
   if !isnothing(column_labels)
@@ -331,6 +332,47 @@ function horner(x,p::Vector)
   end
   value
 end
+
+# partitions of n of first (greatest) part <=m
+function PartitionsA(n,m)
+#  println("n=$n m=$m")
+  if m==1 return [fill(1,n)] end
+  if iszero(n) return [Int[]] end
+  res=Vector{Int}[]
+  for i in 1:min(m,n)
+    append!(res,map(x->vcat([i],x),PartitionsA(n-i,i)))
+  end
+  res
+end
+
+partitions(n)=PartitionsA(n,n)
+
+function CombinationsK(mset::AbstractVector,k)
+#  println("mset=$mset k=$k")
+  if iszero(k) return [eltype(mset)[]] end
+  combs=Vector{eltype(mset)}[]
+  for i in eachindex(mset)
+    append!(combs,map(x->vcat([mset[i]],x),CombinationsK(mset[i+1:end],k-1)))
+  end
+  combs
+end 
+
+combinations(mset,k)=CombinationsK(sort(mset),k)
+
+function ArrangementsK(mset::AbstractVector,blist,k)
+  if iszero(k) return [eltype(mset)[]] end
+  combs=Vector{eltype(mset)}[]
+  for i in eachindex(mset)
+    if blist[i]
+    blist1=copy(blist)
+    blist1[i]=false
+    append!(combs,map(x->vcat([mset[i]],x),ArrangementsK(mset,blist1,k-1)))
+    end
+  end
+  combs
+end 
+
+arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 
 #----------- Linear algebra over Rationals/integers------------------------
 " returns: echelon form of m, indices of linearly independent rows of m"
