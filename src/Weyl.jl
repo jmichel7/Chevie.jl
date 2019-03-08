@@ -130,7 +130,7 @@ systems can be obtained as a product
 
 ```julia-repl
 julia> W=WeylGroup(:A,2)*WeylGroup(:B,2)
-W(A₂)×W(B₂)
+W(A₂)× W(B₂)₍₃₄₎
 
 julia> cartan(W)
 4×4 Array{Int16,2}:

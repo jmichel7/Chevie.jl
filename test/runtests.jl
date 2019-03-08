@@ -146,7 +146,7 @@ end
 @test mytest("W=WeylGroup(:D,4)","W(D₄)")
 @test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2   0  -1   0\n  0   2  -1   0\n -1  -1   2  -1\n  0   0  -1   2")
 @test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2   0  -1   0\n  0   2  -1   0\n -1  -1   2  -1\n  0   0  -1   2")
-@test mytest("W=WeylGroup(:A,2)*WeylGroup(:B,2)","W(A₂)×W(B₂)")
+@test mytest("W=WeylGroup(:A,2)*WeylGroup(:B,2)","W(A₂)× W(B₂)₍₃₄₎")
 @test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
 @test mytest("cartan(W)","4×4 Array{Int16,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
 @test mytest("W=WeylGroup(:D,4)","W(D₄)")

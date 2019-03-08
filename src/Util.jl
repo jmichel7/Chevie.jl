@@ -13,6 +13,7 @@ export getp, gets, # helpers for objects with a Dict of properties
   format, TeXstrip, bracket_if_needed, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
+  partition_tuples, #combinatorics
   echelon, Nullspace  # linear algebra
 
 #--------------------------------------------------------------------------
@@ -261,9 +262,9 @@ end
 
 # make Primes.factor fast by memoizing it
 import Primes
-const lfactor=Dict(2=>Primes.factor(2))
+const dict_factor=Dict(2=>Primes.factor(2))
 function factor(n::Integer)
-  get!(lfactor,n) do 
+  get!(dict_factor,n) do 
     Primes.factor(Dict,n) 
   end
 end
@@ -334,30 +335,42 @@ function horner(x,p::Vector)
 end
 
 # partitions of n of first (greatest) part <=m
-function PartitionsA(n,m)
-#  println("n=$n m=$m")
+function partitions_less(n,m)
   if m==1 return [fill(1,n)] end
   if iszero(n) return [Int[]] end
   res=Vector{Int}[]
   for i in 1:min(m,n)
-    append!(res,map(x->vcat([i],x),PartitionsA(n-i,i)))
+    append!(res,map(x->vcat([i],x),partitions_less(n-i,i)))
   end
   res
 end
 
-partitions(n)=PartitionsA(n,n)
+partitions(n)=partitions_less(n,n)
 
-function CombinationsK(mset::AbstractVector,k)
-#  println("mset=$mset k=$k")
-  if iszero(k) return [eltype(mset)[]] end
-  combs=Vector{eltype(mset)}[]
-  for i in eachindex(mset)
-    append!(combs,map(x->vcat([mset[i]],x),CombinationsK(mset[i+1:end],k-1)))
+function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
+  if r==1 return iszero(n) ? [[Int[]]] : map(x->[x],partitions(n)) end
+  res=Vector{Vector{Int}}[]
+  for i in  n:-1:1
+    for p1 in partitions(i), p2 in partition_tuples(n-i,r-1)
+      push!(res,vcat([p1],p2))
+    end 
   end
-  combs
+  for p2 in partition_tuples(n,r-1)
+    push!(res,vcat([Int[]],p2))
+  end 
+  res
+end
+
+function combinations_sorted(mset::AbstractVector,k)
+  if iszero(k) return [eltype(mset)[]] end
+  res=Vector{eltype(mset)}[]
+  for (i,e) in enumerate(mset)
+    append!(res,map(x->vcat([e],x),combinations_sorted(mset[i+1:end],k-1)))
+  end
+  res
 end 
 
-combinations(mset,k)=CombinationsK(sort(mset),k)
+combinations(mset,k)=combinations_sorted(sort(mset),k)
 
 function ArrangementsK(mset::AbstractVector,blist,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -373,6 +386,7 @@ function ArrangementsK(mset::AbstractVector,blist,k)
 end 
 
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
+
 
 #----------- Linear algebra over Rationals/integers------------------------
 " returns: echelon form of m, indices of linearly independent rows of m"

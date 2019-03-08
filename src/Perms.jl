@@ -17,12 +17,12 @@ The  GAP permutation  (1,2,3)(4,5) can  be written Perm(1,2,3)*Perm(4,5) or
 perm"(1,2,3)(4,5)".  It is represented internally as [2,3,1,5,4]; note that
 [2,3,1,5,4,6] represents the same permutation.
 
-As in GAP i^p applies p to integer i, while p^q means p^-1*q&ast;p.
+As in GAP i^p applies p to integer i, while p^q means p^-1*q*p.
 
-Another  Perm  constructor  is  Perm{T}(p) which converts the
-perm  p to a permutation on integers of type T; for instance Perm{UInt8} is
-more  efficient that Perm{Int} and can be  used for Weyl groups of rank <=8
-since they have at most 240 roots.
+Another  Perm  constructor  is  Perm{T}(p)  which  converts the perm p to a
+permutation  on  integers  of  type  T;  for  instance  Perm{UInt8} is more
+efficient  that Perm{Int} and can be used for Weyl groups of rank <=8 since
+they have at most 240 roots.
 
 # Examples
 ```julia-repl
@@ -73,8 +73,6 @@ module Perms
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point
 
-import ..Gapjm.degree
-
 struct Perm{T<:Integer}
    d::Vector{T}
 end
@@ -91,9 +89,7 @@ end
 
 Perm(x::Int...)=Perm{Int}(x...)
 
-function Perm{T}(p::Perm)where T<:Integer
-  Perm(Vector{T}(p.d))
-end
+Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
 
 # just for fun, to provide Perm[1 2;5 6 7;4 9]=perm"(1,2)(5,6,7)(4,9)"
 function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
@@ -122,10 +118,8 @@ Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
-@inline degree(a::Perm)= length(a.d)
-
-@inline Base.:^(n::Integer, a::Perm{T}) where T=
-   @inbounds if n>length(a.d) T(n) else a.d[n] end
+import ..Gapjm.degree
+@inline degree(a::Perm)=length(a.d)
 
 function Base.promote(a::Perm,b::Perm)
   da=length(a.d)
@@ -140,13 +134,6 @@ function Base.promote(a::Perm,b::Perm)
   (a,b)
 end
 
-function Base.:^(a::Perm, b::Perm)
-  a,b=promote(a,b)
-  r=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) r[b.d[i]]=b.d[v] end
-  Perm(r)
-end
-
 function Base.:*(a::Perm, b::Perm)
   a,b=promote(a,b)
   r=similar(a.d)
@@ -154,14 +141,24 @@ function Base.:*(a::Perm, b::Perm)
   Perm(r)
 end
 
-Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
-
 function Base.inv(a::Perm)
   d=similar(a.d)
 @inbounds for (i,v) in enumerate(a.d) d[v]=i end
   Perm(d)
 end
+
+function Base.:^(a::Perm, b::Perm)
+  a,b=promote(a,b)
+  r=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) r[b.d[i]]=b.d[v] end
+  Perm(r)
+end
+
+@inline Base.:^(n::Integer, a::Perm{T}) where T=
+   @inbounds if n>length(a.d) T(n) else a.d[n] end
+
+Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                               Base.power_by_squaring(inv(a),-n)
 
 # hash is needed for using permutations in Sets/Dicts
 function Base.hash(a::Perm, h::UInt)
@@ -199,10 +196,10 @@ Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 
 " largest_moved_point(a::Perm) is the largest integer moved by a"
-largest_moved_point(a::Perm)=findlast(x->x^a!=x,1:degree(a))
+largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 
 " smallest_moved_point(a::Perm) is the smallest integer moved by a"
-smallest_moved_point(a::Perm)=findfirst(x->x^a!=x,1:degree(a))
+smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 """
   cycles(a::Perm) returns the non-trivial cycles of a
@@ -217,16 +214,16 @@ julia> cycles(Perm(1,2)*Perm(4,5))
 """
 function cycles(a::Perm{T},check::Bool=false)where T
   to_visit=trues(length(a.d))
-  cycles=Vector{Vector{T}}()
+  cycles=Vector{T}[]
   for i in eachindex(to_visit)
-   if !to_visit[i] continue end
-    cycle=Vector{T}()
+    if !to_visit[i] continue end
+    cycle=T[]
     j=i
     while true
       if check && j in cycle error("point $j occurs twice") end
       to_visit[j]=false
       push!(cycle,j)
-      if (j^=a)==i break end
+      if (j=a.d[j])==i break end
     end
     push!(cycles,cycle)
   end
@@ -235,7 +232,7 @@ end
 
 function Base.show(io::IO, a::Perm{T}) where T
   if T==Int t="" else t="{$T}" end
-  cyc=(c for c in cycles(a) if length(c)>1)
+  cyc=(c for c in cycles(a,true) if length(c)>1)
   if isempty(cyc) print(io,t,"()")
   else print(io,t,join("("*join(c,",")*")" for c in cyc))
   end
@@ -259,7 +256,7 @@ cycletype(a::Perm) = sort(length.(cycles(a)), rev=true)
 
 " sign(a::Perm) is the signature of  the permutation a"
 function Base.sign(a::Perm)
-  parity = degree(a)
+  parity = length(a.d)
   to_visit = trues(parity)
   k = 1
   while !isnothing(k=findnext(to_visit, k))
@@ -267,13 +264,12 @@ function Base.sign(a::Perm)
      next=k
      while true
        to_visit[next]=false
-       if (next^=a)==k break end
+       if (next=a.d[next])==k break end
      end
   end
   (-1)^parity
 end
 
 "Matrix(a::Perm) is the permutation matrix for a"
-Base.Matrix(a::Perm)=Int[j==i^a for i in 1:degree(a), j in 1:degree(a)]
-Base.Matrix(a::Perm,n)=Int[j==i^a for i in 1:n, j in 1:n]
+Base.Matrix(a::Perm,n=length(a.d))=Int[j==i^a for i in 1:n, j in 1:n]
 end
