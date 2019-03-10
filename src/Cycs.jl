@@ -132,13 +132,13 @@ conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Int)=1
 
-const zumdict=Dict(1=>[0])
+const zumbroich_basis_dict=Dict(1=>[0])
 """
   zumbroich_basis(n::Int) returns the Zumbroich basis of Q(ζ_n)
   as the vector of i in 0:n-1 such that ``ζ_n^i`` is in the basis
 """
 function zumbroich_basis(n::Int)::Vector{Int}
-  get!(zumdict,n) do
+  get!(zumbroich_basis_dict,n) do
   if n==1 return [0] end
   function J(k::Int, p::Int) # see [Breuer] Rem. 1 p. 283
     if k==0 if p==2 return 0:0 else return 1:p-1 end
@@ -163,10 +163,10 @@ end
   is  the  list  of  i  in  0:n-1  such  that  ζ_n^i occurs with a non-zero
   coefficient.
 =#
-const Elist_Dict=Dict((1,0)=>(true=>[0]))
+const Elist_dict=Dict((1,0)=>(true=>[0]))
 function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
   i=mod(i1,n)
-  get!(Elist_Dict,(n,i)) do
+  get!(Elist_dict,(n,i)) do
 if use_list
     z=zumbroich_basis(n)
 end
@@ -210,11 +210,11 @@ end
 #=
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 =#
-const E_Dict=Dict((1,0)=>Cyc(1, use_list ? [1] : [0=>1]))
+const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : [0=>1]))
 function E(n1::Integer,i1::Integer=1)::Cyc{Int}
   n=Int(n1)
   i=mod(Int(i1),n)
-  get!(E_Dict,(n,i)) do
+  get!(E_dict,(n,i)) do
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
 if use_list
     v=zeros(Int,length(zumbroich_basis(n)))

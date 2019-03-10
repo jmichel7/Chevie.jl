@@ -409,6 +409,8 @@ struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
 end
 
 (W::CoxSymmetricGroup)(w...)=element(W,w...)
+Base.iterate(W::CoxSymmetricGroup)=iterate(W.G)
+Base.iterate(W::CoxSymmetricGroup,state)=iterate(W.G,state)
 
 "The symmetric group on n letters as a Coxeter group"
 function coxsym(n::Int)
@@ -449,7 +451,7 @@ function length2(W::CoxSymmetricGroup,w)
 end
 
 function reflength(W::CoxSymmetricGroup,w::Perm{T})where T
- sum(x->x-1,length.(cycles(w)))
+  sum(x->x-1,length.(cycles(w)))
 end
 
 " Only parabolics defined are I=1:m for m≤n"

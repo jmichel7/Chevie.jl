@@ -41,7 +41,6 @@ see also the individual documentation of gcd.
 module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part
 
-using Memoize
 using ..Gapjm # for degree
 
 const var=Ref(:x)
@@ -245,13 +244,16 @@ function Base.inv(p::Pol)
   Pol([p.c[1]],-p.v)
 end
 
-@memoize function cyclotomic_polynomial(n::Integer)
-  v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0)
-  for d in divisors(n)
-    if d!=n
-      res,foo=divrem1(res,cyclotomic_polynomial(d))
+const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0))
+function cyclotomic_polynomial(n::Integer)
+  get!(cyclotomic_polynomial_dict,n) do
+    v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0)
+    for d in divisors(n)
+      if d!=n
+        res,foo=divrem1(res,cyclotomic_polynomial(d))
+      end
     end
+    res
   end
-  res
 end
 end

@@ -294,7 +294,9 @@ function primitiveroot(m::Integer)
  if nf>2 return nothing end
  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
- 1+findfirst(x->powermod(x,phi(m),m)==1,2:m-1)
+ p=phi(m)
+ 1+findfirst(x->powermod(x,p,m)==1 && 
+             all(d->powermod(x,d,m)!=1,divisors(p)[2:end-1]),2:m-1)
 end
 
 #--------------------------------------------------------------------------

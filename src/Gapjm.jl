@@ -71,8 +71,6 @@ include("KL.jl")
 @reexport using .KL
 include("CycPols.jl")
 @reexport using .CycPols
-#include("Tbl.jl")
-#@reexport using .Tbl
-#include("HasType.jl")
-#@reexport using .HasType
+include("HasType.jl")
+@reexport using .HasType
 end
