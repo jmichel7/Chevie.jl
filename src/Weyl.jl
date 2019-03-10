@@ -350,8 +350,27 @@ function roots(C::Matrix{T})where T<:Integer
   end
   vcat(R...)::Vector{Vector{T}}
 end
+
+function coxeter_from_cartan(m)
+  function find(c)
+    if c in 0:4 return [2,3,4,6,0][c+1] end
+    x=conductor(c)
+    if c==2+E(x)+E(x,-1) return x 
+    elseif c==2+E(2x)+E(2x,-1) return 2x
+    else error("not a Cartan matrix of a Coxeter group")
+    end
+  end
+  res=one(m)
+  for i in 2:size(m,1), j in 1:i-1
+    res[i,j]=res[j,i]=find(m[i,j]*m[j,i])
+  end
+  res
+end
+
 #--------------- Finite Coxeter groups --------------------------------------
 abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
+
+CoxGroups.coxetermat(W::FiniteCoxeterGroup)=coxeter_from_cartan(cartan(W))
 
 # finite Coxeter groups have functions nref and fields rootdec
 inversions(W::FiniteCoxeterGroup,w)=[i for i in 1:nref(W) if isleftdescent(W,w,i)]

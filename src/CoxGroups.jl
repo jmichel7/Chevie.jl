@@ -158,8 +158,9 @@ The dictionary from CHEVIE is as follows:
 """
 module CoxGroups
 
-export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, longest, reduced,
-coxsym
+export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
+  longest, reduced, braid_relations, coxetermat,
+  coxsym
 
 export isleftdescent, nref # 'virtual' methods
 
@@ -175,6 +176,8 @@ function leftdescents(W::CoxeterGroup,w)
   # 3 times faster than filter
   [i for i in eachindex(gens(W)) if isleftdescent(W,w,i)]
 end
+
+isrightdescent(W::CoxeterGroup,w,i)=isleftdescent(W,inv(w),i)
 
 """
   The Coxeter word for element w of W
@@ -269,7 +272,7 @@ function reduced(H::CoxeterGroup,W::CoxeterGroup,S)
   res=empty(S)
   for w in S
     for i in eachindex(gens(W))
-      if !isleftdescent(W,inv(w),i)
+      if !isrightdescent(W,w,i)
         w1=w*gens(W)[i]
         if w1==reduced(H,w1) push!(res,w1) end
       end
@@ -297,7 +300,7 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
 # println("l=$l W=$W H=$H rc=$rc")
   elts[l]=T[]
   for i in max(0,l+1-length(rc)):l
-    for x in rc[1+l-i] append!(elts[l],elements(H,i).*x) end
+    for x in rc[1+l-i] append!(elts[l],elements(H,i).*Ref(x)) end
   end
 # N=nref(W)
 # if !isnothing(N) && N-l>l elts[N-l]=elts[l].*longest(W) end
@@ -401,6 +404,13 @@ function parabolic_representatives(W,s)
   first.(orbits)
 end
 
+function coxetermat end
+
+function braid_relations(W::CoxeterGroup)
+  p(i,j,b)=map(k->iszero(k%2) ? j : i,1:b)
+  m=coxetermat(W)
+  vcat(map(i->map(j->[p(i,j,m[i,j]),p(j,i,m[i,j])],1:i-1),1:size(m,1))...)
+end
 #--------------------- CoxSymmetricGroup ---------------------------------
 struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}

@@ -325,7 +325,7 @@ function Base.show(io::IO, W::AbstractPermRootGroup)
         n=repl||TeX ? "G_{$(t[:p]),$(t[:q]),$(t[:rank])}" : 
           "ComplexReflectionGroup($(t[:p]),$(t[:q]),$(t[:rank]))"
       end
-    else n="W($s_{$(length(indices))})"
+     else n="W($(s)_{$(length(indices))})"
     end
     if indices!=eachindex(indices)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)

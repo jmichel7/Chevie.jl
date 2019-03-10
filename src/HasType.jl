@@ -97,8 +97,17 @@ function chartable(ct::Dict)
 end
 
 function chartable(W)
-  ctt=map(getfromtype.(refltype(W),:CharTable)) do ct
-    names=getindex.(ct[:irredinfo],:charname)
+  ctt=map(refltype(W)) do t
+    ct=getfromtype(t,:CharTable)
+    if haskey(ct,:irredinfo)
+      names=getindex.(ct[:irredinfo],:charname)
+    else
+      names=map(p->getfromtype(t,:CharName,p,Dict(:TeX=>true)),
+                getfromtype(t,:CharInfo)[:charparams])
+    end
+    if !haskey(ct,:classnames)
+      merge!(ct,getfromtype(t,:ClassInfo))
+    end
     CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),names,
     ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
   end
@@ -243,12 +252,8 @@ function getfromtype(t,f::Symbol,extra...)
   end
 end
 
-function getclassified(W::FiniteCoxeterGroup,f::Symbol,extra...)
+function getclassified(W,f::Symbol,extra...)
   [getfromtype(ti,f::Symbol,extra...) for ti in refltype(W)]
-end
-
-function getclassified(W::AbstractPermRootGroup,f::Symbol,extra...)
-  getfromtype(PermRoot.type_irred(W),f::Symbol,extra...)
 end
 
 #----------------------------------------------------------------------

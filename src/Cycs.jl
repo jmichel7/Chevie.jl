@@ -653,6 +653,10 @@ end
   return real(Complex(c))
 end
 
+Base.:<(c::Cyc,d::Real)=Real(c)<d
+
+Base.abs(c::Cyc)=c*conj(c)
+
 struct Root1
  r::Rational{Int}
  Root1(r::Rational)=new(mod(r.num,r.den)//r.den)

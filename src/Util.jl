@@ -393,7 +393,7 @@ arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 #----------- Linear algebra over Rationals/integers------------------------
 " returns: echelon form of m, indices of linearly independent rows of m"
 function echelon!(m::Matrix)
-  T=typeof(1//one(eltype(m)))
+  T=typeof(one(eltype(m))//1)
   if T!=eltype(m) m=convert.(T,m) end
   rk=0
   inds=collect(axes(m,1))
