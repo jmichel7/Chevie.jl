@@ -18,7 +18,8 @@ algorithms like base, centralizer chain, etc...
 julia> G=PermGroup([Perm(i,i+1) for i in 1:2])
 PermGroup((1,2),(2,3))
 
-julia> collect(G)  # PermGroups are iterators over their elements
+# PermGroups are iterators over their elements
+julia> collect(G)  
 6-element Array{Perm{Int64},1}:
  (1,2)
  (1,3,2)
@@ -27,10 +28,12 @@ julia> collect(G)  # PermGroups are iterators over their elements
  (1,3)
  (2,3)
 
-julia> degree(G)  # maximum degree of an element of G
+# maximum degree of an element of G
+julia> degree(G)  
 3
 
-julia> orbit(G,1) # orbit of point 1 under G
+# orbit of point 1 under G
+julia> orbit(G,1) 
 3-element Array{Int64,1}:
  2
  3
@@ -43,8 +46,8 @@ Dict{Int64,Perm{Int64}} with 3 entries:
   3 => (1,3,2)
   1 => ()
 
-# this function is general and can take any action
-julia> orbit_and_representative(G,[1,2],(x,y)->x.^Ref(y))
+# orbit functions can take any action of G as keyword argument
+julia> orbit_and_representative(G,[1,2],action=(x,y)->x.^Ref(y))
 Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
   [1, 3] => (2,3)
   [1, 2] => ()
@@ -62,23 +65,25 @@ false
 # Elements,  appartenance test and  other function are  computed on G using
 # Schreier-Sims theory, that is computing the following
 
-julia> base(G) # a list of points that no element of G fixes
+# a list of points that no element of G fixes
+julia> base(G) 
 2-element Array{Int64,1}:
  1
  2
 
-julia> centralizers(G) # the i-th element is the centralizer of base[1:i-1]
+# the i-th element is the centralizer of base[1:i-1]
+julia> centralizers(G) 
 2-element Array{PermGroup{Int64},1}:
  PermGroup((1,2),(2,3))
  PermGroup((2,3))
 
-# i-th element is orbit_and_representive of centralizer[i] on base[i]
+# i-th element is orbit_and_representative of centralizer[i] on base[i]
 julia> centralizer_orbits(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
  Dict(2=>(1,2),3=>(1,3,2),1=>())
  Dict(2=>(),3=>(2,3))
 
-julia> minimal_words(G)  # minimal word for each element of G
+julia> minimal_words(G)  # minimal word in gens for each element of G
 Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
   ()      => Int64[]
   (2,3)   => [2]
@@ -119,41 +124,43 @@ element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) :
     prod( gen(W,i) for i in w)
 
 " orbit(G,p) is the orbit of p under Group G"
-function orbit(G::Group{T},p,action::Function=^)where T
+function orbit(G::Group,p;action::Function=^)
   new=Set([p])
   res=empty(new)
-  while true
+  while !isempty(new)
     union!(res,new)
-    n=vec([action(p,s) for p in new, s in gens(G)])
-    new=BitSet(setdiff(n,res))
-    if isempty(new) break end
+    n=empty(res)
+    for p in new, s in gens(G)
+      w=action(p,s)
+      if !(w in res) push!(n,w) end
+    end
+    new=n
   end
   collect(res)
 end
 
 "returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)"
-function orbit_and_representative(G::Group,p,action::Function=^)
+function orbit_and_representative(G::Group,p;action::Function=^)
   new=[p]
-  d=Dict(p=>one(G))
+  res=Dict(p=>one(G))
   while !isempty(new)
     old=copy(new)
-    resize!(new,0)
-    for s in gens(G), i in old
-      let s=s,i=i,e=action(i,s)
-        get!(d,e) do
-          push!(new,e)
-          d[i]*s
-        end
+    empty!(new)
+    for p in old, s in gens(G)
+      w=action(p,s)
+      if !haskey(res,w)
+        push!(new,w)
+        res[w]=res[p]*s
       end
     end
   end
-  d
+  res
 end
 
-function orbits(G::Group,v::AbstractVector,action::Function=^)
+function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
   res=Vector{eltype(v)}[]
   while !isempty(v)
-    o=orbit(G,v[1],action)
+    o=orbit(G,v[1],action=action)
     push!(res,o)
     v=setdiff(v,o)
   end
@@ -171,9 +178,9 @@ function minimal_words(G::Group)
       for k in 1:i
         e=rw[j][1]*gens(G)[k]
         if !haskey(nwords,e)
-          we=[rw[j][2];k]
+          we=vcat(rw[j][2],[k])
           push!(rw,e=>we)
-          for (e1,w1) in words nwords[e1*e]=[w1;we] end
+          for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
         end
       end
       j+=1
@@ -222,7 +229,7 @@ end
 (W::PermGroup)(x...)=element(W,x...)
 
 " describe the orbit of Int p under group G as a Schreier vector "
-function schreier_vector(G::PermGroup,p::Integer,action::Function=^)
+function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
   res=zeros(Int,degree(G))
   res[p]=-1
   new=BitSet([p])
