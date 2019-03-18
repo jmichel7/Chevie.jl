@@ -96,7 +96,7 @@ Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
 finally, benchmarks on julia 1.0.1
 ```benchmark
 julia> @btime length(collect(symmetric_group(8)))
-  6.519 ms (350522 allocations: 14.17 MiB)
+  5.481 ms (270429 allocations: 12.40 MiB)
 
 julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
@@ -356,8 +356,7 @@ end
 " length(G::PermGroup) returns the cardinality of G "
 function Base.length(G::PermGroup)::Int
   gets(G,:length)do G 
-    o=centralizer_orbits(G)
-    isempty(o) ? 1 : prod(length,o) 
+    prod(map(length,centralizer_orbits(G)))
   end
 end
 
@@ -369,18 +368,18 @@ end
 
 # if l1,...,ln are the centralizer orbits the elements are the products
 # of one element in each li
-function Base.iterate(G::PermGroup{T})where T
+function Base.iterate(G::PermGroup)
   prod=one(G)
   state=map(reverse(values.(centralizer_orbits(G)))) do l
     u=iterate(l)
     if isnothing(u) return nothing end
-    prod*=u[1]::Perm{T}
-    (prod,u[2]::Int)
+    prod*=u[1]
+    prod,u[2]
   end
-  prod::Perm{T},reverse(state)
+  prod,reverse(state)
 end
 
-function Base.iterate(G::PermGroup{T},state)where T
+function Base.iterate(G::PermGroup,state)
   for i in eachindex(state)
     u=iterate(values(centralizer_orbits(G)[i]),state[i][2])
     if isnothing(u) continue end

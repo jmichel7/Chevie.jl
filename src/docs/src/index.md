@@ -37,13 +37,19 @@ gcd
 ```@docs
 CoxGroups
 reduced
+bruhatless
+coxsym
+longest
+nref
 ```
 # Weyl.jl Documentation
 ```@docs
 Weyl
 cartan
 two_tree
-ReflectionSubGroup
+reflection_subgroup
+coxgroup
+rootdatum
 ```
 # Hecke.jl Documentation
 ```@docs
@@ -66,4 +72,9 @@ format
 prime_residues
 phi
 primitiveroot
+echelon!
+```
+# Cycpols.jl Documentation
+```@docs
+CycPols
 ```

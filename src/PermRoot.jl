@@ -1,8 +1,9 @@
 module PermRoot
 
-export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup, ReflectionSubGroup, 
-simple_representatives, simple_conjugating_element, reflections, reflection, 
-Diagram, refltype, cartan, independent_roots, inclusion, restriction, coroot
+export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup, 
+ reflection_subgroup, simple_representatives, simple_conjugating_element, 
+ reflections, reflection, Diagram, refltype, cartan, independent_roots, 
+ inclusion, restriction, coroot, hyperplane_orbits
 
 using Gapjm
 
@@ -67,17 +68,17 @@ function Base.show(io::IO,d::Diagram)
   end
 end
 
+#---------------------------------------------------------------------------
 abstract type AbstractPermRootGroup{T,T1<:Integer}<:Group{Perm{T1}} end 
 
 Diagram(W::AbstractPermRootGroup)=Diagram(refltype(W))
 Gapjm.gens(W::AbstractPermRootGroup)=gens(W.G)
-Base.one(W::AbstractPermRootGroup)=one(W.G)
-PermGroups.orbit_and_representative(W::AbstractPermRootGroup,i)=orbit_and_representative(W.G,i)
+Gapjm.degree(W::AbstractPermRootGroup)=degree(W.G)
 Base.length(W::AbstractPermRootGroup)=length(W.G)
-PermGroups.element(W::AbstractPermRootGroup,x...)=element(W.G,x...)
+Base.iterate(W::AbstractPermRootGroup,x...)=iterate(W.G,x...)
 
 "for each root index of simple representative"
-function simple_representatives(W::AbstractPermRootGroup{T})::Vector{T} where T
+function simple_representatives(W::AbstractPermRootGroup{T,T1})::Vector{T1} where {T,T1}
   getp(root_representatives,W,:rootreps)
 end
   
@@ -216,10 +217,28 @@ end
 function refltype(W::AbstractPermRootGroup)
   gets(W,:refltype)do W
     map(blocks(cartan(W))) do I
-      t=type_irred(ReflectionSubGroup(W,I))
+      t=type_irred(reflection_subgroup(W,I))
       t[:indices]=I
       t
     end
+  end
+end
+
+function hyperplane_orbits(W::AbstractPermRootGroup)
+  orb=collect(Set(simple_representatives(W)))
+  class=map(orb)do s
+   findfirst(x->length(x)==1 && simple_representatives(W)[x[1]]==s,
+             classinfo(W)[:classtext])
+  end
+  chars=chartable(W).irr
+  map(zip(orb,class)) do (s,c)
+    ord=order(W(s))
+ #  classno=map(j->position_class(W,W(s)^j),1:ord-1)
+    Ns=classinfo(W)[:classes][c]
+    dets=map(1:ord-1) do j
+      findfirst(i->chars[i,1]==1 && chars[i,c]==E(ord,j),axes(chars,1))
+    end
+    (s=s,cl_s=[c],order=ord,N_s=Ns,det_s=dets)
   end
 end
 
@@ -232,6 +251,7 @@ struct PermRootGroup{T,T1}<:AbstractPermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
+(W::PermRootGroup)(x...)=element(W.G,x...)
 function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
   matgens=map(reflection,r,cr)
 
@@ -263,7 +283,7 @@ function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
 #   println(" ",length(roots))
   end
   roots=map(x->convert.(eltype(matgens[1]),x),roots)
-  PermRootGroup(matgens,roots,cr,PermGroup(map(Perm,refls)),
+  PermRootGroup(matgens,roots,cr,PermGroup(map(Perm{Int16},refls)),
     Dict{Symbol,Any}())
 end
 
@@ -352,10 +372,11 @@ struct PermRootSubGroup{T,T1}<:AbstractPermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
+(W::PermRootSubGroup)(x...)=element(W.G,x...)
 inclusion(W::PermRootSubGroup)=W.inclusion
 restriction(W::PermRootSubGroup)=W.restriction
 
-function ReflectionSubGroup(W::PermRootGroup,I::AbstractVector{Int})
+function reflection_subgroup(W::PermRootGroup,I::AbstractVector{Int})
   G=PermRootGroup(W.roots[I],W.coroots[I])
   inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   restriction=zeros(Int,length(W.roots))
@@ -367,8 +388,8 @@ end
 cartan_coeff(W::PermRootSubGroup,i,j)=
    cartan_coeff(W.parent,W.inclusion[i],W.inclusion[j])
 
-ReflectionSubGroup(W::PermRootSubGroup,I::AbstractVector{Int})=
-  ReflectionSubGroup(W.parent,W.inclusion[I])
+reflection_subgroup(W::PermRootSubGroup,I::AbstractVector{Int})=
+  reflection_subgroup(W.parent,W.inclusion[I])
 
 function root_representatives(W::PermRootSubGroup)
   reps=fill(0,length(W.inclusion))

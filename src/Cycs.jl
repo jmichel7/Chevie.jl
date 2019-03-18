@@ -226,6 +226,8 @@ end
   end
 end
 
+E(a,b=1)=Cycs.E(Int(a),Int(b))
+
 function Cyc(c::Complex{T}) where T
   if iszero(imag(c)) return Cyc(real(c)) end
 if use_list

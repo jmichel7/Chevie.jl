@@ -71,14 +71,14 @@ In  the  following  example,  we  compute  the multiplication table for the
 `0`-Iwahori--Hecke algebra associated with the Coxeter group of type `A_2`.
 
 ```julia-repl
-julia> W=WeylGroup(:A,2)
+julia> W=coxgroup(:A,2)
 W(A₂)
 
 julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(W(A₂),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,WeylGroup{Int16}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int8,1},1}:
@@ -90,7 +90,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int16},Int64,WeylGroup{Int16}},2}:
+6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -105,7 +105,7 @@ this also works on the level of characters and representations.
 finally, benchmarks on julia 1.0.2
 ```benchmark
 julia> function test_w0(n)
-         W=WeylGroup(:A,n)
+         W=coxgroup(:A,n)
          Tbasis(hecke(W,Pol([1],1)))(longest(W))^2
        end
 test_w0 (generic function with 1 method)
@@ -137,7 +137,7 @@ end
 
 # Example
 ```julia-repl
-julia> W=WeylGroup(:B,2)
+julia> W=coxgroup(:B,2)
 W(B₂)
 
 julia> Pol(:q)

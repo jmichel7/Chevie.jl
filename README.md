@@ -33,8 +33,10 @@ julia> using Gapjm
 
 and you are set up.
 
+To update to the latest version, I do not know a better way that to rm the package and re-install it.
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Gapjm.jl#L1-L26' class='documenter-source'>source</a><br>
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Gapjm.jl#L1-L29' class='documenter-source'>source</a><br>
 
 - [Gapjm.jl Documentation](README.md#Gapjm.jl-Documentation-1)
 - [Perms.jl Documentation](README.md#Perms.jl-Documentation-1)
@@ -46,6 +48,7 @@ and you are set up.
 - [Hecke.jl Documentation](README.md#Hecke.jl-Documentation-1)
 - [KL.jl Documentation](README.md#KL.jl-Documentation-1)
 - [Util.jl Documentation](README.md#Util.jl-Documentation-1)
+- [Cycpols.jl Documentation](README.md#Cycpols.jl-Documentation-1)
 
 
 <a id='Perms.jl-Documentation-1'></a>
@@ -65,9 +68,9 @@ Permutations  in  this  module  follow  the  GAP  design: it is possible to mult
 
 The  GAP permutation  (1,2,3)(4,5) can  be written Perm(1,2,3)*Perm(4,5) or perm"(1,2,3)(4,5)".  It is represented internally as [2,3,1,5,4]; note that [2,3,1,5,4,6] represents the same permutation.
 
-As in GAP i^p applies p to integer i, while p^q means p^-1*q&ast;p.
+As in GAP i^p applies p to integer i, while p^q means p^-1*q*p.
 
-Another  Perm  constructor  is  Perm{T}(p) which converts the perm  p to a permutation on integers of type T; for instance Perm{UInt8} is more  efficient that Perm{Int} and can be  used for Weyl groups of rank <=8 since they have at most 240 roots.
+Another  Perm  constructor  is  Perm{T}(p)  which  converts the perm p to a permutation  on  integers  of  type  T;  for  instance  Perm{UInt8} is more efficient  that Perm{Int} and can be used for Weyl groups of rank <=8 since they have at most 240 roots.
 
 **Examples**
 
@@ -114,14 +117,14 @@ Perms  have methods copy, hash,  ==, cmp, isless (total order)  so they can be k
 other functions are: cycles, cycletype, sign. See individual documentation.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Perms.jl#L1-L70' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Perms.jl#L1-L70' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Perms.cycles' href='#Gapjm.Perms.cycles'>#</a>
 **`Gapjm.Perms.cycles`** &mdash; *Function*.
 
 
 
-cycles(a::Perm) returns the non-trivial cycles of a
+cycles(a::Perm) returns the cycles of a
 
 **Example**
 
@@ -134,7 +137,7 @@ julia> cycles(Perm(1,2)*Perm(4,5))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Perms.jl#L205-L215' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Perms.jl#L205-L215' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Perms.cycletype' href='#Gapjm.Perms.cycletype'>#</a>
 **`Gapjm.Perms.cycletype`** &mdash; *Function*.
@@ -154,7 +157,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Perms.jl#L244-L255' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Perms.jl#L245-L256' class='documenter-source'>source</a><br>
 
 <a id='Base.sign' href='#Base.sign'>#</a>
 **`Base.sign`** &mdash; *Function*.
@@ -164,7 +167,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 sign(a::Perm) is the signature of  the permutation a
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Perms.jl#L258' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Perms.jl#L259' class='documenter-source'>source</a><br>
 
 
 <a id='PermGroups.jl-Documentation-1'></a>
@@ -190,7 +193,8 @@ A  PermGroup is  a group  where gens  are Perms,  which allows  for all the algo
 julia> G=PermGroup([Perm(i,i+1) for i in 1:2])
 PermGroup((1,2),(2,3))
 
-julia> collect(G)  # PermGroups are iterators over their elements
+# PermGroups are iterators over their elements
+julia> collect(G)  
 6-element Array{Perm{Int64},1}:
  (1,2)
  (1,3,2)
@@ -199,10 +203,12 @@ julia> collect(G)  # PermGroups are iterators over their elements
  (1,3)
  (2,3)
 
-julia> degree(G)  # maximum degree of an element of G
+# maximum degree of an element of G
+julia> degree(G)  
 3
 
-julia> orbit(G,1) # orbit of point 1 under G
+# orbit of point 1 under G
+julia> orbit(G,1) 
 3-element Array{Int64,1}:
  2
  3
@@ -215,8 +221,8 @@ Dict{Int64,Perm{Int64}} with 3 entries:
   3 => (1,3,2)
   1 => ()
 
-# this function is general and can take any action
-julia> orbit_and_representative(G,[1,2],(x,y)->x.^Ref(y))
+# orbit functions can take any action of G as keyword argument
+julia> orbit_and_representative(G,[1,2],action=(x,y)->x.^Ref(y))
 Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
   [1, 3] => (2,3)
   [1, 2] => ()
@@ -234,23 +240,25 @@ false
 # Elements,  appartenance test and  other function are  computed on G using
 # Schreier-Sims theory, that is computing the following
 
-julia> base(G) # a list of points that no element of G fixes
+# a list of points that no element of G fixes
+julia> base(G) 
 2-element Array{Int64,1}:
  1
  2
 
-julia> centralizers(G) # the i-th element is the centralizer of base[1:i-1]
+# the i-th element is the centralizer of base[1:i-1]
+julia> centralizers(G) 
 2-element Array{PermGroup{Int64},1}:
  PermGroup((1,2),(2,3))
  PermGroup((2,3))
 
-# i-th element is orbit_and_representive of centralizer[i] on base[i]
+# i-th element is orbit_and_representative of centralizer[i] on base[i]
 julia> centralizer_orbits(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
  Dict(2=>(1,2),3=>(1,3,2),1=>())
  Dict(2=>(),3=>(2,3))
 
-julia> minimal_words(G)  # minimal word for each element of G
+julia> minimal_words(G)  # minimal word in gens for each element of G
 Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
   ()      => Int64[]
   (2,3)   => [2]
@@ -264,7 +272,7 @@ finally, benchmarks on julia 1.0.1
 
 ```benchmark
 julia> @btime length(collect(symmetric_group(8)))
-  6.519 ms (350522 allocations: 14.17 MiB)
+  5.481 ms (270429 allocations: 12.40 MiB)
 
 julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
@@ -273,7 +281,7 @@ julia> @btime minimal_words(symmetric_group(8));
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/PermGroups.jl#L1-L101' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/PermGroups.jl#L1-L106' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.symmetric_group' href='#Gapjm.PermGroups.symmetric_group'>#</a>
 **`Gapjm.PermGroups.symmetric_group`** &mdash; *Function*.
@@ -283,7 +291,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 The symmetric group of degree n 
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/PermGroups.jl#L226' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/PermGroups.jl#L251' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.orbit' href='#Gapjm.PermGroups.orbit'>#</a>
 **`Gapjm.PermGroups.orbit`** &mdash; *Function*.
@@ -293,7 +301,7 @@ The symmetric group of degree n
 orbit(G,p) is the orbit of p under Group G
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/PermGroups.jl#L121' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/PermGroups.jl#L126' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.orbit_and_representative' href='#Gapjm.PermGroups.orbit_and_representative'>#</a>
 **`Gapjm.PermGroups.orbit_and_representative`** &mdash; *Function*.
@@ -303,7 +311,7 @@ orbit(G,p) is the orbit of p under Group G
 returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/PermGroups.jl#L134' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/PermGroups.jl#L142' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.PermGroups.minimal_words' href='#Gapjm.PermGroups.minimal_words'>#</a>
 **`Gapjm.PermGroups.minimal_words`** &mdash; *Function*.
@@ -313,7 +321,7 @@ returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)
 dict giving for each element of G a minimal word in the generators
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/PermGroups.jl#L163' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/PermGroups.jl#L170' class='documenter-source'>source</a><br>
 
 
 <a id='Cycs.jl-Documentation-1'></a>
@@ -423,7 +431,7 @@ end;
 for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Cycs.jl#L1-L109' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Cycs.jl#L1-L109' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.galois' href='#Gapjm.Cycs.galois'>#</a>
 **`Gapjm.Cycs.galois`** &mdash; *Function*.
@@ -443,7 +451,7 @@ true
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Cycs.jl#L570-L582' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Cycs.jl#L575-L587' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.ER' href='#Gapjm.Cycs.ER'>#</a>
 **`Gapjm.Cycs.ER`** &mdash; *Function*.
@@ -463,7 +471,7 @@ julia> ER(3)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Cycs.jl#L614-L624' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Cycs.jl#L620-L630' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Cycs.quadratic' href='#Gapjm.Cycs.quadratic'>#</a>
 **`Gapjm.Cycs.quadratic`** &mdash; *Function*.
@@ -483,7 +491,7 @@ julia> quadratic(1+E(5))
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Cycs.jl#L695-L708' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Cycs.jl#L705-L718' class='documenter-source'>source</a><br>
 
 
 <a id='Pols.jl-Documentation-1'></a>
@@ -535,7 +543,7 @@ q⁸-q⁴+1
 see also the individual documentation of gcd.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Pols.jl#L1-L40' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Pols.jl#L1-L40' class='documenter-source'>source</a><br>
 
 <a id='Base.divrem' href='#Base.divrem'>#</a>
 **`Base.divrem`** &mdash; *Function*.
@@ -545,7 +553,7 @@ see also the individual documentation of gcd.
 computes (p,q) such that a=p*b+q
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Pols.jl#L168-L170' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Pols.jl#L171-L173' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Pols.divrem1' href='#Gapjm.Pols.divrem1'>#</a>
 **`Gapjm.Pols.divrem1`** &mdash; *Function*.
@@ -555,7 +563,7 @@ computes (p,q) such that a=p*b+q
 divrem when b unitary: does not change type
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Pols.jl#L186-L188' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Pols.jl#L189-L191' class='documenter-source'>source</a><br>
 
 <a id='Base.gcd' href='#Base.gcd'>#</a>
 **`Base.gcd`** &mdash; *Function*.
@@ -575,7 +583,7 @@ julia> gcd(q+1//1,q^2-1//1)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Pols.jl#L208-L221' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Pols.jl#L220-L233' class='documenter-source'>source</a><br>
 
 
 <a id='CoxGroups.jl-Documentation-1'></a>
@@ -673,7 +681,7 @@ The above line tells us that there is 1 element of length 0, there are 6 of leng
 
 For  most basic functions the convention is that the input is an element of the  group, rather than  a Coxeter word.  The reason is  that for a Coxeter group  which  is  a  permutation  group,  using the low level functions for permutations  is usually  much faster  than manipulating lists representing reduced expressions.
 
-This  file contains mostly a port of  the basic functions on Coxeter groups in  CHEVIE. The only Coxeter group  constructor implemented here is coxsym. The file Weyl.jl defines WeylGroup.
+This  file contains mostly a port of  the basic functions on Coxeter groups in  CHEVIE. The only Coxeter group  constructor implemented here is coxsym. The file Weyl.jl defines coxgroup.
 
 The dictionary from CHEVIE is as follows:
 
@@ -696,7 +704,95 @@ The dictionary from CHEVIE is as follows:
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/CoxGroups.jl#L1-L158' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L1-L158' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.CoxGroups.reduced' href='#Gapjm.CoxGroups.reduced'>#</a>
+**`Gapjm.CoxGroups.reduced`** &mdash; *Function*.
+
+
+
+reduced(W,w)   The unique element in the coset W.w which stabilises the positive roots of W
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+W(G₂)
+
+julia> H=reflection_subgroup(W,[2,6])
+W(G₂)₂₄
+
+julia> Set(word.(Ref(W),reduced.(Ref(H),elements(W))))
+Set(Array{Int64,1}[[1], []])
+
+```
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L216-L230' class='documenter-source'>source</a><br>
+
+
+reduced(H,W)   The elements in W which are H-reduced
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+W(G₂)
+
+julia> H=reflection_subgroup(W,[2,6])
+W(G₂)₂₄
+
+julia> [word(W,w) for S in reduced(H,W) for w in S]
+2-element Array{Array{Int64,1},1}:
+ [] 
+ [1]
+
+```
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L239-L255' class='documenter-source'>source</a><br>
+
+
+reduced(H,W,S)   The elements in W which are H-reduced of length i from the set S of length i-1
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L267-L270' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.CoxGroups.bruhatless' href='#Gapjm.CoxGroups.bruhatless'>#</a>
+**`Gapjm.CoxGroups.bruhatless`** &mdash; *Function*.
+
+
+
+`bruhatless(W, x, y)`  whether x≤y in the Bruhat order, for x, y ∈ W.
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L345-L347' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.CoxGroups.coxsym' href='#Gapjm.CoxGroups.coxsym'>#</a>
+**`Gapjm.CoxGroups.coxsym`** &mdash; *Function*.
+
+
+
+The symmetric group on n letters as a Coxeter group
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L425' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.CoxGroups.longest' href='#Gapjm.CoxGroups.longest'>#</a>
+**`Gapjm.CoxGroups.longest`** &mdash; *Function*.
+
+
+
+The longest element of reflection_subgroup(W,I) –- never ends if infinite
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L201-L203' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.CoxGroups.nref' href='#Gapjm.CoxGroups.nref'>#</a>
+**`Gapjm.CoxGroups.nref`** &mdash; *Function*.
+
+
+
+number of reflections of W
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L435' class='documenter-source'>source</a><br>
 
 
 <a id='Weyl.jl-Documentation-1'></a>
@@ -708,7 +804,7 @@ The dictionary from CHEVIE is as follows:
 
 
 
-*Weyl groups* are the finite real reflection groups (finite Coxeter groups) which  can be defined  over the rational  numbers (that is, finite rational reflection  groups). We implement them as a subgroup of the permutations of a  root system. Root systems play an  important role in mathematics as they classify semi-simple Lie algebras and algebraic groups.
+Let  `V` be a  real vector space.  Finite Coxeter groups  coincide with teh finite  subgroups of  `GL(V)` which  can be  generated y reflections. *Weyl groups*  are  the  finite  Coxeter  groups  which  can  be defined over the rational   numbers.  We  implement  finite   Coxter  groups  as  groups  of permutations  of  a  root  system.  Root  systems play an important role in mathematics as they classify semi-simple Lie algebras and algebraic groups.
 
 Let  us give precise definitions. Let `V`  be a real vector space, `Vⱽ` its dual  and let `(,)`  be the natural  pairing between `Vⱽ`  and `V`. A *root system*  is a finite set  of vectors `R` which  generate `V` (the *roots*), together  with  a  map  `r↦  rⱽ`  from  `R`  to  a subset `Rⱽ` of `Vⱽ` (the *coroots*) such that:
 
@@ -718,45 +814,53 @@ defines a reflection `s_r:V→ V` with root `r` and coroot `rⱽ`.
 
   * The reflection `s_r` stabilizes `R`.
 
-We  will only  consider *reduced*  root systems,  i.e., such  that the only elements of `R` colinear with `r∈ R` are `r` and `-r`; we also ask that the root  system be *crystallographic*, that is `(rⱽ,s)` is an integer, for any `s∈ R,rⱽ∈ Rⱽ`.
+We  will only  consider *reduced*  root systems,  i.e., such  that the only elements  of `R` colinear with `r∈ R` are `r` and `-r`; for Weyl groups, we also ask that the root system be *crystallographic*, that is `(rⱽ,s)` is an integer, for any `s∈ R,rⱽ∈ Rⱽ`.
 
-The  subgroup `W=W(R)` of  `GL(V)` generated by  the reflections `s_r` is a Weyl  group –- the representation `V` of  `W` is defined over the rational numbers.  All other finite-dimensional (complex)  representations of a Weyl group  can also be realized  over the rational numbers.  Weyl groups can be characterized  amongst finite Coxeter  groups by the  fact that all numbers `m(s,t)` in the Coxeter matrix are in `{2,3,4,6}`.
+The  subgroup `W=W(R)` of  `GL(V)` generated by  the reflections `s_r` is a finite  Coxeter group; when `R` is crystallographic, the representation `V` of  `W`  is  defined  over  the  rational  numbers.  All finite-dimensional (complex)  representations of a  finite Coxeter group  can be realized over the  same field  as `V`.  Weyl groups  can be  characterized amongst finite Coxeter  groups by the fact that all numbers `m(s,t)` in the Coxeter matrix are in `{2,3,4,6}`.
 
-If  we identify  `V` with  `Vⱽ` by  choosing a  `W`-invariant bilinear form `(.;.)`;  then we have `rⱽ=2r/(r;r)`. A root system `R` is *irreducible* if it is not the union of two orthogonal subsets. If `R` is reducible then the corresponding  Weyl  group  is  the  direct  product  of  the  Weyl  groups associated   with  the  irreducible  components  of  `R`.  The  irreducible crystallographic  root  systems  are  classified  by  the following list of *Dynkin  diagrams*. We show the labeling of the nodes given by the function 'diagram' described below.
+If  we identify  `V` with  `Vⱽ` by  choosing a  `W`-invariant bilinear form `(.;.)`;  then we have `rⱽ=2r/(r;r)`. A root system `R` is *irreducible* if it is not the union of two orthogonal subsets. If `R` is reducible then the corresponding  Coxeter group  is the  direct product  of the Coxeter groups associated with the irreducible components of `R`.
+
+The  irreducible  crystallographic  root  systems  are  classified  by  the following  list of  *Dynkin diagrams*,  which, in  addition to  the Coxeter matrix,  encode also the relative length of the roots. We show the labeling of the nodes given by the function 'Diagram' described below.
 
 ```
-A_n O—O—O—…—O   B_n O⇐O—O—…—O  C_n O⇒O—O—…—O  D_n  O 2
-    1 2 3 … n       1 2 3 … n      1 2 3 … n       ￨
-                                                 O—O—…—O
-                                                 1 3 … n
+A_n O—O—O—…—O   B_n O⇐O—O—…—O  C_n O⇒ O—O—…—O  D_n  O 2
+    1 2 3 … n       1 2 3 … n      1  2 3 … n       ￨
+                                                  O—O—…—O
+                                                  1 3 … n
 
-G_2 O⇛O   F_4 O—O⇒O—O  E_6   O 2   E_7   O 2     E_8    O 2
-    1 2       1 2 3 4        ￨           ￨              ￨
-                         O—O—O—O—O   O—O—O—O—O—O    O—O—O—O—O—O—O
-                         1 3 4 5 6   1 3 4 5 6 7    1 3 4 5 6 7 8
+G₂ O⇛ O  F₄ O—O⇒ O—O  E₆   O 2   E₇   O 2     E₈    O 2
+   1  2     1 2  3 4       ￨          ￨             ￨
+                       O—O—O—O—O  O—O—O—O—O—O   O—O—O—O—O—O—O
+                       1 3 4 5 6  1 3 4 5 6 7   1 3 4 5 6 7 8
 ```
 
 These diagrams encode the presentation of the Coxeter group `W` as follows: the vertices represent the generating reflections; an edge is drawn between `s`  and `t` if the order `m(s,t)` of `st` is greater than `2`; the edge is single  if  `m(s,t)=3`,  double  if  `m(s,t)=4`,  triple if `m(s,t)=6`. The arrows  indicate the relative root lengths when `W` has more than one orbit on  `R`, as explained below; we  get the *Coxeter Diagram*, which describes the  underlying Weyl group, if  we ignore the arrows:  we see that the root systems `B_n` and `C_n` correspond to the same Coxeter group.
 
-Let us now describe how the root systems are encoded in these diagrams. Let `R`  be a root system in `V`. Then we can choose a linear form on `V` which vanishes  on no element of `R`. According to  the sign of the value of this linear  form on a root  `r ∈ R` we  call `r` *positive* or *negative*. Then there  exists a unique subset `Π` of  the positive roots, called the set of *simple  roots*, such that  any positive root  is a linear combination with non-negative  coefficients of roots  in `Π`. It  can be shown  that any two sets of simple roots (corresponding to different choices of linear forms as above)  can be transformed into  each other by a  unique element of `W(R)`. Hence, since the pairing between `V` and `Vⱽ` is `W`-invariant, if `Π` is a set  of simple roots and if we define  the *Cartan matrix* as being the `n` times  `n` matrix `C={rⱽ(s)}_{rs}`, for `r,s∈Π` this matrix is unique up to simultaneous  permutation of rows and columns.  It is precisely this matrix which is encoded in a Dynkin diagram, as follows.
-
-The  indices for the rows of `C` label the nodes of the diagram. The edges, for  `r ≠ s`, are  given as follows. If  `C_{rs}` and `C_{sr}` are integers such  that `|C_{rs}| ≥  |C_{sr}|` the vertices  are connected by `|C_{rs}|` lines,  and if `|C_{rs}|>1`  then we put  an additional arrow  on the lines pointing towards the node with label `s`. In all other cases, we simply put a  single line  equipped with  the unique  integer `p_{rs}  ≥ 1`  such that `C_{rs}C_{sr}=cos^2 (π/p_{sr})`.
-
-It  is now important to note that, conversely, the whole root system can be recovered from the simple roots. The reflections in `W(R)` corresponding to the  simple roots are  called *simple* reflections.  They are precisely the generators  for which the Coxeter diagram encodes the defining relations of `W(R)`. Each root is in the orbit of a simple root, so that `R` is obtained as  the orbit of the  simple roots under the  group generated by the simple reflections.  The  restriction  of  the  simple  reflections  to  `V_R`  is determined  by the Cartan matrix, so `R` is determined by the Cartan matrix and the set of simple roots.
-
-The  Cartan  matrix  corresponding  to  one  of  the above irreducible root systems  (with the specified labeling) is  returned by the command 'cartan' which takes as input a symbol giving the type (that is ':A', ':B', …, ':I') and a positive integer giving the rank. This function returns a matrix with entries  in `bbZ`.  Given two  Cartan matrices  `c1` and `c2`, their matrix direct sum (corresponding to the orthogonal direct sum of the root systems) can be produced by the `cat(c1,c2,dims=[1,2])`.
-
-The function 'WeylGroup' takes as input some data which determine the roots and  the coroots and  produces a `struct`  containing information about the root  system `R` and about `W(R)`. If we label the positive roots by '1:N', and  the  negative  roots  by  'N+1:2N',  then  each  simple  reflection is represented by the permutation of '1:2N' which it induces on the roots.
-
-The function 'WeylGroup' has 2 methods; in one of them, the argument is the Cartan  matrix of the root system. This  constructs a root system where the simple  roots are the canonical basis of `V`, and the matrix of the coroots expressed in the dual basis of `Vⱽ` is then equal to the Cartan matrix.
-
-If one only wants to work with Cartan matrices with a labeling as specified by  the  above  list,  the  function  call  can  be  simplified. Instead of 'WeylGroup(CartanMat(:D,4))' the following is also possible.
+Here  are  the  diagrams  for  the  finite  Coxeter  groups which  are  not crystallographic:
 
 ```
-julia> W=WeylGroup(:D,4)
+   e        5         5
+```
+
+I₂(e) O—O   H₃ O—O—O  H₄ O—O—O—O       1 2      1 2 3     1 2 3 4 
+
+Let us now describe how the root systems are encoded in these diagrams. Let `R`  be a root system in `V`. Then we can choose a linear form on `V` which vanishes  on no element of `R`. According to  the sign of the value of this linear  form on a root  `r ∈ R` we  call `r` *positive* or *negative*. Then there  exists a unique subset `Π` of  the positive roots, called the set of *simple  roots*, such that  any positive root  is a linear combination with non-negative  coefficients of  roots in  `Π`. Any  two sets of simple roots (corresponding  to  different  choices  of  linear  forms  as above) can be transformed into each other by a unique element of `W(R)`. Hence, since the pairing  between `V` and `Vⱽ`  is `W`-invariant, if `Π`  is a set of simple roots  and if  we define  the *Cartan  matrix* as  being the  `n` times `n` matrix   `C={rⱽ(s)}_{rs}`,  for  `r,s∈Π`  this   matrix  is  unique  up  to simultaneous  permutation of rows and columns.  It is precisely this matrix which is encoded in a Dynkin diagram, as follows.
+
+The  indices for the rows of `C` label the nodes of the diagram. The edges, for  `r ≠ s`, are  given as follows. If  `C_{rs}` and `C_{sr}` are integers such  that `|C_{rs}|≥|C_{sr}|=1`  the vertices  are connected by `|C_{rs}|` lines,  and if `|C_{rs}|>1`  then we put  an additional arrow  on the lines pointing  towards the node with label `s`.  In other cases, we simply put a single   line  equipped  with  the  unique  integer  `p_{rs}≥1`  such  that `C_{rs}C_{sr}=cos^2 (π/p_{sr})`.
+
+Conversely,  the whole root  system can be  recovered from the simple roots and  the corresponding coroots. The  reflections in `W(R)` corresponding to the  simple roots are called  *simple* reflections or *Coxeter generators*. They are precisely the generators for which the Coxeter diagram encodes the defining  relations of `W(R)`. Each root is  in the orbit of a simple root, so  that `R` is obtained  as the orbit of  the simple roots under the group generated  by  the  simple  reflections.  The  restriction  of  the  simple reflections  to the span of `R` is  determined by the Cartan matrix, so `R` is determined by the Cartan matrix and the set of simple roots.
+
+The  Cartan  matrix  corresponding  to  one  of  the above irreducible root systems  (with the specified labeling) is  returned by the command 'cartan' which  takes as input  a `Symbol` giving  the type (that  is ':A', ':B', …, ':I')  and a positive `Int` giving the  rank (plus an `Int` giving the bond for  type `:I`).  This function  returns a  matrix with  entries in `ℤ` for crystallographic  types, and a  matrix of `Cyc`  for the other types. Given two  Cartan matrices `c1` and `c2`,  their matrix direct sum (corresponding to  the  orthogonal  direct  sum  of  the  root systems) can be produced by `cat(c1,c2,dims=[1,2])`.
+
+The  function 'rootdatum' takes as input a  list of simple roots and a list of the corresponding coroots and produces a `struct` containing information about  the root system `R` and about `W(R)`. If we label the positive roots by  '1:N', and the negative roots  by 'N+1:2N', then each simple reflection is  represented by the permutation of '1:2N' which it induces on the roots. If  only one argument is given, the Cartan matrix of the root system, it is taken  as the list  of coroots and  the list of  roots is assumed to be the canonical basis of `V`.
+
+If one only wants to work with Cartan matrices with a labeling as specified by  the  above  list,  the  function  call  can  be  simplified. Instead of 'rootdatum(CartanMat(:D,4))' the following is also possible.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
 W(D₄)
 
-julia> W.cartan
+julia> cartan(W)
 4×4 Array{Int64,2}:
   2   0  -1   0
   0   2  -1   0
@@ -766,11 +870,11 @@ julia> W.cartan
 
 Also,  the Weyl group struct associated to a direct sum of irreducible root systems can be obtained as a product
 
-```
-julia> W=WeylGroup(:A,2)*WeylGroup(:B,2)
-W(A₂)×W(B₂₍₃₄₎)
+```julia-repl
+julia> W=coxgroup(:A,2)*coxgroup(:B,2)
+W(A₂)× W(B₂)₍₃₄₎
 
-julia> W.cartan
+julia> cartan(W)
 4×4 Array{Int64,2}:
   2  -1   0   0
  -1   2   0   0
@@ -778,12 +882,12 @@ julia> W.cartan
   0   0  -1   2
 ```
 
-The  same `struct`  is constructed  by applying  'WeylGroup' to  the matrix 'cat(cartan(:A,2), cartan(:B,2),dims=[1,2])'.
+The  same `struct`  is constructed  by applying  'coxgroup' to  the matrix 'cat(cartan(:A,2), cartan(:B,2),dims=[1,2])'.
 
 The elements of a Weyl group are permutations of the roots:
 
 ```julia-repl
-julia> W=WeylGroup(:D,4)
+julia> W=coxgroup(:D,4)
 W(D₄)
 
 julia> p=W(1,3,2,1,3)
@@ -803,35 +907,35 @@ This module is mostly a port of the basic functions on Weyl groups in CHEVIE. Th
 
 ```
      CartanMat("A",5)                       →  cartan(:A,5) 
-     CoxeterGroup("A",5)                    →  WeylGroup(:A,5) 
+     CoxeterGroup("A",5)                    →  coxgroup(:A,5) 
      Size(W)                                →  length(W) 
      ForEachElement(W,f)                    →  for w in W f(w) end 
      ReflectionDegrees(W)                   →  degrees(W) 
      IsLeftDescending(W,w,i)                →  isleftdescent(W,w,i) 
-     ReflectionSubGroup : only standard parabolics now
+     ReflectionSubgroup                     →  reflection_subgroup
      TwoTree(m)                             →  twotree(m) 
      FiniteCoxeterTypeFromCartanMat(m)      →  type_cartan(m) 
      RootsCartan(m)                         →  roots(m) 
-     PrintDiagram(W)                        →  diagram(W) 
+     PrintDiagram(W)                        →  Diagram(W) 
      Inversions                             →  inversions 
      Reflection                             →  reflection 
-     W.orbitRepresentative                  →  simple_representatives(W) 
+     W.orbitRepresentative[i]               →  simple_representative(W,i) 
 ```
 
 finally, a benchmark on julia 1.0.2
 
 ```benchmark
-julia> @btime length(elements(WeylGroup(:E,7)))
-  807.009 ms (8608502 allocations: 787.93 MiB)
+julia> @btime length(elements(coxgroup(:E,7)))
+  531.385 ms (5945569 allocations: 1.08 GiB)
 ```
 
 GAP3 for the same computation takes 2.2s
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Weyl.jl#L1-L187' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L1-L197' class='documenter-source'>source</a><br>
 
-<a id='Gapjm.Weyl.cartan' href='#Gapjm.Weyl.cartan'>#</a>
-**`Gapjm.Weyl.cartan`** &mdash; *Function*.
+<a id='Gapjm.PermRoot.cartan' href='#Gapjm.PermRoot.cartan'>#</a>
+**`Gapjm.PermRoot.cartan`** &mdash; *Function*.
 
 
 
@@ -851,7 +955,7 @@ julia> cartan(:A,4)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Weyl.jl#L195-L208' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L204-L217' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Weyl.two_tree' href='#Gapjm.Weyl.two_tree'>#</a>
 **`Gapjm.Weyl.two_tree`** &mdash; *Function*.
@@ -865,22 +969,145 @@ two_tree(m)
 Given  a square  matrix m  with zeroes  (or falses,  for a boolean matrix)  symmetric  with respect to the diagonal, let  G be the graph with vertices  axes(m)[1] and an edge between i and j iff !iszero(m[i,j]).  If G  is a line this function returns it as a Vector{Int}.   If  G  is  a  tree  with  one  vertex  c of valence 3 the function returns  (c,b1,b2,b3)  where b1,b2,b3 are  the branches from  this vertex sorted by  increasing length.  Otherwise the function returns `nothing`
 
 ```julia-repl
-julia> CoxGroups.two_tree(cartan(:A,4))
+julia> Weyl.two_tree(cartan(:A,4))
 4-element Array{Int64,1}:
  1
  2
  3
  4
 
-julia> CoxGroups.two_tree(cartan(:E,8))
+julia> Weyl.two_tree(cartan(:E,8))
 (4, [2], [3, 1], [5, 6, 7, 8])
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Weyl.jl#L222-L244' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L242-L264' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.PermRoot.reflection_subgroup' href='#Gapjm.PermRoot.reflection_subgroup'>#</a>
+**`Gapjm.PermRoot.reflection_subgroup`** &mdash; *Function*.
 
 
-#type_cartan #roots
+
+reflection_subgroup(W,I) The subgroup of W generated by reflections(W)[I]
+
+A   theorem  discovered  by  Deodhar  cite{Deo89}  and  Dyer  cite{Dye90} independently  is that a subgroup `H` of a Coxeter system `(W,S)` generated by  reflections has  a canonical  Coxeter generating  set, formed of the `t ∈Ref(H)`  such `l(tt')>l(t)` for any `t'∈  Ref(H)` different from `t`. This is used by 'reflection_subgroup' to determine the Coxeter system of `H`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+W(G₂)
+
+julia> Diagram(W)
+O⇛ O
+1  2
+
+julia> H=reflection_subgroup(W,[2,6])
+W(G₂)₂₄
+
+julia> Diagram(H)
+O—O
+1 2
+```
+
+The  notation `W(G₂)₂₃` means  that 'W.roots[2:3]' form  a system of simple roots for `H`.
+
+A  reflection subgroup has specific properties  the most important of which is  'inclusion' which gives the positions of the roots of H in the roots of W. The inverse (partial) map is 'restriction'.
+
+```julia-repl
+julia> inclusion(H)
+3-element Array{Int64,1}:
+ 2
+ 4
+ 6
+
+julia> restriction(H)
+12-element Array{Int64,1}:
+ 0
+ 1
+ 0
+ 2
+ 0
+ 3
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+
+```
+
+If H is a standard parabolic subgroup  of a Coxeter group W then the length function  on H (with respect  to its set of  generators) is the restriction of  the length function on  W. This need not  no longer be true for arbitrary reflection subgroups of W:
+
+```julia-repl
+julia> word(W,H(2))
+3-element Array{Int64,1}:
+ 1
+ 2
+ 1
+```
+
+In  this package, finite  reflection groups are  represented as permutation groups  on a set of roots. Consequently,  a reflection subgroup `H⊆ W` is a permutation  subgroup, thus its elements are represented as permutations of the roots of the parent group.
+
+```julia-repl
+julia> elH=word.(Ref(H),elements(H))
+6-element Array{Array{Int64,1},1}:
+ []       
+ [2]      
+ [1]      
+ [2, 1]   
+ [1, 2]   
+ [1, 2, 1]
+
+julia> elW=word.(Ref(W),elements(H))
+6-element Array{Array{Int64,1},1}:
+ []             
+ [1, 2, 1]      
+ [2]            
+ [1, 2, 1, 2]   
+ [2, 1, 2, 1]   
+ [2, 1, 2, 1, 2]
+
+julia> map(w->H(w...),elH)==map(w->W(w...),elW)
+true
+
+```
+
+Another  basic result about reflection subgroups  of Coxeter groups is that each  coset of  H in  W contains  a unique  element of  minimal length, see `reduced`.
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L539-L641' class='documenter-source'>source</a><br>
+
+
+Only parabolics defined are I=1:m for m≤n
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CoxGroups.jl#L467' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.Weyl.coxgroup' href='#Gapjm.Weyl.coxgroup'>#</a>
+**`Gapjm.Weyl.coxgroup`** &mdash; *Function*.
+
+
+
+Coxeter group from type
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L440' class='documenter-source'>source</a><br>
+
+<a id='Gapjm.Weyl.rootdatum' href='#Gapjm.Weyl.rootdatum'>#</a>
+**`Gapjm.Weyl.rootdatum`** &mdash; *Function*.
+
+
+
+Adjoint root datum from cartan mat
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L443' class='documenter-source'>source</a><br>
+
+
+root datum
+
+
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Weyl.jl#L446' class='documenter-source'>source</a><br>
 
 
 <a id='Hecke.jl-Documentation-1'></a>
@@ -921,14 +1148,14 @@ If all `s` we have `uₛ₀=q`, `uₛ₁=-1` then we call the corresponding alge
 In  the  following  example,  we  compute  the multiplication table for the `0`-Iwahori–Hecke algebra associated with the Coxeter group of type `A_2`.
 
 ```julia-repl
-julia> W=WeylGroup(:A,2)
+julia> W=coxgroup(:A,2)
 W(A₂)
 
 julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(W(A₂),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,WeylGroup{Int16}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int8,1},1}:
@@ -940,7 +1167,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int16},Int64,WeylGroup{Int16}},2}:
+6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -956,7 +1183,7 @@ finally, benchmarks on julia 1.0.2
 
 ```benchmark
 julia> function test_w0(n)
-         W=WeylGroup(:A,n)
+         W=coxgroup(:A,n)
          Tbasis(hecke(W,Pol([1],1)))(longest(W))^2
        end
 test_w0 (generic function with 1 method)
@@ -975,7 +1202,7 @@ end;
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Hecke.jl#L1-L123' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Hecke.jl#L1-L123' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Hecke.HeckeAlgebra' href='#Gapjm.Hecke.HeckeAlgebra'>#</a>
 **`Gapjm.Hecke.HeckeAlgebra`** &mdash; *Type*.
@@ -987,7 +1214,7 @@ hecke( W [, parameter, [rootparameter]] ) return a Hecke algebra for W
 **Example**
 
 ```julia-repl
-julia> W=WeylGroup(:B,2)
+julia> W=coxgroup(:B,2)
 W(B₂)
 
 julia> Pol(:q)
@@ -1027,7 +1254,7 @@ julia> [H.para,H.sqpara]
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Hecke.jl#L135-L178' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/Hecke.jl#L135-L178' class='documenter-source'>source</a><br>
 
 
 <a id='KL.jl-Documentation-1'></a>
@@ -1063,7 +1290,7 @@ julia> function test_kl(W)
        end
 test_kl (generic function with 1 method)
 
-julia> @btime test_kl(WeylGroup(:F,4));
+julia> @btime test_kl(coxgroup(:F,4));
 2.265 s (22516606 allocations: 1.81 GiB)
 ```
 
@@ -1087,7 +1314,7 @@ end
 
 test_kl2 (generic function with 1 method)
 
-julia>@btime test_kl2(WeylGroup(:F,4));
+julia>@btime test_kl2(coxgroup(:F,4));
   8s (97455915 allocations: 6.79 GiB)
 ```
 
@@ -1101,7 +1328,7 @@ end;
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/KL.jl#L22-L115' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/KL.jl#L22-L115' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.KL.KLPol' href='#Gapjm.KL.KLPol'>#</a>
 **`Gapjm.KL.KLPol`** &mdash; *Function*.
@@ -1113,7 +1340,7 @@ KLPol(W,y,w) returns the Kazhdan-Lusztig polynomial P_{y,w} of W
 To  compute Kazhdan-Lusztig polynomials in  the one-parameter case it seems that  the best  approach still  is by  using the  recursion formula  in the original  article KL79. One can first run  a number of standard checks on a given  pair  of  elements  to  see  if the computation of the corresponding polynomial  can be reduced to a similar computation for elements of smaller length. One such check involves the notion of critical pairs (cf. Alv87): a pair  of elements `w₁,w₂∈  W` such that  `w₁≤w₂` is *critical*  if `ℒ(w₂) ⊆ ℒ(w₁)`  and `ℛ (w₂)⊆ ℛ (w₁)`, where `ℒ`  and `ℛ` denote the left and right descent  set, respectively.  Now if  `y≤w ∈  W` are arbitrary elements then there   always  exists  a  critical  pair   `z≤w`  with  `y≤z≤w`  and  then `P_{y,w}=P_{z,w}`.  Given two elements `y` and `w`, such a critical pair is found by the function 'CriticalPair'. Whenever the polynomial corresponding to a critical pair is computed then this pair and the polynomial are stored in the property `:klpol` of the underlying Coxeter group.
 
 ```julia-repl
-julia> W=WeylGroup(:B,3)
+julia> W=coxgroup(:B,3)
 W(B₃)
 
 julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
@@ -1130,7 +1357,7 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/KL.jl#L186-L220' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/KL.jl#L186-L220' class='documenter-source'>source</a><br>
 
 <a id='Gapjm.Hecke.Tbasis' href='#Gapjm.Hecke.Tbasis'>#</a>
 **`Gapjm.Hecke.Tbasis`** &mdash; *Function*.
@@ -1138,137 +1365,83 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
 
 
 ```julia-repl
-julia> W=WeylGroup(:B,3)
+julia> W=coxgroup(:B,3)
 W(B₃)
 
 julia> Pol(:v);H=hecke(W,v^2,v)
 Hecke(W(B₃),v²,v)
 
 julia> C=Cpbasis(H)
-(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 3 methods)
+(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 3 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/KL.jl#L307-L324' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/KL.jl#L307-L324' class='documenter-source'>source</a><br>
 
 
 <a id='Util.jl-Documentation-1'></a>
 
 # Util.jl Documentation
 
-<a id='Gapjm.Util' href='#Gapjm.Util'>#</a>
-**`Gapjm.Util`** &mdash; *Module*.
-
-
-
-This  module contains  various utility  functions used  in the  rest of the code.  Maybe some  of them  exist in  some Julia  module I am not aware of; please tell me.
-
-The code is divided in sections  according to semantics.
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L1-L7' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.groupby' href='#Gapjm.Util.groupby'>#</a>
-**`Gapjm.Util.groupby`** &mdash; *Function*.
-
-
-
-group items of list l according to the corresponding values in list v
 
 ```
-julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
-       [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
-Dict{Int64,Array{Symbol,1}} with 3 entries:
-  31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
-  28 => Symbol[:Feb]
-  30 => Symbol[:Apr, :Jun, :Sep, :Nov]
+Util
+groupby
+constant
+blocks
+format
+prime_residues
+phi
+primitiveroot
+echelon!
 ```
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L37-L47' class='documenter-source'>source</a><br>
+<a id='Cycpols.jl-Documentation-1'></a>
+
+# Cycpols.jl Documentation
+
+<a id='Gapjm.CycPols' href='#Gapjm.CycPols'>#</a>
+**`Gapjm.CycPols`** &mdash; *Module*.
 
 
-group items of list l according to the values taken by function f on them
+
+Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some cyclotomic  field, play an important role in the study of reductive groups. Special  facilities are provided in this module to deal with them. The type `CycPol` represents the product of a polynomial with a rational fraction in one variable with all poles or zeroes equal to 0 or roots of unity.
+
+The  advantages  of  representing  as  `CycPol`  objects  which  can  be so represented   are:   nice   display   (factorized),  less  storage,  faster multiplication,  division and evaluation. The big drawback is that addition and subtraction are not implemented!
+
+```julia-repl
+julia> Pol(:q)
+q
+
+julia> p=CycPol(q^18 + q^16 + 2*q^12 + q^8 + q^6)
+(q⁸+q⁶-q⁴+q²+1)q⁶Φ₈
+
+julia> p*inv(CycPol(q^2+q+1))
+(q⁸+q⁶-q⁴+q²+1)q⁶Φ₃⁻¹Φ₈
 
 ```
-julia> groupby(iseven,1:10)
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 3, 5, 7, 9]
-  true  => [2, 4, 6, 8, 10]
-```
 
-Note:in this version l is required to be non-empty since I do not know how to access the return type of a function
+The variable name in a `CycPol` is set by default to the same as for `Pols`.
 
+`CycPol`s are represented internally by a `struct` with fields:
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L56-L66' class='documenter-source'>source</a><br>
+`.coeff`:  a coefficient, usually a cyclotomic number or a polynomial.
 
-<a id='Gapjm.Util.constant' href='#Gapjm.Util.constant'>#</a>
-**`Gapjm.Util.constant`** &mdash; *Function*.
+`.valuation`: the valuation in ℤ.
 
+`.v`: a list of pairs `e=>m` of a root of unity `e` and a multiplicity `m`. Here  `e`  is  a  `Root1`,  which  is internally fraction `p//d` with `p<d` representing `E(d)^p`. The pair represents `(q-E(d)^p)^m`.
 
+So if we let `ζ(e)=E(e)=E(d,p)`, a `CycPol` `r` represents
 
-whether all elements in list a are equal
+`r.coeff*q^r.valuation*prod(r.vcyc,p->(q-ζ(p[1]))^p[2])`.
 
 
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L75' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.blocks' href='#Gapjm.Util.blocks'>#</a>
-**`Gapjm.Util.blocks`** &mdash; *Function*.
-
-
-
-blocks(M::Matrix)
-
-M  should be a square matrix. Define  a graph G with vertices 1:size(M,1)   and  with an edge between i and j  if either M[i,j] or M[j,i] is not zero   or false. blocks returns a vector of vectors I such that I[1],I[2], etc..   are  the  vertices  in  each  connected  component  of G. In other words,   M[I[1],I[1]],M[I[2],I[2]],etc... are blocks of M.
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L80-L88' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.format' href='#Gapjm.Util.format'>#</a>
-**`Gapjm.Util.format`** &mdash; *Function*.
-
-
-
-format( table; options )
-
-General routine to format a table. Used for character tables.   Options:      row*labels          Labels for rows      column*labels       Labels for columns      rows*label          Label for column of rowLabels      separators          line numbers after which to put a separator      column*repartition  display in pieces of sizes these numbers of cols      rows                show only these rows      columns             show only these columns
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L193-L206' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.prime_residues' href='#Gapjm.Util.prime_residues'>#</a>
-**`Gapjm.Util.prime_residues`** &mdash; *Function*.
-
-
-
-the numbers less than n and prime to n 
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L255' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.phi' href='#Gapjm.Util.phi'>#</a>
-**`Gapjm.Util.phi`** &mdash; *Function*.
-
-
-
-the Euler function ϕ 
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L274' class='documenter-source'>source</a><br>
-
-<a id='Gapjm.Util.primitiveroot' href='#Gapjm.Util.primitiveroot'>#</a>
-**`Gapjm.Util.primitiveroot`** &mdash; *Function*.
-
-
-
-primitiveroot(m::Integer) a primitive root mod. m,   that is it generates multiplicatively prime_residues(m).   It exists if m is of the form 4, 2p^a or p^a for p prime>2.
-
-
-<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/41e7f397bd1471d43f7a16273c75b38a830de532/src/Util.jl#L280-L284' class='documenter-source'>source</a><br>
+<a target='_blank' href='https://github.com/jmichel7/Gapjm.jl/blob/8c7bc151b38bf49665581a2c00bff7ceab6075d5/src/CycPols.jl#L1-L40' class='documenter-source'>source</a><br>
 

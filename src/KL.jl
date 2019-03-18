@@ -82,7 +82,7 @@ julia> function test_kl(W)
        end
 test_kl (generic function with 1 method)
 
-julia> @btime test_kl(WeylGroup(:F,4));
+julia> @btime test_kl(coxgroup(:F,4));
 2.265 s (22516606 allocations: 1.81 GiB)
 ```
 Compare to GAP3 where the following function takes 11s for F4
@@ -102,7 +102,7 @@ end
 
 test_kl2 (generic function with 1 method)
 
-julia>@btime test_kl2(WeylGroup(:F,4));
+julia>@btime test_kl2(coxgroup(:F,4));
   8s (97455915 allocations: 6.79 GiB)
 ```
 Compare to GAP3 where the following function takes 42s for F4
@@ -131,7 +131,7 @@ y≤z≤w.
 The significance of this construction is that `KLPol(W,y,w)==KLPol(W,z,w)`
 
 ```julia-repl
-julia> W=WeylGroup(:F,4)
+julia> W=coxgroup(:F,4)
 W(F₄)
 
 julia> w=longest(W)*gens(W)[1];length(W,w)
@@ -202,7 +202,7 @@ to a critical pair is computed then this pair and the polynomial are stored
 in the property `:klpol` of the underlying Coxeter group.
 
 ```julia-repl
-julia> W=WeylGroup(:B,3)
+julia> W=coxgroup(:B,3)
 W(B₃)
 
 julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
@@ -306,17 +306,17 @@ end
 
 """
 ```julia-repl
-julia> W=WeylGroup(:B,3)
+julia> W=coxgroup(:B,3)
 W(B₃)
 
 julia> Pol(:v);H=hecke(W,v^2,v)
 Hecke(W(B₃),v²,v)
 
 julia> C=Cpbasis(H)
-(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 3 methods)
+(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 3 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},WeylGroup{Int16}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#20")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂

@@ -120,6 +120,7 @@ Base.copy(p::Perm)=Perm(copy(p.d))
 
 import ..Gapjm.degree
 @inline degree(a::Perm)=length(a.d)
+Base.vec(a::Perm)=a.d
 
 function Base.promote(a::Perm,b::Perm)
   da=length(a.d)
@@ -202,7 +203,7 @@ largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 """
-  cycles(a::Perm) returns the non-trivial cycles of a
+  cycles(a::Perm) returns the cycles of a
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
@@ -212,8 +213,9 @@ julia> cycles(Perm(1,2)*Perm(4,5))
  [4, 5]
 ```
 """
-function cycles(a::Perm{T},check::Bool=false)where T
-  to_visit=trues(length(a.d))
+function cycles(a::Perm{T};domain=1:length(a.d),check=false)where T
+  to_visit=falses(length(a.d))
+  to_visit[domain].=true
   cycles=Vector{T}[]
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
@@ -232,7 +234,7 @@ end
 
 function Base.show(io::IO, a::Perm{T}) where T
   if T==Int t="" else t="{$T}" end
-  cyc=(c for c in cycles(a,true) if length(c)>1)
+  cyc=(c for c in cycles(a,check=true) if length(c)>1)
   if isempty(cyc) print(io,t,"()")
   else print(io,t,join("("*join(c,",")*")" for c in cyc))
   end
@@ -252,7 +254,7 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 
 ```
 """
-cycletype(a::Perm) = sort(length.(cycles(a)), rev=true)
+cycletype(a::Perm;domain=1:length(a.d)) = sort(length.(cycles(a;domain=domain)), rev=true)
 
 " sign(a::Perm) is the signature of  the permutation a"
 function Base.sign(a::Perm)

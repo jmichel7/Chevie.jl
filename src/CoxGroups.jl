@@ -135,7 +135,7 @@ reduced expressions.
 
 This  file contains mostly a port of  the basic functions on Coxeter groups
 in  CHEVIE. The only Coxeter group  constructor implemented here is coxsym.
-The file Weyl.jl defines WeylGroup.
+The file Weyl.jl defines coxgroup.
 
 The dictionary from CHEVIE is as follows:
 ```
@@ -199,7 +199,7 @@ coxrank(W::CoxeterGroup)=length(gens(W))
 function nref end
 
 """
-The longest element of ReflectionSubgroup(W,I) --- never ends if infinite
+The longest element of reflection_subgroup(W,I) --- never ends if infinite
 """
 function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
   w=one(W)
@@ -217,11 +217,11 @@ end
 reduced(W,w)
   The unique element in the coset W.w which stabilises the positive roots of W
 ```julia-repl
-julia> W=WeylGroup(:G,2)
+julia> W=coxgroup(:G,2)
 W(G₂)
 
-julia> H=ReflectionSubGroup(W,[2,4])
-W(G₂)₂₃
+julia> H=reflection_subgroup(W,[2,6])
+W(G₂)₂₄
 
 julia> Set(word.(Ref(W),reduced.(Ref(H),elements(W))))
 Set(Array{Int64,1}[[1], []])
@@ -240,11 +240,11 @@ end
 reduced(H,W)
   The elements in W which are H-reduced
 ```julia-repl
-julia> W=WeylGroup(:G,2)
+julia> W=coxgroup(:G,2)
 W(G₂)
 
-julia> H=ReflectionSubGroup(W,[2,4])
-W(G₂)₂₃
+julia> H=reflection_subgroup(W,[2,6])
+W(G₂)₂₄
 
 julia> [word(W,w) for S in reduced(H,W) for w in S]
 2-element Array{Array{Int64,1},1}:
@@ -289,7 +289,7 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
     else return gens(W)
     end
   end
-  H=gets(W->ReflectionSubGroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=gets(W->[Set([one(W)])],W,:rc)::Vector{Set{T}}
   while length(rc)<=l
     new=reduced(H,W,rc[end])
@@ -320,7 +320,7 @@ function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
     else return [[1]]
     end
   end
-  H=gets(W->ReflectionSubGroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=gets(W->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
     new=reduced(H,W,Set((x->element(W,x...)).(rc[end])))
@@ -465,7 +465,7 @@ function reflength(W::CoxSymmetricGroup,w::Perm{T})where T
 end
 
 " Only parabolics defined are I=1:m for m≤n"
-function PermRoot.ReflectionSubGroup(W::CoxSymmetricGroup,I::AbstractVector{Int})
+function PermRoot.reflection_subgroup(W::CoxSymmetricGroup,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I) 
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end

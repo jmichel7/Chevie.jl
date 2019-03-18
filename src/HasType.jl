@@ -14,7 +14,7 @@ braid_relations(W)=impl1(getclassified(W,:BraidRelations))
 function codegrees(W)
   vcat(map(refltype(W)) do t
     cd=getfromtype(t,:ReflectionCoDegrees)
-    if cd===nothing
+    if isnothing(cd)
       cd=getfromtype(t,:ReflectionDegrees)
       maximum(cd).-cd
     else cd
@@ -41,6 +41,7 @@ end
 allhaskey(v::Vector{<:Dict},k)=all(d->haskey(d,k),v)
 
 function charinfo(W)
+  gets(W,:charinfo) do W
   p=map(refltype(W)) do t
     c=copy(getfromtype(t,:CharInfo))
     c[:positionId]=c[:extRefl][1]
@@ -64,30 +65,33 @@ function charinfo(W)
     gt=Cartesian(map(x->1:length(x[:charparams]), p))
     res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
   end
-  return res
+  res
+  end
 end
 
 function classinfo(W)
-  tmp = getclassified(W,:ClassInfo)
-  if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
-                    :classparams=>[Int[]],:orders=>[1],:classes=>[1])
+  gets(W,:classinfo) do W
+    tmp = getclassified(W,:ClassInfo)
+    if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
+                      :classparams=>[Int[]],:orders=>[1],:classes=>[1])
+    end
+    if any(isnothing, tmp) return nothing end
+    if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
+    res[:classtext]=map(x->vcat(x...),Cartesian(map((i,t)->
+                                               getindex.(Ref(i),t[:classtext]),
+                          map(x->x[:indices],refltype(W)),tmp)...))
+    res[:classnames]=map(join,cartfields(tmp,:classnames))
+    if allhaskey(tmp, :classparam)
+      res[:classparams]=cartfields(tmp,:classparams)
+    end
+    if allhaskey(tmp,:orders)
+      res[:orders]=map(lcm, cartfields(tmp,:orders))
+    end
+    if allhaskey(tmp,:classes)
+      res[:classes]=Int.(map(prod, cartfields(tmp,:classes)))
+    end
+    res
   end
-  if any(isnothing, tmp) return nothing end
-  if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
-  res[:classtext]=map(x->vcat(x...),Cartesian(map((i,t)->
-                                             getindex.(Ref(i),t[:classtext]),
-                        map(x->x[:indices],refltype(W)),tmp)...))
-  res[:classnames]=map(join,cartfields(tmp,:classnames))
-  if allhaskey(tmp, :classparam)
-    res[:classparams]=cartfields(tmp,:classparams)
-  end
-  if allhaskey(tmp,:orders)
-    res[:orders]=map(lcm, cartfields(tmp,:orders))
-  end
-  if allhaskey(tmp,:classes)
-    res[:classes]=Int.(map(prod, cartfields(tmp,:classes)))
-  end
-  return res
 end
 
 function chartable(ct::Dict)
@@ -130,6 +134,18 @@ function chartable(H::HeckeAlgebra{C})where C
 end
 
 function ComplexReflectionGroup(i::Int)
+  if i in [23,28,30,36,37,38]
+    if i==23     return coxgroup(:H,3)
+    elseif i==28 return coxgroup(:F,4)
+    elseif i==30 return coxgroup(:H,4)
+    elseif i==36 return coxgroup(:E,6)
+    elseif i==37 return coxgroup(:E,7)
+    elseif i==38 return coxgroup(:E,8)
+    end
+    m=getfromtype(t,:CartanMat)
+    n=one(hcat(m...))
+    return PermRootGroup(map(i->n[i,:],axes(n,1)),m)
+  end
   t=Dict(:series=>:ST,:ST=>i)
   r=getfromtype(t,:GeneratingRoots)
   cr=getfromtype(t,:GeneratingCoRoots)
@@ -188,6 +204,7 @@ unipotent_characters(W)=impl1(getclassified(W,:UnipotentCharacters))
 
 unipotent_classes(W,p=0)=impl1(getclassified(W,:UnipotentClasses,p))
 
+#-----------------------------------------------------------------------
 const chevie=Dict()
 
 Base.:*(a::Array,b::Pol)=a .* Ref(b)
@@ -206,8 +223,6 @@ function chevieget(t::Symbol,w::Symbol)
  if haskey(chevie[t],w) return chevie[t][w] end
  println("chevie[$t] has no $w")
 end
-
-Cycs.E(a,b=1)=Cycs.E(Int(a),Int(b))
 
 function chevieset(t::Symbol,w::Symbol,o::Any)
   if !haskey(chevie,t) chevie[t]=Dict{Symbol,Any}() end
@@ -258,6 +273,8 @@ end
 
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
+
+IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 
 function pad(s::String, i::Int)
   if i>0 return lpad(s,i)
@@ -464,21 +481,23 @@ SymbolsDefect=function(e,r,def,c)
   local IsReducedSymbol, S
   function defShape(s)local e
     e=length(s)
-    (binomial(e,2)*div(sum(s),e)-sum(i->i*s[i+1],0:e-1))%e
+    (binomial(e,2)*div(sum(s),e)-sum(i->(i-1)*s[i],1:e))%e
   end
  
   shapesSymbols=function(r,e,c)local f,res,m,new
     f=function(lim2,sum,nb,max)local res,a
+      println("lim2=$lim2 sum=$sum nb=$nb mex=$max")
       if nb==1   
         if sum==0   return [[sum]]
-        else return [] end 
+        else return Vector{Int}[] end 
       end
-      res=[]
+      res=Vector{Int}[]
       a=div(sum,nb-1)
       while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum  
         append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
         a+=1 
       end
+      println("res=$res")
       return res
     end
 
@@ -490,7 +509,7 @@ SymbolsDefect=function(e,r,def,c)
       m+=1
       if length(new)==0 break end
     end
-    res=vcat(map(x->Arrangements(x,e),res)...)
+    res=vcat(map(x->arrangements(x,e),res)...)
     filter(s->defShape(s)==def  &&  
       all(x->defShape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
   end
@@ -651,7 +670,7 @@ function ImprimitiveCuspidalName(S)
   end
 end
 
-WeylGroup(s::String,n)=WeylGroup(Symbol(s),Int(n))
+WeylGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
 CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
