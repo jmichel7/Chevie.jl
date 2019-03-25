@@ -10,11 +10,13 @@ module Util
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
   SortedPairs, norm!, mergesum, getvalue, # data structure
-  format, TeXstrip, bracket_if_needed, # formatting
+  format, TeXstrip, bracket_if_needed, ordinal, # formatting
   factor, prime_residues, divisors, phi, primitiveroot,  # number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
   partition_tuples, #combinatorics
-  echelon, Nullspace  # linear algebra
+  echelon, exterior_power  # linear algebra
+
+# not exported: nullspace, to avoid conflict with LinearAlgebra
 
 #--------------------------------------------------------------------------
 """
@@ -254,6 +256,17 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     if ci[end]!=length(colwidth) print(io,"\n") end
   end
 end
+
+function ordinal(n)
+  str=repr(n)
+  if     n%10==1 && n%100!=11 str*="st"
+  elseif n%10==2 && n%100!=12 str*="nd"
+  elseif n%10==3 && n%100!=13 str*="rd"
+  else                        str*="th"
+  end
+  str
+end
+
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)
@@ -384,7 +397,7 @@ function ArrangementsK(mset::AbstractVector,blist,k)
     append!(combs,map(x->vcat([mset[i]],x),ArrangementsK(mset,blist1,k-1)))
     end
   end
-  combs
+  unique(combs)
 end 
 
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
@@ -416,8 +429,8 @@ end
 
 echelon(m::Matrix)=echelon!(copy(m))
 
-" computes right nullspace of m"
-function Nullspace(m::Matrix)
+" computes right nullspace of m in a type_preserving way"
+function nullspace(m::Matrix)
   m=echelon(m)[1]
   n=size(m)[2]
   z=Int[]
@@ -439,4 +452,17 @@ function Nullspace(m::Matrix)
   for i in nn zz[i,i]=-one(eltype(m)) end
   zz[:,nn]
 end
+
+function det(A)
+  if size(A,1)==1 return A[1,1]
+  elseif size(A,1)==2 return A[1,1]*A[2,2]-A[1,2]*A[2,1]
+  end
+  sum(i->det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
+end
+
+function exterior_power(A,m)
+  basis=combinations(1:size(A,1),m)
+  [det(A[i,j]) for i in basis, j in basis]
+end 
+
 end

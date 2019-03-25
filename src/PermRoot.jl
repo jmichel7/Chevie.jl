@@ -263,6 +263,7 @@ function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
 
 # println("# roots: ")
   roots=map(x->convert.(eltype(matgens[1]),x),r)
+  cr=map(x->convert.(eltype(matgens[1]),x),cr)
   refls=map(x->Int[],roots)
   newroots=true
   while newroots
@@ -282,7 +283,7 @@ function PermRootGroup(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
     end
 #   println(" ",length(roots))
   end
-  roots=map(x->convert.(eltype(matgens[1]),x),roots)
+# roots=map(x->convert.(eltype(matgens[1]),x),roots)
   PermRootGroup(matgens,roots,cr,PermGroup(map(Perm{Int16},refls)),
     Dict{Symbol,Any}())
 end
@@ -321,7 +322,7 @@ function baseX(W::PermRootGroup{T})::Matrix{T} where T
   gets(W,:baseX) do W
     ir=independent_roots(W)
     res=permutedims(hcat(W.roots[ir]...))
-    res=hcat(res,NullSpace(hcat(W.coroots[ir]...)))
+    res=hcat(res,Util.nullspace(hcat(W.coroots[ir]...)))
   end
 end
 

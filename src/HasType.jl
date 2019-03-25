@@ -7,7 +7,9 @@ export charinfo, classinfo, reflection_name, diagram, chartable,
 
 using Gapjm
 
-Cartesian(a::AbstractVector...)=reverse.(vec(collect.(Iterators.product(reverse(a)...))))
+function Cartesian(a::AbstractVector...)
+  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
+end
 
 braid_relations(W)=impl1(getclassified(W,:BraidRelations))
 
@@ -113,7 +115,7 @@ function chartable(W)
       merge!(ct,getfromtype(t,:ClassInfo))
     end
     CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),names,
-    ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
+     ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
   end
   charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
@@ -183,6 +185,8 @@ end
 
 nr_conjugacy_classes(W)=prod(getclassified(W,:NrConjugacyClasses))
 
+PrintToSring(s,v...)=sprint(show,v...)
+
 reflection_name(W)=join(getclassified(W,:ReflectionName,Dict()),"×")
 
 function representation(W,i::Int)
@@ -200,6 +204,8 @@ function schur_elements(H::HeckeAlgebra)
     charinfo(W)[:charparams])
 end
 
+UnipotentClassOps=Dict(:Name=>x->x)
+
 unipotent_characters(W)=impl1(getclassified(W,:UnipotentCharacters))
 
 unipotent_classes(W,p=0)=impl1(getclassified(W,:UnipotentClasses,p))
@@ -216,7 +222,7 @@ Base.:+(a::AbstractVector,b::Number)=a .+ b
 #Base.:*(a::Mvp, b::Array)=Ref(a).*b
 #include("mvp.jl")
 #Base.:*(b::Array,a::Mvp)=b.*Ref(a)
-Base.getindex(s::String,a::Vector{Any})=getindex.(s,a)
+Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 
 function chevieget(t::Symbol,w::Symbol)
@@ -274,6 +280,7 @@ end
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
+Binomial=binomial
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 
 function pad(s::String, i::Int)
@@ -285,9 +292,22 @@ end
 pad(s::String)=s
 
 function Replace(s,p...)
-  p=Dict(p[i]=>p[i+1] for i in 1:2:length(p))
-  p=[haskey(p,s[i:i]) ? p[s[i:i]] : s[i:i] for i in 1:length(s)]
-  vcat(p...)
+# println("Replace s=$s p=$p")
+  r=[p[i]=>p[i+1] for i in 1:2:length(p)]
+  for (src,tgt) in r
+    i=1
+    while i+length(src)-1<=length(s)
+      if src==s[i:i+length(src)-1]
+        if tgt isa String
+          s=s[1:i-1]*tgt*s[i+length(src):end]
+        else
+          s=vcat(s[1:i-1],tgt,s[i+length(src):end])
+        end
+      end
+      i+=1
+    end
+  end
+  s
 end
 
 function Position(a::Vector,b)
@@ -325,6 +345,8 @@ Base.length(a::Symbol)=length(string(a))
 IsList(l)=l isa Vector
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
 
+Flat(v)=collect(Iterators.flatten(v))
+
 ForAll(l,f)=all(f,l)
 
 PartitionTuples=partition_tuples
@@ -350,7 +372,12 @@ function Collected(v)
   sort([[k,length(v)] for (k,v) in d])
 end
 
-SortBy(x,f)=sort(x,by=f)
+function CollectBy(v,f)
+  d=groupby(f,v)
+  [d[k] for k in sort(collect(keys(d)))]
+end
+
+SortBy(x,f)=sort!(x,by=f)
 
 function Ignore() end
 
@@ -486,7 +513,6 @@ SymbolsDefect=function(e,r,def,c)
  
   shapesSymbols=function(r,e,c)local f,res,m,new
     f=function(lim2,sum,nb,max)local res,a
-      println("lim2=$lim2 sum=$sum nb=$nb mex=$max")
       if nb==1   
         if sum==0   return [[sum]]
         else return Vector{Int}[] end 
@@ -497,7 +523,6 @@ SymbolsDefect=function(e,r,def,c)
         append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
         a+=1 
       end
-      println("res=$res")
       return res
     end
 
@@ -518,7 +543,6 @@ SymbolsDefect=function(e,r,def,c)
     ForAll(Rotations(s){[2..Length(s)]},x->s==x || LessSymbols(x,s))
   end
 
-  println("shapesSymbols(r,e,c)=$(shapesSymbols(r,e,c))")
   S=vcat(map(shapesSymbols(r,e,c)) do s
     map(x->SymbolPartitionTuple(x,s),
        PartitionTuples(r-RankSymbol(map(x->0:x-1,s)),e)) end...)
@@ -527,6 +551,8 @@ end
 
 Filtered(l,f)=isempty(l) ? l : filter(f,l)
 
+PartBeta(l)=filter(x->!iszero(x),reverse(l.-(0:length(l)-1)))
+gapSet(v)=unique(sort(v))
 Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
 
@@ -670,6 +696,102 @@ function ImprimitiveCuspidalName(S)
   end
 end
 
+FamilyImprimitive = function (S,)
+local e, Scoll, ct, d, m, ll, eps, equiv, nrSymbols, epsreps, trace, roots, i, j, mat, frobs, symbs, newsigns, schon, orb, mult, res, IsReducedSymbol
+  println("S=$S")
+  e = length(S)
+  Scoll = Collected(vcat(S...))
+  ct = vcat(map(x->fill(x[1],x[2]), Scoll)...)
+  d = length(ct) % e
+  if !(d in [0, 1]) error("Length(", IntListToString(ct), ") should be 0 or 1  %  ", e, " !\n")
+        end
+  m = div(length(ct) - d, e)
+  j = (m * binomial(e, 2)) % e
+  ll = Cartesian(map(i->0:e-1, Scoll)...)
+  ll = filter(x->sum(x)%e==j,ll)
+  ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
+                   collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
+  nrSymbols=sum(x->prod(length,x),ll)
+  ll = vcat(map(x->Cartesian(x...), ll)...)
+  eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
+  equiv = map(x->
+      Dict(:globaleps=>length(x)==1 ? 1 :
+     (-1)^sum(i->sum(j->sum(y->count(k->y<k,j),x[i]),x[i+1:end]),1:length(x)-1),
+     :aa=>map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
+  epsreps = map(x->eps(vcat(x...)), ll)
+  roots = map(i->E(e,i),0:e-1)
+  mat = map(i->i[:globaleps]*map(k->epsreps[k]*
+  prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
+              i[:aa][l]),
+          1:length(i[:aa])), 1:nrSymbols), equiv)
+  mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*ER(e)^e)^m
+  frobs = E(12,-(e^2-1)*m)*map(i->E(2e,-(sum(j->j*j,i))-e*sum(sum,i)),ll)
+  symbs = map(function (l)local sy, j
+              sy = map(j->Int[], 1:e)
+              map((v,c)->begin push!(sy[v + 1], c)
+                      return 1 end, vcat(l...), ct)
+              return sy
+          end, ll)
+  newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
+               (-1)^((0:e - 1)*map(x->binomial(length(x), 2), i)),symbs)
+  mat = map((s,l)->s * map((x, y)->x*y, newsigns,l),newsigns,mat)
+  if d == 0
+  IsReducedSymbol(s)=all(x->s==x || LessSymbols(x, s),Rotations(s)[2:length(s)])
+    schon = map(IsReducedSymbol, symbs)
+    mult = []
+    for i = 1:nrSymbols
+        if schon[i]
+            orb = gapSet(Rotations(symbs[i]))
+            push!(mult, e // length(orb))
+            for j = Filtered(i + 1:nrSymbols, (j->symbs[j] in orb))
+                schon[j] = false
+            end
+        end
+    end
+    frobs = vcat(map((m,f)->fill(f,m), mult, ListBlist(frobs, schon))...)
+    symbs = vcat(map(function (m, s)
+                    if m==1 return [s]
+                    else return map(j->vcat(s[1:e//m], [m, j]), 0:m-1)
+                    end
+                end, mult, ListBlist(symbs, schon))...)
+    mat = vcat(map(function (m, l)return map((i->begin
+      vcat(map((n,c)->fill(e*c//m//n,n),mult,ListBlist(l, schon))...)
+                         end), 1:m)end, mult, ListBlist(mat, schon))...)
+    mult=vcat(map(m->fill(m,m),mult)...)
+    nrSymbols=length(symbs)
+    for i=1:nrSymbols
+      for j=1:nrSymbols
+        if FullSymbol(symbs[i])==FullSymbol(symbs[j])
+            mat[i][j]-=1//mult[i]
+            if symbs[i]==symbs[j] mat[i][j]+=1 end
+        end
+      end
+    end
+    if (mat*DiagonalMat(frobs))^3!=mat^0
+        print("** WARNING: (S*T)^3!=1\n")
+    end
+  end
+  res=Dict{Symbol,Any}(:symbols=>symbs,
+    :fourierMat=>mat,
+    :eigenvalues=>frobs,
+    :name=>IntListToString(ct),
+    :explanation=>"classical family",
+    :special=>1,
+    :operations=>FamilyOps)
+  res[:charLabels] = map(string, 1:length(res[:symbols]))
+  res[:size] = length(res[:symbols])
+  res
+end
+MakeFamilyImprimitive = function (S, uc)
+  f=x->Position(uc[:charSymbols],x)
+  if length(S)==1 return Family("C1", map(f, S)) end
+  r = FamilyImprimitive(FullSymbol(S[1]))
+  r[:charNumbers] = map(f, r[:symbols])
+  r[:special] = PositionProperty(r[:charNumbers],(x->uc[:a][x] == uc[:b][x]))
+  r[:cospecial] = PositionProperty(r[:charNumbers],(x->uc[:A][x] == uc[:B][x]))
+# if length(blocks(r[:fourierMat])) > 1 error() end
+  r
+end
 WeylGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
@@ -677,96 +799,22 @@ CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
                            :AdjustHeckeCharTable=>(x,y)->x,
         :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
 
-FamilyOps=Dict()
-CHEVIE[:families]=Dict(:C1=>
-        Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
-  :charLabels=>[""], :fourierMat=>[[1]], :eigenvalues=>[1],
-  :mellin=>[[1]],:mellinLabels=>[""]),
-  :C2=>Dict(:group=>"C2", :name=>"C_2",
-  :explanation=>"DrinfeldDouble(Z/2)",
-  :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
-  :fourierMat=>1/2*[[1,1,1,1],[1,1,-1,-1],[1,-1,1,-1],[1,-1,-1,1]],
-  :eigenvalues=>[1,1,1,-1],
-  :perm=>(),
-  :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
-  :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"]),
-  :S3=>Dict(:group=>"S3", :name=>"D(S_3)",
-  :explanation=>"Drinfeld double of S3, Lusztig's version",
-  :charLabels=>[ "(1,1)", "(g_2,1)", "(g_3,1)", "(1,\\rho)", "(1,\\varepsilon)",
-		"(g_2,\\varepsilon)", "(g_3,\\zeta_3)", "(g_3,\\zeta_3^2)"],
-  :fourierMat=>[[1, 3, 2, 2,1, 3, 2, 2],[3, 3, 0, 0,-3,-3, 0, 0],
-		[2, 0, 4,-2,2, 0,-2,-2],[2, 0,-2, 4, 2, 0,-2,-2],
-		[1,-3, 2, 2,1,-3, 2, 2],[3,-3, 0, 0,-3, 3, 0, 0],
-		[2, 0,-2,-2,2, 0, 4,-2],[2, 0,-2,-2, 2, 0,-2, 4]]//6,
-  :eigenvalues=>[1,1,1,1,1,-1,E(3),E(3,2)],
-  :perm=>Perm(7,8),
-  :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
-  :mellin=>[[1,0,0,2,1,0,0,0],[0,1,0,0,0,1,0,0],[0,0,1,0,0,0,1,1],[1,0,0,-1,1,0,
-   0,0],[1,0,0,0,-1,0,0,0],[0,1,0,0,0,-1,0,0],[0,0,1,0,0,0,E(3),E(3,2)],
-   [0,0,1,0,0,0,E(3,2),E(3)]],
-  :mellinLabels=>["(1,1)","(g2,1)","(g3,1)","(1,g3)","(1,g2)","(g2,g2)",
-                 "(g3,g3)","(g3,g3^2)"]),
-  :X=>function(p)
-    ss=combinations(0:p-1,2)
-    Dict(:name=>"R_{\\BZ/$p}^{\\wedge 2}",
-         :explanation=>"DoubleTaft($p)",
-         :charSymbols=>ss,
-         :charLabels=>map(s->repr(E(p)^s[1],context=:TeX=>true)*
-      "\\!\\wedge\\!"*repr(E(p)^s[2],context=:TeX=>true),ss),
-    :eigenvalues=>map(s->E(p)^Product(s),ss),
-    :fourierMat=>map(i->map(j->(E(p)^(i*reverse(j))-E(p)^(i*j))/p,ss),ss),
-    :special=>1,:cospecial=>p-1)
-   end)
+DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 
-function SubFamily(f,ind,scal,label)
-  ind=filter(i->ind(f,i),1:length(f[:eigenvalues]))
-  res=Dict(:fourierMat=>getindex.(f[:fourierMat][ind],Ref(ind))*scal,
-           :eigenvalues=>f[:eigenvalues][ind],
-           :charLabels=>f[:charLabels][ind],
-   :operations=>FamilyOps)
-  res[:name]="$(f[:name])_{[$label]}"
-  if haskey(f,:charSymbols) res[:charSymbols]=f[:charSymbols][ind] end
-  if haskey(f,:group) 
-    res[:group]=f[:group] 
-  end
-  if f[:special] in ind 
-   res[:special]=findfirst(isequal(ind),f[:special]) 
-  end
-  res
-end
-
-function SubFamilyij(f,i,j,scal)
-  g=SubFamily(f,(f,k)->sum(f[:charSymbols][k])%j==i,scal,join([i,j]))
-  g[:explanation]="subfamily(sum(charsymbols)mod $j=$i of $(f[:explanation]))"
-  g
-end
-
-CHEVIE[:families][:X5]=SubFamilyij(CHEVIE[:families][:X](6),1,3,1-E(3))
-CHEVIE[:families][:X5][:cospecial]=5
-
-UnipotentClassOps=Dict(:Name=>x->x)
-
+include("families.jl")
 Format(x)=string(x)
 Format(x,opt)=string(x)
+FormatTeX(x)=repr(x,context=:TeX=>true)
 Torus(i::Int)=i
 RootsCartan=x->x
-function Family(s::String,v::Vector,d::Dict=Dict{Symbol,Any}())
-  f=CHEVIE[:families][Symbol(s)]
-  f[:char_numbers]=v
-  merge(f,d)
-end
-function Family(f::Dict{Symbol,Any},v::Vector,d::Dict=Dict{Symbol,Any}())
-  f[:char_numbers]=v
-  merge(f,d)
-end
 
 function ReadChv(s::String)
 end
-DiagonalMat(v...)=v
 Group(v...)=v
 ComplexConjugate(v)=v
-function GetRoot(x,n::Number,msg::String="")
-   println("GetRoot($x,$n)")
+function GetRoot(x,n::Number=2,msg::String="")
+   println("GetRoot($x,$n) returns $x")
    x
 end
 Unbind(x)=x
