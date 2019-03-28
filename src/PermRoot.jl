@@ -306,7 +306,7 @@ function root_representatives(W::PermRootGroup)
 end
 
 " the matrix of the reflection of given root and coroot"
-function reflection(root::Vector,coroot::Vector)
+function reflection(root::AbstractVector,coroot::AbstractVector)
   root,coroot=promote(root,coroot)
   m=[i*j for i in coroot, j in root]
   one(m)-m

@@ -452,6 +452,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   r=vcat(r,-r)
   # the reflections defined by Cartan matrix C
   matgens=[reflection(rr[i,:],cr[i,:]) for i in axes(C,1)]
+# matgens=map(reflection,eachrow(rr),eachrow(cr))
   """
     the permutations of the roots r effected by the matrices mm
   """
