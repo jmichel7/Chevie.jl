@@ -1,17 +1,87 @@
 FamilyOps=Dict()
+
+struct Family
+  d::Dict{Symbol,Any}
+end
+
+function Family(s::String,v::Vector,d::Dict=Dict{Symbol,Any}())
+  f=CHEVIE[:families][Symbol(s)]
+  f[:charNumbers]=v
+  f isa Dict ?  Family(merge(f,d)) : Family(merge(f.d,d))
+end
+function Family(s::String,d::Dict=Dict{Symbol,Any}())
+  f=CHEVIE[:families][Symbol(s)]
+  f isa Dict ?  Family(merge(f,d)) : Family(merge(f.d,d))
+end
+function Family(f::Family,v::Vector,d::Dict=Dict{Symbol,Any}())
+  f[:charNumbers]=v
+  Family(merge(f.d,d))
+end
+function Family(f::Dict{Symbol,Any},v::Vector,d::Dict=Dict{Symbol,Any}())
+  f[:charNumbers]=v
+  Family(merge(f,d))
+end
+Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.d
+
+function Base.show(io::IO,f::Family)
+ if !haskey(f,:name) f[:name]="???" end
+ print(io,"Family($(TeXstrip(f.d[:name])):$(length(f.d[:eigenvalues])))")
+end
+
+Base.getindex(f::Family,k)=f.d[k]
+Base.haskey(f::Family,k)=haskey(f.d,k)
+Base.setindex!(f::Family,v,k)=setindex!(f.d,v,k)
+
+function Base.:*(f::Family,g::Family)
+  println(f,"*",g)
+  if !haskey(f,:charLabels) f[:charLabels]=map(string,eachindex(f[:eigenvalues])) end
+  if !haskey(g,:charLabels) g[:charLabels]=map(string,eachindex(g[:eigenvalues])) end
+  res=Dict{Symbol,Any}(
+    :charLabels=>map(v->join(v,"\\otimes "),Cartesian(f[:charLabels],g[:charLabels])),
+    :fourierMat=>kron(f[:fourierMat],g[:fourierMat]),
+    :eigenvalues=>map(prod,Cartesian(f[:eigenvalues],g[:eigenvalues])),
+    :name=>f[:name]*"\\otimes "*g[:name],
+    :explanation=>"Tensor("*f[:explanation]*","*g[:explanation]*")"
+  )
+#  if ForAll(arg,f->IsBound(f.charNumbers)) then 
+#    res.charNumbers:=Cartesian(List(arg,x->x.charNumbers));
+#  fi;
+#  if ForAll(arg,f->IsBound(f.special)) then 
+#    res.special:=PositionCartesian(List(arg,Size),List(arg,f->f.special));
+#    res.cospecial:=PositionCartesian(List(arg,Size),
+#      List(arg,function(f)if IsBound(f.cospecial) then return f.cospecial;
+#                                          else return f.special;fi;end));
+#    if res.cospecial=res.special then Unbind(res.cospecial);fi;
+#  fi;
+#  if ForAll(arg,f->IsBound(f.perm) or Size(f)=1) then 
+#    res.perm:=PermListList(Cartesian(List(arg,x->[1..Size(x)])),
+#        Cartesian(List(arg,function(x)if IsBound(x.perm) then return
+#          Permuted([1..Size(x)],x.perm);else return [1];fi;end)));
+#  fi;
+#  if ForAll(arg,f->IsBound(f.lusztig) or Size(f)=1) then 
+#    res.lusztig:=true;
+#  fi;
+#  if ForAny(arg,f->IsBound(f.qEigen)) then
+#    res.qEigen:=List(Cartesian(List(arg,function(f) 
+#      if IsBound(f.qEigen) then return f.qEigen;else return f.eigenvalues*0;fi;
+#      end)),Sum);
+#  fi;
+  res
+end
+
 CHEVIE[:families]=Dict(:C1=>
-        Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
+        Family(Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
   :charLabels=>[""], :fourierMat=>[[1]], :eigenvalues=>[1],
-  :mellin=>[[1]],:mellinLabels=>[""]),
-  :C2=>Dict(:group=>"C2", :name=>"C_2",
+  :mellin=>[[1]],:mellinLabels=>[""])),
+  :C2=>Family(Dict(:group=>"C2", :name=>"C_2",
   :explanation=>"DrinfeldDouble(Z/2)",
   :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[[1,1,1,1],[1,1,-1,-1],[1,-1,1,-1],[1,-1,-1,1]],
   :eigenvalues=>[1,1,1,-1],
   :perm=>(),
   :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
-  :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"]),
-  :S3=>Dict(:group=>"S3", :name=>"D(S_3)",
+  :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"])),
+  :S3=>Family(Dict(:group=>"S3", :name=>"D(S_3)",
   :explanation=>"Drinfeld double of S3, Lusztig's version",
   :charLabels=>[ "(1,1)", "(g_2,1)", "(g_3,1)", "(1,\\rho)", "(1,\\varepsilon)",
 		"(g_2,\\varepsilon)", "(g_3,\\zeta_3)", "(g_3,\\zeta_3^2)"],
@@ -26,27 +96,27 @@ CHEVIE[:families]=Dict(:C1=>
    0,0],[1,0,0,0,-1,0,0,0],[0,1,0,0,0,-1,0,0],[0,0,1,0,0,0,E(3),E(3,2)],
    [0,0,1,0,0,0,E(3,2),E(3)]],
   :mellinLabels=>["(1,1)","(g2,1)","(g3,1)","(1,g3)","(1,g2)","(g2,g2)",
-                 "(g3,g3)","(g3,g3^2)"]),
+                  "(g3,g3)","(g3,g3^2)"])),
   :X=>function(p)
     ss=combinations(0:p-1,2)
-    Dict(:name=>"R_{\\BZ/$p}^{\\wedge 2}",
+    Family(Dict(:name=>"R_{\\BZ/$p}^{\\wedge 2}",
          :explanation=>"DoubleTaft($p)",
          :charSymbols=>ss,
          :charLabels=>map(s->repr(E(p)^s[1],context=:TeX=>true)*
       "\\!\\wedge\\!"*repr(E(p)^s[2],context=:TeX=>true),ss),
     :eigenvalues=>map(s->E(p)^Product(s),ss),
-    :fourierMat=>map(i->map(j->(E(p)^(i*reverse(j))-E(p)^(i*j))/p,ss),ss),
-    :special=>1,:cospecial=>p-1)
+    :fourierMat=>[(E(p)^(i*reverse(j))-E(p)^(i*j))/p for i in ss,j in ss],
+    :special=>1,:cospecial=>p-1))
    end,
-   Symbol("C'\"2")=>Dict(:group=>"C2", :name=>"C'''_2",
+   Symbol("C'\"2")=>Family(Dict(:group=>"C2", :name=>"C'''_2",
   :explanation=>"TwistedDrinfeldDouble(Z/2)'",
   :charLabels=>["(1,1)", "(1,\\varepsilon)", "(g_2,1)", "(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[[1,1,-1,-1],[1,1,1,1],[-1,1,-1,1],[-1,1,1,-1]],
   :eigenvalues=>[1,1,E(4),-E(4)],
   :qEigen=>[0,0,1//2,1//2],
   :perm=>Perm(3,4),
-  :cospecial=>2),
-   Symbol("C'2")=>Dict(:group=>"C2",:name=>"C'_2",
+  :cospecial=>2)),
+   Symbol("C'2")=>Family(Dict(:group=>"C2",:name=>"C'_2",
   :explanation=>"TwistedDrinfeldDouble(Z/2)",
   :charLabels=>["(1,1)",  "(1,\\varepsilon)", "(g_2,1)","(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[[1,1,-1,-1],[1,1,1,1],[-1,1,1,-1],[-1,1,-1,1]],
@@ -54,12 +124,12 @@ CHEVIE[:families]=Dict(:C1=>
   :qEigen=>[0,0,1//2,1//2],
   :perm=>Perm(3,4),
   :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
-  :cospecial=>2)
+  :cospecial=>2))
   )
 
 function SubFamily(f,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f[:eigenvalues]))
-  res=Dict(:fourierMat=>getindex.(f[:fourierMat][ind],Ref(ind))*scal,
+  res=Dict(:fourierMat=>f[:fourierMat][ind,ind]*scal,
            :eigenvalues=>f[:eigenvalues][ind],
            :charLabels=>f[:charLabels][ind],
    :operations=>FamilyOps)
@@ -71,7 +141,7 @@ function SubFamily(f,ind,scal,label)
   if f[:special] in ind 
    res[:special]=findfirst(isequal(ind),f[:special]) 
   end
-  res
+  Family(res)
 end
 
 function SubFamilyij(f,i,j,scal)
@@ -101,34 +171,29 @@ CHEVIE[:families][:ExtPowCyclic]=function(e,n)
        g[:explanation]="character ring of Z/$e"
   end
   g[:eigenvalues]=g[:eigenvalues]/g[:eigenvalues][1]
-  g
+  Family(g)
 end
 
 CHEVIE[:families][:X5]=SubFamilyij(CHEVIE[:families][:X](6),1,3,1-E(3))
 CHEVIE[:families][:X5][:cospecial]=5
 CHEVIE[:families][:Z4]=CHEVIE[:families][:ExtPowCyclic](4,1)
 
-struct Family
-  d::Dict{Symbol,Any}
+CHEVIE[:families][:Z9]=CHEVIE[:families][:ExtPowCyclic](9,1)
+#if CHEVIE.families.Z9.eigenvalues<>List([0..8],i->E(9)^(5*i^2))then Error();fi;
+CHEVIE[:families][:Z9][:perm]=perm"(2,9)(3,8)(4,7)(5,6)"
+CHEVIE[:families][:Z9][:qEigen]=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
+
+CHEVIE[:families][:QZ]=function(n)
+  pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
+  res=Dict{Symbol,Any}(:name=>"D(\\BZ/$n)")
+  res[:explanation]="Drinfeld double "*res[:name]
+  res[:fourierMat]=[E(n,x)^c1*E(n,x1)^c for (x,c) in pairs, (x1,c1) in pairs]
+  res[:eigenvalues]=[E(n,x)^c for (x,c) in pairs]
+  res[:special]=1
+  res[:charLabels]=["($(E(n,x)),$(E(n,c)))" for (x,c) in pairs]
+  Family(res)
 end
 
-function Family(s::String,v::Vector,d::Dict=Dict{Symbol,Any}())
-  f=CHEVIE[:families][Symbol(s)]
-  f[:charNumbers]=v
-  Family(merge(f,d))
-end
-function Family(s::String,d::Dict=Dict{Symbol,Any}())
-  f=CHEVIE[:families][Symbol(s)]
-  Family(merge(f,d))
-end
-function Family(f::Dict{Symbol,Any},v::Vector,d::Dict=Dict{Symbol,Any}())
-  f[:charNumbers]=v
-  Family(merge(f,d))
-end
-
-function Base.show(io::IO,f::Family)
- print(io,"Family($(f.d[:name]):$(length(f.d[:eigenvalues])))")
-end
 # The big family in dihedral groups. For e=5 occurs in H3, H4
 CHEVIE[:families][:Dihedral]=function(e)
   e1=div(e,2)
@@ -176,6 +241,163 @@ CHEVIE[:families][:Dihedral]=function(e)
   f[:perm]=prod(c) do i
    Perm(i,findfirst(isequal([nc[i][1],e-nc[i][2]]),nc))
    end
-  f
+   Family(f)
 end
 
+function Drinfeld_double(g;lu=false)
+  g=arg[1]
+  res=Dict{Symbol,Any}(:group=> g)
+  res[:classinfo] = map(function (c, n) local r, t
+    r = Dict{Symbol, Any}(:elt => Representative(c), :name => n)
+    if r[:elt] == g[:identity] r[:name] = "1" end
+    r[:centralizer] = Centralizer(g, r[:elt])
+    r[:centelms] = map(Representative, ConjugacyClasses(r[:centralizer]))
+    t = CharTable(r[:centralizer])
+    r[:charNames] = CharNames(r[:centralizer], Dict{Symbol, Any}(:TeX => true))
+    r[:names] = ClassNamesCharTable(t)
+    r[:names][Position(r[:centelms], g[:identity])] = "1"
+    r[:chars] = t[:irreducibles]
+    r[:charNames][PositionProperty(r[:chars], y->y==1)] = "1"
+    r[:centralizers] = t[:centralizers]
+    return r
+end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
+  res[:charLabels]=vcat(map(r->map(y->"($(r[:name]),$y)",r[:charNames]),
+                              res[:classinfo])...)
+  if IsAbelian(g)
+    for r in res[:classinfo]
+      r[:names]=map(x->First(res[:classinfo],s->s[:elt]==x)[:name],r[:centelms])
+    end
+  end
+  res[:size] = length(res[:charLabels])
+  res[:eigenvalues]=vcat(map(function(r)ct=TransposedMat(r[:chars])
+     return map((x, y)->x//y,ct[PositionClass(r[:centralizer],r[:elt])], 
+               ct[PositionClass(r[:centralizer],g[:identity])]) end,
+      res[:classinfo])...)
+  if lu
+      res[:name] = "L"
+      res[:explanation] = "Lusztig's"
+  else
+      res[:name] = ""
+      res[:explanation] = ""
+  end
+  res[:name] *= "D($g)"
+  res[:explanation] *= "DrinfeldDouble($g)"
+  res[:operations] = FamilyOps
+  res[:mellin] = DiagonalMat(List, res[:classinfo], (r->begin
+    conj(map(x->map((x, y)->x//y,x,r[:centralizers]),r[:chars]))^ -1
+              end))
+  res[:mellinLabels]=vcat(map(x->map(y->"($(x[:name]),$y)",x[:names]),res[:classinfo])...)
+  res[:xy] = vcat(map(r->map(y->[r[:elt],y], r[:centelms]),res[:classinfo])...)
+  p = vcat(map((r->begin map(function (y)
+           r1 = (res[:classinfo])[PositionClass(g, y ^ -1)]
+          return Position(res[:xy], [r1[:elt], (r1[:centelms])[PositionClass(r1[:centralizer], r[:elt] ^ RepresentativeOperation(g, y ^ -1, r1[:elt]))]])
+                          end, r[:centelms]) end), res[:classinfo])...)
+  delete!(res, :classinfo)
+  res[:fourierMat] = (IdentityMat(res[:size]))[p] ^ res[:mellin]
+  if lu
+    res[:perm]=PermListList(conj(transpose(res[:mellin])),
+                                 transpose(res[:mellin]))
+    res[:fourierMat]=Permuted(res[:fourierMat], res[:perm])
+  end
+  res[:special] = Position(res[:charLabels], "(1,1)")
+  res
+end
+
+FamilyImprimitive = function (S,)
+local e, Scoll, ct, d, m, ll, eps, equiv, nrSymbols, epsreps, trace, roots, i, j, mat, frobs, symbs, newsigns, schon, orb, mult, res, IsReducedSymbol
+  println("S=$S")
+  e = length(S)
+  Scoll = Collected(vcat(S...))
+  ct = vcat(map(x->fill(x[1],x[2]), Scoll)...)
+  d = length(ct) % e
+  if !(d in [0, 1]) error("Length(", IntListToString(ct), ") should be 0 or 1  %  ", e, " !\n")
+        end
+  m = div(length(ct) - d, e)
+  j = (m * binomial(e, 2)) % e
+  ll = Cartesian(map(i->0:e-1, Scoll)...)
+  ll = filter(x->sum(x)%e==j,ll)
+  ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
+                   collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
+  nrSymbols=sum(x->prod(length,x),ll)
+  ll = vcat(map(x->Cartesian(x...), ll)...)
+  eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
+  equiv = map(x->
+      Dict(:globaleps=>length(x)==1 ? 1 :
+     (-1)^sum(i->sum(j->sum(y->count(k->y<k,j),x[i]),x[i+1:end]),1:length(x)-1),
+     :aa=>map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
+  epsreps = map(x->eps(vcat(x...)), ll)
+  roots = map(i->E(e,i),0:e-1)
+  mat = map(i->i[:globaleps]*map(k->epsreps[k]*
+  prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
+              i[:aa][l]),
+          1:length(i[:aa])), 1:nrSymbols), equiv)
+  mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*ER(e)^e)^m
+  frobs = E(12,-(e^2-1)*m)*map(i->E(2e,-(sum(j->j*j,i))-e*sum(sum,i)),ll)
+  symbs = map(function (l)local sy, j
+              sy = map(j->Int[], 1:e)
+              map((v,c)->begin push!(sy[v + 1], c)
+                      return 1 end, vcat(l...), ct)
+              return sy
+          end, ll)
+  newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
+               (-1)^((0:e - 1)*map(x->binomial(length(x), 2), i)),symbs)
+  mat = map((s,l)->s * map((x, y)->x*y, newsigns,l),newsigns,mat)
+  if d == 0
+  IsReducedSymbol(s)=all(x->s==x || LessSymbols(x, s),Rotations(s)[2:length(s)])
+    schon = map(IsReducedSymbol, symbs)
+    mult = []
+    for i = 1:nrSymbols
+        if schon[i]
+            orb = gapSet(Rotations(symbs[i]))
+            push!(mult, e // length(orb))
+            for j = Filtered(i + 1:nrSymbols, (j->symbs[j] in orb))
+                schon[j] = false
+            end
+        end
+    end
+    frobs = vcat(map((m,f)->fill(f,m), mult, ListBlist(frobs, schon))...)
+    symbs = vcat(map(function (m, s)
+                    if m==1 return [s]
+                    else return map(j->vcat(s[1:e//m], [m, j]), 0:m-1)
+                    end
+                end, mult, ListBlist(symbs, schon))...)
+    mat = vcat(map(function (m, l)return map((i->begin
+      vcat(map((n,c)->fill(e*c//m//n,n),mult,ListBlist(l, schon))...)
+                         end), 1:m)end, mult, ListBlist(mat, schon))...)
+    mult=vcat(map(m->fill(m,m),mult)...)
+    nrSymbols=length(symbs)
+    for i=1:nrSymbols
+      for j=1:nrSymbols
+        if FullSymbol(symbs[i])==FullSymbol(symbs[j])
+            mat[i][j]-=1//mult[i]
+            if symbs[i]==symbs[j] mat[i][j]+=1 end
+        end
+      end
+    end
+    if (mat*DiagonalMat(frobs))^3!=mat^0
+        print("** WARNING: (S*T)^3!=1\n")
+    end
+  end
+  res=Dict{Symbol,Any}(:symbols=>symbs,
+    :fourierMat=>mat,
+    :eigenvalues=>frobs,
+    :name=>IntListToString(ct),
+    :explanation=>"classical family",
+    :special=>1,
+    :operations=>FamilyOps)
+  res[:charLabels] = map(string, 1:length(res[:symbols]))
+  res[:size] = length(res[:symbols])
+  res
+end
+
+MakeFamilyImprimitive = function (S, uc)
+  f=x->Position(uc[:charSymbols],x)
+  if length(S)==1 return Family("C1", map(f, S)) end
+  r = Family(FamilyImprimitive(FullSymbol(S[1])))
+  r[:fourierMat]=hcat(r[:fourierMat]...)
+  r[:charNumbers] = map(f, r[:symbols])
+  r[:special] = PositionProperty(r[:charNumbers],(x->uc[:a][x] == uc[:b][x]))
+  r[:cospecial] = PositionProperty(r[:charNumbers],(x->uc[:A][x] == uc[:B][x]))
+# if length(blocks(r[:fourierMat])) > 1 error() end
+  r
+end
