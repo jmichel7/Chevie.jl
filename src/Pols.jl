@@ -71,6 +71,7 @@ end
 
 Base.copy(p::Pol)=Pol(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=Pol([T(a)],0)
+Base.convert(::Type{Pol{T}},p::Pol) where T=Pol(convert.(T,p.c),p.v)
 
 Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 

@@ -3,21 +3,93 @@ module HasType
 export charinfo, classinfo, reflection_name, diagram, chartable,
   representation, fakedegrees, unipotent_characters, 
   schur_elements, charname, codegrees, ComplexReflectionGroup,
-  getclassified, chevieget, field, getfromtype, Cartesian
+  chevieget, field, getchev, Cartesian
 
 using Gapjm
+#-----------------------------------------------------------------------
+const chevie=Dict()
+
+Base.:*(a::Array,b::Pol)=a .* Ref(b)
+Base.:*(a::Pol,b::Array)=Ref(a) .* b
+Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
+Base.:-(a::AbstractVector,b::Int)=a .- b
+Base.:+(a::Integer,b::AbstractVector)=a .+ b
+Base.:+(a::AbstractVector,b::Number)=a .+ b
+#Base.:*(a::Mvp, b::Array)=Ref(a).*b
+#include("mvp.jl")
+#Base.:*(b::Array,a::Mvp)=b.*Ref(a)
+Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
+Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
+Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
+Base.isless(a::Array,b::Number)=true
+Base.isless(b::Number,a::Array)=false
+
+function chevieget(t::Symbol,w::Symbol)
+  if haskey(chevie[t],w) return chevie[t][w] end
+  println("chevie[$t] has no $w")
+end
+
+function chevieset(t::Symbol,w::Symbol,o::Any)
+  if !haskey(chevie,t) chevie[t]=Dict{Symbol,Any}() end
+  chevie[t][w]=o
+end
+
+function chevieset(t::Vector{String},w::Symbol,f::Function)
+  for s in t 
+    println("set $s $w")
+    chevieset(Symbol(s),w,f(Symbol(s))) 
+  end
+end
+
+function field(t::TypeIrred)
+  s=t[:series]
+  if s in [:A,:B,:D] return (s,length(t[:indices]))
+  elseif s==:ST 
+    if haskey(t,:ST)
+      if 4<=t[:ST]<=22 return (:G4_22,t[:ST])
+      else return (Symbol(string("G",t[:ST])),)
+      end
+    else
+      return (:imp, t[:p], t[:q], t[:rank])
+    end
+   elseif s==:I return (:I,t[:bond])
+  else return (Symbol(string(s,length(t[:indices]))),) 
+  end
+end
+
+const needcartantype=Set([:PrintDiagram,:ReflectionName,:UnipotentClasses])
+
+function getchev(t::TypeIrred,f::Symbol,extra...)
+  d=field(t)
+# println("d[1]=$(d[1]) f=$f")
+  o=chevieget(d[1],f)
+  if o isa Function
+#   o(vcat(collect(d)[2:end],collect(extra))...)
+    if haskey(t,:cartantype) && f in needcartantype
+      o(d[2:end]...,extra...,t[:cartantype])
+    else o(d[2:end]...,extra...)
+    end
+  else o
+  end
+end
+
+function getchev(W,f::Symbol,extra...)
+  [getchev(ti,f::Symbol,extra...) for ti in refltype(W)]
+end
+
+#-----------------------------------------------------------------------
 
 function Cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
-braid_relations(W)=impl1(getclassified(W,:BraidRelations))
+braid_relations(W)=impl1(getchev(W,:BraidRelations))
 
 function codegrees(W)
   vcat(map(refltype(W)) do t
-    cd=getfromtype(t,:ReflectionCoDegrees)
+    cd=getchev(t,:ReflectionCoDegrees)
     if isnothing(cd)
-      cd=getfromtype(t,:ReflectionDegrees)
+      cd=getchev(t,:ReflectionDegrees)
       maximum(cd).-cd
     else cd
     end
@@ -26,7 +98,7 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-charname(W,x;TeX=false)=join(map((t,p)->getfromtype(t,:CharName,p,
+charname(W,x;TeX=false)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
 
 cartfields(p,f)=Cartesian(getindex.(p,f)...)
@@ -42,38 +114,42 @@ end
 
 allhaskey(v::Vector{<:Dict},k)=all(d->haskey(d,k),v)
 
+function charinfo(t::TypeIrred)
+  c=deepcopy(getchev(t,:CharInfo))
+  c[:positionId]=c[:extRefl][1]
+  c[:positionDet]=c[:extRefl][end]
+  c[:charnames]=map(c[:charparams]) do p
+     getchev(t,:CharName,p,Dict(:TeX=>true))
+  end
+  c
+end
+
 function charinfo(W)
   gets(W,:charinfo) do W
-  p=map(refltype(W)) do t
-    c=copy(getfromtype(t,:CharInfo))
-    c[:positionId]=c[:extRefl][1]
-    c[:positionDet]=c[:extRefl][end]
-    c
-  end
-  if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
-  res[:charparams]=cartfields(p,:charparams)
-  res[:charnames]=charname.(Ref(W),res[:charparams])
-  if length(p)==1 return res end
-  for f in [:positionId, :positionDet]
-    if allhaskey(p,f)
-      res[f]=PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
+    p=charinfo.(refltype(W))
+    if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
+    res[:charparams]=cartfields(p,:charparams)
+    if length(p)==1 return res end
+    for f in [:positionId, :positionDet]
+      if allhaskey(p,f)
+       res[f]=PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
+      end
     end
-  end
-  for f in [:b, :B, :a, :A]
-    if allhaskey(p,f) res[f]=Int.(map(sum,cartfields(p,f))) end
-  end
-  if any(x->haskey(x, :opdam),p)
-    res[:opdam]=map(x->haskey(x,:opdam) ? x[:opdam] : Perm(), p)
-    gt=Cartesian(map(x->1:length(x[:charparams]), p))
-    res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
-  end
-  res
+    for f in [:b, :B, :a, :A]
+      if allhaskey(p,f) res[f]=Int.(map(sum,cartfields(p,f))) end
+    end
+    if any(x->haskey(x, :opdam),p)
+      res[:opdam]=map(x->haskey(x,:opdam) ? x[:opdam] : Perm(), p)
+      gt=Cartesian(map(x->1:length(x[:charparams]), p))
+      res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
+    end
+    res
   end
 end
 
 function classinfo(W)
   gets(W,:classinfo) do W
-    tmp = getclassified(W,:ClassInfo)
+    tmp = getchev(W,:ClassInfo)
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
                       :classparams=>[Int[]],:orders=>[1],:classes=>[1])
     end
@@ -96,27 +172,18 @@ function classinfo(W)
   end
 end
 
-function chartable(ct::Dict)
-  CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),
-     map(x->x[:charname],ct[:irredinfo]),
-        ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
+function chartable(t::TypeIrred)
+  ct=getchev(t,:CharTable)
+  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+  else                     names=charinfo(t)[:charnames]
+  end
+  if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
+  CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),names,
+   ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
 function chartable(W)
-  ctt=map(refltype(W)) do t
-    ct=getfromtype(t,:CharTable)
-    if haskey(ct,:irredinfo)
-      names=getindex.(ct[:irredinfo],:charname)
-    else
-      names=map(p->getfromtype(t,:CharName,p,Dict(:TeX=>true)),
-                getfromtype(t,:CharInfo)[:charparams])
-    end
-    if !haskey(ct,:classnames)
-      merge!(ct,getfromtype(t,:ClassInfo))
-    end
-    CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),names,
-     ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
-  end
+  ctt=chartable.(refltype(W))
   charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
@@ -127,10 +194,10 @@ end
 
 function chartable(H::HeckeAlgebra{C})where C
   W=H.W
-  ct=impl1(getclassified(W,:HeckeCharTable,H.para,H.sqpara))
+  ct=impl1(getchev(W,:HeckeCharTable,H.para,H.sqpara))
   CharTable(Matrix(permutedims(hcat(
                 map(ch->convert.(C,ch),ct[:irreducibles])...))),
-     map(x->getclassified(W,:CharName,x,Dict(:TeX=>true)),
+     map(x->getchev(W,:CharName,x,Dict(:TeX=>true)),
          charinfo(W)[:charparams]),
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
@@ -144,140 +211,72 @@ function ComplexReflectionGroup(i::Int)
     elseif i==36 return coxgroup(:E,7)
     elseif i==37 return coxgroup(:E,8)
     end
-    m=getfromtype(t,:CartanMat)
+    m=getchev(t,:CartanMat)
     n=one(hcat(m...))
     return PermRootGroup(map(i->n[i,:],axes(n,1)),m)
   end
-  t=Dict(:series=>:ST,:ST=>i)
-  r=getfromtype(t,:GeneratingRoots)
-  cr=getfromtype(t,:GeneratingCoRoots)
+  t=TypeIrred(Dict(:series=>:ST,:ST=>i))
+  r=getchev(t,:GeneratingRoots)
+  cr=getchev(t,:GeneratingCoRoots)
   if cr===nothing
-    e=getfromtype(t,:EigenvaluesGeneratingReflections)
+    e=getchev(t,:EigenvaluesGeneratingReflections)
     cr=map((x,y)->coroot(x,y),r,E.(Root1.(e)))
   end
   PermRootGroup(r,cr)
 end
 
 function ComplexReflectionGroup(p,q,r)
-  t=Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r)
-  r=getfromtype(t,:GeneratingRoots)
-  cr=getfromtype(t,:EigenvaluesGeneratingReflections)
+ t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
+  r=getchev(t,:GeneratingRoots)
+  cr=getchev(t,:EigenvaluesGeneratingReflections)
   cr=map((x,y)->coroot(x,y),r,map(x->E(Root1(x)),cr))
+  cr=map(x->convert.(Cyc{Rational{Int}},x),cr)
   PermRootGroup(r,cr)
 end
 
-degrees(W)=vcat(getclassified(W,:ReflectionDegrees)...)
+degrees(W)=vcat(getchev(W,:ReflectionDegrees)...)
 
 function diagram(W)
   for t in refltype(W)
-    getfromtype(t,:PrintDiagram,t[:indices],
-               getfromtype(t,:ReflectionName,Dict()))
+    getchev(t,:PrintDiagram,t[:indices],
+               getchev(t,:ReflectionName,Dict()))
   end
 end
 
 function fakedegree(W,p,q)
-  prod(map((t,p)->getfromtype(t,:FakeDegree,p,q),refltype(W),p))
+  prod(map((t,p)->getchev(t,:FakeDegree,p,q),refltype(W),p))
 end
 
 function fakedegrees(W,q)
   map(p->fakedegree(W,p,q),charinfo(W)[:charparams])
 end
 
-nr_conjugacy_classes(W)=prod(getclassified(W,:NrConjugacyClasses))
+nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 PrintToSring(s,v...)=sprint(show,v...)
 
-reflection_name(W)=join(getclassified(W,:ReflectionName,Dict()),"×")
+reflection_name(W)=join(getchev(W,:ReflectionName,Dict()),"×")
 
 function representation(W,i::Int)
-  map(x->hcat(x...),impl1(getclassified(W,:Representation,i)))
+  map(x->hcat(x...),impl1(getchev(W,:Representation,i)))
 end
 
 function representation(H::HeckeAlgebra,i::Int)
-  ct=impl1(getclassified(H.W,:HeckeRepresentation,H.para,H.sqpara,i))
+  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,H.sqpara,i))
   map(x->hcat(x...),ct)
 end
 
 function schur_elements(H::HeckeAlgebra)
   W=H.W
-  map(p->getclassified(W,:SchurElement,p,H.para,H.sqpara),
+  map(p->getchev(W,:SchurElement,p,H.para,H.sqpara),
     charinfo(W)[:charparams])
 end
 
 UnipotentClassOps=Dict(:Name=>x->x)
 
-unipotent_characters(W)=impl1(getclassified(W,:UnipotentCharacters))
+unipotent_classes(W,p=0)=impl1(getchev(W,:UnipotentClasses,p))
 
-unipotent_classes(W,p=0)=impl1(getclassified(W,:UnipotentClasses,p))
-
-#-----------------------------------------------------------------------
-const chevie=Dict()
-
-Base.:*(a::Array,b::Pol)=a .* Ref(b)
-Base.:*(a::Pol,b::Array)=Ref(a) .* b
-Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
-Base.:-(a::AbstractVector,b::Int)=a .- b
-Base.:+(a::Integer,b::AbstractVector)=a .+ b
-Base.:+(a::AbstractVector,b::Number)=a .+ b
-#Base.:*(a::Mvp, b::Array)=Ref(a).*b
-#include("mvp.jl")
-#Base.:*(b::Array,a::Mvp)=b.*Ref(a)
-Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
-Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
-Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n)*m*n
-
-function chevieget(t::Symbol,w::Symbol)
- if haskey(chevie[t],w) return chevie[t][w] end
- println("chevie[$t] has no $w")
-end
-
-function chevieset(t::Symbol,w::Symbol,o::Any)
-  if !haskey(chevie,t) chevie[t]=Dict{Symbol,Any}() end
-  chevie[t][w]=o
-end
-
-function chevieset(t::Vector{String},w::Symbol,f::Function)
-  for s in t 
-    println("set $s $w")
-    chevieset(Symbol(s),w,f(Symbol(s))) 
-  end
-end
-
-function field(t)
-  s=t[:series]
-  if s in [:A,:B,:D] return (s,length(t[:indices]))
-  elseif s==:ST 
-    if haskey(t,:ST)
-      if 4<=t[:ST]<=22 return (:G4_22,t[:ST])
-      else return (Symbol(string("G",t[:ST])),)
-      end
-    else
-      return (:imp, t[:p], t[:q], t[:rank])
-    end
-  else return (Symbol(string(s,length(t[:indices]))),) 
-  end
-end
-
-const needcartantype=Set([:PrintDiagram,:ReflectionName,:UnipotentClasses])
-
-function getfromtype(t,f::Symbol,extra...)
-  d=field(t)
-# println("d[1]=$(d[1]) f=$f")
-  o=chevieget(d[1],f)
-  if o isa Function
-#   o(vcat(collect(d)[2:end],collect(extra))...)
-    if haskey(t,:cartantype) && f in needcartantype
-      o(d[2:end]...,extra...,t[:cartantype])
-    else o(d[2:end]...,extra...)
-    end
-  else o
-  end
-end
-
-function getclassified(W,f::Symbol,extra...)
-  [getfromtype(ti,f::Symbol,extra...) for ti in refltype(W)]
-end
-
+include("uch.jl")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
@@ -332,13 +331,18 @@ function PositionProperty(a::Vector,b::Function)
   r
 end
 
+PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
+
 Sublist(a::Vector, b::AbstractVector)=a[b]
 
 Append(a::Vector,b::AbstractVector)=vcat(a,b)
 Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
 
+Concatenation(a::String...)=prod(a)
+Concatenation(b...)=vcat(b...)
 Combinations=combinations
+Copy=deepcopy
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
 
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
@@ -362,8 +366,6 @@ function PartitionTupleToString(n,a=Dict())
   if r=="-1" r="-" end
   join(map(join,n[1:end-2]),".")*r
 end
-
-include("symbols.jl")
 
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v,f)=isempty(v) ? 1 : prod(f,v)
@@ -480,44 +482,6 @@ function CharRepresentationWords(mats,words)
   end
 end
 
-function CycPolFakeDegreeSymbol(arg...)
-  local s, p, res, delta, theta, r, d, e, q, rot
-  s = FullSymbol(arg[1])
-  q = Pol([1],1)
-  e = length(s)
-  r = RankSymbol(s)
-  if e == 0 return CycPol(1) end
-  if length(arg) == 2 p = E(e, arg[2])
-  else p = 1
-  end
-  delta=S->Product(collect(combinations(S,2)),x->CycPol(q^(e*x[2])-q^(e*x[1])))
-  theta=S->Product(Filtered(S,x->x>0),l->Product(1:l,h->CycPol(q^(e*h)-1)))
-  if length(s) == 1 d = 0
-  else d = DefectSymbol(s)
-  end
-  if d == 1 res = theta([r])
-  elseif d == 0 res = theta([r - 1]) * CycPol(q ^ r - p)
-  else res = CycPol(0q)
-  end
-  res = (res * Product(s, (S-> delta(S) // theta(S)))) //
-   CycPol(q ^ Sum(e * (1:div(Sum(s, length), e) - 1) + d % 2, (x->
-                              (x * (x - 1)) // 2)))
-  if d == 1
-      res = res * CycPol(q ^ ((0:e - 1) * map(Sum, s)))
-  else
-      rot = Rotations(s)
-      res*=CycPol(map(j->p^j,0:e-1)*
-         map(s->q^((0:e-1)*map(Sum,s)), rot)) // count(i->i==s, rot)
-      if e == 2 && p == -1
-          res = -res
-      end
-  end
-  if r == 2 && (e > 2 && p == E(e))
-      res = CycPol(Value(res, E(2e) * q) // E(2e, Degree(res)))
-  end
-  return res
-end
-
 function ImprimitiveCuspidalName(S)
   r=RankSymbol(convert(Vector{Vector{Int}},S))
   d=length(S)
@@ -584,4 +548,19 @@ end
 chevie[:A][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](1,1,n+1,para,root)
 chevie[:D][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](2,2,n,para,root)
 chevie[:imp][:PowerMaps]=(p,q,r)->[]
+chevie[:imp][:GeneratingRoots]=function(p,q,r)
+  if q==1 roots=[vcat([1],fill(0,r-1))]
+  else
+    if q!=p roots=[vcat([1],fill(0,r-1))*E(1)] end
+    v=vcat([-E(p),1],fill(0,r-2))
+    if r==2 && q>1 && q%2==1 v*=E(p) end
+    if q == p roots = [v] else push!(roots, v) end
+  end
+  for i=2:r
+    v=fill(0,r)
+    v[[i-1,i]]=[-1,1]
+    push!(roots, v)
+  end
+  return roots
+end
 end

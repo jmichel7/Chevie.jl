@@ -69,6 +69,7 @@ const p=CycPol([0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
 37//42=>1, 41//42=>1],19,(1//6)E(3))
 
+const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 #=
   benchmark: 
 julia> @btime u=CycPols.p(q) # gap 2ms
@@ -80,7 +81,7 @@ julia> @btime u(1)  # gap 57μs
 
 =#
 
-Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,[Pair{Root1,Int}[]])
+Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,Pair{Root1,Int}[])
 
 function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,mergesum(a.v,b.v))
@@ -173,7 +174,7 @@ function Base.show(io::IO,a::CycPol)
   end
 end
 
-# fields to test first
+# fields to test first: all n such that phi(n)<=12 except 11,13,22,26
 const tested=[1,2,4,3,6,8,12,5,10,9,18,24,16,20,7,14,15,30,36,28,21,42]
 
 # list of i such that phi_i/phi(gcd(i,conductor))<=d
@@ -262,7 +263,7 @@ function CycPol(p::Pol{T})where T
     if degree(p)>=phi(i) 
       testcyc(i) 
     end
-    testall(i) 
+    testall(i)
     if degree(p)==0
       return CycPol(coeff,val,norm!(vcyc))
     end
@@ -275,7 +276,7 @@ function CycPol(p::Pol{T})where T
 # println("try_=$try_\n")
   i=1
   while i<=length(try_) 
-    push!(tested,try_[i])
+#   push!(tested,try_[i])
     found=if cond==1 # All factors are Phi_i
          testcyc(try_[i])
     else testall(try_[i])
@@ -295,7 +296,12 @@ function CycPol(p::Pol{T})where T
   CycPol(coeff,val,norm!(vcyc))
 end
 
-(p::CycPol)(x)=x^p.valuation*prod(v->prod(u->(x-E(u[1]))^u[2],v),
-        values(groupby(x->conductor(x[1]),p.v)))*p.coeff
+function (p::CycPol)(x)
+  res=x^p.valuation*p.coeff
+  if !isempty(p.v)
+   res*=prod(v->prod(u->(x-E(u[1]))^u[2],v),values(groupby(x->conductor(x[1]),p.v)))
+  end
+  res
+end
 
 end

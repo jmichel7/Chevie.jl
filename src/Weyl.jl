@@ -347,7 +347,7 @@ function type_cartan(m::AbstractMatrix)
   map(blocks(m)) do I
     t=type_irred_cartan(m[I,I])
     t[:indices]=I[t[:indices]]
-    t
+    TypeIrred(t)
   end
 end
 
@@ -405,7 +405,7 @@ inversions(W::AbstractFiniteCoxeterGroup,w)=
 
 Base.length(W::AbstractFiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-PermRoot.refltype(W::AbstractFiniteCoxeterGroup)::Vector{Dict{Symbol,Any}}=
+PermRoot.refltype(W::AbstractFiniteCoxeterGroup)::Vector{TypeIrred}=
    gets(W->type_cartan(cartan(W)),W,:refltype)
 
 """
@@ -473,19 +473,10 @@ end
 function Base.show(io::IO, W::FiniteCoxeterGroup)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
+  if isempty(refltype(W)) print(io,repl||TeX ? "W()" : coxgroup()) end
   n=join(map(refltype(W))do t
     indices=t[:indices]
-    r=length(indices)
-    s=t[:series]
-    if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
-      s=:C
-    end
-    if haskey(t,:bond)
-      b=t[:bond]
-      n=repl||TeX ? "W($(s)_{$r}($b))" : "coxgroup(:$s,$r,$b)"
-    else
-      n=repl||TeX ? "W($(s)_{$r})" : "coxgroup(:$s,$r)"
-    end
+    n=sprint(show,t; context=io)
     if indices!=eachindex(indices) && (repl|| TeX)
       ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
       n*="_{($ind)}"

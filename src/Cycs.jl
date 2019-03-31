@@ -344,7 +344,7 @@ function Base.show(io::IO, p::Cyc)
       print(io,"√$(q.root)")
       if !iszero(q.a) && q.den!=1 print(io,")") end
     end
-    if q.den!=1 && !iszero(q.a) print(io,"/$(q.den)") end
+    if q.den!=1 && !iszero(p) print(io,"/$(q.den)") end
     return
   end
 if use_list

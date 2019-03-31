@@ -1,3 +1,11 @@
+module Symbols
+using Gapjm
+export ShiftBeta, BetaSet, PartBeta, SymbolPartitionTuple,
+LowestPowerGenericDegreeSymbol, HighestPowerGenericDegreeSymbol,
+HighestPowerFakeDegreeSymbol, LowestPowerFakeDegreeSymbol,
+DefectSymbol, FullSymbol, RankSymbol, SymbolsDefect,
+CycPolFakeDegreeSymbol
+
 function ShiftBeta(beta,n)
   if n>=0 return [0:n-1;beta .+ n]
   elseif beta[1:-n]!=[0:-n-1]
@@ -11,12 +19,12 @@ BetaSet(alpha)=isempty(alpha) ? alpha : reverse(alpha) .+(0:length(alpha)-1)
 PartBeta(l)=filter(x->!iszero(x),reverse(l.-(0:length(l)-1)))
 
 function SymbolPartitionTuple(p,s)
-  if IsInt(p[end])
+  if p[end] isa Integer
     l= length(p) - 2
     e= l*p[end-1]
   else e=l=length(p)
   end
-  if IsInt(s)
+  if s isa Integer
     if s<0  s=[0;fill(-s,l-1)]
     else    s=[s;zeros(Int,l-1)]
     end
@@ -150,4 +158,51 @@ SymbolsDefect=function(e,r,def,c)
     map(x->SymbolPartitionTuple(x,s),
        partition_tuples(r-RankSymbol(map(x->0:x-1,s)),e)) end...)
   c!=0 ? S : filter(IsReducedSymbol,S)
+end
+
+function CycPolFakeDegreeSymbol(arg...)
+  local s, p, res, delta, theta, r, d, e, q, rot
+  s = FullSymbol(arg[1])
+  q = Pol([1],1)
+  e = length(s)
+  r = RankSymbol(s)
+  if e == 0 return CycPol(1) end
+  if length(arg) == 2 p = E(e, arg[2])
+  else p = 1
+  end
+  function delta(S)
+    S=collect(combinations(S,2))
+    if isempty(S) return CycPol(Pol([1],0)) end
+    prod(x->CycPol(q^(e*x[2])-q^(e*x[1])),S)
+  end
+  function theta(S)
+    S=filter(x->x>0,S)
+    if isempty(S) return CycPol(Pol([1],0)) end
+    prod(l->prod(h->CycPol(q^(e*h)-1),1:l),S)
+  end
+  if length(s) == 1 d = 0
+  else d = DefectSymbol(s)
+  end
+  if d == 1 res = theta([r])
+  elseif d == 0 res = theta([r - 1]) * CycPol(q ^ r - p)
+  else res = CycPol(0q)
+  end
+  res*=prod(S->delta(S)//theta(S),s)
+  res//=CycPol(q^sum([div(x*(x-1),2) for x in e*(1:div(sum(length,s),e)-1)+d%2]))
+  if d == 1
+    res*=CycPol(q^sum(map((x,y)->x*sum(y),0:e-1,s)))
+  else
+      rot = Rotations(s)
+      res*=CycPol(map(j->p^j,0:e-1)*
+         map(s->q^((0:e-1)*map(Sum,s)), rot)) // count(i->i==s, rot)
+      if e == 2 && p == -1
+          res = -res
+      end
+  end
+  if r == 2 && (e > 2 && p == E(e))
+      res = CycPol(Value(res, E(2e) * q) // E(2e, Degree(res)))
+  end
+  return res
+end
+
 end

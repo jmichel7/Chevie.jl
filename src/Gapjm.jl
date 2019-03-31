@@ -71,6 +71,8 @@ include("KL.jl")
 @reexport using .KL
 include("CycPols.jl")
 @reexport using .CycPols
+include("Symbols.jl")
+@reexport using .Symbols
 include("HasType.jl")
 @reexport using .HasType
 end

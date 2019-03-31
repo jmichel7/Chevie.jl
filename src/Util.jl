@@ -171,14 +171,18 @@ end
 #--------------------------------------------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
+  s=replace(s,r"\\varepsilon"=>"ε")
+  s=replace(s,r"\\gamma"=>"γ")
   s=replace(s,r"\\phi"=>"ϕ")
   s=replace(s,r"\\Phi"=>"Φ")
+  s=replace(s,r"\\rho"=>"ρ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\otimes"=>"⊗")
   s=replace(s,r"\\tilde A"=>"Ã")
   s=replace(s,r"\\times"=>"×")
   s=replace(s,r"\\BZ"=>"ℤ")
   s=replace(s,r"\\wedge"=>"∧")
+  s=replace(s,r"\\!"=>"")
   sup=Dict(zip("0123456789-","⁰¹²³⁴⁵⁶⁷⁸⁹⁻"))
   sub=Dict(zip("0123456789,()","₀₁₂₃₄₅₆₇₈₉‚₍₎"))
   s=replace(s,r"_[0-9]"=>t->sub[t[2]])
