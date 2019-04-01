@@ -147,17 +147,23 @@ function charinfo(W)
   end
 end
 
+function classinfo(t::TypeIrred)
+  cl=deepcopy(getchev(t,:ClassInfo))
+  inds=t[:indices]
+  cl[:classtext]=map(x->inds[x],cl[:classtext])
+  cl[:classes]=Int.(cl[:classes])
+  cl
+end
+
 function classinfo(W)
   gets(W,:classinfo) do W
-    tmp = getchev(W,:ClassInfo)
+    tmp=map(classinfo,refltype(W))
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
                       :classparams=>[Int[]],:orders=>[1],:classes=>[1])
     end
     if any(isnothing, tmp) return nothing end
     if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
-    res[:classtext]=map(x->vcat(x...),Cartesian(map((i,t)->
-                                               getindex.(Ref(i),t[:classtext]),
-                          map(x->x[:indices],refltype(W)),tmp)...))
+    res[:classtext]=map(x->vcat(x...),cartfields(tmp,:classtext))
     res[:classnames]=map(join,cartfields(tmp,:classnames))
     if allhaskey(tmp, :classparam)
       res[:classparams]=cartfields(tmp,:classparams)
@@ -166,7 +172,7 @@ function classinfo(W)
       res[:orders]=map(lcm, cartfields(tmp,:orders))
     end
     if allhaskey(tmp,:classes)
-      res[:classes]=Int.(map(prod, cartfields(tmp,:classes)))
+      res[:classes]=map(prod, cartfields(tmp,:classes))
     end
     res
   end
@@ -340,9 +346,15 @@ Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
 
 Concatenation(a::String...)=prod(a)
+Concatenation(a::Vector{<:Vector})=vcat(a...)
 Concatenation(b...)=vcat(b...)
 Combinations=combinations
 Copy=deepcopy
+
+DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
+DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
+
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
 
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
@@ -517,13 +529,10 @@ CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
                            :AdjustHeckeCharTable=>(x,y)->x,
         :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
 
-DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
-DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
-
 include("families.jl")
 Format(x)=string(x)
-Format(x,opt)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
+Format(x,opt)= haskey(opt,:TeX) ? FormatTeX(x) : string(x)
 Torus(i::Int)=i
 RootsCartan=x->x
 

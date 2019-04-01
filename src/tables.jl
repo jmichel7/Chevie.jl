@@ -3998,7 +3998,7 @@ chevieset(:imp, :ClassName, function (p,)
         local j, p1
         if IsList(p) && ForAll(p, IsList)
             if Sum(p, Sum) == 1
-                return Format(E(length(p), Position(p, [1]) - 1))
+                return FormatTeX(E(length(p), Position(p, [1]) - 1))
             else
                 return PartitionTupleToString(p)
             end
