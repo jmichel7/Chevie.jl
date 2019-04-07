@@ -173,7 +173,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
         p = (chevieget(:G4_22, :paramclasses))(ST)
         res = Dict{Symbol, Any}()
         g = function (c, a, b)
-                return c[2] % a == b[c[1]]
+                return mod(c[2], a) == b[c[1]]
             end
         f = function (class, z)
                 local r, i
@@ -641,7 +641,7 @@ chevieset(:G4_22, :DecompositionMatrix, function (ST, p)
         local T, m
         T = (chevieget(:G4_22, :CharTable))(ST)
         T[:name] = T[:identifier]
-        m = DecompositionMatrix(T % p)
+        m = DecompositionMatrix(mod(T, p))
         return map((c->begin
                         [c[1], (m[c[1]])[c[2]]]
                     end), BlocksMat(m))
@@ -2219,8 +2219,8 @@ chevieset(:G31, :HeckeRepresentation, function (para, root, i)
                             end), 1:5)
                 for v = l
                     for k = v[2:length(v)]
-                        l = k % d ^ 2
-                        ((m[div(k, d ^ 2) + 1])[div(l, d) + 1])[l % d + 1] = v[1]
+                        l = mod(k, d ^ 2)
+                        ((m[div(k, d ^ 2) + 1])[div(l, d) + 1])[mod(l, d) + 1] = v[1]
                     end
                 end
                 return m
@@ -2326,8 +2326,8 @@ chevieset(:G31, :Representation, function (i,)
                             end), 1:5)
                 for v = l
                     for k = v[2:length(v)]
-                        l = k % d ^ 2
-                        ((m[div(k, d ^ 2) + 1])[div(l, d) + 1])[l % d + 1] = v[1]
+                        l = mod(k, d ^ 2)
+                        ((m[div(k, d ^ 2) + 1])[div(l, d) + 1])[mod(l, d) + 1] = v[1]
                     end
                 end
                 return m
@@ -2910,9 +2910,9 @@ chevieset(:G33, :HeckeRepresentation, function (para, root, i)
                 for v = l
                     for k = v[2:length(v)]
                         i = div(k, d ^ 2)
-                        k = k % d ^ 2
+                        k = mod(k, d ^ 2)
                         j = div(k, d)
-                        k = k % d
+                        k = mod(k, d)
                         ((m[i + 1])[j + 1])[k + 1] = v[1]
                     end
                 end
@@ -3312,9 +3312,9 @@ chevieset(:G34, :HeckeRepresentation, function (para, root, i)
                 for v = l
                     for k = v[2:length(v)]
                         i = div(k, d ^ 2)
-                        k = k % d ^ 2
+                        k = mod(k, d ^ 2)
                         j = div(k, d)
-                        k = k % d
+                        k = mod(k, d)
                         ((m[i + 1])[j + 1])[k + 1] = v[1]
                     end
                 end
@@ -3623,7 +3623,7 @@ chevieset(:imp, :BraidRelations, function (p, q, r)
                 local p
                 p = function (i, j)
                         return map((k->begin
-                                        i * (k % 2) + j * ((1 - k) % 2)
+                                        i * mod(k, 2) + j * mod(1 - k, 2)
                                     end), 1:o)
                     end
                 return [p(i, j), p(j, i)]
@@ -3711,7 +3711,7 @@ chevieset(:imp, :GeneratingRoots, function (p, q, r)
                 roots = [Concatenation([1], fill(0, max(0, (1 + r) - 2)))]
             end
             v = Concatenation([-(E(p)), 1], fill(0, max(0, (1 + r) - 3)))
-            if r == 2 && (q > 1 && q % 2 == 1)
+            if r == 2 && (q > 1 && mod(q, 2) == 1)
                 v = v * E(p)
             end
             if q == p
@@ -3792,7 +3792,7 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
                 t = [[[]], [[1], [2], [3]], [1:3]]
                 return t[s + 1]
             elseif p == q
-                if p % 2 == 0
+                if mod(p, 2) == 0
                     t = [[[]], [[1], [2]], [[1, 2]]]
                     return t[s + 1]
                 else
@@ -3922,7 +3922,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     res = []
                     word = function (l, i)
                             return map((j->begin
-                                            1 + j % 2
+                                            1 + mod(j, 2)
                                         end), i + (l:(l - 1) - l:1))
                         end
                     add = function (a,)
@@ -3942,7 +3942,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                         elseif l != 2
                             add(l)
                         else
-                            d = d % p
+                            d = mod(d, p)
                             if d == 0
                                 add(2)
                             else
@@ -3954,8 +3954,8 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                             end
                         end
                     end
-                    d = d % p
-                    if d % q != 0
+                    d = mod(d, p)
+                    if mod(d, q) != 0
                         error()
                     elseif d != 0
                         res = Concatenation(1 + res, fill(0, max(0, (1 + d // q) - 1)) + 1)
@@ -3967,7 +3967,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
             I = (chevieget(:imp, :ClassInfo))(p, 1, r)
             res = Dict{Symbol, Any}(:classtext => [], :classparams => [], :classnames => [], :orders => [], :centralizers => [])
             for i = Filtered(1:length(I[:classparams]), (i->begin
-                                (map(length, (I[:classparams])[i]) * (0:p - 1)) % q == 0
+                                mod(map(length, (I[:classparams])[i]) * (0:p - 1), q) == 0
                             end))
                 S = (I[:classparams])[i]
                 a = Concatenation(S)
@@ -4025,7 +4025,7 @@ chevieset(:imp, :PowerMaps, function (p, q, r)
                         for l = p[k]
                             g = gcd(n, l)
                             for j = 1:g
-                                push!(res[1 + div(n * (k - 1), g) % e], l // g)
+                                push!(res[1 + mod(div(n * (k - 1), g), e)], l // g)
                             end
                         end
                     end
@@ -4083,7 +4083,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                                 SymbolPartitionTuple(x, 0)
                             end), res[:charparams])
             end
-            if d > 1 && (e % 2 == 0 && r == 2)
+            if d > 1 && (mod(e, 2) == 0 && r == 2)
                 res[:malle] = map(function (t,)
                             local pos, de
                             if IsInt(t[length(t)])
@@ -4903,10 +4903,10 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                 end), 0:p - 1), para[1]]
             else
                 if para[2] != para[3]
-                    if q % 2 == 0 && r == 2
+                    if mod(q, 2) == 0 && r == 2
                         S = ((((CHEVIE[:imp])[:CharInfo])(p, q, r))[:malle])[i]
                         if S[1] == 1
-                            return [[[(para[1])[1 + (S[4] - 1) % p // q]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
+                            return [[[(para[1])[1 + mod(S[4] - 1, p // q)]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
                         else
                             Y = para[2]
                             T = para[3]
@@ -5452,7 +5452,7 @@ chevieset(:I, :CartanMat, function (arg...,)
         end
         if length(arg) == 2
             type_ = arg[2]
-        elseif bond % 2 == 0
+        elseif mod(bond, 2) == 0
             type_ = 1
         else
             type_ = E(2bond) + E(2bond, -1)
@@ -5485,7 +5485,7 @@ chevieset(:I, :ReflectionName, function (arg...,)
         opt = arg[2]
         if length(arg) == 3
             type_ = arg[3]
-        elseif bond % 2 == 0
+        elseif mod(bond, 2) == 0
             type_ = 1
         else
             type_ = E(2bond) + E(2bond, -1)
@@ -5499,7 +5499,7 @@ chevieset(:I, :ReflectionName, function (arg...,)
                 return SPrint("I2(", bond, ")")
             end
         elseif type_ == E(2bond) + E(2bond, -1)
-            if bond % 2 == 1
+            if mod(bond, 2) == 1
                 if haskey(opt, :TeX)
                     return SPrint("I_2(", bond, ")")
                 elseif haskey(opt, :arg)
@@ -5529,7 +5529,7 @@ chevieset(:I, :GeneratingRoots, function (m,)
         local a, b, r
         a = E(2m, m - 1)
         b = ComplexConjugate(a)
-        if m % 2 == 0
+        if mod(m, 2) == 0
             r = ER(m // 2)
         else
             r = 1
@@ -5546,7 +5546,7 @@ chevieset(:I, :ReflectionDegrees, (m->begin
             [2, m]
         end))
 chevieset(:I, :NrConjugacyClasses, (m->begin
-            div(m + 3, 2) + ((m + 1) % 2) * 2
+            div(m + 3, 2) + mod(m + 1, 2) * 2
         end))
 chevieset(:I, :ParabolicRepresentatives, function (m, s)
         return (chevieget(:imp, :ParabolicRepresentatives))(m, m, 2, s)
@@ -5571,7 +5571,7 @@ chevieset(:I, :CharName, function (m, x, option)
 chevieset(:I, :CharInfo, function (m,)
         local res, applyf, v, m1
         res = Dict{Symbol, Any}(:charparams => [[1, 0]])
-        if m % 2 == 0
+        if mod(m, 2) == 0
             res[:extRefl] = [1, 5, 4]
             m1 = div(m, 2)
             res[:charparams] = Append(res[:charparams], [[1, m1, "'"], [1, m1, "''"]])
@@ -5614,7 +5614,7 @@ chevieset(:I, :CharInfo, function (m,)
                     k = 0
                     if k != 0
                         S[1] = [0, 1]
-                        S[1 + (k + l) % m] = [0, 1]
+                        S[1 + mod(k + l, m)] = [0, 1]
                         S[k + 1] = []
                         S[l + 1] = []
                     else
@@ -5628,7 +5628,7 @@ chevieset(:I, :CharInfo, function (m,)
                     end), 1:m)
         v[m] = [1, 2]
         res[:charSymbols] = Concatenation([v], res[:charSymbols])
-        if m % 2 == 0
+        if mod(m, 2) == 0
             v = map((x->begin
                             [0]
                         end), 1:m)
@@ -5650,10 +5650,10 @@ chevieset(:I, :CharInfo, function (m,)
         res[:malleParams] = map((x->begin
                         map(PartBeta, x)
                     end), res[:charSymbols])
-    #   if m % 2 == 0
-    #       (res[:malleParams])[2] = Concatenation(((res[:malleParams])[2])[1:m1], [1])
-    #       (res[:malleParams])[3] = Concatenation(((res[:malleParams])[3])[1:m1], [-1])
-    #   end
+        if mod(m, 2) == 0
+  #         (res[:malleParams])[2] = Concatenation(((res[:malleParams])[2])[1:m1], [1])
+  #         (res[:malleParams])[3] = Concatenation(((res[:malleParams])[3])[1:m1], [-1])
+        end
         return res
     end)
 chevieset(:I, :WordsClassRepresentatives, function (m,)
@@ -5694,7 +5694,7 @@ chevieset(:I, :ClassInfo, function (m,)
                     return Product(gen[l])
                 end
             end
-        if m % 2 == 0
+        if mod(m, 2) == 0
             cl = [1, m // 2, m // 2]
             cl = Append(cl, fill(0, max(0, (1 + (m // 2 - 1)) - 1)) + 2)
             push!(cl, 1)
@@ -5710,7 +5710,7 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
         local u, v, squv, cl, r, ct, tbl
         u = -((param[1])[1]) // (param[1])[2]
         v = -((param[2])[1]) // (param[2])[2]
-        if m % 2 != 0
+        if mod(m, 2) != 0
             squv = u
         elseif rootparam[1] !== nothing && rootparam[2] !== nothing
             squv = rootparam[1] * rootparam[2]
@@ -5718,7 +5718,7 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
             squv = GetRoot(u * v, 2, "CharTable(Hecke(I2(", m, ")))")
         end
         ct = [[u, v]]
-        if m % 2 == 0
+        if mod(m, 2) == 0
             ct = Append(ct, [[u, -(u ^ 0)], [-(v ^ 0), v]])
         end
         push!(ct, [-(v ^ 0), -(v ^ 0)])
@@ -5765,7 +5765,7 @@ chevieset(:I, :HeckeRepresentation, function (m, param, rootparam, i)
         if i == 1
             return [[[(param[1])[1]]], [[(param[2])[1]]]]
         end
-        if m % 2 == 0
+        if mod(m, 2) == 0
             i = i - 2
         end
         if i == 0
@@ -5777,7 +5777,7 @@ chevieset(:I, :HeckeRepresentation, function (m, param, rootparam, i)
         else
             u = -((param[1])[1]) // (param[1])[2]
             v = -((param[2])[1]) // (param[2])[2]
-            if m % 2 != 0
+            if mod(m, 2) != 0
                 squv = u
             elseif rootparam[1] !== nothing && rootparam[2] !== nothing
                 squv = rootparam[1] * rootparam[2]
@@ -5806,7 +5806,7 @@ chevieset(:I, :PoincarePolynomial, function (m, param)
     end)
 chevieset(:I, :SchurElement, function (m, phi, para, rootpara)
         local u, v, ruv, e, ci
-        if m % 2 == 1
+        if mod(m, 2) == 1
             ci = (chevieget(:I, :CharInfo))(m)
             ci = (ci[:malleParams])[Position(ci[:charparams], phi)]
             return (chevieget(:imp, :SchurElement))(m, 1, 2, ci, [map((i->begin
@@ -5864,14 +5864,14 @@ chevieset(:I, :DecompositionMatrix, function (n, p)
         local T, m
         T = (chevieget(:I, :CharTable))(n)
         T[:name] = T[:identifier]
-        m = DecompositionMatrix(T % p)
+        m = DecompositionMatrix(mod(T, p))
         return map((c->begin
                         [c[1], (m[c[1]])[c[2]]]
                     end), BlocksMat(m))
     end)
 chevieset(:I, :FactorizedSchurElement, function (arg...,)
         local ci
-        if arg[1] % 2 == 0 && (arg[3])[1] != (arg[3])[2]
+        if mod(arg[1], 2) == 0 && (arg[3])[1] != (arg[3])[2]
             error(" !  implemented")
         end
         ci = (chevieget(:I, :CharInfo))(arg[1])
@@ -5883,7 +5883,7 @@ chevieset(:I, :Invariants, function (arg...,)
         e = arg[1]
         if length(arg) == 2
             type_ = arg[2]
-        elseif e % 2 == 0
+        elseif mod(e, 2) == 0
             type_ = 1
         else
             type_ = -(E(e, (e + 1) // 2)) - E(e, (e + 3) // 2)
@@ -5899,7 +5899,7 @@ chevieset(:I, :SymbolToParameter, function (S,)
         if S[1] != [0, 1] || !([]) in S
             return false
         end
-        if length(S) % 2 == 1
+        if mod(length(S), 2) == 1
             S = reverse(S)
             return [Position(S, []), Position(S, [0, 1]) - Position(S, [])]
         else
@@ -5923,27 +5923,27 @@ chevieset(:I, :ParameterToSymbol, function (e, p)
                             [0]
                         end), 1:e // 2 - 1)
             S = Append(S, [[1], 2, (p[3] + 1) // 2])
-        elseif e % 2 == 0
+        elseif mod(e, 2) == 0
             S = map((x->begin
                             [0]
                         end), 1:e)
             if p[1] == 0
                 S[[e, e - p[2]]] = [[1], [1]]
             else
-                S[1 + [0, (p[2] - p[1]) % e]] = [[0, 1], [0, 1]]
-                S[1 + [-(p[1]) % e, p[2]]] = [[], []]
+                S[1 + [0, mod(p[2] - p[1], e)]] = [[0, 1], [0, 1]]
+                S[1 + [mod(-(p[1]), e), p[2]]] = [[], []]
             end
         else
             S = map((i->begin
                             [0]
                         end), 1:e)
             if p[1] != 0
-                S[1 + [0, -(Sum(p)) % e]] = [[0, 1], [0, 1]]
+                S[1 + [0, mod(-(Sum(p)), e)]] = [[0, 1], [0, 1]]
                 S[1 + map((x->begin
-                                        x % e
+                                        mod(x, e)
                                     end), -p)] = [[], []]
             else
-                S[e + [-((p[2] - p[1]) % e), 0]] = [[1], [1]]
+                S[e + [-(mod(p[2] - p[1], e)), 0]] = [[1], [1]]
             end
         end
         return S
@@ -5953,7 +5953,7 @@ chevieset(:I, :UnipotentCharacters, function (e,)
         f = div(e, 2)
         uc = Dict{Symbol, Any}()
         uc[:harishChandra] = [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "I", :indices => [1, 2], :rank => 2, :bond => e), :parameterExponents => [1, 1], :levi => [], :eigenvalue => 1, :cuspidalName => "")]
-        if e % 2 != 0
+        if mod(e, 2) != 0
             ((uc[:harishChandra])[1])[:charNumbers] = 1:f + 2
         else
             ((uc[:harishChandra])[1])[:charNumbers] = Concatenation([1, 3, 4, 2], 4 + (1:f - 1))
@@ -5963,14 +5963,14 @@ chevieset(:I, :UnipotentCharacters, function (e,)
                                         [k, l]
                                     end), k + 1:(e - k) - 1)
                         end), 1:f - 1))
-        f = (f + 1) - e % 2
+        f = (f + 1) - mod(e, 2)
         uc[:harishChandra] = Append(uc[:harishChandra], map((x->begin
                             Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(e, -(Product(cusp[x]))), :cuspidalName => SPrint("I_2(", e, ")", FormatGAP(cusp[x])), :charNumbers => [x + f + 2])
                         end), 1:length(cusp)))
         uc[:families] = [Family(((CHEVIE[:families])[:Dihedral])(e), (1:length(cusp) + f) + 2), Family("C1", [1]), Family("C1", [2])]
         uc[:parameters] = Concatenation([[0], [1]], ((uc[:families])[1])[:parameters])
         uc[:charSymbols] = map((p->begin
-                        ((CHEVIE[:I])[:ParameterToSymbol])(e, p)
+                        (chevieget(:I, :ParameterToSymbol))(e, p)
                     end), uc[:parameters])
         uc[:a] = Concatenation([0, e], map((x->begin
                             1
@@ -6022,7 +6022,7 @@ chevieset(:A, :WordClass, function (pi,)
         w = []
         i = 0
         for l = pi
-            r = l % 2
+            r = mod(l, 2)
             w = Append(w, i + Concatenation(1:3 - 1:(l - 1) - r, 2:4 - 2:(l + r) - 2))
             i = i + l
         end
@@ -6119,7 +6119,7 @@ chevieset(:A, :FactorizedSchurElement, function (arg...,)
     end)
 chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H
-        H = Hecke(WeylGroup("A", n), -((param[1])[1]) // (param[1])[2])
+        H = Hecke(CoxeterGroup("A", n), -((param[1])[1]) // (param[1])[2])
         return SpechtModel(H, (Partitions(n + 1))[i])
     end)
 chevieset(:A, :Representation, function (n, i)
@@ -6162,8 +6162,8 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                                 Dict{Symbol, Any}(:parameter => p)
                             end), Partitions(n + 1)), :springerSeries => Concatenation(map((d->begin
                                     map((i->begin
-                                                Dict{Symbol, Any}(:relgroup => WeylGroup("A", (n + 1) // d - 1), :Z => [E(d, i)], :levi => Filtered(1:n + 1, (i->begin
-                                                                    i % d != 0
+                                                Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", (n + 1) // d - 1), :Z => [E(d, i)], :levi => Filtered(1:n + 1, (i->begin
+                                                                    mod(i, d) != 0
                                                                 end)), :locsys => [])
                                             end), PrimeResidues(d))
                                 end), DivisorsInt(n + 1))))
@@ -6194,7 +6194,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                 cl[:red] = Append(cl[:red], p:(p + j[2]) - 2)
                 p = p + j[2]
             end
-            cl[:red] = ReflectionSubgroup(WeylGroup("A", p - 2), cl[:red])
+            cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
             cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat((cl[:red])[:rank])])
             if d == 2
                 push!((ss(1))[:locsys], [i, 2])
@@ -6223,7 +6223,7 @@ chevieset(:A, :KLeftCellRepresentatives, function (n,)
                 i = map(length, (RobinsonSchenstedCorrespondent(n + 1, i))[:P])
                 return Position(CharParams(W), [i])
             end
-        W = WeylGroup("A", n)
+        W = CoxeterGroup("A", n)
         l = Filtered(Elements(W), (x->begin
                         x ^ 2 == ()
                     end))
@@ -6342,7 +6342,7 @@ chevieset(:B, :WordClass, function (pi,)
             i = i + l
         end
         for l = pi[1]
-            r = l % 2
+            r = mod(l, 2)
             w = Append(w, i + Concatenation(1:3 - 1:(l - 1) - r, 2:4 - 2:(l + r) - 2))
             i = i + l
         end
@@ -6481,10 +6481,10 @@ chevieset(:B, :UnipotentCharacters, function (arg...,)
         rank = arg[1]
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [])
         for d = 1 + 2 * (0:div(-1 + RootInt(1 + 4rank, 2), 2))
-            s = (d ^ 2 - 1) // 4
-            s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + s:rank, :rank => rank - s), :levi => 1:s, :eigenvalue => (-1) ^ div(d + 1, 4), :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + s))) + 1), :cuspidalName => SPrint("B_", TeXBracket(s)))
+            s = div(d ^ 2 - 1, 4)
+            s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + s:rank, :rank => rank - s), :levi => 1:s, :eigenvalue => (-1) ^ div(d + 1, 4), :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + s))) + 1), :cuspidalName => SPrint("B_{", s, "}"))
             push!(uc[:harishChandra], s)
-            symbols = Symbols(rank, d)
+            symbols = BDSymbols(rank, d)
             s[:charNumbers] = (1:length(symbols)) + length(uc[:charSymbols])
             FixRelativeType(s)
             uc[:charSymbols] = Append(uc[:charSymbols], symbols)
@@ -6558,7 +6558,7 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                 end))
         uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function (d,)
                             local res
-                            res = Dict{Symbol, Any}(:relgroup => WeylGroup("C", d[2]), :defect => d[1], :locsys => [], :levi => 1:r - d[2])
+                            res = Dict{Symbol, Any}(:relgroup => CoxeterGroup("C", d[2]), :defect => d[1], :locsys => [], :levi => 1:r - d[2])
                             if char == 2
                                 res[:Z] = [1]
                             elseif type_ == 1
@@ -6577,7 +6577,7 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                     Sort(c)
                     i = 1
                     part = []
-                    d = type_ % 2
+                    d = mod(type_, 2)
                     while i <= length(c)
                         if i == length(c) || c[i + 1] - c[i] > 0
                             push!(part, (2 * (c[i] - (i - 1)) + 1) - d)
@@ -6629,7 +6629,7 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
         end
         for cl = ss
             cc = Dict{Symbol, Any}(:parameter => symbol2para((cl[1])[:symbol]))
-            cc[:Au] = WeylGroup(Concatenation, map((x->begin
+            cc[:Au] = CoxeterGroup(Concatenation, map((x->begin
                                 ["A", 1]
                             end), (cl[1])[:Au]))
             if char != 2
@@ -6647,21 +6647,21 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                                 return res
                             end, reverse(Collected((cc[:parameter])[1]))), "")
             end
-            cc[:red] = WeylGroup()
+            cc[:red] = CoxeterGroup()
             if char == 2
                 j = (cc[:parameter])[1]
             else
                 j = cc[:parameter]
             end
             for j = Collected(j)
-                if j[1] % 2 == type_ % 2
-                    cc[:red] = cc[:red] * WeylGroup("C", j[2] // 2)
-                elseif j[2] % 2 != 0
+                if mod(j[1], 2) == mod(type_, 2)
+                    cc[:red] = cc[:red] * CoxeterGroup("C", j[2] // 2)
+                elseif mod(j[2], 2) != 0
                     if j[2] > 1
-                        cc[:red] = cc[:red] * WeylGroup("B", (j[2] - 1) // 2)
+                        cc[:red] = cc[:red] * CoxeterGroup("B", (j[2] - 1) // 2)
                     end
                 elseif j[2] > 2
-                    cc[:red] = cc[:red] * WeylGroup("D", j[2] // 2)
+                    cc[:red] = cc[:red] * CoxeterGroup("D", j[2] // 2)
                 else
                     cc[:red] = cc[:red] * Torus(1)
                 end
@@ -6696,7 +6696,7 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                                                 if i in Difference((x[:parameter])[1], (x[:parameter])[2])
                                                     return false
                                                 end
-                                                if i < m && (fx[i + 1] - fy[i + 1]) % 2 == 1
+                                                if i < m && mod(fx[i + 1] - fy[i + 1], 2) == 1
                                                     return false
                                                 end
                                             end
@@ -6712,16 +6712,16 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                     b = []
                     d = [0, 1, 0, -1]
                     d = d[map((x->begin
-                                        1 + x % 4
+                                        1 + mod(x, 4)
                                     end), p)]
                     i = 1
                     while i <= length(p)
                         l = p[i]
                         t = Sum(d[1:i - 1])
-                        if 1 == l % 4
+                        if 1 == mod(l, 4)
                             push!(a, (l - 1) // 4 - t)
                             i = i + 1
-                        elseif 3 == l % 4
+                        elseif 3 == mod(l, 4)
                             push!(b, (l - 3) // 4 + t)
                             i = i + 1
                         else
@@ -6730,8 +6730,8 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
                                 i = i + 1
                             end
                             j = fill(0, max(0, (1 + (i - j) // 2) - 1))
-                            a = Append(a, (j + (l + l % 4) // 4) - t)
-                            b = Append(b, j + (l - l % 4) // 4 + t)
+                            a = Append(a, (j + (l + mod(l, 4)) // 4) - t)
+                            b = Append(b, j + (l - mod(l, 4)) // 4 + t)
                         end
                     end
                     a = Filtered(a, (x->begin
@@ -6776,31 +6776,31 @@ chevieset(:B, :UnipotentClasses, function (r, type_, char)
             d = 0
             while 4 * d ^ 2 - 3d <= r
                 i = 4 * d ^ 2 - 3d
-                if (r - d) % 2 == 0
+                if mod(r - d, 2) == 0
                     l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):r)
-                    push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
+                    push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
                     i = 4 * d ^ 2 + 3d
                     if i <= r && d != 0
                         l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):r)
-                        push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
+                        push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
                     end
                 end
                 d = d + 1
             end
             l = Filtered(1:length(uc[:classes]), (i->begin
                             ForAll(Collected(((uc[:classes])[i])[:parameter]), (c->begin
-                                        c[1] % 2 == 0 || c[2] == 1
+                                        mod(c[1], 2) == 0 || c[2] == 1
                                     end))
                         end))
             for i = l
                 cl = (uc[:classes])[i]
                 s = LuSpin(cl[:parameter])
                 if Size(cl[:Au]) == 1
-                    cl[:Au] = WeylGroup("A", 1)
+                    cl[:Au] = CoxeterGroup("A", 1)
                     trspringer(i, [1], [2])
                     d = 1
                 elseif Size(cl[:Au]) == 4
-                    cl[:Au] = WeylGroup("B", 2)
+                    cl[:Au] = CoxeterGroup("B", 2)
                     trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
                     d = 2
                 else
@@ -6864,7 +6864,7 @@ chevieset(:D, :GeneratingRoots, function (l,)
     end)
 chevieset(:D, :WeightInfo, function (n,)
         local res
-        if n % 2 == 1
+        if mod(n, 2) == 1
             return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[1], [3], [2]], :moduli => [4])
         else
             return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[1, 0], [0, 1], [1, 1]], :moduli => [2, 2])
@@ -6888,7 +6888,7 @@ chevieset(:D, :WordsClassRepresentatives, function (arg...,)
             if pi[2] == '+'
                 pi[2] = []
             end
-            if IsList(pi[2]) && length(pi[2]) % 2 == 0
+            if IsList(pi[2]) && mod(length(pi[2]), 2) == 0
                 w = []
                 i = 1
                 for l = reverse(pi[2])
@@ -6901,7 +6901,7 @@ chevieset(:D, :WordsClassRepresentatives, function (arg...,)
                     i = i + l
                 end
                 for l = pi[1]
-                    r = l % 2
+                    r = mod(l, 2)
                     w = Append(w, i + Concatenation(1:3 - 1:(l - 1) - r, 2:4 - 2:(l + r) - 2))
                     i = i + l
                 end
@@ -6909,7 +6909,7 @@ chevieset(:D, :WordsClassRepresentatives, function (arg...,)
                     w[1] = 1
                 end
                 if pi[2] == [] && ForAll(pi[1], (x->begin
-                                    x % 2 == 0
+                                    mod(x, 2) == 0
                                 end))
                     push!(res, w)
                     w = copy(w)
@@ -6937,7 +6937,7 @@ chevieset(:D, :ClassInfo, function (n,)
         return res
     end)
 chevieset(:D, :NrConjugacyClasses, function (n,)
-        if n % 2 == 1
+        if mod(n, 2) == 1
             return NrPartitionTuples(n, 2) // 2
         else
             return (NrPartitionTuples(n, 2) + 3 * NrPartitions(n // 2)) // 2
@@ -6980,10 +6980,10 @@ chevieset(:D, :ClassParameter, function (n, w)
             end
         end
         if res[2] == [] && ForAll(res[1], (i->begin
-                            i % 2 == 0
+                            mod(i, 2) == 0
                         end))
             if !((CHEVIE.R("gensMODA", "D"))[n] !== nothing)
-                tmp = WeylGroup("D", n)
+                tmp = CoxeterGroup("D", n)
                 gens = PermCosetsSubgroup(tmp, ReflectionSubgroup(tmp, 2:n))
                 tmp = (chevieget(:D, :ClassInfo))(n)
                 tmp = (tmp[:classtext])[Filtered(1:length(tmp[:classnames]), (i->begin
@@ -7076,7 +7076,7 @@ chevieset(:D, :UnipotentCharacters, function (rank,)
         local uc, symbols, r, d, s
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [])
         for d = 4 * (0:RootInt(div(rank, 4), 2))
-            r = d ^ 2 // 4
+            r = div(d ^ 2, 4)
             s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => (-1) ^ div(d + 1, 4), :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + r))) + 1))
             if r < 10
                 s[:cuspidalName] = SPrint("D_", r, "")
@@ -7089,7 +7089,7 @@ chevieset(:D, :UnipotentCharacters, function (rank,)
                 (s[:parameterExponents])[1] = 1
             end
             push!(uc[:harishChandra], s)
-            symbols = Symbols(rank, d)
+            symbols = BDSymbols(rank, d)
             s[:charNumbers] = (1:length(symbols)) + length(uc[:charSymbols])
             FixRelativeType(s)
             uc[:charSymbols] = Append(uc[:charSymbols], symbols)
@@ -7201,23 +7201,23 @@ chevieset(:D, :UnipotentClasses, function (n, char)
         uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function (d,)
                             local res
                             res = Dict{Symbol, Any}(:defect => d[1], :locsys => [], :levi => 1:n - d[2])
-                            if (n - d[2]) % 4 == 0 || char == 2
-                                if n % 2 == 0
+                            if mod(n - d[2], 4) == 0 || char == 2
+                                if mod(n, 2) == 0
                                     res[:Z] = [1, 1]
                                 else
                                     res[:Z] = [1]
                                 end
                             else
-                                if n % 2 == 0
+                                if mod(n, 2) == 0
                                     res[:Z] = [-1, -1]
                                 else
                                     res[:Z] = [-1]
                                 end
                             end
                             if d[1] == 0
-                                res[:relgroup] = WeylGroup("D", d[2])
+                                res[:relgroup] = CoxeterGroup("D", d[2])
                             else
-                                res[:relgroup] = WeylGroup("B", d[2])
+                                res[:relgroup] = CoxeterGroup("B", d[2])
                             end
                             return res
                         end, l))
@@ -7237,29 +7237,29 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                 cc[:dynkin] = partition2DR(cc[:parameter])
                 cc[:name] = IntListToString(cc[:parameter])
             end
-            cc[:Au] = WeylGroup(Concatenation, map((x->begin
+            cc[:Au] = CoxeterGroup(Concatenation, map((x->begin
                                 ["A", 1]
                             end), (cl[1])[:Au]))
             CharNames(cc[:Au])
             if char != 2
-                cc[:red] = WeylGroup()
+                cc[:red] = CoxeterGroup()
                 j = cc[:parameter]
                 for j = Collected(j)
-                    if j[1] % 2 == 0
-                        cc[:red] = cc[:red] * WeylGroup("C", j[2] // 2)
-                    elseif j[2] % 2 != 0
+                    if mod(j[1], 2) == 0
+                        cc[:red] = cc[:red] * CoxeterGroup("C", j[2] // 2)
+                    elseif mod(j[2], 2) != 0
                         if j[2] > 1
-                            cc[:red] = cc[:red] * WeylGroup("B", (j[2] - 1) // 2)
+                            cc[:red] = cc[:red] * CoxeterGroup("B", (j[2] - 1) // 2)
                         end
                     elseif j[2] > 2
-                        cc[:red] = cc[:red] * WeylGroup("D", j[2] // 2)
+                        cc[:red] = cc[:red] * CoxeterGroup("D", j[2] // 2)
                     else
                         cc[:red] = cc[:red] * Torus(1)
                     end
                 end
             end
             if !(IsList(((cl[1])[:sp])[2]))
-                ((cl[1])[:sp])[3] = 1 - n // 2 % 2
+                ((cl[1])[:sp])[3] = 1 - mod(n // 2, 2)
             end
             push!(uc[:classes], cc)
             for s = cl
@@ -7302,7 +7302,7 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                                                     if i in Difference((x[:parameter])[1], (x[:parameter])[2])
                                                         return false
                                                     end
-                                                    if i < m && (fx[i + 1] - fy[i + 1]) % 2 == 1
+                                                    if i < m && mod(fx[i + 1] - fy[i + 1], 2) == 1
                                                         return false
                                                     end
                                                 end
@@ -7324,10 +7324,10 @@ chevieset(:D, :UnipotentClasses, function (n, char)
             d = 0
             while 4 * d ^ 2 - d <= n
                 i = 4 * d ^ 2 - d
-                if (n - d) % 2 == 0
+                if mod(n - d, 2) == 0
                     l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):n)
-                    s = Dict{Symbol, Any}(:relgroup => WeylGroup("B", (n - i) // 2), :levi => l, :locsys => [])
-                    if n % 2 == 0
+                    s = Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (n - i) // 2), :levi => l, :locsys => [])
+                    if mod(n, 2) == 0
                         s[:Z] = [1, -1]
                     else
                         s[:Z] = [E(4)]
@@ -7336,8 +7336,8 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                     if d == 0
                         l = Concatenation([1], 4:6 - 4:n)
                     end
-                    s = Dict{Symbol, Any}(:relgroup => WeylGroup("B", (n - i) // 2), :levi => l, :locsys => [])
-                    if n % 2 == 0
+                    s = Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (n - i) // 2), :levi => l, :locsys => [])
+                    if mod(n, 2) == 0
                         s[:Z] = [-1, 1]
                     else
                         s[:Z] = [-(E(4))]
@@ -7346,15 +7346,15 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                     i = 4 * d ^ 2 + d
                     if d != 0 && i <= n
                         l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):n)
-                        s = Dict{Symbol, Any}(:relgroup => WeylGroup("B", (n - i) // 2), :levi => l, :locsys => [])
-                        if n % 2 == 0
+                        s = Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (n - i) // 2), :levi => l, :locsys => [])
+                        if mod(n, 2) == 0
                             s[:Z] = [1, -1]
                         else
                             s[:Z] = [E(4)]
                         end
                         push!(uc[:springerSeries], s)
-                        s = Dict{Symbol, Any}(:relgroup => WeylGroup("B", (n - i) // 2), :levi => l, :locsys => [])
-                        if n % 2 == 0
+                        s = Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (n - i) // 2), :levi => l, :locsys => [])
+                        if mod(n, 2) == 0
                             s[:Z] = [1, 1]
                         else
                             s[:Z] = [-(E(4))]
@@ -7371,16 +7371,16 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                     b = []
                     d = [0, 1, 0, -1]
                     d = d[map((x->begin
-                                        1 + x % 4
+                                        1 + mod(x, 4)
                                     end), p)]
                     i = 1
                     while i <= length(p)
                         l = p[i]
                         t = Sum(d[1:i - 1])
-                        if 1 == l % 4
+                        if 1 == mod(l, 4)
                             push!(a, (l - 1) // 4 - t)
                             i = i + 1
-                        elseif 3 == l % 4
+                        elseif 3 == mod(l, 4)
                             push!(b, (l - 3) // 4 + t)
                             i = i + 1
                         else
@@ -7389,8 +7389,8 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                                 i = i + 1
                             end
                             j = fill(0, max(0, (1 + (i - j) // 2) - 1))
-                            a = Append(a, (j + (l + l % 4) // 4) - t)
-                            b = Append(b, j + (l - l % 4) // 4 + t)
+                            a = Append(a, (j + (l + mod(l, 4)) // 4) - t)
+                            b = Append(b, j + (l - mod(l, 4)) // 4 + t)
                         end
                     end
                     a = Filtered(a, (x->begin
@@ -7431,22 +7431,22 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                 end
             l = Filtered(1:length(uc[:classes]), (i->begin
                             ForAll(Collected(((uc[:classes])[i])[:parameter]), (c->begin
-                                        c[1] % 2 == 0 || c[2] == 1
+                                        mod(c[1], 2) == 0 || c[2] == 1
                                     end))
                         end))
             for i = l
                 cl = (uc[:classes])[i]
                 s = LuSpin(cl[:parameter])
                 if Size(cl[:Au]) == 1
-                    cl[:Au] = WeylGroup("A", 1)
+                    cl[:Au] = CoxeterGroup("A", 1)
                     trspringer(i, [2])
                     k = [1, 1]
                 elseif Size(cl[:Au]) == 2
-                    cl[:Au] = WeylGroup("A", 1, "A", 1)
+                    cl[:Au] = CoxeterGroup("A", 1, "A", 1)
                     trspringer(i, [2, 4])
                     k = [1, 3]
                 elseif Size(cl[:Au]) == 8
-                    cl[:Au] = WeylGroup("A", 1, "B", 2)
+                    cl[:Au] = CoxeterGroup("A", 1, "B", 2)
                     trspringer(i, [1, 6, 8, 5, 10, 3, 4, 9])
                     k = [2, 7]
                 else
@@ -7470,7 +7470,7 @@ chevieset(Symbol("2D"), :ClassParams, function (n,)
         local B
         B = (chevieget(:B, :ClassParams))(n)
         return Filtered(B, (a->begin
-                        length(a[2]) % 2 == 1
+                        mod(length(a[2]), 2) == 1
                     end))
     end)
 chevieset(Symbol("2D"), :WordsClassRepresentatives, function (n,)
@@ -7480,7 +7480,7 @@ chevieset(Symbol("2D"), :ClassInfo, function (n,)
         local l, B
         B = (chevieget(:B, :ClassInfo))(n)
         l = Filtered(1:length(B[:classtext]), (i->begin
-                        length(((B[:classparams])[i])[2]) % 2 == 1
+                        mod(length(((B[:classparams])[i])[2]), 2) == 1
                     end))
         return Dict{Symbol, Any}(:classnames => (B[:classnames])[l], :classparams => (B[:classparams])[l], :classes => (B[:classes])[l], :classtext => map(function (l,)
                             local res, i, n
@@ -7488,7 +7488,7 @@ chevieset(Symbol("2D"), :ClassInfo, function (n,)
                             n = 1
                             for i = 1:length(l)
                                 if l[i] == 1
-                                    n = (n + 1) % 2
+                                    n = mod(n + 1, 2)
                                 elseif l[i] == 2
                                     push!(res, 2 - n)
                                 else
@@ -7499,7 +7499,7 @@ chevieset(Symbol("2D"), :ClassInfo, function (n,)
                         end, (B[:classtext])[l]))
     end)
 chevieset(Symbol("2D"), :NrConjugacyClasses, function (n,)
-        if n % 2 == 1
+        if mod(n, 2) == 1
             return NrPartitionTuples(n, 2) // 2
         else
             return (NrPartitionTuples(n, 2) - NrPartitions(n // 2)) // 2
@@ -7599,7 +7599,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                 s[:levi] = []
                 s[:cuspidalName] = ""
             end
-            symbols = Symbols(rank, d)
+            symbols = BDSymbols(rank, d)
             s[:charNumbers] = (1:length(symbols)) + length(uc[:charSymbols])
             FixRelativeType(s)
             uc[:charSymbols] = Append(uc[:charSymbols], symbols)
@@ -7616,8 +7616,8 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                 s[:cuspidalName] = SPrint("D_{", r, "}")
             end
             r = (s[:relativeType])[:rank]
-            symbols = Symbols(rank, d)
-            if div(d + 1, 4) % 2 != 0
+            symbols = BDSymbols(rank, d)
+            if mod(div(d + 1, 4), 2) != 0
                 symbols = map(reverse, symbols)
             end
             if d == 0
@@ -7680,18 +7680,18 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                                     local v, D, v1, v2, s
                                     M = SymmetricDifference(Difference(M[2], f[:Z2]), (f[:Z1])[3:5 - 3:length(f[:Z1]) - 1])
                                     v = map((z->begin
-                                                    count((y->begin
+                                                    mod(count((y->begin
                                                                     y >= z
-                                                                end), M) % 2
+                                                                end), M), 2)
                                                 end), f[:Z1])
                                     D = length(v)
-                                    v1 = v[2:4 - 2:D - D % 2]
-                                    v2 = v[3:5 - 3:(D - 1) + D % 2]
-                                    if D % 2 == 1
+                                    v1 = v[2:4 - 2:D - mod(D, 2)]
+                                    v2 = v[3:5 - 3:(D - 1) + mod(D, 2)]
+                                    if mod(D, 2) == 1
                                         push!(v1, 0)
                                     end
                                     v1 = map((i->begin
-                                                    Sum(v1[[i, i + 1]]) % 2
+                                                    mod(Sum(v1[[i, i + 1]]), 2)
                                                 end), 1:length(v2))
                                     s = "+-"
                                     return ConcatenationString(s[v2 + 1], ",", s[v1 + 1])
@@ -7743,7 +7743,7 @@ chevieset(Symbol("2I"), :ClassInfo, function (m,)
         res[:classparams] = res[:classnames]
         res[:classes] = [m]
         res[:classes] = Append(res[:classes], fill(0, max(0, (1 + div(m, 2)) - 1)) + 2)
-        if m % 2 == 1
+        if mod(m, 2) == 1
             push!(res[:classes], 1)
         end
         res[:orders] = map((i->begin
@@ -7883,15 +7883,15 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
                                         2 * [i, j] - 1
                                     end), i + 1:e - i)
                         end), 1:n))
-        if e % 2 == 1
+        if mod(e, 2) == 1
             untUnp = map(function (s,)
                         local res
                         res = map((x->begin
-                                        x % e
+                                        mod(x, e)
                                     end), (e - reverse(s)) // 2)
                         if res[1] > res[2]
                             res = map((x->begin
-                                            x % e
+                                            mod(x, e)
                                         end), -res)
                         end
                         return res
@@ -8306,20 +8306,20 @@ chevieset(:E6, :UnipotentClasses, function (p,)
         Z = (n->begin
                     ComplexReflectionGroup(n, 1, 1)
                 end)
-        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("\tE_6\n", "\t |\n", "      E_6(a_1)\n", "\t |\n", "\tD_5\n", "\t |\n", "     E_6(a_3)\n", "     /   |\n", "  A_5    |\n", "   |   D_5(a_1)\n", "   |   /      \\\n", "A_4+A_1        \\\n", "   |           D_4\n", "  A_4         /\n", "     \\       /\n", "      D_4(a_1)\n", "\t |\n", "      A_3+A_1\n", "     /       \\\n", "  A_3     2A_2+A_1\n", "   |     /    |\n", "  A_2+2A_1   2A_2\n", "     \\       /\n", "      A_2+A_1\n", "\t |\n", "\tA_2\n", "\t |\n", "       3A_1\n", "\t |\n", "       2A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1\n"), :classes => [Dict{Symbol, Any}(:name => "E_6", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2], :Au => Z(3 * gcd(p, 2)), :balacarter => 1:6), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6"], :dynkin => [2, 2, 2, 0, 2, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, -4, 5, 6]), Dict{Symbol, Any}(:name => "D_5", :succ => ["E6(a1)"], :dynkin => [2, 2, 0, 2, 0, 2], :Au => Z(gcd(2, p)), :balacarter => 1:5, :red => Torus(1)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "A_5{+}A_1", :succ => ["D5"], :dynkin => [2, 0, 0, 2, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1) * 2), :balacarter => [1, -2, -3, 4, -5, 6]), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)"], :dynkin => [2, 1, 1, 0, 1, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 4, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["E6(a3)"], :dynkin => [1, 2, 1, 0, 1, 1], :balacarter => [1, 2, 3, -4, 5], :red => Torus(1)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A5", "D5(a1)"], :dynkin => [1, 1, 1, 0, 1, 1], :balacarter => [1, 2, 3, 4, 6], :red => Torus(1)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D5(a1)"], :dynkin => [0, 2, 0, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4, 5], :red => WeylGroup("A", 2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 2, 0, 0, 0, 2], :balacarter => [1, 2, 3, 4], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "A4"], :dynkin => [0, 0, 0, 2, 0, 0], :Au => WeylGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Torus(2), :AuAction => ExtendedReflectionGroup(Torus(2), (WeylGroup("A", 2))[:matgens])), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["D4(a1)"], :dynkin => [0, 1, 1, 0, 1, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["A3+A1"], :dynkin => [1, 2, 0, 0, 0, 1], :balacarter => [1, 3, 4], :red => WeylGroup("B", 2) * Torus(1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["A3+A1"], :dynkin => [1, 0, 0, 1, 0, 1], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 5, 6], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "2A2+A1"], :dynkin => [0, 0, 1, 0, 1, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["2A2", "A2+2A1"], :dynkin => [1, 1, 0, 0, 0, 1], :balacarter => [1, 2, 3], :red => WeylGroup("A", 2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => WeylGroup("A", 2, "A", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 2, "A", 2), #= none:82 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["A2"], :dynkin => [0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 5], :red => WeylGroup("A", 2, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 1], :balacarter => [1, 2], :red => WeylGroup("B", 3) * Torus(1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 1, 0, 0, 0, 0], :balacarter => [1], :red => WeylGroup("A", 5)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0], :balacarter => [], :red => WeylGroup("E", 6))], :springerSeries => [Dict{Symbol, Any}(:levi => [], :relgroup => WeylGroup("E", 6), :Z => [1], :locsys => [[1, 1], [21, 1], [13, 1], [2, 1], [20, 1], [10, 1], [4, 4], [17, 1], [5, 1], [18, 1], [3, 1], [19, 1], [8, 1], [14, 1], [4, 1], [17, 2], [11, 1], [10, 3], [10, 2], [7, 1], [15, 1], [6, 1], [16, 1], [9, 1], [12, 1]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => WeylGroup("G", 2), :Z => [E(3)], :locsys => [[1, 2], [14, 2], [13, 2], [2, 2], [4, 3], [5, 2]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => WeylGroup("G", 2), :Z => [E(3, 2)], :locsys => [[1, 3], [14, 3], [13, 3], [2, 3], [4, 5], [5, 3]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:6, :Z => [E(3)], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:6, :Z => [E(3, 2)], :locsys => [[4, 6]])])
+        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("\tE_6\n", "\t |\n", "      E_6(a_1)\n", "\t |\n", "\tD_5\n", "\t |\n", "     E_6(a_3)\n", "     /   |\n", "  A_5    |\n", "   |   D_5(a_1)\n", "   |   /      \\\n", "A_4+A_1        \\\n", "   |           D_4\n", "  A_4         /\n", "     \\       /\n", "      D_4(a_1)\n", "\t |\n", "      A_3+A_1\n", "     /       \\\n", "  A_3     2A_2+A_1\n", "   |     /    |\n", "  A_2+2A_1   2A_2\n", "     \\       /\n", "      A_2+A_1\n", "\t |\n", "\tA_2\n", "\t |\n", "       3A_1\n", "\t |\n", "       2A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1\n"), :classes => [Dict{Symbol, Any}(:name => "E_6", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2], :Au => Z(3 * gcd(p, 2)), :balacarter => 1:6), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6"], :dynkin => [2, 2, 2, 0, 2, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, -4, 5, 6]), Dict{Symbol, Any}(:name => "D_5", :succ => ["E6(a1)"], :dynkin => [2, 2, 0, 2, 0, 2], :Au => Z(gcd(2, p)), :balacarter => 1:5, :red => Torus(1)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "A_5{+}A_1", :succ => ["D5"], :dynkin => [2, 0, 0, 2, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1) * 2), :balacarter => [1, -2, -3, 4, -5, 6]), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)"], :dynkin => [2, 1, 1, 0, 1, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 4, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["E6(a3)"], :dynkin => [1, 2, 1, 0, 1, 1], :balacarter => [1, 2, 3, -4, 5], :red => Torus(1)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A5", "D5(a1)"], :dynkin => [1, 1, 1, 0, 1, 1], :balacarter => [1, 2, 3, 4, 6], :red => Torus(1)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D5(a1)"], :dynkin => [0, 2, 0, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4, 5], :red => CoxeterGroup("A", 2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 2, 0, 0, 0, 2], :balacarter => [1, 2, 3, 4], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "A4"], :dynkin => [0, 0, 0, 2, 0, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Torus(2), :AuAction => ExtendedReflectionGroup(Torus(2), (CoxeterGroup("A", 2))[:matgens])), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["D4(a1)"], :dynkin => [0, 1, 1, 0, 1, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["A3+A1"], :dynkin => [1, 2, 0, 0, 0, 1], :balacarter => [1, 3, 4], :red => CoxeterGroup("B", 2) * Torus(1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["A3+A1"], :dynkin => [1, 0, 0, 1, 0, 1], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 5, 6], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "2A2+A1"], :dynkin => [0, 0, 1, 0, 1, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["2A2", "A2+2A1"], :dynkin => [1, 1, 0, 0, 0, 1], :balacarter => [1, 2, 3], :red => CoxeterGroup("A", 2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => CoxeterGroup("A", 2, "A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2, "A", 2), #= none:82 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["A2"], :dynkin => [0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 5], :red => CoxeterGroup("A", 2, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 1], :balacarter => [1, 2], :red => CoxeterGroup("B", 3) * Torus(1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 1, 0, 0, 0, 0], :balacarter => [1], :red => CoxeterGroup("A", 5)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("E", 6))], :springerSeries => [Dict{Symbol, Any}(:levi => [], :relgroup => CoxeterGroup("E", 6), :Z => [1], :locsys => [[1, 1], [21, 1], [13, 1], [2, 1], [20, 1], [10, 1], [4, 4], [17, 1], [5, 1], [18, 1], [3, 1], [19, 1], [8, 1], [14, 1], [4, 1], [17, 2], [11, 1], [10, 3], [10, 2], [7, 1], [15, 1], [6, 1], [16, 1], [9, 1], [12, 1]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3)], :locsys => [[1, 2], [14, 2], [13, 2], [2, 2], [4, 3], [5, 2]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3, 2)], :locsys => [[1, 3], [14, 3], [13, 3], [2, 3], [4, 5], [5, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3)], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3, 2)], :locsys => [[4, 6]])])
         if p == 2
-            push!(uc[:springerSeries], Dict{Symbol, Any}(:levi => [2, 3, 4, 5], :relgroup => WeylGroup("A", 2), :Z => [1], :locsys => [[8, 1], [3, 1], [1, 4]]))
+            push!(uc[:springerSeries], Dict{Symbol, Any}(:levi => [2, 3, 4, 5], :relgroup => CoxeterGroup("A", 2), :Z => [1], :locsys => [[8, 1], [3, 1], [1, 4]]))
             (((uc[:springerSeries])[1])[:locsys])[[11, 13]] = [[3, 2], [8, 2]]
             (((uc[:springerSeries])[2])[:locsys])[1] = [1, 3]
             (((uc[:springerSeries])[3])[:locsys])[1] = [1, 5]
             for c = [2, 6]
-                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:6, :Z => [E(3, 1 - c)], :locsys => [[1, c]]))
+                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3, 1 - c)], :locsys => [[1, c]]))
             end
         elseif p == 3
             uc[:springerSeries] = (uc[:springerSeries])[[1]]
             ((((uc[:springerSeries])[1])[:locsys])[[7, 15]])[2] = [1, 2]
             for c = [2, 3]
-                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:6, :Z => [1], :locsys => [[1, c]]))
+                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [1], :locsys => [[1, c]]))
             end
         end
         uc[:orderClasses] = map((c->begin
@@ -8483,9 +8483,9 @@ chevieset(:E7, :UnipotentClasses, function (p,)
                                 x[:name] == n
                             end))
                 end)
-        uc = Dict{Symbol, Any}(:orderPicture => Join(["\t\t  E_7", "\t\t   |", "\t\tE_7(a_1)", "\t\t   |", "\t\tE_7(a_2)", "\t\t /    \\", "\t       E_6     E_7(a_3)", "\t\t \\    /     \\", "\t\tE_6(a_1)   D_6", "\t\t   |       /", "\t\t   |      /", "\t\t  E_7(a_4)", "\t       /   |       \\", "\t      /    |        \\", "       A_6        D_5+A_1   D_6(a_1)", "\t|      /          \\   |", "     E_7(a_5)                D_5", "\t|\\__________________  |", "\t|                   \\ |", "    D_6(a_2)               E_6(a_3)", "\t|\\__________________/ |", "\t|         |           |", "\t|        A_5     D_5(a_1)+A_1", "\t|         _ \\ _____/  |", "\t|         |  \\________|", "     A_5+A_1      |           |", "\t|     \\______________ |", "\t|                   A_4+A_2", "       A_5''      |           |", "\t|      D_5(a_1)       |", "\t|         |  \\_______ |", "\t|         |          \\|", "\t|     D_4+A_1      A_4+A_1", "      _ | ____/    \\______ /_ |", "     /   \\___ _      ____ /  \\|", "   D_4         \\    /    A_3+A_2+A_1", "    |           A_4           |", "    |             \\_________  |", "    |                       \\ |", "    |                      A_3+A_2", "    |                         |", "    |                    D_4(a_1)+A_1", "    |  ______________________/|", "    | /                       |", "  D_4(a_1)                 A_3+2A_1", "\t\\_______    _________/|", "\t\t\\  /          |", "\t      (A_3+A_1)'      |", "\t\t/   _\\_____(A_3+A_1)''", "\t2A_2+A_1 ] |  \\_____  |", "    ___/     |     |        \\ |", "   /          2A_2          A_3", "A_2+3A_1         |            |", "   |             |            |", "    \\___________ | __________/", "\t\t\\|/", "\t      A_2+2A_1", "\t\t |", "\t      A_2+A_1", "\t      /      \\", "\t 4A_1____    A_2", "\t /        \\     |", "      (3A_1)''     (3A_1)'", "\t \\            /", "\t      2A_1", "\t       |", "\t      A_1", "\t       |", "\t      A_0"], "\n"), :classes => [Dict{Symbol, Any}(:name => "E_7", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2, 2], :Au => Z(2 * gcd(6, p)), :balacarter => 1:7), Dict{Symbol, Any}(:name => "E_7(a_1)", :succ => ["E7"], :dynkin => [2, 2, 2, 0, 2, 2, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6, 7]), Dict{Symbol, Any}(:name => "E_7(a_2)", :succ => ["E7(a1)"], :dynkin => [2, 2, 2, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, -6, 7]), Dict{Symbol, Any}(:name => "E_6", :succ => ["E7(a2)"], :dynkin => [2, 0, 2, 2, 0, 2, 0], :Au => Z(gcd(6, p)), :balacarter => 1:6, :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_3)", :mizuno => "D_6{+}A_1", :succ => ["E7(a2)"], :dynkin => [2, 0, 0, 2, 0, 2, 2], :Au => Z(2) * Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, 6, 7]), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6", "E7(a3)"], :dynkin => [2, 0, 0, 2, 0, 2, 0], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "D_6", :succ => ["E7(a3)"], :dynkin => [2, 1, 1, 0, 1, 2, 2], :Au => Z(2), :balacarter => 2:7, :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_4)", :mizuno => "D_6(a_1){+}A_1", :succ => ["E6(a1)", "D6"], :dynkin => [2, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)) * Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, -6, 7]), Dict{Symbol, Any}(:name => "A_6", :succ => ["E7(a4)"], :dynkin => [0, 0, 0, 2, 0, 2, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 3, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5{+}A_1", :succ => ["E7(a4)"], :dynkin => [2, 1, 1, 0, 1, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4, 5, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_1)", :succ => ["E7(a4)"], :dynkin => [2, 1, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [2, 3, -4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_5)", :mizuno => "D_6(a_2){+}A_1", :succ => ["A6", "D5+A1", "D6(a1)"], :dynkin => [0, 0, 0, 2, 0, 0, 2], :Au => WeylGroup("A", 2) * Z(gcd(2, p - 1)), :balacarter => [-1, -2, -3, 4, -5, -6, 7]), Dict{Symbol, Any}(:name => "D_5", :succ => ["D5+A1", "D6(a1)"], :dynkin => [2, 0, 2, 0, 0, 2, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_6(a_2)", :succ => ["E7(a5)"], :dynkin => [0, 1, 1, 0, 1, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "(A_5{+}A_1)'", :succ => ["E7(a5)", "D5"], :dynkin => [0, 0, 2, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5'", :succ => ["D6(a2)", "E6(a3)"], :dynkin => [1, 0, 0, 1, 0, 2, 0], :balacarter => [1, 3, 4, 5, 6], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_1", :succ => ["E6(a3)", "D6(a2)"], :dynkin => [2, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, -4, 5, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5{+}A_1", :mizuno => "(A_5{+}A_1)''", :succ => ["D6(a2)"], :dynkin => [1, 0, 0, 1, 0, 1, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4{+}A_2", :succ => ["A5'", "D5(a1)+A1", "A5+A1"], :dynkin => [0, 0, 0, 2, 0, 0, 0], :balacarter => [1, 2, 3, 4, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5''", :succ => ["A5+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 4, 5, 6, 7], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["D5(a1)+A1"], :dynkin => [2, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5], :red => ReflectionSubgroup(Z(2) * Z(2), [1]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), [1]), #= none:132 =# @perm_str("(2,4)"))), Dict{Symbol, Any}(:name => "D_4{+}A_1", :succ => ["D5(a1)"], :dynkin => [2, 1, 1, 0, 0, 0, 1], :Au => Z(2), :balacarter => [2, 3, 4, 5, 7], :red => WeylGroup("B", 2)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A4+A2", "D5(a1)"], :dynkin => [1, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6], :red => ReflectionSubgroup(Z(2) * Z(2), []), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), []), #= none:137 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "D_4", :succ => ["D4+A1"], :dynkin => [2, 0, 2, 0, 0, 0, 0], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5], :red => WeylGroup("C", 3)), Dict{Symbol, Any}(:name => "A_3{+}A_2{+}A_1", :succ => ["D4+A1", "A4+A1"], :dynkin => [0, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A5''", "A4+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4], :red => ReflectionSubgroup(WeylGroup("A", 2, "A", 1), [1, 2]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(WeylGroup("A", 2, "A", 1), [1, 2]), #= none:147 =# @perm_str("(1,2)(3,7)(5,6)"))), Dict{Symbol, Any}(:name => "A_3{+}A_2", :succ => ["A3+A2+A1", "A4"], :dynkin => [0, 0, 0, 1, 0, 1, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 3, 4, 6, 7], :red => ReflectionSubgroup(Z(2) * Z(2), [1]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), [1]), #= none:151 =# @perm_str("(2,4)"))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_1", :succ => ["A3+A2"], :dynkin => [0, 1, 1, 0, 0, 0, 1], :Au => Z(2) * Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), [#= none:155 =# @perm_str("(1,2)"), ()])), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "D4(a1)+A1"], :dynkin => [0, 0, 2, 0, 0, 0, 0], :Au => WeylGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Z(2) * Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2) * Z(2), [#= none:159 =# @perm_str("(1,2)"), #= none:159 =# @perm_str("(2,3)")])), Dict{Symbol, Any}(:name => "A_3{+}2A_1", :succ => ["D4(a1)+A1"], :dynkin => [1, 0, 0, 0, 1, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_1)'", :succ => ["D4(a1)", "A3+2A1"], :dynkin => [1, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Z(2) * Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_1)''", :succ => ["A3+2A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 4, 5, 7], :red => WeylGroup("B", 3)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["(A3+A1)'"], :dynkin => [0, 0, 1, 0, 0, 1, 0], :balacarter => [1, 2, 3, 5, 6], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["(A3+A1)''", "2A2+A1"], :dynkin => [0, 0, 0, 0, 0, 2, 0], :balacarter => [1, 3, 5, 6], :red => WeylGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["(A3+A1)'", "(A3+A1)''"], :dynkin => [2, 0, 0, 0, 0, 1, 0], :balacarter => [1, 3, 4], :red => WeylGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}3A_1", :succ => ["2A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 5, 7], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["2A2", "A3", "A2+3A1"], :dynkin => [0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["A2+2A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3], :red => ReflectionSubgroup(WeylGroup("A", 3, "A", 1), 1:3), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(WeylGroup("A", 3, "A", 1), 1:3), #= none:185 =# @perm_str("(1,3)(4,11)"))), Dict{Symbol, Any}(:name => "4A_1", :succ => ["A2+A1"], :dynkin => [0, 1, 0, 0, 0, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 5, 7], :red => WeylGroup("C", 3)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => WeylGroup("A", 5), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 5), #= none:190 =# @perm_str("(1,5)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1''", :succ => ["4A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 5, 7], :red => WeylGroup("F", 4)), Dict{Symbol, Any}(:name => "3A_1'", :succ => ["4A1", "A2"], :dynkin => [0, 0, 1, 0, 0, 0, 0], :balacarter => [1, 2, 5], :red => WeylGroup("C", 3, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1''", "3A1'"], :dynkin => [0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2], :red => WeylGroup("B", 4, "A", 1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0], :balacarter => [1], :red => WeylGroup("D", 6)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0], :balacarter => [], :red => WeylGroup("E", 7))], :springerSeries => [Dict{Symbol, Any}(:relgroup => WeylGroup("E", 7), :levi => [], :Z => [1], :locsys => [[1, 2], [45, 1], [44, 1], [2, 2], [39, 2], [8, 2], [5, 2], [40, 1], [41, 2], [4, 1], [3, 2], [43, 1], [29, 1], [12, 2], [7, 2], [42, 1], [40, 2], [5, 4], [33, 1], [18, 2], [22, 2], [27, 1], [38, 1], [6, 1], [9, 1], [36, 2], [20, 2], [24, 1], [6, 2], [38, 2], [10, 2], [34, 1], [15, 1], [28, 2], [37, 1], [8, 4], [32, 2], [13, 1], [11, 2], [35, 1], [19, 1], [25, 2], [30, 2], [16, 1], [29, 2], [12, 4], [14, 2], [31, 1], [29, 3], [12, 6], [26, 1], [21, 1], [27, 2], [17, 2], [15, 2], [28, 4], [21, 2], [26, 2], [23, 1], [23, 2]]), Dict{Symbol, Any}(:levi => [2, 5, 7], :relgroup => WeylGroup("F", 4), :Z => [-1], :locsys => [[1, 1], [5, 3], [36, 1], [41, 1], [2, 1], [39, 1], [10, 1], [28, 3], [17, 1], [7, 1], [11, 1], [22, 1], [28, 1], [18, 1], [12, 3], [12, 5], [3, 1], [8, 1], [25, 1], [32, 1], [5, 1], [30, 1], [8, 3], [20, 1], [14, 1]]), Dict{Symbol, Any}(:relgroup => Z(1), :levi => [1, 2, 3, 4, 5, 6, 7], :Z => [-1], :locsys => [[12, 1]])])
+        uc = Dict{Symbol, Any}(:orderPicture => Join(["\t\t  E_7", "\t\t   |", "\t\tE_7(a_1)", "\t\t   |", "\t\tE_7(a_2)", "\t\t /    \\", "\t       E_6     E_7(a_3)", "\t\t \\    /     \\", "\t\tE_6(a_1)   D_6", "\t\t   |       /", "\t\t   |      /", "\t\t  E_7(a_4)", "\t       /   |       \\", "\t      /    |        \\", "       A_6        D_5+A_1   D_6(a_1)", "\t|      /          \\   |", "     E_7(a_5)                D_5", "\t|\\__________________  |", "\t|                   \\ |", "    D_6(a_2)               E_6(a_3)", "\t|\\__________________/ |", "\t|         |           |", "\t|        A_5     D_5(a_1)+A_1", "\t|         _ \\ _____/  |", "\t|         |  \\________|", "     A_5+A_1      |           |", "\t|     \\______________ |", "\t|                   A_4+A_2", "       A_5''      |           |", "\t|      D_5(a_1)       |", "\t|         |  \\_______ |", "\t|         |          \\|", "\t|     D_4+A_1      A_4+A_1", "      _ | ____/    \\______ /_ |", "     /   \\___ _      ____ /  \\|", "   D_4         \\    /    A_3+A_2+A_1", "    |           A_4           |", "    |             \\_________  |", "    |                       \\ |", "    |                      A_3+A_2", "    |                         |", "    |                    D_4(a_1)+A_1", "    |  ______________________/|", "    | /                       |", "  D_4(a_1)                 A_3+2A_1", "\t\\_______    _________/|", "\t\t\\  /          |", "\t      (A_3+A_1)'      |", "\t\t/   _\\_____(A_3+A_1)''", "\t2A_2+A_1 ] |  \\_____  |", "    ___/     |     |        \\ |", "   /          2A_2          A_3", "A_2+3A_1         |            |", "   |             |            |", "    \\___________ | __________/", "\t\t\\|/", "\t      A_2+2A_1", "\t\t |", "\t      A_2+A_1", "\t      /      \\", "\t 4A_1____    A_2", "\t /        \\     |", "      (3A_1)''     (3A_1)'", "\t \\            /", "\t      2A_1", "\t       |", "\t      A_1", "\t       |", "\t      A_0"], "\n"), :classes => [Dict{Symbol, Any}(:name => "E_7", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2, 2], :Au => Z(2 * gcd(6, p)), :balacarter => 1:7), Dict{Symbol, Any}(:name => "E_7(a_1)", :succ => ["E7"], :dynkin => [2, 2, 2, 0, 2, 2, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6, 7]), Dict{Symbol, Any}(:name => "E_7(a_2)", :succ => ["E7(a1)"], :dynkin => [2, 2, 2, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, -6, 7]), Dict{Symbol, Any}(:name => "E_6", :succ => ["E7(a2)"], :dynkin => [2, 0, 2, 2, 0, 2, 0], :Au => Z(gcd(6, p)), :balacarter => 1:6, :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_3)", :mizuno => "D_6{+}A_1", :succ => ["E7(a2)"], :dynkin => [2, 0, 0, 2, 0, 2, 2], :Au => Z(2) * Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, 6, 7]), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6", "E7(a3)"], :dynkin => [2, 0, 0, 2, 0, 2, 0], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "D_6", :succ => ["E7(a3)"], :dynkin => [2, 1, 1, 0, 1, 2, 2], :Au => Z(2), :balacarter => 2:7, :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_4)", :mizuno => "D_6(a_1){+}A_1", :succ => ["E6(a1)", "D6"], :dynkin => [2, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)) * Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, -6, 7]), Dict{Symbol, Any}(:name => "A_6", :succ => ["E7(a4)"], :dynkin => [0, 0, 0, 2, 0, 2, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 3, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5{+}A_1", :succ => ["E7(a4)"], :dynkin => [2, 1, 1, 0, 1, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4, 5, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_1)", :succ => ["E7(a4)"], :dynkin => [2, 1, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [2, 3, -4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_5)", :mizuno => "D_6(a_2){+}A_1", :succ => ["A6", "D5+A1", "D6(a1)"], :dynkin => [0, 0, 0, 2, 0, 0, 2], :Au => CoxeterGroup("A", 2) * Z(gcd(2, p - 1)), :balacarter => [-1, -2, -3, 4, -5, -6, 7]), Dict{Symbol, Any}(:name => "D_5", :succ => ["D5+A1", "D6(a1)"], :dynkin => [2, 0, 2, 0, 0, 2, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_6(a_2)", :succ => ["E7(a5)"], :dynkin => [0, 1, 1, 0, 1, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "(A_5{+}A_1)'", :succ => ["E7(a5)", "D5"], :dynkin => [0, 0, 2, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5'", :succ => ["D6(a2)", "E6(a3)"], :dynkin => [1, 0, 0, 1, 0, 2, 0], :balacarter => [1, 3, 4, 5, 6], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_1", :succ => ["E6(a3)", "D6(a2)"], :dynkin => [2, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, -4, 5, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5{+}A_1", :mizuno => "(A_5{+}A_1)''", :succ => ["D6(a2)"], :dynkin => [1, 0, 0, 1, 0, 1, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4{+}A_2", :succ => ["A5'", "D5(a1)+A1", "A5+A1"], :dynkin => [0, 0, 0, 2, 0, 0, 0], :balacarter => [1, 2, 3, 4, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_5''", :succ => ["A5+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 4, 5, 6, 7], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["D5(a1)+A1"], :dynkin => [2, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5], :red => ReflectionSubgroup(Z(2) * Z(2), [1]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), [1]), #= none:132 =# @perm_str("(2,4)"))), Dict{Symbol, Any}(:name => "D_4{+}A_1", :succ => ["D5(a1)"], :dynkin => [2, 1, 1, 0, 0, 0, 1], :Au => Z(2), :balacarter => [2, 3, 4, 5, 7], :red => CoxeterGroup("B", 2)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A4+A2", "D5(a1)"], :dynkin => [1, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6], :red => ReflectionSubgroup(Z(2) * Z(2), []), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), []), #= none:137 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "D_4", :succ => ["D4+A1"], :dynkin => [2, 0, 2, 0, 0, 0, 0], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5], :red => CoxeterGroup("C", 3)), Dict{Symbol, Any}(:name => "A_3{+}A_2{+}A_1", :succ => ["D4+A1", "A4+A1"], :dynkin => [0, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A5''", "A4+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, 2, 3, 4], :red => ReflectionSubgroup(CoxeterGroup("A", 2, "A", 1), [1, 2]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(CoxeterGroup("A", 2, "A", 1), [1, 2]), #= none:147 =# @perm_str("(1,2)(3,7)(5,6)"))), Dict{Symbol, Any}(:name => "A_3{+}A_2", :succ => ["A3+A2+A1", "A4"], :dynkin => [0, 0, 0, 1, 0, 1, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 3, 4, 6, 7], :red => ReflectionSubgroup(Z(2) * Z(2), [1]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(Z(2) * Z(2), [1]), #= none:151 =# @perm_str("(2,4)"))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_1", :succ => ["A3+A2"], :dynkin => [0, 1, 1, 0, 0, 0, 1], :Au => Z(2) * Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), [#= none:155 =# @perm_str("(1,2)"), ()])), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "D4(a1)+A1"], :dynkin => [0, 0, 2, 0, 0, 0, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Z(2) * Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2) * Z(2), [#= none:159 =# @perm_str("(1,2)"), #= none:159 =# @perm_str("(2,3)")])), Dict{Symbol, Any}(:name => "A_3{+}2A_1", :succ => ["D4(a1)+A1"], :dynkin => [1, 0, 0, 0, 1, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_1)'", :succ => ["D4(a1)", "A3+2A1"], :dynkin => [1, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Z(2) * Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_1)''", :succ => ["A3+2A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 4, 5, 7], :red => CoxeterGroup("B", 3)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["(A3+A1)'"], :dynkin => [0, 0, 1, 0, 0, 1, 0], :balacarter => [1, 2, 3, 5, 6], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["(A3+A1)''", "2A2+A1"], :dynkin => [0, 0, 0, 0, 0, 2, 0], :balacarter => [1, 3, 5, 6], :red => CoxeterGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["(A3+A1)'", "(A3+A1)''"], :dynkin => [2, 0, 0, 0, 0, 1, 0], :balacarter => [1, 3, 4], :red => CoxeterGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}3A_1", :succ => ["2A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 5, 7], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["2A2", "A3", "A2+3A1"], :dynkin => [0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["A2+2A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0], :Au => Z(2), :balacarter => [1, 2, 3], :red => ReflectionSubgroup(CoxeterGroup("A", 3, "A", 1), 1:3), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(CoxeterGroup("A", 3, "A", 1), 1:3), #= none:185 =# @perm_str("(1,3)(4,11)"))), Dict{Symbol, Any}(:name => "4A_1", :succ => ["A2+A1"], :dynkin => [0, 1, 0, 0, 0, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 5, 7], :red => CoxeterGroup("C", 3)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => CoxeterGroup("A", 5), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 5), #= none:190 =# @perm_str("(1,5)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1''", :succ => ["4A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 5, 7], :red => CoxeterGroup("F", 4)), Dict{Symbol, Any}(:name => "3A_1'", :succ => ["4A1", "A2"], :dynkin => [0, 0, 1, 0, 0, 0, 0], :balacarter => [1, 2, 5], :red => CoxeterGroup("C", 3, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1''", "3A1'"], :dynkin => [0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2], :red => CoxeterGroup("B", 4, "A", 1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0], :balacarter => [1], :red => CoxeterGroup("D", 6)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("E", 7))], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("E", 7), :levi => [], :Z => [1], :locsys => [[1, 2], [45, 1], [44, 1], [2, 2], [39, 2], [8, 2], [5, 2], [40, 1], [41, 2], [4, 1], [3, 2], [43, 1], [29, 1], [12, 2], [7, 2], [42, 1], [40, 2], [5, 4], [33, 1], [18, 2], [22, 2], [27, 1], [38, 1], [6, 1], [9, 1], [36, 2], [20, 2], [24, 1], [6, 2], [38, 2], [10, 2], [34, 1], [15, 1], [28, 2], [37, 1], [8, 4], [32, 2], [13, 1], [11, 2], [35, 1], [19, 1], [25, 2], [30, 2], [16, 1], [29, 2], [12, 4], [14, 2], [31, 1], [29, 3], [12, 6], [26, 1], [21, 1], [27, 2], [17, 2], [15, 2], [28, 4], [21, 2], [26, 2], [23, 1], [23, 2]]), Dict{Symbol, Any}(:levi => [2, 5, 7], :relgroup => CoxeterGroup("F", 4), :Z => [-1], :locsys => [[1, 1], [5, 3], [36, 1], [41, 1], [2, 1], [39, 1], [10, 1], [28, 3], [17, 1], [7, 1], [11, 1], [22, 1], [28, 1], [18, 1], [12, 3], [12, 5], [3, 1], [8, 1], [25, 1], [32, 1], [5, 1], [30, 1], [8, 3], [20, 1], [14, 1]]), Dict{Symbol, Any}(:relgroup => Z(1), :levi => [1, 2, 3, 4, 5, 6, 7], :Z => [-1], :locsys => [[12, 1]])])
         if p == 2
-            push!(uc[:classes], Dict{Symbol, Any}(:name => "(A_3{+}A_2)_2", :succ => ["A3+A2"], :red => WeylGroup("A", 1, "A", 1), :dimBu => 15))
+            push!(uc[:classes], Dict{Symbol, Any}(:name => "(A_3{+}A_2)_2", :succ => ["A3+A2"], :red => CoxeterGroup("A", 1, "A", 1), :dimBu => 15))
             push!((class("(A_3{+}A_1)'"))[:succ], "(A3+A2)2")
             c = class("A_6")
             c[:red] = Torus(1)
@@ -8498,13 +8498,13 @@ chevieset(:E7, :UnipotentClasses, function (p,)
             delete!(c, :dynkin)
             delete!(c, :AuAction)
             ((uc[:springerSeries])[1])[:locsys] = [[1, 1], [45, 1], [44, 1], [2, 2], [39, 1], [9, 1], [5, 1], [40, 1], [41, 1], [4, 2], [3, 2], [43, 1], [29, 1], [12, 1], [7, 2], [42, 1], [40, 2], [5, 2], [33, 1], [18, 1], [22, 2], [46, 1], [38, 1], [6, 1], [9, 2], [36, 1], [20, 1], [24, 2], [6, 2], [38, 2], [10, 2], [34, 1], [15, 1], [28, 1], [37, 1], [8, 1], [32, 1], [13, 2], [11, 2], [35, 1], [19, 1], [25, 1], [30, 1], [16, 1], [29, 2], [12, 2], [14, 1], [31, 1], [29, 3], [12, 3], [26, 1], [21, 1], [27, 1], [17, 1], [15, 2], [28, 2], [21, 2], [26, 2], [23, 1], [23, 2]]
-            (uc[:springerSeries])[2:4] = [Dict{Symbol, Any}(:relgroup => WeylGroup("C", 3), :levi => [2, 3, 4, 5], :Z => [1], :locsys => [[22, 1], [11, 1], [13, 1], [24, 1], [7, 1], [4, 1], [3, 1], [10, 1], [2, 1], [1, 3]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 4]])]
+            (uc[:springerSeries])[2:4] = [Dict{Symbol, Any}(:relgroup => CoxeterGroup("C", 3), :levi => [2, 3, 4, 5], :Z => [1], :locsys => [[22, 1], [11, 1], [13, 1], [24, 1], [7, 1], [4, 1], [3, 1], [10, 1], [2, 1], [1, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 4]])]
         elseif p == 3
             (((uc[:springerSeries])[1])[:locsys])[1] = [1, 1]
             (((uc[:springerSeries])[2])[:locsys])[1] = [1, 4]
-            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => WeylGroup("A", 1), :Z => [1], :levi => 1:6, :locsys => [[4, 2], [1, 3]]), Dict{Symbol, Any}(:relgroup => WeylGroup("A", 1), :Z => [1], :levi => 1:6, :locsys => [[4, 3], [1, 5]])])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", 1), :Z => [1], :levi => 1:6, :locsys => [[4, 2], [1, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", 1), :Z => [1], :levi => 1:6, :locsys => [[4, 3], [1, 5]])])
             for c = [2, 6]
-                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup(), :Z => [-1], :levi => 1:7, :locsys => [[1, c]]))
+                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :Z => [-1], :levi => 1:7, :locsys => [[1, c]]))
             end
         end
         uc[:orderClasses] = map((c->begin
@@ -8681,9 +8681,9 @@ chevieset(:E8, :UnipotentClasses, function (p,)
                                 x[:name] == n
                             end))
                 end)
-        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "E_8", :succ => "", :dynkin => [2, 2, 2, 2, 2, 2, 2, 2], :Au => Z(gcd(60, p ^ 2)), :balacarter => 1:8), Dict{Symbol, Any}(:name => "E_8(a_1)", :succ => ["E8"], :dynkin => [2, 2, 2, 0, 2, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, -4, 5, 6, 7, 8]), Dict{Symbol, Any}(:name => "E_8(a_2)", :succ => ["E8(a1)"], :dynkin => [2, 2, 2, 0, 2, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, -6, 7, 8]), Dict{Symbol, Any}(:name => "E_8(a_3)", :mizuno => "E_7{+}A_1", :succ => ["E8(a2)"], :dynkin => [2, 0, 0, 2, 0, 2, 2, 2], :Au => Z(2) * Z(gcd(6, p)), :balacarter => [1, -2, -3, 4, -5, 6, 7, 8]), Dict{Symbol, Any}(:name => "E_7", :succ => ["E8(a3)"], :dynkin => [2, 1, 1, 0, 1, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_4)", :mizuno => "D_8", :succ => ["E8(a3)"], :dynkin => [2, 0, 0, 2, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, -7, 8]), Dict{Symbol, Any}(:name => "E_8(b_4)", :mizuno => "E_7(a_1){+}A_1", :succ => ["E7", "E8(a4)"], :dynkin => [2, 0, 0, 2, 0, 0, 2, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, -6, 7, 8]), Dict{Symbol, Any}(:name => "E_7(a_1)", :succ => ["E8(b4)"], :dynkin => [2, 1, 1, 0, 1, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_5)", :mizuno => "D_8(a_1)", :succ => ["E8(b4)"], :dynkin => [2, 0, 0, 2, 0, 0, 2, 0], :Au => WeylGroup("B", gcd(2, p)), :balacarter => [1, -2, -3, 4, -5, -6, 7, -8]), Dict{Symbol, Any}(:name => "E_8(b_5)", :mizuno => "E_7(a_2){+}A_1", :succ => ["E7(a1)", "E8(a5)"], :dynkin => [0, 0, 0, 2, 0, 0, 2, 2], :Au => WeylGroup("A", 2) * Z(gcd(2, p)), :balacarter => [-1, -2, -3, 4, -5, -6, 7, 8]), Dict{Symbol, Any}(:name => "D_7", :succ => ["E8(a5)"], :dynkin => [2, 1, 1, 0, 1, 1, 0, 1], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_2)", :succ => ["E8(b5)"], :dynkin => [0, 1, 1, 0, 1, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_6)", :mizuno => "A_8", :succ => ["E8(b5)", "D7"], :dynkin => [0, 0, 0, 2, 0, 0, 2, 0], :Au => WeylGroup("A", 2), :balacarter => [-1, -2, -3, 4, -5, -6, 7, -8]), Dict{Symbol, Any}(:name => "E_6{+}A_1", :succ => ["E7(a2)"], :dynkin => [1, 0, 0, 1, 0, 1, 2, 2], :Au => Z(gcd(6, p)), :balacarter => [1, 2, 3, 4, 5, 6, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_7(a_1)", :succ => ["E7(a2)", "E8(a6)"], :dynkin => [2, 0, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, 6, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_6", :succ => ["E6+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 2, 2], :Au => Z(gcd(6, p)), :balacarter => [1, 2, 3, 4, 5, 6], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "E_7(a_3)", :mizuno => "D_6{+}A_1", :succ => ["D7(a1)"], :dynkin => [2, 0, 0, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(b_6)", :mizuno => "D_8(a_3)", :succ => ["D7(a1)", "E6+A1"], :dynkin => [0, 0, 0, 2, 0, 0, 0, 2], :Au => WeylGroup("A", 2 - (gcd(3, p) - 1) // 2), :balacarter => [-1, -2, -3, 4, -5, -6, -7, 8]), Dict{Symbol, Any}(:name => "D_6", :succ => ["E7(a3)"], :dynkin => [2, 1, 1, 0, 0, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 6, 7], :red => WeylGroup("B", 2)), Dict{Symbol, Any}(:name => "E_6(a_1){+}A_1", :succ => ["E7(a3)", "E8(b6)"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "A_7", :succ => ["E8(b6)"], :dynkin => [1, 0, 0, 1, 0, 1, 1, 0], :balacarter => [1, 3, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_7(a_2)", :succ => ["E6(a1)+A1", "A7"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 1], :Au => Z(2), :balacarter => [2, 3, -4, 5, -6, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6", "E6(a1)+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6], :red => WeylGroup("A", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 2), #= none:66 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "D_5{+}A_2", :succ => ["D6", "D7(a2)"], :dynkin => [0, 0, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 4, 5, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_7(a_4)", :mizuno => "D_6(a_1){+}A_1", :succ => ["E6(a1)", "D5+A2"], :dynkin => [0, 0, 0, 1, 0, 1, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_6{+}A_1", :succ => ["D5+A2"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 0], :balacarter => [1, 2, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_1)", :succ => ["E7(a4)"], :dynkin => [0, 1, 1, 0, 0, 0, 1, 2], :Au => Z(2) * Z(gcd(2, p)), :balacarter => [2, 3, -4, 5, 6, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), #= none:77 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_6", :succ => ["E7(a4)", "A6+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 3, 4, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "E_8(a_7)", :mizuno => "2A_4", :succ => ["D6(a1)", "A6"], :dynkin => [0, 0, 0, 0, 2, 0, 0, 0], :Au => WeylGroup("A", 4), :balacarter => [-1, -2, -3, -4, 5, -6, -7, -8]), Dict{Symbol, Any}(:name => "D_5{+}A_1", :succ => ["D6(a1)"], :dynkin => [1, 0, 0, 0, 1, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "E_7(a_5)", :mizuno => "A_5{+}A_2", :succ => ["E8(a7)", "D5+A1"], :dynkin => [0, 0, 0, 1, 0, 1, 0, 0], :Au => WeylGroup("A", 2), :balacarter => [-1, -2, -3, 4, -5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5", :succ => ["D5+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5], :red => WeylGroup("B", 3)), Dict{Symbol, Any}(:name => "E_6(a_3){+}A_1", :mizuno => "A_5{+}2A_1", :succ => ["E7(a5)"], :dynkin => [1, 0, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_2)", :succ => ["E7(a5)"], :dynkin => [0, 1, 1, 0, 0, 0, 1, 0], :Au => Z(2), :balacarter => [2, 3, -4, 5, -6, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), #= none:95 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "(A_5{+}A_1)''", :succ => ["D5", "E6(a3)+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "A_5{+}A_1", :mizuno => "(A_5{+}A_1)'", :succ => ["E6(a3)+A1", "D6(a2)"], :dynkin => [1, 0, 0, 1, 0, 0, 0, 1], :balacarter => [1, 2, 4, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_2", :succ => ["E6(a3)+A1", "D6(a2)"], :dynkin => [0, 0, 1, 0, 0, 1, 0, 1], :balacarter => [1, 2, 3, -4, 5, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4{+}A_3", :succ => ["A5+A1", "D5(a1)+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 1, 0], :balacarter => [1, 2, 3, 4, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_4{+}A_2", :succ => ["D5(a1)+A2"], :dynkin => [0, 2, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, 4, 5, 7, 8], :red => WeylGroup("A", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 2), #= none:109 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)", "A5+A1"], :dynkin => [2, 0, 0, 0, 0, 1, 0, 1], :balacarter => [1, 3, 4, 5, 6], :red => WeylGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_4{+}A_2{+}A_1", :succ => ["A4+A3", "D4+A2"], :dynkin => [0, 0, 1, 0, 0, 1, 0, 0], :balacarter => [1, 2, 3, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_1", :succ => ["E6(a3)", "D4+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 2], :balacarter => [1, 2, 3, -4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["D5(a1)+A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5], :red => WeylGroup("A", 3), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 3), #= none:118 =# @perm_str("(1,3)"))), Dict{Symbol, Any}(:name => "A_4{+}A_2", :succ => ["A5", "A4+A2+A1", "D5(a1)+A1"], :dynkin => [0, 0, 0, 0, 0, 2, 0, 0], :balacarter => [1, 2, 3, 4, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_4{+}2A_1", :succ => ["A4+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6, 8], :red => Z(2) * Torus(1), :AuAction => ExtendedReflectionGroup(Z(2) * Torus(1), DiagonalMat(1, -1))), Dict{Symbol, Any}(:name => "D_4{+}A_1", :succ => ["D5(a1)"], :dynkin => [0, 1, 0, 0, 0, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 7], :red => WeylGroup("C", 3)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A4+2A1", "D5(a1)"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6], :red => ReflectionSubgroup(WeylGroup("A", 2, "A", 1), [1, 2]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(WeylGroup("A", 2, "A", 1), [1, 2]), #= none:130 =# @perm_str("(1,2)(3,7)(5,6)"))), Dict{Symbol, Any}(:name => "2A_3", :succ => ["A4+2A1"], :dynkin => [1, 0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 3, 4, 6, 7, 8], :red => WeylGroup("B", 2)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D4+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5], :red => WeylGroup("F", 4)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, 4], :red => WeylGroup("A", 4), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 4), #= none:137 =# @perm_str("(1,4)(2,3)"))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_2", :succ => ["A4+A1", "2A3"], :dynkin => [0, 2, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [2, 3, -4, 5, 7, 8], :red => WeylGroup("A", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 2), #= none:140 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_3{+}A_2{+}A_1", :succ => ["D4+A1", "D4(a1)+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 0], :balacarter => [1, 2, 3, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_3{+}A_2", :succ => ["A4", "A3+A2+A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 3, 4, 6, 7], :red => WeylGroup("B", 2) * Torus(1), :AuAction => ExtendedReflectionGroup(WeylGroup("B", 2) * Torus(1), DiagonalMat(1, 1, -1))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_1", :succ => ["A3+A2"], :dynkin => [0, 1, 0, 0, 0, 0, 1, 0], :Au => WeylGroup("A", 2), :balacarter => [2, 3, -4, 5, 7], :red => Z(2) * Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2) * Z(2), [#= none:149 =# @perm_str("(1,2)"), #= none:149 =# @perm_str("(2,3)")])), Dict{Symbol, Any}(:name => "A_3{+}2A_1", :succ => ["D4(a1)+A1"], :dynkin => [0, 0, 1, 0, 0, 0, 0, 1], :balacarter => [1, 2, 4, 5, 7], :red => WeylGroup("B", 2, "A", 1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "D4(a1)+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2, 0], :Au => WeylGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => WeylGroup("D", 4), :AuAction => ExtendedReflectionGroup(WeylGroup("D", 4), [#= none:154 =# @perm_str("(1,2)"), #= none:154 =# @perm_str("(2,4)")])), Dict{Symbol, Any}(:name => "2A_2{+}2A_1", :succ => ["A3+2A1"], :dynkin => [0, 0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 3, 5, 6, 8], :red => WeylGroup("B", 2)), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["A3+2A1", "D4(a1)"], :dynkin => [0, 0, 0, 0, 0, 1, 0, 1], :balacarter => [1, 2, 4, 5], :red => WeylGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["2A2+2A1", "A3+A1"], :dynkin => [1, 0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2, 3, 5, 6], :red => WeylGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["D4(a1)", "A3+A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 2], :balacarter => [1, 3, 4], :red => WeylGroup("B", 5)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3, 5, 6], :red => WeylGroup("G", 2, "G", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("G", 2, "G", 2), #= none:165 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "A_2{+}3A_1", :succ => ["2A2"], :dynkin => [0, 0, 1, 0, 0, 0, 0, 0], :balacarter => [1, 2, 3, 5, 7], :red => WeylGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "A2+3A1"], :dynkin => [0, 0, 0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 3, 5], :red => WeylGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["A2+2A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3], :red => WeylGroup("A", 5), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 5), #= none:172 =# @perm_str("(1,5)(2,4)"))), Dict{Symbol, Any}(:name => "4A_1", :succ => ["A2+A1"], :dynkin => [0, 1, 0, 0, 0, 0, 0, 0], :balacarter => [1, 2, 5, 7], :red => WeylGroup("C", 4)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 2], :Au => Z(2), :balacarter => [1, 3], :red => WeylGroup("E", 6), :AuAction => ExtendedReflectionGroup(WeylGroup("E", 6), #= none:177 =# @perm_str("(1,6)(3,5)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["4A1", "A2"], :dynkin => [0, 0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2, 5], :red => WeylGroup("F", 4, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 0], :balacarter => [1, 2], :red => WeylGroup("B", 6)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 1], :balacarter => [1], :red => WeylGroup("E", 7)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 0], :balacarter => [], :red => WeylGroup("E", 8))], :springerSeries => [Dict{Symbol, Any}(:relgroup => WeylGroup("E", 8), :levi => "", :Z => [], :locsys => [[1, 1], [70, 1], [4, 1], [66, 1], [3, 1], [68, 1], [29, 2], [7, 1], [65, 1], [5, 1], [67, 1], [39, 1], [18, 2], [57, 1], [6, 2], [64, 2], [38, 1], [9, 1], [61, 1], [13, 1], [54, 1], [16, 1], [49, 1], [8, 1], [60, 1], [33, 1], [25, 1], [46, 1], [9, 2], [61, 2], [29, 3], [24, 1], [48, 1], [29, 4], [19, 1], [53, 1], [15, 1], [55, 1], [32, 1], [12, 1], [58, 1], [34, 1], [13, 3], [54, 3], [13, 2], [54, 2], [33, 2], [23, 1], [43, 1], [34, 2], [18, 3], [51, 2], [29, 7], [17, 2], [50, 2], [29, 5], [26, 1], [41, 1], [29, 6], [30, 1], [40, 1], [20, 1], [47, 2], [22, 2], [45, 2], [25, 2], [42, 1], [2, 1], [69, 1], [10, 1], [56, 1], [4, 2], [66, 2], [6, 1], [64, 1], [31, 1], [11, 1], [62, 1], [14, 1], [59, 1], [7, 2], [63, 1], [37, 1], [18, 1], [51, 1], [10, 2], [56, 2], [36, 1], [17, 1], [50, 1], [21, 1], [52, 1], [10, 3], [56, 3], [27, 1], [35, 1], [23, 2], [43, 2], [31, 2], [15, 2], [53, 2], [22, 1], [45, 1], [31, 3], [20, 2], [47, 1], [28, 1], [39, 2], [24, 2], [44, 1], [27, 2], [35, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[29, 1]], :parameter => [165])], :operations => UnipotentClassesOps)
+        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "E_8", :succ => "", :dynkin => [2, 2, 2, 2, 2, 2, 2, 2], :Au => Z(gcd(60, p ^ 2)), :balacarter => 1:8), Dict{Symbol, Any}(:name => "E_8(a_1)", :succ => ["E8"], :dynkin => [2, 2, 2, 0, 2, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, -4, 5, 6, 7, 8]), Dict{Symbol, Any}(:name => "E_8(a_2)", :succ => ["E8(a1)"], :dynkin => [2, 2, 2, 0, 2, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, -6, 7, 8]), Dict{Symbol, Any}(:name => "E_8(a_3)", :mizuno => "E_7{+}A_1", :succ => ["E8(a2)"], :dynkin => [2, 0, 0, 2, 0, 2, 2, 2], :Au => Z(2) * Z(gcd(6, p)), :balacarter => [1, -2, -3, 4, -5, 6, 7, 8]), Dict{Symbol, Any}(:name => "E_7", :succ => ["E8(a3)"], :dynkin => [2, 1, 1, 0, 1, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, 4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_4)", :mizuno => "D_8", :succ => ["E8(a3)"], :dynkin => [2, 0, 0, 2, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, -7, 8]), Dict{Symbol, Any}(:name => "E_8(b_4)", :mizuno => "E_7(a_1){+}A_1", :succ => ["E7", "E8(a4)"], :dynkin => [2, 0, 0, 2, 0, 0, 2, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, -6, 7, 8]), Dict{Symbol, Any}(:name => "E_7(a_1)", :succ => ["E8(b4)"], :dynkin => [2, 1, 1, 0, 1, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_5)", :mizuno => "D_8(a_1)", :succ => ["E8(b4)"], :dynkin => [2, 0, 0, 2, 0, 0, 2, 0], :Au => CoxeterGroup("B", gcd(2, p)), :balacarter => [1, -2, -3, 4, -5, -6, 7, -8]), Dict{Symbol, Any}(:name => "E_8(b_5)", :mizuno => "E_7(a_2){+}A_1", :succ => ["E7(a1)", "E8(a5)"], :dynkin => [0, 0, 0, 2, 0, 0, 2, 2], :Au => CoxeterGroup("A", 2) * Z(gcd(2, p)), :balacarter => [-1, -2, -3, 4, -5, -6, 7, 8]), Dict{Symbol, Any}(:name => "D_7", :succ => ["E8(a5)"], :dynkin => [2, 1, 1, 0, 1, 1, 0, 1], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "E_7(a_2)", :succ => ["E8(b5)"], :dynkin => [0, 1, 1, 0, 1, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, -4, 5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(a_6)", :mizuno => "A_8", :succ => ["E8(b5)", "D7"], :dynkin => [0, 0, 0, 2, 0, 0, 2, 0], :Au => CoxeterGroup("A", 2), :balacarter => [-1, -2, -3, 4, -5, -6, 7, -8]), Dict{Symbol, Any}(:name => "E_6{+}A_1", :succ => ["E7(a2)"], :dynkin => [1, 0, 0, 1, 0, 1, 2, 2], :Au => Z(gcd(6, p)), :balacarter => [1, 2, 3, 4, 5, 6, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_7(a_1)", :succ => ["E7(a2)", "E8(a6)"], :dynkin => [2, 0, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, -4, 5, 6, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_6", :succ => ["E6+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 2, 2], :Au => Z(gcd(6, p)), :balacarter => [1, 2, 3, 4, 5, 6], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "E_7(a_3)", :mizuno => "D_6{+}A_1", :succ => ["D7(a1)"], :dynkin => [2, 0, 0, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "E_8(b_6)", :mizuno => "D_8(a_3)", :succ => ["D7(a1)", "E6+A1"], :dynkin => [0, 0, 0, 2, 0, 0, 0, 2], :Au => CoxeterGroup("A", 2 - (gcd(3, p) - 1) // 2), :balacarter => [-1, -2, -3, 4, -5, -6, -7, 8]), Dict{Symbol, Any}(:name => "D_6", :succ => ["E7(a3)"], :dynkin => [2, 1, 1, 0, 0, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 6, 7], :red => CoxeterGroup("B", 2)), Dict{Symbol, Any}(:name => "E_6(a_1){+}A_1", :succ => ["E7(a3)", "E8(b6)"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "A_7", :succ => ["E8(b6)"], :dynkin => [1, 0, 0, 1, 0, 1, 1, 0], :balacarter => [1, 3, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_7(a_2)", :succ => ["E6(a1)+A1", "A7"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 1], :Au => Z(2), :balacarter => [2, 3, -4, 5, -6, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6", "E6(a1)+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5, 6], :red => CoxeterGroup("A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2), #= none:66 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "D_5{+}A_2", :succ => ["D6", "D7(a2)"], :dynkin => [0, 0, 0, 0, 2, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 2, 3, 4, 5, 7, 8], :red => Torus(1), :AuAction => ExtendedReflectionGroup(Torus(1), [[-1]])), Dict{Symbol, Any}(:name => "E_7(a_4)", :mizuno => "D_6(a_1){+}A_1", :succ => ["E6(a1)", "D5+A2"], :dynkin => [0, 0, 0, 1, 0, 1, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [1, -2, -3, 4, -5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "A_6{+}A_1", :succ => ["D5+A2"], :dynkin => [1, 0, 0, 1, 0, 1, 0, 0], :balacarter => [1, 2, 4, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_1)", :succ => ["E7(a4)"], :dynkin => [0, 1, 1, 0, 0, 0, 1, 2], :Au => Z(2) * Z(gcd(2, p)), :balacarter => [2, 3, -4, 5, 6, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), #= none:77 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_6", :succ => ["E7(a4)", "A6+A1"], :dynkin => [2, 0, 0, 0, 0, 2, 0, 0], :Au => Z(gcd(2, p)), :balacarter => [1, 3, 4, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "E_8(a_7)", :mizuno => "2A_4", :succ => ["D6(a1)", "A6"], :dynkin => [0, 0, 0, 0, 2, 0, 0, 0], :Au => CoxeterGroup("A", 4), :balacarter => [-1, -2, -3, -4, 5, -6, -7, -8]), Dict{Symbol, Any}(:name => "D_5{+}A_1", :succ => ["D6(a1)"], :dynkin => [1, 0, 0, 0, 1, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "E_7(a_5)", :mizuno => "A_5{+}A_2", :succ => ["E8(a7)", "D5+A1"], :dynkin => [0, 0, 0, 1, 0, 1, 0, 0], :Au => CoxeterGroup("A", 2), :balacarter => [-1, -2, -3, 4, -5, -6, 7], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5", :succ => ["D5+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [1, 2, 3, 4, 5], :red => CoxeterGroup("B", 3)), Dict{Symbol, Any}(:name => "E_6(a_3){+}A_1", :mizuno => "A_5{+}2A_1", :succ => ["E7(a5)"], :dynkin => [1, 0, 0, 0, 1, 0, 1, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_6(a_2)", :succ => ["E7(a5)"], :dynkin => [0, 1, 1, 0, 0, 0, 1, 0], :Au => Z(2), :balacarter => [2, 3, -4, 5, -6, 7], :red => Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2), #= none:95 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "(A_5{+}A_1)''", :succ => ["D5", "E6(a3)+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 2, 0], :Au => Z(2), :balacarter => [1, -2, -3, 4, -5, 6], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_5{+}A_1", :mizuno => "(A_5{+}A_1)'", :succ => ["E6(a3)+A1", "D6(a2)"], :dynkin => [1, 0, 0, 1, 0, 0, 0, 1], :balacarter => [1, 2, 4, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_2", :succ => ["E6(a3)+A1", "D6(a2)"], :dynkin => [0, 0, 1, 0, 0, 1, 0, 1], :balacarter => [1, 2, 3, -4, 5, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "A_4{+}A_3", :succ => ["A5+A1", "D5(a1)+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 1, 0], :balacarter => [1, 2, 3, 4, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_4{+}A_2", :succ => ["D5(a1)+A2"], :dynkin => [0, 2, 0, 0, 0, 0, 0, 2], :Au => Z(gcd(2, p - 1)), :balacarter => [2, 3, 4, 5, 7, 8], :red => CoxeterGroup("A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2), #= none:109 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)", "A5+A1"], :dynkin => [2, 0, 0, 0, 0, 1, 0, 1], :balacarter => [1, 3, 4, 5, 6], :red => CoxeterGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_4{+}A_2{+}A_1", :succ => ["A4+A3", "D4+A2"], :dynkin => [0, 0, 1, 0, 0, 1, 0, 0], :balacarter => [1, 2, 3, 5, 6, 7, 8], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1){+}A_1", :succ => ["E6(a3)", "D4+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 2], :balacarter => [1, 2, 3, -4, 5, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["D5(a1)+A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, -4, 5], :red => CoxeterGroup("A", 3), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 3), #= none:118 =# @perm_str("(1,3)"))), Dict{Symbol, Any}(:name => "A_4{+}A_2", :succ => ["A5", "A4+A2+A1", "D5(a1)+A1"], :dynkin => [0, 0, 0, 0, 0, 2, 0, 0], :balacarter => [1, 2, 3, 4, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_4{+}2A_1", :succ => ["A4+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6, 8], :red => Z(2) * Torus(1), :AuAction => ExtendedReflectionGroup(Z(2) * Torus(1), DiagonalMat(1, -1))), Dict{Symbol, Any}(:name => "D_4{+}A_1", :succ => ["D5(a1)"], :dynkin => [0, 1, 0, 0, 0, 0, 1, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5, 7], :red => CoxeterGroup("C", 3)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A4+2A1", "D5(a1)"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3, 4, 6], :red => ReflectionSubgroup(CoxeterGroup("A", 2, "A", 1), [1, 2]), :AuAction => ExtendedReflectionGroup(ReflectionSubgroup(CoxeterGroup("A", 2, "A", 1), [1, 2]), #= none:130 =# @perm_str("(1,2)(3,7)(5,6)"))), Dict{Symbol, Any}(:name => "2A_3", :succ => ["A4+2A1"], :dynkin => [1, 0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 3, 4, 6, 7, 8], :red => CoxeterGroup("B", 2)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D4+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2, 2], :Au => Z(gcd(2, p)), :balacarter => [2, 3, 4, 5], :red => CoxeterGroup("F", 4)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0, 2], :Au => Z(2), :balacarter => [1, 2, 3, 4], :red => CoxeterGroup("A", 4), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 4), #= none:137 =# @perm_str("(1,4)(2,3)"))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_2", :succ => ["A4+A1", "2A3"], :dynkin => [0, 2, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [2, 3, -4, 5, 7, 8], :red => CoxeterGroup("A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2), #= none:140 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_3{+}A_2{+}A_1", :succ => ["D4+A1", "D4(a1)+A2"], :dynkin => [0, 0, 0, 1, 0, 0, 0, 0], :balacarter => [1, 2, 3, 5, 6, 7], :red => Z(2) * Z(2)), Dict{Symbol, Any}(:name => "A_3{+}A_2", :succ => ["A4", "A3+A2+A1"], :dynkin => [1, 0, 0, 0, 0, 1, 0, 0], :Au => Z(gcd(2, p - 1)), :balacarter => [1, 3, 4, 6, 7], :red => CoxeterGroup("B", 2) * Torus(1), :AuAction => ExtendedReflectionGroup(CoxeterGroup("B", 2) * Torus(1), DiagonalMat(1, 1, -1))), Dict{Symbol, Any}(:name => "D_4(a_1){+}A_1", :succ => ["A3+A2"], :dynkin => [0, 1, 0, 0, 0, 0, 1, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5, 7], :red => Z(2) * Z(2) * Z(2), :AuAction => ExtendedReflectionGroup(Z(2) * Z(2) * Z(2), [#= none:149 =# @perm_str("(1,2)"), #= none:149 =# @perm_str("(2,3)")])), Dict{Symbol, Any}(:name => "A_3{+}2A_1", :succ => ["D4(a1)+A1"], :dynkin => [0, 0, 1, 0, 0, 0, 0, 1], :balacarter => [1, 2, 4, 5, 7], :red => CoxeterGroup("B", 2, "A", 1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "D4(a1)+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 2, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => CoxeterGroup("D", 4), :AuAction => ExtendedReflectionGroup(CoxeterGroup("D", 4), [#= none:154 =# @perm_str("(1,2)"), #= none:154 =# @perm_str("(2,4)")])), Dict{Symbol, Any}(:name => "2A_2{+}2A_1", :succ => ["A3+2A1"], :dynkin => [0, 0, 0, 0, 1, 0, 0, 0], :balacarter => [1, 2, 3, 5, 6, 8], :red => CoxeterGroup("B", 2)), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["A3+2A1", "D4(a1)"], :dynkin => [0, 0, 0, 0, 0, 1, 0, 1], :balacarter => [1, 2, 4, 5], :red => CoxeterGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["2A2+2A1", "A3+A1"], :dynkin => [1, 0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2, 3, 5, 6], :red => CoxeterGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["D4(a1)", "A3+A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 2], :balacarter => [1, 3, 4], :red => CoxeterGroup("B", 5)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3, 5, 6], :red => CoxeterGroup("G", 2, "G", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("G", 2, "G", 2), #= none:165 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "A_2{+}3A_1", :succ => ["2A2"], :dynkin => [0, 0, 1, 0, 0, 0, 0, 0], :balacarter => [1, 2, 3, 5, 7], :red => CoxeterGroup("G", 2, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "A2+3A1"], :dynkin => [0, 0, 0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 3, 5], :red => CoxeterGroup("B", 3, "A", 1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["A2+2A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 1], :Au => Z(2), :balacarter => [1, 2, 3], :red => CoxeterGroup("A", 5), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 5), #= none:172 =# @perm_str("(1,5)(2,4)"))), Dict{Symbol, Any}(:name => "4A_1", :succ => ["A2+A1"], :dynkin => [0, 1, 0, 0, 0, 0, 0, 0], :balacarter => [1, 2, 5, 7], :red => CoxeterGroup("C", 4)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 2], :Au => Z(2), :balacarter => [1, 3], :red => CoxeterGroup("E", 6), :AuAction => ExtendedReflectionGroup(CoxeterGroup("E", 6), #= none:177 =# @perm_str("(1,6)(3,5)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["4A1", "A2"], :dynkin => [0, 0, 0, 0, 0, 0, 1, 0], :balacarter => [1, 2, 5], :red => CoxeterGroup("F", 4, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 0, 0, 0], :balacarter => [1, 2], :red => CoxeterGroup("B", 6)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 1], :balacarter => [1], :red => CoxeterGroup("E", 7)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("E", 8))], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("E", 8), :levi => "", :Z => [], :locsys => [[1, 1], [70, 1], [4, 1], [66, 1], [3, 1], [68, 1], [29, 2], [7, 1], [65, 1], [5, 1], [67, 1], [39, 1], [18, 2], [57, 1], [6, 2], [64, 2], [38, 1], [9, 1], [61, 1], [13, 1], [54, 1], [16, 1], [49, 1], [8, 1], [60, 1], [33, 1], [25, 1], [46, 1], [9, 2], [61, 2], [29, 3], [24, 1], [48, 1], [29, 4], [19, 1], [53, 1], [15, 1], [55, 1], [32, 1], [12, 1], [58, 1], [34, 1], [13, 3], [54, 3], [13, 2], [54, 2], [33, 2], [23, 1], [43, 1], [34, 2], [18, 3], [51, 2], [29, 7], [17, 2], [50, 2], [29, 5], [26, 1], [41, 1], [29, 6], [30, 1], [40, 1], [20, 1], [47, 2], [22, 2], [45, 2], [25, 2], [42, 1], [2, 1], [69, 1], [10, 1], [56, 1], [4, 2], [66, 2], [6, 1], [64, 1], [31, 1], [11, 1], [62, 1], [14, 1], [59, 1], [7, 2], [63, 1], [37, 1], [18, 1], [51, 1], [10, 2], [56, 2], [36, 1], [17, 1], [50, 1], [21, 1], [52, 1], [10, 3], [56, 3], [27, 1], [35, 1], [23, 2], [43, 2], [31, 2], [15, 2], [53, 2], [22, 1], [45, 1], [31, 3], [20, 2], [47, 1], [28, 1], [39, 2], [24, 2], [44, 1], [27, 2], [35, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[29, 1]], :parameter => [165])], :operations => UnipotentClassesOps)
         if p == 2
-            uc[:classes] = Append(uc[:classes], [Dict{Symbol, Any}(:name => "(D_7(a_1))_2", :succ => ["D7(a1)"], :red => Z(2), :dimBu => 10, :Au => Z(2)), Dict{Symbol, Any}(:name => "(D_5{+}A_2)_2", :succ => ["D5+A2"], :red => Z(2), :dimBu => 14, :Au => Z(2)), Dict{Symbol, Any}(:name => "(D_4{+}A_2)_2", :succ => ["D4+A2"], :red => WeylGroup("G", 2), :dimBu => 24, :Au => Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_2)_2", :succ => ["A3+A2"], :red => WeylGroup("A", 1, "B", 2), :dimBu => 32)])
+            uc[:classes] = Append(uc[:classes], [Dict{Symbol, Any}(:name => "(D_7(a_1))_2", :succ => ["D7(a1)"], :red => Z(2), :dimBu => 10, :Au => Z(2)), Dict{Symbol, Any}(:name => "(D_5{+}A_2)_2", :succ => ["D5+A2"], :red => Z(2), :dimBu => 14, :Au => Z(2)), Dict{Symbol, Any}(:name => "(D_4{+}A_2)_2", :succ => ["D4+A2"], :red => CoxeterGroup("G", 2), :dimBu => 24, :Au => Z(2)), Dict{Symbol, Any}(:name => "(A_3{+}A_2)_2", :succ => ["A3+A2"], :red => CoxeterGroup("A", 1, "B", 2), :dimBu => 32)])
             for c = ["D_6", "A_7"]
                 push!((class(c))[:succ], "(D7(a1))2")
             end
@@ -8717,13 +8717,13 @@ chevieset(:E8, :UnipotentClasses, function (p,)
             delete!(c, :dynkin)
             delete!(c, :AuAction)
             c = class("A_3{+}A_2")
-            c[:red] = WeylGroup("B", 2)
+            c[:red] = CoxeterGroup("B", 2)
             c[:dimBu] = 31
             delete!(c, :dynkin)
             delete!(c, :AuAction)
             ((uc[:springerSeries])[1])[:locsys] = [[1, 1], [70, 1], [4, 1], [66, 1], [3, 2], [68, 1], [29, 2], [9, 1], [65, 1], [5, 1], [67, 1], [73, 2], [18, 2], [57, 1], [6, 2], [64, 2], [38, 1], [9, 2], [61, 1], [13, 1], [54, 1], [16, 2], [49, 2], [8, 2], [60, 1], [33, 1], [28, 1], [46, 2], [9, 4], [61, 2], [29, 3], [72, 2], [48, 1], [29, 4], [19, 2], [74, 1], [71, 2], [55, 1], [32, 2], [12, 2], [58, 1], [34, 1], [13, 3], [54, 3], [13, 2], [54, 2], [33, 2], [23, 1], [43, 1], [34, 2], [18, 3], [51, 2], [29, 7], [17, 2], [50, 2], [29, 5], [26, 1], [41, 1], [29, 6], [30, 2], [40, 1], [20, 1], [47, 2], [22, 2], [45, 2], [25, 1], [42, 1], [2, 1], [69, 1], [10, 2], [56, 1], [4, 4], [66, 2], [6, 1], [64, 1], [31, 1], [11, 2], [62, 1], [14, 2], [59, 1], [7, 2], [63, 1], [37, 1], [18, 1], [51, 1], [10, 4], [56, 2], [36, 1], [17, 1], [50, 1], [21, 1], [52, 1], [10, 6], [56, 3], [27, 1], [35, 1], [23, 2], [43, 2], [31, 2], [15, 1], [53, 1], [22, 1], [45, 1], [31, 3], [20, 2], [47, 1], [28, 2], [39, 1], [24, 1], [44, 1], [27, 4], [35, 2]]
             l = [["E8", 3, "1_1"], ["E8(a1)", 3, "2_1"], ["E8(a2)", 1, "4_2"], ["E7+A1", 2, "8_1"], ["E7+A1", 3, "1_2"], ["E7", 3, "9_1"], ["E7(a1)+A1", 1, "4_3"], ["E7(a1)", 1, "9_2"], ["D8(a1)", 3, "8_3"], ["D7", 1, "2_3"], ["E7(a2)+A1", 5, "12"], ["E7(a2)+A1", 3, "6_2"], ["E7(a2)", 1, "16"], ["E6+A1", 1, "6_1"], ["(D7(a1))2", 1, "4_1"], ["E6", 1, "8_4"], ["D6", 1, "9_3"], ["(D5+A2)2", 1, "4_4"], ["D6(a1)", 2, "9_4"], ["D6(a1)", 3, "2_4"], ["D5+A1", 1, "8_2"], ["D5", 1, "4_5"], ["(D4+A2)2", 1, "1_3"], ["D4+A1", 1, "2_2"], ["D4", 1, "1_4"]]
-            push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup("F", 4), :levi => 2:5, :Z => [], :locsys => map(function (i,)
+            push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup("F", 4), :levi => 2:5, :Z => [], :locsys => map(function (i,)
                                 local s
                                 s = PositionProperty(l, (x->begin
                                                 x[3] == (((chevieget(:F4, :CharInfo))())[:kondo])[i]
@@ -8732,7 +8732,7 @@ chevieset(:E8, :UnipotentClasses, function (p,)
                                                     (UnipotentClassOps[:Name])(i, Dict{Symbol, Any}(:mizuno => true)) == (l[s])[1]
                                                 end)), (l[s])[2]]
                             end, 1:length(l))))
-            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => WeylGroup("A", 1), :levi => 1:7, :Z => [], :locsys => [[5, 2], [1, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup("A", 1), :levi => 1:7, :Z => [], :locsys => [[5, 4], [1, 4]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[2, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[2, 4]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[9, 5]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[10, 1]])])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", 1), :levi => 1:7, :Z => [], :locsys => [[5, 2], [1, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", 1), :levi => 1:7, :Z => [], :locsys => [[5, 4], [1, 4]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[2, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[2, 4]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[9, 5]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[10, 1]])])
         elseif p == 3
             push!(uc[:classes], Dict{Symbol, Any}(:name => "(A_7)_3", :succ => ["A7"], :red => Z(2), :dimBu => 12))
             push!(((uc[:classes])[26])[:succ], "(A7)3")
@@ -8740,11 +8740,11 @@ chevieset(:E8, :UnipotentClasses, function (p,)
             c[:red] = Z(1)
             c[:dimBu] = 11
             delete!(c, :dynkin)
-            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => WeylGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 2], [16, 2], [14, 2], [2, 2], [4, 5], [5, 2]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]"), Dict{Symbol, Any}(:relgroup => WeylGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 3], [16, 3], [14, 3], [2, 3], [4, 6], [5, 3]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]"), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 3]])])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 2], [16, 2], [14, 2], [2, 2], [4, 5], [5, 2]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]"), Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 3], [16, 3], [14, 3], [2, 3], [4, 6], [5, 3]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]"), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 3]])])
             ((((uc[:springerSeries])[1])[:locsys])[72])[2] = 4
             (((uc[:springerSeries])[1])[:locsys])[[13, 51]] = [[71, 1], [18, 2]]
         elseif p == 5
-            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 3]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 4]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 5]])])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 4]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[1, 5]])])
         end
         uc[:orderClasses] = map((c->begin
                         map((n->begin
@@ -8993,9 +8993,9 @@ chevieset(:F4, :UnipotentClasses, function (c, p)
                                 x[:name] == n
                             end))
                 end)
-        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("      \tF_4\n", "        |\n", "      F_4(a_1)\n", "        |\n", "      F_4(a_2)\n", "      /      \\\n", "   B_3       C_3\n", "      \\     /\n", "      F_4(a_3)\n", "\t |\n", "      C_3(a_1)\n", "     /       |\n", "~A_2+A_1     B_2\n", "    |   \\    |\n", "    |     A_2+~A_1\n", "    |        |\n", "  ~A_2      A_2\n", "     \\       |\n", "      A_1+~A_1\n", "\t |\n", "       ~A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1"), :classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0], :balacarter => [], :red => WeylGroup("F", 4)), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0, 0, 0], :balacarter => [1], :red => WeylGroup("C", 3)), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["A1+~A1"], :dynkin => [0, 0, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [3], :red => WeylGroup("A", 3), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 3), #= none:44 =# @perm_str("(1,3)"))), Dict{Symbol, Any}(:name => "A_1{+}\\tilde A_1", :succ => ["A2", "~A2"], :dynkin => [0, 1, 0, 0], :balacarter => [1, 3], :red => WeylGroup("A", 1, "A", 1)), Dict{Symbol, Any}(:name => "\\tilde A_2", :succ => ["~A2+A1"], :dynkin => [0, 0, 0, 2], :Au => Z(gcd(2, p)), :balacarter => [3, 4], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+~A1"], :dynkin => [2, 0, 0, 0], :Au => Z(2), :balacarter => [1, 2], :red => WeylGroup("A", 2), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 2), #= none:51 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_2{+}\\tilde A_1", :succ => ["~A2+A1", "B2"], :dynkin => [0, 0, 1, 0], :balacarter => [1, 2, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "\\tilde A_2{+}A_1", :succ => ["C3(a1)"], :dynkin => [0, 1, 0, 1], :balacarter => [1, 3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "B_2", :succ => ["C3(a1)"], :dynkin => [2, 0, 0, 1], :Au => Z(gcd(p - 1, 2)), :balacarter => [2, 3], :red => WeylGroup("A", 1, "A", 1), :AuAction => ExtendedReflectionGroup(WeylGroup("A", 1, "A", 1), #= none:58 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "C_3(a_1)", :shoji => "A_1{+}B_2", :succ => ["F4(a3)"], :dynkin => [1, 0, 1, 0], :Au => Z(gcd(p - 1, 2)), :balacarter => [2, -3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "F_4(a_3)", :shoji => "A_3{+}\\tilde A_1", :succ => ["C3", "B3"], :dynkin => [0, 2, 0, 0], :Au => WeylGroup("A", 4 - gcd(p, 2)), :balacarter => [-1, 2, -3, -4]), Dict{Symbol, Any}(:name => "C_3", :succ => ["F4(a2)"], :dynkin => [1, 0, 1, 2], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "B_3", :succ => ["F4(a2)"], :dynkin => [2, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [1, 2, 3], :red => Z(2)), Dict{Symbol, Any}(:name => "F_4(a_2)", :shoji => "C_3{+}A_1", :succ => ["F4(a1)"], :dynkin => [0, 2, 0, 2], :Au => WeylGroup("B", gcd(p, 2)), :balacarter => [-1, 2, -3, 4]), Dict{Symbol, Any}(:name => "F_4(a_1)", :shoji => "B_4", :succ => ["F4"], :dynkin => [2, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, -3, 4]), Dict{Symbol, Any}(:name => "F_4", :succ => [], :dynkin => [2, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, 4])], :springerSeries => [Dict{Symbol, Any}(:relgroup => WeylGroup("F", 4), :levi => [], :Z => [], :locsys => [[16, 1], [6, 1], [11, 2], [1, 1], [14, 1], [3, 1], [15, 1], [2, 1], [9, 1], [14, 2], [9, 2], [11, 4], [4, 1], [8, 1], [11, 3], [11, 5], [15, 2], [7, 1], [10, 1], [3, 2], [13, 1], [5, 1], [12, 1], [6, 2], [10, 2]]), Dict{Symbol, Any}(:relgroup => Z(1), :levi => [1, 2, 3, 4], :Z => [], :locsys => [[11, 1]], :parameter => [37])])
+        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("      \tF_4\n", "        |\n", "      F_4(a_1)\n", "        |\n", "      F_4(a_2)\n", "      /      \\\n", "   B_3       C_3\n", "      \\     /\n", "      F_4(a_3)\n", "\t |\n", "      C_3(a_1)\n", "     /       |\n", "~A_2+A_1     B_2\n", "    |   \\    |\n", "    |     A_2+~A_1\n", "    |        |\n", "  ~A_2      A_2\n", "     \\       |\n", "      A_1+~A_1\n", "\t |\n", "       ~A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1"), :classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("F", 4)), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0, 0, 0], :balacarter => [1], :red => CoxeterGroup("C", 3)), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["A1+~A1"], :dynkin => [0, 0, 0, 1], :Au => Z(gcd(2, p - 1)), :balacarter => [3], :red => CoxeterGroup("A", 3), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 3), #= none:44 =# @perm_str("(1,3)"))), Dict{Symbol, Any}(:name => "A_1{+}\\tilde A_1", :succ => ["A2", "~A2"], :dynkin => [0, 1, 0, 0], :balacarter => [1, 3], :red => CoxeterGroup("A", 1, "A", 1)), Dict{Symbol, Any}(:name => "\\tilde A_2", :succ => ["~A2+A1"], :dynkin => [0, 0, 0, 2], :Au => Z(gcd(2, p)), :balacarter => [3, 4], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+~A1"], :dynkin => [2, 0, 0, 0], :Au => Z(2), :balacarter => [1, 2], :red => CoxeterGroup("A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2), #= none:51 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "A_2{+}\\tilde A_1", :succ => ["~A2+A1", "B2"], :dynkin => [0, 0, 1, 0], :balacarter => [1, 2, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "\\tilde A_2{+}A_1", :succ => ["C3(a1)"], :dynkin => [0, 1, 0, 1], :balacarter => [1, 3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "B_2", :succ => ["C3(a1)"], :dynkin => [2, 0, 0, 1], :Au => Z(gcd(p - 1, 2)), :balacarter => [2, 3], :red => CoxeterGroup("A", 1, "A", 1), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 1, "A", 1), #= none:58 =# @perm_str("(1,2)"))), Dict{Symbol, Any}(:name => "C_3(a_1)", :shoji => "A_1{+}B_2", :succ => ["F4(a3)"], :dynkin => [1, 0, 1, 0], :Au => Z(gcd(p - 1, 2)), :balacarter => [2, -3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "F_4(a_3)", :shoji => "A_3{+}\\tilde A_1", :succ => ["C3", "B3"], :dynkin => [0, 2, 0, 0], :Au => CoxeterGroup("A", 4 - gcd(p, 2)), :balacarter => [-1, 2, -3, -4]), Dict{Symbol, Any}(:name => "C_3", :succ => ["F4(a2)"], :dynkin => [1, 0, 1, 2], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4], :red => Z(2)), Dict{Symbol, Any}(:name => "B_3", :succ => ["F4(a2)"], :dynkin => [2, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [1, 2, 3], :red => Z(2)), Dict{Symbol, Any}(:name => "F_4(a_2)", :shoji => "C_3{+}A_1", :succ => ["F4(a1)"], :dynkin => [0, 2, 0, 2], :Au => CoxeterGroup("B", gcd(p, 2)), :balacarter => [-1, 2, -3, 4]), Dict{Symbol, Any}(:name => "F_4(a_1)", :shoji => "B_4", :succ => ["F4"], :dynkin => [2, 2, 0, 2], :Au => Z(2), :balacarter => [1, 2, -3, 4]), Dict{Symbol, Any}(:name => "F_4", :succ => [], :dynkin => [2, 2, 2, 2], :Au => Z(gcd(12, p ^ 2)), :balacarter => [1, 2, 3, 4])], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("F", 4), :levi => [], :Z => [], :locsys => [[16, 1], [6, 1], [11, 2], [1, 1], [14, 1], [3, 1], [15, 1], [2, 1], [9, 1], [14, 2], [9, 2], [11, 4], [4, 1], [8, 1], [11, 3], [11, 5], [15, 2], [7, 1], [10, 1], [3, 2], [13, 1], [5, 1], [12, 1], [6, 2], [10, 2]]), Dict{Symbol, Any}(:relgroup => Z(1), :levi => [1, 2, 3, 4], :Z => [], :locsys => [[11, 1]], :parameter => [37])])
         if p == 2
-            uc[:classes] = Append(uc[:classes], [Dict{Symbol, Any}(:name => "(\\tilde A_1)_2", :succ => ["~A1"], :red => WeylGroup("B", 3), :dimBu => 16), Dict{Symbol, Any}(:name => "(B_2)_2", :succ => ["B2", "C3(a1)2"], :red => WeylGroup("B", 2), :dimBu => 8, :Au => Z(2)), Dict{Symbol, Any}(:name => "(\\tilde A_2{+}A_1)_2", :succ => ["~A2+A1", "C3(a1)2"], :red => Z(2), :dimBu => 7), Dict{Symbol, Any}(:name => "C_3(a_1)_2", :succ => ["C3(a1)"], :red => Z(2), :dimBu => 6)])
+            uc[:classes] = Append(uc[:classes], [Dict{Symbol, Any}(:name => "(\\tilde A_1)_2", :succ => ["~A1"], :red => CoxeterGroup("B", 3), :dimBu => 16), Dict{Symbol, Any}(:name => "(B_2)_2", :succ => ["B2", "C3(a1)2"], :red => CoxeterGroup("B", 2), :dimBu => 8, :Au => Z(2)), Dict{Symbol, Any}(:name => "(\\tilde A_2{+}A_1)_2", :succ => ["~A2+A1", "C3(a1)2"], :red => Z(2), :dimBu => 7), Dict{Symbol, Any}(:name => "C_3(a_1)_2", :succ => ["C3(a1)"], :red => Z(2), :dimBu => 6)])
             push!((class("1"))[:succ], "(~A1)2")
             push!((class("A_1{+}\\tilde A_1"))[:succ], "(B2)2")
             (class("\\tilde A_2"))[:succ] = ["(~A2+A1)2"]
@@ -9013,16 +9013,16 @@ chevieset(:F4, :UnipotentClasses, function (c, p)
             c[:dimBu] = 5
             delete!(c, :dynkin)
             c = class("\\tilde A_2")
-            c[:red] = WeylGroup("A", 2)
+            c[:red] = CoxeterGroup("A", 2)
             c[:dimBu] = 9
             delete!(c, :dynkin)
-            c[:AuAction] = ExtendedReflectionGroup(WeylGroup("A", 2), #= none:114 =# @perm_str("(1,2)"))
+            c[:AuAction] = ExtendedReflectionGroup(CoxeterGroup("A", 2), #= none:114 =# @perm_str("(1,2)"))
             c = class("\\tilde A_1")
-            c[:red] = WeylGroup("B", 2)
+            c[:red] = CoxeterGroup("B", 2)
             c[:dimBu] = 13
             delete!(c, :dynkin)
             delete!(c, :AuAction)
-            uc[:springerSeries] = [Dict{Symbol, Any}(:relgroup => WeylGroup("F", 4), :levi => [], :Z => [], :locsys => [[16, 1], [6, 1], [5, 1], [1, 1], [14, 1], [17, 1], [14, 5], [2, 1], [18, 2], [14, 4], [9, 1], [20, 1], [4, 1], [8, 1], [11, 2], [11, 3], [15, 2], [7, 1], [19, 1], [3, 1], [13, 2], [5, 2], [12, 2], [6, 2], [10, 1]]), Dict{Symbol, Any}(:relgroup => WeylGroup("B", 2), :levi => [2, 3], :Z => [], :locsys => [[12, 1], [14, 2], [18, 1], [16, 3], [13, 1]])]
+            uc[:springerSeries] = [Dict{Symbol, Any}(:relgroup => CoxeterGroup("F", 4), :levi => [], :Z => [], :locsys => [[16, 1], [6, 1], [5, 1], [1, 1], [14, 1], [17, 1], [14, 5], [2, 1], [18, 2], [14, 4], [9, 1], [20, 1], [4, 1], [8, 1], [11, 2], [11, 3], [15, 2], [7, 1], [19, 1], [3, 1], [13, 2], [5, 2], [12, 2], [6, 2], [10, 1]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", 2), :levi => [2, 3], :Z => [], :locsys => [[12, 1], [14, 2], [18, 1], [16, 3], [13, 1]])]
             uc[:springerSeries] = Append(uc[:springerSeries], map((c->begin
                                 Dict{Symbol, Any}(:relgroup => Z(1), :levi => [1, 2, 3, 4], :Z => [], :locsys => [c])
                             end), [[11, 1], [16, 2], [16, 4], [15, 1], [14, 3]]))
@@ -9249,18 +9249,18 @@ chevieset(:G2, :UnipotentClasses, function (c, p)
         Z = (n->begin
                     ComplexReflectionGroup(n, 1, 1)
                 end)
-        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0], :balacarter => [], :red => WeylGroup("G", 2)), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0], :balacarter => [1], :red => Z(2)), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["G2(a1)"], :dynkin => [0, 1], :balacarter => [2], :red => Z(2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2(a_1)", :succ => ["G2"], :dynkin => [2, 0], :balacarter => [1, -2], :Au => WeylGroup("A", 2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2", :succ => [], :dynkin => [2, 2], :Au => Z(gcd(p, 6)), :balacarter => [1, 2])], :springerSeries => [Dict{Symbol, Any}(:relgroup => WeylGroup("G", 2), :levi => "", :Z => [], :locsys => [[5, 1], [1, 1], [4, 2], [2, 1], [4, 3], [3, 1]]), Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => [1, 2], :Z => [], :locsys => [[4, 1]], :parameter => [8])])
+        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0], :balacarter => [], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0], :balacarter => [1], :red => Z(2)), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["G2(a1)"], :dynkin => [0, 1], :balacarter => [2], :red => Z(2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2(a_1)", :succ => ["G2"], :dynkin => [2, 0], :balacarter => [1, -2], :Au => CoxeterGroup("A", 2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2", :succ => [], :dynkin => [2, 2], :Au => Z(gcd(p, 6)), :balacarter => [1, 2])], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => "", :Z => [], :locsys => [[5, 1], [1, 1], [4, 2], [2, 1], [4, 3], [3, 1]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[4, 1]], :parameter => [8])])
         if p == 2
             (((uc[:springerSeries])[1])[:locsys])[1] = [5, 2]
-            push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, 1]]))
+            push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, 1]]))
         elseif p == 3
-            push!(uc[:classes], Dict{Symbol, Any}(:name => "(\\tilde A_1)_3", :succ => ["~A1"], :dimBu => 3, :red => Z(2), :Au => WeylGroup()))
+            push!(uc[:classes], Dict{Symbol, Any}(:name => "(\\tilde A_1)_3", :succ => ["~A1"], :dimBu => 3, :red => Z(2), :Au => CoxeterGroup()))
             push!(((uc[:classes])[1])[:succ], "(~A1)3")
             ((uc[:classes])[3])[:dimBu] = 2
             delete!(uc.classes[3], :dynkin)
             (((uc[:springerSeries])[1])[:locsys])[[3, 5]] = [[6, 1], [4, 2]]
             for c = [2, 3]
-                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => WeylGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, c]]))
+                push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, c]]))
             end
         end
         uc[:orderClasses] = map((c->begin
@@ -9494,7 +9494,7 @@ chevieset(["F4", "G2", "G25", "G26"], :DecompositionMatrix, (t->begin
                 local T, m
                 T = (chevieget(t, :CharTable))()
                 T[:name] = T[:identifier]
-                m = DecompositionMatrix(T % p)
+                m = DecompositionMatrix(mod(T, p))
                 return map((c->begin
                                 [c[1], (m[c[1]])[c[2]]]
                             end), BlocksMat(m))

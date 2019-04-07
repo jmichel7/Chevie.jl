@@ -226,7 +226,10 @@ function PermRoot.cartan(t::Symbol,r::Int=0,b::Int=0)
   elseif t==:G m[2,1]=-3
   elseif t==:H m=Cyc{Int}.(m) 
     m[1,2]=m[2,1]=E(5,2)+E(5,3)
-  elseif t==:I return [2 -1;-2-E(b)-E(b,-1) 2]
+  elseif t==:I 
+    if b%2==0 return [2 -1;-2-E(b)-E(b,-1) 2]
+    else return [2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
+    end
   end
   m
 end

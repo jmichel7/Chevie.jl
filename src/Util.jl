@@ -369,6 +369,7 @@ end
 
 partitions(n)=partitions_less(n,n)
 
+if false
 function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
   if r==1 return iszero(n) ? [[Int[]]] : map(x->[x],partitions(n)) end
   res=Vector{Vector{Int}}[]
@@ -381,6 +382,47 @@ function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
     push!(res,vcat([Int[]],p2))
   end 
   res
+end
+else # bas implementation but which has same order as GAP3
+function partition_tuples(n, r)
+   if n==0 return [fill(Int[],r)] end
+   empty=(tup=[Int[] for i in 1:r], pos=fill(1,n-1))
+   pm=[typeof(empty)[] for i in 1:n-1]
+   for m in 1:div(n,2)
+      for i in 1:r
+         t1=map(copy,empty)
+         t1.tup[i]=[m]
+         t1.pos[m]=i
+         push!(pm[m],t1)
+      end
+      for k in m+1:n-m
+         for t in pm[k-m]
+            for i in t.pos[m]:r
+               t1=map(copy,t)
+               t1.tup[i]=vcat([m],t1.tup[i])
+               t1.pos[m]= i
+               push!(pm[k], t1)
+            end
+         end
+      end
+   end
+   res= Vector{Vector{Int}}[]
+   for k in 1:n-1
+      for t in pm[n-k]
+         for i in t.pos[k]:r
+            s=copy(t.tup)
+            s[i]=vcat([k],s[i])
+            push!(res,s)
+         end
+      end
+   end
+   for i in 1:r
+      s=copy(empty.tup)
+      s[i]=[n]
+      push!(res,s)
+   end
+   res
+end
 end
 
 function combinations_sorted(mset::AbstractVector,k)

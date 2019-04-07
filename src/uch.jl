@@ -201,3 +201,23 @@ function labels(uc::UnipotentCharacters)
     lab
   end
 end
+
+# fix illegal relativeTypes B1 and C2 which appear in HC or almost HC
+# series of classical groups
+function FixRelativeType(t)
+  if t[:relativeType][:series]=="B" 
+   if t[:relativeType][:rank]==1
+     t[:relativeType][:series]="A"
+     t[:charNumbers]=collect(t[:charNumbers]) # map B1->A1
+     t[:charNumbers][[1,2]]=t[:charNumbers][[2,1]] # map B1->A1
+    elseif t[:relativeType][:rank]==2 && haskey(t[:relativeType],:cartanType) &&
+      t[:relativeType][:cartanType]==1
+      t[:relativeType][:cartanType]=2
+      t[:relativeType][:indices]=reverse(t[:relativeType][:indices])
+      t[:charNumbers][[1,5]]=t[:charNumbers][[5,1]] # map C2->B2
+      if IsBound(t[:parameterExponents])
+        t[:parameterExponents]=reverse(t[:parameterExponents])
+      end
+    end
+  end
+end

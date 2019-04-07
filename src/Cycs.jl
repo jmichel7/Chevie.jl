@@ -659,9 +659,9 @@ Base.:<(c::Cyc,d::Real)=Real(c)<d
 
 Base.abs(c::Cyc)=c*conj(c)
 
-struct Root1
- r::Rational{Int}
- Root1(r::Rational)=new(mod(r.num,r.den)//r.den)
+struct Root1 # E(c,n)
+  r::Rational{Int}
+  Root1(n::Int,c::Int)=new(mod(n,c)//c)
 end
 
 function Root1(c::Cyc)
@@ -675,15 +675,15 @@ else
   end
 end
   for i in 0:c.n-1
-    if c==E(c.n,i) return Root1(i//c.n) end
-    if -c==E(c.n,i) return Root1(1//2+i//c.n) end
+    if c==E(c.n,i) return Root1(i,c.n) end
+    if -c==E(c.n,i) return Root1(div(c.n,2)+i,c.n) end
   end
   return nothing
 end
 
 function Root1(c::Real)
-  if c==1 Root1(0//1)
-  elseif c==-1 Root1(1//2)
+  if c==1 Root1(0,1)
+  elseif c==-1 Root1(1,2)
   else nothing
   end
 end
@@ -698,6 +698,11 @@ function Base.cmp(a::Root1,b::Root1)
 end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
+
+function Base.:*(a::Root1,b::Root1)
+  r=a.r+b.r
+  Root1(numerator(r),denominator(r))
+end
 
 Cycs.E(a::Root1)=E(conductor(a),exponent(a))
 

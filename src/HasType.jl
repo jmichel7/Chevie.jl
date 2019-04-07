@@ -9,6 +9,7 @@ using Gapjm
 #-----------------------------------------------------------------------
 const chevie=Dict()
 
+# extensions to get closer to GAP semantics
 Base.:*(a::Array,b::Pol)=a .* Ref(b)
 Base.:*(a::Pol,b::Array)=Ref(a) .* b
 Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
@@ -23,6 +24,9 @@ Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
 Base.isless(a::Array,b::Number)=true
 Base.isless(b::Number,a::Array)=false
+Base.getindex(a::Symbol,i::Int)=string(a)[i]
+Base.length(a::Symbol)=length(string(a))
+Base.copy(x::Char)=x
 
 function chevieget(t::Symbol,w::Symbol)
   if haskey(chevie[t],w) return chevie[t][w] end
@@ -220,7 +224,7 @@ function ComplexReflectionGroup(i::Int)
   cr=getchev(t,:GeneratingCoRoots)
   if cr===nothing
     e=getchev(t,:EigenvaluesGeneratingReflections)
-    cr=map((x,y)->coroot(x,y),r,E.(Root1.(e)))
+    cr=map((x,y)->coroot(x,y),r,map(x->E(denominator(x),numerator(x)),e))
   end
   PermRootGroup(r,cr)
 end
@@ -229,7 +233,7 @@ function ComplexReflectionGroup(p,q,r)
  t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   r=getchev(t,:GeneratingRoots)
   cr=getchev(t,:EigenvaluesGeneratingReflections)
-  cr=map((x,y)->coroot(x,y),r,map(x->E(Root1(x)),cr))
+  cr=map((x,y)->coroot(x,y),r,map(x->E(Root1(numerator(x),denominator(x))),cr))
   cr=map(x->convert.(Cyc{Rational{Int}},x),cr)
   PermRootGroup(r,cr)
 end
@@ -280,8 +284,25 @@ include("uch.jl")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
-Binomial=binomial
-IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
+Append(a::Vector,b::AbstractVector)=vcat(a,b)
+Append(a::String,b::String)=a*b
+Append(a::String,b::Vector{Char})=a*String(b)
+
+function Collected(v)
+  d=groupby(v,v)
+  sort([[k,length(v)] for (k,v) in d])
+end
+
+function CollectBy(v,f)
+  d=groupby(f,v)
+  [d[k] for k in sort(collect(keys(d)))]
+end
+
+Inherit(a,b)=merge!(a,b)
+function Inherit(a,b,c)
+  for k in c a[Symbol(k)]=b[Symbol(k)] end
+  a
+end
 
 function pad(s::String, i::Int)
   if i>0 return lpad(s,i)
@@ -290,25 +311,6 @@ function pad(s::String, i::Int)
 end
 
 pad(s::String)=s
-
-function Replace(s,p...)
-# println("Replace s=$s p=$p")
-  r=[p[i]=>p[i+1] for i in 1:2:length(p)]
-  for (src,tgt) in r
-    i=1
-    while i+length(src)-1<=length(s)
-      if src==s[i:i+length(src)-1]
-        if tgt isa String
-          s=s[1:i-1]*tgt*s[i+length(src):end]
-        else
-          s=vcat(s[1:i-1],tgt,s[i+length(src):end])
-        end
-      end
-      i+=1
-    end
-  end
-  s
-end
 
 function Position(a::Vector,b)
   x=findfirst(isequal(b),a)
@@ -331,33 +333,60 @@ function PositionProperty(a::Vector,b::Function)
   r
 end
 
-PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
+function Replace(s,p...)
+# println("Replace s=$s p=$p")
+  r=[p[i]=>p[i+1] for i in 1:2:length(p)]
+  for (src,tgt) in r
+    i=1
+    while i+length(src)-1<=length(s)
+      if src==s[i:i+length(src)-1]
+        if tgt isa String
+          s=s[1:i-1]*tgt*s[i+length(src):end]
+        else
+          s=vcat(s[1:i-1],tgt,s[i+length(src):end])
+        end
+      end
+      i+=1
+    end
+  end
+  s
+end
 
-Sublist(a::Vector, b::AbstractVector)=a[b]
-
-Append(a::Vector,b::AbstractVector)=vcat(a,b)
-Append(a::String,b::String)=a*b
-Append(a::String,b::Vector{Char})=a*String(b)
-
+Arrangements=arrangements
+BetaSet=βSet
+Binomial=binomial
 Concatenation(a::String...)=prod(a)
+Concatenation(a::Vector)=vcat(a...)
 Concatenation(b...)=vcat(b...)
 Combinations=combinations
 Copy=deepcopy
+CycPolFakeDegreeSymbol=fegsymbol
+DefectSymbol=defectsymbol
+DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
-
-Base.getindex(a::Symbol,i::Int)=string(a)[i]
-Base.length(a::Symbol)=length(string(a))
-
+Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
+Filtered(l,f)=isempty(l) ? l : filter(f,l)
+Flat(v)=collect(Iterators.flatten(v))
+ForAll(l,f)=all(f,l)
+FullSymbol=fullsymbol
+HighestPowerFakeDegreeSymbol=degree_feg_symbol
+HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
+IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
+function Ignore() end
+InfoChevie2=print
+IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
 IsList(l)=l isa Vector
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
-
-Flat(v)=collect(Iterators.flatten(v))
-
-ForAll(l,f)=all(f,l)
-
-PartitionTuples=partition_tuples
-Arrangements=arrangements
+Lcm(a...)=Lcm(collect(a))
+Lcm(a::Vector)=lcm(Int.(a))
+LowestPowerFakeDegreeSymbol=valuation_feg_symbol
+LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
+Minimum(v::AbstractVector)=minimum(v)
+Minimum(a::Number,x...)=min(a,x...)
+PartBeta=partβ
 Partitions=partitions
+PartitionTuples=partition_tuples
 
 function PartitionTupleToString(n,a=Dict())
   if n[end] isa Vector return join(map(join,n),".") end
@@ -367,27 +396,26 @@ function PartitionTupleToString(n,a=Dict())
   join(map(join,n[1:end-2]),".")*r
 end
 
+PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v,f)=isempty(v) ? 1 : prod(f,v)
-
-IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
-
-Lcm(a...)=Lcm(collect(a))
-Lcm(a::Vector)=lcm(Int.(a))
-
-function Collected(v)
-  d=groupby(v,v)
-  sort([[k,length(v)] for (k,v) in d])
-end
-
-function CollectBy(v,f)
-  d=groupby(f,v)
-  [d[k] for k in sort(collect(keys(d)))]
-end
-
+RankSymbol=ranksymbol
+RecFields=keys
+RootInt(a,b)=floor(Int,a^(1/b))
+gapSet(v)=unique(sort(v))
+ShiftBeta=shiftβ
+Sort=sort!
 SortBy(x,f)=sort!(x,by=f)
-
-function Ignore() end
+SPrint=string
+StringSymbol=stringsymbol
+Sublist(a::Vector, b::AbstractVector)=a[b]
+Sum(v::AbstractVector)=sum(v)
+Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
+SymbolPartitionTuple=symbol_partition_tuple
+SymbolsDefect(a,b,c,d)=symbols(a,b,d)
+Value(p,v)=p(v)
+CoxeterGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
+CoxeterGroup()=coxgroup()
 
 CharTableSymmetric=Dict(:centralizers=>[
      function(n,pp) res=k=1;last=0
@@ -400,19 +428,6 @@ CharTableSymmetric=Dict(:centralizers=>[
         end
         res
      end])
-
-Base.copy(x::Char)=x
-Filtered(l,f)=isempty(l) ? l : filter(f,l)
-
-gapSet(v)=unique(sort(v))
-Sum(v::AbstractVector)=sum(v)
-Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
-
-Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
-
-RecFields=keys
-Sort=sort!
-InfoChevie2=print
 
 function VcycSchurElement(arg...)
   local r, data, i, para, res, n, monomial, den, root
@@ -462,17 +477,6 @@ function CycPols.CycPol(v::AbstractVector)
   CycPol(vv,valuation,coeff)
 end
 
-Minimum(v::AbstractVector)=minimum(v)
-Minimum(a::Number,x...)=min(a,x...)
-Value(p,v)=p(v)
-SPrint=string
-
-Inherit(a,b)=merge!(a,b)
-function Inherit(a,b,c)
-  for k in c a[Symbol(k)]=b[Symbol(k)] end
-  a
-end
-
 function CharRepresentationWords(mats,words)
   mats=map(x->hcat(x...),mats)
   map(words)do w
@@ -502,33 +506,37 @@ function ImprimitiveCuspidalName(S)
 	return "I_2($d)",FormatGAP(p)
       end
       elseif r==3 && d==3 
-       return "G_{3,3,3}["* (s=="300" ? "\\zeta_3" : "\\zeta_3^2")*"]"
+        return "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
       elseif r==3 && d==4 
-       return "G_{4,4,3}["* (s=="3010" ? "\\zeta_4" : "-\\zeta_4")*"]"
+        return "G_{4,4,3}["* (s=="3010" ? "" : "-")*"\\zeta_4]"
     else return "G_{$d,$d,$r}^{$s}"
     end
   end
 end
 
-WeylGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
-#-------------------------------------------------------------------------
-#  dummy translations of GAP3 functions
+function BDSymbols(n,d)
+  n-=div(d^2,4)
+  if n<0 return Vector{Vector{Int}}[] end
+  if d>0 return map(x->symbol_partition_tuple(x,d),PartitionTuples(n,2)) end
+   return map(chevieget(:D,:symbolcharparam),
+              chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
+end
+
 CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
                            :AdjustHeckeCharTable=>(x,y)->x,
         :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
-
-DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
-DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
-
 include("families.jl")
+
+#-------------------------------------------------------------------------
+#  dummy translations of GAP3 functions
 Format(x)=string(x)
 Format(x,opt)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
+FormatGAP(x)=repr(x)
 Torus(i::Int)=i
 RootsCartan=x->x
 
-function ReadChv(s::String)
-end
+function ReadChv(s) end
 Group(v...)=v
 ComplexConjugate(v)=v
 function GetRoot(x,n::Number=2,msg::String="")
@@ -536,6 +544,7 @@ function GetRoot(x,n::Number=2,msg::String="")
    x
 end
 Unbind(x)=x
+#-------------------------------------------------------------------------
 
 include("tables.jl")
 chevie[:D][:CharTable]=n->chevie[:imp][:CharTable](2,2,n)
@@ -546,6 +555,7 @@ chevie[:A][:CharTable]=function(n)
   ct
 end
 chevie[:A][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](1,1,n+1,para,root)
+chevie[:A][:FakeDegree]=(n,p,q)->fegsymbol([βSet(p)])(q)
 chevie[:D][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](2,2,n,para,root)
 chevie[:imp][:PowerMaps]=(p,q,r)->[]
 chevie[:imp][:GeneratingRoots]=function(p,q,r)

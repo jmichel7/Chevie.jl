@@ -9,7 +9,7 @@ function getf(s::String)
   f=CHEVIE[:families][Symbol(s)]
   (f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
 end
-function Family(s::String,v::Vector,d::Dict=Dict{Symbol,Any}())
+function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f=getf(s)
   f[:charNumbers]=v
   merge!(f,d)
@@ -18,11 +18,11 @@ function Family(s::String,d::Dict=Dict{Symbol,Any}())
   f=getf(s)
   merge!(f,d)
 end
-function Family(f::Family,v::Vector,d::Dict=Dict{Symbol,Any}())
+function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f[:charNumbers]=v
   merge!(f,d)
 end
-function Family(f::Dict{Symbol,Any},v::Vector,d::Dict=Dict{Symbol,Any}())
+function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f=Family(f)
   f[:charNumbers]=v
   merge!(f,d)
@@ -239,7 +239,7 @@ CHEVIE[:families][:Dihedral]=function(e)
     :name=>"0"^(e-2)*"11",
     :explanation=>"Dihedral($e) family",
     :operations=>FamilyOps)
-  if iszero(e%2) then
+  if iszero(e%2)
     f[:fourierMat]=map(i->map(function(j)
        if length(i)==2 
          if length(j)==2 return (c(j*[i[2],-i[1]])-c(j*[-i[1],i[2]]))/e
@@ -427,4 +427,58 @@ MakeFamilyImprimitive = function (S, uc)
   r[:cospecial] = PositionProperty(r[:charNumbers],(x->uc[:A][x] == uc[:B][x]))
 # if length(blocks(r[:fourierMat])) > 1 error() end
   Family(r)
+end
+
+FamiliesClassical=function(sym)
+  t=map(sym) do ST
+    ST=fullsymbol(ST)
+    f=Dict{Symbol, Any}(:Z1 => symdiff(ST...))
+    D=length(f[:Z1]) % 2
+    f[:M♯] = symdiff(setdiff(f[:Z1], ST[2]), f[:Z1][1+D:2:length(f[:Z1])-1])
+    if D==1 && length(f[:M♯])%2!=0 f[:M♯]=setdiff(f[:Z1],f[:M♯]) end
+    f[:content] = sort(vcat(ST...))
+    f
+  end
+  res = []
+  for l = CollectBy(1:length(t), i->t[i][:content])
+      f = Dict{Symbol, Any}(:content => t[l[1]][:content], :charNumbers => l)
+      f[:M♯] = map(x->x[:M♯],t[l])
+      if length(l) == 2
+          push!(res, Dict{Symbol, Any}(:content => f[:content], 
+            :charNumbers => [l[2]],
+            :M♯ => [f[:M♯][2]]))
+          f=Dict{Symbol, Any}(:content => f[:content], :charNumbers => [l[1]], 
+                              :M♯ => [f[:M♯][1]])
+      end
+      push!(res, f)
+  end
+  map(res)do f
+   Z1 = filter(x->count(isequal(x),f[:content])==1,f[:content])
+   f[:fourierMat] = (2//1)^(-div(length(Z1)-1,2))*map(x->
+                    map(y->(-1)^length(intersect(x, y)), f[:M♯]), f[:M♯])
+   f[:fourierMat]=hcat(f[:fourierMat]...)
+    f[:eigenvalues] = map(x->(-1) ^ div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
+    if length(f[:eigenvalues]) == 1
+        f[:charLabels] = [""]
+        f[:special] = 1
+    else
+        f[:charLabels] = map(f[:M♯])do M
+          v = map((z->begin count(y->y>=z, M) % 2 end), Z1)
+          D = length(v)
+          v1 = v[2:2:D-D%2]
+          v2 = v[3:2:(D-1)+D%2]
+          if D%2==1 push!(v1,0) end
+          v1 = map(i->sum(v1[[i,i+1]]) % 2, 1:length(v2))
+          s = "+-"
+          s[v2+1]*","*s[v1+1]
+        end
+        f[:special] = findfirst(x->all(y->y in "+,",x),f[:charLabels])
+    end
+    f[:name] = IntListToString(f[:content])
+    f[:explanation] = "classical family"
+    f[:perm] = Perm()
+    f[:size] = length(f[:charNumbers])
+    Family(f)
+#   f[:operations] = FamilyOps
+  end
 end
