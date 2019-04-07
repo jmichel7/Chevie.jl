@@ -361,6 +361,7 @@ end
 Arrangements=arrangements
 BetaSet=βSet
 Binomial=binomial
+CartanMat(s,a...)=cartan(Symbol(s),a...)
 Concatenation(a::String...)=prod(a)
 Concatenation(a::Vector{<:Vector})=vcat(a...)
 Concatenation(b...)=vcat(b...)
@@ -391,6 +392,7 @@ LowestPowerFakeDegreeSymbol=valuation_feg_symbol
 LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
 Minimum(v::AbstractVector)=minimum(v)
 Minimum(a::Number,x...)=min(a,x...)
+OrderPerm=order
 PartBeta=partβ
 Partitions=partitions
 PartitionTuples=partition_tuples
