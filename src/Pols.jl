@@ -169,6 +169,8 @@ Base.:-(a::Pol, b::Pol)=a+(-b)
 Base.:-(a::Pol, b::T) where T=a-Pol(b)
 Base.:-(b::T, a::Pol) where T=Pol(b)-a
 
+Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
+
 """
 computes (p,q) such that a=p*b+q
 """

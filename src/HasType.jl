@@ -358,12 +358,14 @@ function Replace(s,p...)
   s
 end
 
+ApplyFunc(f,x)=f(x...)
 Arrangements=arrangements
 BetaSet=βSet
 Binomial=binomial
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 Concatenation(a::String...)=prod(a)
 Concatenation(a::Vector{<:Vector})=vcat(a...)
+Concatenation(a::Vector,b::Tuple)=vcat(a,collect(b))
 Concatenation(b...)=vcat(b...)
 Combinations=combinations
 Copy=deepcopy
@@ -375,6 +377,7 @@ DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
 Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
 Filtered(l,f)=isempty(l) ? l : filter(f,l)
+First(a,b)=a[findfirst(b,a)]
 Flat(v)=collect(Iterators.flatten(v))
 ForAll(l,f)=all(f,l)
 FullSymbol=fullsymbol
@@ -411,6 +414,7 @@ Product(v,f)=isempty(v) ? 1 : prod(f,v)
 RankSymbol=ranksymbol
 RecFields=keys
 RootInt(a,b)=floor(Int,a^(1/b))
+Rotations(a)=circshift.(Ref(a),0:length(a)-1)
 gapSet(v)=unique(sort(v))
 ShiftBeta=shiftβ
 Sort=sort!
