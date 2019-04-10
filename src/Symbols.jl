@@ -53,7 +53,8 @@ using Gapjm
 export shiftβ, βSet, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol, degree_gendeg_symbol,
 degree_feg_symbol, valuation_feg_symbol,
-defectsymbol, fullsymbol, ranksymbol, symbols, fegsymbol, stringsymbol
+defectsymbol, fullsymbol, ranksymbol, symbols, fegsymbol, stringsymbol,
+Tableaux
 
 """
 `shiftβ( β, n)` shift β-set β by n
@@ -392,6 +393,33 @@ function fegsymbol(s,p=0)
   end
   if r==2 && (e>2 && p==E(e)) res=CycPol(res(E(2e)*q)//E(2e, degree(res))) end
   return res
+end
+
+function Tableaux(S::Vector{Int})
+  first.(Tableaux([S]))
+end
+
+# list of standard tableaux of shape the partition-tuple S (that is, a filling
+# of S with the numbers [1..Sum(S,Sum)] such that the numbers increase across
+# the rows and down the columns).
+# If S is a single partition return single tableaux.
+function Tableaux(S)
+  if isempty(S) return S end
+  w=sum(sum,S)
+  if w==0 return [map(x->map(y->Int[],x),S)] end
+  res=vcat(map(function(i) local rim, l
+    l=length(S[i])
+    rim = filter(j->S[i][j+1]<S[i][j],1:l-1)
+    if l!=0 && S[i][l]!=0 push!(rim,l) end
+    return vcat(map(function(p)
+          n=deepcopy(S)
+          n[i][p]-=1
+          n=Tableaux(n)
+          for t=n push!(t[i][p], w) end
+          return n
+      end, rim)...)
+    end, 1:length(S))...)
+  res
 end
 
 end
