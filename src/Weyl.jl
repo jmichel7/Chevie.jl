@@ -476,7 +476,10 @@ end
 function Base.show(io::IO, W::FiniteCoxeterGroup)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if isempty(refltype(W)) print(io,repl||TeX ? "W()" : coxgroup()) end
+  if isempty(refltype(W)) 
+    print(io,"coxgroup()") 
+    return
+  end
   n=join(map(refltype(W))do t
     indices=t[:indices]
     n=sprint(show,t; context=io)

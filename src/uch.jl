@@ -68,10 +68,10 @@ function unipotent_characters(W)
 
   type=refltype(W)
   if isempty(type) # unipotent_characters(coxgroup())
-    return UnipotentCharaters(Dict( 
+    return UnipotentCharacters(Dict( 
       :harishChandra=>[
-	rec(:relativeType=>[], 
-	    :levi=>[], :parameterExponents=>[],
+	Dict(:relativeType=>Dict[], 
+	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
       :families => [Family("C1",[1])],
       :charParams => [ [ "", [ 1 ] ] ],

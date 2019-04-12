@@ -436,17 +436,17 @@ end
 
 combinations(mset,k)=combinations_sorted(sort(mset),k)
 
-function ArrangementsK(mset::AbstractVector,blist,k)
+function ArrangementsK(mset,blist,k)
   if iszero(k) return [eltype(mset)[]] end
   combs=Vector{eltype(mset)}[]
   for i in eachindex(mset)
-    if blist[i]
-    blist1=copy(blist)
-    blist1[i]=false
-    append!(combs,map(x->vcat([mset[i]],x),ArrangementsK(mset,blist1,k-1)))
+    if blist[i] && (i==length(mset) || mset[i+1]!=mset[i] || !blist[i+1])
+      blist1=copy(blist)
+      blist1[i]=false
+      append!(combs,pushfirst!.(ArrangementsK(mset,blist1,k-1),Ref(mset[i])))
     end
   end
-  unique(combs)
+  combs
 end 
 
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)

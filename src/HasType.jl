@@ -22,6 +22,7 @@ Base.:+(a::AbstractVector,b::Number)=a .+ b
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
+Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*hcat(m...)*n
 Base.isless(a::Array,b::Number)=true
 Base.isless(b::Number,a::Array)=false
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
@@ -131,6 +132,9 @@ end
 function charinfo(W)
   gets(W,:charinfo) do W
     p=charinfo.(refltype(W))
+    if isempty(p) return Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
+      :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
+    end
     if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
     res[:charparams]=cartfields(p,:charparams)
     if length(p)==1 return res end
@@ -194,11 +198,16 @@ end
 
 function chartable(W)
   ctt=chartable.(refltype(W))
+  if isempty(ctt) 
+    return CharTable(hcat(1),["Id"],["1"],[1],"$W")
+  end
   charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
   identifier=join(getfield.(ctt,:identifier),"×")
-  irr=length(ctt)==1 ? ctt[1].irr : kron(getfield.(ctt,:irr)...)
+  if length(ctt)==1 irr=ctt[1].irr 
+  else irr=kron(getfield.(ctt,:irr)...)
+  end
   CharTable(irr,charnames,classnames,centralizers,identifier)
 end
 
@@ -254,7 +263,9 @@ function diagram(W)
 end
 
 function fakedegree(W,p,q)
-  prod(map((t,p)->getchev(t,:FakeDegree,p,q),refltype(W),p))
+  typ=refltype(W)
+  if isempty(typ) return one(q) end
+  prod(map((t,p)->getchev(t,:FakeDegree,p,q),typ,p))
 end
 
 function fakedegrees(W,q)
@@ -395,6 +406,7 @@ LowestPowerFakeDegreeSymbol=valuation_feg_symbol
 LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
 Minimum(v::AbstractVector)=minimum(v)
 Minimum(a::Number,x...)=min(a,x...)
+OnMatrices(a::Vector{<:Vector},b::Perm)=Permuted(map(x->Permuted(x,b),a),b)
 OrderPerm=order
 PartBeta=partβ
 Partitions=partitions
@@ -409,6 +421,7 @@ function PartitionTupleToString(n,a=Dict())
 end
 
 PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
+Permuted(a,b)=[a[i^b] for i in eachindex(a)]
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v,f)=isempty(v) ? 1 : prod(f,v)
 RankSymbol=ranksymbol
