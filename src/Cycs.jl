@@ -676,7 +676,11 @@ else
 end
   for i in 0:c.n-1
     if c==E(c.n,i) return Root1(i,c.n) end
-    if -c==E(c.n,i) return Root1(div(c.n,2)+i,c.n) end
+    if -c==E(c.n,i) 
+      if c.n%2==0 return Root1(div(c.n,2)+i,c.n)
+      else return Root1(c.n+2*i,2*c.n)
+      end
+    end
   end
   return nothing
 end

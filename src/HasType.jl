@@ -214,10 +214,11 @@ end
 function chartable(H::HeckeAlgebra{C})where C
   W=H.W
   ct=impl1(getchev(W,:HeckeCharTable,H.para,H.sqpara))
+  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+  else                     names=charinfo(t)[:charnames]
+  end
   CharTable(Matrix(permutedims(hcat(
-                map(ch->convert.(C,ch),ct[:irreducibles])...))),
-     map(x->getchev(W,:CharName,x,Dict(:TeX=>true)),
-         charinfo(W)[:charparams]),
+       map(ch->convert.(C,ch),ct[:irreducibles])...))),names,
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
 
@@ -429,6 +430,9 @@ RecFields=keys
 RootInt(a,b)=floor(Int,a^(1/b))
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
 gapSet(v)=unique(sort(v))
+SemisimpleRank(W)=length(independent_roots(W))
+Rank(W::AbstractPermRootGroup)=length(W.roots[1])
+Rank(W::Weyl.FiniteCoxeterGroup)=Rank(W.G)
 ShiftBeta=shiftβ
 Sort=sort!
 SortBy(x,f)=sort!(x,by=f)
@@ -565,10 +569,43 @@ RootsCartan=x->x
 function ReadChv(s) end
 Group(v...)=v
 ComplexConjugate(v)=v
-function GetRoot(x,n::Number=2,msg::String="")
-   println("GetRoot($x,$n) returns $x")
-   x
+function GetRoot(x::Cyc,n::Number=2,msg::String="")
+  r=Root1(x)
+  if isnothing(r) 
+    if conductor(x)>1 return nothing end
+    x=Real(x)
+    if denominator(x)>1 return nothing end
+    return ER(Int(x))
+  end
+  d=denominator(r.r)
+  j=1
+  n1=Int(n)
+  while true
+    k=gcd(n1,d)
+    n1=div(n1,k)
+    j*=k
+    if k==1 break end
+  end
+  res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
+  println("GetRoot($x,$n) returns $res")
+  res
 end
+ 
+function GetRoot(x::Integer,n::Number=2,msg::String="")
+  if n==1 return x
+  elseif n==2
+    res=ER(x)
+    println("GetRoot($x,$n) returns $res")
+    return res
+  else
+    error("GetRoot($x,$n) not implemented")
+  end
+end
+
+function GetRoot(x,n::Number=2,msg::String="")
+  error("GetRoot($x,$n) not implemented")
+end
+
 Unbind(x)=x
 #-------------------------------------------------------------------------
 

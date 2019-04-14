@@ -11,7 +11,7 @@ export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
   SortedPairs, norm!, mergesum, getvalue, # data structure
   format, TeXstrip, bracket_if_needed, ordinal, # formatting
-  factor, prime_residues, divisors, phi, primitiveroot,  # number theory
+  factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
   partition_tuples, #combinatorics
   echelon, exterior_power  # linear algebra
@@ -319,6 +319,22 @@ function primitiveroot(m::Integer)
              all(d->powermod(x,d,m)!=1,divisors(p)[2:end-1]),2:m-1)
 end
 
+"""
+  gcd_repr(x,y) returns a,b such that ax+by=gcd(x,y)
+"""
+function gcd_repr(x,y)
+  (f,fx)=(x,1)
+  (g,gx)=(y,0)
+  while !iszero(g)
+    (h,hx)=(g,gx)
+    q,r=divrem(f,g)
+    (g,gx)=(r,fx-q*gx)
+    (f,fx)=(h,hx)
+  end
+  q=sign(f)
+  (q*fx, iszero(y) ? 0 : div(q * (f - fx * x), y ))
+end
+
 #--------------------------------------------------------------------------
 # written since should allow negative powers with inv
 #function Base.:^(a::T, p::Integer) where T
@@ -494,7 +510,7 @@ function nullspace(m::Matrix)
     j+=f
     push!(z,j)
   end
-  println("z=$z lim=$lim")
+# println("z=$z lim=$lim")
   zz=zeros(eltype(m),n,n)
   zz[z,:]=m[1:lim,:]
   nn=filter(k->iszero(zz[k,k]),1:n)
