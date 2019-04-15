@@ -109,14 +109,14 @@ using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
 export Group, PermGroup, orbit, orbit_and_representative, orbits,
   base, centralizer_orbits, centralizers, minimal_words, element,
-  symmetric_group, CharTable
+  symmetric_group, gens, nbgens, CharTable
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
 Base.one(G::Group{T}) where T=one(T)
-Gapjm.gens(G::Group)=G.gens
-
+gens(G::Group)=G.gens
+nbgens(G::Group)=length(gens(G))
 @inline gen(W,i)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
 
 " element of W corresponding to a sequence of generators and their inverses"

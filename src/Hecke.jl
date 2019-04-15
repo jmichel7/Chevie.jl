@@ -34,7 +34,7 @@ of general cyclotomic Hecke algebras, and can be useful in many contexts.
 
 For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
 bases,  require a square root of `qₛ=-uₛ₀/uₛ₁`. We provide a way to specify
-it  with  the  field  `.sqpara`  which  can  be given when constructing the
+it  with  the  field  `.rootpara`  which  can  be given when constructing the
 algebra. If not given a root is automatically extracted when needed (and we
 know  how to compute it) by the function `RootParameter`. Note however that
 sometimes  an  explicit  choice  of  root  is  necessary  which  cannot  be
@@ -123,12 +123,11 @@ end;
 """
 module Hecke
 using Gapjm
-export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt
+export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt, rootpara
 
-struct HeckeAlgebra{C,TW<:CoxeterGroup}
+struct HeckeAlgebra{C,TW<:Group}
   W::TW
   para::Vector{Tuple{C,C}}
-  sqpara::Vector{<:Union{Missing,C}}
   prop::Dict{Symbol,Any}
 end
 
@@ -146,39 +145,39 @@ q
 julia> H=hecke(W,q)
 Hecke(W(B₂),q)
 
-julia> [H.para,H.sqpara]
+julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
  Tuple{Pol{Int64},Pol{Int64}}[(q, -1), (q, -1)]
  Missing[missing, missing]                     
 
-julia> H=hecke(W,q^2,q)
+julia> H=hecke(W,q^2,rootpara=q)
 Hecke(W(B₂),q²,q)
 
-julia> [H.para,H.sqpara]
+julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
  Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q², -1)]
  Pol{Int64}[q, q]                                  
 
-julia> H=hecke(W,[q^2,q^4],[q,q^2])
+julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
 Hecke(W(B₂),Pol{Int64}[q², q⁴],Pol{Int64}[q, q²])
 
-julia> [H.para,H.sqpara]
+julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
  Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q⁴, -1)]
  Pol{Int64}[q, q²]
 
-julia> H=hecke(W,9,3)
+julia> H=hecke(W,9,rootpara=3)
 Hecke(W(B₂),9,3)
 
-julia> [H.para,H.sqpara]
+julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
  Tuple{Int64,Int64}[(9, -1), (9, -1)]
  [3, 3]                              
 ```
 """
-function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
-                      sqpara::Vector{<:Union{Missing,C}})where C
-  para=map(1:coxrank(W))do i
+function hecke(W::Group,para::Vector{Tuple{C,C}};
+    rootpara::Vector{C}=C[]) where C
+  para=map(eachindex(gens(W)))do i
    j=simple_representatives(W)[i]
     if i<=length(para) 
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
@@ -187,41 +186,35 @@ function HeckeAlgebra(W::CoxeterGroup,para::Vector{Tuple{C,C}},
     else error("parameters should be given for first reflection in a class")
     end
   end
-  sqpara=map(1:coxrank(W))do i
-    j=simple_representatives(W)[i]
-    if i<=length(sqpara) && !ismissing(sqpara[i])
-      if j<i && sqpara[i]!=sqpara[j] 
-        error("one should have sqpara[$i]==sqpara[$j]")
-      end
-      if sqpara[i]^2*para[i][2]!=-para[i][1]
-       error("one should have sqpara[$i]^2*$(para[i][2])==$(-para[i][1])")
-      end
-      return sqpara[i]
-    elseif j<i return sqpara[j]
-    elseif isone(-prod(para[i])) return para[i][1]
-    else return missing
+  d=Dict{Symbol,Any}()
+  if !isempty(rootpara) d[:rootpara]=rootpara end
+  HeckeAlgebra(W,para,d)
+end
+
+function hecke(W,p::Vector{C};rootpara::Vector{C}=C[])where C
+  hecke(W,map(p->(p,-one(p)),p),rootpara=rootpara)
+end
+  
+function hecke(W,p::C;rootpara::C=zero(C))where C
+  rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
+  hecke(W,fill((p,-one(p)),nbgens(W)),rootpara=rootpara)
+end
+
+function hecke(W,p::Tuple{C,C};rootpara::C=zero(C))where C
+  rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
+  hecke(W,fill(p,nbgens(W)),rootpara=rootpara)
+end
+
+hecke(W::Group)=hecke(W,1)
+
+function rootpara(H::HeckeAlgebra)
+  gets(H,:rootpara) do H
+    map(eachindex(H.para)) do i
+       if isone(-prod(H.para[i])) return H.para[i][1] end
+       error("could not compute rootpara[$i]")
     end
   end
-  HeckeAlgebra(W,para,sqpara,Dict{Symbol,Any}())
 end
-
-function hecke(W::CoxeterGroup,p::Vector{C},sqp::Vector{C}=C[])where C
-  HeckeAlgebra(W,map(p->(p,-one(p)),p),sqp)
-end
-  
-function hecke(W::CoxeterGroup,p::Vector{Tuple{C,C}},sqp::Vector{C}=C[])where C
-  HeckeAlgebra(W,p,sqp)
-end
-  
-function hecke(W::CoxeterGroup,p::C,sqp::Union{C,Missing}=missing)where C
-  HeckeAlgebra(W,fill((p,-one(p)),coxrank(W)),fill(sqp,coxrank(W)))
-end
-
-function hecke(W::CoxeterGroup,p::Tuple{C,C},sqp::Union{C,Missing}=missing)where C
-  HeckeAlgebra(W,fill(p,coxrank(W)),fill(sqp,coxrank(W)))
-end
-
-hecke(W::CoxeterGroup)=hecke(W,1,1)
 
 function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"Hecke(",H.W,",")
@@ -229,9 +222,10 @@ function Base.show(io::IO, H::HeckeAlgebra)
   if constant(H.para) print(io,tr(H.para[1]))
   else print(io,map(tr,H.para))
   end
-  if !ismissing(H.sqpara[1]) && !iszero(H.sqpara[1]) 
-    if constant(collect(skipmissing(H.sqpara))) print(io,",",H.sqpara[1])
-    else print(io,",",H.sqpara)
+  if haskey(H.prop,:rootpara)
+    rp=rootpara(H)
+    if constant(rp) print(io,",rootpara=",rp[1])
+    else print(io,",rootpara=",rp)
     end
   end
   print(io,")")

@@ -91,6 +91,7 @@ Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 
 Base.one(a::Pol)=Pol([one(eltype(a.c))],0)
 Base.one(::Type{Pol{T}}) where T=Pol([one(T)],0)
+Base.zero(::Type{Pol{T}}) where T=Pol(T[],0)
 Base.zero(a::Pol)=Pol(empty(a.c),0)
 Base.iszero(a::Pol)=length(a.c)==0
 Base.transpose(a::Pol)=a

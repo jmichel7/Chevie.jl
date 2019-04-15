@@ -31,10 +31,9 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export degree, degrees, gens, elements, words, word
+export degree, degrees, elements, words, word
 function degree end
 function degrees end
-function gens end
 function elements end
 function words end
 function word end

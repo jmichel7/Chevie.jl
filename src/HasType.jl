@@ -213,7 +213,7 @@ end
 
 function chartable(H::HeckeAlgebra{C})where C
   W=H.W
-  ct=impl1(getchev(W,:HeckeCharTable,H.para,H.sqpara))
+  ct=impl1(getchev(W,:HeckeCharTable,H.para,Hecke.rootpara(H)))
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(t)[:charnames]
   end
@@ -600,6 +600,14 @@ function GetRoot(x::Integer,n::Number=2,msg::String="")
   else
     error("GetRoot($x,$n) not implemented")
   end
+end
+
+function GetRoot(x::Pol,n::Number=2,msg::String="")
+  if length(x.c)>1 || !iszero(x.v%n)
+    error("GetRoot($x,$n) not implemented") 
+  end
+  if isempty(x.c) return x end
+  Pol([GetRoot(x.c[1])],div(x.v,n))
 end
 
 function GetRoot(x,n::Number=2,msg::String="")

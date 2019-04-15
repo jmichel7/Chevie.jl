@@ -247,7 +247,7 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-QXHalf(H::HeckeAlgebra,x::Perm)=H.sqpara[1]^length(H.W,x)
+QXHalf(H::HeckeAlgebra,x::Perm)=rootpara(H)[1]^length(H.W,x)
 
 struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
@@ -292,7 +292,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   l=firstleftdescent(W,w)
   s=gens(W)[l]
   if w==s
-    return inv(H.sqpara[l])*(one(H)-inv(H.para[l][2])*T(s))
+    return inv(rootpara(H)[l])*(one(H)-inv(H.para[l][2])*T(s))
   else
     res=getCp(H,s)*getCp(H,s*w)
     tmp=zero(H)
