@@ -80,6 +80,7 @@ Gapjm.gens(W::AbstractPermRootGroup)=gens(W.G)
 Gapjm.degree(W::AbstractPermRootGroup)=degree(W.G)
 Base.length(W::AbstractPermRootGroup)=length(W.G)
 Base.iterate(W::AbstractPermRootGroup,x...)=iterate(W.G,x...)
+Base.eltype(W::AbstractPermRootGroup)=eltype(W.G)
 
 "for each root index of simple representative"
 function simple_representatives(W::AbstractPermRootGroup{T,T1})::Vector{T1} where {T,T1}

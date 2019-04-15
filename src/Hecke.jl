@@ -127,7 +127,7 @@ export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt, rootpara
 
 struct HeckeAlgebra{C,TW<:Group}
   W::TW
-  para::Vector{Tuple{C,C}}
+  para::Vector{Vector{C}}
   prop::Dict{Symbol,Any}
 end
 
@@ -175,7 +175,7 @@ julia> [H.para,rootpara(H)]
  [3, 3]                              
 ```
 """
-function hecke(W::Group,para::Vector{Tuple{C,C}};
+function hecke(W::Group,para::Vector{Vector{C}};
     rootpara::Vector{C}=C[]) where C
   para=map(eachindex(gens(W)))do i
    j=simple_representatives(W)[i]
@@ -192,17 +192,23 @@ function hecke(W::Group,para::Vector{Tuple{C,C}};
 end
 
 function hecke(W,p::Vector{C};rootpara::Vector{C}=C[])where C
-  hecke(W,map(p->(p,-one(p)),p),rootpara=rootpara)
+  oo=order.(gens(W))
+  if all(isequal(2),oo) z=0 else z=zero(Cyc) end
+  para=map(p,oo)do p, o
+    if o==2 return [p,-one(p)].+z end
+    return map(i->i==0 ? p+z : zero(p)+E(o)^i,0:o-1)
+  end
+  hecke(W,para,rootpara=convert.(typeof(para[1][1]),rootpara))
 end
   
 function hecke(W,p::C;rootpara::C=zero(C))where C
   rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
-  hecke(W,fill((p,-one(p)),nbgens(W)),rootpara=rootpara)
+  hecke(W,fill(p,nbgens(W)),rootpara=rootpara)
 end
 
-function hecke(W,p::Tuple{C,C};rootpara::C=zero(C))where C
+function hecke(W,p::Tuple;rootpara::C=zero(C))where C
   rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
-  hecke(W,fill(p,nbgens(W)),rootpara=rootpara)
+  hecke(W,[[i for i in p] for j in 1:nbgens(W)],rootpara=rootpara)
 end
 
 hecke(W::Group)=hecke(W,1)
@@ -310,17 +316,17 @@ function Base.zero(H::HeckeAlgebra{C}) where C
   HeckeTElt(Pair{typeof(one(H.W)),C}[],H)
 end
 
+Tbasis(h::HeckeElt)=h
+
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
-  function f(w::Vector{<:Integer})
+  function f(w::Vararg{Integer})
     if isempty(w) return one(H) end
     HeckeTElt([element(H.W,w...)=>one(C)],H)
   end
-  f(w::Vararg{Integer})=f(collect(w))
+  f(w::Vector{<:Integer})=f(w...)
   f(w::P)=HeckeTElt([w=>one(C)],H)
   f(h::HeckeElt)=Tbasis(h)
 end
-
-Tbasis(h::HeckeElt)=h
 
 function Base.:*(a::HeckeTElt, b::HeckeTElt)
   if iszero(a) return a end

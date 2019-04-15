@@ -213,7 +213,8 @@ end
 
 function chartable(H::HeckeAlgebra{C})where C
   W=H.W
-  ct=impl1(getchev(W,:HeckeCharTable,H.para,Hecke.rootpara(H)))
+  ct=impl1(getchev(W,:HeckeCharTable,H.para,
+                   haskey(H.prop,:rootpara) ? rootpara(H) : Any[]))
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(t)[:charnames]
   end

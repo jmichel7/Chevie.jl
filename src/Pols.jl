@@ -71,7 +71,10 @@ end
 
 Base.copy(p::Pol)=Pol(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=Pol([T(a)],0)
-Base.convert(::Type{Pol{T}},p::Pol) where T=Pol(convert.(T,p.c),p.v)
+Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
+
+Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
+Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
 
 Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 
@@ -149,8 +152,8 @@ end
 Base.:*(a::Pol, b::T) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
 Base.:*(b::T, a::Pol) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
 
-Base.:^(a::Pol, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                              Base.power_by_squaring(inv(a),-n)
+Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
+                                 Base.power_by_squaring(inv(a),-Int(n))
 
 function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
