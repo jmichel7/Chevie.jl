@@ -214,7 +214,7 @@ end
 function chartable(H::HeckeAlgebra{C})where C
   W=H.W
   ct=impl1(getchev(W,:HeckeCharTable,H.para,
-                   haskey(H.prop,:rootpara) ? rootpara(H) : Any[]))
+       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(t)[:charnames]
   end
@@ -439,6 +439,7 @@ Sort=sort!
 SortBy(x,f)=sort!(x,by=f)
 SPrint=string
 StringSymbol=stringsymbol
+StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
 Sublist(a::Vector, b::AbstractVector)=a[b]
 Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
@@ -608,7 +609,7 @@ function GetRoot(x::Pol,n::Number=2,msg::String="")
     error("GetRoot($x,$n) not implemented") 
   end
   if isempty(x.c) return x end
-  Pol([GetRoot(x.c[1])],div(x.v,n))
+  Pol([GetRoot(x.c[1],n)],div(x.v,n))
 end
 
 function GetRoot(x,n::Number=2,msg::String="")
