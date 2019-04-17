@@ -96,25 +96,19 @@ chevieset(:G4_22, :NrConjugacyClasses, function (ST,)
         return l[ST - 3]
     end)
 chevieset(:G4_22, :paramclasses, function (ST,)
+        local p
         if ST in 4:7
-            return Concatenation(map((i->begin
-                                map((j->begin
-                                            [i[1], j]
-                                        end), (1:i[2]) - 1)
-                            end), [[1, 12], [2, 6], [3, 12], [4, 12]]))
+            p = [[1, 12], [2, 6], [3, 12], [4, 12]]
         elseif ST in 8:15
-            return Concatenation(map((i->begin
-                                map((j->begin
-                                            [i[1], j]
-                                        end), (1:i[2]) - 1)
-                            end), [[1, 24], [2, 12], [3, 24], [4, 24], [5, 12]]))
+            p = [[1, 24], [2, 12], [3, 24], [4, 24], [5, 12]]
         elseif ST in 16:22
-            return Concatenation(map((i->begin
-                                map((j->begin
-                                            [i[1], j]
-                                        end), (1:i[2]) - 1)
-                            end), [[1, 60], [2, 30], [3, 60], [4, 60], [5, 60]]))
+            p = [[1, 60], [2, 30], [3, 60], [4, 60], [5, 60]]
         end
+        return Concatenation(map((i->begin
+                            map((j->begin
+                                        [i[1], j]
+                                    end), 0:i[2] - 1)
+                        end), p))
     end)
 chevieset(:G4_22, :GeneratingRoots, function (ST,)
         local d
@@ -169,7 +163,7 @@ chevieset(:G4_22, :PowerMaps, function (ST,)
         return res
     end)
 chevieset(:G4_22, :ClassInfo, function (ST,)
-        local res, p, g, m, f, digits
+        local res, p, g, z, f, digits
         p = (chevieget(:G4_22, :paramclasses))(ST)
         res = Dict{Symbol, Any}()
         g = function (c, a, b)
@@ -191,7 +185,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
-            m = "121212"
+            z = "121212"
         elseif ST == 5
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 2, [0, 1, 0, 0])
@@ -199,7 +193,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "1212"
+            z = "1212"
         elseif ST == 6
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 3, [0, 0, 2, 0])
@@ -207,7 +201,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "212121"
+            z = "212121"
         elseif ST == 7
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 1, [0, 0, 0, 0])
@@ -215,7 +209,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
-            m = "123"
+            z = "123"
         elseif ST == 8
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 6, [0, 3, 2, 0, 0])
@@ -223,7 +217,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
-            m = "121212"
+            z = "121212"
         elseif ST == 9
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 3, [0, 0, 2, 0, 0])
@@ -231,7 +225,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "212121"
+            z = "212121"
         elseif ST == 10
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 2, [0, 1, 0, 0, 0])
@@ -239,7 +233,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "1212"
+            z = "1212"
         elseif ST == 11
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 1, [0, 0, 0, 0, 0])
@@ -247,7 +241,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
-            m = "123"
+            z = "123"
         elseif ST == 12
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 12, [0, 0, 8, 3, 6])
@@ -255,15 +249,15 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [2, 1, 2, 1, 2], [2, 3])
                         end), p[res[:indexclasses]])
-            m = "123123123123"
+            z = "123123123123"
         elseif ST == 13
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 6, [0, 0, 2, 3, 0])
                         end))
             res[:classtext] = map((x->begin
-                            Replace(x, "z", [1, 2, 3, 1, 2, 3, 1, 2, 3])
-                        end), [[], "z", "zz", "zzz", [2], [2, 'z'], [3, 1, 2], [3, 1, 2, 'z'], [3, 1, 2, 'z', 'z'], [3, 1, 2, 'z', 'z', 'z'], [2, 3, 1, 2, 1], [2, 3, 1, 2, 1, 'z'], [2, 3, 1, 2, 1, 'z', 'z'], [2, 3, 1, 2, 1, 'z', 'z', 'z'], [1], [1, 'z']])
-            m = "123123123"
+                            Replace(x, [0], [1, 2, 3, 1, 2, 3, 1, 2, 3])
+                        end), [[], [0], [0, 0], [0, 0, 0], [2], [2, 0], [3, 1, 2], [3, 1, 2, 0], [3, 1, 2, 0, 0], [3, 1, 2, 0, 0, 0], [2, 3, 1, 2, 1], [2, 3, 1, 2, 1, 0], [2, 3, 1, 2, 1, 0, 0], [2, 3, 1, 2, 1, 0, 0, 0], [1], [1, 0]])
+            z = "123123123"
         elseif ST == 14
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 4, [0, 0, 0, 3, 2])
@@ -271,7 +265,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [])
                         end), p[res[:indexclasses]])
-            m = "12121212"
+            z = "12121212"
         elseif ST == 15
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 2, [0, 0, 0, 1, 0])
@@ -279,7 +273,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2, 3]), [3, 3], [4], [3, 1, 2, 3], [4, 1, 2], [4], [3])
                         end), p[res[:indexclasses]])
-            m = "12312"
+            z = "12312"
         elseif ST == 16
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 6, [0, 3, 2, 0, 0])
@@ -287,7 +281,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((c->begin
                             Replace(f(c, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
-            m = "121212"
+            z = "121212"
         elseif ST == 17
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 3, [0, 0, 2, 0, 0])
@@ -295,7 +289,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "212121"
+            z = "212121"
         elseif ST == 18
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 2, [0, 1, 0, 0, 0])
@@ -303,7 +297,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "1212"
+            z = "1212"
         elseif ST == 19
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 1, [0, 0, 0, 0, 0])
@@ -311,7 +305,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
-            m = "123"
+            z = "123"
         elseif ST == 20
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 10, [0, 5, 0, 4, 8])
@@ -319,7 +313,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [1, 1], [], [1, 2, 1], [3], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
-            m = "2121212121"
+            z = "2121212121"
         elseif ST == 21
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 5, [0, 0, 0, 4, 3])
@@ -327,7 +321,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [])
                         end), p[res[:indexclasses]])
-            m = "1212121212"
+            z = "1212121212"
         elseif ST == 22
             res[:indexclasses] = Filtered(1:length(p), (i->begin
                             g(p[i], 15, [0, 0, 5, 9, 3])
@@ -335,7 +329,7 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [2, 1, 2, 1, 2], [2, 3])
                         end), p[res[:indexclasses]])
-            m = "123123123123123"
+            z = "123123123123123"
         end
         digits = "123"
         res[:classnames] = map(function (x,)
@@ -343,28 +337,28 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
                     if length(x) == 0
                         return "."
                     end
-                    return string(Replace(digits[x], m, "z"))
+                    return string(Replace(digits[x], z, "z"))
                 end, res[:classtext])
         if ST in 4:7
-            m = [1, 6, 4, 4]
+            z = [1, 6, 4, 4]
             res[:classes] = map((x->begin
-                            m[x[1]]
+                            z[x[1]]
                         end), p[res[:indexclasses]])
-            m = [1, 12, 6, 4, 3, 12, 2, 12, 3, 4, 6, 12, 2, 12, 6, 4, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12]
+            z = [1, 12, 6, 4, 3, 12, 2, 12, 3, 4, 6, 12, 2, 12, 6, 4, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12, 3, 12, 6, 12]
         elseif ST in 8:15
-            m = [1, 12, 8, 6, 6]
+            z = [1, 12, 8, 6, 6]
             res[:classes] = map((x->begin
-                            m[x[1]]
+                            z[x[1]]
                         end), p[res[:indexclasses]])
-            m = [1, 24, 12, 8, 6, 24, 4, 24, 3, 8, 12, 24, 2, 24, 12, 8, 3, 24, 4, 24, 6, 8, 12, 24, 2, 24, 12, 8, 6, 24, 4, 24, 6, 8, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 2, 24, 12, 8, 6, 24, 4, 24, 6, 8, 12, 24]
+            z = [1, 24, 12, 8, 6, 24, 4, 24, 3, 8, 12, 24, 2, 24, 12, 8, 3, 24, 4, 24, 6, 8, 12, 24, 2, 24, 12, 8, 6, 24, 4, 24, 6, 8, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 3, 24, 12, 24, 6, 24, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 4, 24, 12, 8, 12, 24, 2, 24, 12, 8, 6, 24, 4, 24, 6, 8, 12, 24]
         elseif ST in 16:22
-            m = [1, 30, 20, 12, 12]
+            z = [1, 30, 20, 12, 12]
             res[:classes] = map((x->begin
-                            m[x[1]]
+                            z[x[1]]
                         end), p[res[:indexclasses]])
-            m = [1, 60, 30, 20, 15, 12, 10, 60, 15, 20, 6, 60, 5, 60, 30, 4, 15, 60, 10, 60, 3, 20, 30, 60, 5, 12, 30, 20, 15, 60, 2, 60, 15, 20, 30, 12, 5, 60, 30, 20, 3, 60, 10, 60, 15, 4, 30, 60, 5, 60, 6, 20, 15, 60, 10, 12, 15, 20, 30, 60, 2, 60, 30, 20, 30, 12, 10, 60, 30, 20, 6, 60, 10, 60, 30, 4, 30, 60, 10, 60, 6, 20, 30, 60, 10, 12, 30, 20, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60]
+            z = [1, 60, 30, 20, 15, 12, 10, 60, 15, 20, 6, 60, 5, 60, 30, 4, 15, 60, 10, 60, 3, 20, 30, 60, 5, 12, 30, 20, 15, 60, 2, 60, 15, 20, 30, 12, 5, 60, 30, 20, 3, 60, 10, 60, 15, 4, 30, 60, 5, 60, 6, 20, 15, 60, 10, 12, 15, 20, 30, 60, 2, 60, 30, 20, 30, 12, 10, 60, 30, 20, 6, 60, 10, 60, 30, 4, 30, 60, 10, 60, 6, 20, 30, 60, 10, 12, 30, 20, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 3, 60, 30, 60, 15, 12, 30, 60, 15, 60, 6, 60, 15, 60, 30, 12, 15, 60, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60, 5, 60, 30, 20, 15, 60, 10, 60, 15, 20, 30, 60]
         end
-        res[:orders] = m[res[:indexclasses]]
+        res[:orders] = z[res[:indexclasses]]
         res[:classparams] = res[:classnames]
         return res
     end)

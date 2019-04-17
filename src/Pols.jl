@@ -165,8 +165,8 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Polstrip(res,a.v)
 end
 
-Base.:+(a::Pol, b::T) where T=a+Pol(b)
-Base.:+(b::T, a::Pol) where T=Pol(b)+a
+Base.:+(a::Pol, b::T) where T<:Number=a+Pol(b)
+Base.:+(b::T, a::Pol) where T<:Number=Pol(b)+a
 
 Base.:-(a::Pol)=Pol(-a.c,a.v)
 Base.:-(a::Pol, b::Pol)=a+(-b)

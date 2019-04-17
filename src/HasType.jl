@@ -13,9 +13,10 @@ const chevie=Dict()
 Base.:*(a::Array,b::Pol)=a .* Ref(b)
 Base.:*(a::Pol,b::Array)=Ref(a) .* b
 Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
-Base.:-(a::AbstractVector,b::Int)=a .- b
+Base.:-(a::AbstractVector,b::Number)=a .- b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:+(a::AbstractVector,b::Number)=a .+ b
+Base.:+(a::AbstractVector,b::Pol)=a .+ Ref(b)
 #Base.:*(a::Mvp, b::Array)=Ref(a).*b
 #include("mvp.jl")
 #Base.:*(b::Array,a::Mvp)=b.*Ref(a)
@@ -353,21 +354,23 @@ function PositionProperty(a::Vector,b::Function)
 end
 
 function Replace(s,p...)
-# println("Replace s=$s p=$p")
-  r=[p[i]=>p[i+1] for i in 1:2:length(p)]
-  for (src,tgt) in r
-    i=1
-    while i+length(src)-1<=length(s)
-      if src==s[i:i+length(src)-1]
+# print("Replace s=$s p=$p")
+  for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
+    i=0
+    while i+length(src)<=length(s)
+     if src==s[i+(1:length(src))]
         if tgt isa String
-          s=s[1:i-1]*tgt*s[i+length(src):end]
+          s=s[1:i]*tgt*s[i+length(src)+1:end]
         else
-          s=vcat(s[1:i-1],tgt,s[i+length(src):end])
+          s=vcat(s[1:i],tgt,s[i+length(src)+1:end])
         end
+        i+=length(tgt)
+      else
+        i+=1
       end
-      i+=1
     end
   end
+# println("=>",s)
   s
 end
 
