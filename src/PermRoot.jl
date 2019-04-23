@@ -98,6 +98,11 @@ end
 
 reflection(W::AbstractPermRootGroup,i)=reflections(W)[i]
 
+function reflection_length(W::AbstractPermRootGroup,w::Perm)
+  l=getp(reflection_eigenvalues,W,:reflection_lengths)::Vector{Int}
+  l[position_class(W,w)]
+end
+
 function cartan(W::AbstractPermRootGroup{T,T1})::Matrix{T} where {T,T1}
   gets(W,:cartan)do W
   [cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in eachindex(gens(W))]
@@ -278,6 +283,32 @@ function hyperplane_orbits(W::AbstractPermRootGroup)
     (s=s,cl_s=[c],order=ord,N_s=Ns,det_s=dets)
   end
 end
+  
+function BipartiteDecomposition(W)
+  L=Int[]
+  R=Int[]
+  rest=collect(eachindex(gens(W)))
+  function comm(x,y)
+    p=gens(W)[x]
+    q=gens(W)[y]
+    return p*q==q*p
+  end
+  while length(rest)>0
+    r=findfirst(x->any(y->!comm(x,y),L),rest)
+    if r!=nothing 
+      if any(y->!comm(rest[r],y),R) 
+        error(W," has no bipartite decomposition")
+      end
+      push!(R,rest[r])
+      deleteat!(rest,r)
+    else r=findfirst(x->any(y->!comm(x,y),R),rest)
+      if r!=nothing push!(L,rest[r]); deleteat!(rest,r)
+      else push!(L,rest[1]); deleteat!(rest,1);
+      end
+    end
+  end
+  return L,R
+end
 
 #--------------------------------------------------------------------------
 struct PermRootGroup{T,T1}<:AbstractPermRootGroup{T,T1}
@@ -366,8 +397,22 @@ end
 " as Chevie's MatXPerm"
 function matX(W::PermRootGroup,w)
   X=baseX(W)
-  inv(X)*vcat(permutedims(hcat(W.roots[independent_roots(W).^w]...)),
-            X[length(ir)+1:end,:]);
+  ir=independent_roots(W)
+  Xinv=Int.(inv(Rational.(X)))
+  Xinv*vcat(permutedims(hcat(W.roots[ir.^w]...)),X[length(ir)+1:end,:]);
+end
+
+tr(m)=sum(i->m[i,i],axes(m,1))
+reflchar(W::AbstractPermRootGroup,w)=tr(matX(W,w))
+reflchar(W::AbstractPermRootGroup)=map(x->reflchar(W,W(x...)),classinfo(W)[:classtext])
+  
+function refleigen(W::AbstractPermRootGroup)::Vector{Vector{Rational{Int}}}
+  gets(W,:refleigen) do W
+    t=chartable(W).irr[charinfo(W)[:extRefl],:]
+    v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
+    l=CycPol.((permutedims(v)*t)[1,:])
+    map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
+  end
 end
 
 function Base.show(io::IO, W::AbstractPermRootGroup)

@@ -425,6 +425,7 @@ Base.length(W::AbstractFiniteCoxeterGroup)=prod(degrees(W))
 
 @inline PermRoot.cartan(W::AbstractFiniteCoxeterGroup)=cartan(W.G)
 
+PermRoot.reflections(W::AbstractFiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::AbstractFiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::AbstractFiniteCoxeterGroup)=eltype(W.G)
 #--------------- FiniteCoxeterGroup -----------------------------------------

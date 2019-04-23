@@ -142,10 +142,23 @@ function Base.:*(a::Perm, b::Perm)
   Perm(r)
 end
 
+function mul!(a::Perm, b::Perm)
+  a,b=promote(a,b)
+@inbounds for (i,v) in enumerate(a.d) a.d[i]=b.d[v] end
+  a
+end
+
 function Base.inv(a::Perm)
   d=similar(a.d)
 @inbounds for (i,v) in enumerate(a.d) d[v]=i end
   Perm(d)
+end
+
+function Base.:\(a::Perm, b::Perm)
+  a,b=promote(a,b)
+  r=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) r[v]=b.d[i] end
+  Perm(r)
 end
 
 function Base.:^(a::Perm, b::Perm)

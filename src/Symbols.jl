@@ -269,13 +269,13 @@ and those for unipotent characters of `G(e,e,r)` are `symbols(e,r,0)`.
 julia> stringsymbol.(symbols(3,2,1))
 14-element Array{String,1}:
  "(12,0,0)"   
- "(2,,)"      
  "(02,1,0)"   
  "(02,0,1)"   
  "(012,12,01)"
- "(01,2,0)"   
  "(01,1,1)"   
  "(012,01,12)"
+ "(2,,)"      
+ "(01,2,0)"   
  "(01,0,2)"   
  "(1,012,012)"
  "(,02,01)"   
@@ -284,18 +284,13 @@ julia> stringsymbol.(symbols(3,2,1))
  "(0,012,)"   
 
 julia> stringsymbol.(symbols(3,3,0))
-15-element Array{String,1}:
- "(02,12,01)"   
- "(1,2,0)"      
+10-element Array{String,1}:
  "(1,1,1)"      
- "(012,123,012)"
- "(01,13,01)"   
- "(0,3,0)"      
  "(01,12,02)"   
- "(0,2,1)"      
  "(01,02,12)"   
- "(0,1,2)"      
  "(012,012,123)"
+ "(0,1,2)"      
+ "(0,2,1)"      
  "(01,01,13)"   
  "(0,0,3)"      
  "(012,,)"      
@@ -356,7 +351,7 @@ end
 `fegsymbol(S)` returns as a CycPol the fake degree given by symbol `S`
 
 ```julia-repl
-julia> fegSymbol([[1,5,6],[1,2]])
+julia> fegsymbol([[1,5,6],[1,2]])
 q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂
 ```
 """

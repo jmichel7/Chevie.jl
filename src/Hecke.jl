@@ -78,7 +78,7 @@ julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
 Hecke(W(A₂),0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
-(::getfield(Gapjm.Hecke, Symbol("#f#20")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#32")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}}) (generic function with 4 methods)
 
 julia> el=words(W)
 6-element Array{Array{Int8,1},1}:
@@ -145,33 +145,33 @@ q
 julia> H=hecke(W,q)
 Hecke(W(B₂),q)
 
-julia> [H.para,rootpara(H)]
-2-element Array{Array{T,1} where T,1}:
- Tuple{Pol{Int64},Pol{Int64}}[(q, -1), (q, -1)]
- Missing[missing, missing]                     
+julia> H.para
+2-element Array{Array{Pol{Int64},1},1}:
+ [q, -1]
+ [q, -1]
 
 julia> H=hecke(W,q^2,rootpara=q)
-Hecke(W(B₂),q²,q)
+Hecke(W(B₂),q²,rootpara=q)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
- Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q², -1)]
+ Array{Pol{Int64},1}[[q², -1], [q², -1]]
  Pol{Int64}[q, q]                                  
 
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
-Hecke(W(B₂),Pol{Int64}[q², q⁴],Pol{Int64}[q, q²])
+Hecke(W(B₂),Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
- Tuple{Pol{Int64},Pol{Int64}}[(q², -1), (q⁴, -1)]
+ Array{Pol{Int64},1}[[q², -1], [q⁴, -1]]
  Pol{Int64}[q, q²]
 
 julia> H=hecke(W,9,rootpara=3)
-Hecke(W(B₂),9,3)
+Hecke(W(B₂),9,rootpara=3)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
- Tuple{Int64,Int64}[(9, -1), (9, -1)]
+ Array{Int64,1}[[9, -1], [9, -1]]
  [3, 3]                              
 ```
 """

@@ -198,18 +198,20 @@ function chartable(t::TypeIrred)
 end
 
 function chartable(W)
-  ctt=chartable.(refltype(W))
-  if isempty(ctt) 
-    return CharTable(hcat(1),["Id"],["1"],[1],"$W")
+  gets(W,:chartable) do W
+    ctt=chartable.(refltype(W))
+    if isempty(ctt) 
+      return CharTable(hcat(1),["Id"],["1"],[1],"$W")
+    end
+    charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
+    classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
+    centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
+    identifier=join(getfield.(ctt,:identifier),"×")
+    if length(ctt)==1 irr=ctt[1].irr 
+    else irr=kron(getfield.(ctt,:irr)...)
+    end
+    CharTable(irr,charnames,classnames,centralizers,identifier)
   end
-  charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
-  classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
-  centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
-  identifier=join(getfield.(ctt,:identifier),"×")
-  if length(ctt)==1 irr=ctt[1].irr 
-  else irr=kron(getfield.(ctt,:irr)...)
-  end
-  CharTable(irr,charnames,classnames,centralizers,identifier)
 end
 
 function chartable(H::HeckeAlgebra{C})where C
@@ -608,8 +610,9 @@ function GetRoot(x::Integer,n::Number=2,msg::String="")
 end
 
 function GetRoot(x::Pol,n::Number=2,msg::String="")
+  n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
-    error("GetRoot($x,$n) not implemented") 
+    error("GetRoot($(repr(x;context=:limit=>true)),$n) not implemented") 
   end
   if isempty(x.c) return x end
   Pol([GetRoot(x.c[1],n)],div(x.v,n))

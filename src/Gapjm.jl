@@ -62,6 +62,8 @@ include("PermRoot.jl")
 @reexport using .PermRoot
 include("CoxGroups.jl")
 @reexport using .CoxGroups
+include("Garside.jl")
+@reexport using .Garside
 include("Weyl.jl")
 @reexport using .Weyl
 include("Hecke.jl")
