@@ -149,9 +149,9 @@ function mul!(a::Perm, b::Perm)
 end
 
 function Base.inv(a::Perm)
-  d=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) d[v]=i end
-  Perm(d)
+  r=similar(a.d)
+@inbounds for (i,v) in enumerate(a.d) r[v]=i end
+  Perm(r)
 end
 
 function Base.:\(a::Perm, b::Perm)

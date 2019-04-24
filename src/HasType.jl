@@ -130,7 +130,7 @@ function charinfo(t::TypeIrred)
   c
 end
 
-function charinfo(W)
+function charinfo(W)::Dict{Symbol,Any}
   gets(W,:charinfo) do W
     p=charinfo.(refltype(W))
     if isempty(p) return Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
@@ -164,7 +164,7 @@ function classinfo(t::TypeIrred)
   cl
 end
 
-function classinfo(W)
+function classinfo(W)::Dict{Symbol,Any}
   gets(W,:classinfo) do W
     tmp=map(classinfo,refltype(W))
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
@@ -197,7 +197,7 @@ function chartable(t::TypeIrred)
    ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
-function chartable(W)
+function chartable(W)::CharTable
   gets(W,:chartable) do W
     ctt=chartable.(refltype(W))
     if isempty(ctt) 
