@@ -256,18 +256,36 @@ end
 order(a::Perm) = lcm(length.(cycles(a)))
 
 """
-  cycletype(a::Perm) is the partition of degree(a) associated to the
+  cycletype(a::Perm) describes the partition of degree(a) associated to the
   conjugacy class of a in the symmetric group, with ones removed
 # Example
 ```julia-repl
 julia> cycletype(Perm(1,2)*Perm(3,4))
-2-element Array{Int64,1}:
- 2
- 2
-
+1-element Array{Pair{Int64,Int64},1}:
+ 2 => 2
 ```
 """
-cycletype(a::Perm;domain=1:length(a.d)) = sort(length.(cycles(a;domain=domain)), rev=true)
+function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
+  res=Dict{Tuple{Int,Int},Int}()
+  domain=domain[1:length(a.d)]
+  for i in eachindex(domain)
+    if iszero(domain[i]) continue end
+    l=0
+    j=i
+    color=domain[i]
+    while true
+      domain[j]=0
+      l+=1
+      if (j=a.d[j])==i break end
+    end
+    if l>1 
+      if haskey(res,(l,color)) res[(l,color)]+=1
+      else res[(l,color)]=1
+      end
+    end
+  end
+  sort(collect(res),by=x->x[1])
+end
 
 " sign(a::Perm) is the signature of  the permutation a"
 function Base.sign(a::Perm)
