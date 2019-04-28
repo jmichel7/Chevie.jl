@@ -163,38 +163,37 @@ julia> repr(w^-1)
 ```
 In  general elements of  a Garside monoid  are displayed thus  as a list of
 their constituting atoms.
+
+We  now describe the dual braid monoid.  For that, we first give a possible
+approach  to construct Garside monoids. Given a  group `W` and a set `S` of
+generators  of `W` as a monoid, we  define the length `l(w)` as the minimum
+number of elements of `S` needed to write `w`. We then define left divisors
+of   `x`  as  the  `d`   such  that  there  exists   `y`  with  `x=dy`  and
+`l(d)+l(y)=l(x)`.  We say that `w∈ W` is  balanced if its set of left and
+right  divisors coincide,  is a  lattice (where  upper and lower bounds are
+lcms and gcds) and generates `W`. Then we have:
+
+suppose `w` is balanced and let `[1,w]` be its set of divisors (an interval
+for  the partial order  defined by divisibility).  Then the monoid `M` with
+generators  `[1,w]` and relations  `xy=z` whenever `xy=z`  holds in `W` and
+`l(x)+l(y)=l(z)`  is Garside,  with simples  `[1,w]` and  atoms `S`.  It is
+called the interval monoid defined by the interval `[1,w]`.
+
+The  Artin-Tits braid monoid  is an interval  monoid by taking  for `S` the
+Coxeter generators, in which case `l` is the Coxeter length, and taking for
+`w`  the longest element of `W`. The dual monoid, constructed by Birman, Ko
+and  Lee  for  type  `A`  and  by  Bessis  for  all  well-generated complex
+reflection  groups, is obtained in  a similar way, by  taking this time for
+`S`  the set of all reflections, and for `w` a Coxeter element; then `l` is
+the  'reflection_length';  (this  is  for  Coxeter
+groups;  for  well-generated  complex  reflection  groups `S` contains only
+those reflections which divide `w` for the reflection length); for the dula
+monoid  the simple are  of cardinality the  generalized Catalan numbers. An
+interval  monoid has naturally an inverse  morphism from `M` to `W`, called
+'EltBraid'  which is the quotient map from the interval monoid to `W` which
+sends back simple braids to `[1,w]`.
 """
 module Garside
-#
-#We  now describe the dual braid monoid.  For that, we first give a possible
-#approach  to construct Garside monoids. Given a  group `W` and a set `S` of
-#generators  of `W` as a monoid, we  define the length `l(w)` as the minimum
-#number of elements of `S` needed to write `w`. We then define left divisors
-#of   `x`  as  the  `d`   such  that  there  exists   `y`  with  `x=dy`  and
-#`l(d)+l(y)=l(x)`.  We say that `w∈ W` is  balanced if its set of left and
-#right  divisors coincide,  is a  lattice (where  upper and lower bounds are
-#lcms and gcds) and generates `W`. Then we have:
-#
-#suppose `w` is balanced and let `[1,w]` be its set of divisors (an interval
-#for  the partial order  defined by divisibility).  Then the monoid `M` with
-#generators  `[1,w]` and relations  `xy=z` whenever `xy=z`  holds in `W` and
-#`l(x)+l(y)=l(z)`  is Garside,  with simples  `[1,w]` and  atoms `S`.  It is
-#called the interval monoid defined by the interval `[1,w]`.
-#
-#The  Artin-Tits braid monoid  is an interval  monoid by taking  for `S` the
-#Coxeter generators, in which case `l` is the Coxeter length, and taking for
-#`w`  the longest element of `W`. The dual monoid, constructed by Birman, Ko
-#and  Lee  for  type  `A`  and  by  Bessis  for  all  well-generated complex
-#reflection  groups, is obtained in  a similar way, by  taking this time for
-#`S`  the set of all reflections, and for `w` a Coxeter element; then `l` is
-#the  'ReflectionLength',  see  "ReflectionLength";  (this  is  for  Coxeter
-#groups;  for  well-generated  complex  reflection  groups `S` contains only
-#those reflections which divide `w` for the reflection length); for the dula
-#monoid  the simple are  of cardinality the  generalized Catalan numbers. An
-#interval  monoid has naturally an inverse  morphism from `M` to `W`, called
-#'EltBraid'  which is the quotient map from the interval monoid to `W` which
-#sends back simple braids to `[1,w]`.
-#
 #A  last notable  notion is  *reversible* monoids.  Since in CHEVIE we store
 #only  left normal forms, it is easy to compute left lcms and gcds, but hard
 #to  compute right ones.  But this becomes  easy to do  if the monoid has an
@@ -286,22 +285,15 @@ module Garside
 #    gap> GetRoot(pi,4);
 #    132|
 using Gapjm
-export BraidMonoid, braid, shrink, α
+export BraidMonoid, braid, shrink, α, DualBraidMonoid
 
-abstract type AbstractIntervalMonoid{T,TW<:Group{T}} end
-
-function deltaaction(M::AbstractIntervalMonoid,w,i::Int)
-# w^(M.delta^i)
-  i=mod(i,M.orderdelta)
-  if iszero(i) return w end
-  w^(i==1 ? M.delta : M.delta^i)
-end
+abstract type GarsideMonoid{T} end # T=type of simples
 
 """
 elts must be simples
 """
-function leftgcd(M::AbstractIntervalMonoid,elts...)
-  x=one(M.W)
+function leftgcd(M::GarsideMonoid,elts...)
+  x=one(M)
   elts=collect(elts)
   found=true
   while found
@@ -310,8 +302,8 @@ function leftgcd(M::AbstractIntervalMonoid,elts...)
     let M=M, i=i
       if all(b->isleftdescent(M,b,i),elts)
         found=true
-        Perms.mul!(x,M.atoms[i])
-        elts .= M.atoms[i] .\ elts
+        mul!(M,x,M.atoms[i])
+        elts .= .\(Ref(M),M.atoms[i],elts)
       end
     end
     end
@@ -319,13 +311,88 @@ function leftgcd(M::AbstractIntervalMonoid,elts...)
   return x,elts
 end
 
+function rightlcm(M::GarsideMonoid,elts...)
+  x,c=rightgcd(M,rightcomplδ.(Ref(M),elts)...)
+  *(M,elts[1],c[1]),c
+end
+
 """
 returns α(xv),ω(xv)
 """
-function alpha2(M::AbstractIntervalMonoid,x,v)
-  g,rests=leftgcd(M,inv(x)*M.delta,v)
-  (x*g,rests[2])
+function alpha2(M::GarsideMonoid,x,v)
+  g,rests=leftgcd(M,\(M,x,M.delta),v)
+  (*(M,x,g),rests[2])
 end
+
+function element(M::GarsideMonoid{T},l::Int...)where T
+  res=GarsideElm(0,T[],M)
+  if isempty(l) return res end
+  for s in reverse(l) # faster in reversed order (see *)
+    if s<0 b=inv(M,GarsideElm(0,[M.atoms[-s]],M))
+    else   b=GarsideElm(0,[M.atoms[s]],M)
+    end
+    res=*(M,b,res)
+  end
+  res
+end
+
+function element(M::GarsideMonoid{T},r::T)where T
+  if r==one(M) GarsideElm(0,T[],M)
+  elseif r==M.delta GarsideElm(1,T[],M)
+  else GarsideElm(0,[r],M)
+  end
+end
+
+function CoxGroups.word(M::GarsideMonoid,w)
+  res=Int[]
+  while w!=one(M)
+    for i in eachindex(M.atoms)
+       if isleftdescent(M,w,i)
+         push!(res,i)
+         w=\(M,M.atoms[i],w)
+       end
+    end
+  end
+  res
+end
+
+# left_divisors(<M>,<s>) 
+# all divisors of the simple s of monoid M
+function left_divisors(M::GarsideMonoid,s)
+  rest=[(left=one(M),right=s)]
+  res=[]
+  while !isempty(rest)
+    push!(res,rest)
+    new=empty(res[1])
+    for x in rest
+      for i in eachindex(M.atoms)
+        if isleftdescent(M,x.right,i)
+          push!(new,(left=*(M,x.left,M.atoms[i]),right=\(M,M.atoms[i],x.right)))
+        end
+      end
+    end
+    rest=unique(new)
+  end
+  map(x->first.(x),res)
+end
+
+#--------------------AbstractIntervalMonoid-----------------------------------
+abstract type AbstractIntervalMonoid{T,TW<:Group{T}}<:GarsideMonoid{T} end
+
+function δad(M::AbstractIntervalMonoid,w,i::Int)
+# w^(M.delta^i)
+  i=mod(i,M.orderdelta)
+  if iszero(i) return w end
+  w^(i==1 ? M.delta : M.delta^i)
+end
+
+Base.one(M::AbstractIntervalMonoid)=one(M.W)
+Base.:\(M::AbstractIntervalMonoid,x,y)=x\y
+Base.:*(M::AbstractIntervalMonoid,x,y)=x*y
+Base.inv(M::AbstractIntervalMonoid,x)=inv(x)
+mul!(M::AbstractIntervalMonoid,x,y)=Perms.mul!(x,y)
+
+rightcomplδ(M::AbstractIntervalMonoid,x)=x\M.delta
 
 #-----------------------BraidMonoid-----------------------------------
 struct BraidMonoid{T,TW}<:AbstractIntervalMonoid{T,TW}
@@ -347,16 +414,11 @@ function CoxGroups.word(M::BraidMonoid,w)
   word(M.W,w)
 end
 
-function (M::BraidMonoid{T})(l::Int...)where T
-  res=GarsideElm(0,T[],M)
-  if isempty(l) return res end
-  for s in reverse(l) # faster in reversed order (see *)
-    if s<0 b=inv(GarsideElm(0,[M.atoms[-s]],M))
-    else   b=GarsideElm(0,[M.atoms[s]],M)
-    end
-    res=b*res 
-  end
-  res
+(M::BraidMonoid)(l...)=element(M,l...)
+
+function rightgcd(M::BraidMonoid,elts...)
+  g,c=leftgcd(M,inv.(elts)...)
+  inv(g),inv.(c)
 end
 
 #-----------------------DualBraidMonoid-------------------------------
@@ -366,13 +428,44 @@ struct DualBraidMonoid{T,TW}<:AbstractIntervalMonoid{T,TW}
   atoms::Vector{T}
   W::TW
 end
+"""
+Let  `W` be a well generated complex  reflection group and `c` be a Coxeter
+element  of `W` (if `W` is a Coxeter group and no `c` is given a particular
+one  is chosen  by making  the product  of elements  in a  partition of the
+Coxeter  diagram in two sets where  elements in each commute pairwise). The
+result  is the dual braid  monoid determined by `W`  and `c`: let `w` be an
+element  of `W` or a sequence  `s₁,…,sₙ` of integers indices of reflections
+of `W`.
 
-function DualBraidMonoid(W::CoxeterGroup{T},delta::T=prod(gens(W)))where T
-  DualBraidMonoid(delta,order(delta),reflections(W),W)
+```julia-repl
+julia> W=coxgroup(:A,3)
+W(A₃)
+
+julia> B=DualBraidMonoid(W)
+DualBraidMonoid(coxgroup(:A,3),c=[1, 2, 5])
+
+julia> B(2,1,2,1,1)
+12.1.1.1
+
+julia> B(-1,-2,-3,1,1)
+(25.1)⁻¹1.1
+```
+"""
+function DualBraidMonoid(W::CoxeterGroup;c=vcat(bipartite_decomposition(W)...))
+  delta=W(c...)
+  DualBraidMonoid(delta,order(delta),reflections(W)[1:nref(W)],W)
 end
 
+(M::DualBraidMonoid)(l...)=element(M,l...)
+
+function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
+  reflection_length(M.W,M.atoms[i]*w)<reflection_length(M.W,w)
+end
+
+Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid($(M.W),c=",
+                                            word(M,M.delta),")")
 #---------------------------------------------------------------------
-struct GarsideElm{T,TM<:AbstractIntervalMonoid}
+struct GarsideElm{T,TM<:GarsideMonoid}
   pd::Int
   elm::Vector{T}
   M::TM
@@ -406,7 +499,7 @@ function Base.inv(b::GarsideElm)
   k=length(b.elm)
   M=b.M
   GarsideElm(-b.pd-k,
-    map(i->deltaaction(M,inv(b.elm[i])*M.delta,-i-b.pd),k:-1:1),M)
+    map(i->δad(M,\(M,b.elm[i],M.delta),-i-b.pd),k:-1:1),M)
 end
 
 function fraction(b::GarsideElm)
@@ -422,7 +515,7 @@ function α(b)
   elseif b.pd>0 return b.M.delta
   end
   if length(b.elm)>0 return b.elm[1]
-  else return b.M.identity
+  else return one(b.M)
   end
 end
 
@@ -444,7 +537,7 @@ function Base.show(io::IO,b::GarsideElm)
   TeX=get(io,:TeX,false)
   greedy=get(io,:greedy,false)
   if !repl && !TeX 
-    print(io,"B("*join(word(b),",")*")")
+    print(io,"B(",join(word(b),","),")")
     return
   end
   function p(b)
@@ -476,16 +569,16 @@ function Base.:*(a::GarsideElm{T},x::T)::GarsideElm{T} where T
   for i in length(v):-1:2
     x,y=alpha2(M,v[i-1],v[i])
 #   y=M.one
-    if y==one(T) # this implies i==Length(v)
+    if y==one(M) # this implies i==Length(v)
       if x==M.delta
-        return GarsideElm(1+a.pd,v[1:end-2].^M.delta,M)
+       return GarsideElm(1+a.pd,δad.(Ref(M),v[1:end-2],1),M)
       end
       resize!(v,i-1) 
       v[i-1]=x 
     elseif x==v[i-1] return GarsideElm(a.pd,v,M)
     elseif x==M.delta
       v[i]=y
-      v[2:i-1]=v[1:i-2].^M.delta
+      v[2:i-1]=δad.(Ref(M),v[1:i-2],1)
       return GarsideElm(1+a.pd,v[2:end],M)
     else v[[i-1,i]]=[x,y]
     end
@@ -495,14 +588,269 @@ end
 
 function Base.:*(a::GarsideElm,b::GarsideElm)
   res=GarsideElm(a.pd+b.pd,copy(a.elm),a.M)
-  res.elm.=deltaaction.(Ref(a.M),res.elm,Ref(b.pd))
+  res.elm.=δad.(Ref(a.M),res.elm,Ref(b.pd))
   for x in b.elm res*=x end
   res
 end
 
-Base.:^(a::GarsideElm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
-                                   Base.power_by_squaring(inv(a),-n)
+Base.:^(a::GarsideElm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : Base.power_by_squaring(inv(a),-n)
 
+Base.:^(a::GarsideElm, b::GarsideElm)=inv(b)*a*b
+#----------------------------------------------------------------------------
+struct Category{TO}
+  obj::Vector{TO}
+  atoms::Vector{Vector{Pair{TO,Int}}}
+end
+
+function Base.show(io::IO,C::Category)
+  print(io,"category with ",length(C.obj)," objects and ",
+        sum(length,C.atoms)," maps")
+end
+
+function Category(atomsfrom::Function,o::TO) where TO
+  C=Category([o],[Pair{TO,Int}[]])
+  i=1
+  while i<=length(C.obj) 
+    b=C.obj[i]
+    for m in atomsfrom(b)
+      p=findfirst(isequal(m[2]),C.obj)
+  #	Print(b,"^",m.map,"->",m.tgt,"\n");
+      if isnothing(p)
+         push!(C.obj,m[2])
+         push!(C.atoms,empty(C.atoms[1]))
+         p=length(C.obj)
+      end
+      push!(C.atoms[i],m[1]=>p)
+    end
+    i+=1
+    if iszero(i%100) print(".") end
+  end
+  C
+end
+
+###############################################
+# Endomorphisms(C,o) for category C, returns  #
+# generators of the endomorphisms of C.obj[o] #
+###############################################
+function endomorphisms(C::Category{TO},o) where TO
+  paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
+  paths[o]=Tuple{Int,Int}[]
+  maps=copy(C.obj)
+  function foo()
+    reached=[o]
+    for i in reached t=C.atoms[i]
+      for j in eachindex(t) m=t[j]
+        if !(m[2] in reached)
+          paths[m[2]]=vcat(paths[i],[(i,j)])
+          if i!=o maps[m[2]]=maps[i]*m[1]
+          else maps[m[2]]=m[1]
+          end
+          push!(reached,m[2])
+          if length(reached)==length(C.obj) return end
+        end
+      end
+    end
+  end
+  foo()
+  # here paths[p] describes a path to get from obj o to  obj p
+  gens=Set{TO}()
+  for i in eachindex(C.obj)
+    t=C.atoms[i]
+    for j in eachindex(t)
+     if vcat(paths[i],[(i,j)])!=paths[t[j][2]]
+       if i==o nmap=t[j][1]
+       else nmap=maps[i]*t[j][1]
+        end
+        if t[j][2]==o push!(gens,nmap)
+        elseif nmap!=maps[t[j][2]] push!(gens,nmap*inv(maps[t[j][2]]))
+        end
+      end
+    end
+  end
+  gens
+end
+
+function AtomicMaps(a,minconj::Function)
+  M=a.M
+  res=typeof(a=>a)[]
+  for i in eachindex(M.atoms)
+    minc=minconj(a,M.atoms[i])
+    if !isnothing(minc) && !any(k->isleftdescent(M,minc,k),i+1:length(M.atoms))
+      bminc=M(minc)
+      push!(res,bminc=>a^bminc)
+    end
+  end
+  filter(x->count(y->(y[1]^-1*x[1]).pd>=0,res)==1,res)
+end
+
+# a braid x atom
+function min_cyc(a,x)
+  if a.pd>0 return x end
+  if isempty(a.elm) return nothing end
+  M=a.M
+  if !isleftdescent(M,a.elm[1],findfirst(isequal(x),M.atoms)) return nothing end
+  x
+end
+
+function preferred_prefix(b)
+  M=b.M
+  if isempty(b.elm) return one(M) end
+  o=b.elm[end]
+  \(M,o,alpha2(M,o,δad(M,b.elm[1],-b.pd))[1])
+end
+
+# Inf(a,x)  minimal m such that x<m and inf(a^m)>=inf(a). 
+# m is simple; see algorithm 2 in Franco-Gonzales 1.
+function min_inf(a,x)
+  M=a.M
+  m=x
+  while true
+    x=δad(M,m,a.pd)
+    for s in a.elm x=rightlcm(M,x,s)[2][2] end
+    m,c=rightlcm(M,x,m)
+    if c[2]==one(M) break end
+  end
+  m
+end
+
+# SS(a,x)  Assumes a in SSS(a). Returns minimal m such that x<m and
+# a^m is in SSS(a). m is simple. See algorithm 5 in Franco-Gonzales 1
+function min_SS(a,x)
+  ai=inv(a)
+  m=x # because scope
+  while true
+    m=x
+    x=min_inf(a,x)
+    x=min_inf(ai,x)
+    if x==m break end
+  end
+  m
+end
+
+# representativeSC(b) returns
+# (conj=minimal r such that b^r in sliding circuit, 
+#  circuit=sliding circuit)
+function representativeSC(b)
+  seen=typeof(b)[]
+  l=[[b,b^0]]
+  while !(b in seen)
+    push!(seen,b)
+    e=b.M(preferred_prefix(b))
+    b=b^e
+    push!(l,[b,l[end][2]*e])
+  end
+  t=findfirst(x->x[1]==b,l)
+  (conj=l[t][2],circuit=first.(l[t:end-1]))
+end
+
+PositiveSimpleConjugation(y,r)=y^y.M(r)
+
+# MinConjugating.SC(a,x,F) minimal m such that x<m and m^-1*a*F(m) is in SC(a).
+# m is a simple.
+function min_SC(a,x)
+    M=a.M
+# Gebhart-Gonzalez function F for a in SC such that a^x in SSS
+  function ggF(a,x)
+    f=typeof([a,x])[]
+    y=a
+    while true # find the history under sliding of the pair [a,x]
+      push!(f,[y,x])
+      r=preferred_prefix(y)
+      x=\(M,r,*(M,x,preferred_prefix(PositiveSimpleConjugation(y,x))))
+      if x==one(M) return [one(M)] end
+      y=PositiveSimpleConjugation(y,r)
+      p=findfirst(isequal([y,x]),f)
+      if !isnothing(p) break end
+    end
+    map(x->x[2],filter(x->x[1]==a,f[p:end]))
+  end
+  x=min_SS(a,x)
+  f=ggF(a,x)
+  if f!=[one(M)]
+    p=findfirst(s->leftgcd(M,x,s)[2][1]==one(M),f)
+    isnothing(p) ? nothing : f[p]
+  else p=preferred_prefix(a)
+    if leftgcd(M,x,p)[2][1]!=one(M) return nothing end
+#   l:=Filtered(Concatenation(LeftDivisorsSimple(M,p)),
+#            s->s<>x and M.LeftGcdSimples(x,s)[2]=M.identity);
+    l=left_divisors(M,\(M,x,p))
+    l=.*(Ref(M),x,vcat(l[2:end]...))
+#   Print("Warning: for b=",a," F=1 & x=",x," divides p=",p," ",Length(l),"\n");
+    l[findfirst(x->x==p || x in ggF(a,x),l)]
+  end
+end
+
+inf_cat(b)=Category(x->AtomicMaps(x,min_inf),b)
+cyc_cat(b)=Category(x->AtomicMaps(x,min_cyc),b)
+SS_cat(b)=Category(x->AtomicMaps(x,min_SS),b)
+SC_cat(b)=Category(x->AtomicMaps(x,min_SC),b)
+#----------------------------------------------------------------------------
+struct TwistedPowerMonoid{T,TM}<:GarsideMonoid{T}
+  delta::T
+  orderdelta::Int
+  atoms::Vector{T}
+  n::Int # twisting
+  M::TM
+end
+
+struct TwistedPowerMonoidAtom{T,TM}
+  v::Vector{T}
+  t::Bool
+  M::TM
+end
+
+Base.:(==)(a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=(a.v==b.v)&&
+  (a.t==b.t)&&(a.M==b.M)
+
+Base.hash(a::TwistedPowerMonoidAtom, h::UInt)=
+ hash(a.v,hash(a.t,hash(a.M,0x595dee0e71d271d0%UInt)))
+
+IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
+function Base.show(io::IO,r::TwistedPowerMonoidAtom)
+  if r.t print(io,"t") end
+  print(io,"(",join(map(a->IntListToString(word(r.M,a)),r.v),","),")")
+end
+
+function TwistedPowerMonoid(M,n)
+  delta=TwistedPowerMonoidAtom([M.delta for i in 1:n],true,M)
+  atoms=[TwistedPowerMonoidAtom([one(M) for i in 1:n],true,M)]
+  for i in 1:n
+    append!(atoms,map(a->
+      TwistedPowerMonoidAtom([j==i ? a : one(M) for j in 1:n],false,M),
+      M.atoms))
+  end
+  TwistedPowerMonoid(delta,n*M.orderdelta,atoms,n,M)
+end
+
+# M.IsRightDescending:=function(s,i)if i=1 then return s.t;fi;
+# m=length(M.M.atoms);i1=1+div(i-2,m);i2=1+mod(i-2,m)
+#   return M1.IsRightDescending(s.v[i1],i2);end;
+# M.IsRightAscending:=function(s,i)if i=1 then return not s.t;fi;
+# m=length(M.M.atoms);i1=1+div(i-2,m);i2=1+mod(i-2,m)
+#   return M1.IsRightAscending(s.v[i1],i2);end;
+
+function CoxGroups.isleftdescent(M::TwistedPowerMonoid,s,i)
+  if i==1 return s.t end
+  m=length(M.M.atoms);i1=1+div(i-2,m);i2=1+mod(i-2,m)
+  isleftdescent(M.M,s.v[s.t ? 1+mod(i1-2,M.n) : i1],i2)
+end
+
+Base.one(M::TwistedPowerMonoid)=TwistedPowerMonoidAtom(
+           [one(M.M) for i in 1:M.n],false,M.M)
+
+Base.:*(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(
+     map(i->*(M.M,a.v[b.t ? 1+mod(i,M.n) : i],b.v[i]),1:M.n),a.t||b.t,M.M)
+
+Base.:\(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(
+     map(i->\(M.M,a.v[b.t!=a.t ? 1+mod(i,M.n) : i],b.v[i]),1:M.n),b.t!=a.t,M.M)
+
+Base.:/(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(map(i->/(M.M,a.v[
+  b.t ? 1+mod(i-2,M.n) : i],b.v[b.t ? 1+mod(i-2,M.n) : i]),1:M.n),a.t!=b.t,M.M)
+
+function Base.show(io::IO,M::TwistedPowerMonoid)
+  print(io,"twisted $(ordinal(M.n)) power of $(M.M)");
+end
+#----------------------------------------------------------------------------
 function shrink(b1::Vector{T})where T<:GarsideElm
   function f(b::GarsideElm)
     ld,ln=map(x->length(word(x)),fraction(b))

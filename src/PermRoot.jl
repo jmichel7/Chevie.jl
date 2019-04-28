@@ -1,9 +1,24 @@
+"""
+Dictionary
+ReflectionSubgroup -> reflection_subgroup
+.orbitRepresentatives -> simple_representatives
+.                     -> simple_conjugating_element
+Reflections -> reflections
+ReflectionType -> refltype
+IndependentRoots -> independent_roots
+HyperplaneOrbits -> hyperplane_orbits
+ReflectionEigenvalues -> refleigen
+ReflectionCharacter -> reflchar
+PositionClass -> position_class
+ReflectionLength->reflection_length
+"""
 module PermRoot
 
 export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup, 
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
- inclusion, restriction, coroot, hyperplane_orbits, TypeIrred
+ inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
+ position_class, reflection_length, bipartite_decomposition
 
 using Gapjm
 
@@ -99,7 +114,7 @@ end
 reflection(W::AbstractPermRootGroup,i)=reflections(W)[i]
 
 function reflection_length(W::AbstractPermRootGroup,w::Perm)
-  l=getp(reflection_eigenvalues,W,:reflection_lengths)::Vector{Int}
+  l=getp(refleigen,W,:reflection_lengths)::Vector{Int}
   l[position_class(W,w)]
 end
 
@@ -284,7 +299,8 @@ function hyperplane_orbits(W::AbstractPermRootGroup)
   end
 end
   
-function BipartiteDecomposition(W)
+"bipartite decomposition of eachindex(gens(W))"
+function bipartite_decomposition(W)
   L=Int[]
   R=Int[]
   rest=collect(eachindex(gens(W)))
@@ -411,8 +427,24 @@ function refleigen(W::AbstractPermRootGroup)::Vector{Vector{Rational{Int}}}
     t=chartable(W).irr[charinfo(W)[:extRefl],:]
     v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
     l=CycPol.((permutedims(v)*t)[1,:])
-    map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
+    ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
+    W.prop[:reflection_lengths]=map(x->count(y->!iszero(y),x),ll)
+    ll
   end
+end
+
+function classinv(W::AbstractPermRootGroup)
+  gets(W,:classinv)do W
+    map(x->cycletype(W(x...),domain=simple_representatives(W)),
+         classinfo(W)[:classtext])
+  end
+end
+
+function position_class(W::AbstractPermRootGroup,w)
+  i=cycletype(w,domain=simple_representatives(W))
+  l=findall(isequal(i),classinv(W))
+  if length(l)>1 error("ambiguity") end
+  l
 end
 
 function Base.show(io::IO, W::AbstractPermRootGroup)

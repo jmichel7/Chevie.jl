@@ -261,8 +261,8 @@ order(a::Perm) = lcm(length.(cycles(a)))
 # Example
 ```julia-repl
 julia> cycletype(Perm(1,2)*Perm(3,4))
-1-element Array{Pair{Int64,Int64},1}:
- 2 => 2
+1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:
+ (2, 1) => 2
 ```
 """
 function cycletype(a::Perm;domain=ones(Int16,length(a.d)))

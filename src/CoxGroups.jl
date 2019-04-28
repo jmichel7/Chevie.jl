@@ -438,6 +438,21 @@ end
 
 PermRoot.refltype(W::CoxSymmetricGroup)=[(series=:A,indices=collect(1:W.n-1))]
 
+function PermRoot.reflection_length(W::CoxSymmetricGroup,a)
+  to_visit=trues(length(a.d))
+  l=0
+  for i in eachindex(to_visit)
+    if !to_visit[i] continue end
+    j=i
+    while true
+      to_visit[j]=false
+      if (j=a.d[j])==i break end
+      l+=1
+    end
+  end
+  l
+end
+  
 nref(W::CoxSymmetricGroup)=div(W.n*(W.n-1),2)
 
 function isleftdescent(W::CoxSymmetricGroup,w,i::Int)
@@ -460,10 +475,6 @@ function length2(W::CoxSymmetricGroup,w)
   count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 end
 
-function reflength(W::CoxSymmetricGroup,w::Perm{T})where T
-  sum(x->x-1,length.(cycles(w)))
-end
-
 " Only parabolics defined are I=1:m for m≤n"
 function PermRoot.reflection_subgroup(W::CoxSymmetricGroup,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I) 
@@ -481,4 +492,5 @@ function PermRoot.reflection(W::CoxSymmetricGroup{T},i::Int)where T
   ref[i]
 end
 
+PermRoot.reflections(W::CoxSymmetricGroup)=reflection.(Ref(W),1:nref(W))
 end

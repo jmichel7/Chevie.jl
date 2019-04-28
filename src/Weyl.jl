@@ -419,15 +419,16 @@ function Gapjm.degrees(W::AbstractFiniteCoxeterGroup)
   reverse(1 .+conjugate_partition(l))
 end
 
-Gapjm.degree(W::AbstractFiniteCoxeterGroup)=degree(W.G)
 
 Base.length(W::AbstractFiniteCoxeterGroup)=prod(degrees(W))
 
+#forward methods
 @inline PermRoot.cartan(W::AbstractFiniteCoxeterGroup)=cartan(W.G)
-
+Gapjm.degree(W::AbstractFiniteCoxeterGroup)=degree(W.G)
 PermRoot.reflections(W::AbstractFiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::AbstractFiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::AbstractFiniteCoxeterGroup)=eltype(W.G)
+PermRoot.reflection_length(W::AbstractFiniteCoxeterGroup,w)=reflection_length(W.G,w)
 #--------------- FiniteCoxeterGroup -----------------------------------------
 struct FiniteCoxeterGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
   G::PermRootGroup{T1,T}
@@ -517,7 +518,6 @@ simple_conjugating_element(W::FiniteCoxeterGroup,i)=
    simple_conjugating_element(W.G,i)
 
 PermRoot.reflection(W::FiniteCoxeterGroup,i::Integer)=reflection(W.G,i)
-
 #--------------- FiniteCoxeterSubGroup -----------------------------------------
 struct FiniteCoxeterSubGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
   G::PermRootSubGroup{T1,T}

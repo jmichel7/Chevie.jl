@@ -76,6 +76,11 @@ end
 @test mytest("repr(w)","\"B(1,2,3,4)\"")
 @test mytest("repr(w^3)","\"B(1,2,1,3,2,1,4,3,2,3,4,3)\"")
 @test mytest("repr(w^-1)","\"B(-4,-3,-2,-1)\"")
+@test mytest("repr(w^-1)","\"B(-4,-3,-2,-1)\"")
+@test mytest("W=coxgroup(:A,3)","W(A₃)")
+@test mytest("B=DualBraidMonoid(W)","DualBraidMonoid(coxgroup(:A,3),c=[1, 2, 5])")
+@test mytest("B(2,1,2,1,1)","12.1.1.1")
+@test mytest("B(-1,-2,-3,1,1)","(25.1)⁻¹1.1")
 end
 @testset "Hecke.jl" begin
 @test mytest("W=coxgroup(:A,2)","W(A₂)")
@@ -141,7 +146,7 @@ end
 @test mytest("smallest_moved_point(Perm(2,3))","2")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
-@test mytest("cycletype(Perm(1,2)*Perm(3,4))","2-element Array{Int64,1}:\n 2\n 2")
+@test mytest("cycletype(Perm(1,2)*Perm(3,4))","1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:\n (2, 1) => 2")
 end
 @testset "Pols.jl" begin
 @test mytest("Pol(:q)","q")
