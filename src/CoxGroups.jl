@@ -438,7 +438,7 @@ end
 
 PermRoot.refltype(W::CoxSymmetricGroup)=[(series=:A,indices=collect(1:W.n-1))]
 
-function PermRoot.reflection_length(W::CoxSymmetricGroup,a)
+function PermRoot.reflength(W::CoxSymmetricGroup,a)
   to_visit=trues(length(a.d))
   l=0
   for i in eachindex(to_visit)

@@ -428,7 +428,7 @@ Gapjm.degree(W::AbstractFiniteCoxeterGroup)=degree(W.G)
 PermRoot.reflections(W::AbstractFiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::AbstractFiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::AbstractFiniteCoxeterGroup)=eltype(W.G)
-PermRoot.reflection_length(W::AbstractFiniteCoxeterGroup,w)=reflection_length(W.G,w)
+PermRoot.reflength(W::AbstractFiniteCoxeterGroup,w)=reflength(W.G,w)
 #--------------- FiniteCoxeterGroup -----------------------------------------
 struct FiniteCoxeterGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
   G::PermRootGroup{T1,T}

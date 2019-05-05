@@ -154,6 +154,8 @@ function Base.inv(a::Perm)
   Perm(r)
 end
 
+Base.:/(a::Perm, b::Perm)=a*inv(b)
+
 function Base.:\(a::Perm, b::Perm)
   a,b=promote(a,b)
   r=similar(a.d)

@@ -110,6 +110,7 @@ for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 module Cycs
 export E, ER, Cyc, conductor, galois, Root1, quadratic
 
+using Gapjm
 import ..Util: SortedPairs, norm!, mergesum, getvalue
 import ..Util: TeXstrip, bracket_if_needed, groupby, constant
 import ..Util: factor, prime_residues, phi
@@ -791,6 +792,28 @@ end
 
   if d*cyc!=a+b*ER(root) return nothing end
   return (a=a,b=b,root=root,den=den*d)
+end
+
+function Gapjm.root(x::Cyc,n::Number=2)
+  r=Root1(x)
+  n1=Int(n)
+  if isnothing(r) 
+    if conductor(x)>1 return nothing end
+    x=Real(x)
+    if denominator(x)>1 return nothing end
+    return root(Int(x),n)
+  end
+  d=denominator(r.r)
+  j=1
+  while true
+    k=gcd(n1,d)
+    n1=div(n1,k)
+    j*=k
+    if k==1 break end
+  end
+  res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
+  println("GetRoot($x,$n) returns $res")
+  res
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0

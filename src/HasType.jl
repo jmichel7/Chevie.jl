@@ -576,48 +576,9 @@ RootsCartan=x->x
 function ReadChv(s) end
 Group(v...)=v
 ComplexConjugate(v)=v
-function GetRoot(x::Cyc,n::Number=2,msg::String="")
-  r=Root1(x)
-  if isnothing(r) 
-    if conductor(x)>1 return nothing end
-    x=Real(x)
-    if denominator(x)>1 return nothing end
-    return ER(Int(x))
-  end
-  d=denominator(r.r)
-  j=1
-  n1=Int(n)
-  while true
-    k=gcd(n1,d)
-    n1=div(n1,k)
-    j*=k
-    if k==1 break end
-  end
-  res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
-  println("GetRoot($x,$n) returns $res")
-  res
-end
- 
-function GetRoot(x::Integer,n::Number=2,msg::String="")
-  if n==1 return x
-  elseif n==2
-    res=ER(x)
-    println("GetRoot($x,$n) returns $res")
-    return res
-  else
-    error("GetRoot($x,$n) not implemented")
-  end
-end
-
-function GetRoot(x::Pol,n::Number=2,msg::String="")
-  n=Int(n)
-  if length(x.c)>1 || !iszero(x.v%n)
-    error("GetRoot($(repr(x;context=:limit=>true)),$n) not implemented") 
-  end
-  if isempty(x.c) return x end
-  Pol([GetRoot(x.c[1],n)],div(x.v,n))
-end
-
+GetRoot(x::Cyc,n::Number=2,msg::String="")=root(x,n)
+GetRoot(x::Integer,n::Number=2,msg::String="")=root(x,n)
+GetRoot(x::Pol,n::Number=2,msg::String="")=root(x,n)
 function GetRoot(x,n::Number=2,msg::String="")
   error("GetRoot($x,$n) not implemented")
 end

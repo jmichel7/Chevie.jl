@@ -7,6 +7,8 @@ The code is divided in sections  according to semantics.
 """
 module Util
 
+using Gapjm
+
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
   SortedPairs, norm!, mergesum, getvalue, # data structure
@@ -333,6 +335,17 @@ function gcd_repr(x,y)
   end
   q=sign(f)
   (q*fx, iszero(y) ? 0 : div(q * (f - fx * x), y ))
+end
+
+function Gapjm.root(x::Integer,n::Number=2)
+  if n==1 return x
+  elseif n==2
+    res=ER(x)
+    println("GetRoot($x,$n) returns $res")
+    return res
+  else
+    error("GetRoot($x,$n) not implemented")
+  end
 end
 
 #--------------------------------------------------------------------------

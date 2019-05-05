@@ -185,15 +185,13 @@ Coxeter generators, in which case `l` is the Coxeter length, and taking for
 and  Lee  for  type  `A`  and  by  Bessis  for  all  well-generated complex
 reflection  groups, is obtained in  a similar way, by  taking this time for
 `S`  the set of all reflections, and for `w` a Coxeter element; then `l` is
-the  'reflection_length';  (this  is  for  Coxeter
-groups;  for  well-generated  complex  reflection  groups `S` contains only
-those reflections which divide `w` for the reflection length); for the dula
-monoid  the simple are  of cardinality the  generalized Catalan numbers. An
-interval  monoid has naturally an inverse  morphism from `M` to `W`, called
-'EltBraid'  which is the quotient map from the interval monoid to `W` which
-sends back simple braids to `[1,w]`.
-"""
-module Garside
+the  reflection length  'reflength' (for  well-generated complex reflection
+groups  whihc are not real `S` contains only those reflections which divide
+`w`  for the  reflection length);  for the  dual monoid  the simples are of
+cardinality  the  generalized  Catalan  numbers.  An  interval  monoid  has
+naturally  an inverse morphism from `M`  to `W`, called 'EltBraid' which is
+the  quotient map from the  interval monoid to `W`  which sends back simple
+braids to `[1,w]`.
 #A  last notable  notion is  *reversible* monoids.  Since in CHEVIE we store
 #only  left normal forms, it is easy to compute left lcms and gcds, but hard
 #to  compute right ones.  But this becomes  easy to do  if the monoid has an
@@ -206,86 +204,134 @@ module Garside
 #the  Coxeter element `w` to the dual  monoid for the Coxeter element `w⁻¹`.
 #The  operations 'RightLcm' and  'RightGcd', as well  quite a few algorithms
 #have faster implementations if the monoid has a reverse operation.
-#
-#We  have implemented functions  to solve the  conjugacy problem and compute
-#centralizers  in Garside groups, following the work of Franco, Gebhardt and
-#Gonzalez-Meneses [gebgon10] and [fragon03].
-#
-#Two  elements `w` and `w'` of a monoid  `M` are *conjugate* in `M` if there
-#exists  `x∈ M` such that `wx=xw'`; if  `M` satisfies the Öre conditions, it
-#has  a  group  of  fractions  where  this  becomes  `x⁻¹wx=w'`,  the  usual
-#definition  of conjugacy. A special case  which is even closer to conjugacy
-#in  the group is if there exists `y∈  M` such that `w=xy` and `w'=yx`. This
-#relation  is not transitive in general,  but we call *cyclic conjugacy* the
-#transitive closure of this relation, a restricted form of conjugacy.
-#
-#The  next  observation  is  that  if  `w,w'`  are conjugate in the group of
-#fractions  of the Garside monoid `M` then  they are conjugate in `M`, since
-#if  `wx=xw'` then  there is  a power  `Δⁱ` which  is central and such that
-#`xΔⁱ∈ M`. Then `wxΔⁱ=xΔⁱ w'` is a conjugation in `M`.
-#
-#The  crucial observation for solving the  conjugacy problem is to introduce
-#`inf(w):=sup{i such  that  Δⁱ   divides  w}`  and
-#`sup(w):=inf{i such  that  w  divides Δⁱ}`, and to
-#notice  that the number of  conjugates of `w` with  same `inf` and `sup` as
-#`w`  is finite. Further, a  theorem of Birman shows  that the maximum `inf`
-#and  minimum `sup` in a conjugacy class can be achieved simultaneously; the
-#elements  achieving this are called the super summit set of `w`. Thus a way
-#to  determine if two elements are conjugate  is to find a representative of
-#both  of them in  their super summit  set, and then  solve conjugacy within
-#that  set. This can also be used  to compute the centralizer of an element:
-#if  we consider  the super  summit set  as the  objects of a category whose
-#morphisms are the conjugations by simple elements, the centralizer is given
-#by the endomorphisms of the given object.
-#
-#We illustrate this on an example:
-#
-#|    gap> w:=B(2,1,4,1,4);
-#    214.14
-#    gap> ConjugacySet(w,"SS"); # super summit set
-#    [ 1214.4, 214.14, 124.24, 1343.1, 14.124, 143.13, 24.214, 134.14,
-#      13.134, 14.143 ]
-#    gap> RepresentativeConjugation(w,B(1,4,1,4,3));
-#    (1)^-1.21321432
-#    gap> w^B(-1,2,1,3,2,1,4,3,2);
-#    14.143
-#    gap> CentralizerGenerators(w);
-#    [ 4, 321432.213243, 21.1 ]|
-#
-#There  is a faster  solution to the  conjugacy problem given in [gebgon10]:
-#for  each `b∈ M`, they define a  particular simple left divisor of `b`, its
-#*preferred  prefix*  such  that  the  operation  *sliding* which cyclically
-#conjugates  `b` by  its preferred  prefix, is  eventually periodic, and the
-#period  is contained in the super summit set  of `x`. We say that `x` is in
-#its  sliding circuit if some  iterated sliding of `x`  is equal to `x`. The
-#set  of sliding  circuits in  a given  conjugacy class  is smaller than the
-#super  summit  set,  thus  allows  to  solve  the conjugacy problem faster.
-#Continuing from the above example,
-#
-#|    gap> CoxeterWord(W,PreferredPrefix(w));
-#    [ 2, 1 ]
-#    gap> w^B(PreferredPrefix(w));
-#    1214.4
-#    gap> last^B(PreferredPrefix(last));
-#    1214.4
-#    gap> ConjugacySet(w,"SC"); # set of sliding circuits
-#    [ 1214.4, 1343.1 ]|
-#
-#Finally,  we have implemented  Hao Zheng's algorithm  to extract roots in a
-#Garside monoid:
-#
-#|    gap> W:=coxgroup("A",3);; M:=BraidMonoid(W);
-#    BraidMonoid(coxgroup("A",3))
-#    gap> pi:=M.B(M.delta)^2;
-#    w0.w0
-#    gap> GetRoot(pi,2);
-#    w0
-#    gap> GetRoot(pi,3);
-#    1232
-#    gap> GetRoot(pi,4);
-#    132|
+
+This module implements functions to solve the conjugacy problem and compute
+centralizers  in Garside groups, following the work of Franco, Gebhardt and
+Gonzalez-Meneses.
+
+Two  elements `w` and `w'` of a monoid  `M` are *conjugate* in `M` if there
+exists  `x∈ M` such that `wx=xw'`; if  `M` satisfies the Öre conditions, it
+has  a  group  of  fractions  where  this  becomes  `x⁻¹wx=w'`,  the  usual
+definition  of conjugacy. A special case  which is even closer to conjugacy
+in  the group is if there exists `y∈  M` such that `w=xy` and `w'=yx`. This
+relation  is not transitive in general,  but we call *cyclic conjugacy* the
+transitive closure of this relation, a restricted form of conjugacy.
+
+The  next  observation  is  that  if  `w,w'`  are conjugate in the group of
+fractions  of the Garside monoid `M` then  they are conjugate in `M`, since
+if  `wx=xw'` then  there is  a power  `Δⁱ` which  is central and such that
+`xΔⁱ∈ M`. Then `wxΔⁱ=xΔⁱ w'` is a conjugation in `M`.
+
+The  crucial observation for solving the  conjugacy problem is to introduce
+`inf(w):=sup{i such  that  Δⁱ   divides  w}`  and
+`sup(w):=inf{i such  that  w  divides Δⁱ}`, and to
+notice  that the number of  conjugates of `w` with  same `inf` and `sup` as
+`w`  is finite. Further, a  theorem of Birman shows  that the maximum `inf`
+and  minimum `sup` in a conjugacy class can be achieved simultaneously; the
+elements  achieving this are called the super summit set of `w`. Thus a way
+to  determine if two elements are conjugate  is to find a representative of
+both  of them in  their super summit  set, and then  solve conjugacy within
+that  set. This can also be used  to compute the centralizer of an element:
+if  we consider  the super  summit set  as the  objects of a category whose
+morphisms are the conjugations by simple elements, the centralizer is given
+by the endomorphisms of the given object.
+
+We illustrate this on an example:
+
+```julia-repl
+julia> b=B(2,1,4,1,4)
+214.14
+
+julia> c=B(1,4,1,4,3)
+14.143
+
+julia> d=representative_operation(b,c)
+(1)⁻¹21321432
+
+julia> b^d
+14.143
+
+julia> centralizer_generators(b)
+3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+ 21.1         
+ 321432.213243
+ 4
+
+julia> C=Garside.SS_cat(b)
+category with 10 objects and 32 maps
+
+julia> C.obj
+10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+ 214.14
+ 14.124
+ 143.13
+ 1214.4
+ 13.134
+ 124.24
+ 1343.1
+ 24.214
+ 134.14
+ 14.143
+```
+
+There  is a faster  solution to the  conjugacy problem given in [gebgon10]:
+for  each `b∈ M`, they define a  particular simple left divisor of `b`, its
+*preferred  prefix*  such  that  the  operation  *sliding* which cyclically
+conjugates  `b` by  its preferred  prefix, is  eventually periodic, and the
+period  is contained in the super summit set  of `x`. We say that `x` is in
+its  sliding circuit if some  iterated sliding of `x`  is equal to `x`. The
+set  of sliding  circuits in  a given  conjugacy class  is smaller than the
+super  summit  set,  thus  allows  to  solve  the conjugacy problem faster.
+Continuing from the above example,
+
+```julia-repl
+julia> word(W,preferred_prefix(b))
+2-element Array{Int64,1}:
+ 2
+ 1
+
+julia> b^B(preferred_prefix(b))
+1214.4
+
+julia> b1=b^B(preferred_prefix(b))
+1214.4
+
+julia> C=Garside.SC_cat(b)
+category with 3 objects and 7 maps
+
+julia> C.obj
+3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+ 214.14
+ 1214.4
+ 1343.1
+```
+Finally,  we have implemented  Hao Zheng's algorithm  to extract roots in a
+Garside monoid:
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+W(A₃)
+
+julia> B=BraidMonoid(W)
+BraidMonoid(coxgroup(:A,3))
+
+julia> pi=B(B.delta)^2
+δ²
+
+julia> root(pi,2)
+δ
+
+julia> root(pi,3)
+1232
+
+julia> root(pi,4)
+132
+```
+"""
+module Garside
 using Gapjm
-export BraidMonoid, braid, shrink, α, DualBraidMonoid
+export BraidMonoid, braid, shrink, α, DualBraidMonoid,
+representative_operation, centralizer_generators, preferred_prefix
 
 abstract type GarsideMonoid{T} end # T=type of simples
 
@@ -302,13 +348,32 @@ function leftgcd(M::GarsideMonoid,elts...)
     let M=M, i=i
       if all(b->isleftdescent(M,b,i),elts)
         found=true
-        mul!(M,x,M.atoms[i])
-        elts .= .\(Ref(M),M.atoms[i],elts)
+        x=mul!(M,x,M.atoms[i])
+        elts .= .\(Ref(M),Ref(M.atoms[i]),elts)
       end
     end
     end
   end
   return x,elts
+end
+
+function rightgcd(M::GarsideMonoid,elts...)
+  x=one(M)
+  elts=collect(elts)
+  found=true
+  while found
+    found=false
+    for i in eachindex(M.atoms)
+      let M=M, i=i
+      if all(b->isrightdescent(M,b,i),elts)
+        found=true
+        x=*(M,M.atoms[i],x)
+        elts .= ./(Ref(M),elts,Ref(M.atoms[i]))
+      end
+      end
+    end
+   end
+   return x,elts
 end
 
 function rightlcm(M::GarsideMonoid,elts...)
@@ -328,10 +393,10 @@ function element(M::GarsideMonoid{T},l::Int...)where T
   res=GarsideElm(0,T[],M)
   if isempty(l) return res end
   for s in reverse(l) # faster in reversed order (see *)
-    if s<0 b=inv(M,GarsideElm(0,[M.atoms[-s]],M))
+    if s<0 b=inv(GarsideElm(0,[M.atoms[-s]],M))
     else   b=GarsideElm(0,[M.atoms[s]],M)
     end
-    res=*(M,b,res)
+    res=b*res
   end
   res
 end
@@ -376,6 +441,20 @@ function left_divisors(M::GarsideMonoid,s)
   map(x->first.(x),res)
 end
 
+rightcomplδ(M::GarsideMonoid,x)=\(M,x,M.delta)
+leftcomplδ(M::GarsideMonoid,x)=/(M,M.delta,x)
+
+function δad(M::GarsideMonoid,x,i)
+  while i>0 
+    x=\(M,rightcomplδ(M,x),M.delta)
+    i-=1 
+  end
+  while i<0 
+    x=/(M,M.delta,leftcomplδ(M,x))
+    i+=1 
+  end
+  x
+end
 #--------------------AbstractIntervalMonoid-----------------------------------
 abstract type AbstractIntervalMonoid{T,TW<:Group{T}}<:GarsideMonoid{T} end
 
@@ -388,6 +467,7 @@ end
 
 Base.one(M::AbstractIntervalMonoid)=one(M.W)
 Base.:\(M::AbstractIntervalMonoid,x,y)=x\y
+Base.:/(M::AbstractIntervalMonoid,x,y)=x/y
 Base.:*(M::AbstractIntervalMonoid,x,y)=x*y
 Base.inv(M::AbstractIntervalMonoid,x)=inv(x)
 mul!(M::AbstractIntervalMonoid,x,y)=Perms.mul!(x,y)
@@ -408,6 +488,10 @@ Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid($(M.W))")
 
 function CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)
    isleftdescent(M.W,w,i)
+end
+
+function isrightdescent(M::BraidMonoid,w,i::Int)
+ isleftdescent(M.W,inv(w),i)
 end
 
 function CoxGroups.word(M::BraidMonoid,w)
@@ -459,7 +543,7 @@ end
 (M::DualBraidMonoid)(l...)=element(M,l...)
 
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
-  reflection_length(M.W,M.atoms[i]*w)<reflection_length(M.W,w)
+  reflength(M.W,M.atoms[i]*w)<reflength(M.W,w)
 end
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid($(M.W),c=",
@@ -481,7 +565,7 @@ function Base.cmp(a::GarsideElm,b::GarsideElm)
 end
 
 Base.isless(a::GarsideElm,b::GarsideElm)=cmp(a,b)==-1
-Base.:(==)(a::GarsideElm,b::GarsideElm)=cmp(a,b)==0
+Base.:(==)(a::GarsideElm,b::GarsideElm)=a.pd==b.pd && a.elm==b.elm
 
 # hash is needed for using permutations in Sets/Dicts
 function Base.hash(a::GarsideElm, h::UInt)
@@ -589,7 +673,9 @@ end
 function Base.:*(a::GarsideElm,b::GarsideElm)
   res=GarsideElm(a.pd+b.pd,copy(a.elm),a.M)
   res.elm.=δad.(Ref(a.M),res.elm,Ref(b.pd))
-  for x in b.elm res*=x end
+  for x in b.elm 
+    res*=x 
+  end
   res
 end
 
@@ -774,7 +860,7 @@ function min_SC(a,x)
 #   l:=Filtered(Concatenation(LeftDivisorsSimple(M,p)),
 #            s->s<>x and M.LeftGcdSimples(x,s)[2]=M.identity);
     l=left_divisors(M,\(M,x,p))
-    l=.*(Ref(M),x,vcat(l[2:end]...))
+    l=.*(Ref(M),Ref(x),vcat(l[2:end]...))
 #   Print("Warning: for b=",a," F=1 & x=",x," divides p=",p," ",Length(l),"\n");
     l[findfirst(x->x==p || x in ggF(a,x),l)]
   end
@@ -784,6 +870,35 @@ inf_cat(b)=Category(x->AtomicMaps(x,min_inf),b)
 cyc_cat(b)=Category(x->AtomicMaps(x,min_cyc),b)
 SS_cat(b)=Category(x->AtomicMaps(x,min_SS),b)
 SC_cat(b)=Category(x->AtomicMaps(x,min_SC),b)
+
+function representative_operation(b,c)
+  bconj=representativeSC(b)
+  cconj=representativeSC(c)
+  b=bconj.circuit[1]
+  bconj=bconj.conj
+  c=cconj.circuit[1] 
+  cconj=cconj.conj
+  if b.pd!=c.pd || length(b.elm)!=length(c.elm) return nothing end
+  if b==c return bconj*cconj^-1 end
+  res=[bconj]
+  class=[b]
+  for a in class for m in AtomicMaps(a,min_SC)
+    if !(m[2] in class)
+      e=res[findfirst(isequal(a),class)]*m[1]
+      if m[2]==c return e*cconj^-1 end
+      push!(class,m[2])
+      push!(res,e)
+    end
+  end end
+end
+
+function centralizer_generators(b)
+  b=representativeSC(b)
+  a=b.conj
+  b=b.circuit[1]
+  Ref(a).*endomorphisms(SC_cat(b),1).*Ref(a^-1)
+end
+
 #----------------------------------------------------------------------------
 struct TwistedPowerMonoid{T,TM}<:GarsideMonoid{T}
   delta::T
@@ -798,6 +913,8 @@ struct TwistedPowerMonoidAtom{T,TM}
   t::Bool
   M::TM
 end
+
+(M::TwistedPowerMonoid)(l...)=element(M,l...)
 
 Base.:(==)(a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=(a.v==b.v)&&
   (a.t==b.t)&&(a.M==b.M)
@@ -822,9 +939,14 @@ function TwistedPowerMonoid(M,n)
   TwistedPowerMonoid(delta,n*M.orderdelta,atoms,n,M)
 end
 
-# M.IsRightDescending:=function(s,i)if i=1 then return s.t;fi;
-# m=length(M.M.atoms);i1=1+div(i-2,m);i2=1+mod(i-2,m)
-#   return M1.IsRightDescending(s.v[i1],i2);end;
+function isrightdescent(M::TwistedPowerMonoid,s,i)
+  if i==1 return s.t end
+  m=length(M.M.atoms)
+  i1=1+div(i-2,m)
+  i2=1+mod(i-2,m)
+  isrightdescent(M.M,s.v[i1],i2)
+end
+
 # M.IsRightAscending:=function(s,i)if i=1 then return not s.t;fi;
 # m=length(M.M.atoms);i1=1+div(i-2,m);i2=1+mod(i-2,m)
 #   return M1.IsRightAscending(s.v[i1],i2);end;
@@ -838,17 +960,55 @@ end
 Base.one(M::TwistedPowerMonoid)=TwistedPowerMonoidAtom(
            [one(M.M) for i in 1:M.n],false,M.M)
 
-Base.:*(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(
+Base.:*(M::TwistedPowerMonoid,a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=TwistedPowerMonoidAtom(
      map(i->*(M.M,a.v[b.t ? 1+mod(i,M.n) : i],b.v[i]),1:M.n),a.t||b.t,M.M)
+mul!(M::TwistedPowerMonoid,a,b)=*(M,a,b)
 
-Base.:\(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(
+Base.:\(M::TwistedPowerMonoid,a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=TwistedPowerMonoidAtom(
      map(i->\(M.M,a.v[b.t!=a.t ? 1+mod(i,M.n) : i],b.v[i]),1:M.n),b.t!=a.t,M.M)
 
-Base.:/(M::TwistedPowerMonoid,a,b)=TwistedPowerMonoidAtom(map(i->/(M.M,a.v[
+Base.:/(M::TwistedPowerMonoid,a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=TwistedPowerMonoidAtom(map(i->/(M.M,a.v[
   b.t ? 1+mod(i-2,M.n) : i],b.v[b.t ? 1+mod(i-2,M.n) : i]),1:M.n),a.t!=b.t,M.M)
 
 function Base.show(io::IO,M::TwistedPowerMonoid)
   print(io,"twisted $(ordinal(M.n)) power of $(M.M)");
+end
+
+# Algorithm following Hao Zheng "A new approach to extracting roots in Garside
+# groups" Comm. Algebra 34 (2006) 1793--1802
+function Gapjm.root(b0,n=2)
+  M=b0.M
+  tM=TwistedPowerMonoid(M,n)
+  l=vcat(fill(M.delta,b0.pd),b0.elm)
+  b=GarsideElm(0,map(eachindex(l)) do j
+          TwistedPowerMonoidAtom([i==1 ? l[j] : one(M) for i in 1:n],j==1,M)
+          end,tM)
+  function inner(b)
+    cst=b->all(x->constant(x.v),b.elm)
+    sc=representativeSC(b)
+    conj=[sc.conj]
+    class=[sc.circuit[1]]
+    if cst(class[1]) return conj[1] end
+    for a in class 
+      for m in AtomicMaps(a,min_SC)
+       if !(m[2] in class)
+         e=conj[findfirst(isequal(a),class)]*m[1]
+         if cst(m[2]) return e end
+         push!(class,m[2])
+         push!(conj,e)
+      end
+     end
+    end
+  end
+  conj=inner(b)
+  if conj==nothing return nothing end
+  a=b^conj
+  a=GarsideElm(a.pd,map(x->x.v[1],a.elm),M)
+  l=length(conj.elm)
+  k=count(x->x.t,conj.elm)
+  conj=GarsideElm(conj.pd,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
+                map(i->conj.elm[i].v[1+mod(k,n)],k+1:l)),M)
+  conj*a*conj^-1
 end
 #----------------------------------------------------------------------------
 function shrink(b1::Vector{T})where T<:GarsideElm

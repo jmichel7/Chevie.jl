@@ -10,7 +10,7 @@ HyperplaneOrbits -> hyperplane_orbits
 ReflectionEigenvalues -> refleigen
 ReflectionCharacter -> reflchar
 PositionClass -> position_class
-ReflectionLength->reflection_length
+ReflectionLength->reflength
 """
 module PermRoot
 
@@ -18,7 +18,7 @@ export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- position_class, reflection_length, bipartite_decomposition
+ position_class, reflength, bipartite_decomposition
 
 using Gapjm
 
@@ -113,8 +113,8 @@ end
 
 reflection(W::AbstractPermRootGroup,i)=reflections(W)[i]
 
-function reflection_length(W::AbstractPermRootGroup,w::Perm)
-  l=getp(refleigen,W,:reflection_lengths)::Vector{Int}
+function reflength(W::AbstractPermRootGroup,w::Perm)
+  l=getp(refleigen,W,:reflengths)::Vector{Int}
   l[position_class(W,w)]
 end
 
@@ -428,7 +428,7 @@ function refleigen(W::AbstractPermRootGroup)::Vector{Vector{Rational{Int}}}
     v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
     l=CycPol.((permutedims(v)*t)[1,:])
     ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
-    W.prop[:reflection_lengths]=map(x->count(y->!iszero(y),x),ll)
+    W.prop[:reflengths]=map(x->count(y->!iszero(y),x),ll)
     ll
   end
 end

@@ -54,13 +54,17 @@ rootdatum
 # Hecke.jl Documentation
 ```@docs
 Hecke
-HeckeAlgebra
+hecke
 ```
 # KL.jl Documentation
 ```@docs
 KL
 KLPol
 Tbasis
+```
+# Garside.jl Documentation
+```@docs
+Garside
 ```
 # Util.jl Documentation
 ```@docs

@@ -263,4 +263,13 @@ function cyclotomic_polynomial(n::Integer)
     res
   end
 end
+
+function Gapjm.root(x::Pol,n::Number=2)
+  n=Int(n)
+  if length(x.c)>1 || !iszero(x.v%n)
+    error("GetRoot($(repr(x;context=:limit=>true)),$n) not implemented") 
+  end
+  if isempty(x.c) return x end
+  Pol([GetRoot(x.c[1],n)],div(x.v,n))
+end
 end
