@@ -1006,8 +1006,16 @@ function Gapjm.root(b0,n=2)
   a=GarsideElm(a.pd,map(x->x.v[1],a.elm),M)
   l=length(conj.elm)
   k=count(x->x.t,conj.elm)
-  conj=GarsideElm(conj.pd,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
-                map(i->conj.elm[i].v[1+mod(k,n)],k+1:l)),M)
+  pd=conj.pd
+  elm=vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
+               map(i->conj.elm[i].v[1+mod(k,n)],k+1:l))
+  while length(elm)>0 && elm[1]==M.delta
+    pd+=1; elm=elm[2:end]
+  end
+  while length(elm)>0 && elm[end]==one(M)
+    elm=elm[1:end-1]
+  end
+  conj=GarsideElm(pd,elm,M)
   conj*a*conj^-1
 end
 #----------------------------------------------------------------------------
