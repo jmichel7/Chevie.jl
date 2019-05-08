@@ -65,6 +65,13 @@ Tbasis
 # Garside.jl Documentation
 ```@docs
 Garside
+left_divisors
+DualBraidMonoid
+fraction
+word
+representative_operation
+centralizer_generators
+shrink
 ```
 # Util.jl Documentation
 ```@docs

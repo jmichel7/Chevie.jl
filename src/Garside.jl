@@ -101,7 +101,7 @@ julia> W=coxgroup(:A,4)
 W(A₄)
 
 julia> B=BraidMonoid(W)
-BraidMonoid(coxgroup(:A,4))
+BraidMonoid(W(A₄))
 ```
 constructs  the  associated  braid  monoid,  and  then  as  a  function 'B'
 constructs  elements of the braid monoid (or group when `W` is finite) from
@@ -257,7 +257,7 @@ julia> centralizer_generators(b)
  321432.213243
  4
 
-julia> C=Garside.SS_cat(b)
+julia> C=conjcat(b,:ss)
 category with 10 objects and 32 maps
 
 julia> C.obj
@@ -296,7 +296,7 @@ julia> b^B(preferred_prefix(b))
 julia> b1=b^B(preferred_prefix(b))
 1214.4
 
-julia> C=Garside.SC_cat(b)
+julia> C=conjcat(b)
 category with 3 objects and 7 maps
 
 julia> C.obj
@@ -313,7 +313,7 @@ julia> W=coxgroup(:A,3)
 W(A₃)
 
 julia> B=BraidMonoid(W)
-BraidMonoid(coxgroup(:A,3))
+BraidMonoid(W(A₃))
 
 julia> pi=B(B.delta)^2
 δ²
@@ -330,8 +330,9 @@ julia> root(pi,4)
 """
 module Garside
 using Gapjm
-export BraidMonoid, braid, shrink, α, DualBraidMonoid,
-representative_operation, centralizer_generators, preferred_prefix
+export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
+representative_operation, centralizer_generators, preferred_prefix,
+left_divisors
 
 abstract type GarsideMonoid{T} end # T=type of simples
 
@@ -421,8 +422,38 @@ function CoxGroups.word(M::GarsideMonoid,w)
   res
 end
 
-# left_divisors(<M>,<s>) 
-# all divisors of the simple s of monoid M
+"""
+left_divisors( M, s)
+
+all  the left divisors of the simple element `s` of the Garside monoid `M`,
+as  a vector  of vectors,  where the  i+1-th vector  holds the  divisors of
+length i in the atoms.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+W(A₃)
+
+julia> B=BraidMonoid(W)
+BraidMonoid(W(A₃))
+
+julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1},1}:
+ [.]   
+ [1, 3]
+ [13]  
+ [132] 
+
+julia> B=DualBraidMonoid(W)
+DualBraidMonoid(W(A₃),c=[1, 3, 2])
+
+julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1},1}:
+ [.]                     
+ [1, 2, 3, 4, 5, 6]      
+ [12, 13, 15, 25, 34, 45]
+ [δ]                     
+```
+"""
 function left_divisors(M::GarsideMonoid,s)
   rest=[(left=one(M),right=s)]
   res=[]
@@ -455,6 +486,39 @@ function δad(M::GarsideMonoid,x,i)
   end
   x
 end
+
+"elements(M,l) returns the elements of M of length l."
+function PermGroups.elements(M::GarsideMonoid,l)
+  if !haskey(M.prop,:elements)
+    M.prop[:elements]=Dict(0=>[M()],1=>[M(i) for i in eachindex(M.atoms)])
+  end
+  RA(w)=filter(i->!isrightdescent(M,w,i),eachindex(M.atoms))
+  if !haskey(M.prop[:elements],l)
+    res=empty(M.prop[:elements][1])
+    for b in elements(M,l-1)
+      lb=length(b.elm)
+      if iszero(lb) r=Int[]
+      else
+        r=RA(b.elm[lb])
+        if lb==1 rr=Int[] else rr=RA(b.elm[lb-1]) end
+        for s in r
+          w=*(M,b.elm[lb],M.atoms[s])
+          if !any(i->isleftdescent(M,w,i),rr)
+            elm=copy(b.elm)
+            elm[end]=w
+            push!(res,norm(GarsideElm(b.pd,elm,M)))
+          end
+        end
+      end
+      for i in setdiff(eachindex(M.atoms),r)
+        push!(res,norm(GarsideElm(b.pd,vcat(b.elm,[M.atoms[i]]),M)))
+      end
+    end
+    M.prop[:elements][l]=collect(Set(res))
+  end
+  M.prop[:elements][l]
+end
+
 #--------------------AbstractIntervalMonoid-----------------------------------
 abstract type AbstractIntervalMonoid{T,TW<:Group{T}}<:GarsideMonoid{T} end
 
@@ -480,18 +544,20 @@ struct BraidMonoid{T,TW}<:AbstractIntervalMonoid{T,TW}
   orderdelta::Int
   atoms::Vector{T}
   W::TW
+  prop::Dict{Symbol,Any}
 end
 
-BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,gens(W),W)
+" BraidMonoid(W) returns the BraidMonoid of the Coxeter group W"
+BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,gens(W),W,Dict{Symbol,Any}())
 
-Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid($(M.W))")
+Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 
 function CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)
    isleftdescent(M.W,w,i)
 end
 
 function isrightdescent(M::BraidMonoid,w,i::Int)
- isleftdescent(M.W,inv(w),i)
+  isleftdescent(M.W,inv(w),i)
 end
 
 function CoxGroups.word(M::BraidMonoid,w)
@@ -526,7 +592,7 @@ julia> W=coxgroup(:A,3)
 W(A₃)
 
 julia> B=DualBraidMonoid(W)
-DualBraidMonoid(coxgroup(:A,3),c=[1, 2, 5])
+DualBraidMonoid(W(A₃),c=[1, 3, 2])
 
 julia> B(2,1,2,1,1)
 12.1.1.1
@@ -546,8 +612,8 @@ function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,M.atoms[i]*w)<reflength(M.W,w)
 end
 
-Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid($(M.W),c=",
-                                            word(M,M.delta),")")
+Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
+                                            word(M.W,M.delta),")")
 #---------------------------------------------------------------------
 struct GarsideElm{T,TM<:GarsideMonoid}
   pd::Int
@@ -579,6 +645,21 @@ function Base.hash(a::GarsideElm, h::UInt)
   b
 end
 
+function norm(a::GarsideElm)
+  M=a.M
+  i=1
+  pd=a.pd
+  while i<length(a.elm) && a.elm[i]==M.delta 
+    i+=1
+    pd+=1
+  end
+  j=length(a.elm)
+  while j>0 && a.elm[j]==one(M)
+    j-=1
+  end
+  i>1 || j<length(a.elm) ? GarsideElm(pd,a.elm[i:j],M) : a
+end
+
 function Base.inv(b::GarsideElm)
   k=length(b.elm)
   M=b.M
@@ -586,6 +667,22 @@ function Base.inv(b::GarsideElm)
     map(i->δad(M,\(M,b.elm[i],M.delta),-i-b.pd),k:-1:1),M)
 end
 
+"""
+fraction(b)
+returns a tuple `(x,y)`  of two  elements with  no non-trivial  common left
+divisor and such that `b=inv(x)*y`.
+
+```julia-repl
+julia> B=BraidMonoid(coxgroup(:A,3))
+BraidMonoid(W(A₃))
+
+julia> b=B( 2, 1, -3, 1, 1)
+(23)⁻¹321.1.1
+
+julia> fraction(b)
+(23, 321.1.1)
+```
+"""
 function fraction(b::GarsideElm)
   M=b.M
   if b.pd>=0 return [one(b),b] end
@@ -603,6 +700,32 @@ function α(b)
   end
 end
 
+"""
+word(b)
+returns  a description  of `b`  as a  list of  the atoms  of which  it is a
+product.  If `b` is in the Garside group  but not the Garside monoid, it is
+represented  in  fraction  normal  form  where  as a special convention the
+inverses  of  the  atoms  are  represented  by  negating  the corresponding
+integer.
+
+```julia-repl
+julia> B=BraidMonoid(coxgroup(:A,3))
+BraidMonoid(W(A₃))
+
+julia> b=B(2,1,2,1,1)*inv(B(2,2))
+(21)⁻¹1.12.21
+
+julia> word(b)
+7-element Array{Int64,1}:
+ -1
+ -2
+  1
+  1
+  2
+  2
+  1
+```
+"""
 function CoxGroups.word(b::GarsideElm)
   M=b.M
   res=Int[]
@@ -756,21 +879,21 @@ function endomorphisms(C::Category{TO},o) where TO
   gens
 end
 
-function AtomicMaps(a,minconj::Function)
+function AtomicMaps(a,s::Symbol=:sc)
   M=a.M
   res=typeof(a=>a)[]
   for i in eachindex(M.atoms)
-    minc=minconj(a,M.atoms[i])
-    if !isnothing(minc) && !any(k->isleftdescent(M,minc,k),i+1:length(M.atoms))
-      bminc=M(minc)
-      push!(res,bminc=>a^bminc)
+   m=minc(a,M.atoms[i],Val(s))
+    if !isnothing(m) && !any(k->isleftdescent(M,m,k),i+1:length(M.atoms))
+      bm=M(m)
+      push!(res,bm=>a^bm)
     end
   end
   filter(x->count(y->(y[1]^-1*x[1]).pd>=0,res)==1,res)
 end
 
 # a braid x atom
-function min_cyc(a,x)
+function minc(a,x,::Val{:cyc})
   if a.pd>0 return x end
   if isempty(a.elm) return nothing end
   M=a.M
@@ -787,7 +910,7 @@ end
 
 # Inf(a,x)  minimal m such that x<m and inf(a^m)>=inf(a). 
 # m is simple; see algorithm 2 in Franco-Gonzales 1.
-function min_inf(a,x)
+function minc(a,x,::Val{:inf})
   M=a.M
   m=x
   while true
@@ -801,13 +924,13 @@ end
 
 # SS(a,x)  Assumes a in SSS(a). Returns minimal m such that x<m and
 # a^m is in SSS(a). m is simple. See algorithm 5 in Franco-Gonzales 1
-function min_SS(a,x)
+function minc(a,x,::Val{:ss})
   ai=inv(a)
   m=x # because scope
   while true
     m=x
-    x=min_inf(a,x)
-    x=min_inf(ai,x)
+    x=minc(a,x,Val(:inf))
+    x=minc(ai,x,Val(:inf))
     if x==m break end
   end
   m
@@ -833,7 +956,7 @@ PositiveSimpleConjugation(y,r)=y^y.M(r)
 
 # MinConjugating.SC(a,x,F) minimal m such that x<m and m^-1*a*F(m) is in SC(a).
 # m is a simple.
-function min_SC(a,x)
+function minc(a,x,::Val{:sc})
     M=a.M
 # Gebhart-Gonzalez function F for a in SC such that a^x in SSS
   function ggF(a,x)
@@ -850,7 +973,7 @@ function min_SC(a,x)
     end
     map(x->x[2],filter(x->x[1]==a,f[p:end]))
   end
-  x=min_SS(a,x)
+  x=minc(a,x,Val(:ss))
   f=ggF(a,x)
   if f!=[one(M)]
     p=findfirst(s->leftgcd(M,x,s)[2][1]==one(M),f)
@@ -866,37 +989,96 @@ function min_SC(a,x)
   end
 end
 
-inf_cat(b)=Category(x->AtomicMaps(x,min_inf),b)
-cyc_cat(b)=Category(x->AtomicMaps(x,min_cyc),b)
-SS_cat(b)=Category(x->AtomicMaps(x,min_SS),b)
-SC_cat(b)=Category(x->AtomicMaps(x,min_SC),b)
+minc(a,x)=minc(a,x,Val(:sc))
 
-function representative_operation(b,c)
-  bconj=representativeSC(b)
-  cconj=representativeSC(c)
-  b=bconj.circuit[1]
-  bconj=bconj.conj
-  c=cconj.circuit[1] 
-  cconj=cconj.conj
-  if b.pd!=c.pd || length(b.elm)!=length(c.elm) return nothing end
+conjcat(b,s::Symbol=:sc)=Category(x->AtomicMaps(x,s),b)
+
+"""
+representative_operation(b,b1)
+
+The  function returns `a` such that  `b^a=b1` if such exists, and `nothing`
+otherwise.  If an argument <type> is given,  the computation is done in the
+corresponding category --- see "conjcat".
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+W(D₄)
+
+julia> B=BraidMonoid(coxgroup(:D,4))
+BraidMonoid(W(D₄))
+
+julia> b=B(2,3,1,2,4,3);b1=B(1,4,3,2,2,2)
+1432.2.2
+
+julia> representative_operation(b,b1)
+(134312.23)⁻¹
+
+julia> representative_operation(b,b1,:cyc)
+232.2
+```
+"""
+function representative_operation(b,c,s::Symbol=:sc)
+  if s==:sc || s==:ss
+    bconj=representativeSC(b)
+    cconj=representativeSC(c)
+    b=bconj.circuit[1]
+    bconj=bconj.conj
+    c=cconj.circuit[1] 
+    cconj=cconj.conj
+    if b.pd!=c.pd || length(b.elm)!=length(c.elm) return nothing end
+  else
+    bconj=cconj=one(b)
+  end
   if b==c return bconj*cconj^-1 end
   res=[bconj]
   class=[b]
-  for a in class for m in AtomicMaps(a,min_SC)
-    if !(m[2] in class)
-      e=res[findfirst(isequal(a),class)]*m[1]
-      if m[2]==c return e*cconj^-1 end
-      push!(class,m[2])
-      push!(res,e)
-    end
-  end end
+  for a in class 
+    for m in AtomicMaps(a,s)
+      if !(m[2] in class)
+        e=res[findfirst(isequal(a),class)]*m[1]
+        if m[2]==c return e*cconj^-1 end
+        push!(class,m[2])
+        push!(res,e)
+      end
+    end 
+  end
 end
 
-function centralizer_generators(b)
-  b=representativeSC(b)
-  a=b.conj
-  b=b.circuit[1]
-  Ref(a).*endomorphisms(SC_cat(b),1).*Ref(a^-1)
+"""
+centralizer_generators(b)
+
+a list of generators  of the centralizer of `b`. 
+The computation is done by computing
+the  endomorphisms  of  the  object  <b>  in  the  category  of its sliding
+circuits.  If an argument <type>  is given, the computation  is done in the
+corresponding  category --- see "ConjugacySet". The  main use of this is to
+compute  the  centralizer  in  the  category  of cyclic conjugacy by giving
+'\"Cyc\"' as the type.
+
+|    gap> W:=CoxeterGroup("D",4);;
+    gap> w:=Braid(W)(4,4,4);
+    4.4.4
+    gap> CentralizerGenerators(w);
+    [ 4, 2, (1)^-1.34.431, 34.43, (32431)^-1.132431, 1, (2)^-1.34.432,
+      (31432)^-1.231432 ]
+    gap> ShrinkGarsideGeneratingSet(last);
+    [ 4, 2, 1, 34.43, (3243)^-1.13243 ]
+    gap> CentralizerGenerators(w,"Cyc");
+    [ 4 ]
+    gap> F:=Frobenius(CoxeterCoset(W,(1,2,4)));
+    function ( arg ) ... end
+    gap> CentralizerGenerators(w,F);
+    [ 312343123, 124 ]|
+"""
+function centralizer_generators(b,s::Symbol=:sc)
+  if s==:ss || s==:sc
+    b=representativeSC(b)
+    a=b.conj
+    b=b.circuit[1]
+    Ref(a).*endomorphisms(conjcat(b,s),1).*Ref(a^-1)
+  else
+    endomorphisms(conjcat(b,s),1)
+  end
 end
 
 #----------------------------------------------------------------------------
@@ -990,7 +1172,7 @@ function Gapjm.root(b0,n=2)
     class=[sc.circuit[1]]
     if cst(class[1]) return conj[1] end
     for a in class 
-      for m in AtomicMaps(a,min_SC)
+      for m in AtomicMaps(a)
        if !(m[2] in class)
          e=conj[findfirst(isequal(a),class)]*m[1]
          if cst(m[2]) return e end
@@ -1006,43 +1188,58 @@ function Gapjm.root(b0,n=2)
   a=GarsideElm(a.pd,map(x->x.v[1],a.elm),M)
   l=length(conj.elm)
   k=count(x->x.t,conj.elm)
-  pd=conj.pd
-  elm=vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
-               map(i->conj.elm[i].v[1+mod(k,n)],k+1:l))
-  while length(elm)>0 && elm[1]==M.delta
-    pd+=1; elm=elm[2:end]
-  end
-  while length(elm)>0 && elm[end]==one(M)
-    elm=elm[1:end-1]
-  end
-  conj=GarsideElm(pd,elm,M)
+  conj=norm(GarsideElm(conj.pd,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
+                                    map(i->conj.elm[i].v[1+mod(k,n)],k+1:l)),M))
   conj*a*conj^-1
 end
 #----------------------------------------------------------------------------
+"""
+shrink(l)
+
+The  list `l` is a  list of  elements of  the same Garside group `G`. This
+function  tries to find  another set of  generators of the  subgroup of `G`
+generated by the elements of `l`, of smaller total length (the length being
+counted  as returned by the function  `word`).
+
+```julia-repl
+julia> B=BraidMonoid(coxsym(3))
+BraidMonoid(coxsym(3))
+
+julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
+4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:
+ 1.1.1              
+ 2.2.2              
+ (1.12)⁻¹2.2.2.21.12
+ 1.1.12             
+
+julia> shrink(b)
+2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:
+ 2  
+ 1  
+```
+"""
 function shrink(b1::Vector{T})where T<:GarsideElm
-  function f(b::GarsideElm)
-    ld,ln=map(x->length(word(x)),fraction(b))
-    if ld>ln return (l=ld+ln,ld=ln,b=inv(b),s=true)
-    else return (l=ld+ln,ld=ld,b=b,s=true)
-    end
+  function f(b)
+    ld,ln=length.(word.(fraction(b)))
+    ld>ln ? (l=ld+ln,ld=ln,b=inv(b),s=true) : (l=ld+ln,ld=ld,b=b,s=true)
   end
   simplified=false
-  function test(el::GarsideElm,j::Int)
+  function test(el,j)
     p=f(el)
     pos=findfirst(isequal(p),bs)
     if !isnothing(pos) && pos!=j
       print(" eliminated")
+      simplified=true
       splice!(bs,max(pos,j))
       return true
     end
     if p>=bs[j] return false end
-    print("<$(p.l)÷$(p.ld)>");
+    print("<$(p.l)÷$(p.ld)>")
     bs[j]=p
     simplified=true
     return false
   end
-  bs=map(f,b1)
-  sort!(bs)
+  bs=sort!(f.(b1))
   while true
     globsimplified=false
     print("#I total length $(sum(x->x.l,bs)) maximal length $(bs[end].l)\n")
