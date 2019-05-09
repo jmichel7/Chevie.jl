@@ -802,6 +802,18 @@ function Base.:*(a::GarsideElm,b::GarsideElm)
   res
 end
 
+# conjugation of b by simple r such that (b^r).pd>=b.pd
+# About 2 times faster than (b,r)->b^b.M(r) for long words
+#function Base.:^(b::GarsideElm{T},r::T) where T
+#  M=b.M 
+#  if r==one(M) return b end
+#  l=*(M,b,r)
+#  l=PrefixToNormal(\(M,M.DeltaAction(r,b.pd),l.elm[1]),l.elm[2:end])
+#  norm!(GarsideElm(b.pd,l,M))
+#end
+
+Base.:^(y::GarsideElm{T},r::T) where T=inv(y.M(r))*(y*r)
+
 Base.:^(a::GarsideElm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : Base.power_by_squaring(inv(a),-n)
 
 Base.:^(a::GarsideElm, b::GarsideElm)=inv(b)*a*b
@@ -952,8 +964,6 @@ function representativeSC(b)
   (conj=l[t][2],circuit=first.(l[t:end-1]))
 end
 
-PositiveSimpleConjugation(y,r)=y^y.M(r)
-
 # MinConjugating.SC(a,x,F) minimal m such that x<m and m^-1*a*F(m) is in SC(a).
 # m is a simple.
 function minc(a,x,::Val{:sc})
@@ -965,9 +975,9 @@ function minc(a,x,::Val{:sc})
     while true # find the history under sliding of the pair [a,x]
       push!(f,[y,x])
       r=preferred_prefix(y)
-      x=\(M,r,*(M,x,preferred_prefix(PositiveSimpleConjugation(y,x))))
+      x=\(M,r,*(M,x,preferred_prefix(y^x)))
       if x==one(M) return [one(M)] end
-      y=PositiveSimpleConjugation(y,r)
+      y^=r
       p=findfirst(isequal([y,x]),f)
       if !isnothing(p) break end
     end
