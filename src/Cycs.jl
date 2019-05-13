@@ -709,7 +709,8 @@ function Base.:*(a::Root1,b::Root1)
   Root1(numerator(r),denominator(r))
 end
 
-Cycs.E(a::Root1)=E(conductor(a),exponent(a))
+E(a::Root1)=E(conductor(a),exponent(a))
+E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
 
 
 """

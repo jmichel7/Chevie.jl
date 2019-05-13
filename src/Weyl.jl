@@ -429,6 +429,9 @@ PermRoot.reflections(W::AbstractFiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::AbstractFiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::AbstractFiniteCoxeterGroup)=eltype(W.G)
 PermRoot.reflength(W::AbstractFiniteCoxeterGroup,w)=reflength(W.G,w)
+PermRoot.hyperplane_orbits(W::AbstractFiniteCoxeterGroup)=hyperplane_orbits(W.G)
+PermRoot.refleigen(W::AbstractFiniteCoxeterGroup)=refleigen(W.G)
+PermRoot.torus_order(W::AbstractFiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
 #--------------- FiniteCoxeterGroup -----------------------------------------
 struct FiniteCoxeterGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
   G::PermRootGroup{T1,T}

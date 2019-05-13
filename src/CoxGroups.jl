@@ -192,6 +192,7 @@ function Gapjm.word(W::CoxeterGroup,w)
   ww
 end
 
+Base.length(W::CoxeterGroup,w)=length(word(W,w))
 Base.one(W::CoxeterGroup)=one(W.G)
 Base.eltype(W::CoxeterGroup)=eltype(W.G)
 Gapjm.gens(W::CoxeterGroup)=gens(W.G)

@@ -18,7 +18,7 @@ export AbstractPermRootGroup, PermRootGroup, PermRootSubGroup,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- position_class, reflength, bipartite_decomposition
+ position_class, reflength, bipartite_decomposition, torus_order
 
 using Gapjm
 
@@ -326,6 +326,54 @@ function bipartite_decomposition(W)
   return L,R
 end
 
+tr(m)=sum(i->m[i,i],axes(m,1))
+reflchar(W::AbstractPermRootGroup,w)=tr(matX(W,w))
+reflchar(W::AbstractPermRootGroup)=map(x->reflchar(W,W(x...)),classinfo(W)[:classtext])
+  
+function refleigen(W::AbstractPermRootGroup)::Vector{Vector{Rational{Int}}}
+  gets(W,:refleigen) do W
+    t=chartable(W).irr[charinfo(W)[:extRefl],:]
+    v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
+    l=CycPol.((permutedims(v)*t)[1,:])
+    ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
+    W.prop[:reflengths]=map(x->count(y->!iszero(y),x),ll)
+    ll
+  end
+end
+
+torus_order(W::AbstractPermRootGroup,q,i)=prod(l->q-E(l),refleigen(W)[i])
+
+function classinv(W::AbstractPermRootGroup)
+  gets(W,:classinv)do W
+    map(x->cycletype(W(x...),domain=simple_representatives(W)),
+         classinfo(W)[:classtext])
+  end
+end
+
+function position_class(W::AbstractPermRootGroup,w)
+  i=cycletype(w,domain=simple_representatives(W))
+  l=findall(isequal(i),classinv(W))
+  if length(l)>1 error("ambiguity") end
+  l
+end
+
+function Base.show(io::IO, W::AbstractPermRootGroup)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  if isempty(refltype(W)) print(io,repl||TeX ? "W()" : coxgroup()) end
+  n=join(map(refltype(W))do t
+    n=sprint(show,t; context=io)
+    inds=indices(t)
+    if inds!=eachindex(inds)
+      ind=any(i->i>10,inds) ? join(inds,",") : join(inds)
+      n*="_{($ind)}"
+    end
+    n
+  end,repl||TeX ? "\\times " : "*")
+  if repl n=TeXstrip(n) end
+  print(io,n)
+end
+
 #--------------------------------------------------------------------------
 struct PermRootGroup{T,T1}<:AbstractPermRootGroup{T,T1}
   matgens::Vector{Matrix{T}}
@@ -416,52 +464,6 @@ function matX(W::PermRootGroup,w)
   ir=independent_roots(W)
   Xinv=Int.(inv(Rational.(X)))
   Xinv*vcat(permutedims(hcat(W.roots[ir.^w]...)),X[length(ir)+1:end,:]);
-end
-
-tr(m)=sum(i->m[i,i],axes(m,1))
-reflchar(W::AbstractPermRootGroup,w)=tr(matX(W,w))
-reflchar(W::AbstractPermRootGroup)=map(x->reflchar(W,W(x...)),classinfo(W)[:classtext])
-  
-function refleigen(W::AbstractPermRootGroup)::Vector{Vector{Rational{Int}}}
-  gets(W,:refleigen) do W
-    t=chartable(W).irr[charinfo(W)[:extRefl],:]
-    v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
-    l=CycPol.((permutedims(v)*t)[1,:])
-    ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
-    W.prop[:reflengths]=map(x->count(y->!iszero(y),x),ll)
-    ll
-  end
-end
-
-function classinv(W::AbstractPermRootGroup)
-  gets(W,:classinv)do W
-    map(x->cycletype(W(x...),domain=simple_representatives(W)),
-         classinfo(W)[:classtext])
-  end
-end
-
-function position_class(W::AbstractPermRootGroup,w)
-  i=cycletype(w,domain=simple_representatives(W))
-  l=findall(isequal(i),classinv(W))
-  if length(l)>1 error("ambiguity") end
-  l
-end
-
-function Base.show(io::IO, W::AbstractPermRootGroup)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isempty(refltype(W)) print(io,repl||TeX ? "W()" : coxgroup()) end
-  n=join(map(refltype(W))do t
-    n=sprint(show,t; context=io)
-    inds=indices(t)
-    if inds!=eachindex(inds)
-      ind=any(i->i>10,inds) ? join(inds,",") : join(inds)
-      n*="_{($ind)}"
-    end
-    n
-  end,repl||TeX ? "\\times " : "*")
-  if repl n=TeXstrip(n) end
-  print(io,n)
 end
 
 function cartan_coeff(W::PermRootGroup,i,j)
