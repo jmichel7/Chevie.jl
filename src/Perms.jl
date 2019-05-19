@@ -1,28 +1,31 @@
 """
-This module is a port of some GAP functionality on permutations.
+This module is a port of the GAP permutations type.
 
-A  permutation here is a permutation of the set 1:n and is represented as a
-list  of n integers representing the images of 1:n. The integer n is called
-the *degree* of the permutation.
+A  permutation here is a permutation of the set `1:n` and is represented as
+a  vector of `n` integers representing the images of `1:n`. The integer `n`
+is called the *degree* of the permutation, even if it is not moved.
 
-Permutations  in  this  module  follow  the  GAP  design: it is possible to
+The  permutations in this module  follow the GAP design:  it is possible to
 multiply, or to store in the same group, permutations of different degrees.
-A  slightly faster  design is  the MAGMA  one where  any permutation has to
-belong  to  a  group  and  the  degree  is  determined by that group. There
-multiplication of permutations in a given group is a faster, but it is more
-difficult  to multiply  permutations coming  from different  groups, like a
-group and one of its subgroups.
+Slightly  faster is the MAGMA design where any permutation has to belong to
+a  group and the degree is determined by that group. Then multiplication of
+permutations  in a given group is slightly faster, but it is more difficult
+to multiply permutations coming from different groups, like a group and one
+of its subgroups.
 
-The  GAP permutation  (1,2,3)(4,5) can  be written Perm(1,2,3)*Perm(4,5) or
-perm"(1,2,3)(4,5)".  It is represented internally as [2,3,1,5,4]; note that
-[2,3,1,5,4,6] represents the same permutation.
+The  permutation whose cycle decomposition is `(1,2,3)(4,5)` can be written
+`Perm(1,2,3)*Perm(4,5)`   or   `perm"(1,2,3)(4,5)"`.   It   is  represented
+internally  as `[2,3,1,5,4]`; note that `[2,3,1,5,4,6]` represents the same
+permutation.
 
-As in GAP i^p applies p to integer i, while p^q means p^-1*q*p.
+As  in  GAP  `i^p`  applies  `p`  to  the  integer  `i`,  while `p^q` means
+`p^-1*q*p`.
 
-Another  Perm  constructor  is  Perm{T}(p)  which  converts the perm p to a
-permutation  on  integers  of  type  T;  for  instance  Perm{UInt8} is more
-efficient  that Perm{Int} and can be used for Weyl groups of rank <=8 since
-they have at most 240 roots.
+The  complete  type  of  our  permutations is `Perm{T}` where `T<:Integer`,
+where `Vector{T}` is the type of the vector which holds the image of `1:n`.
+This   can  used  to  save  space  or  time  when  possible.  For  instance
+`Perm{UInt8}`  uses less  space than  `Perm{Int}` and  can be used for Weyl
+groups of rank <=8 since they have at most 240 roots.
 
 # Examples
 ```julia-repl
@@ -61,12 +64,18 @@ julia> largest_moved_point(Perm(1,2)*Perm(2,3)^2)
 
 julia> smallest_moved_point(Perm(2,3))
 2
+
+julia> rand(Perm,10)
+(1,8,4,2,9,7,5,10,3,6)
+
 ```
 
-Perms  have methods copy, hash,  ==, cmp, isless (total order)  so they can be
+Operations on permutations are `*, /, inv, \` and `mul!`
+Perms  have methods `copy, hash,  ==, cmp, isless` (total order)  so they can be
 keys in hashes or elements of sets.
 
-other functions are: cycles, cycletype, sign. See individual documentation.
+other functions are: `cycles, cycletype, sign, rand`. 
+See individual documentations.
 """
 module Perms
 
@@ -77,6 +86,8 @@ struct Perm{T<:Integer}
    d::Vector{T}
 end
 
+#---------------- Constructors ---------------------------------------
+"for example  Perm{Int8}(1,2,3)"
 function Perm{T}(x::Int...)where T<:Integer
   if isempty(x) return Perm(T[]) end
   d=T.(1:max(x...))
@@ -87,21 +98,15 @@ function Perm{T}(x::Int...)where T<:Integer
   Perm(d)
 end
 
+"Perm(1,2,3)==Perm{Int}(1,2,3)"
 Perm(x::Int...)=Perm{Int}(x...)
 
+"Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)"
 Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
 
-# just for fun, to provide Perm[1 2;5 6 7;4 9]=perm"(1,2)(5,6,7)(4,9)"
-function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
-  b::Vararg{Number,N} where N)
-  res=Perm()
-  for i in a
-    res*=Perm(Iterators.take(b,i)...)
-    b=Iterators.drop(b,i)
-  end
-  res
-end
-
+"""
+allows GAP-style perm"(1,2)(5,6,7)(4,9)"
+"""
 macro perm_str(s::String)
   start=1
   res=Perm()
@@ -114,6 +119,20 @@ macro perm_str(s::String)
   res::Perm
 end
 
+"""
+just for fun: Perm[1 2;5 6 7;4 9]=perm"(1,2)(5,6,7)(4,9)"
+"""
+function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
+  b::Vararg{Number,N} where N)
+  res=Perm()
+  for i in a
+    res*=Perm(Iterators.take(b,i)...)
+    b=Iterators.drop(b,i)
+  end
+  res
+end
+
+#---------------------------------------------------------------------
 Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
@@ -122,6 +141,54 @@ import ..Gapjm.degree
 @inline degree(a::Perm)=length(a.d)
 Base.vec(a::Perm)=a.d
 
+" hash is needed for using Perms in Sets/Dicts"
+function Base.hash(a::Perm, h::UInt)
+  b = 0x595dee0e71d271d0%UInt
+  for (i,v) in enumerate(a.d)
+    if v!=i
+      b = xor(b,xor(hash(v, h),h))
+      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+    end
+  end
+  b
+end
+
+" total order is needed to use Perms in sorted lists"
+function Base.cmp(a::Perm, b::Perm)
+  da=length(a.d)
+  db=length(b.d)
+  for i in 1:min(da,db)
+@inbounds if a.d[i]<b.d[i] return -1 end
+@inbounds if a.d[i]>b.d[i] return  1 end
+  end
+  if     da<db for i in (da+1:db) b.d[i]==i || return -1 end
+  elseif da>db for i in (db+1:da) a.d[i]==i || return  1 end
+  end
+  0
+end
+
+" permutations are scalars for broadcasting"
+Base.broadcastable(p::Perm)=Ref(p)
+
+Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+
+Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
+
+Base.rand(::Type{Perm},i::Integer)=Perm(sortperm(rand(1:i,i)))
+Base.rand(::Type{Perm{T}},i::Integer) where T=Perm(T.(sortperm(rand(1:i,i))))
+
+"Matrix(a::Perm) is the permutation matrix for a"
+Base.Matrix(a::Perm,n=length(a.d))=Int[j==i^a for i in 1:n, j in 1:n]
+
+" largest_moved_point(a::Perm) is the largest integer moved by a"
+largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
+
+" smallest_moved_point(a::Perm) is the smallest integer moved by a"
+smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
+
+#------------------ operations on permutations --------------------------
+
+" `promote(a::Perm, b::Perm)` promote `a` and `b` to the same degree"
 function Base.promote(a::Perm,b::Perm)
   da=length(a.d)
   db=length(b.d)
@@ -177,47 +244,7 @@ end
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
-# hash is needed for using permutations in Sets/Dicts
-function Base.hash(a::Perm, h::UInt)
-  b = 0x595dee0e71d271d0%UInt
-  for (i,v) in enumerate(a.d)
-    if v!=i
-      b = xor(b,xor(hash(v, h),h))
-      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-    end
-  end
-  b
-end
-
-# total order is needed to use Perms in sorted lists
-function Base.cmp(a::Perm, b::Perm)
-  da=length(a.d)
-  db=length(b.d)
-  for i in 1:min(da,db)
-@inbounds if a.d[i]<b.d[i] return -1 end
-@inbounds if a.d[i]>b.d[i] return  1 end
-  end
-  if     da<db for i in (da+1:db) b.d[i]==i || return -1 end
-  elseif da>db for i in (db+1:da) a.d[i]==i || return  1 end
-  end
-  0
-end
-
-# permutations are scalars for broadcasting
-Base.broadcastable(p::Perm)=Ref(p)
-
-randperm(i)=Perm(sortperm(rand(1:i,i)))
-
-Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
-
-Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
-
-" largest_moved_point(a::Perm) is the largest integer moved by a"
-largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
-
-" smallest_moved_point(a::Perm) is the smallest integer moved by a"
-smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
-
+#---------------------- cycle decomposition -------------------------
 """
   cycles(a::Perm) returns the cycles of a
 # Example
@@ -249,7 +276,7 @@ function cycles(a::Perm{T};domain=1:length(a.d),check=false)where T
 end
 
 function Base.show(io::IO, a::Perm{T}) where T
-  if T==Int t="" else t="{$T}" end
+  t= T==Int ? "" : "{$T}"
   cyc=(c for c in cycles(a,check=true) if length(c)>1)
   if isempty(cyc) print(io,t,"()")
   else print(io,t,join("("*join(c,",")*")" for c in cyc))
@@ -260,7 +287,8 @@ order(a::Perm) = lcm(length.(cycles(a)))
 
 """
   cycletype(a::Perm) describes the partition of degree(a) associated to the
-  conjugacy class of a in the symmetric group, with ones removed
+  conjugacy class of a in the symmetric group, with ones removed. It is
+  represented as a Dict of cyclesize=>multiplicity
 # Example
 ```julia-repl
 julia> cycletype(Perm(1,2)*Perm(3,4))
@@ -306,6 +334,4 @@ function Base.sign(a::Perm)
   (-1)^parity
 end
 
-"Matrix(a::Perm) is the permutation matrix for a"
-Base.Matrix(a::Perm,n=length(a.d))=Int[j==i^a for i in 1:n, j in 1:n]
 end
