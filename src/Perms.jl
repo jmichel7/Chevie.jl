@@ -142,6 +142,7 @@ function Base.:*(a::Perm, b::Perm)
   Perm(r)
 end
 
+# a*=b
 function mul!(a::Perm, b::Perm)
   a,b=promote(a,b)
 @inbounds for (i,v) in enumerate(a.d) a.d[i]=b.d[v] end

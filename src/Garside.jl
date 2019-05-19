@@ -252,7 +252,7 @@ julia> b^d
 14.143
 
 julia> centralizer_generators(b)
-3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
  21.1         
  321432.213243
  4
@@ -261,7 +261,7 @@ julia> C=conjcat(b,:ss)
 category with 10 objects and 32 maps
 
 julia> C.obj
-10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
  214.14
  14.124
  143.13
@@ -300,7 +300,7 @@ julia> C=conjcat(b)
 category with 3 objects and 7 maps
 
 julia> C.obj
-3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1}:
+3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
  214.14
  1214.4
  1343.1
@@ -437,7 +437,7 @@ julia> B=BraidMonoid(W)
 BraidMonoid(W(A₃))
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1},1}:
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
  [.]   
  [1, 3]
  [13]  
@@ -447,7 +447,7 @@ julia> B=DualBraidMonoid(W)
 DualBraidMonoid(W(A₃),c=[1, 3, 2])
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},Gapjm.Weyl.FiniteCoxeterGroup{Int16,Int64}}},1},1}:
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
  [.]                     
  [1, 2, 3, 4, 5, 6]      
  [12, 13, 15, 25, 34, 45]

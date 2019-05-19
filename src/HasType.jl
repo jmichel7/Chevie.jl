@@ -237,7 +237,7 @@ function ComplexReflectionGroup(i::Int)
     end
     m=getchev(t,:CartanMat)
     n=one(hcat(m...))
-    return PermRootGroup(map(i->n[i,:],axes(n,1)),m)
+    return PRG(map(i->n[i,:],axes(n,1)),m)
   end
   t=TypeIrred(Dict(:series=>:ST,:ST=>i))
   r=getchev(t,:GeneratingRoots)
@@ -246,7 +246,7 @@ function ComplexReflectionGroup(i::Int)
     e=getchev(t,:EigenvaluesGeneratingReflections)
     cr=map((x,y)->coroot(x,y),r,map(x->E(denominator(x),numerator(x)),e))
   end
-  PermRootGroup(r,cr)
+  PRG(r,cr)
 end
 
 function ComplexReflectionGroup(p,q,r)
@@ -255,7 +255,7 @@ function ComplexReflectionGroup(p,q,r)
   cr=getchev(t,:EigenvaluesGeneratingReflections)
   cr=map((x,y)->coroot(x,y),r,map(x->E(Root1(numerator(x),denominator(x))),cr))
   cr=map(x->convert.(Cyc{Rational{Int}},x),cr)
-  PermRootGroup(r,cr)
+  PRG(r,cr)
 end
 
 degrees(W)=vcat(getchev(W,:ReflectionDegrees)...)
@@ -437,8 +437,7 @@ RootInt(a,b)=floor(Int,a^(1/b))
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
 gapSet(v)=unique(sort(v))
 SemisimpleRank(W)=length(independent_roots(W))
-Rank(W::AbstractPermRootGroup)=length(W.roots[1])
-Rank(W::Weyl.FiniteCoxeterGroup)=Rank(W.G)
+Rank=rank
 ShiftBeta=shiftβ
 Sort=sort!
 SortBy(x,f)=sort!(x,by=f)

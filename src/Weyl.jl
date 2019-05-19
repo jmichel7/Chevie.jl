@@ -197,7 +197,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, AbstractFiniteCoxeterGroup, inversions, two_tree, rootdatum
+export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -397,54 +397,55 @@ function coxeter_from_cartan(m)
 end
 
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
-abstract type AbstractFiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
+abstract type FiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
 
-CoxGroups.coxetermat(W::AbstractFiniteCoxeterGroup)=
+CoxGroups.coxetermat(W::FiniteCoxeterGroup)=
      coxeter_from_cartan(cartan(W))
 
 # finite Coxeter groups have functions nref and fields rootdec
-inversions(W::AbstractFiniteCoxeterGroup,w)=
+inversions(W::FiniteCoxeterGroup,w)=
      [i for i in 1:nref(W) if isleftdescent(W,w,i)]
 
-Base.length(W::AbstractFiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
+Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-PermRoot.refltype(W::AbstractFiniteCoxeterGroup)::Vector{TypeIrred}=
+PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}=
    gets(W->type_cartan(cartan(W)),W,:refltype)
 
 """
   The reflection degrees of W
 """
-function Gapjm.degrees(W::AbstractFiniteCoxeterGroup)
+function Gapjm.degrees(W::FiniteCoxeterGroup)
   l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
   reverse(1 .+conjugate_partition(l))
 end
 
 
-Base.length(W::AbstractFiniteCoxeterGroup)=prod(degrees(W))
+Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
-#forward methods
-@inline PermRoot.cartan(W::AbstractFiniteCoxeterGroup)=cartan(W.G)
-Gapjm.degree(W::AbstractFiniteCoxeterGroup)=degree(W.G)
-PermRoot.reflections(W::AbstractFiniteCoxeterGroup)=reflections(W.G)
-Base.iterate(W::AbstractFiniteCoxeterGroup,a...)=iterate(W.G,a...)
-Base.eltype(W::AbstractFiniteCoxeterGroup)=eltype(W.G)
-PermRoot.reflength(W::AbstractFiniteCoxeterGroup,w)=reflength(W.G,w)
-PermRoot.hyperplane_orbits(W::AbstractFiniteCoxeterGroup)=hyperplane_orbits(W.G)
-PermRoot.refleigen(W::AbstractFiniteCoxeterGroup)=refleigen(W.G)
-PermRoot.torus_order(W::AbstractFiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
-#--------------- FiniteCoxeterGroup -----------------------------------------
-struct FiniteCoxeterGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
-  G::PermRootGroup{T1,T}
+#forwarded methods
+@inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
+PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
+Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G,a...)
+Base.eltype(W::FiniteCoxeterGroup)=eltype(W.G)
+PermRoot.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
+PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
+PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
+PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
+PermRoot.rank(W::FiniteCoxeterGroup)=rank(W.G)
+#--------------- FCG -----------------------------------------
+struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
+  G::TW
   rootdec::Vector{Vector{T1}}
   N::Int
   prop::Dict{Symbol,Any}
 end
 
-(W::FiniteCoxeterGroup)(x...)=element(W.G,x...)
+(W::FCG)(x...)=element(W.G,x...)
 "number of reflections of W"
-@inline CoxGroups.nref(W::FiniteCoxeterGroup)=W.N
-root(W::FiniteCoxeterGroup,i)=W.G.roots[i]
-CoxGroups.isleftdescent(W::FiniteCoxeterGroup,w,i::Int)=i^w>W.N
+@inline CoxGroups.nref(W::FCG)=W.N
+root(W::FCG,i)=W.G.roots[i]
+CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 
 "Coxeter group from type"
 coxgroup(t::Symbol,r::Int=0,b::Int=0)=rootdatum(cartan(t,r,b))
@@ -468,18 +469,18 @@ function rootdatum(rr::Matrix,cr::Matrix)
   s=Perm{Int16}(sortperm(r))
   gens=map(m->inv(Perm{Int16}(sortperm(Ref(permutedims(m)).*r)))*s,matgens)
   rank=size(C,1)
-  G=PermRootGroup(matgens,r,map(i->cr[i,:],1:rank),PermGroup(gens),
+  G=PRG(matgens,r,map(i->cr[i,:],1:rank),PermGroup(gens),
     Dict{Symbol,Any}(:cartan=>C))
-  FiniteCoxeterGroup(G,rootdec,N,Dict{Symbol,Any}())
+  FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
 function coxgroup()
-  G=PermRootGroup(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
+  G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
    PermGroup(Perm{Int16}[]),Dict{Symbol,Any}())
-  FiniteCoxeterGroup(G,Vector{Int}[],0,Dict{Symbol,Any}())
+  FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
 end
 
-function Base.show(io::IO, W::FiniteCoxeterGroup)
+function Base.show(io::IO, W::FCG)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if isempty(refltype(W)) 
@@ -499,45 +500,43 @@ function Base.show(io::IO, W::FiniteCoxeterGroup)
   print(io,n)
 end
   
-function matX(W::FiniteCoxeterGroup,w)
+function matX(W::FCG,w)
   vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
 end
 
-function cartancoeff(W::FiniteCoxeterGroup,i,j)
+function cartancoeff(W::FCG,i,j)
   v=findfirst(x->!iszero(x),root(W,i))
   r=root(W,j)-root(W,j^reflection(W,i))
   div(r[v],root(W,i)[v])
 end
 
-function Base.:*(W::FiniteCoxeterGroup...)
+function Base.:*(W::FCG...)
   rootdatum(cat(map(cartan,W)...,dims=[1,2]))
 end
 
 "for each root index of simple representative"
-CoxGroups.simple_representatives(W::FiniteCoxeterGroup)=simple_representatives(W.G)
+CoxGroups.simple_representatives(W::FCG)=simple_representatives(W.G)
   
 "for each root element conjugative representative to root"
-simple_conjugating_element(W::FiniteCoxeterGroup,i)=
+simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
 
-PermRoot.reflection(W::FiniteCoxeterGroup,i::Integer)=reflection(W.G,i)
-#--------------- FiniteCoxeterSubGroup -----------------------------------------
-struct FiniteCoxeterSubGroup{T,T1} <: AbstractFiniteCoxeterGroup{Perm{T},T1}
-  G::PermRootSubGroup{T1,T}
+PermRoot.reflection(W::FCG,i::Integer)=reflection(W.G,i)
+#--------------- FCSG -----------------------------------------
+struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
+  G::TW
   rootdec::Vector{Vector{T1}}
   N::Int
-  parent::FiniteCoxeterGroup{T,T1}
+  parent::FCG{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-(W::FiniteCoxeterSubGroup)(x...)=element(W.G,x...)
-@inline CoxGroups.nref(W::FiniteCoxeterSubGroup)=W.N
+(W::FCSG)(x...)=element(W.G,x...)
+CoxGroups.nref(W::FCSG)=W.N
 
-matX(W::FiniteCoxeterSubGroup,w)=matX(W.parent,w)
-@inline PermRoot.inclusion(W::FiniteCoxeterSubGroup)=W.G.inclusion
-@inline @inbounds PermRoot.inclusion(W::FiniteCoxeterSubGroup,i)=W.G.inclusion[i]
-@inline PermRoot.restriction(W::FiniteCoxeterSubGroup)=W.G.restriction
-@inline @inbounds PermRoot.restriction(W::FiniteCoxeterSubGroup,i)=W.G.restriction[i]
+matX(W::FCSG,w)=matX(W.parent,w)
+PermRoot.inclusion(W::FCSG,a...)=inclusion(W.G,a...)
+PermRoot.restriction(W::FCSG,a...)=restriction(W.G,a...)
 
 """
 reflection_subgroup(W,I)
@@ -642,8 +641,7 @@ Another  basic result about reflection subgroups  of Coxeter groups is that
 each  coset of  H in  W contains  a unique  element of  minimal length, see
 `reduced`.
 """
-function
- PermRoot.reflection_subgroup(W::FiniteCoxeterGroup{T,T1},I::AbstractVector{Int})where {T,T1}
+function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where {T,T1}
   G=PermGroup(reflection.(Ref(W),I))
   inclusion=sort!(vcat(orbits(G,I)...))
   N=div(length(inclusion),2)
@@ -669,19 +667,19 @@ function
   end
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  G=PermRootSubGroup(G,inclusion,restriction,W.G,Dict{Symbol,Any}(:cartan=>C))
-  FiniteCoxeterSubGroup(G,rootdec,N,W,Dict{Symbol,Any}())
+  G=PRSG(G,inclusion,restriction,W.G,Dict{Symbol,Any}(:cartan=>C))
+  FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
 end
 
-function Base.show(io::IO, W::FiniteCoxeterSubGroup)
-  I=W.G.inclusion[1:coxrank(W)]
+function Base.show(io::IO, W::FCSG)
+  I=inclusion(W)[1:coxrank(W)]
   n=any(i->i>=10,I) ? join(I,",") : join(I)
   print(io,sprint(show,W.parent; context=io)*TeXstrip("_{$n}"))
 end
   
-PermRoot.reflection_subgroup(W::FiniteCoxeterSubGroup,I::AbstractVector{Int})=
+PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
-@inbounds CoxGroups.isleftdescent(W::FiniteCoxeterSubGroup,w,i::Int)=inclusion(W,i)^w>W.parent.N
+@inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
 
 end

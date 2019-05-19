@@ -109,7 +109,7 @@ using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
 export Group, PermGroup, orbit, orbit_and_representative, orbits,
   base, centralizer_orbits, centralizers, minimal_words, element,
-  symmetric_group, gens, nbgens, CharTable
+  symmetric_group, gens, nbgens, centralizer, CharTable
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -155,6 +155,26 @@ function orbit_and_representative(G::Group,p;action::Function=^)
     end
   end
   res
+end
+
+function centralizer(G::Group,p;action::Function=^)
+  new=[p]
+  res=Dict(p=>one(G))
+  C=PermGroup(empty(gens(G)))
+  while !isempty(new)
+    old=copy(new)
+    empty!(new)
+    for p in old, s in gens(G)
+      w=action(p,s)
+      if !haskey(res,w)
+        push!(new,w)
+        res[w]=res[p]*s
+      else
+        extend!(C,res[p]*s/res[w])
+      end
+    end
+  end
+  C
 end
 
 function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
@@ -364,6 +384,15 @@ end
 function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),centralizer_orbits(G))
   isone(g)
+end
+
+" extend G by adding generator s to G"
+function extend!(G::PermGroup,s::Perm)
+  if !(s in G)
+    push!(G.gens,s)
+    schreier_sims(G)
+  end
+  G
 end
 
 # if l1,...,ln are the centralizer orbits the elements are the products

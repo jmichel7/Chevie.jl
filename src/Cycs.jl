@@ -112,10 +112,10 @@ export E, ER, Cyc, conductor, galois, Root1, quadratic
 
 using Gapjm
 import ..Util: SortedPairs, norm!, mergesum, getvalue
-import ..Util: TeXstrip, bracket_if_needed, groupby, constant
+import ..Util: TeXstrip, bracket_if_needed, constant
 import ..Util: factor, prime_residues, phi
 
-const use_list=false
+const use_list=true
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
@@ -342,10 +342,10 @@ function Base.show(io::IO, p::Cyc)
         if q.b>0 print(io,"+") end
       end
       print(io,q.b==1 ? "" : q.b==-1 ? "-" : q.b)
-      print(io,"√$(q.root)")
+      print(io,"√",q.root)
       if !iszero(q.a) && q.den!=1 print(io,")") end
     end
-    if q.den!=1 && !iszero(p) print(io,"/$(q.den)") end
+    if q.den!=1 && !iszero(p) print(io,"/",q.den) end
     return
   end
 if use_list
@@ -496,17 +496,6 @@ function raise(n::Int,c::Cyc{T})where T # write c in Q(ζ_n) if c.n divides n
 end
 end
 
-function cntmod(m::Int,p::Int,c::Cyc)
-  cnt=zeros(Int,m)
-if use_list
-  zb=zumbroich_basis(c.n)
-  for i in eachindex(zb) if !iszero(c.d[i]) cnt[1+(zb[i]%m)]+=1 end end
-else
-  for (k,v) in c.d cnt[1+(k%m)]+=1 end
-end
-  all(x->iszero(x) || x==p-1,cnt)
-end
-
 if use_list
 function Cyc(m::Int,z::Vector{Int},c::Vector{T})where T
   zb=zumbroich_basis(m)
@@ -535,38 +524,41 @@ if use_list
       if all(z->z%p==0,zb[nz])
         return lower(Cyc(m,div.(zb[nz],p),c.d[nz]))
       end
-    elseif cntmod(m,p,c) # if all(v->length(v)==p-1,values(res))
-      res=groupby(x->x%m,zb[nz])
-      kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]
-      if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
-      elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
-       return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
+    elseif count(x->!iszero(x),c.d)%(p-1)==0
+      cnt=zeros(Int,m)
+      for (i,v) in enumerate(zumbroich_basis(c.n)) 
+        if !iszero(c.d[i]) cnt[1+(v%m)]+=1 end 
+      end
+      if all(x->iszero(x) || x==p-1,cnt) 
+        u=findall(x->!iszero(x),cnt).-1
+        kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]
+        if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
+        elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
+         return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
+        end
       end
     end
     end
 else
-    let p=p, m=m
     if np>1 
+      let p=p
       if all(k->k[1]%p==0,c.d) 
         return lower(Cyc(m,[div(k,p)=>v for (k,v) in c.d]))
       end
-    elseif cntmod(m,p,c) # if all(v->length(v)==p-1,values(res))
-if use_list
-      res=groupby(x->x%m,zb[nz])
-      kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]
-      if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
-      elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
-        return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
       end
-else
-      res=groupby(x->x%m,first.(c.d))
-      kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in keys(res)]))
-      if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
-      elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
-        return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
+    elseif iszero(length(c.d)%(p-1))
+      cnt=zeros(Int,m)
+      let p=p, m=m
+      for (k,v) in c.d cnt[1+(k%m)]+=1 end
+      if all(x->iszero(x) || x==p-1,cnt) 
+        u=findall(x->!iszero(x),cnt).-1
+        kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))
+        if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
+        elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
+          return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
+        end
       end
-end
-    end
+      end
     end
 end
   end
