@@ -33,7 +33,7 @@ considered  in  the  context  of  Kazhdan-Lusztig  theory, is `uₛ₀=√qₛ` 
 of general cyclotomic Hecke algebras, and can be useful in many contexts.
 
 For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
-bases,  require a square root of `qₛ=-uₛ₀/uₛ₁`. We provide a way to specify
+bases,  require a square root of `qₛ=-uₛ₀uₛ₁`. We provide a way to specify
 it  with  the  field  `.rootpara`  which  can  be given when constructing the
 algebra. If not given a root is automatically extracted when needed (and we
 know  how to compute it) by the function `RootParameter`. Note however that
@@ -132,7 +132,7 @@ struct HeckeAlgebra{C,TW<:Group}
 end
 
 """
-   hecke( W [, parameter, [rootparameter]] ) return a Hecke algebra for W
+   hecke( W [, parameter][,rootpara=r]) return a Hecke algebra for W
 
 # Example
 ```julia-repl
@@ -216,7 +216,7 @@ hecke(W::Group)=hecke(W,1)
 function rootpara(H::HeckeAlgebra)
   gets(H,:rootpara) do H
     map(eachindex(H.para)) do i
-       if isone(-prod(H.para[i])) return H.para[i][1] end
+       if isone(-prod(H.para[i])) return -prod(H.para[i]) end
        error("could not compute rootpara[$i]")
     end
   end
@@ -245,7 +245,10 @@ Base.iszero(h::HeckeElt)=length(h.d)==0
 
 const usedict=false
 function Base.show(io::IO, h::HeckeElt)
-  if isempty(h.d) return "0" end
+  if isempty(h.d)
+    print(io,"0")
+    return
+  end
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   s=map(usedict ? collect(h.d) : h.d)do (e,c)

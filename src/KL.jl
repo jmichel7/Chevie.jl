@@ -247,7 +247,7 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-QXHalf(H::HeckeAlgebra,x::Perm)=rootpara(H)[1]^length(H.W,x)
+Hecke.rootpara(H::HeckeAlgebra,x::Perm)=rootpara(H)[1]^length(H.W,x)
 
 struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::SortedPairs{P,C} # has better merge performance than Dict
@@ -265,6 +265,20 @@ function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=f(word(H.W,w))
+  f(h::HeckeElt)=Cpbasis(h)
+end
+
+function Cpbasis(h::HeckeTElt)
+  H=h.H
+  res=HeckeCpElt(empty(h.d),H)
+  while !iszero(h)
+    lens=map(x->length(H.W,x[1]),h.d)
+    lens=findall(isequal(maximum(lens)),lens)
+    tmp=HeckeCpElt(norm!(map(x->x[1]=>x[2]*rootpara(H,x[1]),h.d[lens])),H)
+    res+=tmp
+    h-=Tbasis(H)(tmp)
+  end
+  res
 end
 
 """
@@ -292,12 +306,12 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   l=firstleftdescent(W,w)
   s=gens(W)[l]
   if w==s
-    return inv(rootpara(H)[l])*(one(H)-inv(H.para[l][2])*T(s))
+    return inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
   else
     res=getCp(H,s)*getCp(H,s*w)
     tmp=zero(H)
     for (e,coef) in res.d 
-      if e!=w tmp+=positive_part(coef*QXHalf(H,e))*getCp(H,e) end
+      if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
     end
     res-=tmp
   end
@@ -323,4 +337,6 @@ v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 """
 Hecke.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
+
+Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 end
