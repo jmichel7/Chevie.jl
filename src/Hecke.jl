@@ -33,8 +33,8 @@ considered  in  the  context  of  Kazhdan-Lusztig  theory, is `uₛ₀=√qₛ` 
 of general cyclotomic Hecke algebras, and can be useful in many contexts.
 
 For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
-bases,  require a square root of `qₛ=-uₛ₀uₛ₁`. We provide a way to specify
-it  with  the  field  `.rootpara`  which  can  be given when constructing the
+bases,  require a square root of `-uₛ₀uₛ₁`.  We provide a way to specify it
+with  the  field  `.rootpara`  which  can  be  given  when constructing the
 algebra. If not given a root is automatically extracted when needed (and we
 know  how to compute it) by the function `RootParameter`. Note however that
 sometimes  an  explicit  choice  of  root  is  necessary  which  cannot  be
@@ -111,7 +111,7 @@ julia> function test_w0(n)
 test_w0 (generic function with 1 method)
 
 julia> @btime test_w0(7);
-  132.737 ms (178853 allocations: 157.37 MiB)
+  132.737 ms (1788153 allocations: 157.37 MiB)
 ```
 Compare to GAP3 where the following function takes 0.92s
 ```
@@ -123,7 +123,7 @@ end;
 """
 module Hecke
 using Gapjm
-export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt, rootpara
+export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt, rootpara, equalpara
 
 struct HeckeAlgebra{C,TW<:Group}
   W::TW
@@ -178,7 +178,7 @@ julia> [H.para,rootpara(H)]
 function hecke(W::Group,para::Vector{Vector{C}};
     rootpara::Vector{C}=C[]) where C
   para=map(eachindex(gens(W)))do i
-   j=simple_representatives(W)[i]
+    j=simple_representatives(W)[i]
     if i<=length(para) 
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
@@ -186,7 +186,7 @@ function hecke(W::Group,para::Vector{Vector{C}};
     else error("parameters should be given for first reflection in a class")
     end
   end
-  d=Dict{Symbol,Any}()
+  d=Dict{Symbol,Any}(:equal=>constant(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
   HeckeAlgebra(W,para,d)
 end
@@ -221,6 +221,8 @@ function rootpara(H::HeckeAlgebra)
     end
   end
 end
+
+equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
 
 function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"Hecke(",H.W,",")

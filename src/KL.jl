@@ -119,7 +119,7 @@ using Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
 """
- `CriticalPair(W, y, w)` returns the critical pair z≤w associated to y≤w.
+ `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w.
 
 Let  `ℒ` (resp.  `ℛ `)  be the  left (resp.  right) descent  set. A pair of
 elements y≤w of W is called critical if `ℒ(y)⊃ ℒ(w)` and `ℛ (y)⊃ ℛ (w)`. If
@@ -140,7 +140,7 @@ julia> w=longest(W)*gens(W)[1];length(W,w)
 julia> y=element(W,1:4...);length(W,y)
 4
 
-julia> cr=KL.CriticalPair(W,y,w);length(W,cr)
+julia> cr=KL.critical_pair(W,y,w);length(W,cr)
 16
 
 julia> Pol(:x);KLPol(W,y,w)
@@ -151,7 +151,7 @@ x³+1
 ```julia-repl
 
 """
-function CriticalPair(W::CoxeterGroup,y,w)::typeof(y)
+function critical_pair(W::CoxeterGroup,y,w)::typeof(y)
   Lw=filter(i->isleftdescent(W,w,i),eachindex(gens(W)))
   Rw=filter(i->isleftdescent(W,inv(w),i),eachindex(gens(W)))
   function cr(y)::typeof(y)
@@ -197,7 +197,7 @@ pair  of elements `w₁,w₂∈  W` such that  `w₁≤w₂` is *critical*  if `
 descent  set, respectively.  Now if  `y≤w ∈  W` are arbitrary elements then
 there   always  exists  a  critical  pair   `z≤w`  with  `y≤z≤w`  and  then
 `P_{y,w}=P_{z,w}`.  Given two elements `y` and `w`, such a critical pair is
-found by the function 'CriticalPair'. Whenever the polynomial corresponding
+found by the function 'critical_pair'. Whenever the polynomial corresponding
 to a critical pair is computed then this pair and the polynomial are stored
 in the property `:klpol` of the underlying Coxeter group.
 
@@ -220,7 +220,7 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
 """
 function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   if !bruhatless(W,y,w) return Pol(Int[],0) end
-  y=CriticalPair(W,y,w)
+  y=critical_pair(W,y,w)
   lw=length(W,w)
   if lw-length(W,y)<=2 return Pol(1) end
   d=gets(W->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
@@ -301,19 +301,45 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   T=Tbasis(H)
   W=H.W
   cdict=gets(H,Symbol("C'->T")) do H 
-  Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
+    Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
   if haskey(cdict,w) return cdict[w] end
-  l=firstleftdescent(W,w)
-  s=gens(W)[l]
-  if w==s
-    return inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
-  else
-    res=getCp(H,s)*getCp(H,s*w)
-    tmp=zero(H)
-    for (e,coef) in res.d 
-      if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
+  if equalpara(H)
+    l=firstleftdescent(W,w)
+    s=gens(W)[l]
+    if w==s
+      return inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
+    else
+      res=getCp(H,s)*getCp(H,s*w)
+      tmp=zero(H)
+      for (e,coef) in res.d 
+        if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
+      end
+      res-=tmp
     end
-    res-=tmp
+  else
+# we follow formula 2.2 in Lusztig's 'Left cells in Weyl groups'
+#
+# bar(P̄̄_{x,w})-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}
+#
+#  where R_{x,y}=bar(T_{y^-1}^{-1}|T_x)
+#  where T is the basis with parameters q_s,-q_s^-1
+#
+# thus we compute P_{x,w} by induction on l(w)-l(x) by
+# P_{x,w}=\neg ∑_{x<y≤w} R_{x,y} P_{y,w}
+    elm=vcat(reverse(bruhatless(W,w)))
+    coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
+    f=w->prod(y->-H.para[y][2],word(W,w))
+    for i in 2:length(elm)
+      x=elm[i]
+      qx=rootparam(H,x)
+      z=critical_pair(W,x,w)
+      if x!=z coeff[i]=f(z)/f(x)*coeff[findfirst(equalto(z),elm)]
+      else 
+        coeff[i]=-negative_part(sum(j->
+          bar(qx*getvalue(inv(T(inv(elm[j]))),x))*coeff[j],1:i-1))/qx
+      end
+    end
+    norm!(res)
   end
   cdict[w]=res
 end

@@ -362,6 +362,20 @@ function bruhatless(W::CoxeterGroup,x,y)
   return x==y
 end
 
+"""
+   `bruhatless(W, y)`  all x≤y in the Bruhat order, for y ∈ W.
+"""
+function bruhatless(W::CoxeterGroup,w)
+  if w==one(W) return [[w]] end
+  i=firstleftdescent(W,w)
+  s=W(i)
+  res=bruhatless(W,s*w)
+  for j in 1:length(res)-1
+    res[j+1]=union(res[j+1],s.*filter(x->!isleftdescent(W,x,i),res[j]))
+  end
+  push!(res,s.*filter(x->!isleftdescent(W,x,i),res[end]))
+end
+
 function reduced_words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end

@@ -166,7 +166,7 @@ function norm!(x::SortedPairs{K,V}) where {K,V}
 end
 
 function getvalue(x::SortedPairs,i)
-  r=searchsorted(x,i;by=first)
+  r=searchsorted(x,Ref(i);by=first)
   if r.start!=r.stop error("Bounds in $x") end
   x[r.start][2]
 end
