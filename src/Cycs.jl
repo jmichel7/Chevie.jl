@@ -111,11 +111,11 @@ module Cycs
 export E, ER, Cyc, conductor, galois, Root1, quadratic
 
 using Gapjm
-import ..Util: SortedPairs, norm!, mergesum, getvalue
+import ..Util: ModuleElt, norm!
 import ..Util: TeXstrip, bracket_if_needed, constant
 import ..Util: factor, prime_residues, phi
 
-const use_list=true
+const use_list=false
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
@@ -125,7 +125,7 @@ end
 else
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
-  d::SortedPairs{Int,T} # coefficients on the Zumbroich basis
+  d::ModuleElt{Int,T} # coefficients on the Zumbroich basis
 end
 end
 
@@ -211,18 +211,18 @@ end
 #=
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 =#
-const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : [0=>1]))
+const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : ModuleElt(0=>1)))
 function E(n1::Integer,i1::Integer=1)::Cyc{Int}
   n=Int(n1)
   i=mod(Int(i1),n)
   get!(E_dict,(n,i)) do
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
 if use_list
-    v=zeros(Int,length(zumbroich_basis(n)))
-    v[l].=ifelse(s,1,-1)
-    Cyc(n,v)
+  v=zeros(Int,length(zumbroich_basis(n)))
+  v[l].=ifelse(s,1,-1)
+  lower(Cyc(n,v))
 else
-    lower(Cyc(n,l.=>ifelse(s,1,-1)))
+  lower(Cyc(n,ModuleElt(l.=>ifelse(s,1,-1))))
 end
   end
 end
@@ -236,8 +236,8 @@ if use_list
   else return Cyc(4,[real(c),imag(c)])
   end
 else
-  if iszero(real(c)) return Cyc(4,[1=>imag(c)])
-  else return Cyc(4,[0=>real(c),1=>imag(c)])
+  if iszero(real(c)) return Cyc(4,ModuleElt(1=>imag(c)))
+  else return Cyc(4,ModuleElt(0=>real(c),1=>imag(c)))
   end
 end
 end
@@ -245,7 +245,7 @@ end
 if use_list
 Cyc(i::T) where T<:Real=Cyc(1,[i])
 else
-Cyc(i::T) where T<:Real=Cyc(1,iszero(i) ? Pair{Int,T}[] : [0=>i])
+Cyc(i::T) where T<:Real=Cyc(1,iszero(i) ? zero(ModuleElt{Int,T}) : ModuleElt(0=>i))
 end
 Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
 Cyc{T}(i::T1) where {T<:Real,T1<:Real}=convert(Cyc{T},i)
@@ -255,7 +255,7 @@ function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
 if use_list
   Cyc(c.n,convert.(T,c.d))
 else
-  Cyc(c.n,convert.(Pair{Int,T},c.d))
+  Cyc(c.n,ModuleElt(convert.(Pair{Int,T},c.d)))
 end
 end
 
@@ -264,7 +264,7 @@ Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
 if use_list
 num(c::Cyc)=c.d[1]
 else
-num(c::Cyc)=c.d[1][2]
+num(c::Cyc)=c.d.d[1][2]
 end
 
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real
@@ -294,9 +294,9 @@ Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
 Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
 else
-Base.zero(c::Cyc)=Cyc(1,empty(c.d))
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,Pair{Int,T}[])
-Base.iszero(c::Cyc)=isempty(c.d)
+Base.zero(c::Cyc)=Cyc(1,zero(c.d))
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
+Base.iszero(c::Cyc)=iszero(c.d)
 end
 Base.one(c::Cyc)=E(1,0)
 
@@ -388,31 +388,27 @@ function Base.:+(x::Cyc,y::Cyc)
 if use_list
   lower(Cyc(a.n,a.d.+b.d))
 else
-  lower(Cyc(a.n,mergesum(a.d,b.d)))
+  lower(Cyc(a.n,a.d+b.d))
 end
 end
 
 Base.:+(a::Cyc,b::Number)=a+Cyc(b)
 Base.:+(b::Number,a::Cyc)=a+Cyc(b)
 
-Base.:-(a::Cyc)=Cyc(a.n,use_list ? -a.d : [k=>-v for (k,v) in a.d])
+Base.:-(a::Cyc)=Cyc(a.n,-a.d)
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Number,a::Cyc)=Cyc(b)-a
 Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
-if use_list
-Base.:*(a::Real,c::Cyc)=Cyc(c.n,a.*c.d)
-else
-Base.:*(a::Real,c::Cyc)=iszero(a) ? zero(c) : Cyc(c.n,[k=>a*v for (k,v) in c.d])
-end
+Base.:*(a::Real,c::Cyc)= use_list ? Cyc(c.n,c.d.*a) : Cyc(c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list
 Base.div(c::Cyc,a::Real)=Cyc(c.n,Div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
-Base.div(c::Cyc,a::Real)=Cyc(c.n,[k=>Div(v,a) for (k,v) in c.d])
-Base.://(c::Cyc,a::Real)=Cyc(c.n,[k=>v//a for (k,v) in c.d])
+Base.div(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>Div(v,a) for (k,v) in c.d))
+Base.://(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>v//a for (k,v) in c.d))
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
@@ -420,7 +416,7 @@ Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
-#function sumroots(n::Int,l::SortedPairs{Int,T})where T<:Real
+#function sumroots(n::Int,l::ModuleElt{Int,T})where T<:Real
 function sumroots(n::Int,l)
   res=sizehint!(empty(l),phi(n)*length(l))
 # res=Pair{Int,T}[]
@@ -432,7 +428,7 @@ function sumroots(n::Int,l)
     end
 #   append!(res,v.=>b)
   end
-  lower(Cyc(n,norm!(res)))
+  lower(Cyc(n,norm!(ModuleElt(res))))
 end
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -453,7 +449,7 @@ if use_list
   lower(Cyc(a.n,res))
 else
 # sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
-  res=similar(a.d,length(a.d)*length(b.d)*length(zumbroich_basis(a.n)))
+  res=similar(a.d.d,length(a.d)*length(b.d)*length(zumbroich_basis(a.n)))
   cnt=0
   for (i,va) in a.d for (j,vb) in b.d
     (s,v)=Elist(a.n,i+j)
@@ -461,7 +457,7 @@ else
     if !s u=-u end
     for k in v res[cnt+=1]=k=>u end
   end end
-  lower(Cyc(a.n,norm!(resize!(res,cnt))))
+  lower(Cyc(a.n,norm!(ModuleElt(resize!(res,cnt)))))
 end
 end
 
@@ -485,14 +481,14 @@ function raise(n::Int,c::Cyc{T})where T # write c in Q(ζ_n) if c.n divides n
 # let m=m, c=c
 # sumroots(n,[(i*m=>e) for (i,e) in c.d])
 # end
-  res=similar(c.d,length(zumbroich_basis(n))*length(c.d))
+  res=similar(c.d.d,length(zumbroich_basis(n))*length(c.d))
   j=0
   for (i,u) in c.d
     (s,v)=Elist(n,i*m)
     if !s u=-u end
     for k in v res[j+=1]=k=>u end
   end
-  Cyc(n,norm!(resize!(res,j)))
+  Cyc(n,norm!(ModuleElt(resize!(res,j))))
 end
 end
 
@@ -543,7 +539,7 @@ else
     if np>1 
       let p=p
       if all(k->k[1]%p==0,c.d) 
-        return lower(Cyc(m,[div(k,p)=>v for (k,v) in c.d]))
+        return lower(Cyc(m,ModuleElt(div(k,p)=>v for (k,v) in c.d)))
       end
       end
     elseif iszero(length(c.d)%(p-1))
@@ -553,9 +549,9 @@ else
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(x->!iszero(x),cnt).-1
         kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))
-        if p==2 return lower(Cyc(m,[k=>getvalue(c.d,(k*p)%n) for k in kk]))
-        elseif all(k->constant(map(i->getvalue(c.d,(m*i+k*p)%n),1:p-1)),kk)
-          return lower(Cyc(m,[k=>-getvalue(c.d,(m+k*p)%n) for k in kk]))
+        if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
+        elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
+          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in kk)))
         end
       end
       end
@@ -805,7 +801,7 @@ function Gapjm.root(x::Cyc,n::Number=2)
     if k==1 break end
   end
   res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
-  println("GetRoot($x,$n) returns $res")
+  println("root($x,$n)=$res")
   res
 end
 

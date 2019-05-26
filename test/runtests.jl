@@ -11,11 +11,11 @@ b=$b
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=coxsym(4)","coxsym(4)")
-@test mytest("p=W(1,3,2,1,3)","{UInt8}(1,4)")
+@test mytest("p=W(1,3,2,1,3)","UInt8(1,4)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("word(W,longest(W))","6-element Array{Int64,1}:\n 1\n 2\n 1\n 3\n 2\n 1")
-@test mytest("w0=longest(W)","{UInt8}(1,4)(2,3)")
+@test mytest("w0=longest(W)","UInt8(1,4)(2,3)")
 @test mytest("length(W,w0)","6")
 @test mytest("map(i->word(W,reflection(W,i)),1:nref(W))","6-element Array{Array{Int64,1},1}:\n [1]\n [2]\n [3]\n [1, 2, 1]\n [2, 3, 2]\n [1, 2, 3, 2, 1]")
 @test mytest("[length(elements(W,i)) for i in 0:nref(W)]","7-element Array{Int64,1}:\n 1\n 3\n 5\n 6\n 5\n 3\n 1")
@@ -130,7 +130,7 @@ end
 @testset "Hecke.jl" begin
 @test mytest("W=coxgroup(:A,2)","W(A₂)")
 @test mytest("H=hecke(W,0)","Hecke(W(A₂),0)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#32\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#24\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("el=words(W)","6-element Array{Array{Int8,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
@@ -149,7 +149,7 @@ end
 @test mytest("W=coxgroup(:F,4)","W(F₄)")
 @test mytest("w=longest(W)*gens(W)[1];length(W,w)","23")
 @test mytest("y=element(W,1:4...);length(W,y)","4")
-@test mytest("cr=KL.CriticalPair(W,y,w);length(W,cr)","16")
+@test mytest("cr=KL.critical_pair(W,y,w);length(W,cr)","16")
 @test mytest("Pol(:x);KLPol(W,y,w)","x³+1")
 @test mytest("KLPol(W,cr,w)","x³+1")
 @test mytest("KLPol(W,cr,w)","x³+1")
@@ -158,8 +158,8 @@ end
 @test mytest("map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Array{Array{Pol{Int64},1},1}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
 @test mytest("W=coxgroup(:B,3)","W(B₃)")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","Hecke(W(B₃),v²,rootpara=v)")
-@test mytest("C=Cpbasis(H)","(::getfield(Gapjm.KL, Symbol(\"#f#10\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 3 methods)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#32\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("C=Cpbasis(H)","(::getfield(Gapjm.KL, Symbol(\"#f#10\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#24\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 end
 @testset "PermGroups.jl" begin
@@ -178,7 +178,7 @@ end
 end
 @testset "Perms.jl" begin
 @test mytest("p=Perm(1,2)*Perm(2,3)","(1,3,2)")
-@test mytest("Perm{Int8}(p)","{Int8}(1,3,2)")
+@test mytest("Perm{Int8}(p)","Int8(1,3,2)")
 @test mytest("1^p","3")
 @test mytest("Matrix(p)","3×3 Array{Int64,2}:\n 0  0  1\n 1  0  0\n 0  1  0")
 @test mytest("p^Perm(3,10)","(1,10,2)")
@@ -188,7 +188,8 @@ end
 @test mytest("degree.((Perm(1,2),Perm(2,3)))","(2, 3)")
 @test mytest("largest_moved_point(Perm(1,2)*Perm(2,3)^2)","2")
 @test mytest("smallest_moved_point(Perm(2,3))","2")
-@test mytest("smallest_moved_point(Perm(2,3))","2")
+#@test mytest("rand(Perm,10)","(1,8,4,2,9,7,5,10,3,6)")
+#@test mytest("rand(Perm,10)","(1,8,4,2,9,7,5,10,3,6)")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:\n (2, 1) => 2")
@@ -235,7 +236,7 @@ end
 @test mytest("cartan(W)","4×4 Array{Int64,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
 @test mytest("cartan(W)","4×4 Array{Int64,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
 @test mytest("W=coxgroup(:D,4)","W(D₄)")
-@test mytest("p=W(1,3,2,1,3)","{Int16}(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
+@test mytest("p=W(1,3,2,1,3)","Int16(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 3\n 1\n 2\n 3")
 @test mytest("cartan(:A,4)","4×4 Array{Int64,2}:\n  2  -1   0   0\n -1   2  -1   0\n  0  -1   2  -1\n  0   0  -1   2")

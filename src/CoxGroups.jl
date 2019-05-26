@@ -73,7 +73,7 @@ julia> W=coxsym(4)
 coxsym(4)
 
 julia> p=W(1,3,2,1,3)
-{UInt8}(1,4)
+UInt8(1,4)
 
 julia> word(W,p)
 5-element Array{Int64,1}:
@@ -101,7 +101,7 @@ julia> word(W,longest(W))  # the (unique) longest element in W
  1
 
 julia> w0=longest(W)
-{UInt8}(1,4)(2,3)
+UInt8(1,4)(2,3)
 julia> length(W,w0)
 6
 julia> map(i->word(W,reflection(W,i)),1:nref(W))

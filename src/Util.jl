@@ -11,7 +11,7 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  SortedPairs, norm!, mergesum, getvalue, # data structure
+  ModuleElt, norm!, # data structure
   format, TeXstrip, bracket_if_needed, ordinal, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
@@ -109,66 +109,93 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
 end
 #--------------------------------------------------------------------------
 """
-SortedPairs has a similar interface to Dicts, but is 3 times faster for the
-merge operation.  Pairs are sorted by the first item (the key)
+ModuleElt represents an element of a module with basis of type K and
+coefficients of type V. It has a similar interface to Dict{K,V}, but is 3 
+times faster addition than a Dict using the merge(+,...) operation.  
+ModuleElts are kept sorted by K
 """
-const SortedPairs{K,V}=Vector{Pair{K,V}} where {K,V}
+struct ModuleElt{K,V}
+  d::Vector{Pair{K,V}}
+end
+
+ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(collect(x))
+ModuleElt(x::Base.Generator)=ModuleElt(collect(x))
+
+Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
+Base.iszero(x::ModuleElt)=isempty(x.d)
+Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
+@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
+@inline Base.length(x::ModuleElt)=length(x.d)
+@inline Base.push!(x::ModuleElt,y...)=push!(x.d,y...)
+@inline Base.append!(x::ModuleElt,y...)=append!(x.d,y...)
+@inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
+
+Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
+
+Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
 
 """
-merge is like merge(+,..) for Dicts, with the difference that keys with
-value 0 are deleted
++ is like merge(+,..) for Dicts, except keys with value 0 are deleted
 """
-function mergesum(a::SortedPairs,b::SortedPairs)::SortedPairs
-  la=length(a)
-  lb=length(b)
-  res=similar(a,la+lb)
+function Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt
+  la=length(a.d)
+  lb=length(b.d)
+  res=similar(a.d,la+lb)
   ai=bi=1
   ri=0
   while ai<=la || bi<=lb
     if ai>la
-      res[ri+=1]=b[bi]; bi+=1
+@inbounds res[ri+=1]=b.d[bi]; bi+=1
     elseif bi>lb
-      res[ri+=1]=a[ai]; ai+=1
+@inbounds res[ri+=1]=a.d[ai]; ai+=1
     else
-      c=cmp(a[ai][1],b[bi][1])
+@inbounds c=cmp(a.d[ai][1],b.d[bi][1])
       if c==1
-        res[ri+=1]=b[bi]; bi+=1
+@inbounds res[ri+=1]=b.d[bi]; bi+=1
       elseif c==-1
-        res[ri+=1]=a[ai]; ai+=1
-      else s=a[ai][2]+b[bi][2]
+@inbounds res[ri+=1]=a.d[ai]; ai+=1
+      else s=a.d[ai][2]+b.d[bi][2]
         if !iszero(s)
-          res[ri+=1]=a[ai][1]=>s
+@inbounds res[ri+=1]=a.d[ai][1]=>s
         end
         ai+=1; bi+=1
       end
     end
   end
-  resize!(res,ri)
+  ModuleElt(resize!(res,ri))
 end
 
 """
-normalize an unsorted SortedPairs -- which may occur in some computation
+normalize an unsorted ModuleElt -- which may occur in some computation
 """
-function norm!(x::SortedPairs{K,V}) where {K,V}
+function norm!(x::ModuleElt{K,V}) where {K,V}
   if isempty(x) return x end
-  sort!(x,by=first)
+  sort!(x.d,by=first)
   ri=1
-  for j in 2:length(x)
-    if x[j][1]==x[ri][1]
-      x[ri]=x[ri][1]=>x[ri][2]+x[j][2]
+@inbounds  for j in 2:length(x.d)
+    if x.d[j][1]==x.d[ri][1]
+      x.d[ri]=x.d[ri][1]=>x.d[ri][2]+x.d[j][2]
     else 
-      if !iszero(x[ri][2]) ri+=1 end
-      x[ri]=x[j]
+      if !iszero(x.d[ri][2]) ri+=1 end
+      x.d[ri]=x.d[j]
     end
   end
-  if iszero(x[ri][2]) ri-=1 end
-  resize!(x,ri)
+  if iszero(x.d[ri][2]) ri-=1 end
+  ModuleElt(resize!(x.d,ri))
 end
 
-function getvalue(x::SortedPairs,i)
-  r=searchsorted(x,Ref(i);by=first)
+function Base.getindex(x::ModuleElt,i)
+  r=searchsorted(x.d,Ref(i);by=first)
   if r.start!=r.stop error("Bounds in $x") end
-  x[r.start][2]
+  x.d[r.start][2]
+end
+#------------- Make a version with Dict of ModuleElt ----------------------
+usedict=false
+if usedict
+function weed!(a::Dict)
+  for (k,v) in a if iszero(v) delete!(a,k) end end
+  a
+end
 end
 #--------------------------------------------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
@@ -341,10 +368,10 @@ function Gapjm.root(x::Integer,n::Number=2)
   if n==1 return x
   elseif n==2
     res=ER(x)
-    println("GetRoot($x,$n) returns $res")
+    println("root($x,$n)=$res")
     return res
   else
-    error("GetRoot($x,$n) not implemented")
+    error("root($x,$n) not implemented")
   end
 end
 

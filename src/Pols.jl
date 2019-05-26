@@ -39,7 +39,8 @@ q⁸-q⁴+1
 see also the individual documentation of gcd.
 """
 module Pols
-export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part
+export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
+  negative_part, bar
 
 using ..Gapjm # for degree
 
@@ -84,11 +85,20 @@ valuation(p::Pol)=p.v
 
 shift(p::Pol,s)=Pol(p.c,p.v+s)
 
+# degree ≥0
 function positive_part(p::Pol)
   v=max(0,-p.v)
   if v==0 return p end
   Pol(p.c[1+v:end],p.v+v)
 end
+
+# degree ≤0
+function negative_part(p::Pol)
+  if degree(p)<=0 return p end
+  Pol(p.c[1:1-p.v],p.v)
+end
+
+bar(p::Pol)=Pol(reverse(p.c),-degree(p))
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 
@@ -144,13 +154,13 @@ function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(a) || iszero(b) return zero(a) end
   res=fill(zero(promote_type(T1,T2)),length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
-    res[i+j-1]+=a.c[i]*b.c[j]
+@inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
   Pol(res,a.v+b.v)
 end
 
-Base.:*(a::Pol, b::T) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
-Base.:*(b::T, a::Pol) where T=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
+Base.:*(a::Pol, b::Number)=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
+Base.:*(b::Number, a::Pol)=a*b
 
 Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
                                  Base.power_by_squaring(inv(a),-Int(n))
@@ -165,14 +175,12 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Polstrip(res,a.v)
 end
 
-Base.:+(a::Pol, b::T) where T<:Number=a+Pol(b)
-Base.:+(b::T, a::Pol) where T<:Number=Pol(b)+a
-
+Base.:+(a::Pol, b::Number)=a+Pol(b)
+Base.:+(b::Number, a::Pol)=Pol(b)+a
 Base.:-(a::Pol)=Pol(-a.c,a.v)
 Base.:-(a::Pol, b::Pol)=a+(-b)
-Base.:-(a::Pol, b::T) where T=a-Pol(b)
-Base.:-(b::T, a::Pol) where T=Pol(b)-a
-
+Base.:-(a::Pol, b::Number)=a-Pol(b)
+Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
 
 """
@@ -267,9 +275,9 @@ end
 function Gapjm.root(x::Pol,n::Number=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
-    error("GetRoot($(repr(x;context=:limit=>true)),$n) not implemented") 
+    error("root($(repr(x;context=:limit=>true)),$n) not implemented") 
   end
   if isempty(x.c) return x end
-  Pol([GetRoot(x.c[1],n)],div(x.v,n))
+  Pol([root(x.c[1],n)],div(x.v,n))
 end
 end

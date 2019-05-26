@@ -48,15 +48,16 @@ import Primes
 struct CycPol{T}
   coeff::T
   valuation::Int
-  v::SortedPairs{Root1,Int}
+  v::ModuleElt{Root1,Int}
 end
 
-function CycPol(v::SortedPairs{Rational{Int},Int},valuation::Int=0,coeff=1)
- CycPol(coeff,valuation,norm!([Root1(numerator(r),denominator(r))=>m for (r,m) in v]))
+function CycPol(v::ModuleElt{Rational{Int},Int},valuation::Int=0,coeff=1)
+ CycPol(coeff,valuation,norm!(ModuleElt([Root1(numerator(r),denominator(r))=>m
+                                           for (r,m) in v])))
 end
 
 # 281st generic degree of G34
-const p=CycPol([0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
+const p=CycPol(ModuleElt(0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 1//5=>1, 2//5=>1, 3//5=>1, 4//5=>1, 1//6=>4, 5//6=>4, 1//7=>1, 2//7=>1,
 3//7=>1, 4//7=>1, 5//7=>1, 6//7=>1, 1//8=>1, 3//8=>1, 5//8=>1, 7//8=>1,
 1//9=>1, 4//9=>1, 7//9=>1, 1//10=>1, 3//10=>1, 7//10=>1, 9//10=>1, 1//14=>1,
@@ -67,7 +68,7 @@ const p=CycPol([0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 7//24=>1, 13//24=>1, 19//24=>1, 1//30=>1, 7//30=>1, 11//30=>1, 13//30=>1,
 17//30=>1, 19//30=>1, 23//30=>1, 29//30=>1, 1//42=>1, 5//42=>1, 11//42=>1,
 13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
-37//42=>1, 41//42=>1],19,(1//6)E(3))
+37//42=>1, 41//42=>1),19,(1//6)E(3))
 
 const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 #=
@@ -78,21 +79,20 @@ julia> @btime CycPol(u) # gap 12ms
   44.270 ms (500873 allocations: 56.74 MiB)
 julia> @btime u(1)  # gap 57μs
   107.098 μs (2559 allocations: 196.03 KiB)
-
 =#
 
-Base.one(::Type{CycPol})=CycPol(1,0,Pair{Root1,Int}[])
-Base.zero(::Type{CycPol})=CycPol(0,0,Pair{Root1,Int}[])
-Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,Pair{Root1,Int}[])
-Base.zero(a::CycPol)=CycPol(zero(a.coeff),0,Pair{Root1,Int}[])
+Base.one(::Type{CycPol})=CycPol(1,0,zero(ModuleElt{Root1,Int}))
+Base.zero(::Type{CycPol})=CycPol(0,0,zero(ModuleElt{Root1,Int}))
+Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,zero(ModuleElt{Root1,Int}))
+Base.zero(a::CycPol)=CycPol(zero(a.coeff),0,zero(ModuleElt{Root1,Int}))
 
 function Base.:*(a::CycPol,b::CycPol)
-  CycPol(a.coeff*b.coeff,a.valuation+b.valuation,mergesum(a.v,b.v))
+  CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
 end
 Base.:*(a::CycPol,b::Number)=iszero(b) ? zero(a) : CycPol(a.coeff*b,a.valuation,a.v)
 
-Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff),
-                           -a.valuation,[c=>-m for (c,m) in a.v])
+Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff), -a.valuation,
+                                         -a.v)
 
 Base.://(a::CycPol,b::CycPol)=a*inv(b)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
@@ -126,10 +126,10 @@ function dec(d::Int)
 end
 
 # decompose the .v of a CycPol in subsets Φ^i (for printing)
-function decompose(v::SortedPairs{Root1,Int})
+function decompose(v::ModuleElt{Root1,Int})
   rr=NamedTuple{(:cond, :no, :pow),Tuple{Int,Int,Int}}[]
   if isempty(v) return rr end
-  for (c,t) in groupby(x->conductor(x[1]),v)
+  for (c,t) in groupby(x->conductor(x[1]),v.d)
     t=[(exponent(e),p) for (e,p) in t]
     if c==1 
       push!(rr,(cond=c,no=1,pow=t[1][2]))
@@ -216,18 +216,18 @@ function CycPol(p::Pol{T})where T
  # lot of code to be as efficient as possible in all cases
   if iszero(p) return zero(CycPol{T})
   elseif length(p.c)==1 # p==ax^s
-    return CycPol(p.c[1],valuation(p),Pair{Root1,Int}[])
+    return CycPol(p.c[1],valuation(p),zero(ModuleElt{Root1,Int}))
   elseif 2==count(x->!iszero(x),p.c) # p==ax^s+bx^t
     a=Root1(-p.c[1]//p.c[end])
-    if a===nothing return CycPol(Pol(p.c,0),valuation(p),Pair{Root1,Int}[]) end
+    if a===nothing return CycPol(Pol(p.c,0),valuation(p),zero(ModuleElt{Root1,Int})) end
     d=length(p.c)-1
     vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
-    return CycPol(p.c[end],valuation(p),sort(vcyc))
+    return CycPol(p.c[end],valuation(p),ModuleElt(sort(vcyc)))
   end
   coeff=p.c[end]
   val=valuation(p)
   p=Pol(p.c,0)
-  vcyc=Pair{Root1,Int}[]
+  vcyc=zero(ModuleElt{Root1,Int})
   if coeff^2!=1 p=p//coeff end # now p is monic
 
   # find factors Phi_i
@@ -237,7 +237,7 @@ function CycPol(p::Pol{T})where T
     while true
       np,r=Pols.divrem1(p,cyclotomic_polynomial(c))
       if iszero(r) 
-        append!(vcyc,map(j->Root1(j,c)=>1,c==1 ? [1] : prime_residues(c)))
+        append!(vcyc,[Root1(j,c)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
         if trace print("(d°$(degree(p)) c$(conductor(p.c)))") end
         found=true
@@ -257,21 +257,15 @@ function CycPol(p::Pol{T})where T
       p=Pols.divrem1(p,prod(r->Pol([-E(i,r),1],0),l))[1]
       append!(vcyc,Root1.(l,i).=>1)
       if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$l)") end
-      if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c))))
-        return found 
-      end
+      if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
     end
   end
 
   # first try commonly occuring fields
   for i in tested 
-    if degree(p)>=phi(i) 
-      testcyc(i) 
-    end
+    if degree(p)>=phi(i) testcyc(i) end
     testall(i)
-    if degree(p)==0
-      return CycPol(coeff,val,norm!(vcyc))
-    end
+    if degree(p)==0 return CycPol(coeff,val,norm!(vcyc)) end
   end
   
   # if not finished do a general search.
@@ -304,7 +298,7 @@ end
 function (p::CycPol)(x)
   res=x^p.valuation*p.coeff
   if !isempty(p.v)
-   res*=prod(v->prod(u->(x-E(u[1]))^u[2],v),values(groupby(x->conductor(x[1]),p.v)))
+   res*=prod(v->prod(u->(x-E(u[1]))^u[2],v),values(groupby(x->conductor(x[1]),p.v.d)))
   end
   res
 end

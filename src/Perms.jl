@@ -33,7 +33,7 @@ julia> p=Perm(1,2)*Perm(2,3)
 (1,3,2)
 
 julia> Perm{Int8}(p)
-{Int8}(1,3,2)
+Int8(1,3,2)
 
 julia> 1^p
 3
@@ -139,7 +139,7 @@ Base.copy(p::Perm)=Perm(copy(p.d))
 
 import ..Gapjm.degree
 @inline degree(a::Perm)=length(a.d)
-Base.vec(a::Perm)=a.d
+#Base.vec(a::Perm)=a.d
 
 " hash is needed for using Perms in Sets/Dicts"
 function Base.hash(a::Perm, h::UInt)
@@ -152,6 +152,9 @@ function Base.hash(a::Perm, h::UInt)
   end
   b
 end
+
+" permutations are scalars for broadcasting"
+Base.broadcastable(p::Perm)=Ref(p)
 
 " total order is needed to use Perms in sorted lists"
 function Base.cmp(a::Perm, b::Perm)
@@ -166,9 +169,6 @@ function Base.cmp(a::Perm, b::Perm)
   end
   0
 end
-
-" permutations are scalars for broadcasting"
-Base.broadcastable(p::Perm)=Ref(p)
 
 Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
@@ -188,7 +188,7 @@ smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 #------------------ operations on permutations --------------------------
 
-" `promote(a::Perm, b::Perm)` promote `a` and `b` to the same degree"
+" `promote(a::Perm, b::Perm)` promotes `a` and `b` to the same degree"
 function Base.promote(a::Perm,b::Perm)
   da=length(a.d)
   db=length(b.d)
@@ -209,7 +209,7 @@ function Base.:*(a::Perm, b::Perm)
   Perm(r)
 end
 
-# a*=b
+# this is a*=b without allocation
 function mul!(a::Perm, b::Perm)
   a,b=promote(a,b)
 @inbounds for (i,v) in enumerate(a.d) a.d[i]=b.d[v] end
@@ -222,8 +222,10 @@ function Base.inv(a::Perm)
   Perm(r)
 end
 
+# I do not know how to do this one faster
 Base.:/(a::Perm, b::Perm)=a*inv(b)
 
+# less allocations than inv(a)*b
 function Base.:\(a::Perm, b::Perm)
   a,b=promote(a,b)
   r=similar(a.d)
@@ -231,6 +233,7 @@ function Base.:\(a::Perm, b::Perm)
   Perm(r)
 end
 
+# less allocations than inv(a)*b*a
 function Base.:^(a::Perm, b::Perm)
   a,b=promote(a,b)
   r=similar(a.d)
@@ -276,10 +279,10 @@ function cycles(a::Perm{T};domain=1:length(a.d),check=false)where T
 end
 
 function Base.show(io::IO, a::Perm{T}) where T
-  t= T==Int ? "" : "{$T}"
-  cyc=(c for c in cycles(a,check=true) if length(c)>1)
-  if isempty(cyc) print(io,t,"()")
-  else print(io,t,join("("*join(c,",")*")" for c in cyc))
+  if T!=Int print(io,T) end
+  cyc=filter(c->length(c)>1,cycles(a,check=true))
+  if isempty(cyc) print(io,"()")
+  else for c in cyc print(io,"(",join(c,","),")") end
   end
 end
 
@@ -298,14 +301,14 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
 """
 function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
   res=Dict{Tuple{Int,Int},Int}()
-  domain=domain[1:length(a.d)]
-  for i in eachindex(domain)
-    if iszero(domain[i]) continue end
+  to_visit=domain[1:length(a.d)] # this makes a copy
+  for i in eachindex(to_visit)
+    if iszero(to_visit[i]) continue end
     l=0
     j=i
-    color=domain[i]
+    color=to_visit[i]
     while true
-      domain[j]=0
+      to_visit[j]=0
       l+=1
       if (j=a.d[j])==i break end
     end
@@ -318,20 +321,23 @@ function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
   sort(collect(res),by=x->x[1])
 end
 
-" sign(a::Perm) is the signature of  the permutation a"
-function Base.sign(a::Perm)
-  parity = length(a.d)
-  to_visit = trues(parity)
-  k = 1
-  while !isnothing(k=findnext(to_visit, k))
-     parity -= 1
-     next=k
-     while true
-       to_visit[next]=false
-       if (next=a.d[next])==k break end
-     end
+function nrcycles(a::Perm)
+  to_visit=trues(length(a.d))
+  nr=0
+  for i in eachindex(to_visit)
+    if !to_visit[i] continue end
+    nr+=1
+    j=i
+    while true
+      to_visit[j]=false
+      j=a.d[j]
+      if j==i break end
+    end
   end
-  (-1)^parity
+  nr
 end
+
+" sign(a::Perm) is the signature of  the permutation a"
+Base.sign(a::Perm)=(-1)^(length(a.d)-nrcycles(a)) # nr of even cycles
 
 end

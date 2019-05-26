@@ -210,6 +210,21 @@ function minimal_words(G::Group)
   words
 end
 
+function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
+  gets(G,:classes) do G
+    if length(G)>1000
+      println("length(G)=",length(G),": not supposed to do it the hard way")
+    end
+    cl=orbits(G,collect(G))
+    G.prop[:classreps]=first.(cl)
+    G.prop[:classes]=cl
+  end
+end
+
+function class_reps(G::Group{T})::Vector{T} where T
+  getp(conjugacy_classes,G,:classreps)
+end
+
 #--------------- CharTables -----------------------------------------
 struct CharTable{T}
   irr::Matrix{T}

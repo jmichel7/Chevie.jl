@@ -247,10 +247,10 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-Hecke.rootpara(H::HeckeAlgebra,x::Perm)=rootpara(H)[1]^length(H.W,x)
+Hecke.rootpara(H::HeckeAlgebra,x::Perm)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
-  d::SortedPairs{P,C} # has better merge performance than Dict
+  d::ModuleElt{P,C} # has better merge performance than Dict
   H::HeckeAlgebra{C,G}
 end
 
@@ -260,8 +260,8 @@ Hecke.basename(h::HeckeCpElt)="C'"
 
 function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
-    if isempty(w) return HeckeCpElt([one(H.W)=>one(C)],H) end
-    HeckeCpElt([element(H.W,w...)=>one(C)],H)
+    if isempty(w) return HeckeCpElt(ModuleElt(one(H.W)=>one(C)),H) end
+    HeckeCpElt(ModuleElt(element(H.W,w...)=>one(C)),H)
   end
   f(w::Vararg{Integer})=f(collect(w))
   f(w::P)=f(word(H.W,w))
@@ -270,11 +270,11 @@ end
 
 function Cpbasis(h::HeckeTElt)
   H=h.H
-  res=HeckeCpElt(empty(h.d),H)
+  res=HeckeCpElt(zero(h.d),H)
   while !iszero(h)
     lens=map(x->length(H.W,x[1]),h.d)
     lens=findall(isequal(maximum(lens)),lens)
-    tmp=HeckeCpElt(norm!(map(x->x[1]=>x[2]*rootpara(H,x[1]),h.d[lens])),H)
+    tmp=HeckeCpElt(ModuleElt(x[1]=>x[2]*rootpara(H,x[1]) for x in h.d.d[lens]),H)
     res+=tmp
     h-=Tbasis(H)(tmp)
   end
@@ -326,20 +326,20 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
 #
 # thus we compute P_{x,w} by induction on l(w)-l(x) by
 # P_{x,w}=\neg ∑_{x<y≤w} R_{x,y} P_{y,w}
-    elm=vcat(reverse(bruhatless(W,w)))
+    elm=vcat(reverse(bruhatless(W,w))...)
     coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
-    f=w->prod(y->-H.para[y][2],word(W,w))
+    f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
     for i in 2:length(elm)
       x=elm[i]
-      qx=rootparam(H,x)
+      qx=rootpara(H,x)
       z=critical_pair(W,x,w)
-      if x!=z coeff[i]=f(z)/f(x)*coeff[findfirst(equalto(z),elm)]
+      if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(isequal(z),elm)]
       else 
         coeff[i]=-negative_part(sum(j->
-          bar(qx*getvalue(inv(T(inv(elm[j]))),x))*coeff[j],1:i-1))/qx
+           bar(qx*getvalue(inv(T(inv(elm[j]))),x))*coeff[j],1:i-1))*inv(qx)
       end
     end
-    norm!(res)
+    res=HeckeTElt(norm!(map((x,y)->x=>y,elm,coeff)),H)
   end
   cdict[w]=res
 end
@@ -353,7 +353,7 @@ julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
 Hecke(W(B₃),v²,rootpara=v)
 
 julia> C=Cpbasis(H)
-(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 3 methods)
+(::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
 (::getfield(Gapjm.Hecke, Symbol("#f#32")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
