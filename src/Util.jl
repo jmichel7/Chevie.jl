@@ -107,15 +107,49 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
   end
   sort(collect(values(groupby(cc,collect(1:l)))))
 end
+#------------- Make a version with Dict of ModuleElt ----------------------
+const usedict=false
+if usedict
+struct ModuleElt{K,V}
+  d::Dict{K,V}
+end
+
+ModuleElt(x::Vector{Pair{K,V}}) where{K,V}=ModuleElt(Dict(x))
+ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(Dict(x...))
+ModuleElt(x::Base.Generator)=ModuleElt(Dict(x))
+
+Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Dict{K,V}())
+Base.iszero(x::ModuleElt)=isempty(x.d)
+Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
+@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
+@inline Base.length(x::ModuleElt)=length(x.d)
+@inline Base.push!(x::ModuleElt,y...)=push!(x.d,y...)
+@inline Base.haskey(x::ModuleElt,y...)=haskey(x.d,y...)
+@inline Base.append!(x::ModuleElt,y...)=append!(x.d,y...)
+@inline Base.getindex(x::ModuleElt,i)=getindex(x.d,i)
+@inline Base.cmp(x::ModuleElt,y::ModuleElt)=x.d == y.d ? 0 : 1
+
+Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
+
+# multiply module element by scalar
+Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
+
+function norm!(a::ModuleElt)
+  for (k,v) in a.d if iszero(v) delete!(a.d,k) end end
+  a
+end
+
+Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt=norm!(ModuleElt(merge(+,a.d,b.d)))
+
+else
 #--------------------------------------------------------------------------
 """
-ModuleElt represents an element of a module with basis of type K and
-coefficients of type V. It has a similar interface to Dict{K,V}, but is 3 
-times faster addition than a Dict using the merge(+,...) operation.  
-ModuleElts are kept sorted by K
+ModuleElt  represents  an  element  of  a  module  with basis of type K and
+coefficients  of type  V. It  has a  similar interface  to Dict{K,V}, but +
+below is 3 times faster than merge(+,...) on Dicts.
 """
 struct ModuleElt{K,V}
-  d::Vector{Pair{K,V}}
+  d::Vector{Pair{K,V}} # This vector is kept sorted by K
 end
 
 ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(collect(x))
@@ -132,6 +166,7 @@ Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 
 Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
 
+# multiply module element by scalar
 Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
 
 """
@@ -189,15 +224,8 @@ function Base.getindex(x::ModuleElt,i)
   if r.start!=r.stop error("Bounds in $x") end
   x.d[r.start][2]
 end
-#------------- Make a version with Dict of ModuleElt ----------------------
-usedict=false
-if usedict
-function weed!(a::Dict)
-  for (k,v) in a if iszero(v) delete!(a,k) end end
-  a
-end
-end
 #--------------------------------------------------------------------------
+end
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
   s=replace(s,r"\\varepsilon"=>"ε")

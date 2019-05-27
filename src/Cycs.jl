@@ -263,6 +263,8 @@ Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
 
 if use_list
 num(c::Cyc)=c.d[1]
+elseif Util.usedict
+num(c::Cyc)=c.d.d[0]
 else
 num(c::Cyc)=c.d.d[1][2]
 end
@@ -319,10 +321,10 @@ if use_list
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
    end
 else
-   for i in a.d
-     b = xor(b,xor(hash(i[1], h),h))
+   for (k,v) in a.d
+     b = xor(b,xor(hash(k, h),h))
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-     b = xor(b,xor(hash(i[2], h),h))
+     b = xor(b,xor(hash(v, h),h))
      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
    end
 end
@@ -416,19 +418,21 @@ Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
-#function sumroots(n::Int,l::ModuleElt{Int,T})where T<:Real
-function sumroots(n::Int,l)
-  res=sizehint!(empty(l),phi(n)*length(l))
-# res=Pair{Int,T}[]
-  for (i,b) in l
-    (s,v)=Elist(n,i)#::Pair{Bool,Vector{Int}}
-    if !s b=-b end
-    for j in v 
-      push!(res,j=>b)#::Pair{Int,T}) 
-    end
-#   append!(res,v.=>b)
-  end
-  lower(Cyc(n,norm!(ModuleElt(res))))
+function addroot!(l::ModuleElt,n::Int,p)
+  (i,c)=p
+  (s,v)=Elist(n,i)
+  if !s c=-c end
+if Util.usedict
+  for k in v if haskey(l,k) l.d[k]+=c else push!(l,k=>c) end end
+else
+  for k in v push!(l,k=>c) end
+end
+end
+
+function sumroots(n::Int,l::Vector{Pair{K,V}})where {K,V}
+  res=zero(ModuleElt{K,V})
+  for p in l addroot!(res,n,p) end
+  Cyc(n,norm!(res))
 end
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -444,51 +448,36 @@ if use_list
   for i in eachindex(a.d), j in eachindex(b.d)
 @inbounds  c=a.d[i]*b.d[j]
     if iszero(c) continue end
-@inbounds  res.+=c.*E(a.n,zb[i]+zb[j]).d
+    (v,k)=Elist(a.n,zb[i]+zb[j])
+@inbounds  res[k].+=v ? c : -c
   end
   lower(Cyc(a.n,res))
 else
-# sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d])
-  res=similar(a.d.d,length(a.d)*length(b.d)*length(zumbroich_basis(a.n)))
-  cnt=0
-  for (i,va) in a.d for (j,vb) in b.d
-    (s,v)=Elist(a.n,i+j)
-    u=va*vb
-    if !s u=-u end
-    for k in v res[cnt+=1]=k=>u end
-  end end
-  lower(Cyc(a.n,norm!(ModuleElt(resize!(res,cnt)))))
+#  lower(sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d]))
+   res=zero(a.d)
+   for (i,va) in a.d, (j,vb) in b.d addroot!(res,a.n,i+j=>va*vb) end
+   lower(Cyc(a.n,norm!(res)))
 end
 end
 
 # in raise guarantee argument is not zero
-if use_list
 function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   if n==c.n return c end
-  zn=zumbroich_basis(n)
-  res=zeros(eltype(c.d),length(zn))
-  z=zumbroich_basis(c.n).*div(n,c.n)
+  m=div(n,c.n)
+if use_list
+  res=zeros(eltype(c.d),length(zumbroich_basis(n)))
+  z=zumbroich_basis(c.n).*m
   for i in eachindex(c.d)
     if iszero(c.d[i]) continue end
-    @inbounds res.+=c.d[i].*E(n,z[i]).d
+    (v,k)=Elist(n,z[i])
+    @inbounds res[k].+=v ? c.d[i] : -c.d[i]
   end
   Cyc(n,res)
-end
 else
-function raise(n::Int,c::Cyc{T})where T # write c in Q(ζ_n) if c.n divides n
-  if n==c.n return c end
-  m=div(n,c.n)
-# let m=m, c=c
-# sumroots(n,[(i*m=>e) for (i,e) in c.d])
-# end
-  res=similar(c.d.d,length(zumbroich_basis(n))*length(c.d))
-  j=0
-  for (i,u) in c.d
-    (s,v)=Elist(n,i*m)
-    if !s u=-u end
-    for k in v res[j+=1]=k=>u end
-  end
-  Cyc(n,norm!(ModuleElt(resize!(res,j))))
+# sumroots(n,[i*m=>u for (i,u) in c.d])
+  res=zero(c.d)
+  for (i,u) in c.d addroot!(res,n,i*m=>u) end
+  Cyc(n,norm!(res))
 end
 end
 
