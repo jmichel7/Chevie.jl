@@ -1,5 +1,5 @@
-using Documenter, Gapjm
+using Documenter, DocumenterMarkdown, Gapjm
 
-makedocs(sitename="Gapjm documentation",
+makedocs(format=Markdown(),
          modules=[Cycs,Gapjm,PermGroups,Perms,Pols,CoxGroups,
                   Weyl,Hecke,KL,Garside,Util,CycPols])
