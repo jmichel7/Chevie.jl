@@ -533,8 +533,8 @@ else
       end
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
-      let p=p, m=m
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
+      let p=p, m=m
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(x->!iszero(x),cnt).-1
         kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))

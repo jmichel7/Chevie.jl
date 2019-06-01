@@ -187,6 +187,14 @@ function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
   res
 end
 
+"""
+assume l is union of orbits under group elt g; return permutation of l by g
+needs objects in l sortable
+"""
+Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
+
+Perm(g,l::AbstractVector;action::Function=^)=Perm{Int}(g,l,action=action)
+
 " dict giving for each element of G a minimal word in the generators"
 function minimal_words(G::Group)
   words=Dict(one(G)=>Int[])
@@ -249,7 +257,7 @@ struct PermGroup{T}<:Group{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-function PermGroup(a::Vector{Perm{T}})where T
+function PermGroup(a::AbstractVector{Perm{T}})where T
   PermGroup(a,Dict{Symbol,Any}())
 end
 
@@ -263,7 +271,7 @@ end
 
 (W::PermGroup)(x...)=element(W,x...)
 
-" describe the orbit of Int p under group G as a Schreier vector "
+" describe the orbit of Int p under PermGroup G as a Schreier vector "
 function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
   res=zeros(Int,degree(G))
   res[p]=-1
@@ -292,7 +300,7 @@ end
  The input is
  -  g: an element of a PermGroup G
  -  B: a base (or partial base) of G
- -  Δ: Δ[i] is the orbit of C_G(B[1:i-1]) on B[i]
+ -  Δ: Δ[i] is the orbit_and_representative of C_G(B[1:i-1]) on B[i]
  The function returns g "stripped" of its components in all C_G(B[1:i])
 """
 function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T

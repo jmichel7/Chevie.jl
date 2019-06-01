@@ -64,7 +64,9 @@ julia> largest_moved_point(Perm(1,2)*Perm(2,3)^2)
 
 julia> smallest_moved_point(Perm(2,3))
 2
+```
 
+```not-in-tests
 julia> rand(Perm,10)
 (1,8,4,2,9,7,5,10,3,6)
 
@@ -76,6 +78,12 @@ keys in hashes or elements of sets.
 
 other functions are: `cycles, cycletype, sign, rand`. 
 See individual documentations.
+
+GAP→ Julia dictionary
+     PermList(v)                      →  Perm(v) 
+     Permuted(v,p)                    →  v[p.d]
+     ListPerm(p)                      →  p.d
+     PermListList(l1,l2)              →  Perm(l1,l2)
 """
 module Perms
 
@@ -86,8 +94,9 @@ struct Perm{T<:Integer}
    d::Vector{T}
 end
 
+# Gap's Permuted(a,p) is a[p.d], Gap's ListPerm(p) is p.d
 #---------------- Constructors ---------------------------------------
-"for example  Perm{Int8}(1,2,3)"
+"for example  Perm{Int8}(1,2,3) constructs a cycle"
 function Perm{T}(x::Int...)where T<:Integer
   if isempty(x) return Perm(T[]) end
   d=T.(1:max(x...))
@@ -132,6 +141,15 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
   res
 end
 
+" find permutation mapping l to l1 if exists (like GAP's PermListList)"
+function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
+  s=sortperm(l)
+  s1=sortperm(l1)
+  if !all(i->l[s[i]]==l1[s1[i]],eachindex(l)) error("not permuted") end
+  Perm{T}(s1)\Perm{T}(s)
+end
+
+Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int}(l,l1)
 #---------------------------------------------------------------------
 Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])

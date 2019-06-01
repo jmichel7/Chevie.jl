@@ -1168,7 +1168,7 @@ end
 
 # Algorithm following Hao Zheng "A new approach to extracting roots in Garside
 # groups" Comm. Algebra 34 (2006) 1793--1802
-function Gapjm.root(b0,n=2)
+function Gapjm.root(b0::GarsideElm,n=2)
   M=b0.M
   tM=TwistedPowerMonoid(M,n)
   l=vcat(fill(M.delta,b0.pd),b0.elm)

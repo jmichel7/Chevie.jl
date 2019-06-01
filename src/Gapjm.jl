@@ -4,8 +4,8 @@ I am not even sure this is a well-formed Julia package.
 
 It  contains  for  now  permutations  and  permutation  groups,  cyclotomic
 numbers,  Laurent polynomials, some  Weyl groups and  Coxeter groups, Hecke
-algebras  and Kazhdan-Lusztig polynomials. Coming soon are braid groups and
-Garside monoids and factorisations into cyclotomic polynomials.
+algebras  and  Kazhdan-Lusztig  polynomials,  braid  and Garside groups and
+monoids, factorisations into cyclotomic polynomials.
 
 Even  though the code  is often competitive  with or faster  than GAP, I am
 sure there are more optimisations possible. Any comments about the code and

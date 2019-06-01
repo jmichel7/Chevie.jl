@@ -360,7 +360,7 @@ end
  return the set of positive roots defined by the Cartan matrix C
  works for any finite Coxeter group
 """
-function roots(C::Matrix)
+function PermRoot.roots(C::Matrix)
   o=one(C)
   R=[o[i,:] for i in axes(C,1)] # fast way to get rows of one(C)
   j=1
@@ -422,7 +422,7 @@ end
 
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
-#forwarded methods
+#forwarded methods to PermRoot/W.G
 @inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
 Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
 PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
@@ -433,6 +433,8 @@ PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
 PermRoot.rank(W::FiniteCoxeterGroup)=rank(W.G)
+PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
+Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
@@ -444,7 +446,6 @@ end
 (W::FCG)(x...)=element(W.G,x...)
 "number of reflections of W"
 @inline CoxGroups.nref(W::FCG)=W.N
-root(W::FCG,i)=W.G.roots[i]
 CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 
 "Coxeter group from type"
@@ -460,14 +461,14 @@ function rootdatum(rr::Matrix,cr::Matrix)
   N=length(rootdec)
   r=Ref(permutedims(rr)).*rootdec
   r=vcat(r,-r)
+  rootdec=vcat(rootdec,-rootdec)
   # the reflections defined by Cartan matrix C
   matgens=[reflection(rr[i,:],cr[i,:]) for i in axes(C,1)]
 # matgens=map(reflection,eachrow(rr),eachrow(cr))
   """
-    the permutations of the roots r effected by the matrices mm
+    the permutations of the roots r effected by the matrices matgens
   """
-  s=Perm{Int16}(sortperm(r))
-  gens=map(m->inv(Perm{Int16}(sortperm(Ref(permutedims(m)).*r)))*s,matgens)
+  gens=Perm{Int16}.(matgens,Ref(r),action=(v,m)->permutedims(m)*v)
   rank=size(C,1)
   G=PRG(matgens,r,map(i->cr[i,:],1:rank),PermGroup(gens),
     Dict{Symbol,Any}(:cartan=>C))
@@ -573,10 +574,13 @@ W. The inverse (partial) map is 'restriction'.
 
 ```julia-repl
 julia> inclusion(H)
-3-element Array{Int64,1}:
- 2
- 4
- 6
+6-element Array{Int64,1}:
+  2
+  4
+  6
+  8
+ 10
+ 12
 
 julia> restriction(H)
 12-element Array{Int64,1}:
@@ -587,11 +591,11 @@ julia> restriction(H)
  0
  3
  0
+ 4
  0
+ 5
  0
- 0
- 0
- 0
+ 6
 
 ```
 
@@ -662,6 +666,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where 
     C=T1[cartancoeff(W,i,j) for i in I, j in I]
   end
   rootdec=roots(C)
+  rootdec=vcat(rootdec,-rootdec)
   inclusion=map(rootdec)do r
     findfirst(isequal(sum(r.*W.rootdec[I])),W.rootdec)
   end
