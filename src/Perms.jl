@@ -80,10 +80,12 @@ other functions are: `cycles, cycletype, sign, rand`.
 See individual documentations.
 
 GAP→ Julia dictionary
+```
      PermList(v)                      →  Perm(v) 
      Permuted(v,p)                    →  v[p.d]
      ListPerm(p)                      →  p.d
      PermListList(l1,l2)              →  Perm(l1,l2)
+```
 """
 module Perms
 

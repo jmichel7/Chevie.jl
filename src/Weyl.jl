@@ -432,7 +432,7 @@ PermRoot.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
-PermRoot.rank(W::FiniteCoxeterGroup)=rank(W.G)
+PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
 PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
@@ -667,19 +667,23 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where 
   end
   rootdec=roots(C)
   rootdec=vcat(rootdec,-rootdec)
-  inclusion=map(rootdec)do r
+  if isempty(rootdec) inclusion=Int[]
+  else inclusion=map(rootdec)do r
     findfirst(isequal(sum(r.*W.rootdec[I])),W.rootdec)
+    end
   end
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  G=PRSG(G,inclusion,restriction,W.G,Dict{Symbol,Any}(:cartan=>C))
+  prop=Dict{Symbol,Any}(:cartan=>C)
+  if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
+  G=PRSG(G,inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::FCSG)
   I=inclusion(W)[1:coxrank(W)]
   n=any(i->i>=10,I) ? join(I,",") : join(I)
-  print(io,sprint(show,W.parent; context=io)*TeXstrip("_{$n}"))
+  print(io,sprint(show,W.parent; context=io)*TeXstrip("_{($n)}"))
 end
   
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=

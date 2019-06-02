@@ -109,7 +109,7 @@ using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
 export Group, PermGroup, orbit, orbit_and_representative, orbits,
   base, centralizer_orbits, centralizers, minimal_words, element,
-  symmetric_group, gens, nbgens, centralizer, CharTable
+  symmetric_group, gens, nbgens, centralizer, CharTable, class_reps
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G

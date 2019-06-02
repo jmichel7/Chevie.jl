@@ -77,4 +77,8 @@ include("Symbols.jl")
 @reexport using .Symbols
 include("HasType.jl")
 @reexport using .HasType
+include("Cosets.jl")
+@reexport using .Cosets
+include("Mvps.jl")
+@reexport using .Mvps
 end

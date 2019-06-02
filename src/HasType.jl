@@ -187,6 +187,8 @@ function classinfo(W)::Dict{Symbol,Any}
   end
 end
 
+class_rep(W::FiniteCoxeterGroup)=map(x->W(x...),classinfo(W)[:classtext])
+
 function chartable(t::TypeIrred)
   ct=getchev(t,:CharTable)
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)

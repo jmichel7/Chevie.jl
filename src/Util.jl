@@ -221,9 +221,21 @@ end
 
 function Base.getindex(x::ModuleElt,i)
   r=searchsorted(x.d,Ref(i);by=first)
-  if r.start!=r.stop error("Bounds in $x") end
+  if r.start!=r.stop error("key $i not found") end
   x.d[r.start][2]
 end
+
+function Base.haskey(x::ModuleElt,i)
+  r=searchsorted(x.d,Ref(i);by=first)
+  r.start==r.stop
+end
+
+function Base.delete!(m::ModuleElt,k)
+  r=searchsorted(m.d,Ref(k);by=first)
+  if r.start!=r.stop error("key $k not found") end
+  ModuleElt(deleteat!(copy(m.d),r.start))
+end
+
 #--------------------------------------------------------------------------
 end
 "strip TeX formatting from  a string, using unicode characters to approximate"
