@@ -46,7 +46,8 @@ function torusfactors(WF::CoxeterCoset)
   M=Int.(M*WF.F*inv(Rational.(M)))
   r=length(gens(WF.W))
   M=M[r+1:end,r+1:end]
-  M=M-Ref(Pol([1],1)).*one(M)
+  if isempty(M) return CycPol(Pol([1],0)) end
+  M=Ref(Pol([1],1)).*one(M)-M
   CycPol(det(M))
 end
 
@@ -54,7 +55,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   gets(WF,:refltype)do WF
     t=refltype(WF.W)
     c=map(x->PermRoot.indices(x),t)
-    phires=Perm(WF.phi,inclusion(WF.W))
+    phires=Perm(WF.phi,inclusion(WF.W.G))
     map(cycles(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
       o=deepcopy(t[c])
       J=PermRoot.indices(o[1])
@@ -77,7 +78,8 @@ end
 
 function Base.show(io::IO, W::CoxeterCoset)
    show(io,refltype(W))
-   show(io,torusfactors(W))
+   t=torusfactors(W)
+   if !isone(t) show(io,t) end
 end
 
 end

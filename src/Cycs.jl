@@ -262,11 +262,9 @@ end
 Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
 
 if use_list
-num(c::Cyc)=c.d[1]
-elseif Util.usedict
-num(c::Cyc)=c.d.d[0]
+ num(c::Cyc)=c.d[1]
 else
-num(c::Cyc)=c.d.d[1][2]
+ num(c::Cyc)=first(c.d)[2]
 end
 
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real

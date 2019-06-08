@@ -160,8 +160,14 @@ Base.iszero(x::ModuleElt)=isempty(x.d)
 Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 @inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
 @inline Base.length(x::ModuleElt)=length(x.d)
-@inline Base.push!(x::ModuleElt,y...)=push!(x.d,y...)
-@inline Base.append!(x::ModuleElt,y...)=append!(x.d,y...)
+@inline function Base.push!(x::ModuleElt,y...)
+  push!(x.d,y...)
+  x
+end
+@inline function Base.append!(x::ModuleElt,y...)
+  append!(x.d,y...)
+  x
+end
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
 
 Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
@@ -230,12 +236,14 @@ function Base.haskey(x::ModuleElt,i)
   r.start==r.stop
 end
 
-function Base.delete!(m::ModuleElt,k)
+function drop(m::ModuleElt,k)
   r=searchsorted(m.d,Ref(k);by=first)
-  if r.start!=r.stop error("key $k not found") end
-  ModuleElt(deleteat!(copy(m.d),r.start))
+  if r.start!=r.stop return nothing end
+  ModuleElt(deleteat!(copy(m.d),r.start)),m.d[r.start][2]
 end
 
+Base.keys(x::ModuleElt)=first.(x.d)
+Base.first(x::ModuleElt)=first(x.d)
 #--------------------------------------------------------------------------
 end
 "strip TeX formatting from  a string, using unicode characters to approximate"

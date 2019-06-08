@@ -41,6 +41,58 @@ struct TypeIrred
   prop::Dict{Symbol,Any}
 end
 
+Base.haskey(t::TypeIrred,k)=haskey(t.prop,k)
+Base.getindex(t::TypeIrred,k)=t.prop[k]
+indices(t::TypeIrred)=t[:indices]
+series(t::TypeIrred)=t[:series]
+
+function Base.show(io::IO, l::Vector{TypeIrred})
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  if isempty(l) print(io,repl||TeX ? "W()" : coxgroup()) end
+  n=join(map(l)do t
+    sprint(show,t; context=io)
+  end,repl||TeX ? "\\times " : "*")
+  if repl n=TeXstrip(n) end
+  print(io,n)
+end
+  
+function Base.show(io::IO, t::TypeIrred)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  if haskey(t,:series)
+    s=series(t)
+    if s==:ST 
+      if haskey(t,:ST) 
+        n=repl||TeX ? "G_{$(t[:ST])}" : "ComplexReflectionGroup($(t[:ST]))"
+      else 
+        n=repl||TeX ? "G_{$(t[:p]),$(t[:q]),$(t[:rank])}" : 
+          "ComplexReflectionGroup($(t[:p]),$(t[:q]),$(t[:rank]))"
+      end
+    else 
+      r=length(indices(t))
+      if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
+        s=:C
+      end
+      if haskey(t,:bond)
+        b=t[:bond]
+        n=repl||TeX ? "W($(s)_{$r}($b))" : "coxgroup(:$s,$r,$b)"
+      else
+        n=repl||TeX ? "W($(s)_{$r})" : "coxgroup(:$s,$r)"
+      end
+    end
+    if repl n=TeXstrip(n) end
+    print(io,n)
+  else
+    o=order(t[:twist])
+    if o!=1 print(io,o) end
+    o=length(t[:orbit])
+    if o!=1 print(io,"(") end
+    for t1 in t[:orbit] print(io,t1) end
+    if o!=1 print(io,")") end
+  end
+end
+
 struct Diagram
   types::Vector{TypeIrred}
 end
@@ -253,58 +305,6 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       d[:indices]=I
       TypeIrred(d)
     end
-  end
-end
-
-Base.haskey(t::TypeIrred,k)=haskey(t.prop,k)
-Base.getindex(t::TypeIrred,k)=t.prop[k]
-indices(t::TypeIrred)=t[:indices]
-series(t::TypeIrred)=t[:series]
-
-function Base.show(io::IO, l::Vector{TypeIrred})
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isempty(l) print(io,repl||TeX ? "W()" : coxgroup()) end
-  n=join(map(l)do t
-    sprint(show,t; context=io)
-  end,repl||TeX ? "\\times " : "*")
-  if repl n=TeXstrip(n) end
-  print(io,n)
-end
-  
-function Base.show(io::IO, t::TypeIrred)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if haskey(t,:series)
-    s=series(t)
-    if s==:ST 
-      if haskey(t,:ST) 
-        n=repl||TeX ? "G_{$(t[:ST])}" : "ComplexReflectionGroup($(t[:ST]))"
-      else 
-        n=repl||TeX ? "G_{$(t[:p]),$(t[:q]),$(t[:rank])}" : 
-          "ComplexReflectionGroup($(t[:p]),$(t[:q]),$(t[:rank]))"
-      end
-    else 
-      r=length(indices(t))
-      if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
-        s=:C
-      end
-      if haskey(t,:bond)
-        b=t[:bond]
-        n=repl||TeX ? "W($(s)_{$r}($b))" : "coxgroup(:$s,$r,$b)"
-      else
-        n=repl||TeX ? "W($(s)_{$r})" : "coxgroup(:$s,$r)"
-      end
-    end
-    if repl n=TeXstrip(n) end
-    print(io,n)
-  else
-    o=order(t[:twist])
-    if o!=1 print(io,o) end
-    o=length(t[:orbit])
-    if o!=1 print(io,"(") end
-    for t1 in t[:orbit] print(io,t1) end
-    if o!=1 print(io,")") end
   end
 end
 

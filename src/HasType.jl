@@ -48,17 +48,35 @@ function chevieset(t::Vector{String},w::Symbol,f::Function)
 end
 
 function field(t::TypeIrred)
+  if haskey(t,:orbit)
+    orderphi=order(t[:twist])
+    t=t[:orbit][1]
+  else
+    orderphi=1
+  end
   s=t[:series]
-  if s in [:A,:B,:D] return (s,length(t[:indices]))
+  if s in [:A,:B,:D] 
+     if orderphi==1 return (s,length(t[:indices]))
+     elseif orderphi==2 return (Symbol(2,s),length(t[:indices]))
+     elseif orderphi==3 return (Symbol("3D4"),)
+     end
+  elseif s in [:E,:F,:G]
+    if orderphi==1 return (Symbol(s,length(t[:indices])),) 
+    else return (Symbol(orderphi,s,length(t[:indices])),) 
+    end
   elseif s==:ST 
     if haskey(t,:ST)
-      if 4<=t[:ST]<=22 return (:G4_22,t[:ST])
+      if orderphi!=1 return (Symbol(orderphi,"G",t[:ST]),)
+      elseif 4<=t[:ST]<=22 return (:G4_22,t[:ST])
       else return (Symbol(string("G",t[:ST])),)
       end
+    elseif orderphi!=1
+      return (:timp, t[:p], t[:q], t[:rank])
     else
       return (:imp, t[:p], t[:q], t[:rank])
     end
-   elseif s==:I return (:I,t[:bond])
+  elseif s==:I 
+    return (orderphi==1 ? :I : :(2I),t[:bond])
   else return (Symbol(string(s,length(t[:indices]))),) 
   end
 end

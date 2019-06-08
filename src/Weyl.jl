@@ -215,21 +215,28 @@ julia> cartan(:A,4)
   0   0  -1   2
 ```
 """
-function PermRoot.cartan(t::Symbol,r::Int=0,b::Int=0)
+function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
   if t==:A return Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
   m=cartan(:A,r) 
   if t==:B m[1,2]=-2 
   elseif t==:C m[2,1]=-2 
+  elseif t==:Bsym m=Cyc{Int}.(m) 
+    m[1,2]=m[2,1]=ER(2)
   elseif t==:D m[1:3,1:3]=[2 0 -1; 0 2 -1;-1 -1 2]
   elseif t==:E m[1:4,1:4]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2]
   elseif t==:F m[3,2]=-2 
+  elseif t==:Fsym m=Cyc{Int}.(m) 
+    m[3,2]=m[2,3]=ER(2)
   elseif t==:G m[2,1]=-3
+  elseif t==:Gsym m=Cyc{Int}.(m) 
+    m[1,2]=m[2,1]=ER(3)
   elseif t==:H m=Cyc{Int}.(m) 
     m[1,2]=m[2,1]=E(5,2)+E(5,3)
   elseif t==:I 
     if b%2==0 return [2 -1;-2-E(b)-E(b,-1) 2]
     else return [2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
     end
+  else error("unknown type")
   end
   m
 end
@@ -309,7 +316,7 @@ function type_irred_cartan(m::AbstractMatrix)
       if l(1)*r(1)==1 t[:series]=:A 
       elseif l(1)*r(1)==2 t[:series]=:B  
         if l(1)==-1 rev() end # B2 preferred to C2
-        t[:cartantype]=2
+        t[:cartantype]=-l(1)
       elseif l(1)*r(1)==3 t[:series]=:G  
         if l(1)!=-1 rev() end 
         t[:cartantype]=1
@@ -337,6 +344,7 @@ function type_irred_cartan(m::AbstractMatrix)
     end 
     t[:indices]=s::Vector{Int}
   end 
+  println("t=$t")
   if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
   t
 end
@@ -349,6 +357,7 @@ end
 function type_cartan(m::AbstractMatrix)
   map(blocks(m)) do I
     t=type_irred_cartan(m[I,I])
+    if isnothing(t) error("unknown Cartan matrix ",m[I,I]) end
     t[:indices]=I[t[:indices]]
     TypeIrred(t)
   end

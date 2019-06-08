@@ -82,6 +82,7 @@ julia> @btime u(1)  # gap 57μs
 =#
 
 Base.one(::Type{CycPol})=CycPol(1,0,zero(ModuleElt{Root1,Int}))
+Base.isone(p::CycPol)=isone(p.coeff) && iszero(p.valuation) && iszero(p.v)
 Base.zero(::Type{CycPol})=CycPol(0,0,zero(ModuleElt{Root1,Int}))
 Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,zero(ModuleElt{Root1,Int}))
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0,zero(ModuleElt{Root1,Int}))

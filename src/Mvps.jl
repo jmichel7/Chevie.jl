@@ -1,13 +1,13 @@
 module Mvps
 using Gapjm
-export Mvp, @Mvp
+export Mvp, @Mvp, variables
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
   d::ModuleElt{Symbol,PowType}   
 end
-Monomial(a::Pair...)=Monomial(ModuleElt(a...))
+Monomial(a::Pair...)=Monomial(ModuleElt{Symbol,PowType}(collect(a)))
 
 const fractional=Dict{Symbol,PowType}() 
 # if fractional(:x)==y then x interpreted as x^(1/y)
@@ -16,21 +16,23 @@ function Base.convert(::Type{Monomial},v::Symbol)
   if haskey(fractional,v) pow=fractional[v]
   else pow=1
   end
-  Monomial(ModuleElt(v=>PowType(pow)))
+  Monomial(v=>PowType(pow))
 end
 Monomial(v::Symbol)=convert(Monomial,v)
 
 Base.:*(a::Monomial, b::Monomial)=Monomial(a.d+b.d)
-Base.isone(a::Monomial)=isempty(a.d)
-Base.one(::Type{Monomial})=Monomial(ModuleElt{Symbol,PowType}())
+Base.isone(a::Monomial)=iszero(a.d)
+Base.iszero(a::Monomial)=false
+Base.one(::Type{Monomial})=Monomial()
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Base.div(a::Monomial, b::Monomial)=a*inv(b)
-Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
-Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(ModuleElt(v=>d*p for
-                                                               (v,d) in x.d))
-@inline Base.haskey(a::Monomial,k)=haskey(a.d,k)
-@inline Base.delete!(a::Monomial,k)=Monomial(delete!(a.d,k))
+Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
+@inline function Util.drop(a::Monomial,k)
+   u=Util.drop(a.d,k)
+   if isnothing(u) return u end
+   Monomial(u[1]),u[2]
+end
 @inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO, m::Monomial)
@@ -48,6 +50,11 @@ function Base.show(io::IO, m::Monomial)
       end
     end
   end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
+  print(io,"Monomial:")
+  show(io,m)
 end
 
 # cmp must define a monomial order (a<b => a m< b m for all monomials a, b, m)
@@ -68,6 +75,8 @@ function Base.cmp(a::Monomial, b::Monomial)
 end
 
 Base.isless(a::Monomial, b::Monomial)=cmp(a,b)==-1
+Base.:(==)(a::Monomial, b::Monomial)=cmp(a,b)==0
+#Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
 # gcd(m_1,...,m_k)= largest m such that m_i>=m
 function Base.gcd(l::Monomial...)
@@ -118,18 +127,17 @@ struct Mvp{T} # N=type of exponents T=type of coeffs
   d::ModuleElt{Monomial,T}
 end
 
-Mvp(v::Symbol)=Mvp(ModuleElt(Monomial(v)=>1))
-
-Mvp{T}(n::T) where T=Mvp(ModuleElt(one(Monomial)=>n))
 Mvp(a::Pair...)=Mvp(ModuleElt(a...))
+Mvp(v::Symbol)=Mvp(Monomial(v)=>1)
+Mvp{T}(n::T) where T=Mvp(one(Monomial)=>n)
 
 macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   if t isa Expr
     for v in t.args
-      eval(:($v=Mvp($(Core.QuoteNode(Symbol(v))))))
+      Base.eval(Main,:($v=Mvp($(Core.QuoteNode(Symbol(v))))))
     end
   elseif t isa Symbol
-    eval(:($t=Mvp($(Core.QuoteNode(t)))))
+    Base.eval(Main,:($t=Mvp($(Core.QuoteNode(t)))))
   end
 end
 
@@ -146,7 +154,7 @@ function Base.show(io::IO, x::Mvp)
   print(io,s=="" ? 0 : s)
 end
 
-Base.zero(p::Mvp)=Mvp(empty(p.d))
+Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(ModuleElt{Monomial,Int}())
 Base.zero(::Type{Mvp{T}}) where T=Mvp(ModuleElt{Monomial,T}())
 Base.one(::Type{Mvp{T}}) where T=Mvp(one(T))
@@ -155,8 +163,8 @@ Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=length(p.d)==0
 Base.transpose(p::Mvp)=p
 Base.convert(::Type{Mvp},a::Number)=iszero(a) ? zero(Mvp{typeof(a)}) : 
-                                          Mvp(ModuleElt(one(Monomial)=>a))
-Base.convert(::Type{Mvp{T}},a::Number) where T=Mvp(ModuleElt(one(Monomial)=>T(a)))
+                                          Mvp(one(Monomial)=>a)
+Base.convert(::Type{Mvp{T}},a::Number) where T=Mvp(one(Monomial)=>T(a))
 Mvp(a::Number)=convert(Mvp,a)
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 
@@ -176,7 +184,7 @@ end
 
 Base.:+(a::Number, b::Mvp)=Mvp(a)+b
 Base.:+(a::Mvp, b::Number)=b+a
-Base.:-(a::Mvp)=Mvp([v=>-d for (v,d) in a.d])
+Base.:-(a::Mvp)=Mvp(-a.d)
 Base.:-(a::Mvp, b::Mvp)=a+(-b)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(a)-b
@@ -187,8 +195,8 @@ Base.:*(b::Mvp, a)=a*b
 
 function Base.inv(x::Mvp)
   if length(x.d)!=1 error("can only take inverse of monomial") end
-  (m,c)=x.d[1]
-  Mvp(ModuleElt(inv(m)=>(c^2==1 ? c : 1//c)))
+  (m,c)=first(x.d)
+  Mvp(inv(m)=>(c^2==1 ? c : 1//c))
 end
 
 function Base.:^(x::Mvp, p::Int)
@@ -198,8 +206,8 @@ function Base.:^(x::Mvp, p::Int)
     p=-p
   end
   if length(x.d)==1
-    (m,c)=x.d[1]
-    return Mvp(ModuleElt(m^p=>c^p))
+    (m,c)=first(x.d)
+    return Mvp(m^p=>c^p)
   end
   Base.power_by_squaring(x,p)
 end
@@ -212,10 +220,11 @@ function coefficients(p::Mvp,v::Symbol)
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d
 #   print("$m=>$c d=$d\n")
-    if !haskey(m,v) d[0]=push!(get(d,0,zero(p.d)),m=>c)
+    u=Util.drop(m,v)
+    if isnothing(u)
+      d[0]=push!(get(d,0,zero(p.d)),m=>c)
     else 
-      deg=m[v]
-      m1=delete!(m,v)
+      (m1,deg)=u
       d[deg]=push!(get(d,deg,zero(p.d)),m1=>c)
     end
   end
@@ -227,7 +236,7 @@ variables(p::Mvp)=sort(union(map(c->map(x->x[1],c[1].d),p.d)...))
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
   if length(p.d)!=1 return nothing end
-  (m,c)=p.d[1]
+  (m,c)=first(p.d)
   if isone(m) return c end
   return nothing
 end
@@ -237,10 +246,10 @@ function (p::Mvp)(;arg...)
   for s in keys(arg)
     res1=zero(res.d)
     for (m,c) in res.d
-      if !haskey(m,s) push!(res1,m=>c)
+      u=Util.drop(m,s)
+      if isnothing(u) push!(res1,m=>c)
       else 
-        deg=m[s]
-        m1=delete!(m,s)
+        (m1,deg)=u
         append!(res1,(Mvp(m1=>c)*arg[s]^deg).d)
       end
     end
@@ -261,7 +270,7 @@ function ExactDiv(p::Mvp,q::Mvp)
   elseif length(p.d)<2 return iszero(p) ? p : nothing
   elseif iszero(q) error("cannot divide by 0")
   end
-  var=p.d[1][1].d[1][1]
+  var=first(first(p.d)[1].d)[1]
   res=zero(p)
   cq=coefficients(q,var)
   mq=maximum(keys(cq))
@@ -273,7 +282,7 @@ function ExactDiv(p::Mvp,q::Mvp)
 #   println("mp=$mp cp=$cp")
     t=ExactDiv(cp[mp],cq[mq])
     if isnothing(t) return nothing end
-    if mp!=mq t*=Monomial([var=>mp-mq]) end
+    if mp!=mq t*=Monomial(var=>mp-mq) end
     res+=t
 #   print("t=$t res=$res p=$p=>")
     p-=t*q
