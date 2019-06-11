@@ -17,6 +17,9 @@ q
 julia> p=CycPol(q^18 + q^16 + 2*q^12 + q^8 + q^6)
 (q⁸+q⁶-q⁴+q²+1)q⁶Φ₈
 
+julia> p(q) # a CycPol is a callable object, this call evaluates p at q
+q¹⁸+q¹⁶+2q¹²+q⁸+q⁶
+
 julia> p*inv(CycPol(q^2+q+1))
 (q⁸+q⁶-q⁴+q²+1)q⁶Φ₃⁻¹Φ₈
 
@@ -29,13 +32,13 @@ The variable name in a `CycPol` is set by default to the same as for `Pols`.
 
 `.valuation`: the valuation in ℤ.
 
-`.v`: a list of pairs `e=>m` of a root of unity `e` and a multiplicity `m`.
-Here  `e`  is  a  `Root1`,  which  is internally fraction `p//d` with `p<d`
-representing `E(d)^p`. The pair represents `(q-E(d)^p)^m`.
+`.v`: a list of pairs `r=>m` of a root of unity `r` and a multiplicity `m`.
+Here  `r`  is  a  `Root1`,  which  is internally fraction `n//e` with `n<e`
+representing `E(r)=E(e,n)`. The pair represents `(q-E(e)^n)^m`.
 
-So if we let `ζ(e)=E(e)=E(d,p)`, a `CycPol` `r` represents
+So a `CycPol` `p` represents
 
-`r.coeff*q^r.valuation*prod(r.vcyc,p->(q-ζ(p[1]))^p[2])`.
+`p.coeff*q^p.valuation*prod((q-E(r))^m for (r,m) in p.v)`.
 
 """
 module CycPols
@@ -51,13 +54,11 @@ struct CycPol{T}
   v::ModuleElt{Root1,Int}
 end
 
-function CycPol(v::ModuleElt{Rational{Int},Int},valuation::Int=0,coeff=1)
- CycPol(coeff,valuation,norm!(ModuleElt([Root1(numerator(r),denominator(r))=>m
-                                           for (r,m) in v])))
-end
+CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
+  ModuleElt(Pair{Root1,Int}[Root1(r)=>m for (r,m) in v]))
 
 # 281st generic degree of G34
-const p=CycPol(ModuleElt(0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
+const p=CycPol((1//6)E(3),19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 1//5=>1, 2//5=>1, 3//5=>1, 4//5=>1, 1//6=>4, 5//6=>4, 1//7=>1, 2//7=>1,
 3//7=>1, 4//7=>1, 5//7=>1, 6//7=>1, 1//8=>1, 3//8=>1, 5//8=>1, 7//8=>1,
 1//9=>1, 4//9=>1, 7//9=>1, 1//10=>1, 3//10=>1, 7//10=>1, 9//10=>1, 1//14=>1,
@@ -68,7 +69,7 @@ const p=CycPol(ModuleElt(0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 7//24=>1, 13//24=>1, 19//24=>1, 1//30=>1, 7//30=>1, 11//30=>1, 13//30=>1,
 17//30=>1, 19//30=>1, 23//30=>1, 29//30=>1, 1//42=>1, 5//42=>1, 11//42=>1,
 13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
-37//42=>1, 41//42=>1),19,(1//6)E(3))
+37//42=>1, 41//42=>1)
 
 const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 #=
@@ -81,11 +82,11 @@ julia> @btime u(1)  # gap 57μs
   107.098 μs (2559 allocations: 196.03 KiB)
 =#
 
-Base.one(::Type{CycPol})=CycPol(1,0,zero(ModuleElt{Root1,Int}))
+Base.one(::Type{CycPol})=CycPol(1,0)
 Base.isone(p::CycPol)=isone(p.coeff) && iszero(p.valuation) && iszero(p.v)
-Base.zero(::Type{CycPol})=CycPol(0,0,zero(ModuleElt{Root1,Int}))
-Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0,zero(ModuleElt{Root1,Int}))
-Base.zero(a::CycPol)=CycPol(zero(a.coeff),0,zero(ModuleElt{Root1,Int}))
+Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0)
+Base.zero(::Type{CycPol})=zero(CycPol{Int})
+Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 
 function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
@@ -126,15 +127,34 @@ function dec(d::Int)
   end
 end
 
+CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
+  
+function segment(v::ModuleElt{Root1,Int})
+  res=typeof(v.d)[]
+  n=empty(v.d)
+  c=0
+  for p in v.d
+    c1=conductor(p[1])
+    if c!=c1 
+      if !iszero(c) push!(res,n) end
+      c=c1
+      n=empty(v.d)
+    end
+    push!(n,p)
+  end
+  if !iszero(c) push!(res,n) end
+  res
+end
+
 # decompose the .v of a CycPol in subsets Φ^i (for printing)
 function decompose(v::ModuleElt{Root1,Int})
-  rr=NamedTuple{(:cond, :no, :pow),Tuple{Int,Int,Int}}[]
-  if isempty(v) return rr end
-  for (c,t) in groupby(x->conductor(x[1]),v.d)
+  rr=Pair{NamedTuple{(:cond, :no),Tuple{Int,Int}},Int}[]
+  for t in segment(v)
+    c=conductor(t[1][1])
     t=[(exponent(e),p) for (e,p) in t]
     if c==1 
-      push!(rr,(cond=c,no=1,pow=t[1][2]))
-      break
+      push!(rr,(cond=c,no=1)=>t[1][2])
+      continue
     end
     res=[]
     v=fill(0,c)
@@ -145,10 +165,10 @@ function decompose(v::ModuleElt{Root1,Int})
       elseif (n=maximum(v[r]))<0 v[r].-=n 
       else n=0 
       end
-      if n!=0 push!(res,(cond=c,no=i,pow=n)) end
+      if n!=0 push!(res,(cond=c,no=i)=>n) end
     end
     for i in 1:c  
-      if v[i]!=0 push!(res,(cond=c,no=-i,pow=v[i])) end 
+      if v[i]!=0 push!(res,(cond=c,no=-i)=>v[i]) end 
     end
     append!(rr,res)
   end
@@ -158,10 +178,11 @@ end
 function Base.show(io::IO,a::CycPol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  f(x)= if TeX print(io,x) else print(io, TeXstrip(x)) end
+  f(x)=TeX ? x : TeXstrip(x)
   if !(repl || TeX)
-    print(io,"CycPol(",map(x->x[1].r=>x[2],a.v),
-          ",",a.valuation,",",a.coeff,")")
+    print(io,"CycPol(",a.coeff,",",a.valuation)
+    for (r,m) in a.v print(io,",",r.r,"=>",m) end
+    print(io,")")
     return
   end
   if a.coeff!=1 || (iszero(a.valuation) && isempty(a.v))
@@ -170,13 +191,13 @@ function Base.show(io::IO,a::CycPol)
     print(io,s) 
   end
   if a.valuation==1 print(io,"q")
-  elseif a.valuation!=0 f("q^{$(a.valuation)}") end
-  for e in sort(decompose(a.v),by=x->x.cond)
+  elseif a.valuation!=0 print(io,f("q^{$(a.valuation)}")) end
+  for (e,pow) in decompose(a.v)
 #   println(e)
-    if e.no>0  f("\\Phi"*"'"^(e.no-1)*"_{$(e.cond)}")
+    if e.no>0  print(io,f("\\Phi"*"'"^(e.no-1)*"_{$(e.cond)}"))
     else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
     end
-    if (e.pow!=0 && e.pow!=1) f("^{$(e.pow)}") end
+    if pow!=1 print(io,f("^{$pow}")) end
   end
 end
 
@@ -217,10 +238,10 @@ function CycPol(p::Pol{T})where T
  # lot of code to be as efficient as possible in all cases
   if iszero(p) return zero(CycPol{T})
   elseif length(p.c)==1 # p==ax^s
-    return CycPol(p.c[1],valuation(p),zero(ModuleElt{Root1,Int}))
+    return CycPol(p.c[1],valuation(p))
   elseif 2==count(x->!iszero(x),p.c) # p==ax^s+bx^t
     a=Root1(-p.c[1]//p.c[end])
-    if a===nothing return CycPol(Pol(p.c,0),valuation(p),zero(ModuleElt{Root1,Int})) end
+    if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1
     vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
     return CycPol(p.c[end],valuation(p),ModuleElt(sort(vcyc)))
@@ -297,11 +318,14 @@ function CycPol(p::Pol{T})where T
 end
 
 function (p::CycPol)(x)
-  res=x^p.valuation*p.coeff
+  res=x^p.valuation
   if !isempty(p.v)
-   res*=prod(v->prod(u->(x-E(u[1]))^u[2],v),values(groupby(x->conductor(x[1]),p.v.d)))
+    for v in segment(p.v)
+      res*=prod((x-E(r))^m for (r,m) in v)
+      if iszero(res) return res end
+    end
   end
-  res
+  res*p.coeff
 end
 
 end

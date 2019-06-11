@@ -255,7 +255,7 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 function Base.inv(p::Pol)
-  if length(p.c)>1 || !(p.c[1]^2==1) Throw(InexactError()) end
+  if length(p.c)>1 || !(p.c[1]^2==1) throw(InexactError(:inv,Int,p)) end
   Pol([p.c[1]],-p.v)
 end
 

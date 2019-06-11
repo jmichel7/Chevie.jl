@@ -640,6 +640,8 @@ struct Root1 # E(c,n)
   Root1(n::Int,c::Int)=new(mod(n,c)//c)
 end
 
+Root1(r::Rational)=Root1(numerator(r),denominator(r))
+
 function Root1(c::Cyc)
 if use_list
   if !(all(x->x==0 || x==1,c.d) ||all(x->x==0 || x==-1,c.d))

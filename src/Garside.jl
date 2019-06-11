@@ -1059,26 +1059,43 @@ centralizer_generators(b)
 
 a list of generators  of the centralizer of `b`. 
 The computation is done by computing
-the  endomorphisms  of  the  object  <b>  in  the  category  of its sliding
-circuits.  If an argument <type>  is given, the computation  is done in the
-corresponding  category --- see "ConjugacySet". The  main use of this is to
+the  endomorphisms  of  the  object  `b`  in  the  category  of its sliding
+circuits.  If an argument `type`  is given, the computation  is done in the
+corresponding  category --- see `conjcat`. The  main use of this is to
 compute  the  centralizer  in  the  category  of cyclic conjugacy by giving
-'\"Cyc\"' as the type.
+`:cyc` as the type.
 
-|    gap> W:=CoxeterGroup("D",4);;
-    gap> w:=Braid(W)(4,4,4);
-    4.4.4
-    gap> CentralizerGenerators(w);
-    [ 4, 2, (1)^-1.34.431, 34.43, (32431)^-1.132431, 1, (2)^-1.34.432,
-      (31432)^-1.231432 ]
-    gap> ShrinkGarsideGeneratingSet(last);
-    [ 4, 2, 1, 34.43, (3243)^-1.13243 ]
-    gap> CentralizerGenerators(w,"Cyc");
-    [ 4 ]
-    gap> F:=Frobenius(CoxeterCoset(W,(1,2,4)));
-    function ( arg ) ... end
-    gap> CentralizerGenerators(w,F);
-    [ 312343123, 124 ]|
+```julia-repl
+julia> W=coxgroup(:D,4)
+W(D₄)
+
+julia> B=BraidMonoid(W)
+BraidMonoid(W(D₄))
+
+julia> w=B(4,4,4)
+4.4.4
+
+julia> cc=centralizer_generators(w)
+8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+ (31432)⁻¹231432
+ 1              
+ (2)⁻¹34.432    
+ (1)⁻¹34.431    
+ 34.43          
+ 4              
+ (32431)⁻¹132431
+ 2              
+
+julia> shrink(cc)
+5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+ 4            
+ 2            
+ 1            
+ 34.43        
+ (3243)⁻¹13243
+
+julia> centralizer_generators(w,:cyc)
+Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}[4])
 """
 function centralizer_generators(b,s::Symbol=:sc)
   if s==:ss || s==:sc

@@ -260,18 +260,17 @@ function TeXstrip(s::String)
   s=replace(s,r"\\BZ"=>"ℤ")
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\!"=>"")
-  sup=Dict(zip("0123456789-","⁰¹²³⁴⁵⁶⁷⁸⁹⁻"))
-  sub=Dict(zip("0123456789,()","₀₁₂₃₄₅₆₇₈₉‚₍₎"))
-  s=replace(s,r"_[0-9]"=>t->sub[t[2]])
-  s=replace(s,r"\^[0-9]"=>t->sup[t[2]])
+  sup=Dict(zip("0123456789-()","⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁽⁾"))
+  sub=Dict(zip("-0123456789,()+=aehijklmnoprstuvx",
+               "₋₀₁₂₃₄₅₆₇₈₉‚₍₎₊₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
+  s=replace(s,r"_[-0-9,()+=aehijklmnoprstuvx]"=>t->sub[t[2]])
   s=replace(s,r"(_\{[0-9,]*\})('*)"=>s"\2\1")
-  s=replace(s,r"_\{[0-9,()]*\}"=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,r"\^\{[-0-9]*\}"=>t->map(x->sup[x],t[3:end-1]))
-  s=replace(s,r"'''''"=>"‴″")
-  s=replace(s,r"''''"=>"⁗")
-  s=replace(s,r"'''"=>"‴")
-  s=replace(s,r"''"=>"″")
-  s=replace(s,r"'"=>"′")
+  s=replace(s,r"_\{[-0-9,()+=aehijklmnoprstuvx]*\}"=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,r"\^[-0-9()]"=>t->sup[t[2]])
+  s=replace(s,r"\^\{[-0-9()]*\}"=>t->map(x->sup[x],t[3:end-1]))
+  q(l)= l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : 
+     "⁽$(map(x->sup[x],string(l)))⁾"
+  s=replace(s,r"''*"=>t->q(length(t)))
   s
 end
 
