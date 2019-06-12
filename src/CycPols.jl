@@ -76,10 +76,13 @@ const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
   benchmark: 
 julia> @btime u=CycPols.p(q) # gap 2ms
   868.139 μs (14931 allocations: 1.03 MiB)
+    1.827 ms (90128 allocations: 4.62 MiB)
 julia> @btime CycPol(u) # gap 12ms
   44.270 ms (500873 allocations: 56.74 MiB)
+  31.011 ms (666125 allocations: 41.54 MiB)
 julia> @btime u(1)  # gap 57μs
   107.098 μs (2559 allocations: 196.03 KiB)
+   69.927 μs (2819 allocations: 149.95 KiB)
 =#
 
 Base.one(::Type{CycPol})=CycPol(1,0)
