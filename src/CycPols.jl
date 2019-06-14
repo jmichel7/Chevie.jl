@@ -1,44 +1,95 @@
 """
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
-cyclotomic  field, play an important role in the study of reductive groups.
-Special  facilities are provided in this module to deal with them. The type
-`CycPol` represents the product of a polynomial with a rational fraction in
-one variable with all poles or zeroes equal to 0 or roots of unity.
-
-The  advantages  of  representing  as  `CycPol`  objects  which  can  be so
-represented   are:   nice   display   (factorized),  less  storage,  faster
-multiplication,  division and evaluation. The big drawback is that addition
-and subtraction are not implemented!
+cyclotomic field, are important in reductive groups or Spetses. This module
+deals  with them: the type `CycPol`  represents the product of a polynomial
+with  a rational fraction in one variable with all poles or zeroes equal to
+0  or  roots  of  unity.  The  advantages  of representing as `CycPol` such
+objects    are:   nice   display   (factorized),   less   storage,   faster
+multiplication,  division and evaluation. The drawback is that addition and
+subtraction are not implemented!
 
 ```julia-repl
 julia> Pol(:q)
 q
 
-julia> p=CycPol(q^18 + q^16 + 2*q^12 + q^8 + q^6)
-(q⁸+q⁶-q⁴+q²+1)q⁶Φ₈
+julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2)
+(q-2)Φ₁Φ₂Φ₂₃
 
 julia> p(q) # a CycPol is a callable object, this call evaluates p at q
-q¹⁸+q¹⁶+2q¹²+q⁸+q⁶
+q²⁵-q²⁴-2q²³-q²+q+2
 
 julia> p*inv(CycPol(q^2+q+1))
-(q⁸+q⁶-q⁴+q²+1)q⁶Φ₃⁻¹Φ₈
+(q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
 ```
 The variable name in a `CycPol` is set by default to the same as for `Pols`.
 
-`CycPol`s are represented internally by a `struct` with fields:
+`CycPol`s are internally a `struct` with fields:
 
 `.coeff`:  a coefficient, usually a cyclotomic number or a polynomial.
 
-`.valuation`: the valuation in ℤ.
+`.valuation`: an `Int`.
 
 `.v`: a list of pairs `r=>m` of a root of unity `r` and a multiplicity `m`.
-Here  `r`  is  a  `Root1`,  which  is internally fraction `n//e` with `n<e`
-representing `E(r)=E(e,n)`. The pair represents `(q-E(e)^n)^m`.
+Here `r` is a `Root1`, internally a fraction `n//e` with `n<e` representing
+`E(r)=E(e,n)`.
 
-So a `CycPol` `p` represents
+So `CycPol(c,val,v)` represents `c*q^val*prod((q-E(r))^m for (r,m) in v)`.
 
-`p.coeff*q^p.valuation*prod((q-E(r))^m for (r,m) in p.v)`.
+When   showing,  some  factors  of   the  cyclotomic  polynomial  `Φₙ`  are
+represented.  If `n`  has a  primitive root,  `ϕ′ₙ` is  the product  of the
+`(q-ζ)`  where `ζ` runs over the odd powers of a primitive root of `n`, and
+`ϕ″ₙ`  is the product for the even powers. Some other factors of cyclotomic
+polynomials are:
+
+```
+Φ′₈=q²-ζ₄
+Φ″₈=q²+ζ₄
+Φ‴₈=q²-√2q+1
+Φ⁗₈=q²+√2q+1
+Φ⁽⁵⁾₈=q²-√-2q-1
+Φ⁽⁶⁾₈=q²+√-2q-1
+Φ′₁₂=q²-ζ₄q-1
+Φ″₁₂=q²+ζ₄q-1
+Φ‴₁₂=q²+ζ₃²
+Φ⁗₁₂=q²+ζ₃
+Φ⁽⁵⁾₁₂=q²-√3q+1
+Φ⁽⁶⁾₁₂=q²+√3q+1
+Φ′₁₅=q⁴-q(1+√5)(q^2-q+1)/2+1
+Φ″₁₅=q⁴-q(1-√5)(q^2-q+1)/2+1
+Φ‴₁₅=q⁴+ζ₃²q³+ζ₃q²+q+ζ₃²
+Φ⁗₁₅=q⁴+ζ₃q³+ζ₃²q²+q+ζ₃
+Φ⁽⁵⁾₁₅=q²+ζ₃²(1+√5)q/2+ζ₃
+Φ⁽⁶⁾₁₅=q²+ζ₃²(1-√5)q/2+ζ₃
+Φ⁽⁷⁾₁₅=q²+ζ₃(1+√5)q/2+ζ₃
+Φ⁽⁸⁾₁₅=q²+ζ₃(1-√5)q/2+ζ₃
+Φ′₂₀=q⁴-(1+√5)/2q²+1
+Φ″₂₀=q⁴-(1-√5)/2q²+1
+Φ‴₂₀=q⁴+ζ₄q³-q²-ζ₄q+1
+Φ⁗₂₀=q⁴-ζ₄q³-q²+ζ₄q+1
+Φ′₂₄=q⁴+ζ₃²
+Φ″₂₄=q⁴+ζ₃
+Φ‴₂₄=q⁴-√2q³+q²-√2q+1
+Φ⁗₂₄=q⁴+√2q³+q²+√2q+1
+Φ⁽⁵⁾₂₄=q⁴-√6q³+3q²-√6q+1
+Φ⁽⁶⁾₂₄=q⁴+√6q³+3q²+√6q+1
+Φ⁽⁷⁾₂₄=q⁴+√-2q³-q²-√-2q+1
+Φ⁽⁸⁾₂₄=q⁴-√-2q³-q²+√-2q+1
+Φ⁽⁹⁾₂₄=q²+ζ₃²√-2q-ζ₃
+Φ⁽¹⁰⁾₂₄=q²-ζ₃²√-2q-ζ₃
+Φ⁽¹¹⁾₂₄=q²+ζ₃√-2q-ζ₃²
+Φ⁽¹²⁾₂₄=q²-ζ₃√-2q-ζ₃²
+Φ′₃₀=q⁴-q(1-√5)(q^2+q+1)/2+1
+Φ″₃₀=q⁴-q(1+√5)(q^2+q+1)/2+1
+Φ‴₃₀=q⁴-ζ₃q³+ζ₃²q²-q+ζ₃
+Φ⁗₃₀=q⁴-ζ₃²q³+ζ₃q²-q+ζ₃²
+Φ⁽⁵⁾₃₀=q²-ζ₃²(1-√5)q/2+ζ₃
+Φ⁽⁶⁾₃₀=q²-ζ₃²(1+√5)q/2+ζ₃
+Φ⁽⁷⁾₃₀=q²-ζ₃(1-√5)q/2+ζ₃²
+Φ⁽⁸⁾₃₀=q²-ζ₃(1+√5)q/2+ζ₃²
+Φ′₄₂=q⁶-ζ₃²q⁵+ζ₃q⁴-q³+ζ₃²q²-ζ₃q+1
+Φ″₄₂=q⁶-ζ₃q⁵+ζ₃²q⁴-q³+ζ₃q²-ζ₃²q+1
+```
 
 """
 module CycPols
@@ -105,7 +156,7 @@ Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
   8=>[[1,3,5,7],[1,5],[3,7],[1,7],[3,5],[1,3],[5,7]],
- 12=>[[1,5,7,11],[1,5],[7,11],[1,7],[5,11],[1,11],[5,7],[1],[5],[7],[11]],
+ 12=>[[1,5,7,11],[1,5],[7,11],[1,7],[5,11],[1,11],[5,7]],
  15=>[[1,2,4,7,8,11,13,14],[1,4,11,14],[2,7,8,13],[1,4,7,13],[2,8,11,14],
       [1,4],[7,13],[11,14],[2,8]],
  16=>[[1,3,5,7,9,11,13,15],[1,7,9,15],[3,5,11,13]],
@@ -116,6 +167,17 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
  30=>[[1,7,11,13,17,19,23,29],[1,11,19,29],[7,13,17,23],[1,7,13,19],
       [11,17,23,29],[11,29],[17,23],[1,19],[7,13]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
+
+rshow(x,p...)=show(IOContext(stdout,[s=>true for s in p]...),"text/plain",x)
+
+function pr()
+  for i in sort(collect(keys(dec_dict)))
+    for j in 2:length(dec_dict[i])
+      p=CycPol(;cond=i,no=j)
+      rshow(p,:limit);print("=");rshow(p(Pol(:q)),:limit,:quadratic);print("\n");
+    end
+  end
+end
 
 # returns list of subsets of primitive_roots(d) wich have a `name` Φ^i
 function dec(d::Int)
