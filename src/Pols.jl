@@ -222,8 +222,8 @@ end
 
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
 function Base.://(p::Pol,q::Pol)
-  if q.c==[1] return shift(p,q.v)
-  elseif q.c==[-1] return shift(-p,q.v)
+  if q.c==[1] return shift(p,-q.v)
+  elseif q.c==[-1] return shift(-p,-q.v)
   end
   r=divrem1(p,q)
   if r[2]==1 return r[1] end
@@ -255,8 +255,11 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 function Base.inv(p::Pol)
-  if length(p.c)>1 || !(p.c[1]^2==1) throw(InexactError(:inv,Int,p)) end
-  Pol([p.c[1]],-p.v)
+  if length(p.c)>1 throw(InexactError(:inv,Int,p)) end
+  if p.c[1]^2==1 return Pol([p.c[1]],-p.v) end
+  r=Root1(p.c[1])
+  if isnothing(r) throw(InexactError(:inv,Int,p)) end
+  Pol([inv(p.c[1])],-p.v)
 end
 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0))

@@ -8,18 +8,17 @@ abstract type Spets{TW}<:Coset{TW} end
 
 abstract type CoxeterCoset{TW}<:Spets{TW} end
 
-class_reps(W::FiniteCoxeterGroup)=map(x->W(x...),classinfo(W)[:classtext]) 
-
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
-  if isempty(J) class_reps(W)
-  else class_reps(centralizer(W,Set(J);action=(J,w)->Set(J.^w)))
+  if isempty(J) C=W
+  elseif W isa CoxeterGroup && all(x->x in 1:coxrank(W),J)
+    C=PermGroup(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
+  else C=centralizer(W,sort(J);action=(J,w)->sort(J.^w))
   end
+  class_reps(C)
 end
 
-function twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
-  R=reflection_subgroup(W,J)
-  map(w->spets(R,w),twisting_elements(W,J))
-end
+twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
+  spets.(Ref(reflection_subgroup(W,J)),twisting_elements(W,J))
 
 struct FCC{T,T1,TW<:FiniteCoxeterGroup{Perm{T},T1}}<:CoxeterCoset{TW}
   phi::Perm{T}

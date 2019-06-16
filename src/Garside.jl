@@ -98,10 +98,10 @@ Given a Coxeter group `W`,
 # Examples
 ```julia-repl
 julia> W=coxgroup(:A,4)
-W(A₄)
+A₄
 
 julia> B=BraidMonoid(W)
-BraidMonoid(W(A₄))
+BraidMonoid(A₄)
 ```
 constructs  the  associated  braid  monoid,  and  then  as  a  function 'B'
 constructs  elements of the braid monoid (or group when `W` is finite) from
@@ -258,7 +258,7 @@ julia> centralizer_generators(b)
  4
 
 julia> C=conjcat(b,:ss)
-category with 10 objects and 32 maps
+category with 10 objects and 32 generating maps
 
 julia> C.obj
 10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
@@ -297,7 +297,7 @@ julia> b1=b^B(preferred_prefix(b))
 1214.4
 
 julia> C=conjcat(b)
-category with 3 objects and 7 maps
+category with 3 objects and 7 generating maps
 
 julia> C.obj
 3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
@@ -310,10 +310,10 @@ Garside monoid:
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
-W(A₃)
+A₃
 
 julia> B=BraidMonoid(W)
-BraidMonoid(W(A₃))
+BraidMonoid(A₃)
 
 julia> pi=B(B.delta)^2
 δ²
@@ -332,7 +332,7 @@ module Garside
 using Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 representative_operation, centralizer_generators, preferred_prefix,
-left_divisors
+left_divisors, Category, endomorphisms
 
 abstract type GarsideMonoid{T} end # T=type of simples
 
@@ -431,10 +431,10 @@ length i in the atoms.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
-W(A₃)
+A₃
 
 julia> B=BraidMonoid(W)
-BraidMonoid(W(A₃))
+BraidMonoid(A₃)
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
 4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
@@ -444,7 +444,7 @@ julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
  [132] 
 
 julia> B=DualBraidMonoid(W)
-DualBraidMonoid(W(A₃),c=[1, 3, 2])
+DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
 4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
@@ -589,10 +589,10 @@ of `W`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
-W(A₃)
+A₃
 
 julia> B=DualBraidMonoid(W)
-DualBraidMonoid(W(A₃),c=[1, 3, 2])
+DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> B(2,1,2,1,1)
 12.1.1.1
@@ -674,7 +674,7 @@ divisor and such that `b=inv(x)*y`.
 
 ```julia-repl
 julia> B=BraidMonoid(coxgroup(:A,3))
-BraidMonoid(W(A₃))
+BraidMonoid(A₃)
 
 julia> b=B( 2, 1, -3, 1, 1)
 (23)⁻¹321.1.1
@@ -710,7 +710,7 @@ integer.
 
 ```julia-repl
 julia> B=BraidMonoid(coxgroup(:A,3))
-BraidMonoid(W(A₃))
+BraidMonoid(A₃)
 
 julia> b=B(2,1,2,1,1)*inv(B(2,2))
 (21)⁻¹1.12.21
@@ -770,9 +770,10 @@ function Base.show(io::IO,b::GarsideElm)
 end
 
 function Base.:*(a::GarsideElm{T},x::T)::GarsideElm{T} where T
+  M=a.M
+  if x==one(M) return a end # see if can suppress this special case
   v=copy(a.elm)::Vector{T}
   push!(v,x)
-  M=a.M
   for i in length(v):-1:2
     x,y=alpha2(M,v[i-1],v[i])
 #   y=M.one
@@ -818,30 +819,32 @@ Base.:^(a::GarsideElm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : Base.po
 
 Base.:^(a::GarsideElm, b::GarsideElm)=inv(b)*a*b
 #----------------------------------------------------------------------------
-struct Category{TO}
+struct Category{TO,TM} # TO type of objs TM type of maps
   obj::Vector{TO}
-  atoms::Vector{Vector{Pair{TO,Int}}}
+  atoms::Vector{Vector{Pair{TM,Int}}}
 end
 
 function Base.show(io::IO,C::Category)
   print(io,"category with ",length(C.obj)," objects and ",
-        sum(length,C.atoms)," maps")
+        sum(length,C.atoms)," generating maps")
 end
 
-function Category(atomsfrom::Function,o::TO) where TO
-  C=Category([o],[Pair{TO,Int}[]])
+function Category(atomsfrom::Function,o;action::Function=^)
+  TM=eltype(atomsfrom(o))
+  C=Category([o],[Pair{TM,Int}[]])
   i=1
   while i<=length(C.obj) 
     b=C.obj[i]
     for m in atomsfrom(b)
-      p=findfirst(isequal(m[2]),C.obj)
+      target=action(b,m)
+      p=findfirst(isequal(target),C.obj)
   #	Print(b,"^",m.map,"->",m.tgt,"\n");
       if isnothing(p)
-         push!(C.obj,m[2])
+         push!(C.obj,target)
          push!(C.atoms,empty(C.atoms[1]))
          p=length(C.obj)
       end
-      push!(C.atoms[i],m[1]=>p)
+      push!(C.atoms[i],m=>p)
     end
     i+=1
     if iszero(i%100) print(".") end
@@ -849,24 +852,58 @@ function Category(atomsfrom::Function,o::TO) where TO
   C
 end
 
-###############################################
-# Endomorphisms(C,o) for category C, returns  #
-# generators of the endomorphisms of C.obj[o] #
-###############################################
-function endomorphisms(C::Category{TO},o) where TO
+function showgraph(C::Category;showmap::Function=x->x,showobj::Function=x->x)
+  maps=vcat(map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj))...)
+  for f in 1:3
+    new=empty(maps)
+    for m in maps
+      p=findfirst(x->x[end]==m[1],new)
+      if isnothing(p)
+        p=findfirst(x->x[1]==m[end],new)
+        if isnothing(p) push!(new,m)
+        else new[p]=vcat(m[1:end-1],new[p])
+        end
+      else new[p]=vcat(new[p],m[2:end])
+      end
+    end
+    maps=new
+  end
+  for f in maps
+    l1=l2=""
+    for i in 1:2:length(f)-2
+      a=string(showobj(C.obj[f[i]]))
+      ff=string(showmap(f[i+1]))
+      l=max(2,length(ff))
+#     if length(l1)+length(a)+l+1>SizeScreen()[1]
+#       print(l1,"\n",l2,"\n")
+#       l1=l2=""
+#     end
+      l2*=a*"-"^l*">"
+      l1*=lpad("",length(a))*lpad(ff,l)*" "
+    end
+    print(l1,"\n",l2,showobj(C.obj[f[end]]),"\n")
+  end
+end
+
+"""
+Endomorphisms(C,o) 
+for category C, returns generators of the endomorphisms of C.obj[o]
+"""
+function endomorphisms(C::Category,o)
   paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
   paths[o]=Tuple{Int,Int}[]
-  maps=copy(C.obj)
+  maps=[one(C.atoms[o][1][1]) for i in eachindex(C.obj)]
   function foo()
     reached=[o]
     for i in reached t=C.atoms[i]
-      for j in eachindex(t) m=t[j]
-        if !(m[2] in reached)
-          paths[m[2]]=vcat(paths[i],[(i,j)])
-          if i!=o maps[m[2]]=maps[i]*m[1]
-          else maps[m[2]]=m[1]
+      for (j,m) in enumerate(t)
+        (mp,o1)=m
+        if !(o1 in reached)
+          paths[o1]=vcat(paths[i],[(i,j)])
+          if i!=o maps[o1]=maps[i]*mp
+          else maps[o1]=mp
           end
-          push!(reached,m[2])
+          push!(reached,o1)
           if length(reached)==length(C.obj) return end
         end
       end
@@ -874,7 +911,7 @@ function endomorphisms(C::Category{TO},o) where TO
   end
   foo()
   # here paths[p] describes a path to get from obj o to  obj p
-  gens=Set{TO}()
+  gens=Set(empty(maps))
   for i in eachindex(C.obj)
     t=C.atoms[i]
     for j in eachindex(t)
@@ -893,15 +930,14 @@ end
 
 function AtomicMaps(a,s::Symbol=:sc)
   M=a.M
-  res=typeof(a=>a)[]
+  res=typeof(a)[]
   for i in eachindex(M.atoms)
-   m=minc(a,M.atoms[i],Val(s))
+    m=minc(a,M.atoms[i],Val(s))
     if !isnothing(m) && !any(k->isleftdescent(M,m,k),i+1:length(M.atoms))
-      bm=M(m)
-      push!(res,bm=>a^bm)
+      push!(res,M(m))
     end
   end
-  filter(x->count(y->(y[1]^-1*x[1]).pd>=0,res)==1,res)
+  filter(x->count(y->(inv(y)*x).pd>=0,res)==1,res)
 end
 
 # a braid x atom
@@ -964,24 +1000,24 @@ function representativeSC(b)
   (conj=l[t][2],circuit=first.(l[t:end-1]))
 end
 
-# MinConjugating.SC(a,x,F) minimal m such that x<m and m^-1*a*F(m) is in SC(a).
-# m is a simple.
+# minc(a::GarsideElm,x::simple,:sc) 
+# minimal simple m such that x<m and a^m is in SC(a).
 function minc(a,x,::Val{:sc})
-    M=a.M
+  M=a.M
 # Gebhart-Gonzalez function F for a in SC such that a^x in SSS
   function ggF(a,x)
-    f=typeof([a,x])[]
+    f=empty([(a,x)])
     y=a
-    while true # find the history under sliding of the pair [a,x]
-      push!(f,[y,x])
+    while true # find the history under sliding of (a,x)
+      push!(f,(y,x))
       r=preferred_prefix(y)
       x=\(M,r,*(M,x,preferred_prefix(y^x)))
       if x==one(M) return [one(M)] end
       y^=r
-      p=findfirst(isequal([y,x]),f)
+      p=findfirst(isequal((y,x)),f)
       if !isnothing(p) break end
     end
-    map(x->x[2],filter(x->x[1]==a,f[p:end]))
+    map(last,filter(x->x[1]==a,f[p:end]))
   end
   x=minc(a,x,Val(:ss))
   f=ggF(a,x)
@@ -1012,10 +1048,10 @@ corresponding category --- see "conjcat".
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
-W(D₄)
+D₄
 
 julia> B=BraidMonoid(coxgroup(:D,4))
-BraidMonoid(W(D₄))
+BraidMonoid(D₄)
 
 julia> b=B(2,3,1,2,4,3);b1=B(1,4,3,2,2,2)
 1432.2.2
@@ -1044,10 +1080,11 @@ function representative_operation(b,c,s::Symbol=:sc)
   class=[b]
   for a in class 
     for m in AtomicMaps(a,s)
-      if !(m[2] in class)
-        e=res[findfirst(isequal(a),class)]*m[1]
-        if m[2]==c return e*cconj^-1 end
-        push!(class,m[2])
+      target=a^m
+      if !(target in class)
+        e=res[findfirst(isequal(a),class)]*m
+        if target==c return e*cconj^-1 end
+        push!(class,target)
         push!(res,e)
       end
     end 
@@ -1067,10 +1104,10 @@ compute  the  centralizer  in  the  category  of cyclic conjugacy by giving
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
-W(D₄)
+D₄
 
 julia> B=BraidMonoid(W)
-BraidMonoid(W(D₄))
+BraidMonoid(D₄)
 
 julia> w=B(4,4,4)
 4.4.4
@@ -1096,6 +1133,7 @@ julia> shrink(cc)
 
 julia> centralizer_generators(w,:cyc)
 Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}[4])
+```
 """
 function centralizer_generators(b,s::Symbol=:sc)
   if s==:ss || s==:sc
@@ -1200,13 +1238,14 @@ function Gapjm.root(b0::GarsideElm,n=2)
     if cst(class[1]) return conj[1] end
     for a in class 
       for m in AtomicMaps(a)
-       if !(m[2] in class)
-         e=conj[findfirst(isequal(a),class)]*m[1]
-         if cst(m[2]) return e end
-         push!(class,m[2])
-         push!(conj,e)
+        target=a^m
+        if !(target in class)
+          e=conj[findfirst(isequal(a),class)]*m
+          if cst(target) return e end
+          push!(class,target)
+          push!(conj,e)
+        end
       end
-     end
     end
   end
   conj=inner(b)
@@ -1230,7 +1269,7 @@ counted  as returned by the function  `word`).
 
 ```julia-repl
 julia> B=BraidMonoid(coxsym(3))
-BraidMonoid(coxsym(3))
+BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
 4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:

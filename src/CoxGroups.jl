@@ -70,7 +70,7 @@ Coxeter words and elements of the group.
 # Examples
 ```julia-repl
 julia> W=coxsym(4)
-coxsym(4)
+𝔖 ₄
 
 julia> p=W(1,3,2,1,3)
 UInt8(1,4)
@@ -219,10 +219,10 @@ reduced(W,w)
   The unique element in the coset W.w which stabilises the positive roots of W
 ```julia-repl
 julia> W=coxgroup(:G,2)
-W(G₂)
+G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-W(G₂)₂₄
+G₂₍₂₄₎
 
 julia> Set(word.(Ref(W),reduced.(Ref(H),elements(W))))
 Set(Array{Int64,1}[[1], []])
@@ -242,10 +242,10 @@ reduced(H,W)
   The elements in W which are H-reduced
 ```julia-repl
 julia> W=coxgroup(:G,2)
-W(G₂)
+G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-W(G₂)₂₄
+G₂₍₂₄₎
 
 julia> [word(W,w) for S in reduced(H,W) for w in S]
 2-element Array{Array{Int64,1},1}:
@@ -407,12 +407,20 @@ function standard_parabolic_class(W,I::Vector{Int})
    res
 end
 
+function parabolic_category(W,I::AbstractVector{<:Integer})
+  Category(collect(sort(I));action=(J,e)->sort(J.^e))do J
+    map(setdiff(1:coxrank(W),J)) do i
+      longest(W,J)*longest(W,push!(copy(J),i))
+    end
+  end
+end
+    
 # representatives of parabolic classes
 function parabolic_representatives(W,s)
   l=collect(combinations(1:coxrank(W),s))
   orbits=[]
   while !isempty(l) 
-    o=standard_parabolic_class(W,l[1])
+    o=parabolic_category(W,l[1]).obj
     push!(orbits,o)
     l=setdiff(l,o)
   end
@@ -444,14 +452,15 @@ function coxsym(n::Int)
 end
 
 function Base.show(io::IO, W::CoxSymmetricGroup)
-# repl=get(io,:limit,false)
-# if repl print(io,TeXstrip("𝔖 _{$(W.n)}"))
-# else 
+  repl=get(io,:limit,false)
+  if repl print(io,TeXstrip("𝔖 _{$(W.n)}"))
+  else 
     print(io,"coxsym($(W.n))")
-# end
+  end
 end
 
-PermRoot.refltype(W::CoxSymmetricGroup)=[(series=:A,indices=collect(1:W.n-1))]
+PermRoot.refltype(W::CoxSymmetricGroup)=[TypeIrred(Dict(:series=>:A,
+                                        :indices=>collect(1:W.n-1)))]
 
 function PermRoot.reflength(W::CoxSymmetricGroup,a)
   to_visit=trues(length(a.d))
@@ -485,7 +494,7 @@ function Base.length(W::CoxSymmetricGroup,w)
   end end
   l
 end
-# 2.5 times longer on 1.0.2
+# 1.7 times longer on 1.1.1
 function length2(W::CoxSymmetricGroup,w)
   count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 end

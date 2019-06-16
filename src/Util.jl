@@ -260,6 +260,7 @@ function TeXstrip(s::String)
   s=replace(s,r"\\BZ"=>"ℤ")
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\!"=>"")
+  s=replace(s,r"{}"=>"")
   sup=Dict(zip("0123456789-()","⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁽⁾"))
   sub=Dict(zip("-0123456789,()+=aehijklmnoprstuvx",
                "₋₀₁₂₃₄₅₆₇₈₉‚₍₎₊₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
@@ -422,6 +423,7 @@ function Gapjm.root(x::Integer,n::Number=2)
   end
 end
 
+Gapjm.root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
 #--------------------------------------------------------------------------
 # written since should allow negative powers with inv
 #function Base.:^(a::T, p::Integer) where T

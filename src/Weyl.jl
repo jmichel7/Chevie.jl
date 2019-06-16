@@ -126,7 +126,7 @@ by  the  above  list,  the  function  call  can  be  simplified. Instead of
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
-W(D₄)
+D₄
 
 julia> cartan(W)
 4×4 Array{Int64,2}:
@@ -141,7 +141,7 @@ systems can be obtained as a product
 
 ```julia-repl
 julia> W=coxgroup(:A,2)*coxgroup(:B,2)
-W(A₂)× W(B₂)₍₃₄₎
+A₂× B₂₍₃₄₎
 
 julia> cartan(W)
 4×4 Array{Int64,2}:
@@ -156,7 +156,7 @@ The  same `struct`  is constructed  by applying  'coxgroup' to  the matrix
 The elements of a Weyl group are permutations of the roots:
 ```julia-repl
 julia> W=coxgroup(:D,4)
-W(D₄)
+D₄
 
 julia> p=W(1,3,2,1,3)
 Int16(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)
@@ -344,7 +344,7 @@ function type_irred_cartan(m::AbstractMatrix)
     end 
     t[:indices]=s::Vector{Int}
   end 
-  println("t=$t")
+# println("t=$t")
   if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
   t
 end
@@ -430,6 +430,9 @@ end
 
 
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
+
+PermGroups.class_reps(W::FiniteCoxeterGroup)=
+   map(x->W(x...),classinfo(W)[:classtext]) 
 
 #forwarded methods to PermRoot/W.G
 @inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
@@ -560,21 +563,21 @@ is used by 'reflection_subgroup' to determine the Coxeter system of `H`.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
-W(G₂)
+G₂
 
 julia> Diagram(W)
 O⇛ O
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
-W(G₂)₂₄
+G₂₍₂₄₎
 
 julia> Diagram(H)
 O—O
 1 2
 ```
 
-The  notation `W(G₂)₂₃` means  that 'W.roots[2:3]' form  a system of simple
+The  notation `G₂₍₂₃₎` means  that 'W.roots[2:3]' form  a system of simple
 roots for `H`.
 
 A  reflection subgroup has specific properties  the most important of which
@@ -692,7 +695,12 @@ end
 function Base.show(io::IO, W::FCSG)
   I=inclusion(W)[1:coxrank(W)]
   n=any(i->i>=10,I) ? join(I,",") : join(I)
-  print(io,sprint(show,W.parent; context=io)*TeXstrip("_{($n)}"))
+  repl=get(io,:limit,false)
+  if !repl print(io,"reflection_subgroup(") end
+  print(io,sprint(show,W.parent; context=io))
+  if repl print(io,TeXstrip("_{($n)}"))
+  else print(io,",$I)")
+  end
 end
   
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=

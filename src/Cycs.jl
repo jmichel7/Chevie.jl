@@ -342,7 +342,9 @@ function Base.show(io::IO, p::Cyc)
         if q.b>0 print(io,"+") end
       end
       print(io,q.b==1 ? "" : q.b==-1 ? "-" : q.b)
-      print(io,"√",q.root)
+      if repl print(io,"√",q.root)
+      else print(io,"ER(",q.root,")")
+      end
       if !iszero(q.a) && q.den!=1 print(io,")") end
     end
     if q.den!=1 && !iszero(p) print(io,"/",q.den) end
@@ -712,7 +714,7 @@ if use_list
   l[1 .+ zb]=Int.(cyc.d*den)
 else
   den=lcm(denominator.(map(x->x[2],cyc.d)))::Int
-  if den!=1 cyc=Cyc(cyc.n,[k=>Int(v*den) for (k,v) in cyc.d]) end
+  if den!=1 cyc=Cyc(cyc.n,ModuleElt([k=>Int(v*den) for (k,v) in cyc.d])) end
   l=fill(0,cyc.n)
   for (k,v) in cyc.d l[k+1]=v end
 end

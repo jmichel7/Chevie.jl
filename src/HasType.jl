@@ -239,11 +239,24 @@ function chartable(H::HeckeAlgebra{C})where C
   ct=impl1(getchev(W,:HeckeCharTable,H.para,
        haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(t)[:charnames]
+  else                     names=charinfo(W)[:charnames]
   end
   CharTable(Matrix(permutedims(hcat(
        map(ch->convert.(C,ch),ct[:irreducibles])...))),names,
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
+end
+
+function representation(H::HeckeAlgebra,i::Int)
+  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
+    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
+  map(x->hcat(x...),ct)
+end
+
+function schur_elements(H::HeckeAlgebra)
+  W=H.W
+  map(p->getchev(W,:SchurElement,p,H.para,
+     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))[1],
+      first.(charinfo(W)[:charparams]))
 end
 
 function ComplexReflectionGroup(i::Int)
@@ -305,17 +318,6 @@ reflection_name(W)=join(getchev(W,:ReflectionName,Dict()),"×")
 
 function representation(W,i::Int)
   map(x->hcat(x...),impl1(getchev(W,:Representation,i)))
-end
-
-function representation(H::HeckeAlgebra,i::Int)
-  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,H.sqpara,i))
-  map(x->hcat(x...),ct)
-end
-
-function schur_elements(H::HeckeAlgebra)
-  W=H.W
-  map(p->getchev(W,:SchurElement,p,H.para,H.sqpara),
-    charinfo(W)[:charparams])
 end
 
 UnipotentClassOps=Dict(:Name=>x->x)
@@ -501,12 +503,14 @@ function VcycSchurElement(arg...)
   if haskey(r, :factor) res = res * monomial(r[:factor]) end
   if haskey(r, :root)
       para = para + 0 * Product(para)
-      para[n + 1] = ChevieIndeterminate(para)
+#     para[n + 1] = ChevieIndeterminate(para)
+      push!(para,ChevieIndeterminate(para))
   elseif haskey(r, :rootUnity)
-      para[n + 1] = r[:rootUnity] ^ data[:rootUnityPower]
+   push!(para, r[:rootUnity] ^ data[:rootUnityPower])
+#     para[n + 1] = r[:rootUnity] ^ data[:rootUnityPower]
   end
   res = res * Product(r[:vcyc], x->
-            Value(CyclotomicPolynomial(Cyclotomics, x[2]), monomial(x[1])))
+            cyclotomic_polynomial(x[2])(monomial(x[1])))
   if haskey(r, :root)
       den = Lcm(map(denominator, r[:root]))
       root = monomial(den * r[:root])
@@ -520,17 +524,17 @@ end
 function CycPols.CycPol(v::AbstractVector)
   coeff=v[1]
   valuation=convert(Int,v[2])
-  vv=Pair{Rational{Int},Int}[]
+  vv=Pair{Root1,Int}[]
   v1=convert.(Rational{Int},v[3:end])
   for i in v1
     if denominator(i)==1
        k=convert(Int,i)
-       for j in prime_residues(k) push!(vv,j//k=>1) end
+       for j in prime_residues(k) push!(vv,Root1(j//k)=>1) end
     else
-      push!(vv,i=>1)
+     push!(vv,Root1(i)=>1)
     end
   end
-  CycPol(vv,valuation,coeff)
+  CycPol(coeff,valuation,ModuleElt(vv))
 end
 
 function CharRepresentationWords(mats,words)

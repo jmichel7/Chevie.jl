@@ -72,10 +72,10 @@ In  the  following  example,  we  compute  the multiplication table for the
 
 ```julia-repl
 julia> W=coxgroup(:A,2)
-W(A₂)
+A₂
 
 julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
-Hecke(W(A₂),0)
+Hecke(A₂,0)
 
 julia> T=Tbasis(H)              # Create the `T` basis
 (::getfield(Gapjm.Hecke, Symbol("#f#24")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
@@ -137,13 +137,13 @@ end
 # Example
 ```julia-repl
 julia> W=coxgroup(:B,2)
-W(B₂)
+B₂
 
 julia> Pol(:q)
 q
 
 julia> H=hecke(W,q)
-Hecke(W(B₂),q)
+Hecke(B₂,q)
 
 julia> H.para
 2-element Array{Array{Pol{Int64},1},1}:
@@ -151,7 +151,7 @@ julia> H.para
  [q, -1]
 
 julia> H=hecke(W,q^2,rootpara=q)
-Hecke(W(B₂),q²,rootpara=q)
+Hecke(B₂,q²,rootpara=q)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
@@ -159,7 +159,7 @@ julia> [H.para,rootpara(H)]
  Pol{Int64}[q, q]                                  
 
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
-Hecke(W(B₂),Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
+Hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
@@ -167,7 +167,7 @@ julia> [H.para,rootpara(H)]
  Pol{Int64}[q, q²]
 
 julia> H=hecke(W,9,rootpara=3)
-Hecke(W(B₂),9,rootpara=3)
+Hecke(B₂,9,rootpara=3)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:

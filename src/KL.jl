@@ -76,7 +76,7 @@ Kazhdan-Lusztig bases.
 finally, benchmarks on julia 1.0.2
 ```benchmark
 julia> function test_kl(W)
-         q=Pol([1],1); H=hecke(W,q^2,q)
+         q=Pol([1],1); H=hecke(W,q^2,rootpara=q)
          C=Cpbasis(H); T=Tbasis(H)
          [T(C(w)) for w in elements(W)]
        end
@@ -132,7 +132,7 @@ The significance of this construction is that `KLPol(W,y,w)==KLPol(W,z,w)`
 
 ```julia-repl
 julia> W=coxgroup(:F,4)
-W(F₄)
+F₄
 
 julia> w=longest(W)*gens(W)[1];length(W,w)
 23
@@ -203,7 +203,7 @@ in the property `:klpol` of the underlying Coxeter group.
 
 ```julia-repl
 julia> W=coxgroup(:B,3)
-W(B₃)
+B₃
 
 julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
 9-element Array{Array{Pol{Int64},1},1}:
@@ -347,10 +347,10 @@ end
 """
 ```julia-repl
 julia> W=coxgroup(:B,3)
-W(B₃)
+B₃
 
 julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
-Hecke(W(B₃),v²,rootpara=v)
+Hecke(B₃,v²,rootpara=v)
 
 julia> C=Cpbasis(H)
 (::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)

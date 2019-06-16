@@ -258,6 +258,7 @@ struct PermGroup{T}<:Group{Perm{T}}
 end
 
 function PermGroup(a::AbstractVector{Perm{T}})where T
+  a=filter(x->!isone(x),a)
   PermGroup(a,Dict{Symbol,Any}())
 end
 
