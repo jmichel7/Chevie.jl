@@ -12,7 +12,7 @@ using Gapjm
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
   ModuleElt, norm!, # data structure
-  format, TeXstrip, bracket_if_needed, ordinal, # formatting
+  format, TeXstrip, bracket_if_needed, ordinal, rshow, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
   partition_tuples, #combinatorics
@@ -350,6 +350,9 @@ function ordinal(n)
   end
   str
 end
+
+# show with attributes...
+rshow(x,p...)=show(IOContext(stdout,:limit=>true,[s=>true for s in p]...),"text/plain",x)
 
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "

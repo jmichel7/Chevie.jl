@@ -487,37 +487,61 @@ CharTableSymmetric=Dict(:centralizers=>[
         res
      end])
 
+ChevieIndeterminate(a::Vector{<:Number})=Pol([1],0)
+ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)
+
+############################################################################
+# EvalPolRoot(pol, x, n, p)
+#  evaluate polynomial pol at p*x^(1/n)
+#  
+#  The point of this routine is to avoid unnecessary root extractions
+#  during evaluation (e.g., if pol has no terms of odd degree and n=2,
+#  then no root extraction is necessary).
+#
+function EvalPolRoot(pol::Pol,x,n,p)
+  if isempty(pol.c) return 0 end
+  P=vcat(fill(0,pol.v%n),pol.c)
+  P=map(i->Pol(P[filter(j->(j-1)%n==i,eachindex(P))],(pol.v-pol.v%n)/n)(x*p^n),0:n-1)
+  pol=Polynomial(pol.baseRing,P[1:First(n:-1:1,i->!iszero(P[i]))],0)
+  if isempty(pol.c) return 0 end
+  l=pol.v-1+Filtered(eachindex(pol.c),i->!iszero(pol.c[i]))
+  push!(l,n)
+  r=gcd(l...)
+  pol=Polynomial(pol.baseRing,
+         pol.coefficients[1:r:Length(pol.coefficients)],
+         pol.valuation/r)
+  n/=r
+  pol(GetRoot(x,n)*p^r)
+end
+
 function VcycSchurElement(arg...)
-  local r, data, i, para, res, n, monomial, den, root
   n = length(arg[1])
-  println(arg)
   if length(arg) == 3
       data = arg[3]
       para = arg[1][data[:order]]
   else
       para = copy(arg[1])
   end
-  monomial = v->Product(1:length(v), i->para[i] ^ v[i])
+  monomial=v->prod(map(^,para,v))
   r = arg[2]
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end
-  if haskey(r, :factor) res = res * monomial(r[:factor]) end
+  if haskey(r, :factor) res*=monomial(r[:factor]) end
   if haskey(r, :root)
-      para = para + 0 * Product(para)
+    para+= 0*Product(para)
 #     para[n + 1] = ChevieIndeterminate(para)
-      push!(para,ChevieIndeterminate(para))
+    println("para=$para\nr=$r\ndata=$data")
+    push!(para,ChevieIndeterminate(para))
   elseif haskey(r, :rootUnity)
-   push!(para, r[:rootUnity] ^ data[:rootUnityPower])
+    push!(para, r[:rootUnity] ^ data[:rootUnityPower])
 #     para[n + 1] = r[:rootUnity] ^ data[:rootUnityPower]
   end
-  res = res * Product(r[:vcyc], x->
-            cyclotomic_polynomial(x[2])(monomial(x[1])))
+  res*=Product(r[:vcyc], x->cyclotomic_polynomial(x[2])(monomial(x[1])))
   if haskey(r, :root)
-      den = Lcm(map(denominator, r[:root]))
-      root = monomial(den * r[:root])
-      if haskey(r, :rootCoeff) root = root * r[:rootCoeff] end
-      return EvalPolRoot(res, root, den, data[:rootPower])
-  else
-      return res
+      den=lcm(denominator.(r[:root])...)
+      root=monomial(den*r[:root])
+      if haskey(r, :rootCoeff) root*=r[:rootCoeff] end
+      EvalPolRoot(res, root, den, data[:rootPower])
+  else res
   end
 end
 

@@ -359,6 +359,9 @@ res=join( map(it) do (deg,v)
 if use_list
     if iszero(v) return "" end
 end
+    if (repl || TeX) && v isa Rational && isone(denominator(v)) 
+      v=numerator(v) 
+    end
     if deg==0 t=string(v)
     else 
       if repl || TeX
@@ -402,7 +405,7 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Number,a::Cyc)=Cyc(b)-a
 Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
-Base.:*(a::Real,c::Cyc)= use_list ? Cyc(c.n,c.d.*a) : Cyc(c.n,c.d*a)
+Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(c) : Cyc(c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list

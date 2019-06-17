@@ -168,13 +168,11 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
       [11,17,23,29],[11,29],[17,23],[1,19],[7,13]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
 
-rshow(x,p...)=show(IOContext(stdout,[s=>true for s in p]...),"text/plain",x)
-
 function pr()
   for i in sort(collect(keys(dec_dict)))
     for j in 2:length(dec_dict[i])
       p=CycPol(;cond=i,no=j)
-      rshow(p,:limit);print("=");rshow(p(Pol(:q)),:limit,:quadratic);print("\n");
+      rshow(p);print("=");rshow(p(Pol(:q)),:quadratic);print("\n");
     end
   end
 end
@@ -251,7 +249,9 @@ function Base.show(io::IO,a::CycPol)
     return
   end
   if a.coeff!=1 || (iszero(a.valuation) && isempty(a.v))
-    s=sprint(show,a.coeff; context=io)
+    c=a.coeff
+    if c isa Rational && isone(denominator(c)) c=numerator(c) end
+    s=sprint(show,c; context=io)
     if occursin(r"[+\-*/]",s[nextind(s,1):end]) s="($s)" end
     print(io,s) 
   end
