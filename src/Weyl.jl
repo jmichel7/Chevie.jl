@@ -64,9 +64,11 @@ systems `B_n` and `C_n` correspond to the same Coxeter group.
 Here  are  the  diagrams  for  the  finite  Coxeter  groups which  are  not
 crystallographic:
 
+```
        e        5         5
 I₂(e) O—O   H₃ O—O—O  H₄ O—O—O—O
       1 2      1 2 3     1 2 3 4 
+```
 
 Let us now describe how the root systems are encoded in these diagrams. Let
 `R`  be a root system in `V`. Then we can choose a linear form on `V` which

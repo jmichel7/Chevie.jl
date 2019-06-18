@@ -152,7 +152,7 @@ end
 # stupid code is better
 function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(a) || iszero(b) return zero(a) end
-  res=fill(zero(promote_type(T1,T2)),length(a.c)+length(b.c)-1)
+  res=fill(zero(T1)*zero(T2),length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
@@ -168,8 +168,7 @@ Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
 function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
-  T=promote_type(T1,T2)
-  res=zeros(T,max(length(a.c),d+length(b.c)))
+  res=fill(zero(T1)+zero(T2),max(length(a.c),d+length(b.c)))
 @inbounds  res[eachindex(a.c)].=a.c
 @inbounds  res[d.+eachindex(b.c)].+=b.c
   Polstrip(res,a.v)
