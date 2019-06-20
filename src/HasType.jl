@@ -522,29 +522,32 @@ function VcycSchurElement(arg...)
       para = copy(arg[1])
   end
   monomial=mon->prod(map(^,para,mon[1:n]))
-  term=v->cyclotomic_polynomial(v[2])(monomial(v[1]))
   r = arg[2]
-  if haskey(r, :rootUnity) && haskey(r,:root) eror("cannot have both") end
+  if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end
   if haskey(r, :factor) res*=monomial(r[:factor]) end
   if haskey(r, :rootUnity)
-    term=v->cyclotomic_polynomial(v[2])(prod(map(^,para,v[1][1:n]))*
-        r[:rootUnity]^data[:rootUnityPower])
-  end
-  if haskey(r, :root)
+    term=function(v)
+     mon,pol=v
+     tt=monomial(mon)
+     if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
+     cyclotomic_polynomial(pol)(tt)
+    end
+  elseif haskey(r, :root)
     term=function(v)
       mon,pol=v
      if length(mon)==n return Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
      else return cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
      end
     end
-    res*=prod(term,r[:vcyc])
-    den=lcm(denominator.(r[:root])...)
-    root=monomial(den*r[:root])
-    if haskey(r, :rootCoeff) root*=r[:rootCoeff] end
-    EvalPolRoot(res, root, den, data[:rootPower])
-  else res*=prod(term,r[:vcyc])
+  else term=v->cyclotomic_polynomial(v[2])(monomial(v[1]))
   end
+  res*=prod(term,r[:vcyc])
+  if !haskey(r, :root) return res end
+  den=lcm(denominator.(r[:root])...)
+  root=monomial(den*r[:root])
+  if haskey(r, :rootCoeff) root*=r[:rootCoeff] end
+  EvalPolRoot(res, root, den, data[:rootPower])
 end
 
 function CycPols.CycPol(v::AbstractVector)
