@@ -448,6 +448,7 @@ PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
 PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
 PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
+PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}

@@ -475,6 +475,8 @@ Value(p,v)=p(v)
 CoxeterGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
 CoxeterGroup()=coxgroup()
 
+ExtendedReflectionGroup(W,mats)=1
+
 CharTableSymmetric=Dict(:centralizers=>[
      function(n,pp) res=k=1;last=0
         for p in pp
