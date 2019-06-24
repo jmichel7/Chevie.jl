@@ -81,4 +81,6 @@ include("Cosets.jl")
 @reexport using .Cosets
 include("Mvps.jl")
 @reexport using .Mvps
+include("Posets.jl")
+@reexport using .Posets
 end

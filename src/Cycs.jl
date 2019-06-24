@@ -229,6 +229,17 @@ end
 
 E(a,b=1)=Cycs.E(Int(a),Int(b))
 
+if use_list
+Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
+Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
+else
+Base.zero(c::Cyc)=Cyc(1,zero(c.d))
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
+Base.iszero(c::Cyc)=iszero(c.d)
+end
+Base.one(c::Cyc)=E(1,0)
+
 function Cyc(c::Complex{T}) where T
   if iszero(imag(c)) return Cyc(real(c)) end
 if use_list
@@ -245,7 +256,7 @@ end
 if use_list
 Cyc(i::T) where T<:Real=Cyc(1,[i])
 else
-Cyc(i::T) where T<:Real=Cyc(1,iszero(i) ? zero(ModuleElt{Int,T}) : ModuleElt(0=>i))
+Cyc(i::T) where T<:Real=iszero(i) ? zero(Cyc{T}) : Cyc(1,ModuleElt(0=>i))
 end
 Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
 Cyc{T}(i::T1) where {T<:Real,T1<:Real}=convert(Cyc{T},i)
@@ -255,7 +266,7 @@ function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
 if use_list
   Cyc(c.n,convert.(T,c.d))
 else
-  Cyc(c.n,ModuleElt(convert.(Pair{Int,T},c.d)))
+  Cyc(c.n,ModuleElt(n=>convert(T,v) for (n,v) in c.d))
 end
 end
 
@@ -288,17 +299,6 @@ end
 function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1<:Real,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
-
-if use_list
-Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
-Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
-else
-Base.zero(c::Cyc)=Cyc(1,zero(c.d))
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
-Base.iszero(c::Cyc)=iszero(c.d)
-end
-Base.one(c::Cyc)=E(1,0)
 
 " isless is necessary to put Cycs in a sorted list"
 function Base.cmp(a::Cyc,b::Cyc)
@@ -385,9 +385,9 @@ end
 end
 
 function Base.:+(x::Cyc,y::Cyc)
-  if iszero(x) return y
-  elseif iszero(y) return x
-  end
+# if iszero(x) return y
+# elseif iszero(y) return x
+# end
   a,b=promote(x,y)
   a,b=promote_conductor(a,b)
 if use_list
@@ -463,7 +463,6 @@ else
 end
 end
 
-# in raise guarantee argument is not zero
 function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   if n==c.n return c end
   m=div(n,c.n)
@@ -537,7 +536,7 @@ else
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
-      let p=p, m=m
+      let p=p, m=m, n=n
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(x->!iszero(x),cnt).-1
         kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))

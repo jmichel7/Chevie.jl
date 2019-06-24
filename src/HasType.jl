@@ -291,7 +291,7 @@ function ComplexReflectionGroup(p,q,r)
   PRG(r,cr)
 end
 
-degrees(W)=vcat(getchev(W,:ReflectionDegrees)...)
+Gapjm.degrees(W)=vcat(getchev(W,:ReflectionDegrees)...)
 
 function diagram(W)
   for t in refltype(W)
@@ -320,11 +320,8 @@ function representation(W,i::Int)
   map(x->hcat(x...),impl1(getchev(W,:Representation,i)))
 end
 
-UnipotentClassOps=Dict(:Name=>x->x)
-
-unipotent_classes(W,p=0)=impl1(getchev(W,:UnipotentClasses,p))
-
 include("uch.jl")
+include("ucl.jl")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
@@ -453,13 +450,14 @@ PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
 Permuted(a,b)=[a[i^b] for i in eachindex(a)]
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v,f)=isempty(v) ? 1 : prod(f,v)
+Rank=rank
 RankSymbol=ranksymbol
 RecFields=keys
 RootInt(a,b)=floor(Int,a^(1/b))
+RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
 gapSet(v)=unique(sort(v))
-SemisimpleRank(W)=length(independent_roots(W))
-Rank=rank
+SemisimpleRank(W)=semisimplerank(W)
 ShiftBeta=shiftβ
 Sort=sort!
 SortBy(x,f)=sort!(x,by=f)
@@ -471,6 +469,7 @@ Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
 SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
+Torus(i::Int)=torus(i)
 Value(p,v)=p(v)
 CoxeterGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
 CoxeterGroup()=coxgroup()
@@ -622,8 +621,6 @@ Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=repr(x)
 Format(x,opt)= haskey(opt,:TeX) ? FormatTeX(x) : string(x)
-Torus(i::Int)=i
-RootsCartan=x->x
 
 function ReadChv(s) end
 Group(v...)=v

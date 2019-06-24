@@ -13,8 +13,7 @@ function params_and_names(sers)
   l=sum(x->length(x[:charnames]),chh)
   res[:charParams]=fill([],l)
   res[:TeXCharNames]=fill("",l)
-  for i in eachindex(sers)
-    ser=sers[i]
+  for (i,ser) in enumerate(sers)
     t=ser[:relativeType]
     n=ser[:cuspidalName]
     ch=chh[i]
@@ -44,25 +43,25 @@ end
 function unipotent_characters(W) 
   function CartesianSeries(sers)
     ser=Dict()
-    ser[:levi]=vcat(map(x->x[:levi],sers))
-    ser[:relativeType]=filter(x->x[:rank]!=0,map(x->x[:relativeType],sers))
+    ser[:levi]=vcat(getindex.(sers,:levi)...)
+    ser[:relativeType]=filter(x->x[:rank]!=0,getindex.(sers,:relativeType))
     if haskey(sers[1],:eigenvalue)
-      ser[:eigenvalue]=prod(map(x->x[:eigenvalue],sers))
+      ser[:eigenvalue]=prod(getindex.(sers,:eigenvalue))
     end
     if any(x->haskey(x,:qEigen),sers)
-     ser[:qEigen]=sum(sers)do x
+      ser[:qEigen]=sum(sers)do x
        if !haskey(x,:qEigen) return 0
        elseif x[:qEigen]==false return false
        else return x[:qEigen]
        end end
     else 
-     ser[:qEigen]=0
+      ser[:qEigen]=0
     end
-    if all(x->haskey(x,:parameterExponents),sers)
-      ser[:parameterExponents]=vcat(map(x->x[:parameterExponents],sers))
+    if all(haskey.(sers,:parameterExponents))
+      ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents))
     end
-    ser[:charNumbers]=Cartesian(map(x->x[:charNumbers],sers)...)
-    ser[:cuspidalName]=join(map(x->x[:cuspidalName],sers),"\\otimes ")
+    ser[:charNumbers]=Cartesian(getindex.(sers,:charNumbers)...)
+    ser[:cuspidalName]=join(getindex.(sers,:cuspidalName),"\\otimes ")
     ser
   end
 
@@ -98,16 +97,16 @@ function unipotent_characters(W)
   # "Kronecker product" of records in simp:
   r=simp[1]
   f=keys(r)
-  res=Dict()
+  res=Dict{Symbol,Any}()
   for a in f
     if length(simp)==1 res[a]=map(x->[x],r[a])
-    elseif all(x->haskeys(x,a),simp)
+    elseif all(x->haskey(x,a),simp)
       res[a]=Cartesian(map(x->x[a],simp)...)
     end
   end
   
   for a in [:TeXCharNames]
-    res[a]=map(x->join(x,"\\otimes "),res[a])
+    res[a]=join.(res[a],"\\otimes ")
   end
 
   res[:size]=length(res[:TeXCharNames])
@@ -119,7 +118,7 @@ function unipotent_characters(W)
   if length(type)==1
     res[:families]=map(res[:families]) do f
       f=f[1]
-      f[:charNumbers]=map(x->[x],f[:charNumbers])
+      f[:charNumbers]=vcat.(f[:charNumbers])
       f
     end
   else 
@@ -145,7 +144,7 @@ end
 function Base.show(io::IO,uc::UnipotentCharacters)
   println(io,"unipotent_characters(",uc.prop[:group],")")
   q=Pol([1],1)
-  m=hcat(sprint.(show,CycPol.(Gapjm.degrees(uc,q)); context=io),
+  m=hcat(sprint.(show,CycPol.(degrees(uc,q)); context=io),
          sprint.(show,CycPol.(fakedegrees(uc,q)); context=io),
          sprint.(show,eigen(uc); context=io),
          TeXstrip.(labels(uc)))
@@ -193,7 +192,7 @@ function eigen(uc::UnipotentCharacters)
   end
 end
 
-function labels(uc::UnipotentCharacters)
+function labels(uc::UnipotentCharacters)::Vector{String}
   gets(uc,:labels)do uc
     lab=fill("",length(uc.prop[:TeXCharNames]))
     for f in uc.prop[:families] lab[f[:charNumbers]]=f[:charLabels]
@@ -206,10 +205,10 @@ end
 # series of classical groups
 function FixRelativeType(t)
   if t[:relativeType][:series]=="B" 
-   if t[:relativeType][:rank]==1
-     t[:relativeType][:series]="A"
-     t[:charNumbers]=collect(t[:charNumbers]) # map B1->A1
-     t[:charNumbers][[1,2]]=t[:charNumbers][[2,1]] # map B1->A1
+    if t[:relativeType][:rank]==1
+      t[:relativeType][:series]="A"
+      t[:charNumbers]=collect(t[:charNumbers]) # map B1->A1
+      t[:charNumbers][[1,2]]=t[:charNumbers][[2,1]] # map B1->A1
     elseif t[:relativeType][:rank]==2 && haskey(t[:relativeType],:cartanType) &&
       t[:relativeType][:cartanType]==1
       t[:relativeType][:cartanType]=2

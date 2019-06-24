@@ -57,18 +57,22 @@ end
 
 function Base.:*(f::Family,g::Family)
 # println(f,"*",g)
-  if !haskey(f,:charLabels) f[:charLabels]=map(string,eachindex(f[:eigenvalues])) end
-  if !haskey(g,:charLabels) g[:charLabels]=map(string,eachindex(g[:eigenvalues])) end
+  arg=(f,g)
+  for ff in arg
+    if !haskey(ff,:charLabels) 
+      ff[:charLabels]=map(string,eachindex(ff[:eigenvalues])) 
+    end
+  end
   res=Dict{Symbol,Any}(
-    :charLabels=>map(v->join(v,"\\otimes "),Cartesian(f[:charLabels],g[:charLabels])),
-    :fourierMat=>kron(f[:fourierMat],g[:fourierMat]),
-    :eigenvalues=>map(prod,Cartesian(f[:eigenvalues],g[:eigenvalues])),
-    :name=>f[:name]*"\\otimes "*g[:name],
-    :explanation=>"Tensor("*f[:explanation]*","*g[:explanation]*")"
+    :charLabels=>join.(Cartesian(getindex.(arg,:charLabels)...),"\\otimes"),
+    :fourierMat=>kron(getindex.(arg,:fourierMat)...),
+    :eigenvalues=>map(prod,Cartesian(getindex.(arg,:eigenvalues)...)),
+    :name=>join(getindex.(arg,:name),"\\otimes "),
+    :explanation=>"Tensor("*join(getindex.(arg,:explanation),",")*")"
   )
-#  if ForAll(arg,f->IsBound(f.charNumbers)) then 
-#    res.charNumbers:=Cartesian(List(arg,x->x.charNumbers));
-#  fi;
+  if all(haskey.(arg,:charNumbers))
+    res[:charNumbers]=Cartesian(getindex.(arg,:charNumbers)...)
+  end
 #  if ForAll(arg,f->IsBound(f.special)) then 
 #    res.special:=PositionCartesian(List(arg,Size),List(arg,f->f.special));
 #    res.cospecial:=PositionCartesian(List(arg,Size),

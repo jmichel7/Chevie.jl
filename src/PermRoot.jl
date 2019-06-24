@@ -162,7 +162,7 @@ export PermRootGroup, PRG, PRSG,
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
  position_class, reflength, bipartite_decomposition, torus_order, rank, matX,
- roots, inclusion, restriction, baseX
+ roots, inclusion, restriction, baseX, semisimplerank
 
 using Gapjm
 
@@ -553,6 +553,8 @@ function independent_roots(W::PermRootGroup)::Vector{Int}
     end
   end
 end
+
+semisimplerank(W::PermRootGroup)=length(independent_roots(W))
 
 function baseX(W::PermRootGroup{T})::Matrix{T} where T
   gets(W,:baseX) do W
