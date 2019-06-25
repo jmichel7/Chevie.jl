@@ -234,17 +234,15 @@ function valuation_feg_symbol(s)
   res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2))) 
 end
 
-IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
-
 " stringsymbol(S) string for symbol S"
 function stringsymbol(S)
   if isempty(S) return "()" end
   if S[end] isa AbstractVector 
-    return "("*join(IntListToString.(S),",")*")"
+    return "("*join(joindigits.(S),",")*")"
   else
     v=E(S[end-1])^S[end]
     n= v==1 ? "+" : v==-1 ? "-" : string(v)
-   return "("*join(IntListToString.(S[1:end-2]),",")*"$n)"
+   return "("*join(joindigits.(S[1:end-2]),",")*"$n)"
   end
 end
 

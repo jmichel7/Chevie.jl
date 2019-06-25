@@ -28,8 +28,8 @@ Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Base.div(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
-@inline function Util.drop(a::Monomial,k)
-   u=Util.drop(a.d,k)
+@inline function ModuleElts.drop(a::Monomial,k)
+   u=ModuleElts.drop(a.d,k)
    if isnothing(u) return u end
    Monomial(u[1]),u[2]
 end
@@ -220,7 +220,7 @@ function coefficients(p::Mvp,v::Symbol)
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d
 #   print("$m=>$c d=$d\n")
-    u=Util.drop(m,v)
+    u=ModuleElts.drop(m,v)
     if isnothing(u)
       d[0]=push!(get(d,0,zero(p.d)),m=>c)
     else 
@@ -246,7 +246,7 @@ function (p::Mvp)(;arg...)
   for s in keys(arg)
     res1=zero(res.d)
     for (m,c) in res.d
-      u=Util.drop(m,s)
+      u=ModuleElts.drop(m,s)
       if isnothing(u) push!(res1,m=>c)
       else 
         (m1,deg)=u

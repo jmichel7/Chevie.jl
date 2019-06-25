@@ -423,7 +423,7 @@ HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 function Ignore() end
 InfoChevie2=print
-IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
+IntListToString=joindigits
 IsList(l)=l isa Vector
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
 Lcm(a...)=Lcm(collect(a))
@@ -577,7 +577,7 @@ end
 function ImprimitiveCuspidalName(S)
   r=RankSymbol(convert(Vector{Vector{Int}},S))
   d=length(S)
-  s=IntListToString(map(length,S))
+  s=joindigits(map(length,S))
   if r==0 return "" end
   if sum(length,S)%d==1 # G(d,1,r)
     if r==1 return d==3 ? "Z_3" : "Z_{$d}^{$s}"
@@ -640,7 +640,7 @@ chevie[:D][:CharTable]=n->chevie[:imp][:CharTable](2,2,n)
 chevie[:B][:CharTable]=n->chevie[:imp][:CharTable](2,1,n)
 chevie[:A][:CharTable]=function(n)
   ct=chevie[:imp][:CharTable](1,1,n+1)
-  ct[:irredinfo]=map(x->Dict(:charname=>IntListToString(x)),chevie[:A][:CharInfo](n)[:charparams])
+  ct[:irredinfo]=map(x->Dict(:charname=>joindigits(x)),chevie[:A][:CharInfo](n)[:charparams])
   ct
 end
 chevie[:A][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](1,1,n+1,para,root)

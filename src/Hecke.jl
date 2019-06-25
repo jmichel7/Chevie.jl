@@ -327,7 +327,7 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
         if isleftdescent(W,e,i) push!(down,e=>p) 
         else push!(up,s*e=>p) end
       end
-if Util.usedict
+if ModuleElts.usedict
       h=ModuleElt(up.d)
 else
       h=ModuleElt(sort!(up.d,by=x->x[1]))

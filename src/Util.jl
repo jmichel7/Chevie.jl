@@ -11,8 +11,7 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  ModuleElt, norm!, # data structure
-  format, TeXstrip, bracket_if_needed, ordinal, rshow, # formatting
+  format, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
   partition_tuples, #combinatorics
@@ -107,145 +106,8 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
   end
   sort(collect(values(groupby(cc,collect(1:l)))))
 end
-#------------- Make a version with Dict of ModuleElt ----------------------
-const usedict=false
-if usedict
-struct ModuleElt{K,V}
-  d::Dict{K,V}
-end
 
-ModuleElt(x::Vector{Pair{K,V}}) where{K,V}=ModuleElt(Dict(x))
-ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(Dict(x...))
-ModuleElt(x::Base.Generator)=ModuleElt(Dict(x))
-
-Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Dict{K,V}())
-Base.iszero(x::ModuleElt)=isempty(x.d)
-Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
-@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
-@inline Base.length(x::ModuleElt)=length(x.d)
-@inline Base.push!(x::ModuleElt,y...)=push!(x.d,y...)
-@inline Base.haskey(x::ModuleElt,y...)=haskey(x.d,y...)
-@inline Base.append!(x::ModuleElt,y...)=append!(x.d,y...)
-@inline Base.getindex(x::ModuleElt,i)=getindex(x.d,i)
-@inline Base.cmp(x::ModuleElt,y::ModuleElt)=x.d == y.d ? 0 : 1
-
-Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
-
-# multiply module element by scalar
-Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
-
-function norm!(a::ModuleElt)
-  for (k,v) in a.d if iszero(v) delete!(a.d,k) end end
-  a
-end
-
-Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt=norm!(ModuleElt(merge(+,a.d,b.d)))
-
-else
-#--------------------------------------------------------------------------
-"""
-ModuleElt  represents  an  element  of  a  module  with basis of type K and
-coefficients  of type  V. It  has a  similar interface  to Dict{K,V}, but +
-below is 3 times faster than merge(+,...) on Dicts.
-"""
-struct ModuleElt{K,V}
-  d::Vector{Pair{K,V}} # This vector is kept sorted by K
-end
-
-ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(collect(x))
-ModuleElt(x::Base.Generator)=ModuleElt(collect(x))
-
-Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
-Base.iszero(x::ModuleElt)=isempty(x.d)
-Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
-@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
-@inline Base.length(x::ModuleElt)=length(x.d)
-@inline function Base.push!(x::ModuleElt,y...)
-  push!(x.d,y...)
-  x
-end
-@inline function Base.append!(x::ModuleElt,y...)
-  append!(x.d,y...)
-  x
-end
-@inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
-
-Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
-
-# multiply module element by scalar
-Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
-
-"""
-+ is like merge(+,..) for Dicts, except keys with value 0 are deleted
-"""
-function Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt
-  la=length(a.d)
-  lb=length(b.d)
-  res=similar(a.d,la+lb)
-  ai=bi=1
-  ri=0
-  while ai<=la || bi<=lb
-    if ai>la
-@inbounds res[ri+=1]=b.d[bi]; bi+=1
-    elseif bi>lb
-@inbounds res[ri+=1]=a.d[ai]; ai+=1
-    else
-@inbounds c=cmp(a.d[ai][1],b.d[bi][1])
-      if c==1
-@inbounds res[ri+=1]=b.d[bi]; bi+=1
-      elseif c==-1
-@inbounds res[ri+=1]=a.d[ai]; ai+=1
-      else s=a.d[ai][2]+b.d[bi][2]
-        if !iszero(s)
-@inbounds res[ri+=1]=a.d[ai][1]=>s
-        end
-        ai+=1; bi+=1
-      end
-    end
-  end
-  ModuleElt(resize!(res,ri))
-end
-
-"""
-normalize an unsorted ModuleElt -- which may occur in some computation
-"""
-function norm!(x::ModuleElt{K,V}) where {K,V}
-  if isempty(x) return x end
-  sort!(x.d,by=first)
-  ri=1
-@inbounds  for j in 2:length(x.d)
-    if x.d[j][1]==x.d[ri][1]
-      x.d[ri]=x.d[ri][1]=>x.d[ri][2]+x.d[j][2]
-    else 
-      if !iszero(x.d[ri][2]) ri+=1 end
-      x.d[ri]=x.d[j]
-    end
-  end
-  if iszero(x.d[ri][2]) ri-=1 end
-  ModuleElt(resize!(x.d,ri))
-end
-
-function Base.getindex(x::ModuleElt,i)
-  r=searchsorted(x.d,Ref(i);by=first)
-  if r.start!=r.stop error("key $i not found") end
-  x.d[r.start][2]
-end
-
-function Base.haskey(x::ModuleElt,i)
-  r=searchsorted(x.d,Ref(i);by=first)
-  r.start==r.stop
-end
-
-function drop(m::ModuleElt,k)
-  r=searchsorted(m.d,Ref(k);by=first)
-  if r.start!=r.stop return nothing end
-  ModuleElt(deleteat!(copy(m.d),r.start)),m.d[r.start][2]
-end
-
-Base.keys(x::ModuleElt)=first.(x.d)
-Base.first(x::ModuleElt)=first(x.d)
-#--------------------------------------------------------------------------
-end
+#----------------------- Formatting -----------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
   s=replace(s,r"\\varepsilon"=>"ε")
@@ -354,6 +216,7 @@ end
 # show with attributes...
 rshow(x,p...)=show(IOContext(stdout,:limit=>true,[s=>true for s in p]...),"text/plain",x)
 
+joindigits(l::Vector{<:Integer})=any(l.>10) ? string("(",join(l,","),")") : join(l)
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)

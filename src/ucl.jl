@@ -133,7 +133,7 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   end
   ucl[:classes]=ucl[:classes][l]
 # AdjustAu(ucl)
-# ucl[:orderClasses]=Hasse(Restricted(Poset(ucl[:orderClasses]),l))
+  ucl[:orderClasses]=hasse(restricted(Poset(ucl[:orderClasses]),l))
   ucl[:size]=length(l)
   ucl
 end

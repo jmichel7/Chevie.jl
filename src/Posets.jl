@@ -38,6 +38,8 @@ julia> incidence(p)
 """
 module Posets
 using Gapjm
+export lcm_partitions, gcd_partitions, Poset, linear_extension, hasse,
+ incidence, partition, restricted
 
 function lcm_partitions(arg...)
   function lcm2(a,b)
@@ -47,13 +49,11 @@ function lcm_partitions(arg...)
     end
     b = Set(Vector{Int}[])
     for p in res
-     push!(b, sort(union(filter(x-> !isempty(intersect(x, p)),res)...)))
+     push!(b, sort(union(filter(x->!isempty(intersect(x, p)),res)...)))
     end
     b
   end
-  res = arg[1]
-  for x in arg[2:end] res = lcm2(res, x) end
-  res
+  reduce(lcm2,arg)
 end
 
 function gcd_partitions(arg...)
@@ -61,9 +61,7 @@ function gcd_partitions(arg...)
     res = map(x->map(y->intersect(x, y), b), a)
     Set(filter(x->!isempty(x),vcat(res...)))
   end
-  res = arg[1]
-  for x in arg[2:end] res = gcd2(res, x) end
-  res
+  reduce(gcd2,arg)
 end
 
 struct Poset
@@ -71,7 +69,7 @@ struct Poset
 end
 
 Poset(m::Matrix{Bool})=Poset(Dict(:incidence=>m,:size=>size(m,1)))
-Poset(m::Vector{Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
+Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
 Base.length(p::Poset)=p.prop[:size]
 
 Base.show(io::IO,p::Poset)=print(io,"Poset with ",length(p)," elements")
@@ -88,7 +86,7 @@ function linear_extension(P::Poset)
       n[x]-=1
       if iszero(n[x]) push!(Q, x) end
     end
-    Q=Q[2:end]
+    popfirst!(Q)
   end
   if sum(n)>0 error("cycle") end
   res
@@ -132,7 +130,7 @@ function Base.reverse(p::Poset)
     res.prop[:incidence]=permutedims(incidence(p))
   end
   if haskey(p.prop,:hasse)
-    res.prop[:hasse] = map(empty,p[:hasse])
+    res.prop[:hasse] = map(empty,hasse(p))
     for i in 1:length(p)
       for j in hasse(p)[i] push!(hasse(res)[j], i) end
     end
@@ -141,57 +139,57 @@ function Base.reverse(p::Poset)
 end
 
 function partition(p::Poset)
-  if haskey(p, :hasse)
+  if haskey(p.prop, :hasse)
     l=reverse(p)
-    l=CollectBy(1:length(p),i->[hasse(l)[i], hasse(p)[i]])
+    l=groupby(i->[hasse(l)[i], hasse(p)[i]],1:length(p))
+    collect(values(l))
   else
     I=incidence(p)
     ind=1:length(p)
     l=map(i->[map(j->j!=i && I[i][j], ind), map(j->j!=i && I[j][i], ind)], ind)
-    l=map(x->filter(i->l[i] == x,ind), gapSet(l))
+    map(x->filter(i->l[i] == x,ind), gapSet(l))
   end
-  l
 end
 
-function fancy(x, opt)
+function showgraph(x; opt...)
   p=partition(x)
   s=hasse(x)
-  s=Poset(map(x->gapSet(map(y->findfirst(z->y in z,p), s[x[1]])), p))
-  labels=map(y->Join(map(n->haskey(x,:label) ? x[:label](x,n,opt) : string(n),y)),p)
+  s=Poset(map(x->unique(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),s[x[1]])))), p))
+  labels=map(y->join(map(n->haskey(x.prop,:label) ? x.prop[:label](x,n,opt) :
+                         string(n),y),","),p)
+  opt=Dict(opt)
   if haskey(opt, :symbol) sep = opt[:symbol]
   elseif haskey(opt, :TeX) sep = "{<}"
   else sep = "<"
   end
-  s=map(x->Join(labels[x],sep), chains(s)) 
-  if haskey(opt,:TeX)
-     return string("\\noindent",
-      Concatenation(List(s,x->SPrint("\$",x,"\$","\\hfill\\break\n"))))
-  else return Concatenation(map(x->SPrint(x, "\n"), s))
+  s=map(x->join(labels[x],sep), chains(s)) 
+  if haskey(opt,:TeX) print("\\noindent",join(map(x->"\$$x\$\\hfill\\break\n",s)))
+  else print(map(x->"$x\n", s)...)
   end
 end
 
 function restricted(p::Poset,ind::Vector{<:Integer})
-  res = copy(p)
-  if length(ind) == length(p) && gapSet(ind) == 1:length(p)
+  res = Poset(copy(p.prop))
+  if length(ind) == length(p) && sort(ind) == 1:length(p)
     if haskey(res.prop, :hasse)
-      res[:hasse] = map(x->map(y->Position(ind, y), x), res[:hasse][ind])
+     res.prop[:hasse] = map(x->map(y->findfirst(isequal(y),ind), x), res.prop[:hasse][ind])
     end
     if haskey(res.prop, :incidence)
       res.prop[:incidence] = incidence(res)[ind,ind]
     end
   else
     inc=incidence(p)
-    res[:incidence] = map(i->map(function(j)
+    res.prop[:incidence] = map(i->map(function(j)
                               if i != j && ind[i] == ind[j] return false
                               else return inc[ind[i],ind[j]]
                               end
                           end, 1:length(ind)), 1:length(ind))
     delete!(res.prop, :hasse)
   end
-  res[:size] = length(ind)
-  if haskey(p, :label)
-    res[:indices]=ind
-    res[:label]=(x, n, opt)->p[:label](x, x[:indices][n], opt)
+  res.prop[:size] = length(ind)
+  if haskey(p.prop, :label)
+    res.prop[:indices]=ind
+    res.prop[:label]=(x, n, opt)->p[:label](x, x[:indices][n], opt)
   end
   res
 end
@@ -228,7 +226,7 @@ IsMeetLattice(P::Poset)=checkl(permutedims(incidence(P)))
 function Poset(W::CoxeterGroup,w=longest(W))
   if w==one(W) return Poset(Dict(:elts=>[w],:hasse=>[Int[]],
     :action=>map(x->[0],gens(W)),:size=>1,
-    :label=>(p,n,opt)->IntListToString(word(p[:W],p[:elts][n])),
+    :label=>(p,n,opt)->joindigits(word(p.prop[:W],p.prop[:elts][n])),
     :W=>W))
   end
   s=firstleftdescent(W,w)

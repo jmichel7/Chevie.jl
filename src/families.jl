@@ -342,7 +342,7 @@ local e, Scoll, ct, d, m, ll, eps, equiv, nrSymbols, epsreps, trace, roots, i, j
   Scoll = Collected(vcat(S...))
   ct = vcat(map(x->fill(x[1],x[2]), Scoll)...)
   d = length(ct) % e
-  if !(d in [0, 1]) error("Length(", IntListToString(ct), ") should be 0 or 1  %  ", e, " !\n")
+  if !(d in [0, 1]) error("Length(", joindigits(ct), ") should be 0 or 1  %  ", e, " !\n")
         end
   m = div(length(ct) - d, e)
   j = (m * binomial(e, 2)) % e
@@ -413,7 +413,7 @@ local e, Scoll, ct, d, m, ll, eps, equiv, nrSymbols, epsreps, trace, roots, i, j
   res=Dict{Symbol,Any}(:symbols=>symbs,
     :fourierMat=>hcat(mat...),
     :eigenvalues=>frobs,
-    :name=>IntListToString(ct),
+    :name=>joindigits(ct),
     :explanation=>"classical family",
     :special=>1,
     :operations=>FamilyOps)
@@ -478,7 +478,7 @@ FamiliesClassical=function(sym)
         end
         f[:special] = findfirst(x->all(y->y in "+,",x),f[:charLabels])
     end
-    f[:name] = IntListToString(f[:content])
+    f[:name] = joindigits(f[:content])
     f[:explanation] = "classical family"
     f[:perm] = Perm()
     f[:size] = length(f[:charNumbers])

@@ -51,6 +51,8 @@ It degree was in Base there would be no problem, both importing from Base.
 
 include("Util.jl")
 @reexport using .Util
+include("ModuleElts.jl")
+@reexport using .ModuleElts
 include("Perms.jl")
 @reexport using .Perms
 include("PermGroups.jl")
@@ -75,12 +77,12 @@ include("CycPols.jl")
 @reexport using .CycPols
 include("Symbols.jl")
 @reexport using .Symbols
-include("HasType.jl")
-@reexport using .HasType
 include("Cosets.jl")
 @reexport using .Cosets
 include("Mvps.jl")
 @reexport using .Mvps
 include("Posets.jl")
 @reexport using .Posets
+include("HasType.jl")
+@reexport using .HasType
 end

@@ -425,7 +425,7 @@ function addroot!(l::ModuleElt,n::Int,p)
   (i,c)=p
   (s,v)=Elist(n,i)
   if !s c=-c end
-if Util.usedict
+if ModuleElts.usedict
   for k in v if haskey(l,k) l.d[k]+=c else push!(l,k=>c) end end
 else
   for k in v push!(l,k=>c) end
