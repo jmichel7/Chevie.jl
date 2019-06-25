@@ -190,7 +190,7 @@ end
   x
 end
 
-function show(io::IO, m::ModuleElt; showbasis=(io,k)->print(io,k))
+function helpshow(io::IO, m::ModuleElt; showbasis=(io,k)->print(io,k))
   if iszero(m)
     print(io,"0")
     return
@@ -206,6 +206,5 @@ function show(io::IO, m::ModuleElt; showbasis=(io,k)->print(io,k))
     if start start=false end
   end
 end
-# Base.show(io::IO,m::ModuleElt)=ModuleElts.show(io,m)
 #--------------------------------------------------------------------------
 end

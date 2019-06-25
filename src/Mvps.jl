@@ -44,7 +44,9 @@ function Base.show(io::IO, m::Monomial)
       print(io,v)
       if haskey(fractional,v) d//=fractional[v] end
       if !isone(d)
-        if repl || TeX  print(io,TeXstrip(1<d<10 ? "^$d" : "^{$d}")) 
+        if repl || TeX  
+          e=1<d<10 ? "^$d" : "^{$d}"
+          print(io, TeX ? e : TeXstrip(e)) 
         else print(io,"^$d") 
         end
       end
@@ -141,18 +143,7 @@ macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   end
 end
 
-function Base.show(io::IO, x::Mvp)
-  s=""
-  for (m,c) in x.d
-    m=sprint(show,m; context=io)
-    if m=="1" t="$c"
-    else t=(c==1 ? "" : (c==-1 ? "-" : "$c"))*m
-    end
-    if t[1]!='-' && s!="" t="+"*t end
-    s*=t
-  end
-  print(io,s=="" ? 0 : s)
-end
+Base.show(io::IO, x::Mvp)=ModuleElts.helpshow(io,x.d;showbasis=show)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(ModuleElt{Monomial,Int}())

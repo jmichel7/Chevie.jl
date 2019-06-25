@@ -246,14 +246,9 @@ Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
 
 function Base.show(io::IO, h::HeckeElt)
-  if iszero(h)
-    print(io,"0")
-    return
-  end
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  start=true
-  for (e,c) in h.d
+  function showbasis(io::IO,e)
+    repl=get(io,:limit,false)
+    TeX=get(io,:TeX,false)
     w=word(h.H.W,e)
     res=basename(h)
     if repl || TeX
@@ -262,13 +257,9 @@ function Base.show(io::IO, h::HeckeElt)
       end
     else res*="("*join(map(x->"$x",w),",")*")"
     end
-    c=sprint(show,c; context=io)
-    if !(repl || TeX) || occursin(r"[-+*]",c[nextind(c,0,2):end]) c="($c)" end
-    res= (c=="1" ? "" : (c=="-1" ? "-" : c))*res
-    if res[1]!='-' && !start res="+"*res end
-    if start start=false end
-    print(io, (repl && !TeX) ? TeXstrip(res) : res)
+    print(io,(repl && !TeX) ? TeXstrip(res) : res)
   end
+  ModuleElts.helpshow(io,h.d; showbasis=showbasis)
 end
 
 
