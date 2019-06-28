@@ -163,8 +163,8 @@ function showgraph(x; opt...)
   else sep = "<"
   end
   s=map(x->join(labels[x],sep), chains(s)) 
-  if haskey(opt,:TeX) print("\\noindent",join(map(x->"\$$x\$\\hfill\\break\n",s)))
-  else print(map(x->"$x\n", s)...)
+  if haskey(opt,:TeX) "\\noindent"*join(map(x->"\$$x\$\\hfill\\break\n",s))
+  else join(map(x->"$x\n", s)...)
   end
 end
 
@@ -172,7 +172,8 @@ function restricted(p::Poset,ind::Vector{<:Integer})
   res = Poset(copy(p.prop))
   if length(ind) == length(p) && sort(ind) == 1:length(p)
     if haskey(res.prop, :hasse)
-     res.prop[:hasse] = map(x->map(y->findfirst(isequal(y),ind), x), res.prop[:hasse][ind])
+     res.prop[:hasse] = Vector{Int}.(map(x->map(y->findfirst(isequal(y),ind),x),
+       res.prop[:hasse][ind]))
     end
     if haskey(res.prop, :incidence)
       res.prop[:incidence] = incidence(res)[ind,ind]

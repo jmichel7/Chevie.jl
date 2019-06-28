@@ -1,7 +1,7 @@
 module HasType
 
 export charinfo, classinfo, reflection_name, diagram, chartable,
-  representation, fakedegrees, unipotent_characters, 
+  representation, fakedegrees, unipotent_characters, unipotent_classes,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, Cartesian
 
@@ -122,7 +122,7 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-charname(W,x;TeX=false)=join(map((t,p)->getchev(t,:CharName,p,
+charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
 
 cartfields(p,f)=Cartesian(getindex.(p,f)...)

@@ -1,11 +1,30 @@
-
 UnipotentClassOps=Dict{Symbol,Any}()
 
-UnipotentClassOps[:Name]=function(u)
-  s=replace(u[:name],r"_"=>"")
-  s=replace(s,r"\\tilde "=>"~")
-  s
+function uclassname(u,opt=Dict{Symbol,Any}())
+  if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno]
+  elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
+  else n=u[:name]
+  end
+  if !haskey(opt,:TeX)
+    n=replace(n,r"_"=>"")
+    n=replace(n,r"\\tilde "=>"~")
+    n=replace(n,r"{"=>"")
+    n=replace(n,r"}"=>"")
+  end
+  if haskey(opt,:locsys)
+    if opt[:locsys]==PositionId(cl.Au) return n end
+    cl=SPrint("(",CharNames(cl.Au,opt)[opt.locsys],")")
+    if haskey(opt,:TeX) return SPrint(n,"^{",cl,"}")
+    else return SPrint(n,cl) end
+  elseif haskey(opt,:class)
+    if opt[:class]==PositionId(cl.Au) return n end
+    cl=ChevieClassInfo(cl.Au).classnames[opt.class]
+    if haskey(opt,:TeX) return SPrint("\\hbox{\$",n,"\$}_{(",cl,")}")
+    else return SPrint(n,"_",cl) end
+  else return n
+  end
 end
+UnipotentClassOps[:Name]=uclassname
 
 function unipotent_classes(t::TypeIrred,p=0) 
   uc=getchev(t,:UnipotentClasses,p)
@@ -30,6 +49,9 @@ function unipotent_classes(t::TypeIrred,p=0)
     end
   end
   uc[:orderClasses]=convert.(Vector{Int},uc[:orderClasses])
+  for s in uc[:springerSeries]
+    if s[:levi]=="" s[:levi]=Int[] end
+  end
   uc
 end
 
@@ -40,7 +62,8 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
       :parameter=>[],:dimBu=>0,:dynkin=>[],:balacarter=>[],
       :dimunip=>0,:red=>Torus(W.rank),:operations=>UnipotentClassOps)])
   else
-   ucl=Dict{Symbol,Any}(:classes=>map(Cartesian(getindex.(uc,:classes)...)) do v
+    ucl=Dict{Symbol,Any}()
+    ucl[:classes]=map(Cartesian(getindex.(uc,:classes)...)) do v
       l=getindex.(t,:indices)
       if length(v)==1 u=deepcopy(v[1]) 
       else
@@ -70,7 +93,7 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
       end
       u[:operations]=UnipotentClassOps
       u
-      end)
+    end
   end
   ucl[:size]=length(ucl[:classes])
   if iszero(p) && !haskey(ucl[:classes][1],:balacarter)
@@ -84,30 +107,37 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
     o=Cartesian(map(j->vcat(uc[j][:orderClasses][v[j]],[v[j]]),1:length(v))...)
     o=map(x->PositionCartesian(ll,x),o)
     setdiff(o,[PositionCartesian(ll,v)])
+  end
+  ucl[:springerSeries]=map(Cartesian(getindex.(uc,:springerSeries)...)) do v
+    if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
+    elseif length(v)==1 return Copy(v[1])
     end
-    ucl[:springerSeries]=map(Cartesian(getindex.(uc,:springerSeries)...)) do v
-      if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
-      elseif length(v)==1 return Copy(v[1])
+    s=Dict(:levi=>vcat(map(i->l[i][v[i][:levi]],eachindex(v))...))
+    s[:Z]=vcat(getindex.(v,:Z)...)
+    s[:locsys]=map(Cartesian(getindex.(v,:locsys))) do v
+        v=permutedims(v)
+        v[2]=PositionCartesian(List(i->NrConjugacyClasses(
+              uc[i][:classes[v[1][i]]][:Au]),eachindex(v[1])),v[2])
+        v[1]=PositionCartesian(ll,v[1])
+        v
+        end
+    if all(haskey.(v,:parameter)) s[:parameter]=getindex.(v,:parameter) end
+    if length(v)==1 
+      for k in setdiff(keys(v[1]),[:levi,:Z,:locsys,:parameter])
+        s[k]=v[1][k]
       end
-      s=Dict(:levi=>vcat(map(i->l[i][v[i][:levi]],eachindex(v))...))
-      s[:Z]=vcat(getindex.(v,:Z)...)
-      s[:locsys]=map(Cartesian(getindex.(v,:locsys))) do v
-	  v=permutedims(v)
-	  v[2]=PositionCartesian(List(i->NrConjugacyClasses(
-                uc[i][:classes[v[1][i]]][:Au]),eachindex(v[1])),v[2])
-	  v[1]=PositionCartesian(ll,v[1])
-	  v
-          end
-      if all(haskey.(v,:parameter)) s[:parameter]=getindex.(v,:parameter) end
-  #   if length(v)=1 then Inherit(s,v[1],Difference(RecFields(v[1]),
-  #["levi","Z","locsys","parameter"]));fi;
-      s
-      end
+    end
+    s
+  end
 # adjust indices of levi, relativetype so they agree with Parent(Group(WF))
   for s in ucl[:springerSeries] s[:levi]=inclusion.(Ref(W),s[:levi]) end
   ucl[:p]=p
-  if length(uc)==1 Inherit(ucl,uc[1],setdiff(keys(uc[1]),
-    [:group,:operations,:springerSeries,:classes,:orderClasses])) 
+  ucl[:spets]=W
+  if length(uc)==1 
+    for k in setdiff(keys(uc[1]),
+      [:group,:operations,:springerSeries,:classes,:orderClasses])
+      ucl[k]=uc[1][k]
+    end
   end
 # To deal with a general group intermediate between Gad and Gsc, we discard
 # the  Springer series  corresponding to  a central  character which is not
@@ -136,4 +166,80 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   ucl[:orderClasses]=hasse(restricted(Poset(ucl[:orderClasses]),l))
   ucl[:size]=length(l)
   ucl
+end
+
+UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
+ :order=>true,:springer=>true,:centralizer=>false,:balaCarter=>true))
+
+CharNames(W,opt=Dict{Symbol,Any}())=
+   map(x->charname(W,x;opt...),charinfo(W)[:charparams])
+ 
+function formatuc(uc, opt=Dict{Symbol,Any}())
+  opt = merge(UnipotentClassesOps[:DisplayOptions],opt)
+  TeX(a, b)=haskey(opt, :TeX) ? a : b
+  opt[:rowLabels] = uclassname.(uc[:classes], Ref(opt))
+  if haskey(opt,:order)
+    print(Posets.showgraph(Poset(uc[:orderClasses]);opt...))
+  end
+  sp = map(copy, uc[:springerSeries])
+  if haskey(opt, :fourier)
+    for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
+  end
+  W = uc[:spets]
+  tbl = map(uc[:classes])do u
+    res= iszero(uc[:p]) ? [joindigits(u[:dynkin])] : String[]
+    push!(res, string(u[:dimBu]))
+    if iszero(uc[:p]) && opt[:balaCarter]
+        if haskey(u, :balacarter)
+            b = fill('.',coxrank(W))
+            for i in filter(x->x>0,u[:balacarter]) b[i] = '2' end
+            for i in filter(x->x<0,u[:balacarter]) b[-i] = '0' end
+        else
+            b = fill('?',coxrank(W))
+        end
+        push!(res, String(b))
+    end
+    if opt[:centralizer]
+        push!(res, UnipotentClassOps[:FormatCentralizer](u, opt))
+    end
+    if opt[:springer]
+        i = Position(uc[:classes], u)
+        res = Append(res, map((ss->begin
+           join(map(function (i)
+                c1 = CharNames(u[:Au], opt)[ss[:locsys][i][2]]
+                c2 = CharNames(ss[:relgroup], opt)[i]
+                c1=="" ? c2 : c1*":"*c2
+           end, findall(y->y[1]==i,ss[:locsys])), TeX("\\kern 0[:8]em "," "))
+       end), sp))
+    end
+    res
+  end
+  column_labels = String[]
+  if iszero(uc[:p])
+      push!(column_labels, TeX("\\hbox{Dynkin-Richardson}", "D-R"))
+  end
+  push!(column_labels, TeX("\\dim{\\cal B}_u", "dBu"))
+  if iszero(uc[:p]) && opt[:balaCarter]
+      push!(column_labels, TeX("\\hbox{Bala-Carter}", "B-C"))
+  end
+  if opt[:centralizer]
+      push!(column_labels, TeX("C_{\\bf G}(u)", "C(u)"))
+  end
+  if opt[:springer]
+      column_labels = append!(column_labels, 
+      map(function (ss,)
+        res = string(ss[:relgroup],"(",
+          repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
+        if !all(x->x==1,ss[:Z])
+          res*=string("/", join(ss[:Z],","))
+        end
+        return res
+    end, sp))
+  end
+  if !(haskey(opt, :rows))
+      p = Perm(sortperm(map(x->x[:dimBu], uc[:classes])))
+      tbl = Permuted(tbl, p)
+      opt[:rowLabels] = Permuted(opt[:rowLabels], p)
+  end
+  format(stdout,permutedims(hcat(tbl...)),rows_label="u",column_labels=column_labels)
 end
