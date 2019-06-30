@@ -12,13 +12,13 @@ function uclassname(u,opt=Dict{Symbol,Any}())
     n=replace(n,r"}"=>"")
   end
   if haskey(opt,:locsys)
-    if opt[:locsys]==PositionId(cl.Au) return n end
-    cl=SPrint("(",CharNames(cl.Au,opt)[opt.locsys],")")
+   if opt[:locsys]==PositionId(cl[:Au]) return n end
+   cl=SPrint("(",CharNames(cl[:Au],opt)[opt.locsys],")")
     if haskey(opt,:TeX) return SPrint(n,"^{",cl,"}")
     else return SPrint(n,cl) end
   elseif haskey(opt,:class)
-    if opt[:class]==PositionId(cl.Au) return n end
-    cl=ChevieClassInfo(cl.Au).classnames[opt.class]
+   if opt[:class]==PositionId(cl[:Au]) return n end
+   cl=ChevieClassInfo(cl[:Au]).classnames[opt.class]
     if haskey(opt,:TeX) return SPrint("\\hbox{\$",n,"\$}_{(",cl,")}")
     else return SPrint(n,"_",cl) end
   else return n
@@ -168,11 +168,57 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   ucl
 end
 
-UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
- :order=>true,:springer=>true,:centralizer=>false,:balaCarter=>true))
+function FormatCentralizer(u,opt)
+  c=""
+  function AuName(u)
+    if length(u[:Au])==1 return "" end
+    res=haskey(u,:AuAction) || 
+        (haskey(u,:dimred) && iszero(u[:dimred])) ? "." : "?"
+    au=reflection_name(u[:Au],opt)
+    if haskey(opt,:TeX) 
+      rep=["A_1"=>"Z_2","A_2"=>"S_3","A_3"=>"S_4","A_4"=>"S_5","B_2"=>"D_8"]
+    else
+      rep=["A1"=>"Z2","A2"=>"S3","A3"=>"S4","A4"=>"S5","B2"=>"D8"]
+    end
+    for p in rep  au=replace(au,p) end
+    res*au
+  end
+  if haskey(u,:dimunip)
+    if u[:dimunip]>0 c*=Format(Mvp(:q)^u[:dimunip],opt) end
+  else c*="q^?" end
+  if haskey(u,:AuAction)
+    if Rank(u[:red])>0
+      c*="."
+      if length(u[:Au])==1 || length(u[:Au])==length(Group(u[:AuAction].F0s...))
+        c*=reflection_name(u[:AuAction],opt)
+      elseif all(isone,u[:AuAction].F0s)
+        c*=reflection_name(u[:AuAction].group,opt)*AuName(u)
+      else
+        c*=reflection_name(u[:AuAction],opt)*AuName(u)
+      end
+    else
+      c*=AuName(u)
+    end
+  elseif haskey(u,:red)
+    n=reflection_name(u[:red],opt)
+    if n!="." c*="."*n end
+    c*=AuName(u)
+  else
+    if haskey(u,:dimred)
+      if u[:dimred]>0 c*="[red dim ",u[:dimred],"]" end
+    else c*="[red??]"
+    end
+    c*=AuName(u)
+  end
+  if length(c)>1 && c[1]=='.' c=c[2:end] end
+  if length(c)>1 && c[length(c)]=='.' c=c[1:end-1] end
+  replace(c,"()"=>"")
+end
 
-CharNames(W,opt=Dict{Symbol,Any}())=
-   map(x->charname(W,x;opt...),charinfo(W)[:charparams])
+UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
+ :order=>true,:springer=>true,:centralizer=>true,:balaCarter=>true))
+
+CharNames(W,opt=Dict{Symbol,Any}())=TeXstrip.(charinfo(W)[:charnames])
  
 function formatuc(uc, opt=Dict{Symbol,Any}())
   opt = merge(UnipotentClassesOps[:DisplayOptions],opt)
@@ -199,9 +245,7 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
         end
         push!(res, String(b))
     end
-    if opt[:centralizer]
-        push!(res, UnipotentClassOps[:FormatCentralizer](u, opt))
-    end
+    if opt[:centralizer] push!(res, FormatCentralizer(u, opt)) end
     if opt[:springer]
         i = Position(uc[:classes], u)
         res = Append(res, map((ss->begin
@@ -228,7 +272,7 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
   if opt[:springer]
       column_labels = append!(column_labels, 
       map(function (ss,)
-        res = string(ss[:relgroup],"(",
+        res = string(repr(ss[:relgroup],context=:limit=>true),"(",
           repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
         if !all(x->x==1,ss[:Z])
           res*=string("/", join(ss[:Z],","))

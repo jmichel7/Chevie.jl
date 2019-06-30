@@ -283,6 +283,17 @@ function ComplexReflectionGroup(i::Int)
 end
 
 function ComplexReflectionGroup(p,q,r)
+  if p==1 return coxgroup(:A,r)
+  elseif p==2 
+   if q==2 if r==1 return coxgroup()
+           elseif r==2 return coxgroup(:A,1)*coxgroup(:A,1)
+           elseif r==3 return coxgroup(:A,3)
+           else return coxgroup(:D,r)
+           end
+   elseif r==1 return coxgroup(:A,1)
+   else return coxgroup(:B,r) end
+  elseif p==q && r==2 return coxgroup(:I,2,r)
+  end
  t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   r=getchev(t,:GeneratingRoots)
   cr=getchev(t,:EigenvaluesGeneratingReflections)
@@ -314,7 +325,7 @@ nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 PrintToSring(s,v...)=sprint(show,v...)
 
-reflection_name(W)=join(getchev(W,:ReflectionName,Dict()),"×")
+reflection_name(W,opt=Dict())=join(getchev(W,:ReflectionName,opt),"×")
 
 function representation(W,i::Int)
   map(x->hcat(x...),impl1(getchev(W,:Representation,i)))
@@ -474,7 +485,14 @@ Value(p,v)=p(v)
 CoxeterGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
 CoxeterGroup()=coxgroup()
 
-ExtendedReflectionGroup(W,mats)=1
+struct ExtendedCox{T<:FiniteCoxeterGroup}
+  group::T
+  F0s::Vector{Matrix{Int}}
+end
+
+ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
+ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})=
+          ExtendedCox(W,map(x->hcat(x...),mats))
 
 CharTableSymmetric=Dict(:centralizers=>[
      function(n,pp) res=k=1;last=0
