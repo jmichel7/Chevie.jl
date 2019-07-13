@@ -69,6 +69,7 @@ struct Poset
 end
 
 Poset(m::Matrix{Bool})=Poset(Dict(:incidence=>m,:size=>size(m,1)))
+Poset(m::Vector{Vector{Bool}})=Poset(permutedims(hcat(m...)))
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
 Base.length(p::Poset)=p.prop[:size]
 
@@ -141,8 +142,8 @@ end
 function partition(p::Poset)
   if haskey(p.prop, :hasse)
     l=reverse(p)
-    l=groupby(i->[hasse(l)[i], hasse(p)[i]],1:length(p))
-    collect(values(l))
+    res=groupby(i->[hasse(l)[i], hasse(p)[i]],1:length(p))
+    sort(collect(values(res)),by=v->[hasse(l)[v[1]], hasse(p)[v[1]]])
   else
     I=incidence(p)
     ind=1:length(p)
@@ -154,7 +155,8 @@ end
 function showgraph(x; opt...)
   p=partition(x)
   s=hasse(x)
-  s=Poset(map(x->unique(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),s[x[1]])))), p))
+  s=Poset(map(x->unique(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),
+                                                     s[x[1]])))), p))
   labels=map(y->join(map(n->haskey(x.prop,:label) ? x.prop[:label](x,n,opt) :
                          string(n),y),","),p)
   opt=Dict(opt)
@@ -164,7 +166,7 @@ function showgraph(x; opt...)
   end
   s=map(x->join(labels[x],sep), chains(s)) 
   if haskey(opt,:TeX) "\\noindent"*join(map(x->"\$$x\$\\hfill\\break\n",s))
-  else join(map(x->"$x\n", s)...)
+  else join(s,"\n")
   end
 end
 

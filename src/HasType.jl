@@ -283,7 +283,9 @@ function ComplexReflectionGroup(i::Int)
 end
 
 function ComplexReflectionGroup(p,q,r)
-  if p==1 return coxgroup(:A,r)
+ if p==1 if r==1 return coxgroup()
+   else return coxgroup(:A,r-1)
+   end
   elseif p==2 
    if q==2 if r==1 return coxgroup()
            elseif r==2 return coxgroup(:A,1)*coxgroup(:A,1)
@@ -422,6 +424,8 @@ DefectSymbol=defectsymbol
 DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
+DivisorsInt=divisors
+Dominates=dominates
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
 Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
 Filtered(l,f)=isempty(l) ? l : filter(f,l)
@@ -429,6 +433,7 @@ First(a,b)=a[findfirst(b,a)]
 Flat(v)=collect(Iterators.flatten(v))
 ForAll(l,f)=all(f,l)
 FullSymbol=fullsymbol
+Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
 HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
@@ -459,11 +464,13 @@ end
 
 PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
 Permuted(a,b)=[a[i^b] for i in eachindex(a)]
+PrimeResidues=prime_residues
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v,f)=isempty(v) ? 1 : prod(f,v)
 Rank=rank
 RankSymbol=ranksymbol
 RecFields=keys
+ReflectionSubgroup(W,I::Vector)=reflection_subgroup(W,convert(Vector{Int},I))
 RootInt(a,b)=floor(Int,a^(1/b))
 RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
@@ -482,7 +489,10 @@ SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 Torus(i::Int)=torus(i)
 Value(p,v)=p(v)
-CoxeterGroup(s::String,n)=coxgroup(Symbol(s),Int(n))
+function CoxeterGroup(S::String,s...)
+ if length(s)==1 return coxgroup(Symbol(S),Int(s[1])) end
+ coxgroup(Symbol(S),Int(s[1]))*coxgroup(Symbol(s[2]),Int(s[3]))
+end
 CoxeterGroup()=coxgroup()
 
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -490,9 +500,20 @@ struct ExtendedCox{T<:FiniteCoxeterGroup}
   F0s::Vector{Matrix{Int}}
 end
 
-ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
-ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})=
-          ExtendedCox(W,map(x->hcat(x...),mats))
+#ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
+function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
+ if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
+ elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
+ else ExtendedCox(W,map(x->hcat(x...),mats))
+ end
+end
+function ExtendedReflectionGroup(W,mats::Vector)
+#  println("mats=$mats")
+   if !isempty(mats) error("not empty") end
+   ExtendedCox(W,empty([fill(0,0,0)]))
+end
+ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[matX(W,p)])
+reflection_name(W::ExtendedCox,a...)=reflection_name(W.group,a...)
 
 CharTableSymmetric=Dict(:centralizers=>[
      function(n,pp) res=k=1;last=0

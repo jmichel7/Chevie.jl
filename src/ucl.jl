@@ -5,11 +5,11 @@ function uclassname(u,opt=Dict{Symbol,Any}())
   elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
   else n=u[:name]
   end
-  if !haskey(opt,:TeX)
-    n=replace(n,r"_"=>"")
-    n=replace(n,r"\\tilde "=>"~")
-    n=replace(n,r"{"=>"")
-    n=replace(n,r"}"=>"")
+  if !haskey(opt,:TeX) 
+   n=replace(n,r"\\tilde *"=>"~")
+   n=replace(n,"_"=>"")
+   n=replace(n,"}"=>"")
+   n=replace(n,"{"=>"")
   end
   if haskey(opt,:locsys)
    if opt[:locsys]==PositionId(cl[:Au]) return n end
@@ -57,7 +57,7 @@ end
 
 function unipotent_classes(W::FiniteCoxeterGroup,p=0) 
   t=refltype(W) 
-  uc=unipotent_classes.(t)
+  uc=unipotent_classes.(t,p)
   if isempty(t) ucl=Dict{Symbol,Any}(:classes=>[Dict(:name=>"",:Au=>coxgroup(),
       :parameter=>[],:dimBu=>0,:dynkin=>[],:balacarter=>[],
       :dimunip=>0,:red=>Torus(W.rank),:operations=>UnipotentClassOps)])
@@ -223,7 +223,8 @@ CharNames(W,opt=Dict{Symbol,Any}())=TeXstrip.(charinfo(W)[:charnames])
 function formatuc(uc, opt=Dict{Symbol,Any}())
   opt = merge(UnipotentClassesOps[:DisplayOptions],opt)
   TeX(a, b)=haskey(opt, :TeX) ? a : b
-  opt[:rowLabels] = uclassname.(uc[:classes], Ref(opt))
+  opt[:rowLabels] = TeXstrip.(uclassname.(uc[:classes],
+                                          Ref(merge(opt,Dict(:TeX=>true)))))
   if haskey(opt,:order)
     print(Posets.showgraph(Poset(uc[:orderClasses]);opt...))
   end
@@ -285,5 +286,7 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
       tbl = Permuted(tbl, p)
       opt[:rowLabels] = Permuted(opt[:rowLabels], p)
   end
-  format(stdout,permutedims(hcat(tbl...)),rows_label="u",column_labels=column_labels)
+  format(stdout,permutedims(hcat(tbl...)),rows_label="u",
+         row_labels=opt[:rowLabels],
+         column_labels=column_labels)
 end

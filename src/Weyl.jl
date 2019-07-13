@@ -220,6 +220,7 @@ julia> cartan(:A,4)
 function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
   if t==:A return Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
   m=cartan(:A,r) 
+  if r==1 return m end
   if t==:B m[1,2]=-2 
   elseif t==:C m[2,1]=-2 
   elseif t==:Bsym m=Cyc{Int}.(m) 
@@ -335,8 +336,8 @@ function type_irred_cartan(m::AbstractMatrix)
         if l(2)*r(2)==1 t[:series]=:A 
         else t[:series]=:F
           if l(2)!=-1 rev() end 
+          t[:cartantype]=1
         end
-        t[:cartantype]=1
       else n=conductor(l(1)*r(1))
         if n==5 t[:series]=:H
         else t[:series]=:B
@@ -426,6 +427,7 @@ PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}=
   The reflection degrees of W
 """
 function Gapjm.degrees(W::FiniteCoxeterGroup)
+  if iszero(W.N) return Int[] end
   l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
   reverse(1 .+conjugate_partition(l))
 end
@@ -466,7 +468,7 @@ end
 CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 
 "Coxeter group from type"
-coxgroup(t::Symbol,r::Int=0,b::Int=0)=rootdatum(cartan(t,r,b))
+coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(t,r,b))
 
 " Adjoint root datum from cartan mat"
 rootdatum(C)=rootdatum(one(C),C)
@@ -494,7 +496,7 @@ end
 
 function coxgroup()
   G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}())
+   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>0))
   FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
 end
 

@@ -14,7 +14,7 @@ export getp, gets, # helpers for objects with a Dict of properties
   format, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
-  partition_tuples, #combinatorics
+  partition_tuples, dominates, #combinatorics
   echelon, exterior_power  # linear algebra
 
 # not exported: nullspace, to avoid conflict with LinearAlgebra
@@ -168,7 +168,7 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
   rows_label=lpad(rows_label,labwidth)
-  row_labels=rpad.(row_labels,labwidth)
+  row_labels=map(x->x*" "^(labwidth-textwidth(x)),row_labels)
   function hline(ci)
     print(io,"\u2500"^labwidth,"\u253C")
     print(io,"\u2500"^sum(colwidth[ci].+1),"\n")
@@ -220,6 +220,7 @@ joindigits(l::Vector{<:Integer})=any(l.>10) ? string("(",join(l,","),")") : join
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)
+  if n==1 return [0] end
   filter(i->gcd(n,i)==1,1:n-1)
 end
 
@@ -422,7 +423,7 @@ end
 
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 
-
+dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 #----------- Linear algebra over Rationals/integers------------------------
 " returns: echelon form of m, indices of linearly independent rows of m"
 function echelon!(m::Matrix)

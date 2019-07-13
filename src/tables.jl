@@ -6191,10 +6191,13 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                 p = p + j[2]
             end
             cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
-            cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat((cl[:red])[:rank])])
+            cl[:AuAction] = ExtendedReflectionGroup(cl[:red],
+                                                    [IdentityMat(Rank(cl[:red]))])
             if d == 2
                 push!((ss(1))[:locsys], [i, 2])
                 push!((ss(-1))[:locsys], [i, 1])
+            elseif d==1
+                push!((ss(1))[:locsys], [i, 1])
             else
                 for j = 0:d - 1
                     push!((ss(E(d, j)))[:locsys], [i, j + 1])
@@ -9041,9 +9044,9 @@ chevieset(:F4, :UnipotentClasses, function (c, p)
                 c[:Au] = Z(1)
             end
             if !(haskey(c, :AuAction))
-                c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                    IdentityMat((c[:red])[:rank])
-                                end), (c[:Au])[:generators]))
+                c[:AuAction] = ExtendedReflectionGroup(c[:red], fill(
+                                    IdentityMat(rank(c[:red])), 
+                                    semisimplerank(c[:Au])))
             end
         end
         return uc
