@@ -134,6 +134,7 @@ function TeXstrip(s::String)
   q(l)= l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : 
      "⁽$(map(x->sup[x],string(l)))⁾"
   s=replace(s,r"''*"=>t->q(length(t)))
+  s=replace(s,r"\{\+\}"=>"+")
   s
 end
 

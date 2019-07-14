@@ -199,7 +199,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum
+export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -494,11 +494,13 @@ function rootdatum(rr::Matrix,cr::Matrix)
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
-function coxgroup()
+function torus(i)
   G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>0))
+   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
   FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
 end
+
+coxgroup()=torus(0)
 
 function Base.show(io::IO, W::FCG)
   repl=get(io,:limit,false)

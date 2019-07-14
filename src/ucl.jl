@@ -48,9 +48,9 @@ function unipotent_classes(t::TypeIrred,p=0)
       u[:dimunip]=2*u[:dimBu]+rank-u[:dimred]
     end
   end
-  uc[:orderClasses]=convert.(Vector{Int},uc[:orderClasses])
+  uc[:orderClasses]=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
   for s in uc[:springerSeries]
-    if s[:levi]=="" s[:levi]=Int[] end
+   if isempty(s[:levi]) s[:levi]=Int[] end
   end
   uc
 end
@@ -210,8 +210,8 @@ function FormatCentralizer(u,opt)
     end
     c*=AuName(u)
   end
-  if length(c)>1 && c[1]=='.' c=c[2:end] end
-  if length(c)>1 && c[length(c)]=='.' c=c[1:end-1] end
+  replace(c,r"^."=>"")
+  replace(c,r".*"=>"")
   replace(c,"()"=>"")
 end
 
@@ -226,7 +226,7 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
   opt[:rowLabels] = TeXstrip.(uclassname.(uc[:classes],
                                           Ref(merge(opt,Dict(:TeX=>true)))))
   if haskey(opt,:order)
-    print(Posets.showgraph(Poset(uc[:orderClasses]);opt...))
+    println(Posets.showgraph(Poset(uc[:orderClasses]);opt...))
   end
   sp = map(copy, uc[:springerSeries])
   if haskey(opt, :fourier)

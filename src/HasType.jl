@@ -157,6 +157,7 @@ function charinfo(W)::Dict{Symbol,Any}
     if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
     res[:charparams]=cartfields(p,:charparams)
     if length(p)==1 return res end
+    res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]
       if allhaskey(p,f)
        res[f]=PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
@@ -442,6 +443,8 @@ InfoChevie2=print
 IntListToString=joindigits
 IsList(l)=l isa Vector
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
+Join(x,y)=join(x,y)
+Join(x)=join(x,",")
 Lcm(a...)=Lcm(collect(a))
 Lcm(a::Vector)=lcm(Int.(a))
 LowestPowerFakeDegreeSymbol=valuation_feg_symbol
@@ -470,7 +473,7 @@ Product(v,f)=isempty(v) ? 1 : prod(f,v)
 Rank=rank
 RankSymbol=ranksymbol
 RecFields=keys
-ReflectionSubgroup(W,I::Vector)=reflection_subgroup(W,convert(Vector{Int},I))
+ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 RootInt(a,b)=floor(Int,a^(1/b))
 RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
@@ -500,19 +503,27 @@ struct ExtendedCox{T<:FiniteCoxeterGroup}
   F0s::Vector{Matrix{Int}}
 end
 
-#ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
+ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
+ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
+ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=
+  ExtendedCox(W,[hcat(mats...)])
+
 function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
- if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
- elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
- else ExtendedCox(W,map(x->hcat(x...),mats))
- end
+  if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
+  elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
+  else ExtendedCox(W,map(x->hcat(x...),mats))
+  end
 end
-function ExtendedReflectionGroup(W,mats::Vector)
-#  println("mats=$mats")
-   if !isempty(mats) error("not empty") end
-   ExtendedCox(W,empty([fill(0,0,0)]))
-end
+
+ExtendedReflectionGroup(W,p::Vector{Perm{Int}})=ExtendedCox(W,matX.(Ref(W),p))
 ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[matX(W,p)])
+
+function ExtendedReflectionGroup(W,mats::Vector{Any})
+  if isempty(mats) ExtendedCox(W,empty([fill(0,0,0)]))
+  else error("not empty")
+  end
+end
+
 reflection_name(W::ExtendedCox,a...)=reflection_name(W.group,a...)
 
 CharTableSymmetric=Dict(:centralizers=>[

@@ -1433,7 +1433,11 @@ chevieset(:G26, :EigenvaluesGeneratingReflections, [1 // 2, 1 // 3, 1 // 3])
 chevieset(:G26, :BraidRelations, [[[1, 2, 1, 2], [2, 1, 2, 1]], [[1, 3], [3, 1]], [[2, 3, 2], [3, 2, 3]]])
 chevieset(:G26, :ReflectionName, function (arg...,)
         local i, TeX, type_
-        type_ = arg[2]
+        if length(arg) == 1
+            type_ = 1
+        else
+            type_ = arg[2]
+        end
         TeX = haskey(arg[1], :TeX)
         if type_ == 1
             if TeX
@@ -6191,13 +6195,10 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                 p = p + j[2]
             end
             cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
-            cl[:AuAction] = ExtendedReflectionGroup(cl[:red],
-                                                    [IdentityMat(Rank(cl[:red]))])
+            cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat(Rank(cl[:red]))])
             if d == 2
                 push!((ss(1))[:locsys], [i, 2])
                 push!((ss(-1))[:locsys], [i, 1])
-            elseif d==1
-                push!((ss(1))[:locsys], [i, 1])
             else
                 for j = 0:d - 1
                     push!((ss(E(d, j)))[:locsys], [i, j + 1])
@@ -8305,7 +8306,9 @@ chevieset(:E6, :UnipotentClasses, function (p,)
         Z = (n->begin
                     ComplexReflectionGroup(n, 1, 1)
                 end)
-        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("\tE_6\n", "\t |\n", "      E_6(a_1)\n", "\t |\n", "\tD_5\n", "\t |\n", "     E_6(a_3)\n", "     /   |\n", "  A_5    |\n", "   |   D_5(a_1)\n", "   |   /      \\\n", "A_4+A_1        \\\n", "   |           D_4\n", "  A_4         /\n", "     \\       /\n", "      D_4(a_1)\n", "\t |\n", "      A_3+A_1\n", "     /       \\\n", "  A_3     2A_2+A_1\n", "   |     /    |\n", "  A_2+2A_1   2A_2\n", "     \\       /\n", "      A_2+A_1\n", "\t |\n", "\tA_2\n", "\t |\n", "       3A_1\n", "\t |\n", "       2A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1\n"), :classes => [Dict{Symbol, Any}(:name => "E_6", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2], :Au => Z(3 * gcd(p, 2)), :balacarter => 1:6), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6"], :dynkin => [2, 2, 2, 0, 2, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, -4, 5, 6]), Dict{Symbol, Any}(:name => "D_5", :succ => ["E6(a1)"], :dynkin => [2, 2, 0, 2, 0, 2], :Au => Z(gcd(2, p)), :balacarter => 1:5, :red => Torus(1)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "A_5{+}A_1", :succ => ["D5"], :dynkin => [2, 0, 0, 2, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1) * 2), :balacarter => [1, -2, -3, 4, -5, 6]), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)"], :dynkin => [2, 1, 1, 0, 1, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 4, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["E6(a3)"], :dynkin => [1, 2, 1, 0, 1, 1], :balacarter => [1, 2, 3, -4, 5], :red => Torus(1)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A5", "D5(a1)"], :dynkin => [1, 1, 1, 0, 1, 1], :balacarter => [1, 2, 3, 4, 6], :red => Torus(1)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D5(a1)"], :dynkin => [0, 2, 0, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4, 5], :red => CoxeterGroup("A", 2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 2, 0, 0, 0, 2], :balacarter => [1, 2, 3, 4], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "A4"], :dynkin => [0, 0, 0, 2, 0, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Torus(2), :AuAction => ExtendedReflectionGroup(Torus(2), (CoxeterGroup("A", 2))[:matgens])), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["D4(a1)"], :dynkin => [0, 1, 1, 0, 1, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["A3+A1"], :dynkin => [1, 2, 0, 0, 0, 1], :balacarter => [1, 3, 4], :red => CoxeterGroup("B", 2) * Torus(1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["A3+A1"], :dynkin => [1, 0, 0, 1, 0, 1], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 5, 6], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "2A2+A1"], :dynkin => [0, 0, 1, 0, 1, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["2A2", "A2+2A1"], :dynkin => [1, 1, 0, 0, 0, 1], :balacarter => [1, 2, 3], :red => CoxeterGroup("A", 2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => CoxeterGroup("A", 2, "A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2, "A", 2), #= none:82 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["A2"], :dynkin => [0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 5], :red => CoxeterGroup("A", 2, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 1], :balacarter => [1, 2], :red => CoxeterGroup("B", 3) * Torus(1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 1, 0, 0, 0, 0], :balacarter => [1], :red => CoxeterGroup("A", 5)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("E", 6))], :springerSeries => [Dict{Symbol, Any}(:levi => [], :relgroup => CoxeterGroup("E", 6), :Z => [1], :locsys => [[1, 1], [21, 1], [13, 1], [2, 1], [20, 1], [10, 1], [4, 4], [17, 1], [5, 1], [18, 1], [3, 1], [19, 1], [8, 1], [14, 1], [4, 1], [17, 2], [11, 1], [10, 3], [10, 2], [7, 1], [15, 1], [6, 1], [16, 1], [9, 1], [12, 1]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3)], :locsys => [[1, 2], [14, 2], [13, 2], [2, 2], [4, 3], [5, 2]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3, 2)], :locsys => [[1, 3], [14, 3], [13, 3], [2, 3], [4, 5], [5, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3)], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3, 2)], :locsys => [[4, 6]])])
+        uc = Dict{Symbol, Any}(:orderPicture => Concatenation("\tE_6\n", "\t |\n", "      E_6(a_1)\n", "\t |\n", "\tD_5\n", "\t |\n", "     E_6(a_3)\n", "     /   |\n", "  A_5    |\n", "   |   D_5(a_1)\n", "   |   /      \\\n", "A_4+A_1        \\\n", "   |           D_4\n", "  A_4         /\n", "     \\       /\n", "      D_4(a_1)\n", "\t |\n", "      A_3+A_1\n", "     /       \\\n", "  A_3     2A_2+A_1\n", "   |     /    |\n", "  A_2+2A_1   2A_2\n", "     \\       /\n", "      A_2+A_1\n", "\t |\n", "\tA_2\n", "\t |\n", "       3A_1\n", "\t |\n", "       2A_1\n", "\t |\n", "\tA_1\n", "\t |\n", "\t 1\n"), :classes => [Dict{Symbol, Any}(:name => "E_6", :succ => [], :dynkin => [2, 2, 2, 2, 2, 2], :Au => Z(3 * gcd(p, 2)), :balacarter => 1:6), Dict{Symbol, Any}(:name => "E_6(a_1)", :succ => ["E6"], :dynkin => [2, 2, 2, 0, 2, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, -4, 5, 6]), Dict{Symbol, Any}(:name => "D_5", :succ => ["E6(a1)"], :dynkin => [2, 2, 0, 2, 0, 2], :Au => Z(gcd(2, p)), :balacarter => 1:5, :red => Torus(1)), Dict{Symbol, Any}(:name => "E_6(a_3)", :mizuno => "A_5{+}A_1", :succ => ["D5"], :dynkin => [2, 0, 0, 2, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1) * 2), :balacarter => [1, -2, -3, 4, -5, 6]), Dict{Symbol, Any}(:name => "A_5", :succ => ["E6(a3)"], :dynkin => [2, 1, 1, 0, 1, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 4, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "D_5(a_1)", :succ => ["E6(a3)"], :dynkin => [1, 2, 1, 0, 1, 1], :balacarter => [1, 2, 3, -4, 5], :red => Torus(1)), Dict{Symbol, Any}(:name => "A_4{+}A_1", :succ => ["A5", "D5(a1)"], :dynkin => [1, 1, 1, 0, 1, 1], :balacarter => [1, 2, 3, 4, 6], :red => Torus(1)), Dict{Symbol, Any}(:name => "D_4", :succ => ["D5(a1)"], :dynkin => [0, 2, 0, 2, 0, 0], :Au => Z(gcd(p, 2)), :balacarter => [2, 3, 4, 5], :red => CoxeterGroup("A", 2)), Dict{Symbol, Any}(:name => "A_4", :succ => ["A4+A1"], :dynkin => [2, 2, 0, 0, 0, 2], :balacarter => [1, 2, 3, 4], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "D_4(a_1)", :succ => ["D4", "A4"], :dynkin => [0, 0, 0, 2, 0, 0], :Au => CoxeterGroup("A", 2), :balacarter => [2, 3, -4, 5], :red => Torus(2), :AuAction => ExtendedReflectionGroup(Torus(2), map((i->begin
+                                                MatXPerm(CoxeterGroup("A", 2), EltWord(CoxeterGroup("A", 2), [i]))
+                                            end), 1:2))), Dict{Symbol, Any}(:name => "A_3{+}A_1", :succ => ["D4(a1)"], :dynkin => [0, 1, 1, 0, 1, 0], :balacarter => [1, 2, 4, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_3", :succ => ["A3+A1"], :dynkin => [1, 2, 0, 0, 0, 1], :balacarter => [1, 3, 4], :red => CoxeterGroup("B", 2) * Torus(1)), Dict{Symbol, Any}(:name => "2A_2{+}A_1", :succ => ["A3+A1"], :dynkin => [1, 0, 0, 1, 0, 1], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 2, 3, 5, 6], :red => Z(2)), Dict{Symbol, Any}(:name => "2A_2", :succ => ["2A2+A1"], :dynkin => [2, 0, 0, 0, 0, 2], :Au => Z(gcd(3, p ^ 2 - 1)), :balacarter => [1, 3, 5, 6], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_2{+}2A_1", :succ => ["A3", "2A2+A1"], :dynkin => [0, 0, 1, 0, 1, 0], :balacarter => [1, 2, 3, 5], :red => Z(2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2{+}A_1", :succ => ["2A2", "A2+2A1"], :dynkin => [1, 1, 0, 0, 0, 1], :balacarter => [1, 2, 3], :red => CoxeterGroup("A", 2) * Torus(1)), Dict{Symbol, Any}(:name => "A_2", :succ => ["A2+A1"], :dynkin => [0, 2, 0, 0, 0, 0], :Au => Z(2), :balacarter => [1, 3], :red => CoxeterGroup("A", 2, "A", 2), :AuAction => ExtendedReflectionGroup(CoxeterGroup("A", 2, "A", 2), #= none:83 =# @perm_str("(1,3)(2,4)"))), Dict{Symbol, Any}(:name => "3A_1", :succ => ["A2"], :dynkin => [0, 0, 0, 1, 0, 0], :balacarter => [1, 2, 5], :red => CoxeterGroup("A", 2, "A", 1)), Dict{Symbol, Any}(:name => "2A_1", :succ => ["3A1"], :dynkin => [1, 0, 0, 0, 0, 1], :balacarter => [1, 2], :red => CoxeterGroup("B", 3) * Torus(1)), Dict{Symbol, Any}(:name => "A_1", :succ => ["2A1"], :dynkin => [0, 1, 0, 0, 0, 0], :balacarter => [1], :red => CoxeterGroup("A", 5)), Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0, 0, 0, 0, 0], :balacarter => [], :red => CoxeterGroup("E", 6))], :springerSeries => [Dict{Symbol, Any}(:levi => [], :relgroup => CoxeterGroup("E", 6), :Z => [1], :locsys => [[1, 1], [21, 1], [13, 1], [2, 1], [20, 1], [10, 1], [4, 4], [17, 1], [5, 1], [18, 1], [3, 1], [19, 1], [8, 1], [14, 1], [4, 1], [17, 2], [11, 1], [10, 3], [10, 2], [7, 1], [15, 1], [6, 1], [16, 1], [9, 1], [12, 1]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3)], :locsys => [[1, 2], [14, 2], [13, 2], [2, 2], [4, 3], [5, 2]]), Dict{Symbol, Any}(:levi => [1, 3, 5, 6], :relgroup => CoxeterGroup("G", 2), :Z => [E(3, 2)], :locsys => [[1, 3], [14, 3], [13, 3], [2, 3], [4, 5], [5, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3)], :locsys => [[4, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [E(3, 2)], :locsys => [[4, 6]])])
         if p == 2
             push!(uc[:springerSeries], Dict{Symbol, Any}(:levi => [2, 3, 4, 5], :relgroup => CoxeterGroup("A", 2), :Z => [1], :locsys => [[8, 1], [3, 1], [1, 4]]))
             (((uc[:springerSeries])[1])[:locsys])[[11, 13]] = [[3, 2], [8, 2]]
@@ -8338,8 +8341,8 @@ chevieset(:E6, :UnipotentClasses, function (p,)
             end
             if !(haskey(c, :AuAction))
                 c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                    IdentityMat((c[:red])[:rank])
-                                end), (c[:Au])[:generators]))
+                                    IdentityMat(Rank(c[:red]))
+                                end), 1:SemisimpleRank(c[:Au])))
             end
         end
         return uc
@@ -8523,8 +8526,8 @@ chevieset(:E7, :UnipotentClasses, function (p,)
             end
             if !(haskey(c, :AuAction))
                 c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                    IdentityMat((c[:red])[:rank])
-                                end), (c[:Au])[:generators]))
+                                    IdentityMat(Rank(c[:red]))
+                                end), 1:SemisimpleRank(c[:Au])))
             end
         end
         return uc
@@ -8762,8 +8765,8 @@ chevieset(:E8, :UnipotentClasses, function (p,)
             end
             if !(haskey(c, :AuAction))
                 c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                    IdentityMat((c[:red])[:rank])
-                                end), (c[:Au])[:generators]))
+                                    IdentityMat(Rank(c[:red]))
+                                end), 1:SemisimpleRank(c[:Au])))
             end
         end
         return uc
@@ -9044,9 +9047,9 @@ chevieset(:F4, :UnipotentClasses, function (c, p)
                 c[:Au] = Z(1)
             end
             if !(haskey(c, :AuAction))
-                c[:AuAction] = ExtendedReflectionGroup(c[:red], fill(
-                                    IdentityMat(rank(c[:red])), 
-                                    semisimplerank(c[:Au])))
+                c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
+                                    IdentityMat(Rank(c[:red]))
+                                end), 1:SemisimpleRank(c[:Au])))
             end
         end
         return uc
