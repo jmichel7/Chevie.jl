@@ -159,7 +159,7 @@ The dictionary from CHEVIE is as follows:
 module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
-  longest, reduced, braid_relations, coxetermat,
+  longest, reduced, braid_relations, coxetermat, parabolic_representatives,
   coxsym
 
 export isleftdescent, nref # 'virtual' methods
@@ -426,6 +426,9 @@ function parabolic_representatives(W,s)
   end
   first.(orbits)
 end
+
+parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
+          0:semisimplerank(W))...)
 
 function coxetermat end
 

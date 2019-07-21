@@ -26,12 +26,51 @@ function uclassname(u,opt=Dict{Symbol,Any}())
 end
 UnipotentClassOps[:Name]=uclassname
 
+# h  is a  linear form  defined by  its value  on the  simple roots  of the
+# reflection subgroup K. Induce it to W by extending by 0 on the orthogonal
+# of K, then conjugate it so it takes >=0 values on the simple roots.
+function InducedLinearForm(W,K,h)
+# Print("W=",W," K=",K," h=",h,"\n");
+  if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
+  h=copy(h)
+  append!(h,fill(0,rank(K)-semisimplerank(K)))
+  h=PermRoot.baseX(parent(W.G))*PermRoot.baseX(K.G)^-1*h
+  r=parent(W).roots[inclusion(W)]
+  v=r[1:W.N]*h
+  w=with_inversions(W,filter(i->v[i]<0,1:W.N))
+  map(i->r[i]*h,restriction.(Ref(W),
+        inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
+end
+
+function DistinguishedParabolicSubgroups(W)
+  filter(combinations(inclusion.(Ref(W),eachindex(gens(W))))) do J
+    if isempty(J) return true end
+    p=fill(1,semisimplerank(W))
+    p[restriction.(Ref(W),J)]=fill(0,length(J))
+    println("W=$W p=$p")
+    p=permutedims(p)*hcat(W.rootdec[1:W.N]...)
+    2*count(iszero,p)+semisimplerank(W)==count(isone,p)
+  end
+end
+
+function BalaCarterLabels(W)
+  l=vcat(map(parabolic_representatives(W)) do J
+    map(D->[J,D],DistinguishedParabolicSubgroups(reflection_subgroup(W,J)))
+  end...)
+  map(l) do p
+    L=reflection_subgroup(W,p[1])
+    w=fill(2,semisimplerank(L))
+    w[restriction(L,p[2])]=p[2]*0
+    [InducedLinearForm(W,L,w),map(i->i in p[2] ? -i : i,p[1])]
+  end
+end
+
 function unipotent_classes(t::TypeIrred,p=0) 
   uc=getchev(t,:UnipotentClasses,p)
   rank=length(t[:indices])
   for u in uc[:classes] # fill omitted fields
     if !haskey(u,:parameter) u[:parameter]=u[:name] end
-    if !haskey(u,[:dynkin])
+    if haskey(u,:dynkin)
       weights=permutedims(u[:dynkin])*hcat(roots(cartan(t.prop))...)
       p=count(iszero,weights)
       if haskey(u,:dimBu) && u[:dimBu]!=p+div(count(isone,weights),2)
@@ -42,7 +81,7 @@ function unipotent_classes(t::TypeIrred,p=0)
       u[:dimunip]=2*u[:dimBu]-p
       u[:dimred]=p+rank
     elseif haskey(u,:red)
-      u[:dimred]=Dimension(u[:red])
+      u[:dimred]=dimension(u[:red])
       u[:dimunip]=2*u[:dimBu]+rank-u[:dimred]
     elseif haskey(u,:dimred)
       u[:dimunip]=2*u[:dimBu]+rank-u[:dimred]

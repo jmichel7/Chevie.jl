@@ -54,7 +54,7 @@ export shiftβ, βSet, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol, degree_gendeg_symbol,
 degree_feg_symbol, valuation_feg_symbol,
 defectsymbol, fullsymbol, ranksymbol, symbols, fegsymbol, stringsymbol,
-Tableaux
+Tableaux, XSP
 
 """
 `shiftβ( β, n)` shift β-set β by n
@@ -415,4 +415,109 @@ function Tableaux(S)
   res
 end
 
+# XSP(ρ,s,n[,d]) returns the union of the Lusztig-Spaltenstein 
+# X̃^{ρ-s,s}_{n,d} for all d even when the 4th argument is present
+#                     all d odd otherwise
+# In "Character sheaves on disconnected groups II, 13.2" the notation is
+#  {}^ρ Xˢₙ,d.
+# The result is a list of lists, each one corresponding to a similarity class.
+# If s = 0, only positive defects are considered.
+# XSP(2,1,n) LS symbols for Sp_2n
+# XSP(4,2,n) LS symbols for Sp_2n in char.2
+# XSP(2,0,n) LS symbols for SO_{2n+1} [defect odd]
+# XSP(2,0,n,true) LS symbols for SO_{2n} [defect even]
+# XSP(4,0,n,true) LS symbols for SO_{2n} in char 2
+# returns records with fields:
+# .symbol  
+# .dimBu
+# .sp  parameter (double partition) of the generalized Springer correspondent
+#                              character of the relative Weyl group
+# .Au  describes a character of A(u) as a list: true->sgn, false->Id
+#      representing the local system of the Springer correspondent
+function xsp(rho,s,n,d)
+  nrsd=rho*div(d^2,4)-s*div(d-mod(d,2),2)
+  if n<nrsd return Vector{Vector{Int}}[] end
+  return map(partition_tuples(n-nrsd,2)) do S
+    S = symbol_partition_tuple(S, d)
+    S = map(x->isempty(x) ? x : x+(0:length(x)-1)*(rho-1),S)
+    [S[1],S[2]+s]
+  end
+end
+
+function XSP(rho,s,n,d=false)
+  d=Int(!d)
+  res = []
+  while true
+    S=xsp(rho, s, n, d)
+    if iszero(d) S=unique(sort(map(sort,S))) end
+    append!(res,S)
+    d+=2
+    if isempty(S) break end
+  end
+  if !iszero(s) && !iszero(mod(d,2))
+    d=-1
+    while true
+      S=xsp(rho, s, n, d)
+      append!(res, S)
+      d-=2
+      if isempty(S) break end
+    end
+  end
+  map(values(groupby(x->[Set(union(x...)),Set(intersect(x...))],res))) do f
+    ii=[]
+    d=sort(symdiff(f[1]...))
+    if length(d)>0
+      i=[d[1]]
+      for j in d[2:end]
+        if j-i[end]<rho push!(i, j)
+        else push!(ii, i)
+          i=[j]
+        end
+      end
+      push!(ii,i)
+      ii=filter(x->x[1]>=s,ii)
+    end
+    u=findfirst(f) do x
+      if !(defectsymbol(x) in [0,1]) return false end
+      l=zeros(Int,1+sum(length,x))
+      l[1:2:2*length(x[1])-1]=x[1]
+      l[2:2:2*length(x[2])]=x[2]
+      issorted(l[1:sum(length,x)])
+    end
+    if isnothing(u) error("f=$f") end
+    dist=f[u]
+    n=sum(length,dist)
+    d=defectsymbol(dist)
+    m=div(n,2)
+    i=sort(vcat(dist...),rev=true)
+    n=i*(0:n-1)-div(rho*m*(m-1)*((4m-5)+6d),6)-s*m*(m+d-1)
+    return map(f) do S
+      function rr(x,s)
+        isempty(x) ? x : reverse(filter(y->!iszero(y),x-(0:length(x)-1)*rho-s))
+      end
+      r=Dict(:symbol=>S,:sp=>[rr(S[1],0), rr(S[2],s)],:dimBu=>n)
+      if defectsymbol(S) == 0
+        if r[:sp]>reverse(r[:sp]) reverse!(r[:sp]) end
+        if r[:sp][1]==r[:sp][2] r[:sp]=[r[:sp][1],2,0] end
+      elseif defectsymbol(S)<0 reverse!(r[:sp])
+      end
+      r[:Au] = map(i->intersect(S[1],i)!=intersect(dist[1],i), ii)
+      if iszero(s) && S[1]!=S[2]
+        if r[:Au][end] r[:Au]=.!(r[:Au]) end
+        r[:Au]=r[:Au][1:end-1]
+      end
+      r[:operations]=Dict(:Display=>function(r,opt)
+        println(joindigits(r[:symbol][1]))
+        println(joindigits(r[:symbol][2]))
+      end)
+      return r
+  end
+end
+end
+
+function showxsp(r)
+   println("(symbol=", HasType.PartitionTupleToString(r[:symbol]),
+       ", sp=", HasType.PartitionTupleToString(r[:sp]), ", dimBu=", r[:dimBu], 
+       ", Au=", r[:Au], ")")
+end
 end

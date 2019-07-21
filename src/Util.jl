@@ -218,6 +218,9 @@ end
 rshow(x,p...)=show(IOContext(stdout,:limit=>true,[s=>true for s in p]...),"text/plain",x)
 
 joindigits(l::Vector{<:Integer})=any(l.>10) ? string("(",join(l,","),")") : join(l)
+
+joindigits(l::Vector{<:Integer},sep)=any(l.>10) ? string(sep[1:1],join(l,","),
+                                                         sep[2:2]) : join(l)
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)
@@ -408,6 +411,7 @@ function combinations_sorted(mset::AbstractVector,k)
 end 
 
 combinations(mset,k)=combinations_sorted(sort(mset),k)
+combinations(mset)=isempty(mset) ? [Int[]] : union(combinations.(Ref(mset),0:length(mset)))
 
 function ArrangementsK(mset,blist,k)
   if iszero(k) return [eltype(mset)[]] end

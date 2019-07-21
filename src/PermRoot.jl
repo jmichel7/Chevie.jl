@@ -162,7 +162,7 @@ export PermRootGroup, PRG, PRSG,
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
  position_class, reflength, bipartite_decomposition, torus_order, rank, matX,
- roots, inclusion, restriction, baseX, semisimplerank
+ roots, baseX, semisimplerank
 
 using Gapjm
 

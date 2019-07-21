@@ -189,6 +189,7 @@ The dictionary from CHEVIE is as follows:
      Inversions                             →  inversions 
      Reflection                             →  reflection 
      W.orbitRepresentative[i]               →  simple_representative(W,i) 
+     ElementWithInversions                  →  with_inversions
 ```
 finally, a benchmark on julia 1.0.2
 ```benchmark
@@ -199,7 +200,8 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus
+export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
+ dimension, with_inversions
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -418,6 +420,23 @@ CoxGroups.coxetermat(W::FiniteCoxeterGroup)=
 inversions(W::FiniteCoxeterGroup,w)=
      [i for i in 1:nref(W) if isleftdescent(W,w,i)]
 
+#  with_inversions(<W>,<N>)
+#
+# given the set N of positive roots of W negated by an element w, find w.
+# N is a subset of [1..W.N] (not W.parentN!)
+function with_inversions(W,N)
+  w=one(W)
+  n=N
+  while !isempty(n)
+    p=intersect(n,eachindex(gens(W)))
+    if isempty(p) return nothing end
+    r=reflection(W,p[1])
+    n=restriction.(Ref(W),inclusion.(Ref(W),setdiff(n,[p[1]])).^r)
+    w=r*w
+  end
+  w^-1
+end
+
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
 PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}=
@@ -432,7 +451,7 @@ function Gapjm.degrees(W::FiniteCoxeterGroup)
   reverse(1 .+conjugate_partition(l))
 end
 
-
+dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
 PermGroups.class_reps(W::FiniteCoxeterGroup)=
@@ -453,6 +472,8 @@ PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
+PermRoot.inclusion(W::FiniteCoxeterGroup,a...)=inclusion(W.G,a...)
+PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
@@ -533,7 +554,12 @@ function cartancoeff(W::FCG,i,j)
 end
 
 function Base.:*(W::FCG...)
-  rootdatum(cat(map(cartan,W)...,dims=[1,2]))
+  if iszero(sum(semisimplerank,W)) 
+    res=coxgroup()
+    res.G.prop[:rank]=sum(Gapjm.rank,W)
+  else res=rootdatum(cat(map(cartan,W)...,dims=[1,2]))
+  end
+  res
 end
 
 "for each root index of simple representative"
@@ -557,8 +583,6 @@ end
 CoxGroups.nref(W::FCSG)=W.N
 
 matX(W::FCSG,w)=matX(W.parent,w)
-PermRoot.inclusion(W::FCSG,a...)=inclusion(W.G,a...)
-PermRoot.restriction(W::FCSG,a...)=restriction(W.G,a...)
 
 """
 reflection_subgroup(W,I)
