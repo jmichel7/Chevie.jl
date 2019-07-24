@@ -463,6 +463,7 @@ Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
 PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::FiniteCoxeterGroup)=eltype(W.G)
+Base.parent(W::FiniteCoxeterGroup)=W
 PermRoot.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
@@ -582,7 +583,8 @@ end
 (W::FCSG)(x...)=element(W.G,x...)
 CoxGroups.nref(W::FCSG)=W.N
 
-matX(W::FCSG,w)=matX(W.parent,w)
+Base.parent(W::FCSG)=W.parent
+matX(W::FCSG,w)=matX(parent(W),w)
 
 """
 reflection_subgroup(W,I)

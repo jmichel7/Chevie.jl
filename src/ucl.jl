@@ -30,13 +30,13 @@ UnipotentClassOps[:Name]=uclassname
 # reflection subgroup K. Induce it to W by extending by 0 on the orthogonal
 # of K, then conjugate it so it takes >=0 values on the simple roots.
 function InducedLinearForm(W,K,h)
-# Print("W=",W," K=",K," h=",h,"\n");
+# print("W=$W K=$K h=$h");
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
   h=copy(h)
   append!(h,fill(0,rank(K)-semisimplerank(K)))
-  h=PermRoot.baseX(parent(W.G))*PermRoot.baseX(K.G)^-1*h
-  r=parent(W).roots[inclusion(W)]
-  v=r[1:W.N]*h
+  h=Int.(PermRoot.baseX(parent(W.G))/Rational.(PermRoot.baseX(K.G))*h)
+  r=parent(W).rootdec[inclusion(W)]
+  v=permutedims(h)*hcat(r[1:W.N]...)
   w=with_inversions(W,filter(i->v[i]<0,1:W.N))
   map(i->r[i]*h,restriction.(Ref(W),
         inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
@@ -47,7 +47,6 @@ function DistinguishedParabolicSubgroups(W)
     if isempty(J) return true end
     p=fill(1,semisimplerank(W))
     p[restriction.(Ref(W),J)]=fill(0,length(J))
-    println("W=$W p=$p")
     p=permutedims(p)*hcat(W.rootdec[1:W.N]...)
     2*count(iszero,p)+semisimplerank(W)==count(isone,p)
   end
@@ -137,7 +136,7 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   ucl[:size]=length(ucl[:classes])
   if iszero(p) && !haskey(ucl[:classes][1],:balacarter)
     bc=BalaCarterLabels(W)
-    for u in ucl[classes]
+    for u in ucl[:classes]
       u[:balacarter]=bc[findfirst(p->p[1]==u[:dynkin],bc)][2]
     end
   end
