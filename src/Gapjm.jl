@@ -83,6 +83,8 @@ include("Mvps.jl")
 @reexport using .Mvps
 include("Posets.jl")
 @reexport using .Posets
+include("MatInt.jl")
+@reexport using .MatInt
 include("HasType.jl")
 @reexport using .HasType
 end

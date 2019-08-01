@@ -695,8 +695,9 @@ matX(W::PRG,i::Integer)=W.matgens[i]
 function matX(W::PRG,w)
   X=baseX(W)
   ir=independent_roots(W)
-  Xinv=Int.(inv(Rational.(X)))
-  Xinv*vcat(permutedims(hcat(W.roots[ir.^w]...)),X[length(ir)+1:end,:]);
+  if isempty(ir) return X end
+  Xinv=inv(Rational.(X))
+  Int.(Xinv*vcat(permutedims(hcat(W.roots[ir.^w]...)),X[length(ir)+1:end,:]))
 end
 
 function cartan_coeff(W::PRG,i,j)

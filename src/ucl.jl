@@ -201,7 +201,11 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   end
   ucl[:classes]=ucl[:classes][l]
 # AdjustAu(ucl)
-  ucl[:orderClasses]=hasse(restricted(Poset(ucl[:orderClasses]),l))
+  ucl[:orderClasses]=Poset(hasse(restricted(Poset(ucl[:orderClasses]),l)))
+  ucl[:orderClasses].prop[:uc]=ucl
+  ucl[:orderClasses].prop[:label]=function(p,n,opt)
+   uclassname(p.prop[:uc][:classes][n],opt)
+  end
   ucl[:size]=length(l)
   ucl
 end
@@ -264,7 +268,7 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
   opt[:rowLabels] = TeXstrip.(uclassname.(uc[:classes],
                                           Ref(merge(opt,Dict(:TeX=>true)))))
   if haskey(opt,:order)
-    println(Posets.showgraph(Poset(uc[:orderClasses]);opt...))
+    println(Posets.showgraph(uc[:orderClasses];opt...))
   end
   sp = map(copy, uc[:springerSeries])
   if haskey(opt, :fourier)

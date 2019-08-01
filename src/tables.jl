@@ -6815,7 +6815,7 @@ chevieset(:D, :UnipotentClasses, function (n, char)
                                     1 - x:(3 - x) - (1 - x):x - 1
                                 end), part))
                 Sort(p)
-                p = p[1 + length(p) // 2:length(p)]
+                p = p[div(1 + length(p) ,2):length(p)]
                 return Concatenation([p[1] + p[2]], map((i->begin
                                     p[i + 1] - p[i]
                                 end), 1:length(p) - 1))

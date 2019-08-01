@@ -114,7 +114,7 @@ export Group, PermGroup, orbit, orbit_and_representative, orbits,
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
-Base.one(G::Group{T}) where T=one(T)
+Base.one(G::Group{T}) where T=isempty(gens(G)) ? one(T) : one(gens(G)[1])
 gens(G::Group)=G.gens
 nbgens(G::Group)=length(gens(G))
 @inline gen(W,i)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
@@ -218,6 +218,8 @@ function minimal_words(G::Group)
   words
 end
 
+Gapjm.elements(G::Group)=collect(keys(minimal_words(G)))
+
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do G
     if length(G)>1000
@@ -256,6 +258,8 @@ struct PermGroup{T}<:Group{Perm{T}}
   gens::Vector{Perm{T}}
   prop::Dict{Symbol,Any}
 end
+
+Group(a::AbstractVector{Perm{T}}) where T=PermGroup(a)
 
 function PermGroup(a::AbstractVector{Perm{T}})where T
   a=filter(x->!isone(x),a)

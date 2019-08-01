@@ -445,7 +445,7 @@ function xsp(rho,s,n,d)
 end
 
 function XSP(rho,s,n,d=false)
-  d=Int(!d)
+  d=Int(!Bool(d))
   res = []
   while true
     S=xsp(rho, s, n, d)

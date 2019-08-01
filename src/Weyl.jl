@@ -124,7 +124,7 @@ canonical basis of `V`.
 
 If one only wants to work with Cartan matrices with a labeling as specified
 by  the  above  list,  the  function  call  can  be  simplified. Instead of
-'rootdatum(CartanMat(:D,4))' the following is also possible.
+'rootdatum(cartan(:D,4))' the following is also possible.
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
@@ -227,7 +227,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
   elseif t==:C m[2,1]=-2 
   elseif t==:Bsym m=Cyc{Int}.(m) 
     m[1,2]=m[2,1]=ER(2)
-  elseif t==:D m[1:3,1:3]=[2 0 -1; 0 2 -1;-1 -1 2]
+  elseif t==:D if r>2 m[1:3,1:3]=[2 0 -1; 0 2 -1;-1 -1 2] else m=[2 0;0 2] end
   elseif t==:E m[1:4,1:4]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2]
   elseif t==:F m[3,2]=-2 
   elseif t==:Fsym m=Cyc{Int}.(m) 
@@ -473,7 +473,6 @@ PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
-PermRoot.inclusion(W::FiniteCoxeterGroup,a...)=inclusion(W.G,a...)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
@@ -516,6 +515,18 @@ function rootdatum(rr::Matrix,cr::Matrix)
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
+function rootdatum(t::Symbol,r::Int)
+  if t==:gl
+    if r==1 return torus(1) end
+    R=one(rand(Int,r,r))
+    R=R[1:end-1,:]-R[2:end,:]
+    rootdatum(R,R)
+  elseif t==:sl
+    c=cartan(:A,r-1)
+    rootdatum(c,one(c))
+  end
+end
+
 function torus(i)
   G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
    PermGroup(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
@@ -544,9 +555,9 @@ function Base.show(io::IO, W::FCG)
   print(io,n)
 end
   
-function matX(W::FCG,w)
-  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
-end
+#function matX(W::FCG,w)
+#  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
+#end
 
 function cartancoeff(W::FCG,i,j)
   v=findfirst(x->!iszero(x),root(W,i))
@@ -554,13 +565,27 @@ function cartancoeff(W::FCG,i,j)
   div(r[v],root(W,i)[v])
 end
 
-function Base.:*(W::FCG...)
-  if iszero(sum(semisimplerank,W)) 
-    res=coxgroup()
-    res.G.prop[:rank]=sum(Gapjm.rank,W)
-  else res=rootdatum(cat(map(cartan,W)...,dims=[1,2]))
+function Base.:*(W1::FCG,W2::FCG)
+  mroots(W)=permutedims(hcat(W.G.roots[1:semisimplerank(W)]...))
+  mcoroots(W)=permutedims(hcat(W.G.coroots[1:semisimplerank(W)]...))
+  r=W1.G.roots
+  cr=W2.G.roots
+  if isempty(r)
+    if isempty(cr) return torus(Gapjm.rank(W1)+Gapjm.rank(W2)) end
+    r=mroots(W2)
+    r=hcat(r,zeros(eltype(r),size(r,1),Gapjm.rank(W1)))
+    cr=mcoroots(W2)
+    cr=hcat(cr,zeros(eltype(cr),size(cr,1),Gapjm.rank(W1)))
+  elseif isempty(cr)
+    r=mroots(W1)
+    r=hcat(r,zeros(eltype(r),size(r,1),Gapjm.rank(W2)))
+    cr=mcoroots(W1)
+    cr=hcat(cr,zeros(eltype(cr),size(cr,1),Gapjm.rank(W2)))
+  else
+    r=cat(mroots(W1),mroots(W2),dims=[1,2])
+    cr=cat(mcoroots(W1),mcoroots(W2),dims=[1,2])
   end
-  res
+  return rootdatum(r,cr)
 end
 
 "for each root index of simple representative"
@@ -584,7 +609,7 @@ end
 CoxGroups.nref(W::FCSG)=W.N
 
 Base.parent(W::FCSG)=W.parent
-matX(W::FCSG,w)=matX(parent(W),w)
+PermRoot.matX(W::FCSG,w)=matX(parent(W),w)
 
 """
 reflection_subgroup(W,I)
@@ -742,5 +767,161 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
 @inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
+
+#----------------------------------------------------------------------------
+
+mod1(a::Rational{Int})=mod(numerator(a),denominator(a))//denominator(a)
+
+abstract type SemisimpleElement end
+
+struct AdditiveSE<:SemisimpleElement
+  v::Vector{Rational{Int}}
+  W::FiniteCoxeterGroup
+end
+
+AdditiveSE(W::FiniteCoxeterGroup,v::Vector{Rational{Int}})=AdditiveSE(mod1.(v),W)
+
+Base.show(io::IO,a::SemisimpleElement)=print(io,"<",join(a.v,","),">")
+
+Base.one(a::AdditiveSE)=AdditiveSE(a.W,0 .*a.v)
+Base.isone(a::AdditiveSE)=all(iszero,a.v)
+
+" hash is needed for using Perms in Sets/Dicts"
+Base.hash(a::AdditiveSE, h::UInt)=hash(a.v, h)
+Base.:(==)(a::AdditiveSE, b::AdditiveSE)=a.v==b.v
+
+Perms.order(a::AdditiveSE)=lcm(denominator.(a.v))
+
+Base.:*(a::AdditiveSE,b::AdditiveSE)=AdditiveSE(a.W,mod1.(a.v .+ b.v))
+
+struct SEGroup<:Group{AdditiveSE}
+  gens::Vector{AdditiveSE}
+  prop::Dict{Symbol,Any}
+end
+
+function Group(a::AbstractVector{AdditiveSE})
+  a=filter(x->!isone(x),a)
+  SEGroup(a,Dict{Symbol,Any}())
+end
+
+toL(m)=[m[i,:] for i in axes(m,1)]
+toM(m)=permutedims(hcat(m...))
+
+struct SubTorus
+  generators::Vector{Vector{Int}}
+  complement::Vector{Vector{Int}}
+  group
+end
+
+function SubTorus(W,V=matX(W,one(W)))
+  V=ComplementIntMat(toL(matX(W,one(W))),toL(V))
+  if any(x->x!=1,V[:moduli])
+    error("not a pure sublattice")
+    return false
+  end
+  SubTorus(V[:sub],V[:complement],W)
+end
+
+Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.generators,")")
+
+Gapjm.rank(T::SubTorus)=length(T.generators)
+
+# element in subtorus
+function Base.:in(s,T::SubTorus)
+  n=Lcm(List(s.v,Denominator))
+  s=s.v*n
+  V=List(T.generators,x->mod.(x,n))
+  i=1
+  for v in Filtered(V,x->!iszero(x))
+    while v[i]==0 
+      if s[i]!=0 return false
+      else i+=1
+      end
+    end
+    r=Gcdex(n,v[i])
+    v=mod.(r.coeff2.*v,n)
+    if mod(s[i],v[i])!=0 return false
+    else s-=div(s[i],v[i]).*v
+      s=mod.(s,n)
+    end
+  end
+  iszero(s)
+end
+
+function AbelianGenerators(l)
+  res=empty(l)
+  l=filter(x->!isone(x),l)
+  while !isempty(l)
+    o=order.(l)
+    push!(res,l[findfirst(isequal(maximum(o)),o)])
+    l=setdiff(l,elements(Group(res)))
+  end
+  res
+end
+
+##
+#F  AlgebraicCentre( <W> )  . . . centre of algebraic group W
+##  
+##  <W>  should be a Weyl group record  (or an extended Weyl group record).
+##  The  function returns information  about the centre  Z of the algebraic
+##  group defined by <W> as a record with fields:
+##   Z0:         subtorus Z^0
+##   complement: S=complement torus of Z0 in T
+##   AZ:         representatives of Z/Z^0 given as a group of ss elts
+##   [implemented only for connected groups 18/1/2010]
+##   [I added something hopefully correct in general. JM 22/3/2010]
+##   [introduced subtori JM 2017 and corrected AZ computation]
+##   descAZ:  describes AZ as a quotient  of the fundamental group Pi (seen
+##   as  the centre of  the simply connected  goup with same isogeny type).
+##   Returns words in the generators of Pi which generate the kernel of the
+##   map Pi->AZ
+##
+function AlgebraicCentre(W)
+  if W isa HasType.ExtendedCox
+    F0s=map(permutedims,W.F0s)
+    W=W.group
+  end
+  if iszero(semisimplerank(W))
+    Z0=toL(matX(W,one(W)))
+  else
+    Z0=NullspaceIntMat(collect.(collect(zip(
+                                W.G.roots[1:semisimplerank(W)]...))))
+  end
+  Z0=SubTorus(W,toM(Z0))
+  if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]
+  else
+    AZ=toL(inv(Rational.(toM(Z0.complement)*
+             hcat(W.G.roots[1:semisimplerank(W)]...)))*toM(Z0.complement))
+  end
+  AZ=AdditiveSE.(Ref(W),AZ)
+  if W isa HasType.ExtendedCox # compute fixed space of F0s in Y(T)
+    for m in F0s
+      AZ=Filtered(AZ,s->(s/SemisimpleElement(W,s.v*m)) in Z0)
+      if Rank(Z0)>0 Z0=FixedPoints(Z0,m)
+        Append(AZ,Z0[2])
+        Z0=Z0[1]
+      end
+    end
+  end
+  res=Dict(:Z0=>Z0,:AZ=>Group(AbelianGenerators(AZ)))
+  if W isa HasType.ExtendedCox && length(F0s)>0 return res end
+  println("res=$res")
+  AZ=List(WeightInfo(W).CenterSimplyConnected,x->SemisimpleElement(W,x))
+  if isempty(AZ) res[:descAZ]=AZ
+    return res
+  end
+  AZ=Group(AZ...)
+  toAZ=function(s)
+    s=s.v*W.simpleCoroots
+    s=SolutionMat(vcat(res.Z0.complement,res.Z0.generators),
+                  vcat(s,fill(0,length(res.Z0.generators))))
+    return SemisimpleElement(W,s[1:semisimplerank(W)]*res.Z0.complement)
+  end
+  # map of root data Y(Wsc)->Y(W)
+  hom=GroupHomomorphismByImages(AZ,res.AZ,AZ.generators,
+    List(AZ.generators,toAZ))
+  res.descAZ=List(Kernel(hom).generators,x->GetWord(AZ,x))
+  return res
+end
 
 end
