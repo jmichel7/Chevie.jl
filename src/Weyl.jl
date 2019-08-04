@@ -201,7 +201,7 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions
+ dimension, with_inversions, AlgebraicCentre
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -565,11 +565,11 @@ function cartancoeff(W::FCG,i,j)
   div(r[v],root(W,i)[v])
 end
 
-function Base.:*(W1::FCG,W2::FCG)
-  mroots(W)=permutedims(hcat(W.G.roots[1:semisimplerank(W)]...))
-  mcoroots(W)=permutedims(hcat(W.G.coroots[1:semisimplerank(W)]...))
-  r=W1.G.roots
-  cr=W2.G.roots
+function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
+  mroots(W)=toM(roots(W.G)[1:semisimplerank(W)])
+  mcoroots(W)=toM(coroots(W.G)[1:semisimplerank(W)])
+  r=roots(W1.G)
+  cr=roots(W2.G)
   if isempty(r)
     if isempty(cr) return torus(Gapjm.rank(W1)+Gapjm.rank(W2)) end
     r=mroots(W2)
@@ -770,7 +770,7 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
 
 #----------------------------------------------------------------------------
 
-mod1(a::Rational{Int})=mod(numerator(a),denominator(a))//denominator(a)
+Base.mod1(a::Rational{Int})=mod(numerator(a),denominator(a))//denominator(a)
 
 abstract type SemisimpleElement end
 
@@ -803,9 +803,6 @@ function Group(a::AbstractVector{AdditiveSE})
   a=filter(x->!isone(x),a)
   SEGroup(a,Dict{Symbol,Any}())
 end
-
-toL(m)=[m[i,:] for i in axes(m,1)]
-toM(m)=permutedims(hcat(m...))
 
 struct SubTorus
   generators::Vector{Vector{Int}}
@@ -905,22 +902,29 @@ function AlgebraicCentre(W)
   end
   res=Dict(:Z0=>Z0,:AZ=>Group(AbelianGenerators(AZ)))
   if W isa HasType.ExtendedCox && length(F0s)>0 return res end
-  println("res=$res")
-  AZ=List(WeightInfo(W).CenterSimplyConnected,x->SemisimpleElement(W,x))
+  AZ=AdditiveSE.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(AZ) res[:descAZ]=AZ
     return res
   end
-  AZ=Group(AZ...)
+  AZ=Group(AZ)
   toAZ=function(s)
-    s=s.v*W.simpleCoroots
-    s=SolutionMat(vcat(res.Z0.complement,res.Z0.generators),
-                  vcat(s,fill(0,length(res.Z0.generators))))
-    return SemisimpleElement(W,s[1:semisimplerank(W)]*res.Z0.complement)
+    s=vec(permutedims(s.v)*toM(W.G.coroots[1:semisimplerank(W)]))
+    s=permutedims(s)*
+       inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
+       return AdditiveSE(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*
+                                      toM(res[:Z0].complement)))
   end
+  ss=map(toAZ,gens(AZ))
+# println("AZ=$AZ")
+# println("res[:AZ]=",res[:AZ])
+# println("gens(AZ)=",gens(AZ))
+# println("ss=$ss")
+  if isempty(gens(res[:AZ])) res[:descAZ]=map(x->[x],eachindex(gens(AZ)))
+  else
   # map of root data Y(Wsc)->Y(W)
-  hom=GroupHomomorphismByImages(AZ,res.AZ,AZ.generators,
-    List(AZ.generators,toAZ))
-  res.descAZ=List(Kernel(hom).generators,x->GetWord(AZ,x))
+  hom=GroupHomomorphismByImages(AZ,res[:AZ],gens(AZ),ss)
+  res[:descAZ]=List(Kernel(hom).generators,x->GetWord(AZ,x))
+  end
   return res
 end
 

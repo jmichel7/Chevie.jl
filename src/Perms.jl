@@ -85,9 +85,13 @@ GAP→ Julia dictionary
      Permuted(v,p)                    →  v[p.d]
      ListPerm(p)                      →  p.d
      PermListList(l1,l2)              →  Perm(l1,l2)
+     OnTuples(l,p)                    →  l.^p or (faster) p.d[l]
+     RestrictedPerm                   →  restricted
 ```
 """
 module Perms
+
+using Gapjm 
 
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point
@@ -268,6 +272,16 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 #---------------------- cycle decomposition -------------------------
+function cycle(a::Perm{T},i::Integer,check=false)where T
+  res=T[]
+  j=i
+  while true
+    if check && j in res error("point $j occurs twice") end
+    push!(res,j)
+    if (j=a.d[j])==i return res end
+  end
+end
+  
 """
   cycles(a::Perm) returns the cycles of a
 # Example
@@ -285,15 +299,9 @@ function cycles(a::Perm{T};domain=1:length(a.d),check=false)where T
   cycles=Vector{T}[]
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
-    cycle=T[]
-    j=i
-    while true
-      if check && j in cycle error("point $j occurs twice") end
-      to_visit[j]=false
-      push!(cycle,j)
-      if (j=a.d[j])==i break end
-    end
-    push!(cycles,cycle)
+    cyc=cycle(a,i,check)
+    to_visit[cyc].=false
+    push!(cycles,cyc)
   end
   cycles
 end
@@ -359,5 +367,17 @@ end
 
 " sign(a::Perm) is the signature of  the permutation a"
 Base.sign(a::Perm)=(-1)^(length(a.d)-nrcycles(a)) # nr of even cycles
+
+# l should be a union of cycles of p
+# returns p restricted to l
+function Gapjm.restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
+  res=one(a)
+  while !isempty(l)
+    c=cycle(a,l[1])
+    l=setdiff(l,c)
+    res*=Perm{T}(Int.(c)...)
+  end
+  res
+end
 
 end

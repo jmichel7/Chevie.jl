@@ -39,7 +39,7 @@ julia> incidence(p)
 module Posets
 using Gapjm
 export lcm_partitions, gcd_partitions, Poset, linear_extension, hasse,
- incidence, partition, restricted
+ incidence, partition
 
 function lcm_partitions(arg...)
   function lcm2(a,b)
@@ -170,7 +170,7 @@ function showgraph(x; opt...)
   end
 end
 
-function restricted(p::Poset,ind::Vector{<:Integer})
+function Gapjm.restricted(p::Poset,ind::Vector{<:Integer})
   res = Poset(copy(p.prop))
   if length(ind) == length(p) && sort(ind) == 1:length(p)
     if haskey(res.prop, :hasse)

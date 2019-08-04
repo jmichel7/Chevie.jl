@@ -162,7 +162,7 @@ export PermRootGroup, PRG, PRSG,
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
  position_class, reflength, bipartite_decomposition, torus_order, rank, matX,
- roots, baseX, semisimplerank
+ roots, coroots, baseX, semisimplerank
 
 using Gapjm
 
@@ -634,6 +634,7 @@ function PRG(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
 end
 
 @inline roots(W::PRG)=W.roots
+@inline coroots(W::PRG)=W.coroots
 @inline coroot(W::PRG,i)=W.coroots[i]
 @inline inclusion(W::PRG)=eachindex(W.roots)
 @inline inclusion(W::PRG,i)=i
@@ -721,6 +722,7 @@ inclusion(W::PRSG,i)=W.inclusion[i]
 restriction(W::PRSG)=W.restriction
 restriction(W::PRSG,i)=W.restriction[i]
 @inline roots(W::PRSG)=W.parent.roots[W.inclusion]
+@inline coroots(W::PRSG)=map(i->coroot(W,i),W.inclusion)
 @inline coroot(W::PRSG,i)=coroot(parent(W),inclusion(W,i))
 @inline Base.parent(W::PRSG)=W.parent
 

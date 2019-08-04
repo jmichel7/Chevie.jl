@@ -31,10 +31,11 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export degree, degrees, elements, words, word, root
+export degree, degrees, elements, restricted, root, words, word
 function degree end
 function degrees end
 function elements end
+function restricted end
 function root end
 function words end
 function word end
@@ -48,6 +49,10 @@ Otherwise they could not work together.
 
 It degree was in Base there would be no problem, both importing from Base.
 """
+
+export toL, toM # convert Gap matrices <-> Julia matrices
+toL(m)=[m[i,:] for i in axes(m,1)] # to Gap
+toM(m)=permutedims(hcat(m...))     # to julia
 
 include("Util.jl")
 @reexport using .Util

@@ -64,6 +64,117 @@ function BalaCarterLabels(W)
   end
 end
 
+# QuotientAu(Au,chars): chars is a list of indices of characters of Au.
+# If  k is the common kernel of chars, QuotientAu returns a record
+# rec(Au:=Au/k,
+#     chars:=index of chars as characters of Au/k,
+#     gens:=words in Au preimages of generators of Au/k)
+# Since  GAP3  has  many  problems  with  quotient groups, we are forced to
+# program an ad hoc solution which works only for Au actually occuring for
+# unipotent classes of a reductive group G.
+function QuotientAu(Au,chars)
+  AbGens=function(g)
+    res=[]
+    l=g.generators
+    while !isempty(l)
+      SortBy(l,x->-Order(g,x))
+      t=l[1]*Elements(Subgroup(g,res))
+      if ForAny(t,x->Order(g,x)<Order(g,l[1]))
+        t=First(t,x->Order(g,x)<Order(g,l[1]))
+	if Order(g,t)>1 l[1]=t
+	else l=Drop(l,1)
+        end
+      else Add(res,l[1])
+      end
+    end
+    res
+  end
+  # q=Au/k,  ww=words in q images of Au.generators
+  finish=function(q,ww)
+    h=GroupHomomorphismByImages(Au,q,Au.generators,List(ww,x->EltWord(q,x)))
+    fusion=List(ChevieClassInfo(Au).classtext,
+       c->PositionClass(q,Image(h,EltWord(Au,c))))
+    ctu=CharTable(Au).irreducibles
+    cth=CharTable(q).irreducibles
+    return Dict(:Au=>q,:chars=>List(chars,
+      c->Position(cth,List(1:NrConjugacyClasses(q),
+      j->ctu[c][Position(fusion,j)]))),
+      :gens=>List(q.generators,
+           x->GetWord(Au,First(Elements(Au),y->Image(h,y)==x))));
+  end
+  Z=n->ComplexReflectionGroup(n,1,1)
+  ct=TransposedMat(CharTable(Au).irreducibles[chars])
+  cl=Filtered(eachindex(ct),i->ct[i]==ct[1])
+  if Length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
+             :gens=>List(Au.generatingReflections,x->[x])) end
+  ct=TransposedMat(Set(ct))
+  k=Subgroup(Au,Union(List(cl,i->Elements(ConjugacyClasses(Au)[i]))))
+  if Size(k)==Size(Au) return Dict(:Au=>CoxeterGroup(),:chars=>[1],:gens=>[]) end
+  if Au.semisimpleRank==1 return finish(Z(Size(Au)/Size(k)),[[1]])
+  elseif IsAbelian(Au/k)
+    q=Au/k
+    q.generators=AbGens(q)
+    h=NaturalHomomorphism(Au,q)
+    f=List(Au.generators,x->GetWord(q,x^h))
+ #  Print(Product(List(q.generators,x->Z(Order(q,x))))," ",f,"\n");
+    return finish(Product(List(q.generators,x->Z(Order(q,x)))),f)
+  else
+    p=PositionProperty(Au.type,t->ForAll(Elements(k),x->
+                  x in ReflectionSubgroup(Au,t.indices)))
+    if p!=false
+      p=Au.type[p].indices
+      if Size(k)==Size(ReflectionSubgroup(Au,p))
+	return finish(
+	 ReflectionSubgroup(Au,Difference(Au.generatingReflections,p)),
+	 List(Au.generatingReflections,function(i)
+               if i in p return [] else return [i] end end))
+      elseif Length(p)==1
+        t=Copy(Au.type)
+        p=PositionProperty(Au.type,t->t.indices==p)
+	t[p].p=t[p].p/Size(k)
+        return finish(ApplyFunc(ReflectionGroup,t),
+	  List(Au.generatingReflections,x->[x]))
+      end
+     elseif ReflectionName(Au)=="A1xB2" && Size(k)==2 
+      && LongestCoxeterElement(Au) in k
+      return finish(CoxeterGroup("B",2),[[1,2,1,2],[1],[2]])
+    end
+  end
+# Print(" Au=",ReflectionName(Au)," sub=",List(k.generators,e.Get),"\n");
+  Error("not implemented ",ReflectionName(Au),chars)
+# q:=Au/k; f:=FusionConjugacyClasses(Au,q); Print(" quot=",q," fusion=",f,"\n");
+# return rec(Au:=Au,chars:=chars);
+end
+
+# When some Springer series have been suppressed/weeded out, we  quotient 
+# the Aus by the common  kernel of the remaining characters of the Aus. 
+function AdjustAu(ucl)
+  ucl=copy(ucl)
+  for i, u in enumerate(ucl.classes)
+    l=List(ucl.springerSeries,s->
+       filter(k->s.locsys[k][1]==i,eachindex(s.locsys)))
+    chars=vcat(map(j->getindex.(ucl.springerSeries[j].locsys[l[j]],2),
+                   eachindex(l)))
+    f=QuotientAu(u.Au,chars)
+#   if Size(Au)<>Size(f.Au) then
+#     Print("class ",i,"=",ucl.classes[i].name," ",[Au,chars],"=>",f,"\n");
+#   fi;
+    u.Au=f.Au
+    if IsBound(u.AuAction)
+      if u.AuAction.group.rank==0 u.AuAction.F0s=List(f.gens,x->[[]])
+      else u.AuAction.F0s=List(f.gens,x->Product(u.AuAction.F0s{x}))
+      end
+      u.AuAction.phis=List(f.gens,x->Product(u.AuAction.phis{x}))
+    end
+    k=1
+    for j in eachindex(l)
+      ucl.springerSeries[j].locsys=Copy(ucl.springerSeries[j].locsys)
+      for s in l[j] ucl.springerSeries[j].locsys[s][2]=f.chars[k];k+=1 end
+    end
+  end
+  ucl
+end
+
 function unipotent_classes(t::TypeIrred,p=0) 
   uc=getchev(t,:UnipotentClasses,p)
   rank=length(t[:indices])
@@ -183,11 +294,11 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
 # AlgebraicCentre(W).descAZ returns the generators of the fundamental group
 # of  the  algebraic  group  W  as  words  in  generators  of  the absolute
 # fundamental group.
-# if !all(x->Set(x[:Z])==Set([1]),ucl[:springerSeries])
-#   ucl[:springerSeries]=filter(s->all(y->Product(s[:Z][y])==1,
-#            AlgebraicCentre(W)[:descAZ]),ucl[:springerSeries])
+  if !all(x->Set(x[:Z])==Set([1]),ucl[:springerSeries])
+    ucl[:springerSeries]=filter(s->all(y->Product(s[:Z][y])==1,
+             AlgebraicCentre(W)[:descAZ]),ucl[:springerSeries])
 #   ucl=AdjustAu(ucl) 
-# end
+  end
   s=ucl[:springerSeries][1]
 # s[:relgroup]=RelativeCoset(WF,s[:levi])
 # s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]

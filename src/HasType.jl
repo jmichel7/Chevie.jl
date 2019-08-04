@@ -3,7 +3,7 @@ module HasType
 export charinfo, classinfo, reflection_name, diagram, chartable,
   representation, fakedegrees, unipotent_characters, unipotent_classes,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, Cartesian
+  chevieget, field, getchev, Cartesian, weightinfo
 
 using Gapjm
 #-----------------------------------------------------------------------
@@ -326,44 +326,48 @@ end
 
 function WeightToAdjointFundamentalGroupElement(W,i)
   t=First(refltype(W),t->i in t[:indices])
-  l=W.rootInclusion[t[:indices]]
-  b=longest(W,l)*longest(W,Difference(l,[W.rootInclusion[i]]))
-  Add(l,W.rootInclusion[Maximum(Filtered(1:length(W.roots),
-    i->ForAll(1:semisimpleRank(W),j->j in t[:indices] || W.roots[i][j]==0)))])
-  RestrictedPerm(b,l)
+  l=inclusion.(Ref(W),t[:indices])
+  b=longest(W,l)*longest(W,setdiff(l,[inclusion(W,i)]))
+  push!(l,inclusion(W,maximum(findall(
+    i->all(j->j in t[:indices] || W.rootdec[i][j]==0,1:semisimplerank(W)),
+    1:nref(W)))))
+  restricted(b,l)
 end
 
 # returns a record containing minuscule coweights, decompositions
 # (in terms of generators of the fundamental group)
-function WeightInfo(W)
+function weightinfo(W)
   l=map(refltype(W)) do t
     r=getchev(t,:WeightInfo)
+    if !haskey(r,:minusculeCoweights)
+      r[:minusculeCoweights]=r[:minusculeWeights]
+    end
     g=filter(i->sum(r[:decompositions][i])==1,
           1:length(r[:minusculeCoweights])) # generators of fundamental group
-    println("g=$g")
     r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
-               t[:indices][r[:minusculeCoweights[g]]])
-    C=mod1.(inv(Rational.(toM(cartan(t)))))
-    r[:csi]=zeros(Int,length(g),semisimplerank(W))
-    r[:csi][:,t[:indices]]=C[r[:minusculeCoweights[g]]]
+               t[:indices][r[:minusculeCoweights][g]])
+    C=mod1.(inv(Rational.(cartan(t.prop))))
+    r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
+    r[:csi][:,t[:indices]]=C[r[:minusculeCoweights],g]
+    r[:csi]=toL(r[:csi])
     r[:minusculeWeights]=t[:indices][r[:minusculeWeights]]
     r[:minusculeCoweights]=t[:indices][r[:minusculeCoweights]]
     r
   end
-  res=Dict(minusculeWeights=>Cartesian(List(l,
-                                        x->vcat(x[:minusculeWeights],[0]))),
-    minusculeCoweights=>Cartesian(List(l,
-                                       x->vcat(x[:minusculeCoweights],[0]))),
-    decompositions=>List(Cartesian(List(l,x->vcat(x[:decompositions],
-      [0*x.moduli]))),Concatenation),
-    moduli=>Concatenation(List(l,x->x[:moduli])))
+  res=Dict(:minusculeWeights=>Cartesian(map(
+                                        x->vcat(x[:minusculeWeights],[0]),l)),
+    :minusculeCoweights=>Cartesian(map(
+                                     x->vcat(x[:minusculeCoweights],[0]),l)),
+    :decompositions=>map(vcat,Cartesian(map(x->vcat(x[:decompositions],
+                                 [0 .*x[:moduli]]),l))),
+    :moduli=>vcat(map(x->x[:moduli],l)...))
 # centre of simply connected group: the generating minuscule coweights
 # mod the root lattice
   res[:CenterSimplyConnected]=vcat(getindex.(l,:csi)...)
   res[:AdjointFundamentalGroup]=vcat(getindex.(l,:ww)...)
   n=length(res[:decompositions])-1
-  res[:minusculeWeights]=List(res.minusculeWeights[1:n],x->filter(y->y!=0,x))
-  res[:minusculeCoweights]=List(res.minusculeCoweights[1:n],x->filter(y->y!=0,x))
+  res[:minusculeWeights]=map(x->filter(y->y!=0,x),res[:minusculeWeights][1:n])
+  res[:minusculeCoweights]=map(x->filter(y->y!=0,x),res[:minusculeCoweights][1:n])
   res[:decompositions]=res[:decompositions][1:n]
   res
 end
