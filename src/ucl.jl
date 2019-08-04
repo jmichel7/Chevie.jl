@@ -77,9 +77,9 @@ function QuotientAu(Au,chars)
     res=[]
     l=g.generators
     while !isempty(l)
-      SortBy(l,x->-Order(g,x))
-      t=l[1]*Elements(Subgroup(g,res))
-      if ForAny(t,x->Order(g,x)<Order(g,l[1]))
+      sort!(l,by=x->-Order(g,x))
+      t=l[1].*elements(subgroup(g,res))
+      if any(x->Order(g,x)<Order(g,l[1]),t)
         t=First(t,x->Order(g,x)<Order(g,l[1]))
 	if Order(g,t)>1 l[1]=t
 	else l=Drop(l,1)
@@ -91,8 +91,8 @@ function QuotientAu(Au,chars)
   end
   # q=Au/k,  ww=words in q images of Au.generators
   finish=function(q,ww)
-    h=GroupHomomorphismByImages(Au,q,Au.generators,List(ww,x->EltWord(q,x)))
-    fusion=List(ChevieClassInfo(Au).classtext,
+    h=GroupHomomorphismByImages(Au,q,Au.generators,map(ww,x->EltWord(q,x)))
+    fusion=List(classinfo(Au)[:classtext],
        c->PositionClass(q,Image(h,EltWord(Au,c))))
     ctu=CharTable(Au).irreducibles
     cth=CharTable(q).irreducibles
@@ -119,29 +119,27 @@ function QuotientAu(Au,chars)
  #  Print(Product(List(q.generators,x->Z(Order(q,x))))," ",f,"\n");
     return finish(Product(List(q.generators,x->Z(Order(q,x)))),f)
   else
-    p=PositionProperty(Au.type,t->ForAll(Elements(k),x->
-                  x in ReflectionSubgroup(Au,t.indices)))
+    p=PositionProperty(t->all(x->x in ReflectionSubgroup(Au,t.indices)),
+                       elements(k),refltype(Au))
     if p!=false
-      p=Au.type[p].indices
-      if Size(k)==Size(ReflectionSubgroup(Au,p))
+     p=refltype(Au)[p].indices
+      if length(k)==length(reflection_subgroup(Au,p))
 	return finish(
-	 ReflectionSubgroup(Au,Difference(Au.generatingReflections,p)),
-	 List(Au.generatingReflections,function(i)
-               if i in p return [] else return [i] end end))
-      elseif Length(p)==1
-        t=Copy(Au.type)
-        p=PositionProperty(Au.type,t->t.indices==p)
-	t[p].p=t[p].p/Size(k)
-        return finish(ApplyFunc(ReflectionGroup,t),
-	  List(Au.generatingReflections,x->[x]))
+	 reflection_subgroup(Au,Difference(Au.generatingReflections,p)),
+	 map(i->i in p ? [] : [i],Au.generatingReflections))
+      elseif length(p)==1
+        t=Copy(refltype(Au))
+        p=findfirst(t->t.indices==p,refltype(Au))
+	t[p].p/=length(k)
+        return finish(ReflectionGroup(t...),
+	  map(x->[x],Au.generatingReflections))
       end
-     elseif ReflectionName(Au)=="A1xB2" && Size(k)==2 
-      && LongestCoxeterElement(Au) in k
-      return finish(CoxeterGroup("B",2),[[1,2,1,2],[1],[2]])
+     elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
+      return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
     end
   end
 # Print(" Au=",ReflectionName(Au)," sub=",List(k.generators,e.Get),"\n");
-  Error("not implemented ",ReflectionName(Au),chars)
+  error("not implemented ",ReflectionName(Au),chars)
 # q:=Au/k; f:=FusionConjugacyClasses(Au,q); Print(" quot=",q," fusion=",f,"\n");
 # return rec(Au:=Au,chars:=chars);
 end
@@ -150,21 +148,21 @@ end
 # the Aus by the common  kernel of the remaining characters of the Aus. 
 function AdjustAu(ucl)
   ucl=copy(ucl)
-  for i, u in enumerate(ucl.classes)
+  for (i, u) in enumerate(ucl.classes)
     l=List(ucl.springerSeries,s->
        filter(k->s.locsys[k][1]==i,eachindex(s.locsys)))
     chars=vcat(map(j->getindex.(ucl.springerSeries[j].locsys[l[j]],2),
                    eachindex(l)))
-    f=QuotientAu(u.Au,chars)
+    f=QuotientAu(u[:Au],chars)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",ucl.classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
-    u.Au=f.Au
-    if IsBound(u.AuAction)
-      if u.AuAction.group.rank==0 u.AuAction.F0s=List(f.gens,x->[[]])
-      else u.AuAction.F0s=List(f.gens,x->Product(u.AuAction.F0s{x}))
+    u[:A]u=f.Au
+    if haskey(u,:AuAction)
+      if u[:AuAction].group.rank==0 u[:AuAction].F0s=map(x->[[]],f.gens)
+      else u[:AuAction].F0s=map(x->prod(u[:AuAction].F0s[x]),f.gens)
       end
-      u.AuAction.phis=List(f.gens,x->Product(u.AuAction.phis{x}))
+      u[:AuAction].phis=map(x->Product(u[:AuAction].phis[x]),f.gens)
     end
     k=1
     for j in eachindex(l)
