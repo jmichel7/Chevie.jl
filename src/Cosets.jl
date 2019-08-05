@@ -11,7 +11,7 @@ abstract type CoxeterCoset{TW}<:Spets{TW} end
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) C=W
   elseif W isa CoxeterGroup && all(x->x in 1:coxrank(W),J)
-    C=PermGroup(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
+    C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
   else C=centralizer(W,sort(J);action=(J,w)->sort(J.^w))
   end
   class_reps(C)

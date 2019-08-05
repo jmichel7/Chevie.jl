@@ -450,8 +450,8 @@ Base.iterate(W::CoxSymmetricGroup,state)=iterate(W.G,state)
 
 "The symmetric group on n letters as a Coxeter group"
 function coxsym(n::Int)
-  gens=map(i->Perm{UInt8}(i,i+1),1:n-1)
-  CoxSymmetricGroup{UInt8}(PermGroup(gens),n,Dict{Symbol,Any}())
+  gens=[Perm{UInt8}(i,i+1) for i in 1:n-1]
+  CoxSymmetricGroup{UInt8}(Group(gens),n,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSymmetricGroup)
@@ -507,7 +507,7 @@ function PermRoot.reflection_subgroup(W::CoxSymmetricGroup,I::AbstractVector{Int
   if length(I)>0 n=maximum(I) 
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
-  CoxSymmetricGroup(PermGroup(gens(W)[I]),n+1,Dict{Symbol,Any}())
+  CoxSymmetricGroup(Group(gens(W)[I]),n+1,Dict{Symbol,Any}())
 end
   
 PermRoot.simple_representatives(W::CoxSymmetricGroup)=fill(1,nref(W))

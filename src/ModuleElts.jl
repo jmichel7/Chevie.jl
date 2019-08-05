@@ -10,7 +10,7 @@ Here is an example where basis elements are represented by Symbols.
 The first instruction is to use the show method defined below.
 
 ```julia-repl
-julia> Base.show(io::IO,m::ModuleElt)=ModuleElts.show(io,m)
+julia> Base.show(io::IO,m::ModuleElt)=ModuleElts.helpshow(io,m)
 
 julia> a=ModuleElt(:xy=>1,:yx=>-1)
 xy-yx

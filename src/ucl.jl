@@ -122,7 +122,7 @@ function QuotientAu(Au,chars)
     p=PositionProperty(t->all(x->x in ReflectionSubgroup(Au,t.indices)),
                        elements(k),refltype(Au))
     if p!=false
-     p=refltype(Au)[p].indices
+      p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
 	return finish(
 	 reflection_subgroup(Au,Difference(Au.generatingReflections,p)),
@@ -134,7 +134,7 @@ function QuotientAu(Au,chars)
         return finish(ReflectionGroup(t...),
 	  map(x->[x],Au.generatingReflections))
       end
-     elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
+    elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
     end
   end
@@ -157,7 +157,7 @@ function AdjustAu(ucl)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",ucl.classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
-    u[:A]u=f.Au
+    u[:Au]=f.Au
     if haskey(u,:AuAction)
       if u[:AuAction].group.rank==0 u[:AuAction].F0s=map(x->[[]],f.gens)
       else u[:AuAction].F0s=map(x->prod(u[:AuAction].F0s[x]),f.gens)

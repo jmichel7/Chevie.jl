@@ -510,7 +510,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   """
   gens=Perm{Int16}.(matgens,Ref(r),action=(v,m)->permutedims(m)*v)
   rank=size(C,1)
-  G=PRG(matgens,r,map(i->cr[i,:],1:rank),PermGroup(gens),
+  G=PRG(matgens,r,map(i->cr[i,:],1:rank),Group(gens),
     Dict{Symbol,Any}(:cartan=>C))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
@@ -529,7 +529,7 @@ end
 
 function torus(i)
   G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-   PermGroup(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
+   Group(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
   FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
 end
 
@@ -718,7 +718,7 @@ each  coset of  H in  W contains  a unique  element of  minimal length, see
 `reduced`.
 """
 function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where {T,T1}
-  G=PermGroup(reflection.(Ref(W),I))
+  G=Group(reflection.(Ref(W),I))
   inclusion=sort!(vcat(orbits(G,I)...))
   N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)
@@ -734,7 +734,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where 
       return true
     end
     end
-    G=PermGroup(reflection.(Ref(W),I))
+    G=Group(reflection.(Ref(W),I))
     C=T1[cartancoeff(W,i,j) for i in I, j in I]
   end
   rootdec=roots(C)

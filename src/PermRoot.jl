@@ -629,7 +629,7 @@ function PRG(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
 #   println(" ",length(roots))
   end
 # roots=map(x->convert.(eltype(matgens[1]),x),roots)
-  PRG(matgens,roots,cr,PermGroup(map(Perm{Int16},refls)),
+  PRG(matgens,roots,cr,Group(map(Perm{Int16},refls)),
     Dict{Symbol,Any}())
 end
 
@@ -733,7 +733,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector{Int})
   end
   restriction=zeros(Int,length(W.roots))
   restriction[inclusion]=1:length(inclusion)
-  G=PermGroup(reflections(W)[I])
+  G=Group(reflections(W)[I])
   prop=Dict{Symbol,Any}()
   if isempty(inclusion) prop[:rank]=rank(W) end
   PRSG(G,inclusion,restriction,W,prop)

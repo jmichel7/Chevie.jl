@@ -15,8 +15,8 @@ algorithms like base, centralizer chain, etc...
 
 # Examples
 ```julia-repl
-julia> G=PermGroup([Perm(i,i+1) for i in 1:2])
-PermGroup((1,2),(2,3))
+julia> G=Group([Perm(i,i+1) for i in 1:2])
+Group([(1,2),(2,3)])
 
 # PermGroups are iterators over their elements
 julia> collect(G)  
@@ -74,8 +74,8 @@ julia> base(G)
 # the i-th element is the centralizer of base[1:i-1]
 julia> centralizers(G) 
 2-element Array{PermGroup{Int64},1}:
- PermGroup((1,2),(2,3))
- PermGroup((2,3))
+ Group([(1,2),(2,3)])
+ Group([(2,3)])
 
 # i-th element is orbit_and_representative of centralizer[i] on base[i]
 julia> centralizer_orbits(G)
@@ -160,7 +160,7 @@ end
 function centralizer(G::Group,p;action::Function=^)
   new=[p]
   res=Dict(p=>one(G))
-  C=PermGroup(empty(gens(G)))
+  C=Group(empty(gens(G)))
   while !isempty(new)
     old=copy(new)
     empty!(new)
@@ -259,15 +259,12 @@ struct PermGroup{T}<:Group{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-Group(a::AbstractVector{Perm{T}}) where T=PermGroup(a)
-
-function PermGroup(a::AbstractVector{Perm{T}})where T
-  a=filter(x->!isone(x),a)
-  PermGroup(a,Dict{Symbol,Any}())
+function Group(a::AbstractVector{Perm{T}}) where T
+  PermGroup(filter(x->!isone(x),a),Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO,G::PermGroup)
-  print(io,"PermGroup($(join(map(repr,gens(G)),',')))")
+  print(io,"Group([$(join(map(repr,gens(G)),','))])")
 end
 
 function Gapjm.degree(G::PermGroup)::Int
@@ -297,9 +294,7 @@ function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
 end
 
 " The symmetric group of degree n "
-function symmetric_group(n::Int)
-  PermGroup([Perm(i,i+1) for i in 1:n-1])
-end
+symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 """
  The input is
@@ -341,7 +336,7 @@ function schreier_sims(G::PermGroup{T})where T
       push!(S,[x])
     end
   end
-  H=[PermGroup(s) for s in S]
+  H=[Group(s) for s in S]
   Δ=map(orbit_and_representative,H,B)
   rep(v)=join(map(repr,v),',')
   i=length(B)
@@ -362,10 +357,10 @@ function schreier_sims(G::PermGroup{T})where T
          for l in i+1:j
            push!(S[l],h)
            if l>length(H)
-            push!(H,PermGroup(S[l]))
+            push!(H,Group(S[l]))
             push!(Δ,orbit_and_representative(H[l],B[l]))
            else
-           H[l]=PermGroup(S[l])
+           H[l]=Group(S[l])
            Δ[l]=orbit_and_representative(H[l],B[l])
            end
          end

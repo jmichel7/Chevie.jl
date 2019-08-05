@@ -356,7 +356,7 @@ julia> C=Cpbasis(H)
 (::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#24")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#25")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂

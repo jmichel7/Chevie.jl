@@ -138,7 +138,7 @@ end
 @testset "Hecke.jl" begin
 @test mytest("W=coxgroup(:A,2)","A₂")
 @test mytest("H=hecke(W,0)","Hecke(A₂,0)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#24\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#25\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("el=words(W)","6-element Array{Array{Int8,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
@@ -167,11 +167,25 @@ end
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","Hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H)","(::getfield(Gapjm.KL, Symbol(\"#f#10\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#24\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#25\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 end
+@testset "ModuleElts.jl" begin
+@test mytest("Base.show(io::IO,m::ModuleElt)=ModuleElts.helpshow(io,m)","nothing")
+@test mytest("a=ModuleElt(:xy=>1,:yx=>-1)","xy-yx")
+@test mytest("a-a","0")
+@test mytest("a*99","99xy-99yx")
+@test mytest("push!(a,:yy=>2)","xy-yx+2yy")
+@test mytest("a+ModuleElt(:yx=>1)","xy+2yy")
+@test mytest("a[:xy]","1")
+@test mytest("haskey(a,:xx)","false")
+@test mytest("haskey(a,:xx)","false")
+@test mytest("a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)","yy+2yx+3xy-yy")
+@test mytest("norm!(a)","3xy+2yx")
+@test mytest("a","3xy+2yx")
+end
 @testset "PermGroups.jl" begin
-@test mytest("G=PermGroup([Perm(i,i+1) for i in 1:2])","PermGroup((1,2),(2,3))")
+@test mytest("G=Group([Perm(i,i+1) for i in 1:2])","Group([(1,2),(2,3)])")
 @test mytest("collect(G)","6-element Array{Perm{Int64},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
 @test mytest("degree(G)","3")
 @test mytest("orbit(G,1)","3-element Array{Int64,1}:\n 2\n 3\n 1")
@@ -180,7 +194,7 @@ end
 @test mytest("Perm(1,2) in G","true")
 @test mytest("Perm(1,2,4) in G","false")
 @test mytest("base(G)","2-element Array{Int64,1}:\n 1\n 2")
-@test mytest("centralizers(G)","2-element Array{PermGroup{Int64},1}:\n PermGroup((1,2),(2,3))\n PermGroup((2,3))")
+@test mytest("centralizers(G)","2-element Array{PermGroup{Int64},1}:\n Group([(1,2),(2,3)])\n Group([(2,3)])")
 @test mytest("centralizer_orbits(G)","2-element Array{Dict{Int64,Perm{Int64}},1}:\n Dict(2=>(1,2),3=>(1,3,2),1=>())\n Dict(2=>(),3=>(2,3))")
 @test mytest("minimal_words(G)","Dict{Perm{Int64},Array{Int64,1}} with 6 entries:\n  ()      => Int64[]\n  (2,3)   => [2]\n  (1,3,2) => [1, 2]\n  (1,3)   => [1, 2, 1]\n  (1,2)   => [1]\n  (1,2,3) => [2, 1]")
 end
@@ -215,6 +229,11 @@ end
 @test mytest("cyclotomic_polynomial(24)","q⁸-q⁴+1")
 @test mytest("gcd(q+1,q^2-1)","1.0q+1.0")
 @test mytest("gcd(q+1//1,q^2-1//1)","(1//1)q+1//1")
+end
+@testset "Posets.jl" begin
+@test mytest("p=Poset(coxgroup(:A,2))","Poset with 6 elements")
+@test mytest("hasse(p)","6-element Array{Array{Int64,1},1}:\n [2, 3]\n [4, 5]\n [4, 5]\n [6]\n [6]\n []")
+@test mytest("incidence(p)","6×6 Array{Bool,2}:\n  true   true   true   true   true  true\n false   true  false   true   true  true\n false  false   true   true   true  true\n false  false  false   true  false  true\n false  false  false  false   true  true\n false  false  false  false  false  true")
 end
 @testset "Symbols.jl" begin
 @test mytest("shiftβ([4,5],3)","5-element Array{Int64,1}:\n 0\n 1\n 2\n 7\n 8")

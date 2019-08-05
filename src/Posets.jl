@@ -14,7 +14,7 @@ If  only one field is present, the other  is computed on demand. Here is an
 example of use;
 
 ```julia-repl
-julia> p=Poset(W)
+julia> p=Poset(coxgroup(:A,2))
 Poset with 6 elements
 
 julia> hasse(p)
