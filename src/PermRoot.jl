@@ -521,11 +521,23 @@ function classinv(W::PermRootGroup)
   end
 end
 
+function PermGroups.conjugacy_classes(W::PermRootGroup)
+  gets(W,:classes)do W
+    cl=conjugacy_classes(W.G)
+    W.prop[:classreps]=map(x->W(x...),classinfo(W)[:classtext])
+    sort(cl,by=c->findfirst(w->w in c,W.prop[:classreps]))
+  end
+end
+  
 function position_class(W::PermRootGroup,w)
   i=cycletype(w,domain=simple_representatives(W))
   l=findall(isequal(i),classinv(W))
-  if length(l)>1 error("ambiguity") end
-  l
+  if length(l)>1 
+    if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W))
+    else error("ambiguity: classes $l match")
+    end
+  end
+  l[1]
 end
 
 function Base.show(io::IO, W::PermRootGroup)
@@ -549,7 +561,7 @@ function independent_roots(W::PermRootGroup)::Vector{Int}
   gets(W,:indeproots) do W
     r=roots(W)
     if isempty(r) Int[]
-    else echelon(permutedims(hcat(roots(W)...)))[2]
+    else echelon(toM(roots(W)))[2]
     end
   end
 end
@@ -560,8 +572,8 @@ function baseX(W::PermRootGroup{T})::Matrix{T} where T
   gets(W,:baseX) do W
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
-    res=permutedims(hcat(roots(W)[ir]...))
-    u=permutedims(Util.nullspace(permutedims(hcat(coroot.(Ref(W),ir)...))))
+    res=toM(roots(W)[ir])
+    u=permutedims(Util.nullspace(toM(coroot.(Ref(W),ir))))
     if eltype(u) <:Rational
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
       u=Int.(u)
@@ -635,12 +647,17 @@ end
 
 @inline roots(W::PRG)=W.roots
 @inline coroots(W::PRG)=W.coroots
-@inline coroot(W::PRG,i)=W.coroots[i]
 @inline inclusion(W::PRG)=eachindex(W.roots)
 @inline inclusion(W::PRG,i)=i
 @inline restriction(W::PRG)=eachindex(W.roots)
 @inline restriction(W::PRG,i)=i
 @inline Base.parent(W::PRG)=W
+function coroot(W::PRG,i)
+  if i<=length(W.coroots) return W.coroots[i] end
+  m=matX(W,reflection(W,i))
+  j=findfirst(x->!iszero(x),roots(W)[i])
+  map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
+end
 
 """
 `reflection(root, coroot)` the matrix of the reflection of given root and coroot
@@ -698,13 +715,13 @@ function matX(W::PRG,w)
   ir=independent_roots(W)
   if isempty(ir) return X end
   Xinv=inv(Rational.(X))
-  Int.(Xinv*vcat(permutedims(hcat(W.roots[ir.^w]...)),X[length(ir)+1:end,:]))
+  Int.(Xinv*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:]))
 end
 
 function cartan_coeff(W::PRG,i,j)
   v=findfirst(x->!iszero(x),W.roots[i])
   r=W.roots[j]-W.roots[j^reflection(W,i)]
-  return r[v]/W.roots[i][v];
+  return r[v]//W.roots[i][v];
 end
 
 #--------------- type of subgroups of PRG----------------------------------
@@ -722,7 +739,7 @@ inclusion(W::PRSG,i)=W.inclusion[i]
 restriction(W::PRSG)=W.restriction
 restriction(W::PRSG,i)=W.restriction[i]
 @inline roots(W::PRSG)=W.parent.roots[W.inclusion]
-@inline coroots(W::PRSG)=map(i->coroot(W,i),W.inclusion)
+@inline coroots(W::PRSG)=coroot.(Ref(parent(W)),inclusion(W))
 @inline coroot(W::PRSG,i)=coroot(parent(W),inclusion(W,i))
 @inline Base.parent(W::PRSG)=W.parent
 

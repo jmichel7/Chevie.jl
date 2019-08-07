@@ -69,7 +69,7 @@ struct Poset
 end
 
 Poset(m::Matrix{Bool})=Poset(Dict(:incidence=>m,:size=>size(m,1)))
-Poset(m::Vector{Vector{Bool}})=Poset(permutedims(hcat(m...)))
+Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
 Base.length(p::Poset)=p.prop[:size]
 

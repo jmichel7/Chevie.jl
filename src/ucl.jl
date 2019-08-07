@@ -1,5 +1,3 @@
-UnipotentClassOps=Dict{Symbol,Any}()
-
 function uclassname(u,opt=Dict{Symbol,Any}())
   if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno]
   elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
@@ -11,20 +9,17 @@ function uclassname(u,opt=Dict{Symbol,Any}())
    n=replace(n,"}"=>"")
    n=replace(n,"{"=>"")
   end
-  if haskey(opt,:locsys)
-   if opt[:locsys]==PositionId(cl[:Au]) return n end
-   cl=SPrint("(",CharNames(cl[:Au],opt)[opt.locsys],")")
-    if haskey(opt,:TeX) return SPrint(n,"^{",cl,"}")
-    else return SPrint(n,cl) end
-  elseif haskey(opt,:class)
-   if opt[:class]==PositionId(cl[:Au]) return n end
-   cl=ChevieClassInfo(cl[:Au]).classnames[opt.class]
-    if haskey(opt,:TeX) return SPrint("\\hbox{\$",n,"\$}_{(",cl,")}")
-    else return SPrint(n,"_",cl) end
-  else return n
+  if haskey(opt,:locsys) && opt[:locsys]!=PositionId(cl[:Au])
+    cl="("*CharNames(cl[:Au],opt)[opt[:locsys]]*")"
+    n*(haskey(opt,:TeX) ? "^{$cl}" : cl)
+  elseif haskey(opt,:class) && opt[:class]!=PositionId(cl[:Au])
+    cl=classinfo(cl[:Au])[:classnames][opt[:class]]
+    haskey(opt,:TeX) ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
+  else n
   end
 end
-UnipotentClassOps[:Name]=uclassname
+
+UnipotentClassOps=Dict{Symbol,Any}(:Name=>uclassname)
 
 # h  is a  linear form  defined by  its value  on the  simple roots  of the
 # reflection subgroup K. Induce it to W by extending by 0 on the orthogonal
@@ -32,11 +27,10 @@ UnipotentClassOps[:Name]=uclassname
 function InducedLinearForm(W,K,h)
 # print("W=$W K=$K h=$h");
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
-  h=copy(h)
-  append!(h,fill(0,rank(K)-semisimplerank(K)))
-  h=Int.(PermRoot.baseX(parent(W.G))/Rational.(PermRoot.baseX(K.G))*h)
-  r=parent(W).rootdec[inclusion(W)]
-  v=permutedims(h)*hcat(r[1:W.N]...)
+  h=vcat(h,zeros(Int,rank(K)-semisimplerank(K)))
+  h=Int.(inv(Rational.(PermRoot.baseX(K.G)))*h)
+  r=parent(W).G.roots[inclusion(W)]
+  v=toM(r[1:W.N])*h
   w=with_inversions(W,filter(i->v[i]<0,1:W.N))
   map(i->r[i]*h,restriction.(Ref(W),
         inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
@@ -47,7 +41,7 @@ function DistinguishedParabolicSubgroups(W)
     if isempty(J) return true end
     p=fill(1,semisimplerank(W))
     p[restriction.(Ref(W),J)]=fill(0,length(J))
-    p=permutedims(p)*hcat(W.rootdec[1:W.N]...)
+    p=toM(W.rootdec[1:W.N])*p
     2*count(iszero,p)+semisimplerank(W)==count(isone,p)
   end
 end
@@ -94,8 +88,8 @@ function QuotientAu(Au,chars)
     h=GroupHomomorphismByImages(Au,q,Au.generators,map(ww,x->EltWord(q,x)))
     fusion=List(classinfo(Au)[:classtext],
        c->PositionClass(q,Image(h,EltWord(Au,c))))
-    ctu=CharTable(Au).irreducibles
-    cth=CharTable(q).irreducibles
+    ctu=chartable(Au).irr
+    cth=chartable(q).irr
     return Dict(:Au=>q,:chars=>List(chars,
       c->Position(cth,List(1:NrConjugacyClasses(q),
       j->ctu[c][Position(fusion,j)]))),
@@ -103,14 +97,17 @@ function QuotientAu(Au,chars)
            x->GetWord(Au,First(Elements(Au),y->Image(h,y)==x))));
   end
   Z=n->ComplexReflectionGroup(n,1,1)
-  ct=TransposedMat(CharTable(Au).irreducibles[chars])
-  cl=Filtered(eachindex(ct),i->ct[i]==ct[1])
-  if Length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
-             :gens=>List(Au.generatingReflections,x->[x])) end
-  ct=TransposedMat(Set(ct))
-  k=Subgroup(Au,Union(List(cl,i->Elements(ConjugacyClasses(Au)[i]))))
-  if Size(k)==Size(Au) return Dict(:Au=>CoxeterGroup(),:chars=>[1],:gens=>[]) end
-  if Au.semisimpleRank==1 return finish(Z(Size(Au)/Size(k)),[[1]])
+  ct=permutedims(chartable(Au).irr[chars,:])
+  cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))
+  println("Au=$Au chars=$chars ct=$ct cl=$cl")
+  if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
+                              :gens=>map(x->[x],eachindex(gens(Au)))) end
+  ct=permutedims(toM(unique(sort(toL(ct)))))
+  println("ct=$ct")
+# k=Subgroup(Au,filter(x->position_class(Au,x) in cl,elements(Au)))
+  k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
+  if length(k)==length(Au) return Dict(:Au=>CoxeterGroup(),:chars=>[1],:gens=>[]) end
+  if semisimpleRank(Au)==1 return finish(Z(div(length(Au),length(k))),[[1]])
   elseif IsAbelian(Au/k)
     q=Au/k
     q.generators=AbGens(q)
@@ -128,7 +125,7 @@ function QuotientAu(Au,chars)
 	 reflection_subgroup(Au,Difference(Au.generatingReflections,p)),
 	 map(i->i in p ? [] : [i],Au.generatingReflections))
       elseif length(p)==1
-        t=Copy(refltype(Au))
+        t=copy(refltype(Au))
         p=findfirst(t->t.indices==p,refltype(Au))
 	t[p].p/=length(k)
         return finish(ReflectionGroup(t...),
@@ -148,26 +145,36 @@ end
 # the Aus by the common  kernel of the remaining characters of the Aus. 
 function AdjustAu(ucl)
   ucl=copy(ucl)
-  for (i, u) in enumerate(ucl.classes)
-    l=List(ucl.springerSeries,s->
-       filter(k->s.locsys[k][1]==i,eachindex(s.locsys)))
-    chars=vcat(map(j->getindex.(ucl.springerSeries[j].locsys[l[j]],2),
-                   eachindex(l)))
+  for (i, u) in enumerate(ucl[:classes])
+    l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
+          ucl[:springerSeries])
+    println(ucl[:springerSeries])
+    chars=vcat(map(j->last.(ucl[:springerSeries][j][:locsys][l[j]]),
+                   eachindex(l))...)
     f=QuotientAu(u[:Au],chars)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",ucl.classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
-    u[:Au]=f.Au
+    u[:Au]=f[:Au]
     if haskey(u,:AuAction)
-      if u[:AuAction].group.rank==0 u[:AuAction].F0s=map(x->[[]],f.gens)
-      else u[:AuAction].F0s=map(x->prod(u[:AuAction].F0s[x]),f.gens)
+      R=u[:AuAction].group
+      if rank(R)==0 
+        u[:AuAction]=ExtendedCox(R,map(x->fill(0,0,0),f[:gens]))
+      else 
+       if isempty(f[:gens]) F0s=[matX(R,R())]
+       else F0s=map(x->prod(u[:AuAction].F0s[x]),f[:gens])
+       end
+       u[:AuAction]=ExtendedCox(R,F0s)
       end
-      u[:AuAction].phis=map(x->Product(u[:AuAction].phis[x]),f.gens)
+#     u[:AuAction].phis=map(x->Product(u[:AuAction].phis[x]),f[:gens])
     end
     k=1
     for j in eachindex(l)
-      ucl.springerSeries[j].locsys=Copy(ucl.springerSeries[j].locsys)
-      for s in l[j] ucl.springerSeries[j].locsys[s][2]=f.chars[k];k+=1 end
+      ucl[:springerSeries][j][:locsys]=copy(ucl[:springerSeries][j][:locsys])
+      for s in l[j] 
+        ucl[:springerSeries][j][:locsys][s][2]=f[:chars][k]
+        k+=1 
+      end
     end
   end
   ucl
@@ -179,7 +186,7 @@ function unipotent_classes(t::TypeIrred,p=0)
   for u in uc[:classes] # fill omitted fields
     if !haskey(u,:parameter) u[:parameter]=u[:name] end
     if haskey(u,:dynkin)
-      weights=permutedims(u[:dynkin])*hcat(roots(cartan(t.prop))...)
+      weights=toM(roots(cartan(t.prop)))*u[:dynkin]
       p=count(iszero,weights)
       if haskey(u,:dimBu) && u[:dimBu]!=p+div(count(isone,weights),2)
         error("theory")
@@ -197,7 +204,8 @@ function unipotent_classes(t::TypeIrred,p=0)
   end
   uc[:orderClasses]=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
   for s in uc[:springerSeries]
-   if isempty(s[:levi]) s[:levi]=Int[] end
+    if isempty(s[:levi]) s[:levi]=Int[] end
+    s[:locsys]=Vector{Int}.(s[:locsys])
   end
   uc
 end
@@ -226,16 +234,15 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
         end
       end
       if all(haskey.(v,:balacarter))
-        u[:balacarter]=vcat(map(
-         i->map(j->j>0 ? l[i][j] : -l[i][-j],v[i][:balacarter]),1:length(l))...)
+        u[:balacarter]=vcat([map(j->j>0 ? x[j] : -x[-j],v[i][:balacarter]) for
+                             (i,x) in enumerate(l)]...)
       end
       if rank(W)>semisimplerank(W) && haskey(u, :red) 
-        tr=rank(W)-semisimplerank(W)
-        u[:red]*=torus(tr)
+        T=torus(rank(W)-semisimplerank(W))
+        u[:red]*=T
         if haskey(u,:AuAction)
-          u[:AuAction][:group]*=torus(tr)
-          u[:AuAction][:F0s]=map(x->DiagonalMat(x,IdentityMat(tr)),
-                                 u[:AuAction][:F0s])
+          u[:AuAction]=ExtendedCox(u[:AuAction].group*T,
+               map(x->DiagonalMat(x,matX(T,T())),u[:AuAction].F0s))
         end
       end
       u[:operations]=UnipotentClassOps
@@ -295,7 +302,7 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
   if !all(x->Set(x[:Z])==Set([1]),ucl[:springerSeries])
     ucl[:springerSeries]=filter(s->all(y->Product(s[:Z][y])==1,
              AlgebraicCentre(W)[:descAZ]),ucl[:springerSeries])
-#   ucl=AdjustAu(ucl) 
+    ucl=AdjustAu(ucl) 
   end
   s=ucl[:springerSeries][1]
 # s[:relgroup]=RelativeCoset(WF,s[:levi])
@@ -309,7 +316,7 @@ function unipotent_classes(W::FiniteCoxeterGroup,p=0)
     s[:locsys]=map(y->[Position(l,y[1]),y[2]],s[:locsys])
   end
   ucl[:classes]=ucl[:classes][l]
-# AdjustAu(ucl)
+  AdjustAu(ucl)
   ucl[:orderClasses]=Poset(hasse(restricted(Poset(ucl[:orderClasses]),l)))
   ucl[:orderClasses].prop[:uc]=ucl
   ucl[:orderClasses].prop[:label]=function(p,n,opt)
@@ -437,7 +444,6 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
       tbl = Permuted(tbl, p)
       opt[:rowLabels] = Permuted(opt[:rowLabels], p)
   end
-  format(stdout,permutedims(hcat(tbl...)),rows_label="u",
-         row_labels=opt[:rowLabels],
+  format(stdout,toM(tbl),rows_label="u",row_labels=opt[:rowLabels],
          column_labels=column_labels)
 end

@@ -23,7 +23,7 @@ Base.:+(a::AbstractVector,b::Pol)=a .+ Ref(b)
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
-Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*hcat(m...)*n
+Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
 Base.isless(a::Array,b::Number)=true
 Base.isless(b::Number,a::Array)=false
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
@@ -81,15 +81,19 @@ function field(t::TypeIrred)
   end
 end
 
-const needcartantype=Set([:PrintDiagram,:ReflectionName,:UnipotentClasses])
+const needcartantype=Set([:PrintDiagram,
+                          :ReflectionName,
+                          :UnipotentClasses,
+                          :WeightInfo])
 
 function getchev(t::TypeIrred,f::Symbol,extra...)
   d=field(t)
-# println("d[1]=$(d[1]) f=$f")
+# println("d=$d f=$f extra=$extra")
   o=chevieget(d[1],f)
   if o isa Function
 #   o(vcat(collect(d)[2:end],collect(extra))...)
     if haskey(t,:cartantype) && f in needcartantype
+#     println("args=",(d[2:end]...,extra...,t[:cartantype]))
       o(d[2:end]...,extra...,t[:cartantype])
     else o(d[2:end]...,extra...)
     end
@@ -214,7 +218,7 @@ function chartable(t::TypeIrred)
   else                     names=charinfo(t)[:charnames]
   end
   if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-  CharTable(permutedims(Cyc{Int}.(hcat(ct[:irreducibles]...))),names,
+  CharTable(Cyc{Int}.(toM(ct[:irreducibles])),names,
    ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
@@ -242,15 +246,14 @@ function chartable(H::HeckeAlgebra{C})where C
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(W)[:charnames]
   end
-  CharTable(Matrix(permutedims(hcat(
-       map(ch->convert.(C,ch),ct[:irreducibles])...))),names,
+  CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
 
 function representation(H::HeckeAlgebra,i::Int)
   ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
-  map(x->hcat(x...),ct)
+  toM.(ct)
 end
 
 function schur_elements(H::HeckeAlgebra)
@@ -270,7 +273,7 @@ function ComplexReflectionGroup(i::Int)
     elseif i==37 return coxgroup(:E,8)
     end
     m=getchev(t,:CartanMat)
-    n=one(hcat(m...))
+    n=one(toM(m))
     return PRG(map(i->n[i,:],axes(n,1)),m)
   end
   t=TypeIrred(Dict(:series=>:ST,:ST=>i))
@@ -339,19 +342,28 @@ end
 function weightinfo(W)
   l=map(refltype(W)) do t
     r=getchev(t,:WeightInfo)
+    if isnothing(r)
+      r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
+           :minusculeWeights=>Vector{Int}[])
+    end
     if !haskey(r,:minusculeCoweights)
       r[:minusculeCoweights]=r[:minusculeWeights]
     end
-    g=filter(i->sum(r[:decompositions][i])==1,
-          1:length(r[:minusculeCoweights])) # generators of fundamental group
-    r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
+    if isempty(r[:moduli]) g=Int[]
+      r[:ww]=Perm{Int}[]
+    else g=filter(i->sum(r[:decompositions][i])==1,
+          eachindex(r[:minusculeCoweights])) # generators of fundamental group
+      r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
                t[:indices][r[:minusculeCoweights][g]])
-    C=mod1.(inv(Rational.(cartan(t.prop))))
+    end
     r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
-    r[:csi][:,t[:indices]]=C[r[:minusculeCoweights],g]
+    if !isempty(r[:moduli]) 
+      C=mod1.(inv(Rational.(cartan(t.prop))))
+      r[:csi][:,t[:indices]]=C[r[:minusculeCoweights][g],:]
+      r[:minusculeWeights]=t[:indices][r[:minusculeWeights]]
+      r[:minusculeCoweights]=t[:indices][r[:minusculeCoweights]]
+    end
     r[:csi]=toL(r[:csi])
-    r[:minusculeWeights]=t[:indices][r[:minusculeWeights]]
-    r[:minusculeCoweights]=t[:indices][r[:minusculeCoweights]]
     r
   end
   res=Dict(:minusculeWeights=>Cartesian(map(
@@ -378,9 +390,7 @@ PrintToSring(s,v...)=sprint(show,v...)
 
 reflection_name(W,opt=Dict())=join(getchev(W,:ReflectionName,opt),"×")
 
-function representation(W,i::Int)
-  map(x->hcat(x...),impl1(getchev(W,:Representation,i)))
-end
+representation(W::Group,i::Int)=toM.(impl1(getchev(W,:Representation,i)))
 
 include("uch.jl")
 include("ucl.jl")
@@ -560,13 +570,12 @@ end
 
 ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
-ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=
-  ExtendedCox(W,[hcat(mats...)])
+ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=ExtendedCox(W,[toM(mats)])
 
 function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
   if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
   elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
-  else ExtendedCox(W,map(x->hcat(x...),mats))
+  else ExtendedCox(W,toM.(mats))
   end
 end
 
@@ -671,7 +680,7 @@ function CycPols.CycPol(v::AbstractVector)
 end
 
 function CharRepresentationWords(mats,words)
-  mats=map(x->hcat(x...),mats)
+  mats=toM.(mats)
   map(words)do w
     if isempty(w) return size(mats[1],1) end
     m=prod(mats[w])

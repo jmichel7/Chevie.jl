@@ -1,5 +1,5 @@
 """
-Let  `V` be a  real vector space.  Finite Coxeter groups  coincide with teh
+Let  `V` be a  real vector space.  Finite Coxeter groups  coincide with the
 finite  subgroups of  `GL(V)` which  can be  generated y reflections. *Weyl
 groups*  are  the  finite  Coxeter  groups  which  can  be defined over the
 rational   numbers.  We  implement  finite   Coxter  groups  as  groups  of
@@ -474,6 +474,7 @@ PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
+PermGroups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
@@ -516,15 +517,80 @@ function rootdatum(rr::Matrix,cr::Matrix)
 end
 
 function rootdatum(t::Symbol,r::Int)
-  if t==:gl
-    if r==1 return torus(1) end
-    R=one(rand(Int,r,r))
-    R=R[1:end-1,:]-R[2:end,:]
-    rootdatum(R,R)
-  elseif t==:sl
-    c=cartan(:A,r-1)
-    rootdatum(c,one(c))
-  end
+  id(r)=one(rand(Int,r,r))
+  data=Dict{Symbol,Function}(
+   :gl=>function(r)
+     if r==1 return torus(1) end
+     R=id(r)
+     R=R[1:end-1,:]-R[2:end,:]
+     rootdatum(R,R)
+     end,
+   :sl=>r->rootdatum(cartan(:A,r-1),id(r-1)),
+   :pgl=>r->coxgroup(:A,r-1),
+   :sp=>function(r)
+     R=id(div(r,2))
+     for i in 2:div(r,2) R[i,i-1]=-1 end
+     R1=copy(R)
+     R1[1,:].*=2
+     rootdatum(R1,R)
+     end,
+   :csp=>function(r)
+     r=div(r,2)
+     R=id(r+1)
+     R=R[1:r,:]-R[2:end,:] 
+     cR=copy(R) 
+     R[1,1:2]=[0,-1] 
+     cR[1,1:2]=[1,-2]
+     rootdatum(cR,R)
+     end,
+  :psp=>r->coxgroup(:C,div(r,2)),
+  :so=>function(r)
+    R=id(div(r,2)) 
+    for i in 2:div(r,2) R[i,i-1]=-1 end
+    if isodd(r) R1=copy(R)
+      R1[1,1]=2
+      rootdatum(R,R1)
+    else R[1,2]=1 
+      rootdatum(R,R)
+    end
+    end,
+  :pso=>function(r)
+    r1=div(r,2)
+    isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : coxgroup(:D,r1)
+    end,
+  :spin=>function(r)
+    r1=div(r,2)
+    isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : rootdatum(cartan(:D,r1),id(r1))
+    end,
+  :halfspin=>function(r)
+    if !iszero(r%4) error("halfspin groups only exist in dimension 4r") end
+    r=div(r,2)
+    R=id(r)
+    R[r,:]=vcat([-div(r,2),1-div(r,2)],2-r:1:-2,[2])
+    rootdatum(R,Int.(cartan(:D,r)*permutedims(inv(Rational.(R)))))
+    end,
+  :gpin=>function(r)
+    d=div(r,2)
+    R=id(d+1)
+    R=R[1:d,:]-R[2:end,:]
+    cR=copy(R)
+    if isodd(r)
+      R[1,1:2]=[0,-1]
+      cR[1,1:2]=[1,-2]
+    else
+      R[1,1:3]=[1,-1,-1]
+      cR[1,1:3]=[0,-1,-1]
+      R=hcat(fill(0,d),R)
+      cR=hcat(fill(0,d),cR)
+      cR[1,1]=1
+    end
+    rootdatum(R,cR)
+   end)
+   if haskey(data,t)
+     data[t](r)
+   else error("Unknown root datum $(repr(t)). Known types are:\n",
+               join(keys(data),", "))
+   end
 end
 
 function torus(i)
@@ -920,6 +986,7 @@ function AlgebraicCentre(W)
 # println("gens(AZ)=",gens(AZ))
 # println("ss=$ss")
   if isempty(gens(res[:AZ])) res[:descAZ]=map(x->[x],eachindex(gens(AZ)))
+  elseif gens(AZ)==ss res[:descAZ]=Vector{Int}[]
   else
   # map of root data Y(Wsc)->Y(W)
   hom=GroupHomomorphismByImages(AZ,res[:AZ],gens(AZ),ss)
