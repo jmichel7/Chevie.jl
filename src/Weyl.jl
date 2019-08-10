@@ -454,9 +454,6 @@ end
 dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
-PermGroups.class_reps(W::FiniteCoxeterGroup)=
-   map(x->W(x...),classinfo(W)[:classtext]) 
-
 #forwarded methods to PermRoot/W.G
 @inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
 Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)

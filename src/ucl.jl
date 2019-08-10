@@ -87,14 +87,14 @@ function QuotientAu(Au,chars)
   finish=function(q,ww)
     h=GroupHomomorphismByImages(Au,q,Au.generators,map(ww,x->EltWord(q,x)))
     fusion=List(classinfo(Au)[:classtext],
-       c->PositionClass(q,Image(h,EltWord(Au,c))))
+       c->position_class(q,Image(h,EltWord(Au,c))))
     ctu=chartable(Au).irr
     cth=chartable(q).irr
-    return Dict(:Au=>q,:chars=>List(chars,
-      c->Position(cth,List(1:NrConjugacyClasses(q),
-      j->ctu[c][Position(fusion,j)]))),
-      :gens=>List(q.generators,
-           x->GetWord(Au,First(Elements(Au),y->Image(h,y)==x))));
+    return Dict(:Au=>q,:chars=>map(
+      c->Position(cth,map(j->ctu[c,findfirst(isequal(j),fusion)],
+                          1:NrConjugacyClasses(q))),chars),
+      :gens=>map(x->GetWord(Au,First(Elements(Au),y->Image(h,y)==x)),
+                 q.generators));
   end
   Z=n->ComplexReflectionGroup(n,1,1)
   ct=permutedims(chartable(Au).irr[chars,:])
@@ -106,7 +106,8 @@ function QuotientAu(Au,chars)
   println("ct=$ct")
 # k=Subgroup(Au,filter(x->position_class(Au,x) in cl,elements(Au)))
   k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
-  if length(k)==length(Au) return Dict(:Au=>CoxeterGroup(),:chars=>[1],:gens=>[]) end
+  if length(k)==length(Au) return Dict(:Au=>coxgroup(),:chars=>[1],:gens=>[])
+  end
   if semisimpleRank(Au)==1 return finish(Z(div(length(Au),length(k))),[[1]])
   elseif IsAbelian(Au/k)
     q=Au/k
@@ -121,15 +122,13 @@ function QuotientAu(Au,chars)
     if p!=false
       p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
-	return finish(
-	 reflection_subgroup(Au,Difference(Au.generatingReflections,p)),
-	 map(i->i in p ? [] : [i],Au.generatingReflections))
+	return finish(reflection_subgroup(Au,Difference(gens(Au),p)),
+                      map(i->i in p ? [] : [i],gens(Au)))
       elseif length(p)==1
         t=copy(refltype(Au))
         p=findfirst(t->t.indices==p,refltype(Au))
 	t[p].p/=length(k)
-        return finish(ReflectionGroup(t...),
-	  map(x->[x],Au.generatingReflections))
+        return finish(ReflectionGroup(t...),map(x->[x],gens(Au)))
       end
     elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
@@ -447,3 +446,81 @@ function formatuc(uc, opt=Dict{Symbol,Any}())
   format(stdout,toM(tbl),rows_label="u",row_labels=opt[:rowLabels],
          column_labels=column_labels)
 end
+
+# coefficients of R_\chi on unipotently supported local systems 
+# ICCTable(uc[,Springer series no[,variable]]) eg (uc,1,X(Rationals))
+# Works for G split.
+function ICCTable(uc,i=1,q=Pol(:q))
+  W=Group(uc.spets)
+  ss=uc[:springerSeries][i]
+  res=Dict(:spets=>uc.spets,:relgroup=>ss.relgroup,:series=>i,:q=>q,:p=>uc.p)
+  if haskey(ss,:warning) println("# ",ss[:warning])
+    res[:warning]=ss[:warning]
+  end
+# We are going to solve the equation in "unipotent support", page 151
+# $Transposed(P)\Lambda P=\omega$
+# where $\Lambda_{i,j}$ is  $\sum_{g\in G^F} Y_i(g)\overline{Y_j(g)}$
+# and $\Omega_{i,j}$ is equal to
+# $|Z^0(G^F)|q^{-\text{semisimple rank}L}|G^F|/P(W_G(L))
+#  q^{-b_i-b_j}FakeDegree(\chi_i\otimes\chi_j\otimes\sgn)$
+# where $P(W_G(L))$ is the Poincare polynomial $\prod_i(q^{d_i}-1)$
+# where $d_i$ are the reflection degrees of $W_G(L)$
+# res[:scalar] is the masrix $P$
+  R=ss[:relgroup]
+  f=fakedegrees(R,q)
+  k=PositionDet(R)
+  n=length(f)
+# Partition on characters of ss.relgroup induced by poset of unipotent classes
+  res[:dimBu]=map(x->uc[:classes[x[1]]][:dimBu],ss.locsys)
+  res[:blocks]=CollectBy(eachindex(ss.locsys),-res[:dimBu])
+  tbl=BigCellDecomposition(map(i->map(
+  # q^{-b_i-b_j}*matrix of FakeDegrees(chi_i tensor chi_j tensor sgn)
+    j->q^(-res[:dimBu][i]-res[:dimBu][j])*f*DecomposeTensor(R,i,j,k),1:n),1:n),
+                           res[:blocks])
+  res[:scalar]=tbl[1]
+  res[:locsys]=ss[:locsys]
+# res[:L]=tbl[2]*GenericOrder(W,q)/Product(ReflectionDegrees(R),d->q^d-1)/
+#   q^(W.semisimpleRank-R.semisimpleRank);
+  res[:L]=tbl[2]*q^(W.N+semisimplerank(R)-semisimplerank(W))
+  res[:uc]=uc
+  if haskey(ss,:parameter) res[:parameter]=ss[:parameter]
+  else res[:parameter]=1:length(ss.locsys)
+  end
+  if q!=arg[3]
+    q=arg[3]
+    res[:scalar]=map(x->Value.(x,q),res[:scalar])
+    res[:L]=map(x->Value.(x,q),res[:L])
+  end
+  res[:operations]=rec(
+    String=>x->SPrint("ICCTable(",W,",",i,",",q,")"),
+    Print=>function(x)Print(String(x));end,
+    Format=>function(x,opt)
+     if haskey(opt,:TeX)
+       res=SPrint("Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$",
+        ReflectionName(x.relgroup,opt),"\$\n\\medskip\n\n")
+     else
+       res=SPrint("Coefficients of X_phi on Y_psi for ",
+        ReflectionName(x.relgroup,opt),"\n\n")
+     end
+     if !haskey(opt,:columns) && !haskey(opt,:rows)
+       opt.rows=1:length(x.dimBu);
+       SortBy(opt.rows,i->[x.dimBu[i],x.locsys[i]])
+       opt.columns=opt.rows
+     end
+     tbl=Copy(x.scalar)
+     if ! haskey(opt,:CycPol) opt.CycPol=true end
+     if opt.CycPol tbl=List(tbl,x->List(x,
+                 function(p)p=CycPol(p);p.vname="q";return p;end)) end
+     opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
+         Inherit(rec(locsys=p[2]),opt)))
+     opt.rowLabels=List(CharNames(x.relgroup,opt),
+       function(x)if IsBound(opt.TeX) return SPrint("X_{",x,"}")
+        else return SPrint("X",x) end end)
+     PrintToString(res,FormatTable(TransposedMat(tbl),opt))
+     return String(res)
+     end,
+    Display=>function(x,opt)opt.screenColumns=SizeScreen()[1]
+               Print(Format(x,opt));end);
+  res
+end
+

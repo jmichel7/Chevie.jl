@@ -499,7 +499,7 @@ end
 
 tr(m)=sum(i->m[i,i],axes(m,1))
 reflchar(W::PermRootGroup,w)=tr(matX(W,w))
-reflchar(W::PermRootGroup)=map(x->reflchar(W,W(x...)),classinfo(W)[:classtext])
+reflchar(W::PermRootGroup)=reflchar.(Ref(W),class_reps(W))
   
 function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
   gets(W,:refleigen) do W
@@ -523,9 +523,7 @@ end
 
 function PermGroups.conjugacy_classes(W::PermRootGroup)
   gets(W,:classes)do W
-    cl=conjugacy_classes(W.G)
-    W.prop[:classreps]=map(x->W(x...),classinfo(W)[:classtext])
-    sort(cl,by=c->findfirst(w->w in c,W.prop[:classreps]))
+    sort(conjugacy_classes(W.G),by=c->findfirst(w->w in c,class_reps(W)))
   end
 end
   
@@ -714,8 +712,12 @@ function matX(W::PRG,w)
   X=baseX(W)
   ir=independent_roots(W)
   if isempty(ir) return X end
-  Xinv=inv(Rational.(X))
-  Int.(Xinv*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:]))
+  if eltype(X)==Int 
+    Xinv=inv(Rational.(X))
+    Int.(Xinv*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:]))
+  else
+    inv(X)*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:])
+  end
 end
 
 function cartan_coeff(W::PRG,i,j)

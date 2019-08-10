@@ -210,7 +210,12 @@ function classinfo(W)::Dict{Symbol,Any}
   end
 end
 
-class_rep(W::FiniteCoxeterGroup)=map(x->W(x...),classinfo(W)[:classtext])
+function PermGroups.class_reps(W::PermRootGroup)
+  gets(W,:classreps)do W
+    map(x->W(x...),classinfo(W)[:classtext])
+  end
+end
+PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 
 function chartable(t::TypeIrred)
   ct=getchev(t,:CharTable)
