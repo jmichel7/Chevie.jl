@@ -305,7 +305,7 @@ function CycPol(p::Pol{T})where T
   elseif length(p.c)==1 # p==ax^s
     return CycPol(p.c[1],valuation(p))
   elseif 2==count(x->!iszero(x),p.c) # p==ax^s+bx^t
-    a=Root1(-p.c[1]//p.c[end])
+    a=Root1(Cyc(-p.c[1]//p.c[end]))
     if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1
     vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
@@ -386,7 +386,9 @@ function (p::CycPol)(x)
   res=x^p.valuation
   if !isempty(p.v)
     for v in segment(p.v)
-      res*=prod((x-E(r))^m for (r,m) in v)
+      pp=prod((x-E(r))^m for (r,m) in v)
+      if all(isone,conductor.(pp.c)) pp=Pol(convert.(Int,pp.c),pp.v) end
+      res*=pp
       if iszero(res) return res end
     end
   end

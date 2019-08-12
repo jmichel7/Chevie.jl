@@ -40,7 +40,7 @@ see also the individual documentation of gcd.
 """
 module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
-  negative_part, bar
+  negative_part, bar, isunit
 
 using ..Gapjm # for degree
 
@@ -52,6 +52,8 @@ struct Pol{T}
   c::Vector{T}
   v::Int
 end
+
+Base.broadcastable(p::Pol)=Ref(p)
 
 function Polstrip(v::AbstractVector,val=0)
   b=findfirst(x->!iszero(x),v)
@@ -76,6 +78,13 @@ Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T
 
 Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
+
+function Base.hash(a::Pol, h::UInt)
+  b = 0x595dee0e71d271d0%UInt
+  b = xor(b,hash(a.v, h))
+  b = xor(b,hash(a.c, h))
+  (b << 1) | (b >> (sizeof(Int)*8 - 1))
+end
 
 Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 
@@ -200,6 +209,8 @@ function Base.divrem(a::Pol, b::Pol)
   Pol(res,a.v-b.v),Polstrip(v,a.v)
 end
 
+Base.div(a::Pol, b::Pol)=divrem1(a,b)[1]
+
 """
 divrem when b unitary: does not change type
 """
@@ -252,6 +263,8 @@ function Base.gcd(p::Pol,q::Pol)
   end
   return p/p.c[end]
 end
+
+isunit(p::Pol)=length(p.c)==1 && p.c[1]^2==1
 
 function Base.inv(p::Pol)
   if length(p.c)>1 throw(InexactError(:inv,Int,p)) end

@@ -1,7 +1,7 @@
 module HasType
 
 export charinfo, classinfo, reflection_name, diagram, chartable,
-  representation, fakedegrees, unipotent_characters, unipotent_classes,
+  representation, fakedegrees, unipotent_characters, UnipotentClasses,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, Cartesian, weightinfo
 
@@ -223,8 +223,11 @@ function chartable(t::TypeIrred)
   else                     names=charinfo(t)[:charnames]
   end
   if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-  CharTable(Cyc{Int}.(toM(ct[:irreducibles])),names,
-   ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
+  irr=toM(ct[:irreducibles])
+  if eltype(irr)==Rational{Int} irr=Int.(irr)
+  elseif eltype(irr)==Cyc{Rational{Int}} irr=Cyc{Int}.(irr)
+  end
+  CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
 function chartable(W)::CharTable
@@ -573,6 +576,8 @@ struct ExtendedCox{T<:FiniteCoxeterGroup}
   F0s::Vector{Matrix{Int}}
 end
 
+Base.show(io::IO,W::ExtendedCox)=print(io,"Extended($(W.group),$(W.F0s))")
+
 ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
 ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=ExtendedCox(W,[toM(mats)])
@@ -765,7 +770,7 @@ end
 chevie[:A][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](1,1,n+1,para,root)
 chevie[:A][:FakeDegree]=(n,p,q)->fegsymbol([βSet(p)])(q)
 chevie[:D][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](2,2,n,para,root)
-chevie[:imp][:PowerMaps]=(p,q,r)->[]
+chevie[:imp][:PowerMaps]=(p,q,r)->[1,1,1]
 chevie[:imp][:GeneratingRoots]=function(p,q,r)
   if q==1 roots=[vcat([1],fill(0,r-1))]
   else

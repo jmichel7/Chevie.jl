@@ -53,6 +53,12 @@ It degree was in Base there would be no problem, both importing from Base.
 export toL, toM # convert Gap matrices <-> Julia matrices
 toL(m)=[m[i,:] for i in axes(m,1)] # to Gap
 toM(m)=permutedims(hcat(m...))     # to julia
+export ds # dump struct
+function ds(s)
+  for f in fieldnames(typeof(s))
+    println(f,"=",getproperty(s,f))
+  end
+end
 
 include("Util.jl")
 @reexport using .Util

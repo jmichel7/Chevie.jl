@@ -110,10 +110,12 @@ end
 #----------------------- Formatting -----------------------------------------
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
+  s=replace(s,r"\$"=>"")
   s=replace(s,r"\\varepsilon"=>"ε")
   s=replace(s,r"\\gamma"=>"γ")
   s=replace(s,r"\\phi"=>"ϕ")
   s=replace(s,r"\\Phi"=>"Φ")
+  s=replace(s,r"\\psi"=>"ψ")
   s=replace(s,r"\\rho"=>"ρ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\otimes"=>"⊗")

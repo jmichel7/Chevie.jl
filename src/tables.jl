@@ -8410,7 +8410,7 @@ chevieset(:E7, :HeckeCharTable, function (param, sqrtparam)
                                         if IsInt(j[2])
                                             res = res * q ^ j[2]
                                         else
-                                            res = res * v ^ (2 * j[2])
+                                            res = res * v ^ Int(2 * j[2])
                                         end
                                         return res
                                     end, i)

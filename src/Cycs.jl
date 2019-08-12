@@ -409,10 +409,10 @@ Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(c) : Cyc(c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list
-Base.div(c::Cyc,a::Real)=Cyc(c.n,Div.(c.d,a))
+Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
-Base.div(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>Div(v,a) for (k,v) in c.d))
+Base.div(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>div(v,a) for (k,v) in c.d))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>v//a for (k,v) in c.d))
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
