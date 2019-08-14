@@ -490,7 +490,7 @@ CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(t,r,b))
 
 " Adjoint root datum from cartan mat"
-rootdatum(C)=rootdatum(one(C),C)
+rootdatum(C::Matrix)=rootdatum(one(C),C)
 
 " root datum"
 function rootdatum(rr::Matrix,cr::Matrix)
@@ -514,7 +514,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
 end
 
 function rootdatum(t::Symbol,r::Int)
-  id(r)=one(rand(Int,r,r))
+  id(r)=one(fill(0,r,r))
   data=Dict{Symbol,Function}(
    :gl=>function(r)
      if r==1 return torus(1) end
@@ -550,10 +550,10 @@ function rootdatum(t::Symbol,r::Int)
     else R[1,2]=1 
       rootdatum(R,R)
     end
-    end,
+  end,
   :pso=>function(r)
     r1=div(r,2)
-    isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : coxgroup(:D,r1)
+    isodd(r) ? coxgroup(:B,r1) : coxgroup(:D,r1)
     end,
   :spin=>function(r)
     r1=div(r,2)
@@ -572,22 +572,23 @@ function rootdatum(t::Symbol,r::Int)
     R=R[1:d,:]-R[2:end,:]
     cR=copy(R)
     if isodd(r)
-      R[1,1:2]=[0,-1]
-      cR[1,1:2]=[1,-2]
+      R[1,1]=0
+      cR[1,2]=-2
     else
-      R[1,1:3]=[1,-1,-1]
+      R[1,3]=-1
       cR[1,1:3]=[0,-1,-1]
       R=hcat(fill(0,d),R)
       cR=hcat(fill(0,d),cR)
       cR[1,1]=1
     end
     rootdatum(R,cR)
-   end)
-   if haskey(data,t)
-     data[t](r)
-   else error("Unknown root datum $(repr(t)). Known types are:\n",
-               join(keys(data),", "))
-   end
+   end,
+   :E=>r->coxgroup(:E,r),
+   :Esc=>r->rootdatum(cartan(:E,r),id(r))
+   )
+   if haskey(data,t) return data[t](r) end
+   error("Unknown root datum $(repr(t)). Known types are:\n",
+              join(sort(collect(keys(data))),", "))
 end
 
 function torus(i)
@@ -862,6 +863,8 @@ struct SEGroup<:Group{AdditiveSE}
   prop::Dict{Symbol,Any}
 end
 
+Base.show(io::IO,G::SEGroup)=print(io,"SEGroup(",gens(G),")")
+
 function Group(a::AbstractVector{AdditiveSE})
   a=filter(x->!isone(x),a)
   SEGroup(a,Dict{Symbol,Any}())
@@ -919,8 +922,7 @@ function AbelianGenerators(l)
   res
 end
 
-##
-#F  AlgebraicCentre( <W> )  . . . centre of algebraic group W
+#F  AlgebraicCentre(W)  . . . centre of algebraic group W
 ##  
 ##  <W>  should be a Weyl group record  (or an extended Weyl group record).
 ##  The  function returns information  about the centre  Z of the algebraic
@@ -978,18 +980,18 @@ function AlgebraicCentre(W)
                                       toM(res[:Z0].complement)))
   end
   ss=map(toAZ,gens(AZ))
-# println("AZ=$AZ")
-# println("res[:AZ]=",res[:AZ])
-# println("gens(AZ)=",gens(AZ))
-# println("ss=$ss")
-  if isempty(gens(res[:AZ])) res[:descAZ]=map(x->[x],eachindex(gens(AZ)))
-  elseif gens(AZ)==ss res[:descAZ]=Vector{Int}[]
-  else
-  # map of root data Y(Wsc)->Y(W)
-  hom=GroupHomomorphismByImages(AZ,res[:AZ],gens(AZ),ss)
-  res[:descAZ]=List(Kernel(hom).generators,x->GetWord(AZ,x))
-  end
-  return res
+  #println("AZ=$AZ")
+  #println("res=",res)
+  #println("gens(AZ)=",gens(AZ))
+  #println("ss=$ss")
+  res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
+               elseif gens(AZ)==ss Vector{Int}[]
+               else # map of root data Y(Wsc)->Y(W)
+                  h=Hom(AZ,res[:AZ],ss)
+                  println("h=$h")
+                  map(x->word(AZ,x),gens(kernel(h)))
+               end
+  res
 end
 
 end

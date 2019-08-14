@@ -147,7 +147,7 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
   res
 end
 
-" find permutation mapping l to l1 if exists (like GAP's PermListList)"
+" find permutation mapping l to l1 if exists"
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
   s1=sortperm(l1)
@@ -156,6 +156,15 @@ function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
 end
 
 Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int}(l,l1)
+
+"""
+assume l is union of orbits under group elt g; return permutation of l by g
+needs objects in l sortable
+"""
+Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
+
+Perm(g,l::AbstractVector;action::Function=^)=Perm{Int}(g,l,action=action)
+
 #---------------------------------------------------------------------
 Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])

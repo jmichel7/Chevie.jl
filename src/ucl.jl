@@ -34,12 +34,13 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   end
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
     cl="("*CharNames(u[:Au],opt)[opt[:locsys]]*")"
-    n*(TeX ? "^{$cl}" : cl)
+    n*="^{$cl}"
+    if !TeX n=TeXstrip(n) end
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
-    TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
-  else n
+    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
   end
+  n
 end
 
 function name(u::UnipotentClass,opt=Dict{Symbol,Any}())
@@ -119,20 +120,20 @@ function QuotientAu(Au,chars)
   end
   # q=Au/k,  ww=words in q images of gens(Au)
   finish=function(q,ww)
-    h=GroupHomomorphismByImages(Au,q,gens(Au),map(ww,x->EltWord(q,x)))
-    fusion=List(classinfo(Au)[:classtext],
-       c->position_class(q,Image(h,EltWord(Au,c))))
+    h=Hom(Au,q,map(x->q(x...),ww))
+    fusion=map(c->position_class(q,h(c)),class_reps(Au))
     ctu=chartable(Au).irr
     cth=chartable(q).irr
-    return Dict(:Au=>q,:chars=>map(
-      c->Position(cth,map(j->ctu[c,findfirst(isequal(j),fusion)],
-                          1:NrConjugacyClasses(q))),chars),
-      :gens=>map(x->GetWord(Au,First(Elements(Au),y->Image(h,y)==x)),gens(q)))
+    ch(c)=map(j->ctu[c,findfirst(isequal(j),fusion)],1:NrConjugacyClasses(q))
+    return Dict(:Au=>q,
+      :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
+      :gens=>map(x->word(Au,First(elements(Au),y->h(y)==x)),gens(q)))
   end
   Z=n->ComplexReflectionGroup(n,1,1)
+  println("Au=$Au chars=$chars")
   ct=permutedims(chartable(Au).irr[chars,:])
   cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))
-# println("Au=$Au chars=$chars ct=$ct cl=$cl")
+# println("ct=$ct cl=$cl")
   if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
                               :gens=>map(x->[x],eachindex(gens(Au)))) end
   ct=permutedims(toM(unique(sort(toL(ct)))))
@@ -141,12 +142,13 @@ function QuotientAu(Au,chars)
   k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
   if length(k)==length(Au) return Dict(:Au=>coxgroup(),:chars=>[1],:gens=>[])
   end
+  println("Au=$Au k=$k")
   if semisimplerank(Au)==1 return finish(Z(div(length(Au),length(k))),[[1]])
   elseif IsAbelian(Au/k)
     q=Au/k
     q.generators=AbGens(q)
     h=NaturalHomomorphism(Au,q)
-    f=List(gens(Au),x->GetWord(q,x^h))
+    f=List(gens(Au),x->word(q,x^h))
 #  Print(Product(List(gens(q),x->Z(Order(q,x))))," ",f,"\n");
     return finish(Product(List(gens(q),x->Z(Order(q,x)))),f)
   else
@@ -298,6 +300,8 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   end
   if iszero(p) && !haskey(classes[1].prop,:balacarter)
     bc=BalaCarterLabels(W)
+ #  println("W=$W bc=$bc")
+ #  println(map(u->u.prop[:dynkin],classes))
     for u in classes
       u.prop[:balacarter]=bc[findfirst(p->p[1]==u.prop[:dynkin],bc)][2]
     end
@@ -564,7 +568,7 @@ end
 function BigCellDecomposition(M,b=map(i->[i],axes(M,1)))
   L=one(M)
   P=one(M)
-  block(X,i,j)=X,b[i],b[j]
+  block(X,i,j)=X[b[i],b[j]]
   if M==permutedims(M)
     for j in eachindex(b)
       L[b[j],b[j]]=block(M,j,j)
@@ -666,8 +670,8 @@ function formatICC(x,opt=Dict())
   if !haskey(opt,:CycPol) opt[:CycPol]=true end
   if opt[:CycPol] tbl=map(CycPol,tbl) end
   tbl=repr.(tbl,context=:limit=>true)
-  columnLabels=map(p->name(x[:uc].classes[p[1]],merge(Dict(:locsys=>p[2]),opt)),
-                   x[:locsys])
+  columnLabels=map(p->name(x[:uc].classes[p[1]],
+     merge(Dict(:locsys=>p[2],:limit=>true),opt)),x[:locsys])
   rowLabels=map(x->haskey(opt,:TeX) ? "X_{$x}" : "X$x",
                 CharNames(x[:relgroup],opt))
   format(stdout,permutedims(tbl),rows=opt[:rows],columns=opt[:columns],

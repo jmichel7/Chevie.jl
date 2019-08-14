@@ -31,10 +31,11 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export degree, degrees, elements, restricted, root, words, word
+export degree, degrees, elements, kernel, restricted, root, words, word
 function degree end
 function degrees end
 function elements end
+function kernel end
 function restricted end
 function root end
 function words end
@@ -66,6 +67,8 @@ include("ModuleElts.jl")
 @reexport using .ModuleElts
 include("Perms.jl")
 @reexport using .Perms
+include("Groups.jl")
+@reexport using .Groups
 include("PermGroups.jl")
 @reexport using .PermGroups
 include("Cycs.jl")

@@ -1,14 +1,8 @@
 """
-This module is a port of some GAP functionality on groups, in particular
-permutation groups.
+This module is a port of some GAP functionality on permutation groups.
 
-This  codes refers to Holt "Handbook of computational group theory" chapter
-4 for basic algorithms.
-
-The only field of a Group G at the start is gens, the list of generators of
-G.  To  mimic  GAP  records  where  attributes/properties  of an object are
-computed  on demand when asked for, other fields are computed on demand and
-stored in the field prop of the Group, which starts as Dict{Symbol,Any}()
+This code refers to Holt "Handbook of computational group theory" chapter 4
+for basic algorithms.
 
 A  PermGroup is  a group  where gens  are Perms,  which allows  for all the
 algorithms like base, centralizer chain, etc...
@@ -32,30 +26,6 @@ julia> collect(G)
 julia> degree(G)  
 3
 
-# orbit of point 1 under G
-julia> orbit(G,1) 
-3-element Array{Int64,1}:
- 2
- 3
- 1
-
-# orbit decorated with representatives moving 1 to given point
-julia> orbit_and_representative(G,1)
-Dict{Int64,Perm{Int64}} with 3 entries:
-  2 => (1,2)
-  3 => (1,3,2)
-  1 => ()
-
-# orbit functions can take any action of G as keyword argument
-julia> orbit_and_representative(G,[1,2],action=(x,y)->x.^Ref(y))
-Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
-  [1, 3] => (2,3)
-  [1, 2] => ()
-  [2, 3] => (1,2,3)
-  [3, 2] => (1,3)
-  [2, 1] => (1,2)
-  [3, 1] => (1,3,2)
-
 julia> Perm(1,2) in G
 true
 
@@ -77,20 +47,11 @@ julia> centralizers(G)
  Group([(1,2),(2,3)])
  Group([(2,3)])
 
-# i-th element is orbit_and_representative of centralizer[i] on base[i]
-julia> centralizer_orbits(G)
+# i-th element is transversal of centralizer[i] on base[i]
+julia> transversals(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
  Dict(2=>(1,2),3=>(1,3,2),1=>())
  Dict(2=>(),3=>(2,3))
-
-julia> minimal_words(G)  # minimal word in gens for each element of G
-Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
-  ()      => Int64[]
-  (2,3)   => [2]
-  (1,3,2) => [1, 2]
-  (1,3)   => [1, 2, 1]
-  (1,2)   => [1]
-  (1,2,3) => [2, 1]
 ```
 
 finally, benchmarks on julia 1.0.1
@@ -101,63 +62,15 @@ julia> @btime length(collect(symmetric_group(8)))
 julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
 ```
-
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export Group, PermGroup, orbit, orbit_and_representative, orbits,
-  base, centralizer_orbits, centralizers, minimal_words, element,
-  symmetric_group, gens, nbgens, centralizer, CharTable, class_reps,
-  conjugacy_classes
+export PermGroup, base, transversals, centralizers,
+  symmetric_group, centralizer, CharTable
 
-#--------------general groups and functions for "black box groups" -------
-abstract type Group{T} end # T is the type of elements of G
-
-Base.one(G::Group{T}) where T=isempty(gens(G)) ? one(T) : one(gens(G)[1])
-gens(G::Group)=G.gens
-nbgens(G::Group)=length(gens(G))
-@inline gen(W,i)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
-
-" element of W corresponding to a sequence of generators and their inverses"
-element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) : 
-    prod( gen(W,i) for i in w)
-
-" orbit(G,p) is the orbit of p under Group G"
-function orbit(G::Group,p;action::Function=^)
-  new=Set([p])
-  res=empty(new)
-  while !isempty(new)
-    union!(res,new)
-    n=empty(res)
-    for p in new, s in gens(G)
-      w=action(p,s)
-      if !(w in res) push!(n,w) end
-    end
-    new=n
-  end
-  collect(res)
-end
-
-"returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)"
-function orbit_and_representative(G::Group,p;action::Function=^)
-  new=[p]
-  res=Dict(p=>one(G))
-  while !isempty(new)
-    old=copy(new)
-    empty!(new)
-    for p in old, s in gens(G)
-      w=action(p,s)
-      if !haskey(res,w)
-        push!(new,w)
-        res[w]=res[p]*s
-      end
-    end
-  end
-  res
-end
-
+# centralizer works for PermGroups only (because of extend below)
 function centralizer(G::Group,p;action::Function=^)
   new=[p]
   res=Dict(p=>one(G))
@@ -176,64 +89,6 @@ function centralizer(G::Group,p;action::Function=^)
     end
   end
   C
-end
-
-function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
-  res=Vector{eltype(v)}[]
-  while !isempty(v)
-    o=orbit(G,v[1],action=action)
-    push!(res,o)
-    v=setdiff(v,o)
-  end
-  res
-end
-
-"""
-assume l is union of orbits under group elt g; return permutation of l by g
-needs objects in l sortable
-"""
-Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
-
-Perm(g,l::AbstractVector;action::Function=^)=Perm{Int}(g,l,action=action)
-
-" dict giving for each element of G a minimal word in the generators"
-function minimal_words(G::Group)
-  words=Dict(one(G)=>Int[])
-  for i in eachindex(gens(G))
-    rw = [one(G)=>Int[]]
-    j=1
-    nwords=deepcopy(words)
-    while j<=length(rw)
-      for k in 1:i
-        e=rw[j][1]*gens(G)[k]
-        if !haskey(nwords,e)
-          we=vcat(rw[j][2],[k])
-          push!(rw,e=>we)
-          for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
-        end
-      end
-      j+=1
-    end
-    words = nwords
-  end
-  words
-end
-
-Gapjm.elements(G::Group)=collect(keys(minimal_words(G)))
-
-function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
-  gets(G,:classes) do G
-    if length(G)>1000
-      println("length(G)=",length(G),": not supposed to do it the hard way")
-    end
-    cl=orbits(G,collect(G))
-    G.prop[:classreps]=first.(cl)
-    G.prop[:classes]=cl
-  end
-end
-
-function class_reps(G::Group{T})::Vector{T} where T
-  getp(conjugacy_classes,G,:classreps)
 end
 
 #--------------- CharTables -----------------------------------------
@@ -301,26 +156,23 @@ symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
  The input is
  -  g: an element of a PermGroup G
  -  B: a base (or partial base) of G
- -  Δ: Δ[i] is the orbit_and_representative of C_G(B[1:i-1]) on B[i]
+ -  Δ: Δ[i] is the transversal of C_G(B[1:i-1]) on B[i]
  The function returns g "stripped" of its components in all C_G(B[1:i])
 """
 function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T
-  h=g
   for i in eachindex(B)
-    β=B[i]^h
-    if !haskey(Δ[i],β)
-      return h,i
-    end
-    h*=inv(Δ[i][β])
+    β=B[i]^g
+    if !haskey(Δ[i],β) return g,i end
+    g*=inv(Δ[i][β])
   end
-  h,length(B)+1
+  g,length(B)+1
 end
 
 """
   see Holt, 4.4.2
 
   This function creates in G.prop the fields base, centralizers,
-  centralizer_orbits. See the description in the functions with the same name.
+  transversals. See the description in the functions with the same name.
 """
 function schreier_sims(G::PermGroup{T})where T
   B=T[]
@@ -338,7 +190,7 @@ function schreier_sims(G::PermGroup{T})where T
     end
   end
   H=[Group(s) for s in S]
-  Δ=map(orbit_and_representative,H,B)
+  Δ=map(transversal,H,B)
   rep(v)=join(map(repr,v),',')
   i=length(B)
   while i>=1
@@ -359,10 +211,10 @@ function schreier_sims(G::PermGroup{T})where T
            push!(S[l],h)
            if l>length(H)
             push!(H,Group(S[l]))
-            push!(Δ,orbit_and_representative(H[l],B[l]))
+            push!(Δ,transversal(H[l],B[l]))
            else
            H[l]=Group(S[l])
-           Δ[l]=orbit_and_representative(H[l],B[l])
+           Δ[l]=transversal(H[l],B[l])
            end
          end
          i=j
@@ -375,7 +227,7 @@ function schreier_sims(G::PermGroup{T})where T
   end
   G.prop[:base]=B
   G.prop[:centralizers]=H
-  G.prop[:centralizer_orbits]=Δ
+  G.prop[:transversals]=Δ
 end
 
 " centralizers: the i-th element is the centralizer of base[1:i-1]"
@@ -388,8 +240,8 @@ end
   :base[i]  as a Dict where each point q is the key to a permutation p such
   that :base[i]^p=q
 """
-function centralizer_orbits(G::PermGroup{T})::Vector{Dict{T,Perm{T}}} where T
-  getp(schreier_sims,G,:centralizer_orbits)
+function transversals(G::PermGroup{T})::Vector{Dict{T,Perm{T}}} where T
+  getp(schreier_sims,G,:transversals)
 end
 
 " A list of points stabilized by no element of G "
@@ -400,13 +252,13 @@ end
 " length(G::PermGroup) returns the cardinality of G "
 function Base.length(G::PermGroup)::Int
   gets(G,:length)do G 
-    prod(map(length,centralizer_orbits(G)))
+    prod(length.(transversals(G)))
   end
 end
 
 " Tells whether permutation g is an element of G "
 function Base.in(g::Perm,G::PermGroup)
-  g,i=strip(g,base(G),centralizer_orbits(G))
+  g,i=strip(g,base(G),transversals(G))
   isone(g)
 end
 
@@ -423,7 +275,7 @@ end
 # of one element in each li
 function Base.iterate(G::PermGroup)
   prod=one(G)
-  state=map(reverse(values.(centralizer_orbits(G)))) do l
+  state=map(reverse(values.(transversals(G)))) do l
     u=iterate(l)
     if isnothing(u) return nothing end
     prod*=u[1]
@@ -434,7 +286,7 @@ end
 
 function Base.iterate(G::PermGroup,state)
   for i in eachindex(state)
-    u=iterate(values(centralizer_orbits(G)[i]),state[i][2])
+    u=iterate(values(transversals(G)[i]),state[i][2])
     if isnothing(u) continue end
     if i==length(state)
       state[i]=u
@@ -442,7 +294,7 @@ function Base.iterate(G::PermGroup,state)
       state[i]=(state[i+1][1]*u[1],u[2])
     end
     for j in i-1:-1:1
-      u=iterate(values(centralizer_orbits(G)[j]))
+      u=iterate(values(transversals(G)[j]))
       state[j]=(state[j+1][1]*u[1],u[2])
     end
     return state[1][1],state

@@ -160,6 +160,8 @@ bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end])
 function format(io::IO,t::Matrix; row_labels=axes(t,1),
   column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
   columns=axes(t,2), column_repartition=nothing)
+  lpad(s,n)=" "^(n-textwidth(s))*s # because lpad not what expected
+  rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
   t=t[rows,columns]
   if eltype(t)!=String t=sprint.(show,t; context=io) end
   row_labels=string.(row_labels[rows])
@@ -171,7 +173,7 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
   rows_label=lpad(rows_label,labwidth)
-  row_labels=map(x->x*" "^(labwidth-textwidth(x)),row_labels)
+  row_labels=rpad.(row_labels,labwidth)
   function hline(ci)
     print(io,"\u2500"^labwidth,"\u253C")
     print(io,"\u2500"^sum(colwidth[ci].+1),"\n")

@@ -195,6 +195,7 @@ Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
 computes (p,q) such that a=p*b+q
 """
 function Base.divrem(a::Pol, b::Pol)
+  if iszero(b) throw(DivideError) end
   d=inv(b.c[end])
   T=typeof(a.c[end]*d)
   v=T.(a.c)
@@ -215,6 +216,7 @@ Base.div(a::Pol, b::Pol)=divrem1(a,b)[1]
 divrem when b unitary: does not change type
 """
 function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+  if iszero(b) throw(DivideError) end
   d=b.c[end]
   if d^2!=1 throw(InexactError) end
   T=promote_type(T1,T2)

@@ -248,11 +248,12 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  if a.coeff!=1 || (iszero(a.valuation) && isempty(a.v))
+  nov=iszero(a.valuation) && isempty(a.v)
+  if a.coeff!=1 || nov
     c=a.coeff
     if c isa Rational && isone(denominator(c)) c=numerator(c) end
     s=sprint(show,c; context=io)
-    if occursin(r"[+\-*/]",s[nextind(s,1):end]) s="($s)" end
+    if occursin(r"[+\-*/]",s[nextind(s,1):end]) && !nov s="($s)" end
     print(io,s) 
   end
   if a.valuation==1 print(io,"q")
@@ -311,11 +312,9 @@ function CycPol(p::Pol{T})where T
     vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
     return CycPol(p.c[end],valuation(p),ModuleElt(sort(vcyc)))
   end
-  coeff=p.c[end]
   val=valuation(p)
   p=Pol(p.c,0)
   vcyc=zero(ModuleElt{Root1,Int})
-  if coeff^2!=1 p=p//coeff end # now p is monic
 
   # find factors Phi_i
   testcyc=function(c)
@@ -352,7 +351,7 @@ function CycPol(p::Pol{T})where T
   for i in tested 
     if degree(p)>=phi(i) testcyc(i) end
     testall(i)
-    if degree(p)==0 return CycPol(coeff,val,norm!(vcyc)) end
+    if degree(p)==0 return CycPol(p.c[end],val,norm!(vcyc)) end
   end
   
   # if not finished do a general search.
@@ -375,11 +374,9 @@ function CycPol(p::Pol{T})where T
     else i+=1
     end
   end
-# println("now p=$p val=$val coeff=$coeff")
-  if degree(p)==0 coeff*=p.c[1]
-  else coeff*=p
-  end
-  CycPol(coeff,val,norm!(vcyc))
+# println("now p=$p val=$val")
+  
+  CycPol(degree(p)==0 ? p.c[1] : p,val,norm!(vcyc))
 end
 
 function (p::CycPol)(x)

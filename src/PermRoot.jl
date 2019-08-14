@@ -585,7 +585,7 @@ function root_representatives(W::PermRootGroup)
   repelts=fill(one(W),length(roots(W)))
   for i in eachindex(gens(W))
     if iszero(reps[i])
-      d=orbit_and_representative(W,inclusion(W,i))
+      d=transversal(W,inclusion(W,i))
       for (n,e) in d 
         reps[restriction(W,n)]=i
         repelts[restriction(W,n)]=e
