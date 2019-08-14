@@ -481,7 +481,7 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   prop::Dict{Symbol,Any}
 end
 
-(W::FCG)(x...)=element(W.G,x...)
+(W::FCG)(x...)=element(W,x...)
 "number of reflections of W"
 @inline CoxGroups.nref(W::FCG)=W.N
 CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N

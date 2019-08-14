@@ -67,47 +67,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export PermGroup, base, transversals, centralizers,
-  symmetric_group, centralizer, CharTable
-
-# centralizer works for PermGroups only (because of extend below)
-function centralizer(G::Group,p;action::Function=^)
-  new=[p]
-  res=Dict(p=>one(G))
-  C=Group(empty(gens(G)))
-  while !isempty(new)
-    old=copy(new)
-    empty!(new)
-    for p in old, s in gens(G)
-      w=action(p,s)
-      if !haskey(res,w)
-        push!(new,w)
-        res[w]=res[p]*s
-      else
-        extend!(C,res[p]*s/res[w])
-      end
-    end
-  end
-  C
-end
-
-#--------------- CharTables -----------------------------------------
-struct CharTable{T}
-  irr::Matrix{T}
-  charnames::Vector{String}
-  classnames::Vector{String}
-  centralizers::Vector{Int}
-  identifier::String
-end
-
-function Base.show(io::IO,ct::CharTable)
-  println(io,"CharTable(",ct.identifier,")")
-  irr=map(ct.irr)do e
-   if iszero(e) "." else sprint(show,e; context=io) end
-  end
-  format(io,irr,row_labels=TeXstrip.(ct.charnames),
-                column_labels=TeXstrip.(ct.classnames))
-end
+export PermGroup, base, transversals, centralizers, symmetric_group
 
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
@@ -261,16 +221,7 @@ function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)
 end
-
-" extend G by adding generator s to G"
-function extend!(G::PermGroup,s::Perm)
-  if !(s in G)
-    push!(G.gens,s)
-    schreier_sims(G)
-  end
-  G
-end
-
+#------------------------- iteration for PermGroups -----------------------
 # if l1,...,ln are the centralizer orbits the elements are the products
 # of one element in each li
 function Base.iterate(G::PermGroup)
@@ -303,5 +254,49 @@ function Base.iterate(G::PermGroup,state)
 end
 
 Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
+
+#------------------- cosets ----------------------------------------
+struct Coset{T,TW<:Group{T}}
+  w::T
+  G::TW
+end
+
+# computes "canonical" element of W.w
+function Coset(W::PermGroup,w)
+  for i in eachindex(base(W))
+    t=transversals(W)[i]
+    (kw,e)=minimum((k^w,e) for (k,e) in t)
+    w=e*w
+  end
+  Coset(w,W)
+end
+
+Base.cmp(a::Coset, b::Coset)=cmp(a.w,b.w)
+
+Base.isless(a::Coset, b::Coset)=cmp(a,b)==-1
+
+Base.:(==)(a::Coset, b::Coset)= cmp(a,b)==0
+
+Base.hash(a::Coset, h::UInt)=hash(a.w,h)
+
+Base.copy(C::Coset)=Coset(C.w,C.G)
+
+Base.one(C::Coset)=Coset(one(C.w),C.G)
+
+Base.inv(C::Coset)=Coset(C.G,inv(C.w))
+
+Base.:*(a::Coset,b::Coset)=Coset(a.G,a.w*b.w)
+
+Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                               Base.power_by_squaring(inv(a),-n)
+Base.show(io::IO,C::Coset)=print(io,C.G,".",C.w)
+
+struct CosetGroup{T,TW}<:Group{T}
+  gens::Vector{Coset{T,TW}}
+  prop::Dict{Symbol,Any}
+end
+
+Groups.Group(g::Vector{Coset{T,TW}}) where {T,TW}=
+  CosetGroup(filter(x->!isone(x),g),Dict{Symbol,Any}())
 
 end

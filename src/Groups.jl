@@ -58,7 +58,7 @@ Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
 
 module Groups
 using ..Gapjm # for gens, minimal_words
-export Group, minimal_words, element, gens, nbgens, class_reps,
+export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom
 
 #--------------general groups and functions for "black box groups" -------
@@ -115,6 +115,13 @@ function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
     v=setdiff(v,o)
   end
   res
+end
+
+# centralizer of point: Schreier generators
+function centralizer(G::Group,p;action::Function=^)
+  t=transversal(G,p;action=action)
+  C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)]
+  Group(unique(sort(C)))
 end
 
 " dict giving for each element of G a minimal word in the generators"

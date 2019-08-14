@@ -122,8 +122,8 @@ function QuotientAu(Au,chars)
   finish=function(q,ww)
     h=Hom(Au,q,map(x->q(x...),ww))
     fusion=map(c->position_class(q,h(c)),class_reps(Au))
-    ctu=chartable(Au).irr
-    cth=chartable(q).irr
+    ctu=CharTable(Au).irr
+    cth=CharTable(q).irr
     ch(c)=map(j->ctu[c,findfirst(isequal(j),fusion)],1:NrConjugacyClasses(q))
     return Dict(:Au=>q,
       :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
@@ -131,7 +131,7 @@ function QuotientAu(Au,chars)
   end
   Z=n->ComplexReflectionGroup(n,1,1)
   println("Au=$Au chars=$chars")
-  ct=permutedims(chartable(Au).irr[chars,:])
+  ct=permutedims(CharTable(Au).irr[chars,:])
   cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))
 # println("ct=$ct cl=$cl")
   if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
@@ -493,9 +493,9 @@ function Util.format(io::IO,uc::UnipotentClasses, opt=Dict{Symbol,Any}())
          column_labels=column_labels)
 end
 
-# decompose tensor product of characteres (given as their indices in chartable)
+# decompose tensor product of characteres (given as their indices in CharTable)
 function DecomposeTensor(W,c::Int...)
-  ct=chartable(W)
+  ct=CharTable(W)
   irr=ct.irr
 # println("eltype=",eltype(irr))
   ch=conj.(prod(irr[collect(c),:],dims=1))
@@ -626,7 +626,7 @@ function ICCTable(uc,i=1,var=Pol(:q))
 # where $d_i$ are the reflection degrees of $W_G(L)$
 # res[:scalar] is the masrix $P$
   R=ss[:relgroup]
-  ct=chartable(R)
+  ct=CharTable(R)
   q=Pol(:q)
   f=fakedegrees(R,q)
   k=charinfo(R)[:positionDet]

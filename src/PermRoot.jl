@@ -458,7 +458,7 @@ function hyperplane_orbits(W::PermRootGroup)
    findfirst(x->length(x)==1 && simple_representatives(W)[x[1]]==s,
              classinfo(W)[:classtext])
   end
-  chars=chartable(W).irr
+  chars=CharTable(W).irr
   map(zip(orb,class)) do (s,c)
     ord=order(W(s))
  #  classno=map(j->position_class(W,W(s)^j),1:ord-1)
@@ -503,7 +503,7 @@ reflchar(W::PermRootGroup)=reflchar.(Ref(W),class_reps(W))
   
 function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
   gets(W,:refleigen) do W
-    t=chartable(W).irr[charinfo(W)[:extRefl],:]
+    t=CharTable(W).irr[charinfo(W)[:extRefl],:]
     v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
     l=CycPol.((permutedims(v)*t)[1,:])
     ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
@@ -606,7 +606,7 @@ struct PRG{T,T1}<:PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-(W::PRG)(x...)=element(W.G,x...)
+(W::PRG)(x...)=element(W,x...)
 function PRG(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
   matgens=map(reflection,r,cr)
 

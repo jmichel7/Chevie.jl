@@ -1,10 +1,9 @@
 module HasType
 
-export charinfo, classinfo, reflection_name, diagram, chartable,
+export charinfo, classinfo, reflection_name, diagram,
   representation, fakedegrees, unipotent_characters, UnipotentClasses,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, Cartesian, weightinfo
-
+  chevieget, field, getchev, Cartesian, weightinfo, CharTable
 using Gapjm
 #-----------------------------------------------------------------------
 const chevie=Dict()
@@ -217,7 +216,25 @@ function PermGroups.class_reps(W::PermRootGroup)
 end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 
-function chartable(t::TypeIrred)
+#--------------- CharTables -----------------------------------------
+struct CharTable{T}
+  irr::Matrix{T}
+  charnames::Vector{String}
+  classnames::Vector{String}
+  centralizers::Vector{Int}
+  identifier::String
+end
+
+function Base.show(io::IO,ct::CharTable)
+  println(io,"CharTable(",ct.identifier,")")
+  irr=map(ct.irr)do e
+   if iszero(e) "." else sprint(show,e; context=io) end
+  end
+  format(io,irr,row_labels=TeXstrip.(ct.charnames),
+                column_labels=TeXstrip.(ct.classnames))
+end
+
+function CharTable(t::TypeIrred)
   ct=getchev(t,:CharTable)
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(t)[:charnames]
@@ -230,9 +247,9 @@ function chartable(t::TypeIrred)
   CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
-function chartable(W)::CharTable
+function CharTable(W)::CharTable
   gets(W,:chartable) do W
-    ctt=chartable.(refltype(W))
+    ctt=CharTable.(refltype(W))
     if isempty(ctt) 
       return CharTable(hcat(1),["Id"],["1"],[1],"$W")
     end
@@ -247,7 +264,7 @@ function chartable(W)::CharTable
   end
 end
 
-function chartable(H::HeckeAlgebra{C})where C
+function CharTable(H::HeckeAlgebra{C})where C
   W=H.W
   ct=impl1(getchev(W,:HeckeCharTable,H.para,
        haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
@@ -258,6 +275,7 @@ function chartable(H::HeckeAlgebra{C})where C
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
 
+#----------------- representations ----------------------------------------
 function representation(H::HeckeAlgebra,i::Int)
   ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
@@ -747,7 +765,7 @@ FormatGAP(x)=repr(x)
 Format(x,opt)= haskey(opt,:TeX) ? FormatTeX(x) : string(x)
 
 function ReadChv(s) end
-Group(v...)=v
+Group(a::Perm...)=Group(collect(a))
 ComplexConjugate(v)=v
 GetRoot(x::Cyc,n::Number=2,msg::String="")=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg::String="")=root(x,n)
