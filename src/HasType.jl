@@ -592,6 +592,22 @@ CoxeterGroup()=coxgroup()
 struct ExtendedCox{T<:FiniteCoxeterGroup}
   group::T
   F0s::Vector{Matrix{Int}}
+  phis::Vector{<:Perm}
+end
+
+function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
+  phis=map(F->Perm(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r),F0s)
+  ExtendedCox(W,F0s,phis)
+end
+
+function Base.:*(a::ExtendedCox,b::ExtendedCox)
+  if isempty(gens(a.group)) return b
+  elseif isempty(gens(b.group)) return a
+  end
+  id(r)=one(fill(0,r,r))
+  ExtendedCox(a.group*b.group,vcat(
+                   map(m->cat(m,id(rank(b.group)),dims=(1,2)),a.F0s),
+                   map(m->cat(id(rank(b.group)),m,dims=(1,2)),b.F0s)))
 end
 
 Base.show(io::IO,W::ExtendedCox)=print(io,"Extended($(W.group),$(W.F0s))")

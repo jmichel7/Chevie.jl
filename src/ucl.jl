@@ -103,17 +103,19 @@ end
 # unipotent classes of a reductive group G.
 function QuotientAu(Au,chars)
   AbGens=function(g)
-    res=[]
+    res=empty(gens(g))
     l=gens(g)
+    println("l=$l")
     while !isempty(l)
-      sort!(l,by=x->-Order(g,x))
-      t=l[1].*elements(subgroup(g,res))
-      if any(x->Order(g,x)<Order(g,l[1]),t)
-        t=First(t,x->Order(g,x)<Order(g,l[1]))
-	if Order(g,t)>1 l[1]=t
+      sort!(l,by=order,rev=true)
+      if isempty(res) t=[l[1]] else t=Ref(l[1]).*elements(Group(res)) end
+      p=findfirst(x->order(x)<order(l[1]),t)
+      if !isnothing(p)
+        t=t[p]
+	if order(t)>1 l[1]=t
 	else l=Drop(l,1)
         end
-      else Add(res,l[1])
+      else push!(res,l[1])
       end
     end
     res
@@ -144,17 +146,17 @@ function QuotientAu(Au,chars)
   end
   println("Au=$Au k=$k")
   if semisimplerank(Au)==1 return finish(Z(div(length(Au),length(k))),[[1]])
-  elseif IsAbelian(Au/k)
+  elseif isabelian(Au/k)
     q=Au/k
-    q.generators=AbGens(q)
-    h=NaturalHomomorphism(Au,q)
-    f=List(gens(Au),x->word(q,x^h))
-#  Print(Product(List(gens(q),x->Z(Order(q,x))))," ",f,"\n");
-    return finish(Product(List(gens(q),x->Z(Order(q,x)))),f)
+    q=Group(AbGens(q))
+    h=Hom(Au,q,map(x->Coset(k,x),gens(Au)))
+    f=map(x->word(q,h(x)),gens(Au))
+#  Print(Product(map(x->Z(order(x)),gens(q)))," ",f,"\n");
+    return finish(prod(map(x->Z(order(x)),gens(q))),f)
   else
-    p=PositionProperty(t->all(x->x in ReflectionSubgroup(Au,t.indices)),
+    p=findfirst(t->all(x->x in reflection_subgroup(Au,t.indices)),
                        elements(k),refltype(Au))
-    if p!=false
+    if !isnothing(p)
       p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
 	return finish(reflection_subgroup(Au,Difference(gens(Au),p)),
@@ -169,7 +171,7 @@ function QuotientAu(Au,chars)
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
     end
   end
-# Print(" Au=",ReflectionName(Au)," sub=",List(k.generators,e.Get),"\n");
+# Print(" Au=",ReflectionName(Au)," sub=",map(e.Get,gens(k)),"\n");
   error("not implemented ",ReflectionName(Au),chars)
 # q:=Au/k; f:=FusionConjugacyClasses(Au,q); Print(" quot=",q," fusion=",f,"\n");
 # return rec(Au:=Au,chars:=chars);
@@ -264,7 +266,6 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   else
     classes=map(Cartesian(map(x->x.classes,uc)...)) do v
       l=getindex.(t,:indices)
-#     println("v=$v")
       if length(v)==1 u=deepcopy(v[1]) 
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
@@ -276,10 +277,10 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
           u.prop[:dimunip]=sum(x->x.prop[:dimunip],v) end
         if all(x->haskey(x.prop,:red),v) 
           u.prop[:red]=prod(x->x.prop[:red],v) end
-        if all(x->haskey(x.prop,:AuAction)) 
+        if all(x->haskey(x.prop,:AuAction),v) 
           u.prop[:AuAction]=prod(x->x.prop[:AuAction],v) end
-        if all(x->haskey(x.prop,:dynkin))
-          u.prop[:dynkin]=zeroes(Int,sum(x->length(x.prop[:dynkin]),v))
+        if all(x->haskey(x.prop,:dynkin),v)
+          u.prop[:dynkin]=zeros(Int,sum(x->length(x.prop[:dynkin]),v))
           for i in 1:length(l) u.prop[:dynkin][l[i]]=v[i].prop[:dynkin] end
         end
       end
@@ -316,16 +317,16 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
     elseif length(v)==1 return deepcopy(v[1])
     end
-    s=Dict(:levi=>vcat(map(i->l[i][v[i][:levi]],eachindex(v))...))
+    s=Dict{Symbol,Any}(:levi=>vcat(map(i->l[i][v[i][:levi]],eachindex(v))...))
     s[:Z]=vcat(getindex.(v,:Z)...)
-    s[:locsys]=map(Cartesian(getindex.(v,:locsys))) do v
-        v=permutedims(v)
-        v[2]=PositionCartesian(List(i->NrConjugacyClasses(
-              uc[i].classes[v[1][i]][:Au]),eachindex(v[1])),v[2])
-        v[1]=PositionCartesian(ll,v[1])
-        v
-        end
+    s[:locsys]=map(Cartesian(getindex.(v,:locsys)...)) do v
+      v=collect.(zip(v...))
+      u=map(i->NrConjugacyClasses(uc[i].classes[v[1][i]].prop[:Au]),
+              eachindex(v[1]))
+      [PositionCartesian(ll,v[1]),PositionCartesian(u,v[2])]
+    end
     if all(haskey.(v,:parameter)) s[:parameter]=getindex.(v,:parameter) end
+    s[:relgroup]=prod(getindex.(v,:relgroup))
     if length(v)==1 
       for k in setdiff(keys(v[1]),[:levi,:Z,:locsys,:parameter])
         s[k]=v[1][k]
@@ -391,7 +392,8 @@ function FormatCentralizer(u,opt)
   if haskey(u.prop,:AuAction)
     if Rank(u.prop[:red])>0
       c*="."
-      if length(u.prop[:Au])==1 || length(u.prop[:Au])==length(Group(u.prop[:AuAction].F0s...))
+      if length(u.prop[:Au])==1 || 
+         length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
         c*=reflection_name(u.prop[:AuAction],opt)
       elseif all(isone,u.prop[:AuAction].F0s)
         c*=reflection_name(u.prop[:AuAction].group,opt)*AuName(u)

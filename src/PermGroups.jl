@@ -67,13 +67,15 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export PermGroup, base, transversals, centralizers, symmetric_group
+export PermGroup, base, transversals, centralizers, symmetric_group, Coset
 
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
   gens::Vector{Perm{T}}
   prop::Dict{Symbol,Any}
 end
+
+PermGroup(W::PermGroup)=W
 
 function Group(a::AbstractVector{Perm{T}}) where T
   PermGroup(filter(x->!isone(x),a),Dict{Symbol,Any}())
@@ -289,14 +291,19 @@ Base.:*(a::Coset,b::Coset)=Coset(a.G,a.w*b.w)
 
 Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
+
+Perms.order(a::Coset)=findfirst(i->isone(a^i),1:order(a.w))
+
 Base.show(io::IO,C::Coset)=print(io,C.G,".",C.w)
 
-struct CosetGroup{T,TW}<:Group{T}
+struct CosetGroup{T,TW}<:Group{Coset{T,TW}}
   gens::Vector{Coset{T,TW}}
   prop::Dict{Symbol,Any}
 end
 
 Groups.Group(g::Vector{Coset{T,TW}}) where {T,TW}=
   CosetGroup(filter(x->!isone(x),g),Dict{Symbol,Any}())
+
+Base.:/(W::PermGroup,H::PermGroup)=Group(map(x->Coset(H,x),gens(W)))
 
 end

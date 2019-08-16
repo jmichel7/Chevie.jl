@@ -59,7 +59,7 @@ Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
 module Groups
 using ..Gapjm # for gens, minimal_words
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
-  conjugacy_classes, orbit, transversal, orbits, Hom
+  conjugacy_classes, orbit, transversal, orbits, Hom, isabelian
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -170,10 +170,10 @@ function class_reps(G::Group{T})::Vector{T} where T
 end
 
 # hom from source to target sending gens(source) to images
-struct Hom{T}
+struct Hom{T,T1}
   source::Group{T}
-  target::Group{T}
-  images::Vector{T}
+  target::Group{T1}
+  images::Vector{T1}
 end
 
 function Base.show(io::IO,h::Hom)
@@ -181,14 +181,18 @@ function Base.show(io::IO,h::Hom)
 end
 
 function Gapjm.kernel(h::Hom)
-  if all(isone,h.images) return h.source end
-  if length(h.source)==length(Group(h.images)) 
+  if all(isone,h.images) return h.source
+  elseif length(h.source)==length(Group(h.images)) 
     return Group(empty(gens(h.source)))
+  elseif length(h.source)<1000
+    return Group(filter(x->isone(h(x)),elements(h.source)))
+  else error("not implemented: kernel(",h,")")
   end
-  error("not implemented: kernel(",h,")")
 end
 
 # h(w) is the image of w by h
 (h::Hom)(w)=isone(w) ? one(h.target) : prod(h.images[word(h.source,w)])
+
+isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
 end

@@ -287,12 +287,14 @@ end
 #---------------------------------------------------------------------------
 abstract type PermRootGroup{T,T1<:Integer}<:Group{Perm{T1}} end 
 
+PermGroups.PermGroup(W::PermRootGroup)=W.G
 Diagram(W::PermRootGroup)=Diagram(refltype(W))
 Gapjm.gens(W::PermRootGroup)=gens(W.G)
 Gapjm.degree(W::PermRootGroup)=degree(W.G)
 Base.length(W::PermRootGroup)=length(W.G)
 Base.iterate(W::PermRootGroup,x...)=iterate(W.G,x...)
 Base.eltype(W::PermRootGroup)=eltype(W.G)
+Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
 
 "for each root index of simple representative"
 function simple_representatives(W::PermRootGroup{T,T1})::Vector{T1} where {T,T1}

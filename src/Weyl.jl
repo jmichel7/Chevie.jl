@@ -456,6 +456,7 @@ Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
 #forwarded methods to PermRoot/W.G
 @inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
 Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
 PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G,a...)
@@ -473,6 +474,7 @@ PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 PermGroups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
+Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
