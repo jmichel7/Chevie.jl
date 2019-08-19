@@ -55,7 +55,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
     t=refltype(WF.W)
     c=map(x->PermRoot.indices(x),t)
     phires=Perm(WF.phi,inclusion(WF.W.G))
-    map(cycles(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
+    map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
       o=deepcopy(t[c])
       J=PermRoot.indices(o[1])
       twist=Perm{Int16}(phires^length(c),J)

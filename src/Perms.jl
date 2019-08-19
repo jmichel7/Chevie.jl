@@ -3,23 +3,24 @@ This module is a port of the GAP permutations type.
 
 A  permutation here is a permutation of the set `1:n` and is represented as
 a  vector of `n` integers representing the images of `1:n`. The integer `n`
-is called the *degree* of the permutation, even if it is not moved.
+is called the degree of the permutation, even if it is not moved. We follow
+the  GAP design: it is possible to multiply, or to store in the same group,
+permutations of different degrees; this is implemented by promoting both to
+the   higher  degree.  Slightly  faster  is  the  MAGMA  design  where  any
+permutation  has to belong to a group  and the degree is determined by that
+group. Then multiplication of permutations within a given group is slightly
+faster,  but  it  is  more  difficult  to multiply permutations coming from
+different  groups, like a group and one  of its subgroups. The degree is an
+implementation  detail so usually  it should not  be used. One sould rather
+use the function `largest_moved_point`.
 
-The  permutations in this module  follow the GAP design:  it is possible to
-multiply, or to store in the same group, permutations of different degrees.
-Slightly  faster is the MAGMA design where any permutation has to belong to
-a  group and the degree is determined by that group. Then multiplication of
-permutations  in a given group is slightly faster, but it is more difficult
-to multiply permutations coming from different groups, like a group and one
-of its subgroups.
-
-The  permutation whose cycle decomposition is `(1,2,3)(4,5)` can be written
-`Perm(1,2,3)*Perm(4,5)`   or   `perm"(1,2,3)(4,5)"`.   It   is  represented
-internally  as `[2,3,1,5,4]`; note that `[2,3,1,5,4,6]` represents the same
-permutation.
-
-As  in  GAP  `i^p`  applies  `p`  to  the  integer  `i`,  while `p^q` means
-`p^-1*q*p`.
+A  permutation  can  be  defined  by  the  list  of  images  of `1:n`, like
+`Perm([2,3,1,5,4])`.  Usually it is rather  given by its cycle decomposion:
+the  permutation whose cycle decomposition is `(1,2,3)(4,5)` can be written
+`Perm(1,2,3)*Perm(4,5)`  or  `perm"(1,2,3)(4,5)"`.  The  list  of images of
+`1:n`  is gotten back from the permutation by the function `vec`; note that
+since  equal  permutations  may  have  different  degrees,  they  may  have
+different `vec`.
 
 The  complete  type  of  our  permutations is `Perm{T}` where `T<:Integer`,
 where `Vector{T}` is the type of the vector which holds the image of `1:n`.
@@ -29,41 +30,66 @@ groups of rank <=8 since they have at most 240 roots.
 
 # Examples
 ```julia-repl
-julia> p=Perm(1,2)*Perm(2,3)
-(1,3,2)
-
-julia> Perm{Int8}(p)
-Int8(1,3,2)
-
-julia> 1^p
-3
-
-julia> Matrix(p)
-3×3 Array{Int64,2}:
- 0  0  1
- 1  0  0
- 0  1  0
-
-julia> p^Perm(3,10)
-(1,10,2)
-
-julia> inv(p)
+julia> a=Perm(1,2,3)
 (1,2,3)
 
-julia> one(p)
+julia> vec(a)
+3-element Array{Int64,1}:
+ 2
+ 3
+ 1
+
+julia> a==Perm(vec(a))
+true
+
+julia> b=Perm(1,2,3,4)
+(1,2,3,4)
+
+julia> a*b     # product
+(1,3,2,4)
+
+julia> inv(a)  # inverse
+(1,3,2)
+
+julia> a/b     # quotient  a*inv(b)
+(3,4)
+
+julia> a\b     # left quotient inv(a)*b
+(1,4)
+
+julia> a^b     # conjugation inv(b)*a*b
+(2,3,4)
+
+julia> b^2
+(1,3)(2,4)
+
+julia> 1^a     # apply a to point 1
+2
+
+julia> one(a)
 ()
 
-julia> order(p)
+julia> sign(a)
+1
+
+julia> order(a)
 3
 
-julia> degree.((Perm(1,2),Perm(2,3)))
-(2, 3)
+julia> largest_moved_point(a)
+3
 
-julia> largest_moved_point(Perm(1,2)*Perm(2,3)^2)
-2
+julia> smallest_moved_point(a)
+1
 
-julia> smallest_moved_point(Perm(2,3))
-2
+julia> Perm{Int8}(a) # convert to Perm{Int8}
+Int8(1,2,3)
+
+julia> Matrix(b)
+4×4 Array{Int64,2}:
+ 0  1  0  0
+ 0  0  1  0
+ 0  0  0  1
+ 1  0  0  0
 ```
 
 ```not-in-tests
@@ -72,37 +98,41 @@ julia> rand(Perm,10)
 
 ```
 
-Operations on permutations are `*, /, inv, \` and `mul!`
-Perms  have methods `copy, hash,  ==, cmp, isless` (total order)  so they can be
-keys in hashes or elements of sets.
+Perms  have methods `copy, hash, ==, cmp, isless` (total order) so they can
+be  keys  in  hashes  or  elements  of sets. Permutations are considered as
+scalars for broadcasting.
 
-other functions are: `cycles, cycletype, sign, rand`. 
+other functions are: `cycles, cycletype, orbits, rand, sign`. 
 See individual documentations.
 
 GAP→ Julia dictionary
 ```
      PermList(v)                      →  Perm(v) 
      Permuted(v,p)                    →  v[p.d]
-     ListPerm(p)                      →  p.d
+     ListPerm(p)                      →  vec(p)
      PermListList(l1,l2)              →  Perm(l1,l2)
-     OnTuples(l,p)                    →  l.^p or (faster) p.d[l]
+     OnTuples(l,p)                    →  l.^p
      RestrictedPerm                   →  restricted
 ```
 """
 module Perms
 
-using Gapjm 
+using Gapjm, ..Groups
+import ..Gapjm.degree
+import ..Gapjm.restricted
 
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
-  @perm_str, smallest_moved_point
+  @perm_str, smallest_moved_point, reflength
 
 struct Perm{T<:Integer}
    d::Vector{T}
 end
 
+Base.vec(a::Perm)=a.d
+
 # Gap's Permuted(a,p) is a[p.d], Gap's ListPerm(p) is p.d
 #---------------- Constructors ---------------------------------------
-"for example  Perm{Int8}(1,2,3) constructs a cycle"
+"for example  Perm{Int8}(1,2,3) constructs the cycle (1,2,3)"
 function Perm{T}(x::Int...)where T<:Integer
   if isempty(x) return Perm(T[]) end
   d=T.(1:max(x...))
@@ -120,7 +150,7 @@ Perm(x::Int...)=Perm{Int}(x...)
 Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
 
 """
-allows GAP-style perm"(1,2)(5,6,7)(4,9)"
+allow GAP-style perm"(1,2)(5,6,7)(4,9)"
 """
 macro perm_str(s::String)
   start=1
@@ -147,7 +177,10 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
   res
 end
 
-" find permutation mapping l to l1 if exists"
+"""
+Perm{T}(l::AbstractVector,l1::AbstractVector)
+find permutation p such that Permuted(l1,p)==l if  it exists
+"""
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
   s1=sortperm(l1)
@@ -170,7 +203,6 @@ Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
-import ..Gapjm.degree
 @inline degree(a::Perm)=length(a.d)
 #Base.vec(a::Perm)=a.d
 
@@ -281,7 +313,10 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 #---------------------- cycle decomposition -------------------------
-function cycle(a::Perm{T},i::Integer,check=false)where T
+"""
+  orbit(a::Perm,i::Integer) returns the orbit of a on i
+"""
+function Group.orbit(a::Perm{T},i::Integer,check=false)where T
   res=T[]
   j=i
   while true
@@ -292,32 +327,44 @@ function cycle(a::Perm{T},i::Integer,check=false)where T
 end
   
 """
-  cycles(a::Perm) returns the cycles of a
+orbits(a::Perm,d::Vector=1:length(vec(a))) returns the orbits of a on domain d
 # Example
 ```julia-repl
-julia> cycles(Perm(1,2)*Perm(4,5))
+julia> orbits(Perm(1,2)*Perm(4,5),1:5)
 3-element Array{Array{Int64,1},1}:
  [1, 2]
  [3]
  [4, 5]
 ```
 """
-function cycles(a::Perm{T};domain=1:length(a.d),check=false)where T
+function Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
   to_visit=falses(length(a.d))
   to_visit[domain].=true
-  cycles=Vector{T}[]
+  cycles=Vector{eltype(a.d)}[]
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
-    cyc=cycle(a,i,check)
+    cyc=orbit(a,i,check)
     to_visit[cyc].=false
-    push!(cycles,cyc)
+    if length(cyc)>1 || trivial push!(cycles,cyc) end
   end
   cycles
 end
 
+"""
+  cycles(a::Perm) returns the non-trivial cycles of a
+# Example
+```julia-repl
+julia> cycles(Perm(1,2)*Perm(4,5))
+3-element Array{Array{Int64,1},1}:
+ [1, 2]
+ [4, 5]
+```
+"""
+cycles(a::Perm;check=false)=orbits(a;trivial=false)
+
 function Base.show(io::IO, a::Perm{T}) where T
   if T!=Int print(io,T) end
-  cyc=filter(c->length(c)>1,cycles(a,check=true))
+  cyc=orbits(a;trivial=false,check=true)
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
@@ -358,35 +405,30 @@ function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
   sort(collect(res),by=x->x[1])
 end
 
-function nrcycles(a::Perm)
+" reflength(a::Perm) minimum number of transpositions of which a is product"
+function reflength(a::Perm)
   to_visit=trues(length(a.d))
-  nr=0
+  l=0
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
-    nr+=1
     j=i
     while true
       to_visit[j]=false
-      j=a.d[j]
-      if j==i break end
+      if (j=a.d[j])==i break end
+      l+=1
     end
   end
-  nr
+  l
 end
 
 " sign(a::Perm) is the signature of  the permutation a"
-Base.sign(a::Perm)=(-1)^(length(a.d)-nrcycles(a)) # nr of even cycles
+Base.sign(a::Perm)=(-1)^reflength(a)
 
 # l should be a union of cycles of p
 # returns p restricted to l
-function Gapjm.restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
-  res=one(a)
-  while !isempty(l)
-    c=cycle(a,l[1])
-    l=setdiff(l,c)
-    res*=Perm{T}(Int.(c)...)
-  end
-  res
+function restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
+  o=orbits(a,l;trivial=false)
+  isempty(o) ? Perm{T}() : prod(c->Perm{T}(c...),o)
 end
 
 end

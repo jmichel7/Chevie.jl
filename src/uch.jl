@@ -29,7 +29,7 @@ function params_and_names(sers)
   res
 end
 
-function unipotent_characters(t::TypeIrred) 
+function UnipotentCharacters(t::TypeIrred) 
   uc=getchev(t,:UnipotentCharacters)
   if uc==false 
     println("Warning: $t is not a Spets!!")
@@ -37,10 +37,11 @@ function unipotent_characters(t::TypeIrred)
   end
   merge!(uc,params_and_names(uc[:harishChandra]))
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
-  uc
+  uc[:group]=t
+  UnipotentCharacters(uc)
 end
 
-function unipotent_characters(W) 
+function UnipotentCharacters(W) 
   function CartesianSeries(sers)
     ser=Dict()
     ser[:levi]=vcat(getindex.(sers,:levi)...)
@@ -66,7 +67,7 @@ function unipotent_characters(W)
   end
 
   type=refltype(W)
-  if isempty(type) # unipotent_characters(coxgroup())
+  if isempty(type) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(Dict( 
       :harishChandra=>[
 	Dict(:relativeType=>Dict[], 
@@ -85,7 +86,7 @@ function unipotent_characters(W)
   simp=map(type) do t
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
-    uc=unipotent_characters(t)
+    uc=UnipotentCharacters(t).prop
     H=reflection_subgroup(W,t[:indices])
     for s in uc[:harishChandra]
      s[:levi]=inclusion(H)[s[:levi]]
@@ -142,7 +143,11 @@ function unipotent_characters(W)
 end
 
 function Base.show(io::IO,uc::UnipotentCharacters)
-  println(io,"unipotent_characters(",uc.prop[:group],")")
+  print(io,"UnipotentCharacters(",uc.prop[:group],")")
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  if !repl return end
+  println(io,"")
   q=Pol([1],1)
   m=hcat(sprint.(show,CycPol.(degrees(uc,q)); context=io),
          sprint.(show,CycPol.(fakedegrees(uc,q)); context=io),
@@ -153,12 +158,12 @@ function Base.show(io::IO,uc::UnipotentCharacters)
          column_labels=TeXstrip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
 end
 
-group(uc::UnipotentCharacters)=uc.prop[:group]
+Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
 
 function fakedegrees(uc::UnipotentCharacters,q)
   gets(uc,:fakedegrees)do uc
     fd=fill(zero(q),length(uc.prop[:TeXCharNames]))
-    f=fakedegrees(group(uc),q)
+    f=fakedegrees(Group(uc),q)
     if isa(q,Pol) f=convert.(Pol{Int},f) end
     fd[uc.prop[:harishChandra][1][:charNumbers]]=f
     fd

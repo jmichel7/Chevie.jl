@@ -161,7 +161,7 @@ export PermRootGroup, PRG, PRSG,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- position_class, reflength, bipartite_decomposition, torus_order, rank, matX,
+ position_class, bipartite_decomposition, torus_order, rank, matX,
  roots, coroots, baseX, semisimplerank
 
 using Gapjm

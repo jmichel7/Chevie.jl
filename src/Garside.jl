@@ -701,7 +701,7 @@ function α(b)
 end
 
 """
-word(b)
+word(b::GarsideElm)
 returns  a description  of `b`  as a  list of  the atoms  of which  it is a
 product.  If `b` is in the Garside group  but not the Garside monoid, it is
 represented  in  fraction  normal  form  where  as a special convention the

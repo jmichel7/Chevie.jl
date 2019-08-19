@@ -3,59 +3,30 @@ This module is a port of some GAP functionality on groups.
 
 The only field of a Group G at the start is gens, the list of generators of
 G.  To  mimic  GAP  records  where  attributes/properties  of an object are
-computed  on demand when asked for, other fields are computed on demand and
-stored in the field prop of the Group, which starts as Dict{Symbol,Any}()
+computed  on demand when asked for, other attributes computed on demand are
+stored in the field .prop of the Group, which starts as Dict{Symbol,Any}()
 
 # Examples
 ```julia-repl
-julia> G=Group([Perm(i,i+1) for i in 1:2])
-Group([(1,2),(2,3)])
+julia> G=Group([Perm(1,2),Perm(1,2,3)])
+Group([(1,2),(1,2,3)])
 
 julia> gens(G)
 2-element Array{Perm{Int64},1}:
- (1,2)
- (2,3)
+ (1,2)  
+ (1,2,3)
 
 julia> nbgens(G)
 2
-
-# orbit of point 1 under G
-julia> orbit(G,1) 
-3-element Array{Int64,1}:
- 2
- 3
- 1
-
-# transversal of point 1: Dict  t with keys orbit of 1 and for i in orbit
-# t[i] is a representatives moving 1 to i
-julia> transversal(G,1)
-Dict{Int64,Perm{Int64}} with 3 entries:
-  2 => (1,2)
-  3 => (1,3,2)
-  1 => ()
-
-# orbit functions can take any action of G as keyword argument
-julia> transversal(G,[1,2],action=(x,y)->x.^Ref(y))
-Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
-  [1, 3] => (2,3)
-  [1, 2] => ()
-  [2, 3] => (1,2,3)
-  [3, 2] => (1,3)
-  [2, 1] => (1,2)
-  [3, 1] => (1,3,2)
-
-julia> minimal_words(G)  # minimal word in gens for each element of G
-Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
-  ()      => Int64[]
-  (2,3)   => [2]
-  (1,3,2) => [1, 2]
-  (1,3)   => [1, 2, 1]
-  (1,2)   => [1]
-  (1,2,3) => [2, 1]
 ```
 
+The group itself, applied to a sequence of integers, returns the element
+defined by the corresponding word in the generators
+```julia-repl
+julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
+(1,3)
+```
 """
-
 module Groups
 using ..Gapjm # for gens, minimal_words
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
@@ -73,7 +44,19 @@ nbgens(G::Group)=length(gens(G))
 element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) : 
     prod( gen(W,i) for i in w)
 
-" orbit(G,p) is the orbit of p under Group G"
+"""
+  orbit(G::Group,p;action::Function=^)
+
+  the orbit of p under Group G"
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> orbit(G,1) 
+3-element Array{Int64,1}:
+ 2
+ 3
+ 1
+```
+"""
 function orbit(G::Group,p;action::Function=^)
   new=Set([p])
   res=empty(new)
@@ -89,7 +72,33 @@ function orbit(G::Group,p;action::Function=^)
   collect(res)
 end
 
-"returns Dict x=>g for x in orbit(G,p) giving g such that x=action(p,g)"
+"""
+  transversal(G::Group,p;action::Function=^)
+
+ returns  a Dict with entries x=>g where x runs over orbit(G,p) and where g
+ is such that x=action(p,g)
+
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> transversal(G,1)
+Dict{Int64,Perm{Int64}} with 3 entries:
+  2 => (1,2)
+  3 => (1,3,2)
+  1 => ()
+```
+ orbit functions can take any action of G as keyword argument
+
+```julia-repl
+julia> transversal(G,[1,2],action=(x,y)->x.^y)
+Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
+  [1, 3] => (2,3)
+  [1, 2] => ()
+  [2, 3] => (1,2,3)
+  [3, 2] => (1,3)
+  [2, 1] => (1,2)
+  [3, 1] => (1,3,2)
+```
+"""
 function transversal(G::Group,p;action::Function=^)
   new=[p]
   res=Dict(p=>one(G))
@@ -107,6 +116,17 @@ function transversal(G::Group,p;action::Function=^)
   res
 end
 
+"""
+    orbits(G,v;action=^) 
+    the orbits of G on v
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> orbits(G,1:4)
+2-element Array{Array{Int64,1},1}:
+ [2, 3, 1]
+ [4]      
+```
+"""
 function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
   res=Vector{eltype(v)}[]
   while !isempty(v)
@@ -117,42 +137,71 @@ function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
   res
 end
 
-# centralizer of point: Schreier generators
+"""
+    centralizer(G,p;action=^) 
+    computes the centralizer C_G(p)
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> centralizer(G,1)
+Group([(2,3)])
+```
+"""
 function centralizer(G::Group,p;action::Function=^)
+# this computes Schreier generators
   t=transversal(G,p;action=action)
   C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)]
   Group(unique(sort(C)))
 end
 
-" dict giving for each element of G a minimal word in the generators"
+"""
+    `minimal_words(G)`
+  returns a Dict giving for each element of `G` a minimal positive word in 
+  the generators representing it.
+
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> minimal_words(G)
+Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
+  ()      => Int64[]
+  (2,3)   => [2, 1]
+  (1,3,2) => [1, 2, 1]
+  (1,3)   => [1, 2]
+  (1,2)   => [1]
+  (1,2,3) => [2]
+```
+  This Dict is stored in `G.prop[:words]` for further use.
+"""
 function minimal_words(G::Group)
   gets(G,:words)do G
-  words=Dict(one(G)=>Int[])
-  for i in eachindex(gens(G))
-    rw = [one(G)=>Int[]]
-    j=1
-    nwords=deepcopy(words)
-    while j<=length(rw)
-      for k in 1:i
-        e=rw[j][1]*gens(G)[k]
-        if !haskey(nwords,e)
-          we=vcat(rw[j][2],[k])
-          push!(rw,e=>we)
-          for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
+    words=Dict(one(G)=>Int[])
+    for i in eachindex(gens(G))
+      nwords=copy(words)
+      rw = [one(G)=>Int[]]
+      while !isempty(rw)
+        p=popfirst!(rw)
+        for k in 1:i
+          e=first(p)*gens(G)[k]
+          if !haskey(nwords,e)
+            we=vcat(last(p),[k])
+            push!(rw,e=>we)
+            for (e1,w1) in words nwords[e1*e]=vcat(w1,we) end
+          end
         end
       end
-      j+=1
+      words = nwords
     end
-    words = nwords
-  end
-  words
+    words
   end
 end
 
-Gapjm.word(G,w)=minimal_words(G)[w]
+"word(G::Group,w): a word in  gens(G) representing element w of G"
+Gapjm.word(G::Group,w)=minimal_words(G)[w]
 
+"elements(G::Group): the list of elements of G"
 Gapjm.elements(G::Group)=collect(keys(minimal_words(G)))
-Gapjm.length(G::Group)=length(elements(G))
+
+"length(G::Group): the number of elements of G"
+Gapjm.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do G
@@ -165,6 +214,7 @@ function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   end
 end
 
+"class_reps(G::Group): representatives of conjugacy classes of G"
 function class_reps(G::Group{T})::Vector{T} where T
   getp(conjugacy_classes,G,:classreps)
 end

@@ -7,17 +7,33 @@ Gapjm
 # Perms.jl Documentation
 ```@docs
 Perms
+largest_moved_point
+smallest_moved_point
+cycle
 cycles
 cycletype
 sign
 ```
+# Groups.jl Documentation
+```@docs
+Groups
+orbit
+orbits
+transversal
+centralizer
+word(G::Group,w)
+elements
+length
+class_reps
+minimal_words
+```
 # PermGroups.jl Documentation
 ```@docs
 PermGroups
+base
+centralizers
+transversals
 symmetric_group
-orbit
-orbit_and_representative
-minimal_words
 ```
 # Cycs.jl Documentation
 ```@docs
@@ -37,6 +53,7 @@ gcd
 ```@docs
 CoxGroups
 reduced
+word(W::CoxeterGroup,w)
 bruhatless
 coxsym
 longest
@@ -68,10 +85,14 @@ Garside
 left_divisors
 DualBraidMonoid
 fraction
-word
+word(b::Garside.GarsideElm)
 representative_operation
 centralizer_generators
 shrink
+```
+# HasType.jl Documentation
+```@docs
+CharTable
 ```
 # Util.jl Documentation
 ```@docs

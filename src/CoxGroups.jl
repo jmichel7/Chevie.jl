@@ -180,6 +180,7 @@ end
 isrightdescent(W::CoxeterGroup,w,i)=isleftdescent(W,inv(w),i)
 
 """
+  word(W::CoxeterGroup,w)
   The Coxeter word for element w of W
 """
 function Gapjm.word(W::CoxeterGroup,w)
@@ -465,20 +466,7 @@ end
 PermRoot.refltype(W::CoxSymmetricGroup)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-function PermRoot.reflength(W::CoxSymmetricGroup,a)
-  to_visit=trues(length(a.d))
-  l=0
-  for i in eachindex(to_visit)
-    if !to_visit[i] continue end
-    j=i
-    while true
-      to_visit[j]=false
-      if (j=a.d[j])==i break end
-      l+=1
-    end
-  end
-  l
-end
+PermRoot.reflength(W::CoxSymmetricGroup,a)=reflength(a)
   
 nref(W::CoxSymmetricGroup)=div(W.n*(W.n-1),2)
 

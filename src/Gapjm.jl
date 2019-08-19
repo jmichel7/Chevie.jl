@@ -1,31 +1,53 @@
 """
-Here are some of my efforts porting GAP code to julia.
-I am not even sure this is a well-formed Julia package.
+This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
+package  of GAP3 plus the minimal other GAP functionality needed for Chevie
+to   work:  Cyclotomics,  Permutations,   Laurent  polynomials,  and  basic
+permutation group operations.
 
-It  contains  for  now  permutations  and  permutation  groups,  cyclotomic
-numbers,  Laurent polynomials, some  Weyl groups and  Coxeter groups, Hecke
-algebras  and  Kazhdan-Lusztig  polynomials,  braid  and Garside groups and
-monoids, factorisations into cyclotomic polynomials.
+I am rather new to Julia, git and github so I am not even sure this package
+is  properly constituted; I did not try yet to register it. If you are more
+competent  that me and see anything to  be improved in this package, please
+write me or make a pull request.
 
-Even  though the code  is often competitive  with or faster  than GAP, I am
-sure there are more optimisations possible. Any comments about the code and
-the design are welcome.
+### Installing
 
-If you are new to julia, to install this package:
-- enter package mode with ]
-- do the command
+If you are new to Julia, to install this package, at the Julia command line:
+
+  *  enter package mode with ]
+  *  do the command
 ```
 (v1.0) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
-- exit package mode with backspace
-do 
+- exit package mode with backspace and then do 
 ```
 julia> using Gapjm
 ```
 and you are set up.
 
-To update to the latest version, I do not know a better way that to rm
-the package and re-install it.
+To update later to the latest version, do
+
+```
+(v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
+
+The package now contains:
+
+-  infrastructure: permutations,  cyclotomic numbers,  Laurent polynomials.
+There  are also  permutation groups,  for which  I have  often replaced the
+proper  algorithms of GAP by naive but  easy to write methods only suitable
+for  small groups (sufficient for the rest of the package but maybe not for
+your needs).
+
+-  from  Chevie  ported:  Weyl  groups,  Coxeter  groups,  Hecke  algebras,
+Kazhdan-Lusztig   polynomials,  braid  and   Garside  groups  and  monoids,
+factorisations into cyclotomic polynomials, character tables of Weyl groups
+and  Hecke algebras, Unipotent characters  of Spetses, unipotent classes of
+reductive groups.
+
+The  code for infrastructure  is often competitive  with GAP, despite being
+much  shorter (often 100 lines of Julia replace 1000 lines of C); I am sure
+there  are more optimisations possible. Any comments about the code and the
+design  are welcome. The code for Chevie  is often 10 times faster than the
+GAP3 Chevie (after the maddeningly long compilation time on first execution).
 """
 module Gapjm
 using Reexport
@@ -65,10 +87,10 @@ include("Util.jl")
 @reexport using .Util
 include("ModuleElts.jl")
 @reexport using .ModuleElts
-include("Perms.jl")
-@reexport using .Perms
 include("Groups.jl")
 @reexport using .Groups
+include("Perms.jl")
+@reexport using .Perms
 include("PermGroups.jl")
 @reexport using .PermGroups
 include("Cycs.jl")

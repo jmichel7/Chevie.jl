@@ -1,7 +1,7 @@
 module HasType
 
 export charinfo, classinfo, reflection_name, diagram,
-  representation, fakedegrees, unipotent_characters, UnipotentClasses,
+  representation, fakedegrees, UnipotentCharacters, UnipotentClasses,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, Cartesian, weightinfo, CharTable
 using Gapjm
@@ -217,6 +217,10 @@ end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 
 #--------------- CharTables -----------------------------------------
+"""
+ CharTable is a structure to hold character tables of groups and Hecke
+ algebras
+"""
 struct CharTable{T}
   irr::Matrix{T}
   charnames::Vector{String}
@@ -343,10 +347,12 @@ function diagram(W)
   end
 end
 
+fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
+
 function fakedegree(W,p,q)
   typ=refltype(W)
   if isempty(typ) return one(q) end
-  prod(map((t,p)->getchev(t,:FakeDegree,p,q),typ,p))
+  prod(map((t,p)->fakedegree(t,p,q),typ,p))
 end
 
 function fakedegrees(W,q)
