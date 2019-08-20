@@ -9,10 +9,13 @@ Gapjm
 Perms
 largest_moved_point
 smallest_moved_point
-cycle
+order
+Groups.orbit(a::Perm,i::Integer,check=false)
 cycles
 cycletype
 sign
+permuted
+restricted
 ```
 # Groups.jl Documentation
 ```@docs

@@ -54,7 +54,7 @@ julia> inv(a)  # inverse
 julia> a/b     # quotient  a*inv(b)
 (3,4)
 
-julia> a\b     # left quotient inv(a)*b
+julia> a\\b     # left quotient inv(a)*b
 (1,4)
 
 julia> a^b     # conjugation inv(b)*a*b
@@ -99,20 +99,22 @@ julia> rand(Perm,10)
 ```
 
 Perms  have methods `copy, hash, ==, cmp, isless` (total order) so they can
-be  keys  in  hashes  or  elements  of sets. Permutations are considered as
-scalars for broadcasting.
+be  keys in hashes or elements of  sets; two permutations are equal if they
+move   the  same  points.  Permutations   are  considered  as  scalars  for
+broadcasting.
 
-other functions are: `cycles, cycletype, orbits, rand, sign`. 
+other functions are: 
+`cycles, cycletype, orbit, orbits, permuted, rand, restricted, sign`. 
 See individual documentations.
 
 GAP→ Julia dictionary
 ```
      PermList(v)                      →  Perm(v) 
-     Permuted(v,p)                    →  v[p.d]
+     Permuted(v,p)                    →  permuted(v,p)
      ListPerm(p)                      →  vec(p)
      PermListList(l1,l2)              →  Perm(l1,l2)
      OnTuples(l,p)                    →  l.^p
-     RestrictedPerm                   →  restricted
+     RestrictedPerm(p,d)              →  restricted(p,d)
 ```
 """
 module Perms
@@ -122,7 +124,7 @@ import ..Gapjm.degree
 import ..Gapjm.restricted
 
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
-  @perm_str, smallest_moved_point, reflength
+  @perm_str, smallest_moved_point, reflength, permuted
 
 struct Perm{T<:Integer}
    d::Vector{T}
@@ -133,7 +135,7 @@ Base.vec(a::Perm)=a.d
 # Gap's Permuted(a,p) is a[p.d], Gap's ListPerm(p) is p.d
 #---------------- Constructors ---------------------------------------
 "for example  Perm{Int8}(1,2,3) constructs the cycle (1,2,3)"
-function Perm{T}(x::Int...)where T<:Integer
+function Perm{T}(x::Integer...)where T<:Integer
   if isempty(x) return Perm(T[]) end
   d=T.(1:max(x...))
   for i in 1:length(x)-1
@@ -178,8 +180,8 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
 end
 
 """
-Perm{T}(l::AbstractVector,l1::AbstractVector)
-find permutation p such that Permuted(l1,p)==l if  it exists
+  Perm{T}(l::AbstractVector,l1::AbstractVector)
+  return permutation p such that Permuted(l1,p)==l if such p exists
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
@@ -242,13 +244,13 @@ Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 Base.rand(::Type{Perm},i::Integer)=Perm(sortperm(rand(1:i,i)))
 Base.rand(::Type{Perm{T}},i::Integer) where T=Perm(T.(sortperm(rand(1:i,i))))
 
-"Matrix(a::Perm) is the permutation matrix for a"
+"`Matrix(a::Perm)` is the permutation matrix for a"
 Base.Matrix(a::Perm,n=length(a.d))=Int[j==i^a for i in 1:n, j in 1:n]
 
-" largest_moved_point(a::Perm) is the largest integer moved by a"
+" `largest_moved_point(a::Perm)` is the largest integer moved by a"
 largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 
-" smallest_moved_point(a::Perm) is the smallest integer moved by a"
+" `smallest_moved_point(a::Perm)` is the smallest integer moved by a"
 smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 #------------------ operations on permutations --------------------------
@@ -312,7 +314,7 @@ end
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
-#---------------------- cycle decomposition -------------------------
+#---------------------- cycles -------------------------
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
@@ -370,6 +372,7 @@ function Base.show(io::IO, a::Perm{T}) where T
   end
 end
 
+" order(a) is the order of the permutation a"
 order(a::Perm) = lcm(length.(cycles(a)))
 
 """
@@ -423,9 +426,23 @@ end
 
 " sign(a::Perm) is the signature of  the permutation a"
 Base.sign(a::Perm)=(-1)^reflength(a)
+#---------------------- other -------------------------
 
-# l should be a union of cycles of p
-# returns p restricted to l
+"""
+   permuted(l,a) returns l permuted by a as a new list r,
+   that is r[i^a]==l[i]
+"""
+function permuted(l::AbstractVector,a::Perm)
+  res=copy(l)
+  res[eachindex(l).^a].=l
+  res
+end
+
+"""
+   restricted(a::Perm{T},l::AbstractVector{<:Integer})
+
+l should be a union of cycles of p; returns p restricted to l
+"""
 function restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
   o=orbits(a,l;trivial=false)
   isempty(o) ? Perm{T}() : prod(c->Perm{T}(c...),o)

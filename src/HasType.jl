@@ -1,10 +1,10 @@
 module HasType
 
-export charinfo, classinfo, reflection_name, diagram,
-  representation, fakedegrees, UnipotentCharacters, UnipotentClasses,
-  schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, Cartesian, weightinfo, CharTable
-using Gapjm
+export reflection_name, diagram, representation, UnipotentCharacters, 
+  UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
+  chevieget, field, getchev, weightinfo, Cartesian
+
+using ..Gapjm
 #-----------------------------------------------------------------------
 const chevie=Dict()
 
@@ -128,8 +128,6 @@ impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
 
-cartfields(p,f)=Cartesian(getindex.(p,f)...)
-
 function PositionCartesian(l,ind)
   res=prod=1
   for i in length(l):-1:1
@@ -139,145 +137,12 @@ function PositionCartesian(l,ind)
   res
 end
 
-allhaskey(v::Vector{<:Dict},k)=all(d->haskey(d,k),v)
-
-function charinfo(t::TypeIrred)
-  c=deepcopy(getchev(t,:CharInfo))
-  c[:positionId]=c[:extRefl][1]
-  c[:positionDet]=c[:extRefl][end]
-  c[:charnames]=map(c[:charparams]) do p
-     getchev(t,:CharName,p,Dict(:TeX=>true))
-  end
-  c
-end
-
-function charinfo(W)::Dict{Symbol,Any}
-  gets(W,:charinfo) do W
-    p=charinfo.(refltype(W))
-    if isempty(p) return Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
-      :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
-    end
-    if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
-    res[:charparams]=cartfields(p,:charparams)
-    if length(p)==1 return res end
-    res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
-    for f in [:positionId, :positionDet]
-      if allhaskey(p,f)
-       res[f]=PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
-      end
-    end
-    for f in [:b, :B, :a, :A]
-      if allhaskey(p,f) res[f]=Int.(map(sum,cartfields(p,f))) end
-    end
-    if any(x->haskey(x, :opdam),p)
-      res[:opdam]=map(x->haskey(x,:opdam) ? x[:opdam] : Perm(), p)
-      gt=Cartesian(map(x->1:length(x[:charparams]), p))
-      res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
-    end
-    res
-  end
-end
-
-function classinfo(t::TypeIrred)
-  cl=deepcopy(getchev(t,:ClassInfo))
-  inds=t[:indices]
-  cl[:classtext]=map(x->inds[x],cl[:classtext])
-  cl[:classes]=Int.(cl[:classes])
-  cl
-end
-
-function classinfo(W)::Dict{Symbol,Any}
-  gets(W,:classinfo) do W
-    tmp=map(classinfo,refltype(W))
-    if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
-                      :classparams=>[Int[]],:orders=>[1],:classes=>[1])
-    end
-    if any(isnothing, tmp) return nothing end
-    if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
-    res[:classtext]=map(x->vcat(x...),cartfields(tmp,:classtext))
-    res[:classnames]=map(join,cartfields(tmp,:classnames))
-    if allhaskey(tmp, :classparam)
-      res[:classparams]=cartfields(tmp,:classparams)
-    end
-    if allhaskey(tmp,:orders)
-      res[:orders]=map(lcm, cartfields(tmp,:orders))
-    end
-    if allhaskey(tmp,:classes)
-      res[:classes]=map(prod, cartfields(tmp,:classes))
-    end
-    res
-  end
-end
-
 function PermGroups.class_reps(W::PermRootGroup)
   gets(W,:classreps)do W
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
-
-#--------------- CharTables -----------------------------------------
-"""
- CharTable is a structure to hold character tables of groups and Hecke
- algebras
-"""
-struct CharTable{T}
-  irr::Matrix{T}
-  charnames::Vector{String}
-  classnames::Vector{String}
-  centralizers::Vector{Int}
-  identifier::String
-end
-
-function Base.show(io::IO,ct::CharTable)
-  println(io,"CharTable(",ct.identifier,")")
-  irr=map(ct.irr)do e
-   if iszero(e) "." else sprint(show,e; context=io) end
-  end
-  format(io,irr,row_labels=TeXstrip.(ct.charnames),
-                column_labels=TeXstrip.(ct.classnames))
-end
-
-function CharTable(t::TypeIrred)
-  ct=getchev(t,:CharTable)
-  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(t)[:charnames]
-  end
-  if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-  irr=toM(ct[:irreducibles])
-  if eltype(irr)==Rational{Int} irr=Int.(irr)
-  elseif eltype(irr)==Cyc{Rational{Int}} irr=Cyc{Int}.(irr)
-  end
-  CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
-end
-
-function CharTable(W)::CharTable
-  gets(W,:chartable) do W
-    ctt=CharTable.(refltype(W))
-    if isempty(ctt) 
-      return CharTable(hcat(1),["Id"],["1"],[1],"$W")
-    end
-    charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
-    classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
-    centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
-    identifier=join(getfield.(ctt,:identifier),"×")
-    if length(ctt)==1 irr=ctt[1].irr 
-    else irr=kron(getfield.(ctt,:irr)...)
-    end
-    CharTable(irr,charnames,classnames,centralizers,identifier)
-  end
-end
-
-function CharTable(H::HeckeAlgebra{C})where C
-  W=H.W
-  ct=impl1(getchev(W,:HeckeCharTable,H.para,
-       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
-  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(W)[:charnames]
-  end
-  CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
-     ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
-end
 
 #----------------- representations ----------------------------------------
 function representation(H::HeckeAlgebra,i::Int)
@@ -347,26 +212,14 @@ function diagram(W)
   end
 end
 
-fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
-
-function fakedegree(W,p,q)
-  typ=refltype(W)
-  if isempty(typ) return one(q) end
-  prod(map((t,p)->fakedegree(t,p,q),typ,p))
-end
-
-function fakedegrees(W,q)
-  map(p->fakedegree(W,p,q),charinfo(W)[:charparams])
-end
-
 function WeightToAdjointFundamentalGroupElement(W,i)
   t=First(refltype(W),t->i in t[:indices])
-  l=inclusion.(Ref(W),t[:indices])
-  b=longest(W,l)*longest(W,setdiff(l,[inclusion(W,i)]))
-  push!(l,inclusion(W,maximum(findall(
+  l=copy(t[:indices])
+  b=longest(W,l)*longest(W,setdiff(l,[i]))
+  push!(l,maximum(findall(
     i->all(j->j in t[:indices] || W.rootdec[i][j]==0,1:semisimplerank(W)),
-    1:nref(W)))))
-  restricted(b,l)
+  eachindex(W.rootdec))))
+  restricted(b,inclusion.(Ref(W),l))
 end
 
 # returns a record containing minuscule coweights, decompositions

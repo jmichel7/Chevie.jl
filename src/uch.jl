@@ -41,7 +41,7 @@ function UnipotentCharacters(t::TypeIrred)
   UnipotentCharacters(uc)
 end
 
-function UnipotentCharacters(W) 
+function UnipotentCharacters(W::Group) 
   function CartesianSeries(sers)
     ser=Dict()
     ser[:levi]=vcat(getindex.(sers,:levi)...)
@@ -66,8 +66,8 @@ function UnipotentCharacters(W)
     ser
   end
 
-  type=refltype(W)
-  if isempty(type) # UnipotentCharacters(coxgroup())
+  tt=refltype(W)
+  if isempty(tt) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(Dict( 
       :harishChandra=>[
 	Dict(:relativeType=>Dict[], 
@@ -83,7 +83,7 @@ function UnipotentCharacters(W)
       :group=>W))
   end
 
-  simp=map(type) do t
+  simp=map(tt) do t
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
     uc=UnipotentCharacters(t).prop
@@ -100,14 +100,17 @@ function UnipotentCharacters(W)
   f=keys(r)
   res=Dict{Symbol,Any}()
   for a in f
-    if length(simp)==1 res[a]=map(x->[x],r[a])
+    if a!=:group 
+    if length(simp)==1 
+      res[a]=map(x->[x],r[a])
     elseif all(x->haskey(x,a),simp)
-      res[a]=Cartesian(map(x->x[a],simp)...)
+      res[a]=Cartesian(getindex.(simp,a)...)
+    end
     end
   end
   
   for a in [:TeXCharNames]
-    res[a]=join.(res[a],"\\otimes ")
+   res[a]=join.(res[a],"\\otimes ")
   end
 
   res[:size]=length(res[:TeXCharNames])
@@ -116,7 +119,7 @@ function UnipotentCharacters(W)
     res[a]=CartesianSeries.(res[a])
   end
 
-  if length(type)==1
+  if length(tt)==1
     res[:families]=map(res[:families]) do f
       f=f[1]
       f[:charNumbers]=vcat.(f[:charNumbers])
@@ -160,7 +163,7 @@ end
 
 Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
 
-function fakedegrees(uc::UnipotentCharacters,q)
+function Chars.fakedegrees(uc::UnipotentCharacters,q)
   gets(uc,:fakedegrees)do uc
     fd=fill(zero(q),length(uc.prop[:TeXCharNames]))
     f=fakedegrees(Group(uc),q)

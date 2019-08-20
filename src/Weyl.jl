@@ -949,13 +949,13 @@ function AlgebraicCentre(W)
     Z0=toL(matX(W,one(W)))
   else
     Z0=NullspaceIntMat(collect.(collect(zip(
-                                W.G.roots[1:semisimplerank(W)]...))))
+                                       roots(W.G)[1:semisimplerank(W)]...))))
   end
   Z0=SubTorus(W,toM(Z0))
   if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]
   else
     AZ=toL(inv(Rational.(toM(Z0.complement)*
-             hcat(W.G.roots[1:semisimplerank(W)]...)))*toM(Z0.complement))
+           hcat(roots(W.G)[1:semisimplerank(W)]...)))*toM(Z0.complement))
   end
   AZ=AdditiveSE.(Ref(W),AZ)
   if W isa HasType.ExtendedCox # compute fixed space of F0s in Y(T)
@@ -975,7 +975,7 @@ function AlgebraicCentre(W)
   end
   AZ=Group(AZ)
   toAZ=function(s)
-    s=vec(permutedims(s.v)*toM(W.G.coroots[1:semisimplerank(W)]))
+   s=vec(permutedims(s.v)*toM(coroots(W.G)[1:semisimplerank(W)]))
     s=permutedims(s)*
        inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
        return AdditiveSE(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*

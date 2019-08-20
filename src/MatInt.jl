@@ -1,4 +1,5 @@
 module MatInt
+using ..Gapjm
 
 export ComplementIntMat, NullspaceIntMat
 # MATINTsplit(N,a) largest factor of N prime to a
@@ -314,7 +315,7 @@ DoNFIM = function (mat::Vector{Vector{Int}}, opt::Int)
         j=j+1
     end
     if TRIANG && ((COLTRANS || ROWTRANS) && c2 < m)
-        N = gcd(map(x->x[2],A[r:n]))
+        N = gcd(map(x->x[c2],A[r:n]))
         L = vcat(c1+1:c2-1, c2+1:m-1)
         push!(L, c2)
         for j = L
@@ -504,12 +505,10 @@ ComplementIntMat = function (full, sub)
   S = BaseIntersectionIntMats(F, sub)
   if S!=BaseIntMat(sub) error("sub must be submodule of full") end
   M = vcat(F, S)
-  tol(m)=[m[i,:] for i in axes(m,1)]
-  tom(m)=permutedims(hcat(m...))
-  T = tol(Int.(inv(Rational.(tom(NormalFormIntMat(M,4)[:rowtrans])))))
+  T = toL(Int.(inv(Rational.(toM(NormalFormIntMat(M,4)[:rowtrans])))))
   T = map(x->x[1:length(F)],T[length(F)+1:length(T)])
   r = NormalFormIntMat(T, 13)
-  M = tol(Int.(inv(Rational.(tom(r[:coltrans])))*tom(F)))
+  M = toL(Int.(inv(Rational.(toM(r[:coltrans])))*toM(F)))
   Dict(:complement=>BaseIntMat(M[1+r[:rank]:length(M)]),
       :sub=>MatMul(MatMul(r[:rowtrans],T),F), 
       :moduli=>map(i->r[:normal][i][i],1:r[:rank]))
