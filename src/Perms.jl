@@ -316,7 +316,7 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
-function Group.orbit(a::Perm{T},i::Integer,check=false)where T
+function Groups.orbit(a::Perm{T},i::Integer,check=false)where T
   res=T[]
   j=i
   while true
