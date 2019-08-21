@@ -934,36 +934,35 @@ end
 # How to interpret W-graphs for complex reflection groups with one orbit of
 # reflections, for Hecke(W,[vars]).
 
-#WGraph2Representation:=function(a,vars)local pos,nodes,n,dim,R,j,r,k;
-#  nodes:=a[1];
-#  pos:=function(n,j)local p;
-#    if IsList(n[1]) then p:=PositionProperty(n,x->j in x);
-#      if p=false then p:=Length(vars);fi;
-#    elif j in n then p:=1; else p:=2; fi;
-#    return p;
-#  end;
-#  n:=Maximum(Flat(nodes));# number of generators
-#  dim:=Length(nodes);
-#  R:=List([1..n],j->DiagonalMat(List([1..dim],k->vars[pos(nodes[k],j)])));
-#  for r in a[2] do for k in [3,4] do
-#    if IsList(r[k]) then
-#      for j in [2,4..Length(r[k])] do R[r[k][j-1]][r[k-2]][r[5-k]]:=r[k][j];od;
-#    else
-#      j:=Filtered([1..n],i->pos(nodes[r[k-2]],i)<pos(nodes[r[5-k]],i));
-#      R{j}[r[k-2]][r[5-k]]:=List(j,x->r[k]);
-#    fi;
-#  od;od;
-#  return R;
-#end;
+function WGraph2Representation(a,vars)
+  nodes=a[1]
+  pos=function(n,j)
+    if n[1] isa Vector p=findfirst(x->j in x,n)
+      if isnothing(p) p=length(vars) end
+    elseif j in n p=1 
+    else p=2 end
+    p
+  end
+  n=maximum(Flat(nodes)) # number of generators
+  dim=length(nodes)
+  R=map(j->DiagonalMat(map(k->vars[pos(nodes[k],j)],1:dim)),1:n)
+  for r in a[2] for k in [3,4] 
+    if IsList(r[k])
+      for j in 2:2:length(r[k])  R[r[k][j-1]][r[k-2]][r[5-k]]=r[k][j] end
+    else
+      j=Filtered([1..n],i->pos(nodes[r[k-2]],i)<pos(nodes[r[5-k]],i))
+      R[j][r[k-2]][r[5-k]]=List(j,x->r[k])
+    end
+  end end
+  R
+end
 
 # the next function returns the dual W-graph of gr (for an Hecke algebra of
 # rank rk). A dual W-graph corresponds to a Curtis Dual representation.
-#DualWGraph:=function(rk,gr)
-#  return [List(gr[1],function(x)if IsInt(x) then return x;
-#                                else return Difference([1..rk],x);fi;end),
-#          List(gr[2],function(x)if IsList(x[1]) then return 
-#	  [-Reversed(x[1]),x[2]]; else return [-x[1],x[2]];fi;end)];
-#end;
+function DualWGraph(rk,gr)
+  [map(x->x isa Integer ? x : setdiff(1:rk,x),gr[1]),
+   map(x->x[1] isa Vector ? [-Reversed(x[1]),x[2]] : [-x[1],x[2]],gr[2])]
+end
 
 """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
