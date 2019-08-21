@@ -1,6 +1,6 @@
 module HasType
 
-export reflection_name, diagram, representation, UnipotentCharacters, 
+export reflection_name, diagram, UnipotentCharacters, 
   UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian
 
@@ -110,6 +110,8 @@ function Cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
+impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
+
 braid_relations(W)=impl1(getchev(W,:BraidRelations))
 
 function codegrees(W)
@@ -122,8 +124,6 @@ function codegrees(W)
     end
   end...)
 end
-
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
 charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
@@ -144,12 +144,6 @@ function PermGroups.class_reps(W::PermRootGroup)
 end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 
-#----------------- representations ----------------------------------------
-function representation(H::HeckeAlgebra,i::Int)
-  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
-    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
-  toM.(ct)
-end
 
 function schur_elements(H::HeckeAlgebra)
   W=H.W
@@ -274,8 +268,6 @@ nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 PrintToSring(s,v...)=sprint(show,v...)
 
 reflection_name(W,opt=Dict())=join(getchev(W,:ReflectionName,opt),"×")
-
-representation(W::Group,i::Int)=toM.(impl1(getchev(W,:Representation,i)))
 
 include("uch.jl")
 include("ucl.jl")

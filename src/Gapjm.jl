@@ -11,7 +11,7 @@ write me or make a pull request.
 
 ### Installing
 
-If you are new to Julia, to install this package, at the Julia command line:
+To install this package, at the Julia command line:
 
   *  enter package mode with ]
   *  do the command
@@ -28,8 +28,9 @@ To update later to the latest version, do
 
 ```
 (v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
+```
 
-The package now contains:
+The package currently contains:
 
 -  infrastructure: permutations,  cyclotomic numbers,  Laurent polynomials.
 There  are also  permutation groups,  for which  I have  often replaced the
@@ -37,7 +38,7 @@ proper  algorithms of GAP by naive but  easy to write methods only suitable
 for  small groups (sufficient for the rest of the package but maybe not for
 your needs).
 
--  from  Chevie  ported:  Weyl  groups,  Coxeter  groups,  Hecke  algebras,
+-  ported from  Chevie:  Weyl  groups,  Coxeter  groups,  Hecke  algebras,
 Kazhdan-Lusztig   polynomials,  braid  and   Garside  groups  and  monoids,
 factorisations into cyclotomic polynomials, character tables of Weyl groups
 and  Hecke algebras, Unipotent characters  of Spetses, unipotent classes of

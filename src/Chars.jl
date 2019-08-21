@@ -22,9 +22,8 @@ representation  containing  the  given  character  as  a  constituent  (the
 functions `classinfo` and `charinfo`. When you display the character table,
 the canonical labelings for classes and characters are those displayed.
 
-A   typical   example   is   `coxgroup(:A,n)`,  the  symmetric  group
-`𝔖ₙ₊₁`  where classes and characters  are parameterized by partitions
-of `n+1`.
+A  typical example  is `coxgroup(:A,n)`,  the symmetric  group `𝔖ₙ₊₁` where
+classes and characters are parameterized by partitions of `n+1`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -77,13 +76,12 @@ julia> ct.classnames
 Recall  that our groups acts a reflection group on the vector space `V`, so
 have  fake degrees  (see "fakeDegree").  The valuation  and degree of these
 give  two  integers  `b,B`  for  each  irreducible  character  of  `W` (see
-"LowestPowerfakeDegrees" and "HighestPowerfakeDegrees"). For finite Coxeter
-groups,   the  valuation  and   degree  of  the   generic  degrees  of  the
-one-parameter  generic Hecke algebra give two  more integers `a,A` (see the
-functions  "LowestPowerGenericDegrees",  "HighestPowerGenericDegrees",  and
-[@Car85, Ch.11]   for  more details).  These will  also be  used in the
-operations  of truncated  inductions explained  in the  chapter "Reflection
-subgroups".
+`charinf(W)[:b]`  and  `charinfo(W)[:B]`).  For  finite Coxeter groups, the
+valuation  and degree of  the generic degrees  of the one-parameter generic
+Hecke  algebra  give  two  more  integers  `a,A` (see `charinfo(W)[:a]` and
+`charinfo(W)[:A]`,  and [@Car85, Ch.11] for  more details). These will also
+be  used in the operations of truncated inductions explained in the chapter
+"Reflection subgroups".
 
 Iwahori-Hecke  algebras and  cyclotomic Hecke  algebras also have character
 tables, see the corresponding chapters.
@@ -91,7 +89,7 @@ tables, see the corresponding chapters.
 We  now describe for each type our conventions for labeling the classes and
 characters.
 
-{Type  `Aₙ` (`n ≥  0`)}. In this  case we have  `W ≅ 𝔖ₙ₊₁`. The classes and
+Type  `Aₙ` (`n≥0`). In this  case we have  `W ≅ 𝔖ₙ₊₁`. The classes and
 characters  are labeled by partitions of `n+1`. The partition corresponding
 to  a class describes  the cycle type  for the elements  in that class; the
 representative   in  '.classtext'   is  the   concatenation  of  the  words
@@ -102,26 +100,26 @@ describes  the type of  the Young subgroup  such that the trivial character
 induced  from this  subgroup contains  that character with multiplicity `1`
 and such that every other character occurring in this induced character has
 a  higher `a`-value. Thus, the sign  character corresponds to the partition
-`(1^{n+1})`  and  the  trivial  character  to  the  partition  `(n+1)`. The
+`(1ⁿ⁺¹)`  and  the  trivial  character  to  the  partition  `(n+1)`. The
 character of the reflection representation of `W` is labeled by `(n,1)`.
 
-{Type  `Bₙ` (`n ≥ 2`)}. In this  case `W=W(Bₙ)` is isomorphic to the wreath
+Type  `Bₙ` (`n≥2`). In this  case `W=W(Bₙ)` is  isomorphic to the wreath
 product  of the cyclic  group of order  `2` with the  symmetric group `𝔖ₙ`.
 Hence  the classes and characters are  parameterized by pairs of partitions
 such  that the total sum of their  parts equals `n`. The pair corresponding
 to  a class describes the signed cycle type for the elements in that class,
 as  in [@Car72]. We use the convention that  if `(λ,μ)` is such a pair then
 `λ`  corresponds  to  the  positive  and  `μ` to the negative cycles. Thus,
-`(1^n,-)`  and `(-,1^n)` label  the trivial class  and the class containing
-the longest element, respectively. The pair corresponding to an irreducible
+`(1ⁿ,-)`  and `(-,1ⁿ)` label the trivial class and the class containing the
+longest  element, respectively.  The pair  corresponding to  an irreducible
 character is determined via Clifford theory, as follows.
 
 We  have a semidirect product decomposition `W(Bₙ)=N ⋊ 𝔖ₙ` where `N` is the
-standard  `n`-dimensional  `𝔽₂^n`-vector  space.  For  `a,b  ≥ 0` such that
+standard  `n`-dimensional  `𝔽₂ⁿ`-vector  space.  For  `a,b  ≥  0` such that
 `n=a+b` let `η_{a,b}` be the irreducible character of `N` which takes value
 `1`  on the first `a` standard basis vectors and value `-1` on the next `b`
 standard  basis vectors of `N`. Then  the inertia subgroup of `η_{a,b}` has
-the  form `T_{a,b}:=N.(𝔖_a × 𝔖_b)` and we can extend `η_{a,b}` trivially to
+the  form `T_{a,b}=N.(𝔖_a × 𝔖_b)` and  we can extend `η_{a,b}` trivially to
 an  irreducible  character  `η̃_{a,b}`  of  `T_{a,b}`.  Let  `α` and `β` be
 partitions  of `a` and `b`, respectively. We take the tensor product of the
 corresponding  irreducible characters of `𝔖_a` and `𝔖_b` and regard this as
@@ -130,12 +128,12 @@ an  irreducible  character  of  `T_{a,b}`.  Multiplying this character with
 χ_{(α,β)}`  of `W(Bₙ)`. This defines the correspondence between irreducible
 characters and pairs of partitions as above.
 
-For   example,  the  pair  `((n),-)`   labels  the  trivial  character  and
-`(-,(1^n))`  labels  the  sign  character.  The  character  of  the natural
-reflection representation is labeled by `((n-1),(1))`.
+For example, the pair `((n),-)` labels the trivial character and `(-,(1ⁿ))`
+labels  the  sign  character.  The  character  of  the  natural  reflection
+representation is labeled by `((n-1),(1))`.
 
-{Type `Dₙ` (`n ≥ 4`)}. In this case `W=W(Dₙ)` can be embedded as a subgroup
-of index `2` into the Coxeter group `W(Bₙ)`. The intersection of a class of
+Type  `Dₙ` (`n≥4`). In this case `W=W(Dₙ)` can be embedded as a subgroup of
+index  `2` into the Coxeter  group `W(Bₙ)`. The intersection  of a class of
 `W(Bₙ)` with `W(Dₙ)` is either empty or a single class in `W(Dₙ)` or splits
 up  into two classes in  `W(Dₙ)`. This also leads  to a parameterization of
 the  classes of `W(Dₙ)` by pairs of  partitions `(λ,μ)` as before but where
@@ -149,18 +147,18 @@ representative which can be written as a word in `{s₂,s₃, …,sₙ}`.
 By  Clifford theory the restriction of  an irreducible character of `W(Bₙ)`
 to  `W(Dₙ)`  is  either  irreducible  or  splits  up  into  two irreducible
 components.  Let `(α,β)` be  a pair of  partitions with total  sum of parts
-equal  to  `n`.  If  `α  !=  β`  then  the  restrictions of the irreducible
-characters  of `W(Bₙ)` labeled by `(α,β)`  and `(β, α)` are irreducible and
-equal.  If `α=β` then  the restriction of  the character labeled by `(α,α)`
-splits  into  two  irreducible  components  which  we denote by `(α,+)` and
-`(α,-)`. Note that this can only happen if `n` is even. In order to fix the
-notation  we use  a result  of [@Ste89]  which describes  the value  of the
-difference  of these two characters on a class of the form `(λ,+)` in terms
-of the character values of the symmetric group `𝔖ₙ_{/2}`. Recall that it is
+equal to `n`. If `α!=β` then the restrictions of the irreducible characters
+of  `W(Bₙ)` labeled  by `(α,β)`  and `(β,α)`  are irreducible and equal. If
+`α=β`  then the restriction of the character labeled by `(α,α)` splits into
+two  irreducible components  which we  denote by  `(α,+)` and `(α,-)`. Note
+that  this can only happen if `n` is  even. In order to fix the notation we
+use  a result of  [@Ste89] which describes  the value of  the difference of
+these  two  characters  on  a  class  of  the  form `(λ,+)` in terms of the
+character  values  of  the  symmetric  group  `𝔖_{n/2}`.  Recall that it is
 implicit  in the notation `(λ,+)` that all  parts of `λ` are even. Let `λ'`
 be  the partition of `n/2` obtained by  dividing each part by `2`. Then the
 value  of `χ_{(α,-)}-χ_{(α,+)}` on an element in the class `(λ,+)` is given
-by  `2^{k(λ)}` times  the value  of the  irreducible character of `𝔖ₙ_{/2}`
+by  `2^{k(λ)}` times  the value  of the  irreducible character of `𝔖_{n/2}`
 labeled  by `α` on the class of  cycle type `λ'`. (Here, `k(λ)` denotes the
 number of non-zero parts of `λ`.)
 
@@ -168,7 +166,7 @@ The  labels for the trivial, the  sign and the natural reflection character
 are the same as for `W(Bₙ)`, since these characters are restrictions of the
 corresponding characters of `W(Bₙ)`.
 
-{The groups `G(d,1,n)`}.
+The groups `G(d,1,n)`.
 They  are isomorphic to the wreath product of the cyclic group of order `d`
 with  the  symmetric  group  `𝔖ₙ`.  Hence  the  classes  and characters are
 parameterized  by `d`-tuples of partitions such that the total sum of their
@@ -177,8 +175,8 @@ when `d>2`, computed in a slightly different way than for `Bₙ`, in order to
 agree  with the words on which Ram  and Halverson compute the characters of
 the  Hecke algebra. First the parts of the `d` partitions are merged in one
 big  partition and sorted in  increasing order. Then, to  a part `i` coming
-from  the `j`-th partition  is associated the  word `(l+1…1… l+1)^{j-1}l+2…
-l+i` where `l` is the highest generator used to express the previous part.
+from  the `j`-th partition is  associated the word `(l+1…1… l+1)ʲ⁻¹l+2…l+i`
+where `l` is the highest generator used to express the previous part.
 
 The  `d`-tuple corresponding to an  irreducible character is determined via
 Clifford  theory in  a similar  way than  for the  `Bₙ` case.  The identity
@@ -187,16 +185,16 @@ ones  empty. The character of the  reflection representations has the first
 two  partitions with one part  equal respectively to `n-1`  and to `1`, and
 the other partitions empty.
 
-{The groups `G(de,e,n)`}.
+The groups `G(de,e,n)`.
 They  are normal  subgroups of  index `e`  in `G(de,1,n)`.  The quotient is
 cyclic,  generated by the image `g`  of the first generator of `G(de,1,n)`.
 The  classes are parameterized as the  classes of `G(de,e,n)` with an extra
 information for a component of a class which splits.
 
 According  to  [@Hu85],  a  class  `C`  of  `G(de,1,n)`  parameterized by a
-`de`-partition  `(S₀,…,S_{de-1})` is in  `G(de,e,n)` if `e`  divides `∑_i i
-∑_{p∈ S_i}p`. It splits in `d` classes for the largest `d` dividing `e` and
-all  parts of all `S_i` and such that `S_i` is empty if `d` does not divide
+`de`-partition  `(S₀,…,S_{de-1})` is  in `G(de,e,n)`  if `e`  divides `∑ᵢ i
+∑_{p∈  Sᵢ}p`. It splits in `d` classes for the largest `d` dividing `e` and
+all  parts of all `Sᵢ` and  such that `Sᵢ` is empty  if `d` does not divide
 `i`.  If `w` is in `C` then 'gⁱ w g⁻ⁱ' for 'i in 0:d-1' are representatives
 of  the  classes  of  `G(de,e,n)`  which  meet  `C`.  They are described by
 appending the integer `i` to the label for `C`.
@@ -210,17 +208,17 @@ of  `g`.  We  encode  a  character  of  `G(de,e,n)`  by first, choosing the
 smallest  for lexicographical order label  of a character whose restriction
 contains  it; then this label is periodic with a motive repeated `k` times;
 we  represent the  character by  one of  these motives,  to which we append
-`E(k)^i` for 'i in 0:k-1' to describe which component of the restriction we
+`E(k)ⁱ` for 'i in 0:k-1' to describe which component of the restriction we
 choose.
 
-{Types  `G₂` and `F₄`}. The matrices  of character values and the orderings
+Types  `G₂` and `F₄`. The matrices  of character values and the orderings
 and  labelings of  the irreducible  characters are  exactly the  same as in
 [@Car85,  p.412/413]: in type `G₂` the character `φ₁,₃'` takes the value -1
 on  the reflection associated  to the long  simple root; in  type `F₄`, the
-characters  `φ₁,₁₂'`, `φ₂,₄'`, `φ₄,₇'`, `φ₈,₉'` and `φ₉,_{6}'` occur in the
+characters  `φ₁,₁₂'`, `φ₂,₄'`, `φ₄,₇'`, `φ₈,₉'` and `φ₉,₆'` occur in the
 induced  of the  identity from  the `A₂`  corresponding to the short simple
-roots;  the  pairs  (`φ₂,₁_{6}'`,  `φ₂,₄″`)  and  (`φ₈,₃'`, `φ₈,₉″`) are
-related by tensoring by sign; and finally `φ₆,_{6}″` is the exterior square
+roots;  the  pairs  (`φ₂,₁₆'`,  `φ₂,₄″`)  and  (`φ₈,₃'`, `φ₈,₉″`) are
+related by tensoring by sign; and finally `φ₆,₆″` is the exterior square
 of  the reflection representation. Note, however, that we put the long root
 at the left of the Dynkin diagrams to be in accordance with the conventions
 in [@Lus85, (4.8) and (4.10)].
@@ -230,13 +228,13 @@ character is labeled by a pair `(d,b)` where `d` denotes the degree and `b`
 the  corresponding `b`-invariant. If there  are several characters with the
 same pair `(d,b)` we attach a prime to them, as in [@Car85].
 
-{Types  `E₆,E₇,E₈`}. The character tables are obtained by specialization of
+Types  `E₆,E₇,E₈`. The character tables are obtained by specialization of
 those  of the Hecke algebra. The classes are labeled by Carter's admissible
 diagrams  [@Car72]. A  character is  labeled by  the pair `(d,b)` where `d`
 denotes  the degree and  `b` is the  corresponding `b`-invariant. For these
 types, this gives a unique labeling of the characters.
 
-{Non-crystallographic  types `I₂(m)`, `H₃`, `H₄`}. In these cases we do not
+Non-crystallographic  types `I₂(m)`, `H₃`, `H₄`. In these cases we do not
 have  canonical  labelings  for  the  classes.  We  label  them  by reduced
 expressions.
 
@@ -245,9 +243,9 @@ where  `d` is the degree and  `b` the corresponding `b`-invariant. For type
 `H₄`  there are just  two characters (those  of degree `30`)  for which the
 corresponding  pairs are  the same.  These two  characters are nevertheless
 distinguished  by  their  fake  degrees:  the  character `φ₃₀,₁₀'` has fake
-degree  `q^{10}+q^{12}+`  higher  terms,  while  `φ₃₀,₁₀″`  has fake degree
-`q^{10}+q^{14}+`  higher terms. The  characters in the  table for type `H₄`
-are ordered in the same way as in [@AL82].
+degree  `q¹⁰+q¹²+` higher terms, while `φ₃₀,₁₀″` has fake degree `q¹⁰+q¹⁴+`
+higher  terms. The characters in the table for type `H₄` are ordered in the
+same way as in [@AL82].
 
 Finally,  the characters  of degree `2`  for type  `I₂(m)` are  ordered as
 follows.  The matrix representations affording the characters of degree `2`
@@ -259,7 +257,7 @@ where  `1 ≤ j ≤  ⌊(m-1)/2⌋`. The reflection representation
 is  `ρ₁`. The  characters in  the table  are ordered by listing
 first the characters of degree 1 and then `ρ₁,ρ₂,…`.
 
-{Primitive complex reflection groups `G₄` to `G₃₄`}.
+Primitive complex reflection groups `G₄` to `G₃₄`.
 The  groups `G₂₃=H₃`, `G₂₈=F₄`, `G₃₀=H₄` are exceptional Coxeter groups and
 have  been  explained  above.  Similarly  for  the  other groups labels for
 characters  consist primarily  of the  pair `(d,b)`  where `d`  denotes the
@@ -271,75 +269,73 @@ according  to  the  conventions  of  [@Mal00]  for `G₂₇, G₂₉, G₃₁, G
 
 -  For `G₂₇`:
 The  fake degree  of `φ₃,₅'`  (resp. `φ₃,₂₀'`,  `φ₈,₉″`) has smaller degree
-that  of `φ₃,₅″` (resp. `φ₃,₂₀″`,  `φ₈,₉'`). The characters `φ₅,_{15}'` and
-`φ₅,_{6}'`  occur  with  multiplicity  1  in  the  induced from the trivial
-character of the parabolic subgroup of type `A₂` generated by the first and
-third generator (it is asserted mistakenly in [@Mal00] that `φ₅,_{6}″` does
-not occur in this induced; it occurs with multiplicity 2).
+that  of  `φ₃,₅″`  (resp.  `φ₃,₂₀″`,  `φ₈,₉'`). The characters `φ₅,₁₅'` and
+`φ₅,₆'` occur with multiplicity 1 in the induced from the trivial character
+of  the parabolic subgroup  of type `A₂`  generated by the  first and third
+generator  (it is  asserted mistakenly  in [@Mal00]  that `φ₅,₆″`  does not
+occur in this induced; it occurs with multiplicity 2).
 
 -  For `G₂₉`:
 The  character  `φ₆,₁₀‴`  is  the  exterior  square  of `φ₄,₁`; its complex
-conjugate is `φ₆,₁₀⁗`. The character `φ₁₅,₄″` occurs in `φ₄,₁⊗φ₄,₃`; the
-character  `φ₁₅,_{12}″` is  tensored by  the sign  character from `φ₁₅,₄″`.
+conjugate  is `φ₆,₁₀⁗`. The  character `φ₁₅,₄″` occurs  in `φ₄,₁⊗φ₄,₃`; the
+character  `φ₁₅,₁₂″`  is  tensored  by  the  sign  character from `φ₁₅,₄″`.
 Finally  `φ₆,₁₀'` occurs in  the induced from  the trivial character of the
 standard parabolic subgroup of type `A₃` generated by the first, second and
 fourth generators.
 
 -  For `G₃₁`:
-The   characters  `φ₁₅,_{8}'`,   `φ₁₅,_{20}'`  and   `φ₄₅,_{8}″`  occur  in
-`φ₄,₁⊗φ₂₀,_{7}`;   the  character  `φ₂₀,₁₃'`  is  complex  conjugate  of
-`φ₂₀,_{7}`;  the character `φ₄₅,_{12}'` is tensored by sign of `φ₄₅,_{8}'`.
-The  two  terms  of  maximal  degree  of  the  fakedegree  of `φ₃₀,₁₀'` are
-`q^{50}+q^{46}` while for `φ₃₀,₁₀″` they are `q^{50}+2q^{46}`.
+The  characters `φ₁₅,₈'`, `φ₁₅,₂₀'` and `φ₄₅,₈″` occur in `φ₄,₁⊗φ₂₀,₇`; the
+character   `φ₂₀,₁₃'`  is  complex  conjugate  of  `φ₂₀,₇`;  the  character
+`φ₄₅,₁₂'`  is tensored by sign of `φ₄₅,₈'`. The two terms of maximal degree
+of  the fakedegree of `φ₃₀,₁₀'` are  `q⁵⁰+q⁴⁶` while for `φ₃₀,₁₀″` they are
+`q⁵⁰+2q⁴⁶`.
 
 -  For `G₃₃`:
-The   terms  of   maximal  degree   of  the   fakedegree  of  `φ₁₀,₈'`  are
-`q^{28}+q^{26}`  while for `φ₁₀,₈'` they  are `q^{28}+q^{24}`. The terms of
-maximal  degree of the fakedegree of `φ₄₀,₅'` are `q^{31}+q^{29}` while for
-`φ₄₀,₅″`  they are `q^{31}+2q^{29}`. The character `φ₁₀,₁₇'` is tensored by
-sign of `φ₁₀,₈'` and `φ₄₀,₁₄'` is tensored by sign of `φ₄₀,₅'`.
+The  terms of  maximal degree  of the  fakedegree of `φ₁₀,₈'` are `q²⁸+q²⁶`
+while  for `φ₁₀,₈'` they are `q²⁸+q²⁴`. The  terms of maximal degree of the
+fakedegree   of  `φ₄₀,₅'`  are  `q³¹+q²⁹`   while  for  `φ₄₀,₅″`  they  are
+`q³¹+2q²⁹`.  The character  `φ₁₀,₁₇'` is  tensored by  sign of `φ₁₀,₈'` and
+`φ₄₀,₁₄'` is tensored by sign of `φ₄₀,₅'`.
 
 -  For `G₃₄`:
-The  character  `φ₂₀,₃₃'`  occurs  in  `φ₆,₁⊗φ₁₅,_{14}`.  The  character
-`φ₇₀,₉'`  is rational.  The character  `φ₇₀,₉″` occurs in `φ₆,₁⊗φ₁₅,_{14}`.
-The  character  `φ₇₀,₄_{5}'`  is  rational.The  character  `φ₇₀,₄_{5}″`  is
-tensored   by  the   determinant  character   of  `φ₇₀,₉″`.  The  character
-`φ₅_{60,18}'`   is   rational.   The   character  `φ₅_{60,18}‴`  occurs  in
-`φ₆,₁⊗φ₃₃₆,₁_{7}`. The character `φ₂₈₀_{,12}'` occurs in `φ₆,₁⊗φ₃₃₆,₁_{7}`.
-The  character  `φ₂₈₀_{,30}″`  occurs  in  `φ₆,₁⊗φ₃₃₆,₁_{7}`. The character
-`φ₅₄₀_{,21}'`  occurs in  `φ₆,₁⊗φ₁₀₅,_{20}`. The  character `φ₁₀₅,_{8}'` is
-complex  conjugate of `φ₁₀₅,₄`,  and `φ₈₄₀_{,13}'` is  complex conjugate of
-`φ₈₄₀_{,11}`.   The  character   `φ₈₄₀_{,23}'`  is   complex  conjugate  of
-`φ₈₄₀_{,19}`.  Finally  `φ₁₂₀,_{21}'`  occurs  in  induced from the trivial
-character  of the standard parabolic subgroup of type `A₅` generated by the
-generators of `G₃₄` with the third one omitted.
+The  character `φ₂₀,₃₃'` occurs in `φ₆,₁⊗φ₁₅,₁₄`. The character `φ₇₀,₉'` is
+rational.  The character  `φ₇₀,₉″` occurs  in `φ₆,₁⊗φ₁₅,₁₄`.  The character
+`φ₇₀,₄₅'`   is  rational.The   character  `φ₇₀,₄₅″`   is  tensored  by  the
+determinant  character of  `φ₇₀,₉″`. The  character `φ₅₆₀,₁₈'` is rational.
+The character `φ₅₆₀,₁₈‴` occurs in `φ₆,₁⊗φ₃₃₆,₁₇`. The character `φ₂₈₀,₁₂'`
+occurs    in   `φ₆,₁⊗φ₃₃₆,₁₇`.   The   character   `φ₂₈₀,₃₀″`   occurs   in
+`φ₆,₁⊗φ₃₃₆,₁₇`.  The  character  `φ₅₄₀,₂₁'`  occurs  in `φ₆,₁⊗φ₁₀₅,₂₀`. The
+character  `φ₁₀₅,₈'` is  complex conjugate  of `φ₁₀₅,₄`,  and `φ₈₄₀,₁₃'` is
+complex  conjugate  of  `φ₈₄₀,₁₁`.  The  character  `φ₈₄₀,₂₃'`  is  complex
+conjugate  of  `φ₈₄₀,₁₉`.  Finally  `φ₁₂₀,₂₁'`  occurs  in induced from the
+trivial character of the standard parabolic subgroup of type `A₅` generated
+by the generators of `G₃₄` with the third one omitted.
 
-For the groups `G₅` and `G₇` we adopt the following conventions.
-For `G₅` they are compatible with those of [@MR03] and [@BMM14].
+For  the groups `G₅` and `G₇` we  adopt the following conventions. For `G₅`
+they are compatible with those of [@MR03] and [@BMM14].
 
 -  For `G₅`:
-We  let |W:=ComplexReflectionGroup(5)|,  so the  generators are
-|W.1| and |W.2|.
+We  let `W=ComplexReflectionGroup(5)`,  so the  generators are  `W(1)` and
+`W(2)`.
 
-The  character  `φ₁,₄'`  (resp.  `φ₁,₁₂'`,  `φ₂,₃'`) takes the value `1`
-(resp.  |E(3)|,  |-E(3)|)  on  |W.1|.  The  character  `φ₁,₈″`  is  complex
-conjugate  to `φ₁,₁₆`,  and the  character `φ₁,₈'`  is complex conjugate to
-`φ₁,₄'`  . The  character `φ₂,₅″`  is complex  conjugate to `φ₂,₁`; `φ₂,₅'`
-take the value `-1` on |W.1|. The character `φ₂,₇'` is complex conjugate to
-`φ₂,₅'`.
+The  character `φ₁,₄'` (resp. `φ₁,₁₂'`, `φ₂,₃'`) takes the value `1` (resp.
+`ζ₃`,  `-ζ₃`)  on  `W(1)`.  The  character  `φ₁,₈″` is complex conjugate to
+`φ₁,₁₆`,  and the character  `φ₁,₈'` is complex  conjugate to `φ₁,₄'` . The
+character  `φ₂,₅″` is complex  conjugate to `φ₂,₁`;  `φ₂,₅'` take the value
+`-1` on `W(1)`. The character `φ₂,₇'` is complex conjugate to `φ₂,₅'`.
 
 -  For `G₇`:
-We  let |W:=ComplexReflectionGroup(7)|,  so the  generators are
-|W.1|, |W.2| and |W.3|.
+We  let `W=ComplexReflectionGroup(7)`,  so the  generators are
+`W(1)`, `W(2)` and `W(3)`.
 
-The  characters  `φ₁,₄'`  and  `φ₁,₁₀'`  take  the  value `1` on |W.2|. The
+The  characters  `φ₁,₄'`  and  `φ₁,₁₀'`  take  the value `1` on `W(2)`. The
 character  `φ₁,₈″` is complex  conjugate to `φ₁,₁₆`  and `φ₁,₈'` is complex
 conjugate  to `φ₁,₄'`. The characters `φ₁,₁₂'`  and `φ₁,₁₈'` take the value
-|E(3)| on |W.2|. The character `φ₁,₁₄″` is complex conjugate to `φ₁,₂₂` and
-`φ₁,₁₄'`  is complex conjugate to  `φ₁,₁₀'`. The character `φ₂,₃'` takes
-the  value |-E(3)| on |W.2| and `φ₂,₁₃'`  takes the value `-1` on |W.2|.
-The  characters `φ₂,₁₁″`, `φ₂,₅″`, `φ₂,₇‴` and `φ₂,₁` are Galois conjugate,
-as  well as the characters `φ₂,₇'`,  `φ₂,₁₃'`, `φ₂,₁₁'` and `φ₂,₅'`. The
+`ζ₃`  on `W(2)`. The character `φ₁,₁₄″` is complex conjugate to `φ₁,₂₂` and
+`φ₁,₁₄'`  is complex conjugate to `φ₁,₁₀'`. The character `φ₂,₃'` takes the
+value  `-ζ₃` on  `W(2)` and  `φ₂,₁₃'` takes  the value  `-1` on `W(2)`. The
+characters  `φ₂,₁₁″`, `φ₂,₅″`, `φ₂,₇‴` and  `φ₂,₁` are Galois conjugate, as
+well  as  the  characters  `φ₂,₇'`,  `φ₂,₁₃'`,  `φ₂,₁₁'`  and  `φ₂,₅'`. The
 character  `φ₂,₉'` is complex  conjugate to `φ₂,₁₅`  and `φ₂,₉‴` is complex
 conjugate to `φ₂,₃'`.
 
@@ -382,170 +378,19 @@ and  `G₃₄`, groups  which admit  outer automorphisms  preserving the set of
 reflections,  so choices  of a  particular value  on a particular generator
 must be made for characters which are not invariant by these automorphisms.
 
-{Labels  for  the  classes.}  For  the  exceptional  complex
-reflection  groups, the labels for  the classes represent the decomposition
-of  a representative  of the  class as  a product  of generators,  with the
-additional  conventions that 'z' represents the generator of the center and
-for  well-generated groups 'c'  represents a Coxeter  element (a product of
-the  generators  which  is  a  regular  element  for the highest reflection
-degree).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'CharNames( `W` [,<options>] )'
-
-returns  the  list  of  character  names  for the reflection group `W`. The
-optional  <options> is a record which can give alternative names in certain
-cases, or a different formatting of names in general.
-
-|    gap> W:=coxgroup("G",2);
-    coxgroup("G",2)
-    gap> CharNames(W);
-    [ "phi{1,0}", "phi{1,6}", "phi{1,3}'", "phi{1,3}''", "phi{2,1}",
-      "phi{2,2}" ]
-    gap> CharNames(W,rec(TeX:=true));
-    [ "φ₁,₀", "φ₁,₆", "φ₁,₃'", "φ₁,₃''",
-      "φ₂,₁", "φ₂,₂" ]
-    gap> CharNames(W,rec(spaltenstein:=true));
-    [ "1", "eps", "epsl", "epsc", "theta'", "theta''" ]
-    gap> CharNames(W,rec(spaltenstein:=true,TeX:=true));
-    [ "1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c",
-      "\\theta'", "\\theta''" ]|
-
-The  last two  commands show  the character  names used by Spaltenstein and
-Lusztig when describing the Springer correspondence.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'CharParams( `W` )'
-
-this  function returns the list of parameters for irreducible characters of
-`W`:  partitions for type 'A', double partitions for type 'B', etc`…`
-as  described in the introduction. For exceptional groups they are pairs or
-triples,  beginning with the  dimension, the valuation  of the fake degree,
-and  an ordinal  number if  more than  one character  shares the  first two
-invariants.
-
-|    gap> CharParams(coxgroup("G",2));
-    [ [ [ 1, 0 ] ], [ [ 1, 6 ] ], [ [ 1, 3, 1 ] ], [ [ 1, 3, 2 ] ],
-      [ [ 2, 1 ] ], [ [ 2, 2 ] ] ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'LowestPowerfakeDegrees( `W` )'
-
-return a list holding the `b`-function for all irreducible characters of
-`W`,  that is,  for each  character `χ`,  the valuation  of the  fake
-degree of `χ`. The ordering of the result corresponds to the ordering
-of  the characters  in 'CharTable(W)'.  The advantage  of this  function
-compared to calling  'fakeDegrees' is that one does not  have to provide
-an indeterminate,  and that it  may be much  faster to compute  than the
-fake degrees.
-
-|    gap> LowestPowerfakeDegrees( coxgroup( :D, 4 ) );
-    [ 6, 6, 7, 12, 4, 3, 6, 2, 2, 4, 1, 2, 0 ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'HighestPowerfakeDegrees( `W` )'
-
-returns a list  holding the `B`-function for  all irreducible characters
-of  `W`, that  is, for  each character  `χ`, the  degree of  the fake
-degree of `χ`. The ordering of the result corresponds to the ordering
-of  the characters  in 'CharTable(W)'.  The advantage  of this  function
-compared to calling  'fakeDegrees' is that one does not  have to provide
-an indeterminate,  and that it  may be much  faster to compute  than the
-fake degrees.
-
-|    gap> HighestPowerfakeDegrees( coxgroup( :D, 4 ) );
-    [ 10, 10, 11, 12, 8, 9, 10, 6, 6, 8, 5, 6, 0 ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'Representations( `W`[, `l`])'
-
-returns  a  list  holding,  for  each  irreducible character of the complex
-reflection  group  `W`,  a  list  of  matrices  images  of  the  generating
-reflections  of `W`  in a  model of  the corresponding representation. This
-function  is based on the classification,  and is not yet fully implemented
-for  `G₃₄`;  88  representations  are  missing  out  of  169,  that is 4
-representations of dim. 105, 3 of dim. 315, 6 of dim. 420, 4 of dim.840 and
-those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
-896, 945, 1260 and 1280.
-
-If  there is a  second argument, it  can be a  list of indices (or a single
-integer) and only the representations with these indices (or that index) in
-the list of all representations are returned.
-
-|    gap> Representations(coxgroup("B",2));
-    [ [ [ [ 1 ] ], [ [ -1 ] ] ],
-      [ [ [ 1, 0 ], [ -1, -1 ] ], [ [ 1, 2 ], [ 0, -1 ] ] ],
-      [ [ [ -1 ] ], [ [ -1 ] ] ], [ [ [ 1 ] ], [ [ 1 ] ] ],
-      [ [ [ -1 ] ], [ [ 1 ] ] ] ]
-    gap> Representations(ComplexReflectionGroup(4),7);
-    [ [ [ E(3)^2, 0, 0 ], [ 2*E(3)^2, E(3), 0 ], [ E(3), 1, 1 ] ],
-      [ [ 1, -1, E(3) ], [ 0, E(3), -2*E(3)^2 ], [ 0, 0, E(3)^2 ] ] ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'LowestPowerGenericDegrees( `W` )'
-
-returns  a list holding the `a`-function  for all irreducible characters of
-the  Coxeter  group  or  Spetsial  reflection  group `W`, that is, for each
-character  `χ`, the  valuation of  the generic  degree of `χ` (in the
-one-parameter  Hecke  algebra  'Hecke(W,X(Cyclotomics))'  corresponding  to
-`W`).  The  ordering  of  the  result  corresponds  to  the ordering of the
-characters in 'CharTable(W)'.
-
-|    gap> LowestPowerGenericDegrees( coxgroup( :D, 4 ) );
-    [ 6, 6, 7, 12, 3, 3, 6, 2, 2, 3, 1, 2, 0 ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'HighestPowerGenericDegrees( `W` )'
-
-returns  a list holding the `A`-function  for all irreducible characters of
-the  Coxeter  group  or  Spetsial  reflection  group `W`, that is, for each
-character  `χ`,  the  degree  of  the  generic  degree of `χ` (in the
-one-parameter  Hecke  algebra  'Hecke(W,X(Cyclotomics))'  corresponding  to
-`W`).  The  ordering  of  the  result  corresponds  to  the ordering of the
-characters in 'CharTable(W)'.
-
-|    gap> HighestPowerGenericDegrees( coxgroup( :D, 4 ) );
-    [ 10, 10, 11, 12, 9, 9, 10, 6, 6, 9, 5, 6, 0 ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'PositionDet( `W` )'
-
-return  the position of the determinant character in the character table of
-the group `W` (for Coxeter groups this is the sign character).
-
-|    gap> W := coxgroup( :D, 4 );;
-    gap> PositionDet( W );
-    4|
-
-See also 'ChevieCharInfo' ("ChevieCharInfo").
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'DetPerm( `W` )'
-
-return  the permutation of the characters of the reflection group `W` which
-is effected when tensoring by the determinant character (for Coxeter groups
-this is the sign character).
-
-|    gap> W := coxgroup( :D, 4 );;
-    gap> DetPerm( W );
-    [ 8, 9, 11, 13, 5, 6, 12, 1, 2, 10, 3, 7, 4 ]|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Labels  for the classes. For the exceptional complex reflection groups, the
+labels  for the classes represent the  decomposition of a representative of
+the  class as a product of generators, with the additional conventions that
+'z'  represents the generator  of the center  and for well-generated groups
+'c'  represents a Coxeter element  (a product of the  generators which is a
+regular element for the highest reflection degree).
 """
 module Chars
 
 using Gapjm
 
-export charinfo, classinfo, fakedegrees, CharTable
+export charinfo, classinfo, fakedegrees, CharTable, representation,
+  WGraphToRepresentation
 
 fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
 
@@ -596,101 +441,229 @@ function charinfo(t::TypeIrred)
   c[:charnames]=map(c[:charparams]) do p
      getchev(t,:CharName,p,Dict(:TeX=>true))
   end
+  if haskey(c,:b) c[:b]=Int.(c[:b]) end
+  if haskey(c,:B) c[:B]=Int.(c[:B]) end
+  if haskey(c,:a) c[:a]=Int.(c[:a]) end
+  if haskey(c,:A) c[:A]=Int.(c[:A]) end
   c
 end
 
 cartfields(p,f)=Cartesian(getindex.(p,f)...)
 
 """
-'ChevieCharInfo( `W` )'
+`charinfo(W)`
 
-returns  information  about the  irreducible  characters  of the  finite
-reflection group `W`.  The result is a record with the following
-components:
+returns   information  about  the  irreducible  characters  of  the  finite
+reflection group `W`. The result is a Dict with the following entries:
 
-'charparams': contains parameters for the irreducible characters as
-     described  in the  introduction or  returned by 'CharParams(`W`)'. The
-     parameters   are  tuples  with  one  component  for  each  irreducible
-     irreducible  component of `W`  (as given by  'ReflectionType'). For an
-     irreducible  component which  is an  imprimitive reflection  group the
-     component  of  the  'charparam'  is  a  tuple of partitions, and for a
-     primitive  irreducible group  it is  a pair  `(d,e)` where  `d` is the
-     degree of the character and `e` is the smallest symmetric power of the
-     character  of the  reflection representation  which contains the given
-     character as a component.
-
-'charnames': strings describing the irreducible characters, computed from
-     the 'charparams'. This is the same as 'CharNames(`W`)'.
-
-'positionId': the  position of the  trivial character  in the  character
-     table  of `W`  (which is  also returned by the function 'PositionId').
-
-'positionDet':  Contains the position of the determinant character in the
-   character  table  of  `W`  (which  is  also  returned  by  the  function
-   'PositionDet'). For Coxeter groups this is the sign character.
-
-'extRefl':  Only  present  if  `W`  is  irreducible,  in  which  case the
-     reflection  representation  of  `W`  and  all  its exterior powers are
-     irreducible.  It then contains the position  of the exterior powers of
-     the reflection representation in the character table.
-
-'b': contains  the    result   of    'LowestPowerFakeDegrees(`W`)'.
-
-'B': contains  the    result   of    'HighestPowerFakeDegrees(`W`)'.
-
-'a': Only filled for Spetsial groups. Contains the result of
-   'LowestPowerGenericDegrees(`W`)'.
-
-'A': Only filled for Spetsial groups. Contains the result of
-   'HighestPowerGenericDegrees(`W`)'.
-
-'opdam': Contains the permutation of the characters obtained by composing
-   the  Opdam involution with complex  conjugation. This permutation has an
-   interpretation  as a Galois action on the characters of 'H:=Hecke(W,x)'
-   where  'x:=Indeterminate(Cyclotomics)': if 'H' splits by taking `v` an
-   `e`-th  root of  `x`, '.opdam'  records the  permutation effected by the
-   Galois action 'v->E(e)*v'.
+`:charparams`:  contains  parameters  for  the  irreducible  characters  as
+described in the introduction. The parameters are tuples with one component
+for  each irreducible  component of  `W` (as  given by  `refltype`). For an
+irreducible   component  which  is  an  imprimitive  reflection  group  the
+component  of the `charparam` is a tuple of partitions (partitions for type
+`:A`,  double partitions  for type  `:B`), and  for a primitive irreducible
+group it is a pair `(d,e)` where `d` is the degree of the character and `e`
+is  the  smallest  symmetric  power  of  the  character  of  the reflection
+representation  which  contains  the  given  character  as  a component. In
+addition,  there is an ordinal number if more than one character shares the
+first two invariants.
 
 ```julia-repl
-julia> charinfo(ComplexReflectionGroup(22))
-Dict{Symbol,Any} with 8 entries:
-  :positionDet => 2
-  :b           => [0, 30, 11, 13, 1, 7, 2, 6, 12, 16, 3, 6, 9, 8, 4, 10, 7, 5]
-  :positionId  => 1
-  :charnames   => ["\\phi_{1,0}", "\\phi_{1,30}", "\\phi_{2,11}", "\\phi_{2,13}…
-  :extRefl     => [1, 5, 2]
-  :indexchars  => [1, 16, 65, 32, 35, 62, 91, 92, 101, 102, 151, 166, 181, 196,…
-  :charparams  => Array{Array{Int64,1},1}[[[1, 0]], [[1, 30]], [[2, 11]], [[2, …
-  :opdam       => (3,5)(4,6)(11,13)(12,14)(17,18)
+julia> charinfo(coxgroup(:G,2))[:charparams]
+6-element Array{Array{Array{Int64,1},1},1}:
+ [[1, 0]]   
+ [[1, 6]]   
+ [[1, 3, 1]]
+ [[1, 3, 2]]
+ [[2, 1]]   
+ [[2, 2]]   
+```
 
-julia> charinfo(coxgroup(:G,2))
-Dict{Symbol,Any} with 10 entries:
-  :a            => [0, 6, 1, 1, 1, 1]
-  :b            => [0, 6, 3, 3, 1, 2]
-  :positionId   => 1
-  :charnames    => ["\\phi_{1,0}", "\\phi_{1,6}", "\\phi_{1,3}'", "\\phi_{1,3}'…
-  :A            => [0, 6, 5, 5, 5, 5]
-  :B            => [0, 6, 3, 3, 5, 4]
-  :spaltenstein => ["1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c",…
-  :extRefl      => [1, 5, 2]
-  :charparams   => Array{Array{Int64,1},1}[[[1, 0]], [[1, 6]], [[1, 3, 1]], [[1…
-  :positionDet  => 2
+`:charnames`:  strings describing the  irreducible characters, computed from
+the `charparams`. This is the same as `CharNames(W)`.
+
+`:positionId`:  the position of the trivial character in the character table
+of `W`.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:positionId]
+13
+```
+
+`:positionDet`:  Contains the position  of the determinant  character in the
+character   table  of  `W`. For Coxeter groups this is the sign character.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:positionDet]
+4
+```
+
+`:extRefl`: Only present if `W` is irreducible, in which case the reflection
+representation  of `W` and all its exterior powers are irreducible. It then
+contains   the  position   of  the   exterior  powers   of  the  reflection
+representation in the character table.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:extRefl]
+5-element Array{Int64,1}:
+ 13
+ 11
+  5
+  3
+  4
+```
+
+`:b`:   contains  a  list  holding  the  `b`-function  for  all  irreducible
+characters  of `W`, that is,  for each character `χ`,  the valuation of the
+fake  degree of `χ`. The ordering of the result corresponds to the ordering
+of  the  characters  in  `CharTable(W)`.  The  advantage  of  this function
+compared  to calling `fakeDegrees` is that one  does not have to provide an
+indeterminate,  and that  it may  be much  faster to  compute than the fake
+degrees.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:b]
+13-element Array{Int64,1}:
+  6
+  6
+  7
+ 12
+  4
+  3
+  6
+  2
+  2
+  4
+  1
+  2
+  0
+```
+
+`:B`:   contains  a  list  holding  the  `B`-function  for  all  irreducible
+characters  of `W`, that is, for each character `χ`, the degree of the fake
+degree  of `χ`. The ordering  of the result corresponds  to the ordering of
+the  characters in `CharTable(W)`. The  advantage of this function compared
+to  calling  `fakeDegrees`  is  that  one  does  not  have  to  provide  an
+indeterminate,  and that  it may  be much  faster to  compute than the fake
+degrees.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:B]
+13-element Array{Int64,1}:
+ 10
+ 10
+ 11
+ 12
+  8
+  9
+ 10
+  6
+  6
+  8
+  5
+  6
+  0
+```
+
+`:a`:  Only  filled  for  Spetsial  groups.  Contains  a  list  holding  the
+`a`-function  for  all  irreducible  characters  of  the  Coxeter  group or
+Spetsial  reflection  group  `W`,  that  is,  for  each  character `χ`, the
+valuation  of the generic degree of `χ` (in the one-parameter Hecke algebra
+`Hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+corresponds to the ordering of the characters in `CharTable(W)`.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:a]
+13-element Array{Int64,1}:
+  6
+  6
+  7
+ 12
+  3
+  3
+  6
+  2
+  2
+  3
+  1
+  2
+  0
+```
+
+`:A`:  Only  filled  for  Spetsial  groups.  Contains  a  list  holding  the
+`A`-function  for  all  irreducible  characters  of  the  Coxeter  group or
+Spetsial  reflection group `W`, that is, for each character `χ`, the degree
+of   the  generic  degree  of  `χ`  (in  the  one-parameter  Hecke  algebra
+`Hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+corresponds to the ordering of the characters in `CharTable(W)`.
+
+```julia-repl
+julia> charinfo(coxgroup(:D,4))[:A]
+13-element Array{Int64,1}:
+ 10
+ 10
+ 11
+ 12
+  9
+  9
+ 10
+  6
+  6
+  9
+  5
+  6
+  0
+```
+
+`:opdam`:  Contains the permutation of  the characters obtained by composing
+the  Opdam  involution  with  complex  conjugation. This permutation has an
+interpretation as a Galois action on the characters of
+`H=Hecke(W,Pol(:x))`:  if `H` splits  by taking `v`  an `e`-th root of `x`,
+`.opdam` records the permutation effected by the Galois action `v->E(e)*v`.
+
+```julia-repl
+julia> charinfo(ComplexReflectionGroup(22))[:opdam]
+(3,5)(4,6)(11,13)(12,14)(17,18)
+```
+
+```julia-repl
+julia> charinfo(coxgroup(:A,2))
+Dict{Symbol,Any} with 9 entries:
+  :a           => [3, 1, 0]
+  :b           => [3, 1, 0]
+  :positionId  => 3
+  :charnames   => ["111", "21", "3"]
+  :A           => [3, 2, 0]
+  :B           => [3, 2, 0]
+  :extRefl     => [3, 2, 1]
+  :charparams  => Array{Array{Int64,1},1}[[[1, 1, 1]], [[2, 1]], [[3]]]
+  :positionDet => 1
 ```
 
 For  irreducible groups, the returned  record contains sometimes additional
 information:
 
-for  `F₄`: the field 'kondo' gives  the labeling of the characters given
-  by Kondo, also used in [@Lus85, (4.10)].
+for  `F₄`: the entry `:kondo` gives the  labeling of the characters given by
+Kondo, also used in [@Lus85, (4.10)].
 
-for  `E₆,  E₇,  E₈`:  the  field  'frame'  gives  the  labeling of the
-  characters  given  by  Frame,  also  used  in  [@Lus85, (4.11),  (4.12), and
-  (4.13)].
+for  `E₆, E₇, E₈`: the  entry `:frame` gives the  labeling of the characters
+given by Frame, also used in [@Lus85, (4.11), (4.12), and (4.13)].
 
-for  `G₂`: the field 'spaltenstein' gives the labeling of the characters
-  given by Spaltenstein.
+for  `G₂`: the  entry `:spaltenstein`  gives the  labeling of the characters
+given by Spaltenstein.
 
-for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  field  'malle'  gives  the
+```julia-repl
+julia> charinfo(coxgroup(:G,2))[:spaltenstein]
+6-element Array{String,1}:
+ "1"             
+ "\\varepsilon"  
+ "\\varepsilon_l"
+ "\\varepsilon_c"
+ "\\theta'"      
+ "\\theta''"     
+```
+
+for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  entry  `:malle`  gives  the
 parameters for the characters used by Malle in [@Mal96].
 """
 function charinfo(W)::Dict{Symbol,Any}
@@ -720,44 +693,6 @@ function charinfo(W)::Dict{Symbol,Any}
   end
 end
 
-"""
-'ChevieClassInfo( `W` )'
-
-returns  information about the  conjugacy classes of  the finite reflection
-group `W`. The result is a record with three components:
-
-'classtext': contains words in the generators  describing representatives
-     of  each conjugacy class.  Each word is  a list of  integers where the
-     generator  `s_i` is represented by the integer `i`. For finite Coxeter
-     groups, it is the same as
-     'List(ConjugacyClasses(W),x->CoxeterWord(W,Representative(x)))',   and
-     each  such representative is of minimal  length in its conjugacy class
-     and is a "very good" element in the sense of [@GM97].
-
-'classparams':   The elements of this list are tuples which have one
-     component  for each irreducible component of `W`. These components for
-     the infinite series, contain partitions or partition tuples describing
-     the  class (see the introduction).  For the exceptional Coxeter groups
-     they  contain  Carter's  admissible  diagrams,  see [@Car72]. For
-     exceptional complex reflection groups they contain in general the same
-     information as in classtext.
-
-'classnames': Contains strings describing  the conjugacy classes, made
-     out of the information in 'classparams'.
-
-```julia-repl
-julia> classinfo(coxgroup(:D,4))
-Dict{Symbol,Any} with 6 entries:
-  :classes      => [1, 6, 1, 12, 24, 12, 6, 6, 12, 32, 32, 24, 24]
-  :orders       => [1, 2, 2, 2, 4, 2, 2, 2, 4, 3, 6, 4, 4]
-  :classtext    => Array{Int64,1}[[], [1, 2], [1, 2, 3, 1, 2, 3, 4, 3, 1, 2, 3,…
-  :centralizers => Any[192//1, 32//1, 192//1, 16//1, 8//1, 16//1, 32//1, 32//1,…
-  :classnames   => ["1111.", "11.11", ".1111", "211.", "1.21", "2.11", "22.+", …
-  :classparams  => Array{T,1} where T[Array{Int64,1}[[1, 1, 1, 1], []], Array{I…
-```
-
-See also the introduction of this section.
-"""
 function classinfo(t::TypeIrred)
   cl=deepcopy(getchev(t,:ClassInfo))
   inds=t[:indices]
@@ -766,6 +701,43 @@ function classinfo(t::TypeIrred)
   cl
 end
 
+"""
+`classinfo(W)`
+
+returns  information about the  conjugacy classes of  the finite reflection
+group `W`. The result is a Dict with three entries:
+
+`:classtext`:  contains words in  the generators describing representatives
+of  each  conjugacy  class.  Each  word  is  a  list  of integers where the
+generator  `sᵢ`  is  represented  by  the  integer  `i`. For finite Coxeter
+groups, it is the same as
+`map(x->word(W,representative(x)),conjugacyclasses(W))`,   and   each  such
+representative  is of minimal length in its  conjugacy class and is a "very
+good" element in the sense of [@GM97].
+
+`:classparams`:  The  elements  of  this  list  are  tuples  which have one
+component  for each irreducible component of  `W`. These components for the
+infinite  series,  contain  partitions  or  partition tuples describing the
+class  (see  the  introduction).  For  the  exceptional Coxeter groups they
+contain Carter's admissible diagrams, see [@Car72]. For exceptional complex
+reflection  groups  they  contain  in  general  the  same information as in
+classtext.
+
+`:classnames`:  Contains strings describing the conjugacy classes, made out
+of the information in `:classparams`.
+
+```julia-repl
+julia> classinfo(coxgroup(:A,2))
+Dict{Symbol,Any} with 5 entries:
+  :classes     => [1, 3, 2]
+  :orders      => [1, 2, 3]
+  :classtext   => Array{Int64,1}[[], [1], [1, 2]]
+  :classnames  => ["111", "21", "3"]
+  :classparams => Array{Int64,1}[[1, 1, 1], [2, 1], [3]]
+```
+
+See also the introduction of this section.
+"""
 function classinfo(W)::Dict{Symbol,Any}
   gets(W,:classinfo) do W
     tmp=map(classinfo,refltype(W))
@@ -776,13 +748,13 @@ function classinfo(W)::Dict{Symbol,Any}
     if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
     res[:classtext]=map(x->vcat(x...),cartfields(tmp,:classtext))
     res[:classnames]=map(join,cartfields(tmp,:classnames))
-    if all(x->haskey(x,:classparam),tmp)
+    if all(haskey.(tmp,:classparam))
       res[:classparams]=cartfields(tmp,:classparams)
     end
-    if all(x->haskey(x,:orders),tmp)
+    if all(haskey.(tmp,:orders))
       res[:orders]=map(lcm, cartfields(tmp,:orders))
     end
-    if all(x->haskey(x,:classes),tmp)
+    if all(haskey.(tmp,:classes))
       res[:classes]=map(prod, cartfields(tmp,:classes))
     end
     res
@@ -841,6 +813,8 @@ function CharTable(W)::CharTable
   end
 end
 
+impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
+
 function CharTable(H::HeckeAlgebra{C})where C
   W=H.W
   ct=impl1(getchev(W,:HeckeCharTable,H.para,
@@ -851,4 +825,184 @@ function CharTable(H::HeckeAlgebra{C})where C
   CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
+
+"""
+'Representations( `W`[, `l`])'
+
+returns  a  list  holding,  for  each  irreducible character of the complex
+reflection  group  `W`,  a  list  of  matrices  images  of  the  generating
+reflections  of `W`  in a  model of  the corresponding representation. This
+function  is based on the classification,  and is not yet fully implemented
+for  `G₃₄`;  88  representations  are  missing  out  of  169,  that is 4
+representations of dim. 105, 3 of dim. 315, 6 of dim. 420, 4 of dim.840 and
+those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
+896, 945, 1260 and 1280.
+
+If  there is a  second argument, it  can be a  list of indices (or a single
+integer) and only the representations with these indices (or that index) in
+the list of all representations are returned.
+
+|    gap> Representations(coxgroup("B",2));
+    [ [ [ [ 1 ] ], [ [ -1 ] ] ],
+      [ [ [ 1, 0 ], [ -1, -1 ] ], [ [ 1, 2 ], [ 0, -1 ] ] ],
+      [ [ [ -1 ] ], [ [ -1 ] ] ], [ [ [ 1 ] ], [ [ 1 ] ] ],
+      [ [ [ -1 ] ], [ [ 1 ] ] ] ]
+    gap> Representations(ComplexReflectionGroup(4),7);
+    [ [ [ E(3)^2, 0, 0 ], [ 2*E(3)^2, E(3), 0 ], [ E(3), 1, 1 ] ],
+      [ [ 1, -1, E(3) ], [ 0, E(3), -2*E(3)^2 ], [ 0, 0, E(3)^2 ] ] ]|
+
+"""
+function representation(W::Group,i::Int)
+  ct=toM.(impl1(getchev(W,:Representation,i)))
+  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
+  ct
+end
+
+function representation(H::HeckeAlgebra,i::Int)
+  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
+    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
+  ct=toM.(ct)
+  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
+  ct
+end
+
+"""
+              Functions for W-graphs 
+(Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
+Naruse, Howlett,Yin)
+   WGraphToRepresentation(semisimpleRank,graph,v)
+or WGraphToRepresentation(H,graph)
+Chevie stores some representations of some equal-parameter Hecke algebras
+as  `W`-graphs. For a Coxeter system `(W,S)`  a `W`-graph is defined by a
+set  of vertices  `C`; to  `x∈ C`  is attached  `I(x)⊂ S`  and to
+`(x,y)∈  C^2`  is  attached  an  ``edge''  `μ(x,y)`  in  the field of
+definition  of `W`;  this defines  a representation  of the Hecke algebra
+with single rootparameter `v` on a space with basis `e_y_{y∈ C}` by:
+
+  T_s(e_y)=cases{-e_y&                            if `s∈ I(y)`\\
+             v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\}
+
+The W-graphs  are stored in a  compact format to save  space. They are
+represented  as a  pair. 
+-The  first element is a list describing C; its elements are either a set
+I(x),  or an integer n  specifying to repeat the  previous element n more
+times.
+-The  second element is a list which  specifies mu. We first describe the
+mu-list  for symmetric  W-graphs (when  μ(x,y)=μ(y,x)). There  is one
+element  of the  mu-list for  each non-zero  value m  taken by μ, which
+consists of a pair whose first element is m and whose second element is a
+list  of  lists;  if  l  is  one  of  these  lists  each pair [l[1],l[i]]
+represents  an  edge  (x=l[1],y=l[i])  such that μ(x,y)=μ(y,x)=m. For
+non-symmetric  W-graphs, the first element of each pair in the mu-list is
+a  pair [m1,m2] and each edge [x,y] obtained from the lists in the second
+element has to be interpreted as mu(x,y)=m1 and mu(y,x)=m2.
+
+The next function given a W-graph gr for some Hecke algebra of rank rk
+with rootparameter v constructs the rk matrices it specifies
+"""
+function WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
+  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
+                                   rootpara(H)[1]//H.para[1][2])
+  CheckHeckeDefiningRelations(H,S)
+  S
+end
+
+function WGraphToRepresentation(rk::Integer,gr::Vector,v)
+  V=Vector{Int}[]
+  for S in gr[1]
+    if S isa Integer append!(V,map(i->V[end],1:S))
+    else push!(V,S)
+    end
+  end
+  n=length(V)
+  S=map(i->one(fill(0,n,n))*v^2,1:rk)
+  for j in 1:n for i in V[j] S[i][j,j]=-one(v) end end
+  for i in gr[2] 
+    if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end
+    for l in i[2]
+      x=l[1]
+      for y in l[2:end]
+        for j in setdiff(V[y],V[x]) S[j][y,x]=mu[2]*v end
+        for j in setdiff(V[x],V[y]) S[j][x,y]=mu[1]*v end
+      end
+    end
+  end
+  map(toL,S)
+end
+
+############################################################################
+# How to interpret W-graphs for complex reflection groups with one orbit of
+# reflections, for Hecke(W,[vars]).
+
+#WGraph2Representation:=function(a,vars)local pos,nodes,n,dim,R,j,r,k;
+#  nodes:=a[1];
+#  pos:=function(n,j)local p;
+#    if IsList(n[1]) then p:=PositionProperty(n,x->j in x);
+#      if p=false then p:=Length(vars);fi;
+#    elif j in n then p:=1; else p:=2; fi;
+#    return p;
+#  end;
+#  n:=Maximum(Flat(nodes));# number of generators
+#  dim:=Length(nodes);
+#  R:=List([1..n],j->DiagonalMat(List([1..dim],k->vars[pos(nodes[k],j)])));
+#  for r in a[2] do for k in [3,4] do
+#    if IsList(r[k]) then
+#      for j in [2,4..Length(r[k])] do R[r[k][j-1]][r[k-2]][r[5-k]]:=r[k][j];od;
+#    else
+#      j:=Filtered([1..n],i->pos(nodes[r[k-2]],i)<pos(nodes[r[5-k]],i));
+#      R{j}[r[k-2]][r[5-k]]:=List(j,x->r[k]);
+#    fi;
+#  od;od;
+#  return R;
+#end;
+
+# the next function returns the dual W-graph of gr (for an Hecke algebra of
+# rank rk). A dual W-graph corresponds to a Curtis Dual representation.
+#DualWGraph:=function(rk,gr)
+#  return [List(gr[1],function(x)if IsInt(x) then return x;
+#                                else return Difference([1..rk],x);fi;end),
+#          List(gr[2],function(x)if IsList(x[1]) then return 
+#	  [-Reversed(x[1]),x[2]]; else return [-x[1],x[2]];fi;end)];
+#end;
+
+"""
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+'CharNames( `W` [,<options>] )'
+
+returns  the  list  of  character  names  for the reflection group `W`. The
+optional  <options> is a record which can give alternative names in certain
+cases, or a different formatting of names in general.
+
+|    gap> W=coxgroup("G",2);
+    coxgroup("G",2)
+    gap> CharNames(W);
+    [ "phi{1,0}", "phi{1,6}", "phi{1,3}'", "phi{1,3}''", "phi{2,1}",
+      "phi{2,2}" ]
+    gap> CharNames(W,rec(TeX=true));
+    [ "φ₁,₀", "φ₁,₆", "φ₁,₃'", "φ₁,₃''",
+      "φ₂,₁", "φ₂,₂" ]
+    gap> CharNames(W,rec(spaltenstein=true));
+    [ "1", "eps", "epsl", "epsc", "theta'", "theta''" ]
+    gap> CharNames(W,rec(spaltenstein=true,TeX=true));
+    [ "1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c",
+      "\\theta'", "\\theta''" ]|
+
+The  last two  commands show  the character  names used by Spaltenstein and
+Lusztig when describing the Springer correspondence.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+'DetPerm( `W` )'
+
+return  the permutation of the characters of the reflection group `W` which
+is effected when tensoring by the determinant character (for Coxeter groups
+this is the sign character).
+
+|    gap> W = coxgroup( :D, 4 );;
+    gap> DetPerm( W );
+    [ 8, 9, 11, 13, 5, 6, 12, 1, 2, 10, 3, 7, 4 ]|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+"""
 end

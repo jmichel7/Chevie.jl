@@ -93,9 +93,14 @@ representative_operation
 centralizer_generators
 shrink
 ```
+# Chars.jl Documentation
+```@docs
+Chars
+charinfo
+```
 # HasType.jl Documentation
 ```@docs
-CharTable
+UnipotentCharacters
 ```
 # Util.jl Documentation
 ```@docs
