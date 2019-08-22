@@ -286,6 +286,10 @@ end
   convert(T,num(c))
 end
 
+Int(c::Cyc)=convert(Int,c)
+
+Base.isinteger(c::Cyc)=isone(conductor(c)) && (iszero(c) || isinteger(num(c)))
+
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
   l=lcm(a.n,b.n)

@@ -390,7 +390,7 @@ module Chars
 using Gapjm
 
 export charinfo, classinfo, fakedegrees, CharTable, representation,
-  WGraphToRepresentation
+  WGraphToRepresentation, DualWGraph, WGraph2Representation, CharNames
 
 fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
 
@@ -858,6 +858,8 @@ function representation(W::Group,i::Int)
   ct
 end
 
+representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
+
 function representation(H::HeckeAlgebra,i::Int)
   ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
@@ -935,6 +937,7 @@ end
 # reflections, for Hecke(W,[vars]).
 
 function WGraph2Representation(a,vars)
+  println("a=$a vars=$vars")
   nodes=a[1]
   pos=function(n,j)
     if n[1] isa Vector p=findfirst(x->j in x,n)
@@ -943,53 +946,97 @@ function WGraph2Representation(a,vars)
     else p=2 end
     p
   end
-  n=maximum(Flat(nodes)) # number of generators
+  flat(l)=l[1] isa Vector ? flat(vcat(l...)) : l
+  n=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
-  R=map(j->DiagonalMat(map(k->vars[pos(nodes[k],j)],1:dim)),1:n)
-  for r in a[2] for k in [3,4] 
-    if IsList(r[k])
-      for j in 2:2:length(r[k])  R[r[k][j-1]][r[k-2]][r[5-k]]=r[k][j] end
+  R=map(j->HasType.DiagonalMat(map(k->vars[pos(nodes[k],j)],1:dim)),1:n)
+  R=map(x->Cyc.(x//1),R)
+  println("R=$(typeof(R))")
+  for r in a[2] 
+    println("r=$r")
+    for k in [3,4] 
+    if HasType.IsList(r[k])
+      for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
     else
-      j=Filtered([1..n],i->pos(nodes[r[k-2]],i)<pos(nodes[r[5-k]],i))
-      R[j][r[k-2]][r[5-k]]=List(j,x->r[k])
+      r2=Int.(r[1:2])
+      j=filter(i->pos(nodes[r2[k-2]],i)<pos(nodes[r2[5-k]],i),1:n)
+      for i in j R[i][r2[k-2],r2[5-k]]=r[k] end
     end
-  end end
-  R
+    end 
+  end
+  toL.(R)
 end
 
 # the next function returns the dual W-graph of gr (for an Hecke algebra of
 # rank rk). A dual W-graph corresponds to a Curtis Dual representation.
 function DualWGraph(rk,gr)
   [map(x->x isa Integer ? x : setdiff(1:rk,x),gr[1]),
-   map(x->x[1] isa Vector ? [-Reversed(x[1]),x[2]] : [-x[1],x[2]],gr[2])]
+   map(x->x[1] isa Vector ? [-reverse(x[1]),x[2]] : [-x[1],x[2]],gr[2])]
 end
 
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-'CharNames( `W` [,<options>] )'
+`CharNames(W;[,options])`
 
 returns  the  list  of  character  names  for the reflection group `W`. The
-optional  <options> is a record which can give alternative names in certain
+optional  options are keywords which can give alternative names in certain
 cases, or a different formatting of names in general.
 
-|    gap> W=coxgroup("G",2);
-    coxgroup("G",2)
-    gap> CharNames(W);
-    [ "phi{1,0}", "phi{1,6}", "phi{1,3}'", "phi{1,3}''", "phi{2,1}",
-      "phi{2,2}" ]
-    gap> CharNames(W,rec(TeX=true));
-    [ "φ₁,₀", "φ₁,₆", "φ₁,₃'", "φ₁,₃''",
-      "φ₂,₁", "φ₂,₂" ]
-    gap> CharNames(W,rec(spaltenstein=true));
-    [ "1", "eps", "epsl", "epsc", "theta'", "theta''" ]
-    gap> CharNames(W,rec(spaltenstein=true,TeX=true));
-    [ "1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c",
-      "\\theta'", "\\theta''" ]|
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> CharNames(W)
+6-element Array{String,1}:
+ "φ₁‚₀" 
+ "φ₁‚₆" 
+ "φ′₁‚₃"
+ "φ″₁‚₃"
+ "φ₂‚₁" 
+ "φ₂‚₂" 
+
+julia> CharNames(W,TeX=true)
+6-element Array{String,1}:
+ "\\phi_{1,0}"  
+ "\\phi_{1,6}"  
+ "\\phi_{1,3}'" 
+ "\\phi_{1,3}''"
+ "\\phi_{2,1}"  
+ "\\phi_{2,2}"  
+
+julia> CharNames(W,spaltenstein=true)
+6-element Array{String,1}:
+ "1"  
+ "ε"  
+ "εₗ" 
+ "ε_c"
+ "θ′" 
+ "θ″" 
+
+julia> CharNames(W,spaltenstein=true,TeX=true)
+6-element Array{String,1}:
+ "1"             
+ "\\varepsilon"  
+ "\\varepsilon_l"
+ "\\varepsilon_c"
+ "\\theta'"      
+ "\\theta''"     
+```
 
 The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
-
+"""
+function CharNames(W;opt...)
+  opt=Dict(opt)
+  c=charinfo(W)
+  cn=c[:charnames]
+  for k in [:spaltenstein, :frame, :malle, :kondo]
+   if haskey(opt,k) && haskey(c,k) cn=c[k] end
+  end
+  if !haskey(opt,:TeX) cn=TeXstrip.(cn) end
+  cn
+end
+ 
+"""
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 'DetPerm( `W` )'
@@ -1004,4 +1051,5 @@ this is the sign character).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
+
 end

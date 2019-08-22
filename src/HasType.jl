@@ -11,17 +11,21 @@ const chevie=Dict()
 # extensions to get closer to GAP semantics
 Base.:*(a::Array,b::Pol)=a .* Ref(b)
 Base.:*(a::Pol,b::Array)=Ref(a) .* b
-Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
+Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
+Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:-(a::AbstractVector,b::Number)=a .- b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
-Base.:+(a::AbstractVector,b::Number)=a .+ b
-Base.:+(a::AbstractVector,b::Pol)=a .+ Ref(b)
+Base.:+(a::AbstractArray,b::Number)=a .+ b
+Base.:+(a::AbstractArray,b::Pol)=a .+ Ref(b)
 #Base.:*(a::Mvp, b::Array)=Ref(a).*b
 #include("mvp.jl")
 #Base.:*(b::Array,a::Mvp)=b.*Ref(a)
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
+Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*E(1))*toM(m)*toM(n))
+Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
 Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
 Base.isless(a::Array,b::Number)=true
 Base.isless(b::Number,a::Array)=false
@@ -366,6 +370,7 @@ DivisorsInt=divisors
 Dominates=dominates
 Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
 EltWord(W,x)=W(x...)
+ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
 Filtered(l,f)=isempty(l) ? l : filter(f,l)
 First(a,b)=a[findfirst(b,a)]
@@ -376,11 +381,13 @@ Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
 HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
+NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 function Ignore() end
 InfoChevie2=print
 IntListToString=joindigits
 IsList(l)=l isa Vector
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
+IsString(l)=l isa String
 Join(x,y)=join(x,y)
 Join(x)=join(x,",")
 Lcm(a...)=Lcm(collect(a))

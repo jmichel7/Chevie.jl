@@ -2,6 +2,12 @@ module MatInt
 using ..Gapjm
 
 export ComplementIntMat, NullspaceIntMat
+
+IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
+NullMat(i,j)=[zeros(Int,j) for k in 1:i]
+MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1])) 
+             for k in eachindex(b[1])] for i in eachindex(a)]
+
 # MATINTsplit(N,a) largest factor of N prime to a
 MATINTsplit = function (N, a)
   while a != 1
@@ -255,11 +261,6 @@ BITLISTS_NFIM = [
 # * - possible non-zero entry in upper right corner...
 #				
 #
-IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
-NullMat(i,j)=[zeros(Int,j) for k in 1:i]
-MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1])) 
-             for k in eachindex(b[1])] for i in eachindex(a)]
-
 DoNFIM = function (mat::Vector{Vector{Int}}, opt::Int)
   if isempty(mat) mat=[Int[]] end
 # println("mat=$mat opt=$opt")

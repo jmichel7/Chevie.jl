@@ -33,7 +33,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
    end
   end
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
-    cl="("*CharNames(u[:Au],opt)[opt[:locsys]]*")"
+    cl="("*CharNames(u[:Au];opt...)[opt[:locsys]]*")"
     n*="^{$cl}"
     if !TeX n=TeXstrip(n) end
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
@@ -422,8 +422,6 @@ end
 UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
  :order=>true,:springer=>true,:centralizer=>true,:balaCarter=>true))
 
-CharNames(W,opt=Dict{Symbol,Any}())=TeXstrip.(charinfo(W)[:charnames])
- 
 function Util.format(io::IO,uc::UnipotentClasses, opt=Dict{Symbol,Any}())
   opt = merge(UnipotentClassesOps[:DisplayOptions],opt)
   TeX(a, b)=haskey(opt, :TeX) ? a : b
@@ -456,8 +454,8 @@ function Util.format(io::IO,uc::UnipotentClasses, opt=Dict{Symbol,Any}())
         i = Position(uc.classes, u)
         res = Append(res, map((ss->begin
            join(map(function (i)
-                c1 = CharNames(u.prop[:Au], opt)[ss[:locsys][i][2]]
-                c2 = CharNames(ss[:relgroup], opt)[i]
+                c1 = CharNames(u.prop[:Au]; opt...)[ss[:locsys][i][2]]
+                c2 = CharNames(ss[:relgroup]; opt...)[i]
                 c1=="" ? c2 : c1*":"*c2
            end, findall(y->y[1]==i,ss[:locsys])), TeX("\\kern 0[:8]em "," "))
        end), sp))
@@ -675,7 +673,7 @@ function formatICC(x,opt=Dict())
   columnLabels=map(p->name(x[:uc].classes[p[1]],
      merge(Dict(:locsys=>p[2],:limit=>true),opt)),x[:locsys])
   rowLabels=map(x->haskey(opt,:TeX) ? "X_{$x}" : "X$x",
-                CharNames(x[:relgroup],opt))
+                CharNames(x[:relgroup];opt...))
   format(stdout,permutedims(tbl),rows=opt[:rows],columns=opt[:columns],
          row_labels=rowLabels,column_labels=columnLabels)
 end
