@@ -6,7 +6,9 @@ export reflection_name, diagram, UnipotentCharacters,
 
 using ..Gapjm
 #-----------------------------------------------------------------------
-const chevie=Dict()
+CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
+                           :AdjustHeckeCharTable=>(x,y)->x,
+        :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
 
 # extensions to get closer to GAP semantics
 Base.:*(a::Array,b::Pol)=a .* Ref(b)
@@ -34,13 +36,13 @@ Base.length(a::Symbol)=length(string(a))
 Base.copy(x::Char)=x
 
 function chevieget(t::Symbol,w::Symbol)
-  if haskey(chevie[t],w) return chevie[t][w] end
-  println("chevie[$t] has no $w")
+  if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
+  println("CHEVIE[$t] has no $w")
 end
 
 function chevieset(t::Symbol,w::Symbol,o::Any)
-  if !haskey(chevie,t) chevie[t]=Dict{Symbol,Any}() end
-  chevie[t][w]=o
+  if !haskey(CHEVIE,t) CHEVIE[t]=Dict{Symbol,Any}() end
+  CHEVIE[t][w]=o
 end
 
 function chevieset(t::Vector{String},w::Symbol,f::Function)
@@ -273,7 +275,6 @@ PrintToSring(s,v...)=sprint(show,v...)
 
 reflection_name(W,opt=Dict())=join(getchev(W,:ReflectionName,opt),"×")
 
-include("uch.jl")
 include("ucl.jl")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
@@ -632,9 +633,6 @@ function BDSymbols(n,d)
               chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
 end
 
-CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
-                           :AdjustHeckeCharTable=>(x,y)->x,
-        :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
 include("families.jl")
 
 #-------------------------------------------------------------------------
@@ -645,7 +643,7 @@ FormatGAP(x)=repr(x)
 Format(x,opt)= haskey(opt,:TeX) ? FormatTeX(x) : string(x)
 
 function ReadChv(s) end
-Group(a::Perm...)=Group(collect(a))
+Groups.Group(a::Perm...)=Group(collect(a))
 ComplexConjugate(v)=v
 GetRoot(x::Cyc,n::Number=2,msg::String="")=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg::String="")=root(x,n)

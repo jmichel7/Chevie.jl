@@ -172,8 +172,8 @@ julia> word(W,p)
  3
 
 ```
-This module is mostly a port of the basic functions on Weyl groups in CHEVIE.
-The dictionary from CHEVIE is as follows:
+This module is mostly a port of the basic functions on Weyl groups in Chevie.
+The dictionary from Chevie is as follows:
 ```
      CartanMat("A",5)                       →  cartan(:A,5) 
      CoxeterGroup("A",5)                    →  coxgroup(:A,5) 

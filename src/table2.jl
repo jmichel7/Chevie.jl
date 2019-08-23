@@ -1,15 +1,15 @@
 # replacements for some functions in tables (whose automatic translation failed)
-chevie[:D][:CharTable]=n->chevie[:imp][:CharTable](2,2,n)
-chevie[:B][:CharTable]=n->chevie[:imp][:CharTable](2,1,n)
-chevie[:A][:CharTable]=function(n)
-  ct=chevie[:imp][:CharTable](1,1,n+1)
-  ct[:irredinfo]=map(x->Dict(:charname=>joindigits(x)),chevie[:A][:CharInfo](n)[:charparams])
+chevieset(:D,:CharTable,n->chevieget(:imp,:CharTable)(2,2,n))
+chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
+chevieset(:A,:CharTable,function(n)
+  ct=chevieget(:imp,:CharTable)(1,1,n+1)
+  ct[:irredinfo]=map(x->Dict(:charname=>joindigits(x)),chevieget(:A,:CharInfo)(n)[:charparams])
   ct
-end
-chevie[:A][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](1,1,n+1,para,root)
-chevie[:A][:FakeDegree]=(n,p,q)->fegsymbol([βSet(p)])(q)
-chevie[:D][:HeckeCharTable]=(n,para,root)->chevie[:imp][:HeckeCharTable](2,2,n,para,root)
-chevie[:imp][:PowerMaps]=function(p,q,r)
+ end)
+chevieset(:A,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root))
+chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βSet(p)])(q))
+chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))
+chevieset(:imp,:PowerMaps,function(p,q,r)
   if q!=1
     InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
     return [[1],[1],[1]]
@@ -33,9 +33,9 @@ chevie[:imp][:PowerMaps]=function(p,q,r)
     res[pw] = map(x->Position(pp, pow(x, pw)), pp)
   end
   res
-end
+ end)
 
-chevie[:imp][:GeneratingRoots]=function(p,q,r)
+chevieset(:imp,:GeneratingRoots,function(p,q,r)
   if q==1 roots=[vcat([1],fill(0,r-1))]
   else
     if q!=p roots=[vcat([Cyc(1)],fill(0,r-1))] end
@@ -49,9 +49,9 @@ chevie[:imp][:GeneratingRoots]=function(p,q,r)
     push!(roots, v)
   end
   return roots
-end
+ end)
 
-chevie[:B][:UnipotentClasses]=function(r,char,ctype)
+chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   part2dynkin=function(part)
     p=sort(vcat(map(d->1-d:2:d-1, part)...))
     p=p[div(3+length(p),2):end]
@@ -268,9 +268,9 @@ chevie[:B][:UnipotentClasses]=function(r,char,ctype)
     end
   end
   return uc
-end
+end)
 
-chevie[:D][:UnipotentClasses]=function(n,char)
+chevieset(:D,:UnipotentClasses,function(n,char)
   addSpringer = function (s, i, cc)
      ss = First(uc[:springerSeries], x->x[:defect] == DefectSymbol(s[:symbol]))
      if s[:sp] in [[[], [1]], [[], []]] p = 1
@@ -525,4 +525,4 @@ chevie[:D][:UnipotentClasses]=function(n,char)
   end
 end
   uc
-end
+end)

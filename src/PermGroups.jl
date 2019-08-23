@@ -77,7 +77,7 @@ end
 
 PermGroup(W::PermGroup)=W
 
-function Group(a::AbstractVector{Perm{T}}) where T
+function Groups.Group(a::AbstractVector{Perm{T}}) where T
   PermGroup(filter(x->!isone(x),a),Dict{Symbol,Any}())
 end
 

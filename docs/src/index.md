@@ -98,9 +98,13 @@ shrink
 Chars
 charinfo
 ```
+# Uch.jl Documentation
+```@docs
+Uch
+UnipotentCharacters
+```
 # HasType.jl Documentation
 ```@docs
-UnipotentCharacters
 ```
 # Util.jl Documentation
 ```@docs

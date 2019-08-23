@@ -124,6 +124,12 @@ function Gapjm.degree(m::Monomial,var::Symbol)
   end
   return 0
 end
+
+function Gapjm.root(m::Monomial,n::Integer)
+ if !all(x->iszero(x%n),last.(m.d)) throw(InexactError(:root,Monomial,n)) end
+ Monomial((k=>div(v,n) for (k,v) in m.d)...)
+end
+
 #------------------------------------------------------------------------------
 struct Mvp{T} # N=type of exponents T=type of coeffs
   d::ModuleElt{Monomial,T}
@@ -185,7 +191,7 @@ Base.:*(a, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a)=a*b
 
 function Base.inv(x::Mvp)
-  if length(x.d)!=1 error("can only take inverse of monomial") end
+  if length(x.d)!=1 throw(InexactError(:inv,x)) end
   (m,c)=first(x.d)
   Mvp(inv(m)=>(c^2==1 ? c : 1//c))
 end
@@ -247,6 +253,12 @@ function (p::Mvp)(;arg...)
     res=Mvp(norm!(res1))
   end
   res
+end
+
+function Gapjm.root(p::Mvp,n::Integer)
+  if length(p.d)>1 throw(InexactError(:root,n,p)) end
+  p=p.d.d[1]
+  Mvp(root(first(p),n)=>root(last(p),n))
 end
 
 function Base.://(p::Mvp,q::Mvp)

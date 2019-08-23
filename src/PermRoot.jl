@@ -138,7 +138,7 @@ version  of the regular  representation of `W`.  The polynomial which gives
 the  graded multiplicity  of a  character `φ`  of `W`  in the graded module
 `SV/I` is called the *fake degree* of `φ`.
 
-Dictionary from CHEVIE
+Dictionary from Chevie
 ```
      ReflectionSubgroup          → reflection_subgroup
      .orbitRepresentative        → simple_representatives

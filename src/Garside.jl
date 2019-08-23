@@ -192,7 +192,7 @@ cardinality  the  generalized  Catalan  numbers.  An  interval  monoid  has
 naturally  an inverse morphism from `M`  to `W`, called 'EltBraid' which is
 the  quotient map from the  interval monoid to `W`  which sends back simple
 braids to `[1,w]`.
-#A  last notable  notion is  *reversible* monoids.  Since in CHEVIE we store
+#A  last notable  notion is  *reversible* monoids.  Since in Chevie we store
 #only  left normal forms, it is easy to compute left lcms and gcds, but hard
 #to  compute right ones.  But this becomes  easy to do  if the monoid has an
 #operation  'reverse', which has the property that  'a' is a left divisor of

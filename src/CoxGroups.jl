@@ -134,10 +134,10 @@ permutations  is usually  much faster  than manipulating lists representing
 reduced expressions.
 
 This  file contains mostly a port of  the basic functions on Coxeter groups
-in  CHEVIE. The only Coxeter group  constructor implemented here is coxsym.
+in  Chevie. The only Coxeter group  constructor implemented here is coxsym.
 The file Weyl.jl defines coxgroup.
 
-The dictionary from CHEVIE is as follows:
+The dictionary from Chevie is as follows:
 ```
      CoxeterElements(W[,l])                → elements(W[,l])
      CoxeterLength(W,w)                    → length(W,w)
