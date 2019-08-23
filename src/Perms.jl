@@ -132,7 +132,6 @@ end
 
 Base.vec(a::Perm)=a.d
 
-# Gap's Permuted(a,p) is a[p.d], Gap's ListPerm(p) is p.d
 #---------------- Constructors ---------------------------------------
 "for example  Perm{Int8}(1,2,3) constructs the cycle (1,2,3)"
 function Perm{T}(x::Integer...)where T<:Integer
@@ -206,7 +205,6 @@ Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
 @inline degree(a::Perm)=length(a.d)
-#Base.vec(a::Perm)=a.d
 
 " hash is needed for using Perms in Sets/Dicts"
 function Base.hash(a::Perm, h::UInt)

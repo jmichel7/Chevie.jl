@@ -62,10 +62,7 @@ function Polstrip(v::AbstractVector,val=0)
   Pol(v[b:l],val+b-1)
 end
 
-function Pol(a)
-  if iszero(a) Pol(typeof(a)[],0) end
-  Pol([a],0)
-end
+Pol(a)=iszero(a) ? Pol(typeof(a)[],0) : Pol([a],0)
 
 function Pol(t::Symbol)
   varname(t)
@@ -76,15 +73,20 @@ Base.copy(p::Pol)=Pol(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=Pol([T(a)],0)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
 
+Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
+                                     isinteger(p.c[1]))
+
+function Base.convert(::Type{T},p::Pol) where T<:Number
+  if iszero(p) return T(0) end
+  if !isone(length(p.c)) throw(InexactError(:convert,T,p)) end
+  convert(T,p.c[1]) 
+end
+
+Base.Int(p::Pol)=convert(Int,p)
+
 Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
-
-function Base.hash(a::Pol, h::UInt)
-  b = 0x595dee0e71d271d0%UInt
-  b = xor(b,hash(a.v, h))
-  b = xor(b,hash(a.c, h))
-  (b << 1) | (b >> (sizeof(Int)*8 - 1))
-end
+Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 
 Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 

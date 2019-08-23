@@ -390,7 +390,8 @@ module Chars
 using Gapjm
 
 export charinfo, classinfo, fakedegrees, CharTable, representation,
-  WGraphToRepresentation, DualWGraph, WGraph2Representation, CharNames
+  WGraphToRepresentation, DualWGraph, WGraph2Representation, CharNames,
+  representations
 
 fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
 
@@ -842,7 +843,7 @@ If  there is a  second argument, it  can be a  list of indices (or a single
 integer) and only the representations with these indices (or that index) in
 the list of all representations are returned.
 
-|    gap> Representations(coxgroup("B",2));
+|    gap> Representations(coxgroup(:B,2));
     [ [ [ [ 1 ] ], [ [ -1 ] ] ],
       [ [ [ 1, 0 ], [ -1, -1 ] ], [ [ 1, 2 ], [ 0, -1 ] ] ],
       [ [ [ -1 ] ], [ [ -1 ] ] ], [ [ [ 1 ] ], [ [ 1 ] ] ],
@@ -859,6 +860,7 @@ function representation(W::Group,i::Int)
 end
 
 representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
+representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
 
 function representation(H::HeckeAlgebra,i::Int)
   ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
@@ -937,7 +939,7 @@ end
 # reflections, for Hecke(W,[vars]).
 
 function WGraph2Representation(a,vars)
-  println("a=$a vars=$vars")
+# println("a=$a vars=$vars")
   nodes=a[1]
   pos=function(n,j)
     if n[1] isa Vector p=findfirst(x->j in x,n)
@@ -949,11 +951,12 @@ function WGraph2Representation(a,vars)
   flat(l)=l[1] isa Vector ? flat(vcat(l...)) : l
   n=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
-  R=map(j->HasType.DiagonalMat(map(k->vars[pos(nodes[k],j)],1:dim)),1:n)
-  R=map(x->Cyc.(x//1),R)
-  println("R=$(typeof(R))")
+  R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:n)
+  R=map(x->HasType.DiagonalMat(x...),R)
+  R=map(x->x*E(1)//1,R)
+# println("R=$(typeof(R))$R")
   for r in a[2] 
-    println("r=$r")
+#   println("r=$r")
     for k in [3,4] 
     if HasType.IsList(r[k])
       for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
@@ -964,6 +967,7 @@ function WGraph2Representation(a,vars)
     end
     end 
   end
+# println("R=$(typeof(R))$R")
   toL.(R)
 end
 

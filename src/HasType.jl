@@ -363,7 +363,13 @@ Combinations=combinations
 Copy=deepcopy
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
-DiagonalMat(v...)=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+function DiagonalMat(v...)
+  R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+  for i in axes(R,1), j in axes(R,2)
+    if i!=j R[i,j]=zero(R[1,1]) end
+  end
+  R
+end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 DivisorsInt=divisors
