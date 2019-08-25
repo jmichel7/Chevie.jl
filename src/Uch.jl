@@ -9,9 +9,9 @@ If `𝐓` is an `F`-stable maximal torus of `𝐆`, and `𝐁` is a (not necessa
 variety  `X_𝐁={g𝐁 ∈  𝐆/𝐁 ∣  g𝐁 ∩  F(g𝐁 )≠∅  }`. This  variety has a natural
 action of `𝐆 ^F` on the left, so the corresponding *Deligne-Lusztig virtual
 module*  `∑ᵢ  (-1)ⁱ  Hⁱ_c(X_𝐁,ℚ̄_ℓ)`  also.  The  character of this virtual
-module is the *Deligne-Lusztig* character `R_𝐓^𝐆(1)`; the notation reflects
-the  fact that  one can  prove that  this character  does not depend on the
-choice   of  `𝐁`.   Actually,  this   character  is   parameterized  by  an
+module  is  the  *Deligne-Lusztig*  character  `R_𝐓^𝐆  (1)`;  the  notation
+reflects the fact that one can prove that this character does not depend on
+the  choice  of  `𝐁`.  Actually,  this  character  is  parameterized  by an
 `F`-conjugacy  class of `W`: if `𝐓₀⊂𝐁₀` is  an `F`-stable pair, there is an
 unique `w∈ W=N_𝐆(𝐓₀)/𝐓₀` such that the triple `(𝐓,𝐁,F)` is `𝐆`-conjugate to
 `(𝐓₀,𝐁₀,wF)`.  In this case we denote `R_w` for `R_𝐓^𝐆(1)`; it depends only
@@ -31,7 +31,7 @@ characters,   can  be  described  in  an   elementary  way.  They  are  the
 constituents of `R_1`, or equivalently the characters of the virtual module
 defined  by  the  cohomology  of  `X_{𝐁₀}`,  which  is the discrete variety
 `(𝐆/𝐁₀)^F`; the virtual module reduces to the actual module
-`ℚ̄_ℓ[(𝐆/𝐁₀)^F]`.  Thus the Deligne-Lusztig induction `R_{𝐓₀}^𝐆(1)` reduces
+`ℚ̄_ℓ[(𝐆/𝐁₀)^F]`.  Thus the Deligne-Lusztig induction `R_𝐓₀^𝐆(1)` reduces
 to  Harish-Chandra induction,  defined as  follows: let  `𝐏 =𝐔  ⋊ 𝐋`  be an
 `F`-stable  Levi decomposition of an  `F`-stable parabolic subgroup of `𝐆`.
 Then  the *Harish-Chandra* induced  `R_𝐋^𝐆` of a  character `χ` of `𝐋^F` is
@@ -106,7 +106,7 @@ Lusztig  and  Digne-Michel  show  that  this  eigenvalue  is  of  the  form
 Frobenius  attached  to  `ρ`.  Unipotent  characters  in the Harish-Chandra
 series of a pair `(𝐋,λ)` have the same eigenvalue of Frobenius as `λ`.
 
-Chevie   contains  table   of  all   this  information,   and  can  compute
+Chevie   contains  tables  of  all   this  information,   and  can  compute
 Harish-Chandra  and Lusztig  induction of  unipotent characters  and almost
 characters. We illustrate the information on some examples:
 
@@ -149,18 +149,18 @@ One  can get  more information  on the  Lusztig Fourier  matrix of  the big
 family by asking
 
 ```julia-repl
-|    gap> Display(uc.families[1]);
-    D(S3)
-        label |'|'|eigen
-    ________________________________________________________
-    (1,1)     |'|'|    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
-    (g2,1)    |'|'|    1 1/2  1/2    0    0 -1/2 -1/2    0    0
-    (g3,1)    |'|'|    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
-    (1,r)     |'|'|    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
-    (1,eps)   |'|'|    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
-    (g2,eps)  |'|'|   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
-    (g3,E3)   |'|'|   E3 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
-    (g3,E3^2) |'|'| E3^2 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3|
+julia> uc.prop[:families][1]
+Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
+   label│eigen                                               
+────────┼─────────────────────────────────────────────────────
+(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
+(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1
+(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3
+(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3
+(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3
+(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1
+(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3
+(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3
 ```
 
 One  can  do  computations  with  individual  unipotent characters. Here we
@@ -309,14 +309,14 @@ described in the section about families below.
     UnipotentCharacters( Bsym2 )
     gap> Display(uc);
     Unipotent characters for Bsym2
-    Name |'|'|  Degree FakeDegree Eigenvalue Label
+    Name |  Degree FakeDegree Eigenvalue Label
     ___________________________________________
-    11.  |'|'|  1/2qP4        q^2          1   +,-
-    1.1  |'|'|1/2qP2^2        qP4          1   +,+
-    .11  |'|'|     q^4        q^4          1
-    2.   |'|'|       1          1          1
-    .2   |'|'|  1/2qP4        q^2          1   -,+
-    B2   |'|'|1/2qP1^2          0         -1   -,-
+    11.  |  1/2qP4        q^2          1   +,-
+    1.1  |1/2qP2^2        qP4          1   +,+
+    .11  |     q^4        q^4          1
+    2.   |       1          1          1
+    .2   |  1/2qP4        q^2          1   -,+
+    B2   |1/2qP1^2          0         -1   -,-
     gap> uc.harishChandra[1];
     rec(
       levi := [  ],
@@ -330,12 +330,12 @@ described in the section about families below.
     gap> uc.families[2];
     Family("012",[1,2,5,6])
     gap> Display(uc.families[2]);
-    label |'|'|eigen  +,- +,+  -,+  -,-
+    label |eigen  +,- +,+  -,+  -,-
     ________________________________
-    +,-   |'|'|    1  1/2 1/2 -1/2 -1/2
-    +,+   |'|'|    1  1/2 1/2  1/2  1/2
-    -,+   |'|'|    1 -1/2 1/2  1/2 -1/2
-    -,-   |'|'|   -1 -1/2 1/2 -1/2  1/2|
+    +,-   |    1  1/2 1/2 -1/2 -1/2
+    +,+   |    1  1/2 1/2  1/2  1/2
+    -,+   |    1 -1/2 1/2  1/2 -1/2
+    -,-   |   -1 -1/2 1/2 -1/2  1/2|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -918,16 +918,16 @@ Fourier matrix. Here is an example.
     Family("D(S3)",[5,6,4,3,8,7,9,10])
     gap> Display(f);
     D(S3)
-        label |'|'|eigen
+        label |eigen
     ________________________________________________________
-    (1,1)     |'|'|    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
-    (g2,1)    |'|'|    1 1/2  1/2    0    0 -1/2 -1/2    0    0
-    (g3,1)    |'|'|    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
-    (1,r)     |'|'|    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
-    (1,eps)   |'|'|    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
-    (g2,eps)  |'|'|   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
-    (g3,E3)   |'|'|   E3 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
-    (g3,E3^2) |'|'| E3^2 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
+    (1,1)     |    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
+    (g2,1)    |    1 1/2  1/2    0    0 -1/2 -1/2    0    0
+    (g3,1)    |    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
+    (1,r)     |    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
+    (1,eps)   |    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
+    (g2,eps)  |   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
+    (g3,E3)   |   E3 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
+    (g3,E3^2) | E3^2 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
     gap> f.charNumbers;
     [ 5, 6, 4, 3, 8, 7, 9, 10 ]
     gap> CharNames(uc){f.charNumbers};
@@ -969,20 +969,20 @@ of unipotent degrees.
 
 |    gap> Display(Family("C2"));
     C2
-       label |'|'|eigen
+       label |eigen
     ___________________________________
-    (1,1)    |'|'|    1 1/2  1/2  1/2  1/2
-    (g2,1)   |'|'|    1 1/2  1/2 -1/2 -1/2
-    (1,eps)  |'|'|    1 1/2 -1/2  1/2 -1/2
-    (g2,eps) |'|'|   -1 1/2 -1/2 -1/2  1/2
+    (1,1)    |    1 1/2  1/2  1/2  1/2
+    (g2,1)   |    1 1/2  1/2 -1/2 -1/2
+    (1,eps)  |    1 1/2 -1/2  1/2 -1/2
+    (g2,eps) |   -1 1/2 -1/2 -1/2  1/2
     gap> Display(Family("C2",[4..7],rec(signs:=[1,-1,1,-1])));
     C2
-       label |'|'|eigen signs
+       label |eigen signs
     _________________________________________
-    (1,1)    |'|'|    1     1  1/2 -1/2 1/2 -1/2
-    (g2,1)   |'|'|    1    -1 -1/2  1/2 1/2 -1/2
-    (1,eps)  |'|'|    1     1  1/2  1/2 1/2  1/2
-    (g2,eps) |'|'|   -1    -1 -1/2 -1/2 1/2  1/2|
+    (1,1)    |    1     1  1/2 -1/2 1/2 -1/2
+    (g2,1)   |    1    -1 -1/2  1/2 1/2 -1/2
+    (1,eps)  |    1     1  1/2  1/2 1/2  1/2
+    (g2,eps) |   -1    -1 -1/2 -1/2 1/2  1/2|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1003,15 +1003,6 @@ Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
 and the eigenvalues of Frobenius are the pairwise products.
 
 `ComplexConjugate(<f>)`:   is    a    synonym    for 'OnFamily(<f>,-1)'.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`IsFamily(<obj>)`
-
-returns |true| if <obj> is a family, and |false| otherwise.
-
-|    gap> List(UnipotentCharacters(ComplexReflectionGroup(4)).families,IsFamily);
-    [ true, true, true, true ]|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

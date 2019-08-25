@@ -83,7 +83,7 @@ julia> Cyc(c) # even less useful
 -0.4999999999999998+0.8660254037844387ζ₄
 ```
 
-For more information see ER, quadratic, galois. 
+For more information see ER, Quadratic, galois. 
 
 Finally, a benchmark:
 
@@ -108,7 +108,7 @@ end;
 for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
-export E, ER, Cyc, conductor, galois, Root1, quadratic
+export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
 using Gapjm
 import ..Util: ModuleElt, norm!
@@ -333,26 +333,15 @@ end
    return b
 end
 
-function Base.show(io::IO, p::Cyc)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if get(io,:quadratic,false) && !isnothing(quadratic(p))
-    q=quadratic(p)
-    if q.b==0 print(io,q.a)
-    else
-      if !iszero(q.a) 
-        if q.den!=1 print(io,"(") end
-        print(io,q.a)
-        if q.b>0 print(io,"+") end
-      end
-      print(io,q.b==1 ? "" : q.b==-1 ? "-" : q.b)
-      if repl print(io,"√",q.root)
-      else print(io,"ER(",q.root,")")
-      end
-      if !iszero(q.a) && q.den!=1 print(io,")") end
+Base.show(io::IO,p::Cyc)=print(io,format(p;repl=get(io,:limit,false)))
+
+function Util.format(p::Cyc; TeX=false, quadratic=true, repl=false)
+  rq=""
+  if quadratic
+    q=Quadratic(p)
+    if !isnothing(q)
+      rq=format(q;TeX=TeX,repl=repl)
     end
-    if q.den!=1 && !iszero(p) print(io,"/",q.den) end
-    return
   end
 if use_list
   it=zip(zumbroich_basis(p.n),p.d)
@@ -363,9 +352,8 @@ res=join( map(it) do (deg,v)
 if use_list
     if iszero(v) return "" end
 end
-    if (repl || TeX) && v isa Rational && isone(denominator(v)) 
-      v=numerator(v) 
-    end
+    den=denominator(v)
+    v=numerator(v) 
     if deg==0 t=string(v)
     else 
       if repl || TeX
@@ -380,12 +368,14 @@ end
       t*=r
     end
     if t[1]!='-' t="+"*t end
+    if !isone(den) t*="/$den" end
     t
   end)
   if res=="" res="0"
   elseif res[1]=='+' res=res[2:end] 
   end
-  print(io, (repl && !TeX) ? TeXstrip(res) : res)
+  res=(repl && !TeX) ? TeXstrip(res) : res
+  (quadratic && rq!="" && length(rq)<length(res)) ? rq : res
 end
 
 function Base.:+(x::Cyc,y::Cyc)
@@ -612,13 +602,16 @@ julia> ER(3)
 -ζ₁₂⁷+ζ₁₂¹¹
 ```
 """
+const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
 function ER(n::Int)
+  get!(ER_dict,n) do 
   if n==0       return 0
   elseif n<0    return E(4)*ER(-n)
   elseif n%4==1 return sum(k->E(n,k^2),1:n)
   elseif n%4==2 return (E(8)-E(8,3))*ER(div(n,2))
-  elseif n%4==3 return -E(4)*sum(k->E(n,k^2),1:n)
+  elseif n%4==3 return E(4,3)*sum(k->E(n,k^2),1:n)
   else          return 2*ER(div(n,4))
+  end
   end
 end 
 
@@ -698,21 +691,28 @@ E(a::Root1)=E(conductor(a),exponent(a))
 E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
 
 
+struct Quadratic{T<:Integer}
+  a::T
+  b::T
+  root::T
+  den::T
+end
+
 """
-  quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
+  Quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
   it  returns a named  tuple (a=a,b=b,root=root,d=d) of  integers such that
   c=(a + b ER(root))//d or nothing if no such tuple exists
 
 # Examples
 ```julia-repl
-julia> quadratic(1+E(3))
+julia> Quadratic(1+E(3))
 (a = 1, b = 1, root = -3, den = 2)
 
-julia> quadratic(1+E(5))
+julia> Quadratic(1+E(5))
 
 ```
 """
-quadratic=function(cyc::Cyc)
+function Quadratic(cyc::Cyc)
 if use_list
   den=lcm(denominator.(cyc.d))::Int
   zb=zumbroich_basis(cyc.n)
@@ -724,7 +724,7 @@ else
   l=fill(0,cyc.n)
   for (k,v) in cyc.d l[k+1]=v end
 end
-  if cyc.n==1 return (a=l[1],b=0,root=1,den=den) end
+  if cyc.n==1 return Quadratic(l[1],0,1,den) end
 
   f=factor(cyc.n)
   v2=get(f,2,0)
@@ -738,10 +738,7 @@ end
   if v2==0
     root=cyc.n
     if root%4==3 root=-root end
-    gal=
-    let cyc=cyc
-      Set(map(i->galois(cyc,i),prime_residues(cyc.n)))
-    end
+    gal=Set(galois.(cyc,prime_residues(cyc.n)))
     if length(gal)!=2 return nothing end
     a=convert(Int,sum(gal))          # trace of 'cyc' over the rationals
     if length(f)%2==0 b=2*l[2]-a
@@ -775,10 +772,24 @@ end
     end
     d=1
   end
-
   if d*cyc!=a+b*ER(root) return nothing end
-  return (a=a,b=b,root=root,den=den*d)
+  return Quadratic(a,b,root,den*d)
 end
+
+function Util.format(q::Quadratic;repl=false,TeX=false,opt...)
+  rq=string(q.a)
+  if q.b!=0 
+    if iszero(q.a) rq=""
+    elseif q.b>0 rq*="+" end
+    rq*=q.b==1 ? "" : (q.b==-1 ? "-" : string(q.b))
+    rq*=repl ? "√$(q.root)" : (TeX ? "\\sqrt{$(q.root)}" : "ER($(q.root))")
+    if !iszero(q.a) && q.den!=1 rq="("*rq*")" end
+  end
+  if q.den!=1 && rq!="0" rq*="/$(q.den)" end
+  rq
+end
+
+Base.show(io::IO,q::Quadratic)=print(io,format(q,repl=get(io,:limit,false)))
 
 function Gapjm.root(x::Cyc,n::Number=2)
   r=Root1(x)

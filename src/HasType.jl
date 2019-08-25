@@ -352,7 +352,7 @@ end
 AbsInt=abs
 ApplyFunc(f,x)=f(x...)
 Arrangements=arrangements
-BetaSet=βSet
+BetaSet=βset
 Binomial=binomial
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]

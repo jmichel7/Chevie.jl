@@ -7,7 +7,7 @@ chevieset(:A,:CharTable,function(n)
   ct
  end)
 chevieset(:A,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root))
-chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βSet(p)])(q))
+chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
 chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))
 chevieset(:imp,:PowerMaps,function(p,q,r)
   if q!=1

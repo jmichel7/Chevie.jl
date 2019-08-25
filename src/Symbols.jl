@@ -35,9 +35,10 @@ Partitions  and pairs  of partitions  are parameters  for characters of the
 Weyl groups of classical types, and tuples of partitions are parameters for
 characters  of  imprimitive  complex  reflection  groups.  Symbols with two
 β-sets  are parameters for the  unipotent characters of classical Chevalley
-groups,  and more general  symbols for the  unipotent characters of Spetses
-associated  to complex  reflection groups.  The rank  of the  symbol is the
-semi-simple rank of the corresponding Chevalley group or Spets.
+groups,   and  more  general  symbols  are  parameters  for  the  unipotent
+characters  of Spetses associated to complex reflection groups. The rank of
+the  symbol is the semi-simple rank of the corresponding Chevalley group or
+Spets.
 
 Symbols of rank n and defect 0 parameterize characters of the Weyl group of
 type  Dₙ, and  symbols of  rank n  and defect  divisible by  4 parameterize
@@ -50,7 +51,7 @@ groups of dimension 2n or orthogonal groups of dimension 2n+1.
 """
 module Symbols
 using Gapjm
-export shiftβ, βSet, partβ, symbol_partition_tuple,
+export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol, degree_gendeg_symbol,
 degree_feg_symbol, valuation_feg_symbol,
 defectsymbol, fullsymbol, ranksymbol, symbols, fegsymbol, stringsymbol,
@@ -83,17 +84,17 @@ function shiftβ(β,n=1)
 end
 
 """
-`βSet(p)` normalized β-set of a partition
+`βset(p)` normalized β-set of a partition
     
 ```julia-repl
-julia> βSet([3,3,1])
+julia> βset([3,3,1])
 3-element Array{Int64,1}:
  1
  4
  5
 ```
 """
-βSet(α)=isempty(α) ? α : reverse(α) .+(0:length(α)-1)
+βset(α)=isempty(α) ? α : reverse(α) .+(0:length(α)-1)
 
 """
 'partβ(β)' partition defined by β-set β
@@ -154,7 +155,7 @@ function symbol_partition_tuple(p,s)
   s= map(length, p[1:l]) .- s
   s= maximum(s) .- s
   p= copy(p)
-  p[1:l]=map(i->shiftβ(βSet(p[i]),s[i]),1:l)
+  p[1:l]=map(i->shiftβ(βset(p[i]),s[i]),1:l)
   p
 end
 

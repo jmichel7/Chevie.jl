@@ -360,7 +360,7 @@ julia> cycles(Perm(1,2)*Perm(4,5))
  [4, 5]
 ```
 """
-cycles(a::Perm;check=false)=orbits(a;trivial=false)
+cycles(a::Perm;check=false)=orbits(a;trivial=false,check=check)
 
 function Base.show(io::IO, a::Perm{T}) where T
   if T!=Int print(io,T) end

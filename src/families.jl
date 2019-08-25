@@ -5,28 +5,34 @@ struct Family
 end
 
 Family(f::Family)=f
+
 function getf(s::String)
   f=chevieget(:families,Symbol(s))
   (f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
 end
+
 function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f=getf(s)
   f[:charNumbers]=v
   merge!(f,d)
 end
+
 function Family(s::String,d::Dict=Dict{Symbol,Any}())
   f=getf(s)
   merge!(f,d)
 end
+
 function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f[:charNumbers]=v
   merge!(f,d)
 end
+
 function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}())
   f=Family(f)
   f[:charNumbers]=v
   merge!(f,d)
 end
+
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 Base.getindex(f::Family,k)=f.prop[k]
 Base.haskey(f::Family,k)=haskey(f.prop,k)
@@ -50,11 +56,6 @@ function Base.merge!(f::Family,d::Dict)
   f
 end
 
-function Base.show(io::IO,f::Family)
- if !haskey(f,:name) f[:name]="???" end
- print(io,"Family($(TeXstrip(f.prop[:name])):$(length(f.prop[:eigenvalues])))")
-end
-
 function Base.:*(f::Family,g::Family)
 # println(f,"*",g)
   arg=(f,g)
@@ -73,8 +74,8 @@ function Base.:*(f::Family,g::Family)
   if all(haskey.(arg,:charNumbers))
     res[:charNumbers]=Cartesian(getindex.(arg,:charNumbers)...)
   end
-#  if ForAll(arg,f->IsBound(f.special)) then 
-#    res.special:=PositionCartesian(List(arg,Size),List(arg,f->f.special));
+#  if all(haskey.(arg,:special))
+#    res.special:=PositionCartesian(List(arg,Size),getindex.(arg,:special));
 #    res.cospecial:=PositionCartesian(List(arg,Size),
 #      List(arg,function(f)if IsBound(f.cospecial) then return f.cospecial;
 #                                          else return f.special;fi;end));
@@ -88,7 +89,7 @@ function Base.:*(f::Family,g::Family)
 #  if ForAll(arg,f->IsBound(f.lusztig) or Size(f)=1) then 
 #    res.lusztig:=true;
 #  fi;
-#  if ForAny(arg,f->IsBound(f.qEigen)) then
+#  if any(haskey.(arg,:qEigen))
 #    res.qEigen:=List(Cartesian(List(arg,function(f) 
 #      if IsBound(f.qEigen) then return f.qEigen;else return f.eigenvalues*0;fi;
 #      end)),Sum);
@@ -403,13 +404,12 @@ the call).
     (3a,X.3) | E3^2 1/3  1/3 -1/3    0    0 -1/3 -1/3  2/3|
 """
 function Drinfeld_double(g;lu=false)
-  g=arg[1]
   res=Dict{Symbol,Any}(:group=> g)
   res[:classinfo] = map(function (c, n) local r, t
     r = Dict{Symbol, Any}(:elt => Representative(c), :name => n)
     if r[:elt] == g[:identity] r[:name] = "1" end
     r[:centralizer] = Centralizer(g, r[:elt])
-    r[:centelms] = map(Representative, ConjugacyClasses(r[:centralizer]))
+    r[:centelms] = class_reps(r[:centralizer])
     t = CharTable(r[:centralizer])
     r[:charNames] = CharNames(r[:centralizer], Dict{Symbol, Any}(:TeX => true))
     r[:names] = ClassNamesCharTable(t)
@@ -466,17 +466,16 @@ end
 
 <S> should be a symbol for a unipotent characters of an imprimitive complex
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
-of unipotent characters to which the character with symbol <S> belongs.
 
-|    gap> FamilyImprimitive([[0,1],[1],[0]]);
-    Family("0011")
-    gap> Display(last);
-    0011
-    label |eigen         1            2            3
-    _________________________________________________
-    1     | E3^2  ER(-3)/3    -ER(-3)/3     ER(-3)/3
-    2     |    1 -ER(-3)/3 (3-ER(-3))/6 (3+ER(-3))/6
-    3     |    1  ER(-3)/3 (3+ER(-3))/6 (3-ER(-3))/6|
+```julia-repl
+julia> FamilyImprimitive([[0,1],[1],[0]]);
+Family(0011:3)
+label│     eigen      1         2         3
+─────┼──────────────────────────────────────
+1    │(-1-√-3)/2  √-3/3    -√-3/3     √-3/3
+2    │         1 -√-3/3 (3-√-3)/6 (3+√-3)/6
+3    │         1  √-3/3 (3+√-3)/6 (3-√-3)/6
+```
 """
 FamilyImprimitive = function (S)
   println("S=$S")
@@ -576,18 +575,23 @@ MakeFamilyImprimitive = function (S, uc)
 end
 
 """
-`FamiliesClassical(<l>)`
+`FamiliesClassical(l)`
 
-The  list  <l>  should  be  a  list  of symbols as returned by the function
-`Symbols', which classify the unipotent characters of groups of type |"B"|,
-|"C"| or |"D"|. 'FamiliesClassical' returns the list of families determined
+The  list  `l`  should  be  a  list  of symbols as returned by the function
+`Symbols`,  which classify the unipotent characters of groups of type `:B`,
+`:C`  or `:D`. `FamiliesClassical` returns  the list of families determined
 by these symbols.
 
-|    gap> FamiliesClassical(Symbols(3,1));
-    [ Family("0112233",[4]), Family("01123",[1,3,8]),
-      Family("013",[5,7,10]), Family("022",[6]), Family("112",[2]),
-      Family("3",[9]) ]|
-
+```julia-repl
+julia> FamiliesClassical(BDSymbols(3,1))
+6-element Array{Gapjm.HasType.Family,1}:
+ Family(0112233:[4])    
+ Family(01123:[1, 3, 8])
+ Family(013:[5, 7, 10]) 
+ Family(022:[6])        
+ Family(112:[2])        
+ Family(3:[9])
+```
 The  above example shows the families of unipotent characters for the group
 `B_3`.
 """
@@ -643,4 +647,41 @@ FamiliesClassical=function(sym)
     Family(f)
 #   f[:operations] = FamilyOps
   end
+end
+
+function Base.show(io::IO,f::Family)
+  format(io,f)
+end
+
+function Util.format(io::IO,f::Family,opt=Dict{Symbol,Any}())
+  TeX=get(io,:TeX,false) || get(opt,:TeX,false)
+  repl=get(io,:limit,false)
+  deep=get(io,:typeinfo,false)!=false
+  if haskey(f,:name)
+    name=TeX ? "\$"*f[:name]*"\$" : TeXstrip(f[:name])
+  else name="???"
+  end
+  print(io,"Family($name:")
+  if haskey(f,:charNumbers) print(io,f[:charNumbers],")")
+  else print(io,length(f[:eigenvalues]),")")
+  end
+  if !(repl || TeX) || deep return end
+  if haskey(f,:charLabels) rowLabels=f[:charLabels]
+    if !TeX rowLabels=TeXstrip.(rowLabels) end
+  else  rowLabels=1:length(f)
+  end
+  print(io,"\n")
+  t=[sprint.(show,f[:eigenvalues];context=io)]
+  columnLabels=TeX ? ["\\Omega"] : ["eigen"]
+  if haskey(f,:signs) 
+    push!(t,f[:signs])
+    push!(columnLabels,"signs")
+  end
+  append!(t,toL(map(y->sprint(show,y;context=io),f[:fourierMat])))
+  if maximum(length.(rowLabels))<=4 append!(columnLabels,rowLabels)
+  else append!(columnLabels,map(x->" ",rowLabels))
+  end
+  format(io,permutedims(toM(t)),row_labels=rowLabels,
+        column_labels=columnLabels,
+        rows_label=TeX ? "\\hbox{label}" : "label")
 end

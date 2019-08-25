@@ -106,6 +106,15 @@ UnipotentCharacters
 # HasType.jl Documentation
 ```@docs
 ```
+# Symbols.jl Documentation
+```@docs
+Symbols
+shiftβ
+βset
+partβ
+ranksymbol
+fegsymbol
+```
 # Util.jl Documentation
 ```@docs
 Util

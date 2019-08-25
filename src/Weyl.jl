@@ -226,15 +226,15 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
   if t==:B m[1,2]=-2 
   elseif t==:C m[2,1]=-2 
   elseif t==:Bsym m=Cyc{Int}.(m) 
-    m[1,2]=m[2,1]=ER(2)
+    m[1,2]=m[2,1]=-ER(2)
   elseif t==:D if r>2 m[1:3,1:3]=[2 0 -1; 0 2 -1;-1 -1 2] else m=[2 0;0 2] end
   elseif t==:E m[1:4,1:4]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2]
   elseif t==:F m[3,2]=-2 
   elseif t==:Fsym m=Cyc{Int}.(m) 
-    m[3,2]=m[2,3]=ER(2)
+    m[3,2]=m[2,3]=-ER(2)
   elseif t==:G m[2,1]=-3
   elseif t==:Gsym m=Cyc{Int}.(m) 
-    m[1,2]=m[2,1]=ER(3)
+    m[1,2]=m[2,1]=-ER(3)
   elseif t==:H m=Cyc{Int}.(m) 
     m[1,2]=m[2,1]=E(5,2)+E(5,3)
   elseif t==:I 
@@ -247,8 +247,22 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
 end
 
 function PermRoot.cartan(t::Dict{Symbol,Any})
-  if haskey(t,:cartantype) && t[:series]==:B &&t[:cartantype]==1
-       cartan(:C,length(t[:indices]))
+# println("t=$t")
+  if haskey(t,:cartantype) 
+    ct=t[:cartantype]
+    C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
+    if t[:series]==:B
+      C[1,2]=-t[:cartantype]
+      C[2,1]=-2//t[:cartantype]
+    elseif t[:series]==:G
+      C[1,2]=-t[:cartantype]
+      C[2,1]=-3//t[:cartantype]
+    elseif t[:series]==:F
+      C[2,3]=-t[:cartantype]
+      C[3,2]=-2//t[:cartantype]
+    end
+    if all(isinteger,C) C=Int.(C) end
+    C
   elseif haskey(t,:bond) cartan(:I,2,t[:bond])
   else cartan(t[:series],length(t[:indices]))
   end
@@ -320,11 +334,11 @@ function type_irred_cartan(m::AbstractMatrix)
     elseif rank==2 
       if l(1)*r(1)==1 t[:series]=:A 
       elseif l(1)*r(1)==2 t[:series]=:B  
-        if l(1)==-1 rev() end # B2 preferred to C2
-        t[:cartantype]=-l(1)
+        if r(1)==-1 rev() end # B2 preferred to C2
+        t[:cartantype]=-r(1)
       elseif l(1)*r(1)==3 t[:series]=:G  
-        if l(1)!=-1 rev() end 
-        t[:cartantype]=1
+        if l(1)==-1 rev() end 
+        t[:cartantype]=-l(1)
       else n=conductor(l(1)*r(1))
         if r(1)==-1 || (r(1)==-1 && r(1)>l(1)) rev() end
         if l(1)*r(1)==2+E(n)+E(n,-1) bond=n else bond=2n end
@@ -337,8 +351,8 @@ function type_irred_cartan(m::AbstractMatrix)
       if l(1)*r(1)==1
         if l(2)*r(2)==1 t[:series]=:A 
         else t[:series]=:F
-          if l(2)!=-1 rev() end 
-          t[:cartantype]=1
+          if l(2)==-1 rev() end 
+          t[:cartantype]=-l(2)
         end
       else n=conductor(l(1)*r(1))
         if n==5 t[:series]=:H

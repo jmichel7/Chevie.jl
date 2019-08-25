@@ -42,7 +42,7 @@ end
 
 function torusfactors(WF::CoxeterCoset)
   M=PermRoot.baseX(WF.W.G)
-  M=Int.(M*WF.F*inv(Rational.(M)))
+  M=convert.(Int,M*WF.F*inv(convert.(Cyc{Rational},M)))
   r=length(gens(WF.W))
   M=M[r+1:end,r+1:end]
   if isempty(M) return CycPol(Pol([1],0)) end

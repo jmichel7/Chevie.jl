@@ -108,6 +108,11 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
 end
 
 #----------------------- Formatting -----------------------------------------
+const  sup=Dict(zip("-0123456789+()abcdefghijklmnoprstuvwxyz",
+                    "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ"))
+const  sub=Dict(zip("-0123456789,+()=aehijklmnoprstuvx",
+                    "₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
+
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
   s=replace(s,r"\$"=>"")
@@ -126,16 +131,12 @@ function TeXstrip(s::String)
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\!"=>"")
   s=replace(s,r"{}"=>"")
-  sup=Dict(zip("0123456789-()","⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁽⁾"))
-  sub=Dict(zip("-0123456789,()+=aehijklmnoprstuvx",
-               "₋₀₁₂₃₄₅₆₇₈₉‚₍₎₊₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
-  s=replace(s,r"_[-0-9,()+=aehijklmnoprstuvx]"=>t->sub[t[2]])
-  s=replace(s,r"(_\{[0-9,]*\})('*)"=>s"\2\1")
-  s=replace(s,r"_\{[-0-9,()+=aehijklmnoprstuvx]*\}"=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,r"\^[-0-9()]"=>t->sup[t[2]])
-  s=replace(s,r"\^\{[-0-9()]*\}"=>t->map(x->sup[x],t[3:end-1]))
-  q(l)= l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : 
-     "⁽$(map(x->sup[x],string(l)))⁾"
+  s=replace(s,r"_[-0-9,()+=aeh-pr-vx]"=>t->sub[t[2]])
+  s=replace(s,r"(_\{[-0-9,()+=aeh-pr-vx]*\})('*)"=>s"\2\1")
+  s=replace(s,r"_\{[-0-9,()+=aeh-pr-vx]*\}"=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,r"\^[-0-9,()a-op-z]"=>t->sup[t[2]])
+  s=replace(s,r"\^\{[-0-9,()a-op-z]*\}"=>t->map(x->sup[x],t[3:end-1]))
+  q(l)=l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : map(x->sup[x],"($l)")
   s=replace(s,r"''*"=>t->q(length(t)))
   s=replace(s,r"\{\+\}"=>"+")
   s
@@ -222,10 +223,9 @@ end
 # show with attributes...
 rshow(x,p...)=show(IOContext(stdout,:limit=>true,[s=>true for s in p]...),"text/plain",x)
 
-joindigits(l::Vector{<:Integer})=any(l.>10) ? string("(",join(l,","),")") : join(l)
+joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
+                 string(sep[1:1],join(l,","),sep[2:2]) : join(l)
 
-joindigits(l::Vector{<:Integer},sep)=any(l.>10) ? string(sep[1:1],join(l,","),
-                                                         sep[2:2]) : join(l)
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)
