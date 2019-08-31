@@ -126,6 +126,8 @@ include("Chars.jl")
 @reexport using .Chars
 include("Uch.jl")
 @reexport using .Uch
+include("Ucl.jl")
+@reexport using .Ucl
 include("HasType.jl")
 @reexport using .HasType
 end

@@ -103,6 +103,12 @@ charinfo
 Uch
 UnipotentCharacters
 ```
+# Ucl.jl Documentation
+```@docs
+Ucl
+UnipotentClasses
+ICCTable
+```
 # HasType.jl Documentation
 ```@docs
 ```

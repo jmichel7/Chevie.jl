@@ -8580,7 +8580,7 @@ chevieset(:G2, :UnipotentClasses, function (p, type_)
             push!(uc[:classes], Dict{Symbol, Any}(:name => "(\\tilde A_1)_3", :succ => ["~A1"], :dimBu => 3, :red => Z(2), :Au => CoxeterGroup()))
             push!(((uc[:classes])[1])[:succ], "(~A1)3")
             ((uc[:classes])[3])[:dimBu] = 2
-            delete!(uc.classes[3], :dynkin)
+            delete!(uc[:classes][3], :dynkin)
             (((uc[:springerSeries])[1])[:locsys])[[3, 5]] = [[6, 1], [4, 2]]
             for c = [2, 3]
                 push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, c]]))

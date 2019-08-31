@@ -10,7 +10,7 @@ Here is an example where basis elements are represented by Symbols.
 The first instruction is to use the show method defined below.
 
 ```julia-repl
-julia> Base.show(io::IO,m::ModuleElt)=ModuleElts.helpshow(io,m)
+julia> Base.show(io::IO,m::ModuleElt)=ModuleElts.show(io,m)
 
 julia> a=ModuleElt(:xy=>1,:yx=>-1)
 xy-yx
@@ -50,6 +50,9 @@ julia> a
 
 """
 module ModuleElts
+
+using Gapjm
+
 export ModuleElt, norm! # data structure
 #------------- implementation with Dicts ----------------------
 const usedict=false
@@ -190,21 +193,28 @@ end
   x
 end
 
-function helpshow(io::IO, m::ModuleElt; showbasis=(io,k)->print(io,k))
-  if iszero(m)
-    print(io,"0")
-    return
+function Base.show(io::IO, m::ModuleElt)
+   format(io,m;showbasis=function(io,k)
+      return sprint(show,k;context=io) end,repl=get(io,:limit,false))
+end
+
+function Util.format(io::IO,m::ModuleElt; showbasis=nothing,opt...)
+  if iszero(m) return "0" end
+  if isnothing(showbasis) 
+    showbasis=(io,x)->sprint((io,x)->format(io,x;opt...),x;context=io)
   end
   start=true
+  res=""
   for (k,v) in m 
-    v=sprint(show,v; context=io)
+    v=sprint((io,x)->format(io,x;opt...),v;context=io)
     if occursin(r"[-+*]",v[nextind(v,0,2):end]) v="($v)" end
     v= (v=="1" ? "" : (v=="-1" ? "-" : v))
     if (isempty(v) || v[1]!='-') && !start v="+"*v end
-    print(io,v)
-    showbasis(io,k)
+    res*=v
+    res*=showbasis(io,k)
     if start start=false end
   end
+  print(io,res)
 end
 #--------------------------------------------------------------------------
 end

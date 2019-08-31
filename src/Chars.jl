@@ -781,7 +781,7 @@ function Base.show(io::IO,ct::CharTable)
    if iszero(e) "." else sprint(show,e; context=io) end
   end
   format(io,irr,row_labels=TeXstrip.(ct.charnames),
-                column_labels=TeXstrip.(ct.classnames))
+                col_labels=TeXstrip.(ct.classnames))
 end
 
 function CharTable(t::TypeIrred)
@@ -1031,6 +1031,7 @@ Lusztig when describing the Springer correspondence.
 """
 function CharNames(W;opt...)
   opt=Dict(opt)
+# println("W=$W opt=$opt")
   c=charinfo(W)
   cn=c[:charnames]
   for k in [:spaltenstein, :frame, :malle, :kondo]

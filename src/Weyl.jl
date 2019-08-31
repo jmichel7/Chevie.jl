@@ -219,38 +219,59 @@ julia> cartan(:A,4)
   0   0  -1   2
 ```
 """
+
 function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
-  if t==:A return Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1))) end
-  m=cartan(:A,r) 
-  if r==1 return m end
-  if t==:B m[1,2]=-2 
-  elseif t==:C m[2,1]=-2 
-  elseif t==:Bsym m=Cyc{Int}.(m) 
-    m[1,2]=m[2,1]=-ER(2)
-  elseif t==:D if r>2 m[1:3,1:3]=[2 0 -1; 0 2 -1;-1 -1 2] else m=[2 0;0 2] end
-  elseif t==:E m[1:4,1:4]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2]
-  elseif t==:F m[3,2]=-2 
-  elseif t==:Fsym m=Cyc{Int}.(m) 
-    m[3,2]=m[2,3]=-ER(2)
-  elseif t==:G m[2,1]=-3
-  elseif t==:Gsym m=Cyc{Int}.(m) 
-    m[1,2]=m[2,1]=-ER(3)
-  elseif t==:H m=Cyc{Int}.(m) 
-    m[1,2]=m[2,1]=E(5,2)+E(5,3)
-  elseif t==:I 
-    if b%2==0 return [2 -1;-2-E(b)-E(b,-1) 2]
-    else return [2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
-    end
-  else error("unknown type")
+  A(r,b=0)=Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1)))
+  Isym(r,b)=[2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
+  cartanDict=Dict{Symbol,Function}(
+   :A=>A,
+   :B=>function(r,b)m=A(r)
+     if r>1 m[1,2]=-2 end
+     m end,
+   :Bsym=>function(r,b)m=Cyc{Int}.(A(r))
+     m[1:2,1:2]=Isym(2,4)
+     m end,
+   :C=>function(r,b)m=A(r)
+     if r>1 m[2,1]=-2 end
+     m end,
+   :D=>function(r,b)m=A(r)
+     u=min(r,3); m[1:u,1:u]=[2 0 -1; 0 2 -1;-1 -1 2][1:u,1:u]
+     m end,
+   :E=>function(r,b)m=A(r)
+     u=min(r,4); m[1:u,1:u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][1:u,1:u]
+     m end,
+   :F=>function(r,b)m=A(r)
+     m[3,2]=-2 
+     m end,
+   :Fsym=>function(r,b)m=Cyc{Int}.(A(r))
+     m[3,2]=m[2,3]=-ER(2)
+     m end,
+   :G=>function(r,b)m=A(r)
+     m[2,1]=-3
+     m end,
+   :Gsym=>(r,b)->Isym(2,6),
+   :H=>function(r,b)m=Cyc{Int}.(A(r))
+     m[1:2,1:2]=Isym(2,5)
+     m end,
+   :I=>function(r,b)
+     b%2==0 ? [2 -1;-2-E(b)-E(b,-1) 2] : Isym(2,b)
+   end,
+   :Isym=>Isym)
+  if haskey(cartanDict,t) cartanDict[t](r,b)
+  else error("Unknown Cartan type $(repr(t)). Known types are:\n",
+              join(sort(collect(keys(cartanDict))),", "))
   end
-  m
 end
 
 function PermRoot.cartan(t::Dict{Symbol,Any})
 # println("t=$t")
   if haskey(t,:cartantype) 
     ct=t[:cartantype]
-    C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
+    if haskey(t,:bond) 
+      C=convert.(typeof(ct),cartan(t[:series],length(t[:indices]),t[:bond]))
+    else
+      C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
+    end
     if t[:series]==:B
       C[1,2]=-t[:cartantype]
       C[2,1]=-2//t[:cartantype]
@@ -260,10 +281,13 @@ function PermRoot.cartan(t::Dict{Symbol,Any})
     elseif t[:series]==:F
       C[2,3]=-t[:cartantype]
       C[3,2]=-2//t[:cartantype]
+    elseif t[:series]==:I
+      C[1,2]=-t[:cartantype]
+      b=t[:bond]
+      C[2,1]=(-2-E(b)-E(b,-1))/t[:cartantype]
     end
     if all(isinteger,C) C=Int.(C) end
     C
-  elseif haskey(t,:bond) cartan(:I,2,t[:bond])
   else cartan(t[:series],length(t[:indices]))
   end
 end
@@ -332,12 +356,13 @@ function type_irred_cartan(m::AbstractMatrix)
     function rev() s=s[end:-1:1] end
     if rank==1 t[:series]=:A 
     elseif rank==2 
+#     println("l(1)=",l(1)," r(1)=",r(1))
       if l(1)*r(1)==1 t[:series]=:A 
       elseif l(1)*r(1)==2 t[:series]=:B  
-        if r(1)==-1 rev() end # B2 preferred to C2
-        t[:cartantype]=-r(1)
+        if l(1)==-1 rev() end # B2 preferred to C2
+        t[:cartantype]=-l(1)
       elseif l(1)*r(1)==3 t[:series]=:G  
-        if l(1)==-1 rev() end 
+        if r(1)==-1 rev() end 
         t[:cartantype]=-l(1)
       else n=conductor(l(1)*r(1))
         if r(1)==-1 || (r(1)==-1 && r(1)>l(1)) rev() end
@@ -351,7 +376,7 @@ function type_irred_cartan(m::AbstractMatrix)
       if l(1)*r(1)==1
         if l(2)*r(2)==1 t[:series]=:A 
         else t[:series]=:F
-          if l(2)==-1 rev() end 
+          if r(2)==-1 rev() end 
           t[:cartantype]=-l(2)
         end
       else n=conductor(l(1)*r(1))
@@ -364,12 +389,14 @@ function type_irred_cartan(m::AbstractMatrix)
     t[:indices]=s::Vector{Int}
   end 
 # println("t=$t")
+# println("indices=",t[:indices]," cartan=",cartan(t)," m=$m")
   if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
   t
 end
 
 """
     type_cartan(C)
+
 
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
@@ -619,7 +646,8 @@ function Base.show(io::IO, W::FCG)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if isempty(refltype(W)) 
-    print(io,"coxgroup()") 
+#   print(io,"coxgroup()") 
+    print(io,".") 
     return
   end
   n=join(map(refltype(W))do t
@@ -838,7 +866,8 @@ function Base.show(io::IO, W::FCSG)
   repl=get(io,:limit,false)
   if !repl print(io,"reflection_subgroup(") end
   print(io,sprint(show,W.parent; context=io))
-  if repl print(io,TeXstrip("_{($n)}"))
+  if repl 
+    if I!=collect(1:coxrank(W.parent)) print(io,TeXstrip("_{($n)}")) end
   else print(io,",$I)")
   end
 end

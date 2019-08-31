@@ -35,22 +35,24 @@ Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
 end
 @inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
-function Base.show(io::IO, m::Monomial)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isone(m) print(io,"1") 
+Base.show(io::IO, m::Monomial)=format(io,m;repl=get(io,:limit,false))
+
+function Util.format(io::IO,m::Monomial;repl=true,TeX=false,opt...)
+  if isone(m) print(io,"1")
   else
+    res=""
     for (v,d) in m.d
-      print(io,v)
+     res*=string(v)
       if haskey(fractional,v) d//=fractional[v] end
       if !isone(d)
         if repl || TeX  
           e=1<d<10 ? "^$d" : "^{$d}"
-          print(io, TeX ? e : TeXstrip(e)) 
-        else print(io,"^$d") 
+          res*=TeX ? e : TeXstrip(e)
+        else res*="^$d"
         end
       end
     end
+    print(io,res)
   end
 end
 
@@ -149,7 +151,8 @@ macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   end
 end
 
-Base.show(io::IO, x::Mvp)=ModuleElts.helpshow(io,x.d;showbasis=show)
+Base.show(io::IO, x::Mvp)=show(io,x.d)
+Util.format(io::IO,x::Mvp;opt...)=format(io,x.d;opt...)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(ModuleElt{Monomial,Int}())

@@ -337,8 +337,6 @@ described in the section about families below.
     -,+   |    1 -1/2 1/2  1/2 -1/2
     -,-   |   -1 -1/2 1/2 -1/2  1/2|
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 `:CharNames`:  returns  the  names  of  the  unipotent characters. Using the
 version  with an additional  option record as  the second argument, one can
 control the display in various ways.
@@ -543,7 +541,7 @@ function Base.show(io::IO,uc::UnipotentCharacters)
          strip.(labels(uc)))
   format(io,m,row_labels=strip.(uc.prop[:TeXCharNames]),
          rows_label=strip("\\gamma"),
-         column_labels=strip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
+         col_labels=strip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
 end
 
 Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]

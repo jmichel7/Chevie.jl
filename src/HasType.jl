@@ -2,7 +2,7 @@ module HasType
 
 export reflection_name, diagram, UnipotentCharacters, 
   UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, weightinfo, Cartesian
+  chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -273,9 +273,11 @@ nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 PrintToSring(s,v...)=sprint(show,v...)
 
-reflection_name(W,opt=Dict())=join(getchev(W,:ReflectionName,opt),"×")
+function reflection_name(W,opt=Dict())
+ r=join(getchev(W,:ReflectionName,merge(opt,Dict(:TeX=>true))),"×")
+  if get(opt,:repl,false) r=TeXstrip(r) end
+end
 
-include("ucl.jl")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
@@ -640,7 +642,7 @@ include("families.jl")
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=repr(x)
-Format(x,opt)= haskey(opt,:TeX) ? FormatTeX(x) : string(x)
+Format(x,opt)=sprint((io,x)->format(io,x;opt...),x)
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))

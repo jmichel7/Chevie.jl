@@ -146,32 +146,32 @@ bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end])
  "($c)" else c end
 
 """
-  format( table; options )
+  format(io, table; options )
 
   General routine to format a table. Used for character tables.
   Options:
      row_labels          Labels for rows
-     column_labels       Labels for columns
+     col_labels          Labels for columns
      rows_label          Label for column of rowLabels
      separators          line numbers after which to put a separator
      column_repartition  display in pieces of sizes these numbers of cols
      rows                show only these rows
-     columns             show only these columns
+     cols                show only these columns
 
 """
 function format(io::IO,t::Matrix; row_labels=axes(t,1),
-  column_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
-  columns=axes(t,2), column_repartition=nothing)
+  col_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
+  cols=axes(t,2), column_repartition=nothing, opt...)
   lpad(s,n)=" "^(n-textwidth(s))*s # because lpad not what expected
   rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
-  t=t[rows,columns]
+  t=t[rows,cols]
   if eltype(t)!=String t=sprint.(show,t; context=io) end
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
-  if !isnothing(column_labels)
-    column_labels=string.(column_labels[columns])
-    colwidth=map(max,colwidth,textwidth.(column_labels))
-    column_labels=map(lpad,column_labels,colwidth)
+  if !isnothing(col_labels)
+    col_labels=string.(col_labels[cols])
+    colwidth=map(max,colwidth,textwidth.(col_labels))
+    col_labels=map(lpad,col_labels,colwidth)
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
   rows_label=lpad(rows_label,labwidth)
@@ -198,8 +198,8 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   ci=[0]
   for k in column_repartition
     ci=ci[end].+(1:k)
-    if !isnothing(column_labels)
-      print(io,rows_label,"\u2502",join(column_labels[ci]," "),"\n")
+    if !isnothing(col_labels)
+      print(io,rows_label,"\u2502",join(col_labels[ci]," "),"\n")
       if 0 in separators hline(ci) end
     end
     for l in axes(t,1)
@@ -209,6 +209,9 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     if ci[end]!=length(colwidth) print(io,"\n") end
   end
 end
+
+format(io::IO,i::Integer;opt...)=print(io,i)
+format(io::IO,i::Rational;opt...)=print(io,i)
 
 function ordinal(n)
   str=repr(n)

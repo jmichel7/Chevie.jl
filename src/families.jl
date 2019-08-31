@@ -672,16 +672,16 @@ function Util.format(io::IO,f::Family,opt=Dict{Symbol,Any}())
   end
   print(io,"\n")
   t=[sprint.(show,f[:eigenvalues];context=io)]
-  columnLabels=TeX ? ["\\Omega"] : ["eigen"]
+  col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs) 
     push!(t,f[:signs])
-    push!(columnLabels,"signs")
+    push!(col_labels,"signs")
   end
   append!(t,toL(map(y->sprint(show,y;context=io),f[:fourierMat])))
-  if maximum(length.(rowLabels))<=4 append!(columnLabels,rowLabels)
-  else append!(columnLabels,map(x->" ",rowLabels))
+  if maximum(length.(rowLabels))<=4 append!(col_labels,rowLabels)
+  else append!(col_labels,map(x->" ",rowLabels))
   end
   format(io,permutedims(toM(t)),row_labels=rowLabels,
-        column_labels=columnLabels,
+        col_labels=col_labels,
         rows_label=TeX ? "\\hbox{label}" : "label")
 end
