@@ -47,29 +47,27 @@ element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) :
 """
   orbit(G::Group,p;action::Function=^)
 
-  the orbit of p under Group G"
+  the orbit of `p` under Group `G`. `p` should be hashable
 ```julia-repl
-julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> orbit(G,1) 
 3-element Array{Int64,1}:
+ 1
  2
  3
- 1
 ```
 """
-function orbit(G::Group,p;action::Function=^)
-  new=Set([p])
-  res=empty(new)
-  while !isempty(new)
-    union!(res,new)
-    n=empty(res)
-    for p in new, s in gens(G)
-      w=action(p,s)
-      if !(w in res) push!(n,w) end
+function orbit(G::Group,pnt;action::Function=^)
+  set=Set([pnt])
+  orb=[pnt]
+  for pnt in orb, gen in gens(G)
+    img=action(pnt,gen)
+    if !(img in set)
+      push!(orb,img)
+      push!(set,img)
     end
-    new=n
   end
-  collect(res)
+  orb
 end
 
 """
@@ -79,7 +77,7 @@ end
  is such that x=action(p,g)
 
 ```julia-repl
-julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> transversal(G,1)
 Dict{Int64,Perm{Int64}} with 3 entries:
   2 => (1,2)
@@ -99,39 +97,37 @@ Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
   [3, 1] => (1,3,2)
 ```
 """
-function transversal(G::Group,p;action::Function=^)
-  new=[p]
-  res=Dict(p=>one(G))
-  while !isempty(new)
-    old=copy(new)
-    empty!(new)
-    for p in old, s in gens(G)
-      w=action(p,s)
-      if !haskey(res,w)
-        push!(new,w)
-        res[w]=res[p]*s
-      end
+function transversal(G::Group,pnt;action::Function=^)
+  trans=Dict(pnt=>one(G))
+  orb=[pnt]
+  for pnt in orb, gen in gens(G)
+    img=action(pnt,gen)
+    if !haskey(trans,img)
+      push!(orb,img)
+      trans[img]=trans[pnt]*gen
     end
   end
-  res
+  trans
 end
 
 """
-    orbits(G,v;action=^) 
-    the orbits of G on v
+    `orbits(G,v;action=^)`
+    
+the orbits of Group `G` on `v`; the elements of `v` should be hashable.
 ```julia-repl
-julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> orbits(G,1:4)
 2-element Array{Array{Int64,1},1}:
- [2, 3, 1]
- [4]      
+ [1, 2, 3]
+ [4]
 ```
 """
-function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^)
+function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,
+               trivial=true)
   res=Vector{eltype(v)}[]
   while !isempty(v)
     o=orbit(G,v[1],action=action)
-    push!(res,o)
+    if length(o)>1 || trivial push!(res,o) end
     v=setdiff(v,o)
   end
   res

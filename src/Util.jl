@@ -438,7 +438,12 @@ arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 
 dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 #----------- Linear algebra over Rationals/integers------------------------
-" returns: echelon form of m, indices of linearly independent rows of m"
+"""
+    `echelon!(m)`
+
+    puts `m` in echelon form and returns: 
+    `m`, indices of linearly independent rows of `m`
+"""
 function echelon!(m::Matrix)
   T=typeof(one(eltype(m))//1)
   if T!=eltype(m) m=convert.(T,m) end

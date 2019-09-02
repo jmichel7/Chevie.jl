@@ -7,10 +7,12 @@ Gapjm
 # Perms.jl Documentation
 ```@docs
 Perms
+Perm
 largest_moved_point
 smallest_moved_point
 order
 Groups.orbit(a::Perm,i::Integer,check=false)
+Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
 cycles
 cycletype
 sign
@@ -43,7 +45,7 @@ symmetric_group
 Cycs
 galois
 ER
-quadratic
+Quadratic
 ```
 # Pols.jl Documentation
 ```@docs
@@ -71,6 +73,10 @@ reflection_subgroup
 coxgroup
 rootdatum
 ```
+# PermRoot.jl Documentation
+```@docs
+reflection
+```
 # Hecke.jl Documentation
 ```@docs
 Hecke
@@ -97,6 +103,11 @@ shrink
 ```@docs
 Chars
 charinfo
+classinfo
+fakedegree
+fakedegrees
+representation
+representations
 ```
 # Uch.jl Documentation
 ```@docs

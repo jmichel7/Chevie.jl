@@ -11,9 +11,9 @@ The  conjugacy  classes  and  irreducible  characters of irreducible finite
 complex reflection groups have canonical labelings by certain combinatorial
 objects;  these labelings are used in the  tables we give. For the classes,
 these  are partitions or partition tuples  for the infinite series, or, for
-exceptional  Coxeter  groups,  Carter's  admissible  diagrams [@Car72] (for
+exceptional  Coxeter  groups,  Carter's  admissible  diagrams [@Car72]; for
 other  primitive  complex  reflection  groups  we  just  use  words  in the
-generators  to specify  the classes).  For the  characters, these are again
+generators  to specify  the classes.  For the  characters, these  are again
 partitions  or partition tuples for the infinite series, and for the others
 they  are pairs  of two  integers `(d,e)`  where `d`  is the  degree of the
 character  and  `e`  is  the  smallest  symmetric  power  of the reflection
@@ -389,11 +389,9 @@ module Chars
 
 using Gapjm
 
-export charinfo, classinfo, fakedegrees, CharTable, representation,
+export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, CharNames,
   representations
-
-fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
 
 """
 `fakeDegree(W, φ, q)`
@@ -412,6 +410,8 @@ function fakedegree(W,p,q)
   if isempty(typ) return one(q) end
   prod(map((t,p)->fakedegree(t,p,q),typ,p))
 end
+
+fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
 
 """
 `fakedegrees(W , q)`
@@ -828,30 +828,24 @@ function CharTable(H::HeckeAlgebra{C})where C
 end
 
 """
-'Representations( `W`[, `l`])'
+`representation(W,i)`
 
-returns  a  list  holding,  for  each  irreducible character of the complex
+returns a list holding, for the `i`-th irreducible character of the complex
 reflection  group  `W`,  a  list  of  matrices  images  of  the  generating
 reflections  of `W`  in a  model of  the corresponding representation. This
 function  is based on the classification,  and is not yet fully implemented
-for  `G₃₄`;  88  representations  are  missing  out  of  169,  that is 4
+for   `G₃₄`;  88  representations  are  missing  out  of  169,  that  is  4
 representations of dim. 105, 3 of dim. 315, 6 of dim. 420, 4 of dim.840 and
 those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
 896, 945, 1260 and 1280.
 
-If  there is a  second argument, it  can be a  list of indices (or a single
-integer) and only the representations with these indices (or that index) in
-the list of all representations are returned.
-
-|    gap> Representations(coxgroup(:B,2));
-    [ [ [ [ 1 ] ], [ [ -1 ] ] ],
-      [ [ [ 1, 0 ], [ -1, -1 ] ], [ [ 1, 2 ], [ 0, -1 ] ] ],
-      [ [ [ -1 ] ], [ [ -1 ] ] ], [ [ [ 1 ] ], [ [ 1 ] ] ],
-      [ [ [ -1 ] ], [ [ 1 ] ] ] ]
-    gap> Representations(ComplexReflectionGroup(4),7);
-    [ [ [ E(3)^2, 0, 0 ], [ 2*E(3)^2, E(3), 0 ], [ E(3), 1, 1 ] ],
-      [ [ 1, -1, E(3) ], [ 0, E(3), -2*E(3)^2 ], [ 0, 0, E(3)^2 ] ] ]|
-
+```julia-repl
+julia> representation(ComplexReflectionGroup(24),3)
+3-element Array{Array{Cyc{Rational{Int64}},2},1}:
+ [1 0 0; -1 -1 0; -1 0 -1]       
+ [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
+ [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
+```
 """
 function representation(W::Group,i::Int)
   ct=toM.(impl1(getchev(W,:Representation,i)))
@@ -859,6 +853,21 @@ function representation(W::Group,i::Int)
   ct
 end
 
+"""
+`representations(W)`
+
+returns the representations of `W` (see `representation`).
+
+```julia-repl
+julia> representations(coxgroup(:B,2))
+5-element Array{Array{Array{Int64,2},1},1}:
+ [[1], [-1]]                
+ [[1 0; -1 -1], [1 2; 0 -1]]
+ [[-1], [-1]]               
+ [[1], [1]]                 
+ [[-1], [1]]                
+```
+"""
 representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
 representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
 

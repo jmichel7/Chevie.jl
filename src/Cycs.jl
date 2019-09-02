@@ -595,18 +595,18 @@ end
 Base.:^(a::Cyc, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                     Base.power_by_squaring(inv(a),-n)
 
+const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
 """
   ER(n::Int) computes as a Cyc the square root of the integer n.
 # Examples
 ```julia-repl
-julia> ER(-3)
-ζ₃-ζ₃²
+julia> ER(-1)
+ζ₄
 
 julia> ER(3)
--ζ₁₂⁷+ζ₁₂¹¹
+√3
 ```
 """
-const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
 function ER(n::Int)
   get!(ER_dict,n) do 
   if n==0       return 0

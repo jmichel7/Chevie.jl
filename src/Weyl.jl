@@ -205,6 +205,7 @@ export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
+
 """
     `cartan(type, rank)`
 
@@ -219,7 +220,6 @@ julia> cartan(:A,4)
   0   0  -1   2
 ```
 """
-
 function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
   A(r,b=0)=Matrix(SymTridiagonal(fill(2,r),fill(-1,r-1)))
   Isym(r,b)=[2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]

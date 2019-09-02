@@ -11,7 +11,7 @@ permutation  has to belong to a group  and the degree is determined by that
 group. Then multiplication of permutations within a given group is slightly
 faster,  but  it  is  more  difficult  to multiply permutations coming from
 different  groups, like a group and one  of its subgroups. The degree is an
-implementation  detail so usually  it should not  be used. One sould rather
+implementation  detail so usually it should  not be used. One should rather
 use the function `largest_moved_point`.
 
 A  permutation  can  be  defined  by  the  list  of  images  of `1:n`, like
@@ -133,7 +133,12 @@ end
 Base.vec(a::Perm)=a.d
 
 #---------------- Constructors ---------------------------------------
-"for example  Perm{Int8}(1,2,3) constructs the cycle (1,2,3)"
+"""
+   `Perm{T}(x::Integer...)where T<:Integer`
+
+   returns  a cycle.  For example  `Perm{Int8}(1,2,3)` constructs the cycle
+   `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken as to be `Int`.
+"""
 function Perm{T}(x::Integer...)where T<:Integer
   if isempty(x) return Perm(T[]) end
   d=T.(1:max(x...))
@@ -144,14 +149,20 @@ function Perm{T}(x::Integer...)where T<:Integer
   Perm(d)
 end
 
-"Perm(1,2,3)==Perm{Int}(1,2,3)"
 Perm(x::Int...)=Perm{Int}(x...)
 
-"Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)"
+"""
+   `Perm{T}(p::Perm) where T<:Integer`
+
+   change the type of `p` to `Perm{T}`
+   for example `Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)`
+"""
 Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
 
 """
-allow GAP-style perm"(1,2)(5,6,7)(4,9)"
+   @perm"..."
+
+ make a `Perm` form a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
 """
 macro perm_str(s::String)
   start=1
@@ -179,8 +190,11 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
 end
 
 """
-  Perm{T}(l::AbstractVector,l1::AbstractVector)
-  return permutation p such that Permuted(l1,p)==l if such p exists
+  `Perm{T}(l::AbstractVector,l1::AbstractVector)`
+
+  return a `Perm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
+  Gives an error otherwise. If not given `{T}` is given to be `{Int}`.
+  Needs the objects in `l` to be sortable.
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
@@ -192,8 +206,11 @@ end
 Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int}(l,l1)
 
 """
-assume l is union of orbits under group elt g; return permutation of l by g
-needs objects in l sortable
+   `Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer`
+
+assumes `l`  is  union  of  orbits  under  group  elt `g`; returns the
+`Perm{T}` effected on `l` by `g`. If not given `T==Int`.
+Needs objects in `l` sortable
 """
 Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
 
@@ -307,27 +324,38 @@ function Base.:^(a::Perm, b::Perm)
 end
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
-   @inbounds if n>length(a.d) T(n) else a.d[n] end
+  if n>length(a.d) T(n) 
+  else
+@inbounds a.d[n] 
+  end
 
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 #---------------------- cycles -------------------------
+
+# takes 30% more time than GAP CyclePermInt for rand(Perm,1000)
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
 function Groups.orbit(a::Perm{T},i::Integer,check=false)where T
+  if i>length(a.d) return T[i] end
   res=T[]
+  sizehint!(res,length(a.d))
   j=i
   while true
     if check && j in res error("point $j occurs twice") end
     push!(res,j)
-    if (j=a.d[j])==i return res end
+@inbounds j=a.d[j]
+    if j==i return res end
   end
 end
   
 """
-orbits(a::Perm,d::Vector=1:length(vec(a))) returns the orbits of a on domain d
+`orbits(a::Perm,d::Vector=1:length(vec(a)))` 
+
+returns the orbits of a on domain d
+
 # Example
 ```julia-repl
 julia> orbits(Perm(1,2)*Perm(4,5),1:5)
@@ -338,7 +366,7 @@ julia> orbits(Perm(1,2)*Perm(4,5),1:5)
 ```
 """
 function Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
-  to_visit=falses(length(a.d))
+  to_visit=falses(max(length(a.d),maximum(domain)))
   to_visit[domain].=true
   cycles=Vector{eltype(a.d)}[]
   for i in eachindex(to_visit)
@@ -350,6 +378,7 @@ function Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
   cycles
 end
 
+# 15 times faster than GAP Cycles for rand(Perm,1000)
 """
   cycles(a::Perm) returns the non-trivial cycles of a
 # Example
@@ -408,14 +437,15 @@ end
 
 " reflength(a::Perm) minimum number of transpositions of which a is product"
 function reflength(a::Perm)
-  to_visit=trues(length(a.d))
+  to_visit=ones(Bool,length(a.d))
   l=0
   for i in eachindex(to_visit)
-    if !to_visit[i] continue end
+@inbounds if !to_visit[i] continue end
     j=i
     while true
-      to_visit[j]=false
-      if (j=a.d[j])==i break end
+@inbounds to_visit[j]=false
+@inbounds j=a.d[j]
+      if j==i break end
       l+=1
     end
   end
@@ -427,8 +457,8 @@ Base.sign(a::Perm)=(-1)^reflength(a)
 #---------------------- other -------------------------
 
 """
-   permuted(l,a) returns l permuted by a as a new list r,
-   that is r[i^a]==l[i]
+   `permuted(l,a)` returns `l` permuted by `a` as a new list `r`,
+   that is `r[i^a]==l[i]`
 """
 function permuted(l::AbstractVector,a::Perm)
   res=copy(l)
