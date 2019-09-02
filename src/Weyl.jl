@@ -365,7 +365,7 @@ function type_irred_cartan(m::AbstractMatrix)
         if r(1)==-1 rev() end 
         t[:cartantype]=-l(1)
       else n=conductor(l(1)*r(1))
-        if r(1)==-1 || (r(1)==-1 && r(1)>l(1)) rev() end
+        if r(1)==-1 rev() end
         if l(1)*r(1)==2+E(n)+E(n,-1) bond=n else bond=2n end
         t[:series]=:I
         if bond%2==0 t[:cartantype]=-l(1) end

@@ -1023,7 +1023,6 @@ Base.getindex(t::ICCTable,k)=t.prop[k]
 # ICCTable(uc[,Springer series no[,variable]]) eg (uc,1,X(Rationals))
 # Works for G split.
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 `ICCTable(uc[,seriesNo[,q]])`
 
 This  function gives the table of decompositions of the functions `X_{u,φ}`

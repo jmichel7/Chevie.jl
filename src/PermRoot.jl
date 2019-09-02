@@ -55,7 +55,7 @@ Let  `W`  be  a  finite  reflection  group  on  the vector space `V` over a
 subfield  `k` of the  complex numbers. An  efficient representation that we
 use  for  computing  with  such  group  is, is a permutation
 representation  on  a  `W`-invariant  set  of  root  and coroot vectors for
-reflections  of `W`;  that is,  a set  `R` of  pairs `(r,r^∨)∈ V×V^*`
+reflections  of `W`;  that is,  a set  `R` of  pairs `(r,rᵛ)∈ V×Vᵛ`
 invariant by  `W` and  such each  distinguished reflection in `W` is
 defined  by some pair in `R` (see "Reflection"). There may be several pairs
 for  each reflection,  differing by  roots of  unity. This  generalizes the
@@ -211,8 +211,18 @@ function Base.show(io::IO, t::TypeIrred)
       end
     else 
       r=length(indices(t))
-      if s==:B && haskey(t,:cartantype) && t[:cartantype]==1 
-        s=:C
+      if haskey(t,:cartantype)
+        if s==:B
+          if t[:cartantype]==1 s=:C
+          elseif t[:cartantype]==2 s=:B
+          elseif t[:cartantype]==ER(2) s=:Bsym
+          else s=Symbol(":B(",sprint(show,t[:cartantype];context=io),")")
+          end
+        elseif s==:G
+          if t[:cartantype]==ER(3) s=:Gsym end
+        elseif s==:I
+          if t[:cartantype]!=1 s=:Isym end
+        end
       end
       if haskey(t,:bond)
         b=t[:bond]
@@ -338,7 +348,7 @@ reflections. type_irred classifies W (returns a type record) using:
  h=the Coxeter number=Sum(Degrees(W)+CoDegrees(W))/r=Sum_{s∈ D} o(s)
     where D is the set of distinguished reflections of W.
 
-G(de,e,r) has s=(de)^r/e, o=max(2,d), h=ed(r-1)+d-δ_{d,1}
+G(de,e,r) has s=(de)ʳ/e, o=max(2,d), h=ed(r-1)+d-δ_{d,1}
 
 (r,s,o)  are  sufficient  to  determine  a G(de,e,r) excepted for ambiguity
 G(2e,e,2)/G(4e,4e,2),  which is resolved  by h (excepted  for e=1, when the
@@ -660,22 +670,22 @@ function coroot(W::PRG,i)
 end
 
 """
-`reflection(root, coroot)` the matrix of the reflection of given root and coroot
+`reflection(root, coroot)::Matrix` the reflection of given root and coroot
 
-A  (complex) reflection `s` acting on the vector space `V` (over a subfield
-of the complex numbers), is a linear map of finite order whose fixed points
-are  a hyperplane `H` (the *reflecting  hyperplane* of `s`); an eigenvector
-`r` for the non-trivial eigenvalue `ζ` (a root of unity) is called a *root*
-of  `s`.  If  we  choose  a  linear  form  `r^∨` (called a *coroot* of `s`)
-defining  `H` such that `r^∨(r)=1-ζ` then as a linear map `s` is given by `
-x↦ x-r^∨(x)r`.
+A  (complex) reflection in `GL(V)`, the linear group of a vector space over
+a subfield of the complex numbers, is a map `s` of finite order whose fixed
+points  are  a  hyperplane  `H`  (the  *reflecting  hyperplane* of `s`); an
+eigenvector  `r` for  the non-trivial  eigenvalue `ζ`  (a root of unity) is
+called  a *root* of `s`. If we choose a linear form `rᵛ` (called a *coroot*
+of `s`) defining `H` such that `rᵛ(r)=1-ζ` then the linear map `s` is given
+by `x↦x-rᵛ(x)r`.
 
 A  way of specifying a  reflection is by giving  a root and a coroot, which
 are  uniquely determined by the reflection up to multiplication of the root
 by  a  scalar  and  of  the  coroot  by  the  inverse  scalar. The function
 `reflection`  gives  the  matrix  of  the  corresponding  reflection in the
 standard  basis of `V`, where the `root` and the `coroot` are vectors given
-in  the  standard  bases  of  `V`  and  `V^∨`, thus `r^∨(r)` is obtained as
+in  the standard  bases of  `V` and  `Vᵛ`, so  that `rᵛ(r)`  is obtained as
 `permutedims(root)*coroot`.
 
 ```
@@ -699,7 +709,7 @@ julia> [1 0 0]*r
  -1  0  0
 ```
 As  we see in the last lines, in our package the matrices operate an `V` as
-row vectors and on `V^∨` as column vectors
+row vectors and on `Vᵛ` as column vectors
 """
 function reflection(root::AbstractVector,coroot::AbstractVector)
   root,coroot=promote(root,coroot)
