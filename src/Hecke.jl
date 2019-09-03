@@ -257,9 +257,9 @@ function Base.show(io::IO, h::HeckeElt)
       end
     else res*="("*join(map(x->"$x",w),",")*")"
     end
-    print(io,(repl && !TeX) ? TeXstrip(res) : res)
+    (repl && !TeX) ? TeXstrip(res) : res
   end
-  ModuleElts.helpshow(io,h.d; showbasis=showbasis)
+  ModuleElts.format(io,h.d; showbasis=showbasis)
 end
 
 

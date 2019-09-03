@@ -50,7 +50,7 @@ julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
 julia> c=inv(1+E(4)) # inverses need Rationals
-1//2+(-1//2)ζ₄
+1/2-ζ₄/2
 
 julia> typeof(c)
 Cyc{Rational{Int64}}
@@ -62,7 +62,7 @@ julia> Cyc(1+im) # one can convert Gaussian integers or rationals
 1+ζ₄
 
 julia> 1//(1+E(4))
-1//2+(-1//2)ζ₄
+1/2-ζ₄/2
 
 julia> typeof(Cyc(1//2)) # another way of building a Cyc
 Cyc{Rational{Int64}}
@@ -78,9 +78,6 @@ Root1(1//9)
 
 julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
-
-julia> Cyc(c) # even less useful
--0.4999999999999998+0.8660254037844387ζ₄
 ```
 
 For more information see ER, Quadratic, galois. 
@@ -703,14 +700,16 @@ struct Quadratic{T<:Integer}
 end
 
 """
-  Quadratic(c::Cyc) determines if c lives in a quadratic extension of Q
-  it  returns a named  tuple (a=a,b=b,root=root,d=d) of  integers such that
-  c=(a + b ER(root))//d or nothing if no such tuple exists
+  `Quadratic(c::Cyc)` 
+  
+  determines  if `c` lives  in a quadratic  extension of `ℚ`.  It returns a
+  `Quadratic`  object representing `c` as `(a  + b ER(root))//d` or nothing
+  if no such tuple exists
 
 # Examples
 ```julia-repl
 julia> Quadratic(1+E(3))
-(a = 1, b = 1, root = -3, den = 2)
+(1+√-3)/2
 
 julia> Quadratic(1+E(5))
 

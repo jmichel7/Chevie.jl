@@ -466,7 +466,7 @@ end
 PermRoot.refltype(W::CoxSymmetricGroup)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-PermRoot.reflength(W::CoxSymmetricGroup,a)=reflength(a)
+Perms.reflength(W::CoxSymmetricGroup,a)=reflength(a)
   
 nref(W::CoxSymmetricGroup)=div(W.n*(W.n-1),2)
 

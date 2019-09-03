@@ -116,18 +116,18 @@ G₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(G₂)
-      γ│       Deg(γ)  Feg Fr(γ)    label
-───────┼──────────────────────────────────
-φ₁‚₀   │            1    1     1         
-φ₁‚₆   │           q⁶   q⁶     1         
-φ′₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1    (1,ρ)
-φ″₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1   (g₃,1)
-φ₂‚₁   │ (1//6)qΦ₂²Φ₃  qΦ₈     1    (1,1)
-φ₂‚₂   │ (1//2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)
-G₂[-1] │ (1//2)qΦ₁²Φ₃    0    -1   (g₂,ε)
-G₂[1]  │ (1//6)qΦ₁²Φ₆    0     1    (1,ε)
-G₂[ζ₃] │(1//3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)
-G₂[ζ₃²]│(1//3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)
+      γ│      Deg(γ)  Feg Fr(γ)    label
+───────┼─────────────────────────────────
+φ₁‚₀   │           1    1     1         
+φ₁‚₆   │          q⁶   q⁶     1         
+φ′₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1    (1,ρ)
+φ″₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1   (g₃,1)
+φ₂‚₁   │ (1/6)qΦ₂²Φ₃  qΦ₈     1    (1,1)
+φ₂‚₂   │ (1/2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)
+G₂[-1] │ (1/2)qΦ₁²Φ₃    0    -1   (g₂,ε)
+G₂[1]  │ (1/6)qΦ₁²Φ₆    0     1    (1,ε)
+G₂[ζ₃] │(1/3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)
+G₂[ζ₃²]│(1/3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)
 ```
 
 The first column gives the name of the unipotent character; the first 6 are
@@ -167,19 +167,16 @@ One  can  do  computations  with  individual  unipotent characters. Here we
 construct  the Coxeter torus, and then the identity character of this torus
 as a unipotent character.
 
-```julia-repl
 |    gap> W:=CoxeterGroup("G",2);
     CoxeterGroup("G",2)
     gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));
     (q^2-q+1)
     gap> u:=UnipotentCharacter(T,1);
     [(q^2-q+1)]=<>|
-```
 
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
 associated to the Coxeter torus:
 
-```julia-repl
 |    gap> LusztigInduction(W,u);
     [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>
     gap> v:=DeligneLusztigCharacter(W,[1,2]);
@@ -188,7 +185,6 @@ associated to the Coxeter torus:
     q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1
     gap> v*v;
     6|
-```
 
 The  last two lines ask for the degree  of `v`, then for the scalar product
 of `v` with itself.
@@ -199,18 +195,18 @@ Spetses, as defined in [@BMM14]. An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│                         Deg(γ)    Feg Fr(γ)   label
-─────┼─────────────────────────────────────────────────────
-φ₁‚₀ │                              1      1     1        
-φ₁‚₄ │((-1//6)ζ₃+(1//6)ζ₃²)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²
-φ₁‚₈ │((1//6)ζ₃+(-1//6)ζ₃²)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²
-φ₂‚₅ │                  (1//2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²
-φ₂‚₃ │((-1//3)ζ₃+(-2//3)ζ₃²)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²
-φ₂‚₁ │((-2//3)ζ₃+(-1//3)ζ₃²)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃
-φ₃‚₂ │                         q²Φ₃Φ₆ q²Φ₃Φ₆     1        
-Z₃:2 │   ((-1//3)ζ₃+(1//3)ζ₃²)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²
-Z₃:11│  ((-1//3)ζ₃+(1//3)ζ₃²)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃
-G₄   │                 (-1//2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1
+    γ│              Deg(γ)    Feg Fr(γ)       label
+─────┼──────────────────────────────────────────────
+φ₁‚₀ │                   1      1     1            
+φ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1   1∧-E(3,2)
+φ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1   -1∧E(3,2)
+φ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1    1∧E(3,2)
+φ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1    1∧E(3,2)
+φ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1      1∧E(3)
+φ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1            
+Z₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃² E(3)∧E(3,2)
+Z₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  E(3)∧-E(3)
+G₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1  -E(3,2)∧-1
 ```
 """
 module Uch
@@ -388,17 +384,16 @@ B₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(B₂)
-  γ│    Deg(γ) Feg Fr(γ) label
-───┼───────────────────────────
-11.│(-1//2)qΦ₄  q²     1   -,-
-1.1│ (1//2)qΦ₄ qΦ₄     1   -,+
-.11│        q⁴  q⁴     1      
-2. │         1   1     1      
-.2 │ (1//2)qΦ₄  q²     1   -,+
-B₂ │(-1//2)qΦ₄   0    -1   -,-
+  γ│   Deg(γ) Feg Fr(γ) label
+───┼──────────────────────────
+11.│(-1/2)qΦ₄  q²     1   -,-
+1.1│ (1/2)qΦ₄ qΦ₄     1   -,+
+.11│       q⁴  q⁴     1      
+2. │        1   1     1      
+.2 │ (1/2)qΦ₄  q²     1   -,+
+B₂ │(-1/2)qΦ₄   0    -1   -,-
 ```
 
-```julia-repl
     gap> Display(uc,rec(byFamily:=true));
     Unipotent characters for B2
     Name |  Degree FakeDegree Eigenvalue Label
@@ -421,7 +416,6 @@ B₂ │(-1//2)qΦ₄   0    -1   -,-
     4  |  2.     (2,)
     5  |  .2   (01,2)
     6  |  B2   (012,)|
-```
 """
 function UnipotentCharacters(W::Group) 
   function CartesianSeries(sers)

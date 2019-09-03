@@ -468,17 +468,17 @@ end
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
 
 ```julia-repl
-julia> FamilyImprimitive([[0,1],[1],[0]]);
+julia> HasType.Family(FamilyImprimitive([[0,1],[1],[0]]))
 Family(0011:3)
-label│     eigen      1         2         3
-─────┼──────────────────────────────────────
-1    │(-1-√-3)/2  √-3/3    -√-3/3     √-3/3
-2    │         1 -√-3/3 (3-√-3)/6 (3+√-3)/6
-3    │         1  √-3/3 (3+√-3)/6 (3-√-3)/6
+label│eigen      1         2         3
+─────┼─────────────────────────────────
+1    │  ζ₃²  √-3/3    -√-3/3     √-3/3
+2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6
+3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6
 ```
 """
 FamilyImprimitive = function (S)
-  println("S=$S")
+# println("S=$S")
   e = length(S)
   Scoll = Collected(vcat(S...))
   ct = vcat(map(x->fill(x[1],x[2]), Scoll)...)
@@ -583,7 +583,7 @@ The  list  `l`  should  be  a  list  of symbols as returned by the function
 by these symbols.
 
 ```julia-repl
-julia> FamiliesClassical(BDSymbols(3,1))
+julia> HasType.FamiliesClassical(HasType.BDSymbols(3,1))
 6-element Array{Gapjm.HasType.Family,1}:
  Family(0112233:[4])    
  Family(01123:[1, 3, 8])

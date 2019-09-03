@@ -54,7 +54,7 @@ julia> inv(a)  # inverse
 julia> a/b     # quotient  a*inv(b)
 (3,4)
 
-julia> a\\b     # left quotient inv(a)*b
+julia> a\b     # left quotient inv(a)*b
 (1,4)
 
 julia> a^b     # conjugation inv(b)*a*b
@@ -366,9 +366,10 @@ julia> orbits(Perm(1,2)*Perm(4,5),1:5)
 ```
 """
 function Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
+  cycles=Vector{eltype(a.d)}[]
+  if isempty(a.d) return cycles end
   to_visit=falses(max(length(a.d),maximum(domain)))
   to_visit[domain].=true
-  cycles=Vector{eltype(a.d)}[]
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
     cyc=orbit(a,i,check)
@@ -384,7 +385,7 @@ end
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
-3-element Array{Array{Int64,1},1}:
+2-element Array{Array{Int64,1},1}:
  [1, 2]
  [4, 5]
 ```

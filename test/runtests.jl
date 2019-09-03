@@ -1,12 +1,14 @@
 # auto-generated tests from julia-repl docstrings
 using Test, Gapjm
 function mytest(a::String,b::String)
+  omit=a[end]==';'
   a=repr(MIME("text/plain"),eval(Meta.parse(a)),context=:limit=>true)
-  a=replace(a,r" *\n"s=>"\n")
-  a=replace(a,r" *$"s=>"")
-  if a!=b print("a=$a
-b=$b
-") end
+  if omit a="nothing" end
+  a=replace(a,r" *(\n|$)"s=>s"\1")
+  a=replace(a,r"\n$"s=>"")
+  b=replace(b,r" *(\n|$)"s=>s"\1")
+  b=replace(b,r"\n$"s=>"")
+  if a!=b print("exec=$(repr(a))\nman=$(repr(b))\n") end
   a==b
 end
 @testset "Chars.jl" begin
@@ -87,31 +89,30 @@ end
 @test mytest("a=E(4)-E(4)","0")
 @test mytest("conductor(a)","1")
 @test mytest("typeof(convert(Int,a))","Int64")
-@test mytest("c=inv(1+E(4))","1//2+(-1//2)ζ₄")
+@test mytest("c=inv(1+E(4))","1/2-ζ₄/2")
 @test mytest("typeof(c)","Cyc{Rational{Int64}}")
 @test mytest("typeof(1+E(4))","Cyc{Int64}")
 @test mytest("Cyc(1+im)","1+ζ₄")
-@test mytest("1//(1+E(4))","1//2+(-1//2)ζ₄")
+@test mytest("1//(1+E(4))","1/2-ζ₄/2")
 @test mytest("typeof(Cyc(1//2))","Cyc{Rational{Int64}}")
 @test mytest("conj(1+E(4))","1-ζ₄")
 @test mytest("c=E(9)","-ζ₉⁴-ζ₉⁷")
 @test mytest("Root1(c)","Root1(1//9)")
 @test mytest("c=Complex(E(3))","-0.4999999999999998 + 0.8660254037844387im")
-@test mytest("Cyc(c)","-0.4999999999999998+0.8660254037844387ζ₄")
-@test mytest("Cyc(c)","-0.4999999999999998+0.8660254037844387ζ₄")
+@test mytest("c=Complex(E(3))","-0.4999999999999998 + 0.8660254037844387im")
 @test mytest("galois(1+E(4),-1)","1-ζ₄")
 @test mytest("galois(ER(5),2)==-ER(5)","true")
 @test mytest("galois(ER(5),2)==-ER(5)","true")
 @test mytest("ER(-1)","ζ₄")
 @test mytest("ER(3)","√3")
 @test mytest("ER(3)","√3")
-@test mytest("Quadratic(1+E(3))","(a = 1, b = 1, root = -3, den = 2)")
+@test mytest("Quadratic(1+E(3))","(1+√-3)/2")
 @test mytest("Quadratic(1+E(5))","nothing")
 end
 @testset "families.jl" begin
-@test mytest("FamilyImprimitive([[0,1],[1],[0]]);","Family(0011:3)\nlabel│     eigen      1         2         3\n─────┼──────────────────────────────────────\n1    │(-1-√-3)/2  √-3/3    -√-3/3     √-3/3\n2    │         1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │         1  √-3/3 (3+√-3)/6 (3-√-3)/6")
-@test mytest("FamilyImprimitive([[0,1],[1],[0]]);","Family(0011:3)\nlabel│     eigen      1         2         3\n─────┼──────────────────────────────────────\n1    │(-1-√-3)/2  √-3/3    -√-3/3     √-3/3\n2    │         1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │         1  √-3/3 (3+√-3)/6 (3-√-3)/6")
-@test mytest("FamiliesClassical(BDSymbols(3,1))","6-element Array{Gapjm.HasType.Family,1}:\n Family(0112233:[4])\n Family(01123:[1, 3, 8])\n Family(013:[5, 7, 10])\n Family(022:[6])\n Family(112:[2])\n Family(3:[9])")
+@test mytest("HasType.Family(FamilyImprimitive([[0,1],[1],[0]]))","Family(0011:3)\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6")
+@test mytest("HasType.Family(FamilyImprimitive([[0,1],[1],[0]]))","Family(0011:3)\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6")
+@test mytest("HasType.FamiliesClassical(HasType.BDSymbols(3,1))","6-element Array{Gapjm.HasType.Family,1}:\n Family(0112233:[4])\n Family(01123:[1, 3, 8])\n Family(013:[5, 7, 10])\n Family(022:[6])\n Family(112:[2])\n Family(3:[9])")
 end
 @testset "Garside.jl" begin
 @test mytest("W=coxgroup(:A,4)","A₄")
@@ -246,7 +247,7 @@ end
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 end
 @testset "ModuleElts.jl" begin
-@test mytest("Base.show(io::IO,m::ModuleElt)=ModuleElts.show(io,m)","nothing")
+@test mytest("Base.show(io::IO,m::ModuleElt)=format(io,m;showbasis=(io,m)->String(m))","nothing")
 @test mytest("a=ModuleElt(:xy=>1,:yx=>-1)","xy-yx")
 @test mytest("a-a","0")
 @test mytest("a*99","99xy-99yx")
@@ -267,7 +268,7 @@ end
 @test mytest("Perm(1,2,4) in G","false")
 @test mytest("base(G)","2-element Array{Int64,1}:\n 1\n 2")
 @test mytest("centralizers(G)","2-element Array{PermGroup{Int64},1}:\n Group([(1,2),(2,3)])\n Group([(2,3)])")
-@test mytest("transversals(G)","2-element Array{Dict{Int64,Perm{Int64}},1}:\n Dict(2=>(1,2),3=>(1,3,2),1=>())\n Dict(2=>(),3=>(2,3))")
+@test mytest("transversals(G)","2-element Array{Dict{Int64,Perm{Int64}},1}:\n Dict(2 => (1,2),3 => (1,3,2),1 => ())\n Dict(2 => (),3 => (2,3))")
 end
 @testset "Perms.jl" begin
 @test mytest("a=Perm(1,2,3)","(1,2,3)")
@@ -277,7 +278,7 @@ end
 @test mytest("a*b","(1,3,2,4)")
 @test mytest("inv(a)","(1,3,2)")
 @test mytest("a/b","(3,4)")
-@test mytest("a\\\\b","(1,4)")
+@test mytest("a\\b","(1,4)")
 @test mytest("a^b","(2,3,4)")
 @test mytest("b^2","(1,3)(2,4)")
 @test mytest("1^a","2")
@@ -291,8 +292,8 @@ end
 @test mytest("Matrix(b)","4×4 Array{Int64,2}:\n 0  1  0  0\n 0  0  1  0\n 0  0  0  1\n 1  0  0  0")
 @test mytest("orbits(Perm(1,2)*Perm(4,5),1:5)","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("orbits(Perm(1,2)*Perm(4,5),1:5)","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [3]\n [4, 5]")
-@test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [4, 5]")
-@test mytest("cycles(Perm(1,2)*Perm(4,5))","3-element Array{Array{Int64,1},1}:\n [1, 2]\n [4, 5]")
+@test mytest("cycles(Perm(1,2)*Perm(4,5))","2-element Array{Array{Int64,1},1}:\n [1, 2]\n [4, 5]")
+@test mytest("cycles(Perm(1,2)*Perm(4,5))","2-element Array{Array{Int64,1},1}:\n [1, 2]\n [4, 5]")
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:\n (2, 1) => 2")
 end
 @testset "Pols.jl" begin
@@ -313,7 +314,7 @@ end
 @testset "Posets.jl" begin
 @test mytest("p=Poset(coxgroup(:A,2))","Poset with 6 elements")
 @test mytest("hasse(p)","6-element Array{Array{Int64,1},1}:\n [2, 3]\n [4, 5]\n [4, 5]\n [6]\n [6]\n []")
-@test mytest("incidence(p)","6×6 Array{Bool,2}:\n  true   true   true   true   true  true\n false   true  false   true   true  true\n false  false   true   true   true  true\n false  false  false   true  false  true\n false  false  false  false   true  true\n false  false  false  false  false  true")
+@test mytest("incidence(p)","6×6 Array{Bool,2}:\n 1  1  1  1  1  1\n 0  1  0  1  1  1\n 0  0  1  1  1  1\n 0  0  0  1  0  1\n 0  0  0  0  1  1\n 0  0  0  0  0  1")
 end
 @testset "Symbols.jl" begin
 @test mytest("shiftβ([4,5],3)","5-element Array{Int64,1}:\n 0\n 1\n 2\n 7\n 8")
@@ -336,17 +337,14 @@ end
 end
 @testset "Uch.jl" begin
 @test mytest("W=coxgroup(:G,2)","G₂")
-@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(G₂)\n      γ│       Deg(γ)  Feg Fr(γ)    label\n───────┼──────────────────────────────────\nφ₁‚₀   │            1    1     1\nφ₁‚₆   │           q⁶   q⁶     1\nφ′₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1    (1,ρ)\nφ″₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1   (g₃,1)\nφ₂‚₁   │ (1//6)qΦ₂²Φ₃  qΦ₈     1    (1,1)\nφ₂‚₂   │ (1//2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)\nG₂[-1] │ (1//2)qΦ₁²Φ₃    0    -1   (g₂,ε)\nG₂[1]  │ (1//6)qΦ₁²Φ₆    0     1    (1,ε)\nG₂[ζ₃] │(1//3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)\nG₂[ζ₃²]│(1//3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)")
-@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(G₂)\n      γ│       Deg(γ)  Feg Fr(γ)    label\n───────┼──────────────────────────────────\nφ₁‚₀   │            1    1     1\nφ₁‚₆   │           q⁶   q⁶     1\nφ′₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1    (1,ρ)\nφ″₁‚₃  │  (1//3)qΦ₃Φ₆   q³     1   (g₃,1)\nφ₂‚₁   │ (1//6)qΦ₂²Φ₃  qΦ₈     1    (1,1)\nφ₂‚₂   │ (1//2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)\nG₂[-1] │ (1//2)qΦ₁²Φ₃    0    -1   (g₂,ε)\nG₂[1]  │ (1//6)qΦ₁²Φ₆    0     1    (1,ε)\nG₂[ζ₃] │(1//3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)\nG₂[ζ₃²]│(1//3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)")
-@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3\n|    gap> W:=CoxeterGroup(\"G\",2);\n    CoxeterGroup(\"G\",2)\n    gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));\n    (q^2-q+1)\n    gap> u:=UnipotentCharacter(T,1);\n    [(q^2-q+1)]=<>|\n|    gap> LusztigInduction(W,u);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> v:=DeligneLusztigCharacter(W,[1,2]);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> Degree(v);\n    q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1\n    gap> v*v;\n    6|")
-@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3\n|    gap> W:=CoxeterGroup(\"G\",2);\n    CoxeterGroup(\"G\",2)\n    gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));\n    (q^2-q+1)\n    gap> u:=UnipotentCharacter(T,1);\n    [(q^2-q+1)]=<>|\n|    gap> LusztigInduction(W,u);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> v:=DeligneLusztigCharacter(W,[1,2]);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> Degree(v);\n    q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1\n    gap> v*v;\n    6|")
-@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3\n|    gap> W:=CoxeterGroup(\"G\",2);\n    CoxeterGroup(\"G\",2)\n    gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));\n    (q^2-q+1)\n    gap> u:=UnipotentCharacter(T,1);\n    [(q^2-q+1)]=<>|\n|    gap> LusztigInduction(W,u);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> v:=DeligneLusztigCharacter(W,[1,2]);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> Degree(v);\n    q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1\n    gap> v*v;\n    6|")
-@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3\n|    gap> W:=CoxeterGroup(\"G\",2);\n    CoxeterGroup(\"G\",2)\n    gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));\n    (q^2-q+1)\n    gap> u:=UnipotentCharacter(T,1);\n    [(q^2-q+1)]=<>|\n|    gap> LusztigInduction(W,u);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> v:=DeligneLusztigCharacter(W,[1,2]);\n    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>\n    gap> Degree(v);\n    q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1\n    gap> v*v;\n    6|")
-@test mytest("UnipotentCharacters(ComplexReflectionGroup(4))","UnipotentCharacters(G₄)\n    γ│                         Deg(γ)    Feg Fr(γ)   label\n─────┼─────────────────────────────────────────────────────\nφ₁‚₀ │                              1      1     1\nφ₁‚₄ │((-1//6)ζ₃+(1//6)ζ₃²)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²\nφ₁‚₈ │((1//6)ζ₃+(-1//6)ζ₃²)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²\nφ₂‚₅ │                  (1//2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²\nφ₂‚₃ │((-1//3)ζ₃+(-2//3)ζ₃²)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²\nφ₂‚₁ │((-2//3)ζ₃+(-1//3)ζ₃²)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃\nφ₃‚₂ │                         q²Φ₃Φ₆ q²Φ₃Φ₆     1\nZ₃:2 │   ((-1//3)ζ₃+(1//3)ζ₃²)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²\nZ₃:11│  ((-1//3)ζ₃+(1//3)ζ₃²)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃\nG₄   │                 (-1//2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1")
-@test mytest("UnipotentCharacters(ComplexReflectionGroup(4))","UnipotentCharacters(G₄)\n    γ│                         Deg(γ)    Feg Fr(γ)   label\n─────┼─────────────────────────────────────────────────────\nφ₁‚₀ │                              1      1     1\nφ₁‚₄ │((-1//6)ζ₃+(1//6)ζ₃²)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²\nφ₁‚₈ │((1//6)ζ₃+(-1//6)ζ₃²)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²\nφ₂‚₅ │                  (1//2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²\nφ₂‚₃ │((-1//3)ζ₃+(-2//3)ζ₃²)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²\nφ₂‚₁ │((-2//3)ζ₃+(-1//3)ζ₃²)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃\nφ₃‚₂ │                         q²Φ₃Φ₆ q²Φ₃Φ₆     1\nZ₃:2 │   ((-1//3)ζ₃+(1//3)ζ₃²)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²\nZ₃:11│  ((-1//3)ζ₃+(1//3)ζ₃²)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃\nG₄   │                 (-1//2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1")
+@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(G₂)\n      γ│      Deg(γ)  Feg Fr(γ)    label\n───────┼─────────────────────────────────\nφ₁‚₀   │           1    1     1\nφ₁‚₆   │          q⁶   q⁶     1\nφ′₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1    (1,ρ)\nφ″₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1   (g₃,1)\nφ₂‚₁   │ (1/6)qΦ₂²Φ₃  qΦ₈     1    (1,1)\nφ₂‚₂   │ (1/2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)\nG₂[-1] │ (1/2)qΦ₁²Φ₃    0    -1   (g₂,ε)\nG₂[1]  │ (1/6)qΦ₁²Φ₆    0     1    (1,ε)\nG₂[ζ₃] │(1/3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)\nG₂[ζ₃²]│(1/3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)")
+@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(G₂)\n      γ│      Deg(γ)  Feg Fr(γ)    label\n───────┼─────────────────────────────────\nφ₁‚₀   │           1    1     1\nφ₁‚₆   │          q⁶   q⁶     1\nφ′₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1    (1,ρ)\nφ″₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1   (g₃,1)\nφ₂‚₁   │ (1/6)qΦ₂²Φ₃  qΦ₈     1    (1,1)\nφ₂‚₂   │ (1/2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)\nG₂[-1] │ (1/2)qΦ₁²Φ₃    0    -1   (g₂,ε)\nG₂[1]  │ (1/6)qΦ₁²Φ₆    0     1    (1,ε)\nG₂[ζ₃] │(1/3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)\nG₂[ζ₃²]│(1/3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)")
+@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3")
+@test mytest("uc.prop[:families][1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3")
+@test mytest("UnipotentCharacters(ComplexReflectionGroup(4))","UnipotentCharacters(G₄)\n    γ│              Deg(γ)    Feg Fr(γ)       label\n─────┼──────────────────────────────────────────────\nφ₁‚₀ │                   1      1     1\nφ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1   1∧-E(3,2)\nφ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1   -1∧E(3,2)\nφ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1    1∧E(3,2)\nφ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1    1∧E(3,2)\nφ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1      1∧E(3)\nφ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1\nZ₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃² E(3)∧E(3,2)\nZ₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  E(3)∧-E(3)\nG₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1  -E(3,2)∧-1")
+@test mytest("UnipotentCharacters(ComplexReflectionGroup(4))","UnipotentCharacters(G₄)\n    γ│              Deg(γ)    Feg Fr(γ)       label\n─────┼──────────────────────────────────────────────\nφ₁‚₀ │                   1      1     1\nφ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1   1∧-E(3,2)\nφ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1   -1∧E(3,2)\nφ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1    1∧E(3,2)\nφ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1    1∧E(3,2)\nφ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1      1∧E(3)\nφ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1\nZ₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃² E(3)∧E(3,2)\nZ₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  E(3)∧-E(3)\nG₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1  -E(3,2)∧-1")
 @test mytest("W=coxgroup(:B,2)","B₂")
-@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│    Deg(γ) Feg Fr(γ) label\n───┼───────────────────────────\n11.│(-1//2)qΦ₄  q²     1   -,-\n1.1│ (1//2)qΦ₄ qΦ₄     1   -,+\n.11│        q⁴  q⁴     1\n2. │         1   1     1\n.2 │ (1//2)qΦ₄  q²     1   -,+\nB₂ │(-1//2)qΦ₄   0    -1   -,-\n    gap> Display(uc,rec(byFamily:=true));\n    Unipotent characters for B2\n    Name |  Degree FakeDegree Eigenvalue Label\n    ___________________________________________\n    *.11 |     q^4        q^4          1\n    ___________________________________________\n    11.  |  1/2qP4        q^2          1   +,-\n    *1.1 |1/2qP2^2        qP4          1   +,+\n    .2   |  1/2qP4        q^2          1   -,+\n    B2   |1/2qP1^2          0         -1   -,-\n    ___________________________________________\n    *2.  |'|'|       1          1          1\n    gap> Display(uc,items=[:n0,:Name,:Symbol]));\n    Unipotent characters for B2\n    n0 |Name   Symbol\n    __________________\n    1  | 11.   (12,0)\n    2  | 1.1   (02,1)\n    3  | .11 (012,12)\n    4  |  2.     (2,)\n    5  |  .2   (01,2)\n    6  |  B2   (012,)|")
-@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│    Deg(γ) Feg Fr(γ) label\n───┼───────────────────────────\n11.│(-1//2)qΦ₄  q²     1   -,-\n1.1│ (1//2)qΦ₄ qΦ₄     1   -,+\n.11│        q⁴  q⁴     1\n2. │         1   1     1\n.2 │ (1//2)qΦ₄  q²     1   -,+\nB₂ │(-1//2)qΦ₄   0    -1   -,-\n    gap> Display(uc,rec(byFamily:=true));\n    Unipotent characters for B2\n    Name |  Degree FakeDegree Eigenvalue Label\n    ___________________________________________\n    *.11 |     q^4        q^4          1\n    ___________________________________________\n    11.  |  1/2qP4        q^2          1   +,-\n    *1.1 |1/2qP2^2        qP4          1   +,+\n    .2   |  1/2qP4        q^2          1   -,+\n    B2   |1/2qP1^2          0         -1   -,-\n    ___________________________________________\n    *2.  |'|'|       1          1          1\n    gap> Display(uc,items=[:n0,:Name,:Symbol]));\n    Unipotent characters for B2\n    n0 |Name   Symbol\n    __________________\n    1  | 11.   (12,0)\n    2  | 1.1   (02,1)\n    3  | .11 (012,12)\n    4  |  2.     (2,)\n    5  |  .2   (01,2)\n    6  |  B2   (012,)|")
+@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│   Deg(γ) Feg Fr(γ) label\n───┼──────────────────────────\n11.│(-1/2)qΦ₄  q²     1   -,-\n1.1│ (1/2)qΦ₄ qΦ₄     1   -,+\n.11│       q⁴  q⁴     1\n2. │        1   1     1\n.2 │ (1/2)qΦ₄  q²     1   -,+\nB₂ │(-1/2)qΦ₄   0    -1   -,-")
 end
 @testset "Ucl.jl" begin
 @test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄\n────┼───────────────────────────────────────────────────────────────\n4   │222   0 222    q³.Z4      1:4          -1:2    ζ₄:Id    -ζ₄:Id\n31  │202   1 22.      q⁴.    Id:31\n22  │020   2 2.2 q⁴.A1.Z2     2:22         11:11\n211 │101   3 2..    q⁵.A1   Id:211\n1111│000   6 ...      .A3  Id:1111")

@@ -53,7 +53,6 @@ CharTable(W(G2))
 φ₂‚₁ │ 2  .  .  1 -1    -2
 φ₂‚₂ │ 2  .  . -1 -1     2
 
-
 julia> ct.charnames
 6-element Array{String,1}:
  "\\phi_{1,0}"  

@@ -152,6 +152,8 @@ function Base.show(io::IO,p::Pol)
   print(io, (repl && !TeX) ? TeXstrip(s) : s)
 end
 
+Util.format(io::IO,p::Pol)=show(io,p)
+
 #function Base.:*(a::Pol, b::Pol)
 #  if iszero(a) || iszero(b) return zero(a) end
 #  res=map(1:length(a.c)+length(b.c)-1)do i

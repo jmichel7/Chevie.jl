@@ -50,8 +50,8 @@ julia> centralizers(G)
 # i-th element is transversal of centralizer[i] on base[i]
 julia> transversals(G)
 2-element Array{Dict{Int64,Perm{Int64}},1}:
- Dict(2=>(1,2),3=>(1,3,2),1=>())
- Dict(2=>(),3=>(2,3))
+ Dict(2 => (1,2),3 => (1,3,2),1 => ())
+ Dict(2 => (),3 => (2,3))
 ```
 
 finally, benchmarks on julia 1.0.1

@@ -2,7 +2,8 @@ module HasType
 
 export reflection_name, diagram, UnipotentCharacters, 
   UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox
+  chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
+  FamilyImprimitive
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -48,7 +49,7 @@ end
 function chevieset(t::Vector{String},w::Symbol,f::Function)
   for s in t 
     println("set $s $w")
-    chevieset(Symbol(s),w,f(Symbol(s))) 
+    chevieset(Symbol(s),w,f(s)) 
   end
 end
 
@@ -447,6 +448,10 @@ Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
 SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
+function TeXBracket(s)
+  s=string(s)
+  length(s)==1  ? " "*s : "{"*s*"}"
+end
 Torus(i::Int)=torus(i)
 Base.union(v::Vector)=union(v...)
 Value(p,v)=p(v)

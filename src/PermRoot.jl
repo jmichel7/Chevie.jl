@@ -157,7 +157,7 @@ Dictionary from Chevie
 """
 module PermRoot
 
-export PermRootGroup, PRG, PRSG, 
+export PermRootGroup, PRG, PRSG,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
@@ -322,7 +322,7 @@ end
 
 reflection(W::PermRootGroup,i)=reflections(W)[i]
 
-function reflength(W::PermRootGroup,w::Perm)
+function Perms.reflength(W::PermRootGroup,w::Perm)
   l=getp(refleigen,W,:reflengths)::Vector{Int}
   l[position_class(W,w)]
 end
