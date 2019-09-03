@@ -692,11 +692,11 @@ E(a::Root1)=E(conductor(a),exponent(a))
 E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
 
 
-struct Quadratic{T<:Integer}
-  a::T
-  b::T
-  root::T
-  den::T
+struct Quadratic
+  a
+  b
+  root
+  den
 end
 
 """
@@ -722,7 +722,7 @@ if use_list
   l=fill(0,cyc.n)
   l[1 .+ zb]=Int.(cyc.d*den)
 else
-  den=lcm(denominator.(map(x->x[2],cyc.d)))::Int
+  den=lcm(denominator.(map(x->x[2],cyc.d)))
   if den!=1 cyc=Cyc(cyc.n,ModuleElt([k=>Int(v*den) for (k,v) in cyc.d])) end
   l=fill(0,cyc.n)
   for (k,v) in cyc.d l[k+1]=v end

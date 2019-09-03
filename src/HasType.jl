@@ -41,6 +41,8 @@ function chevieget(t::Symbol,w::Symbol)
   println("CHEVIE[$t] has no $w")
 end
 
+chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
+
 function chevieset(t::Symbol,w::Symbol,o::Any)
   if !haskey(CHEVIE,t) CHEVIE[t]=Dict{Symbol,Any}() end
   CHEVIE[t][w]=o
@@ -101,7 +103,7 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
     if haskey(t,:cartantype) && f in needcartantype
 #     println("args=",(d[2:end]...,extra...,t[:cartantype]))
       o(d[2:end]...,extra...,t[:cartantype])
-    else o(d[2:end]...,extra...)
+     else o(d[2:end]...,extra...)
     end
   else o
   end
@@ -275,8 +277,9 @@ nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 PrintToSring(s,v...)=sprint(show,v...)
 
 function reflection_name(W,opt=Dict())
- r=join(getchev(W,:ReflectionName,merge(opt,Dict(:TeX=>true))),"×")
+  r=join(getchev(W,:ReflectionName,merge(opt,Dict(:TeX=>true))),"×")
   if get(opt,:repl,false) r=TeXstrip(r) end
+  r
 end
 
 #----------------------------------------------------------------------
@@ -450,7 +453,7 @@ SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 function TeXBracket(s)
   s=string(s)
-  length(s)==1  ? " "*s : "{"*s*"}"
+  length(s)==1  ? s : "{"*s*"}"
 end
 Torus(i::Int)=torus(i)
 Base.union(v::Vector)=union(v...)

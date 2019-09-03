@@ -109,11 +109,11 @@ UnipotentClasses(A₃)
 1111<211<22<31<4
    u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄
 ────┼───────────────────────────────────────────────────────────────
-4   │222   0 222    q³.Z4      1:4          -1:2    ζ₄:Id    -ζ₄:Id
+4   │222   0 222    q³.Z₄      1:4          -1:2    ζ₄:Id    -ζ₄:Id
 31  │202   1 22.      q⁴.    Id:31                                 
-22  │020   2 2.2 q⁴.A1.Z2     2:22         11:11                   
-211 │101   3 2..    q⁵.A1   Id:211                                 
-1111│000   6 ...      .A3  Id:1111  
+22  │020   2 2.2 q⁴.A₁.Z₂     2:22         11:11                   
+211 │101   3 2..    q⁵.A₁   Id:211                                 
+1111│000   6 ...      .A₃  Id:1111
 ```
 
 The  first column in the table gives the name of the unipotent class, which
@@ -165,9 +165,9 @@ UnipotentClasses(A₃)
 ────┼───────────────────────────
 4   │222   0 222    q³     Id:4
 31  │202   1 22.   q⁴.    Id:31
-22  │020   2 2.2 q⁴.A1    Id:22
-211 │101   3 2.. q⁵.A1   Id:211
-1111│000   6 ...   .A3  Id:1111
+22  │020   2 2.2 q⁴.A₁    Id:22
+211 │101   3 2.. q⁵.A₁   Id:211
+1111│000   6 ...   .A₃  Id:1111
 ```
 
 Here is another example:
@@ -179,10 +179,10 @@ UnipotentClasses(G₂)
      u│D-R dBu B-C  C(u)        G₂(G₂₍₎)  .(G₂)
 ──────┼─────────────────────────────────────────
 G₂    │ 22   0  22    q²         Id:φ₁‚₀       
-G₂(a₁)│ 20   1  20 q⁴.S3 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id
-Ã₁    │ 01   2  .2 q³.A1         Id:φ₂‚₂       
-A₁    │ 10   3  2. q⁵.A1        Id:φ″₁‚₃       
-1     │ 00   6  ..   .G2         Id:φ₁‚₆       
+G₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id
+Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂       
+A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃       
+1     │ 00   6  ..   .G₂         Id:φ₁‚₆
 ```
 
 which illustrates that on class `G₂(a₁)` there are two local systems in the
@@ -201,12 +201,12 @@ UnipotentClasses(G₂)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
      u│dBu B-C  C(u) G₂(G₂₍₎) .(G₂) .(G₂)  .(G₂)
 ──────┼──────────────────────────────────────────
-(Ã₁)₃ │  0  22 q².Z3   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
-G₂(a₁)│  1  20 q⁴.Z2   2:φ₂‚₁ 11:Id             
+(Ã₁)₃ │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
+G₂(a₁)│  1  20 q⁴.Z₂   2:φ₂‚₁ 11:Id             
 Ã₁    │  2  .2    q⁶  Id:φ₂‚₂                   
-A₁    │  3  2. q⁵.A1 Id:φ″₁‚₃                   
-1     │  3  ?? q⁵.A1 Id:φ′₁‚₃                   
-G₂    │  6  ..   .G2  Id:φ₁‚₆       
+A₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃                   
+1     │  3  ?? q⁵.A₁ Id:φ′₁‚₃                   
+G₂    │  6  ..   .G₂  Id:φ₁‚₆
 ```
 
 The  function 'ICCTable' gives the  transition matrix between the functions
@@ -215,7 +215,7 @@ The  function 'ICCTable' gives the  transition matrix between the functions
 ```julia-repl
 julia> uc=UnipotentClasses(coxgroup(:G,2));
 julia> t=ICCTable(uc)
-Coefficients of X_φ on Y_ψ for G2
+Coefficients of X_φ on Y_ψ for G₂
       │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1
 ──────┼──────────────────────────────
 Xφ₁‚₀ │ 1          0      1  1  1  1
@@ -289,7 +289,7 @@ function Base.show(io::IO,u::UnipotentClass)
   opt=Dict{Symbol,Any}()
   if get(io,:TeX,false) opt[:TeX]=true end
   if get(io,:limit,false) opt[:repl]=true end
-  print(io,"UnipotentClass(",name(u,opt...),")")
+  print(io,"UnipotentClass(",name(u;opt...),")")
 end
 
 UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
@@ -584,7 +584,7 @@ those of Frame for the characters of the Weyl group and of Spaltenstein for
 the  characters of `G₂` (this is convenient  for checking our data with the
 original paper of Spaltenstein):
 
-```julia-repl
+```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:Esc,6));
 
 julia> format(stdout,uc;repl=true,cols=[1,2,5,6,7],spaltenstein=true,frame=true,mizuno=true,order=false)
@@ -775,14 +775,7 @@ function FormatCentralizer(u,opt)
     if length(u.prop[:Au])==1 return "" end
     res=haskey(u.prop,:AuAction) || 
         (haskey(u.prop,:dimred) && iszero(u.prop[:dimred])) ? "." : "?"
-    au=reflection_name(u.prop[:Au],opt)
-    if haskey(opt,:TeX) 
-      rep=["A_1"=>"Z_2","A_2"=>"S_3","A_3"=>"S_4","A_4"=>"S_5","B_2"=>"D_8"]
-    else
-      rep=["A1"=>"Z2","A2"=>"S3","A3"=>"S4","A4"=>"S5","B2"=>"D8"]
-    end
-    for p in rep  au=replace(au,p) end
-    res*au
+    res*=reflection_name(u.prop[:Au],merge(Dict(:Au=>true),opt))
   end
   if haskey(u.prop,:dimunip)
     if u.prop[:dimunip]>0 c*=HasType.Format(Mvp(:q)^u.prop[:dimunip],opt) end
@@ -835,7 +828,7 @@ function Util.format(io::IO,uc::UnipotentClasses; opt...)
   if !repl || deep return end
   print(io,"\n")
   if get(opt,:order,true)
-    println(Posets.showgraph(uc.orderclasses;opt...))
+    println(io,Posets.showgraph(uc.orderclasses;opt...))
   end
   sp = map(copy, uc.springerseries)
   if haskey(opt, :fourier)
@@ -1060,7 +1053,7 @@ table can be controlled more precisely.
 For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
-```julia-repl
+```julia-rep1
 julia> format(stdout,t;repl=true,cycpol=false)
 Coefficients of X_φ on Y_ψ for A3
      │4 31 22 211   1111
@@ -1078,11 +1071,10 @@ the  entries displayed to a given sublist of the rows and columns (here the
 indices correspond to the number in Chevie of the corresponding character
 of the relative Weyl group of the given Springer series):
 
-```julia-repl
+```julia-rep1
 julia> uc=UnipotentClasses(coxgroup(:F,4));
-
+julia> t=ICCTable(uc);
 julia> sh=[13,24,22,18,14,9,11,19];
-
 julia> format(stdout,t;rows=sh,cols=sh,repl=true)
 Coefficients of X_φ on Y_ψ for F₄
       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾

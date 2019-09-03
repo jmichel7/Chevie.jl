@@ -4016,42 +4016,6 @@ chevieset(:imp, :ClassName, function (p,)
             error()
         end
     end)
-chevieset(:imp, :PowerMaps, function (p, q, r)
-        local pow, pp, pw, res
-        if q == 1
-            pow = function (p, n)
-                    local e, res, k, l, g, j
-                    e = length(p)
-                    res = map((x->begin
-                                    []
-                                end), 1:e)
-                    for k = 1:e
-                        for l = p[k]
-                            g = gcd(n, l)
-                            for j = 1:g
-                                push!(res[1 + mod(div(n * (k - 1), g), e)], l // g)
-                            end
-                        end
-                    end
-                    for k = 1:e
-                        Sort(res[k])
-                        res[k] = reverse(res[k])
-                    end
-                    return res
-                end
-            pp = ((chevieget(:imp, :ClassInfo))(p, q, r))[:classparams]
-            res = []
-            for pw = gapSet(Factors(factorial(r) * p))
-                res[pw] = map((x->begin
-                                Position(pp, pow(x, pw))
-                            end), pp)
-            end
-            return res
-        else
-            InfoChevie("# PowerMaps  !  implemented for G(", p, ",", q, ",", r, ")\n")
-            return false
-        end
-    end)
 chevieset(:imp, :CharInfo, function (de, e, r)
         local d, ct, res, t, tt, s, fd
         res = Dict{Symbol, Any}()
@@ -6004,6 +5968,23 @@ chevieset(:A, :PrintDiagram, function (r, indices, title)
         local i
         print(title, " ", Join(indices, " - "), "\n")
     end)
+chevieset(:A, :ReflectionName, function (r, option)
+        if haskey(option, :arg)
+            return SPrint("\"A\",", r)
+        elseif haskey(option, :TeX)
+            if haskey(option, :Au)
+                o = ["Z_2", "S_3", "S_4", "S_5"]
+                return o[r]
+            else
+                return SPrint("A_", TeXBracket(r))
+            end
+        elseif haskey(option, :Au)
+            o = ["Z2", "S3", "S4", "S5"]
+            return o[r]
+        else
+            return SPrint("A", r)
+        end
+    end)
 chevieset(:A, :GeneratingRoots, function (l,)
         local r, i
         r = map((i->begin
@@ -6272,7 +6253,13 @@ chevieset(:B, :ReflectionName, function (arg...,)
         end
         if type_ == 2
             if haskey(option, :TeX)
-                return SPrint("B_", TeXBracket(r))
+                if haskey(option, :Au)
+                    return "D_8"
+                else
+                    return SPrint("B_", TeXBracket(r))
+                end
+            elseif haskey(option, :Au)
+                return "D8"
             elseif haskey(option, :arg)
                 return SPrint("\"B\",", r)
             else
@@ -6495,6 +6482,324 @@ chevieset(:B, :UnipotentCharacters, function (arg...,)
         uc[:families] = FamiliesClassical(uc[:charSymbols])
         if length(arg) == 2 && arg[2] == 1
             (((uc[:harishChandra])[1])[:relativeType])[:cartanType] = 1
+        end
+        return uc
+    end)
+chevieset(:B, :UnipotentClasses, function (r, char, type_)
+        local cl, uc, i, l, s, cc, ss, symbol2para, part2dynkin, addSpringer, d, LuSpin, trspringer, j
+        part2dynkin = function (part,)
+                local p, res
+                p = Concatenation(map((d->begin
+                                    1 - d:(3 - d) - (1 - d):d - 1
+                                end), part))
+                Sort(p)
+                p = p[div(3 + length(p), 2):length(p)]
+                if type_ == 1
+                    res = [2 * p[1]]
+                else
+                    res = [p[1]]
+                end
+                res = Append(res, p[2:length(p)] - p[1:length(p) - 1])
+                return res
+            end
+        addSpringer = function (s,)
+                local ss, p
+                ss = First(uc[:springerSeries], (x->begin
+                                x[:defect] == DefectSymbol(s[:symbol])
+                            end))
+                if s[:sp] == [[], []]
+                    p = 1
+                elseif s[:sp] == [[1], []]
+                    p = 2
+                elseif s[:sp] == [[], [1]]
+                    p = 1
+                else
+                    p = Position(CharParams(ss[:relgroup]), [s[:sp]])
+                end
+                (ss[:locsys])[p] = [length(uc[:classes]), Position(CharParams(cc[:Au]), map(function (x,)
+                                    if x
+                                        return [1, 1]
+                                    else
+                                        return [2]
+                                    end
+                                end, s[:Au]))]
+            end
+        if type_ == ER(2)
+            type_ = 2
+            char = 2
+        end
+        if char == 2
+            ss = XSP(4, 2, r)
+        elseif type_ == 1
+            ss = XSP(2, 1, r)
+        else
+            ss = XSP(2, 0, r)
+        end
+        l = Union(map((c->begin
+                            map((x->begin
+                                        [DefectSymbol(x[:symbol]), Sum(x[:sp], Sum)]
+                                    end), c)
+                        end), ss))
+        SortBy(l, (x->begin
+                    [AbsInt(x[1]), -(SignInt(x[1]))]
+                end))
+        uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function (d,)
+                            local res
+                            res = Dict{Symbol, Any}(:relgroup => CoxeterGroup("C", d[2]), :defect => d[1], :levi => 1:r - d[2])
+                            res[:locsys] = map((x->begin
+                                            [0, 0]
+                                        end), 1:NrConjugacyClasses(res[:relgroup]))
+                            if char == 2
+                                res[:Z] = [1]
+                            elseif type_ == 1
+                                res[:Z] = [(-1) ^ (r - d[2])]
+                            elseif IsInt(ER(2 * (r - d[2]) + 1))
+                                res[:Z] = [1]
+                            else
+                                res[:Z] = [-1]
+                            end
+                            return res
+                        end, l))
+        if char != 2
+            symbol2para = function (S,)
+                    local c, i, l, part, d
+                    c = Concatenation(S)
+                    Sort(c)
+                    i = 1
+                    part = []
+                    d = mod(type_, 2)
+                    while i <= length(c)
+                        if i == length(c) || c[i + 1] - c[i] > 0
+                            push!(part, (2 * (c[i] - (i - 1)) + 1) - d)
+                            i = i + 1
+                        else
+                            l = 2 * (c[i] - (i - 1)) - d
+                            part = Append(part, [l, l])
+                            i = i + 2
+                        end
+                    end
+                    Sort(part)
+                    part = Filtered(part, (y->begin
+                                    y != 0
+                                end))
+                    return reverse(part)
+                end
+        else
+            symbol2para = function (S,)
+                    local c, i, l, part, ex
+                    c = Concatenation(S)
+                    Sort(c)
+                    i = 1
+                    part = []
+                    ex = []
+                    while i <= length(c)
+                        if i == length(c) || c[i + 1] - c[i] > 1
+                            push!(part, 2 * (c[i] - 2 * (i - 1)))
+                            i = i + 1
+                        elseif c[i] == c[i + 1]
+                            l = 2 * (c[i] - 2 * (i - 1)) - 2
+                            part = Append(part, [l, l])
+                            push!(ex, l)
+                            i = i + 2
+                        elseif c[i] + 1 == c[i + 1]
+                            l = 2 * (c[i] - 2 * (i - 1)) - 1
+                            part = Append(part, [l, l])
+                            i = i + 2
+                        end
+                    end
+                    Sort(part)
+                    part = Filtered(part, (y->begin
+                                    y != 0
+                                end))
+                    return [reverse(part), ex]
+                end
+        end
+        if char == 2
+            type_ = 1
+        end
+        for cl = ss
+            cc = Dict{Symbol, Any}(:parameter => symbol2para((cl[1])[:symbol]))
+            cc[:Au] = ApplyFunc(CoxeterGroup, Concatenation(map((x->begin
+                                    ["A", 1]
+                                end), (cl[1])[:Au])))
+            if char != 2
+                cc[:dynkin] = part2dynkin(cc[:parameter])
+                cc[:name] = IntListToString(cc[:parameter])
+            else
+                type_ = 1
+                cc[:dimBu] = (cl[1])[:dimBu]
+                cc[:name] = Join(map(function (x,)
+                                local res
+                                res = IntListToString(fill(0, max(0, (1 + x[2]) - 1)) + x[1], "[]")
+                                if x[1] in (cc[:parameter])[2]
+                                    return SPrint("(", res, ")")
+                                end
+                                return res
+                            end, reverse(Collected((cc[:parameter])[1]))), "")
+            end
+            cc[:red] = CoxeterGroup()
+            if char == 2
+                j = (cc[:parameter])[1]
+            else
+                j = cc[:parameter]
+            end
+            for j = Collected(j)
+                if mod(j[1], 2) == mod(type_, 2)
+                    cc[:red] = cc[:red] * CoxeterGroup("C", j[2] // 2)
+                elseif mod(j[2], 2) != 0
+                    if j[2] > 1
+                        cc[:red] = cc[:red] * CoxeterGroup("B", (j[2] - 1) // 2)
+                    end
+                elseif j[2] > 2
+                    cc[:red] = cc[:red] * CoxeterGroup("D", j[2] // 2)
+                else
+                    cc[:red] = cc[:red] * Torus(1)
+                end
+            end
+            push!(uc[:classes], cc)
+            for s = cl
+                addSpringer(s)
+            end
+        end
+        uc[:orderClasses] = Hasse(Poset(map((x->begin
+                                map(function (y,)
+                                        local m, f, fx, fy, i
+                                        if char != 2
+                                            return Dominates(y[:parameter], x[:parameter])
+                                        end
+                                        m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
+                                        f = (x->begin
+                                                    map((i->begin
+                                                                Sum(Filtered(x, (z->begin
+                                                                                    z < i
+                                                                                end))) + i * count((z->begin
+                                                                                    z >= i
+                                                                                end), x)
+                                                            end), 1:m)
+                                                end)
+                                        fx = f((x[:parameter])[1])
+                                        fy = f((y[:parameter])[1])
+                                        for i = 1:m
+                                            if fx[i] < fy[i]
+                                                return false
+                                            elseif fx[i] == fy[i] && i in (y[:parameter])[2]
+                                                if i in Difference((x[:parameter])[1], (x[:parameter])[2])
+                                                    return false
+                                                end
+                                                if i < m && mod(fx[i + 1] - fy[i + 1], 2) == 1
+                                                    return false
+                                                end
+                                            end
+                                        end
+                                        return true
+                                    end, uc[:classes])
+                            end), uc[:classes])))
+        if char != 2 && type_ == 2
+            LuSpin = function (p,)
+                    local t, a, b, i, j, l, d
+                    Sort(p)
+                    a = []
+                    b = []
+                    d = [0, 1, 0, -1]
+                    d = d[map((x->begin
+                                        1 + mod(x, 4)
+                                    end), p)]
+                    i = 1
+                    while i <= length(p)
+                        l = p[i]
+                        t = Sum(d[1:i - 1])
+                        if 1 == mod(l, 4)
+                            push!(a, div(l - 1, 4) - t)
+                            i = i + 1
+                        elseif 3 == mod(l, 4)
+                            push!(b, div(l - 3, 4) + t)
+                            i = i + 1
+                        else
+                            j = i
+                            while i <= length(p) && p[i] == l
+                                i = i + 1
+                            end
+                            j = fill(0, max(0, (1 + div(i - j, 2)) - 1))
+                            a = Append(a, (j + div(l + mod(l, 4), 4)) - t)
+                            b = Append(b, j + div(l - mod(l, 4), 4) + t)
+                        end
+                    end
+                    a = Filtered(a, (x->begin
+                                    x != 0
+                                end))
+                    a = reverse(a)
+                    b = Filtered(b, (x->begin
+                                    x != 0
+                                end))
+                    b = reverse(b)
+                    if Sum(d) >= 1
+                        return [a, b]
+                    else
+                        return [b, a]
+                    end
+                end
+            addSpringer = function (f, i, s, k)
+                    local ss, p
+                    ss = First(uc[:springerSeries], f)
+                    if s in [[[], [1]], [[], []]]
+                        p = 1
+                    elseif s == [[1], []]
+                        p = 2
+                    else
+                        p = Position(CharParams(ss[:relgroup]), [s])
+                    end
+                    (ss[:locsys])[p] = [i, k]
+                end
+            trspringer = function (i, old, new)
+                    local ss, c, p
+                    for ss = uc[:springerSeries]
+                        for c = ss[:locsys]
+                            if c[1] == i
+                                p = Position(old, c[2])
+                                if p != false
+                                    c[2] = new[p]
+                                end
+                            end
+                        end
+                    end
+                end
+            d = 0
+            while 4 * d ^ 2 - 3d <= r
+                i = 4 * d ^ 2 - 3d
+                if mod(r - d, 2) == 0
+                    l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):r)
+                    push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
+                    i = 4 * d ^ 2 + 3d
+                    if i <= r && d != 0
+                        l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):r)
+                        push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup("B", (r - i) // 2), :levi => l, :Z => [-1], :locsys => []))
+                    end
+                end
+                d = d + 1
+            end
+            l = Filtered(1:length(uc[:classes]), (i->begin
+                            ForAll(Collected(((uc[:classes])[i])[:parameter]), (c->begin
+                                        mod(c[1], 2) == 0 || c[2] == 1
+                                    end))
+                        end))
+            for i = l
+                cl = (uc[:classes])[i]
+                s = LuSpin(cl[:parameter])
+                if Size(cl[:Au]) == 1
+                    cl[:Au] = CoxeterGroup("A", 1)
+                    trspringer(i, [1], [2])
+                    d = 1
+                elseif Size(cl[:Au]) == 4
+                    cl[:Au] = CoxeterGroup("B", 2)
+                    trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
+                    d = 2
+                else
+                    error("Au non-commutative of order ", Size(cl[:Au]) * 2, "  !  implemented")
+                end
+                addSpringer((ss->begin
+                            ss[:Z] == [-1] && Rank(ss[:relgroup]) == Sum(s, Sum)
+                        end), i, s, d)
+            end
         end
         return uc
     end)
@@ -8643,11 +8948,11 @@ chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "H3", 
                         Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(t, :CharName))(x, Dict{Symbol, Any}(:TeX => true)))
                     end), ((chevieget(t, :CharInfo))())[:charparams])
         end))
-chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, (t->begin
+chevieset(["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, (t->begin
             function (option,)
                 local i, o
-                i = ["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"]
-                o = ["G_{24}", "G_{25}", "G_{26}", "G_{27}", "G_{29}", "G_{31}", "G_{32}", "G_{33}", "G_{34}", "E_6", "E_7", "E_8", "{}^2E_6", "{}^2F_4", "{}^3D_4", "H_3", "H_4"]
+                i = ["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"]
+                o = ["G_{24}", "G_{25}", "G_{27}", "G_{29}", "G_{31}", "G_{32}", "G_{33}", "G_{34}", "E_6", "E_7", "E_8", "{}^2E_6", "{}^2F_4", "{}^3D_4", "H_3", "H_4"]
                 if haskey(option, :TeX)
                     return o[Position(i, t)]
                 else
@@ -8655,11 +8960,11 @@ chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", 
                 end
             end
         end))
-chevieset(["A", "D", "2A", "2D"], :ReflectionName, (t->begin
+chevieset(["D", "2A", "2D"], :ReflectionName, (t->begin
             function (r, option)
                 local i, o
-                i = ["A", "D", "2A", "2D"]
-                o = ["A", "D", "{}^2A", "{}^2D"]
+                i = ["D", "2A", "2D"]
+                o = ["D", "{}^2A", "{}^2D"]
                 if haskey(option, :arg)
                     return SPrint(FormatGAP(t), ",", r)
                 elseif haskey(option, :TeX)
