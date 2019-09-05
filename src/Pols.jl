@@ -120,6 +120,7 @@ Base.zero(a::Pol)=Pol(empty(a.c),0)
 Base.iszero(a::Pol)=length(a.c)==0
 Base.transpose(a::Pol)=a
 
+
 function Base.show(io::IO,p::Pol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
@@ -151,8 +152,6 @@ function Base.show(io::IO,p::Pol)
   end
   print(io, (repl && !TeX) ? TeXstrip(s) : s)
 end
-
-Util.format(io::IO,p::Pol)=show(io,p)
 
 #function Base.:*(a::Pol, b::Pol)
 #  if iszero(a) || iszero(b) return zero(a) end

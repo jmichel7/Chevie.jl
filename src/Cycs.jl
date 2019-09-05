@@ -330,18 +330,15 @@ end
    return b
 end
 
-Base.show(io::IO,p::Cyc)=format(io,p;repl=get(io,:limit,false))
-
-function Util.format(io::IO, p::Cyc; opt...)
-  opt=Dict(opt)
-  quadratic=get(opt,:quadratic,true)
-  repl=get(opt,:repl,false)
-  TeX=get(opt,:TeX,false)
+function Util.show(io::IO, p::Cyc)
+  quadratic=get(io,:quadratic,true)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
   rq=""
   if quadratic
     q=Quadratic(p)
     if !isnothing(q)
-      rq=sprint((io,x)->format(io,x;opt...),q;context=io)
+      rq=sprint(show,q;context=io)
     end
   end
 if use_list
@@ -376,7 +373,7 @@ end
   elseif res[1]=='+' res=res[2:end] 
   end
   res=(repl && !TeX) ? TeXstrip(res) : res
-  print(io, (quadratic && rq!="" && length(rq)<length(res)) ? rq : res)
+  print(io, (quadratic && rq!="" && length(rq)<=length(res)) ? rq : res)
 end
 
 function Base.:+(x::Cyc,y::Cyc)
@@ -779,7 +776,9 @@ end
   return Quadratic(a,b,root,den*d)
 end
 
-function Util.format(io::IO,q::Quadratic;repl=false,TeX=false,opt...)
+function Util.show(io::IO,q::Quadratic)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
   rq=string(q.a)
   if q.b!=0 
     if iszero(q.a) rq=""
@@ -791,8 +790,6 @@ function Util.format(io::IO,q::Quadratic;repl=false,TeX=false,opt...)
   if q.den!=1 && rq!="0" rq*="/$(q.den)" end
   print(io,rq)
 end
-
-Base.show(io::IO,q::Quadratic)=format(io,q;repl=get(io,:limit,false))
 
 function Gapjm.root(x::Cyc,n::Number=2)
   r=Root1(x)

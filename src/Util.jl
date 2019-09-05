@@ -11,7 +11,7 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  format, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
+  format, ff, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, partitions, combinations, arrangements,
   partition_tuples, dominates, #combinatorics
@@ -209,6 +209,8 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     if ci[end]!=length(colwidth) print(io,"\n") end
   end
 end
+
+ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
 
 format(io::IO,i::Integer;opt...)=print(io,i)
 format(io::IO,i::Rational;opt...)=print(io,i)

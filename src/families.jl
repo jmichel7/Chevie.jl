@@ -650,11 +650,7 @@ FamiliesClassical=function(sym)
 end
 
 function Base.show(io::IO,f::Family)
-  format(io,f)
-end
-
-function Util.format(io::IO,f::Family,opt=Dict{Symbol,Any}())
-  TeX=get(io,:TeX,false) || get(opt,:TeX,false)
+  TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)!=false
   if haskey(f,:name)

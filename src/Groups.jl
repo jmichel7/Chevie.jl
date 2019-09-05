@@ -201,7 +201,7 @@ Gapjm.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do G
-    if length(G)>1000
+    if length(G)>10000
       println("length(G)=",length(G),": not supposed to do it the hard way")
     end
     cl=orbits(G,collect(G))

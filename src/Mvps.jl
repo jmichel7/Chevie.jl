@@ -35,9 +35,9 @@ Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
 end
 @inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
-Base.show(io::IO, m::Monomial)=format(io,m;repl=get(io,:limit,false))
-
-function Util.format(io::IO,m::Monomial;repl=true,TeX=false,opt...)
+function Base.show(io::IO,m::Monomial)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
   if isone(m) print(io,"1")
   else
     res=""
@@ -152,7 +152,6 @@ macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
 end
 
 Base.show(io::IO, x::Mvp)=show(io,x.d)
-Util.format(io::IO,x::Mvp;opt...)=format(io,x.d;opt...)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(ModuleElt{Monomial,Int}())

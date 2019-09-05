@@ -650,7 +650,7 @@ include("families.jl")
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=repr(x)
-Format(x,opt)=sprint((io,x)->format(io,x;opt...),x)
+Format(x,opt)=sprint((io,x)->ff(io,x;opt...),x)
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))

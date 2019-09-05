@@ -568,7 +568,7 @@ julia> uc.classes
           levi := [ 1, 2, 3 ],
           locsys := [ [ 5, 4 ] ] ) ]|
 
-The  `format` function  for unipotent  classes accepts  all the  options of
+The  `ff` function  for unipotent  classes accepts  all the  options of
 formatTable`,  `CharNames`. Giving the option `mizuno` (resp. `shoji`) uses
 the  names given by  Mizuno (resp. Shoji)  for unipotent classes. Moreover,
 there  is also an option `fourier`  which gives the correspondence tensored
@@ -587,7 +587,7 @@ original paper of Spaltenstein):
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:Esc,6));
 
-julia> format(stdout,uc;repl=true,cols=[1,2,5,6,7],spaltenstein=true,frame=true,mizuno=true,order=false)
+julia> ff(stdout,uc;repl=true,cols=[1,2,5,6,7],spaltenstein=true,frame=true,mizuno=true,order=false)
 UnipotentClasses(coxgroup(:E,6))
      u│   D-R dBu             E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎)/ζ₃ G₂(E₆₍₁₃₅₆₎)/ζ₃²
 ──────┼─────────────────────────────────────────────────────────────────
@@ -808,40 +808,38 @@ function FormatCentralizer(u,opt)
   replace(c,r"^."=>"")
   replace(c,r".*"=>"")
   replace(c,"()"=>"")
+  c
 end
 
 UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
  :order=>true,:springer=>true,:centralizer=>true,:balaCarter=>true))
 
 function Base.show(io::IO,uc::UnipotentClasses)
-  format(io,uc,repl=get(io,:limit,false),deep=get(io,:typeinfo,false)!=false)
-end
-
-function Util.format(io::IO,uc::UnipotentClasses; opt...)
-  TeX=get(opt,:TeX,false)
-  repl=get(opt,:repl,false)
-  deep=get(opt,:deep,false)
-  opt = merge(UnipotentClassesOps[:DisplayOptions],Dict{Symbol,Any}(opt))
+  TeX=get(io,:TeX,false)
+  repl=get(io,:limit,false)
+  deep=get(io,:typeinfo,false)
+  io=IOContext(io,UnipotentClassesOps[:DisplayOptions]...)
 # println("opt=$opt")
+  opt=Dict{Symbol,Any}()
   opt[:row_labels]=name.(uc.classes;opt...)
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
-  if get(opt,:order,true)
-    println(io,Posets.showgraph(uc.orderclasses;opt...))
+  if get(io,:order,true)
+    println(io,Posets.showgraph(uc.orderclasses;io.dict...))
   end
   sp = map(copy, uc.springerseries)
-  if haskey(opt, :fourier)
+  if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
   W = uc.prop[:spets]
   if uc.p!=0 || !any(x->haskey(x.prop,:balacarter),uc.classes)
-     delete!(opt,:balacarter)
+    io=IOContext(io,:balacarter=>false)
   end
   tbl = map(uc.classes)do u
     res= iszero(uc.p) ? [joindigits(u.prop[:dynkin])] : String[]
     push!(res, string(u.dimBu))
-    if opt[:balaCarter]
+    if get(io,:balaCarter,false)
       if haskey(u.prop, :balacarter)
         b=fill('.',coxrank(W))
         for i in u.prop[:balacarter] if i>0 b[i]='2' else b[-i]='0' end end
@@ -850,12 +848,14 @@ function Util.format(io::IO,uc::UnipotentClasses; opt...)
       end
       push!(res, String(b))
     end
-    if opt[:centralizer] push!(res, FormatCentralizer(u, opt)) end
-    if opt[:springer]
+    if get(io,:centralizer,false)
+      push!(res,FormatCentralizer(u,io.dict)) 
+    end
+    if get(io,:springer,false)
       i=findfirst(isequal(u),uc.classes)
       cc(ss)=map(function (i)
-                c1 = CharNames(u.prop[:Au]; opt...)[ss[:locsys][i][2]]
-                c2 = CharNames(ss[:relgroup]; opt...)[i]
+                c1 = CharNames(u.prop[:Au]; io.dict...)[ss[:locsys][i][2]]
+                c2 = CharNames(ss[:relgroup]; io.dict...)[i]
                 (c1=="") ? c2 : c1*":"*c2
            end, findall(y->y[1]==i,ss[:locsys]))
       append!(res, map(ss->join(cc(ss), TeX ? "\\kern 0[:8]em " : " "),sp))
@@ -866,21 +866,20 @@ function Util.format(io::IO,uc::UnipotentClasses; opt...)
   if iszero(uc.p)
     push!(opt[:col_labels], TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
   end
-  push!(opt[:col_labels], TeX ? "\\dim{\\cal B}_u" : "dBu")
-  if opt[:balaCarter]
-   push!(opt[:col_labels], TeX ? "\\hbox{Bala-Carter}" : "B-C")
+    push!(opt[:col_labels], TeX ? "\\dim{\\cal B}_u" : "dBu")
+  if get(io,:balaCarter,false)
+     push!(opt[:col_labels], TeX ? "\\hbox{Bala-Carter}" : "B-C")
   end
-  if opt[:centralizer]
-   push!(opt[:col_labels], TeX ? "C_{\\bf G}(u)" : "C(u)")
+  if get(io,:centralizer,false)
+     push!(opt[:col_labels], TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
-  if opt[:springer]
+  if get(io,:springer,false)
    append!(opt[:col_labels], 
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
           repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
         if !all(x->x==1,ss[:Z])
-          res*=string("/", join(map(q->sprint((io,x)->
-             format(io,x;opt...),q;context=io),ss[:Z]),","))
+          res*=string("/", join(map(q->sprint(show,q;context=io),ss[:Z]),","))
         end
         return res
     end, sp))
@@ -891,7 +890,7 @@ function Util.format(io::IO,uc::UnipotentClasses; opt...)
       opt[:row_labels] = permuted(opt[:row_labels], p)
   end
   opt[:rows_label]="u"
-  format(io,toM(tbl);opt...)
+  format(io,toM(tbl);merge(opt,io.dict)...)
 end
 
 # decompose tensor product of characteres (given as their indices in CharTable)
@@ -1054,7 +1053,7 @@ For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
 ```julia-rep1
-julia> format(stdout,t;repl=true,cycpol=false)
+julia> ff(stdout,t;limit=true,cycpol=false)
 Coefficients of X_φ on Y_ψ for A3
      │4 31 22 211   1111
 ─────┼───────────────────
@@ -1075,7 +1074,7 @@ of the relative Weyl group of the given Springer series):
 julia> uc=UnipotentClasses(coxgroup(:F,4));
 julia> t=ICCTable(uc);
 julia> sh=[13,24,22,18,14,9,11,19];
-julia> format(stdout,t;rows=sh,cols=sh,repl=true)
+julia> ff(stdout,t;rows=sh,cols=sh,limit=true)
 Coefficients of X_φ on Y_ψ for F₄
       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾
 ──────┼─────────────────────────────────────────────
@@ -1159,16 +1158,14 @@ function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
   ICCTable(res)
 end
 
-Base.show(io::IO,t::ICCTable)=format(io,t;repl=get(io,:limit,false))
-
-function Util.format(io::IO,x::ICCTable;opt...)
-  repl=get(opt,:repl,false)
+function Base.show(io::IO,x::ICCTable)
+  repl=get(io,:limit,false)
   if !repl
-   print(io,"ICCTable(");format(io,x[:uc];opt...)
+   print(io,"ICCTable(");show(io,x[:uc])
    print(io,",",x.prop[:series],")")
    return
   end
-  opt=Dict{Symbol,Any}(opt)
+  opt=Dict{Symbol,Any}()
   text="Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$"*
         reflection_name(x[:relgroup],opt)*"\$\n"
   if haskey(opt,:TeX) text*="\\medskip\n\n"
