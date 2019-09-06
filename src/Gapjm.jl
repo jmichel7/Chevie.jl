@@ -124,10 +124,10 @@ include("MatInt.jl")
 @reexport using .MatInt
 include("Chars.jl")
 @reexport using .Chars
+include("HasType.jl")
+@reexport using .HasType
 include("Uch.jl")
 @reexport using .Uch
 include("Ucl.jl")
 @reexport using .Ucl
-include("HasType.jl")
-@reexport using .HasType
 end

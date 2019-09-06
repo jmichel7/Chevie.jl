@@ -262,7 +262,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   end
   TeX=haskey(opt,:TeX) 
   if !TeX
-   if get(opt,:repl,false) n=TeXstrip(n)
+   if get(opt,:limit,false) n=TeXstrip(n)
    else
      n=replace(n,r"\\tilde *"=>"~")
      n=replace(n,"_"=>"")
@@ -297,10 +297,56 @@ UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 # h  is a  linear form  defined by  its value  on the  simple roots  of the
 # reflection subgroup K. Induce it to W by extending by 0 on the orthogonal
 # of K, then conjugate it so it takes >=0 values on the simple roots.
+"""
+`InducedLinearForm(<W>, <K>, h)`
+
+This routine can be used to find the Richardson-Dynkin diagram of the class
+in  the algebraic group `𝐆`  which contains a given  unipotent class of a
+reductive subgroup of maximum rank `𝐒` of `𝐆`.
+
+It  takes a linear  form on the  roots of <K>,  defined by its value on the
+simple  roots (these values  can define a  Dynkin-Richardson diagram); then
+extends  this linear form to the roots of `𝐆` by `0` on the orthogonal of
+the  roots of <K>; and finally conjugates  the resulting form by an element
+of the Weyl group so that it takes positive values on the simple roots.
+
+julia> W=coxgroup(:F,4)
+F₄
+
+julia> H=reflection_subgroup(W,[1,3])
+F₄₍₁₃₎
+
+julia> Ucl.InducedLinearForm(W,H,[2,2])
+4-element Array{Int64,1}:
+ 0
+ 1
+ 0
+ 0
+
+julia> uc=UnipotentClasses(W);
+CHEVIE[F4] has no WeightInfo
+CHEVIE[F4] has no WeightInfo
+
+julia> uc.classes[4].prop
+Dict{Symbol,Any} with 7 entries:
+  :dynkin     => [0, 1, 0, 0]
+  :dimred     => 6
+  :red        => A₁× A₁₍₂₎
+  :Au         => .
+  :balacarter => [1, 3]
+  :dimunip    => 18
+  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),Array{Int64,2}[[1 0; 0 …
+
+julia> uc.classes[4]
+UnipotentClass(A₁+Ã₁)
+
+The  example above shows that the class containing the regular class of the
+Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
+"""
 function InducedLinearForm(W,K,h)
 # print("W=$W K=$K h=$h");
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
-  h=vcat(h,zeros(Int,rank(K)-semisimplerank(K)))
+  h=vcat(h,zeros(Int,rank(W)-semisimplerank(K)))
   h=Int.(inv(Rational.(PermRoot.baseX(K.G)))*h)
   r=parent(W).G.roots[inclusion(W)]
   v=toM(r[1:W.N])*h
@@ -587,7 +633,8 @@ original paper of Spaltenstein):
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:Esc,6));
 
-julia> ff(stdout,uc;repl=true,cols=[1,2,5,6,7],spaltenstein=true,frame=true,mizuno=true,order=false)
+julia> show(IOContext(stdout,:limit=>true,:cols=>[1,2,5,6,7],
+:spaltenstein=>true,:frame=>true,:mizuno=>true,:order=>false),uc)
 UnipotentClasses(coxgroup(:E,6))
      u│   D-R dBu             E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎)/ζ₃ G₂(E₆₍₁₃₅₆₎)/ζ₃²
 ──────┼─────────────────────────────────────────────────────────────────
@@ -811,25 +858,24 @@ function FormatCentralizer(u,opt)
   c
 end
 
-UnipotentClassesOps=Dict(:DisplayOptions=>Dict(
+UnipotentClassesOps=Dict(:DisplayOptions=>Dict{Symbol,Any}(
  :order=>true,:springer=>true,:centralizer=>true,:balaCarter=>true))
 
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)
-  io=IOContext(io,UnipotentClassesOps[:DisplayOptions]...)
+  opt=merge!(copy(UnipotentClassesOps[:DisplayOptions]),io.dict)
 # println("opt=$opt")
-  opt=Dict{Symbol,Any}()
   opt[:row_labels]=name.(uc.classes;opt...)
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
-  if get(io,:order,true)
+  if get(opt,:order,false)
     println(io,Posets.showgraph(uc.orderclasses;io.dict...))
   end
   sp = map(copy, uc.springerseries)
-  if get(io,:fourier,false)
+  if get(opt,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
   W = uc.prop[:spets]
@@ -839,7 +885,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
   tbl = map(uc.classes)do u
     res= iszero(uc.p) ? [joindigits(u.prop[:dynkin])] : String[]
     push!(res, string(u.dimBu))
-    if get(io,:balaCarter,false)
+    if get(opt,:balaCarter,false)
       if haskey(u.prop, :balacarter)
         b=fill('.',coxrank(W))
         for i in u.prop[:balacarter] if i>0 b[i]='2' else b[-i]='0' end end
@@ -848,10 +894,10 @@ function Base.show(io::IO,uc::UnipotentClasses)
       end
       push!(res, String(b))
     end
-    if get(io,:centralizer,false)
-      push!(res,FormatCentralizer(u,io.dict)) 
+    if get(opt,:centralizer,false)
+      push!(res,FormatCentralizer(u,opt)) 
     end
-    if get(io,:springer,false)
+    if get(opt,:springer,false)
       i=findfirst(isequal(u),uc.classes)
       cc(ss)=map(function (i)
                 c1 = CharNames(u.prop[:Au]; io.dict...)[ss[:locsys][i][2]]
@@ -867,13 +913,13 @@ function Base.show(io::IO,uc::UnipotentClasses)
     push!(opt[:col_labels], TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
   end
     push!(opt[:col_labels], TeX ? "\\dim{\\cal B}_u" : "dBu")
-  if get(io,:balaCarter,false)
+  if get(opt,:balaCarter,false)
      push!(opt[:col_labels], TeX ? "\\hbox{Bala-Carter}" : "B-C")
   end
-  if get(io,:centralizer,false)
+  if get(opt,:centralizer,false)
      push!(opt[:col_labels], TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
-  if get(io,:springer,false)
+  if get(opt,:springer,false)
    append!(opt[:col_labels], 
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
@@ -1166,6 +1212,7 @@ function Base.show(io::IO,x::ICCTable)
    return
   end
   opt=Dict{Symbol,Any}()
+  merge!(opt,io.dict)
   text="Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$"*
         reflection_name(x[:relgroup],opt)*"\$\n"
   if haskey(opt,:TeX) text*="\\medskip\n\n"
@@ -1177,7 +1224,7 @@ function Base.show(io::IO,x::ICCTable)
     opt[:cols]=opt[:rows]
   end
   tbl=copy(x[:scalar])
-  if get(opt,:cycpol,true) tbl=map(CycPol,tbl) end
+  if get(io,:cycpol,true) tbl=map(CycPol,tbl) end
   tbl=repr.(tbl,context=:limit=>true)
   col_labels=map(p->name(x[:uc].classes[p[1]];
      :locsys=>p[2],:repl=>true,opt...),x[:locsys])
@@ -1213,30 +1260,6 @@ dimension, so the special class is listed first.
 
 The   example  above  shows  that  the  special  pieces  are  different  in
 characteristic 3.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'InducedLinearForm(<W>, <K>, h)'
-
-This routine can be used to find the Richardson-Dynkin diagram of the class
-in  the algebraic group `𝐆`  which contains a given  unipotent class of a
-reductive subgroup of maximum rank `𝐒` of `𝐆`.
-
-It  takes a linear  form on the  roots of <K>,  defined by its value on the
-simple  roots (these values  can define a  Dynkin-Richardson diagram); then
-extends  this linear form to the roots of `𝐆` by `0` on the orthogonal of
-the  roots of <K>; and finally conjugates  the resulting form by an element
-of the Weyl group so that it takes positive values on the simple roots.
-
-|    gap> W:=CoxeterGroup("F",4);;
-    gap> H:=ReflectionSubgroup(W,[1,3]);;
-    gap> InducedLinearForm(W,H,[2,2]);
-    [ 0, 1, 0, 0 ]
-    gap> uc:=UnipotentClasses(W);;
-    gap> Display(uc.classes[4]);
-    A1+~A1: D-R0100 C=q^18.A1xA1|
-
-The  example above shows that the class containing the regular class of the
-Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %'GreenTable(<uc>,q)'

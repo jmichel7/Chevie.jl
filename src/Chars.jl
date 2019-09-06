@@ -678,7 +678,7 @@ function charinfo(W)::Dict{Symbol,Any}
     res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]
      if all(d->haskey(d,f),p)
-       res[f]=PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
+       res[f]=HasType.PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
       end
     end
     for f in [:b, :B, :a, :A]

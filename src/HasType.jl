@@ -3,7 +3,7 @@ module HasType
 export reflection_name, diagram, UnipotentCharacters, 
   UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  FamilyImprimitive
+  FamilyImprimitive, Family
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -278,7 +278,7 @@ PrintToSring(s,v...)=sprint(show,v...)
 
 function reflection_name(W,opt=Dict())
   r=join(getchev(W,:ReflectionName,merge(opt,Dict(:TeX=>true))),"×")
-  if get(opt,:repl,false) r=TeXstrip(r) end
+  if get(opt,:limit,false) r=TeXstrip(r) end
   r
 end
 

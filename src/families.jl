@@ -670,7 +670,7 @@ function Base.show(io::IO,f::Family)
   t=[sprint.(show,f[:eigenvalues];context=io)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs) 
-    push!(t,f[:signs])
+   push!(t,string.(f[:signs]))
     push!(col_labels,"signs")
   end
   append!(t,toL(map(y->sprint(show,y;context=io),f[:fourierMat])))

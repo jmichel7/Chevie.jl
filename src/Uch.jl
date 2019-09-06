@@ -149,7 +149,7 @@ One  can get  more information  on the  Lusztig Fourier  matrix of  the big
 family by asking
 
 ```julia-repl
-julia> uc.prop[:families][1]
+julia> uc.families[1]
 Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
    label│eigen                                               
 ────────┼─────────────────────────────────────────────────────
@@ -195,18 +195,18 @@ Spetses, as defined in [@BMM14]. An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│              Deg(γ)    Feg Fr(γ)       label
-─────┼──────────────────────────────────────────────
-φ₁‚₀ │                   1      1     1            
-φ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1   1∧-E(3,2)
-φ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1   -1∧E(3,2)
-φ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1    1∧E(3,2)
-φ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1    1∧E(3,2)
-φ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1      1∧E(3)
-φ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1            
-Z₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃² E(3)∧E(3,2)
-Z₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  E(3)∧-E(3)
-G₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1  -E(3,2)∧-1
+    γ│              Deg(γ)    Feg Fr(γ)   label
+─────┼──────────────────────────────────────────
+φ₁‚₀ │                   1      1     1        
+φ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²
+φ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²
+φ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²
+φ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²
+φ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃
+φ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1        
+Z₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²
+Z₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃
+G₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1
 ```
 """
 module Uch
@@ -216,6 +216,7 @@ using Gapjm
 export UnipotentCharacters, FixRelativeType
 
 struct UnipotentCharacters
+  families::Vector{Family}
   prop::Dict{Symbol,Any}
 end
 
@@ -255,7 +256,9 @@ function UnipotentCharacters(t::TypeIrred)
   merge!(uc,params_and_names(uc[:harishChandra]))
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   uc[:group]=t
-  UnipotentCharacters(uc)
+  ff=uc[:families]
+  delete!(uc,:families)
+  UnipotentCharacters(ff,uc)
 end
 
 """
@@ -444,12 +447,11 @@ function UnipotentCharacters(W::Group)
 
   tt=refltype(W)
   if isempty(tt) # UnipotentCharacters(coxgroup())
-    return UnipotentCharacters(Dict( 
+    return UnipotentCharacters([Family("C1",[1])],Dict( 
       :harishChandra=>[
 	Dict(:relativeType=>Dict[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
-      :families => [Family("C1",[1])],
       :charParams => [ [ "", [ 1 ] ] ],
       :TeXCharNames => [ "" ],
       :charSymbols => [ [ "", [ 1 ] ] ],
@@ -462,9 +464,9 @@ function UnipotentCharacters(W::Group)
   simp=map(tt) do t
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
-    uc=UnipotentCharacters(t).prop
+    uc=UnipotentCharacters(t)
     H=reflection_subgroup(W,t[:indices])
-    for s in uc[:harishChandra]
+    for s in uc.prop[:harishChandra]
      s[:levi]=inclusion(H)[s[:levi]]
      s[:relativeType][:indices]=inclusion(H)[s[:relativeType][:indices]]
     end
@@ -473,20 +475,20 @@ function UnipotentCharacters(W::Group)
 
   # "Kronecker product" of records in simp:
   r=simp[1]
-  f=keys(r)
+  f=keys(r.prop)
   res=Dict{Symbol,Any}()
   for a in f
     if a!=:group 
     if length(simp)==1 
-      res[a]=map(x->[x],r[a])
-    elseif all(x->haskey(x,a),simp)
-      res[a]=Cartesian(getindex.(simp,a)...)
+      res[a]=map(x->[x],r.prop[a])
+    elseif all(x->haskey(x.prop,a),simp)
+      res[a]=Cartesian(map(x->x.prop[a],simp)...)
     end
     end
   end
   
   for a in [:TeXCharNames]
-   res[a]=join.(res[a],"\\otimes ")
+    res[a]=join.(res[a],"\\otimes ")
   end
 
   res[:size]=length(res[:TeXCharNames])
@@ -495,30 +497,28 @@ function UnipotentCharacters(W::Group)
     res[a]=CartesianSeries.(res[a])
   end
 
+  # finally the new 'charNumbers' lists
+  tmp=Cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
+
   if length(tt)==1
-    res[:families]=map(res[:families]) do f
-      f=f[1]
-      f[:charNumbers]=vcat.(f[:charNumbers])
-      f
-    end
+    ff=r.families
   else 
-    res[:families]=prod.(res[:families])
+    ff=Family.(prod.(Cartesian(map(x->x.families,simp)...)))
+    for f in ff
+      f[:charNumbers]=map(y->findfirst(isequal(y),tmp),f[:charNumbers])
+    end
   end
   
   for a in ["a", "A"]
     if haskey(res,a) res[a]=sum.(res[a]) end
   end
 
-  # finally the new 'charNumbers' lists
-  tmp=Cartesian(map(a->1:length(a[:TeXCharNames]),simp)...)
-  for a in [ :harishChandra, :families]
-    for s in res[a]
-      s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
-    end
+  for s in res[:harishChandra]
+    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
   end
 
   res[:group]=W
-  UnipotentCharacters(res)
+  UnipotentCharacters(ff,res)
 end
 
 function Base.show(io::IO,uc::UnipotentCharacters)
@@ -557,7 +557,7 @@ function fourierinverse(uc::UnipotentCharacters)
   gets(uc,:fourierinverse)do uc
     l=length(uc)
     i=one(fill(E(1)//1,l,l))
-    for f in uc.prop[:families]
+    for f in uc.families
       i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]'
     end
     i
@@ -573,7 +573,7 @@ end
 function eigen(uc::UnipotentCharacters)
   gets(uc,:eigen)do uc
     eig=fill(E(1),length(uc))
-    for f in uc.prop[:families] eig[f[:charNumbers]]=f[:eigenvalues] end
+    for f in uc.families eig[f[:charNumbers]]=f[:eigenvalues] end
     eig
   end
 end
@@ -581,7 +581,7 @@ end
 function labels(uc::UnipotentCharacters)::Vector{String}
   gets(uc,:labels)do uc
     lab=fill("",length(uc))
-    for f in uc.prop[:families] lab[f[:charNumbers]]=f[:charLabels]
+    for f in uc.families lab[f[:charNumbers]]=f[:charLabels]
     end
     lab
   end

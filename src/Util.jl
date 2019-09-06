@@ -145,6 +145,8 @@ end
 bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end]) 
  "($c)" else c end
 
+ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
+
 """
   format(io, table; options )
 
@@ -209,11 +211,6 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     if ci[end]!=length(colwidth) print(io,"\n") end
   end
 end
-
-ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
-
-format(io::IO,i::Integer;opt...)=print(io,i)
-format(io::IO,i::Rational;opt...)=print(io,i)
 
 function ordinal(n)
   str=repr(n)

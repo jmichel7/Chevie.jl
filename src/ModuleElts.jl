@@ -10,22 +10,20 @@ Here is an example where basis elements are represented by Symbols.
 The first instruction is to use the show method defined below.
 
 ```julia-repl
-julia> Base.show(io::IO,m::ModuleElt)=ff(io,m;showbasis=(io,m)->String(m))
-
 julia> a=ModuleElt(:xy=>1,:yx=>-1)
-xy-yx
+:xy-:yx
 
 julia> a-a
 0
 
 julia> a*99
-99xy-99yx
+99:xy-99:yx
 
 julia> push!(a,:yy=>2)
-xy-yx+2yy
+:xy-:yx+2:yy
 
 julia> a+ModuleElt(:yx=>1)
-xy+2yy
+:xy+2:yy
 
 julia> a[:xy]
 1
@@ -39,12 +37,18 @@ element, removing zero coefficients
 
 ```julia-repl
 julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
-yy+2yx+3xy-yy
+:yy+2:yx+3:xy-:yy
 
 julia> norm!(a)
-3xy+2yx
+3:xy+2:yx
 
 julia> a
+3:xy+2:yx
+```
+
+setting the property showbasis determines how the basis elements are printed.
+```julia-rep1
+julia> show(IOContext(stdout,:showbasis=>(io,s)->String(s)),a)
 3xy+2yx
 ```
 
