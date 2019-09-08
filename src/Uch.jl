@@ -216,6 +216,7 @@ using Gapjm
 export UnipotentCharacters, FixRelativeType
 
 struct UnipotentCharacters
+  harishChandra::Vector{Dict{Symbol,Any}}
   families::Vector{Family}
   prop::Dict{Symbol,Any}
 end
@@ -256,9 +257,11 @@ function UnipotentCharacters(t::TypeIrred)
   merge!(uc,params_and_names(uc[:harishChandra]))
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   uc[:group]=t
-  ff=uc[:families]
+  ff=Family.(uc[:families])
   delete!(uc,:families)
-  UnipotentCharacters(ff,uc)
+  hh=uc[:harishChandra]
+  delete!(uc,:harishChandra)
+  UnipotentCharacters(hh,ff,uc)
 end
 
 """
@@ -422,7 +425,7 @@ B₂ │(-1/2)qΦ₄   0    -1   -,-
 """
 function UnipotentCharacters(W::Group) 
   function CartesianSeries(sers)
-    ser=Dict()
+    ser=Dict{Symbol,Any}()
     ser[:levi]=vcat(getindex.(sers,:levi)...)
     ser[:relativeType]=filter(x->x[:rank]!=0,getindex.(sers,:relativeType))
     if haskey(sers[1],:eigenvalue)
@@ -447,12 +450,11 @@ function UnipotentCharacters(W::Group)
 
   tt=refltype(W)
   if isempty(tt) # UnipotentCharacters(coxgroup())
-    return UnipotentCharacters([Family("C1",[1])],Dict( 
-      :harishChandra=>[
-	Dict(:relativeType=>Dict[], 
+    return UnipotentCharacters([Family("C1",[1])],
+      [Dict(:relativeType=>Dict[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
-      :charParams => [ [ "", [ 1 ] ] ],
+     Dict( :charParams => [ [ "", [ 1 ] ] ],
       :TeXCharNames => [ "" ],
       :charSymbols => [ [ "", [ 1 ] ] ],
       :size=>1,
@@ -466,7 +468,7 @@ function UnipotentCharacters(W::Group)
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
     H=reflection_subgroup(W,t[:indices])
-    for s in uc.prop[:harishChandra]
+    for s in uc.harishChandra
      s[:levi]=inclusion(H)[s[:levi]]
      s[:relativeType][:indices]=inclusion(H)[s[:relativeType][:indices]]
     end
@@ -493,12 +495,17 @@ function UnipotentCharacters(W::Group)
 
   res[:size]=length(res[:TeXCharNames])
   
-  for a in [:harishChandra] 
-    res[a]=CartesianSeries.(res[a])
-  end
-
   # finally the new 'charNumbers' lists
   tmp=Cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
+
+  if length(tt)==1
+    hh=r.harishChandra
+  else 
+    hh=CartesianSeries.(Cartesian(map(x->x.harishChandra,simp)...))
+    for s in hh
+      s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
+    end
+  end
 
   if length(tt)==1
     ff=r.families
@@ -513,12 +520,9 @@ function UnipotentCharacters(W::Group)
     if haskey(res,a) res[a]=sum.(res[a]) end
   end
 
-  for s in res[:harishChandra]
-    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
-  end
 
   res[:group]=W
-  UnipotentCharacters(ff,res)
+  UnipotentCharacters(hh,ff,res)
 end
 
 function Base.show(io::IO,uc::UnipotentCharacters)
@@ -547,7 +551,7 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q)
     fd=fill(zero(q),length(uc))
     f=fakedegrees(Group(uc),q)
     if isa(q,Pol) f=convert.(Pol{Int},f) end
-    fd[uc.prop[:harishChandra][1][:charNumbers]]=f
+    fd[uc.harishChandra[1][:charNumbers]]=f
     fd
   end
 end

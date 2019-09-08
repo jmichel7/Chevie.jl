@@ -37,65 +37,34 @@ Here `r` is a `Root1`, internally a fraction `n//e` with `n<e` representing
 So `CycPol(c,val,v)` represents `c*q^val*prod((q-E(r))^m for (r,m) in v)`.
 
 When   showing,  some  factors  of   the  cyclotomic  polynomial  `Φₙ`  are
-represented.  If `n`  has a  primitive root,  `ϕ′ₙ` is  the product  of the
-`(q-ζ)`  where `ζ` runs over the odd powers of a primitive root of `n`, and
-`ϕ″ₙ`  is the product for the even powers. Some other factors of cyclotomic
-polynomials are:
+represented.  If `n` has a primitive root  `ξ`, `ϕ′ₙ` is the product of the
+`(q-ζ)` where `ζ` runs over the odd powers of `ξ`, and `ϕ″ₙ` is the product
+for the even powers. The function `show_CycPols` gives the complete list of
+recognized factors:
 
-```
-Φ′₈=q²-ζ₄
-Φ″₈=q²+ζ₄
-Φ‴₈=q²-√2q+1
-Φ⁗₈=q²+√2q+1
-Φ⁽⁵⁾₈=q²-√-2q-1
-Φ⁽⁶⁾₈=q²+√-2q-1
-Φ′₁₂=q²-ζ₄q-1
-Φ″₁₂=q²+ζ₄q-1
-Φ‴₁₂=q²+ζ₃²
-Φ⁗₁₂=q²+ζ₃
-Φ⁽⁵⁾₁₂=q²-√3q+1
-Φ⁽⁶⁾₁₂=q²+√3q+1
-Φ′₁₅=q⁴-q(1+√5)(q^2-q+1)/2+1
-Φ″₁₅=q⁴-q(1-√5)(q^2-q+1)/2+1
-Φ‴₁₅=q⁴+ζ₃²q³+ζ₃q²+q+ζ₃²
-Φ⁗₁₅=q⁴+ζ₃q³+ζ₃²q²+q+ζ₃
-Φ⁽⁵⁾₁₅=q²+ζ₃²(1+√5)q/2+ζ₃
-Φ⁽⁶⁾₁₅=q²+ζ₃²(1-√5)q/2+ζ₃
-Φ⁽⁷⁾₁₅=q²+ζ₃(1+√5)q/2+ζ₃
-Φ⁽⁸⁾₁₅=q²+ζ₃(1-√5)q/2+ζ₃
-Φ′₂₀=q⁴-(1+√5)/2q²+1
-Φ″₂₀=q⁴-(1-√5)/2q²+1
-Φ‴₂₀=q⁴+ζ₄q³-q²-ζ₄q+1
-Φ⁗₂₀=q⁴-ζ₄q³-q²+ζ₄q+1
+```julia-rep1
+julia> show_CycPols(24)
+Φ₂₄=q⁸-q⁴+1
 Φ′₂₄=q⁴+ζ₃²
 Φ″₂₄=q⁴+ζ₃
 Φ‴₂₄=q⁴-√2q³+q²-√2q+1
 Φ⁗₂₄=q⁴+√2q³+q²+√2q+1
 Φ⁽⁵⁾₂₄=q⁴-√6q³+3q²-√6q+1
 Φ⁽⁶⁾₂₄=q⁴+√6q³+3q²+√6q+1
-Φ⁽⁷⁾₂₄=q⁴+√-2q³-q²-√-2q+1
-Φ⁽⁸⁾₂₄=q⁴-√-2q³-q²+√-2q+1
-Φ⁽⁹⁾₂₄=q²+ζ₃²√-2q-ζ₃
-Φ⁽¹⁰⁾₂₄=q²-ζ₃²√-2q-ζ₃
-Φ⁽¹¹⁾₂₄=q²+ζ₃√-2q-ζ₃²
-Φ⁽¹²⁾₂₄=q²-ζ₃√-2q-ζ₃²
-Φ′₃₀=q⁴-q(1-√5)(q^2+q+1)/2+1
-Φ″₃₀=q⁴-q(1+√5)(q^2+q+1)/2+1
-Φ‴₃₀=q⁴-ζ₃q³+ζ₃²q²-q+ζ₃
-Φ⁗₃₀=q⁴-ζ₃²q³+ζ₃q²-q+ζ₃²
-Φ⁽⁵⁾₃₀=q²-ζ₃²(1-√5)q/2+ζ₃
-Φ⁽⁶⁾₃₀=q²-ζ₃²(1+√5)q/2+ζ₃
-Φ⁽⁷⁾₃₀=q²-ζ₃(1-√5)q/2+ζ₃²
-Φ⁽⁸⁾₃₀=q²-ζ₃(1+√5)q/2+ζ₃²
-Φ′₄₂=q⁶-ζ₃²q⁵+ζ₃q⁴-q³+ζ₃²q²-ζ₃q+1
-Φ″₄₂=q⁶-ζ₃q⁵+ζ₃²q⁴-q³+ζ₃q²-ζ₃²q+1
+Φ⁽⁷⁾₂₄=q⁴+(√-2)q³-q²+(-√-2)q+1
+Φ⁽⁸⁾₂₄=q⁴+(-√-2)q³-q²+(√-2)q+1
+Φ⁽⁹⁾₂₄=q⁴-ζ₄q²-1
+Φ⁽¹⁰⁾₂₄=q⁴+ζ₄q²-1
+Φ⁽¹¹⁾₂₄=q²+(ζ₂₄+ζ₂₄¹⁹)q-ζ₃
+Φ⁽¹²⁾₂₄=q²+(-ζ₂₄-ζ₂₄¹⁹)q-ζ₃
+Φ⁽¹³⁾₂₄=q²+(ζ₂₄¹¹+ζ₂₄¹⁷)q-ζ₃²
+Φ⁽¹⁴⁾₂₄=q²+(-ζ₂₄¹¹-ζ₂₄¹⁷)q-ζ₃²
 ```
-
 """
 module CycPols
 using Gapjm, Memoize
 
-export CycPol
+export CycPol, show_CycPols
 
 import Primes
 
@@ -159,23 +128,18 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
  12=>[[1,5,7,11],[1,5],[7,11],[1,7],[5,11],[1,11],[5,7]],
  15=>[[1,2,4,7,8,11,13,14],[1,4,11,14],[2,7,8,13],[1,4,7,13],[2,8,11,14],
       [1,4],[7,13],[11,14],[2,8]],
- 16=>[[1,3,5,7,9,11,13,15],[1,7,9,15],[3,5,11,13]],
+ 16=>[[1,3,5,7,9,11,13,15],[1,7,9,15],[3,5,11,13],[1,5,9,13],[3,7,11,15]],
  20=>[[1,3,7,9,11,13,17,19],[1,9,11,19],[3,7,13,17],[1,9,13,17],[3,7,11,19]],
  21=>[[1,2,4,5,8,10,11,13,16,17,19,20],[1,4,10,13,16,19],[2,5,8,11,17,20]],
  24=>[[1,5,7,11,13,17,19,23],[1,7,13,19],[5,11,17,23],[1,7,17,23],[5,11,13,19],
-[1,5,19,23],[7,11,13,17],[1,11,17,19],[5,7,13,23],[7,13],[1,19],[5,23],[11,17]],
+      [1,5,19,23],[7,11,13,17],[1,11,17,19],[5,7,13,23],[1,5,13,17],
+      [7,11,19,23],[7,13],[1,19],[5,23],[11,17]],
  30=>[[1,7,11,13,17,19,23,29],[1,11,19,29],[7,13,17,23],[1,7,13,19],
       [11,17,23,29],[11,29],[17,23],[1,19],[7,13]],
+ 36=>[[1,5,7,11,13,17,19,23,25,29,31,35],[1,7,13,19,25,31],[5,11,17,23,29,35],
+      [7,11,19,23,31,35],[1,5,13,17,25,29]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
 
-function pr()
-  for i in sort(collect(keys(dec_dict)))
-    for j in 2:length(dec_dict[i])
-      p=CycPol(;cond=i,no=j)
-      rshow(p);print("=");rshow(p(Pol(:q)),:quadratic);print("\n");
-    end
-  end
-end
 
 # returns list of subsets of primitive_roots(d) wich have a `name` Φ^i
 function dec(d::Int)
@@ -189,6 +153,14 @@ function dec(d::Int)
     dd
   end
 end
+
+function show_CycPols(d)
+  for i in eachindex(CycPols.dec(d))
+    p=CycPol(;cond=d,no=i)
+    println(IOContext(stdout,:limit=>true),p,"=",p(Pol(:q)))
+  end
+end
+pr()=for d in sort(collect(keys(dec_dict))) show_CycPols(d) end
 
 CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
   

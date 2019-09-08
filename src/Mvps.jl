@@ -1,6 +1,68 @@
+"""
+What   is  implemented  here  is  "Puiseux  polynomials",  that  is  linear
+combinations  of monomials  of the  type `x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ` are
+variables  and `aᵢ` are exponents which  can be arbitrary rational numbers.
+Some  functions  described  below  need  their  argument  to  involve  only
+variables  to integral  powers; we  will refer  to such objects as "Laurent
+polynomials"; some functions require further that variables are raised only
+to positive powers: we refer then to "true polynomials".
+
+`@Mvp x₁,…,xₙ`
+
+declares   that  `xᵢ`are  indeterminates  suitable  to  build  multivariate
+polynomials.
+
+```julia-repl
+julia> @Mvp x,y
+
+julia> (x+y)^3
+x³+3x²y+3xy²+y³
+```
+`Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
+
+```julia-repl
+julia> Pol(:q)
+q
+
+julia> Mvp(q^2+q)
+q²+q
+```
+
+`Mvp(x::Number)`
+
+Returns the  constant multivariate polynomial whose constant term is `x`.
+
+```julia-repl
+julia> degree(Mvp(1))
+0
+```
+
+One can divide an `Mvp` by another when the divison is exact
+(this is equivalent to `ExactDiv`, see below).
+
+```julia-repl
+julia> (x^2-y^2)//(x-y)
+x+y
+```
+
+Only monomials can be raised to a non-integral power; they can be raised
+to  a fractional  power of  denominator  'b' only  if 'GetRoot(x,b)'  is
+defined  where 'x'  is  their  leading coefficient.  For  an 'Mvp'  <m>,
+the  function  'GetRoot(m,n)' is  equivalent  to  'm^(1/n)'. Raising  a
+non-monomial Laurent polynomial  to a negative power  returns a rational
+fraction.
+
+|    gap> (2*x)^(1/2);
+    ER(2)x^(1/2)
+    gap> (evalf(2)*x)^(1/2);
+    1.4142135624x^(1/2)
+    gap> GetRoot(evalf(2)*x,2);
+    1.4142135624x^(1/2)|
+
+"""
 module Mvps
 using Gapjm
-export Mvp, @Mvp, variables
+export Mvp, @Mvp, variables, coefficients
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
@@ -38,7 +100,7 @@ end
 function Base.show(io::IO,m::Monomial)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if isone(m) print(io,"1")
+  if isone(m) print(io,"")
   else
     res=""
     for (v,d) in m.d
@@ -127,7 +189,7 @@ function Gapjm.degree(m::Monomial,var::Symbol)
   return 0
 end
 
-function Gapjm.root(m::Monomial,n::Integer)
+function Gapjm.root(m::Monomial,n::Integer=2)
  if !all(x->iszero(x%n),last.(m.d)) throw(InexactError(:root,Monomial,n)) end
  Monomial((k=>div(v,n) for (k,v) in m.d)...)
 end
@@ -192,6 +254,8 @@ Base.:*(a::Mvp, b::Mvp)=sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m
 Base.:*(a, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a)=a*b
 
+Mvp(p::Pol)=p(Mvp(Pols.var[]))
+
 function Base.inv(x::Mvp)
   if length(x.d)!=1 throw(InexactError(:inv,x)) end
   (m,c)=first(x.d)
@@ -211,11 +275,97 @@ function Base.:^(x::Mvp, p::Int)
   Base.power_by_squaring(x,p)
 end
 
-Gapjm.degree(m::Mvp)=maximum(map(degree,keys(m.d)))
-Pols.valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
+"""
+The `degree` of a monomial is the sum of  the exponent of the variables.
+The `degree` of an `Mvp` is the largest degree of a monomial.
 
+```julia-repl
+julia> a=x^2+x*y
+x²+xy
+
+julia> degree(a)
+2
+```
+
+There  exists also a form of `degree`  taking as second argument a variable
+name, which returns the degree of the polynomial in that variable.
+
+```julia-repl
+julia> degree(a,:y)
+1
+
+julia> degree(a,:x)
+2
+```
+
+"""
+Gapjm.degree(m::Mvp)=maximum(degree.(keys(m.d)))
+Gapjm.degree(m::Mvp,v::Symbol)=maximum(map(x->degree(x,v),keys(m.d)))
+
+"""
+The `valuation` of an `Mvp` is the minimal degree of a monomial.
+
+
+```julia-repl
+julia> a=x^2+x*y
+x²+xy
+
+julia> valuation(a)
+2
+```
+
+There  exists  also  a  form  of  `valuation`  taking  as second argument a
+variable  name,  which  returns  the  valuation  of  the polynomial in that
+variable.
+
+```julia-repl
+julia> valuation(a,:y)
+0
+
+julia> valuation(a,:x)
+1
+```
+
+"""
+Pols.valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
+Pols.valuation(m::Mvp,v::Symbol)=minimum(map(x->degree(x,v),keys(m.d)))
+
+"""
+  `coefficients(p, var)` 
+
+returns as a Dict the list of coefficients of `p` with respect to `var`.
+
+```julia-repl
+julia> p=(x+y+inv(y))^4
+x⁴+4x³y+4x³y⁻¹+6x²y²+12x²+6x²y⁻²+4xy³+12xy+12xy⁻¹+4xy⁻³+y⁴+4y²+6+4y⁻²+y⁻⁴
+
+julia> coefficients(p,:x)
+Dict{Int64,Mvp{Int64}} with 5 entries:
+  0 => y⁴+4y²+6+4y⁻²+y⁻⁴
+  4 => 1
+  2 => 6y²+12+6y⁻²
+  3 => 4y+4y⁻¹
+  1 => 4y³+12y+12y⁻¹+4y⁻³
+
+julia> coefficients(p,:y)
+Dict{Int64,Mvp{Int64}} with 9 entries:
+  0  => x⁴+12x²+6
+  4  => 1
+  -4 => 1
+  -3 => 4x
+  2  => 6x²+4
+  -2 => 6x²+4
+  -1 => 4x³+12x
+  3  => 4x
+  1  => 4x³+12x
+```
+
+The  same caveat is  applicable to 'coefficients'  as to values: the values
+are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
+represented as `Mvp`s, one should use `ScalMvp`.
+"""
 function coefficients(p::Mvp,v::Symbol)
-  if iszero(p) return Dict() end
+  if iszero(p) return Dict{PowType,typeof(p.d)}() end
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d
 #   print("$m=>$c d=$d\n")
@@ -230,6 +380,18 @@ function coefficients(p::Mvp,v::Symbol)
   Dict(dg=>Mvp(c) for (dg,c) in d)
 end
 
+"""
+`variables(p)`
+
+returns the list of variables of the `Mvp` as a sorted list of strings.
+
+```julia-repl
+julia> variables(x+x^4+y)
+2-element Array{Symbol,1}:
+ :x
+ :y
+```
+"""
 variables(p::Mvp)=sort(union(map(c->map(x->x[1],c[1].d),p.d)...))
 
 function scal(p::Mvp{T})where T
@@ -240,6 +402,55 @@ function scal(p::Mvp{T})where T
   return nothing
 end
 
+"""
+Value of an `Mvp`
+
+```julia-repl
+julia> p=-2+7x^5*inv(y)
+7x⁵y⁻¹-2
+
+julia> p(x=2)
+-2+224y⁻¹
+
+julia> p(y=1)
+7x⁵-2
+
+julia> p(x=2,y=1)
+222
+```
+
+One should pay attention to the fact that the last value is not an integer,
+but  a constant `Mvp`  (for consistency). See  the function 'ScalMvp' below
+for how to convert such constants to their base ring.
+
+```julia-repl
+julia> p(x=y)
+7y⁴-2
+
+julia> p(x=y,y=x)
+7x⁴-2
+```
+    gap> Value(p,["x",y,"y",x]);
+    -2+7x^-1y^5|
+
+Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
+'GetRoot'
+
+|    gap> p:=x^(1/2)*y^(1/3);
+    x^(1/2)y^(1/3)
+    gap> Value(p,["x",y]);
+    y^(5/6)
+    gap>  Value(p,["x",2]);
+    ER(2)y^(1/3)
+    gap>  Value(p,["y",2]);
+    Error, : unable to compute 3-th root of 2
+     in
+    GetRoot( values[i], d[i] ) called from
+    f.operations.Value( f, x ) called from
+    Value( p, [ "y", 2 ] ) called from
+    main loop
+    brk>|
+"""
 function (p::Mvp)(;arg...)
   res=p
   for s in keys(arg)
@@ -257,7 +468,7 @@ function (p::Mvp)(;arg...)
   res
 end
 
-function Gapjm.root(p::Mvp,n::Integer)
+function Gapjm.root(p::Mvp,n::Integer=2)
   if length(p.d)>1 throw(InexactError(:root,n,p)) end
   p=p.d.d[1]
   Mvp(root(first(p),n)=>root(last(p),n))
@@ -295,7 +506,6 @@ function ExactDiv(p::Mvp,q::Mvp)
   end
   res
 end
-
 
 function Base.gcd(a::Mvp,b::Mvp)
   if any(x->length(x.d)==1,[a,b]) 
@@ -353,4 +563,126 @@ function Base.gcd(a::Mvp,b::Mvp)
 # if not IsMvp(MvpGcd(cont[1],cont[2])) Error() end
   MvpGcd(cont[1],cont[2])* ValuePol(reseuc,Mvp(v))
 end
+
+"""
+The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
+to  the variable given by the string 'v'; if 'v' is not given, with respect
+to the first variable in alphabetical order.
+
+|    gap>  p:=7*x^5*y^-1-2;
+    -2+7x^5y^-1
+    gap> Derivative(p,"x");
+    35x^4y^-1
+    gap> Derivative(p,"y");
+    -7x^5y^-2
+    gap> Derivative(p);
+    35x^4y^-1
+    gap>  p:=x^(1/2)*y^(1/3);
+    x^(1/2)y^(1/3)
+    gap>  Derivative(p,"x");
+    1/2x^(-1/2)y^(1/3)
+    gap>  Derivative(p,"y");
+    1/3x^(1/2)y^(-2/3)
+    gap>  Derivative(p,"z");
+    0|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Finally we  mention the  functions 'ComplexConjugate' and  'evalf' which
+are defined using  for coefficients the 'Complex'  and 'Decimal' numbers
+of the CHEVIE package.
+
+|    gap> p:=E(3)*x+E(5);
+    E5+E3x
+    gap> evalf(p);
+    0.3090169944+0.9510565163I+(-0.5+0.8660254038I)x
+    gap> p:=E(3)*x+E(5);          
+    E5+E3x
+    gap> ComplexConjugate(p);
+    E5^4+E3^2x
+    gap> evalf(p);
+    0.3090169944+0.9510565163I+(-0.5+0.8660254038I)x
+    gap> ComplexConjugate(last);
+    0.3090169944-0.9510565163I+(-0.5-0.8660254038I)x|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'ScalMvp( <p> )'
+
+If  <p> is  an  'Mvp' then  if  <p>  is a  scalar,  return that  scalar,
+otherwise return  'false'. Or  if <p>  is a  list, then  apply 'ScalMvp'
+recursively to  it (but return false  if it contains any  'Mvp' which is
+not a scalar). Else assume <p> is already a scalar and thus return <p>.
+
+|    gap> v:=[Mvp("x"),Mvp("y")];        
+    [ x, y ]
+    gap> ScalMvp(v);
+    false
+    gap> w:=List(v,p->Value(p,["x",2,"y",3]));
+    [ 2, 3 ]
+    gap> Gcd(w);
+    Error, sorry, the elements of <arg> lie in no common ring domain in
+    Domain( arg[1] ) called from
+    DefaultRing( ns ) called from
+    Gcd( w ) called from
+    main loop
+    brk> 
+    gap> Gcd(ScalMvp(w));
+    1|
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'LaurentDenominator( <p1>, <p2>, ... )'
+
+Returns the unique monomial 'm' of minimal degree such that for all the
+Laurent polynomial arguments <p1>, <p2>, etc... the product `m* p_i` is
+a true polynomial.
+
+|    gap> LaurentDenominator(x^-1,y^-2+x^4);
+    xy^2|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'OnPolynomials( <m>, <p> [,<vars>] )'
+
+Implements  the action of  a matrix on  'Mvp's. <vars> should  be a list of
+strings representing variables. If `v`'=List(vars,Mvp)', the polynomial `p`
+is  changed  by  replacing  in  it  `v_i`  by `(v×m)_i`. If <vars> is
+omitted, it is taken to be 'Variables(p)'.
+
+|    gap> OnPolynomials([[1,2],[3,1]],x+y);    
+    3x+4y|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'FactorizeQuadraticForm( <p>)'
+
+<p>  should be an 'Mvp' of degree  2 which represents a quadratic form. The
+function  returns a list of two linear forms of which <p> is the product if
+such  forms exist, otherwise it returns 'false' (it returns [Mvp(1),<p>] if
+<p> is of degree 1).
+
+|    gap> FactorizeQuadraticForm(x^2-y^2+x+3*y-2);
+    [ -1+x+y, 2+x-y ]
+    gap> FactorizeQuadraticForm(x^2+x+1);        
+    [ -E3+x, -E3^2+x ]
+    gap> FactorizeQuadraticForm(x*y+1);  
+    false|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The next functions have been provided by Gwenaëlle Genet
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'MvpGcd( <p1>, <p2>, ...)'
+
+Returns  the Gcd  of the  'Mvp' arguments.  The arguments  must be  true
+polynomials.
+
+|    gap> MvpGcd(x^2-y^2,(x+y)^2);
+    x+y|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+'MvpLcm( <p1>, <p2>, ...)'
+
+Returns  the Lcm  of the  'Mvp' arguments.  The arguments  must be  true
+polynomials.
+
+|    gap> MvpLcm(x^2-y^2,(x+y)^2);
+    xy^2-x^2y-x^3+y^3|
+
+"""
 end

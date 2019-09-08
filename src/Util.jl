@@ -294,7 +294,7 @@ function Gapjm.root(x::Integer,n::Number=2)
   if n==1 return x
   elseif n==2
     res=ER(x)
-    println("root($x,$n)=$res")
+    if HasType.CHEVIE[:info]  println("root($x,$n)=$res") end
     return res
   else
     error("root($x,$n) not implemented")

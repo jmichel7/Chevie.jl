@@ -3,11 +3,10 @@ A  `ModuleElt` represents an element of a  module. It is essentially a list
 of pairs `b=>c` where `b` is a basis element and `c` its coefficient.
 
 The  constructors  take  as  argument  a  list  of  pairs,  or several pair
-arguments,  or a generator of pairs (these pairs should be sorted by key in
-the second implementation).
+arguments,  or a generator of pairs. We provide two implementations, one by
+dicts and one by sorting pairs by key.
 
 Here is an example where basis elements are represented by Symbols.
-The first instruction is to use the show method defined below.
 
 ```julia-repl
 julia> a=ModuleElt(:xy=>1,:yx=>-1)
@@ -214,6 +213,7 @@ function Base.show(io::IO,m::ModuleElt)
     res*=showbasis(io,k)
     if start start=false end
   end
+  if res=="" res="1" end
   print(io,res)
 end
 #--------------------------------------------------------------------------

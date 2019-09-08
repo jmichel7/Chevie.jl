@@ -25,10 +25,13 @@ julia> degree(p)
 julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
 9//4
 
+julia> p[0], p[1], p[-1] # indexing gives the coefficients
+(1, 2, 0)
+
 julia> divrem(q^3+1,q+2) # changes coefficients to field elements
 (1.0q²-2.0q+4.0, -7.0)
 
-julia> divrem1(q^3+1,q+2) # keeps the ring, but needs second argument unitary
+julia> divrem1(q^3+1,q+2) # keeps the ring, but needs leading coeff divides
 (q²-2q+4, -7)
 
 julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
@@ -36,7 +39,16 @@ q⁸-q⁴+1
 
 ```
 
-see also the individual documentation of gcd.
+The dictionary from GAP3 is as follows:
+
+    Coefficient(p,i)             →    p[i]
+    Value(p,x)                   →    p(x)
+    Degree(p)                    →    degree(p)
+    Valuation(p)                 →    valuation(p)
+    LeadingCoefficient(p)        →    p[degree(p)]
+    CyclotomicPolynomial(R,i)    →    cyclotomic_polynomial(i)
+
+see also the individual documentation of divrem, divrem1, gcd.
 """
 module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
@@ -54,6 +66,9 @@ struct Pol{T}
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
+
+Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ? 
+    p.c[i-p.v+1] : zero(T)
 
 function Polstrip(v::AbstractVector,val=0)
   b=findfirst(x->!iszero(x),v)
@@ -78,11 +93,11 @@ Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
 
 function Base.convert(::Type{T},p::Pol) where T<:Number
   if iszero(p) return T(0) end
-  if !isone(length(p.c)) throw(InexactError(:convert,T,p)) end
+  if !isone(length(p.c)) || !iszero(p.v) throw(InexactError(:convert,T,p)) end
   convert(T,p.c[1]) 
 end
 
-Base.Int(p::Pol)=convert(Int,p)
+(::Type{T})(p::Pol) where T<:Number=convert(T,p)
 
 Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
@@ -94,6 +109,7 @@ valuation(p::Pol)=p.v
 
 (p::Pol)(x)=horner(x,p.c)*x^p.v
 
+# efficient p↦ qˢ p
 shift(p::Pol,s)=Pol(p.c,p.v+s)
 
 # degree ≥0
@@ -109,6 +125,7 @@ function negative_part(p::Pol)
   Pol(p.c[1:1-p.v],p.v)
 end
 
+# q↦ q⁻¹ on p
 bar(p::Pol)=Pol(reverse(p.c),-degree(p))
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
@@ -197,10 +214,11 @@ Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
 """
 computes (p,q) such that a=p*b+q
 """
-function Base.divrem(a::Pol, b::Pol)
+function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
-  d=inv(b.c[end])
-  T=typeof(a.c[end]*d)
+  T=promote_type(T1,T2)
+  d=inv(T(b.c[end]))
+  T=promote_type(T1,T2,typeof(d))
   v=T.(a.c)
   res=T[]
   for i=length(a.c):-1:length(b.c)
@@ -216,21 +234,22 @@ end
 Base.div(a::Pol, b::Pol)=divrem1(a,b)[1]
 
 """
-divrem when b unitary: does not change type
+divrem when b divides in ring: does not change type
 """
 function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
+  if T1<:Cyc || T1<:Rational return divrem(a,b) end
   d=b.c[end]
-  if d^2!=1 throw(InexactError) end
   T=promote_type(T1,T2)
   v=T.(a.c)
   res=T[]
   for i=length(a.c):-1:length(b.c)
-    if iszero(v[i]) c=zero(d)
-    else c=v[i]*d
-         v[i-length(b.c)+1:i] .-= c .* b.c
+    if iszero(v[i]) pushfirst!(res,0)
+    else r=divrem(v[i],d)
+      if !iszero(r[2]) throw(InexactError) end
+      v[i-length(b.c)+1:i] .-= r[1] .* b.c
+      pushfirst!(res,r[1])
     end
-    pushfirst!(res,convert(T,c))
   end
   Pol(res,a.v-b.v),Polstrip(v,a.v)
 end
@@ -241,8 +260,8 @@ function Base.://(p::Pol,q::Pol)
   elseif q.c==[-1] return shift(-p,-q.v)
   end
   r=divrem1(p,q)
-  if r[2]==1 return r[1] end
-  error("division $p//$q not implemented")
+  if iszero(r[2]) return r[1] end
+  error("r=$r division $p//$q not implemented")
 end
 
 Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)

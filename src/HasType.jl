@@ -10,10 +10,12 @@ using ..Gapjm
 CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
                            :AdjustHeckeCharTable=>(x,y)->x,
         :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
+CHEVIE[:CheckIndexChars]=false
+CHEVIE[:info]=false
 
 # extensions to get closer to GAP semantics
-Base.:*(a::Array,b::Pol)=a .* Ref(b)
-Base.:*(a::Pol,b::Array)=Ref(a) .* b
+Base.:*(a::Array,b::Pol)=a .* b
+Base.:*(a::Pol,b::Array)=a .* b
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
@@ -38,7 +40,7 @@ Base.copy(x::Char)=x
 
 function chevieget(t::Symbol,w::Symbol)
   if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
-  println("CHEVIE[$t] has no $w")
+  if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
 end
 
 chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
@@ -379,9 +381,10 @@ function DiagonalMat(v...)
 end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
+Difference(a,b)=sort(setdiff(a,b))
 DivisorsInt=divisors
 Dominates=dominates
-Drop(a::Vector,i::Int)=deleteat!(copy(a),i)
+Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
@@ -553,7 +556,7 @@ function VcycSchurElement(arg...)
   else
       para = copy(arg[1])
   end
-  monomial=mon->prod(map(^,para,mon[1:n]))
+  monomial(mon)=prod(map(^,para,Int.(mon[1:n])))
   r = arg[2]
   if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end

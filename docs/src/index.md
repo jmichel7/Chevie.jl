@@ -54,6 +54,15 @@ divrem
 divrem1
 gcd
 ```
+# Mvps.jl Documentation
+```@docs
+Mvps
+variables
+coefficients
+valuation
+degree
+Mvp(;arg...)
+```
 # CoxGroups.jl Documentation
 ```@docs
 CoxGroups
@@ -75,6 +84,7 @@ rootdatum
 ```
 # PermRoot.jl Documentation
 ```@docs
+PermRoot
 reflection
 ```
 # Hecke.jl Documentation
@@ -144,7 +154,15 @@ phi
 primitiveroot
 echelon!
 ```
+# ModuleElts.jl Documentation
+```@docs
+ModuleElts
+```
 # Cycpols.jl Documentation
 ```@docs
 CycPols
+```
+# Posets.jl Documentation
+```@docs
+Posets
 ```
