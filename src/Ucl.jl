@@ -1099,7 +1099,7 @@ For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
 ```julia-rep1
-julia> ff(stdout,t;limit=true,cycpol=false)
+julia> show(IOContext(stdout,:limit=>true,:cycpol=>false),t)
 Coefficients of X_φ on Y_ψ for A3
      │4 31 22 211   1111
 ─────┼───────────────────
@@ -1120,7 +1120,7 @@ of the relative Weyl group of the given Springer series):
 julia> uc=UnipotentClasses(coxgroup(:F,4));
 julia> t=ICCTable(uc);
 julia> sh=[13,24,22,18,14,9,11,19];
-julia> ff(stdout,t;rows=sh,cols=sh,limit=true)
+julia> show(IOContext(stdout,:rows=>sh,:cols=>sh,:limit=>true),t);
 Coefficients of X_φ on Y_ψ for F₄
       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾
 ──────┼─────────────────────────────────────────────

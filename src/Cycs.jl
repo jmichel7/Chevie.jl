@@ -154,6 +154,20 @@ function zumbroich_basis(n::Int)::Vector{Int}
   end
 end
 
+function Gapjm.coefficients(c::Cyc{T})where T
+  res=zeros(T,conductor(c))
+if use_list
+  for (p,i) in enumerate(zumbroich_basis(length(res)))
+    if iszero(i) res[end]=c.d[v] else res[i]=c.d[v] end
+  end
+else
+  for (i,v) in c.d.d 
+     if iszero(i) res[end]=v else res[i]=v end
+  end
+end
+  res
+end
+  
 #=
   Elist(n,i)  expresses ζ_n^i  in zumbroich_basis(n):  it is  a sum of some
   ζ_n^j  with coefficients all 1 or all  -1. The result is a Pair sgn=>inds
@@ -330,6 +344,12 @@ end
    return b
 end
 
+function Base.show(io::IO, ::MIME"text/html", a::Cyc)
+  print(io, "\$")
+  show(IOContext(io,:TeX=>true),a)
+  print(io, "\$")
+end
+
 function Util.show(io::IO, p::Cyc)
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
@@ -354,8 +374,12 @@ end
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
-      if repl || TeX
+      if repl 
         t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
+        r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
+        if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
+      elseif TeX
+        t= v//den==1 ? "" : v//den==-1 ? "-" : isone(den) ? string(v) : "\\frac{$v}{$den}"
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
         if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
       else
@@ -366,7 +390,7 @@ end
       t*=r
     end
     if t[1]!='-' t="+"*t end
-    if !isone(den) t*="/$den" end
+    if !isone(den) && !TeX t*=repl ? "/$den" : "//$den" end
     t
   end)
   if res=="" res="0"

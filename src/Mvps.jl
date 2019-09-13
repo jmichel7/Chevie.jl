@@ -253,6 +253,7 @@ Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
 Base.:*(a::Mvp, b::Mvp)=sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
 Base.:*(a, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a)=a*b
+Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
 
 Mvp(p::Pol)=p(Mvp(Pols.var[]))
 
@@ -331,7 +332,7 @@ Pols.valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
 Pols.valuation(m::Mvp,v::Symbol)=minimum(map(x->degree(x,v),keys(m.d)))
 
 """
-  `coefficients(p, var)` 
+  `coefficients(p::Mvp, var::Symbol)` 
 
 returns as a Dict the list of coefficients of `p` with respect to `var`.
 
@@ -364,7 +365,7 @@ The  same caveat is  applicable to 'coefficients'  as to values: the values
 are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
 represented as `Mvp`s, one should use `ScalMvp`.
 """
-function coefficients(p::Mvp,v::Symbol)
+function Gapjm.coefficients(p::Mvp,v::Symbol)
   if iszero(p) return Dict{PowType,typeof(p.d)}() end
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d

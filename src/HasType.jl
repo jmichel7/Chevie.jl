@@ -3,7 +3,8 @@ module HasType
 export reflection_name, diagram, UnipotentCharacters, 
   UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  FamilyImprimitive, Family
+  FamilyImprimitive, Family,
+  combinations, arrangements, partitions, partition_tuples, exterior_power
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -23,6 +24,7 @@ Base.:-(a::AbstractVector,b::Number)=a .- b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:+(a::AbstractArray,b::Number)=a .+ b
 Base.:+(a::AbstractArray,b::Pol)=a .+ Ref(b)
+Base.:/(a::AbstractArray,b::Pol)=a ./ Ref(b)
 #Base.:*(a::Mvp, b::Array)=Ref(a).*b
 #include("mvp.jl")
 #Base.:*(b::Array,a::Mvp)=b.*Ref(a)
@@ -30,6 +32,7 @@ Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
 Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*E(1))*toM(m)*toM(n))
+Base.inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
 Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
 Base.isless(a::Array,b::Number)=true
@@ -123,7 +126,13 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-braid_relations(W)=impl1(getchev(W,:BraidRelations))
+CoxGroups.braid_relations(t::TypeIrred)=getchev(t,:BraidRelations)
+
+function CoxGroups.braid_relations(W)
+  vcat(map(refltype(W)) do t
+       map(x->map(y->t[:indices][y],x),braid_relations(t))
+    end...)
+end
 
 function codegrees(W)
   vcat(map(refltype(W)) do t
@@ -287,9 +296,7 @@ end
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
-Append(a::Vector,b::AbstractVector)=vcat(a,b)
-Append(a::String,b::String)=a*b
-Append(a::String,b::Vector{Char})=a*String(b)
+include("gap3support.jl")
 
 function Collected(v)
   d=groupby(v,v)
@@ -315,27 +322,6 @@ end
 
 pad(s::String)=s
 
-function Position(a::Vector,b)
-  x=findfirst(isequal(b),a)
-  isnothing(x) ? false : x
-end
-
-function Position(a::String,b::String)
-  x=findfirst(b,a)
-  isnothing(x) ? false : x.start
-end
-
-function Position(a::String,b::Char)
-  x=findfirst(isequal(b),a)
-  isnothing(x) ? false : x
-end
-
-function PositionProperty(a::Vector,b::Function)
-  r=findfirst(b,a)
-  if isnothing(r) return false end
-  r
-end
-
 function Replace(s,p...)
 # print("Replace s=$s p=$p")
   for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
@@ -357,19 +343,10 @@ function Replace(s,p...)
   s
 end
 
-AbsInt=abs
-ApplyFunc(f,x)=f(x...)
-Arrangements=arrangements
+ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
 BetaSet=βset
-Binomial=binomial
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
-Concatenation(a::String...)=prod(a)
-Concatenation(a::AbstractVector{<:AbstractVector})=vcat(collect.(a)...)
-Concatenation(a::Vector,b::Tuple)=vcat(a,collect(b))
-Concatenation(b...)=vcat(b...)
-Combinations=combinations
-Copy=deepcopy
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
 function DiagonalMat(v...)
@@ -380,45 +357,41 @@ function DiagonalMat(v...)
   R
 end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
-DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
-Difference(a,b)=sort(setdiff(a,b))
 DivisorsInt=divisors
 Dominates=dominates
 Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
 EltWord(W,x)=W(x...)
+
+function det(A)
+  if size(A,1)==1 return A[1,1]
+  elseif size(A,1)==2 return A[1,1]*A[2,2]-A[1,2]*A[2,1]
+  end
+  sum(i->det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
+end
+
+function exterior_power(A,m)
+  basis=combinations(1:size(A,1),m)
+  [det(A[i,j]) for i in basis, j in basis]
+end 
+
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
-Filtered(l,f)=isempty(l) ? l : filter(f,l)
-First(a,b)=a[findfirst(b,a)]
-Flat(v)=collect(Iterators.flatten(v))
-ForAll(l,f)=all(f,l)
 FullSymbol=fullsymbol
 Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
 HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
-IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
-NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 function Ignore() end
 InfoChevie2=print
 IntListToString=joindigits
-IsList(l)=l isa Vector
-IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
-IsString(l)=l isa String
 Join(x,y)=join(x,y)
 Join(x)=join(x,",")
-Lcm(a...)=Lcm(collect(a))
-Lcm(a::Vector)=lcm(Int.(a))
 LowestPowerFakeDegreeSymbol=valuation_feg_symbol
 LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
 MatXPerm=matX
-Minimum(v::AbstractVector)=minimum(v)
-Minimum(a::Number,x...)=min(a,x...)
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=Permuted(map(x->Permuted(x,b),a),b)
 OrderPerm=order
 PartBeta=partβ
-Partitions=partitions
-PartitionTuples=partition_tuples
 
 function PartitionTupleToString(n,a=Dict())
   if n[end] isa Vector return join(map(join,n),".") end
@@ -431,8 +404,6 @@ end
 PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
 Permuted(a,b)=[a[i^b] for i in eachindex(a)]
 PrimeResidues=prime_residues
-Product(v)=isempty(v) ? 1 : prod(v)
-Product(v,f)=isempty(v) ? 1 : prod(f,v)
 Rank=rank
 RankSymbol=ranksymbol
 RecFields=keys
@@ -443,15 +414,11 @@ Rotations(a)=circshift.(Ref(a),0:length(a)-1)
 gapSet(v)=unique(sort(v))
 SemisimpleRank(W)=semisimplerank(W)
 ShiftBeta=shiftβ
-SignInt=sign
-Sort=sort!
 SortBy(x,f)=sort!(x,by=f)
 SPrint=string
 StringSymbol=stringsymbol
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
 Sublist(a::Vector, b::AbstractVector)=a[b]
-Sum(v::AbstractVector)=sum(v)
-Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
 SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 function TeXBracket(s)
@@ -653,15 +620,16 @@ include("families.jl")
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=repr(x)
+ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
 Format(x,opt)=sprint((io,x)->ff(io,x;opt...),x)
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))
 ComplexConjugate(v)=v
-GetRoot(x::Cyc,n::Number=2,msg::String="")=root(x,n)
-GetRoot(x::Integer,n::Number=2,msg::String="")=root(x,n)
-GetRoot(x::Pol,n::Number=2,msg::String="")=root(x,n)
-function GetRoot(x,n::Number=2,msg::String="")
+GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
+GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
+GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)
+function GetRoot(x,n::Number=2,msg...)
   error("GetRoot($x,$n) not implemented")
 end
 

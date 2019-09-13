@@ -11,11 +11,10 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  format, ff, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
+  format, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
-  conjugate_partition, horner, partitions, combinations, arrangements,
-  partition_tuples, dominates, #combinatorics
-  echelon, exterior_power  # linear algebra
+  conjugate_partition, horner, dominates, #combinatorics
+  echelon  # linear algebra
 
 # not exported: nullspace, to avoid conflict with LinearAlgebra
 
@@ -145,8 +144,6 @@ end
 bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end]) 
  "($c)" else c end
 
-ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
-
 """
   format(io, table; options )
 
@@ -168,19 +165,25 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
   rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
   t=t[rows,cols]
   if eltype(t)!=String t=sprint.(show,t; context=io) end
+  TeX=get(io,:TeX,false)
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
   if !isnothing(col_labels)
     col_labels=string.(col_labels[cols])
     colwidth=map(max,colwidth,textwidth.(col_labels))
-    col_labels=map(lpad,col_labels,colwidth)
+    if !TeX col_labels=map(lpad,col_labels,colwidth) end
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
-  rows_label=lpad(rows_label,labwidth)
-  row_labels=rpad.(row_labels,labwidth)
+  if !TeX
+    rows_label=lpad(rows_label,labwidth)
+    row_labels=rpad.(row_labels,labwidth)
+  end
   function hline(ci)
+    if TeX println(io,"\\hline")
+    else
     print(io,"\u2500"^labwidth,"\u253C")
     print(io,"\u2500"^sum(colwidth[ci].+1),"\n")
+    end
   end
   function cut(l,max) # cut Integer list l in parts of sum<max
     res=Int[];len=0;n=0
@@ -195,20 +198,31 @@ function format(io::IO,t::Matrix; row_labels=axes(t,1),
     push!(res,n)
   end
   if isnothing(column_repartition)
-     column_repartition=cut(1 .+colwidth,displaysize(io)[2]-labwidth-1)
+     if TeX column_repartition=[length(colwidth)]
+     else column_repartition=cut(1 .+colwidth,displaysize(io)[2]-labwidth-1)
+     end
   end
   ci=[0]
   for k in column_repartition
     ci=ci[end].+(1:k)
     if !isnothing(col_labels)
-      print(io,rows_label,"\u2502",join(col_labels[ci]," "),"\n")
+      if TeX
+        println(io,"\\begin{array}{c|","c"^length(ci),"}")
+        println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
+      else println(io,rows_label,"\u2502",join(col_labels[ci]," "))
+      end
       if 0 in separators hline(ci) end
     end
     for l in axes(t,1)
-      print(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],colwidth[ci])," "),"\n")
+      if TeX
+        println(io,row_labels[l],"&",join(t[l,ci],"&"),"\\\\")
+      else
+        println(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],colwidth[ci])," "))
+      end
       if l in separators hline(ci) end
     end
     if ci[end]!=length(colwidth) print(io,"\n") end
+    if TeX println(io,"\\end{array}") end
   end
 end
 
@@ -291,11 +305,12 @@ function gcd_repr(x,y)
 end
 
 function Gapjm.root(x::Integer,n::Number=2)
-  if n==1 return x
+  if n==1 || x==1 return x
   elseif n==2
     res=ER(x)
     if HasType.CHEVIE[:info]  println("root($x,$n)=$res") end
     return res
+  elseif x==-1 && n%2==1 return x
   else
     error("root($x,$n) not implemented")
   end
@@ -338,102 +353,6 @@ function horner(x,p::Vector)
   end
   value
 end
-
-# partitions of n of first (greatest) part <=m
-function partitions_less(n,m)
-  if m==1 return [fill(1,n)] end
-  if iszero(n) return [Int[]] end
-  res=Vector{Int}[]
-  for i in 1:min(m,n)
-    append!(res,map(x->vcat([i],x),partitions_less(n-i,i)))
-  end
-  res
-end
-
-partitions(n)=partitions_less(n,n)
-
-if false
-function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
-  if r==1 return iszero(n) ? [[Int[]]] : map(x->[x],partitions(n)) end
-  res=Vector{Vector{Int}}[]
-  for i in  n:-1:1
-    for p1 in partitions(i), p2 in partition_tuples(n-i,r-1)
-      push!(res,vcat([p1],p2))
-    end 
-  end
-  for p2 in partition_tuples(n,r-1)
-    push!(res,vcat([Int[]],p2))
-  end 
-  res
-end
-else # bas implementation but which has same order as GAP3
-function partition_tuples(n, r)
-   if n==0 return [fill(Int[],r)] end
-   empty=(tup=[Int[] for i in 1:r], pos=fill(1,n-1))
-   pm=[typeof(empty)[] for i in 1:n-1]
-   for m in 1:div(n,2)
-      for i in 1:r
-         t1=map(copy,empty)
-         t1.tup[i]=[m]
-         t1.pos[m]=i
-         push!(pm[m],t1)
-      end
-      for k in m+1:n-m
-         for t in pm[k-m]
-            for i in t.pos[m]:r
-               t1=map(copy,t)
-               t1.tup[i]=vcat([m],t1.tup[i])
-               t1.pos[m]= i
-               push!(pm[k], t1)
-            end
-         end
-      end
-   end
-   res= Vector{Vector{Int}}[]
-   for k in 1:n-1
-      for t in pm[n-k]
-         for i in t.pos[k]:r
-            s=copy(t.tup)
-            s[i]=vcat([k],s[i])
-            push!(res,s)
-         end
-      end
-   end
-   for i in 1:r
-      s=copy(empty.tup)
-      s[i]=[n]
-      push!(res,s)
-   end
-   res
-end
-end
-
-function combinations_sorted(mset::AbstractVector,k)
-  if iszero(k) return [eltype(mset)[]] end
-  res=Vector{eltype(mset)}[]
-  for (i,e) in enumerate(mset)
-    append!(res,map(x->vcat([e],x),combinations_sorted(mset[i+1:end],k-1)))
-  end
-  res
-end 
-
-combinations(mset,k)=combinations_sorted(sort(mset),k)
-combinations(mset)=isempty(mset) ? [Int[]] : union(combinations.(Ref(mset),0:length(mset)))
-
-function ArrangementsK(mset,blist,k)
-  if iszero(k) return [eltype(mset)[]] end
-  combs=Vector{eltype(mset)}[]
-  for i in eachindex(mset)
-    if blist[i] && (i==length(mset) || mset[i+1]!=mset[i] || !blist[i+1])
-      blist1=copy(blist)
-      blist1[i]=false
-      append!(combs,pushfirst!.(ArrangementsK(mset,blist1,k-1),Ref(mset[i])))
-    end
-  end
-  combs
-end 
-
-arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 
 dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 #----------- Linear algebra over Rationals/integers------------------------
@@ -490,17 +409,5 @@ function nullspace(m::Matrix)
   for i in nn zz[i,i]=-one(eltype(m)) end
   zz[:,nn]
 end
-
-function det(A)
-  if size(A,1)==1 return A[1,1]
-  elseif size(A,1)==2 return A[1,1]*A[2,2]-A[1,2]*A[2,1]
-  end
-  sum(i->det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
-end
-
-function exterior_power(A,m)
-  basis=combinations(1:size(A,1),m)
-  [det(A[i,j]) for i in basis, j in basis]
-end 
 
 end

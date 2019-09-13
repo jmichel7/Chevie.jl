@@ -525,10 +525,16 @@ function UnipotentCharacters(W::Group)
   UnipotentCharacters(hh,ff,res)
 end
 
+function Base.show(io::IO, ::MIME"text/html", uc::UnipotentCharacters)
+  print(io, "\$")
+  show(IOContext(io,:TeX=>true),uc)
+  print(io, "\$")
+end
+
 function Base.show(io::IO,uc::UnipotentCharacters)
-  print(io,"UnipotentCharacters(",uc.prop[:group],")")
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
+  if !TeX print(io,"UnipotentCharacters(",uc.prop[:group],")") end
   if !repl && !TeX return end
   println(io,"")
   q=Pol([1],1)

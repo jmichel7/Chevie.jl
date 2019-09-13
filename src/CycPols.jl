@@ -210,6 +210,12 @@ function decompose(v::ModuleElt{Root1,Int})
   rr
 end
 
+function Base.show(io::IO, ::MIME"text/html", a::CycPol)
+  print(io, "\$")
+  show(IOContext(io,:TeX=>true),a)
+  print(io, "\$")
+end
+
 function Base.show(io::IO,a::CycPol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)

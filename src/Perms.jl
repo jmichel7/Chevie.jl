@@ -119,9 +119,13 @@ GAP→ Julia dictionary
 """
 module Perms
 
+# to use as a stand-alone module replace the following 5 lines by
+# export degree, restricted, orbit, orbits
 using Gapjm, ..Groups
 import ..Gapjm.degree
 import ..Gapjm.restricted
+import ..Groups.orbit
+import ..Groups.orbits
 
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point, reflength, permuted
@@ -338,7 +342,7 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
-function Groups.orbit(a::Perm{T},i::Integer,check=false)where T
+function orbit(a::Perm{T},i::Integer,check=false)where T
   if i>length(a.d) return T[i] end
   res=T[]
   sizehint!(res,length(a.d))
@@ -365,7 +369,7 @@ julia> orbits(Perm(1,2)*Perm(4,5),1:5)
  [4, 5]
 ```
 """
-function Groups.orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
+function orbits(a::Perm,domain=1:length(a.d);trivial=true,check=false)
   cycles=Vector{eltype(a.d)}[]
   if isempty(a.d) return cycles end
   to_visit=falses(max(length(a.d),maximum(domain)))

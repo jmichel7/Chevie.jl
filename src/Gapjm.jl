@@ -54,7 +54,8 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export degree, degrees, elements, kernel, restricted, root, words, word
+export coefficients, degree, degrees, elements, kernel, restricted, root, words, word
+function coefficients end
 function degree end
 function degrees end
 function elements end

@@ -774,10 +774,16 @@ struct CharTable{T}
   identifier::String
 end
 
+function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
+  print(io, "\$")
+  show(IOContext(io,:TeX=>true),ct)
+  print(io, "\$")
+end
+
 function Base.show(io::IO,ct::CharTable)
-  println(io,"CharTable(",ct.identifier,")")
+  if !get(io,:TeX,false) println(io,"CharTable(",ct.identifier,")") end
   irr=map(ct.irr)do e
-   if iszero(e) "." else sprint(show,e; context=io) end
+    if iszero(e) "." else sprint(show,e; context=io) end
   end
   format(io,irr,row_labels=TeXstrip.(ct.charnames),
                 col_labels=TeXstrip.(ct.classnames))
@@ -1064,5 +1070,55 @@ this is the sign character).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
+
+
+############################################################################
+##
+#F  InductionTable( <u>, <g> ) . . . . . . . . table of induced characters 
+##  
+##  'InductionTable'  returns a record describing  the decomposition of the
+##  irreducible characters of the subgroup <u> induced to the group <g>.
+##  
+##  The result can be displayed using 'Display'.
+##  
+##  This function also works for Spets (Reflection Cosets)
+##  
+#InductionTableOps.Format:=function(t,option)
+#  option.rowLabels:=t.gNames(t,option);option.columnLabels:=t.uNames(t,option);
+#  return SPrint(t.head(t,option),"\n",FormatTable(List(t.scalar,v->List(v,
+#   function(a)if a=0 then return ".";else return Format(a,option);fi;end)),
+#       option));
+#end;
+#
+function InductionTable(u,g)
+  tu=CharTable(u)
+  tg=CharTable(g)
+  f=fusion_conjugacy_classes(u,g)
+  scals(c)=c->map(j->div(sum(map(*,c,tu.irr[j],div.(length(u),tu.centralizers))),
+        length(g)),axes(tu.irr,1))
+  map(scals,tg.irr[:,fusion])
+end
+#  res:=rec(scalar:=MatScalarProducts(tu,tu.irreducibles,
+#                                  Restricted(tg,tu,tg.irreducibles)));
+#  res.u:=u; res.g:=g; res.what:="Induction";
+#  res.head:=function(t,option)local n;
+#    n:=List([t.u,t.g],function(g)
+#      if IsBound(g.operations.ReflectionName) 
+#      then if IsBound(option.TeX) 
+#           then return SPrint("$",ReflectionName(g,option),"$");
+#           else return ReflectionName(g,option);fi;
+#      else return Format(g,option);
+#      fi;
+#    end);
+#    if IsBound(option.TeX) 
+#    then return SPrint(t.what," from ",n[1]," to ",n[2],"\n");
+#    else return SPrint(t.what," from ",n[1]," to ",n[2]);
+#    fi;
+#  end;
+#  res.uNames:=function(res,option)return CharNames(res.u,option);end;
+#  res.gNames:=function(res,option)return CharNames(res.g,option);end;
+#  res.operations:=InductionTableOps;
+#  return res;
+#end;
 
 end

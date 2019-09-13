@@ -30,7 +30,8 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 module Groups
 using ..Gapjm # for gens, minimal_words
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
-  conjugacy_classes, orbit, transversal, orbits, Hom, isabelian
+  conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
+  position_class, fusion_conjugacy_classes
 
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
@@ -208,6 +209,14 @@ function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
     G.prop[:classreps]=first.(cl)
     cl
   end
+end
+
+function position_class(G::Group,g)
+  findfirst(c->g in c,conjugacy_classes(G))
+end
+
+function fusion_conjugacy_classes(G::Group,H::Group)
+  map(x->position_class(G,x),class_reps(H))
 end
 
 "class_reps(G::Group): representatives of conjugacy classes of G"

@@ -259,7 +259,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
    :Isym=>Isym)
   if haskey(cartanDict,t) cartanDict[t](r,b)
   else error("Unknown Cartan type $(repr(t)). Known types are:\n",
-              join(sort(collect(keys(cartanDict))),", "))
+             join(sort(repr.(collect(keys(cartanDict)))),", "))
   end
 end
 
@@ -513,7 +513,7 @@ PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
-PermGroups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
+Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
 #--------------- FCG -----------------------------------------

@@ -390,7 +390,7 @@ function alpha2(M::GarsideMonoid,x,v)
   (*(M,x,g),rests[2])
 end
 
-function element(M::GarsideMonoid{T},l::Int...)where T
+function element(M::GarsideMonoid{T},l::Integer...)where T
   res=GarsideElm(0,T[],M)
   if isempty(l) return res end
   for s in reverse(l) # faster in reversed order (see *)
@@ -578,6 +578,7 @@ struct DualBraidMonoid{T,TW}<:AbstractIntervalMonoid{T,TW}
   atoms::Vector{T}
   W::TW
 end
+
 """
 Let  `W` be a well generated complex  reflection group and `c` be a Coxeter
 element  of `W` (if `W` is a Coxeter group and no `c` is given a particular

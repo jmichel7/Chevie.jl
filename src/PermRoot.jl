@@ -161,7 +161,7 @@ export PermRootGroup, PRG, PRSG,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- position_class, bipartite_decomposition, torus_order, rank, matX,
+ bipartite_decomposition, torus_order, rank, matX,
  roots, coroots, baseX, semisimplerank
 
 using Gapjm
@@ -259,7 +259,7 @@ function Base.show(io::IO,d::Diagram)
     l=length.(ind)
     bar(n)="\u2014"^n
     rdarrow(n)="\u21D0"^(n-1)*" "
-    ldarrow(n)="\u21D2"^(n-1)*" "
+    ldarrow(n)="\u21D2"^(n-1)
     tarrow(n)="\u21DB"^(n-1)*" "
     vbar="\UFFE8" # "\u2503"
     node="O"
@@ -286,7 +286,7 @@ function Base.show(io::IO,d::Diagram)
       print(io,join(ind[[1;3:end]]," "))
     elseif series==:F
       println(io,node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
-      print(io,ind[1]," ",ind[2]," "^max(3-l[2],1),ind[3]," ",ind[4])
+      print(io,ind[1]," ",ind[2]," "^max(2-l[2],1),ind[3]," ",ind[4])
     elseif series==:G
       println(io,node,tarrow(max(l[1],2)),node)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
@@ -539,7 +539,7 @@ function PermGroups.conjugacy_classes(W::PermRootGroup)
   end
 end
   
-function position_class(W::PermRootGroup,w)
+function Groups.position_class(W::PermRootGroup,w)
   i=cycletype(w,domain=simple_representatives(W))
   l=findall(isequal(i),classinv(W))
   if length(l)>1 
@@ -619,7 +619,7 @@ struct PRG{T,T1}<:PermRootGroup{T,T1}
 end
 
 (W::PRG)(x...)=element(W,x...)
-function PRG(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
+function PRG(r::Vector{Vector{T1}},cr::Vector{Vector{T2}}) where{T1,T2}
   matgens=map(reflection,r,cr)
 
   # the following section is quite subtle: it has the (essential -- this is
@@ -629,8 +629,9 @@ function PRG(r::Vector{Vector{T}},cr::Vector{Vector{T1}}) where{T,T1}
   # root values.
 
 # println("# roots: ")
-  roots=map(x->convert.(eltype(matgens[1]),x),r)
-  cr=map(x->convert.(eltype(matgens[1]),x),cr)
+  T=eltype(matgens[1])  # promotion of T1 and T2
+  roots=map(x->convert.(T,x),r)
+  cr=map(x->convert.(T,x),cr)
   refls=map(x->Int[],roots)
   newroots=true
   while newroots
@@ -738,6 +739,11 @@ function cartan_coeff(W::PRG,i,j)
   return r[v]//W.roots[i][v];
 end
 
+function Base.:*(W::PRG,V::PRG)
+  PRG(toL(cat(toM(W.roots[independent_roots(W)]),toM(V.roots[independent_roots(V)]),dims=(1,2))),
+      toL(cat(toM(W.coroots[independent_roots(W)]),toM(V.coroots[independent_roots(V)]),dims=(1,2))))
+end
+  
 #--------------- type of subgroups of PRG----------------------------------
 struct PRSG{T,T1}<:PermRootGroup{T,T1}
   G::PermGroup{T1}

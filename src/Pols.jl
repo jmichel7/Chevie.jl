@@ -86,11 +86,12 @@ end
 
 Base.copy(p::Pol)=Pol(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=Pol([T(a)],0)
+(::Type{Pol{T}})(a::Number) where T=convert(Pol{T},a)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
+(::Type{Pol{T}})(p::Pol) where T=convert(Pol{T},p)
 
 Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
-
 function Base.convert(::Type{T},p::Pol) where T<:Number
   if iszero(p) return T(0) end
   if !isone(length(p.c)) || !iszero(p.v) throw(InexactError(:convert,T,p)) end
@@ -135,8 +136,15 @@ Base.one(::Type{Pol{T}}) where T=Pol([one(T)],0)
 Base.zero(::Type{Pol{T}}) where T=Pol(T[],0)
 Base.zero(a::Pol)=Pol(empty(a.c),0)
 Base.iszero(a::Pol)=length(a.c)==0
-Base.transpose(a::Pol)=a
+Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
+Base.adjoint(a::Pol)=a
+Base.abs(p::Pol)=p
 
+function Base.show(io::IO, ::MIME"text/html", a::Pol)
+  print(io, "\$")
+  show(IOContext(io,:TeX=>true),a)
+  print(io, "\$")
+end
 
 function Base.show(io::IO,p::Pol)
   repl=get(io,:limit,false)
@@ -254,6 +262,7 @@ function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Pol(res,a.v-b.v),Polstrip(v,a.v)
 end
 
+Base.:/(p::Pol,q::Pol)=p//q
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
 function Base.://(p::Pol,q::Pol)
   if q.c==[1] return shift(p,-q.v)
@@ -265,6 +274,7 @@ function Base.://(p::Pol,q::Pol)
 end
 
 Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
+Base.://(p::T,q::Pol) where T=Pol(p)//q
 
 """
   gcd(p::Pol, q::Pol)

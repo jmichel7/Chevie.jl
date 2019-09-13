@@ -259,7 +259,7 @@ function Base.show(io::IO, h::HeckeElt)
     end
     (repl && !TeX) ? TeXstrip(res) : res
   end
-  ff(io,h.d; showbasis=showbasis)
+  show(IOContext(io,:showbasis=>showbasis),h.d)
 end
 
 
