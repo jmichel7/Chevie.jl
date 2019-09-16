@@ -11,7 +11,8 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  format, TeXstrip, bracket_if_needed, ordinal, rshow, joindigits, # formatting
+  format, TeXstrip, bracket_if_needed, ordinal, rshow, fromTeX,
+  joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, dominates, #combinatorics
   echelon  # linear algebra
@@ -144,6 +145,18 @@ end
 bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end]) 
  "($c)" else c end
 
+function fromTeX(io::IO,n::String)
+  TeX=get(io,:TeX,false) 
+  if TeX return n end
+  if get(io,:limit,false) return TeXstrip(n) end
+  n=replace(n,r"\\tilde *"=>"~")
+  n=replace(n,"_"=>"")
+  n=replace(n,"}"=>"")
+  n=replace(n,"{"=>"")
+end
+
+fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)
+
 """
   format(io, table; options )
 
@@ -158,9 +171,15 @@ bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end])
      cols                show only these columns
 
 """
-function format(io::IO,t::Matrix; row_labels=axes(t,1),
-  col_labels=nothing, rows_label="", separators=[0], rows=axes(t,1),
-  cols=axes(t,2), column_repartition=nothing, opt...)
+function format(io::IO,t::Matrix; opt...)
+  io=IOContext(io,opt...)
+  row_labels=get(io,:row_labels,axes(t,1))
+  col_labels=get(io,:col_labels,nothing)
+  rows_label=get(io,:rows_label,"")
+  separators=get(io,:separators,[0])
+  rows=get(io,:rows,axes(t,1))
+  cols=get(io,:cols,axes(t,2))
+  column_repartition=get(io,:column_repartition,nothing)
   lpad(s,n)=" "^(n-textwidth(s))*s # because lpad not what expected
   rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
   t=t[rows,cols]

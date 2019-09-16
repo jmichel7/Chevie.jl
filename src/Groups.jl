@@ -215,7 +215,7 @@ function position_class(G::Group,g)
   findfirst(c->g in c,conjugacy_classes(G))
 end
 
-function fusion_conjugacy_classes(G::Group,H::Group)
+function fusion_conjugacy_classes(H::Group,G::Group)
   map(x->position_class(G,x),class_reps(H))
 end
 

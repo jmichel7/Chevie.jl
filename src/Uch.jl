@@ -339,16 +339,16 @@ described in the section about families below.
     -,+   |    1 -1/2 1/2  1/2 -1/2
     -,-   |   -1 -1/2 1/2 -1/2  1/2|
 
-`:CharNames`:  returns  the  names  of  the  unipotent characters. Using the
+`:charnames`:  returns  the  names  of  the  unipotent characters. Using the
 version  with an additional  option record as  the second argument, one can
 control the display in various ways.
 
-|    gap> uc:=UnipotentCharacters(CoxeterGroup("G",2));
+|    gap> uc=UnipotentCharacters(coxgroup(:G,2))
     UnipotentCharacters( G2 )
-    gap> CharNames(uc);
+    gap> charnames(uc)
     [ "phi{1,0}", "phi{1,6}", "phi{1,3}'", "phi{1,3}''", "phi{2,1}",
       "phi{2,2}", "G2[-1]", "G2[1]", "G2[E3]", "G2[E3^2]" ]
-    gap> CharNames(uc,rec(TeX:=true));
+    gap> charnames(uc;TeX=true)
     [ "\\phi_{1,0}", "\\phi_{1,6}", "\\phi_{1,3}'", "\\phi_{1,3}''",
       "\\phi_{2,1}", "\\phi_{2,2}", "G_2[-1]", "G_2[1]", "G_2[\\zeta_3]",
       "G_2[\\zeta_3^2]" ]|
@@ -932,7 +932,7 @@ Fourier matrix. Here is an example.
     (g3,E3^2) | E3^2 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
     gap> f.charNumbers;
     [ 5, 6, 4, 3, 8, 7, 9, 10 ]
-    gap> CharNames(uc){f.charNumbers};
+    gap> charnames(uc)[f.charNumbers]
     [ "phi{2,1}", "phi{2,2}", "phi{1,3}''", "phi{1,3}'", "G2[1]",
       "G2[-1]", "G2[E3]", "G2[E3^2]" ]|
 

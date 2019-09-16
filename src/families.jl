@@ -411,7 +411,7 @@ function Drinfeld_double(g;lu=false)
     r[:centralizer] = Centralizer(g, r[:elt])
     r[:centelms] = class_reps(r[:centralizer])
     t = CharTable(r[:centralizer])
-    r[:charNames] = CharNames(r[:centralizer], Dict{Symbol, Any}(:TeX => true))
+    r[:charNames] = charnames(r[:centralizer]; TeX = true)
     r[:names] = ClassNamesCharTable(t)
     r[:names][Position(r[:centelms], g[:identity])] = "1"
     r[:chars] = t[:irreducibles]

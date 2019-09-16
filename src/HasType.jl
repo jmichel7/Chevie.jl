@@ -287,10 +287,10 @@ nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 PrintToSring(s,v...)=sprint(show,v...)
 
-function reflection_name(W,opt=Dict())
-  r=join(getchev(W,:ReflectionName,merge(opt,Dict(:TeX=>true))),"×")
-  if get(opt,:limit,false) r=TeXstrip(r) end
-  r
+function reflection_name(io::IO,W)
+  opt=IOContext(io,:TeX=>true).dict
+  r=join(getchev(W,:ReflectionName,opt),"×")
+  fromTeX(io,r)
 end
 
 #----------------------------------------------------------------------
@@ -477,7 +477,7 @@ function ExtendedReflectionGroup(W,mats::Vector{Any})
   end
 end
 
-reflection_name(W::ExtendedCox,a...)=reflection_name(W.group,a...)
+reflection_name(io::IO,W::ExtendedCox)=reflection_name(io,W.group)
 
 CharTableSymmetric=Dict(:centralizers=>[
      function(n,pp) res=k=1;last=0

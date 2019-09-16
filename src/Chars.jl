@@ -389,7 +389,7 @@ module Chars
 using Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
-  WGraphToRepresentation, DualWGraph, WGraph2Representation, CharNames,
+  WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations
 
 """
@@ -480,7 +480,7 @@ julia> charinfo(coxgroup(:G,2))[:charparams]
 ```
 
 `:charnames`:  strings describing the  irreducible characters, computed from
-the `charparams`. This is the same as `CharNames(W)`.
+the `charparams`. This is the same as `charnames(W)`.
 
 `:positionId`:  the position of the trivial character in the character table
 of `W`.
@@ -785,8 +785,8 @@ function Base.show(io::IO,ct::CharTable)
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
-  format(io,irr,row_labels=TeXstrip.(ct.charnames),
-                col_labels=TeXstrip.(ct.classnames))
+  format(io,irr,row_labels=map(s->fromTeX(io,s),ct.charnames),
+                col_labels=map(s->fromTeX(io,s),ct.classnames))
 end
 
 function CharTable(t::TypeIrred)
@@ -993,7 +993,7 @@ function DualWGraph(rk,gr)
 end
 
 """
-`CharNames(W;[,options])`
+`charnames(W;options...)`
 
 returns  the  list  of  character  names  for the reflection group `W`. The
 optional  options are keywords which can give alternative names in certain
@@ -1003,7 +1003,7 @@ cases, or a different formatting of names in general.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> CharNames(W)
+julia> charnames(W)
 6-element Array{String,1}:
  "φ₁‚₀" 
  "φ₁‚₆" 
@@ -1012,7 +1012,7 @@ julia> CharNames(W)
  "φ₂‚₁" 
  "φ₂‚₂" 
 
-julia> CharNames(W,TeX=true)
+julia> charnames(W;TeX=true)
 6-element Array{String,1}:
  "\\phi_{1,0}"  
  "\\phi_{1,6}"  
@@ -1021,7 +1021,7 @@ julia> CharNames(W,TeX=true)
  "\\phi_{2,1}"  
  "\\phi_{2,2}"  
 
-julia> CharNames(W,spaltenstein=true)
+julia> charnames(W;spaltenstein=true)
 6-element Array{String,1}:
  "1"  
  "ε"  
@@ -1030,7 +1030,7 @@ julia> CharNames(W,spaltenstein=true)
  "θ′" 
  "θ″" 
 
-julia> CharNames(W,spaltenstein=true,TeX=true)
+julia> charnames(W;spaltenstein=true,TeX=true)
 6-element Array{String,1}:
  "1"             
  "\\varepsilon"  
@@ -1043,21 +1043,18 @@ julia> CharNames(W,spaltenstein=true,TeX=true)
 The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
-function CharNames(W;opt...)
-  opt=Dict(opt)
-# println("W=$W opt=$opt")
+function charnames(io::IO,W)
   c=charinfo(W)
   cn=c[:charnames]
   for k in [:spaltenstein, :frame, :malle, :kondo]
-   if haskey(opt,k) && haskey(c,k) cn=c[k] end
+    if get(io,k,false) && haskey(c,k) cn=c[k] end
   end
-  if !haskey(opt,:TeX) cn=TeXstrip.(cn) end
-  cn
+  fromTeX.(Ref(io),cn)
 end
  
-"""
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 
+"""
 'DetPerm( `W` )'
 
 return  the permutation of the characters of the reflection group `W` which
@@ -1068,57 +1065,44 @@ this is the sign character).
     gap> DetPerm( W );
     [ 8, 9, 11, 13, 5, 6, 12, 1, 2, 10, 3, 7, 4 ]|
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
 
+struct InductionTable
+  scalar::Matrix{Int}
+  gcharnames::Vector{String}
+  ucharnames::Vector{String}
+  identifier::String
+end
 
-############################################################################
-##
-#F  InductionTable( <u>, <g> ) . . . . . . . . table of induced characters 
-##  
-##  'InductionTable'  returns a record describing  the decomposition of the
-##  irreducible characters of the subgroup <u> induced to the group <g>.
-##  
-##  The result can be displayed using 'Display'.
-##  
+"""
+   `InductionTable(u,g)`
+
+   returns an object describing  the decomposition of the
+   irreducible characters of the subgroup `u` induced to the group `g`.
 ##  This function also works for Spets (Reflection Cosets)
-##  
-#InductionTableOps.Format:=function(t,option)
-#  option.rowLabels:=t.gNames(t,option);option.columnLabels:=t.uNames(t,option);
-#  return SPrint(t.head(t,option),"\n",FormatTable(List(t.scalar,v->List(v,
-#   function(a)if a=0 then return ".";else return Format(a,option);fi;end)),
-#       option));
-#end;
-#
+"""
 function InductionTable(u,g)
   tu=CharTable(u)
   tg=CharTable(g)
   f=fusion_conjugacy_classes(u,g)
-  scals(c)=c->map(j->div(sum(map(*,c,tu.irr[j],div.(length(u),tu.centralizers))),
-        length(g)),axes(tu.irr,1))
-  map(scals,tg.irr[:,fusion])
+  cl=div.(length(u),tu.centralizers)
+  scal(c,c1)=div(Int(sum(map(*,c,conj.(c1),cl))),length(u))
+  InductionTable(
+  [scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1), i in axes(tu.irr,1)],
+  tg.charnames,tu.charnames,"Induction Table")
 end
-#  res:=rec(scalar:=MatScalarProducts(tu,tu.irreducibles,
-#                                  Restricted(tg,tu,tg.irreducibles)));
-#  res.u:=u; res.g:=g; res.what:="Induction";
-#  res.head:=function(t,option)local n;
-#    n:=List([t.u,t.g],function(g)
-#      if IsBound(g.operations.ReflectionName) 
-#      then if IsBound(option.TeX) 
-#           then return SPrint("$",ReflectionName(g,option),"$");
-#           else return ReflectionName(g,option);fi;
-#      else return Format(g,option);
-#      fi;
-#    end);
-#    if IsBound(option.TeX) 
-#    then return SPrint(t.what," from ",n[1]," to ",n[2],"\n");
-#    else return SPrint(t.what," from ",n[1]," to ",n[2]);
-#    fi;
-#  end;
-#  res.uNames:=function(res,option)return CharNames(res.u,option);end;
-#  res.gNames:=function(res,option)return CharNames(res.g,option);end;
-#  res.operations:=InductionTableOps;
-#  return res;
-#end;
 
+function Base.show(io::IO,t::InductionTable)
+  TeX=get(io,:TeX,false)
+  if !TeX println(io,t.identifier) end
+  column_labels=t.ucharnames
+  if !TeX column_labels=TeXstrip.(column_labels) end
+  row_labels=t.gcharnames
+  if !TeX row_labels=TeXstrip.(row_labels) end
+  scal=map(t.scalar)do e
+    if iszero(e) "." else sprint(show,e; context=io) end
+  end
+  format(io,scal,row_labels=row_labels,col_labels=column_labels)
+end
+  
 end

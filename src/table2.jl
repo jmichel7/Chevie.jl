@@ -183,8 +183,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       sort!(p)
       a = []
       b = []
-      d = [0, 1, 0, -1]
-      d = d[map((x->begin 1 + mod(x, 4) end), p)]
+      d = [0, 1, 0, -1][map(x->1+mod(x,4), p)]
       i = 1
       while i <= length(p)
           l = p[i]
@@ -362,7 +361,6 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
     cc[:Au] = isempty(cl[1][:Au]) ? coxgroup() : 
        prod(coxgroup(:A,1) for i in eachindex(cl[1][:Au]))
-    CharNames(cc[:Au])
     if char != 2
      cc[:red] = coxgroup()
      j = cc[:parameter]
@@ -452,8 +450,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     sort!(p)
     a = Int[]
     b = Int[]
-    d = [0, 1, 0, -1]
-    d = d[map((x->begin 1 + mod(x, 4) end), p)]
+    d = [0, 1, 0, -1][map(x->1 + mod(x, 4), p)]
     i = 1
     while i <= length(p)
         l = p[i]

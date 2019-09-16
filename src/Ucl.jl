@@ -261,19 +261,11 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   else n=u[:name]
   end
   TeX=haskey(opt,:TeX) 
-  if !TeX
-   if get(opt,:limit,false) n=TeXstrip(n)
-   else
-     n=replace(n,r"\\tilde *"=>"~")
-     n=replace(n,"_"=>"")
-     n=replace(n,"}"=>"")
-     n=replace(n,"{"=>"")
-   end
-  end
+  n=fromTeX(n;opt...)
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
-    cl="("*CharNames(u[:Au];opt...)[opt[:locsys]]*")"
+    cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
     n*="^{$cl}"
-    if !TeX n=TeXstrip(n) end
+    n=fromTeX(n,opt...)
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
     n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
@@ -281,15 +273,12 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   n
 end
 
-function name(u::UnipotentClass;opt...)
-  nameclass(merge(u.prop,Dict(:name=>u.name)),Dict(opt))
+function name(io::IO,u::UnipotentClass)
+  nameclass(merge(u.prop,Dict(:name=>u.name)),io.dict)
 end
 
 function Base.show(io::IO,u::UnipotentClass)
-  opt=Dict{Symbol,Any}()
-  if get(io,:TeX,false) opt[:TeX]=true end
-  if get(io,:limit,false) opt[:repl]=true end
-  print(io,"UnipotentClass(",name(u;opt...),")")
+  print(io,"UnipotentClass(",name(io,u),")")
 end
 
 UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
@@ -615,7 +604,7 @@ julia> uc.classes
           locsys := [ [ 5, 4 ] ] ) ]|
 
 The  `ff` function  for unipotent  classes accepts  all the  options of
-formatTable`,  `CharNames`. Giving the option `mizuno` (resp. `shoji`) uses
+formatTable`,  `charnames`. Giving the option `mizuno` (resp. `shoji`) uses
 the  names given by  Mizuno (resp. Shoji)  for unipotent classes. Moreover,
 there  is also an option `fourier`  which gives the correspondence tensored
 with  the  sign  character  of  each  relative  Weyl  group,  which  is the
@@ -811,38 +800,38 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   AdjustAu!(classes,springerseries)
   orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)))
   merge!(orderclasses.prop,Dict(:classes=>classes,
-  :label=>function(p,n,opt)name(p.prop[:classes][n];repl=true,opt...) end))
+                                :label=>function(p,n,opt)name(IOContext(stdout,opt...),p.prop[:classes][n]) end))
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
 end
 
-function FormatCentralizer(u,opt)
+function showcentralizer(io::IO,u)
   c=""
   function AuName(u)
     if length(u.prop[:Au])==1 return "" end
     res=haskey(u.prop,:AuAction) || 
         (haskey(u.prop,:dimred) && iszero(u.prop[:dimred])) ? "." : "?"
-    res*=reflection_name(u.prop[:Au],merge(Dict(:Au=>true),opt))
+        res*=reflection_name(IOContext(io,:Au=>true),u.prop[:Au])
   end
   if haskey(u.prop,:dimunip)
-    if u.prop[:dimunip]>0 c*=HasType.Format(Mvp(:q)^u.prop[:dimunip],opt) end
+    if u.prop[:dimunip]>0 c*=HasType.Format(Mvp(:q)^u.prop[:dimunip],io.dict) end
   else c*="q^?" end
   if haskey(u.prop,:AuAction)
     if rank(u.prop[:red])>0
       c*="."
       if length(u.prop[:Au])==1 || 
          length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
-        c*=reflection_name(u.prop[:AuAction],opt)
+        c*=reflection_name(io,u.prop[:AuAction])
       elseif all(isone,u.prop[:AuAction].F0s)
-        c*=reflection_name(u.prop[:AuAction].group,opt)*AuName(u)
+        c*=reflection_name(io,u.prop[:AuAction].group)*AuName(u)
       else
-        c*=reflection_name(u.prop[:AuAction],opt)*AuName(u)
+        c*=reflection_name(io,u.prop[:AuAction])*AuName(u)
       end
     else
       c*=AuName(u)
     end
   elseif haskey(u.prop,:red)
-    n=reflection_name(u.prop[:red],opt)
+    n=reflection_name(io,u.prop[:red])
     if n!="." c*="."*n end
     c*=AuName(u)
   else
@@ -865,17 +854,15 @@ function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)
-  opt=merge!(copy(UnipotentClassesOps[:DisplayOptions]),io.dict)
-# println("opt=$opt")
-  opt[:row_labels]=name.(uc.classes;opt...)
+  io=IOContext(io,UnipotentClassesOps[:DisplayOptions]...)
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
-  if get(opt,:order,false)
+  if get(io,:order,false)
     println(io,Posets.showgraph(uc.orderclasses;io.dict...))
   end
   sp = map(copy, uc.springerseries)
-  if get(opt,:fourier,false)
+  if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
   W = uc.prop[:spets]
@@ -885,7 +872,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
   tbl = map(uc.classes)do u
     res= iszero(uc.p) ? [joindigits(u.prop[:dynkin])] : String[]
     push!(res, string(u.dimBu))
-    if get(opt,:balaCarter,false)
+    if get(io,:balaCarter,false)
       if haskey(u.prop, :balacarter)
         b=fill('.',coxrank(W))
         for i in u.prop[:balacarter] if i>0 b[i]='2' else b[-i]='0' end end
@@ -894,33 +881,33 @@ function Base.show(io::IO,uc::UnipotentClasses)
       end
       push!(res, String(b))
     end
-    if get(opt,:centralizer,false)
-      push!(res,FormatCentralizer(u,opt)) 
+    if get(io,:centralizer,false)
+      push!(res,showcentralizer(io,u)) 
     end
-    if get(opt,:springer,false)
+    if get(io,:springer,false)
       i=findfirst(isequal(u),uc.classes)
       cc(ss)=map(function (i)
-                c1 = CharNames(u.prop[:Au]; io.dict...)[ss[:locsys][i][2]]
-                c2 = CharNames(ss[:relgroup]; io.dict...)[i]
+                c1 = charnames(io,u.prop[:Au])[ss[:locsys][i][2]]
+                c2 = charnames(io,ss[:relgroup])[i]
                 (c1=="") ? c2 : c1*":"*c2
            end, findall(y->y[1]==i,ss[:locsys]))
       append!(res, map(ss->join(cc(ss), TeX ? "\\kern 0[:8]em " : " "),sp))
     end
     res
   end
-  opt[:col_labels]= String[]
+  col_labels= String[]
   if iszero(uc.p)
-    push!(opt[:col_labels], TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
+    push!(col_labels, TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
   end
-    push!(opt[:col_labels], TeX ? "\\dim{\\cal B}_u" : "dBu")
-  if get(opt,:balaCarter,false)
-     push!(opt[:col_labels], TeX ? "\\hbox{Bala-Carter}" : "B-C")
+    push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dBu")
+  if get(io,:balaCarter,false)
+     push!(col_labels, TeX ? "\\hbox{Bala-Carter}" : "B-C")
   end
-  if get(opt,:centralizer,false)
-     push!(opt[:col_labels], TeX ? "C_{\\bf G}(u)" : "C(u)")
+  if get(io,:centralizer,false)
+     push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
-  if get(opt,:springer,false)
-   append!(opt[:col_labels], 
+  if get(io,:springer,false)
+   append!(col_labels, 
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
           repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
@@ -930,13 +917,13 @@ function Base.show(io::IO,uc::UnipotentClasses)
         return res
     end, sp))
   end
-  if !(haskey(opt, :rows))
+  row_labels=name.(Ref(io),uc.classes)
+  if get(io,:rows,false)!=false
       p = Perm(sortperm(map(x->x.dimBu, uc.classes)))
       tbl = permuted(tbl, inv(p))
-      opt[:row_labels] = permuted(opt[:row_labels], p)
+      row_labels = permuted(row_labels, p)
   end
-  opt[:rows_label]="u"
-  format(io,toM(tbl);merge(opt,io.dict)...)
+  format(io,toM(tbl);rows_label="u",col_labels=col_labels,row_labels=row_labels)
 end
 
 # decompose tensor product of characteres (given as their indices in CharTable)
@@ -1211,27 +1198,24 @@ function Base.show(io::IO,x::ICCTable)
    print(io,",",x.prop[:series],")")
    return
   end
-  opt=Dict{Symbol,Any}()
-  merge!(opt,io.dict)
   text="Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$"*
-        reflection_name(x[:relgroup],opt)*"\$\n"
-  if haskey(opt,:TeX) text*="\\medskip\n\n"
+        reflection_name(io,x[:relgroup])*"\$\n"
+  if get(io,:TeX,false) text*="\\medskip\n\n"
   else text=TeXstrip(text) end
   print(io,text)
-  if !haskey(opt,:cols) && !haskey(opt,:rows)
-    opt[:rows]=collect(1:length(x[:dimBu]))
-    sort!(opt[:rows],by=i->[x[:dimBu][i],x[:locsys][i]])
-    opt[:cols]=opt[:rows]
+  if get(io,:cols,false)==false && get(io,:rows,false)==false
+    rows=collect(1:length(x[:dimBu]))
+    sort!(rows,by=i->[x[:dimBu][i],x[:locsys][i]])
+    io=IOContext(io,:rows=>rows,:cols=>rows)
   end
   tbl=copy(x[:scalar])
   if get(io,:cycpol,true) tbl=map(CycPol,tbl) end
   tbl=repr.(tbl,context=:limit=>true)
-  col_labels=map(p->name(x[:uc].classes[p[1]];
-     :locsys=>p[2],:repl=>true,opt...),x[:locsys])
-  rowLabels=map(x->haskey(opt,:TeX) ? "X_{$x}" : "X$x",
-                CharNames(x[:relgroup];opt...))
-  format(io,permutedims(tbl),rows=opt[:rows],cols=opt[:cols],
-         row_labels=rowLabels,col_labels=col_labels)
+  col_labels=map(p->name(IOContext(io,:locsys=>p[2]),x[:uc].classes[p[1]]),
+                  x[:locsys])
+  rowLabels=map(x->get(io,:TeX,false) ? "X_{$x}" : "X$x",
+                charnames(io,x[:relgroup]))
+  format(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
 end
 """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
