@@ -667,7 +667,9 @@ function coroot(W::PRG,i)
   if i<=length(W.coroots) return W.coroots[i] end
   m=matX(W,reflection(W,i))
   j=findfirst(x->!iszero(x),roots(W)[i])
-  map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
+  r=map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
+  if all(isinteger,r) r=Int.(r) end
+  r
 end
 
 """
@@ -764,7 +766,7 @@ restriction(W::PRSG,i)=W.restriction[i]
 @inline Base.parent(W::PRSG)=W.parent
 
 function reflection_subgroup(W::PRG,I::AbstractVector{Int})
-  G=PRG(W.roots[I],W.coroots[I])
+  G=PRG(W.roots[I],coroot.(Ref(W),I))
   if isempty(G.roots) inclusion=Int[]
   else inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   end

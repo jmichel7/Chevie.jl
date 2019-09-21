@@ -256,7 +256,7 @@ function ordinal(n)
 end
 
 # show with attributes...
-rshow(x,p...)=show(IOContext(stdout,:limit=>true,[s=>true for s in p]...),"text/plain",x)
+rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
 
 joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
                  string(sep[1:1],join(l,","),sep[2:2]) : join(l)

@@ -288,6 +288,7 @@ function PermRoot.cartan(t::Dict{Symbol,Any})
     end
     if all(isinteger,C) C=Int.(C) end
     C
+  elseif haskey(t,:bond) cartan(t[:series],length(t[:indices]),t[:bond])
   else cartan(t[:series],length(t[:indices]))
   end
 end
@@ -514,6 +515,7 @@ PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
+Chars.CharTable(W)=CharTable(W.G)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
 #--------------- FCG -----------------------------------------

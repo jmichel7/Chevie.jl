@@ -101,6 +101,8 @@ include("Pols.jl")
 @reexport using .Pols
 include("PermRoot.jl")
 @reexport using .PermRoot
+include("Chars.jl")
+@reexport using .Chars
 include("CoxGroups.jl")
 @reexport using .CoxGroups
 include("Garside.jl")
@@ -123,8 +125,6 @@ include("Posets.jl")
 @reexport using .Posets
 include("MatInt.jl")
 @reexport using .MatInt
-include("Chars.jl")
-@reexport using .Chars
 include("HasType.jl")
 @reexport using .HasType
 include("Uch.jl")

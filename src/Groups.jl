@@ -202,12 +202,13 @@ Gapjm.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do G
-    if length(G)>10000
-      println("length(G)=",length(G),": not supposed to do it the hard way")
+    if haskey(G.prop,:classreps)
+      map(x->orbit(G,x),class_reps(G))
+    elseif length(G)>10000
+      error("length(G)=",length(G),": should call Gap4")
+    else
+      orbits(G,collect(G))
     end
-    cl=orbits(G,collect(G))
-    G.prop[:classreps]=first.(cl)
-    cl
   end
 end
 
@@ -221,7 +222,9 @@ end
 
 "class_reps(G::Group): representatives of conjugacy classes of G"
 function class_reps(G::Group{T})::Vector{T} where T
-  getp(conjugacy_classes,G,:classreps)
+  gets(G,:classreps) do G
+    first.(conjugacy_classes(G))
+  end
 end
 
 # hom from source to target sending gens(source) to images

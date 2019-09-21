@@ -239,6 +239,36 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,")")
 end
 
+impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
+
+function Chars.CharTable(H::HeckeAlgebra{C})where C
+  W=H.W
+  ct=impl1(getchev(W,:HeckeCharTable,H.para,
+       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
+  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+  else                     names=charinfo(W)[:charnames]
+  end
+  CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
+     ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
+end
+
+function Chars.representation(H::HeckeAlgebra,i::Int)
+  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
+    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
+  ct=toM.(ct)
+  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
+  ct
+end
+
+Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
+
+function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
+  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
+                                   rootpara(H)[1]//H.para[1][2])
+  CheckHeckeDefiningRelations(H,S)
+  S
+end
+
 #--------------------------------------------------------------------------
 abstract type HeckeElt{P,C} end
 

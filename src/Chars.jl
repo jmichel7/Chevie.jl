@@ -390,7 +390,7 @@ using Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
-  representations
+  representations, InductionTable
 
 """
 `fakeDegree(W, φ, q)`
@@ -796,13 +796,13 @@ function CharTable(t::TypeIrred)
   end
   if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
   irr=toM(ct[:irreducibles])
-  if eltype(irr)==Rational{Int} irr=Int.(irr)
-  elseif eltype(irr)==Cyc{Rational{Int}} irr=Cyc{Int}.(irr)
+  if all(isinteger,irr) irr=Int.(irr)
+  else irr=Cyc{Int}.(irr)
   end
   CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
-function CharTable(W)::CharTable
+function CharTable(W::PermRootGroup)::CharTable
   gets(W,:chartable) do W
     ctt=CharTable.(refltype(W))
     if isempty(ctt) 
@@ -817,19 +817,6 @@ function CharTable(W)::CharTable
     end
     CharTable(irr,charnames,classnames,centralizers,identifier)
   end
-end
-
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
-
-function CharTable(H::HeckeAlgebra{C})where C
-  W=H.W
-  ct=impl1(getchev(W,:HeckeCharTable,H.para,
-       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
-  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(W)[:charnames]
-  end
-  CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
-     ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
 
 """
@@ -852,6 +839,7 @@ julia> representation(ComplexReflectionGroup(24),3)
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
+impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 function representation(W::Group,i::Int)
   ct=toM.(impl1(getchev(W,:Representation,i)))
   if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
@@ -874,15 +862,6 @@ julia> representations(coxgroup(:B,2))
 ```
 """
 representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
-representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
-
-function representation(H::HeckeAlgebra,i::Int)
-  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
-    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
-  ct=toM.(ct)
-  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
-  ct
-end
 
 """
               Functions for W-graphs 
@@ -918,13 +897,6 @@ element has to be interpreted as mu(x,y)=m1 and mu(y,x)=m2.
 The next function given a W-graph gr for some Hecke algebra of rank rk
 with rootparameter v constructs the rk matrices it specifies
 """
-function WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
-  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
-                                   rootpara(H)[1]//H.para[1][2])
-  CheckHeckeDefiningRelations(H,S)
-  S
-end
-
 function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   V=Vector{Int}[]
   for S in gr[1]
@@ -1077,8 +1049,63 @@ end
 """
    `InductionTable(u,g)`
 
-   returns an object describing  the decomposition of the
-   irreducible characters of the subgroup `u` induced to the group `g`.
+returns   an  object  describing  the   decomposition  of  the  irreducible
+characters  of the subgroup  `u` induced to  the group `g`.  In the default
+show method, the rows correspond to the characters of the parent group, and
+the  columns  to  those  of  the  subgroup.  The  return object has a field
+`scalar`  which is a `Matrix{Int}` containing  the induction table, and the
+other  fields contain labeling information  taken from the character tables
+of `u` and `g` when it exists.
+
+```julia-repl
+julia> g=Group([Perm(1,2),Perm(2,3),Perm(3,4)])
+Group([(1,2),(2,3),(3,4)])
+
+julia> u=Group( [ Perm(1,2), Perm(3,4) ])
+Group([(1,2),(3,4)])
+
+julia> InductionTable(u,g)
+Induction Table
+   │X.1 X.2 X.3 X.4
+───┼────────────────
+X.1│  .   1   .   .
+X.2│  .   1   1   1
+X.3│  1   1   .   .
+X.4│  1   .   1   1
+X.5│  1   .   .   .
+```
+
+```julia-repl
+julia> g=coxgroup(:G,2)
+G₂
+
+julia> u=reflection_subgroup(g,[1,6])
+G₂₍₁₆₎
+
+julia> InductionTable(u,g)
+Induction Table
+     │11,11 11,2 2,11 2,2
+─────┼────────────────────
+φ₁‚₀ │    .    .    .   1
+φ₁‚₆ │    1    .    .   .
+φ′₁‚₃│    .    1    .   .
+φ″₁‚₃│    .    .    1   .
+φ₂‚₁ │    .    1    1   .
+φ₂‚₂ │    1    .    .   1
+```
+
+the rshow method allows to transmit attributes to the format method
+
+```julia-rep1
+julia> rshow(t;rows=[5],cols=[3,2])
+Induction Table
+    │2,11 11,2
+────┼──────────
+φ₂‚₁│   1    1
+```
+
+It is also possible to get TeX
+
 ##  This function also works for Spets (Reflection Cosets)
 """
 function InductionTable(u,g)

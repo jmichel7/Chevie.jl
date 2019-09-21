@@ -159,7 +159,9 @@ end
 
 function PermGroups.class_reps(W::PermRootGroup)
   gets(W,:classreps)do W
-    map(x->W(x...),classinfo(W)[:classtext])
+    cl=map(x->W(x...),classinfo(W)[:classtext])
+    W.G.prop[:classreps]=cl
+    cl
   end
 end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
@@ -629,6 +631,7 @@ ComplexConjugate(v)=v
 GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)
+GetRoot(x::Rational,n::Number=2,msg...)=root(x,n)
 function GetRoot(x,n::Number=2,msg...)
   error("GetRoot($x,$n) not implemented")
 end
