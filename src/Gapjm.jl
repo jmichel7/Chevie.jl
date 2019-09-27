@@ -80,6 +80,7 @@ toL(m)=[m[i,:] for i in axes(m,1)] # to Gap
 toM(m)=permutedims(hcat(m...))     # to julia
 export ds # dump struct
 function ds(s)
+  println(typeof(s),":")
   for f in fieldnames(typeof(s))
     println(f,"=",getproperty(s,f))
   end

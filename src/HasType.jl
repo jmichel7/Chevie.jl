@@ -17,14 +17,17 @@ CHEVIE[:info]=false
 # extensions to get closer to GAP semantics
 Base.:*(a::Array,b::Pol)=a .* b
 Base.:*(a::Pol,b::Array)=a .* b
+Base.:*(a::Array,b::Mvp)=a .* b
+Base.:*(a::Mvp,b::Array)=a .* b
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:-(a::AbstractVector,b::Number)=a .- b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:+(a::AbstractArray,b::Number)=a .+ b
-Base.:+(a::AbstractArray,b::Pol)=a .+ Ref(b)
-Base.:/(a::AbstractArray,b::Pol)=a ./ Ref(b)
+Base.:+(a::AbstractArray,b::Pol)=a .+ b
+Base.:+(a::AbstractArray,b::Mvp)=a .+ b
+Base.:/(a::AbstractArray,b::Pol)=a ./ b
 #Base.:*(a::Mvp, b::Array)=Ref(a).*b
 #include("mvp.jl")
 #Base.:*(b::Array,a::Mvp)=b.*Ref(a)
@@ -632,6 +635,7 @@ GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Rational,n::Number=2,msg...)=root(x,n)
+GetRoot(x::Mvp,n::Number=2,msg...)=root(x,n)
 function GetRoot(x,n::Number=2,msg...)
   error("GetRoot($x,$n) not implemented")
 end

@@ -183,6 +183,7 @@ Base.iszero(x::ModuleElt)=isempty(x.d)
 Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
 Base.:-(a::ModuleElt,b::ModuleElt)=a+(-b)
+Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
 # forwarded methods
 @inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
 @inline Base.length(x::ModuleElt)=length(x.d)

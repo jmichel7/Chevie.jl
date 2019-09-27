@@ -213,11 +213,15 @@ macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   end
 end
 
+Base.broadcastable(p::Mvp)=Ref(p)
+Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
+Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
+
 Base.show(io::IO, x::Mvp)=show(io,x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
-Base.zero(::Type{Mvp})=Mvp(ModuleElt{Monomial,Int}())
-Base.zero(::Type{Mvp{T}}) where T=Mvp(ModuleElt{Monomial,T}())
+Base.zero(::Type{Mvp})=Mvp(zero(ModuleElt{Monomial,Int}))
+Base.zero(::Type{Mvp{T}}) where T=Mvp(zero(ModuleElt{Monomial,T}))
 Base.one(::Type{Mvp{T}}) where T=Mvp(one(T))
 Base.one(p::Mvp{T}) where T=Mvp(one(T))
 Base.copy(p::Mvp)=Mvp(p.d)
@@ -232,8 +236,8 @@ Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 function Base.promote(a::Mvp{T1},b::Mvp{T2}) where {T1,T2}
   T=promote_type(T1,T2)
   let T=T, a=a, b=b
-    if T!=T1 a=Mvp(ModuleElt{Monomial,T}(m=>T(c) for (m,c) in a.d)) end
-    if T!=T2 b=Mvp(ModuleElt{Monomial,T}(m=>T(c) for (m,c) in b.d)) end
+   if T!=T1 a=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in a.d])) end
+   if T!=T2 b=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in b.d])) end
     a,b
   end
 end
@@ -250,9 +254,9 @@ Base.:-(a::Mvp, b::Mvp)=a+(-b)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(a)-b
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
-Base.:*(a::Mvp, b::Mvp)=sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
-Base.:*(a, b::Mvp)=Mvp(b.d*a)
-Base.:*(b::Mvp, a)=a*b
+Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
+Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
+Base.:*(b::Mvp, a::Number)=a*b
 Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
 
 Mvp(p::Pol)=p(Mvp(Pols.var[]))
@@ -263,8 +267,9 @@ function Base.inv(x::Mvp)
   Mvp(inv(m)=>(c^2==1 ? c : 1//c))
 end
 
-function Base.:^(x::Mvp, p::Int)
+function Base.:^(x::Mvp, p::Real)
   if iszero(x) return 0 end
+  p=Int(p)
   if p<0
     x=inv(x)
     p=-p
@@ -469,11 +474,20 @@ function (p::Mvp)(;arg...)
   res
 end
 
-function Gapjm.root(p::Mvp,n::Integer=2)
+function Gapjm.root(p::Mvp,n::Real=2)
+  n=Int(n)
   if length(p.d)>1 throw(InexactError(:root,n,p)) end
   p=p.d.d[1]
   Mvp(root(first(p),n)=>root(last(p),n))
 end
+
+function Base.inv(p::Mvp)
+  if length(p.d)>1 throw(InexactError(:inv,Int,p)) end
+  if p.d.d[1].second^2==1 return Mvp([inv(m)=>c for (m,c) in p.d]...) end
+  throw(InexactError(:inv,Int,p))
+end
+
+Base.:/(p::Mvp,q::Mvp)=p* inv(q)
 
 function Base.://(p::Mvp,q::Mvp)
   res=ExactDiv(p,q)
