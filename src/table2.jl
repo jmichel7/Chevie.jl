@@ -524,3 +524,49 @@ chevieset(:D,:UnipotentClasses,function(n,char)
 end
   uc
 end)
+chevieset(:I, :CharInfo, function(m)
+  local res, applyf, v, m1
+  res = Dict{Symbol, Any}(:charparams => [Any[1, 0]])
+  if mod(m, 2) == 0
+      res[:extRefl] = [1, 5, 4]
+      m1 = div(m, 2)
+      push!(res[:charparams], [1, m1, "'"], [1, m1, "''"])
+  else
+      res[:extRefl] = [1, 3, 2]
+  end
+  push!(res[:charparams], [1, m])
+  append!(res[:charparams], map(i->[2, i], 1:div(m - 1, 2)))
+  res[:b]=map(x->x[2], res[:charparams])
+  res[:B]=map(phi->phi[1] == 1 ? phi[2] : m - phi[2], res[:charparams])
+  res[:a]=map(phi->phi[1]!=1 || phi[2]==div(m,2) ? 1 : phi[2], res[:charparams])
+  res[:A]=map(phi->phi[1]==1 || phi[2]==div(m,2) ? m-1 : phi[2], res[:charparams])
+  res[:charSymbols] = map(function (l)
+              S = map(i->[0], 1:m)
+              k = 0
+              if k != 0
+                  S[1] = [0, 1]
+                  S[1 + mod(k + l, m)] = [0, 1]
+                  S[k + 1] = []
+                  S[l + 1] = []
+              else
+                  S[1] = [1]
+                  S[l + 1] = [1]
+              end
+              S
+          end, 1:div(m - 1, 2))
+  v=map(x->[0],1:m);v[m]=[1,2];pushfirst!(res[:charSymbols],v)
+  if mod(m,2)==0
+    v=map(x->[0],1:m);v[m]=[1];v[m1]=[1];pushfirst!(res[:charSymbols],v)
+    v=map(x->[0], 1:m); v[m]=[1];v[m1]=[1]; pushfirst!(res[:charSymbols],v)
+  end
+  v=map(x->[0,1],1:m)
+  v[m]=[2]
+  pushfirst!(res[:charSymbols],v)
+  res[:malleParams] = map(x->Vector{Any}(map(PartBeta,x)),res[:charSymbols])
+  if mod(m,2)==0
+    res[:malleParams][2]=push!(res[:malleParams][2][1:m1],1)
+    res[:malleParams][3]=push!(res[:malleParams][3][1:m1],-1)
+  end
+  return res
+end)
+

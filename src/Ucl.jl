@@ -237,7 +237,7 @@ module Ucl
 
 using Gapjm
 
-export UnipotentClasses, UnipotentClassOps, ICCTable
+export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable
 
 struct UnipotentClass
   name::String
@@ -729,7 +729,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-               map(x->DiagonalMat(x,matX(T,T())),u.prop[:AuAction].F0s))
+             map(x->DiagonalMat(x,matX(T,T())),u.prop[:AuAction].F0s))
         end
       end
       u

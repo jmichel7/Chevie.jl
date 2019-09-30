@@ -40,7 +40,13 @@ chevieset(:B, :ReflectionName, function (arg...,)
         end
         if type_ == 2
             if haskey(option, :TeX)
-                return SPrint("B_", TeXBracket(r))
+                if haskey(option, :Au)
+                    return "D_8"
+                else
+                    return SPrint("B_", TeXBracket(r))
+                end
+            elseif haskey(option, :Au)
+                return "D8"
             elseif haskey(option, :arg)
                 return SPrint("\"B\",", r)
             else
@@ -482,7 +488,9 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                     a = []
                     b = []
                     d = [0, 1, 0, -1]
-                    d = d[map(x->1 + mod(x, 4), p)]
+                    d = d[map((x->begin
+                                        1 + mod(x, 4)
+                                    end), p)]
                     i = 1
                     while i <= length(p)
                         l = p[i]

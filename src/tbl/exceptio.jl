@@ -34,11 +34,11 @@ chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "H3", 
                         Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(t, :CharName))(x, Dict{Symbol, Any}(:TeX => true)))
                     end), ((chevieget(t, :CharInfo))())[:charparams])
         end))
-chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, (t->begin
+chevieset(["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, (t->begin
             function (option,)
                 local i, o
-                i = ["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"]
-                o = ["G_{24}", "G_{25}", "G_{26}", "G_{27}", "G_{29}", "G_{31}", "G_{32}", "G_{33}", "G_{34}", "E_6", "E_7", "E_8", "{}^2E_6", "{}^2F_4", "{}^3D_4", "H_3", "H_4"]
+                i = ["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"]
+                o = ["G_{24}", "G_{25}", "G_{27}", "G_{29}", "G_{31}", "G_{32}", "G_{33}", "G_{34}", "E_6", "E_7", "E_8", "{}^2E_6", "{}^2F_4", "{}^3D_4", "H_3", "H_4"]
                 if haskey(option, :TeX)
                     return o[Position(i, t)]
                 else
@@ -46,11 +46,11 @@ chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "E6", 
                 end
             end
         end))
-chevieset(["A", "D", "2A", "2D"], :ReflectionName, (t->begin
+chevieset(["D", "2A", "2D"], :ReflectionName, (t->begin
             function (r, option)
                 local i, o
-                i = ["A", "D", "2A", "2D"]
-                o = ["A", "D", "{}^2A", "{}^2D"]
+                i = ["D", "2A", "2D"]
+                o = ["D", "{}^2A", "{}^2D"]
                 if haskey(option, :arg)
                     return SPrint(FormatGAP(t), ",", r)
                 elseif haskey(option, :TeX)

@@ -249,7 +249,7 @@ function params_and_names(sers)
 end
 
 function UnipotentCharacters(t::TypeIrred) 
-  uc=getchev(t,:UnipotentCharacters)
+  uc=Dict{Symbol,Any}(k=>v for (k,v) in getchev(t,:UnipotentCharacters))
   if uc==false 
     println("Warning: $t is not a Spets!!")
     return false 

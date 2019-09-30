@@ -124,94 +124,6 @@ chevieset(:I, :CharName, function (m, x, option)
             return string(s)
         end
     end)
-chevieset(:I, :CharInfo, function (m,)
-        local res, applyf, v, m1
-        res = Dict{Symbol, Any}(:charparams => [[1, 0]])
-        if mod(m, 2) == 0
-            res[:extRefl] = [1, 5, 4]
-            m1 = div(m, 2)
-            res[:charparams] = Append(res[:charparams], [[1, m1, "'"], [1, m1, "''"]])
-        else
-            res[:extRefl] = [1, 3, 2]
-        end
-        push!(res[:charparams], [1, m])
-        res[:charparams] = Append(res[:charparams], map((i->begin
-                            [2, i]
-                        end), 1:div(m - 1, 2)))
-        res[:b] = map((x->begin
-                        x[2]
-                    end), res[:charparams])
-        res[:B] = map(function (phi,)
-                    if phi[1] == 1
-                        return phi[2]
-                    else
-                        return m - phi[2]
-                    end
-                end, res[:charparams])
-        res[:a] = map(function (phi,)
-                    if phi[1] != 1 || phi[2] == m // 2
-                        return 1
-                    else
-                        return phi[2]
-                    end
-                end, res[:charparams])
-        res[:A] = map(function (phi,)
-                    if phi[1] == 1 || phi[2] == m // 2
-                        return m - 1
-                    else
-                        return phi[2]
-                    end
-                end, res[:charparams])
-        res[:charSymbols] = map(function (l,)
-                    local S, k
-                    S = map((i->begin
-                                    [0]
-                                end), 1:m)
-                    k = 0
-                    if k != 0
-                        S[1] = [0, 1]
-                        S[1 + mod(k + l, m)] = [0, 1]
-                        S[k + 1] = []
-                        S[l + 1] = []
-                    else
-                        S[1] = [1]
-                        S[l + 1] = [1]
-                    end
-                    return S
-                end, 1:div(m - 1, 2))
-        v = map((x->begin
-                        [0]
-                    end), 1:m)
-        v[m] = [1, 2]
-        res[:charSymbols] = Concatenation([v], res[:charSymbols])
-        if mod(m, 2) == 0
-            v = map((x->begin
-                            [0]
-                        end), 1:m)
-            v[m] = [1]
-            v[m1] = [1]
-            res[:charSymbols] = Concatenation([v], res[:charSymbols])
-            v = map((x->begin
-                            [0]
-                        end), 1:m)
-            v[m] = [1]
-            v[m1] = [1]
-            res[:charSymbols] = Concatenation([v], res[:charSymbols])
-        end
-        v = map((x->begin
-                        [0, 1]
-                    end), 1:m)
-        v[m] = [2]
-        res[:charSymbols] = Concatenation([v], res[:charSymbols])
-        res[:malleParams] = map((x->begin
-                        map(PartBeta, x)
-                    end), res[:charSymbols])
-        if mod(m, 2) == 0
-            (res[:malleParams])[2] = Concatenation(((res[:malleParams])[2])[1:m1], [1])
-            (res[:malleParams])[3] = Concatenation(((res[:malleParams])[3])[1:m1], [-1])
-        end
-        return res
-    end)
 chevieset(:I, :WordsClassRepresentatives, function (m,)
         local r, x, i
         if IsInt(m // 2)
@@ -494,7 +406,9 @@ chevieset(:I, :ParameterToSymbol, function (e, p)
                         end), 1:e)
             if p[1] != 0
                 S[1 + [0, mod(-(Sum(p)), e)]] = [[0, 1], [0, 1]]
-                S[1 + map(x->mod(x, e), -p)] = [[], []]
+                S[1 + map((x->begin
+                                        mod(x, e)
+                                    end), -p)] = [[], []]
             else
                 S[e + [-(mod(p[2] - p[1], e)), 0]] = [[1], [1]]
             end

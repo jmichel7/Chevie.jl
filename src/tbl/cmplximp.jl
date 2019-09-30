@@ -152,7 +152,7 @@ chevieset(:imp, :BraidRelations, function (p, q, r)
         return res
     end)
 chevieset(:imp, :Size, function (p, q, r)
-        return (p ^ r * factorial(r)) // q
+        return div(p ^ r * factorial(r), q)
     end)
 chevieset(:imp, :ReflectionName, function (arg...,)
         local n, option
@@ -228,7 +228,7 @@ chevieset(:imp, :CartanMat, function (p, q, r)
                     end), e)
     end)
 chevieset(:imp, :ReflectionDegrees, function (p, q, r)
-        return Concatenation(p * (1:r - 1), [(r * p) // q])
+        return Concatenation(p * (1:r - 1), [div(r * p, q)])
     end)
 chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
         local res
@@ -280,7 +280,7 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
     end)
 chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
         if [q, r] == [2, 2]
-            return (p * (p + 6)) // 4
+            return div(p * (p + 6), 4)
         elseif q == 1
             return NrPartitionTuples(r, p)
         else
@@ -384,7 +384,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                                             end), m))
                         end), res[:classparams])
             res[:classes] = map((x->begin
-                            (p ^ r * factorial(r)) // x
+                            div(p ^ r * factorial(r), x)
                         end), res[:centralizers])
             return res
         else
@@ -1167,7 +1167,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                     return [[[-1, 0, 0], [0, 0, 1], [0, x, -1 + x]], [[-1, 0, 0], [x - x ^ 2, -1 + x, j ^ 2], [j * x - j * x ^ 2, j * x, 0]], [[0, 1, 0], [x, -1 + x, 0], [0, 0, -1]]]
                 end
             r = x ^ 0 * [[[[-1, 0], [-1, x]], [[x, -x], [0, -1]], [[x, -x], [0, -1]]], [[[-1, 0], [-1, x]], [[x, -x], [0, -1]], [[-1, 0], [-1, x]]], [[[-1, 0], [-1, x]], [[x, -x], [0, -1]], [[-1 + x, 1], [x, 0]]], f(x, E(3)), f(x, E(3, 2)), [[[-1]], [[-1]], [[-1]]], -x * f(x ^ -1, E(3, 2)), -x * f(x ^ -1, E(3)), [[[-1, 0], [-1, x]], [[-1, 0], [-1, x]], [[x, -x], [0, -1]]], [[[x]], [[x]], [[x]]]]
-            return r[i]
+            return -((para[2])[2]) * r[i]
         elseif [p, q, r] == [2, 2, 4]
             x = -((para[1])[1]) // (para[1])[2]
             r = [(x->begin
@@ -1188,9 +1188,9 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                             [[[x, 0], [-1, -1]], [[x, 0], [-1, -1]], [[0, 1], [x, -1 + x]], [[x, 0], [-1, -1]]]
                         end), 3, 7, 4]
             if IsInt(r[i])
-                return -x * (r[r[i]])(x ^ -1)
+                return (para[1])[2] * x * (r[r[i]])(x ^ -1)
             else
-                return (r[i])(x) * x ^ 0
+                return -((para[1])[2]) * (r[i])(x) * x ^ 0
             end
         elseif [p, q, r] == [3, 3, 4]
             x = -((para[2])[1]) // (para[2])[2]
@@ -1223,7 +1223,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                     r = [f1(x), f2(x, E(3)), f3(x), f2(x, E(3, 2)), f5(x), -x * f1(x ^ -1), f7(x, E(3)), f8(x, E(3)), f8(x, E(3, 2)), -x * f7(x ^ -1, E(3)), f11(x), -x * f3(x ^ -1), f13(x), -x * f2(x ^ -1, E(3, 2)), -x * f2(x ^ -1, E(3)), -x * f11(x ^ -1), -x * f5(x ^ -1)]
                     return x ^ 0 * r[i]
                 end
-            return m(i)
+            return -((para[2])[2]) * m(i)
         elseif [p, q, r] == [3, 3, 5]
             x = -((para[2])[1]) // (para[2])[2]
             m = function (i,)
@@ -1270,11 +1270,11 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                     r = [f1(x), f2(x), f3(x, E(3)), f4(x, E(3)), f4(x, E(3, 2)), f3(x, E(3, 2)), [[[-1]], [[-1]], [[-1]], [[-1]], [[-1]]], f8(x), f9(x), f8(1 // x) * -x, f11(x, E(3)), f12(x, E(3)), f13(x, E(3)), f13(x, E(3, 2)), f12(x, E(3, 2)), f11(x, E(3, 2)), f17(x), f1(1 // x) * -x, f13(1 // x, E(3, 2)) * -x, f20(x, E(3)), f20(x, E(3, 2)), f13(1 // x, E(3)) * -x, f23(x), f2(1 // x) * -x, f11(1 // x, E(3, 2)) * -x, f12(1 // x, E(3)) * -x, f12(1 // x, E(3, 2)) * -x, f11(1 // x, E(3)) * -x, f29(x), f4(1 // x, E(3, 2)) * -x, f4(1 // x, E(3)) * -x, f23(1 // x) * -x, f3(1 // x, E(3, 2)) * -x, f3(1 // x, E(3)) * -x, f17(1 // x) * -x, [[[x]], [[x]], [[x]], [[x]], [[x]]]]
                     return r[i]
                 end
-            return m(i)
+            return -((para[2])[2]) * m(i)
         elseif [p, q, r] == [4, 4, 3]
             x = -((para[2])[1]) // (para[2])[2]
             r = x ^ 0 * [[[[x, -1, -1, 0, 0, 0], [0, -1, 0, 0, 0, 0], [0, 0, -1, 0, 0, 0], [0, 0, 0, -1, 0, 0], [0, 0, -1 + x, -1, x, 0], [0, 1, -1, -1, 0, x]], [[-1, 0, 0, 0, 0, 0], [-x, x, 0, 0, 0, x], [0, 0, 0, 0, -x, 0], [0, 0, 0, x, 0, 0], [0, 0, -1, 0, -1 + x, 0], [0, 0, 0, 0, 0, -1]], [[x, -1, 0, 0, 0, -1], [0, -1, 0, 0, 0, 0], [0, 0, x, 0, 1, -1], [0, -x, 0, x, -1, 1 - x], [0, 0, 0, 0, -1, 0], [0, 0, 0, 0, 0, -1]]], [[[-1, 0, 0], [0, 0, 1], [0, x, -1 + x]], [[x, 0, 0], [-1, -1, 0], [1, 0, -1]], [[0, 1, 0], [x, -1 + x, 0], [0, 0, -1]]], [[[x, 0, 0], [x, -1, 0], [x, 0, -1]], [[-1, 2, 0], [0, x, 0], [0, (-(E(4)) + 1) * x, -1]], [[-1, 0, 1], [0, -1, (E(4) + 1) // 2], [0, 0, x]]], [[[x, 0, 0], [x, -1, 0], [x, 0, -1]], [[-1, 2, 0], [0, x, 0], [0, (E(4) + 1) * x, -1]], [[-1, 0, 1], [0, -1, (-(E(4)) + 1) // 2], [0, 0, x]]], [[[-1]], [[-1]], [[-1]]], [[[x, -1, 0], [0, -1, 0], [0, -1, x]], [[-1 + x, 0, 1], [0, x, 0], [x, 0, 0]], [[0, x, 0], [1, -1 + x, 0], [0, 0, x]]], [[[-1, 0, 0], [-1, x, 0], [-1, 0, x]], [[x, -2x, 0], [0, -1, 0], [0, -(E(4)) - 1, x]], [[x, 0, -x], [0, x, (E(4) - 1) // 2 * x], [0, 0, -1]]], [[[-1, 0, 0], [-1, x, 0], [-1, 0, x]], [[x, -2x, 0], [0, -1, 0], [0, E(4) - 1, x]], [[x, 0, -x], [0, x, (-(E(4)) - 1) // 2 * x], [0, 0, -1]]], [[[-1, 0], [-1, x]], [[-1, 0], [-1, x]], [[x, -x], [0, -1]]], [[[x]], [[x]], [[x]]]]
-            return r[i]
+            return -((para[2])[2]) * r[i]
         else
             S = (((chevieget(:imp, :CharInfo))(p, q, r))[:charparams])[i]
             p1rRep = function ()
@@ -1653,4 +1653,76 @@ chevieset(:imp, :Invariants, function (p, q, r)
                 return Product(arg) ^ (p // q)
             end)
         return v
+    end)
+chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
+        if q != 1 || r != 1
+            error("implemented only for G(d,1,1)")
+        end
+        H[:mul] = function (x, y)
+                local H, res, ops, W, temp, i, xi, temp1, j, e, pol, d
+                H = Hecke(y)
+                if !(IsRec(x)) || (!(haskey(x, :hecke)) || !(haskey(x, :elm)))
+                    if x == 0*x
+                        return HeckeElt(H, y[:basis], [], [])
+                    else
+                        return HeckeElt(H, y[:basis], y[:elm], y[:coeff] * (x * H[:unit]))
+                    end
+                end
+                if !(IsIdentical(H, Hecke(x)))
+                    error(" !  elements of the same algebra")
+                end
+                ops = H[:operations]
+                pol = Coefficients(Product((H[:parameter])[1], (u->begin
+                                    Mvp("xxx") - u
+                                end)), "xxx")
+                d = length(pol) - 1
+                if x[:basis] != y[:basis]
+                    return (Basis(H, "T"))(x) * (Basis(H, "T"))(y)
+                elseif x[:basis] == "T"
+                    W = Group(H)
+                    res = HeckeElt(H, x[:basis], [], [])
+                    for i = 1:length(x[:elm])
+                        temp = (x[:coeff])[i] * y
+                        xi = (x[:elm])[i]
+                        for i = 1:length(xi)
+                            temp1 = HeckeElt(H, x[:basis], [], [])
+                            for j = 1:length(temp[:elm])
+                                e = length((temp[:elm])[j])
+                                if e + 1 < d
+                                    push!(temp1[:elm], map((i->begin
+                                                    1
+                                                end), 1:e + 1))
+                                    push!(temp1[:coeff], (temp[:coeff])[j])
+                                else
+                                    temp1[:elm] = Append(temp1[:elm], map((i->begin
+                                                        fill(0, max(0, (1 + i) - 1)) + 1
+                                                    end), 0:d - 1))
+                                    temp1[:coeff] = Append(temp1[:coeff], -(pol[1:d]) * (temp[:coeff])[j])
+                                end
+                            end
+                            temp = temp1
+                            CollectCoefficients(temp)
+                        end
+                        res = res + temp
+                    end
+                    return res
+                else
+                    return (Basis(H, x[:basis]))((Basis(H, "T"))(x) * (Basis(H, "T"))(y))
+                end
+            end
+        H[:inverse] = function (h,)
+                local H, d, pol
+                if length(h[:elm]) != 1
+                    error("inverse implemented only for single T_w")
+                end
+                H = Hecke(h)
+                pol = Coefficients(Product((H[:parameter])[1], (u->begin
+                                    Mvp("xxx") - u
+                                end)), "xxx")
+                d = length(pol) - 1
+                return (h[:coeff])[1] ^ -1 * (Basis(H, "T"))(map((i->begin
+                                            fill(0, max(0, (1 + i) - 1)) + 1
+                                        end), 0:d - 1), -(pol[2:d + 1]) // pol[1]) ^ length((h[:elm])[1])
+            end
+        return true
     end)

@@ -76,7 +76,10 @@ chevieset(:G2, :ClassInfo, Dict{Symbol, Any}(:classtext => [[], [2], [1], [1, 2]
 chevieset(:G2, :PowerMaps, [nothing, [1, 1, 1, 5, 5, 1], [1, 2, 3, 6, 1, 6]])
 chevieset(:G2, :sparseFakeDegrees, [[1, 0], [1, 6], [1, 3], [1, 3], [1, 1, 1, 5], [1, 2, 1, 4]])
 chevieset(:G2, :ClassParameter, (w->begin
-            (chevieget(:G2, :ClassNames))[PositionProperty([[[]], [[2], [1, 2, 1], [2, 1, 2, 1, 2]], [[1], [2, 1, 2], [1, 2, 1, 2, 1]], [[2, 1], [1, 2]], [[2, 1, 2, 1], [1, 2, 1, 2]], [[1, 2, 1, 2, 1, 2]]], x->w in x)] end))
+            (chevieget(:G2, :ClassNames))[PositionProperty([[[]], [[2], [1, 2, 1], [2, 1, 2, 1, 2]], [[1], [2, 1, 2], [1, 2, 1, 2, 1]], [[2, 1], [1, 2]], [[2, 1, 2, 1], [1, 2, 1, 2]], [[1, 2, 1, 2, 1, 2]]], (x->begin
+                            w in x
+                        end))]
+        end))
 chevieset(:G2, :squv, function (para, sqrtpara)
         local u, v
         u = Product(para[1])

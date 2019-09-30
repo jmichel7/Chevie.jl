@@ -20,6 +20,24 @@ chevieset(:A, :PrintDiagram, function (r, indices, title)
         local i
         print(title, " ", Join(indices, " - "), "\n")
     end)
+chevieset(:A, :ReflectionName, function (r, option)
+        local o
+        if haskey(option, :arg)
+            return SPrint("\"A\",", r)
+        elseif haskey(option, :TeX)
+            if haskey(option, :Au)
+                o = ["Z_2", "S_3", "S_4", "S_5"]
+                return o[r]
+            else
+                return SPrint("A_", TeXBracket(r))
+            end
+        elseif haskey(option, :Au)
+            o = ["Z2", "S3", "S4", "S5"]
+            return o[r]
+        else
+            return SPrint("A", r)
+        end
+    end)
 chevieset(:A, :GeneratingRoots, function (l,)
         local r, i
         r = map((i->begin
@@ -136,7 +154,7 @@ chevieset(:A, :FactorizedSchurElement, function (arg...,)
 chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H
         H = Hecke(CoxeterGroup("A", n), -((param[1])[1]) // (param[1])[2])
-        return SpechtModel(H, (Partitions(n + 1))[i])
+        return -((param[1])[2]) * SpechtModel(H, (Partitions(n + 1))[i])
     end)
 chevieset(:A, :Representation, function (n, i)
         return ((chevieget(:imp, :Representation))(1, 1, n + 1, i))[2:n + 1]

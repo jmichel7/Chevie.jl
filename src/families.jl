@@ -547,7 +547,7 @@ FamilyImprimitive = function (S)
         end
       end
     end
-    if (mat*DiagonalMat(frobs))^3!=mat^0
+    if (mat*cat(frobs...,dim=(1,2)))^3!=mat^0
         print("** WARNING: (S*T)^3!=1\n")
     end
   end
