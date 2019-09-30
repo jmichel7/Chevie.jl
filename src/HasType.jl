@@ -22,6 +22,7 @@ Base.:*(a::Mvp,b::Array)=a .* b
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
 Base.:-(a::AbstractVector,b::Number)=a .- b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:+(a::AbstractArray,b::Number)=a .+ b
@@ -360,6 +361,7 @@ ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
+Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
 function DiagonalMat(v...)
