@@ -223,15 +223,34 @@ Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(zero(ModuleElt{Monomial,Int}))
 Base.zero(::Type{Mvp{T}}) where T=Mvp(zero(ModuleElt{Monomial,T}))
 Base.one(::Type{Mvp{T}}) where T=Mvp(one(T))
+Base.one(::Type{Mvp})=Mvp(1)
 Base.one(p::Mvp{T}) where T=Mvp(one(T))
 Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=length(p.d)==0
+Base.adjoint(a::Mvp)=a
 Base.transpose(p::Mvp)=p
+Base.abs(p::Mvp)=p
 Base.convert(::Type{Mvp},a::Number)=iszero(a) ? zero(Mvp{typeof(a)}) : 
                                           Mvp(one(Monomial)=>a)
-Base.convert(::Type{Mvp{T}},a::Number) where T=Mvp(one(Monomial)=>T(a))
+Base.convert(::Type{Mvp{T}},a::Number) where T=iszero(a) ? zero(Mvp{T}) : 
+                                          Mvp(one(Monomial)=>T(a))
+(::Type{Mvp{T}})(a::Number) where T=convert(Mvp{T},a)
+(::Type{Mvp{T}})(a::Mvp) where T=convert(Mvp{T},a)
+Base.convert(::Type{Mvp{T}},a::Mvp) where T=iszero(a) ? zero(Mvp{T}) : Mvp([k=>T(v) for (k,v) in a.d]...)
 Mvp(a::Number)=convert(Mvp,a)
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
+
+function Base.convert(::Type{T},a::Mvp) where T<:Number
+  if iszero(a) return zero(T) end
+  if length(a.d)>1 || !isone(a.d.d[1].first)
+      throw(InexactError(:convert,T,a)) 
+  end
+  convert(T,a.d.d[1].second)
+end
+(::Type{T})(a::Mvp) where T<: Number=convert(T,a)
+
+Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d.d)) &&
+                           isone(p.d.d[1].first) && isinteger(p.d.d[1].second))
 
 function Base.promote(a::Mvp{T1},b::Mvp{T2}) where {T1,T2}
   T=promote_type(T1,T2)
@@ -252,7 +271,7 @@ Base.:+(a::Mvp, b::Number)=b+a
 Base.:-(a::Mvp)=Mvp(-a.d)
 Base.:-(a::Mvp, b::Mvp)=a+(-b)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
-Base.:-(b::Number, a::Mvp)=Mvp(a)-b
+Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
 Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
@@ -260,12 +279,6 @@ Base.:*(b::Mvp, a::Number)=a*b
 Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
 
 Mvp(p::Pol)=p(Mvp(Pols.var[]))
-
-function Base.inv(x::Mvp)
-  if length(x.d)!=1 throw(InexactError(:inv,x)) end
-  (m,c)=first(x.d)
-  Mvp(inv(m)=>(c^2==1 ? c : 1//c))
-end
 
 function Base.:^(x::Mvp, p::Real)
   if iszero(x) return 0 end
@@ -482,18 +495,22 @@ function Gapjm.root(p::Mvp,n::Real=2)
 end
 
 function Base.inv(p::Mvp)
-  if length(p.d)>1 throw(InexactError(:inv,Int,p)) end
-  if p.d.d[1].second^2==1 return Mvp([inv(m)=>c for (m,c) in p.d]...) end
-  throw(InexactError(:inv,Int,p))
+  if length(p.d)>1 throw(InexactError(:inv,Mvp,p)) end
+  (m,c)=first(p.d)
+  if c^2==1 return Mvp(inv(m)=>c) end
+  if c isa Cyc return Mvp(inv(m)=>inv(c)) end
+  throw(InexactError(:inv,typeof(c),p))
 end
 
 Base.:/(p::Mvp,q::Mvp)=p* inv(q)
 
 function Base.://(p::Mvp,q::Mvp)
   res=ExactDiv(p,q)
-  if isnothing(res) error("rational fractions of Mvp not yet implemented") end
+  if isnothing(res) return p*inv(q) end
   res
 end
+
+Base.://(p::Number,q::Mvp)=Mvp(p)//q
 
 function ExactDiv(p::Mvp,q::Mvp)
 # println("p=$p q=$q")

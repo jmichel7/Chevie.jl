@@ -206,9 +206,9 @@ function hecke(W,p::C;rootpara::C=zero(C))where C
   hecke(W,fill(p,nbgens(W)),rootpara=rootpara)
 end
 
-function hecke(W,p::Tuple;rootpara::C=zero(C))where C
-  rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
-  hecke(W,[[i for i in p] for j in 1:nbgens(W)],rootpara=rootpara)
+function hecke(W,p::Tuple;rootpara=zero(p[1]))
+  rootpara= iszero(rootpara) ? typeof(p[1])[] : fill(rootpara,nbgens(W))
+  hecke(W,[collect(p) for j in 1:nbgens(W)],rootpara=rootpara)
 end
 
 hecke(W::Group)=hecke(W,1)

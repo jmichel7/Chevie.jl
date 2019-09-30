@@ -899,13 +899,20 @@ with rootparameter v constructs the rk matrices it specifies
 """
 function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   V=Vector{Int}[]
+  T=Int
+  function prom(a)
+    if a isa Vector for u in a prom(u) end
+    else T=promote_type(T,typeof(a))
+    end
+  end
+  prom(gr[2])
   for S in gr[1]
     if S isa Integer append!(V,map(i->V[end],1:S))
     else push!(V,S)
     end
   end
   n=length(V)
-  S=map(i->one(fill(0,n,n))*v^2,1:rk)
+  S=map(i->one(fill(T(0),n,n))*v^2,1:rk)
   for j in 1:n for i in V[j] S[i][j,j]=-one(v) end end
   for i in gr[2] 
     if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end

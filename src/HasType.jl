@@ -28,9 +28,9 @@ Base.:+(a::AbstractArray,b::Number)=a .+ b
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
 Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Pol)=a ./ b
-#Base.:*(a::Mvp, b::Array)=Ref(a).*b
-#include("mvp.jl")
-#Base.:*(b::Array,a::Mvp)=b.*Ref(a)
+Base.:/(a::AbstractArray,b::Mvp)=a ./ b
+Base.://(a::AbstractArray,b::Mvp)=a .// b
+Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
@@ -123,6 +123,14 @@ end
 
 #-----------------------------------------------------------------------
 
+struct Unknown
+end
+
+Base.:+(a,b::Unknown)=b
+Base.:+(b::Unknown,a)=b
+Base.:*(a,b::Unknown)=b
+Base.:*(b::Unknown,a)=b
+#-----------------------------------------------------------------------
 function Cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
@@ -371,7 +379,7 @@ function det(A)
   if size(A,1)==1 return A[1,1]
   elseif size(A,1)==2 return A[1,1]*A[2,2]-A[1,2]*A[2,1]
   end
-  sum(i->det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
+  sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
 end
 
 function exterior_power(A,m)
@@ -643,7 +651,21 @@ end
 Unbind(x)=x
 #-------------------------------------------------------------------------
 
-include("tables.jl")
+const src=[ 
+#  "compat3", 
+"cmp4_22", "cmplxg24", "cmplxg25", "cmplxg26", 
+"cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
+"cmplximp", "coxh3", "coxh4", "coxi", 
+"weyla", "weylbc", "weyld", 
+#"weyl2a", 
+"weyl2d",
+"cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
+"weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "exceptio"]
+
+for f in src
+  println("reading tbl/$f.jl")
+  include("tbl/$f.jl")
+end
 include("table2.jl")
 
 end

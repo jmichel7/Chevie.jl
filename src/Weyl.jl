@@ -435,17 +435,16 @@ function PermRoot.roots(C::Matrix)
   R
 end 
 
-
 function coxeter_from_cartan(m)
   function find(c)
-    if c in 0:4 return [2,3,4,6,0][c+1] end
+    if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
     x=conductor(c)
     if c==2+E(x)+E(x,-1) return x 
     elseif c==2+E(2x)+E(2x,-1) return 2x
     else error("not a Cartan matrix of a Coxeter group")
     end
   end
-  res=one(m)
+  res=Int.([i==j for i in axes(m,1), j in axes(m,2)])
   for i in 2:size(m,1), j in 1:i-1
     res[i,j]=res[j,i]=find(m[i,j]*m[j,i])
   end

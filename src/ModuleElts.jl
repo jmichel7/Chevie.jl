@@ -207,11 +207,12 @@ function Base.show(io::IO,m::ModuleElt)
   res=""
   for (k,v) in m 
     v=sprint(show,v;context=io)
-    if occursin(r"[-+*]",v[nextind(v,0,2):end]) v="($v)" end
-    v= (v=="1" ? "" : (v=="-1" ? "-" : v))
+    k=showbasis(io,k)
+    if occursin(r"[-+*/]",v[nextind(v,0,2):end]) v="($v)" end
+    if v=="1" && !isempty(k) v="" end
+    if v=="-1" && !isempty(k) v="-" end
     if (isempty(v) || v[1]!='-') && !start v="+"*v end
-    res*=v
-    res*=showbasis(io,k)
+    res*=v*k
     if start start=false end
   end
   if res=="" res="1" end
