@@ -25,8 +25,9 @@ different `vec`.
 The  complete  type  of  our  permutations is `Perm{T}` where `T<:Integer`,
 where `Vector{T}` is the type of the vector which holds the image of `1:n`.
 This   can  used  to  save  space  or  time  when  possible.  For  instance
-`Perm{UInt8}`  uses less  space than  `Perm{Int}` and  can be used for Weyl
-groups of rank <=8 since they have at most 240 roots.
+`Perm{UInt8}`  can be used for  Weyl groups of rank  <=8 since they have at
+most 240 roots. If `T` is not specified we take it to be `Int16` since this
+is a good compromise between speed and compactness.
 
 # Examples
 ```julia-repl
@@ -141,7 +142,7 @@ Base.vec(a::Perm)=a.d
    `Perm{T}(x::Integer...)where T<:Integer`
 
    returns  a cycle.  For example  `Perm{Int8}(1,2,3)` constructs the cycle
-   `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken as to be `Int`.
+   `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken as to be `Int16`.
 """
 function Perm{T}(x::Integer...)where T<:Integer
   if isempty(x) return Perm(T[]) end
@@ -153,7 +154,7 @@ function Perm{T}(x::Integer...)where T<:Integer
   Perm(d)
 end
 
-Perm(x::Int...)=Perm{Int}(x...)
+Perm(x::Integer...)=Perm{Int16}(x...)
 
 """
    `Perm{T}(p::Perm) where T<:Integer`
@@ -183,7 +184,7 @@ end
 """
 just for fun: Perm[1 2;5 6 7;4 9]=perm"(1,2)(5,6,7)(4,9)"
 """
-function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int64,N} where N},
+function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int,N} where N},
   b::Vararg{Number,N} where N)
   res=Perm()
   for i in a
@@ -197,7 +198,7 @@ end
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
   return a `Perm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
-  Gives an error otherwise. If not given `{T}` is given to be `{Int}`.
+  Gives an error otherwise. If not given `{T}` is given to be `{Int16}`.
   Needs the objects in `l` to be sortable.
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
@@ -207,18 +208,18 @@ function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   Perm{T}(s1)\Perm{T}(s)
 end
 
-Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int}(l,l1)
+Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int16}(l,l1)
 
 """
    `Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer`
 
 assumes `l`  is  union  of  orbits  under  group  elt `g`; returns the
-`Perm{T}` effected on `l` by `g`. If not given `T==Int`.
+`Perm{T}` effected on `l` by `g`. If not given `T==Int16`.
 Needs objects in `l` sortable
 """
 Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
 
-Perm(g,l::AbstractVector;action::Function=^)=Perm{Int}(g,l,action=action)
+Perm(g,l::AbstractVector;action::Function=^)=Perm{Int16}(g,l,action=action)
 
 #---------------------------------------------------------------------
 Base.one(p::Perm)=Perm(empty(p.d))
@@ -260,11 +261,11 @@ Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
 Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 
-Base.rand(::Type{Perm},i::Integer)=Perm(sortperm(rand(1:i,i)))
+Base.rand(::Type{Perm},i::Integer)=Perm(Int16.(sortperm(rand(1:i,i))))
 Base.rand(::Type{Perm{T}},i::Integer) where T=Perm(T.(sortperm(rand(1:i,i))))
 
 "`Matrix(a::Perm)` is the permutation matrix for a"
-Base.Matrix(a::Perm,n=length(a.d))=Int[j==i^a for i in 1:n, j in 1:n]
+Base.Matrix(a::Perm,n=length(a.d))=[j==i^a for i in 1:n, j in 1:n]
 
 " `largest_moved_point(a::Perm)` is the largest integer moved by a"
 largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
@@ -363,7 +364,7 @@ returns the orbits of a on domain d
 # Example
 ```julia-repl
 julia> orbits(Perm(1,2)*Perm(4,5),1:5)
-3-element Array{Array{Int64,1},1}:
+3-element Array{Array{Int16,1},1}:
  [1, 2]
  [3]
  [4, 5]
@@ -389,19 +390,23 @@ end
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
-2-element Array{Array{Int64,1},1}:
+2-element Array{Array{Int16,1},1}:
  [1, 2]
  [4, 5]
 ```
 """
 cycles(a::Perm;check=false)=orbits(a;trivial=false,check=check)
 
-function Base.show(io::IO, a::Perm{T}) where T
-  if T!=Int print(io,T) end
+function Base.show(io::IO, a::Perm)
   cyc=orbits(a;trivial=false,check=true)
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T
+ if T!=Int16 print(io,typeof(p),": ") end
+  show(io,p)
 end
 
 " order(a) is the order of the permutation a"

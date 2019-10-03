@@ -336,10 +336,10 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
       if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(isequal(z),elm)]
       else 
         coeff[i]=-negative_part(sum(j->
-           bar(qx*getvalue(inv(T(inv(elm[j]))),x))*coeff[j],1:i-1))*inv(qx)
+          bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
-    res=HeckeTElt(norm!(map((x,y)->x=>y,elm,coeff)),H)
+    res=HeckeTElt(norm!(ModuleElt(map((x,y)->x=>y,elm,coeff))),H)
   end
   cdict[w]=res
 end

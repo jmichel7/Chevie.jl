@@ -119,7 +119,7 @@ function Base.show(io::IO,m::Monomial)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
-  print(io,"Monomial:")
+  print(io,typeof(m),":")
   show(io,m)
 end
 
@@ -217,7 +217,7 @@ Base.broadcastable(p::Mvp)=Ref(p)
 Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 
-Base.show(io::IO, x::Mvp)=show(io,x.d)
+Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp})=Mvp(zero(ModuleElt{Monomial,Int}))

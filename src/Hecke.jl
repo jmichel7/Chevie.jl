@@ -299,7 +299,9 @@ Base.:-(a::HeckeElt, b::HeckeElt)=a+(-b)
 
 Base.:*(a::HeckeElt, b)=clone(a,a.d*b)
 Base.:*(a::HeckeElt, b::Pol)=clone(a,a.d*b)
+Base.:*(a::HeckeElt, b::Mvp)=clone(a,a.d*b)
 Base.:*(b::Pol, a::HeckeElt)=a*b
+Base.:*(b::Mvp, a::HeckeElt)=a*b
 Base.:*(b::Number, a::HeckeElt)= a*b
 
 Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 

@@ -100,6 +100,8 @@ include("Cycs.jl")
 @reexport using .Cycs
 include("Pols.jl")
 @reexport using .Pols
+include("Mvps.jl")
+@reexport using .Mvps
 include("PermRoot.jl")
 @reexport using .PermRoot
 include("Chars.jl")
@@ -120,8 +122,6 @@ include("Symbols.jl")
 @reexport using .Symbols
 include("Cosets.jl")
 @reexport using .Cosets
-include("Mvps.jl")
-@reexport using .Mvps
 include("Posets.jl")
 @reexport using .Posets
 include("MatInt.jl")
