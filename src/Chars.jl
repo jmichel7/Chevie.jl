@@ -973,16 +973,18 @@ end
 
 """
 `charnames(W;options...)`
+`charnames(io::IO,W)`
 
 returns  the  list  of  character  names  for the reflection group `W`. The
-optional  options are keywords which can give alternative names in certain
-cases, or a different formatting of names in general.
+optional  options are IOContext attributes which can give alternative names
+in  certain cases, or a different formatting  of names in general. They can
+be specified by giving an IO as argument.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> charnames(W)
+julia> charnames(W;limit=true)
 6-element Array{String,1}:
  "φ₁‚₀" 
  "φ₁‚₆" 
@@ -1000,7 +1002,7 @@ julia> charnames(W;TeX=true)
  "\\phi_{2,1}"  
  "\\phi_{2,2}"  
 
-julia> charnames(W;spaltenstein=true)
+julia> charnames(W;spaltenstein=true,limit=true)
 6-element Array{String,1}:
  "1"  
  "ε"  
@@ -1064,7 +1066,7 @@ the  columns  to  those  of  the  subgroup.  The  return object has a field
 other  fields contain labeling information  taken from the character tables
 of `u` and `g` when it exists.
 
-```julia-repl
+```julia-rep1        needs Gap4
 julia> g=Group([Perm(1,2),Perm(2,3),Perm(3,4)])
 Group([(1,2),(2,3),(3,4)])
 

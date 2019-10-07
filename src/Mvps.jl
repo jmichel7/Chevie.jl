@@ -217,6 +217,7 @@ Base.broadcastable(p::Mvp)=Ref(p)
 Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 
+# necessary to clean up a ModuleElt upstream
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
@@ -514,9 +515,9 @@ Base.://(p::Number,q::Mvp)=Mvp(p)//q
 
 function ExactDiv(p::Mvp,q::Mvp)
 # println("p=$p q=$q")
-  if length(q.d)==1 return p*inv(q)
+  if iszero(q) error("cannot divide by 0")
+  elseif length(q.d)==1 return p*inv(q)
   elseif length(p.d)<2 return iszero(p) ? p : nothing
-  elseif iszero(q) error("cannot divide by 0")
   end
   var=first(first(p.d)[1].d)[1]
   res=zero(p)
@@ -530,7 +531,7 @@ function ExactDiv(p::Mvp,q::Mvp)
 #   println("mp=$mp cp=$cp")
     t=ExactDiv(cp[mp],cq[mq])
     if isnothing(t) return nothing end
-    if mp!=mq t*=Monomial(var=>mp-mq) end
+    if mp!=mq t=Monomial(var=>mp-mq)*t end
     res+=t
 #   print("t=$t res=$res p=$p=>")
     p-=t*q

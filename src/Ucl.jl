@@ -90,7 +90,7 @@ Lusztig  and Shoji have given an algorithm to compute the matrix `P_{ψ,χ}`,
 which  is  implemented  in  Chevie.  The  relationship  with  characters of
 `𝐆(𝔽_q)`,  taking to simplify the ordinary Springer correspondence, is that
 the  restriction to the unipotent elements of the almost character `R_χ` is
-equal  to `q^{b_χ} X_χ`, where `b_χ` is `dim 𝓑ᵤ` for an element `u` of the
+equal  to `q^{b_χ} X_χ`, where `b_χ` is `dim  𝓑ᵤ` for an element `u` of the
 class  `C` such  that the  support of  `χ` is  `C̄`. The restriction of the
 Deligne-Lusztig  characters `R_w` to  the unipotents are  called the *Green
 functions*  and can also be computed by Chevie. The values of all unipotent
@@ -201,12 +201,12 @@ UnipotentClasses(G₂)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
      u│dBu B-C  C(u) G₂(G₂₍₎) .(G₂) .(G₂)  .(G₂)
 ──────┼──────────────────────────────────────────
-(Ã₁)₃ │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
+G₂    │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
 G₂(a₁)│  1  20 q⁴.Z₂   2:φ₂‚₁ 11:Id             
 Ã₁    │  2  .2    q⁶  Id:φ₂‚₂                   
 A₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃                   
-1     │  3  ?? q⁵.A₁ Id:φ′₁‚₃                   
-G₂    │  6  ..   .G₂  Id:φ₁‚₆
+(Ã₁)₃ │  3  ?? q⁵.A₁ Id:φ′₁‚₃                   
+1     │  6  ..   .G₂  Id:φ₁‚₆  
 ```
 
 The  function 'ICCTable' gives the  transition matrix between the functions
@@ -265,7 +265,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
     cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
     n*="^{$cl}"
-    n=fromTeX(n,opt...)
+    n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
     n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
@@ -799,8 +799,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   classes=classes[l]
   AdjustAu!(classes,springerseries)
   orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)))
-  merge!(orderclasses.prop,Dict(:classes=>classes,
-                                :label=>function(p,n,opt)name(IOContext(stdout,opt...),p.prop[:classes][n]) end))
+  orderclasses.prop[:label]=(io,n)->name(io,classes[n])
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
 end
@@ -858,9 +857,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
-  if get(io,:order,false)
-    println(io,Posets.showgraph(uc.orderclasses;io.dict...))
-  end
+  if get(io,:order,false) println(io,uc.orderclasses) end
   sp = map(copy, uc.springerseries)
   if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
@@ -918,10 +915,8 @@ function Base.show(io::IO,uc::UnipotentClasses)
     end, sp))
   end
   row_labels=name.(Ref(io),uc.classes)
-  if get(io,:rows,false)!=false
-      p = Perm(sortperm(map(x->x.dimBu, uc.classes)))
-      tbl = permuted(tbl, inv(p))
-      row_labels = permuted(row_labels, p)
+  if get(io,:rows,false)==false
+    io=IOContext(io,:rows=>sortperm(map(x->x.dimBu, uc.classes)))
   end
   format(io,toM(tbl);rows_label="u",col_labels=col_labels,row_labels=row_labels)
 end

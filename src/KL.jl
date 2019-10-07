@@ -229,9 +229,9 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   v=gens(W)[s]*w
   pol=KLPol(W,gens(W)[s]*y,v)+shift(KLPol(W,y,v),1)
   lz=lw-2
-  while div(lw-lz,2)<=Pols.degree(pol)
+  while div(lw-lz,2)<=degree(pol)
    for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
-      if div(lw-lz,2)<=Pols.degree(pol) && pol.c[div(lw-lz,2)+1]>0 && 
+      if div(lw-lz,2)<=degree(pol) && pol.c[div(lw-lz,2)+1]>0 && 
         isleftdescent(W,z,s) && bruhatless(W,y,z)
         let z=z, m=m=KLMue(W,z,v)
         if m!=0 
@@ -356,7 +356,7 @@ julia> C=Cpbasis(H)
 (::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#25")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#27")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂

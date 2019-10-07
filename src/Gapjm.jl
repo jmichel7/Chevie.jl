@@ -82,7 +82,7 @@ export ds # dump struct
 function ds(s)
   println(typeof(s),":")
   for f in fieldnames(typeof(s))
-    println(f,"=",getproperty(s,f))
+    println(f,"=",getfield(s,f))
   end
 end
 

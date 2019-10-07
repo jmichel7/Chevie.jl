@@ -35,7 +35,7 @@ julia> a=Perm(1,2,3)
 (1,2,3)
 
 julia> vec(a)
-3-element Array{Int64,1}:
+3-element Array{Int16,1}:
  2
  3
  1
@@ -83,10 +83,10 @@ julia> smallest_moved_point(a)
 1
 
 julia> Perm{Int8}(a) # convert to Perm{Int8}
-Int8(1,2,3)
+Perm{Int8}: (1,2,3)
 
 julia> Matrix(b)
-4×4 Array{Int64,2}:
+4×4 Array{Bool,2}:
  0  1  0  0
  0  0  1  0
  0  0  0  1

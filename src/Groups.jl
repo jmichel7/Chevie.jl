@@ -12,7 +12,7 @@ julia> G=Group([Perm(1,2),Perm(1,2,3)])
 Group([(1,2),(1,2,3)])
 
 julia> gens(G)
-2-element Array{Perm{Int64},1}:
+2-element Array{Perm{Int16},1}:
  (1,2)  
  (1,2,3)
 
@@ -80,7 +80,7 @@ end
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> transversal(G,1)
-Dict{Int64,Perm{Int64}} with 3 entries:
+Dict{Int64,Perm{Int16}} with 3 entries:
   2 => (1,2)
   3 => (1,3,2)
   1 => ()
@@ -89,7 +89,7 @@ Dict{Int64,Perm{Int64}} with 3 entries:
 
 ```julia-repl
 julia> transversal(G,[1,2],action=(x,y)->x.^y)
-Dict{Array{Int64,1},Perm{Int64}} with 6 entries:
+Dict{Array{Int64,1},Perm{Int16}} with 6 entries:
   [1, 3] => (2,3)
   [1, 2] => ()
   [2, 3] => (1,2,3)
@@ -158,7 +158,7 @@ end
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> minimal_words(G)
-Dict{Perm{Int64},Array{Int64,1}} with 6 entries:
+Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   ()      => Int64[]
   (2,3)   => [2, 1]
   (1,3,2) => [1, 2, 1]

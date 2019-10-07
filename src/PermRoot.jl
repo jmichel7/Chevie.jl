@@ -528,7 +528,7 @@ torus_order(W::PermRootGroup,q,i)=prod(l->q-E(l),refleigen(W)[i])
 
 function classinv(W::PermRootGroup)
   gets(W,:classinv)do W
-    map(x->cycletype(W(x...),domain=simple_representatives(W)),
+    map(x->cycletype(W(x...),domain=simple_representatives(parent(W))),
          classinfo(W)[:classtext])
   end
 end
@@ -540,7 +540,7 @@ function PermGroups.conjugacy_classes(W::PermRootGroup)
 end
   
 function Groups.position_class(W::PermRootGroup,w)
-  i=cycletype(w,domain=simple_representatives(W))
+  i=cycletype(w,domain=simple_representatives(parent(W)))
   l=findall(isequal(i),classinv(W))
   if length(l)>1 
     if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W))

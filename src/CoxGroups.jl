@@ -73,7 +73,7 @@ julia> W=coxsym(4)
 𝔖 ₄
 
 julia> p=W(1,3,2,1,3)
-UInt8(1,4)
+Perm{UInt8}: (1,4)
 
 julia> word(W,p)
 5-element Array{Int64,1}:
@@ -101,7 +101,7 @@ julia> word(W,longest(W))  # the (unique) longest element in W
  1
 
 julia> w0=longest(W)
-UInt8(1,4)(2,3)
+Perm{UInt8}: (1,4)(2,3)
 julia> length(W,w0)
 6
 julia> map(i->word(W,reflection(W,i)),1:nref(W))
@@ -143,6 +143,7 @@ The dictionary from Chevie is as follows:
      CoxeterLength(W,w)                    → length(W,w)
      CoxeterWord(W,w)                      → word(W,w)
      LongestCoxeterElement(W)              → longest(W)
+     ReducedExpressions(W,w)               → reduced_words(W,w)
      FirstLeftDescending(W,w)              → firstleftdescent(W,w)
      LeftDescenTSet(W,w)                   → leftdescents(W,w)
      ReducedInRightCoset(W,w)              → reduced(W,w)
@@ -160,7 +161,7 @@ module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
   longest, reduced, braid_relations, coxetermat, parabolic_representatives,
-  coxsym
+  coxsym, coxb, reduced_words
 
 export isleftdescent, nref # 'virtual' methods
 
@@ -181,14 +182,38 @@ isrightdescent(W::CoxeterGroup,w,i)=isleftdescent(W,inv(w),i)
 
 """
   word(W::CoxeterGroup,w)
-  The Coxeter word for element w of W
+
+returns  a reduced word in the standard generators of the Coxeter group `W`
+for  the  element  `w`  (represented  as  the  vector  of the corresponding
+generator indices).
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> w=perm"(1,11)(3,10)(4,9)(5,7)(6,12)"
+(1,11)(3,10)(4,9)(5,7)(6,12)
+
+julia> w in W
+true
+
+julia> word(W,w)
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 2
+ 1
+```
+The  result  of   `word`  is  the  lexicographically  smallest reduced word
+for~`w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
 function Gapjm.word(W::CoxeterGroup,w)
   ww=Int[]
   while w!=one(W)
     i=firstleftdescent(W,w)
     push!(ww,i)
-    w=gens(W)[i]*w
+    w=W(i)*w
   end
   ww
 end
@@ -208,7 +233,7 @@ function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W))
   i=1
   while i<=length(I)
     if isleftdescent(W,w,I[i]) i+=1
-    else w=gens(W)[I[i]]*w
+    else w=W(I[i])*w
       i=1
     end
   end
@@ -234,7 +259,7 @@ function reduced(W::CoxeterGroup,w)
   while true
     i=firstleftdescent(W, w)
     if isnothing(i) return w end
-    w = gens(W)[i] * w
+    w = W(i) * w
   end
 end
 
@@ -275,7 +300,7 @@ function reduced(H::CoxeterGroup,W::CoxeterGroup,S)
   for w in S
     for i in eachindex(gens(W))
       if !isrightdescent(W,w,i)
-        w1=w*gens(W)[i]
+        w1=w*W(i)
         if w1==reduced(H,w1) push!(res,w1) end
       end
     end
@@ -286,11 +311,7 @@ end
 function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=gets(W->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
-  if coxrank(W)==1
-    if l!=1 return T[]
-    else return gens(W)
-    end
-  end
+  if coxrank(W)==1 return l>1 ? T[] : gens(W) end
   H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=gets(W->[Set([one(W)])],W,:rc)::Vector{Set{T}}
   while length(rc)<=l
@@ -352,7 +373,7 @@ function bruhatless(W::CoxeterGroup,x,y)
   d=length(W,y)-length(W,x)
   while d>0
     i=firstleftdescent(W,y)
-    s=gens(W)[i]
+    s=W(i)
     if isleftdescent(W,x,i)
       if x==s return true end
       x=s*x 
@@ -380,7 +401,7 @@ end
 function reduced_words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
-  vcat(map(x->vcat.(Ref([x]),reduced_words(W,gens(W)[x]*w)),l)...)
+  vcat(map(x->vcat.(Ref([x]),reduced_words(W,W(x)*w)),l)...)
 end
 
 "diagram of finite Coxeter group"
@@ -446,8 +467,7 @@ struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
 end
 
 (W::CoxSymmetricGroup)(w...)=element(W,w...)
-Base.iterate(W::CoxSymmetricGroup)=iterate(W.G)
-Base.iterate(W::CoxSymmetricGroup,state)=iterate(W.G,state)
+Base.iterate(W::CoxSymmetricGroup,r...)=iterate(W.G,r...)
 
 "The symmetric group on n letters as a Coxeter group"
 function coxsym(n::Int)
@@ -456,10 +476,10 @@ function coxsym(n::Int)
 end
 
 function Base.show(io::IO, W::CoxSymmetricGroup)
-  repl=get(io,:limit,false)
-  if repl print(io,TeXstrip("𝔖 _{$(W.n)}"))
-  else 
-    print(io,"coxsym($(W.n))")
+  name="\\frakS _{$(W.n)}"
+  if get(io,:TeX,false) print(io,name)
+  elseif get(io,:limit,false) print(io,TeXstrip(name))
+  else print(io,"coxsym($(W.n))")
   end
 end
 
@@ -508,4 +528,72 @@ function PermRoot.reflection(W::CoxSymmetricGroup{T},i::Int)where T
 end
 
 PermRoot.reflections(W::CoxSymmetricGroup)=reflection.(Ref(W),1:nref(W))
+
+#------------ Example II: HyperOctaedral groups as Coxeter groups
+
+struct CoxHyperoctaedralGroup{T} <: CoxeterGroup{Perm{T}}
+  G::PermGroup{T}
+  n::Int
+  prop::Dict{Symbol,Any}
+end
+
+(W::CoxHyperoctaedralGroup)(w...)=element(W,w...)
+Base.iterate(W::CoxHyperoctaedralGroup,r...)=iterate(W.G,r...)
+
+"The Hyperoctaedral group as a Coxeter group"
+function coxb(n::Int)
+  conj=i->2*n+1-i
+  gens=[Perm{UInt8}(n,conj(n))]
+  for i in n:-1:2 
+     push!(gens,Perm{UInt8}(i,i-1)*Perm{UInt8}(conj(i),conj(i-1)))
+  end
+  CoxHyperoctaedralGroup{UInt8}(Group(gens),n,Dict{Symbol,Any}())
+end
+
+function Base.show(io::IO, W::CoxHyperoctaedralGroup)
+  print(io,"coxb($(W.n))")
+end
+
+PermRoot.refltype(W::CoxHyperoctaedralGroup)=[TypeIrred(Dict(:series=>:B,
+                                        :indices=>collect(1:W.n)))]
+
+nref(W::CoxHyperoctaedralGroup)=length(gens(W))^2
+
+Gapjm.degrees(W::CoxHyperoctaedralGroup)=2*(1:length(gens(W)))
+
+Base.length(W::CoxHyperoctaedralGroup)=prod(degrees(W))
+
+function isleftdescent(W::CoxHyperoctaedralGroup,w,i::Int)
+  (W.n+1-i)^w>(W.n+2-i)^w
+end
+
+function PermRoot.reflection(W::CoxHyperoctaedralGroup,i::Int)
+  ref=gets(W,:reflections)do W
+    conj=i->2*W.n+1-i
+    refs=vcat(gens(W),map(i->Perm{UInt8}(i,conj(i)),1:W.n-1))
+    for i in 1:W.n 
+      append!(refs,map(j->Perm{UInt8}(i,j)*Perm{UInt8}(conj(i),conj(j)),
+          vcat(i+2:W.n,conj.(1:i-1))))
+    end
+    refs
+  end
+  ref[i]
+end
+
+PermRoot.reflections(W::CoxHyperoctaedralGroup)=reflection.(Ref(W),1:nref(W))
+
+function Perms.reflength(W::CoxHyperoctaedralGroup,w)
+  c=cycles(w)
+  conj=i->2*W.n+1-i
+  c1=filter(x->Set(x)==Set(conj.(x)),c)
+  div(reduce(+,map(length,c1);init=0)+
+      reduce(+,map(x->length(x)-1,setdiff(c,c1));init=0),2)
+end
+
+" Only parabolics defined are I=1:m for m≤n"
+function PermRoot.reflection_subgroup(W::CoxHyperoctaedralGroup,I::AbstractVector{Int})
+  if I!=1:length(I) error(I," should be 1:n for some n") end
+  CoxHyperoctaedralGroup(Group(gens(W)[I]),W.n,Dict{Symbol,Any}())
+end
+  
 end

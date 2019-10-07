@@ -54,7 +54,9 @@ module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit
 
-using ..Gapjm # for degree
+using ..Gapjm: Gapjm # for degree, root
+using ..Util: bracket_if_needed, TeXstrip, horner, divisors
+using ..Cycs: Cyc
 
 const var=Ref(:x)
 varname(a::Symbol)=(var[]=a)

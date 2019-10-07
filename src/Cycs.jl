@@ -86,7 +86,7 @@ Finally, a benchmark:
 
 ```benchmark
 julia> function testmat(p) 
-         ss=vcat([[[i,j] for j in i+1:p-1] for i in 0:p-1]...)
+         ss=[[i,j] for i in 0:p-1 for j in i+1:p-1]
          [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
        end
 testmat (generic function with 1 method)
@@ -102,15 +102,15 @@ testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
 end; 
 ```
 
-for testmat(12) takes 0.4s in GAP3, 0.3s in GAP4
+testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
 export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using Gapjm
-import ..Util: ModuleElt, norm!
-import ..Util: TeXstrip, bracket_if_needed, constant
-import ..Util: factor, prime_residues, phi
+using ..Gapjm: Gapjm, coefficients, degree # for extending coefficients, root
+using ..ModuleElts: ModuleElts, ModuleElt, norm!
+using ..Util: TeXstrip, bracket_if_needed, constant
+using ..Util: factor, prime_residues, phi
 
 const use_list=false
 if use_list
@@ -350,7 +350,7 @@ function Base.show(io::IO, ::MIME"text/html", a::Cyc)
   print(io, "\$")
 end
 
-function Util.show(io::IO, p::Cyc)
+function Base.show(io::IO, p::Cyc)
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
@@ -801,7 +801,7 @@ end
   return Quadratic(a,b,root,den*d)
 end
 
-function Util.show(io::IO,q::Quadratic)
+function Base.show(io::IO,q::Quadratic)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   rq=string(q.a)

@@ -165,4 +165,16 @@ CycPols
 # Posets.jl Documentation
 ```@docs
 Posets
+lcm_partitions
+gcd_partitions
+transitive_closure
+linear_extension
+hasse
+incidence
+reverse
+partition
+restricted(p::Poset,ind::AbstractVector{<:Integer})
+is_join_lattice
+is_meet_lattice
+Poset(W::CoxeterGroup,w=longest(W))
 ```
