@@ -736,7 +736,7 @@ function matX(W::PRG,w)
 end
 
 function cartan_coeff(W::PRG,i,j)
-  v=findfirst(!iszero),W.roots[i])
+  v=findfirst(!iszero,W.roots[i])
   r=W.roots[j]-W.roots[j^reflection(W,i)]
   return r[v]//W.roots[i][v];
 end

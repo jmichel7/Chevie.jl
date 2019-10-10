@@ -302,7 +302,7 @@ struct CosetGroup{T,TW}<:Group{Coset{T,TW}}
 end
 
 Groups.Group(g::Vector{Coset{T,TW}}) where {T,TW}=
-  CosetGroup(filter(!isone),g),Dict{Symbol,Any}())
+  CosetGroup(filter(!isone,g),Dict{Symbol,Any}())
 
 Base.:/(W::PermGroup,H::PermGroup)=Group(map(x->Coset(H,x),gens(W)))
 
