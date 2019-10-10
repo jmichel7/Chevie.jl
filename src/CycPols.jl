@@ -283,7 +283,7 @@ function CycPol(p::Pol{T})where T
   if iszero(p) return zero(CycPol{T})
   elseif length(p.c)==1 # p==ax^s
     return CycPol(p.c[1],valuation(p))
-  elseif 2==count(x->!iszero(x),p.c) # p==ax^s+bx^t
+  elseif 2==count(!iszero,p.c) # p==ax^s+bx^t
     a=Root1(Cyc(-p.c[1]//p.c[end]))
     if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1

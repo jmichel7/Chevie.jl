@@ -25,7 +25,7 @@ MATINTrgcd = function (N, a)
   c = 0
   while true
     for i in 1:length(r) r[i] = mod(r[i] + 1, d[i]) end
-    i = findfirst(x->x<=0,r)
+    i = findfirst(<=(0),r)
     if isnothing(i)
       g=1
       i=0
@@ -129,14 +129,14 @@ end
 SNFofREF = function (R, destroy)
   n = length(R)
   m = length(R[1])
-  piv = map(x->PositionProperty(x, y->y!=0), R)
-  r = PositionProperty(piv, x->x==false)
+  piv = map(x->findfirst(!iszero,x), R)
+  r = findfirst(==(false),piv)
   if r == false r = length(piv)
   else
       r-=1
       piv=piv[1:r]
   end
-  piv = Append(piv, Difference(1:m, piv))
+  append!(piv, Difference(1:m, piv))
   if destroy
       T = R
       for i in 1:r T[i][1:m] = T[i][piv] end

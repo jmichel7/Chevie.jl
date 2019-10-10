@@ -106,7 +106,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
           i+=2
         end
       end
-      reverse(filter(y->!iszero(y),sort(part)))
+      reverse(filter(!iszero,sort(part)))
     end
   else
     symbol2para = function (S,)
@@ -167,7 +167,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       map(function(y)
         if char != 2 return Dominates(y[:parameter], x[:parameter]) end
         m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
-        f = x-> map(i->sum(filter(z->z<i,x))+i*count(z->z>=i,x) ,1:m)
+        f = x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
         fx = f(x[:parameter][1])
         fy = f(y[:parameter][1])
         for i in 1:m
@@ -306,8 +306,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
               push!(ex, l)
           end
       end
-      part = filter(y->!iszero(y),sort(part)) 
-      [reverse(part), ex]
+      [reverse(filter(!iszero,sort(part))), ex]
     end
   else
     ss = XSP(2, 0, n, 1)
@@ -325,8 +324,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
           i+=2
         end
       end
-      part = filter(y->!iszero(y),sort(part)) 
-      reverse(part)
+      reverse(filter(!iszero,sort(part)))
     end
   end
   l = union(map(c->map(x->
@@ -392,7 +390,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     uc[:orderClasses] = Hasse(Poset(map((x->begin
     map(function (y,)
       m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
-      f = x-> map(i-> Sum(Filtered(x, z->z<i))+i*count(z->z>=i, x) , 1:m)
+      f = x-> map(i-> sum(filter(<(i),x))+i*count(>=(i),x) , 1:m)
       fx = f(x[:parameter][1])
       fy = f(y[:parameter][1])
       for i = 1:m

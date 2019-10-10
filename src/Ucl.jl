@@ -908,7 +908,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
           repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
-        if !all(x->x==1,ss[:Z])
+        if !all(isone,ss[:Z])
           res*=string("/", join(map(q->sprint(show,q;context=io),ss[:Z]),","))
         end
         return res
@@ -943,9 +943,9 @@ function Det(m)
   if n<=3 
     return sum(p->prod(i->m[i,i^p],1:n)*sign(p),collect(symmetric_group(n)))
   end
-  i=findfirst(i->count(x->!iszero(x),m[i,:])<=2,axes(m,1))
+  i=findfirst(i->count(!iszero,m[i,:])<=2,axes(m,1))
   if !isnothing(i)
-    j=findall(x->!iszero(x),m[i,:])
+    j=findall(!iszero,m[i,:])
     if isempty(j) return 0 end
     return sum(k->(-1)^(i+k)*m[i,k]*Det(compl(m,i,k)),j)
   end
@@ -961,7 +961,7 @@ function Det(m)
     return (-1)^(i+j)*m[i][j]*Det(compl(m,i,j))
   end
   print("m=");display(iszero.(m))
-  v=map(x->count(y->!iszero(y),x),toL(m))
+  v=map(x->count(!iszero,x),toL(m))
   j=findfirst(isequal(minimum(v)),v)
   if length(m)>71 println("\n",length(m),":",v[j]) end
 # if v[j]>5 return det*DeterminantMat(m) end

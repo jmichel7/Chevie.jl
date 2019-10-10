@@ -751,8 +751,7 @@ function Base.show(io::IO,b::GarsideElm)
   function p(b)
     l=join(map(b.elm) do e
       w=word(M,e)
-      pad=any(x->x>=10,w) ? " " : ""
-      return join(map(string,w),pad)
+      return join(map(string,w),any(>=(10),w) ? " " : "")
     end,".")
     if b.pd==0 return l end
     if !isempty(l) l="."*l end
@@ -1170,10 +1169,9 @@ Base.:(==)(a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=(a.v==b.v)&&
 Base.hash(a::TwistedPowerMonoidAtom, h::UInt)=
  hash(a.v,hash(a.t,hash(a.M,0x595dee0e71d271d0%UInt)))
 
-IntListToString(l)=any(x->x>10,l) ? join(l,",") : join(l)
 function Base.show(io::IO,r::TwistedPowerMonoidAtom)
   if r.t print(io,"t") end
-  print(io,"(",join(map(a->IntListToString(word(r.M,a)),r.v),","),")")
+  print(io,"(",join(map(a->joindigits(word(r.M,a)),r.v),","),")")
 end
 
 function TwistedPowerMonoid(M,n)

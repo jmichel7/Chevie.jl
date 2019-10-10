@@ -61,7 +61,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
       twist=Perm{Int16}(phires^length(c),J)
       if o[1][:series]==:D && length(J)==4
         if order(twist)==2
-          rf=findall(i->i!=i^twist,J)
+          rf=vcat(cycles(twist)...)
           o[1].prop[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
         elseif order(twist)==3 && J[1]^twist!=J[2]
           o[1].prop[:indices]=J[[1,4,3,2]]

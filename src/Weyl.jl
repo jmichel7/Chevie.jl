@@ -655,7 +655,7 @@ function Base.show(io::IO, W::FCG)
     indices=t[:indices]
     n=sprint(show,t; context=io)
     if indices!=eachindex(indices) && (repl|| TeX)
-      ind=any(i->i>10,indices) ? join(indices,",") : join(indices)
+      ind=any(>=(10),indices) ? join(indices,",") : join(indices)
       n*="_{($ind)}"
     end
     n
@@ -669,7 +669,7 @@ end
 #end
 
 function cartancoeff(W::FCG,i,j)
-  v=findfirst(x->!iszero(x),root(W,i))
+  v=findfirst(!iszero,root(W,i))
   r=root(W,j)-root(W,j^reflection(W,i))
   div(r[v],root(W,i)[v])
 end
@@ -863,7 +863,7 @@ end
 
 function Base.show(io::IO, W::FCSG)
   I=inclusion(W)[1:coxrank(W)]
-  n=any(i->i>=10,I) ? join(I,",") : join(I)
+  n=any(>=(10),I) ? join(I,",") : join(I)
   repl=get(io,:limit,false)
   if !repl print(io,"reflection_subgroup(") end
   print(io,sprint(show,W.parent; context=io))
@@ -911,9 +911,8 @@ end
 
 Base.show(io::IO,G::SEGroup)=print(io,"SEGroup(",gens(G),")")
 
-function Group(a::AbstractVector{AdditiveSE})
-  a=filter(x->!isone(x),a)
-  SEGroup(a,Dict{Symbol,Any}())
+function Groups.Group(a::AbstractVector{AdditiveSE})
+  SEGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
 
 struct SubTorus
@@ -941,7 +940,7 @@ function Base.:in(s,T::SubTorus)
   s=s.v*n
   V=List(T.generators,x->mod.(x,n))
   i=1
-  for v in Filtered(V,x->!iszero(x))
+  for v in filter(!iszero,V)
     while v[i]==0 
       if s[i]!=0 return false
       else i+=1
@@ -959,7 +958,7 @@ end
 
 function AbelianGenerators(l)
   res=empty(l)
-  l=filter(x->!isone(x),l)
+  l=filter(!isone,l)
   while !isempty(l)
     o=order.(l)
     push!(res,l[findfirst(isequal(maximum(o)),o)])

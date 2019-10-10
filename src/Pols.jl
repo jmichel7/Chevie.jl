@@ -73,10 +73,9 @@ Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ?
     p.c[i-p.v+1] : zero(T)
 
 function Polstrip(v::AbstractVector,val=0)
-  b=findfirst(x->!iszero(x),v)
+  b=findfirst(!iszero,v)
   if isnothing(b) return Pol(eltype(v)[],0) end
-  l=findlast(x->!iszero(x),v)
-  Pol(v[b:l],val+b-1)
+  Pol(v[b:findlast(!iszero,v)],val+b-1)
 end
 
 Pol(a)=iszero(a) ? Pol(typeof(a)[],0) : Pol([a],0)

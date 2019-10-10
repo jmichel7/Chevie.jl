@@ -269,7 +269,7 @@ chevieset(:families,:Dihedral,function(e)
   else
 # The associated symbol to S(0,l) is s_i=[0] for i\ne 0,l and s_0=s_l=[1].
     f[:fourierMat]=map(i->map(j->
-# (-1)^Number([i[1],j[1]],x->x=0)*  This sign is in
+# (-1)^count(iszero,[i[1],j[1]])*  This sign is in
 # [Malle, "Unipotente Grade", Beispiel 6.29]
           (c(i[1]*j[2]+i[2]*j[1])-c(i[1]*j[1]+i[2]*j[2]))/e,nc),nc)
     f[:special]=1
@@ -415,7 +415,7 @@ function Drinfeld_double(g;lu=false)
     r[:names] = ClassNamesCharTable(t)
     r[:names][Position(r[:centelms], g[:identity])] = "1"
     r[:chars] = t[:irreducibles]
-    r[:charNames][PositionProperty(r[:chars], y->y==1)] = "1"
+    r[:charNames][findfirst(isone,r[:chars])] = "1"
     r[:centralizers] = t[:centralizers]
     return r
 end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
@@ -496,7 +496,7 @@ FamilyImprimitive = function (S)
   eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
   equiv = map(x->
       Dict(:globaleps=>length(x)==1 ? 1 :
-     (-1)^sum(i->sum(j->sum(y->count(k->y<k,j),x[i]),x[i+1:end]),1:length(x)-1),
+       (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
      :aa=>map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
   epsreps = map(x->eps(vcat(x...)), ll)
   roots = map(i->E(e,i),0:e-1)
@@ -568,8 +568,8 @@ MakeFamilyImprimitive = function (S, uc)
   if length(S)==1 return Family("C1", map(f, S)) end
   r = Family(FamilyImprimitive(FullSymbol(S[1])))
   r[:charNumbers] = map(f, r[:symbols])
-  r[:special] = PositionProperty(r[:charNumbers],(x->uc[:a][x] == uc[:b][x]))
-  r[:cospecial] = PositionProperty(r[:charNumbers],(x->uc[:A][x] == uc[:B][x]))
+  r[:special] = findfirst(x->uc[:a][x]==uc[:b][x],r[:charNumbers])
+  r[:cospecial] = findfirst(x->uc[:A][x]==uc[:B][x],r[:charNumbers])
 # if length(blocks(r[:fourierMat])) > 1 error() end
   Family(r)
 end
@@ -629,7 +629,7 @@ FamiliesClassical=function(sym)
         f[:special] = 1
     else
         f[:charLabels] = map(f[:M♯])do M
-          v = map(z->count(y->y>=z, M) % 2, Z1)
+         v = map(z->count(>=(z), M) % 2, Z1)
           D = length(v)
           v1 = v[2:2:D-D%2]
           v2 = v[3:2:(D-1)+D%2]

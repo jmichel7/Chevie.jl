@@ -94,7 +94,7 @@ function blocks(M::Matrix)::Vector{Vector{Int}}
   l=size(M,1)
   if l==0 return Vector{Int}[] end
   cc=collect(1:l) # cc[i]: in which block is i, initialized to different blocks
-  nz=x->!iszero(x)
+  nz=!iszero
   for i in 1:l, j in i+1:l
     # if new relation i~j then merge components:
     if (nz(M[i,j]) || nz(M[j,i])) && cc[i]!=cc[j]
@@ -388,7 +388,7 @@ function echelon!(m::Matrix)
   rk=0
   inds=collect(axes(m,1))
   for k in axes(m,2)
-    j=findfirst(x->!iszero(x),m[rk+1:end,k])
+    j=findfirst(!iszero,m[rk+1:end,k])
     if isnothing(j) continue end
     j+=rk
     rk+=1
@@ -414,7 +414,7 @@ function nullspace(m::Matrix)
   j=0
   lim=size(m,1)
   for i in axes(m,1)
-    f=findfirst(x->!iszero(x),m[i,j+1:end])
+    f=findfirst(!iszero,m[i,j+1:end])
     if isnothing(f)
       lim=i-1
       break 

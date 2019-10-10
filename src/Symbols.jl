@@ -106,7 +106,7 @@ julia> partβ([0,4,5])
  3
 ```
 """
-partβ(β)=filter(x->!iszero(x),reverse(β.-(0:length(β)-1)))
+partβ(β)=filter(!iszero,reverse(β.-(0:length(β)-1)))
 
 """
 `symbol_partition_tuple(p, s)` symbol of shape `s` for partition tuple `p`.
@@ -214,7 +214,7 @@ function degree_feg_symbol(s,p=length(fullsymbol(s)))
   else    res=div(e*r*(r-1),2)+r
   end
   res+=e*sum(S->sum(S.*(0:length(S)-1))-sum(l->div(l*(l+1),2),S),
-               filter(x->!isempty(x),s))
+               filter(!isempty,s))
   gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
   else res+=maximum(gamma.(0:e-1))
@@ -227,7 +227,7 @@ function valuation_feg_symbol(s)
   d=defectsymbol(s)
   if !(d in [0,1]) return -1 end
   e=length(s)
-  res=e*sum(S->sum(S.*(length(S)-1:-1:0)),filter(x->!isempty(x),s))
+  res=e*sum(S->sum(S.*(length(S)-1:-1:0)),filter(!isempty,s))
   gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
   else res+=minimum(gamma.(0:e-1))
@@ -367,7 +367,7 @@ function fegsymbol(s,p=0)
     prod(CycPol(q^(e*S[j])-q^(e*S[i])) for i in 1:l for j in i+1:l)
   end
   function theta(S)
-    s1=filter(x->x>0,S)
+    s1=filter(>(0),S)
     if isempty(s1) return one(CycPol) end
     prod(l->prod(h->CycPol(q^(e*h)-1),1:l),s1)
   end
@@ -382,7 +382,7 @@ function fegsymbol(s,p=0)
   else
     rot=circshift.(Ref(s),0:e-1)
     res*=div(CycPol(sum(map(j->p^j,0:e-1).* map(s->q^sum((0:e-1).*map(sum,s)),
-                                                rot))),count(i->i==s, rot))
+                                                rot))),count(==(s), rot))
     if e == 2 && p == -1 res=-res end
   end
   if r==2 && (e>2 && p==E(e)) res=CycPol(res(E(2e)*q)//E(2e, degree(res))) end
@@ -494,7 +494,7 @@ function XSP(rho,s,n,d=false)
     n=i*(0:n-1)-div(rho*m*(m-1)*((4m-5)+6d),6)-s*m*(m+d-1)
     return map(f) do S
       function rr(x,s)
-        isempty(x) ? x : reverse(filter(y->!iszero(y),x-(0:length(x)-1)*rho-s))
+        isempty(x) ? x : reverse(filter(!iszero,x-(0:length(x)-1)*rho-s))
       end
       r=Dict(:symbol=>S,:sp=>[rr(S[1],0), rr(S[2],s)],:dimBu=>n)
       if defectsymbol(S) == 0

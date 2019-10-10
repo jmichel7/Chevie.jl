@@ -519,7 +519,7 @@ function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
     v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
     l=CycPol.((permutedims(v)*t)[1,:])
     ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
-    W.prop[:reflengths]=map(x->count(y->!iszero(y),x),ll)
+    W.prop[:reflengths]=map(x->count(!iszero,x),ll)
     ll
   end
 end
@@ -558,7 +558,7 @@ function Base.show(io::IO, W::PermRootGroup)
     n=sprint(show,t; context=io)
     inds=indices(t)
     if inds!=eachindex(inds)
-      ind=any(i->i>10,inds) ? join(inds,",") : join(inds)
+      ind=any(>(10),inds) ? join(inds,",") : join(inds)
       n*="_{($ind)}"
     end
     n
@@ -666,7 +666,7 @@ end
 function coroot(W::PRG,i)
   if i<=length(W.coroots) return W.coroots[i] end
   m=matX(W,reflection(W,i))
-  j=findfirst(x->!iszero(x),roots(W)[i])
+  j=findfirst(!iszero,roots(W)[i])
   r=map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
   if all(isinteger,r) r=Int.(r) end
   r
@@ -736,7 +736,7 @@ function matX(W::PRG,w)
 end
 
 function cartan_coeff(W::PRG,i,j)
-  v=findfirst(x->!iszero(x),W.roots[i])
+  v=findfirst(!iszero),W.roots[i])
   r=W.roots[j]-W.roots[j^reflection(W,i)]
   return r[v]//W.roots[i][v];
 end

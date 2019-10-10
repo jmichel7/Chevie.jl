@@ -520,7 +520,7 @@ function EvalPolRoot(pol::Pol,x,n,p)
   if isempty(pol.c) return 0 end
   P=vcat(fill(0,mod(pol.v,n)),pol.c)
   P=map(i->Pol(P[i:n:length(P)],div(pol.v-mod(pol.v,n),n))(x*p^n),1:n)
-  j=findlast(x->!iszero(x),P)
+  j=findlast(!iszero,P)
   if isnothing(j) return 0 end
   pol=Pol(P[1:j],0)
   l=pol.v-1+filter(i->!iszero(pol.c[i]),eachindex(pol.c))

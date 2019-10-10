@@ -513,7 +513,7 @@ function lower(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
 # println("lowering $(c.n):$(c.d)")
   if n==1 return c end
 if use_list
-  nz=findall(x->!iszero(x),c.d)
+  nz=findall(!iszero,c.d)
   if length(nz)==0 return Cyc(c.d[1]) end
   zb=zumbroich_basis(n)
 else
@@ -527,13 +527,13 @@ if use_list
       if all(z->z%p==0,zb[nz])
         return lower(Cyc(m,div.(zb[nz],p),c.d[nz]))
       end
-    elseif count(x->!iszero(x),c.d)%(p-1)==0
+    elseif count(!iszero,c.d)%(p-1)==0
       cnt=zeros(Int,m)
       for (i,v) in enumerate(zumbroich_basis(c.n)) 
         if !iszero(c.d[i]) cnt[1+(v%m)]+=1 end 
       end
       if all(x->iszero(x) || x==p-1,cnt) 
-        u=findall(x->!iszero(x),cnt).-1
+        u=findall(!iszero,cnt).-1
         kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]
         if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
         elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
@@ -554,7 +554,7 @@ else
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
       let p=p, m=m, n=n
       if all(x->iszero(x) || x==p-1,cnt) 
-        u=findall(x->!iszero(x),cnt).-1
+        u=findall(!iszero,cnt).-1
 #       kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))
         kk=sort(@. div(u+m*mod(-u,p)*invmod(m,p),p)%m)
         if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
@@ -586,7 +586,7 @@ function galois(c::Cyc,n::Int)
   if gcd(n,c.n)!=1 error("$n should be prime to conductor($c)=$(c.n)") end
 if use_list
   zb=zumbroich_basis(c.n)
-  nz=findall(x->!iszero(x),c.d)
+  nz=findall(!iszero,c.d)
   if isempty(nz) c
   else let zb=zb
      sum(t->c.d[t]*E(c.n,zb[t]*n),nz)

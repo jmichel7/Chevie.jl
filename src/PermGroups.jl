@@ -78,7 +78,7 @@ end
 PermGroup(W::PermGroup)=W
 
 function Groups.Group(a::AbstractVector{Perm{T}}) where T
-  PermGroup(filter(x->!isone(x),a),Dict{Symbol,Any}())
+  PermGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO,G::PermGroup)
@@ -302,7 +302,7 @@ struct CosetGroup{T,TW}<:Group{Coset{T,TW}}
 end
 
 Groups.Group(g::Vector{Coset{T,TW}}) where {T,TW}=
-  CosetGroup(filter(x->!isone(x),g),Dict{Symbol,Any}())
+  CosetGroup(filter(!isone),g),Dict{Symbol,Any}())
 
 Base.:/(W::PermGroup,H::PermGroup)=Group(map(x->Coset(H,x),gens(W)))
 

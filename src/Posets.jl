@@ -54,7 +54,9 @@ by the arguments.
 
 ```julia-repl
 julia> lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-Set(Array{Int64,1}[[3, 4], [1, 2, 5, 6]])
+2-element Array{Array{Int64,1},1}:
+ [1, 2, 5, 6]
+ [3, 4]      
 ```
 """
 function lcm_partitions(arg...)
@@ -69,7 +71,7 @@ function lcm_partitions(arg...)
     end
     b
   end
-  reduce(lcm2,arg)
+  sort(collect(reduce(lcm2,arg)))
 end
 
 """
@@ -84,15 +86,20 @@ arguments.
 
 ```julia-repl
 julia> gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-Set(Array{Int64,1}[[6], [3], [4], [1], [5], [2]])
+6-element Array{Array{Int64,1},1}:
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+ [6]
 ```
 """
 function gcd_partitions(arg...)
-  function gcd2(a,b)
+  sort(collect(reduce(arg)do a,b
     res = map(x->map(y->intersect(x, y), b), a)
-    Set(filter(x->!isempty(x),vcat(res...)))
-  end
-  reduce(gcd2,arg)
+    Set(filter(!isempty,vcat(res...)))
+  end))
 end
 
 struct Poset

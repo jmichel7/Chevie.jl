@@ -283,7 +283,7 @@ function Base.show(io::IO, h::HeckeElt)
     res=basename(h)
     if repl || TeX
       if isempty(w) res*="."
-      else res*="_{"*(any(x->x>=10,w) ? join(w,",") : join(w))*"}"
+      else res*="_{"*(any(>=(10),w) ? join(w,",") : join(w))*"}"
       end
     else res*="("*join(map(x->"$x",w),",")*")"
     end
