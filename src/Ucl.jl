@@ -457,8 +457,8 @@ function AdjustAu!(classes,springerseries)
     l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
           springerseries)
 #   println(springerseries)
-    chars=vcat(map(j->last.(springerseries[j][:locsys][l[j]]),
-                   eachindex(l))...)
+    chars=reduce(vcat,map(j->last.(springerseries[j][:locsys][l[j]]),
+                   eachindex(l)))
     f=QuotientAu(u.prop[:Au],chars)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",classes[i].name," ",[Au,chars],"=>",f,"\n");
@@ -721,8 +721,8 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         end
       end
       if all(x->haskey(x.prop,:balacarter),v)
-        u.prop[:balacarter]=vcat([map(j->j>0 ? x[j] : -x[-j],
-                    v[i].prop[:balacarter]) for (i,x) in enumerate(l)]...)
+        u.prop[:balacarter]=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
+                    v[i].prop[:balacarter]) for (i,x) in enumerate(l)])
       end
       if rank(W)>semisimplerank(W) && haskey(u.prop, :red) 
         T=torus(rank(W)-semisimplerank(W))
@@ -753,8 +753,8 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
     elseif length(v)==1 return deepcopy(v[1])
     end
-    s=Dict{Symbol,Any}(:levi=>vcat(map(i->l[i][v[i][:levi]],eachindex(v))...))
-    s[:Z]=vcat(getindex.(v,:Z)...)
+    s=Dict{Symbol,Any}(:levi=>reduce(vcat,map(i->l[i][v[i][:levi]],eachindex(v))))
+    s[:Z]=reduce(vcat,getindex.(v,:Z))
     s[:locsys]=map(Cartesian(getindex.(v,:locsys)...)) do v
       v=collect.(zip(v...))
       u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].prop[:Au]),

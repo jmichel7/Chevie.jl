@@ -269,7 +269,7 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
   produ=function(l,d)
     p=filter(x->l[1][x]<=d,eachindex(l[1]))
     if length(l)==1 return map(x->[x],p) end
-    return vcat(map(i->vcat.([i],produ(l[2:end],div(d,l[1][i]))),p)...)
+    return reduce(vcat,map(i->vcat.([i],produ(l[2:end],div(d,l[1][i]))),p))
   end
   p=[prod(map((i,j)->j[i],l,t1)) for l in produ(t,d)]
   p=union(map(divisors,p)...)

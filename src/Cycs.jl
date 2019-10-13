@@ -839,7 +839,7 @@ function Gapjm.root(x::Cyc,n::Number=2)
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
-  ss=vcat([[[i,j] for j in i+1:p-1] for i in 0:p-1]...)
+  ss=reduce(vcat,[[[i,j] for j in i+1:p-1] for i in 0:p-1])
   [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
 end
 end

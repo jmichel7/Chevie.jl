@@ -331,7 +331,7 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
 end
 
 function Gapjm.elements(W::CoxeterGroup)
-  vcat(map(i->elements(W,i),0:nref(W))...)
+  reduce(vcat,map(i->elements(W,i),0:nref(W)))
 end
 
 const Wtype=Vector{Int8}
@@ -362,7 +362,7 @@ function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
 end
 
 function Gapjm.words(W::CoxeterGroup)
-  vcat(map(i->words(W,i),0:nref(W))...)
+  reduce(vcat,map(i->words(W,i),0:nref(W)))
 end
 
 """
@@ -401,7 +401,7 @@ end
 function reduced_words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
-  vcat(map(x->vcat.(Ref([x]),reduced_words(W,W(x)*w)),l)...)
+  reduce(vcat,map(x->vcat.(Ref([x]),reduced_words(W,W(x)*w)),l))
 end
 
 "diagram of finite Coxeter group"
@@ -457,7 +457,7 @@ function coxetermat end
 function braid_relations(W::CoxeterGroup)
   p(i,j,b)=map(k->iszero(k%2) ? j : i,1:b)
   m=coxetermat(W)
-  vcat(map(i->map(j->[p(i,j,m[i,j]),p(j,i,m[i,j])],1:i-1),1:size(m,1))...)
+  reduce(vcat,map(i->map(j->[p(i,j,m[i,j]),p(j,i,m[i,j])],1:i-1),1:size(m,1)))
 end
 #--------------------- CoxSymmetricGroup ---------------------------------
 struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}

@@ -161,7 +161,7 @@ end
 
 function fullsymbol(S)
   if isempty(S) || S[end] isa AbstractVector return S end
-  vcat(map(i->map(copy,S[1:end-2]),1:S[end-1])...)
+  reduce(vcat,map(i->map(copy,S[1:end-2]),1:S[end-1]))
 end
 
 """
@@ -183,7 +183,7 @@ end
 function valuation_gendeg_symbol(p)
   p=fullsymbol(p)
   e=length(p)
-  p=sort!(vcat(p...))
+  p=sort!(reduce(vcat,p))
   m=length(p)
   sum(p.*(m-1:-1:0))-div(m*(m-e)*(2*m-3-e),12*e)
 end
@@ -192,7 +192,7 @@ function degree_gendeg_symbol(p)
   p=fullsymbol(p)
   r=ranksymbol(p)
   e=length(p)
-  p=sort!(vcat(p...))
+  p=sort!(reduce(vcat,p))
   m=length(p)
   if mod(m,e)==1 r=div(e*r*(r+1),2)
   else           r+= div(e*r*(r-1),2)
@@ -332,15 +332,15 @@ function symbols(e,r,c=1)
       m+=1
       if length(new)==0 break end
     end
-    res=vcat(map(x->arrangements(x,e),res)...)
+    res=reduce(vcat,map(x->arrangements(x,e),res))
     filter(s->defShape(s)==0  &&  
       all(x->defShape(x)!=0  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
   end
 
   c=c%e
-  S=vcat(map(shapesSymbols(r,e,c)) do s
+  S=reduce(vcat,map(shapesSymbols(r,e,c)) do s
     map(x->symbol_partition_tuple(x,s),
-       partition_tuples(r-ranksymbol(map(x->0:x-1,s)),e)) end...)
+       partition_tuples(r-ranksymbol(map(x->0:x-1,s)),e)) end)
   !iszero(c) ? S : filter(IsReducedSymbol,S)
 end
 
@@ -401,18 +401,18 @@ function Tableaux(S)
   if isempty(S) return S end
   w=sum(sum,S)
   if w==0 return [map(x->map(y->Int[],x),S)] end
-  res=vcat(map(function(i) local rim, l
+  res=reduce(vcat,map(function(i) local rim, l
     l=length(S[i])
     rim = filter(j->S[i][j+1]<S[i][j],1:l-1)
     if l!=0 && S[i][l]!=0 push!(rim,l) end
-    return vcat(map(function(p)
+    return reduce(vcat,map(function(p)
           n=deepcopy(S)
           n[i][p]-=1
           n=Tableaux(n)
           for t=n push!(t[i][p], w) end
           return n
-      end, rim)...)
-    end, 1:length(S))...)
+      end, rim))
+    end, 1:length(S)))
   res
 end
 
@@ -490,7 +490,7 @@ function XSP(rho,s,n,d=false)
     n=sum(length,dist)
     d=defectsymbol(dist)
     m=div(n,2)
-    i=sort(vcat(dist...),rev=true)
+    i=sort(reduce(vcat,dist),rev=true)
     n=i*(0:n-1)-div(rho*m*(m-1)*((4m-5)+6d),6)-s*m*(m+d-1)
     return map(f) do S
       function rr(x,s)

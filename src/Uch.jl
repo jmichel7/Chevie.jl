@@ -426,7 +426,7 @@ B₂ │(-1/2)qΦ₄   0    -1   -,-
 function UnipotentCharacters(W::Group) 
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
-    ser[:levi]=vcat(getindex.(sers,:levi)...)
+    ser[:levi]=reduce(vcat,getindex.(sers,:levi))
     ser[:relativeType]=filter(x->x[:rank]!=0,getindex.(sers,:relativeType))
     if haskey(sers[1],:eigenvalue)
       ser[:eigenvalue]=prod(getindex.(sers,:eigenvalue))

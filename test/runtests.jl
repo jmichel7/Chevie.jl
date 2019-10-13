@@ -181,7 +181,7 @@ end
 @testset "Hecke.jl" begin
 @test mytest("W=coxgroup(:A,2)","A₂")
 @test mytest("H=hecke(W,0)","Hecke(A₂,0)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#27\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#25\")){Int64,Perm{Int16},HeckeAlgebra{Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("el=words(W)","6-element Array{Array{Int8,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
 @test mytest("W=coxgroup(:B,2)","B₂")
@@ -207,7 +207,7 @@ end
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","Hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H)","(::getfield(Gapjm.KL, Symbol(\"#f#10\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#27\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#25\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 end
 @testset "ModuleElts.jl" begin
@@ -300,8 +300,8 @@ end
 @test mytest("p=Poset(coxgroup(:A,2))","<1,2<21,12<121")
 @test mytest("hasse(p)","6-element Array{Array{Int64,1},1}:\n [2, 3]\n [4, 5]\n [4, 5]\n [6]\n [6]\n []")
 @test mytest("incidence(p)","6×6 Array{Bool,2}:\n 1  1  1  1  1  1\n 0  1  0  1  1  1\n 0  0  1  1  1  1\n 0  0  0  1  0  1\n 0  0  0  0  1  1\n 0  0  0  0  0  1")
-@test mytest("lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","Set(Array{Int64,1}[[3, 4], [1, 2, 5, 6]])")
-@test mytest("gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","Set(Array{Int64,1}[[6], [3], [4], [1], [5], [2]])")
+@test mytest("lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","2-element Array{Array{Int64,1},1}:\n [1, 2, 5, 6]\n [3, 4]")
+@test mytest("gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","6-element Array{Array{Int64,1},1}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]")
 @test mytest("m=[j-i in [0,1] for i in 1:5, j in 1:5]","5×5 Array{Bool,2}:\n 1  1  0  0  0\n 0  1  1  0  0\n 0  0  1  1  0\n 0  0  0  1  1\n 0  0  0  0  1")
 @test mytest("transitive_closure(m)","5×5 Array{Bool,2}:\n 1  1  1  1  1\n 0  1  1  1  1\n 0  0  1  1  1\n 0  0  0  1  1\n 0  0  0  0  1")
 @test mytest("p=Poset([j%i==0 for i in 1:5, j in 1:5])","1<3,5\n1<2<4")

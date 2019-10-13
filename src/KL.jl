@@ -326,7 +326,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
 #
 # thus we compute P_{x,w} by induction on l(w)-l(x) by
 # P_{x,w}=\neg ∑_{x<y≤w} R_{x,y} P_{y,w}
-    elm=vcat(reverse(bruhatless(W,w))...)
+    elm=reduce(vcat,reverse(bruhatless(W,w)))
     coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
     f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
     for i in 2:length(elm)
@@ -356,7 +356,7 @@ julia> C=Cpbasis(H)
 (::getfield(Gapjm.KL, Symbol("#f#10")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::getfield(Gapjm.Hecke, Symbol("#f#27")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::getfield(Gapjm.Hecke, Symbol("#f#25")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂

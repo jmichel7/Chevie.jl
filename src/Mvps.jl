@@ -542,7 +542,7 @@ end
 
 function Base.gcd(a::Mvp,b::Mvp)
   if any(x->length(x.d)==1,[a,b]) 
-    return Mvp([gcd(vcat(map(x->x[1],a.d),map(x->x[1],b.d))...)=>1])
+    return Mvp([gcd(reduce(vcat,map(x->x[1],a.d),map(x->x[1],b.d)))=>1])
   end
   listvar=(variables(a),variables(b))
   v=symdiff(listvar...)

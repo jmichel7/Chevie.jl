@@ -54,7 +54,7 @@ chevieset(:imp,:GeneratingRoots,function(p,q,r)
 
 chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   part2dynkin=function(part)
-    p=sort(vcat(map(d->1-d:2:d-1, part)...))
+    p=sort(reduce(vcat,map(d->1-d:2:d-1, part)))
     p=p[div(3+length(p),2):end]
     res= ctype==1 ? [2*p[1]] : [p[1]]
     append!(res,p[2:end]-p[1:end-1])
@@ -92,7 +92,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   end
   if char != 2
     symbol2para = function(S)
-      c=sort(vcat(S...))
+      c=sort(reduce(vcat,S))
       i=1
       part=Int[]
       d=mod(ctype,2)
@@ -110,7 +110,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     end
   else
     symbol2para = function (S,)
-      c=sort(vcat(S...))
+      c=sort(reduce(vcat,S))
       i=1
       part=Int[]
       ex=Int[]
@@ -281,14 +281,14 @@ chevieset(:D,:UnipotentClasses,function(n,char)
                                    map(x->x ? [1,1] : [2], s[:Au]))]
   end
   function partition2DR(part)
-    p=sort(vcat(map(x->1-x:2:x-1, part)...))
+    p=sort(reduce(vcat,map(x->1-x:2:x-1, part)))
     p=p[1+div(length(p),2):end]
     vcat([p[1]+p[2]], map(i->p[i+1]-p[i], 1:length(p)-1))
   end
   if char==2
     ss = XSP(4, 0, n, 1)
     symbol2partition = function (S)
-      c=sort(vcat(S...))
+      c=sort(reduce(vcat,S))
       i = 1
       part = Int[]
       ex = Int[]
@@ -311,7 +311,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   else
     ss = XSP(2, 0, n, 1)
     function symbol2partition(S)
-      c=sort(vcat(S...))
+      c=sort(reduce(vcat,S))
       i = 1
       part = Int[]
       while i <= length(c)

@@ -518,7 +518,7 @@ function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
     t=CharTable(W).irr[charinfo(W)[:extRefl],:]
     v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
     l=CycPol.((permutedims(v)*t)[1,:])
-    ll=map(c->vcat(map(p->fill(p[1].r,p[2]),c.v)...),l)
+    ll=map(c->reduce(vcat,map(p->fill(p[1].r,p[2]),c.v)),l)
     W.prop[:reflengths]=map(x->count(!iszero,x),ll)
     ll
   end

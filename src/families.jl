@@ -39,9 +39,7 @@ Base.haskey(f::Family,k)=haskey(f.prop,k)
 Base.setindex!(f::Family,v,k)=setindex!(f.prop,v,k)
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
-  if !isa(f[:fourierMat],Matrix)
-    f[:fourierMat]=hcat(f[:fourierMat]...)
-  end
+  if !isa(f[:fourierMat],Matrix) f[:fourierMat]=toM(f[:fourierMat]) end
   if !haskey(f,:charLabels)
     f[:charLabels]=map(string,1:length(f[:eigenvalues]))
   end
@@ -281,7 +279,7 @@ chevieset(:families,:Dihedral,function(e)
   f[:perm]=prod(c) do i
    Perm(i,findfirst(isequal([nc[i][1],e-nc[i][2]]),nc))
    end
-   f[:fourierMat]=hcat(f[:fourierMat]...)
+   f[:fourierMat]=toM(f[:fourierMat])
    Family(f)
 end)
 
@@ -419,18 +417,18 @@ function Drinfeld_double(g;lu=false)
     r[:centralizers] = t[:centralizers]
     return r
 end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
-  res[:charLabels]=vcat(map(r->map(y->"($(r[:name]),$y)",r[:charNames]),
-                              res[:classinfo])...)
+  res[:charLabels]=reduce(vcat,map(r->map(y->"($(r[:name]),$y)",r[:charNames]),
+                              res[:classinfo]))
   if IsAbelian(g)
     for r in res[:classinfo]
       r[:names]=map(x->First(res[:classinfo],s->s[:elt]==x)[:name],r[:centelms])
     end
   end
   res[:size] = length(res[:charLabels])
-  res[:eigenvalues]=vcat(map(function(r)ct=TransposedMat(r[:chars])
+  res[:eigenvalues]=reduce(vcat,map(function(r)ct=TransposedMat(r[:chars])
      return map((x, y)->x//y,ct[PositionClass(r[:centralizer],r[:elt])], 
                ct[PositionClass(r[:centralizer],g[:identity])]) end,
-      res[:classinfo])...)
+      res[:classinfo]))
   if lu
       res[:name] = "L"
       res[:explanation] = "Lusztig's"
@@ -444,12 +442,12 @@ end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
   res[:mellin] = DiagonalMat(List, res[:classinfo], (r->begin
     conj(map(x->map((x, y)->x//y,x,r[:centralizers]),r[:chars]))^ -1
               end))
-  res[:mellinLabels]=vcat(map(x->map(y->"($(x[:name]),$y)",x[:names]),res[:classinfo])...)
-  res[:xy] = vcat(map(r->map(y->[r[:elt],y], r[:centelms]),res[:classinfo])...)
-  p = vcat(map((r->begin map(function (y)
+  res[:mellinLabels]=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res[:classinfo]))
+  res[:xy] = reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res[:classinfo]))
+  p = reduce(vcat,map((r->begin map(function (y)
            r1 = (res[:classinfo])[PositionClass(g, y ^ -1)]
           return Position(res[:xy], [r1[:elt], (r1[:centelms])[PositionClass(r1[:centralizer], r[:elt] ^ RepresentativeOperation(g, y ^ -1, r1[:elt]))]])
-                          end, r[:centelms]) end), res[:classinfo])...)
+                          end, r[:centelms]) end), res[:classinfo]))
   delete!(res, :classinfo)
   res[:fourierMat] = (IdentityMat(res[:size]))[p] ^ res[:mellin]
   if lu
@@ -480,8 +478,8 @@ label│eigen      1         2         3
 FamilyImprimitive = function (S)
 # println("S=$S")
   e = length(S)
-  Scoll = Collected(vcat(S...))
-  ct = vcat(map(x->fill(x[1],x[2]), Scoll)...)
+  Scoll = Collected(reduce(vcat,S))
+  ct = reduce(vcat,map(x->fill(x[1],x[2]), Scoll))
   d = length(ct) % e
   if !(d in [0, 1]) error("Length(", joindigits(ct), ") should be 0 or 1  %  ", e, " !\n")
         end
@@ -492,13 +490,13 @@ FamilyImprimitive = function (S)
   ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
                    collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
   nrSymbols=sum(x->prod(length,x),ll)
-  ll = vcat(map(x->Cartesian(x...), ll)...)
+  ll = reduce(vcat,map(x->Cartesian(x...), ll))
   eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
   equiv = map(x->
       Dict(:globaleps=>length(x)==1 ? 1 :
        (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
      :aa=>map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
-  epsreps = map(x->eps(vcat(x...)), ll)
+  epsreps = map(x->eps(reduce(vcat,x)), ll)
   roots = map(i->E(e,i),0:e-1)
   mat = map(i->i[:globaleps]*map(k->epsreps[k]*
   prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
@@ -509,7 +507,7 @@ FamilyImprimitive = function (S)
   symbs = map(function (l)local sy, j
               sy = map(j->Int[], 1:e)
               map((v,c)->begin push!(sy[v + 1], c)
-                      return 1 end, vcat(l...), ct)
+                      return 1 end, reduce(vcat,l), ct)
               return sy
           end, ll)
   newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
@@ -528,16 +526,16 @@ FamilyImprimitive = function (S)
             end
         end
     end
-    frobs = vcat(map((m,f)->fill(f,m), mult, ListBlist(frobs, schon))...)
-    symbs = vcat(map(function (m, s)
+    frobs = reduce(vcat,map((m,f)->fill(f,m), mult, ListBlist(frobs, schon)))
+    symbs = reduce(vcat,map(function (m, s)
                     if m==1 return [s]
                     else return map(j->vcat(s[1:e//m], [m, j]), 0:m-1)
                     end
-                end, mult, ListBlist(symbs, schon))...)
-    mat = vcat(map(function (m, l)return map((i->begin
-      vcat(map((n,c)->fill(e*c//m//n,n),mult,ListBlist(l, schon))...)
-                         end), 1:m)end, mult, ListBlist(mat, schon))...)
-    mult=vcat(map(m->fill(m,m),mult)...)
+                end, mult, ListBlist(symbs, schon)))
+    mat = reduce(vcat,map(function (m, l)return map((i->begin
+      reduce(vcat,map((n,c)->fill(e*c//m//n,n),mult,ListBlist(l, schon)))
+                         end), 1:m)end, mult, ListBlist(mat, schon)))
+    mult=reduce(vcat,map(m->fill(m,m),mult))
     nrSymbols=length(symbs)
     for i=1:nrSymbols
       for j=1:nrSymbols
@@ -552,7 +550,7 @@ FamilyImprimitive = function (S)
     end
   end
   res=Dict{Symbol,Any}(:symbols=>symbs,
-    :fourierMat=>hcat(mat...),
+    :fourierMat=>toM(mat),
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
     :explanation=>"classical family",
@@ -602,7 +600,7 @@ FamiliesClassical=function(sym)
     D=length(f[:Z1]) % 2
     f[:M♯] = symdiff(setdiff(f[:Z1], ST[2]), f[:Z1][1+D:2:length(f[:Z1])-1])
     if D==1 && length(f[:M♯])%2!=0 f[:M♯]=setdiff(f[:Z1],f[:M♯]) end
-    f[:content] = sort(vcat(ST...))
+    f[:content] = sort(reduce(vcat,ST))
     f
   end
   res = []
@@ -622,7 +620,7 @@ FamiliesClassical=function(sym)
    Z1 = filter(x->count(isequal(x),f[:content])==1,f[:content])
    f[:fourierMat] = (2//1)^(-div(length(Z1)-1,2))*map(x->
                     map(y->(-1)^length(intersect(x, y)), f[:M♯]), f[:M♯])
-   f[:fourierMat]=hcat(f[:fourierMat]...)
+   f[:fourierMat]=toM(f[:fourierMat])
     f[:eigenvalues] = map(x->(-1) ^ div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
     if length(f[:eigenvalues]) == 1
         f[:charLabels] = [""]

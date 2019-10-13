@@ -602,7 +602,7 @@ julia> B(-1,-2,-3,1,1)
 (25.1)⁻¹1.1
 ```
 """
-function DualBraidMonoid(W::CoxeterGroup;c=vcat(bipartite_decomposition(W)...))
+function DualBraidMonoid(W::CoxeterGroup;c=reduce(vcat,bipartite_decomposition(W)))
   delta=W(c...)
   DualBraidMonoid(delta,order(delta),reflections(W)[1:nref(W)],W)
 end
@@ -853,7 +853,7 @@ function Category(atomsfrom::Function,o;action::Function=^)
 end
 
 function showgraph(C::Category;showmap::Function=x->x,showobj::Function=x->x)
-  maps=vcat(map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj))...)
+  maps=reduce(vcat,map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj)))
   for f in 1:3
     new=empty(maps)
     for m in maps
@@ -1029,7 +1029,7 @@ function minc(a,x,::Val{:sc})
 #   l:=Filtered(Concatenation(LeftDivisorsSimple(M,p)),
 #            s->s<>x and M.LeftGcdSimples(x,s)[2]=M.identity);
     l=left_divisors(M,\(M,x,p))
-    l=.*(Ref(M),Ref(x),vcat(l[2:end]...))
+    l=.*(Ref(M),Ref(x),reduce(vcat,l[2:end]))
 #   Print("Warning: for b=",a," F=1 & x=",x," divides p=",p," ",Length(l),"\n");
     l[findfirst(x->x==p || x in ggF(a,x),l)]
   end

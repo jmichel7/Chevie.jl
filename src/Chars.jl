@@ -746,7 +746,7 @@ function classinfo(W)::Dict{Symbol,Any}
     end
     if any(isnothing, tmp) return nothing end
     if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
-    res[:classtext]=map(x->vcat(x...),cartfields(tmp,:classtext))
+    res[:classtext]=map(x->reduce(vcat,x),cartfields(tmp,:classtext))
     res[:classnames]=map(join,cartfields(tmp,:classnames))
     if all(haskey.(tmp,:classparam))
       res[:classparams]=cartfields(tmp,:classparams)
@@ -941,7 +941,7 @@ function WGraph2Representation(a,vars)
     else p=2 end
     p
   end
-  flat(l)=l[1] isa Vector ? flat(vcat(l...)) : l
+  flat(l)=l[1] isa Vector ? flat(reduce(vcat,l)) : l
   n=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
   R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:n)

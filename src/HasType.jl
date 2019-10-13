@@ -141,20 +141,20 @@ impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 CoxGroups.braid_relations(t::TypeIrred)=getchev(t,:BraidRelations)
 
 function CoxGroups.braid_relations(W)
-  vcat(map(refltype(W)) do t
+  reduce(vcat,map(refltype(W)) do t
        map(x->map(y->t[:indices][y],x),braid_relations(t))
-    end...)
+    end)
 end
 
 function codegrees(W)
-  vcat(map(refltype(W)) do t
+  reduce(vcat,map(refltype(W)) do t
     cd=getchev(t,:ReflectionCoDegrees)
     if isnothing(cd)
       cd=getchev(t,:ReflectionDegrees)
       maximum(cd).-cd
     else cd
     end
-  end...)
+  end)
 end
 
 charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
@@ -231,7 +231,7 @@ function ComplexReflectionGroup(p,q,r)
   PRG(r,cr)
 end
 
-Gapjm.degrees(W)=vcat(getchev(W,:ReflectionDegrees)...)
+Gapjm.degrees(W)=reduce(vcat,getchev(W,:ReflectionDegrees))
 
 function diagram(W)
   for t in refltype(W)
@@ -285,11 +285,11 @@ function weightinfo(W)
                                      x->vcat(x[:minusculeCoweights],[0]),l)),
     :decompositions=>map(vcat,Cartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l))),
-    :moduli=>vcat(map(x->x[:moduli],l)...))
+    :moduli=>reduce(vcat,map(x->x[:moduli],l)))
 # centre of simply connected group: the generating minuscule coweights
 # mod the root lattice
-  res[:CenterSimplyConnected]=vcat(getindex.(l,:csi)...)
-  res[:AdjointFundamentalGroup]=vcat(getindex.(l,:ww)...)
+  res[:CenterSimplyConnected]=reduce(vcat,getindex.(l,:csi))
+  res[:AdjointFundamentalGroup]=reduce(vcat,getindex.(l,:ww))
   n=length(res[:decompositions])-1
   res[:minusculeWeights]=map(x->filter(y->y!=0,x),res[:minusculeWeights][1:n])
   res[:minusculeCoweights]=map(x->filter(y->y!=0,x),res[:minusculeCoweights][1:n])
@@ -390,7 +390,7 @@ function exterior_power(A,m)
 end 
 
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
-Factors(n)=vcat([fill(k,v) for (k,v) in factor(n)]...)
+Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
 FullSymbol=fullsymbol
 Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
