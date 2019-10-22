@@ -94,6 +94,8 @@ include("Groups.jl")
 @reexport using .Groups
 include("Perms.jl")
 @reexport using .Perms
+include("SPerms.jl")
+@reexport using .SPerms
 include("PermGroups.jl")
 @reexport using .PermGroups
 include("Cycs.jl")

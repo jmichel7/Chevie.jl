@@ -67,6 +67,13 @@ struct Pol{T}
   v::Int
 end
 
+Pol(a::Number)=iszero(a) ? zero(Pol{typeof(a)}) : Pol([a],0)
+
+function Pol(t::Symbol)
+  varname(t)
+  Base.eval(Main,:($t=Pol([1],1)))
+end
+
 Base.broadcastable(p::Pol)=Ref(p)
 
 Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ? 
@@ -74,22 +81,19 @@ Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ?
 
 function Polstrip(v::AbstractVector,val=0)
   b=findfirst(!iszero,v)
-  if isnothing(b) return Pol(eltype(v)[],0) end
+  if isnothing(b) return zero(Pol{eltype(v)}) end
   Pol(v[b:findlast(!iszero,v)],val+b-1)
 end
 
-Pol(a)=iszero(a) ? Pol(typeof(a)[],0) : Pol([a],0)
-
-function Pol(t::Symbol)
-  varname(t)
-  Base.eval(Main,:($t=Pol([1],1)))
-end
-
 Base.copy(p::Pol)=Pol(p.c,p.v)
-Base.convert(::Type{Pol{T}},a::Number) where T=Pol([T(a)],0)
+Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) : Pol([T(a)],0)
 (::Type{Pol{T}})(a::Number) where T=convert(Pol{T},a)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
 (::Type{Pol{T}})(p::Pol) where T=convert(Pol{T},p)
+
+function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
+  Pol{promote_type(T1,T2)}
+end
 
 Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
@@ -146,6 +150,11 @@ function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")
   show(IOContext(io,:TeX=>true),a)
   print(io, "\$")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", a::Pol{T}) where T
+  print(io,"Pol{",T,"}: ")
+  show(io,a)
 end
 
 function Base.show(io::IO,p::Pol)
@@ -208,8 +217,8 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
   res=fill(zero(T1)+zero(T2),max(length(a.c),d+length(b.c)))
-@inbounds  res[eachindex(a.c)].=a.c
-@inbounds  res[d.+eachindex(b.c)].+=b.c
+@inbounds res[eachindex(a.c)].=a.c
+@inbounds res[d.+eachindex(b.c)].+=b.c
   Polstrip(res,a.v)
 end
 
