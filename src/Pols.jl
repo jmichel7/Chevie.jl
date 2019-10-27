@@ -5,19 +5,19 @@
 # Examples
 ```julia-repl
 julia> Pol(:q) # define string used for printing and set variable q
-q
+Pol{Int64}: q
 
 julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
-2q+1
+Pol{Int64}: 2q+1
 
 julia> p=Pol([1,2],-1)
-2+q⁻¹
+Pol{Int64}: 2+q⁻¹
 
 julia> valuation(p)
 -1
 
 julia> p=(q+1)^2
-q²+2q+1
+Pol{Int64}: q²+2q+1
 
 julia> degree(p)
 2
@@ -35,7 +35,7 @@ julia> divrem1(q^3+1,q+2) # keeps the ring, but needs leading coeff divides
 (q²-2q+4, -7)
 
 julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
-q⁸-q⁴+1
+Pol{Int64}: q⁸-q⁴+1
 
 ```
 
@@ -152,8 +152,8 @@ function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")
 end
 
-function Base.show(io::IO, ::MIME"text/plain", a::Pol{T}) where T
-  print(io,"Pol{",T,"}: ")
+function Base.show(io::IO, ::MIME"text/plain", a::Pol)
+  print(io,typeof(a),": ")
   show(io,a)
 end
 
@@ -295,10 +295,10 @@ Base.://(p::T,q::Pol) where T=Pol(p)//q
 # Examples
 ```julia-repl
 julia> gcd(q+1,q^2-1)
-1.0q+1.0
+Pol{Float64}: 1.0q+1.0
 
 julia> gcd(q+1//1,q^2-1//1)
-(1//1)q+1//1
+Pol{Rational{Int64}}: (1//1)q+1//1
 ```
 """
 function Base.gcd(p::Pol,q::Pol)

@@ -157,13 +157,9 @@ end
 function Gapjm.coefficients(c::Cyc{T})where T
   res=zeros(T,conductor(c))
 if use_list
-  for (p,i) in enumerate(zumbroich_basis(length(res)))
-    if iszero(i) res[end]=c.d[v] else res[i]=c.d[v] end
-  end
+  for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[v] end
 else
-  for (i,v) in c.d.d 
-     if iszero(i) res[end]=v else res[i]=v end
-  end
+  for (i,v) in c.d.d res[i+1]=v end
 end
   res
 end
@@ -738,17 +734,10 @@ julia> Quadratic(1+E(5))
 ```
 """
 function Quadratic(cyc::Cyc)
-if use_list
-  den=lcm(denominator.(cyc.d))::Int
-  zb=zumbroich_basis(cyc.n)
-  l=fill(0,cyc.n)
-  l[1 .+ zb]=Int.(cyc.d*den)
-else
-  den=lcm(denominator.(map(x->x[2],cyc.d)))
-  if den!=1 cyc=Cyc(cyc.n,ModuleElt([k=>Int(v*den) for (k,v) in cyc.d])) end
-  l=fill(0,cyc.n)
-  for (k,v) in cyc.d l[k+1]=v end
-end
+  l1=coefficients(cyc)
+  den=lcm(denominator.(l1))
+  l=numerator.(l1)
+  cyc*=den
   if cyc.n==1 return Quadratic(l[1],0,1,den) end
 
   f=factor(cyc.n)

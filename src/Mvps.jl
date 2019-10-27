@@ -16,16 +16,16 @@ polynomials.
 julia> @Mvp x,y
 
 julia> (x+y)^3
-x³+3x²y+3xy²+y³
+Mvp{Int64}: x³+3x²y+3xy²+y³
 ```
 `Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
 
 ```julia-repl
 julia> Pol(:q)
-q
+Pol{Int64}: q
 
 julia> Mvp(q^2+q)
-q²+q
+Mvp{Int64}: q²+q
 ```
 
 `Mvp(x::Number)`
@@ -42,7 +42,7 @@ One can divide an `Mvp` by another when the divison is exact
 
 ```julia-repl
 julia> (x^2-y^2)//(x-y)
-x+y
+Mvp{Int64}: x+y
 ```
 
 Only monomials can be raised to a non-integral power; they can be raised
@@ -62,14 +62,14 @@ fraction.
 """
 module Mvps
 using Gapjm
-export Mvp, @Mvp, variables, coefficients
+export Mvp, @Mvp, variables, coefficients, value
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
   d::ModuleElt{Symbol,PowType}   
 end
-Monomial(a::Pair...)=Monomial(ModuleElt{Symbol,PowType}(collect(a)))
+Monomial(a::Pair...)=Monomial(ModuleElt(convert.(Pair{Symbol,PowType},collect(a))))
 
 const fractional=Dict{Symbol,PowType}() 
 # if fractional(:x)==y then x interpreted as x^(1/y)
@@ -85,16 +85,11 @@ Monomial(v::Symbol)=convert(Monomial,v)
 Base.:*(a::Monomial, b::Monomial)=Monomial(a.d+b.d)
 Base.isone(a::Monomial)=iszero(a.d)
 Base.iszero(a::Monomial)=false
-Base.one(::Type{Monomial})=Monomial()
+Base.one(::Type{Monomial})=Monomial(ModuleElt(Pair{Symbol,PowType}[]))
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Base.div(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
-@inline function ModuleElts.drop(a::Monomial,k)
-   u=ModuleElts.drop(a.d,k)
-   if isnothing(u) return u end
-   Monomial(u[1]),u[2]
-end
 @inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
@@ -217,6 +212,11 @@ Base.broadcastable(p::Mvp)=Ref(p)
 Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 
+function Base.show(io::IO, ::MIME"text/plain", a::Mvp)
+  print(io,typeof(a),": ")
+  show(io,a)
+end
+
 # necessary to clean up a ModuleElt upstream
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
@@ -237,7 +237,7 @@ Base.convert(::Type{Mvp{T}},a::Number) where T=iszero(a) ? zero(Mvp{T}) :
                                           Mvp(one(Monomial)=>T(a))
 (::Type{Mvp{T}})(a::Number) where T=convert(Mvp{T},a)
 (::Type{Mvp{T}})(a::Mvp) where T=convert(Mvp{T},a)
-Base.convert(::Type{Mvp{T}},a::Mvp) where T=iszero(a) ? zero(Mvp{T}) : Mvp([k=>T(v) for (k,v) in a.d]...)
+Base.convert(::Type{Mvp{T}},a::Mvp{T1}) where {T,T1}=T==T1 ? a : iszero(a) ? zero(Mvp{T}) : Mvp([k=>T(v) for (k,v) in a.d]...)
 Mvp(a::Number)=convert(Mvp,a)
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 
@@ -278,12 +278,15 @@ Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : sum(Mvp(ModuleElt(m*m1=>c*c1 for (
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
 Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
+Base.conj(a::Mvp)=Mvp(map(x->(x[1]=>conj(x[2])),a.d)...)
 
 Mvp(p::Pol)=p(Mvp(Pols.var[]))
 
 function Base.:^(x::Mvp, p::Real)
-  if iszero(x) return 0 end
+  if iszero(x) return x end
   p=Int(p)
+  if iszero(p) return one(x) end
+  if isone(p) return x end
   if p<0
     x=inv(x)
     p=-p
@@ -301,7 +304,7 @@ The `degree` of an `Mvp` is the largest degree of a monomial.
 
 ```julia-repl
 julia> a=x^2+x*y
-x²+xy
+Mvp{Int64}: x²+xy
 
 julia> degree(a)
 2
@@ -328,7 +331,7 @@ The `valuation` of an `Mvp` is the minimal degree of a monomial.
 
 ```julia-repl
 julia> a=x^2+x*y
-x²+xy
+Mvp{Int64}: x²+xy
 
 julia> valuation(a)
 2
@@ -357,7 +360,7 @@ returns as a Dict the list of coefficients of `p` with respect to `var`.
 
 ```julia-repl
 julia> p=(x+y+inv(y))^4
-x⁴+4x³y+4x³y⁻¹+6x²y²+12x²+6x²y⁻²+4xy³+12xy+12xy⁻¹+4xy⁻³+y⁴+4y²+6+4y⁻²+y⁻⁴
+Mvp{Int64}: x⁴+4x³y+4x³y⁻¹+6x²y²+12x²+6x²y⁻²+4xy³+12xy+12xy⁻¹+4xy⁻³+y⁴+4y²+6+4y⁻²+y⁻⁴
 
 julia> coefficients(p,:x)
 Dict{Int64,Mvp{Int64}} with 5 entries:
@@ -389,12 +392,12 @@ function Gapjm.coefficients(p::Mvp,v::Symbol)
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d
 #   print("$m=>$c d=$d\n")
-    u=ModuleElts.drop(m,v)
+    u=ModuleElts.drop(m.d,v)
     if isnothing(u)
       d[0]=push!(get(d,0,zero(p.d)),m=>c)
     else 
       (m1,deg)=u
-      d[deg]=push!(get(d,deg,zero(p.d)),m1=>c)
+      d[deg]=push!(get(d,deg,zero(p.d)),Monomial(m1)=>c)
     end
   end
   Dict(dg=>Mvp(c) for (dg,c) in d)
@@ -412,7 +415,13 @@ julia> variables(x+x^4+y)
  :y
 ```
 """
-variables(p::Mvp)=sort(union(map(c->map(x->x[1],c[1].d),p.d)...))
+function variables(p::Mvp)
+  l=map(c->map(x->x[1],c[1].d),p.d)
+  if length(l)==1 l[1]
+  elseif  length(l)==0 Symbol[]
+  else sort(union(l...))
+  end
+end
 
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
@@ -427,16 +436,16 @@ Value of an `Mvp`
 
 ```julia-repl
 julia> p=-2+7x^5*inv(y)
-7x⁵y⁻¹-2
+Mvp{Int64}: 7x⁵y⁻¹-2
 
 julia> p(x=2)
--2+224y⁻¹
+Mvp{Int64}: -2+224y⁻¹
 
 julia> p(y=1)
-7x⁵-2
+Mvp{Int64}: 7x⁵-2
 
 julia> p(x=2,y=1)
-222
+Mvp{Int64}: 222
 ```
 
 One should pay attention to the fact that the last value is not an integer,
@@ -445,10 +454,10 @@ for how to convert such constants to their base ring.
 
 ```julia-repl
 julia> p(x=y)
-7y⁴-2
+Mvp{Int64}: 7y⁴-2
 
 julia> p(x=y,y=x)
-7x⁴-2
+Mvp{Int64}: 7x⁴-2
 ```
     gap> Value(p,["x",y,"y",x]);
     -2+7x^-1y^5|
@@ -471,21 +480,46 @@ Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
     main loop
     brk>|
 """
-function (p::Mvp)(;arg...)
-  res=p
-  for s in keys(arg)
-    res1=zero(res.d)
-    for (m,c) in res.d
-      u=ModuleElts.drop(m,s)
-      if isnothing(u) push!(res1,m=>c)
-      else 
-        (m1,deg)=u
-        append!(res1,(Mvp(m1=>c)*arg[s]^deg).d)
-      end
+# generic version:
+#function value(p::Mvp,vv::Pair{Symbol,<:Mvp})
+#  (s,v)=vv
+#  res1=Tuple{typeof(v),Monomial}[]
+#  for (m,c) in p.d
+#    u=ModuleElts.drop(m.d,s)
+#    if !isnothing(u)
+#      (m1,deg)=u
+#      push!(res1,(c*(Monomial(m1)*v^deg),m))
+#    end
+#  end
+#  if isempty(res1) return p end
+#  newd=p.d
+#  newp=zero(p)
+#  for (p,m) in res1
+#    newd=ModuleElts.drop(newd,m)[1]
+#    newp+=p
+#  end
+#  Mvp(newd)+newp
+#end
+function value(p::Mvp,vv::Pair)
+  (s,v)=vv
+  if !(v isa Mvp) v=Mvp(v) end
+  res1=Tuple{typeof(v),Int}[]
+  for i in eachindex(p.d.d)
+    (m,c)=p.d.d[i]
+    u=ModuleElts.drop(m.d,s)
+    if !isnothing(u)
+      push!(res1,(c*(Monomial(first(u))*v^last(u)),i))
     end
-    res=Mvp(norm!(res1))
   end
-  res
+  if isempty(res1) return p end
+  newd=deleteat!(copy(p.d.d),map(last,res1))
+  Mvp(ModuleElt(newd))+
+     Mvp(ModuleElt(vcat(map(x->first(x).d.d,res1)...);check=true))
+end
+
+function (p::Mvp)(;arg...)
+  for vv in arg p=value(p,vv) end
+  p
 end
 
 function Gapjm.root(p::Mvp,n::Real=2)

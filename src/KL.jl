@@ -144,10 +144,10 @@ julia> cr=KL.critical_pair(W,y,w);length(W,cr)
 16
 
 julia> Pol(:x);KLPol(W,y,w)
-x³+1
+Pol{Int64}: x³+1
 
 julia> KLPol(W,cr,w)
-x³+1
+Pol{Int64}: x³+1
 ```julia-repl
 
 """
@@ -339,7 +339,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
           bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
-    res=HeckeTElt(norm!(ModuleElt(map((x,y)->x=>y,elm,coeff))),H)
+    res=HeckeTElt(ModuleElt(map((x,y)->x=>y,elm,coeff);check=true),H)
   end
   cdict[w]=res
 end

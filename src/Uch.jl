@@ -553,13 +553,16 @@ Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
 Base.length(uc::UnipotentCharacters)=length(uc.prop[:TeXCharNames])
 
 function Chars.fakedegrees(uc::UnipotentCharacters,q)
-  gets(uc,:fakedegrees)do uc
-    fd=fill(zero(q),length(uc))
-    f=fakedegrees(Group(uc),q)
-    if isa(q,Pol) f=convert.(Pol{Int},f) end
-    fd[uc.harishChandra[1][:charNumbers]]=f
-    fd
+  if !haskey(uc.prop,:fakedegrees)
+    uc.prop[:fakedegrees]=Dict{Any,Any}()
   end
+  d=uc.prop[:fakedegrees]
+  if haskey(d,q) return d[q] end
+  fd=fill(zero(q),length(uc))
+  f=fakedegrees(Group(uc),q)
+  if isa(q,Pol) f=convert.(Pol{Int},f) end
+  fd[uc.harishChandra[1][:charNumbers]]=f
+  d[q]=fd
 end
 
 # FourierInverse times the vector of fake degrees is the vector of unip degrees

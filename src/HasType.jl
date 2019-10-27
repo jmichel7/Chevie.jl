@@ -361,6 +361,7 @@ ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
+ComplexConjugate(v)=conj(v)
 Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
@@ -640,7 +641,6 @@ Format(x,opt)=sprint((io,x)->ff(io,x;opt...),x)
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))
-ComplexConjugate(v)=v
 GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)

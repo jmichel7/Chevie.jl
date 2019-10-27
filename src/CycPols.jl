@@ -10,13 +10,13 @@ subtraction are not implemented!
 
 ```julia-repl
 julia> Pol(:q)
-q
+Pol{Int64}: q
 
 julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2)
 (q-2)Φ₁Φ₂Φ₂₃
 
 julia> p(q) # a CycPol is a callable object, this call evaluates p at q
-q²⁵-q²⁴-2q²³-q²+q+2
+Pol{Cyc{Int64}}: q²⁵-q²⁴-2q²³-q²+q+2
 
 julia> p*inv(CycPol(q^2+q+1))
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
@@ -362,7 +362,7 @@ function (p::CycPol)(x)
   if !isempty(p.v)
     for v in segment(p.v)
       pp=prod((x-E(r))^m for (r,m) in v)
-      if all(isone,conductor.(pp.c)) pp=Pol(convert.(Int,pp.c),pp.v) end
+#     if all(isone,conductor.(pp.c)) pp=Pol(convert.(Int,pp.c),pp.v) end
       res*=pp
       if iszero(res) return res end
     end

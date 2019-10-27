@@ -33,6 +33,15 @@ function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}()
   merge!(f,d)
 end
 
+function Base.conj(f::Family)
+  g=Family(copy(f.prop))
+  g[:fourierMat]=conj(f[:fourierMat])
+  g[:eigenvalues]=conj(f[:eigenvalues])
+  g[:name]="\\overline "*f[:name]
+  g[:explanation]="ComplexConjugate("*f[:explanation]*")"
+  g
+end
+
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 Base.getindex(f::Family,k)=f.prop[k]
 Base.haskey(f::Family,k)=haskey(f.prop,k)
@@ -53,6 +62,8 @@ function Base.merge!(f::Family,d::Dict)
   end
   f
 end
+
+Base.length(f::Family)=length(f[:eigenvalues])
 
 function Base.:*(f::Family,g::Family)
 # println(f,"*",g)

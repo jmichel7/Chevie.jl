@@ -31,14 +31,14 @@ julia> haskey(a,:xx)
 false
 ```
 
-both implementations provide a function `norm!` which normalizes an
+both implementations provide an option check which normalizes an
 element, removing zero coefficients
 
 ```julia-repl
 julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
 :yy+2:yx+3:xy-:yy
 
-julia> norm!(a)
+julia> a=ModuleElt([:yy=>1, :yx=>2, :xy=>3, :yy=>-1];check=true)
 3:xy+2:yx
 
 julia> a
@@ -62,6 +62,12 @@ const usedict=false
 if usedict
 struct ModuleElt{K,V}
   d::Dict{K,V} # the keys K should be hashable
+  function ModuleElt(d::Dict{K,V};check::Bool=false)where {K,V}
+    if check
+      for (k,v) in d if iszero(v) delete!(d,k) end end
+    end
+    new{K,V}(d)
+  end
 end
 
 ModuleElt(x::Vector{Pair{K,V}}) where{K,V}=ModuleElt(Dict(x))
@@ -78,15 +84,26 @@ Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Dict{K,V}())
 # multiply module element by scalar
 Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
 
-function norm!(a::ModuleElt)
-  for (k,v) in a.d if iszero(v) delete!(a.d,k) end end
-  a
-end
-
-Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt=norm!(ModuleElt(merge(+,a.d,b.d)))
+Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt=ModuleElt(merge(+,a.d,b.d);check=true)
 
 else
 #-------------- faster implementation -------------------------------------
+@inbounds function norm!(d::Vector{Pair{K,V}}) where {K,V}
+  if all(i->first(d[i])<first(d[i+1]),1:length(d)-1) return end
+  sort!(d,by=first)
+  ri=1
+  for j in 2:length(d)
+    if first(d[j])==first(d[ri])
+      d[ri]=first(d[ri])=>last(d[ri])+last(d[j])
+    else 
+      if !iszero(last(d[ri])) ri+=1 end
+      d[ri]=d[j]
+    end
+  end
+  if iszero(last(d[ri][2])) ri-=1 end
+  resize!(d,ri)
+end
+
 """
 The  type below  has a  similar interface  to Dict{K,V},  but +  is 3 times
 faster than merge(+,...) on Dicts.
@@ -94,6 +111,10 @@ faster than merge(+,...) on Dicts.
 # The vector d is kept sorted by K 
 struct ModuleElt{K,V}
   d::Vector{Pair{K,V}} # the keys K should be sortable
+  function ModuleElt(d::Vector{Pair{K,V}};check::Bool=false)where {K,V}
+    if check norm!(d) end
+    new{K,V}(d)
+  end
 end
 
 ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(collect(x))
@@ -104,7 +125,10 @@ Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
 
 # multiply module element by scalar
-Base.:*(a::ModuleElt,b)=iszero(b) ? zero(a) : ModuleElt(k=>v*b for (k,v) in a)
+function Base.:*(a::ModuleElt,b)
+  if iszero(b) || iszero(a) return  zero(a) end
+  ModuleElt(k=>v*b for (k,v) in a)
+end
 
 """
 + is like merge(+,..) for Dicts, except keys with value 0 are deleted
@@ -137,25 +161,6 @@ function Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt
   ModuleElt(resize!(res,ri))
 end
 
-"""
-normalize an unsorted ModuleElt
-"""
-function norm!(x::ModuleElt{K,V}) where {K,V}
-  if isempty(x) return x end
-  sort!(x.d,by=first)
-  ri=1
-@inbounds  for j in 2:length(x.d)
-    if x.d[j][1]==x.d[ri][1]
-      x.d[ri]=x.d[ri][1]=>x.d[ri][2]+x.d[j][2]
-    else 
-      if !iszero(x.d[ri][2]) ri+=1 end
-      x.d[ri]=x.d[j]
-    end
-  end
-  if iszero(x.d[ri][2]) ri-=1 end
-  ModuleElt(resize!(x.d,ri))
-end
-
 function Base.getindex(x::ModuleElt,i)
   r=searchsorted(x.d,Ref(i);by=first)
   if r.start!=r.stop error("key $i not found") end
@@ -179,6 +184,13 @@ Base.keys(x::ModuleElt)=first.(x.d)
 Base.first(x::ModuleElt)=first(x.d)
 end
 #-------------- methods which have same code in both implementations-------
+"""
+normalize a ModuleElt
+"""
+function norm!(x::ModuleElt)
+  norm!(x.d)
+  x
+end
 Base.iszero(x::ModuleElt)=isempty(x.d)
 Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)

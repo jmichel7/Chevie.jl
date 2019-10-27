@@ -401,7 +401,7 @@ returns  the  fake degree  of  the  character  of parameter  φ  (see
 
 ```julia-repl
 julia> Chars.fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
-q²+q
+Pol{Cyc{Int64}}: q²+q
 ```
 """
 function fakedegree(W,p,q)
@@ -424,7 +424,7 @@ corresponds to the ordering of the characters in 'CharTable(W)'.
 
 ```julia-repl
 julia> fakedegrees(coxgroup(:A,2),Pol(:q))
-3-element Array{Pol{Int64},1}:
+3-element Array{Pol,1}:
  q³  
  q²+q
  1   

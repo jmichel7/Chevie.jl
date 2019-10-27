@@ -153,6 +153,17 @@ function Perms.permuted(l::AbstractVector,a::SPerm)
   res
 end
 
+# Find if it exists a signed perm which permutes list a to list b
+function SPerm(a::AbstractVector,b::AbstractVector)
+  p=Perm(map(x->sort([x,-x]),a),map(x->sort([x,-x]),b))
+  if isnothing(p) return p end
+  res=permuted(collect(eachindex(a)),p)
+  for i in eachindex(a)
+    if b[i^(p^-1)]!=a[i] res[i]=-res[i] end
+  end
+  SPerm(res)
+end
+
 "`Matrix(a::Perm)` is the permutation matrix for a"
 function Base.Matrix(a::SPerm,n=length(a.d))
   res=zeros(Int,n,n)
@@ -216,17 +227,6 @@ end
 #    return SignedPerm(List(OnTuples([1,3..2*n-1],ls),function(i)
 #      if i mod 2=0 then return -i/2;else return QuoInt(i+1,2);fi;end));
 #  fi;
-#end;
-#
-## Find if exists signed perm which permutes list a to list b
-#SignedPermListList:=function(a,b)local p,i,res;
-#  p:=PermListList(List(a,x->Set([x,-x])),List(b,x->Set([x,-x])));
-#  if p=false then return false;fi;
-#  res:=Permuted([1..Length(a)],p);
-#  for i in [1..Length(a)] do
-#    if b[i^(p^-1)]<>a[i] then res[i]:=-res[i];fi;
-#  od;
-#  return SignedPerm(res);
 #end;
 #
 ## duplicate lines and cols of M so HOgroup operates
