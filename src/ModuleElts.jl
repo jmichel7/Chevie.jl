@@ -193,7 +193,7 @@ function norm!(x::ModuleElt)
 end
 Base.iszero(x::ModuleElt)=isempty(x.d)
 Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
-Base.:-(a::ModuleElt)=ModuleElt(k=>-v for (k,v) in a)
+Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for (k,v) in a)
 Base.:-(a::ModuleElt,b::ModuleElt)=a+(-b)
 Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
 # forwarded methods
