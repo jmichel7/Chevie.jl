@@ -390,7 +390,7 @@ function alpha2(M::GarsideMonoid,x,v)
   (*(M,x,g),rests[2])
 end
 
-function element(M::GarsideMonoid{T},l::Integer...)where T
+function (M::GarsideMonoid{T})(l::Integer...)where T
   res=GarsideElm(0,T[],M)
   if isempty(l) return res end
   for s in reverse(l) # faster in reversed order (see *)
@@ -402,7 +402,7 @@ function element(M::GarsideMonoid{T},l::Integer...)where T
   res
 end
 
-function element(M::GarsideMonoid{T},r::T)where T
+function (M::GarsideMonoid{T})(r::T)where T
   if r==one(M) GarsideElm(0,T[],M)
   elseif r==M.delta GarsideElm(1,T[],M)
   else GarsideElm(0,[r],M)
@@ -564,8 +564,6 @@ function CoxGroups.word(M::BraidMonoid,w)
   word(M.W,w)
 end
 
-(M::BraidMonoid)(l...)=element(M,l...)
-
 function rightgcd(M::BraidMonoid,elts...)
   g,c=leftgcd(M,inv.(elts)...)
   inv(g),inv.(c)
@@ -606,8 +604,6 @@ function DualBraidMonoid(W::CoxeterGroup;c=reduce(vcat,bipartite_decomposition(W
   delta=W(c...)
   DualBraidMonoid(delta,order(delta),reflections(W)[1:nref(W)],W)
 end
-
-(M::DualBraidMonoid)(l...)=element(M,l...)
 
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,M.atoms[i]*w)<reflength(M.W,w)
@@ -1160,8 +1156,6 @@ struct TwistedPowerMonoidAtom{T,TM}
   t::Bool
   M::TM
 end
-
-(M::TwistedPowerMonoid)(l...)=element(M,l...)
 
 Base.:(==)(a::TwistedPowerMonoidAtom,b::TwistedPowerMonoidAtom)=(a.v==b.v)&&
   (a.t==b.t)&&(a.M==b.M)

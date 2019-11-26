@@ -618,7 +618,6 @@ struct PRG{T,T1}<:PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-(W::PRG)(x...)=element(W,x...)
 function PRG(r::Vector{Vector{T1}},cr::Vector{Vector{T2}}) where{T1,T2}
   matgens=map(reflection,r,cr)
 
@@ -755,7 +754,6 @@ struct PRSG{T,T1}<:PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-(W::PRSG)(x...)=element(W.G,x...)
 inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i)=W.inclusion[i]
 restriction(W::PRSG)=W.restriction

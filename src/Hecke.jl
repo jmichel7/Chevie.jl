@@ -328,7 +328,7 @@ Tbasis(h::HeckeTElt)=h
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vararg{Integer})
     if isempty(w) return one(H) end
-    HeckeTElt(ModuleElt(element(H.W,w...)=>one(C)),H)
+    HeckeTElt(ModuleElt(H.W(w...)=>one(C)),H)
   end
   f(w::Vector{<:Integer})=f(w...)
   f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)

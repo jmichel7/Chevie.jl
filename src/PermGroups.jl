@@ -89,8 +89,6 @@ function Gapjm.degree(G::PermGroup)::Int
   gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
 end
 
-(W::PermGroup)(x...)=element(W,x...)
-
 " describe the orbit of Int p under PermGroup G as a Schreier vector "
 function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
   res=zeros(Int,degree(G))

@@ -346,7 +346,7 @@ function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
   H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=gets(W->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
-    new=reduced(H,W,Set((x->element(W,x...)).(rc[end])))
+    new=reduced(H,W,Set((x->W(x...)).(rc[end])))
     if isempty(new) break
     else push!(rc,Wtype.(word.(Ref(W),new)))
     end
@@ -466,7 +466,6 @@ struct CoxSymmetricGroup{T} <: CoxeterGroup{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-(W::CoxSymmetricGroup)(w...)=element(W,w...)
 Base.iterate(W::CoxSymmetricGroup,r...)=iterate(W.G,r...)
 
 "The symmetric group on n letters as a Coxeter group"
@@ -537,7 +536,6 @@ struct CoxHyperoctaedralGroup{T} <: CoxeterGroup{Perm{T}}
   prop::Dict{Symbol,Any}
 end
 
-(W::CoxHyperoctaedralGroup)(w...)=element(W,w...)
 Base.iterate(W::CoxHyperoctaedralGroup,r...)=iterate(W.G,r...)
 
 "The Hyperoctaedral group as a Coxeter group"

@@ -44,6 +44,7 @@ nbgens(G::Group)=length(gens(G))
 " element of W corresponding to a sequence of generators and their inverses"
 element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) : 
     prod( gen(W,i) for i in w)
+(W::Group)(x...)=element(W,x...)
 
 """
   orbit(G::Group,p;action::Function=^)
