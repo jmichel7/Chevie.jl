@@ -175,24 +175,20 @@ const Elist_dict=Dict((1,0)=>(true=>[0]))
 function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
   i=mod(i1,n)
   get!(Elist_dict,(n,i)) do
-if use_list
-    z=zumbroich_basis(n)
-end
-    nfact=factor(n)
     mp=Int[]
     j=i
-    for (p,np) in nfact
-      factor=p^np
-      m=div(n,factor)
-      cnt=mod(j*invmod(m,factor),factor)
+    for (p,np) in factor(n)
+      f=p^np
+      m=div(n,f)
+      cnt=mod(j*invmod(m,f),f)
       j-=cnt*m
       if p==2
-        if 1==div(cnt,div(factor,p)) push!(mp,p) end
+        if 1==div(cnt,div(f,p)) push!(mp,p) end
       else
         tmp=zeros(Int,np)
         for k in 1:np
-          factor=div(factor,p)
-          tmp[k],cnt=divrem(cnt,factor)
+          f=div(f,p)
+          tmp[k],cnt=divrem(cnt,f)
         end
         for k in np-1:-1:1
           if tmp[k+1]>div(p-1,2)
@@ -203,9 +199,12 @@ end
         if tmp[1]==0 push!(mp,p) end
       end
     end
-    if isempty(mp) 
-      return true=> use_list ? Vector{Int}(indexin([i],z)) : [i] 
-    end
+if use_list
+    z=zumbroich_basis(n)
+    if isempty(mp) return true=> Vector{Int}(indexin([i],z)) end
+else
+    if isempty(mp) return true=> [i] end
+end
     v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
 if use_list
     iseven(length(mp))=>Vector{Int}(indexin((i .+ v).%n,z))
