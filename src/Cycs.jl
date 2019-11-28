@@ -157,7 +157,7 @@ end
 function Gapjm.coefficients(c::Cyc{T})where T
   res=zeros(T,conductor(c))
 if use_list
-  for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[v] end
+  for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[p] end
 else
   for (i,v) in c.d.d res[i+1]=v end
 end

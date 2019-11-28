@@ -209,6 +209,12 @@ function base(G::PermGroup{T})::Vector{T} where T
   getp(schreier_sims,G,:base)
 end
 
+" Tells whether permutation g is an element of G "
+function Base.in(g::Perm,G::PermGroup)
+  g,i=strip(g,base(G),transversals(G))
+  isone(g)
+end
+#------------------------- iteration for PermGroups -----------------------
 " length(G::PermGroup) returns the cardinality of G "
 function Base.length(G::PermGroup)::Int
   gets(G,:length)do G 
@@ -216,15 +222,9 @@ function Base.length(G::PermGroup)::Int
   end
 end
 
-" Tells whether permutation g is an element of G "
-function Base.in(g::Perm,G::PermGroup)
-  g,i=strip(g,base(G),transversals(G))
-  isone(g)
-end
-#------------------------- iteration for PermGroups -----------------------
 # if l1,...,ln are the centralizer orbits the elements are the products
 # of one element in each li
-function Base.iterate(G::PermGroup)
+function Base.iterate(G::PermGroup{T})where T
   prod=one(G)
   state=map(reverse(values.(transversals(G)))) do l
     u=iterate(l)
@@ -232,7 +232,7 @@ function Base.iterate(G::PermGroup)
     prod*=u[1]
     prod,u[2]
   end
-  prod,reverse(state)
+  prod::Perm{T},reverse(state)::Array{Tuple{Perm{Int16},Int64},1}
 end
 
 function Base.iterate(G::PermGroup,state)
@@ -255,6 +255,14 @@ end
 
 Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
 
+function Gapjm.elements(G::PermGroup)
+  t=transversals(G)
+  res=collect(values(t[end]))
+  for i in length(t)-1:-1:1
+    res=vcat(map(x->res.*x,values(t[i]))...)
+  end
+  res
+end
 #------------------- cosets ----------------------------------------
 struct Coset{T,TW<:Group{T}}
   w::T
