@@ -221,7 +221,7 @@ function ComplexReflectionGroup(p,q,r)
            end
    elseif r==1 return coxgroup(:A,1)
    else return coxgroup(:B,r) end
-  elseif p==q && r==2 return coxgroup(:I,2,r)
+  elseif p==q && r==2 return coxgroup(:I,2,p)
   end
  t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   r=getchev(t,:GeneratingRoots)
