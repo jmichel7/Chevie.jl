@@ -25,15 +25,45 @@ julia> elements(Group([p,q]))
  (2,-2)      
  (1,-1)      
 ```
+
+The  complete type of signed permutations is `SPerm{T}` where `T<:Integer`,
+where `Vector{T}` is the type of the vector which holds the image of `1:n`.
+This  can used to save space or time when possible. If `T` is not specified
+we  take it to be `Int16` since this is a good compromise between speed and
+compactness.
+
+SPerms have methods `copy, hash, ==, cmp, isless` (total order) so they can
+be  keys in hashes or elements of sets; two `SPerms` are equal if they move
+the same points to the same images. For instance,
+```julia-repl
+julia> SPerm([-2,-1,-3])==SPerm([-2,-1,-3,4])
+true
+```
+SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using Gapjm
 export SPerm, CoxHyperoctaedral
 
+"""
+`struct SPerm`
+
+An  `SPerm` represents a signed permutation of `1:n`, that is a permutation
+of  the  set  `-n,…,-1,1,…,n`  which  preserves  the  pairs `(-i,i)`. It is
+implemented  by a `struct SPerm`  with one field `d`,  a vector holding the
+images of `1:n`.
+"""
 struct SPerm{T<:Integer}
    d::Vector{T}
 end
 
+"""
+SPerm{T}(x::Integer...)where T<:Integer
+
+returns   a   signed   cycle.   For  instance  `SPerm{Int8}(1,2,-1,2)`  and
+`SPerm({Int8}[1,-2])`  define  the  same  signed  permutation. If not given
+`{T}` is taken to be `{Int16}`.
+"""
 function SPerm{T}(x::Integer...)where T<:Integer
   if isempty(x) return SPerm(T[]) end
   d=T.(1:max(abs.(x)...))
@@ -61,10 +91,13 @@ Base.one(p::SPerm)=SPerm(empty(p.d))
 
 Base.vec(a::SPerm)=a.d
 
-#underlying Perm of a SignedPerm
+"`Perm(p::SPerm)` returns the underlying Perm of an SPerm"
 Perms.Perm(p::SPerm)=Perm(abs.(p.d))
 
-" hash is needed for using SPerms in Sets/Dicts"
+# SPerms are scalars for broadcasting"
+Base.broadcastable(p::SPerm)=Ref(p)
+
+# hash is needed for using SPerms in Sets/Dicts
 function Base.hash(a::SPerm, h::UInt)
   b = 0x595dee0e71d271d0%UInt
   for (i,v) in enumerate(a.d)
@@ -76,7 +109,7 @@ function Base.hash(a::SPerm, h::UInt)
   b
 end
 
-" total order is needed to use Perms in sorted lists"
+# total order is needed to use SPerms in sorted lists
 function Base.cmp(a::SPerm, b::SPerm)
   da=length(a.d)
   db=length(b.d)
@@ -110,7 +143,7 @@ function Groups.orbit(a::SPerm{T},i::Integer)where T
   end
 end
 
-# argument SignedPerm or hyperoctaedral perm
+# argument SignedPerm
 function Perms.cycles(p::SPerm)
   cycles=Vector{eltype(p.d)}[]
   to_visit=trues(length(p.d))
@@ -122,6 +155,9 @@ function Perms.cycles(p::SPerm)
   end
   cycles
 end
+
+" order(a) is the order of the permutation a"
+order(a::SPerm) = lcm(length.(cycles(a)))
 
 function Base.show(io::IO, a::SPerm)
   cyc=cycles(a)
@@ -179,9 +215,7 @@ Base.:^(a::SPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 """
 `Permuted(l::AbstractVector,p::SPerm)`
 
-returns  a new list `n` that contains the elements of the list `l` permuted
-according   to  the  signed   permutation  `p`,  that   is  `n[abs(i^p)]  =
-l[i]*sign(i^p)`.
+returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`.
 
 # Examples
 ```julia-repl
@@ -204,16 +238,24 @@ function Perms.permuted(l::AbstractVector,a::SPerm)
   res
 end
 
-# Find if it exists a signed perm which permutes list a to list b
-function SPerm(a::AbstractVector,b::AbstractVector)
+"""
+  `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
+
+  return a `SPerm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
+  Gives an error otherwise. If not given `{T}` is taken to be `{Int16}`.
+  Needs the objects in `l` and `l1` to be sortable.
+"""
+function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   p=Perm(map(x->sort([x,-x]),a),map(x->sort([x,-x]),b))
   if isnothing(p) return p end
   res=permuted(collect(eachindex(a)),p)
   for i in eachindex(a)
     if b[i^(p^-1)]!=a[i] res[i]=-res[i] end
   end
-  SPerm(res)
+  SPerm{T}(res)
 end
+
+SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Int16}(l,l1)
 
 """
 `Matrix(a::SPerm)` is the permutation matrix for a

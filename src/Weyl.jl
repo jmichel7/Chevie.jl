@@ -894,7 +894,7 @@ Base.show(io::IO,a::SemisimpleElement)=print(io,"<",join(a.v,","),">")
 Base.one(a::AdditiveSE)=AdditiveSE(a.W,0 .*a.v)
 Base.isone(a::AdditiveSE)=all(iszero,a.v)
 
-" hash is needed for using Perms in Sets/Dicts"
+# hash is needed for using AdditiveSE in Sets/Dicts
 Base.hash(a::AdditiveSE, h::UInt)=hash(a.v, h)
 Base.:(==)(a::AdditiveSE, b::AdditiveSE)=a.v==b.v
 

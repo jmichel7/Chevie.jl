@@ -14,20 +14,20 @@ different  groups, like a group and one  of its subgroups. The degree is an
 implementation  detail so usually it should  not be used. One should rather
 use the function `largest_moved_point`.
 
-A  permutation  can  be  defined  by  the  list  of  images  of `1:n`, like
-`Perm([2,3,1,5,4])`.  Usually it is rather  given by its cycle decomposion:
-the  permutation whose cycle decomposition is `(1,2,3)(4,5)` can be written
-`Perm(1,2,3)*Perm(4,5)`  or  `perm"(1,2,3)(4,5)"`.  The  list  of images of
-`1:n`  is gotten back from the permutation by the function `vec`; note that
-since  equal  permutations  may  have  different  degrees,  they  may  have
-different `vec`.
+A   permutation  is  defined   by  the  list   of  images  of  `1:n`,  like
+`Perm([2,3,1,5,4])`.   Often   it   is   more   convenient   to  use  cycle
+decompositions: the permutation with cycle decomposition `(1,2,3)(4,5)` can
+be  written  `Perm(1,2,3)*Perm(4,5)`  or  `perm"(1,2,3)(4,5)"`. The list of
+images  of `1:n` is gotten back from the permutation by the function `vec`;
+note  that since  equal permutations  may have  different degrees, they may
+have different `vec`.
 
 The  complete  type  of  our  permutations is `Perm{T}` where `T<:Integer`,
 where `Vector{T}` is the type of the vector which holds the image of `1:n`.
-This   can  used  to  save  space  or  time  when  possible.  For  instance
-`Perm{UInt8}`  can be used for  Weyl groups of rank  <=8 since they have at
-most 240 roots. If `T` is not specified we take it to be `Int16` since this
-is a good compromise between speed and compactness.
+This can used to save space or time. For instance `Perm{UInt8}` can be used
+for  Weyl groups of rank≤8 since they have at most 240 roots. If `T` is not
+specified  we take it to be `Int16` since this is a good compromise between
+speed and compactness.
 
 # Examples
 ```julia-repl
@@ -99,10 +99,10 @@ julia> rand(Perm,10)
 
 ```
 
-Perms  have methods `copy, hash, ==, cmp, isless` (total order) so they can
-be  keys in hashes or elements of  sets; two permutations are equal if they
-move  the same  points to  the same  images. Permutations are considered as
-scalars for broadcasting.
+`Perm`s  have methods `copy,  hash, ==, cmp,  isless` (total order) so they
+can  be keys in hashes  or elements of sets;  two permutations are equal if
+they  move the same points to  the same images. Permutations are considered
+as scalars for broadcasting.
 
 other functions are: 
 `cycles, cycletype, orbit, orbits, permuted, rand, restricted, sign`. 
@@ -131,6 +131,12 @@ import ..Groups.orbits
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point, reflength, permuted
 
+"""
+`struct Perm`
+
+A  Perm represents a permutation  of the set `1:n`  and is implemented by a
+`struct Perm` with one field `d`, a vector holding the images of `1:n`.
+"""
 struct Perm{T<:Integer}
    d::Vector{T}
 end
@@ -198,13 +204,13 @@ end
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
   return a `Perm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
-  Gives an error otherwise. If not given `{T}` is taken to be `{Int16}`.
+  returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
   Needs the objects in `l` and `l1` to be sortable.
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
   s1=sortperm(l1)
-  if !all(i->l[s[i]]==l1[s1[i]],eachindex(l)) error("not permuted") end
+  if !all(i->l[s[i]]==l1[s1[i]],eachindex(l)) return nothing end
   Perm{T}(s1)\Perm{T}(s)
 end
 
@@ -228,7 +234,7 @@ Base.copy(p::Perm)=Perm(copy(p.d))
 
 @inline degree(a::Perm)=length(a.d)
 
-" hash is needed for using Perms in Sets/Dicts"
+# hash is needed for using Perms in Sets/Dicts
 function Base.hash(a::Perm, h::UInt)
   b = 0x595dee0e71d271d0%UInt
   for (i,v) in enumerate(a.d)
@@ -240,10 +246,10 @@ function Base.hash(a::Perm, h::UInt)
   b
 end
 
-" permutations are scalars for broadcasting"
+# Perms are scalars for broadcasting"
 Base.broadcastable(p::Perm)=Ref(p)
 
-" total order is needed to use Perms in sorted lists"
+# total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
   da=length(a.d)
   db=length(b.d)
@@ -467,8 +473,21 @@ Base.sign(a::Perm)=(-1)^reflength(a)
 #---------------------- other -------------------------
 
 """
-   `permuted(l,a)` returns `l` permuted by `a` as a new list `r`,
-   that is `r[i^a]==l[i]`
+   `permuted(l::AbstractVector,p::Perm)` 
+
+   returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
+
+# Examples
+```julia-repl
+julia> permuted([5,4,6,1,7,5], Perm(1,3,5,6,4))
+6-element Array{Int64,1}:
+ 1
+ 4
+ 5
+ 5
+ 6
+ 7
+```
 """
 function permuted(l::AbstractVector,a::Perm)
   res=copy(l)

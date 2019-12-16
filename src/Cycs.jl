@@ -80,7 +80,10 @@ julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
 ```
 
-For more information see ER, Quadratic, galois. 
+`Cyc`s have methods `copy, hash, ==, cmp, isless` (total order) so they can
+be keys in hashes or elements of sets.
+
+For more information see the methods ER, Quadratic, galois. 
 
 Finally, a benchmark:
 
@@ -310,7 +313,7 @@ function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1<:Real,T2<
   Cyc{promote_type(T1,T2)}
 end
 
-" isless is necessary to put Cycs in a sorted list"
+# total order is necessary to put Cycs in a sorted list
 function Base.cmp(a::Cyc,b::Cyc)
   t=cmp(a.n,b.n)
   if !iszero(t) return t end
@@ -320,7 +323,7 @@ end
 Base.isless(a::Cyc,b::Cyc)=cmp(a,b)==-1
 Base.:(==)(a::Cyc,b::Cyc)=cmp(a,b)==0
 
-" hash is necessary to put Cycs as keys of a Dict"
+# hash is necessary to put Cycs as keys of a Dict
 function Base.hash(a::Cyc, h::UInt)
    b = 0x595dee0e71d271d0%UInt
 if use_list
