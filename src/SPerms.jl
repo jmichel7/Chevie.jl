@@ -1,19 +1,52 @@
-##  This  file contains routines to work with signed permutations. A signed
-##  permutation is a compact way to work with permutations of [-n..-1,1..n]
-##  which preserve the pairs [-i,i]. Such a permutation is represented by a
-##  list  l  of  length  n  of  the  integers  in  [1..n] with signs, which
-##  represents the permutation sending i to l[i]. It may be also convenient
-##  in  computations  to  work  with  elements of the hyperoctaedral group,
-##  acting  on [2,4..2*n]  instead of  [-1..-n] and  [1,3,2*n-1] instead of
-##  [1..n].
-##
+"""
+A  signed permutation of `1:n` is  a permutation of the set `-n,…,-1,1,…,n`
+which  preserves the  pairs `(-i,i)`.  It is  represented internally as the
+images of `1:n`. It is printed as a product of signed cycles.
+
+# Examples
+```julia-repl
+julia> SPerm([-2,-1,-3])
+SPerm{Int64}: (1,-2)(3,-3)
+
+julia> p=SPerm(-1)
+(1,-1)
+
+julia> q=SPerm(1,2)
+(1,2)
+
+julia> elements(Group([p,q]))
+8-element Array{SPerm{Int16},1}:
+ ()          
+ (1,-1)(2,-2)
+ (1,-2,-1,2) 
+ (1,-2)      
+ (1,2)       
+ (1,2,-1,-2) 
+ (2,-2)      
+ (1,-1)      
+```
+"""
 module SPerms
 using Gapjm
-export SPerm
+export SPerm, CoxHyperoctaedral
 
 struct SPerm{T<:Integer}
    d::Vector{T}
 end
+
+function SPerm{T}(x::Integer...)where T<:Integer
+  if isempty(x) return SPerm(T[]) end
+  d=T.(1:max(abs.(x)...))
+  for i in 1:length(x)-1
+   d[abs(x[i])]=sign(x[i])*x[i+1]
+  end
+  if length(x)==1 d[abs(x[1])]=x[1]
+  else d[abs(x[end])]=sign(x[end])*x[1]
+  end
+  SPerm(d)
+end
+
+SPerm(x::Integer...)=SPerm{Int16}(x...)
 
 struct SPermGroup{T}<:Group{SPerm{T}}
   gens::Vector{SPerm{T}}
@@ -143,7 +176,25 @@ Base.:^(a::SPerm, b::SPerm)=inv(a)*b*a
 Base.:^(a::SPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
-# Apply SignedPerm a to list l
+"""
+`Permuted(l::AbstractVector,p::SPerm)`
+
+returns  a new list `n` that contains the elements of the list `l` permuted
+according   to  the  signed   permutation  `p`,  that   is  `n[abs(i^p)]  =
+l[i]*sign(i^p)`.
+
+# Examples
+```julia-repl
+julia> p=SPerm([-2,-1,-3])
+SPerm{Int64}: (1,-2)(3,-3)
+
+julia> permuted([20,30,40],p)
+3-element Array{Int64,1}:
+ -30
+ -20
+ -40
+```
+"""
 function Perms.permuted(l::AbstractVector,a::SPerm)
   res=copy(l)
   for i in eachindex(l)
@@ -164,7 +215,17 @@ function SPerm(a::AbstractVector,b::AbstractVector)
   SPerm(res)
 end
 
-"`Matrix(a::Perm)` is the permutation matrix for a"
+"""
+`Matrix(a::SPerm)` is the permutation matrix for a
+# Examples
+```julia-repl
+julia> Matrix(SPerm([-2,-1,-3]))
+3×3 Array{Int64,2}:
+  0  -1   0
+ -1   0   0
+  0   0  -1
+```
+"""
 function Base.Matrix(a::SPerm,n=length(a.d))
   res=zeros(Int,n,n)
   for (i,v) in enumerate(a.d) res[i,abs(v)]=sign(v) end
@@ -173,19 +234,6 @@ end
 
 #SignedPermOps.Comm:=function(p,q)return p^-1*q^-1*p*q;end;
 #
-## hyperoctaedral perm from SignedPerm
-#SignedPermOps.HO:=function(p)local n,ls,i,j;
-#  n:=Length(p.l);
-#  ls:=[1..2*n]*0;
-#  for j in [1..n] do
-#    i:=p.l[j];
-#    if i>0 then ls[2*j-1]:=2*i-1;ls[2*j]:=2*i;
-#    else        ls[2*j-1]:=-2*i;ls[2*j]:=-2*i-1;
-#    fi;
-#  od;
-#  return PermList(ls);
-#end;
-#
 ##underlying Signs of a SignedPerm
 #Signs:=p->Permuted(List(p.l,SignInt),Perm(p));
 #
@@ -193,7 +241,7 @@ end
 ## if N=OnMatrices(M,p) then
 ##    M=OnMatrices(N,Perm(p))^DiagonalMat(Signs(p)))
 #
-## Transforms hyperoctaedral perm or matrix or perm+signs to a signed perm,
+## Transforms matrix or perm+signs to a signed perm,
 #SignedPerm:=function(arg)local ls,n,i,nz,res;
 #  ls:=arg[1];
 #  if IsMat(ls) then
@@ -209,23 +257,9 @@ end
 #      fi;
 #    od;
 #    return SignedPerm(res);
-#  elif IsList(ls) then
-#    return rec(l:=ls,operations:=SignedPermOps,
-#    domain:=rec(operations:=rec(
-#      \in:=function(a,b)return IsSignedPerm(a);end,
-#      Group:=function(D,gens,id) return rec(isDomain:=true,isGroup:=true,
-#	identity:=id,generators:=gens,operations:=GroupOps,isFinite:=true);
-#      end)));
-#  else # hyperoctaedral perm, length
-## Apply hyperoctaedral permutation sp to list l
-#    if Length(arg)=2 then n:=arg[2];
-#      if IsList(n) then  # perm, signs
-#        return SignedPerm(Permuted(Zip([1..Length(n)],n,
-#          function(x,y)return x*y;end),ls^-1));fi;
-#    elif ls=() then n:=1;
-#    else n:=QuoInt(LargestMovedPointPerm(ls)+1,2);fi;
-#    return SignedPerm(List(OnTuples([1,3..2*n-1],ls),function(i)
-#      if i mod 2=0 then return -i/2;else return QuoInt(i+1,2);fi;end));
+#  elif Length(arg)=2 then n:=arg[2];  # perm, signs
+#    return SignedPerm(Permuted(Zip([1..Length(n)],n,
+#       function(x,y)return x*y;end),ls^-1));
 #  fi;
 #end;
 #
@@ -336,4 +370,68 @@ end
 #  # transporter of a ps from [1..Length(I)] to I
 #  trans:=I->SignedPerm(ListPerm(MappingPermListList([1..Length(I)],I)));
 #  return trans(I)^-1*tr*trans(J);
+#------------ Example II: HyperOctaedral groups as Coxeter groups
+
+struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
+  G::SPermGroup{T}
+  n::Int
+  prop::Dict{Symbol,Any}
+end
+
+Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
+
+"""
+  `CoxHyperoctaedral(n)` The Hyperoctaedral group on ±1,…,±n as a Coxeter group
+  of type B, with generators (1,-1) and (i,i+1)(-i,-i-1)
+"""
+function CoxHyperoctaedral(n::Int)
+  gens=[SPerm{Int8}(1,-1)]
+  for i in 2:n push!(gens,SPerm{Int8}(i-1,i)) end
+  CoxHyperoctaedral{Int8}(Group(gens),n,Dict{Symbol,Any}())
+end
+
+function Base.show(io::IO, W::CoxHyperoctaedral)
+  print(io,"CoxHyperoctaedral($(W.n))")
+end
+
+PermRoot.refltype(W::CoxHyperoctaedral)=[TypeIrred(Dict(:series=>:B,
+                                        :indices=>collect(1:W.n)))]
+
+CoxGroups.nref(W::CoxHyperoctaedral)=length(gens(W))^2
+
+Gapjm.degrees(W::CoxHyperoctaedral)=2*(1:length(gens(W)))
+
+Base.length(W::CoxHyperoctaedral)=prod(degrees(W))
+
+function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
+  if i^w<0 return true end
+  if i==1 return false end
+  return (i-1)^w>0 && (i-1)^w>i^w
+end
+
+function PermRoot.reflection(W::CoxHyperoctaedral,i::Int)
+  ref=gets(W,:reflections)do W
+    refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
+    for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
+    for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
+    refs
+  end
+  ref[i]
+end
+
+PermRoot.reflections(W::CoxHyperoctaedral)=reflection.(Ref(W),1:nref(W))
+
+function Perms.reflength(W::CoxHyperoctaedral,w)
+  c=cycles(w)
+  c1=filter(x->Set(x)==Set(-x),c)
+  div(reduce(+,map(length,c1);init=0),2)+
+      reduce(+,map(x->length(x)-1,setdiff(c,c1));init=0)
+end
+
+" Only parabolics defined are I=1:m for m≤n"
+function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int})
+  if I!=1:length(I) error(I," should be 1:n for some n") end
+  CoxHyperoctaedral(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
+end
+
 end;

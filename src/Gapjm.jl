@@ -94,8 +94,6 @@ include("Groups.jl")
 @reexport using .Groups
 include("Perms.jl")
 @reexport using .Perms
-include("SPerms.jl")
-@reexport using .SPerms
 include("PermGroups.jl")
 @reexport using .PermGroups
 include("Cycs.jl")
@@ -110,6 +108,8 @@ include("Chars.jl")
 @reexport using .Chars
 include("CoxGroups.jl")
 @reexport using .CoxGroups
+include("SPerms.jl")
+@reexport using .SPerms
 include("Garside.jl")
 @reexport using .Garside
 include("Weyl.jl")

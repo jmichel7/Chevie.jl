@@ -623,6 +623,10 @@ julia> ER(3)
 """
 function ER(n::Int)
   get!(ER_dict,n) do 
+  for (p,d) in factor(n)
+    h=p^div(d,2)
+    if h>1 return h*ER(div(n,h^2)) end
+  end
   if n==0       return 0
   elseif n<0    return E(4)*ER(-n)
   elseif n%4==1 return sum(k->E(n,k^2),1:n)

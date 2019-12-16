@@ -101,8 +101,8 @@ julia> rand(Perm,10)
 
 Perms  have methods `copy, hash, ==, cmp, isless` (total order) so they can
 be  keys in hashes or elements of  sets; two permutations are equal if they
-move   the  same  points.  Permutations   are  considered  as  scalars  for
-broadcasting.
+move  the same  points to  the same  images. Permutations are considered as
+scalars for broadcasting.
 
 other functions are: 
 `cycles, cycletype, orbit, orbits, permuted, rand, restricted, sign`. 
@@ -167,7 +167,7 @@ Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
 """
    @perm"..."
 
- make a `Perm` form a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
+ make a `Perm` from a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
 """
 macro perm_str(s::String)
   start=1
@@ -198,8 +198,8 @@ end
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
   return a `Perm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
-  Gives an error otherwise. If not given `{T}` is given to be `{Int16}`.
-  Needs the objects in `l` to be sortable.
+  Gives an error otherwise. If not given `{T}` is taken to be `{Int16}`.
+  Needs the objects in `l` and `l1` to be sortable.
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
   s=sortperm(l)
@@ -214,7 +214,7 @@ Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int16}(l,l1)
    `Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer`
 
 assumes `l`  is  union  of  orbits  under  group  elt `g`; returns the
-`Perm{T}` effected on `l` by `g`. If not given `T==Int16`.
+`Perm{T}` effected on `l` by `g`. If not given `T=Int16`.
 Needs objects in `l` sortable
 """
 Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))

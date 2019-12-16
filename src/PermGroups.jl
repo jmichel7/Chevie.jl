@@ -214,52 +214,71 @@ function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)
 end
+#-------------- iteration on product of lists of group elements ---------------
+struct GroupProdIterator{T}
+  iterators::Vector{T}
+end
+# if the iterators are i1,...,in iterate on all products i1[j1]*...*in[jn]
+
+Base.length(I::GroupProdIterator)=prod(length.(I.iterators))
+
+function Base.iterate(I::GroupProdIterator{T})where T
+  prod=one(eltype(T))
+  state=map(I.iterators) do l
+    u=iterate(l)
+    if isnothing(u) return nothing end
+    prod*=first(u)
+    prod,last(u)
+  end
+  prod::eltype(T),state::Vector{Tuple{eltype(T),Int}}
+end
+
+function Base.iterate(I::GroupProdIterator,state)
+  for i in length(state):-1:1
+    u=iterate(I.iterators[i],last(state[i]))
+    if isnothing(u) continue end
+    p,st=u
+    state[i]= i==1 ? u : (first(state[i-1])*p,st)
+    for j in i+1:length(state)
+      p,st=iterate(I.iterators[j])
+      state[j]=(first(state[j-1])*p,st)
+    end
+    return first(state[end]),state
+  end
+  return nothing
+end
+
+Base.eltype(::Type{GroupProdIterator{T}}) where T=eltype(T)
 #------------------------- iteration for PermGroups -----------------------
-" length(G::PermGroup) returns the cardinality of G "
 function Base.length(G::PermGroup)::Int
   gets(G,:length)do G 
     prod(length.(transversals(G)))
   end
 end
 
-# if l1,...,ln are the centralizer orbits the elements are the products
-# of one element in each li
-function Base.iterate(G::PermGroup{T})where T
-  prod=one(G)
-  state=map(reverse(values.(transversals(G)))) do l
-    u=iterate(l)
-    if isnothing(u) return nothing end
-    prod*=u[1]
-    prod,u[2]
-  end
-  prod::Perm{T},reverse(state)::Array{Tuple{Perm{Int16},Int64},1}
-end
-
-function Base.iterate(G::PermGroup,state)
-  for i in eachindex(state)
-    u=iterate(values(transversals(G)[i]),state[i][2])
-    if isnothing(u) continue end
-    if i==length(state)
-      state[i]=u
-    else
-      state[i]=(state[i+1][1]*u[1],u[2])
-    end
-    for j in i-1:-1:1
-      u=iterate(values(transversals(G)[j]))
-      state[j]=(state[j+1][1]*u[1],u[2])
-    end
-    return state[1][1],state
-  end
-  return nothing
-end
-
 Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
 
+function Base.iterate(G::PermGroup)
+  I=GroupProdIterator(reverse(values.(transversals(G))))
+  u=iterate(I)
+  if isnothing(u) return u end
+  p,st=u
+  p,(I,st)
+end
+
+function Base.iterate(G::PermGroup,(I,state))
+  u=iterate(I,state)
+  if isnothing(u) return u end
+  p,st=u
+  p,(I,st)
+end
+
+# elements is much faster than collect(G), should not be
 function Gapjm.elements(G::PermGroup)
-  t=transversals(G)
-  res=collect(values(t[end]))
-  for i in length(t)-1:-1:1
-    res=vcat(map(x->res.*x,values(t[i]))...)
+  t=reverse(values.(transversals(G)))
+  res=t[1]
+  for i in 2:length(t)
+    res=vcat(map(x->res.*x,t[i])...)
   end
   res
 end
