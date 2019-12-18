@@ -242,7 +242,7 @@ end
   `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
 
   return a `SPerm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
-  Gives an error otherwise. If not given `{T}` is taken to be `{Int16}`.
+  returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
   Needs the objects in `l` and `l1` to be sortable.
 """
 function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer

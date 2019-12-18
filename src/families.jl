@@ -33,6 +33,8 @@ function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}()
   merge!(f,d)
 end
 
+special(f::Family)::Int=gets(f->1,f,:special)
+
 function Base.conj(f::Family)
   g=Family(copy(f.prop))
   g[:fourierMat]=conj(f[:fourierMat])

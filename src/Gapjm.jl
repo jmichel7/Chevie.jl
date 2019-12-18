@@ -56,7 +56,7 @@ using Reexport
 #--------------------------------------------------------------------------
 export coefficients, degree, degrees, elements, kernel, restricted, root, words, word
 function coefficients end
-function degree end
+degree(a::Number)=0
 function degrees end
 function elements end
 function kernel end

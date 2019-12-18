@@ -47,6 +47,31 @@ element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) :
 (W::Group)(x...)=element(W,x...)
 
 """
+  orbit(gens::vector,p;action::Function=^)
+
+  the orbit of `p` under generators `gens`. `p` should be hashable
+```julia-repl
+julia> orbit([Perm(1,2),Perm(2,3)],1) 
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+```
+"""
+function orbit(gens::Vector,pnt;action::Function=^)
+  set=Set([pnt])
+  orb=[pnt]
+  for pnt in orb, gen in gens
+    img=action(pnt,gen)
+    if !(img in set)
+      push!(orb,img)
+      push!(set,img)
+    end
+  end
+  orb
+end
+
+"""
   orbit(G::Group,p;action::Function=^)
 
   the orbit of `p` under Group `G`. `p` should be hashable
@@ -59,18 +84,7 @@ julia> orbit(G,1)
  3
 ```
 """
-function orbit(G::Group,pnt;action::Function=^)
-  set=Set([pnt])
-  orb=[pnt]
-  for pnt in orb, gen in gens(G)
-    img=action(pnt,gen)
-    if !(img in set)
-      push!(orb,img)
-      push!(set,img)
-    end
-  end
-  orb
-end
+orbit(G::Group,pnt;action::Function=^)=orbit(gens(G),pnt;action=action)
 
 """
   transversal(G::Group,p;action::Function=^)
@@ -112,6 +126,16 @@ function transversal(G::Group,pnt;action::Function=^)
   trans
 end
 
+function orbits(gens::Vector,v::AbstractVector;action::Function=^,trivial=true)
+  res=Vector{eltype(v)}[]
+  while !isempty(v)
+    o=orbit(gens,v[1],action=action)
+    if length(o)>1 || trivial push!(res,o) end
+    v=setdiff(v,o)
+  end
+  res
+end
+
 """
     `orbits(G,v;action=^)`
     
@@ -124,16 +148,8 @@ julia> orbits(G,1:4)
  [4]
 ```
 """
-function orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,
-               trivial=true)
-  res=Vector{eltype(v)}[]
-  while !isempty(v)
-    o=orbit(G,v[1],action=action)
-    if length(o)>1 || trivial push!(res,o) end
-    v=setdiff(v,o)
-  end
-  res
-end
+orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,trivial=true)=
+  orbits(gens(G),v;action=action,trivial=trivial)
 
 """
     centralizer(G,p;action=^) 

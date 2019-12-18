@@ -365,4 +365,234 @@ v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 Hecke.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
 
 Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
+
+#----------------------------------Left cells --------------------------
+# orbit of list of functions gens on item v
+function Groups.orbit(gens::Vector{Function},pnt)
+  set=Set([pnt])
+  orb=[pnt]
+  for pnt in orb, gen in gens
+    img=gen(pnt)
+    if !(img in set)
+      push!(orb,img)
+      push!(set,img)
+    end
+  end
+  orb
+end
+
+struct LeftCell{G<:Group}
+  group::G
+  prop::Dict{Symbol,Any}
+## Optional (computed) fields are:
+## .reps representatives of the cell
+## .duflo the Duflo involution of the cell
+## .character the character of the cell
+## .a the a-function of the cell
+## .elements the elements of the cell
+end
+
+Base.copy(c::LeftCell)=LeftCell(c.group,copy(c.prop))
+
+duflo(c::LeftCell)=c.prop[:duflo]
+
+Base.hash(c::LeftCell, h::UInt)=hash(duflo(c),h)
+
+function Base.length(c::LeftCell)
+  if haskey(c.prop,:character)
+    sum(first.(CharTable(c.group).irr)[c.prop[:character]])
+  else length(elements(c))
+  end
+end
+
+## returns character as list of irred. numbers repeated if multiplicity
+function character(c::LeftCell)
+  gets(c,:character) do
+    r=representation(c,Hecke(c.group))
+    cc=CharRepresentationWords(r,classinfo(c.group)[:classtext])
+    ct=CharTable(c.group)
+    cc=MatScalarProducts(ct,ct.irreducibles,[cc])[1]
+    c.prop[:character]=vcat(map(i->fill(i,cc[i]),1:Length(cc))...)
+    c.prop[:a]=charinfo(c.group)[:a][c.prop[:character]]
+    if length(Set(c.a))>1 error() else c.a=c.a[1] end
+  end
+end
+
+function Base.show(io::IO,c::LeftCell)
+   print(io,"LeftCell<",c.group,": ")
+   if haskey(c.prop,:duflo)
+     print(io,"duflo=",joindigits(Weyl.DescribeInvolution(c.group,duflo(c))))
+   end
+   if haskey(c.prop,:character)
+     uc=UnipotentCharacters(c.group)
+     ch=c.prop[:character]
+     i=findfirst(f->uc.harishChandra[1][:charNumbers][ch[1]] in f[:charNumbers],
+                 uc.families)
+     f=uc.families[i]
+     i=f[:charNumbers][HasType.special(f)]
+     i=findfirst(==(i),uc.harishChandra[1][:charNumbers])
+     p=findfirst(==(i),ch)
+     p=vcat([[i,1]],HasType.Collected(vcat(ch[1:p-1],ch[p+1:end])))
+     print(io," character=",join(
+       map(p)do v
+        (v[2]!=1 ? string(v[2]) : "")*charnames(io,c.group)[v[1]]
+      end,"+"))
+   end
+   print(io,">")
+ end
+ 
+# br is a braid_relation of W
+# returns corresponding * op on w if applicable otherwise returns w
+function leftstar(W,br,w)
+  # st is a left or right member of a braidrelation of W
+  # leftdescents(W,w) contains st[1] and not st[2]
+  # returns corresponding * operation applied to w
+  function leftstarNC(W,st,w)
+    rst=reflections(W)[st]
+    w0=prod(rst)
+    i=1
+    while true
+      w=rst[i]*w
+      i+=1
+      w0*=rst[i]
+      if !isleftdescent(W,w,st[i]) break end
+    end
+    w0*w
+  end
+  l,r=map(x->restriction(W)[x],br)
+  if isleftdescent(W,w,l[1]) isleftdescent(W,w,r[1]) ? w : leftstarNC(W,l,w)
+  else isleftdescent(W,w,r[1]) ? leftstarNC(W,r,w) : w
+  end
+end
+
+# List of functions giving all possible left * images of w
+leftstars(W)=map(st->(w->leftstar(W,st,w)),
+                 filter(r->length(r[1])>2,braid_relations(W)))
+
+function Gapjm.elements(c::LeftCell)
+  gets(c,:elements) do
+    elements=orbit(leftstars(c.group),c.duflo;action=(x,f)->f(x))
+    for w in c.reps append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x))) end
+    Set(elements)
+  end
+end
+
+Gapjm.words(c::LeftCell)=word.(Ref(c.group),elements(c))
+
+Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
+
+Base.in(w,c::LeftCell)=w in elements(c)
+
+#LeftCellOps.Mu:=function(c)
+#  if not IsBound(c.mu) then
+#    c.mu:=KLMueMat(c.group,Elements(c));
+#  fi;
+#  return c.mu;
+#end;
+#
+#LeftCellOps.Representation:=function(c,H)local v,W,u,e,mu,w,res,l,k,s,n,value;
+#  W:=Group(H);
+#  if Length(Set(List(W.generatingReflections,
+#                i->RootParameter(H,i,"Left Cell Representation"))))>1 then
+#  # this checks one can compute rootParameters
+#    Error("cell representations for unequal parameters not yet implemented");
+#  else v := H.rootParameter[1];
+#  fi;
+#  return WGraphToRepresentation(c.group.semisimpleRank,WGraph(c),v);
+#end;
+
+# returns right star operation st (a BraidRelation) of LeftCell c
+function RightStar(st,c)
+  res=copy(c)
+  W=c.group
+  rs(w)=leftstar(W,st,w^-1)^-1
+  if haskey(c.prop,:duflo)
+   res.prop[:duflo]=rs(rs(duflo(c))^-1)
+  end
+  if haskey(c.prop,:reps) res.prop[:reps]=rs.(c.prop[:reps]) end
+  if haskey(c.prop,:elements)
+    res.prop[:elements]=rs.(c.prop[:elements])
+    n=sortperm(res.prop[:elements])
+    res.prop[:elements]=res.prop[:elements][n]
+    if haskey(c.prop,:mu) res.prop[mu]=c.prop[:mu][n,n] end
+    if haskey(c.prop,:graph) res.prop[:orderGraph]=c.prop[:orderGraph][n] end
+  end
+  res
+end
+
+# Fo an irreducible type, reps contain:
+# .duflo,  .reps: elements of W represented as images of simple roots
+# .character: decomposition of left cell in irreducibles
+function LeftCellRepresentatives(W)
+  res=map(refltype(W))do t
+#   R=ReflectionGroup(t)
+    R=rootdatum(cartan(t.prop)) # above implemented for now like that
+    rr=getchev(t,:KLeftCellRepresentatives)
+    if isnothing(rr) return nothing end
+    return map(rr)do r
+      r=copy(r)
+      function f(l)
+        m=permutedims(toM(R.rootdec[l]))
+        w=Perm(R.rootdec,Ref(m).*R.rootdec)
+        inclusion(W)[t[:indices][word(R,w)]]
+      end
+      r[:duflo]=f(r[:duflo])
+      if isempty(r[:reps]) r[:reps]=Vector{Int}[]
+      else r[:reps]=f.(r[:reps])
+      end
+      push!(r[:reps],r[:duflo])
+      r
+    end
+  end
+  if isempty(res) return res end
+  if nothing in res return nothing end
+  n=getchev(W,:NrConjugacyClasses)
+  return map(Cartesian(res...)) do l
+    duflo=W(vcat(map(x->x[:duflo],l)...)...)
+    reps=map(v->W(vcat(v...)...),Cartesian(map(x->x[:reps],l)...))
+    reps=setdiff(reps,[duflo])
+    character=map(p->HasType.PositionCartesian(n,p),Cartesian(map(x->x[:character],l)...))
+    a=charinfo(W)[:a][character]
+    if length(Set(a))>1 error() else a=a[1] end
+    return LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,
+                 :character=>character,:a=>a))
+  end
+end
+
+#############################################################################
+##
+#F  LeftCells( <W> [,i] ) . . . left cells of W [in i-th 2-sided cell]
+#   for the 1-parameter Hecke algebra
+##
+## 'LeftCells'  returns a list  of pairs. The  first component of each pair
+## consists  of the reduced words in the Coxeter group <W> which lie in one
+## left  cell C, the second component  consists of the corresponding matrix
+## of highest coefficients mu(y,w), where y,w are in C.
+## options: family= only leftcells in that uc.family
+##
+function LeftCells(W,i=0)
+  cc=LeftCellRepresentatives(W)
+  if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
+  if !iszero(i)
+    uc=UnipotentCharacters(W)
+    cc=filter(c->uc.harishChandra[1][:charNumbers][Character(c)[1]]
+                                in uc.families[i][:charNumbers],cc)
+  end
+  st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
+  union(map(c->orbit(st,c;action=(x,f)->f(x)),cc)...)
+end
+
+# LeftCell containing w
+function LeftCell(W,w)
+  l=KLeftCellRepresentatives(W)
+  sst=filter(r->length(r[1])>2,braid_relations(W))
+  word=MinimalWordProperty(w,map(st->(w->leftstar(W,st,w^-1)^-1),sst),
+     w->any(c->w in c,l))
+  v=w
+  for g in reverse(word) v=leftstar(W,sst[g],v^-1)^-1 end
+  cell=First(l,c->v in c);
+  for g in word cell=RightStar(sst[g],cell) end
+  return cell
+end
+
 end

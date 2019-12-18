@@ -441,10 +441,14 @@ function charinfo(t::TypeIrred)
   c[:charnames]=map(c[:charparams]) do p
      getchev(t,:CharName,p,Dict(:TeX=>true))
   end
-  if haskey(c,:b) c[:b]=Int.(c[:b]) end
-  if haskey(c,:B) c[:B]=Int.(c[:B]) end
-  if haskey(c,:a) c[:a]=Int.(c[:a]) end
-  if haskey(c,:A) c[:A]=Int.(c[:A]) end
+  if !haskey(c,:b) c[:b]=getchev(t,:LowestPowerFakeDegrees) end
+  if !haskey(c,:B) c[:B]=getchev(t,:HighestPowerFakeDegrees) end
+  if !haskey(c,:a) c[:a]=getchev(t,:LowestPowerGenericDegrees) end
+  if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
+  c[:b]=Int.(c[:b])
+  c[:B]=Int.(c[:B])
+  c[:a]=Int.(c[:a])
+  c[:A]=Int.(c[:A])
   c
 end
 

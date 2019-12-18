@@ -365,6 +365,7 @@ ComplexConjugate(v)=conj(v)
 Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
+Degree=degree
 function DiagonalMat(v...)
   R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
   for i in axes(R,1), j in axes(R,2)
@@ -419,6 +420,7 @@ end
 
 PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
 Permuted(a,b)=[a[i^b] for i in eachindex(a)]
+Phi=phi
 PrimeResidues=prime_residues
 Rank=rank
 RankSymbol=ranksymbol

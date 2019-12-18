@@ -111,6 +111,8 @@ Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0)
 Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 
+Gapjm.degree(a::CycPol)=sum(last,a.v)+a.valuation+degree(a.coeff)
+
 function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
 end
