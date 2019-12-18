@@ -405,9 +405,11 @@ cycles(a::Perm;check=false)=orbits(a;trivial=false,check=check)
 
 function Base.show(io::IO, a::Perm)
   cyc=orbits(a;trivial=false,check=true)
+  if !get(io,:limit,false) print(io,"perm\"") end
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
+  if !get(io,:limit,false) print(io,"\"") end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T

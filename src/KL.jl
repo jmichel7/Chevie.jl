@@ -367,20 +367,6 @@ Hecke.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
 Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 
 #----------------------------------Left cells --------------------------
-# orbit of list of functions gens on item v
-function Groups.orbit(gens::Vector{Function},pnt)
-  set=Set([pnt])
-  orb=[pnt]
-  for pnt in orb, gen in gens
-    img=gen(pnt)
-    if !(img in set)
-      push!(orb,img)
-      push!(set,img)
-    end
-  end
-  orb
-end
-
 struct LeftCell{G<:Group}
   group::G
   prop::Dict{Symbol,Any}
@@ -412,7 +398,7 @@ function character(c::LeftCell)
     cc=CharRepresentationWords(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
     cc=MatScalarProducts(ct,ct.irreducibles,[cc])[1]
-    c.prop[:character]=vcat(map(i->fill(i,cc[i]),1:Length(cc))...)
+    c.prop[:character]=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
     c.prop[:a]=charinfo(c.group)[:a][c.prop[:character]]
     if length(Set(c.a))>1 error() else c.a=c.a[1] end
   end
@@ -472,7 +458,9 @@ leftstars(W)=map(st->(w->leftstar(W,st,w)),
 function Gapjm.elements(c::LeftCell)
   gets(c,:elements) do
     elements=orbit(leftstars(c.group),c.duflo;action=(x,f)->f(x))
-    for w in c.reps append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x))) end
+    for w in c.reps 
+      append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
+    end
     Set(elements)
   end
 end
@@ -483,23 +471,40 @@ Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 
 Base.in(w,c::LeftCell)=w in elements(c)
 
-#LeftCellOps.Mu:=function(c)
-#  if not IsBound(c.mu) then
-#    c.mu:=KLMueMat(c.group,Elements(c));
-#  fi;
-#  return c.mu;
-#end;
-#
-#LeftCellOps.Representation:=function(c,H)local v,W,u,e,mu,w,res,l,k,s,n,value;
-#  W:=Group(H);
-#  if Length(Set(List(W.generatingReflections,
-#                i->RootParameter(H,i,"Left Cell Representation"))))>1 then
-#  # this checks one can compute rootParameters
-#    Error("cell representations for unequal parameters not yet implemented");
-#  else v := H.rootParameter[1];
-#  fi;
-#  return WGraphToRepresentation(c.group.semisimpleRank,WGraph(c),v);
-#end;
+#F  KLMueMat( <W>, <list> )  . . . . (symmetrized) matrix of leading 
+#F coefficients of Kazhdan-Lusztig polynomials of elements in a given list
+##
+function KLMueMat(W,c)
+  w0c=longest(W).*c
+  lc=length.(Ref(W),c)
+  m=zeros(Int,length(c),length(c))
+  for k in 0:maximum(lc)-minimum(lc)
+    for i in eachindex(c)
+      for j in filter(j->lc[i]-lc[j]==k,eachindex(c))
+        if lc[i]+lc[j]>W.N m[i,j]=KLMue(W,w0c[i],w0c[j])
+        else m[i,j]=KLMue(W,c[j],c[i])
+        end
+        m[j,i]=m[i,j]
+      end
+    end
+  end
+  return m
+end
+
+function Mu(c::LeftCell)
+  gets(c,:mu) do
+    KLMueMat(c.group,elements(c))
+  end
+end
+
+function Representation(c::LeftCell,H)
+  W=H.W
+  if !equalpara(H)
+    error("cell representations for unequal parameters not yet implemented")
+  else v=rootpara(H)[1]
+  end
+  WGraphToRepresentation(semisimplerank(c.group),WGraph(c),v)
+end
 
 # returns right star operation st (a BraidRelation) of LeftCell c
 function RightStar(st,c)
@@ -514,7 +519,7 @@ function RightStar(st,c)
     res.prop[:elements]=rs.(c.prop[:elements])
     n=sortperm(res.prop[:elements])
     res.prop[:elements]=res.prop[:elements][n]
-    if haskey(c.prop,:mu) res.prop[mu]=c.prop[:mu][n,n] end
+    if haskey(c.prop,:mu) res.prop[:mu]=c.prop[:mu][n,n] end
     if haskey(c.prop,:graph) res.prop[:orderGraph]=c.prop[:orderGraph][n] end
   end
   res
@@ -559,40 +564,154 @@ function LeftCellRepresentatives(W)
   end
 end
 
-#############################################################################
-##
-#F  LeftCells( <W> [,i] ) . . . left cells of W [in i-th 2-sided cell]
-#   for the 1-parameter Hecke algebra
-##
-## 'LeftCells'  returns a list  of pairs. The  first component of each pair
-## consists  of the reduced words in the Coxeter group <W> which lie in one
-## left  cell C, the second component  consists of the corresponding matrix
-## of highest coefficients mu(y,w), where y,w are in C.
-## options: family= only leftcells in that uc.family
-##
+InfoChevie(x...)=println(x...)
+function OldLeftCellRepresentatives(W)
+  st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
+  rw=groupby(x->leftdescents(W,x^-1),elements(W))
+  rw=[(rd=k,elements=Set(v)) for (k,v) in rw]
+  sort!(rw;by=x->length(x.elements))
+  cells0=LeftCell{typeof(W)}[]
+  while length(rw)>0
+    c=collect(rw[1].elements)
+    InfoChevie("#I R(w)=",rw[1].rd," : #Elts=",length(c))
+    mu=KLMueMat(W,c)
+    n=1:length(c)
+    Lleq=[x==y || (mu[x,y]!=0 && any(i->isleftdescent(W,c[x],i) && 
+       !isleftdescent(W,c[y],i),eachindex(gens(W)))) for x in n, y in n]
+    Lleq=transitive_closure(Lleq)
+    m=Set(n[Lleq[i,:].&Lleq[:,i]] for i in n)
+    x=[LeftCell(W,Dict{Symbol,Any}(:elements=>c[d],:mu=>mu[d,d])) for d in m]
+    while length(x)>0
+      c=x[1]
+      n=sortperm(c.prop[:elements])
+      c.prop[:elements]=c.prop[:elements][n]
+      c.prop[:mu]=c.prop[:mu][n,n]
+      i=filter(x->isone(x^2),c.prop[:elements])
+      if length(i)==1 c.prop[:duflo]=i[1]
+      else m=map(x->length(W,x)-2*degree(KLPol(W,one(W),x)),i)
+        p=argmin(m)
+        c.prop[:a]=m[p]
+        c.prop[:duflo]=i[p] # Duflo involutions minimize Delta
+      end
+      i=filter(x->!(c.prop[:duflo] in x),
+               orbits(leftstars(W),c.prop[:elements];action=(x,f)->f(x)))
+      c.prop[:reps]=first.(i)
+      push!(cells0,c)
+      n=orbit(st,c;action=(x,f)->f(x))
+      InfoChevie(", ",length(n)," new cell")
+      if length(n)>1 InfoChevie("s") end
+      for e in n
+        rd=leftdescents(W,duflo(e))
+        i=findfirst(x->x.rd==rd,rw)
+        if i==1 x=filter(c->!(c.prop[:elements][1] in elements(e)),x)
+        elseif i!=nothing
+	  setdiff!(rw[i].elements,elements(e))
+        end
+      end
+    end
+    InfoChevie(" \n")
+    rw=filter(x->length(x.elements)>0,rw)
+    rw=rw[2:end]
+    sort!(rw,by=x->length(x.elements))
+  end
+  cells0
+end
+  
+"""
+  `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
+  for the 1-parameter Hecke algebra
+"""
 function LeftCells(W,i=0)
   cc=LeftCellRepresentatives(W)
   if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
   if !iszero(i)
     uc=UnipotentCharacters(W)
-    cc=filter(c->uc.harishChandra[1][:charNumbers][Character(c)[1]]
+    cc=filter(c->uc.harishChandra[1][:charNumbers][character(c)[1]]
                                 in uc.families[i][:charNumbers],cc)
   end
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
-  union(map(c->orbit(st,c;action=(x,f)->f(x)),cc)...)
+  d=map(c->orbit(st,c;action=(x,f)->f(x)),cc)
+  length(d)==1 ? d[1] : union(d...)
+end
+
+# gens is a list each element of which can operate on element e
+# returns minimal word w such that Composition(gens[w]) applied to e 
+# satifies cond
+function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
+  if cond(e) return Int[] end
+  elements=[e]
+  nbLength=[1]
+  cayleyGraph=[Int[]]
+  bag=Set(elements)
+  InfoChevie("#I ")
+  while true
+    new=map(1+sum(nbLength[1:end-1]):length(elements))do h
+      map(g->[action(elements[h],gens[g]),[h,g]],eachindex(gens))
+    end
+    new=first.(values(groupby(first,vcat(new...))))
+    new=filter(x->!(x[1] in bag),new)
+    append!(cayleyGraph,map(x->x[2],new))
+    new=first.(new)
+    p=findfirst(cond,new)
+    if !isnothing(p) InfoChevie("\n")
+      res=Int[] 
+      p=length(elements)+p
+      while p!=1 push!(res,cayleyGraph[p][2])
+        p=cayleyGraph[p][1] 
+      end
+      return res
+    end
+    if all(x->x in elements,new) error("no solution") end
+    append!(elements,new)
+    bag=union(bag,new)
+#   if Length(new)>10 then 
+       InfoChevie(length(new)," ")
+#   fi;
+    push!(nbLength,length(new))
+  end
 end
 
 # LeftCell containing w
 function LeftCell(W,w)
-  l=KLeftCellRepresentatives(W)
+  l=LeftCellRepresentatives(W)
+  if isnothing(l) l=OldLeftCellRepresentatives(W) end
   sst=filter(r->length(r[1])>2,braid_relations(W))
   word=MinimalWordProperty(w,map(st->(w->leftstar(W,st,w^-1)^-1),sst),
-     w->any(c->w in c,l))
+     w->any(c->w in c,l);action=(x,f)->f(x))
   v=w
   for g in reverse(word) v=leftstar(W,sst[g],v^-1)^-1 end
-  cell=First(l,c->v in c);
+  cell=l[findfirst(c->v in c,l)]
   for g in word cell=RightStar(sst[g],cell) end
   return cell
+end
+
+# WGraph of LeftCell c
+function WGraph(c::LeftCell)
+  gets(c,:graph) do c
+    e=elements(c)
+    mu=Mu(c)
+    n=length(e)
+    nodes=leftdescents.(Ref(c.group),e)
+    p=sortperm(nodes)
+    nodes=nodes[p]
+    mu=mu[p,p]
+    c.prop[:orderGraph]=p
+    nodes=vcat(map(HasType.Collected(nodes)) do p
+        p[2]==1  ? [p[1]] : [p[1],p[2]-1]
+        end...)
+    graph=[nodes,[]]
+    l=vcat(map(i->map(j->[mu[i,j],mu[j,i],i,j],1:i-1),1:n)...)
+    l=filter(x->x[1]!=0 || x[2]!=0,l)
+    l=groupby(x->x[[1,2]],l)
+    for u in values(l)
+      if u[1][1]==u[1][2] value=u[1][1] else value=u[1][[1,2]] end
+      w=[value,[]]
+      s=groupby(first,map(x->x[[3,4]],u))
+      for k in values(s) push!(w[2],vcat([k[1][1]],map(x->x[2],k))) end
+      push!(graph[2],w)
+    end
+    graph
+  end
 end
 
 end
