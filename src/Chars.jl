@@ -823,6 +823,15 @@ function CharTable(W::PermRootGroup)::CharTable
   end
 end
 
+function scalarproduct(ct::CharTable,c1,c2)
+  cl=div.(ct.centralizers[1],ct.centralizers)
+  div(sum(map(*,c1,c2,cl)),ct.centralizers[1])
+end
+  
+function decompose(ct::CharTable,c)
+  map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
+end
+
 """
 `representation(W,i)`
 

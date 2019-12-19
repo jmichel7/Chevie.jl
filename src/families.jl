@@ -609,54 +609,51 @@ The  above example shows the families of unipotent characters for the group
 FamiliesClassical=function(sym)
   t=map(sym) do ST
     ST=fullsymbol(ST)
-    f=Dict{Symbol, Any}(:Z1 => symdiff(ST...))
+    f=Dict{Symbol, Any}(:Z1=>sort(symdiff(ST...)))
     D=length(f[:Z1]) % 2
-    f[:M♯] = symdiff(setdiff(f[:Z1], ST[2]), f[:Z1][1+D:2:length(f[:Z1])-1])
+    f[:M♯]=sort(symdiff(setdiff(f[:Z1], ST[2]),f[:Z1][1+D:2:length(f[:Z1])-1]))
     if D==1 && length(f[:M♯])%2!=0 f[:M♯]=setdiff(f[:Z1],f[:M♯]) end
     f[:content] = sort(reduce(vcat,ST))
     f
   end
   res = []
-  for l = CollectBy(1:length(t), i->t[i][:content])
-      f = Dict{Symbol, Any}(:content => t[l[1]][:content], :charNumbers => l)
-      f[:M♯] = map(x->x[:M♯],t[l])
-      if length(l) == 2
-          push!(res, Dict{Symbol, Any}(:content => f[:content], 
-            :charNumbers => [l[2]],
-            :M♯ => [f[:M♯][2]]))
-          f=Dict{Symbol, Any}(:content => f[:content], :charNumbers => [l[1]], 
-                              :M♯ => [f[:M♯][1]])
+  for (k,v) in groupby(i->t[i][:content],1:length(t))
+      f = Dict{Symbol, Any}(:content=>k, :charNumbers =>v)
+      f[:M♯]=getindex.(t[v],:M♯)
+      if length(v)==2
+        push!(res,
+          Dict{Symbol,Any}(:content=>k,:charNumbers=>[v[2]],:M♯=>[f[:M♯][2]]))
+        f=Dict{Symbol,Any}(:content=>k,:charNumbers=>[v[1]],:M♯=>[f[:M♯][1]])
       end
       push!(res, f)
   end
   map(res)do f
-   Z1 = filter(x->count(isequal(x),f[:content])==1,f[:content])
-   f[:fourierMat] = (2//1)^(-div(length(Z1)-1,2))*map(x->
+    Z1=filter(x->count(isequal(x),f[:content])==1,f[:content])
+    f[:fourierMat]=(2//1)^(-div(length(Z1)-1,2))*map(x->
                     map(y->(-1)^length(intersect(x, y)), f[:M♯]), f[:M♯])
-   f[:fourierMat]=toM(f[:fourierMat])
-    f[:eigenvalues] = map(x->(-1) ^ div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
+    f[:fourierMat]=toM(f[:fourierMat])
+    f[:eigenvalues]=map(x->(-1)^div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
     if length(f[:eigenvalues]) == 1
-        f[:charLabels] = [""]
-        f[:special] = 1
+      f[:charLabels] = [""]
+      f[:special] = 1
     else
-        f[:charLabels] = map(f[:M♯])do M
-         v = map(z->count(>=(z), M) % 2, Z1)
-          D = length(v)
-          v1 = v[2:2:D-D%2]
-          v2 = v[3:2:(D-1)+D%2]
-          if D%2==1 push!(v1,0) end
-          v1 = convert(Vector{Int},map(i->sum(v1[[i,i+1]]) % 2, 1:length(v2)))
-          s = "+-"
-          s[v2+1]*","*s[v1+1]
-        end
-        f[:special] = findfirst(x->all(y->y in "+,",x),f[:charLabels])
+      f[:charLabels] = map(f[:M♯])do M
+        v=map(z->count(>=(z),M)%2,Z1)
+        D=length(v)
+        v1=v[2:2:D-D%2]
+        v2=v[3:2:(D-1)+D%2]
+        if D%2==1 push!(v1,0) end
+        v1=map(i->(v1[i]+v1[i+1])%2, 1:length(v2))
+        s="+-"
+        s[v2+1]*","*s[v1+1]
+      end
+      f[:special]=findfirst(x->all(y->y in "+,",x),f[:charLabels])
     end
     f[:name] = joindigits(f[:content])
     f[:explanation] = "classical family"
     f[:perm] = Perm()
     f[:size] = length(f[:charNumbers])
     Family(f)
-#   f[:operations] = FamilyOps
   end
 end
 

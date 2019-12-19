@@ -114,7 +114,7 @@ end;
 ```
 """
 module KL
-export KLPol, Cpbasis
+export KLPol, Cpbasis, LeftCell, LeftCells
 using Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
@@ -393,14 +393,15 @@ end
 
 ## returns character as list of irred. numbers repeated if multiplicity
 function character(c::LeftCell)
-  gets(c,:character) do
-    r=representation(c,Hecke(c.group))
-    cc=CharRepresentationWords(r,classinfo(c.group)[:classtext])
+  gets(c,:character) do c
+    r=representation(c,hecke(c.group))
+    cc=HasType.CharRepresentationWords(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
-    cc=MatScalarProducts(ct,ct.irreducibles,[cc])[1]
-    c.prop[:character]=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
-    c.prop[:a]=charinfo(c.group)[:a][c.prop[:character]]
-    if length(Set(c.a))>1 error() else c.a=c.a[1] end
+    cc=Chars.decompose(ct,cc)
+    char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
+    c.prop[:a]=charinfo(c.group)[:a][char]
+    if length(Set(c.prop[:a]))>1 error() else c.prop[:a]=c.prop[:a][1] end
+    char
   end
 end
 
@@ -456,9 +457,9 @@ leftstars(W)=map(st->(w->leftstar(W,st,w)),
                  filter(r->length(r[1])>2,braid_relations(W)))
 
 function Gapjm.elements(c::LeftCell)
-  gets(c,:elements) do
-    elements=orbit(leftstars(c.group),c.duflo;action=(x,f)->f(x))
-    for w in c.reps 
+  gets(c,:elements) do c
+    elements=orbit(leftstars(c.group),duflo(c);action=(x,f)->f(x))
+    for w in c.prop[:reps]
       append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
     end
     Set(elements)
@@ -497,7 +498,7 @@ function Mu(c::LeftCell)
   end
 end
 
-function Representation(c::LeftCell,H)
+function Chars.representation(c::LeftCell,H)
   W=H.W
   if !equalpara(H)
     error("cell representations for unequal parameters not yet implemented")
@@ -617,13 +618,20 @@ function OldLeftCellRepresentatives(W)
   cells0
 end
   
+function cellreps(W)
+  gets(W,:cellreps) do W
+    cc=LeftCellRepresentatives(W)
+    if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
+    cc
+  end
+end
+    
 """
   `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
   for the 1-parameter Hecke algebra
 """
 function LeftCells(W,i=0)
-  cc=LeftCellRepresentatives(W)
-  if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
+  cc=cellreps(W)
   if !iszero(i)
     uc=UnipotentCharacters(W)
     cc=filter(c->uc.harishChandra[1][:charNumbers][character(c)[1]]
@@ -673,8 +681,7 @@ end
 
 # LeftCell containing w
 function LeftCell(W,w)
-  l=LeftCellRepresentatives(W)
-  if isnothing(l) l=OldLeftCellRepresentatives(W) end
+  l=cellreps(W)
   sst=filter(r->length(r[1])>2,braid_relations(W))
   word=MinimalWordProperty(w,map(st->(w->leftstar(W,st,w^-1)^-1),sst),
      w->any(c->w in c,l);action=(x,f)->f(x))
@@ -702,6 +709,7 @@ function WGraph(c::LeftCell)
     graph=[nodes,[]]
     l=vcat(map(i->map(j->[mu[i,j],mu[j,i],i,j],1:i-1),1:n)...)
     l=filter(x->x[1]!=0 || x[2]!=0,l)
+    if isempty(l) return graph end
     l=groupby(x->x[[1,2]],l)
     for u in values(l)
       if u[1][1]==u[1][2] value=u[1][1] else value=u[1][[1,2]] end
