@@ -10,7 +10,7 @@ algorithms like base, centralizer chain, etc...
 # Examples
 ```julia-repl
 julia> G=Group([Perm(i,i+1) for i in 1:2])
-Group([(1,2),(2,3)])
+Group([perm"(1,2)",perm"(2,3)"])
 
 # PermGroups are iterators over their elements
 julia> collect(G)  
@@ -44,8 +44,8 @@ julia> base(G)
 # the i-th element is the centralizer of base[1:i-1]
 julia> centralizers(G) 
 2-element Array{PermGroup{Int16},1}:
- Group([(1,2),(2,3)])
- Group([(2,3)])
+ Group([perm"(1,2)",perm"(2,3)"])
+ Group([perm"(2,3)"])
 
 # i-th element is transversal of centralizer[i] on base[i]
 julia> transversals(G)
@@ -224,6 +224,7 @@ Base.length(I::GroupProdIterator)=prod(length.(I.iterators))
 
 function Base.iterate(I::GroupProdIterator{T})where T
   prod=one(eltype(T))
+  if isempty(I.iterators) return prod,Tuple{eltype(T),Int}[] end
   state=map(I.iterators) do l
     u=iterate(l)
     if isnothing(u) return nothing end

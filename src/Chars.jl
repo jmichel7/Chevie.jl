@@ -443,12 +443,20 @@ function charinfo(t::TypeIrred)
   end
   if !haskey(c,:b) c[:b]=getchev(t,:LowestPowerFakeDegrees) end
   if !haskey(c,:B) c[:B]=getchev(t,:HighestPowerFakeDegrees) end
-  if !haskey(c,:a) c[:a]=getchev(t,:LowestPowerGenericDegrees) end
-  if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
+  if !haskey(c,:a) 
+    x=getchev(t,:LowestPowerGenericDegrees)
+    if !isnothing(x) c[:a]=Int.(x) end
+  else
+   c[:a]=Int.(c[:a])
+  end
+  if !haskey(c,:A) 
+    x=getchev(t,:HighestPowerGenericDegrees)
+    if !isnothing(x) c[:A]=Int.(x) end
+  else
+   c[:A]=Int.(c[:A])
+  end
   c[:b]=Int.(c[:b])
   c[:B]=Int.(c[:B])
-  c[:a]=Int.(c[:a])
-  c[:A]=Int.(c[:A])
   c
 end
 
@@ -1102,18 +1110,18 @@ julia> g=coxgroup(:G,2)
 G₂
 
 julia> u=reflection_subgroup(g,[1,6])
-G₂₍₁₆₎
+G₂₍₁₅₎
 
 julia> InductionTable(u,g)
 Induction Table
-     │11,11 11,2 2,11 2,2
-─────┼────────────────────
-φ₁‚₀ │    .    .    .   1
-φ₁‚₆ │    1    .    .   .
-φ′₁‚₃│    .    1    .   .
-φ″₁‚₃│    .    .    1   .
-φ₂‚₁ │    .    1    1   .
-φ₂‚₂ │    1    .    .   1
+     │111 21 3
+─────┼─────────
+φ₁‚₀ │  .  . 1
+φ₁‚₆ │  1  . .
+φ′₁‚₃│  1  . .
+φ″₁‚₃│  .  . 1
+φ₂‚₁ │  .  1 .
+φ₂‚₂ │  .  1 .
 ```
 
 the rshow method allows to transmit attributes to the format method
@@ -1126,7 +1134,7 @@ Induction Table
 φ₂‚₁│   1    1
 ```
 
-It is also possible to get TeX
+It is also possible to TeX induction tables
 
 ##  This function also works for Spets (Reflection Cosets)
 """

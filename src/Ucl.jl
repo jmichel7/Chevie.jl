@@ -451,7 +451,7 @@ function QuotientAu(Au,chars)
 end
 
 # When some Springer series have been suppressed/weeded out, we  quotient 
-# the Aus by the common  kernel of the remaining characters of the Aus. 
+# the Au's by the common  kernel of the remaining characters of the Au's. 
 function AdjustAu!(classes,springerseries)
   for (i, u) in enumerate(classes)
     l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
@@ -467,7 +467,7 @@ function AdjustAu!(classes,springerseries)
     if haskey(u.prop,:AuAction)
       R=u.prop[:AuAction].group
       if rank(R)==0 
-        u.prop[:AuAction]=ExtendedCox(R,map(x->fill(0,0,0),f[:gens]))
+        u.prop[:AuAction]=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
       else 
        if isempty(f[:gens]) F0s=[matX(R,R())]
        else F0s=map(x->prod(u.prop[:AuAction].F0s[x]),f[:gens])
@@ -1242,8 +1242,6 @@ characteristic 3.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %'GreenTable(<uc>,q)'
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %'UnipotentValues(<W>,<w>)'
-%
 """
 end

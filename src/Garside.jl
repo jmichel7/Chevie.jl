@@ -1265,14 +1265,14 @@ julia> B=BraidMonoid(CoxSym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
-4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:
+4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:
  1.1.1              
  2.2.2              
  (1.12)⁻¹2.2.2.21.12
  1.1.12             
 
 julia> shrink(b)
-2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:
+2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:
  2  
  1  
 ```

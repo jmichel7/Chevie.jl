@@ -459,8 +459,8 @@ struct ExtendedCox{T<:FiniteCoxeterGroup}
 end
 
 function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
-  phis=map(F->Perm(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r),F0s)
-  ExtendedCox(W,F0s,phis)
+  ExtendedCox(W,F0s,isempty(F0s) ? Perm{Int}[] : 
+     map(F->Perm(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r),F0s))
 end
 
 function Base.:*(a::ExtendedCox,b::ExtendedCox)

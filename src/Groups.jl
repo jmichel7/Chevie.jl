@@ -9,7 +9,7 @@ stored in the field .prop of the Group, which starts as Dict{Symbol,Any}()
 # Examples
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
-Group([(1,2),(1,2,3)])
+Group([perm"(1,2)",perm"(1,2,3)"])
 
 julia> gens(G)
 2-element Array{Perm{Int16},1}:
@@ -157,7 +157,7 @@ orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,trivial=true)=
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> centralizer(G,1)
-Group([(2,3)])
+Group([perm"(2,3)"])
 ```
 """
 function centralizer(G::Group,p;action::Function=^)

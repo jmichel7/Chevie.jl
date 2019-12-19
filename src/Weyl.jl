@@ -761,14 +761,16 @@ O⇛ O
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₄₎
+G₂₍₂₆₎
 
 julia> Diagram(H)
-O—O
-1 2
+O
+1
+O
+2
 ```
 
-The  notation `G₂₍₂₃₎` means  that 'W.roots[2:3]' form  a system of simple
+The  notation `G₂₍₂₆₎` means  that 'W.G.roots[2:6]' form  a system of simple
 roots for `H`.
 
 A  reflection subgroup has specific properties  the most important of which
@@ -777,12 +779,10 @@ W. The inverse (partial) map is 'restriction'.
 
 ```julia-repl
 julia> inclusion(H)
-6-element Array{Int64,1}:
+4-element Array{Int64,1}:
   2
-  4
   6
   8
- 10
  12
 
 julia> restriction(H)
@@ -790,27 +790,27 @@ julia> restriction(H)
  0
  1
  0
+ 0
+ 0
  2
  0
  3
  0
+ 0
+ 0
  4
- 0
- 5
- 0
- 6
-
 ```
 
-
-If H is a standard parabolic subgroup  of a Coxeter group W then the
-length function  on H (with respect  to its set of  generators) is the
-restriction of  the length function on  W. This need not  no longer be
-true for arbitrary reflection subgroups of W:
+If  H is a standard parabolic subgroup of a Coxeter group W then the length
+function on H (with respect to its set of generators) is the restriction of
+the  length function on  W. This need  not no longer  be true for arbitrary
+reflection subgroups of W:
 
 ```julia-repl
 julia> word(W,H(2))
-3-element Array{Int64,1}:
+5-element Array{Int64,1}:
+ 1
+ 2
  1
  2
  1
@@ -823,22 +823,18 @@ the roots of the parent group.
 
 ```julia-repl
 julia> elH=word.(Ref(H),elements(H))
-6-element Array{Array{Int64,1},1}:
- []       
- [2]      
- [1]      
- [2, 1]   
- [1, 2]   
- [1, 2, 1]
+4-element Array{Array{Int64,1},1}:
+ []    
+ [2]   
+ [1]   
+ [1, 2]
 
 julia> elW=word.(Ref(W),elements(H))
-6-element Array{Array{Int64,1},1}:
- []             
- [1, 2, 1]      
- [2]            
- [1, 2, 1, 2]   
- [2, 1, 2, 1]   
- [2, 1, 2, 1, 2]
+4-element Array{Array{Int64,1},1}:
+ []                
+ [1, 2, 1, 2, 1]   
+ [2]               
+ [1, 2, 1, 2, 1, 2]
 
 julia> map(w->H(w...),elH)==map(w->W(w...),elW)
 true

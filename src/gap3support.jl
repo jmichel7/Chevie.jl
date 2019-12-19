@@ -19,7 +19,7 @@ function Position(a::Vector,b)
   isnothing(x) ? false : x
 end
 Filtered(l,f)=isempty(l) ? l : filter(f,l)
-First(a,b)=a[findfirst(b,a)]
+First(a,b)=a[findfirst(b,a)]::eltype(a)
 Flat(v)=collect(Iterators.flatten(v))
 ForAll(l,f)=all(f,l)
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)

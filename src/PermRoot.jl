@@ -252,7 +252,8 @@ struct Diagram
 end
 
 function Base.show(io::IO,d::Diagram)
-  for t in d.types
+  for (i,t) in enumerate(d.types)
+    if i>1 print(io,"\n") end
     series=t[:series]::Symbol
     indices=t[:indices]::Vector{Int}
     ind=repr.(indices)

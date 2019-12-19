@@ -249,11 +249,13 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₄₎
+G₂₍₂₆₎
 
-julia> Set(word.(Ref(W),reduced.(Ref(H),elements(W))))
-Set(Array{Int64,1}[[1], []])
-
+julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
+3-element Array{Array{Int64,1},1}:
+ []    
+ [1, 2]
+ [1]   
 ```
 """
 function reduced(W::CoxeterGroup,w)
@@ -272,13 +274,13 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₄₎
+G₂₍₂₆₎
 
 julia> [word(W,w) for S in reduced(H,W) for w in S]
-2-element Array{Array{Int64,1},1}:
- [] 
- [1]
-
+3-element Array{Array{Int64,1},1}:
+ []    
+ [1]   
+ [1, 2]
 ```
 """
 function reduced(H::CoxeterGroup,W::CoxeterGroup)

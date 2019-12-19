@@ -392,12 +392,12 @@ julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(B₂)
   γ│   Deg(γ) Feg Fr(γ) label
 ───┼──────────────────────────
-11.│(-1/2)qΦ₄  q²     1   -,-
-1.1│ (1/2)qΦ₄ qΦ₄     1   -,+
+11.│ (1/2)qΦ₄  q²     1   +,-
+1.1│(1/2)qΦ₂² qΦ₄     1   +,+
 .11│       q⁴  q⁴     1      
 2. │        1   1     1      
 .2 │ (1/2)qΦ₄  q²     1   -,+
-B₂ │(-1/2)qΦ₄   0    -1   -,-
+B₂ │(1/2)qΦ₁²   0    -1   -,-
 ```
 
     gap> Display(uc,rec(byFamily:=true));

@@ -44,11 +44,11 @@ end
 @test mytest("charnames(W;spaltenstein=true,limit=true)","6-element Array{String,1}:\n \"1\"\n \"ε\"\n \"εₗ\"\n \"ε_c\"\n \"θ′\"\n \"θ″\"")
 @test mytest("charnames(W;spaltenstein=true,TeX=true)","6-element Array{String,1}:\n \"1\"\n \"\\\\varepsilon\"\n \"\\\\varepsilon_l\"\n \"\\\\varepsilon_c\"\n \"\\\\theta'\"\n \"\\\\theta''\"")
 @test mytest("g=coxgroup(:G,2)","G₂")
-@test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₆₎")
-@test mytest("InductionTable(u,g)","Induction Table\n     │11,11 11,2 2,11 2,2\n─────┼────────────────────\nφ₁‚₀ │    .    .    .   1\nφ₁‚₆ │    1    .    .   .\nφ′₁‚₃│    .    1    .   .\nφ″₁‚₃│    .    .    1   .\nφ₂‚₁ │    .    1    1   .\nφ₂‚₂ │    1    .    .   1")
+@test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎")
+@test mytest("InductionTable(u,g)","Induction Table\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
 end
 @testset "CoxGroups.jl" begin
-@test mytest("W=coxsym(4)","𝔖 ₄")
+@test mytest("W=CoxSym(4)","𝔖 ₄")
 @test mytest("p=W(1,3,2,1,3)","Perm{UInt8}: (1,4)")
 @test mytest("word(W,p)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("word(W,longest(W))","6-element Array{Int64,1}:\n 1\n 2\n 1\n 3\n 2\n 1")
@@ -61,11 +61,11 @@ end
 @test mytest("w in W","true")
 @test mytest("word(W,w)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("W=coxgroup(:G,2)","G₂")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₄₎")
-@test mytest("Set(word.(Ref(W),reduced.(Ref(H),elements(W))))","Set(Array{Int64,1}[[1], []])")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("word.(Ref(W),Set(reduced.(Ref(H),elements(W))))","3-element Array{Array{Int64,1},1}:\n []\n [1, 2]\n [1]")
 @test mytest("W=coxgroup(:G,2)","G₂")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₄₎")
-@test mytest("[word(W,w) for S in reduced(H,W) for w in S]","2-element Array{Array{Int64,1},1}:\n []\n [1]")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("[word(W,w) for S in reduced(H,W) for w in S]","3-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]")
 end
 @testset "CycPols.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
@@ -99,7 +99,7 @@ end
 end
 @testset "families.jl" begin
 @test mytest("HasType.Family(FamilyImprimitive([[0,1],[1],[0]]))","Family(0011:3)\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6")
-@test mytest("HasType.FamiliesClassical(HasType.BDSymbols(3,1))","6-element Array{Family,1}:\n Family(0112233:[4])\n Family(01123:[1, 3, 8])\n Family(013:[5, 7, 10])\n Family(022:[6])\n Family(112:[2])\n Family(3:[9])")
+@test mytest("HasType.FamiliesClassical(HasType.BDSymbols(3,1))","6-element Array{Family,1}:\n Family(01123:[1, 3, 8])\n Family(3:[9])\n Family(013:[5, 7, 10])\n Family(0112233:[4])\n Family(112:[2])\n Family(022:[6])")
 end
 @testset "Garside.jl" begin
 @test mytest("W=coxgroup(:A,4)","A₄")
@@ -157,15 +157,16 @@ end
 @test mytest("cc=centralizer_generators(w)","8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:\n (31432)⁻¹231432\n 1\n (2)⁻¹34.432\n (1)⁻¹34.431\n 34.43\n 4\n (32431)⁻¹132431\n 2")
 @test mytest("shrink(cc)","5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:\n 4\n 2\n 1\n 34.43\n (3243)⁻¹13243")
 @test mytest("centralizer_generators(w,:cyc)","Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}[4])")
-@test mytest("B=BraidMonoid(coxsym(3))","BraidMonoid(𝔖 ₃)")
-@test mytest("b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]","4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:\n 1.1.1\n 2.2.2\n (1.12)⁻¹2.2.2.21.12\n 1.1.12")
-@test mytest("shrink(b)","2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},Gapjm.CoxGroups.CoxSymmetricGroup{UInt8}}},1}:\n 2\n 1")
+@test mytest("B=BraidMonoid(CoxSym(3))","BraidMonoid(𝔖 ₃)")
+@test mytest("b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]","4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:\n 1.1.1\n 2.2.2\n (1.12)⁻¹2.2.2.21.12\n 1.1.12")
+@test mytest("shrink(b)","2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:\n 2\n 1")
 end
 @testset "Groups.jl" begin
-@test mytest("G=Group([Perm(1,2),Perm(1,2,3)])","Group([(1,2),(1,2,3)])")
+@test mytest("G=Group([Perm(1,2),Perm(1,2,3)])","Group([perm\"(1,2)\",perm\"(1,2,3)\"])")
 @test mytest("gens(G)","2-element Array{Perm{Int16},1}:\n (1,2)\n (1,2,3)")
 @test mytest("nbgens(G)","2")
 @test mytest("G(2,1,-2)","(1,3)")
+@test mytest("orbit([Perm(1,2),Perm(2,3)],1)","3-element Array{Int64,1}:\n 1\n 2\n 3")
 @test mytest("G=Group([Perm(1,2),Perm(2,3)]);","nothing")
 @test mytest("orbit(G,1)","3-element Array{Int64,1}:\n 1\n 2\n 3")
 @test mytest("G=Group([Perm(1,2),Perm(2,3)]);","nothing")
@@ -174,7 +175,7 @@ end
 @test mytest("G=Group([Perm(1,2),Perm(2,3)]);","nothing")
 @test mytest("orbits(G,1:4)","2-element Array{Array{Int64,1},1}:\n [1, 2, 3]\n [4]")
 @test mytest("G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
-@test mytest("centralizer(G,1)","Group([(2,3)])")
+@test mytest("centralizer(G,1)","Group([perm\"(2,3)\"])")
 @test mytest("G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
 @test mytest("minimal_words(G)","Dict{Perm{Int16},Array{Int64,1}} with 6 entries:\n  ()      => Int64[]\n  (2,3)   => [2, 1]\n  (1,3,2) => [1, 2, 1]\n  (1,3)   => [1, 2]\n  (1,2)   => [1]\n  (1,2,3) => [2]")
 end
@@ -198,7 +199,7 @@ end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:F,4)","F₄")
 @test mytest("w=longest(W)*gens(W)[1];length(W,w)","23")
-@test mytest("y=element(W,1:4...);length(W,y)","4")
+@test mytest("y=W(1:4...);length(W,y)","4")
 @test mytest("cr=KL.critical_pair(W,y,w);length(W,cr)","16")
 @test mytest("Pol(:x);KLPol(W,y,w)","Pol{Int64}: x³+1")
 @test mytest("KLPol(W,cr,w)","Pol{Int64}: x³+1")
@@ -206,8 +207,8 @@ end
 @test mytest("map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Array{Array{Pol{Int64},1},1}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","Hecke(B₃,v²,rootpara=v)")
-@test mytest("C=Cpbasis(H)","(::getfield(Gapjm.KL, Symbol(\"#f#10\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
-@test mytest("T=Tbasis(H)","(::getfield(Gapjm.Hecke, Symbol(\"#f#25\")){Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("C=Cpbasis(H)","(::Gapjm.KL.var\"#f#10\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::Gapjm.Hecke.var\"#f#25\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 end
 @testset "ModuleElts.jl" begin
@@ -249,13 +250,13 @@ end
 @test mytest("p(x=y,y=x)","Mvp{Int64}: 7x⁴-2")
 end
 @testset "PermGroups.jl" begin
-@test mytest("G=Group([Perm(i,i+1) for i in 1:2])","Group([(1,2),(2,3)])")
+@test mytest("G=Group([Perm(i,i+1) for i in 1:2])","Group([perm\"(1,2)\",perm\"(2,3)\"])")
 @test mytest("collect(G)","6-element Array{Perm{Int16},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
 @test mytest("degree(G)","3")
 @test mytest("Perm(1,2) in G","true")
 @test mytest("Perm(1,2,4) in G","false")
 @test mytest("base(G)","2-element Array{Int16,1}:\n 1\n 2")
-@test mytest("centralizers(G)","2-element Array{PermGroup{Int16},1}:\n Group([(1,2),(2,3)])\n Group([(2,3)])")
+@test mytest("centralizers(G)","2-element Array{PermGroup{Int16},1}:\n Group([perm\"(1,2)\",perm\"(2,3)\"])\n Group([perm\"(2,3)\"])")
 @test mytest("transversals(G)","2-element Array{Dict{Int16,Perm{Int16}},1}:\n Dict(2 => (1,2),3 => (1,3,2),1 => ())\n Dict(2 => (),3 => (2,3))")
 end
 @testset "Perms.jl" begin
@@ -280,6 +281,7 @@ end
 @test mytest("orbits(Perm(1,2)*Perm(4,5),1:5)","3-element Array{Array{Int16,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","2-element Array{Array{Int16,1},1}:\n [1, 2]\n [4, 5]")
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:\n (2, 1) => 2")
+@test mytest("permuted([5,4,6,1,7,5], Perm(1,3,5,6,4))","6-element Array{Int64,1}:\n 1\n 4\n 5\n 5\n 6\n 7")
 end
 @testset "Pols.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
@@ -325,6 +327,16 @@ end
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("Poset(W,W(1,3))","<3,1<13")
 end
+@testset "SPerms.jl" begin
+@test mytest("SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
+@test mytest("p=SPerm(-1)","(1,-1)")
+@test mytest("q=SPerm(1,2)","(1,2)")
+@test mytest("elements(Group([p,q]))","8-element Array{SPerm{Int16},1}:\n ()\n (1,-1)(2,-2)\n (1,-2,-1,2)\n (1,-2)\n (1,2)\n (1,2,-1,-2)\n (2,-2)\n (1,-1)")
+@test mytest("SPerm([-2,-1,-3])==SPerm([-2,-1,-3,4])","true")
+@test mytest("p=SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
+@test mytest("permuted([20,30,40],p)","3-element Array{Int64,1}:\n -30\n -20\n -40")
+@test mytest("Matrix(SPerm([-2,-1,-3]))","3×3 Array{Int64,2}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
+end
 @testset "Symbols.jl" begin
 @test mytest("shiftβ([4,5],3)","5-element Array{Int64,1}:\n 0\n 1\n 2\n 7\n 8")
 @test mytest("shiftβ([0,1,4,5],-2)","2-element Array{Int64,1}:\n 2\n 3")
@@ -344,7 +356,7 @@ end
 @test mytest("uc.families[1]","Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])\n   label│eigen\n────────┼─────────────────────────────────────────────────────\n(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3\n(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1\n(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3\n(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3\n(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3\n(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1\n(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3\n(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3")
 @test mytest("UnipotentCharacters(ComplexReflectionGroup(4))","UnipotentCharacters(G₄)\n    γ│              Deg(γ)    Feg Fr(γ)   label\n─────┼──────────────────────────────────────────\nφ₁‚₀ │                   1      1     1\nφ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²\nφ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²\nφ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²\nφ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²\nφ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃\nφ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1\nZ₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²\nZ₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃\nG₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1")
 @test mytest("W=coxgroup(:B,2)","B₂")
-@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│   Deg(γ) Feg Fr(γ) label\n───┼──────────────────────────\n11.│(-1/2)qΦ₄  q²     1   -,-\n1.1│ (1/2)qΦ₄ qΦ₄     1   -,+\n.11│       q⁴  q⁴     1\n2. │        1   1     1\n.2 │ (1/2)qΦ₄  q²     1   -,+\nB₂ │(-1/2)qΦ₄   0    -1   -,-")
+@test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│   Deg(γ) Feg Fr(γ) label\n───┼──────────────────────────\n11.│ (1/2)qΦ₄  q²     1   +,-\n1.1│(1/2)qΦ₂² qΦ₄     1   +,+\n.11│       q⁴  q⁴     1\n2. │        1   1     1\n.2 │ (1/2)qΦ₄  q²     1   -,+\nB₂ │(1/2)qΦ₁²   0    -1   -,-")
 end
 @testset "Ucl.jl" begin
 @test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄\n────┼───────────────────────────────────────────────────────────────\n4   │222   0 222    q³.Z₄      1:4          -1:2    ζ₄:Id    -ζ₄:Id\n31  │202   1 22.      q⁴.    Id:31\n22  │020   2 2.2 q⁴.A₁.Z₂     2:22         11:11\n211 │101   3 2..    q⁵.A₁   Id:211\n1111│000   6 ...      .A₃  Id:1111")
@@ -371,12 +383,12 @@ end
 @test mytest("Weyl.two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("Diagram(W)","O⇛ O\n1  2")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₄₎")
-@test mytest("Diagram(H)","O—O\n1 2")
-@test mytest("inclusion(H)","6-element Array{Int64,1}:\n  2\n  4\n  6\n  8\n 10\n 12")
-@test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 0\n 2\n 0\n 3\n 0\n 4\n 0\n 5\n 0\n 6")
-@test mytest("word(W,H(2))","3-element Array{Int64,1}:\n 1\n 2\n 1")
-@test mytest("elH=word.(Ref(H),elements(H))","6-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
-@test mytest("elW=word.(Ref(W),elements(H))","6-element Array{Array{Int64,1},1}:\n []\n [1, 2, 1]\n [2]\n [1, 2, 1, 2]\n [2, 1, 2, 1]\n [2, 1, 2, 1, 2]")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("Diagram(H)","O\n1\nO\n2")
+@test mytest("inclusion(H)","4-element Array{Int64,1}:\n  2\n  6\n  8\n 12")
+@test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 0\n 0\n 0\n 2\n 0\n 3\n 0\n 0\n 0\n 4")
+@test mytest("word(W,H(2))","5-element Array{Int64,1}:\n 1\n 2\n 1\n 2\n 1")
+@test mytest("elH=word.(Ref(H),elements(H))","4-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [1, 2]")
+@test mytest("elW=word.(Ref(W),elements(H))","4-element Array{Array{Int64,1},1}:\n []\n [1, 2, 1, 2, 1]\n [2]\n [1, 2, 1, 2, 1, 2]")
 @test mytest("map(w->H(w...),elH)==map(w->W(w...),elW)","true")
 end
