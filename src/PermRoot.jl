@@ -186,17 +186,6 @@ Base.getindex(t::TypeIrred,k)=t.prop[k]
 indices(t::TypeIrred)=t[:indices]
 series(t::TypeIrred)=t[:series]
 
-function Base.show(io::IO, l::Vector{TypeIrred})
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isempty(l) print(io,repl||TeX ? "W()" : coxgroup()) end
-  n=join(map(l)do t
-    sprint(show,t; context=io)
-  end,repl||TeX ? "\\times " : "*")
-  if repl n=TeXstrip(n) end
-  print(io,n)
-end
- 
 function Base.show(io::IO, t::TypeIrred)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
@@ -228,22 +217,18 @@ function Base.show(io::IO, t::TypeIrred)
         b=t[:bond]
         n=repl||TeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
       else
-        n=repl||TeX ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
+        n=(repl||TeX) ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
       end
     end
-    if repl n=TeXstrip(n) end
-    print(io,n)
+    print(io,fromTeX(io,n))
   else
     o=order(t[:twist])
-    if o!=1 
-      n=repl||TeX ? "{}^{$o}" : "$o" 
-      if repl n=TeXstrip(n) end
-      print(io,n) 
+    if o!=1 print(io,fromTeX(io,repl||TeX ? "{}^{$o}" : "$o")) end
+    if length(t[:orbit])==1 print(io,t[:orbit][1])
+    else print(io,"(")
+      for t1 in t[:orbit] print(io,t1) end
+      print(io,")") 
     end
-    o=length(t[:orbit])
-    if o!=1 print(io,"(") end
-    for t1 in t[:orbit] print(io,t1) end
-    if o!=1 print(io,")") end
   end
 end
 
@@ -551,22 +536,23 @@ function Groups.position_class(W::PermRootGroup,w)
   l[1]
 end
 
-function Base.show(io::IO, W::PermRootGroup)
+function showtypes(io::IO, t::Vector{TypeIrred})
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if isempty(refltype(W)) print(io,repl||TeX ? "W()" : coxgroup()) end
-  n=join(map(refltype(W))do t
+  if isempty(t) print(io,repl||TeX ? "W()" : ".") end
+  n=join(map(t)do t
     n=sprint(show,t; context=io)
     inds=indices(t)
-    if inds!=eachindex(inds)
-      ind=any(>(10),inds) ? join(inds,",") : join(inds)
-      n*="_{($ind)}"
+    if inds!=eachindex(inds) && (repl|| TeX)
+     n*="_{("*joindigits(inds)*")}"
     end
     n
   end,repl||TeX ? "\\times " : "*")
-  if repl n=TeXstrip(n) end
+  n=fromTeX(io,n)
   print(io,n)
 end
+
+Base.show(io::IO, W::PermRootGroup)=showtypes(io,refltype(W))
 
 function independent_roots(W::PermRootGroup)::Vector{Int}
   gets(W,:indeproots) do W

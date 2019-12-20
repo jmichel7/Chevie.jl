@@ -1196,7 +1196,7 @@ function Base.show(io::IO,x::ICCTable)
   text="Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$"*
         reflection_name(io,x[:relgroup])*"\$\n"
   if get(io,:TeX,false) text*="\\medskip\n\n"
-  else text=TeXstrip(text) end
+  else text=fromTeX(io,text) end
   print(io,text)
   if get(io,:cols,false)==false && get(io,:rows,false)==false
     rows=collect(1:length(x[:dimBu]))

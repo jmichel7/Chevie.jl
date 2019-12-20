@@ -286,7 +286,7 @@ function Base.show(io::IO, h::HeckeElt)
       end
     else res*="("*join(map(x->"$x",w),",")*")"
     end
-    (repl && !TeX) ? TeXstrip(res) : res
+    fromTeX(io,res)
   end
   show(IOContext(io,:showbasis=>showbasis),h.d)
 end

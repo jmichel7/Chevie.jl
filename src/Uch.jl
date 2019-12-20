@@ -538,7 +538,7 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   if !repl && !TeX return end
   println(io,"")
   q=Pol([1],1)
-  strip(x)=TeX ? x : TeXstrip(x)
+  strip(x)=fromTeX(io,x)
   m=hcat(sprint.(show,CycPol.(degrees(uc,q)); context=io),
          sprint.(show,CycPol.(fakedegrees(uc,q)); context=io),
          sprint.(show,eigen(uc); context=io),

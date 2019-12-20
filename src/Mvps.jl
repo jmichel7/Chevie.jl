@@ -93,23 +93,11 @@ Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
 @inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isone(m) print(io,"")
-  else
-    res=""
-    for (v,d) in m.d
-     res*=string(v)
-      if haskey(fractional,v) d//=fractional[v] end
-      if !isone(d)
-        if repl || TeX  
-          e=1<d<10 ? "^$d" : "^{$d}"
-          res*=TeX ? e : TeXstrip(e)
-        else res*="^$d"
-        end
-      end
-    end
-    print(io,res)
+  if isone(m) return end
+  for (v,d) in m.d
+    print(io,v)
+    if haskey(fractional,v) d//=fractional[v] end
+    if !isone(d) print(io,fromTeX(io,"^{$d}")) end
   end
 end
 

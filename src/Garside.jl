@@ -751,13 +751,13 @@ function Base.show(io::IO,b::GarsideElm)
     end,".")
     if b.pd==0 return l end
     if !isempty(l) l="."*l end
-    return b.pd!=1 ? "δ^{$(b.pd)}$l" : "δ$l"
+    return "\\delta"*(b.pd!=1 ? "^{$(b.pd)}" : "")*l
   end
   if greedy
-   print(io,TeXstrip(p(b)))
+    print(io,fromTeX(io,p(b)))
   else
-   den,num=map(x->TeXstrip(p(x)),fraction(b))
-   if den!="" print(io,TeXstrip("($den)^{-1}"))
+    den,num=map(x->fromTeX(io,p(x)),fraction(b))
+    if den!="" print(io,fromTeX(io,"($den)^{-1}"))
       if num!="" print(io,"$num") end
     elseif num!="" print(io, num)
     else print(io,".")

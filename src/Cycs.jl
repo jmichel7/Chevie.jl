@@ -7,24 +7,25 @@ of finite groups are cyclotomics.
 
 They  have a normal form given by the Zumbroich basis, which allows to find
 the  smallest Cyclotomic field which contains a given number, and decide in
-particular if a cyclotomic is zero. Let ζ_n:=e^{2iπ/n}. The Zumbroich basis
-of Q(ζ_n) is a particular subset of 1,ζ,ζ^2,...,ζ^{n-1} which forms a basis
-of Q(ζ_n) with good properties.
+particular  if a cyclotomic is zero.  Let ζ=exp(2iπ/n). The Zumbroich basis
+of Q(ζ) is a particular subset of 1,ζ,ζ²,…,ζⁿ⁻¹ which forms a basis of Q(ζ)
+with good properties.
 
-I  ported here Christian Stump's Sage  code, which is simpler to understand
-than GAP's code. The reference for the algorithms is
+The  code in this  file started as  a port of  Christian Stump's Sage code,
+which  is  simpler  to  understand  than  GAP's code. The reference for the
+algorithms is
 
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
-As in GAP, I lower automatically numbers after each computation; this makes
-this code about twice slower than GAP since lower is not as much optimized.
-GAP  also converts a Cyclotomic which is rational to a Rational, a Rational
-which is integral to an Int, etc... This is tremendously useful but needs a
-new  type of  number to  be added  to Julia,  which requires more competent
-people than me.
+As  does GAP,  I lower  automatically numbers  after each computation; this
+makes  this code  about twice  slower than  GAP since  lower is not as much
+optimized.  GAP also converts a Cyclotomic which is rational to a Rational,
+a  Rational which is integral to an Int, a BigInt which is small to a small
+Int,  etc... This is tremendously useful but  needs a new type of number to
+be added to Julia, which I am not competent enough to try.
 
 The main way to build a Cyclotomic number is to use the function `E(n,k=1)`
-which constructs ζ_n^k.
+which constructs ζₙᵏ.
 
 # Examples
 ```julia-repl
@@ -95,7 +96,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime testmat(12)^2;
-  472.964 ms (8324504 allocations: 707.18 MiB)
+  459.521 ms (9640239 allocations: 554.47 MiB)
 ```
 The equivalent in GAP:
 
@@ -112,7 +113,7 @@ export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
 using ..Gapjm: Gapjm, coefficients, degree # for extending coefficients, root
 using ..ModuleElts: ModuleElts, ModuleElt, norm!
-using ..Util: TeXstrip, bracket_if_needed, constant
+using ..Util: fromTeX, bracket_if_needed, constant
 using ..Util: factor, prime_residues, phi
 
 const use_list=false
@@ -372,12 +373,8 @@ end
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
-      if repl 
+      if repl || TeX
         t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
-        r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
-        if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
-      elseif TeX
-        t= v//den==1 ? "" : v//den==-1 ? "-" : isone(den) ? string(v) : "\\frac{$v}{$den}"
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
         if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
       else
@@ -388,13 +385,13 @@ end
       t*=r
     end
     if t[1]!='-' t="+"*t end
-    if !isone(den) && !TeX t*=repl ? "/$den" : "//$den" end
+    if !isone(den) t*=fromTeX(io,TeX ? "/{$den}" : "/$den") end
     t
   end)
   if res=="" res="0"
   elseif res[1]=='+' res=res[2:end] 
   end
-  res=(repl && !TeX) ? TeXstrip(res) : res
+  res=fromTeX(io,res)
   print(io, (quadratic && rq!="" && length(rq)<=length(res)) ? rq : res)
 end
 

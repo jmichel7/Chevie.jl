@@ -662,7 +662,7 @@ function Base.show(io::IO,f::Family)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)!=false
   if haskey(f,:name)
-    name=TeX ? "\$"*f[:name]*"\$" : TeXstrip(f[:name])
+    name=TeX ? "\$"*f[:name]*"\$" : fromTeX(io,f[:name])
   else name="???"
   end
   print(io,"Family($name:")
@@ -670,15 +670,14 @@ function Base.show(io::IO,f::Family)
   else print(io,length(f[:eigenvalues]),")")
   end
   if !(repl || TeX) || deep return end
-  if haskey(f,:charLabels) rowLabels=f[:charLabels]
-    if !TeX rowLabels=TeXstrip.(rowLabels) end
+  if haskey(f,:charLabels) rowLabels=fromTeX.(Ref(io),f[:charLabels])
   else  rowLabels=1:length(f)
   end
   print(io,"\n")
   t=[sprint.(show,f[:eigenvalues];context=io)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs) 
-   push!(t,string.(f[:signs]))
+    push!(t,string.(f[:signs]))
     push!(col_labels,"signs")
   end
   append!(t,toL(map(y->sprint(show,y;context=io),f[:fourierMat])))

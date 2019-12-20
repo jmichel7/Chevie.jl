@@ -219,10 +219,7 @@ function Base.show(io::IO, ::MIME"text/html", a::CycPol)
 end
 
 function Base.show(io::IO,a::CycPol)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  f(x)=TeX ? x : TeXstrip(x)
-  if !(repl || TeX)
+  if !(get(io,:limit,false) || get(io,:TeX,false))
     print(io,"CycPol(",a.coeff,",",a.valuation)
     for (r,m) in a.v print(io,",",r.r,"=>",m) end
     print(io,")")
@@ -237,13 +234,13 @@ function Base.show(io::IO,a::CycPol)
     print(io,s) 
   end
   if a.valuation==1 print(io,"q")
-  elseif a.valuation!=0 print(io,f("q^{$(a.valuation)}")) end
+  elseif a.valuation!=0 print(io,fromTeX(io,"q^{$(a.valuation)}")) end
   for (e,pow) in decompose(a.v)
 #   println(e)
-    if e.no>0  print(io,f("\\Phi"*"'"^(e.no-1)*"_{$(e.cond)}"))
+    if e.no>0  print(io,fromTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.cond)}"))
     else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
     end
-    if pow!=1 print(io,f("^{$pow}")) end
+    if pow!=1 print(io,fromTeX(io,"^{$pow}")) end
   end
 end
 

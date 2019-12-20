@@ -1152,10 +1152,8 @@ end
 function Base.show(io::IO,t::InductionTable)
   TeX=get(io,:TeX,false)
   if !TeX println(io,t.identifier) end
-  column_labels=t.ucharnames
-  if !TeX column_labels=TeXstrip.(column_labels) end
-  row_labels=t.gcharnames
-  if !TeX row_labels=TeXstrip.(row_labels) end
+  column_labels=fromTeX.(Ref(io),t.ucharnames)
+  row_labels=fromTeX.(Ref(io),t.gcharnames)
   scal=map(t.scalar)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end

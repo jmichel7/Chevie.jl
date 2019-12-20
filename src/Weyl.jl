@@ -654,26 +654,7 @@ end
 
 coxgroup()=torus(0)
 
-function Base.show(io::IO, W::FCG)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isempty(refltype(W)) 
-#   print(io,"coxgroup()") 
-    print(io,".") 
-    return
-  end
-  n=join(map(refltype(W))do t
-    indices=t[:indices]
-    n=sprint(show,t; context=io)
-    if indices!=eachindex(indices) && (repl|| TeX)
-      ind=any(>=(10),indices) ? join(indices,",") : join(indices)
-      n*="_{($ind)}"
-    end
-    n
-  end,repl||TeX ? "\\times " : "*")
-  if repl n=TeXstrip(n) end
-  print(io,n)
-end
+Base.show(io::IO, W::FCG)=show(io,W.G)
   
 #function matX(W::FCG,w)
 #  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
@@ -862,7 +843,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where 
   end
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  prop=Dict{Symbol,Any}(:cartan=>C)
+  prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   G=Group(reflection.(Ref(W),I))
   G=PRSG(G,inclusion,restriction,W.G,prop)
@@ -871,14 +852,15 @@ end
 
 function Base.show(io::IO, W::FCSG)
   I=inclusion(W)[1:coxrank(W)]
-  n=any(>=(10),I) ? join(I,",") : join(I)
-  repl=get(io,:limit,false)
-  if !repl print(io,"reflection_subgroup(") end
+  n=joindigits(I)
+  replorTeX=get(io,:limit,false)||get(io,:TeX,false)
+  if !(replorTeX) print(io,"reflection_subgroup(") end
   print(io,sprint(show,W.parent; context=io))
-  if repl 
-    if I!=collect(1:coxrank(W.parent)) print(io,TeXstrip("_{($n)}")) end
+  if replorTeX 
+    if I!=collect(1:coxrank(W.parent)) print(io,fromTeX(io,"_{($n)}")) end
   else print(io,",$I)")
   end
+  if replorTeX print(io,"=",W.G) end
 end
   
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=

@@ -479,9 +479,8 @@ function CoxSym(n::Int)
 end
 
 function Base.show(io::IO, W::CoxSym)
-  name="\\frakS _{$(W.n)}"
-  if get(io,:TeX,false) print(io,name)
-  elseif get(io,:limit,false) print(io,TeXstrip(name))
+  if get(io,:TeX,false) || get(io,:limit,false) 
+   print(io,fromTeX(io,"\\frakS_{$(W.n)}"))
   else print(io,"CoxSym($(W.n))")
   end
 end

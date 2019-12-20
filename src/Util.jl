@@ -11,8 +11,7 @@ using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, blocks, # arrays
-  format, TeXstrip, bracket_if_needed, ordinal, rshow, fromTeX,
-  joindigits, # formatting
+  format, bracket_if_needed, ordinal, rshow, fromTeX, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
   conjugate_partition, horner, dominates, #combinatorics
   echelon  # linear algebra
@@ -117,11 +116,14 @@ const  sub=Dict(zip("-0123456789,+()=aehijklmnoprstuvx",
 function TeXstrip(s::String)
   s=replace(s,r"\$"=>"")
   s=replace(s,r"\\varepsilon"=>"ε")
+  s=replace(s,r"\\delta"=>"δ")
   s=replace(s,r"\\gamma"=>"γ")
+  s=replace(s,r"\\lambda"=>"λ")
   s=replace(s,r"\\phi"=>"φ")
   s=replace(s,r"\\Phi"=>"Φ")
   s=replace(s,r"\\psi"=>"ψ")
   s=replace(s,r"\\rho"=>"ρ")
+  s=replace(s,r"\\sigma"=>"σ")
   s=replace(s,r"\\theta"=>"θ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\otimes"=>"⊗")

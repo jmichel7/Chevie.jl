@@ -55,7 +55,7 @@ export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit
 
 using ..Gapjm: Gapjm # for degree, root
-using ..Util: bracket_if_needed, TeXstrip, horner, divisors
+using ..Util: bracket_if_needed, fromTeX, horner, divisors
 using ..Cycs: Cyc
 
 const var=Ref(:x)
@@ -186,7 +186,7 @@ function Base.show(io::IO,p::Pol)
   else
     s="Pol($(p.c),$(p.v))"
   end
-  print(io, (repl && !TeX) ? TeXstrip(s) : s)
+  print(io, fromTeX(io,s))
 end
 
 #function Base.:*(a::Pol, b::Pol)
