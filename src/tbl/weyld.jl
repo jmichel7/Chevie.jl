@@ -56,7 +56,7 @@ chevieset(:D, :WordsClassRepresentatives, function (arg...,)
                             map(copy, a)
                         end), arg[2])
         else
-            param = PartitionTuples(n, 2)
+            param = partition_tuples(n, 2)
         end
         res = []
         for pi = param
@@ -83,9 +83,9 @@ chevieset(:D, :WordsClassRepresentatives, function (arg...,)
                 if w != [] && w[1] == 2
                     w[1] = 1
                 end
-                if pi[2] == [] && ForAll(pi[1], (x->begin
+                if pi[2] == [] && all((x->begin
                                     mod(x, 2) == 0
-                                end))
+                                end), pi[1])
                     push!(res, w)
                     w = copy(w)
                     w[1] = 2
@@ -154,9 +154,9 @@ chevieset(:D, :ClassParameter, function (n, w)
                 end
             end
         end
-        if res[2] == [] && ForAll(res[1], (i->begin
+        if res[2] == [] && all((i->begin
                             mod(i, 2) == 0
-                        end))
+                        end), res[1])
             if !((CHEVIE.R("gensMODA", "D"))[n] !== nothing)
                 tmp = CoxeterGroup("D", n)
                 gens = PermCosetsSubgroup(tmp, ReflectionSubgroup(tmp, 2:n))
@@ -176,9 +176,9 @@ chevieset(:D, :ClassParameter, function (n, w)
                 res[2] = '-'
             end
         end
-        Sort(res[1])
+        sort!(res[1])
         if IsList(res[2])
-            Sort(res[2])
+            sort!(res[2])
             return [reverse(res[1]), reverse(res[2])]
         else
             return [reverse(res[1]), res[2]]

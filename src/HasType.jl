@@ -1,10 +1,9 @@
 module HasType
 
-export reflection_name, diagram, UnipotentCharacters, 
-  UnipotentClasses, schur_elements, charname, codegrees, ComplexReflectionGroup,
+export reflection_name, diagram,
+  schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  FamilyImprimitive, Family,
-  combinations, arrangements, partitions, partition_tuples, exterior_power
+  FamilyImprimitive, Family
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -361,35 +360,13 @@ ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
-ComplexConjugate(v)=conj(v)
+CoxeterWord(W,w)=word(W,w)
 Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
-Degree=degree
-function DiagonalMat(v...)
-  R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
-  for i in axes(R,1), j in axes(R,2)
-    if i!=j R[i,j]=zero(R[1,1]) end
-  end
-  R
-end
-DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
-DivisorsInt=divisors
-Dominates=dominates
 Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
+Elements=elements
 EltWord(W,x)=W(x...)
-
-function det(A)
-  if size(A,1)==1 return A[1,1]
-  elseif size(A,1)==2 return A[1,1]*A[2,2]-A[1,2]*A[2,1]
-  end
-  sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
-end
-
-function exterior_power(A,m)
-  basis=combinations(1:size(A,1),m)
-  [det(A[i,j]) for i in basis, j in basis]
-end 
 
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
@@ -407,7 +384,6 @@ LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
 MatXPerm=matX
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=Permuted(map(x->Permuted(x,b),a),b)
-OrderPerm=order
 PartBeta=partβ
 
 function PartitionTupleToString(n,a=Dict())
@@ -418,25 +394,16 @@ function PartitionTupleToString(n,a=Dict())
   join(map(join,n[1:end-2]),".")*r
 end
 
-PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
-Permuted(a,b)=[a[i^b] for i in eachindex(a)]
-Phi=phi
-PrimeResidues=prime_residues
 Rank=rank
 RankSymbol=ranksymbol
-RecFields=keys
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
-RootInt(a,b)=floor(Int,a^(1/b))
+RootInt(a,b)=floor(Int,a^(1/b)+0.0001)
 RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),0:length(a)-1)
-gapSet(v)=unique(sort(v))
 SemisimpleRank(W)=semisimplerank(W)
 ShiftBeta=shiftβ
-SortBy(x,f)=sort!(x,by=f)
-SPrint=string
 StringSymbol=stringsymbol
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
-Sublist(a::Vector, b::AbstractVector)=a[b]
 SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 function TeXBracket(s)
@@ -626,7 +593,7 @@ end
 function BDSymbols(n,d)
   n-=div(d^2,4)
   if n<0 return Vector{Vector{Int}}[] end
-  if d>0 return map(x->symbol_partition_tuple(x,d),PartitionTuples(n,2)) end
+  if d>0 return map(x->symbol_partition_tuple(x,d),partition_tuples(n,2)) end
    return map(chevieget(:D,:symbolcharparam),
               chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
 end

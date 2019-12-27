@@ -98,20 +98,22 @@ include("PermGroups.jl")
 @reexport using .PermGroups
 include("Cycs.jl")
 @reexport using .Cycs
+include("Combinat.jl")
+@reexport using .Combinat
 include("Pols.jl")
 @reexport using .Pols
 include("Mvps.jl")
 @reexport using .Mvps
 include("PermRoot.jl")
 @reexport using .PermRoot
+include("GLinearAlgebra.jl")
+@reexport using .GLinearAlgebra
 include("Chars.jl")
 @reexport using .Chars
 include("CoxGroups.jl")
 @reexport using .CoxGroups
 include("SPerms.jl")
 @reexport using .SPerms
-include("Garside.jl")
-@reexport using .Garside
 include("Weyl.jl")
 @reexport using .Weyl
 include("Hecke.jl")
@@ -124,6 +126,8 @@ include("Symbols.jl")
 @reexport using .Symbols
 include("Cosets.jl")
 @reexport using .Cosets
+include("Garside.jl")
+@reexport using .Garside
 include("Posets.jl")
 @reexport using .Posets
 include("MatInt.jl")

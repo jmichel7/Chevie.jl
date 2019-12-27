@@ -558,7 +558,7 @@ chevieset(:G4_22, :SchurData, function (ST,)
                         if char[1] == 1
                             return Dict{Symbol, Any}(:name => "f1", :order => Concatenation(f([1, 2], char[2]), f(3:5, char[3]), f(6:9, char[4])))
                         elseif char[1] == 2
-                            return Dict{Symbol, Any}(:name => "f2", :order => Concatenation([1, 2], f(3:5, char[3]), 5 + (Combinations(1:4, 2))[char[4]], 5 + Difference(1:4, (Combinations(1:4, 2))[char[4]])), :rootPower => (-1) ^ char[2])
+                            return Dict{Symbol, Any}(:name => "f2", :order => Concatenation([1, 2], f(3:5, char[3]), 5 + (combinations(1:4, 2))[char[4]], 5 + Difference(1:4, (combinations(1:4, 2))[char[4]])), :rootPower => (-1) ^ char[2])
                         elseif char[1] == 3
                             return Dict{Symbol, Any}(:name => "f3", :order => Concatenation(f([1, 2], char[3]), 3:5, f(6:9, char[4])), :rootPower => E(3, char[2]))
                         elseif char[1] == 4
@@ -574,9 +574,9 @@ chevieset(:G4_22, :SchurData, function (ST,)
                         if char[1] == 1
                             return Dict{Symbol, Any}(:name => "f1", :order => Concatenation(f([1, 2], char[2]), f(3:5, char[3]), f(6:10, char[4])))
                         elseif char[1] == 2
-                            return Dict{Symbol, Any}(:name => "f2", :order => Concatenation([1, 2], 2 + Drop(1:3, char[3]), [2 + char[3]], 5 + (Combinations(1:5, 2))[char[4]], 5 + Difference(1:5, (Combinations(1:5, 2))[char[4]])), :rootPower => (-1) ^ char[2])
+                            return Dict{Symbol, Any}(:name => "f2", :order => Concatenation([1, 2], 2 + Drop(1:3, char[3]), [2 + char[3]], 5 + (combinations(1:5, 2))[char[4]], 5 + Difference(1:5, (combinations(1:5, 2))[char[4]])), :rootPower => (-1) ^ char[2])
                         elseif char[1] == 3
-                            return Dict{Symbol, Any}(:name => "f3", :order => Concatenation(f([1, 2], char[3]), 3:5, 5 + (Combinations(1:5, 3))[char[4]], 5 + Difference(1:5, (Combinations(1:5, 3))[char[4]])), :rootPower => E(3, char[2]))
+                            return Dict{Symbol, Any}(:name => "f3", :order => Concatenation(f([1, 2], char[3]), 3:5, 5 + (combinations(1:5, 3))[char[4]], 5 + Difference(1:5, (combinations(1:5, 3))[char[4]])), :rootPower => E(3, char[2]))
                         elseif char[1] == 4
                             return Dict{Symbol, Any}(:name => "f4", :order => Concatenation([1, 2], f(3:5, char[3]), Drop(6:10, char[4]), [5 + char[4]]), :rootPower => E(4, char[2]))
                         elseif char[1] == 5
@@ -777,10 +777,10 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
         Z = X[3]
         Y = X[2]
         X = X[1]
-        c24 = Combinations(1:4, 2)
+        c24 = combinations(1:4, 2)
         c23 = [[2, 3], [1, 3], [1, 2]]
-        c25 = Combinations(1:5, 2)
-        c35 = Combinations(1:5, 3)
+        c25 = combinations(1:5, 2)
+        c35 = combinations(1:5, 3)
         c23 = [[2, 3], [1, 3], [1, 2]]
         c = 0 * Product(para, Product)
         if ST in 4:7
@@ -919,7 +919,7 @@ chevieset(:G4_22, :Rep, Dict{Symbol, Any}(Symbol("1") => function (X, Y, Z)
                 a = y2 * x1 * x2 * y1 * Product(Z) * Sum(Z, (x->begin
                                         1 // x
                                     end)) - r ^ 2 * Sum(Z)
-                b = x1 * x2 * y1 * Product(Z) * (y3 + y2) - r ^ 2 * Sum(Combinations(1:4, 2), (x->begin
+                b = x1 * x2 * y1 * Product(Z) * (y3 + y2) - r ^ 2 * Sum(combinations(1:4, 2), (x->begin
                                         Product(Z[x])
                                     end))
                 return [[[x1, 0, x1 * a - (x1 * x2 * y1 * b) // r, x1 * (1 + y1 // y3) - (r * Sum(Z, (x->begin
@@ -976,7 +976,7 @@ chevieset(:G4_22, :HeckeRepresentation, function (ST, para, root, i)
                             return r(X, Drop(Y, char[3]), Z, char[2])
                         end
                     else
-                        return r(X, Drop(Y, char[3]), Z[(Combinations(1:length(Z), 2))[char[4]]], char[2])
+                        return r(X, Drop(Y, char[3]), Z[(combinations(1:length(Z), 2))[char[4]]], char[2])
                     end
                 elseif dim == 3
                     X = X[[char[3], 3 - char[3]]]
@@ -989,7 +989,7 @@ chevieset(:G4_22, :HeckeRepresentation, function (ST, para, root, i)
                     elseif ST in 8:15
                         return r(X, Y, Drop(Z, char[4]), char[2])
                     else
-                        return r(X, Y, Z[(Combinations(1:5, 3))[char[4]]], char[2])
+                        return r(X, Y, Z[(combinations(1:5, 3))[char[4]]], char[2])
                     end
                 elseif dim == 4
                     Y = Concatenation(Drop(Y, char[3]), [Y[char[3]]])

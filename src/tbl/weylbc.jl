@@ -160,12 +160,12 @@ chevieset(:B, :ClassParameter, function (n, w)
                 end
             end
         end
-        Sort(res[1])
-        Sort(res[2])
+        sort!(res[1])
+        sort!(res[2])
         return [reverse(res[1]), reverse(res[2])]
     end)
 chevieset(:B, :CharParams, (n->begin
-            PartitionTuples(n, 2)
+            partition_tuples(n, 2)
         end))
 chevieset(:B, :CharName, function (arg...,)
         return PartitionTupleToString(arg[2])
@@ -226,8 +226,8 @@ chevieset(:B, :DecompositionMatrix, function (l, p)
         decS = (i->begin
                     MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
                 end)
-        pp = map(Partitions, 0:l)
-        pt = PartitionTuples(l, 2)
+        pp = map(partitions, 0:l)
+        pt = partition_tuples(l, 2)
         if p == 2
             return [[1:length(pt), map(function (p,)
                                     p = LittlewoodRichardsonRule(p[1], p[2])
@@ -255,8 +255,11 @@ chevieset(:B, :UnipotentCharacters, function (arg...,)
         rank = arg[1]
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [])
         for d = 1 + 2 * (0:div(-1 + RootInt(1 + 4rank, 2), 2))
-            s = div(d ^ 2 - 1, 4)
-            s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + s:rank, :rank => rank - s), :levi => 1:s, :eigenvalue => (-1) ^ div(d + 1, 4), :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + s))) + 1), :cuspidalName => SPrint("B_{", s, "}"))
+            r = div(d ^ 2 - 1, 4)
+            s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => (-1) ^ div(d + 1, 4), :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + r))) + 1), :cuspidalName => SPrint("B_{", r, "}"))
+            if r < 10
+                s[:cuspidalName] = SPrint("B_", r)
+            end
             push!(uc[:harishChandra], s)
             symbols = BDSymbols(rank, d)
             s[:charNumbers] = (1:length(symbols)) + length(uc[:charSymbols])
@@ -279,7 +282,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                 p = Concatenation(map((d->begin
                                     1 - d:(3 - d) - (1 - d):d - 1
                                 end), part))
-                Sort(p)
+                sort!(p)
                 p = p[div(3 + length(p), 2):length(p)]
                 if type_ == 1
                     res = [2 * p[1]]
@@ -328,7 +331,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                                     end), c)
                         end), ss))
         SortBy(l, (x->begin
-                    [AbsInt(x[1]), -(SignInt(x[1]))]
+                    [abs(x[1]), -(sign(x[1]))]
                 end))
         uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function (d,)
                             local res
@@ -351,7 +354,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
             symbol2para = function (S,)
                     local c, i, l, part, d
                     c = Concatenation(S)
-                    Sort(c)
+                    sort!(c)
                     i = 1
                     part = []
                     d = mod(type_, 2)
@@ -365,7 +368,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                             i = i + 2
                         end
                     end
-                    Sort(part)
+                    sort!(part)
                     part = Filtered(part, (y->begin
                                     y != 0
                                 end))
@@ -375,7 +378,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
             symbol2para = function (S,)
                     local c, i, l, part, ex
                     c = Concatenation(S)
-                    Sort(c)
+                    sort!(c)
                     i = 1
                     part = []
                     ex = []
@@ -394,7 +397,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                             i = i + 2
                         end
                     end
-                    Sort(part)
+                    sort!(part)
                     part = Filtered(part, (y->begin
                                     y != 0
                                 end))
@@ -452,7 +455,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                                 map(function (y,)
                                         local m, f, fx, fy, i
                                         if char != 2
-                                            return Dominates(y[:parameter], x[:parameter])
+                                            return dominates(y[:parameter], x[:parameter])
                                         end
                                         m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
                                         f = (x->begin
@@ -484,7 +487,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
         if char != 2 && type_ == 2
             LuSpin = function (p,)
                     local t, a, b, i, j, l, d
-                    Sort(p)
+                    sort!(p)
                     a = []
                     b = []
                     d = [0, 1, 0, -1]
@@ -565,9 +568,9 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                 d = d + 1
             end
             l = Filtered(1:length(uc[:classes]), (i->begin
-                            ForAll(Collected(((uc[:classes])[i])[:parameter]), (c->begin
+                            all((c->begin
                                         mod(c[1], 2) == 0 || c[2] == 1
-                                    end))
+                                    end), Collected(((uc[:classes])[i])[:parameter]))
                         end))
             for i = l
                 cl = (uc[:classes])[i]

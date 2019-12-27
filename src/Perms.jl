@@ -281,17 +281,12 @@ smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 #------------------ operations on permutations --------------------------
 
-" `promote(a::Perm, b::Perm)` promotes `a` and `b` to the same degree"
+extend(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+
+# `promote(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
 function Base.promote(a::Perm,b::Perm)
-  da=length(a.d)
-  db=length(b.d)
-  if da<db
-    resize!(a.d,db)
-@inbounds    a.d[da+1:db]=da+1:db
-  elseif db<da
-    resize!(b.d,da)
-@inbounds    b.d[db+1:da]=db+1:da
-  end
+  extend(a,length(b.d))
+  extend(b,length(a.d))
   (a,b)
 end
 
@@ -345,7 +340,7 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 
 #---------------------- cycles -------------------------
 
-# takes 30% more time than GAP CyclePermInt for rand(Perm,1000)
+# takes 20% more time than GAP CyclePermInt for rand(Perm,1000)
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """

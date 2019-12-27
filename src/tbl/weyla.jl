@@ -64,7 +64,7 @@ chevieset(:A, :WordClass, function (pi,)
     end)
 chevieset(:A, :ClassInfo, function (n,)
         local res
-        res = Dict{Symbol, Any}(:classparams => Partitions(n + 1))
+        res = Dict{Symbol, Any}(:classparams => partitions(n + 1))
         res[:classnames] = map(IntListToString, res[:classparams])
         res[:classtext] = map(chevieget(:A, :WordClass), res[:classparams])
         res[:classes] = map((pi->begin
@@ -96,11 +96,11 @@ chevieset(:A, :ClassParameter, function (n, w)
                 mark[cyc] = cyc * 0
             end
         end
-        Sort(res)
+        sort!(res)
         return reverse(res)
     end)
 chevieset(:A, :CharParams, (n->begin
-            Partitions(n + 1)
+            partitions(n + 1)
         end))
 chevieset(:A, :LowestPowerFakeDegree, (p->begin
             p * (0:length(p) - 1)
@@ -134,7 +134,7 @@ chevieset(:A, :SchurElement, function (n, alpha, param, sqrtparam)
         local i, j, lambda, res, q
         q = -((param[1])[1]) // (param[1])[2]
         lambda = BetaSet(alpha)
-        res = q ^ Binomial(length(lambda), 3)
+        res = q ^ binomial(length(lambda), 3)
         for i = lambda
             for j = 0:i - 1
                 if j in lambda
@@ -154,7 +154,7 @@ chevieset(:A, :FactorizedSchurElement, function (arg...,)
 chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H
         H = Hecke(CoxeterGroup("A", n), -((param[1])[1]) // (param[1])[2])
-        return -((param[1])[2]) * SpechtModel(H, (Partitions(n + 1))[i])
+        return -((param[1])[2]) * SpechtModel(H, (partitions(n + 1))[i])
     end)
 chevieset(:A, :Representation, function (n, i)
         return ((chevieget(:imp, :Representation))(1, 1, n + 1, i))[2:n + 1]
@@ -184,7 +184,7 @@ chevieset(:A, :Invariants, function (n,)
                             v = copy(arg)
                             push!(v, 0 * v[1])
                             v = v * m
-                            return Sum(Arrangements(1:n + 1, i), (a->begin
+                            return Sum(arrangements(1:n + 1, i), (a->begin
                                             Product(v[a])
                                         end))
                         end
@@ -194,13 +194,13 @@ chevieset(:A, :UnipotentClasses, function (n, p)
         local uc, i, j, cl, d, ss
         uc = Dict{Symbol, Any}(:classes => map((p->begin
                                 Dict{Symbol, Any}(:parameter => p)
-                            end), Partitions(n + 1)), :springerSeries => Concatenation(map((d->begin
+                            end), partitions(n + 1)), :springerSeries => Concatenation(map((d->begin
                                     map((i->begin
                                                 Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", (n + 1) // d - 1), :Z => [E(d, i)], :levi => Filtered(1:n + 1, (i->begin
                                                                     mod(i, d) != 0
                                                                 end)), :locsys => [])
-                                            end), PrimeResidues(d))
-                                end), DivisorsInt(n + 1))))
+                                            end), prime_residues(d))
+                                end), divisors(n + 1))))
         ss = (z->begin
                     First(uc[:springerSeries], (x->begin
                                 x[:Z] == [z]
@@ -218,7 +218,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
             p = Concatenation(map((x->begin
                                 1 - x:(3 - x) - (1 - x):x - 1
                             end), p))
-            Sort(p)
+            sort!(p)
             cl[:dynkin] = map((i->begin
                             p[i + 1] - p[i]
                         end), 1:length(p) - 1)
@@ -241,7 +241,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
         end
         uc[:orderClasses] = Hasse(Poset(map((x->begin
                                 map((y->begin
-                                            Dominates(y[:parameter], x[:parameter])
+                                            dominates(y[:parameter], x[:parameter])
                                         end), uc[:classes])
                             end), uc[:classes])))
         return uc

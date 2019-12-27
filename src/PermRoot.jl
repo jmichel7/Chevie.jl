@@ -183,7 +183,7 @@ end
 
 Base.haskey(t::TypeIrred,k)=haskey(t.prop,k)
 Base.getindex(t::TypeIrred,k)=t.prop[k]
-indices(t::TypeIrred)=t[:indices]
+indices(t::TypeIrred)=haskey(t,:indices) ? t[:indices] : union(getindex.(t[:orbit],:indices)...)
 series(t::TypeIrred)=t[:series]
 
 function Base.show(io::IO, t::TypeIrred)
@@ -539,15 +539,17 @@ end
 function showtypes(io::IO, t::Vector{TypeIrred})
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if isempty(t) print(io,repl||TeX ? "W()" : ".") end
+  if isempty(t) print(io,repl||TeX ? "." : "W()") end
+  r=0
   n=join(map(t)do t
     n=sprint(show,t; context=io)
     inds=indices(t)
-    if inds!=eachindex(inds) && (repl|| TeX)
+    if inds!=r .+eachindex(inds) && (repl|| TeX)
      n*="_{("*joindigits(inds)*")}"
     end
+    r+=length(inds)
     n
-  end,repl||TeX ? "\\times " : "*")
+   end,repl||TeX ? "\\times{}" : "*")
   n=fromTeX(io,n)
   print(io,n)
 end
@@ -570,7 +572,7 @@ function baseX(W::PermRootGroup{T})::Matrix{T} where T
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
     res=toM(roots(W)[ir])
-    u=permutedims(Util.nullspace(toM(coroot.(Ref(W),ir))))
+    u=permutedims(GLinearAlgebra.nullspace(toM(coroot.(Ref(W),ir))))
     if eltype(u) <:Rational
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
       u=Int.(u)

@@ -143,7 +143,7 @@ systems can be obtained as a product
 
 ```julia-repl
 julia> W=coxgroup(:A,2)*coxgroup(:B,2)
-A₂× B₂₍₃₄₎
+A₂×B₂
 
 julia> cartan(W)
 4×4 Array{Int64,2}:
@@ -432,7 +432,9 @@ function PermRoot.roots(C::Matrix)
     end
     j+=1
   end 
-  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) end
+  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) 
+  else R
+  end
   # important roots are sorted as in CHEVIE for data (KLeftCells) to work
 end 
 
@@ -742,7 +744,7 @@ O⇛ O
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₆₎
+G₂₍₂₆₎=A₁×A₁
 
 julia> Diagram(H)
 O
@@ -856,11 +858,12 @@ function Base.show(io::IO, W::FCSG)
   replorTeX=get(io,:limit,false)||get(io,:TeX,false)
   if !(replorTeX) print(io,"reflection_subgroup(") end
   print(io,sprint(show,W.parent; context=io))
+  std=collect(1:coxrank(W.parent))
   if replorTeX 
-    if I!=collect(1:coxrank(W.parent)) print(io,fromTeX(io,"_{($n)}")) end
+    if I!=std print(io,fromTeX(io,"_{($n)}")) end
   else print(io,",$I)")
   end
-  if replorTeX print(io,"=",W.G) end
+  if replorTeX && I!=std && !isempty(I) print(io,"=",W.G) end
 end
   
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
@@ -1018,7 +1021,7 @@ function AlgebraicCentre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  #println("ss=$ss")
+  println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)

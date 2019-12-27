@@ -53,7 +53,7 @@ chevieset(Symbol("2E6"), :UnipotentCharacters, function ()
     end)
 chevieset(Symbol("2E6"), :UnipotentClasses, function (p,)
         local uc, l
-        uc = Copy((chevieget(:E6, :UnipotentClasses))(p))
+        uc = deepcopy((chevieget(:E6, :UnipotentClasses))(p))
         uc[:springerSeries] = Filtered(uc[:springerSeries], (x->begin
                         x[:Z] == [1]
                     end))

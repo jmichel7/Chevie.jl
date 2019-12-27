@@ -112,9 +112,48 @@ test_kl2:=function(W)local el;
   List(el,x->List(el,y->KazhdanLusztigPolynomial(W,x,y)));
 end;
 ```
+
+We provide also functionality to study the Kazhdan-Lusztig left cells
+(for the equal-parameter Hecke algebra).
+
+```julia-repl
+julia> W=coxgroup(:H,3)
+H₃
+
+julia> c=LeftCells(W)
+22-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Cyc{Int64},PRG{Cyc{Int64},Int16}}},1}:
+ LeftCell<H₃: duflo= character=φ₁‚₀>           
+ LeftCell<H₃: duflo=123 character=φ₁‚₁₅>       
+ LeftCell<H₃: duflo=(15) character=φ₅‚₅>       
+ LeftCell<H₃: duflo=(10) character=φ₅‚₅>       
+ LeftCell<H₃: duflo=(14) character=φ₅‚₅>       
+ LeftCell<H₃: duflo=7 character=φ₅‚₅>          
+ LeftCell<H₃: duflo=(12) character=φ₅‚₅>       
+ LeftCell<H₃: duflo=(9,12) character=φ₅‚₂>     
+ LeftCell<H₃: duflo=(5,11) character=φ₅‚₂>     
+ LeftCell<H₃: duflo=13 character=φ₅‚₂>         
+ LeftCell<H₃: duflo=46 character=φ₅‚₂>         
+ LeftCell<H₃: duflo=79 character=φ₅‚₂>         
+ LeftCell<H₃: duflo=(3,15) character=φ₃‚₆+φ₃‚₈>
+ LeftCell<H₃: duflo=(8,13) character=φ₃‚₆+φ₃‚₈>
+ LeftCell<H₃: duflo=(1,15) character=φ₃‚₆+φ₃‚₈>
+ LeftCell<H₃: duflo=3 character=φ₃‚₁+φ₃‚₃>     
+ LeftCell<H₃: duflo=2 character=φ₃‚₁+φ₃‚₃>     
+ LeftCell<H₃: duflo=1 character=φ₃‚₁+φ₃‚₃>     
+ LeftCell<H₃: duflo=6 character=φ₄‚₃+φ₄‚₄>     
+ LeftCell<H₃: duflo=(13) character=φ₄‚₃+φ₄‚₄>  
+ LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>  
+ LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>     
+```
+see  also  the  functions  `elements`,  `character`,  `representation`  and
+`WGraph`  for left  cells. The  operations `length`,  `in` (which  refer to
+`elements`)  and `==` (which  compares Duflo involutions)  are also defined
+for  left cells. When  `Character(c)` has been  computed, then `c.prop[:a]`
+also  has been bound which holds the common value of Lusztig's `a`-function
+for the elements of `c` and The irreducible constituents of `character(c)`.
 """
 module KL
-export KLPol, Cpbasis, LeftCell, LeftCells
+export KLPol, Cpbasis, LeftCell, LeftCells, character
 using Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
@@ -391,7 +430,23 @@ function Base.length(c::LeftCell)
   end
 end
 
-## returns character as list of irred. numbers repeated if multiplicity
+"""
+`character(c)`
+
+Returns  a list `l`  such that the  character of `c.group`  afforded by the
+left cell `c` is `sum(CharTable(c.group).irr[l])`.
+
+```julia-repl
+julia> c=LeftCells(coxgroup(:G,2))[3]
+LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
+
+julia> KL.character(c)
+3-element Array{Int64,1}:
+ 3
+ 5
+ 6
+```
+"""
 function character(c::LeftCell)
   gets(c,:character) do c
     r=representation(c,hecke(c.group))
@@ -493,11 +548,34 @@ function KLMueMat(W,c)
 end
 
 function Mu(c::LeftCell)
-  gets(c,:mu) do
-    KLMueMat(c.group,elements(c))
+  gets(c,:mu) do c
+    KLMueMat(c.group,collect(elements(c)))
   end
 end
 
+"""
+`representation(c::LeftCell,H)`
+
+returns  a list of  matrices giving the  representation of `H`  on the left
+cell `c`.
+
+```julia-repl
+julia> W=coxgroup(:H,3)
+H₃
+
+julia> c=LeftCells(W)[3]
+LeftCell<H₃: duflo=(15) character=φ₅‚₅>
+
+julia> Pol(:q);H=hecke(W,q^2;rootpara=q)
+Hecke(H₃,q²,rootpara=q)
+
+julia> representation(c,H)
+3-element Array{Array{Array{Pol{Int64},1},1},1}:
+ [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]
+ [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]
+ [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]
+```
+"""
 function Chars.representation(c::LeftCell,H)
   W=H.W
   if !equalpara(H)
@@ -628,7 +706,44 @@ end
     
 """
   `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
-  for the 1-parameter Hecke algebra
+  for the 1-parameter Hecke algebra `hecke(W,q)`
+
+The program uses precomputed data(see cite{GH14}) for exceptional types and
+for  type `:A`, so  is quite fast  for these types  (it takes 13 seconds to
+compute  the 101796 left cells for type  `E₈`). For other types, left cells
+are  computed from  first principles,  thus computing  many Kazhdan-Lusztig
+polynomials.  It takes 60  seconds to compute  the left cells  of `D₆`, for
+example.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> LeftCells(W)
+4-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
+ LeftCell<G₂: duflo= character=φ₁‚₀>            
+ LeftCell<G₂: duflo=12 character=φ₁‚₆>          
+ LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
+ LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
+```
+
+Printing such a record displays the character afforded by the left cell and
+its  Duflo involution; the Duflo involution `r`  is printed as a subset `I`
+of    `1:W.N`   such    that   `r=longest(reflection_subgroup(W,I))`,   see
+`DescribeInvolution`.
+
+If  a second argument `i` is given, the program returns only the left cells
+which  are in the `i`-th two-sided cell,  that is whose character is in the
+`i`-th family of `W` (see "Families of unipotent characters").
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+julia> LeftCells(W,1)
+2-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
+ LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
+ LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
+```
+
 """
 function LeftCells(W,i=0)
   cc=cellreps(W)
@@ -679,7 +794,20 @@ function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
   end
 end
 
-# LeftCell containing w
+"""
+`LeftCell(W,w)`
+
+returns  a  record  describing  the  left  cell  of  `W`  for  `Hecke(W,q)`
+containing element `w`.
+
+```julia-repl
+julia> W=coxgroup(:E,8)
+E₈
+
+julia> LeftCell(W,W((1:8)...))
+LeftCell<E₈: duflo=(42,43) character=φ₃₅‚₂>
+```
+"""
 function LeftCell(W,w)
   l=cellreps(W)
   sst=filter(r->length(r[1])>2,braid_relations(W))

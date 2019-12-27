@@ -68,8 +68,8 @@ chevieset(Symbol("2D"), :ClassParameter, function (n, w)
                 end
             end
         end
-        Sort(res[1])
-        Sort(res[2])
+        sort!(res[1])
+        sort!(res[2])
         return [reverse(res[1]), reverse(res[2])]
     end)
 chevieset(Symbol("2D"), :IsPreferred, function (pp,)
@@ -231,12 +231,12 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                                 end, (uc[:charSymbols])[res[:charNumbers]])
                     end
                     res[:special] = PositionProperty(res[:charLabels], (x->begin
-                                    ForAll(x, (y->begin
+                                    all((y->begin
                                                 y in "+,"
-                                            end))
+                                            end), x)
                                 end))
                     res[:name] = Concatenation(f[:Z1], f[:Z2], f[:Z2])
-                    Sort(res[:name])
+                    sort!(res[:name])
                     res[:name] = IntListToString(res[:name])
                     res[:explanation] = "classical family"
                     res[:perm] = Perm()

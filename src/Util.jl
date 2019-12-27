@@ -10,13 +10,9 @@ module Util
 using Gapjm
 
 export getp, gets, # helpers for objects with a Dict of properties
-  groupby, constant, blocks, # arrays
+  groupby, constant, # lists
   format, bracket_if_needed, ordinal, rshow, fromTeX, joindigits, # formatting
-  factor, prime_residues, divisors, phi, primitiveroot, gcd_repr, #number theory
-  conjugate_partition, horner, dominates, #combinatorics
-  echelon  # linear algebra
-
-# not exported: nullspace, to avoid conflict with LinearAlgebra
+  factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
 
 #--------------------------------------------------------------------------
 """
@@ -78,32 +74,6 @@ end
 " whether all elements in list a are equal"
 function constant(a::AbstractVector)
    all(i->a[i]==a[1],2:length(a))
-end
-
-"""
-  blocks(M::Matrix)
-
-  M  should be a square matrix. Define  a graph G with vertices 1:size(M,1)
-  and  with an edge between i and j  if either M[i,j] or M[j,i] is not zero
-  or false. blocks returns a vector of vectors I such that I[1],I[2], etc..
-  are  the  vertices  in  each  connected  component  of G. In other words,
-  M[I[1],I[1]],M[I[2],I[2]],etc... are blocks of M.
-"""
-function blocks(M::Matrix)::Vector{Vector{Int}}
-  l=size(M,1)
-  if l==0 return Vector{Int}[] end
-  cc=collect(1:l) # cc[i]: in which block is i, initialized to different blocks
-  nz=!iszero
-  for i in 1:l, j in i+1:l
-    # if new relation i~j then merge components:
-    if (nz(M[i,j]) || nz(M[j,i])) && cc[i]!=cc[j]
-      cj=cc[j]
-      for k in 1:l
-         if cc[k]==cj cc[k]=cc[i] end
-      end
-    end
-  end
-  sort(collect(values(groupby(cc,collect(1:l)))))
 end
 
 #----------------------- Formatting -----------------------------------------
@@ -360,76 +330,4 @@ Gapjm.root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denomi
 #       show(io, denominator(x))
 #   end
 #end
-
-function conjugate_partition(p)
-  res=zeros(eltype(p),maximum(p))
-  for i in p, j in 1:i res[j]+=1 end
-  res
-end
-
-# horner scheme
-function horner(x,p::Vector)
-  value=zero(x)
-  for i in length(p):-1:1
-    value=x*value+p[i]
-  end
-  value
-end
-
-dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
-#----------- Linear algebra over Rationals/integers------------------------
-"""
-    `echelon!(m)`
-
-    puts `m` in echelon form and returns: 
-    `m`, indices of linearly independent rows of `m`
-"""
-function echelon!(m::Matrix)
-  T=typeof(one(eltype(m))//1)
-  if T!=eltype(m) m=convert.(T,m) end
-  rk=0
-  inds=collect(axes(m,1))
-  for k in axes(m,2)
-    j=findfirst(!iszero,m[rk+1:end,k])
-    if isnothing(j) continue end
-    j+=rk
-    rk+=1
-    row=m[j,:]
-    m[j,:].=m[rk,:]
-    m[rk,:].=inv(row[k]).*row
-    inds[[j,rk]]=inds[[rk,j]]
-    for j in axes(m,1)
-      if rk!=j && !iszero(m[j,k]) m[j,:].-=m[j,k].*m[rk,:] end
-    end
-#   println(m)
-  end
-  m,inds[1:rk]
-end
-
-echelon(m::Matrix)=echelon!(copy(m))
-
-" computes right nullspace of m in a type_preserving way"
-function nullspace(m::Matrix)
-  m=echelon(m)[1]
-  n=size(m)[2]
-  z=Int[]
-  j=0
-  lim=size(m,1)
-  for i in axes(m,1)
-    f=findfirst(!iszero,m[i,j+1:end])
-    if isnothing(f)
-      lim=i-1
-      break 
-    end
-    j+=f
-    push!(z,j)
-  end
-# println("z=$z lim=$lim")
-  zz=zeros(eltype(m),n,n)
-  zz[z,:]=m[1:lim,:]
-  nn=filter(k->iszero(zz[k,k]),1:n)
-  for i in nn zz[i,i]=-one(eltype(m)) end
-  zz[:,nn]
-end
-
 end

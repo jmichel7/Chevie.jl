@@ -139,7 +139,7 @@ chevieset(["H4", "E7", "E8", "G31"], :HighestPowerFakeDegrees, (t->begin
                             else
                                 res = f[2]
                             end
-                            return res + Sum(f[3:length(f)], Phi)
+                            return res + Sum(f[3:length(f)], phi)
                         end, chevieget(t, :cycpolfakedegrees))
             end
         end))
@@ -192,7 +192,7 @@ chevieset(["G24", "G27", "G29", "G33", "G34", "H3", "H4", "E6", "E7", "E8"], :Hi
                                 x - 1
                             end))
                 return map((x->begin
-                                N - Degree(CycPol(x))
+                                N - degree(CycPol(x))
                             end), chevieget(t, :CycPolSchurElements))
             end
         end))

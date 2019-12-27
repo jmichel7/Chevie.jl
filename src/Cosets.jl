@@ -1,7 +1,7 @@
 module Cosets
 
 using Gapjm
-export twistings, spets 
+export twistings, spets, Frobenius
 abstract type Coset{TW} end
 
 abstract type Spets{TW}<:Coset{TW} end
@@ -35,11 +35,6 @@ function spets(W::FiniteCoxeterGroup{Perm{T},T1},F::Matrix) where{T,T1}
   FCC(phi,F,W,Dict{Symbol,Any}())
 end
 
-function det(m::Matrix)
-  if size(m,1)==1 return m[1,1] end
-  sum(i->(-1)^(i-1)*m[i,1]*det(m[vcat(1:i-1,i+1:size(m,1)),2:end]),1:size(m,1))
-end
-
 function torusfactors(WF::CoxeterCoset)
   M=PermRoot.baseX(WF.W.G)
   M=convert.(Int,M*WF.F*inv(convert.(Cyc{Rational},M)))
@@ -47,7 +42,7 @@ function torusfactors(WF::CoxeterCoset)
   M=M[r+1:end,r+1:end]
   if isempty(M) return CycPol(Pol([1],0)) end
   M=Ref(Pol([1],1)).*one(M)-M
-  CycPol(det(M))
+  CycPol(GLinearAlgebra.Det(M))
 end
 
 function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
@@ -76,9 +71,15 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
 end
 
 function Base.show(io::IO, W::CoxeterCoset)
-   show(io,refltype(W))
+   PermRoot.showtypes(io,refltype(W))
    t=torusfactors(W)
    if !isone(t) show(io,t) end
 end
+
+function Frobenius(WF::CoxeterCoset)
+  f(w,i=1)=Frobenius(w,WF.phi^i)
+end
+
+Frobenius(w::Perm,phi)=w^phi
 
 end

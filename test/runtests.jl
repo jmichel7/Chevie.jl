@@ -44,7 +44,7 @@ end
 @test mytest("charnames(W;spaltenstein=true,limit=true)","6-element Array{String,1}:\n \"1\"\n \"ε\"\n \"εₗ\"\n \"ε_c\"\n \"θ′\"\n \"θ″\"")
 @test mytest("charnames(W;spaltenstein=true,TeX=true)","6-element Array{String,1}:\n \"1\"\n \"\\\\varepsilon\"\n \"\\\\varepsilon_l\"\n \"\\\\varepsilon_c\"\n \"\\\\theta'\"\n \"\\\\theta''\"")
 @test mytest("g=coxgroup(:G,2)","G₂")
-@test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎")
+@test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎=A₂")
 @test mytest("InductionTable(u,g)","Induction Table\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
 end
 @testset "CoxGroups.jl" begin
@@ -61,10 +61,10 @@ end
 @test mytest("w in W","true")
 @test mytest("word(W,w)","5-element Array{Int64,1}:\n 1\n 2\n 3\n 2\n 1")
 @test mytest("W=coxgroup(:G,2)","G₂")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=A₁×A₁")
 @test mytest("word.(Ref(W),Set(reduced.(Ref(H),elements(W))))","3-element Array{Array{Int64,1},1}:\n []\n [1, 2]\n [1]")
 @test mytest("W=coxgroup(:G,2)","G₂")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=A₁×A₁")
 @test mytest("[word(W,w) for S in reduced(H,W) for w in S]","3-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]")
 end
 @testset "CycPols.jl" begin
@@ -359,12 +359,18 @@ end
 @test mytest("uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│   Deg(γ) Feg Fr(γ) label\n───┼──────────────────────────\n11.│ (1/2)qΦ₄  q²     1   +,-\n1.1│(1/2)qΦ₂² qΦ₄     1   +,+\n.11│       q⁴  q⁴     1\n2. │        1   1     1\n.2 │ (1/2)qΦ₄  q²     1   -,+\nB₂ │(1/2)qΦ₁²   0    -1   -,-")
 end
 @testset "Ucl.jl" begin
-@test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄\n────┼───────────────────────────────────────────────────────────────\n4   │222   0 222    q³.Z₄      1:4          -1:2    ζ₄:Id    -ζ₄:Id\n31  │202   1 22.      q⁴.    Id:31\n22  │020   2 2.2 q⁴.A₁.Z₂     2:22         11:11\n211 │101   3 2..    q⁵.A₁   Id:211\n1111│000   6 ...      .A₃  Id:1111")
+@test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄\n────┼─────────────────────────────────────────────────────────────────────\n4   │222   0 222    q³.Z₄      1:4                -1:2    ζ₄:Id    -ζ₄:Id\n31  │202   1 22.      q⁴.    Id:31\n22  │020   2 2.2 q⁴.A₁.Z₂     2:22               11:11\n211 │101   3 2..    q⁵.A₁   Id:211\n1111│000   6 ...      .A₃  Id:1111")
 @test mytest("UnipotentClasses(coxgroup(:A,3))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C  C(u) A₃(A₃₍₎)\n────┼───────────────────────────\n4   │222   0 222    q³     Id:4\n31  │202   1 22.   q⁴.    Id:31\n22  │020   2 2.2 q⁴.A₁    Id:22\n211 │101   3 2.. q⁵.A₁   Id:211\n1111│000   6 ...   .A₃  Id:1111")
 @test mytest("UnipotentClasses(coxgroup(:G,2))","UnipotentClasses(G₂)\n1<A₁<Ã₁<G₂(a₁)<G₂\n     u│D-R dBu B-C  C(u)        G₂(G₂₍₎)  .(G₂)\n──────┼─────────────────────────────────────────\nG₂    │ 22   0  22    q²         Id:φ₁‚₀\nG₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id\nÃ₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂\nA₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃\n1     │ 00   6  ..   .G₂         Id:φ₁‚₆")
 @test mytest("UnipotentClasses(coxgroup(:G,2),3)","UnipotentClasses(G₂)\n1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂\n     u│dBu B-C  C(u) G₂(G₂₍₎) .(G₂) .(G₂)  .(G₂)\n──────┼──────────────────────────────────────────\nG₂    │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id\nG₂(a₁)│  1  20 q⁴.Z₂   2:φ₂‚₁ 11:Id\nÃ₁    │  2  .2    q⁶  Id:φ₂‚₂\nA₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃\n(Ã₁)₃ │  3  ?? q⁵.A₁ Id:φ′₁‚₃\n1     │  6  ..   .G₂  Id:φ₁‚₆")
 @test mytest("uc=UnipotentClasses(coxgroup(:G,2));","nothing")
 @test mytest("t=ICCTable(uc)","Coefficients of X_φ on Y_ψ for G₂\n      │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1\n──────┼──────────────────────────────\nXφ₁‚₀ │ 1          0      1  1  1  1\nXφ′₁‚₃│ 0          1      0  1  0 q²\nXφ₂‚₁ │ 0          0      1  1  1 Φ₈\nXφ₂‚₂ │ 0          0      0  1  1 Φ₄\nXφ″₁‚₃│ 0          0      0  0  1  1\nXφ₁‚₆ │ 0          0      0  0  0  1")
+@test mytest("W=coxgroup(:F,4)","F₄")
+@test mytest("H=reflection_subgroup(W,[1,3])","F₄₍₁₃₎=A₁×A₁")
+@test mytest("Ucl.InducedLinearForm(W,H,[2,2])","4-element Array{Int64,1}:\n 0\n 1\n 0\n 0")
+@test mytest("uc=UnipotentClasses(W);","nothing")
+@test mytest("uc.classes[4].prop","Dict{Symbol,Any} with 7 entries:\n  :dynkin     => [0, 1, 0, 0]\n  :dimred     => 6\n  :red        => A₁×A₁\n  :Au         => .\n  :balacarter => [1, 3]\n  :dimunip    => 18\n  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),Array{Int64,2}[[1 0; 0 …")
+@test mytest("uc.classes[4]","UnipotentClass(A₁+Ã₁)")
 @test mytest("W=rootdatum(:sl,4)","A₃")
 @test mytest("uc=UnipotentClasses(W);","nothing")
 @test mytest("uc.classes","5-element Array{Gapjm.Ucl.UnipotentClass,1}:\n UnipotentClass(1111)\n UnipotentClass(211)\n UnipotentClass(22)\n UnipotentClass(31)\n UnipotentClass(4)")
@@ -373,7 +379,7 @@ end
 @testset "Weyl.jl" begin
 @test mytest("W=coxgroup(:D,4)","D₄")
 @test mytest("cartan(W)","4×4 Array{Int64,2}:\n  2   0  -1   0\n  0   2  -1   0\n -1  -1   2  -1\n  0   0  -1   2")
-@test mytest("W=coxgroup(:A,2)*coxgroup(:B,2)","A₂× B₂₍₃₄₎")
+@test mytest("W=coxgroup(:A,2)*coxgroup(:B,2)","A₂×B₂")
 @test mytest("cartan(W)","4×4 Array{Int64,2}:\n  2  -1   0   0\n -1   2   0   0\n  0   0   2  -2\n  0   0  -1   2")
 @test mytest("W=coxgroup(:D,4)","D₄")
 @test mytest("p=W(1,3,2,1,3)","(1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)")
@@ -383,7 +389,7 @@ end
 @test mytest("Weyl.two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("Diagram(W)","O⇛ O\n1  2")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=A₁×A₁")
 @test mytest("Diagram(H)","O\n1\nO\n2")
 @test mytest("inclusion(H)","4-element Array{Int64,1}:\n  2\n  6\n  8\n 12")
 @test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 0\n 0\n 0\n 2\n 0\n 3\n 0\n 0\n 0\n 4")

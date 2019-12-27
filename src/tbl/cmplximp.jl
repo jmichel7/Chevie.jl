@@ -250,7 +250,7 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
                                                 ((Sum(j[1:k - 1]) + k) - 1) + (1:j[k])
                                             end), 1:length(j)))
                             end), Concatenation(map((i->begin
-                                        Partitions(s, i)
+                                        partitions(s, i)
                                     end), 1:(r + 1) - s)))
             else
                 return Concatenation(map((i->begin
@@ -346,7 +346,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     end, res[:classparams])
             return res
         elseif q == 1
-            res = Dict{Symbol, Any}(:classparams => PartitionTuples(r, p))
+            res = Dict{Symbol, Any}(:classparams => partition_tuples(r, p))
             res[:classtext] = map(function (S,)
                         local l, w, d
                         S = Concatenation(map((i->begin
@@ -468,15 +468,15 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     end)
 chevieset(:imp, :ClassName, function (p,)
         local j, p1
-        if IsList(p) && ForAll(p, IsList)
+        if IsList(p) && all(IsList, p)
             if Sum(p, Sum) == 1
                 return FormatTeX(E(length(p), Position(p, [1]) - 1))
             else
                 return PartitionTupleToString(p)
             end
-        elseif IsList(p) && ForAll(p, IsInt)
+        elseif IsList(p) && all(IsInt, p)
             return IntListToString(p)
-        elseif IsList(p) && (ForAll(p[1:length(p) - 1], IsList) && IsInt(p[length(p)]))
+        elseif IsList(p) && (all(IsList, p[1:length(p) - 1]) && IsInt(p[length(p)]))
             p1 = p[1:length(p) - 1]
             p1 = Append(p1, [length(p1), p[length(p)]])
             return PartitionTupleToString(p1)
@@ -489,7 +489,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
         res = Dict{Symbol, Any}()
         d = div(de, e)
         if e == 1
-            res[:charparams] = PartitionTuples(r, de)
+            res[:charparams] = partition_tuples(r, de)
             s = fill(0, max(0, (1 + d) - 1))
             s[1] = 1
             res[:charSymbols] = map((x->begin
@@ -497,7 +497,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                         end), res[:charparams])
         else
             res[:charparams] = []
-            for t = PartitionTuples(r, de)
+            for t = partition_tuples(r, de)
                 tt = map((i->begin
                                 circshift(t, i)
                             end), (1:e) * d)
@@ -586,7 +586,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
         if e > 1 && d > 1
             res[:opdam] = PermListList(res[:charparams], map(function (s,)
                             if !(IsList(s[length(s)]))
-                                s = Copy(s)
+                                s = deepcopy(s)
                                 t = div(length(s) - 2, d)
                                 s[(0:t - 1) * d + 1] = circshift(s[(0:t - 1) * d + 1], 1)
                                 s[1:length(s) - 2] = Minimum(map((i->begin
@@ -672,7 +672,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
                 end
             res = Dict{Symbol, Any}(:coeff => (-1) ^ (r * (p - 1)), :factor => fill(0, max(0, (1 + p) - 1)), :vcyc => [])
             l = Concatenation(phi)
-            Sort(l)
+            sort!(l)
             push!(res[:factor], ((1:length(l)) - length(l)) * l)
             for s = 1:p
                 for t = 1:p
@@ -684,7 +684,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
                             push!(res[:vcyc], [v, 1])
                         else
                             push!(v, 1)
-                            for d = DivisorsInt(h)
+                            for d = divisors(h)
                                 if d > 1
                                     push!(res[:vcyc], [v, d])
                                 end
@@ -978,7 +978,7 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, root)
                                                 end), hs)), :remainder => apply(S[e], hs))
                         for a = Strips(S[1:e - 1], s - hs[:area])
                             ss = Dict{Symbol, Any}()
-                            for r = RecFields(a)
+                            for r = keys(a)
                                 ss[Symbol(r)] = copy(a[Symbol(r)])
                             end
                             ss[:SC] = Append(ss[:SC], hs[:SC])
@@ -1019,12 +1019,12 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, root)
                         return res
                     end
                     ElementarySymmetricFunction = function (t, v)
-                            return Sum(Combinations(1:length(v), t), (x->begin
+                            return Sum(combinations(1:length(v), t), (x->begin
                                             Product(v[x])
                                         end))
                         end
                     HomogeneousSymmetricFunction = function (t, v)
-                            return Sum(Combinations(Concatenation(map((x->begin
+                            return Sum(combinations(Concatenation(map((x->begin
                                                         1:length(v)
                                                     end), 1:t)), t), (x->begin
                                             Product(v[x])
@@ -1143,7 +1143,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
         if [q, r] == [1, 2]
             X = para[2]
             Y = para[1]
-            t = (PartitionTuples(2, p))[i]
+            t = (partition_tuples(2, p))[i]
             if count((x->begin
                                 x != []
                             end), t) == 1
@@ -1299,9 +1299,9 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                 (para[1])[p[1]] * Q ^ (p[3] - p[2])
                             end)
                     T = Tableaux(S)
-                    return Concatenation([toL(DiagonalMat(map((S->begin
+                    return Concatenation([DiagonalMat(map((S->begin
                                                     ct(pos(S, 1))
-                                                   end), T)))], map((i->begin
+                                                end), T))], map((i->begin
                                             map(function (j,)
                                                     local S, v, a, b, p, tll
                                                     S = T[j]
@@ -1321,7 +1321,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                                     else
                                                         tll = Sum(para[2]) // (1 - ct(b) // ct(a))
                                                     end
-                                                    v = fill(0//1, max(0, (1 + length(T)) - 1))
+                                                    v = fill(0, max(0, (1 + length(T)) - 1))
                                                     v[j] = tll
                                                     p = Position(T, S)
                                                     if p != false
@@ -1403,7 +1403,13 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                 m1 = map((x->begin
                                 x[1]
                             end), m)
-                return map(x->map(c->l*map(y->y[m1],x[c]), m), v)
+                return map((x->begin
+                                map((c->begin
+                                            l * map((y->begin
+                                                            y[m1]
+                                                        end), x[c])
+                                        end), m)
+                            end), v)
             else
                 return v
             end
@@ -1470,7 +1476,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                                         Position(uc[:charSymbols], SymbolPartitionTuple(x, map(length, c)))
                                     end), map((x->begin
                                             map(PartBeta, x)
-                                        end), ((chevieget(:imp, :CharSymbols))(p, 1, r - cr))[1:length(PartitionTuples(r - cr, p))]))
+                                        end), ((chevieget(:imp, :CharSymbols))(p, 1, r - cr))[1:length(partition_tuples(r - cr, p))]))
                         res[:cuspidalName] = ImprimitiveCuspidalName(c)
                         return res
                     end, cusp)
@@ -1503,7 +1509,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                                             end), Flat(s)) == 1
                                 return [1]
                             else
-                                s = Copy(s)
+                                s = deepcopy(s)
                                 l = PositionProperty(s, (p->begin
                                                 1 in p
                                             end))
@@ -1578,9 +1584,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                             end), s)
                 f[:cuspidalName] = ImprimitiveCuspidalName(s)
                 if addextra
-                    s = Copy(f[:charNumbers])
+                    s = deepcopy(f[:charNumbers])
                     f[:charNumbers] = s[[1]]
-                    f = Copy(f)
+                    f = deepcopy(f)
                     f[:charNumbers] = s[[2]]
                     push!(f[:cuspidalName], '2')
                     push!(extra, f)
@@ -1640,7 +1646,7 @@ chevieset(:imp, :Invariants, function (p, q, r)
         local v
         v = map((i->begin
                         function (arg...,)
-                            return Sum(Arrangements(1:r, i), (a->begin
+                            return Sum(arrangements(1:r, i), (a->begin
                                             Product(arg[a]) ^ p
                                         end))
                         end

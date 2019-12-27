@@ -833,7 +833,7 @@ end
 
 function scalarproduct(ct::CharTable,c1,c2)
   cl=div.(ct.centralizers[1],ct.centralizers)
-  div(sum(map(*,c1,c2,cl)),ct.centralizers[1])
+  div(sum(map(*,c1,conj.(c2),cl)),ct.centralizers[1])
 end
   
 function decompose(ct::CharTable,c)
@@ -1110,7 +1110,7 @@ julia> g=coxgroup(:G,2)
 G₂
 
 julia> u=reflection_subgroup(g,[1,6])
-G₂₍₁₅₎
+G₂₍₁₅₎=A₂
 
 julia> InductionTable(u,g)
 Induction Table

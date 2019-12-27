@@ -521,4 +521,33 @@ function showxsp(r)
        ", sp=", HasType.PartitionTupleToString(r[:sp]), ", dimBu=", r[:dimBu], 
        ", Au=", r[:Au], ")")
 end
+
+function RobinsonSchensted(n,p)
+  Perms.extend(p,n);pi=vec(p)
+  P=Vector{Int}[]
+  Q=Vector{Int}[]
+  for i in eachindex(pi)
+    j=pi[i]
+    z=1
+    while j!=0
+      if z>length(P)
+        push!(P,[j])
+        push!(Q,[i])
+        j=0
+      else
+        pos=findfirst(>=(j),P[z])
+        if isnothing(pos)
+          push!(P[z],j)
+          push!(Q[z],i)
+          j=0
+        else
+          (P[z][pos],j)=(j,P[z][pos])
+          z+=1
+        end
+      end
+    end
+  end
+  (P,Q)
+end
+
 end

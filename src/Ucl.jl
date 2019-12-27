@@ -10,9 +10,9 @@ bijection with nilpotent orbits on the Lie algebra.
 We  give  the  following  information  for  a unipotent element `u` of each
 class:
 
-- the centralizer `C_𝐆 (u)`, that we describe by the reductive part of `C_𝐆
-(u)^0`,  by the group  of components `A(u):=C_𝐆  (u)/C_𝐆 (u)^0`, and by the
-dimension of its radical.
+- the centralizer `C_𝐆 (u)`, that we describe by the reductive part of 
+  `C_𝐆 (u)^0`,  by the group  of components `A(u):=C_𝐆 (u)/C_𝐆 (u)^0`, 
+  and by the dimension of its radical.
 
 - in good characteristic, the  Dynkin-Richardson  diagram.
 
@@ -107,12 +107,12 @@ We illustrate these computations on some examples:
 julia> UnipotentClasses(rootdatum(:sl,4))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄
-────┼───────────────────────────────────────────────────────────────
-4   │222   0 222    q³.Z₄      1:4          -1:2    ζ₄:Id    -ζ₄:Id
-31  │202   1 22.      q⁴.    Id:31                                 
-22  │020   2 2.2 q⁴.A₁.Z₂     2:22         11:11                   
-211 │101   3 2..    q⁵.A₁   Id:211                                 
+   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄
+────┼─────────────────────────────────────────────────────────────────────
+4   │222   0 222    q³.Z₄      1:4                -1:2    ζ₄:Id    -ζ₄:Id
+31  │202   1 22.      q⁴.    Id:31                                       
+22  │020   2 2.2 q⁴.A₁.Z₂     2:22               11:11                   
+211 │101   3 2..    q⁵.A₁   Id:211                                       
 1111│000   6 ...      .A₃  Id:1111
 ```
 
@@ -299,11 +299,12 @@ extends  this linear form to the roots of `𝐆` by `0` on the orthogonal of
 the  roots of <K>; and finally conjugates  the resulting form by an element
 of the Weyl group so that it takes positive values on the simple roots.
 
+```julia-repl
 julia> W=coxgroup(:F,4)
 F₄
 
 julia> H=reflection_subgroup(W,[1,3])
-F₄₍₁₃₎
+F₄₍₁₃₎=A₁×A₁
 
 julia> Ucl.InducedLinearForm(W,H,[2,2])
 4-element Array{Int64,1}:
@@ -313,14 +314,12 @@ julia> Ucl.InducedLinearForm(W,H,[2,2])
  0
 
 julia> uc=UnipotentClasses(W);
-CHEVIE[F4] has no WeightInfo
-CHEVIE[F4] has no WeightInfo
 
 julia> uc.classes[4].prop
 Dict{Symbol,Any} with 7 entries:
   :dynkin     => [0, 1, 0, 0]
   :dimred     => 6
-  :red        => A₁× A₁₍₂₎
+  :red        => A₁×A₁
   :Au         => .
   :balacarter => [1, 3]
   :dimunip    => 18
@@ -328,6 +327,7 @@ Dict{Symbol,Any} with 7 entries:
 
 julia> uc.classes[4]
 UnipotentClass(A₁+Ã₁)
+```
 
 The  example above shows that the class containing the regular class of the
 Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
@@ -568,86 +568,51 @@ julia> uc.classes
  UnipotentClass(4)   
 ```
 
-    gap> PrintRec(uc.classes[3]);
-    rec(
-      name      := 22,
-      Au        := CoxeterGroup("A",1),
-      dimBu     := 2,
-      dimunip   := 4,
-      dimred    := 3,
-      parameter := [ 2, 2 ],
-      balacarter:= [ 1, 3 ],
-      dynkin    := [ 0, 2, 0 ],
-      red       := ReflectionSubgroup(CoxeterGroup("A",1), [ 1 ]),
-      AuAction  := A1,
-      operations:= UnipotentClassOps )
-    gap> uc.orderClasses;
-    [ [ 2 ], [ 3 ], [ 4 ], [ 5 ], [  ] ]
-    gap> uc.springerSeries;
-    [ rec(
-          relgroup := A3,
-          Z := [ 1 ],
-          levi := [  ],
-          locsys := [ [ 1, 1 ], [ 2, 1 ], [ 3, 2 ], [ 4, 1 ], [ 5, 1 ] ] )
-        , rec(
-          relgroup := A1,
-          Z := [ -1 ],
-          levi := [ 1, 3 ],
-          locsys := [ [ 3, 1 ], [ 5, 3 ] ] ), rec(
-          relgroup := .,
-          Z := [ E(4) ],
-          levi := [ 1, 2, 3 ],
-          locsys := [ [ 5, 2 ] ] ), rec(
-          relgroup := .,
-          Z := [ -E(4) ],
-          levi := [ 1, 2, 3 ],
-          locsys := [ [ 5, 4 ] ] ) ]|
+The  `show`  function  for  unipotent  classes  accepts  all the options of
+`formatTable`  and  of  `charnames`.  Giving  the  option  `mizuno`  (resp.
+`shoji`)  uses  the  names  given  by  Mizuno  (resp.  Shoji) for unipotent
+classes.  Moreover,  there  is  also  an  option  `fourier` which gives the
+correspondence  tensored  with  the  sign  character  of each relative Weyl
+group, which is the correspondence obtained via a Fourier-Deligne transform
+(here  we assume that  `p` is very  good, so that  there is a nondegenerate
+invariant  bilinear  form  on  the  Lie  algebra, and also one can identify
+nilpotent orbits with unipotent classes).
 
-The  `ff` function  for unipotent  classes accepts  all the  options of
-formatTable`,  `charnames`. Giving the option `mizuno` (resp. `shoji`) uses
-the  names given by  Mizuno (resp. Shoji)  for unipotent classes. Moreover,
-there  is also an option `fourier`  which gives the correspondence tensored
-with  the  sign  character  of  each  relative  Weyl  group,  which  is the
-correspondence  obtained via  a Fourier-Deligne  transform (here  we assume
-that  `p` is very good, so that there is a nondegenerate invariant bilinear
-form  on the Lie algebra,  and also one can  identify nilpotent orbits with
-unipotent classes).
-
-Here  is how  to display  only the  ordinary Springer correspondence of the
-unipotent classes of `E₆` using the notations of Mizuno for the classes and
-those of Frame for the characters of the Weyl group and of Spaltenstein for
-the  characters of `G₂` (this is convenient  for checking our data with the
-original paper of Spaltenstein):
+Here is how to display the non-cuspidal part of the Springer correspondence
+of  the unipotent  classes of  `E₆` using  the notations  of Mizuno for the
+classes  and those  of Frame  for the  characters of  the Weyl group and of
+Spaltenstein  for the characters  of `G₂` (this  is convenient for checking
+our data with the original paper of Spaltenstein):
 
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:Esc,6));
 
-julia> show(IOContext(stdout,:limit=>true,:cols=>[1,2,5,6,7],
-:spaltenstein=>true,:frame=>true,:mizuno=>true,:order=>false),uc)
-UnipotentClasses(coxgroup(:E,6))
-     u│   D-R dBu             E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎)/ζ₃ G₂(E₆₍₁₃₅₆₎)/ζ₃²
-──────┼─────────────────────────────────────────────────────────────────
-E₆    │222222   0                 1:1ₚ            ζ₃:1            ζ₃²:1
-E₆(a₁)│222022   1                 1:6ₚ          ζ₃:ε_c          ζ₃²:ε_c
-D₅    │220202   2               Id:20ₚ                                 
-A₅+A₁ │200202   3         -1:15ₚ 1:30ₚ           ζ₃:θ′           ζ₃²:θ′
-A₅    │211012   4               1:15_q           ζ₃:θ″           ζ₃²:θ″
-D₅(a₁)│121011   4               Id:64ₚ                                 
-A₄+A₁ │111011   5               Id:60ₚ                                 
-D₄    │020200   6               Id:24ₚ                                 
-A₄    │220002   6               Id:81ₚ                                 
-D₄(a₁)│000200   7 111:20ₛ 3:80ₛ 21:90ₛ                                 
-A₃+A₁ │011010   8               Id:60ₛ                                 
-2A₂+A₁│100101   9                1:10ₛ           ζ₃:εₗ           ζ₃²:εₗ
-A₃    │120001  10              Id:81ₚ′                                 
-A₂+2A₁│001010  11              Id:60ₚ′                                 
-2A₂   │200002  12               1:24ₚ′            ζ₃:ε            ζ₃²:ε
-A₂+A₁ │110001  13              Id:64ₚ′                                 
-A₂    │020000  15       11:15ₚ′ 2:30ₚ′                                 
-3A₁   │000100  16             Id:15_q′                                 
-2A₁   │100001  20              Id:20ₚ′                                 
-A₁    │010000  25               Id:6ₚ′                                 
-1     │000000  36               Id:1ₚ′   
+julia> rshow(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
+      order=false)
+UnipotentClasses(E₆)
+     u│            E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃ G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃²
+──────┼──────────────────────────────────────────────────────────────────
+E₆    │                1:1ₚ                  ζ₃:1                  ζ₃²:1
+E₆(a₁)│                1:6ₚ                ζ₃:ε_c                ζ₃²:ε_c
+D₅    │              Id:20ₚ                                             
+A₅+A₁ │        -1:15ₚ 1:30ₚ                 ζ₃:θ′                 ζ₃²:θ′
+A₅    │              1:15_q                 ζ₃:θ″                 ζ₃²:θ″
+D₅(a₁)│              Id:64ₚ                                             
+A₄+A₁ │              Id:60ₚ                                             
+D₄    │              Id:24ₚ                                             
+A₄    │              Id:81ₚ                                             
+D₄(a₁)│111:20ₛ 3:80ₛ 21:90ₛ                                             
+A₃+A₁ │              Id:60ₛ                                             
+2A₂+A₁│               1:10ₛ                 ζ₃:εₗ                 ζ₃²:εₗ
+A₃    │             Id:81ₚ′                                             
+A₂+2A₁│             Id:60ₚ′                                             
+2A₂   │              1:24ₚ′                  ζ₃:ε                  ζ₃²:ε
+A₂+A₁ │             Id:64ₚ′                                             
+A₂    │      11:15ₚ′ 2:30ₚ′                                             
+3A₁   │            Id:15_q′                                             
+2A₁   │             Id:20ₚ′                                             
+A₁    │              Id:6ₚ′                                             
+1     │              Id:1ₚ′                                             
 ```
 """
 function UnipotentClasses(t::TypeIrred,p=0) 
@@ -846,18 +811,14 @@ function showcentralizer(io::IO,u)
   c
 end
 
-UnipotentClassesOps=Dict(:DisplayOptions=>Dict{Symbol,Any}(
- :order=>true,:springer=>true,:centralizer=>true,:balaCarter=>true))
-
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)
-  io=IOContext(io,UnipotentClassesOps[:DisplayOptions]...)
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
-  if get(io,:order,false) println(io,uc.orderclasses) end
+  if get(io,:order,true) println(io,uc.orderclasses) end
   sp = map(copy, uc.springerseries)
   if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
@@ -869,7 +830,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
   tbl = map(uc.classes)do u
     res= iszero(uc.p) ? [joindigits(u.prop[:dynkin])] : String[]
     push!(res, string(u.dimBu))
-    if get(io,:balaCarter,false)
+    if get(io,:balaCarter,true)
       if haskey(u.prop, :balacarter)
         b=fill('.',coxrank(W))
         for i in u.prop[:balacarter] if i>0 b[i]='2' else b[-i]='0' end end
@@ -878,10 +839,10 @@ function Base.show(io::IO,uc::UnipotentClasses)
       end
       push!(res, String(b))
     end
-    if get(io,:centralizer,false)
+    if get(io,:centralizer,true)
       push!(res,showcentralizer(io,u)) 
     end
-    if get(io,:springer,false)
+    if get(io,:springer,true)
       i=findfirst(isequal(u),uc.classes)
       cc(ss)=map(function (i)
                 c1 = charnames(io,u.prop[:Au])[ss[:locsys][i][2]]
@@ -897,13 +858,13 @@ function Base.show(io::IO,uc::UnipotentClasses)
     push!(col_labels, TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
   end
     push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dBu")
-  if get(io,:balaCarter,false)
+  if get(io,:balaCarter,true)
      push!(col_labels, TeX ? "\\hbox{Bala-Carter}" : "B-C")
   end
-  if get(io,:centralizer,false)
+  if get(io,:centralizer,true)
      push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
-  if get(io,:springer,false)
+  if get(io,:springer,true)
    append!(col_labels, 
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
@@ -924,113 +885,8 @@ end
 # decompose tensor product of characteres (given as their indices in CharTable)
 function DecomposeTensor(W,c::Int...)
   ct=CharTable(W)
-  irr=ct.irr
 # println("eltype=",eltype(irr))
-  ch=conj.(prod(irr[collect(c),:],dims=1))
-  sW=length(W)
-  classes=map(x->div(sW,x),ct.centralizers)
-  ch=map(*,ch,classes)
-  convert.(Int,div.(irr*ch,sW))
-end
-
-function Det(m)
-  function compl(m,i,j)
-    v=axes(m,1)
-    m[setdiff(v,[i]),setdiff(v,[j])]
-  end
-  if isempty(m) return 0 end
-  n=size(m,1)
-  if n<=3 
-    return sum(p->prod(i->m[i,i^p],1:n)*sign(p),collect(symmetric_group(n)))
-  end
-  i=findfirst(i->count(!iszero,m[i,:])<=2,axes(m,1))
-  if !isnothing(i)
-    j=findall(!iszero,m[i,:])
-    if isempty(j) return 0 end
-    return sum(k->(-1)^(i+k)*m[i,k]*Det(compl(m,i,k)),j)
-  end
-  v=axes(m,1)
-# if length(v)<=3 return det*Det(m) end
-  for j in v
-    i=findfirst(isunit,m[v,j])
-    if isnothing(i) continue end
-    println(size(m,1),":",[j,i])
-    m=copy(m)
-    f=inv(m[i,j])
-    for k in setdiff(v,[i]) m[k,:]-=m[k][j]*f.*m[i,:] end
-    return (-1)^(i+j)*m[i][j]*Det(compl(m,i,j))
-  end
-  print("m=");display(iszero.(m))
-  v=map(x->count(!iszero,x),toL(m))
-  j=findfirst(isequal(minimum(v)),v)
-  if length(m)>71 println("\n",length(m),":",v[j]) end
-# if v[j]>5 return det*DeterminantMat(m) end
-  sum(function(i)
-#   if Length(m) mod 5=0 then Print(Length(m),":",i," \c");fi;
-    if iszero(m[i,j]) return 0
-    else return (-1)^(i+1)*m[i,j]*Det(compl(m,i,j))
-   end end,axes(m,1))
-end
-
-# Cofactors of the square matrix M, defined by CoFactors(M)*M=Det(M)*one(M)
-function CoFactors(m)
-  if size(m,1)==1 return fill(1,1,1) end
-  v=axes(m,1)
-  permutedims([(-1)^(i+j)*Det(m[filter(x->x!=i,v),filter(x->x!=j,v)])
-               for i in v, j in v])
-end
-
-#############################################################################
-##
-# BigCellDecomposition(M [, b]) . . . .  Decompose in the big Bruhat cell
-# M should be a square matrix such that the principal minors which are
-# union of blocks should be non-zero.
-# The  function decomposes  M as  a product  P*L*tP where  P is lower block
-# unitriangular  and tp  upper block-unitriangular  (with identity diagonal
-# blocks)  and L block-diagonal according to the  block structure b; b is a
-# list  of lists of  union [1..Length(M)]. If  not given, the trivial block
-# structure [[1],..,[Length(M)]] is assumed.
-# If  M is  symmetric then  tP=TransposedMat(P) and  the result is the pair
-# [tP,L]. else the result is [P,L,tP]
-#
-function BigCellDecomposition(M,b=map(i->[i],axes(M,1)))
-  L=one(M)
-  P=one(M)
-  block(X,i,j)=X[b[i],b[j]]
-  if M==permutedims(M)
-    for j in eachindex(b)
-      L[b[j],b[j]]=block(M,j,j)
-      if j>1 L[b[j],b[j]]-=sum(k->block(P,j,k)*block(L,k,k)*
-                              permutedims(block(P,j,k)),1:j-1) end
-      cb=CoFactors(block(L,j,j))
-      db=Det(block(L,j,j))
-      for i in j+1:length(b)
-        P[b[i],b[j]]=block(M,i,j)
-        if j>1 P[b[i],b[j]]-=
-          sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1) 
-        end
-        P[b[i],b[j]]*=cb
-        P[b[i],b[j]]=div.(block(P,i,j),db)
-      end
-    end
-    return permutedims(P),L
-  end
-  tP=one(M)
-  for j in eachindex(b)
-    L[b[j],b[j]]=block(M,j,j)-sum(k->block(P,j,k)*block(L,k,k)*
-                                  permutedims(block(P,j,k)),1:j-1)
-    cb=CoFactors(block(L,j,j))
-    db=Det(block(L,j,j))
-    for i in j+1:length(b)
-      P[b[i],b[j]]=block(M,i,j)-sum(k->block(P,i,k)*block(L,k,k)*
-                                     block(tP,k,j),1:j-1)
-      P[b[i],b[j]]=div.(P[b[i],b[j]]*cb,db)
-      tP[b[j],b[i]]=cb*(block(M,j,i)-sum(k->block(P,j,k)*
-                                         block(L,k,k)*block(tP,k,i),1:j-1))
-      tP[b[i],b[j]]=div.(tP[b[i],b[j]],db)
-    end
-  end
-  (P,L,tP)
+  Chars.decompose(ct,prod(ct.irr[collect(c),:],dims=1))
 end
 
 struct ICCTable
@@ -1039,9 +895,6 @@ end
 
 Base.getindex(t::ICCTable,k)=t.prop[k]
 
-# coefficients of R_χ on unipotently supported local systems 
-# ICCTable(uc[,Springer series no[,variable]]) eg (uc,1,X(Rationals))
-# Works for G split.
 """
 `ICCTable(uc[,seriesNo[,q]])`
 
@@ -1081,7 +934,7 @@ For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
 ```julia-rep1
-julia> show(IOContext(stdout,:limit=>true,:cycpol=>false),t)
+julia> rshow(t;cycpol=false)
 Coefficients of X_φ on Y_ψ for A3
      │4 31 22 211   1111
 ─────┼───────────────────

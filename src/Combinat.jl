@@ -1,3 +1,7 @@
+module Combinat
+export combinations, arrangements, partitions, NrPartitions, partition_tuples,
+  conjugate_partition, horner, dominates
+
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
   res=Vector{eltype(mset)}[]
@@ -8,7 +12,7 @@ function combinations_sorted(mset::AbstractVector,k)
 end 
 
 combinations(mset,k)=combinations_sorted(sort(mset),k)
-combinations(mset)=isempty(mset) ? [Int[]] : union(combinations.(Ref(mset),0:length(mset)))
+combinations(mset)=isempty(mset) ? [Int[]] : union(combinations.(Ref(mset),eachindex(mset)))
 
 function ArrangementsK(mset,blist,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -37,6 +41,7 @@ function partitions_less(n,m)
 end
 
 partitions(n)=partitions_less(n,n)
+NrPartitions(n)=length(partitions(n))
 
 if false
 function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
@@ -52,7 +57,8 @@ function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
   end 
   res
 end
-else # bad implementation but which is ordered as GAP3
+else # bad implementation but which is ordered as GAP3; needed for
+# compatibility with CHEVIE data library
 function partition_tuples(n, r)
    if n==0 return [fill(Int[],r)] end
    empty=(tup=[Int[] for i in 1:r], pos=fill(1,n-1))
@@ -94,3 +100,20 @@ function partition_tuples(n, r)
 end
 end
 
+function conjugate_partition(p)
+  res=zeros(eltype(p),maximum(p))
+  for i in p, j in 1:i res[j]+=1 end
+  res
+end
+
+# horner scheme
+function horner(x,p::Vector)
+  value=zero(x)
+  for i in length(p):-1:1
+    value=x*value+p[i]
+  end
+  value
+end
+
+dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
+end

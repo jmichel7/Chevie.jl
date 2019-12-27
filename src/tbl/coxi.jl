@@ -172,7 +172,7 @@ chevieset(:I, :ClassInfo, function (m,)
             cl = Append(cl, fill(0, max(0, (1 + m1) - 1)) + 2)
         end
         return Dict{Symbol, Any}(:classtext => r, :classnames => clnp, :classparams => clnp, :orders => map((i->begin
-                                OrderPerm(perm(i))
+                                order(perm(i))
                             end), r), :classes => cl)
     end)
 chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
@@ -304,9 +304,9 @@ chevieset(:I, :SchurElement, function (m, phi, para, rootpara)
             end
         else
             e = E(m, phi[2]) + E(m, -(phi[2]))
-            if ForAll([1, 2], (i->begin
+            if all((i->begin
                             rootpara[i] !== nothing
-                        end))
+                        end), [1, 2])
                 ruv = Product(rootpara)
             else
                 ruv = GetRoot(u * v, 2, "SchurElement(Hecke(I2(", m, "),", phi, "))")

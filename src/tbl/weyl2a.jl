@@ -29,11 +29,11 @@ chevieset(Symbol("2A"), :ClassParameter, function (n, w)
                 end
             end
         end
-        Sort(res)
+        sort!(res)
         return reverse(res)
     end)
 chevieset(Symbol("2A"), :CharParams, (n->begin
-            Partitions(n + 1)
+            partitions(n + 1)
         end))
 chevieset(Symbol("2A"), :CharName, function (arg...,)
         return IntListToString(arg[2])
@@ -52,7 +52,7 @@ chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H, res, W, p
         W = CoxeterGroup("A", n)
         H = Hecke(W, -((param[1])[1]) // (param[1])[2])
-        p = (Partitions(n + 1))[i]
+        p = (partitions(n + 1))[i]
         res = Dict{Symbol, Any}(:gens => SpechtModel(H, p))
         res[:F] = Product((res[:gens])[LongestCoxeterWord(W)]) // GetRoot((HeckeCentralMonomials(H))[i]) * (-1) ^ (chevieget(:A, :LowestPowerFakeDegree))(p)
         return res
@@ -118,7 +118,7 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
     end)
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
         local uc, c, t, WF, m, p
-        uc = Copy((chevieget(:A, :UnipotentClasses))(r, p))
+        uc = deepcopy((chevieget(:A, :UnipotentClasses))(r, p))
         for c = uc[:classes]
             t = Parent(c[:red])
             if length(t[:type_]) > 1

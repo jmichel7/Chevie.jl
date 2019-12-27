@@ -114,7 +114,7 @@ export E, ER, Cyc, conductor, galois, Root1, Quadratic
 using ..Gapjm: Gapjm, coefficients, degree # for extending coefficients, root
 using ..ModuleElts: ModuleElts, ModuleElt, norm!
 using ..Util: fromTeX, bracket_if_needed, constant
-using ..Util: factor, prime_residues, phi
+using ..Util: factor, prime_residues, phi, gcd_repr
 
 const use_list=false
 if use_list

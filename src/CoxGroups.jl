@@ -249,7 +249,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₆₎
+G₂₍₂₆₎=A₁×A₁
 
 julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
 3-element Array{Array{Int64,1},1}:
@@ -274,7 +274,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₆₎
+G₂₍₂₆₎=A₁×A₁
 
 julia> [word(W,w) for S in reduced(H,W) for w in S]
 3-element Array{Array{Int64,1},1}:
@@ -480,7 +480,7 @@ end
 
 function Base.show(io::IO, W::CoxSym)
   if get(io,:TeX,false) || get(io,:limit,false) 
-   print(io,fromTeX(io,"\\frakS_{$(W.n)}"))
+   print(io,fromTeX(io,"\\frakS _{$(W.n)}"))
   else print(io,"CoxSym($(W.n))")
   end
 end
