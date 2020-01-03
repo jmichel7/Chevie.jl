@@ -263,15 +263,15 @@ category with 10 objects and 32 generating maps
 
 julia> C.obj
 10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
- 214.14
- 14.124
- 143.13
  1214.4
- 13.134
+ 214.14
  124.24
  1343.1
+ 14.124
+ 143.13
  24.214
  134.14
+ 13.134
  14.143
 ```
 
@@ -298,11 +298,10 @@ julia> b1=b^B(preferred_prefix(b))
 1214.4
 
 julia> C=conjcat(b)
-category with 3 objects and 7 generating maps
+category with 2 objects and 6 generating maps
 
 julia> C.obj
-3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
- 214.14
+2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
  1214.4
  1343.1
 ```
@@ -545,7 +544,7 @@ isrightdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
 
 CoxGroups.word(M::BraidMonoid{T},w::T) where T=word(M.W,w)
 
-function rightgcd(M::BraidMonoid,elts...)
+function rightgcd(M::BraidMonoid{T,TW},elts::T...)where {T,TW}
   g,c=leftgcd(M,inv.(elts)...)
   inv(g),inv.(c)
 end
@@ -1038,7 +1037,7 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
 #   l:=Filtered(Concatenation(LeftDivisorsSimple(M,p)),
 #            s->s<>x and M.LeftGcdSimples(x,s)[2]=M.identity);
     l=left_divisors(M,\(M,x,p))
-    println("x=$x p=$p")
+#   println("x=$x p=$p")
     l=.*(Ref(M),Ref(x),reduce(vcat,l[2:end];init=eltype(l)[]))
 #   println("Warning: for b=",a," F=1 & x=",x," divides p=",p," ",length(l));
     l[findfirst(x->x==p || x in ggF(a,x,F),l)]
@@ -1110,10 +1109,10 @@ julia> b=B(2,3,1,2,4,3);b1=B(1,4,3,2,2,2)
 julia> representative_operation(b,b1)
 (134312.23)⁻¹
 
-julia> representative_operation(b,b1,:cyc)
+julia> c=representative_operation(b,b1,:cyc)
 232.2
 
-julia> b^ans
+julia> b^c
 1432.2.2
 
 julia> WF=spets(W,Perm(1,2,4))

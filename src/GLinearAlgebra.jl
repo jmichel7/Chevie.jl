@@ -14,7 +14,7 @@ export echelon, exterior_power, CoFactors, BigCellDecomposition, blocks
 """
     `echelon!(m)`
 
-  puts `m` in echelon form and returns: 
+  puts `m` in echelon form and returns:
   `m`, indices of linearly independent rows of `m`
   works in any field.
   The echelon form transforms the rows of m into a particular basis
@@ -59,7 +59,7 @@ function nullspace(m::Matrix)
     f=findfirst(!iszero,m[i,j+1:end])
     if isnothing(f)
       lim=i-1
-      break 
+      break
     end
     j+=f
     push!(z,j)
@@ -85,7 +85,7 @@ function Det(m)
   n=size(m,1)
   if n==1 return m[1,1]
   elseif n==2 return m[1,1]*m[2,2]-m[1,2]*m[2,1]
-  elseif n==3 
+  elseif n==3
     return sum(p->prod(i->m[i,i^p],1:n)*sign(p),collect(symmetric_group(n)))
   end
   function compl(m,i,j)
@@ -158,11 +158,11 @@ julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2;
           q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q;
           q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]
 6×6 Array{Pol{Int64},2}:
- q⁶     1      q³     q³     q⁵+q        q⁴+q²     
- 1      q⁶     q³     q³     q⁵+q        q⁴+q²     
- q³     q³     q⁶     1      q⁴+q²       q⁵+q      
- q³     q³     1      q⁶     q⁴+q²       q⁵+q      
- q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q  
+ q⁶     1      q³     q³     q⁵+q        q⁴+q²
+ 1      q⁶     q³     q³     q⁵+q        q⁴+q²
+ q³     q³     q⁶     1      q⁴+q²       q⁵+q
+ q³     q³     1      q⁶     q⁴+q²       q⁵+q
+ q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q
  q⁴+q²  q⁴+q²  q⁵+q   q⁵+q   q⁵+2q³+q    q⁶+q⁴+q²+1
 
 julia> bb=[[2],[4],[6],[3,5],[1]];
@@ -171,20 +171,20 @@ julia> (P,L)=Ucl.BigCellDecomposition(M,bb);
 
 julia> P
 6×6 Array{Pol{Int64},2}:
- 1    0  0    0    0        0      
+ 1    0  0    0    0        0
  q⁻⁶  1  q⁻³  q⁻³  q⁻¹+q⁻⁵  q⁻²+q⁻⁴
- 0    0  1    0    0        0      
- q⁻³  0  0    1    q⁻²      q⁻¹    
- q⁻¹  0  0    0    1        0      
- q⁻²  0  q⁻¹  0    q⁻¹      1      
+ 0    0  1    0    0        0
+ q⁻³  0  0    1    q⁻²      q⁻¹
+ q⁻¹  0  0    0    1        0
+ q⁻²  0  q⁻¹  0    q⁻¹      1
 
 julia> L
 6×6 Array{Pol{Int64},2}:
- q⁶-q⁴-1+q⁻²  0   0            0     0            0   
- 0            q⁶  0            0     0            0   
- 0            0   q⁶-q⁴-1+q⁻²  0     0            0   
- 0            0   0            q⁶-1  0            0   
- 0            0   0            0     q⁶-q⁴-1+q⁻²  0   
+ q⁶-q⁴-1+q⁻²  0   0            0     0            0
+ 0            q⁶  0            0     0            0
+ 0            0   q⁶-q⁴-1+q⁻²  0     0            0
+ 0            0   0            q⁶-1  0            0
+ 0            0   0            0     q⁶-q⁴-1+q⁻²  0
  0            0   0            0     0            q⁶-1
 
 julia> M==permutedims(P)*L*P
@@ -205,7 +205,7 @@ function BigCellDecomposition(M,b=map(i->[i],axes(M,1)))
       for i in j+1:length(b)
         P[b[i],b[j]]=block(M,i,j)
         if j>1 P[b[i],b[j]]-=
-          sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1) 
+          sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1)
         end
         P[b[i],b[j]]*=cb
         P[b[i],b[j]]=div.(block(P,i,j),db)
@@ -234,7 +234,7 @@ end
 function exterior_power(A,m)
   basis=combinations(1:size(A,1),m)
   [det(A[i,j]) for i in basis, j in basis]
-end 
+end
 
 """
   blocks(M::Matrix)

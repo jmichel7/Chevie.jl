@@ -658,6 +658,7 @@ Base.:<(c::Cyc,d::Real)=Real(c)<d
 
 Base.abs(c::Cyc)=c*conj(c)
 
+#------------------------ type Root1 ----------------------------------
 struct Root1 # E(c,n)
   r::Rational{Int}
   Root1(n::Int,c::Int)=new(mod(n,c)//c)
@@ -709,9 +710,11 @@ function Base.:*(a::Root1,b::Root1)
   Root1(numerator(r),denominator(r))
 end
 
-E(a::Root1)=E(conductor(a),exponent(a))
-E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
+Base.:-(a::Root1)=Root1(-a.r)
 
+E(a::Root1)=E(conductor(a),exponent(a))
+#------------------- end of Root1 ----------------------------------------
+E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
 
 struct Quadratic
   a
@@ -815,7 +818,7 @@ function Gapjm.root(x::Cyc,n::Number=2)
     if conductor(x)>1 return nothing end
     x=Real(x)
     if denominator(x)>1 return nothing end
-    return root(Int(x),n)
+    return Gapjm.root(Int(x),n)
   end
   d=denominator(r.r)
   j=1

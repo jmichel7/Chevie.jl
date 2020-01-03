@@ -39,11 +39,11 @@ So `CycPol(c,val,v)` represents `c*q^val*prod((q-E(r))^m for (r,m) in v)`.
 When   showing,  some  factors  of   the  cyclotomic  polynomial  `Φₙ`  are
 represented.  If `n` has a primitive root  `ξ`, `ϕ′ₙ` is the product of the
 `(q-ζ)` where `ζ` runs over the odd powers of `ξ`, and `ϕ″ₙ` is the product
-for the even powers. The function `show_CycPols` gives the complete list of
+for the even powers. The function `show_factors` gives the complete list of
 recognized factors:
 
 ```julia-rep1
-julia> show_CycPols(24)
+julia> CycPols.show_factors(24)
 Φ₂₄=q⁸-q⁴+1
 Φ′₂₄=q⁴+ζ₃²
 Φ″₂₄=q⁴+ζ₃
@@ -64,7 +64,7 @@ julia> show_CycPols(24)
 module CycPols
 using Gapjm, Memoize
 
-export CycPol, show_CycPols
+export CycPol, roots
 
 import Primes
 
@@ -76,6 +76,14 @@ end
 
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(r)=>m for (r,m) in v]))
+
+function PermRoot.roots(c::CycPol)
+  function f(e,m)
+    if m<0 error("should be a true polynomial") end
+    fill(e,m)
+  end
+  vcat([f(e,m) for (e,m) in c.v]...)
+end
 
 # 281st generic degree of G34
 const p=CycPol((1//6)E(3),19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
@@ -156,13 +164,13 @@ function dec(d::Int)
   end
 end
 
-function show_CycPols(d)
+function show_factors(d)
   for i in eachindex(CycPols.dec(d))
     p=CycPol(;cond=d,no=i)
     println(IOContext(stdout,:limit=>true),p,"=",p(Pol(:q)))
   end
 end
-pr()=for d in sort(collect(keys(dec_dict))) show_CycPols(d) end
+pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
 
 CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
   

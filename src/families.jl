@@ -439,8 +439,8 @@ end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
   end
   res[:size] = length(res[:charLabels])
   res[:eigenvalues]=reduce(vcat,map(function(r)ct=TransposedMat(r[:chars])
-     return map((x, y)->x//y,ct[PositionClass(r[:centralizer],r[:elt])], 
-               ct[PositionClass(r[:centralizer],g[:identity])]) end,
+     return map((x, y)->x//y,ct[position_class(r[:centralizer],r[:elt])], 
+               ct[position_class(r[:centralizer],g[:identity])]) end,
       res[:classinfo]))
   if lu
       res[:name] = "L"
@@ -458,8 +458,8 @@ end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
   res[:mellinLabels]=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res[:classinfo]))
   res[:xy] = reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res[:classinfo]))
   p = reduce(vcat,map((r->begin map(function (y)
-           r1 = (res[:classinfo])[PositionClass(g, y ^ -1)]
-          return Position(res[:xy], [r1[:elt], (r1[:centelms])[PositionClass(r1[:centralizer], r[:elt] ^ RepresentativeOperation(g, y ^ -1, r1[:elt]))]])
+           r1 = (res[:classinfo])[position_class(g, y ^ -1)]
+          return Position(res[:xy], [r1[:elt], (r1[:centelms])[position_class(r1[:centralizer], r[:elt] ^ RepresentativeOperation(g, y ^ -1, r1[:elt]))]])
                           end, r[:centelms]) end), res[:classinfo]))
   delete!(res, :classinfo)
   res[:fourierMat] = (IdentityMat(res[:size]))[p] ^ res[:mellin]

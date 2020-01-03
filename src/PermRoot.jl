@@ -216,6 +216,8 @@ function Base.show(io::IO, t::TypeIrred)
       if haskey(t,:bond)
         b=t[:bond]
         n=repl||TeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
+      elseif haskey(t,:short)
+        n=repl||TeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r,$b)"
       else
         n=(repl||TeX) ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
       end
@@ -752,10 +754,16 @@ restriction(W::PRSG,i)=W.restriction[i]
 @inline coroot(W::PRSG,i)=coroot(parent(W),inclusion(W,i))
 @inline Base.parent(W::PRSG)=W.parent
 
-function reflection_subgroup(W::PRG,I::AbstractVector{Int})
-  G=PRG(W.roots[I],coroot.(Ref(W),I))
-  if isempty(G.roots) inclusion=Int[]
-  else inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
+function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
+  WW=parent(W)
+  if !(p in WW) error("can only conjugate in parennt") end
+  reflection_subgroup(WW,inclusion(W,eachindex(gens(W))).^p)
+end
+
+function reflection_subgroup(W::PRG,I::AbstractVector)
+  if isempty(I) inclusion=Int[]
+  else G=PRG(W.roots[I],coroot.(Ref(W),I))
+       inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   end
   restriction=zeros(Int,length(W.roots))
   restriction[inclusion]=1:length(inclusion)

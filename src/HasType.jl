@@ -145,17 +145,6 @@ function CoxGroups.braid_relations(W)
     end)
 end
 
-function codegrees(W)
-  reduce(vcat,map(refltype(W)) do t
-    cd=getchev(t,:ReflectionCoDegrees)
-    if isnothing(cd)
-      cd=getchev(t,:ReflectionDegrees)
-      maximum(cd).-cd
-    else cd
-    end
-  end)
-end
-
 charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
 
@@ -230,7 +219,83 @@ function ComplexReflectionGroup(p,q,r)
   PRG(r,cr)
 end
 
-Gapjm.degrees(W)=reduce(vcat,getchev(W,:ReflectionDegrees))
+function Gapjm.degrees(W::Group)
+  vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
+end
+
+function Gapjm.degrees(W::Spets)
+  vcat(map(x->[1,x],E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
+end
+
+function Gapjm.degrees(t::TypeIrred)
+  if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
+  d=getchev(t[:orbit][1],:ReflectionDegrees)
+# Let  t.scalar=[s_1,..,s_r],  where  r=length(t.orbit)  and  let  p be the
+# PhiFactor   of  t.twist  associated  to  the  reflection  degree  d_i  of
+# t.orbit[1].   If   G0   is   the   Spets  described  by  t.orbit[1],  and
+# G1:=Ennola(Product(t.scalar),G0)  then G is isomorphic  to the descent of
+# scalars  of G1. According to spets 1.5, a Phifactor of Ennola(zeta,G0) is
+# \zeta^{d_i}  times  that  of  G0;  and  by  spets  1.5  or [Digne-Michel,
+# parabolic A.1] those of an a-descent of scalars are
+# \zeta_a^j\zeta_i^{1/a} (all the a-th roots of \zeta_i).
+  if order(t[:twist])>1 
+   f=getchev(t,:PhiFactors)
+   if isnothing(f) return f end
+  else f=fill(1,length(d))
+  end
+  if haskey(t,:scalar)
+    p=prod(t[:scalar]) 
+    f=[f[i]*p^d[i] for i in eachindex(d)]
+  end
+  f=collect.(zip(d,f))
+  a=length(t[:orbit])
+  if a==1 return f end
+  vcat(permutedims(map(function(p)
+    r=root(p[2],a)
+    map(i->[p[1],r*E(a,i)],0:a-1)
+    end,f))...)
+end
+
+function codegrees(t::TypeIrred)
+  if !haskey(t,:orbit)
+    d=getchev(t,:ReflectionCoDegrees)
+    if !isnothing(d) return d
+    else
+      d=getchev(t,:ReflectionDegrees)
+      return reverse(maximum(d).-d)
+    end
+  end
+  d=getchev(t,:ReflectionCoDegrees)
+  if isnothing(d)
+    d=getchev(t[:orbit][1],:ReflectionDegrees)
+    a=argmax(d)
+    d=reverse(d[a].-d)
+    if order(t[:twist])==1
+      f=fill(1,length(d))
+    else
+      f=getchev(t,:PhiFactors)
+      if isnothing(f) return f end
+      f=reverse(map(x->f[a]//x,f))
+    end
+  end
+  if haskey(t,:scalar)
+    p=prod(t[:scalar]) 
+    f=[f[i]*p^d[i] for i in eachindex(d)]
+  end
+  d=collect.(zip(d,f))
+  a=length(t[:orbit])
+  vcat(permutedims(map(d)do p
+    r=root(p[2],a)
+    return map(i->[p[1],r*E(a)^i],0:a-1) end)...)
+end
+
+function codegrees(W::Group)
+  vcat(fill(0,rank(W)-semisimplerank(W)),codegrees.(refltype(W))...)
+end
+
+function codegrees(W::Spets)
+  vcat(map(x->[1,x],E.(-roots(torusfactors(W)))),codegrees.(refltype(W))...)
+end
 
 function diagram(W)
   for t in refltype(W)

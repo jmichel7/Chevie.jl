@@ -707,6 +707,13 @@ end
 
 function classinfo(t::TypeIrred)
   cl=deepcopy(getchev(t,:ClassInfo))
+  if haskey(t,:orbit)
+     l=length(t[:orbit])
+     t=t[:orbit][1]
+     if l>1 && haskey(cl,:classes)
+       cl[:classes].*=prod(degrees(t))^(l-1)
+     end
+  end
   inds=t[:indices]
   cl[:classtext]=map(x->inds[x],cl[:classtext])
   cl[:classes]=Int.(cl[:classes])
@@ -815,6 +822,25 @@ function CharTable(t::TypeIrred)
 end
 
 function CharTable(W::PermRootGroup)::CharTable
+  gets(W,:chartable) do W
+    ctt=CharTable.(refltype(W))
+    if isempty(ctt) 
+      return CharTable(hcat(1),["Id"],["1"],[1],"$W")
+    end
+    charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
+    classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
+    centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
+    identifier=join(getfield.(ctt,:identifier),"×")
+    if length(ctt)==1 irr=ctt[1].irr 
+    else irr=kron(getfield.(ctt,:irr)...)
+    end
+    CharTable(irr,charnames,classnames,centralizers,identifier)
+  end
+end
+
+CharTable(W::FiniteCoxeterGroup)=CharTable(W.G)
+
+function CharTable(W::Spets)::CharTable
   gets(W,:chartable) do W
     ctt=CharTable.(refltype(W))
     if isempty(ctt) 

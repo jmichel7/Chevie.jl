@@ -190,6 +190,7 @@ The dictionary from Chevie is as follows:
      Reflection                             →  reflection 
      W.orbitRepresentative[i]               →  simple_representative(W,i) 
      ElementWithInversions                  →  with_inversions
+     StandardParabolic                      →  standard_parabolic
 ```
 finally, a benchmark on julia 1.0.2
 ```benchmark
@@ -339,7 +340,7 @@ two_tree=function(m::AbstractMatrix)
 end
 
 " (series,rank) for an irreducible Cartan matrix"
-function type_irred_cartan(m::AbstractMatrix)
+function type_fincox_cartan(m::AbstractMatrix)
   rank=size(m,1)
   s=two_tree(m)
   if isnothing(s) return nothing end
@@ -398,12 +399,11 @@ end
 """
     type_cartan(C)
 
-
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
 function type_cartan(m::AbstractMatrix)
   map(blocks(m)) do I
-    t=type_irred_cartan(m[I,I])
+    t=type_fincox_cartan(m[I,I])
     if isnothing(t) error("unknown Cartan matrix ",m[I,I]) end
     t[:indices]=I[t[:indices]]
     TypeIrred(t)
@@ -464,10 +464,12 @@ CoxGroups.coxetermat(W::FiniteCoxeterGroup)=
 inversions(W::FiniteCoxeterGroup,w)=
      [i for i in 1:nref(W) if isleftdescent(W,w,i)]
 
-#  with_inversions(<W>,<N>)
-#
-# given the set N of positive roots of W negated by an element w, find w.
-# N is a subset of [1..W.N] (not W.parentN!)
+"""
+`with_inversions(W,N)`
+
+given the set N of positive roots of W negated by an element w, find w.
+N is a subset of [1..W.N] (not W.parentN!)
+"""
 function with_inversions(W,N)
   w=one(W)
   n=N
@@ -479,6 +481,32 @@ function with_inversions(W,N)
     w=r*w
   end
   w^-1
+end
+
+"""
+  standard_parabolic(<W>,<H>) H reflection subgroup or its simple roots.
+
+ Given parabolic H returns w such that H^w is a standard parabolic subgroup
+ of W
+"""
+function standard_parabolic(W::FiniteCoxeterGroup,hr)
+  if isempty(hr) return Perm() end
+  b=W.rootdec[restriction(W)[hr]]
+  heads=map(x->findfirst(y->!iszero(y),x),filter(!iszero,toL(echelon(toM(b))[1])))
+  b=vcat(W.rootdec[setdiff(eachindex(gens(W)),heads)],b)
+# complete basis of I with part of S to make basis
+  l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
+   for x in v 
+     if (x isa Rational && x<0) || Real(x)<0 return true
+     elseif (x isa Rational && x>0) || Real(x)>0 return false 
+     end 
+   end end
+  N=(1:W.N)[l]
+# find negative roots for associated order and make order standard
+  w=with_inversions(W,N)
+  if issubset(hr.^w,inclusion(W,eachindex(gens(W)))) return w
+  else return nothing
+  end
 end
 
 """
@@ -494,17 +522,20 @@ DescribeInvolution(W,w)=
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}=
-   gets(W->type_cartan(cartan(W)),W,:refltype)
-
-"""
-  The reflection degrees of W
-"""
-function Gapjm.degrees(W::FiniteCoxeterGroup)
-  if iszero(W.N) return Int[] end
-  l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
-  reverse(1 .+conjugate_partition(l))
+function PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}
+  gets(W.G,:refltype)do W
+    type_cartan(cartan(W))
+  end
 end
+
+#"""
+#  The reflection degrees of W
+#"""
+#function Gapjm.degrees(W::FiniteCoxeterGroup)
+#  if iszero(W.N) return Int[] end
+#  l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
+#  reverse(1 .+conjugate_partition(l))
+#end
 
 dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
@@ -525,10 +556,10 @@ PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
 PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
+PermRoot.roots(W::FiniteCoxeterGroup)=roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
-Chars.CharTable(W)=CharTable(W.G)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
 #--------------- FCG -----------------------------------------
@@ -656,7 +687,7 @@ end
 
 coxgroup()=torus(0)
 
-Base.show(io::IO, W::FCG)=show(io,W.G)
+Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
   
 #function matX(W::FCG,w)
 #  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
@@ -665,7 +696,30 @@ Base.show(io::IO, W::FCG)=show(io,W.G)
 function cartancoeff(W::FCG,i,j)
   v=findfirst(!iszero,root(W,i))
   r=root(W,j)-root(W,j^reflection(W,i))
-  div(r[v],root(W,i)[v])
+  c=r[v]//root(W,i)[v]
+  isinteger(c) ? Int(c) : c
+end
+
+# root lengths for parent group
+function rootlengths(W::FCG)::Vector{Int}
+  gets(W,:rootlengths) do W
+    C=cartan(W)
+    lengths=fill(0,2*W.N)
+    for t in refltype(W)
+      I=t[:indices]
+      if length(I)>1 && C[I[1],I[2]]!=C[I[2],I[1]]
+        lengths[I[2]]=-C[I[1],I[2]]
+        lengths[I[1]]=-C[I[2],I[1]]
+      elseif length(I)>2 && C[I[2],I[3]]!=C[I[3],I[2]]
+        lengths[I[3]]=-C[I[2],I[3]]
+        lengths[I[1]]=-C[I[3],I[2]]
+      end
+    end
+    for i in eachindex(lengths) 
+      lengths[i]=lengths[simple_representatives(W.G)[i]] 
+    end
+    lengths
+  end
 end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
@@ -846,6 +900,12 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where 
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
+  prop[:refltype]=map(prop[:refltype]) do t
+   if (t[:series] in [:A,:D]) && rootlengths(W)[inclusion[t[:indices][1]]]==1
+     t.prop[:short]=true
+   end
+   t
+  end
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   G=Group(reflection.(Ref(W),I))
   G=PRSG(G,inclusion,restriction,W.G,prop)

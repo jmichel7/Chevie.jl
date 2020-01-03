@@ -167,6 +167,8 @@ function centralizer(G::Group,p;action::Function=^)
   Group(unique(sort(C)))
 end
 
+centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
+
 """
     `minimal_words(G)`
   returns a Dict giving for each element of `G` a minimal positive word in 
