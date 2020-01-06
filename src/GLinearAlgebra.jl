@@ -151,12 +151,7 @@ extracted from the computation of the Green functions for `G₂`.
 julia> Pol(:q)
 Pol{Int64}: q
 
-julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2;
-          q^0 q^6 q^3 q^3 q^5+q q^4+q^2;
-          q^3 q^3 q^6 q^0 q^4+q^2 q^5+q;
-          q^3 q^3 q^0 q^6 q^4+q^2 q^5+q;
-          q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q;
-          q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]
+julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]
 6×6 Array{Pol{Int64},2}:
  q⁶     1      q³     q³     q⁵+q        q⁴+q²
  1      q⁶     q³     q³     q⁵+q        q⁴+q²

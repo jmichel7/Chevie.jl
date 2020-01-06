@@ -304,7 +304,7 @@ julia> W=coxgroup(:F,4)
 F₄
 
 julia> H=reflection_subgroup(W,[1,3])
-F₄₍₁₃₎=A₁×A₁
+F₄₍₁₃₎=A₁×Ã₁
 
 julia> Ucl.InducedLinearForm(W,H,[2,2])
 4-element Array{Int64,1}:

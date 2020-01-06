@@ -798,7 +798,7 @@ O⇛ O
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
-G₂₍₂₆₎=A₁×A₁
+G₂₍₂₆₎=Ã₁×A₁
 
 julia> Diagram(H)
 O

@@ -190,7 +190,7 @@ end
 end
 @testset "GLinearAlgebra.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
-@test mytest("M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2;","          q^0 q^6 q^3 q^3 q^5+q q^4+q^2;\n          q^3 q^3 q^6 q^0 q^4+q^2 q^5+q;\n          q^3 q^3 q^0 q^6 q^4+q^2 q^5+q;\n          q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q;\n          q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]\n6×6 Array{Pol{Int64},2}:\n q⁶     1      q³     q³     q⁵+q        q⁴+q²\n 1      q⁶     q³     q³     q⁵+q        q⁴+q²\n q³     q³     q⁶     1      q⁴+q²       q⁵+q\n q³     q³     1      q⁶     q⁴+q²       q⁵+q\n q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q\n q⁴+q²  q⁴+q²  q⁵+q   q⁵+q   q⁵+2q³+q    q⁶+q⁴+q²+1")
+@test mytest("M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]","6×6 Array{Pol{Int64},2}:\n q⁶     1      q³     q³     q⁵+q        q⁴+q²\n 1      q⁶     q³     q³     q⁵+q        q⁴+q²\n q³     q³     q⁶     1      q⁴+q²       q⁵+q\n q³     q³     1      q⁶     q⁴+q²       q⁵+q\n q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q\n q⁴+q²  q⁴+q²  q⁵+q   q⁵+q   q⁵+2q³+q    q⁶+q⁴+q²+1")
 @test mytest("bb=[[2],[4],[6],[3,5],[1]];","nothing")
 @test mytest("(P,L)=Ucl.BigCellDecomposition(M,bb);","nothing")
 @test mytest("P","6×6 Array{Pol{Int64},2}:\n 1    0  0    0    0        0\n q⁻⁶  1  q⁻³  q⁻³  q⁻¹+q⁻⁵  q⁻²+q⁻⁴\n 0    0  1    0    0        0\n q⁻³  0  0    1    q⁻²      q⁻¹\n q⁻¹  0  0    0    1        0\n q⁻²  0  q⁻¹  0    q⁻¹      1")
@@ -234,7 +234,7 @@ end
 end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:H,3)","H₃")
-@test mytest("c=LeftCells(W)","22-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Cyc{Int64},PRG{Cyc{Int64},Int16}}},1}:\n LeftCell<H₃: duflo= character=φ₁‚₀>\n LeftCell<H₃: duflo=123 character=φ₁‚₁₅>\n LeftCell<H₃: duflo=(15) character=φ₅‚₅>\n LeftCell<H₃: duflo=(10) character=φ₅‚₅>\n LeftCell<H₃: duflo=(14) character=φ₅‚₅>\n LeftCell<H₃: duflo=7 character=φ₅‚₅>\n LeftCell<H₃: duflo=(12) character=φ₅‚₅>\n LeftCell<H₃: duflo=(9,12) character=φ₅‚₂>\n LeftCell<H₃: duflo=(5,11) character=φ₅‚₂>\n LeftCell<H₃: duflo=13 character=φ₅‚₂>\n LeftCell<H₃: duflo=46 character=φ₅‚₂>\n LeftCell<H₃: duflo=79 character=φ₅‚₂>\n LeftCell<H₃: duflo=(3,15) character=φ₃‚₆+φ₃‚₈>\n LeftCell<H₃: duflo=(8,13) character=φ₃‚₆+φ₃‚₈>\n LeftCell<H₃: duflo=(1,15) character=φ₃‚₆+φ₃‚₈>\n LeftCell<H₃: duflo=3 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=2 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=1 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=6 character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=(13) character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>")
+@test mytest("c=LeftCells(W)","22-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Cyc{Int64},PRG{Cyc{Int64},Int16}}},1}:\n LeftCell<H₃: duflo= character=φ₁‚₀>\n LeftCell<H₃: duflo=123 character=φ₁‚₁₅>\n LeftCell<H₃: duflo=(15) character=φ₅‚₅>\n LeftCell<H₃: duflo=(10) character=φ₅‚₅>\n LeftCell<H₃: duflo=(14) character=φ₅‚₅>\n LeftCell<H₃: duflo=7 character=φ₅‚₅>\n LeftCell<H₃: duflo=(12) character=φ₅‚₅>\n LeftCell<H₃: duflo=(9,12) character=φ₅‚₂>\n LeftCell<H₃: duflo=(5,11) character=φ₅‚₂>\n LeftCell<H₃: duflo=13 character=φ₅‚₂>\n ⋮\n LeftCell<H₃: duflo=(8,13) character=φ₃‚₆+φ₃‚₈>\n LeftCell<H₃: duflo=(1,15) character=φ₃‚₆+φ₃‚₈>\n LeftCell<H₃: duflo=3 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=2 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=1 character=φ₃‚₁+φ₃‚₃>\n LeftCell<H₃: duflo=6 character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=(13) character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>\n LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>")
 @test mytest("W=coxgroup(:F,4)","F₄")
 @test mytest("w=longest(W)*gens(W)[1];length(W,w)","23")
 @test mytest("y=W(1:4...);length(W,y)","4")
@@ -256,7 +256,7 @@ end
 @test mytest("representation(c,H)","3-element Array{Array{Array{Pol{Int64},1},1},1}:\n [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]\n [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]\n [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("LeftCells(W)","4-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:\n LeftCell<G₂: duflo= character=φ₁‚₀>\n LeftCell<G₂: duflo=12 character=φ₁‚₆>\n LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>\n LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>")
-@test mytest("W=coxgroup(:G,2)","nothing")
+@test mytest("W=coxgroup(:G,2);","nothing")
 @test mytest("LeftCells(W,1)","2-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:\n LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>\n LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>")
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("LeftCell(W,W((1:8)...))","LeftCell<E₈: duflo=(42,43) character=φ₃₅‚₂>")
@@ -416,7 +416,7 @@ end
 @test mytest("uc=UnipotentClasses(coxgroup(:G,2));","nothing")
 @test mytest("t=ICCTable(uc)","Coefficients of X_φ on Y_ψ for G₂\n      │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1\n──────┼──────────────────────────────\nXφ₁‚₀ │ 1          0      1  1  1  1\nXφ′₁‚₃│ 0          1      0  1  0 q²\nXφ₂‚₁ │ 0          0      1  1  1 Φ₈\nXφ₂‚₂ │ 0          0      0  1  1 Φ₄\nXφ″₁‚₃│ 0          0      0  0  1  1\nXφ₁‚₆ │ 0          0      0  0  0  1")
 @test mytest("W=coxgroup(:F,4)","F₄")
-@test mytest("H=reflection_subgroup(W,[1,3])","F₄₍₁₃₎=A₁×A₁")
+@test mytest("H=reflection_subgroup(W,[1,3])","F₄₍₁₃₎=A₁×Ã₁")
 @test mytest("Ucl.InducedLinearForm(W,H,[2,2])","4-element Array{Int64,1}:\n 0\n 1\n 0\n 0")
 @test mytest("uc=UnipotentClasses(W);","nothing")
 @test mytest("uc.classes[4].prop","Dict{Symbol,Any} with 7 entries:\n  :dynkin     => [0, 1, 0, 0]\n  :dimred     => 6\n  :red        => A₁×A₁\n  :Au         => .\n  :balacarter => [1, 3]\n  :dimunip    => 18\n  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),Array{Int64,2}[[1 0; 0 …")
@@ -439,7 +439,7 @@ end
 @test mytest("Weyl.two_tree(cartan(:E,8))","(4, [2], [3, 1], [5, 6, 7, 8])")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("Diagram(W)","O⇛ O\n1  2")
-@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=A₁×A₁")
+@test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
 @test mytest("Diagram(H)","O\n1\nO\n2")
 @test mytest("inclusion(H)","4-element Array{Int64,1}:\n  2\n  6\n  8\n 12")
 @test mytest("restriction(H)","12-element Array{Int64,1}:\n 0\n 1\n 0\n 0\n 0\n 2\n 0\n 3\n 0\n 0\n 0\n 4")

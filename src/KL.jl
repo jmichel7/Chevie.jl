@@ -122,28 +122,26 @@ H₃
 
 julia> c=LeftCells(W)
 22-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Cyc{Int64},PRG{Cyc{Int64},Int16}}},1}:
- LeftCell<H₃: duflo= character=φ₁‚₀>           
- LeftCell<H₃: duflo=123 character=φ₁‚₁₅>       
- LeftCell<H₃: duflo=(15) character=φ₅‚₅>       
- LeftCell<H₃: duflo=(10) character=φ₅‚₅>       
- LeftCell<H₃: duflo=(14) character=φ₅‚₅>       
- LeftCell<H₃: duflo=7 character=φ₅‚₅>          
- LeftCell<H₃: duflo=(12) character=φ₅‚₅>       
- LeftCell<H₃: duflo=(9,12) character=φ₅‚₂>     
- LeftCell<H₃: duflo=(5,11) character=φ₅‚₂>     
- LeftCell<H₃: duflo=13 character=φ₅‚₂>         
- LeftCell<H₃: duflo=46 character=φ₅‚₂>         
- LeftCell<H₃: duflo=79 character=φ₅‚₂>         
- LeftCell<H₃: duflo=(3,15) character=φ₃‚₆+φ₃‚₈>
+ LeftCell<H₃: duflo= character=φ₁‚₀>
+ LeftCell<H₃: duflo=123 character=φ₁‚₁₅>
+ LeftCell<H₃: duflo=(15) character=φ₅‚₅>
+ LeftCell<H₃: duflo=(10) character=φ₅‚₅>
+ LeftCell<H₃: duflo=(14) character=φ₅‚₅>
+ LeftCell<H₃: duflo=7 character=φ₅‚₅>
+ LeftCell<H₃: duflo=(12) character=φ₅‚₅>
+ LeftCell<H₃: duflo=(9,12) character=φ₅‚₂>
+ LeftCell<H₃: duflo=(5,11) character=φ₅‚₂>
+ LeftCell<H₃: duflo=13 character=φ₅‚₂>
+ ⋮
  LeftCell<H₃: duflo=(8,13) character=φ₃‚₆+φ₃‚₈>
  LeftCell<H₃: duflo=(1,15) character=φ₃‚₆+φ₃‚₈>
- LeftCell<H₃: duflo=3 character=φ₃‚₁+φ₃‚₃>     
- LeftCell<H₃: duflo=2 character=φ₃‚₁+φ₃‚₃>     
- LeftCell<H₃: duflo=1 character=φ₃‚₁+φ₃‚₃>     
- LeftCell<H₃: duflo=6 character=φ₄‚₃+φ₄‚₄>     
- LeftCell<H₃: duflo=(13) character=φ₄‚₃+φ₄‚₄>  
- LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>  
- LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>     
+ LeftCell<H₃: duflo=3 character=φ₃‚₁+φ₃‚₃>
+ LeftCell<H₃: duflo=2 character=φ₃‚₁+φ₃‚₃>
+ LeftCell<H₃: duflo=1 character=φ₃‚₁+φ₃‚₃>
+ LeftCell<H₃: duflo=6 character=φ₄‚₃+φ₄‚₄>
+ LeftCell<H₃: duflo=(13) character=φ₄‚₃+φ₄‚₄>
+ LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>
+ LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>
 ```
 see  also  the  functions  `elements`,  `character`,  `representation`  and
 `WGraph`  for left  cells. The  operations `length`,  `in` (which  refer to
@@ -212,9 +210,9 @@ function KLMue(W::CoxeterGroup,y,w)
   lw=length(W,w)
   if ly>=lw || !bruhatless(W,y,w) return 0 end
   if lw==ly+1 return 1 end
-  if any(s->(isleftdescent(W,w,s) && !isleftdescent(W,y,s)) 
-    || (isleftdescent(W,inv(w),s) && !isleftdescent(W,inv(y),s)), 
-    eachindex(gens(W))) 
+  if any(s->(isleftdescent(W,w,s) && !isleftdescent(W,y,s))
+    || (isleftdescent(W,inv(w),s) && !isleftdescent(W,inv(y),s)),
+    eachindex(gens(W)))
     return 0
   end
   pol=KLPol(W,y,w)
@@ -246,14 +244,14 @@ B₃
 
 julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
 9-element Array{Array{Pol{Int64},1},1}:
- [1, 1, 1]                       
- [1, 1, 1, 1, 1]                 
- [1, 1, 1, 1, 1, 1, 1]           
- [1, 1, 1, x+1, 1, 1, 1, 1]      
+ [1, 1, 1]
+ [1, 1, 1, 1, 1]
+ [1, 1, 1, 1, 1, 1, 1]
+ [1, 1, 1, x+1, 1, 1, 1, 1]
  [x+1, 1, 1, x+1, x+1, 1, x+1, 1]
- [1, x+1, 1, x+1, x+1, x²+1, 1]  
- [x+1, x+1, x²+x+1, 1, 1]        
- [x²+1, x+1, 1]                  
+ [1, x+1, 1, x+1, x+1, x²+1, 1]
+ [x+1, x+1, x²+x+1, 1, 1]
+ [x²+1, x+1, 1]
  [1]
 ```
 """
@@ -270,11 +268,11 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   lz=lw-2
   while div(lw-lz,2)<=degree(pol)
    for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
-      if div(lw-lz,2)<=degree(pol) && pol.c[div(lw-lz,2)+1]>0 && 
+      if div(lw-lz,2)<=degree(pol) && pol.c[div(lw-lz,2)+1]>0 &&
         isleftdescent(W,z,s) && bruhatless(W,y,z)
         let z=z, m=m=KLMue(W,z,v)
-        if m!=0 
-          pol-=m*shift(KLPol(W,y,z),div(lw-lz,2)) 
+        if m!=0
+          pol-=m*shift(KLPol(W,y,z),div(lw-lz,2))
         end
         end
       end
@@ -339,7 +337,7 @@ occurs in the formula for ``μᵥ``).
 function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   T=Tbasis(H)
   W=H.W
-  cdict=gets(H,Symbol("C'->T")) do H 
+  cdict=gets(H,Symbol("C'->T")) do H
     Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
   if haskey(cdict,w) return cdict[w] end
   if equalpara(H)
@@ -350,7 +348,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
     else
       res=getCp(H,s)*getCp(H,s*w)
       tmp=zero(H)
-      for (e,coef) in res.d 
+      for (e,coef) in res.d
         if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
       end
       res-=tmp
@@ -373,7 +371,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
       qx=rootpara(H,x)
       z=critical_pair(W,x,w)
       if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(isequal(z),elm)]
-      else 
+      else
         coeff[i]=-negative_part(sum(j->
           bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
       end
@@ -482,7 +480,7 @@ function Base.show(io::IO,c::LeftCell)
    end
    print(io,">")
  end
- 
+
 # br is a braid_relation of W
 # returns corresponding * op on w if applicable otherwise returns w
 function leftstar(W,br,w)
@@ -527,7 +525,7 @@ Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 
 Base.in(w,c::LeftCell)=w in elements(c)
 
-#F  KLMueMat( <W>, <list> )  . . . . (symmetrized) matrix of leading 
+#F  KLMueMat( <W>, <list> )  . . . . (symmetrized) matrix of leading
 #F coefficients of Kazhdan-Lusztig polynomials of elements in a given list
 ##
 function KLMueMat(W,c)
@@ -655,7 +653,7 @@ function OldLeftCellRepresentatives(W)
     InfoChevie("#I R(w)=",rw[1].rd," : #Elts=",length(c))
     mu=KLMueMat(W,c)
     n=1:length(c)
-    Lleq=[x==y || (mu[x,y]!=0 && any(i->isleftdescent(W,c[x],i) && 
+    Lleq=[x==y || (mu[x,y]!=0 && any(i->isleftdescent(W,c[x],i) &&
        !isleftdescent(W,c[y],i),eachindex(gens(W)))) for x in n, y in n]
     Lleq=transitive_closure(Lleq)
     m=Set(n[Lleq[i,:].&Lleq[:,i]] for i in n)
@@ -695,7 +693,7 @@ function OldLeftCellRepresentatives(W)
   end
   cells0
 end
-  
+
 function cellreps(W)
   gets(W,:cellreps) do W
     cc=LeftCellRepresentatives(W)
@@ -703,7 +701,7 @@ function cellreps(W)
     cc
   end
 end
-    
+
 """
   `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
   for the 1-parameter Hecke algebra `hecke(W,q)`
@@ -721,8 +719,8 @@ G₂
 
 julia> LeftCells(W)
 4-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
- LeftCell<G₂: duflo= character=φ₁‚₀>            
- LeftCell<G₂: duflo=12 character=φ₁‚₆>          
+ LeftCell<G₂: duflo= character=φ₁‚₀>
+ LeftCell<G₂: duflo=12 character=φ₁‚₆>
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
  LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
 ```
@@ -737,7 +735,7 @@ which  are in the `i`-th two-sided cell,  that is whose character is in the
 `i`-th family of `W` (see "Families of unipotent characters").
 
 ```julia-repl
-julia> W=coxgroup(:G,2)
+julia> W=coxgroup(:G,2);
 julia> LeftCells(W,1)
 2-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
@@ -758,7 +756,7 @@ function LeftCells(W,i=0)
 end
 
 # gens is a list each element of which can operate on element e
-# returns minimal word w such that Composition(gens[w]) applied to e 
+# returns minimal word w such that Composition(gens[w]) applied to e
 # satifies cond
 function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
   if cond(e) return Int[] end
@@ -777,17 +775,17 @@ function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
     new=first.(new)
     p=findfirst(cond,new)
     if !isnothing(p) InfoChevie("\n")
-      res=Int[] 
+      res=Int[]
       p=length(elements)+p
       while p!=1 push!(res,cayleyGraph[p][2])
-        p=cayleyGraph[p][1] 
+        p=cayleyGraph[p][1]
       end
       return res
     end
     if all(x->x in elements,new) error("no solution") end
     append!(elements,new)
     bag=union(bag,new)
-#   if Length(new)>10 then 
+#   if Length(new)>10 then
        InfoChevie(length(new)," ")
 #   fi;
     push!(nbLength,length(new))

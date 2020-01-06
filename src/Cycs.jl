@@ -2,23 +2,22 @@
 Cyclotomic  numbers means complex numbers which are sums of rationals times
 roots of unity.
 
-They are a very important feature of GAP, since entries of character tables
-of finite groups are cyclotomics.
+They  are a very important feature of GAP, since character values of finite
+groups are cyclotomics.
 
-They  have a normal form given by the Zumbroich basis, which allows to find
-the  smallest Cyclotomic field which contains a given number, and decide in
-particular  if a cyclotomic is zero.  Let ζ=exp(2iπ/n). The Zumbroich basis
-of Q(ζ) is a particular subset of 1,ζ,ζ²,…,ζⁿ⁻¹ which forms a basis of Q(ζ)
-with good properties.
+They  have a normal form given by writing them in the Zumbroich basis. This
+form  allows to find  the smallest Cyclotomic  field which contains a given
+number,   and  decide   in  particular   if  a   cyclotomic  is  zero.  Let
+ζₙ=exp(2iπ/n). The Zumbroich basis of ℚ (ζₙ) is a particular subset of size
+φ(n) of 1,ζₙ,ζₙ²,…,ζₙⁿ⁻¹ which forms a basis of ℚ (ζₙ).
 
-The  code in this  file started as  a port of  Christian Stump's Sage code,
-which  is  simpler  to  understand  than  GAP's code. The reference for the
-algorithms is
+I  started  this  file  by  porting  Christian  Stump's Sage code, which is
+simpler to understand than GAP's code. The reference for the algorithms is
 
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
 As  does GAP,  I lower  automatically numbers  after each computation; this
-makes  this code  about twice  slower than  GAP since  lower is not as much
+makes  this  code  about  50%  slower  than  GAP since lower is not as much
 optimized.  GAP also converts a Cyclotomic which is rational to a Rational,
 a  Rational which is integral to an Int, a BigInt which is small to a small
 Int,  etc... This is tremendously useful but  needs a new type of number to
@@ -41,7 +40,7 @@ julia> 1+E(3,2)
 julia> a=E(4)-E(4)
 0
 
-julia> conductor(a) # a is lowered to Q(ζ_1)=Q
+julia> conductor(a) # a is lowered to ℚ (ζ_1)=ℚ 
 1
 
 julia> typeof(convert(Int,a))
@@ -117,16 +116,18 @@ using ..Util: fromTeX, bracket_if_needed, constant
 using ..Util: factor, prime_residues, phi, gcd_repr
 
 const use_list=false
+# I tried two different implementations. The above selects the fastest one.
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
-  n::Int
+  n::Int       # conductor
   d::Vector{T} # coefficients on the Zumbroich basis
                # the i-th element is the coefficient on zumbroich_basis[i]
 end
 else
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
-  n::Int
-  d::ModuleElt{Int,T} # coefficients on the Zumbroich basis
+  n::Int              # conductor
+  d::ModuleElt{Int,T} # conceptually a list of pairs i, coefficient on
+                      # zumbroich_basis[i]
 end
 end
 
@@ -134,10 +135,12 @@ conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Int)=1
 
-const zumbroich_basis_dict=Dict(1=>[0])
+const zumbroich_basis_dict=Dict(1=>[0]) # The Zumbroich basis is memoized
 """
-  zumbroich_basis(n::Int) returns the Zumbroich basis of Q(ζ_n)
-  as the vector of i in 0:n-1 such that ``ζ_n^i`` is in the basis
+  zumbroich_basis(n::Int) 
+
+  returns  the Zumbroich basis of  ℚ (ζₙ) as the  vector of i in 0:n-1 such
+  that `ζₙⁱ` is in the basis
 """
 function zumbroich_basis(n::Int)::Vector{Int}
   get!(zumbroich_basis_dict,n) do
@@ -168,14 +171,15 @@ end
   res
 end
   
-#=
-  Elist(n,i)  expresses ζ_n^i  in zumbroich_basis(n):  it is  a sum of some
-  ζ_n^j  with coefficients all 1 or all  -1. The result is a Pair sgn=>inds
-  where sgn is true if coefficients are all 1 and false otherwise, and inds
-  is  the  list  of  i  in  0:n-1  such  that  ζ_n^i occurs with a non-zero
-  coefficient.
-=#
-const Elist_dict=Dict((1,0)=>(true=>[0]))
+const Elist_dict=Dict((1,0)=>(true=>[0])) # the function Elist is memoized
+"""
+  Elist(n,i)  
+  
+  expresses  ζₙⁱ  in  zumbroich_basis(n):  it  is  a  sum  of some ζₙʲ with
+  coefficients all 1 or all -1. The result is a Pair sgn=>inds where sgn is
+  true  if coefficients are all 1 and false otherwise, and inds is the list
+  of i in 0:n-1 such that ζₙⁱ occurs with a non-zero coefficient.
+"""
 function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
   i=mod(i1,n)
   get!(Elist_dict,(n,i)) do
@@ -218,10 +222,10 @@ end
   end
 end
 
-#=
-  E(n::Integer,k::Integer=1) is exp(2i k π/n)
-=#
 const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : ModuleElt(0=>1)))
+"""
+  E(n::Integer,k::Integer=1) is exp(2i k π/n)
+"""
 function E(n1::Integer,i1::Integer=1)::Cyc{Int}
   n=Int(n1)
   i=mod(Int(i1),n)
@@ -322,7 +326,7 @@ function Base.cmp(a::Cyc,b::Cyc)
 end
 
 Base.isless(a::Cyc,b::Cyc)=cmp(a,b)==-1
-Base.:(==)(a::Cyc,b::Cyc)=cmp(a,b)==0
+Base.:(==)(a::Cyc,b::Cyc)=a.n==b.n && a.d==b.d
 
 # hash is necessary to put Cycs as keys of a Dict
 function Base.hash(a::Cyc, h::UInt)
@@ -392,7 +396,7 @@ end
   elseif res[1]=='+' res=res[2:end] 
   end
   res=fromTeX(io,res)
-  print(io, (quadratic && rq!="" && length(rq)<=length(res)) ? rq : res)
+  print(io, (!isempty(rq) && length(rq)<=length(res)) ? rq : res)
 end
 
 function Base.:+(x::Cyc,y::Cyc)
