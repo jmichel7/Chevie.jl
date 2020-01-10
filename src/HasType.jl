@@ -7,7 +7,7 @@ export reflection_name, diagram,
 
 using ..Gapjm
 #-----------------------------------------------------------------------
-CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
+const CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
                            :AdjustHeckeCharTable=>(x,y)->x,
         :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
 CHEVIE[:CheckIndexChars]=false

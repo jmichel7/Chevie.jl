@@ -743,7 +743,7 @@ julia> Quadratic(1+E(5))
 
 ```
 """
-function Quadratic(cyc::Cyc)
+function Quadratic(cyc::Cyc{T})where T
   l1=coefficients(cyc)
   den=lcm(denominator.(l1))
   l=numerator.(l1)
@@ -764,7 +764,7 @@ function Quadratic(cyc::Cyc)
     if root%4==3 root=-root end
     gal=Set(galois.(cyc,prime_residues(cyc.n)))
     if length(gal)!=2 return nothing end
-    a=convert(Int,sum(gal))          # trace of 'cyc' over the rationals
+    a=numerator(convert(T,sum(gal)))      # trace of 'cyc' over the rationals
     if length(f)%2==0 b=2*l[2]-a
     else b=2*l[2]+a
     end

@@ -119,10 +119,20 @@ end
 
 ModuleElt(x::Pair{K,V}...) where{K,V}=ModuleElt(collect(x))
 ModuleElt(x::Base.Generator)=ModuleElt(collect(x))
-# note: the constructors do not check sorting.
+# note: these constructors do not check sorting.
 
 Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
+
+function Base.hash(x::ModuleElt, h::UInt)
+   b = 0x595dee0e71d271d0%UInt
+   for (s,p) in x.d
+     b = xor(b,xor(hash(s, h),h))
+     b = xor(b,xor(hash(p, h),h))
+     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+   end
+   return b
+end
 
 # multiply module element by scalar
 function Base.:*(a::ModuleElt,b)

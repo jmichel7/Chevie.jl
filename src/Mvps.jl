@@ -152,15 +152,7 @@ function Base.gcd(l::Monomial...)
   Monomial(res)
 end
 
-function Base.hash(a::Monomial, h::UInt)
-   b = 0x595dee0e71d271d0%UInt
-   for (s,p) in a.d
-     b = xor(b,xor(hash(s, h),h))
-     b = xor(b,xor(hash(p, h),h))
-     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-   end
-   return b
-end
+Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
 Gapjm.degree(m::Monomial)=isone(m) ? 0 : sum(last.(m.d))
 
@@ -199,6 +191,7 @@ end
 Base.broadcastable(p::Mvp)=Ref(p)
 Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
+Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
 
 function Base.show(io::IO, ::MIME"text/plain", a::Mvp)
   print(io,typeof(a),": ")
