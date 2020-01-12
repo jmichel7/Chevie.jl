@@ -137,23 +137,6 @@ a  `W`-module. It  is thus  a graded  (by the  degree of  elements of `SV`)
 version  of the regular  representation of `W`.  The polynomial which gives
 the  graded multiplicity  of a  character `φ`  of `W`  in the graded module
 `SV/I` is called the *fake degree* of `φ`.
-
-Dictionary from Chevie
-```
-     ReflectionSubgroup          → reflection_subgroup
-     .orbitRepresentative        → simple_representatives
-     .orbitRepresentativeElement → simple_conjugating_element
-     Reflections                 → reflections
-     ReflectionType              → refltype
-     IndependentRoots            → independent_roots
-     HyperplaneOrbits            → hyperplane_orbits
-     W.matgens[i]                → matX(W,i)
-     MatXPerm(W,p)               → matX(W,p)
-     ReflectionEigenvalues       → refleigen
-     ReflectionCharacter         → reflchar
-     PositionClass               → position_class
-     ReflectionLength            → reflength
-```
 """
 module PermRoot
 
@@ -466,9 +449,8 @@ end
 # g is a sublist of inclusion(H). Returns sublist k of g such that 
 # corresponding elements of H satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
-  orders=map(x->Int(inv(x)),getchev(t,:EigenvaluesGeneratingReflections))
-  rels=map(x->Vector{Vector{Int}}[],1:length(orders))
-  for j in braid_relations(t) push!(rels[maximum(j[1])],j) end
+  orders=Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
+  rels=groupby(r->maximum(r[1]),braid_relations(t))
   # check gens satisfy relations concerning them, find if can add
   # another gen from rest
   function findarr(gens,rest)::Vector{Int}

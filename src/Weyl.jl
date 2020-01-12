@@ -172,26 +172,7 @@ julia> word(W,p)
  3
 
 ```
-This module is mostly a port of the basic functions on Weyl groups in Chevie.
-The dictionary from Chevie is as follows:
-```
-     CartanMat("A",5)                       →  cartan(:A,5) 
-     CoxeterGroup("A",5)                    →  coxgroup(:A,5) 
-     Size(W)                                →  length(W) 
-     ForEachElement(W,f)                    →  for w in W f(w) end 
-     ReflectionDegrees(W)                   →  degrees(W) 
-     IsLeftDescending(W,w,i)                →  isleftdescent(W,w,i) 
-     ReflectionSubgroup                     →  reflection_subgroup
-     TwoTree(m)                             →  twotree(m) 
-     FiniteCoxeterTypeFromCartanMat(m)      →  type_cartan(m) 
-     RootsCartan(m)                         →  roots(m) 
-     PrintDiagram(W)                        →  Diagram(W) 
-     Inversions                             →  inversions 
-     Reflection                             →  reflection 
-     W.orbitRepresentative[i]               →  simple_representative(W,i) 
-     ElementWithInversions                  →  with_inversions
-     StandardParabolic                      →  standard_parabolic
-```
+
 finally, a benchmark on julia 1.0.2
 ```benchmark
 julia> @btime length(elements(coxgroup(:E,7)))
@@ -1081,7 +1062,7 @@ function AlgebraicCentre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  println("ss=$ss")
+  #println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)

@@ -136,27 +136,6 @@ reduced expressions.
 This  file contains mostly a port of  the basic functions on Coxeter groups
 in  Chevie. The only Coxeter group  constructor implemented here is CoxSym.
 The file Weyl.jl defines coxgroup.
-
-The dictionary from Chevie is as follows:
-```
-     CoxeterElements(W[,l])                → elements(W[,l])
-     CoxeterLength(W,w)                    → length(W,w)
-     CoxeterWord(W,w)                      → word(W,w)
-     LongestCoxeterElement(W)              → longest(W)
-     ReducedExpressions(W,w)               → reduced_words(W,w)
-     FirstLeftDescending(W,w)              → firstleftdescent(W,w)
-     LeftDescenTSet(W,w)                   → leftdescents(W,w)
-     ReducedInRightCoset(W,w)              → reduced(W,w)
-     ReducedRightCosetRepresentatives(W,H) → reduced(H,W)
-     SemiSimpleRank(W)                     → coxrank(W)
-     CoxeterGroupSymmetricGroup(n)         → CoxSym(n)
-     CoxeterGroupHyperoctaedralGroup(n)    → CoxHyperoctaedral(n)
-     ReflectionSubGroup                    only standard parabolics now
-     IsLeftDescending(W,w,i)               → isleftdescent(W,w,i)
-     ReflectionDegrees(W)                  → degrees(W)
-     ReflectionLength(W,w)                 → reflength(W,w)
-     W.N                                   → nref(W)
-```
 """
 module CoxGroups
 
@@ -510,6 +489,9 @@ function length2(W::CoxSym,w)
   count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 end
 
+# for reflection_subgroups note the difference with Chevie:
+# leftdescents, rightdescents, classinfo.classtext, word 
+# use indices in W and not in parent(W)
 " Only parabolics defined are I=1:m for m≤n"
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I) 

@@ -175,56 +175,48 @@ function schur_elements(H::HeckeAlgebra)
 end
 
 function ComplexReflectionGroup(i::Int)
-  if i in [23,28,30,35,36,37]
-    if i==23     return coxgroup(:H,3)
-    elseif i==28 return coxgroup(:F,4)
-    elseif i==30 return coxgroup(:H,4)
-    elseif i==35 return coxgroup(:E,6)
-    elseif i==36 return coxgroup(:E,7)
-    elseif i==37 return coxgroup(:E,8)
-    end
-    m=getchev(t,:CartanMat)
-    n=one(toM(m))
-    return PRG(map(i->n[i,:],axes(n,1)),m)
+  if i==23     return coxgroup(:H,3)
+  elseif i==28 return coxgroup(:F,4)
+  elseif i==30 return coxgroup(:H,4)
+  elseif i==35 return coxgroup(:E,6)
+  elseif i==36 return coxgroup(:E,7)
+  elseif i==37 return coxgroup(:E,8)
   end
   t=TypeIrred(Dict(:series=>:ST,:ST=>i))
   r=getchev(t,:GeneratingRoots)
   cr=getchev(t,:GeneratingCoRoots)
-  if cr===nothing
-    e=getchev(t,:EigenvaluesGeneratingReflections)
-    cr=map((x,y)->coroot(x,y),r,map(x->E(denominator(x),numerator(x)),e))
+  if isnothing(cr)
+    cr=map(coroot,r,E.(getchev(t,:EigenvaluesGeneratingReflections)))
   end
   PRG(r,cr)
 end
 
 function ComplexReflectionGroup(p,q,r)
- if p==1 if r==1 return coxgroup()
-   else return coxgroup(:A,r-1)
-   end
+  if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1) 
+   error("ComplexReflectionGroup(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
+  end
+  if p==1 return coxgroup(:A,r-1)
   elseif p==2 
-   if q==2 if r==1 return coxgroup()
-           elseif r==2 return coxgroup(:A,1)*coxgroup(:A,1)
-           elseif r==3 return coxgroup(:A,3)
-           else return coxgroup(:D,r)
-           end
-   elseif r==1 return coxgroup(:A,1)
-   else return coxgroup(:B,r) end
+    if q==2 return coxgroup(:D,r)
+    else return coxgroup(:B,r) end
   elseif p==q && r==2 return coxgroup(:I,2,r)
   end
- t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
+  t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   r=getchev(t,:GeneratingRoots)
-  cr=getchev(t,:EigenvaluesGeneratingReflections)
-  cr=map((x,y)->coroot(x,y),r,map(x->E(Root1(numerator(x),denominator(x))),cr))
-  cr=map(x->convert.(Cyc{Rational{Int}},x),cr)
-  PRG(r,cr)
+  cr=map(coroot,r,E.(getchev(t,:EigenvaluesGeneratingReflections)))
+  PRG(r,map(x->convert.(Cyc{Rational{Int}},x),cr))
 end
 
 function Gapjm.degrees(W::Group)
-  vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
+  gets(W,:degrees)do W
+    vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
+  end
 end
 
 function Gapjm.degrees(W::Spets)
-  vcat(map(x->[1,x],E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
+  gets(W,:degrees)do W
+  vcat(map(x->(1,x),E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
+  end
 end
 
 function Gapjm.degrees(t::TypeIrred)
@@ -247,13 +239,10 @@ function Gapjm.degrees(t::TypeIrred)
     p=prod(t[:scalar]) 
     f=[f[i]*p^d[i] for i in eachindex(d)]
   end
-  f=collect.(zip(d,f))
+  f=collect(zip(d,f))
   a=length(t[:orbit])
   if a==1 return f end
-  vcat(permutedims(map(function(p)
-    r=root(p[2],a)
-    map(i->[p[1],r*E(a,i)],0:a-1)
-    end,f))...)
+  vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
 
 function codegrees(t::TypeIrred)
@@ -282,11 +271,10 @@ function codegrees(t::TypeIrred)
     p=prod(t[:scalar]) 
     f=[f[i]*p^d[i] for i in eachindex(d)]
   end
-  d=collect.(zip(d,f))
+  f=collect(zip(d,f))
   a=length(t[:orbit])
-  vcat(permutedims(map(d)do p
-    r=root(p[2],a)
-    return map(i->[p[1],r*E(a)^i],0:a-1) end)...)
+  if a==1 return f end
+  vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
 
 function codegrees(W::Group)
