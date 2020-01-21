@@ -238,7 +238,7 @@ chevieset(:families,:QZ,function(n)
   pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
   res=Dict{Symbol,Any}(:name=>"D(\\BZ/$n)")
   res[:explanation]="Drinfeld double "*res[:name]
-  res[:fourierMat]=[E(n,x)^c1*E(n,x1)^c for (x,c) in pairs, (x1,c1) in pairs]
+  res[:fourierMat]=[E(n,x)^c1*E(n,x1)^c for (x,c) in pairs, (x1,c1) in pairs]//n
   res[:eigenvalues]=[E(n,x)^c for (x,c) in pairs]
   res[:special]=1
   res[:charLabels]=["($(E(n,x)),$(E(n,c)))" for (x,c) in pairs]
