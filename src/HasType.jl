@@ -680,8 +680,7 @@ const src=[
 "cmp4_22", "cmplxg24", "cmplxg25", "cmplxg26", 
 "cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
 "cmplximp", "coxh3", "coxh4", "coxi", 
-"weyla", "weylbc", "weyld", 
-#"weyl2a", 
+"weyla", "weylbc", "weyld", "weyl2a", 
 "weyl2d",
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
 "weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "exceptio"]

@@ -44,7 +44,7 @@ function Position(a::String,b::Char)
   x=findfirst(isequal(b),a)
   isnothing(x) ? false : x
 end
-function PositionProperty(a::Vector,b::Function)
+function PositionProperty(a::AbstractVector,b::Function)
   r=findfirst(b,a)
   if isnothing(r) return false end
   r

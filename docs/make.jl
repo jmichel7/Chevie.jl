@@ -1,5 +1,6 @@
 using Documenter, Gapjm
 
 makedocs(sitename="Gapjm.jl documentation",
-         modules=[Cycs,Gapjm,PermGroups,Perms,Pols,CoxGroups,
-                  Weyl,Hecke,KL,Garside,Util,CycPols])
+         modules=[Gapjm,Perms,Groups,PermGroups,Cycs,Pols,Mvps,CoxGroups,
+                  Weyl,PermRoot,HeckeAlgebras,KL,Garside,Chars,Cosets,Uch,
+                  Ucl,Symbols,Util,ModuleElts,CycPols,Posets])

@@ -39,24 +39,16 @@ Pol{Int64}: q⁸-q⁴+1
 
 ```
 
-The dictionary from GAP3 is as follows:
-
-    Coefficient(p,i)             →    p[i]
-    Value(p,x)                   →    p(x)
-    Degree(p)                    →    degree(p)
-    Valuation(p)                 →    valuation(p)
-    LeadingCoefficient(p)        →    p[degree(p)]
-    CyclotomicPolynomial(R,i)    →    cyclotomic_polynomial(i)
-
 see also the individual documentation of divrem, divrem1, gcd.
 """
 module Pols
 export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit
 
-using ..Gapjm: Gapjm # for degree, root
-using ..Util: bracket_if_needed, fromTeX, horner, divisors
+using ..Gapjm: Gapjm, root # for degree, root
+using ..Util: bracket_if_needed, fromTeX, divisors
 using ..Cycs: Cyc
+using ..Combinat: evalpoly
 
 const var=Ref(:x)
 varname(a::Symbol)=(var[]=a)
@@ -113,7 +105,7 @@ Gapjm.degree(p::Pol)=length(p.c)-1+p.v
 
 valuation(p::Pol)=p.v
 
-(p::Pol)(x)=horner(x,p.c)*x^p.v
+(p::Pol)(x)=evalpoly(x,p.c)*x^p.v
 
 # efficient p↦ qˢ p
 shift(p::Pol,s)=Pol(p.c,p.v+s)

@@ -284,16 +284,16 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-Hecke.rootpara(H::HeckeAlgebra,x::Perm)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
+HeckeAlgebras.rootpara(H::HeckeAlgebra,x::Perm)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict
   H::HeckeAlgebra{C,G}
 end
 
-Hecke.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
+HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
 
-Hecke.basename(h::HeckeCpElt)="C'"
+HeckeAlgebras.basename(h::HeckeCpElt)="C'"
 
 function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
@@ -387,19 +387,19 @@ julia> W=coxgroup(:B,3)
 B₃
 
 julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
-Hecke(B₃,v²,rootpara=v)
+hecke(B₃,v²,rootpara=v)
 
 julia> C=Cpbasis(H)
 (::Gapjm.KL.var"#f#10"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::Gapjm.Hecke.var"#f#25"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::Gapjm.HeckeAlgebras.var"#f#35"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 """
-Hecke.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
+HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
 
 Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 
@@ -407,12 +407,12 @@ Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 struct LeftCell{G<:Group}
   group::G
   prop::Dict{Symbol,Any}
-## Optional (computed) fields are:
-## .reps representatives of the cell
-## .duflo the Duflo involution of the cell
-## .character the character of the cell
-## .a the a-function of the cell
-## .elements the elements of the cell
+# Optional (computed) fields are:
+# .reps representatives of the cell
+# .duflo the Duflo involution of the cell
+# .character the character of the cell
+# .a the a-function of the cell
+# .elements the elements of the cell
 end
 
 Base.copy(c::LeftCell)=LeftCell(c.group,copy(c.prop))
@@ -565,7 +565,7 @@ julia> c=LeftCells(W)[3]
 LeftCell<H₃: duflo=(15) character=φ₅‚₅>
 
 julia> Pol(:q);H=hecke(W,q^2;rootpara=q)
-Hecke(H₃,q²,rootpara=q)
+hecke(H₃,q²,rootpara=q)
 
 julia> representation(c,H)
 3-element Array{Array{Array{Pol{Int64},1},1},1}:
@@ -795,7 +795,7 @@ end
 """
 `LeftCell(W,w)`
 
-returns  a  record  describing  the  left  cell  of  `W`  for  `Hecke(W,q)`
+returns  a  record  describing  the  left  cell  of  `W`  for  `hecke(W,q)`
 containing element `w`.
 
 ```julia-repl

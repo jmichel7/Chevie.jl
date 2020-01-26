@@ -49,7 +49,7 @@ chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
         tbl = Dict{Symbol, Any}(:identifier => "H(H3)", :text => "the representing matrices are those of Lusztig(1981)", :parameter => [q, q, q], :cartan => chevieget(:H3, :CartanMat), :size => 120, :order => 120, :powermap => chevieget(:H3, :PowerMaps), :irreducibles => map((i->begin
                                 map(function (j,)
                                         local res
-                                        res = horner(q, j[1])
+                                        res = evalpoly(q, j[1])
                                         if IsInt(j[2])
                                             res = res * q ^ j[2]
                                         else

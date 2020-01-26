@@ -69,7 +69,7 @@ CoxGroups
 reduced
 word(W::CoxeterGroup,w)
 bruhatless
-coxsym
+CoxSym
 longest
 nref
 ```
@@ -81,22 +81,31 @@ two_tree
 reflection_subgroup
 coxgroup
 rootdatum
+Weyl.DescribeInvolution
+Weyl.standard_parabolic
+with_inversions
 ```
 # PermRoot.jl Documentation
 ```@docs
 PermRoot
 reflection
+hyperplane_orbits
 ```
-# Hecke.jl Documentation
+# HeckeAlgebras.jl Documentation
 ```@docs
-Hecke
+HeckeAlgebras
 hecke
+central_monomials
 ```
 # KL.jl Documentation
 ```@docs
 KL
 KLPol
 Tbasis
+character
+representation(c::LeftCell,H)
+LeftCells
+LeftCell
 ```
 # Garside.jl Documentation
 ```@docs
@@ -107,6 +116,8 @@ fraction
 word(b::Garside.GarsideElm)
 representative_operation
 centralizer_generators
+conjcat
+endomorphisms
 shrink
 ```
 # Chars.jl Documentation
@@ -118,6 +129,12 @@ fakedegree
 fakedegrees
 representation
 representations
+InductionTable
+WGraphToRepresentation
+```
+# Cosets.jl Documentation
+```@docs
+Cosets
 ```
 # Uch.jl Documentation
 ```@docs
@@ -129,6 +146,7 @@ UnipotentCharacters
 Ucl
 UnipotentClasses
 ICCTable
+Ucl.InducedLinearForm
 ```
 # HasType.jl Documentation
 ```@docs
@@ -142,17 +160,24 @@ partβ
 ranksymbol
 fegsymbol
 ```
+# SPerms.jl Documentation
+```@docs
+SPerms
+SPerm
+Perm(p::SPerm)
+permuted(l::AbstractVector,a::SPerm)
+Matrix
+CoxHyperoctaedral
+```
 # Util.jl Documentation
 ```@docs
 Util
 groupby
 constant
-blocks
 format
 prime_residues
 phi
 primitiveroot
-echelon!
 ```
 # ModuleElts.jl Documentation
 ```@docs
@@ -178,30 +203,60 @@ is_join_lattice
 is_meet_lattice
 Poset(W::CoxeterGroup,w=longest(W))
 ```
+# GLinearAlgebra.jl Documentation
+```@docs
+GLinearAlgebra
+GLinearAlgebra.echelon!
+BigCellDecomposition
+blocks
+GLinearAlgebra.Transporter
+```
 
-# Dictionary from Chevie
-The dictionary from Chevie is as follows:
+# Dictionary from GAP3/Chevie
+The dictionary from GAP3/Chevie is as follows:
 ```
      CartanMat("A",5)                      →  cartan(:A,5) 
+     Coefficient(p,i)                      →  p[i]
      CoxeterElements(W[,l])                →  elements(W[,l])
      CoxeterGroup("A",5)                   →  coxgroup(:A,5) 
      CoxeterGroupHyperoctaedralGroup(n)    →  CoxHyperoctaedral(n)
      CoxeterGroupSymmetricGroup(n)         →  CoxSym(n)
      CoxeterLength(W,w)                    →  length(W,w)
      CoxeterWord(W,w)                      →  word(W,w)
+     CyclotomicPolynomial(R,i)             →  cyclotomic_polynomial(i)
+     Degree(p)                             →  degree(p)
      ElementWithInversions(W,l)            →  with_inversions(W,l)
      FiniteCoxeterTypeFromCartanMat(m)     →  type_cartan(m) 
      FirstLeftDescending(W,w)              →  firstleftdescent(W,w)
      ForEachElement(W,f)                   →  for w in W f(w) end 
+     HeckeCentralMonomials                 →  central_monomials
      HyperplaneOrbits                      →  hyperplane_orbits
      IndependentRoots                      →  independent_roots
      Inversions                            →  inversions 
      IsLeftDescending(W,w,i)               →  isleftdescent(W,w,i)
+     LeadingCoefficient(p)                 →  p[degree(p)]
      LeftDescentSet(W,w)                   →  leftdescents(W,w)
+     ListPerm(p)                           →  vec(p)
      LongestCoxeterElement(W)              →  longest(W)
      MatXPerm(W,p)                         →  matX(W,p)
+     OnTuples(l,p)                         →  l.^p
+     .orbitRepresentativeElement           →  simple_conjugating_element
+     .orbitRepresentative                  →  simple_ central_monomials
+     HyperplaneOrbits                      →  hyperplane_orbits
+     IndependentRoots                      →  independent_roots
+     Inversions                            →  inversions 
+     IsLeftDescending(W,w,i)               →  isleftdescent(W,w,i)
+     LeadingCoefficient(p)                 →  p[degree(p)]
+     LeftDescentSet(W,w)                   →  leftdescents(W,w)
+     ListPerm(p)                           →  vec(p)
+     LongestCoxeterElement(W)              →  longest(W)
+     MatXPerm(W,p)                         →  matX(W,p)
+     OnTuples(l,p)                         →  l.^p
      .orbitRepresentativeElement           →  simple_conjugating_element
      .orbitRepresentative                  →  simple_representatives
+     PermListList(l1,l2)                   →  Perm(l1,l2)
+     PermList(v)                           →  Perm(v) 
+     Permuted(v,p)                         →  permuted(v,p)
      PositionClass                         →  position_class
      PrintDiagram(W)                       →  Diagram(W) 
      ReducedExpressions(W,w)               →  reduced_words(W,w)
@@ -215,12 +270,15 @@ The dictionary from Chevie is as follows:
      Reflections                           →  reflections
      ReflectionSubgroup                    →  reflection_subgroup
      ReflectionType                        →  refltype
+     RestrictedPerm(p,d)                   →  restricted(p,d)
      RightDescentSet(W,w)                  →  rightdescents(W,w)
      RootsCartan(m)                        →  roots(m) 
      SemiSimpleRank(W)                     →  coxrank(W)
      Size(W)                               →  length(W) 
      StandardParabolic                     →  standard_parabolic
      TwoTree(m)                            →  twotree(m) 
+     Valuation(p)                          →  valuation(p)
+     Value(p,x)                            →  p(x)
      W.matgens[i]                          →  matX(W,i)
      W.N                                   →  nref(W)
      W.orbitRepresentative[i]              →  simple_representative(W,i) 

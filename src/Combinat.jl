@@ -1,6 +1,6 @@
 module Combinat
 export combinations, arrangements, partitions, NrPartitions, partition_tuples,
-  conjugate_partition, horner, dominates
+  conjugate_partition, evalpoly, dominates
 
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -107,7 +107,7 @@ function conjugate_partition(p)
 end
 
 # horner scheme
-function horner(x,p::Vector)
+function evalpoly(x,p::Vector)
   value=zero(x)
   for i in length(p):-1:1
     value=x*value+p[i]

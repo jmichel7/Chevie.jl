@@ -449,7 +449,7 @@ inversions(W::FiniteCoxeterGroup,w)=
 `with_inversions(W,N)`
 
 given the set N of positive roots of W negated by an element w, find w.
-N is a subset of [1..W.N] (not W.parentN!)
+Here N is a subset of 1:W.N (not of 1:parent(W).N)
 """
 function with_inversions(W,N)
   w=one(W)

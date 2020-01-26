@@ -108,15 +108,6 @@ other functions are:
 `cycles, cycletype, orbit, orbits, permuted, rand, restricted, sign`. 
 See individual documentations.
 
-GAP→ Julia dictionary
-```
-     PermList(v)                      →  Perm(v) 
-     Permuted(v,p)                    →  permuted(v,p)
-     ListPerm(p)                      →  vec(p)
-     PermListList(l1,l2)              →  Perm(l1,l2)
-     OnTuples(l,p)                    →  l.^p
-     RestrictedPerm(p,d)              →  restricted(p,d)
-```
 """
 module Perms
 

@@ -581,7 +581,7 @@ julia> charinfo(coxgroup(:D,4))[:B]
 `a`-function  for  all  irreducible  characters  of  the  Coxeter  group or
 Spetsial  reflection  group  `W`,  that  is,  for  each  character `χ`, the
 valuation  of the generic degree of `χ` (in the one-parameter Hecke algebra
-`Hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+`hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
 corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
@@ -606,7 +606,7 @@ julia> charinfo(coxgroup(:D,4))[:a]
 `A`-function  for  all  irreducible  characters  of  the  Coxeter  group or
 Spetsial  reflection group `W`, that is, for each character `χ`, the degree
 of   the  generic  degree  of  `χ`  (in  the  one-parameter  Hecke  algebra
-`Hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+`hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
 corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
@@ -630,7 +630,7 @@ julia> charinfo(coxgroup(:D,4))[:A]
 `:opdam`:  Contains the permutation of  the characters obtained by composing
 the  Opdam  involution  with  complex  conjugation. This permutation has an
 interpretation as a Galois action on the characters of
-`H=Hecke(W,Pol(:x))`:  if `H` splits  by taking `v`  an `e`-th root of `x`,
+`H=hecke(W,Pol(:x))`:  if `H` splits  by taking `v`  an `e`-th root of `x`,
 `.opdam` records the permutation effected by the Galois action `v->E(e)*v`.
 
 ```julia-repl
@@ -800,7 +800,7 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,ct::CharTable)
-  if !get(io,:TeX,false) println(io,"CharTable(",ct.identifier,")") end
+ if !get(io,:TeX,false) println(io,"CharTable(",fromTeX(io,ct.identifier),")") end
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
@@ -976,7 +976,7 @@ end
 
 ############################################################################
 # How to interpret W-graphs for complex reflection groups with one orbit of
-# reflections, for Hecke(W,[vars]).
+# reflections, for hecke(W,[vars]).
 
 function WGraph2Representation(a,vars)
 # println("a=$a vars=$vars")

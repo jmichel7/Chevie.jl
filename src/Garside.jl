@@ -893,7 +893,7 @@ function showgraph(C::Category;showmap::Function=x->x,showobj::Function=x->x)
 end
 
 """
-Endomorphisms(C,o) 
+endomorphisms(C,o) 
 for category C, returns generators of the endomorphisms of C.obj[o]
 """
 function endomorphisms(C::Category,o)

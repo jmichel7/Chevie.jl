@@ -215,22 +215,24 @@ end
 @test mytest("G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
 @test mytest("minimal_words(G)","Dict{Perm{Int16},Array{Int64,1}} with 6 entries:\n  ()      => Int64[]\n  (2,3)   => [2, 1]\n  (1,3,2) => [1, 2, 1]\n  (1,3)   => [1, 2]\n  (1,2)   => [1]\n  (1,2,3) => [2]")
 end
-@testset "Hecke.jl" begin
+@testset "HeckeAlgebras.jl" begin
 @test mytest("W=coxgroup(:A,2)","A₂")
-@test mytest("H=hecke(W,0)","Hecke(A₂,0)")
+@test mytest("H=hecke(W,0)","hecke(A₂,0)")
 @test mytest("T=Tbasis(H);","nothing")
 @test mytest("el=words(W)","6-element Array{Array{Int8,1},1}:\n []\n [2]\n [1]\n [2, 1]\n [1, 2]\n [1, 2, 1]")
 @test mytest("T.(el)*permutedims(T.(el))","6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("Pol(:q)","Pol{Int64}: q")
-@test mytest("H=hecke(W,q)","Hecke(B₂,q)")
+@test mytest("H=hecke(W,q)","hecke(B₂,q)")
 @test mytest("H.para","2-element Array{Array{Pol{Int64},1},1}:\n [q, -1]\n [q, -1]")
-@test mytest("H=hecke(W,q^2,rootpara=q)","Hecke(B₂,q²,rootpara=q)")
+@test mytest("H=hecke(W,q^2,rootpara=q)","hecke(B₂,q²,rootpara=q)")
 @test mytest("[H.para,rootpara(H)]","2-element Array{Array{T,1} where T,1}:\n Array{Pol{Int64},1}[[q², -1], [q², -1]]\n Pol{Int64}[q, q]")
-@test mytest("H=hecke(W,[q^2,q^4],rootpara=[q,q^2])","Hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])")
+@test mytest("H=hecke(W,[q^2,q^4],rootpara=[q,q^2])","hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])")
 @test mytest("[H.para,rootpara(H)]","2-element Array{Array{T,1} where T,1}:\n Array{Pol{Int64},1}[[q², -1], [q⁴, -1]]\n Pol{Int64}[q, q²]")
-@test mytest("H=hecke(W,9,rootpara=3)","Hecke(B₂,9,rootpara=3)")
+@test mytest("H=hecke(W,9,rootpara=3)","hecke(B₂,9,rootpara=3)")
 @test mytest("[H.para,rootpara(H)]","2-element Array{Array{T,1} where T,1}:\n Array{Int64,1}[[9, -1], [9, -1]]\n [3, 3]")
+@test mytest("H=hecke(coxgroup(:H,3),Pol(:q))","hecke(H₃,q)")
+@test mytest("central_monomials(H)","10-element Array{Pol{Cyc{Int64}},1}:\n 1\n q³⁰\n q¹²\n q¹⁸\n q¹⁰\n q¹⁰\n q²⁰\n q²⁰\n q¹⁵\n q¹⁵")
 end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:H,3)","H₃")
@@ -244,15 +246,15 @@ end
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Array{Array{Pol{Int64},1},1}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
 @test mytest("W=coxgroup(:B,3)","B₃")
-@test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","Hecke(B₃,v²,rootpara=v)")
+@test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H)","(::Gapjm.KL.var\"#f#10\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
-@test mytest("T=Tbasis(H)","(::Gapjm.Hecke.var\"#f#25\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::Gapjm.HeckeAlgebras.var\"#f#35\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 @test mytest("c=LeftCells(coxgroup(:G,2))[3]","LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>")
 @test mytest("KL.character(c)","3-element Array{Int64,1}:\n 3\n 5\n 6")
 @test mytest("W=coxgroup(:H,3)","H₃")
 @test mytest("c=LeftCells(W)[3]","LeftCell<H₃: duflo=(15) character=φ₅‚₅>")
-@test mytest("Pol(:q);H=hecke(W,q^2;rootpara=q)","Hecke(H₃,q²,rootpara=q)")
+@test mytest("Pol(:q);H=hecke(W,q^2;rootpara=q)","hecke(H₃,q²,rootpara=q)")
 @test mytest("representation(c,H)","3-element Array{Array{Array{Pol{Int64},1},1},1}:\n [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]\n [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]\n [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("LeftCells(W)","4-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:\n LeftCell<G₂: duflo= character=φ₁‚₀>\n LeftCell<G₂: duflo=12 character=φ₁‚₆>\n LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>\n LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>")
@@ -308,6 +310,10 @@ end
 @test mytest("base(G)","2-element Array{Int16,1}:\n 1\n 2")
 @test mytest("centralizers(G)","2-element Array{PermGroup{Int16},1}:\n Group([perm\"(1,2)\",perm\"(2,3)\"])\n Group([perm\"(2,3)\"])")
 @test mytest("transversals(G)","2-element Array{Dict{Int16,Perm{Int16}},1}:\n Dict(2 => (1,2),3 => (1,3,2),1 => ())\n Dict(2 => (),3 => (2,3))")
+end
+@testset "PermRoot.jl" begin
+@test mytest("W=coxgroup(:B,2)","B₂")
+@test mytest("hyperplane_orbits(W)","2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int16,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])")
 end
 @testset "Perms.jl" begin
 @test mytest("a=Perm(1,2,3)","(1,2,3)")

@@ -60,7 +60,7 @@ expression for `v`, say `v=s_1 ⋯ s_k` and apply inductively the formula:
 
 If all `s` we have `uₛ₀=q`, `uₛ₁=-1` then we call the corresponding algebra
 the one-parameter or Spetsial Iwahori-Hecke algebra associated with `W`; it
-can  be obtained with the  simplified call 'Hecke(W,q)'. Certain invariants
+can  be obtained with the  simplified call 'hecke(W,q)'. Certain invariants
 of  the irreducible characters of  this algebra play a  special role in the
 representation  theory of the underlying  finite Coxeter groups, namely the
 `a`- and `A`-invariants. For basic properties of Iwahori-Hecke algebras and
@@ -75,7 +75,7 @@ julia> W=coxgroup(:A,2)
 A₂
 
 julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
-Hecke(A₂,0)
+hecke(A₂,0)
 
 julia> T=Tbasis(H);             # Create the `T` basis
 
@@ -120,9 +120,10 @@ test_w0:=function(n)local W,T,H;
 end;
 ```
 """
-module Hecke
+module HeckeAlgebras
 using Gapjm
-export HeckeElt, Tbasis, hecke, HeckeAlgebra, HeckeTElt, rootpara, equalpara
+export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
+  rootpara, equalpara
 
 struct HeckeAlgebra{C,TW<:Group}
   W::TW
@@ -142,7 +143,7 @@ julia> Pol(:q)
 Pol{Int64}: q
 
 julia> H=hecke(W,q)
-Hecke(B₂,q)
+hecke(B₂,q)
 
 julia> H.para
 2-element Array{Array{Pol{Int64},1},1}:
@@ -150,7 +151,7 @@ julia> H.para
  [q, -1]
 
 julia> H=hecke(W,q^2,rootpara=q)
-Hecke(B₂,q²,rootpara=q)
+hecke(B₂,q²,rootpara=q)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
@@ -158,7 +159,7 @@ julia> [H.para,rootpara(H)]
  Pol{Int64}[q, q]                                  
 
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
-Hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
+hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
@@ -166,7 +167,7 @@ julia> [H.para,rootpara(H)]
  Pol{Int64}[q, q²]
 
 julia> H=hecke(W,9,rootpara=3)
-Hecke(B₂,9,rootpara=3)
+hecke(B₂,9,rootpara=3)
 
 julia> [H.para,rootpara(H)]
 2-element Array{Array{T,1} where T,1}:
@@ -224,7 +225,7 @@ end
 equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
 
 function Base.show(io::IO, H::HeckeAlgebra)
-  print(io,"Hecke(",H.W,",")
+  print(io,"hecke(",H.W,",")
   tr(p)= p[2]==-one(p[2]) ? p[1] : p
   if constant(H.para) print(io,tr(H.para[1]))
   else print(io,map(tr,H.para))
@@ -266,6 +267,50 @@ function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
                                    rootpara(H)[1]//H.para[1][2])
   CheckHeckeDefiningRelations(H,S)
   S
+end
+
+"""
+central_monomials(H)
+  Let  `H` be an Hecke  algebra for the reflection  group `W`. The function
+  returns  the  scalars  by  which  the  image  in  `H`  of  π  acts on the
+  irreducible  representations of  the Iwahori-Hecke  algebra. When  `W` is
+  irreducible, π is the generator of the center of the pure braid group. In
+  general,  it  is  the  product  of  such  elements  for  each irreducible
+  component. When `W` is an irreducible Coxeter group, π is the lift to the
+  braid group of the square of the longest element of `W`.
+
+```julia-repl
+julia> H=hecke(coxgroup(:H,3),Pol(:q))
+hecke(H₃,q)
+
+julia> central_monomials(H)
+10-element Array{Pol{Cyc{Int64}},1}:
+ 1  
+ q³⁰
+ q¹²
+ q¹⁸
+ q¹⁰
+ q¹⁰
+ q²⁰
+ q²⁰
+ q¹⁵
+ q¹⁵
+```
+"""
+function central_monomials(H::HeckeAlgebra)
+# Cf. BrMi, 4.16 for the formula used
+  W=H.W
+  v=hyperplane_orbits(W)
+  map(eachrow(CharTable(W).irr)) do irr
+    prod(v)do C
+      q=H.para[restriction(W)[C.s]]
+      m=map(0:C.order-1)do j
+       (irr[1]+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
+      end
+      E.(irr[1],-C.N_s*sum(m.*(0:C.order-1)))*
+          prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
+    end
+  end
 end
 
 #--------------------------------------------------------------------------

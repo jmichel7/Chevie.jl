@@ -49,9 +49,9 @@ chevieset(:E8, :HeckeCharTable, function (param, sqrtparam)
                     if p[i] !== nothing
                         return map(function (j,)
                                     if length(j) == 3
-                                        return horner(v, j[1]) * v ^ j[2]
+                                        return evalpoly(v, j[1]) * v ^ j[2]
                                     else
-                                        return horner(q, j[1]) * q ^ j[2]
+                                        return evalpoly(q, j[1]) * q ^ j[2]
                                     end
                                 end, p[i])
                     else
@@ -60,9 +60,9 @@ chevieset(:E8, :HeckeCharTable, function (param, sqrtparam)
                                     j = (p[i - 1])[k]
                                     l = length((tbl[:classtext])[k])
                                     if length(j) == 3
-                                        return horner(v ^ -1, j[1]) * v ^ -(j[2]) * (-q) ^ l
+                                        return evalpoly(v ^ -1, j[1]) * v ^ -(j[2]) * (-q) ^ l
                                     else
-                                        return horner(q ^ -1, j[1]) * q ^ -(j[2]) * (-q) ^ l
+                                        return evalpoly(q ^ -1, j[1]) * q ^ -(j[2]) * (-q) ^ l
                                     end
                                 end, 1:length(tbl[:classes]))
                     end

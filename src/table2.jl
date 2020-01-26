@@ -6,7 +6,37 @@ chevieset(:A,:CharTable,function(n)
   ct[:irredinfo]=map(x->Dict(:charname=>joindigits(x)),chevieget(:A,:CharInfo)(n)[:charparams])
   ct
  end)
+
+chevieset(Symbol("2A"),:CharTable,function(r)
+  tbl = chevieget(:A, :CharTable)(r)
+  tbl[:identifier] = "W(^2A_$r)"
+  A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
+  tbl[:irreducibles]= (-1).^A .* tbl[:irreducibles]
+  merge!(tbl, chevieget(Symbol("2A"), :ClassInfo)(r))
+end)
+
 chevieset(:A,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root))
+
+chevieset(Symbol("2A"),:HeckeCharTable, function (r, param, rootparam)
+  q = -param[1][1] // param[1][2]
+  if isnothing(rootparam[1]) v=GetRoot(q, 2, "CharTable(Hecke(2A))")
+  else v = rootparam[1]
+  end
+  W = coxgroup(:A, r)
+  qE = HeckeCentralMonomials(hecke(W, v))
+  H = hecke(W, v^-2)
+  T = Tbasis(H)
+  tbl = copy(CharTable(H))
+  Inherit(tbl, (chevieget(Symbol("2A"), :ClassInfo))(r))
+  tbl[:identifier] = "H(^2A_$r)"
+  cl = map(x->T(W(x...)*longest(W)), tbl[:classtext])
+  tbl[:irreducibles] = permutedims(map(HeckeCharValues, cl))
+  A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
+  tbl[:irreducibles]= (-1).^A .* qE .* tbl[:irreducibles]
+  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, param)
+  return tbl
+end)
+
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
 chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))

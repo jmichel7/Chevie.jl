@@ -1,3 +1,56 @@
+chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
+        local n, part, guesslongest, redw, l, w0, p
+        n = arg[1]
+        if length(arg) > 1
+            part = arg[2]
+        else
+            part = partitions(n + 1)
+        end
+        redw = function (n, w)
+                local l, i
+                l = []
+                while true
+                    i = PositionProperty(1:n, (j->begin
+                                    j ^ w > (j + 1) ^ w
+                                end))
+                    if i == false
+                        return l
+                    end
+                    push!(l, i)
+                    w = Perm(i, i + 1) * w
+                end
+                return l
+            end
+        guesslongest = function (p,)
+                local x, off, i
+                p = Concatenation(Filtered(p, (i->begin
+                                    mod(i, 2) == 0
+                                end)), Filtered(p, (i->begin
+                                    i != 1 && mod(i, 2) == 1
+                                end)))
+                x = Perm()
+                off = 0
+                for i = p
+                    x = x * Product(map((j->begin
+                                            Perm(l[off + 1], l[off + j])
+                                        end), 2:i))
+                    off = off + i
+                end
+                return x
+            end
+        l = []
+        w0 = Perm()
+        for p = 1:div(n + 1, 2)
+            l = Append(l, [p, (n - p) + 2])
+            w0 = w0 * Perm(p, (n - p) + 2)
+        end
+        if mod(n, 2) == 0
+          push!(l, 1+div(n,2))
+        end
+        return map((p->begin
+                        redw(n, guesslongest(p) * w0)
+                    end), part)
+    end)
 
 chevieset(Symbol("2A"), :ClassInfo, function (n,)
         local res
@@ -41,8 +94,8 @@ chevieset(Symbol("2A"), :CharName, function (arg...,)
 chevieset(Symbol("2A"), :CharInfo, (n->begin
             (chevieget(:A, :CharInfo))(n)
         end))
-chevieset(Symbol("2A"), :CharTable, (CHEVIE[:compat])[:CharTable2A])
-chevieset(Symbol("2A"), :HeckeCharTable, (CHEVIE[:compat])[:HeckeCharTable2A])
+#chevieset(Symbol("2A"), :CharTable, (CHEVIE[:compat])[:CharTable2A])
+#chevieset(Symbol("2A"), :HeckeCharTable, (CHEVIE[:compat])[:HeckeCharTable2A])
 chevieset(Symbol("2A"), :PhiFactors, (n->begin
             map((x->begin
                         (-1) ^ x
@@ -117,7 +170,7 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
         return uc
     end)
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
-        local uc, c, t, WF, m, p
+        local uc, c, t, WF, m
         uc = deepcopy((chevieget(:A, :UnipotentClasses))(r, p))
         for c = uc[:classes]
             t = Parent(c[:red])

@@ -54,7 +54,8 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export coefficients, degree, degrees, elements, kernel, restricted, root, words, word
+export coefficients, degree, degrees, elements, kernel, restricted, root, 
+       words, word
 function coefficients end
 degree(a::Number)=0
 function degrees end
@@ -118,8 +119,8 @@ include("Chars.jl")
 @reexport using .Chars
 include("SPerms.jl")
 @reexport using .SPerms
-include("Hecke.jl")
-@reexport using .Hecke
+include("HeckeAlgebras.jl")
+@reexport using .HeckeAlgebras
 include("KL.jl")
 @reexport using .KL
 include("CycPols.jl")

@@ -36,7 +36,7 @@ chevieset(:E6, :HeckeCharTable, function (param, sqrtparam)
         q = -((param[1])[1]) // (param[1])[2]
         tbl = Dict{Symbol, Any}(:identifier => "H(E6)", :text => "origin: Meinolf Geck, April 1992", :parameter => param, :rootparameter => sqrtparam, :cartan => chevieget(:E6, :CartanMat), :size => 51840, :powermap => chevieget(:E6, :PowerMaps), :irreducibles => map((i->begin
                                 map((j->begin
-                                            horner(q, j[1]) * q ^ j[2]
+                                            evalpoly(q, j[1]) * q ^ j[2]
                                         end), i)
                             end), chevieget(:E6, :vpolheckeirreducibles)), :irredinfo => chevieget(:E6, :IrredInfo))
         Inherit(tbl, chevieget(:E6, :ClassInfo))
