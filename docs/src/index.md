@@ -240,22 +240,8 @@ The dictionary from GAP3/Chevie is as follows:
      LongestCoxeterElement(W)              →  longest(W)
      MatXPerm(W,p)                         →  matX(W,p)
      OnTuples(l,p)                         →  l.^p
-     .orbitRepresentativeElement           →  simple_conjugating_element
-     .orbitRepresentative                  →  simple_ central_monomials
-     HyperplaneOrbits                      →  hyperplane_orbits
-     IndependentRoots                      →  independent_roots
-     Inversions                            →  inversions 
-     IsLeftDescending(W,w,i)               →  isleftdescent(W,w,i)
-     LeadingCoefficient(p)                 →  p[degree(p)]
-     LeftDescentSet(W,w)                   →  leftdescents(W,w)
-     ListPerm(p)                           →  vec(p)
-     LongestCoxeterElement(W)              →  longest(W)
-     MatXPerm(W,p)                         →  matX(W,p)
-     OnTuples(l,p)                         →  l.^p
-     .orbitRepresentativeElement           →  simple_conjugating_element
-     .orbitRepresentative                  →  simple_representatives
      PermListList(l1,l2)                   →  Perm(l1,l2)
-     PermList(v)                           →  Perm(v) 
+     PermList(v)                           →  Perm(v)
      Permuted(v,p)                         →  permuted(v,p)
      PositionClass                         →  position_class
      PrintDiagram(W)                       →  Diagram(W) 
@@ -282,4 +268,5 @@ The dictionary from GAP3/Chevie is as follows:
      W.matgens[i]                          →  matX(W,i)
      W.N                                   →  nref(W)
      W.orbitRepresentative[i]              →  simple_representative(W,i) 
+     W.orbitRepresentativeElement          →  simple_conjugating_element(W,i)
 ```

@@ -108,9 +108,10 @@ end;
 testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
+# to use as a stand-alone module uncomment the next line
+# export coefficients, root
 export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Gapjm: Gapjm, coefficients, degree # for extending coefficients, root
 using ..ModuleElts: ModuleElts, ModuleElt, norm!
 using ..Util: fromTeX, bracket_if_needed, constant
 using ..Util: factor, prime_residues, phi, gcd_repr
@@ -161,7 +162,7 @@ function zumbroich_basis(n::Int)::Vector{Int}
   end
 end
 
-function Gapjm.coefficients(c::Cyc{T})where T
+function coefficients(c::Cyc{T})where T
   res=zeros(T,conductor(c))
 if use_list
   for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[p] end
@@ -815,14 +816,29 @@ function Base.show(io::IO,q::Quadratic)
   print(io,rq)
 end
 
-function Gapjm.root(x::Cyc,n::Number=2)
+const inforoot=true
+function root(x::Integer,n::Number=2)
+  if n==1 || x==1 return x
+  elseif n==2
+    res=ER(x)
+    if inforoot  println("root($x,$n)=$res") end
+    return res
+  elseif x==-1 && n%2==1 return x
+  else
+    error("root($x,$n) not implemented")
+  end
+end
+
+root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
+
+function root(x::Cyc,n::Number=2)
   r=Root1(x)
   n1=Int(n)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
     x=Real(x)
     if denominator(x)>1 return nothing end
-    return Gapjm.root(Int(x),n)
+    return root(Int(x),n)
   end
   d=denominator(r.r)
   j=1

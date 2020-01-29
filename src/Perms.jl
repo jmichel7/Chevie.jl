@@ -111,13 +111,8 @@ See individual documentations.
 """
 module Perms
 
-# to use as a stand-alone module replace the following 5 lines by
+# to use as a stand-alone module uncomment the next line
 # export degree, restricted, orbit, orbits
-using Gapjm, ..Groups
-import ..Gapjm.degree
-import ..Gapjm.restricted
-import ..Groups.orbit
-import ..Groups.orbits
 
 export Perm, largest_moved_point, cycles, cycletype, order, sign,
   @perm_str, smallest_moved_point, reflength, permuted

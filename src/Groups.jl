@@ -28,11 +28,13 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 ```
 """
 module Groups
-using ..Gapjm # for gens, minimal_words
+# to use as a stand-alone module uncomment the next line
+# export word, elements, kernel
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes
 
+using ..Util: gets
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
@@ -211,13 +213,13 @@ function minimal_words(G::Group)
 end
 
 "word(G::Group,w): a word in  gens(G) representing element w of G"
-Gapjm.word(G::Group,w)=minimal_words(G)[w]
+word(G::Group,w)=minimal_words(G)[w]
 
 "elements(G::Group): the list of elements of G"
-Gapjm.elements(G::Group)=collect(keys(minimal_words(G)))
+elements(G::Group)=collect(keys(minimal_words(G)))
 
 "length(G::Group): the number of elements of G"
-Gapjm.length(G::Group)=length(minimal_words(G))
+Base.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do G
@@ -257,7 +259,7 @@ function Base.show(io::IO,h::Hom)
   print(io,"Hom(",h.source,"→ ",h.target,";",gens(h.source),"↦ ",h.images)
 end
 
-function Gapjm.kernel(h::Hom)
+function kernel(h::Hom)
   if all(isone,h.images) return h.source
   elseif length(h.source)==length(Group(h.images)) 
     return Group(empty(gens(h.source)))
@@ -271,5 +273,12 @@ end
 (h::Hom)(w)=isone(w) ? one(h.target) : prod(h.images[word(h.source,w)])
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
+
+struct GroupofAny{T}<:Group{T}
+  gens::Vector{T}
+  prop::Dict{Symbol,Any}
+end
+
+Group(a::AbstractVector{T}) where T=GroupofAny(a,Dict{Symbol,Any}())
 
 end

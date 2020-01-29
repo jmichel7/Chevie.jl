@@ -42,17 +42,16 @@ Pol{Int64}: q⁸-q⁴+1
 see also the individual documentation of divrem, divrem1, gcd.
 """
 module Pols
-export Pol, valuation, cyclotomic_polynomial, divrem1, shift, positive_part,
+# to use as a stand-alone module uncomment the next line
+# export root, degree, valuation
+export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit
 
-using ..Gapjm: Gapjm, root # for degree, root
 using ..Util: bracket_if_needed, fromTeX, divisors
 using ..Cycs: Cyc
 using ..Combinat: evalpoly
 
-const var=Ref(:x)
-varname(a::Symbol)=(var[]=a)
-varname()=var[]
+const varname=Ref(:x)
 
 struct Pol{T}
   c::Vector{T}
@@ -62,7 +61,7 @@ end
 Pol(a::Number)=iszero(a) ? zero(Pol{typeof(a)}) : Pol([a],0)
 
 function Pol(t::Symbol)
-  varname(t)
+  varname[]=t
   Base.eval(Main,:($t=Pol([1],1)))
 end
 
@@ -101,7 +100,7 @@ Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
 Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 
-Gapjm.degree(p::Pol)=length(p.c)-1+p.v
+degree(p::Pol)=length(p.c)-1+p.v
 
 valuation(p::Pol)=p.v
 
@@ -159,7 +158,7 @@ function Base.show(io::IO,p::Pol)
       c=sprint(show,c; context=io)
       deg=i+p.v-1
       if !iszero(deg) 
-        mon=String(var[])
+        mon=String(varname[])
         if deg!=1
            if repl || TeX mon*=(1<deg<10 ? "^$deg" : "^{$deg}")
            else mon*= "^$deg"
@@ -324,7 +323,7 @@ function cyclotomic_polynomial(n::Integer)
   end
 end
 
-function Gapjm.root(x::Pol,n::Number=2)
+function root(x::Pol,n::Number=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
     error("root($(repr(x;context=:limit=>true)),$n) not implemented") 

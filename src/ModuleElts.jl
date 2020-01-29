@@ -54,8 +54,6 @@ julia> show(IOContext(stdout,:showbasis=>(io,s)->String(s)),a)
 """
 module ModuleElts
 
-using Gapjm
-
 export ModuleElt, norm! # data structure
 #------------- implementation with Dicts ----------------------
 const usedict=false

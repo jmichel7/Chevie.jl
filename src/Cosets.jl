@@ -189,8 +189,16 @@ a  reductive subgroup of maximal rank.  For example, if `Wϕ` corresponds to
 the  algebraic group `𝐆` and  `H` is the trivial  subgroup, the coset `Hwϕ`
 corresponds to a maximal torus `𝐓_w` of type `w`.
 
-|    gap> CoxeterSubCoset(2B2,[],Group(2B2).1);
-    (q²-ER(2)q+1)|
+```julia-repl
+julia> W=coxgroup(:Bsym,2)
+Bsym₂
+
+julia> WF=spets(W,Perm(1,2))
+²Bsym₂
+
+julia> subspets(WF,Int[],W(1))
+.Φ‴₈
+```
 
 A subgroup `H` which is a parabolic subgroup corresponds to a rational form
 of  a Levi  subgroup of  `𝐆`. The  command 'Twistings'  gives all rational
@@ -201,12 +209,12 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[1])
-2-element Array{Gapjm.Cosets.FCC{Int16,Int64,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
  Ã₁Φ₁
  Ã₁Φ₂
 
 julia> twistings(W,[2])
-2-element Array{Gapjm.Cosets.FCC{Int16,Int64,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
  A₁Φ₂
  A₁Φ₁
 ```
@@ -222,15 +230,15 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[2,4])
-2-element Array{Gapjm.Cosets.FCC{Int16,Int64,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,Gapjm.Weyl.FCSG{Int16,Int64,PRSG{Int64,Int16}}},1}:
  (A₁A₁)
  A₁×A₁ 
 ```
 """
 module Cosets
 
-using Gapjm
-export twistings, spets, Frobenius, Spets, torusfactors
+using ..Gapjm
+export twistings, spets, Frobenius, Spets, torusfactors, subspets
 
 abstract type Coset{TW} end
 
@@ -251,7 +259,7 @@ twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
   spets.(Ref(reflection_subgroup(W,J)),twisting_elements(W,J))
 
 #-------------- finite coxeter cosets ---------------------------------
-struct FCC{T,T1,TW<:FiniteCoxeterGroup{Perm{T},T1}}<:CoxeterCoset{TW}
+struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   phi::Perm{T}
   F::Matrix
   W::TW
@@ -259,8 +267,9 @@ struct FCC{T,T1,TW<:FiniteCoxeterGroup{Perm{T},T1}}<:CoxeterCoset{TW}
 end
 
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,matX(W,w))
+Base.parent(W::FCC)=W
 
-function spets(W::FiniteCoxeterGroup{Perm{T},T1},F::Matrix) where{T,T1}
+function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   perm=Perm{T}(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
@@ -269,7 +278,7 @@ end
 
 function torusfactors(WF::CoxeterCoset)
   M=PermRoot.baseX(WF.W.G)
-  M=convert.(Int,M*WF.F*inv(convert.(Cyc{Rational},M)))
+  M*=WF.F*inv(convert.(Cyc{Rational},M))
   r=length(gens(WF.W))
   M=M[r+1:end,r+1:end]
   if isempty(M) return CycPol(Pol([1],0)) end
@@ -313,5 +322,29 @@ function Frobenius(WF::CoxeterCoset)
 end
 
 Frobenius(w::Perm,phi)=w^phi
+
+#-------------- finite coxeter subcoset ---------------------------------
+struct FCSC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
+  phi::Perm{T}
+  F::Matrix
+  W::TW
+  prop::Dict{Symbol,Any}
+end
+
+function subspets(WF,I::AbstractVector{Int},w=one(WF.W))
+  RF=WF
+  WF=parent(WF)
+  phi=RF.phi/WF.phi
+  W=WF.W
+  if !(w in W) error(w," should be in ",W) end
+  phi=w*phi
+  R=reflection_subgroup(W,I)
+  tmp=Set(inclusion(R))
+  if Set(tmp.^(phi*WF.phi))!=tmp 
+    error("w*WF.phi does not normalize subsystem")
+  end
+  phi=reduced(R,phi*WF.phi)
+  FCSC(phi,matX(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+end
 
 end

@@ -61,9 +61,12 @@ fraction.
 
 """
 module Mvps
-using Gapjm
-export Mvp, @Mvp, variables, coefficients, value
+# to use as a stand-alone module uncomment the next line
+# export degree, root, coefficients, valuation
+export Mvp, Monomial, @Mvp, variables, value
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
+using ..ModuleElts: ModuleElt, ModuleElts
+using ..Util: fromTeX
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
@@ -154,9 +157,9 @@ end
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
-Gapjm.degree(m::Monomial)=isone(m) ? 0 : sum(last.(m.d))
+degree(m::Monomial)=isone(m) ? 0 : sum(last.(m.d))
 
-function Gapjm.degree(m::Monomial,var::Symbol)
+function degree(m::Monomial,var::Symbol)
   for (v,d) in m.d
     if v>var return 0 end
     if v==var return d end
@@ -164,7 +167,7 @@ function Gapjm.degree(m::Monomial,var::Symbol)
   return 0
 end
 
-function Gapjm.root(m::Monomial,n::Integer=2)
+function root(m::Monomial,n::Integer=2)
  if !all(x->iszero(x%n),last.(m.d)) throw(InexactError(:root,Monomial,n)) end
  Monomial((k=>div(v,n) for (k,v) in m.d)...)
 end
@@ -261,8 +264,6 @@ Base.:*(b::Mvp, a::Number)=a*b
 Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
 Base.conj(a::Mvp)=Mvp(map(x->(x[1]=>conj(x[2])),a.d)...)
 
-Mvp(p::Pol)=p(Mvp(Pols.var[]))
-
 function Base.:^(x::Mvp, p::Real)
   if iszero(x) return x end
   p=Int(p)
@@ -303,8 +304,8 @@ julia> degree(a,:x)
 ```
 
 """
-Gapjm.degree(m::Mvp)=maximum(degree.(keys(m.d)))
-Gapjm.degree(m::Mvp,v::Symbol)=maximum(map(x->degree(x,v),keys(m.d)))
+degree(m::Mvp)=maximum(degree.(keys(m.d)))
+degree(m::Mvp,v::Symbol)=maximum(map(x->degree(x,v),keys(m.d)))
 
 """
 The `valuation` of an `Mvp` is the minimal degree of a monomial.
@@ -331,8 +332,8 @@ julia> valuation(a,:x)
 ```
 
 """
-Pols.valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
-Pols.valuation(m::Mvp,v::Symbol)=minimum(map(x->degree(x,v),keys(m.d)))
+valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
+valuation(m::Mvp,v::Symbol)=minimum(map(x->degree(x,v),keys(m.d)))
 
 """
   `coefficients(p::Mvp, var::Symbol)` 
@@ -368,7 +369,7 @@ The  same caveat is  applicable to 'coefficients'  as to values: the values
 are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
 represented as `Mvp`s, one should use `ScalMvp`.
 """
-function Gapjm.coefficients(p::Mvp,v::Symbol)
+function coefficients(p::Mvp,v::Symbol)
   if iszero(p) return Dict{PowType,typeof(p.d)}() end
   d=Dict{PowType,typeof(p.d)}()
   for (m,c) in p.d
@@ -503,7 +504,7 @@ function (p::Mvp)(;arg...)
   p
 end
 
-function Gapjm.root(p::Mvp,n::Real=2)
+function root(p::Mvp,n::Real=2)
   n=Int(n)
   if length(p.d)>1 throw(InexactError(:root,n,p)) end
   p=p.d.d[1]

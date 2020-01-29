@@ -7,8 +7,6 @@ The code is divided in sections  according to semantics.
 """
 module Util
 
-using Gapjm
-
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, # lists
   format, bracket_if_needed, ordinal, rshow, fromTeX, joindigits, # formatting
@@ -297,19 +295,6 @@ function gcd_repr(x,y)
   (q*fx, iszero(y) ? 0 : div(q * (f - fx * x), y ))
 end
 
-function Gapjm.root(x::Integer,n::Number=2)
-  if n==1 || x==1 return x
-  elseif n==2
-    res=ER(x)
-    if HasType.CHEVIE[:info]  println("root($x,$n)=$res") end
-    return res
-  elseif x==-1 && n%2==1 return x
-  else
-    error("root($x,$n) not implemented")
-  end
-end
-
-Gapjm.root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
 #--------------------------------------------------------------------------
 # written since should allow negative powers with inv
 #function Base.:^(a::T, p::Integer) where T
