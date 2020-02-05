@@ -183,7 +183,9 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions, AlgebraicCentre
+ dimension, with_inversions, AlgebraicCentre, standard_parabolic
+# to use as a stand-alone module uncomment the next line
+# export roots
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
@@ -397,7 +399,7 @@ end
  return the set of positive roots defined by the Cartan matrix C
  works for any finite Coxeter group
 """
-function PermRoot.roots(C::Matrix)
+function Gapjm.roots(C::Matrix)
   o=one(C)
   R=[o[i,:] for i in axes(C,1)] # fast way to get rows of one(C)
   j=1
@@ -455,7 +457,7 @@ function with_inversions(W,N)
   w=one(W)
   n=N
   while !isempty(n)
-    p=intersect(n,eachindex(gens(W)))
+    p=intersect(n,1:semisimplerank(W))
     if isempty(p) return nothing end
     r=reflection(W,p[1])
     n=restriction.(Ref(W),inclusion.(Ref(W),setdiff(n,[p[1]])).^r)
@@ -470,11 +472,11 @@ end
  Given parabolic H returns w such that H^w is a standard parabolic subgroup
  of W
 """
-function standard_parabolic(W::FiniteCoxeterGroup,hr)
+function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   if isempty(hr) return Perm() end
   b=W.rootdec[restriction(W)[hr]]
   heads=map(x->findfirst(y->!iszero(y),x),filter(!iszero,toL(echelon(toM(b))[1])))
-  b=vcat(W.rootdec[setdiff(eachindex(gens(W)),heads)],b)
+  b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
 # complete basis of I with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
    for x in v 
@@ -485,10 +487,13 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr)
   N=(1:W.N)[l]
 # find negative roots for associated order and make order standard
   w=with_inversions(W,N)
-  if issubset(hr.^w,inclusion(W,eachindex(gens(W)))) return w
+  if issubset(hr.^w,inclusion(W,1:semisimplerank(W))) return w
   else return nothing
   end
 end
+
+standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
+  standard_parabolic(W,inclusion(H)[1:semisimplerank(H)])
 
 """
 DescribeInvolution(W,w)
@@ -537,7 +542,7 @@ PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
 PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
-PermRoot.roots(W::FiniteCoxeterGroup)=roots(W.G)
+Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
@@ -549,6 +554,10 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   rootdec::Vector{Vector{T1}}
   N::Int
   prop::Dict{Symbol,Any}
+end
+
+function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
+  print(io,"FiniteCoxeterGroup{Perm{$T},$T1}")
 end
 
 "number of reflections of W"
@@ -743,6 +752,10 @@ struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   prop::Dict{Symbol,Any}
 end
 
+function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
+  print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")
+end
+
 CoxGroups.nref(W::FCSG)=W.N
 
 Base.parent(W::FCSG)=W.parent
@@ -862,7 +875,7 @@ Another  basic result about reflection subgroups  of Coxeter groups is that
 each  coset of  H in  W contains  a unique  element of  minimal length, see
 `reduced`.
 """
-function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{Int})where {T,T1}
+function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})where {T,T1}
   inclusion=sort!(vcat(orbits(reflection.(Ref(W),I),I)...))
   N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)
@@ -923,7 +936,7 @@ struct AdditiveSE<:SemisimpleElement
   W::FiniteCoxeterGroup
 end
 
-AdditiveSE(W::FiniteCoxeterGroup,v::Vector{Rational{Int}})=AdditiveSE(mod1.(v),W)
+AdditiveSE(W::FiniteCoxeterGroup,v::AbstractVector{Rational{Int}})=AdditiveSE(mod1.(v),W)
 
 Base.show(io::IO,a::SemisimpleElement)=print(io,"<",join(a.v,","),">")
 
@@ -934,7 +947,7 @@ Base.isone(a::AdditiveSE)=all(iszero,a.v)
 Base.hash(a::AdditiveSE, h::UInt)=hash(a.v, h)
 Base.:(==)(a::AdditiveSE, b::AdditiveSE)=a.v==b.v
 
-Perms.order(a::AdditiveSE)=lcm(denominator.(a.v))
+Gapjm.order(a::AdditiveSE)=lcm(denominator.(a.v))
 
 Base.:*(a::AdditiveSE,b::AdditiveSE)=AdditiveSE(a.W,mod1.(a.v .+ b.v))
 

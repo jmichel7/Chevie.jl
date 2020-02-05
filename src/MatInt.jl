@@ -261,7 +261,7 @@ BITLISTS_NFIM = [
 # * - possible non-zero entry in upper right corner...
 #				
 #
-DoNFIM = function (mat::Vector{Vector{Int}}, opt::Int)
+DoNFIM = function (mat::AbstractVector{<:AbstractVector{Int}}, opt::Int)
   if isempty(mat) mat=[Int[]] end
 # println("mat=$mat opt=$opt")
   opt = BITLISTS_NFIM[opt + 1]

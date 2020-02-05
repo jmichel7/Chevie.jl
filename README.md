@@ -16,7 +16,8 @@ make a pull request.
 
 ### Installing
 
-If you are new to Julia, to install this package, at the Julia command line:
+[For Julia novices]
+To install this package, at the Julia command line:
 
   *  enter package mode with ]
   *  do the command

@@ -67,7 +67,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export PermGroup, base, transversals, centralizers, symmetric_group, Coset
+export PermGroup, base, transversals, centralizers, symmetric_group
 
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
@@ -223,30 +223,28 @@ end
 Base.length(I::GroupProdIterator)=prod(length.(I.iterators))
 
 function Base.iterate(I::GroupProdIterator{T})where T
-  prod=one(eltype(T))
-  if isempty(I.iterators) return prod,Tuple{eltype(T),Int}[] end
-  state=map(I.iterators) do l
-    u=iterate(l)
-    if isnothing(u) return nothing end
-    prod*=first(u)
-    prod,last(u)
+  state=Tuple{eltype(T),Int}[]
+  n=one(eltype(T))
+  for it in I.iterators
+    u=iterate(it)
+    if isnothing(u) return u end
+    n*=first(u)
+    push!(state, (n,last(u)))
   end
-  prod::eltype(T),state::Vector{Tuple{eltype(T),Int}}
+  return n,state 
 end
 
 function Base.iterate(I::GroupProdIterator,state)
   for i in length(state):-1:1
     u=iterate(I.iterators[i],last(state[i]))
     if isnothing(u) continue end
-    p,st=u
-    state[i]= i==1 ? u : (first(state[i-1])*p,st)
+    state[i]= i==1 ? u : (first(state[i-1])*first(u),last(u))
     for j in i+1:length(state)
-      p,st=iterate(I.iterators[j])
-      state[j]=(first(state[j-1])*p,st)
+      u=iterate(I.iterators[j])
+      state[j]=(first(state[j-1])*first(u),last(u))
     end
     return first(state[end]),state
   end
-  return nothing
 end
 
 Base.eltype(::Type{GroupProdIterator{T}}) where T=eltype(T)
@@ -262,16 +260,16 @@ Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
 function Base.iterate(G::PermGroup)
   I=GroupProdIterator(reverse(values.(transversals(G))))
   u=iterate(I)
-  if isnothing(u) return u end
-  p,st=u
-  p,(I,st)
+  if !isnothing(u) 
+    first(u),(I,last(u))
+  end
 end
 
 function Base.iterate(G::PermGroup,(I,state))
   u=iterate(I,state)
-  if isnothing(u) return u end
-  p,st=u
-  p,(I,st)
+  if !isnothing(u) 
+    first(u),(I,last(u))
+  end
 end
 
 # elements is much faster than collect(G), should not be
@@ -283,53 +281,19 @@ function Gapjm.elements(G::PermGroup)
   end
   res
 end
-#------------------- cosets ----------------------------------------
-struct Coset{T,TW<:Group{T}}
-  w::T
-  G::TW
-end
 
-# computes "canonical" element of W.w
-function Coset(W::PermGroup,w)
+function reduced(W::PermGroup,phi)
   for i in eachindex(base(W))
     t=transversals(W)[i]
-    (kw,e)=minimum((k^w,e) for (k,e) in t)
-    w=e*w
+    (kw,e)=minimum((k^phi,e) for (k,e) in t)
+    phi=e*phi
   end
-  Coset(w,W)
+  phi
 end
 
-Base.cmp(a::Coset, b::Coset)=cmp(a.w,b.w)
-
-Base.isless(a::Coset, b::Coset)=cmp(a,b)==-1
-
-Base.:(==)(a::Coset, b::Coset)= cmp(a,b)==0
-
-Base.hash(a::Coset, h::UInt)=hash(a.w,h)
-
-Base.copy(C::Coset)=Coset(C.w,C.G)
-
-Base.one(C::Coset)=Coset(one(C.w),C.G)
-
-Base.inv(C::Coset)=Coset(C.G,inv(C.w))
-
-Base.:*(a::Coset,b::Coset)=Coset(a.G,a.w*b.w)
-
-Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
-
-Perms.order(a::Coset)=findfirst(i->isone(a^i),1:order(a.w))
-
-Base.show(io::IO,C::Coset)=print(io,C.G,".",C.w)
-
-struct CosetGroup{T,TW}<:Group{Coset{T,TW}}
-  gens::Vector{Coset{T,TW}}
-  prop::Dict{Symbol,Any}
+# computes "canonical" element of W.phi
+function Groups.Coset(W::PermGroup{T},phi::Perm{T})where T
+  Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
 end
-
-Groups.Group(g::Vector{Coset{T,TW}}) where {T,TW}=
-  CosetGroup(filter(!isone,g),Dict{Symbol,Any}())
-
-Base.:/(W::PermGroup,H::PermGroup)=Group(map(x->Coset(H,x),gens(W)))
 
 end

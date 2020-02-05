@@ -62,10 +62,16 @@ julia> CycPols.show_factors(24)
 ```
 """
 module CycPols
-using Gapjm, Memoize
 
-export CycPol, roots
+export CycPol
+# to use as a stand-alone module uncomment the next line
+# export roots, degree
 
+using ..ModuleElts: ModuleElt, norm!
+using ..Cycs: Root1, E, conductor, Cyc
+using ..Pols
+using ..Util: fromTeX, prime_residues, primitiveroot, phi
+using ..Gapjm
 import Primes
 
 struct CycPol{T}
@@ -77,7 +83,7 @@ end
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(r)=>m for (r,m) in v]))
 
-function PermRoot.roots(c::CycPol)
+function roots(c::CycPol)
   function f(e,m)
     if m<0 error("should be a true polynomial") end
     fill(e,m)
@@ -289,15 +295,15 @@ function CycPol(p::Pol{T})where T
  # lot of code to be as efficient as possible in all cases
   if iszero(p) return zero(CycPol{T})
   elseif length(p.c)==1 # p==ax^s
-    return CycPol(p.c[1],valuation(p))
+    return CycPol(p.c[1],Pols.valuation(p))
   elseif 2==count(!iszero,p.c) # p==ax^s+bx^t
     a=Root1(Cyc(-p.c[1]//p.c[end]))
-    if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
+    if a===nothing return CycPol(Pol(p.c,0),Pols.valuation(p)) end
     d=length(p.c)-1
     vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
-    return CycPol(p.c[end],valuation(p),ModuleElt(sort(vcyc)))
+    return CycPol(p.c[end],Pols.valuation(p),ModuleElt(sort(vcyc)))
   end
-  val=valuation(p)
+  val=Pols.valuation(p)
   p=Pol(p.c,0)
   vcyc=zero(ModuleElt{Root1,Int})
 

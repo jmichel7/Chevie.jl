@@ -12,6 +12,19 @@ export getp, gets, # helpers for objects with a Dict of properties
   format, bracket_if_needed, ordinal, rshow, fromTeX, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
 
+export toL, toM # convert Gap matrices <-> Julia matrices
+export ds # dump struct
+#--------------------------------------------------------------------------
+toL(m)=collect(eachrow(m)) # to Gap
+toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
+
+function ds(s)
+  println(typeof(s),":")
+  for f in fieldnames(typeof(s))
+    println(f,"=",getfield(s,f))
+  end
+end
+
 #--------------------------------------------------------------------------
 """
   a variant of get! for objects O which have a Dict of properties named prop.

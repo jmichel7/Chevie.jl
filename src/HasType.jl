@@ -16,33 +16,25 @@ CHEVIE[:info]=false
 # extensions to get closer to GAP semantics
 Base.:*(a::Array,b::Pol)=a .* b
 Base.:*(a::Pol,b::Array)=a .* b
-Base.:*(a::Array,b::Mvp)=a .* b
-Base.:*(a::Mvp,b::Array)=a .* b
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
-Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
-Base.:-(a::AbstractVector,b::Number)=a .- b
-Base.:+(a::Integer,b::AbstractVector)=a .+ b
-Base.:+(a::AbstractArray,b::Number)=a .+ b
+Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
-Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Pol)=a ./ b
+Base.://(a::AbstractArray,b::Pol)=a .// b
+Base.:*(a::Array,b::Mvp)=a .* b
+Base.:*(a::Mvp,b::Array)=a .* b
+Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
-Base.://(a::AbstractArray,b::Pol)=a .// b
-Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
+Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
 Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*E(1))*toM(m)*toM(n))
 Base.inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
-Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
-Base.isless(a::Array,b::Number)=true
-Base.isless(b::Number,a::Array)=false
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 Base.length(a::Symbol)=length(string(a))
-Base.copy(x::Char)=x
 
 function chevieget(t::Symbol,w::Symbol)
   if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
@@ -362,7 +354,7 @@ end
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
-include("gap3support.jl")
+include("../tools/gap3support.jl")
 
 function Collected(v)
   d=groupby(v,v)

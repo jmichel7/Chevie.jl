@@ -73,7 +73,7 @@ function nullspace(m::Matrix)
 end
 
 function det(A::Matrix)
- if size(A,1)==1 return A[1,1] end
+  if size(A,1)==1 return A[1,1] end
   sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
 end
 
@@ -86,7 +86,7 @@ function Det(m)
   if n==1 return m[1,1]
   elseif n==2 return m[1,1]*m[2,2]-m[1,2]*m[2,1]
   elseif n==3
-    return sum(p->prod(i->m[i,i^p],1:n)*sign(p),collect(symmetric_group(n)))
+    return sum(p->prod(i->m[i,i^p],1:n)*sign(p),elements(symmetric_group(n)))
   end
   function compl(m,i,j)
     v=axes(m,1)

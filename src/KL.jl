@@ -121,7 +121,7 @@ julia> W=coxgroup(:H,3)
 H₃
 
 julia> c=LeftCells(W)
-22-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Cyc{Int64},PRG{Cyc{Int64},Int16}}},1}:
+22-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Cyc{Int64}}},1}:
  LeftCell<H₃: duflo= character=φ₁‚₀>
  LeftCell<H₃: duflo=123 character=φ₁‚₁₅>
  LeftCell<H₃: duflo=(15) character=φ₅‚₅>
@@ -390,10 +390,10 @@ julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
 hecke(B₃,v²,rootpara=v)
 
 julia> C=Cpbasis(H)
-(::Gapjm.KL.var"#f#10"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::Gapjm.KL.var"#f#10"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::Gapjm.HeckeAlgebras.var"#f#35"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 4 methods)
+(::Gapjm.HeckeAlgebras.var"#f#35"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
@@ -568,7 +568,7 @@ julia> Pol(:q);H=hecke(W,q^2;rootpara=q)
 hecke(H₃,q²,rootpara=q)
 
 julia> representation(c,H)
-3-element Array{Array{Array{Pol{Int64},1},1},1}:
+3-element Array{Array{SubArray{Pol{Int64},1,Array{Pol{Int64},2},Tuple{Int64,Base.Slice{Base.OneTo{Int64}}},true},1},1}:
  [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]
  [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]
  [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]
@@ -718,7 +718,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> LeftCells(W)
-4-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
+4-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
  LeftCell<G₂: duflo= character=φ₁‚₀>
  LeftCell<G₂: duflo=12 character=φ₁‚₆>
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
@@ -737,7 +737,7 @@ which  are in the `i`-th two-sided cell,  that is whose character is in the
 ```julia-repl
 julia> W=coxgroup(:G,2);
 julia> LeftCells(W,1)
-2-element Array{LeftCell{Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},1}:
+2-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
  LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
 ```

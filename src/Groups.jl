@@ -29,10 +29,10 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 """
 module Groups
 # to use as a stand-alone module uncomment the next line
-# export word, elements, kernel
+# export word, elements, kernel, order
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
-  position_class, fusion_conjugacy_classes
+  position_class, fusion_conjugacy_classes, Coset
 
 using ..Util: gets
 #--------------general groups and functions for "black box groups" -------
@@ -228,7 +228,7 @@ function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
     elseif length(G)>10000
       error("length(G)=",length(G),": should call Gap4")
     else
-      orbits(G,collect(G))
+      orbits(G,elements(G))
     end
   end
 end
@@ -280,5 +280,83 @@ struct GroupofAny{T}<:Group{T}
 end
 
 Group(a::AbstractVector{T}) where T=GroupofAny(a,Dict{Symbol,Any}())
+
+#------------------- cosets ----------------------------------------
+# for now normal cosets (phi normalizes G)
+abstract type Coset{TW<:Group} end
+
+struct CosetofAny{T,TW<:Group{T}}<:Coset{TW}
+  phi::T
+  G::TW
+  prop::Dict{Symbol,Any}
+end
+
+Coset(G::Group{T},phi::T) where T=CosetofAny(phi,G,Dict{Symbol,Any}())
+
+Group(W::Coset)=W.G
+
+(W::Coset)(x...)=element(Group(W),x...)*W.phi
+
+Base.cmp(a::Coset, b::Coset)=cmp(a.phi,b.phi)
+
+Base.isless(a::Coset, b::Coset)=cmp(a,b)==-1
+
+Base.:(==)(a::Coset, b::Coset)= cmp(a,b)==0
+
+Base.hash(a::Coset, h::UInt)=hash(a.phi,h)
+
+Base.copy(C::Coset)=Coset(Group(C),C.phi)
+
+Base.one(C::Coset)=Coset(Group(C),one(C.phi))
+
+Base.inv(C::Coset)=Coset(Group(C),inv(C.phi))
+
+Base.length(C::Coset)=length(Group(C))
+
+Base.:*(a::Coset,b::Coset)=Coset(Group(a),a.phi*b.phi)
+
+Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                               Base.power_by_squaring(inv(a),-n)
+
+order(a::Coset)=findfirst(i->isone(a^i),1:order(a.phi))
+
+Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
+
+struct CosetGroup{TW}<:Group{Coset{TW}}
+  gens::Vector{Coset{TW}}
+  prop::Dict{Symbol,Any}
+end
+
+Groups.Group(g::Vector{Coset})=CosetGroup(filter(!isone,g),Dict{Symbol,Any}())
+
+Base.:/(W::Group,H::Group)=Group(map(x->Coset(H,x),gens(W)))
+
+elements(C::Coset)=C.phi .* elements(Group(C))
+
+function class_reps(G::Coset{Group{T}})::Vector{T} where T
+  gets(G,:classreps) do G
+    first.(conjugacy_classes(G))
+  end
+end
+
+function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
+  gets(G,:classes) do G
+    if haskey(G.prop,:classreps)
+      map(x->orbit(Group(G),x),class_reps(G))
+    elseif length(G)>10000
+      error("length(G)=",length(G),": should call Gap4")
+    else
+      orbits(Group(G),elements(G))
+    end
+  end
+end
+
+function position_class(G::Coset,g)
+  findfirst(c->g in c,conjugacy_classes(G))
+end
+
+function fusion_conjugacy_classes(H::Coset,G::Coset)
+  map(x->position_class(G,x),class_reps(H))
+end
 
 end

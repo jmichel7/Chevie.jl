@@ -253,7 +253,7 @@ julia> b^d
 14.143
 
 julia> centralizer_generators(b)
-3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  21.1         
  321432.213243
  4
@@ -262,7 +262,7 @@ julia> C=conjcat(b,:ss)
 category with 10 objects and 32 generating maps
 
 julia> C.obj
-10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  1214.4
  214.14
  124.24
@@ -301,7 +301,7 @@ julia> C=conjcat(b)
 category with 2 objects and 6 generating maps
 
 julia> C.obj
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  1214.4
  1343.1
 ```
@@ -433,7 +433,7 @@ julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1},1}:
  [.]   
  [1, 3]
  [13]  
@@ -443,7 +443,7 @@ julia> B=DualBraidMonoid(W)
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1},1}:
+4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1},1}:
  [.]                     
  [1, 2, 3, 4, 5, 6]      
  [12, 13, 15, 25, 34, 45]
@@ -1068,12 +1068,12 @@ julia> conjcat(w)
 category with 2 objects and 4 generating maps
 
 julia> conjcat(w).obj
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  32143
  21324
 
 julia> conjcat(w,:ss).obj
-4-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+4-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  32143
  13243
  21432
@@ -1119,7 +1119,7 @@ julia> WF=spets(W,Perm(1,2,4))
 ³D₄
 
 julia> F=Frobenius(WF)
-(::Gapjm.Cosets.var"#f#15"{Gapjm.Cosets.FCC{Int16,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 2 methods)
+(::Gapjm.Cosets.var"#f#25"{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
 
 julia> c=B(3,4,3,3,2,4)
 343.324
@@ -1184,7 +1184,7 @@ julia> w=B(4,4,4)
 4.4.4
 
 julia> cc=centralizer_generators(w)
-8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  (31432)⁻¹231432
  1              
  (2)⁻¹34.432    
@@ -1195,7 +1195,7 @@ julia> cc=centralizer_generators(w)
  2              
 
 julia> shrink(cc)
-5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  4            
  2            
  1            
@@ -1203,13 +1203,13 @@ julia> shrink(cc)
  (3243)⁻¹13243
 
 julia> centralizer_generators(w,:cyc)
-Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}[4])
+Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}[4])
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)))
-(::Gapjm.Cosets.var"#f#15"{Gapjm.Cosets.FCC{Int16,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}}) (generic function with 2 methods)
+(::Gapjm.Cosets.var"#f#25"{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
 
 julia> centralizer_generators(w,:sc,F)
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}}},1}:
+2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  124      
  312343123
 ```

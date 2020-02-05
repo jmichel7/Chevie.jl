@@ -140,12 +140,14 @@ the  graded multiplicity  of a  character `φ`  of `W`  in the graded module
 """
 module PermRoot
 
-export PermRootGroup, PRG, PRSG,
+export PermRootGroup, PRG, PRSG, catalan,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
  bipartite_decomposition, torus_order, rank, matX,
- roots, coroots, baseX, semisimplerank
+ coroots, baseX, semisimplerank
+# to use as a stand-alone module uncomment the next line
+# export roots
 
 using Gapjm
 
@@ -856,5 +858,72 @@ matX(W::PRSG,w)=matX(parent(W),w)
 
 reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
    reflection_subgroup(parent(W),inclusion(W)[I])
+#-------------------------------------------------
+"""
+Catalan(n) `n`-th Catalan Number
+
+```julia-repl
+julia> catalan(8)
+1430
+```
+"""
+catalan(n::Int)=Int(prod(i->(n+i)//i,2:n))
+
+# Catalan(W [,m] [,q]]) [q][Fuss-]Catalan numbers of W
+"""
+`Catalan(W)`
+
+returns the Catalan Number of the irreducible complex reflection group `W`.
+For well-generated groups, this number is equal to the number of simples in
+the  dual  Braid  monoid.  For  other  groups  it was defined by Gordon and
+Griffeth  (cite{gg12}).  For  Weyl  groups,  it  also counts the number of
+antichains of roots.
+
+```julia-repl
+julia> catalan(coxgroup(:A,7))
+1430
+```
+
+`Catalan(W,i)`
+
+returns   the  `i`-th  Fuss-Catalan  Number   of  the  irreducible  complex
+reflection  group `W`. For  well-generated groups, this  number is equal to
+the  number of chains  `s₁,…,sᵢ` of simples  in the dual  monoid where `sⱼ`
+divides  `sⱼ₊₁`. For these groups, it is also equal to `∏ⱼ(ih+dⱼ)/dⱼ` where
+the  product runs over the reflection degrees  of `W`, and where `h` is the
+Coxeter  number of `W`. For non-well generated groups, the definition is in
+cite{gg12}.
+
+```julia-repl
+julia> catalan(ComplexReflectionGroup(7),2)
+16//1
+```
+
+`Catalan(W,q)`, resp. `Catalan(W,i,q)`
+
+where  `q`  is  a  variable  (an  indeterminate  or  an  'Mvp') returns the
+`q`-Catalan number (resp. the `i`-th `q`-Fuss Catalan number) of `W`. Again
+the definitions in general are in cite{gg12}.
+
+```julia-repl
+julia> catalan(ComplexReflectionGroup(7),2,q)
+Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1
+```
+"""
+function catalan(W,m=1,q=1)
+  if length(refltype(W))>1 error(W," should be irreducible") end
+  d=sort(degrees(W))
+  d=filter(x->x!=1,d)
+  h=div(sum(d)+sum(codegrees(W)),length(d))
+  f(i)=sum(j->q^j,0:i-1)
+  if length(d)==length(gens(W)) return Int(prod(x->f(m*h+x)//f(x),d)) end
+  ci=charinfo(W)
+  if haskey(ci,:opdam) opdam=ci[:opdam]^-1 else opdam=Perm() end
+  ct=toL(CharTable(W).irr)
+  complex=Perm(ct,conj(ct))
+  fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
+  fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
+  prod(map((e,d)->f(m*h+e)//f(d),fd,d))
+end
 
 end

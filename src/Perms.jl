@@ -112,9 +112,9 @@ See individual documentations.
 module Perms
 
 # to use as a stand-alone module uncomment the next line
-# export degree, restricted, orbit, orbits
+# export degree, restricted, orbit, orbits, order
 
-export Perm, largest_moved_point, cycles, cycletype, order, sign,
+export Perm, largest_moved_point, cycles, cycletype,
   @perm_str, smallest_moved_point, reflength, permuted
 
 """

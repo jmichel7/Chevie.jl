@@ -62,39 +62,30 @@ module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-export coefficients, degree, degrees, elements, kernel, restricted, root, 
-       words, word, valuation
+# All  the glue  code below  should not  exist: extending e.g. Gapjm.degree
+# instead  of just exporting degree from Pols  and Perms is a horrible hack
+# forced  by the unpleasant Julia rules  not merging methods from different
+# modules.
+# 
+# This  way both Pols  and Perms can  work together only  as part of Gapjm.
+# Otherwise they could not work together.
+# 
+# If degree  was in  Base there  would be  no problem, both importing from
+# Base.
+export coefficients, degree, degrees, elements, kernel, order, restricted,
+       root, roots, valuation, words, word
 function coefficients end
 degree(a::Number)=0
 function degrees end
 function elements end
 function kernel end
+function order end
 function restricted end
 function root end
+function roots end
 function valuation end
 function words end
 function word end
-"""
-This  should  not  exist:  extending  e.g.  Gapjm.degree  instead  of  just
-exporting  degree from  Pols and  Perms is  a horrible  hack forced  by the
-unpleasant Julia rules not merging methods from different modules.
-
-This  way both Pols and Perms can work together only as part of Gapjm.
-Otherwise they could not work together.
-
-It degree was in Base there would be no problem, both importing from Base.
-"""
-
-export toL, toM # convert Gap matrices <-> Julia matrices
-toL(m)=[m[i,:] for i in axes(m,1)] # to Gap
-toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m))     # to julia
-export ds # dump struct
-function ds(s)
-  println(typeof(s),":")
-  for f in fieldnames(typeof(s))
-    println(f,"=",getfield(s,f))
-  end
-end
 
 include("Util.jl")
 @reexport using .Util
@@ -105,9 +96,11 @@ include("Groups.jl")
 word(G::Group,x...)=Groups.word(G,x...)
 elements(G::Group)=Groups.elements(G)
 kernel(h::Hom)=Groups.kernel(h)
+order(C::Coset)=Groups.order(C)
 include("Perms.jl")
 @reexport using .Perms
 degree(a::Perm)=Perms.degree(a)
+order(p::Perm)=Perms.order(p)
 restricted(a::Perm,l::AbstractVector)=Perms.restricted(a,l)
 Groups.orbit(a::Perm,x...)=Perms.orbit(a,x...)
 Groups.orbits(a::Perm,x...)=Perms.orbits(a,x...)
@@ -128,7 +121,7 @@ valuation(p::Pol,x...)=Pols.valuation(p,x...)
 root(p::Pol,x...)=Pols.root(p,x...)
 include("Mvps.jl")
 @reexport using .Mvps
-degree(p::Monomial,x...)=Mvps.degree(p,x...)
+degree(p::Mvps.Monomial,x...)=Mvps.degree(p,x...)
 degree(p::Mvp,x...)=Mvps.degree(p,x...)
 coefficients(p::Mvp,x...)=Mvps.coefficients(p,x...)
 root(r::Monomial,x...)=Mvps.root(r,x...)
@@ -137,12 +130,16 @@ valuation(p::Mvp,x...)=Mvps.valuation(p,x...)
 Mvp(p::Pol)=p(Mvp(Pols.varname[]))
 include("PermRoot.jl")
 @reexport using .PermRoot
+roots(W::PRG)=PermRoot.roots(W)
+roots(W::PRSG)=PermRoot.roots(W)
 include("GLinearAlgebra.jl")
 @reexport using .GLinearAlgebra
 include("CoxGroups.jl")
 @reexport using .CoxGroups
 include("Weyl.jl")
 @reexport using .Weyl
+#roots(W::FiniteCoxeterGroup)=Weyl.roots(W)
+#roots(C::Matrix)=Weyl.roots(C)
 include("Cosets.jl")
 @reexport using .Cosets
 include("Chars.jl")
@@ -155,6 +152,8 @@ include("KL.jl")
 @reexport using .KL
 include("CycPols.jl")
 @reexport using .CycPols
+roots(c::CycPol)=CycPols.roots(c)
+#degree(c::CycPol)=CycPols.degree(c)
 include("Symbols.jl")
 @reexport using .Symbols
 include("Garside.jl")
@@ -169,4 +168,6 @@ include("Uch.jl")
 @reexport using .Uch
 include("Ucl.jl")
 @reexport using .Ucl
+include("Eigenspaces.jl")
+@reexport using .Eigenspaces
 end

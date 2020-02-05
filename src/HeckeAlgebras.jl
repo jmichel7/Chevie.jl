@@ -89,7 +89,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int16},Int64,Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}},2}:
+6×6 Array{HeckeTElt{Perm{Int16},Int64,FiniteCoxeterGroup{Perm{Int16},Int64}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -377,6 +377,7 @@ function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   end
   f(w::Vector{<:Integer})=f(w...)
   f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
+# Base.show(io::IO,t::Type{f})=print(io,"Tbasis($H)")
   f(h::HeckeElt)=Tbasis(h)
 end
 

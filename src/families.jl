@@ -311,16 +311,16 @@ The  elements of the family are in bijection  with the set `𝓜 (Γ)` of pairs
 `(x,χ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `χ` is an irreducible
 complex-valued   character  of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,χ)`  is
 associated  an eigenvalue of Frobenius defined by `ω_ρ:=χ(x)/χ(1)`. Lusztig
-then defines a Fourier matrix `T` whose coefficient is given, for `ρ=(x,χ)`
+then defines a Fourier matrix `S₀` whose coefficient is given, for `ρ=(x,χ)`
 and `ρ'=(x', χ')`, by:
 
-`T_{ρ,ρ'}:=#C_Γ(x)⁻¹ ∑_{ρ_1=(x_1,χ_1)}χ̄_1(x)χ(y_1)`
+`S₀_{ρ,ρ'}:=#C_Γ(x)⁻¹ ∑_{ρ₁=(x₁,χ₁)}χ̄₁(x)χ(y₁)`
 
-where the sum is over all pairs `ρ_1∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
-and  such that `y_1∈  C_Γ(x)`. This coefficient  also represents the scalar
+where the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
+and  such that `y₁∈  C_Γ(x)`. This coefficient  also represents the scalar
 product `⟨ρ,ρ'⟩_{𝐆^F}` of the corresponding unipotent characters.
 
-A  way  to  understand  the  formula  for  `T_{ρ,ρ'}` better is to consider
+A  way  to  understand  the  formula  for  `S₀_{ρ,ρ'}` better is to consider
 another  basis of the complex  vector space with basis  `𝓜 (Γ)`, indexed by
 the  pairs  `(x,y)`  taken  up  to  `Γ`-conjugacy,  where  `x`  and `y` are
 commuting  elements  of  `Γ`.  This  basis  is  called  the basis of Mellin
@@ -328,30 +328,30 @@ transforms, and given by:
 
 `(x,y)=∑_{χ∈ Irr(C_Γ(x))}χ(y)(x,χ)`
 
-In  the  basis  of  Mellin  transforms,  the  linear  map  `T`  is given by
-`(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation which sends
-`ρ`   to  `ω_ρρ`  becomes   `(x,y)↦(x,xy)`.  These  are
-particular  cases of the  permutation representation of  `GL_2(ℤ)` on the
-basis of Mellin transforms where
+In  the  basis  of  Mellin  transforms,  the  linear  map  `S₀` is given by
+`(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation  `T` which sends `ρ` to
+`ω_ρρ`   becomes  `(x,y)↦(x,xy)`.   These  are   particular  cases  of  the
+permutation  representation of `GL_2(ℤ)` on  the basis of Mellin transforms
+where
 `(begin{array}{cc}a&b;c&d{array})
 %begin{pmatrix}{cc}a&b;c&d{pmatrix}`
 acts by `(x,y)↦(x^ay^b,x^cy^d)`.
 
 Fourier  matrices in finite reductive groups  are given by the above matrix
-`T`.  But for non-rational Spetses, we use  a different matrix `S` which in
+`S₀`.  But for non-rational Spetses, we use  a different matrix `S` which in
 the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
-the  formula `S_{ρ,ρ'}`  differs from  the formula  for `T_{ρ,ρ'}`  in that
-there  is no complex conjugation of `χ_1`;  thus the matrix `S` is equal to
-`T`  multiplied on the right by the permutation matrix which corresponds to
-`(x,χ)↦(x,χ̄)`.  The advantage of the matrix `S`  over `T` is that the pair
-`S,Ω`  satisfies directly the axioms for a fusion algebra (see below); also
-the matrix `S` is symmetric, while `T` is Hermitian.
+the  formula `S_{ρ,ρ'}`  differs from  the formula  for `S₀_{ρ,ρ'}`  in that
+there  is no complex conjugation of `χ₁`;  thus the matrix `S` is equal to
+`S₀`  multiplied on the right by the permutation matrix which corresponds to
+`(x,χ)↦(x,χ̄)`.  The advantage of the matrix `S`  over `S₀` is that the pair
+`S,T`  satisfies directly the axioms for a fusion algebra (see below); also
+the matrix `S` is symmetric, while `S₀` is Hermitian.
 
 Thus there are two variants of 'DrinfeldDouble`:
 
 `DrinfeldDouble(<g>,rec(lusztig:=true))`
 
-returns  a family  containing Lusztig's  Fourier matrix  `T`, and  an extra
+returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and  an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
 `(x,χ)↦(x,χ̄)`,  which allows  to recover  `S`, as  well as  an extra field
 `:lusztig', set to 'true'.
@@ -368,7 +368,7 @@ The family record 'f' returned also has the fields:
 `:charLabels`: a list of labels describing the pairs `(x,χ)`, and thus also
 specifying in which order they are taken.
 
-`:fourierMat`: the Fourier matrix (the matrix `S` or `T` depending on the
+`:fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the
 call).
 
 `:eigenvalues`: the eigenvalues of Frobenius.
