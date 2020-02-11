@@ -88,17 +88,25 @@ function constant(a::AbstractVector)
 end
 
 #----------------------- Formatting -----------------------------------------
-const  sup=Dict(zip("-0123456789+()abcdefghijklmnoprstuvwxyz",
-                    "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ"))
-const  sub=Dict(zip("-0123456789,+()=aehijklmnoprstuvx",
-                    "₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
+const supchars  =
+ "-0123456789+()abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
+const unicodesup=
+ "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴿᵀᵁⱽᵂᵝᵞᵟᵋᶥᶿᵠᵡ"
+const supclass="["*supchars*"]"
+const sup=Dict(zip(supchars,unicodesup))
+const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ"
+const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ"
+const sub=Dict(zip(subchars,unicodesub))
+const subclass="["*subchars*"]"
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function TeXstrip(s::String)
   s=replace(s,r"\$"=>"")
   s=replace(s,r"\\varepsilon"=>"ε")
+  s=replace(s,r"\\beta"=>"β")
   s=replace(s,r"\\delta"=>"δ")
   s=replace(s,r"\\gamma"=>"γ")
+  s=replace(s,r"\\iota"=>"ι")
   s=replace(s,r"\\lambda"=>"λ")
   s=replace(s,r"\\phi"=>"φ")
   s=replace(s,r"\\Phi"=>"Φ")
@@ -106,6 +114,7 @@ function TeXstrip(s::String)
   s=replace(s,r"\\rho"=>"ρ")
   s=replace(s,r"\\sigma"=>"σ")
   s=replace(s,r"\\theta"=>"θ")
+  s=replace(s,r"\\chi"=>"χ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\otimes"=>"⊗")
   s=replace(s,r"\\tilde A"=>"Ã")
@@ -116,11 +125,11 @@ function TeXstrip(s::String)
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\!"=>"")
   s=replace(s,r"{}"=>"")
-  s=replace(s,r"_[-0-9,()+=aeh-pr-vx]"=>t->sub[t[2]])
-  s=replace(s,r"(_\{[-0-9,()+=aeh-pr-vx]*\})('*)"=>s"\2\1")
-  s=replace(s,r"_\{[-0-9,()+=aeh-pr-vx]*\}"=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,r"\^[-0-9,()a-op-z]"=>t->sup[t[2]])
-  s=replace(s,r"\^\{[-0-9,()a-op-z]*\}"=>t->map(x->sup[x],t[3:end-1]))
+  s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
+  s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
+  s=replace(s,Regex("_\\{$subclass*\\}")=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,Regex("\\^$supclass")=>t->sup[t[2]])
+  s=replace(s,Regex("\\^\\{$supclass*\\}")=>t->map(x->sup[x],t[3:end-1]))
   q(l)=l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : map(x->sup[x],"($l)")
   s=replace(s,r"''*"=>t->q(length(t)))
   s=replace(s,r"\{\+\}"=>"+")

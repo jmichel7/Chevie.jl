@@ -57,35 +57,35 @@ end
 
 function field(t::TypeIrred)
   if haskey(t,:orbit)
-    orderphi=order(t[:twist])
-    t=t[:orbit][1]
+    orderphi=order(t.twist)
+    t=t.orbit[1]
   else
     orderphi=1
   end
-  s=t[:series]
+  s=t.series
   if s in [:A,:B,:D] 
-     if orderphi==1 return (s,length(t[:indices]))
-     elseif orderphi==2 return (Symbol(2,s),length(t[:indices]))
+     if orderphi==1 return (s,PermRoot.rank(t))
+     elseif orderphi==2 return (Symbol(2,s),PermRoot.rank(t))
      elseif orderphi==3 return (Symbol("3D4"),)
      end
   elseif s in [:E,:F,:G]
-    if orderphi==1 return (Symbol(s,length(t[:indices])),) 
-    else return (Symbol(orderphi,s,length(t[:indices])),) 
+    if orderphi==1 return (Symbol(s,PermRoot.rank(t)),) 
+    else return (Symbol(orderphi,s,PermRoot.rank(t)),) 
     end
   elseif s==:ST 
     if haskey(t,:ST)
-      if orderphi!=1 return (Symbol(orderphi,"G",t[:ST]),)
-      elseif 4<=t[:ST]<=22 return (:G4_22,t[:ST])
-      else return (Symbol(string("G",t[:ST])),)
+      if orderphi!=1 return (Symbol(orderphi,"G",t.ST),)
+      elseif 4<=t.ST<=22 return (:G4_22,t.ST)
+      else return (Symbol(string("G",t.ST)),)
       end
     elseif orderphi!=1
-      return (:timp, t[:p], t[:q], t[:rank])
+      return (:timp, t.p, t.q, t.rank)
     else
-      return (:imp, t[:p], t[:q], t[:rank])
+      return (:imp, t.p, t.q, t.rank)
     end
   elseif s==:I 
-    return (orderphi==1 ? :I : :(2I),t[:bond])
-  else return (Symbol(string(s,length(t[:indices]))),) 
+    return (orderphi==1 ? :I : :(2I),t.bond)
+  else return (Symbol(string(s,PermRoot.rank(t))),) 
   end
 end
 
@@ -101,8 +101,8 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
   if o isa Function
 #   o(vcat(collect(d)[2:end],collect(extra))...)
     if haskey(t,:cartantype) && f in needcartantype
-#     println("args=",(d[2:end]...,extra...,t[:cartantype]))
-      o(d[2:end]...,extra...,t[:cartantype])
+#     println("args=",(d[2:end]...,extra...,t.cartantype))
+      o(d[2:end]...,extra...,t.cartantype)
      else o(d[2:end]...,extra...)
     end
   else o
@@ -213,7 +213,7 @@ end
 
 function Gapjm.degrees(t::TypeIrred)
   if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
-  d=getchev(t[:orbit][1],:ReflectionDegrees)
+  d=getchev(t.orbit[1],:ReflectionDegrees)
 # Let  t.scalar=[s_1,..,s_r],  where  r=length(t.orbit)  and  let  p be the
 # PhiFactor   of  t.twist  associated  to  the  reflection  degree  d_i  of
 # t.orbit[1].   If   G0   is   the   Spets  described  by  t.orbit[1],  and
@@ -222,17 +222,17 @@ function Gapjm.degrees(t::TypeIrred)
 # \zeta^{d_i}  times  that  of  G0;  and  by  spets  1.5  or [Digne-Michel,
 # parabolic A.1] those of an a-descent of scalars are
 # \zeta_a^j\zeta_i^{1/a} (all the a-th roots of \zeta_i).
-  if order(t[:twist])>1 
+  if order(t.twist)>1 
    f=getchev(t,:PhiFactors)
    if isnothing(f) return f end
   else f=fill(1,length(d))
   end
   if haskey(t,:scalar)
-    p=prod(t[:scalar]) 
+    p=prod(t.scalar) 
     f=[f[i]*p^d[i] for i in eachindex(d)]
   end
   f=collect(zip(d,f))
-  a=length(t[:orbit])
+  a=length(t.orbit)
   if a==1 return f end
   vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
@@ -248,25 +248,27 @@ function codegrees(t::TypeIrred)
   end
   d=getchev(t,:ReflectionCoDegrees)
   if isnothing(d)
-    d=getchev(t[:orbit][1],:ReflectionDegrees)
+    d=getchev(t.orbit[1],:ReflectionDegrees)
     a=argmax(d)
     d=reverse(d[a].-d)
-    if order(t[:twist])==1
+    if order(t.twist)==1
       f=fill(1,length(d))
     else
       f=getchev(t,:PhiFactors)
       if isnothing(f) return f end
       f=reverse(map(x->f[a]//x,f))
     end
+    d=zip(d,f)
+  elseif order(t.twist)==1
+    d=zip(d,fill(1,length(d)))
   end
   if haskey(t,:scalar)
-    p=prod(t[:scalar]) 
-    f=[f[i]*p^d[i] for i in eachindex(d)]
+    f=prod(t.scalar) 
+    d=[(deg,eps*f^deg) for (deg,eps) in d]
   end
-  f=collect(zip(d,f))
-  a=length(t[:orbit])
-  if a==1 return f end
-  vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
+  a=length(t.orbit)
+  if a==1 return d end
+  vcat(map(d)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
 end
 
 function codegrees(W::Group)
@@ -274,7 +276,7 @@ function codegrees(W::Group)
 end
 
 function codegrees(W::Spets)
-  vcat(map(x->[1,x],E.(-roots(torusfactors(W)))),codegrees.(refltype(W))...)
+  vcat(map(x->(-1,x),E.(-roots(torusfactors(W)))),codegrees.(refltype(W))...)
 end
 
 function diagram(W)
@@ -285,11 +287,11 @@ function diagram(W)
 end
 
 function WeightToAdjointFundamentalGroupElement(W,i)
-  t=First(refltype(W),t->i in t[:indices])
-  l=copy(t[:indices])
+  t=First(refltype(W),t->i in t.indices)
+  l=copy(t.indices)
   b=longest(W,l)*longest(W,setdiff(l,[i]))
   push!(l,maximum(findall(
-    i->all(j->j in t[:indices] || W.rootdec[i][j]==0,1:semisimplerank(W)),
+    i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
   eachindex(W.rootdec))))
   restricted(b,inclusion.(Ref(W),l))
 end
@@ -311,14 +313,14 @@ function weightinfo(W)
     else g=filter(i->sum(r[:decompositions][i])==1,
           eachindex(r[:minusculeCoweights])) # generators of fundamental group
       r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
-               t[:indices][r[:minusculeCoweights][g]])
+               t.indices[r[:minusculeCoweights][g]])
     end
     r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
     if !isempty(r[:moduli]) 
-      C=mod1.(inv(Rational.(cartan(t.prop))))
-      r[:csi][:,t[:indices]]=C[r[:minusculeCoweights][g],:]
-      r[:minusculeWeights]=t[:indices][r[:minusculeWeights]]
-      r[:minusculeCoweights]=t[:indices][r[:minusculeCoweights]]
+      C=mod1.(inv(Rational.(cartan(t))))
+      r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
+      r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
+      r[:minusculeCoweights]=t.indices[r[:minusculeCoweights]]
     end
     r[:csi]=toL(r[:csi])
     r

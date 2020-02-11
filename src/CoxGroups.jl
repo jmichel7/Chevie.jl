@@ -140,7 +140,7 @@ The file Weyl.jl defines coxgroup.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
-  longest, reduced, braid_relations, coxetermat, parabolic_representatives,
+  longest, braid_relations, coxetermat, parabolic_representatives,
   CoxSym, reduced_words
 
 export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
@@ -237,7 +237,7 @@ julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
  [1]   
 ```
 """
-function reduced(W::CoxeterGroup,w)
+function PermGroups.reduced(W::CoxeterGroup,w)
   while true
     i=firstleftdescent(W, w)
     if isnothing(i) return w end
@@ -262,7 +262,7 @@ julia> [word(W,w) for S in reduced(H,W) for w in S]
  [1, 2]
 ```
 """
-function reduced(H::CoxeterGroup,W::CoxeterGroup)
+function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup)
   res=[Set([one(W)])]
   while true
     new=reduced(H,W,res[end])
@@ -277,7 +277,7 @@ end
 reduced(H,W,S)
   The elements in W which are H-reduced of length i from the set S of length i-1
 """
-function reduced(H::CoxeterGroup,W::CoxeterGroup,S)
+function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,S)
   res=empty(S)
   for w in S
     for i in eachindex(gens(W))

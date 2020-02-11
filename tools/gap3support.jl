@@ -1,8 +1,9 @@
 # extensions to get closer to GAP semantics
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
 Base.:-(a::AbstractVector,b::Number)=a .- b
-Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:+(a::AbstractArray,b::Number)=a .+ b
+Base.:+(a::Integer,b::AbstractVector)=a .+ b
+Base.:-(a::Integer,b::AbstractVector)=a .- b
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Base.isless(a::Array,b::Number)=true
 Base.isless(b::Number,a::Array)=false
@@ -66,3 +67,5 @@ SPrint=string
 Sublist(a::Vector, b::AbstractVector)=a[b]
 Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
+TransposedMat(l::Vector{<:Vector})=collect.(zip(l...))
+

@@ -28,7 +28,7 @@ Chevie, they are objects combinatorially attached to a Coxeter coset.
 
 A  subset  of  the  unipotent  characters, the *principal series* unipotent
 characters,   can  be  described  in  an   elementary  way.  They  are  the
-constituents of `R_1`, or equivalently the characters of the virtual module
+constituents of `R₁`, or equivalently the characters of the virtual module
 defined  by  the  cohomology  of  `X_{𝐁₀}`,  which  is the discrete variety
 `(𝐆/𝐁₀)^F`; the virtual module reduces to the actual module
 `ℚ̄_ℓ[(𝐆/𝐁₀)^F]`.  Thus the Deligne-Lusztig induction `R_𝐓₀^𝐆(1)` reduces
@@ -53,20 +53,20 @@ To  understand the  decomposition of  Deligne-Lusztig characters,  and thus
 unipotent  characters,  is  is  useful  to  introduce  another set of class
 functions  which are parameterized  by irreducible characters  of the coset
 `Wφ`.  If  `χ`  is  such  a  character,  we  define  the associated *almost
-character* by: `R_χ=|W|⁻¹∑_{w∈ W}χ(wφ) R_w`. The reason to the name is that
+character* by: `Rᵪ=|W|⁻¹∑_{w∈ W}χ(wφ) R_w`. The reason to the name is that
 these  class  function  are  close  to irreducible characters: they satisfy
-`⟨R_χ, R_ψ⟩_{𝐆^F}=δ_{χ,ψ}`;  for  the  linear  and  unitary group they are
+`⟨Rᵪ, R_ψ⟩_{𝐆^F}=δ_{χ,ψ}`;  for  the  linear  and  unitary group they are
 actually  unipotent characters (up to sign in the latter case). They are in
 general  sum (with  rational coefficients)  of a  small number of unipotent
 characters  in  the  same  *Lusztig  family*  (see  "Families  of unipotent
-characters").  The degree of `R_χ` is a polynomial in `q` equal to the fake
+characters").  The degree of `Rᵪ` is a polynomial in `q` equal to the fake
 degree  of  the  character  `χ`  of  `Wφ`  (see  "Functions  for Reflection
 cosets").
 
 We  now describe the parameterization of unipotent characters when `W^φ=W`,
 thus  when the coset `Wφ` identifies with `W` (the situation is similar but
 a  bit more difficult to describe  in general). The (rectangular) matrix of
-scalar  products  `⟨ρ, R_χ⟩_{𝐆 ^F}`,  when  characters of `W` and unipotent
+scalar  products  `⟨ρ, Rᵪ⟩_{𝐆 ^F}`,  when  characters of `W` and unipotent
 characters  are arranged in the right  order, is block-diagonal with rather
 small blocks which are called *Lusztig families*.
 
@@ -77,7 +77,7 @@ the  unipotent  characters  in  the  family  are parameterized by the pairs
 `(x,θ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `θ` is an irreducible
 character  of  `C_Γ(x)`.  Further,  the  elements  of  `𝓕`  themselves  are
 parameterized  by a  subset of  such pairs,  and Lusztig  defines a pairing
-between  such pairs which computes the scalar product `⟨ρ, R_χ⟩_{𝐆^F}`. For
+between  such pairs which computes the scalar product `⟨ρ, Rᵪ⟩_{𝐆^F}`. For
 more details see "DrinfeldDouble".
 
 A  second parameterization  of unipotent  character is  via *Harish-Chandra
@@ -467,7 +467,7 @@ function UnipotentCharacters(W::Group)
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
-    H=reflection_subgroup(W,t[:indices])
+    H=reflection_subgroup(W,t.indices)
     for s in uc.harishChandra
      s[:levi]=inclusion(H)[s[:levi]]
      s[:relativeType][:indices]=inclusion(H)[s[:relativeType][:indices]]
@@ -768,7 +768,7 @@ represents the class (or `φ`-class) of that element.
 This  function  returns  the  <i>-th  almost  unipotent  character  of  the
 algebraic  group `𝐆` associated to the  Coxeter group or Coxeter coset <W>.
 If  `χ`  is  the  <i>-th  irreducible  character  of <W>, the <i>-th almost
-character  is  `R_χ=|W|⁻¹∑_{w∈  W}χ(w)  R_{𝐓_w}^𝐆(1)`,  where  `𝐓_w` is the
+character  is  `Rᵪ=|W|⁻¹∑_{w∈  W}χ(w)  R_{𝐓_w}^𝐆(1)`,  where  `𝐓_w` is the
 maximal torus associated to the conjugacy class (or `φ`-conjugacy class for
 a coset) of <w>.
 
@@ -851,20 +851,20 @@ representing the Lusztig induction `R_𝐋^𝐆` between unipotent characters.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-`DeligneLusztigLefschetz(<h>)`
+`DeligneLusztigLefschetz(h)`
 
-Here <h> is an element of a Hecke algebra associated to a Coxeter group <W>
+Here `h` is an element of a Hecke algebra associated to a Coxeter group `W`
 which  itself  is  associated  to  an  algebraic  group  `𝐆`. By results of
 Digne-Michel,  for  `g∈𝐆^F`,  the  number  of  fixed points of `F^m` on the
 Deligne-Lusztig variety associated to the element `wφ` of the Coxeter coset
-`Wφ`, have, for `m` sufficiently divisible, the form `∑_χ
-χ_{q^m}(T_wφ)R_χ(g)`  where  `χ`  runs  over  the irreducible characters of
-`Wφ`,  where  `R_χ`  is  the  corresponding  almost  character,  and  where
-`χ_{q^m}`  is a  character value  of the  Hecke algebra `𝓗(Wφ,q^m)` of `Wφ`
-with  parameter `q^m`. This expression  is called the *Lefschetz character*
-of  the Deligne-Lusztig variety.  If we consider  `q^m` as an indeterminate
-`x`,  it can  be seen  as a  sum of  unipotent characters with coefficients
-character values of the generic Hecke algebra `𝓗(Wφ,x)`.
+`Wφ`,  have, for  `m` sufficiently  divisible, the  form `∑_χ χ_{q^m}(T_wφ)
+Rᵪ(g)`  where `χ` runs over the  irreducible characters of `Wφ`, where `Rᵪ`
+is  the corresponding almost character, and  where `χ_{q^m}` is a character
+value  of the Hecke algebra `𝓗 (Wφ,q^m)` of `Wφ` with parameter `q^m`. This
+expression  is  called  the  *Lefschetz  character*  of the Deligne-Lusztig
+variety.  If we consider `q^m` as an indeterminate `x`, it can be seen as a
+sum  of  unipotent  characters  with  coefficients  character values of the
+generic Hecke algebra `𝓗 (Wφ,x)`.
 
 The  function 'DeligneLusztigLefschetz'  takes as  argument a Hecke element
 and  returns the corresponding Lefschetz character.  This is defined on the
@@ -899,13 +899,13 @@ We now show an example with a coset (corresponding to the unitary group).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Section{Families of unipotent characters}
 
-The  blocks of the (rectangular) matrix `⟨ R_χ,ρ⟩_{𝐆^F}` when `χ` runs over
+The  blocks of the  (rectangular) matrix `⟨Rᵪ,ρ⟩_{𝐆^F}`  when `χ` runs over
 `Irr(W)`  and  `ρ`  runs  over  the  unipotent  characters,  are called the
 *Lusztig  families*. When  `𝐆` is  split and  `W` is  a Coxeter  group they
 correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells --- for
 split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke
-algebra. The matrix of scalar products `⟨ R_χ,ρ⟩_{𝐆^F}` can be completed to
-a  square matrix `⟨ A_{ρ'},ρ⟩_{𝐆^F}` where `A_{ρ'}` are the *characteristic
+algebra. The matrix of scalar products `⟨Rᵪ,ρ⟩_{𝐆^F}` can be completed to a
+square  matrix  `⟨A_{ρ'},ρ⟩_{𝐆^F}`  where  `A_{ρ'}` are the *characteristic
 functions  of character sheaves* on `𝐆^F`; this square matrix is called the
 *Fourier matrix* of the family.
 

@@ -166,40 +166,52 @@ struct TypeIrred
   prop::Dict{Symbol,Any}
 end
 
-Base.haskey(t::TypeIrred,k)=haskey(t.prop,k)
-Base.getindex(t::TypeIrred,k)=t.prop[k]
-indices(t::TypeIrred)=haskey(t,:indices) ? t[:indices] : union(getindex.(t[:orbit],:indices)...)
-series(t::TypeIrred)=t[:series]
+Base.haskey(t::TypeIrred,k)=haskey(getfield(t,:prop),k)
+
+Base.getproperty(t::TypeIrred,k::Symbol)=getfield(t,:prop)[k]
+
+Base.setproperty!(t::TypeIrred,k::Symbol,v)=getfield(t,:prop)[k]=v
+
+Base.copy(t::TypeIrred)=TypeIrred(copy(getfield(t,:prop)))
+
+indices(t::TypeIrred)=haskey(t,:indices) ? t.indices : haskey(t,:orbit) ?
+   union(getproperty.(t.orbit,:indices)...) : nothing
+
+function rank(t::TypeIrred)
+  if haskey(t,:rank) return t.rank end
+  i=indices(t)
+  if !isnothing(i) return length(i) end
+end
 
 function Base.show(io::IO, t::TypeIrred)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if haskey(t,:series)
-    s=series(t)
+    s=t.series
     if s==:ST 
       if haskey(t,:ST) 
-        n=repl||TeX ? "G_{$(t[:ST])}" : "ComplexReflectionGroup($(t[:ST]))"
+        n=repl||TeX ? "G_{$(t.ST)}" : "ComplexReflectionGroup($(t.ST))"
       else 
-        n=repl||TeX ? "G_{$(t[:p]),$(t[:q]),$(t[:rank])}" : 
-          "ComplexReflectionGroup($(t[:p]),$(t[:q]),$(t[:rank]))"
+        n=repl||TeX ? "G_{$(t.p),$(t.q),$(t.rank)}" : 
+          "ComplexReflectionGroup($(t.p),$(t.q),$(t.rank))"
       end
     else 
-      r=length(indices(t))
+      r=rank(t)
       if haskey(t,:cartantype)
         if s==:B
-          if t[:cartantype]==1 s=:C
-          elseif t[:cartantype]==2 s=:B
-          elseif t[:cartantype]==ER(2) s=:Bsym
-          else s=Symbol(":B(",sprint(show,t[:cartantype];context=io),")")
+          if t.cartantype==1 s=:C
+          elseif t.cartantype==2 s=:B
+          elseif t.cartantype==ER(2) s=:Bsym
+          else s=Symbol(":B(",sprint(show,t.cartantype;context=io),")")
           end
         elseif s==:G
-          if t[:cartantype]==ER(3) s=:Gsym end
+          if t.cartantype==ER(3) s=:Gsym end
         elseif s==:I
-          if t[:cartantype]!=1 s=:Isym end
+          if t.cartantype!=1 s=:Isym end
         end
       end
       if haskey(t,:bond)
-        b=t[:bond]
+        b=t.bond
         n=repl||TeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
       elseif haskey(t,:short)
         n=repl||TeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r,$b)"
@@ -209,12 +221,15 @@ function Base.show(io::IO, t::TypeIrred)
     end
     print(io,fromTeX(io,n))
   else
-    o=order(t[:twist])
+    o=order(t.twist)
     if o!=1 print(io,fromTeX(io,repl||TeX ? "{}^{$o}" : "$o")) end
-    if length(t[:orbit])==1 print(io,t[:orbit][1])
+    if length(t.orbit)==1 print(io,t.orbit[1])
     else print(io,"(")
-      for t1 in t[:orbit] print(io,t1) end
+      for t1 in t.orbit print(io,t1) end
       print(io,")") 
+    end
+    if haskey(t,:scalar)
+      print(io,"[",join(sprint.(show,t.scalar;context=io)),"]")
     end
   end
 end
@@ -226,9 +241,11 @@ end
 function Base.show(io::IO,d::Diagram)
   for (i,t) in enumerate(d.types)
     if i>1 print(io,"\n") end
-    series=t[:series]::Symbol
-    indices=t[:indices]::Vector{Int}
-    ind=repr.(indices)
+    series=t.series::Symbol
+    indices=t.indices
+    if isnothing(indices) ind=fill("?",rank(t))
+    else ind=repr.(indices)
+    end
     l=length.(ind)
     bar(n)="\u2014"^n
     rdarrow(n)="\u21D0"^(n-1)*" "
@@ -308,6 +325,8 @@ function cartan(W::PermRootGroup{T,T1})::Matrix{T} where {T,T1}
   [cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in eachindex(gens(W))]
   end
 end
+
+cartan(t::TypeIrred)=toM(getchev(t,:CartanMat))
 
 function rank(W::PermRootGroup)
   if isempty(roots(W)) W.prop[:rank]
@@ -466,11 +485,11 @@ function findgoodgens(H,g,t::TypeIrred)
     end
     i=length(gens)+1
     for e in rest
-#       Print(e,"(",Length(gens),")\c");
+#     println("g=$g t=$t $e(",length(gens),")",restriction(H))
       r=reflection(H,restriction(H)[e])
       if order(r)==orders[i]
         newgens=vcat(gens,[r])
-        if all(r->CheckRelation(newgens,r),rels[i])
+        if !haskey(rels,i) || all(r->CheckRelation(newgens,r),rels[i])
           res=findarr(newgens,setdiff(rest,[e]))
           if res!=false return vcat([e],res) end
         end
@@ -484,9 +503,14 @@ end
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
   gets(W,:refltype)do W
     map(blocks(cartan(W))) do I
-      d=type_irred(reflection_subgroup(W,I))
-      d[:indices]=I
-      TypeIrred(d)
+      R=reflection_subgroup(W,I)
+      d=TypeIrred(type_irred(R))
+      if cartan(d)==cartan(R)
+        d.indices=I
+      else 
+        d.indices=restriction(W)[findgoodgens(W,inclusion(R),d)]
+      end
+      d
     end
   end
 end
@@ -623,10 +647,11 @@ function showtypes(io::IO, t::Vector{TypeIrred})
   n=join(map(t)do t
     n=sprint(show,t; context=io)
     inds=indices(t)
-    if inds!=r .+eachindex(inds) && (repl|| TeX)
+    if isnothing(inds) n*="?"
+    elseif inds!=r .+eachindex(inds) && (repl|| TeX)
      n*="_{("*joindigits(inds)*")}"
     end
-    r+=length(inds)
+    r+=rank(t)
     n
    end,repl||TeX ? "\\times{}" : "*")
   n=fromTeX(io,n)
@@ -675,6 +700,24 @@ function root_representatives(W::PermRootGroup)
   W.prop[:rootreps]=reps
   W.prop[:repelms]=repelts
   W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
+end
+
+function Perms.Perm(W::PermRootGroup,M::Matrix)
+  Perm(M,parent(W).roots,action=(v,m)->permutedims(m)*v)
+end
+
+function PermGroups.reduced(W::PermRootGroup,F)
+  ir=independent_roots(W)
+  if issubset(inclusion(W)[ir].^F,inclusion(W))
+    w=Perm(W,matX(W,F))
+    if !isnothing(w) && w in W return w\F 
+    elseif length(W)==1 return F
+    end
+  end
+  base=reflection.(Ref(W),eachindex(gens(W)))
+  w=representative_operation(W,base,base.^F;action=(x,y)->x.^y)
+  if !isnothing(w) return F/w end
+  return nothing
 end
 
 #--------------- PRG: an implementation of PermRootGroups--------------------

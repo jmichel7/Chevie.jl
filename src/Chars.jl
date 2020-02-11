@@ -708,13 +708,13 @@ end
 function classinfo(t::TypeIrred)
   cl=deepcopy(getchev(t,:ClassInfo))
   if haskey(t,:orbit)
-     l=length(t[:orbit])
-     t=t[:orbit][1]
+     l=length(t.orbit)
+     t=t.orbit[1]
      if l>1 && haskey(cl,:classes)
        cl[:classes].*=prod(degrees(t))^(l-1)
      end
   end
-  inds=t[:indices]
+  inds=t.indices
   cl[:classtext]=map(x->inds[x],cl[:classtext])
   cl[:classes]=Int.(cl[:classes])
   cl

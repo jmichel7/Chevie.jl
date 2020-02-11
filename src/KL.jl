@@ -438,7 +438,7 @@ left cell `c` is `sum(CharTable(c.group).irr[l])`.
 julia> c=LeftCells(coxgroup(:G,2))[3]
 LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
 
-julia> KL.character(c)
+julia> character(c)
 3-element Array{Int64,1}:
  3
  5
@@ -608,7 +608,7 @@ end
 function LeftCellRepresentatives(W)
   res=map(refltype(W))do t
 #   R=ReflectionGroup(t)
-    R=rootdatum(cartan(t.prop)) # above implemented for now like that
+    R=rootdatum(cartan(t)) # above implemented for now like that
     rr=getchev(t,:KLeftCellRepresentatives)
     if isnothing(rr) return nothing end
     return map(rr)do r
@@ -616,7 +616,7 @@ function LeftCellRepresentatives(W)
       function f(l)
         m=permutedims(toM(R.rootdec[l]))
         w=Perm(R.rootdec,Ref(m).*R.rootdec)
-        inclusion(W)[t[:indices][word(R,w)]]
+        inclusion(W)[t.indices[word(R,w)]]
       end
       r[:duflo]=f(r[:duflo])
       if isempty(r[:reps]) r[:reps]=Vector{Int}[]

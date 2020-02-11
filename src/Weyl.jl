@@ -509,8 +509,8 @@ DescribeInvolution(W,w)=
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
 function PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}
-  gets(W.G,:refltype)do W
-    type_cartan(cartan(W))
+  gets(W,:refltype)do W
+    W.G.prop[:refltype]=type_cartan(cartan(W))
   end
 end
 
@@ -584,7 +584,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   """
     the permutations of the roots r effected by the matrices matgens
   """
-  gens=Perm{Int16}.(matgens,Ref(r),action=(v,m)->permutedims(m)*v)
+  gens=Perm.(matgens,Ref(r),action=(v,m)->permutedims(m)*v)
   rank=size(C,1)
   G=PRG(matgens,r,map(i->cr[i,:],1:rank),Group(gens),
     Dict{Symbol,Any}(:cartan=>C))
@@ -696,7 +696,7 @@ function rootlengths(W::FCG)::Vector{Int}
     C=cartan(W)
     lengths=fill(0,2*W.N)
     for t in refltype(W)
-      I=t[:indices]
+      I=t.indices
       if length(I)>1 && C[I[1],I[2]]!=C[I[2],I[1]]
         lengths[I[2]]=-C[I[1],I[2]]
         lengths[I[1]]=-C[I[2],I[1]]
@@ -895,15 +895,15 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   restriction[inclusion]=1:length(inclusion)
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
   prop[:refltype]=map(prop[:refltype]) do t
-   if (t[:series] in [:A,:D]) && rootlengths(W)[inclusion[t[:indices][1]]]==1
-     t.prop[:short]=true
+   if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
+     getfield(t,:prop)[:short]=true
    end
    t
   end
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   G=Group(reflection.(Ref(W),I))
   G=PRSG(G,inclusion,restriction,W.G,prop)
-  FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
+  FCSG(G,rootdec,N,W,prop)
 end
 
 function Base.show(io::IO, W::FCSG)

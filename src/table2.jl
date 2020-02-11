@@ -1,3 +1,5 @@
+# an addition
+chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,(t->r->fill(1//2,r)))
 # replacements for some functions in tables (whose automatic translation failed)
 chevieset(:D,:CharTable,n->chevieget(:imp,:CharTable)(2,2,n))
 chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))

@@ -134,11 +134,17 @@ julia> regular_eigenvalues(W)
 
 julia> W=ComplexReflectionGroup(6)
 G₆
+
+julia> L=twistings(W,[2])[2]
+G₃‚₁‚₁[ζ₄]Φ′₄
+
+julia> regular_eigenvalues(L)
+3-element Array{Rational{Int64},1}:
+  1//4 
+  7//12
+ 11//12
+
 ```
-    gap> L:=Twistings(W,[2])[4];
-    Z3[I]<2>.(q-I)
-    gap> RegularEigenvalues(L);
-    [ 1/4, 7/12, 11/12 ]|
 """
 function regular_eigenvalues(W)
   d=degrees(W)
@@ -178,11 +184,13 @@ julia> PositionRegularClass(W,30)
 
 julia> W=ComplexReflectionGroup(6)
 G₆
+
+julia> L=twistings(W,[2])[2]
+G₃‚₁‚₁[ζ₄]Φ′₄
+
+julia> PositionRegularClass(L,7//12)
+3
 ```
-    gap> L:=Twistings(W,[2])[4];
-    Z3[I]<2>.(q-I)
-    gap> PositionRegularClass(L,7/12);
-    2|
 """
 function PositionRegularClass(W,d=0)
   if d isa Int && d!=0 d=mod1(1//d) end
@@ -206,15 +214,16 @@ A₃
 julia> w=W(1:3...)
 (1,12,3,2)(4,11,10,5)(6,9,8,7)
 
-julia> EigenspaceProjector(W,w,1//4)
+julia> p=EigenspaceProjector(W,w,1//4)
 3×3 Array{Cyc{Rational{Int64}},2}:
   1/4+ζ₄/4   ζ₄/2  -1/4+ζ₄/4
   1/4-ζ₄/4    1/2   1/4+ζ₄/4
  -1/4-ζ₄/4  -ζ₄/2   1/4-ζ₄/4
 
+julia> GLinearAlgebra.rank(p)
+1
+
 ```
-    gap> RankMat(last);
-    1|
 """
 function EigenspaceProjector(WF, w, d)
   if d isa Int && d!=0 d=mod1(1//d) end

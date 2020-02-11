@@ -32,7 +32,8 @@ module Groups
 # export word, elements, kernel, order
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
-  position_class, fusion_conjugacy_classes, Coset
+  position_class, fusion_conjugacy_classes, Coset, representative_operation,
+  centre
 
 using ..Util: gets
 #--------------general groups and functions for "black box groups" -------
@@ -171,6 +172,8 @@ end
 
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
 
+centre(G::Group)=centralizer(G,G)
+
 """
     `minimal_words(G)`
   returns a Dict giving for each element of `G` a minimal positive word in 
@@ -274,6 +277,12 @@ end
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
+function representative_operation(W::Group,p1,p2;action::Function=^)
+  t=transversal(W,p1;action=action)
+  if haskey(t,p2) return t[p2] end
+end
+
+#------------------- "abstract" concrete groups -------------------------------
 struct GroupofAny{T}<:Group{T}
   gens::Vector{T}
   prop::Dict{Symbol,Any}
@@ -291,7 +300,7 @@ struct CosetofAny{T,TW<:Group{T}}<:Coset{TW}
   prop::Dict{Symbol,Any}
 end
 
-Coset(G::Group{T},phi::T) where T=CosetofAny(phi,G,Dict{Symbol,Any}())
+Coset(G::Group,phi)=CosetofAny(phi,G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
 
@@ -317,6 +326,8 @@ Base.:*(a::Coset,b::Coset)=Coset(Group(a),a.phi*b.phi)
 
 Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
+
+Base.:^(a::Coset, b::Coset)= inv(b)*a*b
 
 order(a::Coset)=findfirst(i->isone(a^i),1:order(a.phi))
 

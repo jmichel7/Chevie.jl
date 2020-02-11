@@ -715,7 +715,7 @@ function Base.:*(a::Root1,b::Root1)
   Root1(numerator(r),denominator(r))
 end
 
-Base.:-(a::Root1)=Root1(-a.r)
+Base.:inv(a::Root1)=Root1(-a.r)
 
 E(a::Root1)=E(conductor(a),exponent(a))
 #------------------- end of Root1 ----------------------------------------

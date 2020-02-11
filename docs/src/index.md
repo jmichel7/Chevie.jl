@@ -245,6 +245,7 @@ The dictionary from GAP3/Chevie is as follows:
      Permuted(v,p)                         →  permuted(v,p)
      PositionClass                         →  position_class
      PrintDiagram(W)                       →  Diagram(W) 
+     ProportionalityCoefficient(v,w)       →  ratio(v,w)
      ReducedExpressions(W,w)               →  reduced_words(W,w)
      ReducedInRightCoset(W,w)              →  reduced(W,w)
      ReducedRightCosetRepresentatives(W,H) →  reduced(H,W)

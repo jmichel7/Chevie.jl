@@ -67,6 +67,7 @@ export Mvp, Monomial, @Mvp, variables, value
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
 using ..Util: fromTeX
+using ..Cycs: Cyc
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
@@ -515,7 +516,7 @@ function Base.inv(p::Mvp)
   if length(p.d)>1 throw(InexactError(:inv,Mvp,p)) end
   (m,c)=first(p.d)
   if c^2==1 return Mvp(inv(m)=>c) end
-  if c isa Cyc return Mvp(inv(m)=>inv(c)) end
+  if (c isa Cyc) || (c isa Rational) return Mvp(inv(m)=>inv(c)) end
   throw(InexactError(:inv,typeof(c),p))
 end
 

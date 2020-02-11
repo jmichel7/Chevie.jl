@@ -67,7 +67,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export PermGroup, base, transversals, centralizers, symmetric_group
+export PermGroup, base, transversals, centralizers, symmetric_group, reduced
 
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
@@ -275,6 +275,7 @@ end
 # elements is much faster than collect(G), should not be
 function Gapjm.elements(G::PermGroup)
   t=reverse(values.(transversals(G)))
+  if isempty(t) return [one(G)] end
   res=t[1]
   for i in 2:length(t)
     res=vcat(map(x->res.*x,t[i])...)
@@ -292,7 +293,7 @@ function reduced(W::PermGroup,phi)
 end
 
 # computes "canonical" element of W.phi
-function Groups.Coset(W::PermGroup{T},phi::Perm{T})where T
+function Groups.Coset(W::PermGroup,phi::Perm)
   Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
 end
 

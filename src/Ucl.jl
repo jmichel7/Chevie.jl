@@ -73,7 +73,7 @@ extension  `φ̃` of `φ`  to `A(u).F`); it  is a class  function `Y_{u,φ}` on
 geometrically  conjugate to `u` and its `𝐆^F`-class is parameterized by the
 `F`-conjugacy class `cF` of `A(u)`, otherwise `Y_{u,φ}(u₁)=0`. If the pair
 `u,φ`  corresponds via the Springer correspondence  to the character `χ` of
-`W_𝐆(𝐋)`,  then `Y_{u,φ}` is also denoted `Y_χ`. There is another important
+`W_𝐆(𝐋)`,  then `Y_{u,φ}` is also denoted `Yᵪ`. There is another important
 class of functions indexed by local systems: to a local system on class `C`
 is  attached  an  intersection  cohomology  complex,  which is a complex of
 sheaves  supported on  the closure  `C̄`. To  such a  complex of sheaves is
@@ -82,21 +82,21 @@ obtained  by taking  the alternating  trace of  the Frobenius acting on the
 stalks  of the cohomology sheaves. If  `Y_ψ` is the characteristic function
 of  a  local  system,  the  characteristic  function  of  the corresponding
 intersection  cohomology  complex  is  denoted  by  `X_ψ`. This function is
-supported  on `C̄`, and Lusztig has  shown that `X_ψ=∑_φ P_{ψ,χ} Y_χ` where
-`P_{ψ,χ}`  are integer polynomials  in `q` and  `Y_χ` are attached to local
+supported  on `C̄`, and Lusztig has  shown that `X_ψ=∑ᵩ P_{ψ,χ} Yᵪ` where
+`P_{ψ,χ}`  are integer polynomials  in `q` and  `Yᵪ` are attached to local
 systems on classes lying in `C̄`.
 
 Lusztig  and Shoji have given an algorithm to compute the matrix `P_{ψ,χ}`,
 which  is  implemented  in  Chevie.  The  relationship  with  characters of
 `𝐆(𝔽_q)`,  taking to simplify the ordinary Springer correspondence, is that
 the  restriction to the unipotent elements of the almost character `R_χ` is
-equal  to `q^{b_χ} X_χ`, where `b_χ` is `dim  𝓑ᵤ` for an element `u` of the
+equal  to `q^{bᵪ} Xᵪ`, where `bᵪ` is `dim  𝓑ᵤ` for an element `u` of the
 class  `C` such  that the  support of  `χ` is  `C̄`. The restriction of the
 Deligne-Lusztig  characters `R_w` to  the unipotents are  called the *Green
 functions*  and can also be computed by Chevie. The values of all unipotent
 characters  on  unipotent  elements  can  also  be computed in principle by
 applying Lusztig's Fourier transform matrix (see the section on the Fourier
-matrix)  but  there  is  a  difficulty  in  that  the  `X_χ`  must be first
+matrix)  but  there  is  a  difficulty  in  that  the  `Xᵪ`  must be first
 multiplied  by some roots  of unity which  are not known  in all cases (and
 when  known may  depend on  the congruence  class of  `q` modulo some small
 primes).
@@ -210,12 +210,12 @@ A₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃
 ```
 
 The  function 'ICCTable' gives the  transition matrix between the functions
-`X_χ`  and `Y_ψ`.
+`Xᵪ`  and `Y_ψ`.
 
 ```julia-repl
 julia> uc=UnipotentClasses(coxgroup(:G,2));
 julia> t=ICCTable(uc)
-Coefficients of X_φ on Y_ψ for G₂
+Coefficients of Xᵩ on Y_ψ for G₂
       │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1
 ──────┼──────────────────────────────
 Xφ₁‚₀ │ 1          0      1  1  1  1
@@ -617,14 +617,14 @@ A₁    │              Id:6ₚ′
 """
 function UnipotentClasses(t::TypeIrred,p=0) 
   uc=getchev(t,:UnipotentClasses,p)
-  rank=length(t[:indices])
+  rank=PermRoot.rank(t)
   classes=UnipotentClass[]
   for u in uc[:classes] # fill omitted fields
     name=u[:name]
     parameter= haskey(u,:parameter) ? u[:parameter] : u[:name]
     dimBu= haskey(u,:dimBu)  ? u[:dimBu] : -1
     if haskey(u,:dynkin)
-      weights=toM(roots(cartan(t.prop)))*u[:dynkin]
+      weights=toM(roots(cartan(t)))*u[:dynkin]
       n0=count(iszero,weights)
       if dimBu==-1 dimBu=n0+div(count(isone,weights),2)
       elseif dimBu!=n0+div(count(isone,weights),2) error("theory")
@@ -666,7 +666,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
      Dict{Symbol,Any}(:spets=>W))
   else
     classes=map(Cartesian(map(x->x.classes,uc)...)) do v
-      l=getindex.(t,:indices)
+      l=getproperty.(t,:indices)
       if length(v)==1 u=deepcopy(v[1]) 
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
@@ -906,7 +906,7 @@ the  reductive group `𝐆` and `φ` is  a character of the group of components
 local   system  and  `X_{u,φ}`  is   the  characteristic  function  of  the
 corresponding  intersection cohomology  complex on  `C̄`. The local systems
 can  also be indexed by characters of  the relative Weyl group occurring in
-the Springer correspondence, and since the coefficient of `X_χ` on `Y_ψ` is
+the Springer correspondence, and since the coefficient of `Xᵪ` on `Y_ψ` is
 `0`  if `χ` and `ψ` do not correspond  to the same relative Weyl group (are
 not  in the same Springer series), the  table given is for a given Springer
 series,  the series  whose number  is given  by the argument 'seriesNo' (if
@@ -917,7 +917,7 @@ assumed).
 
 ```julia-repl
 julia> t=ICCTable(uc)
-Coefficients of X_φ on Y_ψ for A₃
+Coefficients of Xᵩ on Y_ψ for A₃
      │4 31 22 211 1111
 ─────┼─────────────────
 X4   │1  1  1   1    1
@@ -973,7 +973,7 @@ The function 'ICCTable' returns a Dict with various pieces of information
 which can help further computations.
 
 `:scalar`: this contains the table of multiplicities `P_{ψ,χ}` of the `X_ψ`
-on  the `Y_χ`. One should  pay attention that by  default, the table is not
+on  the `Yᵪ`. One should  pay attention that by  default, the table is not
 displayed  in the same order as the  stored |.scalar|, which is in order in
 Chevie  of  the  characters  in  the  relative  Weyl  group;  the  table is
 transposed,  then lines  and rows  are sorted  by |dimBu,class  no,index of
@@ -988,7 +988,7 @@ character in A(u)| while displayed.
 `:dimBu`: The list of `dim𝓑ᵤ` for each local system `(u,φ)` in the series.
 
 `:L`:  The matrix of (unnormalized) scalar  products of the functions `Y_ψ`
-with  themselves,  that  is  the  `(φ,ψ)`  entry  is  `∑_{g∈𝐆(𝔽_q)}  Y_φ(g)
+with  themselves,  that  is  the  `(φ,ψ)`  entry  is  `∑_{g∈𝐆(𝔽_q)}  Yᵩ(g)
 Ȳ_ψ(g)`.  This  is  thus  a  symmetric,  block-diagonal  matrix  where the
 diagonal  blocks correspond to geometric  unipotent conjugacy classes. This
 matrix  is  obtained  as  a  by-product  of  Lusztig's algorithm to compute
@@ -1008,7 +1008,7 @@ function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
 #  q^{-bᵢ-bⱼ}FakeDegree(χᵢ⊗χⱼ⊗sgn)$
 # where $P(W_G(L))$ is the Poincare polynomial $∏ᵢ(q^{dᵢ}-1)$
 # where $dᵢ$ are the reflection degrees of $W_G(L)$
-# res[:scalar] is the masrix $P$
+# res[:scalar] is the matrix $P$
   R=ss[:relgroup]
   ct=CharTable(R)
   q=Pol(:q)

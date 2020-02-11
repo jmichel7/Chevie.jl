@@ -209,12 +209,12 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[1])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  Ã₁Φ₁
  Ã₁Φ₂
 
 julia> twistings(W,[2])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  A₁Φ₁
  A₁Φ₂
 ```
@@ -230,7 +230,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[2,4])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  A₁×A₁ 
  (A₁A₁)
 ```
@@ -246,7 +246,7 @@ abstract type CoxeterCoset{TW}<:Spets{TW} end
 
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) C=W
-  elseif W isa CoxeterGroup && all(x->x in 1:coxrank(W),J)
+  elseif W isa CoxeterGroup && all(J.<=coxrank(W))
     C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
   else C=centralizer(W,sort(J);action=(J,w)->sort(J.^w))
   end
@@ -256,7 +256,32 @@ end
 Groups.Group(WF::Spets)=WF.W
 
 twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
-  spets.(Ref(reflection_subgroup(W,J)),twisting_elements(W,J))
+  subspets.(Ref(spets(W)),Ref(J),twisting_elements(W,J))
+
+function twistings(W::FiniteCoxeterGroup)
+  if W!=parent(W)
+    error(W," must not be a proper subgroup of another reflection group")
+  end
+  gen=empty(gens(W))
+  for (n,t) in groupby(repr,refltype(W))
+    for i in 1:length(t)-1
+      push!(gen,prod(map(Perm,inclusion(W)[t[i][:indices]],
+                       inclusion(W)[t[i+1][:indices]])))
+    end
+    J=inclusion(W)[t[1][:indices]]
+    rk=length(J)
+    if t[1][:series]==:A 
+      if rk>1  
+        push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
+      end
+    elseif t[1][:series]==:D push!(gen,Perm(J[1],J[2]))
+      if rk==4  push!(gen,Perm(J[1],J[4])) end
+    elseif t[1][:series]==:E && rk==6 
+      push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
+    end
+  end
+  spets.(Ref(W),elements(Group(gen)))
+end
 
 #-------------- finite coxeter cosets ---------------------------------
 struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
@@ -266,11 +291,18 @@ struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   prop::Dict{Symbol,Any}
 end
 
+function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
+  print(io,"spets{$TW}")
+end
+
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,matX(W,w))
-Base.parent(W::FCC)=W
+spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
+
+Base.parent(W::Spets)=gets(W->W,W,:parent)
 
 function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
-  perm=Perm{T}(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r)
+# perm=Perm{T}(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r)
+  perm=Perm(W.G,F)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
   FCC(phi,F,W,Dict{Symbol,Any}())
@@ -295,37 +327,37 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
       o=deepcopy(t[c])
       J=PermRoot.indices(o[1])
       twist=Perm{Int16}(phires^length(c),J)
-      if o[1][:series]==:D && length(J)==4
+      if o[1].series==:D && length(J)==4
         if order(twist)==2
           rf=reduce(vcat,cycles(twist))
-          o[1].prop[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
+          getfield(o[1],:prop)[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
         elseif order(twist)==3 && J[1]^twist!=J[2]
-          o[1].prop[:indices]=J[[1,4,3,2]]
+          getfield(o[1],:prop)[:indices]=J[[1,4,3,2]]
         end
       end
       for i in 2:length(c) 
-        o[i].prop[:indices]=PermRoot.indices(o[i-1]).^phires
+        getfield(o[i],:prop)[:indices]=PermRoot.indices(o[i-1]).^phires
       end
       TypeIrred(Dict(:orbit=>o,:twist=>twist))
     end
   end
 end
 
-function Base.show(io::IO, W::CoxeterCoset)
+function Base.show(io::IO, W::Spets)
    PermRoot.showtypes(io,refltype(W))
    t=torusfactors(W)
    if !isone(t) show(io,t) end
 end
 
-PermRoot.matX(WF::CoxeterCoset,w)=WF.F*matX(WF.W,w)
+PermRoot.matX(WF::Spets,w)=WF.F*matX(Group(WF),w)
   
-function PermGroups.class_reps(W::CoxeterCoset)
+function PermGroups.class_reps(W::Spets)
   gets(W,:classreps)do W
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
 
-function PermRoot.refleigen(W::CoxeterCoset)::Vector{Vector{Rational{Int}}}
+function PermRoot.refleigen(W::Spets)::Vector{Vector{Rational{Int}}}
   gets(W,:refleigen) do W
     map(W.phi.\class_reps(W)) do x
       p=charpoly(matX(W,x))
@@ -340,15 +372,27 @@ end
 
 Frobenius(w::Perm,phi)=w^phi
 
-#-------------- finite coxeter subcoset ---------------------------------
-struct FCSC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
-  phi::Perm{T}
-  F::Matrix
-  W::TW
-  prop::Dict{Symbol,Any}
+function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
+  if isempty(J) class_reps(WF)./WF.phi end
 end
 
-function subspets(WF,I::AbstractVector{<:Integer},w=one(WF.W))
+function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
+  if isempty(J) class_reps(W) end
+  L=reflection_subgroup(W,J)
+  s=sort(collect(Set(reflections(L))))
+  C=centralizer(W,s;action=(p,g)->sort(p.^g))
+  W_L=C/L.G
+  map(x->reduced(L,x.phi),class_reps(W_L))
+end
+
+twistings(W::PermRootGroup,J::AbstractVector{<:Integer})=
+  subspets.(Ref(spets(W)),Ref(J),twisting_elements(W,J))
+
+twistings(W::Spets,J::AbstractVector{<:Integer})=
+   subspets.(Ref(W),Ref(J),twisting_elements(W,J))
+
+#-------------- subcoset ---------------------------------
+function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
   RF=WF
   WF=parent(WF)
   phi=RF.phi/WF.phi
@@ -356,12 +400,98 @@ function subspets(WF,I::AbstractVector{<:Integer},w=one(WF.W))
   if !(w in W) error(w," should be in ",W) end
   phi=w*phi
   R=reflection_subgroup(W,I)
-  tmp=Set(inclusion(R))
-  if Set(tmp.^(phi*WF.phi))!=tmp 
+  tmp=sort(inclusion(R))
+  if (W isa CoxeterGroup) && (sort(tmp.^(phi*WF.phi))!=tmp)
     error("w*WF.phi does not normalize subsystem")
   end
   phi=reduced(R,phi*WF.phi)
-  FCSC(phi,matX(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+  spets(phi,matX(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+end
+
+#-------------- spets ---------------------------------
+struct PRC{T,T1,TW<:PermRootGroup{T,T1}}<:Spets{TW}
+  phi::Perm{T1}
+  F::Matrix
+  W::TW
+  prop::Dict{Symbol,Any}
+end
+
+function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
+  w=reduced(W,w)
+  F=matX(W,w)
+# println("w=$w\nF=$F")
+  PRC(w,F,W,Dict{Symbol,Any}())
+end
+
+function Base.show(io::IO,t::Type{PRC{T,T1,TW}})where {T,T1,TW}
+  print(io,"Spets{$TW}")
+end
+
+Groups.Coset(W::PermRootGroup,w)=spets(W,w)
+
+spets(phi,F::Matrix,W::PermRootGroup,P::Dict{Symbol,Any})=PRC(phi,F,W,P)
+
+Groups.Group(W::PRC)=W.W
+
+function PermRoot.refltype(WF::PRC)
+  gets(WF,:refltype)do WF
+    W=Group(WF)
+    t=refltype(W)
+    if isone(WF.phi) 
+      return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t) 
+    end
+    subgens=map(x->gens(reflection_subgroup(W,inclusion(W)[x.indices])),t)
+    c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
+    c=orbits(inv(c))
+    roots=parent(W).roots
+    function scals(rr,img)
+      map(ratio,roots[inclusion(W)[rr].^WF.phi],roots[inclusion(W)[img]])
+    end
+    map(c) do orb
+      to=TypeIrred(Dict{Symbol,Any}(:orbit=>map(copy,t[orb])))
+      scalar=Cyc{Rational{Int}}[]
+      for i in eachindex(orb)
+        if i==length(orb) next=1 else next=i+1 end
+        u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
+        tn=t[next]
+        if i!=length(orb)  tn.indices=permuted(tn.indices,u)
+          scal=scals(t[orb[i]].indices,tn.indices)
+        else to.twist=u
+          scal=scals(t[orb[i]].indices,permuted(tn.indices,inv(u)))
+        end
+        if any(isnothing,scal) || !constant(scal)
+          error("no element of coset acts as scalar on orbits")
+          return nothing
+        end
+        scal=scal[1]
+        sub=reflection_subgroup(W,inclusion(W)[t[orb[i]].indices])
+        zg=Groups.centre(sub)
+        z=length(zg)
+ #      println("zg=$zg")
+        if z>1 # simplify scalars using centre
+          e=collect(elements(zg))
+          zg=e[findfirst(x->order(x)==z,e)]
+          i=inclusion(sub)[1]
+          v=Root1(ratio(roots[i.^zg],roots[i]))
+          zg^=invmod(exponent(v),conductor(v)) # distinguished
+          v=Ref(Root1(scal)).*Root1.((0:z-1).//z)
+          m=argmin(conductor.(v))
+          scal=E(v[m])
+          Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
+        end
+        push!(scalar,scal)
+      end
+      to.scalar=scalar 
+      to
+    end
+  end
+end
+
+function torusfactors(WF::PRC)
+  M=PermRoot.baseX(Group(WF))
+  M*=WF.F*inv(convert.(Cyc{Rational},M))
+  r=semisimplerank(WF.W)
+  charpoly(M[r+1:end,r+1:end])
 end
 
 end

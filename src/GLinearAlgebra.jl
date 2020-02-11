@@ -9,7 +9,7 @@ any ring).
 """
 module GLinearAlgebra
 using Gapjm
-export echelon, exterior_power, CoFactors, BigCellDecomposition, blocks
+export echelon, exterior_power, CoFactors, BigCellDecomposition, blocks, ratio
 
 """
     `echelon!(m)`
@@ -44,6 +44,12 @@ function echelon!(m::Matrix)
 end
 
 echelon(m::Matrix)=echelon!(copy(m))
+
+"""
+ computes rank of m
+ not exported to avoid conflict with LinearAlgebra
+"""
+rank(m::Matrix)=length(echelon(m)[2])
 
 """
  computes right nullspace of m in a type_preserving way
@@ -283,4 +289,14 @@ function Transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
 end
 
 Transporter(l1::Matrix, l2::Matrix)=Transporter([l1],[l2])
+
+"ratio of two vectors"
+function ratio(v::Vector, w::Vector)
+  i=findfirst(x->!iszero(x),w)
+  if isnothing(i) return nothing end
+  r=v[i]//w[i]
+  if v!= r.* w  return nothing end
+  r
+end
+
 end
