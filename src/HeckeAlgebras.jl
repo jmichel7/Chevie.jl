@@ -424,4 +424,58 @@ function Base.inv(a::HeckeTElt)
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
 end
 
+
+##
+#F  HeckeClassPolynomials( <h> )  . . . . . . class polynomials of <h>
+##
+##  returns  the  class  polynomials  of  the  element  <h> with respect to
+##  representatives  of minimal length in  the (F-)conjugacy classes of the
+##  Coxeter  group (or coset). <h> is an element of <H> given in any basis.
+
+function HeckeClassPolynomials(h)
+  H=Hecke(h)
+# if IsBound(h.coset) WF=Spets(h.coset); W=Group(WF);
+# else 
+    W=Group(H);WF=W
+# end
+  minl=length.(classinfo(WF)[:classtext])
+  h=Tbasis(H)(h)
+# Since  vF is not of minimal length in its class there exists wF conjugate
+# by   cyclic  shift  to  vF  and  a  generating  reflection  s  such  that
+# l(swFs)=l(vF)-2. Return T_sws.T_s^2
+  function orb(orbit)
+    for w in orbit
+      for s in leftdescents(W,w)
+        sw=W(s)*w
+        sws=sw*W(s)
+        if isleftdescent(W,inv(sw),s) q=H.parameter[s]
+          return Dict(elm=>[sws,sw],coeff=>[-q[1]*q[2],q[1]+q[2]])
+        elseif !(sws in orbit) push!(orbit,sws)
+        end
+      end
+    end
+    error("Geck-Kim-Pfeiffer theory")
+  end
+
+  min=minl*0*H.unit
+  while length(h.elm)>0
+    new=Dict(elm=>[],coeff=>[])
+    l=map(x->Length(W,x),h.elm)
+    maxl=Maximum(l)
+    for i in 1:Length(h.elm)
+      if l[i]<maxl push!(new.elm,h.elm[i])
+                   push!(new.coeff,h.coeff[i])
+      else
+        p=PositionClass(WF,h.elm[i])
+        if minl[p]==maxl min[p]+=h.coeff[i]
+        else o=orb([h.elm[i]])
+          append!(new.elm,o.elm);append!(new.coeff,o.coeff*h.coeff[i]);
+        end
+      end
+    end
+    CollectCoefficients(new);h=new
+  end
+  return min
+end
+
 end

@@ -67,6 +67,8 @@ end
 
 Base.broadcastable(p::Pol)=Ref(p)
 
+Base.lastindex(p::Pol)=length(p.c)+p.v-1
+
 Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ? 
     p.c[i-p.v+1] : zero(T)
 

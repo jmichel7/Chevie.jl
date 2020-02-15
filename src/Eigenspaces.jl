@@ -28,11 +28,12 @@ reflection group in its action on `V_ζ` (see cite[2.5]{LS99}).
 Finally,  a  still  more  general  example,  but which only occurs for Weyl
 groups  or  Spetsial  reflection  groups,  is  when `𝐋` is a `ζ`-split Levi
 subgroup  (which means that  the corresponding subcoset  `Lwϕ` is formed of
-all  the elements which act  by `ζ` on some  subspace `V_ζ` of `V`), and `λ
-`d`-cuspidal  unipotent character of `𝐋` (which means that the multiplicity
-of  `ζ` as a root of  the degree of `λ` is  the same as the multiplicity of
-`ζ`  as a root of  the generic order of  the semi-simple part of `𝐆`); then
-`N_W(Lwϕ,λ)/L` is a complex reflection group in its action on `V_ζ`.
+all  the elements which act by `ζ` on  some subspace `V_ζ` of `V`), and `λ`
+is  a  `d`-cuspidal  unipotent  character  of  `𝐋`  (which  means  that the
+multiplicity  of `ζ`  as a  root of  the degree  of `λ`  is the same as the
+multiplicity  of `ζ` as a root of the generic order of the semi-simple part
+of `𝐆`); then `N_W(Lwϕ,λ)/L` is a complex reflection group in its action on
+`V_ζ`.
 
 Further,  in the above cases the relative group describes the decomposition
 of a Lusztig induction.
@@ -57,7 +58,7 @@ factor of the order of `𝐆^F`.
 The functions described in this module allow to explore these situations.
 """
 module Eigenspaces
-export relative_degrees, regular_eigenvalues, regular_eigenvalues,
+export relative_degrees, regular_eigenvalues,
   PositionRegularClass, EigenspaceProjector, GetRelativeAction,
   GetRelativeRoot, SplitLevis, RelativeGroup
 

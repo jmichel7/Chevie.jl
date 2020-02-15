@@ -140,8 +140,8 @@ The file Weyl.jl defines coxgroup.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
-  longest, braid_relations, coxetermat, parabolic_representatives,
-  CoxSym, reduced_words
+  longest, braid_relations, coxmat, parabolic_representatives,
+  CoxSym
 
 export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
 
@@ -317,6 +317,7 @@ function Gapjm.elements(W::CoxeterGroup)
 end
 
 const Wtype=Vector{Int8}
+#CoxeterWords
 function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
  ww=gets(W->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
@@ -380,10 +381,11 @@ function bruhatless(W::CoxeterGroup,w)
   push!(res,s.*filter(x->!isleftdescent(W,x,i),res[end]))
 end
 
-function reduced_words(W::CoxeterGroup,w)
+# ReducedExpressions
+function Gapjm.words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
-  reduce(vcat,map(x->vcat.(Ref([x]),reduced_words(W,W(x)*w)),l))
+  reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
 end
 
 "diagram of finite Coxeter group"
@@ -434,13 +436,35 @@ end
 parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
           0:semisimplerank(W))...)
 
-function coxetermat end
+function coxmat(m::Matrix)
+  function find(c)
+    if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
+    x=conductor(c)
+    if c==2+E(x)+E(x,-1) return x 
+    elseif c==2+E(2x)+E(2x,-1) return 2x
+    else error("not a Cartan matrix of a Coxeter group")
+    end
+  end
+  res=Int.([i==j for i in axes(m,1), j in axes(m,2)])
+  for i in 2:size(m,1), j in 1:i-1
+    res[i,j]=res[j,i]=find(m[i,j]*m[j,i])
+  end
+  res
+end
 
-function braid_relations(W::CoxeterGroup)
+function braid_relations(t::TypeIrred)
+  if t.series==:ST return getchev(t,:BraidRelations) end
+  m=coxmat(cartan(t))
   p(i,j,b)=map(k->iszero(k%2) ? j : i,1:b)
-  m=coxetermat(W)
   reduce(vcat,map(i->map(j->[p(i,j,m[i,j]),p(j,i,m[i,j])],1:i-1),1:size(m,1)))
 end
+
+function braid_relations(W::Group)
+  reduce(vcat,map(refltype(W)) do t
+       map(x->map(y->t[:indices][y],x),braid_relations(t))
+    end)
+end
+
 #--------------------- CoxSymmetricGroup ---------------------------------
 struct CoxSym{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}

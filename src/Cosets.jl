@@ -440,7 +440,7 @@ function PermRoot.refltype(WF::PRC)
     if isone(WF.phi) 
       return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t) 
     end
-    subgens=map(x->gens(reflection_subgroup(W,inclusion(W)[x.indices])),t)
+    subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     c=orbits(inv(c))
     roots=parent(W).roots
@@ -453,18 +453,19 @@ function PermRoot.refltype(WF::PRC)
       for i in eachindex(orb)
         if i==length(orb) next=1 else next=i+1 end
         u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
-        tn=t[next]
+        tn=t[orb[next]]
+        ti=t[orb[i]]
         if i!=length(orb)  tn.indices=permuted(tn.indices,u)
-          scal=scals(t[orb[i]].indices,tn.indices)
+          scal=scals(ti.indices,tn.indices)
         else to.twist=u
-          scal=scals(t[orb[i]].indices,permuted(tn.indices,inv(u)))
+          scal=scals(ti.indices,permuted(tn.indices,inv(u)))
         end
         if any(isnothing,scal) || !constant(scal)
           error("no element of coset acts as scalar on orbits")
           return nothing
         end
-        scal=scal[1]
-        sub=reflection_subgroup(W,inclusion(W)[t[orb[i]].indices])
+        scal=Root1(scal[1])
+        sub=reflection_subgroup(W,ti.indices)
         zg=Groups.centre(sub)
         z=length(zg)
  #      println("zg=$zg")
@@ -474,12 +475,32 @@ function PermRoot.refltype(WF::PRC)
           i=inclusion(sub)[1]
           v=Root1(ratio(roots[i.^zg],roots[i]))
           zg^=invmod(exponent(v),conductor(v)) # distinguished
-          v=Ref(Root1(scal)).*Root1.((0:z-1).//z)
+          v=Ref(scal).*Root1.((0:z-1).//z)
           m=argmin(conductor.(v))
-          scal=E(v[m])
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
+          scal=v[m]
         end
-        push!(scalar,scal)
+        # simplify again by -1 in types 2A(>1), 2D(odd), 2E6
+        if mod(conductor(scal),4)==2 && 
+          (ti.series in [:A,:D] || (ti.series==:E && ti.rank==6))
+          sb=coxgroup(ti.series,ti.rank)
+          w0=sub(word(sb,longest(sb))...)
+          Perms.mul!(WF.phi,w0)
+          u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
+          #print("l=$l i=$i scal before:$scal")
+          if i!=length(orb)
+            tn.indices=permuted(tn.indices,u)
+            subgens[orb[next]]=gens(reflection_subgroup(W,tn.indices))
+            scal=scals(ti.indices,tn.indices)
+          else to.twist=u
+            scal=scals(ti.indices,permuted(tn.indices,u^-1))
+          end
+          #println(" scal after:$scal")
+          if !constant(scal) error()
+          else scal=scal[1]
+          end
+        end
+        push!(scalar,E(scal))
       end
       to.scalar=scalar 
       to

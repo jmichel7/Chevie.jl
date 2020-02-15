@@ -421,27 +421,10 @@ function Gapjm.roots(C::Matrix)
   # important roots are sorted as in CHEVIE for data (KLeftCells) to work
 end 
 
-function coxeter_from_cartan(m)
-  function find(c)
-    if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
-    x=conductor(c)
-    if c==2+E(x)+E(x,-1) return x 
-    elseif c==2+E(2x)+E(2x,-1) return 2x
-    else error("not a Cartan matrix of a Coxeter group")
-    end
-  end
-  res=Int.([i==j for i in axes(m,1), j in axes(m,2)])
-  for i in 2:size(m,1), j in 1:i-1
-    res[i,j]=res[j,i]=find(m[i,j]*m[j,i])
-  end
-  res
-end
-
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
 abstract type FiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
 
-CoxGroups.coxetermat(W::FiniteCoxeterGroup)=
-     coxeter_from_cartan(cartan(W))
+coxmat(W::FiniteCoxeterGroup)=coxmat(cartan(W))
 
 # finite Coxeter groups have functions nref and fields rootdec
 inversions(W::FiniteCoxeterGroup,w)=
@@ -876,6 +859,7 @@ each  coset of  H in  W contains  a unique  element of  minimal length, see
 `reduced`.
 """
 function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})where {T,T1}
+# contrary to Chevie, I is indices in W and not parent(W)
   inclusion=sort!(vcat(orbits(reflection.(Ref(W),I),I)...))
   N=div(length(inclusion),2)
   if all(i->i in 1:coxrank(W),I)

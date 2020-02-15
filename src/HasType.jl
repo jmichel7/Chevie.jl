@@ -129,14 +129,6 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-CoxGroups.braid_relations(t::TypeIrred)=getchev(t,:BraidRelations)
-
-function CoxGroups.braid_relations(W)
-  reduce(vcat,map(refltype(W)) do t
-       map(x->map(y->t[:indices][y],x),braid_relations(t))
-    end)
-end
-
 charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
 

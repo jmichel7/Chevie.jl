@@ -393,7 +393,7 @@ export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   representations, InductionTable
 
 """
-`fakeDegree(W, φ, q)`
+`fakedegree(W, φ, q)`
 
 returns  the  fake degree  of  the  character  of parameter  φ  (see
 :CharParams)  of  the  reflection  group `W`,  evaluated  at  `q`  (see

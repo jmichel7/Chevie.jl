@@ -228,7 +228,7 @@ function Base.show(io::IO, t::TypeIrred)
       for t1 in t.orbit print(io,t1) end
       print(io,")") 
     end
-    if haskey(t,:scalar)
+    if haskey(t,:scalar) && any(x->!isone(x),t.scalar)
       print(io,"[",join(sprint.(show,t.scalar;context=io)),"]")
     end
   end
@@ -880,6 +880,7 @@ function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   reflection_subgroup(WW,inclusion(W,eachindex(gens(W))).^p)
 end
 
+# contrary to Chevie, I is indices in W and not parent(W)
 function reflection_subgroup(W::PRG,I::AbstractVector)
   if isempty(I) inclusion=Int[]
   else G=PRG(W.roots[I],coroot.(Ref(W),I))
@@ -967,6 +968,55 @@ function catalan(W,m=1,q=1)
   fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
   fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
   prod(map((e,d)->f(m*h+e)//f(d),fd,d))
+end
+
+"""
+`reflection(s [,r])`
+
+Here  `s` is a square matrix with  entries cyclotomic numbers, and if given
+`r`  is  a  vector  of  the  same  length as `s` of cyclotomic numbers. The
+function  determines if `s` is the matrix  of a reflection (resp. if `r` is
+given  if it is the matrix of a reflection of root `r`; the point of giving
+`r`  is to specify exactly the desired root and coroot, which otherwise are
+determined  only up to  a scalar and  its inverse). The  returned result is
+`false`  if `s` is not a reflection (resp. not a reflection with root `r`),
+and otherwise is a record with four fields:
+
+`.root`:   the root of the reflection `s` (equal to `r` if given)
+
+`.coroot`:  the coroot of `s`
+
+`.eigenvalue`:  the non-trivial eigenvalue of `s`
+
+`.isOrthogonal`:   a  boolean  which is  `true` if  and  only if  `s` is
+  orthogonal  with respect to  the usual scalar  product (then the root and
+  eigenvalue are sufficient to determine `s`)
+
+```julia-repl
+julia> reflection([-1 0 0;1 1 0;0 0 1])
+(root = [2, 0, 0], coroot = Real[1//1, -1//2, 0], eig = Root1(0//1), isOrthogonal = false)
+
+julia> reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
+(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = Root1(0//1), isOrthogonal = false)
+```
+"""
+function reflection(m::Matrix,r::AbstractVector)
+  rr=one(m)-m
+  rc=map(j->ratio(rr[j,:],r),axes(m,1))
+  zeta=ratio(permutedims(m)*r,r)
+  rzeta=Root1(zeta)
+  if isnothing(zeta) || isnothing(rzeta)
+    error("# WARNING: ",m," is not a reflection of root ",r,"\n")
+  end
+  orth=(rc*sum(conj(r).*r)==(1-zeta)*conj(r))
+  (root=r,coroot=rc,eig=rzeta,isOrthogonal=orth)
+end
+
+function reflection(m::Matrix)
+  rr=one(m)-m
+  r=findfirst(i->!all(iszero,rr[i,:]),axes(rr,1))
+  if isnothing(r) error("not a reflection") end
+  reflection(m,rr[r,:])
 end
 
 end
