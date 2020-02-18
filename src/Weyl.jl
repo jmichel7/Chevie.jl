@@ -183,7 +183,7 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions, AlgebraicCentre, standard_parabolic
+ dimension, with_inversions, algebraic_centre, standard_parabolic
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -998,7 +998,7 @@ function AbelianGenerators(l)
   res
 end
 
-#F  AlgebraicCentre(W)  . . . centre of algebraic group W
+#F  algebraic_centre(W)  . . . centre of algebraic group W
 ##  
 ##  <W>  should be a Weyl group record  (or an extended Weyl group record).
 ##  The  function returns information  about the centre  Z of the algebraic
@@ -1014,7 +1014,7 @@ end
 ##   Returns words in the generators of Pi which generate the kernel of the
 ##   map Pi->AZ
 ##
-function AlgebraicCentre(W)
+function algebraic_centre(W)
   if W isa HasType.ExtendedCox
     F0s=map(permutedims,W.F0s)
     W=W.group

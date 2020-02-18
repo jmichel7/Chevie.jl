@@ -1,10 +1,10 @@
 const ChevieDict=Dict(
-#AlgebraicCentre
+"AlgebraicCentre"=>"algebraic_centre",
 "AsReflection"=>"reflection",
 "AsFraction"=>"fraction",
 "AsWord"=>"word",
 #BadPrimes
-#BipartiteDecomposition
+"BipartiteDecomposition"=>"bipartite_decomposition",
 "Braid"=>"BraidMonoid",
 "BraidMonoid"=>"BraidMonoid",
 "BraidRelations"=>"braid_relations",

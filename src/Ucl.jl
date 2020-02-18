@@ -742,12 +742,12 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
 # To deal with a general group intermediate between Gad and Gsc, we discard
 # the  Springer series  corresponding to  a central  character which is not
 # trivial on the fundamental group (seen as a subgroup of ZGsc)
-# AlgebraicCentre(W).descAZ returns the generators of the fundamental group
+# algebraic_centre(W).descAZ returns the generators of the fundamental group
 # of  the  algebraic  group  W  as  words  in  generators  of  the absolute
 # fundamental group.
   if !all(x->Set(x[:Z])==Set([1]),springerseries)
     springerseries=filter(s->all(y->prod(s[:Z][y])==1,
-             AlgebraicCentre(W)[:descAZ]),springerseries)
+             algebraic_centre(W)[:descAZ]),springerseries)
     AdjustAu!(classes,springerseries) 
   end
   s=springerseries[1]
