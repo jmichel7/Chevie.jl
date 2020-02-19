@@ -21,7 +21,7 @@ function lex(s::String)
   s=replace(s,r",\s*,"s=>",nothing,")
   s=replace(s,r"\[\s*,"s=>"[nothing,")
   s=replace(s,r",\s*\]"s=>",nothing]")
-  s=replace(s,r"([^<>:])="=>s"\1==") 
+  s=replace(s,r"([^<>:=])=([^=])"=>s"\1==\2") 
   s=replace(s,r":="=>"=")
   s=replace(s,r"<>"=>"!=")
   s=replace(s,r"return\s*\n"=>" return ")
@@ -135,7 +135,7 @@ function trans(e)
   sym=x->Core.QuoteNode(Symbol(x))
   if e isa Expr
     args=e.args
-#   if e.head!=:macrocall args=filter(x->!(x isa LineNumberNode),args) end
+    if e.head!=:macrocall args=filter(x->!(x isa LineNumberNode),args) end
     nargs=length(args)
     if nargs==1 (a,)=args
     elseif nargs==2 (a,b)=args

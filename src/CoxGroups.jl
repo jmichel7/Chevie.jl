@@ -106,11 +106,11 @@ julia> length(W,w0)
 6
 julia> map(i->word(W,reflection(W,i)),1:nref(W))
 6-element Array{Array{Int64,1},1}:
- [1]            
- [2]            
- [3]            
- [1, 2, 1]      
- [2, 3, 2]      
+ [1]
+ [2]
+ [3]
+ [1, 2, 1]
+ [2, 3, 2]
  [1, 2, 3, 2, 1]
 julia> [length(elements(W,i)) for i in 0:nref(W)]
 7-element Array{Int64,1}:
@@ -139,7 +139,7 @@ The file Weyl.jl defines coxgroup.
 """
 module CoxGroups
 
-export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents, 
+export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, parabolic_representatives,
   CoxSym
 
@@ -147,7 +147,7 @@ export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
 
 using Gapjm
 #-------------------------- Coxeter groups
-abstract type CoxeterGroup{T}<:Group{T} end 
+abstract type CoxeterGroup{T}<:Group{T} end
 
 function firstleftdescent(W::CoxeterGroup,w)
   findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)))
@@ -232,9 +232,9 @@ G₂₍₂₆₎=Ã₁×A₁
 
 julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
 3-element Array{Array{Int64,1},1}:
- []    
+ []
  [1, 2]
- [1]   
+ [1]
 ```
 """
 function PermGroups.reduced(W::CoxeterGroup,w)
@@ -257,8 +257,8 @@ G₂₍₂₆₎=Ã₁×A₁
 
 julia> [word(W,w) for S in reduced(H,W) for w in S]
 3-element Array{Array{Int64,1},1}:
- []    
- [1]   
+ []
+ [1]
  [1, 2]
 ```
 """
@@ -349,7 +349,35 @@ function Gapjm.words(W::CoxeterGroup)
 end
 
 """
-   `bruhatless(W, x, y)`  whether x≤y in the Bruhat order, for x, y ∈ W.
+   `bruhatless(W, x, y)`
+
+whether `x≤y` in the Bruhat order, for `x,y∈ W`. We have `x≤y` if a reduced
+expression  for `x` can be extracted from  one for `w`). See cite[(5.9) and
+(5.10)]{Hum90} for properties of the Bruhat order.
+
+```julia-repl
+julia> W=coxgroup(:H,3)
+H₃
+
+julia> w=W(1,2,1,3);
+
+julia> b=filter(x->bruhatless(W,x,w),elements(W));
+
+julia> word.(Ref(W),b)
+12-element Array{Array{Int64,1},1}:
+ []
+ [3]
+ [2]
+ [1]
+ [2, 3]
+ [1, 3]
+ [2, 1]
+ [1, 2]
+ [2, 1, 3]
+ [1, 2, 3]
+ [1, 2, 1]
+ [1, 2, 1, 3]
+```
 """
 function bruhatless(W::CoxeterGroup,x,y)
   if x==one(W) return true end
@@ -359,7 +387,7 @@ function bruhatless(W::CoxeterGroup,x,y)
     s=W(i)
     if isleftdescent(W,x,i)
       if x==s return true end
-      x=s*x 
+      x=s*x
     else d-=1
     end
     y=s*y
@@ -368,7 +396,26 @@ function bruhatless(W::CoxeterGroup,x,y)
 end
 
 """
-   `bruhatless(W, y)`  all x≤y in the Bruhat order, for y ∈ W.
+`bruhatless(W, y)`
+
+returns  a vector  whose `i`-th  element is  the vector  of elements of `W`
+smaller for the Bruhat order than `w` and of Coxeter length `i-1`. Thus the
+first  element  of  the  returned  list  contains  only  `one(W)`  and  the
+`length(W,w)`-th element contains only `w`.
+
+```julia-repl
+julia> W=CoxSym(3)
+𝔖 ₃
+
+julia> bruhatless(W,Perm(1,3))
+4-element Array{Array{Perm{UInt8},1},1}:
+ [()]
+ [(1,2), (2,3)]
+ [(1,2,3), (1,3,2)]
+ [(1,3)]
+```
+
+see also the method `Poset` for Coxeter groups.
 """
 function bruhatless(W::CoxeterGroup,w)
   if w==one(W) return [[w]] end
@@ -399,7 +446,7 @@ function standard_parabolic_class(W,I::Vector{Int})
      n=vcat(map(new) do K
        J=map(setdiff(1:coxrank(W),K)) do i
 	 w0=longest(W,push!(copy(K),i)::Vector{Int})
-         if isnothing(w0) one(w) else w0 end 
+         if isnothing(w0) one(w) else w0 end
          # isnothing==parabolic W_I1 infinite
        end
        map(J) do w
@@ -420,12 +467,12 @@ function parabolic_category(W,I::AbstractVector{<:Integer})
     end
   end
 end
-    
+
 # representatives of parabolic classes
 function parabolic_representatives(W,s)
   l=collect(combinations(1:coxrank(W),s))
   orbits=[]
-  while !isempty(l) 
+  while !isempty(l)
     o=parabolic_category(W,l[1]).obj
     push!(orbits,o)
     l=setdiff(l,o)
@@ -440,7 +487,7 @@ function coxmat(m::Matrix)
   function find(c)
     if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
     x=conductor(c)
-    if c==2+E(x)+E(x,-1) return x 
+    if c==2+E(x)+E(x,-1) return x
     elseif c==2+E(2x)+E(2x,-1) return 2x
     else error("not a Cartan matrix of a Coxeter group")
     end
@@ -452,6 +499,35 @@ function coxmat(m::Matrix)
   res
 end
 
+"""
+`braid_relations(W)`
+
+this  function returns the  relations which present  the braid group of the
+reflection group `W`. These are homogeneous (both sides of the same length)
+relations  between generators in bijection  with the generating reflections
+of  `W`. A presentation  of `W` is  obtained by adding relations specifying
+the order of the generators.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(29)
+G₂₉
+
+julia> braid_relations(W)
+7-element Array{Array{Array{Int64,1},1},1}:
+ [[1, 2, 1], [2, 1, 2]]
+ [[2, 4, 2], [4, 2, 4]]
+ [[3, 4, 3], [4, 3, 4]]
+ [[2, 3, 2, 3], [3, 2, 3, 2]]
+ [[1, 3], [3, 1]]
+ [[1, 4], [4, 1]]
+ [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]
+```
+
+each  relation  is  represented  as  a  pair  of lists, specifying that the
+product  of the  generators according  to the  indices on  the left side is
+equal  to the product according to the  indices on the right side. See also
+`Diagram`.
+"""
 function braid_relations(t::TypeIrred)
   if t.series==:ST return getchev(t,:BraidRelations) end
   m=coxmat(cartan(t))
@@ -461,7 +537,7 @@ end
 
 function braid_relations(W::Group)
   reduce(vcat,map(refltype(W)) do t
-       map(x->map(y->t[:indices][y],x),braid_relations(t))
+       map(x->map(y->t.indices[y],x),braid_relations(t))
     end)
 end
 
@@ -482,7 +558,7 @@ function CoxSym(n::Int)
 end
 
 function Base.show(io::IO, W::CoxSym)
-  if get(io,:TeX,false) || get(io,:limit,false) 
+  if get(io,:TeX,false) || get(io,:limit,false)
    print(io,fromTeX(io,"\\frakS _{$(W.n)}"))
   else print(io,"CoxSym($(W.n))")
   end
@@ -492,7 +568,7 @@ PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
-  
+
 nref(W::CoxSym)=div(W.n*(W.n-1),2)
 
 isleftdescent(W::CoxSym,w,i::Int)=i^w>(i+1)^w
@@ -514,16 +590,16 @@ function length2(W::CoxSym,w)
 end
 
 # for reflection_subgroups note the difference with Chevie:
-# leftdescents, rightdescents, classinfo.classtext, word 
+# leftdescents, rightdescents, classinfo.classtext, word
 # use indices in W and not in parent(W)
 " Only parabolics defined are I=1:m for m≤n"
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
-  if length(I)>0 n=maximum(I) 
+  if length(I)>0 n=maximum(I)
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
   CoxSym(Group(gens(W)[I]),n+1,Dict{Symbol,Any}())
 end
-  
+
 PermRoot.simple_representatives(W::CoxSym)=fill(1,nref(W))
 
 function PermRoot.reflection(W::CoxSym{T},i::Int)where T

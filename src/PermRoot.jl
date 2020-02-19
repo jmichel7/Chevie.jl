@@ -280,6 +280,8 @@ function Base.show(io::IO,d::Diagram)
     elseif series==:G
       println(io,node,tarrow(max(l[1],2)),node)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
+    elseif series==:ST
+      getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
     end
   end
 end
@@ -959,7 +961,7 @@ julia> catalan(ComplexReflectionGroup(7),2)
 
 `Catalan(W,q)`, resp. `Catalan(W,i,q)`
 
-where  `q`  is  a  variable  (an  indeterminate  or  an  'Mvp') returns the
+where  `q`  is  a  variable  (like  `Pol(:q)`  or  an  'Mvp')  returns  the
 `q`-Catalan number (resp. the `i`-th `q`-Fuss Catalan number) of `W`. Again
 the definitions in general are in cite{gg12}.
 

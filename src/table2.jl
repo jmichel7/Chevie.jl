@@ -1,6 +1,15 @@
 # an addition
 chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,(t->r->fill(1//2,r)))
 # replacements for some functions in tables (whose automatic translation failed)
+chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
+  function(t)
+    r=chevieget(t,:GeneratingRoots)
+    e=chevieget(t,:EigenvaluesGeneratingReflections)
+    e=map(x->E(denominator(x),numerator(x)),e)
+    e=map(i->e[i]*conj(r[i])//(sum(conj(r[i]).*r[i])),eachindex(e))
+    map(x->map(y->x*y,r),e)
+  end)
+
 chevieset(:D,:CharTable,n->chevieget(:imp,:CharTable)(2,2,n))
 chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 chevieset(:A,:CharTable,function(n)

@@ -80,6 +80,14 @@ end
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
 @test mytest("[word(W,w) for S in reduced(H,W) for w in S]","3-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]")
+@test mytest("W=coxgroup(:H,3)","H₃")
+@test mytest("w=W(1,2,1,3);","nothing")
+@test mytest("b=filter(x->bruhatless(W,x,w),elements(W));","nothing")
+@test mytest("word.(Ref(W),b)","12-element Array{Array{Int64,1},1}:\n []\n [3]\n [2]\n [1]\n [2, 3]\n [1, 3]\n [2, 1]\n [1, 2]\n [2, 1, 3]\n [1, 2, 3]\n [1, 2, 1]\n [1, 2, 1, 3]")
+@test mytest("W=CoxSym(3)","𝔖 ₃")
+@test mytest("bruhatless(W,Perm(1,3))","4-element Array{Array{Perm{UInt8},1},1}:\n [()]\n [(1,2), (2,3)]\n [(1,2,3), (1,3,2)]\n [(1,3)]")
+@test mytest("W=ComplexReflectionGroup(29)","G₂₉")
+@test mytest("braid_relations(W)","7-element Array{Array{Array{Int64,1},1},1}:\n [[1, 2, 1], [2, 1, 2]]\n [[2, 4, 2], [4, 2, 4]]\n [[3, 4, 3], [4, 3, 4]]\n [[2, 3, 2, 3], [3, 2, 3, 2]]\n [[1, 3], [3, 1]]\n [[1, 4], [4, 1]]\n [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]")
 end
 @testset "CycPols.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
@@ -168,6 +176,8 @@ end
 @test mytest("root(pi,2)","δ")
 @test mytest("root(pi,3)","1232")
 @test mytest("root(pi,4)","132")
+@test mytest("B=BraidMonoid(coxgroup(:A,3))","BraidMonoid(A₃)")
+@test mytest("word(B,B.delta)","6-element Array{Int64,1}:\n 1\n 2\n 1\n 3\n 2\n 1")
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("B=BraidMonoid(W)","BraidMonoid(A₃)")
 @test mytest("map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))","4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1},1}:\n [.]\n [1, 3]\n [13]\n [132]")
@@ -331,10 +341,13 @@ end
 @testset "PermRoot.jl" begin
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("hyperplane_orbits(W)","2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int16,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])")
+@test mytest("bipartite_decomposition(coxgroup(:E,8))","([1, 4, 6, 8], [3, 2, 5, 7])")
 @test mytest("catalan(8)","1430")
 @test mytest("catalan(coxgroup(:A,7))","1430")
 @test mytest("catalan(ComplexReflectionGroup(7),2)","16//1")
 @test mytest("catalan(ComplexReflectionGroup(7),2,q)","Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1")
+@test mytest("reflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Real[1//1, -1//2, 0], eig = Root1(0//1), isOrthogonal = false)")
+@test mytest("reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = Root1(0//1), isOrthogonal = false)")
 end
 @testset "Perms.jl" begin
 @test mytest("a=Perm(1,2,3)","(1,2,3)")

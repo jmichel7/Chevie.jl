@@ -404,6 +404,25 @@ function (M::GarsideMonoid{T})(r::T)where T
   end
 end
 
+"""
+`word(M::GarsideMonoid{T},w::T)`
+
+returns a word in the atoms of `M` representing the simple `w`
+
+```julia-repl
+julia> B=BraidMonoid(coxgroup(:A,3))
+BraidMonoid(A₃)
+
+julia> word(B,B.delta)
+6-element Array{Int64,1}:
+ 1
+ 2
+ 1
+ 3
+ 2
+ 1
+```
+"""
 function CoxGroups.word(M::GarsideMonoid{T},w::T)where T
   res=Int[]
   while w!=one(M)

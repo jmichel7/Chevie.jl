@@ -14,7 +14,7 @@ chevieset(:imp, :PrintDiagram, function (arg...,)
         if q == 1
             print(indices[1], "(", p, ")")
             if length(indices) > 1
-                print("===")
+                print("==")
             end
             print(Join(indices[2:length(indices)], "--"), "\n")
         elseif p == q

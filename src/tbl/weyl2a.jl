@@ -1,3 +1,4 @@
+
 chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
         local n, part, guesslongest, redw, l, w0, p
         n = arg[1]
@@ -45,13 +46,12 @@ chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
             w0 = w0 * Perm(p, (n - p) + 2)
         end
         if mod(n, 2) == 0
-          push!(l, 1+div(n,2))
+            push!(l, div(n, 2) + 1)
         end
         return map((p->begin
                         redw(n, guesslongest(p) * w0)
                     end), part)
     end)
-
 chevieset(Symbol("2A"), :ClassInfo, function (n,)
         local res
         res = (chevieget(:A, :ClassInfo))(n)
@@ -94,8 +94,6 @@ chevieset(Symbol("2A"), :CharName, function (arg...,)
 chevieset(Symbol("2A"), :CharInfo, (n->begin
             (chevieget(:A, :CharInfo))(n)
         end))
-#chevieset(Symbol("2A"), :CharTable, (CHEVIE[:compat])[:CharTable2A])
-#chevieset(Symbol("2A"), :HeckeCharTable, (CHEVIE[:compat])[:HeckeCharTable2A])
 chevieset(Symbol("2A"), :PhiFactors, (n->begin
             map((x->begin
                         (-1) ^ x
