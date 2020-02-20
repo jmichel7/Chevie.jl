@@ -987,16 +987,16 @@ function catalan(W,m=1,q=1)
 end
 
 """
-`reflection(s [,r])`
+`reflection(s::Matrix [,r::AbstractVector])`
 
-Here  `s` is a square matrix with  entries cyclotomic numbers, and if given
-`r`  is  a  vector  of  the  same  length as `s` of cyclotomic numbers. The
-function  determines if `s` is the matrix  of a reflection (resp. if `r` is
-given  if it is the matrix of a reflection of root `r`; the point of giving
-`r`  is to specify exactly the desired root and coroot, which otherwise are
-determined  only up to  a scalar and  its inverse). The  returned result is
-`false`  if `s` is not a reflection (resp. not a reflection with root `r`),
-and otherwise is a record with four fields:
+Here  `s` is  a square  matrix, and  if given  `r` is  a vector of the same
+length  as `size(s)[1]`. The function determines if  `s` is the matrix of a
+reflection  (resp. if `r` is  given if it is  the matrix of a reflection of
+root  `r`; the point of  giving `r` is to  specify exactly the desired root
+and  coroot, which  otherwise are  determined only  up to  a scalar and its
+inverse).  The returned result is `false` if `s` is not a reflection (resp.
+not  a  reflection  with  root  `r`),  and  otherwise is a record with four
+fields:
 
 `.root`:   the root of the reflection `s` (equal to `r` if given)
 

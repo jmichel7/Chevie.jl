@@ -73,10 +73,10 @@ fraction  smaller `a/b` with `0<a<b`  and specifies `ζ=E(b,a)`. If omitted,
 `ζ`-eigenspace  of some element of `WF`,  and is of maximal dimension among
 such   possible  `ζ`-eigenspaces,  and  `W`  is  the  group  of  `WF`  then
 `N_W(V_ζ)/C_W(V_ζ)`  is  a  reflection  group  in  its action on `V_ζ`. The
-function  `RelativeDegrees` returns the reflection  degrees of this complex
+function  `relative_degrees` returns the reflection degrees of this complex
 reflection group, which are a subset of those of `W`.
 
-These  degrees are obtained quickly by invariant-theoretic computations: if
+These   degrees  are   computed  by   an  invariant-theoretic  formula:  if
 `(d₁,ε₁),…,(dₙ,εₙ)`  are the generalized degrees of  `WF` they are the `dᵢ`
 such that `ζ^{dᵢ}=εᵢ`.
 
@@ -95,7 +95,7 @@ julia> relative_degrees(W,4)
 function relative_degrees(W,d=0//1)
   if d isa Integer && !iszero(d) d=1//d end
   if W isa Spets 
-    zeta=E(d//1)
+    zeta=E(;r=d)
     [d for (d,f) in degrees(W) if zeta^d==f]
   else filter(x->iszero(mod1(d*x)),degrees(W))
   end
@@ -154,7 +154,7 @@ function regular_eigenvalues(W)
     return filter(x->
      count(i->mod(i,x)==0,d)==count(i->mod(i,x)==0,c),union(divisors.(d)...))
   end
-  l=union(map(p->divisors(denominator(Root1(p[2]).r)*p[1]),d)...)
+  l=union(map(p->divisors(conductor(p[2])*p[1]),d)...)
   res=Rational{Int}[]
   for n in l
     p=prime_residues(n)
@@ -228,11 +228,11 @@ julia> GLinearAlgebra.rank(p)
 """
 function EigenspaceProjector(WF, w, d)
   if d isa Int && d!=0 d=mod1(1//d) end
-  c=Root1.(refleigen(WF)[position_class(WF,w)])
-  c=E.(filter(x->x!=Root1(d),c))
+  c=refleigen(WF)[position_class(WF,w)]
+  c=map(x->E(;r=x),filter(x->x!=d,c))
   f=matX(WF,w)
   if length(c)==0 f^0
-  else prod(x->f-f^0*x,c)//prod(x->E(Root1(d))-x,c)
+  else prod(x->f-f^0*x,c)//prod(x->E(;r=d)-x,c)
   end
 end
 
@@ -333,7 +333,7 @@ function SplitLevis(WF,d=0,ad=-1)
     w=class_reps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=matX(WF,w)
-      V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(denominator(d),numerator(d))*one(m))))
+      V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(;r=d)*one(m))))
     end
     I=refs[map(m->V==V*m, mats)]
     HF=subspets(WF, inclusion(W)[I], w/WF.phi)

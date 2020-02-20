@@ -170,7 +170,7 @@ function ComplexReflectionGroup(i::Int)
   r=getchev(t,:GeneratingRoots)
   cr=getchev(t,:GeneratingCoRoots)
   if isnothing(cr)
-    cr=map(coroot,r,E.(getchev(t,:EigenvaluesGeneratingReflections)))
+   cr=map(coroot,r,map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
   end
   PRG(r,cr)
 end
@@ -583,10 +583,10 @@ function CycPols.CycPol(v::AbstractVector)
   v1=convert.(Rational{Int},v[3:end])
   for i in v1
     if denominator(i)==1
-       k=convert(Int,i)
-       for j in prime_residues(k) push!(vv,Root1(j//k)=>1) end
+      k=convert(Int,i)
+      for j in prime_residues(k) push!(vv,Root1(;r=j//k)=>1) end
     else
-     push!(vv,Root1(i)=>1)
+      push!(vv,Root1(;r=i)=>1)
     end
   end
   CycPol(coeff,valuation,ModuleElt(vv))

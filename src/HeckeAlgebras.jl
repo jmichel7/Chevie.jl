@@ -196,7 +196,7 @@ function hecke(W,p::Vector{C};rootpara::Vector{C}=C[])where C
   if all(isequal(2),oo) z=0 else z=zero(Cyc) end
   para=map(p,oo)do p, o
     if o==2 return [p,-one(p)].+z end
-    map(i->iszero(i) ? p+z : zero(p)+E(o)^i,0:o-1)
+    map(i->iszero(i) ? p+z : zero(p)+E(o,i),0:o-1)
   end
   hecke(W,para,rootpara=convert(Vector{typeof(para[1][1])},rootpara))
 end

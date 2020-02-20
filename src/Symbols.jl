@@ -241,7 +241,7 @@ function stringsymbol(S)
   if S[end] isa AbstractVector 
     return "("*join(joindigits.(S),",")*")"
   else
-    v=E(S[end-1])^S[end]
+    v=E(S[end-1],S[end])
     n= v==1 ? "+" : v==-1 ? "-" : string(v)
    return "("*join(joindigits.(S[1:end-2]),",")*"$n)"
   end

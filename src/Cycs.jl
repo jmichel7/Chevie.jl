@@ -243,6 +243,7 @@ end
 end
 
 E(a,b=1)=Cycs.E(Int(a),Int(b))
+E(;r)=E(denominator(r),numerator(r))
 
 if use_list
 Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
@@ -669,8 +670,30 @@ struct Root1 # E(c,n)
   Root1(n::Int,c::Int)=new(mod(n,c)//c)
 end
 
-Root1(r::Rational)=Root1(numerator(r),denominator(r))
+Root1(;r::Rational)=Root1(numerator(r),denominator(r))
 
+Base.broadcastable(r::Root1)=Ref(r)
+
+"""
+`Root1(c)`
+    
+`c` should be a cyclotomic number (a `Cyc`), or a `Real`. `Root1` returns a
+`Root1` object containing the rational `e/n` with `0≤e<n` (that is, `e/n∈ ℚ
+/ℤ`) if `c==E(n,e)`, and `nothing` if `c` is not a root of unity.
+
+```julia-repl
+julia> r=Root1(-E(9,2)-E(9,5))
+Root1(8//9)
+
+julia> E(r)
+-ζ₉²-ζ₉⁵
+
+julia> Root1(-E(9,4)-E(9,5))
+
+julia> Root1(1)
+Root1(0//1)
+```
+""" 
 function Root1(c::Cyc)
 if use_list
   if !(all(x->x==0 || x==1,c.d) ||all(x->x==0 || x==-1,c.d))
@@ -710,16 +733,12 @@ end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
 
-function Base.:*(a::Root1,b::Root1)
-  r=a.r+b.r
-  Root1(numerator(r),denominator(r))
-end
+Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 
-Base.:inv(a::Root1)=Root1(-a.r)
+Base.:inv(a::Root1)=Root1(;r=-a.r)
 
-E(a::Root1)=E(conductor(a),exponent(a))
+E(a::Root1)=E(;r=a.r)
 #------------------- end of Root1 ----------------------------------------
-E(a::Rational{<:Integer})=E(denominator(a),numerator(a))
 
 struct Quadratic
   a

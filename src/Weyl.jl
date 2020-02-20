@@ -911,7 +911,7 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
 
 #----------------------------------------------------------------------------
 
-Base.mod1(a::Rational{Int})=mod(numerator(a),denominator(a))//denominator(a)
+Base.mod1(a)=mod(numerator(a),denominator(a))//denominator(a)
 
 abstract type SemisimpleElement end
 

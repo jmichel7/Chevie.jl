@@ -6,7 +6,7 @@ const ChevieDict=Dict(
 #AlmostCharacter
 "AsReflection"=>"reflection",
 "AsFraction"=>"fraction",
-#AsRootOfUnity
+"AsRootOfUnity"=>"Root1",
 #AsymptoticAlgebra
 "AsWord"=>"word",
 #BadPrimes

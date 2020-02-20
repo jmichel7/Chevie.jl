@@ -146,10 +146,10 @@ chevieset(:families,:X,function(p)
     Family(Dict(:name=>"R_{\\BZ/$p}^{\\wedge 2}",
          :explanation=>"DoubleTaft($p)",
          :charSymbols=>ss,
-         :charLabels=>map(s->repr(E(p)^s[1],context=:TeX=>true)*
-      "\\!\\wedge\\!"*repr(E(p)^s[2],context=:TeX=>true),ss),
-    :eigenvalues=>map(s->E(p)^Product(s),ss),
-    :fourierMat=>[(E(p)^(i*reverse(j))-E(p)^(i*j))/p for i in ss,j in ss],
+         :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
+             "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
+    :eigenvalues=>map(s->E(p,Product(s)),ss),
+    :fourierMat=>[(E(p,i*reverse(j))-E(p,i*j))/p for i in ss,j in ss],
     :special=>1,:cospecial=>p-1))
    end)
 
@@ -203,15 +203,15 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
     :operations=>FamilyOps,
     :charSymbols=>combinations(0:e-1,n)
   )
-  g[:charLabels]=map(s->join(map(x->repr(E(e)^x,context=:TeX=>true),s),
+  g[:charLabels]=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s),
                              "\\!\\wedge\\!"), g[:charSymbols])
   if iszero(e%2)
-    g[:eigenvalues]=E(24)^(e-1)*map(i->E(2*e)^(i*i+e*i),0:e-1)
+    g[:eigenvalues]=E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1)
   else
-    g[:eigenvalues]=E(24)^(e-1)*map(i->E(e)^div(i*i+e*i,2),0:e-1)
+    g[:eigenvalues]=E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1)
   end
   g[:eigenvalues]=DiagonalOfMat(exterior_power(DiagonalMat(g[:eigenvalues]...),n))
-  g[:fourierMat]=exterior_power([E(e)^(i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
+  g[:fourierMat]=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
   if n>1 g[:name]="R(\\BZ/$e)^{\\wedge $n}"
     g[:explanation]=ordinal(n)*" exterior power of char. ring of Z/$e"
   else g[:name]="R(\\BZ/$e)"
@@ -238,8 +238,8 @@ chevieset(:families,:QZ,function(n)
   pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
   res=Dict{Symbol,Any}(:name=>"D(\\BZ/$n)")
   res[:explanation]="Drinfeld double "*res[:name]
-  res[:fourierMat]=[E(n,x)^c1*E(n,x1)^c for (x,c) in pairs, (x1,c1) in pairs]//n
-  res[:eigenvalues]=[E(n,x)^c for (x,c) in pairs]
+  res[:fourierMat]=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
+  res[:eigenvalues]=[E(n,x*c) for (x,c) in pairs]
   res[:special]=1
   res[:charLabels]=["($(E(n,x)),$(E(n,c)))" for (x,c) in pairs]
   Family(res)
@@ -255,8 +255,8 @@ chevieset(:families,:Dihedral,function(e)
   else nc=vcat(map(l->[0,l],1:e1),nc)
 # The principal series chars in f are:[S(0,l) with 0<l<e1+1]
   end
-  c=a->E(e)^a+E(e)^(-a)
-  f=Dict( :eigenvalues=>map(s->E(e)^-prod(s[1:2]),nc),
+  c=a->E(e,a)+E(e,-a)
+  f=Dict( :eigenvalues=>map(s->E(e,-prod(s[1:2])),nc),
     :size=>length(nc),
     :parameters=>nc,
     :charLabels=>map(repr,nc),

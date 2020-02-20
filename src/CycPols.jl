@@ -81,7 +81,7 @@ struct CycPol{T}
 end
 
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
-  ModuleElt(Pair{Root1,Int}[Root1(r)=>m for (r,m) in v]))
+  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v]))
 
 function roots(c::CycPol)
   function f(e,m)
@@ -297,10 +297,10 @@ function CycPol(p::Pol{T})where T
   elseif length(p.c)==1 # p==ax^s
     return CycPol(p.c[1],Pols.valuation(p))
   elseif 2==count(!iszero,p.c) # p==ax^s+bx^t
-    a=Root1(Cyc(-p.c[1]//p.c[end]))
+    a=Root1(-p.c[1]//p.c[end])
     if a===nothing return CycPol(Pol(p.c,0),Pols.valuation(p)) end
     d=length(p.c)-1
-    vcyc=[Root1(numerator(u),denominator(u))=>1 for u in (a.r .+(0:d-1))//d]
+    vcyc=[Root1(;r=u)=>1 for u in (a.r .+(0:d-1))//d]
     return CycPol(p.c[end],Pols.valuation(p),ModuleElt(sort(vcyc)))
   end
   val=Pols.valuation(p)

@@ -116,6 +116,10 @@ end
 @test mytest("galois(ER(5),2)==-ER(5)","true")
 @test mytest("ER(-1)","ζ₄")
 @test mytest("ER(3)","√3")
+@test mytest("r=Root1(-E(9,2)-E(9,5))","Root1(8//9)")
+@test mytest("E(r)","-ζ₉²-ζ₉⁵")
+@test mytest("Root1(-E(9,4)-E(9,5))","nothing")
+@test mytest("Root1(1)","Root1(0//1)")
 @test mytest("Quadratic(1+E(3))","(1+√-3)/2")
 @test mytest("Quadratic(1+E(5))","nothing")
 end
