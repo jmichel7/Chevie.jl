@@ -350,8 +350,8 @@ end
 @test mytest("catalan(coxgroup(:A,7))","1430")
 @test mytest("catalan(ComplexReflectionGroup(7),2)","16//1")
 @test mytest("catalan(ComplexReflectionGroup(7),2,q)","Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1")
-@test mytest("reflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Real[1//1, -1//2, 0], eig = Root1(0//1), isOrthogonal = false)")
-@test mytest("reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = Root1(0//1), isOrthogonal = false)")
+@test mytest("reflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = Root1(1//2), isOrthogonal = false)")
+@test mytest("reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = Root1(1//2), isOrthogonal = false)")
 end
 @testset "Perms.jl" begin
 @test mytest("a=Perm(1,2,3)","(1,2,3)")

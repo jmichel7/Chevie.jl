@@ -187,7 +187,7 @@ function ComplexReflectionGroup(p,q,r)
   end
   t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   r=getchev(t,:GeneratingRoots)
-  cr=map(coroot,r,E.(getchev(t,:EigenvaluesGeneratingReflections)))
+  cr=map(coroot,r,map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
   PRG(r,map(x->convert.(Cyc{Rational{Int}},x),cr))
 end
 
