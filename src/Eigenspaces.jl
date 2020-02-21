@@ -92,14 +92,11 @@ julia> relative_degrees(W,4)
  24
 ```
 """
-function relative_degrees(W,d=0//1)
-  if d isa Integer && !iszero(d) d=1//d end
-  if W isa Spets 
-    zeta=E(;r=d)
-    [d for (d,f) in degrees(W) if zeta^d==f]
-  else filter(x->iszero(mod1(d*x)),degrees(W))
-  end
-end
+relative_degrees(W,d::Integer)=relative_degrees(W,Root1(1,d))
+relative_degrees(W,d::Rational)=relative_degrees(W,Root1(;r=d))
+relative_degrees(W)=relative_degrees(W,Root1(0,1))
+relative_degrees(W,d::Root1)=filter(x->isone(d^x),degrees(W))
+relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if E(z)^d==f]
 
 """
 `regular_eigenvalues(W)`
@@ -151,8 +148,8 @@ function regular_eigenvalues(W)
   d=degrees(W)
   c=codegrees(W)
   if !(W isa Spets)
-    return filter(x->
-     count(i->mod(i,x)==0,d)==count(i->mod(i,x)==0,c),union(divisors.(d)...))
+    return filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
+                  sort(union(divisors.(d)...)))
   end
   l=union(map(p->divisors(conductor(p[2])*p[1]),d)...)
   res=Rational{Int}[]

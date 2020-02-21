@@ -3,7 +3,7 @@ module HasType
 export reflection_name, diagram,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  FamilyImprimitive, Family
+  FamilyImprimitive, Family, traces_words_mats
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -158,6 +158,41 @@ function schur_elements(H::HeckeAlgebra)
       first.(charinfo(W)[:charparams]))
 end
 
+"""
+`ComplexReflectionGroup(STnumber)`
+
+`ComplexReflectionGroup(p,q,r)`
+
+The  first form of `ComplexReflectionGroup`  returns the complex reflection
+group which has Shephard-Todd number `STnumber`, see cite{ST54}. The second
+form returns the imprimitive complex reflection group `G(p,q,r)`.
+
+```julia-repl
+julia> G=ComplexReflectionGroup(4)
+G₄
+
+julia> degrees(G)
+2-element Array{Int64,1}:
+ 4
+ 6
+
+julia> length(G)
+24
+
+julia> fakedegrees(G,Pol(:q))
+7-element Array{Pol{Int64},1}:
+ 1       
+ q⁴      
+ q⁸      
+ q⁷+q⁵   
+ q⁵+q³   
+ q³+q    
+ q⁶+q⁴+q²
+
+julia> ComplexReflectionGroup(2,1,6)
+B₆
+```
+"""
 function ComplexReflectionGroup(i::Int)
   if i==23     return coxgroup(:H,3)
   elseif i==28 return coxgroup(:F,4)
@@ -264,11 +299,11 @@ function codegrees(t::TypeIrred)
 end
 
 function codegrees(W::Group)
-  vcat(fill(0,rank(W)-semisimplerank(W)),codegrees.(refltype(W))...)
+  vcat(fill(0,rank(W)-semisimplerank(W)),collect.(codegrees.(refltype(W)))...)
 end
 
 function codegrees(W::Spets)
-  vcat(map(x->(-1,x),E.(-roots(torusfactors(W)))),codegrees.(refltype(W))...)
+ vcat(map(x->(-1,x),E.(-roots(torusfactors(W)))),collect.(codegrees.(refltype(W)))...)
 end
 
 function diagram(W)
@@ -592,14 +627,38 @@ function CycPols.CycPol(v::AbstractVector)
   CycPol(coeff,valuation,ModuleElt(vv))
 end
 
-function CharRepresentationWords(mats,words)
-  mats=toM.(mats)
+"""
+`traces_words_mats(mats,words)`
+    
+given  a list `mats`  of matrices and  a list `words`  of words returns the
+list of traces of the corresponding products of the matrices
+
+```julia-repl
+julia> W=coxgroup(:F,4)
+F₄
+
+julia> r=classinfo(W)[:classtext];
+
+julia> R=representation(W,17)
+4-element Array{Array{Int64,2},1}:
+ [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1] 
+ [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]
+ [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]
+ [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1] 
+
+julia> traces_words_mats(R,r)==CharTable(W).irr[17,:]
+true
+```
+"""
+function traces_words_mats(mats,words)
   map(words)do w
     if isempty(w) return size(mats[1],1) end
     m=prod(mats[w])
     sum(i->m[i,i],axes(m,1))
   end
 end
+
+CharRepresentationWords(mats,words)=traces_words_mat(toM.(mats),words)
 
 function ImprimitiveCuspidalName(S)
   r=RankSymbol(convert(Vector{Vector{Int}},S))

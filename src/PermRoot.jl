@@ -504,7 +504,7 @@ end
 
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
   gets(W,:refltype)do W
-    map(blocks(cartan(W))) do I
+    map(diagblocks(cartan(W))) do I
       R=reflection_subgroup(W,I)
       d=TypeIrred(type_irred(R))
       if cartan(d)==cartan(R)

@@ -1019,7 +1019,7 @@ function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
   res[:dimBu]=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
   res[:blocks]=HasType.CollectBy(eachindex(ss[:locsys]),-res[:dimBu])
   # matrix of q^{-bᵢ-bⱼ}*fakedegree(χᵢ ⊗ χⱼ ⊗ sgn)
-  tbl=BigCellDecomposition([q^(-res[:dimBu][i]-res[:dimBu][j])*
+  tbl=bigcell_decomposition([q^(-res[:dimBu][i]-res[:dimBu][j])*
                             sum(map(*,f,DecomposeTensor(R,i,j,k)))
      for i in 1:n,j in 1:n], res[:blocks])
   res[:scalar]=tbl[1]

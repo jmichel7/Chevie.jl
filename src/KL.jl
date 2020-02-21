@@ -448,7 +448,7 @@ julia> character(c)
 function character(c::LeftCell)
   gets(c,:character) do c
     r=representation(c,hecke(c.group))
-    cc=HasType.CharRepresentationWords(r,classinfo(c.group)[:classtext])
+    cc=HasType.traces_words_mats(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
     cc=Chars.decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
@@ -568,10 +568,10 @@ julia> Pol(:q);H=hecke(W,q^2;rootpara=q)
 hecke(H₃,q²,rootpara=q)
 
 julia> representation(c,H)
-3-element Array{Array{SubArray{Pol{Int64},1,Array{Pol{Int64},2},Tuple{Int64,Base.Slice{Base.OneTo{Int64}}},true},1},1}:
- [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]
- [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]
- [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]
+3-element Array{Array{Pol{Int64},2},1}:
+ [-1 0 … q 0; 0 -1 … q q; … ; 0 0 … q² 0; 0 0 … 0 q²]
+ [-1 0 … 0 0; 0 q² … 0 0; … ; 0 q … -1 0; 0 q … 0 -1]
+ [q² 0 … 0 0; 0 -1 … q 0; … ; 0 0 … q² 0; 0 0 … q -1]
 ```
 """
 function Chars.representation(c::LeftCell,H)
@@ -580,7 +580,7 @@ function Chars.representation(c::LeftCell,H)
     error("cell representations for unequal parameters not yet implemented")
   else v=rootpara(H)[1]
   end
-  WGraphToRepresentation(semisimplerank(c.group),WGraph(c),v)
+  toM.(WGraphToRepresentation(semisimplerank(c.group),WGraph(c),v))
 end
 
 # returns right star operation st (a BraidRelation) of LeftCell c

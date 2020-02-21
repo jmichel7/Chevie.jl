@@ -9,7 +9,8 @@ any ring).
 """
 module GLinearAlgebra
 using Gapjm
-export echelon, exterior_power, CoFactors, BigCellDecomposition, blocks, ratio
+export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
+  ratio
 
 """
     `echelon!(m)`
@@ -136,12 +137,12 @@ function CoFactors(m)
 end
 
 """
-`BigCellDecomposition(M [, b])`
+`bigcell_decomposition(M [, b])`
 
 `M`  should be a square  matrix, and `b` specifies  a block structure for a
-matrix  of  same  size  as  `M`  (it  is  a  list  of  lists whose union is
-`1:Length(M)`).   If  <b>  is  not   given,  the  trivial  block  structure
-`[[1],…,[length(M)]]` is assumed.
+matrix  of  same  size  as  `M`  (it  is  a  `Vector`  of  `Vector`s  whose
+concatenation  is `1:size(M,1)`).  If `b`  is not  given, the trivial block
+structure `[[i] for i in axes(M,1)]` is assumed.
 
 The  function  decomposes  `M`  as  a  product  `P₁ L P` where `P` is upper
 block-unitriangular   (with  identity  diagonal   blocks),  `P₁`  is  lower
@@ -150,8 +151,9 @@ If  `M` is symmetric then  `P₁` is the transposed  of `P` and the result is
 the  pair  `[P,L]`;  else  the  result  is  the triple `[P₁,L,P]`. The only
 condition  for  this  decomposition  of  `M`  to  be  possible  is that the
 principal  minors  according  to  the  block  structure be invertible. This
-routine is used when computing the green functions and the example below is
-extracted from the computation of the Green functions for `G₂`.
+routine  is used  in the  Lusztig-Shoji algorithm  for computing  the Green
+functions  and the example  below is extracted  from the computation of the
+Green functions for `G₂`.
 
 ```julia-repl
 julia> Pol(:q)
@@ -168,7 +170,7 @@ julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 
 
 julia> bb=[[2],[4],[6],[3,5],[1]];
 
-julia> (P,L)=Ucl.BigCellDecomposition(M,bb);
+julia> (P,L)=bigcell_decomposition(M,bb);
 
 julia> P
 6×6 Array{Pol{Int64},2}:
@@ -192,7 +194,7 @@ julia> M==permutedims(P)*L*P
 true
 ```
 """
-function BigCellDecomposition(M,b=map(i->[i],axes(M,1)))
+function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
   L=one(M)
   P=one(M)
   block(X,i,j)=X[b[i],b[j]]
@@ -238,22 +240,41 @@ function exterior_power(A,m)
 end
 
 """
-  blocks(M::Matrix)
+`diagblocks(M::Matrix)`
 
-  M  should be a square matrix. Define  a graph G with vertices 1:size(M,1)
-  and  with an edge between i and j  if either M[i,j] or M[j,i] is not zero
-  or false. blocks returns a vector of vectors I such that I[1],I[2], etc..
-  are  the  vertices  in  each  connected  component  of G. In other words,
-  M[I[1],I[1]],M[I[2],I[2]],etc... are blocks of M.
+`M`  should  be  a  square  matrix.  Define  a  graph  `G`  with vertices
+`1:size(M,1)` and with an edge between `i`  and `j` if either `M[i,j]` or
+`M[j,i]` is not zero or `false`. `diagblocks` returns a vector of vectors
+`I`  such that  `I[1]`,`I[2]`, etc..  are the  vertices in each connected
+component  of `G`.  In other  words, `M[I[1],I[1]]`,`M[I[2],I[2]]`,etc...
+are diagonal blocks of `M`.
+
+```julia-repl
+julia> m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]
+4×4 Array{Int64,2}:
+ 0  0  0  1
+ 0  0  1  0
+ 0  1  0  0
+ 1  0  0  0
+
+julia> diagblocks(m)
+2-element Array{Array{Int64,1},1}:
+ [1, 4]
+ [2, 3]
+
+julia> m[[1,4],[1,4]]
+2×2 Array{Int64,2}:
+ 0  1
+ 1  0
+```
 """
-function blocks(M::Matrix)::Vector{Vector{Int}}
+function diagblocks(M::Matrix)::Vector{Vector{Int}}
   l=size(M,1)
   if l==0 return Vector{Int}[] end
   cc=collect(1:l) # cc[i]: in which block is i, initialized to different blocks
-  nz=!iszero
   for i in 1:l, j in i+1:l
     # if new relation i~j then merge components:
-    if (nz(M[i,j]) || nz(M[j,i])) && cc[i]!=cc[j]
+    if !(iszero(M[i,j]) && iszero(M[j,i])) && cc[i]!=cc[j]
       cj=cc[j]
       for k in 1:l
          if cc[k]==cj cc[k]=cc[i] end

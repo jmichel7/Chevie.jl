@@ -355,6 +355,11 @@ function Base.show(io::IO, ::MIME"text/html", a::Cyc)
   print(io, "\$")
 end
 
+function Base.show(io::IO, ::MIME"text/plain", r::Cyc)
+  print(io,typeof(r),": ")
+  show(io,r)
+end
+
 function Base.show(io::IO, p::Cyc)
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
@@ -379,13 +384,11 @@ end
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
+      t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
       if repl || TeX
-        t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
         if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
       else
-        v=bracket_if_needed(string(v))
-        t= v=="1" ? "" : v=="-1" ? "-" : v
         r=(deg==1 ? "E($(p.n))" : "E($(p.n),$deg)")
       end
       t*=r
@@ -674,6 +677,15 @@ Root1(;r::Rational)=Root1(numerator(r),denominator(r))
 
 Base.broadcastable(r::Root1)=Ref(r)
 
+function Base.show(io::IO, ::MIME"text/plain", r::Root1)
+  print(io,typeof(r),": ")
+  show(io,r)
+end
+
+function Base.show(io::IO, r::Root1)
+  print(io,exponent(r),"/",conductor(r))
+end
+
 """
 `Root1(c)`
     
@@ -733,7 +745,13 @@ end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
 
+Base.one(a::Root1)=Root1(0,1)
+
+Base.isone(a::Root1)=iszero(a.r)
+
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
+
+Base.:^(a::Root1,n)=Root1(;r=n*a.r)
 
 Base.:inv(a::Root1)=Root1(;r=-a.r)
 

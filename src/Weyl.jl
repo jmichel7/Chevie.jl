@@ -385,7 +385,7 @@ end
  return a list of (series=s,indices=[i1,..,in]) for a Cartan matrix
 """
 function type_cartan(m::AbstractMatrix)
-  map(blocks(m)) do I
+  map(diagblocks(m)) do I
     t=type_fincox_cartan(m[I,I])
     if isnothing(t) error("unknown Cartan matrix ",m[I,I]) end
     t[:indices]=I[t[:indices]]
@@ -547,7 +547,80 @@ end
 @inline CoxGroups.nref(W::FCG)=W.N
 CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 
-"Coxeter group from type"
+"""
+`coxgroup(type,rank[,bond])`
+    
+This is equivalent to 'coxgroup(cartan(type,rank[,bond]))`.
+                          
+The  resulting record, that we will  call a *Coxeter datum*, has additional
+entries describing various information on the root system and Coxeter group
+that we describe below.
+
+`.N`:   the number of positive roots
+
+`.rootdec`:   the root vectors, given  as linear combinations of simple roots.
+       The first 'N' roots are positive, the next 'N' are the corresponding
+       negative  roots. Moreover,  the first  'SemisimpleRank(W)' roots are
+       the  simple  roots.  The  positive  roots  are ordered by increasing
+       height.
+
+'coroots':     the same   information    for  the  coroots.    The coroot
+       corresponding  to a given  root is in  the same relative position in
+       the list of coroots as the root in the list of roots.
+
+'rootLengths':   the vector of length of roots the simple roots.
+       The  shortest roots in an irreducible subsystem are given the length
+       1. The others then have length 2 (or 3 in type  G_2).  The matrix of
+       the <W>-invariant bilinear form is given by
+       'map(i->W.rootLengths[i]*W.cartan[i],1:semisimplerank(W)])/2'.
+
+'orbitRepresentative':   this is a list of  same length as 'roots', which
+       for  each  root,  gives  the  smallest  index  of a root in the same
+       <W>-orbit.
+
+'orbitRepresentativeElements':   a list of  same length as 'roots', which
+       for  the  i-th  root, gives an element  <w> of <W> of minimal length
+       such that 'i=orbitRepresentative[i]^w'.
+
+'matgens':    the  matrices  (in  row  convention  ---  that is the matrices
+       operate  *from the right*) of the  simple reflections of the Coxeter
+       group.
+
+'gens(W)':   the generators as permutations of the root vectors.  They
+       are given in the same order as the first 'semisimplerank(W)' roots.
+
+```julia_repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> cartan(W)
+3×3 Array{Int64,2}:
+  2  -1   0
+ -1   2  -1
+  0  -1   2
+
+julia> W.rootdec
+12-element Array{Array{Int64,1},1}:
+ [1, 0, 0]   
+ [0, 1, 0]   
+ [0, 0, 1]   
+ [1, 1, 0]   
+ [0, 1, 1]   
+ [1, 1, 1]   
+ [-1, 0, 0]  
+ [0, -1, 0]  
+ [0, 0, -1]  
+ [-1, -1, 0] 
+ [0, -1, -1] 
+ [-1, -1, -1]
+
+julia> W.G.matgens
+3-element Array{Array{Int64,2},1}:
+ [-1 0 0; 1 1 0; 0 0 1]
+ [1 1 0; 0 -1 0; 0 1 1]
+ [1 0 0; 0 1 1; 0 0 -1]
+```
+"""
 coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(t,r,b))
 
 " Adjoint root datum from cartan mat"
@@ -916,24 +989,25 @@ Base.mod1(a)=mod(numerator(a),denominator(a))//denominator(a)
 abstract type SemisimpleElement end
 
 struct AdditiveSE<:SemisimpleElement
-  v::Vector{Rational{Int}}
   W::FiniteCoxeterGroup
+  v::Vector{Root1}
 end
 
-AdditiveSE(W::FiniteCoxeterGroup,v::AbstractVector{Rational{Int}})=AdditiveSE(mod1.(v),W)
+AdditiveSE(W::FiniteCoxeterGroup,v::AbstractVector{Rational{Int}})=AdditiveSE(
+           W,map(x->Root1(;r=x),v))
 
 Base.show(io::IO,a::SemisimpleElement)=print(io,"<",join(a.v,","),">")
 
-Base.one(a::AdditiveSE)=AdditiveSE(a.W,0 .*a.v)
-Base.isone(a::AdditiveSE)=all(iszero,a.v)
+Base.one(a::AdditiveSE)=AdditiveSE(a.W,one.(a.v))
+Base.isone(a::AdditiveSE)=all(isone,a.v)
 
 # hash is needed for using AdditiveSE in Sets/Dicts
 Base.hash(a::AdditiveSE, h::UInt)=hash(a.v, h)
 Base.:(==)(a::AdditiveSE, b::AdditiveSE)=a.v==b.v
 
-Gapjm.order(a::AdditiveSE)=lcm(denominator.(a.v))
+Gapjm.order(a::AdditiveSE)=lcm(conductor.(a.v))
 
-Base.:*(a::AdditiveSE,b::AdditiveSE)=AdditiveSE(a.W,mod1.(a.v .+ b.v))
+Base.:*(a::AdditiveSE,b::AdditiveSE)=AdditiveSE(a.W,a.v .*b.v)
 
 struct SEGroup<:Group{AdditiveSE}
   gens::Vector{AdditiveSE}

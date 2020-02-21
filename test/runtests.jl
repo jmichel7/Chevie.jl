@@ -47,6 +47,16 @@ end
 @test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎=A₂")
 @test mytest("InductionTable(u,g)","Induction Table\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
 end
+@testset "Combinat.jl" begin
+@test mytest("combinations([1,2,2,3])","12-element Array{Array{Int64,1},1}:\n []\n [1]\n [2]\n [3]\n [1, 2]\n [1, 3]\n [2, 2]\n [2, 3]\n [1, 2, 2]\n [1, 2, 3]\n [2, 2, 3]\n [1, 2, 2, 3]")
+@test mytest("partitions(7)","15-element Array{Array{Int64,1},1}:\n [1, 1, 1, 1, 1, 1, 1]\n [2, 1, 1, 1, 1, 1]\n [2, 2, 1, 1, 1]\n [2, 2, 2, 1]\n [3, 1, 1, 1, 1]\n [3, 2, 1, 1]\n [3, 2, 2]\n [3, 3, 1]\n [4, 1, 1, 1]\n [4, 2, 1]\n [4, 3]\n [5, 1, 1]\n [5, 2]\n [6, 1]\n [7]")
+@test mytest("partition_tuples(3,2)","10-element Array{Array{Array{Int64,1},1},1}:\n [[1, 1, 1], []]\n [[1, 1], [1]]\n [[1], [1, 1]]\n [[], [1, 1, 1]]\n [[2, 1], []]\n [[1], [2]]\n [[2], [1]]\n [[], [2, 1]]\n [[3], []]\n [[], [3]]")
+@test mytest("conjugate_partition([4,2,1])","4-element Array{Int64,1}:\n 3\n 2\n 1\n 1")
+@test mytest("conjugate_partition([6])","6-element Array{Int64,1}:\n 1\n 1\n 1\n 1\n 1\n 1")
+@test mytest("dominates([5,4],[4,4,1])","true")
+@test mytest("compositions(4)","8-element Array{Array{Int64,1},1}:\n [1, 1, 1, 1]\n [2, 1, 1]\n [1, 2, 1]\n [3, 1]\n [1, 1, 2]\n [2, 2]\n [1, 3]\n [4]")
+@test mytest("compositions(4,2)","3-element Array{Array{Int64,1},1}:\n [3, 1]\n [2, 2]\n [1, 3]")
+end
 @testset "Cosets.jl" begin
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("W=coxgroup(:Bsym,2)","Bsym₂")
@@ -145,10 +155,13 @@ end
 @test mytest("Pol(:q)","Pol{Int64}: q")
 @test mytest("M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]","6×6 Array{Pol{Int64},2}:\n q⁶     1      q³     q³     q⁵+q        q⁴+q²\n 1      q⁶     q³     q³     q⁵+q        q⁴+q²\n q³     q³     q⁶     1      q⁴+q²       q⁵+q\n q³     q³     1      q⁶     q⁴+q²       q⁵+q\n q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q\n q⁴+q²  q⁴+q²  q⁵+q   q⁵+q   q⁵+2q³+q    q⁶+q⁴+q²+1")
 @test mytest("bb=[[2],[4],[6],[3,5],[1]];","nothing")
-@test mytest("(P,L)=Ucl.BigCellDecomposition(M,bb);","nothing")
+@test mytest("(P,L)=bigcell_decomposition(M,bb);","nothing")
 @test mytest("P","6×6 Array{Pol{Int64},2}:\n 1    0  0    0    0        0\n q⁻⁶  1  q⁻³  q⁻³  q⁻¹+q⁻⁵  q⁻²+q⁻⁴\n 0    0  1    0    0        0\n q⁻³  0  0    1    q⁻²      q⁻¹\n q⁻¹  0  0    0    1        0\n q⁻²  0  q⁻¹  0    q⁻¹      1")
 @test mytest("L","6×6 Array{Pol{Int64},2}:\n q⁶-q⁴-1+q⁻²  0   0            0     0            0\n 0            q⁶  0            0     0            0\n 0            0   q⁶-q⁴-1+q⁻²  0     0            0\n 0            0   0            q⁶-1  0            0\n 0            0   0            0     q⁶-q⁴-1+q⁻²  0\n 0            0   0            0     0            q⁶-1")
 @test mytest("M==permutedims(P)*L*P","true")
+@test mytest("m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]","4×4 Array{Int64,2}:\n 0  0  0  1\n 0  0  1  0\n 0  1  0  0\n 1  0  0  0")
+@test mytest("diagblocks(m)","2-element Array{Array{Int64,1},1}:\n [1, 4]\n [2, 3]")
+@test mytest("m[[1,4],[1,4]]","2×2 Array{Int64,2}:\n 0  1\n 1  0")
 end
 @testset "Garside.jl" begin
 @test mytest("W=coxgroup(:A,4)","A₄")
@@ -246,6 +259,12 @@ end
 @test mytest("G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
 @test mytest("minimal_words(G)","Dict{Perm{Int16},Array{Int64,1}} with 6 entries:\n  ()      => Int64[]\n  (2,3)   => [2, 1]\n  (1,3,2) => [1, 2, 1]\n  (1,3)   => [1, 2]\n  (1,2)   => [1]\n  (1,2,3) => [2]")
 end
+@testset "HasType.jl" begin
+@test mytest("W=coxgroup(:F,4)","F₄")
+@test mytest("r=classinfo(W)[:classtext];","nothing")
+@test mytest("R=representation(W,17)","4-element Array{Array{Int64,2},1}:\n [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]")
+@test mytest("traces_words_mats(R,r)==CharTable(W).irr[17,:]","true")
+end
 @testset "HeckeAlgebras.jl" begin
 @test mytest("W=coxgroup(:A,2)","A₂")
 @test mytest("H=hecke(W,0)","hecke(A₂,0)")
@@ -286,7 +305,7 @@ end
 @test mytest("W=coxgroup(:H,3)","H₃")
 @test mytest("c=LeftCells(W)[3]","LeftCell<H₃: duflo=(15) character=φ₅‚₅>")
 @test mytest("Pol(:q);H=hecke(W,q^2;rootpara=q)","hecke(H₃,q²,rootpara=q)")
-@test mytest("representation(c,H)","3-element Array{Array{SubArray{Pol{Int64},1,Array{Pol{Int64},2},Tuple{Int64,Base.Slice{Base.OneTo{Int64}}},true},1},1}:\n [[-1, 0, 0, q, 0], [0, -1, 0, q, q], [0, 0, -1, 0, q], [0, 0, 0, q², 0], [0, 0, 0, 0, q²]]\n [[-1, 0, q, 0, 0], [0, q², 0, 0, 0], [0, 0, q², 0, 0], [0, q, 0, -1, 0], [0, q, q, 0, -1]]\n [[q², 0, 0, 0, 0], [0, -1, 0, q, 0], [q, 0, -1, 0, 0], [0, 0, 0, q², 0], [0, 0, 0, q, -1]]")
+@test mytest("representation(c,H)","3-element Array{Array{Pol{Int64},2},1}:\n [-1 0 … q 0; 0 -1 … q q; … ; 0 0 … q² 0; 0 0 … 0 q²]\n [-1 0 … 0 0; 0 q² … 0 0; … ; 0 q … -1 0; 0 q … 0 -1]\n [q² 0 … 0 0; 0 -1 … q 0; … ; 0 0 … q² 0; 0 0 … q -1]")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("LeftCells(W)","4-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:\n LeftCell<G₂: duflo= character=φ₁‚₀>\n LeftCell<G₂: duflo=12 character=φ₁‚₆>\n LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>\n LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>")
 @test mytest("W=coxgroup(:G,2);","nothing")

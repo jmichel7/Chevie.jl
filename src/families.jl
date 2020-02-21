@@ -581,7 +581,7 @@ MakeFamilyImprimitive = function (S, uc)
   r[:charNumbers] = map(f, r[:symbols])
   r[:special] = findfirst(x->uc[:a][x]==uc[:b][x],r[:charNumbers])
   r[:cospecial] = findfirst(x->uc[:A][x]==uc[:B][x],r[:charNumbers])
-# if length(blocks(r[:fourierMat])) > 1 error() end
+# if length(diagblocks(r[:fourierMat])) > 1 error() end
   Family(r)
 end
 

@@ -258,7 +258,7 @@ julia> centralizer_generators(b)
  321432.213243
  4
 
-julia> C=conjcat(b,:ss)
+julia> C=conjcat(b;ss=:ss)
 category with 10 objects and 32 generating maps
 
 julia> C.obj
@@ -1065,12 +1065,13 @@ end
 minc(a,x,F=(x,y=1)->x)=minc(a,x,Val(:sc),F)
 
 """
-'conjcat(b[,type[,F]])'
+'conjcat(b[,F];ss=:sc)'
 
-By  default, or if  the `type` is  `*sc`, computes the  category of sliding
-circuits  of `b`.  If `type`  is `:ss`,  computes the  super summit set. If
-`type`  is ':cyc', computes the cyclic conjugacy category. Finally, if type
-is `:inf` computes the category of all conjugate eleements with same `Inf`.
+returns  the conjugacy category  of the summit  set of `b`  of the required
+type.  By default,  computes the  category of  sliding circuits  of `b`. If
+`ss==:ss`,  computes  the  super  summit  set.  If `ss==:cyc`, computes the
+cyclic  conjugacy category. Finally, if `ss==:inf` computes the category of
+all conjugate elements with same `Inf` as `b`.
 
 If  an argument  `F` is  given it  should be  the Frobenius of a Reflection
 coset attached to `b.M.W`. Then the `F`-conjugacy category is returned.
@@ -1090,7 +1091,7 @@ julia> conjcat(w).obj
  32143
  21324
 
-julia> conjcat(w,:ss).obj
+julia> conjcat(w;ss=:ss).obj
 4-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  32143
  13243
@@ -1098,17 +1099,17 @@ julia> conjcat(w,:ss).obj
  21324
 ```
 """
-function conjcat(b,s::Symbol=:sc,F=(x,y=1)->x)
-  if s==:sc || s==:ss b=representativeSC(b,F).circuit[1] end
-  Category(x->AtomicMaps(x,s,F),b;action=(b,m)->^(b,m,F))
+function conjcat(b,F=(x,y=1)->x;ss::Symbol=:sc)
+  if ss==:sc || ss==:ss b=representativeSC(b,F).circuit[1] end
+  Category(x->AtomicMaps(x,ss,F),b;action=(b,m)->^(b,m,F))
 end
 
 """
-representative_operation(b,b1[,type[,F]])
+representative_operation(b,b1[,F];ss=:sc)
 
 `b`  and `b1` should  be elements of  the same Garside  group. The function
 returns  `a` such that `b^a=b1` if such exists, and `nothing` otherwise. If
-an  argument `type` is given, the  computation is done in the corresponding
+an  argument `ss`  is given,  the computation  is done in the corresponding
 category  --- see "conjcat".  If an argument  `F` is given  it should be an
 automorphism  of the braid monoid, like the Frobenius of a reflection coset
 attached  to `b.M.W`;  the computation  is then  done in  the corresponding
@@ -1127,7 +1128,7 @@ julia> b=B(2,3,1,2,4,3);b1=B(1,4,3,2,2,2)
 julia> representative_operation(b,b1)
 (134312.23)⁻¹
 
-julia> c=representative_operation(b,b1,:cyc)
+julia> c=representative_operation(b,b1;ss=:cyc)
 232.2
 
 julia> b^c
@@ -1142,15 +1143,15 @@ julia> F=Frobenius(WF)
 julia> c=B(3,4,3,3,2,4)
 343.324
 
-julia> representative_operation(b,c,:sc,F)
+julia> representative_operation(b,c,F)
 2312
 
 julia> ^(b,B(2,3,1,2),F)
 343.324
 ```
 """
-function Groups.representative_operation(b,c,s::Symbol=:sc,F=(x,y=1)->x)
-  if s==:sc || s==:ss
+function Groups.representative_operation(b,c,F=(x,y=1)->x;ss::Symbol=:sc)
+  if ss==:sc || ss==:ss
     bconj=representativeSC(b,F)
     cconj=representativeSC(c,F)
     b=bconj.circuit[1]
@@ -1165,7 +1166,7 @@ function Groups.representative_operation(b,c,s::Symbol=:sc,F=(x,y=1)->x)
   res=[bconj]
   class=[b]
   for (i,a) in enumerate(class)
-    for m in AtomicMaps(a,s,F)
+    for m in AtomicMaps(a,ss,F)
       target=^(a,m,F)
       if !(target in class)
         e=res[i]*m
@@ -1180,12 +1181,12 @@ function Groups.representative_operation(b,c,s::Symbol=:sc,F=(x,y=1)->x)
 end
 
 """
-`centralizer_generators(b[,type[,F]])`
+`centralizer_generators(b[,F];ss=:sc)`
 
 a  list of generators of the centralizer of `b`. The computation is done by
 computing  the  endomorphisms  of  the  object  `b`  in the category of its
-sliding  circuits. If an argument `type`  is given, the computation is done
-in the corresponding category --- see `conjcat`. 
+sliding  circuits. If an argument `ss` is given, the computation is done in
+the corresponding category --- see `conjcat`.
 
 If  an argument  `F` is  given it  should be  an automorphism  of the braid
 monoid,  like the Frobenius of a reflection coset attached to `b.M.W`; then
@@ -1220,26 +1221,26 @@ julia> shrink(cc)
  34.43        
  (3243)⁻¹13243
 
-julia> centralizer_generators(w,:cyc)
+julia> centralizer_generators(w;ss=:cyc)
 Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}[4])
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)))
 (::Gapjm.Cosets.var"#f#25"{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
 
-julia> centralizer_generators(w,:sc,F)
+julia> centralizer_generators(w,F)
 2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
  124      
  312343123
 ```
 """
-function centralizer_generators(b,s::Symbol=:sc,F=(x,y=1)->x)
-  if s==:ss || s==:sc
+function centralizer_generators(b,F=(x,y=1)->x;ss::Symbol=:sc)
+  if ss==:ss || ss==:sc
     b=representativeSC(b,F)
     a=b.conj
     b=b.circuit[1]
-    Ref(a).*endomorphisms(conjcat(b,s,F),1).*Ref(a^-1)
+    Ref(a).*endomorphisms(conjcat(b,F;ss=ss),1).*Ref(a^-1)
   else
-    endomorphisms(conjcat(b,s,F),1)
+    endomorphisms(conjcat(b,F;ss=ss),1)
   end
 end
 

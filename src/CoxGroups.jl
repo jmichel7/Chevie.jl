@@ -290,6 +290,28 @@ function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,S)
   res
 end
 
+"""
+`elements(W::CoxeterGroup[,l])`
+
+With  one argument this works only if  `W` is finite; the returned elements
+are  sorted  by  increasing  Coxeter  length.  If the second argument is an
+integer  `l`, the elements  of Coxeter length  `l` are returned. The second
+argument  can also be a list of integers,  and the result is a list of same
+length  as `l`  of lists  where the  `i`-th list  contains the  elements of
+Coxeter length 'l[i]'.
+
+```julia_repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> e=elements(W,6)
+1-element Array{Perm{Int16},1}:
+ (1,7)(2,8)(3,9)(4,10)(5,11)(6,12)
+
+julia> e[1]==longest(W)
+true
+```
+"""
 function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=gets(W->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
