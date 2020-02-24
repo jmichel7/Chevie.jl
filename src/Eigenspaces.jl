@@ -59,7 +59,7 @@ The functions described in this module allow to explore these situations.
 """
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
-  PositionRegularClass, EigenspaceProjector, GetRelativeAction,
+  PositionRegularClass, eigenspace_projector, GetRelativeAction,
   GetRelativeRoot, SplitLevis, RelativeGroup
 
 using Gapjm
@@ -198,12 +198,12 @@ function PositionRegularClass(W,d=0)
 end
 
 """
-`EigenspaceProjector(WF,w,d)`
+`eigenspace_projector(WF,w[,d=0//1])`
 
 Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
 root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)' or is a
 fraction  smaller `a/b` with `0<a<b` and specifies `ζ=E(b,a)'. The function
-returns the unique <w>-invariant projector on the `ζ`-eigenspace of `w`.
+returns the unique `w`-invariant projector on the `ζ`-eigenspace of `w`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -212,7 +212,7 @@ A₃
 julia> w=W(1:3...)
 (1,12,3,2)(4,11,10,5)(6,9,8,7)
 
-julia> p=EigenspaceProjector(W,w,1//4)
+julia> p=eigenspace_projector(W,w,1//4)
 3×3 Array{Cyc{Rational{Int64}},2}:
   1/4+ζ₄/4   ζ₄/2  -1/4+ζ₄/4
   1/4-ζ₄/4    1/2   1/4+ζ₄/4
@@ -223,13 +223,14 @@ julia> GLinearAlgebra.rank(p)
 
 ```
 """
-function EigenspaceProjector(WF, w, d)
-  if d isa Int && d!=0 d=mod1(1//d) end
+eigenspace_projector(WF,w,d::Integer)=eigenspace_projector(WF,w,Root1(1,d))
+eigenspace_projector(WF,w,d::Rational=0//1)=eigenspace_projector(WF,w,Root1(;r=d))
+function eigenspace_projector(WF, w, d::Root1)
   c=refleigen(WF)[position_class(WF,w)]
-  c=map(x->E(;r=x),filter(x->x!=d,c))
+  c=map(x->E(;r=x),filter(x->x!=d.r,c))
   f=matX(WF,w)
   if length(c)==0 f^0
-  else prod(x->f-f^0*x,c)//prod(x->E(;r=d)-x,c)
+  else prod(x->f-f^0*x,c)//prod(x->E(d)-x,c)
   end
 end
 
@@ -454,6 +455,17 @@ function RelativeGroup(W,J,indices=false)
     end
   end
   error("relgroup  !  found")
+end
+
+
+# CuspidalUnipotentCharacters(WF[,d]) indices of the unipotent characters
+# of the Spets WF which are d-cuspidal (d=0 if not specified)
+function CuspidalUnipotentCharacters(WF,d=0)
+  if length(WF)==1 return [1] end
+  ad=count(!isone,relative_degrees(WF,d))
+# if ad=0 then Error(d," should divide one of the degrees");fi;
+  ud=CycPolUnipotentDegrees(WF)
+  filter(i->ad==valuation(ud[i],d),eachindex(ud))
 end
 
 end

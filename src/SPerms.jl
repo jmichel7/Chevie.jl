@@ -213,7 +213,7 @@ Base.:^(a::SPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 """
-`Permuted(l::AbstractVector,p::SPerm)`
+`Base.:^(l::AbstractVector,p::SPerm)`
 
 returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`.
 
@@ -222,14 +222,14 @@ returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`
 julia> p=SPerm([-2,-1,-3])
 SPerm{Int64}: (1,-2)(3,-3)
 
-julia> permuted([20,30,40],p)
+julia> [20,30,40]^p
 3-element Array{Int64,1}:
  -30
  -20
  -40
 ```
 """
-function Perms.permuted(l::AbstractVector,a::SPerm)
+function Base.:^(l::AbstractVector,a::SPerm)
   res=copy(l)
   for i in eachindex(l)
     v=i^a
@@ -241,14 +241,14 @@ end
 """
   `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
 
-  return a `SPerm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
+  return a `SPerm{T}` `p` such that `l1^p==l` if such `p` exists;
   returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
   Needs the objects in `l` and `l1` to be sortable.
 """
 function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   p=Perm(map(x->sort([x,-x]),a),map(x->sort([x,-x]),b))
   if isnothing(p) return p end
-  res=permuted(collect(eachindex(a)),p)
+  res=collect(eachindex(a))^p
   for i in eachindex(a)
     if b[i^(p^-1)]!=a[i] res[i]=-res[i] end
   end
@@ -425,6 +425,18 @@ Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
 """
   `CoxHyperoctaedral(n)` The Hyperoctaedral group on ±1,…,±n as a Coxeter group
   of type B, with generators (1,-1) and (i,i+1)(-i,-i-1)
+```julia-repl
+julia> elements(CoxHyperoctaedral(2))
+8-element Array{SPerm{Int8},1}:
+ ()          
+ (1,2)       
+ (1,-1)      
+ (1,2,-1,-2) 
+ (1,-2,-1,2) 
+ (2,-2)      
+ (1,-2)      
+ (1,-1)(2,-2)
+```
 """
 function CoxHyperoctaedral(n::Int)
   gens=[SPerm{Int8}(1,-1)]

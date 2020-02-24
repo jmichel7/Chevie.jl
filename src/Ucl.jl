@@ -283,20 +283,17 @@ end
 
 UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 
-# h  is a  linear form  defined by  its value  on the  simple roots  of the
-# reflection subgroup K. Induce it to W by extending by 0 on the orthogonal
-# of K, then conjugate it so it takes >=0 values on the simple roots.
 """
-`InducedLinearForm(<W>, <K>, h)`
+`induced_linear_form(W, K, h)`
 
 This routine can be used to find the Richardson-Dynkin diagram of the class
 in  the algebraic group `𝐆`  which contains a given  unipotent class of a
 reductive subgroup of maximum rank `𝐒` of `𝐆`.
 
-It  takes a linear  form on the  roots of <K>,  defined by its value on the
+It  takes a linear  form on the  roots of `K`,  defined by its value on the
 simple  roots (these values  can define a  Dynkin-Richardson diagram); then
 extends  this linear form to the roots of `𝐆` by `0` on the orthogonal of
-the  roots of <K>; and finally conjugates  the resulting form by an element
+the  roots of `K`; and finally conjugates  the resulting form by an element
 of the Weyl group so that it takes positive values on the simple roots.
 
 ```julia-repl
@@ -306,7 +303,7 @@ F₄
 julia> H=reflection_subgroup(W,[1,3])
 F₄₍₁₃₎=A₁×Ã₁
 
-julia> Ucl.InducedLinearForm(W,H,[2,2])
+julia> Ucl.induced_linear_form(W,H,[2,2])
 4-element Array{Int64,1}:
  0
  1
@@ -332,7 +329,7 @@ UnipotentClass(A₁+Ã₁)
 The  example above shows that the class containing the regular class of the
 Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
 """
-function InducedLinearForm(W,K,h)
+function induced_linear_form(W,K,h)
 # print("W=$W K=$K h=$h");
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
   h=vcat(h,zeros(Int,rank(W)-semisimplerank(K)))
@@ -362,7 +359,7 @@ function BalaCarterLabels(W)
     L=reflection_subgroup(W,p[1])
     w=fill(2,semisimplerank(L))
     w[restriction(L,p[2])]=p[2]*0
-    [InducedLinearForm(W,L,w),map(i->i in p[2] ? -i : i,p[1])]
+    [induced_linear_form(W,L,w),map(i->i in p[2] ? -i : i,p[1])]
   end
 end
 

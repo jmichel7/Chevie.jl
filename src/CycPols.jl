@@ -291,6 +291,19 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
 end
 
 const trace=false
+"""
+`CycPol(p::Pol)`
+    
+Converts a polynomial to `CycPol`
+    
+```julia-repl
+julia> CycPol(3*q^3-3)
+3Φ₁Φ₃
+```
+
+Special code makes the conversion fast if `p` has not more than two nonzero
+coefficients.
+"""
 function CycPol(p::Pol{T})where T
  # lot of code to be as efficient as possible in all cases
   if iszero(p) return zero(CycPol{T})

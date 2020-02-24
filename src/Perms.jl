@@ -105,7 +105,7 @@ they  move the same points to  the same images. Permutations are considered
 as scalars for broadcasting.
 
 other functions are: 
-`cycles, cycletype, orbit, orbits, permuted, rand, restricted, sign`. 
+`cycles, cycletype, orbit, orbits, rand, restricted, sign`. 
 See individual documentations.
 
 """
@@ -115,7 +115,7 @@ module Perms
 # export degree, restricted, orbit, orbits, order
 
 export Perm, largest_moved_point, cycles, cycletype,
-  @perm_str, smallest_moved_point, reflength, permuted
+  @perm_str, smallest_moved_point, reflength
 
 """
 `struct Perm`
@@ -189,7 +189,7 @@ end
 """
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
-  return a `Perm{T}` `p` such that `permuted(l1,p)==l` if such `p` exists;
+  return a `Perm{T}` `p` such that `l1^p==l` if such `p` exists;
   returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
   Needs the objects in `l` and `l1` to be sortable.
 """
@@ -324,6 +324,29 @@ end
 Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
+"""
+`Base.;^(l::AbstractVector,p::Perm)` 
+
+   returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
+
+# Examples
+```julia-repl
+julia> [5,4,6,1,7,5]^Perm(1,3,5,6,4)
+6-element Array{Int64,1}:
+ 1
+ 4
+ 5
+ 5
+ 6
+ 7
+```
+"""
+function Base.:^(l::AbstractVector,a::Perm)
+  res=copy(l)
+  res[eachindex(l).^a].=l
+  res
+end
+
 #---------------------- cycles -------------------------
 
 # takes 20% more time than GAP CyclePermInt for rand(Perm,1000)
@@ -454,30 +477,6 @@ end
 " sign(a::Perm) is the signature of  the permutation a"
 Base.sign(a::Perm)=(-1)^reflength(a)
 #---------------------- other -------------------------
-
-"""
-   `permuted(l::AbstractVector,p::Perm)` 
-
-   returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
-
-# Examples
-```julia-repl
-julia> permuted([5,4,6,1,7,5], Perm(1,3,5,6,4))
-6-element Array{Int64,1}:
- 1
- 4
- 5
- 5
- 6
- 7
-```
-"""
-function permuted(l::AbstractVector,a::Perm)
-  res=copy(l)
-  res[eachindex(l).^a].=l
-  res
-end
-
 """
    restricted(a::Perm{T},l::AbstractVector{<:Integer})
 

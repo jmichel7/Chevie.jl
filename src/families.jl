@@ -473,13 +473,13 @@ end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
 end
 
 """
-`FamilyImprimitive(<S>)`
+`family_imprimitive(<S>)`
 
 <S> should be a symbol for a unipotent characters of an imprimitive complex
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
 
 ```julia-repl
-julia> HasType.Family(FamilyImprimitive([[0,1],[1],[0]]))
+julia> HasType.Family(family_imprimitive([[0,1],[1],[0]]))
 Family(0011:3)
 label│eigen      1         2         3
 ─────┼─────────────────────────────────
@@ -488,14 +488,14 @@ label│eigen      1         2         3
 3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6
 ```
 """
-FamilyImprimitive = function (S)
+family_imprimitive = function (S)
 # println("S=$S")
   e = length(S)
   Scoll = Collected(reduce(vcat,S))
   ct = reduce(vcat,map(x->fill(x[1],x[2]), Scoll))
   d = length(ct) % e
-  if !(d in [0, 1]) error("Length(", joindigits(ct), ") should be 0 or 1  %  ", e, " !\n")
-        end
+  if !(d in [0,1]) error("length(",joindigits(ct),") should be 0 or 1",e," !\n")
+  end
   m = div(length(ct) - d, e)
   j = (m * binomial(e, 2)) % e
   ll = Cartesian(map(i->0:e-1, Scoll)...)
@@ -575,9 +575,9 @@ FamilyImprimitive = function (S)
 end
 
 MakeFamilyImprimitive = function (S, uc)
-  f=x->Position(uc[:charSymbols],x)
+  f=x->findfirst(==(x),uc[:charSymbols])
   if length(S)==1 return Family("C1", map(f, S)) end
-  r = Family(FamilyImprimitive(FullSymbol(S[1])))
+  r = Family(family_imprimitive(FullSymbol(S[1])))
   r[:charNumbers] = map(f, r[:symbols])
   r[:special] = findfirst(x->uc[:a][x]==uc[:b][x],r[:charNumbers])
   r[:cospecial] = findfirst(x->uc[:A][x]==uc[:B][x],r[:charNumbers])

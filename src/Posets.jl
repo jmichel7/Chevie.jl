@@ -140,8 +140,33 @@ function transitive_closure(m)
   m
 end
 
+"""
+`Poset(m::Matrix{Bool})`
+
+Creates a poset from an incidence matrix `m`, that is `m[i,j]==true` if and
+only if `i≤j` in the poset,
+
+```julia-repl
+julia> Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])
+1<2,3<4,5
+```
+"""
 Poset(m::Matrix{Bool})=Poset(Dict(:incidence=>m,:size=>size(m,1)))
 Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
+
+"""
+`Poset(h::Vector{<:Vector{<:Integer}})`
+
+Creates a poset from a Hasse diagram given as a `Vector` whose `i`-th entry
+is  the list of indices of elements which are immediate successors (covers)
+of the `i`-th element, that is `h[i]` is the list of `j` such that `i<j` in
+the poset and such that there is no `k` such that `i<k<j`.
+
+```julia-repl
+julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
+1<2,3<4,5
+```
+"""
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
 Base.length(p::Poset)=p.prop[:size]
 

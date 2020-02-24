@@ -29,16 +29,16 @@ which constructs ζₙᵏ.
 # Examples
 ```julia-repl
 julia> E(3)+E(4)
-ζ₁₂⁴-ζ₁₂⁷-ζ₁₂¹¹
+Cyc{Int64}: ζ₁₂⁴-ζ₁₂⁷-ζ₁₂¹¹
 
 julia> E(3,2)
-ζ₃²
+Cyc{Int64}: ζ₃²
 
 julia> 1+E(3,2)
--ζ₃
+Cyc{Int64}: -ζ₃
 
 julia> a=E(4)-E(4)
-0
+Cyc{Int64}: 0
 
 julia> conductor(a) # a is lowered to ℚ (ζ_1)=ℚ 
 1
@@ -50,7 +50,7 @@ julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
 julia> c=inv(1+E(4)) # inverses need Rationals
-1/2-ζ₄/2
+Cyc{Rational{Int64}}: 1/2-ζ₄/2
 
 julia> typeof(c)
 Cyc{Rational{Int64}}
@@ -59,22 +59,22 @@ julia> typeof(1+E(4))
 Cyc{Int64}
 
 julia> Cyc(1+im) # one can convert Gaussian integers or rationals
-1+ζ₄
+Cyc{Int64}: 1+ζ₄
 
 julia> 1//(1+E(4))
-1/2-ζ₄/2
+Cyc{Rational{Int64}}: 1/2-ζ₄/2
 
 julia> typeof(Cyc(1//2)) # another way of building a Cyc
 Cyc{Rational{Int64}}
 
 julia> conj(1+E(4))
-1-ζ₄
+Cyc{Int64}: 1-ζ₄
 
 julia> c=E(9)   # an effect of the Zumbroich basis
--ζ₉⁴-ζ₉⁷
+Cyc{Int64}: -ζ₉⁴-ζ₉⁷
 
 julia> Root1(c) # but you can decide whether a Cyc is a root of unity
-Root1(1//9)
+Root1: 1/9
 
 julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
@@ -580,7 +580,7 @@ end
 # Examples
 ```julia-repl
 julia> galois(1+E(4),-1) # galois(c,-1) is the same as conj(c)
-1-ζ₄
+Cyc{Int64}: 1-ζ₄
 
 julia> galois(ER(5),2)==-ER(5)
 true
@@ -624,10 +624,10 @@ const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
 # Examples
 ```julia-repl
 julia> ER(-1)
-ζ₄
+Cyc{Int64}: ζ₄
 
 julia> ER(3)
-√3
+Cyc{Int64}: √3
 ```
 """
 function ER(n::Int)
@@ -695,15 +695,15 @@ end
 
 ```julia-repl
 julia> r=Root1(-E(9,2)-E(9,5))
-Root1(8//9)
+Root1: 8/9
 
 julia> E(r)
--ζ₉²-ζ₉⁵
+Cyc{Int64}: -ζ₉²-ζ₉⁵
 
 julia> Root1(-E(9,4)-E(9,5))
 
 julia> Root1(1)
-Root1(0//1)
+Root1: 0/1
 ```
 """ 
 function Root1(c::Cyc)

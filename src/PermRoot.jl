@@ -1010,10 +1010,10 @@ fields:
 
 ```julia-repl
 julia> reflection([-1 0 0;1 1 0;0 0 1])
-(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = Root1(1//2), isOrthogonal = false)
+(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = 1/2, isOrthogonal = false)
 
 julia> reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
-(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = Root1(1//2), isOrthogonal = false)
+(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = 1/2, isOrthogonal = false)
 ```
 """
 function reflection(m::Matrix,r::AbstractVector)

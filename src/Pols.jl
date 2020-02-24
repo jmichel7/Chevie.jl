@@ -313,6 +313,19 @@ function Base.inv(p::Pol)
 end
 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0))
+"""
+`cyclotomic_polynomial(n)`
+ 
+returns the `n`-th cyclotomic polynomial.
+ 
+```julia-repl
+julia> cyclotomic_polynomial(5)
+Pol{Int64}: q⁴+q³+q²+q+1
+```
+ 
+The  computed  cyclotomic  polynomials  are  cached  in  the global `Dict ̀
+`Pols.cyclotomic_polynomial_dict`
+"""
 function cyclotomic_polynomial(n::Integer)
   get!(cyclotomic_polynomial_dict,n) do
     v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0)

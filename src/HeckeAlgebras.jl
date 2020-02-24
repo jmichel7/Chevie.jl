@@ -123,7 +123,7 @@ end;
 module HeckeAlgebras
 using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
-  rootpara, equalpara
+  rootpara, equalpara, class_polynomials, char_values
 
 struct HeckeAlgebra{C,TW<:Group}
   W::TW
@@ -424,32 +424,59 @@ function Base.inv(a::HeckeTElt)
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
 end
 
+"""
+`class_polynomials(h)`
 
-##
-#F  HeckeClassPolynomials( <h> )  . . . . . . class polynomials of <h>
-##
-##  returns  the  class  polynomials  of  the  element  <h> with respect to
-##  representatives  of minimal length in  the (F-)conjugacy classes of the
-##  Coxeter  group (or coset). <h> is an element of <H> given in any basis.
+returns the class polynomials of the Hecke element `h` of the Hecke algebra
+`H=h.H`  with respect  to representatives  `reps` of  minimal length in the
+conjugacy  classes  of  the  Coxeter  group  `W=H.W`.  Such  minimal length
+representatives  are given by  the function `classinfo(W)[:classtext]`. The
+vector  `p` of these polynomials has the property that if `X` is the matrix
+of  the values of  the irreducible characters  of `H` on  `T_w` (for `w` in
+`reps`),  then the product `X*p`  is the list of  values of the irreducible
+characters on `h`.
 
-function HeckeClassPolynomials(h)
-  H=Hecke(h)
+```julia-repl
+julia> W=CoxSym(4)
+𝔖 ₄
+
+julia> H=hecke(W,Pol(:q))
+hecke(𝔖 ₄,q)
+
+julia> h=Tbasis(H)(longest(W))
+T₁₂₁₃₂₁
+
+julia> p=class_polynomials(h)
+5-element Array{Pol{Int64},1}:
+ 0        
+ 0        
+ q²       
+ q³-2q²+q 
+ q³-q²+q-1
+```
+The class polynomials were introduced in  cite{GP93}.
+"""
+function class_polynomials(h)
+  H=h.H
 # if IsBound(h.coset) WF=Spets(h.coset); W=Group(WF);
 # else 
-    W=Group(H);WF=W
+    W=H.W
+    WF=W
 # end
   minl=length.(classinfo(WF)[:classtext])
   h=Tbasis(H)(h)
 # Since  vF is not of minimal length in its class there exists wF conjugate
 # by   cyclic  shift  to  vF  and  a  generating  reflection  s  such  that
 # l(swFs)=l(vF)-2. Return T_sws.T_s^2
-  function orb(orbit)
+  function orb(w)
+    orbit=[w]
     for w in orbit
       for s in leftdescents(W,w)
         sw=W(s)*w
         sws=sw*W(s)
-        if isleftdescent(W,inv(sw),s) q=H.parameter[s]
-          return Dict(elm=>[sws,sw],coeff=>[-q[1]*q[2],q[1]+q[2]])
+        if isleftdescent(W,inv(sw),s) 
+          q1,q2=H.para[s]
+          return (elm=[sws,sw],coeff=[-q1*q2,q1+q2])
         elseif !(sws in orbit) push!(orbit,sws)
         end
       end
@@ -457,25 +484,55 @@ function HeckeClassPolynomials(h)
     error("Geck-Kim-Pfeiffer theory")
   end
 
-  min=minl*0*H.unit
-  while length(h.elm)>0
-    new=Dict(elm=>[],coeff=>[])
-    l=map(x->Length(W,x),h.elm)
-    maxl=Maximum(l)
-    for i in 1:Length(h.elm)
-      if l[i]<maxl push!(new.elm,h.elm[i])
-                   push!(new.coeff,h.coeff[i])
+  elm,coeff=first(h.d)
+  min=fill(zero(coeff),length(minl))
+  while length(h.d)>0
+    elms=typeof(elm)[]
+    coeffs=typeof(coeff)[]
+    l=[length(W,elm) for (elm,coeff) in h.d]
+    maxl=maximum(l)
+    for (elm,coeff) in h.d
+      if length(W,elm)<maxl 
+        push!(elms,elm)
+        push!(coeffs,coeff)
       else
-        p=PositionClass(WF,h.elm[i])
-        if minl[p]==maxl min[p]+=h.coeff[i]
-        else o=orb([h.elm[i]])
-          append!(new.elm,o.elm);append!(new.coeff,o.coeff*h.coeff[i]);
+        p=position_class(WF,elm)
+        if minl[p]==maxl min[p]+=coeff
+        else o=orb(elm)
+          append!(elms,o.elm)
+          append!(coeffs,o.coeff.*coeff)
         end
       end
     end
-    CollectCoefficients(new);h=new
+    h=clone(h,ModuleElt(map(Pair,elms,coeffs);check=true))
   end
   return min
 end
+
+"""
+`char_values(h)`
+
+`h`  is an  element of  an Iwahori-Hecke  algebra `H`  (in any  basis). The
+function  returns the  values of  the irreducible  characters of `H` on `h`
+(the   method  used  is  to  convert  to   the  `T`  basis,  and  then  use
+`class_polynomials`).
+
+```julia-repl
+julia> W=coxgroup(:B,2)
+B₂
+
+julia> H=hecke(W,q^2;rootpara=q)
+hecke(B₂,q²,rootpara=q)
+
+julia> HeckeAlgebras.char_values(Cpbasis(H)(1,2,1))
+5-element Array{Pol{Int64},1}:
+ -q-q⁻¹        
+ q+q⁻¹         
+ 0             
+ q³+2q+2q⁻¹+q⁻³
+ 0             
+```
+"""
+char_values(h::HeckeElt)=CharTable(h.H).irr*class_polynomials(h)
 
 end

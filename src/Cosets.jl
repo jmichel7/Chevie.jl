@@ -455,10 +455,10 @@ function PermRoot.refltype(WF::PRC)
         u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
         tn=t[orb[next]]
         ti=t[orb[i]]
-        if i!=length(orb)  tn.indices=permuted(tn.indices,u)
+        if i!=length(orb)  tn.indices^=u
           scal=scals(ti.indices,tn.indices)
         else to.twist=u
-          scal=scals(ti.indices,permuted(tn.indices,inv(u)))
+          scal=scals(ti.indices,tn.indices^inv(u))
         end
         if any(isnothing,scal) || !constant(scal)
           error("no element of coset acts as scalar on orbits")
@@ -489,11 +489,11 @@ function PermRoot.refltype(WF::PRC)
           u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
           #print("l=$l i=$i scal before:$scal")
           if i!=length(orb)
-            tn.indices=permuted(tn.indices,u)
+            tn.indices^=u
             subgens[orb[next]]=gens(reflection_subgroup(W,tn.indices))
             scal=scals(ti.indices,tn.indices)
           else to.twist=u
-            scal=scals(ti.indices,permuted(tn.indices,u^-1))
+            scal=scals(ti.indices,tn.indices^inv(u))
           end
           #println(" scal after:$scal")
           if !constant(scal) error()

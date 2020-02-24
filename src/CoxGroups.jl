@@ -52,7 +52,7 @@ It  should be  noted that  a Coxeter group can be
 
 A  common occurrence in code for Coxeter groups is a loop like:
 
-`findfirst(eachindex(gens(W)),x->isleftdescent(W,w,x))`
+`findfirst(x->isleftdescent(W,w,x),eachindex(gens(W)))`
 
 if you provide a function `firstleftdescent(W,w)` it will be called instead
 of the above loop.
@@ -149,6 +149,20 @@ using Gapjm
 #-------------------------- Coxeter groups
 abstract type CoxeterGroup{T}<:Group{T} end
 
+"""
+`firstleftdescent(W,w)`
+
+returns the index in `gens(W)` of the first element of the left descent set
+of `w` --- that is, the first `i` such that if `s=W(i)` then `l(sw)<l(w).
+
+```julia-repl
+julia> W=CoxSym(3)
+𝔖 ₃
+
+julia> firstleftdescent(W,Perm(2,3))
+2
+```
+"""
 function firstleftdescent(W::CoxeterGroup,w)
   findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)))
 end
@@ -198,6 +212,31 @@ function Gapjm.word(W::CoxeterGroup,w)
   ww
 end
 
+"""
+`length(W::CoxeterGroup ,w)`
+
+returns the length of a reduced expression in the Coxeter generators of the
+element `w` of `W`.
+
+```julia-repl
+julia> W=coxgroup(:F,4)
+F₄
+
+julia> p=W(1,2,3,4,2)
+(1,44,38,25,20,14)(2,5,40,47,48,35)(3,7,13,21,19,15)(4,6,12,28,30,36)(8,34,41,32,10,17)(9,18)(11,26,29,16,23,24)(27,31,37,45,43,39)(33,42)
+
+julia> length(W,p)
+5
+
+julia> word(W,p)
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 2
+ 4
+```
+"""
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
 Base.one(W::CoxeterGroup)=one(W.G)
 Base.eltype(W::CoxeterGroup)=eltype(W.G)
@@ -505,6 +544,25 @@ end
 parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
           0:semisimplerank(W))...)
 
+"""
+`coxmat(W)`
+
+returns the Coxeter matrix of the Coxeter group `W`, that is the matrix `m`
+whose  entry `m[i,j]` contains the order of `W(i)*W(j)` where `W(i)` is the
+`i`-th  Coxeter generator of  `W`. An infinite  order is represented by the
+entry `0`.
+
+```julia-repl
+julia> W=CoxSym(4)
+𝔖 ₄
+
+julia> coxmat(W)
+3×3 Array{Int64,2}:
+ 1  3  2
+ 3  1  3
+ 2  3  1
+```
+"""
 function coxmat(m::Matrix)
   function find(c)
     if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
@@ -520,6 +578,8 @@ function coxmat(m::Matrix)
   end
   res
 end
+
+coxmat(W::CoxeterGroup)=coxmat(cartan(W))
 
 """
 `braid_relations(W)`
@@ -574,9 +634,40 @@ Base.iterate(W::CoxSym,r...)=iterate(W.G,r...)
 
 """
   `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group
+```julia-repl
+julia> W=CoxSym(3)
+𝔖 ₃
+
+julia> e=elements(W)
+6-element Array{Perm{UInt8},1}:
+ ()     
+ (2,3)  
+ (1,2)  
+ (1,2,3)
+ (1,3,2)
+ (1,3)  
+
+julia> length.(Ref(W),e)
+6-element Array{Int64,1}:
+ 0
+ 1
+ 1
+ 2
+ 2
+ 3
+```
 """
 function CoxSym(n::Int)
-  CoxSym{UInt8}(Group([Perm{UInt8}(i,i+1) for i in 1:n-1]),n,Dict{Symbol,Any}())
+  CoxSym{UInt8}(Group([Perm{UInt8}(i,i+1) for i in 1:n-1]),n,
+   Dict{Symbol,Any}(:classreps=>map(partitions(n))do p
+    m=0
+    res=Perm{UInt8}()
+    for i in p
+      res*=Perm{UInt8}((m+1:m+i)...)
+      m+=i
+    end
+    res
+  end))
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -598,6 +689,8 @@ isleftdescent(W::CoxSym,w,i::Int)=i^w>(i+1)^w
 Gapjm.degrees(W::CoxSym)=2:length(gens(W))+1
 
 Base.length(W::CoxSym)=prod(degrees(W))
+
+PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 
 function Base.length(W::CoxSym,w)
   l=0

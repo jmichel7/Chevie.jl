@@ -461,7 +461,7 @@ end
 function Base.show(io::IO,c::LeftCell)
    print(io,"LeftCell<",c.group,": ")
    if haskey(c.prop,:duflo)
-     print(io,"duflo=",joindigits(Weyl.DescribeInvolution(c.group,duflo(c))))
+     print(io,"duflo=",joindigits(describe_involution(c.group,duflo(c))))
    end
    if haskey(c.prop,:character)
      uc=UnipotentCharacters(c.group)
@@ -728,7 +728,7 @@ julia> LeftCells(W)
 Printing such a record displays the character afforded by the left cell and
 its  Duflo involution; the Duflo involution `r`  is printed as a subset `I`
 of    `1:W.N`   such    that   `r=longest(reflection_subgroup(W,I))`,   see
-`DescribeInvolution`.
+`describe_involution`.
 
 If  a second argument `i` is given, the program returns only the left cells
 which  are in the `i`-th two-sided cell,  that is whose character is in the

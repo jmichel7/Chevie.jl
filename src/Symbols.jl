@@ -52,10 +52,9 @@ groups of dimension 2n or orthogonal groups of dimension 2n+1.
 module Symbols
 using Gapjm
 export shiftβ, βset, partβ, symbol_partition_tuple,
-valuation_gendeg_symbol, degree_gendeg_symbol,
-degree_feg_symbol, valuation_feg_symbol,
-defectsymbol, fullsymbol, ranksymbol, symbols, fegsymbol, stringsymbol,
-Tableaux, XSP
+valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_feg_symbol,
+valuation_feg_symbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
+fegsymbol, stringsymbol, tableaux, XSP
 
 """
 `shiftβ( β, n)` shift β-set β by n
@@ -188,6 +187,18 @@ function valuation_gendeg_symbol(p)
   sum(p.*(m-1:-1:0))-div(m*(m-e)*(2*m-3-e),12*e)
 end
 
+"""
+`degree_gendeg_symbol(s)`
+    
+Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
+returns  the  degree  of  the  generic  degree  of  the unipotent character
+parameterized by `s`.
+
+```julia-repl
+julia> degree_gendeg_symbol([[1,5,6],[1,2]])
+91
+```
+"""
 function degree_gendeg_symbol(p)
   p=fullsymbol(p)
   r=ranksymbol(p)
@@ -200,10 +211,34 @@ function degree_gendeg_symbol(p)
   r+sum(p.*(0:m-1))-sum(x->div(e*x*(x+1),2),p)-div(m*(m-e)*(2*m-3-e),12*e)
 end
 
+"""
+`defectsymbol(s)'
+
+Let  `s=[S,T]` be  a symbol  given as  a pair  of lists  (see the whelp for
+`?Symbols`).   'defectsymbol'  returns   the  defect   of  `s`,   equal  to
+`length(S)-length(T)`.
+
+```julia-repl
+julia> defectsymbol([[1,2],[1,5,6]])
+-1
+```
+"""
 function defectsymbol(S)
  S[end] isa AbstractVector && length(S)>1 ? length(S[1])-length(S[2]) : 0
 end
 
+"""
+`degree_feg_symbol(s)`
+    
+Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
+returns  the degree  of the  fake degree  of the character parameterized by
+`s`.
+
+```julia-repl
+julia> degree_feg_symbol([[1,5,6],[1,2]])
+88
+```
+"""
 function degree_feg_symbol(s,p=length(fullsymbol(s)))
   s=fullsymbol(s)
   e=length(s)
@@ -222,6 +257,17 @@ function degree_feg_symbol(s,p=length(fullsymbol(s)))
   res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2))) 
 end
 
+"""
+`valuation_feg_symbol(s)`
+
+Let  `s=[S₁,…,Sₙ]` be a symbol `valuation_feg_symbol` returns the valuation
+of the fake degree of the character parameterized by `s`.
+
+```julia-repl
+julia> valuation_feg_symbol([[1,2],[1,5,6]])
+-1
+```
+"""
 function valuation_feg_symbol(s)
   s=fullsymbol(s)
   d=defectsymbol(s)
@@ -347,7 +393,10 @@ end
 # When given a second argument p dividing e, works for the coset G(e,e,r).s_1^p
 # See Malle, "Unipotente Grade", 2.11 and 5.7
 """
-`fegsymbol(S)` returns as a CycPol the fake degree given by symbol `S`
+`fegsymbol(S)` 
+
+Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
+returns as a CycPol the fake degree of the character of symbol `S`.
 
 ```julia-repl
 julia> fegsymbol([[1,5,6],[1,2]])
@@ -389,15 +438,38 @@ function fegsymbol(s,p=0)
   return res
 end
 
-function Tableaux(S::Vector{Int})
-  first.(Tableaux([S]))
+function tableaux(S::Vector{Int})
+  first.(tableaux([S]))
 end
 
-# list of standard tableaux of shape the partition-tuple S (that is, a filling
-# of S with the numbers [1..Sum(S,Sum)] such that the numbers increase across
-# the rows and down the columns).
-# If S is a single partition return single tableaux.
-function Tableaux(S)
+"""
+`tableaux(S)`
+
+`S`  is a  partition tuple  or a  partition. returns  the list  of standard
+tableaux  associated to the partition  tuple `S`, that is  a filling of the
+associated  young diagrams  with the  numbers `1:sum(sum,S)`  such that the
+numbers  increase across the rows  and down the columns.  If the imput is a
+single partition, the standard tableaux for that partition are returned.
+
+```julia-repl
+julia> tableaux([[2,1],[1]])
+8-element Array{Any,1}:
+ Array{Array{Int64,1},1}[[[2, 4], [3]], [[1]]]
+ Array{Array{Int64,1},1}[[[1, 4], [3]], [[2]]]
+ Array{Array{Int64,1},1}[[[1, 4], [2]], [[3]]]
+ Array{Array{Int64,1},1}[[[2, 3], [4]], [[1]]]
+ Array{Array{Int64,1},1}[[[1, 3], [4]], [[2]]]
+ Array{Array{Int64,1},1}[[[1, 2], [4]], [[3]]]
+ Array{Array{Int64,1},1}[[[1, 3], [2]], [[4]]]
+ Array{Array{Int64,1},1}[[[1, 2], [3]], [[4]]]
+
+julia> tableaux([2,2])
+2-element Array{Array{Array{Int64,1},1},1}:
+ [[1, 3], [2, 4]]
+ [[1, 2], [3, 4]]
+```
+"""
+function tableaux(S)
   if isempty(S) return S end
   w=sum(sum,S)
   if w==0 return [map(x->map(y->Int[],x),S)] end
@@ -405,13 +477,13 @@ function Tableaux(S)
     l=length(S[i])
     rim = filter(j->S[i][j+1]<S[i][j],1:l-1)
     if l!=0 && S[i][l]!=0 push!(rim,l) end
-    return reduce(vcat,map(function(p)
+    return vcat(map(function(p)
           n=deepcopy(S)
           n[i][p]-=1
-          n=Tableaux(n)
+          n=tableaux(n)
           for t=n push!(t[i][p], w) end
           return n
-      end, rim))
+      end, rim)...)
     end, 1:length(S)))
   res
 end

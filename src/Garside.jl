@@ -150,7 +150,7 @@ julia> repr(w^-1,context=IOContext(stdout,:greedy=>true,:limit=>true))
 "δ⁻¹.232432"
 ```
 Finally,  `repr` gives   `w`  back   in  a   form  which   after  assigning
-'B=braid(braid_monoid(W))' can be input back into Julia:
+'B=BraidMonoid(W)' can be input back into Julia:
 
 ```julia-repl
 julia> repr(w)
@@ -331,7 +331,8 @@ julia> root(pi,4)
 module Garside
 using Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
-centralizer_generators, preferred_prefix, left_divisors, Category, endomorphisms
+centralizer_generators, preferred_prefix, left_divisors, Category,
+endomorphisms, image
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
@@ -496,7 +497,34 @@ function δad(M::GarsideMonoid,x,i)
   x
 end
 
-"elements(M,l) returns the elements of M of length l."
+"""
+`elements(M,l)`
+    
+`M`  should  be  a  (locally)  Garside  monoid which has an additive length
+function  (that is, a product  of `l` atoms is  not equal to any product of
+less  than `l` atoms). `GarsideWords(M,l)` returns  the list of elements of
+length `l` in `M`.
+
+```julia-repl
+julia> M=BraidMonoid(coxgroup(:A,2))
+BraidMonoid(A₂)
+
+julia> elements(M,4)
+12-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+ δ.1    
+ 21.1.1 
+ 2.2.2.2
+ 12.2.2 
+ 1.1.12 
+ 12.21  
+ δ.2    
+ 2.2.21 
+ 1.12.2 
+ 1.1.1.1
+ 21.12  
+ 2.21.1 
+```
+"""
 function PermGroups.elements(M::LocallyGarsideMonoid,l)
   if !haskey(M.prop,:elements)
     M.prop[:elements]=Dict(0=>[M()],1=>M.(eachindex(M.atoms)))
@@ -843,6 +871,27 @@ function Cosets.Frobenius(x::GarsideElm,phi)
   y
 end
 
+"""
+'image(b)'
+    
+This  function is defined only if <b>  is an element of an interval monoid,
+for instance a braid. It returns the image of <b> in the group of which the
+monoid  is an interval  monoid. For instance  it gives the  projection of a
+braid in an Artin monoid back to the Coxeter group.
+
+gap>  W := CoxeterGroupSymmetricGroup( 4 );;
+gap>  b := Braid( W )(2, 1, 2, 1, 1);
+121.1.1
+gap> p := EltBraid( b );
+(1,3)
+gap> CoxeterWord( W, p );
+[ 1, 2, 1 ]
+"""
+function image(a::GarsideElm)
+  if a.M isa IntervalMonoid a.M.delta^a.pd*prod(a.elm)
+  else error(a," should be an element of an interval monoid")
+  end
+end
 #----------------------------------------------------------------------------
 struct Category{TO,TM} # TO type of objs TM type of maps
   obj::Vector{TO}

@@ -183,12 +183,32 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions, algebraic_centre, standard_parabolic
+ dimension, with_inversions, algebraic_centre, standard_parabolic,
+ describe_involution
 # to use as a stand-alone module uncomment the next line
 # export roots
 
 using Gapjm, LinearAlgebra
 #------------------------ Cartan matrices ----------------------------------
+
+"""
+`cartan(m)`
+
+The  argument is a Coxeter matrix for a Coxeter group `W` and the result is
+a  Cartan Matrix  for the  standard reflection  representation of  `W`. Its
+diagonal   terms  are  `2`  and  the  coefficient  between  two  generating
+reflections   `s`  and  `t`  is  `-2cos(pi/m[s,t])`  (where  by  convention
+`pi/m[s,t]==0`  if `m[s,t]==infty`,  which is  represented here  by setting
+'m[s,t]=0').
+
+```julia-repl
+julia> cartan([1 3;3 1])
+2×2 Array{Cyc{Int64},2}:
+  2  -1
+ -1   2
+```
+"""
+PermRoot.cartan(m::AbstractMatrix)=map(c->iszero(c) ? -2 : -E(2*c,-1)-E(2*c),m)
 
 """
     `cartan(type, rank)`
@@ -479,14 +499,31 @@ standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
   standard_parabolic(W,inclusion(H)[1:semisimplerank(H)])
 
 """
-DescribeInvolution(W,w)
- 
-  Given  an involution w there  is a unique H=reflection_subgroup(W,I) such
-  that  w=longest(H) and w is central in H. The function returns I. For now
-  does not work for abscox groups.
+`describe_involution(W,w)`
 
+Given  an involution `w` of a Coxeter group `W`, by a theorem of Richardson
+cite{rich82} there is a unique parabolic subgroup `P` of `W` such that that
+`w`  is the  longest element  of `P`,  and is  central in `P`. The function
+returns `I` such that `P=reflection_subgroup(W,I)`, so that
+`w=longest(reflection_subgroup(W,I))`.
+
+```julia-repl
+julia> W=coxgroup(:A,2)
+A₂
+
+julia> w=longest(W)
+(1,5)(2,4)(3,6)
+
+julia> describe_involution(W,w)
+1-element Array{Int64,1}:
+ 3
+
+julia> w==longest(reflection_subgroup(W,[3]))
+true
+```
+For now does not work for abscox groups.
 """
-DescribeInvolution(W,w)=
+describe_involution(W,w)=
   SimpleRootsSubsystem(W,filter(i->i^w==i+parent(W).N,inclusion(W)[1:W.N]))
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
@@ -1123,7 +1160,7 @@ function algebraic_centre(W)
   end
   AZ=Group(AZ)
   toAZ=function(s)
-   s=vec(permutedims(s.v)*toM(coroots(W.G)[1:semisimplerank(W)]))
+    s=vec(permutedims(map(x->x.r,s.v))*toM(coroots(W.G)[1:semisimplerank(W)]))
     s=permutedims(s)*
        inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
        return AdditiveSE(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*
@@ -1133,7 +1170,7 @@ function algebraic_centre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  #println("ss=$ss")
+  println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)
