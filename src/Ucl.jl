@@ -237,7 +237,8 @@ module Ucl
 
 using Gapjm
 
-export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable
+export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable,
+ induced_linear_form
 
 struct UnipotentClass
   name::String

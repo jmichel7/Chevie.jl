@@ -48,8 +48,9 @@ export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit
 
 using ..Util: bracket_if_needed, fromTeX, divisors
-using ..Cycs: Cyc
+using ..Cycs: Cyc, Root1
 using ..Combinat: evalpoly
+using ..Gapjm: Gapjm, root
 
 const varname=Ref(:x)
 
@@ -338,7 +339,7 @@ function cyclotomic_polynomial(n::Integer)
   end
 end
 
-function root(x::Pol,n::Number=2)
+function Gapjm.root(x::Pol,n::Number=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
     error("root($(repr(x;context=:limit=>true)),$n) not implemented") 

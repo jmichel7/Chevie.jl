@@ -149,10 +149,10 @@ end
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("relative_degrees(W,4)","4-element Array{Int64,1}:\n  8\n 12\n 20\n 24")
 @test mytest("W=coxgroup(:E,8)","E₈")
-@test mytest("PositionRegularClass(W,30)","65")
+@test mytest("position_regular_class(W,30)","65")
 @test mytest("W=ComplexReflectionGroup(6)","G₆")
 @test mytest("L=twistings(W,[2])[2]","G₃‚₁‚₁[ζ₄]Φ′₄")
-@test mytest("PositionRegularClass(L,7//12)","3")
+@test mytest("position_regular_class(L,7//12)","3")
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("w=W(1:3...)","(1,12,3,2)(4,11,10,5)(6,9,8,7)")
 @test mytest("p=eigenspace_projector(W,w,1//4)","3×3 Array{Cyc{Rational{Int64}},2}:\n  1/4+ζ₄/4   ζ₄/2  -1/4+ζ₄/4\n  1/4-ζ₄/4    1/2   1/4+ζ₄/4\n -1/4-ζ₄/4  -ζ₄/2   1/4-ζ₄/4")
@@ -276,6 +276,9 @@ end
 @test mytest("minimal_words(G)","Dict{Perm{Int16},Array{Int64,1}} with 6 entries:\n  ()      => Int64[]\n  (2,3)   => [2, 1]\n  (1,3,2) => [1, 2, 1]\n  (1,3)   => [1, 2]\n  (1,2)   => [1]\n  (1,2,3) => [2]")
 end
 @testset "HasType.jl" begin
+@test mytest("H=hecke(ComplexReflectionGroup(4),Pol(:q))","hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])")
+@test mytest("s=schur_elements(H)","7-element Array{Pol{Cyc{Rational{Int64}}},1}:\n q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1\n 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴\n -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴\n 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴\n (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹\n (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹\n q²+2q+2+2q⁻¹+q⁻²")
+@test mytest("CycPol.(s)","7-element Array{CycPol{Cyc{Rational{Int64}}},1}:\n Φ₂²Φ₃Φ₄Φ₆\n (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆\n (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆\n 2q⁻⁴Φ₃Φ₄\n (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆\n (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆\n q⁻²Φ₂²Φ₄")
 @test mytest("G=ComplexReflectionGroup(4)","G₄")
 @test mytest("degrees(G)","2-element Array{Int64,1}:\n 4\n 6")
 @test mytest("length(G)","24")
@@ -480,6 +483,8 @@ end
 @test mytest("SPerm([-2,-1,-3])==SPerm([-2,-1,-3,4])","true")
 @test mytest("p=SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
 @test mytest("[20,30,40]^p","3-element Array{Int64,1}:\n -30\n -20\n -40")
+@test mytest("p=SPerm([20,30,40],[-40,-20,-30])","(1,-2,3,-1,2,-3)")
+@test mytest("[20,30,40]^p","3-element Array{Int64,1}:\n -40\n -20\n -30")
 @test mytest("Matrix(SPerm([-2,-1,-3]))","3×3 Array{Int64,2}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
 @test mytest("elements(CoxHyperoctaedral(2))","8-element Array{SPerm{Int8},1}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 end
@@ -492,6 +497,7 @@ end
 @test mytest("symbol_partition_tuple([[1,2],[1]],0)","2-element Array{Array{Int64,1},1}:\n [2, 2]\n [0, 2]")
 @test mytest("symbol_partition_tuple([[1,2],[1]],-1)","2-element Array{Array{Int64,1},1}:\n [2, 2]\n [0, 1, 3]")
 @test mytest("ranksymbol([[1,2],[1,5,6]])","11")
+@test mytest("valuation_gendeg_symbol([[1,2],[1,5,6]])","13")
 @test mytest("degree_gendeg_symbol([[1,5,6],[1,2]])","91")
 @test mytest("defectsymbol([[1,2],[1,5,6]])","-1")
 @test mytest("degree_feg_symbol([[1,5,6],[1,2]])","88")
@@ -544,6 +550,7 @@ end
 @test mytest("w=longest(W)","(1,5)(2,4)(3,6)")
 @test mytest("describe_involution(W,w)","1-element Array{Int64,1}:\n 3")
 @test mytest("w==longest(reflection_subgroup(W,[3]))","true")
+@test mytest("torus(3)",".")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("Diagram(W)","O⇛ O\n1  2")
 @test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
@@ -554,8 +561,12 @@ end
 @test mytest("elH=word.(Ref(H),elements(H))","4-element Array{Array{Int64,1},1}:\n []\n [2]\n [1]\n [1, 2]")
 @test mytest("elW=word.(Ref(W),elements(H))","4-element Array{Array{Int64,1},1}:\n []\n [1, 2, 1, 2, 1]\n [2]\n [1, 2, 1, 2, 1, 2]")
 @test mytest("map(w->H(w...),elH)==map(w->W(w...),elW)","true")
+@test mytest("W=coxgroup(:A,4)","A₄")
+@test mytest("SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 1])","SubTorus(A₄,Array{Int64,1}[[1, 0, 3, -13], [0, 1, 2, 7], [0, 0, 4, -3]])")
 end
 @testset "families.jl" begin
+@test mytest("Family(\"C2\")","Family(C₂:4)\n label│eigen\n──────┼─────────────────────────────\n(1,1) │    1 1//2  1//2  1//2  1//2\n(g₂,1)│    1 1//2  1//2 -1//2 -1//2\n(1,ε) │    1 1//2 -1//2  1//2 -1//2\n(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2")
+@test mytest("Family(\"C2\",1:7,Dict(:signs=>[1,-1,1,-1]))","Family(C₂:1:7)\n label│eigen signs\n──────┼───────────────────────────────────\n(1,1) │    1     1  1//2 -1//2 1//2 -1//2\n(g₂,1)│    1    -1 -1//2  1//2 1//2 -1//2\n(1,ε) │    1     1  1//2  1//2 1//2  1//2\n(g₂,ε)│   -1    -1 -1//2 -1//2 1//2  1//2")
 @test mytest("HasType.Family(family_imprimitive([[0,1],[1],[0]]))","Family(0011:3)\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6")
 @test mytest("HasType.FamiliesClassical(HasType.BDSymbols(3,1))","6-element Array{Family,1}:\n Family(01123:[1, 3, 8])\n Family(3:[9])\n Family(013:[5, 7, 10])\n Family(0112233:[4])\n Family(112:[2])\n Family(022:[6])")
 end

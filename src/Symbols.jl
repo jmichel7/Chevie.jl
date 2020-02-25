@@ -179,6 +179,17 @@ function ranksymbol(s)
   sum(sum,s)-div((ss-1)*(ss-e+1),2*e)
 end
 
+"""
+`valuation_gendeg_symbol(s)`
+
+Let  `s=[S₁,…,Sₙ]` be a  symbol. The function  returns the valuation of the
+generic degree of the unipotent character parameterized by `s`.
+
+```julia-repl
+julia> valuation_gendeg_symbol([[1,2],[1,5,6]])
+13
+```
+"""
 function valuation_gendeg_symbol(p)
   p=fullsymbol(p)
   e=length(p)

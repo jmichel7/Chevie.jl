@@ -12,6 +12,7 @@ const ChevieDict=Dict(
 #AsymptoticAlgebra
 "AsWord"=>"word",
 #BadPrimes
+"BetaSet"=>"βset",
 "BigCellDecomposition"=>"bigcell_decomposition",
 "BipartiteDecomposition"=>"bipartite_decomposition",
 #BlocksMat
@@ -84,8 +85,8 @@ const ChevieDict=Dict(
 #FactorizedSchurElements
 "FakeDegree"=>"fakedegree",
 "FakeDegrees"=>"fakedegrees",
-#FamiliesClassical
-#Family
+"FamiliesClassical"=>"FamiliesClassical",
+"Family"=>"Family",
 "FamilyImprimitive"=>"family_imprimitive",
 "FiniteCoxeterTypeFromCartanMat(m)"=>"type_cartan(m)",
 "FirstLeftDescending(W,w)"=>"firstleftdescent(W,w)",
@@ -97,7 +98,7 @@ const ChevieDict=Dict(
 #FusionAlgebra
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
-"GcdPartitions"=>"gcd_partitions"
+"GcdPartitions"=>"gcd_partitions",
 #GenericDegrees
 #GenericOrder
 #GetRoot
@@ -157,7 +158,7 @@ const ChevieDict=Dict(
 #LowestPowerFakeDegrees
 "LowestPowerFakeDegreeSymbol"=>"valuation_feg_symbol",
 #LowestPowerGenericDegrees
-#LowestPowerGenericDegreeSymbol
+"LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
 #Lusztigaw
 #LusztigAw
 #LusztigInduction
@@ -172,7 +173,7 @@ const ChevieDict=Dict(
 "OnTuples(l,p)"=>"l.^p",
 "ParabolicRepresentatives"=>"parabolic_representatives",
 #ParabolicSubgroups
-#PartBeta
+"PartBeta"=>"partβ",
 "Partition"=>"partition",
 "Partitions"=>"partitions",
 "PartitionTuples"=>"partition_tuples",
@@ -191,14 +192,14 @@ const ChevieDict=Dict(
 "PositionClass"=>"position_class",
 #PositionDet
 #PositionId
-#PositionRegularClass
+"PositionRegularClass"=>"position_regular_class",
 #Presentation
 "PrintDiagram(W)"=>"Diagram(W)",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
 #QuasiIsolatedRepresentatives
 "Rank"=>"rank",
-#RankSymbol
-"ReducedCoxeterWord(W,w)"=>"word(W,W(w...))"
+"RankSymbol"=>"ranksymbol",
+"ReducedCoxeterWord(W,w)"=>"word(W,W(w...))",
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
@@ -216,8 +217,8 @@ const ChevieDict=Dict(
 #ReflectionSubCoset
 "ReflectionSubgroup"=>"reflection_subgroup",
 "ReflectionType"=>"refltype",
-#RegularEigenvalues
-#RelativeDegrees
+"RegularEigenvalues"=>"regular_eigenvalues",
+"RelativeDegrees"=>"relative_degrees",
 #Replace
 "Representations"=>"representations",
 "RepresentativeConjugation"=>"representative_operation",
@@ -229,24 +230,24 @@ const ChevieDict=Dict(
 #ReversedWord
 "RightDescentSet(W,w)"=>"rightdescents(W,w)",
 "RightGcd"=>"rightgcd",
-"RightLcm"=>"rightlcm"
+"RightLcm"=>"rightlcm",
 "RootDatum"=>"rootdatum",
 "RootsCartan(m)"=>"roots(m)",
-#Rotation
-#Rotations
+"Rotation(v,i)"=>"circshift(v,-i)",
+"Rotations(v)"=>"circshift.(Ref(a),length(a):-1:1)",
 #SchurElement
-#SchurElements
+"SchurElements"=>"schur_elements",
 #SchurFunctor
 #SemisimpleCentralizerRepresentatives
 #SemisimpleElement
 "SemisimpleRank(W)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
 #SemisimpleSubgroup
-#ShiftBeta
+"ShiftBeta"=>"shiftβ",
 "ShrinkGarsideGeneratingSet"=>"shrink",
 #SignedMatStab
-#SignedPerm
-#SignedPermListList
+"SignedPerm"=>"SPerm",
+"SignedPermListList"=>"SPerm",
 #SignedPermMatMat
 "Size(W)"=>"length(W)",
 #SpecialPieces
@@ -256,12 +257,12 @@ const ChevieDict=Dict(
 "StandardParabolicClass"=>"standard_parabolic_class",
 #StructureRationalPointsConnectedCentre
 #SubSpets
-#SubTorus
+"SubTorus"=>"SubTorus",
 #Symbols
 #SymbolsDefect
 #SymmetricPower
 "Tableaux"=>"tableaux",
-#Torus
+"Torus"=>"torus",
 #TorusOrder
 "TransitiveClosure"=>"transitive_closure",
 #Transporter
@@ -270,8 +271,8 @@ const ChevieDict=Dict(
 "TwoTree(m)"=>"twotree(m)",
 #UnipotentAbelianPart
 #UnipotentCharacter
-#UnipotentCharacters
-#UnipotentClasses
+"UnipotentCharacters"=>"UnipotentCharacters",
+"UnipotentClasses"=>"UnipotentClasses",
 #UnipotentDecompose
 #UnipotentDegrees
 #UnipotentGroup
@@ -286,7 +287,8 @@ const ChevieDict=Dict(
 "W.orbitRepresentativeElement"=>"simple_conjugating_element(W,i)",
 )
 
-function chevie(s)
+function gap(s)
+  s=Regex(s,"i")
   kk=filter(x->occursin(s,x),keys(ChevieDict))
   pad=maximum(length(k) for k in kk)+2
   for k in kk

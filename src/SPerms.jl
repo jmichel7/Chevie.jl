@@ -239,11 +239,22 @@ function Base.:^(l::AbstractVector,a::SPerm)
 end
 
 """
-  `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
+`SPerm{T}(l::AbstractVector,l1::AbstractVector)`
 
-  return a `SPerm{T}` `p` such that `l1^p==l` if such `p` exists;
-  returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
-  Needs the objects in `l` and `l1` to be sortable.
+return  a `SPerm{T}`  `p` such  that `l1^p==l`  if such `p` exists; returns
+nothing  otherwise. If not given `{T}` is  taken to be `{Int16}`. Needs the
+objects in `l` and `l1` to be sortable.
+
+```julia-repl
+julia> p=SPerm([20,30,40],[-40,-20,-30])
+(1,-2,3,-1,2,-3)
+
+julia> [20,30,40]^p
+3-element Array{Int64,1}:
+ -40
+ -20
+ -30
+```
 """
 function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   p=Perm(map(x->sort([x,-x]),a),map(x->sort([x,-x]),b))

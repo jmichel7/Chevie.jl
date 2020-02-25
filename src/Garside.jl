@@ -332,7 +332,7 @@ module Garside
 using Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_generators, preferred_prefix, left_divisors, Category,
-endomorphisms, image
+endomorphisms, image, leftgcd
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end

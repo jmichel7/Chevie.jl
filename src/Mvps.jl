@@ -28,16 +28,15 @@ julia> Mvp(q^2+q)
 Mvp{Int64}: q²+q
 ```
 
-`Mvp(x::Number)`
-
-Returns the  constant multivariate polynomial whose constant term is `x`.
+`Mvp(x::Number)`   returns  the  constant   multivariate  polynomial  whose
+constant term is `x`.
 
 ```julia-repl
 julia> degree(Mvp(1))
 0
 ```
 
-One can divide an `Mvp` by another when the divison is exact
+One can divide an `Mvp` by another when the division is exact
 (this is equivalent to `ExactDiv`, see below).
 
 ```julia-repl
@@ -63,7 +62,7 @@ fraction.
 module Mvps
 # to use as a stand-alone module uncomment the next line
 # export degree, root, coefficients, valuation
-export Mvp, Monomial, @Mvp, variables, value
+export Mvp, Monomial, @Mvp, variables, value, scal
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
 using ..Util: fromTeX
@@ -113,17 +112,18 @@ end
 # cmp must define a monomial order (a<b => a m< b m for all monomials a, b, m)
 # We take the sign of the power of the first variable in a/b
 function Base.cmp(a::Monomial, b::Monomial)
-  for (ea,eb) in zip(a.d,b.d)
-    c=cmp(ea[1],eb[1])
-    if c<0 return -sign(ea[2])
-    elseif c>0 return sign(eb[2])
+  for ((ca,pa),(cb,pb)) in zip(a.d,b.d)
+    c=cmp(ca,cb)
+    if c<0 return -sign(pa)
+    elseif c>0 return sign(pb)
     end
-    c=cmp(ea[2],eb[2])
-    if c!=0 return -c end
+    if pa!=pb return cmp(pb,pa) end
   end
-  if length(a.d)>length(b.d) return -sign(a.d.d[length(b.d)+1][2])
-  elseif length(a.d)<length(b.d) return sign(b.d.d[length(a.d)+1][2])
-  else return 0
+  la=length(a.d)
+  lb=length(b.d)
+  if    la==lb return 0
+  elseif la>lb return -sign(last(a.d.d[lb+1]))
+  else         return sign(last(b.d.d[la+1]))
   end
 end
 
@@ -293,8 +293,8 @@ julia> degree(a)
 2
 ```
 
-There  exists also a form of `degree`  taking as second argument a variable
-name, which returns the degree of the polynomial in that variable.
+With  second argument a  variable name, `degree`  returns the degree of the
+polynomial in that variable.
 
 ```julia-repl
 julia> degree(a,:y)
@@ -320,9 +320,8 @@ julia> valuation(a)
 2
 ```
 
-There  exists  also  a  form  of  `valuation`  taking  as second argument a
-variable  name,  which  returns  the  valuation  of  the polynomial in that
-variable.
+With  second argument a variable name, `valuation` returns the valuation of
+the polynomial in that variable.
 
 ```julia-repl
 julia> valuation(a,:y)
@@ -366,9 +365,9 @@ Dict{Int64,Mvp{Int64}} with 9 entries:
   1  => 4x³+12x
 ```
 
-The  same caveat is  applicable to 'coefficients'  as to values: the values
+The  same caveat is  applicable to `coefficients`  as to values: the values
 are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
-represented as `Mvp`s, one should use `ScalMvp`.
+represented as `Mvp`s, one should use `scal`.
 """
 function coefficients(p::Mvp,v::Symbol)
   if iszero(p) return Dict{PowType,typeof(p.d)}() end
@@ -387,9 +386,9 @@ function coefficients(p::Mvp,v::Symbol)
 end
 
 """
-`variables(p)`
+`variables(p::Mvp)`
 
-returns the list of variables of the `Mvp` as a sorted list of strings.
+returns the list of variables of `p` as a sorted list of `Symbol`s.
 
 ```julia-repl
 julia> variables(x+x^4+y)
@@ -406,6 +405,26 @@ function variables(p::Mvp)
   end
 end
 
+"""
+`scal(p::Mvp)`
+
+If  `p`  is a  scalar,  return that  scalar,
+otherwise return  `nothing`. 
+
+```julia-repl
+julia> p=Mvp(:x)+1
+Mvp{Int64}: x+1
+
+julia> w=p(x=4)
+Mvp{Int64}: 5
+
+julia> scal(w)
+5
+
+julia> typeof(scal(w))
+Int64
+```
+"""
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
   if length(p.d)!=1 return nothing end
@@ -414,55 +433,6 @@ function scal(p::Mvp{T})where T
   return nothing
 end
 
-"""
-Value of an `Mvp`
-
-```julia-repl
-julia> p=-2+7x^5*inv(y)
-Mvp{Int64}: 7x⁵y⁻¹-2
-
-julia> p(x=2)
-Mvp{Int64}: -2+224y⁻¹
-
-julia> p(y=1)
-Mvp{Int64}: 7x⁵-2
-
-julia> p(x=2,y=1)
-Mvp{Int64}: 222
-```
-
-One should pay attention to the fact that the last value is not an integer,
-but  a constant `Mvp`  (for consistency). See  the function 'ScalMvp' below
-for how to convert such constants to their base ring.
-
-```julia-repl
-julia> p(x=y)
-Mvp{Int64}: 7y⁴-2
-
-julia> p(x=y,y=x)
-Mvp{Int64}: 7x⁴-2
-```
-    gap> Value(p,["x",y,"y",x]);
-    -2+7x^-1y^5|
-
-Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
-'GetRoot'
-
-|    gap> p:=x^(1/2)*y^(1/3);
-    x^(1/2)y^(1/3)
-    gap> Value(p,["x",y]);
-    y^(5/6)
-    gap>  Value(p,["x",2]);
-    ER(2)y^(1/3)
-    gap>  Value(p,["y",2]);
-    Error, : unable to compute 3-th root of 2
-     in
-    GetRoot( values[i], d[i] ) called from
-    f.operations.Value( f, x ) called from
-    Value( p, [ "y", 2 ] ) called from
-    main loop
-    brk>|
-"""
 # generic version:
 #function value(p::Mvp,vv::Pair{Symbol,<:Mvp})
 #  (s,v)=vv
@@ -500,6 +470,55 @@ function value(p::Mvp,vv::Pair)
      Mvp(ModuleElt(vcat(map(x->first(x).d.d,res1)...);check=true))
 end
 
+"""
+Value of an `Mvp`
+
+```julia-repl
+julia> p=-2+7x^5*inv(y)
+Mvp{Int64}: 7x⁵y⁻¹-2
+
+julia> p(x=2)
+Mvp{Int64}: -2+224y⁻¹
+
+julia> p(y=1)
+Mvp{Int64}: 7x⁵-2
+
+julia> p(x=2,y=1)
+Mvp{Int64}: 222
+```
+
+One should pay attention to the fact that the last value is not an integer,
+but  a constant `Mvp`  (for consistency). See  the function 'scal' below
+for how to convert such constants to their base ring.
+
+```julia-repl
+julia> p(x=y)
+Mvp{Int64}: 7y⁴-2
+
+julia> p(x=y,y=x)
+Mvp{Int64}: 7x⁴-2
+```
+    gap> Value(p,["x",y,"y",x]);
+    -2+7x^-1y^5|
+
+Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
+'GetRoot'
+
+|    gap> p:=x^(1/2)*y^(1/3);
+    x^(1/2)y^(1/3)
+    gap> Value(p,["x",y]);
+    y^(5/6)
+    gap>  Value(p,["x",2]);
+    ER(2)y^(1/3)
+    gap>  Value(p,["y",2]);
+    Error, : unable to compute 3-th root of 2
+     in
+    GetRoot( values[i], d[i] ) called from
+    f.operations.Value( f, x ) called from
+    Value( p, [ "y", 2 ] ) called from
+    main loop
+    brk>|
+"""
 function (p::Mvp)(;arg...)
   for vv in arg p=value(p,vv) end
   p
@@ -588,7 +607,7 @@ function Base.gcd(a::Mvp,b::Mvp)
     end
     p=p[1:lp]
     if lp==0 return p end
-    plp=ScalMvp(p[lp])
+    plp=scal(p[lp])
     if plp==false return p/ApplyFunc(MvpGcd,p) end
     p/plp
   end
@@ -601,7 +620,7 @@ function Base.gcd(a::Mvp,b::Mvp)
   if nvar==1 return Mvp(v,VecGcd(coef[1],coef[2])) end # faster
   cont=map(x->MvpGcd(x...),coef)
   for i in 1:2
-     if ScalMvp(cont[i]==false) coef[i]=List(coef[i],x->ExactDiv(x,cont[i]))
+     if scal(cont[i]==false) coef[i]=List(coef[i],x->ExactDiv(x,cont[i]))
      else coef[i]=List(coef[i],Mvp)
           cont[i]=Mvp(cont[i])
      end
@@ -654,16 +673,16 @@ of the CHEVIE package.
     0.3090169944-0.9510565163I+(-0.5-0.8660254038I)x|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'ScalMvp( <p> )'
+'scal( <p> )'
 
 If  <p> is  an  'Mvp' then  if  <p>  is a  scalar,  return that  scalar,
-otherwise return  'false'. Or  if <p>  is a  list, then  apply 'ScalMvp'
+otherwise return  'false'. Or  if <p>  is a  list, then  apply 'scal'
 recursively to  it (but return false  if it contains any  'Mvp' which is
 not a scalar). Else assume <p> is already a scalar and thus return <p>.
 
 |    gap> v:=[Mvp("x"),Mvp("y")];        
     [ x, y ]
-    gap> ScalMvp(v);
+    gap> scal(v);
     false
     gap> w:=List(v,p->Value(p,["x",2,"y",3]));
     [ 2, 3 ]
@@ -674,7 +693,7 @@ not a scalar). Else assume <p> is already a scalar and thus return <p>.
     Gcd( w ) called from
     main loop
     brk> 
-    gap> Gcd(ScalMvp(w));
+    gap> Gcd(scal(w));
     1|
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 'LaurentDenominator( <p1>, <p2>, ... )'

@@ -38,11 +38,17 @@ proper  algorithms of GAP by naive but  easy to write methods only suitable
 for  small groups (sufficient for the rest of the package but maybe not for
 your needs).
 
--  ported  from  Chevie:  Weyl  groups,  Coxeter  groups,  Hecke  algebras,
-Kazhdan-Lusztig   polynomials,  braid  and   Garside  groups  and  monoids,
-factorisations into cyclotomic polynomials, character tables of Weyl groups
-and  Hecke algebras, Unipotent characters  of Spetses, unipotent classes of
-reductive groups.
+-  ported from Chevie:  about 75% of  the functionality. The function `gap`
+can  help you discover the equivalent  functionality to a Gap3 function: it
+takes  a string and gives you Julia translations of functions in Gap3 which
+match this string:
+
+```julia-repl
+julia> Gapjm.gap("words")
+CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
+GarsideWords             =>  elements
+CharRepresentationWords  =>  traces_words_mats
+```
 
 The  code for infrastructure  is often competitive  with GAP, despite being
 much  shorter (often 100 lines of Julia replace 1000 lines of C); I am sure
@@ -170,4 +176,6 @@ include("Ucl.jl")
 @reexport using .Ucl
 include("Eigenspaces.jl")
 @reexport using .Eigenspaces
+include("../docs/src/cheviedict.jl")
+export gap
 end

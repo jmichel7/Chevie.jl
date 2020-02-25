@@ -109,7 +109,7 @@ faster than merge(+,...) on Dicts.
 # The vector d is kept sorted by K 
 struct ModuleElt{K,V}
   d::Vector{Pair{K,V}} # the keys K should be sortable
-  function ModuleElt(d::Vector{Pair{K,V}};check::Bool=false)where {K,V}
+  function ModuleElt(d::AbstractVector{Pair{K,V}};check::Bool=false)where {K,V}
     if check norm!(d) end
     new{K,V}(d)
   end
@@ -147,21 +147,14 @@ function Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt
   res=similar(a.d,la+lb)
   ai=bi=1
   ri=0
-  while ai<=la || bi<=lb
-    if ai>la
-@inbounds res[ri+=1]=b.d[bi]; bi+=1
-    elseif bi>lb
-@inbounds res[ri+=1]=a.d[ai]; ai+=1
-    else
-@inbounds c=cmp(a.d[ai][1],b.d[bi][1])
-      if c==1
-@inbounds res[ri+=1]=b.d[bi]; bi+=1
-      elseif c==-1
-@inbounds res[ri+=1]=a.d[ai]; ai+=1
-      else s=a.d[ai][2]+b.d[bi][2]
-        if !iszero(s)
-@inbounds res[ri+=1]=a.d[ai][1]=>s
-        end
+@inbounds while ai<=la || bi<=lb
+    if     ai>la res[ri+=1]=b.d[bi]; bi+=1
+    elseif bi>lb res[ri+=1]=a.d[ai]; ai+=1
+    else c=cmp(first(a.d[ai]),first(b.d[bi]))
+      if     c>0 res[ri+=1]=b.d[bi]; bi+=1
+      elseif c<0 res[ri+=1]=a.d[ai]; ai+=1
+      else s=last(a.d[ai])+last(b.d[bi])
+        if !iszero(s) res[ri+=1]=first(a.d[ai])=>s end
         ai+=1; bi+=1
       end
     end

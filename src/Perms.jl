@@ -8,23 +8,23 @@ the  GAP design: it is possible to multiply, or to store in the same group,
 permutations of different degrees; this is implemented by promoting both to
 the   higher  degree.  Slightly  faster  is  the  MAGMA  design  where  any
 permutation  has to belong to a group  and the degree is determined by that
-group. Then multiplication of permutations within a given group is slightly
+group; then multiplication of permutations within a given group is slightly
 faster,  but  it  is  more  difficult  to multiply permutations coming from
 different  groups, like a group and one  of its subgroups. The degree is an
 implementation  detail so usually it should  not be used. One should rather
 use the function `largest_moved_point`.
 
-A   permutation  is  defined   by  the  list   of  images  of  `1:n`,  like
-`Perm([2,3,1,5,4])`.   Often   it   is   more   convenient   to  use  cycle
-decompositions: the permutation with cycle decomposition `(1,2,3)(4,5)` can
-be  written  `Perm(1,2,3)*Perm(4,5)`  or  `perm"(1,2,3)(4,5)"`. The list of
-images  of `1:n` is gotten back from the permutation by the function `vec`;
-note  that since  equal permutations  may have  different degrees, they may
-have different `vec`.
+The default constructor for a permutation uses the list of images of `1:n`,
+like  `Perm([2,3,1,5,4])`.  Often  it  is  more  convenient  to  use  cycle
+decompositions:    the   above   permutation    has   cycle   decomposition
+`(1,2,3)(4,5)`    thus   can   be    written   `Perm(1,2,3)*Perm(4,5)`   or
+`perm"(1,2,3)(4,5)"`.  The list of images of  `1:n` can be gotten back from
+the  permutation by the function `vec`;  note that since equal permutations
+may have different degrees, they may have different `vec`.
 
-The  complete  type  of  our  permutations is `Perm{T}` where `T<:Integer`,
-where `Vector{T}` is the type of the vector which holds the image of `1:n`.
-This can used to save space or time. For instance `Perm{UInt8}` can be used
+The  complete type of a permutation  is `Perm{T}` where `T<:Integer`, where
+`Vector{T}`  is the type of the vector which holds the image of `1:n`. This
+can  be used to save space or  time. For instance `Perm{UInt8}` can be used
 for  Weyl groups of rank≤8 since they have at most 240 roots. If `T` is not
 specified  we take it to be `Int16` since this is a good compromise between
 speed and compactness.
@@ -101,8 +101,8 @@ julia> rand(Perm,10)
 
 `Perm`s  have methods `copy,  hash, ==, cmp,  isless` (total order) so they
 can  be keys in hashes  or elements of sets;  two permutations are equal if
-they  move the same points to  the same images. Permutations are considered
-as scalars for broadcasting.
+they  move the same points to the same images. Permutations are scalars for
+broadcasting.
 
 other functions are: 
 `cycles, cycletype, orbit, orbits, rand, restricted, sign`. 
@@ -421,8 +421,10 @@ function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T
   show(io,p)
 end
 
-" order(a) is the order of the permutation a"
-order(a::Perm) = lcm(length.(cycles(a)))
+"""
+`order(a::Perm)` is the order of the permutation a
+"""
+order(a::Perm)=lcm(length.(cycles(a)))
 
 """
   cycletype(a::Perm) describes the partition of degree(a) associated to the

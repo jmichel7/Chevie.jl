@@ -59,7 +59,7 @@ The functions described in this module allow to explore these situations.
 """
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
-  PositionRegularClass, eigenspace_projector, GetRelativeAction,
+  position_regular_class, eigenspace_projector, GetRelativeAction,
   GetRelativeRoot, SplitLevis, RelativeGroup
 
 using Gapjm
@@ -164,7 +164,7 @@ function regular_eigenvalues(W)
 end
 
 """
-`PositionRegularClass(WF,d=0)`
+`position_regular_class(WF,d=0)`
 
 Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
 root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)' or is a
@@ -177,7 +177,7 @@ index of the conjugacy class of `WF` which has a `ζ`-regular eigenvector.
 julia> W=coxgroup(:E,8)
 E₈
 
-julia> PositionRegularClass(W,30)
+julia> position_regular_class(W,30)
 65
 
 julia> W=ComplexReflectionGroup(6)
@@ -186,11 +186,11 @@ G₆
 julia> L=twistings(W,[2])[2]
 G₃‚₁‚₁[ζ₄]Φ′₄
 
-julia> PositionRegularClass(L,7//12)
+julia> position_regular_class(L,7//12)
 3
 ```
 """
-function PositionRegularClass(W,d=0)
+function position_regular_class(W,d=0)
   if d isa Int && d!=0 d=mod1(1//d) end
   drank=length(relative_degrees(W,d))
   if drank==0 return nothing end

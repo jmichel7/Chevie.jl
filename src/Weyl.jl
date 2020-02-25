@@ -184,7 +184,7 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, algebraic_centre, standard_parabolic,
- describe_involution
+ describe_involution, SubTorus
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -762,6 +762,19 @@ function rootdatum(t::Symbol,r::Int)
               join(sort(collect(keys(data))),", "))
 end
 
+"""
+`torus(rank)`
+
+This  function returns the object corresponding to the notion of a torus of
+dimension  `rank`, a Coxeter  group of semisimple  rank 0 and given `rank`.
+This  corresponds to a split torus; the extension to Coxeter cosets is more
+useful.
+
+```julia-repl
+julia> torus(3)
+.
+```
+"""
 function torus(i)
   G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
    Group(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
@@ -831,7 +844,6 @@ end
 "for each root index of simple representative"
 CoxGroups.simple_representatives(W::FCG)=simple_representatives(W.G)
   
-"for each root element conjugative representative to root"
 simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
 
@@ -1063,6 +1075,34 @@ struct SubTorus
   group
 end
 
+"""
+`SubTorus(W,Y::Matrix)`
+
+The  function  returns  the  subtorus  𝐒  of  the  maximal torus `𝐓` of the
+reductive  group represented by the Weyl group  `W` such that `Y(𝐒)` is the
+(pure)  sublattice of  `Y(𝐓)` generated  by the  (integral) vectors  `Y`. A
+basis  of `Y(𝐒)`  adapted to  `Y(𝐓)` is  computed and  stored in  the field
+'S.generators'  of the returned  SubTorus struct. Here,  adapted means that
+there  is a  set of  integral vectors,  stored in 'S.complement', such that
+'M=vcat(S.generators,S.complement)'  is  a  basis  of  `Y(𝐓)` (equivalently
+`M∈GL(Z^{rank(W)})`.  An  error  is  raised  if  `Y` does not define a pure
+sublattice.
+
+```julia-repl
+julia> W=coxgroup(:A,4)
+A₄
+
+julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 1])
+SubTorus(A₄,Array{Int64,1}[[1, 0, 3, -13], [0, 1, 2, 7], [0, 0, 4, -3]])
+
+julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
+ERROR: not a pure sublattice
+Stacktrace:
+ [1] error(::String) at ./error.jl:33
+ [2] Gapjm.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Array{Int64,2}) at /home/jmichel/julia/Gapjm.jl/src/Weyl.jl:1082
+ [3] top-level scope at REPL[25]:1
+```
+"""
 function SubTorus(W,V=matX(W,one(W)))
   V=ComplementIntMat(toL(matX(W,one(W))),toL(V))
   if any(x->x!=1,V[:moduli])

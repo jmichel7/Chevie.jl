@@ -3,7 +3,8 @@ module HasType
 export reflection_name, diagram,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
   chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  family_imprimitive, Family, traces_words_mats
+  traces_words_mats,
+  family_imprimitive, Family, Drinfeld_double
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -126,7 +127,36 @@ function PermGroups.class_reps(W::PermRootGroup)
 end
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 
+"""
+`schur_elements(H)`
 
+returns the list of Schur elements for the (cyclotomic) Hecke algebra `H`
+
+```julia-repl
+julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
+hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])
+
+julia> s=schur_elements(H)
+7-element Array{Pol{Cyc{Rational{Int64}}},1}:
+ q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
+ 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴
+ -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴
+ 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴                        
+ (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹
+ (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹
+ q²+2q+2+2q⁻¹+q⁻²                             
+
+julia> CycPol.(s)
+7-element Array{CycPol{Cyc{Rational{Int64}}},1}:
+ Φ₂²Φ₃Φ₄Φ₆             
+ (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆    
+ (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆   
+ 2q⁻⁴Φ₃Φ₄              
+ (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆
+ (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆
+ q⁻²Φ₂²Φ₄              
+```
+"""
 function schur_elements(H::HeckeAlgebra)
   W=H.W
   map(p->getchev(W,:SchurElement,p,H.para,
