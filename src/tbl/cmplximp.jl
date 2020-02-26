@@ -1321,7 +1321,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                                     else
                                                         tll = Sum(para[2]) // (1 - ct(b) // ct(a))
                                                     end
-                                                    v = fill(0, max(0, (1 + length(T)) - 1))
+                                                    v = fill(0//1, max(0, (1 + length(T)) - 1))
                                                     v[j] = tll
                                                     p = Position(T, S)
                                                     if p != false

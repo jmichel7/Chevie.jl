@@ -245,10 +245,12 @@ end
 E(a,b=1)=Cycs.E(Int(a),Int(b))
 E(;r)=E(denominator(r),numerator(r))
 
+Base.isreal(c::Cyc)=c.n==1
+
 if use_list
 Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
-Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
+Base.iszero(c::Cyc)=isreal(c) && iszero(c.d[1])
 else
 Base.zero(c::Cyc)=Cyc(1,zero(c.d))
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
@@ -291,20 +293,17 @@ Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
 if use_list
  num(c::Cyc)=c.d[1]
 else
- num(c::Cyc)=first(c.d)[2]
+ num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
 end
 
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real
-  if c.n!=1 throw(InexactError(:convert,T,c)) end
-if !use_list
-  if iszero(c) return zero(T) end
-end
-  convert(T,num(c))
+  if isreal(c) return convert(T,num(c)) end
+  throw(InexactError(:convert,T,c))
 end
 
 Int(c::Cyc)=convert(Int,c)
 
-Base.isinteger(c::Cyc)=isone(conductor(c)) && (iszero(c) || isinteger(num(c)))
+Base.isinteger(c::Cyc)=isone(conductor(c)) && isinteger(num(c))
 
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
@@ -459,11 +458,9 @@ function sumroots(n::Int,l::Vector{Pair{K,V}})where {K,V}
 end
 
 function Base.:*(a::Cyc,b::Cyc)
-  a,b=promote(a,b)
-  if iszero(a) return a end
-  if iszero(b) return b end
   if a.n==1 return num(a)*b end
   if b.n==1 return num(b)*a end
+  a,b=promote(a,b)
   a,b=promote_conductor(a,b)
 if use_list
   zb=zumbroich_basis(a.n)
@@ -655,12 +652,14 @@ Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) :
 end
 
 function Base.Real(c::Cyc{T}) where T
-if !use_list
-  if iszero(c) return zero(T) end
-end
-  if c.n==1 return num(c) end
+  if isreal(c) return num(c) end
   if c!=conj(c) error("$c is not real") end
   return real(Complex(c))
+end
+
+function Base.Rational(c::Cyc)
+  if isreal(c) return Rational(num(c)) end
+  throw(InexactError(:Rational,Rational,c))
 end
 
 Base.:<(c::Cyc,d::Real)=Real(c)<d
@@ -786,7 +785,7 @@ function Quadratic(cyc::Cyc{T})where T
   den=lcm(denominator.(l1))
   l=numerator.(l1)
   cyc*=den
-  if cyc.n==1 return Quadratic(l[1],0,1,den) end
+  if isreal(cyc) return Quadratic(l[1],0,1,den) end
 
   f=factor(cyc.n)
   v2=get(f,2,0)

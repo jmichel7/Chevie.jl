@@ -27,10 +27,21 @@ ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
+function CharRepresentationWords(mats,words)
+  traces_words_mats(toM.(mats),words)
+end
 CoxeterWord(W,w)=word(W,w)
 Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
+function DiagonalMat(v...)
+  R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
+  for i in axes(R,1), j in axes(R,2)
+    if i!=j R[i,j]=zero(R[1,1]) end
+  end
+  toL(R)
+end
+DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
 Elements=elements
 EltWord(W,x)=W(x...)
@@ -63,6 +74,7 @@ StringSymbol=stringsymbol
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
 SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
+Tableaux=tableaux
 function TeXBracket(s)
   s=string(s)
   length(s)==1  ? s : "{"*s*"}"

@@ -184,7 +184,7 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, algebraic_centre, standard_parabolic,
- describe_involution, SubTorus
+ describe_involution, SubTorus, weightinfo, fundamental_group
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -1210,7 +1210,7 @@ function algebraic_centre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  println("ss=$ss")
+  #println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)
@@ -1219,6 +1219,106 @@ function algebraic_centre(W)
                   map(x->word(AZ,x),gens(kernel(h)))
                end
   res
+end
+
+function WeightToAdjointFundamentalGroupElement(W,l::Vector)
+  if isempty(l) return Perm();end
+  prod(x->WeightToAdjointFundamentalGroupElement(W,x),l)
+end
+
+function WeightToAdjointFundamentalGroupElement(W,i)
+  t=refltype(W)[findfirst(t->i in t.indices,refltype(W))]
+  l=copy(t.indices)
+  b=longest(W,l)*longest(W,setdiff(l,[i]))
+  push!(l,maximum(findall(
+    i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
+  eachindex(W.rootdec))))
+  restricted(b,inclusion.(Ref(W),l))
+end
+
+# returns a record containing minuscule coweights, decompositions
+# (in terms of generators of the fundamental group)
+function weightinfo(W)
+  l=map(refltype(W)) do t
+    r=getchev(t,:WeightInfo)
+    if isnothing(r)
+      r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
+           :minusculeWeights=>Vector{Int}[])
+    end
+    if !haskey(r,:minusculeCoweights)
+      r[:minusculeCoweights]=r[:minusculeWeights]
+    end
+    if isempty(r[:moduli]) g=Int[]
+      r[:ww]=Perm{Int}[]
+    else g=filter(i->sum(r[:decompositions][i])==1,
+          eachindex(r[:minusculeCoweights])) # generators of fundamental group
+      r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
+               t.indices[r[:minusculeCoweights][g]])
+    end
+    r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
+    if !isempty(r[:moduli]) 
+      C=mod1.(inv(Rational.(cartan(t))))
+      r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
+      r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
+      r[:minusculeCoweights]=t.indices[r[:minusculeCoweights]]
+    end
+    r[:csi]=toL(r[:csi])
+    r
+  end
+  res=Dict(:minusculeWeights=>Cartesian(map(
+                                        x->vcat(x[:minusculeWeights],[0]),l)...),
+    :minusculeCoweights=>Cartesian(map(
+                                     x->vcat(x[:minusculeCoweights],[0]),l)...),
+    :decompositions=>map(vcat,Cartesian(map(x->vcat(x[:decompositions],
+                                 [0 .*x[:moduli]]),l)...)),
+    :moduli=>reduce(vcat,map(x->x[:moduli],l)))
+# centre of simply connected group: the generating minuscule coweights
+# mod the root lattice
+  res[:CenterSimplyConnected]=reduce(vcat,getindex.(l,:csi))
+  res[:AdjointFundamentalGroup]=reduce(vcat,getindex.(l,:ww))
+  n=length(res[:decompositions])-1
+  res[:minusculeWeights]=map(x->filter(y->y!=0,x),res[:minusculeWeights][1:n])
+  res[:minusculeCoweights]=map(x->filter(y->y!=0,x),res[:minusculeCoweights][1:n])
+  res[:decompositions]=res[:decompositions][1:n]
+  res
+end
+
+"""
+`fundamental_group(W)`
+
+This  function returns the fundamental group of the algebraic group defined
+by  the Coxeter  group struct  `W`. This  group is  returned as  a group of
+diagram  automorphisms of the corresponding affine Weyl group, that is as a
+group  of permutations of  the set of  simple roots enriched  by the lowest
+root  of  each  irreducible  component.  The  definition  we  take  of  the
+fundamental  group of a (not necessarily semisimple) reductive group is (P∩
+Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of the
+root lattice) and Q is the coroot latice. The bijection between elements of
+P/Q   and   diagram   automorphisms   is   explained   in  the  context  of
+non-irreducible groups for example in cite[S 3.B]{Bon05}.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> fundamental_group(W)
+Group([perm"(1,2,3,12)"])
+
+julia> W=rootdatum(:sl,4)
+A₃
+
+julia> fundamental_group(W)
+Group([])
+```
+"""
+function fundamental_group(W)
+  if iszero(semisimplerank(W)) return Group([Perm()]) end
+  omega=inv(Rational.(cartan(W)))*toM(W.G.coroots) # simple coweights in basis of Y(T)
+  e=weightinfo(W)[:minusculeCoweights]
+  e=filter(x->all(isinteger,sum(omega[x,:];dims=1)),e) # minusc. coweights in Y
+  if isempty(e) return Group(Perm()) end
+  e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
+  Group(AbelianGenerators(e))
 end
 
 end

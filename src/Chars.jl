@@ -821,24 +821,22 @@ function CharTable(t::TypeIrred)
   CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
 
-function CharTable(W::PermRootGroup)::CharTable
-  gets(W,:chartable) do W
-    ctt=CharTable.(refltype(W))
-    if isempty(ctt) 
-      return CharTable(hcat(1),["Id"],["1"],[1],"$W")
-    end
-    charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
-    classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
-    centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
-    identifier=join(getfield.(ctt,:identifier),"×")
-    if length(ctt)==1 irr=ctt[1].irr 
-    else irr=kron(getfield.(ctt,:irr)...)
-    end
-    CharTable(irr,charnames,classnames,centralizers,identifier)
+function Base.prod(ctt::Vector{CharTable})
+  if isempty(ctt) 
+    return CharTable(hcat(1),["Id"],["1"],[1],".")
   end
+  charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
+  classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
+  centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
+  identifier=join(getfield.(ctt,:identifier),"×")
+  if length(ctt)==1 irr=ctt[1].irr 
+  else irr=kron(getfield.(ctt,:irr)...)
+  end
+  CharTable(irr,charnames,classnames,centralizers,identifier)
 end
 
-CharTable(W::FiniteCoxeterGroup)=CharTable(W.G)
+CharTable(W::PermRootGroup)=gets(W->prod(CharTable.(refltype(W))),W,:chartable)
+CharTable(W::FiniteCoxeterGroup)=gets(W->prod(CharTable.(refltype(W))),W,:chartable)
 
 function CharTable(W::Spets)::CharTable
   gets(W,:chartable) do W
@@ -992,7 +990,7 @@ function WGraph2Representation(a,vars)
   n=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
   R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:n)
-  R=map(x->HasType.DiagonalMat(x...),R)
+  R=map(x->toM(HasType.DiagonalMat(x...)),R)
   R=map(x->x*E(1)//1,R)
 # println("R=$(typeof(R))$R")
   for r in a[2] 

@@ -94,7 +94,7 @@ const ChevieDict=Dict(
 "ForEachElement(W,f)"=>"for w in W f(w) end",
 #FormatTable
 #Frobenius
-#FundamentalGroup
+"FundamentalGroup"=>"fundamental_group",
 #FusionAlgebra
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",

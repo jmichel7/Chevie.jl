@@ -32,16 +32,20 @@ To update later to the latest version, do
 
 The package currently contains:
 
--  infrastructure: permutations,  cyclotomic numbers,  Laurent polynomials.
-There  are also  permutation groups,  for which  I have  often replaced the
-proper  algorithms of GAP by naive but  easy to write methods only suitable
-for  small groups (sufficient for the rest of the package but maybe not for
-your needs).
+-  infrastructure
+Permutations,  cyclotomic  numbers,  Laurent  polynomials.  There  are also
+permutation  groups, for which I have  often replaced the proper algorithms
+of  GAP by naive but  easy to write methods  only suitable for small groups
+(sufficient  for the rest of the package but maybe not for your needs). The
+code  for infrastructure is often competitive  with GAP, despite being much
+shorter (often 100 lines of Julia replace 1000 lines of C); I am sure there
+are more optimisations possible. Any comments about the code and the design
+are welcome.
 
--  ported from Chevie:  about 75% of  the functionality. The function `gap`
-can  help you discover the equivalent  functionality to a Gap3 function: it
-takes  a string and gives you Julia translations of functions in Gap3 which
-match this string:
+-  ported from Chevie
+about 75% of Chevie functionality. The function `gap` can help you discover
+the  equivalent functionality  to a  Gap3 function:  it takes  a string and
+gives you Julia translations of functions in Gap3 which match this string:
 
 ```julia-repl
 julia> Gapjm.gap("words")
@@ -49,19 +53,14 @@ CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
 GarsideWords             =>  elements
 CharRepresentationWords  =>  traces_words_mats
 ```
+Then you can call on-line help on the discovered functions.
 
-The  code for infrastructure  is often competitive  with GAP, despite being
-much  shorter (often 100 lines of Julia replace 1000 lines of C); I am sure
-there  are more optimisations possible. Any comments about the code and the
-design  are welcome. The code for Chevie  is often 10 times faster than the
-GAP3   Chevie  (after  the  maddeningly  long  compilation  time  on  first
-execution).
+This package is  often 10 times faster  than the equivalent GAP3 Chevie code
+(after the maddeningly long compilation time on first execution).
 
-I tried that parts of my package can be used independently of the rest. The
-modules  Combinat, Groups, ModuleElts,  Perms, Util are  independent of the
-rest of the package and can be used stand-alone.
-
-Mvps uses only ModuleElts and Util
+I tried that parts of my package can be used independently of the rest. For
+instance,  the modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
+are independent of the rest of the package and can be used stand-alone.
 
 """
 module Gapjm

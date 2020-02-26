@@ -2,8 +2,7 @@ module HasType
 
 export reflection_name, diagram,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, weightinfo, Cartesian, ExtendedCox,
-  traces_words_mats,
+  chevieget, field, getchev, Cartesian, ExtendedCox, traces_words_mats,
   family_imprimitive, Family, Drinfeld_double
 
 using ..Gapjm
@@ -319,63 +318,6 @@ function diagram(W)
   end
 end
 
-function WeightToAdjointFundamentalGroupElement(W,i)
-  t=First(refltype(W),t->i in t.indices)
-  l=copy(t.indices)
-  b=longest(W,l)*longest(W,setdiff(l,[i]))
-  push!(l,maximum(findall(
-    i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
-  eachindex(W.rootdec))))
-  restricted(b,inclusion.(Ref(W),l))
-end
-
-# returns a record containing minuscule coweights, decompositions
-# (in terms of generators of the fundamental group)
-function weightinfo(W)
-  l=map(refltype(W)) do t
-    r=getchev(t,:WeightInfo)
-    if isnothing(r)
-      r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
-           :minusculeWeights=>Vector{Int}[])
-    end
-    if !haskey(r,:minusculeCoweights)
-      r[:minusculeCoweights]=r[:minusculeWeights]
-    end
-    if isempty(r[:moduli]) g=Int[]
-      r[:ww]=Perm{Int}[]
-    else g=filter(i->sum(r[:decompositions][i])==1,
-          eachindex(r[:minusculeCoweights])) # generators of fundamental group
-      r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
-               t.indices[r[:minusculeCoweights][g]])
-    end
-    r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
-    if !isempty(r[:moduli]) 
-      C=mod1.(inv(Rational.(cartan(t))))
-      r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
-      r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
-      r[:minusculeCoweights]=t.indices[r[:minusculeCoweights]]
-    end
-    r[:csi]=toL(r[:csi])
-    r
-  end
-  res=Dict(:minusculeWeights=>Cartesian(map(
-                                        x->vcat(x[:minusculeWeights],[0]),l)),
-    :minusculeCoweights=>Cartesian(map(
-                                     x->vcat(x[:minusculeCoweights],[0]),l)),
-    :decompositions=>map(vcat,Cartesian(map(x->vcat(x[:decompositions],
-                                 [0 .*x[:moduli]]),l))),
-    :moduli=>reduce(vcat,map(x->x[:moduli],l)))
-# centre of simply connected group: the generating minuscule coweights
-# mod the root lattice
-  res[:CenterSimplyConnected]=reduce(vcat,getindex.(l,:csi))
-  res[:AdjointFundamentalGroup]=reduce(vcat,getindex.(l,:ww))
-  n=length(res[:decompositions])-1
-  res[:minusculeWeights]=map(x->filter(y->y!=0,x),res[:minusculeWeights][1:n])
-  res[:minusculeCoweights]=map(x->filter(y->y!=0,x),res[:minusculeCoweights][1:n])
-  res[:decompositions]=res[:decompositions][1:n]
-  res
-end
-
 nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 PrintToSring(s,v...)=sprint(show,v...)
@@ -616,14 +558,29 @@ true
 ```
 """
 function traces_words_mats(mats,words)
+  mats=map(x->x.*E(1),mats)
+  if all(m->all(x->conductor(x)==1,m),mats) mats=map(m->Rational.(m),mats) end
+  words=convert.(Vector{Int},words)
+  trace(m)=sum(i->m[i,i],axes(m,1))
+  prods=Dict{Vector{Int},typeof(mats[1])}(Int[]=>mats[1]^0)
+  for i in eachindex(mats) prods[[i]]=mats[i] end
+# println("mats=$mats")
+# println("words=$words")
   map(words)do w
-    if isempty(w) return size(mats[1],1) end
-    m=prod(mats[w])
-    sum(i->m[i,i],axes(m,1))
+    i=0
+    while haskey(prods,w[1:i]) 
+      if i==length(w) return trace(prods[w]) end
+      i+=1 
+    end
+    m=prods[w[1:i-1]]
+    while i<=length(w) 
+      prods[w[1:i]]=m*mats[w[i]]
+      i+=1
+    end
+    trace(prods[w])
   end
+# sort(collect(keys(prods)),by=x->[length(x),x])
 end
-
-CharRepresentationWords(mats,words)=traces_words_mat(toM.(mats),words)
 
 function ImprimitiveCuspidalName(S)
   r=RankSymbol(convert(Vector{Vector{Int}},S))

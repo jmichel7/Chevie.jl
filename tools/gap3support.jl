@@ -18,14 +18,6 @@ Concatenation(a::String...)=prod(a)
 Concatenation(a::AbstractVector{<:AbstractVector})=vcat(collect.(a)...)
 Concatenation(a::Vector,b::Tuple)=vcat(a,collect(b))
 Concatenation(b...)=reduce(vcat,b)
-function DiagonalMat(v...)
-  R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
-  for i in axes(R,1), j in axes(R,2)
-    if i!=j R[i,j]=zero(R[1,1]) end
-  end
-  R
-end
-DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Difference(a,b)=sort(setdiff(a,b))
 function Position(a::Vector,b)

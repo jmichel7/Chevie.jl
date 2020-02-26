@@ -252,7 +252,7 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   else
     g[:eigenvalues]=E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1)
   end
-  g[:eigenvalues]=DiagonalOfMat(exterior_power(DiagonalMat(g[:eigenvalues]...),n))
+  g[:eigenvalues]=DiagonalOfMat(exterior_power(toM(DiagonalMat(g[:eigenvalues]...)),n))
   g[:fourierMat]=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
   if n>1 g[:name]="R(\\BZ/$e)^{\\wedge $n}"
     g[:explanation]=ordinal(n)*" exterior power of char. ring of Z/$e"
