@@ -155,7 +155,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
             end
             if d == 0
                 (s[:relativeType])[:series] = "D"
-                s[:relativeType] = Dict{Symbol, Any}(:orbit => [s[:relativeType]], :twist => #= none:58 =# @perm_str("(1,2)"))
+                s[:relativeType] = Dict{Symbol, Any}(:orbit => [s[:relativeType]], :twist => perm"(1,2)")
                 s[:cuspidalName] = ""
                 symbols = map((x->begin
                                 SymbolPartitionTuple(x, 0)

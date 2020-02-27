@@ -459,19 +459,19 @@ the call).
 function Drinfeld_double(g;lu=false)
   res=Dict{Symbol,Any}(:group=> g)
   res[:classinfo] = map(function (c, n) local r, t
-    r = Dict{Symbol, Any}(:elt => Representative(c), :name => n)
-    if r[:elt] == g[:identity] r[:name] = "1" end
-    r[:centralizer] = Centralizer(g, r[:elt])
+    r = Dict{Symbol, Any}(:elt => c, :name => n)
+    if r[:elt]==one(g) r[:name]="1" end
+    r[:centralizer] = centralizer(g, r[:elt])
     r[:centelms] = class_reps(r[:centralizer])
     t = CharTable(r[:centralizer])
     r[:charNames] = charnames(r[:centralizer]; TeX = true)
-    r[:names] = ClassNamesCharTable(t)
-    r[:names][Position(r[:centelms], g[:identity])] = "1"
-    r[:chars] = t[:irreducibles]
+    r[:names]=t.classnames
+    r[:names][findfirst(==(one(g)),r[:centelms])] = "1"
+    r[:chars]=t[:irreducibles]
     r[:charNames][findfirst(isone,r[:chars])] = "1"
     r[:centralizers] = t[:centralizers]
     return r
-end, ConjugacyClasses(g), ClassNamesCharTable(CharTable(g)))
+end, class_reps(g), CharTable(g).classnames)
   res[:charLabels]=reduce(vcat,map(r->map(y->"($(r[:name]),$y)",r[:charNames]),
                               res[:classinfo]))
   if IsAbelian(g)
@@ -605,7 +605,7 @@ family_imprimitive = function (S)
     end
   end
   res=Dict{Symbol,Any}(:symbols=>symbs,
-    :fourierMat=>toM(mat),
+    :fourierMat=>mat,
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
     :explanation=>"classical family",

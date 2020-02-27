@@ -491,9 +491,7 @@ chevieset(:B, :UnipotentClasses, function (r, char, type_)
                     a = []
                     b = []
                     d = [0, 1, 0, -1]
-                    d = d[map((x->begin
-                                        1 + mod(x, 4)
-                                    end), p)]
+                    d = d[map((x->(1 + mod(x, 4);)), p)]
                     i = 1
                     while i <= length(p)
                         l = p[i]

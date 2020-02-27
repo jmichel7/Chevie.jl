@@ -29,7 +29,7 @@ chevieset(:G24, :PowerMaps, [nothing, [1, 1, 7, 4, 9, 10, 1, 4, 9, 10, 7, 1], [1
 chevieset(:G24, :ClassInfo, Dict{Symbol, Any}(:classtext => chevieget(:G24, :WordsClassRepresentatives), :classnames => chevieget(:G24, :ClassNames), :classparams => chevieget(:G24, :ClassNames), :orders => [1, 2, 4, 3, 14, 14, 2, 6, 7, 7, 4, 2], :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1]))
 chevieset(:G24, :CharInfo, function ()
         local res
-        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 21], [3, 8], [3, 1], [3, 10], [3, 3], [6, 2], [6, 9], [7, 6], [7, 3], [8, 4], [8, 5]], :opdam => #= none:7 =# @perm_str("(11,12)"), :extRefl => [1, 4, 5, 2])
+        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 21], [3, 8], [3, 1], [3, 10], [3, 3], [6, 2], [6, 9], [7, 6], [7, 3], [8, 4], [8, 5]], :opdam => perm"(11,12)", :extRefl => [1, 4, 5, 2])
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
@@ -57,7 +57,7 @@ chevieset(:G24, :HeckeCharTable, function (param, root)
         f8 = function (p, r, u)
                 return [8, 4p + 4r, 2 * p * r + p ^ 2 + r ^ 2, 3 * p * r + p ^ 2 + r ^ 2, u * p ^ 4 * r ^ 4, -p * r * u, -2 * p ^ 2 * r ^ 2 + p ^ 4 + r ^ 4, p ^ 3 * r ^ 3 * u, -(p ^ 9) * r ^ 9, -(p ^ 3) * r ^ 3, 0, 8 * p ^ 10 * r ^ 10 * u]
             end
-        tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, ER(-7)), f3(r, p, ER(-7)), f3(p, r, -(ER(-7))), f3(r, p, -(ER(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(#= none:39 =# @perm_str("( 5, 6)( 9,10)")), :irredinfo => chevieget(:G24, :IrredInfo))
+        tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, ER(-7)), f3(r, p, ER(-7)), f3(p, r, -(ER(-7))), f3(r, p, -(ER(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(perm"( 5, 6)( 9,10)"), :irredinfo => chevieget(:G24, :IrredInfo))
         Inherit(tbl, chevieget(:G24, :ClassInfo))
         tbl[:centralizers] = map((x->begin
                         tbl[:size] // x

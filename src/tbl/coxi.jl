@@ -406,9 +406,7 @@ chevieset(:I, :ParameterToSymbol, function (e, p)
                         end), 1:e)
             if p[1] != 0
                 S[1 + [0, mod(-(Sum(p)), e)]] = [[0, 1], [0, 1]]
-                S[1 + map((x->begin
-                                        mod(x, e)
-                                    end), -p)] = [[], []]
+                S[1 + map((x->(mod(x, e);)), -p)] = [[], []]
             else
                 S[e + [-(mod(p[2] - p[1], e)), 0]] = [[1], [1]]
             end

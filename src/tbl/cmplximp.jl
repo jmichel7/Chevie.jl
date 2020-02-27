@@ -1595,9 +1595,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             uc[:harishChandra] = Append(uc[:harishChandra], extra)
             for f = uc[:families]
                 f[:eigenvalues] = map((i->begin
-                                (First(uc[:harishChandra], (s->begin
-                                            i in s[:charNumbers]
-                                        end)))[:eigenvalue]
+                                (First(uc[:harishChandra], (s->(i in s[:charNumbers];))))[:eigenvalue]
                             end), f[:charNumbers])
             end
             uc[:b] = fill(0, max(0, (1 + length(uc[:charSymbols])) - 1))

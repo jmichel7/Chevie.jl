@@ -303,7 +303,7 @@ end
 
 Int(c::Cyc)=convert(Int,c)
 
-Base.isinteger(c::Cyc)=isone(conductor(c)) && isinteger(num(c))
+Base.isinteger(c::Cyc)=isreal(c) && isinteger(num(c))
 
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
@@ -458,8 +458,8 @@ function sumroots(n::Int,l::Vector{Pair{K,V}})where {K,V}
 end
 
 function Base.:*(a::Cyc,b::Cyc)
-  if a.n==1 return num(a)*b end
-  if b.n==1 return num(b)*a end
+  if isreal(a) return num(a)*b end
+  if isreal(b) return num(b)*a end
   a,b=promote(a,b)
   a,b=promote_conductor(a,b)
 if use_list
@@ -468,7 +468,7 @@ if use_list
   for i in eachindex(a.d), j in eachindex(b.d)
 @inbounds  c=a.d[i]*b.d[j]
     if iszero(c) continue end
-    (v,k)=Elist(a.n,zb[i]+zb[j])
+@inbounds  (v,k)=Elist(a.n,zb[i]+zb[j])
 @inbounds  res[k].+=v ? c : -c
   end
   lower(Cyc(a.n,res))
@@ -653,8 +653,8 @@ end
 
 function Base.Real(c::Cyc{T}) where T
   if isreal(c) return num(c) end
-  if c!=conj(c) error("$c is not real") end
-  return real(Complex(c))
+  if c==conj(c) return real(Complex(c)) end
+  throw(InexactError(:Real,Real,c))
 end
 
 function Base.Rational(c::Cyc)

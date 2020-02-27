@@ -191,7 +191,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
         uc[:harishChandra] = Concatenation([Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [1], :rank => 1), :parameterExponents => [e], :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => [2, 1])], map((x->begin
                             Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(2e, Product(x)), :cuspidalName => SPrint("{}^2", TeXpref, "[", x[1], ",", x[2], "]"), :charNumbers => [2 + Position(symUnp, x)])
                         end), symUnp))
-        uc[:almostHarishChandra] = Concatenation([Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:orbit => [Dict{Symbol, Any}(:series => "I", :indices => [1, 2], :rank => 2, :bond => e)], :twist => #= none:66 =# @perm_str("(1,2)")), :parameterExponents => [1, 1], :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => 1:n + 2)], map((x->begin
+        uc[:almostHarishChandra] = Concatenation([Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:orbit => [Dict{Symbol, Any}(:series => "I", :indices => [1, 2], :rank => 2, :bond => e)], :twist => perm"(1,2)"), :parameterExponents => [1, 1], :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => 1:n + 2)], map((x->begin
                             Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(e, -(Product(x))), :cuspidalName => SPrint(TeXpref, "[", x[1], ",", x[2], "]"), :charNumbers => [n + 2 + Position(nc, x)])
                         end), nc))
         if e == 4

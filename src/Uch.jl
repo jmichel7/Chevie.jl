@@ -450,12 +450,13 @@ function UnipotentCharacters(W::Group)
 
   tt=refltype(W)
   if isempty(tt) # UnipotentCharacters(coxgroup())
-    return UnipotentCharacters([Family("C1",[1])],
+    return UnipotentCharacters(
       [Dict(:relativeType=>Dict[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
+     [Family("C1",[1])],
      Dict( :charParams => [ [ "", [ 1 ] ] ],
-      :TeXCharNames => [ "" ],
+      :TeXCharNames => [ "." ],
       :charSymbols => [ [ "", [ 1 ] ] ],
       :size=>1,
       :a => [ 0 ],
@@ -471,6 +472,11 @@ function UnipotentCharacters(W::Group)
     for s in uc.harishChandra
      s[:levi]=inclusion(H)[s[:levi]]
      s[:relativeType][:indices]=inclusion(H)[s[:relativeType][:indices]]
+    end
+    for f in uc.families
+      if f[:fourierMat] isa Vector 
+        f[:fourierMat]=toM(f[:fourierMat]) 
+      end
     end
     uc
   end
@@ -569,9 +575,9 @@ end
 function fourierinverse(uc::UnipotentCharacters)
   gets(uc,:fourierinverse)do uc
     l=length(uc)
-    i=one(fill(E(1)//1,l,l))
+    i=fill(0*E(1)//1,l,l)
     for f in uc.families
-      i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]'
+      i[f[:charNumbers],f[:charNumbers]]=conj.(permutedims(f[:fourierMat]))
     end
     i
   end
