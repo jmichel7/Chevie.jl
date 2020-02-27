@@ -111,10 +111,10 @@ function Det(m)
     i=findfirst(isunit,m[v,j])
     if isnothing(i) continue end
 #   println(size(m,1),":",[j,i])
-    m=copy(m)
+    n=copy(m)
     f=inv(m[i,j])
-    for k in setdiff(v,[i]) m[k,:]-=m[k][j]*f.*m[i,:] end
-    return (-1)^(i+j)*m[i][j]*Det(compl(m,i,j))
+    for k in setdiff(v,[i]) n[k,:]-=m[k,j]*f.*m[i,:] end
+    return (-1)^(i+j)*n[i,j]*Det(compl(n,i,j))
   end
   print("m=");display(iszero.(m))
   v=map(x->count(!iszero,x),toL(m))

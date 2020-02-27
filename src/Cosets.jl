@@ -283,6 +283,11 @@ function twistings(W::FiniteCoxeterGroup)
   spets.(Ref(W),elements(Group(gen)))
 end
 
+function position_class(G::Spets,g)
+  if isone(G.phi) return position_class(G.W,g) end
+  findfirst(c->g in c,conjugacy_classes(G))
+end
+
 #-------------- finite coxeter cosets ---------------------------------
 struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   phi::Perm{T}

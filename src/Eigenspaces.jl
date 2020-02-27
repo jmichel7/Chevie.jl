@@ -60,7 +60,7 @@ The functions described in this module allow to explore these situations.
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
   position_regular_class, eigenspace_projector, GetRelativeAction,
-  GetRelativeRoot, SplitLevis, RelativeGroup
+  GetRelativeRoot, split_levis, RelativeGroup
 
 using Gapjm
 """
@@ -306,13 +306,16 @@ julia> SplitLevis(W,3)
 
 julia> W=coxgroup(:E,8)
 E₈
-```
 
-|   gap> SplitLevis(W,4,2); # too difficult fusion classes
-    [ D4<3,2,4,5>.(q^2+1)^2, (A1xA1)<5,7>x(A1xA1)<2,3>.(q^2+1)^2,
-      2(A2xA2)<3,1,5,6>.(q^2+1)^2 ]|
+julia> split_levis(W,4,2)
+3-element Array{Any,1}:
+ D₄₍₁₃₂₄₎Φ₄²     
+ (A₁A₁)×(A₁A₁)Φ₄²
+ ²(A₂A₂)₍₁₄₂₃₎Φ₄²
+
+```
 """
-function SplitLevis(WF,d=0,ad=-1)
+function split_levis(WF,d=0,ad=-1)
   if WF isa Spets W=WF.W
   else W=WF; WF=spets(W)
   end
@@ -347,9 +350,9 @@ function SplitLevis(WF,d=0,ad=-1)
       H=HF.W
       P=standard_parabolic(W, H)
       if P==false P=Perm() end
-      P=[P, inclusion(H)[eachindex(gens(H))].^P]
-      if P[1]!=Perm() || P[2]!=inclusion(H)[eachindex(gens(H))]
-         HF=subspets(WF,P[2],HF.phi^P[1]/WF.phi)
+      J=inclusion(H)[eachindex(gens(H))].^P
+      if P!=Perm() || J!=inclusion(H)[eachindex(gens(H))]
+         HF=subspets(WF,J,HF.phi^P/WF.phi)
       end
       push!(res, HF)
     end

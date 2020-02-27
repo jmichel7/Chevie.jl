@@ -54,7 +54,49 @@ using Gapjm
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_feg_symbol,
 valuation_feg_symbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
-fegsymbol, stringsymbol, tableaux, XSP
+fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol
+
+"""
+`PartitionTupleToString(tuple)`
+
+converts  the partition tuple `tuple` to  a string where the partitions are
+separated by a dot.
+
+```julia-repl
+julia> d=partition_tuples(3,2)
+10-element Array{Array{Array{Int64,1},1},1}:
+ [[1, 1, 1], []]
+ [[1, 1], [1]]  
+ [[1], [1, 1]]  
+ [[], [1, 1, 1]]
+ [[2, 1], []]   
+ [[1], [2]]     
+ [[2], [1]]     
+ [[], [2, 1]]   
+ [[3], []]      
+ [[], [3]]      
+
+julia> PartitionTupleToString.(d)
+10-element Array{String,1}:
+ "111."
+ "11.1"
+ "1.11"
+ ".111"
+ "21." 
+ "1.2" 
+ "2.1" 
+ ".21" 
+ "3."  
+ ".3"  
+```
+"""
+function PartitionTupleToString(n,a=Dict())
+  if n[end] isa Vector return join(map(join,n),".") end
+  r=repr(E(n[end-1],n[end]),context=:limit=>true)
+  if r=="1" r="+" end
+  if r=="-1" r="-" end
+  join(map(join,n[1:end-2]),".")*r
+end
 
 """
 `shiftβ( β, n)` shift β-set β by n
@@ -449,6 +491,77 @@ function fegsymbol(s,p=0)
   return res
 end
 
+"""
+`gendeg_symbol(s)`
+
+Let  `s=[S₁,…,Sₙ]`  be  a  symbol.  The  function returns as a `CycPol` the
+generic degree of the unipotent character parameterized by `s`.
+
+```julia-repl
+julia> Symbols.gendeg_symbol([[1,2],[1,5,6]])
+(1/2)q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂
+```
+
+Works for symbols for:
+
+       G(e,1,r) (d==1, defect==0)
+       G(e,e,r) (d==0, defect==0)
+      ²G(e,e,2) (d==0, defect==1) (this includes ²Dₙ, ²B₂, ²G₂)
+
+here d=Inhalt mod. e  See cite[3.9 and 6.4]{Malle Unipotente Grade}.
+"""
+function gendeg_symbol(S)
+  S=fullsymbol(S)
+  r=ranksymbol(S)
+  e=length(S)
+  sh=length.(S)
+  if e==0 return CycPol(1) end
+  m=div(sum(sh),e)
+  d=sum(sh)% e
+  q=Pol([1],1)
+  defect=(binomial(e,2)*m.-sh.*(0:e-1)).%e 
+  theta(S)=prod(l->prod(h->CycPol(q^h-1),(1:l)*e),S)
+
+  # initialize with the q'-part of the group order
+  if d==1 res=theta([r])
+  elseif d==0 res=theta([r-1])*CycPol(q^r-E(e,defect))
+  end
+
+  res*=(-1)^((0:e-1)*map(x->binomial(x,2),sh))*
+    prod(i->prod(j->prod(l->reduce(*,map(m->CycPol(l-m),
+    filter(m->i<j ||
+           degree(m)<degree(l),map(l->q^l*E(e)^j,S[j+1])));init=CycPol(q^0)),
+                       map(l->q^l*E(e,i),S[i+1])),i:e-1),0:e-1)//
+     (prod(theta,S)*(E(4)^binomial(e-1,2)*ER(e)^e)^m
+      *CycPol(q^sum(x->binomial(x,2),e.*(1:m-1).+d)))
+  
+  if r==1 m=findfirst(isempty,S)
+    if !isnothing(m) res*=(-1)^m end
+  elseif r==2 && e==3 && S in 
+    [[[1],[0,1,2],[0,1,2]],[Int[],[0,2],[0,1]],[Int[],[0,1],[0,2]]] res=-res
+  elseif r==3 && e==3 && d==0 && S in 
+    [[[0,1,2],Int[],Int[]],[[0,1,2],[0,1,2],Int[]]] res=-res
+  elseif r==4 && e==3 && d==0 && S in 
+    [[[0,1,3],Int[],Int[]],[[0,1,2,3],[1],[0]],[[0,1,2,3],[0],[1]],
+    [[0,1,3],[0,1,2],Int[]],[[0,1,2],[0,1,3],Int[]],[[0,1,2,3],[0,1,2,3],[1]]]
+    res=-res
+  elseif r==5 && e==3 && d==0 && S in 
+  [[[0,2,3],Int[],Int[]],[[0,1,2,4],[1],[0]],[[0,1,2,4],[0],[1]],
+   [[0,1,2,3,4],[1,2],[0,1]],[[0,1,2,3],[1],[1]],[[0,1,2,3,4],[0,1],[1,2]],
+   [[0,1,4],Int[],Int[]],[[0,1,2,3],[2],[0]],[[0,1,2,3],[0],[2]],
+   [[0,2,3],[0,1,2],Int[]],[[0,1,3],[0,1,3],Int[]],[[0,1,2,4],[0,1,2,3],[1]],
+   [[0,1,2],[0,2,3],Int[]],[[0,1,2,3],[0,1,2,4],[1]],[[0,1,2,3,4],[0,1,2,3,4],[1,2]],
+   [[0,1,4],[0,1,2],Int[]],[[0,1,2],[0,1,4],Int[]],[[0,1,2,3],[0,1,2,3],[2]]] 
+    res=-res
+  end
+  # Dudas' sign change
+  
+  if d==0 res*=findfirst(i->circshift(S,-i)==S,1:e) end
+  if defect==0 || r!=2 || e<=2 return res
+  else return E(e)^-1*CycPolOps.EnnolaTwist(res,E(2*e)) # 2I(e)
+  end
+end
+
 function tableaux(S::Vector{Int})
   first.(tableaux([S]))
 end
@@ -506,11 +619,11 @@ end
 #  {}^ρ Xˢₙ,d.
 # The result is a list of lists, each one corresponding to a similarity class.
 # If s = 0, only positive defects are considered.
-# XSP(2,1,n) LS symbols for Sp_2n
-# XSP(4,2,n) LS symbols for Sp_2n in char.2
-# XSP(2,0,n) LS symbols for SO_{2n+1} [defect odd]
-# XSP(2,0,n,true) LS symbols for SO_{2n} [defect even]
-# XSP(4,0,n,true) LS symbols for SO_{2n} in char 2
+# XSP(2,1,n) LS symbols for Sp₂ₙ
+# XSP(4,2,n) LS symbols for Sp₂ₙ in char.2
+# XSP(2,0,n) LS symbols for SO₂ₙ₊₁ [defect odd]
+# XSP(2,0,n,true) LS symbols for SO₂ₙ [defect even]
+# XSP(4,0,n,true) LS symbols for SO₂ₙ in char 2
 # returns records with fields:
 # .symbol  
 # .dimBu
@@ -528,9 +641,9 @@ function xsp(rho,s,n,d)
   end
 end
 
-function XSP(rho,s,n,d=false)
-  d=Int(!Bool(d))
-  res = []
+function XSP(rho,s,n,even=false)
+  d=Int(!Bool(even))
+  res = Vector{Vector{Int}}[]
   while true
     S=xsp(rho, s, n, d)
     if iszero(d) S=unique(sort(map(sort,S))) end
@@ -548,7 +661,7 @@ function XSP(rho,s,n,d=false)
     end
   end
   map(values(groupby(x->[Set(union(x...)),Set(intersect(x...))],res))) do f
-    ii=[]
+    ii=Vector{Int}[]
     d=sort(symdiff(f[1]...))
     if length(d)>0
       i=[d[1]]
@@ -600,8 +713,8 @@ end
 end
 
 function showxsp(r)
-   println("(symbol=", HasType.PartitionTupleToString(r[:symbol]),
-       ", sp=", HasType.PartitionTupleToString(r[:sp]), ", dimBu=", r[:dimBu], 
+   println("(symbol=", PartitionTupleToString(r[:symbol]),
+       ", sp=", PartitionTupleToString(r[:sp]), ", dimBu=", r[:dimBu], 
        ", Au=", r[:Au], ")")
 end
 

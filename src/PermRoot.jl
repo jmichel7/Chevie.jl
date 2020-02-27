@@ -297,6 +297,7 @@ Base.length(W::PermRootGroup)=length(W.G)
 Base.iterate(W::PermRootGroup,x...)=iterate(W.G,x...)
 Base.eltype(W::PermRootGroup)=eltype(W.G)
 Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
+Base.in(w,W::PermRootGroup)=in(w,W.G)
 
 "for each root index of first simple root conjugate to it"
 function simple_representatives(W::PermRootGroup{T,T1})::Vector{T1} where {T,T1}

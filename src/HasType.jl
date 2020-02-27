@@ -378,14 +378,6 @@ function Replace(s,p...)
   s
 end
 
-function PartitionTupleToString(n,a=Dict())
-  if n[end] isa Vector return join(map(join,n),".") end
-  r=repr(E(n[end-1],n[end]),context=:limit=>true)
-  if r=="1" r="+" end
-  if r=="-1" r="-" end
-  join(map(join,n[1:end-2]),".")*r
-end
-
 struct ExtendedCox{T<:FiniteCoxeterGroup}
   group::T
   F0s::Vector{Matrix{Int}}
@@ -558,28 +550,30 @@ true
 ```
 """
 function traces_words_mats(mats,words)
-  mats=map(x->x.*E(1),mats)
-  if all(m->all(x->conductor(x)==1,m),mats) mats=map(m->Rational.(m),mats) end
+  dens=map(x->1,mats)
+  if all(m->all(isreal,m),mats) 
+    mats=map(m->map(Rational,m),mats) 
+    dens=map(m->lcm(denominator.(m)),mats)
+    mats=map((m,d)->Int.(m.*d),mats,dens)
+  end
   words=convert.(Vector{Int},words)
-  trace(m)=sum(i->m[i,i],axes(m,1))
+  tr(m)=sum(i->m[i,i],axes(m,1))
+  trace(w)=tr(prods[w])//prod(dens[w])
   prods=Dict{Vector{Int},typeof(mats[1])}(Int[]=>mats[1]^0)
   for i in eachindex(mats) prods[[i]]=mats[i] end
-# println("mats=$mats")
-# println("words=$words")
-  map(words)do w
+  res=map(words)do w
     i=0
     while haskey(prods,w[1:i]) 
-      if i==length(w) return trace(prods[w]) end
+      if i==length(w) return trace(w) end
       i+=1 
     end
-    m=prods[w[1:i-1]]
     while i<=length(w) 
-      prods[w[1:i]]=m*mats[w[i]]
+      prods[w[1:i]]=prods[w[1:i-1]]*mats[w[i]]
       i+=1
     end
-    trace(prods[w])
+#   println(prod(dens[w]))
+    trace(w)
   end
-# sort(collect(keys(prods)),by=x->[length(x),x])
 end
 
 function ImprimitiveCuspidalName(S)

@@ -14,6 +14,7 @@ const ChevieDict=Dict(
 #BadPrimes
 "BetaSet"=>"βset",
 "BigCellDecomposition"=>"bigcell_decomposition",
+"Binomial"=>"binomial",
 "BipartiteDecomposition"=>"bipartite_decomposition",
 #BlocksMat
 "Braid"=>"BraidMonoid",
@@ -58,7 +59,7 @@ const ChevieDict=Dict(
 "CyclotomicPolynomial(R,i)"=>"cyclotomic_polynomial(i)",
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
-#CycPolGenericDegreeSymbol
+"CycPolGenericDegreeSymbol"=>"gendeg_symbol",
 #CycPolUnipotentDegrees
 "DecomposedMat"=>"diagblocks",
 "DefectSymbol"=>"defectsymbol",
@@ -112,8 +113,8 @@ const ChevieDict=Dict(
 #HeckeReflectionRepresentation
 #HeckeSubAlgebra
 #HighestPowerFakeDegrees
-#HighestPowerGenericDegrees
 "HighestPowerFakeDegreeSymbol"=>"degree_feg_symbol",
+#HighestPowerGenericDegrees
 "HighestPowerGenericDegreeSymbol"=>"degree_gendeg_symbol",
 #HighestShortRoot
 "KazhdanLusztigPolynomial"=>"KLPol",
@@ -251,8 +252,8 @@ const ChevieDict=Dict(
 #SignedPermMatMat
 "Size(W)"=>"length(W)",
 #SpecialPieces
-#Spets
-#SplitLevis
+"Spets"=>"spets",
+"SplitLevis"=>"split_levis",
 "StandardParabolic"=>"standard_parabolic",
 "StandardParabolicClass"=>"standard_parabolic_class",
 #StructureRationalPointsConnectedCentre
@@ -274,11 +275,11 @@ const ChevieDict=Dict(
 "UnipotentCharacters"=>"UnipotentCharacters",
 "UnipotentClasses"=>"UnipotentClasses",
 #UnipotentDecompose
-#UnipotentDegrees
+"UnipotentDegrees(W,q)"=>"degrees(UnipotentCharacters(W),q)",
 #UnipotentGroup
 "Valuation(p)"=>"valuation(p)",
 "Value(p,x)"=>"p(x)",
-#WeightInfo
+"WeightInfo"=>"weightinfo",
 #WGraph
 #WGraphToRepresentation
 "W.matgens[i]"=>"matX(W,i)",

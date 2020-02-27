@@ -131,6 +131,7 @@ function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
 end
 Base.:*(a::CycPol,b::Number)=iszero(b) ? zero(a) : CycPol(a.coeff*b,a.valuation,a.v)
+Base.:*(b::Number,a::CycPol)=a*b
 
 Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff), -a.valuation,
                                          -a.v)

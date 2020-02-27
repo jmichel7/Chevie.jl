@@ -568,6 +568,7 @@ PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
+Base.in(w,W::FiniteCoxeterGroup)=w in W.G
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
