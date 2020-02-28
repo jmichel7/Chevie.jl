@@ -59,7 +59,7 @@ struct Pol{T}
   v::Int
 end
 
-Pol(a::Number)=iszero(a) ? zero(Pol{typeof(a)}) : Pol([a],0)
+Pol(a::Number)=convert(Pol,a)
 
 function Pol(t::Symbol)
   varname[]=t
@@ -81,6 +81,7 @@ end
 
 Base.copy(p::Pol)=Pol(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) : Pol([T(a)],0)
+Base.convert(::Type{Pol},a::Number)=iszero(a) ? zero(Pol{typeof(a)}) : Pol([a],0)
 (::Type{Pol{T}})(a::Number) where T=convert(Pol{T},a)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
 (::Type{Pol{T}})(p::Pol) where T=convert(Pol{T},p)
@@ -134,6 +135,7 @@ Base.one(a::Pol)=Pol([one(eltype(a.c))],0)
 Base.one(::Type{Pol{T}}) where T=Pol([one(T)],0)
 Base.one(::Type{Pol})=Pol([1],0)
 Base.zero(::Type{Pol{T}}) where T=Pol(T[],0)
+Base.zero(::Type{Pol})=Pol(Int[],0)
 Base.zero(a::Pol)=Pol(empty(a.c),0)
 Base.iszero(a::Pol)=length(a.c)==0
 Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
@@ -177,10 +179,10 @@ function Base.show(io::IO,p::Pol)
     if s=="" s="0"
     elseif  s[1]=='+' s=s[2:end]
     end
+    print(io, fromTeX(io,s))
   else
-    s="Pol($(p.c),$(p.v))"
+    print(io,"Pol(",p.c,",",p.v,")")
   end
-  print(io, fromTeX(io,s))
 end
 
 #function Base.:*(a::Pol, b::Pol)

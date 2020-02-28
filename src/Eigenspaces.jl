@@ -268,7 +268,7 @@ function GetRelativeRoot(W,L,i)
 end
 
 """
-`SplitLevis(WF,d=0,ad=-1)`
+`split_levis(WF,d=0,ad=-1)`
 
 Let  `WF`  be  a  reflection  group  or  a  reflection  coset.  If `W` is a
 reflection group it is treated as the trivial coset 'Spets(W)'.
@@ -290,7 +290,7 @@ that the common `ζ`-eigenspace of their elements is of dimension `ad`.
 julia> W=coxgroup(:A,3)
 A₃
 
-julia> SplitLevis(W,4)
+julia> split_levis(W,4)
 2-element Array{Any,1}:
  A₃   
  .Φ₂Φ₄
@@ -298,7 +298,7 @@ julia> SplitLevis(W,4)
 julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
 
-julia> SplitLevis(W,3)
+julia> split_levis(W,3)
 3-element Array{Any,1}:
  ³D₄ 
  A₂Φ₃
@@ -320,7 +320,7 @@ function split_levis(WF,d=0,ad=-1)
   else W=WF; WF=spets(W)
   end
   if d isa Int && d!=0 d=mod1(1 // d) end
-  if ad==-1 return vcat(map(ad->SplitLevis(WF, d,
+  if ad==-1 return vcat(map(ad->split_levis(WF, d,
                                    ad),0:length(relative_degrees(WF,d)))...)
   end
   refs=eachindex(reflections(W)[1:nref(W)]) #hum

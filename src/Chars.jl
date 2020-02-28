@@ -864,6 +864,7 @@ function decompose(ct::CharTable,c)
   map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
 end
 
+impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 """
 `representation(W,i)`
 
@@ -878,17 +879,14 @@ those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
 
 ```julia-repl
 julia> representation(ComplexReflectionGroup(24),3)
-3-element Array{Array{Cyc{Rational{Int64}},2},1}:
- [1 0 0; -1 -1 0; -1 0 -1]       
- [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
- [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
+3-element Array{Array{T,2} where T,1}:
+ [1 0 0; -1 -1 0; -1 0 -1]
+ Cyc{Rational{Int64}}[-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
+ Cyc{Rational{Int64}}[-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 function representation(W::Group,i::Int)
-  ct=toM.(impl1(getchev(W,:Representation,i)))
-  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
-  ct
+  improve_type.(toM.(impl1(getchev(W,:Representation,i))))
 end
 
 """
@@ -991,7 +989,7 @@ function WGraph2Representation(a,vars)
   dim=length(nodes)
   R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:n)
   R=map(x->toM(HasType.DiagonalMat(x...)),R)
-  R=map(x->x*E(1)//1,R)
+  R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
   for r in a[2] 
 #   println("r=$r")

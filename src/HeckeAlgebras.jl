@@ -241,23 +241,21 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-function Chars.CharTable(H::HeckeAlgebra{C})where C
+function Chars.CharTable(H::HeckeAlgebra)
   W=H.W
   ct=impl1(getchev(W,:HeckeCharTable,H.para,
        haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
   else                     names=charinfo(W)[:charnames]
   end
-  CharTable(Matrix(convert.(C,toM(ct[:irreducibles]))),names,
+  CharTable(improve_type(toM(ct[:irreducibles])),names,
      ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
 end
 
 function Chars.representation(H::HeckeAlgebra,i::Int)
-  ct=impl1(getchev(H.W,:HeckeRepresentation,H.para,
+  r=impl1(getchev(H.W,:HeckeRepresentation,H.para,
     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
-  ct=toM.(ct)
-  if all(x->all(isinteger,x),ct) ct=map(x->Int.(x),ct) end
-  ct
+  if r!=false return improve_type.(toM.(r)) end
 end
 
 Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
@@ -524,7 +522,7 @@ B₂
 julia> H=hecke(W,q^2;rootpara=q)
 hecke(B₂,q²,rootpara=q)
 
-julia> HeckeAlgebras.char_values(Cpbasis(H)(1,2,1))
+julia> char_values(Cpbasis(H)(1,2,1))
 5-element Array{Pol{Int64},1}:
  -q-q⁻¹        
  q+q⁻¹         

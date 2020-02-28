@@ -283,7 +283,7 @@ function twistings(W::FiniteCoxeterGroup)
   spets.(Ref(W),elements(Group(gen)))
 end
 
-function position_class(G::Spets,g)
+function Groups.position_class(G::Spets,g)
   if isone(G.phi) return position_class(G.W,g) end
   findfirst(c->g in c,conjugacy_classes(G))
 end
@@ -319,6 +319,7 @@ charpoly(M)=isempty(M) ? CycPol(Pol([1],0)) :
 function torusfactors(WF::CoxeterCoset)
   M=PermRoot.baseX(WF.W.G)
   M*=WF.F*inv(convert.(Cyc{Rational},M))
+  M=improve_type(M)
   r=semisimplerank(WF.W)
   charpoly(M[r+1:end,r+1:end])
 end

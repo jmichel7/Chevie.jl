@@ -110,7 +110,7 @@ testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
 module Cycs
 # to use as a stand-alone module uncomment the next line
 # export coefficients, root
-export E, ER, Cyc, conductor, galois, Root1, Quadratic
+export E, ER, Cyc, conductor, galois, Root1, Quadratic, improve_type
 
 using ..ModuleElts: ModuleElts, ModuleElt, norm!
 using ..Util: fromTeX, bracket_if_needed, constant
@@ -245,12 +245,10 @@ end
 E(a,b=1)=Cycs.E(Int(a),Int(b))
 E(;r)=E(denominator(r),numerator(r))
 
-Base.isreal(c::Cyc)=c.n==1
-
 if use_list
 Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
-Base.iszero(c::Cyc)=isreal(c) && iszero(c.d[1])
+Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
 else
 Base.zero(c::Cyc)=Cyc(1,zero(c.d))
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
@@ -297,13 +295,13 @@ else
 end
 
 function Base.convert(::Type{T},c::Cyc)::T where T<:Real
-  if isreal(c) return convert(T,num(c)) end
+  if c.n==1 return convert(T,num(c)) end
   throw(InexactError(:convert,T,c))
 end
 
 Int(c::Cyc)=convert(Int,c)
 
-Base.isinteger(c::Cyc)=isreal(c) && isinteger(num(c))
+Base.isinteger(c::Cyc)=c.n==1 && isinteger(num(c))
 
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
@@ -458,8 +456,8 @@ function sumroots(n::Int,l::Vector{Pair{K,V}})where {K,V}
 end
 
 function Base.:*(a::Cyc,b::Cyc)
-  if isreal(a) return num(a)*b end
-  if isreal(b) return num(b)*a end
+  if a.n==1 return num(a)*b end
+  if b.n==1 return num(b)*a end
   a,b=promote(a,b)
   a,b=promote_conductor(a,b)
 if use_list
@@ -603,11 +601,11 @@ Base.conj(c::Cyc)=galois(c,-1)
 function Base.inv(c::Cyc)
   c=lower(c)
   if c.n==1
-    r=Real(c)
+    r=num(c)
     if r^2==1 return Cyc(r) else return Cyc(1//r) end
   else
     r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
-    n=Real(c*r)
+    n=num(c*r)
   end
   n==1 ? r : (n==-1 ? -r : r//n)
 end
@@ -651,14 +649,16 @@ Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) :
              sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
 end
 
+Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
+
 function Base.Real(c::Cyc{T}) where T
-  if isreal(c) return num(c) end
+  if c.n==1 return num(c) end
   if c==conj(c) return real(Complex(c)) end
   throw(InexactError(:Real,Real,c))
 end
 
 function Base.Rational(c::Cyc)
-  if isreal(c) return Rational(num(c)) end
+  if c.n==1 return Rational(num(c)) end
   throw(InexactError(:Rational,Rational,c))
 end
 
@@ -785,7 +785,7 @@ function Quadratic(cyc::Cyc{T})where T
   den=lcm(denominator.(l1))
   l=numerator.(l1)
   cyc*=den
-  if isreal(cyc) return Quadratic(l[1],0,1,den) end
+  if cyc.n==1 return Quadratic(l[1],0,1,den) end
 
   f=factor(cyc.n)
   v2=get(f,2,0)
@@ -872,7 +872,7 @@ function root(x::Cyc,n::Number=2)
   n1=Int(n)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
-    x=Real(x)
+    x=num(x)
     if denominator(x)>1 return nothing end
     return root(Int(x),n)
   end
@@ -887,6 +887,14 @@ function root(x::Cyc,n::Number=2)
   res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
   println("root($x,$n)=$res")
   res
+end
+
+function improve_type(m::Array)
+  m=convert.(reduce(promote_type,typeof.(m)),m)
+  if all(isinteger,m) m=Int.(m)
+  elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
+  end
+  m
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0

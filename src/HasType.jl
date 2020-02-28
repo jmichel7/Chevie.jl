@@ -550,16 +550,16 @@ true
 ```
 """
 function traces_words_mats(mats,words)
+  mats=improve_type.(mats)
   dens=map(x->1,mats)
-  if all(m->all(isreal,m),mats) 
-    mats=map(m->map(Rational,m),mats) 
+  if all(m->all(x->x isa Rational,m),mats) 
     dens=map(m->lcm(denominator.(m)),mats)
     mats=map((m,d)->Int.(m.*d),mats,dens)
   end
   words=convert.(Vector{Int},words)
   tr(m)=sum(i->m[i,i],axes(m,1))
   trace(w)=tr(prods[w])//prod(dens[w])
-  prods=Dict{Vector{Int},typeof(mats[1])}(Int[]=>mats[1]^0)
+  prods=Dict{Vector{Int},eltype(mats)}(Int[]=>mats[1]^0)
   for i in eachindex(mats) prods[[i]]=mats[i] end
   res=map(words)do w
     i=0

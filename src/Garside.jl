@@ -1187,7 +1187,7 @@ julia> WF=spets(W,Perm(1,2,4))
 ³D₄
 
 julia> F=Frobenius(WF)
-(::Gapjm.Cosets.var"#f#25"{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
+(::Gapjm.Cosets.var"#f#27"{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
 
 julia> c=B(3,4,3,3,2,4)
 343.324
@@ -1274,7 +1274,7 @@ julia> centralizer_generators(w;ss=:cyc)
 Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}[4])
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)))
-(::Gapjm.Cosets.var"#f#25"{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
+(::Gapjm.Cosets.var"#f#27"{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 2 methods)
 
 julia> centralizer_generators(w,F)
 2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:

@@ -1,6 +1,6 @@
 # extensions to get closer to GAP semantics
-Base.:*(a::Array,b::Pol)=a .* b
-Base.:*(a::Pol,b::Array)=a .* b
+Base.:*(a::AbstractArray,b::Pol)=a .* b
+Base.:*(a::Pol,b::AbstractArray)=a .* b
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
@@ -16,7 +16,7 @@ Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
 Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
 Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*E(1))*toM(m)*toM(n))
-Base.inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
+Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 Base.length(a::Symbol)=length(string(a))

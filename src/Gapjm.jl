@@ -47,7 +47,7 @@ about 75% of Chevie functionality. The function `gap` can help you discover
 the  equivalent functionality  to a  Gap3 function:  it takes  a string and
 gives you Julia translations of functions in Gap3 which match this string:
 
-```julia-repl
+```julia-rep1
 julia> Gapjm.gap("words")
 CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
 GarsideWords             =>  elements
