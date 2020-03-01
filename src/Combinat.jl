@@ -1,6 +1,6 @@
 module Combinat
 export combinations, arrangements, partitions, NrPartitions, partition_tuples,
-  conjugate_partition, evalpoly, dominates, compositions
+  conjugate_partition, evalpoly, dominates, compositions, submultisets
 
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -297,6 +297,48 @@ end
 function compositions(n,k)
   if isone(k) return [[n]] end
   vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1)),1:n-1)...)
+end
+
+"""
+`submultisets(set,k)`
+
+`submultisets` returns the  set of all  multisets length `k`
+of elements of the set `set`.
+
+An *multiset* of length `k` is a  selection with
+repetitions  of length `k` from `set` and  is represented by a vector
+of length `k` containing  elements  from  `set`.   There  are  
+`binomial(|set|+k-1,k)` such sub-multisets.
+
+```julia-repl
+julia> Combinat.submultisets(1:4,3)
+20-element Array{Array{Int64,1},1}:
+ [1, 1, 1]
+ [1, 1, 2]
+ [1, 1, 3]
+ [1, 1, 4]
+ [1, 2, 2]
+ [1, 2, 3]
+ [1, 2, 4]
+ [1, 3, 3]
+ [1, 3, 4]
+ [1, 4, 4]
+ [2, 2, 2]
+ [2, 2, 3]
+ [2, 2, 4]
+ [2, 3, 3]
+ [2, 3, 4]
+ [2, 4, 4]
+ [3, 3, 3]
+ [3, 3, 4]
+ [3, 4, 4]
+ [4, 4, 4]
+```
+"""
+function submultisets(A,i)
+  if i==1 return map(x->[x],A) end
+  vcat(map(j->map(v->pushfirst!(v,A[j]),submultisets(A[j:end],i-1)),
+           eachindex(A))...)
 end
 
 end

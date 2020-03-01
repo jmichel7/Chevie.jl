@@ -1,4 +1,4 @@
-# install_tbl() translates ~/Gap3-dev/pkg/chevie/tbl to ./tbl
+# install_tbl() translates ~/gap3-dev/pkg/chevie/tbl to ./tbl
 using Gap2Julia
 
 const src=[ 
@@ -52,7 +52,8 @@ ok2=[
     :G4_22Helper,
     :G4_22Test,
     :G4_22FetchIndexChars,
-    :VFactorSchurElement
+    :VFactorSchurElement,
+    :ExpandRep
    ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)

@@ -165,7 +165,7 @@ chevieset(:G32, :HeckeRepresentation, function (para, root, i)
             return false
         end
     end)
-chevieset(:G32, :CachedRepresentations, [])
+chevieset(:G32, :CachedRepresentations, Dict{Symbol, Any}())
 chevieset(:G32, :Representation, function (i,)
         local para, r, f, J, cached
         J = E(3)
@@ -178,10 +178,10 @@ chevieset(:G32, :Representation, function (i,)
         cached = chevieget(:G32, :CachedRepresentations)
         f = function (i,)
                 InfoChevie("#I calling rep(", i, ")\n")
-                if !(cached[i] !== nothing)
-                    cached[i] = (chevieget(:G32, :Representation))(i)
+                if !(haskey(cached, (i,)))
+                    cached[Symbol(i)] = (chevieget(:G32, :Representation))(i)
                 end
-                return cached[i]
+                return cached[Symbol(i)]
             end
         if i < 80
             if i == 31
@@ -348,7 +348,7 @@ chevieset(:G32, :Representation, function (i,)
                 r = J * f(100)
             end
         end
-        cached[i] = r
+        cached[Symbol(i)] = r
         return r
     end)
 chevieset(:G32, :Invariants, [function (a, b, c, d)

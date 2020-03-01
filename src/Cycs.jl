@@ -110,7 +110,7 @@ testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
 module Cycs
 # to use as a stand-alone module uncomment the next line
 # export coefficients, root
-export E, ER, Cyc, conductor, galois, Root1, Quadratic, improve_type
+export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
 using ..ModuleElts: ModuleElts, ModuleElt, norm!
 using ..Util: fromTeX, bracket_if_needed, constant
@@ -887,14 +887,6 @@ function root(x::Cyc,n::Number=2)
   res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
   println("root($x,$n)=$res")
   res
-end
-
-function improve_type(m::Array)
-  m=convert.(reduce(promote_type,typeof.(m)),m)
-  if all(isinteger,m) m=Int.(m)
-  elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
-  end
-  m
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0

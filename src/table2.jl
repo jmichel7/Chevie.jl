@@ -609,3 +609,14 @@ chevieset(:I, :CharInfo, function(m)
   return res
 end)
 
+ExpandRep = function (r, d, l)
+  T=reduce(promote_type,typeof.(first.(l)))
+  m=map(i->map(j->fill(zero(T),d),1:d), 1:r)
+  for v in l
+    for k in Int.(v[2:end])
+      i=k%(d^2)
+      m[div(k,d^2)+1][div(i,d)+1][mod(i,d)+1]=v[1]
+    end
+  end
+  return m
+end

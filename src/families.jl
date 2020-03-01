@@ -605,7 +605,7 @@ family_imprimitive = function (S)
     end
   end
   res=Dict{Symbol,Any}(:symbols=>symbs,
-    :fourierMat=>mat,
+                       :fourierMat=>toM(mat),
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
     :explanation=>"classical family",

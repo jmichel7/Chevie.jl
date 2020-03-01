@@ -560,7 +560,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                     local v
                     v = map((x->begin
                                     []
-                                end), 1:de)
+                                    end), 1:max(de,2))
                     if i > 0
                         v[1] = [i]
                     end
@@ -1014,7 +1014,7 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, root)
                     ctDC = map((x->begin
                                     v[x[1]] * q ^ x[2]
                                 end), hs[:DC])
-                    res = res * Product(ctSC) * Product(ctDC) ^ -1
+                    res = (res * Product(ctSC)) // Product(ctDC)
                     if k == 1
                         return res
                     end

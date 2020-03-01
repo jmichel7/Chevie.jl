@@ -45,7 +45,7 @@ module Pols
 # to use as a stand-alone module uncomment the next line
 # export root, degree, valuation
 export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
-  negative_part, bar, isunit
+  negative_part, bar, isunit, improve_type
 
 using ..Util: bracket_if_needed, fromTeX, divisors
 using ..Cycs: Cyc, Root1
@@ -141,6 +141,15 @@ Base.iszero(a::Pol)=length(a.c)==0
 Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
 Base.adjoint(a::Pol)=a
 Base.abs(p::Pol)=p
+
+function improve_type(m::Array)
+  m=convert.(reduce(promote_type,typeof.(m)),m)
+  if all(isinteger,m) m=Int.(m)
+  elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
+  elseif first(m) isa Pol && all(x->all(isinteger,x.c),m) m=convert.(Pol{Int},m)
+  end
+  m
+end
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")

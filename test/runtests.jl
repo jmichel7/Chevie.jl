@@ -315,7 +315,7 @@ end
 @test mytest("p=class_polynomials(h)","5-element Array{Pol{Int64},1}:\n 0\n 0\n q²\n q³-2q²+q\n q³-q²+q-1")
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("H=hecke(W,q^2;rootpara=q)","hecke(B₂,q²,rootpara=q)")
-@test mytest("HeckeAlgebras.char_values(Cpbasis(H)(1,2,1))","5-element Array{Pol{Int64},1}:\n -q-q⁻¹\n q+q⁻¹\n 0\n q³+2q+2q⁻¹+q⁻³\n 0")
+@test mytest("char_values(Cpbasis(H)(1,2,1))","5-element Array{Pol{Int64},1}:\n -q-q⁻¹\n q+q⁻¹\n 0\n q³+2q+2q⁻¹+q⁻³\n 0")
 end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:H,3)","H₃")
@@ -331,7 +331,7 @@ end
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H)","(::Gapjm.KL.var\"#f#10\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)")
-@test mytest("T=Tbasis(H)","(::Gapjm.HeckeAlgebras.var\"#f#35\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)")
+@test mytest("T=Tbasis(H)","(::Gapjm.HeckeAlgebras.var\"#f#31\"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)")
 @test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 @test mytest("c=LeftCells(coxgroup(:G,2))[3]","LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>")
 @test mytest("character(c)","3-element Array{Int64,1}:\n 3\n 5\n 6")

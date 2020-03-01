@@ -10,7 +10,7 @@ any ring).
 module GLinearAlgebra
 using Gapjm
 export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
-  ratio
+  ratio, schur_functor
 
 """
     `echelon!(m)`
@@ -262,6 +262,52 @@ julia> exterior_power(M,2)
 function exterior_power(A,m)
   basis=combinations(1:size(A,1),m)
   [det(A[i,j]) for i in basis, j in basis]
+end
+
+"""
+`schur_functor(mat,l)`
+
+`mat`  should be  a square  matrix and  `l` a  partition. The result is the
+Schur  functor  of  the  matrix  `mat`  corresponding to partition `l`; for
+example,   if  `l==[n]`  it  returns  the   n-th  symmetric  power  and  if
+`l==[1,1,1]` it returns the 3rd exterior power. The current algorithm (from
+Littlewood)  is rather inefficient so it is  quite slow for partitions of n
+where `n>6`.
+
+```julia-repl
+julia> m=cartan(:A,3)
+3×3 Array{Int64,2}:
+  2  -1   0
+ -1   2  -1
+  0  -1   2
+
+julia> schur_functor(m,[2,2])
+6×6 Array{Rational{Int64},2}:
+ 10//1   12//1  -16//1   16//1  -16//1   12//1
+  3//2    9//1   -6//1    4//1   -2//1    1//1
+ -4//1  -12//1   16//1  -16//1    8//1   -4//1
+  2//1    4//1   -8//1   16//1   -8//1    4//1
+ -4//1   -4//1    8//1  -16//1   16//1  -12//1
+  3//2    1//1   -2//1    4//1   -6//1    9//1
+```julia-repl
+"""
+function schur_functor(A,la)
+  n=sum(la)
+  S=CoxSym(n)
+  r=representation(S,findfirst(==(la),partitions(n)))
+  rep=function(x)x=word(S,x)
+    isempty(x) ? r[1]^0 : prod(r[x]) end
+  f=j->prod(factorial,last.(HasType.Collected(j)))
+  basis=submultisets(axes(A,1),n) 
+  M=sum(x->kron(rep(x),toM(map(function(i)i^=x
+      return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
+# Print(Length(M),"=>");
+  M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
+  M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
+  m=sort.(values(groupby(i->M[:,i],axes(M,2))))
+  m=sort(m)
+  M=M[:,first.(m)]
+  toM(map(x->sum(M[x,:],dims=1)[1,:],m))
 end
 
 """

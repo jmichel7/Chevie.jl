@@ -393,7 +393,7 @@ julia> C=Cpbasis(H)
 (::Gapjm.KL.var"#f#10"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
 
 julia> T=Tbasis(H)
-(::Gapjm.HeckeAlgebras.var"#f#35"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
+(::Gapjm.HeckeAlgebras.var"#f#31"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
@@ -641,7 +641,6 @@ function LeftCellRepresentatives(W)
   end
 end
 
-InfoChevie(x...)=println(x...)
 function OldLeftCellRepresentatives(W)
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
   rw=groupby(x->leftdescents(W,x^-1),elements(W))

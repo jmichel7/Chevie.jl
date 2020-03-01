@@ -277,6 +277,7 @@ const ChevieDict=Dict(
 #UnipotentDecompose
 "UnipotentDegrees(W,q)"=>"degrees(UnipotentCharacters(W),q)",
 #UnipotentGroup
+"UnorderedTuples"=>"submultiset",
 "Valuation(p)"=>"valuation(p)",
 "Value(p,x)"=>"p(x)",
 "WeightInfo"=>"weightinfo",
