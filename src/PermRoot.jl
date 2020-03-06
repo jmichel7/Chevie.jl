@@ -1018,38 +1018,52 @@ function reflection(m::Matrix)
   reflection(m,rr[r,:])
 end
 
-# invariant  Hermitian form. That is, a matrix  M such that for any vectors
-# x,y and matrix g in W, we have
-# x*M*conj(y)==(x*g)*M*conj(y*g)
-#
-# We use C[i,j]/C[i,i]=M[j,i]/M[i,i]
-# 
-function InvariantForm(W::PermRootGroup)
-  i=independent_roots(W)
-  C=cartan(W)[i,i]
-  M=zero(C)
+"""
+`invariant_form(W)`
+
+This  function returns the matrix `F`  of an Hermitian form invariant under
+the action of the reflection group `W`. That is, if `M` is the matrix of an
+element of `W`, then `M*F*M'=F`.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(4)
+G₄
+
+julia> PermRoot.InvariantForm(W)
+2×2 Array{Cyc{Rational{Int64}},2}:
+ 1  0
+ 0  2
+```
+"""
+function invariant_form(W::PermRootGroup)
+  I=independent_roots(W)
+  C=cartan(W)[I,I]
+# we use that C[i,j]/C[i,i]=F[j,i]/F[i,i]
+  T=typeof(C[1,1]//1)
+  F=zeros(T,size(C))
   for b in diagblocks(C)
     # first fill in the diagonal terms
-    M[b[1],b[1]]=1
+    F[b[1],b[1]]=1
     next=[1]
     while !isempty(next)
       i=b[next[1]]
       next=next[2:end]
-      for k in filter(k->M[b[k],b[k]]=0 && C[i,b[k]]!=0,eachindex(b))
+      for k in filter(k->F[b[k],b[k]]==0 && C[i,b[k]]!=0,eachindex(b))
 	j=b[k]
         push!(next,k)
-        M[j,j]=M[i,i]*C[i,j]*conj(C[j,j])/conj(C[j,i])/C[i,i];
+        F[j,j]=F[i,i]*C[i,j]*conj(C[j,j])//(conj(C[j,i])*C[i,i]);
       end
     end
     # then fill in the rest
-    for i in b for j in b
-      if i!=j M[j,i]=C[i,j]*M[i,i]/C[i,i] end
-    end end
+    for i in b, j in b
+      if i!=j F[j,i]=C[i,j]*F[i,i]//C[i,i] end
+    end
   end
-  M=DiagonalMat(M,IdentityMat(rank(W)-semisimplerank(W)))
-  N=baseX(W)^-1
-  M=N*M*N'
-  M/M[1,1]
+  d=rank(W)-semisimplerank(W)
+  F=cat(F,one(zeros(T,d,d)),dims=(1,2))
+  N=(baseX(W).//1)^-1
+  F=N*F*N'
+  F.//F[1,1]
 end
 
 end

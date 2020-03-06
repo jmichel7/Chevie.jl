@@ -390,7 +390,7 @@ using Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
-  representations, InductionTable
+  representations, InductionTable, classes
 
 """
 `fakedegree(W, φ, q)`
@@ -820,6 +820,8 @@ function CharTable(t::TypeIrred)
   end
   CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
 end
+
+classes(ct::CharTable)=div.(maximum(ct.centralizers),ct.centralizers)
 
 function Base.prod(ctt::Vector{CharTable})
   if isempty(ctt) 

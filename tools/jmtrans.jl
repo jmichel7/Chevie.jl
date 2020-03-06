@@ -58,7 +58,7 @@ ok2=[
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)
 
-function install(n)
+function install(n,ok=false)
   println("installing $n")
   l=readf(n*".g")
   open(n*".jl","w")do f 
@@ -70,7 +70,7 @@ function install(n)
         end
         println(".",e.args[2])
         write(f,"\n",string(Gap2Julia.trans(e)))
-      elseif e.head==:(=) && (e.args[1] in ok2) 
+       elseif e.head==:(=) && (ok  || (e.args[1] in ok2)) 
         println("=",e.args[1])
         write(f,"\n",string(Gap2Julia.trans(e)))
       end

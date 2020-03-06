@@ -121,14 +121,14 @@ const ChevieDict=Dict(
 "HyperplaneOrbits"=>"hyperplane_orbits",
 "ICCTable"=>"ICCTable",
 "Incidence"=>"incidence",
-#IndependentLines
+"IndependentLines(M)"=>"echelon(M)[2]",
 "IndependentRoots"=>"independent_roots",
 "InducedLinearForm"=>"induced_linear_form",
 "InductionTable"=>"InductionTable",
 #Inherit
 #IntermediateGroup
 "IntListToString"=>"joindigits",
-#InvariantForm
+"InvariantForm"=>"invariant_form",
 #Invariants
 "Inversions"=>"inversions",
 "IsCycPol(p)"=>"p isa CycPol",

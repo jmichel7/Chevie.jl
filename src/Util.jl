@@ -147,6 +147,9 @@ function fromTeX(io::IO,n::String)
   n=replace(n,"_"=>"")
   n=replace(n,"}"=>"")
   n=replace(n,"{"=>"")
+  n=replace(n,"\\phi"=>"phi")
+  n=replace(n,"\\zeta"=>"E")
+  n=replace(n,r"\bi\b"=>"I")
 end
 
 fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)

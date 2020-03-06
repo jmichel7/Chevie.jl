@@ -375,7 +375,7 @@ if use_list
 else
   it=p.d
 end
-res=join( map(it) do (deg,v)
+  res=join( map(it) do (deg,v)
 if use_list
     if iszero(v) return "" end
 end
@@ -386,14 +386,14 @@ end
       t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
       if repl || TeX
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
-        if deg>=1 r*= (deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}") end
+        if deg>=1 r*= deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}" end
       else
         r=(deg==1 ? "E($(p.n))" : "E($(p.n),$deg)")
       end
       t*=r
     end
     if t[1]!='-' t="+"*t end
-    if !isone(den) t*=fromTeX(io,TeX ? "/{$den}" : "/$den") end
+    if !isone(den) t*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) end
     t
   end)
   if res=="" res="0"
@@ -846,12 +846,13 @@ function Base.show(io::IO,q::Quadratic)
   if q.b!=0 
     if iszero(q.a) rq=""
     elseif q.b>0 rq*="+" end
-    rq*=q.b==1 ? "" : (q.b==-1 ? "-" : string(q.b))
-    rq*=repl ? "√$(q.root)" : (TeX ? "\\sqrt{$(q.root)}" : "ER($(q.root))")
+    rq*=q.b==1 ? "" : q.b==-1 ? "-" : string(q.b)
+    r=string(q.root)
+    rq*=repl ? "√$r" : TeX ? "\\sqrt{$r)}" : "ER($r))"
     if !iszero(q.a) && q.den!=1 rq="("*rq*")" end
   end
-  if q.den!=1 && rq!="0" rq*="/$(q.den)" end
   print(io,rq)
+  if q.den!=1 && rq!="0" print(io,(repl||TeX) ? "/" : "//",q.den) end
 end
 
 const inforoot=true

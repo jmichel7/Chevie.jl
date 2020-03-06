@@ -213,7 +213,7 @@ module Uch
 
 using Gapjm
 
-export UnipotentCharacters, FixRelativeType
+export UnipotentCharacters, FixRelativeType, fourier, fourierinverse
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -537,19 +537,21 @@ function Base.show(io::IO, ::MIME"text/html", uc::UnipotentCharacters)
   print(io, "\$")
 end
 
+Chars.charnames(io::IO,uc::UnipotentCharacters)=
+   fromTeX.(Ref(io),uc.prop[:TeXCharNames])
+
 function Base.show(io::IO,uc::UnipotentCharacters)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if !TeX print(io,"UnipotentCharacters(",uc.prop[:group],")") end
   if !repl && !TeX return end
   println(io,"")
-  q=Pol([1],1)
   strip(x)=fromTeX(io,x)
-  m=hcat(sprint.(show,CycPol.(degrees(uc,q)); context=io),
-         sprint.(show,CycPol.(fakedegrees(uc,q)); context=io),
+  m=hcat(sprint.(show,CycPol.(degrees(uc)); context=io),
+         sprint.(show,CycPol.(fakedegrees(uc)); context=io),
          sprint.(show,eigen(uc); context=io),
          strip.(labels(uc)))
-  format(io,m,row_labels=strip.(uc.prop[:TeXCharNames]),
+  format(io,m,row_labels=charnames(io,uc),
          rows_label=strip("\\gamma"),
          col_labels=strip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
 end
@@ -558,7 +560,7 @@ Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
 
 Base.length(uc::UnipotentCharacters)=length(uc.prop[:TeXCharNames])
 
-function Chars.fakedegrees(uc::UnipotentCharacters,q)
+function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol([1],1))
   if !haskey(uc.prop,:fakedegrees)
     uc.prop[:fakedegrees]=Dict{Any,Any}()
   end
@@ -574,19 +576,33 @@ end
 # FourierInverse times the vector of fake degrees is the vector of unip degrees
 function fourierinverse(uc::UnipotentCharacters)
   gets(uc,:fourierinverse)do uc
-    l=length(uc)
-    i=fill(0*E(1)//1,l,l)
-    for f in uc.families
-      i[f[:charNumbers],f[:charNumbers]]=conj.(permutedims(f[:fourierMat]))
-    end
-    i
+     l=length(uc)
+     i=fill(0*E(1)//1,l,l)
+     for f in uc.families
+       i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]'
+     end
+     i
   end
 end
 
-function Gapjm.degrees(uc::UnipotentCharacters,q)
-  gets(uc,:degrees)do uc
-    fourierinverse(uc)*fakedegrees(uc,q)
+function fourier(uc::UnipotentCharacters)
+  gets(uc,:fourier)do uc
+     l=length(uc)
+     i=fill(0*E(1)//1,l,l)
+     for f in uc.families
+       i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]
+     end
+     i
   end
+end
+
+function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
+  if !haskey(uc.prop,:degrees)
+    uc.prop[:degrees]=Dict{Any,Any}()
+  end
+  d=uc.prop[:degrees]
+  if haskey(d,q) return d[q] end
+  d[q]=fourierinverse(uc)*fakedegrees(uc,q)
 end
 
 function eigen(uc::UnipotentCharacters)
@@ -625,6 +641,35 @@ function FixRelativeType(t)
     end
   end
 end
+
+"""
+`CycPolUnipotentDegrees(W)`
+
+Taking  advantage that  the degrees  of unipotent  characters of the finite
+reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
+`W`  are products  of cyclotomic  polynomials, this  function returns these
+degrees as a list of `CycPol`s.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> Uch.CycPolUnipotentDegrees(W)
+10-element Array{CycPol{Cyc{Rational{Int64}}},1}:
+ 1           
+ q⁶          
+ (1/3)qΦ₃Φ₆  
+ (1/3)qΦ₃Φ₆  
+ (1/6)qΦ₂²Φ₃ 
+ (1/2)qΦ₂²Φ₆ 
+ (1/2)qΦ₁²Φ₃ 
+ (1/6)qΦ₁²Φ₆ 
+ (1/3)qΦ₁²Φ₂²
+ (1/3)qΦ₁²Φ₂²
+```
+"""
+CycPolUnipotentDegrees(W)=CycPol.(degrees(UnipotentCharacters(W)))
+# slow implementation
 
 """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -730,21 +775,6 @@ reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
 
 For  a  non-rational  Spetses,  'Indeterminate(Cyclotomics)'  would be more
 appropriate.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`CycPolUnipotentDegrees(<W>)`
-
-Taking  advantage that  the degrees  of unipotent  characters of the finite
-reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
-<W>  are products  of cyclotomic  polynomials, this  function returns these
-degrees as a list of 'CycPol's (see "Cyclotomic polynomials").
-
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> CycPolUnipotentDegrees(W);
-    [ 1, q^6, 1/3qP3P6, 1/3qP3P6, 1/6qP2^2P3, 1/2qP2^2P6, 1/2qP1^2P3,
-      1/6qP1^2P6, 1/3qP1^2P2^2, 1/3qP1^2P2^2 ]|
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 `DeligneLusztigCharacter(<W>,<w>)`
