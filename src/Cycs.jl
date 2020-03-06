@@ -172,6 +172,8 @@ end
   res
 end
   
+Base.denominator(c::Cyc{<:Rational})=lcm(denominator.(coefficients(c)))
+
 const Elist_dict=Dict((1,0)=>(true=>[0])) # the function Elist is memoized
 """
   Elist(n,i)  
