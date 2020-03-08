@@ -664,27 +664,24 @@ coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(
 " Adjoint root datum from cartan mat"
 rootdatum(C::Matrix)=rootdatum(one(C),C)
 
-" root datum"
+" root datum from 2 matrices: roots on basis of X(T), coroots on basis of Y(T)"
 function rootdatum(rr::Matrix,cr::Matrix)
-  C=cr*permutedims(rr)
-  rootdec=roots(C)
+  C=cr*permutedims(rr) # Cartan matrix
+  rootdec=roots(C) # difference with PermRootGroup is order of roots here
   N=length(rootdec)
   r=Ref(permutedims(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
-  # the reflections defined by Cartan matrix C
-  matgens=[reflection(rr[i,:],cr[i,:]) for i in axes(C,1)]
-# matgens=map(reflection,eachrow(rr),eachrow(cr))
-  """
-    the permutations of the roots r effected by the matrices matgens
-  """
-  gens=Perm.(matgens,Ref(r),action=(v,m)->permutedims(m)*v)
+  matgens=map(reflection,eachrow(rr),eachrow(cr)) # reflection matrices
+  # permutations of the roots effected by matgens
+  gens=map(M->Perm(r,Ref(permutedims(M)).*r),matgens)
   rank=size(C,1)
   G=PRG(matgens,r,map(i->cr[i,:],1:rank),Group(gens),
     Dict{Symbol,Any}(:cartan=>C))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
+" root datum from type "
 function rootdatum(t::Symbol,r::Int)
   id(r)=one(fill(0,r,r))
   data=Dict{Symbol,Function}(

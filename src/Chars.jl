@@ -1070,10 +1070,14 @@ The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
 function charnames(io::IO,W)
-  c=charinfo(W)
-  cn=c[:charnames]
-  for k in [:spaltenstein, :frame, :malle, :kondo]
-    if get(io,k,false) && haskey(c,k) cn=c[k] end
+  if hasmethod(refltype,(typeof(W),))
+    c=charinfo(W)
+    cn=c[:charnames]
+    for k in [:spaltenstein, :frame, :malle, :kondo]
+      if get(io,k,false) && haskey(c,k) cn=c[k] end
+    end
+  else
+    cn=CharTable(W).charnames
   end
   fromTeX.(Ref(io),cn)
 end

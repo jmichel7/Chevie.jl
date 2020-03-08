@@ -189,29 +189,30 @@ end
 """
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
-  return a `Perm{T}` `p` such that `l1^p==l` if such `p` exists;
-  returns nothing otherwise. If not given `{T}` is taken to be `{Int16}`.
-  Needs the objects in `l` and `l1` to be sortable.
+returns `p`, a `Perm{T}`, such that `l1^p==l` if such a `p` exists; returns
+`nothing` otherwise. If not given `{T}` is taken to be `{Int16}`. Needs the
+objects in `l` and `l1` to be sortable.
+
+```julia-repl
+julia> Perm([0,2,4],[4,0,2])
+(1,3,2)
+```
 """
 function Perm{T}(l::AbstractVector,l1::AbstractVector)where T<:Integer
-  s=sortperm(l)
-  s1=sortperm(l1)
-  if !all(i->l[s[i]]==l1[s1[i]],eachindex(l)) return nothing end
-  Perm{T}(s1)\Perm{T}(s)
+  p=sortperm(l)
+  p1=sortperm(l1)
+  if l[p]==l1[p1] Perm{T}(p1)\Perm{T}(p) end
 end
 
 Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int16}(l,l1)
 
-"""
-   `Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer`
+function Perm{T}(l::AbstractMatrix,l1::AbstractMatrix;dims=1)where T<:Integer
+  if     dims==1 Perm(collect(eachrow(l)),collect(eachrow(l1)))
+  elseif dims==2 Perm(collect(eachcol(l)),collect(eachcol(l1)))
+  end
+end
 
-assumes `l`  is  union  of  orbits  under  group  elt `g`; returns the
-`Perm{T}` effected on `l` by `g`. If not given `T=Int16`.
-Needs objects in `l` sortable
-"""
-Perm{T}(g,l::AbstractVector;action::Function=^) where T<:Integer=Perm{T}(l,action.(l,Ref(g)))
-
-Perm(g,l::AbstractVector;action::Function=^)=Perm{Int16}(g,l,action=action)
+Perm(l::AbstractMatrix,l1::AbstractMatrix;dims=1)=Perm{Int16}(l,l1,dims=dims)
 
 #---------------------------------------------------------------------
 Base.one(p::Perm)=Perm(empty(p.d))
@@ -347,6 +348,47 @@ function Base.:^(l::AbstractVector,a::Perm)
   res
 end
 
+"""
+Base.:^(m::AbstractMatrix,p::Perm;dims=1)
+
+Applies the permutation `p` on the lines, columns or both of the matrix `m`
+depending on the value of `dims`
+
+```julia-repl
+julia> m=[3*i+j for i in 0:2,j in 1:3]
+3×3 Array{Int64,2}:
+ 1  2  3
+ 4  5  6
+ 7  8  9
+
+julia> p=Perm(1,2,3)
+(1,2,3)
+
+julia> ^(m,p;dims=1)
+3×3 Array{Int64,2}:
+ 7  8  9
+ 1  2  3
+ 4  5  6
+
+julia> ^(m,p;dims=2)
+3×3 Array{Int64,2}:
+ 3  1  2
+ 6  4  5
+ 9  7  8
+
+julia> ^(m,p;dims=(1,2))
+3×3 Array{Int64,2}:
+ 9  7  8
+ 3  1  2
+ 6  4  5
+```
+"""
+function Base.:^(m::AbstractMatrix,a::Perm;dims=1)
+  if dims==2 hcat(collect(eachcol(m))^a...)
+  elseif dims==1 hcat(collect(eachcol(m)).^a...)
+  elseif dims==(1,2) hcat((collect(eachcol(m)).^a)^a...)
+  end
+end
 #---------------------- cycles -------------------------
 
 # takes 20% more time than GAP CyclePermInt for rand(Perm,1000)

@@ -141,6 +141,7 @@ Base.iszero(a::Pol)=length(a.c)==0
 Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
 Base.adjoint(a::Pol)=a
 Base.abs(p::Pol)=p
+Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
 
 function improve_type(m::Array)
   m=convert.(reduce(promote_type,typeof.(m)),m)

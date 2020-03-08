@@ -65,7 +65,6 @@ variables
 Mvps.coefficients
 Mvps.valuation
 Mvps.degree
-(p::Mvp)(;Any...)
 ```
 # CoxGroups.jl Documentation
 ```@docs
@@ -93,6 +92,7 @@ Weyl.standard_parabolic
 with_inversions
 torus
 SubTorus
+fundamental_group
 ```
 # PermRoot.jl Documentation
 ```@docs
@@ -105,12 +105,15 @@ matX
 reflections
 simple_conjugating_element
 simple_representatives
+invariant_form
 ```
 # HeckeAlgebras.jl Documentation
 ```@docs
 HeckeAlgebras
 hecke
 central_monomials
+class_polynomials
+char_values
 ```
 # KL.jl Documentation
 ```@docs
@@ -159,6 +162,10 @@ Cosets
 ```@docs
 Uch
 UnipotentCharacters
+UniChar
+DLChar
+AlmostChar
+DLLefschetz
 ```
 # Ucl.jl Documentation
 ```@docs
@@ -194,7 +201,6 @@ tableaux
 ```@docs
 SPerms
 SPerm
-SPerms:order
 Perm(p::SPerm)
 Matrix
 CoxHyperoctaedral
@@ -218,6 +224,7 @@ compositions
 conjugate_partition
 dominates
 partitions
+submultisets
 ```
 # ModuleElts.jl Documentation
 ```@docs
@@ -253,6 +260,7 @@ bigcell_decomposition
 diagblocks
 ratio
 exterior_power
+schur_functor
 GLinearAlgebra.Transporter
 ```
 # Eigenspaces.jl Documentation
@@ -262,6 +270,7 @@ relative_degrees
 regular_eigenvalues
 eigenspace_projector
 position_regular_class
+split_levis
 ```
 
 # Dictionary from GAP3/Chevie

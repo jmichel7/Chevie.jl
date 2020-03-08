@@ -231,15 +231,80 @@ function ComplexReflectionGroup(p,q,r)
   PRG(r,map(x->convert.(Cyc{Rational{Int}},x),cr))
 end
 
+"""
+`degrees(W)`
+
+returns  a list  holding the  degrees of  `W` as  a reflection group on the
+vector  space `V` on which  it acts. These are  the degrees `d₁,…,dₙ` where
+`n`  is the dimension of  `V` of the basic  invariants of `W` in `SV`. They
+reflect various properties of `W`; in particular, their product is the size
+of `W`.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(30)
+H₄
+
+julia> degrees(W)
+4-element Array{Int64,1}:
+  2
+ 12
+ 20
+ 30
+
+julia> length(W)
+14400
+```
+"""
 function Gapjm.degrees(W::Group)
   gets(W,:degrees)do W
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
 end
 
+"""
+'degrees(WF::Spets)'
+
+Let  `W` be  the group  of the  reflection coset  `WF`, and  let `V` be the
+vector  space  of  dimension  'rank(W)'  on  which `W` acts as a reflection
+group.  Let  `f₁,…,fₙ`  be  the  basic  invariants  of `W` on the symmetric
+algebra  `SV` of `V`;  they can be  chosen so they  are eigenvectors of the
+matrix  `WF.F`. The corresponding  eigenvalues are called  the *factors* of
+`F` acting on `V`; they characterize the coset --- they are equal to 1 only
+for  the trivial  coset. The  *generalized degrees*  of `WF`  are the pairs
+formed of the reflection degrees and the corresponding factor.
+
+```julia-repl
+julia> W=coxgroup(:E,6)
+E₆
+
+julia> WF=spets(W)
+E₆
+
+julia> phi=W(6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1);
+
+julia> HF=subspets(WF,2:5,phi)
+³D₄Φ₃
+
+julia> Diagram(HF)
+ϕ acts as (1,2,4) on the component below
+  O 2
+  ￨
+O—O—O
+1 3 4
+
+julia> degrees(HF)
+6-element Array{Tuple{Int64,Cyc{Int64}},1}:
+ (1, ζ₃) 
+ (1, ζ₃²)
+ (2, 1)  
+ (4, ζ₃) 
+ (6, 1)  
+ (4, ζ₃²)
+```
+"""
 function Gapjm.degrees(W::Spets)
   gets(W,:degrees)do W
-  vcat(map(x->(1,x),E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
+    vcat(map(x->(1,x),E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
   end
 end
 
@@ -385,8 +450,7 @@ struct ExtendedCox{T<:FiniteCoxeterGroup}
 end
 
 function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
-  ExtendedCox(W,F0s,isempty(F0s) ? Perm{Int}[] : 
-     map(F->Perm(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r),F0s))
+  ExtendedCox(W,F0s,isempty(F0s) ? Perm{Int}[] : map(F->PermX(W.G,F),F0s))
 end
 
 function Base.:*(a::ExtendedCox,b::ExtendedCox)

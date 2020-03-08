@@ -306,8 +306,7 @@ spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 Base.parent(W::Spets)=gets(W->W,W,:parent)
 
 function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
-# perm=Perm{T}(F,roots(parent(W.G)),action=(r,m)->permutedims(m)*r)
-  perm=Perm(W.G,F)
+  perm=PermX(W.G,F)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
   FCC(phi,F,W,Dict{Symbol,Any}())
@@ -328,11 +327,11 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   gets(WF,:refltype)do WF
     t=refltype(WF.W)
     c=map(x->PermRoot.indices(x),t)
-    phires=Perm(WF.phi,inclusion(WF.W.G))
+    phires=Perm(inclusion(WF.W.G),inclusion(WF.W.G).^WF.phi)
     map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
       o=deepcopy(t[c])
       J=PermRoot.indices(o[1])
-      twist=Perm{Int16}(phires^length(c),J)
+      twist=Perm(J,J.^(phires^length(c)))
       if o[1].series==:D && length(J)==4
         if order(twist)==2
           rf=reduce(vcat,cycles(twist))
@@ -348,6 +347,8 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
     end
   end
 end
+
+PermRoot.Diagram(W::Spets)=PermRoot.Diagram(refltype(W))
 
 function Base.show(io::IO, W::Spets)
    PermRoot.showtypes(io,refltype(W))

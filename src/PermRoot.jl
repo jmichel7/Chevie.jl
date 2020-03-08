@@ -126,8 +126,8 @@ export PermRootGroup, PRG, PRSG, catalan,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- bipartite_decomposition, torus_order, rank, matX,
- coroots, baseX, semisimplerank
+ bipartite_decomposition, torus_order, rank, matX, PermX,
+ coroots, baseX, semisimplerank, invariant_form
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -223,6 +223,17 @@ end
 function Base.show(io::IO,d::Diagram)
   for (i,t) in enumerate(d.types)
     if i>1 print(io,"\n") end
+    if haskey(t,:orbit)
+      act=length(t.orbit)>1
+      if act
+        println(io,"ϕ permutes the next ",length(t.orbit)," components")
+      end
+      if !isone(t.twist)
+        println(io,"ϕ",act ? ("^"*length(t.orbit)) : "",
+            " acts as ",t.twist," on the component below")
+      end
+      show(io,Diagram(t.orbit))
+    else
     series=t.series::Symbol
     indices=t.indices
     if isnothing(indices) ind=fill("?",rank(t))
@@ -264,6 +275,7 @@ function Base.show(io::IO,d::Diagram)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
     elseif series==:ST
       getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+    end
     end
   end
 end
@@ -701,14 +713,15 @@ function root_representatives(W::PermRootGroup)
   W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
 end
 
-function Perms.Perm(W::PermRootGroup,M::Matrix)
-  Perm(M,parent(W).roots,action=(v,m)->permutedims(m)*v)
+# permutation effected by M on roots of parent
+function PermX(W::PermRootGroup,M::Matrix)
+  Perm(parent(W).roots,Ref(permutedims(M)).*parent(W).roots)
 end
 
 function PermGroups.reduced(W::PermRootGroup,F)
   ir=independent_roots(W)
   if issubset(inclusion(W)[ir].^F,inclusion(W))
-    w=Perm(W,matX(W,F))
+    w=PermX(W,matX(W,F))
     if !isnothing(w) && w in W return w\F 
     elseif length(W)==1 return F
     end
@@ -728,8 +741,11 @@ struct PRG{T,T1}<:PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-function PRG(r::Vector{Vector{T1}},cr::Vector{Vector{T2}}) where{T1,T2}
+function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVector})
   matgens=map(reflection,r,cr)
+  T=eltype(matgens[1])  # promotion of r and cr types
+  roots=map(x->convert.(T,x),r)
+  cr=map(x->convert.(T,x),cr)
 
   # the following section is quite subtle: it has the (essential -- this is
   # what  allows  to  construct  reflexion  subgroups  in a consistent way)
@@ -738,9 +754,6 @@ function PRG(r::Vector{Vector{T1}},cr::Vector{Vector{T2}}) where{T1,T2}
   # root values.
 
 # println("# roots: ")
-  T=eltype(matgens[1])  # promotion of T1 and T2
-  roots=map(x->convert.(T,x),r)
-  cr=map(x->convert.(T,x),cr)
   refls=map(x->Int[],roots)
   newroots=true
   while newroots
@@ -760,9 +773,7 @@ function PRG(r::Vector{Vector{T1}},cr::Vector{Vector{T2}}) where{T1,T2}
     end
 #   println(" ",length(roots))
   end
-# roots=map(x->convert.(eltype(matgens[1]),x),roots)
-  PRG(matgens,roots,cr,Group(map(Perm{Int16},refls)),
-    Dict{Symbol,Any}())
+  PRG(matgens,roots,cr,Group(Perm{Int16}.(refls)),Dict{Symbol,Any}())
 end
 
 @inline roots(W::PRG)=W.roots
@@ -1029,7 +1040,7 @@ element of `W`, then `M*F*M'=F`.
 julia> W=ComplexReflectionGroup(4)
 G₄
 
-julia> PermRoot.InvariantForm(W)
+julia> invariant_form(W)
 2×2 Array{Cyc{Rational{Int64}},2}:
  1  0
  0  2

@@ -458,32 +458,32 @@ the call).
 """
 function Drinfeld_double(g;lu=false)
   res=Dict{Symbol,Any}(:group=> g)
-  res[:classinfo] = map(function (c, n) local r, t
-    r = Dict{Symbol, Any}(:elt => c, :name => n)
+  res[:classinfo] = map(function (c, n)
+    r = Dict{Symbol, Any}(:elt => c,:name => n)
     if r[:elt]==one(g) r[:name]="1" end
     r[:centralizer] = centralizer(g, r[:elt])
     r[:centelms] = class_reps(r[:centralizer])
     t = CharTable(r[:centralizer])
+    println("t=$t")
     r[:charNames] = charnames(r[:centralizer]; TeX = true)
     r[:names]=t.classnames
     r[:names][findfirst(==(one(g)),r[:centelms])] = "1"
-    r[:chars]=t[:irreducibles]
+    r[:chars]=t.irr
     r[:charNames][findfirst(isone,r[:chars])] = "1"
-    r[:centralizers] = t[:centralizers]
+    r[:centralizers] = t.centralizers
     return r
 end, class_reps(g), CharTable(g).classnames)
-  res[:charLabels]=reduce(vcat,map(r->map(y->"($(r[:name]),$y)",r[:charNames]),
-                              res[:classinfo]))
-  if IsAbelian(g)
+  res[:charLabels]=vcat(
+      map(r->map(c->"($(r[:name]),$c)",r[:charNames]),res[:classinfo])...)
+  if isabelian(g)
     for r in res[:classinfo]
       r[:names]=map(x->First(res[:classinfo],s->s[:elt]==x)[:name],r[:centelms])
     end
   end
   res[:size] = length(res[:charLabels])
-  res[:eigenvalues]=reduce(vcat,map(function(r)ct=TransposedMat(r[:chars])
-     return map((x, y)->x//y,ct[position_class(r[:centralizer],r[:elt])], 
-               ct[position_class(r[:centralizer],g[:identity])]) end,
-      res[:classinfo]))
+  res[:eigenvalues]=vcat(map(r->
+       r[:chars][:,position_class(r[:centralizer],r[:elt])].// 
+       r[:chars][:,position_class(r[:centralizer],one(g))],res[:classinfo])...)
   if lu
       res[:name] = "L"
       res[:explanation] = "Lusztig's"
@@ -493,25 +493,25 @@ end, class_reps(g), CharTable(g).classnames)
   end
   res[:name] *= "D($g)"
   res[:explanation] *= "DrinfeldDouble($g)"
-  res[:operations] = FamilyOps
-  res[:mellin] = DiagonalMat(List, res[:classinfo], (r->begin
-    conj(map(x->map((x, y)->x//y,x,r[:centralizers]),r[:chars]))^ -1
-              end))
+  res[:mellin] = cat(map(r->
+          conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1, 
+    res[:classinfo])...,dims=(1,2))
   res[:mellinLabels]=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res[:classinfo]))
   res[:xy] = reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res[:classinfo]))
-  p = reduce(vcat,map((r->begin map(function (y)
-           r1 = (res[:classinfo])[position_class(g, y ^ -1)]
-          return Position(res[:xy], [r1[:elt], (r1[:centelms])[position_class(r1[:centralizer], r[:elt] ^ RepresentativeOperation(g, y ^ -1, r1[:elt]))]])
-                          end, r[:centelms]) end), res[:classinfo]))
+  p=vcat(map(r->map(function(y)
+           r1=res[:classinfo][position_class(g, y^-1)]
+          return findfirst( ==([r1[:elt],
+                  r1[:centelms][position_class(r1[:centralizer],
+            r[:elt]^representative_operation(g, y^-1, r1[:elt]))]]),res[:xy])
+                          end, r[:centelms]), res[:classinfo])...)
   delete!(res, :classinfo)
-  res[:fourierMat] = (IdentityMat(res[:size]))[p] ^ res[:mellin]
+  res[:fourierMat] = inv(res[:mellin])*one(res[:mellin])[p,:]*res[:mellin]
   if lu
-    res[:perm]=PermListList(conj(transpose(res[:mellin])),
-                                 transpose(res[:mellin]))
-    res[:fourierMat]=Permuted(res[:fourierMat], res[:perm])
+    res[:perm]=Perm(conj(res[:mellin]),res[:mellin];dims=2)
+    res[:fourierMat]=^(res[:fourierMat], res[:perm],dims=1)
   end
   res[:special] = Position(res[:charLabels], "(1,1)")
-  res
+  Family(res)
 end
 
 """

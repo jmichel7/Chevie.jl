@@ -3,7 +3,7 @@ const ChevieDict=Dict(
 #Affine
 #AffineRootAction
 "AlgebraicCentre"=>"algebraic_centre",
-#AlmostCharacter
+"AlmostCharacter"=>"AlmostChar",
 "Arrangements"=>"arrangements",
 "AsReflection"=>"reflection",
 "AsFraction"=>"fraction",
@@ -60,12 +60,12 @@ const ChevieDict=Dict(
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
 "CycPolGenericDegreeSymbol"=>"gendeg_symbol",
-#CycPolUnipotentDegrees
+"CycPolUnipotentDegrees"=>"CycPolUnipotentDegrees",
 "DecomposedMat"=>"diagblocks",
 "DefectSymbol"=>"defectsymbol",
 "Degree(p)"=>"degree(p)",
-#DeligneLusztigCharacter
-#DeligneLusztigLefschetz
+"DeligneLusztigCharacter"=>"DLChar",
+"DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",
 #DetPerm
 #Dictionary
@@ -131,6 +131,7 @@ const ChevieDict=Dict(
 "InvariantForm"=>"invariant_form",
 #Invariants
 "Inversions"=>"inversions",
+"IsAbelian"=>"isabelian",
 "IsCycPol(p)"=>"p isa CycPol",
 "IsFamily(f)"=>"f isa Family",
 #IsIsolated
@@ -170,7 +171,7 @@ const ChevieDict=Dict(
 #MatYPerm
 #NrDrinfeldDouble
 #OnFamily
-#OnMatrices
+"OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",
 "OnTuples(l,p)"=>"l.^p",
 "ParabolicRepresentatives"=>"parabolic_representatives",
 #ParabolicSubgroups
@@ -183,11 +184,11 @@ const ChevieDict=Dict(
 "PermListList(l1,l2)"=>"Perm(l1,l2)",
 "PermList(v)"=>"Perm(v)",
 #PermMatMat
-#PermMatX
+"PermMatX"=>"PermX",
 #PermMatY
 "PermutationMat(p,dim)"=>"Matrix(p,dim)",
 "Permuted(v,p)"=>"v^p",
-#PermutedByCols
+"PermutedByCols(m,p)"=>"^(m,p;dims=2)",
 #PoincarePolynomial
 "Poset"=>"Poset",
 "PositionClass"=>"position_class",
@@ -238,7 +239,7 @@ const ChevieDict=Dict(
 "Rotations(v)"=>"circshift.(Ref(a),length(a):-1:1)",
 #SchurElement
 "SchurElements"=>"schur_elements",
-#SchurFunctor
+"SchurFunctor"=>"schur_functor",
 #SemisimpleCentralizerRepresentatives
 #SemisimpleElement
 "SemisimpleRank(W)"=>"coxrank(W)",
@@ -271,7 +272,7 @@ const ChevieDict=Dict(
 #Twistings
 "TwoTree(m)"=>"twotree(m)",
 #UnipotentAbelianPart
-#UnipotentCharacter
+"UnipotentCharacter"=>"UniChar",
 "UnipotentCharacters"=>"UnipotentCharacters",
 "UnipotentClasses"=>"UnipotentClasses",
 #UnipotentDecompose

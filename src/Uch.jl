@@ -213,7 +213,8 @@ module Uch
 
 using Gapjm
 
-export UnipotentCharacters, FixRelativeType, fourier, fourierinverse
+export UnipotentCharacters, FixRelativeType, fourier, fourierinverse, UniChar,
+AlmostChar, DLChar, DLLefschetz
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -596,6 +597,33 @@ function fourier(uc::UnipotentCharacters)
   end
 end
 
+"""
+`degrees(uc::UnipotentCharacters,q=Pol([1],1))`
+
+Returns  the  list  of  degrees  of  the unipotent characters of the finite
+reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
+`W`, evaluated at `q`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> uc=UnipotentCharacters(W);
+
+julia> degrees(uc)
+10-element Array{Union{Pol{Int64}, Pol{Cyc{Rational{Int64}}}},1}:
+ 1                                       
+ q⁶                                      
+ (1/3)q⁵+(1/3)q³+(1/3)q                  
+ (1/3)q⁵+(1/3)q³+(1/3)q                  
+ (1/6)q⁵+(1/2)q⁴+(2/3)q³+(1/2)q²+(1/6)q  
+ (1/2)q⁵+(1/2)q⁴+(1/2)q²+(1/2)q          
+ (1/2)q⁵+(-1/2)q⁴+(-1/2)q²+(1/2)q        
+ (1/6)q⁵+(-1/2)q⁴+(2/3)q³+(-1/2)q²+(1/6)q
+ (1/3)q⁵+(-2/3)q³+(1/3)q                 
+ (1/3)q⁵+(-2/3)q³+(1/3)q                 
+```
+"""
 function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
   if !haskey(uc.prop,:degrees)
     uc.prop[:degrees]=Dict{Any,Any}()
@@ -671,30 +699,258 @@ julia> Uch.CycPolUnipotentDegrees(W)
 CycPolUnipotentDegrees(W)=CycPol.(degrees(UnipotentCharacters(W)))
 # slow implementation
 
+#-------------------------- UniChars -------------------------------
+struct UniChar{T,T1}
+  group::T
+  v::T1
+  prop::Dict{Symbol,Any}
+end
+
+UniChar(W,v::Vector)=UniChar(W,v,Dict{Symbol,Any}())
+
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+`UniChar(W,l)`
 
-`UnipotentCharacter(<W>,l)`
-
-Constructs  an object representing the unipotent character of the algebraic
-group  associated  to  the  Coxeter  group  or  Coxeter  coset <W> which is
-specified  by <l>. There are 3 possibilities  for <l>: if it is an integer,
-the  <l>-th unipotent character of <W> is  returned. If it is a string, the
-unipotent  character of <W> whose name is <l> is returned. Finally, <l> can
-be  a  list  of  length  the  number  of unipotent characters of <W>, which
+Constructs  an object representing the unipotent character specified by `l`
+of  the algebraic  group associated  to the  Coxeter group or Coxeter coset
+specified  by `W`. There are 3 possibilities  for `l`: if it is an integer,
+the  `l`-th unipotent character of `W` is  returned. If it is a string, the
+unipotent  character of `W` whose name is `l` is returned. Finally, `l` can
+be  a  list  of  length  the  number  of unipotent characters of `W`, which
 specifies the coefficient to give to each.
 
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> u:=UnipotentCharacter(W,7);
-    [G2]=<G2[-1]>
-    gap> v:=UnipotentCharacter(W,"G2[E3]");
-    [G2]=<G2[E3]>
-    gap> w:=UnipotentCharacter(W,[1,0,0,-1,0,0,2,0,0,1]);
-    [G2]=<phi{1,0}>-<phi{1,3}''>+2<G2[-1]>+<G2[E3^2]>|
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+julia> UniChar(W,7)
+[G₂]:<G₂[-1]>
 
+julia> UniChar(W,"G2[E3]")
+[G₂]:<G₂[ζ₃]>
+
+julia> UniChar(W,[1,0,0,-1,0,0,2,0,0,1])
+[G₂]:<φ₁‚₀>-<φ″₁‚₃>+2<G₂[-1]>+<G₂[ζ₃²]>
+```
+"""
+function UniChar(W,v::Int)
+  r=zeros(Int,length(UnipotentCharacters(W)))
+  r[v] = 1
+  UniChar(W,r)
+end
+
+function UniChar(W,v::String)
+  n=charnames(stdout,UnipotentCharacters(W))
+  UniChar(W,findfirst(==(v),n))
+end
+
+const short=Ref(true)
+
+function Base.show(io::IO,r::UniChar)
+  res=""
+  s=charnames(io,UnipotentCharacters(r.group))
+  m=maximum(length.(s))+3
+  for i = 1:length(r.v)
+    n = "<"*s[i]*">"
+    c = sprint(show,r.v[i];context=io)
+    if short[]
+      if c != "0"
+        if c == "1" res*= "+"
+        elseif c == "-1" res*="-"
+        else
+          if occursin(r".[+-]",c) c = "("* c* ")" end
+          if !(c[1] in "+-") res*="+" end
+          res*=c
+        end
+        res*=n
+      end
+    elseif c!="0" || !get(io,:nozero,false)
+      res *= "\n"* rpad(n,m)* c
+    end
+  end
+  if length(res) == 0 res = "0" end
+  if res[1] == '+' res = res[2:end] end
+  if haskey(r.prop, :name)
+    res="DLvar["*sprint(show,r.group; context=io)*","*r[:name],"]:",res
+  else
+    res="["*sprint(show,r.group; context=io)*"]:"* res
+  end
+  print(io,res)
+end
+
+Base.:+(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v+u2.v)
+Base.:-(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v-u2.v)
+Base.:*(u1::UniChar,u2::UniChar)=UniChar(u1.group,sum(u1.v .*u2.v))
+Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
+Base.:*(a,u1::UniChar)=u1*a
+
+Gapjm.degree(u::UniChar)=sum(u.v .*
+                             degrees(UnipotentCharacters(u.group),Pol(:q)))
+
+function LusztigInduction(WF, u)
+  t = LusztigInductionTable(u[:group], WF)
+  t==false ? false : UnipotentCharacter(WF, t[:scalar] * u.v)
+end
+
+LusztigRestriction(HF, u)=
+  UnipotentCharacter(HF, u.v * (LusztigInductionTable(HF, u[:group]))[:scalar])
+
+HCInduce(WF,u)=UnipotentCharacter(WF,HCInductionTable(u.group,WF)[:scalar]*u.v)
+
+HCRestrict(HF,u)=
+  UnipotentCharacter(HF,u.v*HCInductionTable(HF,u.group)[:scalar])
+
+function DLCharTable(W)
+  gets(W,:rwTable)do W
+    uc=UnipotentCharacters(W)
+    CharTable(W).irr'*fourier(uc)[uc.harishChandra[1][:charNumbers],:]
+  end
+end
+
+"""
+`DLChar(W,w)`
+
+This  function returns  the Deligne-Lusztig  character `R_𝐓  ^𝐆 (1)` of the
+algebraic  group `𝐆 ` associated to the Coxeter group or Coxeter coset `W`.
+The  torus  `𝐓`  can  be  specified  in  3  ways:  if `w` is an integer, it
+represents the `w`-th conjugacy class (or `phi`-conjugacy class for a coset
+`Wϕ`)  of `W`. Otherwise  `w` can be  a word or  an element of  `W`, and it
+represents the class (or `ϕ`-class) of `w`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> DLChar(W,3)
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+
+julia> DLChar(W,W(1))
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+
+julia> DLChar(W,[1])
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+
+julia> DLChar(W,[1,2])
+[G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
+```
+"""
+DLChar(W,i::Int)=UniChar(W,DLCharTable(W)[i,:])
+
+DLChar(W,w::Perm)=DLChar(W,position_class(W,w))
+
+DLChar(W,w::Vector{Int})=DLChar(W,W(w...))
+
+"""
+`AlmostChar(W,i)`
+
+This  function  returns  the  `i`-th  almost  unipotent  character  of  the
+algebraic  group 𝐆 associated to the Coxeter group or Coxeter coset `W`. If
+`φ` is the `i`-th irreducible character of `W`, the `i`-th almost character
+is  `R_φ=W⁻¹∑_w∈  W  φ(w)  R_𝐓_w^𝐆  (1)`  where  `𝐓_w` is the maximal torus
+associated  to the conjugacy class (or  `ϕ`-conjugacy class for a coset) of
+`w`.
+
+```julia-repl
+julia> W=coxgroup(:B,2)
+B₂
+
+julia> AlmostChar(W,3)
+[B₂]:<.11>
+
+julia> AlmostChar(W,1)
+[B₂]:1/2<11.>+1/2<1.1>-1/2<.2>-1/2<B₂>
+```
+"""
+AlmostChar=function(W,i)
+  ct=CharTable(W)
+  dl=DLChar.(Ref(W),1:length(ct.charnames))
+  sum(ct.irr[i,:] .* classes(ct).//length(W).*dl)
+end
+
+"""
+`DLLefschetz(h)`
+
+Here `h` is an element of a Hecke algebra associated to a Coxeter group <W>
+which  itself  is  associated  to  an  algebraic  group `𝐆 `. By results of
+Digne-Michel,  for `g∈  𝐆 ^F`,  the number  of fixed  points of `Fᵐ` on the
+Deligne-Lusztig variety associated to the element `wϕ` of the Coxeter coset
+`Wϕ`, have for `m` sufficiently divisible, the form `∑_φ φ_(qᵐ)(T_wϕ)R_φ(g)`
+where  `φ` runs over the irreducible characters of `Wϕ`, where `R_φ` is the
+corresponding  almost character, and where `φ_(qᵐ)` is a character value of
+the  Hecke algebra `ℋ (Wϕ,qᵐ)` of `Wϕ` with parameter `qᵐ`. This expression
+is  called the *Lefschetz character* of  the Deligne-Lusztig variety. If we
+consider `qᵐ` as an indeterminate `x`, it can be seen as a sum of unipotent
+characters  with coefficients character values of the generic Hecke algebra
+`ℋ (Wϕ,x)`.
+
+The  function 'DLLefschetz' takes  as argument a  Hecke element and returns
+the  corresponding Lefschetz character. This is defined on the whole of the
+Hecke  algebra by linearity.  The Lefschetz character  of various varieties
+related   to   Deligne-Lusztig   varieties,   like   their  completions  or
+desingularisation,  can be  obtained by  taking the  Lefschetz character at
+various elements of the Hecke algebra.
+
+```julia-repl
+julia> W=coxgroup(:A,2)
+A₂
+
+julia> H=hecke(W,Pol(:q))
+hecke(A₂,q)
+
+julia> T=Tbasis(H);
+
+julia> DLLefschetz(T(1,2))
+[A₂]:<111>-q<21>+q²<3>
+
+julia> DLLefschetz((T(1)+T())*(T(2)+T()))
+[A₂]:q<21>+(q²+2q+1)<3>
+```
+
+The   last  line  shows  the   Lefschetz  character  of  the  Samelson-Bott
+desingularisation of the Coxeter element Deligne-Lusztig variety.
+
+We now show an example with a coset (corresponding to the unitary group).
+
+gap> H:=Hecke(CoxeterCoset(W,(1,2)),q^2);
+Hecke(2A2,q^2)
+gap> T:=Basis(H,"T");
+function ( arg ) ... end
+gap> DeligneLusztigLefschetz(T(1));
+[2A2]=-<11>-q<2A2>+q^2<2>
+"""
+DLLefschetz=function(h,i=0)
+# if haskey(h, :coset) W = ReflectionCoset(h[:coset])
+# else 
+  W=h.H.W
+# end
+  uc=UnipotentCharacters(W)
+  UniChar(W, fourier(uc)[:,uc.harishChandra[1][:charNumbers]]*
+          conj.(char_values(h)).*Uch.eigen(uc).^i)
+end
+
+DLLefschetzTable=function(H)
+# if haskey(H, :spets) WF = ReflectionCoset(H)
+# else 
+  WF=H.W
+# end
+  t=CharTable(H).irr
+  uc=UnipotentCharacters(WF)
+  return t'*fourier(uc)[uc.harishChandra[1][:charNumbers],:]
+end
+
+Frobenius=function(WF, x::UniChar, i)
+  W=x.group
+  p=Perm(map(x->position_class(W,x^WF.phi), class_reps(W)))
+  uc=UnipotentCharacters(W)
+  t=vcat(DLCharTable(W), permutedims(eigen(uc)))
+  pt=t^p
+  p = map(findall(i->x==t[:;i], axes(t,2)), eachcol(pt))
+  if any(x->length(x)>1,p) error("Rw + eigen cannot disambiguate\n") end
+  p=Perm(map(x->x[1], p))
+  UniChar(W,x.v^(p^-i))
+end
+
+"""
 `+`: Adds the specified characters.
 
 `-`: Subtracts the specified characters
@@ -753,67 +1009,6 @@ corresponding automorphism on the unipotent characters
     [D4]=<.211>
     gap> Frobenius(WF)(u,-1);
     [D4]=<11+>|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`UnipotentDegrees(<W>,<q>)`
-
-Returns  the  list  of  degrees  of  the unipotent characters of the finite
-reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
-<W>, evaluated at <q>.
-
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> q:=Indeterminate(Rationals);;q.name:="q";;
-    gap> UnipotentDegrees(W,q);
-    [ q^0, q^6, (1/3)*q^5 + (1/3)*q^3 + (1/3)*q,
-      (1/3)*q^5 + (1/3)*q^3 + (1/3)*q, (1/6)*q^5 + (1/2)*q^4 + (2/3)*q^
-        3 + (1/2)*q^2 + (1/6)*q, (1/2)*q^5 + (1/2)*q^4 + (1/2)*q^2 + (1/
-        2)*q, (1/2)*q^5 + (-1/2)*q^4 + (-1/2)*q^2 + (1/2)*q,
-      (1/6)*q^5 + (-1/2)*q^4 + (2/3)*q^3 + (-1/2)*q^2 + (1/6)*q,
-      (1/3)*q^5 + (-2/3)*q^3 + (1/3)*q, (1/3)*q^5 + (-2/3)*q^3 + (1/3)*q ]|
-
-For  a  non-rational  Spetses,  'Indeterminate(Cyclotomics)'  would be more
-appropriate.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`DeligneLusztigCharacter(<W>,<w>)`
-
-This  function  returns  the  Deligne-Lusztig  character  `R_𝐓^𝐆(1)` of the
-algebraic  group `𝐆` associated to the  Coxeter group or Coxeter coset <W>.
-The  torus  `𝐓`  can  be  specified  in  3  ways:  if <w> is an integer, it
-represents  the `w`-th conjugacy class (or `φ`-conjugacy class for a coset)
-of  <W>. Otherwise <w> can  be a Coxeter word  or a Coxeter element, and it
-represents the class (or `φ`-class) of that element.
-
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> DeligneLusztigCharacter(W,3);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>
-    gap> DeligneLusztigCharacter(W,W.1);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>
-    gap> DeligneLusztigCharacter(W,[1]);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>
-    gap> DeligneLusztigCharacter(W,[1,2]);
-    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`AlmostCharacter(<W>,<i>)`
-
-This  function  returns  the  <i>-th  almost  unipotent  character  of  the
-algebraic  group `𝐆` associated to the  Coxeter group or Coxeter coset <W>.
-If  `χ`  is  the  <i>-th  irreducible  character  of <W>, the <i>-th almost
-character  is  `Rᵪ=|W|⁻¹∑_{w∈  W}χ(w)  R_{𝐓_w}^𝐆(1)`,  where  `𝐓_w` is the
-maximal torus associated to the conjugacy class (or `φ`-conjugacy class for
-a coset) of <w>.
-
-|    gap> W:=CoxeterGroup("B",2);
-    CoxeterGroup("B",2)
-    gap> AlmostCharacter(W,3);
-    [B2]=<.11>
-    gap> AlmostCharacter(W,1);
-    [B2]=1/2<11.>+1/2<1.1>-1/2<.2>-1/2<B2>|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -884,53 +1079,6 @@ representing the Lusztig induction `R_𝐋^𝐆` between unipotent characters.
     .3    |'|'|    .    1    1  -1
     B2:2  |'|'|    .    .    1  -1
     B2:11 |'|'|    1   -1    .   .|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`DeligneLusztigLefschetz(h)`
-
-Here `h` is an element of a Hecke algebra associated to a Coxeter group `W`
-which  itself  is  associated  to  an  algebraic  group  `𝐆`. By results of
-Digne-Michel,  for  `g∈𝐆^F`,  the  number  of  fixed points of `F^m` on the
-Deligne-Lusztig variety associated to the element `wφ` of the Coxeter coset
-`Wφ`,  have, for  `m` sufficiently  divisible, the  form `∑_χ χ_{q^m}(T_wφ)
-Rᵪ(g)`  where `χ` runs over the  irreducible characters of `Wφ`, where `Rᵪ`
-is  the corresponding almost character, and  where `χ_{q^m}` is a character
-value  of the Hecke algebra `𝓗 (Wφ,q^m)` of `Wφ` with parameter `q^m`. This
-expression  is  called  the  *Lefschetz  character*  of the Deligne-Lusztig
-variety.  If we consider `q^m` as an indeterminate `x`, it can be seen as a
-sum  of  unipotent  characters  with  coefficients  character values of the
-generic Hecke algebra `𝓗 (Wφ,x)`.
-
-The  function 'DeligneLusztigLefschetz'  takes as  argument a Hecke element
-and  returns the corresponding Lefschetz character.  This is defined on the
-whole of the Hecke algebra by linearity. The Lefschetz character of various
-varieties  related to Deligne-Lusztig varieties,  like their completions or
-desingularisation,  can be  obtained by  taking the  Lefschetz character at
-various elements of the Hecke algebra.
-
-|    gap> W:=CoxeterGroup("A",2);;
-    gap> q:=X(Rationals);;q.name:="q";;
-    gap> H:=Hecke(W,q);
-    Hecke(A2,q)
-    gap> T:=Basis(H,"T");
-    function ( arg ) ... end
-    gap> DeligneLusztigLefschetz(T(1,2));
-    [A2]=<111>-q<21>+q^2<3>
-    gap> DeligneLusztigLefschetz((T(1)+T())*(T(2)+T()));
-    [A2]=q<21>+(q^2+2q+1)<3>|
-
-The   last  line  shows  the   Lefschetz  character  of  the  Samelson-Bott
-desingularisation of the Coxeter element Deligne-Lusztig variety.
-
-We now show an example with a coset (corresponding to the unitary group).
-
-|    gap> H:=Hecke(CoxeterCoset(W,(1,2)),q^2);
-    Hecke(2A2,q^2)
-    gap> T:=Basis(H,"T");
-    function ( arg ) ... end
-    gap> DeligneLusztigLefschetz(T(1));
-    [2A2]=-<11>-q<2A2>+q^2<2>|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Section{Families of unipotent characters}
