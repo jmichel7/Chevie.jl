@@ -126,6 +126,10 @@ Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 
 Gapjm.degree(a::CycPol)=sum(last,a.v)+a.valuation+degree(a.coeff)
+Gapjm.valuation(a::CycPol)=a.valuation
+Gapjm.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
+Gapjm.valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
+Gapjm.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)

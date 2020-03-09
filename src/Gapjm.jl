@@ -48,7 +48,7 @@ the  equivalent functionality  to a  Gap3 function:  it takes  a string and
 gives you Julia translations of functions in Gap3 which match this string:
 
 ```julia-rep1
-julia> Gapjm.gap("words")
+julia> gap("words")
 CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
 GarsideWords             =>  elements
 CharRepresentationWords  =>  traces_words_mats

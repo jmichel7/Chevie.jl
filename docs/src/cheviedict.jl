@@ -40,7 +40,7 @@ const ChevieDict=Dict(
 "ComplexConjugate"=>"conj",
 "ComplexReflectionGroup"=>"ComplexReflectionGroup",
 "Compositions"=>"compositions",
-"ConjugacySet(b[,F][,type])"=>"conjcat(b[,type[,F]]).obj",
+"ConjugacySet(b[,F][,type])"=>"conjcat(b[,F],ss=type).obj",
 "ConjugatePartition"=>"conjugate_partition",
 #CoxeterCoset
 #CoxeterSubCoset
@@ -55,7 +55,7 @@ const ChevieDict=Dict(
 "CoxeterMatrixFromCartanMat"=>"coxmat",
 "CoxeterWord(W,w)"=>"word(W,w)",
 "CoxeterWords(W[,l])"=>"word.(Ref(W),elements(W[,l])",
-#CuspidalUnipotentCharacters
+"CuspidalUnipotentCharacters"=>"cuspidal_unipotent_characters",
 "CyclotomicPolynomial(R,i)"=>"cyclotomic_polynomial(i)",
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
@@ -223,7 +223,7 @@ const ChevieDict=Dict(
 "RelativeDegrees"=>"relative_degrees",
 #Replace
 "Representations"=>"representations",
-"RepresentativeConjugation"=>"representative_operation",
+"RepresentativeConjugation(b,b'[,F][,type])"=>"representative_operation(b,b'[,F],ss=type)",
 #RepresentativeDiagonalConjugaction
 #RepresentativeRowColPermutation
 "Restricted"=>"restricted",

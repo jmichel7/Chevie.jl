@@ -60,16 +60,16 @@ The functions described in this module allow to explore these situations.
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
   position_regular_class, eigenspace_projector, GetRelativeAction,
-  GetRelativeRoot, split_levis, RelativeGroup
+  GetRelativeRoot, split_levis, RelativeGroup, cuspidal_unipotent_characters
 
 using Gapjm
 """
-`relative_degrees(WF,d=0)`
+`relative_degrees(WF,d)`
 
 Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
 root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)` or is a
 fraction  smaller `a/b` with `0<a<b`  and specifies `ζ=E(b,a)`. If omitted,
-`d`   is  taken  to  be  `0`,  specifying  `ζ=1`.  Then  if  `V_ζ`  is  the
+`d`   is  taken  to  be  `1`,  specifying  `ζ=1`.  Then  if  `V_ζ`  is  the
 `ζ`-eigenspace  of some element of `WF`,  and is of maximal dimension among
 such   possible  `ζ`-eigenspaces,  and  `W`  is  the  group  of  `WF`  then
 `N_W(V_ζ)/C_W(V_ζ)`  is  a  reflection  group  in  its action on `V_ζ`. The
@@ -94,8 +94,8 @@ julia> relative_degrees(W,4)
 """
 relative_degrees(W,d::Integer)=relative_degrees(W,Root1(1,d))
 relative_degrees(W,d::Rational)=relative_degrees(W,Root1(;r=d))
-relative_degrees(W)=relative_degrees(W,Root1(0,1))
 relative_degrees(W,d::Root1)=filter(x->isone(d^x),degrees(W))
+relative_degrees(W)=relative_degrees(W,Root1(0,1))
 relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if E(z)^d==f]
 
 """
@@ -460,14 +460,46 @@ function RelativeGroup(W,J,indices=false)
   error("relgroup  !  found")
 end
 
+"""
+`cuspidal_unipotent_characters(WF[,d])`
 
-# CuspidalUnipotentCharacters(WF[,d]) indices of the unipotent characters
-# of the Spets WF which are d-cuspidal (d=0 if not specified)
-function CuspidalUnipotentCharacters(WF,d=0)
+Let  `WF`  be  a  reflection  group  or  a  reflection  coset.  If `W` is a
+reflection group it is treated as the trivial coset `Spets(W)`.
+
+A  unipotent character `γ` of the corresponding finite reductive group `bG`
+is  `d`-cuspidal if its Lusztig restriction to any proper `d`-split Levi is
+zero.  When  `d==1`  we  recover  the  usual  notion of cuspidal character.
+Equivalently  the `Phi_d`-part of the generic degree of `γ` is equal to the
+` Phi_d`-part of the generic order of the adjoint group of ` bG`.
+
+The  function returns the list of indices of unipotent characters which are
+`d`-cuspidal.  If ` d` is  omitted, it is taken  to be `1`.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> cuspidal_unipotent_characters(W)
+1-element Array{Int64,1}:
+ 14
+
+julia> cuspidal_unipotent_characters(W,6)
+8-element Array{Int64,1}:
+  1
+  2
+  6
+  7
+  8
+  9
+ 10
+ 12
+```
+"""
+function cuspidal_unipotent_characters(WF,d=1)
   if length(WF)==1 return [1] end
   ad=count(!isone,relative_degrees(WF,d))
 # if ad=0 then Error(d," should divide one of the degrees");fi;
-  ud=CycPolUnipotentDegrees(WF)
+  ud=Uch.CycPolUnipotentDegrees(WF)
   filter(i->ad==valuation(ud[i],d),eachindex(ud))
 end
 
