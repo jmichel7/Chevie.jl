@@ -80,6 +80,17 @@ chevieset(Symbol("2I"), :CharInfo, function (m,)
         end
         return res
     end)
+chevieset(Symbol("2I"), :FakeDegree, function (m, phi, q)
+        local i
+        i = Position(((chevieget(Symbol("2I"), :CharInfo))(m))[:charparams], phi)
+        if i == 1
+            return q ^ 0
+        elseif i == 2
+            return q ^ m
+        else
+            return q ^ ((m + 2) - i) - q ^ (i - 2)
+        end
+    end)
 chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
         local q, i, j, ct, cos, cl, l, ident, ord, v, tbl
         q = -((param[1])[1]) // (param[1])[2]
@@ -170,8 +181,8 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
             untUnp = map(function (s,)
                         local res
                         res = map((x->begin
-                                        mod(x, e)
-                                    end), (e - reverse(s)) // 2)
+                                        mod(div(x, 2), e)
+                                    end), e - reverse(s))
                         if res[1] > res[2]
                             res = map((x->begin
                                             mod(x, e)
@@ -201,7 +212,8 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
             eig = [E(3, 2), -1, E(3), 1]
             ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "G", :indices => [1, 2], :rank => 2, :cartanType => ER(3))
             for i = 1:4
-                ((uc[:almostHarishChandra])[i + 1])[:cuspidalName] = SPrint("G2[", Format(eig[i], Dict{Symbol, Any}(:TeX => 1)), "]")
+                ((uc[:almostHarishChandra])[i + 1])[:cuspidalName] =
+                SPrint("G2[", FormatTeX(eig[i]), "]")
             end
         end
         uc[:charParams] = Concatenation((((chevieget(:I, :CharInfo))(e))[:charparams])[[1, 2]], ac)
@@ -230,8 +242,8 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
                                 [0, 1]
                             end), 1:e)], map(function (s,)
                         local S, k, l
-                        k = (s[1] + 1) // 2
-                        l = (s[2] + 1) // 2
+                        k = div(s[1] + 1, 2)
+                        l = div(s[2] + 1, 2)
                         S = map(function (i,)
                                     if i == k + 1 || i == l + 1
                                         return []

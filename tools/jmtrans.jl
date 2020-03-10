@@ -12,7 +12,7 @@ const src=[
 
 # functions whose translation does not work so they are not translated
 # an implementation is in table2.jl, with the useful code from compat3
-exclu=[
+const exclu=[
  ["Discriminant","H4"],
  ["UnipotentClasses","3D4"],
  ["UnipotentClasses",:(["B"])],
@@ -35,10 +35,10 @@ exclu=[
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 
-ok=[:(CHEVIE.AddData), 
+const ok=[:(CHEVIE.AddData), 
     :(CHEVIE.IndirectAddData)
    ]
-ok2=[
+const ok2=[
     :((CHEVIE.families).HS4),
     :((CHEVIE.families).S5), 
     :((CHEVIE.families).G14), 
@@ -53,12 +53,11 @@ ok2=[
     :G4_22Test,
     :G4_22FetchIndexChars,
     :VFactorSchurElement,
-    :ExpandRep
    ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)
 
-function install(n,ok=false)
+function install(n)
   println("installing $n")
   l=readf(n*".g")
   open(n*".jl","w")do f 
@@ -70,7 +69,7 @@ function install(n,ok=false)
         end
         println(".",e.args[2])
         write(f,"\n",string(Gap2Julia.trans(e)))
-       elseif e.head==:(=) && (ok  || (e.args[1] in ok2)) 
+       elseif e.head==:(=) && (e.args[1] in ok2)
         println("=",e.args[1])
         write(f,"\n",string(Gap2Julia.trans(e)))
       end

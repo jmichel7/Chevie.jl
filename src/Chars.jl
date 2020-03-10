@@ -443,20 +443,18 @@ function charinfo(t::TypeIrred)
   end
   if !haskey(c,:b) c[:b]=getchev(t,:LowestPowerFakeDegrees) end
   if !haskey(c,:B) c[:B]=getchev(t,:HighestPowerFakeDegrees) end
-  if !haskey(c,:a) 
-    x=getchev(t,:LowestPowerGenericDegrees)
-    if !isnothing(x) c[:a]=Int.(x) end
-  else
-   c[:a]=Int.(c[:a])
+  if !haskey(c,:a) c[:a]=getchev(t,:LowestPowerGenericDegrees) end
+  if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
+  if isnothing(c[:a]) 
+    uc=getchev(t,:UnipotentCharacters)
+    if uc!=false
+    c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
+    c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
+    end
   end
-  if !haskey(c,:A) 
-    x=getchev(t,:HighestPowerGenericDegrees)
-    if !isnothing(x) c[:A]=Int.(x) end
-  else
-   c[:A]=Int.(c[:A])
+  for f in [:a,:A,:b,:B]
+    if isnothing(c[f]) delete!(c,f) else c[f]=Int.(c[f]) end
   end
-  c[:b]=Int.(c[:b])
-  c[:B]=Int.(c[:B])
   c
 end
 

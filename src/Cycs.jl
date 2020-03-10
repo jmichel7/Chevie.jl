@@ -74,7 +74,7 @@ julia> c=E(9)   # an effect of the Zumbroich basis
 Cyc{Int64}: -ζ₉⁴-ζ₉⁷
 
 julia> Root1(c) # but you can decide whether a Cyc is a root of unity
-Root1: 1/9
+Root1: ζ₉
 
 julia> c=Complex(E(3))   # convert to float is probably not very useful
 -0.4999999999999998 + 0.8660254037844387im
@@ -684,7 +684,19 @@ function Base.show(io::IO, ::MIME"text/plain", r::Root1)
 end
 
 function Base.show(io::IO, r::Root1)
-  print(io,exponent(r),"/",conductor(r))
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  d=exponent(r)
+  c=conductor(r)
+  if c==1 print(io,"1")
+  elseif c==2 print(io,"-1")
+  elseif repl || TeX
+    r="\\zeta"* (c==1 ? "" : c<10 ? "_$(c)" : "_{$(c)}")
+    if d>=1 r*=(d==1 ? "" : d<10 ? "^$d" : "^{$d}") end
+    print(io,fromTeX(io,r))
+  else
+    print(io,d==1 ? "E($(c))" : "E($(c),$d)")
+  end
 end
 
 """
@@ -696,15 +708,12 @@ end
 
 ```julia-repl
 julia> r=Root1(-E(9,2)-E(9,5))
-Root1: 8/9
+Root1: ζ₉⁸
 
 julia> E(r)
 Cyc{Int64}: -ζ₉²-ζ₉⁵
 
 julia> Root1(-E(9,4)-E(9,5))
-
-julia> Root1(1)
-Root1: 0/1
 ```
 """ 
 function Root1(c::Cyc)

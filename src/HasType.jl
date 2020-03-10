@@ -42,11 +42,15 @@ function field(t::TypeIrred)
   s=t.series
   if s in [:A,:B,:D] 
      if orderphi==1 return (s,PermRoot.rank(t))
-     elseif orderphi==2 return (Symbol(2,s),PermRoot.rank(t))
+     elseif orderphi==2 
+       if s==:B return (Symbol("2I"),4)
+       else return (Symbol(2,s),PermRoot.rank(t))
+       end
      elseif orderphi==3 return (Symbol("3D4"),)
      end
   elseif s in [:E,:F,:G]
     if orderphi==1 return (Symbol(s,PermRoot.rank(t)),) 
+    elseif s==:G return (Symbol("2I"),6)
     else return (Symbol(orderphi,s,PermRoot.rank(t)),) 
     end
   elseif s==:ST 
@@ -60,8 +64,7 @@ function field(t::TypeIrred)
     else
       return (:imp, t.p, t.q, t.rank)
     end
-  elseif s==:I 
-    return (orderphi==1 ? :I : :(2I),t.bond)
+  elseif s==:I return (orderphi==1 ? :I : Symbol("2I"),t.bond)
   else return (Symbol(string(s,PermRoot.rank(t))),) 
   end
 end
@@ -105,8 +108,11 @@ end
 
 impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
-charname(W,x;TeX=false,opt...)=join(map((t,p)->getchev(t,:CharName,p,
-                           TeX ? Dict(:TeX=>true) : Dict()),refltype(W),x),",")
+charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
+                           TeX ? Dict(:TeX=>true) : Dict())
+
+charname(W,x;TeX=false,opt...)=join(map((t,p)->charname(t,p;TeX=TeX,opt...),
+                           refltype(W),x),",")
 
 function PositionCartesian(l,ind)
   res=prod=1

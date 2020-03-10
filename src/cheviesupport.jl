@@ -97,8 +97,7 @@ CoxeterGroup()=coxgroup()
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=repr(x)
-ff(io::IO,p;opt...)=show(IOContext(io,opt...),p)
-Format(x,opt)=sprint((io,x)->ff(io,x;opt...),x)
+Format(x,opt)=sprint((io,x)->show(IOContext(io,opt...),x),x)
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))

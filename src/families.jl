@@ -713,7 +713,7 @@ function Base.show(io::IO,f::Family)
   end
   if !(repl || TeX) || deep return end
   if haskey(f,:charLabels) rowLabels=fromTeX.(Ref(io),f[:charLabels])
-  else  rowLabels=1:length(f)
+  else  rowLabels=string.(1:length(f))
   end
   print(io,"\n")
   t=[sprint.(show,f[:eigenvalues];context=io)]

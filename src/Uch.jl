@@ -1,25 +1,25 @@
 """
-Let  `𝐆` be a connected reductive  group defined over the algebraic closure
+Let  `𝐆 ` be a connected reductive group defined over the algebraic closure
 of  a finite field `𝔽_q`, with corresponding Frobenius automorphism `F`, or
-more  generally  let  `F`  be  an  isogeny  of  `𝐆`  such that a power is a
+more  generally  let  `F`  be  an  isogeny  of  `𝐆 ` such that a power is a
 Frobenius (this covers the Suzuki and Ree groups).
 
-If `𝐓` is an `F`-stable maximal torus of `𝐆`, and `𝐁` is a (not necessarily
-`F`-stable)  Borel subgroup containing `𝐓`, we define the *Deligne-Lusztig*
-variety  `X_𝐁={g𝐁 ∈  𝐆/𝐁 ∣  g𝐁 ∩  F(g𝐁 )≠∅  }`. This  variety has a natural
-action of `𝐆 ^F` on the left, so the corresponding *Deligne-Lusztig virtual
-module*  `∑ᵢ  (-1)ⁱ  Hⁱ_c(X_𝐁,ℚ̄_ℓ)`  also.  The  character of this virtual
-module  is  the  *Deligne-Lusztig*  character  `R_𝐓^𝐆  (1)`;  the  notation
-reflects the fact that one can prove that this character does not depend on
-the  choice  of  `𝐁`.  Actually,  this  character  is  parameterized  by an
-`F`-conjugacy  class of `W`: if `𝐓₀⊂𝐁₀` is  an `F`-stable pair, there is an
-unique `w∈ W=N_𝐆(𝐓₀)/𝐓₀` such that the triple `(𝐓,𝐁,F)` is `𝐆`-conjugate to
-`(𝐓₀,𝐁₀,wF)`.  In this case we denote `R_w` for `R_𝐓^𝐆(1)`; it depends only
-on the `F`-class of `w`.
+If  `𝐓`  is  an  `F`-stable  maximal  torus  of  `𝐆  `,  and  `𝐁` is a (not
+necessarily  `F`-stable)  Borel  subgroup  containing  `𝐓`,  we  define the
+*Deligne-Lusztig*  variety `X_𝐁={g𝐁 ∈ 𝐆 /𝐁 ∣ g𝐁 ∩ F(g𝐁 )≠∅ }`. This variety
+has  a  natural  action  of  `𝐆  ^F`  on  the  left,  so  the corresponding
+*Deligne-Lusztig  virtual  module*  `∑ᵢ  (-1)ⁱ  Hⁱ_c(X_𝐁,ℚ̄  _ℓ)` also. The
+character of this virtual module is the *Deligne-Lusztig* character `R_𝐓 ^𝐆
+(1)`; the notation reflects the fact that one can prove that this character
+does  not  depend  on  the  choice  of  `𝐁`.  Actually,  this  character is
+parameterized by an `F`-conjugacy class of `W`: if `𝐓₀⊂𝐁₀` is an `F`-stable
+pair,  there is an unique `w∈ W=N_𝐆 (𝐓₀)/𝐓₀` such that the triple `(𝐓,𝐁,F)`
+is  `𝐆 `-conjugate to `(𝐓₀,𝐁₀,wF)`. In this case we denote `R_w` for `R_𝐓^𝐆
+(1)`; it depends only on the `F`-class of `w`.
 
-The *unipotent characters* of `𝐆^F` are the irreducible constituents of the
-`R_w`. In a similar way that the unipotent classes are a building block for
-describing  the  conjugacy  classes  of  a  reductive  group, the unipotent
+The  *unipotent characters* of  `𝐆 ^F` are  the irreducible constituents of
+the `R_w`. In a similar way that the unipotent classes are a building block
+for  describing the conjugacy  classes of a  reductive group, the unipotent
 characters  are  a  building  block  for  the  irreducible  characters of a
 reductive  group.  They  can  be  parameterized  by combinatorial data that
 Lusztig  has attached just to the coset `Wφ`, where `φ` is the finite order
@@ -28,19 +28,19 @@ Chevie, they are objects combinatorially attached to a Coxeter coset.
 
 A  subset  of  the  unipotent  characters, the *principal series* unipotent
 characters,   can  be  described  in  an   elementary  way.  They  are  the
-constituents of `R₁`, or equivalently the characters of the virtual module
-defined  by  the  cohomology  of  `X_{𝐁₀}`,  which  is the discrete variety
-`(𝐆/𝐁₀)^F`; the virtual module reduces to the actual module
-`ℚ̄_ℓ[(𝐆/𝐁₀)^F]`.  Thus the Deligne-Lusztig induction `R_𝐓₀^𝐆(1)` reduces
-to  Harish-Chandra induction,  defined as  follows: let  `𝐏 =𝐔  ⋊ 𝐋`  be an
-`F`-stable  Levi decomposition of an  `F`-stable parabolic subgroup of `𝐆`.
-Then  the *Harish-Chandra* induced  `R_𝐋^𝐆` of a  character `χ` of `𝐋^F` is
-the  character `Ind_{𝐏^F}^{𝐆^F}χ̃`, where `χ̃` is  the lift to `𝐏^F` of `χ`
-via  the quotient  `𝐏^F/𝐔^F=𝐋^F`; Harish-Chandra  induction is a particular
+constituents  of `R₁`, or equivalently the characters of the virtual module
+defined  by the cohomology of `X_{𝐁 ₀}`,  which is the discrete variety `(𝐆
+/𝐁₀)^F`;  the virtual  module reduces  to the  actual module `ℚ̄ _ℓ[(𝐆 /𝐁₀)
+^F]`.   Thus  the   Deligne-Lusztig  induction   `R_𝐓₀^𝐆  (1)`  reduces  to
+Harish-Chandra  induction,  defined  as  follows:  let  `𝐏  =𝐔  ⋊ 𝐋 ` be an
+`F`-stable  Levi decomposition of an `F`-stable parabolic subgroup of `𝐆 `.
+Then  the *Harish-Chandra* induced `R_𝐋^𝐆 ` of  a character `χ` of `𝐋^F` is
+the  character `Ind_{𝐏^F}^{𝐆 ^F}χ̃`, where `χ̃` is the lift to `𝐏^F` of `χ`
+via  the quotient `𝐏^F/𝐔 ^F=𝐋^F`;  Harish-Chandra induction is a particular
 case  of *Lusztig induction*,  which is defined  when `𝐏` is not `F`-stable
-using  the  variety  `X_𝐔={  g𝐔∈𝐆/𝐔  ∣  g𝐔∩  F(g𝐔)≠∅}`,  and  gives  for an
-`𝐋^F`-module   a  virtual  `𝐆^F`-module.  Like  ordinary  induction,  these
-functors  have  adjoint  functors  going  from  representations of `𝐆^F` to
+using  the variety `X_𝐔  ={ g𝐔 ∈𝐆  /𝐔 ∣ g𝐔  ∩ F(g𝐔 )≠∅}`,  and gives for an
+`𝐋^F`-module  a  virtual  `𝐆  ^F`-module.  Like  ordinary  induction, these
+functors  have adjoint  functors going  from representations  of `𝐆  ^F` to
 representations   (resp.   virtual   representations)   of   `𝐋^F`   called
 Harish-Chandra restriction (resp. Lusztig restriction).
 
@@ -218,19 +218,24 @@ AlmostChar, DLChar, DLLefschetz
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
+  almostHarishChandra::Vector{Dict{Symbol,Any}}
   families::Vector{Family}
   prop::Dict{Symbol,Any}
 end
 
 function params_and_names(sers)
-  res=Dict{Symbol,Any}()
-  chh=map(sers) do ser
-    s=ser[:relativeType]
-    s[:series]=Symbol(s[:series])
-    if s[:rank]==0 return Dict(:charnames=>[""],:charparams=>[[]]) end
-    charinfo(TypeIrred(s))
+  function maketype(s)
+    if s isa TypeIrred return s end
+    if haskey(s,:orbit) s[:orbit]=maketype.(s[:orbit])
+    else s[:series]=Symbol(s[:series])
+#     if s[:rank]==0 return Dict(:charnames=>[""],:charparams=>[[]]) end
+    end
+    TypeIrred(convert(Dict{Symbol,Any},s))
   end
+  for ser in sers ser[:relativeType]=maketype(ser[:relativeType]) end
+  chh=map(ser->charinfo(ser[:relativeType]),sers)
   l=sum(x->length(x[:charnames]),chh)
+  res=Dict{Symbol,Any}()
   res[:charParams]=fill([],l)
   res[:TeXCharNames]=fill("",l)
   for (i,ser) in enumerate(sers)
@@ -239,10 +244,10 @@ function params_and_names(sers)
     ch=chh[i]
     res[:charParams][ser[:charNumbers]]=map(x->[n,x],ch[:charparams])
     res[:TeXCharNames][ser[:charNumbers]]=map(ch[:charnames])do x
-#     s=(n isa String) ? n : prod(n)
+      rk=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
       s=n
-      if length(s)>0 && t[:rank]>0 s*=":" end
-      if t[:rank]>0 s*=x end
+      if length(s)>0 && rk>0 s*=":" end
+      if rk>0 s*=x end
       s
       end
   end
@@ -250,30 +255,69 @@ function params_and_names(sers)
 end
 
 function UnipotentCharacters(t::TypeIrred) 
-  uc=Dict{Symbol,Any}(k=>v for (k,v) in getchev(t,:UnipotentCharacters))
+  uc=getchev(t,:UnipotentCharacters)
   if uc==false 
     println("Warning: $t is not a Spets!!")
     return false 
   end
   merge!(uc,params_and_names(uc[:harishChandra]))
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
+  # adjust things for descent of scalars
+  # we would like to adjust indices so they fit with those stored in t
+  # but we cannot when indices mention non-generating reflections!
+  a=length(t.orbit)
+  if a>1
+    if haskey(uc,:a) uc[:a].*=a end
+    if haskey(uc,:A) uc[:A].*=a end
+    for s in uc.harishChandra
+      s[:parameterExponents].*=a
+      s[:eigenvalue]^=a
+      s[:cuspidalName]=join(fill(s.cuspidalName,1:a),"\\otimes ")
+    end
+  end
+
+  if !haskey(uc,:almostHarishChandra)
+    uc[:almostHarishChandra]=map(uc[:harishChandra])do s
+    res=Dict{Symbol,Any}()
+    for f in [:levi, :cuspidalName, :eigenvalue, :charNumbers] res[f]=s[f] end
+    res[:relativeType]=TypeIrred(Dict(:orbit=>[copy(s[:relativeType])],:twist=>Perm()))
+    if !isone(t.twist)
+      a=t.orbit[1].indices[s.relativeType[:indices]]
+      res[:relativeType][:twist]=prod(map(Perm,a,a.^t.twist))
+    end
+    res
+    end
+  else
+    for s in uc[:almostHarishChandra]
+      if !haskey(s[:relativeType],:orbit)
+        s[:relativeType]=Dict(:orbit=>[s[:relativeType]],:twist=>Perm())
+      end
+    end
+  end
+  if !haskey(uc,:almostCharSymbols) uc[:almostCharSymbols]=uc[:charSymbols] end
+  a=params_and_names(uc[:almostHarishChandra])
+  uc[:almostCharParams]=a[:charParams]
+  uc[:almostTeXCharNames]=a[:TeXCharNames]
   uc[:group]=t
-  ff=Family.(uc[:families])
+  uch=UnipotentCharacters(uc[:harishChandra],uc[:almostHarishChandra],
+                          Family.(uc[:families]),uc)
   delete!(uc,:families)
-  hh=uc[:harishChandra]
   delete!(uc,:harishChandra)
-  UnipotentCharacters(hh,ff,uc)
+  delete!(uc,:almostHarishChandra)
+  uch
 end
 
-"""
-`UnipotentCharacters(<W>)`
+UnipotentCharacters(W::Group)=UnipotentCharacters(spets(W))
 
-<W>  should be a Coxeter group, a  Coxeter Coset or a Spetses. The function
+"""
+`UnipotentCharacters(W)`
+
+`W`  should be a Coxeter group, a  Coxeter Coset or a Spetses. The function
 gives  back a record containing  information about the unipotent characters
 of the associated algebraic group (or Spetses). This contains the following
 fields:
 
-`:group`: a pointer to <W>
+`:group`: a pointer to `W`
 
 `:charNames`:  the list of names of the unipotent characters.
 
@@ -291,68 +335,83 @@ character of `𝐋^F`. These records themselves have the following fields:
 
 `:eigenvalue`: the eigenvalue of Frobenius for `λ`.
 
-`:relativeType`: the reflection type of `W_𝐆(𝐋)`;
+`:relativeType`: the reflection type of `W_𝐆 (𝐋)`;
 
-`:parameterExponents`:  the  `𝐆^F`-endomorphism  algebra  of `R_𝐋^𝐆(λ)` is a
-Hecke algebra for `W_𝐆(𝐋)` with some parameters of the form `q^{a_s}`. This
+`:parameterExponents`:  the  `𝐆 ^F`-endomorphism  algebra  of `R_𝐋^𝐆 (λ)` is a
+Hecke algebra for `W_𝐆 (𝐋)` with some parameters of the form `q^{a_s}`. This
 holds the list of exponents `a_s`.
 
 `:charNumbers`:  the  indices  of  the  unipotent  characters indexed by the
-irreducible characters of `W_𝐆(𝐋)`.
+irreducible characters of `W_𝐆 (𝐋)`.
 
 `:families`:  information  about  Lusztig  families of unipotent characters.
 This  is itself a list  of records, one for  each family. These records are
 described in the section about families below.
 
-|    gap> W:=CoxeterGroup("Bsym",2);
-    CoxeterGroup("Bsym",2)
-    gap> WF:=CoxeterCoset(W,(1,2));
-    2Bsym2
-    gap> uc:=UnipotentCharacters(W);
-    UnipotentCharacters( Bsym2 )
-    gap> Display(uc);
-    Unipotent characters for Bsym2
-    Name |  Degree FakeDegree Eigenvalue Label
-    ___________________________________________
-    11.  |  1/2qP4        q^2          1   +,-
-    1.1  |1/2qP2^2        qP4          1   +,+
-    .11  |     q^4        q^4          1
-    2.   |       1          1          1
-    .2   |  1/2qP4        q^2          1   -,+
-    B2   |1/2qP1^2          0         -1   -,-
-    gap> uc.harishChandra[1];
-    rec(
-      levi := [  ],
-      relativeType := [ rec(series  := "B",
-              indices := [ 1, 2 ],
-              rank    := 2) ],
-      eigenvalue := 1,
-      parameterExponents := [ 1, 1 ],
-      charNumbers := [ 1, 2, 3, 4, 5 ],
-      cuspidalName := "" )
-    gap> uc.families[2];
-    Family("012",[1,2,5,6])
-    gap> Display(uc.families[2]);
-    label |eigen  +,- +,+  -,+  -,-
-    ________________________________
-    +,-   |    1  1/2 1/2 -1/2 -1/2
-    +,+   |    1  1/2 1/2  1/2  1/2
-    -,+   |    1 -1/2 1/2  1/2 -1/2
-    -,-   |   -1 -1/2 1/2 -1/2  1/2|
+```julia-repl
+julia> W=coxgroup(:Bsym,2)
+Bsym₂
+
+julia> WF=spets(W,Perm(1,2))
+²Bsym₂
+
+julia> uc=UnipotentCharacters(WF)
+UnipotentCharacters(²Bsym₂)
+       γ│     Deg(γ)   Feg Fr(γ) label
+────────┼──────────────────────────────
+2       │          1     1     1      
+11      │         q⁴    q⁴     1      
+²B₂[1,3]│(√2/2)qΦ₁Φ₂ qΦ₁Φ₂   ζ₈³     1
+²B₂[1,5]│(√2/2)qΦ₁Φ₂     0   ζ₈⁵     2
+
+
+julia> uc.families
+3-element Array{Family,1}:
+ Family(C₁:[1]) 
+ Family(C₁:[2]) 
+ Family(???:3:4)
+
+julia> uc.families[3]
+Family(???:3:4)
+label│eigen    1     2
+─────┼─────────────────
+1    │  ζ₈³ √2/2 -√2/2
+2    │  -ζ₈ √2/2  √2/2
+```
 
 `:charnames`:  returns  the  names  of  the  unipotent characters. Using the
 version  with an additional  option record as  the second argument, one can
 control the display in various ways.
 
-|    gap> uc=UnipotentCharacters(coxgroup(:G,2))
-    UnipotentCharacters( G2 )
-    gap> charnames(uc)
-    [ "phi{1,0}", "phi{1,6}", "phi{1,3}'", "phi{1,3}''", "phi{2,1}",
-      "phi{2,2}", "G2[-1]", "G2[1]", "G2[E3]", "G2[E3^2]" ]
-    gap> charnames(uc;TeX=true)
-    [ "\\phi_{1,0}", "\\phi_{1,6}", "\\phi_{1,3}'", "\\phi_{1,3}''",
-      "\\phi_{2,1}", "\\phi_{2,2}", "G_2[-1]", "G_2[1]", "G_2[\\zeta_3]",
-      "G_2[\\zeta_3^2]" ]|
+```julia-repl
+julia> uc=UnipotentCharacters(coxgroup(:G,2));
+
+julia> charnames(uc;limit=true)
+10-element Array{String,1}:
+ "φ₁‚₀"   
+ "φ₁‚₆"   
+ "φ′₁‚₃"  
+ "φ″₁‚₃"  
+ "φ₂‚₁"   
+ "φ₂‚₂"   
+ "G₂[-1]" 
+ "G₂[1]"  
+ "G₂[ζ₃]" 
+ "G₂[ζ₃²]"
+
+julia> charnames(uc;TeX=true)
+10-element Array{String,1}:
+ "\\phi_{1,0}"    
+ "\\phi_{1,6}"    
+ "\\phi_{1,3}'"   
+ "\\phi_{1,3}''"  
+ "\\phi_{2,1}"    
+ "\\phi_{2,2}"    
+ "G_2[-1]"        
+ "G_2[1]"         
+ "G_2[\\zeta_3]"  
+ "G_2[\\zeta_3^2]"
+```
 
 `:Display`:  One can control the display  of unipotent characters in various
 ways.  In the record controlling 'Display', a field 'items' specifies which
@@ -424,7 +483,7 @@ B₂ │(1/2)qΦ₁²   0    -1   -,-
     5  |  .2   (01,2)
     6  |  B2   (012,)|
 """
-function UnipotentCharacters(W::Group) 
+function UnipotentCharacters(WF::Spets) 
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
     ser[:levi]=reduce(vcat,getindex.(sers,:levi))
@@ -449,7 +508,7 @@ function UnipotentCharacters(W::Group)
     ser
   end
 
-  tt=refltype(W)
+  tt=refltype(WF)
   if isempty(tt) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(
       [Dict(:relativeType=>Dict[], 
@@ -462,21 +521,37 @@ function UnipotentCharacters(W::Group)
       :size=>1,
       :a => [ 0 ],
       :A => [ 0 ],
-      :group=>W))
+      :group=>WF))
   end
 
+  W=WF.W
   simp=map(tt) do t
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
-    H=reflection_subgroup(W,t.indices)
+    if uc==false return false end
+    H=map(x->reflection_subgroup(W,x.indices),t.orbit)
     for s in uc.harishChandra
-     s[:levi]=inclusion(H)[s[:levi]]
-     s[:relativeType][:indices]=inclusion(H)[s[:relativeType][:indices]]
+      s[:levi]=vcat(map(R->inclusion(R,s[:levi]),H)...)
+      s[:relativeType].indices=inclusion(H[1])[s[:relativeType].indices]
     end
+    for s in uc.almostHarishChandra
+      s[:levi]=vcat(map(R->inclusion(R,s[:levi]),H)...)
+      s[:relativeType].orbit=vcat(map(x->
+        map(s[:relativeType].orbit)do r
+	  r=copy(r)
+          r.indices=inclusion(x,r.indices)
+	  r
+        end,H))
+      s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H[1])),inclusion(H[1])))
+    end
+
     for f in uc.families
       if f[:fourierMat] isa Vector 
         f[:fourierMat]=toM(f[:fourierMat]) 
+      end
+      if !haskey(f,:charLabels) 
+         f[:charLabels]=string.(1:length(f[:eigenvalues]))
       end
     end
     uc
@@ -496,7 +571,7 @@ function UnipotentCharacters(W::Group)
     end
   end
   
-  for a in [:TeXCharNames]
+  for a in [:TeXCharNames,:almostTeXCharNames]
     res[a]=join.(res[a],"\\otimes ")
   end
 
@@ -507,9 +582,14 @@ function UnipotentCharacters(W::Group)
 
   if length(tt)==1
     hh=r.harishChandra
+    ah=r.almostHarishChandra
   else 
     hh=CartesianSeries.(Cartesian(map(x->x.harishChandra,simp)...))
+    ah=CartesianSeries.(Cartesian(map(x->x.almostHarishChandra,simp)...))
     for s in hh
+      s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
+    end
+    for s in ah
       s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
     end
   end
@@ -528,8 +608,8 @@ function UnipotentCharacters(W::Group)
   end
 
 
-  res[:group]=W
-  UnipotentCharacters(hh,ff,res)
+  res[:group]=WF
+  UnipotentCharacters(hh,ah,ff,res)
 end
 
 function Base.show(io::IO, ::MIME"text/html", uc::UnipotentCharacters)
@@ -550,7 +630,7 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   strip(x)=fromTeX(io,x)
   m=hcat(sprint.(show,CycPol.(degrees(uc)); context=io),
          sprint.(show,CycPol.(fakedegrees(uc)); context=io),
-         sprint.(show,eigen(uc); context=io),
+         sprint.(show,Root1.(eigen(uc)); context=io),
          strip.(labels(uc)))
   format(io,m,row_labels=charnames(io,uc),
          rows_label=strip("\\gamma"),
@@ -570,7 +650,7 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol([1],1))
   fd=fill(zero(q),length(uc))
   f=fakedegrees(Group(uc),q)
   if isa(q,Pol) f=convert.(Pol{Int},f) end
-  fd[uc.harishChandra[1][:charNumbers]]=f
+  fd[uc.almostHarishChandra[1][:charNumbers]]=f
   d[q]=fd
 end
 

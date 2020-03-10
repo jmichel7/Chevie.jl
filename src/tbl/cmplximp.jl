@@ -560,7 +560,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                     local v
                     v = map((x->begin
                                     []
-                                    end), 1:max(de,2))
+                                end), 1:maximum([de, 2]))
                     if i > 0
                         v[1] = [i]
                     end
