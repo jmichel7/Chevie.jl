@@ -79,7 +79,7 @@ chevieset(:B, :ReflectionName, function (arg...,)
 chevieset(:B, :GeneratingRoots, function (l, type_)
         local rts, i
         rts = map((i->begin
-                        0 * (1:l)
+                        fill(0, max(0, (1 + l) - 1))
                     end), 1:l)
         for i = 1:l - 1
             (rts[i])[[i, i + 1]] = [1, -1]

@@ -144,7 +144,7 @@ Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
 
 function improve_type(m::Array)
-  m=convert.(reduce(promote_type,typeof.(m)),m)
+ if !isempty(m) m=convert.(reduce(promote_type,typeof.(m)),m) end
   if all(isinteger,m) m=Int.(m)
   elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
   elseif first(m) isa Pol && all(x->all(isinteger,x.c),m) m=convert.(Pol{Int},m)

@@ -212,8 +212,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
             eig = [E(3, 2), -1, E(3), 1]
             ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "G", :indices => [1, 2], :rank => 2, :cartanType => ER(3))
             for i = 1:4
-                ((uc[:almostHarishChandra])[i + 1])[:cuspidalName] =
-                SPrint("G2[", FormatTeX(eig[i]), "]")
+                ((uc[:almostHarishChandra])[i + 1])[:cuspidalName] = SPrint("G2[", FormatTeX(eig[i]), "]")
             end
         end
         uc[:charParams] = Concatenation((((chevieget(:I, :CharInfo))(e))[:charparams])[[1, 2]], ac)

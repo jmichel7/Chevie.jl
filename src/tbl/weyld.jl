@@ -28,11 +28,11 @@ chevieset(:D, :GeneratingRoots, function (l,)
         local r, rts, i
         rts = []
         for i = 1:l - 1
-            r = 0 * (1:l)
+            r = fill(0, max(0, (1 + l) - 1))
             r[[i, i + 1]] = [1, -1]
             push!(rts, r)
         end
-        r = 0 * (1:l)
+        r = fill(0, max(0, (1 + l) - 1))
         r[[l - 1, l]] = [1, 1]
         push!(rts, r)
         return reverse(rts)

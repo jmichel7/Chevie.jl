@@ -51,7 +51,32 @@ l2=[
   (coxgroup,),
 ]
 
-spets=map(l2)do x
+l3=[
+  (rootdatum,:psu,3),
+  (rootdatum,Symbol("2B2")),
+  (rootdatum,Symbol("2G2")),
+  (rootdatum,Symbol("2I"),5),
+  (rootdatum,Symbol("2I"),8),
+  (rootdatum,:psu,4),
+  (rootdatum,Symbol("3D4")),
+  (rootdatum,:psu,5),
+  (rootdatum,Symbol("pso-"),8),
+  (rootdatum,:psu,6),
+  (rootdatum,Symbol("2F4")),
+  (rootdatum,:psu,7),
+  (rootdatum,Symbol("pso-"),10),
+  (rootdatum,Symbol("2E6")),
+  (rootdatum,:psu,8),
+  (rootdatum,Symbol("pso-"),12),
+  (rootdatum,Symbol("pso-"),14),
+]
+
+spets_ex=map(l2)do x
+  println("creating $x")
+  x[1](x[2:end]...)
+end
+
+twisted=map(l3) do x
   println("creating $x")
   x[1](x[2:end]...)
 end

@@ -26,6 +26,11 @@ chevieset(Symbol("2A"),:CharTable,function(r)
   merge!(tbl, chevieget(Symbol("2A"), :ClassInfo)(r))
 end)
 
+chevieset(Symbol("2A"),:FakeDegree,function(n,p,q)
+  res=chevieget(:A, :FakeDegree)(n, p, Pol([1],1))
+  (-1)^valuation(res)*res(-q)
+end)
+
 chevieset(:A,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(1,1,n+1,para,root))
 
 chevieset(Symbol("2A"),:HeckeCharTable, function (r, param, rootparam)

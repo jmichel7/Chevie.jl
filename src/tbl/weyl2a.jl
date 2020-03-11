@@ -113,11 +113,11 @@ chevieset(Symbol("2A"), :Representation, function (n, i)
                             [1, -1]
                         end), 1:n), 1:n * 0 + 1, i)
     end)
-chevieset(Symbol("2A"), :FakeDegree, function (n, p, q)
-        local res
-        res = (chevieget(:A, :FakeDegree))(n, p, Indeterminate(Rationals))
-        return (-1) ^ Valuation(res) * Value(res, -q)
-    end)
+PartitionTwoCoreQuotient = function (d, p)
+        local x
+        x = SymbolPartitionTuple(reverse(p), -d)
+        return PartBeta(gapSet(Concatenation(2 * x[1], 2 * x[2] + 1)))
+    end
 chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
         local uc, d, k, s, i, r
         uc = (chevieget(:A, :UnipotentCharacters))(l)
@@ -131,15 +131,15 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
         uc[:harishChandra] = []
         d = 0
         while (d * (d + 1)) // 2 <= l + 1
-            k = (l + 1) - (d * (d + 1)) // 2
+            k = (l + 1) - div(d * (d + 1), 2)
             if mod(k, 2) == 0
-                r = k // 2
+                r = div(k, 2)
                 s = Dict{Symbol, Any}(:levi => r + 1:l - r, :relativeType => Dict{Symbol, Any}(:series => "B", :indices => r:(r - 1) - r:1, :rank => r), :eigenvalue => (-1) ^ (Product(d + (-1:2)) // 8))
                 if d == 0
                     (s[:relativeType])[:cartanType] = 1
                 end
                 if r != 0
-                    s[:parameterExponents] = Concatenation([2d + 1], 0 * (2:r) + 2)
+                    s[:parameterExponents] = Concatenation([2d + 1], fill(0, max(0, (1 + r) - 2)) + 2)
                 else
                     s[:parameterExponents] = []
                 end

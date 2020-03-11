@@ -92,7 +92,7 @@ Base.haskey(f::Family,k)=haskey(f.prop,k)
 Base.setindex!(f::Family,v,k)=setindex!(f.prop,v,k)
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
-  if !isa(f[:fourierMat],Matrix) f[:fourierMat]=toM(f[:fourierMat]) end
+  if f[:fourierMat] isa Vector f[:fourierMat]=improve_type(toM(f[:fourierMat])) end
   if !haskey(f,:charLabels)
     f[:charLabels]=map(string,1:length(f[:eigenvalues]))
   end
@@ -195,6 +195,13 @@ chevieset(:families,:X,function(p)
     :special=>1,:cospecial=>p-1))
    end)
 
+chevieset(:families,Symbol("C'1"),
+  Family(Dict(:group=>"C1", :name=>"C'_1",
+  :explanation=>"-trivial",
+  :charLabels=>[""],
+  :fourierMat=>[[-1]],
+  :eigenvalues=>[-1],
+  :sh=>[1])))
 chevieset(:families,Symbol("C'\"2"),
   Family(Dict(:group=>"C2", :name=>"C'''_2",
   :explanation=>"TwistedDrinfeldDouble(Z/2)'",
@@ -218,7 +225,7 @@ chevieset(:families,Symbol("C'2"),
 
 function SubFamily(f,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f[:eigenvalues]))
-  res=Dict(:fourierMat=>f[:fourierMat][ind,ind]*scal,
+  res=Dict(:fourierMat=>f[:fourierMat][ind,ind].*scal,
            :eigenvalues=>f[:eigenvalues][ind],
            :charLabels=>f[:charLabels][ind],
    :operations=>FamilyOps)
@@ -605,7 +612,7 @@ family_imprimitive = function (S)
     end
   end
   res=Dict{Symbol,Any}(:symbols=>symbs,
-                       :fourierMat=>toM(mat),
+                       :fourierMat=>mat,
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
     :explanation=>"classical family",
@@ -673,7 +680,7 @@ FamiliesClassical=function(sym)
     Z1=filter(x->count(isequal(x),f[:content])==1,f[:content])
     f[:fourierMat]=(2//1)^(-div(length(Z1)-1,2))*map(x->
                     map(y->(-1)^length(intersect(x, y)), f[:M♯]), f[:M♯])
-    f[:fourierMat]=toM(f[:fourierMat])
+#   f[:fourierMat]=toM(f[:fourierMat])
     f[:eigenvalues]=map(x->(-1)^div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
     if length(f[:eigenvalues]) == 1
       f[:charLabels] = [""]

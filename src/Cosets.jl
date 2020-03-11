@@ -522,4 +522,132 @@ function torusfactors(WF::PRC)
   charpoly(M[r+1:end,r+1:end])
 end
 
+Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
+" root datum from type "
+function Weyl.rootdatum(t::Symbol,r::Int...)
+   if haskey(rootdata,t) return rootdata[t](r...) end
+   error("Unknown root datum $(repr(t)). Known types are:\n",
+              join(sort(collect(keys(rootdata))),", "))
+end
+
+id(r)=one(fill(0,r,r))
+
+const  rootdata=Dict{Symbol,Function}()
+rootdata[:gl]=function(r)
+  if r==1 return torus(1) end
+  R=id(r)
+  R=R[1:end-1,:]-R[2:end,:]
+  rootdatum(R,R)
+end
+rootdata[:sl]=r->rootdatum(cartan(:A,r-1),id(r-1))
+rootdata[:tgl]=function(n, k)
+  if gcd(n,k)!=1 error(k," should be prime to ",n) end
+  X=hcat(cartan(:A,n-1),fill(0,n-1))
+  # We intertwine the last weight with the torus
+  lat=vcat(X,permutedims(vcat(fill(0,n-2), [k,1])))
+  # Get a basis for the sublattice
+  lat=MatInt.HermiteNormalFormIntegerMat(toL(lat))
+  # Find the roots in a basis of the sublattice
+  Y=id(n)[1:n-1,:]
+  return rootdatum(toM(map(x->MatInt.SolutionIntMat(lat,x),toL(X))),
+                   Y*permutedims(toM(lat)))
+end
+rootdata[:pgl]=r->coxgroup(:A,r-1)
+rootdata[:sp]=function(r)
+  R=id(div(r,2))
+  for i in 2:div(r,2) R[i,i-1]=-1 end
+  R1=copy(R)
+  R1[1,:].*=2
+  rootdatum(R1,R)
+end
+rootdata[:csp]=function(r)
+  r=div(r,2)
+  R=id(r+1)
+  R=R[1:r,:]-R[2:end,:] 
+  cR=copy(R) 
+  R[1,1:2]=[0,-1] 
+  cR[1,1:2]=[1,-2]
+  rootdatum(cR,R)
+end
+rootdata[:psp]=r->coxgroup(:C,div(r,2))
+rootdata[:so]=function(r)
+  R=id(div(r,2)) 
+  for i in 2:div(r,2) R[i,i-1]=-1 end
+  if isodd(r) R1=copy(R)
+    R1[1,1]=2
+    rootdatum(R,R1)
+  else R[1,2]=1 
+    rootdatum(R,R)
+  end
+end
+rootdata[:pso]=function(r)
+  r1=div(r,2)
+  isodd(r) ? coxgroup(:B,r1) : coxgroup(:D,r1)
+end
+rootdata[:spin]=function(r)
+  r1=div(r,2)
+  isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : rootdatum(cartan(:D,r1),id(r1))
+end
+rootdata[:halfspin]=function(r)
+  if !iszero(r%4) error("halfspin groups only exist in dimension 4r") end
+  r=div(r,2)
+  R=id(r)
+  R[r,:]=vcat([-div(r,2),1-div(r,2)],2-r:1:-2,[2])
+  rootdatum(R,Int.(cartan(:D,r)*permutedims(inv(Rational.(R)))))
+end
+rootdata[:gpin]=function(r)
+  d=div(r,2)
+  R=id(d+1)
+  R=R[1:d,:]-R[2:end,:]
+  cR=copy(R)
+  if isodd(r)
+    R[1,1]=0
+    cR[1,2]=-2
+  else
+    R[1,3]=-1
+    cR[1,1:3]=[0,-1,-1]
+    R=hcat(fill(0,d),R)
+    cR=hcat(fill(0,d),cR)
+    cR[1,1]=1
+  end
+  rootdatum(R,cR)
+end
+rootdata[:E6]=()->coxgroup(:E,6)
+rootdata[:E7]=()->coxgroup(:E,7)
+rootdata[:E8]=()->coxgroup(:E,8)
+rootdata[:E6sc]=()->rootdatum(cartan(:E,6),id(6))
+rootdata[:E7sc]=()->rootdatum(cartan(:E,7),id(7))
+rootdata[:F4]=()->coxgroup(:F,4)
+rootdata[:G2]=()->coxgroup(:G,2)
+rootdata[:u]=r->spets(rootdatum(:gl,r),reverse(-id(r),dims=1))
+rootdata[:su]=r->r==2 ? spets(rootdatum(:sl,r)) :
+    spets(rootdatum(:sl,r),prod(i->Perm(i,r-i),1:div(r-1,2)))
+rootdata[:psu]=function(r)g=rootdatum(:pgl,r)
+  r==2 ? g : spets(g,prod(i->Perm(i,r-i),1:div(r-1,2))) end
+rootdata[Symbol("3gpin8")]=()->spets(rootdatum(:gpin,8),[1 1 1 0 0 0;
+ -2 0 -1 -1 -1 -1;-1 0 -1 0 0 -1;-1 0 -1 0 -1 0;
+ -1 0 -1 -1 0 0;-1 -1 0 0 0 0])
+rootdata[Symbol("gpin-")]=function(r)
+  d=r/2
+  F=id(d+2)
+  F[1,1:3]=[1,-1,1]
+  F[1:d+2,2]=fill(-1,d+2)
+  F[2:3,2:3]=-id(2)
+  spets(rootdatum(:gpin,r),F)
+end
+rootdata[Symbol("so-")]=r->spets(rootdatum(:so,r),Perm(1,2))
+rootdata[Symbol("pso-")]=r->spets(rootdatum(:pso,r),Perm(1,2))
+rootdata[Symbol("spin-")]=r->spets(rootdatum(:spin,r),Perm(1,2))
+rootdata[Symbol("2I")]=e->spets(coxgroup(:Isym,2,e),Perm(1,2))
+rootdata[:suzuki]=()->spets(coxgroup(:Bsym,2),Perm(1,2))
+rootdata[Symbol("2B2")]=()->rootdatum(:suzuki)
+rootdata[:ree]=()->spets(coxgroup(:Gsym,2),Perm(1,2))
+rootdata[Symbol("2G2")]=()->rootdatum(:ree)
+rootdata[:triality]=()->spets(coxgroup(:D,4),Perm(1,2,4))
+rootdata[Symbol("3D4")]=()->rootdatum(:triality)
+rootdata[Symbol("3D4sc")]=()->spets(rootdatum(:spin,8),Perm(1,2,4))
+rootdata[Symbol("2E6")]=()->spets(coxgroup(:E,6),Perm(1,6)*Perm(3,5))
+rootdata[Symbol("2E6sc")]=()->spets(rootdatum(:E6sc),Perm(1,6)*Perm(3,5))
+rootdata[Symbol("2F4")]=()->spets(coxgroup(:Fsym,4),Perm(1,4)*Perm(2,3))
+
 end

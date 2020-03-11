@@ -424,7 +424,7 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Number,a::Cyc)=Cyc(b)-a
 Base.:-(b::Cyc,a::Number)=b-Cyc(a)
 
-Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(c) : Cyc(c.n,c.d*a)
+Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(promote(a,c)[1]) : Cyc(c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list

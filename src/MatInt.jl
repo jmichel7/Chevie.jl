@@ -9,7 +9,7 @@ MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1]))
              for k in eachindex(b[1])] for i in eachindex(a)]
 
 # MATINTsplit(N,a) largest factor of N prime to a
-MATINTsplit = function (N, a)
+function MATINTsplit(N, a)
   while a != 1
       a = gcd(a, N)
       N = div(N, a)
@@ -18,7 +18,7 @@ MATINTsplit = function (N, a)
 end
 
 # MATINTrgcd(N,a) smallest nonnegative c such that gcd(N,a+c) = 1
-MATINTrgcd = function (N, a)
+function MATINTrgcd(N, a)
   if N == 1 return 0 end
   r = [mod(a-1, N)]
   d = [N]
@@ -80,7 +80,7 @@ end
 
 #  MATINTmgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
 #   gcd(N,a+c[1]*v[1]+...+c[n]*v[k]) = gcd(N,a,v[1],v[2],...,v[k])
-MATINTmgcdex = function (N, a, v)
+function MATINTmgcdex(N, a, v)
   l = length(v)
   M = zeros(Int,l)
   h = N
@@ -108,7 +108,7 @@ end
 #  [st][ab]=[ef] 
 #  [uv][cd] [0g]
 #
-MATINTbezout = function (a, b, c, d)
+function MATINTbezout(a, b, c, d)
   e=Gcdex(a, c)
   f=e.coeff1*b+e.coeff2*d
   g=e.coeff3*b+e.coeff4*d
@@ -126,7 +126,7 @@ MATINTbezout = function (a, b, c, d)
 end
 
 ## SNFofREF - fast SNF of REF matrix
-SNFofREF = function (R, destroy)
+function SNFofREF(R, destroy)
   n = length(R)
   m = length(R[1])
   piv = map(x->findfirst(!iszero,x), R)
@@ -261,7 +261,7 @@ BITLISTS_NFIM = [
 # * - possible non-zero entry in upper right corner...
 #				
 #
-DoNFIM = function (mat::AbstractVector{<:AbstractVector{Int}}, opt::Int)
+function DoNFIM(mat::AbstractVector, opt::Int)
   if isempty(mat) mat=[Int[]] end
 # println("mat=$mat opt=$opt")
   opt = BITLISTS_NFIM[opt + 1]
@@ -470,7 +470,7 @@ DoNFIM = function (mat::AbstractVector{<:AbstractVector{Int}}, opt::Int)
   return R
 end
 
-NormalFormIntMat = function (mat, options)
+function NormalFormIntMat(mat, options)
   r=DoNFIM(mat, options)
   opt=BITLISTS_NFIM[options+1]
   if opt[3] r[:rowtrans]=MatMul(r[:rowQ],r[:rowC]) end
@@ -486,11 +486,11 @@ HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat, 6)
 SmithNormalFormIntegerMat(mat)=DoNFIM(mat,1)[:normal]
 SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat,13)
 DiagonalizeIntMat(mat)=DoNFIM(mat,17)
-BaseIntMat=function(mat)
+function BaseIntMat(mat)
   norm=NormalFormIntMat(mat, 2)
   norm[:normal][1:norm[:rank]]
 end
-BaseIntersectionIntMats = function (M1, M2)
+function BaseIntersectionIntMats(M1, M2)
   M = vcat(M1, M2)
   r = NormalFormIntMat(M,4)
   T = map(x->x[1:length(M1)],r[:rowtrans][r[:rank]+1:length(M)])
@@ -498,7 +498,7 @@ BaseIntersectionIntMats = function (M1, M2)
   BaseIntMat(T)
 end
 
-ComplementIntMat = function (full, sub)
+function ComplementIntMat(full, sub)
   F = BaseIntMat(full)
   if length(sub) == 0 || iszero(sub)
     return Dict(:complement => F, :sub => Vector{Int}[], :moduli => Int[])
@@ -515,13 +515,13 @@ ComplementIntMat = function (full, sub)
       :moduli=>map(i->r[:normal][i][i],1:r[:rank]))
 end
 
-NullspaceIntMat = function (mat,)
+function NullspaceIntMat(mat)
   norm=NormalFormIntMat(mat, 4)
   kern=norm[:rowtrans][norm[:rank]+1:length(mat)]
   return BaseIntMat(kern)
 end
 
-SolutionIntMat = function (mat, v)
+function SolutionIntMat(mat, v)
   if iszero(mat)
       if iszero(v) return fill(0, max(0, (1 + length(mat)) - 1))
       else return false
@@ -530,7 +530,7 @@ SolutionIntMat = function (mat, v)
   norm = NormalFormIntMat(mat, 4)
   t = norm[:rowtrans]
   rs = (norm[:normal])[1:norm[:rank]]
-  M = Concatenation(rs, [v])
+  M = vcat(rs, [v])
   r = NormalFormIntMat(M, 4)
   if r[:rank]==length(r[:normal]) || r[:rowtrans][length(M)][length(M)]!=1
       return false
@@ -538,7 +538,7 @@ SolutionIntMat = function (mat, v)
   return -r[:rowtrans][length(M)][1:r[:rank]]*t[1:r[:rank]]
 end
     
-SolutionNullspaceIntMat = function (mat, v)
+function SolutionNullspaceIntMat(mat, v)
   if iszero(mat)
     len = length(mat)
     if iszero(v) return [fill(0, max(0, (1 + len) - 1)), IdentityMat(len)]
@@ -558,7 +558,7 @@ SolutionNullspaceIntMat = function (mat, v)
   return [-r[:rowtrans][length(M)][1:r[:rank]]*t[1:r[:rank]], kern]
 end
 
-DeterminantIntMat = function (mat)
+function DeterminantIntMat(mat)
   sig = 1
   n = length(mat) + 2
   if n < 22 return DeterminantMat(mat) end
@@ -615,7 +615,7 @@ DeterminantIntMat = function (mat)
   return sig
 end
 
-IntersectionLatticeSubspace = function (m)
+function IntersectionLatticeSubspace(m)
   m = m * Lcm(map(denominator, Concatenation(m)))
   r = SmithNormalFormIntegerMatTransforms(m)
   for i = 1:length(r[:normal])
@@ -644,7 +644,7 @@ end
 # r.rowtrans        a unimodular matrix such that  
 #   r.normal=List(r.rowtrans*m,v->Zip(v,moduli,function(x,y)return x mod y;end))
 #
-DiaconisGraham = function (m, moduli)
+function DiaconisGraham(m, moduli)
   if moduli == [] return Dict{Symbol, Any}(:rowtrans => [], :normal => m) end
   if any(i->mod(moduli[i],moduli[i+1])!=0,1:length(moduli)-1)
     error("DiaconisGraham(m,moduli): moduli[i+1] should divide moduli[i] for all i")

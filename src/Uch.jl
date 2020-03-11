@@ -255,7 +255,7 @@ function params_and_names(sers)
 end
 
 function UnipotentCharacters(t::TypeIrred) 
-  uc=getchev(t,:UnipotentCharacters)
+ uc=copy(getchev(t,:UnipotentCharacters))
   if uc==false 
     println("Warning: $t is not a Spets!!")
     return false 
@@ -300,7 +300,7 @@ function UnipotentCharacters(t::TypeIrred)
   uc[:almostTeXCharNames]=a[:TeXCharNames]
   uc[:group]=t
   uch=UnipotentCharacters(uc[:harishChandra],uc[:almostHarishChandra],
-                          Family.(uc[:families]),uc)
+                          Family.(copy(uc[:families])),uc)
   delete!(uc,:families)
   delete!(uc,:harishChandra)
   delete!(uc,:almostHarishChandra)
@@ -514,6 +514,9 @@ function UnipotentCharacters(WF::Spets)
       [Dict(:relativeType=>Dict[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
+      [Dict(:relativeType=>Dict[], 
+	    :levi=>Int[], :parameterExponents=>Int[],
+	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],
      Dict( :charParams => [ [ "", [ 1 ] ] ],
       :TeXCharNames => [ "." ],
@@ -548,10 +551,11 @@ function UnipotentCharacters(WF::Spets)
 
     for f in uc.families
       if f[:fourierMat] isa Vector 
-        f[:fourierMat]=toM(f[:fourierMat]) 
+        f[:fourierMat]=improve_type(toM(f[:fourierMat]))
+        println("made mat:",repr(f))
       end
       if !haskey(f,:charLabels) 
-         f[:charLabels]=string.(1:length(f[:eigenvalues]))
+        f[:charLabels]=string.(1:length(f[:eigenvalues]))
       end
     end
     uc
@@ -658,7 +662,9 @@ end
 function fourierinverse(uc::UnipotentCharacters)
   gets(uc,:fourierinverse)do uc
      l=length(uc)
-     i=fill(0*E(1)//1,l,l)
+     T=reduce(promote_type,map(f->eltype(f[:fourierMat]),uc.families))
+#    println(map(f->eltype(f[:fourierMat]),uc.families),"=> T=$T")
+     i=fill(T(0),l,l)
      for f in uc.families
        i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]'
      end

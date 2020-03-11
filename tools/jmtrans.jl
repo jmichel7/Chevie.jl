@@ -13,25 +13,26 @@ const src=[
 # functions whose translation does not work so they are not translated
 # an implementation is in table2.jl, with the useful code from compat3
 const exclu=[
- ["Discriminant","H4"],
- ["UnipotentClasses","3D4"],
- ["UnipotentClasses",:(["B"])],
- ["UnipotentClasses","D"],
- ["CharInfo","I"],
  ["CharTable","A"],
- ["CharTable","2A"],
- ["CharTable",:(["B"])],
- ["CharTable","D"],
- ["CharTable","2D"],
  ["HeckeCharTable","A"],
- ["HeckeCharTable","2A"],
- ["HeckeCharTable",:(["B"])],
- ["HeckeCharTable","D"],
- ["HeckeCharTable","2D"],
- ["PowerMaps","imp"],
  ["Hk","A"],
+ ["CharTable","2A"],
+ ["FakeDegree","2A"],
+ ["HeckeCharTable","2A"],
+ ["CharTable",:(["B"])],
  ["Hk","B"],
+ ["HeckeCharTable",:(["B"])],
+ ["UnipotentClasses",:(["B"])],
+ ["CharTable","D"],
+ ["UnipotentClasses","D"],
+ ["HeckeCharTable","D"],
  ["Hk","D"],
+ ["CharTable","2D"],
+ ["HeckeCharTable","2D"],
+ ["UnipotentClasses","3D4"],
+ ["Discriminant","H4"],
+ ["CharInfo","I"],
+ ["PowerMaps","imp"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 
@@ -53,6 +54,7 @@ const ok2=[
     :G4_22Test,
     :G4_22FetchIndexChars,
     :VFactorSchurElement,
+    :PartitionTwoCoreQuotient
    ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)

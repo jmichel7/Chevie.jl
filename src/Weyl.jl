@@ -681,84 +681,6 @@ function rootdatum(rr::Matrix,cr::Matrix)
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
-" root datum from type "
-function rootdatum(t::Symbol,r::Int)
-  id(r)=one(fill(0,r,r))
-  data=Dict{Symbol,Function}(
-   :gl=>function(r)
-     if r==1 return torus(1) end
-     R=id(r)
-     R=R[1:end-1,:]-R[2:end,:]
-     rootdatum(R,R)
-     end,
-   :sl=>r->rootdatum(cartan(:A,r-1),id(r-1)),
-   :pgl=>r->coxgroup(:A,r-1),
-   :sp=>function(r)
-     R=id(div(r,2))
-     for i in 2:div(r,2) R[i,i-1]=-1 end
-     R1=copy(R)
-     R1[1,:].*=2
-     rootdatum(R1,R)
-     end,
-   :csp=>function(r)
-     r=div(r,2)
-     R=id(r+1)
-     R=R[1:r,:]-R[2:end,:] 
-     cR=copy(R) 
-     R[1,1:2]=[0,-1] 
-     cR[1,1:2]=[1,-2]
-     rootdatum(cR,R)
-     end,
-  :psp=>r->coxgroup(:C,div(r,2)),
-  :so=>function(r)
-    R=id(div(r,2)) 
-    for i in 2:div(r,2) R[i,i-1]=-1 end
-    if isodd(r) R1=copy(R)
-      R1[1,1]=2
-      rootdatum(R,R1)
-    else R[1,2]=1 
-      rootdatum(R,R)
-    end
-  end,
-  :pso=>function(r)
-    r1=div(r,2)
-    isodd(r) ? coxgroup(:B,r1) : coxgroup(:D,r1)
-    end,
-  :spin=>function(r)
-    r1=div(r,2)
-    isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : rootdatum(cartan(:D,r1),id(r1))
-    end,
-  :halfspin=>function(r)
-    if !iszero(r%4) error("halfspin groups only exist in dimension 4r") end
-    r=div(r,2)
-    R=id(r)
-    R[r,:]=vcat([-div(r,2),1-div(r,2)],2-r:1:-2,[2])
-    rootdatum(R,Int.(cartan(:D,r)*permutedims(inv(Rational.(R)))))
-    end,
-  :gpin=>function(r)
-    d=div(r,2)
-    R=id(d+1)
-    R=R[1:d,:]-R[2:end,:]
-    cR=copy(R)
-    if isodd(r)
-      R[1,1]=0
-      cR[1,2]=-2
-    else
-      R[1,3]=-1
-      cR[1,1:3]=[0,-1,-1]
-      R=hcat(fill(0,d),R)
-      cR=hcat(fill(0,d),cR)
-      cR[1,1]=1
-    end
-    rootdatum(R,cR)
-   end,
-   :E=>r->coxgroup(:E,r),
-   :Esc=>r->rootdatum(cartan(:E,r),id(r))
-   )
-   if haskey(data,t) return data[t](r) end
-   error("Unknown root datum $(repr(t)). Known types are:\n",
-              join(sort(collect(keys(data))),", "))
-end
 
 """
 `torus(rank)`
@@ -1208,7 +1130,7 @@ function algebraic_centre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  println("ss=$ss")
+  #println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)

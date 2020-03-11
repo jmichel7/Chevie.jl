@@ -75,6 +75,11 @@ SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SignedPerm=SPerm
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 SemisimpleRank(W)=semisimplerank(W)
+function SortParallel(a,b)
+  v=sortperm(a)
+  b.=b[v]
+  a.=a[v]
+end
 ShiftBeta=shiftβ
 StringSymbol=stringsymbol
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1

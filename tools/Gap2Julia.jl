@@ -194,6 +194,9 @@ function trans(e)
       elseif a==:* && c==0 && b isa Expr && b.head== :vect && b.args[1].args[1]== :..
         v=b.args[1].args
         return :(fill(0,max(0,1+$(trans(v[3]))-$(trans(v[2])))))
+      elseif a==:* && b==0 && c isa Expr && c.head== :vect && c.args[1].args[1]== :..
+        v=c.args[1].args
+        return :(fill(0,max(0,1+$(trans(v[3]))-$(trans(v[2])))))
       end
     elseif head==:vect
       if nargs>=1 && a isa Expr && a.head==:call && a.args[1]==:(..)

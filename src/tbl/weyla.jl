@@ -41,7 +41,7 @@ chevieset(:A, :ReflectionName, function (r, option)
 chevieset(:A, :GeneratingRoots, function (l,)
         local r, i
         r = map((i->begin
-                        0 * (1:l + 1)
+                        fill(0, max(0, (1 + (l + 1)) - 1))
                     end), 1:l)
         for i = 1:l
             (r[i])[[i, i + 1]] = [1, -1]
