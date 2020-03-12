@@ -249,6 +249,7 @@ function Base.show(io::IO,a::CycPol)
     c=a.coeff
     if c isa Rational && isone(denominator(c)) c=numerator(c) end
     s=sprint(show,c; context=io)
+    if s=="-1" && !nov s="-" end
     if occursin(r"[+\-*/]",s[nextind(s,1):end]) && !nov s="($s)" end
     print(io,s) 
   end

@@ -204,11 +204,19 @@ function Base.show(io::IO, t::TypeIrred)
     print(io,fromTeX(io,n))
   else
     o=order(t.twist)
-    if o!=1 print(io,fromTeX(io,repl||TeX ? "{}^{$o}" : "$o")) end
-    if length(t.orbit)==1 print(io,t.orbit[1])
-    else print(io,"(")
-      for t1 in t.orbit print(io,t1) end
-      print(io,")") 
+    if repl||TeX
+      if o!=1 print(io,fromTeX(io,"{}^{$o}")) end
+      if length(t.orbit)==1 print(io,t.orbit[1]) 
+      else print(io,"(")
+        for t1 in t.orbit print(io,t1) end
+        print(io,")") 
+      end
+    else
+      print(io,"spets(")
+      showtypes(io,t.orbit)
+      p=prod(map((x...)->Perm(x...),map(x->x.indices,t.orbit)...))*t.twist
+      if !isone(p) print(io,",",p) end
+      print(io,")")
     end
     if haskey(t,:scalar) && any(x->!isone(x),t.scalar)
       print(io,"[",join(sprint.(show,t.scalar;context=io)),"]")

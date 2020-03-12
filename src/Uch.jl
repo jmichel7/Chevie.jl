@@ -213,7 +213,7 @@ module Uch
 
 using Gapjm
 
-export UnipotentCharacters, FixRelativeType, fourier, fourierinverse, UniChar,
+export UnipotentCharacters, FixRelativeType, fourierinverse, UniChar,
 AlmostChar, DLChar, DLLefschetz
 
 struct UnipotentCharacters
@@ -550,10 +550,7 @@ function UnipotentCharacters(WF::Spets)
     end
 
     for f in uc.families
-      if f[:fourierMat] isa Vector 
-        f[:fourierMat]=improve_type(toM(f[:fourierMat]))
-        println("made mat:",repr(f))
-      end
+      f[:fourierMat]=fourier(f)
       if !haskey(f,:charLabels) 
         f[:charLabels]=string.(1:length(f[:eigenvalues]))
       end
@@ -672,7 +669,7 @@ function fourierinverse(uc::UnipotentCharacters)
   end
 end
 
-function fourier(uc::UnipotentCharacters)
+function Families.fourier(uc::UnipotentCharacters)
   gets(uc,:fourier)do uc
      l=length(uc)
      i=fill(0*E(1)//1,l,l)
@@ -749,9 +746,9 @@ function FixRelativeType(t)
       reverse!(view(t[:charNumbers],1:2)) # map B1->A1
     elseif d[:rank]==2 && haskey(d,:cartanType) && d[:cartanType]==1
       d[:cartanType]=2
-      reverse!(d[:indices])
+      d[:indices]=reverse(collect(d[:indices]))
       reverse!(view(t[:charNumbers],[1,5])) # map C2->B2
-      if IsBound(t[:parameterExponents]) reverse!(t[:parameterExponents]) end
+      if haskey(t,:parameterExponents) reverse!(t[:parameterExponents]) end
     end
   end
 end

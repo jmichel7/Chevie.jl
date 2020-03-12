@@ -2,36 +2,10 @@ module HasType
 
 export reflection_name, diagram,
   schur_elements, charname, codegrees, ComplexReflectionGroup,
-  chevieget, field, getchev, Cartesian, ExtendedCox, traces_words_mats,
-  family_imprimitive, Family, Drinfeld_double
+  field, getchev, Cartesian, ExtendedCox, traces_words_mats
 
 using ..Gapjm
 #-----------------------------------------------------------------------
-const CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
-                           :AdjustHeckeCharTable=>(x,y)->x,
-        :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
-CHEVIE[:CheckIndexChars]=false
-CHEVIE[:info]=false
-
-function chevieget(t::Symbol,w::Symbol)
-  if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
-  if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
-end
-
-chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
-
-function chevieset(t::Symbol,w::Symbol,o::Any)
-  if !haskey(CHEVIE,t) CHEVIE[t]=Dict{Symbol,Any}() end
-  CHEVIE[t][w]=o
-end
-
-function chevieset(t::Vector{String},w::Symbol,f::Function)
-  for s in t 
-    println("set $s $w")
-    chevieset(Symbol(s),w,f(s)) 
-  end
-end
-
 function field(t::TypeIrred)
   if haskey(t,:orbit)
     orderphi=order(t.twist)
@@ -683,7 +657,6 @@ function BDSymbols(n,d)
 end
 
 include("cheviesupport.jl")
-include("families.jl")
 
 const src=[ 
 #  "compat3", 

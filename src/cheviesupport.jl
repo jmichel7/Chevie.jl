@@ -48,6 +48,7 @@ EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
 FullSymbol=fullsymbol
+GaloisCyc=galois
 Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
 HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
@@ -68,11 +69,12 @@ PermutationMat=Matrix
 Rank=rank
 RankSymbol=ranksymbol
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
-RootInt(a,b)=floor(Int,a^(1/b)+0.0001)
+RootInt(a,b=2)=floor(Int,a^(1/b)+0.0001)
 RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SignedPerm=SPerm
+SymmetricDifference=symdiff
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 SemisimpleRank(W)=semisimplerank(W)
 function SortParallel(a,b)

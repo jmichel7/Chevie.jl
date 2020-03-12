@@ -120,7 +120,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
         local symbols, uc, n, i, d, s, r, f, z, Defect0to2
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [], :almostHarishChandra => [])
         for d = 4 * (0:div(RootInt(rank) - 1, 2)) + 2
-            r = d ^ 2 // 4
+         r = div(d ^ 2,4)
             s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => 1, :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + r))) + 1))
             if r < 10
                 s[:cuspidalName] = SPrint("{}^2D_", r, "")

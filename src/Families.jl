@@ -1,3 +1,9 @@
+module Families
+
+export family_imprimitive, Family, Drinfeld_double, fourier
+
+using ..Gapjm
+
 FamilyOps=Dict()
 
 struct Family
@@ -77,15 +83,6 @@ end
 
 special(f::Family)::Int=gets(f->1,f,:special)
 
-function Base.conj(f::Family)
-  g=Family(copy(f.prop))
-  g[:fourierMat]=conj(f[:fourierMat])
-  g[:eigenvalues]=conj(f[:eigenvalues])
-  g[:name]="\\overline "*f[:name]
-  g[:explanation]="ComplexConjugate("*f[:explanation]*")"
-  g
-end
-
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 Base.getindex(f::Family,k)=f.prop[k]
 Base.haskey(f::Family,k)=haskey(f.prop,k)
@@ -150,10 +147,51 @@ function Base.:*(f::Family,g::Family)
   res
 end
 
+function fourier(f::Family)
+  m=f[:fourierMat] 
+  m isa Vector ? improve_type(toM(m)) : m
+end
+
+# apply galois to a family
+function Base.:^(f::Family,p::Int)
+  f=Family(copy(f.prop))
+  f[:fourierMat]=galois.(fourier(f),p)
+  f[:eigenvalues]=galois.(f[:eigenvalues],p)
+  if haskey(f,[:sh]) f[:sh]=galois.(f[:sh],p) end
+  if haskey(f,:name)
+    f[:name]=p==-1 ? "\\overline "*f[:name] : "Gal("*p*","*f[:name]*")"
+  end
+  if haskey(f,:explanation)
+    f[:explanation]=p==-1 ? "ComplexConjugate("*f[:explanation]*")" :
+                            "GaloisCyc("*p*","*f[:explanation]*")"
+  end
+  f
+end
+
+Base.conj(f::Family)=f^-1
+
+# apply permutation to a family
+function Base.:^(f::Family,p::Perm)
+  f=Family(copy(f.prop))
+  for n in [:x,:chi,:charNumbers,:eigenvalues,:unpdeg,:fakdeg,
+    :mellinLabels,:charLabels,:perm,:special] if haskey(f,n) f[n]^=p end
+  end
+  for n in [:fourierMat,:mellin] if haskey(f,n) f[n]=^(f,p;dims=(1,2)) end end
+  f[:explanation]="Permuted("*p*","*f[:explanation]*")"
+end
+
 chevieset(:families,:C1,
   Family(Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
          :charLabels=>[""], :fourierMat=>hcat([1]), :eigenvalues=>[1],
          :mellin=>[[1]],:mellinLabels=>[""])))
+
+chevieset(:families,Symbol("C'1"),
+  Family(Dict(:group=>"C1", :name=>"C'_1",
+  :explanation=>"-trivial",
+  :charLabels=>[""],
+  :fourierMat=>[[-1]],
+  :eigenvalues=>[-1],
+  :sh=>[1])))
 
 chevieset(:families,:C2,
   Family(Dict(:group=>"C2", :name=>"C_2",
@@ -164,6 +202,27 @@ chevieset(:families,:C2,
   :perm=>(),
   :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
   :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"])))
+
+chevieset(:families,Symbol("C'2"),
+  Family(Dict(:group=>"C2",:name=>"C'_2",
+  :explanation=>"TwistedDrinfeldDouble(Z/2)",
+  :charLabels=>["(1,1)",  "(1,\\varepsilon)", "(g_2,1)","(g_2,\\varepsilon)"],
+  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1],
+  :eigenvalues=>[1,1,E(4),-E(4)],
+  :qEigen=>[0,0,1,1]//2,
+  :perm=>Perm(3,4),
+  :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
+  :cospecial=>2)))
+
+chevieset(:families,Symbol("C'\"2"),
+  Family(Dict(:group=>"C2", :name=>"C'''_2",
+  :explanation=>"TwistedDrinfeldDouble(Z/2)'",
+  :charLabels=>["(1,1)", "(1,\\varepsilon)", "(g_2,1)", "(g_2,\\varepsilon)"],
+  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 -1 1;-1 1 1 -1],
+  :eigenvalues=>[1,1,E(4),-E(4)],
+  :qEigen=>[0,0,1,1]//2,
+  :perm=>Perm(3,4),
+  :cospecial=>2)))
 
 chevieset(:families,:S3,
   Family(Dict(:group=>"S3", :name=>"D(S_3)",
@@ -190,38 +249,10 @@ chevieset(:families,:X,function(p)
          :charSymbols=>ss,
          :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
              "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
-    :eigenvalues=>map(s->E(p,Product(s)),ss),
-    :fourierMat=>[(E(p,i*reverse(j))-E(p,i*j))/p for i in ss,j in ss],
+    :eigenvalues=>map(s->E(p,prod(s)),ss),
+    :fourierMat=>[(E(p,sum(i.*reverse(j)))-E(p,sum(i.*j)))/p for i in ss,j in ss],
     :special=>1,:cospecial=>p-1))
    end)
-
-chevieset(:families,Symbol("C'1"),
-  Family(Dict(:group=>"C1", :name=>"C'_1",
-  :explanation=>"-trivial",
-  :charLabels=>[""],
-  :fourierMat=>[[-1]],
-  :eigenvalues=>[-1],
-  :sh=>[1])))
-chevieset(:families,Symbol("C'\"2"),
-  Family(Dict(:group=>"C2", :name=>"C'''_2",
-  :explanation=>"TwistedDrinfeldDouble(Z/2)'",
-  :charLabels=>["(1,1)", "(1,\\varepsilon)", "(g_2,1)", "(g_2,\\varepsilon)"],
-  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 -1 1;-1 1 1 -1],
-  :eigenvalues=>[1,1,E(4),-E(4)],
-  :qEigen=>[0,0,1,1]//2,
-  :perm=>Perm(3,4),
-  :cospecial=>2)))
-
-chevieset(:families,Symbol("C'2"),
-  Family(Dict(:group=>"C2",:name=>"C'_2",
-  :explanation=>"TwistedDrinfeldDouble(Z/2)",
-  :charLabels=>["(1,1)",  "(1,\\varepsilon)", "(g_2,1)","(g_2,\\varepsilon)"],
-  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1],
-  :eigenvalues=>[1,1,E(4),-E(4)],
-  :qEigen=>[0,0,1,1]//2,
-  :perm=>Perm(3,4),
-  :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
-  :cospecial=>2)))
 
 function SubFamily(f,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f[:eigenvalues]))
@@ -249,7 +280,6 @@ end
 chevieset(:families,:ExtPowCyclic,function(e,n)
   g=Dict{Symbol,Any}(
     :special=>1,
-    :operations=>FamilyOps,
     :charSymbols=>combinations(0:e-1,n)
   )
   g[:charLabels]=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s),
@@ -259,7 +289,8 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   else
     g[:eigenvalues]=E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1)
   end
-  g[:eigenvalues]=DiagonalOfMat(exterior_power(toM(DiagonalMat(g[:eigenvalues]...)),n))
+  diag(m)=map(i->m[i,i],axes(m,1))
+  g[:eigenvalues]=diag(exterior_power(cat(g[:eigenvalues]...;dims=(1,2)),n))
   g[:fourierMat]=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
   if n>1 g[:name]="R(\\BZ/$e)^{\\wedge $n}"
     g[:explanation]=ordinal(n)*" exterior power of char. ring of Z/$e"
@@ -729,11 +760,13 @@ function Base.show(io::IO,f::Family)
     push!(t,string.(f[:signs]))
     push!(col_labels,"signs")
   end
-  append!(t,toL(map(y->sprint(show,y;context=io),f[:fourierMat])))
+  append!(t,toL(map(y->sprint(show,y;context=io),fourier(f))))
   if maximum(length.(rowLabels))<=4 append!(col_labels,rowLabels)
   else append!(col_labels,map(x->" ",rowLabels))
   end
   format(io,permutedims(toM(t)),row_labels=rowLabels,
         col_labels=col_labels,
         rows_label=TeX ? "\\hbox{label}" : "label")
+end
+
 end
