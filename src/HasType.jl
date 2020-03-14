@@ -75,12 +75,11 @@ Base.:+(a,b::Unknown)=b
 Base.:+(b::Unknown,a)=b
 Base.:*(a,b::Unknown)=b
 Base.:*(b::Unknown,a)=b
+Base.zero(a::Unknown)=0
 #-----------------------------------------------------------------------
 function Cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
-
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 
 charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict())
@@ -377,22 +376,7 @@ end
 # correct translations of GAP3 functions
 
 include("../tools/gap3support.jl")
-
-function Collected(v)
-  d=groupby(v,v)
-  sort([[k,length(v)] for (k,v) in d])
-end
-
-function CollectBy(v,f)
-  d=groupby(f,v)
-  [d[k] for k in sort(collect(keys(d)))]
-end
-
-Inherit(a,b)=merge!(a,b)
-function Inherit(a,b,c)
-  for k in c a[Symbol(k)]=b[Symbol(k)] end
-  a
-end
+include("cheviesupport.jl")
 
 function pad(s::String, i::Int)
   if i>0 return lpad(s,i)
@@ -655,8 +639,6 @@ function BDSymbols(n,d)
    return map(chevieget(:D,:symbolcharparam),
               chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
 end
-
-include("cheviesupport.jl")
 
 const src=[ 
 #  "compat3", 

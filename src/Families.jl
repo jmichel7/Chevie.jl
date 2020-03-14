@@ -1,6 +1,72 @@
+"""
+Families of unipotent characters
+
+The  blocks of the (rectangular) matrix  `⟨Rᵪ,ρ⟩_{𝐆 ^F}` when `χ` runs over
+`Irr(W)`  and  `ρ`  runs  over  the  unipotent  characters,  are called the
+*Lusztig  families*. When  `𝐆 `  is split  and `W`  is a Coxeter group they
+correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells --- for
+split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke
+algebra.  The matrix of scalar products `⟨Rᵪ,ρ⟩_{𝐆 ^F}` can be completed to
+a  square matrix `⟨A_{ρ'},ρ⟩_{𝐆 ^F}` where `A_{ρ'}` are the *characteristic
+functions of character sheaves* on `𝐆 ^F`; this square matrix is called the
+*Fourier matrix* of the family.
+
+The  'UnipotentCharacters' record in Chevie contains a field '.families', a
+list of family records containing information on each family, including the
+Fourier matrix. Here is an example.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> uc=UnipotentCharacters(W);
+
+julia> uc.families
+3-element Array{Family,1}:
+ Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
+ Family(C₁:[1])                         
+ Family(C₁:[2])                         
+
+julia> uc.families[1]
+Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
+   label│eigen                                               
+────────┼─────────────────────────────────────────────────────
+(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
+(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1
+(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3
+(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3
+(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3
+(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1
+(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3
+(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3
+
+julia> charnames(uc)[uc.families[1][:charNumbers]]
+8-element Array{String,1}:
+ "phi2,1"  
+ "phi2,2"  
+ "phi1,3''"
+ "phi1,3'" 
+ "G2[1]"   
+ "G2[-1]"  
+ "G2[E3]"  
+ "G2[E3^2]"
+```
+
+The Fourier matrix is obtained by 'fourier(f)'; the field 'f[:charNumbers]'
+holds  the indices of the unipotent characters  which are in the family. We
+obtain  the list of eigenvalues of Frobenius for these unipotent characters
+by  'Eigenvalues(f)'. The Fourier matrix  and vector of eigenvalues satisfy
+the  properties of *fusion data*, see  below. The field 'f[:charLabels]' is
+what  is displayed  in the  column 'labels'  when displaying the family. It
+contains  labels naturally attached to lines  of the Fourier matrix. In the
+case   of  reductive  groups,   the  family  is   always  attached  to  the
+"DrinfeldDouble"  of a small  finite group and  the '.charLabels' come from
+this construction.
+"""
 module Families
 
-export family_imprimitive, Family, Drinfeld_double, fourier
+export family_imprimitive, Family, Drinfeld_double, fourier, FamilyOps,
+ FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, NrDrinfeldDouble
 
 using ..Gapjm
 
@@ -49,8 +115,8 @@ Family(C₂:4)
 (1,ε) │    1 1//2 -1//2  1//2 -1//2
 (g₂,ε)│   -1 1//2 -1//2 -1//2  1//2
 
-julia> Family("C2",1:7,Dict(:signs=>[1,-1,1,-1]))
-Family(C₂:1:7)
+julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
+Family(C₂:4:7)
  label│eigen signs                       
 ──────┼───────────────────────────────────
 (1,1) │    1     1  1//2 -1//2 1//2 -1//2
@@ -152,14 +218,56 @@ function fourier(f::Family)
   m isa Vector ? improve_type(toM(m)) : m
 end
 
+"""
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`OnFamily(<f>,<p>)`
+
+<f> should be a family. This function has two forms.
+
+In the first form, <p> is a permutation, and the function returns a copy of
+the   family  <f>  with  the  Fourier  matrix,  eigenvalues  of  Frobenius,
+`:charLabels', etc`…` permuted by <p>.
+
+In  the second form, <p> is an integer and 'x->GaloisCyc(x,<p>)' is applied
+to the Fourier matrix and eigenvalues of Frobenius of the family.
+
+```julia-repl
+julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
+Family(0011:[4, 3, 2])
+label│eigen      1         2         3
+─────┼─────────────────────────────────
+1    │  ζ₃²  √-3/3     √-3/3    -√-3/3
+2    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6
+3    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6
+
+
+julia> f^Perm(1,2,3)
+Family(0011:[2, 4, 3])
+label│eigen         3      1         2
+─────┼─────────────────────────────────
+3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6
+1    │  ζ₃²    -√-3/3  √-3/3     √-3/3
+2    │    1 (3+√-3)/6  √-3/3 (3-√-3)/6
+
+
+julia> galois(f,-1)
+Family(overline 0011:[4, 3, 2])
+label│eigen      1         2         3
+─────┼─────────────────────────────────
+1    │   ζ₃ -√-3/3    -√-3/3     √-3/3
+2    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6
+3    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6
+```
+"""
 # apply galois to a family
-function Base.:^(f::Family,p::Int)
+function Cycs.galois(f::Family,p::Int)
   f=Family(copy(f.prop))
   f[:fourierMat]=galois.(fourier(f),p)
   f[:eigenvalues]=galois.(f[:eigenvalues],p)
   if haskey(f,[:sh]) f[:sh]=galois.(f[:sh],p) end
   if haskey(f,:name)
-    f[:name]=p==-1 ? "\\overline "*f[:name] : "Gal("*p*","*f[:name]*")"
+    f[:name]=p==-1 ? "overline "*f[:name] : "Gal("*p*","*f[:name]*")"
   end
   if haskey(f,:explanation)
     f[:explanation]=p==-1 ? "ComplexConjugate("*f[:explanation]*")" :
@@ -168,7 +276,7 @@ function Base.:^(f::Family,p::Int)
   f
 end
 
-Base.conj(f::Family)=f^-1
+Base.conj(f::Family)=galois(f,-1)
 
 # apply permutation to a family
 function Base.:^(f::Family,p::Perm)
@@ -176,8 +284,11 @@ function Base.:^(f::Family,p::Perm)
   for n in [:x,:chi,:charNumbers,:eigenvalues,:unpdeg,:fakdeg,
     :mellinLabels,:charLabels,:perm,:special] if haskey(f,n) f[n]^=p end
   end
-  for n in [:fourierMat,:mellin] if haskey(f,n) f[n]=^(f,p;dims=(1,2)) end end
-  f[:explanation]="Permuted("*p*","*f[:explanation]*")"
+  for n in [:fourierMat,:mellin] 
+    if haskey(f,n) f[n]=^(f[n],p;dims=(1,2)) end 
+  end
+  f[:explanation]="Permuted("*sprint(show,p;context=:limit=>true)*","*f[:explanation]*")"
+  f
 end
 
 chevieset(:families,:C1,
@@ -553,6 +664,20 @@ end, class_reps(g), CharTable(g).classnames)
 end
 
 """
+`NrDrinfeldDouble(g)`
+
+This  function returns the number of elements that the family associated to
+the  Drinfeld double of the group `g` would have, without computing it. The
+evident advantage is the speed.
+
+```julia-repl
+julia> Families.NrDrinfeldDouble(ComplexReflectionGroup(5))
+378
+```
+"""
+NrDrinfeldDouble(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
+
+"""
 `family_imprimitive(<S>)`
 
 <S> should be a symbol for a unipotent characters of an imprimitive complex
@@ -570,8 +695,10 @@ label│eigen      1         2         3
 """
 family_imprimitive = function (S)
 # println("S=$S")
-  e = length(S)
-  Scoll = Collected(reduce(vcat,S))
+  e=length(S)
+  v=vcat(S...)
+  d=groupby(v,v)
+  Scoll = sort([[k,length(v)] for (k,v) in d])
   ct = reduce(vcat,map(x->fill(x[1],x[2]), Scoll))
   d = length(ct) % e
   if !(d in [0,1]) error("length(",joindigits(ct),") should be 0 or 1",e," !\n")
@@ -632,7 +759,7 @@ family_imprimitive = function (S)
     nrSymbols=length(symbs)
     for i=1:nrSymbols
       for j=1:nrSymbols
-        if FullSymbol(symbs[i])==FullSymbol(symbs[j])
+        if fullsymbol(symbs[i])==fullsymbol(symbs[j])
             mat[i][j]-=1//mult[i]
             if symbs[i]==symbs[j] mat[i][j]+=1 end
         end
@@ -657,7 +784,7 @@ end
 MakeFamilyImprimitive = function (S, uc)
   f=x->findfirst(==(x),uc[:charSymbols])
   if length(S)==1 return Family("C1", map(f, S)) end
-  r = Family(family_imprimitive(FullSymbol(S[1])))
+  r = Family(family_imprimitive(fullsymbol(S[1])))
   r[:charNumbers] = map(f, r[:symbols])
   r[:special] = findfirst(x->uc[:a][x]==uc[:b][x],r[:charNumbers])
   r[:cospecial] = findfirst(x->uc[:A][x]==uc[:B][x],r[:charNumbers])
@@ -712,7 +839,7 @@ FamiliesClassical=function(sym)
     f[:fourierMat]=(2//1)^(-div(length(Z1)-1,2))*map(x->
                     map(y->(-1)^length(intersect(x, y)), f[:M♯]), f[:M♯])
 #   f[:fourierMat]=toM(f[:fourierMat])
-    f[:eigenvalues]=map(x->(-1)^div(DefectSymbol(sym[x])+1,4), f[:charNumbers])
+    f[:eigenvalues]=map(x->(-1)^div(defectsymbol(sym[x])+1,4), f[:charNumbers])
     if length(f[:eigenvalues]) == 1
       f[:charLabels] = [""]
       f[:special] = 1
@@ -769,4 +896,69 @@ function Base.show(io::IO,f::Family)
         rows_label=TeX ? "\\hbox{label}" : "label")
 end
 
+"""
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`Fourier(<f>)`: returns the Fourier matrix for the family <f>.
+
+`Eigenvalues(<f>)`:  returns the list of eigenvalues of Frobenius associated
+to <f>.
+
+`String(<f>)', 'Print(<f>)`: give a short description of the family.
+
+`Display(<f>)`: displays the labels, eigenvalues and Fourier matrix for the
+family.
+
+`Size(<f>)`: how many characters are in the family.
+
+`<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
+Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
+and the eigenvalues of Frobenius are the pairwise products.
+
+`ComplexConjugate(<f>)`:   is    a    synonym    for 'OnFamily(<f>,-1)'.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`FusionAlgebra(<f>)`
+
+The argument <f> should be a family, or the Fourier matrix of a family. All
+the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=ᵗS̄`, and have
+a *special* line `s` (the line of index `s=`'<f>.special' for a family <f>)
+such  that  no  entry  `S_{s,i}`  is  equal  to `0`. Further, they have the
+property  that  the  sums  `C_{i,j,k}:=∑_l S_{i,l} S_{j,l}S̄_{k,l}/S_{s,l}`
+take   integral  values.  Finally,  `S`   has  the  property  that  complex
+conjugation does a permutation with signs `σ` of the lines of `S`.
+
+It  follows that we can define a `ℤ`-algebra `A` as follows: it has a basis
+`bᵢ`  indexed by the lines of `S`, and has a multiplication defined by the
+fact that the coefficient of `bᵢb_j` on `b_k` is equal to `C_{i,j,k}`.
+
+`A` is commutative, and has as unit the element `b_s`; the basis σ(bᵢ)` is
+`dual to `bᵢ` for the linear form (bᵢ,b_j)=C_{i,j,σ(s)}`.
+
+|    gap> W:=ComplexReflectionGroup(4);;uc:=UnipotentCharacters(W);
+    UnipotentCharacters( G4 )
+    gap> f:=uc.families[4];
+    Family("RZ/6^2[1,3]",[2,4,10,9,3])
+    gap> A:=FusionAlgebra(f);
+    Fusion algebra dim.5
+    gap> b:=A.basis;
+    [ T(1), T(2), T(3), T(4), T(5) ]
+    gap> List(b,x->x*b);
+    [ [ T(1), T(2), T(3), T(4), T(5) ],
+      [ T(2), -T(4)+T(5), T(1)+T(4), T(2)-T(3), T(3) ],
+      [ T(3), T(1)+T(4), -T(4)+T(5), -T(2)+T(3), T(2) ],
+      [ T(4), T(2)-T(3), -T(2)+T(3), T(1)+T(4)-T(5), -T(4) ],
+      [ T(5), T(3), T(2), -T(4), T(1) ] ]
+    gap> CharTable(A);
+
+        1        2        3   4   5
+
+    1   1  -ER(-3)   ER(-3)   2  -1
+    2   1        1        1   .   1
+    3   1       -1       -1   .   1
+    4   1        .        .  -1  -1
+    5   1   ER(-3)  -ER(-3)   2  -1
+|
+"""
 end

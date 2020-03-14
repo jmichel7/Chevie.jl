@@ -239,23 +239,38 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,")")
 end
 
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
-
 function Chars.CharTable(H::HeckeAlgebra)
+  gets(H,:chartable) do H
   W=H.W
-  ct=impl1(getchev(W,:HeckeCharTable,H.para,
-       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))))
-  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(W)[:charnames]
+  cts=getchev(W,:HeckeCharTable,H.para,
+       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))
+  cts=map(cts) do ct
+    if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+    else                     names=charinfo(W)[:charnames]
+    end
+    CharTable(improve_type(toM(ct[:irreducibles])),names,
+        ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
   end
-  CharTable(improve_type(toM(ct[:irreducibles])),names,
-     ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
+  prod(cts)
+  end
 end
 
 function Chars.representation(H::HeckeAlgebra,i::Int)
-  r=impl1(getchev(H.W,:HeckeRepresentation,H.para,
-    haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)),i))
-  if r!=false return improve_type.(toM.(r)) end
+  tt=refltype(H.W)
+  dims=Tuple(getchev.(tt,:NrConjugacyClasses))
+  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
+  rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
+  mm=map((t,j)->toM.(getchev(t,:HeckeRepresentation,H.para,rp,i)),tt,inds)
+  if any(x->x==false,mm) return false end
+  mm=improve_type.(mm)
+  n=length(tt)
+  if n==1 return mm[1] end
+  id(i)=fill(1,i,i)^0
+  vcat(map(1:n) do i
+         map(mm[i]) do m
+           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
+         end
+       end...)
 end
 
 Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
@@ -531,6 +546,6 @@ julia> char_values(Cpbasis(H)(1,2,1))
  0             
 ```
 """
-char_values(h::HeckeElt)=CharTable(h.H).irr*class_polynomials(h)
+char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
 end

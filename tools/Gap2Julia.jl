@@ -109,7 +109,6 @@ ftrans=Dict{Symbol,Symbol}(
   :OrderPerm=>:order,
   :Partitions=>:partitions,
   :PartitionTuples=>:partition_tuples,
-  :Permuted=>:permuted,
   :Phi=>:phi,
   :PrimeResidues=>:prime_residues,
   :Print=>:print,

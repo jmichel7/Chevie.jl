@@ -821,7 +821,7 @@ end
 
 classes(ct::CharTable)=div.(maximum(ct.centralizers),ct.centralizers)
 
-function Base.prod(ctt::Vector{CharTable})
+function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt) 
     return CharTable(hcat(1),["Id"],["1"],[1],".")
   end
@@ -864,7 +864,6 @@ function decompose(ct::CharTable,c)
   map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
 end
 
-impl1(l)=length(l)==1 ? l[1] : error("implemented only for irreducible groups")
 """
 `representation(W,i)`
 
@@ -879,14 +878,26 @@ those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
 
 ```julia-repl
 julia> representation(ComplexReflectionGroup(24),3)
-3-element Array{Array{T,2} where T,1}:
+3-element Array{Array{Cyc{Rational{Int64}},2},1}:
  [1 0 0; -1 -1 0; -1 0 -1]
- Cyc{Rational{Int64}}[-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
- Cyc{Rational{Int64}}[-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
+ [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
+ [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
 function representation(W::Group,i::Int)
-  improve_type.(toM.(impl1(getchev(W,:Representation,i))))
+  dims=Tuple(getchev(W,:NrConjugacyClasses))
+  tt=refltype(W)
+  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
+  mm=map((t,j)->toM.(getchev(t,:Representation,j)),tt,inds)
+  mm=improve_type.(mm)
+  n=length(tt)
+  if n==1 return mm[1] end
+  id(i)=fill(1,i,i)^0
+  vcat(map(1:n) do i
+         map(mm[i]) do m
+           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
+         end
+       end...)
 end
 
 """

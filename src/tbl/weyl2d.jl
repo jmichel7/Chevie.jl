@@ -120,7 +120,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
         local symbols, uc, n, i, d, s, r, f, z, Defect0to2
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [], :almostHarishChandra => [])
         for d = 4 * (0:div(RootInt(rank) - 1, 2)) + 2
-         r = div(d ^ 2,4)
+            r = div(d ^ 2, 4)
             s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => 1, :parameterExponents => Concatenation([d], fill(0, max(0, (1 + rank) - (2 + r))) + 1))
             if r < 10
                 s[:cuspidalName] = SPrint("{}^2D_", r, "")
@@ -139,9 +139,8 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
         end
         uc[:a] = map(LowestPowerGenericDegreeSymbol, uc[:charSymbols])
         uc[:A] = map(HighestPowerGenericDegreeSymbol, uc[:charSymbols])
-        uc[:almostCharSymbols] = []
         for d = 4 * (0:RootInt(div(rank, 4), 2))
-            r = d ^ 2 // 4
+            r = div(d ^ 2, 4)
             s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => (-1) ^ div(d + 1, 4))
             if r < 10
                 s[:cuspidalName] = SPrint("D_", r, "")
@@ -174,11 +173,20 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
             s[:charNumbers] = map((s->begin
                             Position(uc[:charSymbols], Defect0to2(s))
                         end), symbols)
-            (uc[:almostCharSymbols])[s[:charNumbers]] = symbols
+            s[:symbols] = symbols
             if d != 0
                 FixRelativeType(s)
             end
             push!(uc[:almostHarishChandra], s)
+        end
+        uc[:almostCharSymbols] = map((i->begin
+                        (uc[:charSymbols])[1]
+                    end), 1:Sum(uc[:almostHarishChandra], (x->begin
+                                length(x[:symbols])
+                            end)))
+        for s = uc[:almostHarishChandra]
+            (uc[:almostCharSymbols])[s[:charNumbers]] = s[:symbols]
+            delete!(s, :symbols)
         end
         z = (x->begin
                     Dict{Symbol, Any}(:Z1 => SymmetricDifference(x[1], x[2]), :Z2 => Intersection(x))
@@ -194,7 +202,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                     res[:almostCharNumbers] = res[:charNumbers]
                     res[:fourierMat] = map((u->begin
                                     map((a->begin
-                                                2 ^ -(div(length(f[:Z1]) - 1, 2)) * (-1) ^ length(Intersection(sharp(u), sharp(a)))
+                                                (1 // 2) ^ div(length(f[:Z1]) - 1, 2) * (-1) ^ length(Intersection(sharp(u), sharp(a)))
                                             end), (uc[:almostCharSymbols])[res[:almostCharNumbers]])
                                 end), (uc[:charSymbols])[res[:charNumbers]])
                     if length(res[:fourierMat]) == 16
@@ -243,7 +251,8 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                     res[:size] = length(res[:charNumbers])
                     res[:operations] = FamilyOps
                     return res
-                end, gapSet(map(z, uc[:charSymbols])))
+                end, map(z, uc[:charSymbols]))
+#               end, gapSet(map(z, uc[:charSymbols])))
         return uc
     end)
 chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)

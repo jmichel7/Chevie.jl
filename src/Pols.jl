@@ -90,6 +90,10 @@ function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
   Pol{promote_type(T1,T2)}
 end
 
+function Base.promote_rule(a::Type{Pol{T1}},b::Type{T2})where {T1,T2<:Number}
+  Pol{promote_type(T1,T2)}
+end
+
 Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
 function Base.convert(::Type{T},p::Pol) where T<:Number
@@ -144,12 +148,18 @@ Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
 
 function improve_type(m::Array)
- if !isempty(m) m=convert.(reduce(promote_type,typeof.(m)),m) end
+  if !isempty(m) m=convert.(reduce(promote_type,typeof.(m)),m) end
   if all(isinteger,m) m=Int.(m)
   elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
   elseif first(m) isa Pol && all(x->all(isinteger,x.c),m) m=convert.(Pol{Int},m)
   end
   m
+end
+
+function improve_type(mm::Vector{<:Array})
+  mm=improve_type.(mm)
+  T=reduce(promote_type,eltype.(mm))
+  map(x->convert.(T,x),mm)
 end
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
@@ -263,9 +273,9 @@ divrem when b divides in ring: does not change type
 """
 function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
-  if T1<:Cyc || T1<:Rational return divrem(a,b) end
   d=b.c[end]
   T=promote_type(T1,T2)
+  if !(T<:Integer) return divrem(a,b) end
   v=T.(a.c)
   res=T[]
   for i=length(a.c):-1:length(b.c)

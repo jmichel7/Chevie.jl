@@ -82,6 +82,34 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
   res
  end)
 
+chevieset(Symbol("2D"),:HeckeCharTable,
+function (l,param,rootparam)
+  q=-param[1][1]//param[1][2]
+  q=vcat([[q^0,-1]],map(i->[q,-1],2:l))
+  hi=chevieget(:B,:HeckeCharTable)(l,q,Int[])
+  chr=1:length(hi[:classparams])
+  lst=filter(i->isodd(length(hi[:classparams][i][2])),chr);
+  tbl=Dict{Symbol,Any}(:identifier=>"H(^2D$l)",
+                       :size=>div(hi[:size],2),
+                       :orders=>hi[:orders][lst],
+                       :centralizers=>div.(hi[:centralizers][lst],2),
+                       :classes=>hi[:classes][lst],
+	   :text=>"extracted from generic character table of HeckeB")
+  merge!(tbl,chevieget(Symbol("2D"),:ClassInfo)(l))
+  para=chevieget(Symbol("2D"),:CharParams)(l)
+  tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
+      :charname=>chevieget(Symbol("2D"),:CharName)(l,para[i])),eachindex(para))
+  para=chevieget(:B,:CharParams)(l)
+  chr=filter(i->chevieget(Symbol("2D"),:testchar)(para[i]),chr)
+  tbl[:irreducibles]=permutedims(map(x->char_values(
+   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
+   toM(hi[:irreducibles][chr])),tbl[:classtext]))
+   CHEVIE[:compat][:AdjustHeckeCharTable](tbl,param)
+  tbl
+end)
+
+chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
+
 chevieset(:imp,:GeneratingRoots,function(p,q,r)
   if q==1 roots=[vcat([1],fill(0,r-1))]
   else

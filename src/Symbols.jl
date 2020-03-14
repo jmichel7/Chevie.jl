@@ -499,7 +499,7 @@ generic degree of the unipotent character parameterized by `s`.
 
 ```julia-repl
 julia> Symbols.gendeg_symbol([[1,2],[1,5,6]])
-(1/2)q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂
+q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2
 ```
 
 Works for symbols for:

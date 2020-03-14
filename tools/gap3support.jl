@@ -16,7 +16,7 @@ ApplyFunc(f,x)=f(x...)
 ComplexConjugate(v)=conj(v)
 Concatenation(a::String...)=prod(a)
 Concatenation(a::AbstractVector{<:AbstractVector})=vcat(collect.(a)...)
-Concatenation(a::Vector,b::Tuple)=vcat(a,collect(b))
+Concatenation(a::Vector,b::Tuple)=vcat(a,improve_type(collect(b)))
 Concatenation(b...)=reduce(vcat,b)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Difference(a,b)=sort(setdiff(a,b))
@@ -39,6 +39,7 @@ Minimum(a::Number,x...)=min(a,x...)
 NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 OnTuples(a,b)=a.^b
 PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
+Permuted(x,p)=x^p
 function Position(a::String,b::String)
   x=findfirst(b,a)
   isnothing(x) ? false : x.start

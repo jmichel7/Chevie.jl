@@ -114,13 +114,18 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
         cos = (i->begin
                     E(2m, i) + E(2m, -i)
                 end)
-        ct = [map((i->begin
-                            q ^ length(i)
-                        end), cl[:classtext]), map((i->begin
-                            (-1) ^ length(i)
-                        end), cl[:classtext])]
+        ct = map((i->begin
+                        map((j->begin
+                                    cos(1) * 0 * v
+                                end), cl[:classtext])
+                    end), cl[:classtext])
+        ct[1] = map((i->begin
+                        q ^ length(i)
+                    end), cl[:classtext])
+        ct[2] = map((i->begin
+                        (-1) ^ length(i)
+                    end), cl[:classtext])
         for i = 1:div(m - 1, 2)
-            ct[i + 2] = [0]
             for j = 1:div(m + 1, 2)
                 (ct[i + 2])[j + 1] = -(v ^ (2j - 1)) * cos(i * (2j - 1))
             end

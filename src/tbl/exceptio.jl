@@ -107,7 +107,7 @@ chevieset(["A", "B", "D"], :SemisimpleRank, (t->begin
                     r
                 end
         end))
-chevieset(["3D4", "G2", "F4", "H3", "E6", "G24", "G25", "G26", "G27", "G29", "G32", "G33", "G34"], :FakeDegree, (t->begin
+chevieset(["3D4", "G2", "F4", "2F4", "H3", "E6", "G24", "G25", "G26", "G27", "G29", "G32", "G33", "G34"], :FakeDegree, (t->begin
             function (phi, q)
                 local f
                 f = (chevieget(t, :sparseFakeDegrees))[Position(((chevieget(t, :CharInfo))())[:charparams], phi)]

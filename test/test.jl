@@ -81,14 +81,14 @@ twisted=map(l3) do x
   x[1](x[2:end]...)
 end
 
-function ct(l)
+function chartab(l)
   for g in l
     println("creating CharTable($g)")
     show(IOContext(stdout,:limit=>true),CharTable(g))
   end
 end
 
-function uc(l)
+function uch(l)
   for g in l
     println("creating UnipotentCharacters($g)")
     show(IOContext(stdout,:limit=>true),UnipotentCharacters(g))

@@ -389,11 +389,9 @@ B₃
 julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
 hecke(B₃,v²,rootpara=v)
 
-julia> C=Cpbasis(H)
-(::Gapjm.KL.var"#f#10"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
+julia> C=Cpbasis(H);
 
-julia> T=Tbasis(H)
-(::Gapjm.HeckeAlgebras.var"#f#31"{Pol{Int64},Perm{Int16},HeckeAlgebra{Pol{Int64},FiniteCoxeterGroup{Perm{Int16},Int64}}}) (generic function with 4 methods)
+julia> T=Tbasis(H);
 
 julia> T(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
@@ -469,7 +467,7 @@ function Base.show(io::IO,c::LeftCell)
      i=findfirst(f->uc.harishChandra[1][:charNumbers][ch[1]] in f[:charNumbers],
                  uc.families)
      f=uc.families[i]
-     i=f[:charNumbers][HasType.special(f)]
+     i=f[:charNumbers][Families.special(f)]
      i=findfirst(==(i),uc.harishChandra[1][:charNumbers])
      p=findfirst(==(i),ch)
      p=vcat([[i,1]],HasType.Collected(vcat(ch[1:p-1],ch[p+1:end])))

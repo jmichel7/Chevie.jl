@@ -30,6 +30,15 @@ CharParams(W)=charinfo(W)[:charparams]
 function CharRepresentationWords(mats,words)
   traces_words_mats(toM.(mats),words)
 end
+function Collected(v)
+  d=groupby(v,v)
+  sort([[k,length(v)] for (k,v) in d])
+end
+function CollectBy(v,f)
+  d=groupby(f,v)
+  [d[k] for k in sort(collect(keys(d)))]
+end
+ConcatenationString(s...)=prod(s)
 CoxeterWord(W,w)=word(W,w)
 Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
@@ -55,6 +64,13 @@ HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 function Ignore() end
 InfoChevie=println
 InfoChevie2=print
+Inherit(a,b)=merge!(a,b)
+function Inherit(a,b,c)
+  for k in c a[Symbol(k)]=b[Symbol(k)] end
+  a
+end
+Intersection(x,y)=sort(intersect(x,y))
+Intersection(x::Vector)=sort(intersect(x...))
 IntListToString=joindigits
 Join(x,y)=join(x,y)
 Join(x)=join(x,",")
@@ -74,7 +90,7 @@ RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SignedPerm=SPerm
-SymmetricDifference=symdiff
+SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 SemisimpleRank(W)=semisimplerank(W)
 function SortParallel(a,b)

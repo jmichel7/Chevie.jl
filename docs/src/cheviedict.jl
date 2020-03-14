@@ -30,7 +30,7 @@ const ChevieDict=Dict(
 "CentralizerGenerators"=>"centralizer_generators",
 #CharName
 "CharNames"=>"charnames",
-#CharParams
+"CharParams(W)"=>"charinfo(W)[:charparams]",
 "CharRepresentationWords"=>"traces_words_mats",
 "ChevieClassInfo"=>"classinfo",
 "ChevieCharInfo"=>"charinfo",
@@ -40,6 +40,7 @@ const ChevieDict=Dict(
 "ComplexConjugate"=>"conj",
 "ComplexReflectionGroup"=>"ComplexReflectionGroup",
 "Compositions"=>"compositions",
+"ConcatenationString(s...)"=>"prod(s)",
 "ConjugacySet(b[,F][,type])"=>"conjcat(b[,F],ss=type).obj",
 "ConjugatePartition"=>"conjugate_partition",
 #CoxeterCoset
@@ -57,6 +58,7 @@ const ChevieDict=Dict(
 "CoxeterWords(W[,l])"=>"word.(Ref(W),elements(W[,l])",
 "CuspidalUnipotentCharacters"=>"cuspidal_unipotent_characters",
 "CyclotomicPolynomial(R,i)"=>"cyclotomic_polynomial(i)",
+"Cycles"=>"orbits",
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
 "CycPolGenericDegreeSymbol"=>"gendeg_symbol",
@@ -78,6 +80,7 @@ const ChevieDict=Dict(
 "DualBraidMonoid"=>"DualBraidMonoid",
 "EigenspaceProjector"=>"eigenspace_projector",
 #EigenvaluesMat
+"Elements"=>"elements",
 "ElementWithInversions(W,l)"=>"with_inversions(W,l)",
 "EltBraid"=>"image",
 "EltWord(W,w)"=>"W(w...)",
@@ -95,8 +98,10 @@ const ChevieDict=Dict(
 "ForEachElement(W,f)"=>"for w in W f(w) end",
 #FormatTable
 #Frobenius
+"FullSymbol"=>"fullsymbol",
 "FundamentalGroup"=>"fundamental_group",
 #FusionAlgebra
+"GaloisCyc"=>"galois",
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
 "GcdPartitions"=>"gcd_partitions",
@@ -145,6 +150,7 @@ const ChevieDict=Dict(
 #jInductionTable
 #JInductionTable
 "Join"=>"join",
+"KroneckerProduct"=>"kron",
 "LcmPartitions"=>"lcm_partitions",
 "LeadingCoefficient(p)"=>"p[end]",
 "LeftCell"=>"LeftCell",
@@ -262,6 +268,7 @@ const ChevieDict=Dict(
 "SubTorus"=>"SubTorus",
 #Symbols
 #SymbolsDefect
+"SymmetricDifference"=>"symdiff",
 #SymmetricPower
 "Tableaux"=>"tableaux",
 "Torus"=>"torus",

@@ -1,6 +1,7 @@
 module Combinat
 export combinations, arrangements, partitions, NrPartitions, partition_tuples,
-  conjugate_partition, evalpoly, dominates, compositions, submultisets
+  conjugate_partition, evalpoly, dominates, compositions, submultisets,
+  NrPartitionTuples, NrArrangements
 
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -86,6 +87,7 @@ as they appear in the dictionary.
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 arrangements(mset)=isempty(mset) ? [Int[]] :
    union(arrangements.(Ref(mset),0:length(mset)))
+NrArrangements(a...)=length(arrangements(a...))
 
 # partitions of n of first (greatest) part <=m
 function partitions_less(n,m)
@@ -129,7 +131,19 @@ julia> partitions(7)
 ```
 """
 partitions(n)=partitions_less(n,n)
-NrPartitions(n)=length(partitions(n))
+# partitions of n of first (greatest) part <=m with k parts
+function partitions_less(n,m,k)
+# if m==1 return [fill(1,n)] end
+  res=Vector{Int}[]
+  if n<k return res end
+  if k==1 return m<n ? res : [[n]] end
+  for i in 1:min(m,n)
+    append!(res,map(x->vcat([i],x),partitions_less(n-i,i,k-1)))
+  end
+  res
+end
+partitions(n,k)=partitions_less(n,n,k)
+NrPartitions(n...)=length(partitions(n...))
 
 if false
 function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
@@ -207,6 +221,15 @@ function partition_tuples(n, r)
    end
    res
 end
+end
+
+function NrPartitionTuples(n,k)
+  res=0
+  for l in 1:k
+    r=binomial(k,l)
+    res+=r*sum(a->NrArrangements(a,l)*prod(NrPartitions.(a)),partitions(n,l))
+  end
+  res
 end
 
 """

@@ -116,18 +116,18 @@ G₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(G₂)
-      γ│      Deg(γ)  Feg Fr(γ)    label
-───────┼─────────────────────────────────
-φ₁‚₀   │           1    1     1         
-φ₁‚₆   │          q⁶   q⁶     1         
-φ′₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1    (1,ρ)
-φ″₁‚₃  │  (1/3)qΦ₃Φ₆   q³     1   (g₃,1)
-φ₂‚₁   │ (1/6)qΦ₂²Φ₃  qΦ₈     1    (1,1)
-φ₂‚₂   │ (1/2)qΦ₂²Φ₆ q²Φ₄     1   (g₂,1)
-G₂[-1] │ (1/2)qΦ₁²Φ₃    0    -1   (g₂,ε)
-G₂[1]  │ (1/6)qΦ₁²Φ₆    0     1    (1,ε)
-G₂[ζ₃] │(1/3)qΦ₁²Φ₂²    0    ζ₃  (g₃,ζ₃)
-G₂[ζ₃²]│(1/3)qΦ₁²Φ₂²    0   ζ₃² (g₃,ζ₃²)
+      γ│   Deg(γ)  Feg Fr(γ)    label
+───────┼──────────────────────────────
+φ₁‚₀   │        1    1     1         
+φ₁‚₆   │       q⁶   q⁶     1         
+φ′₁‚₃  │  qΦ₃Φ₆/3   q³     1    (1,ρ)
+φ″₁‚₃  │  qΦ₃Φ₆/3   q³     1   (g₃,1)
+φ₂‚₁   │ qΦ₂²Φ₃/6  qΦ₈     1    (1,1)
+φ₂‚₂   │ qΦ₂²Φ₆/2 q²Φ₄     1   (g₂,1)
+G₂[-1] │ qΦ₁²Φ₃/2    0    -1   (g₂,ε)
+G₂[1]  │ qΦ₁²Φ₆/6    0     1    (1,ε)
+G₂[ζ₃] │qΦ₁²Φ₂²/3    0    ζ₃  (g₃,ζ₃)
+G₂[ζ₃²]│qΦ₁²Φ₂²/3    0   ζ₃² (g₃,ζ₃²)
 ```
 
 The first column gives the name of the unipotent character; the first 6 are
@@ -195,18 +195,18 @@ Spetses, as defined in [@BMM14]. An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│              Deg(γ)    Feg Fr(γ)   label
-─────┼──────────────────────────────────────────
-φ₁‚₀ │                   1      1     1        
-φ₁‚₄ │  (-√-3/6)q⁴Φ″₃Φ₄Φ″₆     q⁴     1  1∧-ζ₃²
-φ₁‚₈ │   (√-3/6)q⁴Φ′₃Φ₄Φ′₆     q⁸     1  -1∧ζ₃²
-φ₂‚₅ │        (1/2)q⁴Φ₂²Φ₆   q⁵Φ₄     1   1∧ζ₃²
-φ₂‚₃ │((3+√-3)/6)qΦ″₃Φ₄Φ′₆   q³Φ₄     1   1∧ζ₃²
-φ₂‚₁ │((3-√-3)/6)qΦ′₃Φ₄Φ″₆    qΦ₄     1    1∧ζ₃
-φ₃‚₂ │              q²Φ₃Φ₆ q²Φ₃Φ₆     1        
-Z₃:2 │     (-√-3/3)qΦ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧ζ₃²
-Z₃:11│    (-√-3/3)q⁴Φ₁Φ₂Φ₄      0   ζ₃²  ζ₃∧-ζ₃
-G₄   │       (-1/2)q⁴Φ₁²Φ₃      0    -1 -ζ₃²∧-1
+    γ│               Deg(γ)    Feg Fr(γ)   label
+─────┼───────────────────────────────────────────
+φ₁‚₀ │                    1      1     1        
+φ₁‚₄ │   (-√-3)q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
+φ₁‚₈ │    (√-3)q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
+φ₂‚₅ │            q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
+φ₂‚₃ │(-ζ₃-2ζ₃²)qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1   1∧ζ₃²
+φ₂‚₁ │(-2ζ₃-ζ₃²)qΦ′₃Φ₄Φ″₆/3    qΦ₄     1    1∧ζ₃
+φ₃‚₂ │               q²Φ₃Φ₆ q²Φ₃Φ₆     1        
+Z₃:2 │      (-√-3)qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
+Z₃:11│     (-√-3)q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
+G₄   │           -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
 ```
 """
 module Uch
@@ -357,13 +357,12 @@ julia> WF=spets(W,Perm(1,2))
 
 julia> uc=UnipotentCharacters(WF)
 UnipotentCharacters(²Bsym₂)
-       γ│     Deg(γ)   Feg Fr(γ) label
-────────┼──────────────────────────────
-2       │          1     1     1      
-11      │         q⁴    q⁴     1      
-²B₂[1,3]│(√2/2)qΦ₁Φ₂ qΦ₁Φ₂   ζ₈³     1
-²B₂[1,5]│(√2/2)qΦ₁Φ₂     0   ζ₈⁵     2
-
+       γ│   Deg(γ)   Feg Fr(γ) label
+────────┼────────────────────────────
+2       │        1     1     1      
+11      │       q⁴    q⁴     1      
+²B₂[1,3]│√2qΦ₁Φ₂/2 qΦ₁Φ₂   ζ₈³     1
+²B₂[1,5]│√2qΦ₁Φ₂/2     0   ζ₈⁵     2
 
 julia> uc.families
 3-element Array{Family,1}:
@@ -450,14 +449,14 @@ B₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(B₂)
-  γ│   Deg(γ) Feg Fr(γ) label
-───┼──────────────────────────
-11.│ (1/2)qΦ₄  q²     1   +,-
-1.1│(1/2)qΦ₂² qΦ₄     1   +,+
-.11│       q⁴  q⁴     1      
-2. │        1   1     1      
-.2 │ (1/2)qΦ₄  q²     1   -,+
-B₂ │(1/2)qΦ₁²   0    -1   -,-
+  γ│Deg(γ) Feg Fr(γ) label
+───┼───────────────────────
+11.│ qΦ₄/2  q²     1   +,-
+1.1│qΦ₂²/2 qΦ₄     1   +,+
+.11│    q⁴  q⁴     1      
+2. │     1   1     1      
+.2 │ qΦ₄/2  q²     1   -,+
+B₂ │qΦ₁²/2   0    -1   -,-
 ```
 
     gap> Display(uc,rec(byFamily:=true));
@@ -694,17 +693,17 @@ G₂
 julia> uc=UnipotentCharacters(W);
 
 julia> degrees(uc)
-10-element Array{Union{Pol{Int64}, Pol{Cyc{Rational{Int64}}}},1}:
- 1                                       
- q⁶                                      
- (1/3)q⁵+(1/3)q³+(1/3)q                  
- (1/3)q⁵+(1/3)q³+(1/3)q                  
- (1/6)q⁵+(1/2)q⁴+(2/3)q³+(1/2)q²+(1/6)q  
- (1/2)q⁵+(1/2)q⁴+(1/2)q²+(1/2)q          
- (1/2)q⁵+(-1/2)q⁴+(-1/2)q²+(1/2)q        
- (1/6)q⁵+(-1/2)q⁴+(2/3)q³+(-1/2)q²+(1/6)q
- (1/3)q⁵+(-2/3)q³+(1/3)q                 
- (1/3)q⁵+(-2/3)q³+(1/3)q                 
+10-element Array{Union{Pol{Rational{Int64}}, Pol{Int64}},1}:
+ 1//1                                         
+ (1//1)q⁶                                     
+ (1//3)q⁵+(1//3)q³+(1//3)q                    
+ (1//3)q⁵+(1//3)q³+(1//3)q                    
+ (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q  
+ (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q           
+ (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q         
+ (1//6)q⁵+(-1//2)q⁴+(2//3)q³+(-1//2)q²+(1//6)q
+ (1//3)q⁵+(-2//3)q³+(1//3)q                   
+ (1//3)q⁵+(-2//3)q³+(1//3)q                   
 ```
 """
 function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
@@ -766,17 +765,17 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> Uch.CycPolUnipotentDegrees(W)
-10-element Array{CycPol{Cyc{Rational{Int64}}},1}:
- 1           
- q⁶          
- (1/3)qΦ₃Φ₆  
- (1/3)qΦ₃Φ₆  
- (1/6)qΦ₂²Φ₃ 
- (1/2)qΦ₂²Φ₆ 
- (1/2)qΦ₁²Φ₃ 
- (1/6)qΦ₁²Φ₆ 
- (1/3)qΦ₁²Φ₂²
- (1/3)qΦ₁²Φ₂²
+10-element Array{CycPol{Rational{Int64}},1}:
+ 1     
+ q⁶       
+ qΦ₃Φ₆/3  
+ qΦ₃Φ₆/3  
+ qΦ₂²Φ₃/6 
+ qΦ₂²Φ₆/2 
+ qΦ₁²Φ₃/2 
+ qΦ₁²Φ₆/6 
+ qΦ₁²Φ₂²/3
+ qΦ₁²Φ₂²/3
 ```
 """
 CycPolUnipotentDegrees(W)=CycPol.(degrees(UnipotentCharacters(W)))
@@ -1163,211 +1162,5 @@ representing the Lusztig induction `R_𝐋^𝐆` between unipotent characters.
     B2:2  |'|'|    .    .    1  -1
     B2:11 |'|'|    1   -1    .   .|
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Section{Families of unipotent characters}
-
-The  blocks of the  (rectangular) matrix `⟨Rᵪ,ρ⟩_{𝐆^F}`  when `χ` runs over
-`Irr(W)`  and  `ρ`  runs  over  the  unipotent  characters,  are called the
-*Lusztig  families*. When  `𝐆` is  split and  `W` is  a Coxeter  group they
-correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells --- for
-split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke
-algebra. The matrix of scalar products `⟨Rᵪ,ρ⟩_{𝐆^F}` can be completed to a
-square  matrix  `⟨A_{ρ'},ρ⟩_{𝐆^F}`  where  `A_{ρ'}` are the *characteristic
-functions  of character sheaves* on `𝐆^F`; this square matrix is called the
-*Fourier matrix* of the family.
-
-The  'UnipotentCharacters' record in Chevie contains a field '.families', a
-list of family records containing information on each family, including the
-Fourier matrix. Here is an example.
-
-|    gap> W:=CoxeterGroup("G",2);;
-    gap> uc:=UnipotentCharacters(W);
-    UnipotentCharacters( G2 )
-    gap> uc.families;
-    [ Family("D(S3)",[5,6,4,3,8,7,9,10]), Family("C1",[1]),
-      Family("C1",[2]) ]
-    gap> f:=last[1];
-    Family("D(S3)",[5,6,4,3,8,7,9,10])
-    gap> Display(f);
-    D(S3)
-        label |eigen
-    ________________________________________________________
-    (1,1)     |    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
-    (g2,1)    |    1 1/2  1/2    0    0 -1/2 -1/2    0    0
-    (g3,1)    |    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
-    (1,r)     |    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
-    (1,eps)   |    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
-    (g2,eps)  |   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
-    (g3,E3)   |   E3 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
-    (g3,E3^2) | E3^2 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
-    gap> f.charNumbers;
-    [ 5, 6, 4, 3, 8, 7, 9, 10 ]
-    gap> charnames(uc)[f.charNumbers]
-    [ "phi{2,1}", "phi{2,2}", "phi{1,3}''", "phi{1,3}'", "G2[1]",
-      "G2[-1]", "G2[E3]", "G2[E3^2]" ]|
-
-The  Fourier matrix is obtained  by 'Fourier(f)'; the field 'f.charNumbers'
-holds  the indices of the unipotent characters  which are in the family. We
-obtain  the list of eigenvalues of Frobenius for these unipotent characters
-by  'Eigenvalues(f)'. The Fourier matrix  and vector of eigenvalues satisfy
-the  properties of  *fusion data*,  see below.  The field 'f.charLabels' is
-what  is displayed  in the  column 'labels'  when displaying the family. It
-contains  labels naturally attached to lines  of the Fourier matrix. In the
-case   of  reductive  groups,   the  family  is   always  attached  to  the
-"DrinfeldDouble"  of a small  finite group and  the '.charLabels' come from
-this construction.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`Family(<f> [, <charNumbers> [, <opt>]])`
-
-This function creates a new family in two possible ways.
-
-In  the first case <f> is a string  which denotes a family known to Chevie.
-Examples are |"S3"|, |"S4"|, |"S5"| which denote the family obtained as the
-Drinfeld  double of the symmetric group  on 3,4,5 elements, or |"C2"| which
-denotes the Drinfeld double of the cyclic group of order 2.
-
-In the second case <f> is already a family record.
-
-The other (optional) arguments add information to the family record defined
-by  the first  argument. If  given, the  second argument  becomes the field
-`:charNumbers'. If given, the third argument <opt> is a record whose fields
-are added to the resulting family record.
-
-If  <opt> has a field 'signs', this field should be a list of '1' and '-1',
-and  then the Fourier matrix is conjugated  by the diagonal matrix of those
-signs.  This is used in Spetses to adjust the matrix to the choice of signs
-of unipotent degrees.
-
-|    gap> Display(Family("C2"));
-    C2
-       label |eigen
-    ___________________________________
-    (1,1)    |    1 1/2  1/2  1/2  1/2
-    (g2,1)   |    1 1/2  1/2 -1/2 -1/2
-    (1,eps)  |    1 1/2 -1/2  1/2 -1/2
-    (g2,eps) |   -1 1/2 -1/2 -1/2  1/2
-    gap> Display(Family("C2",[4..7],rec(signs:=[1,-1,1,-1])));
-    C2
-       label |eigen signs
-    _________________________________________
-    (1,1)    |    1     1  1/2 -1/2 1/2 -1/2
-    (g2,1)   |    1    -1 -1/2  1/2 1/2 -1/2
-    (1,eps)  |    1     1  1/2  1/2 1/2  1/2
-    (g2,eps) |   -1    -1 -1/2 -1/2 1/2  1/2|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`Fourier(<f>)`: returns the Fourier matrix for the family <f>.
-
-`Eigenvalues(<f>)`:  returns the list of eigenvalues of Frobenius associated
-to <f>.
-
-`String(<f>)', 'Print(<f>)`: give a short description of the family.
-
-`Display(<f>)`: displays the labels, eigenvalues and Fourier matrix for the
-family.
-
-`Size(<f>)`: how many characters are in the family.
-
-`<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
-Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
-and the eigenvalues of Frobenius are the pairwise products.
-
-`ComplexConjugate(<f>)`:   is    a    synonym    for 'OnFamily(<f>,-1)'.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`OnFamily(<f>,<p>)`
-
-<f> should be a family. This function has two forms.
-
-In the first form, <p> is a permutation, and the function returns a copy of
-the   family  <f>  with  the  Fourier  matrix,  eigenvalues  of  Frobenius,
-`:charLabels', etc`…` permuted by <p>.
-
-In  the second form, <p> is an integer and 'x->GaloisCyc(x,<p>)' is applied
-to the Fourier matrix and eigenvalues of Frobenius of the family.
-
-|    gap> f:=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2];
-    Family("0011",[4,3,2])
-    gap> Display(f);
-    0011
-    label |'|'|eigen         1            2            3
-    _________________________________________________
-    1     |'|'| E3^2  ER(-3)/3     ER(-3)/3    -ER(-3)/3
-    2     |'|'|    1  ER(-3)/3 (3-ER(-3))/6 (3+ER(-3))/6
-    3     |'|'|    1 -ER(-3)/3 (3+ER(-3))/6 (3-ER(-3))/6
-    gap> Display(OnFamily(f,(1,2,3)));
-    0011
-    label |'|'|eigen            3         1            2
-    _________________________________________________
-    3     |'|'|    1 (3-ER(-3))/6 -ER(-3)/3 (3+ER(-3))/6
-    1     |'|'| E3^2    -ER(-3)/3  ER(-3)/3     ER(-3)/3
-    2     |'|'|    1 (3+ER(-3))/6  ER(-3)/3 (3-ER(-3))/6
-    gap> Display(OnFamily(f,-1));
-    '0011
-    label |'|'|eigen         1            2            3
-    _________________________________________________
-    1     |'|'|   E3 -ER(-3)/3    -ER(-3)/3     ER(-3)/3
-    2     |'|'|    1 -ER(-3)/3 (3+ER(-3))/6 (3-ER(-3))/6
-    3     |'|'|    1  ER(-3)/3 (3-ER(-3))/6 (3+ER(-3))/6|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`NrDrinfeldDouble(<g>)`
-
-This  function returns the number of elements that the family associated to
-the  Drinfeld double of the group <g> would have, without computing it. The
-evident advantage is the speed.
-
-|    gap> NrDrinfeldDouble(ComplexReflectionGroup(5));
-    378|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`FusionAlgebra(<f>)`
-
-The argument <f> should be a family, or the Fourier matrix of a family. All
-the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=ᵗS̄`, and have
-a *special* line `s` (the line of index `s=`'<f>.special' for a family <f>)
-such  that  no  entry  `S_{s,i}`  is  equal  to `0`. Further, they have the
-property  that  the  sums  `C_{i,j,k}:=∑_l S_{i,l} S_{j,l}S̄_{k,l}/S_{s,l}`
-take   integral  values.  Finally,  `S`   has  the  property  that  complex
-conjugation does a permutation with signs `σ` of the lines of `S`.
-
-It  follows that we can define a `ℤ`-algebra `A` as follows: it has a basis
-`bᵢ`  indexed by the lines of `S`, and has a multiplication defined by the
-fact that the coefficient of `bᵢb_j` on `b_k` is equal to `C_{i,j,k}`.
-
-`A` is commutative, and has as unit the element `b_s`; the basis σ(bᵢ)` is
-`dual to `bᵢ` for the linear form (bᵢ,b_j)=C_{i,j,σ(s)}`.
-
-|    gap> W:=ComplexReflectionGroup(4);;uc:=UnipotentCharacters(W);
-    UnipotentCharacters( G4 )
-    gap> f:=uc.families[4];
-    Family("RZ/6^2[1,3]",[2,4,10,9,3])
-    gap> A:=FusionAlgebra(f);
-    Fusion algebra dim.5
-    gap> b:=A.basis;
-    [ T(1), T(2), T(3), T(4), T(5) ]
-    gap> List(b,x->x*b);
-    [ [ T(1), T(2), T(3), T(4), T(5) ],
-      [ T(2), -T(4)+T(5), T(1)+T(4), T(2)-T(3), T(3) ],
-      [ T(3), T(1)+T(4), -T(4)+T(5), -T(2)+T(3), T(2) ],
-      [ T(4), T(2)-T(3), -T(2)+T(3), T(1)+T(4)-T(5), -T(4) ],
-      [ T(5), T(3), T(2), -T(4), T(1) ] ]
-    gap> CharTable(A);
-
-        1        2        3   4   5
-
-    1   1  -ER(-3)   ER(-3)   2  -1
-    2   1        1        1   .   1
-    3   1       -1       -1   .   1
-    4   1        .        .  -1  -1
-    5   1   ER(-3)  -ER(-3)   2  -1
-|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
 end

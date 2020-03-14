@@ -124,6 +124,7 @@ Base.isone(p::CycPol)=isone(p.coeff) && iszero(p.valuation) && iszero(p.v)
 Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0)
 Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
+Base.iszero(a::CycPol)=iszero(a.coeff)
 
 Gapjm.degree(a::CycPol)=sum(last,a.v)+a.valuation+degree(a.coeff)
 Gapjm.valuation(a::CycPol)=a.valuation
@@ -132,10 +133,12 @@ Gapjm.valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
 Gapjm.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
+  if iszero(a) || iszero(b) return zero(a) end
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
 end
 Base.:*(a::CycPol,b::Number)=iszero(b) ? zero(a) : CycPol(a.coeff*b,a.valuation,a.v)
 Base.:*(b::Number,a::CycPol)=a*b
+Base.:-(a::CycPol)=CycPol(-a.coeff,a.valuation,a.v)
 
 Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff), -a.valuation,
                                          -a.v)
@@ -244,10 +247,18 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
+  c=a.coeff
+  if c isa Rational 
+    den=denominator(c)
+    c=numerator(c)
+  elseif c isa Cyc
+    den=denominator(c)
+    c*=den
+  else
+    den=1
+  end
   nov=iszero(a.valuation) && isempty(a.v)
-  if a.coeff!=1 || nov
-    c=a.coeff
-    if c isa Rational && isone(denominator(c)) c=numerator(c) end
+  if !isone(c) || nov
     s=sprint(show,c; context=io)
     if s=="-1" && !nov s="-" end
     if occursin(r"[+\-*/]",s[nextind(s,1):end]) && !nov s="($s)" end
@@ -262,6 +273,7 @@ function Base.show(io::IO,a::CycPol)
     end
     if pow!=1 print(io,fromTeX(io,"^{$pow}")) end
   end
+  if !isone(den) print(io,"/",den) end
 end
 
 # fields to test first: all n such that phi(n)<=12 except 11,13,22,26
