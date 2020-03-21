@@ -12,7 +12,8 @@ export trad
 # massaging GAP so julia can parse it
 function lex(s::String)
   while true #suppress comments makes some below changes harmless
-    new=replace(s,r"^([^\"]*)#.*$"m=>s"\1") 
+    new=replace(s,r"^\s*#.*$"m=>s"") 
+    new=replace(new,r"^([^\"]*)#.*$"m=>s"\1") 
     if new==s break end
     s=new
   end

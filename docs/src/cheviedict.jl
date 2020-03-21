@@ -58,6 +58,7 @@ const ChevieDict=Dict(
 "CoxeterWords(W[,l])"=>"word.(Ref(W),elements(W[,l])",
 "CuspidalUnipotentCharacters"=>"cuspidal_unipotent_characters",
 "CyclotomicPolynomial(R,i)"=>"cyclotomic_polynomial(i)",
+"Cycle"=>"orbit",
 "Cycles"=>"orbits",
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
@@ -143,6 +144,7 @@ const ChevieDict=Dict(
 "IsJoinLattice"=>"is_join_lattice",
 "IsMeetLattice"=>"is_meet_lattice",
 "IsLeftDescending(W,w,i)"=>"isleftdescent(W,w,i)",
+"IsSubset(a,b)"=>"issubset(b,a)",
 #IsNormalizing
 #IsQuasiIsolated
 #IsomorphismType

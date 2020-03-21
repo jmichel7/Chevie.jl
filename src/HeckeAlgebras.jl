@@ -125,7 +125,7 @@ using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values
 
-struct HeckeAlgebra{C,TW<:Group}
+struct HeckeAlgebra{C,TW}
   W::TW
   para::Vector{Vector{C}}
   prop::Dict{Symbol,Any}
@@ -175,8 +175,7 @@ julia> [H.para,rootpara(H)]
  [3, 3]                              
 ```
 """
-function hecke(W::Group,para::Vector{Vector{C}};
-    rootpara::Vector{C}=C[]) where C
+function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
   para=map(eachindex(gens(W)))do i
     j=simple_representatives(W)[i]
     if i<=length(para) 
@@ -191,27 +190,25 @@ function hecke(W::Group,para::Vector{Vector{C}};
   HeckeAlgebra(W,para,d)
 end
 
-function hecke(W,p::Vector{C};rootpara::Vector{C}=C[])where C
+function hecke(W::Group,p::Vector{C};rootpara::Vector{C}=C[])where C
   oo=order.(gens(W))
   if all(isequal(2),oo) z=0 else z=zero(Cyc) end
   para=map(p,oo)do p, o
     if o==2 return [p,-one(p)].+z end
     map(i->iszero(i) ? p+z : zero(p)+E(o,i),0:o-1)
   end
-  hecke(W,para,rootpara=convert(Vector{typeof(para[1][1])},rootpara))
+  hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
   
-function hecke(W,p::C;rootpara::C=zero(C))where C
+function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
   rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
-  hecke(W,fill(p,nbgens(W)),rootpara=rootpara)
+  hecke(W,fill(p,nbgens(W));rootpara=rootpara)
 end
 
-function hecke(W,p::Tuple;rootpara=zero(p[1]))
+function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
   rootpara= iszero(rootpara) ? typeof(p[1])[] : fill(rootpara,nbgens(W))
-  hecke(W,[collect(p) for j in 1:nbgens(W)],rootpara=rootpara)
+  hecke(W,[collect(p) for j in 1:nbgens(W)];rootpara=rootpara)
 end
-
-hecke(W::Group)=hecke(W,1)
 
 function rootpara(H::HeckeAlgebra)
   gets(H,:rootpara) do H
@@ -241,17 +238,19 @@ end
 
 function Chars.CharTable(H::HeckeAlgebra)
   gets(H,:chartable) do H
-  W=H.W
-  cts=getchev(W,:HeckeCharTable,H.para,
-       haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))
-  cts=map(cts) do ct
-    if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-    else                     names=charinfo(W)[:charnames]
+    W=H.W
+    cts=map(refltype(W))do t
+       getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H.prop,:rootpara) ? 
+               rootpara(H)[t.indices] : fill(nothing,length(H.para)))
     end
-    CharTable(improve_type(toM(ct[:irreducibles])),names,
-        ct[:classnames],map(Int,ct[:centralizers]),ct[:identifier])
-  end
-  prod(cts)
+    cts=map(cts) do ct
+      if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+      else                     names=charinfo(W)[:charnames]
+      end
+      CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
+             map(Int,ct[:centralizers]),ct[:identifier],Dict{Symbol,Any}())
+    end
+    prod(cts)
   end
 end
 
@@ -548,4 +547,48 @@ julia> char_values(Cpbasis(H)(1,2,1))
 """
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
+#---------------------- Hecke Cosets
+
+struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
+  H::TH
+  W::TW
+  prop::Dict{Symbol,Any}
+end
+
+hecke(WF::Spets,H::HeckeAlgebra)=HeckeCoset(H,WF,Dict{Symbol,Any}())
+hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF)
+
+function Base.show(io::IO, H::HeckeCoset)
+  print(io,"hecke(",H.W,",")
+  tr(p)= p[2]==-one(p[2]) ? p[1] : p
+  if constant(H.H.para) print(io,tr(H.H.para[1]))
+  else print(io,map(tr,H.H.para))
+  end
+  if haskey(H.H.prop,:rootpara)
+    rp=rootpara(H.H)
+    if constant(rp) print(io,",rootpara=",rp[1])
+    else print(io,",rootpara=",rp)
+    end
+  end
+  print(io,")")
+end
+
+function Chars.CharTable(H::HeckeCoset)
+  gets(H,:chartable) do H
+    W=H.W
+    cts=map(refltype(W))do t
+      inds=t.orbit[1].indices
+      getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H.prop,:rootpara) ? 
+               rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
+    end
+    cts=map(cts) do ct
+      if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+      else                     names=charinfo(W)[:charnames]
+      end
+      CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
+                map(Int,ct[:centralizers]),ct[:identifier],Dict{Symbol,Any}())
+    end
+    prod(cts)
+  end
+end
 end

@@ -209,12 +209,12 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[1])
-2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  Ã₁Φ₁
  Ã₁Φ₂
 
 julia> twistings(W,[2])
-2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  A₁Φ₁
  A₁Φ₂
 ```
@@ -230,7 +230,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[2,4])
-2-element Array{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
  A₁×A₁ 
  (A₁A₁)
 ```
@@ -296,9 +296,9 @@ struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   prop::Dict{Symbol,Any}
 end
 
-function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
-  print(io,"spets{$TW}")
-end
+#function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
+#  print(io,"spets{",TW,"}")
+#end
 
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,matX(W,w))
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
@@ -430,9 +430,9 @@ function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
   PRC(w,F,W,Dict{Symbol,Any}())
 end
 
-function Base.show(io::IO,t::Type{PRC{T,T1,TW}})where {T,T1,TW}
-  print(io,"Spets{$TW}")
-end
+#function Base.show(io::IO,t::Type{PRC{T,T1,TW}})where {T,T1,TW}
+#  print(io,"Spets{",TW,"}")
+#end
 
 Groups.Coset(W::PermRootGroup,w)=spets(W,w)
 
@@ -649,5 +649,4 @@ rootdata[Symbol("3D4sc")]=()->spets(rootdatum(:spin,8),Perm(1,2,4))
 rootdata[Symbol("2E6")]=()->spets(coxgroup(:E,6),Perm(1,6)*Perm(3,5))
 rootdata[Symbol("2E6sc")]=()->spets(rootdatum(:E6sc),Perm(1,6)*Perm(3,5))
 rootdata[Symbol("2F4")]=()->spets(coxgroup(:Fsym,4),Perm(1,4)*Perm(2,3))
-
 end

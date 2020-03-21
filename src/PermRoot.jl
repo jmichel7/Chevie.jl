@@ -125,8 +125,8 @@ module PermRoot
 export PermRootGroup, PRG, PRSG, catalan,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
- inclusion, restriction, coroot, hyperplane_orbits, TypeIrred, refleigen,
- bipartite_decomposition, torus_order, rank, matX, PermX,
+ inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
+ refleigen, bipartite_decomposition, torus_order, rank, matX, PermX,
  coroots, baseX, semisimplerank, invariant_form
 # to use as a stand-alone module uncomment the next line
 # export roots
@@ -157,7 +157,8 @@ Base.setproperty!(t::TypeIrred,k::Symbol,v)=getfield(t,:prop)[k]=v
 Base.copy(t::TypeIrred)=TypeIrred(copy(getfield(t,:prop)))
 
 indices(t::TypeIrred)=haskey(t,:indices) ? t.indices : haskey(t,:orbit) ?
-   union(getproperty.(t.orbit,:indices)...) : nothing
+isempty(t.orbit) ? Int[] : length(t.orbit)==1 ? t.orbit[1].indices :
+union(getproperty.(t.orbit,:indices)...) : nothing
 
 function rank(t::TypeIrred)
   if haskey(t,:rank) return t.rank end
@@ -300,6 +301,8 @@ Base.iterate(W::PermRootGroup,x...)=iterate(W.G,x...)
 Base.eltype(W::PermRootGroup)=eltype(W.G)
 Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
 Base.in(w,W::PermRootGroup)=in(w,W.G)
+inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
+# should use independent_roots
 
 "for each root index of first simple root conjugate to it"
 function simple_representatives(W::PermRootGroup{T,T1})::Vector{T1} where {T,T1}
@@ -727,8 +730,7 @@ function PermX(W::PermRootGroup,M::Matrix)
 end
 
 function PermGroups.reduced(W::PermRootGroup,F)
-  ir=independent_roots(W)
-  if issubset(inclusion(W)[ir].^F,inclusion(W))
+  if issubset(inclusiongens(W).^F,inclusion(W))
     w=PermX(W,matX(W,F))
     if !isnothing(w) && w in W return w\F 
     elseif length(W)==1 return F
@@ -895,7 +897,7 @@ restriction(W::PRSG,i)=W.restriction[i]
 function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   WW=parent(W)
   if !(p in WW) error("can only conjugate in parennt") end
-  reflection_subgroup(WW,inclusion(W,eachindex(gens(W))).^p)
+  reflection_subgroup(WW,inclusiongens(W).^p)
 end
 
 # contrary to Chevie, I is indices in W and not parent(W)

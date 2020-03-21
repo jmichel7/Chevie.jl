@@ -223,7 +223,7 @@ function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Pol(res,a.v+b.v)
 end
 
-Base.:*(a::Pol, b::Number)=iszero(b) ? zero(a) : Pol(a.c.*b,a.v)
+Base.:*(a::Pol, b::Number)=Polstrip(a.c.*b,a.v)
 Base.:*(b::Number, a::Pol)=a*b
 
 Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :

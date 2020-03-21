@@ -226,7 +226,8 @@ end
 function params_and_names(sers)
   function maketype(s)
     if s isa TypeIrred return s end
-    if haskey(s,:orbit) s[:orbit]=maketype.(s[:orbit])
+    if haskey(s,:orbit) 
+      s[:orbit]=maketype.(s[:orbit])
     else s[:series]=Symbol(s[:series])
 #     if s[:rank]==0 return Dict(:charnames=>[""],:charparams=>[[]]) end
     end
@@ -255,7 +256,7 @@ function params_and_names(sers)
 end
 
 function UnipotentCharacters(t::TypeIrred) 
- uc=copy(getchev(t,:UnipotentCharacters))
+  uc=copy(getchev(t,:UnipotentCharacters))
   if uc==false 
     println("Warning: $t is not a Spets!!")
     return false 
@@ -486,7 +487,7 @@ function UnipotentCharacters(WF::Spets)
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
     ser[:levi]=reduce(vcat,getindex.(sers,:levi))
-    ser[:relativeType]=filter(x->x[:rank]!=0,getindex.(sers,:relativeType))
+    ser[:relativeType]=filter(x->rank(x)!=0,getindex.(sers,:relativeType))
     if haskey(sers[1],:eigenvalue)
       ser[:eigenvalue]=prod(getindex.(sers,:eigenvalue))
     end
@@ -544,7 +545,7 @@ function UnipotentCharacters(WF::Spets)
 	  r=copy(r)
           r.indices=inclusion(x,r.indices)
 	  r
-        end,H))
+        end,H)...)
       s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H[1])),inclusion(H[1])))
     end
 
@@ -580,18 +581,13 @@ function UnipotentCharacters(WF::Spets)
   # finally the new 'charNumbers' lists
   tmp=Cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
 
-  if length(tt)==1
-    hh=r.harishChandra
-    ah=r.almostHarishChandra
-  else 
-    hh=CartesianSeries.(Cartesian(map(x->x.harishChandra,simp)...))
-    ah=CartesianSeries.(Cartesian(map(x->x.almostHarishChandra,simp)...))
-    for s in hh
-      s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
-    end
-    for s in ah
-      s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
-    end
+  hh=CartesianSeries.(Cartesian(map(x->x.harishChandra,simp)...))
+  ah=CartesianSeries.(Cartesian(map(x->x.almostHarishChandra,simp)...))
+  for s in hh
+    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
+  end
+  for s in ah
+    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
   end
 
   if length(tt)==1
@@ -693,7 +689,7 @@ G₂
 julia> uc=UnipotentCharacters(W);
 
 julia> degrees(uc)
-10-element Array{Union{Pol{Rational{Int64}}, Pol{Int64}},1}:
+10-element Array{Pol{Rational{Int64}},1}:
  1//1                                         
  (1//1)q⁶                                     
  (1//3)q⁵+(1//3)q³+(1//3)q                    
@@ -1131,36 +1127,6 @@ algebraic  group `𝐆` attached to <W>,  while <R> represents a Levi subgroup
     (q-1)(q+1)
     gap> LusztigRestriction(T,u);
     [(q-1)(q+1)]=0|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`LusztigInductionTable(<R>,<W>)`
-
-<R>  should be a parabolic subgroup of the Coxeter group <W> or a parabolic
-subcoset  of  the  Coxeter  coset  <W>,  in  each  case representing a Levi
-subgroup  `𝐋` of  the algebraic  group `𝐆`  associated to <W>. The function
-returns  a  table  (modeled  after  'InductionTable', see "InductionTable")
-representing the Lusztig induction `R_𝐋^𝐆` between unipotent characters.
-
-|    gap> W:=CoxeterGroup("B",3);;
-    gap> t:=Twistings(W,[1,3]);
-    [ ~A1xA1<3>.(q-1), ~A1xA1<3>.(q+1) ]
-    gap> Display(LusztigInductionTable(t[2],W));
-    Lusztig Induction from ~A1xA1<3>.(q+1) to B3
-          |'|'|11,11 11,2 2,11 2,2
-    ___________________________
-    111.  |'|'|    1   -1   -1   .
-    11.1  |'|'|   -1    .    1  -1
-    1.11  |'|'|    .    .   -1   .
-    .111  |'|'|   -1    .    .   .
-    21.   |'|'|    .    .    .   .
-    1.2   |'|'|    1   -1    .   1
-    2.1   |'|'|    .    1    .   .
-    .21   |'|'|    .    .    .   .
-    3.    |'|'|    .    .    .   1
-    .3    |'|'|    .    1    1  -1
-    B2:2  |'|'|    .    .    1  -1
-    B2:11 |'|'|    1   -1    .   .|
 
 """
 end

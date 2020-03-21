@@ -789,6 +789,7 @@ struct CharTable{T}
   classnames::Vector{String}
   centralizers::Vector{Int}
   identifier::String
+  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
@@ -816,14 +817,15 @@ function CharTable(t::TypeIrred)
   if all(isinteger,irr) irr=Int.(irr)
   else irr=Cyc{Int}.(irr)
   end
-  CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier])
+  CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier],
+            Dict{Symbol,Any}())
 end
 
 classes(ct::CharTable)=div.(maximum(ct.centralizers),ct.centralizers)
 
 function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt) 
-    return CharTable(hcat(1),["Id"],["1"],[1],".")
+   return CharTable(hcat(1),["Id"],["1"],[1],".",Dict{Symbol,Any}())
   end
   charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
@@ -832,7 +834,7 @@ function Base.prod(ctt::Vector{<:CharTable})
   if length(ctt)==1 irr=ctt[1].irr 
   else irr=kron(getfield.(ctt,:irr)...)
   end
-  CharTable(irr,charnames,classnames,centralizers,identifier)
+  CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
 end
 
 CharTable(W::PermRootGroup)=gets(W->prod(CharTable.(refltype(W))),W,:chartable)
@@ -842,7 +844,7 @@ function CharTable(W::Spets)::CharTable
   gets(W,:chartable) do W
     ctt=CharTable.(refltype(W))
     if isempty(ctt) 
-      return CharTable(hcat(1),["Id"],["1"],[1],"$W")
+     return CharTable(hcat(1),["Id"],["1"],[1],"$W",Dict{Symbol,Any}())
     end
     charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
     classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
@@ -851,7 +853,7 @@ function CharTable(W::Spets)::CharTable
     if length(ctt)==1 irr=ctt[1].irr 
     else irr=kron(getfield.(ctt,:irr)...)
     end
-    CharTable(irr,charnames,classnames,centralizers,identifier)
+    CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
   end
 end
 
@@ -1111,6 +1113,7 @@ struct InductionTable
   gcharnames::Vector{String}
   ucharnames::Vector{String}
   identifier::String
+  prop::Dict{Symbol,Any}
 end
 
 """
@@ -1132,7 +1135,7 @@ julia> u=Group( [ Perm(1,2), Perm(3,4) ])
 Group([(1,2),(3,4)])
 
 julia> InductionTable(u,g)
-Induction Table
+Induction Table from Group([perm"(1,2)",perm"(3,4)"]) to Group([perm"(1,2)",perm"(2,3)",perm"(3,4)"])
    │X.1 X.2 X.3 X.4
 ───┼────────────────
 X.1│  .   1   .   .
@@ -1150,7 +1153,7 @@ julia> u=reflection_subgroup(g,[1,6])
 G₂₍₁₅₎=A₂
 
 julia> InductionTable(u,g)
-Induction Table
+Induction Table from G₂₍₁₅₎=A₂ to G₂
      │111 21 3
 ─────┼─────────
 φ₁‚₀ │  .  . 1
@@ -1181,14 +1184,21 @@ function InductionTable(u,g)
   f=fusion_conjugacy_classes(u,g)
   cl=div.(length(u),tu.centralizers)
   scal(c,c1)=div(Int(sum(map(*,c,conj.(c1),cl))),length(u))
+  lu=sprint(show,u;context=:TeX=>true)
+  lg=sprint(show,g;context=:TeX=>true)
   InductionTable(
   [scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1), i in axes(tu.irr,1)],
-  tg.charnames,tu.charnames,"Induction Table")
+  tg.charnames,tu.charnames,
+  "Induction Table from \$$lu\$ to \$$lg\$",
+  Dict{Symbol,Any}(:repr=>"InductionTable($(repr(u)),$(repr(g)))"))
 end
 
 function Base.show(io::IO,t::InductionTable)
-  TeX=get(io,:TeX,false)
-  if !TeX println(io,t.identifier) end
+  rep=!get(io,:TeX,false) && !get(io,:limit,false)
+  if rep && haskey(t.prop,:repr) print(io,t.prop[:repr])
+  else println(io,fromTeX(io,t.identifier))
+  end
+  if rep return end
   column_labels=fromTeX.(Ref(io),t.ucharnames)
   row_labels=fromTeX.(Ref(io),t.gcharnames)
   scal=map(t.scalar)do e

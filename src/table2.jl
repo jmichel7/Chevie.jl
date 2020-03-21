@@ -35,22 +35,27 @@ chevieset(:A,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(1,1,
 
 chevieset(Symbol("2A"),:HeckeCharTable, function (r, param, rootparam)
   q = -param[1][1] // param[1][2]
-  if isnothing(rootparam[1]) v=GetRoot(q, 2, "CharTable(Hecke(2A))")
+  if isnothing(rootparam[1]) v=GetRoot(q,2,"CharTable(Hecke(2A))")
   else v = rootparam[1]
   end
-  W = coxgroup(:A, r)
-  qE = HeckeCentralMonomials(hecke(W, v))
-  H = hecke(W, v^-2)
-  T = Tbasis(H)
-  tbl = copy(CharTable(H))
-  Inherit(tbl, (chevieget(Symbol("2A"), :ClassInfo))(r))
-  tbl[:identifier] = "H(^2A_$r)"
-  cl = map(x->T(W(x...)*longest(W)), tbl[:classtext])
-  tbl[:irreducibles] = permutedims(map(HeckeCharValues, cl))
+  W=coxgroup(:A,r)
+  qE=central_monomials(hecke(W,v))
+  H=hecke(W, v^-2)
+  T=Tbasis(H)
+  tbl=Dict{Symbol,Any}(:identifier=>"H(^2A_$r)")
+  cli=chevieget(Symbol("2A"),:ClassInfo)(r)
+  cl=map(x->T(W(x...)*longest(W)), cli[:classtext])
+  merge(tbl,cli)
+  ct=CharTable(H)
+  tbl[:charnames]=ct.charnames
+  tbl[:classnames]=ct.classnames
+  tbl[:centralizers]=ct.centralizers
+  tbl[:irreducibles]=toL(permutedims(toM(map(char_values, cl))))
   A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
-  tbl[:irreducibles]= (-1).^A .* qE .* tbl[:irreducibles]
+  A=(-1).^A .* qE
+  tbl[:irreducibles]=map((x,y)->x.*y,A,tbl[:irreducibles])
   CHEVIE[:compat][:AdjustHeckeCharTable](tbl, param)
-  return tbl
+  tbl
 end)
 
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))

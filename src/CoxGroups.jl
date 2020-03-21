@@ -726,4 +726,28 @@ end
 
 PermRoot.reflections(W::CoxSym)=reflection.(Ref(W),1:nref(W))
 
+#------------------------ GenCox ------------------------------
+
+struct GenCox{T}<:CoxeterGroup{Matrix{T}}
+  gens::Vector{Matrix{T}}
+  prop::Dict{Symbol,Any}
+end
+
+Gapjm.gens(W::GenCox)=W.gens
+Base.one(W::GenCox)=one(W(1))
+
+isleftdescent(W::GenCox,w,i::Int)=Real(sum(w[i,:]))<0
+  
+function gencox(C::Matrix{T})where T
+  I=one(C)
+  GenCox(reflection.(eachrow(I),eachrow(C)),Dict{Symbol,Any}())
+end
+
+function PermRoot.reflection_subgroup(W::GenCox,I::AbstractVector{Int})
+  if length(I)>0 n=maximum(I)
+    if I!=1:n error(I," should be 1:n for some n") end
+  else n=0 end
+  GenCox(gens(W)[I],Dict{Symbol,Any}())
+end
+
 end

@@ -490,13 +490,13 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   N=(1:W.N)[l]
 # find negative roots for associated order and make order standard
   w=with_inversions(W,N)
-  if issubset(hr.^w,inclusion(W,1:semisimplerank(W))) return w
+  if issubset(hr.^w,inclusiongens(W)) return w
   else return nothing
   end
 end
 
 standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
-  standard_parabolic(W,inclusion(H)[1:semisimplerank(H)])
+  standard_parabolic(W,inclusiongens(H))
 
 """
 `describe_involution(W,w)`
@@ -561,6 +561,7 @@ PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
 PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
 PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
+PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
@@ -933,7 +934,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
 end
 
 function Base.show(io::IO, W::FCSG)
-  I=inclusion(W)[1:coxrank(W)]
+  I=inclusiongens(W)
   n=joindigits(I)
   replorTeX=get(io,:limit,false)||get(io,:TeX,false)
   if !(replorTeX) print(io,"reflection_subgroup(") end
@@ -1239,6 +1240,12 @@ function fundamental_group(W)
   if isempty(e) return Group(Perm()) end
   e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
   Group(AbelianGenerators(e))
+end
+
+function affine(W)
+  ex=vcat(1:semisimplerank(W),2*nref(W))
+  C=Int.([PermRoot.cartan_coeff(W.G,i,j) for i in ex, j in ex])
+  CoxGroups.genCox(C)
 end
 
 end

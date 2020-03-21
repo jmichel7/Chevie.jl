@@ -242,7 +242,7 @@ function GetRelativeAction(W,L,w)
 end
 
 function GetRelativeRoot(W,L,i)
-  J=inclusion(L)[L.generatingReflections]
+  J=inclusiongens(L)
   N=Normalizer(ReflectionSubgroup(W,Concatenation(J,[i])),L)
   F=N/L
   if  !IsCyclic(F)  Error("in theory N/L expected to be cyclic") end
@@ -350,8 +350,8 @@ function split_levis(WF,d=0,ad=-1)
       H=HF.W
       P=standard_parabolic(W, H)
       if P==false P=Perm() end
-      J=inclusion(H)[eachindex(gens(H))].^P
-      if P!=Perm() || J!=inclusion(H)[eachindex(gens(H))]
+      J=inclusiongens(H).^P
+      if P!=Perm() || J!=inclusiongens(H)
          HF=subspets(WF,J,HF.phi^P/WF.phi)
       end
       push!(res, HF)
@@ -361,8 +361,8 @@ function split_levis(WF,d=0,ad=-1)
 end
 
 function PermRoot.standard_parabolic(W::PermRootGroup, H)
-  wr=inclusion(W,eachindex(gens(W)))
-  hr=inclusion(H,eachindex(gens(H)))
+  wr=inclusiongens(W)
+  hr=inclusiongens(H)
   if issubset(hr,wr) return Perm() end
   I=combinations(wr,length(hr))
   I=filter(l->length(reflection_subgroup(W,l))==length(H),I)
@@ -407,8 +407,8 @@ function RelativeGroup(W,J,indices=false)
     W[:relativeIndices] = W[:generatingReflections]
     return W
   end
-  if indices==false indices=Filtered(inclusion(W)[W[:generatingReflections]],
-                         x->!(Reflection(Parent(W), x)) in L)
+  if indices==false indices=Filtered(inclusiongens(W),
+                         x->!(Reflection(Parent(W), x) in L))
   end
   if gapSet(L[:rootInclusion]) == gapSet(W[:rootInclusion])
     Inherit(res, PermRootGroup([]))
