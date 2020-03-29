@@ -60,118 +60,67 @@ This package is  often 10 times faster  than the equivalent GAP3 Chevie code
 
 I tried that parts of my package can be used independently of the rest. For
 instance,  the modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
-are independent of the rest of the package and can be used stand-alone.
-
+are  independent of  the rest  of the  package and  can be used stand-alone
+(after a trivial change forced by the exporting rules of Julia, see below).
 """
 module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-# All  the glue  code below  should not  exist: extending e.g. Gapjm.degree
-# instead  of just exporting degree from Pols  and Perms is a horrible hack
-# forced  by the unpleasant Julia rules  not merging methods from different
-# modules.
+# The glue code below should not exist: extending e.g. Gapjm.degree instead
+# of just exporting degree from Pols and Perms is a horrible hack forced by
+# the unpleasant Julia rules not merging methods from different modules.
 # 
 # This  way both Pols  and Perms can  work together only  as part of Gapjm.
 # Otherwise they could not work together.
 # 
-# If degree  was in  Base there  would be  no problem, both importing from
-# Base.
-export coefficients, degree, degrees, elements, kernel, order, restricted,
-       root, roots, valuation, words, word
-function coefficients end
-degree(a::Number)=0
-function degrees end
-function elements end
-function kernel end
-function order end
-function restricted end
-function root end
-function roots end
-function valuation end
-function words end
-function word end
+# If  degree, etc... was in Base there  would be no problem, both importing
+# from Base.
+function coefficients end; export coefficients
+degree(a::Number)=0; export degree
+function degrees end; export degrees
+function elements end; export elements
+function kernel end; export kernel
+function order end; export order
+function restricted end; export restricted
+function root end; export root
+function roots end; export roots
+function valuation end; export valuation
+function words end; export words
+function word end; export word
 
-include("Util.jl")
-@reexport using .Util
-include("ModuleElts.jl")
-@reexport using .ModuleElts
-include("Groups.jl")
-@reexport using .Groups
-word(G::Group,x...)=Groups.word(G,x...)
-elements(G::Group)=Groups.elements(G)
-kernel(h::Hom)=Groups.kernel(h)
-order(C::Coset)=Groups.order(C)
-include("Perms.jl")
-@reexport using .Perms
-degree(a::Perm)=Perms.degree(a)
-order(p::Perm)=Perms.order(p)
-restricted(a::Perm,l::AbstractVector)=Perms.restricted(a,l)
-Groups.orbit(a::Perm,x...)=Perms.orbit(a,x...)
-Groups.orbits(a::Perm,x...)=Perms.orbits(a,x...)
-include("PermGroups.jl")
-@reexport using .PermGroups
-include("Cycs.jl")
-@reexport using .Cycs
-coefficients(c::Cyc)=Cycs.coefficients(c)
-root(r::Integer,x...)=Cycs.root(r,x...)
-root(r::Rational,x...)=Cycs.root(r,x...)
-root(r::Cyc,x...)=Cycs.root(r,x...)
-include("Combinat.jl")
-@reexport using .Combinat
-include("Pols.jl")
-@reexport using .Pols
-degree(p::Pol)=Pols.degree(p)
-valuation(p::Pol,x...)=Pols.valuation(p,x...)
-root(p::Pol,x...)=Pols.root(p,x...)
-include("Mvps.jl")
-@reexport using .Mvps
-degree(p::Mvps.Monomial,x...)=Mvps.degree(p,x...)
-degree(p::Mvp,x...)=Mvps.degree(p,x...)
-coefficients(p::Mvp,x...)=Mvps.coefficients(p,x...)
-root(r::Monomial,x...)=Mvps.root(r,x...)
-root(r::Mvp,x...)=Mvps.root(r,x...)
-valuation(p::Mvp,x...)=Mvps.valuation(p,x...)
-Mvp(p::Pol)=p(Mvp(Pols.varname[]))
-include("PermRoot.jl")
-@reexport using .PermRoot
-roots(W::PRG)=PermRoot.roots(W)
-roots(W::PRSG)=PermRoot.roots(W)
-include("GLinearAlgebra.jl")
-@reexport using .GLinearAlgebra
-include("CoxGroups.jl")
-@reexport using .CoxGroups
-include("Weyl.jl")
-@reexport using .Weyl
-#roots(W::FiniteCoxeterGroup)=Weyl.roots(W)
-#roots(C::Matrix)=Weyl.roots(C)
-include("Cosets.jl")
-@reexport using .Cosets
-include("Chars.jl")
-@reexport using .Chars
-include("SPerms.jl")
-@reexport using .SPerms
-include("HeckeAlgebras.jl")
-@reexport using .HeckeAlgebras
-include("KL.jl")
-@reexport using .KL
-include("CycPols.jl")
-@reexport using .CycPols
-roots(c::CycPol)=CycPols.roots(c)
-#degree(c::CycPol)=CycPols.degree(c)
-include("Symbols.jl")
-@reexport using .Symbols
-include("Garside.jl")
-@reexport using .Garside
-include("Posets.jl")
-@reexport using .Posets
-include("MatInt.jl")
-@reexport using .MatInt
-const CHEVIE=Dict{Symbol,Any}(:compat=>Dict(:MakeCharacterTable=>x->x,
-                           :AdjustHeckeCharTable=>(x,y)->x,
-        :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end))
-CHEVIE[:CheckIndexChars]=false
-CHEVIE[:info]=false
+include("Util.jl");@reexport using .Util
+include("ModuleElts.jl");@reexport using .ModuleElts
+include("Groups.jl");@reexport using .Groups
+include("Perms.jl");@reexport using .Perms
+include("PermGroups.jl");@reexport using .PermGroups
+include("Cycs.jl");@reexport using .Cycs
+include("Combinat.jl");@reexport using .Combinat
+include("Pols.jl");@reexport using .Pols
+include("Mvps.jl");@reexport using .Mvps
+Mvps.Mvp(p::Pol)=p(Mvp(Pols.varname[]))
+include("PermRoot.jl");@reexport using .PermRoot
+include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
+include("CoxGroups.jl");@reexport using .CoxGroups
+include("Weyl.jl");@reexport using .Weyl
+include("Cosets.jl");@reexport using .Cosets
+include("Chars.jl");@reexport using .Chars
+include("SPerms.jl");@reexport using .SPerms
+include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
+include("KL.jl");@reexport using .KL
+include("CycPols.jl");@reexport using .CycPols
+include("Symbols.jl");@reexport using .Symbols
+include("Garside.jl");@reexport using .Garside
+include("Posets.jl");@reexport using .Posets
+include("MatInt.jl");@reexport using .MatInt
+
+const CHEVIE=Dict{Symbol,Any}(
+ :compat=>Dict(:MakeCharacterTable=>x->x,
+               :AdjustHeckeCharTable=>(x,y)->x,
+               :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end),
+ :CheckIndexChars=>false,
+ :info=>false
+)
 
 function chevieget(t::Symbol,w::Symbol)
   if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
@@ -192,16 +141,11 @@ function chevieset(t::Vector{String},w::Symbol,f::Function)
   end
 end
 export chevieget, chevieset, CHEVIE
-include("Families.jl")
-@reexport using .Families
-include("Uch.jl")
-@reexport using .Uch
-include("HasType.jl")
-@reexport using .HasType
-include("Ucl.jl")
-@reexport using .Ucl
-include("Eigenspaces.jl")
-@reexport using .Eigenspaces
-include("../docs/src/cheviedict.jl")
-export gap
+include("Families.jl");@reexport using .Families
+include("Uch.jl");@reexport using .Uch
+include("HasType.jl");@reexport using .HasType
+include("Ucl.jl");@reexport using .Ucl
+include("Eigenspaces.jl");@reexport using .Eigenspaces
+include("Lusztig.jl");@reexport using .Lusztig
+include("../docs/src/cheviedict.jl");export gap
 end

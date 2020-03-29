@@ -66,6 +66,7 @@ module CycPols
 export CycPol
 # to use as a stand-alone module uncomment the next line
 # export roots, degree
+import Gapjm: roots
 
 using ..ModuleElts: ModuleElt, norm!
 using ..Cycs: Root1, E, conductor, Cyc

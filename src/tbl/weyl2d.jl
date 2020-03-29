@@ -139,6 +139,11 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
         end
         uc[:a] = map(LowestPowerGenericDegreeSymbol, uc[:charSymbols])
         uc[:A] = map(HighestPowerGenericDegreeSymbol, uc[:charSymbols])
+        uc[:almostCharSymbols] = map((i->begin
+                        [[0], [0]]
+                    end), 1:Sum(uc[:harishChandra], (x->begin
+                                length(x[:charNumbers])
+                            end)))
         for d = 4 * (0:RootInt(div(rank, 4), 2))
             r = div(d ^ 2, 4)
             s = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "B", :indices => 1 + r:rank, :rank => rank - r), :levi => 1:r, :eigenvalue => (-1) ^ div(d + 1, 4))
@@ -173,20 +178,11 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
             s[:charNumbers] = map((s->begin
                             Position(uc[:charSymbols], Defect0to2(s))
                         end), symbols)
-            s[:symbols] = symbols
+            (uc[:almostCharSymbols])[s[:charNumbers]] = symbols
             if d != 0
                 FixRelativeType(s)
             end
             push!(uc[:almostHarishChandra], s)
-        end
-        uc[:almostCharSymbols] = map((i->begin
-                        (uc[:charSymbols])[1]
-                    end), 1:Sum(uc[:almostHarishChandra], (x->begin
-                                length(x[:symbols])
-                            end)))
-        for s = uc[:almostHarishChandra]
-            (uc[:almostCharSymbols])[s[:charNumbers]] = s[:symbols]
-            delete!(s, :symbols)
         end
         z = (x->begin
                     Dict{Symbol, Any}(:Z1 => SymmetricDifference(x[1], x[2]), :Z2 => Intersection(x))

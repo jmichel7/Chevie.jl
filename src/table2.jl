@@ -10,6 +10,7 @@ chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
     map(x->map(y->x*y,r),e)
   end)
 
+chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
 chevieset(:D,:CharTable,n->chevieget(:imp,:CharTable)(2,2,n))
 chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 chevieset(:A,:CharTable,function(n)
@@ -106,9 +107,9 @@ function (l,param,rootparam)
       :charname=>chevieget(Symbol("2D"),:CharName)(l,para[i])),eachindex(para))
   para=chevieget(:B,:CharParams)(l)
   chr=filter(i->chevieget(Symbol("2D"),:testchar)(para[i]),chr)
-  tbl[:irreducibles]=permutedims(map(x->char_values(
+  tbl[:irreducibles]=toL(permutedims(toM(map(x->char_values(
    Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
-   toM(hi[:irreducibles][chr])),tbl[:classtext]))
+   toM(hi[:irreducibles][chr])),tbl[:classtext]))))
    CHEVIE[:compat][:AdjustHeckeCharTable](tbl,param)
   tbl
 end)

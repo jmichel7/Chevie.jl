@@ -43,12 +43,12 @@ const ChevieDict=Dict(
 "ConcatenationString(s...)"=>"prod(s)",
 "ConjugacySet(b[,F][,type])"=>"conjcat(b[,F],ss=type).obj",
 "ConjugatePartition"=>"conjugate_partition",
-#CoxeterCoset
-#CoxeterSubCoset
+"CoxeterCoset"=>"spets",
+"CoxeterSubCoset"=>"subspets",
 "CoxeterElements(W[,l])"=>"elements(W[,l])",
 "CoxeterGroup(\"A\",5)"=>"coxgroup(:A,5)",
-#CoxeterGroupByCoxeterMatrix
-#CoxeterGroupByCartanMatrix
+"CoxeterGroupByCoxeterMatrix"=>"gencox(cartan(C))",
+"CoxeterGroupByCartanMatrix(C)"=>"gencox(C)",
 "CoxeterGroupHyperoctaedralGroup(n)"=>"CoxHyperoctaedral(n)",
 "CoxeterGroupSymmetricGroup(n)"=>"CoxSym(n)",
 "CoxeterLength(W,w)"=>"length(W,w)",
@@ -76,6 +76,7 @@ const ChevieDict=Dict(
 #Discriminant
 "Dominates"=>"dominates",
 #DrinfeldDouble
+"Drop"=>"deleteat!",
 #Dual
 "DualBraid"=>"DualBraidMonoid",
 "DualBraidMonoid"=>"DualBraidMonoid",
@@ -106,8 +107,10 @@ const ChevieDict=Dict(
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
 "GcdPartitions"=>"gcd_partitions",
+"GcdRepresentation"=>"gcd_repr",
 #GenericDegrees
-#GenericOrder
+"GenericOrder"=>"generic_order",
+"GenericSign"=>"generic_sign",
 #GetRoot
 #GoodCoxeterWord
 #GraphAutomorphisms
@@ -132,6 +135,7 @@ const ChevieDict=Dict(
 "InducedLinearForm"=>"induced_linear_form",
 "InductionTable"=>"InductionTable",
 #Inherit
+"Intersection"=>"intersect",
 #IntermediateGroup
 "IntListToString"=>"joindigits",
 "InvariantForm"=>"invariant_form",
@@ -171,9 +175,9 @@ const ChevieDict=Dict(
 "LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
 #Lusztigaw
 #LusztigAw
-#LusztigInduction
-#LusztigInductionTable
-#LusztigRestriction
+"LusztigInduction"=>"LusztigInduce",
+"LusztigInductionTable"=>"LusztigInductionTable",
+"LusztigRestriction"=>"LusztigRestrict",
 #MatStab
 "MatXPerm(W,p)"=>"matX(W,p)",
 #MatYPerm
@@ -245,6 +249,7 @@ const ChevieDict=Dict(
 "RootsCartan(m)"=>"roots(m)",
 "Rotation(v,i)"=>"circshift(v,-i)",
 "Rotations(v)"=>"circshift.(Ref(a),length(a):-1:1)",
+"ScalMvp"=>"scal",
 #SchurElement
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",
@@ -266,7 +271,7 @@ const ChevieDict=Dict(
 "StandardParabolic"=>"standard_parabolic",
 "StandardParabolicClass"=>"standard_parabolic_class",
 #StructureRationalPointsConnectedCentre
-#SubSpets
+"SubSpets"=>"subspets",
 "SubTorus"=>"SubTorus",
 #Symbols
 #SymbolsDefect
@@ -278,7 +283,7 @@ const ChevieDict=Dict(
 "TransitiveClosure"=>"transitive_closure",
 #Transporter
 #Transversals
-#Twistings
+"Twistings"=>"twistings",
 "TwoTree(m)"=>"twotree(m)",
 #UnipotentAbelianPart
 "UnipotentCharacter"=>"UniChar",
@@ -302,6 +307,10 @@ const ChevieDict=Dict(
 function gap(s)
   s=Regex(s,"i")
   kk=filter(x->occursin(s,x),keys(ChevieDict))
+  if isempty(kk) 
+    println("no match")
+    return
+  end
   pad=maximum(length(k) for k in kk)+2
   for k in kk
     println(rpad(k,pad),"=>  ",ChevieDict[k])

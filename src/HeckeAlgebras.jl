@@ -123,7 +123,7 @@ end;
 module HeckeAlgebras
 using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
-  rootpara, equalpara, class_polynomials, char_values
+  rootpara, equalpara, class_polynomials, char_values, schur_elements
 
 struct HeckeAlgebra{C,TW}
   W::TW
@@ -153,26 +153,20 @@ julia> H.para
 julia> H=hecke(W,q^2,rootpara=q)
 hecke(B₂,q²,rootpara=q)
 
-julia> [H.para,rootpara(H)]
-2-element Array{Array{T,1} where T,1}:
- Array{Pol{Int64},1}[[q², -1], [q², -1]]
- Pol{Int64}[q, q]                                  
+julia> H.para,rootpara(H)
+(Array{Pol{Int64},1}[[q², -1], [q², -1]], Pol{Int64}[q, q])
 
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
 hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
-julia> [H.para,rootpara(H)]
-2-element Array{Array{T,1} where T,1}:
- Array{Pol{Int64},1}[[q², -1], [q⁴, -1]]
- Pol{Int64}[q, q²]
+julia> H.para,rootpara(H)
+(Array{Pol{Int64},1}[[q², -1], [q⁴, -1]], Pol{Int64}[q, q²])
 
 julia> H=hecke(W,9,rootpara=3)
 hecke(B₂,9,rootpara=3)
 
-julia> [H.para,rootpara(H)]
-2-element Array{Array{T,1} where T,1}:
- Array{Int64,1}[[9, -1], [9, -1]]
- [3, 3]                              
+julia> H.para,rootpara(H)
+([[9, -1], [9, -1]], [3, 3])
 ```
 """
 function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
@@ -547,6 +541,42 @@ julia> char_values(Cpbasis(H)(1,2,1))
 """
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
+"""
+`schur_elements(H)`
+
+returns the list of Schur elements for the (cyclotomic) Hecke algebra `H`
+
+```julia-repl
+julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
+hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])
+
+julia> s=schur_elements(H)
+7-element Array{Pol{Cyc{Rational{Int64}}},1}:
+ q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
+ 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴
+ -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴
+ 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴                        
+ (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹
+ (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹
+ q²+2q+2+2q⁻¹+q⁻²                             
+
+julia> CycPol.(s)
+7-element Array{CycPol{Cyc{Rational{Int64}}},1}:
+ Φ₂²Φ₃Φ₄Φ₆             
+ (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆    
+ (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆   
+ 2q⁻⁴Φ₃Φ₄              
+ (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆
+ (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆
+ q⁻²Φ₂²Φ₄              
+```
+"""
+function schur_elements(H::HeckeAlgebra)
+  W=H.W
+  map(p->getchev(W,:SchurElement,p,H.para,
+     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))[1],
+      first.(charinfo(W)[:charparams]))
+end
 #---------------------- Hecke Cosets
 
 struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}

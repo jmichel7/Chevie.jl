@@ -321,7 +321,7 @@ Dict{Symbol,Any} with 7 entries:
   :Au         => .
   :balacarter => [1, 3]
   :dimunip    => 18
-  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),Array{Int64,2}[[1 0; 0 …
+  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),[[1 0; 0 1]])
 
 julia> uc.classes[4]
 UnipotentClass(A₁+Ã₁)

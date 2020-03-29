@@ -1,15 +1,4 @@
 
-chevieset(:D, :CartanMat, function (n,)
-        local a, m
-        if n < 3
-            m = 3
-        else
-            m = n
-        end
-        a = (chevieget(:A, :CartanMat))(m)
-        (a[1:3])[1:3] = [[2, 0, -1], [0, 2, -1], [-1, -1, 2]]
-        return (a[1:n])[1:n]
-    end)
 chevieset(:D, :Size, function (arg...,)
         return 2 ^ (arg[1] - 1) * factorial(arg[1])
     end)

@@ -1270,7 +1270,8 @@ julia> shrink(cc)
  (3243)⁻¹13243
 
 julia> centralizer_generators(w;ss=:cyc)
-Set(Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}[4])
+Set{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
+  4
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)));
 

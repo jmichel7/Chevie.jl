@@ -110,6 +110,7 @@ function TeXBracket(s)
 end
 Torus(i::Int)=torus(i)
 Value(p,v)=p(v)
+ValuePol(v,c)=isempty(v) ? 0 : evalpoly(c,v)
 function CoxeterGroup(S::String,s...)
  if length(s)==1 return coxgroup(Symbol(S),Int(s[1])) end
  coxgroup(Symbol(S),Int(s[1]))*coxgroup(Symbol(s[2]),Int(s[3]))

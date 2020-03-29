@@ -46,7 +46,7 @@ chevieset(:H4, :HeckeCharTable, function (param, sqrtparam)
         end
         tbl = Dict{Symbol, Any}(:identifier => "H(H4)", :text => "the ordering of the characters is that of Alvis-Lusztig(1982)", :parameter => [v ^ 2, v ^ 2, v ^ 2, v ^ 2], :cartan => chevieget(:H4, :CartanMat), :size => 14400, :powermap => chevieget(:H4, :PowerMaps), :irreducibles => map((i->begin
                                 map((j->begin
-                                            evalpoly(v, j[1]) * v ^ j[2]
+                                            ValuePol(j[1], v) * v ^ j[2]
                                         end), i)
                             end), chevieget(:H4, :vpolheckeirreducibles)), :irredinfo => chevieget(:H4, :IrredInfo))
         Inherit(tbl, (chevieget(:H4, :ClassInfo))())

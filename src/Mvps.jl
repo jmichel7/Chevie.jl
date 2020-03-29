@@ -60,13 +60,14 @@ fraction.
 
 """
 module Mvps
-# to use as a stand-alone module uncomment the next line
-# export degree, root, coefficients, valuation
-export Mvp, Monomial, @Mvp, variables, value, scal
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
 using ..Util: fromTeX
 using ..Cycs: Cyc
+import Gapjm: degree, root, coefficients, valuation
+# to use as a stand-alone module comment above line and uncomment next
+# export degree, root, coefficients, valuation
+export Mvp, Monomial, @Mvp, variables, value, scal
 #------------------ Monomials ---------------------------------------------
 PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
@@ -238,14 +239,22 @@ end
 Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d.d)) &&
                            isone(p.d.d[1].first) && isinteger(p.d.d[1].second))
 
-function Base.promote(a::Mvp{T1},b::Mvp{T2}) where {T1,T2}
-  T=promote_type(T1,T2)
-  let T=T, a=a, b=b
-   if T!=T1 a=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in a.d])) end
-   if T!=T2 b=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in b.d])) end
-    a,b
-  end
+function Base.promote_rule(a::Type{Mvp{T1}},b::Type{Mvp{T2}})where {T1,T2}
+  Mvp{promote_type(T1,T2)}
 end
+
+function Base.promote_rule(a::Type{Mvp{T1}},b::Type{T2})where {T1,T2<:Number}
+  Mvp{promote_type(T1,T2)}
+end
+
+#function Base.promote(a::Mvp{T1},b::Mvp{T2}) where {T1,T2}
+#  T=promote_type(T1,T2)
+#  let T=T, a=a, b=b
+#   if T!=T1 a=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in a.d])) end
+#   if T!=T2 b=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in b.d])) end
+#    a,b
+#  end
+#end
 
 function Base.:+(a::Mvp, b::Mvp)
   a,b=promote(a,b)
@@ -453,10 +462,10 @@ end
 #  end
 #  Mvp(newd)+newp
 #end
-function value(p::Mvp,vv::Pair)
+function value(p::Mvp{T},vv::Pair)where T
   (s,v)=vv
   if !(v isa Mvp) v=Mvp(v) end
-  res1=Tuple{typeof(v),Int}[]
+  res1=Tuple{promote_type(T,typeof(v)),Int}[]
   for i in eachindex(p.d.d)
     (m,c)=p.d.d[i]
     u=ModuleElts.drop(m.d,s)

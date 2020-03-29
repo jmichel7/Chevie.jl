@@ -274,7 +274,7 @@ end
 
 # elements is much faster than collect(G), should not be
 function Gapjm.elements(G::PermGroup)
-  t=reverse(values.(transversals(G)))
+  t=reverse(collect.(values.(transversals(G))))
   if isempty(t) return [one(G)] end
   res=t[1]
   for i in 2:length(t)

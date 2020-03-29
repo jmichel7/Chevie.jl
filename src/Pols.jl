@@ -42,15 +42,13 @@ Pol{Int64}: q⁸-q⁴+1
 see also the individual documentation of divrem, divrem1, gcd.
 """
 module Pols
-# to use as a stand-alone module uncomment the next line
+using ..Util: bracket_if_needed, fromTeX, divisors
+using ..Cycs: Cyc, Root1
+import Gapjm: root, degree, valuation
+# to use as a stand-alone module comment above line and uncomment next
 # export root, degree, valuation
 export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
   negative_part, bar, isunit, improve_type
-
-using ..Util: bracket_if_needed, fromTeX, divisors
-using ..Cycs: Cyc, Root1
-using ..Combinat: evalpoly
-using ..Gapjm: Gapjm, root
 
 const varname=Ref(:x)
 
@@ -112,7 +110,7 @@ degree(p::Pol)=length(p.c)-1+p.v
 
 valuation(p::Pol)=p.v
 
-(p::Pol)(x)=evalpoly(x,p.c)*x^p.v
+(p::Pol{T})(x) where T=iszero(p) ? zero(T) : evalpoly(x,p.c)*x^p.v
 
 # efficient p↦ qˢ p
 shift(p::Pol,s)=Pol(p.c,p.v+s)
@@ -361,7 +359,7 @@ function cyclotomic_polynomial(n::Integer)
   end
 end
 
-function Gapjm.root(x::Pol,n::Number=2)
+function root(x::Pol,n::Number=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
     error("root($(repr(x;context=:limit=>true)),$n) not implemented") 

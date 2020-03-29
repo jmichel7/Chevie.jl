@@ -127,10 +127,10 @@ export PermRootGroup, PRG, PRSG, catalan,
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
  refleigen, bipartite_decomposition, torus_order, rank, matX, PermX,
- coroots, baseX, semisimplerank, invariant_form
+ coroots, baseX, semisimplerank, invariant_form, generic_order
 # to use as a stand-alone module uncomment the next line
-# export roots
-
+# export roots, gens, degree
+import Gapjm: gens, degree, roots
 using Gapjm
 
 # coroot for an orthogonal reflection and integral root
@@ -197,7 +197,7 @@ function Base.show(io::IO, t::TypeIrred)
         b=t.bond
         n=repl||TeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
       elseif haskey(t,:short)
-        n=repl||TeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r,$b)"
+        n=repl||TeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r)"
       else
         n=(repl||TeX) ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
       end
@@ -294,8 +294,8 @@ abstract type PermRootGroup{T,T1<:Integer}<:Group{Perm{T1}} end
 
 PermGroups.PermGroup(W::PermRootGroup)=W.G
 Diagram(W::PermRootGroup)=Diagram(refltype(W))
-Gapjm.gens(W::PermRootGroup)=gens(W.G)
-Gapjm.degree(W::PermRootGroup)=degree(W.G)
+gens(W::PermRootGroup)=gens(W.G)
+degree(W::PermRootGroup)=degree(W.G)
 Base.length(W::PermRootGroup)=length(W.G)
 Base.iterate(W::PermRootGroup,x...)=iterate(W.G,x...)
 Base.eltype(W::PermRootGroup)=eltype(W.G)
@@ -655,7 +655,16 @@ function Groups.position_class(W::PermRootGroup,w)
   l=findall(isequal(i),classinv(W))
   if length(l)>1 
     if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W))
-    else error("ambiguity: classes $l match")
+    else 
+      ncl=classinfo(W)[:classes][l]
+      s=sortperm(ncl)
+      cl=class_reps(W)
+      while s[1]<100
+        if w in orbit(W,cl[l[s[1]]]) return l[s[1]] end
+        s=s[2:end]
+        if length(s)==1 return l[s[1]] end
+      end
+      error("ambiguity: classes $l match")
     end
   end
   l[1]
@@ -742,6 +751,14 @@ function PermGroups.reduced(W::PermRootGroup,F)
   return nothing
 end
 
+function PermGroups.class_reps(W::PermRootGroup)
+  gets(W,:classreps)do W
+    cl=map(x->W(x...),classinfo(W)[:classtext])
+    W.G.prop[:classreps]=cl
+    cl
+  end
+end
+
 #--------------- PRG: an implementation of PermRootGroups--------------------
 struct PRG{T,T1}<:PermRootGroup{T,T1}
   matgens::Vector{Matrix{T}}
@@ -788,10 +805,8 @@ end
 
 @inline roots(W::PRG)=W.roots
 @inline coroots(W::PRG)=W.coroots
-@inline inclusion(W::PRG)=eachindex(W.roots)
-@inline inclusion(W::PRG,i)=i
-@inline restriction(W::PRG)=eachindex(W.roots)
-@inline restriction(W::PRG,i)=i
+@inline inclusion(W::PRG,i=eachindex(W.roots))=i
+@inline restriction(W::PRG,i=eachindex(W.roots))=i
 @inline Base.parent(W::PRG)=W
 function coroot(W::PRG,i)
   if i<=length(W.coroots) return W.coroots[i] end
@@ -1086,5 +1101,24 @@ function invariant_form(W::PermRootGroup)
   F=N*F*N'
   F.//F[1,1]
 end
+
+"""
+`generic_order(W,q)`
+
+returns  the "compact" generic order of `W` as a polynomial in `q`. This is
+`q^(Nₕ)Πᵢ(q^(dᵢ)-1)`  where `dᵢ`  are the  reflection degrees  and `Nₕ` the
+number  of reflecting hyperplanes. For a Weyl group, it is the order of the
+associated  semisimple  finite  reductive  group  over  the  field with `q`
+elements.
+
+```julia-repl
+julia> Pol(:q)
+Pol{Int64}: q
+
+julia> PermRoot.generic_order(ComplexReflectionGroup(4),q)
+Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
+```
+"""
+generic_order(W,q)=q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
 
 end

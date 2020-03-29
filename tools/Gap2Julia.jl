@@ -180,7 +180,6 @@ function trans(e)
         end
       elseif a==:IsFunc args=[:isa,b,:Function]
       elseif nargs==3 && haskey(ftrans1,a) args=[ftrans1[a],c,b]
-      elseif a==:ValuePol args=[:evalpoly,c,b]
       elseif a==:Unbind && b.head==:.
         return Expr(:call,:delete!,trans(b.args[1]),b.args[2])
       elseif a==:PrintToString 

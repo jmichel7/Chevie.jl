@@ -184,7 +184,7 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, algebraic_centre, standard_parabolic,
- describe_involution, SubTorus, weightinfo, fundamental_group
+ describe_involution, SubTorus, weightinfo, fundamental_group, relative_group
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -460,10 +460,10 @@ function with_inversions(W,N)
   w=one(W)
   n=N
   while !isempty(n)
-    p=intersect(n,1:semisimplerank(W))
-    if isempty(p) return nothing end
-    r=reflection(W,p[1])
-    n=restriction.(Ref(W),inclusion.(Ref(W),setdiff(n,[p[1]])).^r)
+    p=findfirst(x->x>0 && x<=semisimplerank(W),n)
+    if isnothing(p) return nothing end
+    r=reflection(W,n[p])
+    n=action.(Ref(W),setdiff(n,[n[p]]),r)
     w=r*w
   end
   w^-1
@@ -523,8 +523,8 @@ true
 ```
 For now does not work for abscox groups.
 """
-describe_involution(W,w)=
-  SimpleRootsSubsystem(W,filter(i->i^w==i+parent(W).N,inclusion(W)[1:W.N]))
+describe_involution(W,w)=SimpleRootsSubsystem(W,
+                                        filter(i->action(W,i,w)==i+W.N,1:W.N))
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
@@ -547,14 +547,20 @@ dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 
 #forwarded methods to PermRoot/W.G
-@inline PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
-PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
-Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
-PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
 Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G,a...)
 Base.eltype(W::FiniteCoxeterGroup)=eltype(W.G)
 Base.parent(W::FiniteCoxeterGroup)=W
+Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
+Base.in(w,W::FiniteCoxeterGroup)=w in W.G
+Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
+Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
+Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
 Perms.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
+Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
+PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
+PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
+PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,q,i)=refleigen(W.G,q,i)
@@ -563,13 +569,9 @@ PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
-Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
-Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
-Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
-Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
-Base.in(w,W::FiniteCoxeterGroup)=w in W.G
+action(W::FiniteCoxeterGroup,i,p)=restriction(W,inclusion(W,i)^p)
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
@@ -790,10 +792,9 @@ PermRoot.matX(W::FCSG,w)=matX(parent(W),w)
 # if I are all the positive roots of a subsystem find the simple ones
 function SimpleRootsSubsystem(W,I) 
   filter(I) do i
-    cnt=0
     r=reflection(W,i)
     for j in I
-      if j!=i && j^r>W.N return false end
+      if j!=i && isleftdescent(W,r,j) return false end
     end
     return true
   end
@@ -947,7 +948,7 @@ function Base.show(io::IO, W::FCSG)
   if replorTeX && I!=std && !isempty(I) print(io,"=",W.G) end
 end
   
-PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{Int})=
+PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
 @inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
@@ -1014,7 +1015,7 @@ julia> W=coxgroup(:A,4)
 A₄
 
 julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 1])
-SubTorus(A₄,Array{Int64,1}[[1, 0, 3, -13], [0, 1, 2, 7], [0, 0, 4, -3]])
+SubTorus(A₄,[[1, 0, 3, -13], [0, 1, 2, 7], [0, 0, 4, -3]])
 
 julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
 ERROR: not a pure sublattice
@@ -1246,6 +1247,52 @@ function affine(W)
   ex=vcat(1:semisimplerank(W),2*nref(W))
   C=Int.([PermRoot.cartan_coeff(W.G,i,j) for i in ex, j in ex])
   CoxGroups.genCox(C)
+end
+
+"""
+  relative_group(W::FiniteCoxeterGroup,J)
+
+  `J` should be a if *distinguished* subset of `S==eachindex(gens(W))`,
+   that is if for s∈ S-J we  set v(s,J)=w_0^{J∪ s}w_0^J then J  is stable 
+   by all v(s,J). Then
+   R=N_W(W_J)/W_J  is a Coxeter group with  Coxeter system the v(s,J). The
+   program  return  R  in  its  reflection  representation  on X(ZL_J/ZG).
+   (according to Lusztig's "Coxeter Orbits...", the images of the roots of
+   W in X(ZL_J/ZG) form a root system).
+
+   R.prop has the fields:
+   :relativeIndices=setdiff(S,J)
+   :parentMap:=the list of v(s,J)
+   :MappingFromNormalizer maps J-reduced elements of N_W(W_J) to
+         elements of R
+
+"""
+function relative_group(W::FiniteCoxeterGroup,J)
+  S=eachindex(gens(W))
+  if !issubset(J,S) 
+    error("implemented only for standard parabolic subgroups")
+  end
+  I=setdiff(S,J) # keep the order of S
+  vI=map(i->longest(W,vcat([i],J))*longest(W,J),I)
+  if any(g->sort(action.(Ref(W),J,g))!=sort(J),vI) 
+    error("$J is not distinguished in $W") 
+  end
+  qr=i->W.rootdec[i][I]
+  res=isempty(J) ? W : isempty(I) ? coxgroup() :
+    rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i)) 
+                                  for (ni,i) in enumerate(I), j in I])
+  res.prop[:relativeIndices]=I
+  res.prop[:parentMap]=vI
+  res.prop[:MappingFromNormalizer]=# maps w∈N_W(W_J) to elt of R
+    function(w)c=Perm()
+      while true
+        r=findfirst(x->isleftdescent(W,w,x),I)
+        if isnothing(r) return c end
+ 	w=vI[r]*w
+        c*=res(r)
+      end
+    end
+  res
 end
 
 end

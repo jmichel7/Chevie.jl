@@ -578,14 +578,14 @@ single partition, the standard tableaux for that partition are returned.
 ```julia-repl
 julia> tableaux([[2,1],[1]])
 8-element Array{Any,1}:
- Array{Array{Int64,1},1}[[[2, 4], [3]], [[1]]]
- Array{Array{Int64,1},1}[[[1, 4], [3]], [[2]]]
- Array{Array{Int64,1},1}[[[1, 4], [2]], [[3]]]
- Array{Array{Int64,1},1}[[[2, 3], [4]], [[1]]]
- Array{Array{Int64,1},1}[[[1, 3], [4]], [[2]]]
- Array{Array{Int64,1},1}[[[1, 2], [4]], [[3]]]
- Array{Array{Int64,1},1}[[[1, 3], [2]], [[4]]]
- Array{Array{Int64,1},1}[[[1, 2], [3]], [[4]]]
+ [[[2, 4], [3]], [[1]]]
+ [[[1, 4], [3]], [[2]]]
+ [[[1, 4], [2]], [[3]]]
+ [[[2, 3], [4]], [[1]]]
+ [[[1, 3], [4]], [[2]]]
+ [[[1, 2], [4]], [[3]]]
+ [[[1, 3], [2]], [[4]]]
+ [[[1, 2], [3]], [[4]]]
 
 julia> tableaux([2,2])
 2-element Array{Array{Array{Int64,1},1},1}:

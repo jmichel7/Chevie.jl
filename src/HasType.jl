@@ -1,7 +1,7 @@
 module HasType
 
 export reflection_name, diagram,
-  schur_elements, charname, codegrees, ComplexReflectionGroup,
+  charname, codegrees, ComplexReflectionGroup,
   field, getchev, Cartesian, ExtendedCox, traces_words_mats
 
 using ..Gapjm
@@ -94,52 +94,6 @@ function PositionCartesian(l,ind)
     prod*=l[i]
   end
   res
-end
-
-function PermGroups.class_reps(W::PermRootGroup)
-  gets(W,:classreps)do W
-    cl=map(x->W(x...),classinfo(W)[:classtext])
-    W.G.prop[:classreps]=cl
-    cl
-  end
-end
-PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
-
-"""
-`schur_elements(H)`
-
-returns the list of Schur elements for the (cyclotomic) Hecke algebra `H`
-
-```julia-repl
-julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
-hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])
-
-julia> s=schur_elements(H)
-7-element Array{Pol{Cyc{Rational{Int64}}},1}:
- q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
- 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴
- -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴
- 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴                        
- (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹
- (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹
- q²+2q+2+2q⁻¹+q⁻²                             
-
-julia> CycPol.(s)
-7-element Array{CycPol{Cyc{Rational{Int64}}},1}:
- Φ₂²Φ₃Φ₄Φ₆             
- (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆    
- (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆   
- 2q⁻⁴Φ₃Φ₄              
- (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆
- (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆
- q⁻²Φ₂²Φ₄              
-```
-"""
-function schur_elements(H::HeckeAlgebra)
-  W=H.W
-  map(p->getchev(W,:SchurElement,p,H.para,
-     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))[1],
-      first.(charinfo(W)[:charparams]))
 end
 
 """
@@ -352,7 +306,8 @@ function codegrees(W::Group)
 end
 
 function codegrees(W::Spets)
- vcat(map(x->(-1,x),E.(-roots(torusfactors(W)))),collect.(codegrees.(refltype(W)))...)
+  vcat(map(x->(-1,x),E.(inv.(roots(torusfactors(W))))),
+         collect.(codegrees.(refltype(W)))...)
 end
 
 function diagram(W)
@@ -363,8 +318,6 @@ function diagram(W)
 end
 
 nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
-
-PrintToSring(s,v...)=sprint(show,v...)
 
 function reflection_name(io::IO,W)
   opt=IOContext(io,:TeX=>true).dict
@@ -385,6 +338,8 @@ function pad(s::String, i::Int)
 end
 
 pad(s::String)=s
+
+PrintToSring(s,v...)=sprint(show,v...)
 
 function Replace(s,p...)
 # print("Replace s=$s p=$p")

@@ -121,7 +121,7 @@ chevieset(["H4", "E7", "E8", "G31"], :FakeDegree, (t->begin
                 local f, res
                 f = (chevieget(t, :cycpolfakedegrees))[Position(((chevieget(t, :CharInfo))())[:charparams], phi)]
                 if IsList(f[1])
-                    res = evalpoly(q ^ 2, f[1])
+                    res = ValuePol(f[1], q ^ 2)
                 else
                     res = f[1]
                 end

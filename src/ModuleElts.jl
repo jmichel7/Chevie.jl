@@ -182,6 +182,7 @@ function drop(m::ModuleElt,k)
 end
 
 Base.keys(x::ModuleElt)=first.(x.d)
+Base.values(x::ModuleElt)=last.(x.d)
 Base.first(x::ModuleElt)=first(x.d)
 end
 #-------------- methods which have same code in both implementations-------

@@ -60,7 +60,7 @@ The functions described in this module allow to explore these situations.
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
   position_regular_class, eigenspace_projector, GetRelativeAction,
-  GetRelativeRoot, split_levis, RelativeGroup, cuspidal_unipotent_characters
+  GetRelativeRoot, split_levis, cuspidal_unipotent_characters
 
 using Gapjm
 """
@@ -237,34 +237,47 @@ end
 function GetRelativeAction(W,L,w)
   m=matX(parent(W), w)
   if size(m,2)==0 return m end
-  m=m^inv(BaseX(L))
+  m=m^inv(baseX(L))
   m[semisimplerank(L)+1:end,semisimplerank(L)+1:end]
 end
 
+function Groups.normalizer(W::PermRootGroup,L::PermRootGroup)
+  r=unique(sort(reflections(L)))
+  centralizer(W,r;action=(x,g)->sort(x.^g))
+end
+
+iscyclic(W::Group)=length(Weyl.AbelianGenerators(elements(W)))<=1
+
 function GetRelativeRoot(W,L,i)
   J=inclusiongens(L)
-  N=Normalizer(ReflectionSubgroup(W,Concatenation(J,[i])),L)
+# println("W=$W L=$L i=$i J=$J")
+  N=normalizer(reflection_subgroup(W,vcat(J,[i])),L)
   F=N/L
-  if  !IsCyclic(F)  Error("in theory N/L expected to be cyclic") end
-  d=Size(F)
-  for rc in Filtered(Elements(F),x->Order(F,x)==d)  
-    m=GetRelativeAction(W,L,rc.element.representative)
-    r=AsReflection(m)
-    if r==false  Error("I thought this does  !  happen") end
-    if r.eigenvalue==E(d)   
-      r.index=i
-      rc=Filtered(List(ConjugacyClasses(N),Representative),
-          c->GetRelativeAction(W,L,c)==m)
-      c=Set(List(rc,x->PositionClass(W,x)))
-      m=Maximum(List(refleigen(W){c},x->Number(x,y->y==0)))
-      m=filter(x->count(==(0),refleigen(W,x))==m,c)
-      m=filter(x->PositionClass(W,x) in m,rc)
+# rshow(Weyl.AbelianGenerators(elements(F)))
+  if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
+  d=length(F)
+# println("d=$d ",order.(elements(F)))
+  for rc in filter(x->order(x)==d,elements(F))  
+    m=GetRelativeAction(W,L,rc.phi)
+    r=reflection(m)
+    if isnothing(r) error("I thought this does not happen") end
+#   println("rc=$rc")
+    if E(r.eig)==E(d)   
+      res=Dict{Symbol,Any}(:root=>r.root, :coroot=>r.coroot,
+                         :eigenvalue=>r.eig)
+      res[:index]=i
+      rc=filter(c->GetRelativeAction(W,L,c)==m,class_reps(N))
+#     println("rc=$rc")
+      c=unique(sort(map(x->position_class(W,x),rc)))
+      m=maximum(map(x->count(iszero,x),refleigen(W)[c]))
+      m=filter(x->count(iszero,refleigen(W)[x])==m,c)
+      m=filter(x->position_class(W,x) in m,rc)
       if any(x->order(x)==d,m)  m=filter(x->order(x)==d,m) end
-      r.parentMap=m[1]
-      return r 
+      res[:parentMap]=m[1]
+      return res 
     end 
   end
-  Error("no root found for reflection",i,"\n")
+  error("no root found for reflection",i,"\n")
 end
 
 """
@@ -393,71 +406,77 @@ function PermRoot.standard_parabolic(W::PermRootGroup, H)
   return nothing
 end
 
-function RelativeGroup(W,J,indices=false)
-  res = Dict{Symbol, Any}(:callarg => IntListToString(J))
+function Weyl.relative_group(W,J,indices=false)
+# println("W=$W J=$J indices=$indices")
+  res = Dict{Symbol, Any}(:callarg => joindigits(J))
   if indices!=false
-      res[:callarg]=Append(res[:callarg], ",")
-      res[:callarg]=Append(res[:callarg], IntListToString(arg[3]))
+      res[:callarg]*=","
+      res[:callarg]*=joindigits(indices)
   end
-  res = CHEVIE[:GetCached](W, "RelativeGroups", res, x->x[:callarg])
+# res = CHEVIE[:GetCached](W, "RelativeGroups", res, x->x[:callarg])
   if length(keys(res))>1 return res end
-  L = ReflectionSubgroup(W, J)
+  L = reflection_subgroup(W, J)
   if length(J)==0
-    W[:MappingFromNormalizer]=w->PermMatX(W,GetRelativeAction(W, L, w))
-    W[:relativeIndices] = W[:generatingReflections]
+    W.prop[:MappingFromNormalizer]=w->PermX(W,GetRelativeAction(W, L, w))
+    W.prop[:relativeIndices] = eachindex(gens(W))
     return W
   end
-  if indices==false indices=Filtered(inclusiongens(W),
-                         x->!(Reflection(Parent(W), x) in L))
+  if indices==false 
+    indices=filter(x->!(reflection(parent(W), x) in L),inclusiongens(W))
   end
-  if gapSet(L[:rootInclusion]) == gapSet(W[:rootInclusion])
-    Inherit(res, PermRootGroup([]))
-    res[:relativeIndices] = []
-    res[:MappingFromNormalizer] = (w->begin Perm() end)
-    return res
+  if sort(inclusion(L))==sort(inclusion(W))
+    res[:relativeIndices]=Int[]
+    res[:MappingFromNormalizer]=w->Perm()
+    return PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
+          Group(Perm{Int16}[]),res)
   end
-  res[:MappingFromNormalizer] = w->PermMatX(res, GetRelativeAction(W, L, w))
   res[:roots] = []
   res[:simpleCoroots] = []
   res[:relativeIndices] = []
   res[:parentMap] = []
-  for R = Filtered(map(r->GetRelativeRoot(W, L, r), indices), x->x!=false)
-    if Position(res[:roots],R[:root])==false || 
-        Position(res[:roots],R[:root])!=Position(res[:simpleCoroots],R[:coroot])
+  for R in filter(!isnothing,map(r->GetRelativeRoot(W,L,r),indices))
+   if !(R[:root] in res[:roots]) || 
+    findfirst(==(R[:root]),res[:roots])!=
+    findfirst(==(R[:coroot]),res[:simpleCoroots])
       push!(res[:roots], R[:root])
       push!(res[:simpleCoroots], R[:coroot])
       push!(res[:relativeIndices], R[:index])
       push!(res[:parentMap], R[:parentMap])
     end
   end
-  N = Size(Normalizer(W, L)) // Size(L)
-  R = PermRootGroup(res[:roots], res[:simpleCoroots])
-  relname = SPrint("W_", ReflectionName(W), "(L_", res[:callarg], ")")
-  if N == Size(R)
-    Inherit(res, R)
-    InfoChevie(relname,"==",ReflectionName(res),"<",Join(res[:relativeIndices]),">\n")
-    return res
+  N=length(normalizer(W,L))//length(L)
+  res[:roots]=improve_type.(res[:roots])
+  res[:simpleCoroots]=improve_type.(res[:simpleCoroots])
+# println(res[:roots],res[:simpleCoroots])
+  R=PRG(res[:roots], res[:simpleCoroots])
+  R.prop[:MappingFromNormalizer] = w->PermX(R, GetRelativeAction(W, L, w))
+  relname = "W_"*repr(W)*"(L_"*res[:callarg]*")"
+  if N==length(R)
+    merge!(R.prop,res)
+#   InfoChevie(relname,"==",repr(R),"<",join(R.prop[:relativeIndices]),">")
+    println(relname,"==",repr(R),"<",join(R.prop[:relativeIndices]),">")
+    return R
   end
-  print("# warning: ", relname, ":size ", N, " not generated by ", 
-    IntListToString(indices, "!="), " ==>size ", Size(R), "\n#", 
-    "           trying all other roots\n")
-  indices = Filtered(W[:rootInclusion], r->!Reflection(Parent(W), r) in
-                     W[:generators] && !(Reflection(Parent(W), r)) in L )
-  for r = indices
-    l = GetRelativeRoot(W, L, r)
-    if l != false && !(l[:root]) in res[:roots]
-      R=PermRootGroup(vcat(res[:roots],[l[:root]]),vcat(res[:simpleCoroots],[l[:coroot]]))
+  println("# warning: ", relname, ":size ", N, " not generated by ", 
+    joindigits(indices, "!="), " ==>size ", length(R), "\n#", 
+    "           trying all other roots")
+  indices=filter(r->!(reflection(parent(W),r) in gens(W)) && 
+                    !(reflection(parent(W),r) in L), inclusion(W))
+  for r in indices
+    l=GetRelativeRoot(W, L, r)
+    if !isnothing(l) && !(l[:root] in res[:roots])
+      R=PRG(vcat(res[:roots],[l[:root]]),vcat(res[:simpleCoroots],[l[:coroot]]))
       if N == Size(R)
-          push!(res[:roots], l[:root])
-          push!(res[:simpleCoroots], l[:coroot])
-          push!(res[:relativeIndices], l[:index])
-          push!(res[:parentMap], l[:parentMap])
-          Inherit(res, R)
-          return res
+        push!(res[:roots], l[:root])
+        push!(res[:simpleCoroots], l[:coroot])
+        push!(res[:relativeIndices], l[:index])
+        push!(res[:parentMap], l[:parentMap])
+        R.prop=res
+        return R
       end
     end
   end
-  error("relgroup  !  found")
+  error("relgroup not found")
 end
 
 """

@@ -214,7 +214,7 @@ module Uch
 using Gapjm
 
 export UnipotentCharacters, FixRelativeType, fourierinverse, UniChar,
-AlmostChar, DLChar, DLLefschetz
+AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -270,10 +270,10 @@ function UnipotentCharacters(t::TypeIrred)
   if a>1
     if haskey(uc,:a) uc[:a].*=a end
     if haskey(uc,:A) uc[:A].*=a end
-    for s in uc.harishChandra
+    for s in uc[:harishChandra]
       s[:parameterExponents].*=a
       s[:eigenvalue]^=a
-      s[:cuspidalName]=join(fill(s.cuspidalName,1:a),"\\otimes ")
+      s[:cuspidalName]=join(map(i->s[:cuspidalName],1:a),"\\otimes ")
     end
   end
 
@@ -520,6 +520,7 @@ function UnipotentCharacters(WF::Spets)
      [Family("C1",[1])],
      Dict( :charParams => [ [ "", [ 1 ] ] ],
       :TeXCharNames => [ "." ],
+      :almostTeXCharNames => [ "." ],
       :charSymbols => [ [ "", [ 1 ] ] ],
       :size=>1,
       :a => [ 0 ],
@@ -784,7 +785,7 @@ struct UniChar{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-UniChar(W,v::Vector)=UniChar(W,v,Dict{Symbol,Any}())
+UniChar(W,v::AbstractVector)=UniChar(W,v,Dict{Symbol,Any}())
 
 """
 `UniChar(W,l)`
@@ -865,23 +866,81 @@ Base.:*(a,u1::UniChar)=u1*a
 Gapjm.degree(u::UniChar)=sum(u.v .*
                              degrees(UnipotentCharacters(u.group),Pol(:q)))
 
-function LusztigInduction(WF, u)
-  t = LusztigInductionTable(u[:group], WF)
-  t==false ? false : UnipotentCharacter(WF, t[:scalar] * u.v)
+"""
+`LusztigInduce(W,u)`
+
+`u`  should be a unipotent character of a parabolic subcoset of the Coxeter
+coset  `W`. It represents  a unipotent character  `λ` of a  Levi `𝐋` of the
+algebraic  group  `𝐆`  attached  to  `W`.  The  program returns the Lusztig
+induced `R_𝐋^𝐆(λ)`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> WF=spets(W)
+G₂
+
+julia> T=subspets(WF,Int[],W(1))
+.Φ₁Φ₂
+
+julia> u=UniChar(T,1)
+[.Φ₁Φ₂]:<.>
+
+julia> LusztigInduce(WF,u)
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+
+julia> DLChar(W,W(1))
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+```
+"""
+function LusztigInduce(WF, u)
+  t=LusztigInductionTable(u.group, WF)
+  if !isnothing(t) UniChar(WF, t.scalar*u.v) end
 end
 
-LusztigRestriction(HF, u)=
-  UnipotentCharacter(HF, u.v * (LusztigInductionTable(HF, u[:group]))[:scalar])
+"""
+`LusztigRestrict(R,u)`
 
-HCInduce(WF,u)=UnipotentCharacter(WF,HCInductionTable(u.group,WF)[:scalar]*u.v)
+`u`  should be a unipotent character of a parent Coxeter coset `W` of which
+`R` is a parabolic subcoset. It represents a unipotent character `γ` of the
+algebraic  group `𝐆` attached to `W`,  while `R` represents a Levi subgroup
+`L`. The program returns the Lusztig restriction `*R_𝐋^𝐆(γ)`.
 
-HCRestrict(HF,u)=
-  UnipotentCharacter(HF,u.v*HCInductionTable(HF,u.group)[:scalar])
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> WF=spets(W)
+G₂
+
+julia> T=subspets(WF,Int[],W(1))
+.Φ₁Φ₂
+
+julia> u=DLChar(W,W(1))
+[G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
+
+julia> Uch.LusztigRestrict(T,u)
+[.Φ₁Φ₂]:4<.>
+
+julia> T=subspets(WF,Int[],W(2))
+.Φ₁Φ₂
+
+julia> Uch.LusztigRestrict(T,u)
+[.Φ₁Φ₂]:0
+```
+"""
+LusztigRestrict(HF,u)=UniChar(HF,permutedims(LusztigInductionTable(HF,
+                                                          u.group).scalar)*u.v)
+
+HCInduce(WF,u)=UniChar(WF,HCInductionTable(u.group,WF).scalar*u.v)
+
+HCRestrict(HF,u)=UniChar(HF,u.v*HCInductionTable(HF,u.group).scalar)
 
 function DLCharTable(W)
   gets(W,:rwTable)do W
     uc=UnipotentCharacters(W)
-    CharTable(W).irr'*fourier(uc)[uc.harishChandra[1][:charNumbers],:]
+    CharTable(W).irr'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:]
   end
 end
 
@@ -1087,46 +1146,6 @@ corresponding automorphism on the unipotent characters
     [D4]=<.211>
     gap> Frobenius(WF)(u,-1);
     [D4]=<11+>|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`LusztigInduction(<W>,<u>)`
-
-<u>  should be a unipotent character of a parabolic subcoset of the Coxeter
-coset  <W>. It represents  a unipotent character  `λ` of a  Levi `𝐋` of the
-algebraic  group  `𝐆`  attached  to  <W>.  The  program returns the Lusztig
-induced `R_𝐋^𝐆(λ)`.
-
-|    gap> W:=CoxeterGroup("G",2);;
-    gap> T:=CoxeterSubCoset(CoxeterCoset(W),[],W.1);
-    (q-1)(q+1)
-    gap> u:=UnipotentCharacter(T,1);
-    [(q-1)(q+1)]=<>
-    gap> LusztigInduction(CoxeterCoset(W),u);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>
-    gap> DeligneLusztigCharacter(W,W.1);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-`LusztigRestriction(<R>,<u>)`
-
-<u>  should be a unipotent character of a parent Coxeter coset <W> of which
-<R> is a parabolic subcoset. It represents a unipotent character `γ` of the
-algebraic  group `𝐆` attached to <W>,  while <R> represents a Levi subgroup
-<L>. The program returns the Lusztig restriction `*R_𝐋^𝐆(γ)`.
-
-|    gap> W:=CoxeterGroup("G",2);;
-    gap> T:=CoxeterSubCoset(CoxeterCoset(W),[],W.1);
-    (q-1)(q+1)
-    gap> u:=DeligneLusztigCharacter(W,W.1);
-    [G2]=<phi{1,0}>-<phi{1,6}>-<phi{1,3}'>+<phi{1,3}''>
-    gap> LusztigRestriction(T,u);
-    [(q-1)(q+1)]=4<>
-    gap> T:=CoxeterSubCoset(CoxeterCoset(W),[],W.2);
-    (q-1)(q+1)
-    gap> LusztigRestriction(T,u);
-    [(q-1)(q+1)]=0|
 
 """
 end

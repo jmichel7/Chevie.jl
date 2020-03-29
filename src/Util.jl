@@ -9,7 +9,7 @@ module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, # lists
-  format, bracket_if_needed, ordinal, rshow, fromTeX, joindigits, # formatting
+  format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -252,8 +252,9 @@ function ordinal(n)
   str
 end
 
-# show with attributes...
+# show/print with attributes...
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
+printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
 
 joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
                  string(sep[1:1],join(l,","),sep[2:2]) : join(l)

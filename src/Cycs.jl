@@ -108,7 +108,8 @@ end;
 testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
 """
 module Cycs
-# to use as a stand-alone module uncomment the next line
+import Gapjm: coefficients, root
+# to use as a stand-alone module comment above line and uncomment next
 # export coefficients, root
 export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
@@ -134,7 +135,8 @@ end
 
 conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
-conductor(i::Int)=1
+conductor(i::Integer)=1
+conductor(i::Rational)=1
 
 const zumbroich_basis_dict=Dict(1=>[0]) # The Zumbroich basis is memoized
 """
@@ -866,9 +868,12 @@ function Base.show(io::IO,q::Quadratic)
 end
 
 const inforoot=true
-function root(x::Integer,n::Number=2)
-  if n==1 || x==1 return x
-  elseif n==2
+const Irootdict=Dict{Tuple{Int,Int},Cyc{Int}}()
+function root(x::Integer,n=2)
+  if isone(n) || isone(x) return x end
+  if !(n isa Int) n=Int(n) end
+  get!(Irootdict,(n,x)) do
+  if n==2
     res=ER(x)
     if inforoot  println("root($x,$n)=$res") end
     return res
@@ -876,30 +881,35 @@ function root(x::Integer,n::Number=2)
   else
     error("root($x,$n) not implemented")
   end
+  end
 end
 
 root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
 
-function root(x::Cyc,n::Number=2)
+const Crootdict=Dict{Tuple{Int,Cyc{Int}},Cyc{Int}}()
+function root(x::Cyc,n=2)
+  if isone(n) || isone(x) return x end
+  if !(n isa Int) n=Int(n) end
+  get!(Crootdict,(n,x)) do
   r=Root1(x)
-  n1=Int(n)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
     x=num(x)
     if denominator(x)>1 return nothing end
     return root(Int(x),n)
   end
-  d=denominator(r.r)
+  d=conductor(r)
   j=1
   while true
-    k=gcd(n1,d)
-    n1=div(n1,k)
+    k=gcd(n,d)
+    n=div(n,k)
     j*=k
     if k==1 break end
   end
-  res=E(j*d,numerator(r.r)*gcd_repr(n1,d)[1])
+  res=E(j*d,exponent(r)*gcd_repr(n,d)[1])
   println("root($x,$n)=$res")
   res
+  end
 end
 
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0

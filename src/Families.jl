@@ -188,7 +188,8 @@ function Base.:*(f::Family,g::Family)
     :explanation=>"Tensor("*join(getindex.(arg,:explanation),",")*")"
   )
   if all(haskey.(arg,:charNumbers))
-    res[:charNumbers]=Cartesian(getindex.(arg,:charNumbers)...)
+    res[:charNumbers]=map(x->collect(Iterators.flatten(x)),
+                          Cartesian(getindex.(arg,:charNumbers)...))
   end
 #  if all(haskey.(arg,:special))
 #    res.special:=PositionCartesian(List(arg,Size),getindex.(arg,:special));
@@ -210,7 +211,7 @@ function Base.:*(f::Family,g::Family)
 #      if IsBound(f.qEigen) then return f.qEigen;else return f.eigenvalues*0;fi;
 #      end)),Sum);
 #  fi;
-  res
+  Family(res)
 end
 
 function fourier(f::Family)

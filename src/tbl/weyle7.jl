@@ -54,7 +54,7 @@ chevieset(:E7, :HeckeCharTable, function (param, sqrtparam)
         tbl = Dict{Symbol, Any}(:identifier => "H(E7)", :text => "origin: Meinolf Geck, July 1992", :cartan => chevieget(:E7, :CartanMat), :parameter => param, :rootparameter => sqrtparam, :size => 2903040, :powermap => chevieget(:E7, :PowerMaps), :irreducibles => map((i->begin
                                 map(function (j,)
                                         local res
-                                        res = evalpoly(q, j[1])
+                                        res = ValuePol(j[1], q)
                                         if IsInt(j[2])
                                             res = res * q ^ j[2]
                                         else

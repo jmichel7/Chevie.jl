@@ -410,7 +410,10 @@ function fakedegree(W,p,q)
   prod(map((t,p)->fakedegree(t,p,q),typ,p))
 end
 
-fakedegree(t::TypeIrred,p,q)=getchev(t,:FakeDegree,p,q)
+fakedegree(t::TypeIrred,p,q)=haskey(t,:scalar) ?
+  getchev(t,:FakeDegree,p,prod(s->q*conj(s),t.scalar)) : 
+  haskey(t,:orbit) ? getchev(t,:FakeDegree,p,q^length(t.orbit)) :
+  getchev(t,:FakeDegree,p,q)
 
 """
 `fakedegrees(W , q)`
@@ -646,7 +649,7 @@ Dict{Symbol,Any} with 9 entries:
   :A           => [3, 2, 0]
   :B           => [3, 2, 0]
   :extRefl     => [3, 2, 1]
-  :charparams  => Array{Array{Int64,1},1}[[[1, 1, 1]], [[2, 1]], [[3]]]
+  :charparams  => [[[1, 1, 1]], [[2, 1]], [[3]]]
   :positionDet => 1
 ```
 
@@ -748,9 +751,9 @@ julia> classinfo(coxgroup(:A,2))
 Dict{Symbol,Any} with 5 entries:
   :classes     => [1, 3, 2]
   :orders      => [1, 2, 3]
-  :classtext   => Array{Int64,1}[[], [1], [1, 2]]
+  :classtext   => [[], [1], [1, 2]]
   :classnames  => ["111", "21", "3"]
-  :classparams => Array{Int64,1}[[1, 1, 1], [2, 1], [3]]
+  :classparams => [[1, 1, 1], [2, 1], [3]]
 ```
 
 See also the introduction of this section.
@@ -1108,8 +1111,8 @@ this is the sign character).
 
 """
 
-struct InductionTable
-  scalar::Matrix{Int}
+struct InductionTable{T}
+  scalar::Matrix{T}
   gcharnames::Vector{String}
   ucharnames::Vector{String}
   identifier::String
@@ -1183,12 +1186,11 @@ function InductionTable(u,g)
   tg=CharTable(g)
   f=fusion_conjugacy_classes(u,g)
   cl=div.(length(u),tu.centralizers)
-  scal(c,c1)=div(Int(sum(map(*,c,conj.(c1),cl))),length(u))
+  scal(c,c1)=sum(map(*,conj.(c),c1,cl))//length(u)
   lu=sprint(show,u;context=:TeX=>true)
   lg=sprint(show,g;context=:TeX=>true)
-  InductionTable(
-  [scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1), i in axes(tu.irr,1)],
-  tg.charnames,tu.charnames,
+  sc=[scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1),i in axes(tu.irr,1)]
+  InductionTable(improve_type(sc),tg.charnames,tu.charnames,
   "Induction Table from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"InductionTable($(repr(u)),$(repr(g)))"))
 end
@@ -1196,9 +1198,10 @@ end
 function Base.show(io::IO,t::InductionTable)
   rep=!get(io,:TeX,false) && !get(io,:limit,false)
   if rep && haskey(t.prop,:repr) print(io,t.prop[:repr])
-  else println(io,fromTeX(io,t.identifier))
+  else print(io,fromTeX(io,t.identifier))
   end
-  if rep return end
+  if rep || get(io,:typeinfo,false)!=false return end
+  println(io)
   column_labels=fromTeX.(Ref(io),t.ucharnames)
   row_labels=fromTeX.(Ref(io),t.gcharnames)
   scal=map(t.scalar)do e

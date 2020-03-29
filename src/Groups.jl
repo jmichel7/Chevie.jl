@@ -28,16 +28,19 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 ```
 """
 module Groups
-# to use as a stand-alone module uncomment the next line
-# export word, elements, kernel, order
 export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, representative_operation,
-  centre
+  centre, normalizer
 
 using ..Util: gets
+import Gapjm: word, elements, kernel, order
+# to use as a stand-alone module comment above line and uncomment next line
+# export word, elements, kernel, order
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
+
+function normalizer end
 
 Base.one(G::Group{T}) where T=isempty(gens(G)) ? one(T) : one(gens(G)[1])
 gens(G::Group)=G.gens
@@ -340,7 +343,7 @@ end
 
 Groups.Group(g::Vector{Coset})=CosetGroup(filter(!isone,g),Dict{Symbol,Any}())
 
-Base.:/(W::Group,H::Group)=Group(map(x->Coset(H,x),gens(W)))
+Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))))
 
 elements(C::Coset)=C.phi .* elements(Group(C))
 

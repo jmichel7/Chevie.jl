@@ -72,25 +72,25 @@ l3=[
 ]
 
 spets_ex=map(l2)do x
-  println("creating $x")
+  printc("creating ",x,"\n")
   x[1](x[2:end]...)
 end
 
 twisted=map(l3) do x
-  println("creating $x")
+  printc("creating ",x,"\n")
   x[1](x[2:end]...)
 end
 
 function chartab(l)
   for g in l
-    println("creating CharTable($g)")
+    printc("creating CharTable(",g,")\n")
     show(IOContext(stdout,:limit=>true),CharTable(g))
   end
 end
 
 function uch(l)
   for g in l
-    println("creating UnipotentCharacters($g)")
+    printc("creating UnipotentCharacters(",g,")\n")
     show(IOContext(stdout,:limit=>true),UnipotentCharacters(g))
   end
 end
@@ -172,3 +172,66 @@ function CheckRepresentations(W,l=Int[])
     end
   end
 end
+
+function CheckLusztigInduction(WF)
+  if !(WF isa Spets) WF=spets(WF) end
+  W=Group(WF)
+  for J in filter(x->length(x)<length(gens(W)),parabolic_representatives(W))
+    CheckLusztigInduction(WF,J)
+  end
+end
+
+function CheckLusztigInduction(WF,J::AbstractVector{<:Integer})
+  for L in twistings(WF,J) CheckLusztigInduction(WF,L) end
+end
+
+function CheckLusztigInduction(WF,L)
+  if L.phi==WF.phi print("Split ") end
+  printc("Lusztig Induction from ",L," to ",WF,"\n")
+  t=LusztigInductionTable(L,WF)
+  if isnothing(t) return end
+  if haskey(t.prop,:scalars) 
+    println("************** scalars=",t.prop[:scalars]) 
+  end
+  if L.phi==WF.phi
+    h=Lusztig.HCInductionTable(L,WF)
+    if h.scalar!=t.scalar error("HC!=Lusztig") end
+  end
+  uh=UnipotentCharacters(L)
+  uw=UnipotentCharacters(WF)
+  q=Pol([1],1)
+  nh=charnames(uh)
+  hd=degrees(uh,q)
+  ud=degrees(uw,q)
+  index=generic_order(WF,q)/generic_order(L,q)
+  index*=q^-index.v
+  index*=generic_sign(L)/generic_sign(WF)
+  pred=hd.*index
+  ind=map(x->UniChar(WF,x),eachcol(t.scalar))
+  for j in 1:length(hd)
+    if pred[j]!=degree(ind[j])
+     printc("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j],"\n!!",
+        CycPol(degree(ind[j]))," instead of ",CycPol(pred[j]),
+        " quotient ", CycPol(degree(ind[j]))*inv(CycPol(pred[j])),"\n")
+    end
+  end
+  f=fusion_conjugacy_classes(L,WF)
+#  Check Mackey with Tori
+  c=map((a,b)->a//b,CharTable(WF).centralizers[f],CharTable(L).centralizers)
+  u=Uch.DLCharTable(L)
+  rhs=toM(map(1:HasType.NrConjugacyClasses(WF))do i
+    l=findall(==(i),f)
+    return isempty(l) ? u[1,:].*0 : sum(j->u[j,:].*c[j],l)
+  end)
+  rhs=Dict{Symbol,Any}(:scalar=>rhs, :u=>L,:g=>WF,
+    :uNames=>UnipotentCharacters(L).prop[:TeXCharNames],
+    :gNames=>classinfo(WF)[:classnames])
+  m=copy(rhs)
+  m[:scalar]=Uch.DLCharTable(WF)*t.scalar
+  if m[:scalar]!=rhs[:scalar] error("tables differ",m[:scalar],rhs[:scalar]) end
+  # Check transitivity with RTL
+  if Uch.DLCharTable(L)*permutedims(t.scalar)!=Uch.DLCharTable(WF)[f,:]
+     error("transitivity with RTL")
+  end
+end
+

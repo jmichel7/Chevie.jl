@@ -39,7 +39,7 @@ chevieset(Symbol("2E6"), :HeckeCharTable, function (param, rootparam)
                                 [q, -1]
                             end), 1:6), :sqrtParameter => fill(0, max(0, (1 + 6) - 1)) + v, :size => 51840, :cartan => chevieget(Symbol("2E6"), :CartanMat), :irreducibles => map((i->begin
                                 map((j->begin
-                                            evalpoly(v, j[1]) * v ^ j[2]
+                                            ValuePol(j[1], v) * v ^ j[2]
                                         end), i)
                             end), chevieget(Symbol("2E6"), :vpolheckeirreducibles)), :irredinfo => chevieget(Symbol("2E6"), :IrredInfo))
         Inherit(tbl, (chevieget(Symbol("2E6"), :ClassInfo))())
