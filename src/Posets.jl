@@ -252,7 +252,7 @@ julia> hasse(p)
 ```
 """
 function hasse(p::Poset)
-  gets(p,:hasse) do p
+  gets(p,:hasse)do
     m=Int.(incidence(p))
     map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
   end
@@ -278,7 +278,7 @@ julia> incidence(p)
 ```
 """
 function incidence(p::Poset)::Matrix{Bool}
-  gets(p, :incidence) do p
+  gets(p,:incidence)do
     n = linear_extension(p)
     incidence = one(Matrix{Bool}(undef,length(n),length(n)))
     for i in length(n)-1:-1:1

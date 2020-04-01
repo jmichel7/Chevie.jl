@@ -126,8 +126,9 @@ export PermRootGroup, PRG, PRSG, catalan,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
- refleigen, bipartite_decomposition, torus_order, rank, matX, PermX,
- coroots, baseX, semisimplerank, invariant_form, generic_order
+ refleigen, reflchar, bipartite_decomposition, torus_order, rank, matX, PermX,
+ coroots, baseX, semisimplerank, invariant_form, generic_order,
+ parabolic_representatives
 # to use as a stand-alone module uncomment the next line
 # export roots, gens, degree
 import Gapjm: gens, degree, roots
@@ -304,33 +305,43 @@ Base.in(w,W::PermRootGroup)=in(w,W.G)
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 # should use independent_roots
 
-"for each root index of first simple root conjugate to it"
-function simple_representatives(W::PermRootGroup{T,T1})::Vector{T1} where {T,T1}
-  getp(root_representatives,W,:rootreps)
-end
-  
-"for each root element conjugative representative to root"
-function simple_conjugating_element(W::PermRootGroup{T,T1},i)::Perm{T1} where{T,T1}
-  getp(simple_conjugating_element,W.G,:repelms)[i]
+"return for each root the index of the first simple root conjugate to it"
+function simple_representatives(W::PermRootGroup)
+  gets(W,:rootreps)do
+    reps=fill(0,length(roots(W)))
+    repelts=fill(one(W),length(roots(W)))
+    for i in eachindex(gens(W))
+      if iszero(reps[i])
+        d=transversal(W,inclusion(W,i))
+        for (n,e) in d 
+          reps[restriction(W,n)]=i
+          repelts[restriction(W,n)]=e
+        end
+      end
+    end
+    W.prop[:repelms]=repelts
+    W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
+    reps
+  end
 end
 
 "list of same length as W.roots giving corresponding reflections"
-function reflections(W::PermRootGroup{T,T1})::Vector{Perm{T1}} where{T,T1}
-  getp(root_representatives,W,:reflections)
+function reflections(W::PermRootGroup)
+  getp(simple_representatives,W,:reflections)
+end
+
+"for each root element conjugative representative to root"
+function simple_conjugating_element(W::PermRootGroup,i)
+  getp(simple_representatives,W,:repelms)[i]
 end
 
 "reflection for i-th root of W"
 reflection(W::PermRootGroup,i)=reflections(W)[i]
 
-"reflength(W,w) minimum number of reflections of which w is the product"
-function Perms.reflength(W::PermRootGroup,w::Perm)
-  l=getp(refleigen,W,:reflengths)::Vector{Int}
-  l[position_class(W,w)]
-end
-
-function cartan(W::PermRootGroup{T,T1})::Matrix{T} where {T,T1}
-  gets(W,:cartan)do W
-  [cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in eachindex(gens(W))]
+function cartan(W::PermRootGroup)
+  gets(W,:cartan)do
+    improve_type([cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in
+                  eachindex(gens(W))])
   end
 end
 
@@ -509,7 +520,7 @@ function findgoodgens(H,g,t::TypeIrred)
 end
 
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
-  gets(W,:refltype)do W
+  gets(W,:refltype)do
     map(diagblocks(cartan(W))) do I
       R=reflection_subgroup(W,I)
       d=TypeIrred(type_irred(R))
@@ -546,7 +557,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> hyperplane_orbits(W)
-2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int16,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:
+2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int64,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
  (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])
 ```
@@ -624,28 +635,38 @@ tr(m)=sum(i->m[i,i],axes(m,1))
 reflchar(W::PermRootGroup,w)=tr(matX(W,w))
 reflchar(W::PermRootGroup)=reflchar.(Ref(W),class_reps(W))
   
+# very inefficient for now
 function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
-  gets(W,:refleigen) do W
-    t=CharTable(W).irr[charinfo(W)[:extRefl],:]
-    v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
-    l=CycPol.((permutedims(v)*t)[1,:])
-    ll=map(c->reduce(vcat,map(p->fill(p[1].r,p[2]),c.v)),l)
+  gets(W,:refleigen) do
+    ll=map(class_reps(W)) do x
+      p=CycPol(charpoly(matX(W,x)))
+      vcat(map(r->fill(r[1].r,r[2]),p.v.d)...)
+    end
+#   t=CharTable(W).irr[charinfo(W)[:extRefl],:]
+#   v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
+#   l=CycPol.((permutedims(v)*t)[1,:])
+#   ll=map(c->reduce(vcat,map(p->fill(p[1].r,p[2]),c.v)),l)
     W.prop[:reflengths]=map(x->count(!iszero,x),ll)
     ll
   end
 end
 
+"reflength(W,w) minimum number of reflections of which w is the product"
+function Perms.reflength(W::PermRootGroup,w::Perm)
+  getp(refleigen,W,:reflengths)[position_class(W,w)]
+end
+
 torus_order(W::PermRootGroup,q,i)=prod(l->q-E(l),refleigen(W)[i])
 
 function classinv(W::PermRootGroup)
-  gets(W,:classinv)do W
+  gets(W,:classinv)do
     map(x->cycletype(W(x...),domain=simple_representatives(parent(W))),
          classinfo(W)[:classtext])
   end
 end
 
 function PermGroups.conjugacy_classes(W::PermRootGroup)
-  gets(W,:classes)do W
+  gets(W,:classes)do
     sort(conjugacy_classes(W.G),by=c->findfirst(w->w in c,class_reps(W)))
   end
 end
@@ -692,7 +713,7 @@ end
 Base.show(io::IO, W::PermRootGroup)=showtypes(io,refltype(W))
 
 function independent_roots(W::PermRootGroup)::Vector{Int}
-  gets(W,:indeproots) do W
+  gets(W,:indeproots) do
     r=roots(W)
     if isempty(r) Int[]
     else echelon(toM(roots(W)))[2]
@@ -702,8 +723,8 @@ end
 
 semisimplerank(W::PermRootGroup)=length(independent_roots(W))
 
-function baseX(W::PermRootGroup{T})::Matrix{T} where T
-  gets(W,:baseX) do W
+function baseX(W::PermRootGroup{T})where T
+  gets(W,:baseX) do
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
     res=toM(roots(W)[ir])
@@ -714,23 +735,6 @@ function baseX(W::PermRootGroup{T})::Matrix{T} where T
     end
     vcat(res,u)
   end
-end
-
-function root_representatives(W::PermRootGroup)
-  reps=fill(0,length(roots(W)))
-  repelts=fill(one(W),length(roots(W)))
-  for i in eachindex(gens(W))
-    if iszero(reps[i])
-      d=transversal(W,inclusion(W,i))
-      for (n,e) in d 
-        reps[restriction(W,n)]=i
-        repelts[restriction(W,n)]=e
-      end
-    end
-  end
-  W.prop[:rootreps]=reps
-  W.prop[:repelms]=repelts
-  W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
 end
 
 # permutation effected by M on roots of parent
@@ -748,15 +752,38 @@ function PermGroups.reduced(W::PermRootGroup,F)
   base=reflection.(Ref(W),eachindex(gens(W)))
   w=representative_operation(W,base,base.^F;action=(x,y)->x.^y)
   if !isnothing(w) return F/w end
+  ir=sort(base.^F)
+  w=representative_operation(W,sort(base),ir;action=(x,y)->sort(x.^y))
+  if !isnothing(w) return F/w end
   return nothing
 end
 
 function PermGroups.class_reps(W::PermRootGroup)
-  gets(W,:classreps)do W
-    cl=map(x->W(x...),classinfo(W)[:classtext])
-    W.G.prop[:classreps]=cl
-    cl
+  Util.gets(W.G,:classreps)do
+    map(x->W(x...),classinfo(W)[:classtext])
   end
+end
+
+parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
+          0:semisimplerank(W))...)
+
+parabolic_representatives(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)
+
+function parabolic_representatives(W::PermRootGroup,s)
+  t=refltype(W)
+  sols=filter(l->sum(l)==s,Cartesian(map(x->0:rank(x),t)...))
+  vcat(map(c->map(x->vcat(x...),Cartesian(map(eachindex(c))
+    do i
+      r=parabolic_representatives(t[i],c[i])
+      if r==false
+        R=reflection_subgroup(W,W.rootInclusion[t[i].indices])
+        return PermRootOps.ParabolicRepresentatives(R,c[i])
+      elseif all(x->all(y->y in 1:t[i].rank,x),r)
+        return map(x->inclusion(W)[t[i].indices[x]],r)
+      else R=reflection_subgroup(W,inclusion(W)[t[i].indices])
+        return map(x->inclusion(R)[x],r);
+      end
+    end...)),sols)...)
 end
 
 #--------------- PRG: an implementation of PermRootGroups--------------------

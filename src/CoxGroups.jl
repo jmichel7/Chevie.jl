@@ -140,8 +140,7 @@ The file Weyl.jl defines coxgroup.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
-  longest, braid_relations, coxmat, parabolic_representatives,
-  CoxSym
+  longest, braid_relations, coxmat, CoxSym
 
 export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
 
@@ -352,11 +351,11 @@ true
 ```
 """
 function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
-  elts=gets(W->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
+  elts=gets(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
   if coxrank(W)==1 return l>1 ? T[] : gens(W) end
-  H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
-  rc=gets(W->[Set([one(W)])],W,:rc)::Vector{Set{T}}
+  H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)#::CoxeterGroup{T}
+  rc=gets(()->[Set([one(W)])],W,:rc)#::Vector{Set{T}}
   while length(rc)<=l
     new=reduced(H,W,rc[end])
     if isempty(new) break
@@ -380,15 +379,15 @@ end
 const Wtype=Vector{Int8}
 #CoxeterWords
 function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
- ww=gets(W->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
+ ww=gets(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if coxrank(W)==1
     if l!=1 return Vector{Int}[]
     else return [[1]]
     end
   end
-  H=gets(W->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
-  rc=gets(W->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
+  H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  rc=gets(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
     new=reduced(H,W,Set((x->W(x...)).(rc[end])))
     if isempty(new) break
@@ -499,28 +498,6 @@ end
 "diagram of finite Coxeter group"
 PermRoot.Diagram(W::CoxeterGroup)=Diagram(refltype(W))
 
-# return all subsets of S which are W-conjugate to I
-function standard_parabolic_class(W,I::Vector{Int})
-   new=[I]
-   res=empty(new)
-   while !isempty(new)
-     n=vcat(map(new) do K
-       J=map(setdiff(1:coxrank(W),K)) do i
-	 w0=longest(W,push!(copy(K),i)::Vector{Int})
-         if isnothing(w0) one(w) else w0 end
-         # isnothing==parabolic W_I1 infinite
-       end
-       map(J) do w
-         H=gens(W)[K].^w
-         findall(x->x in H,gens(W))
-       end
-       end...)
-       res=union(res,new)
-       new=setdiff(n,res)
-   end
-   res
-end
-
 function parabolic_category(W,I::AbstractVector{<:Integer})
   Category(collect(sort(I));action=(J,e)->sort(J.^e))do J
     map(setdiff(1:coxrank(W),J)) do i
@@ -529,20 +506,20 @@ function parabolic_category(W,I::AbstractVector{<:Integer})
   end
 end
 
+# all subsets of S which are W-conjugate to I
+standard_parabolic_class(W,I::Vector{Int})=parabolic_category(W,I).obj
+
 # representatives of parabolic classes
-function parabolic_representatives(W,s)
+function PermRoot.parabolic_representatives(W::CoxeterGroup,s)
   l=collect(combinations(1:coxrank(W),s))
   orbits=[]
   while !isempty(l)
-    o=parabolic_category(W,l[1]).obj
+    o=standard_parabolic_class(W,l[1])
     push!(orbits,o)
     l=setdiff(l,o)
   end
   first.(orbits)
 end
-
-parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
-          0:semisimplerank(W))...)
 
 """
 `coxmat(W)`
@@ -718,7 +695,7 @@ end
 PermRoot.simple_representatives(W::CoxSym)=fill(1,nref(W))
 
 function PermRoot.reflection(W::CoxSym{T},i::Int)where T
-  ref=gets(W,:reflections)do W
+  ref=gets(W,:reflections)do
     [Perm{T}(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
   end::Vector{Perm{T}}
   ref[i]

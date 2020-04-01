@@ -680,7 +680,7 @@ for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  entry  `:malle`  gives  the
 parameters for the characters used by Malle in [@Mal96].
 """
 function charinfo(W)::Dict{Symbol,Any}
-  gets(W,:charinfo) do W
+  gets(W,:charinfo)do
     p=charinfo.(refltype(W))
     if isempty(p) return Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
       :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
@@ -759,7 +759,7 @@ Dict{Symbol,Any} with 5 entries:
 See also the introduction of this section.
 """
 function classinfo(W)::Dict{Symbol,Any}
-  gets(W,:classinfo) do W
+  gets(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
                       :classparams=>[Int[]],:orders=>[1],:classes=>[1])
@@ -820,7 +820,7 @@ function CharTable(t::TypeIrred)
   if all(isinteger,irr) irr=Int.(irr)
   else irr=Cyc{Int}.(irr)
   end
-  CharTable(irr,names,ct[:classnames],Int.(ct[:centralizers]),ct[:identifier],
+  CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),ct[:identifier],
             Dict{Symbol,Any}())
 end
 
@@ -840,11 +840,11 @@ function Base.prod(ctt::Vector{<:CharTable})
   CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
 end
 
-CharTable(W::PermRootGroup)=gets(W->prod(CharTable.(refltype(W))),W,:chartable)
-CharTable(W::FiniteCoxeterGroup)=gets(W->prod(CharTable.(refltype(W))),W,:chartable)
+CharTable(W::PermRootGroup)=gets(()->prod(CharTable.(refltype(W))),W,:chartable)
+CharTable(W::FiniteCoxeterGroup)=gets(()->prod(CharTable.(refltype(W))),W,:chartable)
 
 function CharTable(W::Spets)::CharTable
-  gets(W,:chartable) do W
+  gets(W,:chartable)do
     ctt=CharTable.(refltype(W))
     if isempty(ctt) 
      return CharTable(hcat(1),["Id"],["1"],[1],"$W",Dict{Symbol,Any}())

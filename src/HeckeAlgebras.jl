@@ -205,7 +205,7 @@ function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
 end
 
 function rootpara(H::HeckeAlgebra)
-  gets(H,:rootpara) do H
+  gets(H,:rootpara)do
     map(eachindex(H.para)) do i
        if isone(-prod(H.para[i])) return -prod(H.para[i]) end
        error("could not compute rootpara[$i]")
@@ -231,7 +231,7 @@ function Base.show(io::IO, H::HeckeAlgebra)
 end
 
 function Chars.CharTable(H::HeckeAlgebra)
-  gets(H,:chartable) do H
+  gets(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
        getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H.prop,:rootpara) ? 
@@ -604,7 +604,7 @@ function Base.show(io::IO, H::HeckeCoset)
 end
 
 function Chars.CharTable(H::HeckeCoset)
-  gets(H,:chartable) do H
+  gets(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices

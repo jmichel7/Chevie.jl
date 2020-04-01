@@ -1040,7 +1040,7 @@ chevieset(:G4_22, :UnipotentCharacters, function (ST,)
                         n *= SPrint("^", arg[3])
                     end
                     n *= SPrint("[", FormatTeX(arg[2]), "]")
-                    res = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:6, :parameterExponents => [], :charNumbers => [arg[1]], :eigenvalue => arg[2], :cuspidalName => n)
+                    res = Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [arg[1]], :eigenvalue => arg[2], :cuspidalName => n)
                     if length(arg) > 2 && !(IsInt(arg[length(arg)]))
                         res[:qEigen] = arg[length(arg)]
                     end

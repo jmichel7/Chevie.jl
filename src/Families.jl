@@ -147,7 +147,7 @@ function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}()
   merge!(f,d)
 end
 
-special(f::Family)::Int=gets(f->1,f,:special)
+special(f::Family)::Int=gets(()->1,f,:special)
 
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 Base.getindex(f::Family,k)=f.prop[k]

@@ -31,7 +31,7 @@ end
   Usually called as
     gets(O,:p) do ---code to compute property :p --- end
 """
-gets(f::Function,o,p::Symbol)=get!(()->f(o),o.prop,p)
+gets(f::Function,o,p::Symbol)=get!(f,o.prop,p)
 
 """
   A  variation where it is assumed that f sets key p but not assumed that f

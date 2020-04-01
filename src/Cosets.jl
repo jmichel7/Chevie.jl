@@ -255,6 +255,8 @@ function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
 end
 
 Groups.Group(WF::Spets)=WF.W
+PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
+PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
 
 twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
   subspets.(Ref(spets(W)),Ref(J),twisting_elements(W,J))
@@ -304,7 +306,7 @@ end
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,matX(W,w))
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
-Base.parent(W::Spets)=gets(W->W,W,:parent)
+Base.parent(W::Spets)=gets(()->W,W,:parent)
 
 function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   perm=PermX(W.G,F)
@@ -313,15 +315,12 @@ function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   FCC(phi,F,W,Dict{Symbol,Any}())
 end
 
-charpoly(M)=isempty(M) ? CycPol(Pol([1],0)) : 
-   CycPol(GLinearAlgebra.Det(Ref(Pol([1],1)).*one(M)-M))
-
 function torusfactors(WF::CoxeterCoset)
-  M=PermRoot.baseX(WF.W.G)
+  M=baseX(WF.W.G)
   M*=WF.F*inv(convert.(Cyc{Rational},M))
   M=improve_type(M)
   r=semisimplerank(WF.W)
-  charpoly(M[r+1:end,r+1:end])
+  CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 
 function PermRoot.generic_order(WF::Spets, q )
@@ -340,7 +339,7 @@ generic_sign(WF)=(-1)^rank(Group(WF))*
    prod(last.(degrees(WF)))*conj(PhiOnDiscriminant(WF))
 
 function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
-  gets(WF,:refltype)do WF
+  gets(WF,:refltype)do
     t=refltype(WF.W)
     c=map(x->PermRoot.indices(x),t)
     phires=Perm(inclusion(WF.W.G),inclusion(WF.W.G).^WF.phi)
@@ -364,6 +363,19 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   end
 end
 
+function PermRoot.parabolic_representatives(WF::CoxeterCoset,s)
+  W=Group(WF)
+  res=Vector{Int}[]
+  for I in parabolic_representatives(W,s)
+    if sort(I.^WF.phi)==sort(I) push!(res,I)
+    else 
+      c=filter(x->sort(x.^WF.phi)==sort(x),standard_parabolic_class(W,I))
+      if !isempty(c) push!(res,c[1]) end
+    end
+  end
+  res
+end
+
 PermRoot.Diagram(W::Spets)=PermRoot.Diagram(refltype(W))
 
 function Base.show(io::IO, W::Spets)
@@ -375,15 +387,15 @@ end
 PermRoot.matX(WF::Spets,w)=WF.F*matX(Group(WF),w)
   
 function PermGroups.class_reps(W::Spets)
-  gets(W,:classreps)do W
+  gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
 
 function PermRoot.refleigen(W::Spets)::Vector{Vector{Rational{Int}}}
-  gets(W,:refleigen) do W
+  gets(W,:refleigen)do
     map(W.phi.\class_reps(W)) do x
-      p=charpoly(matX(W,x))
+      p=CycPol(charpoly(matX(W,x)))
       vcat(map(r->fill(r[1].r,r[2]),p.v.d)...)
     end
   end
@@ -410,15 +422,14 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   end
   L=reflection_subgroup(W,J)
   N=normalizer(W,L)
-  W_L=N/L
+  W_L=N/L.G
   if !isone(WF.phi) error( "not implemented for twisted parent Spets" ) end
   if length(W_L)>=10
     H=Group(map(x->GetRelativeAction(W,L,x.phi),gens(W_L)))
     if length(H)==length(W_L)
-      h=GroupHomomorphismByImages(H,W_L,gens(H),gens(W_L))
-      h.isMapping=true
+      h=Hom(H,W_L,gens(W_L))
       e=class_reps(H)
-      return List(e,x->Image(h,x).phi)
+      return map(x->h(x).phi,e)
     end
   end
   return map(x->x.phi,class_reps(W_L))
@@ -430,7 +441,7 @@ function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   s=sort(collect(Set(reflections(L))))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L.G
-  map(x->reduced(L,x.phi),class_reps(W_L))
+  map(x->reduced(L.G,x.phi),class_reps(W_L))
 end
 
 twistings(W::PermRootGroup,J::AbstractVector{<:Integer})=
@@ -486,7 +497,7 @@ function spets(W::PermRootGroup,F::Matrix)
 end
 
 function relative_coset(WF::Spets,J=Int[],a...)
-# Print("SpetsOpsRelativeCoset ",arg," called \n");
+# printc("relative_coset(",WF,",",J,")\n");
   W=Group(WF)
   R=relative_group(W,J,a...)
   res=spets(R,GetRelativeAction(W,reflection_subgroup(W,J),WF.phi))
@@ -508,7 +519,7 @@ spets(phi,F::Matrix,W::PermRootGroup,P::Dict{Symbol,Any})=PRC(phi,F,W,P)
 Groups.Group(W::PRC)=W.W
 
 function PermRoot.refltype(WF::PRC)
-  gets(WF,:refltype)do WF
+  gets(WF,:refltype)do
     W=Group(WF)
     t=refltype(W)
     if isone(WF.phi) 
@@ -571,7 +582,7 @@ function PermRoot.refltype(WF::PRC)
           end
           #println(" scal after:$scal")
           if !constant(scal) error()
-          else scal=scal[1]
+          else scal=Root1(scal[1])
           end
         end
         push!(scalar,E(scal))
@@ -586,7 +597,7 @@ function torusfactors(WF::PRC)
   M=PermRoot.baseX(Group(WF))
   M*=WF.F*inv(convert.(Cyc{Rational},M))
   r=semisimplerank(WF.W)
-  charpoly(M[r+1:end,r+1:end])
+  CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 #--------------------- Root data ---------------------------------
 Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)

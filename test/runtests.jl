@@ -434,7 +434,7 @@ end
 end
 @testset "PermRoot.jl" begin
 @test mytest("W=coxgroup(:B,2)","B₂")
-@test mytest("hyperplane_orbits(W)","2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int16,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])")
+@test mytest("hyperplane_orbits(W)","2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int64,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])")
 @test mytest("bipartite_decomposition(coxgroup(:E,8))","([1, 4, 6, 8], [3, 2, 5, 7])")
 @test mytest("catalan(8)","1430")
 @test mytest("catalan(coxgroup(:A,7))","1430")

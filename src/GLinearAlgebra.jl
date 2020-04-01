@@ -10,7 +10,7 @@ any ring).
 module GLinearAlgebra
 using Gapjm
 export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
-  ratio, schur_functor
+  ratio, schur_functor, charpoly
 
 """
     `echelon!(m)`
@@ -390,5 +390,8 @@ function ratio(v::Vector, w::Vector)
   if v!= r.* w  return nothing end
   r
 end
+
+# characteristic polynomial
+charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
 
 end

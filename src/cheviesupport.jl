@@ -120,7 +120,7 @@ CoxeterGroup()=coxgroup()
 #  dummy translations of GAP3 functions
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
-FormatGAP(x)=repr(x)
+FormatGAP(x)=replace(repr(x)," "=>"")
 Format(x,opt)=sprint((io,x)->show(IOContext(io,opt...),x),x)
 
 function ReadChv(s) end

@@ -260,7 +260,7 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   y=critical_pair(W,y,w)
   lw=length(W,w)
   if lw-length(W,y)<=2 return Pol(1) end
-  d=gets(W->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
+  d=gets(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
   if haskey(d,(w,y)) return  d[(w,y)] end
   s=firstleftdescent(W,w)
   v=gens(W)[s]*w
@@ -337,7 +337,7 @@ occurs in the formula for ``μᵥ``).
 function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   T=Tbasis(H)
   W=H.W
-  cdict=gets(H,Symbol("C'->T")) do H
+  cdict=gets(H,Symbol("C'->T")) do
     Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
   if haskey(cdict,w) return cdict[w] end
   if equalpara(H)
@@ -444,7 +444,7 @@ julia> character(c)
 ```
 """
 function character(c::LeftCell)
-  gets(c,:character) do c
+  gets(c,:character)do
     r=representation(c,hecke(c.group))
     cc=HasType.traces_words_mats(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
@@ -508,7 +508,7 @@ leftstars(W)=map(st->(w->leftstar(W,st,w)),
                  filter(r->length(r[1])>2,braid_relations(W)))
 
 function Gapjm.elements(c::LeftCell)
-  gets(c,:elements) do c
+  gets(c,:elements)do
     elements=orbit(leftstars(c.group),duflo(c);action=(x,f)->f(x))
     for w in c.prop[:reps]
       append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
@@ -544,7 +544,7 @@ function KLMueMat(W,c)
 end
 
 function Mu(c::LeftCell)
-  gets(c,:mu) do c
+  gets(c,:mu)do
     KLMueMat(c.group,collect(elements(c)))
   end
 end
@@ -692,7 +692,7 @@ function OldLeftCellRepresentatives(W)
 end
 
 function cellreps(W)
-  gets(W,:cellreps) do W
+  gets(W,:cellreps)do
     cc=LeftCellRepresentatives(W)
     if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
     cc
@@ -817,7 +817,7 @@ end
 
 # WGraph of LeftCell c
 function WGraph(c::LeftCell)
-  gets(c,:graph) do c
+  gets(c,:graph)do
     e=elements(c)
     mu=Mu(c)
     n=length(e)

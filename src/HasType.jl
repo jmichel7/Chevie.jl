@@ -189,7 +189,7 @@ julia> length(W)
 ```
 """
 function Gapjm.degrees(W::Group)
-  gets(W,:degrees)do W
+  gets(W,:degrees)do
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
 end
@@ -236,7 +236,7 @@ julia> degrees(HF)
 ```
 """
 function Gapjm.degrees(W::Spets)
-  gets(W,:degrees)do W
+  gets(W,:degrees)do
     vcat(map(x->(1,x),E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
   end
 end

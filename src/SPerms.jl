@@ -475,7 +475,7 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
 end
 
 function PermRoot.reflection(W::CoxHyperoctaedral,i::Int)
-  ref=gets(W,:reflections)do W
+  ref=gets(W,:reflections)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
     for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
     for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end

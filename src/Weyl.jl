@@ -529,7 +529,7 @@ describe_involution(W,w)=SimpleRootsSubsystem(W,
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
 function PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}
-  gets(W,:refltype)do W
+  gets(W,:refltype)do
     W.G.prop[:refltype]=type_cartan(cartan(W))
   end
 end
@@ -721,7 +721,7 @@ end
 
 # root lengths for parent group
 function rootlengths(W::FCG)::Vector{Int}
-  gets(W,:rootlengths) do W
+  gets(W,:rootlengths)do
     C=cartan(W)
     lengths=fill(0,2*W.N)
     for t in refltype(W)
@@ -912,7 +912,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
     I=SimpleRootsSubsystem(W,inclusion[1:N])
     C=T1[cartancoeff(W,i,j) for i in I, j in I]
   end
-  rootdec=roots(C)
+  rootdec=isempty(C) ? Vector{T1}[] : roots(C)
   rootdec=vcat(rootdec,-rootdec)
   if isempty(rootdec) inclusion=Int[]
   else inclusion=map(rootdec)do r
@@ -929,7 +929,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
    t
   end
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
-  G=Group(reflection.(Ref(W),I))
+  G=isempty(I) ? Group(Perm{T}[]) : Group(reflection.(Ref(W),I))
   G=PRSG(G,inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,N,W,prop)
 end

@@ -535,16 +535,17 @@ function UnipotentCharacters(WF::Spets)
     uc=UnipotentCharacters(t)
     if uc==false return false end
     H=map(x->reflection_subgroup(W,x.indices),t.orbit)
+    inc=vcat(map(x->x.indices,t.orbit)...)
     for s in uc.harishChandra
-      s[:levi]=vcat(map(R->inclusion(R,s[:levi]),H)...)
-      s[:relativeType].indices=inclusion(H[1])[s[:relativeType].indices]
+      s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
+      s[:relativeType].indices=restriction(W,inclusion(H[1],s[:relativeType].indices))
     end
     for s in uc.almostHarishChandra
-      s[:levi]=vcat(map(R->inclusion(R,s[:levi]),H)...)
+      s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
       s[:relativeType].orbit=vcat(map(x->
         map(s[:relativeType].orbit)do r
 	  r=copy(r)
-          r.indices=inclusion(x,r.indices)
+          r.indices=restriction(W,inclusion(x,r.indices))
 	  r
         end,H)...)
       s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H[1])),inclusion(H[1])))
@@ -644,16 +645,16 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol([1],1))
   end
   d=uc.prop[:fakedegrees]
   if haskey(d,q) return d[q] end
-  fd=fill(zero(q),length(uc))
   f=fakedegrees(Group(uc),q)
-  if isa(q,Pol) f=convert.(Pol{Int},f) end
+  if isa(q,Pol) f=improve_type(f) end
+  fd=fill(zero(f[1]),length(uc))
   fd[uc.almostHarishChandra[1][:charNumbers]]=f
   d[q]=fd
 end
 
 # FourierInverse times the vector of fake degrees is the vector of unip degrees
 function fourierinverse(uc::UnipotentCharacters)
-  gets(uc,:fourierinverse)do uc
+  gets(uc,:fourierinverse)do
      l=length(uc)
      T=reduce(promote_type,map(f->eltype(f[:fourierMat]),uc.families))
 #    println(map(f->eltype(f[:fourierMat]),uc.families),"=> T=$T")
@@ -666,7 +667,7 @@ function fourierinverse(uc::UnipotentCharacters)
 end
 
 function Families.fourier(uc::UnipotentCharacters)
-  gets(uc,:fourier)do uc
+  gets(uc,:fourier)do
      l=length(uc)
      i=fill(0*E(1)//1,l,l)
      for f in uc.families
@@ -713,7 +714,7 @@ function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
 end
 
 function eigen(uc::UnipotentCharacters)
-  gets(uc,:eigen)do uc
+  gets(uc,:eigen)do
     eig=fill(E(1),length(uc))
     for f in uc.families eig[f[:charNumbers]]=f[:eigenvalues] end
     eig
@@ -721,7 +722,7 @@ function eigen(uc::UnipotentCharacters)
 end
 
 function labels(uc::UnipotentCharacters)::Vector{String}
-  gets(uc,:labels)do uc
+  gets(uc,:labels)do
     lab=fill("",length(uc))
     for f in uc.families lab[f[:charNumbers]]=f[:charLabels]
     end
@@ -938,7 +939,7 @@ HCInduce(WF,u)=UniChar(WF,HCInductionTable(u.group,WF).scalar*u.v)
 HCRestrict(HF,u)=UniChar(HF,u.v*HCInductionTable(HF,u.group).scalar)
 
 function DLCharTable(W)
-  gets(W,:rwTable)do W
+  gets(W,:rwTable)do
     uc=UnipotentCharacters(W)
     CharTable(W).irr'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:]
   end

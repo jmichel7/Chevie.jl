@@ -7,24 +7,27 @@ export LusztigInductionTable
 #       (never needed for Coxeter groups and standard levis H)
 FindSeriesInParent=function(h,HF,WF,sers)
   if WF isa Spets W=Group(WF) else W=WF end
-  n = sort(filter(!isempty,split(h[:cuspidalName],"\\otimes ")))
-  for y = sers
-   if h[:eigenvalue]== y[:eigenvalue] && length(h[:levi]) == length(y[:levi])
+  n=sort(filter(!isempty,split(h[:cuspidalName],"\\otimes ")))
+  for y in sers
+#  println("h[:levi]=",h[:levi]," y[:levi]=",y[:levi])
+#  println("h[:eigenvalue]=",h[:eigenvalue]," y[:eigenvalue]=",y[:eigenvalue])
+   if h[:eigenvalue]==y[:eigenvalue] && length(h[:levi])==length(y[:levi])
      p=sort(filter(!isempty,split(y[:cuspidalName],"\\otimes ")))
+#    print(" p=",p)
      if p==n
-       p=representative_operation(W, HasType.gapSet(h[:levi]), 
-                                     HasType.gapSet(y[:levi]), 
-                                  action=(s,g)->HasType.gapSet(s.^g))
-       if p!=false return (ser=y, op=p) end
+       p=representative_operation(W,
+          sort(restriction(WF,inclusion(HF,h[:levi]))), 
+          sort(y[:levi]), action=(s,g)->sort(s.^g))
+       if !isnothing(p) return (ser=y, op=p) end
        p=representative_operation(W, 
-          HasType.gapSet(reflections(reflection_subgroup(W, h[:levi]))), 
-          HasType.gapSet(reflections(reflection_subgroup(W, y[:levi]))), 
-                                  action=(s,g)->HasType.gapSet(s.^g))
-        if p != false return (ser=y, op=p) end
+          sort(reflections(reflection_subgroup(W, h[:levi]))), 
+          sort(reflections(reflection_subgroup(W, y[:levi]))), 
+                                  action=(s,g)->sort(s.^g))
+       if !isnothing(p) return (ser=y, op=p) end
       end
     end
   end
-  error("series not found")
+  error("series ", n," not found in ",WF)
 end
 
 # find the number of cuspidal of name n in UnipotentCharacters(HF)
@@ -80,7 +83,7 @@ FindIntSol=function(l)
   # variable v is val: list-of-rootsofunity-possibilities.
   function applylist(v, val)
    if haskey(vals,v) # vals[i] is a list of possibilities
-      vals[v] = Intersection(vals[v], val)
+      vals[v] = intersect(vals[v], val)
       if length(vals[v]) == 0 return false end
       val = vals[v]
     else
@@ -125,11 +128,12 @@ FindIntSol=function(l)
             end
         end
     end
-    i = findfirst(smallnorm,l)
+    i=findfirst(smallnorm,l)
     if !isnothing(i)
       v=l[i]
-      i=findfirst(x->length(x[:elm])>0,v[:elm])
-      return apply(v[:elm][i][:elm][1],Mvp(v[:elm][i][:elm][1])-v//v[:coeff][i])
+      for (m,c) in v.d
+        if degree(m)>0 return apply(m.d.d[1][1],Mvp(m.d.d[1][1])-v//c) end
+      end
     end
     stuck=true
     return false
@@ -154,15 +158,18 @@ function LusztigInductionPieces(LF,WF)
   uW=UnipotentCharacters(WF)
   hw=uW.almostHarishChandra
   map(uL.almostHarishChandra) do h
+#     printc( "LF=",LF," ",
+#      map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
+#      h[:relativeType]),"\n")
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
     cL=reflection_subgroup(W,ser[:levi])
     if Group(WF) isa CoxeterGroup
-      WFGL=relative_coset(WF,h[:levi])
+      WFGL=relative_coset(WF,restriction(W,inclusion(L,h[:levi])))
       WGL=Group(WFGL)
-      LFGL=relative_coset(LF,restriction(L)[h[:levi]])
-      LFGL=subspets(WFGL,inclusion(WGL)[
+      LFGL=relative_coset(LF,h[:levi])
+      LFGL=subspets(WFGL,convert(Vector{Int},inclusion(WGL,
                     map(x->findfirst(==(x),WGL.prop[:relativeIndices]),
-                        inclusion(L)[Group(LFGL).prop[:relativeIndices]])],
+                        inclusion(L,Group(LFGL).prop[:relativeIndices])))),
                     WGL.prop[:MappingFromNormalizer](LF.phi*WF.phi^-1))
     else
       Jb=vcat(map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) :
@@ -170,21 +177,25 @@ function LusztigInductionPieces(LF,WF)
       WFGL=relative_coset(WF,ser[:levi],Jb)
       if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
-      rh=vcat(map(
+      rh=restriction(W,inclusion(L,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-           h[:relativeType])...).^op
+       h[:relativeType])...))).^op
+#     printc("rh=",rh," op=",op,"\n")
       w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
       rh=map(function(x) r=GetRelativeRoot(W,cL,x)
               p=findfirst(i->reflection(WGL,restriction(WGL,i))==
               PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
               inclusion(WGL)[p] end,rh)
+#     printc("WFGL=",WFGL," rh=",rh," w=",w,"\n")
       LFGL=subspets(WFGL,rh,w)
+#     printc("LFGL=",LFGL,"\n")
 #     ReflectionName(LFGL)
 #     ReflectionName(WFGL)
     end
     lu=sprint(show,LF;context=:TeX=>true)
     lg=sprint(show,WF;context=:TeX=>true)
+#   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
                    uW.prop[:almostTeXCharNames][ser[:charNumbers]],
                    uL.prop[:almostTeXCharNames][h[:charNumbers]],
@@ -285,7 +296,7 @@ function LusztigInductionTable(LF,WF;check=true)
   if any(!isone,scalars)
       res.prop[:scalars] = scalars
       if all(isinteger, scalars) p = "#I signs are "
-      else InfoChevie("#I non-sign scalars needed:", FormatGAP(scalars), "\n")
+      else InfoChevie("#I non-sign scalars needed:", scalars, "\n")
       end
   end
   scalars=sum(i->maps[i]*scalars[i],1:length(scalars))
@@ -314,10 +325,11 @@ function HCInductionTable(HF, WF)
   res.prop[:pieces]=map(uh.harishChandra)do h
     ser,op = FindSeriesInParent(h, HF, WF, uw.harishChandra)
     Jb = vcat(map(x->x.indices, ser[:relativeType])...)
+#   println("Jb=$Jb")
     if Group(WF) isa CoxeterGroup
       Wi=rootdatum(cat(cartan.(ser[:relativeType])...;dims=(1,2)))
       if !isone(op)
-        rh=relative_group(H, h[:levi])[:generators]
+        rh=gens(relative_group(H, h[:levi]))
         rh=filter(a->order.(gens(Wi)[a])==order.(rh),
           arrangements(eachindex(gens(Wi)), length(rh)))
         if length(rh)>1 ChevieErr("WARNING: embedding ambiguous:",rh,"\n") end
@@ -325,7 +337,7 @@ function HCInductionTable(HF, WF)
       else
         Hi=reflection_subgroup(Wi,
              map(x->Int(findfirst(y->x in orbit(WF.phi,y),Jb)), 
-              vcat(map(x->x.indices,h[:relativeType])...)))
+       restriction(W,inclusion(H,vcat(map(x->x.indices,h[:relativeType])...)))))
       end
     else
       L = reflection_subgroup(W, ser[:levi])

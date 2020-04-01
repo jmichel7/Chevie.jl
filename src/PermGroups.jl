@@ -86,7 +86,9 @@ function Base.show(io::IO,G::PermGroup)
 end
 
 function Gapjm.degree(G::PermGroup)::Int
-  gets(G,:degree)do G maximum(map(largest_moved_point,gens(G))) end
+  gets(G,:degree)do 
+    maximum(map(largest_moved_point,gens(G)))
+  end
 end
 
 " describe the orbit of Int p under PermGroup G as a Schreier vector "
@@ -250,7 +252,7 @@ end
 Base.eltype(::Type{GroupProdIterator{T}}) where T=eltype(T)
 #------------------------- iteration for PermGroups -----------------------
 function Base.length(G::PermGroup)::Int
-  gets(G,:length)do G 
+  gets(G,:length)do
     prod(length.(transversals(G)))
   end
 end

@@ -1,7 +1,7 @@
 
 chevieset(:I, :CartanMat, function (arg...,)
         local bond, type_, m
-        m = [[2, 0], [0, 2]]
+        m = [[2*E(1), 0], [0, 2]]
         bond = arg[1]
         if bond == 2
             return m

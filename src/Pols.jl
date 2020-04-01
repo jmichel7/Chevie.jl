@@ -145,20 +145,13 @@ Base.adjoint(a::Pol)=a
 Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
 
-function improve_type(m::Array)
-  if !isempty(m) m=convert.(reduce(promote_type,typeof.(m)),m) end
-  if all(isinteger,m) m=Int.(m)
-  elseif first(m) isa Cyc && all(x->x.n==1,m) m=Rational.(m)
-  elseif first(m) isa Pol && all(x->all(isinteger,x.c),m) m=convert.(Pol{Int},m)
-  end
-  m
-end
-
-function improve_type(mm::Vector{<:Array})
-  mm=improve_type.(mm)
-  T=reduce(promote_type,eltype.(mm))
-  map(x->convert.(T,x),mm)
-end
+best_type(x)=typeof(x)
+best_type(x::Cyc)=x.n==1 ? best_type(Rational(x)) : typeof(x)
+best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
+best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{reduce(promote_type,best_type.(m)),N}
+best_type(p::Pol)=iszero(p) ? Pol{Int} : Pol{reduce(promote_type,best_type.(p.c))}
+  
+improve_type(m)=convert(best_type(m),m)
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")

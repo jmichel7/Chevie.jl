@@ -507,7 +507,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                         push!(res[:charparams], t)
                     else
                         t = t[1:s * d]
-                        s = e // s
+                        s = div(e,s)
                         res[:charparams] = Append(res[:charparams], map((i->begin
                                             Concatenation(t, [s, i])
                                         end), 0:s - 1))
@@ -529,7 +529,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                                     return [1, 1, 2, Position(t, [1])]
                                 end
                             else
-                                de = length(t) // 2
+                                de = div(length(t),2)
                                 pos = Filtered(1:length(t), (i->begin
                                                 length(t[i]) > 0
                                             end))
@@ -1094,7 +1094,9 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, root)
                                     end
                                 end)
                     else
-                        w = char[2] * GetRoot(X[1] * X[2] * Y[1] * Y[2] * Z[char[3]] * Z[char[4]] * E(p // q, (2 - char[3]) - char[4]), 2) * E(p, (char[3] + char[4]) - 2)
+                        w = char[2] * GetRoot(X[1] * X[2] * Y[1] * Y[2] *
+                                              Z[char[3]] * Z[char[4]] *
+     E(div(p,q), (2 - char[3]) - char[4]), 2) * E(p, (char[3] + char[4]) - 2)
                         class = map((i->begin
                                         count((j->begin
                                                     i == j

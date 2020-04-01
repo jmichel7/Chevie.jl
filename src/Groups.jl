@@ -196,7 +196,7 @@ Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   This Dict is stored in `G.prop[:words]` for further use.
 """
 function minimal_words(G::Group)
-  gets(G,:words)do G
+  gets(G,:words)do
     words=Dict(one(G)=>Int[])
     for i in eachindex(gens(G))
       nwords=copy(words)
@@ -228,7 +228,7 @@ elements(G::Group)=collect(keys(minimal_words(G)))
 Base.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
-  gets(G,:classes) do G
+  gets(G,:classes) do
     if haskey(G.prop,:classreps)
       map(x->orbit(G,x),class_reps(G))
     elseif length(G)>10000
@@ -249,7 +249,7 @@ end
 
 "class_reps(G::Group): representatives of conjugacy classes of G"
 function class_reps(G::Group{T})::Vector{T} where T
-  gets(G,:classreps) do G
+  gets(G,:classreps) do
     first.(conjugacy_classes(G))
   end
 end
@@ -348,13 +348,13 @@ Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))))
 elements(C::Coset)=C.phi .* elements(Group(C))
 
 function class_reps(G::Coset{Group{T}})::Vector{T} where T
-  gets(G,:classreps) do G
+  gets(G,:classreps) do
     first.(conjugacy_classes(G))
   end
 end
 
 function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
-  gets(G,:classes) do G
+  gets(G,:classes) do
     if haskey(G.prop,:classreps)
       map(x->orbit(Group(G),x),class_reps(G))
     elseif length(G)>10000
