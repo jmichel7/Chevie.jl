@@ -335,9 +335,41 @@ function simple_conjugating_element(W::PermRootGroup,i)
   getp(simple_representatives,W,:repelms)[i]
 end
 
-"reflection for i-th root of W"
+"""
+`reflection(W,i)`
+
+reflection for `i`-th root of `W`
+"""
 reflection(W::PermRootGroup,i)=reflections(W)[i]
 
+"""
+`cartan(W::Group)`
+
+Let  `s₁,…,sₙ` be a  list of reflections  with associated root vectors `rᵢ`
+and  coroots `cᵢ`.  Then the  matrix `Cᵢ,ⱼ`  of the  `cᵢ(rⱼ)` is called the
+*Cartan  matrix* of the  list of reflections.  It is uniquely determined by
+the reflections up to conjugating by  a diagonal matrix.
+
+If  `s₁,…,sₙ` are the generators of a  reflection group `W`, the matrix `C`
+up  to conjugation by a  diagonal matrix is an  invariant of the reflection
+representation   of   `W`.   It   actually   completely   determines   this
+representation if the `rᵢ` are linearly independent (which is e.g. the case
+if  `C` is  invertible), since  in the  `rᵢ` basis  the matrix for the `sᵢ`
+differs  from the identity only on the `i`-th line, where the corresponding
+line of `C` has been subtracted. This function returns the Cartan matrix of
+the reflection group `W`.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> cartan(W)
+3×3 Array{Int64,2}:
+  2  -1   0
+ -1   2  -1
+  0  -1   2
+```
+"""
 function cartan(W::PermRootGroup)
   gets(W,:cartan)do
     improve_type([cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in
@@ -347,6 +379,17 @@ end
 
 cartan(t::TypeIrred)=toM(getchev(t,:CartanMat))
 
+"""
+rank(W::Group)
+
+This  function  returns  the  *rank*  of  a  reflection group, which is the
+dimension of the space where it acts.
+
+```julia-repl
+julia> rank(ComplexReflectionGroup(31))
+4
+```
+"""
 function rank(W::PermRootGroup)
   if isempty(roots(W)) W.prop[:rank]
   else length(roots(W)[1])
@@ -628,35 +671,129 @@ function bipartite_decomposition(W)
       end
     end
   end
-  return L,R
+  L,R
 end
 
 tr(m)=sum(i->m[i,i],axes(m,1))
+
+"""
+`reflchar(W,w)`
+    
+Returns  the trace  of the  element `w`  of the  reflection group `W` as an
+endomorphism of the vector space `V` on which `W` acts. This is the same as
+`trace(matX(W,w))`.
+
+julia-repl```
+julia> W=coxgroup(:B,3)
+B₃
+
+julia> reflchar(W,longest(W))
+-3
+julia-repl```
+"""
 reflchar(W::PermRootGroup,w)=tr(matX(W,w))
+
+"""
+`reflchar(W)`
+
+Returns  the reflection character of the  reflection group `W`. This is the
+same  as `map(c->reflchar(W,c),class-reps(W))`. When `W` is irreducible, it
+is also `CharTable(W).irr[charinfo(W)[:extRefl][2]]`.
+
+```julia-repl
+julia> reflchar(coxgroup(:A,3))
+5-element Array{Int64,1}:
+  3
+  1
+ -1
+  0
+ -1
+```
+"""
 reflchar(W::PermRootGroup)=reflchar.(Ref(W),class_reps(W))
   
+"""
+'refleigen(W)'
+
+Let  `W`  be  a  reflection  group  on the vector space `V`. `refleigen(W)`
+returns  the  list  for  each  conjugacy  classes  of the eigenvalues of an
+element of that class acting on `V`, as a list of `Root1`.
+
+```julia-repl
+julia> refleigen(coxgroup(:B,2))
+5-element Array{Array{Root1,1},1}:
+ [1, 1]
+ [1, -1]
+ [-1, -1]
+ [1, -1]
+ [ζ₄, ζ₄³]
+```
+"""
+function refleigen(W::PermRootGroup)
 # very inefficient for now
-function refleigen(W::PermRootGroup)::Vector{Vector{Rational{Int}}}
   gets(W,:refleigen) do
     ll=map(class_reps(W)) do x
       p=CycPol(charpoly(matX(W,x)))
-      vcat(map(r->fill(r[1].r,r[2]),p.v.d)...)
+      vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
 #   t=CharTable(W).irr[charinfo(W)[:extRefl],:]
 #   v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
 #   l=CycPol.((permutedims(v)*t)[1,:])
 #   ll=map(c->reduce(vcat,map(p->fill(p[1].r,p[2]),c.v)),l)
-    W.prop[:reflengths]=map(x->count(!iszero,x),ll)
+    W.prop[:reflengths]=map(x->count(!isone,x),ll)
     ll
   end
 end
 
-"reflength(W,w) minimum number of reflections of which w is the product"
+"""
+`reflength(W,w)`
+
+This  function returns the  number of eigenvalues  of `w` in the reflection
+representation  which are not equal to 1.  For a finite Coxeter group, this
+is  equal to the  reflection length of  `w`, that is  the minimum number of
+reflections  of which  `w` is  a product.  This also  holds in general in a
+well-generated  complex reflection group  if `w` divides  a Coxeter element
+for the reflection length.
+
+```julia-repl
+julia> W=coxgroup(:A,4)
+A₄
+
+julia> reflength(W,longest(W))
+2
+
+julia> reflength(W,W(1,2,3,4))
+4
+```
+"""
 function Perms.reflength(W::PermRootGroup,w::Perm)
   getp(refleigen,W,:reflengths)[position_class(W,w)]
 end
 
-torus_order(W::PermRootGroup,q,i)=prod(l->q-E(l),refleigen(W)[i])
+"""
+`torus_order(W,i,q)`
+
+returns  as a  polynomial in  `q` the  toric order  of the `i`-th conjugacy
+class  of `W`. This is the characteristic  polynomial of an element of that
+class  on  the  reflection  representation  of  `W`.  It is the same as the
+generic  order of the reflection subcoset  of `W` determined by the trivial
+subgroup and a representative of the `i`-th conjugacy class.
+
+```julia-repr
+julia> W=ComplexReflectionGroup(4);Pol(:q);
+
+julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),q)
+7-element Array{Pol{Cyc{Int64}},1}:
+ q²-2q+1
+ q²+2q+1
+ q²+1
+ q²-ζ₃q+ζ₃²
+ q²+ζ₃q+ζ₃²
+ q²+ζ₃²q+ζ₃
+ q²-ζ₃²q+ζ₃
+```
+"""
+torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
 
 function classinv(W::PermRootGroup)
   gets(W,:classinv)do
@@ -721,6 +858,26 @@ function independent_roots(W::PermRootGroup)::Vector{Int}
   end
 end
 
+"""
+`semisimpleRank(W)`
+
+This  function returns the  *semisimple rank* of  the reflection group `W`,
+which  is the dimension of the space  where it effectively acts. If `W`is a
+reflection  group acting on `V`, and `V₁`  is the subspace generated by the
+roots  of  the  reflections  of  `W`,  then  the  dimension  of `V₁` is the
+semisimple rank. `W` is called *essential* if `V₁=V`.
+
+```julia-repl
+julia> W=reflection_subgroup(coxgroup(:A,3),[1,3])
+A₃₍₁₃₎=A₁×A₁
+
+julia> semisimplerank(W)
+2
+
+julia> rank(W)
+3
+```
+"""
 semisimplerank(W::PermRootGroup)=length(independent_roots(W))
 
 function baseX(W::PermRootGroup{T})where T
@@ -737,8 +894,24 @@ function baseX(W::PermRootGroup{T})where T
   end
 end
 
-# permutation effected by M on roots of parent
-function PermX(W::PermRootGroup,M::Matrix)
+"""
+`PermX(W,M::AbstractMatrix)`
+
+Let  `M` be  a linear  transformation of  reflection representation  of `W`
+which  preserves the set  of roots of  `parent(W)`, and normalizes `W` (for
+the  action of  matrices on  the right).  `PermX` returns the corresponding
+permutation  of the roots of `parent(W)`;  it returns `nothing` if `M` does
+not normalize the set of roots.
+
+```julia-repl
+julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
+E₇₍₁₂₃₄₅₆₎=E₆
+
+julia> PermX(W,matX(W,longest(W)))==longest(W)
+true
+```
+"""
+function PermX(W::PermRootGroup,M::AbstractMatrix)
   Perm(parent(W).roots,Ref(permutedims(M)).*parent(W).roots)
 end
 
@@ -764,6 +937,37 @@ function PermGroups.class_reps(W::PermRootGroup)
   end
 end
 
+"""
+`parabolic_representatives(W)`
+
+Returns   a   list   of   indices of roots of `W`   describing
+representatives  of orbits of parabolic subgroups under conjugation by `W`.
+For Coxeter groups, each orbit has a representative whose indices is a subset
+of `eachindex(gens(W))`. This may not be the case in general.
+
+julia> parabolic_representatives(coxgroup(:A,4))
+7-element Array{Array{Int64,1},1}:
+ []
+ [1]
+ [1, 2]
+ [1, 3]
+ [1, 2, 3]
+ [1, 2, 4]
+ [1, 2, 3, 4]
+gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3));
+[ [  ], [ 1 ], [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ], [ 1, 2, 3 ] ]
+
+`parabolic_representatives(W,r)`
+
+If  a second  argument <r>  is given,  returns only  representatives of the
+parabolic subgroups of semisimple rank <r>.
+julia> parabolic_representatives(coxgroup(:A,4),2)
+2-element Array{Array{Int64,1},1}:
+ [1, 2]
+ [1, 3]
+gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3),2);
+[ [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ] ]
+"""
 parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
           0:semisimplerank(W))...)
 
@@ -776,8 +980,57 @@ function parabolic_representatives(W::PermRootGroup,s)
     do i
       r=parabolic_representatives(t[i],c[i])
       if r==false
-        R=reflection_subgroup(W,W.rootInclusion[t[i].indices])
-        return PermRootOps.ParabolicRepresentatives(R,c[i])
+        R=reflection_subgroup(W,inclusion(W,t[i].indices))
+#    by:=1+W.nbGeneratingReflections-W.semisimpleRank;
+#    Reflections(W); # make sure they are computed all
+#    stoi:=s->W.rootInclusion[Position(W.reflections,s)];
+#    l:=[List(Set(W.orbitRepresentative),x->ReflectionSubgroup(W,[x]))];
+#    for i in [2..W.semisimpleRank-1] do
+#      new:=[];ref:=[];
+#      for v in l[i-1] do
+#        InfoChevie("# Extending ",ReflectionName(v),"\c");
+#        S:=Normalizer(W,v);
+#        if v.nbGeneratingReflections=i-1 then
+#          c:=Union(List([1..by],i->Combinations(List(Reflections(W),stoi),i)));
+#        else c:=Combinations(List(Reflections(W),stoi),1);
+#        fi;
+#        c:=List(c,x->Union(x,v.rootInclusion{v.generatingReflections}));
+#        c:=Filtered(c,x->RankMat(W.roots{W.rootRestriction{x}})=i);
+#        InfoChevie(" ",Length(c)," new subgroups\c");
+#        c:=List(c,function(x)InfoChevie("*\c");
+#                             return ReflectionSubgroup(W,x);end);
+#        c:=Filtered(c,IsParabolic);
+#        c:=Set(List(c,x->Set(Reflections(x))));
+#        O:=Orbits(S,c,OnSets);
+#        O:=List(O,function(o)local m;m:=Minimum(List(o,x->Sum(x,stoi)));
+#             return First(o,x->Sum(x,stoi)=m);end);
+#        O:=List(O,x->ReflectionSubgroup(W,List(x,stoi)));
+#        InfoChevie("# ",Length(O)," to go\n");
+#        for c in O do
+#          rr:=Collected(ReflectionDegrees(c));
+#          cand:=Filtered([1..Length(ref)],i->ref[i]=rr);
+#          InfoChevie("# candidates for ",c," to be conjugate:",new{cand},"\n");
+#          if ForAll(new{cand},v->RepresentativeOperation(W,v,c)=false)
+#          then InfoChevie("# new:",ReflectionName(c),"\n");
+#               Add(new,c);Add(ref,rr);
+#          fi;
+#        od;
+#      od;
+#      InfoChevie("# i=",i," found:",new,"\n");
+#      Add(l,new);
+#    od;
+#    l:=List(Concatenation(l),function(v)local p;
+#      p:=StandardParabolic(W,v);if p<>false then v:=v^p;fi;return v;end);
+#    l:=CollectBy(l,SemisimpleRank);
+#    l:=List(l,v->List(v,x->x.rootInclusion{x.generatingReflections}));
+#    l:=Concatenation([[[]]],l);
+#    Add(l,[W.rootInclusion{W.generatingReflections}]);
+#    l:=List(l,v->List(v,x->List(x,y->stoi(Reflection(W,
+#                                            W.rootRestriction[y])))));
+#    l:=List(l,x->Set(List(x,Set)));
+#    W.parabolicRepresentatives:=l;
+#  fi;
+        return PermRootOps.parabolic_representatives(R,c[i])
       elseif all(x->all(y->y in 1:t[i].rank,x),r)
         return map(x->inclusion(W)[t[i].indices[x]],r)
       else R=reflection_subgroup(W,inclusion(W)[t[i].indices])
@@ -894,7 +1147,31 @@ end
 
 matX(W::PRG,i::Integer)=W.matgens[i]
 
-" as Chevie's MatXPerm"
+"""
+`MatX(W,w)`
+
+Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
+permutation  of the roots of `W`. The function `MatX` returns the matrix of
+`w`  acting on  `V`. This  is the  linear transformation  of `V` which acts
+trivially  on the orthogonal of  the coroots and has  same effect as `w` on
+the simple roots. The function makes sense more generally for an element of
+the normalizer of `W` in the whole permutation group of the roots.
+
+```julia-repl
+julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
+E₇₍₁₂₃₄₅₆₎=E₆
+
+julia> matX(W,longest(W))
+7×7 Array{Int64,2}:
+  0   0   0   0   0  -1  2
+  0  -1   0   0   0   0  2
+  0   0   0   0  -1   0  3
+  0   0   0  -1   0   0  4
+  0   0  -1   0   0   0  3
+ -1   0   0   0   0   0  2
+  0   0   0   0   0   0  1
+```
+"""
 function matX(W::PRG,w)
   X=baseX(W)
   ir=independent_roots(W)

@@ -1,3 +1,110 @@
+# replacements for non-usable parts of chevie's tbl
+
+CharTableSymmetric=Dict(:centralizers=>[
+     function(n,pp) res=k=1;last=0
+        for p in pp
+          res*=p
+          if p==last k+=1;res*=k
+          else k=1
+          end
+          last=p
+        end
+        res
+     end])
+
+"""
+ EvalPolRoot(pol, x, n, p) compute pol(p*x^(1/n))
+  
+  The point of this routine is to avoid unnecessary root extractions
+  during evaluation (e.g., if pol has no terms of odd degree and n=2,
+  then no root extraction is necessary).
+"""
+function EvalPolRoot(pol::Pol,x,n,p)
+  if isempty(pol.c) return 0 end
+  P=vcat(fill(0,mod(pol.v,n)),pol.c)
+  P=map(i->Pol(P[i:n:length(P)],div(pol.v-mod(pol.v,n),n))(x*p^n),1:n)
+  j=findlast(!iszero,P)
+  if isnothing(j) return 0 end
+  pol=Pol(P[1:j],0)
+  l=pol.v-1+filter(i->!iszero(pol.c[i]),eachindex(pol.c))
+  push!(l,n)
+  r=gcd(l...)
+  pol=Pol(pol.c[1:r:length(pol.c)],div(pol.v,r))
+  pol(GetRoot(x,div(n,r))*p^r)
+end
+
+function VcycSchurElement(arg...)
+  n = length(arg[1])
+  if length(arg) == 3
+      data = arg[3]
+      para = arg[1][data[:order]]
+  else
+      para = copy(arg[1])
+  end
+  monomial(mon)=prod(map(^,para,Int.(mon[1:n])))
+  r = arg[2]
+  if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
+  if haskey(r, :coeff) res = r[:coeff] else res = 1 end
+  if haskey(r, :factor) res*=monomial(r[:factor]) end
+  if haskey(r, :rootUnity)
+    term=function(v)
+     mon,pol=v
+     tt=monomial(mon)
+     if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
+     cyclotomic_polynomial(pol)(tt)
+    end
+  elseif haskey(r, :root)
+    term=function(v)
+      mon,pol=v
+     if length(mon)==n return Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
+     else return cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
+     end
+    end
+  else term=v->cyclotomic_polynomial(v[2])(monomial(v[1]))
+  end
+  res*=prod(term,r[:vcyc])
+  if !haskey(r, :root) return res end
+  den=lcm(denominator.(r[:root])...)
+  root=monomial(den*r[:root])
+  if haskey(r, :rootCoeff) root*=r[:rootCoeff] end
+  EvalPolRoot(res, root, den, data[:rootPower])
+end
+
+function ImprimitiveCuspidalName(S)
+  r=RankSymbol(convert(Vector{Vector{Int}},S))
+  d=length(S)
+  s=joindigits(map(length,S))
+  if r==0 return "" end
+  if sum(length,S)%d==1 # G(d,1,r)
+    if r==1 return d==3 ? "Z_3" : "Z_{$d}^{$s}"
+    else return "G_{$d,1,$r}^{$s}"
+    end
+  else # G(d,d,r)
+    if r==2
+      if d==4 return "B_2"
+      elseif d==6 
+        p=Dict("212010"=>"-1","221001"=>"1",
+               "211200"=>"\\zeta^2","220110"=>"\\zeta_3")
+        return "G_2[$(p[s])]"
+      else p=CHEVIE.R("SymbolToParameter","I")(S);
+	return "I_2($d)",FormatGAP(p)
+      end
+      elseif r==3 && d==3 
+        return "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
+      elseif r==3 && d==4 
+        return "G_{4,4,3}["* (s=="3010" ? "" : "-")*"\\zeta_4]"
+    else return "G_{$d,$d,$r}^{$s}"
+    end
+  end
+end
+
+function BDSymbols(n,d)
+  n-=div(d^2,4)
+  if n<0 return Vector{Vector{Int}}[] end
+  if d>0 return map(x->symbol_partition_tuple(x,d),partition_tuples(n,2)) end
+   return map(chevieget(:D,:symbolcharparam),
+              chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
+end
 # an addition
 chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,(t->r->fill(1//2,r)))
 # replacements for some functions in tables (whose automatic translation failed)

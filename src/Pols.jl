@@ -238,7 +238,9 @@ Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
 
 """
-computes (p,q) such that a=p*b+q
+`divrem(a::Pol, b::Pol)`
+
+computes `(p,q)` such that `a=p*b+q`
 """
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
@@ -260,7 +262,10 @@ end
 Base.div(a::Pol, b::Pol)=divrem1(a,b)[1]
 
 """
-divrem when b divides in ring: does not change type
+`divrem1(a::Pol, b::Pol)`
+
+`divrem` when the leading coefficiant of `b` divides that of `a`: 
+does not change type
 """
 function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
@@ -296,8 +301,8 @@ Base.://(p::T,q::Pol) where T=Pol(p)//q
 
 """
   gcd(p::Pol, q::Pol)
-  the coefficients of p and q must be elements of a field for
-  gcd to be type-stable
+the  coefficients of  p and  q must  be elements  of a  field for gcd to be
+type-stable
 
 # Examples
 ```julia-repl

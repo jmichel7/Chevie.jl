@@ -156,8 +156,12 @@ function Perms.cycles(p::SPerm)
   cycles
 end
 
-" order(a) is the order of the permutation a"
-order(a::SPerm) = lcm(length.(cycles(a)))
+"""
+order(a) 
+
+order of the signed permutation a
+"""
+Gapjm.order(a::SPerm) = lcm(length.(cycles(a)))
 
 function Base.show(io::IO, a::SPerm)
   cyc=cycles(a)

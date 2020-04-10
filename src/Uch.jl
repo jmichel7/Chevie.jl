@@ -167,24 +167,33 @@ One  can  do  computations  with  individual  unipotent characters. Here we
 construct  the Coxeter torus, and then the identity character of this torus
 as a unipotent character.
 
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> T:=ReflectionCoset(ReflectionSubgroup(W,[]),EltWord(W,[1,2]));
-    (q^2-q+1)
-    gap> u:=UnipotentCharacter(T,1);
-    [(q^2-q+1)]=<>|
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> T=spets(reflection_subgroup(W,Int[]),W(1,2))
+.Φ₆
+
+julia> u=UniChar(T,1)
+[.Φ₆]:<.>
+```
 
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
 associated to the Coxeter torus:
 
-|    gap> LusztigInduction(W,u);
-    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>
-    gap> v:=DeligneLusztigCharacter(W,[1,2]);
-    [G2]=<phi{1,0}>+<phi{1,6}>-<phi{2,1}>+<G2[-1]>+<G2[E3]>+<G2[E3^2]>
-    gap> Degree(v);
-    q^6 + q^5 - q^4 - 2*q^3 - q^2 + q + 1
-    gap> v*v;
-    6|
+```julia-repl
+julia> LusztigInduce(W,u)
+[G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
+
+julia> v=DLChar(W,[1,2])
+[G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
+
+julia> degree(v)
+Pol{Cyc{Rational{Int64}}}: q⁶+q⁵-q⁴-2q³-q²+q+1
+
+julia> v*v
+Cyc{Rational{Int64}}: 6
+```
 
 The  last two lines ask for the degree  of `v`, then for the scalar product
 of `v` with itself.
@@ -860,12 +869,12 @@ end
 
 Base.:+(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v+u2.v)
 Base.:-(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v-u2.v)
-Base.:*(u1::UniChar,u2::UniChar)=UniChar(u1.group,sum(u1.v .*u2.v))
+Base.:*(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
 Base.:*(a,u1::UniChar)=u1*a
 
-Gapjm.degree(u::UniChar)=sum(u.v .*
-                             degrees(UnipotentCharacters(u.group),Pol(:q)))
+Gapjm.degree(u::UniChar,q=Pol(:q))=sum(u.v .*
+                             degrees(UnipotentCharacters(u.group),q))
 
 """
 `LusztigInduce(W,u)`

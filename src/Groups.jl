@@ -28,7 +28,7 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 ```
 """
 module Groups
-export Group, minimal_words, element, gens, nbgens, class_reps, centralizer,
+export Group, minimal_words, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, representative_operation,
   centre, normalizer
@@ -45,23 +45,38 @@ function normalizer end
 Base.one(G::Group{T}) where T=isempty(gens(G)) ? one(T) : one(gens(G)[1])
 gens(G::Group)=G.gens
 nbgens(G::Group)=length(gens(G))
-@inline gen(W,i)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
 
 " element of W corresponding to a sequence of generators and their inverses"
-element(W::Group,w...)=isempty(w) ? one(W) : length(w)==1 ? gen(W,w[1]) : 
-    prod( gen(W,i) for i in w)
-(W::Group)(x...)=element(W,x...)
+(W::Group)(w...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
+                                            for i in w)
 
 """
-  orbit(gens::vector,p;action::Function=^)
+`orbit(gens::vector,p;action::Function=^)`
 
-  the orbit of `p` under generators `gens`. `p` should be hashable
+`orbit(G::Group,p;action::Function=^)`
+
+the  orbit of point  `p` under repeated  action of generators `gens`. Point
+`p`  should be hashable. The default action  of a group element is `^`. For
+example  if `g` is a permutation and `p`  an integer, `p^g` is the image of
+`p`  by `g`; if `h` and `g` are group elements, then `h^g` is the conjugate
+`inv(g)*h*g`.  If a group  is given instead  of generators, the orbit under
+`gens(G)` is returned.
+
 ```julia-repl
 julia> orbit([Perm(1,2),Perm(2,3)],1) 
 3-element Array{Int64,1}:
  1
  2
  3
+
+julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
+6-element Array{Array{Int64,1},1}:
+ [1, 3]
+ [2, 3]
+ [1, 2]
+ [3, 2]
+ [2, 1]
+ [3, 1]
 ```
 """
 function orbit(gens::Vector,pnt;action::Function=^)
@@ -77,19 +92,6 @@ function orbit(gens::Vector,pnt;action::Function=^)
   orb
 end
 
-"""
-  orbit(G::Group,p;action::Function=^)
-
-  the orbit of `p` under Group `G`. `p` should be hashable
-```julia-repl
-julia> G=Group([Perm(1,2),Perm(2,3)]);
-julia> orbit(G,1) 
-3-element Array{Int64,1}:
- 1
- 2
- 3
-```
-"""
 orbit(G::Group,pnt;action::Function=^)=orbit(gens(G),pnt;action=action)
 
 """
@@ -143,9 +145,14 @@ function orbits(gens::Vector,v::AbstractVector;action::Function=^,trivial=true)
 end
 
 """
-    `orbits(G,v;action=^)`
+`orbits(gens::Vector,v;action=^)`
+
+`orbits(G,v;action=^)`
     
-the orbits of Group `G` on `v`; the elements of `v` should be hashable.
+the  orbits on `v` of reapted action  of `gens`; the elements of `v` should
+be  hashable. If a  group is given  instead of generators,  the orbit under
+`gens(G)` is returned.
+
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> orbits(G,1:4)
@@ -158,8 +165,9 @@ orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,trivial=true)=
   orbits(gens(G),v;action=action,trivial=trivial)
 
 """
-    centralizer(G,p;action=^) 
-    computes the centralizer C_G(p)
+`centralizer(G,p;action=^)`
+
+computes the centralizer `C_G(p)`
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> centralizer(G,1)
@@ -193,7 +201,7 @@ Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   (1,2)   => [1]
   (1,2,3) => [2]
 ```
-  This Dict is stored in `G.prop[:words]` for further use.
+  This Dict is stored in `G.prop[:words]` so it is computed only once.
 """
 function minimal_words(G::Group)
   gets(G,:words)do
@@ -307,7 +315,7 @@ Coset(G::Group,phi)=CosetofAny(phi,G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
 
-(W::Coset)(x...)=element(Group(W),x...)*W.phi
+(W::Coset)(x...)=Group(W)(x...)*W.phi
 
 Base.cmp(a::Coset, b::Coset)=cmp(a.phi,b.phi)
 

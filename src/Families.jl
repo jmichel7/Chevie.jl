@@ -60,13 +60,13 @@ the  properties of *fusion data*, see  below. The field 'f[:charLabels]' is
 what  is displayed  in the  column 'labels'  when displaying the family. It
 contains  labels naturally attached to lines  of the Fourier matrix. In the
 case   of  reductive  groups,   the  family  is   always  attached  to  the
-"DrinfeldDouble"  of a small  finite group and  the '.charLabels' come from
+"Drinfeld_double"  of a small  finite group and  the '.charLabels' come from
 this construction.
 """
 module Families
 
 export family_imprimitive, Family, Drinfeld_double, fourier, FamilyOps,
- FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, NrDrinfeldDouble
+ FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, NrDrinfeld_double
 
 using ..Gapjm
 
@@ -489,7 +489,7 @@ chevieset(:families,:Dihedral,function(e)
 end)
 
 """
-`DrinfeldDouble(<g>[,<opt>])`
+`Drinfeld_double(g[,opt])`
 
 Given  a (usually small) finite group  `Γ`, Lusztig has associated a family
 (a  Fourier matrix, a list of eigenvalues of Frobenius) which describes the
@@ -539,16 +539,16 @@ there  is no complex conjugation of `χ₁`;  thus the matrix `S` is equal to
 `S,T`  satisfies directly the axioms for a fusion algebra (see below); also
 the matrix `S` is symmetric, while `S₀` is Hermitian.
 
-Thus there are two variants of 'DrinfeldDouble`:
+Thus there are two variants of 'Drinfeld_double`:
 
-`DrinfeldDouble(<g>,rec(lusztig:=true))`
+`Drinfeld_double(g,lu=true)`
 
 returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and  an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
 `(x,χ)↦(x,χ̄)`,  which allows  to recover  `S`, as  well as  an extra field
 `:lusztig', set to 'true'.
 
-`DrinfeldDouble(<g>)`
+`Drinfeld_double(g)`
 
 returns a family with the matrix `S`, which does not have fields '.lusztig'
 or '.perm'.
@@ -577,34 +577,33 @@ the call).
 
 `:special`: the index of the special element, which is `(x,χ)=(1,1)`.
 
-|    gap> f:=DrinfeldDouble(SymmetricGroup(3));
-    Family("D(Group((1,3),(2,3)))")
-    gap> Display(f);
-    D(Group((1,3),(2,3)))
-       label |eigen
-    _______________________________________________________
-    (1,1)    |    1 1/6  1/6  1/3  1/2  1/2  1/3  1/3  1/3
-    (1,X.2)  |    1 1/6  1/6  1/3 -1/2 -1/2  1/3  1/3  1/3
-    (1,X.3)  |    1 1/3  1/3  2/3    0    0 -1/3 -1/3 -1/3
-    (2a,1)   |    1 1/2 -1/2    0  1/2 -1/2    0    0    0
-    (2a,X.2) |   -1 1/2 -1/2    0 -1/2  1/2    0    0    0
-    (3a,1)   |    1 1/3  1/3 -1/3    0    0  2/3 -1/3 -1/3
-    (3a,X.2) |   E3 1/3  1/3 -1/3    0    0 -1/3 -1/3  2/3
-    (3a,X.3) | E3^2 1/3  1/3 -1/3    0    0 -1/3  2/3 -1/3
-    gap> f:=DrinfeldDouble(SymmetricGroup(3),rec(lusztig:=true));
-    Family("LD(Group((1,3),(2,3)))")
-    gap> Display(f);
-    LD(Group((1,3),(2,3)))
-       label |eigen
-    _______________________________________________________
-    (1,1)    |    1 1/6  1/6  1/3  1/2  1/2  1/3  1/3  1/3
-    (1,X.2)  |    1 1/6  1/6  1/3 -1/2 -1/2  1/3  1/3  1/3
-    (1,X.3)  |    1 1/3  1/3  2/3    0    0 -1/3 -1/3 -1/3
-    (2a,1)   |    1 1/2 -1/2    0  1/2 -1/2    0    0    0
-    (2a,X.2) |   -1 1/2 -1/2    0 -1/2  1/2    0    0    0
-    (3a,1)   |    1 1/3  1/3 -1/3    0    0  2/3 -1/3 -1/3
-    (3a,X.2) |   E3 1/3  1/3 -1/3    0    0 -1/3  2/3 -1/3
-    (3a,X.3) | E3^2 1/3  1/3 -1/3    0    0 -1/3 -1/3  2/3|
+```julia-repl
+julia> Drinfeld_double(CoxSym(3))
+Family(D(CoxSym(3)):8)
+   label│eigen                                       
+────────┼─────────────────────────────────────────────
+(1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3
+(1,X.2) │    1  1/3  2/3 1/3    0    0 -1/3 -1/3 -1/3
+(1,1)   │    1  1/6  1/3 1/6  3/2  3/2  1/3  1/3  1/3
+(2a,X.1)│   -1 -1/6    0 1/6  1/2 -1/2    0    0    0
+(2a,1)  │    1 -1/6    0 1/6 -1/2  1/2    0    0    0
+(3a,1)  │    1  1/3 -1/3 1/3    0    0  2/3 -1/3 -1/3
+(3a,X.2)│  ζ₃²  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
+(3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3  2/3 -1/3
+
+julia> Drinfeld_double(CoxSym(3);lu=true)
+Family(LD(CoxSym(3)):8)
+   label│eigen                                       
+────────┼─────────────────────────────────────────────
+(1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3
+(1,X.2) │    1  1/3  2/3 1/3    0    0 -1/3 -1/3 -1/3
+(1,1)   │    1  1/6  1/3 1/6  3/2  3/2  1/3  1/3  1/3
+(2a,X.1)│   -1 -1/6    0 1/6  1/2 -1/2    0    0    0
+(2a,1)  │    1 -1/6    0 1/6 -1/2  1/2    0    0    0
+(3a,1)  │    1  1/3 -1/3 1/3    0    0  2/3 -1/3 -1/3
+(3a,X.2)│  ζ₃²  1/3 -1/3 1/3    0    0 -1/3  2/3 -1/3
+(3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
+```
 """
 function Drinfeld_double(g;lu=false)
   res=Dict{Symbol,Any}(:group=> g)
@@ -614,7 +613,7 @@ function Drinfeld_double(g;lu=false)
     r[:centralizer] = centralizer(g, r[:elt])
     r[:centelms] = class_reps(r[:centralizer])
     t = CharTable(r[:centralizer])
-    println("t=$t")
+#   println("t=$t")
     r[:charNames] = charnames(r[:centralizer]; TeX = true)
     r[:names]=t.classnames
     r[:names][findfirst(==(one(g)),r[:centelms])] = "1"
@@ -660,12 +659,12 @@ end, class_reps(g), CharTable(g).classnames)
     res[:perm]=Perm(conj(res[:mellin]),res[:mellin];dims=2)
     res[:fourierMat]=^(res[:fourierMat], res[:perm],dims=1)
   end
-  res[:special] = Position(res[:charLabels], "(1,1)")
+  res[:special] = findfirst(==("(1,1)"),res[:charLabels])
   Family(res)
 end
 
 """
-`NrDrinfeldDouble(g)`
+`NrDrinfeld_double(g)`
 
 This  function returns the number of elements that the family associated to
 the  Drinfeld double of the group `g` would have, without computing it. The
@@ -676,7 +675,7 @@ julia> Families.NrDrinfeldDouble(ComplexReflectionGroup(5))
 378
 ```
 """
-NrDrinfeldDouble(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
+NrDrinfeld_double(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
 
 """
 `family_imprimitive(<S>)`

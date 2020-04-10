@@ -392,11 +392,11 @@ function PermGroups.class_reps(W::Spets)
   end
 end
 
-function PermRoot.refleigen(W::Spets)::Vector{Vector{Rational{Int}}}
+function PermRoot.refleigen(W::Spets)
   gets(W,:refleigen)do
     map(W.phi.\class_reps(W)) do x
       p=CycPol(charpoly(matX(W,x)))
-      vcat(map(r->fill(r[1].r,r[2]),p.v.d)...)
+      vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
   end
 end

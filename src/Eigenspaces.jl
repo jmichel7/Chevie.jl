@@ -190,8 +190,9 @@ julia> position_regular_class(L,7//12)
 3
 ```
 """
-function position_regular_class(W,d=0)
-  if d isa Int && d!=0 d=mod1(1//d) end
+position_regular_class(W,d::Integer)=position_regular_class(W,Root1(1,d))
+position_regular_class(W,d::Rational)=position_regular_class(W,Root1(;r=d))
+function position_regular_class(W,d::Root1=1)
   drank=length(relative_degrees(W,d))
   if drank==0 return nothing end
   return findfirst(x->count(==(d),x)==drank,refleigen(W))
@@ -227,7 +228,7 @@ eigenspace_projector(WF,w,d::Integer)=eigenspace_projector(WF,w,Root1(1,d))
 eigenspace_projector(WF,w,d::Rational=0//1)=eigenspace_projector(WF,w,Root1(;r=d))
 function eigenspace_projector(WF, w, d::Root1)
   c=refleigen(WF)[position_class(WF,w)]
-  c=map(x->E(;r=x),filter(x->x!=d.r,c))
+  c=E.(filter(x->x!=d,c))
   f=matX(WF,w)
   if length(c)==0 f^0
   else prod(x->f-f^0*x,c)//prod(x->E(d)-x,c)
@@ -269,8 +270,8 @@ function GetRelativeRoot(W,L,i)
       rc=filter(c->GetRelativeAction(W,L,c)==m,class_reps(N))
 #     println("rc=$rc")
       c=unique(sort(map(x->position_class(W,x),rc)))
-      m=maximum(map(x->count(iszero,x),refleigen(W)[c]))
-      m=filter(x->count(iszero,refleigen(W)[x])==m,c)
+      m=maximum(map(x->count(isone,x),refleigen(W)[c]))
+      m=filter(x->count(isone,refleigen(W)[x])==m,c)
       m=filter(x->position_class(W,x) in m,rc)
       if any(x->order(x)==d,m)  m=filter(x->order(x)==d,m) end
       res[:parentMap]=m[1]
@@ -328,13 +329,14 @@ julia> split_levis(W,4,2)
 
 ```
 """
-function split_levis(WF,d=0,ad=-1)
+split_levis(WF,d=0//1)=vcat(map(ad->split_levis(WF, d,
+                                   ad),0:length(relative_degrees(WF,d)))...)
+
+split_levis(WF,d::Integer,ad)=split_levis(WF,Root1(1,d),ad)
+split_levis(WF,d::Rational,ad)=split_levis(WF,Root1(;r=d),ad)
+function split_levis(WF,d::Root1,ad)
   if WF isa Spets W=WF.W
   else W=WF; WF=spets(W)
-  end
-  if d isa Int && d!=0 d=mod1(1 // d) end
-  if ad==-1 return vcat(map(ad->split_levis(WF, d,
-                                   ad),0:length(relative_degrees(WF,d)))...)
   end
   refs=eachindex(reflections(W)[1:nref(W)]) #hum
 #  refs=filter(i->Position(reflections(W),reflection(W,i))==i,
@@ -347,7 +349,7 @@ function split_levis(WF,d=0,ad=-1)
     w=class_reps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=matX(WF,w)
-      V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(;r=d)*one(m))))
+      V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(d)*one(m))))
     end
     I=refs[map(m->V==V*m, mats)]
     HF=subspets(WF, inclusion(W)[I], w/WF.phi)

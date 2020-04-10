@@ -1,33 +1,34 @@
 """
 This module is a port of the GAP permutations type.
 
-A  permutation here is a permutation of the set `1:n` and is represented as
-a  vector of `n` integers representing the images of `1:n`. The integer `n`
-is called the degree of the permutation, even if it is not moved. We follow
-the  GAP design: it is possible to multiply, or to store in the same group,
-permutations of different degrees; this is implemented by promoting both to
-the   higher  degree.  Slightly  faster  is  the  MAGMA  design  where  any
-permutation  has to belong to a group  and the degree is determined by that
-group; then multiplication of permutations within a given group is slightly
-faster,  but  it  is  more  difficult  to multiply permutations coming from
-different  groups, like a group and one  of its subgroups. The degree is an
-implementation  detail so usually it should  not be used. One should rather
-use the function `largest_moved_point`.
+They  are permutations  of the  set `1:n`  represented as  a vector  of `n`
+integers  holding the images of `1:n`. The integer `n` is called the degree
+of  the permutation, even if it is not  moved. We follow the GAP design: it
+is  possible to multiply,  or to store  in the same  group, permutations of
+different  degrees; this  is implemented  by promoting  both to  the higher
+degree. Slightly different is the MAGMA design where any permutation has to
+belong  to  a  group  and  the  degree  is  determined  by that group; then
+multiplication of permutations within a given group is slightly faster, but
+it is more difficult to multiply permutations coming from different groups,
+like  a group  and one  of its  subgroups. The  degree is an implementation
+detail so usually it should not be used. One should rather use the function
+`largest_moved_point`.
 
 The default constructor for a permutation uses the list of images of `1:n`,
 like  `Perm([2,3,1,5,4])`.  Often  it  is  more  convenient  to  use  cycle
 decompositions:    the   above   permutation    has   cycle   decomposition
 `(1,2,3)(4,5)`    thus   can   be    written   `Perm(1,2,3)*Perm(4,5)`   or
-`perm"(1,2,3)(4,5)"`.  The list of images of  `1:n` can be gotten back from
-the  permutation by the function `vec`;  note that since equal permutations
-may have different degrees, they may have different `vec`.
+`perm"(1,2,3)(4,5)"`  (this last form  can parse any  GAP permutation). The
+list  of images  of `1:n`  can be  gotten back  from the permutation by the
+function  `vec`;  note  that  since  equal  permutations may have different
+degrees, they may have different `vec`.
 
 The  complete type of a permutation  is `Perm{T}` where `T<:Integer`, where
 `Vector{T}`  is the type of the vector which holds the image of `1:n`. This
 can  be used to save space or  time. For instance `Perm{UInt8}` can be used
 for  Weyl groups of rank≤8 since they have at most 240 roots. If `T` is not
 specified  we take it to be `Int16` since this is a good compromise between
-speed and compactness.
+speed, compactness and possible size of `n`.
 
 # Examples
 ```julia-repl
@@ -55,22 +56,22 @@ julia> inv(a)  # inverse
 julia> a/b     # quotient  a*inv(b)
 (3,4)
 
-julia> a\b     # left quotient inv(a)*b
+julia> a\\b     # left quotient inv(a)*b
 (1,4)
 
 julia> a^b     # conjugation inv(b)*a*b
 (2,3,4)
 
-julia> b^2
+julia> b^2     # square
 (1,3)(2,4)
 
-julia> 1^a     # apply a to point 1
+julia> 1^a     # image by a of point 1
 2
 
 julia> one(a)
 ()
 
-julia> sign(a)
+julia> sign(a) # sigature of permutation
 1
 
 julia> order(a)
@@ -91,22 +92,21 @@ julia> Matrix(b)
  0  0  1  0
  0  0  0  1
  1  0  0  0
-```
 
-```not-in-tests
 julia> rand(Perm,10)
 (1,8,4,2,9,7,5,10,3,6)
 
 ```
 
-`Perm`s  have methods `copy,  hash, ==, cmp,  isless` (total order) so they
-can  be keys in hashes  or elements of sets;  two permutations are equal if
-they  move the same points to the same images. Permutations are scalars for
+`Perm`s have methods `copy`, `hash`, `==`, so they can be keys in hashes or
+elements  of sets; two permutations are equal  if they move the same points
+to  the same images. They have methods `cmp`, `isless` (lexicographic order
+on   moved  points)  so  they  can  be  sorted.  `Perm`s  are  scalars  for
 broadcasting.
 
-other functions are: 
-`cycles, cycletype, orbit, orbits, rand, restricted, sign`. 
-See individual documentations.
+other functions on `Perm`s are: 
+`cycles, cycletype, orbit, orbits, restricted`. 
+See individual documentations below.
 
 """
 module Perms
@@ -193,7 +193,7 @@ end
 
 returns `p`, a `Perm{T}`, such that `l1^p==l` if such a `p` exists; returns
 `nothing` otherwise. If not given `{T}` is taken to be `{Int16}`. Needs the
-objects in `l` and `l1` to be sortable.
+elements of `l` and `l1` to be sortable.
 
 ```julia-repl
 julia> Perm([0,2,4],[4,0,2])
@@ -259,7 +259,21 @@ Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 Base.rand(::Type{Perm},i::Integer)=Perm(Int16.(sortperm(rand(1:i,i))))
 Base.rand(::Type{Perm{T}},i::Integer) where T=Perm(T.(sortperm(rand(1:i,i))))
 
-"`Matrix(a::Perm)` is the permutation matrix for a"
+"""
+`Matrix(a::Perm,n=degree(a))` 
+the  permutation  matrix  for  `a`  operating  on `n` points. If given, `n`
+should be larger than `largest_moved_point(a)`.
+
+```julia-repl
+julia> Matrix(Perm(2,3,4),5)
+5×5 Array{Bool,2}:
+ 1  0  0  0  0
+ 0  0  1  0  0
+ 0  0  0  1  0
+ 0  1  0  0  0
+ 0  0  0  0  1
+```
+"""
 Base.Matrix(a::Perm,n=length(a.d))=[j==i^a for i in 1:n, j in 1:n]
 
 " `largest_moved_point(a::Perm)` is the largest integer moved by a"
@@ -299,9 +313,6 @@ function Base.inv(a::Perm)
   Perm(r)
 end
 
-# I do not know how to do this one faster
-Base.:/(a::Perm, b::Perm)=a*inv(b)
-
 # less allocations than inv(a)*b
 function Base.:\(a::Perm, b::Perm)
   a,b=promote(a,b)
@@ -318,6 +329,9 @@ function Base.:^(a::Perm, b::Perm)
   Perm(r)
 end
 
+# I do not know how to do this one faster
+Base.:/(a::Perm, b::Perm)=a*inv(b)
+
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
   if n>length(a.d) T(n) 
   else
@@ -328,7 +342,7 @@ Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 """
-`Base.;^(l::AbstractVector,p::Perm)` 
+`Base.:^(l::AbstractVector,p::Perm)` 
 
    returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
 
@@ -411,7 +425,7 @@ function orbit(a::Perm{T},i::Integer,check=false)where T
 end
   
 """
-`orbits(a::Perm,d::Vector=1:length(vec(a)))` 
+`orbits(a::Perm,d::Vector=1:degree(a))` 
 
 returns the orbits of a on domain d
 

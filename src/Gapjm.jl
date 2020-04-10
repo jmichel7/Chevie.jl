@@ -113,36 +113,10 @@ include("Symbols.jl");@reexport using .Symbols
 include("Garside.jl");@reexport using .Garside
 include("Posets.jl");@reexport using .Posets
 include("MatInt.jl");@reexport using .MatInt
-
-const CHEVIE=Dict{Symbol,Any}(
- :compat=>Dict(:MakeCharacterTable=>x->x,
-               :AdjustHeckeCharTable=>(x,y)->x,
-               :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end),
- :CheckIndexChars=>false,
- :info=>false
-)
-
-function chevieget(t::Symbol,w::Symbol)
-  if haskey(CHEVIE[t],w) return CHEVIE[t][w] end
-  if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
-end
-
-chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
-
-function chevieset(t::Symbol,w::Symbol,o::Any)
-  if !haskey(CHEVIE,t) CHEVIE[t]=Dict{Symbol,Any}() end
-  CHEVIE[t][w]=o
-end
-
-function chevieset(t::Vector{String},w::Symbol,f::Function)
-  for s in t 
-    println("set $s $w")
-    chevieset(Symbol(s),w,f(s)) 
-  end
-end
-export chevieget, chevieset, CHEVIE
+include("Chevie.jl");@reexport using .Chevie
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
+include("ComplexR.jl");@reexport using .ComplexR
 include("HasType.jl");@reexport using .HasType
 include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
