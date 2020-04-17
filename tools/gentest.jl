@@ -5,8 +5,10 @@ function gentests(ff::Vector{String})
 """
 # auto-generated tests from julia-repl docstrings
 using Test, Gapjm
+#include("../tools/Gap4.jl")
 function mytest(a::String,b::String)
   omit=a[end]==';'
+  a=replace(a,"\\\\\\\\"=>"\\\\")
   a=repr(MIME("text/plain"),eval(Meta.parse(a)),context=:limit=>true)
   if omit a="nothing" end
   a=replace(a,r" *(\\n|\$)"s=>s"\\1")

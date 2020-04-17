@@ -69,11 +69,12 @@ import Gapjm: degree, root, coefficients, valuation
 # export degree, root, coefficients, valuation
 export Mvp, Monomial, @Mvp, variables, value, scal
 #------------------ Monomials ---------------------------------------------
-PowType=Int # could be int8 to save space if limiting degree
+const PowType=Int # could be int8 to save space if limiting degree
 struct Monomial
   d::ModuleElt{Symbol,PowType}   
 end
-Monomial(a::Pair...)=Monomial(ModuleElt(convert.(Pair{Symbol,PowType},collect(a))))
+Monomial(a::Pair...)=Monomial(ModuleElt(a...))
+Monomial()=one(Monomial)
 
 const fractional=Dict{Symbol,PowType}() 
 # if fractional(:x)==y then x interpreted as x^(1/y)
@@ -180,8 +181,9 @@ struct Mvp{T} # N=type of exponents T=type of coeffs
 end
 
 Mvp(a::Pair...)=Mvp(ModuleElt(a...))
+Mvp()=zero(Mvp)
 Mvp(v::Symbol)=Mvp(Monomial(v)=>1)
-Mvp{T}(n::T) where T=Mvp(one(Monomial)=>n)
+Mvp(n::Number)=convert(Mvp,n)
 
 macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   if t isa Expr
@@ -207,16 +209,16 @@ end
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
-Base.zero(::Type{Mvp})=Mvp(zero(ModuleElt{Monomial,Int}))
-Base.zero(::Type{Mvp{T}}) where T=Mvp(zero(ModuleElt{Monomial,T}))
+Base.zero(::Type{Mvp{T}}) where T=Mvp(ModuleElt(Pair{Monomial,T}[]))
+Base.zero(::Type{Mvp})=zero(Mvp{Int})
 Base.one(::Type{Mvp{T}}) where T=Mvp(one(T))
 Base.one(::Type{Mvp})=Mvp(1)
 Base.one(p::Mvp{T}) where T=Mvp(one(T))
 Base.copy(p::Mvp)=Mvp(p.d)
-Base.iszero(p::Mvp)=length(p.d)==0
-Base.adjoint(a::Mvp)=a
-Base.transpose(p::Mvp)=p
-Base.abs(p::Mvp)=p
+Base.iszero(p::Mvp)=iszero(p.d)
+#Base.adjoint(a::Mvp)=a
+#Base.transpose(p::Mvp)=p
+#Base.abs(p::Mvp)=p
 Base.convert(::Type{Mvp},a::Number)=iszero(a) ? zero(Mvp{typeof(a)}) : 
                                           Mvp(one(Monomial)=>a)
 Base.convert(::Type{Mvp{T}},a::Number) where T=iszero(a) ? zero(Mvp{T}) : 
@@ -224,7 +226,6 @@ Base.convert(::Type{Mvp{T}},a::Number) where T=iszero(a) ? zero(Mvp{T}) :
 (::Type{Mvp{T}})(a::Number) where T=convert(Mvp{T},a)
 (::Type{Mvp{T}})(a::Mvp) where T=convert(Mvp{T},a)
 Base.convert(::Type{Mvp{T}},a::Mvp{T1}) where {T,T1}=T==T1 ? a : iszero(a) ? zero(Mvp{T}) : Mvp([k=>T(v) for (k,v) in a.d]...)
-Mvp(a::Number)=convert(Mvp,a)
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 
 function Base.convert(::Type{T},a::Mvp) where T<:Number
@@ -268,6 +269,7 @@ Base.:-(a::Mvp, b::Mvp)=a+(-b)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
+Base.:*(b::Mvp,a::Monomial)=a*b
 Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
@@ -433,6 +435,9 @@ julia> scal(w)
 julia> typeof(scal(w))
 Int64
 ```
+> if `p`  is a  list, then  apply `scal`
+> recursively to  it (but return `nothing`  if it contains any  `Mvp` which is
+> not a scalar). Else assume `p` is already a scalar and thus return `p`.
 """
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
@@ -442,41 +447,27 @@ function scal(p::Mvp{T})where T
   return nothing
 end
 
-# generic version:
-#function value(p::Mvp,vv::Pair{Symbol,<:Mvp})
-#  (s,v)=vv
-#  res1=Tuple{typeof(v),Monomial}[]
-#  for (m,c) in p.d
-#    u=ModuleElts.drop(m.d,s)
-#    if !isnothing(u)
-#      (m1,deg)=u
-#      push!(res1,(c*(Monomial(m1)*v^deg),m))
-#    end
-#  end
-#  if isempty(res1) return p end
-#  newd=p.d
-#  newp=zero(p)
-#  for (p,m) in res1
-#    newd=ModuleElts.drop(newd,m)[1]
-#    newp+=p
-#  end
-#  Mvp(newd)+newp
-#end
-function value(p::Mvp{T},vv::Pair)where T
-  (s,v)=vv
-  if !(v isa Mvp) v=Mvp(v) end
-  res1=Tuple{promote_type(T,typeof(v)),Int}[]
-  for i in eachindex(p.d.d)
-    (m,c)=p.d.d[i]
-    u=ModuleElts.drop(m.d,s)
-    if !isnothing(u)
-      push!(res1,(c*(Monomial(first(u))*v^last(u)),i))
+function value(p::Mvp,k::Pair...)
+  vv=Dict(k)
+  res=res1=zero(p)
+  badi=Int[]
+  for (i,(m,c1)) in enumerate(p.d)
+    badj=Int[]
+    for (j,(v,c)) in enumerate(m.d)
+      if haskey(vv,v) 
+        if isempty(badj) res=Mvp(c1) end
+        res*=vv[v]^c
+        push!(badj,j)
+      end
     end
+    if !isempty(badj) res1+=Monomial(deleteat!(copy(m.d.d),badj)...)*res
+      push!(badi,i)
+    end
+ #  println("badi=$badi m=$m c=$c res1=$res1")
   end
-  if isempty(res1) return p end
-  newd=deleteat!(copy(p.d.d),map(last,res1))
-  Mvp(ModuleElt(newd))+
-     Mvp(ModuleElt(vcat(map(x->first(x).d.d,res1)...);check=true))
+  if !isempty(badi) Mvp(deleteat!(copy(p.d.d),badi)...)+res1
+  else p
+  end
 end
 
 """
@@ -505,13 +496,9 @@ julia> p(x=y)
 Mvp{Int64}: 7y⁴-2
 
 julia> p(x=y,y=x)
-Mvp{Int64}: 7x⁴-2
+Mvp{Int64}: -2+7x⁻¹y⁵
 ```
-    gap> Value(p,["x",y,"y",x]);
-    -2+7x^-1y^5|
-
-Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
-'GetRoot'
+Evaluating an `Mvp` which is a Puiseux polynomial may cause calls to `root`
 
 |    gap> p:=x^(1/2)*y^(1/3);
     x^(1/2)y^(1/3)
@@ -528,10 +515,7 @@ Evaluating an  'Mvp' which is  a Puiseux  polynomial may cause  calls to
     main loop
     brk>|
 """
-function (p::Mvp)(;arg...)
-  for vv in arg p=value(p,vv) end
-  p
-end
+(p::Mvp)(;arg...)=value(p,arg...)
 
 function root(p::Mvp,n::Real=2)
   n=Int(n)
@@ -643,6 +627,24 @@ function Base.gcd(a::Mvp,b::Mvp)
 end
 
 """
+`Base.:^(p,m;vars=variables(p))`
+
+Implements  the action of  a matrix on  `Mvp`s. `vars` should  be a list of
+symbols   representing  variables.   The  polynomial   `p`  is  changed  by
+simultaneous  substitution in it of  `vᵢ` by `(v×m)ᵢ` where  `v` is the row
+vector  of  the  `Mvp(vᵢ)`.  If  `vars`  is  omitted,  it  is  taken  to be
+`variables(p)`.
+
+```julia-repl
+julia> @Mvp x,y
+
+julia> (x+y)^[1 2;3 1]
+Mvp{Int64}: 3x+4y
+```
+"""
+Base.:^(p,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
+
+"""
 The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
 to  the variable given by the string 'v'; if 'v' is not given, with respect
 to the first variable in alphabetical order.
@@ -681,29 +683,6 @@ of the CHEVIE package.
     gap> ComplexConjugate(last);
     0.3090169944-0.9510565163I+(-0.5-0.8660254038I)x|
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'scal( <p> )'
-
-If  <p> is  an  'Mvp' then  if  <p>  is a  scalar,  return that  scalar,
-otherwise return  'false'. Or  if <p>  is a  list, then  apply 'scal'
-recursively to  it (but return false  if it contains any  'Mvp' which is
-not a scalar). Else assume <p> is already a scalar and thus return <p>.
-
-|    gap> v:=[Mvp("x"),Mvp("y")];        
-    [ x, y ]
-    gap> scal(v);
-    false
-    gap> w:=List(v,p->Value(p,["x",2,"y",3]));
-    [ 2, 3 ]
-    gap> Gcd(w);
-    Error, sorry, the elements of <arg> lie in no common ring domain in
-    Domain( arg[1] ) called from
-    DefaultRing( ns ) called from
-    Gcd( w ) called from
-    main loop
-    brk> 
-    gap> Gcd(scal(w));
-    1|
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 'LaurentDenominator( <p1>, <p2>, ... )'
 
@@ -713,17 +692,6 @@ a true polynomial.
 
 |    gap> LaurentDenominator(x^-1,y^-2+x^4);
     xy^2|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'OnPolynomials( <m>, <p> [,<vars>] )'
-
-Implements  the action of  a matrix on  'Mvp's. <vars> should  be a list of
-strings representing variables. If `v`'=List(vars,Mvp)', the polynomial `p`
-is  changed  by  replacing  in  it  `v_i`  by `(v×m)_i`. If <vars> is
-omitted, it is taken to be 'Variables(p)'.
-
-|    gap> OnPolynomials([[1,2],[3,1]],x+y);    
-    3x+4y|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 'FactorizeQuadraticForm( <p>)'

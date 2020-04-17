@@ -81,17 +81,10 @@ twisted=map(l3) do x
   x[1](x[2:end]...)
 end
 
-function chartab(l)
+function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
   for g in l
-    printc("creating CharTable(",g,")\n")
-    show(IOContext(stdout,:limit=>true),CharTable(g))
-  end
-end
-
-function uch(l)
-  for g in l
-    printc("creating UnipotentCharacters(",g,")\n")
-    show(IOContext(stdout,:limit=>true),UnipotentCharacters(g))
+    printc("creating $fun(",g,")\n")
+    printc(eval(Expr(:call,fun,g)))
   end
 end
 

@@ -92,10 +92,10 @@ julia> Matrix(b)
  0  0  1  0
  0  0  0  1
  1  0  0  0
-
+```
+```julia-rep1
 julia> rand(Perm,10)
 (1,8,4,2,9,7,5,10,3,6)
-
 ```
 
 `Perm`s have methods `copy`, `hash`, `==`, so they can be keys in hashes or
@@ -156,7 +156,8 @@ Perm(x::Integer...)=Perm{Int16}(x...)
    change the type of `p` to `Perm{T}`
    for example `Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)`
 """
-Perm{T}(p::Perm) where T<:Integer=Perm(T.(p.d))
+Base.convert(::Type{Perm{T}},p::Perm) where T<:Integer=Perm(T.(p.d))
+Perm{T}(p::Perm) where T<:Integer=convert(Perm{T},p)
 
 """
    @perm"..."

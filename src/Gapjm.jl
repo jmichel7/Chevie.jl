@@ -32,17 +32,27 @@ To update later to the latest version, do
 
 The package currently contains:
 
--  infrastructure
-Permutations,  cyclotomic  numbers,  Laurent  polynomials.  There  are also
-permutation  groups, for which I have  often replaced the proper algorithms
-of  GAP by naive but  easy to write methods  only suitable for small groups
-(sufficient  for the rest of the package but maybe not for your needs). The
-code  for infrastructure is often competitive  with GAP, despite being much
-shorter (often 100 lines of Julia replace 1000 lines of C); I am sure there
-are more optimisations possible. Any comments about the code and the design
-are welcome.
+  - infrastructure:
+     * permutations  
+     * cyclotomic numbers  
+     * (univariate and multivariate) Laurent polynomials
+     * combinatorics
+     * linear algebra on any field/ring
+     * posets
+     * cyclotomic polynomials
+     * signed permutations
+     * groups
+     * permutation groups
 
--  ported from Chevie
+for  permutation groups I have  often replaced the sophisticated algorithms
+of  GAP by naive but  easy to write methods  only suitable for small groups
+(sufficient  for the  rest of  the package  but maybe  not for your needs).
+Otherwise  the  code  for  infrastructure  is  often  competitive with GAP,
+despite  being much shorter (often 100 lines of Julia replace 1000 lines of
+C); I am sure there are more optimisations possible. Any comments about the
+code and the design are welcome.
+
+-  ported from Chevie:
 about 75% of Chevie functionality. The function `gap` can help you discover
 the  equivalent functionality  to a  Gap3 function:  it takes  a string and
 gives you Julia translations of functions in Gap3 which match this string:
@@ -61,7 +71,10 @@ This package is  often 10 times faster  than the equivalent GAP3 Chevie code
 I tried that parts of my package can be used independently of the rest. For
 instance,  the modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
 are  independent of  the rest  of the  package and  can be used stand-alone
-(after a trivial change forced by the exporting rules of Julia, see below).
+(after a trivial change forced by the exporting rules of Julia that the same
+method name cannot be imported from two different packages, even when
+arguments are on different types. This forces `Gapjm` to be a `Base` to the
+packages if used together).
 """
 module Gapjm
 using Reexport

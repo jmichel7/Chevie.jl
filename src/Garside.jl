@@ -315,16 +315,16 @@ A₃
 julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
-julia> pi=B(B.delta)^2
+julia> Pi=B(B.delta)^2
 δ²
 
-julia> root(pi,2)
+julia> root(Pi,2)
 δ
 
-julia> root(pi,3)
+julia> root(Pi,3)
 1232
 
-julia> root(pi,4)
+julia> root(Pi,4)
 132
 ```
 """
@@ -341,7 +341,7 @@ abstract type IntervalMonoid{T,TW<:Group{T}}<:GarsideMonoid{T} end
 """
 elts must be simples
 """
-function leftgcd(M::LocallyGarsideMonoid{T},elts::T...)where T
+function leftgcd(M::LocallyGarsideMonoid,elts...)
   x=one(M)
   found=true
   while found
@@ -350,14 +350,14 @@ function leftgcd(M::LocallyGarsideMonoid{T},elts::T...)where T
       if all(b->isleftdescent(M,b,i),elts)
         found=true
         x=mul!(M,x,M.atoms[i])
-        elts=map(x->\(M,M.atoms[i],x),elts)
+        elts=map(y->\(M,M.atoms[i],y),elts)
       end
     end
   end
   return x,elts
 end
 
-function rightgcd(M::LocallyGarsideMonoid{T},elts::T...)where T
+function rightgcd(M::LocallyGarsideMonoid,elts...)
   x=one(M)
   found=true
   while found
@@ -373,7 +373,7 @@ function rightgcd(M::LocallyGarsideMonoid{T},elts::T...)where T
   return x,elts
 end
 
-function rightlcm(M::GarsideMonoid{T},elts::T...)where T
+function rightlcm(M::GarsideMonoid,elts...)
   x,c=rightgcd(M,rightcomplδ.(Ref(M),elts)...)
   *(M,elts[1],c[1]),c
 end
@@ -390,9 +390,7 @@ function (M::GarsideMonoid{T})(l::Integer...)where T
   res=GarsideElm(0,T[],M)
   if isempty(l) return res end
   for s in reverse(l) # faster in reversed order (see *)
-    if s<0 b=inv(GarsideElm(0,[M.atoms[-s]],M))
-    else   b=GarsideElm(0,[M.atoms[s]],M)
-    end
+    b=s<0 ? inv(GarsideElm(0,[M.atoms[-s]],M)) : GarsideElm(0,[M.atoms[s]],M)
     res=b*res
   end
   res
@@ -406,7 +404,7 @@ function (M::GarsideMonoid{T})(r::T)where T
 end
 
 """
-`word(M::GarsideMonoid{T},w::T)`
+`word(M::GarsideMonoid,w)`
 
 returns a word in the atoms of `M` representing the simple `w`
 
@@ -424,7 +422,7 @@ julia> word(B,B.delta)
  1
 ```
 """
-function CoxGroups.word(M::GarsideMonoid{T},w::T)where T
+function CoxGroups.word(M::GarsideMonoid,w)
   res=Int[]
   while w!=one(M)
     for i in eachindex(M.atoms)
@@ -557,8 +555,9 @@ function PermGroups.elements(M::LocallyGarsideMonoid,l)
 end
 
 #--------------------IntervalMonoid-----------------------------------
-function δad(M::IntervalMonoid,w,i::Int)
+
 # w^(M.delta^i)
+function δad(M::IntervalMonoid,w,i::Int)
   i=mod(i,M.orderdelta)
   if iszero(i) return w end
   w^(i==1 ? M.delta : M.delta^i)
@@ -588,7 +587,7 @@ CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 
 isrightdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
 
-CoxGroups.word(M::BraidMonoid{T},w::T) where T=word(M.W,w)
+CoxGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
 function rightgcd(M::BraidMonoid{T,TW},elts::T...)where {T,TW}
   g,c=leftgcd(M,inv.(elts)...)
@@ -690,8 +689,7 @@ end
 function Base.inv(b::GarsideElm)
   k=length(b.elm)
   M=b.M
-  GarsideElm(-b.pd-k,
-    map(i->δad(M,\(M,b.elm[i],M.delta),-i-b.pd),k:-1:1),M)
+  GarsideElm(-b.pd-k,map(i->δad(M,\(M,b.elm[i],M.delta),-i-b.pd),k:-1:1),M)
 end
 
 """
@@ -816,16 +814,16 @@ function Base.show(io::IO,b::GarsideElm)
 end
 
 # like gap3 AddToNormal
-function Base.:*(a::GarsideElm{T},x::T)::GarsideElm{T} where T
+function Base.:*(a::GarsideElm,x)
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
-  v=copy(a.elm)::Vector{T}
+  v=copy(a.elm)
   push!(v,x)
   for i in length(v):-1:2
     x,y=alpha2(M,v[i-1],v[i])
-    if y==one(M) # this implies i==Length(v)
+    if y==one(M) # this implies i==length(v)
       if x==M.delta
-       return GarsideElm(1+a.pd,δad.(Ref(M),v[1:end-2],1),M)
+        return GarsideElm(1+a.pd,δad.(Ref(M),v[1:end-2],1),M)
       end
       resize!(v,i-1) 
       v[i-1]=x 
@@ -834,7 +832,7 @@ function Base.:*(a::GarsideElm{T},x::T)::GarsideElm{T} where T
       v[i]=y
       v[2:i-1]=δad.(Ref(M),v[1:i-2],1)
       return GarsideElm(1+a.pd,v[2:end],M)
-    else v[[i-1,i]]=[x,y]
+    else v[[i-1,i]].=[x,y]
     end
   end
   GarsideElm(a.pd,v,M)
@@ -872,7 +870,7 @@ function Cosets.Frobenius(x::GarsideElm,phi)
 end
 
 """
-'image(b)'
+'image(b::GarsideElm)'
     
 This  function is defined only if <b>  is an element of an interval monoid,
 for instance a braid. It returns the image of <b> in the group of which the
@@ -896,6 +894,7 @@ end
 struct Category{TO,TM} # TO type of objs TM type of maps
   obj::Vector{TO}
   atoms::Vector{Vector{Pair{TM,Int}}}
+  # atoms[i] is a list of (m=>j): map m from obj[i] to obj[j]
 end
 
 function Base.show(io::IO,C::Category)
@@ -926,18 +925,26 @@ function Category(atomsfrom::Function,o;action::Function=^)
   C
 end
 
-function showgraph(C::Category;showmap::Function=x->x,showobj::Function=x->x)
-  maps=reduce(vcat,map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj)))
-  for f in 1:3
+showgraph(C)=showgraph(IOContext(stdout,:limit=>true),C)
+
+function showgraph(io,C::Category)
+  maps=vcat(map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj))...)
+  found=true
+  while found
+    found=false
     new=empty(maps)
     for m in maps
       p=findfirst(x->x[end]==m[1],new)
       if isnothing(p)
         p=findfirst(x->x[1]==m[end],new)
-        if isnothing(p) push!(new,m)
-        else new[p]=vcat(m[1:end-1],new[p])
+        if isnothing(p) 
+          push!(new,m)
+        else 
+          new[p]=vcat(m[1:end-1],new[p])
+          found=true
         end
       else new[p]=vcat(new[p],m[2:end])
+           found=true
       end
     end
     maps=new
@@ -945,17 +952,17 @@ function showgraph(C::Category;showmap::Function=x->x,showobj::Function=x->x)
   for f in maps
     l1=l2=""
     for i in 1:2:length(f)-2
-      a=string(showobj(C.obj[f[i]]))
-      ff=string(showmap(f[i+1]))
-      l=max(2,length(ff))
-#     if length(l1)+length(a)+l+1>SizeScreen()[1]
-#       print(l1,"\n",l2,"\n")
-#       l1=l2=""
-#     end
-      l2*=a*"-"^l*">"
-      l1*=lpad("",length(a))*lpad(ff,l)*" "
+      a=sprint(show,C.obj[f[i]];context=io)
+      ff=sprint(show,f[i+1];context=io)
+      l=max(2,textwidth(ff))
+      if textwidth(l1)+textwidth(a)+l+1>displaysize(io)[2]
+        println(io,l1,"\n",l2)
+        l1=l2=""
+      end
+      l2*=a*'\u2500'^(l-1)*"→ "
+      l1*=' '^textwidth(a)*lpad(ff,l)*' '
     end
-    print(l1,"\n",l2,showobj(C.obj[f[end]]),"\n")
+    println(io,l1,"\n",l2,C.obj[f[end]])
   end
 end
 

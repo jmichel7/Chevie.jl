@@ -378,10 +378,10 @@ julia> uc.families
 3-element Array{Family,1}:
  Family(C₁:[1]) 
  Family(C₁:[2]) 
- Family(???:3:4)
+ Family(?4:3:4)
 
 julia> uc.families[3]
-Family(???:3:4)
+Family(?4:3:4)
 label│eigen    1     2
 ─────┼─────────────────
 1    │  ζ₈³ √2/2 -√2/2

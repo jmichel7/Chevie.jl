@@ -128,7 +128,7 @@ export PermRootGroup, PRG, PRSG, catalan,
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, matX, PermX,
  coroots, baseX, semisimplerank, invariant_form, generic_order,
- parabolic_representatives
+ parabolic_representatives, invariants
 # to use as a stand-alone module uncomment the next line
 # export roots, gens, degree
 import Gapjm: gens, degree, roots
@@ -181,17 +181,17 @@ function Base.show(io::IO, t::TypeIrred)
       end
     else 
       r=rank(t)
-      if haskey(t,:cartantype)
+      if haskey(t,:cartanType)
         if s==:B
-          if t.cartantype==1 s=:C
-          elseif t.cartantype==2 s=:B
-          elseif t.cartantype==ER(2) s=:Bsym
-          else s=Symbol(":B(",sprint(show,t.cartantype;context=io),")")
+          if t.cartanType==1 s=:C
+          elseif t.cartanType==2 s=:B
+          elseif t.cartanType==ER(2) s=:Bsym
+          else s=Symbol(":B(",sprint(show,t.cartanType;context=io),")")
           end
         elseif s==:G
-          if t.cartantype==ER(3) s=:Gsym end
+          if t.cartanType==ER(3) s=:Gsym end
         elseif s==:I
-          if t.cartantype!=1 s=:Isym end
+          if t.cartanType!=1 s=:Isym end
         end
       end
       if haskey(t,:bond)
@@ -378,6 +378,8 @@ function cartan(W::PermRootGroup)
 end
 
 cartan(t::TypeIrred)=toM(getchev(t,:CartanMat))
+
+cartan(W::PermRootGroup,I)=[cartan_coeff(W,i,j) for i in I, j in I]
 
 """
 rank(W::Group)
@@ -1192,7 +1194,7 @@ end
 
 function Base.:*(W::PRG,V::PRG)
   PRG(toL(cat(toM(W.roots[independent_roots(W)]),toM(V.roots[independent_roots(V)]),dims=(1,2))),
-      toL(cat(toM(W.coroots[independent_roots(W)]),toM(V.coroots[independent_roots(V)]),dims=(1,2))))
+      toL(cat(toM(coroots(W)[independent_roots(W)]),toM(coroots(V)[independent_roots(V)]),dims=(1,2))))
 end
   
 #--------------- type of subgroups of PRG----------------------------------
@@ -1424,5 +1426,75 @@ Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
 ```
 """
 generic_order(W,q)=q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
+
+"""
+`invariants(W)`
+
+returns  the fundamental invariants of `W` in its reflection representation
+`V`.  That is, returns  a set of  algebraically independent elements of the
+symmetric  algebra  of  the  dual  of  `V` which generate the `W`-invariant
+polynomial  functions on `V`. Each such invariant function is returned as a
+function:  if `e₁,…,eₙ` is a basis of `V` and `f` is the function, then the
+value  of the polynomial  function on `a₁e₁+…+aₙeₙ`  is obtained by calling
+`f(a₁,…,aₙ)`. This function depends on the classification, and is dependent
+on the exact reflection representation of `W`. So for the moment it is only
+implemented   when  the  reflection   representation  for  the  irreducible
+components has the same Cartan matrix as the one provided by CHEVIE for the
+corresponding  irreducible  group.  The  polynomials  are invariant for the
+natural   action  of   the  group   elements  as   matrices;  that  is,  if
+`m==matX(W,w)`  for  some  `w`  in  `W`,  then  an  invariant `f` satisfies
+`f(a₁,…,aₙ)=f(v₁,…,vₙ)`   where  `[v₁,…,vₙ]=[a₁,…,aₙ]×m`.  This  action  is
+implemented on `Mvp`s by the function `^`.
+
+```julia-repl
+julia> W=coxgroup(:A,2)
+A₂
+
+julia> @Mvp x,y,z
+
+julia> i=invariants(W);
+
+julia> i[1](x,y)
+Mvp{Int64}: -2x²+2xy-2y²
+
+julia> i[2](x,y)
+Mvp{Int64}: 6x²y-6xy²
+
+julia> W=ComplexReflectionGroup(24)
+G₂₄
+
+julia> i=invariants(W)[1];
+
+julia> p=i(x,y,z)
+Mvp{Rational{Int64}}: (14//1)x⁴+(-12//1)x²y²+(-42//1)x²yz+(21//2)x²z²+(18//7)y⁴+(-6//1)y³z+(-9//2)y²z²+(-21//8)z⁴
+
+julia> p^W.matgens[1]-p
+Mvp{Cyc{Rational{Int64}}}: 0
+```
+"""
+function invariants(W)
+  V=parent(W)
+  i=map(refltype(W)) do t
+    H=reflection_group(t)
+    if cartan(V,inclusion(W,t.indices))!=cartan(H)
+      error("non standard Cartan matrix: invariants not implemented")
+    end
+    ir=independent_roots(H)
+    i=getchev(t,:Invariants)
+    if i==false return false end
+    map(f->function(arg...)
+         return f(improve_type(inv(E(1).*toM(coroots(H)[ir])//1)*
+     toM(map(i->coroot(V,inclusion(W,t.indices[i])),ir)))*collect(arg)...) end,
+      i)
+  end
+  if false in i return false end
+  i=vcat(i...)
+  N=toM(W.roots[independent_roots(W)])
+  if !isempty(N)
+    N=GLinearAlgebra.nullspace(N)
+    append!(i,map(v->function(arg...)return sum(v.*arg);end,N))
+  end
+  i
+end
 
 end

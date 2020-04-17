@@ -76,8 +76,11 @@ Cyc{Int64}: -ζ₉⁴-ζ₉⁷
 julia> Root1(c) # but you can decide whether a Cyc is a root of unity
 Root1: ζ₉
 
-julia> c=Complex(E(3))   # convert to float is probably not very useful
+julia> c=Complex{Float64}(E(3))  # convert to float is sometimes useful
 -0.4999999999999998 + 0.8660254037844387im
+
+julia> Cyc(exp(2*im*pi/3)) # probably useless
+Cyc{Float64}: -0.4999999999999998+0.8660254037844387ζ₄
 ```
 
 `Cyc`s have methods `copy, hash, ==, cmp, isless` (total order) so they can
@@ -231,7 +234,7 @@ const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : ModuleElt(0=>1)))
 """
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 """
-function E(n1::Integer,i1::Integer=1)::Cyc{Int}
+function E(n1::Integer,i1::Integer=1)
   n=Int(n1)
   i=mod(Int(i1),n)
   get!(E_dict,(n,i)) do
@@ -290,20 +293,28 @@ else
 end
 end
 
-Cyc{T}(c::Cyc{T1}) where {T,T1}=convert(Cyc{T},c)
+Cyc{T}(c::Cyc{T1}) where {T,T1<:Real}=convert(Cyc{T},c)
 
 if use_list
- num(c::Cyc)=c.d[1]
+  num(c::Cyc)=c.d[1]
 else
- num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
+  num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
 end
 
-function Base.convert(::Type{T},c::Cyc)::T where T<:Real
+function Base.convert(::Type{T},c::Cyc)where T<:Real
   if c.n==1 return convert(T,num(c)) end
   throw(InexactError(:convert,T,c))
 end
 
-Int(c::Cyc)=convert(Int,c)
+function Base.convert(::Type{Complex{T}},c::Cyc)where T<:AbstractFloat
+if use_list
+  sum(x->x[2]*exp(2*x[1]*im*T(pi)/c.n), zip(zumbroich_basis(c.n),c.d))
+else
+  iszero(c) ? Complex{T}(0.0) : sum(v*exp(2*k*im*T(pi)/c.n) for (k,v) in c.d)
+end
+end
+
+(::Type{T})(c::Cyc) where T<:Number=convert(T,c)
 
 Base.isinteger(c::Cyc)=c.n==1 && isinteger(num(c))
 
@@ -361,12 +372,12 @@ function Base.show(io::IO, ::MIME"text/plain", r::Cyc)
   show(io,r)
 end
 
-function Base.show(io::IO, p::Cyc)
+function Base.show(io::IO, p::Cyc{T})where T
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   rq=""
-  if quadratic
+  if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)
     if !isnothing(q)
       rq=sprint(show,q;context=io)
@@ -381,8 +392,12 @@ end
 if use_list
     if iszero(v) return "" end
 end
+  if T<:Rational{<:Integer}
     den=denominator(v)
     v=numerator(v) 
+  else
+    den=1
+  end
     if deg==0 t=string(v)
     else 
       t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
@@ -646,14 +661,6 @@ function ER(n::Int)
   end
 end 
 
-if use_list
-Base.Complex(c::Cyc)=sum(x->x[2]*exp(2*x[1]*im*pi/c.n),
-                          zip(zumbroich_basis(c.n),c.d))
-else
-Base.Complex(c::Cyc)=iszero(c) ? Complex(0.0) : 
-             sum(v*exp(2*k*im*pi/c.n) for (k,v) in c.d)
-end
-
 Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
 
 function Base.Real(c::Cyc{T}) where T
@@ -860,7 +867,7 @@ function Base.show(io::IO,q::Quadratic)
     elseif q.b>0 rq*="+" end
     rq*=q.b==1 ? "" : q.b==-1 ? "-" : string(q.b)
     r=string(q.root)
-    rq*=repl ? "√$r" : TeX ? "\\sqrt{$r)}" : "ER($r))"
+    rq*=repl ? "√$r" : TeX ? "\\sqrt{$r)}" : "ER($r)"
     if !iszero(q.a) && q.den!=1 rq="("*rq*")" end
   end
   print(io,rq)

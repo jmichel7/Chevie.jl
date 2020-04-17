@@ -329,7 +329,6 @@ and if ``sw<w`` then
 ``C'ₛ C'_{sw}=C'w+Σ_{y<sw}μ(y,sw)C'y=Σ_{v≤w}μᵥ Tᵥ``
 where
 ``μᵥ=P_{v,w}(q)q^{-l(w)/2}+Σ_{v≤y≤sw}μ(y,sw)P_{v,y}(q)q^{-l(y)/2}``
-
 It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leading
 coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
 occurs in the formula for ``μᵥ``).

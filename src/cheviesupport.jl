@@ -3,6 +3,7 @@ Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
 Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
+Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
 Base.:/(a::AbstractArray,b::Pol)=a ./ b

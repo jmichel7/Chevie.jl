@@ -1,7 +1,23 @@
 module ComplexR
 using ..Gapjm
 export ComplexReflectionGroup, reflection_name, diagram, charname, codegrees,
-  ExtendedCox, ExtendedReflectionGroup, traces_words_mats
+  ExtendedCox, ExtendedReflectionGroup, traces_words_mats, reflection_group
+
+Gapjm.roots(t::TypeIrred)=
+ t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
+
+function Gapjm.coroots(t::TypeIrred)
+  if t.series==:ST
+    cr=getchev(t,:GeneratingCoRoots)
+    if isnothing(cr)
+      r=getchev(t,:GeneratingRoots)
+      cr=map(coroot,r,
+               map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
+    end
+    return map(x->convert.(Cyc{Rational{Int}},x),cr)
+  end
+  toL(cartan(t))
+end
 
 """
 `ComplexReflectionGroup(STnumber)`
@@ -47,12 +63,7 @@ function ComplexReflectionGroup(i::Int)
   elseif i==37 return coxgroup(:E,8)
   end
   t=TypeIrred(Dict(:series=>:ST,:ST=>i))
-  r=getchev(t,:GeneratingRoots)
-  cr=getchev(t,:GeneratingCoRoots)
-  if isnothing(cr)
-   cr=map(coroot,r,map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
-  end
-  PRG(r,cr)
+  PRG(roots(t),coroots(t))
 end
 
 function ComplexReflectionGroup(p,q,r)
@@ -66,9 +77,13 @@ function ComplexReflectionGroup(p,q,r)
   elseif p==q && r==2 return coxgroup(:I,2,r)
   end
   t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
-  r=getchev(t,:GeneratingRoots)
-  cr=map(coroot,r,map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
-  PRG(r,map(x->convert.(Cyc{Rational{Int}},x),cr))
+  PRG(roots(t),coroots(t))
+end
+
+function reflection_group(t::TypeIrred)
+  if t.series==:ST return PRG(roots(t),coroots(t))
+  else return rootdatum(cartan(t))
+  end
 end
 
 """

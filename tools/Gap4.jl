@@ -11,7 +11,7 @@ gapvec_to_julia(gv)=map(i->GAP.gap_to_julia(gv[i]),1:length(gv))
 
 function Perm_to_julia(p)
   l=GAP.Globals.ListPerm(p)
-  length(l)==0 ? Perm() : Perm(Int.(GAP.gap_to_julia(l)))
+  length(l)==0 ? Perm() : Perm{Int16}(Int.(GAP.gap_to_julia(l)))
 end
 
 function Cyc_to_julia(p)
@@ -43,5 +43,6 @@ function Chars.CharTable(g::Group)
   ct.classnames[l]=ct.classnames
   ct
 end
+Chars.CharTable(g::CoxSym)=CharTable(g.G)
 
 end

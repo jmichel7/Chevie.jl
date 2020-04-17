@@ -73,9 +73,10 @@ const ChevieDict=Dict(
 #DetPerm
 #Dictionary
 #DifferenceMultiSet
+"Digits"=>"digits",
 #Discriminant
 "Dominates"=>"dominates",
-#DrinfeldDouble
+"DrinfeldDouble"=>"drinfeld_double",
 "Drop"=>"deleteat!",
 #Dual
 "DualBraid"=>"DualBraidMonoid",
@@ -181,7 +182,7 @@ const ChevieDict=Dict(
 #MatStab
 "MatXPerm(W,p)"=>"matX(W,p)",
 #MatYPerm
-#NrDrinfeldDouble
+"NrDrinfeldDouble"=>"ndrinfeld_double",
 #OnFamily
 "OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",
 "OnTuples(l,p)"=>"l.^p",

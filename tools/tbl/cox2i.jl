@@ -280,7 +280,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
                             e - 1
                         end), ac))
         if e == 5
-            (uc[:families])[3] = galois(uc[:families][3] , 13)
+            (uc[:families])[3] = (uc[:families])[3] ^ 13
             for c = uc[:harishChandra]
                 c[:eigenvalue] = GaloisCyc(c[:eigenvalue], 13)
             end

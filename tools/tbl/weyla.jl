@@ -177,10 +177,13 @@ chevieset(:A, :UnipotentCharacters, function (l,)
 chevieset(:A, :Invariants, function (n,)
         local m
         m = ((CHEVIE[:A])[:GeneratingRoots])(n)
+        push!(m, fill(0, max(0, (1 + (n + 1)) - 1)) + 1)
         return map((i->begin
                         function (arg...,)
                             local v
-                            v = arg * m
+                            v = copy(arg)
+                            push!(v, 0 * v[1])
+                            v = v * m
                             return Sum(arrangements(1:n + 1, i), (a->begin
                                             Product(v[a])
                                         end))

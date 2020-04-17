@@ -89,9 +89,9 @@ end
 
 #----------------------- Formatting -----------------------------------------
 const supchars  =
- "-0123456789+()abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
+ "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
 const unicodesup=
- "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴿᵀᵁⱽᵂᵝᵞᵟᵋᶥᶿᵠᵡ"
+ "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾⁼ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴿᵀᵁⱽᵂᵝᵞᵟᵋᶥᶿᵠᵡ"
 const supclass="["*supchars*"]"
 const sup=Dict(zip(supchars,unicodesup))
 const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ"

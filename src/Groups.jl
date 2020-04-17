@@ -258,7 +258,9 @@ end
 "class_reps(G::Group): representatives of conjugacy classes of G"
 function class_reps(G::Group{T})::Vector{T} where T
   gets(G,:classreps) do
-    first.(conjugacy_classes(G))
+    if length(G)>10000 Gap4.class_reps(G)
+    else first.(conjugacy_classes(G))
+    end
   end
 end
 

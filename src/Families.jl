@@ -60,13 +60,13 @@ the  properties of *fusion data*, see  below. The field 'f[:charLabels]' is
 what  is displayed  in the  column 'labels'  when displaying the family. It
 contains  labels naturally attached to lines  of the Fourier matrix. In the
 case   of  reductive  groups,   the  family  is   always  attached  to  the
-"Drinfeld_double"  of a small  finite group and  the '.charLabels' come from
+"drinfeld_double"  of a small  finite group and  the '.charLabels' come from
 this construction.
 """
 module Families
 
-export family_imprimitive, Family, Drinfeld_double, fourier, FamilyOps,
- FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, NrDrinfeld_double
+export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
+ FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, ndrinfeld_double
 
 using ..Gapjm
 
@@ -185,7 +185,8 @@ function Base.:*(f::Family,g::Family)
     :fourierMat=>kron(getindex.(arg,:fourierMat)...),
     :eigenvalues=>map(prod,Cartesian(getindex.(arg,:eigenvalues)...)),
     :name=>join(getindex.(arg,:name),"\\otimes "),
-    :explanation=>"Tensor("*join(getindex.(arg,:explanation),",")*")"
+    :explanation=>"Tensor("*join(map(x->haskey(x,:explanation) ?
+                                     x[:explanation] : "??",arg),",")*")"
   )
   if all(haskey.(arg,:charNumbers))
     res[:charNumbers]=map(x->collect(Iterators.flatten(x)),
@@ -268,11 +269,11 @@ function Cycs.galois(f::Family,p::Int)
   f[:eigenvalues]=galois.(f[:eigenvalues],p)
   if haskey(f,[:sh]) f[:sh]=galois.(f[:sh],p) end
   if haskey(f,:name)
-    f[:name]=p==-1 ? "overline "*f[:name] : "Gal("*p*","*f[:name]*")"
+    f[:name]=p==-1 ? "overline "*f[:name] : "Gal("*string(p)*","*f[:name]*")"
   end
   if haskey(f,:explanation)
     f[:explanation]=p==-1 ? "ComplexConjugate("*f[:explanation]*")" :
-                            "GaloisCyc("*p*","*f[:explanation]*")"
+    "GaloisCyc("*string(p)*","*f[:explanation]*")"
   end
   f
 end
@@ -489,7 +490,7 @@ chevieset(:families,:Dihedral,function(e)
 end)
 
 """
-`Drinfeld_double(g[,opt])`
+`drinfeld_double(g[,opt])`
 
 Given  a (usually small) finite group  `Γ`, Lusztig has associated a family
 (a  Fourier matrix, a list of eigenvalues of Frobenius) which describes the
@@ -539,16 +540,16 @@ there  is no complex conjugation of `χ₁`;  thus the matrix `S` is equal to
 `S,T`  satisfies directly the axioms for a fusion algebra (see below); also
 the matrix `S` is symmetric, while `S₀` is Hermitian.
 
-Thus there are two variants of 'Drinfeld_double`:
+Thus there are two variants of 'drinfeld_double`:
 
-`Drinfeld_double(g,lu=true)`
+`drinfeld_double(g,lu=true)`
 
 returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and  an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
 `(x,χ)↦(x,χ̄)`,  which allows  to recover  `S`, as  well as  an extra field
 `:lusztig', set to 'true'.
 
-`Drinfeld_double(g)`
+`drinfeld_double(g)`
 
 returns a family with the matrix `S`, which does not have fields '.lusztig'
 or '.perm'.
@@ -577,8 +578,8 @@ the call).
 
 `:special`: the index of the special element, which is `(x,χ)=(1,1)`.
 
-```julia-repl
-julia> Drinfeld_double(CoxSym(3))
+```julia-rep1
+julia> drinfeld_double(CoxSym(3))
 Family(D(CoxSym(3)):8)
    label│eigen                                       
 ────────┼─────────────────────────────────────────────
@@ -591,7 +592,7 @@ Family(D(CoxSym(3)):8)
 (3a,X.2)│  ζ₃²  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
 (3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3  2/3 -1/3
 
-julia> Drinfeld_double(CoxSym(3);lu=true)
+julia> drinfeld_double(CoxSym(3);lu=true)
 Family(LD(CoxSym(3)):8)
    label│eigen                                       
 ────────┼─────────────────────────────────────────────
@@ -605,7 +606,7 @@ Family(LD(CoxSym(3)):8)
 (3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
 ```
 """
-function Drinfeld_double(g;lu=false)
+function drinfeld_double(g;lu=false)
   res=Dict{Symbol,Any}(:group=> g)
   res[:classinfo] = map(function (c, n)
     r = Dict{Symbol, Any}(:elt => c,:name => n)
@@ -664,18 +665,18 @@ end, class_reps(g), CharTable(g).classnames)
 end
 
 """
-`NrDrinfeld_double(g)`
+`ndrinfeld_double(g)`
 
 This  function returns the number of elements that the family associated to
 the  Drinfeld double of the group `g` would have, without computing it. The
 evident advantage is the speed.
 
 ```julia-repl
-julia> Families.NrDrinfeldDouble(ComplexReflectionGroup(5))
+julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
 378
 ```
 """
-NrDrinfeld_double(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
+ndrinfeld_double(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
 
 """
 `family_imprimitive(<S>)`

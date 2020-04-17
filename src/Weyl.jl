@@ -284,26 +284,26 @@ end
 
 function PermRoot.cartan(t::Dict{Symbol,Any})
 # println("t=$t")
-  if haskey(t,:cartantype) 
-    ct=t[:cartantype]
+  if haskey(t,:cartanType) 
+    ct=t[:cartanType]
     if haskey(t,:bond) 
       C=convert.(typeof(ct),cartan(t[:series],length(t[:indices]),t[:bond]))
     else
       C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
     end
     if t[:series]==:B
-      C[1,2]=-t[:cartantype]
-      C[2,1]=-2//t[:cartantype]
+      C[1,2]=-t[:cartanType]
+      C[2,1]=-2//t[:cartanType]
     elseif t[:series]==:G
-      C[1,2]=-t[:cartantype]
-      C[2,1]=-3//t[:cartantype]
+      C[1,2]=-t[:cartanType]
+      C[2,1]=-3//t[:cartanType]
     elseif t[:series]==:F
-      C[2,3]=-t[:cartantype]
-      C[3,2]=-2//t[:cartantype]
+      C[2,3]=-t[:cartanType]
+      C[3,2]=-2//t[:cartanType]
     elseif t[:series]==:I
-      C[1,2]=-t[:cartantype]
+      C[1,2]=-t[:cartanType]
       b=t[:bond]
-      C[2,1]=(-2-E(b)-E(b,-1))/t[:cartantype]
+      C[2,1]=(-2-E(b)-E(b,-1))/t[:cartanType]
     end
     if all(isinteger,C) C=Int.(C) end
     C
@@ -380,15 +380,15 @@ function type_fincox_cartan(m::AbstractMatrix)
       if l(1)*r(1)==1 t[:series]=:A 
       elseif l(1)*r(1)==2 t[:series]=:B  
         if l(1)==-1 rev() end # B2 preferred to C2
-        t[:cartantype]=-l(1)
+        t[:cartanType]=-l(1)
       elseif l(1)*r(1)==3 t[:series]=:G  
         if r(1)==-1 rev() end 
-        t[:cartantype]=-l(1)
+        t[:cartanType]=-l(1)
       else n=conductor(l(1)*r(1))
         if r(1)==-1 rev() end
         if l(1)*r(1)==2+E(n)+E(n,-1) bond=n else bond=2n end
         t[:series]=:I
-        if bond%2==0 t[:cartantype]=-l(1) end
+        if bond%2==0 t[:cartanType]=-l(1) end
         t[:bond]=bond
       end
     else
@@ -397,12 +397,12 @@ function type_fincox_cartan(m::AbstractMatrix)
         if l(2)*r(2)==1 t[:series]=:A 
         else t[:series]=:F
           if r(2)==-1 rev() end 
-          t[:cartantype]=-l(2)
+          t[:cartanType]=-l(2)
         end
       else n=conductor(l(1)*r(1))
         if n==5 t[:series]=:H
         else t[:series]=:B
-          t[:cartantype]=-l(1)
+          t[:cartanType]=-l(1)
         end  
       end  
     end 
@@ -620,8 +620,10 @@ Perms.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
 PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
-PermRoot.cartan(W::FiniteCoxeterGroup)=cartan(W.G)
+PermRoot.cartan(W::FiniteCoxeterGroup,a...)=cartan(W.G,a...)
 PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
+PermRoot.invariants(W::FiniteCoxeterGroup)=invariants(W.G)
+PermRoot.coroots(W::FiniteCoxeterGroup)=coroots(W.G)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,i,q)=torus_order(W.G,i,q)
@@ -781,10 +783,10 @@ function cartancoeff(W::FCG,i,j)
 end
 
 # root lengths for parent group
-function rootlengths(W::FCG)::Vector{Int}
+function rootlengths(W::FCG)
   gets(W,:rootlengths)do
     C=cartan(W)
-    lengths=fill(0,2*W.N)
+    lengths=fill(zero(eltype(C)),2*W.N)
     for t in refltype(W)
       I=t.indices
       if length(I)>1 && C[I[1],I[2]]!=C[I[2],I[1]]
@@ -804,7 +806,7 @@ end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
   mroots(W)=toM(roots(W.G)[1:semisimplerank(W)])
-  mcoroots(W)=toM(coroots(W.G)[1:semisimplerank(W)])
+  mcoroots(W)=toM(coroots(W)[1:semisimplerank(W)])
   r=roots(W1.G)
   cr=roots(W2.G)
   if isempty(r)
@@ -1183,7 +1185,7 @@ function algebraic_centre(W)
   end
   AZ=Group(AZ)
   toAZ=function(s)
-    s=vec(permutedims(map(x->x.r,s.v))*toM(coroots(W.G)[1:semisimplerank(W)]))
+    s=vec(permutedims(map(x->x.r,s.v))*toM(coroots(W)[1:semisimplerank(W)]))
     s=permutedims(s)*
        inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
        return AdditiveSE(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*
@@ -1296,7 +1298,7 @@ Group([])
 """
 function fundamental_group(W)
   if iszero(semisimplerank(W)) return Group([Perm()]) end
-  omega=inv(Rational.(cartan(W)))*toM(W.G.coroots) # simple coweights in basis of Y(T)
+  omega=inv(Rational.(cartan(W)))*toM(coroots(W)) # simple coweights in basis of Y(T)
   e=weightinfo(W)[:minusculeCoweights]
   e=filter(x->all(isinteger,sum(omega[x,:];dims=1)),e) # minusc. coweights in Y
   if isempty(e) return Group(Perm()) end

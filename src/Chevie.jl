@@ -67,7 +67,8 @@ function field(t::TypeIrred)
   end
 end
 
-const needcartantype=Set([:PrintDiagram,
+const needcartantype=Set([:Invariants,
+                          :PrintDiagram,
                           :ReflectionName,
                           :UnipotentClasses,
                           :WeightInfo])
@@ -78,9 +79,9 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
   o=chevieget(d[1],f)
   if o isa Function
 #   o(vcat(collect(d)[2:end],collect(extra))...)
-    if haskey(t,:cartantype) && f in needcartantype
-#     println("args=",(d[2:end]...,extra...,t.cartantype))
-      o(d[2:end]...,extra...,t.cartantype)
+    if haskey(t,:cartanType) && f in needcartantype
+#     println("args=",(d[2:end]...,extra...,t.cartanType))
+      o(d[2:end]...,extra...,t.cartanType)
      else o(d[2:end]...,extra...)
     end
   else o

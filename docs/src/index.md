@@ -128,6 +128,7 @@ reflchar
 simple_conjugating_element
 simple_representatives
 invariant_form
+invariants
 generic_order
 torus_order
 parabolic_representatives
@@ -147,6 +148,7 @@ schur_elements
 KL
 KLPol
 Tbasis
+KL.getCp
 character
 representation(::LeftCell,H)
 LeftCells
@@ -160,7 +162,9 @@ leftgcd
 α
 DualBraidMonoid
 fraction
+word(::Garside.GarsideMonoid,w)
 word(::Garside.GarsideElm)
+elements(::Garside.LocallyGarsideMonoid,l)
 image
 representative_operation
 centralizer_generators
@@ -168,7 +172,7 @@ conjcat
 endomorphisms
 shrink
 ```
-# Classes and characters of reflection groups
+# Classes/characters of reflection groups
 ```@docs
 Chars
 CharTable
@@ -200,8 +204,8 @@ LusztigRestrict
 LusztigInductionTable
 Families
 Family
-Drinfeld_double
-NrDrinfeld_double
+drinfeld_double
+ndrinfeld_double
 family_imprimitive
 FamiliesClassical
 ```
