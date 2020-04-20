@@ -298,8 +298,8 @@ function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
   end
 end
 
-ExtendedReflectionGroup(W,p::Vector{Perm{Int}})=ExtendedCox(W,matX.(Ref(W),p))
-ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[matX(W,p)])
+ExtendedReflectionGroup(W,p::Vector{Perm{Int}})=ExtendedCox(W,refrep.(Ref(W),p))
+ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[refrep(W,p)])
 
 function ExtendedReflectionGroup(W,mats::Vector{Any})
   if isempty(mats) ExtendedCox(W,empty([fill(0,0,0)]))

@@ -68,7 +68,7 @@ export CycPol
 # export roots, degree
 import Gapjm: roots
 
-using ..ModuleElts: ModuleElt, norm!
+using ..ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
 using ..Pols
 using ..Util: fromTeX, prime_residues, primitiveroot, phi
@@ -333,11 +333,11 @@ function CycPol(p::Pol{T})where T
     if a===nothing return CycPol(Pol(p.c,0),Pols.valuation(p)) end
     d=length(p.c)-1
     vcyc=[Root1(;r=u)=>1 for u in (a.r .+(0:d-1))//d]
-    return CycPol(p.c[end],Pols.valuation(p),ModuleElt(sort(vcyc)))
+    return CycPol(p.c[end],Pols.valuation(p),ModuleElt(vcyc;check=true))
   end
   val=Pols.valuation(p)
   p=Pol(p.c,0)
-  vcyc=zero(ModuleElt{Root1,Int})
+  vcyc=Pair{Root1,Int}[]
 
   # find factors Phi_i
   testcyc=function(c)
@@ -374,7 +374,7 @@ function CycPol(p::Pol{T})where T
   for i in tested 
     if degree(p)>=phi(i) testcyc(i) end
     testall(i)
-    if degree(p)==0 return CycPol(p.c[end],val,norm!(vcyc)) end
+    if degree(p)==0 return CycPol(p.c[end],val,ModuleElt(vcyc;check=true)) end
   end
   
   # if not finished do a general search.
@@ -399,7 +399,7 @@ function CycPol(p::Pol{T})where T
   end
 # println("now p=$p val=$val")
   
-  CycPol(degree(p)==0 ? p.c[1] : p,val,norm!(vcyc))
+  CycPol(degree(p)==0 ? p.c[1] : p,val,ModuleElt(vcyc;check=true))
 end
 
 function (p::CycPol)(x)

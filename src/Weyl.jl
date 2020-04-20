@@ -187,7 +187,8 @@ export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
 # to use as a stand-alone module uncomment the next line
 # export roots
 
-using Gapjm, LinearAlgebra
+using Gapjm
+using LinearAlgebra: SymTridiagonal
 #------------------------ Cartan matrices ----------------------------------
 
 """
@@ -247,7 +248,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
    :B=>function(r,b)m=A(r)
      if r>1 m[1,2]=-2 end
      m end,
-   :Bsym=>function(r,b)m=Cyc{Int}.(A(r))
+   :Bsym=>function(r,b)m=convert.(Cyc{Int},A(r))
      m[1:2,1:2]=Isym(2,4)
      m end,
    :C=>function(r,b)m=A(r)
@@ -262,14 +263,14 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
    :F=>function(r,b)m=A(r)
      m[3,2]=-2 
      m end,
-   :Fsym=>function(r,b)m=Cyc{Int}.(A(r))
+   :Fsym=>function(r,b)m=convert.(Cyc{Int},A(r))
      m[3,2]=m[2,3]=-ER(2)
      m end,
    :G=>function(r,b)m=A(r)
      m[2,1]=-3
      m end,
    :Gsym=>(r,b)->Isym(2,6),
-   :H=>function(r,b)m=Cyc{Int}.(A(r))
+   :H=>function(r,b)m=convert.(Cyc{Int},A(r))
      m[1:2,1:2]=Isym(2,5)
      m end,
    :I=>function(r,b)
@@ -627,9 +628,9 @@ PermRoot.coroots(W::FiniteCoxeterGroup)=coroots(W.G)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,i,q)=torus_order(W.G,i,q)
-PermRoot.rank(W::FiniteCoxeterGroup)=PermRoot.rank(W.G)
-PermRoot.matX(W::FiniteCoxeterGroup,w)=PermRoot.matX(W.G,w)
-PermRoot.PermX(W::FiniteCoxeterGroup,M)=PermRoot.PermX(W.G,M)
+PermRoot.rank(W::FiniteCoxeterGroup)=rank(W.G)
+PermRoot.refrep(W::FiniteCoxeterGroup,w...)=refrep(W.G,w...)
+PermRoot.PermX(W::FiniteCoxeterGroup,M)=PermX(W.G,M)
 PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
 PermRoot.reflchar(W::FiniteCoxeterGroup,x...)=reflchar(W.G,x...)
 PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
@@ -687,8 +688,8 @@ are the simple roots. The positive roots are ordered by increasing height.
        for  the  i-th  root, gives an element  <w> of <W> of minimal length
        such that 'i=orbitRepresentative[i]^w'.
 
-`W.G.matgens`:    the  matrices  (in  row  convention  ---  that is the matrices
-       operate  *from the right*) of the  simple reflections of the Coxeter group.
+`refrep(W)`:    the  matrices  (in  row  convention  ---  that is the matrices
+     operate  *from the right*) of the  simple reflections of the Coxeter group.
 
 `gens(W)`:   the generators as permutations of the root vectors.  They
        are given in the same order as the first `semisimplerank(W)` roots.
@@ -718,7 +719,7 @@ julia> W.rootdec
  [0, -1, -1] 
  [-1, -1, -1]
 
-julia> W.G.matgens
+ julia> refrep(W)
 3-element Array{Array{Int64,2},1}:
  [-1 0 0; 1 1 0; 0 0 1]
  [1 1 0; 0 -1 0; 0 1 1]
@@ -738,11 +739,11 @@ function rootdatum(rr::Matrix,cr::Matrix)
   r=Ref(permutedims(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
-  matgens=map(reflection,eachrow(rr),eachrow(cr)) # reflection matrices
-  # permutations of the roots effected by matgens
-  gens=map(M->Perm(r,Ref(permutedims(M)).*r),matgens)
+  mats=map(reflection,eachrow(rr),eachrow(cr)) # refrep
+  # permutations of the roots effected by mats
+  gens=map(M->Perm(r,Ref(permutedims(M)).*r),mats)
   rank=size(C,1)
-  G=PRG(matgens,r,map(i->cr[i,:],1:rank),Group(gens),
+  G=PRG(mats,r,map(i->cr[i,:],1:rank),Group(gens),
     Dict{Symbol,Any}(:cartan=>C))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
@@ -771,7 +772,7 @@ coxgroup()=torus(0)
 
 Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
   
-#function matX(W::FCG,w)
+#function refrep(W::FCG,w)
 #  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
 
@@ -850,7 +851,7 @@ end
 CoxGroups.nref(W::FCSG)=W.N
 
 Base.parent(W::FCSG)=W.parent
-PermRoot.matX(W::FCSG,w)=matX(parent(W),w)
+PermRoot.refrep(W::FCSG,w)=refrep(parent(W),w)
 
 # if I are all the positive roots of a subsystem find the simple ones
 function SimpleRootsSubsystem(W,I) 
@@ -1088,8 +1089,8 @@ Stacktrace:
  [3] top-level scope at REPL[25]:1
 ```
 """
-function SubTorus(W,V=matX(W,one(W)))
-  V=ComplementIntMat(toL(matX(W,one(W))),toL(V))
+function SubTorus(W,V=refrep(W,one(W)))
+  V=ComplementIntMat(toL(refrep(W,one(W))),toL(V))
   if any(x->x!=1,V[:moduli])
     error("not a pure sublattice")
     return false
@@ -1156,7 +1157,7 @@ function algebraic_centre(W)
     W=W.group
   end
   if iszero(semisimplerank(W))
-    Z0=toL(matX(W,one(W)))
+    Z0=toL(refrep(W,one(W)))
   else
     Z0=NullspaceIntMat(collect.(collect(zip(
                                        roots(W.G)[1:semisimplerank(W)]...))))

@@ -87,6 +87,16 @@ function constant(a::AbstractVector)
    all(i->a[i]==a[1],2:length(a))
 end
 
+# faster than unique! for sorted vectors
+function unique_sorted(v::Vector)
+  i=1
+@inbounds  for j in 2:length(v)
+    if v[j]==v[i]
+    else i+=1; v[i]=v[j]
+    end
+  end
+  resize!(v,i)
+end
 #----------------------- Formatting -----------------------------------------
 const supchars  =
  "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
@@ -125,6 +135,10 @@ function TeXstrip(s::String)
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\!"=>"")
   s=replace(s,r"{}"=>"")
+  s=replace(s,r"\^\{1//2\}"=>"½")
+  s=replace(s,r"\^\{-1//2\}"=>"⁻½")
+  s=replace(s,r"\^\{1//3\}"=>"⅓")
+  s=replace(s,r"\^\{1//4\}"=>"¼")
   s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
   s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
   s=replace(s,Regex("_\\{$subclass*\\}")=>t->map(x->sub[x],t[3:end-1]))

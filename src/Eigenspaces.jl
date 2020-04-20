@@ -229,21 +229,21 @@ eigenspace_projector(WF,w,d::Rational=0//1)=eigenspace_projector(WF,w,Root1(;r=d
 function eigenspace_projector(WF, w, d::Root1)
   c=refleigen(WF)[position_class(WF,w)]
   c=E.(filter(x->x!=d,c))
-  f=matX(WF,w)
+  f=refrep(WF,w)
   if length(c)==0 f^0
   else prod(x->f-f^0*x,c)//prod(x->E(d)-x,c)
   end
 end
 
 function GetRelativeAction(W,L,w)
-  m=matX(parent(W), w)
+  m=refrep(W,w)
   if size(m,2)==0 return m end
   m=m^inv(baseX(L))
   m[semisimplerank(L)+1:end,semisimplerank(L)+1:end]
 end
 
 function Groups.normalizer(W::PermRootGroup,L::PermRootGroup)
-  r=unique(sort(reflections(L)))
+  r=unique!(sort(reflections(L)))
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 
@@ -269,7 +269,7 @@ function GetRelativeRoot(W,L,i)
       res[:index]=i
       rc=filter(c->GetRelativeAction(W,L,c)==m,class_reps(N))
 #     println("rc=$rc")
-      c=unique(sort(map(x->position_class(W,x),rc)))
+      c=unique!(sort(map(x->position_class(W,x),rc)))
       m=maximum(map(x->count(isone,x),refleigen(W)[c]))
       m=filter(x->count(isone,refleigen(W)[x])==m,c)
       m=filter(x->position_class(W,x) in m,rc)
@@ -341,14 +341,14 @@ function split_levis(WF,d::Root1,ad)
   refs=eachindex(reflections(W)[1:nref(W)]) #hum
 #  refs=filter(i->Position(reflections(W),reflection(W,i))==i,
 #              eachindex(roots(W)))
-  mats=map(i->matX(W,reflection(W,i)),refs)
+  mats=map(i->refrep(W,reflection(W,i)),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
   res=[]
   while length(cl)>0
     w=class_reps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
-    else m=matX(WF,w)
+    else m=refrep(WF,w)
       V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(d)*one(m))))
     end
     I=refs[map(m->V==V*m, mats)]

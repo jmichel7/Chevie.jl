@@ -126,8 +126,8 @@ export PermRootGroup, PRG, PRSG, catalan,
  reflection_subgroup, simple_representatives, simple_conjugating_element, 
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
- refleigen, reflchar, bipartite_decomposition, torus_order, rank, matX, PermX,
- coroots, baseX, semisimplerank, invariant_form, generic_order,
+ refleigen, reflchar, bipartite_decomposition, torus_order, rank, refrep, 
+ PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants
 # to use as a stand-alone module uncomment the next line
 # export roots, gens, degree
@@ -683,7 +683,7 @@ tr(m)=sum(i->m[i,i],axes(m,1))
     
 Returns  the trace  of the  element `w`  of the  reflection group `W` as an
 endomorphism of the vector space `V` on which `W` acts. This is the same as
-`trace(matX(W,w))`.
+`trace(refrep(W,w))`.
 
 julia-repl```
 julia> W=coxgroup(:B,3)
@@ -693,7 +693,7 @@ julia> reflchar(W,longest(W))
 -3
 julia-repl```
 """
-reflchar(W::PermRootGroup,w)=tr(matX(W,w))
+reflchar(W::PermRootGroup,w)=tr(refrep(W,w))
 
 """
 `reflchar(W)`
@@ -735,7 +735,7 @@ function refleigen(W::PermRootGroup)
 # very inefficient for now
   gets(W,:refleigen) do
     ll=map(class_reps(W)) do x
-      p=CycPol(charpoly(matX(W,x)))
+      p=CycPol(charpoly(refrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
 #   t=CharTable(W).irr[charinfo(W)[:extRefl],:]
@@ -909,7 +909,7 @@ not normalize the set of roots.
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆
 
-julia> PermX(W,matX(W,longest(W)))==longest(W)
+julia> PermX(W,refrep(W,longest(W)))==longest(W)
 true
 ```
 """
@@ -919,7 +919,7 @@ end
 
 function PermGroups.reduced(W::PermRootGroup,F)
   if issubset(inclusiongens(W).^F,inclusion(W))
-    w=PermX(W,matX(W,F))
+    w=PermX(W,refrep(W,F))
     if !isnothing(w) && w in W return w\F 
     elseif length(W)==1 return F
     end
@@ -1092,7 +1092,7 @@ end
 @inline Base.parent(W::PRG)=W
 function coroot(W::PRG,i)
   if i<=length(W.coroots) return W.coroots[i] end
-  m=matX(W,reflection(W,i))
+  m=refrep(W,reflection(W,i))
   j=findfirst(!iszero,roots(W)[i])
   r=map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
   if all(isinteger,r) r=Int.(r) end
@@ -1125,7 +1125,7 @@ julia> r=reflection([1,0,0],[2,-1,0])
   1  1  0
   0  0  1
 
-julia> r==matX(coxgroup(:A,3),1)
+julia> r==refrep(coxgroup(:A,3),1)
 true
 
 julia> r*[2,-1,0]
@@ -1147,14 +1147,15 @@ function reflection(root::AbstractVector,coroot::AbstractVector)
   one(m)-m
 end
 
-matX(W::PRG,i::Integer)=W.matgens[i]
+refrep(W::PRG)=W.matgens
+refrep(W::PRG,i::Integer)=W.matgens[i]
 
 """
-`MatX(W,w)`
+`refrep(W,w)`
 
 Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
-permutation  of the roots of `W`. The function `MatX` returns the matrix of
-`w`  acting on  `V`. This  is the  linear transformation  of `V` which acts
+permutation  of the roots of `W`.  The function `refrep` returns the matrix
+of  `w` acting on `V`. This is  the linear transformation of `V` which acts
 trivially  on the orthogonal of  the coroots and has  same effect as `w` on
 the simple roots. The function makes sense more generally for an element of
 the normalizer of `W` in the whole permutation group of the roots.
@@ -1163,7 +1164,7 @@ the normalizer of `W` in the whole permutation group of the roots.
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆
 
-julia> matX(W,longest(W))
+julia> refrep(W,longest(W))
 7×7 Array{Int64,2}:
   0   0   0   0   0  -1  2
   0  -1   0   0   0   0  2
@@ -1174,7 +1175,7 @@ julia> matX(W,longest(W))
   0   0   0   0   0   0  1
 ```
 """
-function matX(W::PRG,w)
+function refrep(W::PRG,w)
   X=baseX(W)
   ir=independent_roots(W)
   if isempty(ir) return X end
@@ -1238,8 +1239,9 @@ end
 cartan_coeff(W::PRSG,i,j)=
      cartan_coeff(parent(W),inclusion(W,i),inclusion(W,j))
 
-matX(W::PRSG,i::Integer)=matX(parent(W),inclusion(W,i))
-matX(W::PRSG,w)=matX(parent(W),w)
+refrep(W::PRSG)=map(i->refrep(parent(W),i),inclusiongens(W))
+refrep(W::PRSG,i::Integer)=refrep(parent(W),inclusion(W,i))
+refrep(W::PRSG,w)=refrep(parent(W),w)
 
 reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
    reflection_subgroup(parent(W),inclusion(W)[I])
@@ -1442,7 +1444,7 @@ implemented   when  the  reflection   representation  for  the  irreducible
 components has the same Cartan matrix as the one provided by CHEVIE for the
 corresponding  irreducible  group.  The  polynomials  are invariant for the
 natural   action  of   the  group   elements  as   matrices;  that  is,  if
-`m==matX(W,w)`  for  some  `w`  in  `W`,  then  an  invariant `f` satisfies
+`m==refrep(W,w)`  for  some  `w`  in  `W`,  then an invariant `f` satisfies
 `f(a₁,…,aₙ)=f(v₁,…,vₙ)`   where  `[v₁,…,vₙ]=[a₁,…,aₙ]×m`.  This  action  is
 implemented on `Mvp`s by the function `^`.
 
@@ -1468,7 +1470,7 @@ julia> i=invariants(W)[1];
 julia> p=i(x,y,z)
 Mvp{Rational{Int64}}: (14//1)x⁴+(-12//1)x²y²+(-42//1)x²yz+(21//2)x²z²+(18//7)y⁴+(-6//1)y³z+(-9//2)y²z²+(-21//8)z⁴
 
-julia> p^W.matgens[1]-p
+julia> p^refrep(W,1)-p
 Mvp{Cyc{Rational{Int64}}}: 0
 ```
 """

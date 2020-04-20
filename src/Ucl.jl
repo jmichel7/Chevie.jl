@@ -409,7 +409,7 @@ function QuotientAu(Au,chars)
 # println("ct=$ct cl=$cl")
   if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
                               :gens=>map(x->[x],eachindex(gens(Au)))) end
-  ct=permutedims(toM(unique(sort(toL(ct)))))
+  ct=permutedims(toM(unique!(sort(toL(ct)))))
 # println("ct=$ct")
 # k=Subgroup(Au,filter(x->position_class(Au,x) in cl,elements(Au)))
   k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
@@ -467,7 +467,7 @@ function AdjustAu!(classes,springerseries)
       if rank(R)==0 
         u.prop[:AuAction]=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
       else 
-       if isempty(f[:gens]) F0s=[matX(R,R())]
+       if isempty(f[:gens]) F0s=[refrep(R,R())]
        else F0s=map(x->prod(u.prop[:AuAction].F0s[x]),f[:gens])
        end
        u.prop[:AuAction]=ExtendedCox(R,F0s)
@@ -692,7 +692,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-            map(x->toM(DiagonalMat(x,matX(T,T()))),u.prop[:AuAction].F0s))
+            map(x->toM(DiagonalMat(x,refrep(T,T()))),u.prop[:AuAction].F0s))
         end
       end
       u

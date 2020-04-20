@@ -156,7 +156,7 @@ Perm(x::Integer...)=Perm{Int16}(x...)
    change the type of `p` to `Perm{T}`
    for example `Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)`
 """
-Base.convert(::Type{Perm{T}},p::Perm) where T<:Integer=Perm(T.(p.d))
+Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))
 Perm{T}(p::Perm) where T<:Integer=convert(Perm{T},p)
 
 """
@@ -287,15 +287,15 @@ smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 extend(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
 
-# `promote(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
-function Base.promote(a::Perm,b::Perm)
+# `promote_length(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
+function promote_length(a::Perm,b::Perm)
   extend(a,length(b.d))
   extend(b,length(a.d))
   (a,b)
 end
 
 function Base.:*(a::Perm, b::Perm)
-  a,b=promote(a,b)
+  a,b=promote_length(a,b)
   r=similar(a.d)
 @inbounds for (i,v) in enumerate(a.d) r[i]=b.d[v] end
   Perm(r)
@@ -303,7 +303,7 @@ end
 
 # this is a*=b without allocation
 function mul!(a::Perm, b::Perm)
-  a,b=promote(a,b)
+  a,b=promote_length(a,b)
 @inbounds for (i,v) in enumerate(a.d) a.d[i]=b.d[v] end
   a
 end
@@ -316,7 +316,7 @@ end
 
 # less allocations than inv(a)*b
 function Base.:\(a::Perm, b::Perm)
-  a,b=promote(a,b)
+  a,b=promote_length(a,b)
   r=similar(a.d)
 @inbounds for (i,v) in enumerate(a.d) r[v]=b.d[i] end
   Perm(r)
@@ -324,7 +324,7 @@ end
 
 # less allocations than inv(a)*b*a
 function Base.:^(a::Perm, b::Perm)
-  a,b=promote(a,b)
+  a,b=promote_length(a,b)
   r=similar(a.d)
 @inbounds for (i,v) in enumerate(a.d) r[b.d[i]]=b.d[v] end
   Perm(r)

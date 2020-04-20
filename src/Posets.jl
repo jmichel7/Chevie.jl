@@ -175,7 +175,7 @@ function Base.show(io::IO,x::Poset)
   repl=get(io,:limit,false)
   s=hasse(x)
   p=partition(x)
-  s=Poset(map(x->unique(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),
+  s=Poset(map(x->unique!(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),
                                                      s[x[1]])))), p))
   labels=map(y->join(map(n->
     haskey(x.prop,:labels) ? x.prop[:labels][n] :

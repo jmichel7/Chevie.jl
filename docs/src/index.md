@@ -53,7 +53,7 @@ ER
 Quadratic
 Root1
 ```
-# Univariate Laurent polynomials
+# Univariate (Laurent) polynomials
 ```@docs
 Pols
 divrem
@@ -61,14 +61,15 @@ divrem1
 gcd
 cyclotomic_polynomial
 ```
-# Multivariate Laurent polynomials
+# Multivariate (Puiseux) polynomials
 ```@docs
 Mvps
-Mvp
 variables
 Mvps.coefficients
 Mvps.valuation
+Mvps.value
 Mvps.degree
+scal
 ```
 # Coxeter groups
 ```@docs
@@ -120,7 +121,7 @@ degrees(::Group)
 codegrees
 bipartite_decomposition
 catalan
-matX
+refrep(::PRG,w)
 PermX
 reflections
 refleigen
@@ -142,6 +143,8 @@ central_monomials
 class_polynomials
 char_values
 schur_elements
+isrepresentation
+refrep(::HeckeAlgebra)
 ```
 # Kazhdan-Lusztig polynomials and bases
 ```@docs
@@ -265,7 +268,7 @@ dominates
 partitions
 submultisets
 ```
-# ModuleElts.jl Documentation
+# Module Elements
 ```@docs
 ModuleElts
 ```
@@ -342,6 +345,7 @@ CentralizerGenerators                       → centralizer_generators
 CharNames                                   → charnames
 CharParams(W)                               → charinfo(W)[:charparams]
 CharRepresentationWords                     → traces_words_mats
+CheckHeckeDefiningRelations                 → isrepresentation
 ChevieCharInfo                              → charinfo
 ChevieClassInfo                             → classinfo
 Coefficient(p,i)                            → p[i]
@@ -364,7 +368,7 @@ CoxeterMatrix                               → coxmat
 CoxeterMatrixFromCartanMat                  → coxmat
 CoxeterSubCoset                             → subspets
 CoxeterWord(W,w)                            → word(W,w)
-CoxeterWords(W[,l])                         → word.(Ref(W),elements(W[,l])
+CoxeterWords(W[,l])                         → word.(Ref(W),elements(W[,l]))
 CuspidalUnipotentCharacters                 → cuspidal_unipotent_characters
 CycPol                                      → CycPol
 CycPolFakeDegreeSymbol                      → fegsymbol
@@ -379,7 +383,9 @@ Degree(p)                                   → degree(p)
 DeligneLusztigCharacter                     → DLChar
 DeligneLusztigLefschetz                     → DLLeftschetz
 DescribeInvolution                          → describe_involution
+Digits                                      → digits
 Dominates                                   → dominates
+DrinfeldDouble                              → drinfeld_double
 Drop                                        → deleteat!
 DualBraid                                   → DualBraidMonoid
 DualBraidMonoid                             → DualBraidMonoid
@@ -407,10 +413,12 @@ GcdPartitions                               → gcd_partitions
 GcdRepresentation                           → gcd_repr
 GenericOrder                                → generic_order
 GenericSign                                 → generic_sign
+GetRoot                                     → root
 Hasse                                       → hasse
 HeckeCentralMonomials                       → central_monomials
 HeckeCharValues                             → char_values
 HeckeClassPolynomials                       → class_polynomials
+HeckeReflectionRepresentation               → refrep
 HighestPowerFakeDegreeSymbol                → degree_feg_symbol
 HighestPowerGenericDegreeSymbol             → degree_gendeg_symbol
 HyperplaneOrbits                            → hyperplane_orbits
@@ -450,8 +458,10 @@ LowestPowerGenericDegreeSymbol              → valuation_gendeg_symbol
 LusztigInduction                            → LusztigInduce
 LusztigInductionTable                       → LusztigInductionTable
 LusztigRestriction                          → LusztigRestrict
-MatXPerm(W,p)                               → matX(W,p)
+MatXPerm(W,p)                               → refrep(W,p)
+NrDrinfeldDouble                            → ndrinfeld_double
 OnMatrices(m,p)                             → ^(m,p;dims=(1,2))
+OnPolynomials(m,p)                          → p^m
 OnTuples(l,p)                               → l.^p
 ParabolicRepresentatives                    → parabolic_representatives
 PartBeta                                    → partβ
@@ -528,7 +538,7 @@ UnorderedTuples                             → submultiset
 Valuation(p)                                → valuation(p)
 Value(p,x)                                  → p(x)
 W.N                                         → nref(W)
-W.matgens[i]                                → matX(W,i)
+W.matgens[i]                                → refrep(W,i)
 W.orbitRepresentativeElement                → simple_conjugating_element(W,i)
 W.orbitRepresentative[i]                    → simple_representative(W,i)
 WeightInfo                                  → weightinfo

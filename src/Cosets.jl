@@ -303,7 +303,7 @@ end
 #  print(io,"spets{",TW,"}")
 #end
 
-spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,matX(W,w))
+spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,refrep(W,w))
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
 Base.parent(W::Spets)=gets(()->W,W,:parent)
@@ -317,13 +317,13 @@ end
 
 function torusfactors(WF::CoxeterCoset)
   M=baseX(WF.W.G)
-  M*=WF.F*inv(convert.(Cyc{Rational},M))
+  M*=WF.F*inv(M*E(1)//1)
   M=improve_type(M)
   r=semisimplerank(WF.W)
   CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 
-function PermRoot.generic_order(WF::Spets, q )
+function PermRoot.generic_order(WF::Spets,q)
   if rank(Group(WF))==0 return one(q) end
   generic_sign(WF)*q^sum(x->x[1]+1,codegrees(WF))*
       prod(p->1-q^p[1]*conj(p[2]),degrees(WF))
@@ -384,7 +384,7 @@ function Base.show(io::IO, W::Spets)
    if !isone(t) show(io,t) end
 end
 
-PermRoot.matX(WF::Spets,w)=WF.F*matX(Group(WF),w)
+PermRoot.refrep(WF::Spets,w)=WF.F*refrep(Group(WF),w)
   
 function PermGroups.class_reps(W::Spets)
   gets(W,:classreps)do
@@ -395,7 +395,7 @@ end
 function PermRoot.refleigen(W::Spets)
   gets(W,:refleigen)do
     map(W.phi.\class_reps(W)) do x
-      p=CycPol(charpoly(matX(W,x)))
+      p=CycPol(charpoly(refrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
   end
@@ -470,7 +470,7 @@ function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
     error("w*WF.phi does not normalize subsystem")
   end
   phi=reduced(R,phi*WF.phi)
-  spets(phi,matX(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+  spets(phi,refrep(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
 end
 
 #-------------- spets ---------------------------------
@@ -483,7 +483,7 @@ end
 
 function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
   w=reduced(W,w)
-  F=matX(W,w)
+  F=refrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
   refltype(res) # changes phi
@@ -594,9 +594,10 @@ function PermRoot.refltype(WF::PRC)
 end
 
 function torusfactors(WF::PRC)
-  M=PermRoot.baseX(Group(WF))
-  M*=WF.F*inv(convert.(Cyc{Rational},M))
-  r=semisimplerank(WF.W)
+  W=Group(WF)
+  M=baseX(W)
+  M*=WF.F*inv(M)
+  r=semisimplerank(W)
   CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 #--------------------- Root data ---------------------------------

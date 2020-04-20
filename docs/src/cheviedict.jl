@@ -32,6 +32,7 @@ const ChevieDict=Dict(
 "CharNames"=>"charnames",
 "CharParams(W)"=>"charinfo(W)[:charparams]",
 "CharRepresentationWords"=>"traces_words_mats",
+"CheckHeckeDefiningRelations"=>"isrepresentation",
 "ChevieClassInfo"=>"classinfo",
 "ChevieCharInfo"=>"charinfo",
 #ClassTypes
@@ -112,7 +113,7 @@ const ChevieDict=Dict(
 #GenericDegrees
 "GenericOrder"=>"generic_order",
 "GenericSign"=>"generic_sign",
-#GetRoot
+"GetRoot"=>"root",
 #GoodCoxeterWord
 #GraphAutomorphisms
 "Hasse"=>"hasse",
@@ -120,7 +121,7 @@ const ChevieDict=Dict(
 #HeckeCharValuesGood
 "HeckeCentralMonomials"=>"central_monomials",
 "HeckeClassPolynomials"=>"class_polynomials",
-#HeckeReflectionRepresentation
+"HeckeReflectionRepresentation"=>"refrep",
 #HeckeSubAlgebra
 #HighestPowerFakeDegrees
 "HighestPowerFakeDegreeSymbol"=>"degree_feg_symbol",
@@ -180,12 +181,13 @@ const ChevieDict=Dict(
 "LusztigInductionTable"=>"LusztigInductionTable",
 "LusztigRestriction"=>"LusztigRestrict",
 #MatStab
-"MatXPerm(W,p)"=>"matX(W,p)",
+"MatXPerm(W,p)"=>"refrep(W,p)",
 #MatYPerm
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 #OnFamily
 "OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",
 "OnTuples(l,p)"=>"l.^p",
+"OnPolynomials(m,p)"=>"p^m",
 "ParabolicRepresentatives"=>"parabolic_representatives",
 #ParabolicSubgroups
 "PartBeta"=>"partβ",
@@ -293,13 +295,13 @@ const ChevieDict=Dict(
 #UnipotentDecompose
 "UnipotentDegrees(W,q)"=>"degrees(UnipotentCharacters(W),q)",
 #UnipotentGroup
-"UnorderedTuples"=>"submultiset",
+"UnorderedTuples"=>"submultisets",
 "Valuation(p)"=>"valuation(p)",
 "Value(p,x)"=>"p(x)",
 "WeightInfo"=>"weightinfo",
 #WGraph
 #WGraphToRepresentation
-"W.matgens[i]"=>"matX(W,i)",
+"W.matgens[i]"=>"refrep(W,i)",
 "W.N"=>"nref(W)",
 "W.orbitRepresentative[i]"=>"simple_representative(W,i)",
 "W.orbitRepresentativeElement"=>"simple_conjugating_element(W,i)",

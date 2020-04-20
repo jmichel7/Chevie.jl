@@ -116,23 +116,21 @@ import Gapjm: coefficients, root
 # export coefficients, root
 export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..ModuleElts: ModuleElts, ModuleElt, norm!
 using ..Util: fromTeX, bracket_if_needed, constant
 using ..Util: factor, prime_residues, phi, gcd_repr
 
-const use_list=false
-# I tried two different implementations. The above selects the fastest one.
+const use_list=false # I tried two different implementations. 
+                     # This selects the fastest.
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int       # conductor
-  d::Vector{T} # coefficients on the Zumbroich basis
-               # the i-th element is the coefficient on zumbroich_basis[i]
+  d::Vector{T} # the i-th element is the coefficient on zumbroich_basis[i]
 end
 else
+using ..ModuleElts: ModuleElt
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int              # conductor
-  d::ModuleElt{Int,T} # conceptually a list of pairs i, coefficient on
-                      # zumbroich_basis[i]
+  d::ModuleElt{Int,T} # list of pairs: i=>coeff on zumbroich_basis[i]
 end
 end
 
@@ -179,7 +177,7 @@ end
   
 Base.denominator(c::Cyc)=lcm(denominator.(coefficients(c)))
 
-const Elist_dict=Dict((1,0)=>(true=>[0])) # the function Elist is memoized
+const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
 """
   Elist(n,i)  
   
@@ -218,13 +216,11 @@ function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
 if use_list
     z=zumbroich_basis(n)
     if isempty(mp) return true=> Vector{Int}(indexin([i],z)) end
-else
-    if isempty(mp) return true=> [i] end
-end
     v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
-if use_list
     iseven(length(mp))=>Vector{Int}(indexin((i .+ v).%n,z))
 else
+    if isempty(mp) return true=> [i] end
+    v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
     iseven(length(mp))=>sort((i .+ v).%n)
 end
   end
@@ -234,7 +230,7 @@ const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : ModuleElt(0=>1)))
 """
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 """
-function E(n1::Integer,i1::Integer=1)
+function E(n1,i1=1)
   n=Int(n1)
   i=mod(Int(i1),n)
   get!(E_dict,(n,i)) do
@@ -249,7 +245,6 @@ end
   end
 end
 
-E(a,b=1)=Cycs.E(Int(a),Int(b))
 E(;r)=E(denominator(r),numerator(r))
 
 if use_list
@@ -277,23 +272,20 @@ end
 end
 
 if use_list
-Cyc(i::T) where T<:Real=Cyc(1,[i])
+Cyc(i::Real)=Cyc(1,[i])
 else
-Cyc(i::T) where T<:Real=iszero(i) ? zero(Cyc{T}) : Cyc(1,ModuleElt(0=>i))
+Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,ModuleElt(0=>i))
 end
+
 Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
-Cyc{T}(i::T1) where {T<:Real,T1<:Real}=convert(Cyc{T},i)
 
 function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
-  if T==T1 return c end
 if use_list
-  Cyc(c.n,convert.(T,c.d))
+  T==T1 ? c : Cyc(c.n,convert.(T,c.d))
 else
-  Cyc(c.n,ModuleElt(n=>convert(T,v) for (n,v) in c.d))
+  T==T1 ? c : Cyc(c.n,convert(ModuleElt{Int,T},c.d))
 end
 end
-
-Cyc{T}(c::Cyc{T1}) where {T,T1<:Real}=convert(Cyc{T},c)
 
 if use_list
   num(c::Cyc)=c.d[1]
@@ -301,8 +293,13 @@ else
   num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
 end
 
-function Base.convert(::Type{T},c::Cyc)where T<:Real
+function Base.convert(::Type{T},c::Cyc)where T<:Union{Integer,Rational}
   if c.n==1 return convert(T,num(c)) end
+  throw(InexactError(:convert,T,c))
+end
+
+function Base.convert(::Type{T},c::Cyc)where T<:AbstractFloat
+  if isreal(c) return real(convert(Complex{T},c)) end
   throw(InexactError(:convert,T,c))
 end
 
@@ -314,9 +311,30 @@ else
 end
 end
 
+function Base.convert(::Type{Complex{T}},c::Cyc)where T<:Union{Integer,Rational}
+  if c.n==1 return Complex{T}(num(c)) end
+if use_list
+  if c.n==4 return Complex{T}(c.d[1]+im*c.d[2]) end
+else
+  if c.n==4 return Complex{T}(c.d[0]+im*c.d[1]) end
+end
+  throw(InexactError(:convert,Complex{T},c))
+end
+
 (::Type{T})(c::Cyc) where T<:Number=convert(T,c)
+(::Type{Cyc{T}})(c::T1) where {T,T1<:Real}=convert(Cyc{T},c)
 
 Base.isinteger(c::Cyc)=c.n==1 && isinteger(num(c))
+
+Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
+
+function Base.real(c::Cyc{T}) where T<:Real
+  if c.n==1 return num(c) end
+  (c+conj(c))/2
+end
+
+Base.isless(c::Cyc,d::Real)=Float64(c)<d
+Base.isless(d::Real,c::Cyc)=d<Float64(c)
 
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
@@ -324,11 +342,11 @@ function promote_conductor(a::Cyc,b::Cyc)
   (raise(l,a),raise(l,b))
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1<:Real,T2<:Real}
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1<:Real,T2<:Real}
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1,T2}
   Cyc{promote_type(T1,T2)}
 end
 
@@ -421,16 +439,12 @@ end
 end
 
 function Base.:+(x::Cyc,y::Cyc)
-# if iszero(x) return y
-# elseif iszero(y) return x
-# end
+  if iszero(x) return y
+  elseif iszero(y) return x
+  end
   a,b=promote(x,y)
   a,b=promote_conductor(a,b)
-if use_list
-  lower(Cyc(a.n,a.d.+b.d))
-else
   lower(Cyc(a.n,a.d+b.d))
-end
 end
 
 Base.:+(a::Cyc,b::Number)=a+Cyc(b)
@@ -457,21 +471,14 @@ Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
-function addroot!(l::ModuleElt,n::Int,p)
-  (i,c)=p
-  (s,v)=Elist(n,i)
-  if !s c=-c end
-if ModuleElts.usedict
-  for k in v if haskey(l,k) l.d[k]+=c else push!(l,k=>c) end end
-else
-  for k in v push!(l,k=>c) end
-end
-end
-
-function sumroots(n::Int,l::Vector{Pair{K,V}})where {K,V}
-  res=zero(ModuleElt{K,V})
-  for p in l addroot!(res,n,p) end
-  Cyc(n,norm!(res))
+function sumroots(n::Int,l)
+  res=empty(l)
+  for (i,c) in l 
+    (s,v)=Elist(n,i)
+    if !s c=-c end
+    for k in v push!(res,k=>c) end
+  end
+  Cyc(n,ModuleElt(res;check=true))
 end
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -490,10 +497,10 @@ if use_list
   end
   lower(Cyc(a.n,res))
 else
-#  lower(sumroots(a.n,[i+j=>va*vb for (i,va) in a.d for (j,vb) in b.d]))
-   res=zero(a.d)
-   for (i,va) in a.d, (j,vb) in b.d addroot!(res,a.n,i+j=>va*vb) end
-   lower(Cyc(a.n,norm!(res)))
+  let ad=a.d,bd=b.d
+  res=sumroots(a.n,[i+j=>va*vb for (i,va) in ad for (j,vb) in bd])
+  end
+  lower(res)
 end
 end
 
@@ -510,10 +517,9 @@ if use_list
   end
   Cyc(n,res)
 else
-# sumroots(n,[i*m=>u for (i,u) in c.d])
-  res=zero(c.d)
-  for (i,u) in c.d addroot!(res,n,i*m=>u) end
-  Cyc(n,norm!(res))
+  let m=m,cd=c.d
+  sumroots(n,[i*m=>u for (i,u) in cd])
+  end
 end
 end
 
@@ -612,7 +618,9 @@ if use_list
        end
   end
 else
-  sumroots(c.n,[(e*n)%c.n=>p for (e,p) in c.d])
+  let cd=c.d,n=n,cn=c.n
+  sumroots(c.n,[(e*n)%cn=>p for (e,p) in cd])
+  end
 end
 end
 
@@ -661,20 +669,6 @@ function ER(n::Int)
   end
 end 
 
-Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
-
-function Base.Real(c::Cyc{T}) where T
-  if c.n==1 return num(c) end
-  if c==conj(c) return real(Complex(c)) end
-  throw(InexactError(:Real,Real,c))
-end
-
-function Base.Rational(c::Cyc)
-  if c.n==1 return Rational(num(c)) end
-  throw(InexactError(:Rational,Rational,c))
-end
-
-Base.:<(c::Cyc,d::Real)=Real(c)<d
 
 Base.abs(c::Cyc)=c*conj(c)
 

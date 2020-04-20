@@ -646,7 +646,7 @@ function XSP(rho,s,n,even=false)
   res = Vector{Vector{Int}}[]
   while true
     S=xsp(rho, s, n, d)
-    if iszero(d) S=unique(sort(map(sort,S))) end
+    if iszero(d) S=unique!(sort(map(sort,S))) end
     append!(res,S)
     d+=2
     if isempty(S) break end

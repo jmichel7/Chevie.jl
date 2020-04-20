@@ -96,7 +96,7 @@ function elements end; export elements
 function kernel end; export kernel
 function order end; export order
 function restricted end; export restricted
-function root end; export root
+root(x::AbstractFloat,n)=x^(1//n); export root
 function roots end; export roots
 function valuation end; export valuation
 function words end; export words
@@ -111,7 +111,6 @@ include("Cycs.jl");@reexport using .Cycs
 include("Combinat.jl");@reexport using .Combinat
 include("Pols.jl");@reexport using .Pols
 include("Mvps.jl");@reexport using .Mvps
-Mvps.Mvp(p::Pol)=p(Mvp(Pols.varname[]))
 include("PermRoot.jl");@reexport using .PermRoot
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("CoxGroups.jl");@reexport using .CoxGroups

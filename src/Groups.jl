@@ -178,7 +178,7 @@ function centralizer(G::Group,p;action::Function=^)
 # this computes Schreier generators
   t=transversal(G,p;action=action)
   C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)]
-  Group(unique(sort(C)))
+  Group(unique!(sort(C)))
 end
 
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)

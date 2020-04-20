@@ -62,7 +62,7 @@ FindIntSol=function(l)
       if c<0 p=-p ; c=-c end
       return p-floor(c)
     end, l)
-    l=unique(sort(filter(!iszero,l)))
+    l=unique!(sort(filter(!iszero,l)))
   end
   function usevals(v,val)
     for i in filter(j->haskey(vals,j) && vals[j] isa Mvp,vars)

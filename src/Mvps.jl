@@ -44,65 +44,77 @@ julia> (x^2-y^2)//(x-y)
 Mvp{Int64}: x+y
 ```
 
-Only monomials can be raised to a non-integral power; they can be raised
-to  a fractional  power of  denominator  'b' only  if 'GetRoot(x,b)'  is
-defined  where 'x'  is  their  leading coefficient.  For  an 'Mvp'  <m>,
-the  function  'GetRoot(m,n)' is  equivalent  to  'm^(1/n)'. Raising  a
-non-monomial Laurent polynomial  to a negative power  returns a rational
-fraction.
+Only monomials can be raised to a non-integral power; they can be raised to
+a  fractional power of denominator `b` only if `root(x,b)` is defined where
+`x`   is  their  leading  coefficient.  For  an  `Mvp`  `m`,  the  function
+`root(m,n)`  is equivalent  to `m^(1//n)`.  Raising a  non-monomial Laurent
+polynomial to a negative power returns a rational fraction.
 
-|    gap> (2*x)^(1/2);
-    ER(2)x^(1/2)
-    gap> (evalf(2)*x)^(1/2);
-    1.4142135624x^(1/2)
-    gap> GetRoot(evalf(2)*x,2);
-    1.4142135624x^(1/2)|
+```julia-repl
+julia> (2x)^(1//2)
+Mvp{Cyc{Int64},Rational{Int64}}: √2x½
 
+julia> (2.0x)^(1//2)
+Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
+
+julia> root(2.0x)
+Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
+```
 """
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: fromTeX
+using ..Util: fromTeX, ordinal
 using ..Cycs: Cyc
+using ..Pols: Pols, Pol, positive_part
 import Gapjm: degree, root, coefficients, valuation
 # to use as a stand-alone module comment above line and uncomment next
 # export degree, root, coefficients, valuation
 export Mvp, Monomial, @Mvp, variables, value, scal
 #------------------ Monomials ---------------------------------------------
-const PowType=Int # could be int8 to save space if limiting degree
-struct Monomial
-  d::ModuleElt{Symbol,PowType}   
+struct Monomial{T}
+  d::ModuleElt{Symbol,T}   
 end
+
 Monomial(a::Pair...)=Monomial(ModuleElt(a...))
 Monomial()=one(Monomial)
+Monomial(v::Symbol)=convert(Monomial{Int},v)
 
-const fractional=Dict{Symbol,PowType}() 
-# if fractional(:x)==y then x interpreted as x^(1/y)
+Base.convert(::Type{Monomial{T}},v::Symbol) where T=Monomial(v=>T(1))
+Base.convert(::Type{Monomial{T}},m::Monomial{N}) where {T,N}= 
+  Monomial(convert(ModuleElt{Symbol,T},m.d))
 
-function Base.convert(::Type{Monomial},v::Symbol)
-  if haskey(fractional,v) pow=fractional[v]
-  else pow=1
-  end
-  Monomial(v=>PowType(pow))
+function Base.promote_rule(::Type{Monomial{N1}},::Type{Monomial{N2}})where {N1,N2}
+  Monomial{promote_type(N1,N2)}
 end
-Monomial(v::Symbol)=convert(Monomial,v)
 
 Base.:*(a::Monomial, b::Monomial)=Monomial(a.d+b.d)
 Base.isone(a::Monomial)=iszero(a.d)
 Base.iszero(a::Monomial)=false
-Base.one(::Type{Monomial})=Monomial(ModuleElt(Pair{Symbol,PowType}[]))
+Base.one(::Type{Monomial{N}}) where N=Monomial(zero(ModuleElt{Symbol,N}))
+Base.one(::Type{Monomial})=one(Monomial{Int})
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Base.div(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
-@inline Base.getindex(a::Monomial,k)=getindex(a.d,k)
+Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
+  TeX=get(io,:TeX,false)
+  repl=get(io,:limit,false)
   if isone(m) return end
+  start=true
   for (v,d) in m.d
+    if !(start || TeX || repl) print(io,"*") end
     print(io,v)
-    if haskey(fractional,v) d//=fractional[v] end
-    if !isone(d) print(io,fromTeX(io,"^{$d}")) end
+    if !isone(d) 
+      if isone(denominator(d)) d=numerator(d) end
+      if TeX || repl print(io,fromTeX(io,"^{$d}")) 
+      elseif d isa Integer print(io,"^$d")
+      else print(io,"^($d)")
+      end
+    end
+    start=false
   end
 end
 
@@ -140,22 +152,22 @@ function Base.gcd(l::Monomial...)
   elseif length(l)>2 return reduce(gcd,l)
   else (a,b)=l
   end
-  res=empty(a.d)
+  res=empty(a.d.d)
   ai=bi=1
   la=length(a.d)
   lb=length(b.d)
   while ai<=la && bi<=lb
-    if a.d[ai][1]>b.d[bi][1] bi+=1
-    elseif a.d[ai][1]<b.d[bi][1] ai+=1
+    if a.d.d[ai][1]>b.d.d[bi][1] bi+=1
+    elseif a.d.d[ai][1]<b.d.d[bi][1] ai+=1
     else 
-      if    a.d[ai][2]<=b.d[bi][2] push!(res,a.d[ai]) 
-      elseif a.d[ai][2]>b.d[bi][2] push!(res,b.d[bi]) 
+      if    a.d.d[ai][2]<=b.d.d[bi][2] push!(res,a.d.d[ai]) 
+      elseif a.d.d[ai][2]>b.d.d[bi][2] push!(res,b.d.d[bi]) 
       end
       ai+=1
       bi+=1
     end
   end
-  Monomial(res)
+  Monomial(res...)
 end
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
@@ -171,19 +183,21 @@ function degree(m::Monomial,var::Symbol)
 end
 
 function root(m::Monomial,n::Integer=2)
- if !all(x->iszero(x%n),last.(m.d)) throw(InexactError(:root,Monomial,n)) end
- Monomial((k=>div(v,n) for (k,v) in m.d)...)
+ if all(x->iszero(x%n),last.(m.d)) Monomial((k=>div(v,n) for (k,v) in m.d)...)
+ else Monomial((k=>v//n for (k,v) in m.d)...)
+ end
 end
 
 #------------------------------------------------------------------------------
-struct Mvp{T} # N=type of exponents T=type of coeffs
-  d::ModuleElt{Monomial,T}
+struct Mvp{T,N} # N=type of exponents T=type of coeffs
+  d::ModuleElt{Monomial{N},T}
 end
 
 Mvp(a::Pair...)=Mvp(ModuleElt(a...))
-Mvp()=zero(Mvp)
+Mvp()=Mvp(ModuleElt(Pair{Monomial{Int},Int}[]))
 Mvp(v::Symbol)=Mvp(Monomial(v)=>1)
 Mvp(n::Number)=convert(Mvp,n)
+Mvps.Mvp(p::Pol)=p(Mvp(Pols.varname[]))
 
 macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
   if t isa Expr
@@ -200,6 +214,12 @@ Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
 
+function Base.show(io::IO,t::Type{Mvp{T,N}})where {T,N}
+  if N==Int print(io,"Mvp{",T,"}")
+  else print(io,"Mvp{",T,",",N,"}")
+  end
+end
+
 function Base.show(io::IO, ::MIME"text/plain", a::Mvp)
   print(io,typeof(a),": ")
   show(io,a)
@@ -209,59 +229,42 @@ end
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
-Base.zero(::Type{Mvp{T}}) where T=Mvp(ModuleElt(Pair{Monomial,T}[]))
-Base.zero(::Type{Mvp})=zero(Mvp{Int})
-Base.one(::Type{Mvp{T}}) where T=Mvp(one(T))
+Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(ModuleElt(Pair{Monomial{N},T}[]))
+Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T))
+Base.one(::Type{Mvp{T}}) where T=one(Mvp{T,Int})
 Base.one(::Type{Mvp})=Mvp(1)
-Base.one(p::Mvp{T}) where T=Mvp(one(T))
+Base.one(p::Mvp{T,N}) where {T,N}=one(Mvp{T,N})
 Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=iszero(p.d)
-#Base.adjoint(a::Mvp)=a
-#Base.transpose(p::Mvp)=p
-#Base.abs(p::Mvp)=p
-Base.convert(::Type{Mvp},a::Number)=iszero(a) ? zero(Mvp{typeof(a)}) : 
-                                          Mvp(one(Monomial)=>a)
-Base.convert(::Type{Mvp{T}},a::Number) where T=iszero(a) ? zero(Mvp{T}) : 
-                                          Mvp(one(Monomial)=>T(a))
-(::Type{Mvp{T}})(a::Number) where T=convert(Mvp{T},a)
-(::Type{Mvp{T}})(a::Mvp) where T=convert(Mvp{T},a)
-Base.convert(::Type{Mvp{T}},a::Mvp{T1}) where {T,T1}=T==T1 ? a : iszero(a) ? zero(Mvp{T}) : Mvp([k=>T(v) for (k,v) in a.d]...)
+Base.convert(::Type{Mvp},a::Number)=convert(Mvp{typeof(a),Int},a)
+Base.convert(::Type{Mvp{T,N}},a::Number) where {T,N}=iszero(a) ? 
+ zero(Mvp{T,N}) : Mvp(one(Monomial{N})=>convert(T,a))
+Base.convert(::Type{Mvp{T,N}},a::Mvp{T1,N1}) where {T,T1,N,N1}=
+  Mvp(convert(ModuleElt{Monomial{N},T},a.d))
+
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 
 function Base.convert(::Type{T},a::Mvp) where T<:Number
   if iszero(a) return zero(T) end
-  if length(a.d)>1 || !isone(a.d.d[1].first)
+  if length(a.d)>1 || !isone(first(first(a.d)))
       throw(InexactError(:convert,T,a)) 
   end
-  convert(T,a.d.d[1].second)
+  convert(T,last(first(a.d)))
 end
 (::Type{T})(a::Mvp) where T<: Number=convert(T,a)
 
-Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d.d)) &&
-                           isone(p.d.d[1].first) && isinteger(p.d.d[1].second))
+Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d)) &&
+             isone(first(first(p.d))) && isinteger(last(first(p.d))))
 
-function Base.promote_rule(a::Type{Mvp{T1}},b::Type{Mvp{T2}})where {T1,T2}
-  Mvp{promote_type(T1,T2)}
+function Base.promote_rule(::Type{Mvp{T1,N1}},::Type{Mvp{T2,N2}})where {T1,T2,N1,N2}
+  Mvp{promote_type(T1,T2),promote_type(N1,N2)}
 end
 
-function Base.promote_rule(a::Type{Mvp{T1}},b::Type{T2})where {T1,T2<:Number}
-  Mvp{promote_type(T1,T2)}
+function Base.promote_rule(::Type{Mvp{T1,N}},::Type{T2})where {T1,N,T2<:Number}
+  Mvp{promote_type(T1,T2),N}
 end
 
-#function Base.promote(a::Mvp{T1},b::Mvp{T2}) where {T1,T2}
-#  T=promote_type(T1,T2)
-#  let T=T, a=a, b=b
-#   if T!=T1 a=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in a.d])) end
-#   if T!=T2 b=Mvp(ModuleElt(Pair{Monomial,T}[m=>T(c) for (m,c) in b.d])) end
-#    a,b
-#  end
-#end
-
-function Base.:+(a::Mvp, b::Mvp)
-  a,b=promote(a,b)
-  Mvp(a.d+b.d)
-end
-
+Base.:+(a::Mvp, b::Mvp)=Mvp(a.d+b.d)
 Base.:+(a::Number, b::Mvp)=Mvp(a)+b
 Base.:+(a::Mvp, b::Number)=b+a
 Base.:-(a::Mvp)=Mvp(-a.d)
@@ -270,7 +273,8 @@ Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
 Base.:*(b::Mvp,a::Monomial)=a*b
-Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : sum(Mvp(ModuleElt(m*m1=>c*c1 for (m1,c1) in b.d)) for (m,c) in a.d)
+Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : Mvp(ModuleElt(
+            [m*m1=>c*c1 for (m1,c1) in b.d for (m,c) in a.d];check=true))
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
 Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
@@ -278,6 +282,7 @@ Base.conj(a::Mvp)=Mvp(map(x->(x[1]=>conj(x[2])),a.d)...)
 
 function Base.:^(x::Mvp, p::Real)
   if iszero(x) return x end
+  if !isinteger(p) return root(x,denominator(p))^numerator(p) end
   p=Int(p)
   if iszero(p) return one(x) end
   if isone(p) return x end
@@ -381,19 +386,21 @@ are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
 represented as `Mvp`s, one should use `scal`.
 """
 function coefficients(p::Mvp,v::Symbol)
-  if iszero(p) return Dict{PowType,typeof(p.d)}() end
-  d=Dict{PowType,typeof(p.d)}()
+  if iszero(p) return Dict{Int,typeof(p)}() end
+  d=Dict{Int,typeof(p.d.d)}()
   for (m,c) in p.d
 #   print("$m=>$c d=$d\n")
-    u=ModuleElts.drop(m.d,v)
-    if isnothing(u)
-      d[0]=push!(get(d,0,zero(p.d)),m=>c)
-    else 
-      (m1,deg)=u
-      d[deg]=push!(get(d,deg,zero(p.d)),Monomial(m1)=>c)
+    found=false
+    for (i,(v1,deg)) in enumerate(m.d)
+      if v1==v 
+        found=true
+        d[deg]=push!(get(d,deg,empty(p.d.d)),
+                        Monomial(deleteat!(collect(m.d),i)...)=>c)
+      end
     end
+    if !found  d[0]=push!(get(d,0,empty(p.d.d)),m=>c) end
   end
-  Dict(dg=>Mvp(c) for (dg,c) in d)
+  Dict(dg=>Mvp(c...) for (dg,c) in d)
 end
 
 """
@@ -408,13 +415,7 @@ julia> variables(x+x^4+y)
  :y
 ```
 """
-function variables(p::Mvp)
-  l=map(c->map(x->x[1],c[1].d),p.d)
-  if length(l)==1 l[1]
-  elseif  length(l)==0 Symbol[]
-  else sort(union(l...))
-  end
-end
+variables(p::Mvp)=unique!(sort([k1 for (k,v) in p.d for (k1,v1) in k.d]))
 
 """
 `scal(p::Mvp)`
@@ -447,31 +448,12 @@ function scal(p::Mvp{T})where T
   return nothing
 end
 
-function value(p::Mvp,k::Pair...)
-  vv=Dict(k)
-  res=res1=zero(p)
-  badi=Int[]
-  for (i,(m,c1)) in enumerate(p.d)
-    badj=Int[]
-    for (j,(v,c)) in enumerate(m.d)
-      if haskey(vv,v) 
-        if isempty(badj) res=Mvp(c1) end
-        res*=vv[v]^c
-        push!(badj,j)
-      end
-    end
-    if !isempty(badj) res1+=Monomial(deleteat!(copy(m.d.d),badj)...)*res
-      push!(badi,i)
-    end
- #  println("badi=$badi m=$m c=$c res1=$res1")
-  end
-  if !isempty(badi) Mvp(deleteat!(copy(p.d.d),badi)...)+res1
-  else p
-  end
-end
-
 """
-Value of an `Mvp`
+`value(p::Mvp,:x1=>v1,:x2=>v2,...)`
+
+gives  the value  of `p`  when doing  the simultaneous  substitution of the
+variable  `:x1`  by  `v1`,  of  `x2`  by  `v2`,  … This can also be written
+`p(;x1=v1,x2=v2,...)`.
 
 ```julia-repl
 julia> p=-2+7x^5*inv(y)
@@ -488,8 +470,8 @@ Mvp{Int64}: 222
 ```
 
 One should pay attention to the fact that the last value is not an integer,
-but  a constant `Mvp`  (for consistency). See  the function 'scal' below
-for how to convert such constants to their base ring.
+but  a constant `Mvp` (for consistency). See the function `scal` for how to
+convert such constants to their base ring.
 
 ```julia-repl
 julia> p(x=y)
@@ -500,28 +482,54 @@ Mvp{Int64}: -2+7x⁻¹y⁵
 ```
 Evaluating an `Mvp` which is a Puiseux polynomial may cause calls to `root`
 
-|    gap> p:=x^(1/2)*y^(1/3);
-    x^(1/2)y^(1/3)
-    gap> Value(p,["x",y]);
-    y^(5/6)
-    gap>  Value(p,["x",2]);
-    ER(2)y^(1/3)
-    gap>  Value(p,["y",2]);
-    Error, : unable to compute 3-th root of 2
-     in
-    GetRoot( values[i], d[i] ) called from
-    f.operations.Value( f, x ) called from
-    Value( p, [ "y", 2 ] ) called from
-    main loop
-    brk>|
+```julia-repl
+julia> p=x^(1//2)*y^(1//3)
+Mvp{Int64,Rational{Int64}}: x½y⅓
+
+julia> p(;x=y)
+Mvp{Int64,Rational{Int64}}: y^{5//6}
+
+julia> p(;x=2)
+Mvp{Cyc{Int64},Rational{Int64}}: √2y⅓
+
+julia> p(;y=2.0)
+Mvp{Float64,Rational{Int64}}: 1.2599210498948732x½
+```
 """
+function value(p::Mvp,k::Pair...)
+  vv=Dict(k)
+  res=res1=zero(p)
+  badi=Int[]
+  for (i,(m,c1)) in enumerate(p.d)
+    badj=Int[]
+    for (j,(v,c)) in enumerate(m.d)
+      if haskey(vv,v) 
+        if isempty(badj) res=Mvp(c1) end
+        if isinteger(c) res*=vv[v]^c
+        else res*=root(vv[v],denominator(c))^numerator(c)
+        end
+        push!(badj,j)
+      end
+    end
+    if !isempty(badj) res1+=Monomial(deleteat!(collect(m.d),badj)...)*res
+      push!(badi,i)
+    end
+ #  println("badi=$badi m=$m c=$c res1=$res1")
+  end
+  if !isempty(badi) Mvp(deleteat!(collect(p.d),badi)...)+res1
+  else p
+  end
+end
+
 (p::Mvp)(;arg...)=value(p,arg...)
 
 function root(p::Mvp,n::Real=2)
   n=Int(n)
-  if length(p.d)>1 throw(InexactError(:root,n,p)) end
-  p=p.d.d[1]
-  Mvp(root(first(p),n)=>root(last(p),n))
+  if length(p.d)>1 
+   throw(DomainError(p,"$(ordinal(n)) root of non-monomial not implemented")) 
+  end
+  (m,c)=first(p.d)
+  Mvp(root(m,n)=>root(c,n))
 end
 
 function Base.inv(p::Mvp)
@@ -643,6 +651,20 @@ Mvp{Int64}: 3x+4y
 ```
 """
 Base.:^(p,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
+
+function Pols.positive_part(p::Mvp)
+  ispositive(m::Monomial)=all(c>0 for (v,c) in m.d)
+  l=[m=>c for (m,c) in p.d if ispositive(m)]
+  if isempty(l) zero(p) else Mvp(l...) end
+end
+
+function Pols.negative_part(p::Mvp)
+  isnegative(m::Monomial)=all(c<0 for (v,c) in m.d)
+  l=[m=>c for (m,c) in p.d if isnegative(m)]
+  if isempty(l) zero(p) else Mvp(l...) end
+end
+
+Pols.bar(p::Mvp)=Mvp((inv(m)=>c for (m,c) in p.d)...)
 
 """
 The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect

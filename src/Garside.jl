@@ -854,7 +854,7 @@ end
 #  if r==one(M) return b end
 #  l=*(M,b,r)
 #  l=PrefixToNormal(\(M,M.DeltaAction(r,b.pd),l.elm[1]),l.elm[2:end])
-#  norm!(GarsideElm(b.pd,l,M))
+#  norm(GarsideElm(b.pd,l,M))
 #end
 
 Base.:^(y::GarsideElm{T},r::T,F=x->x) where T=inv(y.M(r))*(y*F(r))

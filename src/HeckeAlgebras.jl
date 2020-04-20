@@ -89,7 +89,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int16},Int64,FiniteCoxeterGroup{Perm{Int16},Int64}},2}:
+6×6 Array{HeckeTElt{Perm{Int16},Int64,HeckeAlgebra{Int64,FiniteCoxeterGroup{Perm{Int16},Int64}}},2}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -123,7 +123,8 @@ end;
 module HeckeAlgebras
 using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
-  rootpara, equalpara, class_polynomials, char_values, schur_elements
+  rootpara, equalpara, class_polynomials, char_values, schur_elements,
+  isrepresentation
 
 struct HeckeAlgebra{C,TW}
   W::TW
@@ -208,7 +209,7 @@ function rootpara(H::HeckeAlgebra)
   gets(H,:rootpara)do
     map(eachindex(H.para)) do i
        if isone(-prod(H.para[i])) return -prod(H.para[i]) end
-       error("could not compute rootpara[$i]")
+       return root(-prod(H.para[i]))
     end
   end
 end
@@ -268,10 +269,105 @@ end
 
 Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
 
+"""
+`isrepresentation(H::HeckeAlgebra,r)`
+
+returns `true` or `false`, according  to whether a  given set `r` of matrices
+corresponding to the standard generators  of the Coxeter group `H.W`
+defines a representation of the Iwahori-Hecke algebra `H` or not.
+
+```julia-repl
+julia> H=hecke(coxgroup(:F,4))
+hecke(F₄,1)
+
+julia> isrepresentation(H,refrep(H))
+true
+```
+"""
+function isrepresentation(H::HeckeAlgebra,t;verbose=false)
+  W=H.W
+  res=true
+  for i in eachindex(gens(W))
+    e=prod(q->(t[i]-q.*one(t[i])),H.para[i])
+    if !iszero(e)
+      if verbose
+        println("Error in ",ordinal(i)," parameter relation");
+        res=false
+      else return false
+      end
+    end
+  end
+  for (l,r) in braid_relations(W)
+    e=prod(t[l])-prod(t[r])
+    if !iszero(e)
+       if verbose
+          println("Error in relation ",l,"=",r)
+          res=false
+       else return false
+       end
+    end
+  end
+  res
+end
+
+"""
+`refrep(H)`
+
+returns  a list of matrices which give the reflection representation of the
+Iwahori-Hecke algebra `H`.
+
+```julia-repl
+julia> Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)
+hecke(B₂,q)
+
+julia> refrep(H)
+2-element Array{Array{Pol,2},1}:
+ [-1 0; -q q]
+ [q -2; 0 -1]
+
+julia> H=hecke(coxgroup(:H,3))
+hecke(H₃,1)
+
+julia> refrep(H)
+3-element Array{Array{Cyc{Rational{Int64}},2},1}:
+ [-1 0 0; -1 1 0; 0 0 1]
+ [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]
+ [1 0 0; 0 1 -1; 0 0 -1]
+```
+"""
+function PermRoot.refrep(H::HeckeAlgebra)
+  W=H.W
+  if !equalpara(H) || !(W isa CoxeterGroup)
+        error("Reflexion representation of Cyclotomic Hecke algebras or\n",
+          "Hecke algebras with unequal parameters not implemented")
+  end
+  q=-1*H.para[1][1]//H.para[1][2]
+  r=length(gens(W))
+  C=fill(q*E(1),r,r)
+  CM=coxmat(W)
+  for i  in eachindex(gens(W))
+    for j  in 1:i-1
+      m=CM[i,j]
+      if m!=0 m=E(m)+E(m,-1) else m=2 end
+      C[i,j]=2+m
+      if m==-2 C[j,i]=0 else C[j,i]=q end
+    end
+    C[i,i]=q+1
+  end
+  map(eachindex(gens(W)))do i
+    a=fill(0*q*E(1),r,r)
+    for j  in eachindex(gens(W))
+      a[j,j]=q
+      a[j,i]-=C[i,j]
+    end
+    -H.para[1][2]*a
+  end
+end 
+
 function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
   S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
                                    rootpara(H)[1]//H.para[1][2])
-  CheckHeckeDefiningRelations(H,S)
+  if !isrepresentation(H,S;verbose=true) error() end
   S
 end
 
@@ -357,9 +453,9 @@ Base.:*(b::Number, a::HeckeElt)= a*b
 Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
                                    Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
-struct HeckeTElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
-  d::ModuleElt{P,C} # has better merge performance than Dict
-  H::HeckeAlgebra{C,G}
+struct HeckeTElt{P,C1,TH<:HeckeAlgebra}<:HeckeElt{P,C1}
+  d::ModuleElt{P,C1} # has better merge performance than Dict
+  H::TH
 end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
@@ -383,7 +479,7 @@ function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   end
   f(w::Vector{<:Integer})=f(w...)
   f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
-# Base.show(io::IO,t::Type{f})=print(io,"Tbasis($H)")
+# eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
   f(h::HeckeElt)=Tbasis(h)
 end
 
@@ -395,24 +491,20 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
     h=b.d*pa
     for i in reverse(word(W,ea))
       s=gens(W)[i]
-      up=zero(h)
-      down=zero(h)
+      up=empty(h.d)
+      down=empty(h.d)
       for (e,p)  in h
         if isleftdescent(W,e,i) push!(down,e=>p) 
         else push!(up,s*e=>p) end
       end
-if ModuleElts.usedict
-      h=ModuleElt(up.d)
-else
-      h=ModuleElt(sort!(up.d,by=x->x[1]))
-end
-      if !iszero(down)
+      h=ModuleElt(up;check=true)
+      if !isempty(down)
         pp=a.H.para[i]
         ss,p=(sum(pp),-prod(pp))
-        if !iszero(ss) h+=down*ss end
+        if !iszero(ss) h+=ModuleElt(down)*ss end
         if !iszero(p)  
           let s=s, p=p
-            h+=ModuleElt(sort!([s*e=>c*p for (e,c) in down],by=first))
+            h+=ModuleElt([s*e=>c*p for (e,c) in down];check=true)
           end
         end
       end
@@ -510,7 +602,7 @@ function class_polynomials(h)
         end
       end
     end
-    h=clone(h,ModuleElt(map(Pair,elms,coeffs);check=true))
+    h=clone(h,ModuleElt(Pair.(elms,coeffs);check=true))
   end
   return min
 end

@@ -88,25 +88,6 @@ function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
   end
 end
 
-function check_relations(H::HeckeAlgebra,t)
-  W=H.W
-  res=true
-  for i in eachindex(gens(W))
-    e=prod(q->(t[i]-q.*one(t[i])),H.para[i])
-    if !iszero(e)
-      println("#I  Error in ",Ordinal(i)," parameter relation");
-      res=false
-    end
-  end
-  for (l,r) in braid_relations(W)
-    e=prod(t[l])-prod(t[r])
-    if !iszero(e)
-      println("#I Error in relation ",l,"=",r)
-      res=false
-    end
-  end
-  res
-end
 
 function FindRepresentation(W,gr,check=false)
   O=W
@@ -150,7 +131,7 @@ function CheckRepresentations(W,l=Int[])
     else
       r=gr
       print(" dim:",size(r[1]),"...")
-      check_relations(H,r)
+      isrepresentation(H,r)
       pos=FindRepresentation(O,gr,true)
       if pos==i println("")
       elseif !isnothing(pos) println("character found at ",pos)

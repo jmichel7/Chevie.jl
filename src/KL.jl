@@ -1,12 +1,12 @@
 #A  good example to see how long  the programs will take for computations in
 #big Coxeter groups is the following:
 #
-#|    gap> W:=CoxeterGroup("D",5);;
+#|    gap> W:=CoxeterGroup("B",5);;
 #    gap> LeftCells(W);;|
 #
-#which  takes `10` seconds cpu time on 3Ghz computer. The computation of all
-#Kazhdan-Lusztig  polynomials  for  type  `F_4`  takes  a  bit more than~`1`
-#minute.  Computing the Bruhat order is a bottleneck for these computations;
+#which  takes `1` second cpu time on 3Ghz computer. The computation of all
+#Kazhdan-Lusztig  polynomials  for  type  `F_4`  takes  a  bit more than~`5`
+#seconds.  Computing the Bruhat order is a bottleneck for these computations;
 #they can be speeded up by a factor of two if one does:
 #
 #|    gap> ReadChv("contr/brbase");
@@ -216,7 +216,7 @@ function KLMue(W::CoxeterGroup,y,w)
     return 0
   end
   pol=KLPol(W,y,w)
-  if degree(pol)==div(lw-ly-1,2) return pol.c[div(lw-ly+1,2)]
+  if degree(pol)==(lw-ly-1)//2 return pol[end]
   else return 0 end
 end
 
@@ -286,9 +286,9 @@ end
 
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x::Perm)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
-struct HeckeCpElt{P,C,G<:CoxeterGroup}<:HeckeElt{P,C}
+struct HeckeCpElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict
-  H::HeckeAlgebra{C,G}
+  H::TH
 end
 
 HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
@@ -334,16 +334,15 @@ coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
 occurs in the formula for ``μᵥ``).
 """
 function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
-  T=Tbasis(H)
   W=H.W
-  cdict=gets(H,Symbol("C'->T")) do
-    Dict(one(W)=>one(H)) end::Dict{P,HeckeTElt{P,C,G}}
+  cdict=gets(()->Dict{P,Any}(one(W)=>one(H)),H,Symbol("C'->T"))
   if haskey(cdict,w) return cdict[w] end
+  T=Tbasis(H)
   if equalpara(H)
     l=firstleftdescent(W,w)
     s=gens(W)[l]
     if w==s
-      return inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
+      return cdict[w]=inv(rootpara(H)[l])*(T(s)-H.para[l][2]*one(H))
     else
       res=getCp(H,s)*getCp(H,s*w)
       tmp=zero(H)
@@ -375,7 +374,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
           bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
-    res=HeckeTElt(ModuleElt(map((x,y)->x=>y,elm,coeff);check=true),H)
+    res=HeckeTElt(ModuleElt(Pair.(elm,coeff);check=true),H)
   end
   cdict[w]=res
 end
@@ -512,7 +511,7 @@ function Gapjm.elements(c::LeftCell)
     for w in c.prop[:reps]
       append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
     end
-    Set(elements)
+    sort(collect(Set(elements)))
   end
 end
 
@@ -544,7 +543,7 @@ end
 
 function Mu(c::LeftCell)
   gets(c,:mu)do
-    KLMueMat(c.group,collect(elements(c)))
+    KLMueMat(c.group,elements(c))
   end
 end
 
@@ -561,14 +560,14 @@ H₃
 julia> c=LeftCells(W)[3]
 LeftCell<H₃: duflo=(15) character=φ₅‚₅>
 
-julia> Pol(:q);H=hecke(W,q^2;rootpara=q)
-hecke(H₃,q²,rootpara=q)
+julia> @Mvp q;H=hecke(W,q)
+hecke(H₃,q)
 
 julia> representation(c,H)
-3-element Array{Array{Pol{Int64},2},1}:
- [-1 0 … q 0; 0 -1 … q q; … ; 0 0 … q² 0; 0 0 … 0 q²]
- [-1 0 … 0 0; 0 q² … 0 0; … ; 0 q … -1 0; 0 q … 0 -1]
- [q² 0 … 0 0; 0 -1 … q 0; … ; 0 0 … q² 0; 0 0 … q -1]
+3-element Array{Array{Mvp{Int64,Rational{Int64}},2},1}:
+ [-1 0 … 0 0; 0 -1 … 0 q½; … ; 0 0 … q 0; 0 0 … 0 q]
+ [-1 q½ … 0 0; 0 q … 0 0; … ; 0 0 … -1 0; 0 q½ … 0 -1]
+ [q 0 … 0 0; q½ -1 … 0 0; … ; 0 0 … q 0; 0 0 … 0 -1]
 ```
 """
 function Chars.representation(c::LeftCell,H)
@@ -638,14 +637,16 @@ function LeftCellRepresentatives(W)
   end
 end
 
+InfoChevie=print
 function OldLeftCellRepresentatives(W)
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
   rw=groupby(x->leftdescents(W,x^-1),elements(W))
-  rw=[(rd=k,elements=Set(v)) for (k,v) in rw]
+  rw=[(rd=k,elements=sort(v)) for (k,v) in rw]
+  sort!(rw;by=x->x.rd)
   sort!(rw;by=x->length(x.elements))
   cells0=LeftCell{typeof(W)}[]
   while length(rw)>0
-    c=collect(rw[1].elements)
+    c=rw[1].elements
     InfoChevie("#I R(w)=",rw[1].rd," : #Elts=",length(c))
     mu=KLMueMat(W,c)
     n=1:length(c)
@@ -654,11 +655,9 @@ function OldLeftCellRepresentatives(W)
     Lleq=transitive_closure(Lleq)
     m=Set(n[Lleq[i,:].&Lleq[:,i]] for i in n)
     x=[LeftCell(W,Dict{Symbol,Any}(:elements=>c[d],:mu=>mu[d,d])) for d in m]
+#   println("split ",length.(x))
     while length(x)>0
       c=x[1]
-      n=sortperm(c.prop[:elements])
-      c.prop[:elements]=c.prop[:elements][n]
-      c.prop[:mu]=c.prop[:mu][n,n]
       i=filter(x->isone(x^2),c.prop[:elements])
       if length(i)==1 c.prop[:duflo]=i[1]
       else m=map(x->length(W,x)-2*degree(KLPol(W,one(W),x)),i)
@@ -670,7 +669,9 @@ function OldLeftCellRepresentatives(W)
                orbits(leftstars(W),c.prop[:elements];action=(x,f)->f(x)))
       c.prop[:reps]=first.(i)
       push!(cells0,c)
+#     printc("c=",c," length=",length(c),"\n")
       n=orbit(st,c;action=(x,f)->f(x))
+#     println(length(n),"x",length(n[1]))
       InfoChevie(", ",length(n)," new cell")
       if length(n)>1 InfoChevie("s") end
       for e in n
