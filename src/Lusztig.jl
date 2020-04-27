@@ -17,12 +17,12 @@ FindSeriesInParent=function(h,HF,WF,sers)
      if p==n
        p=representative_operation(W,
           sort(restriction(WF,inclusion(HF,h[:levi]))), 
-          sort(y[:levi]), action=(s,g)->sort(s.^g))
+          sort(y[:levi]), action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
        p=representative_operation(W, 
           sort(reflections(reflection_subgroup(W, h[:levi]))), 
           sort(reflections(reflection_subgroup(W, y[:levi]))), 
-                                  action=(s,g)->sort(s.^g))
+                                  action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
       end
     end
@@ -53,11 +53,11 @@ FindIntSol=function(l)
 # println("l=$l")
   simplify=function()
     l=map(function(p)
-          if iszero(p) || valuation(p)!=0 return p end
-      c=p.d[one(Monomial)]   
+      if iszero(p) || valuation(p)!=0 return p end
+      c=p.d[Monomial()]   
       if (c isa Cyc) 
         if c.n>1 return p 
-        else c=Real(c) end
+        else c=Cycs.num(c) end
       end
       if c<0 p=-p ; c=-c end
       return p-floor(c)
@@ -102,10 +102,10 @@ FindIntSol=function(l)
         InfoChevie("#I WARNING! FindIntSol cannot make:", p, " integral\n")
         return 0
       end
-      v=(0, values(p)[1], keys(p)[1].d.d[1])
+      v=(0, values(p.d)[1], keys(keys(p.d)[1].d)[1])
     else
       var=variables(p)[1]
-      v=(p.d[one(Monomial)],p.d[Monomial(var)],var)
+      v=(p.d[Monomial()],p.d[Monomial(var)],var)
     end
     N=conductor(collect(v[1:2]))
     if N%2!=0 N=2N end
@@ -162,22 +162,24 @@ function LusztigInductionPieces(LF,WF)
 #      map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
 #      h[:relativeType]),"\n")
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
-    cL=reflection_subgroup(W,ser[:levi])
-    if Group(WF) isa CoxeterGroup
+    if W isa CoxeterGroup
       WFGL=relative_coset(WF,restriction(W,inclusion(L,h[:levi])))
+      class_reps(WFGL)
       WGL=Group(WFGL)
       LFGL=relative_coset(LF,h[:levi])
-      LFGL=subspets(WFGL,convert(Vector{Int},inclusion(WGL,
-                    map(x->findfirst(==(x),WGL.prop[:relativeIndices]),
-                        inclusion(L,Group(LFGL).prop[:relativeIndices])))),
+      LFGL=subspets(WFGL,convert(Vector{Int},
+                    map(x->findfirst(==(x),
+                        inclusion(W,WGL.prop[:relativeIndices])),
+                        inclusion(L,Group(LFGL).prop[:relativeIndices]))),
                     WGL.prop[:MappingFromNormalizer](LF.phi*WF.phi^-1))
     else
+      cL=reflection_subgroup(W,ser[:levi]) # cL^op is in LF
       Jb=vcat(map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) :
                   x.indices,ser[:relativeType])...)
       WFGL=relative_coset(WF,ser[:levi],Jb)
       if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
-      rh=restriction(W,inclusion(L,vcat(map(
+      rh=restriction(W,inclusion(cL,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
        h[:relativeType])...))).^op
 #     printc("rh=",rh," op=",op,"\n")
@@ -347,7 +349,7 @@ function HCInductionTable(HF, WF)
         else rh = filter(i->reflection(parent(W),i) in H,Jb)
         end
       else
-        rh=reflection_subgroup(W,inclusiongens(H).^op)
+        rh=reflection_subgroup(W,restriction(W,inclusiongens(H).^op))
 #       println("inclusion(rh)=",inclusion(rh)," inclusion(L)=",inclusion(L))
         if !issubset(inclusion(L),inclusion(rh)) error() end
         rh=filter(i->!(reflection(parent(W),i) in L),inclusion(rh))

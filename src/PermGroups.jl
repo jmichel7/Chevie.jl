@@ -220,7 +220,7 @@ end
 struct GroupProdIterator{T}
   iterators::Vector{T}
 end
-# if the iterators are i1,...,in iterate on all products i1[j1]*...*in[jn]
+# if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
 
 Base.length(I::GroupProdIterator)=prod(length.(I.iterators))
 

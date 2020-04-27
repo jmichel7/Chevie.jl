@@ -9,7 +9,8 @@ module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
   groupby, constant, # lists
-  format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, # formatting
+  format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, 
+  cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -273,6 +274,37 @@ printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
 joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
                  string(sep[1:1],join(l,","),sep[2:2]) : join(l)
 
+"""
+ cut(string;options)
+
+   options:
+   - width=displaysize(stdout)[2]-2 cutting width
+   - after=","                      cutting after these chars
+   - before=""                      cutting before these chars
+   - file=stdout                    where to print result
+"""
+function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
+  a=split(s)
+  if a[end]=="" a=a[1:end-1] end
+  for s in a
+    pos=0
+    l=length(s)
+    while l>pos+width
+      pa=findlast(x->x in after,s[pos+(1:width)])
+      pb=findlast(x->x in before,s[pos+(2:width)])
+      if !isnothing(pa) && (isnothing(pb) || pa<=pb)
+        println(file,s[pos+(1:pa)])
+        pos+=pa
+      elseif !isnothing(pb)
+        println(file,s[pos+(1:pb)])
+        pos+=pb
+      else error("could not cut ",s[pos+(1:width)])
+      end
+    end
+    println(file,s[pos+1:end])
+  end
+  if file!=stdout close(file) end
+end
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)

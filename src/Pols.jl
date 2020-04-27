@@ -322,6 +322,8 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 isunit(p::Pol)=length(p.c)==1 && p.c[1]^2==1
+isunit(c::Cyc)=true
+isunit(c::Any)=false
 
 function Base.inv(p::Pol)
   if length(p.c)>1 throw(InexactError(:inv,Int,p)) end

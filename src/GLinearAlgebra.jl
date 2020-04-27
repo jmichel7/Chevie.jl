@@ -10,7 +10,7 @@ any ring).
 module GLinearAlgebra
 using Gapjm
 export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
-  ratio, schur_functor, charpoly
+  ratio, schur_functor, charpoly, solutionmat, transporter
 
 """
     `echelon!(m)`
@@ -83,9 +83,6 @@ function det(A::Matrix)
   if size(A,1)==1 return A[1,1] end
   sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
 end
-
-Pols.isunit(c::Cyc)=true
-Pols.isunit(c::Any)=false
 
 function Det(m)
   if isempty(m) return 0 end
@@ -356,7 +353,7 @@ function diagblocks(M::Matrix)::Vector{Vector{Int}}
 end
 
 """
-`Transporter(l1, l2 )`
+`transporter(l1, l2 )`
 
 `l1`  and `l2` should be vectors of  the same length of square matrices all
 of the same size. The result is a basis of the vector space of matrices `A`
@@ -364,7 +361,7 @@ such  that for any `i` we have  `A*l1[i]=l2[i]*A` --- the basis is returned
 as  a vector of matrices, empty if the vector space is 0. This is useful to
 find whether two representations are isomorphic.
 """
-function Transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
+function transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
   n=size(l1[1],1)
   M=Vector{eltype(l1[1])}[]
   for i in 1:n, j in 1:n,  m in 1:length(l1)
@@ -380,7 +377,7 @@ function Transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
   map(w->reshape(w,(n,n)), eachcol(v))
 end
 
-Transporter(l1::Matrix, l2::Matrix)=Transporter([l1],[l2])
+transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
 "ratio of two vectors"
 function ratio(v::Vector, w::Vector)
@@ -394,4 +391,54 @@ end
 # characteristic polynomial
 charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
 
+function solutionmat(m,vec)
+  m=permutedims(m)
+  if length(vec)!=size(m,1) error("dimension mismatch") end
+  vec=copy(vec)
+  r=0
+  c=1
+  while c<=size(m,2) && r<size(m,1)
+    s=findfirst(!iszero,m[r+1:end,c])
+    if !isnothing(s)
+      s+=r
+      r+=1
+      piv=inv(m[s,c])
+      m[s,:],m[r,:]=m[r,:],m[s,:].*piv
+      vec[s],vec[r]=vec[r],vec[s]*piv
+      for s in 1:size(m,1)
+        if s!=r && !iszero(m[s,c])
+          tmp=m[s,c]
+          m[s,:]-=tmp*m[r,:]
+          vec[s]-=tmp*vec[r]
+        end
+      end
+    end
+    c+=1
+  end
+  if any(!iszero,vec[r+1:end]) return nothing end
+  h=eltype(m)[]
+  s=size(m,2)
+  v=zero(eltype(m))
+  r=1
+  c=1
+  while c<=s && r<=size(m,1)
+    while c<=s && iszero(m[r,c])
+      c+=1
+      push!(h, v)
+    end
+    if c<=s
+      push!(h, vec[r])
+      r+=1
+      c+=1
+    end
+  end
+  while c<=s
+    push!(h,v)
+    c+=1
+  end
+  return h
+end
+
+# cannot make the next take precedence
+Base.:/(v::Vector{Rational},m::Matrix{Rational})=solutionmat(m,v)
 end

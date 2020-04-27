@@ -1,7 +1,7 @@
 module Combinat
-export combinations, arrangements, partitions, NrPartitions, partition_tuples,
+export combinations, arrangements, partitions, npartitions, partition_tuples,
   conjugate_partition, dominates, compositions, submultisets,
-  NrPartitionTuples, NrArrangements
+  npartition_tuples, NrArrangements
 
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -15,13 +15,13 @@ end
 """
 `combinations(mset[,k])`
 
-'combinations'  returns the set of all combinations of the multiset `mset`.
-If  a second argument `k` is given,  it returns the set of all combinations
-of the multiset `mset` with `k` elements.
+'combinations'  returns  all  combinations  of  the  multiset `mset` (a not
+necessarily  sorted list with  possible repetitions). If  a second argument
+`k` is given, it returns the combinations with `k` elements.
 
-A *combination* of `mset` is an unordered selection without repetitions and
-is  represented by a sorted  sublist of `mset`. If  `mset` is a proper set,
-the set of all combinations is just the *powerset* of `mset`.
+A  *combination*  is  an  unordered  selection  without  repetitions and is
+represented  by a sorted sublist of `mset`.  If `mset` is a proper set, the
+set of all combinations is just the *powerset* of `mset`.
 
 ```julia-repl
 julia> combinations([1,2,2,3])
@@ -60,29 +60,27 @@ end
 """
 `arrangements(mset[,k])`
 
-`arrangements` returns the set of arrangements of the multiset `mset`. It a
-second argument `k` is given, it returns all arrangements with `k` elements
-of the multiset `mset`.
+`arrangements`  returns  the  arrangements  of  the  multiset `mset` (a not
+necessarily  sorted list with  possible repetitions). If  a second argument
+`k` is given, it returns arrangements with `k` elements.
 
-An  *arrangement* of `mset`  is an ordered selection  without repetitions
-and is represented by a list that contains only elements from `mset`, but
-maybe  in a different  order.
+An  *arrangement* of  `mset` is  a selection  without repetitions  and thus
+lists a subset `mset`, but in arbitrary order.
 
-As an example of arrangements of a multiset, think  of the game Scrabble.
-Suppose you have the six characters of the word 'settle'  and you have to
-make a four letter word.  Then the possibilities are given by
+As  an example of arrangements  of a multiset, think  of the game Scrabble.
+Suppose  you have the six  characters of the word  'settle' and you have to
+make a four letter word. Then the possibilities are given by
 
-``julia-repl
+```julia-repl
 julia> length(arrangements(collect("settle"),4))
 102
 
 julia> length(arrangements(collect("settle")))
 523
 ```
-
-Note that the fact that the list returned by 'arrangements' is a proper set
-means  in this example that the possibilities  are listed in the same order
-as they appear in the dictionary.
+The  result  returned  by  'arrangements'  is  sorted,  which means in this
+example  that the possibilities are listed in the same order as they appear
+in the dictionary.
 """
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 arrangements(mset)=isempty(mset) ? [Int[]] :
@@ -105,10 +103,9 @@ end
 
 `partitions` returns the set of all partitions of the positive integer `n`.
 
-A  *partition*  is  a  sum  `n=p₁+p₂+…+  pₖ`  of  positive  integers and is
-represented  by the  list `p=[p₁,p₂,…,pₖ]`,  in nonincreasing  order, i.e.,
-`p₁≥p₂≥…≥pₖ`.  We write `p⊢n`.  There are approximately `exp(π√(2n/3))/(4√3
-n)` such partitions.
+A  *partition*  is  a  decomposition  `n=p₁+p₂+…+pₖ`  in integers such that
+`p₁≥p₂≥…≥pₖ>0`,  and is represented by  the list `p=[p₁,p₂,…,pₖ]`. We write
+`p⊢n`. There are approximately `exp(π√(2n/3))/(4√3 n)` such partitions.
 
 ```julia-repl
 julia> partitions(7)
@@ -143,7 +140,35 @@ function partitions_less(n,m,k)
   res
 end
 partitions(n,k)=partitions_less(n,n,k)
-NrPartitions(n...)=length(partitions(n...))
+
+function npartitions(n)
+  s=1
+  p=fill(s,n+1)
+  for m in 1:n
+    s=0
+    k=1
+    l=1
+    while 0<=m-(l+k)
+      s-=(-1)^k*(p[m-l+1]+p[m-(l+k)+1])
+      k+=1
+      l+=3*k-2
+    end
+    if l<=m s-=(-1)^k*p[m-l+1] end
+    p[m+1]=s
+  end
+  s
+end
+
+function npartitions(n,k)
+  if n==k return 1
+  elseif n<k || k==0 return 0
+  end
+  p=fill(1,n)
+  for l  in 2:k
+    for m  in l+1:n-l+1 p[m]+=p[m-l] end
+  end
+  p[n-k+1]
+end
 
 if false
 function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
@@ -164,22 +189,21 @@ else # bad implementation but which is ordered as GAP3; needed for
 """
 `partition_tuples(n,r)`
 
-returns  the list of  all `r`-tuples of  partitions that together partition
-`n`.
+the `r`-tuples of  partitions that together partition `n`.
 
 ```julia-repl
 julia> partition_tuples(3,2)
 10-element Array{Array{Array{Int64,1},1},1}:
  [[1, 1, 1], []]
- [[1, 1], [1]]  
- [[1], [1, 1]]  
+ [[1, 1], [1]]
+ [[1], [1, 1]]
  [[], [1, 1, 1]]
- [[2, 1], []]   
- [[1], [2]]     
- [[2], [1]]     
- [[], [2, 1]]   
- [[3], []]      
- [[], [3]]      
+ [[2, 1], []]
+ [[1], [2]]
+ [[2], [1]]
+ [[], [2, 1]]
+ [[3], []]
+ [[], [3]]
 ```
 """
 function partition_tuples(n, r)
@@ -223,19 +247,20 @@ function partition_tuples(n, r)
 end
 end
 
-function NrPartitionTuples(n,k)
+function npartition_tuples(n,k)
   res=0
   for l in 1:k
     r=binomial(k,l)
-    res+=r*sum(a->NrArrangements(a,l)*prod(NrPartitions.(a)),partitions(n,l))
+    res+=r*sum(a->NrArrangements(a,l)*prod(npartitions.(a)),partitions(n,l))
   end
   res
 end
 
 """
-`conjugate_partition(pi)`
+`conjugate_partition(λ)`
 
-returns the conjugate partition of the partition `pi`.
+returns  the  conjugate  partition  of  the  partition  `λ`,  that  is, the
+partition having the transposed of the Young diagram of `λ`.
 
 ```julia-repl
 julia> conjugate_partition([4,2,1])
@@ -254,9 +279,6 @@ julia> conjugate_partition([6])
  1
  1
 ```
-
-The  *conjugate  partition*  of  a  partition  `pi`  is  defined  to be the
-partition belonging to the transposed of the Young diagram of `pi`.
 """
 function conjugate_partition(p)
   res=zeros(eltype(p),maximum(p))
@@ -265,11 +287,10 @@ function conjugate_partition(p)
 end
 
 """
-`dominates(mu,nu)`
+`dominates(μ,ν)`
 
-The  dominance  ordering  is  an  important partial order in representation
-theory.  `dominates(mu,nu)` returns  `true` if  either `mu==nu`  or for all
-`i≥1` we have `sumⱼ₌₁ⁱ muⱼ≥sumⱼ₌₁ⁱ nuⱼ`, and `false` otherwise.
+The dominance order is an important partial order in representation theory.
+`μ` dominates `ν` if and only if for all `i` we have `sumⱼ₌₁ⁱ μ≥sumⱼ₌₁ⁱ ν`.
 
 ```julia-repl
 julia> dominates([5,4],[4,4,1])
@@ -279,10 +300,12 @@ true
 dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 
 """
-`compositions(n[,i])`
+`compositions(n[,k])`
 
-returns  the list of compositions of the integer `n` (the compositions with
-`i` parts if a second argument `i` is given).
+This  function returns the compositions of  `n` (the compositions of length
+`k`  if a second argument `k` is given), where a composition of the integer
+`n` is a decomposition `n=p₁+…+pₖ` in positive integers, represented as the
+list `[p₁,…,pₖ]`.
 
 ```julia-repl
 julia> compositions(4)
@@ -316,13 +339,12 @@ end
 """
 `submultisets(set,k)`
 
-`submultisets` returns the  set of all  multisets length `k`
-of elements of the set `set`.
+`submultisets`  returns the set of all  multisets of length `k` of elements
+of the set `set`.
 
-An *multiset* of length `k` is a  selection with
-repetitions  of length `k` from `set` and  is represented by a vector
-of length `k` containing  elements  from  `set`.   There  are  
-`binomial(|set|+k-1,k)` such sub-multisets.
+An  *multiset* of length `k` is a  selection with repetitions of length `k`
+from `set` and is represented by a vector of length `k` containing elements
+from `set`. There are `binomial(|set|+k-1,k)` such sub-multisets.
 
 ```julia-repl
 julia> Combinat.submultisets(1:4,3)

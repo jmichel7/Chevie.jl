@@ -64,39 +64,42 @@ Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: fromTeX, ordinal
+using ..Util: Util, fromTeX, ordinal, toM, factor
 using ..Cycs: Cyc
 using ..Pols: Pols, Pol, positive_part
+using ..GLinearAlgebra: GLinearAlgebra, solutionmat
+
 import Gapjm: degree, root, coefficients, valuation
 # to use as a stand-alone module comment above line and uncomment next
 # export degree, root, coefficients, valuation
-export Mvp, Monomial, @Mvp, variables, value, scal
+export Mvp, Monomial, @Mvp, variables, value, scal, derivative,
+  laurent_denominator
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   
 end
 
 Monomial(a::Pair...)=Monomial(ModuleElt(a...))
-Monomial()=one(Monomial)
+Monomial()=one(Monomial{Int})
 Monomial(v::Symbol)=convert(Monomial{Int},v)
 
 Base.convert(::Type{Monomial{T}},v::Symbol) where T=Monomial(v=>T(1))
 Base.convert(::Type{Monomial{T}},m::Monomial{N}) where {T,N}= 
   Monomial(convert(ModuleElt{Symbol,T},m.d))
 
-function Base.promote_rule(::Type{Monomial{N1}},::Type{Monomial{N2}})where {N1,N2}
-  Monomial{promote_type(N1,N2)}
-end
+Base.promote_rule(::Type{Monomial{N}},::Type{Monomial{M}}) where {N,M}=
+  Monomial{promote_type(N,M)}
 
 Base.:*(a::Monomial, b::Monomial)=Monomial(a.d+b.d)
 Base.isone(a::Monomial)=iszero(a.d)
-Base.iszero(a::Monomial)=false
+#Base.iszero(a::Monomial)=false
 Base.one(::Type{Monomial{N}}) where N=Monomial(zero(ModuleElt{Symbol,N}))
-Base.one(::Type{Monomial})=one(Monomial{Int})
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Base.div(a::Monomial, b::Monomial)=a*inv(b)
-Base.:^(x::Monomial, p)= iszero(p) ? one(x) : Monomial(x.d*p)
+Base.:/(a::Monomial, b::Monomial)=a*inv(b)
+Base.://(a::Monomial, b::Monomial)=a*inv(b)
+Base.:^(x::Monomial,p)=Monomial(x.d*p)
 Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
@@ -123,7 +126,7 @@ function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
   show(io,m)
 end
 
-# cmp must define a monomial order (a<b => a m< b m for all monomials a, b, m)
+# cmp must define a monomial order (a<b => a*m<b*m for all monomials a, b, m)
 # We take the sign of the power of the first variable in a/b
 function Base.cmp(a::Monomial, b::Monomial)
   for ((ca,pa),(cb,pb)) in zip(a.d,b.d)
@@ -142,12 +145,11 @@ function Base.cmp(a::Monomial, b::Monomial)
 end
 
 Base.isless(a::Monomial, b::Monomial)=cmp(a,b)==-1
-Base.:(==)(a::Monomial, b::Monomial)=cmp(a,b)==0
-#Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
+Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
 # gcd(m_1,...,m_k)= largest m such that m_i>=m
 function Base.gcd(l::Monomial...)
-  if length(l)==0 return one(Monomial)
+  if length(l)==0 return Monomial()
   elseif length(l)==1 return l[1]
   elseif length(l)>2 return reduce(gcd,l)
   else (a,b)=l
@@ -156,15 +158,22 @@ function Base.gcd(l::Monomial...)
   ai=bi=1
   la=length(a.d)
   lb=length(b.d)
-  while ai<=la && bi<=lb
-    if a.d.d[ai][1]>b.d.d[bi][1] bi+=1
-    elseif a.d.d[ai][1]<b.d.d[bi][1] ai+=1
-    else 
-      if    a.d.d[ai][2]<=b.d.d[bi][2] push!(res,a.d.d[ai]) 
-      elseif a.d.d[ai][2]>b.d.d[bi][2] push!(res,b.d.d[bi]) 
+  while ai<=la || bi<=lb
+    if ai<=la 
+      (va,pa)=a.d.d[ai] 
+    end
+    if bi<=lb 
+      (vb,pb)=b.d.d[bi] 
+    end
+    if     ai>la if pb<0 push!(res,b.d.d[bi]) end; bi+=1
+    elseif bi>lb if pa<0 push!(res,a.d.d[ai]) end; ai+=1
+    else c=cmp(va,vb)
+      if     c>0 if pb<0 push!(res,b.d.d[bi]) end; bi+=1
+      elseif c<0 if pa<0 push!(res,a.d.d[ai]) end; ai+=1
+      else s=min(pa,pb)
+        if !iszero(s) push!(res,va=>s) end
+        ai+=1; bi+=1
       end
-      ai+=1
-      bi+=1
     end
   end
   Monomial(res...)
@@ -172,15 +181,8 @@ end
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
-degree(m::Monomial)=isone(m) ? 0 : sum(last.(m.d))
-
-function degree(m::Monomial,var::Symbol)
-  for (v,d) in m.d
-    if v>var return 0 end
-    if v==var return d end
-  end
-  return 0
-end
+degree(m::Monomial)=sum(values(m.d))
+degree(m::Monomial,var::Symbol)=m[var]
 
 function root(m::Monomial,n::Integer=2)
  if all(x->iszero(x%n),last.(m.d)) Monomial((k=>div(v,n) for (k,v) in m.d)...)
@@ -214,11 +216,7 @@ Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
 
-function Base.show(io::IO,t::Type{Mvp{T,N}})where {T,N}
-  if N==Int print(io,"Mvp{",T,"}")
-  else print(io,"Mvp{",T,",",N,"}")
-  end
-end
+Base.show(io::IO,t::Type{Mvp{T,N}}) where{T,N}=print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}")
 
 function Base.show(io::IO, ::MIME"text/plain", a::Mvp)
   print(io,typeof(a),": ")
@@ -273,32 +271,39 @@ Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
 Base.:*(b::Mvp,a::Monomial)=a*b
-Base.:*(a::Mvp, b::Mvp)=iszero(a) ? zero(b) : Mvp(ModuleElt(
+function Base.:*(a::Mvp, b::Mvp)
+ iszero(a) ? a : iszero(b) ? b : Mvp(ModuleElt(
             [m*m1=>c*c1 for (m1,c1) in b.d for (m,c) in a.d];check=true))
+end
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
-Base.:(//)(a::Mvp, b)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
-Base.conj(a::Mvp)=Mvp(map(x->(x[1]=>conj(x[2])),a.d)...)
+Base.:(//)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
+Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d))
+
+"""
+`conj(p::Mvp)` acts on the coefficients of `p`
+
+```julia-repl
+julia> @Mvp x; conj(E(3)x+E(5))
+Mvp{Cyc{Int64}}: ζ₃²x+ζ₅⁴
+```
+"""
+Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
 
 function Base.:^(x::Mvp, p::Real)
-  if iszero(x) return x end
-  if !isinteger(p) return root(x,denominator(p))^numerator(p) end
-  p=Int(p)
-  if iszero(p) return one(x) end
-  if isone(p) return x end
-  if p<0
-    x=inv(x)
-    p=-p
-  end
-  if length(x.d)==1
+  if iszero(x) return x
+  elseif !isinteger(p) return root(x,denominator(p))^numerator(p) 
+  elseif iszero(p) return one(x)
+  elseif isone(p) return x 
+  elseif length(x.d)==1
     (m,c)=first(x.d)
     return Mvp(m^p=>c^p)
   end
-  Base.power_by_squaring(x,p)
+  p<0 ? Base.power_by_squaring(inv(x),-p) : Base.power_by_squaring(x,p)
 end
 
 """
-The `degree` of a monomial is the sum of  the exponent of the variables.
+The `degree` of a monomial is the sum of  the exponents of the variables.
 The `degree` of an `Mvp` is the largest degree of a monomial.
 
 ```julia-repl
@@ -321,8 +326,8 @@ julia> degree(a,:x)
 ```
 
 """
-degree(m::Mvp)=maximum(degree.(keys(m.d)))
-degree(m::Mvp,v::Symbol)=maximum(map(x->degree(x,v),keys(m.d)))
+degree(m::Mvp)=iszero(m) ? 0 : maximum(degree.(keys(m.d)))
+degree(m::Mvp,v::Symbol)=iszero(m) ? 0 : maximum(degree.(keys(m.d),v))
 
 """
 The `valuation` of an `Mvp` is the minimal degree of a monomial.
@@ -348,8 +353,8 @@ julia> valuation(a,:x)
 ```
 
 """
-valuation(m::Mvp)=minimum(map(degree,keys(m.d)))
-valuation(m::Mvp,v::Symbol)=minimum(map(x->degree(x,v),keys(m.d)))
+valuation(m::Mvp)=iszero(m) ? 0 : minimum(degree.(keys(m.d)))
+valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
 
 """
   `coefficients(p::Mvp, var::Symbol)` 
@@ -404,18 +409,21 @@ function coefficients(p::Mvp,v::Symbol)
 end
 
 """
-`variables(p::Mvp)`
+`variables(p::Mvp...)`
 
-returns the list of variables of `p` as a sorted list of `Symbol`s.
+returns the list of variables of all `p` as a sorted list of `Symbol`s.
 
 ```julia-repl
-julia> variables(x+x^4+y)
-2-element Array{Symbol,1}:
+julia> @Mvp x,y,z
+
+julia> variables(x+y+1,z)
+3-element Array{Symbol,1}:
  :x
  :y
+ :z
 ```
 """
-variables(p::Mvp)=unique!(sort([k1 for (k,v) in p.d for (k1,v1) in k.d]))
+variables(pp::Mvp...)=unique!(sort([k1 for p in pp for (k,v) in p.d for (k1,v1) in k.d]))
 
 """
 `scal(p::Mvp)`
@@ -537,17 +545,15 @@ function Base.inv(p::Mvp)
   (m,c)=first(p.d)
   if c^2==1 return Mvp(inv(m)=>c) end
   if (c isa Cyc) || (c isa Rational) return Mvp(inv(m)=>inv(c)) end
-  throw(InexactError(:inv,typeof(c),p))
+  throw(InexactError(:inv,typeof(c),c))
 end
-
-Base.:/(p::Mvp,q::Mvp)=p* inv(q)
 
 function Base.://(p::Mvp,q::Mvp)
   res=ExactDiv(p,q)
   if isnothing(res) return p*inv(q) end
   res
 end
-
+Base.:/(p::Mvp,q::Mvp)=p//q
 Base.://(p::Number,q::Mvp)=Mvp(p)//q
 
 function ExactDiv(p::Mvp,q::Mvp)
@@ -650,19 +656,13 @@ julia> (x+y)^[1 2;3 1]
 Mvp{Int64}: 3x+4y
 ```
 """
-Base.:^(p,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
+Base.:^(p::Mvp,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
-function Pols.positive_part(p::Mvp)
-  ispositive(m::Monomial)=all(c>0 for (v,c) in m.d)
-  l=[m=>c for (m,c) in p.d if ispositive(m)]
-  if isempty(l) zero(p) else Mvp(l...) end
-end
+Pols.positive_part(p::Mvp)=
+  Mvp(ModuleElt([m=>c for (m,c) in p.d if all(>(0),values(m.d))]))
 
-function Pols.negative_part(p::Mvp)
-  isnegative(m::Monomial)=all(c<0 for (v,c) in m.d)
-  l=[m=>c for (m,c) in p.d if isnegative(m)]
-  if isempty(l) zero(p) else Mvp(l...) end
-end
+Pols.negative_part(p::Mvp)=
+  Mvp(ModuleElt([m=>c for (m,c) in p.d if all(<(0),values(m.d))]))
 
 Pols.bar(p::Mvp)=Mvp((inv(m)=>c for (m,c) in p.d)...)
 
@@ -671,64 +671,126 @@ The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
 to  the variable given by the string 'v'; if 'v' is not given, with respect
 to the first variable in alphabetical order.
 
-|    gap>  p:=7*x^5*y^-1-2;
-    -2+7x^5y^-1
-    gap> Derivative(p,"x");
-    35x^4y^-1
-    gap> Derivative(p,"y");
-    -7x^5y^-2
-    gap> Derivative(p);
-    35x^4y^-1
-    gap>  p:=x^(1/2)*y^(1/3);
-    x^(1/2)y^(1/3)
-    gap>  Derivative(p,"x");
-    1/2x^(-1/2)y^(1/3)
-    gap>  Derivative(p,"y");
-    1/3x^(1/2)y^(-2/3)
-    gap>  Derivative(p,"z");
-    0|
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Finally we  mention the  functions 'ComplexConjugate' and  'evalf' which
-are defined using  for coefficients the 'Complex'  and 'Decimal' numbers
-of the CHEVIE package.
+```julia-repl
+julia> @Mvp x,y;p=7x^5*y^-1-2
+Mvp{Int64}: 7x⁵y⁻¹-2
+
+julia> derivative(p,:x)
+Mvp{Int64}: 35x⁴y⁻¹
+
+julia> derivative(p,:y)
+Mvp{Int64}: -7x⁵y⁻²
+
+julia> derivative(p)
+Mvp{Int64}: 35x⁴y⁻¹
+
+julia> p=x^(1//2)*y^(1//3)
+Mvp{Int64,Rational{Int64}}: x½y⅓
+
+julia> derivative(p,:x)
+Mvp{Rational{Int64},Rational{Int64}}: (1//2)x⁻½y⅓
+
+julia> derivative(p,:y)
+Mvp{Rational{Int64},Rational{Int64}}: (1//3)x½y^{-2//3}
+
+julia> derivative(p,:z)
+Mvp{Rational{Int64},Rational{Int64}}: 0
+```
+"""
+function derivative(p::Mvp,v=first(variables(p)))
+  Mvp(ModuleElt([m*Monomial(v)^-1=>c*m[v] for (m,c) in p.d];check=true))
+end
+
+"""
+`laurent_denominator(p1,p2,…)`
+
+returns  the unique monomial  `m` of minimal  degree such that  for all the
+Laurent  polynomial  arguments  `p1,p2,…`  the  product  `m*pᵢ`  is  a true
+polynomial.
+
+```julia-repl
+julia> laurent_denominator(x^-1,y^-2+x^4)
+Monomial{Int64}:xy²
+```
+"""
+function laurent_denominator(p::Mvp...)
+  res=Monomial()
+  for v in variables(p...)
+    val=minimum(valuation.(p,v))
+    if val<0 res*=Monomial(v)^-val end
+  end
+  return res
+end
+
+# factorize a quadratic form (an Mvp of degree 2) as product of 2 linear forms
+"""
+`factor(p::Mvp)`
+
+`p`  should be of degree <=2 thus represents a quadratic form. The function
+returns  a list  of two  linear forms  of which  `p` is the product if such
+exist, otherwise it returns [p].
+
+```julia-repl
+julia> factor(x^2-y^2+x+3y-2)
+2-element Array{Mvp{Cyc{Rational{Int64}}},1}:
+ x+y-1
+ x-y+2
+
+julia> factor(x^2+x+1)
+2-element Array{Mvp{Cyc{Rational{Int64}}},1}:
+ x-ζ₃
+ x-ζ₃²
+
+julia> factor(x*y-1)
+1-element Array{Mvp{Int64},1}:
+ xy-1
+```
+"""
+function Util.factor(p::Mvp{T,N})where {T,N}
+  v=variables(p)
+  r=length(v)+1
+  m=zeros(T,r,r)//1
+  for (e,t) in p.d
+    n=map(x->findfirst(==(x),v),keys(e.d))
+    c=values(e.d)
+    if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t//2
+    elseif c==[2] m[n[1],n[1]]=t
+    elseif c==[1] m[n[1],r]=m[r,n[1]]=t//2
+    elseif isempty(c) m[r,r]=t
+    else error("# only implemented for degree <=2")
+    end
+  end
+  if size(m,1)==2 t=one(m)
+  else n=copy(m)
+    m,ind=GLinearAlgebra.echelon!(m)
+    m=m[ind,:]
+    if size(m,1)>2 return [p] end
+    t=permutedims(toM(solutionmat.(Ref(m),eachrow(n))))
+    m=toM(solutionmat.(Ref(t),eachrow(m)))
+  end
+  v=t*vcat(Mvp.(v),[Mvp(1)])
+  if size(m,1)==1 return [v[1],v[1]*m[1,1]] end
+  b=m[1,2]+m[2,1]
+  if m[1,1]==0 return [v[2],b*v[1]+m[2,2]*v[2]] end
+  b//=m[1,1]
+  d=root(b^2-4*m[2,2]//m[1,1])
+  if isnothing(d) 
+    println("root failed")
+    return p 
+  end
+  return [v[1]+v[2]//2*(b-d),m[1,1]*(v[1]+v[2]//2*(b+d))]
+end
+
+"""
+Finally we  mention the  function 'evalf' which
+is defined on coefficients
 
 |    gap> p:=E(3)*x+E(5);
     E5+E3x
     gap> evalf(p);
     0.3090169944+0.9510565163I+(-0.5+0.8660254038I)x
-    gap> p:=E(3)*x+E(5);          
-    E5+E3x
-    gap> ComplexConjugate(p);
-    E5^4+E3^2x
-    gap> evalf(p);
-    0.3090169944+0.9510565163I+(-0.5+0.8660254038I)x
     gap> ComplexConjugate(last);
     0.3090169944-0.9510565163I+(-0.5-0.8660254038I)x|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'LaurentDenominator( <p1>, <p2>, ... )'
-
-Returns the unique monomial 'm' of minimal degree such that for all the
-Laurent polynomial arguments <p1>, <p2>, etc... the product `m* p_i` is
-a true polynomial.
-
-|    gap> LaurentDenominator(x^-1,y^-2+x^4);
-    xy^2|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'FactorizeQuadraticForm( <p>)'
-
-<p>  should be an 'Mvp' of degree  2 which represents a quadratic form. The
-function  returns a list of two linear forms of which <p> is the product if
-such  forms exist, otherwise it returns 'false' (it returns [Mvp(1),<p>] if
-<p> is of degree 1).
-
-|    gap> FactorizeQuadraticForm(x^2-y^2+x+3*y-2);
-    [ -1+x+y, 2+x-y ]
-    gap> FactorizeQuadraticForm(x^2+x+1);        
-    [ -E3+x, -E3^2+x ]
-    gap> FactorizeQuadraticForm(x*y+1);  
-    false|
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

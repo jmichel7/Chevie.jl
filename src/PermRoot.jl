@@ -303,6 +303,7 @@ Base.eltype(W::PermRootGroup)=eltype(W.G)
 Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
 Base.in(w,W::PermRootGroup)=in(w,W.G)
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
+inclusiongens(L,W)=restriction(W,inclusiongens(L))
 # should use independent_roots
 
 "return for each root the index of the first simple root conjugate to it"
@@ -934,7 +935,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
 end
 
 function PermGroups.class_reps(W::PermRootGroup)
-  Util.gets(W.G,:classreps)do
+  gets(W.G,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
@@ -1218,7 +1219,7 @@ restriction(W::PRSG,i)=W.restriction[i]
 
 function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   WW=parent(W)
-  if !(p in WW) error("can only conjugate in parennt") end
+  if !(p in WW) error("can only conjugate in parent") end
   reflection_subgroup(WW,inclusiongens(W).^p)
 end
 
@@ -1228,13 +1229,15 @@ function reflection_subgroup(W::PRG,I::AbstractVector)
   else G=PRG(W.roots[I],coroot.(Ref(W),I))
        inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   end
-  restriction=zeros(Int,length(W.roots))
-  restriction[inclusion]=1:length(inclusion)
   G=Group(reflections(W)[I])
   prop=Dict{Symbol,Any}()
   if isempty(inclusion) prop[:rank]=rank(W) end
+  restriction=zeros(Int,length(W.roots))
+  restriction[inclusion]=1:length(inclusion)
   PRSG(G,inclusion,restriction,W,prop)
 end
+reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
+   reflection_subgroup(parent(W),inclusion(W)[I])
 
 cartan_coeff(W::PRSG,i,j)=
      cartan_coeff(parent(W),inclusion(W,i),inclusion(W,j))
@@ -1243,8 +1246,6 @@ refrep(W::PRSG)=map(i->refrep(parent(W),i),inclusiongens(W))
 refrep(W::PRSG,i::Integer)=refrep(parent(W),inclusion(W,i))
 refrep(W::PRSG,w)=refrep(parent(W),w)
 
-reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
-   reflection_subgroup(parent(W),inclusion(W)[I])
 #-------------------------------------------------
 """
 Catalan(n) `n`-th Catalan Number

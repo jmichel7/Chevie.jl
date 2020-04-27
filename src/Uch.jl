@@ -493,6 +493,7 @@ B₂ │qΦ₁²/2   0    -1   -,-
     6  |  B2   (012,)|
 """
 function UnipotentCharacters(WF::Spets) 
+  gets(WF,:UnipotentCharacters) do
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
     ser[:levi]=reduce(vcat,getindex.(sers,:levi))
@@ -617,6 +618,7 @@ function UnipotentCharacters(WF::Spets)
 
   res[:group]=WF
   UnipotentCharacters(hh,ah,ff,res)
+  end
 end
 
 function Base.show(io::IO, ::MIME"text/html", uc::UnipotentCharacters)

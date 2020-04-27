@@ -1,14 +1,15 @@
 """
-A  `ModuleElt{K,V}` represents an element of  a module where basis elements
-are  of type `K` and coefficients of type  `V`. It is essentially a list of
-pairs  `b=>c` where `b`  is a basis  element and `c`  its coefficient. This
-basic  data structure is common  in mathematics and is  used in the package
-`Gapjm`  as an efficient representation  for cyclotomics, elements of Hecke
-algebras, multivariate polynomials and their monomials, CycPols, etc…
+A  `ModuleElt{K,V}`  represents  an  element  of  a free module where basis
+elements  are of type `K` and coefficients of type `V`. It is essentially a
+list  of pairs `b=>c` where `b` is a basis element and `c` its coefficient.
+This  basic data  structure is  common in  mathematics and  is used  in the
+package `Gapjm` as an efficient representation for cyclotomics, elements of
+Hecke algebras, multivariate polynomials and their monomials, CycPols, etc…
 
 The  constructor takes as argument a list of pairs, or a variable number of
 pair  arguments, or a  generator of pairs.  We provide two implementations,
-one by dicts and a faster one (the default) by sorting pairs by key.
+one  by dicts  (easy since  the interface  of the  type is close to that of
+dicts) and a faster one (the default) by sorting pairs by key.
 
 Here  is an  example where  basis elements  are represented  by Symbols and
 coefficients  are  `Reals`.  The  main  operation  which  has work to do is
@@ -60,8 +61,8 @@ Pair{Symbol,Int64}
 ```
 
 both  implementations provide  an option  `check` in  the constructor which
-normalizes an element, removing zero coefficients (and sorting the basis in
-the default implementation).
+normalizes  an element,  removing zero  coefficients and  merging duplicate
+basis elements (and sorting the basis in the default implementation).
 
 ```julia-repl
 julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
@@ -79,14 +80,14 @@ elements are printed.
 ```julia-rep1
 julia> show(IOContext(stdout,:showbasis=>(io,s)->string("<",s,">")),a)
 3<xy>+2<yx>
+```
 
-When adding `ModuleElt`s there is promotion on the type of the keys and the
-coefficients if needed:
+When  adding or subtracting `ModuleElt`s there  is promotion on the type of
+the keys and the coefficients if needed:
 
 ```julia-repl
 julia> a+ModuleElt([:z=>1.0])
 3.0:xy+2.0:yx+1.0:z
-```
 ```
 
 """
@@ -138,7 +139,7 @@ Base.hash(x::ModuleElt, h::UInt)=hash(x.d,h)
 else
 #-------------- faster implementation -------------------------------------
 @inbounds function norm!(d::Vector{Pair{K,V}}) where {K,V}
-  if all(i->first(d[i])<first(d[i+1]),1:length(d)-1) return end
+  if isempty(d) return d end
   sort!(d,by=first)
   ri=1
   for j in 2:length(d)

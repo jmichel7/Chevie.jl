@@ -249,7 +249,7 @@ function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) C=W
   elseif all(J.<=coxrank(W))
     C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
-  else C=centralizer(W,sort(J);action=(J,w)->sort(J.^w))
+   else C=centralizer(W,sort(J);action=(J,w)->sort(action.(Ref(W),J,w)))
   end
   class_reps(C)
 end
@@ -411,12 +411,13 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   if isempty(J) return class_reps(WF)./WF.phi end
   W=Group(WF)
   if W isa CoxeterGroup
-    h=representative_operation(W,sort(J.^WF.phi),sort(J),action=(x,p)->sort(x.^p))
+    h=representative_operation(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
+                               action=(x,p)->sort(action.(Ref(W),x,p)))
     if isnothing(h)
       println( "\n# no subspets for ", J )
       return Perm[]
     end
-    W_L=centralizer(W,sort(J),action=(x,p)->sort(x.^p) )
+    W_L=centralizer(W,sort(J),action=(x,p)->sort(action.(Ref(W),x,p)))
     e=class_reps(Group(vcat(gens(W_L),[WF.phi*h])))
     return filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
   end
@@ -438,7 +439,7 @@ end
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   if isempty(J) class_reps(W) end
   L=reflection_subgroup(W,J)
-  s=sort(collect(Set(reflections(L))))
+  s=unique!(sort(reflections(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L.G
   map(x->reduced(L.G,x.phi),class_reps(W_L))
@@ -458,6 +459,7 @@ function relative_coset(WF::CoxeterCoset,J)
 end
 #-------------- subcoset ---------------------------------
 function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
+# printc("WF=",WF," I=",I," w=",w,"\n")
   RF=WF
   WF=parent(WF)
   phi=RF.phi/WF.phi
@@ -465,8 +467,8 @@ function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
   if !(w in W) error(w," should be in ",W) end
   phi=w*phi
   R=reflection_subgroup(W,I)
-  tmp=sort(inclusion(R))
-  if (W isa CoxeterGroup) && (sort(tmp.^(phi*WF.phi))!=tmp)
+  if (W isa CoxeterGroup) && 
+     (sort(action.(Ref(R),1:2nref(R),phi*WF.phi))!=1:2nref(R))
     error("w*WF.phi does not normalize subsystem")
   end
   phi=reduced(R,phi*WF.phi)

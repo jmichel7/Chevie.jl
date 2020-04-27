@@ -48,6 +48,7 @@ symmetric_group
 # Cyclotomic numbers
 ```@docs
 Cycs
+E
 galois
 ER
 Quadratic
@@ -69,6 +70,10 @@ Mvps.coefficients
 Mvps.valuation
 Mvps.value
 Mvps.degree
+Mvps.conj
+Mvps.factor
+derivative
+laurent_denominator
 scal
 ```
 # Coxeter groups
@@ -81,7 +86,7 @@ reduced
 word(::CoxeterGroup,w)
 length(::CoxeterGroup,w)
 elements(::CoxeterGroup)
-words(::CoxeterGroup)
+CoxGroups.words
 bruhatless
 CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
@@ -114,6 +119,7 @@ relative_group
 PermRoot
 reflection
 cartan(::PermRootGroup)
+Diagram
 hyperplane_orbits
 rank
 semisimplerank
@@ -198,6 +204,7 @@ degrees(::Spets)
 Uch
 UnipotentCharacters
 degrees(::UnipotentCharacters,q)
+Uch.CycPolUnipotentDegrees
 UniChar
 DLChar
 AlmostChar
@@ -257,6 +264,7 @@ prime_residues
 phi
 primitiveroot
 gcd_repr
+cut
 ```
 # Combinatorics
 ```@docs
@@ -303,7 +311,7 @@ diagblocks
 ratio
 exterior_power
 schur_functor
-GLinearAlgebra.Transporter
+GLinearAlgebra.transporter
 traces_words_mats
 ```
 # Eigenspaces

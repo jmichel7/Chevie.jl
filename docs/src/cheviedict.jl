@@ -184,6 +184,8 @@ const ChevieDict=Dict(
 "MatXPerm(W,p)"=>"refrep(W,p)",
 #MatYPerm
 "NrDrinfeldDouble"=>"ndrinfeld_double",
+"NrPartitions"=>"npartitions",
+"NrPartitionTuples"=>"npartition_tuples",
 #OnFamily
 "OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",
 "OnTuples(l,p)"=>"l.^p",
@@ -268,6 +270,7 @@ const ChevieDict=Dict(
 "SignedPermListList"=>"SPerm",
 #SignedPermMatMat
 "Size(W)"=>"length(W)",
+"SolutionMat"=>"solutionmat",
 #SpecialPieces
 "Spets"=>"spets",
 "SplitLevis"=>"split_levis",
@@ -284,8 +287,9 @@ const ChevieDict=Dict(
 "Torus"=>"torus",
 #TorusOrder
 "TransitiveClosure"=>"transitive_closure",
-#Transporter
+"Transporter"=>"transporter",
 #Transversals
+"TriangulizeMat"=>"echelon!",
 "Twistings"=>"twistings",
 "TwoTree(m)"=>"twotree(m)",
 #UnipotentAbelianPart

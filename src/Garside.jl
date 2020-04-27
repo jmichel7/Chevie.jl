@@ -925,10 +925,10 @@ function Category(atomsfrom::Function,o;action::Function=^)
   C
 end
 
-showgraph(C)=showgraph(IOContext(stdout,:limit=>true),C)
+showgraph(C;k...)=showgraph(IOContext(stdout,:limit=>true),C;k...)
 
-function showgraph(io,C::Category)
-  maps=vcat(map(i->map(p->[i,p[1],p[2]],C.atoms[i]),eachindex(C.obj))...)
+function showgraph(io,C::Category;showobj=show,showmap=show)
+ maps=vcat(map(i->map(p->[i,p[1],p[2]],sort(C.atoms[i],by=x->abs(x[2]-i))),eachindex(C.obj))...)
   found=true
   while found
     found=false
@@ -952,8 +952,8 @@ function showgraph(io,C::Category)
   for f in maps
     l1=l2=""
     for i in 1:2:length(f)-2
-      a=sprint(show,C.obj[f[i]];context=io)
-      ff=sprint(show,f[i+1];context=io)
+      a=sprint(showobj,C.obj[f[i]];context=io)
+      ff=sprint(showmap,f[i+1];context=io)
       l=max(2,textwidth(ff))
       if textwidth(l1)+textwidth(a)+l+1>displaysize(io)[2]
         println(io,l1,"\n",l2)

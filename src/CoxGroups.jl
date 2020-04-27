@@ -580,7 +580,7 @@ end
 PermRoot.Diagram(W::CoxeterGroup)=Diagram(refltype(W))
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
-  Category(collect(sort(I));action=(J,e)->sort(J.^e))do J
+   Category(collect(sort(I));action=(J,e)->sort(action.(Ref(W),J,e)))do J
     map(setdiff(1:coxrank(W),J)) do i
       longest(W,J)*longest(W,push!(copy(J),i))
     end

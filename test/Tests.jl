@@ -1,85 +1,31 @@
-nspets=map(i->ComplexReflectionGroup(i),
-           [5,7,9,10,11,12,16,17,18,20,22,13,15,21])
+module Tests
+using Gapjm
 
-l2=[
-  (ComplexReflectionGroup,4),
-  (ComplexReflectionGroup,6),
-  (ComplexReflectionGroup,8),
-  (ComplexReflectionGroup,14),
-  (ComplexReflectionGroup,24),
-  (ComplexReflectionGroup,25),
-  (ComplexReflectionGroup,26),
-  (ComplexReflectionGroup,27),
-  (ComplexReflectionGroup,29),
-  (ComplexReflectionGroup,32),
-  (ComplexReflectionGroup,33),
-  (ComplexReflectionGroup,3,1,2),
-  (ComplexReflectionGroup,3,3,3),
-  (ComplexReflectionGroup,3,3,4),
-  (ComplexReflectionGroup,4,4,3),
-  (coxgroup,:A,1),
-  (coxgroup,:A,2),
-  (coxgroup,:A,3),
-  (coxgroup,:A,4),
-  (coxgroup,:A,5),
-  (coxgroup,:A,6),
-  (coxgroup,:A,7),
-  (coxgroup,:B,2),
-  (coxgroup,:B,3),
-  (coxgroup,:B,4),
-  (coxgroup,:B,5),
-  (coxgroup,:B,6),
-  (coxgroup,:B,7),
-  (coxgroup,:C,3),
-  (coxgroup,:C,4),
-  (coxgroup,:C,5),
-  (coxgroup,:C,6),
-  (coxgroup,:C,7),
-  (coxgroup,:D,4),
-  (coxgroup,:E,6),
-  (coxgroup,:E,7),
-  (coxgroup,:E,8),
-  (coxgroup,:F,4),
-  (coxgroup,:G,2),
-  (coxgroup,:H,3),
-  (coxgroup,:H,4),
-  (coxgroup,:I,2,5),
-  (coxgroup,:D,5),
-  (coxgroup,:D,6),
-  (coxgroup,:D,7),  #ch
-  (ComplexReflectionGroup,34), #ch
-  (coxgroup,),
-]
+nspets=ComplexReflectionGroup.([5,7,9,10,11,12,16,17,18,20,22,13,15,21])
 
-l3=[
-  (rootdatum,:psu,3),
-  (rootdatum,Symbol("2B2")),
-  (rootdatum,Symbol("2G2")),
-  (rootdatum,Symbol("2I"),5),
-  (rootdatum,Symbol("2I"),8),
-  (rootdatum,:psu,4),
-  (rootdatum,Symbol("3D4")),
-  (rootdatum,:psu,5),
-  (rootdatum,Symbol("pso-"),8),
-  (rootdatum,:psu,6),
-  (rootdatum,Symbol("2F4")),
-  (rootdatum,:psu,7),
-  (rootdatum,Symbol("pso-"),10),
-  (rootdatum,Symbol("2E6")),
-  (rootdatum,:psu,8),
-  (rootdatum,Symbol("pso-"),12),
-  (rootdatum,Symbol("pso-"),14),
-]
+cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
+      coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
+      coxgroup(:H,3),  coxgroup(:A,4), coxgroup(:B,4), coxgroup(:C,4), 
+  coxgroup(:D,4), coxgroup(:F,4), coxgroup(:H,4), coxgroup(:A,5), 
+  coxgroup(:B,5), coxgroup(:C,5), coxgroup(:D,5), coxgroup(:A,6), 
+  coxgroup(:B,6), coxgroup(:C,6), coxgroup(:E,6), coxgroup(:D,6), 
+  coxgroup(:A,7), coxgroup(:B,7), coxgroup(:C,7), coxgroup(:E,7), 
+  coxgroup(:D,7), coxgroup(:E,8), coxgroup()]
 
-spets_ex=map(l2)do x
-  printc("creating ",x,"\n")
-  x[1](x[2:end]...)
-end
+spets_ex=vcat(
+  ComplexReflectionGroup.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
+  [ComplexReflectionGroup(3,1,2),
+  ComplexReflectionGroup(3,3,3),
+  ComplexReflectionGroup(3,3,4),
+  ComplexReflectionGroup(4,4,3)],
+  cox_ex)
 
-twisted=map(l3) do x
-  printc("creating ",x,"\n")
-  x[1](x[2:end]...)
-end
+twisted=[ rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
+  rootdatum(Symbol("2I"),5), rootdatum(Symbol("2I"),8), rootdatum(:psu,4),
+  rootdatum(Symbol("3D4")), rootdatum(:psu,5), rootdatum(Symbol("pso-"),8),
+  rootdatum(:psu,6), rootdatum(Symbol("2F4")), rootdatum(:psu,7),
+  rootdatum(Symbol("pso-"),10), rootdatum(Symbol("2E6")), rootdatum(:psu,8),
+  rootdatum(Symbol("pso-"),12), rootdatum(Symbol("pso-"),14)]
 
 function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
   for g in l
@@ -87,7 +33,6 @@ function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
     printc(eval(Expr(:call,fun,g)))
   end
 end
-
 
 function FindRepresentation(W,gr,check=false)
   O=W
@@ -114,7 +59,7 @@ function FindRepresentation(W,gr,check=false)
   end
 end
 
-function CheckRepresentations(W,l=Int[])
+function tRepresentations(W,l=Int[])
   O=W
   if W isa HeckeAlgebra
     H=W
@@ -147,26 +92,27 @@ function CheckRepresentations(W,l=Int[])
   end
 end
 
-function CheckLusztigInduction(WF)
+function tLusztigInduction(WF)
   if !(WF isa Spets) WF=spets(WF) end
   W=Group(WF)
   for J in filter(x->length(x)<length(gens(W)),parabolic_representatives(W))
-    CheckLusztigInduction(WF,J)
+    tLusztigInduction(WF,J)
   end
 end
 
-function CheckLusztigInduction(WF,J::AbstractVector{<:Integer})
-  for L in twistings(WF,J) CheckLusztigInduction(WF,L) end
+function tLusztigInduction(WF,J::AbstractVector{<:Integer})
+  for L in twistings(WF,J) tLusztigInduction(WF,L) end
 end
 
-function CheckLusztigInduction(WF,L)
+function tLusztigInduction(WF,L)
   if L.phi==WF.phi print("Split ") end
-  printc("Lusztig Induction from ",L," to ",WF,"\n")
+  printc("Lusztig Induction from ",L," to ",WF)
   t=LusztigInductionTable(L,WF)
   if isnothing(t) return end
   if haskey(t.prop,:scalars) 
-    println("************** scalars=",t.prop[:scalars]) 
+    print("\t****** scalars=",t.prop[:scalars]) 
   end
+  println()
   if L.phi==WF.phi
     h=Lusztig.HCInductionTable(L,WF)
     if h.scalar!=t.scalar error("HC!=Lusztig") end
@@ -209,3 +155,19 @@ function CheckLusztigInduction(WF,L)
   end
 end
 
+using ..Gap4
+function tCharTable(W)
+  ct=improve_type(Gap4.CharTable(W).irr)
+  ct1=CharTable(W).irr
+  p=Perm(ct,ct1;dims=1)
+  if isnothing(p) error("irreducibles") 
+  else println("permuted ",p)
+  end
+end
+
+function tposition_class(W)
+  cl=map(x->position_class(W,x),class_reps(W))
+  if cl!=1:length(cl) error("classes") end
+end
+
+end

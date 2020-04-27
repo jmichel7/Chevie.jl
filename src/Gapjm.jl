@@ -110,9 +110,9 @@ include("PermGroups.jl");@reexport using .PermGroups
 include("Cycs.jl");@reexport using .Cycs
 include("Combinat.jl");@reexport using .Combinat
 include("Pols.jl");@reexport using .Pols
+include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("Mvps.jl");@reexport using .Mvps
 include("PermRoot.jl");@reexport using .PermRoot
-include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets

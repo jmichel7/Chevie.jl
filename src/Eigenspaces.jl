@@ -250,9 +250,9 @@ end
 iscyclic(W::Group)=length(Weyl.AbelianGenerators(elements(W)))<=1
 
 function GetRelativeRoot(W,L,i)
-  J=restriction(W,inclusiongens(L))
-# printc("W=",W," i=",i," J=",J," L=",L,"\n")
-  N=normalizer(reflection_subgroup(W,vcat(J,[i])),L)
+  J=vcat(inclusiongens(L,W),[i])
+# printc("W=",W," J=",J," L=",L,"\n")
+  N=normalizer(reflection_subgroup(W,J),L)
   F=N/L
 # rshow(Weyl.AbelianGenerators(elements(F)))
   if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end

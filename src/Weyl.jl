@@ -183,7 +183,8 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, algebraic_centre, standard_parabolic,
- describe_involution, SubTorus, weightinfo, fundamental_group, relative_group
+ describe_involution, SubTorus, weightinfo, fundamental_group, relative_group,
+ action
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -492,7 +493,7 @@ inversions(W::FiniteCoxeterGroup,w)=
      [i for i in 1:nref(W) if isleftdescent(W,w,i)]
 
 inversions(W::FiniteCoxeterGroup,w::AbstractVector{<:Integer})=
-  map(i->inclusion(W,w[i])^W(w[i-1:-1:1]...),eachindex(w))
+   map(i->action(W,w[i],W(w[i-1:-1:1]...)),eachindex(w))
 
 
 """
@@ -534,12 +535,12 @@ end
 """
 `standard_parabolic(W,H)`
 
-Given a parabolic subgroup H or its simple roots returns w such that H^w is
-a standard parabolic subgroup of W
+Given a parabolic subgroup H or the indices of its simple roots returns w such
+that H^w is a standard parabolic subgroup of W
 """
 function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   if isempty(hr) return Perm() end
-  b=W.rootdec[restriction(W)[hr]]
+  b=W.rootdec[hr]
   heads=map(x->findfirst(y->!iszero(y),x),filter(!iszero,toL(echelon(toM(b))[1])))
   b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
 # complete basis of I with part of S to make basis
@@ -552,13 +553,13 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   N=(1:W.N)[l]
 # find negative roots for associated order and make order standard
   w=with_inversions(W,N)
-  if issubset(hr.^w,inclusiongens(W)) return w
+  if issubset(action.(Ref(W),hr,w),eachindex(gens(W))) return w
   else return nothing
   end
 end
 
 standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
-  standard_parabolic(W,inclusiongens(H))
+  standard_parabolic(W,restriction(W,inclusiongens(H)))
 
 """
 `describe_involution(W,w)`
@@ -637,7 +638,6 @@ PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
-action(W::FiniteCoxeterGroup,i,p)=restriction(W,inclusion(W,i)^p)
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
@@ -645,6 +645,8 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   N::Int
   prop::Dict{Symbol,Any}
 end
+
+action(W::FCG,i,p)=i^p
 
 function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterGroup{Perm{$T},$T1}")
@@ -843,6 +845,8 @@ struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   parent::FCG{T,T1}
   prop::Dict{Symbol,Any}
 end
+
+action(W::FCSG,i,p)=restriction(W,inclusion(W,i)^p)
 
 function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")

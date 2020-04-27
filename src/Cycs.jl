@@ -435,7 +435,7 @@ end
   elseif res[1]=='+' res=res[2:end] 
   end
   res=fromTeX(io,res)
-  print(io, (!isempty(rq) && length(rq)<=length(res)) ? rq : res)
+  print(io, (!isempty(rq) && length(rq)<length(res)) ? rq : res)
 end
 
 function Base.:+(x::Cyc,y::Cyc)
@@ -653,7 +653,7 @@ julia> ER(3)
 Cyc{Int64}: √3
 ```
 """
-function ER(n::Int)
+function ER(n::Integer)
   get!(ER_dict,n) do 
   for (p,d) in factor(n)
     h=p^div(d,2)
@@ -668,7 +668,6 @@ function ER(n::Int)
   end
   end
 end 
-
 
 Base.abs(c::Cyc)=c*conj(c)
 
@@ -887,7 +886,7 @@ end
 
 root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
 
-const Crootdict=Dict{Tuple{Int,Cyc{Int}},Cyc{Int}}()
+const Crootdict=Dict{Tuple{Int,Cyc},Any}()
 function root(x::Cyc,n=2)
   if isone(n) || isone(x) return x end
   if !(n isa Int) n=Int(n) end
@@ -895,9 +894,7 @@ function root(x::Cyc,n=2)
   r=Root1(x)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
-    x=num(x)
-    if denominator(x)>1 return nothing end
-    return root(Int(x),n)
+    return root(num(x),n)
   end
   d=conductor(r)
   j=1

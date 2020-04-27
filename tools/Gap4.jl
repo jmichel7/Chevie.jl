@@ -32,10 +32,10 @@ function CharTable_to_julia(ct)
   cn=gapvec_to_julia(GAP.Globals.CharacterNames(ct))
   sz=gapvec_to_julia(GAP.Globals.SizesCentralisers(ct))
   id=GAP.gap_to_julia(GAP.Globals.Identifier(ct))
-  CharTable(irr,cn,n,sz,id,Dict{Symbol,Any}())
+  Chars.CharTable(irr,cn,n,sz,id,Dict{Symbol,Any}())
 end
 
-function Chars.CharTable(g::Group)
+function CharTable(g::Group)
   gg=GAP.julia_to_gap(g)
   ct=CharTable_to_julia(GAP.Globals.CharacterTable(gg))
   l=map(x->position_class(g,x),Gap4.class_reps(g))
