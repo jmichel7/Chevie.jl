@@ -28,17 +28,9 @@ ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
-function CharRepresentationWords(mats,words)
-  traces_words_mats(toM.(mats),words)
-end
-function Collected(v)
-  d=groupby(v,v)
-  sort([[k,length(v)] for (k,v) in d])
-end
-function CollectBy(v,f)
-  d=groupby(f,v)
-  [d[k] for k in sort(collect(keys(d)))]
-end
+CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
+Collected=tally
+CollectBy(v,f)=collectby(f,v)
 ConcatenationString(s...)=prod(s)
 CoxeterWord(W,w)=word(W,w)
 Cycles(p,i)=orbits(p,i)
@@ -63,8 +55,7 @@ Hasse=hasse
 HighestPowerFakeDegreeSymbol=degree_feg_symbol
 HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 function Ignore() end
-InfoChevie=println
-InfoChevie2=print
+InfoChevie2=InfoChevie
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end

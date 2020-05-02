@@ -10,7 +10,8 @@ any ring).
 module GLinearAlgebra
 using Gapjm
 export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
-  ratio, schur_functor, charpoly, solutionmat, transporter
+  ratio, schur_functor, charpoly, solutionmat, transporter, permanent, blocks,
+  symmetric_power, diagconj_elt
 
 """
     `echelon!(m)`
@@ -262,6 +263,61 @@ function exterior_power(A,m)
 end
 
 """
+`permanent(m)`
+
+returns the *permanent* of the square matrix `m`, which is defined by 
+``\\sum_{p in \\frak S_n}\\prod_{i=1}^n m[i,i\\^p]``.
+
+Note the similarity of the definition of  the permanent to the definition
+of the determinant.  In  fact the only  difference is the missing sign of
+the permutation.  However the  permanent is quite unlike the determinant,
+for example   it is  not  multilinear or  alternating.  It   has  however
+important combinatorical properties.
+
+```julia-repl
+julia> permanent([0 1 1 1;1 0 1 1;1 1 0 1;1 1 1 0])
+9 # inefficient way to compute the number of derangements of 1:4
+
+julia> permanent([1 1 0 1 0 0 0; 0 1 1 0 1 0 0;0 0 1 1 0 1 0; 0 0 0 1 1 0 1;1 0 0 0 1 1 0;0 1 0 0 0 1 1;1 0 1 0 0 0 1])
+24 # 24 permutations fit the projective plane of order 2 
+```
+"""
+function permanent(m)
+  n=size(m,1)
+  function Permanent2(m,i,sum)
+    if i==n+1 reduce(*,sum;init=1)
+    else Permanent2(m,i+1,sum)-Permanent2(m,i+1,sum+m[i,:])
+    end
+  end 
+  (-1)^n*Permanent2(m,1,zeros(Int,n));
+end
+
+"""
+`symmetric_power(m,n)`
+
+returns the `n`-th symmetric power of the square matrix `m`, in the basis 
+naturally indexed by the `submultisets` of `1:n`, where `n=size(m,1)`.
+
+```julia-repl
+julia> m=[1 2;3 4]
+2×2 Array{Int64,2}:
+ 1  2
+ 3  4
+
+julia> Int.(symmetric_power(m,2))
+3×3 Array{Int64,2}:
+ 1   2   4
+ 6  10  16
+ 9  12  16
+```
+"""
+function symmetric_power(A,m)
+  f(j)=prod(factorial,last.(tally(j)))
+  basis=submultisets(axes(A,1),m)
+  [permanent(A[i,j])//f(i) for i in basis, j in basis]
+end
+
+"""
 `schur_functor(mat,l)`
 
 `mat`  should be  a square  matrix and  `l` a  partition. The result is the
@@ -353,6 +409,67 @@ function diagblocks(M::Matrix)::Vector{Vector{Int}}
 end
 
 """
+`blocks(M)`
+
+Finds  if the  matrix  `M` admits a block decomposition.
+
+Define  a bipartite  graph `G`  with vertices  `axes(M,1)`, `axes(M,2)` and
+with an edge between `i` and `j` if `M[i,j]` is not zero. BlocksMat returns
+a  list of pairs of  lists `I` such that  `I[i]`, etc.. are the vertices in
+the `i`-th connected component of `G`. In other words, `M[I[1][1],I[1][2]],
+M[I[2][1],I[2][2]]`,etc... are blocks of `M`.
+
+This  function may  also be  applied to  boolean matrices.
+
+```julia-repl
+julia> m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]
+5×4 Array{Int64,2}:
+ 1  0  0  0
+ 0  1  0  0
+ 1  0  1  0
+ 0  0  0  1
+ 0  0  1  0
+
+julia> blocks(m)
+3-element Array{Tuple{Array{Int64,1},Array{Int64,1}},1}:
+ ([1, 3, 5], [1, 3])
+ ([2], [2])
+ ([4], [4])
+
+julia> m[[1,3,5,2,4],[1,3,2,4]]
+5×4 Array{Int64,2}:
+ 1  0  0  0
+ 1  1  0  0
+ 0  1  0  0
+ 0  0  1  0
+ 0  0  0  1
+```
+"""
+function blocks(M)
+  comps=Tuple{Vector{Int},Vector{Int}}[]
+  for l in axes(M,1), c in axes(M,2)
+    if !iszero(M[l,c])
+      p=findfirst(x->l in x[1],comps)
+      q=findfirst(x->c in x[2],comps)
+      if isnothing(p)
+        if isnothing(q)  push!(comps, ([l], [c]))
+        else union!(comps[q][1], l)
+        end
+      elseif isnothing(q) union!(comps[p][2], c)
+      elseif p==q 
+        union!(comps[p][1], l)
+        union!(comps[p][2], c)
+      else 
+        union!(comps[p][1],comps[q][1])
+        union!(comps[p][2],comps[q][2])
+        deleteat!(comps,q)
+      end
+    end
+  end
+  sort!(comps)
+end
+
+"""
 `transporter(l1, l2 )`
 
 `l1`  and `l2` should be vectors of  the same length of square matrices all
@@ -362,83 +479,122 @@ as  a vector of matrices, empty if the vector space is 0. This is useful to
 find whether two representations are isomorphic.
 """
 function transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
-  n=size(l1[1],1)
-  M=Vector{eltype(l1[1])}[]
-  for i in 1:n, j in 1:n,  m in 1:length(l1)
-    v=zero(l1[1])
-    v[i,:]+=l1[m][:,j]
-    v[:,j]-=l2[m][i,:]
-    push!(M, vec(v))
-  end
-  M=echelon(toM(M))[1]
-  M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
-  v=nullspace(M)
-  if isempty(v) return v end
-  map(w->reshape(w,(n,n)), eachcol(v))
+ n=size(l1[1],1)
+ M=Vector{eltype(l1[1])}[]
+ for i in 1:n, j in 1:n,  m in 1:length(l1)
+   v=zero(l1[1])
+   v[i,:]+=l1[m][:,j]
+   v[:,j]-=l2[m][i,:]
+   push!(M, vec(v))
+ end
+ M=echelon(toM(M))[1]
+ M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
+ v=nullspace(M)
+ if isempty(v) return v end
+ map(w->reshape(w,(n,n)), eachcol(v))
 end
 
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
 "ratio of two vectors"
 function ratio(v::Vector, w::Vector)
-  i=findfirst(x->!iszero(x),w)
-  if isnothing(i) return nothing end
-  r=v[i]//w[i]
-  if v!= r.* w  return nothing end
-  r
+ i=findfirst(x->!iszero(x),w)
+ if isnothing(i) return nothing end
+ r=v[i]//w[i]
+ if v!= r.* w  return nothing end
+ r
 end
 
 # characteristic polynomial
 charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
 
 function solutionmat(m,vec)
-  m=permutedims(m)
-  if length(vec)!=size(m,1) error("dimension mismatch") end
-  vec=copy(vec)
-  r=0
-  c=1
-  while c<=size(m,2) && r<size(m,1)
-    s=findfirst(!iszero,m[r+1:end,c])
-    if !isnothing(s)
-      s+=r
-      r+=1
-      piv=inv(m[s,c])
-      m[s,:],m[r,:]=m[r,:],m[s,:].*piv
-      vec[s],vec[r]=vec[r],vec[s]*piv
-      for s in 1:size(m,1)
-        if s!=r && !iszero(m[s,c])
-          tmp=m[s,c]
-          m[s,:]-=tmp*m[r,:]
-          vec[s]-=tmp*vec[r]
-        end
-      end
-    end
-    c+=1
-  end
-  if any(!iszero,vec[r+1:end]) return nothing end
-  h=eltype(m)[]
-  s=size(m,2)
-  v=zero(eltype(m))
-  r=1
-  c=1
-  while c<=s && r<=size(m,1)
-    while c<=s && iszero(m[r,c])
-      c+=1
-      push!(h, v)
-    end
-    if c<=s
-      push!(h, vec[r])
-      r+=1
-      c+=1
-    end
-  end
-  while c<=s
-    push!(h,v)
-    c+=1
-  end
-  return h
+ m=permutedims(m)
+ if length(vec)!=size(m,1) error("dimension mismatch") end
+ vec=copy(vec)
+ r=0
+ c=1
+ while c<=size(m,2) && r<size(m,1)
+   s=findfirst(!iszero,m[r+1:end,c])
+   if !isnothing(s)
+     s+=r
+     r+=1
+     piv=inv(m[s,c])
+     m[s,:],m[r,:]=m[r,:],m[s,:].*piv
+     vec[s],vec[r]=vec[r],vec[s]*piv
+     for s in 1:size(m,1)
+       if s!=r && !iszero(m[s,c])
+         tmp=m[s,c]
+         m[s,:]-=tmp*m[r,:]
+         vec[s]-=tmp*vec[r]
+       end
+     end
+   end
+   c+=1
+ end
+ if any(!iszero,vec[r+1:end]) return nothing end
+ h=eltype(m)[]
+ s=size(m,2)
+ v=zero(eltype(m))
+ r=1
+ c=1
+ while c<=s && r<=size(m,1)
+   while c<=s && iszero(m[r,c])
+     c+=1
+     push!(h, v)
+   end
+   if c<=s
+     push!(h, vec[r])
+     r+=1
+     c+=1
+   end
+ end
+ while c<=s
+   push!(h,v)
+   c+=1
+ end
+ return h
 end
 
 # cannot make the next take precedence
 Base.:/(v::Vector{Rational},m::Matrix{Rational})=solutionmat(m,v)
+
+"""
+`representative_diagconj(M,N)`
+
+`M` and `N` must be square matrices of the same size. This function returns
+a  list  `d`  such  that  `N==inv(Diagonal(d)*M*Diagonal(d)` if such a list
+exists, and `nothing` otherwise.
+
+```julia_repl
+julia> M=[1 2;2 1];N=[1 4;1 1]
+2×2 Array{Int64,2}:
+ 1  4
+ 1  1
+
+julia> diagconj_elt(M,N)
+2-element Array{Rational{Int64},1}:
+ 1//1
+ 2//1
+```
+"""
+function diagconj_elt(M, N)
+ d=fill(zero(eltype(M))//1,size(M,1));d[1]=1
+ n=size(M,1)
+ for i in 1:n, j in i+1:n
+   if M[i,j]!=0
+     if N[i,j]==0 return nothing end
+      if d[i]!=0
+        c=d[i]*N[i,j]//M[i,j]
+        if d[j]!=0 if c!=d[j] return nothing end 
+        else d[j]=c end
+      end
+    end
+  end
+  if 0 in d return nothing end
+  if !all([N[i,j]==M[i,j]*d[j]//d[i] for i in 1:n for j in 1:n])
+    return nothing end
+  d
+end
+
 end

@@ -23,6 +23,7 @@ Base.Matrix(::Perm,n)
 Base.:^(::AbstractMatrix,::Perm)
 restricted(::Perm,::AbstractVector{<:Integer})
 reflength(::Perm)
+mappingPerm
 ```
 # Groups
 ```@docs
@@ -32,10 +33,12 @@ orbits(::Group,::AbstractVector)
 elements(::Group)
 transversal
 centralizer
+stabilizer
 word(::Group,w)
 length(::Group)
 class_reps(::Group)
 minimal_words
+transporting_elt
 ```
 # Permutation groups
 ```@docs
@@ -44,6 +47,9 @@ base
 centralizers
 transversals
 symmetric_group
+stab_onmat
+perm_onmat
+perm_rowcolmat
 ```
 # Cyclotomic numbers
 ```@docs
@@ -175,7 +181,7 @@ word(::Garside.GarsideMonoid,w)
 word(::Garside.GarsideElm)
 elements(::Garside.LocallyGarsideMonoid,l)
 image
-representative_operation
+conjugating_elt
 centralizer_generators
 conjcat
 endomorphisms
@@ -253,11 +259,15 @@ order(::SPerm)
 Matrix
 CoxHyperoctaedral
 reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
+stab_onsmat
+perm_onsmat
 ```
 # Utilities
 ```@docs
 Util
 groupby
+tally
+collectby
 constant
 format
 prime_residues
@@ -308,10 +318,14 @@ GLinearAlgebra
 GLinearAlgebra.echelon!
 bigcell_decomposition
 diagblocks
+blocks
 ratio
 exterior_power
+permanent
+symmetric_power
 schur_functor
-GLinearAlgebra.transporter
+transporter
+diagconj_elt
 traces_words_mats
 ```
 # Eigenspaces
@@ -340,6 +354,7 @@ BetaSet                                     → βset
 BigCellDecomposition                        → bigcell_decomposition
 Binomial                                    → binomial
 BipartiteDecomposition                      → bipartite_decomposition
+BlocksMat                                   → blocks
 Braid                                       → BraidMonoid
 BraidMonoid                                 → BraidMonoid
 BraidRelations                              → braid_relations
@@ -357,6 +372,8 @@ CheckHeckeDefiningRelations                 → isrepresentation
 ChevieCharInfo                              → charinfo
 ChevieClassInfo                             → classinfo
 Coefficient(p,i)                            → p[i]
+CollectBy                                   → collectby
+Collected                                   → tally
 Combinations                                → combinations
 ComplexConjugate                            → conj
 ComplexReflectionGroup                      → ComplexReflectionGroup
@@ -466,10 +483,17 @@ LowestPowerGenericDegreeSymbol              → valuation_gendeg_symbol
 LusztigInduction                            → LusztigInduce
 LusztigInductionTable                       → LusztigInductionTable
 LusztigRestriction                          → LusztigRestrict
+MappingPermListList                         → mappingPerm
+MatStab                                     → stab_onmat
 MatXPerm(W,p)                               → refrep(W,p)
 NrDrinfeldDouble                            → ndrinfeld_double
+NrPartitionTuples                           → npartition_tuples
+NrPartitions                                → npartitions
+OnFamily(f,p::Int)                          → galois(f,p)
+OnFamily(f,p::Perm)                         → f^p
 OnMatrices(m,p)                             → ^(m,p;dims=(1,2))
 OnPolynomials(m,p)                          → p^m
+OnSets(s,g)                                 → unique!(sort(s.^g))
 OnTuples(l,p)                               → l.^p
 ParabolicRepresentatives                    → parabolic_representatives
 PartBeta                                    → partβ
@@ -478,6 +502,7 @@ PartitionTuples                             → partition_tuples
 Partitions                                  → partitions
 PermList(v)                                 → Perm(v)
 PermListList(l1,l2)                         → Perm(l1,l2)
+PermMatMat                                  → perm_onmat
 PermMatX                                    → PermX
 PermutationMat(p,dim)                       → Matrix(p,dim)
 Permuted(v,p)                               → v^p
@@ -505,7 +530,10 @@ Reflections                                 → reflections
 RegularEigenvalues                          → regular_eigenvalues
 RelativeDegrees                             → relative_degrees
 Representations                             → representations
-RepresentativeConjugation(b,b'[,F][,type])  → representative_operation(b,b'[,F],ss=type)
+RepresentativeConjugation(b,b'[,F][,type])  → conjugating_elt(b,b'[,F],ss=type)
+RepresentativeDiagonalConjugation           → diagconj_elt
+RepresentativeOperation                     → transporting_elt
+RepresentativeRowColPermutation             → perm_rowcolmat
 Restricted                                  → restricted
 RestrictedPerm(p,d)                         → restricted(p,d)
 Reversed                                    → reverse
@@ -523,9 +551,12 @@ SemisimpleRank                              → semisimplerank
 SemisimpleRank(W)                           → coxrank(W)
 ShiftBeta                                   → shiftβ
 ShrinkGarsideGeneratingSet                  → shrink
+SignedMatStab                               → stab_onsmat
 SignedPerm                                  → SPerm
 SignedPermListList                          → SPerm
+SignedPermMatMat                            → perm_onsmat
 Size(W)                                     → length(W)
+SolutionMat                                 → solutionmat
 Spets                                       → spets
 SplitLevis                                  → split_levis
 StandardParabolic                           → standard_parabolic
@@ -533,16 +564,19 @@ StandardParabolicClass                      → standard_parabolic_class
 SubSpets                                    → subspets
 SubTorus                                    → SubTorus
 SymmetricDifference                         → symdiff
+SymmetricPower                              → symmetric_power
 Tableaux                                    → tableaux
 Torus                                       → torus
 TransitiveClosure                           → transitive_closure
+Transporter                                 → transporter
+TriangulizeMat                              → echelon!
 Twistings                                   → twistings
 TwoTree(m)                                  → twotree(m)
 UnipotentCharacter                          → UniChar
 UnipotentCharacters                         → UnipotentCharacters
 UnipotentClasses                            → UnipotentClasses
 UnipotentDegrees(W,q)                       → degrees(UnipotentCharacters(W),q)
-UnorderedTuples                             → submultiset
+UnorderedTuples                             → submultisets
 Valuation(p)                                → valuation(p)
 Value(p,x)                                  → p(x)
 W.N                                         → nref(W)

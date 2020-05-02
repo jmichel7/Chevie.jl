@@ -8,7 +8,7 @@ The code is divided in sections  according to semantics.
 module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
-  groupby, constant, # lists
+  groupby, constant, tally, collectby, # lists
   format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, 
   cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
@@ -56,11 +56,9 @@ end
       30 => Symbol[:Apr, :Jun, :Sep, :Nov]
 
 """
-function groupby(v::AbstractVector,l::AbstractVector)
-  res=Dict{eltype(v),Vector{eltype(l)}}()
-  for (k,val) in zip(v,l)
-    push!(get!(res,k,empty(l)),val)
-  end
+function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
+  res=Dict{K,Vector{V}}()
+  for (k,val) in zip(v,l) push!(get!(res,k,V[]),val) end
   res
 end
 
@@ -75,7 +73,7 @@ end
 Note:in this version l is required to be non-empty since I do not know how to
 access the return type of a function
 """
-function groupby(f,l::AbstractVector)
+function groupby(f,l::AbstractArray)
   res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
   for val in l[2:end]
     push!(get!(res,f(val),empty(l)),val)
@@ -83,8 +81,17 @@ function groupby(f,l::AbstractVector)
   res
 end
 
+"count how many times each element of v occurs and return a list of (elt,count)"
+tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
+
+"group the elements of v in packets where f takes the same value"
+function collectby(f,v)
+  d=groupby(f,v)
+  [d[k] for k in sort(collect(keys(d)))]
+end
+
 " whether all elements in list a are equal"
-function constant(a::AbstractVector)
+function constant(a::AbstractArray)
    all(i->a[i]==a[1],2:length(a))
 end
 

@@ -246,7 +246,7 @@ julia> b=B(2,1,4,1,4)
 julia> c=B(1,4,1,4,3)
 14.143
 
-julia> d=representative_operation(b,c)
+julia> d=conjugating_elt(b,c)
 (1)⁻¹21321432
 
 julia> b^d
@@ -332,7 +332,7 @@ module Garside
 using Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_generators, preferred_prefix, left_divisors, Category,
-endomorphisms, image, leftgcd
+endomorphisms, image, leftgcd, conjugating_elt
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
@@ -1161,7 +1161,7 @@ function conjcat(b,F=(x,y=1)->x;ss::Symbol=:sc)
 end
 
 """
-representative_operation(b,b1[,F];ss=:sc)
+conjugating_elt(b,b1[,F];ss=:sc)
 
 `b`  and `b1` should  be elements of  the same Garside  group. The function
 returns  `a` such that `b^a=b1` if such exists, and `nothing` otherwise. If
@@ -1181,10 +1181,10 @@ BraidMonoid(D₄)
 julia> b=B(2,3,1,2,4,3);b1=B(1,4,3,2,2,2)
 1432.2.2
 
-julia> representative_operation(b,b1)
+julia> conjugating_elt(b,b1)
 (134312.23)⁻¹
 
-julia> c=representative_operation(b,b1;ss=:cyc)
+julia> c=conjugating_elt(b,b1;ss=:cyc)
 232.2
 
 julia> b^c
@@ -1198,14 +1198,14 @@ julia> F=Frobenius(WF);
 julia> c=B(3,4,3,3,2,4)
 343.324
 
-julia> representative_operation(b,c,F)
+julia> conjugating_elt(b,c,F)
 2312
 
 julia> ^(b,B(2,3,1,2),F)
 343.324
 ```
 """
-function Groups.representative_operation(b,c,F=(x,y=1)->x;ss::Symbol=:sc)
+function conjugating_elt(b,c,F=(x,y=1)->x;ss::Symbol=:sc)
   if ss==:sc || ss==:ss
     bconj=representativeSC(b,F)
     cconj=representativeSC(c,F)

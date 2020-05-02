@@ -43,7 +43,7 @@ SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using Gapjm
-export SPerm, CoxHyperoctaedral
+export SPerm, CoxHyperoctaedral, stab_onsmat, perm_onsmat, @sperm_str
 
 """
 `struct SPerm`
@@ -78,16 +78,41 @@ end
 
 SPerm(x::Integer...)=SPerm{Int16}(x...)
 
+"""
+   @sperm"..."
+
+ make a `SPerm` from a string; allows style `sperm"(1,-2)(5,-6,7)(-4,9)"`
+"""
+macro sperm_str(s::String)
+  start=1
+  res=SPerm()
+  while true
+    m=match(r"\((\s*-?\d+\s*,)+\s*-?\d+\)",s[start:end])
+    if isnothing(m) break end
+    start+=m.match.ncodeunits
+    res*=SPerm(Meta.parse(m.match).args...)
+  end
+  res::SPerm
+end
+
 struct SPermGroup{T}<:Group{SPerm{T}}
   gens::Vector{SPerm{T}}
   prop::Dict{Symbol,Any}
+end
+
+function Base.show(io::IO,G::SPermGroup)
+  print(io,"Group([$(join(map(repr,gens(G)),','))])")
 end
 
 function Groups.Group(a::AbstractVector{SPerm{T}}) where T
   SPermGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
 
+SPermGroup()=Group(SPerm{Int16}[])
+
 Base.one(p::SPerm)=SPerm(empty(p.d))
+Base.one(::Type{SPerm{T}}) where T=SPerm(T[])
+Base.copy(p::SPerm)=SPerm(copy(p.d))
 
 Base.vec(a::SPerm)=a.d
 
@@ -165,9 +190,11 @@ Gapjm.order(a::SPerm) = lcm(length.(cycles(a)))
 
 function Base.show(io::IO, a::SPerm)
   cyc=cycles(a)
+  if !get(io,:limit,false) print(io,"sperm\"") end
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
+  if !get(io,:limit,false) print(io,"\"") end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T
@@ -206,7 +233,7 @@ function Base.inv(a::SPerm)
   SPerm(r)
 end
 
-Base.:^(a::SPerm, b::SPerm)=inv(a)*b*a
+Base.:^(a::SPerm, b::SPerm)=inv(b)*a*b
 
 @inline function Base.:^(n::Integer, a::SPerm{T}) where T
   if abs(n)>length(a.d) return T(n) end
@@ -242,6 +269,13 @@ function Base.:^(l::AbstractVector,a::SPerm)
   res
 end
 
+function Base.:^(m::AbstractMatrix,a::SPerm;dims=1)
+  if dims==2 hcat(map(c->c^a,eachcol(m))...)
+  elseif dims==1 permutedims(hcat(map(c->c^a,eachcol(m))...))
+  elseif dims==(1,2) hcat(map(c->c^a,eachcol(m))^a...)
+  end
+end
+
 """
 `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
 
@@ -261,9 +295,10 @@ julia> [20,30,40]^p
 ```
 """
 function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
-  p=Perm(map(x->sort([x,-x]),a),map(x->sort([x,-x]),b))
+  pair(x)=x<-x ? (x,-x) : (-x,x)
+  p=Perm(pair.(a),pair.(b))
   if isnothing(p) return p end
-  res=collect(eachindex(a))^p
+  res=eachindex(a)^p
   for i in eachindex(a)
     if b[i^(p^-1)]!=a[i] res[i]=-res[i] end
   end
@@ -289,144 +324,31 @@ function Base.Matrix(a::SPerm,n=length(a.d))
   res
 end
 
-#SignedPermOps.Comm:=function(p,q)return p^-1*q^-1*p*q;end;
-#
 ##underlying Signs of a SignedPerm
-#Signs:=p->Permuted(List(p.l,SignInt),Perm(p));
+#Signs:=p->sign.(p.d)^Perm(p)
 #
-## We have the properties p=SignedPerm(Perm(p),Signs(p)) and
-## if N=OnMatrices(M,p) then
-##    M=OnMatrices(N,Perm(p))^DiagonalMat(Signs(p)))
+## We have the properties p=SPerm(Perm(p),Signs(p)) and
+## if N=OnMats(M,p) then
+##    M=OnMats(N,Perm(p))^Diagonal(Signs(p)))
 #
-## Transforms matrix or perm+signs to a signed perm,
-#SignedPerm:=function(arg)local ls,n,i,nz,res;
-#  ls:=arg[1];
-#  if IsMat(ls) then
-#    n:=Length(ls);
-#    res:=[];
-#    for i in [1..n] do
-#      nz:=Filtered([1..n],x->ls[i][x]<>0);
-#      if Length(nz)<>1 then return false;fi;
-#      nz:=nz[1];
-#      if ls[i][nz]=1 then res[i]:=nz;
-#      elif ls[i][nz]=-1 then res[i]:=-nz;
-#      else return false;
-#      fi;
-#    od;
-#    return SignedPerm(res);
-#  elif Length(arg)=2 then n:=arg[2];  # perm, signs
-#    return SignedPerm(Permuted(Zip([1..Length(n)],n,
-#       function(x,y)return x*y;end),ls^-1));
-#  fi;
-#end;
+## Transforms matrix to SPerm
+#SignedPerm:=function(m::AbstractMatrix)
+#  n=size(m,1)
+#  res=[]
+#  for i in 1:n
+#    nz=filter(x->m[i,x]!=0,1:n)
+#    if length(nz)!=1 return false end
+#    nz=nz[1]
+#    if m[i,nz]==1 res[i]=nz
+#    elif m[i,nz]==-1 res[i]=-nz
+#    else return false
+#    end
+#  end
+#end
+## Transforms perm+signs to a signed perm,
+#SPerm(p,n)=SPerm(map(*,eachindex(n),n)^inv(p))
 #
-## duplicate lines and cols of M so HOgroup operates
-#SignedPermOps.dup:=function(M)local res,i,j;
-#  res:=List([1..2*Length(M)],i->[1..2*Length(M)]*0);
-#  for i in [1..Length(M)] do for j in [1..Length(M)] do
-#    res{[2*i-1,2*i]}{[2*j-1,2*j]}:=[[M[i][j],-M[i][j]],[-M[i][j],M[i][j]]];
-#  od;od;
-#  return res;
-#end;
 #
-## SignedMatStab(M [,extra]) find permutations with signs stabilizing M
-## (and such that the associated permutations in addition stabilizes extra
-##  -- which could be for instance a list of eigenvalues)
-#SignedMatStab:=function(arg)local blocks,stab,g,r,gens,I,p,ss,M,extra,k,gr;
-#  M:=arg[1];k:=Length(M);
-#  ss:=x->Set([x,-x]);
-#  if M<>TransposedMat(M) then Error("M should be symmetric");fi;
-#  if Length(arg)>1 then extra:=arg[2];else extra:=List(M,x->1);fi;
-#  blocks:=CollectBy([1..k],function(i)local inv;
-#    inv:=[Collected(List(M[i],ss)),M[i][i]];
-#    if IsBound(extra) then Add(inv,extra[i]);fi;
-#    return inv;end);
-#  g:=Group(PermList([]));I:=[];
-#  for r in blocks do
-#    if Length(r)>5 then InfoChevie("#I Large Block:",r,"\n");fi;
-#    gr:=MatStab(CoxeterGroupHyperoctaedralGroup(Length(r)),SignedPermOps.dup(M{r}{r}));
-#    p:=MappingPermListList([1..Length(r)],r);
-#    gens:=List(gr.generators,x->SignedPerm(x,Length(r))^p);
-#    g:=ApplyFunc(Group,Concatenation(g.generators,gens));
-#    Append(I,r); 
-#    p:=MappingPermListList(I,[1..Length(I)]);
-#    g:=ApplyFunc(Group,List(g.generators,x->x^p));
-#    g:=Group(List(g.generators,SignedPermOps.HO),());
-#    g:=MatStab(g,SignedPermOps.dup(M{I}{I}));
-#    g:=Group(List(g.generators,x->SignedPerm(x,k)),SignedPerm([]));
-#    g:=ApplyFunc(Group,List(g.generators,x->x^(p^-1)));
-#  od;
-#  return g;
-#end;
-#
-## SignedPermMatMat(M, N[, extra1, extra2]) find p such that PsOnMatrices(M,p)=N
-## [and such that Permuted(extra1,p)=extra2]
-#SignedPermMatMat:=function(arg)
-#  local ind,l,I,J,r,p,e,g,n,h,trans,tr,q,ss,M,N,extra1,extra2,PsOnMatrices;
-#  PsOnMatrices:=function(M,p)return OnMatrices(M,SignedPerm(p,Length(M)));end;
-#  M:=arg[1];N:=arg[2];
-#  ss:=x->Set([x,-x]);
-#  if M<>TransposedMat(M) then Error("M should be symmetric");fi;
-#  if N<>TransposedMat(N) then Error("N should be symmetric");fi;
-#  if Length(arg)=2 then extra1:=List(M,x->1);extra2:=List(N,x->1);fi;
-#  ind:=function(I,J)local iM,iN,p,n;
-#    iM:=List(I,function(i)local inv;
-#      inv:=[Collected(List(M[i]{I},ss)),M[i][i]];
-#      if IsBound(extra1) then Add(inv,extra1[i]);fi;
-#      return inv;end);
-#    iN:=List(J,function(i)local inv;
-#      inv:=[Collected(List(N[i]{J},ss)),N[i][i]];
-#      if IsBound(extra2) then Add(inv,extra2[i]);fi;
-#      return inv;end);
-#    if Collected(iM)<>Collected(iN) then 
-#       InfoChevie("content differs");return false;fi;
-#    iM:=CollectBy(I,iM); iN:=CollectBy(J,iN);
-#    if Length(iM)=1 then
-#      if Length(I)>6 then InfoChevie("large block:",Length(I),"\n");
-#        p:=DistHelpedRepresentativeOperation(Group(Reflections(CoxeterGroupHyperoctaedralGroup(Length(I))),()),
-#           M{I}{I},N{J}{J},PsOnMatrices,
-#	   function(M,N)return Sum(M-N,x->Number(x,y->y<>0));end);
-#      else p:=RepresentativeOperation(CoxeterGroupHyperoctaedralGroup(Length(I)),
-#         M{I}{I},N{J}{J},PsOnMatrices);
-#      fi;
-#      if p=false then InfoChevie("could not match block");return false;fi;
-#      return [[I,J,SignedPerm(p,Length(I))]];
-#    else p:=Zip(iM,iN,ind);
-#      if false in p then return false;
-#      else return Concatenation(p);
-#      fi;
-#    fi;
-#  end;
-#  l:=ind([1..Length(M)],[1..Length(N)]);
-#  if l=false then return false;fi;
-#  I:=[];J:=[];g:=Group(SignedPerm([]));tr:=SignedPerm([]);
-#  for r in l do
-##   Print("r=",r,"\n");
-#    n:=Length(r[1]);
-#    q:=MappingPermListList([1..Length(I)],[1..Length(I)]);
-#    p:=MappingPermListList([1..n],[1..n]+Length(I));
-#    Append(I,r[1]);Append(J,r[2]);
-##   Print("#I=",Length(I),"\c");
-#    if Comm(r[3]^p,tr^q)<>SignedPerm([]) then Error("noncomm");fi;
-#    tr:=tr^q*r[3]^p;
-#    h:=OnTuples(SignedMatStab(M{r[1]}{r[1]}).generators,p);
-#    g:=Group(Concatenation(OnTuples(g.generators,q),h),SignedPerm([]));
-##   Print(" #g=",Size(g),"\c");
-#    e:=RepresentativeOperation(g,M{I}{I},
-#      OnMatrices(N{J}{J},tr^-1),OnMatrices);
-#    if e=false then return false;
-#    else if e^-1*e^tr<>SignedPerm([]) then 
-#            Print("*** tr does not commute to e\n");
-#         fi;
-#         tr:=e*tr;
-#    fi;
-#    g:=MatStab(Group(List(g.generators,SignedPermOps.HO),()),SignedPermOps.dup(M{I}{I}));
-##   Print(" #stab=",Size(g),"\n");
-#    g:=Group(List(g.generators,x->SignedPerm(x,Length(I))),SignedPerm([]));
-#  od;
-#  # transporter of a ps from [1..Length(I)] to I
-#  trans:=I->SignedPerm(ListPerm(MappingPermListList([1..Length(I)],I)));
-#  return trans(I)^-1*tr*trans(J);
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 
 struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
@@ -438,8 +360,9 @@ end
 Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
 
 """
-  `CoxHyperoctaedral(n)` The Hyperoctaedral group on ±1,…,±n as a Coxeter group
-  of type B, with generators (1,-1) and (i,i+1)(-i,-i-1)
+`CoxHyperoctaedral(n)`  The Hyperoctaedral  group on  ±1,…,±n as  a Coxeter
+group  of type  B, with  generators (1,-1)  and (i,i+1)(-i,-i-1); it is the
+group of all signed permutations of `1:n`.
 ```julia-repl
 julia> elements(CoxHyperoctaedral(2))
 8-element Array{SPerm{Int8},1}:
@@ -503,4 +426,171 @@ function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int
   CoxHyperoctaedral(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
 end
 
-end;
+#--------------------- action on matrices -----------------------------------
+# to find orbits under SPerms transform objects to pairs
+pair(x)=x<-x ? (x,-x) : (-x,x)
+
+# duplicate lines and cols of M so group(dup(...)) operates
+function dup(M::AbstractMatrix)
+  res=zeros(eltype(M),size(M).*2)
+  for i in axes(M,1), j in axes(M,2)
+    res[[2*i-1,2*i],[2*j-1,2*j]]=[M[i,j] -M[i,j];-M[i,j] M[i,j]]
+  end
+  res
+end
+
+dedup(M::AbstractMatrix)=M[1:2:size(M,1),1:2:size(M,2)]
+
+# transform SPerm on -n:n to Perm acting on  1:2n
+dup(p::SPerm)=isone(p) ? Perm() : 
+    Perm{Int16}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
+
+dedup(p::Perm)=SPerm{Int16}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
+                         p.d[1:2:length(p.d)-1]))
+
+dup(g::CoxHyperoctaedral)=Group(dup.(gens(g)))
+
+Base.length(g::SPermGroup)=length(Group(dup.(gens(g))))
+
+function invblocks(m,extra=nothing)
+  if isnothing(extra) extra=zeros(Int,size(m,1)) end
+  blk1=[collect(axes(m,1))]
+  while true
+    blk=blk1
+    blk1=vcat(map(I->collectby(map(i->
+            (tally(pair.(m[i,I])),m[i,i],extra[i]),I),I), blk)...)
+    if blk==blk1 return blk end
+  end
+end
+
+"""
+`stab_onsmat([G,]M[,l])`
+
+If `OnMats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
+and  columns, or conjugating by the  matrix of the signed permutation `p`),
+and  the argument `G`  is given (which  should be an  `SPermGroup`) this is
+just  a fast implementation of  `centralizer(G,M;action=OnMats)`. If `G` is
+omitted  it is taken to be `CoxHyperoctaedral(size(M,1))`. The program uses
+sophisticated  algorithms, and can  handle matrices up  to 80×80. If `l` is
+given the return group should also centralize `l` (for the action ^)
+
+```julia-repl
+julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
+
+julia> g=stab_onsmat(fourier(uc.families[2]))
+Group([sperm"(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15)",sperm"(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18)",sperm"(2,19)(4,-14)(5,20)(7,12)",sperm"(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22)",sperm"(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17)",sperm"(1,-3)(2,-19)(4,14)(6,18)(8,-10)(9,-9)(11,-15)(13,-22)(16,-21)",sperm"(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22)",sperm"(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)"])
+julia> length(g)
+32
+```
+"""
+function stab_onsmat(M,extra=nothing)
+  k=size(M,1)
+  if M!=permutedims(M) error("M should be symmetric") end
+  if isnothing(extra) extra=fill(1,size(M,1)) end
+  blocks=sort(invblocks(M),by=length)
+  gen=SPerm{Int16}[]
+  I=Int[]
+  for r in blocks
+    if length(r)>5 InfoChevie("#IS Large Block:",r,"\n") end
+    gr=stab_onmat(dup(CoxHyperoctaedral(length(r))),dup(M[r,r]))
+    p=SPerm{Int16}(mappingPerm(1:length(r),r).d)
+    append!(gen,map(x->dedup(x)^p,gens(gr)))
+    append!(I,r)
+    p=SPerm{Int16}(mappingPerm(I,eachindex(I)).d)
+    gen=gen.^p
+    gen=dedup.(gens(stab_onmat(Group(dup.(gen)),dup(M[I,I]))))
+    gen=gen.^inv(p)
+  end
+  return Group(gen)
+end
+
+comm(a,b)=inv(a)*inv(b)*a*b
+
+"""
+`perm_onsmat(M,N[,l1,l2])`
+
+`M`  and  `N`  should  be  symmetric matrices. `perm_onsmat` returns a
+signed  permutation `p` such that `OnMats(M,p)=N` if such a permutation
+exists, and `nothing` otherwise. If list arguments `l1` and `l2` are given,
+the permutation `p` should also satisfy `l1^p==l2`.
+
+This  routine is  useful to  identify two  objects which are isomorphic but
+with  different  labelings.  It  is  used  in   CHEVIE  to identify Lusztig
+Fourier  transform matrices  with standard  (classified) data.  The program
+uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
+80times   80.
+
+```julia-repl
+julia> f=SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+ER(-3))/2);
+
+julia> M=fourier(conj(f));
+
+julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
+
+julia> N=fourier(uc.families[2]);
+
+julia> p=perm_onsmat(M,N)
+(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
+
+julia> ^(M,p;dims=(1,2))==N
+true
+```
+"""
+function perm_onsmat(M,N,extra1=nothing,extra2=nothing)
+  OnMats(M,p)=^(M,p;dims=(1,2))
+  if M!=permutedims(M) error("M should be symmetric") end
+  if N!=permutedims(N) error("N should be symmetric") end
+  if isnothing(extra1)
+    extra1=fill(1,size(M,1))
+    extra2=fill(1,size(M,1))
+  end
+  function ind(I,J)local iM,iN,p,n;
+    invM=map(i->(tally(pair.(M[i,I])),M[i,i],extra1[i]),I)
+    invN=map(i->(tally(pair.(M[i,J])),M[i,i],extra2[i]),J)
+    if tally(invM)!=tally(invN) InfoChevie("content differs");return false end
+    iM=collectby(invM,I)
+    iN=collectby(invN,J)
+    if length(iM)==1
+      if length(I)>6 InfoChevie("large block:",length(I),"\n")
+        p=transporting_elt(Group(reflections(
+          CoxHyperoctaedral(length(I)))), M[I,I],N[J,J];action=OnMats,
+                    dist=(M,N)->count(i->M[i]!=N[i],eachindex(M)))
+      else p=transporting_elt(CoxHyperoctaedral(length(I)),
+         M[I,I],N[J,J],action=OnMats)
+      end
+      if isnothing(p) InfoChevie("could not match block");return nothing end
+      return [[I,J,p]]
+    else p=map(ind,iM,iN)
+      if false in p return false else return vcat(p...) end
+    end
+  end
+  l=ind(axes(M,1),axes(N,1))
+  if l==false return false end
+  I=Int[];J=Int[];g=SPermGroup();tr=SPerm()
+  for r in l
+#   Print("r=",r,"\n");
+    n=length(r[1])
+#   q=mappingPerm(eachindex(I),eachindex(I))
+    q=SPerm()
+    p=SPerm{Int16}(mappingPerm(1:n,(1:n)+length(I)).d)
+    append!(I,r[1]);append!(J,r[2])
+#   Print("#I=",Length(I),"\c");
+    if comm(r[3]^p,tr^q)!=SPerm() error("noncomm") end
+    tr=tr^q*r[3]^p
+    h=gens(stab_onsmat(M[r[1],r[1]])).^p
+    g=Group(vcat(gens(g).^q,h))
+#   Print(" #g=",Size(g),"\c");
+    e=transporting_elt(g,M[I,I],OnMats(N[J,J],tr^-1),action=OnMats)
+    if e==false return false
+    elseif e^-1*e^tr!=SPerm() print("*** tr does not commute to e\n")
+         tr=e*tr
+    end
+    g=stab_onmat(Group(dup.(gens(g))),dup(M[I,I]))
+#   Print(" #stab=",Size(g),"\n");
+    g=Group(dedup.(gens(g)))
+  end
+  # transporter of a ps from [1..Length(I)] to I
+  trans=I->SPerm{Int16}(mappingPerm(eachindex(I),I).d)
+  trans(I)^-1*tr*trans(J)
+end
+end

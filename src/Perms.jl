@@ -28,7 +28,8 @@ The  complete type of a permutation  is `Perm{T}` where `T<:Integer`, where
 can  be used to save space or  time. For instance `Perm{UInt8}` can be used
 for  Weyl groups of rank≤8 since they have at most 240 roots. If `T` is not
 specified  we take it to be `Int16` since this is a good compromise between
-speed, compactness and possible size of `n`.
+speed,  compactness and possible  size of `n`.  One can mix permutations of
+different types; they are promoted to the higher one when multiplying.
 
 # Examples
 ```julia-repl
@@ -117,7 +118,7 @@ import ..Groups: orbit, orbits
 # export degree, restricted, orbit, orbits, order
 
 export Perm, largest_moved_point, cycles, cycletype,
-  @perm_str, smallest_moved_point, reflength
+  @perm_str, smallest_moved_point, reflength, mappingPerm
 
 """
 `struct Perm`
@@ -156,7 +157,6 @@ Perm(x::Integer...)=Perm{Int16}(x...)
    change the type of `p` to `Perm{T}`
    for example `Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)`
 """
-Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))
 Perm{T}(p::Perm) where T<:Integer=convert(Perm{T},p)
 
 """
@@ -210,8 +210,8 @@ end
 Perm(l::AbstractVector,l1::AbstractVector)=Perm{Int16}(l,l1)
 
 function Perm{T}(l::AbstractMatrix,l1::AbstractMatrix;dims=1)where T<:Integer
-  if     dims==1 Perm(collect(eachrow(l)),collect(eachrow(l1)))
-  elseif dims==2 Perm(collect(eachcol(l)),collect(eachcol(l1)))
+  if     dims==1 Perm{T}(collect(eachrow(l)),collect(eachrow(l1)))
+  elseif dims==2 Perm{T}(collect(eachcol(l)),collect(eachcol(l1)))
   end
 end
 
@@ -285,12 +285,19 @@ smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
 #------------------ operations on permutations --------------------------
 
-extend(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))
+
+function Base.promote_rule(a::Type{Perm{T1}},b::Type{Perm{T2}})where {T1,T2}
+  Perm{promote_type(T1,T2)}
+end
+
+extend!(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
 
 # `promote_length(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
 function promote_length(a::Perm,b::Perm)
-  extend(a,length(b.d))
-  extend(b,length(a.d))
+  a,b=promote(a,b)
+  extend!(a,length(b.d))
+  extend!(b,length(a.d))
   (a,b)
 end
 
@@ -360,7 +367,7 @@ julia> [5,4,6,1,7,5]^Perm(1,3,5,6,4)
 ```
 """
 function Base.:^(l::AbstractVector,a::Perm)
-  res=copy(l)
+  res=collect(l)
   res[eachindex(l).^a].=l
   res
 end
@@ -381,7 +388,7 @@ julia> m=[3*i+j for i in 0:2,j in 1:3]
 julia> p=Perm(1,2,3)
 (1,2,3)
 
-julia> ^(m,p;dims=1)
+julia> m^p
 3×3 Array{Int64,2}:
  7  8  9
  1  2  3
@@ -401,11 +408,12 @@ julia> ^(m,p;dims=(1,2))
 ```
 """
 function Base.:^(m::AbstractMatrix,a::Perm;dims=1)
-  if dims==2 hcat(collect(eachcol(m))^a...)
-  elseif dims==1 hcat(collect(eachcol(m)).^a...)
-  elseif dims==(1,2) hcat((collect(eachcol(m)).^a)^a...)
+  if dims==2 m[:,axes(m,2)^a]
+  elseif dims==1 m[axes(m,1)^a,:]
+  elseif dims==(1,2) m[axes(m,1)^a,axes(m,2)^a]
   end
 end
+
 #---------------------- cycles -------------------------
 
 # takes 20% more time than GAP CyclePermInt for rand(Perm,1000)
@@ -546,6 +554,24 @@ l should be a union of cycles of p; returns p restricted to l
 function restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
   o=orbits(a,l;trivial=false)
   isempty(o) ? Perm{T}() : prod(c->Perm{T}(c...),o)
+end
+
+"""
+`mappingPerm(a,b)`
+
+given two lists of positive integers without repetition `a` and `b`, this
+function finds a permutation `p` such that `a.^p==b`.
+
+```julia-repl
+julia> mappingPerm([1,2,5,3],[2,3,4,6])
+Perm{Int64}: (1,2,3,6,5,4)
+```
+"""
+function mappingPerm(a,b)
+  r=1:max(maximum(a),maximum(b))
+  a=vcat(a,setdiff(r,a))
+  b=vcat(b,setdiff(r,b))
+  Perm(a)\Perm(b)
 end
 
 end

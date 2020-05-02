@@ -652,7 +652,7 @@ end, class_reps(g), CharTable(g).classnames)
            r1=res[:classinfo][position_class(g, y^-1)]
           return findfirst( ==([r1[:elt],
                   r1[:centelms][position_class(r1[:centralizer],
-            r[:elt]^representative_operation(g, y^-1, r1[:elt]))]]),res[:xy])
+            r[:elt]^transporting_elt(g, y^-1, r1[:elt]))]]),res[:xy])
                           end, r[:centelms]), res[:classinfo])...)
   delete!(res, :classinfo)
   res[:fourierMat] = inv(res[:mellin])*one(res[:mellin])[p,:]*res[:mellin]

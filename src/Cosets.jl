@@ -411,7 +411,7 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   if isempty(J) return class_reps(WF)./WF.phi end
   W=Group(WF)
   if W isa CoxeterGroup
-    h=representative_operation(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
+    h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
                                action=(x,p)->sort(action.(Ref(W),x,p)))
     if isnothing(h)
       println( "\n# no subspets for ", J )

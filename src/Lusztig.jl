@@ -15,11 +15,11 @@ FindSeriesInParent=function(h,HF,WF,sers)
      p=sort(filter(!isempty,split(y[:cuspidalName],"\\otimes ")))
 #    print(" p=",p)
      if p==n
-       p=representative_operation(W,
+       p=transporting_elt(W,
           sort(restriction(WF,inclusion(HF,h[:levi]))), 
           sort(y[:levi]), action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
-       p=representative_operation(W, 
+       p=transporting_elt(W, 
           sort(reflections(reflection_subgroup(W, h[:levi]))), 
           sort(reflections(reflection_subgroup(W, y[:levi]))), 
                                   action=(s,g)->sort(action.(Ref(W),s,g)))
@@ -42,7 +42,6 @@ FindCuspidalInLevi=function(n,HF)
   cusp
 end
 
-InfoChevie=print
 ChevieErr=error
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.

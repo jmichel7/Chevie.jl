@@ -637,7 +637,6 @@ function LeftCellRepresentatives(W)
   end
 end
 
-InfoChevie=print
 function OldLeftCellRepresentatives(W)
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
   rw=groupby(x->leftdescents(W,x^-1),elements(W))

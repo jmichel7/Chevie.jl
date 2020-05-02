@@ -926,10 +926,10 @@ function PermGroups.reduced(W::PermRootGroup,F)
     end
   end
   base=reflection.(Ref(W),eachindex(gens(W)))
-  w=representative_operation(W,base,base.^F;action=(x,y)->x.^y)
+  w=transporting_elt(W,base,base.^F;action=(x,y)->x.^y)
   if !isnothing(w) return F/w end
   ir=sort(base.^F)
-  w=representative_operation(W,sort(base),ir;action=(x,y)->sort(x.^y))
+  w=transporting_elt(W,sort(base),ir;action=(x,y)->sort(x.^y))
   if !isnothing(w) return F/w end
   return nothing
 end

@@ -84,8 +84,13 @@ Cyc{Float64}: -0.4999999999999998+0.8660254037844387ζ₄
 ```
 
 `Cyc`s have methods `copy, hash, ==, cmp, isless` (total order) so they can
-be keys in hashes or elements of sets.
+be keys in hashes or elements of sets. Cyclotomics which are integers or
+rationals compare correctly to integers or rationals:
 
+```julia-repl
+julia> -1<Cyc(0)<1
+true
+```
 For more information see the methods ER, Quadratic, galois. 
 
 Finally, a benchmark:
@@ -354,7 +359,7 @@ end
 function Base.cmp(a::Cyc,b::Cyc)
   t=cmp(a.n,b.n)
   if !iszero(t) return t end
-  cmp(a.d,b.d)
+  a.n==1  ? cmp(num(a),num(b)) : cmp(a.d,b.d)
 end
 
 Base.isless(a::Cyc,b::Cyc)=cmp(a,b)==-1

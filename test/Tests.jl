@@ -157,7 +157,8 @@ end
 
 using ..Gap4
 function tCharTable(W)
-  ct=improve_type(Gap4.CharTable(W).irr)
+# ct=improve_type(Gap4.CharTable(W).irr)
+  ct=Gap4.CharTable(W).irr
   ct1=CharTable(W).irr
   p=Perm(ct,ct1;dims=1)
   if isnothing(p) error("irreducibles") 

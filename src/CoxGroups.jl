@@ -3,23 +3,24 @@ A  suitable  reference  for  the  general  theory of Coxeter groups is, for
 example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
 
 A *Coxeter group* is a group which has the presentation
-`W=⟨S|(st)^m(s,t)=1`  for  `s,t∈  S⟩`  for  some  symmetric  integer matrix
-`m(s,t)`  called  the  *Coxeter  matrix*,  where  `m(s,t)>1`  for `s≠t` and
+``W=⟨S|(st)^{m(s,t)}=1\\hbox{  for  }s,t∈  S⟩``  for some symmetric integer
+matrix `m(s,t)` called the *Coxeter matrix*, where `m(s,t)>1` for `s≠t` and
 `m(s,s)=1`.  It is true (but a non-trivial theorem) that in a Coxeter group
 the  order of `st` is exactly `m(s,t)`, thus a Coxeter group is the same as
-a  *Coxeter system*, that is a pair `(W,S)` of a group `W` and a set `S` of
-involutions,  such that the group is  presented by relations describing the
-order  of the product of two elements of `S`. A Coxeter group has a natural
-representation, its *reflection representation*, on a real vector space `V`
-of  dimension `length(S)` (the *Coxeter rank*  of W), where each element of
-`S`  acts as a  reflection; the faithfulness  of this representation in the
-main  argument to prove  that the order  of `st` is  exactly `m(s,t)`. Thus
-Coxeter groups are real reflection groups. The converse need not be true if
-the  set of reflecting  hyperplanes has bad  topological properties, but it
-turns out that finite Coxeter groups are the same as finite real reflection
-groups.  The possible Coxeter matrices for  finite Coxeter groups have been
-completely  classified; the corresponding finite groups play a deep role in
-several areas of mathematics.
+a  *Coxeter system*, that is a pair `(W,S)`  of a group `W` and a set `S⊂W`
+of  involutions, such  that the  group is  presented by  generators `S` and
+relations  describing the order  of the product  of two elements  of `S`. A
+Coxeter group has a natural representation, its *reflection
+representation*, on a real vector space `V` of dimension `length(S)` (which
+is  the  *Coxeter  rank*  of  W),  where  each  element  of  `S`  acts as a
+reflection; the faithfulness of this representation in the main argument to
+prove  that the order of `st` is  exactly `m(s,t)`. Thus Coxeter groups are
+real  reflection  groups.  The  converse  need  not  be  true if the set of
+reflecting  hyperplanes has  bad topological  properties, but  it turns out
+that  finite Coxeter groups are the  same as finite real reflection groups.
+The   possible  Coxeter  matrices  for  finite  Coxeter  groups  have  been
+completely  classified,  see  the  `Weyl`  module; the corresponding finite
+groups play a deep role in several areas of mathematics.
 
 Coxeter  groups  have  a  nice  solution  to the word problem. The *length*
 `l(w)`  of an element  `w∈ W` is  the minimum number  of elements of `S` of
@@ -31,13 +32,14 @@ which  states that if `s₁…sₖ` is a  reduced word for `w` (thus`k=l(w)`) an
 can be deleted to obtain a reduced word for `sw`. Thus given `s∈ S` and `w∈
 W`,  either `l(sw)=l(w)+1` or  `l(sw)=l(w)-1` and we  say in this last case
 that  `s` belongs to  the *left descent  set* of `w`.  The computation of a
-reduced word for an element, and other word problems, are easily done if we
-know  the left descent sets. For the Coxeter groups that we implement, this
-left  descent set  can be  easily determined  (see e.g. 'CoxSym' below), so
-this suggests how to deal with Coxeter groups.
+reduced  word for an element, and other  word problems, are easy if we know
+how  to multiply elements  and the left  descent sets. In  each case of the
+Coxeter  groups that we implement, the left  descent set is easy to compute
+(see  e.g.  'CoxSym'  below),  so  this  suggests  how to deal with Coxeter
+groups generically:
 
-The type `CoxeterGroup` is an abstact type; an actual struct which implements
-it must define a function
+The  type  `CoxeterGroup`  is  an  abstract  type;  an  actual struct which
+implements it must define a function
 
 `isleftdescent(W,w,i)` which tells whether the
       `i`-th element of `S` is in the left descending set of `w`.
@@ -47,25 +49,14 @@ the other functions needed in an instance of a Coxeter group are
 - `nref(W)` which  returns the  number of  reflections of  `W`, if  `W` is
    finite or `nothing` if `W` is infinite
 
-It  should be  noted that  a Coxeter group can be
-*any* kind of group implementing the above functions.
-
-A  common occurrence in code for Coxeter groups is a loop like:
-
-`findfirst(x->isleftdescent(W,w,x),eachindex(gens(W)))`
-
-if you provide a function `firstleftdescent(W,w)` it will be called instead
-of the above loop.
+It  should  be  noted  that  a  Coxeter  group  can  be *any* kind of group
+implementing the above functions.
 
 Because  of the  easy solution  of the  word problem  in Coxeter  groups, a
 convenient  way  to  represent  their  elements  is as words in the Coxeter
-generators.  They are represented as lists of labels for the generators. By
-default  these labels are  given as the  index of a  generator in `S`, so a
-Coxeter  word is just  a list of  integers in `1:length(S)`. For reflection
-subgroups, the labels are indices of the reflections in the parent group.
-
-The functions 'word' and 'W(...)' will do the conversion between
-Coxeter words and elements of the group.
+generators. They are represented as lists of integers in `1:length(S)`. The
+functions  'word' and 'W(...)' will do the conversion between Coxeter words
+and elements of the group.
 
 # Examples
 ```julia-repl
@@ -82,13 +73,12 @@ julia> word(W,p)
  3
  2
  1
-
 ```
 We  notice that the word we started with and the one that we ended up with,
 are not the same, though they represent the same element of `W`. The reason
-is  that the function 'word' computes a lexicographically smallest word for
-`w`.  Below  are  some  other  possible  computations with the same Coxeter
-group:
+is  there are  several reduced  words for  an element  of `W`. The function
+'word'  computes a lexicographically smallest word  for `w`. Below are some
+other possible computations with the same Coxeter group:
 
 ```julia-repl
 julia> word(W,longest(W))  # the (unique) longest element in W
@@ -121,7 +111,6 @@ julia> [length(elements(W,i)) for i in 0:nref(W)]
  5
  3
  1
-
 ```
 
 The above line tells us that there is 1 element of length 0, there are 6 of
@@ -133,9 +122,10 @@ group  which  is  a  permutation  group,  using the low level functions for
 permutations  is usually  much faster  than manipulating lists representing
 reduced expressions.
 
-This  file contains mostly a port of  the basic functions on Coxeter groups
+This module contains mostly a port of the basic functions on Coxeter groups
 in  Chevie. The only Coxeter group  constructor implemented here is CoxSym.
-The file Weyl.jl defines coxgroup.
+The  module `Weyl` defines `coxgroup`, a function building a finite Coxeter
+groups given its type.
 """
 module CoxGroups
 
@@ -294,7 +284,7 @@ end
 """
 `reduced(W,w)`
 
-The unique element in the coset W.w which stabilises the positive roots of W
+The unique element of minimal length in the coset W.w
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
@@ -311,16 +301,16 @@ julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
 """
 function PermGroups.reduced(W::CoxeterGroup,w)
   while true
-    i=firstleftdescent(W, w)
+    i=firstleftdescent(W,w)
     if isnothing(i) return w end
-    w = W(i) * w
+    w=W(i)*w
   end
 end
 
 """
 `reduced(H,W)`
 
-The elements in W which are H-reduced
+The elements `w∈ W` which are `H`-reduced (of minimal length in the coset `Hw`)
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
@@ -348,7 +338,8 @@ end
 
 """
 reduced(H,W,S)
-  The elements in W which are H-reduced of length i from the set S of length i-1
+  The elements in `W` which are `H`-reduced of length `i` given the set `S`
+  of those of length `i-1`
 """
 function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,S)
   res=empty(S)
@@ -520,7 +511,7 @@ julia> W=CoxSym(3)
 𝔖 ₃
 
 julia> bruhatless(W,Perm(1,3))
-4-element Array{Array{Perm{UInt8},1},1}:
+4-element Array{Array{Perm{Int16},1},1}:
  [()]
  [(1,2), (2,3)]
  [(1,2,3), (1,3,2)]

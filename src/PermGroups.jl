@@ -67,8 +67,8 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Gapjm # for degree, gens, minimal_words
-export PermGroup, base, transversals, centralizers, symmetric_group, reduced
-
+export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
+  stab_onmat, perm_onmat, perm_rowcolmat
 #-------------------- now permutation groups -------------------------
 struct PermGroup{T}<:Group{Perm{T}}
   gens::Vector{Perm{T}}
@@ -80,6 +80,8 @@ PermGroup(W::PermGroup)=W
 function Groups.Group(a::AbstractVector{Perm{T}}) where T
   PermGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
+
+PermGroup()=Group(Perm{Int16}[])
 
 function Base.show(io::IO,G::PermGroup)
   print(io,"Group([$(join(map(repr,gens(G)),','))])")
@@ -297,6 +299,214 @@ end
 # computes "canonical" element of W.phi
 function Groups.Coset(W::PermGroup,phi::Perm)
   Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
+end
+
+#---------------- application to matrices ------------------------------
+OnMats(m,g)=^(m,g;dims=(1,2))
+
+function invblocks(m,extra=nothing)
+  if isnothing(extra) extra=zeros(Int,size(m,1)) end
+  blk1=[collect(axes(m,1))]
+  while true
+    blk=blk1
+    blk1=vcat(map(I->collectby(map(i->
+                 (tally(m[i,I]),tally(m[I,i]),m[i,i],extra[i]),I),I), blk)...)
+    if blk==blk1 return blk end
+  end
+end
+
+function stab_onmat(g::Group,M::AbstractMatrix,extra=nothing)
+# if length(g)>1
+#   print("g=",
+#        length.(filter(x->length(x)>1,orbits(g,1:maximum(degree.(gens(g)))))),
+#         " M:",size(M))
+# end
+  blocks=invblocks(M,extra)
+  for r in blocks g=stabilizer(g,r) end
+  n=Cartesian(axes(M,1),axes(M,1))
+  e=Group(map(y->Perm{Int16}(Perm(n,map(x->x.^y,n))),gens(g)))
+  for s in collectby(vec(M),1:length(M)) e=stabilizer(e,s) end
+  Group(map(p->Perm{Int16}(map(i->n[i^p][2], axes(M,1))), gens(e)))
+end
+
+"""
+`stab_onmat([G,]M[,l])`
+
+If  `OnMats(m,p)=^(M,p;dims=(1,2))`, and  the argument  `G` is given (which
+should   be  a  `PermGroup`)   this  is  just   a  fast  implementation  of
+`centralizer(G,M;action=OnMats)`.  If  `G`  is  omitted  it  is taken to be
+`symmetric_group(size(M,1))`.  The  program  uses sophisticated algorithms,
+and can handle matrices up to 80×80.
+
+```julia-repl
+julia> uc=UnipotentCharacters(ComplexReflectionGroup(34));
+
+julia> stab_onmat(fourier(uc.families[20]))
+Group([perm"(7,38)",perm"(39,44)(40,43)(41,42)"])
+```
+"""
+function stab_onmat(M,extra=nothing)
+  k=length(M)
+  blocks=sort(invblocks(M,extra),by=x->-length(x))
+  g=PermGroup()
+  I=Int[]
+  for r in blocks
+    if length(r)>7 println("#I Large Block:",r) end
+    if length(r)>1
+      gr=stab_onmat(CoxSym(length(r)), M[r,r])
+      g=Group(vcat(gens(g),gens(gr).^mappingPerm(eachindex(r),r)))
+    end
+    append!(I,r)
+    p=mappingPerm(I,eachindex(I))
+    g=stab_onmat(Group(gens(g).^p), M[I,I])
+    g=Group(gens(g).^inv(p))
+  end
+  return g
+end
+
+"""
+`perm_onmat(M, N[, m ,n])` 
+
+If  `OnMats(M,p)=^(M,p;dims=(1,2))`, return `p`  such that `OnMats(M,p)=N`.
+If  in  addition  the  vectors  `m`  and  `n` are given, `p` should satisfy
+`m^p=n`.
+
+Efficient version of 
+`transporting_elt(symmetric_group(size(M,1)),M,N;action=OnMats)`
+
+```julia-repl
+julia> m=cartan(:D,12);
+
+julia> n=^(m,Perm(1,5,2,8,12,4,7)*Perm(3,9,11,6);dims=(1,2));
+
+julia> perm_onmat(m,n)
+Perm{Int64}: (1,5,2,8,12,4,7)(3,9,11,6)
+```
+"""
+function perm_onmat(M,N,m=nothing,n=nothing)
+  if isnothing(m) && M==N return Perm() end
+  if size(M,1)!=size(M,2) || size(N,1)!=size(N,2)
+    error("matrices are  not  square")
+  end
+  if size(M,1)!=size(N,1)
+    InfoChevie("# matrices do not have same dimensions")
+    return false
+  end
+  sg=n->n==1 ? PermGroup() : Group(vcat(map(i->map(j->Perm(i,j),i+1:n),1:n-1)...))
+  ind=function(I,J)local p
+    iM=map(i->[tally(M[i,I]), tally(M[I,i]), M[i,i]], I)
+    iN=map(i->[tally(N[i,J]), tally(N[J,i]), N[i,i]], J)
+    if !isnothing(m)
+      iM=map(push!,iM,m[I])
+      iN=map(push!,iN,n[J])
+    end
+    if tally(iM)!=tally(iN) return false end
+    iM=collectby(iM,J)
+    iN=collectby(iN,I)
+    p=map(function(I,J)
+      local g
+      if length(I)>7
+        InfoChevie("#I  large block:", length(I), "\n")
+        if length(iM)==1
+          p=transporting_elt(sg(length(I)),M[I,I],N[J,J];
+                action=OnMats,dist=(M,N)->sum(x->count(!iszero,x),M-N))
+        elseif isnothing(m) p=perm_onmat(M[I,I],N[J,J])
+        else p=perm_onmat(M[I,I],N[J,J],m[I],n[J])
+        end
+      else 
+        p=transporting_elt(sg(length(I)),M[I,I],N[J,J],action=OnMats)
+      end
+      if isnothing(p) return false end
+      I^=p
+      g=stab_onmat(M[I,I])
+      p=mappingPerm(eachindex(I), I)
+      return [I,J,Group(gens(g).^p)] end, iM, iN)
+    if false in p return false else return p end
+  end
+  l=ind(axes(M,1),axes(N,1))
+  if l==false return nothing end
+  I=Int[]
+  J=Int[]
+  g=PermGroup()
+  for r in l
+    append!(I, r[1])
+    append!(J, r[2])
+    s=length(r[1])
+    g=Group(vcat(gens(g), gens(r[3])))
+    p=mappingPerm(I, eachindex(I))
+    h=Group(gens(g).^p)
+    if M[I,I]!=N[J,J]
+      InfoChevie("# I==", length(I), " stab==", length(g), "\n")
+      e = transporting_elt(h, M[I,I], N[J,J], action=OnMats)
+      if isnothing(e) return nothing else I^=e end
+    end
+    h=centralizer(h, M[I,I], action=OnMats)
+    g=Group(gens(h).^inv(p))
+  end
+  return mappingPerm(I,J)
+end
+
+"""
+`RepresentativeRowColPermutation(m1,m2)`
+  whether matrix `m1` is conjugate to matrix `m2` by row/col permutations
+
+  `m1`  and `m2` should be rectangular matrices of the same dimensions. The
+  function   returns   a   pair   of   permutations   `[p1,p2]`  such  that
+  `^(m1^p[1],p[2];dims=2)==m2`   if  such   permutations  exist,  `nothing`
+  otherwise.
+"""
+function perm_rowcolmat(m1, m2)
+  if size(m1)!=size(m2) error("not same dimensions") end
+  if isempty(m1) return [Perm(), Perm()] end
+  dist(m,n)=count(i->m[i]!=n[i],eachindex(m))
+  dist(m,n,dim,l)=dim==1 ? dist(m[l,:],n[l,:]) : dist(m[:,l],n[:,l])
+  mm=[m1,m2]
+  InfoChevie("# ", dist(m1, m2), "")
+  rcperm=[Perm(), Perm()],[Perm(), Perm()]
+  crg=Vector{Int}[],Vector{Int}[]
+  crg1=[axes(m1,1)],[axes(m1,2)]
+  while true
+    crg=crg1
+    crg1=Vector{Int}[],Vector{Int}[]
+    for dim in 1:2
+      for g in crg[dim]
+        invars=map(1:2) do i
+          invar=map(j->map(k->tally(dim==1 ? mm[i][j,k] : mm[i][k,j]),
+                           crg[3-dim]), g)
+          p=mappingPerm(vcat(collectby(invar,g)...), g)
+          rcperm[dim][i]*=p
+          mm[i]=^(mm[i],p,dims=dim)
+          sort!(invar)
+        end
+        if invars[1]!=invars[2] return nothing end
+        append!(crg1[dim], collectby(invars[1],g))
+      end
+    end
+    InfoChevie("==>",dist(mm[1],mm[2]))
+    if crg==crg1 break end
+  end
+  function best(l,dim)
+    if length(l)==1 return false end
+    d=dist(mm[1], mm[2], dim, l)
+    for e in elements(Group(map(i->Perm(l[i],l[i+1]),1:length(l)-1)))
+      m=dist(^(mm[1], e;dims=dim), mm[2], dim, l)
+      if m<d
+        InfoChevie("\n",("rows","cols")[dim],joindigits(l),":$d->",m)
+        rcperm[dim][1]*=e
+        mm[1]=^(mm[1],e;dims=dim)
+        return true
+      end
+    end
+    return false
+  end
+  while true
+    s=false
+    for dim in 1:2 for g in crg[dim] s=s || best(g,dim) end end
+    if !s break end
+  end
+  InfoChevie("\n")
+  if !iszero(dist(mm...)) error("RepresentativeRowColOperation failed") end
+  [rcperm[1][1]/rcperm[1][2],rcperm[2][1]/rcperm[2][2]]
 end
 
 end

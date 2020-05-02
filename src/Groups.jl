@@ -30,8 +30,8 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 module Groups
 export Group, minimal_words, gens, nbgens, class_reps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
-  position_class, fusion_conjugacy_classes, Coset, representative_operation,
-  centre, normalizer
+  position_class, fusion_conjugacy_classes, Coset, transporting_elt,
+  centre, normalizer, stabilizer
 
 using ..Util: gets
 import Gapjm: word, elements, kernel, order
@@ -183,6 +183,27 @@ end
 
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
 
+"""
+`stabilizer(G,s)`
+
+Assuming  that  `s`  is  a  set,  represented  as  a  sorted  list  without
+repetitions,   the  action   of  the   group  `G`   on  sets  is  given  by
+`(g,p)->sort(p.^g)`.  The *stabilizer* of `s` in  `G` is the centralizer of
+`s` for the action of `G` on sets.
+
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3,4)])
+Group([perm"(1,2)",perm"(1,2,3,4)"])
+
+julia> centralizer(G,[1,2];action=(s,g)->s.^g)
+Group([perm"(3,4)"])
+
+julia> stabilizer(G,[1,2])
+Group([perm"(3,4)",perm"(1,2)",perm"(1,2)(3,4)"])
+```
+"""
+stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
+
 centre(G::Group)=centralizer(G,G)
 
 """
@@ -290,9 +311,54 @@ end
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
-function representative_operation(W::Group,p1,p2;action::Function=^)
-  t=transversal(W,p1;action=action)
-  if haskey(t,p2) return t[p2] end
+"""
+`transporting_elt(G,p,q;action=^,dist=nothing)`   
+
+returns  an  element  `g∈ G`  such  that  `p^g==q` (or `action(p,g)==q` if
+`action`  is given) if such a `g`  exists and nothing otherwise. The set of
+possible `g` forms a right coset of the centralizer of p in G.
+
+```julia-repl
+julia> g=Group(perm"(1,2,3)(6,7)",perm"(3,4,5)(7,8)")
+Group([perm"(1,2,3)(6,7)",perm"(3,4,5)(7,8)"])
+
+julia> transporting_elt(g,1,5)
+(1,5,4,3,2)
+
+julia> transporting_elt(g,1,6)
+
+julia> transporting_elt(g,[1,2,3,4],[2,3,4,5];action=(s,g)->sort(s.^g))
+(1,2,3,4,5)(6,7,8)
+
+julia> transporting_elt(g,[1,2,3,4],[3,4,5,2];action=(s,g)->s.^g)
+```
+"""
+function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
+  if isnothing(dist)
+    t=transversal(W,x;action=action)
+    if haskey(t,y) return t[y] else return nothing end
+  end
+# InfoChevie("#I  group:", length(W), " too big - trying random walk\n")
+  p=one(W)
+# InfoChevie(dist(x, y), " ")
+  x1=x
+  while true
+    prev=dist(x1, y)
+    if prev==0
+#     InfoChevie("\n")
+      return p
+    end
+    dmin=minimum(map(g->(dist(action(x1, g), y),g),gens(W)))
+    if dmin[1]<prev 
+#     InfoChevie("->",dmin)
+      p*=dmin[2]
+      x1=action(x1,dmin[2])
+    else
+#     InfoChevie("\n#I stalled -- restarting at a random element of W\n")
+      p*=rand(W)
+      x1=action(x,p)
+    end
+  end
 end
 
 #------------------- "abstract" concrete groups -------------------------------
