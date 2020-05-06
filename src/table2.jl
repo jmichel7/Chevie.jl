@@ -33,37 +33,29 @@ function EvalPolRoot(pol::Pol,x,n,p)
   pol(GetRoot(x,div(n,r))*p^r)
 end
 
-function VcycSchurElement(arg...)
-  n = length(arg[1])
-  if length(arg) == 3
-      data = arg[3]
-      para = arg[1][data[:order]]
-  else
-      para = copy(arg[1])
-  end
+function VcycSchurElement(para,r,data=nothing)
+  n=length(para)
+  if !isnothing(data) para=para[data[:order]] else para = copy(para) end
   monomial(mon)=prod(map(^,para,Int.(mon[1:n])))
-  r = arg[2]
   if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end
   if haskey(r, :factor) res*=monomial(r[:factor]) end
-  if haskey(r, :rootUnity)
-    term=function(v)
-     mon,pol=v
-     tt=monomial(mon)
-     if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
-     cyclotomic_polynomial(pol)(tt)
-    end
-  elseif haskey(r, :root)
-    term=function(v)
-      mon,pol=v
+  function term(v)
+    mon,pol=v
+    if haskey(r,:rootUnity)
+      tt=monomial(mon)
+      if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
+      Pol([cyclotomic_polynomial(pol)(tt)],0)
+    elseif haskey(r, :root)
      if length(mon)==n return Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
      else return cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
      end
+    else 
+     Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
     end
-  else term=v->cyclotomic_polynomial(v[2])(monomial(v[1]))
   end
-  res*=prod(term,r[:vcyc])
-  if !haskey(r, :root) return res end
+  res*=prod(term.(r[:vcyc]))
+  if !haskey(r, :root) return res.c[1] end
   den=lcm(denominator.(r[:root])...)
   root=monomial(den*r[:root])
   if haskey(r, :rootCoeff) root*=r[:rootCoeff] end

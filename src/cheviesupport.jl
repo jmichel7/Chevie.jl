@@ -110,6 +110,9 @@ function CoxeterGroup(S::String,s...)
  coxgroup(Symbol(S),Int(s[1]))*coxgroup(Symbol(s[2]),Int(s[3]))
 end
 CoxeterGroup()=coxgroup()
+FactorizedSchurElementsOps=Dict{Symbol,Any}(
+:Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
+          map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
 Format(x)=string(x)

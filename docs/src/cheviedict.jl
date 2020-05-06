@@ -312,8 +312,9 @@ const ChevieDict=Dict(
 #WGraphToRepresentation
 "W.matgens[i]"=>"refrep(W,i)",
 "W.N"=>"nref(W)",
-"W.orbitRepresentative[i]"=>"simple_representative(W,i)",
-"W.orbitRepresentativeElement"=>"simple_conjugating_element(W,i)",
+"W.orbitRepresentative"=>"simple_representatives(W)",
+"W.orbitRepresentativeElements[i]"=>"simple_conjugating_element(W,i)",
+"W.rootLengths"=>"rootlengths(W)",
 )
 
 function gap(s)

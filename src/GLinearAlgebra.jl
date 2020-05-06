@@ -8,7 +8,14 @@ Here we are interested in functions which work over any field (or sometimes
 any ring).
 """
 module GLinearAlgebra
-using Gapjm
+using ..Pols: Pol # for isunit
+using ..Cycs: Cyc # for isunit
+using ..Combinat: combinations, submultisets, tally, groupby, partitions
+using ..PermGroups: symmetric_group
+using ..Groups: elements, word
+using ..CoxGroups: CoxSym
+using ..Chars: representation
+using ..Util: toM
 export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
   ratio, schur_functor, charpoly, solutionmat, transporter, permanent, blocks,
   symmetric_power, diagconj_elt
@@ -84,6 +91,10 @@ function det(A::Matrix)
   if size(A,1)==1 return A[1,1] end
   sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
 end
+
+isunit(p::Pol)=length(p.c)==1 && p.c[1]^2==1
+isunit(c::Cyc)=true
+isunit(c::Any)=false
 
 function Det(m)
   if isempty(m) return 0 end
@@ -350,7 +361,7 @@ function schur_functor(A,la)
   r=representation(S,findfirst(==(la),partitions(n)))
   rep=function(x)x=word(S,x)
     isempty(x) ? r[1]^0 : prod(r[x]) end
-  f=j->prod(factorial,last.(HasType.Collected(j)))
+  f=j->prod(factorial,last.(tally(j)))
   basis=submultisets(axes(A,1),n) 
   M=sum(x->kron(rep(x),toM(map(function(i)i^=x
       return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))

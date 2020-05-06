@@ -43,12 +43,11 @@ see also the individual documentation of divrem, divrem1, gcd.
 """
 module Pols
 using ..Util: bracket_if_needed, fromTeX, divisors
-using ..Cycs: Cyc, Root1
 import Gapjm: root, degree, valuation
 # to use as a stand-alone module comment above line and uncomment next
 # export root, degree, valuation
 export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
-  negative_part, bar, isunit, improve_type
+  negative_part, bar
 
 const varname=Ref(:x)
 
@@ -145,14 +144,6 @@ Base.adjoint(a::Pol)=a
 Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
 
-best_type(x)=typeof(x)
-best_type(x::Cyc)=x.n==1 ? best_type(Rational(x)) : typeof(x)
-best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{reduce(promote_type,best_type.(m)),N}
-best_type(p::Pol)=iszero(p) ? Pol{Int} : Pol{reduce(promote_type,best_type.(p.c))}
-  
-improve_type(m)=convert(best_type(m),m)
-
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")
   show(IOContext(io,:TeX=>true),a)
@@ -196,15 +187,6 @@ function Base.show(io::IO,p::Pol)
   end
 end
 
-#function Base.:*(a::Pol, b::Pol)
-#  if iszero(a) || iszero(b) return zero(a) end
-#  res=map(1:length(a.c)+length(b.c)-1)do i
-#@inbounds sum(j->a.c[j]*b.c[i+1-j],i+1-min(i,length(b.c)):min(i,length(a.c)))
-#  end
-#  Pol(res,a.v+b.v)
-#end
-
-# stupid code is better
 function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(a) || iszero(b) return zero(a) end
   res=fill(zero(T1)*zero(T2),length(a.c)+length(b.c)-1)
@@ -215,7 +197,9 @@ function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
 end
 
 Base.:*(a::Pol, b::Number)=Polstrip(a.c.*b,a.v)
+Base.:*(a::Pol{T}, b::T) where T=Polstrip(a.c.*b,a.v)
 Base.:*(b::Number, a::Pol)=a*b
+Base.:*(b::T, a::Pol{T}) where T=a*b
 
 Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
                                  Base.power_by_squaring(inv(a),-Int(n))
@@ -321,15 +305,9 @@ function Base.gcd(p::Pol,q::Pol)
   return p/p.c[end]
 end
 
-isunit(p::Pol)=length(p.c)==1 && p.c[1]^2==1
-isunit(c::Cyc)=true
-isunit(c::Any)=false
-
 function Base.inv(p::Pol)
   if length(p.c)>1 throw(InexactError(:inv,Int,p)) end
   if p.c[1]^2==1 return Pol([p.c[1]],-p.v) end
-  r=Root1(p.c[1])
-  if isnothing(r) throw(InexactError(:inv,Int,p)) end
   Pol([inv(p.c[1])],-p.v)
 end
 

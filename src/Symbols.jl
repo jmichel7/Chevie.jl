@@ -54,7 +54,21 @@ using Gapjm
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_feg_symbol,
 valuation_feg_symbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
-fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol
+fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol,
+dominates
+
+"""
+`dominates(μ,ν)`
+
+The dominance order is an important partial order in representation theory.
+`μ` dominates `ν` if and only if for all `i` we have `sumⱼ₌₁ⁱ μ≥sumⱼ₌₁ⁱ ν`.
+
+```julia-repl
+julia> dominates([5,4],[4,4,1])
+true
+```
+"""
+dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 
 """
 `PartitionTupleToString(tuple)`
@@ -558,7 +572,7 @@ function gendeg_symbol(S)
   
   if d==0 res*=findfirst(i->circshift(S,-i)==S,1:e) end
   if defect==0 || r!=2 || e<=2 return res
-  else return E(e)^-1*CycPolOps.EnnolaTwist(res,E(2*e)) # 2I(e)
+  else return E(e)^-1*ennola_twist(res,E(2*e)) # 2I(e)
   end
 end
 

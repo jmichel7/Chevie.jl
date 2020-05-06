@@ -128,11 +128,19 @@ export PermRootGroup, PRG, PRSG, catalan,
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, refrep, 
  PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
- parabolic_representatives, invariants
-# to use as a stand-alone module uncomment the next line
-# export roots, gens, degree
+ parabolic_representatives, invariants,improve_type
 import Gapjm: gens, degree, roots
+# to use as a stand-alone module comment above line and uncomment the next line
+# export roots, gens, degree
 using Gapjm
+
+best_type(x)=typeof(x)
+best_type(x::Cyc)=x.n==1 ? best_type(Rational(x)) : typeof(x)
+best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
+best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{reduce(promote_type,best_type.(m)),N}
+best_type(p::Pol)=iszero(p) ? Pol{Int} : Pol{reduce(promote_type,best_type.(p.c))}
+  
+improve_type(m)=convert(best_type(m),m)
 
 # coroot for an orthogonal reflection and integral root
 function coroot(root::Vector,eigen::Int=-1)

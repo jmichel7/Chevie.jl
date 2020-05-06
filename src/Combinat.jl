@@ -1,7 +1,68 @@
 module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
   conjugate_partition, dominates, compositions, submultisets,
-  npartition_tuples, NrArrangements
+  npartition_tuples, NrArrangements, groupby, constant, tally, collectby
+
+"""
+  group items of list l according to the corresponding values in list v
+
+    julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
+           [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
+    Dict{Int64,Array{Symbol,1}} with 3 entries:
+      31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
+      28 => Symbol[:Feb]
+      30 => Symbol[:Apr, :Jun, :Sep, :Nov]
+
+"""
+function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
+  res=Dict{K,Vector{V}}()
+  for (k,val) in zip(v,l) push!(get!(res,k,V[]),val) end
+  res
+end
+
+"""
+  group items of list l according to the values taken by function f on them
+
+    julia> groupby(iseven,1:10)
+    Dict{Bool,Array{Int64,1}} with 2 entries:
+      false => [1, 3, 5, 7, 9]
+      true  => [2, 4, 6, 8, 10]
+
+Note:in this version l is required to be non-empty since I do not know how to
+access the return type of a function
+"""
+function groupby(f,l::AbstractArray)
+  res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
+  for val in l[2:end]
+    push!(get!(res,f(val),empty(l)),val)
+  end
+  res
+end
+
+"count how many times each element of v occurs and return a list of (elt,count)"
+tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
+
+"group the elements of v in packets where f takes the same value"
+function collectby(f,v)
+  d=groupby(f,v)
+  [d[k] for k in sort(collect(keys(d)))]
+end
+
+" whether all elements in list a are equal"
+function constant(a::AbstractArray)
+   all(i->a[i]==a[1],2:length(a))
+end
+
+# faster than unique! for sorted vectors
+function unique_sorted(v::Vector)
+  i=1
+@inbounds  for j in 2:length(v)
+    if v[j]==v[i]
+    else i+=1; v[i]=v[j]
+    end
+  end
+  resize!(v,i)
+end
 
 function combinations_sorted(mset::AbstractVector,k)
   if iszero(k) return [eltype(mset)[]] end
@@ -285,19 +346,6 @@ function conjugate_partition(p)
   for i in p, j in 1:i res[j]+=1 end
   res
 end
-
-"""
-`dominates(μ,ν)`
-
-The dominance order is an important partial order in representation theory.
-`μ` dominates `ν` if and only if for all `i` we have `sumⱼ₌₁ⁱ μ≥sumⱼ₌₁ⁱ ν`.
-
-```julia-repl
-julia> dominates([5,4],[4,4,1])
-true
-```
-"""
-dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
 
 """
 `compositions(n[,k])`

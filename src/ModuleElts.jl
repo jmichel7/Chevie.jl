@@ -227,7 +227,7 @@ end
 # multiply module element by scalar
 function Base.:*(a::ModuleElt,b)
   if iszero(b) || iszero(a) return  zero(a) end
-  ModuleElt(k=>v*b for (k,v) in a)
+  ModuleElt([k=>v*b for (k,v) in a])
 end
 
 Base.iszero(x::ModuleElt)=isempty(x.d)
@@ -235,30 +235,22 @@ Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for (k,v) in a)
 Base.:-(a::ModuleElt,b::ModuleElt)=a+(-b)
 # forwarded methods
-Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
-Base.first(x::ModuleElt)=first(x.d)
-Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
-Base.length(x::ModuleElt)=length(x.d)
-Base.eltype(x::ModuleElt)=eltype(x.d)
-#function Base.push!(x::ModuleElt,y...)
-#  push!(x.d,y...)
-#  x
-#end
-#function Base.append!(x::ModuleElt,y...)
-#  append!(x.d,y...)
-#  x
-#end
+@inline Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
+@inline Base.first(x::ModuleElt)=first(x.d)
+@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
+@inline Base.length(x::ModuleElt)=length(x.d)
+@inline Base.eltype(x::ModuleElt)=eltype(x.d)
 
 function Base.convert(::Type{ModuleElt{K,V}},a::ModuleElt{K1,V1}) where {K,K1,V,V1}
   if K==K1
     if V==V1 a
     elseif iszero(a) zero(ModuleElt{K,V})
-    else ModuleElt([k=>convert(V,v) for (k,v) in a.d]...)
+    else ModuleElt([k=>convert(V,v) for (k,v) in a.d])
     end
   else 
     if iszero(a) zero(ModuleElt{K,V})
-    elseif V==V1  ModuleElt([convert(K,k)=>v for (k,v) in a.d]...)
-    else ModuleElt([convert(K,k)=>convert(V,v) for (k,v) in a.d]...)
+    elseif V==V1  ModuleElt([convert(K,k)=>v for (k,v) in a.d])
+    else ModuleElt([convert(K,k)=>convert(V,v) for (k,v) in a.d])
     end
   end
 end
@@ -280,7 +272,7 @@ function Base.show(io::IO,m::ModuleElt)
     v=sprint(show,v;context=io)
     k=showbasis(io,k)
     if !isempty(k)
-      if occursin(r"[-+*/]",v[nextind(v,0,2):end]) v="($v)" end
+      if occursin(r"[-+/]",v[nextind(v,0,2):end]) v="($v)" end
       if v=="1"  v="" end
       if v=="-1" v="-" end
     end

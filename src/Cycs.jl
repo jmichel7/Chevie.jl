@@ -121,8 +121,8 @@ import Gapjm: coefficients, root
 # export coefficients, root
 export E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, bracket_if_needed, constant
-using ..Util: factor, prime_residues, phi, gcd_repr
+using ..Util: fromTeX, bracket_if_needed, factor, prime_residues, phi, gcd_repr
+using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
                      # This selects the fastest.

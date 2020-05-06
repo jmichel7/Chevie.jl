@@ -64,7 +64,8 @@ Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: Util, fromTeX, ordinal, toM, factor
+using ..Util: Util, fromTeX, ordinal, toM
+import ..Util: factor
 using ..Cycs: Cyc
 using ..Pols: Pols, Pol, positive_part
 using ..GLinearAlgebra: GLinearAlgebra, solutionmat
@@ -197,11 +198,8 @@ end
 
 Mvp(a::Pair...)=Mvp(ModuleElt(a...))
 Mvp()=Mvp(ModuleElt(Pair{Monomial{Int},Int}[]))
-Mvp(v::Symbol)=Mvp(Monomial(v)=>1)
-Mvp(n::Number)=convert(Mvp,n)
-Mvps.Mvp(p::Pol)=p(Mvp(Pols.varname[]))
 
-macro Mvp(t) # Mvp x,y,z defines variables to be Mvp
+macro Mvp(t) # @Mvp x,y,z defines variables to be Mvp
   if t isa Expr
     for v in t.args
       Base.eval(Main,:($v=Mvp($(Core.QuoteNode(Symbol(v))))))
@@ -239,6 +237,15 @@ Base.convert(::Type{Mvp{T,N}},a::Number) where {T,N}=iszero(a) ?
  zero(Mvp{T,N}) : Mvp(one(Monomial{N})=>convert(T,a))
 Base.convert(::Type{Mvp{T,N}},a::Mvp{T1,N1}) where {T,T1,N,N1}=
   Mvp(convert(ModuleElt{Monomial{N},T},a.d))
+Base.convert(::Type{Mvp},x::Mvp)=x
+Base.convert(::Type{Mvp},v::Symbol)=Mvp(Monomial(v)=>1)
+Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
+                     p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
+Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
+Mvp(x::Symbol)=convert(Mvp,x)
+Mvp(x::Number)=convert(Mvp,x)
+Mvp(x::Pol)=convert(Mvp,x)
+Mvp(x::Mvp)=convert(Mvp,x)
 
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 
@@ -298,8 +305,9 @@ function Base.:^(x::Mvp, p::Real)
   elseif length(x.d)==1
     (m,c)=first(x.d)
     return Mvp(m^p=>c^p)
+  elseif p<0 return Base.power_by_squaring(inv(x),-p) 
+  else return Base.power_by_squaring(x,p)
   end
-  p<0 ? Base.power_by_squaring(inv(x),-p) : Base.power_by_squaring(x,p)
 end
 
 """
@@ -746,7 +754,7 @@ julia> factor(x*y-1)
  xy-1
 ```
 """
-function Util.factor(p::Mvp{T,N})where {T,N}
+function factor(p::Mvp{T,N})where {T,N}
   v=variables(p)
   r=length(v)+1
   m=zeros(T,r,r)//1

@@ -185,7 +185,7 @@ module Weyl
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, algebraic_centre, standard_parabolic,
  describe_involution, SubTorus, weightinfo, fundamental_group, relative_group,
- action
+ action, rootlengths
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -660,7 +660,7 @@ CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 """
 `coxgroup(type,rank[,bond])`
     
-This is equivalent to 'coxgroup(cartan(type,rank[,bond]))`.
+This is equivalent to 'rootdatum(cartan(type,rank[,bond]))`.
                           
 The  resulting object, that we will  call a *Coxeter datum*, has additional
 entries and functions describing various information on the root system and
@@ -668,28 +668,26 @@ Coxeter group that we describe below.
 
 `nref(W)`:   the number of positive roots
 
-`.rootdec`: the root vectors, given as linear combinations of simple roots.
-The  first  'nref(W)'  roots  are  positive,  the  next  'nref(W)'  are the
-corresponding negative roots. Moreover, the first 'semisimpleRank(W)' roots
+`W.rootdec`:  the  root  vectors,  given  as  linear combinations of simple
+roots.  The first 'nref(W)' roots are  positive, the next 'nref(W)' are the
+corresponding negative roots. Moreover, the first 'semisimplerank(W)' roots
 are the simple roots. The positive roots are ordered by increasing height.
 
-'coroots(W.G)':     the same   information    for  the  coroots.    The coroot
-       corresponding  to a given  root is in  the same relative position in
-       the list of coroots as the root in the list of roots.
+'coroots(W)':  the  same  information  for  the  simple coroots. The coroot
+corresponding  to a given root is in the same relative position in the list
+of coroots as the root in the list of roots.
 
-'rootLengths':   the vector of length of roots the simple roots.
-       The  shortest roots in an irreducible subsystem are given the length
-       1. The others then have length 2 (or 3 in type  G_2).  The matrix of
-       the <W>-invariant bilinear form is given by
-       'map(i->W.rootLengths[i]*W.cartan[i],1:semisimplerank(W)])/2'.
+'rootlengths(W)':  the  vector  of  length  of  roots the simple roots. The
+shortest  roots in  an irreducible  subsystem are  given the  length 1. The
+others  then  have  length  2  (or  3  in  type  G_2).  The  matrix  of the
+`W`-invariant bilinear form is given by
+'map(i->(rootLengths)[i]*W.cartan[i,:],1:semisimplerank(W))'.
 
-'orbitRepresentative':   this is a list of  same length as 'roots', which
-       for  each  root,  gives  the  smallest  index  of a root in the same
-       <W>-orbit.
+'simple_representatives(W)[i]':  this gives the  smallest index of  a root in
+the same `W`-orbit as the `i`-th root.
 
-'orbitRepresentativeElements':   a list of  same length as 'roots', which
-       for  the  i-th  root, gives an element  <w> of <W> of minimal length
-       such that 'i=orbitRepresentative[i]^w'.
+'simple_conjugating_element(W,i)': returns an element `w` of `W` of minimal
+length such that `i==simple_representative(W,i)^w'.
 
 `refrep(W)`:    the  matrices  (in  row  convention  ---  that is the matrices
      operate  *from the right*) of the  simple reflections of the Coxeter group.
@@ -790,7 +788,7 @@ end
 function rootlengths(W::FCG)
   gets(W,:rootlengths)do
     C=cartan(W)
-    lengths=fill(zero(eltype(C)),2*W.N)
+    lengths=fill(eltype(C)(1),2*W.N)
     for t in refltype(W)
       I=t.indices
       if length(I)>1 && C[I[1],I[2]]!=C[I[2],I[1]]
@@ -832,9 +830,9 @@ function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
 end
 
 "for each root index of simple representative"
-CoxGroups.simple_representatives(W::FCG)=simple_representatives(W.G)
+PermRoot.simple_representatives(W::FCG)=simple_representatives(W.G)
   
-simple_conjugating_element(W::FCG,i)=
+PermRoot.simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
 
 PermRoot.reflection(W::FCG,i::Integer)=reflection(W.G,i)
@@ -993,7 +991,11 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
   prop[:refltype]=map(prop[:refltype]) do t
    if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
-     getfield(t,:prop)[:short]=true
+     for s in refltype(W) 
+       if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
+          getfield(t,:prop)[:short]=true
+       end
+     end
    end
    t
   end

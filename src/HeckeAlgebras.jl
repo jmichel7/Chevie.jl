@@ -124,7 +124,8 @@ module HeckeAlgebras
 using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
-  isrepresentation
+  isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
+  VFactorSchurElement
 
 struct HeckeAlgebra{C,TW}
   W::TW
@@ -669,6 +670,220 @@ function schur_elements(H::HeckeAlgebra)
      haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))[1],
       first.(charinfo(W)[:charparams]))
 end
+#----------------------- Factorized Schur elements
+struct FactSchur
+  factor::Mvp{Cyc{Rational{Int}},Int}
+  vcyc::Vector{NamedTuple{(:pol,:monomial),
+         Tuple{CycPol{Int},Mvp{Cyc{Rational{Int}},Rational{Int}}}}}
+end
+
+function Base.show(io::IO,x::FactSchur)
+ v=map(x.vcyc) do l
+    if get(io,:Maple,false)
+      "("*sprint(show,l.pol(l.monomial);context=io)*")"
+    else
+      sprint(show,l.pol;context=io)*"("*sprint(show,l.monomial;context=io)*")"
+    end
+  end
+  if get(io,:GAP,false) || get(io,:Maple,false) v=join(v,"*")
+  else v=join(v,"")
+  end
+# return FormatCoefficient(x.factor, v, options)
+  c=sprint(show,x.factor;context=io)
+  if length(v)>0 && degree(x.factor)==0
+    c= c=="1" ? "" : c=="-1" ?  "-" : bracket_if_needed(c) 
+  end
+  print(io,c,v)
+end
+
+expand(x::FactSchur)=x.factor*prod(v->v.pol(v.monomial),x.vcyc)
+
+Base.:*(a::FactSchur, b::Number)=FactSchur(a.factor*b,copy(a.vcyc))
+Base.:*(b::Number,a::FactSchur)=FactSchur(a.factor*b,copy(a.vcyc))
+
+function Base.:*(a::FactSchur, b::FactSchur)
+  vcyc=copy(a.vcyc)
+  for t in b.vcyc
+    p = findfirst(x->x.monomial == t.monomial,vcyc)
+    if isnothing(p) push!(vcyc, t)
+    else vcyc[p]=(pol=vcyc[p].pol*t.pol,monomial=vcyc[p].monomial)
+    end
+  end
+  FactSchur(a.factor*b.factor,filter(x->degree(x.pol)>0,vcyc))
+end
+
+Base.://(a::FactSchur, b::Number)=FactSchur(a.factor//b,copy(a.vcyc))
+
+function Base.://(a::Number, b::FactSchur)
+  FactSchur(a//b.factor,map(t->(pol=1//t.pol,monomial=t.monomial),a.vcyc))
+end
+
+function Base.://(a::FactSchur,b::FactSchur)
+  vcyc=copy(a.vcyc)
+  for t in b.vcyc
+    p=findfirst(x->x.monomial==t.monomial,vcyc)
+    if isnothing(p) push!(vcyc,(pol=1//t.pol,monomial=t.monomial))
+    else vcyc[p]=(pol=vcyc[p].pol//t.pol,monomial=vcyc[p].monomial)
+    end
+  end
+  FactSchur(a.factor//b.factor,filter(x->degree(x.pol)>0,vcyc))
+end
+
+function (x::FactSchur)(y...;z...)
+  Simplify(FactSchur(x.factor(y...;z...),
+        map(p->(pol=p.pol,monomial=p.monomial(y...;z...)) , x.vcyc)))
+end
+
+function Simplify(res::FactSchur)
+  R=Rational{Int}
+  T=Cyc{R}
+  evcyc=NamedTuple{(:pol,:monomial,:power),Tuple{CycPol{T},Mvp{T,R},R}}[]
+  factor=res.factor
+  for (pol,monomial) in res.vcyc
+    k=scal(monomial)
+    if !isnothing(k)
+      factor*=pol(k)
+      continue
+    end
+    k=values(first(monomial.d)[1].d)
+    if k[1]<0
+      pol=descent_of_scalars(pol,-1)
+      k=-k
+      monomial=inv(monomial)
+      factor*=pol.coeff*monomial^pol.valuation
+      pol=CycPol(1,0,pol.v)
+    end
+    c=first(monomial.d)[2]
+    n=c*conj(c)
+    if isinteger(n)
+      n=root(n)//c
+      if n!=1
+        monomial*=n
+        pol=ennola_twist(pol,1//n)
+        factor*=pol.coeff
+        if isone(pol.coeff^2) pol*=pol.coeff
+        else pol//=pol.coeff
+        end
+      end
+    end
+    power=abs(gcd(numerator.(k)))//lcm(denominator.(k))
+    monomial=monomial^(1//power)
+    push!(evcyc,(pol=pol,monomial=monomial,power=power))
+  end
+  if isempty(evcyc) 
+    FactSchur(factor,NamedTuple{(:pol,:monomial),Tuple{CycPol{T},Mvp{T,R}}}[])
+  else
+    vcyc=map(collectby(x->x.monomial,evcyc))do fil
+      D=lcm(map(x->denominator(x.power), fil))
+      P=prod(x->descent_of_scalars(x.pol,D*x.power),fil)
+      p=P(Pol([1],1))
+      p=improve_type(p)
+      f=filter(i->p.c[i]!=0,eachindex(p.c))-1
+      f=gcd(gcd(f),D)
+      if f>1
+        p=Pol(p.c[1:f:length(p.c)],0)
+        D//=f
+      end
+      (pol=CycPol(p), monomial=fil[1].monomial^(1//D))
+    end
+    FactSchur(factor,vcyc)
+  end
+end
+
+function Base.lcm(l::FactSchur...)
+  l=vcat(map(x->x.vcyc,l)...)
+  l=collectby(x->x.monomial,l)
+  l=map(x->[x[1].monomial, lcm(map(y->y.pol,x)...)] , l)
+  FactSchur(1,map(x->(pol=x[2],monomial=x[1]),l))
+end
+
+function VFactorSchurElement(para,r,data=nothing,u=nothing)
+  n=length(para)
+  if isnothing(data) para=copy(para)
+  else para=para[data[:order]]
+  end
+  function monomial(v)
+    res=prod(i->para[i]^v[i],1:n)
+    if length(v)==n+1 res*=rt^v[end] end
+    res
+  end
+  factor=haskey(r,:coeff) ? r[:coeff] : 1
+  if haskey(r, :factor) factor*= monomial(r[:factor]) end
+  if haskey(r, :root)
+    den=lcm(denominator.(r[:root]))
+    rt=monomial(r[:root]*den)
+    if haskey(r, :rootCoeff) rt*=r[:rootCoeff] end
+    rt=root(rt,den)
+    if !isnothing(data) rt*=data[:rootPower] end
+  elseif haskey(r, :rootUnity)
+    rt=r[:rootUnity]^data[:rootUnityPower]
+  end
+  vcyc=[(pol=CycPol([1,0,p]),monomial=Mvp(monomial(v))) for (v,p) in r[:vcyc]]
+  if factor==0 || isempty(vcyc) return factor end
+  return Simplify(FactSchur(factor,vcyc))
+end
+
+"""
+`FactorizedSchurElement(H,phi)`
+
+returns  the factorized `schur_element` (see `FactorizedSchurElements`) of the
+Hecke  algebra  `H`  for  the  irreducible  character of `H` of
+parameter `phi` (see `charinfo(W)[:charparams]`)
+
+```julia-repl
+julia> W=ComplexReflectionGroup(4)
+G₄
+
+julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
+hecke(G₄,Mvp{Int64}[1, x, y])
+
+julia> FactorizedSchurElement(H,[[2,5]])
+-x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
+```
+"""
+function FactorizedSchurElement(H::HeckeAlgebra,phi)
+  t=map(refltype(H.W),phi)do t,psi
+     getchev(t,:FactorizedSchurElement,psi, 
+             H.para[t.indices], 
+   haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : nothing)
+  end
+  if false in t return false
+  else return prod(t)
+  end
+end
+
+"""
+`FactorizedSchurElements(H)`
+
+Let  `H` be  a Hecke  algebra for  the complex  reflection group `W`, whose
+parameters are all (Laurent) monomials in some variables `x₁,…,xₙ`, and let
+K  be the field of definition of `W`. Then Maria Chlouveraki has shown that
+the  Schur elements  of `H`  then take  the particular  form `M ∏_Φ Φ(M_Φ)`
+where  `Φ` runs over a list of  K-cyclotomic polynomials, and `M` and `M_Φ`
+are  (Laurent)  monomials  (in  possibly  some  fractional  powers)  of the
+variables  `xᵢ`.  The  function  `FactorizedSchurElements`  returns  a data
+structure which shows this factorization.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(4)
+G₄
+
+julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
+hecke(G₄,Mvp{Int64}[1, x, y])
+
+julia> FactorizedSchurElements(H)
+7-element Array{Gapjm.HeckeAlgebras.FactSchur,1}:
+ x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)
+ Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
+ -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)
+ -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
+ -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)
+ x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)
+ x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)
+```
+"""
+FactorizedSchurElements(H::HeckeAlgebra)=
+    map(p->FactorizedSchurElement(H,p),charinfo(H.W)[:charparams])
 #---------------------- Hecke Cosets
 
 struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}

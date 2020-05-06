@@ -222,7 +222,6 @@ Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   (1,2)   => [1]
   (1,2,3) => [2]
 ```
-  This Dict is stored in `G.prop[:words]` so it is computed only once.
 """
 function minimal_words(G::Group)
   gets(G,:words)do

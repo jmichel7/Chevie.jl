@@ -155,6 +155,8 @@ central_monomials
 class_polynomials
 char_values
 schur_elements
+FactorizedSchurElement
+FactorizedSchurElements
 isrepresentation
 refrep(::HeckeAlgebra)
 ```

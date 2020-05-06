@@ -57,7 +57,6 @@ end
 @test mytest("partition_tuples(3,2)","10-element Array{Array{Array{Int64,1},1},1}:\n [[1, 1, 1], []]\n [[1, 1], [1]]\n [[1], [1, 1]]\n [[], [1, 1, 1]]\n [[2, 1], []]\n [[1], [2]]\n [[2], [1]]\n [[], [2, 1]]\n [[3], []]\n [[], [3]]")
 @test mytest("conjugate_partition([4,2,1])","4-element Array{Int64,1}:\n 3\n 2\n 1\n 1")
 @test mytest("conjugate_partition([6])","6-element Array{Int64,1}:\n 1\n 1\n 1\n 1\n 1\n 1")
-@test mytest("dominates([5,4],[4,4,1])","true")
 @test mytest("compositions(4)","8-element Array{Array{Int64,1},1}:\n [1, 1, 1, 1]\n [2, 1, 1]\n [1, 2, 1]\n [3, 1]\n [1, 1, 2]\n [2, 2]\n [1, 3]\n [4]")
 @test mytest("compositions(4,2)","3-element Array{Array{Int64,1},1}:\n [3, 1]\n [2, 2]\n [1, 3]")
 @test mytest("Combinat.submultisets(1:4,3)","20-element Array{Array{Int64,1},1}:\n [1, 1, 1]\n [1, 1, 2]\n [1, 1, 3]\n [1, 1, 4]\n [1, 2, 2]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 3]\n [1, 3, 4]\n [1, 4, 4]\n [2, 2, 2]\n [2, 2, 3]\n [2, 2, 4]\n [2, 3, 3]\n [2, 3, 4]\n [2, 4, 4]\n [3, 3, 3]\n [3, 3, 4]\n [3, 4, 4]\n [4, 4, 4]")
@@ -387,6 +386,12 @@ end
 @test mytest("H=hecke(ComplexReflectionGroup(4),Pol(:q))","hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])")
 @test mytest("s=schur_elements(H)","7-element Array{Pol{Cyc{Rational{Int64}}},1}:\n q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1\n 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴\n -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴\n 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴\n (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹\n (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹\n q²+2q+2+2q⁻¹+q⁻²")
 @test mytest("CycPol.(s)","7-element Array{CycPol{Cyc{Rational{Int64}}},1}:\n Φ₂²Φ₃Φ₄Φ₆\n (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆\n (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆\n 2q⁻⁴Φ₃Φ₄\n (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆\n (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆\n q⁻²Φ₂²Φ₄")
+@test mytest("W=ComplexReflectionGroup(4)","G₄")
+@test mytest("@Mvp x,y; H=hecke(W,[[1,x,y]])","hecke(G₄,Mvp{Int64}[1, x, y])")
+@test mytest("FactorizedSchurElement(H,[[2,5]])","-x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)")
+@test mytest("W=ComplexReflectionGroup(4)","G₄")
+@test mytest("@Mvp x,y; H=hecke(W,[[1,x,y]])","hecke(G₄,Mvp{Int64}[1, x, y])")
+@test mytest("FactorizedSchurElements(H)","7-element Array{Gapjm.HeckeAlgebras.FactSchur,1}:\n x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)\n Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)\n -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)\n -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)\n -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)\n x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)\n x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)")
 end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:H,3)","H₃")
@@ -649,6 +654,7 @@ end
 @test mytest("^(M,p;dims=(1,2))==N","true")
 end
 @testset "Symbols.jl" begin
+@test mytest("dominates([5,4],[4,4,1])","true")
 @test mytest("d=partition_tuples(3,2)","10-element Array{Array{Array{Int64,1},1},1}:\n [[1, 1, 1], []]\n [[1, 1], [1]]\n [[1], [1, 1]]\n [[], [1, 1, 1]]\n [[2, 1], []]\n [[1], [2]]\n [[2], [1]]\n [[], [2, 1]]\n [[3], []]\n [[], [3]]")
 @test mytest("PartitionTupleToString.(d)","10-element Array{String,1}:\n \"111.\"\n \"11.1\"\n \"1.11\"\n \".111\"\n \"21.\"\n \"1.2\"\n \"2.1\"\n \".21\"\n \"3.\"\n \".3\"")
 @test mytest("shiftβ([4,5],3)","5-element Array{Int64,1}:\n 0\n 1\n 2\n 7\n 8")

@@ -8,7 +8,6 @@ The code is divided in sections  according to semantics.
 module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
-  groupby, constant, tally, collectby, # lists
   format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, 
   cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
@@ -19,10 +18,11 @@ export ds # dump struct
 toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
 
+printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
 function ds(s)
   println(typeof(s),":")
   for f in fieldnames(typeof(s))
-    println(f,"=",getfield(s,f))
+    printc(f,"=",getfield(s,f),"\n")
   end
 end
 
@@ -45,66 +45,6 @@ function getp(f::Function,o,p::Symbol)
   o.prop[p]
 end
 #--------------------------------------------------------------------------
-"""
-  group items of list l according to the corresponding values in list v
-
-    julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
-           [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
-    Dict{Int64,Array{Symbol,1}} with 3 entries:
-      31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
-      28 => Symbol[:Feb]
-      30 => Symbol[:Apr, :Jun, :Sep, :Nov]
-
-"""
-function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
-  res=Dict{K,Vector{V}}()
-  for (k,val) in zip(v,l) push!(get!(res,k,V[]),val) end
-  res
-end
-
-"""
-  group items of list l according to the values taken by function f on them
-
-    julia> groupby(iseven,1:10)
-    Dict{Bool,Array{Int64,1}} with 2 entries:
-      false => [1, 3, 5, 7, 9]
-      true  => [2, 4, 6, 8, 10]
-
-Note:in this version l is required to be non-empty since I do not know how to
-access the return type of a function
-"""
-function groupby(f,l::AbstractArray)
-  res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
-  for val in l[2:end]
-    push!(get!(res,f(val),empty(l)),val)
-  end
-  res
-end
-
-"count how many times each element of v occurs and return a list of (elt,count)"
-tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
-
-"group the elements of v in packets where f takes the same value"
-function collectby(f,v)
-  d=groupby(f,v)
-  [d[k] for k in sort(collect(keys(d)))]
-end
-
-" whether all elements in list a are equal"
-function constant(a::AbstractArray)
-   all(i->a[i]==a[1],2:length(a))
-end
-
-# faster than unique! for sorted vectors
-function unique_sorted(v::Vector)
-  i=1
-@inbounds  for j in 2:length(v)
-    if v[j]==v[i]
-    else i+=1; v[i]=v[j]
-    end
-  end
-  resize!(v,i)
-end
 #----------------------- Formatting -----------------------------------------
 const supchars  =
  "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
@@ -276,7 +216,6 @@ end
 
 # show/print with attributes...
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
-printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
 
 joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
                  string(sep[1:1],join(l,","),sep[2:2]) : join(l)

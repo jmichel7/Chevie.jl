@@ -63,7 +63,7 @@ julia> CycPols.show_factors(24)
 """
 module CycPols
 
-export CycPol
+export CycPol,descent_of_scalars,ennola_twist
 # to use as a stand-alone module uncomment the next line
 # export roots, degree
 import Gapjm: roots
@@ -80,6 +80,9 @@ struct CycPol{T}
   valuation::Int
   v::ModuleElt{Root1,Int}
 end
+
+Base.convert(::Type{CycPol{T1}},p::CycPol{T}) where {T1,T}=T==T1 ? p :
+                               CycPol(T1(p.coeff),p.valuation,p.v)
 
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v]))
@@ -127,7 +130,7 @@ Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 Base.iszero(a::CycPol)=iszero(a.coeff)
 
-Gapjm.degree(a::CycPol)=sum(last,a.v)+a.valuation+degree(a.coeff)
+Gapjm.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
 Gapjm.valuation(a::CycPol)=a.valuation
 Gapjm.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
 Gapjm.valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
@@ -407,7 +410,7 @@ function (p::CycPol)(x)
   if !isempty(p.v)
     for v in segment(p.v)
       pp=prod((x-E(r))^m for (r,m) in v)
-#     if all(isone,conductor.(pp.c)) pp=Pol(convert.(Int,pp.c),pp.v) end
+#     pp=improve_type(pp)
       res*=pp
       if iszero(res) return res end
     end
@@ -415,4 +418,28 @@ function (p::CycPol)(x)
   res*p.coeff
 end
 
+# Fast routine for CycPol(Value(p,q*e)) for a root of unity e
+function ennola_twist(p::CycPol,e)
+  coeff=improve_type(p.coeff*e^degree(p))
+  re=Root1(e)
+  vcyc=[r*inv(re)=>m for (r,m) in p.v]
+  CycPol(coeff,p.valuation,ModuleElt(vcyc,check=true))
+end
+
+# Fast routine for  CycPol(Value(p,q^n))
+function descent_of_scalars(p::CycPol,n)
+  if n==0 return CycPol(value(p,1)) end
+  n=Int(n)
+  valuation=n*p.valuation
+  if n>0
+    coeff=p.coeff
+    vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:n-1).+r.r)/n) for (r,pow) in p.v)...)
+  else
+    valuation+=n*sum(values(p.v))
+    coeff=p.coeff*(-1)^sum(values(p.v))*E(prod(r^p for (r,p) in p.v))
+    vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:-n-1).-r.r)/-n) for (r,pow) in p.v)...)
+  end
+  CycPol(coeff,valuation,ModuleElt(vcyc;check=true))
+end
+    
 end
