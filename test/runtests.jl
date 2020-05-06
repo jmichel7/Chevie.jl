@@ -186,8 +186,8 @@ end
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("position_regular_class(W,30)","65")
 @test mytest("W=ComplexReflectionGroup(6)","G₆")
-@test mytest("L=twistings(W,[2])[2]","G₃‚₁‚₁[ζ₄]Φ′₄")
-@test mytest("position_regular_class(L,7//12)","3")
+@test mytest("L=twistings(W,[2])[3]","G₃‚₁‚₁[ζ₄]Φ′₄")
+@test mytest("position_regular_class(L,7//12)","2")
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("w=W(1:3...)","(1,12,3,2)(4,11,10,5)(6,9,8,7)")
 @test mytest("p=eigenspace_projector(W,w,1//4)","3×3 Array{Cyc{Rational{Int64}},2}:\n  1/4+ζ₄/4   ζ₄/2  -1/4+ζ₄/4\n  1/4-ζ₄/4    1/2   1/4+ζ₄/4\n -1/4-ζ₄/4  -ζ₄/2   1/4-ζ₄/4")
@@ -500,7 +500,7 @@ end
 end
 @testset "PermGroups.jl" begin
 @test mytest("G=Group([Perm(i,i+1) for i in 1:2])","Group([perm\"(1,2)\",perm\"(2,3)\"])")
-@test mytest("collect(G)","6-element Array{Perm{Int16},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
+@test mytest("collect(Iterator(G))","6-element Array{Perm{Int16},1}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
 @test mytest("degree(G)","3")
 @test mytest("Perm(1,2) in G","true")
 @test mytest("Perm(1,2,4) in G","false")
@@ -511,7 +511,7 @@ end
 @test mytest("stab_onmat(fourier(uc.families[20]))","Group([perm\"(7,38)\",perm\"(39,44)(40,43)(41,42)\"])")
 @test mytest("m=cartan(:D,12);","nothing")
 @test mytest("n=^(m,Perm(1,5,2,8,12,4,7)*Perm(3,9,11,6);dims=(1,2));","nothing")
-@test mytest("perm_onmat(m,n)","Perm{Int64}: (1,5,2,8,12,4,7)(3,9,11,6)")
+@test mytest("perm_onmat(m,n)","(1,5,2,8,12,4,7)(3,9,11,6)")
 end
 @testset "PermRoot.jl" begin
 @test mytest("W=coxgroup(:A,3)","A₃")
@@ -582,7 +582,7 @@ end
 @test mytest("orbits(Perm(1,2)*Perm(4,5),1:5)","3-element Array{Array{Int16,1},1}:\n [1, 2]\n [3]\n [4, 5]")
 @test mytest("cycles(Perm(1,2)*Perm(4,5))","2-element Array{Array{Int16,1},1}:\n [1, 2]\n [4, 5]")
 @test mytest("cycletype(Perm(1,2)*Perm(3,4))","1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:\n (2, 1) => 2")
-@test mytest("mappingPerm([1,2,5,3],[2,3,4,6])","Perm{Int64}: (1,2,3,6,5,4)")
+@test mytest("mappingPerm([1,2,5,3],[2,3,4,6])","(1,2,3,6,5,4)")
 end
 @testset "Pols.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")

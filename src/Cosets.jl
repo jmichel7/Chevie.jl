@@ -423,7 +423,7 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   end
   L=reflection_subgroup(W,J)
   N=normalizer(W,L)
-  W_L=N/L.G
+  W_L=N/L
   if !isone(WF.phi) error( "not implemented for twisted parent Spets" ) end
   if length(W_L)>=10
     H=Group(map(x->GetRelativeAction(W,L,x.phi),gens(W_L)))
@@ -441,8 +441,8 @@ function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   L=reflection_subgroup(W,J)
   s=unique!(sort(reflections(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
-  W_L=C/L.G
-  map(x->reduced(L.G,x.phi),class_reps(W_L))
+  W_L=C/L
+  map(x->reduced(L,x.phi),class_reps(W_L))
 end
 
 twistings(W::PermRootGroup,J::AbstractVector{<:Integer})=
@@ -514,7 +514,7 @@ end
 #  print(io,"Spets{",TW,"}")
 #end
 
-Groups.Coset(W::PermRootGroup,w)=spets(W,w)
+Groups.Coset(W::PermRootGroup,w::Perm)=spets(W,w)
 
 spets(phi,F::Matrix,W::PermRootGroup,P::Dict{Symbol,Any})=PRC(phi,F,W,P)
 

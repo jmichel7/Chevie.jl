@@ -299,17 +299,10 @@ function Base.show(io::IO,d::Diagram)
 end
 
 #---------------------------------------------------------------------------
-abstract type PermRootGroup{T,T1<:Integer}<:Group{Perm{T1}} end 
+abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end 
 
-PermGroups.PermGroup(W::PermRootGroup)=W.G
 Diagram(W::PermRootGroup)=Diagram(refltype(W))
-gens(W::PermRootGroup)=gens(W.G)
-degree(W::PermRootGroup)=degree(W.G)
-Base.length(W::PermRootGroup)=length(W.G)
-Base.iterate(W::PermRootGroup,x...)=iterate(W.G,x...)
-Base.eltype(W::PermRootGroup)=eltype(W.G)
 Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
-Base.in(w,W::PermRootGroup)=in(w,W.G)
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 # should use independent_roots
@@ -815,7 +808,7 @@ end
 
 function PermGroups.conjugacy_classes(W::PermRootGroup)
   gets(W,:classes)do
-    sort(conjugacy_classes(W.G),by=c->findfirst(w->w in c,class_reps(W)))
+    map(x->orbit(W,x),class_reps(W))
   end
 end
   
@@ -943,7 +936,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
 end
 
 function PermGroups.class_reps(W::PermRootGroup)
-  gets(W.G,:classreps)do
+  gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
@@ -1052,10 +1045,10 @@ end
 
 #--------------- PRG: an implementation of PermRootGroups--------------------
 struct PRG{T,T1}<:PermRootGroup{T,T1}
+  gens::Vector{Perm{T1}}
   matgens::Vector{Matrix{T}}
   roots::Vector{Vector{T}}
   coroots::Vector{Vector{T}}
-  G::PermGroup{T1}
   prop::Dict{Symbol,Any}
 end
 
@@ -1091,7 +1084,7 @@ function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVe
     end
 #   println(" ",length(roots))
   end
-  PRG(matgens,roots,cr,Group(Perm{Int16}.(refls)),Dict{Symbol,Any}())
+  PRG(Perm{Int16}.(refls),matgens,roots,cr,Dict{Symbol,Any}())
 end
 
 @inline roots(W::PRG)=W.roots
@@ -1209,7 +1202,7 @@ end
   
 #--------------- type of subgroups of PRG----------------------------------
 struct PRSG{T,T1}<:PermRootGroup{T,T1}
-  G::PermGroup{T1}
+  gens::Vector{Perm{T1}}
   inclusion::Vector{Int}
   restriction::Vector{Int}
   parent::PRG{T,T1}
@@ -1237,13 +1230,13 @@ function reflection_subgroup(W::PRG,I::AbstractVector)
   else G=PRG(W.roots[I],coroot.(Ref(W),I))
        inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   end
-  G=Group(reflections(W)[I])
   prop=Dict{Symbol,Any}()
   if isempty(inclusion) prop[:rank]=rank(W) end
   restriction=zeros(Int,length(W.roots))
   restriction[inclusion]=1:length(inclusion)
-  PRSG(G,inclusion,restriction,W,prop)
+  PRSG(reflections(W)[I],inclusion,restriction,W,prop)
 end
+
 reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
    reflection_subgroup(parent(W),inclusion(W)[I])
 

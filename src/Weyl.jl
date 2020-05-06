@@ -744,8 +744,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   # permutations of the roots effected by mats
   gens=map(M->Perm(r,Ref(permutedims(M)).*r),mats)
   rank=size(C,1)
-  G=PRG(mats,r,map(i->cr[i,:],1:rank),Group(gens),
-    Dict{Symbol,Any}(:cartan=>C))
+  G=PRG(gens,mats,r,map(i->cr[i,:],1:rank),Dict{Symbol,Any}(:cartan=>C))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
@@ -764,8 +763,8 @@ julia> torus(3)
 ```
 """
 function torus(i)
-  G=PRG(Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-   Group(Perm{Int16}[]),Dict{Symbol,Any}(:rank=>i))
+  G=PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],
+    Dict{Symbol,Any}(:rank=>i))
   FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
 end
 
@@ -1000,8 +999,8 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
    t
   end
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
-  G=isempty(I) ? Group(Perm{T}[]) : Group(reflection.(Ref(W),I))
-  G=PRSG(G,inclusion,restriction,W.G,prop)
+  gens=isempty(I) ? Perm{T}[] : reflection.(Ref(W),I)
+  G=PRSG(gens,inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,N,W,prop)
 end
 

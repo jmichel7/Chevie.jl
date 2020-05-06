@@ -57,29 +57,26 @@ julia> transversals(G)
 finally, benchmarks on julia 1.0.1
 ```benchmark
 julia> @btime length(collect(symmetric_group(8)))
-  5.481 ms (270429 allocations: 12.40 MiB)
+  5.995 ms (391728 allocations: 13.89 MiB)
 
 julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
+  
+julia> @btime length(elements(symmetric_group(8)))
+  2.136 ms (98328 allocations: 5.94 MiB)
 ```
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms
-using ..Gapjm # for degree, gens, minimal_words
+using ..Gapjm: degree
+using ..Groups: gens, minimal_words
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
   stab_onmat, perm_onmat, perm_rowcolmat
 #-------------------- now permutation groups -------------------------
-struct PermGroup{T}<:Group{Perm{T}}
-  gens::Vector{Perm{T}}
-  prop::Dict{Symbol,Any}
-end
+abstract type PermGroup{T}<:Group{Perm{T}} end
 
 PermGroup(W::PermGroup)=W
-
-function Groups.Group(a::AbstractVector{Perm{T}}) where T
-  PermGroup(filter(!isone,a),Dict{Symbol,Any}())
-end
 
 PermGroup()=Group(Perm{Int16}[])
 
@@ -112,9 +109,6 @@ function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
   end
   res
 end
-
-" The symmetric group of degree n "
-symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 """
  The input is
@@ -253,34 +247,34 @@ end
 
 Base.eltype(::Type{GroupProdIterator{T}}) where T=eltype(T)
 #------------------------- iteration for PermGroups -----------------------
-function Base.length(G::PermGroup)::Int
+function Base.length(G::PermGroup)
   gets(G,:length)do
     prod(length.(transversals(G)))
   end
 end
 
-Base.eltype(::Type{PermGroup{T}}) where T=Perm{T}
+Base.eltype(::Type{<:PermGroup{T}}) where T=Perm{T}
 
+# iterating I directly is faster, but how to do that?
 function Base.iterate(G::PermGroup)
   I=GroupProdIterator(reverse(values.(transversals(G))))
   u=iterate(I)
-  if !isnothing(u) 
-    first(u),(I,last(u))
-  end
+  if isnothing(u) return u end
+  p,st=u
+  p,(I,st)
 end
 
 function Base.iterate(G::PermGroup,(I,state))
   u=iterate(I,state)
-  if !isnothing(u) 
-    first(u),(I,last(u))
-  end
+  if isnothing(u) return u end
+  p,st=u
+  p,(I,st)
 end
 
 # elements is much faster than collect(G), should not be
 function Gapjm.elements(G::PermGroup)
-  t=reverse(collect.(values.(transversals(G))))
-  if isempty(t) return [one(G)] end
-  res=t[1]
+  t=reverse(values.(transversals(G)))
+  res=collect(t[1])
   for i in 2:length(t)
     res=vcat(map(x->res.*x,t[i])...)
   end
@@ -300,6 +294,19 @@ end
 function Groups.Coset(W::PermGroup,phi::Perm)
   Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
 end
+
+#-------------------------- now the concrete type-------------------------
+struct PG{T}<:PermGroup{T}
+  gens::Vector{Perm{T}}
+  prop::Dict{Symbol,Any}
+end
+
+function Groups.Group(a::AbstractVector{Perm{T}}) where T
+  PG(filter(!isone,a),Dict{Symbol,Any}())
+end
+
+" The symmetric group of degree n "
+symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
 OnMats(m,g)=^(m,g;dims=(1,2))
@@ -353,7 +360,7 @@ function stab_onmat(M,extra=nothing)
   for r in blocks
     if length(r)>7 println("#I Large Block:",r) end
     if length(r)>1
-      gr=stab_onmat(CoxSym(length(r)), M[r,r])
+      gr=stab_onmat(symmetric_group(length(r)), M[r,r])
       g=Group(vcat(gens(g),gens(gr).^mappingPerm(eachindex(r),r)))
     end
     append!(I,r)
@@ -380,7 +387,7 @@ julia> m=cartan(:D,12);
 julia> n=^(m,Perm(1,5,2,8,12,4,7)*Perm(3,9,11,6);dims=(1,2));
 
 julia> perm_onmat(m,n)
-Perm{Int64}: (1,5,2,8,12,4,7)(3,9,11,6)
+(1,5,2,8,12,4,7)(3,9,11,6)
 ```
 """
 function perm_onmat(M,N,m=nothing,n=nothing)

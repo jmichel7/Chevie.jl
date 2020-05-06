@@ -183,11 +183,11 @@ julia> position_regular_class(W,30)
 julia> W=ComplexReflectionGroup(6)
 G₆
 
-julia> L=twistings(W,[2])[2]
+julia> L=twistings(W,[2])[3]
 G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> position_regular_class(L,7//12)
-3
+2
 ```
 """
 position_regular_class(W,d::Integer)=position_regular_class(W,Root1(1,d))

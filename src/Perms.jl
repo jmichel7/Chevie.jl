@@ -564,14 +564,15 @@ function finds a permutation `p` such that `a.^p==b`.
 
 ```julia-repl
 julia> mappingPerm([1,2,5,3],[2,3,4,6])
-Perm{Int64}: (1,2,3,6,5,4)
+(1,2,3,6,5,4)
 ```
 """
-function mappingPerm(a,b)
+function mappingPerm(::Type{T},a,b)where T
   r=1:max(maximum(a),maximum(b))
   a=vcat(a,setdiff(r,a))
   b=vcat(b,setdiff(r,b))
-  Perm(a)\Perm(b)
+  Perm{T}(a)\Perm{T}(b)
 end
+mappingPerm(a,b)=mappingPerm(Int16,a,b)
 
 end
