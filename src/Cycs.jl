@@ -8,20 +8,20 @@ groups are cyclotomics.
 They  have a normal form given by writing them in the Zumbroich basis. This
 form  allows to find  the smallest Cyclotomic  field which contains a given
 number,   and  decide   in  particular   if  a   cyclotomic  is  zero.  Let
-ζₙ=exp(2iπ/n). The Zumbroich basis of ℚ (ζₙ) is a particular subset of size
-φ(n) of 1,ζₙ,ζₙ²,…,ζₙⁿ⁻¹ which forms a basis of ℚ (ζₙ).
+ζₙ=exp(2iπ/n).  The Zumbroich basis is a  particular subset of size φ(n) of
+1,ζₙ,ζₙ²,…,ζₙⁿ⁻¹ which forms a basis of ℚ (ζₙ).
 
 I  started  this  file  by  porting  Christian  Stump's Sage code, which is
 simpler to understand than GAP's code. The reference for the algorithms is
 
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
-As  does GAP,  I lower  automatically numbers  after each computation; this
-makes  this  code  about  50%  slower  than  GAP since lower is not as much
-optimized.  GAP also converts a Cyclotomic which is rational to a Rational,
-a  Rational which is integral to an Int, a BigInt which is small to a small
-Int,  etc... This is tremendously useful but  needs a new type of number to
-be added to Julia, which I am not competent enough to try.
+As  does  GAP,  I  lower  automatically  numbers  after  each  computation;
+currently  the code about 50% slower than the C code in GAP since it is not
+as  much optimized. GAP also  converts a Cyclotomic which  is rational to a
+Rational,  a Rational which is integral to  an Int, a BigInt which is small
+to  a small Int, etc... This is tremendously useful but needs a new type of
+number to be added to Julia, which I am not competent enough to try.
 
 The main way to build a Cyclotomic number is to use the function `E(n,k=1)`
 which constructs ζₙᵏ.
@@ -40,7 +40,7 @@ Cyc{Int64}: -ζ₃
 julia> a=E(4)-E(4)
 Cyc{Int64}: 0
 
-julia> conductor(a) # a is lowered to ℚ (ζ_1)=ℚ 
+julia> conductor(a) # a has been lowered to ℚ (ζ₁)=ℚ 
 1
 
 julia> typeof(convert(Int,a))
@@ -49,26 +49,23 @@ Int64
 julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
-julia> c=inv(1+E(4)) # inverses need Rationals
+julia> inv(1+E(4)) # inverses often need Rational coefficients
 Cyc{Rational{Int64}}: 1/2-ζ₄/2
 
-julia> typeof(c)
-Cyc{Rational{Int64}}
+julia> inv(E(5)+E(5,4)) # but not always
+Cyc{Int64}: -ζ₅²-ζ₅³
 
-julia> typeof(1+E(4))
-Cyc{Int64}
+julia> Cyc(1//2+im) # one can convert Gaussian integers or rationals
+Cyc{Rational{Int64}}: 1/2+ζ₄
 
-julia> Cyc(1+im) # one can convert Gaussian integers or rationals
-Cyc{Int64}: 1+ζ₄
-
-julia> 1//(1+E(4))
-Cyc{Rational{Int64}}: 1/2-ζ₄/2
-
-julia> typeof(Cyc(1//2)) # another way of building a Cyc
-Cyc{Rational{Int64}}
-
-julia> conj(1+E(4))
+julia> conj(1+E(4)) # complex conjugate
 Cyc{Int64}: 1-ζ₄
+
+julia> real(E(5))  # real part
+Cyc{Rational{Int64}}: (-1+√5)/4
+
+julia> imag(E(5))  # imaginary part
+Cyc{Rational{Int64}}: ζ₅/2-ζ₅⁴/2
 
 julia> c=E(9)   # an effect of the Zumbroich basis
 Cyc{Int64}: -ζ₉⁴-ζ₉⁷
@@ -76,22 +73,31 @@ Cyc{Int64}: -ζ₉⁴-ζ₉⁷
 julia> Root1(c) # but you can decide whether a Cyc is a root of unity
 Root1: ζ₉
 
+julia> Root1(1+E(4)) # it returns nothing for a non-root
+
+julia> Root1(1,4)
+Root1: ζ₄
+
+julia> c=Root1(;r=1//4)*Root1(1,3) # faster computation for roots of unity
+Root1: ζ₁₂⁷
+
+julia> E(c) # convert back to Cyc
+Cyc{Int64}: ζ₁₂⁷
+
 julia> c=Complex{Float64}(E(3))  # convert to float is sometimes useful
 -0.4999999999999998 + 0.8660254037844387im
-
-julia> Cyc(exp(2*im*pi/3)) # probably useless
-Cyc{Float64}: -0.4999999999999998+0.8660254037844387ζ₄
 ```
 
 `Cyc`s have methods `copy, hash, ==, cmp, isless` (total order) so they can
-be keys in hashes or elements of sets. Cyclotomics which are integers or
+be  keys in hashes or  elements of sets. Cyclotomics  which are integers or
 rationals compare correctly to integers or rationals:
 
 ```julia-repl
 julia> -1<Cyc(0)<1
 true
 ```
-For more information see the methods ER, Quadratic, galois. 
+For more information see the methods conductor, coefficients, denominator,
+ER, Quadratic, galois, root. 
 
 Finally, a benchmark:
 
@@ -103,7 +109,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime testmat(12)^2;
-  459.521 ms (9640239 allocations: 554.47 MiB)
+  453.005 ms (10790333 allocations: 626.01 MiB)
 ```
 The equivalent in GAP:
 
@@ -112,16 +118,15 @@ testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
   return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 end; 
 ```
-
-testmat(12)^2 takes 0.4s in GAP3, 0.3s in GAP4
+testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 """
 module Cycs
-import Gapjm: coefficients, root
+#import Gapjm: coefficients, root
 # to use as a stand-alone module comment above line and uncomment next
-# export coefficients, root
-export E, ER, Cyc, conductor, galois, Root1, Quadratic
+export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, bracket_if_needed, factor, prime_residues, phi, gcd_repr
+using ..Util: fromTeX, format_coefficient
+using ..Util: factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -139,6 +144,21 @@ struct Cyc{T <: Real}<: Number   # a cyclotomic number
 end
 end
 
+"""
+   `conductor(c::Cyc)`
+   `conductor(v::AbstractVector)`
+
+returns the smallest positive integer  n  uch that `c∈ ℚ (ζₙ)` (resp. all
+elements of `v` are in `ℚ (ζₙ)`).
+
+```julia-repl
+julia> conductor(E(9))
+9
+
+julia> conductor([E(3),1//2,E(4)])
+12
+```
+"""
 conductor(c::Cyc)=c.n
 conductor(a::Array)=lcm(conductor.(a))
 conductor(i::Integer)=1
@@ -170,6 +190,26 @@ function zumbroich_basis(n::Int)::Vector{Int}
   end
 end
 
+"""
+`coefficients(c::Cyc)`
+
+for  a cyclotomic `c` of conductor `n`,  returns a vector `v` of length `n`
+such that `c==∑ᵢ v[i]ζⁱ`.
+
+```julia-repl
+julia> coefficients(E(9))
+9-element Array{Int64,1}:
+  0
+  0
+  0
+  0
+ -1
+  0
+  0
+ -1
+  0
+```
+"""
 function coefficients(c::Cyc{T})where T
   res=zeros(T,conductor(c))
 if use_list
@@ -180,7 +220,17 @@ end
   res
 end
   
-Base.denominator(c::Cyc)=lcm(denominator.(coefficients(c)))
+if use_list
+Base.denominator(c::Cyc)=lcm(denominator.(c.d))
+else
+"""
+`denominator(c::Cyc{Rational})`
+
+returns the smallest `d` such that `d*c` has integral coefficients (thus is
+an algebraic integer).
+"""
+Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
+end
 
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
 """
@@ -285,10 +335,11 @@ end
 Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
 
 function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
+  if T==T1 return c end
 if use_list
-  T==T1 ? c : Cyc(c.n,convert.(T,c.d))
+  Cyc(c.n,convert.(T,c.d))
 else
-  T==T1 ? c : Cyc(c.n,convert(ModuleElt{Int,T},c.d))
+  Cyc(c.n,convert(ModuleElt{Int,T},c.d))
 end
 end
 
@@ -336,6 +387,11 @@ Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
 function Base.real(c::Cyc{T}) where T<:Real
   if c.n==1 return num(c) end
   (c+conj(c))/2
+end
+
+function Base.imag(c::Cyc{T}) where T<:Real
+  if c.n==1 return 0 end
+  (c-conj(c))/2
 end
 
 Base.isless(c::Cyc,d::Real)=Float64(c)<d
@@ -415,15 +471,15 @@ end
 if use_list
     if iszero(v) return "" end
 end
-  if T<:Rational{<:Integer}
-    den=denominator(v)
-    v=numerator(v) 
-  else
-    den=1
-  end
+    if T<:Rational{<:Integer}
+      den=denominator(v)
+      v=numerator(v) 
+    else
+      den=1
+    end
     if deg==0 t=string(v)
     else 
-      t= v==1 ? "" : v==-1 ? "-" : bracket_if_needed(string(v))
+      t=format_coefficient(string(v))
       if repl || TeX
         r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
         if deg>=1 r*= deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}" end
@@ -452,13 +508,12 @@ function Base.:+(x::Cyc,y::Cyc)
   lower(Cyc(a.n,a.d+b.d))
 end
 
-Base.:+(a::Cyc,b::Number)=a+Cyc(b)
-Base.:+(b::Number,a::Cyc)=a+Cyc(b)
-
+Base.:+(a::Cyc,b::Real)=a+Cyc(b)
+Base.:+(b::Real,a::Cyc)=a+Cyc(b)
 Base.:-(a::Cyc)=Cyc(a.n,-a.d)
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
-Base.:-(b::Number,a::Cyc)=Cyc(b)-a
-Base.:-(b::Cyc,a::Number)=b-Cyc(a)
+Base.:-(b::Real,a::Cyc)=Cyc(b)+(-a)
+Base.:-(b::Cyc,a::Real)=b+Cyc(-a)
 
 Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(promote(a,c)[1]) : Cyc(c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
@@ -476,6 +531,7 @@ Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
+# l is a list of pairs i=>c representing E(n,i)*c
 function sumroots(n::Int,l)
   res=empty(l)
   for (i,c) in l 
@@ -483,7 +539,7 @@ function sumroots(n::Int,l)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
-  Cyc(n,ModuleElt(res;check=true))
+  Cyc(n,ModuleElt(res;check=length(l)>1))
 end
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -522,9 +578,7 @@ if use_list
   end
   Cyc(n,res)
 else
-  let m=m,cd=c.d
-  sumroots(n,[i*m=>u for (i,u) in cd])
-  end
+  sumroots(n,[i*m=>u for (i,u) in c.d])
 end
 end
 
@@ -573,10 +627,8 @@ if use_list
     end
 else
     if np>1 
-      let p=p
       if all(k->k[1]%p==0,c.d) 
         return lower(Cyc(m,ModuleElt(div(k,p)=>v for (k,v) in c.d)))
-      end
       end
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
@@ -598,11 +650,11 @@ end
   c
 end
 
-galois(c::Int,n::Int)=c
+galois(c::Rational,n::Int)=c
 """
   galois(c::Cyc,n::Int) applies to c the galois automorphism
   of Q(ζ_conductor(c)) raising all roots of unity to the n-th power.
-  n should be prime to c.
+  n should be prime to conductor(c).
 # Examples
 ```julia-repl
 julia> galois(1+E(4),-1) # galois(c,-1) is the same as conj(c)
@@ -623,8 +675,8 @@ if use_list
        end
   end
 else
-  let cd=c.d,n=n,cn=c.n
-  sumroots(c.n,[(e*n)%cn=>p for (e,p) in cd])
+  let cn=c.n
+  sumroots(c.n,[(e*n)%cn=>p for (e,p) in c.d])
   end
 end
 end
@@ -632,14 +684,12 @@ end
 Base.conj(c::Cyc)=galois(c,-1)
 
 function Base.inv(c::Cyc)
-  c=lower(c)
   if c.n==1
     r=num(c)
-    if r^2==1 return Cyc(r) else return Cyc(1//r) end
-  else
-    r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
-    n=num(c*r)
+    if r==1 || r==-1 return Cyc(r) else return Cyc(1//r) end
   end
+  r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
+  n=num(c*r)
   n==1 ? r : (n==-1 ? -r : r//n)
 end
 
@@ -718,6 +768,12 @@ end
 julia> r=Root1(-E(9,2)-E(9,5))
 Root1: ζ₉⁸
 
+julia> conductor(r)
+9
+
+julia> exponent(r)
+8
+
 julia> E(r)
 Cyc{Int64}: -ζ₉²-ζ₉⁵
 
@@ -786,9 +842,10 @@ end
 """
   `Quadratic(c::Cyc)` 
   
-  determines  if `c` lives  in a quadratic  extension of `ℚ`.  It returns a
-  `Quadratic`  object representing `c` as `(a  + b ER(root))//d` or nothing
-  if no such tuple exists
+determines  if `c`  lives in  a quadratic  extension of  `ℚ`. It  returns a
+`Quadratic`  struct with fields `a`, `b`, `root`, `den` representing `c` as
+`(a  + b ER(root))//den`  if such a  representation is possibe or `nothing`
+otherwise
 
 # Examples
 ```julia-repl
@@ -873,22 +930,43 @@ function Base.show(io::IO,q::Quadratic)
 end
 
 const inforoot=true
-const Irootdict=Dict{Tuple{Int,Int},Cyc{Int}}()
+const Irootdict=Dict{Tuple{Int,Int},Any}()
+
+"""
+`root(x,n=2)`
+
+computes  the `n`-th root of `x` when we know  how to do it. We know how to
+compute  `n`-th  roots  for  roots  of  unity, square roots of integers and
+`n`-th  roots of  integers wich  are perfect  `n`-th powers  of integers or
+square roots of integers.
+
+```julia-repl
+julia> root(-1)
+Cyc{Int64}: ζ₄
+
+julia> root(E(4))
+Cyc{Int64}: ζ₈
+
+julia> root(27,6)
+Cyc{Int64}: √3
+```
+"""
 function root(x::Integer,n=2)
   if isone(n) || isone(x) return x end
   if !(n isa Int) n=Int(n) end
   get!(Irootdict,(n,x)) do
-  if n==2
-    res=ER(x)
+    if x==1 || (x==-1 && n%2==1) return x end
+    l=factor(x)
+    if any(y->(2y)%n!=0,values(l)) error("root($x,$n) not implemented") end
+    a=prod(p^div(pow,n) for (p,pow) in l)
+    b=[p for (p,pow) in l if pow%n!=0]
+    res=isempty(b) ? a : a*ER(prod(b))
     if inforoot  println("root($x,$n)=$res") end
-    return res
-  elseif x==-1 && n%2==1 return x
-  else
-    error("root($x,$n) not implemented")
-  end
+    res
   end
 end
 
+root(x::AbstractFloat,n)=x^(1//n);
 root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
 
 const Crootdict=Dict{Tuple{Int,Cyc},Any}()
@@ -896,6 +974,7 @@ function root(x::Cyc,n=2)
   if isone(n) || isone(x) return x end
   if !(n isa Int) n=Int(n) end
   get!(Crootdict,(n,x)) do
+  if inforoot print("root($x,$n)=") end
   r=Root1(x)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
@@ -909,8 +988,8 @@ function root(x::Cyc,n=2)
     j*=k
     if k==1 break end
   end
-  res=E(j*d,exponent(r)*gcd_repr(n,d)[1])
-  println("root($x,$n)=$res")
+  res=E(j*d,exponent(r)*gcdx(n,d)[2])
+  if inforoot println(res) end
   res
   end
 end

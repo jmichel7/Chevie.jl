@@ -663,7 +663,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
       [Dict(:Z=>Int[],:levi=>Int[],:locsys=>[[1,1]],:relgroup=>coxgroup())],
      Dict{Symbol,Any}(:spets=>W))
   else
-    classes=map(Cartesian(map(x->x.classes,uc)...)) do v
+    classes=map(cartesian(map(x->x.classes,uc)...)) do v
       l=getproperty.(t,:indices)
       if length(v)==1 u=deepcopy(v[1]) 
       else
@@ -707,18 +707,18 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     end
   end
   ll=map(length,uc)
-  orderclasses=map(Cartesian(map(x->1:x,ll)...)) do v
-    o=Cartesian(map(j->vcat(hasse(uc[j].orderclasses)[v[j]],[v[j]]),1:length(v))...)
+  orderclasses=map(cartesian(map(x->1:x,ll)...)) do v
+    o=cartesian(map(j->vcat(hasse(uc[j].orderclasses)[v[j]],[v[j]]),1:length(v))...)
     o=map(x->HasType.PositionCartesian(ll,x),o)
     setdiff(o,[HasType.PositionCartesian(ll,v)])
   end
-  springerseries=map(Cartesian(map(x->x.springerseries,uc)...)) do v
+  springerseries=map(cartesian(map(x->x.springerseries,uc)...)) do v
     if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
     elseif length(v)==1 return deepcopy(v[1])
     end
     s=Dict{Symbol,Any}(:levi=>reduce(vcat,map(i->l[i][v[i][:levi]],eachindex(v))))
     s[:Z]=reduce(vcat,getindex.(v,:Z))
-    s[:locsys]=map(Cartesian(getindex.(v,:locsys)...)) do v
+    s[:locsys]=map(cartesian(getindex.(v,:locsys)...)) do v
       v=collect.(zip(v...))
       u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].prop[:Au]),
               eachindex(v[1]))

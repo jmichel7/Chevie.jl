@@ -513,7 +513,7 @@ function UnipotentCharacters(WF::Spets)
     if all(haskey.(sers,:parameterExponents))
       ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents))
     end
-    ser[:charNumbers]=Cartesian(getindex.(sers,:charNumbers)...)
+    ser[:charNumbers]=cartesian(getindex.(sers,:charNumbers)...)
     ser[:cuspidalName]=join(getindex.(sers,:cuspidalName),"\\otimes ")
     ser
   end
@@ -579,7 +579,7 @@ function UnipotentCharacters(WF::Spets)
     if length(simp)==1 
       res[a]=map(x->[x],r.prop[a])
     elseif all(x->haskey(x.prop,a),simp)
-      res[a]=Cartesian(map(x->x.prop[a],simp)...)
+      res[a]=cartesian(map(x->x.prop[a],simp)...)
     end
     end
   end
@@ -591,10 +591,10 @@ function UnipotentCharacters(WF::Spets)
   res[:size]=length(res[:TeXCharNames])
   
   # finally the new 'charNumbers' lists
-  tmp=Cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
+  tmp=cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
 
-  hh=CartesianSeries.(Cartesian(map(x->x.harishChandra,simp)...))
-  ah=CartesianSeries.(Cartesian(map(x->x.almostHarishChandra,simp)...))
+  hh=CartesianSeries.(cartesian(map(x->x.harishChandra,simp)...))
+  ah=CartesianSeries.(cartesian(map(x->x.almostHarishChandra,simp)...))
   for s in hh
     s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
   end
@@ -605,7 +605,7 @@ function UnipotentCharacters(WF::Spets)
   if length(tt)==1
     ff=r.families
   else 
-    ff=Family.(prod.(Cartesian(map(x->x.families,simp)...)))
+    ff=Family.(prod.(cartesian(map(x->x.families,simp)...)))
     for f in ff
       f[:charNumbers]=map(y->findfirst(isequal(y),tmp),f[:charNumbers])
     end
@@ -637,7 +637,7 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   if !repl && !TeX return end
   println(io,"")
   strip(x)=fromTeX(io,x)
-  m=hcat(sprint.(show,CycPol.(degrees(uc)); context=io),
+  m=hcat(sprint.(show,CycPoldegrees(uc); context=io),
          sprint.(show,CycPol.(fakedegrees(uc)); context=io),
          sprint.(show,Root1.(eigen(uc)); context=io),
          strip.(labels(uc)))
@@ -724,6 +724,12 @@ function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
   d[q]=fourierinverse(uc)*fakedegrees(uc,q)
 end
 
+function CycPoldegrees(uc::UnipotentCharacters)
+  gets(uc,:cycpoldegrees) do
+    CycPol.(degrees(uc))
+  end
+end
+
 function eigen(uc::UnipotentCharacters)
   gets(uc,:eigen)do
     eig=fill(E(1),length(uc))
@@ -787,8 +793,7 @@ julia> Uch.CycPolUnipotentDegrees(W)
  qΦ₁²Φ₂²/3
 ```
 """
-CycPolUnipotentDegrees(W)=CycPol.(degrees(UnipotentCharacters(W)))
-# slow implementation
+CycPolUnipotentDegrees(W)=CycPoldegrees(UnipotentCharacters(W))
 
 #-------------------------- UniChars -------------------------------
 struct UniChar{T,T1}

@@ -688,11 +688,8 @@ function Base.show(io::IO,x::FactSchur)
   if get(io,:GAP,false) || get(io,:Maple,false) v=join(v,"*")
   else v=join(v,"")
   end
-# return FormatCoefficient(x.factor, v, options)
   c=sprint(show,x.factor;context=io)
-  if length(v)>0 && degree(x.factor)==0
-    c= c=="1" ? "" : c=="-1" ?  "-" : bracket_if_needed(c) 
-  end
+  if length(v)>0 && degree(x.factor)==0 c=format_coefficient(c) end
   print(io,c,v)
 end
 
@@ -835,7 +832,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64}[1, x, y])
+hecke(G₄,Mvp{Int64,Int64}[1, x, y])
 
 julia> FactorizedSchurElement(H,[[2,5]])
 -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
@@ -869,7 +866,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64}[1, x, y])
+hecke(G₄,Mvp{Int64,Int64}[1, x, y])
 
 julia> FactorizedSchurElements(H)
 7-element Array{Gapjm.HeckeAlgebras.FactSchur,1}:

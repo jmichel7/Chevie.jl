@@ -8,12 +8,16 @@ The code is divided in sections  according to semantics.
 module Util
 
 export getp, gets, # helpers for objects with a Dict of properties
-  format, bracket_if_needed, ordinal, rshow, printc, fromTeX, joindigits, 
+  format, bracket_if_needed, format_coefficient, ordinal, rshow, printc, fromTeX, joindigits, 
   cut, # formatting
-  factor, prime_residues, divisors, phi, primitiveroot, gcd_repr #number theory
+  factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export ds # dump struct
+export InfoChevie
+#InfoChevie(a...)=print(a...)
+function InfoChevie(a...) end
+
 #--------------------------------------------------------------------------
 toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
@@ -22,7 +26,9 @@ printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
 function ds(s)
   println(typeof(s),":")
   for f in fieldnames(typeof(s))
-    printc(f,"=",getfield(s,f),"\n")
+    if !isdefined(s,f) println(f,"=#undef")
+    else printc(f,"=",getfield(s,f),"\n")
+    end
   end
 end
 
@@ -98,13 +104,16 @@ function TeXstrip(s::String)
   s
 end
 
-bracket_if_needed(c::String)=if occursin(r"[-+*/]",c[nextind(c,0,2):end]) 
- "($c)" else c end
+function format_coefficient(c::String)
+  if c=="1" ""
+  elseif c=="-1" "-"
+  elseif occursin(r"[-+*/]",c[nextind(c,0,2):end]) "("*c*")" 
+  else c end
+end
 
 function fromTeX(io::IO,n::String)
-  TeX=get(io,:TeX,false) 
-  if TeX return n end
-  if get(io,:limit,false) return TeXstrip(n) end
+  if get(io,:TeX,false) return n 
+  elseif get(io,:limit,false) return TeXstrip(n) end
   n=replace(n,r"\\tilde *"=>"~")
   n=replace(n,"_"=>"")
   n=replace(n,"}"=>"")
@@ -255,7 +264,7 @@ end
 " the numbers less than n and prime to n "
 function prime_residues(n)
   if n==1 return [0] end
-  filter(i->gcd(n,i)==1,1:n-1)
+  filter(i->gcd(n,i)==1,1:n-1) # inefficient
 end
 
 # make Primes.factor fast by memoizing it
@@ -295,22 +304,6 @@ function primitiveroot(m::Integer)
  p=phi(m)
  1+findfirst(x->powermod(x,p,m)==1 && 
              all(d->powermod(x,d,m)!=1,divisors(p)[2:end-1]),2:m-1)
-end
-
-"""
-  gcd_repr(x,y) returns a,b such that ax+by=gcd(x,y)
-"""
-function gcd_repr(x,y)
-  (f,fx)=(x,1)
-  (g,gx)=(y,0)
-  while !iszero(g)
-    (h,hx)=(g,gx)
-    q,r=divrem(f,g)
-    (g,gx)=(r,fx-q*gx)
-    (f,fx)=(h,hx)
-  end
-  q=sign(f)
-  (q*fx, iszero(y) ? 0 : div(q * (f - fx * x), y ))
 end
 
 #--------------------------------------------------------------------------

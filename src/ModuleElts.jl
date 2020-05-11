@@ -168,8 +168,8 @@ struct ModuleElt{K,V}
   end
 end
 
-ModuleElt(x::Pair{K,V}...;u...) where{K,V}=ModuleElt(collect(x);u...)
-ModuleElt(x::Base.Generator;u...)=ModuleElt(collect(x);u...)
+@inline ModuleElt(x::Pair...;u...)=ModuleElt(collect(x);u...)
+@inline ModuleElt(x::Base.Generator;u...)=ModuleElt(collect(x);u...)
 
 Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
@@ -225,9 +225,13 @@ Base.values(x::ModuleElt)=last.(x.d)
 end
 #-------------- methods which have same code in both implementations-------
 # multiply module element by scalar
-function Base.:*(a::ModuleElt,b)
-  if iszero(b) || iszero(a) return  zero(a) end
-  ModuleElt([k=>v*b for (k,v) in a])
+function Base.:*(a::ModuleElt{K,V},b)where {K,V}
+  if iszero(b) || iszero(a) 
+    return zero(ModuleElt{K,promote_type(V,typeof(b))})
+  end
+  let b=b
+    ModuleElt(k=>v*b for (k,v) in a)
+  end
 end
 
 Base.iszero(x::ModuleElt)=isempty(x.d)
@@ -245,12 +249,12 @@ function Base.convert(::Type{ModuleElt{K,V}},a::ModuleElt{K1,V1}) where {K,K1,V,
   if K==K1
     if V==V1 a
     elseif iszero(a) zero(ModuleElt{K,V})
-    else ModuleElt([k=>convert(V,v) for (k,v) in a.d])
+    else ModuleElt(k=>convert(V,v) for (k,v) in a.d)
     end
   else 
     if iszero(a) zero(ModuleElt{K,V})
-    elseif V==V1  ModuleElt([convert(K,k)=>v for (k,v) in a.d])
-    else ModuleElt([convert(K,k)=>convert(V,v) for (k,v) in a.d])
+    elseif V==V1  ModuleElt(convert(K,k)=>v for (k,v) in a.d)
+    else ModuleElt(convert(K,k)=>convert(V,v) for (k,v) in a.d)
     end
   end
 end
@@ -272,9 +276,8 @@ function Base.show(io::IO,m::ModuleElt)
     v=sprint(show,v;context=io)
     k=showbasis(io,k)
     if !isempty(k)
-      if occursin(r"[-+/]",v[nextind(v,0,2):end]) v="($v)" end
-      if v=="1"  v="" end
-      if v=="-1" v="-" end
+      if occursin(r"[-+*/]",v[nextind(v,0,2):end]) v="($v)" end
+      if v=="1" v="" elseif v=="-1" v="-" end
     end
     if (isempty(v) || v[1]!='-') && !start v="+"*v end
     res*=v*k

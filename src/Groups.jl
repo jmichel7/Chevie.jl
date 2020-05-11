@@ -34,9 +34,9 @@ export Group, minimal_words, gens, nbgens, class_reps, centralizer,
   centre, normalizer, stabilizer
 
 using ..Util: gets
-import Gapjm: word, elements, kernel, order
+#import Gapjm: word, elements, kernel, order
 # to use as a stand-alone module comment above line and uncomment next line
-# export word, elements, kernel, order
+export word, elements, kernel, order
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 

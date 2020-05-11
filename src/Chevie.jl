@@ -1,10 +1,7 @@
 module Chevie
 
 using ..Gapjm
-export CHEVIE, chevieget, chevieset, getchev, InfoChevie
-
-#InfoChevie(a...)=print(a...)
-function InfoChevie(a...) end
+export CHEVIE, chevieget, chevieset, getchev
 
 const CHEVIE=Dict{Symbol,Any}(
  :compat=>Dict(:MakeCharacterTable=>x->x,

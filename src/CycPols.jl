@@ -65,12 +65,12 @@ module CycPols
 
 export CycPol,descent_of_scalars,ennola_twist
 # to use as a stand-alone module uncomment the next line
-# export roots, degree
-import Gapjm: roots
+# export roots, degree, valuation
+import Gapjm: roots, degree, valuation
 
 using ..ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
-using ..Pols
+#using ..Pols
 using ..Util: fromTeX, prime_residues, primitiveroot, phi
 using ..Gapjm
 import Primes
@@ -130,11 +130,11 @@ Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 Base.iszero(a::CycPol)=iszero(a.coeff)
 
-Gapjm.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
-Gapjm.valuation(a::CycPol)=a.valuation
-Gapjm.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-Gapjm.valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
-Gapjm.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
+degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
+valuation(a::CycPol)=a.valuation
+valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
+valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
+valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
   if iszero(a) || iszero(b) return zero(a) end
@@ -312,7 +312,15 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
   sort(p,by=x->x/length(divisors(x)))
 end
 
-const trace=false
+function (p::Pol{T})(x::Root1) where T
+  if iszero(p) return 0 end
+  res=zero(T)
+  for (i,c) in enumerate(p.c)
+    res+=p.c[i]*E(x^(valuation(p)+i-1))
+  end
+  res
+end
+  
 """
 `CycPol(p::Pol)`
     
@@ -322,24 +330,24 @@ Converts a polynomial to `CycPol`
 julia> CycPol(3*q^3-3)
 3Φ₁Φ₃
 ```
-
 Special code makes the conversion fast if `p` has not more than two nonzero
 coefficients.
 """
-function CycPol(p::Pol{T})where T
+function CycPol(p::Pol{T};trace=false)where T
  # lot of code to be as efficient as possible in all cases
   if iszero(p) return zero(CycPol{T})
   elseif length(p.c)==1 # p==ax^s
-    return CycPol(p.c[1],Pols.valuation(p))
+    return CycPol(p.c[1],valuation(p))
   elseif 2==count(!iszero,p.c) # p==ax^s+bx^t
     a=Root1(-p.c[1]//p.c[end])
-    if a===nothing return CycPol(Pol(p.c,0),Pols.valuation(p)) end
+    if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1
     vcyc=[Root1(;r=u)=>1 for u in (a.r .+(0:d-1))//d]
-    return CycPol(p.c[end],Pols.valuation(p),ModuleElt(vcyc;check=true))
+    return CycPol(p.c[end],valuation(p),ModuleElt(vcyc;check=true))
   end
-  val=Pols.valuation(p)
-  p=Pol(p.c,0)
+  val=valuation(p)
+  coeff=p.c[end]
+  p=improve_type(Pol(p.c.//coeff,0))
   vcyc=Pair{Root1,Int}[]
 
   # find factors Phi_i
@@ -347,7 +355,7 @@ function CycPol(p::Pol{T})where T
     if trace print("C$c") end
     found=false
     while true
-      np,r=Pols.divrem1(p,cyclotomic_polynomial(c))
+      np,r=divrem(p,cyclotomic_polynomial(c))
       if iszero(r) 
         append!(vcyc,[Root1(j,c)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
@@ -361,14 +369,16 @@ function CycPol(p::Pol{T})where T
 
   # find other primitive i-th roots of unity
   testall=function(i)
+    if eltype(p.c)<:Integer return false end # cannot have partial product
     found=false
+    to_test=prime_residues(i)
     while true 
-      l=filter(r->iszero(p(E(i,r))),prime_residues(i))
-      if isempty(l) return found end
+      to_test=filter(r->iszero(p(Root1(;r=r//i))),to_test)
+      if isempty(to_test) return found end
       found=true
-      p=Pols.divrem1(p,prod(r->Pol([-E(i,r),1],0),l))[1]
-      append!(vcyc,Root1.(l,i).=>1)
-      if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$l)") end
+      p=divrem(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
+      append!(vcyc,Root1.(to_test,i).=>1)
+      if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$to_test)") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
     end
   end
@@ -377,7 +387,7 @@ function CycPol(p::Pol{T})where T
   for i in tested 
     if degree(p)>=phi(i) testcyc(i) end
     testall(i)
-    if degree(p)==0 return CycPol(p.c[end],val,ModuleElt(vcyc;check=true)) end
+    if degree(p)==0 return CycPol(coeff,val,ModuleElt(vcyc;check=true)) end
   end
   
   # if not finished do a general search.
@@ -402,7 +412,7 @@ function CycPol(p::Pol{T})where T
   end
 # println("now p=$p val=$val")
   
-  CycPol(degree(p)==0 ? p.c[1] : p,val,ModuleElt(vcyc;check=true))
+  CycPol(degree(p)==0 ? coeff : p*coeff,val,ModuleElt(vcyc;check=true))
 end
 
 function (p::CycPol)(x)

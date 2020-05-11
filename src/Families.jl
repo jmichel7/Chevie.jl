@@ -181,16 +181,16 @@ function Base.:*(f::Family,g::Family)
     end
   end
   res=Dict{Symbol,Any}(
-    :charLabels=>join.(Cartesian(getindex.(arg,:charLabels)...),"\\otimes"),
+    :charLabels=>join.(cartesian(getindex.(arg,:charLabels)...),"\\otimes"),
     :fourierMat=>kron(getindex.(arg,:fourierMat)...),
-    :eigenvalues=>map(prod,Cartesian(getindex.(arg,:eigenvalues)...)),
+    :eigenvalues=>map(prod,cartesian(getindex.(arg,:eigenvalues)...)),
     :name=>join(getindex.(arg,:name),"\\otimes "),
     :explanation=>"Tensor("*join(map(x->haskey(x,:explanation) ?
                                      x[:explanation] : "??",arg),",")*")"
   )
   if all(haskey.(arg,:charNumbers))
     res[:charNumbers]=map(x->collect(Iterators.flatten(x)),
-                          Cartesian(getindex.(arg,:charNumbers)...))
+                          cartesian(getindex.(arg,:charNumbers)...))
   end
 #  if all(haskey.(arg,:special))
 #    res.special:=PositionCartesian(List(arg,Size),getindex.(arg,:special));
@@ -200,15 +200,15 @@ function Base.:*(f::Family,g::Family)
 #    if res.cospecial=res.special then Unbind(res.cospecial);fi;
 #  fi;
 #  if ForAll(arg,f->IsBound(f.perm) or Size(f)=1) then 
-#    res.perm:=PermListList(Cartesian(List(arg,x->[1..Size(x)])),
-#        Cartesian(List(arg,function(x)if IsBound(x.perm) then return
+#    res.perm:=PermListList(cartesian(List(arg,x->[1..Size(x)])),
+#        cartesian(List(arg,function(x)if IsBound(x.perm) then return
 #          Permuted([1..Size(x)],x.perm);else return [1];fi;end)));
 #  fi;
 #  if ForAll(arg,f->IsBound(f.lusztig) or Size(f)=1) then 
 #    res.lusztig:=true;
 #  fi;
 #  if any(haskey.(arg,:qEigen))
-#    res.qEigen:=List(Cartesian(List(arg,function(f) 
+#    res.qEigen:=List(cartesian(List(arg,function(f) 
 #      if IsBound(f.qEigen) then return f.qEigen;else return f.eigenvalues*0;fi;
 #      end)),Sum);
 #  fi;
@@ -706,12 +706,12 @@ family_imprimitive = function (S)
   end
   m = div(length(ct) - d, e)
   j = (m * binomial(e, 2)) % e
-  ll = Cartesian(map(i->0:e-1, Scoll)...)
+  ll = cartesian(map(i->0:e-1, Scoll)...)
   ll = filter(x->sum(x)%e==j,ll)
   ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
                    collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
   nrSymbols=sum(x->prod(length,x),ll)
-  ll = reduce(vcat,map(x->Cartesian(x...), ll))
+  ll = reduce(vcat,map(x->cartesian(x...), ll))
   eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
   equiv = map(x->
       Dict(:globaleps=>length(x)==1 ? 1 :

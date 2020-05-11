@@ -135,10 +135,16 @@ import Gapjm: gens, degree, roots
 using Gapjm
 
 best_type(x)=typeof(x)
-best_type(x::Cyc)=x.n==1 ? best_type(Rational(x)) : typeof(x)
+best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : x.n==1 ? 
+  best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
+best_type(x::Cyc{T}) where T<:Integer=x.n==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{reduce(promote_type,best_type.(m)),N}
-best_type(p::Pol)=iszero(p) ? Pol{Int} : Pol{reduce(promote_type,best_type.(p.c))}
+best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : 
+  Array{reduce(promote_type,best_type.(m)),N}
+best_type(p::Pol)=iszero(p) ? Pol{Int} : 
+  Pol{reduce(promote_type,best_type.(p.c))}
+best_type(p::Mvp{T,N}) where {T,N}=iszero(p) ? Mvp{Int,Int} : 
+    Mvp{reduce(promote_type,best_type.(values(p.d))),N}
   
 improve_type(m)=convert(best_type(m),m)
 
@@ -979,8 +985,8 @@ parabolic_representatives(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)
 
 function parabolic_representatives(W::PermRootGroup,s)
   t=refltype(W)
-  sols=filter(l->sum(l)==s,Cartesian(map(x->0:rank(x),t)...))
-  vcat(map(c->map(x->vcat(x...),Cartesian(map(eachindex(c))
+  sols=filter(l->sum(l)==s,cartesian(map(x->0:rank(x),t)...))
+  vcat(map(c->map(x->vcat(x...),cartesian(map(eachindex(c))
     do i
       r=parabolic_representatives(t[i],c[i])
       if r==false

@@ -1257,11 +1257,11 @@ function weightinfo(W)
     r[:csi]=toL(r[:csi])
     r
   end
-  res=Dict(:minusculeWeights=>Cartesian(map(
+  res=Dict(:minusculeWeights=>cartesian(map(
                                         x->vcat(x[:minusculeWeights],[0]),l)...),
-    :minusculeCoweights=>Cartesian(map(
+    :minusculeCoweights=>cartesian(map(
                                      x->vcat(x[:minusculeCoweights],[0]),l)...),
-    :decompositions=>map(vcat,Cartesian(map(x->vcat(x[:decompositions],
+    :decompositions=>map(vcat,cartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l)...)),
     :moduli=>reduce(vcat,map(x->x[:moduli],l)))
 # centre of simply connected group: the generating minuscule coweights

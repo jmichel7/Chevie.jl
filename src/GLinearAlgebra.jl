@@ -16,19 +16,19 @@ using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
 using ..Util: toM
-export echelon, exterior_power, CoFactors, bigcell_decomposition, diagblocks, 
-  ratio, schur_functor, charpoly, solutionmat, transporter, permanent, blocks,
-  symmetric_power, diagconj_elt
+export echelon, echelon!, exterior_power, CoFactors, bigcell_decomposition, 
+  diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
+  permanent, blocks, symmetric_power, diagconj_elt
 
 """
     `echelon!(m)`
 
   puts `m` in echelon form and returns:
-  `m`, indices of linearly independent rows of `m`
+  (`m`, indices of linearly independent rows of `m`)
+  The  echelon form transforms the rows of m into a particular basis of the
+  rowspace.  The first  non-zero element  of each  line is  1, and  such an
+  element is also the only non-zero in its column.
   works in any field.
-  The echelon form transforms the rows of m into a particular basis
-  of the rowspace. The first non-zero element of each line is 1, and
-  such an element is also the only non-zero in its column.
 """
 function echelon!(m::Matrix)
   T=typeof(one(eltype(m))//1)
@@ -52,6 +52,15 @@ function echelon!(m::Matrix)
   m,inds[1:rk]
 end
 
+"""
+  `echelon(m)`
+
+  returns: (echelon form of `m`, indices of linearly independent rows of `m`)
+  works in any field.
+  The  echelon form transforms the rows of m into a particular basis of the
+  rowspace  of `m`: the first non-zero element  of each line is 1, and such
+  an element is also the only non-zero in its column.
+"""
 echelon(m::Matrix)=echelon!(copy(m))
 
 """
@@ -519,56 +528,71 @@ end
 # characteristic polynomial
 charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
 
-function solutionmat(m,vec)
- m=permutedims(m)
- if length(vec)!=size(m,1) error("dimension mismatch") end
- vec=copy(vec)
- r=0
- c=1
- while c<=size(m,2) && r<size(m,1)
-   s=findfirst(!iszero,m[r+1:end,c])
-   if !isnothing(s)
-     s+=r
-     r+=1
-     piv=inv(m[s,c])
-     m[s,:],m[r,:]=m[r,:],m[s,:].*piv
-     vec[s],vec[r]=vec[r],vec[s]*piv
-     for s in 1:size(m,1)
-       if s!=r && !iszero(m[s,c])
-         tmp=m[s,c]
-         m[s,:]-=tmp*m[r,:]
-         vec[s]-=tmp*vec[r]
-       end
-     end
-   end
-   c+=1
- end
- if any(!iszero,vec[r+1:end]) return nothing end
- h=eltype(m)[]
- s=size(m,2)
- v=zero(eltype(m))
- r=1
- c=1
- while c<=s && r<=size(m,1)
-   while c<=s && iszero(m[r,c])
-     c+=1
-     push!(h, v)
-   end
-   if c<=s
-     push!(h, vec[r])
-     r+=1
-     c+=1
-   end
- end
- while c<=s
-   push!(h,v)
-   c+=1
- end
- return h
+"""
+`solutionmat(mat,v)`
+
+returns one solution of the equation `permutedims(x)*mat=permutedims(v)` or
+`nothing` if no such solution exists.
+
+```julia-repl
+julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])
+3-element Array{Rational{Int64},1}:
+  5//1
+ 15//4
+  0//1
+julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, 20, -10])
+```
+"""
+function solutionmat(m,vec::AbstractVector)
+  m=permutedims(m)//1
+  if length(vec)!=size(m,1) error("dimension mismatch") end
+  vec=vec//1
+  r=0
+  c=1
+  while c<=size(m,2) && r<size(m,1)
+    s=findfirst(!iszero,m[r+1:end,c])
+    if !isnothing(s)
+      s+=r
+      r+=1
+      piv=inv(m[s,c])
+      m[s,:],m[r,:]=m[r,:],m[s,:].*piv
+      vec[s],vec[r]=vec[r],vec[s]*piv
+      for s in 1:size(m,1)
+        if s!=r && !iszero(m[s,c])
+          tmp=m[s,c]
+          m[s,:]-=tmp*m[r,:]
+          vec[s]-=tmp*vec[r]
+        end
+      end
+    end
+    c+=1
+  end
+  if any(!iszero,vec[r+1:end]) return nothing end
+  h=eltype(m)[]
+  s=size(m,2)
+  v=zero(eltype(m))
+  r=1
+  c=1
+  while c<=s && r<=size(m,1)
+    while c<=s && iszero(m[r,c])
+      c+=1
+      push!(h, v)
+    end
+    if c<=s
+      push!(h, vec[r])
+      r+=1
+      c+=1
+    end
+  end
+  while c<=s
+    push!(h,v)
+    c+=1
+  end
+  return h
 end
 
-# cannot make the next take precedence
-Base.:/(v::Vector{Rational},m::Matrix{Rational})=solutionmat(m,v)
+" return matrix x such that x*m==n"
+solutionmat(m,n::AbstractMatrix)=toM(solutionmat.(Ref(m),eachrow(n)))
 
 """
 `representative_diagconj(M,N)`

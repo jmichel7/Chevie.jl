@@ -140,7 +140,7 @@ FindIntSol=function(l)
   vals=Dict{Symbol,Any}()
   stuck=false
   simplify()
-  while try_() if isempty(l) return Cartesian([1],map(v->vals[v],vars[2:end])...) end end
+  while try_() if isempty(l) return cartesian([1],map(v->vals[v],vars[2:end])...) end end
   if stuck InfoChevie("#I WARNING! FindIntSol: stuck ",l,"\n") end
   return false
 end

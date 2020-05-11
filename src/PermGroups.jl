@@ -69,8 +69,10 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms
-using ..Gapjm: degree
-using ..Groups: gens, minimal_words
+using ..Groups
+using ..Util: gets, getp, InfoChevie
+import ..Gapjm: degree, elements
+using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
   stab_onmat, perm_onmat, perm_rowcolmat
 #-------------------- now permutation groups -------------------------
@@ -84,7 +86,7 @@ function Base.show(io::IO,G::PermGroup)
   print(io,"Group([$(join(map(repr,gens(G)),','))])")
 end
 
-function Gapjm.degree(G::PermGroup)::Int
+function degree(G::PermGroup)::Int
   gets(G,:degree)do 
     maximum(map(largest_moved_point,gens(G)))
   end
@@ -272,7 +274,7 @@ function Base.iterate(G::PermGroup,(I,state))
 end
 
 # elements is much faster than collect(G), should not be
-function Gapjm.elements(G::PermGroup)
+function elements(G::PermGroup)
   t=reverse(values.(transversals(G)))
   res=collect(t[1])
   for i in 2:length(t)
@@ -330,10 +332,12 @@ function stab_onmat(g::Group,M::AbstractMatrix,extra=nothing)
 # end
   blocks=invblocks(M,extra)
   for r in blocks g=stabilizer(g,r) end
-  n=Cartesian(axes(M,1),axes(M,1))
-  e=Group(map(y->Perm{Int16}(Perm(n,map(x->x.^y,n))),gens(g)))
+  if isempty(gens(g)) return g end
+  n=vec(CartesianIndices(M))
+  e=Group(map(y->Perm(n,map(x->CartesianIndex(x.I.^y),n)),gens(g)))
   for s in collectby(vec(M),1:length(M)) e=stabilizer(e,s) end
-  Group(map(p->Perm{Int16}(map(i->n[i^p][2], axes(M,1))), gens(e)))
+  if isempty(gens(e)) return e end
+  Group(map(p->Perm(map(i->n[i^p][1], axes(M,1))), gens(e)))
 end
 
 """

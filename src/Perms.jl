@@ -112,10 +112,10 @@ See individual documentations below.
 """
 module Perms
 
-import Gapjm: degree, restricted, order
-import ..Groups: orbit, orbits
+#import Gapjm: degree, restricted, order
+#import ..Groups: orbit, orbits
 # to use as a stand-alone module comment above 2 lines and uncomment next
-# export degree, restricted, orbit, orbits, order
+export degree, restricted, orbit, orbits, order
 
 export Perm, largest_moved_point, cycles, cycletype,
   @perm_str, smallest_moved_point, reflength, mappingPerm

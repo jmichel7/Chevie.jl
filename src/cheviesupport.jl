@@ -27,6 +27,7 @@ Base.union(v::Vector)=union(v...)
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
 BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
+Cartesian=cartesian
 CharParams(W)=charinfo(W)[:charparams]
 CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
 Collected=tally

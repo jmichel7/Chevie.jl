@@ -1,6 +1,6 @@
 module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
-  conjugate_partition, dominates, compositions, submultisets,
+  conjugate_partition, dominates, compositions, submultisets, cartesian,
   npartition_tuples, NrArrangements, groupby, constant, tally, collectby
 
 """
@@ -62,6 +62,11 @@ function unique_sorted(v::Vector)
     end
   end
   resize!(v,i)
+end
+
+# reverse to get the same order as GAP
+function cartesian(a::AbstractVector...)
+  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
 function combinations_sorted(mset::AbstractVector,k)

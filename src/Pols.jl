@@ -28,10 +28,10 @@ julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
 julia> p[0], p[1], p[-1] # indexing gives the coefficients
 (1, 2, 0)
 
-julia> divrem(q^3+1,q+2) # changes coefficients to field elements
-(1.0q²-2.0q+4.0, -7.0)
+julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
+(0.5q²-0.25q+0.125, 0.875)
 
-julia> divrem1(q^3+1,q+2) # keeps the ring, but needs leading coeff divides
+julia> divrem(q^3+1,q+2)  # keeps the ring, but needs leading coeff ±1
 (q²-2q+4, -7)
 
 julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
@@ -39,15 +39,15 @@ Pol{Int64}: q⁸-q⁴+1
 
 ```
 
-see also the individual documentation of divrem, divrem1, gcd.
+see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: bracket_if_needed, fromTeX, divisors
-import Gapjm: root, degree, valuation
+using ..Util: format_coefficient, fromTeX, divisors
+#import Gapjm: root, degree, valuation
 # to use as a stand-alone module comment above line and uncomment next
-# export root, degree, valuation
-export Pol, cyclotomic_polynomial, divrem1, shift, positive_part,
-  negative_part, bar
+export degree, valuation
+import Gapjm: root
+export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
 
 const varname=Ref(:x)
 
@@ -159,8 +159,7 @@ function Base.show(io::IO,p::Pol)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if repl||TeX
-    s=join(map(reverse(eachindex(p.c)))do i
-      c=p.c[i]
+   s=join(map(reverse(collect(enumerate(p.c))))do (i,c)
       if iszero(c) return "" end
       c=sprint(show,c; context=io)
       deg=i+p.v-1
@@ -171,11 +170,9 @@ function Base.show(io::IO,p::Pol)
            else mon*= "^$deg"
            end
         end
-        if c=="1" c="" elseif c=="-1" c="-" end
-        c=bracket_if_needed(c) 
-        c*=mon
+        c=format_coefficient(c)*mon
       end
-      if c[1]!='-' c="+"*c end
+      if isempty(c) || c[1]!='-' c="+"*c end
       c
     end)
     if s=="" s="0"
@@ -225,13 +222,14 @@ Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
 `divrem(a::Pol, b::Pol)`
 
 computes `(p,q)` such that `a=p*b+q`
+When the leading coefficient of b is ±1 does not change type
 """
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
-  T=promote_type(T1,T2)
-  d=inv(T(b.c[end]))
+  c=b.c[end]
+  if isone(c^2) d=c else d=inv(c) end
   T=promote_type(T1,T2,typeof(d))
-  v=T.(a.c)
+  v=convert(Vector{T},copy(a.c))
   res=T[]
   for i=length(a.c):-1:length(b.c)
     if iszero(v[i]) c=zero(d)
@@ -243,31 +241,7 @@ function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Pol(res,a.v-b.v),Polstrip(v,a.v)
 end
 
-Base.div(a::Pol, b::Pol)=divrem1(a,b)[1]
-
-"""
-`divrem1(a::Pol, b::Pol)`
-
-`divrem` when the leading coefficiant of `b` divides that of `a`: 
-does not change type
-"""
-function divrem1(a::Pol{T1}, b::Pol{T2})where {T1,T2}
-  if iszero(b) throw(DivideError) end
-  d=b.c[end]
-  T=promote_type(T1,T2)
-  if !(T<:Integer) return divrem(a,b) end
-  v=T.(a.c)
-  res=T[]
-  for i=length(a.c):-1:length(b.c)
-    if iszero(v[i]) pushfirst!(res,0)
-    else r=divrem(v[i],d)
-      if !iszero(r[2]) throw(InexactError) end
-      v[i-length(b.c)+1:i] .-= r[1] .* b.c
-      pushfirst!(res,r[1])
-    end
-  end
-  Pol(res,a.v-b.v),Polstrip(v,a.v)
-end
+Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 
 Base.:/(p::Pol,q::Pol)=p//q
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
@@ -275,7 +249,7 @@ function Base.://(p::Pol,q::Pol)
   if q.c==[1] return shift(p,-q.v)
   elseif q.c==[-1] return shift(-p,-q.v)
   end
-  r=divrem1(p,q)
+  r=divrem(p,q)
   if iszero(r[2]) return r[1] end
   error("r=$r division $p//$q not implemented")
 end
@@ -330,7 +304,7 @@ function cyclotomic_polynomial(n::Integer)
     v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0)
     for d in divisors(n)
       if d!=n
-        res,foo=divrem1(res,cyclotomic_polynomial(d))
+        res,foo=divrem(res,cyclotomic_polynomial(d))
       end
     end
     res

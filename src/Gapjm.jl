@@ -71,44 +71,25 @@ This package is  often 10 times faster  than the equivalent GAP3 Chevie code
 I tried that parts of my package can be used independently of the rest. For
 instance,  the modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
 are  independent of  the rest  of the  package and  can be used stand-alone
-(after a trivial change forced by the exporting rules of Julia that the same
-method name cannot be imported from two different packages, even when
-arguments are on different types. This forces `Gapjm` to be a `Base` to the
-packages if used together).
 """
 module Gapjm
 using Reexport
 
 #--------------------------------------------------------------------------
-# The glue code below should not exist: extending e.g. Gapjm.degree instead
-# of just exporting degree from Pols and Perms is a horrible hack forced by
-# the unpleasant Julia rules not merging methods from different modules.
-# 
-# This  way both Pols  and Perms can  work together only  as part of Gapjm.
-# Otherwise they could not work together.
-# 
-# If  degree, etc... was in Base there  would be no problem, both importing
-# from Base.
-function coefficients end; export coefficients
 degree(a::Number)=0; export degree
 function degrees end; export degrees
-function elements end; export elements
-function kernel end; export kernel
-function order end; export order
-function restricted end; export restricted
-root(x::AbstractFloat,n)=x^(1//n); export root
 function roots end; export roots
-function valuation end; export valuation
 function words end; export words
-function word end; export word
 
+include("using_merge.jl")
 include("Util.jl");@reexport using .Util
 include("ModuleElts.jl");@reexport using .ModuleElts
-include("Groups.jl");@reexport using .Groups
-include("Perms.jl");@reexport using .Perms
+include("Groups.jl");using_merge(:Groups,debug=false,reexport=true)
+include("Perms.jl");using_merge(:Perms,debug=false,reexport=true)
 include("Combinat.jl");@reexport using .Combinat
-include("Cycs.jl");@reexport using .Cycs
-include("Pols.jl");@reexport using .Pols
+include("Cycs.jl");using_merge(:Cycs,debug=false,reexport=true)
+include("Pols.jl");using_merge(:Pols,debug=false,reexport=true)
+include("Mvps.jl");using_merge(:Mvps,debug=true,reexport=true)
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
@@ -116,7 +97,7 @@ include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
 include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
-include("Mvps.jl");@reexport using .Mvps
+include("mvptools.jl");
 include("SPerms.jl");@reexport using .SPerms
 include("CycPols.jl");@reexport using .CycPols
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras

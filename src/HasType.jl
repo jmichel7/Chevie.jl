@@ -1,6 +1,6 @@
 module HasType
 
-export charname, field, getchev, Cartesian, traces_words_mats
+export charname, traces_words_mats
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -13,10 +13,6 @@ Base.:*(a,b::Unknown)=b
 Base.:*(b::Unknown,a)=b
 Base.zero(a::Unknown)=0
 #-----------------------------------------------------------------------
-function Cartesian(a::AbstractVector...)
-  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
-end
-
 charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict())
 

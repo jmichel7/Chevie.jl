@@ -461,7 +461,7 @@ function charinfo(t::TypeIrred)
   c
 end
 
-cartfields(p,f)=Cartesian(getindex.(p,f)...)
+cartfields(p,f)=cartesian(getindex.(p,f)...)
 
 """
 `charinfo(W)`
@@ -699,7 +699,7 @@ function charinfo(W)::Dict{Symbol,Any}
     end
     if any(x->haskey(x, :opdam),p)
       res[:opdam]=map(x->haskey(x,:opdam) ? x[:opdam] : Perm(), p)
-      gt=Cartesian(map(x->1:length(x[:charparams]), p))
+      gt=cartesian(map(x->1:length(x[:charparams]), p))
       res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
     end
     res
@@ -830,9 +830,9 @@ function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt) 
    return CharTable(hcat(1),["Id"],["1"],[1],".",Dict{Symbol,Any}())
   end
-  charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
-  classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
-  centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
+  charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
+  classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
+  centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
   identifier=join(getfield.(ctt,:identifier),"×")
   if length(ctt)==1 irr=ctt[1].irr 
   else irr=kron(getfield.(ctt,:irr)...)
@@ -849,9 +849,9 @@ function CharTable(W::Spets)::CharTable
     if isempty(ctt) 
      return CharTable(hcat(1),["Id"],["1"],[1],"$W",Dict{Symbol,Any}())
     end
-    charnames=join.(Cartesian(getfield.(ctt,:charnames)...),",")
-    classnames=join.(Cartesian(getfield.(ctt,:classnames)...),",")
-    centralizers=prod.(Cartesian(getfield.(ctt,:centralizers)...))
+    charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
+    classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
+    centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
     identifier=join(getfield.(ctt,:identifier),"×")
     if length(ctt)==1 irr=ctt[1].irr 
     else irr=kron(getfield.(ctt,:irr)...)
@@ -883,7 +883,7 @@ those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
 
 ```julia-repl
 julia> representation(ComplexReflectionGroup(24),3)
-3-element Array{Array{Cyc{Rational{Int64}},2},1}:
+3-element Array{Array{Cyc{Int64},2},1}:
  [1 0 0; -1 -1 0; -1 0 -1]
  [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]

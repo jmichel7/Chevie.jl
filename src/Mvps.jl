@@ -18,15 +18,6 @@ julia> @Mvp x,y
 julia> (x+y)^3
 Mvp{Int64}: x³+3x²y+3xy²+y³
 ```
-`Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
-
-```julia-repl
-julia> Pol(:q)
-Pol{Int64}: q
-
-julia> Mvp(q^2+q)
-Mvp{Int64}: q²+q
-```
 
 `Mvp(x::Number)`   returns  the  constant   multivariate  polynomial  whose
 constant term is `x`.
@@ -51,8 +42,8 @@ a  fractional power of denominator `b` only if `root(x,b)` is defined where
 polynomial to a negative power returns a rational fraction.
 
 ```julia-repl
-julia> (2x)^(1//2)
-Mvp{Cyc{Int64},Rational{Int64}}: √2x½
+julia> (4x)^(1//2)
+Mvp{Int64,Rational{Int64}}: 2x½
 
 julia> (2.0x)^(1//2)
 Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
@@ -64,15 +55,16 @@ Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: Util, fromTeX, ordinal, toM
-import ..Util: factor
-using ..Cycs: Cyc
-using ..Pols: Pols, Pol, positive_part
-using ..GLinearAlgebra: GLinearAlgebra, solutionmat
+using ..Util: fromTeX, ordinal
 
-import Gapjm: degree, root, coefficients, valuation
-# to use as a stand-alone module comment above line and uncomment next
-# export degree, root, coefficients, valuation
+#import Gapjm: degree, coefficients, valuation
+#import ..Pols: positive_part, negative_part, bar
+import ..Cycs: root
+# to use as a stand-alone module comment above line, uncomment next, and
+# define root for the coefficients you want (at least root(1,n)=1)
+#export root
+export degree, coefficients, valuation
+export positive_part, negative_part, bar
 export Mvp, Monomial, @Mvp, variables, value, scal, derivative,
   laurent_denominator
 #------------------ Monomials ---------------------------------------------
@@ -196,7 +188,7 @@ struct Mvp{T,N} # N=type of exponents T=type of coeffs
   d::ModuleElt{Monomial{N},T}
 end
 
-Mvp(a::Pair...)=Mvp(ModuleElt(a...))
+Mvp(a::Pair...;c...)=Mvp(ModuleElt(a...;c...))
 Mvp()=Mvp(ModuleElt(Pair{Monomial{Int},Int}[]))
 
 macro Mvp(t) # @Mvp x,y,z defines variables to be Mvp
@@ -214,10 +206,8 @@ Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
 
-Base.show(io::IO,t::Type{Mvp{T,N}}) where{T,N}=print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}")
-
-function Base.show(io::IO, ::MIME"text/plain", a::Mvp)
-  print(io,typeof(a),": ")
+function Base.show(io::IO, ::MIME"text/plain", a::Mvp{T,N}) where{T,N}
+  print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}",": ")
   show(io,a)
 end
 
@@ -239,12 +229,8 @@ Base.convert(::Type{Mvp{T,N}},a::Mvp{T1,N1}) where {T,T1,N,N1}=
   Mvp(convert(ModuleElt{Monomial{N},T},a.d))
 Base.convert(::Type{Mvp},x::Mvp)=x
 Base.convert(::Type{Mvp},v::Symbol)=Mvp(Monomial(v)=>1)
-Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
-                     p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
-Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
 Mvp(x::Symbol)=convert(Mvp,x)
 Mvp(x::Number)=convert(Mvp,x)
-Mvp(x::Pol)=convert(Mvp,x)
 Mvp(x::Mvp)=convert(Mvp,x)
 
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
@@ -291,8 +277,8 @@ Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d))
 `conj(p::Mvp)` acts on the coefficients of `p`
 
 ```julia-repl
-julia> @Mvp x; conj(E(3)x+E(5))
-Mvp{Cyc{Int64}}: ζ₃²x+ζ₅⁴
+julia> @Mvp x;conj(im*x+1)
+Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im
 ```
 """
 Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
@@ -374,7 +360,7 @@ julia> p=(x+y+inv(y))^4
 Mvp{Int64}: x⁴+4x³y+4x³y⁻¹+6x²y²+12x²+6x²y⁻²+4xy³+12xy+12xy⁻¹+4xy⁻³+y⁴+4y²+6+4y⁻²+y⁻⁴
 
 julia> coefficients(p,:x)
-Dict{Int64,Mvp{Int64}} with 5 entries:
+Dict{Int64,Mvp{Int64,Int64}} with 5 entries:
   0 => y⁴+4y²+6+4y⁻²+y⁻⁴
   4 => 1
   2 => 6y²+12+6y⁻²
@@ -382,7 +368,7 @@ Dict{Int64,Mvp{Int64}} with 5 entries:
   1 => 4y³+12y+12y⁻¹+4y⁻³
 
 julia> coefficients(p,:y)
-Dict{Int64,Mvp{Int64}} with 9 entries:
+Dict{Int64,Mvp{Int64,Int64}} with 9 entries:
   0  => x⁴+12x²+6
   4  => 1
   -4 => 1
@@ -413,7 +399,7 @@ function coefficients(p::Mvp,v::Symbol)
     end
     if !found  d[0]=push!(get(d,0,empty(p.d.d)),m=>c) end
   end
-  Dict(dg=>Mvp(c...) for (dg,c) in d)
+  Dict(dg=>Mvp(c...) for (dg,c) in d) # c... is sorted by defn of monomial order
 end
 
 """
@@ -505,8 +491,8 @@ Mvp{Int64,Rational{Int64}}: x½y⅓
 julia> p(;x=y)
 Mvp{Int64,Rational{Int64}}: y^{5//6}
 
-julia> p(;x=2)
-Mvp{Cyc{Int64},Rational{Int64}}: √2y⅓
+julia> p(;x=4)
+Mvp{Int64,Rational{Int64}}: 2y⅓
 
 julia> p(;y=2.0)
 Mvp{Float64,Rational{Int64}}: 1.2599210498948732x½
@@ -540,6 +526,7 @@ end
 (p::Mvp)(;arg...)=value(p,arg...)
 
 function root(p::Mvp,n::Real=2)
+  if iszero(p) return p end
   n=Int(n)
   if length(p.d)>1 
    throw(DomainError(p,"$(ordinal(n)) root of non-monomial not implemented")) 
@@ -549,11 +536,10 @@ function root(p::Mvp,n::Real=2)
 end
 
 function Base.inv(p::Mvp)
-  if length(p.d)>1 throw(InexactError(:inv,Mvp,p)) end
+  if length(p.d)>1 || iszero(p) throw(InexactError(:inv,Mvp,p)) end
   (m,c)=first(p.d)
-  if c^2==1 return Mvp(inv(m)=>c) end
-  if (c isa Cyc) || (c isa Rational) return Mvp(inv(m)=>inv(c)) end
-  throw(InexactError(:inv,typeof(c),c))
+  if c==1 || c==-1 return Mvp(inv(m)=>c) end
+  Mvp(inv(m)=>inv(c))
 end
 
 function Base.://(p::Mvp,q::Mvp)
@@ -666,13 +652,13 @@ Mvp{Int64}: 3x+4y
 """
 Base.:^(p::Mvp,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
-Pols.positive_part(p::Mvp)=
+positive_part(p::Mvp)=
   Mvp(ModuleElt([m=>c for (m,c) in p.d if all(>(0),values(m.d))]))
 
-Pols.negative_part(p::Mvp)=
+negative_part(p::Mvp)=
   Mvp(ModuleElt([m=>c for (m,c) in p.d if all(<(0),values(m.d))]))
 
-Pols.bar(p::Mvp)=Mvp((inv(m)=>c for (m,c) in p.d)...)
+bar(p::Mvp)=Mvp((inv(m)=>c for (m,c) in p.d)...)
 
 """
 The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
@@ -730,64 +716,6 @@ function laurent_denominator(p::Mvp...)
   return res
 end
 
-# factorize a quadratic form (an Mvp of degree 2) as product of 2 linear forms
-"""
-`factor(p::Mvp)`
-
-`p`  should be of degree <=2 thus represents a quadratic form. The function
-returns  a list  of two  linear forms  of which  `p` is the product if such
-exist, otherwise it returns [p].
-
-```julia-repl
-julia> factor(x^2-y^2+x+3y-2)
-2-element Array{Mvp{Cyc{Rational{Int64}}},1}:
- x+y-1
- x-y+2
-
-julia> factor(x^2+x+1)
-2-element Array{Mvp{Cyc{Rational{Int64}}},1}:
- x-ζ₃
- x-ζ₃²
-
-julia> factor(x*y-1)
-1-element Array{Mvp{Int64},1}:
- xy-1
-```
-"""
-function factor(p::Mvp{T,N})where {T,N}
-  v=variables(p)
-  r=length(v)+1
-  m=zeros(T,r,r)//1
-  for (e,t) in p.d
-    n=map(x->findfirst(==(x),v),keys(e.d))
-    c=values(e.d)
-    if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t//2
-    elseif c==[2] m[n[1],n[1]]=t
-    elseif c==[1] m[n[1],r]=m[r,n[1]]=t//2
-    elseif isempty(c) m[r,r]=t
-    else error("# only implemented for degree <=2")
-    end
-  end
-  if size(m,1)==2 t=one(m)
-  else n=copy(m)
-    m,ind=GLinearAlgebra.echelon!(m)
-    m=m[ind,:]
-    if size(m,1)>2 return [p] end
-    t=permutedims(toM(solutionmat.(Ref(m),eachrow(n))))
-    m=toM(solutionmat.(Ref(t),eachrow(m)))
-  end
-  v=t*vcat(Mvp.(v),[Mvp(1)])
-  if size(m,1)==1 return [v[1],v[1]*m[1,1]] end
-  b=m[1,2]+m[2,1]
-  if m[1,1]==0 return [v[2],b*v[1]+m[2,2]*v[2]] end
-  b//=m[1,1]
-  d=root(b^2-4*m[2,2]//m[1,1])
-  if isnothing(d) 
-    println("root failed")
-    return p 
-  end
-  return [v[1]+v[2]//2*(b-d),m[1,1]*(v[1]+v[2]//2*(b+d))]
-end
 
 """
 Finally we  mention the  function 'evalf' which

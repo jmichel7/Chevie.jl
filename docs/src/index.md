@@ -13,9 +13,9 @@ Perm(::AbstractVector,::AbstractVector)
 largest_moved_point
 smallest_moved_point
 Base.:^(::AbstractVector,::Perm) 
-orbit(::Perm,::Integer,::Any)
-orbits(::Perm,::Any)
-order(::Perm)
+Perms.orbit
+Perms.orbits
+Perms.order
 cycles
 cycletype
 sign
@@ -54,17 +54,19 @@ perm_rowcolmat
 # Cyclotomic numbers
 ```@docs
 Cycs
+conductor
+coefficients(c::Cyc)
 E
 galois
 ER
 Quadratic
 Root1
+Cycs.root
 ```
 # Univariate (Laurent) polynomials
 ```@docs
 Pols
 divrem
-divrem1
 gcd
 cyclotomic_polynomial
 ```
@@ -72,7 +74,7 @@ cyclotomic_polynomial
 ```@docs
 Mvps
 variables
-Mvps.coefficients
+coefficients(p::Mvp,var::Symbol)
 Mvps.valuation
 Mvps.value
 Mvps.degree
@@ -275,7 +277,6 @@ format
 prime_residues
 phi
 primitiveroot
-gcd_repr
 cut
 ```
 # Combinatorics
