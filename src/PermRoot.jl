@@ -128,7 +128,8 @@ export PermRootGroup, PRG, PRSG, catalan,
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, refrep, 
  PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
- parabolic_representatives, invariants,improve_type
+ parabolic_representatives, invariants,improve_type, matY, simpleroots,
+ simplecoroots
 import Gapjm: gens, degree, roots
 # to use as a stand-alone module comment above line and uncomment the next line
 # export roots, gens, degree
@@ -148,14 +149,8 @@ best_type(p::Mvp{T,N}) where {T,N}=iszero(p) ? Mvp{Int,Int} :
   
 improve_type(m)=convert(best_type(m),m)
 
-# coroot for an orthogonal reflection and integral root
-function coroot(root::Vector,eigen::Int=-1)
-  d=root'*root
-  conj.(root)*(mod(2,d)==0 ? div(2,d) : coroot*2//d)
-end
-
 # coroot for an orthogonal reflection
-function coroot(root::Vector,eigen::Cyc)
+function coroot(root::Vector,eigen::Number=-1)
   conj.(root)*(1-eigen)//(root'* root)
 end
 #------------------------------------------------------------------------
@@ -173,7 +168,9 @@ Base.copy(t::TypeIrred)=TypeIrred(copy(getfield(t,:prop)))
 
 indices(t::TypeIrred)=haskey(t,:indices) ? t.indices : haskey(t,:orbit) ?
 isempty(t.orbit) ? Int[] : length(t.orbit)==1 ? t.orbit[1].indices :
-union(getproperty.(t.orbit,:indices)...) : nothing
+vcat(getproperty.(t.orbit,:indices)...) : nothing
+
+indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : vcat(indices.(t)...)
 
 function rank(t::TypeIrred)
   if haskey(t,:rank) return t.rank end
@@ -298,7 +295,9 @@ function Base.show(io::IO,d::Diagram)
       println(io,node,tarrow(max(l[1],2)),node)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
     elseif series==:ST
-      getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+      if haskey(t,:ST) getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+      else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))") 
+      end
     end
     end
   end
@@ -580,7 +579,7 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       if cartan(d)==cartan(R)
         d.indices=I
       else 
-        d.indices=restriction(W)[findgoodgens(W,inclusion(R),d)]
+        d.indices=restriction(W)[findgoodgens(R,inclusion(R),d)]
       end
       d
     end
@@ -894,8 +893,8 @@ function baseX(W::PermRootGroup{T})where T
   gets(W,:baseX) do
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
-    res=toM(roots(W)[ir])
-    u=permutedims(GLinearAlgebra.nullspace(toM(coroot.(Ref(W),ir))))
+    res=toM(roots(W,ir))
+    u=permutedims(GLinearAlgebra.nullspace(toM(coroots(W,ir))))
     if eltype(u) <:Rational
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
       u=Int.(u)
@@ -1090,22 +1089,29 @@ function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVe
     end
 #   println(" ",length(roots))
   end
-  PRG(Perm{Int16}.(refls),matgens,roots,cr,Dict{Symbol,Any}())
+  coroots=Vector{eltype(cr)}(undef,length(roots))
+  coroots[eachindex(cr)].=cr
+  PRG(Perm{Int16}.(refls),matgens,roots,coroots,Dict{Symbol,Any}())
 end
 
 @inline roots(W::PRG)=W.roots
+@inline roots(W::PRG,i)=W.roots[i]
+simpleroots(W::PRG)=roots(W,eachindex(gens(W)))
 @inline coroots(W::PRG)=W.coroots
+simplecoroots(W::PRG)=W.coroots[eachindex(gens(W))]
 @inline inclusion(W::PRG,i=eachindex(W.roots))=i
 @inline restriction(W::PRG,i=eachindex(W.roots))=i
 @inline Base.parent(W::PRG)=W
-function coroot(W::PRG,i)
-  if i<=length(W.coroots) return W.coroots[i] end
+function coroots(W::PRG,i::Integer)
+  if isassigned(W.coroots,i) return W.coroots[i] end
   m=refrep(W,reflection(W,i))
-  j=findfirst(!iszero,roots(W)[i])
-  r=map(v->v[j]//roots(W)[i][j],toL(one(m)-m))
+  j=findfirst(!iszero,roots(W,i))
+  r=map(v->v[j]//roots(W,i)[j],toL(one(m)-m))
   if all(isinteger,r) r=Int.(r) end
-  r
+  W.coroots[i]=r
 end
+
+coroots(W::PRG,i::AbstractVector{<:Integer})=coroots.(Ref(W),i)
 
 """
 `reflection(root, coroot)::Matrix` the reflection of given root and coroot
@@ -1195,6 +1201,8 @@ function refrep(W::PRG,w)
   end
 end
 
+matY(W::PRG,w)=permutedims(refrep(W,inv(w)))
+
 function cartan_coeff(W::PRG,i,j)
   v=findfirst(!iszero,W.roots[i])
   r=W.roots[j]-W.roots[j^reflection(W,i)]
@@ -1202,8 +1210,8 @@ function cartan_coeff(W::PRG,i,j)
 end
 
 function Base.:*(W::PRG,V::PRG)
-  PRG(toL(cat(toM(W.roots[independent_roots(W)]),toM(V.roots[independent_roots(V)]),dims=(1,2))),
-      toL(cat(toM(coroots(W)[independent_roots(W)]),toM(coroots(V)[independent_roots(V)]),dims=(1,2))))
+  PRG(toL(cat(toM(simpleroots(W)),toM(simpleroots(V)),dims=(1,2))),
+      toL(cat(toM(simplecoroots(W)),toM(simplecoroots(V)),dims=(1,2))))
 end
   
 #--------------- type of subgroups of PRG----------------------------------
@@ -1219,9 +1227,12 @@ inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i)=W.inclusion[i]
 restriction(W::PRSG)=W.restriction
 restriction(W::PRSG,i)=W.restriction[i]
-@inline roots(W::PRSG)=W.parent.roots[W.inclusion]
-@inline coroots(W::PRSG)=coroot.(Ref(parent(W)),inclusion(W))
-@inline coroot(W::PRSG,i)=coroot(parent(W),inclusion(W,i))
+@inline roots(W::PRSG)=roots(parent(W),inclusion(W))
+@inline roots(W::PRSG,i)=roots(parent(W),inclusion(W,i))
+simpleroots(W::PRSG)=roots(parent(W),inclusiongens(W))
+@inline coroots(W::PRSG)=coroots(parent(W),inclusion(W))
+@inline coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
+simplecoroots(W::PRSG)=coroots(parent(W),inclusiongens(W))
 @inline Base.parent(W::PRSG)=W.parent
 
 function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
@@ -1233,7 +1244,7 @@ end
 # contrary to Chevie, I is indices in W and not parent(W)
 function reflection_subgroup(W::PRG,I::AbstractVector)
   if isempty(I) inclusion=Int[]
-  else G=PRG(W.roots[I],coroot.(Ref(W),I))
+  else G=PRG(roots(W,I),coroots(W,I))
        inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
   end
   prop=Dict{Symbol,Any}()
@@ -1245,6 +1256,19 @@ end
 
 reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
    reflection_subgroup(parent(W),inclusion(W)[I])
+
+function Base.show(io::IO, W::PRSG)
+  I=inclusiongens(W)
+  if !get(io,:limit,false) && !get(io,:TeX,false)
+    print(io,"reflection_subgroup(",W.parent,",",I,")") 
+    return
+  end
+  n=I[PermRoot.indices(refltype(W))]
+  if n!=eachindex(gens(W.parent))
+    print(io,W.parent,fromTeX(io,"_{$(joindigits(n;always=true))}"),"=") 
+  end
+  showtypes(io,refltype(W))
+end
 
 cartan_coeff(W::PRSG,i,j)=
      cartan_coeff(parent(W),inclusion(W,i),inclusion(W,j))
@@ -1494,8 +1518,7 @@ function invariants(W)
     if i==false return false end
     map(f->function(arg...)
          return f(improve_type(inv(E(1).*toM(coroots(H)[ir])//1)*
-     toM(map(i->coroot(V,inclusion(W,t.indices[i])),ir)))*collect(arg)...) end,
-      i)
+    toM(coroots(V,inclusion(W,t.indices[ir]))))*collect(arg)...) end, i)
   end
   if false in i return false end
   i=vcat(i...)

@@ -4,15 +4,18 @@ export combinations, arrangements, partitions, npartitions, partition_tuples,
   npartition_tuples, NrArrangements, groupby, constant, tally, collectby
 
 """
-  group items of list l according to the corresponding values in list v
+`groupby(v::AbstractVector,l)`
 
-    julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
-           [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
-    Dict{Int64,Array{Symbol,1}} with 3 entries:
-      31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
-      28 => Symbol[:Feb]
-      30 => Symbol[:Apr, :Jun, :Sep, :Nov]
+group items of list l according to the corresponding values in list v
 
+```julia-rep1
+julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
+  [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
+Dict{Int64,Array{Symbol,1}} with 3 entries:
+  31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
+  28 => Symbol[:Feb]
+  30 => Symbol[:Apr, :Jun, :Sep, :Nov]
+```
 """
 function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
   res=Dict{K,Vector{V}}()
@@ -21,13 +24,16 @@ function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
 end
 
 """
-  group items of list l according to the values taken by function f on them
+`groupby(f::Function,l)`
 
-    julia> groupby(iseven,1:10)
-    Dict{Bool,Array{Int64,1}} with 2 entries:
-      false => [1, 3, 5, 7, 9]
-      true  => [2, 4, 6, 8, 10]
+group items of list l according to the values taken by function f on them
 
+```julia-repl
+julia> groupby(iseven,1:10)
+Dict{Bool,Array{Int64,1}} with 2 entries:
+  false => [1, 3, 5, 7, 9]
+  true  => [2, 4, 6, 8, 10]
+```
 Note:in this version l is required to be non-empty since I do not know how to
 access the return type of a function
 """
@@ -39,10 +45,19 @@ function groupby(f,l::AbstractArray)
   res
 end
 
-"count how many times each element of v occurs and return a list of (elt,count)"
+"""
+`tally(v)` 
+
+count how many times each element of collection `v` occurs and return a list 
+of `(elt,count)`
+"""
 tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
 
-"group the elements of v in packets where f takes the same value"
+"""
+`collectby(f,v)`
+
+group the elements of v in packets where f takes the same value"
+"""
 function collectby(f,v)
   d=groupby(f,v)
   [d[k] for k in sort(collect(keys(d)))]

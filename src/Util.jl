@@ -226,8 +226,8 @@ end
 # show/print with attributes...
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
 
-joindigits(l::AbstractVector,sep="()")=any(l.>=10) ? 
-                 string(sep[1:1],join(l,","),sep[2:2]) : join(l)
+joindigits(l::AbstractVector,sep="()";always=false)=any(l.>=10) ? 
+sep[1]*join(l,",")*sep[2] : always ? sep[1]*join(l)*sep[2] : join(l)
 
 """
  cut(string;options)

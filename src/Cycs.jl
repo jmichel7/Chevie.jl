@@ -330,9 +330,8 @@ if use_list
 Cyc(i::Real)=Cyc(1,[i])
 else
 Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,ModuleElt(0=>i))
+Cyc{T}(i::Real) where T<:Real=Cyc(convert(T,i))
 end
-
-Base.convert(::Type{Cyc{T}},i::Real) where T<:Real=Cyc(convert(T,i))
 
 function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
@@ -727,12 +726,12 @@ end
 Base.abs(c::Cyc)=c*conj(c)
 
 #------------------------ type Root1 ----------------------------------
-struct Root1 # E(c,n)
+struct Root1 <: Number # E(c,n)
   r::Rational{Int}
   Root1(n::Int,c::Int)=new(mod(n,c)//c)
 end
 
-Root1(;r::Rational)=Root1(numerator(r),denominator(r))
+Root1(;r=0)=Root1(numerator(r),denominator(r)) # does a mod1
 
 Base.broadcastable(r::Root1)=Ref(r)
 
@@ -746,14 +745,15 @@ function Base.show(io::IO, r::Root1)
   TeX=get(io,:TeX,false)
   d=exponent(r)
   c=conductor(r)
-  if c==1 print(io,"1")
-  elseif c==2 print(io,"-1")
-  elseif repl || TeX
-    r="\\zeta"* (c==1 ? "" : c<10 ? "_$(c)" : "_{$(c)}")
-    if d>=1 r*=(d==1 ? "" : d<10 ? "^$d" : "^{$d}") end
-    print(io,fromTeX(io,r))
+  if repl || TeX
+    if c==1 print(io,"1")
+    elseif c==2 print(io,"-1")
+    else r="\\zeta"* (c==1 ? "" : c<10 ? "_$(c)" : "_{$(c)}")
+      if d>=1 r*=(d==1 ? "" : d<10 ? "^$d" : "^{$d}") end
+      print(io,fromTeX(io,r))
+    end
   else
-    print(io,d==1 ? "E($(c))" : "E($(c),$d)")
+    print(io,"Root1($d,$c)")
   end
 end
 
@@ -818,15 +818,11 @@ function Base.cmp(a::Root1,b::Root1)
 end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
-
+#Base.:(==)(a::Root1,b::Root1)=iszero(cmp(a,b))
 Base.one(a::Root1)=Root1(0,1)
-
 Base.isone(a::Root1)=iszero(a.r)
-
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
-
-Base.:^(a::Root1,n)=Root1(;r=n*a.r)
-
+Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
 Base.:inv(a::Root1)=Root1(;r=-a.r)
 
 E(a::Root1)=E(;r=a.r)

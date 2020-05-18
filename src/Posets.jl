@@ -37,9 +37,12 @@ julia> incidence(p)
 ```
 """
 module Posets
-using Gapjm
+using ..Combinat: groupby
+using ..Util: gets, toM
+#import ..Gapjm: restricted
 export lcm_partitions, gcd_partitions, Poset, linear_extension, hasse,
  incidence, partition, transitive_closure, is_join_lattice, is_meet_lattice
+export restricted
 
 """
 `lcm_partitions(p1,...,pn)`
@@ -358,7 +361,7 @@ function partition(p::Poset)
     I=incidence(p)
     ind=1:length(p)
     l=map(i->[map(j->j!=i && I[i,j], ind), map(j->j!=i && I[j,i], ind)], ind)
-    map(x->filter(i->l[i] == x,ind), HasType.gapSet(l))
+    map(x->filter(i->l[i] == x,ind), unique!(sort(l)))
   end
 end
 
@@ -376,7 +379,7 @@ julia> restricted(p,2:6)
 3<4<1,5<2
 ```
 """
-function Gapjm.restricted(p::Poset,ind::AbstractVector{<:Integer})
+function restricted(p::Poset,ind::AbstractVector{<:Integer})
   res = Poset(copy(p.prop))
   if length(ind) == length(p) && sort(ind) == 1:length(p)
     if haskey(res.prop, :hasse)
@@ -456,57 +459,5 @@ false
 ```
 """
 is_meet_lattice(P::Poset)=checkl(permutedims(incidence(P)))
-
-"""
-`Poset(W::CoxeterGroup,w=longest(W))`
-
-returns  as a poset the Bruhat interval `[1,w]`of `W`. If `w` is not given,
-the whole Bruhat Poset of `W` is returned (`W` must then be finite).
-
-```julia-repl
-julia> W=coxgroup(:A,2)
-A₂
-
-julia> Poset(W)
-<1,2<21,12<121
-
-julia> W=coxgroup(:A,3)
-A₃
-
-julia> Poset(W,W(1,3))
-<3,1<13
-```
-"""
-function Poset(W::CoxeterGroup,w=longest(W))
- if w==one(W) return Poset(Dict(:elts=>[w],:labels=>["."],:hasse=>[Int[]],
-    :action=>map(x->[0],gens(W)),:size=>1,
-    :W=>W))
-  end
-  s=firstleftdescent(W,w)
-  p=Poset(W,W(s)*w)
-  l=length(p)
-  new=filter(k->iszero(p.prop[:action][s][k]),1:l)
-  append!(p.prop[:elts],W(s).*(p.prop[:elts][new]))
-  append!(hasse(p),map(x->Int[],new))
-  p.prop[:action][s][new]=l.+(1:length(new))
-  for i in eachindex(gens(W)) 
-    append!(p.prop[:action][i],i==s ? new : zeros(Int,length(new)))
-  end
-  for i in 1:length(new) push!(hasse(p)[new[i]],l+i) end
-  for i in 1:l 
-    j=p.prop[:action][s][i]
-    if j>i
-      for h in p.prop[:action][s][hasse(p)[i]]
-        if h>l push!(hasse(p)[j],h)
-          k=findfirst(isequal(p.prop[:elts][h]/p.prop[:elts][j]),gens(W))
-          if !isnothing(k) p.prop[:action][k][j]=h;p.prop[:action][k][h]=j end
-        end
-      end
-    end
-  end
-  p.prop[:size]=length(hasse(p))
-  p.prop[:labels]=map(x->joindigits(word(W,x)),p.prop[:elts])
-  p
-end
 
 end

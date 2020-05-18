@@ -1,7 +1,7 @@
 module ComplexR
 using ..Gapjm
 export ComplexReflectionGroup, reflection_name, diagram, charname, codegrees,
-  ExtendedCox, ExtendedReflectionGroup, traces_words_mats, reflection_group
+  traces_words_mats, reflection_group
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -138,7 +138,7 @@ E₆
 julia> phi=W(6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1);
 
 julia> HF=subspets(WF,2:5,phi)
-³D₄Φ₃
+E₆₍₂₃₄₅₎=³D₄Φ₃
 
 julia> Diagram(HF)
 ϕ acts as (1,2,4) on the component below
@@ -263,50 +263,5 @@ function reflection_name(io::IO,W)
   r=join(getchev(W,:ReflectionName,opt),"×")
   fromTeX(io,r)
 end
-
-#----------------- Extended Coxeter groups-------------------------------
-struct ExtendedCox{T<:FiniteCoxeterGroup}
-  group::T
-  F0s::Vector{Matrix{Int}}
-  phis::Vector{<:Perm}
-end
-
-function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
-  ExtendedCox(W,F0s,isempty(F0s) ? Perm{Int}[] : map(F->PermX(W.G,F),F0s))
-end
-
-function Base.:*(a::ExtendedCox,b::ExtendedCox)
-  if isempty(gens(a.group)) return b
-  elseif isempty(gens(b.group)) return a
-  end
-  id(r)=one(fill(0,r,r))
-  ExtendedCox(a.group*b.group,vcat(
-                   map(m->cat(m,id(rank(b.group)),dims=(1,2)),a.F0s),
-                   map(m->cat(id(rank(b.group)),m,dims=(1,2)),b.F0s)))
-end
-
-Base.show(io::IO,W::ExtendedCox)=print(io,"Extended($(W.group),$(W.F0s))")
-
-ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
-ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
-ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=ExtendedCox(W,[toM(mats)])
-
-function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
-  if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
-  elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
-  else ExtendedCox(W,toM.(mats))
-  end
-end
-
-ExtendedReflectionGroup(W,p::Vector{Perm{Int}})=ExtendedCox(W,refrep.(Ref(W),p))
-ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[refrep(W,p)])
-
-function ExtendedReflectionGroup(W,mats::Vector{Any})
-  if isempty(mats) ExtendedCox(W,empty([fill(0,0,0)]))
-  else error("not empty")
-  end
-end
-
-reflection_name(io::IO,W::ExtendedCox)=reflection_name(io,W.group)
 
 end

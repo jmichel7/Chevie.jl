@@ -184,7 +184,7 @@ julia> W=ComplexReflectionGroup(6)
 G₆
 
 julia> L=twistings(W,[2])[3]
-G₃‚₁‚₁[ζ₄]Φ′₄
+G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> position_regular_class(L,7//12)
 2
@@ -306,27 +306,26 @@ A₃
 
 julia> split_levis(W,4)
 2-element Array{Any,1}:
- A₃   
- .Φ₂Φ₄
+ A₃
+ A₃₍₎=.Φ₂Φ₄
 
 julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
 
 julia> split_levis(W,3)
 3-element Array{Any,1}:
- ³D₄ 
- A₂Φ₃
- ³D₄ 
+ ³D₄
+ D₄₍₁₃₎=A₂Φ₃
+ ³D₄
 
 julia> W=coxgroup(:E,8)
 E₈
 
 julia> split_levis(W,4,2)
 3-element Array{Any,1}:
- D₄₍₁₃₂₄₎Φ₄²     
- (A₁A₁)×(A₁A₁)Φ₄²
- ²(A₂A₂)₍₁₄₂₃₎Φ₄²
-
+ E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²
+ E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
+ E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
 ```
 """
 split_levis(WF,d=0//1)=vcat(map(ad->split_levis(WF, d,

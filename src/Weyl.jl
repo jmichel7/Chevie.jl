@@ -183,9 +183,8 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions, algebraic_centre, standard_parabolic,
- describe_involution, SubTorus, weightinfo, fundamental_group, relative_group,
- action, rootlengths
+ dimension, with_inversions, standard_parabolic, describe_involution, 
+ relative_group, action, rootlengths
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -618,7 +617,8 @@ Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
 Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
 Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
-Gapjm.root(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
+Gapjm.roots(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
+PermRoot.simpleroots(W::FiniteCoxeterGroup)=simpleroots(W.G)
 Perms.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
 Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
 PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
@@ -626,7 +626,8 @@ PermGroups.class_reps(W::FiniteCoxeterGroup)=class_reps(W.G)
 PermRoot.cartan(W::FiniteCoxeterGroup,a...)=cartan(W.G,a...)
 PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
 PermRoot.invariants(W::FiniteCoxeterGroup)=invariants(W.G)
-PermRoot.coroots(W::FiniteCoxeterGroup)=coroots(W.G)
+PermRoot.coroots(W::FiniteCoxeterGroup,i...)=coroots(W.G,i...)
+PermRoot.simplecoroots(W::FiniteCoxeterGroup)=simplecoroots(W.G)
 PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
 PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
 PermRoot.torus_order(W::FiniteCoxeterGroup,i,q)=torus_order(W.G,i,q)
@@ -744,7 +745,9 @@ function rootdatum(rr::Matrix,cr::Matrix)
   # permutations of the roots effected by mats
   gens=map(M->Perm(r,Ref(permutedims(M)).*r),mats)
   rank=size(C,1)
-  G=PRG(gens,mats,r,map(i->cr[i,:],1:rank),Dict{Symbol,Any}(:cartan=>C))
+  coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
+  coroots[axes(cr,1)].=eachrow(cr)
+  G=PRG(gens,mats,r,coroots,Dict{Symbol,Any}(:cartan=>C))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
@@ -773,13 +776,13 @@ coxgroup()=torus(0)
 Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
   
 #function refrep(W::FCG,w)
-#  vcat(permutedims(hcat(root.(Ref(W),(1:coxrank(W)).^w)...)))
+#  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
 
 function cartancoeff(W::FCG,i,j)
-  v=findfirst(!iszero,root(W,i))
-  r=root(W,j)-root(W,j^reflection(W,i))
-  c=r[v]//root(W,i)[v]
+  v=findfirst(!iszero,roots(W,i))
+  r=roots(W,j)-roots(W,j^reflection(W,i))
+  c=r[v]//roots(W,i)[v]
   isinteger(c) ? Int(c) : c
 end
 
@@ -806,8 +809,8 @@ function rootlengths(W::FCG)
 end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
-  mroots(W)=toM(roots(W.G)[1:semisimplerank(W)])
-  mcoroots(W)=toM(coroots(W)[1:semisimplerank(W)])
+  mroots(W)=toM(simpleroots(W))
+  mcoroots(W)=toM(simplecoroots(W))
   r=roots(W1.G)
   cr=roots(W2.G)
   if isempty(r)
@@ -1004,320 +1007,12 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   FCSG(G,rootdec,N,W,prop)
 end
 
-function Base.show(io::IO, W::FCSG)
-  I=inclusiongens(W)
-  n=joindigits(I)
-  replorTeX=get(io,:limit,false)||get(io,:TeX,false)
-  if !(replorTeX) print(io,"reflection_subgroup(") end
-  print(io,sprint(show,W.parent; context=io))
-  std=collect(1:coxrank(W.parent))
-  if replorTeX 
-    if I!=std print(io,fromTeX(io,"_{($n)}")) end
-  else print(io,",$I)")
-  end
-  if replorTeX && I!=std && !isempty(I) print(io,"=",W.G) end
-end
+Base.show(io::IO, W::FCSG)=show(io,W.G)
   
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
 @inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
-
-#----------------------------------------------------------------------------
-
-Base.mod1(a)=mod(numerator(a),denominator(a))//denominator(a)
-
-abstract type SemisimpleElement end
-
-struct AdditiveSE<:SemisimpleElement
-  W::FiniteCoxeterGroup
-  v::Vector{Root1}
-end
-
-AdditiveSE(W::FiniteCoxeterGroup,v::AbstractVector{Rational{Int}})=AdditiveSE(
-           W,map(x->Root1(;r=x),v))
-
-Base.show(io::IO,a::SemisimpleElement)=print(io,"<",join(a.v,","),">")
-
-Base.one(a::AdditiveSE)=AdditiveSE(a.W,one.(a.v))
-Base.isone(a::AdditiveSE)=all(isone,a.v)
-
-# hash is needed for using AdditiveSE in Sets/Dicts
-Base.hash(a::AdditiveSE, h::UInt)=hash(a.v, h)
-Base.:(==)(a::AdditiveSE, b::AdditiveSE)=a.v==b.v
-
-Gapjm.order(a::AdditiveSE)=lcm(conductor.(a.v))
-
-Base.:*(a::AdditiveSE,b::AdditiveSE)=AdditiveSE(a.W,a.v .*b.v)
-
-struct SEGroup<:Group{AdditiveSE}
-  gens::Vector{AdditiveSE}
-  prop::Dict{Symbol,Any}
-end
-
-Base.show(io::IO,G::SEGroup)=print(io,"SEGroup(",gens(G),")")
-
-function Groups.Group(a::AbstractVector{AdditiveSE})
-  SEGroup(filter(!isone,a),Dict{Symbol,Any}())
-end
-
-struct SubTorus
-  generators::Vector{Vector{Int}}
-  complement::Vector{Vector{Int}}
-  group
-end
-
-"""
-`SubTorus(W,Y::Matrix)`
-
-The  function  returns  the  subtorus  𝐒  of  the  maximal torus `𝐓` of the
-reductive  group represented by the Weyl group  `W` such that `Y(𝐒)` is the
-(pure)  sublattice of  `Y(𝐓)` generated  by the  (integral) vectors  `Y`. A
-basis  of `Y(𝐒)`  adapted to  `Y(𝐓)` is  computed and  stored in  the field
-'S.generators'  of the returned  SubTorus struct. Here,  adapted means that
-there  is a  set of  integral vectors,  stored in 'S.complement', such that
-'M=vcat(S.generators,S.complement)'  is  a  basis  of  `Y(𝐓)` (equivalently
-`M∈GL(Z^{rank(W)})`.  An  error  is  raised  if  `Y` does not define a pure
-sublattice.
-
-```julia-repl
-julia> W=coxgroup(:A,4)
-A₄
-
-julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 1])
-SubTorus(A₄,[[1, 0, 3, -13], [0, 1, 2, 7], [0, 0, 4, -3]])
-
-julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
-ERROR: not a pure sublattice
-Stacktrace:
- [1] error(::String) at ./error.jl:33
- [2] Gapjm.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Array{Int64,2}) at /home/jmichel/julia/Gapjm.jl/src/Weyl.jl:1082
- [3] top-level scope at REPL[25]:1
-```
-"""
-function SubTorus(W,V=refrep(W,one(W)))
-  V=ComplementIntMat(toL(refrep(W,one(W))),toL(V))
-  if any(x->x!=1,V[:moduli])
-    error("not a pure sublattice")
-    return false
-  end
-  SubTorus(V[:sub],V[:complement],W)
-end
-
-Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.generators,")")
-
-Gapjm.rank(T::SubTorus)=length(T.generators)
-
-# element in subtorus
-function Base.:in(s,T::SubTorus)
-  n=Lcm(List(s.v,Denominator))
-  s=s.v*n
-  V=List(T.generators,x->mod.(x,n))
-  i=1
-  for v in filter(!iszero,V)
-    while v[i]==0 
-      if s[i]!=0 return false
-      else i+=1
-      end
-    end
-    r=Gcdex(n,v[i])
-    v=mod.(r.coeff2.*v,n)
-    if mod(s[i],v[i])!=0 return false
-    else s-=div(s[i],v[i]).*v
-      s=mod.(s,n)
-    end
-  end
-  iszero(s)
-end
-
-function AbelianGenerators(l)
-  res=empty(l)
-  l=filter(!isone,l)
-  while !isempty(l)
-    o=order.(l)
-    push!(res,l[findfirst(isequal(maximum(o)),o)])
-    l=setdiff(l,elements(Group(res)))
-  end
-  res
-end
-
-#F  algebraic_centre(W)  . . . centre of algebraic group W
-##  
-##  <W>  should be a Weyl group record  (or an extended Weyl group record).
-##  The  function returns information  about the centre  Z of the algebraic
-##  group defined by <W> as a record with fields:
-##   Z0:         subtorus Z^0
-##   complement: S=complement torus of Z0 in T
-##   AZ:         representatives of Z/Z^0 given as a group of ss elts
-##   [implemented only for connected groups 18/1/2010]
-##   [I added something hopefully correct in general. JM 22/3/2010]
-##   [introduced subtori JM 2017 and corrected AZ computation]
-##   descAZ:  describes AZ as a quotient  of the fundamental group Pi (seen
-##   as  the centre of  the simply connected  goup with same isogeny type).
-##   Returns words in the generators of Pi which generate the kernel of the
-##   map Pi->AZ
-##
-function algebraic_centre(W)
-  if W isa HasType.ExtendedCox
-    F0s=map(permutedims,W.F0s)
-    W=W.group
-  end
-  if iszero(semisimplerank(W))
-    Z0=toL(refrep(W,one(W)))
-  else
-    Z0=NullspaceIntMat(collect.(collect(zip(
-                                       roots(W.G)[1:semisimplerank(W)]...))))
-  end
-  Z0=SubTorus(W,toM(Z0))
-  if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]
-  else
-    AZ=toL(inv(Rational.(toM(Z0.complement)*
-           hcat(roots(W.G)[1:semisimplerank(W)]...)))*toM(Z0.complement))
-  end
-  AZ=AdditiveSE.(Ref(W),AZ)
-  if W isa HasType.ExtendedCox # compute fixed space of F0s in Y(T)
-    for m in F0s
-      AZ=Filtered(AZ,s->(s/SemisimpleElement(W,s.v*m)) in Z0)
-      if Rank(Z0)>0 Z0=FixedPoints(Z0,m)
-        Append(AZ,Z0[2])
-        Z0=Z0[1]
-      end
-    end
-  end
-  res=Dict(:Z0=>Z0,:AZ=>Group(AbelianGenerators(AZ)))
-  if W isa HasType.ExtendedCox && length(F0s)>0 return res end
-  AZ=AdditiveSE.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
-  if isempty(AZ) res[:descAZ]=AZ
-    return res
-  end
-  AZ=Group(AZ)
-  toAZ=function(s)
-    s=vec(permutedims(map(x->x.r,s.v))*toM(coroots(W)[1:semisimplerank(W)]))
-    s=permutedims(s)*
-       inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
-       return AdditiveSE(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*
-                                      toM(res[:Z0].complement)))
-  end
-  ss=map(toAZ,gens(AZ))
-  #println("AZ=$AZ")
-  #println("res=",res)
-  #println("gens(AZ)=",gens(AZ))
-  #println("ss=$ss")
-  res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
-               elseif gens(AZ)==ss Vector{Int}[]
-               else # map of root data Y(Wsc)->Y(W)
-                  h=Hom(AZ,res[:AZ],ss)
-                  println("h=$h")
-                  map(x->word(AZ,x),gens(kernel(h)))
-               end
-  res
-end
-
-function WeightToAdjointFundamentalGroupElement(W,l::Vector)
-  if isempty(l) return Perm();end
-  prod(x->WeightToAdjointFundamentalGroupElement(W,x),l)
-end
-
-function WeightToAdjointFundamentalGroupElement(W,i)
-  t=refltype(W)[findfirst(t->i in t.indices,refltype(W))]
-  l=copy(t.indices)
-  b=longest(W,l)*longest(W,setdiff(l,[i]))
-  push!(l,maximum(findall(
-    i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
-  eachindex(W.rootdec))))
-  restricted(b,inclusion.(Ref(W),l))
-end
-
-# returns a record containing minuscule coweights, decompositions
-# (in terms of generators of the fundamental group)
-function weightinfo(W)
-  l=map(refltype(W)) do t
-    r=getchev(t,:WeightInfo)
-    if isnothing(r)
-      r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
-           :minusculeWeights=>Vector{Int}[])
-    end
-    if !haskey(r,:minusculeCoweights)
-      r[:minusculeCoweights]=r[:minusculeWeights]
-    end
-    if isempty(r[:moduli]) g=Int[]
-      r[:ww]=Perm{Int}[]
-    else g=filter(i->sum(r[:decompositions][i])==1,
-          eachindex(r[:minusculeCoweights])) # generators of fundamental group
-      r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
-               t.indices[r[:minusculeCoweights][g]])
-    end
-    r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
-    if !isempty(r[:moduli]) 
-      C=mod1.(inv(Rational.(cartan(t))))
-      r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
-      r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
-      r[:minusculeCoweights]=t.indices[r[:minusculeCoweights]]
-    end
-    r[:csi]=toL(r[:csi])
-    r
-  end
-  res=Dict(:minusculeWeights=>cartesian(map(
-                                        x->vcat(x[:minusculeWeights],[0]),l)...),
-    :minusculeCoweights=>cartesian(map(
-                                     x->vcat(x[:minusculeCoweights],[0]),l)...),
-    :decompositions=>map(vcat,cartesian(map(x->vcat(x[:decompositions],
-                                 [0 .*x[:moduli]]),l)...)),
-    :moduli=>reduce(vcat,map(x->x[:moduli],l)))
-# centre of simply connected group: the generating minuscule coweights
-# mod the root lattice
-  res[:CenterSimplyConnected]=reduce(vcat,getindex.(l,:csi))
-  res[:AdjointFundamentalGroup]=reduce(vcat,getindex.(l,:ww))
-  n=length(res[:decompositions])-1
-  res[:minusculeWeights]=map(x->filter(y->y!=0,x),res[:minusculeWeights][1:n])
-  res[:minusculeCoweights]=map(x->filter(y->y!=0,x),res[:minusculeCoweights][1:n])
-  res[:decompositions]=res[:decompositions][1:n]
-  res
-end
-
-"""
-`fundamental_group(W)`
-
-This  function returns the fundamental group of the algebraic group defined
-by  the Coxeter  group struct  `W`. This  group is  returned as  a group of
-diagram  automorphisms of the corresponding affine Weyl group, that is as a
-group  of permutations of  the set of  simple roots enriched  by the lowest
-root  of  each  irreducible  component.  The  definition  we  take  of  the
-fundamental  group of a (not necessarily semisimple) reductive group is (P∩
-Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of the
-root lattice) and Q is the coroot latice. The bijection between elements of
-P/Q   and   diagram   automorphisms   is   explained   in  the  context  of
-non-irreducible groups for example in cite[S 3.B]{Bon05}.
-
-```julia-repl
-julia> W=coxgroup(:A,3)
-A₃
-
-julia> fundamental_group(W)
-Group([perm"(1,2,3,12)"])
-
-julia> W=rootdatum(:sl,4)
-A₃
-
-julia> fundamental_group(W)
-Group([])
-```
-"""
-function fundamental_group(W)
-  if iszero(semisimplerank(W)) return Group([Perm()]) end
-  omega=inv(Rational.(cartan(W)))*toM(coroots(W)) # simple coweights in basis of Y(T)
-  e=weightinfo(W)[:minusculeCoweights]
-  e=filter(x->all(isinteger,sum(omega[x,:];dims=1)),e) # minusc. coweights in Y
-  if isempty(e) return Group(Perm()) end
-  e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
-  Group(AbelianGenerators(e))
-end
-
-function affine(W)
-  ex=vcat(1:semisimplerank(W),2*nref(W))
-  C=Int.([PermRoot.cartan_coeff(W.G,i,j) for i in ex, j in ex])
-  CoxGroups.genCox(C)
-end
 
 """
 relative_group(W::FiniteCoxeterGroup,J)

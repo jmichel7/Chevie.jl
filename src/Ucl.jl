@@ -10,8 +10,8 @@ bijection with nilpotent orbits on the Lie algebra.
 We  give  the  following  information  for  a unipotent element `u` of each
 class:
 
-- the centralizer `C_𝐆 (u)`, that we describe by the reductive part of 
-  `C_𝐆 (u)^0`,  by the group  of components `A(u):=C_𝐆 (u)/C_𝐆 (u)^0`, 
+- the centralizer `C_𝐆 (u)`, that we describe by the reductive part of
+  `C_𝐆 (u)^0`,  by the group  of components `A(u):=C_𝐆 (u)/C_𝐆 (u)^0`,
   and by the dimension of its radical.
 
 - in good characteristic, the  Dynkin-Richardson  diagram.
@@ -21,15 +21,9 @@ relative Weyl groups to each character of `A(u)`.
 
 The  Dynkin-Richarson diagram is attached to a nilpotent element `e` of the
 Lie  algebra `𝔤`.  By the  Jacobson-Morozov theorem  there exists an `𝔰𝔩₂`
-subalgebra of `𝔤` containing `e` as the element
-|---|---|
-| 1 | 0 |
-| 0 | 0 | . Let `𝐒` be the torus 
-
-|---|-----|
-| h | 0   |
-| 0 | h⁻¹ | 
-of `SL₂` and let `𝐓` be a
+subalgebra of `𝔤` containing `e` as the element ``\\begin{pmatrix}1&0\\\\0&1
+\\end{pmatrix}``. Let `𝐒` be the torus ``\\begin{pmatrix}h&0\\\\0&h^{-1}
+\\end{pmatrix}`` of `SL₂` and let `𝐓` be a
 maximal  torus containing `𝐒`, so that `𝐒`  is the image of a one-parameter
 subgroup `σ∈ Y(𝐓)`. Consider the root decomposition `𝔤=∑_{α∈Σ}𝔤_α` given by
 `𝐓`;  then `α↦⟨σ,α⟩` defines a linear form  on `Σ`, determined by its value
@@ -107,13 +101,21 @@ We illustrate these computations on some examples:
 julia> UnipotentClasses(rootdatum(:sl,4))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C     C(u) A₃(A₃₍₎) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄ .(A₃)/-ζ₄
-────┼─────────────────────────────────────────────────────────────────────
-4   │222   0 222    q³.Z₄      1:4                -1:2    ζ₄:Id    -ζ₄:Id
-31  │202   1 22.      q⁴.    Id:31                                       
-22  │020   2 2.2 q⁴.A₁.Z₂     2:22               11:11                   
-211 │101   3 2..    q⁵.A₁   Id:211                                       
-1111│000   6 ...      .A₃  Id:1111
+   u│D-R dBu B-C          C(u) A₃(A₃₍₎=.) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄
+────┼──────────────────────────────────────────────────────────────────
+4   │222   0 222         q³.Z₄        1:4                -1:2    ζ₄:Id
+31  │202   1 22.   q⁴.A₁₍₎=.Φ₁      Id:31
+22  │020   2 2.2      q⁴.A₁.Z₂       2:22               11:11
+211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁     Id:211
+1111│000   6 ...            A₃    Id:1111
+
+   u│.(A₃)/-ζ₄
+────┼──────────
+4   │   -ζ₄:Id
+31  │
+22  │
+211 │
+1111│
 ```
 
 The  first column in the table gives the name of the unipotent class, which
@@ -161,13 +163,13 @@ group:
 julia> UnipotentClasses(coxgroup(:A,3))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C  C(u) A₃(A₃₍₎)
-────┼───────────────────────────
-4   │222   0 222    q³     Id:4
-31  │202   1 22.   q⁴.    Id:31
-22  │020   2 2.2 q⁴.A₁    Id:22
-211 │101   3 2.. q⁵.A₁   Id:211
-1111│000   6 ...   .A₃  Id:1111
+   u│D-R dBu B-C          C(u) A₃(A₃₍₎=.)
+────┼─────────────────────────────────────
+4   │222   0 222            q³       Id:4
+31  │202   1 22.   q⁴.A₁₍₎=.Φ₁      Id:31
+22  │020   2 2.2         q⁴.A₁      Id:22
+211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁     Id:211
+1111│000   6 ...            A₃    Id:1111
 ```
 
 Here is another example:
@@ -176,13 +178,13 @@ Here is another example:
 julia> UnipotentClasses(coxgroup(:G,2))
 UnipotentClasses(G₂)
 1<A₁<Ã₁<G₂(a₁)<G₂
-     u│D-R dBu B-C  C(u)        G₂(G₂₍₎)  .(G₂)
+     u│D-R dBu B-C  C(u)      G₂(G₂₍₎=.)  .(G₂)
 ──────┼─────────────────────────────────────────
-G₂    │ 22   0  22    q²         Id:φ₁‚₀       
+G₂    │ 22   0  22    q²         Id:φ₁‚₀
 G₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id
-Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂       
-A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃       
-1     │ 00   6  ..   .G₂         Id:φ₁‚₆
+Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂
+A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃
+1     │ 00   6  ..    G₂         Id:φ₁‚₆
 ```
 
 which illustrates that on class `G₂(a₁)` there are two local systems in the
@@ -199,14 +201,14 @@ second argument to the function 'UnipotentClasses':
 julia> UnipotentClasses(coxgroup(:G,2),3)
 UnipotentClasses(G₂)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
-     u│dBu B-C  C(u) G₂(G₂₍₎) .(G₂) .(G₂)  .(G₂)
-──────┼──────────────────────────────────────────
-G₂    │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
-G₂(a₁)│  1  20 q⁴.Z₂   2:φ₂‚₁ 11:Id             
-Ã₁    │  2  .2    q⁶  Id:φ₂‚₂                   
-A₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃                   
-(Ã₁)₃ │  3  ?? q⁵.A₁ Id:φ′₁‚₃                   
-1     │  6  ..   .G₂  Id:φ₁‚₆  
+     u│dBu B-C  C(u) G₂(G₂₍₎=.) .(G₂) .(G₂)  .(G₂)
+──────┼────────────────────────────────────────────
+G₂    │  0  22 q².Z₃     1:φ₁‚₀       ζ₃:Id ζ₃²:Id
+G₂(a₁)│  1  20 q⁴.Z₂     2:φ₂‚₁ 11:Id
+Ã₁    │  2  .2    q⁶    Id:φ₂‚₂
+A₁    │  3  2. q⁵.A₁   Id:φ″₁‚₃
+(Ã₁)₃ │  3  ?? q⁵.A₁   Id:φ′₁‚₃
+1     │  6  ..    G₂    Id:φ₁‚₆
 ```
 
 The  function 'ICCTable' gives the  transition matrix between the functions
@@ -254,14 +256,14 @@ struct UnipotentClasses
   springerseries::Vector{Dict}
   prop::Dict{Symbol,Any}
 end
-  
+
 function nameclass(u::Dict,opt=Dict{Symbol,Any}())
 # println("u=$u")
-  if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno] 
+  if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno]
   elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
   else n=u[:name]
   end
-  TeX=haskey(opt,:TeX) 
+  TeX=haskey(opt,:TeX)
   n=fromTeX(n;opt...)
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
     cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
@@ -321,7 +323,7 @@ Dict{Symbol,Any} with 7 entries:
   :Au         => .
   :balacarter => [1, 3]
   :dimunip    => 18
-  :AuAction   => Extended(coxgroup(:A,1)*coxgroup(:A,1),[[1 0; 0 1]])
+  :AuAction   => A₁×A₁
 
 julia> uc.classes[4]
 UnipotentClass(A₁+Ã₁)
@@ -448,8 +450,8 @@ function QuotientAu(Au,chars)
 # return rec(Au:=Au,chars:=chars);
 end
 
-# When some Springer series have been suppressed/weeded out, we  quotient 
-# the Au's by the common  kernel of the remaining characters of the Au's. 
+# When some Springer series have been suppressed/weeded out, we  quotient
+# the Au's by the common  kernel of the remaining characters of the Au's.
 function AdjustAu!(classes,springerseries)
   for (i, u) in enumerate(classes)
     l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
@@ -464,9 +466,9 @@ function AdjustAu!(classes,springerseries)
     u.prop[:Au]=f[:Au]
     if haskey(u.prop,:AuAction)
       R=u.prop[:AuAction].group
-      if rank(R)==0 
+      if rank(R)==0
         u.prop[:AuAction]=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
-      else 
+      else
        if isempty(f[:gens]) F0s=[refrep(R,R())]
        else F0s=map(x->prod(u.prop[:AuAction].F0s[x]),f[:gens])
        end
@@ -477,9 +479,9 @@ function AdjustAu!(classes,springerseries)
     k=1
     for j in eachindex(l)
       springerseries[j][:locsys]=copy(springerseries[j][:locsys])
-      for s in l[j] 
+      for s in l[j]
         springerseries[j][:locsys][s][2]=f[:chars][k]
-        k+=1 
+        k+=1
       end
     end
   end
@@ -501,7 +503,7 @@ computed. It is `0` for any good characteristic.
 
 `orderClasses`:  a list describing the Hasse diagram of the partial order
 induced   on   unipotent   classes   by   the  closure  relation.  That  is
-`.orderclasses[i]`  is the list of `j` such that `C̄ⱼ⊋ C̄ᵢ`  and  there  is 
+`.orderclasses[i]`  is the list of `j` such that `C̄ⱼ⊋ C̄ᵢ`  and  there  is
 no  class  `Cₖ`  such  that `C̄ⱼ⊋ C̄ₖ⊋ C̄ᵢ`.
 
 `classes`:  a  list  of  records  holding information for each unipotent
@@ -560,10 +562,10 @@ julia> uc=UnipotentClasses(W);
 julia> uc.classes
 5-element Array{Gapjm.Ucl.UnipotentClass,1}:
  UnipotentClass(1111)
- UnipotentClass(211) 
- UnipotentClass(22)  
- UnipotentClass(31)  
- UnipotentClass(4)   
+ UnipotentClass(211)
+ UnipotentClass(22)
+ UnipotentClass(31)
+ UnipotentClass(4)
 ```
 
 The  `show`  function  for  unipotent  classes  accepts  all the options of
@@ -583,7 +585,7 @@ Spaltenstein  for the characters  of `G₂` (this  is convenient for checking
 our data with the original paper of Spaltenstein):
 
 ```julia-rep1
-julia> uc=UnipotentClasses(rootdatum(:Esc,6));
+julia> uc=UnipotentClasses(rootdatum(:E6sc));
 
 julia> rshow(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
       order=false)
@@ -592,28 +594,28 @@ UnipotentClasses(E₆)
 ──────┼──────────────────────────────────────────────────────────────────
 E₆    │                1:1ₚ                  ζ₃:1                  ζ₃²:1
 E₆(a₁)│                1:6ₚ                ζ₃:ε_c                ζ₃²:ε_c
-D₅    │              Id:20ₚ                                             
+D₅    │              Id:20ₚ
 A₅+A₁ │        -1:15ₚ 1:30ₚ                 ζ₃:θ′                 ζ₃²:θ′
 A₅    │              1:15_q                 ζ₃:θ″                 ζ₃²:θ″
-D₅(a₁)│              Id:64ₚ                                             
-A₄+A₁ │              Id:60ₚ                                             
-D₄    │              Id:24ₚ                                             
-A₄    │              Id:81ₚ                                             
-D₄(a₁)│111:20ₛ 3:80ₛ 21:90ₛ                                             
-A₃+A₁ │              Id:60ₛ                                             
+D₅(a₁)│              Id:64ₚ
+A₄+A₁ │              Id:60ₚ
+D₄    │              Id:24ₚ
+A₄    │              Id:81ₚ
+D₄(a₁)│111:20ₛ 3:80ₛ 21:90ₛ
+A₃+A₁ │              Id:60ₛ
 2A₂+A₁│               1:10ₛ                 ζ₃:εₗ                 ζ₃²:εₗ
-A₃    │             Id:81ₚ′                                             
-A₂+2A₁│             Id:60ₚ′                                             
+A₃    │             Id:81ₚ′
+A₂+2A₁│             Id:60ₚ′
 2A₂   │              1:24ₚ′                  ζ₃:ε                  ζ₃²:ε
-A₂+A₁ │             Id:64ₚ′                                             
-A₂    │      11:15ₚ′ 2:30ₚ′                                             
-3A₁   │            Id:15_q′                                             
-2A₁   │             Id:20ₚ′                                             
-A₁    │              Id:6ₚ′                                             
-1     │              Id:1ₚ′                                             
+A₂+A₁ │             Id:64ₚ′
+A₂    │      11:15ₚ′ 2:30ₚ′
+3A₁   │            Id:15_q′
+2A₁   │             Id:20ₚ′
+A₁    │              Id:6ₚ′
+1     │              Id:1ₚ′
 ```
 """
-function UnipotentClasses(t::TypeIrred,p=0) 
+function UnipotentClasses(t::TypeIrred,p=0)
   uc=getchev(t,:UnipotentClasses,p)
   rank=PermRoot.rank(t)
   classes=UnipotentClass[]
@@ -652,10 +654,10 @@ end
 
 Base.length(uc::UnipotentClasses)=length(uc.classes)
 
-function UnipotentClasses(W::FiniteCoxeterGroup,p=0) 
-  t=refltype(W) 
+function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
+  t=refltype(W)
   uc=UnipotentClasses.(t,p)
-  if isempty(t) 
+  if isempty(t)
     classes=[UnipotentClass("",[],0,
         Dict(:Au=>coxgroup(),:dynkin=>[],:balacarter=>[],
              :dimunip=>0,:red=>Torus(rank(W))))]
@@ -665,18 +667,18 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
       l=getproperty.(t,:indices)
-      if length(v)==1 u=deepcopy(v[1]) 
+      if length(v)==1 u=deepcopy(v[1])
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
         u.prop[:Au]=prod(x->x.prop[:Au],v)
-        if all(x->haskey(x.prop,:dimred),v) 
+        if all(x->haskey(x.prop,:dimred),v)
           u.prop[:dimred]=sum(x->x.prop[:dimred],v) end
-        if all(x->haskey(x.prop,:dimunip),v) 
+        if all(x->haskey(x.prop,:dimunip),v)
           u.prop[:dimunip]=sum(x->x.prop[:dimunip],v) end
-        if all(x->haskey(x.prop,:red),v) 
+        if all(x->haskey(x.prop,:red),v)
           u.prop[:red]=prod(x->x.prop[:red],v) end
-        if all(x->haskey(x.prop,:AuAction),v) 
+        if all(x->haskey(x.prop,:AuAction),v)
           u.prop[:AuAction]=prod(x->x.prop[:AuAction],v) end
         if all(x->haskey(x.prop,:dynkin),v)
           u.prop[:dynkin]=zeros(Int,sum(x->length(x.prop[:dynkin]),v))
@@ -687,7 +689,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:balacarter]=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
                     v[i].prop[:balacarter]) for (i,x) in enumerate(l)])
       end
-      if rank(W)>semisimplerank(W) && haskey(u.prop, :red) 
+      if rank(W)>semisimplerank(W) && haskey(u.prop, :red)
         T=torus(rank(W)-semisimplerank(W))
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
@@ -726,7 +728,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     end
     if all(haskey.(v,:parameter)) s[:parameter]=getindex.(v,:parameter) end
     s[:relgroup]=prod(getindex.(v,:relgroup))
-    if length(v)==1 
+    if length(v)==1
       for k in setdiff(keys(v[1]),[:levi,:Z,:locsys,:parameter])
         s[k]=v[1][k]
       end
@@ -746,7 +748,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   if !all(x->Set(x[:Z])==Set([1]),springerseries)
     springerseries=filter(s->all(y->prod(s[:Z][y])==1,
              algebraic_centre(W)[:descAZ]),springerseries)
-    AdjustAu!(classes,springerseries) 
+    AdjustAu!(classes,springerseries)
   end
   s=springerseries[1]
 # s[:relgroup]=RelativeCoset(WF,s[:levi])
@@ -754,7 +756,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
   l=filter(i->any(y->i==y[1],s[:locsys]),1:length(classes))
   s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
   # for now only springerseries[1] properly twisted
-  for s in springerseries[2:end] 
+  for s in springerseries[2:end]
  #  s[:relgroup]=RelativeCoset(WF,s[:levi])
  #  s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
     s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
@@ -771,7 +773,7 @@ function showcentralizer(io::IO,u)
   c=""
   function AuName(u)
     if length(u.prop[:Au])==1 return "" end
-    res=haskey(u.prop,:AuAction) || 
+    res=haskey(u.prop,:AuAction) ||
         (haskey(u.prop,:dimred) && iszero(u.prop[:dimred])) ? "." : "?"
         res*=reflection_name(IOContext(io,:Au=>true),u.prop[:Au])
   end
@@ -781,7 +783,7 @@ function showcentralizer(io::IO,u)
   if haskey(u.prop,:AuAction)
     if rank(u.prop[:red])>0
       c*="."
-      if length(u.prop[:Au])==1 || 
+      if length(u.prop[:Au])==1 ||
          length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
         c*=reflection_name(io,u.prop[:AuAction])
       elseif all(isone,u.prop[:AuAction].F0s)
@@ -803,8 +805,8 @@ function showcentralizer(io::IO,u)
     end
     c*=AuName(u)
   end
-  replace(c,r"^."=>"")
-  replace(c,r".*"=>"")
+  c=replace(c,r"^\."=>"")
+  c=replace(c,r"\.\."=>".")
   replace(c,"()"=>"")
   c
 end
@@ -838,7 +840,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
       push!(res, String(b))
     end
     if get(io,:centralizer,true)
-      push!(res,showcentralizer(io,u)) 
+      push!(res,showcentralizer(io,u))
     end
     if get(io,:springer,true)
       i=findfirst(isequal(u),uc.classes)
@@ -863,7 +865,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
      push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
   if get(io,:springer,true)
-   append!(col_labels, 
+   append!(col_labels,
       map(function (ss,)
         res = string(repr(ss[:relgroup],context=:limit=>true),"(",
           repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")

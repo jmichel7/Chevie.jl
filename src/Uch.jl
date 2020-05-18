@@ -172,10 +172,10 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> T=spets(reflection_subgroup(W,Int[]),W(1,2))
-.Φ₆
+G₂₍₎=.Φ₆
 
 julia> u=UniChar(T,1)
-[.Φ₆]:<.>
+[G₂₍₎=.Φ₆]:<.>
 ```
 
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
@@ -899,10 +899,10 @@ julia> WF=spets(W)
 G₂
 
 julia> T=subspets(WF,Int[],W(1))
-.Φ₁Φ₂
+G₂₍₎=.Φ₁Φ₂
 
 julia> u=UniChar(T,1)
-[.Φ₁Φ₂]:<.>
+[G₂₍₎=.Φ₁Φ₂]:<.>
 
 julia> LusztigInduce(WF,u)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
@@ -932,19 +932,19 @@ julia> WF=spets(W)
 G₂
 
 julia> T=subspets(WF,Int[],W(1))
-.Φ₁Φ₂
+G₂₍₎=.Φ₁Φ₂
 
 julia> u=DLChar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
 julia> Uch.LusztigRestrict(T,u)
-[.Φ₁Φ₂]:4<.>
+[G₂₍₎=.Φ₁Φ₂]:4<.>
 
 julia> T=subspets(WF,Int[],W(2))
-.Φ₁Φ₂
+G₂₍₎=.Φ₁Φ₂
 
 julia> Uch.LusztigRestrict(T,u)
-[.Φ₁Φ₂]:0
+[G₂₍₎=.Φ₁Φ₂]:0
 ```
 """
 LusztigRestrict(HF,u)=UniChar(HF,permutedims(LusztigInductionTable(HF,

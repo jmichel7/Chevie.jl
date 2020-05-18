@@ -42,7 +42,12 @@ abstract type Group{T} end # T is the type of elements of G
 
 function normalizer end
 
-Base.one(G::Group{T}) where T=isempty(gens(G)) ? one(T) : one(gens(G)[1])
+function Base.one(G::Group{T}) where T
+  if !isempty(gens(G)) return one(gens(G)[1]) end
+  if haskey(G.prop,:one) return G.prop[:one] end
+  one(T)
+end
+
 gens(G::Group)=G.gens
 nbgens(G::Group)=length(gens(G))
 
@@ -366,7 +371,15 @@ struct GroupofAny{T}<:Group{T}
   prop::Dict{Symbol,Any}
 end
 
-Group(a::AbstractVector{T}) where T=GroupofAny(a,Dict{Symbol,Any}())
+function Group(a::AbstractVector{T}) where T
+  prop=Dict{Symbol,Any}()
+  if !isempty(a) prop[:one]=one(a[1]) end
+  GroupofAny(filter(!isone,a),prop)
+end
+
+function Group(a::AbstractVector{T},one) where T
+  GroupofAny(filter(!isone,a),Dict{Symbol,Any}(:one=>one))
+end
 
 #------------------- cosets ----------------------------------------
 # for now normal cosets (phi normalizes G)
@@ -378,7 +391,10 @@ struct CosetofAny{T,TW<:Group{T}}<:Coset{TW}
   prop::Dict{Symbol,Any}
 end
 
+Base.isone(a::Coset)=isone(a.phi)
+
 Coset(G::Group,phi)=CosetofAny(phi,G,Dict{Symbol,Any}())
+Coset(G::Group)=CosetofAny(one(G),G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
 
@@ -418,7 +434,7 @@ end
 
 Groups.Group(g::Vector{Coset})=CosetGroup(filter(!isone,g),Dict{Symbol,Any}())
 
-Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))))
+Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))),Coset(H))
 
 elements(C::Coset)=C.phi .* elements(Group(C))
 

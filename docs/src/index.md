@@ -74,15 +74,95 @@ cyclotomic_polynomial
 ```@docs
 Mvps
 variables
-coefficients(p::Mvp,var::Symbol)
+Mvps.coefficients(::Mvp,::Symbol)
 Mvps.valuation
 Mvps.value
 Mvps.degree
 Mvps.conj
-Mvps.factor
+factor(::Mvp)
 derivative
 laurent_denominator
 scal
+```
+# Cyclotomic polynomials
+```@docs
+CycPols
+CycPol
+```
+# Utilities
+```@docs
+Util
+groupby
+tally
+collectby
+constant
+format
+prime_residues
+phi
+primitiveroot
+cut
+```
+# Combinatorics
+```@docs
+arrangements
+combinations
+compositions
+conjugate_partition
+dominates
+partitions
+submultisets
+```
+# Module Elements
+```@docs
+ModuleElts
+```
+# Posets
+```@docs
+Posets
+Poset
+lcm_partitions
+gcd_partitions
+transitive_closure
+linear_extension
+hasse
+incidence
+reverse
+partition
+Posets.restricted(::Poset,::AbstractVector{<:Integer})
+is_join_lattice
+is_meet_lattice
+Poset(::CoxeterGroup,w=longest(W))
+```
+# Signed permutations
+```@docs
+SPerms
+SPerm
+Perm(::SPerm)
+orbit(::SPerm,::Integer)
+order(::SPerm)
+Matrix
+CoxHyperoctaedral
+reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
+stab_onsmat
+perm_onsmat
+```
+# Linear algebra on any field/ring
+```@docs
+GLinearAlgebra
+GLinearAlgebra.echelon!
+GLinearAlgebra.echelon
+bigcell_decomposition
+diagblocks
+blocks
+ratio
+exterior_power
+permanent
+symmetric_power
+schur_functor
+transporter
+diagconj_elt
+traces_words_mats
+solutionmat
 ```
 # Coxeter groups
 ```@docs
@@ -119,7 +199,6 @@ inversions
 with_inversions
 torus
 SubTorus
-fundamental_group
 relative_group
 ```
 # Finite reflection groups
@@ -204,6 +283,12 @@ representations
 InductionTable
 WGraphToRepresentation
 ```
+# Reductive groups, semisimple elements
+```@docs
+Semisimple
+fundamental_group
+Semisimple.QuasiIsolatedRepresentatives
+```
 # Reflection cosets
 ```@docs
 Cosets
@@ -252,84 +337,6 @@ valuation_feg_symbol
 valuation_gendeg_symbol
 tableaux
 symbols
-```
-# Signed permutations
-```@docs
-SPerms
-SPerm
-Perm(::SPerm)
-orbit(::SPerm,::Integer)
-order(::SPerm)
-Matrix
-CoxHyperoctaedral
-reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
-stab_onsmat
-perm_onsmat
-```
-# Utilities
-```@docs
-Util
-groupby
-tally
-collectby
-constant
-format
-prime_residues
-phi
-primitiveroot
-cut
-```
-# Combinatorics
-```@docs
-arrangements
-combinations
-compositions
-conjugate_partition
-dominates
-partitions
-submultisets
-```
-# Module Elements
-```@docs
-ModuleElts
-```
-# Cyclotomic polynomials
-```@docs
-CycPols
-CycPol
-```
-# Posets
-```@docs
-Posets
-Poset
-lcm_partitions
-gcd_partitions
-transitive_closure
-linear_extension
-hasse
-incidence
-reverse
-partition
-restricted(::Poset,::AbstractVector{<:Integer})
-is_join_lattice
-is_meet_lattice
-Poset(::CoxeterGroup,w=longest(W))
-```
-# Linear algebra on any field/ring
-```@docs
-GLinearAlgebra
-GLinearAlgebra.echelon!
-bigcell_decomposition
-diagblocks
-blocks
-ratio
-exterior_power
-permanent
-symmetric_power
-schur_functor
-transporter
-diagconj_elt
-traces_words_mats
 ```
 # Eigenspaces
 ```@docs

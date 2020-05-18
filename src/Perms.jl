@@ -20,18 +20,20 @@ decompositions:    the   above   permutation    has   cycle   decomposition
 `(1,2,3)(4,5)`    thus   can   be    written   `Perm(1,2,3)*Perm(4,5)`   or
 `perm"(1,2,3)(4,5)"`  (this last form  can parse any  GAP permutation). The
 list  of images  of `1:n`  can be  gotten back  from the permutation by the
-function  `vec`;  note  that  since  equal  permutations may have different
-degrees, they may have different `vec`.
+function  `vec`;  note  that  permutations  may  be equal even if they have
+different  degrees  (if  they  move  the  same points), then they will have
+different `vec`.
 
 The  complete type of a permutation  is `Perm{T}` where `T<:Integer`, where
 `Vector{T}`  is the type of the vector which holds the image of `1:n`. This
 can  be used to save space or  time. For instance `Perm{UInt8}` can be used
-for  Weyl groups of rank≤8 since they have at most 240 roots. If `T` is not
-specified  we take it to be `Int16` since this is a good compromise between
-speed,  compactness and possible  size of `n`.  One can mix permutations of
-different types; they are promoted to the higher one when multiplying.
+for  Weyl groups of rank≤8 since they permute  at most 240 roots. If `T` is
+not  specified we  take it  to be  `Int16` since  this is a good compromise
+between   speed,  compactness  and  possible  size  of  `n`.  One  can  mix
+permutations  of different  types `T`;  they are  promoted to the wider one
+when multiplying.
 
-# Examples
+# Examples of operations with permutations
 ```julia-repl
 julia> a=Perm(1,2,3)
 (1,2,3)
@@ -104,11 +106,6 @@ elements  of sets; two permutations are equal  if they move the same points
 to  the same images. They have methods `cmp`, `isless` (lexicographic order
 on   moved  points)  so  they  can  be  sorted.  `Perm`s  are  scalars  for
 broadcasting.
-
-other functions on `Perm`s are: 
-`cycles, cycletype, orbit, orbits, restricted`. 
-See individual documentations below.
-
 """
 module Perms
 
@@ -121,10 +118,10 @@ export Perm, largest_moved_point, cycles, cycletype,
   @perm_str, smallest_moved_point, reflength, mappingPerm
 
 """
-`struct Perm`
+`struct Perm{T<:Integer}`
 
 A  Perm represents a permutation  of the set `1:n`  and is implemented by a
-`struct Perm` with one field `d`, a vector holding the images of `1:n`.
+`struct` with one field, a `Vector{T}` holding the images of `1:n`.
 """
 struct Perm{T<:Integer}
    d::Vector{T}
@@ -496,17 +493,19 @@ order(a::Perm)=lcm(length.(cycles(a)))
 """
   cycletype(a::Perm) describes the partition of degree(a) associated to the
   conjugacy class of a in the symmetric group, with ones removed. It is
-  represented as a Dict of cyclesize=>multiplicity
+  represented as a list of pairs cyclesize=>multiplicity
 # Example
 ```julia-repl
 julia> cycletype(Perm(1,2)*Perm(3,4))
-1-element Array{Pair{Tuple{Int64,Int64},Int64},1}:
- (2, 1) => 2
+1-element Array{Pair{Int64,Int64},1}:
+ 2 => 2
 ```
 """
-function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
+function cycletype(a::Perm;domain=nothing)
   res=Dict{Tuple{Int,Int},Int}()
-  to_visit=domain[1:length(a.d)] # this makes a copy
+  if isnothing(domain) to_visit=ones(length(a.d))
+  else to_visit=domain[1:length(a.d)] # this makes a copy
+  end
   for i in eachindex(to_visit)
     if iszero(to_visit[i]) continue end
     l=0
@@ -523,7 +522,9 @@ function cycletype(a::Perm;domain=ones(Int16,length(a.d)))
       end
     end
   end
-  sort(collect(res),by=x->x[1])
+  if isnothing(domain) sort!(map(x->x[1][1]=>x[2],collect(res)))
+  else sort!(collect(res))
+  end
 end
 
 " reflength(a::Perm) minimum number of transpositions of which a is product"
@@ -550,6 +551,11 @@ Base.sign(a::Perm)=(-1)^reflength(a)
    restricted(a::Perm{T},l::AbstractVector{<:Integer})
 
 l should be a union of cycles of p; returns p restricted to l
+
+```julia-repl
+julia> restricted(Perm(1,2)*Perm(3,4),3:4)
+(3,4)
+```
 """
 function restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
   o=orbits(a,l;trivial=false)

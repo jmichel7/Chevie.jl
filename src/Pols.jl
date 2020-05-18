@@ -46,7 +46,7 @@ using ..Util: format_coefficient, fromTeX, divisors
 #import Gapjm: root, degree, valuation
 # to use as a stand-alone module comment above line and uncomment next
 export degree, valuation
-import Gapjm: root
+import ..Cycs: root
 export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
 
 const varname=Ref(:x)

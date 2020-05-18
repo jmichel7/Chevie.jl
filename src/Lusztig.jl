@@ -225,11 +225,11 @@ B₃
 
 julia> t=twistings(W,[1,3])
 2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- Ã₁×A₁Φ₁
- Ã₁×A₁Φ₂
+ B₃₍₁₃₎=Ã₁×A₁Φ₁
+ B₃₍₁₃₎=Ã₁×A₁Φ₂
 
 julia> LusztigInductionTable(t[2],W)
-Lusztig Induction from Ã₁×A₁Φ₂ to B₃
+Lusztig Induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃
      │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2
 ─────┼────────────────────────
 111. │     1    -1    -1    .

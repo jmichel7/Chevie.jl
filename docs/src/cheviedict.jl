@@ -184,7 +184,7 @@ const ChevieDict=Dict(
 "MappingPermListList"=>"mappingPerm",
 "MatStab"=>"stab_onmat",
 "MatXPerm(W,p)"=>"refrep(W,p)",
-#MatYPerm
+"MatYPerm"=>"matY",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",
 "NrPartitionTuples"=>"npartition_tuples",

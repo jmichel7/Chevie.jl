@@ -1,5 +1,6 @@
 module MatInt
-using ..Gapjm
+#using ..Gapjm
+using ..Util: toL, toM
 
 export ComplementIntMat, NullspaceIntMat
 
@@ -8,8 +9,8 @@ NullMat(i,j)=[zeros(Int,j) for k in 1:i]
 MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1])) 
              for k in eachindex(b[1])] for i in eachindex(a)]
 
-# MATINTsplit(N,a) largest factor of N prime to a
-function MATINTsplit(N, a)
+# largest factor of N prime to a
+function prime_part(N, a)
   while a != 1
       a = gcd(a, N)
       N = div(N, a)
@@ -17,8 +18,8 @@ function MATINTsplit(N, a)
   N
 end
 
-# MATINTrgcd(N,a) smallest nonnegative c such that gcd(N,a+c) = 1
-function MATINTrgcd(N, a)
+# rgcd(N,a) smallest nonnegative c such that gcd(N,a+c) = 1
+function rgcd(N, a)
   if N == 1 return 0 end
   r = [mod(a-1, N)]
   d = [N]
@@ -34,7 +35,7 @@ function MATINTrgcd(N, a)
         g=gcd(r[i], d[i])
       end
       if g == 1 return c end
-      q = MATINTsplit(div(d[i], g), g)
+      q = prime_part(div(d[i], g), g)
       if q>1
        push!(r,mod(r[i], q))
        push!(d, q)
@@ -46,17 +47,33 @@ function MATINTrgcd(N, a)
   end
 end
 
-mutable struct GcdRes
-  gcd::Int
-  coeff1::Int
-  coeff2::Int
-  coeff3::Int
-  coeff4::Int
-end
-#############################################################################
-##
-#F  Gcdex( <m>, <n> ) . . . . . . . . . . greatest common divisor of integers
-##
+"""
+`Gcdex(n1,n2)`
+
+`Gcdex` returns a named tuple. The field `gcd` is the gcd of `n1` and n2`.
+
+The   fields  `coeff1`  and  `coeff2`   are  integer  cofactors  such  that
+`gcd=coeff1*n1+coeff2*n2`. If `n1` and `n2` both are nonzero, `abs(coeff1)`
+is  less than or equal to  `abs(n2)/(2*gcd)` and `abs(coeff2)` is less than
+or equal to `abs(n1)/(2*gcd)`.
+
+The  fields  `coeff3`  and  `coeff4`  are  integer cofactors such that `0 =
+coeff3*n1+coeff4*n2`.  If  `n1`  or  `n2`  or  both are nonzero `coeff3` is
+`-n2/gcd` and `coeff4` is `n1/gcd`.
+
+The matrix `[coeff1 coeff2;coeff3 coeff4] is always unimodular (that is has
+determinant ±1.
+
+```julia-repl
+julia> MatInt.Gcdex(123,66)
+(gcd = 3, coeff1 = 7, coeff2 = -13, coeff3 = -22, coeff4 = 41)
+# 3 = 7*123  - 13*66,  0 = -22*123  + 41*66
+julia> MatInt.Gcdex(0,-3)
+(gcd = 3, coeff1 = 0, coeff2 = -1, coeff3 = 1, coeff4 = 0)
+julia> MatInt.Gcdex(0,0)
+(gcd = 0, coeff1 = 1, coeff2 = 0, coeff3 = 0, coeff4 = 1)
+```
+"""
 function Gcdex( m, n )
   if 0<=m  f=m; fm=1
   else f=-m; fm=-1 end
@@ -72,55 +89,52 @@ function Gcdex( m, n )
     fm=hm
   end
   if n==0
-    GcdRes(f, fm, 0, gm, 1)
+    (gcd=f, coeff1=fm, coeff2=0, coeff3=gm, coeff4=1)
   else
-    GcdRes(f, fm, div(f-fm*m,n), gm, div(-gm*m,n))
+    (gcd=f, coeff1=fm, coeff2=div(f-fm*m,n), coeff3=gm, coeff4=div(-gm*m,n))
   end
 end
 
-#  MATINTmgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
+#  mgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
 #   gcd(N,a+c[1]*v[1]+...+c[n]*v[k]) = gcd(N,a,v[1],v[2],...,v[k])
-function MATINTmgcdex(N, a, v)
+function mgcdex(N, a, v)
   l = length(v)
-  M = zeros(Int,l)
   h = N
-  for i = 1:l
+  M=map(1:l)do i
     g = h
     h = gcd(g, v[i])
-    M[i] = div(g, h)
+    div(g, h)
   end
   h=gcd(a,h)
   g=div(a,h)
-  c = zeros(Int,l)
-  for i in l:-1:1
+  reverse(map(l:-1:1)do i
     b = div(v[i], h)
-    d = MATINTsplit(M[i], b)
-    if d==1 c[i] = 0
-    else c[i] = MATINTrgcd(d, mod(div(g,b), d))
-      g+=c[i]*b
+    d = prime_part(M[i], b)
+    if d==1 c=0
+    else c=rgcd(d, numerator(g//b)*invmod(denominator(g//b),d))
+      g+=c*b
     end
-  end
-  c
+    c
+  end)
 end
 
-#  MATINTbezout(a,b,c,d) - returns P to transform A to hnf (PA=H);
+#  bezout(a,b,c,d) - returns P to transform A to hnf (PA=H);
 #
-#  [st][ab]=[ef] 
-#  [uv][cd] [0g]
+#  [st;uv][ab;cd]=[ef;0g]
 #
-function MATINTbezout(a, b, c, d)
+function bezout(a, b, c, d)
   e=Gcdex(a, c)
   f=e.coeff1*b+e.coeff2*d
   g=e.coeff3*b+e.coeff4*d
   if g < 0
-    e.coeff3 = -e.coeff3
-    e.coeff4 = -e.coeff4
-    g = -g
+    e=(gcd=e.gcd,coeff1=e.coeff1,coeff2=e.coeff2,
+       coeff3=-e.coeff3,coeff4=-e.coeff4)
+    g=-g
   end
-  if g > 0
-    q = div(f-mod(f, g), g)
-    e.coeff1-=q*e.coeff3
-    e.coeff2-=q*e.coeff4
+  if g>0
+    q=div(f-mod(f, g), g)
+    e=(gcd=e.gcd,coeff1=e.coeff1-q*e.coeff3,coeff2=e.coeff2-q*e.coeff4,
+       coeff3=e.coeff3,coeff4=e.coeff4)
   end
   e
 end
@@ -156,25 +170,25 @@ function SNFofREF(R, destroy)
       end
       t = min(k, r)
       for i = t-1:-1:si
-          t = MATINTmgcdex(A[i], T[i][k], [T[i+1][k]])[1]
+          t = mgcdex(A[i], T[i][k], [T[i+1][k]])[1]
           if t != 0
               T[i]+=T[i+1]*t
               Apply(T[i], (x->begin mod(x, A[i]) end))
           end
       end
       for i = si:min(k - 1, r)
-          g = Gcdex(A[i], T[i][k])
+          g = gcdx(A[i], T[i][k])
           T[i][k] = 0
-          if g.gcd != A[i]
-              b = div(A[i], g.gcd)
-              A[i] = g.gcd
+          if g[1] != A[i]
+              b = div(A[i], g[1])
+              A[i] = g[1]
               for ii = i + 1:min(k - 1, r)
-                  T[ii]+=map(x->mod(x,A[ii]),T[i]*-g.coeff2*div(T[ii][k],A[i]))
+                  T[ii]+=map(x->mod(x,A[ii]),T[i]*-g[3]*div(T[ii][k],A[i]))
                   T[ii][k]= b*T[ii][k]
                   Apply(T[ii],x->mod(x,A[ii]))
               end
               if k <= r
-                  t = g.coeff2 * div(T[k][k], g.gcd)
+                  t = g[3] * div(T[k][k], g[1])
                   T[k]+=-T[i]-t
                   T[k][k]*=b
               end
@@ -325,9 +339,9 @@ function DoNFIM(mat::AbstractVector, opt::Int)
                 a = A[r][c1]
                 for i = r+1:n
                     if b != 1
-                        g = Gcdex(b, A[i][c2])
-                        b = g.gcd
-                        a = g.coeff1 * a + g.coeff2 * A[i][c1]
+                        g = gcdx(b, A[i][c2])
+                        b = g[1]
+                        a = g[2]*a + g[3]*A[i][c1]
                     end
                 end
                 N = 0
@@ -335,14 +349,14 @@ function DoNFIM(mat::AbstractVector, opt::Int)
                   if N != 1 N = gcd(N, A[i][c1] - div(A[i][c2], b) * a) end
                 end
             else
-              c=MATINTmgcdex(N, A[r][j], map(x->x[j],A[r+1:n]))
+              c=mgcdex(N, A[r][j], map(x->x[j],A[r+1:n]))
               b=A[r][j] + c*map(x->x[j],A[r+1:n])
               a=A[r][c1] + c*map(x->x[c1],A[r+1:n])
             end
-            t = MATINTmgcdex(N, a, [b])[1]
+            t = mgcdex(N, a, [b])[1]
             tmp = A[r][c1] + t * A[r][j]
             if tmp==0 || tmp*A[k][c2]==(A[k][c1]+t*A[k][j])*A[r][c2]
-                t+=1+MATINTmgcdex(N, a+t*b+b,[b])[1]
+                t+=1+mgcdex(N, a+t*b+b,[b])[1]
             end
             if t > 0
                 for i in 1:n A[i][c1]+=t*A[i][j] end
@@ -355,7 +369,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
         end
         c2 = c1 + 1
     end
-    c = MATINTmgcdex(abs(A[r][c1]), A[r+1][c1], map(i->A[i][c1],r+2:n))
+    c = mgcdex(abs(A[r][c1]), A[r+1][c1], map(i->A[i][c1],r+2:n))
     for i in r+2:n
       if c[i-r-1]!=0
         A[r+1]+=A[i]*c[i-r-1]
@@ -368,14 +382,14 @@ function DoNFIM(mat::AbstractVector, opt::Int)
     i=r+1
     while A[r][c1]*A[i][c2]==A[i][c1]*A[r][c2] i+=1 end
     if i>r+1
-      c=MATINTmgcdex(abs(A[r][c1]), A[r+1][c1]+A[i][c1], [A[i][c1]])[1]+1
+      c=mgcdex(abs(A[r][c1]), A[r+1][c1]+A[i][c1], [A[i][c1]])[1]+1
       A[r+1]+=A[i]*c
       if ROWTRANS
         C[r+1][i]+=c
         Q[r+1]+=Q[i]*c
       end
     end
-    g = MATINTbezout(A[r][c1], A[r][c2], A[r+1][c1], A[r+1][c2])
+    g = bezout(A[r][c1], A[r][c2], A[r+1][c1], A[r+1][c2])
     sig*= sign(A[r][c1]*A[r+1][c2]-A[r][c2]*A[r+1][c1])
     A[[r,r+1]]=MatMul([[g.coeff1,g.coeff2],[g.coeff3, g.coeff4]],A[[r,r+1]])
     if ROWTRANS
@@ -427,7 +441,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
     end
   end
   if TRIANG && COLTRANS && r<m-1
-    c=MATINTmgcdex(A[r][r], A[r][r+1], A[r][r+2:m-1])
+    c=mgcdex(A[r][r], A[r][r+1], A[r][r+2:m-1])
     for j in r+2:m-1
         A[r][r+1]+=c[j-r-1] * A[r][j]
         B[j][r+1]=c[j-r-1]
@@ -560,50 +574,46 @@ end
 
 function DeterminantIntMat(mat)
   sig = 1
-  n = length(mat) + 2
-  if n < 22 return DeterminantMat(mat) end
-  m = length(mat[1]) + 2
-  if !n == m error("DeterminantIntMat: <mat> must be a square matrix") end
-  A = [map(x->0, 1:m)]
-  for i = 2:n - 1
-      A[i] = [0]
-      A[i] = Append(A[i], mat[i - 1])
-      A[i][m] = 0
+  n=length(mat)+2
+  if n<22 return DeterminantMat(mat) end
+  m = length(mat[1])+2
+  if n != m error("DeterminantIntMat: <mat> must be a square matrix") end
+  A=[fill(0,m)]
+  for l in mat
+    push!(A,vcat([0],l,[0]))
   end
-  A[n] = map(x->0, 1:m)
-  A[1][1] = 1
-  A[n][m] = 1
+  push!(A,fill(0,m))
+  A[1][1]=1
+  A[n][m]=1
   r = 0
   c2 = 1
   while m > c2
-    r = r + 1
+    r+=1
     c1 = c2
     j = c1 + 1
     while j <= m
         k = r + 1
-        while k <= n && (A[r])[c1] * (A[k])[j] == (A[k])[c1] * (A[r])[j]
-            k = k + 1
-        end
+        while k<=n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k+=1 end
         if k <= n
             c2 = j
             j = m
         end
-        j = j + 1
+        j+=1
     end
-    c = MATINTmgcdex(abs((A[r])[c1]), (A[r + 1])[c1], (A[r + 2:n])[c1])
-    for i in r + 2:n
+    c = mgcdex(abs(A[r][c1]), A[r+1][c1], map(x->x[c1],A[r+2:n]))
+    for i in r+2:n
         if c[i-r-1]!=0 A[r+1]+=A[i]*c[i-r-1] end
     end
     i = r + 1
     while A[r][c1]*A[i][c2]==A[i][c1]*A[r][c2] i=i+1 end
     if i>r+1
-      c=MATINTmgcdex(abs(A[r][c1]), A[r+1][c1]+A[i][c1], [A[i][c1]])[1]+1
+      c=mgcdex(abs(A[r][c1]), A[r+1][c1]+A[i][c1], [A[i][c1]])[1]+1
       A[r+1]+=A[i] * c
     end
-    g = MATINTbezout(A[r][c1], A[r][c2], A[r + 1][c1], A[r + 1][c2])
+    g = bezout(A[r][c1], A[r][c2], A[r + 1][c1], A[r + 1][c2])
     sig*=sign(A[r][c1] * A[r + 1][c2] - A[r][c2] * A[r + 1][c1])
     if sig == 0 return 0 end
-    A[[r,r+1]]=[[g[:coeff1], g[:coeff2]], [g[:coeff3], g[:coeff4]]]*A[[r,r+1]]
+    A[[r,r+1]]=[[g.coeff1, g.coeff2], [g.coeff3, g.coeff4]]*A[[r,r+1]]
     for i in r+2:n
       q = div(A[i][c1], A[r][c1])
       A[i]-=A[r]*q
@@ -644,9 +654,41 @@ end
 # r.rowtrans        a unimodular matrix such that  
 #   r.normal=List(r.rowtrans*m,v->Zip(v,moduli,function(x,y)return x mod y;end))
 #
+"""
+'DiaconisGraham( <mat>, <moduli>)'
+
+Diaconis  and Graham  (see citedg99)  defined a  normal form for generating
+sets of abelian groups. Here <moduli> should be a list of positive integers
+such  that 'moduli[i+1]' divides 'moduli[i]'  for all 'i', representing the
+abelian  group A=Z/moduli[1]×…×Z/moduli[n]. The  integral matrix <m> should
+have  <n> columns where 'n=Length(moduli)', and  each line (with the <i>-th
+element taken 'mod moduli[i]') represents an element of the group A.
+
+The  function returns 'false' if the set  of elements of  A  represented by
+the  lines of  m  does not generate   A.  Otherwise it returns a record 'r'
+with fields
+
+'r.normal':         the Diaconis-Graham normal form, a matrix of same shape
+as 'm' where either the first 'n' lines are the identity matrix and the
+remaining  lines are '0',  or 'Length(m)=n' and  '.normal' differs from
+the  identity matrix only in the  entry '.normal[n][n]', which is prime
+to 'moduli[n]'.
+
+'r.rowtrans':        a unimodular matrix such that  
+'r.normal=List(r.rowtrans*m,v->mod.(v,moduli))'
+
+Here is an example:
+
+```julia-repl
+julia> MatInt.DiaconisGraham([[3,0],[4,1]],[10,5])
+Dict{Symbol,Any} with 2 entries:
+  :normal   => [[1, 0], [0, 2]]
+  :rowtrans => [[-13, 10], [4, -3]]
+```
+"""
 function DiaconisGraham(m, moduli)
-  if moduli == [] return Dict{Symbol, Any}(:rowtrans => [], :normal => m) end
-  if any(i->mod(moduli[i],moduli[i+1])!=0,1:length(moduli)-1)
+  if moduli==[] return Dict{Symbol, Any}(:rowtrans=>[],:normal=>m) end
+  if any(i->moduli[i]%moduli[i+1]!=0,1:length(moduli)-1)
     error("DiaconisGraham(m,moduli): moduli[i+1] should divide moduli[i] for all i")
   end
   r = HermiteNormalFormIntegerMatTransform(m)
@@ -656,16 +698,15 @@ function DiaconisGraham(m, moduli)
   if length(m) > 0 && n != length(m[1])
     error("DiaconisGraham(m,moduli): moduli  &&  m[1] should have same length")
   end
-  ZipMod = function (m, moduli)
-    return map(v-> map(function(x, y) return mod(x, y) end, v, moduli), m)
-  end
+  ZipMod(m,moduli)=map(v->mod.(v,moduli),m)
   for i = 1:min(n,length(m)-1)
       l = m[i][i]
       if m[i][i] != 1
           if gcd(m[i][i], moduli[i]) != 1 return false end
           l1 = invmod(l, moduli[i])
           e = IdentityMat(length(m))
-          e[[i, i + 1]][[i, i+1]] = [[l1, l1-1], [1-l*l1, (l+1)-l*l1]]
+          e[i][i:i+1]  =[l1,l1-1]
+          e[i+1][i:i+1]=[1-l*l1,(l+1)-l*l1]
           res = e*res
           m = ZipMod(e * m, moduli)
       end
@@ -673,7 +714,7 @@ function DiaconisGraham(m, moduli)
   r = HermiteNormalFormIntegerMatTransform(m)
   m = ZipMod(r[:normal], moduli)
   res = MatMul(r[:rowtrans],res)
-  if length(m) == n
+  if length(m)==n
     if m[n][n]>div(moduli[n], 2)
       m[n][n]=mod(-m[n][n], moduli[n])
       res[n]*=-1

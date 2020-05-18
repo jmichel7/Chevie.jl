@@ -1,8 +1,8 @@
 """
 This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
-package  of GAP3 plus the minimal other GAP functionality needed for Chevie
-to   work:  Cyclotomics,  Permutations,   Laurent  polynomials,  and  basic
-permutation group operations.
+package  of  GAP3  plus  the  GAP  functionality needed for Chevie to work:
+Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
+permutation group operations, etc….
 
 I am rather new to Julia, git and github so I am not even sure this package
 is  properly constituted; I did not try yet to register it. If you are more
@@ -30,12 +30,10 @@ To update later to the latest version, do
 (v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
 ```
 
-The package currently contains:
-
-  - infrastructure:
+The package currently contains as infrastructure:
      * permutations  
      * cyclotomic numbers  
-     * (univariate and multivariate) Laurent polynomials
+     * univariate Laurent and multivariate Puiseux polynomials
      * combinatorics
      * linear algebra on any field/ring
      * posets
@@ -52,10 +50,11 @@ despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome.
 
--  ported from Chevie:
-about 75% of Chevie functionality. The function `gap` can help you discover
-the  equivalent functionality  to a  Gap3 function:  it takes  a string and
-gives you Julia translations of functions in Gap3 which match this string:
+Then  it contains about 75% of  Chevie functionality, ported from Gap3. The
+data  library has been automatically ported by  a transpiler so the code is
+"strange".  The  function  `gap`  can  help  you  discover  the  equivalent
+functionality  to a Gap3  function: it takes  a string and  gives you Julia
+translations of functions in Gap3 which match this string:
 
 ```julia-rep1
 julia> gap("words")
@@ -65,12 +64,15 @@ CharRepresentationWords  =>  traces_words_mats
 ```
 Then you can call on-line help on the discovered functions.
 
-This package is  often 10 times faster  than the equivalent GAP3 Chevie code
-(after the maddeningly long compilation time on first execution).
+The  code in this package is often 10 times faster than the equivalent GAP3
+Chevie   code  (after  the  maddeningly  long  compilation  time  on  first
+execution).
 
-I tried that parts of my package can be used independently of the rest. For
-instance,  the modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
-are  independent of  the rest  of the  package and  can be used stand-alone
+I  tried that submodules in of my  package can be used independently of the
+rest.  They could be independent package. This  is the case for the modules
+`Combinat`,  `Groups`,  `ModuleElts`,  `Perms`,  `Util`  which  can be used
+stand-alone.  In addition modules `MatInt`, `Cycs`, `Pols`, `Mvp`, `Posets`
+can be used stand-alone except they use some functions from `Util`.
 """
 module Gapjm
 using Reexport
@@ -84,17 +86,21 @@ function words end; export words
 include("using_merge.jl")
 include("Util.jl");@reexport using .Util
 include("ModuleElts.jl");@reexport using .ModuleElts
+include("Combinat.jl");@reexport using .Combinat
 include("Groups.jl");using_merge(:Groups,debug=false,reexport=true)
 include("Perms.jl");using_merge(:Perms,debug=false,reexport=true)
-include("Combinat.jl");@reexport using .Combinat
 include("Cycs.jl");using_merge(:Cycs,debug=false,reexport=true)
 include("Pols.jl");using_merge(:Pols,debug=false,reexport=true)
-include("Mvps.jl");using_merge(:Mvps,debug=true,reexport=true)
+include("Mvps.jl");using_merge(:Mvps,debug=false,reexport=true)
+include("Posets.jl");using_merge(:Posets,debug=false,reexport=true)
+include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
+include("ComplexR.jl");@reexport using .ComplexR
+include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("mvptools.jl");
@@ -104,12 +110,9 @@ include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
 include("Symbols.jl");@reexport using .Symbols
 include("Garside.jl");@reexport using .Garside
-include("Posets.jl");@reexport using .Posets
-include("MatInt.jl");@reexport using .MatInt
 include("Chevie.jl");@reexport using .Chevie
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
-include("ComplexR.jl");@reexport using .ComplexR
 include("HasType.jl");@reexport using .HasType
 include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
