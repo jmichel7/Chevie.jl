@@ -49,20 +49,21 @@ example the rank is 3 and the semisimple rank is 2.
 The  default form  'W=coxgroup(:A,2)' defines  the adjoint  algebraic group
 (the  group with a trivial center). In that  case `Φ` is a basis of `X`, so
 'simpleroots(W)'  is  the  identity  matrix  and  'simplecoroots(W)' is the
-Cartan  matrix 'cartan(W)' of the root system. The form 'coxgroup(:A,2,sc)'
-constructs   the  semisimple   simply  connected   algebraic  group,  where
-'simpleroots(W)' is the transposed of 'cartan(W)' and 'simplecoroots(W)' is
-the identity matrix.
+Cartan  matrix 'cartan(W)' of the root system. 
+
+|The  form 'coxgroup(:A,2,sc)'  constructs the  semisimple simply connected
+|algebraic  group, where 'simpleroots(W)' is  the transposed of 'cartan(W)'
+|and 'simplecoroots(W)' is the identity matrix.
 
 There  is an extreme form  of root data which  requires another function to
-specify:  when `W` is the trivial |coxgroup()|  and there are thus no roots
-(in  this case `𝐆` is a torus), the  root datum cannot be determined by the
+specify:  when `W` is the trivial `coxgroup()`  and there are thus no roots
+(in  this case `𝐆 ` is a torus), the root datum cannot be determined by the
 roots,  but is entirely determined by the rank `r`. The function `torus(r)`
 constructs such a root datum.
 
-Finally,  thee function `rootdatum` understands some familiar names for the
-algebraic groups and gives the results that could be obtained by giving the
-appropriate matrices 'simpleroots(W)' and 'simplecoroots(W)':
+Finally,  the function `rootdatum` also understands some familiar names for
+the algebraic groups and gives the results that could be obtained by giving
+the appropriate matrices 'simpleroots(W)' and 'simplecoroots(W)':
 
 ```julia-repl
 julia> rootdatum(:gl,3)   # same as the previous example
@@ -73,18 +74,12 @@ A₂
 
 It  is also possible  to compute with  semi-simple elements. The first type
 are  finite order elements of `𝐓`, which over an algebraically closed field
-`K`  are in bijection with elements of  `Y⊗ ℚ/ℤ` whose denominator is prime
-to the characteristic of `K`. These are represented as elements of a vector
-space  of rank `r` over  `ℚ`, taken 'Mod1' whenever  the need arises, where
-'Mod1'  is the function which replaces the numerator of a fraction with the
-numerator  'mod' the denominator; the fraction `p/q` represents a primitive
-`q`-th  root of unity  raised to the  `p`-th power. In this representation,
-multiplication  of roots of unity becomes  addition 'Mod1' of rationals and
-raising  to the power `n`  becomes multiplication by `n`.  We call this the
-``additive'' representation of semisimple elements.
-
-Here  is an example of computations  with semisimple-elements given as list
-of `r` elements of `ℚ/ℤ`.
+`K`  are in bijection with elements of `Y⊗ ℚ /ℤ` whose denominator is prime
+to  the  characteristic  of  `K`.  These  are  represented  as  a vector of
+`Rational`s `r` such that `0≤r<1`, or, more to the point, a `Vector{Root1}`.
+The  function  `SS`  constructs  a  semisimple  element  from  a  vector of
+`Rational`,  while  the  more  general  function  can  construct semisimple
+elements from arbitrary ring elements (like elements of `K`, `Mvps`,…
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)
@@ -93,21 +88,25 @@ A₃
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁
 
-julia> algebraic_centre(L)
+julia> C=algebraic_centre(L)
 Dict{Symbol,Any} with 3 entries:
   :descAZ => [[1, 2]]
   :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
   :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[1, 2, 1]])
-```
 
-    gap> SemisimpleSubgroup(last.Z0,3);
-    Group( <1/3,2/3,1/3> )
-    gap> e:=Elements(last);
-    [ <0,0,0>, <1/3,2/3,1/3>, <2/3,1/3,2/3> ]|
+julia> T=torsion_subgroup(C[:Z0],3)
+SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
+
+julia> e=elements(T)
+3-element Array{SemisimpleElement{Root1},1}:
+ <1,1,1>
+ <ζ₃,ζ₃²,ζ₃>
+ <ζ₃²,ζ₃,ζ₃²>
+```
 
 First,  the  group  `𝐆  =SL₄`  is  constructed,  then the Levi subgroup `L`
 consisting   of  block-diagonal  matrices  of  shape  `2×2`.  The  function
-'AlgebraicCentre' returns a record with : the neutral component `Z⁰` of the
+`algebraic_centre` returns a record with : the neutral component `Z⁰` of the
 centre `Z` of `L`, represented by a basis of `Y(Z⁰)`, a complement subtorus
 `S`  of  `𝐓`  to  `Z⁰`  represented  similarly  by  a  basis of `Y(S)`, and
 semi-simple  elements representing the classes of  `Z` modulo `Z⁰` , chosen
@@ -115,48 +114,70 @@ in `S`. The classes `Z/Z⁰` also biject to the fundamental group as given by
 the  field '.descAZ', see "AlgebraicCentre" for an explanation. Finally the
 semi-simple elements of order 3 in `Z⁰` are computed.
 
-|    gap> e[2]^G.2;
-    <1/3,0,1/3>
-    gap> Orbit(G,e[2]);
-    [ <1/3,2/3,1/3>, <1/3,0,1/3>, <2/3,0,1/3>, <1/3,0,2/3>, <2/3,0,2/3>,
-      <2/3,1/3,2/3> ]|
+```julia-repl
+julia> e[3]^G(2)
+SemisimpleElement{Root1}: <ζ₃²,1,ζ₃²>
 
-Since  over an algebraically  closed field `K`  the points of  `𝐓` are in
-bijection  with `Y⊗  K^×` it  is also  possible to represent any
-point  of `𝐓` over `K` as a list of `r` non-zero elements of `K`. This is
-the ``multiplicative'' representation of semisimple elements. here is the
-same   computation  as  above  performed  with  semisimple  elements  whose
-coefficients are in the finite field 'GF(4)':
+julia> orbit(G,e[3])
+6-element Array{SemisimpleElement{Root1},1}:
+ <ζ₃²,ζ₃,ζ₃²>
+ <ζ₃²,1,ζ₃²>
+ <ζ₃,1,ζ₃²>
+ <ζ₃²,1,ζ₃>
+ <ζ₃,1,ζ₃>
+ <ζ₃,ζ₃²,ζ₃>
+```
 
-|    gap> s:=SemisimpleElement(G,List([1,2,1],i->Z(4)^i));
-    <Z(2^2),Z(2^2)^2,Z(2^2)>
-    gap> s^G.2;
-    <Z(2^2),Z(2)^0,Z(2^2)>
-    gap> Orbit(G,s);
-    [ <Z(2^2),Z(2^2)^2,Z(2^2)>, <Z(2^2),Z(2)^0,Z(2^2)>,
-      <Z(2^2)^2,Z(2)^0,Z(2^2)>, <Z(2^2),Z(2)^0,Z(2^2)^2>,
-      <Z(2^2)^2,Z(2)^0,Z(2^2)^2>, <Z(2^2)^2,Z(2^2),Z(2^2)^2> ]|
+Here  is the same  computation as above  performed with semisimple elements
+whose coefficients are in the finite field `FF(2,2)`:
+
+```julia-repl
+julia> G=rootdatum(:sl,4)
+A₃
+
+julia> Z=FF(4)
+FF(2^2)
+
+julia> s=SemisimpleElement(G,Ref(Z).^[1,2,1])
+SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,Z₄²,Z₄>
+
+julia> s^G(2)
+SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,1₂,Z₄>
+
+julia> orbit(G,s)
+6-element Array{SemisimpleElement{Gapjm.FFields.FFE{4}},1}:
+ <Z₄,Z₄²,Z₄>
+ <Z₄,1₂,Z₄>
+ <Z₄²,1₂,Z₄>
+ <Z₄,1₂,Z₄²>
+ <Z₄²,1₂,Z₄²>
+ <Z₄²,Z₄,Z₄²>
+```
 
 We  can  compute  the  centralizer  `C_𝐆 (s)`  of  a semisimple element in
 `𝐆 `:
 
-|    gap> G:=CoxeterGroup("A",3);
-    CoxeterGroup("A",3)
-    gap> s:=SemisimpleElement(G,[0,1/2,0]);
-    <0,1/2,0>
-    gap> Centralizer(G,s);
-    (A1xA1)<1,3>.(q+1)|
+```julia-repl
+julia> G=coxgroup(:A,3)
+A₃
+
+julia> s=SS(G,[0,1//2,0])
+SemisimpleElement{Root1}: <1,-1,1>
+
+julia> centralizer(G,s)
+A₃₍₁₃₎=(A₁A₁)Φ₂
+```
 
 The  result is an  extended reflection group;  the reflection group part is
-the Weyl group of `C_𝐆 ⁰(s)` and the extended part are representatives of
-`C_𝐆 (s)`  modulo  `C_𝐆⁰(s)`  taken  as  diagram  automorphisms  of the
-reflection  part.  Here  is  is  printed  as a coset `C_𝐆 ⁰(s)ϕ` which
-generates `C_𝐆 (s)`.
+the  Weyl group of `C_𝐆 ⁰(s)` and  the extended part are representatives of
+`C_𝐆 (s)` modulo `C_𝐆⁰(s)` taken as diagram automorphisms of the reflection
+part. Here it is printed as a coset `C_𝐆 ⁰(s)ϕ` which generates `C_𝐆 (s)`.
 """
 module Semisimple
 using Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group,
-SemisimpleElement, SS
+SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
+is_isolated
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -248,7 +269,7 @@ Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
                                  map(v->prod(a.v .^v),eachcol(m)))
   
-Base.:^(a::SemisimpleElement,p::Perm)=a^matY(a.W.G,inv(p))
+Base.:^(a::SemisimpleElement,p::Perm)=a^matY(parent(a.W.G),inv(p))
 
 # scalar product with a root
 Base.:^(a::SemisimpleElement,alpha::Vector{<:Integer})=prod(a.v .^ alpha)
@@ -346,6 +367,37 @@ function Base.:in(s::SemisimpleElement{Root1},T::SubTorus)
   iszero(s)
 end
 
+"""
+`torsion_subgroup(S::SubTorus,n)'
+
+This  function  returns  the  subgroup  of  semi-simple  elements  of order
+dividing `n` in the subtorus `S`.
+
+```julia-repl
+julia> G=rootdatum(:sl,4)
+A₃
+
+julia> L=reflection_subgroup(G,[1,3])
+A₃₍₁₃₎=A₁×A₁
+
+julia> C=algebraic_centre(L)
+Dict{Symbol,Any} with 3 entries:
+  :descAZ => [[1, 2]]
+  :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
+  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[1, 2, 1]])
+
+julia> T=torsion_subgroup(C[:Z0],3)
+SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
+
+julia> elements(T)
+3-element Array{SemisimpleElement{Root1},1}:
+ <1,1,1>
+ <ζ₃,ζ₃²,ζ₃>
+ <ζ₃²,ζ₃,ζ₃²>
+```
+"""
+torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.generators))
+  
 function AbelianGenerators(l)
   res=empty(l)
   l=filter(!isone,l)
@@ -373,6 +425,59 @@ end
 ##   Returns words in the generators of Pi which generate the kernel of the
 ##   map Pi->AZ
 ##
+"""
+`algebraic_centre(W)`
+
+`W` should be a Weyl group,  or an extended Weyl group. This
+function  returns a description of the centre  ZbG   of the algebraic group
+bG    defined by <W> as a Dict with the following fields:
+
+:Z0:  the neutral component  Z^0   of  ZbG   as a subtorus of   bT.
+
+:AZ:  representatives in  ZbG   of  A(Z):=ZbG/(ZbG)^0     given as a group
+of semisimple elements.
+
+:ZD:  center  of  the  derived  subgroup  of    bG   given  as  a group of
+semisimple elements.
+
+:descAZ:  if <W>  is not  an extended  Weyl group,  describes  A(Z)   as a
+quotient  of the center 'pi' of  the simply connected covering of   bG.
+It  contains a list of elements given as words in the generators of 'pi'
+which generate the kernel of the quotient map.
+
+```julia_repl
+julia> G=rootdatum(:sl,4)
+A₃
+
+julia> L=reflection_subgroup(G,[1,3])
+A₃₍₁₃₎=A₁×A₁
+
+julia> algebraic_centre(L)
+Dict{Symbol,Any} with 3 entries:
+  :descAZ => [[1, 2]]
+  :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
+  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[1, 2, 1]])
+
+julia> G=coxgroup(:A,3)
+A₃
+
+julia> s=SS(G,[0,1//2,0])
+SemisimpleElement{Root1}: <1,-1,1>
+
+julia> C=centralizer(G,s)
+A₃₍₁₃₎=(A₁A₁)Φ₂
+
+julia> algebraic_centre(C)
+Dict{Symbol,Any} with 3 entries:
+  :descAZ => [[1], [2]]
+  :AZ     => SSGroup(SemisimpleElement{Root1}[])
+  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[0, 1, 0]])
+```
+gap> AlgebraicCentre(C);
+rec(
+Z0 := SubTorus(ReflectionSubgroup(CoxeterGroup("A",3), [ 1, 3 ]),),
+AZ := Group( <0,1/2,0> ) )
+"""
 function algebraic_centre(W)
   if W isa HasType.ExtendedCox
     F0s=map(permutedims,W.F0s)
@@ -574,31 +679,63 @@ function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
   ExtendedReflectionGroup(W0s,gens(N))
 end
 
-#F  QuasiIsolatedRepresentatives(W[,p=0])  representatives of W-orbits of 
-##       quasi-isolated semisimple elements.
 """
-'QuasiIsolatedRepresentatives(<W>[,<p>])'
+`QuasiIsolatedRepresentatives(W,p=0)`
 
-<W>  should  be  a  Weyl  group  record corresponding to an algebraic group
-bG.    This function returns a list of semisimple elements for   bG,  which
-are  representatives  of  the    bG-orbits   of  quasi-isolated  semisimple
-elements.  It  follows  the  algorithm  given  by C. Bonnafaccent19   e  in
-citeBon05.     If a second argument <p>  is given, it gives representatives
-of those quasi-isolated elements which exist in characteristic <p>.
+`W`  should be a Weyl group corresponding  to an algebraic group bG over an
+algebraically  closed field  of characteristic  0. This  function returns a
+list  of  semisimple  elements  for  bG,  which  are representatives of the
+bG-orbits  of quasi-isolated semisimple elements.  It follows the algorithm
+given in
 
-gap> W:=CoxeterGroup("E",6);;QuasiIsolatedRepresentatives(W);
-[ <0,0,0,0,0,0>, <0,0,0,1/3,0,0>, <0,1/6,1/6,0,1/6,0>,
-<0,1/2,0,0,0,0>, <1/3,0,0,0,0,1/3> ]
-gap> List(last,x->IsIsolated(W,x));
-[ true, true, false, true, false ]
-gap> W:=CoxeterGroup("E",6,"sc");;QuasiIsolatedRepresentatives(W);
-[ <0,0,0,0,0,0>, <1/3,0,2/3,0,1/3,2/3>, <1/2,0,0,1/2,0,1/2>,
-<2/3,0,1/3,0,1/3,2/3>, <2/3,0,1/3,0,2/3,1/3>, <2/3,0,1/3,0,2/3,5/6>,
-<5/6,0,2/3,0,1/3,2/3> ]
-gap> List(last,x->IsIsolated(W,x));
-[ true, true, true, true, true, true, true ]
-gap> QuasiIsolatedRepresentatives(W,3);
-[ <0,0,0,0,0,0>, <1/2,0,0,1/2,0,1/2> ]
+    C.Bonnafe, ``Quasi-Isolated Elements in Reductive Groups''
+    Comm. in Algebra 33 (2005), 2315--2337
+
+If  a  second  argument  `p`  is  given,  it gives representatives of those
+quasi-isolated elements which exist in characteristic `p`.
+
+```julia-repl
+julia> W=coxgroup(:E,6);l=Semisimple.QuasiIsolatedRepresentatives(W)
+5-element Array{SemisimpleElement{Root1},1}:
+ <1,1,1,1,1,1>
+ <1,1,1,ζ₃,1,1>
+ <1,-1,1,1,1,1>
+ <1,ζ₆,ζ₆,1,ζ₆,1>
+ <ζ₃,1,1,1,1,ζ₃>
+
+julia> map(s->is_isolated(W,s),l)
+5-element Array{Bool,1}:
+ 1
+ 1
+ 1
+ 0
+ 0
+
+julia> W=rootdatum(:E6sc);l=Semisimple.QuasiIsolatedRepresentatives(W)
+7-element Array{SemisimpleElement{Root1},1}:
+ <1,1,1,1,1,1>
+ <-1,1,1,-1,1,-1>
+ <ζ₃,1,ζ₃²,1,ζ₃,ζ₃²>
+ <ζ₃²,1,ζ₃,1,ζ₃,ζ₃²>
+ <ζ₃²,1,ζ₃,1,ζ₃²,ζ₃>
+ <ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵>
+ <ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²>
+
+julia> map(s->is_isolated(W,s),l)
+7-element Array{Bool,1}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+
+julia> Semisimple.QuasiIsolatedRepresentatives(W,3)
+2-element Array{SemisimpleElement{Root1},1}:
+ <1,1,1,1,1,1>
+ <-1,1,1,-1,1,-1>
+```
 """
 function QuasiIsolatedRepresentatives(W::FiniteCoxeterGroup,p=0)
 ##  This function follows Theorem 4.6 in 
@@ -653,4 +790,36 @@ function QuasiIsolatedRepresentatives(W::FiniteCoxeterGroup,p=0)
   res
 end
 
+is_isolated(W,s)=rank(algebraic_centre(centralizer(W,s).group)[:Z0])==
+    rank(W)-semisimplerank(W)
+
+"""    
+`StructureRationalPointsConnectedCentre(W,q)`
+    
+<W>   should  be  a  Coxeter  group  record  or  a  Coxeter  coset  record,
+representing  a finite reductive group   bG^F,  and <q> should be the prime
+power  associated  to  the  isogeny  <F>.  The function returns the abelian
+invariants  of the finite  abelian group    Z^0bG^F   where  Z^0bG   is the
+connected center of   bG.
+
+In  the  following  example  one  determines the structure of   bT((mathbb
+F)_3)  where   bT  runs over all the maximal tori of SL_4.
+
+gap> G:=RootDatum("sl",4);
+RootDatum("sl",4)
+gap> List(Twistings(G,[]),T->StructureRationalPointsConnectedCentre(T,3));
+[ [ 2, 2, 2 ], [ 2, 8 ], [ 4, 8 ], [ 26 ], [ 40 ] ]
+"""    
+function StructureRationalPointsConnectedCentre(MF,q)
+  if MF isa Spets M=Group(MF)
+  else M=MF;MF=Spets(M)
+  end
+  W=parent(M)
+  Z0=algebraic_centre(M)[:Z0]
+  Phi=matY(W,MF.phi)
+  Z0F=gens(Z0)*(Phi*q-one(Phi))
+  Z0F=map(x->SolutionIntMat(gens(Z0),x),Z0F)
+  Z0F=DiagonalOfMat(DiagonalizeIntMat(Z0F).normal)
+  filter(x->x!=1,Z0F)
+end
 end

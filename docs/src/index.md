@@ -10,6 +10,7 @@ Perms
 Perm
 Perm(::Integer...)
 Perm(::AbstractVector,::AbstractVector)
+@perm_str
 largest_moved_point
 smallest_moved_point
 Base.:^(::AbstractVector,::Perm) 
@@ -138,6 +139,7 @@ Poset(::CoxeterGroup,w=longest(W))
 SPerms
 SPerm
 Perm(::SPerm)
+@sperm_str
 orbit(::SPerm,::Integer)
 order(::SPerm)
 Matrix
@@ -214,7 +216,7 @@ degrees(::Group)
 codegrees
 bipartite_decomposition
 catalan
-refrep(::PRG,w)
+refrep(::PermRootGroup,w)
 PermX
 reflections
 refleigen
@@ -287,12 +289,17 @@ WGraphToRepresentation
 ```@docs
 Semisimple
 fundamental_group
-Semisimple.QuasiIsolatedRepresentatives
+QuasiIsolatedRepresentatives
+torsion_subgroup
+algebraic_centre
 ```
 # Reflection cosets
 ```@docs
 Cosets
 degrees(::Spets)
+spets
+twistings
+subspets
 ```
 # Unipotent characters
 ```@docs
@@ -470,6 +477,7 @@ Inversions                                  → inversions
 IsAbelian                                   → isabelian
 IsCycPol(p)                                 → p isa CycPol
 IsFamily(f)                                 → f isa Family
+IsIsolated                                  → is_isolated
 IsJoinLattice                               → is_join_lattice
 IsLeftDescending(W,w,i)                     → isleftdescent(W,w,i)
 IsMeetLattice                               → is_meet_lattice
@@ -477,6 +485,7 @@ IsSubset(a,b)                               → issubset(b,a)
 Join                                        → join
 KazhdanLusztigPolynomial                    → KLPol
 KroneckerProduct                            → kron
+LargestMovedPoint                           → largest_moved_point
 LcmPartitions                               → lcm_partitions
 LeadingCoefficient(p)                       → p[end]
 LeftCell                                    → LeftCell
@@ -496,6 +505,8 @@ LusztigRestriction                          → LusztigRestrict
 MappingPermListList                         → mappingPerm
 MatStab                                     → stab_onmat
 MatXPerm(W,p)                               → refrep(W,p)
+MatYPerm                                    → matY
+MovedPoints                                 → support
 NrDrinfeldDouble                            → ndrinfeld_double
 NrPartitionTuples                           → npartition_tuples
 NrPartitions                                → npartitions
@@ -522,6 +533,7 @@ PositionClass                               → position_class
 PositionRegularClass                        → position_regular_class
 PrintDiagram(W)                             → Diagram(W)
 ProportionalityCoefficient(v,w)             → ratio(v,w)
+QuasiIsolatedRepresentatives                → QuasiIsolatedRepresentatives
 Rank                                        → rank
 RankSymbol                                  → ranksymbol
 ReducedCoxeterWord(W,w)                     → word(W,W(w...))
@@ -557,8 +569,10 @@ Rotations(v)                                → circshift.(Ref(a),length(a):-1:1
 ScalMvp                                     → scal
 SchurElements                               → schur_elements
 SchurFunctor                                → schur_functor
+SemisimpleElement                           → SS
 SemisimpleRank                              → semisimplerank
 SemisimpleRank(W)                           → coxrank(W)
+SemisimpleSubgroup                          → torsion_subgroup
 ShiftBeta                                   → shiftβ
 ShrinkGarsideGeneratingSet                  → shrink
 SignedMatStab                               → stab_onsmat
@@ -566,6 +580,7 @@ SignedPerm                                  → SPerm
 SignedPermListList                          → SPerm
 SignedPermMatMat                            → perm_onsmat
 Size(W)                                     → length(W)
+SmallestMovedPoint                          → smallest_moved_point
 SolutionMat                                 → solutionmat
 Spets                                       → spets
 SplitLevis                                  → split_levis
@@ -591,7 +606,8 @@ Valuation(p)                                → valuation(p)
 Value(p,x)                                  → p(x)
 W.N                                         → nref(W)
 W.matgens[i]                                → refrep(W,i)
-W.orbitRepresentativeElement                → simple_conjugating_element(W,i)
-W.orbitRepresentative[i]                    → simple_representative(W,i)
+W.orbitRepresentative                       → simple_representatives(W)
+W.orbitRepresentativeElements[i]            → simple_conjugating_element(W,i)
+W.rootLengths                               → rootlengths(W)
 WeightInfo                                  → weightinfo
 ```

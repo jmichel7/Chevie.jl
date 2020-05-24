@@ -16,14 +16,14 @@ julia> q=SPerm(1,2)
 
 julia> elements(Group([p,q]))
 8-element Array{SPerm{Int16},1}:
- ()          
+ (1,-2)
+ (1,-2,-1,2)
  (1,-1)(2,-2)
- (1,-2,-1,2) 
- (1,-2)      
- (1,2)       
- (1,2,-1,-2) 
- (2,-2)      
- (1,-1)      
+ (1,-1)
+ (2,-2)
+ ()
+ (1,2,-1,-2)
+ (1,2)
 ```
 
 The  complete type of signed permutations is `SPerm{T}` where `T<:Integer`,

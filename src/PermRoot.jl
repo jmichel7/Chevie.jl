@@ -129,7 +129,7 @@ export PermRootGroup, PRG, PRSG, catalan,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, refrep, 
  PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants,improve_type, matY, simpleroots,
- simplecoroots
+ simplecoroots, action
 import Gapjm: gens, degree, roots
 # to use as a stand-alone module comment above line and uncomment the next line
 # export roots, gens, degree
@@ -250,7 +250,7 @@ function Base.show(io::IO,d::Diagram)
         println(io,"ϕ permutes the next ",length(t.orbit)," components")
       end
       if !isone(t.twist)
-        println(io,"ϕ",act ? ("^"*length(t.orbit)) : "",
+       println(io,"ϕ",act ? "^$(length(t.orbit))" : "",
             " acts as ",t.twist," on the component below")
       end
       show(io,Diagram(t.orbit))
@@ -1102,6 +1102,8 @@ simplecoroots(W::PRG)=W.coroots[eachindex(gens(W))]
 @inline inclusion(W::PRG,i=eachindex(W.roots))=i
 @inline restriction(W::PRG,i=eachindex(W.roots))=i
 @inline Base.parent(W::PRG)=W
+@inline action(W::PRG,i,p)=i^p
+
 function coroots(W::PRG,i::Integer)
   if isassigned(W.coroots,i) return W.coroots[i] end
   m=refrep(W,reflection(W,i))
@@ -1162,7 +1164,8 @@ function reflection(root::AbstractVector,coroot::AbstractVector)
 end
 
 refrep(W::PRG)=W.matgens
-refrep(W::PRG,i::Integer)=W.matgens[i]
+refrep(W::PRG,i::Integer)=i<=length(gens(W)) ? W.matgens[i] : 
+                    refrep(W,reflection(W,i))
 
 """
 `refrep(W,w)`
@@ -1189,19 +1192,20 @@ julia> refrep(W,longest(W))
   0   0   0   0   0   0  1
 ```
 """
-function refrep(W::PRG,w)
+function refrep(W::PermRootGroup,w)
+  W=parent(W)
   X=baseX(W)
   ir=independent_roots(W)
   if isempty(ir) return X end
-  if eltype(X)==Int 
+  if eltype(X)<:Integer
     Xinv=inv(Rational.(X))
-    Int.(Xinv*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:]))
+    improve_type(Xinv*vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:]))
   else
-    inv(X)*vcat(toM(W.roots[ir.^w]),X[length(ir)+1:end,:])
+    inv(X)*vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:])
   end
 end
 
-matY(W::PRG,w)=permutedims(refrep(W,inv(w)))
+matY(W::PermRootGroup,w)=permutedims(refrep(W,inv(w)))
 
 function cartan_coeff(W::PRG,i,j)
   v=findfirst(!iszero,W.roots[i])
@@ -1234,6 +1238,7 @@ simpleroots(W::PRSG)=roots(parent(W),inclusiongens(W))
 @inline coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
 simplecoroots(W::PRSG)=coroots(parent(W),inclusiongens(W))
 @inline Base.parent(W::PRSG)=W.parent
+action(W::PRSG,i,p)=restriction(W,inclusion(W,i)^p)
 
 function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   WW=parent(W)
@@ -1275,7 +1280,6 @@ cartan_coeff(W::PRSG,i,j)=
 
 refrep(W::PRSG)=map(i->refrep(parent(W),i),inclusiongens(W))
 refrep(W::PRSG,i::Integer)=refrep(parent(W),inclusion(W,i))
-refrep(W::PRSG,w)=refrep(parent(W),w)
 
 #-------------------------------------------------
 """

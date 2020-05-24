@@ -114,7 +114,7 @@ module Perms
 # to use as a stand-alone module comment above 2 lines and uncomment next
 export degree, restricted, orbit, orbits, order
 
-export Perm, largest_moved_point, cycles, cycletype,
+export Perm, largest_moved_point, cycles, cycletype, support,
   @perm_str, smallest_moved_point, reflength, mappingPerm
 
 """
@@ -280,6 +280,7 @@ largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 " `smallest_moved_point(a::Perm)` is the smallest integer moved by a"
 smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
+support(a::Perm)=findall(x->a.d[x]!=x,eachindex(a.d))
 #------------------ operations on permutations --------------------------
 
 Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))

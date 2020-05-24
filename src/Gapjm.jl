@@ -118,4 +118,5 @@ include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Lusztig.jl");@reexport using .Lusztig
 include("../docs/src/cheviedict.jl");export gap
+include("FFields.jl");@reexport using .FFields
 end

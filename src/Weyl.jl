@@ -184,7 +184,7 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, standard_parabolic, describe_involution, 
- relative_group, action, rootlengths
+ relative_group, rootlengths
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -640,6 +640,7 @@ PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
 PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
 PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
 PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
+PermRoot.action(W::FiniteCoxeterGroup,a...)=action(W.G,a...)
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
@@ -647,8 +648,6 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   N::Int
   prop::Dict{Symbol,Any}
 end
-
-action(W::FCG,i,p)=i^p
 
 function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterGroup{Perm{$T},$T1}")
@@ -847,8 +846,6 @@ struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   prop::Dict{Symbol,Any}
 end
 
-action(W::FCSG,i,p)=restriction(W,inclusion(W,i)^p)
-
 function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")
 end
@@ -856,7 +853,6 @@ end
 CoxGroups.nref(W::FCSG)=W.N
 
 Base.parent(W::FCSG)=W.parent
-PermRoot.refrep(W::FCSG,w)=refrep(parent(W),w)
 
 # if I are all the positive roots of a subsystem find the simple ones
 function SimpleRootsSubsystem(W,I) 

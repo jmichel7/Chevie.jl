@@ -254,13 +254,99 @@ function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   class_reps(C)
 end
 
+function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
+  if isempty(J) return class_reps(WF)./WF.phi end
+  W=Group(WF)
+  h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
+                             action=(x,p)->sort(action.(Ref(W),x,p)))
+  if isnothing(h)
+    println( "\n# no subspets for ", J )
+    return Perm[]
+  end
+  W_L=centralizer(W,sort(collect(J)),action=(x,p)->sort(action.(Ref(W),x,p)))
+  e=class_reps(Group(vcat(gens(W_L),[WF.phi*h])))
+  return filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
+end
+
 Groups.Group(WF::Spets)=WF.W
 PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
 PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
 
-twistings(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
-  subspets.(Ref(spets(W)),Ref(J),twisting_elements(W,J))
+"""
+`twistings(W,I)`
 
+`W`  should be a  Coxeter group.
+                 
+The  function returns the list, up  to `W`-conjugacy, of Coxeter sub-cosets
+of  `W` whose  Coxeter group  is `reflection_subgroup(W,I)`  --- In term of
+algebraic groups, it corresponds to representatives of the possible twisted
+forms of the corresponding reductive subgroup of maximal rank `L`.
+
+`W`  could also be a coset `Wϕ`; then the subgroup `L` must be conjugate to
+`ϕ(L)`  for  a  rational  form  to  exist.  If `ϕ` normalizes `L`, then the
+rational forms are classified by the the `ϕ`-classes of `N_W(L)/L`.
+
+```julia-repl
+julia> W=coxgroup(:E,6)
+E₆
+
+julia> WF=spets(W,Perm(1,6)*Perm(3,5))
+²E₆
+
+julia> twistings(W,2:5)
+3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+ E₆₍₂₃₄₅₎=²D₄Φ₁Φ₂
+ E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₃
+ E₆₍₂₃₄₅₎=D₄Φ₁²
+
+julia> twistings(WF,2:5)
+3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+ E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆
+ E₆₍₂₃₄₅₎=²D₄Φ₁Φ₂
+ E₆₍₂₃₄₅₎=D₄Φ₂²
+```
+"""
+twistings(W,J::AbstractVector{<:Integer})=
+  subspets.(Ref(W),Ref(J),twisting_elements(W,J))
+
+"""  
+`twistings(W)`
+
+`W`  should be a Coxeter group which is not a proper reflection subgroup of
+another  reflection group.  The function  returns all  'spets' representing
+twisted forms of algebraic groups of type `W`.
+
+```julia-repl
+julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
+8-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+ (A₃A₃)
+ ²(A₃A₃)
+ ²A₃×A₃
+ ²A₃×²A₃
+ ²(A₃A₃)₍₁₂₃₆₅₄₎
+ (A₃A₃)₍₁₂₃₆₅₄₎
+ A₃×A₃
+ A₃×²A₃
+
+julia> twistings(coxgroup(:D,4))
+6-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+ ³D₄₍₁₄₃₂₎
+ ²D₄₍₁₄₃₂₎
+ ³D₄
+ ²D₄
+ ²D₄₍₂₄₃₁₎
+ D₄
+
+julia> W=rootdatum(:so,8)
+D₄
+
+julia> twistings(W)
+2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+ ²D₄
+ D₄
+ 
+```
+"""  
 function twistings(W::FiniteCoxeterGroup)
   if W!=parent(W)
     error(W," must not be a proper subgroup of another reflection group")
@@ -268,22 +354,23 @@ function twistings(W::FiniteCoxeterGroup)
   gen=empty(gens(W))
   for (n,t) in groupby(repr,refltype(W))
     for i in 1:length(t)-1
-      push!(gen,prod(map(Perm,inclusion(W)[t[i][:indices]],
-                       inclusion(W)[t[i+1][:indices]])))
+      push!(gen,prod(Perm.(inclusion(W,t[i].indices),
+                           inclusion(W,t[i+1].indices))))
     end
-    J=inclusion(W)[t[1][:indices]]
+    J=inclusion(W,t[1].indices)
     rk=length(J)
-    if t[1][:series]==:A 
+    if t[1].series==:A 
       if rk>1  
         push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
       end
-    elseif t[1][:series]==:D push!(gen,Perm(J[1],J[2]))
+    elseif t[1].series==:D push!(gen,Perm(J[1],J[2]))
       if rk==4  push!(gen,Perm(J[1],J[4])) end
-    elseif t[1][:series]==:E && rk==6 
+    elseif t[1].series==:E && rk==6 
       push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
     end
   end
-  spets.(Ref(W),elements(Group(gen)))
+  l=filter(y->all(isinteger,matY(W.G,y)),elements(Group(gen)))
+  spets.(Ref(W),l)
 end
 
 function Groups.position_class(G::Spets,g)
@@ -309,11 +396,43 @@ spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
 Base.parent(W::Spets)=gets(()->W,W,:parent)
 
+"""
+`spets(W::FiniteCoxeterGroup,F::Matrix=I(rank(W)))`
+
+This  function returns a  Coxeter coset. `F`  must be an invertible matrix,
+representing  an  automorphism  of  the  vector  space  `V` of dimension of
+dimension  `rank(W)` which  induces an  automorphism of  the root system of
+`parent(W)`.
+
+The returned struct has in particular the following fields:
+
+`.W`: the Coxeter group `W`
+
+`.F`: the matrix acting on `V` which represents the unique element `phi` in
+`WF` which preserves the positive roots.
+
+'.phi': the permutation of the roots of `W` induced by `.F`
+(also the element of smallest length in the Coset  `W .phi`).
+
+In the first example we create a Coxeter coset corresponding to the general
+unitary group `GU_3(q)` over the finite field `FF(q)`.
+
+```julia-repl
+julia> W=rootdatum(:gl,3)
+A₂
+
+julia> gu3=spets(W,-refrep(W,W()))
+²A₂Φ₂
+
+julia> F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])
+F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎
+```
+"""
 function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   perm=PermX(W.G,F)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
-  FCC(phi,F,W,Dict{Symbol,Any}())
+  FCC(phi,F*refrep(W,perm\phi),W,Dict{Symbol,Any}())
 end
 
 function torusfactors(WF::CoxeterCoset)
@@ -322,6 +441,66 @@ function torusfactors(WF::CoxeterCoset)
   M=improve_type(M)
   r=semisimplerank(WF.W)
   CycPol(charpoly(M[r+1:end,r+1:end]))
+end
+
+"""
+`torus(m::Matrix)`
+
+`m`  should be an integral matrix of finite order. The function returns the
+coset `T` of the trivial Coxeter group such that `T.F==m`. This corresponds
+to  an algebraic torus `𝐓 ` of rank `size(m,1)`, with an isogeny which acts
+by `m` on `X(𝐓)`.
+
+```julia-repl
+julia> torus([0 -1;1 -1])
+.Φ₃
+```
+"""
+Weyl.torus(m::Matrix)=spets(torus(size(m,1)),m)
+
+"""
+`torus(W,i)`
+
+This  returns the torus twisted by a representative of the `i`-th conjugacy
+class of `W`. This is the same as `twistings(W,Int[])[i]`.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> twistings(W,Int[])
+5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+ A₃₍₎=.Φ₁³
+ A₃₍₎=.Φ₁²Φ₂
+ A₃₍₎=.Φ₁Φ₂²
+ A₃₍₎=.Φ₁Φ₃
+ A₃₍₎=.Φ₂Φ₄
+
+julia> torus(W,2)
+A₃₍₎=.Φ₁²Φ₂
+
+julia> WF=spets(W,Perm(1,3))
+²A₃
+
+julia> twistings(WF,Int[])
+5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+ A₃₍₎=.Φ₂³
+ A₃₍₎=.Φ₁Φ₂²
+ A₃₍₎=.Φ₁²Φ₂
+ A₃₍₎=.Φ₂Φ₆
+ A₃₍₎=.Φ₁Φ₄
+
+julia> torus(WF,2)
+A₃₍₎=.Φ₁Φ₂²
+```
+"""
+Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\class_reps(W)[i])
+Weyl.torus(W,i)=subspets(W,Int[],class_reps(W)[i])
+
+function Groups.conjugacy_classes(WF::Spets)
+  gets(WF,:classes)do
+    map(x->orbit(Group(WF),x),class_reps(WF))
+  end
 end
 
 function PermRoot.generic_order(WF::Spets,q)
@@ -423,17 +602,6 @@ Frobenius(w::Perm,phi)=w^phi
 function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   if isempty(J) return class_reps(WF)./WF.phi end
   W=Group(WF)
-  if W isa CoxeterGroup
-    h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
-                               action=(x,p)->sort(action.(Ref(W),x,p)))
-    if isnothing(h)
-      println( "\n# no subspets for ", J )
-      return Perm[]
-    end
-    W_L=centralizer(W,sort(J),action=(x,p)->sort(action.(Ref(W),x,p)))
-    e=class_reps(Group(vcat(gens(W_L),[WF.phi*h])))
-    return filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
-  end
   L=reflection_subgroup(W,J)
   N=normalizer(W,L)
   W_L=N/L
@@ -458,12 +626,6 @@ function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   map(x->reduced(L,x.phi),class_reps(W_L))
 end
 
-twistings(W::PermRootGroup,J::AbstractVector{<:Integer})=
-  subspets.(Ref(spets(W)),Ref(J),twisting_elements(W,J))
-
-twistings(W::Spets,J::AbstractVector{<:Integer})=
-   subspets.(Ref(W),Ref(J),twisting_elements(W,J))
-
 function relative_coset(WF::CoxeterCoset,J)
 # Print("CoxeterCosetOps.RelativeCoset ",WF,J," called \n");
   res=relative_group(Group(WF),J)
@@ -471,7 +633,32 @@ function relative_coset(WF::CoxeterCoset,J)
   spets(res,p)
 end
 #-------------- subcoset ---------------------------------
-function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
+"""
+`subspets(WF,I,w=one(Group(WF)))`
+
+Returns   the   reflection   subcoset   of   the   coset  `WF`  with  group
+`reflection_subgroup(Group(WF),I)`  and torsion `w*WF.phi`.  `w` must be an
+element  of `Group(WF)` such that  'w*WF.phi' normalizes the subroot system
+generated by `I`.
+
+```julia-repl
+julia> WF=spets(coxgroup(:F,4))
+F₄
+
+julia> w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],action=(s,g)->s.^g);
+
+julia> LF=subspets(WF,[1,2,9,16],w)
+F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
+
+julia> Diagram(LF)
+ϕ acts as (1,4,2) on the component below
+  O 4
+  ￨
+O—O—O
+3 1 2
+```
+"""
+function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
 # printc("WF=",WF," I=",I," w=",w,"\n")
   RF=WF
   WF=parent(WF)
@@ -488,6 +675,7 @@ function subspets(WF,I::AbstractVector{<:Integer},w=one(Group(WF)))
   spets(phi,refrep(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
 end
 
+subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 #-------------- spets ---------------------------------
 struct PRC{T,T1,TW<:PermRootGroup{T,T1}}<:Spets{TW}
   phi::Perm{T1}

@@ -147,7 +147,7 @@ const ChevieDict=Dict(
 "IsAbelian"=>"isabelian",
 "IsCycPol(p)"=>"p isa CycPol",
 "IsFamily(f)"=>"f isa Family",
-#IsIsolated
+"IsIsolated"=>"is_isolated",
 "IsJoinLattice"=>"is_join_lattice",
 "IsMeetLattice"=>"is_meet_lattice",
 "IsLeftDescending(W,w,i)"=>"isleftdescent(W,w,i)",
@@ -161,6 +161,7 @@ const ChevieDict=Dict(
 "Join"=>"join",
 "KroneckerProduct"=>"kron",
 "LcmPartitions"=>"lcm_partitions",
+"LargestMovedPoint"=>"largest_moved_point",
 "LeadingCoefficient(p)"=>"p[end]",
 "LeftCell"=>"LeftCell",
 "LeftCells"=>"LeftCells",
@@ -185,6 +186,7 @@ const ChevieDict=Dict(
 "MatStab"=>"stab_onmat",
 "MatXPerm(W,p)"=>"refrep(W,p)",
 "MatYPerm"=>"matY",
+"MovedPoints"=>"support",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",
 "NrPartitionTuples"=>"npartition_tuples",
@@ -219,7 +221,7 @@ const ChevieDict=Dict(
 #Presentation
 "PrintDiagram(W)"=>"Diagram(W)",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
-#QuasiIsolatedRepresentatives
+"QuasiIsolatedRepresentatives"=>"QuasiIsolatedRepresentatives",
 "Rank"=>"rank",
 "RankSymbol"=>"ranksymbol",
 "ReducedCoxeterWord(W,w)"=>"word(W,W(w...))",
@@ -264,10 +266,10 @@ const ChevieDict=Dict(
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",
 #SemisimpleCentralizerRepresentatives
-#SemisimpleElement
+"SemisimpleElement"=>"SS",
 "SemisimpleRank(W)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
-#SemisimpleSubgroup
+"SemisimpleSubgroup"=>"torsion_subgroup",
 "ShiftBeta"=>"shiftβ",
 "ShrinkGarsideGeneratingSet"=>"shrink",
 "SignedMatStab"=>"stab_onsmat",
@@ -275,6 +277,7 @@ const ChevieDict=Dict(
 "SignedPermListList"=>"SPerm",
 "SignedPermMatMat"=>"perm_onsmat",
 "Size(W)"=>"length(W)",
+"SmallestMovedPoint"=>"smallest_moved_point",
 "SolutionMat"=>"solutionmat",
 #SpecialPieces
 "Spets"=>"spets",

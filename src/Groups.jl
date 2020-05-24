@@ -255,7 +255,7 @@ end
 word(G::Group,w)=minimal_words(G)[w]
 
 "elements(G::Group): the list of elements of G"
-elements(G::Group)=collect(keys(minimal_words(G)))
+elements(G::Group)=sort(collect(keys(minimal_words(G))))
 
 "length(G::Group): the number of elements of G"
 Base.length(G::Group)=length(minimal_words(G))
@@ -446,9 +446,7 @@ end
 
 function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
   gets(G,:classes) do
-    if haskey(G.prop,:classreps)
-      map(x->orbit(Group(G),x),class_reps(G))
-    elseif length(G)>10000
+    if length(G)>10000
       error("length(G)=",length(G),": should call Gap4")
     else
       orbits(Group(G),elements(G))
