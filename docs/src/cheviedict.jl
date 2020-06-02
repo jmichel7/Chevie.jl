@@ -90,8 +90,8 @@ const ChevieDict=Dict(
 "EltBraid"=>"image",
 "EltWord(W,w)"=>"W(w...)",
 "ExteriorPower"=>"exterior_power",
-#FactorizedSchurElement
-#FactorizedSchurElements
+"FactorizedSchurElement"=>"FactorizedSchurElement",
+"FactorizedSchurElements"=>"FactorizedSchurElements",
 "FakeDegree"=>"fakedegree",
 "FakeDegrees"=>"fakedegrees",
 "FamiliesClassical"=>"FamiliesClassical",
@@ -110,7 +110,7 @@ const ChevieDict=Dict(
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
 "GcdPartitions"=>"gcd_partitions",
-"GcdRepresentation"=>"gcd_repr",
+"GcdRepresentation(x,y)"=>"gcdx(x,y)[2:3]",
 #GenericDegrees
 "GenericOrder"=>"generic_order",
 "GenericSign"=>"generic_sign",
@@ -142,7 +142,7 @@ const ChevieDict=Dict(
 #IntermediateGroup
 "IntListToString"=>"joindigits",
 "InvariantForm"=>"invariant_form",
-#Invariants
+"Invariants"=>"invariants",
 "Inversions"=>"inversions",
 "IsAbelian"=>"isabelian",
 "IsCycPol(p)"=>"p isa CycPol",
@@ -154,7 +154,7 @@ const ChevieDict=Dict(
 "IsSubset(a,b)"=>"issubset(b,a)",
 #IsNormalizing
 #IsQuasiIsolated
-#IsomorphismType
+"IsomorphismType"=>"IsomorphismType",
 #IsUnipotentElement
 #jInductionTable
 #JInductionTable
@@ -171,6 +171,7 @@ const ChevieDict=Dict(
 #LeftLcm
 "LinearExtension"=>"linear_extension",
 "ListPerm(p)"=>"vec(p)",
+"List(ConjugacyClasses(G),Representative)"=>"classreps(G)",
 "LongestCoxeterElement(W)"=>"longest(W)",
 "LongestCoxeterWord(W)"=>"word(W,longest(W))",
 #LowestPowerFakeDegrees
@@ -187,6 +188,7 @@ const ChevieDict=Dict(
 "MatXPerm(W,p)"=>"refrep(W,p)",
 "MatYPerm"=>"matY",
 "MovedPoints"=>"support",
+"NrArrangements"=>"narrangements",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",
 "NrPartitionTuples"=>"npartition_tuples",
@@ -215,6 +217,7 @@ const ChevieDict=Dict(
 #PoincarePolynomial
 "Poset"=>"Poset",
 "PositionClass"=>"position_class",
+"PositionCartesian(a,b)"=>"LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]",
 #PositionDet
 #PositionId
 "PositionRegularClass"=>"position_regular_class",
@@ -284,7 +287,7 @@ const ChevieDict=Dict(
 "SplitLevis"=>"split_levis",
 "StandardParabolic"=>"standard_parabolic",
 "StandardParabolicClass"=>"standard_parabolic_class",
-#StructureRationalPointsConnectedCentre
+"StructureRationalPointsConnectedCentre"=>"StructureRationalPointsConnectedCentre",
 "SubSpets"=>"subspets",
 "SubTorus"=>"SubTorus",
 #Symbols

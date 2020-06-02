@@ -208,12 +208,12 @@ for~`w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
 function Gapjm.word(W::CoxeterGroup,w)
   ww=Int[]
-  while w!=one(W)
+  while true
     i=firstleftdescent(W,w)
+    if isnothing(i) return ww end
     push!(ww,i)
     w=W(i)*w
   end
-  ww
 end
 
 """
@@ -242,9 +242,7 @@ julia> word(W,p)
 ```
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
-Base.one(W::CoxeterGroup)=one(W.G)
-Base.eltype(W::CoxeterGroup)=eltype(W.G)
-Gapjm.gens(W::CoxeterGroup)=gens(W.G)
+Base.eltype(W::CoxeterGroup{T}) where T=T
 coxrank(W::CoxeterGroup)=length(gens(W))
 function nref end
 
@@ -769,6 +767,8 @@ struct CoxSym{T} <: CoxeterGroup{Perm{T}}
 end
 
 Base.iterate(W::CoxSym,r...)=iterate(W.G,r...)
+Base.one(W::CoxSym{T}) where T=one(Perm{T})
+Groups.gens(W::CoxSym)=gens(W.G)
 
 """
   `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group
@@ -796,16 +796,7 @@ julia> length.(Ref(W),e)
 ```
 """
 function CoxSym(n::Int)
-  CoxSym{UInt8}(Group([Perm{UInt8}(i,i+1) for i in 1:n-1]),n,
-   Dict{Symbol,Any}(:classreps=>map(partitions(n))do p
-    m=0
-    res=Perm{UInt8}()
-    for i in p
-      res*=Perm{UInt8}((m+1:m+i)...)
-      m+=i
-    end
-    res
-  end))
+  CoxSym{UInt8}(Group([Perm{UInt8}(i,i+1) for i in 1:n-1]),n,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -817,6 +808,13 @@ end
 
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
+
+# the following two methods shoud be derived from a trait "HasType" of CoxSym 
+Groups.conjugacy_classes(W::CoxSym)=gets(()->map(x->orbit(W,x),classreps(W)),
+                                      W,:classes)
+
+Groups.classreps(W::CoxSym)=gets(()->map(x->W(x...),classinfo(W)[:classtext]),
+                                      W,:classreps)
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
 
@@ -843,19 +841,9 @@ Gapjm.degrees(W::CoxSym)=2:length(gens(W))+1
 
 Base.length(W::CoxSym)=prod(degrees(W))
 
-PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
+Base.length(W::CoxSym,w)=count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 
-function Base.length(W::CoxSym,w)
-  l=0
-  for k in 1:W.n-1 for i in 1:W.n-k
-    l+=i^w>(i+k)^w
-  end end
-  l
-end
-# 4 times longer on 1.4; count is worse
-function length2(W::CoxSym,w)
-  sum(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
-end
+PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 
 # for reflection_subgroups note the difference with Chevie:
 # leftdescents, rightdescents, classinfo.classtext, word
@@ -890,7 +878,7 @@ struct GenCox{T}<:CoxeterGroup{Matrix{T}}
   prop::Dict{Symbol,Any}
 end
 
-Gapjm.gens(W::GenCox)=W.gens
+Groups.gens(W::GenCox)=W.gens
 Base.one(W::GenCox)=one(W(1))
 
 isleftdescent(W::GenCox,w,i::Int)=Real(sum(w[i,:]))<0

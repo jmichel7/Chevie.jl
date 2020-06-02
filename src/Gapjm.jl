@@ -96,6 +96,7 @@ include("Posets.jl");using_merge(:Posets,debug=false,reexport=true)
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
+include("FFields.jl");@reexport using .FFields
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
@@ -113,10 +114,10 @@ include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
-include("HasType.jl");@reexport using .HasType
+include("Algebras.jl");@reexport using .Algebras
 include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Lusztig.jl");@reexport using .Lusztig
+include("HasType.jl");@reexport using .HasType
 include("../docs/src/cheviedict.jl");export gap
-include("FFields.jl");@reexport using .FFields
 end

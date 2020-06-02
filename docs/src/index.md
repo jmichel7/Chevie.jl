@@ -37,7 +37,7 @@ centralizer
 stabilizer
 word(::Group,w)
 length(::Group)
-class_reps(::Group)
+classreps(::Group)
 minimal_words
 transporting_elt
 ```

@@ -2,7 +2,8 @@ module MatInt
 #using ..Gapjm
 using ..Util: toL, toM
 
-export ComplementIntMat, NullspaceIntMat
+export ComplementIntMat, NullspaceIntMat, SolutionIntMat, DiagonalizeIntMat,
+ SmithNormalFormaIntegerMat, DiaconisGraham
 
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 NullMat(i,j)=[zeros(Int,j) for k in 1:i]
@@ -11,22 +12,22 @@ MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1]))
 
 # largest factor of N prime to a
 function prime_part(N, a)
-  while a != 1
-      a = gcd(a, N)
-      N = div(N, a)
+  while true
+    a=gcd(a, N)
+    if a==1 return N end
+    N=div(N, a)
   end
-  N
 end
 
 # rgcd(N,a) smallest nonnegative c such that gcd(N,a+c) = 1
 function rgcd(N, a)
-  if N == 1 return 0 end
+  if N==1 return 0 end
   r = [mod(a-1, N)]
   d = [N]
   c = 0
   while true
-    for i in 1:length(r) r[i] = mod(r[i] + 1, d[i]) end
-    i = findfirst(<=(0),r)
+    for i in 1:length(r) r[i]=mod(r[i]+1,d[i]) end
+    i=findfirst(<=(0),r)
     if isnothing(i)
       g=1
       i=0
@@ -118,39 +119,38 @@ function mgcdex(N, a, v)
   end)
 end
 
-#  bezout(a,b,c,d) - returns P to transform A to hnf (PA=H);
+#  bezout(a,b,c,d) - returns P to transform [a b;c d] to hnf (PA=H);
 #
-#  [st;uv][ab;cd]=[ef;0g]
+#  [s t;u v][a b;c d]=[e f;0 g]
 #
 function bezout(a, b, c, d)
   e=Gcdex(a, c)
   f=e.coeff1*b+e.coeff2*d
   g=e.coeff3*b+e.coeff4*d
-  if g < 0
+  if iszero(g) return e end
+  if g<0
     e=(gcd=e.gcd,coeff1=e.coeff1,coeff2=e.coeff2,
        coeff3=-e.coeff3,coeff4=-e.coeff4)
     g=-g
   end
-  if g>0
-    q=div(f-mod(f, g), g)
-    e=(gcd=e.gcd,coeff1=e.coeff1-q*e.coeff3,coeff2=e.coeff2-q*e.coeff4,
+  q=div(f-mod(f, g), g)
+  (gcd=e.gcd,coeff1=e.coeff1-q*e.coeff3,coeff2=e.coeff2-q*e.coeff4,
        coeff3=e.coeff3,coeff4=e.coeff4)
-  end
-  e
 end
 
 ## SNFofREF - fast SNF of REF matrix
 function SNFofREF(R, destroy)
+# println("R=$R destroy=$destroy")
   n = length(R)
   m = length(R[1])
-  piv = map(x->findfirst(!iszero,x), R)
-  r = findfirst(==(false),piv)
-  if r == false r = length(piv)
+  piv = findfirst.(!iszero,R)
+  r = findfirst(isnothing,piv)
+  if isnothing(r) r = length(piv)
   else
       r-=1
       piv=piv[1:r]
   end
-  append!(piv, Difference(1:m, piv))
+  append!(piv, setdiff(1:m, piv))
   if destroy
       T = R
       for i in 1:r T[i][1:m] = T[i][piv] end
@@ -161,49 +161,47 @@ function SNFofREF(R, destroy)
       end
   end
   si = 1
-  A = []
+  A = Vector{Int}(undef,n)
   d = 2
-  for k = 1:m
-      if k <= r
-          d*=abs(T[k][k])
-          Apply(T[k], x->mod(x, 2d))
+  for k in 1:m
+    if k <= r
+        d*=abs(T[k][k])
+        T[k].=mod.(T[k], 2d)
+    end
+    t = min(k, r)
+    for i in t-1:-1:si
+        t = mgcdex(A[i], T[i][k], [T[i+1][k]])[1]
+        if t != 0
+            T[i]+=T[i+1]*t
+            T[i].=mod.(T[i], A[i])
+        end
+    end
+    for i in si:min(k-1, r)
+      g = gcdx(A[i], T[i][k])
+      T[i][k] = 0
+      if g[1] != A[i]
+        b = div(A[i], g[1])
+        A[i] = g[1]
+        for ii in i+1:min(k-1,r)
+          T[ii]+=mod.(T[i]*(-g[3]*div(T[ii][k],A[i])),A[ii])
+          T[ii][k]*=b
+          T[ii].=mod.(T[ii],A[ii])
+        end
+        if k<=r
+          t=g[3]*div(T[k][k], g[1])
+          T[k]+=-t*T[i]
+          T[k][k]*=b
+        end
+        T[i].=mod.(T[i], A[i])
+        if A[i]==1 si=i+1 end
       end
-      t = min(k, r)
-      for i = t-1:-1:si
-          t = mgcdex(A[i], T[i][k], [T[i+1][k]])[1]
-          if t != 0
-              T[i]+=T[i+1]*t
-              Apply(T[i], (x->begin mod(x, A[i]) end))
-          end
-      end
-      for i = si:min(k - 1, r)
-          g = gcdx(A[i], T[i][k])
-          T[i][k] = 0
-          if g[1] != A[i]
-              b = div(A[i], g[1])
-              A[i] = g[1]
-              for ii = i + 1:min(k - 1, r)
-                  T[ii]+=map(x->mod(x,A[ii]),T[i]*-g[3]*div(T[ii][k],A[i]))
-                  T[ii][k]= b*T[ii][k]
-                  Apply(T[ii],x->mod(x,A[ii]))
-              end
-              if k <= r
-                  t = g[3] * div(T[k][k], g[1])
-                  T[k]+=-T[i]-t
-                  T[k][k]*=b
-              end
-              Apply(T[i], x->mod(x, A[i]))
-              if A[i]==1 si=i+1 end
-          end
-      end
-      if k <= r
-          A[k] = abs(T[k][k])
-          Apply(T[k], x->mod(x, A[k]))
-      end
+    end
+    if k <= r
+        A[k] = abs(T[k][k])
+        T[k].=mod.(T[k], A[k])
+    end
   end
-  for i = 1:r
-      T[i][i] = A[i]
-  end
+  for i in 1:r T[i][i]=A[i] end
   return T
 end
 
@@ -277,14 +275,15 @@ BITLISTS_NFIM = [
 #
 function DoNFIM(mat::AbstractVector, opt::Int)
   if isempty(mat) mat=[Int[]] end
-# println("mat=$mat opt=$opt")
   opt = BITLISTS_NFIM[opt + 1]
+# println("mat=$mat opt=$opt")
   TRIANG = opt[1]
   REDDIAG = opt[2]
   ROWTRANS = opt[3]
   COLTRANS = opt[4]
-  INPLACE = opt[5]
+  INPLACE=false # INPLACE = opt[5] since the code for INPLACE can never work
   sig = 1
+  #Embed mat in 2 larger "id" matrix
   n=length(mat)+2
   m=length(mat[1])+2
   k=fill(0, max(0,m))
@@ -329,6 +328,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
         end
         j=j+1
     end
+    #Smith with some transforms..
     if TRIANG && ((COLTRANS || ROWTRANS) && c2 < m)
         N = gcd(map(x->x[c2],A[r:n]))
         L = vcat(c1+1:c2-1, c2+1:m-1)
@@ -406,6 +406,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
   end
   push!(rp,m) # length(rp)==r+1
   if n==m && r+1<n sig=0 end
+  #smith w/ NO transforms - farm the work out...
   if TRIANG && !(ROWTRANS || COLTRANS)
     for i in 2:n-1 A[i-1]=A[i][2:m-1] end
     A=A[1:n-2]
@@ -413,6 +414,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
     if n==m R[:signdet] = sig end
     return R
   end
+  # hermite or (smith w/ column transforms)
   if !TRIANG && REDDIAG || TRIANG && COLTRANS
     for i in r:-1:1
       for j in i+1:r+1
@@ -429,7 +431,8 @@ function DoNFIM(mat::AbstractVector, opt::Int)
       end
     end
   end
-  if TRIANG && (ROWTRANS && !COLTRANS)
+  #Smith w/ row but not col transforms
+  if TRIANG && ROWTRANS && !COLTRANS
     for i in 1:r-1
       t=A[i][i]
       A[i]=map(x->0, 1:m)
@@ -440,6 +443,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
       A[r][j] = 0
     end
   end
+  #smith w/ col transforms
   if TRIANG && COLTRANS && r<m-1
     c=mgcdex(A[r][r], A[r][r+1], A[r][r+2:m-1])
     for j in r+2:m-1
@@ -467,6 +471,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
       P[i][i] = 1
     end
   end
+  #row transforms finisher
   if ROWTRANS for i in r+2:n Q[i][i]=1 end end
   for i in 2:n-1 A[i-1]=A[i][2:m-1] end
   A=A[1:n-2]
@@ -573,45 +578,43 @@ function SolutionNullspaceIntMat(mat, v)
 end
 
 function DeterminantIntMat(mat)
-  sig = 1
+  sig=1
   n=length(mat)+2
   if n<22 return DeterminantMat(mat) end
-  m = length(mat[1])+2
-  if n != m error("DeterminantIntMat: <mat> must be a square matrix") end
+  m=length(mat[1])+2
+  if n!=m error("DeterminantIntMat: <mat> must be a square matrix") end
   A=[fill(0,m)]
-  for l in mat
-    push!(A,vcat([0],l,[0]))
-  end
+  for l in mat push!(A,vcat([0],l,[0])) end
   push!(A,fill(0,m))
   A[1][1]=1
   A[n][m]=1
-  r = 0
-  c2 = 1
-  while m > c2
+  r=0
+  c2=1
+  while m>c2
     r+=1
-    c1 = c2
-    j = c1 + 1
+    c1=c2
+    j=c1+1
     while j <= m
         k = r + 1
         while k<=n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k+=1 end
-        if k <= n
-            c2 = j
-            j = m
+        if k<=n
+          c2=j
+          j=m
         end
         j+=1
     end
-    c = mgcdex(abs(A[r][c1]), A[r+1][c1], map(x->x[c1],A[r+2:n]))
+    c=mgcdex(abs(A[r][c1]), A[r+1][c1], map(x->x[c1],A[r+2:n]))
     for i in r+2:n
-        if c[i-r-1]!=0 A[r+1]+=A[i]*c[i-r-1] end
+      if c[i-r-1]!=0 A[r+1]+=A[i]*c[i-r-1] end
     end
-    i = r + 1
-    while A[r][c1]*A[i][c2]==A[i][c1]*A[r][c2] i=i+1 end
+    i=r+1
+    while A[r][c1]*A[i][c2]==A[i][c1]*A[r][c2] i+=1 end
     if i>r+1
       c=mgcdex(abs(A[r][c1]), A[r+1][c1]+A[i][c1], [A[i][c1]])[1]+1
       A[r+1]+=A[i] * c
     end
-    g = bezout(A[r][c1], A[r][c2], A[r + 1][c1], A[r + 1][c2])
-    sig*=sign(A[r][c1] * A[r + 1][c2] - A[r][c2] * A[r + 1][c1])
+    g = bezout(A[r][c1], A[r][c2], A[r+1][c1], A[r+1][c2])
+    sig*=sign(A[r][c1]*A[r+1][c2]-A[r][c2]*A[r+1][c1])
     if sig == 0 return 0 end
     A[[r,r+1]]=[[g.coeff1, g.coeff2], [g.coeff3, g.coeff4]]*A[[r,r+1]]
     for i in r+2:n
@@ -626,61 +629,43 @@ function DeterminantIntMat(mat)
 end
 
 function IntersectionLatticeSubspace(m)
-  m = m * Lcm(map(denominator, Concatenation(m)))
+  m*=lcm(map(denominator, vcat(m...)))
   r = SmithNormalFormIntegerMatTransforms(m)
-  for i = 1:length(r[:normal])
-    if (r[:normal])[i] != 0 * (r[:normal])[i]
-      r[:normal][i]=r[:normal][i] // maximum(map(abs, r[:normal][i]))
+  for i in 1:length(r[:normal])
+    if !iszero(r[:normal][i])
+      r[:normal][i]//=maximum(map(abs,r[:normal][i]))
     end
   end
-  return r[:rowtrans] ^ -1 * r[:normal] * r[:coltrans]
+  return r[:rowtrans]^-1*r[:normal]*r[:coltrans]
 end
-#############################################################################
-##
-#F  DiaconisGraham(m,moduli)
-#
-# m  should be  an integral  matrix with  n columns where n=Length(moduli),
-# such  that each  line (with  the i-th  element taken  mod moduli[i]) of m
-# represents an element of the group A=Z/moduli[1] x ... x Z/moduli[n], and
-# such  that the set of  lines of m generates  A. The moduli should be such
-# that moduli[i+1] divides moduli[i] for all i.
-#
-# The function returns  a record  r with fields
-# r.normal          the Diaconis-Graham normal form, a matrix of same shape
-#    as  m where either the  first n lines are  the identity matrix and the
-#    remaining  lines are  0, or  Length(m)=n and  .normal differs from the
-#    identity  matrix only  in the  entry .normal[n][n],  which is prime to
-#    moduli[n]
-# r.rowtrans        a unimodular matrix such that  
-#   r.normal=List(r.rowtrans*m,v->Zip(v,moduli,function(x,y)return x mod y;end))
-#
+############################################################################
 """
-'DiaconisGraham( <mat>, <moduli>)'
+`DiaconisGraham(m, moduli)`
 
 Diaconis  and Graham  (see citedg99)  defined a  normal form for generating
-sets of abelian groups. Here <moduli> should be a list of positive integers
-such  that 'moduli[i+1]' divides 'moduli[i]'  for all 'i', representing the
-abelian  group A=Z/moduli[1]×…×Z/moduli[n]. The  integral matrix <m> should
-have  <n> columns where 'n=Length(moduli)', and  each line (with the <i>-th
-element taken 'mod moduli[i]') represents an element of the group A.
+sets of abelian groups. Here `moduli` should be a list of positive integers
+such  that `moduli[i+1]` divides `moduli[i]`  for all `i`, representing the
+abelian group `A=Z/moduli[1]×…×Z/moduli[n]`. The integral matrix `m` should
+have  `n` columns where `n=Length(moduli)`, and  each line (with the `i`-th
+element  taken `mod moduli[i]`) represents an element of the group `A`, and
+such that the set of lines of `m` generates `A`.
 
-The  function returns 'false' if the set  of elements of  A  represented by
-the  lines of  m  does not generate   A.  Otherwise it returns a record 'r'
+The  function returns 'false' if the set  of elements of `A` represented by
+the  lines of `m` does not generate  `A`. Otherwise it returns a `Dict` `r`
 with fields
 
-'r.normal':         the Diaconis-Graham normal form, a matrix of same shape
-as 'm' where either the first 'n' lines are the identity matrix and the
-remaining  lines are '0',  or 'Length(m)=n' and  '.normal' differs from
-the  identity matrix only in the  entry '.normal[n][n]', which is prime
-to 'moduli[n]'.
+`:normal`:  the Diaconis-Graham normal form, a  matrix of same shape as `m`
+where  either the first `n` lines are the identity matrix and the remaining
+lines  are `0`,  or `length(m)=n`  and `:normal`  differs from the identity
+matrix only in the entry `:normal[n][n]`, which is prime to `moduli[n]`.
 
-'r.rowtrans':        a unimodular matrix such that  
-'r.normal=List(r.rowtrans*m,v->mod.(v,moduli))'
+`:rowtrans`: a unimodular matrix such that  
+`r[:normal]=map(v->mod.(v,moduli),r[:rowtrans]*m)`
 
 Here is an example:
 
 ```julia-repl
-julia> MatInt.DiaconisGraham([[3,0],[4,1]],[10,5])
+julia> DiaconisGraham([[3,0],[4,1]],[10,5])
 Dict{Symbol,Any} with 2 entries:
   :normal   => [[1, 0], [0, 2]]
   :rowtrans => [[-13, 10], [4, -3]]

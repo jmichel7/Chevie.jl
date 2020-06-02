@@ -172,6 +172,8 @@ end
 
 Base.length(f::Family)=length(f[:eigenvalues])
 
+position_cartesian(a,b)=LinearIndices(reverse(a))[CartesianIndex(reverse(b))]
+
 function Base.:*(f::Family,g::Family)
 # println(f,"*",g)
   arg=(f,g)
@@ -192,13 +194,12 @@ function Base.:*(f::Family,g::Family)
     res[:charNumbers]=map(x->collect(Iterators.flatten(x)),
                           cartesian(getindex.(arg,:charNumbers)...))
   end
-#  if all(haskey.(arg,:special))
-#    res.special:=PositionCartesian(List(arg,Size),getindex.(arg,:special));
-#    res.cospecial:=PositionCartesian(List(arg,Size),
-#      List(arg,function(f)if IsBound(f.cospecial) then return f.cospecial;
-#                                          else return f.special;fi;end));
-#    if res.cospecial=res.special then Unbind(res.cospecial);fi;
-#  fi;
+  if all(haskey.(arg,:special))
+    res[:special]=position_cartesian(length.(arg),getindex.(arg,:special))
+    res[:cospecial]=position_cartesian(length.(arg),
+                          map(f->get(f.prop,:cospecial,f[:special]),arg))
+    if res[:cospecial]==res[:special] delete!(res,:cospecial) end
+  end
 #  if ForAll(arg,f->IsBound(f.perm) or Size(f)=1) then 
 #    res.perm:=PermListList(cartesian(List(arg,x->[1..Size(x)])),
 #        cartesian(List(arg,function(x)if IsBound(x.perm) then return
@@ -378,9 +379,8 @@ function SubFamily(f,ind,scal,label)
   if haskey(f,:group) 
     res[:group]=f[:group] 
   end
-  if f[:special] in ind 
-   res[:special]=findfirst(isequal(ind),f[:special]) 
-  end
+  special=findfirst(isequal(f[:special]),ind) 
+  if !isnothing(special) res[:special]=special end
   Family(res)
 end
 
@@ -612,7 +612,7 @@ function drinfeld_double(g;lu=false)
     r = Dict{Symbol, Any}(:elt => c,:name => n)
     if r[:elt]==one(g) r[:name]="1" end
     r[:centralizer] = centralizer(g, r[:elt])
-    r[:centelms] = class_reps(r[:centralizer])
+    r[:centelms] = classreps(r[:centralizer])
     t = CharTable(r[:centralizer])
 #   println("t=$t")
     r[:charNames] = charnames(r[:centralizer]; TeX = true)
@@ -622,7 +622,7 @@ function drinfeld_double(g;lu=false)
     r[:charNames][findfirst(isone,r[:chars])] = "1"
     r[:centralizers] = t.centralizers
     return r
-end, class_reps(g), CharTable(g).classnames)
+end, classreps(g), CharTable(g).classnames)
   res[:charLabels]=vcat(
       map(r->map(c->"($(r[:name]),$c)",r[:charNames]),res[:classinfo])...)
   if isabelian(g)
@@ -676,7 +676,7 @@ julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
 378
 ```
 """
-ndrinfeld_double(g)=sum(c->length(class_reps(centralizer(g,c))),class_reps(g))
+ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 
 """
 `family_imprimitive(<S>)`

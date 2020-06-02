@@ -1,7 +1,7 @@
 module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
   conjugate_partition, dominates, compositions, submultisets, cartesian,
-  npartition_tuples, NrArrangements, groupby, constant, tally, collectby
+  npartition_tuples, narrangements, groupby, constant, tally, collectby
 
 """
 `groupby(v::AbstractVector,l)`
@@ -49,7 +49,7 @@ end
 `tally(v)` 
 
 count how many times each element of collection `v` occurs and return a list 
-of `(elt,count)`
+of `(elt,count)` (a variation on StatsBase.countmap)
 """
 tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
 
@@ -166,7 +166,7 @@ in the dictionary.
 arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
 arrangements(mset)=isempty(mset) ? [Int[]] :
    union(arrangements.(Ref(mset),0:length(mset)))
-NrArrangements(a...)=length(arrangements(a...))
+narrangements(a...)=length(arrangements(a...))
 
 # partitions of n of first (greatest) part <=m
 function partitions_less(n,m)
@@ -332,7 +332,7 @@ function npartition_tuples(n,k)
   res=0
   for l in 1:k
     r=binomial(k,l)
-    res+=r*sum(a->NrArrangements(a,l)*prod(npartitions.(a)),partitions(n,l))
+    res+=r*sum(a->narrangements(a,l)*prod(npartitions.(a)),partitions(n,l))
   end
   res
 end

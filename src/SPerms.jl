@@ -43,7 +43,7 @@ SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using Gapjm
-export SPerm, CoxHyperoctaedral, stab_onsmat, perm_onsmat, @sperm_str
+export SPerm, CoxHyperoctaedral, stab_onsmat, perm_onsmat, @sperm_str, signs
 
 """
 `struct SPerm`
@@ -118,6 +118,7 @@ Base.vec(a::SPerm)=a.d
 
 "`Perm(p::SPerm)` returns the underlying Perm of an SPerm"
 Perms.Perm(p::SPerm)=Perm(abs.(p.d))
+signs(p::SPerm)=sign.(p.d)
 
 # SPerms are scalars for broadcasting"
 Base.broadcastable(p::SPerm)=Ref(p)
@@ -358,6 +359,7 @@ struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
 end
 
 Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
+Groups.gens(W::CoxHyperoctaedral)=gens(W.G)
 
 """
 `CoxHyperoctaedral(n)`  The Hyperoctaedral  group on  ±1,…,±n as  a Coxeter

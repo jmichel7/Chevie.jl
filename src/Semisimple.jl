@@ -129,23 +129,20 @@ julia> orbit(G,e[3])
 ```
 
 Here  is the same  computation as above  performed with semisimple elements
-whose coefficients are in the finite field `FF(2,2)`:
+whose coefficients are in the finite field `FF(4)`:
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)
 A₃
 
-julia> Z=FF(4)
-FF(2^2)
-
-julia> s=SemisimpleElement(G,Ref(Z).^[1,2,1])
-SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,Z₄²,Z₄>
+julia> s=SemisimpleElement(G,Z(4).^[1,2,1])
+SemisimpleElement{FFE{2}}: <Z₄,Z₄²,Z₄>
 
 julia> s^G(2)
-SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,1₂,Z₄>
+SemisimpleElement{FFE{2}}: <Z₄,1₂,Z₄>
 
 julia> orbit(G,s)
-6-element Array{SemisimpleElement{Gapjm.FFields.FFE{4}},1}:
+6-element Array{SemisimpleElement{FFE{2}},1}:
  <Z₄,Z₄²,Z₄>
  <Z₄,1₂,Z₄>
  <Z₄²,1₂,Z₄>
@@ -177,7 +174,9 @@ module Semisimple
 using Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group,
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
-is_isolated
+is_isolated, 
+StructureRationalPointsConnectedCentre,
+SemisimpleCentralizerRepresentatives
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -552,6 +551,14 @@ Base.mod1(a)=mod(numerator(a),denominator(a))//denominator(a)
 # returns a record containing minuscule coweights, decompositions
 # (in terms of generators of the fundamental group)
 function weightinfo(W)
+  if isempty(refltype(W)) return Dict(:minusculeWeights=>Vector{Int}[],
+         :minusculeCoweights=>Vector{Int}[],
+         :decompositions=>Vector{Vector{Int}}[],
+         :moduli=>Int[],
+         :CenterSimplyConnected=>Vector{Rational{Int}}[],
+         :AdjointFundamentalGroup=>eltype(W)[]
+        )
+  end
   l=map(refltype(W)) do t
     r=getchev(t,:WeightInfo)
     if isnothing(r)
@@ -796,19 +803,31 @@ is_isolated(W,s)=rank(algebraic_centre(centralizer(W,s).group)[:Z0])==
 """    
 `StructureRationalPointsConnectedCentre(W,q)`
     
-<W>   should  be  a  Coxeter  group  record  or  a  Coxeter  coset  record,
-representing  a finite reductive group   bG^F,  and <q> should be the prime
-power  associated  to  the  isogeny  <F>.  The function returns the abelian
-invariants  of the finite  abelian group    Z^0bG^F   where  Z^0bG   is the
-connected center of   bG.
+`W`  should be  a Coxeter  group or  a Coxeter  coset representing a finite
+reductive group `𝐆 ^F`, and `q` should be the prime power associated to the
+isogeny  `F`. The  function returns  the abelian  invariants of  the finite
+abelian group `Z⁰𝐆 ^F` where `Z⁰𝐆 ` is the connected center of `𝐆 `.
 
-In  the  following  example  one  determines the structure of   bT((mathbb
-F)_3)  where   bT  runs over all the maximal tori of SL_4.
+In  the following example one determines the structure of `𝐓(𝔽₃)` where `𝐓`
+runs over all the maximal tori of `SL`₄.
 
-gap> G:=RootDatum("sl",4);
-RootDatum("sl",4)
-gap> List(Twistings(G,[]),T->StructureRationalPointsConnectedCentre(T,3));
-[ [ 2, 2, 2 ], [ 2, 8 ], [ 4, 8 ], [ 26 ], [ 40 ] ]
+```julia-repl
+julia> l=twistings(rootdatum(:sl,4),Int[])
+5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+ A₃₍₎=.Φ₁³
+ A₃₍₎=.Φ₁²Φ₂
+ A₃₍₎=.Φ₁Φ₂²
+ A₃₍₎=.Φ₁Φ₃
+ A₃₍₎=.Φ₂Φ₄
+
+julia> StructureRationalPointsConnectedCentre.(l,3)
+5-element Array{Array{Int64,1},1}:
+ [2, 2, 2]
+ [2, 8]
+ [4, 8]
+ [26]
+ [40]
+```julia-repl
 """    
 function StructureRationalPointsConnectedCentre(MF,q)
   if MF isa Spets M=Group(MF)
@@ -816,10 +835,74 @@ function StructureRationalPointsConnectedCentre(MF,q)
   end
   W=parent(M)
   Z0=algebraic_centre(M)[:Z0]
-  Phi=matY(W,MF.phi)
-  Z0F=gens(Z0)*(Phi*q-one(Phi))
-  Z0F=map(x->SolutionIntMat(gens(Z0),x),Z0F)
-  Z0F=DiagonalOfMat(DiagonalizeIntMat(Z0F).normal)
-  filter(x->x!=1,Z0F)
+  Phi=matY(W.G,MF.phi)
+  Z0F=toM(Z0.generators)*(Phi*q-one(Phi))
+  Z0F=map(x->SolutionIntMat(Z0.generators,x),eachrow(Z0F))
+  Z0F=DiagonalizeIntMat(Z0F)[:normal]
+  filter(!isone,map(i->Z0F[i][i],1:length(Z0F)))
 end
+
+#F SemisimpleCentralizerRepresentatives(W,p=0)
+## Representatives of G-classes of C_G(s)^0.
+## Same as W-orbits of subsets of Π∪{-α₀}
+"""
+'SemisimpleCentralizerRepresentatives(<W> [,<p>])'
+
+<W>  should  be  a  Weyl  group  record corresponding to an algebraic group
+bG.     This  function  returns  a  list  giving  representatives    bH  of
+bG-orbits     of reductive  subgroups of    bG  which  can be  the identity
+component  of the centralizer of a  semisimple element. Each group   bH  is
+specified  by  a  list  <h>  of  reflection  indices in <W> such that   bH
+corresponds  to  'ReflectionSubgroup(W,h)'.  If  a  second  argument <p> is
+given,  only the list of the centralizers which occur in characteristic <p>
+is returned.
+
+gap> W:=CoxeterGroup("G",2);
+CoxeterGroup("G",2)
+gap> l:=SemisimpleCentralizerRepresentatives(W);
+[ [  ], [ 1 ], [ 1, 2 ], [ 1, 5 ], [ 2 ], [ 2, 6 ] ]
+gap> List(last,h->ReflectionName(ReflectionSubgroup(W,h)));
+[ "(q-1)^2", "A1.(q-1)", "G2", "A2<1,5>", "~A1<2>.(q-1)",
+ "~A1<2>xA1<6>" ]
+gap> SemisimpleCentralizerRepresentatives(W,2);
+[ [  ], [ 1 ], [ 1, 2 ], [ 1, 5 ], [ 2 ] ]
+"""
+function SemisimpleCentralizerRepresentatives(W,p=0)
+  l=map(refltype(W))do t
+    cent=parabolic_representatives(reflection_subgroup(W,t.indices))
+    cent=map(x->reflection_subgroup(W,t.indices[x]),cent)
+    npara=length(cent)
+    r=filter(i->sum(W.rootdec[i])==sum(W.rootdec[i][t.indices]),1:nref(W))
+    (m,h)=findmax(sum.(W.rootdec[r]))
+    ED=vcat(t.indices,[r[h]])
+    for J in combinations(ED)
+      if length(J)==length(ED) continue end
+      R=reflection_subgroup(W,J)
+      if !isnothing(standard_parabolic(W,R)) continue end
+      u=findall(G->IsomorphismType(R)==IsomorphismType(G),cent[npara+1:end])
+      if length(u)>0 println(u,R) end
+      if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
+                 sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara+u])
+        push!(cent,R)
+      end
+    end
+    cent=inclusiongens.(cent)
+    if p==0 return cent end
+    filter(I->all(x->x==0 || x%p!=0,
+                    toM(MatInt.SmithNormalFormIntegerMat(W.rootdec[I]))),cent)
+  end
+  map(x->vcat(x...),cartesian(l...))
+end
+
+function IsomorphismType(W;torus=false)
+  t=reverse(tally(map(x->sprint(show,x;context=:limit=>true),refltype(W))))
+  t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
+  d=rank(W)-semisimplerank(W)
+  if d>0 && torus
+    if t!="" t*="+" end
+    t*="T"*string(d)
+  end
+  t
+end
+
 end

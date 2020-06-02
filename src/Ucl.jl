@@ -396,7 +396,7 @@ function QuotientAu(Au,chars)
   # q=Au/k,  ww=words in q images of gens(Au)
   finish=function(q,ww)
     h=Hom(Au,q,map(x->q(x...),ww))
-    fusion=map(c->position_class(q,h(c)),class_reps(Au))
+    fusion=map(c->position_class(q,h(c)),classreps(Au))
     ctu=CharTable(Au).irr
     cth=CharTable(q).irr
     ch(c)=map(j->ctu[c,findfirst(isequal(j),fusion)],1:HasType.NrConjugacyClasses(q))

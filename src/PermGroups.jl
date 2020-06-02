@@ -86,6 +86,8 @@ function Base.show(io::IO,G::PermGroup)
   print(io,"Group([$(join(map(repr,gens(G)),','))])")
 end
 
+Base.one(G::PermGroup{T}) where T=one(Perm{T})
+
 function degree(G::PermGroup)::Int
   gets(G,:degree)do 
     maximum(map(largest_moved_point,gens(G)))

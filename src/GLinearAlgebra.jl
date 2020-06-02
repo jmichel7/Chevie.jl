@@ -517,7 +517,7 @@ end
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
 "ratio of two vectors"
-function ratio(v::Vector, w::Vector)
+function ratio(v::AbstractVector, w::AbstractVector)
  i=findfirst(x->!iszero(x),w)
  if isnothing(i) return nothing end
  r=v[i]//w[i]

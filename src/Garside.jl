@@ -346,11 +346,11 @@ function leftgcd(M::LocallyGarsideMonoid,elts...)
   found=true
   while found
     found=false
-    for i in eachindex(M.atoms)
+    for (i,a) in enumerate(M.atoms)
       if all(b->isleftdescent(M,b,i),elts)
         found=true
-        x=mul!(M,x,M.atoms[i])
-        elts=map(y->\(M,M.atoms[i],y),elts)
+        x=mul!(M,x,a)
+        elts=map(y->\(M,a,y),elts)
       end
     end
   end

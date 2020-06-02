@@ -1094,7 +1094,7 @@ end
 
 Frobenius=function(WF, x::UniChar, i)
   W=x.group
-  p=Perm(map(x->position_class(W,x^WF.phi), class_reps(W)))
+  p=Perm(map(x->position_class(W,x^WF.phi), classreps(W)))
   uc=UnipotentCharacters(W)
   t=vcat(DLCharTable(W), permutedims(eigen(uc)))
   pt=t^p

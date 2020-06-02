@@ -16,7 +16,7 @@ julia> gens(G)
  (1,2)  
  (1,2,3)
 
-julia> nbgens(G)
+julia> ngens(G)
 2
 ```
 
@@ -28,7 +28,7 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
 ```
 """
 module Groups
-export Group, minimal_words, gens, nbgens, class_reps, centralizer,
+export Group, minimal_words, gens, ngens, classreps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, transporting_elt,
   centre, normalizer, stabilizer
@@ -43,13 +43,13 @@ abstract type Group{T} end # T is the type of elements of G
 function normalizer end
 
 function Base.one(G::Group{T}) where T
-  if !isempty(gens(G)) return one(gens(G)[1]) end
-  if haskey(G.prop,:one) return G.prop[:one] end
+  if !isempty(gens(G)) return one(first(gens(G))) end
+  if haskey(G.prop,:one) return G.prop[:one]::T end
   one(T)
 end
 
 gens(G::Group)=G.gens
-nbgens(G::Group)=length(gens(G))
+ngens(G::Group)=length(gens(G))
 
 " element of W corresponding to a sequence of generators and their inverses"
 (W::Group)(w...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
@@ -263,7 +263,7 @@ Base.length(G::Group)=length(minimal_words(G))
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   gets(G,:classes) do
     if haskey(G.prop,:classreps)
-      map(x->orbit(G,x),class_reps(G))
+      map(x->orbit(G,x),classreps(G))
     elseif length(G)>10000
       error("length(G)=",length(G),": should call Gap4")
     else
@@ -277,13 +277,13 @@ function position_class(G::Group,g)
 end
 
 function fusion_conjugacy_classes(H::Group,G::Group)
-  map(x->position_class(G,x),class_reps(H))
+  map(x->position_class(G,x),classreps(H))
 end
 
-"class_reps(G::Group): representatives of conjugacy classes of G"
-function class_reps(G::Group{T})::Vector{T} where T
+"classreps(G::Group): representatives of conjugacy classes of G"
+function classreps(G::Group{T})::Vector{T} where T
   gets(G,:classreps) do
-    if length(G)>10000 Gap4.class_reps(G)
+    if length(G)>10000 Gap4.classreps(G)
     else first.(conjugacy_classes(G))
     end
   end
@@ -438,7 +438,7 @@ Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))),Coset(H))
 
 elements(C::Coset)=C.phi .* elements(Group(C))
 
-function class_reps(G::Coset{Group{T}})::Vector{T} where T
+function classreps(G::Coset{Group{T}})::Vector{T} where T
   gets(G,:classreps) do
     first.(conjugacy_classes(G))
   end
@@ -459,7 +459,7 @@ function position_class(G::Coset,g)
 end
 
 function fusion_conjugacy_classes(H::Coset,G::Coset)
-  map(x->position_class(G,x),class_reps(H))
+  map(x->position_class(G,x),classreps(H))
 end
 
 end

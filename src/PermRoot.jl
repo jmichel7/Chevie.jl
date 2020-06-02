@@ -130,9 +130,6 @@ export PermRootGroup, PRG, PRSG, catalan,
  PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants,improve_type, matY, simpleroots,
  simplecoroots, action
-import Gapjm: gens, degree, roots
-# to use as a stand-alone module comment above line and uncomment the next line
-# export roots, gens, degree
 using Gapjm
 
 best_type(x)=typeof(x)
@@ -617,7 +614,7 @@ julia> hyperplane_orbits(W)
 function hyperplane_orbits(W::PermRootGroup)
   sr=simple_representatives(W)
   rr=reflections(W)
-  cr=class_reps(W)
+  cr=classreps(W)
   orb=collect(Set(sr))
   class=map(orb)do s
     map(1:order(reflection(W,s))-1)do o
@@ -719,7 +716,7 @@ julia> reflchar(coxgroup(:A,3))
  -1
 ```
 """
-reflchar(W::PermRootGroup)=reflchar.(Ref(W),class_reps(W))
+reflchar(W::PermRootGroup)=reflchar.(Ref(W),classreps(W))
   
 """
 'refleigen(W)'
@@ -741,7 +738,7 @@ julia> refleigen(coxgroup(:B,2))
 function refleigen(W::PermRootGroup)
 # very inefficient for now
   gets(W,:refleigen) do
-    ll=map(class_reps(W)) do x
+    ll=map(classreps(W)) do x
       p=CycPol(charpoly(refrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
@@ -811,9 +808,9 @@ function classinv(W::PermRootGroup)
   end
 end
 
-function PermGroups.conjugacy_classes(W::PermRootGroup)
+function Groups.conjugacy_classes(W::PermRootGroup)
   gets(W,:classes)do
-    map(x->orbit(W,x),class_reps(W))
+    map(x->orbit(W,x),classreps(W))
   end
 end
   
@@ -825,7 +822,7 @@ function Groups.position_class(W::PermRootGroup,w)
     else 
       ncl=classinfo(W)[:classes][l]
       s=sortperm(ncl)
-      cl=class_reps(W)
+      cl=classreps(W)
       while s[1]<100
         if w in orbit(W,cl[l[s[1]]]) return l[s[1]] end
         s=s[2:end]
@@ -940,7 +937,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
   return nothing
 end
 
-function PermGroups.class_reps(W::PermRootGroup)
+function Groups.classreps(W::PermRootGroup)
   gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
@@ -1094,8 +1091,8 @@ function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVe
   PRG(Perm{Int16}.(refls),matgens,roots,coroots,Dict{Symbol,Any}())
 end
 
-@inline roots(W::PRG)=W.roots
-@inline roots(W::PRG,i)=W.roots[i]
+@inline Gapjm.roots(W::PRG)=W.roots
+@inline Gapjm.roots(W::PRG,i)=W.roots[i]
 simpleroots(W::PRG)=roots(W,eachindex(gens(W)))
 @inline coroots(W::PRG)=W.coroots
 simplecoroots(W::PRG)=W.coroots[eachindex(gens(W))]
@@ -1231,8 +1228,8 @@ inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i)=W.inclusion[i]
 restriction(W::PRSG)=W.restriction
 restriction(W::PRSG,i)=W.restriction[i]
-@inline roots(W::PRSG)=roots(parent(W),inclusion(W))
-@inline roots(W::PRSG,i)=roots(parent(W),inclusion(W,i))
+@inline Gapjm.roots(W::PRSG)=roots(parent(W),inclusion(W))
+@inline Gapjm.roots(W::PRSG,i)=roots(parent(W),inclusion(W,i))
 simpleroots(W::PRSG)=roots(parent(W),inclusiongens(W))
 @inline coroots(W::PRSG)=coroots(parent(W),inclusion(W))
 @inline coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))

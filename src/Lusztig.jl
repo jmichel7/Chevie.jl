@@ -163,7 +163,7 @@ function LusztigInductionPieces(LF,WF)
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
     if W isa CoxeterGroup
       WFGL=relative_coset(WF,restriction(W,inclusion(L,h[:levi])))
-      class_reps(WFGL)
+      classreps(WFGL)
       WGL=Group(WFGL)
       LFGL=relative_coset(LF,h[:levi])
       LFGL=subspets(WFGL,convert(Vector{Int},
@@ -259,7 +259,7 @@ function LusztigInductionTable(LF,WF;check=true)
     "Lusztig Induction from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"LusztigInductionTable($(repr(LF)),$(repr(WF)))"))
 # res=CHEVIE[:GetCached](uW, "LusztigInductionMaps", res,
-#       x->[inclusion(Group(x[:u]))[1:nbgens(Group(x[:u]))],
+#       x->[inclusion(Group(x[:u]))[1:ngens(Group(x[:u]))],
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
   res.prop[:pieces]=LusztigInductionPieces(LF,WF)

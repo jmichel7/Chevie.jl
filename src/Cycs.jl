@@ -194,7 +194,7 @@ end
 `coefficients(c::Cyc)`
 
 for  a cyclotomic `c` of conductor `n`,  returns a vector `v` of length `n`
-such that `c==∑ᵢ v[i]ζⁱ`.
+such that `c==∑ᵢ v[i-1]ζⁱ`.
 
 ```julia-repl
 julia> coefficients(E(9))

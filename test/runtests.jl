@@ -17,6 +17,14 @@ function mytest(a::String,b::String)
   if a!=b print("exec=$(repr(a[i:end]))\nmanl=$(repr(b[i:end]))\n") end
   a==b
 end
+@testset "Algebras.jl" begin
+@test mytest("W=ComplexReflectionGroup(4)","G₄")
+@test mytest("uc=UnipotentCharacters(W);f=uc.families[4];","nothing")
+@test mytest("A=Algebras.fusion_algebra(fourier(f),1)","Fusion Algebra dim.5")
+@test mytest("b=basis(A)","5-element Array{Gapjm.Algebras.AlgebraElt{Int64,Gapjm.Algebras.FusionAlgebra},1}:\n B₁\n B₂\n B₃\n B₄\n B₅")
+@test mytest("b*permutedims(b)","5×5 Array{Gapjm.Algebras.AlgebraElt{Int64,Gapjm.Algebras.FusionAlgebra},2}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
+@test mytest("CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
+end
 @testset "Chars.jl" begin
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("CharTable(W)","CharTable(H(G(1,1,4)))\n    │1111 211 22 31  4\n────┼──────────────────\n1111│   1  -1  1  1 -1\n211 │   3  -1 -1  .  1\n22  │   2   .  2 -1  .\n31  │   3   1 -1  . -1\n4   │   1   1  1  1  1")
@@ -370,7 +378,7 @@ end
 @testset "Groups.jl" begin
 @test mytest("G=Group([Perm(1,2),Perm(1,2,3)])","Group([perm\"(1,2)\",perm\"(1,2,3)\"])")
 @test mytest("gens(G)","2-element Array{Perm{Int16},1}:\n (1,2)\n (1,2,3)")
-@test mytest("nbgens(G)","2")
+@test mytest("ngens(G)","2")
 @test mytest("G(2,1,-2)","(1,3)")
 @test mytest("orbit([Perm(1,2),Perm(2,3)],1)","3-element Array{Int64,1}:\n 1\n 2\n 3")
 @test mytest("orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)","6-element Array{Array{Int64,1},1}:\n [1, 3]\n [2, 3]\n [1, 2]\n [3, 2]\n [2, 1]\n [3, 1]")
@@ -478,7 +486,7 @@ end
 @test mytest("MatInt.Gcdex(123,66)","(gcd = 3, coeff1 = 7, coeff2 = -13, coeff3 = -22, coeff4 = 41)")
 @test mytest("MatInt.Gcdex(0,-3)","(gcd = 3, coeff1 = 0, coeff2 = -1, coeff3 = 1, coeff4 = 0)")
 @test mytest("MatInt.Gcdex(0,0)","(gcd = 0, coeff1 = 1, coeff2 = 0, coeff3 = 0, coeff4 = 1)")
-@test mytest("MatInt.DiaconisGraham([[3,0],[4,1]],[10,5])","Dict{Symbol,Any} with 2 entries:\n  :normal   => [[1, 0], [0, 2]]\n  :rowtrans => [[-13, 10], [4, -3]]")
+@test mytest("DiaconisGraham([[3,0],[4,1]],[10,5])","Dict{Symbol,Any} with 2 entries:\n  :normal   => [[1, 0], [0, 2]]\n  :rowtrans => [[-13, 10], [4, -3]]")
 end
 @testset "ModuleElts.jl" begin
 @test mytest("a=ModuleElt(:xy=>1,:yx=>-1)",":xy-:yx")
@@ -710,10 +718,9 @@ end
 @test mytest("e[3]^G(2)","SemisimpleElement{Root1}: <ζ₃²,1,ζ₃²>")
 @test mytest("orbit(G,e[3])","6-element Array{SemisimpleElement{Root1},1}:\n <ζ₃²,ζ₃,ζ₃²>\n <ζ₃²,1,ζ₃²>\n <ζ₃,1,ζ₃²>\n <ζ₃²,1,ζ₃>\n <ζ₃,1,ζ₃>\n <ζ₃,ζ₃²,ζ₃>")
 @test mytest("G=rootdatum(:sl,4)","A₃")
-@test mytest("Z=FF(4)","FF(2^2)")
-@test mytest("s=SemisimpleElement(G,Ref(Z).^[1,2,1])","SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,Z₄²,Z₄>")
-@test mytest("s^G(2)","SemisimpleElement{Gapjm.FFields.FFE{4}}: <Z₄,1₂,Z₄>")
-@test mytest("orbit(G,s)","6-element Array{SemisimpleElement{Gapjm.FFields.FFE{4}},1}:\n <Z₄,Z₄²,Z₄>\n <Z₄,1₂,Z₄>\n <Z₄²,1₂,Z₄>\n <Z₄,1₂,Z₄²>\n <Z₄²,1₂,Z₄²>\n <Z₄²,Z₄,Z₄²>")
+@test mytest("s=SemisimpleElement(G,Z(4).^[1,2,1])","SemisimpleElement{FFE{2}}: <Z₄,Z₄²,Z₄>")
+@test mytest("s^G(2)","SemisimpleElement{FFE{2}}: <Z₄,1₂,Z₄>")
+@test mytest("orbit(G,s)","6-element Array{SemisimpleElement{FFE{2}},1}:\n <Z₄,Z₄²,Z₄>\n <Z₄,1₂,Z₄>\n <Z₄²,1₂,Z₄>\n <Z₄,1₂,Z₄²>\n <Z₄²,1₂,Z₄²>\n <Z₄²,Z₄,Z₄²>")
 @test mytest("G=coxgroup(:A,3)","A₃")
 @test mytest("s=SS(G,[0,1//2,0])","SemisimpleElement{Root1}: <1,-1,1>")
 @test mytest("centralizer(G,s)","A₃₍₁₃₎=(A₁A₁)Φ₂")
@@ -736,6 +743,8 @@ end
 @test mytest("W=rootdatum(:E6sc);l=Semisimple.QuasiIsolatedRepresentatives(W)","7-element Array{SemisimpleElement{Root1},1}:\n <1,1,1,1,1,1>\n <-1,1,1,-1,1,-1>\n <ζ₃,1,ζ₃²,1,ζ₃,ζ₃²>\n <ζ₃²,1,ζ₃,1,ζ₃,ζ₃²>\n <ζ₃²,1,ζ₃,1,ζ₃²,ζ₃>\n <ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵>\n <ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²>")
 @test mytest("map(s->is_isolated(W,s),l)","7-element Array{Bool,1}:\n 1\n 1\n 1\n 1\n 1\n 1\n 1")
 @test mytest("Semisimple.QuasiIsolatedRepresentatives(W,3)","2-element Array{SemisimpleElement{Root1},1}:\n <1,1,1,1,1,1>\n <-1,1,1,-1,1,-1>")
+@test mytest("l=twistings(rootdatum(:sl,4),Int[])","5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:\n A₃₍₎=.Φ₁³\n A₃₍₎=.Φ₁²Φ₂\n A₃₍₎=.Φ₁Φ₂²\n A₃₍₎=.Φ₁Φ₃\n A₃₍₎=.Φ₂Φ₄")
+@test mytest("StructureRationalPointsConnectedCentre.(l,3)","5-element Array{Array{Int64,1},1}:\n [2, 2, 2]\n [2, 8]\n [4, 8]\n [26]\n [40]")
 end
 @testset "Symbols.jl" begin
 @test mytest("dominates([5,4],[4,4,1])","true")

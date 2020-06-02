@@ -251,11 +251,11 @@ function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
     C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
    else C=centralizer(W,sort(J);action=(J,w)->sort(action.(Ref(W),J,w)))
   end
-  class_reps(C)
+  classreps(C)
 end
 
 function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
-  if isempty(J) return class_reps(WF)./WF.phi end
+  if isempty(J) return classreps(WF)./WF.phi end
   W=Group(WF)
   h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
                              action=(x,p)->sort(action.(Ref(W),x,p)))
@@ -264,7 +264,7 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
     return Perm[]
   end
   W_L=centralizer(W,sort(collect(J)),action=(x,p)->sort(action.(Ref(W),x,p)))
-  e=class_reps(Group(vcat(gens(W_L),[WF.phi*h])))
+  e=classreps(Group(vcat(gens(W_L),[WF.phi*h])))
   return filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
 end
 
@@ -391,7 +391,7 @@ end
 #end
 
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,refrep(W,w))
-Groups.Coset(W::FiniteCoxeterGroup,w::Perm)=spets(W,w)
+Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
 Base.parent(W::Spets)=gets(()->W,W,:parent)
@@ -494,12 +494,12 @@ julia> torus(WF,2)
 A₃₍₎=.Φ₁Φ₂²
 ```
 """
-Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\class_reps(W)[i])
-Weyl.torus(W,i)=subspets(W,Int[],class_reps(W)[i])
+Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
+Weyl.torus(W,i)=subspets(W,Int[],classreps(W)[i])
 
 function Groups.conjugacy_classes(WF::Spets)
   gets(WF,:classes)do
-    map(x->orbit(Group(WF),x),class_reps(WF))
+    map(x->orbit(Group(WF),x),classreps(WF))
   end
 end
 
@@ -578,7 +578,7 @@ end
 
 PermRoot.refrep(WF::Spets,w)=WF.F*refrep(Group(WF),w)
   
-function PermGroups.class_reps(W::Spets)
+function PermGroups.classreps(W::Spets)
   gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
@@ -586,7 +586,7 @@ end
 
 function PermRoot.refleigen(W::Spets)
   gets(W,:refleigen)do
-    map(W.phi.\class_reps(W)) do x
+    map(W.phi.\classreps(W)) do x
       p=CycPol(charpoly(refrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
@@ -600,7 +600,7 @@ end
 Frobenius(w::Perm,phi)=w^phi
 
 function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
-  if isempty(J) return class_reps(WF)./WF.phi end
+  if isempty(J) return classreps(WF)./WF.phi end
   W=Group(WF)
   L=reflection_subgroup(W,J)
   N=normalizer(W,L)
@@ -610,20 +610,20 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
     H=Group(map(x->GetRelativeAction(W,L,x.phi),gens(W_L)))
     if length(H)==length(W_L)
       h=Hom(H,W_L,gens(W_L))
-      e=class_reps(H)
+      e=classreps(H)
       return map(x->h(x).phi,e)
     end
   end
-  return map(x->x.phi,class_reps(W_L))
+  return map(x->x.phi,classreps(W_L))
 end
 
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
-  if isempty(J) class_reps(W) end
+  if isempty(J) classreps(W) end
   L=reflection_subgroup(W,J)
   s=unique!(sort(reflections(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L
-  map(x->reduced(L,x.phi),class_reps(W_L))
+  map(x->reduced(L,x.phi),classreps(W_L))
 end
 
 function relative_coset(WF::CoxeterCoset,J)
@@ -715,7 +715,7 @@ end
 #  print(io,"Spets{",TW,"}")
 #end
 
-Groups.Coset(W::PermRootGroup,w::Perm)=spets(W,w)
+Groups.Coset(W::PermRootGroup,w::Perm=one(W))=spets(W,w)
 
 spets(phi,F::Matrix,W::PermRootGroup,P::Dict{Symbol,Any})=PRC(phi,F,W,P)
 

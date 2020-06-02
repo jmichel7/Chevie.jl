@@ -197,13 +197,13 @@ function hecke(W::Group,p::Vector{C};rootpara::Vector{C}=C[])where C
 end
   
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
-  rootpara= iszero(rootpara) ? C[] : fill(rootpara,nbgens(W))
-  hecke(W,fill(p,nbgens(W));rootpara=rootpara)
+  rootpara= iszero(rootpara) ? C[] : fill(rootpara,ngens(W))
+  hecke(W,fill(p,ngens(W));rootpara=rootpara)
 end
 
 function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
-  rootpara= iszero(rootpara) ? typeof(p[1])[] : fill(rootpara,nbgens(W))
-  hecke(W,[collect(p) for j in 1:nbgens(W)];rootpara=rootpara)
+  rootpara= iszero(rootpara) ? typeof(p[1])[] : fill(rootpara,ngens(W))
+  hecke(W,[collect(p) for j in 1:ngens(W)];rootpara=rootpara)
 end
 
 function rootpara(H::HeckeAlgebra)

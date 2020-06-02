@@ -267,7 +267,7 @@ function GetRelativeRoot(W,L,i)
       res=Dict{Symbol,Any}(:root=>r.root, :coroot=>r.coroot,
                          :eigenvalue=>r.eig)
       res[:index]=i
-      rc=filter(c->GetRelativeAction(W,L,c)==m,class_reps(N))
+      rc=filter(c->GetRelativeAction(W,L,c)==m,classreps(N))
 #     println("rc=$rc")
       c=unique!(sort(map(x->position_class(W,x),rc)))
       m=maximum(map(x->count(isone,x),refleigen(W)[c]))
@@ -345,7 +345,7 @@ function split_levis(WF,d::Root1,ad)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
   res=[]
   while length(cl)>0
-    w=class_reps(WF)[cl[1]]
+    w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=refrep(WF,w)
       V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(d)*one(m))))

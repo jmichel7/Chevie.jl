@@ -1,3 +1,5 @@
+# this should just be "tools". It contains simple functions but which need
+# several of the self-contained structural packages of Gapjm
 """
 `Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
 
@@ -70,4 +72,65 @@ function Util.factor(p::Mvp{T,N})where {T,N}
     return p 
   end
   improve_type([v[1]+v[2]//2*(b-d),m[1,1]*(v[1]+v[2]//2*(b+d))])
+end
+
+function ordermod(x,n)
+  if n==1 return 1 end
+  d=gcd(x,n)
+  if d!=1 error("$x should be prime to $n") end
+  o=1
+  res=x
+  while true
+   if res==1 return o end
+   o+=1
+   res=mod(res*x,n)
+  end
+end
+
+"""
+`mod(z::Cyc,p::Integer)`
+
+`p`  should be a  prime and `z`  a cyclotomic number  which is `p`-integral
+(that  is, `z` times some number prime to `p` is a cyclotomic integer). The
+function  returns  the  reduction  of  `z`  mod.  `p`,  an  element of some
+extension  `F_(p^r)` of the prime field  `F_p`.
+
+```julia_repl
+julia> mod(E(7),3)
+Z₇₂₉¹⁰⁴
+```
+"""
+function Base.mod(c::Cyc,p)
+  x=coefficients(c) 
+  n=conductor(c)
+  np=MatInt.prime_part(n,p)
+  pp=div(n,np)
+  r=ordermod(p,np) # order of p mod np
+  zeta=Z(p^r)^(div(p^r-1,np)*gcdx(pp,p^r-1)[2]) #n-th root of unity
+  if !isone(zeta^n) error() end
+  sum(i->zeta^(i-1)*x[i],1:n)
+end;
+
+"""
+`pblocks(G,p)`
+
+Let  `p` be a prime. This function returns the partition of the irreducible
+characters  of `G`  in `p`-blocks,  represented by  the list  of indices of
+irreducibles characters in each block.
+
+gap> W:=SymmetricGroup(5);
+Group( (1,5), (2,5), (3,5), (4,5) )
+gap> PBlocks(W,2);
+[ [ 1, 2, 5, 6, 7 ], [ 3, 4 ] ]
+gap> PBlocks(W,3);
+[ [ 1, 3, 6 ], [ 2, 4, 5 ], [ 7 ] ]
+gap> PBlocks(W,7);
+[ [ 1 ], [ 2 ], [ 3 ], [ 4 ], [ 5 ], [ 6 ], [ 7 ] ]
+"""
+function pblocks(G,p)
+  T=CharTable(G)
+  l=length(T.charnames)
+  classes=map(c->div(T.centralizers[1],c),T.centralizers)
+  v=map(chi->map(j->mod(classes[j]*chi[j]//chi[1],p),1:l),eachrow(T.irr))
+  sort(collect(values(groupby(improve_type(v),1:l))))
 end
