@@ -151,7 +151,7 @@ also  has been bound which holds the common value of Lusztig's `a`-function
 for the elements of `c` and The irreducible constituents of `character(c)`.
 """
 module KL
-export KLPol, Cpbasis, LeftCell, LeftCells, character
+export KLPol, Cpbasis, LeftCell, LeftCells, character, Lusztigaw, LusztigAw
 using Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
@@ -842,6 +842,68 @@ function WGraph(c::LeftCell)
     end
     graph
   end
+end
+
+"""
+`Lusztigaw(W,w)'
+
+For  `w` an element  of the Coxeter  groups `W`, this  function returns the
+coefficients on the irreducible characters of the virtual Character  `ca_w`
+defined  in  cite[5.10.2]Lus85.   This character  has the property that the
+corresponding almost character is integral and positive.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> l=Lusztigaw(W,W(1))
+6-element Array{Int64,1}:
+ 0
+ 0
+ 1
+ 0
+ 1
+ 1
+
+julia> sum(l.*map(i->AlmostChar(W,i),eachindex(l)))
+[G₂]:<φ′₁‚₃>+<φ₂‚₁>+<φ₂‚₂>
+```
+"""
+function Lusztigaw(W,w)
+  v=Pol([1],1)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*(-v)^-length(W,w)
+  map((c,a)->c[-a],l,charinfo(W)[:a])
+end
+
+"""
+'LusztigAw( <W>, <w>)'
+
+For  <w> an element  of the Coxeter  groups <W>, this  function returns the
+coefficients on the irreducible characters of the virtual Character cA_w
+defined  in cite[5.11.6]{Lus85}. This character  has the property that the
+corresponding almost character is integral and positive.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> l=LusztigAw(W,W(1))
+6-element Array{Int64,1}:
+ 0
+ 0
+ 0
+ 1
+ 1
+ 1
+
+julia> sum(l.*map(i->AlmostChar(W,i),eachindex(l)))
+[G₂]:<φ″₁‚₃>+<φ₂‚₁>+<φ₂‚₂>
+```
+"""
+function LusztigAw(W,w)
+  v=Pol([1],1)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
+  map((c,a)->c[nref(W)-a],l,charinfo(W)[:A])
 end
 
 end

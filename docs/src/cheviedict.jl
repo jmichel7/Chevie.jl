@@ -105,7 +105,7 @@ const ChevieDict=Dict(
 #Frobenius
 "FullSymbol"=>"fullsymbol",
 "FundamentalGroup"=>"fundamental_group",
-#FusionAlgebra
+"FusionAlgebra"=>"fusion_algebra",
 "GaloisCyc"=>"galois",
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
@@ -178,8 +178,8 @@ const ChevieDict=Dict(
 "LowestPowerFakeDegreeSymbol"=>"valuation_feg_symbol",
 #LowestPowerGenericDegrees
 "LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
-#Lusztigaw
-#LusztigAw
+"Lusztigaw"=>"Lusztigaw",
+"LusztigAw"=>"LusztigAw",
 "LusztigInduction"=>"LusztigInduce",
 "LusztigInductionTable"=>"LusztigInductionTable",
 "LusztigRestriction"=>"LusztigRestrict",
