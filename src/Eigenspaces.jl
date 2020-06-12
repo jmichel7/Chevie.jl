@@ -104,61 +104,44 @@ relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if E(z)^d==f]
 Let `W` be a reflection group or a reflection coset. A root of unity `ζ` is
 a *regular eigenvalue* for `W` if some element of `W` has a `ζ`-eigenvector
 which   lies   outside   of   the   reflecting  hyperplanes.  The  function
-'RelativeDegree' returns a list describing the regular eigenvalues for `W`.
-If  all the primitive  `n`-th roots of  unity are regular eigenvalues, then
-`n`  is put on the result list.  Otherwise the fractions `a/n` are added to
-the  list for each `a` such that  `E(n,a)` is a primitive `n`-root of unity
-and a regular eigenvalue for `W`.
-
-```julia_repl
-julia> W=coxgroup(:E,8)
-E₈
-
-julia> regular_eigenvalues(W)
-13-element Array{Int64,1}:
-  1
-  2
-  4
-  8
-  3
-  6
- 12
-  5
- 10
- 20
- 24
- 15
- 30
+`regular_eigenvalues` returns the list of regular eigenvalues for `W`.
+```julia-repl
+julia> regular_eigenvalues(coxgroup(:G,2))
+6-element Array{Root1,1}:
+   1
+  -1
+  ζ₃
+ ζ₃²
+  ζ₆
+ ζ₆⁵
 
 julia> W=ComplexReflectionGroup(6)
 G₆
 
-julia> L=twistings(W,[2])[2]
-G₃‚₁‚₁[ζ₄]Φ′₄
+julia> L=twistings(W,[2])[4]
+G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> regular_eigenvalues(L)
-3-element Array{Rational{Int64},1}:
-  1//4 
-  7//12
- 11//12
-
+3-element Array{Root1,1}:
+    ζ₄
+  ζ₁₂⁷
+ ζ₁₂¹¹
 ```
 """
 function regular_eigenvalues(W)
   d=degrees(W)
   c=codegrees(W)
   if !(W isa Spets)
-    return filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
+    l=filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
                   sort(union(divisors.(d)...)))
+    return sort(vcat(map(x->map(y->Root1(;r=y//x),prime_residues(x)),l)...))
   end
-  l=union(map(p->divisors(conductor(p[2])*p[1]),d)...)
-  res=Rational{Int}[]
+  l=union(map(p->divisors(conductor(Root1(p[2]))*p[1]),d)...)
+  res=Root1[]
   for n in l
     p=prime_residues(n)
     p1=filter(i->count(p->E(n,i*p[1])==p[2],d)==count(p->E(n,i*p[1])==p[2],c),p)
-    if p1==p push!(res,n)
-    else res=append!(res,p1//n)
-    end
+    append!(res,map(x->Root1(;r=x//n),p1))
   end
   res
 end

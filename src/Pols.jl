@@ -42,7 +42,7 @@ Pol{Int64}: q⁸-q⁴+1
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: format_coefficient, fromTeX, divisors
+using ..Util: format_coefficient, fromTeX, divisors, ds
 #import Gapjm: root, degree, valuation
 # to use as a stand-alone module comment above line and uncomment next
 export degree, valuation
@@ -151,7 +151,7 @@ function Base.show(io::IO, ::MIME"text/html", a::Pol)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", a::Pol)
-  print(io,typeof(a),": ")
+  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
   show(io,a)
 end
 

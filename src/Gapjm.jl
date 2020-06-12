@@ -107,6 +107,7 @@ include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("mvptools.jl");
 include("SPerms.jl");@reexport using .SPerms
 include("CycPols.jl");@reexport using .CycPols
+include("Algebras.jl");@reexport using .Algebras
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
 include("Symbols.jl");@reexport using .Symbols
@@ -114,7 +115,6 @@ include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
-include("Algebras.jl");@reexport using .Algebras
 include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Lusztig.jl");@reexport using .Lusztig

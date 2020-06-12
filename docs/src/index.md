@@ -237,6 +237,7 @@ hecke
 central_monomials
 class_polynomials
 char_values
+alt
 schur_elements
 FactorizedSchurElement
 FactorizedSchurElements
@@ -249,10 +250,15 @@ KL
 KLPol
 Tbasis
 KL.getCp
+Cbasis
+Cpbasis
 character
 representation(::LeftCell,H)
 LeftCells
 LeftCell
+Lusztigaw
+LusztigAw
+AsymptoticAlgebra
 ```
 # Garside monoids and groups, braids.
 ```@docs
@@ -320,6 +326,7 @@ drinfeld_double
 ndrinfeld_double
 family_imprimitive
 FamiliesClassical
+fusion_algebra
 ```
 # Unipotent classes of reductive groups
 ```@docs

@@ -17,14 +17,6 @@ function mytest(a::String,b::String)
   if a!=b print("exec=$(repr(a[i:end]))\nmanl=$(repr(b[i:end]))\n") end
   a==b
 end
-@testset "Algebras.jl" begin
-@test mytest("W=ComplexReflectionGroup(4)","G₄")
-@test mytest("uc=UnipotentCharacters(W);f=uc.families[4];","nothing")
-@test mytest("A=Algebras.fusion_algebra(fourier(f),1)","Fusion Algebra dim.5")
-@test mytest("b=basis(A)","5-element Array{Gapjm.Algebras.AlgebraElt{Int64,Gapjm.Algebras.FusionAlgebra},1}:\n B₁\n B₂\n B₃\n B₄\n B₅")
-@test mytest("b*permutedims(b)","5×5 Array{Gapjm.Algebras.AlgebraElt{Int64,Gapjm.Algebras.FusionAlgebra},2}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
-@test mytest("CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
-end
 @testset "Chars.jl" begin
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("CharTable(W)","CharTable(H(G(1,1,4)))\n    │1111 211 22 31  4\n────┼──────────────────\n1111│   1  -1  1  1 -1\n211 │   3  -1 -1  .  1\n22  │   2   .  2 -1  .\n31  │   3   1 -1  . -1\n4   │   1   1  1  1  1")
@@ -58,6 +50,12 @@ end
 @test mytest("g=coxgroup(:G,2)","G₂")
 @test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎=A₂")
 @test mytest("InductionTable(u,g)","Induction Table from G₂₍₁₅₎=A₂ to G₂\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
+@test mytest("W=coxgroup(:D,4)","D₄")
+@test mytest("H=reflection_subgroup(W,[1,3])","D₄₍₁₃₎=A₂")
+@test mytest("jInductionTable(H,W)","j-Induction Table from D₄₍₁₃₎=A₂ to D₄\n     │111 21 3\n─────┼─────────\n11+  │  .  . .\n11-  │  .  . .\n1.111│  .  . .\n.1111│  .  . .\n11.2 │  .  . .\n1.21 │  1  . .\n.211 │  .  . .\n2+   │  .  . .\n2-   │  .  . .\n.22  │  .  . .\n1.3  │  .  1 .\n.31  │  .  . .\n.4   │  .  . 1")
+@test mytest("W=coxgroup(:D,4)","D₄")
+@test mytest("H=reflection_subgroup(W,[1,3])","D₄₍₁₃₎=A₂")
+@test mytest("Chars.JInductionTable(H,W)","J-Induction Table from D₄₍₁₃₎=A₂ to D₄\n     │111 21 3\n─────┼─────────\n11+  │  .  . .\n11-  │  .  . .\n1.111│  .  . .\n.1111│  .  . .\n11.2 │  1  . .\n1.21 │  1  . .\n.211 │  .  . .\n2+   │  .  . .\n2-   │  .  . .\n.22  │  .  . .\n1.3  │  .  1 .\n.31  │  .  . .\n.4   │  .  . 1")
 end
 @testset "Combinat.jl" begin
 @test mytest("groupby(iseven,1:10)","Dict{Bool,Array{Int64,1}} with 2 entries:\n  false => [1, 3, 5, 7, 9]\n  true  => [2, 4, 6, 8, 10]")
@@ -230,6 +228,10 @@ end
 @testset "Eigenspaces.jl" begin
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("relative_degrees(W,4)","4-element Array{Int64,1}:\n  8\n 12\n 20\n 24")
+@test mytest("regular_eigenvalues(coxgroup(:G,2))","6-element Array{Root1,1}:\n   1\n  -1\n  ζ₃\n ζ₃²\n  ζ₆\n ζ₆⁵")
+@test mytest("W=ComplexReflectionGroup(6)","G₆")
+@test mytest("L=twistings(W,[2])[4]","G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄")
+@test mytest("regular_eigenvalues(L)","3-element Array{Root1,1}:\n    ζ₄\n  ζ₁₂⁷\n ζ₁₂¹¹")
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("position_regular_class(W,30)","65")
 @test mytest("W=ComplexReflectionGroup(6)","G₆")
@@ -264,11 +266,18 @@ end
 @test mytest("Family(\"C2\")","Family(C₂:4)\n label│eigen\n──────┼─────────────────────────────\n(1,1) │    1 1//2  1//2  1//2  1//2\n(g₂,1)│    1 1//2  1//2 -1//2 -1//2\n(1,ε) │    1 1//2 -1//2  1//2 -1//2\n(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2")
 @test mytest("Family(\"C2\",4:7,Dict(:signs=>[1,-1,1,-1]))","Family(C₂:4:7)\n label│eigen signs\n──────┼───────────────────────────────────\n(1,1) │    1     1  1//2 -1//2 1//2 -1//2\n(g₂,1)│    1    -1 -1//2  1//2 1//2 -1//2\n(1,ε) │    1     1  1//2  1//2 1//2  1//2\n(g₂,ε)│   -1    -1 -1//2 -1//2 1//2  1//2")
 @test mytest("f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]","Family(0011:[4, 3, 2])\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3     √-3/3    -√-3/3\n2    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6")
-@test mytest("f^Perm(1,2,3)","Family(0011:[2, 4, 3])\nlabel│eigen         3      1         2\n─────┼─────────────────────────────────\n3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6\n1    │  ζ₃²    -√-3/3  √-3/3     √-3/3\n2    │    1 (3+√-3)/6  √-3/3 (3-√-3)/6")
 @test mytest("galois(f,-1)","Family(overline 0011:[4, 3, 2])\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │   ζ₃ -√-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6\n3    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6")
+@test mytest("f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]","Family(0011:[4, 3, 2])\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3     √-3/3    -√-3/3\n2    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6")
+@test mytest("f^Perm(1,2,3)","Family(0011:[2, 4, 3])\nlabel│eigen         3      1         2\n─────┼─────────────────────────────────\n3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6\n1    │  ζ₃²    -√-3/3  √-3/3     √-3/3\n2    │    1 (3+√-3)/6  √-3/3 (3-√-3)/6")
 @test mytest("Families.ndrinfeld_double(ComplexReflectionGroup(5))","378")
 @test mytest("HasType.Family(family_imprimitive([[0,1],[1],[0]]))","Family(0011:3)\nlabel│eigen      1         2         3\n─────┼─────────────────────────────────\n1    │  ζ₃²  √-3/3    -√-3/3     √-3/3\n2    │    1 -√-3/3 (3-√-3)/6 (3+√-3)/6\n3    │    1  √-3/3 (3+√-3)/6 (3-√-3)/6")
 @test mytest("HasType.FamiliesClassical(HasType.BDSymbols(3,1))","6-element Array{Family,1}:\n Family(01123:[1, 3, 8])\n Family(3:[9])\n Family(013:[5, 7, 10])\n Family(0112233:[4])\n Family(112:[2])\n Family(022:[6])")
+@test mytest("W=ComplexReflectionGroup(4)","G₄")
+@test mytest("uc=UnipotentCharacters(W);f=uc.families[4];","nothing")
+@test mytest("A=Algebras.fusion_algebra(fourier(f),1)","Fusion Algebra dim.5")
+@test mytest("b=basis(A)","5-element Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},1}:\n B₁\n B₂\n B₃\n B₄\n B₅")
+@test mytest("b*permutedims(b)","5×5 Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},2}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
+@test mytest("CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
 end
 @testset "GLinearAlgebra.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
@@ -431,6 +440,9 @@ end
 @test mytest("refrep(H)","3-element Array{Array{Cyc{Rational{Int64}},2},1}:\n [-1 0 0; -1 1 0; 0 0 1]\n [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]\n [1 0 0; 0 1 -1; 0 0 -1]")
 @test mytest("H=hecke(coxgroup(:H,3),Pol(:q))","hecke(H₃,q)")
 @test mytest("central_monomials(H)","10-element Array{Pol{Cyc{Int64}},1}:\n 1\n q³⁰\n q¹²\n q¹⁸\n q¹⁰\n q¹⁰\n q²⁰\n q²⁰\n q¹⁵\n q¹⁵")
+@test mytest("W=coxgroup(:G,2);Pol(:q);H=hecke(W,q)","hecke(G₂,q)")
+@test mytest("T=Tbasis(H);h=T(1,2)*T(2,1)","q²T.+(q²-q)T₁+(q-1)T₁₂₁")
+@test mytest("alt(h)","q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁")
 @test mytest("W=CoxSym(4)","𝔖 ₄")
 @test mytest("H=hecke(W,Pol(:q))","hecke(𝔖 ₄,q)")
 @test mytest("h=Tbasis(H)(longest(W))","T₁₂₁₃₂₁")
@@ -459,6 +471,14 @@ end
 @test mytest("KLPol(W,cr,w)","Pol{Int64}: x³+1")
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Array{Array{Pol{Int64},1},1}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
+@test mytest("W=coxgroup(:B,2);Pol(:v);H=hecke(W,[v^4,v^2])","hecke(B₂,Pol{Int64}[v⁴, v²])")
+@test mytest("Cp=Cpbasis(H);h=Cp(1)^2","(v²+v⁻²)C′₁")
+@test mytest("k=Tbasis(H)(h)","(1+v⁻⁴)T.+(1+v⁻⁴)T₁")
+@test mytest("Cp(k)","(v²+v⁻²)C′₁")
+@test mytest("W=coxgroup(:B,3);Pol(:v);H=hecke(W,v^2)","hecke(B₃,v²)")
+@test mytest("T=Tbasis(H);C=Cbasis(H);T(C(1))","-vT.+v⁻¹T₁")
+@test mytest("C(T(1))","v²C.+vC₁")
+@test mytest("ref=refrep(H)","3-element Array{Array{Pol,2},1}:\n [-1 0 0; -v² v² 0; 0 0 v²]\n [v² -2 0; 0 -1 0; 0 -v² v²]\n [v² 0 0; 0 v² -1; 0 0 -1]")
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H);","nothing")
@@ -476,6 +496,17 @@ end
 @test mytest("LeftCells(W,1)","2-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:\n LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>\n LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>")
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("LeftCell(W,W((1:8)...))","LeftCell<E₈: duflo=(42,43) character=φ₃₅‚₂>")
+@test mytest("W=coxgroup(:G,2)","G₂")
+@test mytest("l=Lusztigaw(W,W(1))","6-element Array{Int64,1}:\n 0\n 0\n 1\n 0\n 1\n 1")
+@test mytest("sum(l.*map(i->AlmostChar(W,i),eachindex(l)))","[G₂]:<φ′₁‚₃>+<φ₂‚₁>+<φ₂‚₂>")
+@test mytest("W=coxgroup(:G,2)","G₂")
+@test mytest("l=LusztigAw(W,W(1))","6-element Array{Int64,1}:\n 0\n 0\n 0\n 1\n 1\n 1")
+@test mytest("sum(l.*map(i->AlmostChar(W,i),eachindex(l)))","[G₂]:<φ″₁‚₃>+<φ₂‚₁>+<φ₂‚₂>")
+@test mytest("W=coxgroup(:G,2)","G₂")
+@test mytest("A=AsymptoticAlgebra(W,1)","Asymptotic Algebra dim.10")
+@test mytest("b=basis(A)","10-element Array{AlgebraElt{Int64,AsymptoticAlgebra},1}:\n t₂\n t₁₂\n t₂₁₂\n t₁₂₁₂\n t₂₁₂₁₂\n t₁\n t₂₁\n t₁₂₁\n t₂₁₂₁\n t₁₂₁₂₁")
+@test mytest("b*permutedims(b)","10×10 Array{AlgebraElt{Int64,AsymptoticAlgebra},2}:\n t₂      0            t₂₁₂            …  0               t₂₁₂₁        0\n t₁₂     0            t₁₂+t₁₂₁₂          0               t₁₂₁+t₁₂₁₂₁  0\n t₂₁₂    0            t₂+t₂₁₂+t₂₁₂₁₂     0               t₂₁+t₂₁₂₁    0\n t₁₂₁₂   0            t₁₂+t₁₂₁₂          0               t₁+t₁₂₁      0\n t₂₁₂₁₂  0            t₂₁₂               0               t₂₁          0\n 0       t₁₂          0               …  t₁₂₁            0            t₁₂₁₂₁\n 0       t₂+t₂₁₂      0                  t₂₁+t₂₁₂₁       0            t₂₁₂₁\n 0       t₁₂+t₁₂₁₂    0                  t₁+t₁₂₁+t₁₂₁₂₁  0            t₁₂₁\n 0       t₂₁₂+t₂₁₂₁₂  0                  t₂₁+t₂₁₂₁       0            t₂₁\n 0       t₁₂₁₂        0                  t₁₂₁            0            t₁")
+@test mytest("CharTable(A)","CharTable(Asymptotic Algebra dim.10)\n     │2 12 212 1212 21212 1 21 121 2121 12121\n─────┼────────────────────────────────────────\nφ′₁‚₃│.  .   .    .     . 1  .  -1    .     1\nφ₂‚₁ │1  .   2    .     1 1  .   2    .     1\nφ₂‚₂ │1  .   .    .    -1 1  .   .    .    -1\nφ″₁‚₃│1  .  -1    .     1 .  .   .    .     .")
 end
 @testset "Lusztig.jl" begin
 @test mytest("W=coxgroup(:B,3)","B₃")
@@ -564,10 +595,10 @@ end
 @test mytest("centralizers(G)","2-element Array{PermGroup{Int16},1}:\n Group([perm\"(1,2)\",perm\"(2,3)\"])\n Group([perm\"(2,3)\"])")
 @test mytest("transversals(G)","2-element Array{Dict{Int16,Perm{Int16}},1}:\n Dict(2 => (1,2),3 => (1,3,2),1 => ())\n Dict(2 => (),3 => (2,3))")
 @test mytest("uc=UnipotentCharacters(ComplexReflectionGroup(34));","nothing")
-@test mytest("stab_onmat(fourier(uc.families[20]))","Group([perm\"(7,38)\",perm\"(39,44)(40,43)(41,42)\"])")
+@test mytest("stab_onmats(fourier(uc.families[20]))","Group([perm\"(7,38)\",perm\"(39,44)(40,43)(41,42)\"])")
 @test mytest("m=cartan(:D,12);","nothing")
 @test mytest("n=^(m,Perm(1,5,2,8,12,4,7)*Perm(3,9,11,6);dims=(1,2));","nothing")
-@test mytest("perm_onmat(m,n)","(1,5,2,8,12,4,7)(3,9,11,6)")
+@test mytest("Perm_onmats(m,n)","(1,5,2,8,12,4,7)(3,9,11,6)")
 end
 @testset "PermRoot.jl" begin
 @test mytest("W=coxgroup(:A,3)","A₃")
@@ -660,6 +691,7 @@ end
 @testset "Posets.jl" begin
 @test mytest("p=Poset(coxgroup(:A,2))","<1,2<21,12<121")
 @test mytest("hasse(p)","6-element Array{Array{Int64,1},1}:\n [2, 3]\n [4, 5]\n [4, 5]\n [6]\n [6]\n []")
+@test mytest("length(p)","6")
 @test mytest("incidence(p)","6×6 Array{Bool,2}:\n 1  1  1  1  1  1\n 0  1  0  1  1  1\n 0  0  1  1  1  1\n 0  0  0  1  0  1\n 0  0  0  0  1  1\n 0  0  0  0  0  1")
 @test mytest("lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","2-element Array{Array{Int64,1},1}:\n [1, 2, 5, 6]\n [3, 4]")
 @test mytest("gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])","6-element Array{Array{Int64,1},1}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]")
@@ -697,13 +729,13 @@ end
 @test mytest("Matrix(SPerm([-2,-1,-3]))","3×3 Array{Int64,2}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
 @test mytest("elements(CoxHyperoctaedral(2))","8-element Array{SPerm{Int8},1}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 @test mytest("uc=UnipotentCharacters(ComplexReflectionGroup(6));","nothing")
-@test mytest("g=stab_onsmat(fourier(uc.families[2]))","Group([sperm\"(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15)\",sperm\"(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18)\",sperm\"(2,19)(4,-14)(5,20)(7,12)\",sperm\"(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22)\",sperm\"(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17)\",sperm\"(1,-3)(2,-19)(4,14)(6,18)(8,-10)(9,-9)(11,-15)(13,-22)(16,-21)\",sperm\"(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22)\",sperm\"(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)\"])")
+@test mytest("g=sstab_onmats(fourier(uc.families[2]))","Group([sperm\"(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15)\",sperm\"(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18)\",sperm\"(2,19)(4,-14)(5,20)(7,12)\",sperm\"(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22)\",sperm\"(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17)\",sperm\"(1,-3)(2,-19)(4,14)(6,18)(8,-10)(9,-9)(11,-15)(13,-22)(16,-21)\",sperm\"(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22)\",sperm\"(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)\"])")
 @test mytest("length(g)","32")
 @test mytest("f=SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+ER(-3))/2);","nothing")
 @test mytest("M=fourier(conj(f));","nothing")
 @test mytest("uc=UnipotentCharacters(ComplexReflectionGroup(6));","nothing")
 @test mytest("N=fourier(uc.families[2]);","nothing")
-@test mytest("p=perm_onsmat(M,N)","(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)")
+@test mytest("p=SPerm_onmats(M,N)","(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)")
 @test mytest("^(M,p;dims=(1,2))==N","true")
 end
 @testset "Semisimple.jl" begin

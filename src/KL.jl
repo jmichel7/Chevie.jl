@@ -151,7 +151,8 @@ also  has been bound which holds the common value of Lusztig's `a`-function
 for the elements of `c` and The irreducible constituents of `character(c)`.
 """
 module KL
-export KLPol, Cpbasis, LeftCell, LeftCells, character, Lusztigaw, LusztigAw
+export KLPol, Cpbasis, Cbasis, LeftCell, LeftCells, character, Lusztigaw, 
+ LusztigAw, AsymptoticAlgebra
 using Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
@@ -291,10 +292,39 @@ struct HeckeCpElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   H::TH
 end
 
+struct HeckeCElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
+  d::ModuleElt{P,C} # has better merge performance than Dict
+  H::TH
+end
+
 HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
+HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
 
 HeckeAlgebras.basename(h::HeckeCpElt)="C'"
+HeckeAlgebras.basename(h::HeckeCElt)="C"
 
+"""
+`Cpbasis(H)`
+    
+returns  a function which gives the `C'`-basis of the Iwahori-Hecke algebra
+`H` (see cite[(5.1)]Lus85). This basis is defined by `C'_x=
+∑_{y≤x}P_{y,x}q_x^{-1/2} T_y` for `x ∈ W`. We have
+`C'_x=(-1)^(l(x))Alt(C_x)` for all `x ∈ W` (see `alt`).
+
+```julia-repl
+julia> W=coxgroup(:B,2);Pol(:v);H=hecke(W,[v^4,v^2])
+hecke(B₂,Pol{Int64}[v⁴, v²])
+
+julia> Cp=Cpbasis(H);h=Cp(1)^2
+(v²+v⁻²)C′₁
+
+julia> k=Tbasis(H)(h)
+(1+v⁻⁴)T.+(1+v⁻⁴)T₁
+
+julia> Cp(k)
+(v²+v⁻²)C′₁
+```
+"""
 function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vector{<:Integer})
     if isempty(w) return HeckeCpElt(ModuleElt(one(H.W)=>one(C)),H) end
@@ -305,18 +335,91 @@ function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   f(h::HeckeElt)=Cpbasis(h)
 end
 
-function Cpbasis(h::HeckeTElt)
+"""
+`Cbasis(H::HeckeAlgebra)`
+
+returns  a function which gives the  `C`-basis of the Iwahori-Hecke algebra
+`H`. The algebra `H` should have the functon `rootpara` defined. This basis
+is  defined  as  follows  (see  e.g.  cite[(5.1)]Lus85).  Let  `W`  be  the
+underlying  Coxeter group. For `x,y ∈ W` let `P_{x,y}` be the corresponding
+Kazhdan--Lusztig  polynomial. If `{T_w ∣ w∈  W}` denotes the usual T-basis,
+then  ``C_x=\\sum_(y\\le x)(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1}
+T_y`` for `x ∈ W`.
+For   example,  we   have  `Cₛ=qₛ⁻½Tₛ-qₛ½T₁`   for  `s   ∈  S`.  Thus,  the
+transformation  matrix  between  the  `T`-basis  and the `C`-basis is lower
+unitriangular,   with  monomials  in  `qₛ`   along  the  diagonal.  In  the
+one-parameter  case (all `qₛ`  are equal to  `v²`) the multiplication rules
+for the `C` basis are given by:
+
+`Cₛ⋅Cₓ =-(v+v^-1)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
+
+where  the sum is over  all `t` such that  `t<x, l(t)≢l(x)~mod~2 and st<t`.
+The  coefficient `μ(t,x)` is the coefficient of degree `(l(x)-l(t)-1)/2` in
+the Kazhdan--Lusztig polynomial `P_{x,t}`.
+
+```julia-repl
+julia> W=coxgroup(:B,3);Pol(:v);H=hecke(W,v^2)
+hecke(B₃,v²)
+
+julia> T=Tbasis(H);C=Cbasis(H);T(C(1))
+-vT.+v⁻¹T₁
+
+julia> C(T(1))
+v²C.+vC₁
+```
+
+We  can  also  compute  character  values  on  elements in the `C`-basis as
+follows:
+
+```julia-repl
+julia> ref=refrep(H)
+3-element Array{Array{Pol,2},1}:
+ [-1 0 0; -v² v² 0; 0 0 v²]
+ [v² -2 0; 0 -1 0; 0 -v² v²]
+ [v² 0 0; 0 v² -1; 0 0 -1]
+```
+
+```julia-rep1
+julia> c=CharTable(H).irr[charinfo(W)[:extRefl][[2]],:]
+1×10 Array{Pol{Int64},2}:
+ 3  2v²-1  v⁸-2v⁴  -3v¹²  2v²-1  v⁴  v⁴-2v²  -v⁶  v⁴-v²  0
+
+julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
+1×10 Array{Pol{Int64},2}:
+ 3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
+``` 
+"""
+function Cbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
+  function f(w::Vector{<:Integer})
+    if isempty(w) return HeckeCElt(ModuleElt(one(H.W)=>one(C)),H) end
+    HeckeCElt(ModuleElt(H.W(w...)=>one(C)),H)
+  end
+  f(w::Vararg{Integer})=f(collect(w))
+  f(w::P)=f(word(H.W,w))
+  f(h::HeckeElt)=Cbasis(h)
+end
+
+# To convert from "T", we use the fact that the transition matrix M from
+# any  KL  bases to  the  standard  basis  is triangular  with  diagonal
+# coefficient on  T_w equal  to rootpara(H,w)^-1.  The transition  matrix is
+# lower triangular for the C and  C' bases, and upper triangular for the
+# D and D' bases which is what index(maximum or minimum) is for.
+function toKL(h::HeckeTElt,klbasis,index::Function)
   H=h.H
-  res=HeckeCpElt(zero(h.d),H)
+  res=klbasis(zero(h.d),H)
   while !iszero(h)
-    lens=map(x->length(H.W,x[1]),h.d)
-    lens=findall(isequal(maximum(lens)),lens)
-    tmp=HeckeCpElt(ModuleElt(x[1]=>x[2]*rootpara(H,x[1]) for x in h.d.d[lens]),H)
+    l=length.(Ref(H.W),keys(h.d))
+    l=findall(isequal(index(l)),l)
+    tmp=klbasis(ModuleElt(x[1]=>x[2]*rootpara(H,x[1]) for x in h.d.d[l]),H)
     res+=tmp
     h-=Tbasis(H)(tmp)
   end
   res
 end
+
+Cpbasis(h::HeckeTElt)=toKL(h,HeckeCpElt,maximum)
+
+Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
 """
     getCp(H,w)
@@ -396,6 +499,12 @@ v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 """
 HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
+
+function HeckeAlgebras.Tbasis(h::HeckeCElt)
+  sum(h.d)do (e,c)
+    alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e)
+  end
+end
 
 Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 
@@ -904,6 +1013,148 @@ function LusztigAw(W,w)
   v=Pol([1],1)
   l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
   map((c,a)->c[nref(W)-a],l,charinfo(W)[:A])
+end
+
+#----------------- Asymptotic algebra ------------------------------------
+struct AsymptoticAlgebra<:FiniteDimAlgebra
+  e::Vector{Perm{Int16}}
+  a::Int
+  multable::Vector{Vector{Vector{Pair{Int,Int}}}}
+  W
+  prop::Dict{Symbol,Any}
+end
+
+"""
+'AsymptoticAlgebra( <W>, <i>)'
+
+The  asymptotic algebra A  associated to the  algebra cH='Hecke(W,q)' is an
+algebra  with  basis  {t_x}_(x∈  W)  and  structure  constants t_xt_y=sum_z
+γ_(x,y,z) t_z given by: let h_(x,y,z) be the coefficient of C_x C_y on C_z.
+Then  h_(x,y,z)=γ_(x,y,z^(-1)) q^(a(z)/2)+lower terms,  where q^(a(z)/2) is
+the maximum over x,y of the degree of h_(x,y,z).
+
+The  algebra A is the  direct product of the  subalgebras A_cC generated by
+the  elements {t_x}_(x∈cC), where cC runs over the two-sided cells of W. If
+cC  is the i-th  two-sided cell of  W, the command 'AsymptoticAlgebra(W,i)'
+returns  the algebra A_cC. Note that the function 'a(z)' is constant over a
+two-sided  cell, equal to the common  value of the 'a'-function attached to
+the characters of the two-sided cell (see 'Character' for left cells).
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> A=AsymptoticAlgebra(W,1)
+Asymptotic Algebra dim.10
+
+julia> b=basis(A)
+10-element Array{AlgebraElt{Int64,AsymptoticAlgebra},1}:
+ t₂
+ t₁₂
+ t₂₁₂
+ t₁₂₁₂
+ t₂₁₂₁₂
+ t₁
+ t₂₁
+ t₁₂₁
+ t₂₁₂₁
+ t₁₂₁₂₁
+
+julia> b*permutedims(b)
+10×10 Array{AlgebraElt{Int64,AsymptoticAlgebra},2}:
+ t₂      0            t₂₁₂            …  0               t₂₁₂₁        0
+ t₁₂     0            t₁₂+t₁₂₁₂          0               t₁₂₁+t₁₂₁₂₁  0
+ t₂₁₂    0            t₂+t₂₁₂+t₂₁₂₁₂     0               t₂₁+t₂₁₂₁    0
+ t₁₂₁₂   0            t₁₂+t₁₂₁₂          0               t₁+t₁₂₁      0
+ t₂₁₂₁₂  0            t₂₁₂               0               t₂₁          0
+ 0       t₁₂          0               …  t₁₂₁            0            t₁₂₁₂₁
+ 0       t₂+t₂₁₂      0                  t₂₁+t₂₁₂₁       0            t₂₁₂₁
+ 0       t₁₂+t₁₂₁₂    0                  t₁+t₁₂₁+t₁₂₁₂₁  0            t₁₂₁
+ 0       t₂₁₂+t₂₁₂₁₂  0                  t₂₁+t₂₁₂₁       0            t₂₁
+ 0       t₁₂₁₂        0                  t₁₂₁            0            t₁
+
+julia> CharTable(A)
+CharTable(Asymptotic Algebra dim.10)
+     │2 12 212 1212 21212 1 21 121 2121 12121
+─────┼────────────────────────────────────────
+φ′₁‚₃│.  .   .    .     . 1  .  -1    .     1
+φ₂‚₁ │1  .   2    .     1 1  .   2    .     1
+φ₂‚₂ │1  .   .    .    -1 1  .   .    .    -1
+φ″₁‚₃│1  .  -1    .     1 .  .   .    .     .
+```
+"""
+function AsymptoticAlgebra(W,i)
+  l=LeftCells(W,i)
+  f=union(character.(l)...)
+  a=l[1].prop[:a]
+  e=elements.(l)
+  for ee in e sort!(ee,by=x->length(W,x)) end
+  e=vcat(e...)
+  t=map(x->findfirst(==(x.prop[:duflo]),e),l)
+  v=Pol([1],1)
+  H=hecke(W,v^2,rootpara=v)
+  T=Tbasis(H)
+  Cp=Cpbasis(H)
+  C=Cbasis(H)
+  irr=hcat(map(x->map(p->(-1)^a*p[-a],char_values(C(x))[f]),e)...)
+#   parameters:=List(e,x->IntListToString(CoxeterWord(W,x))),
+#   basisname:="t");
+#  A.identification:=[A.type,i,W];
+#  A.zero:=AlgebraElement(A,[]);
+#  A.dimension:=Length(e);
+#  A.operations.underlyingspace(A);
+  w0=longest(W)
+  # The algorithm below follows D. Alvis, "Subrings of the asymptotic Hecke
+  # algebra of type H4" Experimental Math. 17 (2008) 375--383
+  multable=
+  map(e)do x
+    map(e)do y
+#   InfoChevie(".")
+      F=T(x)*T(y)
+      lx=length(W,x)
+      ly=length(W,y)
+      sc=map(e)do z
+        c=T(Cp(w0*z^-1))
+        s=(-1)^length(W,z)*sum(p->c.d[w0*p[1]]*p[2]*(-1)^length(W,p[1]),F.d)
+        # println("deg=",[valuation(s),degree(s)]," pdeg=",a+lx+ly-nref(W))
+        findfirst(==(z^-1),e)=>s[a+lx+ly-nref(W)]
+      end
+      filter(x->!iszero(x[2]),sc)
+    end
+  end
+#  A.operations.underlyingspace(A);
+#  A.one:=Sum(A.basis{t});
+  A=AsymptoticAlgebra(e,a,multable,W,Dict{Symbol,Any}(:irr=>irr))
+  A.prop[:classnames]=joindigits.(word.(Ref(W),e))
+  A.prop[:charnames]=charnames(W;TeX=true)[f]
+  A
+end
+
+Algebras.dim(A::AsymptoticAlgebra)=length(A.e)
+
+Base.show(io::IO,A::AsymptoticAlgebra)=print(io,"Asymptotic Algebra dim.",dim(A))
+
+function Base.show(io::IO, h::AlgebraElt{T,AsymptoticAlgebra}) where T
+  function showbasis(io::IO,i)
+    repl=get(io,:limit,false)
+    TeX=get(io,:TeX,false)
+    w=word(h.A.W,h.A.e[i])
+    if repl || TeX
+      res="t_{"*(any(x->x>=10,w) ? join(w,",") : join(w,""))*"}"
+    else 
+      res="t[$i]"
+    end
+    fromTeX(io,res)
+  end
+  show(IOContext(io,:showbasis=>showbasis),h.d)
+end
+
+Algebras.iscommutative(A::AsymptoticAlgebra)=false
+
+function Chars.CharTable(A::AsymptoticAlgebra)
+  centralizers=fill(dim(A),dim(A))
+  CharTable(A.prop[:irr],A.prop[:charnames],A.prop[:classnames],centralizers,
+            string(A),Dict{Symbol,Any}())
 end
 
 end

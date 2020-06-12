@@ -74,11 +74,9 @@ using ..Util: gets, getp, InfoChevie
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
-  stab_onmat, perm_onmat, perm_rowcolmat
+  stab_onmats, Perm_onmats, Perm_rowcolmat
 #-------------------- now permutation groups -------------------------
 abstract type PermGroup{T}<:Group{Perm{T}} end
-
-PermGroup(W::PermGroup)=W
 
 PermGroup()=Group(Perm{Int16}[])
 
@@ -313,7 +311,7 @@ end
 symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
-OnMats(m,g)=^(m,g;dims=(1,2))
+onmats(m,g)=^(m,g;dims=(1,2))
 
 function invblocks(m,extra=nothing)
   if isnothing(extra) extra=zeros(Int,size(m,1)) end
@@ -326,7 +324,7 @@ function invblocks(m,extra=nothing)
   end
 end
 
-function stab_onmat(g::Group,M::AbstractMatrix,extra=nothing)
+function stab_onmats(g::Group,M::AbstractMatrix,extra=nothing)
 # if length(g)>1
 #   print("g=",
 #        length.(filter(x->length(x)>1,orbits(g,1:maximum(degree.(gens(g)))))),
@@ -343,22 +341,22 @@ function stab_onmat(g::Group,M::AbstractMatrix,extra=nothing)
 end
 
 """
-`stab_onmat([G,]M[,l])`
+`stab_onmats([G,]M[,l])`
 
-If  `OnMats(m,p)=^(M,p;dims=(1,2))`, and  the argument  `G` is given (which
+If  `onmats(m,p)=^(M,p;dims=(1,2))`, and  the argument  `G` is given (which
 should   be  a  `PermGroup`)   this  is  just   a  fast  implementation  of
-`centralizer(G,M;action=OnMats)`.  If  `G`  is  omitted  it  is taken to be
+`centralizer(G,M;action=onmats)`.  If  `G`  is  omitted  it  is taken to be
 `symmetric_group(size(M,1))`.  The  program  uses sophisticated algorithms,
 and can handle matrices up to 80×80.
 
 ```julia-repl
 julia> uc=UnipotentCharacters(ComplexReflectionGroup(34));
 
-julia> stab_onmat(fourier(uc.families[20]))
+julia> stab_onmats(fourier(uc.families[20]))
 Group([perm"(7,38)",perm"(39,44)(40,43)(41,42)"])
 ```
 """
-function stab_onmat(M,extra=nothing)
+function stab_onmats(M,extra=nothing)
   k=length(M)
   blocks=sort(invblocks(M,extra),by=x->-length(x))
   g=PermGroup()
@@ -366,37 +364,37 @@ function stab_onmat(M,extra=nothing)
   for r in blocks
     if length(r)>7 println("#I Large Block:",r) end
     if length(r)>1
-      gr=stab_onmat(symmetric_group(length(r)), M[r,r])
+      gr=stab_onmats(symmetric_group(length(r)), M[r,r])
       g=Group(vcat(gens(g),gens(gr).^mappingPerm(eachindex(r),r)))
     end
     append!(I,r)
     p=mappingPerm(I,eachindex(I))
-    g=stab_onmat(Group(gens(g).^p), M[I,I])
+    g=stab_onmats(Group(gens(g).^p), M[I,I])
     g=Group(gens(g).^inv(p))
   end
   return g
 end
 
 """
-`perm_onmat(M, N[, m ,n])` 
+`Perm_onmats(M, N[, m ,n])` 
 
-If  `OnMats(M,p)=^(M,p;dims=(1,2))`, return `p`  such that `OnMats(M,p)=N`.
+If  `onmats(M,p)=^(M,p;dims=(1,2))`, return `p`  such that `onmats(M,p)=N`.
 If  in  addition  the  vectors  `m`  and  `n` are given, `p` should satisfy
 `m^p=n`.
 
 Efficient version of 
-`transporting_elt(symmetric_group(size(M,1)),M,N;action=OnMats)`
+`transporting_elt(symmetric_group(size(M,1)),M,N;action=onmats)`
 
 ```julia-repl
 julia> m=cartan(:D,12);
 
 julia> n=^(m,Perm(1,5,2,8,12,4,7)*Perm(3,9,11,6);dims=(1,2));
 
-julia> perm_onmat(m,n)
+julia> Perm_onmats(m,n)
 (1,5,2,8,12,4,7)(3,9,11,6)
 ```
 """
-function perm_onmat(M,N,m=nothing,n=nothing)
+function Perm_onmats(M,N,m=nothing,n=nothing)
   if isnothing(m) && M==N return Perm() end
   if size(M,1)!=size(M,2) || size(N,1)!=size(N,2)
     error("matrices are  not  square")
@@ -422,16 +420,16 @@ function perm_onmat(M,N,m=nothing,n=nothing)
         InfoChevie("#I  large block:", length(I), "\n")
         if length(iM)==1
           p=transporting_elt(sg(length(I)),M[I,I],N[J,J];
-                action=OnMats,dist=(M,N)->sum(x->count(!iszero,x),M-N))
-        elseif isnothing(m) p=perm_onmat(M[I,I],N[J,J])
-        else p=perm_onmat(M[I,I],N[J,J],m[I],n[J])
+                action=onmats,dist=(M,N)->sum(x->count(!iszero,x),M-N))
+        elseif isnothing(m) p=Perm_onmats(M[I,I],N[J,J])
+        else p=Perm_onmats(M[I,I],N[J,J],m[I],n[J])
         end
       else 
-        p=transporting_elt(sg(length(I)),M[I,I],N[J,J],action=OnMats)
+        p=transporting_elt(sg(length(I)),M[I,I],N[J,J],action=onmats)
       end
       if isnothing(p) return false end
       I^=p
-      g=stab_onmat(M[I,I])
+      g=stab_onmats(M[I,I])
       p=mappingPerm(eachindex(I), I)
       return [I,J,Group(gens(g).^p)] end, iM, iN)
     if false in p return false else return p end
@@ -450,17 +448,17 @@ function perm_onmat(M,N,m=nothing,n=nothing)
     h=Group(gens(g).^p)
     if M[I,I]!=N[J,J]
       InfoChevie("# I==", length(I), " stab==", length(g), "\n")
-      e = transporting_elt(h, M[I,I], N[J,J], action=OnMats)
+      e = transporting_elt(h, M[I,I], N[J,J], action=onmats)
       if isnothing(e) return nothing else I^=e end
     end
-    h=centralizer(h, M[I,I], action=OnMats)
+    h=centralizer(h, M[I,I], action=onmats)
     g=Group(gens(h).^inv(p))
   end
   return mappingPerm(I,J)
 end
 
 """
-`RepresentativeRowColPermutation(m1,m2)`
+`Perm_rowcolmat(m1,m2)`
   whether matrix `m1` is conjugate to matrix `m2` by row/col permutations
 
   `m1`  and `m2` should be rectangular matrices of the same dimensions. The
@@ -468,7 +466,7 @@ end
   `^(m1^p[1],p[2];dims=2)==m2`   if  such   permutations  exist,  `nothing`
   otherwise.
 """
-function perm_rowcolmat(m1, m2)
+function Perm_rowcolmat(m1, m2)
   if size(m1)!=size(m2) error("not same dimensions") end
   if isempty(m1) return [Perm(), Perm()] end
   dist(m,n)=count(i->m[i]!=n[i],eachindex(m))

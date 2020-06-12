@@ -7,7 +7,9 @@ The code is divided in sections  according to semantics.
 """
 module Util
 
-export getp, gets, # helpers for objects with a Dict of properties
+export 
+  @forward,
+  getp, gets, # helpers for objects with a Dict of properties
   format, bracket_if_needed, format_coefficient, ordinal, rshow, printc, fromTeX, joindigits, 
   cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot #number theory
@@ -17,6 +19,24 @@ export ds # dump struct
 export InfoChevie
 #InfoChevie(a...)=print(a...)
 function InfoChevie(a...) end
+
+"""
+@forward T.f f1,f2,...
+  generates 
+f1(x::T,y...)=f1(x.f,y...)
+f2(x::T,y...)=f2(x.f,y...)
+...
+"""
+macro forward(ex, fs)
+  T, field = esc(ex.args[1]), ex.args[2].value
+  fdefs=map(fs.args)do ff
+      f= esc(ff)
+      quote
+        @inline ($f)(a::($T),args...)=($f)(a.$field,args...)
+      end
+  end
+  Expr(:block, fdefs...)
+end
 
 #--------------------------------------------------------------------------
 toL(m)=collect(eachrow(m)) # to Gap

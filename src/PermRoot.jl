@@ -304,7 +304,6 @@ end
 abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end 
 
 Diagram(W::PermRootGroup)=Diagram(refltype(W))
-Base.:/(W::PermRootGroup,H)=PermGroup(W)/PermGroup(H)
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 # should use independent_roots
@@ -398,7 +397,7 @@ julia> rank(ComplexReflectionGroup(31))
 """
 function rank(W::PermRootGroup)
   if isempty(roots(W)) W.prop[:rank]
-  else length(roots(W)[1])
+  else length(roots(W,1))
   end
 end
 

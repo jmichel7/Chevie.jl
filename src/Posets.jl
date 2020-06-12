@@ -10,8 +10,12 @@ fields is present:
   (covers)  of the i-th element, that is the  list of j such that `i<j` and
   such that there is no k such that i<k<j.
 
-If  only one field is present, the other  is computed on demand. Here is an
-example of use;
+There   are  thus  two   constructors,  `Poset(I::Matrix{Bool})`  from  the
+incidence  matrix `I`, and `Poset(H::Vector{<:Vector{<:Integer}})` from the
+Hasse diagram.
+
+`Poset`s  are  printed  as  a  list  of covering chains. Elements which are
+equivalent for the `Poset` are printed together separated by commas.
 
 ```julia-repl
 julia> p=Poset(coxgroup(:A,2))
@@ -25,6 +29,9 @@ julia> hasse(p)
  [6]   
  [6]   
  []    
+
+julia> length(p) # the number of elements of the `Poset`
+6
 
 julia> incidence(p)
 6×6 Array{Bool,2}:
@@ -173,22 +180,20 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
 Base.length(p::Poset)=p.prop[:size]
 
+function label(io::IO,p::Poset,n)
+  haskey(p.prop,:labels) ? p.prop[:labels][n] :
+    (haskey(p.prop,:label) ? p.prop[:label](io,n) : string(n))
+end
+  
 function Base.show(io::IO,x::Poset)
-  TeX=get(io,:TeX,false)
-  repl=get(io,:limit,false)
   s=hasse(x)
   p=partition(x)
   s=Poset(map(x->unique!(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),
                                                      s[x[1]])))), p))
-  labels=map(y->join(map(n->
-    haskey(x.prop,:labels) ? x.prop[:labels][n] :
-    (haskey(x.prop,:label) ? x.prop[:label](io,n) : string(n)),y),","),p)
+  labels=map(y->join(map(n->label(io,x,n),y),","),p)
   sep=get(io,:Symbol,false)
-  if sep==false
-    if TeX sep = "{<}"
-    else sep="<"
-    end
-  end
+  TeX=get(io,:TeX,false)
+  if sep==false sep=TeX ? "{<}" : "<" end
   s=map(x->join(labels[x],sep), chains(s)) 
   if TeX print(io,"\\noindent"*join(map(x->"\$$x\$\\hfill\\break\n",s)))
   else print(io,join(s,"\n"))

@@ -125,7 +125,7 @@ using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
-  VFactorSchurElement
+  VFactorSchurElement, alt
 
 struct HeckeAlgebra{C,TW}
   W::TW
@@ -521,6 +521,29 @@ function Base.inv(a::HeckeTElt)
   T=Tbasis(H)
   l=reverse(word(H.W,w))
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
+end
+
+"""
+`alt(a::HeckeTElt)`
+
+the  involution on the Hecke algebra defined by `x↦ bar(x)` on coefficients
+and `Tₛ↦ uₛ,₀uₛ,₁Tₛ`. Essentially it corresponds to tensoring with the sign
+representation.
+
+```julia-repl
+julia> W=coxgroup(:G,2);Pol(:q);H=hecke(W,q)
+hecke(G₂,q)
+
+julia> T=Tbasis(H);h=T(1,2)*T(2,1)
+q²T.+(q²-q)T₁+(q-1)T₁₂₁
+
+julia> alt(h)
+q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁
+```
+"""
+function alt(a::HeckeTElt)
+  clone(a,ModuleElt(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
+                for i in word(a.H.W,w))* bar(c) for (w,c) in a.d))
 end
 
 """
@@ -925,4 +948,5 @@ function Chars.CharTable(H::HeckeCoset)
     prod(cts)
   end
 end
+
 end

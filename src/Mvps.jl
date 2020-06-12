@@ -115,7 +115,7 @@ function Base.show(io::IO,m::Monomial)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
-  print(io,typeof(m),":")
+  if !haskey(io,:typeinfo) print(io,typeof(m),":") end
   show(io,m)
 end
 
@@ -207,7 +207,7 @@ Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
 
 function Base.show(io::IO, ::MIME"text/plain", a::Mvp{T,N}) where{T,N}
-  print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}",": ")
+  if !haskey(io,:typeinfo) print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}",": ") end
   show(io,a)
 end
 

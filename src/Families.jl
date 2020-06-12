@@ -66,7 +66,8 @@ this construction.
 module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
- FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, ndrinfeld_double
+ FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, ndrinfeld_double,
+ fusion_algebra, involution, duality
 
 using ..Gapjm
 
@@ -170,10 +171,16 @@ function Base.merge!(f::Family,d::Dict)
   f
 end
 
+"`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(f[:eigenvalues])
 
 position_cartesian(a,b)=LinearIndices(reverse(a))[CartesianIndex(reverse(b))]
 
+"""
+`<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
+Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
+and the eigenvalues of Frobenius are the pairwise products.
+"""
 function Base.:*(f::Family,g::Family)
 # println(f,"*",g)
   arg=(f,g)
@@ -216,24 +223,17 @@ function Base.:*(f::Family,g::Family)
   Family(res)
 end
 
+"`fourier(f::Family`: returns the Fourier matrix for the family `f`."
 function fourier(f::Family)
   m=f[:fourierMat] 
   m isa Vector ? improve_type(toM(m)) : m
 end
 
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+`galois(f::Family,p::Int)`
 
-`OnFamily(<f>,<p>)`
-
-<f> should be a family. This function has two forms.
-
-In the first form, <p> is a permutation, and the function returns a copy of
-the   family  <f>  with  the  Fourier  matrix,  eigenvalues  of  Frobenius,
-`:charLabels', etc`…` permuted by <p>.
-
-In  the second form, <p> is an integer and 'x->GaloisCyc(x,<p>)' is applied
-to the Fourier matrix and eigenvalues of Frobenius of the family.
+`x->galois(x,p)`  is  applied  to  the  Fourier  matrix  and eigenvalues of
+Frobenius of the family.
 
 ```julia-repl
 julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
@@ -244,16 +244,6 @@ label│eigen      1         2         3
 2    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6
 3    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6
 
-
-julia> f^Perm(1,2,3)
-Family(0011:[2, 4, 3])
-label│eigen         3      1         2
-─────┼─────────────────────────────────
-3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6
-1    │  ζ₃²    -√-3/3  √-3/3     √-3/3
-2    │    1 (3+√-3)/6  √-3/3 (3-√-3)/6
-
-
 julia> galois(f,-1)
 Family(overline 0011:[4, 3, 2])
 label│eigen      1         2         3
@@ -263,7 +253,6 @@ label│eigen      1         2         3
 3    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6
 ```
 """
-# apply galois to a family
 function Cycs.galois(f::Family,p::Int)
   f=Family(copy(f.prop))
   f[:fourierMat]=galois.(fourier(f),p)
@@ -279,9 +268,40 @@ function Cycs.galois(f::Family,p::Int)
   f
 end
 
+"`conj(f::Family)`:   is    a    synonym    for 'galois(f,-1)'."
 Base.conj(f::Family)=galois(f,-1)
 
-# apply permutation to a family
+"""
+`Eigenvalues(f)`:  eigenvalues of Frobenius associated to <f>.
+
+`String(<f>)', 'Print(<f>)`: give a short description of the family.
+"""
+
+"""
+`f^p::Perm`
+
+`f`  should be a family, `p` a permutation, and the function returns a copy
+of  the  family  `f`  with  the  Fourier  matrix, eigenvalues of Frobenius,
+`:charLabels…` permuted by `p`.
+
+```julia-repl
+julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
+Family(0011:[4, 3, 2])
+label│eigen      1         2         3
+─────┼─────────────────────────────────
+1    │  ζ₃²  √-3/3     √-3/3    -√-3/3
+2    │    1  √-3/3 (3-√-3)/6 (3+√-3)/6
+3    │    1 -√-3/3 (3+√-3)/6 (3-√-3)/6
+
+julia> f^Perm(1,2,3)
+Family(0011:[2, 4, 3])
+label│eigen         3      1         2
+─────┼─────────────────────────────────
+3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6
+1    │  ζ₃²    -√-3/3  √-3/3     √-3/3
+2    │    1 (3+√-3)/6  √-3/3 (3-√-3)/6
+```
+"""
 function Base.:^(f::Family,p::Perm)
   f=Family(copy(f.prop))
   for n in [:x,:chi,:charNumbers,:eigenvalues,:unpdeg,:fakdeg,
@@ -294,6 +314,7 @@ function Base.:^(f::Family,p::Perm)
   f
 end
 
+#----------------------- now definitions of particular families -------------
 chevieset(:families,:C1,
   Family(Dict(:group=>"C1", :name=>"C_1", :explanation=>"trivial",
          :charLabels=>[""], :fourierMat=>hcat([1]), :eigenvalues=>[1],
@@ -865,6 +886,7 @@ FamiliesClassical=function(sym)
   end
 end
 
+"`show(f)`: displays the labels, eigenvalues and Fourier matrix for the family."
 function Base.show(io::IO,f::Family)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
@@ -896,70 +918,144 @@ function Base.show(io::IO,f::Family)
         col_labels=col_labels,
         rows_label=TeX ? "\\hbox{label}" : "label")
 end
+#------------------------ Fusion algebras -------------------------------
+struct FusionAlgebra<:FiniteDimAlgebra
+  fourier::Matrix
+  special::Int
+  involution::SPerm{Int16}
+  duality::SPerm{Int16}
+  multable::Vector{Vector{Vector{Pair}}}
+  prop::Dict{Symbol,Any}
+end
 
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+`FusionAlgebra(f::Family)`
+`FusionAlgebra(S,special=1)`
 
-`Fourier(<f>)`: returns the Fourier matrix for the family <f>.
+All  the Fourier matrices `S` in CHEVIE are unitary, that is `S⁻¹=conj(S)`,
+and have a *special* line `s` (the line of index `s=special(f)` for a family
+`f`)  such that no entry `S_(s,i)` is  equal to `0`. Further, they have the
+property that the sums `C_(i,j,k)=sum_l S_(i,l)
+S_(j,l)conj(S_(k,l))/S_(s,l)`  take integral  values. Finally,  `S` has the
+property  that complex conjugation does a permutation with signs `σ` of the
+lines of `S`.
 
-`Eigenvalues(<f>)`:  returns the list of eigenvalues of Frobenius associated
-to <f>.
+It  follows that we can define a `Z`-algebra `A` as follows: it has a basis
+`b_i`  indexed by the lines of `S`, and has a multiplication defined by the
+fact that the coefficient of `b_ib_j` on `b_k` is equal to `C_(i,j,k)`.
 
-`String(<f>)', 'Print(<f>)`: give a short description of the family.
+`A`  is  commutative,  and  has  as  unit  the  element  `b_s`;  the  basis
+`sigma(b_i)` is dual to `b_i` for the linear form
+`(b_i,b_j)=C_(i,j,sigma(s))`.
 
-`Display(<f>)`: displays the labels, eigenvalues and Fourier matrix for the
-family.
+```julia-repl
+julia> W=ComplexReflectionGroup(4)
+G₄
 
-`Size(<f>)`: how many characters are in the family.
+julia> uc=UnipotentCharacters(W);f=uc.families[4];
 
-`<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
-Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
-and the eigenvalues of Frobenius are the pairwise products.
+julia> A=Algebras.fusion_algebra(fourier(f),1)
+Fusion Algebra dim.5
 
-`ComplexConjugate(<f>)`:   is    a    synonym    for 'OnFamily(<f>,-1)'.
+julia> b=basis(A)
+5-element Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},1}:
+ B₁
+ B₂
+ B₃
+ B₄
+ B₅
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+julia> b*permutedims(b)
+5×5 Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},2}:
+ B₁  B₂      B₃      B₄        B₅
+ B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
+ B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂
+ B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄
+ B₅  B₃      B₂      -B₄       B₁
 
-`FusionAlgebra(<f>)`
-
-The argument <f> should be a family, or the Fourier matrix of a family. All
-the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=ᵗS̄`, and have
-a *special* line `s` (the line of index `s=`'<f>.special' for a family <f>)
-such  that  no  entry  `S_{s,i}`  is  equal  to `0`. Further, they have the
-property  that  the  sums  `C_{i,j,k}:=∑_l S_{i,l} S_{j,l}S̄_{k,l}/S_{s,l}`
-take   integral  values.  Finally,  `S`   has  the  property  that  complex
-conjugation does a permutation with signs `σ` of the lines of `S`.
-
-It  follows that we can define a `ℤ`-algebra `A` as follows: it has a basis
-`bᵢ`  indexed by the lines of `S`, and has a multiplication defined by the
-fact that the coefficient of `bᵢb_j` on `b_k` is equal to `C_{i,j,k}`.
-
-`A` is commutative, and has as unit the element `b_s`; the basis σ(bᵢ)` is
-`dual to `bᵢ` for the linear form (bᵢ,b_j)=C_{i,j,σ(s)}`.
-
-|    gap> W:=ComplexReflectionGroup(4);;uc:=UnipotentCharacters(W);
-    UnipotentCharacters( G4 )
-    gap> f:=uc.families[4];
-    Family("RZ/6^2[1,3]",[2,4,10,9,3])
-    gap> A:=FusionAlgebra(f);
-    Fusion algebra dim.5
-    gap> b:=A.basis;
-    [ T(1), T(2), T(3), T(4), T(5) ]
-    gap> List(b,x->x*b);
-    [ [ T(1), T(2), T(3), T(4), T(5) ],
-      [ T(2), -T(4)+T(5), T(1)+T(4), T(2)-T(3), T(3) ],
-      [ T(3), T(1)+T(4), -T(4)+T(5), -T(2)+T(3), T(2) ],
-      [ T(4), T(2)-T(3), -T(2)+T(3), T(1)+T(4)-T(5), -T(4) ],
-      [ T(5), T(3), T(2), -T(4), T(1) ] ]
-    gap> CharTable(A);
-
-        1        2        3   4   5
-
-    1   1  -ER(-3)   ER(-3)   2  -1
-    2   1        1        1   .   1
-    3   1       -1       -1   .   1
-    4   1        .        .  -1  -1
-    5   1   ER(-3)  -ER(-3)   2  -1
-|
+julia> CharTable(A)
+CharTable(Fusion Algebra dim.5)
+ │1    2    3  4  5
+─┼──────────────────
+1│1  √-3 -√-3  2 -1
+2│1    1    1  .  1
+3│1   -1   -1  .  1
+4│1    .    . -1 -1
+5│1 -√-3  √-3  2 -1
+```
 """
+function fusion_algebra(S::Matrix,special::Int=1;opt...)
+# zero=AlgebraElt(A,zero(ModuleElt{Int,T}))
+# one=AlgebraElt(A,ModuleElt(special=>1))
+  involution=SPerm(collect(eachrow(S)),collect(eachrow(conj.(S))))
+  if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
+  if order(involution)>2 error("complex conjugacy is of order 4") end
+  irr=mapslices(x->x.//x[special],S;dims=2)
+  duality=SPerm(collect(eachcol(^(irr,Perm(involution)))),
+                 collect(eachcol(irr)))
+  if isnothing(duality) error("the matrix does not have the * involution") end
+  if order(duality)>2 error("duality is not an involution") end
+  s=mapslices(x->x.//conj(x[special]),conj.(S);dims=1)
+  d=size(S,1)
+  multable=map(i->map(j->filter(x->x[2]!=0,
+            map((x,y)->x=>y,1:d,s*(S[i,:].*S[j,:]))),1:i),1:d)
+  if all(r->all(c->all(p->p[2]>=0,c),r),multable)
+      InfoChevie( "# positive structure constants\n" );
+  end
+  if !all(r->all(c->all(p->isinteger(p[2]),c),r),multable)
+      error("structure constants are not integral")
+  else multable=map(r->map(c->[k=>Int(i) for (k,i) in c],r),multable)
+  end
+  A=FusionAlgebra(S,special,involution,duality,multable,Dict{Symbol,Any}())
+  d=map(ratio,eachrow(irr),eachcol(S)) # d=inv.(S[special,:]) ?
+  if nothing in d  error() end
+  A.prop[:cDim]=d[special]^2
+  A.prop[:qDim]=d[special].//d
+  A.prop[:irr]=irr
+  A.prop[:charnames]=haskey(opt,:charnames) ? opt[:charnames] : string.(1:dim(A))
+  A.prop[:classnames]=haskey(opt,:classnames) ? opt[:classnames] : string.(1:dim(A))
+  A
+end
+
+function fusion_algebra(f::Family)
+  fusion_algebra(fourier(f),special(f);charnames=f[:charLabels],
+                                       classnames=f[:charLabels])
+end
+
+Algebras.dim(A::FusionAlgebra)=size(A.fourier,1)
+
+Base.show(io::IO,A::FusionAlgebra)=print(io,"Fusion Algebra dim.",dim(A))
+
+using LinearAlgebra: LinearAlgebra
+function idempotents(A::FusionAlgebra)
+  gets(A,:idempotents)do
+    LinearAlgebra.Diagonal(A.fourier[A.special,:])*
+      conj.(permutedims(A.fourier))*basis(A)
+  end
+end
+
+Algebras.iscommutative(A::FusionAlgebra)=true
+
+function Chars.CharTable(A::FusionAlgebra)
+  irr=toM(map(e->map(b->ratio(coefficients(b*e),coefficients(e)), basis(A)),
+              idempotents(A)))
+  if irr!=A.prop[:irr] error() end
+  labels=string.(1:dim(A))
+  centralizers=fill(dim(A),dim(A))
+  CharTable(irr,A.prop[:charnames],A.prop[:classnames],centralizers,
+            string(A),Dict{Symbol,Any}())
+end
+
+function involution(e::AlgebraElt{FusionAlgebra})
+  p=Perm(e.A.involution)
+  s=signs(e.A.involution)
+  AlgebraElt(e.A,ModuleElt([Int(b^p)=>c*s[b] for (b,c) in e.d]))
+end
+
+function duality(e::AlgebraElt{FusionAlgebra})
+  p=Perm(e.A.duality)
+  s=signs(e.A.duality)
+  AlgebraElt(e.A,ModuleElt([Int(b^p)=>c*s[b] for (b,c) in e.d]))
+end
+
 end

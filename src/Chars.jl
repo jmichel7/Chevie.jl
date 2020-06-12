@@ -390,7 +390,7 @@ using Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
-  representations, InductionTable, classes
+  representations, InductionTable, classes, jInductionTable, JInductionTable
 
 """
 `fakedegree(W, φ, q)`
@@ -1237,4 +1237,103 @@ function Base.show(io::IO,t::InductionTable)
   format(io,scal,row_labels=row_labels,col_labels=column_labels)
 end
   
+"""
+`jInductionTable(H, W)`
+
+computes  the decomposition  into irreducible  characters of the reflection
+group  `W`  of  the  `j`-induced  of  the  irreducible  characters  of  the
+reflection  subgroup  `H`.  The  `j`-induced  of  `φ`  is  the  sum  of the
+irreducible  components of the induced of  `φ` which have same `b`-function
+(see `charinfo`) as `φ`. What is returned is an `InductionTable` struct.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> H=reflection_subgroup(W,[1,3])
+D₄₍₁₃₎=A₂
+
+julia> jInductionTable(H,W)
+j-Induction Table from D₄₍₁₃₎=A₂ to D₄
+     │111 21 3
+─────┼─────────
+11+  │  .  . .
+11-  │  .  . .
+1.111│  .  . .
+.1111│  .  . .
+11.2 │  .  . .
+1.21 │  1  . .
+.211 │  .  . .
+2+   │  .  . .
+2-   │  .  . .
+.22  │  .  . .
+1.3  │  .  1 .
+.31  │  .  . .
+.4   │  .  . 1
+```
+"""
+function jInductionTable(u,g)
+  tbl=InductionTable(u,g)
+  bu=charinfo(u)[:b]
+  bg=charinfo(g)[:b]
+  t=copy(tbl.scalar)
+  for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
+    if bi!=bj t[j,i]=0 end
+  end
+  lu=sprint(show,u;context=:TeX=>true)
+  lg=sprint(show,g;context=:TeX=>true)
+  InductionTable(t,tbl.gcharnames,tbl.ucharnames,
+  "j-Induction Table from \$$lu\$ to \$$lg\$",
+  Dict{Symbol,Any}(:repr=>"jInductionTable($(repr(u)),$(repr(g)))"))
+end
+
+"""
+`JInductionTable(H, W)`
+
+computes  the decomposition  into irreducible  characters of the reflection
+group  `W`  of  the  `J`-induced  of  the  irreducible  characters  of  the
+reflection  subgroup  `H`.  The  `J`-induced  of  `φ`  is  the  sum  of the
+irreducible  components of the induced of  `φ` which have same `a`-function
+(see `charinfo`) as `φ`. What is returned is an `InductionTable` struct.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> H=reflection_subgroup(W,[1,3])
+D₄₍₁₃₎=A₂
+
+julia> Chars.JInductionTable(H,W)
+J-Induction Table from D₄₍₁₃₎=A₂ to D₄
+     │111 21 3
+─────┼─────────
+11+  │  .  . .
+11-  │  .  . .
+1.111│  .  . .
+.1111│  .  . .
+11.2 │  1  . .
+1.21 │  1  . .
+.211 │  .  . .
+2+   │  .  . .
+2-   │  .  . .
+.22  │  .  . .
+1.3  │  .  1 .
+.31  │  .  . .
+.4   │  .  . 1
+```
+"""
+function JInductionTable(u,g)
+  tbl=InductionTable(u,g)
+  bu=charinfo(u)[:a]
+  bg=charinfo(g)[:a]
+  t=copy(tbl.scalar)
+  for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
+    if bi!=bj t[j,i]=0 end
+  end
+  lu=sprint(show,u;context=:TeX=>true)
+  lg=sprint(show,g;context=:TeX=>true)
+  InductionTable(t,tbl.gcharnames,tbl.ucharnames,
+  "J-Induction Table from \$$lu\$ to \$$lg\$",
+  Dict{Symbol,Any}(:repr=>"JInductionTable($(repr(u)),$(repr(g)))"))
+end
 end

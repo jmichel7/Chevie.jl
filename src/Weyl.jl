@@ -359,7 +359,7 @@ two_tree=function(m::AbstractMatrix)
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
-" (series,rank) for an irreducible Cartan matrix"
+" (series,rank,indices,cartantype,bond) for an irreducible Cartan matrix"
 function type_fincox_cartan(m::AbstractMatrix)
   rank=size(m,1)
   s=two_tree(m)
@@ -591,6 +591,7 @@ describe_involution(W,w)=SimpleRootsSubsystem(W,
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
+# the type computation is better than general case
 function PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}
   gets(W,:refltype)do
     W.G.prop[:refltype]=type_cartan(cartan(W))
@@ -608,40 +609,18 @@ end
 
 dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
+@inline Base.parent(W::FiniteCoxeterGroup)=W
+Base.in(w,W::FiniteCoxeterGroup)=w in W.G
 
 #forwarded methods to PermRoot/W.G
-Base.iterate(W::FiniteCoxeterGroup,a...)=iterate(W.G,a...)
-Base.eltype(W::FiniteCoxeterGroup)=eltype(W.G)
-Base.parent(W::FiniteCoxeterGroup)=W
-Base.:/(W::FiniteCoxeterGroup,H)=PermGroup(W)/PermGroup(H)
-Base.in(w,W::FiniteCoxeterGroup)=w in W.G
-Gapjm.degree(W::FiniteCoxeterGroup)=degree(W.G)
-Gapjm.roots(W::FiniteCoxeterGroup)=roots(W.G)
-Gapjm.roots(W::FiniteCoxeterGroup,i)=roots(W.G)[i]
-PermRoot.simpleroots(W::FiniteCoxeterGroup)=simpleroots(W.G)
-Perms.reflength(W::FiniteCoxeterGroup,w)=reflength(W.G,w)
-Groups.gens(W::FiniteCoxeterGroup)=gens(W.G)
-Groups.position_class(W::FiniteCoxeterGroup,a...)=position_class(W.G,a...)
-PermGroups.PermGroup(W::FiniteCoxeterGroup)=PermGroup(W.G)
-PermGroups.classreps(W::FiniteCoxeterGroup)=classreps(W.G)
-PermRoot.cartan(W::FiniteCoxeterGroup,a...)=cartan(W.G,a...)
-PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)
-PermRoot.invariants(W::FiniteCoxeterGroup)=invariants(W.G)
-PermRoot.coroots(W::FiniteCoxeterGroup,i...)=coroots(W.G,i...)
-PermRoot.simplecoroots(W::FiniteCoxeterGroup)=simplecoroots(W.G)
-PermRoot.hyperplane_orbits(W::FiniteCoxeterGroup)=hyperplane_orbits(W.G)
-PermRoot.refleigen(W::FiniteCoxeterGroup)=refleigen(W.G)
-PermRoot.torus_order(W::FiniteCoxeterGroup,i,q)=torus_order(W.G,i,q)
-PermRoot.rank(W::FiniteCoxeterGroup)=rank(W.G)
-PermRoot.refrep(W::FiniteCoxeterGroup,w...)=refrep(W.G,w...)
-PermRoot.PermX(W::FiniteCoxeterGroup,M)=PermX(W.G,M)
-PermRoot.inclusion(W::FiniteCoxeterGroup,x...)=inclusion(W.G,x...)
-PermRoot.reflchar(W::FiniteCoxeterGroup,x...)=reflchar(W.G,x...)
-PermRoot.inclusiongens(W::FiniteCoxeterGroup)=inclusiongens(W.G)
-PermRoot.independent_roots(W::FiniteCoxeterGroup)=independent_roots(W.G)
-PermRoot.semisimplerank(W::FiniteCoxeterGroup)=semisimplerank(W.G)
-PermRoot.restriction(W::FiniteCoxeterGroup,a...)=restriction(W.G,a...)
-PermRoot.action(W::FiniteCoxeterGroup,a...)=action(W.G,a...)
+@forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Gapjm.degree,
+ Gapjm.roots, Groups.gens, Groups.position_class, PermGroups.classreps,
+ PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
+ PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
+ PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
+ PermRoot.reflections, PermRoot.refleigen, PermRoot.refrep,
+ PermRoot.restriction, PermRoot.semisimplerank, PermRoot.simplecoroots,
+ PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength 
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW

@@ -446,7 +446,7 @@ function Base.show(io::IO, ::MIME"text/html", a::Cyc)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", r::Cyc)
-  print(io,typeof(r),": ")
+  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
   show(io,r)
 end
 
@@ -736,7 +736,7 @@ Root1(;r=0)=Root1(numerator(r),denominator(r)) # does a mod1
 Base.broadcastable(r::Root1)=Ref(r)
 
 function Base.show(io::IO, ::MIME"text/plain", r::Root1)
-  print(io,typeof(r),": ")
+  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
   show(io,r)
 end
 

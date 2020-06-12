@@ -274,7 +274,7 @@ Base.:^(a::SemisimpleElement,p::Perm)=a^matY(parent(a.W.G),inv(p))
 Base.:^(a::SemisimpleElement,alpha::Vector{<:Integer})=prod(a.v .^ alpha)
 
 function Base.show(io::IO, ::MIME"text/plain", r::SemisimpleElement)
-  print(io,typeof(r),": ")
+  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
   show(io,r)
 end
 

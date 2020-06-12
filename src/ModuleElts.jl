@@ -128,9 +128,9 @@ Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Dict{K,V}())
 
 # forwarded methods
 Base.haskey(x::ModuleElt,y...)=haskey(x.d,y...)
-Base.getindex(x::ModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
 Base.keys(x::ModuleElt)=keys(x.d)
 Base.values(x::ModuleElt)=values(x.d)
+Base.getindex(x::ModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
 
 Base.:+(a::ModuleElt,b::ModuleElt)::ModuleElt=ModuleElt(merge(+,a.d,b.d);check=true)
 

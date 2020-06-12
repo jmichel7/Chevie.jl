@@ -482,7 +482,7 @@ function Base.show(io::IO, a::Perm)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T
- if T!=Int16 print(io,typeof(p),": ") end
+  if T!=Int16 && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
   show(io,p)
 end
 

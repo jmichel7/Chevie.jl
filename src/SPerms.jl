@@ -43,7 +43,7 @@ SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using Gapjm
-export SPerm, CoxHyperoctaedral, stab_onsmat, perm_onsmat, @sperm_str, signs
+export SPerm, CoxHyperoctaedral, sstab_onmats, SPerm_onmats, @sperm_str, signs
 
 """
 `struct SPerm`
@@ -199,7 +199,7 @@ function Base.show(io::IO, a::SPerm)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T
-  if T!=Int16 print(io,typeof(p),": ") end
+  if T!=Int16 && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
   show(io,p)
 end
 
@@ -271,8 +271,8 @@ function Base.:^(l::AbstractVector,a::SPerm)
 end
 
 function Base.:^(m::AbstractMatrix,a::SPerm;dims=1)
-  if dims==2 hcat(map(c->c^a,eachcol(m))...)
-  elseif dims==1 permutedims(hcat(map(c->c^a,eachcol(m))...))
+  if dims==1 hcat(map(c->c^a,eachcol(m))...)
+  elseif dims==2 permutedims(hcat(map(c->c^a,eachrow(m))...))
   elseif dims==(1,2) hcat(map(c->c^a,eachcol(m))^a...)
   end
 end
@@ -329,8 +329,8 @@ end
 #Signs:=p->sign.(p.d)^Perm(p)
 #
 ## We have the properties p=SPerm(Perm(p),Signs(p)) and
-## if N=OnMats(M,p) then
-##    M=OnMats(N,Perm(p))^Diagonal(Signs(p)))
+## if N=onmats(M,p) then
+##    M=onmats(N,Perm(p))^Diagonal(Signs(p)))
 #
 ## Transforms matrix to SPerm
 #SignedPerm:=function(m::AbstractMatrix)
@@ -466,12 +466,12 @@ function invblocks(m,extra=nothing)
 end
 
 """
-`stab_onsmat([G,]M[,l])`
+`sstab_onmats([G,]M[,l])`
 
-If `OnMats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
+If `onmats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
 and  columns, or conjugating by the  matrix of the signed permutation `p`),
 and  the argument `G`  is given (which  should be an  `SPermGroup`) this is
-just  a fast implementation of  `centralizer(G,M;action=OnMats)`. If `G` is
+just  a fast implementation of  `centralizer(G,M;action=onmats)`. If `G` is
 omitted  it is taken to be `CoxHyperoctaedral(size(M,1))`. The program uses
 sophisticated  algorithms, and can  handle matrices up  to 80×80. If `l` is
 given the return group should also centralize `l` (for the action ^)
@@ -479,13 +479,13 @@ given the return group should also centralize `l` (for the action ^)
 ```julia-repl
 julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
 
-julia> g=stab_onsmat(fourier(uc.families[2]))
+julia> g=sstab_onmats(fourier(uc.families[2]))
 Group([sperm"(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15)",sperm"(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18)",sperm"(2,19)(4,-14)(5,20)(7,12)",sperm"(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22)",sperm"(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17)",sperm"(1,-3)(2,-19)(4,14)(6,18)(8,-10)(9,-9)(11,-15)(13,-22)(16,-21)",sperm"(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22)",sperm"(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)"])
 julia> length(g)
 32
 ```
 """
-function stab_onsmat(M,extra=nothing)
+function sstab_onmats(M,extra=nothing)
   k=size(M,1)
   if M!=permutedims(M) error("M should be symmetric") end
   if isnothing(extra) extra=fill(1,size(M,1)) end
@@ -494,13 +494,13 @@ function stab_onsmat(M,extra=nothing)
   I=Int[]
   for r in blocks
     if length(r)>5 InfoChevie("#IS Large Block:",r,"\n") end
-    gr=stab_onmat(dup(CoxHyperoctaedral(length(r))),dup(M[r,r]))
+    gr=stab_onmats(dup(CoxHyperoctaedral(length(r))),dup(M[r,r]))
     p=SPerm{Int16}(mappingPerm(1:length(r),r).d)
     append!(gen,map(x->dedup(x)^p,gens(gr)))
     append!(I,r)
     p=SPerm{Int16}(mappingPerm(I,eachindex(I)).d)
     gen=gen.^p
-    gen=dedup.(gens(stab_onmat(Group(dup.(gen)),dup(M[I,I]))))
+    gen=dedup.(gens(stab_onmats(Group(dup.(gen)),dup(M[I,I]))))
     gen=gen.^inv(p)
   end
   return Group(gen)
@@ -509,18 +509,21 @@ end
 comm(a,b)=inv(a)*inv(b)*a*b
 
 """
-`perm_onsmat(M,N[,l1,l2])`
+`SPerm_onmats(M,N[,m,n])`
 
-`M`  and  `N`  should  be  symmetric matrices. `perm_onsmat` returns a
-signed  permutation `p` such that `OnMats(M,p)=N` if such a permutation
-exists, and `nothing` otherwise. If list arguments `l1` and `l2` are given,
-the permutation `p` should also satisfy `l1^p==l2`.
+`M`  and `N` should be symmetric  matrices. `SPerm_onmats` returns a signed
+permutation `p` such that `onmats(M,p)=N` if such a permutation exists, and
+`nothing`  otherwise. If  in addition  vectors `m`  and `n`  are given, the
+signed permutation `p` should also satisfy `m^p==n`.
 
 This  routine is  useful to  identify two  objects which are isomorphic but
 with  different  labelings.  It  is  used  in   CHEVIE  to identify Lusztig
 Fourier  transform matrices  with standard  (classified) data.  The program
 uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
-80times   80.
+80×80.
+
+Efficient version of 
+`transporting_elt(CoxHyperoctaedral(size(M,1)),M,N;action=onmats)`
 
 ```julia-repl
 julia> f=SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+ER(-3))/2);
@@ -531,15 +534,15 @@ julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
 
 julia> N=fourier(uc.families[2]);
 
-julia> p=perm_onsmat(M,N)
+julia> p=SPerm_onmats(M,N)
 (1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
 
 julia> ^(M,p;dims=(1,2))==N
 true
 ```
 """
-function perm_onsmat(M,N,extra1=nothing,extra2=nothing)
-  OnMats(M,p)=^(M,p;dims=(1,2))
+function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
+  onmats(M,p)=^(M,p;dims=(1,2))
   if M!=permutedims(M) error("M should be symmetric") end
   if N!=permutedims(N) error("N should be symmetric") end
   if isnothing(extra1)
@@ -555,10 +558,10 @@ function perm_onsmat(M,N,extra1=nothing,extra2=nothing)
     if length(iM)==1
       if length(I)>6 InfoChevie("large block:",length(I),"\n")
         p=transporting_elt(Group(reflections(
-          CoxHyperoctaedral(length(I)))), M[I,I],N[J,J];action=OnMats,
+          CoxHyperoctaedral(length(I)))), M[I,I],N[J,J];action=onmats,
                     dist=(M,N)->count(i->M[i]!=N[i],eachindex(M)))
       else p=transporting_elt(CoxHyperoctaedral(length(I)),
-         M[I,I],N[J,J],action=OnMats)
+         M[I,I],N[J,J],action=onmats)
       end
       if isnothing(p) InfoChevie("could not match block");return nothing end
       return [[I,J,p]]
@@ -579,15 +582,15 @@ function perm_onsmat(M,N,extra1=nothing,extra2=nothing)
 #   Print("#I=",Length(I),"\c");
     if comm(r[3]^p,tr^q)!=SPerm() error("noncomm") end
     tr=tr^q*r[3]^p
-    h=gens(stab_onsmat(M[r[1],r[1]])).^p
+    h=gens(sstab_onmats(M[r[1],r[1]])).^p
     g=Group(vcat(gens(g).^q,h))
 #   Print(" #g=",Size(g),"\c");
-    e=transporting_elt(g,M[I,I],OnMats(N[J,J],tr^-1),action=OnMats)
+    e=transporting_elt(g,M[I,I],onmats(N[J,J],tr^-1),action=onmats)
     if e==false return false
     elseif e^-1*e^tr!=SPerm() print("*** tr does not commute to e\n")
          tr=e*tr
     end
-    g=stab_onmat(Group(dup.(gens(g))),dup(M[I,I]))
+    g=stab_onmats(Group(dup.(gens(g))),dup(M[I,I]))
 #   Print(" #stab=",Size(g),"\n");
     g=Group(dedup.(gens(g)))
   end
