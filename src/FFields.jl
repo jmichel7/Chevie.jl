@@ -28,7 +28,9 @@ struct Mod{p} <: Number
    end
 end
 
-Base.promote_type(::Type{Mod{p}},::Type{<:Integer}) where p=Mod{p}
+Base.promote_rule(::Type{Mod{p}},::Type{<:Integer}) where p=Mod{p}
+Base.promote_rule(::Type{Mod{p}},::Type{<:Rational{<:Integer}}) where p=Mod{p}
+Mod{p}(i::Rational{<:Integer}) where p=Mod{p}(invmod(denominator(i),p)*numerator(i))
 Base.zero(::Type{Mod{p}}) where p = Mod{p}(0)
 Base.:(==)(x::Mod,y::Mod) = x.val==y.val
 Base.:+(x::Mod{p}, y::Mod{p}) where p = Mod{p}(Int(x.val)+y.val)
@@ -168,15 +170,16 @@ end
 
 struct FFE{p}<:Number
   i::Int16
-  F::FF
+  Fi::Int16
 end
 
 printc(x...)=println(IOContext(stdout,:limit=>true),x...)
 
-const FFDict=Dict{Int,FF}()
+const FFi=Dict{Int,Int}()
+const FFvec=FF[]
 
-function FF(q)
-  get!(FFDict,q) do
+function iFF(q)
+  get!(FFi,q) do
     l=collect(factor(q))
     if length(l)>1 error(q," should be a prime power") end
     p,n=l[1]
@@ -216,56 +219,43 @@ function FF(q)
       end
     end
 #   for i in 0:q-1 printc(i,"=>",zz[i+1]) end
-    FF(p,n,q,pol,zz,dic)
+    push!(FFvec,FF(p,n,q,pol,zz,dic))
+    return length(FFvec)
   end
 end
 
 Base.show(io::IO,F::FF)=print(io,"FF(",F.p,"^",F.n,")")
 
-@inline q(x::FFE{p}) where p=x.F.q
-@inline n(x::FFE{p}) where p=x.F.n
-@inline zech(x,i)=x.F.zech[1+i]
-@inline dict(x,i)=x.F.dict[1+i]
-@inline clone(x::FFE{p},i) where p=FFE{p}(i,x.F)
+@inbounds @inline q(x::FFE{p}) where p=FFvec[x.Fi].q
+@inbounds @inline n(x::FFE{p}) where p=FFvec[x.Fi].n
+@inbounds @inline zech(x,i)=FFvec[x.Fi].zech[1+i]
+@inbounds @inline dict(x,i)=FFvec[x.Fi].dict[1+i]
+@inline clone(x::FFE{p},i) where p=FFE{p}(i,x.Fi)
 
-Base.iszero(x::FFE{p}) where p=q(x)==p && x.i==p-1
+Base.iszero(x::FFE{p}) where p=x.i==p-1 && q(x)==p
 
 Base.:^(a::FFE{p},n::Integer) where p=iszero(a) ? a : 
                  lower(clone(a,mod(a.i*n,q(a)-1)))
 
-#Base.:(==)(::Type{FFE{p}},::Type{FFE{q}}) where {p,q}=p==q
-
 function Z(q)
-  if q==2 return FFE{2}(0,FF(2)) end
-  F=FF(q)
-  FFE{F.p}(1,F)
+  if q==2 return FFE{2}(0,iFF(2)) end
+  Fi=iFF(q)
+  FFE{FFvec[Fi].p}(1,Fi)
 end
 
-# next 2 lines are absurd should not be needed
-function Base.promote_type(::Type{FFE{p}},::Type{FFE{q}})where {p,q}
-  if p!=q error("different charcateristic") end
-  FFE{p}
-end
-
-#Base.promote(a::FFE{p},b::FFE{q}) where {p,q}=(FFE{p}(a),FFE{p}(b))
-# next line is absurd should not be needed
-(::Type{FFE{p}})(x::FFE{q}) where {p,q}=clone(x,x.i)
+Base.promote_rule(::Type{FFE{p}},::Type{<:Integer}) where p=FFE{p}
+Base.promote_rule(::Type{FFE{p}},::Type{<:Rational{<:Integer}}) where p=FFE{p}
 
 Base.copy(a::FFE{p}) where p=clone(a,a.i)
-
-Base.one(::Type{FFE{p}}) where p=FFE{p}(0,FF(p))
-
+Base.one(::Type{FFE{p}}) where p=FFE{p}(0,iFF(p))
 Base.one(x::FFE{p}) where p=q(x)==p ? clone(x,0) : one(FFE{p})
-
-Base.zero(::Type{FFE{p}}) where p=FFE{p}(p-1,FF(p))
-
+Base.zero(::Type{FFE{p}}) where p=FFE{p}(p-1,iFF(p))
 Base.zero(x::FFE{p}) where p=q(x)==p ? clone(x,p-1) : zero(FFE{p})
-
 Base.abs(a::FFE)=a
 Base.conj(a::FFE)=a
 
 function Base.cmp(x::FFE{p}, y::FFE{p}) where {p}
- l=cmp(q(x),q(y))
+  l=cmp(q(x),q(y))
   if !iszero(l) return l end
   cmp(x.i,y.i)
 end
@@ -298,43 +288,41 @@ function Base.show(io::IO, x::FFE{p})where p
 end
 
 function (::Type{FFE{p}})(i::Integer)where p
-  F=FF(p)
-  FFE{p}(F.dict[1+mod(i,p)],F)
+  Fi=iFF(p)
+  FFE{p}(FFvec[Fi].dict[1+mod(i,p)],Fi)
 end
 
 function (::Type{FFE{p}})(i::Mod{p})where p
-  F=FF(p)
-  FFE{p}(F.dict[1+i.val],F)
+  Fi=iFF(p)
+  FFE{p}(FFvec[Fi].dict[1+i.val],Fi)
 end
 
 function (::Type{Mod{r}})(x::FFE{p})where {r,p}
   if r!=p || q(x)!=p throw(InexactError(:convert,Mod{r},x)) end
-  iszero(x) ? Mod{p}(0) : Mod{p}(powermod(x.F.conway[1].val,x.i,p))
+  iszero(x) ? Mod{p}(0) : Mod{p}(FFvec[x.Fi].conway[1].val)^x.i
 end
 
 function (::Type{FFE{p}})(i::Rational{<:Integer})where p
-  F=FF(p)
+  Fi=iFF(p)
   i=mod(invmod(denominator(i),p)*numerator(i),p)
-  FFE{p}(F.dict[1+i],F)
+  FFE{p}(FFvec[Fi].dict[1+i],Fi)
 end
 
 function promote_field(r::Integer,x::FFE{p})where {p}
   if r==q(x) return x end
   if r<q(x) error("cannot promote to smaller field") end
-  F=FF(r)
+  Fi=iFF(r)
+@inbounds  F=FFvec[Fi]
   if F.p!=p error("different characteristic!") end
   if mod(F.n,n(x))!=0 error("not an extension field") end
-  FFE{p}(x.i*div(r-1,q(x)-1),F)
+  FFE{p}(x.i*div(r-1,q(x)-1),Fi)
 end
   
 function promote_field(x::FFE{p},y::FFE{p})where {p}
-  if q(x)==q(y) return (x,y) end
+  if x.Fi==y.Fi return (x,y) end
   nq=p^lcm(n(x),n(y))
   (promote_field(nq,x),promote_field(nq,y))
 end
-
-#Base.promote_rule(::Type{FFE{p}},::Type{T}) where {p,T<:Integer}=FFE{q}
-#Base.promote_rule(::Type{FFE{p}},::Type{T}) where {p,T<:Rational{<:Integer}}=FFE{q}
 
 function Base.:+(x::FFE{p},y::FFE{p}) where {p}
   if iszero(x) return y
@@ -343,14 +331,11 @@ function Base.:+(x::FFE{p},y::FFE{p}) where {p}
   x,y=promote_field(x,y)
   if x.i>y.i x,y=y,x end
   @inbounds res=zech(x,y.i-x.i)
-if res==q(x)-1 return zero(x) end
+  if res==q(x)-1 return zero(x) end
   res+=x.i
   if res>=q(x)-1 res-=Int16(q(x)-1) end
   lower(clone(x,res))
 end
-
-Base.:+(x::FFE{p},y::Union{Rational,Integer}) where p=x+FFE{p}(y)
-Base.:+(y::Union{Rational,Integer},x::FFE{p}) where p=x+FFE{p}(y)
 
 function Base.:-(x::FFE{p})where p
   if iseven(p) || iszero(x) return x end
@@ -371,9 +356,6 @@ function Base.:*(x::FFE{p},y::FFE{p}) where {p}
   lower(clone(x,res))
 end
 
-Base.:*(x::FFE{p},y::Union{Rational,Integer}) where p=x*FFE{p}(y)
-Base.:*(y::Union{Rational,Integer},x::FFE{p}) where p=x*FFE{p}(y)
-
 function Base.inv(x::FFE{p}) where p
   if iszero(x) error("inv(0)") end
   if x.i==0 return x end
@@ -387,7 +369,7 @@ function lower(x::FFE{p}) where p
   if q(x)==p return x end
   l=dict(x,x.i)
   if l==n(x) return x end
-  FFE{p}(div(x.i,div(q(x)-1,p^l-1)),FF(p^l))
+  FFE{p}(div(x.i,div(q(x)-1,p^l-1)),iFF(p^l))
 end
 
 end
