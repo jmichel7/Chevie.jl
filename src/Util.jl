@@ -17,8 +17,11 @@ export
 export toL, toM # convert Gap matrices <-> Julia matrices
 export ds # dump struct
 export InfoChevie
-#InfoChevie(a...)=print(a...)
-function InfoChevie(a...) end
+
+const info=Ref(false)
+function InfoChevie(a...)
+  if Util.info[] print(a...) end
+end
 
 """
 @forward T.f f1,f2,...

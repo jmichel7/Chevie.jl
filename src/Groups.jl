@@ -33,7 +33,7 @@ export Group, minimal_words, gens, ngens, classreps, centralizer,
   position_class, fusion_conjugacy_classes, Coset, transporting_elt,
   centre, normalizer, stabilizer
 
-using ..Util: gets
+using ..Util: gets, InfoChevie
 #import Gapjm: word, elements, kernel, order
 # to use as a stand-alone module comment above line and uncomment next line
 export word, elements, kernel, order
@@ -315,6 +315,8 @@ end
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
+rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
+
 """
 `transporting_elt(G,p,q;action=^,dist=nothing)`   
 
@@ -344,21 +346,22 @@ function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
   end
 # InfoChevie("#I  group:", length(W), " too big - trying random walk\n")
   p=one(W)
-# InfoChevie(dist(x, y), " ")
+  InfoChevie(dist(x, y), " ")
   x1=x
   while true
     prev=dist(x1, y)
     if prev==0
-#     InfoChevie("\n")
+      InfoChevie("\n")
       return p
     end
     dmin=minimum(map(g->(dist(action(x1, g), y),g),gens(W)))
     if dmin[1]<prev 
-#     InfoChevie("->",dmin)
+      InfoChevie("->",dmin)
       p*=dmin[2]
       x1=action(x1,dmin[2])
     else
-#     InfoChevie("\n#I stalled -- restarting at a random element of W\n")
+      InfoChevie("\n[ Info: stalled -- restarting at a random element of",
+                 "W(size $(length(W)))\n")
       p*=rand(W)
       x1=action(x,p)
     end

@@ -70,7 +70,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 module PermGroups
 using ..Perms
 using ..Groups
-using ..Util: gets, getp, InfoChevie
+using ..Util: gets, getp, joindigits, InfoChevie
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
@@ -362,7 +362,7 @@ function stab_onmats(M,extra=nothing)
   g=PermGroup()
   I=Int[]
   for r in blocks
-    if length(r)>7 println("#I Large Block:",r) end
+    if length(r)>7 InfoChevie("Large Block:$r\n")  end
     if length(r)>1
       gr=stab_onmats(symmetric_group(length(r)), M[r,r])
       g=Group(vcat(gens(g),gens(gr).^mappingPerm(eachindex(r),r)))
@@ -400,8 +400,8 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     error("matrices are  not  square")
   end
   if size(M,1)!=size(N,1)
-    InfoChevie("# matrices do not have same dimensions")
-    return false
+    @info "matrices do not have same dimensions"
+    return nothing
   end
   sg=n->n==1 ? PermGroup() : Group(vcat(map(i->map(j->Perm(i,j),i+1:n),1:n-1)...))
   ind=function(I,J)local p
@@ -417,7 +417,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     p=map(function(I,J)
       local g
       if length(I)>7
-        InfoChevie("#I  large block:", length(I), "\n")
+        InfoChevie("large block size $(length(I))\n")
         if length(iM)==1
           p=transporting_elt(sg(length(I)),M[I,I],N[J,J];
                 action=onmats,dist=(M,N)->sum(x->count(!iszero,x),M-N))
@@ -447,7 +447,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     p=mappingPerm(I, eachindex(I))
     h=Group(gens(g).^p)
     if M[I,I]!=N[J,J]
-      InfoChevie("# I==", length(I), " stab==", length(g), "\n")
+      InfoChevie("I==$(length(I)) stab==$(length(g)) ")
       e = transporting_elt(h, M[I,I], N[J,J], action=onmats)
       if isnothing(e) return nothing else I^=e end
     end
