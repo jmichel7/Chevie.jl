@@ -1,23 +1,109 @@
 """
-Exemple:
+This module introduces modular arithmetic and finite fields.
+
+The ring of integers mod. `n` is given by the type `Mod{n}`.
+
+Example:
 ```julia-repl
 julia> a=Mod{19}(5)
-5₁₉
+Mod{19}: 5
 
 julia> a^2
-6₁₉
+Mod{19}: 6
 
 julia> inv(a)
-4₁₉
+Mod{19}: 4
 
 julia> a*inv(a)
-1₁₉
+Mod{19}: 1
 
+julia> a+2
+Mod{19}: 7
+
+julia> a*2
+Mod{19}: 10
+
+julia> a+1//2
+Mod{19}: 15
+
+julia> Int(a) # get back an integer from a
+5
+
+julia> order(a) # multiplicative order of a
+9
+```
+
+The finite field with `p^n` elements is obtained as `FF(p^n)`. To work with
+elements  of this  field, the  function `Z(p^n)`  returns a genertor of the
+multiplicative group of `FF(p^n)` (this is a particular generator, obtained
+as a root of the `n`-th Conway polynomial of characteristic `p`). All other
+elements  of  `FF(p^n)`  can  be  obtained  as  a  power  of `Z(p^n)` or as
+`0*Z(p^n)`.
+
+```julia-repl
+julia> a=Z(64)
+Z₆₄
+
+julia> a^9
+Z₈
+
+julia> a^21
+Z₄
+
+julia> a+1
+Z₆₄⁵⁶
+```
+
+Elements of the prime field can be converted back to integers `Mod{p}`
+
+```julia-repl
+julia> a=Z(19)+3
+Z₁₉¹⁶
+
+julia> Mod{19}(a)
+Mod{19}: 5
+
+julia> order(a) # order as element of the multiplicative group
+9
+```
+
+The  field, `p`, `n` and `p^n` can be  obtained back as well as which power
+of `Z(p^n)` is considered
+
+```julia-repl
+julia> a=Z(8)^5
+Z₈⁵
+
+julia> F=field(a)
+FF(2^3)
+
+julia> F.p
+2
+
+julia> F.n
+3
+
+julia> F.q
+8
+
+julia> log(a)
+5
+```
+
+The type of an element of `FF(p^n)` is `FFE{p}`. An integer or a `Mod{p}` can
+be converted to the prime field using this type as constructor.
+
+```julia-repl
+julia> FFE{19}(2)
+Z₁₉
+
+julia> FFE{19}(Mod{19}(2))
+Z₁₉
 ```
 """
 module FFields
 using ..Util: factor, divisors
-export Mod, FF, FFE, Z
+export Mod, FF, FFE, Z, field, order
 
 const T=UInt8 # this allows moduli up to 255
 
@@ -55,6 +141,19 @@ end
 function Base.show(io::IO, m::Mod{p}) where p 
   if get(io,:limit,false) print(io,m.val)
   else print(io,typeof(m),"(",m.val,")")
+  end
+end
+
+function order(x::Mod{n}) where n
+  if n==1 return 1 end
+  d=gcd(x.val,n)
+  if d!=1 error("$x should be invertible") end
+  o=1
+  res=x
+  while true
+   if isone(res) return o end
+   o+=1
+   res*=x
   end
 end
 
@@ -188,7 +287,7 @@ function iFF(q)
       dic=Vector{Int16}(undef,q)
       val=pol[1].val
 #     println(val)
-      dic[1]=p-1
+      dic[1]=-1
       dic[2]=0
       c=1
       for i in 1:p-2
@@ -224,15 +323,18 @@ function iFF(q)
   end
 end
 
+FF(q)=FFvec[iFF(q)]
+
 Base.show(io::IO,F::FF)=print(io,"FF(",F.p,"^",F.n,")")
 
-@inbounds @inline q(x::FFE{p}) where p=FFvec[x.Fi].q
-@inbounds @inline n(x::FFE{p}) where p=FFvec[x.Fi].n
-@inbounds @inline zech(x,i)=FFvec[x.Fi].zech[1+i]
-@inbounds @inline dict(x,i)=FFvec[x.Fi].dict[1+i]
+@inbounds @inline field(x::FFE)=FFvec[x.Fi]
+@inline q(x::FFE)=field(x).q
+@inline n(x::FFE)=field(x).n
+@inbounds @inline zech(x::FFE,i)=field(x).zech[1+i]
+@inbounds @inline dict(x::FFE,i)=field(x).dict[1+i]
 @inline clone(x::FFE{p},i) where p=FFE{p}(i,x.Fi)
 
-Base.iszero(x::FFE{p}) where p=x.i==p-1 && q(x)==p
+Base.iszero(x::FFE{p}) where p=x.i==-1
 
 Base.:^(a::FFE{p},n::Integer) where p=iszero(a) ? a : 
                  lower(clone(a,mod(a.i*n,q(a)-1)))
@@ -249,8 +351,8 @@ Base.promote_rule(::Type{FFE{p}},::Type{<:Rational{<:Integer}}) where p=FFE{p}
 Base.copy(a::FFE{p}) where p=clone(a,a.i)
 Base.one(::Type{FFE{p}}) where p=FFE{p}(0,iFF(p))
 Base.one(x::FFE{p}) where p=q(x)==p ? clone(x,0) : one(FFE{p})
-Base.zero(::Type{FFE{p}}) where p=FFE{p}(p-1,iFF(p))
-Base.zero(x::FFE{p}) where p=q(x)==p ? clone(x,p-1) : zero(FFE{p})
+Base.zero(::Type{FFE{p}}) where p=FFE{p}(-1,iFF(p))
+Base.zero(x::FFE{p}) where p=q(x)==p ? clone(x,-1) : zero(FFE{p})
 Base.abs(a::FFE)=a
 Base.conj(a::FFE)=a
 
@@ -299,7 +401,7 @@ end
 
 function (::Type{Mod{r}})(x::FFE{p})where {r,p}
   if r!=p || q(x)!=p throw(InexactError(:convert,Mod{r},x)) end
-  iszero(x) ? Mod{p}(0) : Mod{p}(FFvec[x.Fi].conway[1].val)^x.i
+  iszero(x) ? Mod{p}(0) : Mod{p}(field(x).conway[1].val)^x.i
 end
 
 function (::Type{FFE{p}})(i::Rational{<:Integer})where p
@@ -370,6 +472,16 @@ function lower(x::FFE{p}) where p
   l=dict(x,x.i)
   if l==n(x) return x end
   FFE{p}(div(x.i,div(q(x)-1,p^l-1)),iFF(p^l))
+end
+
+function order(x::FFE{p}) where p
+  if iszero(x) error(x," must be invertible") end
+  div(q(x)-1,gcd(x.i,q(x)-1))
+end
+
+function Base.log(x::FFE)
+  if iszero(x) error(x," must be invertible") end
+  x.i
 end
 
 end

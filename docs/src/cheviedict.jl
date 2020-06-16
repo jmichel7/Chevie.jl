@@ -28,6 +28,7 @@ const ChevieDict=Dict(
 "CartanMat(\"A\",5)"=>"cartan(:A,5)",
 "CartanMatFromCoxeterMatrix"=>"cartan",
 "CentralizerGenerators"=>"centralizer_generators",
+"CharFFE(x)"=>"field(x).p",
 #CharName
 "CharNames"=>"charnames",
 "CharParams(W)"=>"charinfo(W)[:charparams]",
@@ -70,6 +71,7 @@ const ChevieDict=Dict(
 "DecomposedMat"=>"diagblocks",
 "DefectSymbol"=>"defectsymbol",
 "Degree(p)"=>"degree(p)",
+"DegreeFFE(x)"=>"field(x).n",
 "DeligneLusztigCharacter"=>"DLChar",
 "DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",
@@ -140,6 +142,7 @@ const ChevieDict=Dict(
 #Inherit
 "Intersection"=>"intersect",
 #IntermediateGroup
+"IntFFE"=>"Int",
 "IntListToString"=>"joindigits",
 "InvariantForm"=>"invariant_form",
 "Invariants"=>"invariants",
@@ -147,6 +150,7 @@ const ChevieDict=Dict(
 "IsAbelian"=>"isabelian",
 "IsCycPol(p)"=>"p isa CycPol",
 "IsFamily(f)"=>"f isa Family",
+"IsFFE(x)"=>"x isa FFE",
 "IsIsolated"=>"is_isolated",
 "IsJoinLattice"=>"is_join_lattice",
 "IsMeetLattice"=>"is_meet_lattice",
@@ -156,8 +160,8 @@ const ChevieDict=Dict(
 #IsQuasiIsolated
 "IsomorphismType"=>"IsomorphismType",
 #IsUnipotentElement
-#jInductionTable
-#JInductionTable
+"jInductionTable"=>"jInductionTable",
+"JInductionTable"=>"JInductionTable",
 "Join"=>"join",
 "KroneckerProduct"=>"kron",
 "LcmPartitions"=>"lcm_partitions",
@@ -172,6 +176,7 @@ const ChevieDict=Dict(
 "LinearExtension"=>"linear_extension",
 "ListPerm(p)"=>"vec(p)",
 "List(ConjugacyClasses(G),Representative)"=>"classreps(G)",
+"LogFFE"=>"log",
 "LongestCoxeterElement(W)"=>"longest(W)",
 "LongestCoxeterWord(W)"=>"word(W,longest(W))",
 #LowestPowerFakeDegrees
@@ -198,6 +203,8 @@ const ChevieDict=Dict(
 "OnSets(s,g)"=>"unique!(sort(s.^g))",
 "OnTuples(l,p)"=>"l.^p",
 "OnPolynomials(m,p)"=>"p^m",
+"OrderFFE"=>"order",
+"OrderMod(n,m)"=>"order(Mod{m}(n))",
 "ParabolicRepresentatives"=>"parabolic_representatives",
 #ParabolicSubgroups
 "PartBeta"=>"partβ",
@@ -331,15 +338,13 @@ function gap(s)
     return
   end
   pad=maximum(length(k) for k in kk)+2
-  for k in kk
-    println(rpad(k,pad),"=>  ",ChevieDict[k])
-  end
+  print(join(sort([rpad(k,pad)*"=>  "*ChevieDict[k]*"\n" for k in kk]),""))
 end
 
 function fixdoc()
   s=read("index.md",String)
   pad=maximum(length(k) for k in keys(ChevieDict))+2
-  u=[rpad(k,pad)*"→ "*v*"\n" for (k,v) in ChevieDict]
+  u=[rpad(k,pad)*v*"\n" for (k,v) in ChevieDict]
   u=join(sort(u),"")
   s=replace(s,r"The dictionary from GAP3/Chevie is as follows:\n```(.*)```"s=>
            "The dictionary from GAP3/Chevie is as follows:\n```\n"*u*"```")

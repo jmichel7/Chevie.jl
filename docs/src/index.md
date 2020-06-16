@@ -48,9 +48,9 @@ base
 centralizers
 transversals
 symmetric_group
-stab_onmat
-perm_onmat
-perm_rowcolmat
+stab_onmats
+Perm_onmats
+Perm_rowcolmat
 ```
 # Cyclotomic numbers
 ```@docs
@@ -145,8 +145,8 @@ order(::SPerm)
 Matrix
 CoxHyperoctaedral
 reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
-stab_onsmat
-perm_onsmat
+sstab_onmats
+SPerm_onmats
 ```
 # Linear algebra on any field/ring
 ```@docs
@@ -165,6 +165,14 @@ transporter
 diagconj_elt
 traces_words_mats
 solutionmat
+```
+# Integral matrices and lattices
+```@docs
+DiaconisGraham
+```
+# Finite fields
+```@docs
+FFields
 ```
 # Coxeter groups
 ```@docs
@@ -192,6 +200,7 @@ gencox
 Weyl
 cartan
 two_tree
+roots
 reflection_subgroup
 coxgroup
 rootdatum
@@ -289,7 +298,10 @@ fakedegrees
 representation
 representations
 InductionTable
+jInductionTable
+JInductionTable
 WGraphToRepresentation
+pblocks
 ```
 # Reductive groups, semisimple elements
 ```@docs
@@ -298,6 +310,8 @@ fundamental_group
 QuasiIsolatedRepresentatives
 torsion_subgroup
 algebraic_centre
+SemisimpleCentralizerRepresentatives
+StructureRationalPointsConnectedCentre
 ```
 # Reflection cosets
 ```@docs
@@ -322,6 +336,7 @@ LusztigRestrict
 LusztigInductionTable
 Families
 Family
+fourier
 drinfeld_double
 ndrinfeld_double
 family_imprimitive
@@ -389,6 +404,7 @@ CartanMat("A",5)                            → cartan(:A,5)
 CartanMatFromCoxeterMatrix                  → cartan
 Catalan                                     → catalan
 CentralizerGenerators                       → centralizer_generators
+CharFFE(x)                                  → field(x).p
 CharNames                                   → charnames
 CharParams(W)                               → charinfo(W)[:charparams]
 CharRepresentationWords                     → traces_words_mats
@@ -429,6 +445,7 @@ CyclotomicPolynomial(R,i)                   → cyclotomic_polynomial(i)
 DecomposedMat                               → diagblocks
 DefectSymbol                                → defectsymbol
 Degree(p)                                   → degree(p)
+DegreeFFE(x)                                → field(x).n
 DeligneLusztigCharacter                     → DLChar
 DeligneLusztigLefschetz                     → DLLeftschetz
 DescribeInvolution                          → describe_involution
@@ -444,6 +461,8 @@ Elements                                    → elements
 EltBraid                                    → image
 EltWord(W,w)                                → W(w...)
 ExteriorPower                               → exterior_power
+FactorizedSchurElement                      → FactorizedSchurElement
+FactorizedSchurElements                     → FactorizedSchurElements
 FakeDegree                                  → fakedegree
 FakeDegrees                                 → fakedegrees
 FamiliesClassical                           → FamiliesClassical
@@ -455,11 +474,12 @@ ForEachCoxeterWord(W,f)                     → for w in W f(word(W,w)) end
 ForEachElement(W,f)                         → for w in W f(w) end
 FullSymbol                                  → fullsymbol
 FundamentalGroup                            → fundamental_group
+FusionAlgebra                               → fusion_algebra
 GaloisCyc                                   → galois
 GarsideAlpha                                → α
 GarsideWords                                → elements
 GcdPartitions                               → gcd_partitions
-GcdRepresentation                           → gcd_repr
+GcdRepresentation(x,y)                      → gcdx(x,y)[2:3]
 GenericOrder                                → generic_order
 GenericSign                                 → generic_sign
 GetRoot                                     → root
@@ -477,18 +497,23 @@ IndependentLines(M)                         → echelon(M)[2]
 IndependentRoots                            → independent_roots
 InducedLinearForm                           → induced_linear_form
 InductionTable                              → InductionTable
+IntFFE                                      → Int
 IntListToString                             → joindigits
 Intersection                                → intersect
 InvariantForm                               → invariant_form
+Invariants                                  → invariants
 Inversions                                  → inversions
 IsAbelian                                   → isabelian
 IsCycPol(p)                                 → p isa CycPol
+IsFFE(x)                                    → x isa FFE
 IsFamily(f)                                 → f isa Family
 IsIsolated                                  → is_isolated
 IsJoinLattice                               → is_join_lattice
 IsLeftDescending(W,w,i)                     → isleftdescent(W,w,i)
 IsMeetLattice                               → is_meet_lattice
 IsSubset(a,b)                               → issubset(b,a)
+IsomorphismType                             → IsomorphismType
+JInductionTable                             → JInductionTable
 Join                                        → join
 KazhdanLusztigPolynomial                    → KLPol
 KroneckerProduct                            → kron
@@ -501,19 +526,24 @@ LeftDescentSet(W,w)                         → leftdescents(W,w)
 LeftDivisorsSimple                          → left_divisors
 LeftGcd                                     → leftgcd
 LinearExtension                             → linear_extension
+List(ConjugacyClasses(G),Representative)    → classreps(G)
 ListPerm(p)                                 → vec(p)
+LogFFE                                      → log
 LongestCoxeterElement(W)                    → longest(W)
 LongestCoxeterWord(W)                       → word(W,longest(W))
 LowestPowerFakeDegreeSymbol                 → valuation_feg_symbol
 LowestPowerGenericDegreeSymbol              → valuation_gendeg_symbol
+LusztigAw                                   → LusztigAw
 LusztigInduction                            → LusztigInduce
 LusztigInductionTable                       → LusztigInductionTable
 LusztigRestriction                          → LusztigRestrict
+Lusztigaw                                   → Lusztigaw
 MappingPermListList                         → mappingPerm
-MatStab                                     → stab_onmat
+MatStab                                     → stab_onmats
 MatXPerm(W,p)                               → refrep(W,p)
 MatYPerm                                    → matY
 MovedPoints                                 → support
+NrArrangements                              → narrangements
 NrDrinfeldDouble                            → ndrinfeld_double
 NrPartitionTuples                           → npartition_tuples
 NrPartitions                                → npartitions
@@ -523,6 +553,8 @@ OnMatrices(m,p)                             → ^(m,p;dims=(1,2))
 OnPolynomials(m,p)                          → p^m
 OnSets(s,g)                                 → unique!(sort(s.^g))
 OnTuples(l,p)                               → l.^p
+OrderFFE                                    → order
+OrderMod(n,m)                               → order(Mod{m}(n))
 ParabolicRepresentatives                    → parabolic_representatives
 PartBeta                                    → partβ
 Partition                                   → partition
@@ -530,12 +562,13 @@ PartitionTuples                             → partition_tuples
 Partitions                                  → partitions
 PermList(v)                                 → Perm(v)
 PermListList(l1,l2)                         → Perm(l1,l2)
-PermMatMat                                  → perm_onmat
+PermMatMat                                  → Perm_onmats
 PermMatX                                    → PermX
 PermutationMat(p,dim)                       → Matrix(p,dim)
 Permuted(v,p)                               → v^p
 PermutedByCols(m,p)                         → ^(m,p;dims=2)
 Poset                                       → Poset
+PositionCartesian(a,b)                      → LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]
 PositionClass                               → position_class
 PositionRegularClass                        → position_regular_class
 PrintDiagram(W)                             → Diagram(W)
@@ -562,7 +595,7 @@ Representations                             → representations
 RepresentativeConjugation(b,b'[,F][,type])  → conjugating_elt(b,b'[,F],ss=type)
 RepresentativeDiagonalConjugation           → diagconj_elt
 RepresentativeOperation                     → transporting_elt
-RepresentativeRowColPermutation             → perm_rowcolmat
+RepresentativeRowColPermutation             → Perm_rowcolmat
 Restricted                                  → restricted
 RestrictedPerm(p,d)                         → restricted(p,d)
 Reversed                                    → reverse
@@ -582,10 +615,10 @@ SemisimpleRank(W)                           → coxrank(W)
 SemisimpleSubgroup                          → torsion_subgroup
 ShiftBeta                                   → shiftβ
 ShrinkGarsideGeneratingSet                  → shrink
-SignedMatStab                               → stab_onsmat
+SignedMatStab                               → sstab_onmats
 SignedPerm                                  → SPerm
 SignedPermListList                          → SPerm
-SignedPermMatMat                            → perm_onsmat
+SignedPermMatMat                            → SPerm_onmats
 Size(W)                                     → length(W)
 SmallestMovedPoint                          → smallest_moved_point
 SolutionMat                                 → solutionmat
@@ -593,6 +626,7 @@ Spets                                       → spets
 SplitLevis                                  → split_levis
 StandardParabolic                           → standard_parabolic
 StandardParabolicClass                      → standard_parabolic_class
+StructureRationalPointsConnectedCentre      → StructureRationalPointsConnectedCentre
 SubSpets                                    → subspets
 SubTorus                                    → SubTorus
 SymmetricDifference                         → symdiff
@@ -617,4 +651,5 @@ W.orbitRepresentative                       → simple_representatives(W)
 W.orbitRepresentativeElements[i]            → simple_conjugating_element(W,i)
 W.rootLengths                               → rootlengths(W)
 WeightInfo                                  → weightinfo
+jInductionTable                             → jInductionTable
 ```

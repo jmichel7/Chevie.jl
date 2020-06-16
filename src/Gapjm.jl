@@ -39,6 +39,7 @@ The package currently contains as infrastructure:
      * posets
      * cyclotomic polynomials
      * signed permutations
+     * finite fields
      * groups
      * permutation groups
 
@@ -68,11 +69,12 @@ The  code in this package is often 10 times faster than the equivalent GAP3
 Chevie   code  (after  the  maddeningly  long  compilation  time  on  first
 execution).
 
-I  tried that submodules in of my  package can be used independently of the
-rest.  They could be independent package. This  is the case for the modules
-`Combinat`,  `Groups`,  `ModuleElts`,  `Perms`,  `Util`  which  can be used
-stand-alone.  In addition modules `MatInt`, `Cycs`, `Pols`, `Mvp`, `Posets`
-can be used stand-alone except they use some functions from `Util`.
+I  tried  that  as  any  submodules  as  possible in my package can be used
+independently  of the rest, thus could be independent packages. This is the
+case  for the  modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
+which  can  be  used  stand-alone.  In  addition  modules `MatInt`, `Cycs`,
+`Pols`, `Mvp`, `Posets`, `FFields` can be used stand-alone except they each
+use one or two functions from `Util`.
 """
 module Gapjm
 using Reexport
@@ -93,10 +95,10 @@ include("Cycs.jl");using_merge(:Cycs,debug=false,reexport=true)
 include("Pols.jl");using_merge(:Pols,debug=false,reexport=true)
 include("Mvps.jl");using_merge(:Mvps,debug=false,reexport=true)
 include("Posets.jl");using_merge(:Posets,debug=false,reexport=true)
+include("FFields.jl");using_merge(:FFields,debug=false,reexport=true)
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
-include("FFields.jl");@reexport using .FFields
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets

@@ -74,19 +74,6 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   improve_type([v[1]+v[2]//2*(b-d),m[1,1]*(v[1]+v[2]//2*(b+d))])
 end
 
-function ordermod(x,n)
-  if n==1 return 1 end
-  d=gcd(x,n)
-  if d!=1 error("$x should be prime to $n") end
-  o=1
-  res=x
-  while true
-   if res==1 return o end
-   o+=1
-   res=mod(res*x,n)
-  end
-end
-
 """
 `mod(z::Cyc,p::Integer)`
 
@@ -105,12 +92,13 @@ function Base.mod(c::Cyc,p)
   n=conductor(c)
   np=MatInt.prime_part(n,p)
   pp=div(n,np)
-  r=ordermod(p,np) # order of p mod np
+  r=order(Mod{np}(p)) # order of p mod np
   zeta=Z(p^r)^(div(p^r-1,np)*gcdx(pp,p^r-1)[2]) #n-th root of unity
   if !isone(zeta^n) error() end
   sum(i->zeta^(i-1)*x[i],1:n)
 end;
 
+export pblocks
 """
 `pblocks(G,p)`
 
