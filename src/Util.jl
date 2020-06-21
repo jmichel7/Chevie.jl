@@ -249,8 +249,11 @@ end
 # show/print with attributes...
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
 
-joindigits(l::AbstractVector,sep="()";always=false)=any(l.>=10) ? 
-sep[1]*join(l,",")*sep[2] : always ? sep[1]*join(l)*sep[2] : join(l)
+function joindigits(l::AbstractVector,delim="()";always=false,sep=",")
+  big=any(l.>=10)
+  s=big ? join(l,sep) : join(l)
+  (big || always)&& !isempty(delim) ? delim[1]*s*delim[2] : s
+end
 
 """
  cut(string;options)

@@ -386,7 +386,7 @@ function QuotientAu(Au,chars)
       if !isnothing(p)
         t=t[p]
 	if order(t)>1 l[1]=t
-	else l=Drop(l,1)
+	else l=deleteat!(l,1)
         end
       else push!(res,l[1])
       end

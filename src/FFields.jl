@@ -6,25 +6,25 @@ The ring of integers mod. `n` is given by the type `Mod{n}`.
 Example:
 ```julia-repl
 julia> a=Mod{19}(5)
-Mod{19}: 5
+Mod{19}(5)
 
 julia> a^2
-Mod{19}: 6
+Mod{19}(6)
 
 julia> inv(a)
-Mod{19}: 4
+Mod{19}(4)
 
 julia> a*inv(a)
-Mod{19}: 1
+Mod{19}(1)
 
 julia> a+2
-Mod{19}: 7
+Mod{19}(7)
 
 julia> a*2
-Mod{19}: 10
+Mod{19}(10)
 
 julia> a+1//2
-Mod{19}: 15
+Mod{19}(15)
 
 julia> Int(a) # get back an integer from a
 5
@@ -61,7 +61,7 @@ julia> a=Z(19)+3
 Z₁₉¹⁶
 
 julia> Mod{19}(a)
-Mod{19}: 5
+Mod{19}(5)
 
 julia> order(a) # order as element of the multiplicative group
 9
@@ -133,13 +133,8 @@ Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
 Base.conj(x::Mod)=x     # needed for inv(Matrix) to work
 (::Type{T})(x::Mod) where T<:Integer=T(x.val)
 
-function Base.show(io::IO, ::MIME"text/plain", r::Mod{p})where p
-  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
-  show(io,r)
-end
-
 function Base.show(io::IO, m::Mod{p}) where p 
-  if get(io,:limit,false) print(io,m.val)
+  if get(io,:limit,false) && get(io,:typeinfo,Any)==typeof(m) print(io,m.val)
   else print(io,typeof(m),"(",m.val,")")
   end
 end

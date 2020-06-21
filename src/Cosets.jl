@@ -568,7 +568,7 @@ function Base.show(io::IO, WF::Spets)
     I=inclusiongens(W)
     n=I[PermRoot.indices(refltype(WF))]
     if n!=eachindex(gens(W.parent))
-      print(io,W.parent,fromTeX(io,"_{$(joindigits(n;always=true))}"),"=")
+      print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}="))
     end
   end
   PermRoot.showtypes(io,refltype(WF))
@@ -868,7 +868,7 @@ rootdata[:pso]=function(r)
 end
 rootdata[:spin]=function(r)
   r1=div(r,2)
-  isodd(r) ? rootdatum(cartan(:B,r1),id(r1)) : rootdatum(cartan(:D,r1),id(r1))
+  isodd(r) ? rootdatum(cartan(:C,r1),id(r1)) : rootdatum(cartan(:D,r1),id(r1))
 end
 rootdata[:halfspin]=function(r)
   if !iszero(r%4) error("halfspin groups only exist in dimension 4r") end

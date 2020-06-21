@@ -176,15 +176,14 @@ function rank(t::TypeIrred)
 end
 
 function Base.show(io::IO, t::TypeIrred)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
+  replorTeX=get(io,:limit,false) || get(io,:TeX,false)
   if haskey(t,:series)
     s=t.series
     if s==:ST 
       if haskey(t,:ST) 
-        n=repl||TeX ? "G_{$(t.ST)}" : "ComplexReflectionGroup($(t.ST))"
+        n=replorTeX ? "G_{$(t.ST)}" : "ComplexReflectionGroup($(t.ST))"
       else 
-        n=repl||TeX ? "G_{$(t.p),$(t.q),$(t.rank)}" : 
+        n=replorTeX ? "G_{$(t.p),$(t.q),$(t.rank)}" : 
           "ComplexReflectionGroup($(t.p),$(t.q),$(t.rank))"
       end
     else 
@@ -204,17 +203,17 @@ function Base.show(io::IO, t::TypeIrred)
       end
       if haskey(t,:bond)
         b=t.bond
-        n=repl||TeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
+        n=replorTeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
       elseif haskey(t,:short)
-        n=repl||TeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r)"
+        n=replorTeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r)"
       else
-        n=(repl||TeX) ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
+        n=replorTeX ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
       end
     end
     print(io,fromTeX(io,n))
   else
     o=order(t.twist)
-    if repl||TeX
+    if replorTeX
       if o!=1 print(io,fromTeX(io,"{}^{$o}")) end
       if length(t.orbit)==1 print(io,t.orbit[1]) 
       else print(io,"(")
@@ -228,8 +227,8 @@ function Base.show(io::IO, t::TypeIrred)
       if !isone(p) print(io,",",p) end
       print(io,")")
     end
-    if haskey(t,:scalar) && any(x->!isone(x),t.scalar)
-      print(io,"[",join(sprint.(show,t.scalar;context=io)),"]")
+    if haskey(t,:scalar) && !all(isone,t.scalar)
+      print(io,"[");join(io,t.scalar,",");print(io,"]")
     end
   end
 end
@@ -265,16 +264,15 @@ function Base.show(io::IO,d::Diagram)
     vbar="\UFFE8" # "\u2503"
     node="O"
     if series==:A
-      println(io,join(map(l->node*bar(l),l[1:end-1])),node)
-      print(io,join(ind," "))
+      join(io,node.*bar.(l[1:end-1]));println(io,node);join(io,ind," ")
     elseif series==:B
-      println(io,node,rdarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),
-        node)
-      print(io,ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+      print(io,node,rdarrow(max(l[1],2)));join(io,node.*bar.(l[2:end-1]))
+      prinln(io,node)
+      print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:C
-      println(io,node,ldarrow(max(l[1],2)),join(map(l->node*bar(l),l[2:end-1])),
-        node)
-      print(io,ind[1]," "^max(3-l[1],1),join(ind[2:end]," "))
+      print(io,node,ldarrow(max(l[1],2)));join(io,node.*bar(l[2:end-1]))
+      prinln(io,node)
+      print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:D
       println(io," "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
       println(io,node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
@@ -834,20 +832,19 @@ function Groups.position_class(W::PermRootGroup,w)
 end
 
 function showtypes(io::IO, t::Vector{TypeIrred})
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if isempty(t) print(io,repl||TeX ? "." : "W()") end
+  replorTeX=get(io,:limit,false) || get(io,:TeX,false)
+  if isempty(t) print(io,replorTeX ? "." : "W()") end
   r=0
   n=join(map(t)do t
     n=sprint(show,t; context=io)
     inds=indices(t)
     if isnothing(inds) n*="?"
-    elseif inds!=r .+eachindex(inds) && (repl|| TeX)
-     n*="_{("*joindigits(inds)*")}"
+    elseif inds!=r .+eachindex(inds) && replorTeX
+      n*="_{"*joindigits(inds;always=true)*"}"
     end
     r+=rank(t)
     n
-   end,repl||TeX ? "\\times{}" : "*")
+   end,replorTeX ? "\\times{}" : "*")
   n=fromTeX(io,n)
   print(io,n)
 end
@@ -917,7 +914,7 @@ true
 ```
 """
 function PermX(W::PermRootGroup,M::AbstractMatrix)
-  Perm(parent(W).roots,Ref(permutedims(M)).*parent(W).roots)
+  Perm(parent(W).roots,Ref(transpose(M)).*parent(W).roots)
 end
 
 function PermGroups.reduced(W::PermRootGroup,F)
@@ -1066,20 +1063,20 @@ function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVe
   # root values.
 
 # println("# roots: ")
-  refls=map(x->Int[],roots)
+  refls=map(x->Int[],matgens)
   newroots=true
   while newroots
     newroots=false
-    for j in eachindex(matgens)
+    for (j,refl) in enumerate(refls)
       lr=length(roots)
-      for y in Ref(permutedims(matgens[j])).*roots[length(refls[j])+1:end]
-        p=findfirst(==(y),roots[1:lr]) 
-	if isnothing(p)
+      for y in Ref(transpose(matgens[j])).*roots[length(refl)+1:end]
+        p=findfirst(==(y),roots) 
+	if isnothing(p) || p>lr
           push!(roots,y)
-#         println("j=$j roots[$(length(refls[j])+1)...] ",length(roots),":",y)
+#         println("j=$j roots[$(length(refl)+1)...] ",length(roots),":",y)
           newroots=true
-          push!(refls[j],length(roots))
-        else push!(refls[j],p)
+          push!(refl,length(roots))
+        else push!(refl,p)
 	end
       end
     end
@@ -1266,7 +1263,7 @@ function Base.show(io::IO, W::PRSG)
   end
   n=I[PermRoot.indices(refltype(W))]
   if n!=eachindex(gens(W.parent))
-    print(io,W.parent,fromTeX(io,"_{$(joindigits(n;always=true))}"),"=") 
+    print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}=")) 
   end
   showtypes(io,refltype(W))
 end

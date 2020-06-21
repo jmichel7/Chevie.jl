@@ -9,7 +9,7 @@ stored in the field .prop of the Group, which starts as Dict{Symbol,Any}()
 # Examples
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
-Group([perm"(1,2)",perm"(1,2,3)"])
+Group([(1,2),(1,2,3)])
 
 julia> gens(G)
 2-element Array{Perm{Int16},1}:
@@ -176,7 +176,7 @@ computes the centralizer `C_G(p)`
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> centralizer(G,1)
-Group([perm"(2,3)"])
+Group([(2,3)])
 ```
 """
 function centralizer(G::Group,p;action::Function=^)
@@ -198,13 +198,13 @@ repetitions,   the  action   of  the   group  `G`   on  sets  is  given  by
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3,4)])
-Group([perm"(1,2)",perm"(1,2,3,4)"])
+Group([(1,2),(1,2,3,4)])
 
 julia> centralizer(G,[1,2];action=(s,g)->s.^g)
-Group([perm"(3,4)"])
+Group([(3,4)])
 
 julia> stabilizer(G,[1,2])
-Group([perm"(3,4)",perm"(1,2)",perm"(1,2)(3,4)"])
+Group([(3,4),(1,2),(1,2)(3,4)])
 ```
 """
 stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
@@ -326,7 +326,7 @@ possible `g` forms a right coset of the centralizer of p in G.
 
 ```julia-repl
 julia> g=Group(perm"(1,2,3)(6,7)",perm"(3,4,5)(7,8)")
-Group([perm"(1,2,3)(6,7)",perm"(3,4,5)(7,8)"])
+Group([(1,2,3)(6,7),(3,4,5)(7,8)])
 
 julia> transporting_elt(g,1,5)
 (1,5,4,3,2)

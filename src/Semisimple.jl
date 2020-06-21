@@ -207,11 +207,8 @@ function Base.show(io::IO,W::ExtendedCox)
   else
     ff=map(x->restricted(x,inclusiongens(W.group)),W.phis)
     if all(!isone,ff) || rank(W.group)==0 
-      print(io,"Extended(",W.group,",",
-            join(sprint.(show,ff;context=io),","),")")
-    else
-      print(io,"<",
-           join(sprint.(show,spets.(Ref(W.group),W.phis);context=io),","),">")
+         print(io,"Extended(",W.group,",");join(io,ff,",");print(io,")")
+    else print(io,"<");join(io,spets.(Ref(W.group),W.phis),",");print(io,">")
     end
   end
 end
@@ -278,8 +275,17 @@ function Base.show(io::IO, ::MIME"text/plain", r::SemisimpleElement)
   show(io,r)
 end
 
-Base.show(io::IO,a::SemisimpleElement)=print(io,"<",
-             join(sprint.(show,a.v;context=io),","),">")
+function Base.show(io::IO,a::SemisimpleElement)
+  if get(io,:limit,false) || get(io,:TeX,false)
+    print(io,"<")
+    join(io,a.v,",")
+    print(io,">")
+  else
+    print(io,"SemisimpleElement(",a.W,",[")
+    join(io,a.v,",")
+    print(io,"])")
+  end
+end
 
 # hash is needed for using SemisimpleElement in Sets/Dicts
 Base.hash(a::SemisimpleElement, h::UInt)=hash(a.v, h)
@@ -622,7 +628,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> fundamental_group(W)
-Group([perm"(1,2,3,12)"])
+Group([(1,2,3,12)])
 
 julia> W=rootdatum(:sl,4)
 A₃

@@ -10,7 +10,7 @@ algorithms like base, centralizer chain, etc...
 # Examples
 ```julia-repl
 julia> G=Group([Perm(i,i+1) for i in 1:2])
-Group([perm"(1,2)",perm"(2,3)"])
+Group([(1,2),(2,3)])
 
 # PermGroups are iterators over their elements
 julia> collect(G)  
@@ -44,8 +44,8 @@ julia> base(G)
 # the i-th element is the centralizer of base[1:i-1]
 julia> centralizers(G) 
 2-element Array{PermGroup{Int16},1}:
- Group([perm"(1,2)",perm"(2,3)"])
- Group([perm"(2,3)"])
+ Group([(1,2),(2,3)])
+ Group([(2,3)])
 
 # i-th element is transversal of centralizer[i] on base[i]
 julia> transversals(G)
@@ -81,7 +81,7 @@ abstract type PermGroup{T}<:Group{Perm{T}} end
 PermGroup()=Group(Perm{Int16}[])
 
 function Base.show(io::IO,G::PermGroup)
-  print(io,"Group([$(join(map(repr,gens(G)),','))])")
+  print(io,"Group([");join(io,gens(G),',');print(io,"])")
 end
 
 Base.one(G::PermGroup{T}) where T=one(Perm{T})
@@ -353,7 +353,7 @@ and can handle matrices up to 80×80.
 julia> uc=UnipotentCharacters(ComplexReflectionGroup(34));
 
 julia> stab_onmats(fourier(uc.families[20]))
-Group([perm"(7,38)",perm"(39,44)(40,43)(41,42)"])
+Group([(7,38),(39,44)(40,43)(41,42)])
 ```
 """
 function stab_onmats(M,extra=nothing)

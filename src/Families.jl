@@ -545,10 +545,8 @@ transforms, and given by:
 In  the  basis  of  Mellin  transforms,  the  linear  map  `S₀` is given by
 `(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation  `T` which sends `ρ` to
 `ω_ρρ`   becomes  `(x,y)↦(x,xy)`.   These  are   particular  cases  of  the
-permutation  representation of `GL_2(ℤ)` on  the basis of Mellin transforms
-where
-`(begin{array}{cc}a&b;c&d{array})
-%begin{pmatrix}{cc}a&b;c&d{pmatrix}`
+permutation  representation of `GL₂(ℤ)` on  the basis of Mellin transforms
+where ``\\begin{pmatrix}{cc}a&b\\cr c&d\\end{pmatrix}``
 acts by `(x,y)↦(x^ay^b,x^cy^d)`.
 
 Fourier  matrices in finite reductive groups  are given by the above matrix
@@ -700,9 +698,9 @@ julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
 ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 
 """
-`family_imprimitive(<S>)`
+`family_imprimitive(S)`
 
-<S> should be a symbol for a unipotent characters of an imprimitive complex
+`S` should be a symbol for a unipotent characters of an imprimitive complex
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
 
 ```julia-repl
@@ -929,24 +927,22 @@ struct FusionAlgebra<:FiniteDimAlgebra
 end
 
 """
-`FusionAlgebra(f::Family)`
-`FusionAlgebra(S,special=1)`
+    `FusionAlgebra(f::Family)`
+    `FusionAlgebra(S,special=1)`
 
 All  the Fourier matrices `S` in CHEVIE are unitary, that is `S⁻¹=conj(S)`,
-and have a *special* line `s` (the line of index `s=special(f)` for a family
-`f`)  such that no entry `S_(s,i)` is  equal to `0`. Further, they have the
-property that the sums `C_(i,j,k)=sum_l S_(i,l)
-S_(j,l)conj(S_(k,l))/S_(s,l)`  take integral  values. Finally,  `S` has the
-property  that complex conjugation does a permutation with signs `σ` of the
-lines of `S`.
+and  have a  *special* line  `s` (the  line of  index `s=special(f)`  for a
+family  `f`) such that no entry `Sₛ,ᵢ`  is equal to `0`. Further, they have
+the  property that  the sums  `Cᵢ,ⱼ,ₖ=sumₗ Sᵢ,ₗ  Sⱼ,ₗ conj(Sₖ,ₗ)/Sₛ,ₗ` take
+integral  values. Finally,  `S` has  the property  that complex conjugation
+does a permutation with signs `σ` of the lines of `S`.
 
 It  follows that we can define a `Z`-algebra `A` as follows: it has a basis
-`b_i`  indexed by the lines of `S`, and has a multiplication defined by the
-fact that the coefficient of `b_ib_j` on `b_k` is equal to `C_(i,j,k)`.
+`bᵢ`  indexed by the lines of `S`,  and has a multiplication defined by the
+fact that the coefficient of `bᵢbⱼ` on `bₖ` is equal to `Cᵢ,ⱼ,ₖ`.
 
-`A`  is  commutative,  and  has  as  unit  the  element  `b_s`;  the  basis
-`sigma(b_i)` is dual to `b_i` for the linear form
-`(b_i,b_j)=C_(i,j,sigma(s))`.
+`A`  is commutative, and has as unit  the element `bₛ`; the basis σ(bᵢ)` is
+`dual to `bᵢ` for the linear form (bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎`.
 
 ```julia-repl
 julia> W=ComplexReflectionGroup(4)

@@ -196,7 +196,7 @@ function Base.show(io::IO,x::Poset)
   if sep==false sep=TeX ? "{<}" : "<" end
   s=map(x->join(labels[x],sep), chains(s)) 
   if TeX print(io,"\\noindent"*join(map(x->"\$$x\$\\hfill\\break\n",s)))
-  else print(io,join(s,"\n"))
+  else join(io,s,"\n")
   end
 end
 

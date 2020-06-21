@@ -266,7 +266,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   else ss=XSP(2,0,r)
   end
   l = union(map(c->map(x->[DefectSymbol(x[:symbol]), Sum(x[:sp], Sum)], c), ss))
-  sort!(l,by=x->[AbsInt(x[1]),-SignInt(x[1])])
+  sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc = Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
     res=Dict(:relgroup=>coxgroup(:C,d[2]),:defect=>d[1],:levi=>1:r-d[2])
@@ -329,10 +329,10 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     else
       ctype = 1
       cc[:dimBu] = (cl[1])[:dimBu]
-      cc[:name] = Join(map(function (x,)
-          res = joindigits(fill(0, max(0, (1 + x[2]) - 1)) + x[1], "[]")
-          if x[1] in cc[:parameter][2] return string("(", res, ")") end
-          return res
+      cc[:name] = join(map(function(x)
+        res=joindigits(fill(0,max(0,x[2]))+x[1],"[]")
+        if x[1] in cc[:parameter][2] return string("(", res, ")") end
+        res
       end, reverse(Collected(cc[:parameter][1]))), "")
     end
     cc[:red] = coxgroup()
@@ -352,54 +352,52 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     for s in cl addSpringer1(s,cc) end
   end
   uc[:orderClasses] = Hasse(Poset(map(x->
-      map(function(y)
-        if char != 2 return Dominates(y[:parameter], x[:parameter]) end
-        m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
-        f = x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
-        fx = f(x[:parameter][1])
-        fy = f(y[:parameter][1])
-        for i in 1:m
-          if fx[i] < fy[i] return false
-          elseif fx[i] == fy[i] && i in (y[:parameter])[2]
-            if i in Difference(x[:parameter][1], x[:parameter][2]) return false end
-            if i < m && mod(fx[i+1]-fy[i+1],2)==1 return false end
-          end
+    map(function(y)
+      if char!=2 return dominates(y[:parameter], x[:parameter]) end
+      m=maximum(x[:parameter][1][1], y[:parameter][1][1])
+      f=x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
+      fx=f(x[:parameter][1])
+      fy=f(y[:parameter][1])
+      for i in 1:m
+        if fx[i]<fy[i] return false
+        elseif fx[i]==fy[i] && i in y[:parameter][2]
+          if i in Difference(x[:parameter][1],x[:parameter][2]) return false end
+          if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
         end
-        return true
-      end, uc[:classes]), uc[:classes])))
-  if char != 2 && ctype == 2
+      end
+      return true
+    end, uc[:classes]), uc[:classes])))
+  if char!=2 && ctype==2
     LuSpin=function(p)
       sort!(p)
-      a = []
-      b = []
-      d = [0, 1, 0, -1][map(x->1+mod(x,4), p)]
-      i = 1
-      while i <= length(p)
-          l = p[i]
-          t = Sum(d[1:i - 1])
-          if 1 == mod(l, 4)
-              push!(a, div(l - 1, 4) - t)
-              i = i + 1
-          elseif 3 == mod(l, 4)
-              push!(b, div(l - 3, 4) + t)
-              i = i + 1
-          else
-              j = i
-              while i <= length(p) && p[i] == l i = i + 1 end
-              j = fill(0, max(0, (1 + div(i - j, 2)) - 1))
-              a = Append(a, (j + div(l + mod(l, 4), 4)) - t)
-              b = Append(b, j + div(l - mod(l, 4), 4) + t)
-          end
+      a=Int[]
+      b=Int[]
+      d=[0, 1, 0, -1][map(x->1+mod(x,4), p)]
+      i=1
+      while i<=length(p)
+        l=p[i]
+        t=Sum(d[1:i-1])
+        if 1==mod(l, 4)
+          push!(a, div(l-1, 4)-t)
+          i+=1
+        elseif 3==mod(l, 4)
+          push!(b, div(l-3, 4)+t)
+          i+=1
+        else
+          j=i
+          while i<=length(p) && p[i]==l i+=1 end
+          j=fill(0, max(0,div(i-j,2)))
+          append!(a,j+div(l+mod(l,4),4)-t)
+          append!(b,j+div(l-mod(l,4),4)+t)
+        end
       end
-      a = Vector{Int}(reverse(filter(x->x!=0,a)))
-      b = Vector{Int}(reverse(filter(x->x!=0,b)))
-      if Sum(d) >= 1 return [a, b]
-      else return [b, a]
-      end
+      a=reverse(filter(!iszero,a))
+      b=reverse(filter(!iszero,b))
+      sum(d)>=1 ? [a, b] : [b, a]
     end
     addSpringer = function (f, i, s, k)
       ss = First(uc[:springerSeries], f)
-      if s in [[[], [1]], [[], []]] p = 1
+      if s in [[[], [1]], [[], []]] p=1
       elseif s == [[1], []] p = 2
       else p = Position(CharParams(ss[:relgroup]), [s])
       end
@@ -435,12 +433,11 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       end
       d+=1
     end
-    l = Filtered(eachindex(uc[:classes]), i->
-     ForAll(Collected(uc[:classes][i][:parameter]), c->
-                                mod(c[1],2)==0 || c[2]==1) )
-    for i = l
-      cl = (uc[:classes])[i]
-      s = LuSpin(cl[:parameter])
+    l=filter(i->all(c->mod(c[1],2)==0 || c[2]==1,
+             Collected(uc[:classes][i][:parameter])),eachindex(uc[:classes])) 
+    for i in l
+      cl=uc[:classes][i]
+      s=LuSpin(cl[:parameter])
       if length(cl[:Au]) == 1
           cl[:Au] = CoxeterGroup("A", 1)
           trspringer(i, [1], [2])
@@ -517,7 +514,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   l = union(map(c->map(x->
         [DefectSymbol(x[:symbol]), Sum(FullSymbol(x[:sp]), Sum)], c), ss))
-  SortBy(l, x->[AbsInt(x[1]), -SignInt(x[1])])
+  SortBy(l, x->[abs(x[1]), -sign(x[1])])
   uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
       res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n - d[2])
       if mod(n - d[2], 4) == 0 || char == 2
@@ -535,7 +532,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     cc = Dict{Symbol, Any}(:parameter => symbol2partition(cl[1][:symbol]))
     if char == 2
       cc[:dimBu] = (cl[1])[:dimBu]
-      cc[:name] = Join(map(function(x)
+      cc[:name] = join(map(function(x)
                             res=joindigits(fill(x[1], max(0, x[2])), "[]")
              if x[1] in cc[:parameter][2]
                  return SPrint("(", res, ")")
@@ -567,7 +564,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
    if !IsList(cl[1][:sp][2])
       cl[1][:sp][3]=1-cl[1][:sp][3]
       cc[:name]*="+"
-      cc = Copy(cc)
+      cc=deepcopy(cc)
       cc[:name]=replace(cc[:name],r".$"=>"-")
       if haskey(cc, :dynkin) cc[:dynkin][[1, 2]] = cc[:dynkin][[2, 1]] end
       push!(uc[:classes], cc)
@@ -596,7 +593,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end), uc[:classes])))
   else
     uc[:orderClasses] = Hasse(Poset(map((i->begin map((j->begin
-      Dominates(uc[:classes][j][:parameter], uc[:classes][i][:parameter]) && 
+      dominates(uc[:classes][j][:parameter], uc[:classes][i][:parameter]) && 
       (uc[:classes][j][:parameter]!=uc[:classes][i][:parameter] || i == j)
                                  end), 1:length(uc[:classes]))
                      end), 1:length(uc[:classes]))))
@@ -635,34 +632,30 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   function LuSpin(p)
     sort!(p)
-    a = Int[]
-    b = Int[]
-    d = [0, 1, 0, -1][map(x->1 + mod(x, 4), p)]
-    i = 1
-    while i <= length(p)
-        l = p[i]
-        t = Sum(d[1:i - 1])
-        if 1 == mod(l, 4)
-          push!(a, div(l - 1,4) - t)
-          i+=1
-        elseif 3 == mod(l, 4)
-          push!(b, div(l - 3,4) + t)
-          i+=1
-        else
-            j = i
-            while i <= length(p) && p[i]==l i+=1 end
-            j = fill(0, max(0, div(i - j,2)) )
-            a = Append(a, j + div(l + mod(l, 4), 4) - t)
-            b = Append(b, j + div(l - mod(l, 4), 4) + t)
-        end
+    a=Int[]
+    b=Int[]
+    d=[0,1,0,-1][map(x->1 + mod(x, 4), p)]
+    i=1
+    while i<=length(p)
+      l=p[i]
+      t=sum(d[1:i-1])
+      if 1==mod(l,4)
+        push!(a, div(l-1,4)-t)
+        i+=1
+      elseif 3==mod(l,4)
+        push!(b, div(l-3,4)+t)
+        i+=1
+      else
+        j=i
+        while i<=length(p) && p[i]==l i+=1 end
+        j=fill(0, max(0,div(i-j,2)))
+        append!(a,j+div(l+mod(l,4),4)-t)
+        append!(b,j+div(l-mod(l,4),4)+t)
+      end
     end
-    a = Filtered(a, (x->begin x != 0 end))
-    a = reverse(a)
-    b = Filtered(b, (x->begin x != 0 end))
-    b = reverse(b)
-    if Sum(d) >= 1 return [a, b]
-    else return [b, a]
-    end
+    a=reverse(filter(!iszero,a))
+    b=reverse(filter(!iszero,b))
+    sum(d)>=1 ? [a, b] : [b, a]
   end
   addSpringer1= function (f, i, s, k)
     ss = First(uc[:springerSeries], f)
@@ -677,16 +670,15 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       for c in ss[:locsys] if c[1] == i c[2] = new[c[2]] end end
     end
   end
-  l=Filtered(1:length(uc[:classes]), (i->begin
-                 ForAll(Collected(((uc[:classes])[i])[:parameter]), c->
-                             mod(c[1], 2) == 0 || c[2] == 1) end))
+  l=Filtered(1:length(uc[:classes]), i->all(c->mod(c[1], 2) == 0 || c[2] == 1,
+                 Collected(((uc[:classes])[i])[:parameter])))
   for i in l
-     cl = (uc[:classes])[i]
-     s = LuSpin(cl[:parameter])
+     cl=uc[:classes][i]
+     s=LuSpin(cl[:parameter])
      if length(cl[:Au]) == 1
-         cl[:Au] = coxgroup(:A, 1)
-         trspringer(i, [2])
-         k = [1, 1]
+       cl[:Au] = coxgroup(:A, 1)
+       trspringer(i, [2])
+       k = [1, 1]
      elseif length(cl[:Au]) == 2
        cl[:Au] = coxgroup(:A, 1)*coxgroup(:A,1)
        trspringer(i, [2, 4])

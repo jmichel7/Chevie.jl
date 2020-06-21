@@ -424,15 +424,11 @@ Base.iszero(h::HeckeElt)=iszero(h.d)
 
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
-    repl=get(io,:limit,false)
-    TeX=get(io,:TeX,false)
     w=word(h.H.W,e)
     res=basename(h)
-    if repl || TeX
-      if isempty(w) res*="."
-      else res*="_{"*(any(>=(10),w) ? join(w,",") : join(w))*"}"
-      end
-    else res*="("*join(map(x->"$x",w),",")*")"
+    replorTeX=get(io,:limit,false) || get(io,:TeX,false)
+    if replorTeX res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
+    else         res*="("*join(w,",")*")"
     end
     fromTeX(io,res)
   end

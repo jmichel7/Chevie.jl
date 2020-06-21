@@ -7,7 +7,7 @@
 julia> Pol(:q) # define string used for printing and set variable q
 Pol{Int64}: q
 
-julia> Pol([1,2],0) # coefficients should have no leading or trailing zeroes.
+julia> Pol([1,2]) # valuation is 0 if not specified
 Pol{Int64}: 2q+1
 
 julia> p=Pol([1,2],-1)
@@ -42,9 +42,7 @@ Pol{Int64}: q⁸-q⁴+1
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: format_coefficient, fromTeX, divisors, ds
-#import Gapjm: root, degree, valuation
-# to use as a stand-alone module comment above line and uncomment next
+using ..Util: format_coefficient, fromTeX, divisors
 export degree, valuation
 import ..Cycs: root
 export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
@@ -54,13 +52,23 @@ const varname=Ref(:x)
 struct Pol{T}
   c::Vector{T}
   v::Int
+  function Pol(c::AbstractVector{T},v::Integer=0;check=true)where T
+    if check
+      b=findfirst(!iszero,c)
+      if isnothing(b) return new{T}(empty(c),0) end
+      e=findlast(!iszero,c)
+      if b!=1 || e!=length(c) return new{T}(c[b:e],v+b-1) end
+    end
+    new{T}(c,v)
+  end
 end
+
 
 Pol(a::Number)=convert(Pol,a)
 
 function Pol(t::Symbol)
   varname[]=t
-  Base.eval(Main,:($t=Pol([1],1)))
+  Base.eval(Main,:($t=Pol([1],1;check=false)))
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
@@ -70,17 +78,14 @@ Base.lastindex(p::Pol)=length(p.c)+p.v-1
 Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ? 
     p.c[i-p.v+1] : zero(T)
 
-function Polstrip(v::AbstractVector,val=0)
-  b=findfirst(!iszero,v)
-  if isnothing(b) return zero(Pol{eltype(v)}) end
-  Pol(v[b:findlast(!iszero,v)],val+b-1)
-end
-
-Base.copy(p::Pol)=Pol(p.c,p.v)
-Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) : Pol([T(a)],0)
-Base.convert(::Type{Pol},a::Number)=iszero(a) ? zero(Pol{typeof(a)}) : Pol([a],0)
+Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
+Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) :
+        Pol([T(a)];check=false)
+Base.convert(::Type{Pol},a::Number)=iszero(a) ? zero(Pol{typeof(a)}) :
+        Pol([a];check=false)
 (::Type{Pol{T}})(a::Number) where T=convert(Pol{T},a)
-Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p : Pol(convert.(T,p.c),p.v)
+Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p :
+        Pol(convert.(T,p.c),p.v;check=false)
 (::Type{Pol{T}})(p::Pol) where T=convert(Pol{T},p)
 
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
@@ -112,7 +117,7 @@ valuation(p::Pol)=p.v
 (p::Pol{T})(x) where T=iszero(p) ? zero(T) : evalpoly(x,p.c)*x^p.v
 
 # efficient p↦ qˢ p
-shift(p::Pol,s)=Pol(p.c,p.v+s)
+shift(p::Pol,s)=Pol(p.c,p.v+s;check=false)
 
 # degree ≥0
 function positive_part(p::Pol)
@@ -128,21 +133,21 @@ function negative_part(p::Pol)
 end
 
 # q↦ q⁻¹ on p
-bar(p::Pol)=Pol(reverse(p.c),-degree(p))
+bar(p::Pol)=Pol(reverse(p.c),-degree(p);check=false)
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 
-Base.one(a::Pol)=Pol([one(eltype(a.c))],0)
-Base.one(::Type{Pol{T}}) where T=Pol([one(T)],0)
-Base.one(::Type{Pol})=Pol([1],0)
-Base.zero(::Type{Pol{T}}) where T=Pol(T[],0)
-Base.zero(::Type{Pol})=Pol(Int[],0)
-Base.zero(a::Pol)=Pol(empty(a.c),0)
+Base.one(a::Pol)=Pol([one(eltype(a.c))];check=false)
+Base.one(::Type{Pol{T}}) where T=Pol([one(T)];check=false)
+Base.one(::Type{Pol})=Pol([1];check=false)
+Base.zero(::Type{Pol{T}}) where T=Pol(T[];check=false)
+Base.zero(::Type{Pol})=Pol(Int[];check=false)
+Base.zero(a::Pol)=Pol(empty(a.c);check=false)
 Base.iszero(a::Pol)=length(a.c)==0
-Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
+#Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
 Base.adjoint(a::Pol)=a
 Base.abs(p::Pol)=p
-Base.conj(p::Pol)=Pol(conj.(p.c),p.v)
+Base.conj(p::Pol)=Pol(conj.(p.c),p.v;check=false)
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")
@@ -156,20 +161,14 @@ function Base.show(io::IO, ::MIME"text/plain", a::Pol)
 end
 
 function Base.show(io::IO,p::Pol)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  if repl||TeX
-   s=join(map(reverse(collect(enumerate(p.c))))do (i,c)
+  if get(io,:limit,false) || get(io,:TeX,false)
+    s=join(map(reverse(collect(enumerate(p.c))))do (i,c)
       if iszero(c) return "" end
       c=sprint(show,c; context=io)
       deg=i+p.v-1
       if !iszero(deg) 
         mon=String(varname[])
-        if deg!=1
-           if repl || TeX mon*=(1<deg<10 ? "^$deg" : "^{$deg}")
-           else mon*= "^$deg"
-           end
-        end
+        if deg!=1 mon*="^{$deg}" end
         c=format_coefficient(c)*mon
       end
       if isempty(c) || c[1]!='-' c="+"*c end
@@ -190,11 +189,11 @@ function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
-  Pol(res,a.v+b.v)
+  Pol(res,a.v+b.v;check=false)
 end
 
-Base.:*(a::Pol, b::Number)=Polstrip(a.c.*b,a.v)
-Base.:*(a::Pol{T}, b::T) where T=Polstrip(a.c.*b,a.v)
+Base.:*(a::Pol, b::Number)=Pol(a.c.*b,a.v)
+Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
@@ -207,16 +206,16 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   res=fill(zero(T1)+zero(T2),max(length(a.c),d+length(b.c)))
 @inbounds res[eachindex(a.c)].=a.c
 @inbounds res[d.+eachindex(b.c)].+=b.c
-  Polstrip(res,a.v)
+  Pol(res,a.v)
 end
 
 Base.:+(a::Pol, b::Number)=a+Pol(b)
 Base.:+(b::Number, a::Pol)=Pol(b)+a
-Base.:-(a::Pol)=Pol(-a.c,a.v)
+Base.:-(a::Pol)=Pol(-a.c,a.v;check=false)
 Base.:-(a::Pol, b::Pol)=a+(-b)
 Base.:-(a::Pol, b::Number)=a-Pol(b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
-Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v)
+Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v;check=false)
 
 """
 `divrem(a::Pol, b::Pol)`
@@ -238,13 +237,13 @@ function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
     end
     pushfirst!(res,c)
   end
-  Pol(res,a.v-b.v),Polstrip(v,a.v)
+  Pol(res,a.v-b.v;check=false),Pol(v,a.v)
 end
 
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 
 Base.:/(p::Pol,q::Pol)=p//q
-Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v)
+Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v;check=false)
 function Base.://(p::Pol,q::Pol)
   if q.c==[1] return shift(p,-q.v)
   elseif q.c==[-1] return shift(-p,-q.v)
@@ -254,7 +253,7 @@ function Base.://(p::Pol,q::Pol)
   error("r=$r division $p//$q not implemented")
 end
 
-Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v)
+Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v;check=false)
 Base.://(p::T,q::Pol) where T=Pol(p)//q
 
 """
@@ -280,12 +279,12 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 function Base.inv(p::Pol)
-  if length(p.c)>1 throw(InexactError(:inv,Int,p)) end
-  if p.c[1]^2==1 return Pol([p.c[1]],-p.v) end
-  Pol([inv(p.c[1])],-p.v)
+  if length(p.c)!=1 throw(InexactError(:inv,Int,p)) end
+  if p.c[1]^2==1 return Pol([p.c[1]],-p.v;check=false) end
+  Pol([inv(p.c[1])],-p.v;check=false)
 end
 
-const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0))
+const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0;check=false))
 """
 `cyclotomic_polynomial(n)`
  
@@ -301,7 +300,7 @@ The  computed  cyclotomic  polynomials  are  cached  in  the global `Dict ̀
 """
 function cyclotomic_polynomial(n::Integer)
   get!(cyclotomic_polynomial_dict,n) do
-    v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0)
+    v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0;check=false)
     for d in divisors(n)
       if d!=n
         res,foo=divrem(res,cyclotomic_polynomial(d))
@@ -317,6 +316,6 @@ function root(x::Pol,n::Number=2)
     error("root($(repr(x;context=:limit=>true)),$n) not implemented") 
   end
   if isempty(x.c) return x end
-  Pol([root(x.c[1],n)],div(x.v,n))
+  Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 end

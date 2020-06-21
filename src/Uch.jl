@@ -189,7 +189,7 @@ julia> v=DLChar(W,[1,2])
 [G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
 
 julia> degree(v)
-Pol{Cyc{Rational{Int64}}}: q⁶+q⁵-q⁴-2q³-q²+q+1
+Pol{Int64}: q⁶+q⁵-q⁴-2q³-q²+q+1
 
 julia> v*v
 Cyc{Rational{Int64}}: 6
@@ -819,14 +819,26 @@ specifies the coefficient to give to each.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> UniChar(W,7)
+julia> u=UniChar(W,7)
 [G₂]:<G₂[-1]>
 
-julia> UniChar(W,"G2[E3]")
+julia> v=UniChar(W,"G2[E3]")
 [G₂]:<G₂[ζ₃]>
 
-julia> UniChar(W,[1,0,0,-1,0,0,2,0,0,1])
+julia> w=UniChar(W,[1,0,0,-1,0,0,2,0,0,1])
 [G₂]:<φ₁‚₀>-<φ″₁‚₃>+2<G₂[-1]>+<G₂[ζ₃²]>
+```
+some limited arithmetic is available on unipotent characters:
+
+```julia-repl
+julia> w-2u
+[G₂]:<φ₁‚₀>-<φ″₁‚₃>+<G₂[ζ₃²]>
+
+julia> w*w  # scalar product
+7
+
+julia> degree(w)
+Pol{Int64}: q⁵-q⁴-q³-q²+q+1
 ```
 """
 function UniChar(W,v::Int)
@@ -880,8 +892,8 @@ Base.:*(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
 Base.:*(a,u1::UniChar)=u1*a
 
-Gapjm.degree(u::UniChar,q=Pol(:q))=sum(u.v .*
-                             degrees(UnipotentCharacters(u.group),q))
+Gapjm.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
+                                     degrees(UnipotentCharacters(u.group),q)))
 
 """
 `LusztigInduce(W,u)`
@@ -1105,29 +1117,6 @@ Frobenius=function(WF, x::UniChar, i)
 end
 
 """
-`+`: Adds the specified characters.
-
-`-`: Subtracts the specified characters
-
-`*`:  Multiplies  a  character  by  a  scalar,  or  if  given two unipotent
-characters returns their scalar product.
-
-We go on from examples of the previous section:
-
-|    gap> u+v;
-    [G2]=<G2[-1]>+<G2[E3]>
-    gap> w-2*u;
-    [G2]=<phi{1,0}>-<phi{1,3}''>+<G2[E3^2]>
-    gap> w*w;
-    7|
-
-`:Degree`: returns the degree of the unipotent character.
-
-|    gap> Degree(w);
-    q^5 - q^4 - q^3 - q^2 + q + 1
-    gap> Degree(u+v);
-    (5/6)*q^5 + (-1/2)*q^4 + (-2/3)*q^3 + (-1/2)*q^2 + (5/6)*q|
-
 `:String' and 'Print`: the formatting of unipotent characters is affected by
 the  variable 'CHEVIE.PrintUniChars'. It is a  record; if the field 'short'
 is  bound (the default)  they are printed  in a compact  form. If the field

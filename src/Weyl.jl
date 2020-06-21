@@ -714,15 +714,15 @@ rootdatum(C::Matrix)=rootdatum(one(C),C)
 
 " root datum from 2 matrices: roots on basis of X(T), coroots on basis of Y(T)"
 function rootdatum(rr::Matrix,cr::Matrix)
-  C=cr*permutedims(rr) # Cartan matrix
+  C=cr*transpose(rr) # Cartan matrix
   rootdec=roots(C) # difference with PermRootGroup is order of roots here
   N=length(rootdec)
-  r=Ref(permutedims(rr)).*rootdec
+  r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
   mats=map(reflection,eachrow(rr),eachrow(cr)) # refrep
   # permutations of the roots effected by mats
-  gens=map(M->Perm(r,Ref(permutedims(M)).*r),mats)
+  gens=map(M->Perm(r,Ref(transpose(M)).*r),mats)
   rank=size(C,1)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)

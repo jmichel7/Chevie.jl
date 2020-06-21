@@ -193,7 +193,7 @@ nref
 braid_relations
 coxmat
 standard_parabolic_class
-gencox
+GenCox
 ```
 # Finite Coxeter groups and Weyl groups
 ```@docs
