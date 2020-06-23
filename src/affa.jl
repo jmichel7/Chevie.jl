@@ -192,26 +192,29 @@ function Perms.reflength(w::PPerm)
      i->Length(Intersection(vec(pos,i),vec(neg,i)))>0);
 end
 
-#PPermOps.ReflectionWord:=function(w)local n,ff,res,s;
-#  n:=Length(w.perm);
-#  ff:=function(w)local l,d,i,s;
-#    l:=ReflectionLength(w); d:=1;
-#    while true do
-#      for i in [1..n] do
-#        s:=PPerm([i,i+d],n);
-#        if ReflectionLength(s*w)<l then return s; fi;
-#      od;
-#      d:=d+1;
-#      if d mod n=0 then d:=d+1;fi;
-#    od;
-#  end;
-#  res:=[];
-#  while w<>w^0 do
-#    s:=ff(w);Add(res,s);w:=s*w;
-#  od;
-#  return res;
-#end;
-#
+function refword(w::PPerm)
+  n=length(w.d)
+  function ff(w)local s
+    l=reflength(w)
+    d=1
+    while true
+      for i in 1:n
+        s=PPerm(n,(i,i+d))
+        if reflength(s*w)<l return s end
+      end
+      d+=1
+      if mod(d,n)=0 d+=1 end
+    end
+  end
+  res=PPerm[]
+  while !isone(w)
+    s=ff(w)
+     push!(res,s)
+     w=s*w
+  end
+  res
+end
+
 #PPermOps.CycleType:=function(a)local res;
 #  res:=List(PPermOps.Cycles(a),cyc->[Length(cyc)-1,cyc[Length(cyc)]]);
 #  Sort(res);
