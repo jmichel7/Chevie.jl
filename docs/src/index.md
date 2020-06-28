@@ -111,7 +111,14 @@ compositions
 conjugate_partition
 dominates
 partitions
+npartitions
+partition_tuples
+npartition_tuples
 submultisets
+partitions_set
+npartitions_set
+bell
+stirling2
 ```
 # Module Elements
 ```@docs
