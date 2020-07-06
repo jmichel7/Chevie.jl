@@ -124,7 +124,7 @@ A  Perm represents a permutation  of the set `1:n`  and is implemented by a
 `struct` with one field, a `Vector{T}` holding the images of `1:n`.
 """
 struct Perm{T<:Integer}
-   d::Vector{T}
+  d::Vector{T}
 end
 
 Base.vec(a::Perm)=a.d

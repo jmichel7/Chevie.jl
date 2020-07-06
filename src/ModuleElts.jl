@@ -140,6 +140,7 @@ else
 #-------------- faster implementation -------------------------------------
 @inbounds function norm!(d::Vector{Pair{K,V}}) where {K,V}
   if isempty(d) return d end
+#  println(d)
   sort!(d,by=first)
   ri=1
   for j in 2:length(d)

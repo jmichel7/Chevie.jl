@@ -33,7 +33,7 @@ the root datum of the linear group of rank 3 can be specified as:
 julia> W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])
 A₂
 
-julia> refrep(W,W(1))
+julia> reflrep(W,W(1))
 3×3 Array{Int64,2}:
  0  1  0
  1  0  0
@@ -229,8 +229,8 @@ function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
 end
 
 ExtendedReflectionGroup(W,p::Vector{<:Perm})=ExtendedCox(W,
-       isempty(p) ? Matrix{Int}[] : refrep.(Ref(W),p))
-ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[refrep(W,p)])
+       isempty(p) ? Matrix{Int}[] : reflrep.(Ref(W),p))
+ExtendedReflectionGroup(W,p::Perm)=ExtendedCox(W,[reflrep(W,p)])
 
 function ExtendedReflectionGroup(W,mats::Vector{Any})
   if isempty(mats) ExtendedCox(W,empty([fill(0,0,0)]))
@@ -338,8 +338,8 @@ Stacktrace:
  [3] top-level scope at REPL[25]:1
 ```
 """
-function SubTorus(W,V=refrep(W,one(W)))
-  V=ComplementIntMat(toL(refrep(W,one(W))),toL(V))
+function SubTorus(W,V=reflrep(W,one(W)))
+  V=ComplementIntMat(toL(reflrep(W,one(W))),toL(V))
   if any(x->x!=1,V[:moduli])
     error("not a pure sublattice")
     return false
@@ -489,7 +489,7 @@ function algebraic_centre(W)
     W=W.group
   end
   if iszero(semisimplerank(W))
-    Z0=toL(refrep(W,one(W)))
+    Z0=toL(reflrep(W,one(W)))
   else
     Z0=NullspaceIntMat(collect.(collect(zip(simpleroots(W)...))))
   end
@@ -686,7 +686,7 @@ function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
   N=Group(AbelianGenerators(l))
   if rank(W)!=semisimplerank(W)
     if length(gens(N))==0 N=Group([W.matgens[1]^0])
-    else N=Group(refrep.(Ref(W),gens(N)))
+    else N=Group(reflrep.(Ref(W),gens(N)))
     end
   end
   ExtendedReflectionGroup(W0s,gens(N))

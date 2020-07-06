@@ -821,14 +821,14 @@ The  list  `l`  should  be  a  list  of symbols as returned by the function
 by these symbols.
 
 ```julia-repl
-julia> HasType.FamiliesClassical(HasType.BDSymbols(3,1))
+julia> FamiliesClassical(HasType.BDSymbols(3,1))
 6-element Array{Family,1}:
  Family(01123:[1, 3, 8])
- Family(3:[9])          
- Family(013:[5, 7, 10]) 
- Family(0112233:[4])    
- Family(112:[2])        
+ Family(112:[2])
+ Family(3:[9])
+ Family(013:[5, 7, 10])
  Family(022:[6])
+ Family(0112233:[4])
 ```
 The  above example shows the families of unipotent characters for the group
 `B_3`.

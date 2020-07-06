@@ -618,7 +618,7 @@ Base.in(w,W::FiniteCoxeterGroup)=w in W.G
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
- PermRoot.reflections, PermRoot.refleigen, PermRoot.refrep,
+ PermRoot.reflections, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.restriction, PermRoot.semisimplerank, PermRoot.simplecoroots,
  PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength 
 #--------------- FCG -----------------------------------------
@@ -669,7 +669,7 @@ the same `W`-orbit as the `i`-th root.
 'simple_conjugating_element(W,i)': returns an element `w` of `W` of minimal
 length such that `i==simple_representative(W,i)^w'.
 
-`refrep(W)`:    the  matrices  (in  row  convention  ---  that is the matrices
+`reflrep(W)`:    the  matrices  (in  row  convention  ---  that is the matrices
      operate  *from the right*) of the  simple reflections of the Coxeter group.
 
 `gens(W)`:   the generators as permutations of the root vectors.  They
@@ -700,7 +700,7 @@ julia> W.rootdec
  [0, -1, -1] 
  [-1, -1, -1]
 
- julia> refrep(W)
+ julia> reflrep(W)
 3-element Array{Array{Int64,2},1}:
  [-1 0 0; 1 1 0; 0 0 1]
  [1 1 0; 0 -1 0; 0 1 1]
@@ -720,7 +720,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
-  mats=map(reflection,eachrow(rr),eachrow(cr)) # refrep
+  mats=map(reflection,eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
   gens=map(M->Perm(r,Ref(transpose(M)).*r),mats)
   rank=size(C,1)
@@ -754,7 +754,7 @@ coxgroup()=torus(0)
 
 Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
   
-#function refrep(W::FCG,w)
+#function reflrep(W::FCG,w)
 #  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
 

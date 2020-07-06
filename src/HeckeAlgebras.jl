@@ -281,7 +281,7 @@ defines a representation of the Iwahori-Hecke algebra `H` or not.
 julia> H=hecke(coxgroup(:F,4))
 hecke(F₄,1)
 
-julia> isrepresentation(H,refrep(H))
+julia> isrepresentation(H,reflrep(H))
 true
 ```
 """
@@ -312,7 +312,7 @@ function isrepresentation(H::HeckeAlgebra,t;verbose=false)
 end
 
 """
-`refrep(H)`
+`reflrep(H)`
 
 returns  a list of matrices which give the reflection representation of the
 Iwahori-Hecke algebra `H`.
@@ -321,7 +321,7 @@ Iwahori-Hecke algebra `H`.
 julia> Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)
 hecke(B₂,q)
 
-julia> refrep(H)
+julia> reflrep(H)
 2-element Array{Array{Pol,2},1}:
  [-1 0; -q q]
  [q -2; 0 -1]
@@ -329,14 +329,14 @@ julia> refrep(H)
 julia> H=hecke(coxgroup(:H,3))
 hecke(H₃,1)
 
-julia> refrep(H)
+julia> reflrep(H)
 3-element Array{Array{Cyc{Rational{Int64}},2},1}:
  [-1 0 0; -1 1 0; 0 0 1]
  [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]
  [1 0 0; 0 1 -1; 0 0 -1]
 ```
 """
-function PermRoot.refrep(H::HeckeAlgebra)
+function PermRoot.reflrep(H::HeckeAlgebra)
   W=H.W
   if !equalpara(H) || !(W isa CoxeterGroup)
         error("Reflexion representation of Cyclotomic Hecke algebras or\n",
@@ -495,16 +495,12 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
         else push!(up,s*e=>p) end
       end
       h=ModuleElt(up;check=true)
-      if !isempty(down)
-        pp=a.H.para[i]
-        ss,p=(sum(pp),-prod(pp))
-        if !iszero(ss) h+=ModuleElt(down)*ss end
-        if !iszero(p)  
-          let s=s, p=p
-            h+=ModuleElt([s*e=>c*p for (e,c) in down];check=true)
-          end
-        end
-      end
+      if isempty(down) continue end
+      pp=a.H.para[i]
+      ss,p=(sum(pp),-prod(pp))
+      if !iszero(ss) h+=ModuleElt(down)*ss end
+      if iszero(p) continue end
+      h+=ModuleElt(s*e=>c*p for (e,c) in down;check=true)
     end
     HeckeTElt(h,a.H)
   end

@@ -469,7 +469,7 @@ function AdjustAu!(classes,springerseries)
       if rank(R)==0
         u.prop[:AuAction]=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
       else
-       if isempty(f[:gens]) F0s=[refrep(R,R())]
+       if isempty(f[:gens]) F0s=[reflrep(R,R())]
        else F0s=map(x->prod(u.prop[:AuAction].F0s[x]),f[:gens])
        end
        u.prop[:AuAction]=ExtendedCox(R,F0s)
@@ -694,7 +694,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-            map(x->toM(DiagonalMat(x,refrep(T,T()))),u.prop[:AuAction].F0s))
+            map(x->toM(DiagonalMat(x,reflrep(T,T()))),u.prop[:AuAction].F0s))
         end
       end
       u
@@ -1065,6 +1065,70 @@ function Base.show(io::IO,x::ICCTable)
                 charnames(io,x[:relgroup]))
   format(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
 end
+
+struct GreenTable
+  prop::Dict{Symbol,Any}
+end
+
+# Green functions: Green(uc[,opt]) values on unipotent classes or local systems
+# opt: variable (default X(Cyclotomics))
+#
+# Formatting: options of FormatTable + [.classes, .CycPol]
+function GreenTable(uc;variable=:q)
+  W=Group(uc.spets)
+  if !IsBound(opt.variable) opt.variable=X(Cyclotomics) end
+  q=opt.variable
+  pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerSeries))
+  greenpieces=List(pieces,x->List(x.scalar,l->map((x,y)->x*q^y,l,x.dimBu)))
+  l=Concatenation(List(pieces,x->x.locsys))
+  p=SortingPerm(l)
+  res=rec(
+    scalar=TransposedMat(Permuted(ApplyFunc(DiagonalMat,greenpieces),p)),
+    uc=uc,
+    Y=OnMatrices(ApplyFunc(DiagonalMat,List(pieces,p->p.L)),p),
+    locsys=Permuted(l,p),
+    parameter=Concatenation(List(pieces,x->x.parameter)),
+    relgroups=List(uc.springerSeries,x->x.relgroup))
+  n=Length(res.locsys)
+  if IsBound(opt.classes) then
+    res.cardClass=[]
+    for i in eachindex(uc.classes)
+      Au=uc.classes[i].Au
+      b=Filtered(eachindex(res.locsys),j->res.locsys[j][1]==i)
+      res.scalar{1:n}{b}=res.scalar{1:n}{b}*CharTable(Au).irreducibles
+      res.cardClass{b}=res.Y[b[PositionId(Au)]]{b}*CharTable(Au).irreducibles
+      res.cardClass{b}=Zip(res.cardClass{b},ChevieClassInfo(Au).classes,
+        function(x,y)return x*y/Size(Au);end)
+    end
+    res.classes=true
+  end
+  res.operations=rec()
+  res.operations.String=x->SPrint("GreenTable(",W,",rec(variable=",q,"))")
+  res.operations.Format=function(x,opt)local res,tbl,i,b
+    res=SPrint("Values of character sheaves on")
+    opt.rowLabels=Concatenation(List(x.relgroups,g->
+      List(CharNames(g,opt),n->SPrint("Q^{",ReflectionName(g),"}_{",n,"}"))))
+    opt.rowsLabel="Q"
+    tbl=Copy(x.scalar)
+    if IsBound(x.classes) then
+      PrintToString(res," unipotent classes\n")
+      opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
+	  Inherit(rec(class=p[2]),opt)))
+    else PrintToString(res," local systems\n")
+      opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
+        Inherit(rec(locsys=p[2]),opt)))
+    end
+    if not IsBound(opt.CycPol) then opt.CycPol=true end
+    if opt.CycPol then tbl=List(tbl,y->List(y,CycPol)) end
+    PrintToString(res,FormatTable(tbl,opt))
+    return String(res)
+  end
+  res.operations.Print=function(x)Print(String(x));end
+  res.operations.Display=function(x,opt)opt.screenColumns=SizeScreen()[1]
+               Print(Format(x,opt));end
+  return res
+end
+
 """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 'SpecialPieces(<uc>)'

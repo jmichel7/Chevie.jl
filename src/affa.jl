@@ -42,10 +42,12 @@ function isvalid(d)
 end
 
 Base.one(p::PPerm)=PPerm(1:length(p.d))
+Base.isone(p::PPerm)=p.d==eachindex(p.d)
 Base.copy(p::PPerm)=PPerm(copy(p.d))
+Base.broadcastable(p::PPerm)=Ref(p)
 
 """
-`PPerm((i₁,…,iₖ),n,d=0)`  where  `i₁,…,iₖ`  differ  mod  `n` represents the
+`PPerm(n,(i₁,…,iₖ)[=>d=0])`  where  `i₁,…,iₖ`  differ  mod  `n` represents the
 permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`
 """
 function PPerm(n::Int,cc...)
@@ -89,13 +91,13 @@ end
 function Base.inv(x::PPerm)
   n=length(x.d)
   l=map(i->i-mod(i,n),x.d-1)
-  ll=(1:n)^inv(Perm(x.d.-l))
+  ll=(1:n).^inv(Perm(x.d.-l))
   PPerm(ll.-l[ll])
 end
 
 function Base.:^(i::Int,p::PPerm)
   y=1+mod(i-1,length(p.d))
-  x+p.d[y]-y
+  i+p.d[y]-y
 end
 
 Base.:^(q::PPerm,p::PPerm)= inv(p)*q*p
@@ -104,6 +106,7 @@ Base.:^(a::PPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
 
 Base.:/(a::PPerm,b::PPerm)=a*inv(b)
+Base.:\(a::PPerm,b::PPerm)=inv(a)*b
 
 #PPermOps.\=:=function(a,b)return a.perm=b.perm;end;
 
@@ -112,18 +115,18 @@ Base.:/(a::PPerm,b::PPerm)=a*inv(b)
 function cycles(a::PPerm)
   res=Pair{Vector{Int},Int}[]
   n=length(a.d)
-  l=1:n
-  while !isempty(l)
-    x=l[1]
+  l=trues(n)
+  while true
+    x=findfirst(l)
+    if isnothing(x) break end
     cyc=Int[]
     while true
       push!(cyc,x)
-      x-=1
-      j=mod(x,n)
-      x=a.d[1+j]+x-j
+      xn=mod1(x,n)
+      l[xn]=false
+      x+=a.d[xn]-xn
       if mod(x-cyc[1],n)==0 break end
     end
-    l=setdiff(l,mod1.(cyc,n))
     pp=cyc=>div(x-cyc[1],n)
     if length(cyc)>1 || pp[2]!=0 push!(res,pp) end
   end
@@ -176,9 +179,9 @@ CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
 # for this function see [Digne],2.8
 function Perms.reflength(w::PPerm)
   function vec(pp,i)
-    pp=map(x->map(y->sum(pp[y]),x),PartitionsSet(eachindex(pp),i))
+    pp=map(x->sum.(getindex.(Ref(pp),x)),partitions_set(eachindex(pp),i))
     if pp[1][1]<0 pp=-pp end
-    return Set(collected.(pp))
+    return tally.(pp)
   end
   d=last.(cycles(w))
   n=length(w.d)
@@ -188,12 +191,13 @@ function Perms.reflength(w::PPerm)
   pos=filter(x->x>0,d)
   neg=filter(x->x<0,d)
   m=min(length(pos),length(neg))
-  return res-2*First(m:-1:1,
-     i->Length(Intersection(vec(pos,i),vec(neg,i)))>0);
+  r=m:-1:1
+  res-2*r[findfirst(i->length(intersect(vec(pos,i),vec(neg,i)))>0,r)]
 end
 
 function refword(w::PPerm)
   n=length(w.d)
+  cnt=0
   function ff(w)local s
     l=reflength(w)
     d=1
@@ -203,16 +207,50 @@ function refword(w::PPerm)
         if reflength(s*w)<l return s end
       end
       d+=1
-      if mod(d,n)=0 d+=1 end
+      if mod(d,n)==0 d+=1 end
     end
   end
   res=PPerm[]
   while !isone(w)
     s=ff(w)
-     push!(res,s)
-     w=s*w
+    push!(res,s)
+    w=s*w
   end
   res
+end
+
+# descent sets are encoded as a pair: a list of atoms, and a list
+# of atoms of the form [1,u] representing all atoms [1,u+i*n]
+# This uses lemma 2.20 of [Digne] and is valid only if there are
+# 0 or 2 cycles with a non-zero shift
+function dualleftdescents(a::PPerm)
+  res=[PPerm[],PPerm[]]
+  n=length(a.d)
+  for (x,d) in cycles(a)
+    if x[1]!=1 || length(x)!=1
+      for j in 1:length(x)
+        for k in j+1:length(x)
+          push!(res[1],PPerm(n,(x[j],x[k])))
+          if d!=0 push!(res[1],PPerm(n,(x[j]+n,x[k]))) end
+        end
+        if d!=0 push!(res[2],PPerm(n,(1,1+mod(x[j]-1,n)))) end
+      end
+    end
+  end
+  res
+end
+
+# a,b are results of dualleftdescents
+function firstintersectiondualleftdescents(a,b)
+  for t in a[1]
+    if t in b[1] || mod1.(t.d,length(t.d)) in map(x->x.d,b[2]) 
+      return t
+    end
+  end
+  for t in b[1]
+    if mod1.(t.d,length(t.d)) in map(x->x.d,a[2]) return t end
+  end
+  for t in a[2] if t in b[2] return t end end
 end
 
 #PPermOps.CycleType:=function(a)local res;
@@ -268,6 +306,39 @@ Perms.reflength(W::Atilde,w)=reflength(w)
 
 PermRoot.reflection_subgroup(W::Atilde,I)=Atilde(gens(W)[I],Dict{Symbol,Any}())
 
+struct AffaDualBraidMonoid{T,TW}<:Garside.GarsideMonoid{T}
+  δ::T
+  stringδ::String
+  W::TW
+  prop::Dict{Symbol,Any}
+end
+
+Garside.IntervalStyle(M::AffaDualBraidMonoid)=Garside.Interval()
+
+function Garside.DualBraidMonoid(W::Atilde)
+  n=length(gens(W))
+  delta=PPerm(vcat([1-n],3:n,[2+n]))
+  AffaDualBraidMonoid(delta,"c",W,Dict{Symbol,Any}())
+end
+
+function Garside.leftgcd(M::AffaDualBraidMonoid,a,b)
+  x=one(M)
+  while true
+    t=firstintersectiondualleftdescents(dualleftdescents(a),dualleftdescents(b))
+    if isnothing(t) return x,(a,b) end
+    x*=t
+    a=t^-1*a
+    b=t^-1*b
+  end
+end
+
+CoxGroups.word(M::AffaDualBraidMonoid,w)=refword(w)
+function CoxGroups.word(io::IO,M::AffaDualBraidMonoid,w)
+  join(map(x->sprint(show,x;context=io),refword(w)))
+end
+
+Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
+
 #  W.operations.\in:=function(e,W)return Length(e.perm)=W.rank;end;
 #
 ## DualMonoid(W[,M])
@@ -279,7 +350,6 @@ PermRoot.reflection_subgroup(W::Atilde,I)=Atilde(gens(W)[I],Dict{Symbol,Any}())
 #AtildeGroupOps.DualBraidMonoid:=function(arg)local M,n,W,delta;
 #  W:=arg[1];n:=W.rank;
 #  if Length(arg)=1 then
-#       delta:=rec(perm:=Concatenation([1-n],[3..n],[2+n]),operations:=PPermOps);
 #  else delta:=arg[2].delta^-1;
 #  fi;
 #  M:=rec(rank:=n,
@@ -299,51 +369,9 @@ PermRoot.reflection_subgroup(W::Atilde,I)=Atilde(gens(W)[I],Dict{Symbol,Any}())
 #      return GarsideEltOps.Normalize(M.revMonoid.Elt(res,b.pd));
 #    end,
 #    RightComplementToDelta:=a->a^-1*M.delta,
-## descent sets are encoded as a pair: a list of atoms, and a list
-## of atoms of the form [1,u] representing all atoms [1,u+in]
-## This uses lemma 2.20 of [Digne] and is valid only if there are
-## 0 or 2 cycles with a non-zero shift
-#    LeftDescentSet:=function(a)local d,j,k,x,res;
-#      res:=[[],[]];
-#      for x in PPermOps.Cycles(a) do
-#        d:=x[Length(x)][1];x:=x{[1..Length(x)-1]};
-#	if x[1]<>1 or Length(x)<>1 then
-#	  for j in [1..Length(x)] do
-#	    for k in [j+1..Length(x)] do 
-#	      Add(res[1],[x[j],x[k]]);
-#	      if d<>0 then Add(res[1],[x[j]+n,x[k]]);fi;  
-#	    od;
-#	    if d<>0 then Add(res[2],[1,1+((x[j]-1) mod n)]);fi;  
-#	  od;
-#	fi;
-#      od;
-#      return List(res,i->List(i,x->PPerm(x,n)));
-#    end,
 #    RightAscentSet:=a->M.LeftDescentSet(M.RightComplementToDelta(a)),
 #    operations:=rec(Print:=function(M) Print("DualBraidMonoid(",W,")");end)
 #  );
-#  M.DeltaAction:=function(s,i)return s^(M.delta^i);end;
-#  M.FirstIntersectionLDS:=function(a,b)local t;
-#    for t in a[1] do 
-#      if t in b[1] or 
-#        List(t.perm,u->1+((u-1) mod n)) in List(b[2],x->x.perm) then return t;
-#      fi;
-#    od;
-#    for t in b[1] do 
-#      if List(t.perm,u->1+((u-1) mod n)) in List(a[2],x->x.perm) then return t;
-#      fi;
-#    od;
-#    for t in a[2] do if t in b[2] then return t;fi; od;
-#    return false;
-#  end;
-#  M.LeftGcdSimples:=function(a,b)local t,x;
-#    x:=M.identity;
-#    while true do
-#      t:=M.FirstIntersectionLDS(M.LeftDescentSet(a),M.LeftDescentSet(b));
-#      if t=false then return [x,a,b];fi;
-#      x:=x*t;a:=t^-1*a;b:=t^-1*b;
-#    od;
-#  end;
 #  M.Elt:=function(arg)local res;
 #    res:=rec(elm:=arg[1],operations:=GarsideEltOps,monoid:=M);
 #    if Length(arg)>1 then res.pd:=arg[2]; else res.pd:=0; fi;

@@ -311,6 +311,7 @@ Base.zero(c::Cyc)=Cyc(1,zero(c.d))
 Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
 Base.iszero(c::Cyc)=iszero(c.d)
 end
+#Base.zero(m::Array{Cyc})=zero.(m)
 Base.one(c::Cyc)=E(1,0)
 
 function Cyc(c::Complex{T}) where T

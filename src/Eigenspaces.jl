@@ -212,14 +212,14 @@ eigenspace_projector(WF,w,d::Rational=0//1)=eigenspace_projector(WF,w,Root1(;r=d
 function eigenspace_projector(WF, w, d::Root1)
   c=refleigen(WF)[position_class(WF,w)]
   c=E.(filter(x->x!=d,c))
-  f=refrep(WF,w)
+  f=reflrep(WF,w)
   if length(c)==0 f^0
   else prod(x->f-f^0*x,c)//prod(x->E(d)-x,c)
   end
 end
 
 function GetRelativeAction(W,L,w)
-  m=refrep(W,w)
+  m=reflrep(W,w)
   if size(m,2)==0 return m end
   m=m^inv(baseX(L))
   m[semisimplerank(L)+1:end,semisimplerank(L)+1:end]
@@ -323,14 +323,14 @@ function split_levis(WF,d::Root1,ad)
   refs=eachindex(reflections(W)[1:nref(W)]) #hum
 #  refs=filter(i->Position(reflections(W),reflection(W,i))==i,
 #              eachindex(roots(W)))
-  mats=map(i->refrep(W,reflection(W,i)),refs)
+  mats=map(i->reflrep(W,reflection(W,i)),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
   res=[]
   while length(cl)>0
     w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
-    else m=refrep(WF,w)
+    else m=reflrep(WF,w)
       V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(d)*one(m))))
     end
     I=refs[map(m->V==V*m, mats)]

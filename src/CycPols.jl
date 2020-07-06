@@ -66,13 +66,13 @@ module CycPols
 export CycPol,descent_of_scalars,ennola_twist
 # to use as a stand-alone module uncomment the next line
 # export roots, degree, valuation
-import Gapjm: roots, degree, valuation
+import ..Gapjm: roots, degree, valuation
+using ..Gapjm
 
 using ..ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
 #using ..Pols
 using ..Util: fromTeX, prime_residues, primitiveroot, phi
-using ..Gapjm
 import Primes
 
 struct CycPol{T}

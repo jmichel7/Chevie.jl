@@ -143,7 +143,7 @@ function traces_words_mats(mats,words)
       prods[w[1:i]]=prods[w[1:i-1]]*mats[w[i]]
       i+=1
     end
-#   println(prod(dens[w]))
+#   println(prod(dens[w])
     trace(w)
   end
 end
@@ -153,7 +153,9 @@ end
 const src=[ 
 #  "compat3", 
 "cmp4_22", "cmplxg24", "cmplxg25", "cmplxg26", 
-"cmplxg27", "cmplxg29", "cmplxg31", 
+"cmplxg27", 
+"cmplxg29", 
+"cmplxg31", 
 "cmplxg32", 
 "cmplxg33", "cmplxg34", 
 "cmplximp", "coxh3", "coxh4", "coxi", 
@@ -161,7 +163,8 @@ const src=[
 "weyl2d",
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
 "weyle6", "weyle7", "weyle8", "weylf4", "weylg2", 
-"exceptio"]
+"exceptio"
+]
 
 for f in src
   println("reading tbl/$f.jl")

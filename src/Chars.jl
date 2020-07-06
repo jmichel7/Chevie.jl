@@ -751,7 +751,7 @@ julia> classinfo(coxgroup(:A,2))
 Dict{Symbol,Any} with 5 entries:
   :classes     => [1, 3, 2]
   :orders      => [1, 2, 3]
-  :classtext   => [[], [1], [1, 2]]
+  :classtext   => [Int64[], [1], [1, 2]]
   :classnames  => ["111", "21", "3"]
   :classparams => [[1, 1, 1], [2, 1], [3]]
 ```

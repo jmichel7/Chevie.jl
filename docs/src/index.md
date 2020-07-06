@@ -232,7 +232,7 @@ degrees(::Group)
 codegrees
 bipartite_decomposition
 catalan
-refrep(::PermRootGroup,w)
+reflrep(::PermRootGroup,w)
 PermX
 reflections
 refleigen
@@ -258,7 +258,7 @@ schur_elements
 FactorizedSchurElement
 FactorizedSchurElements
 isrepresentation
-refrep(::HeckeAlgebra)
+reflrep(::HeckeAlgebra)
 ```
 # Kazhdan-Lusztig polynomials and bases
 ```@docs
@@ -494,7 +494,7 @@ Hasse                                       → hasse
 HeckeCentralMonomials                       → central_monomials
 HeckeCharValues                             → char_values
 HeckeClassPolynomials                       → class_polynomials
-HeckeReflectionRepresentation               → refrep
+HeckeReflectionRepresentation               → reflrep
 HighestPowerFakeDegreeSymbol                → degree_feg_symbol
 HighestPowerGenericDegreeSymbol             → degree_gendeg_symbol
 HyperplaneOrbits                            → hyperplane_orbits
@@ -547,7 +547,7 @@ LusztigRestriction                          → LusztigRestrict
 Lusztigaw                                   → Lusztigaw
 MappingPermListList                         → mappingPerm
 MatStab                                     → stab_onmats
-MatXPerm(W,p)                               → refrep(W,p)
+MatXPerm(W,p)                               → reflrep(W,p)
 MatYPerm                                    → matY
 MovedPoints                                 → support
 NrArrangements                              → narrangements
@@ -653,7 +653,7 @@ UnorderedTuples                             → submultisets
 Valuation(p)                                → valuation(p)
 Value(p,x)                                  → p(x)
 W.N                                         → nref(W)
-W.matgens[i]                                → refrep(W,i)
+W.matgens[i]                                → reflrep(W,i)
 W.orbitRepresentative                       → simple_representatives(W)
 W.orbitRepresentativeElements[i]            → simple_conjugating_element(W,i)
 W.rootLengths                               → rootlengths(W)

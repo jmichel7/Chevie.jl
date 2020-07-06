@@ -119,11 +119,11 @@ Dict{Int64,Perm{Int16}} with 3 entries:
 julia> transversal(G,[1,2],action=(x,y)->x.^y)
 Dict{Array{Int64,1},Perm{Int16}} with 6 entries:
   [1, 3] => (2,3)
+  [2, 1] => (1,2)
   [1, 2] => ()
+  [3, 1] => (1,3,2)
   [2, 3] => (1,2,3)
   [3, 2] => (1,3)
-  [2, 1] => (1,2)
-  [3, 1] => (1,3,2)
 ```
 """
 function transversal(G::Group,pnt;action::Function=^)

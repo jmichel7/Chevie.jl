@@ -38,10 +38,10 @@ Cycles(p,i)=orbits(p,i)
 CycPolFakeDegreeSymbol=fegsymbol
 DefectSymbol=defectsymbol
 function DiagonalMat(v...)
-  R=cat(map(m->m isa Array ? m : hcat(m),v)...,dims=(1,2))
-  for i in axes(R,1), j in axes(R,2)
-    if i!=j R[i,j]=zero(R[1,1]) end
-  end
+  arg=map(m->m isa Array ? toM(m) : hcat(m),v)
+  R=cat(arg...;dims=(1,2))
+  u=reshape(R,(prod(size(R),)))
+  for i in eachindex(u) if !isassigned(u,i) u[i]=zero(u[1]) end end
   toL(R)
 end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
@@ -70,7 +70,7 @@ Join(x)=join(x,",")
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LowestPowerFakeDegreeSymbol=valuation_feg_symbol
 LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
-MatXPerm=refrep
+MatXPerm=reflrep
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 NrPartitions=npartitions
 NrPartitionTuples=npartition_tuples

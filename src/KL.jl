@@ -372,7 +372,7 @@ We  can  also  compute  character  values  on  elements in the `C`-basis as
 follows:
 
 ```julia-repl
-julia> ref=refrep(H)
+julia> ref=reflrep(H)
 3-element Array{Array{Pol,2},1}:
  [-1 0 0; -v² v² 0; 0 0 v²]
  [v² -2 0; 0 -1 0; 0 -v² v²]

@@ -466,6 +466,8 @@ function CoxGroups.word(M::LocallyGarsideMonoid,w)
   end
 end
 
+CoxGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w),"";sep=" ")
+
 """
 left_divisors( M, s)
 
@@ -902,7 +904,7 @@ function Base.show(io::IO,b::GarsideElm)
     return
   end
   function p(b)
-    l=join(map(e->joindigits(word(M,e),"";sep=" "),b.elm),".")
+    l=join(map(e->word(io,M,e),b.elm),".")
     if b.pd==0 return l end
     if !isempty(l) l="."*l end
     return M.stringδ*(b.pd!=1 ? "^{$(b.pd)}" : "")*l

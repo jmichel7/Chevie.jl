@@ -386,11 +386,11 @@ struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   prop::Dict{Symbol,Any}
 end
 
-#function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
+#function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
 #  print(io,"spets{",TW,"}")
 #end
 
-spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,refrep(W,w))
+spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,reflrep(W,w))
 Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
@@ -421,7 +421,7 @@ unitary group `GU_3(q)` over the finite field `FF(q)`.
 julia> W=rootdatum(:gl,3)
 A₂
 
-julia> gu3=spets(W,-refrep(W,W()))
+julia> gu3=spets(W,-reflrep(W,W()))
 ²A₂Φ₂
 
 julia> F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])
@@ -432,7 +432,7 @@ function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   perm=PermX(W.G,F)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
-  FCC(phi,F*refrep(W,perm\phi),W,Dict{Symbol,Any}())
+  FCC(phi,F*reflrep(W,perm\phi),W,Dict{Symbol,Any}())
 end
 
 function torusfactors(WF::CoxeterCoset)
@@ -576,7 +576,7 @@ function Base.show(io::IO, WF::Spets)
   if !isone(t) show(io,t) end
 end
 
-PermRoot.refrep(WF::Spets,w)=WF.F*refrep(Group(WF),w)
+PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),w)
   
 function PermGroups.classreps(W::Spets)
   gets(W,:classreps)do
@@ -587,7 +587,7 @@ end
 function PermRoot.refleigen(W::Spets)
   gets(W,:refleigen)do
     map(W.phi.\classreps(W)) do x
-      p=CycPol(charpoly(refrep(W,x)))
+      p=CycPol(charpoly(reflrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
   end
@@ -672,7 +672,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
     error("w*WF.phi does not normalize subsystem")
   end
   phi=reduced(R,phi*WF.phi)
-  spets(phi,refrep(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+  spets(phi,reflrep(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
 end
 
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
@@ -686,7 +686,7 @@ end
 
 function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
   w=reduced(W,w)
-  F=refrep(W,w)
+  F=reflrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
   refltype(res) # changes phi
@@ -711,7 +711,7 @@ function relative_coset(WF::Spets,J=Int[],a...)
   res
 end
 
-#function Base.show(io::IO,t::Type{PRC{T,T1,TW}})where {T,T1,TW}
+#function Base.show(io::IO,::MIME"text/plain",t::Type{PRC{T,T1,TW}})where {T,T1,TW}
 #  print(io,"Spets{",TW,"}")
 #end
 

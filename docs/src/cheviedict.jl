@@ -124,7 +124,7 @@ const ChevieDict=Dict(
 #HeckeCharValuesGood
 "HeckeCentralMonomials"=>"central_monomials",
 "HeckeClassPolynomials"=>"class_polynomials",
-"HeckeReflectionRepresentation"=>"refrep",
+"HeckeReflectionRepresentation"=>"reflrep",
 #HeckeSubAlgebra
 #HighestPowerFakeDegrees
 "HighestPowerFakeDegreeSymbol"=>"degree_feg_symbol",
@@ -190,7 +190,7 @@ const ChevieDict=Dict(
 "LusztigRestriction"=>"LusztigRestrict",
 "MappingPermListList"=>"mappingPerm",
 "MatStab"=>"stab_onmats",
-"MatXPerm(W,p)"=>"refrep(W,p)",
+"MatXPerm(W,p)"=>"reflrep(W,p)",
 "MatYPerm"=>"matY",
 "MovedPoints"=>"support",
 "NrArrangements"=>"narrangements",
@@ -323,7 +323,7 @@ const ChevieDict=Dict(
 "WeightInfo"=>"weightinfo",
 #WGraph
 #WGraphToRepresentation
-"W.matgens[i]"=>"refrep(W,i)",
+"W.matgens[i]"=>"reflrep(W,i)",
 "W.N"=>"nref(W)",
 "W.orbitRepresentative"=>"simple_representatives(W)",
 "W.orbitRepresentativeElements[i]"=>"simple_conjugating_element(W,i)",

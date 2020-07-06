@@ -1,12 +1,14 @@
 module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
   conjugate_partition, dominates, compositions, submultisets, cartesian,
-  npartition_tuples, narrangements, groupby, constant, tally, collectby
+  npartition_tuples, narrangements, groupby, constant, tally, collectby,
+  partitions_set, npartitions_set, bell, stirling2
 
 """
 `groupby(v::AbstractVector,l)`
 
-group items of list l according to the corresponding values in list v
+group  elements of collection `l` according  to the corresponding values in
+the coillection `v`
 
 ```julia-rep1
 julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
@@ -26,7 +28,8 @@ end
 """
 `groupby(f::Function,l)`
 
-group items of list l according to the values taken by function f on them
+group  elements of collection `l` according to the values taken by function
+`f` on them
 
 ```julia-repl
 julia> groupby(iseven,1:10)
@@ -34,13 +37,13 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
   false => [1, 3, 5, 7, 9]
   true  => [2, 4, 6, 8, 10]
 ```
-Note:in this version l is required to be non-empty since I do not know how to
-access the return type of a function
+Note: `l` is required to be non-empty since I do not know how to access the
+return type of a function
 """
-function groupby(f,l::AbstractArray)
+function groupby(f,l::AbstractArray{V})where V
   res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
   for val in l[2:end]
-    push!(get!(res,f(val),empty(l)),val)
+    push!(get!(res,f(val),V[]),val)
   end
   res
 end
@@ -48,15 +51,27 @@ end
 """
 `tally(v)` 
 
-count how many times each element of collection `v` occurs and return a list 
-of `(elt,count)` (a variation on StatsBase.countmap)
+count  how many times  each element of  collection `v` occurs  and return a
+`Vector` of `(elt,count)` (a variation on StatsBase.countmap)
 """
-tally(v)=sort([(k,length(v)) for (k,v) in groupby(v,v)])
+function tally(v)
+  res=Tuple{eltype(v),Int}[]
+  if isempty(v) return res end
+  v=sort(v)
+  c=1
+@inbounds  for j in 2:length(v)
+    if v[j]==v[j-1] c+=1
+    else push!(res,(v[j-1],c))
+      c=1
+    end
+  end
+  push!(res,(v[end],c))
+end
 
 """
 `collectby(f,v)`
 
-group the elements of v in packets where f takes the same value"
+group the elements of `v` in packets (`Vector`s) where f takes the same value"
 """
 function collectby(f,v)
   d=groupby(f,v)
@@ -125,18 +140,6 @@ combinations(mset,k)=unique(combinations_sorted(sort(mset),k))
 combinations(mset)=isempty(mset) ? [Int[]] :
    union(combinations.(Ref(mset),0:length(mset)))
 
-function ArrangementsK(mset,blist,k)
-  if iszero(k) return [eltype(mset)[]] end
-  combs=Vector{eltype(mset)}[]
-  for i in eachindex(mset)
-    if blist[i] && (i==length(mset) || mset[i+1]!=mset[i] || !blist[i+1])
-      blist1=copy(blist)
-      blist1[i]=false
-      append!(combs,pushfirst!.(ArrangementsK(mset,blist1,k-1),Ref(mset[i])))
-    end
-  end
-  combs
-end
 
 """
 `arrangements(mset[,k])`
@@ -163,18 +166,51 @@ The  result  returned  by  'arrangements'  is  sorted,  which means in this
 example  that the possibilities are listed in the same order as they appear
 in the dictionary.
 """
-arrangements(mset,k)=ArrangementsK(sort(mset),fill(true,length(mset)),k)
-arrangements(mset)=isempty(mset) ? [Int[]] :
-   union(arrangements.(Ref(mset),0:length(mset)))
-narrangements(a...)=length(arrangements(a...))
+function arrangements(mset::AbstractVector{K},k)where K
+  blist=trues(length(mset))
+  function arr(mset,k)
+    if iszero(k) return [K[]] end
+    combs=Vector{K}[]
+    for i in eachindex(blist)
+      if blist[i] && (i==length(blist) || mset[i+1]!=mset[i] || !blist[i+1])
+        blist[i]=false
+        append!(combs,pushfirst!.(arr(mset,k-1)::Vector{Vector{K}},Ref(mset[i])))
+        blist[i]=true
+      end
+    end
+    combs
+  end
+  arr(sort(mset),k)
+end
+
+arrangements(mset::AbstractArray)=vcat(arrangements.(Ref(mset),0:length(mset))...)
+
+function narrangements(mset,k)
+  blist=trues(length(mset))
+  function arr(mset,k)
+    if iszero(k) return 1 end
+    combs=0
+@inbounds for i in eachindex(blist)
+      if blist[i] && (i==length(blist) || mset[i+1]!=mset[i] || !blist[i+1])
+        blist[i]=false
+        combs+=arr(mset,k-1)
+        blist[i]=true
+      end
+    end
+    combs
+  end
+  arr(sort(mset),k)
+end
+narrangements(mset)=sum(narrangements.(Ref(mset),0:length(mset)))
 
 # partitions of n of first (greatest) part <=m
 function partitions_less(n,m)
-  if m==1 return [fill(1,n)] end
-  if iszero(n) return [Int[]] end
+  if m==1 return [fill(1,n)]
+  elseif iszero(n) return [Int[]]
+  end
   res=Vector{Int}[]
   for i in 1:min(m,n)
-    append!(res,map(x->vcat([i],x),partitions_less(n-i,i)))
+    append!(res,pushfirst!.(partitions_less(n-i,i),i))
   end
   res
 end
@@ -216,17 +252,18 @@ function partitions_less(n,m,k)
   if n<k return res end
   if k==1 return m<n ? res : [[n]] end
   for i in 1:min(m,n)
-    append!(res,map(x->vcat([i],x),partitions_less(n-i,i,k-1)))
+    append!(res,pushfirst!.(partitions_less(n-i,i,k-1),i))
   end
   res
 end
 partitions(n,k)=partitions_less(n,n,k)
 
+" npartitions(n) number of partitions of n"
 function npartitions(n)
-  s=1
+  s=one(n)
   p=fill(s,n+1)
   for m in 1:n
-    s=0
+    s=zero(n)
     k=1
     l=1
     while 0<=m-(l+k)
@@ -240,6 +277,7 @@ function npartitions(n)
   s
 end
 
+" npartitions(n,k) number of partitions of n with k parts"
 function npartitions(n,k)
   if n==k return 1
   elseif n<k || k==0 return 0
@@ -251,21 +289,19 @@ function npartitions(n,k)
   p[n-k+1]
 end
 
-if false
-function partition_tuples(n,r)::Vector{Vector{Vector{Int}}}
-  if r==1 return iszero(n) ? [[Int[]]] : map(x->[x],partitions(n)) end
+function partition_tuples2(n,r)
+  if r==1 return map(x->[x],partitions(n)) end
   res=Vector{Vector{Int}}[]
   for i in  n:-1:1
-    for p1 in partitions(i), p2 in partition_tuples(n-i,r-1)
-      push!(res,vcat([p1],p2))
+    for p1 in partitions(i)
+      append!(res,pushfirst!.(partition_tuples2(n-i,r-1),Ref(p1)))
     end
   end
-  for p2 in partition_tuples(n,r-1)
-    push!(res,vcat([Int[]],p2))
-  end
+  append!(res,pushfirst!.(partition_tuples2(n,r-1),Ref(Int[])))
   res
 end
-else # bad implementation but which is ordered as GAP3; needed for
+
+# bad implementation but which is ordered as GAP3; needed for
 # compatibility with CHEVIE data library
 """
 `partition_tuples(n,r)`
@@ -326,8 +362,8 @@ function partition_tuples(n, r)
    end
    res
 end
-end
 
+"`npartition_tuples(n,k)` number of `r`-tuples of  partitions of `n`."
 function npartition_tuples(n,k)
   res=0
   for l in 1:k
@@ -445,4 +481,247 @@ function submultisets(A,i)
            eachindex(A))...)
 end
 
+"""
+`partitions_set(set)`
+
+the set of all unordered partitions of the set `set`.
+
+An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
+sets with union `set`  and is represented by  a sorted list of such sets.
+
+```julia-repl
+julia> partitions_set(1:3)
+5-element Array{Array{Array{Int64,1},1},1}:
+ [[1], [2], [3]]
+ [[1], [2, 3]]
+ [[1, 2], [3]]
+ [[1, 2, 3]]
+ [[1, 3], [2]]
+```
+
+Note  that `partitions_set` does currently  not support multisets and that
+there is currently no ordered counterpart.
+"""
+function partitions_set(set)
+  if unique(set)!=set error("partitions_set: ",set," must be a set") end
+  if isempty(set) return [empty(set)] end
+  m=1 .!=eachindex(set)
+"""
+`pp(part)`
+all  partitions  of  `set`  that  begin  with `part[1:end-1]` and where the
+`length(part)`-th set begins with `part[end]`.
+ 
+To find that first we consider the set `part[end]` to be complete and add a
+new  set to `part`, which must start with the smallest element of `set` not
+yet  taken,  because  we  require  the  returned  partitions  to  be sorted
+lexicographically.  `m` is  a boolean  list that  contains `true` for every
+element of `set` not yet taken.
+
+Second  we find all elements of `set`  that can be added to `part[end]` and
+call  `pp`  recursively  for  each  candidate.  If  `o`  is the position of
+`part[end][end]`  in `mset`, these candidates are set[l]` for `l` for which
+`o<=l` and `m[l]` is `true`.
+"""
+  function pp(part)
+    local l,o
+    l=findfirst(m)
+    if isnothing(l) return [part] end
+    m[l]=false
+    npart=copy.(part)
+    push!(npart,[set[l]])
+    parts=pp(npart)
+    m[l]=true
+    part=copy(part)
+    part[end]=copy(part[end])
+    o=findfirst(==(part[end][end]),set)
+    push!(part[end],set[o])
+    for l in o:length(m)
+      if m[l]
+        m[l]=false
+        part[end][end]=set[l]
+        append!(parts,pp(part))
+        m[l]=true
+      end
+    end
+    parts
+  end
+  pp([[set[1]]])
+end
+
+"""
+`partitions_set(set,k)`
+the set of  all unordered partitions of the  set `set` into  `k` pairwise
+disjoint nonempty sets.
+
+```julia-repl
+julia> partitions_set(1:4,2)
+7-element Array{Array{Array{Int64,1},1},1}:
+ [[1], [2, 3, 4]]
+ [[1, 2], [3, 4]]
+ [[1, 2, 3], [4]]
+ [[1, 2, 4], [3]]
+ [[1, 3], [2, 4]]
+ [[1, 3, 4], [2]]
+ [[1, 4], [2, 3]]
+```
+"""
+function partitions_set(set,k)
+  if unique(set)!=set error("partitions_set: ",set," must be a set") end
+  if isempty(set)
+    if k==0  return [empty(set)]
+    else return typeof(set)[]
+    end
+  end
+  m=1 .!=eachindex(set)
+"""
+`pp(k,part)`
+set  of  all  partitions  of  the  set  `set`  of  length  `n`,  that  have
+`k+length(part)-1`  subsets, that begin with  `part[1:end-1]` and where the
+`length(part)`-th set begins with `part[end]`.
+
+To do so it does two things. It finds all elements of `mset` that can go at
+`part[end][end+1]` and calls itself recursively for each candidate. And, if
+`k`  is larger than 1, it considers  the set `part[end]` to be complete and
+starts  a new set `part[end+1]`, which must start with the smallest element
+of  `mset` not yet taken, because we  require the returned partitions to be
+sorted  lexicographically. `m` is  a boolean list  that contains `true` for
+every   element  of   `set`  not   yet  taken.   `o`  is  the  position  of
+`part[end][end]` in `set`, so the candidates for `part[end][end+1]` are the
+`set[l]` for which `o<l` and `m[l]` is `true`.
+"""
+  function pp(k,part)
+    local l,o
+    l=findfirst(m)
+    parts=typeof(part)[]
+    if k==1
+      part=copy.(part)
+      for l in k:length(set)
+        if m[l] push!(part[end],set[l]) end
+      end
+      return [part]
+    end
+    if isnothing(l) return parts end
+    m[l]=false
+    npart=copy(part)
+    push!(npart,[set[l]])
+    parts=pp(k-1,npart)
+    m[l]=true
+    part=copy(part)
+    part[end]=copy(part[end])
+    o=findfirst(==(part[end][end]),set)
+    push!(part[end],set[o])
+    for l in o:length(set)
+      if m[l]
+        m[l]=false
+        part[end][end]=set[l]
+        append!(parts,pp(k,part));
+        m[l]=true
+      end
+    end
+    parts
+  end
+  pp(k,[[set[1]]])
+end
+
+"""
+'bell(n)'
+
+The  Bell numbers are  defined by `bell(0)=1`  and ``bell(n+1)=∑_{k=0}^n {n
+\\choose  k}bell(k)``, or by the fact  that `bell(n)/n!` is the coefficient
+of `x^n` in the formal series `e^(e^x-1)`.
+    
+```julia-repl
+julia> bell.(0:6)
+7-element Array{Int64,1}:
+   1
+   1
+   2
+   5
+  15
+  52
+ 203
+
+julia> bell(14)
+190899322
+```julia-repl
+"""
+function bell(n)
+  bell_=[1]
+  for i in 1:n-1
+    push!(bell_,bell_[1])
+    for k in 0:i-1 bell_[i-k]+=bell_[i-k+1] end
+  end
+  bell_[1]
+end
+
+"""
+`npartitions_set(set)`
+
+the number of  unordered partitions of the set `set`.
+
+```julia-repl
+julia> npartitions_set(1:6)
+203
+```
+"""
+npartitions_set(set)=bell(length(set))
+
+"""
+`stirling2(n,k)`
+
+the   *Stirling  number   of  the   second  kind*.   They  are  defined  by
+`stirling2(0,0)=1`,  `stirling2(n,0)=stirling2(0,k)=0`  if  `n,  k!=0`  and
+`stirling2(n,k)=k   stirling2(n-1,k)+stirling2(n-1,k-1)`,   and   also   as
+coefficients of the generating function 
+``x^n=\\sum_{k=0}^{n}stirling2(n,k) k!{x\\choose k}``.
+
+```julia-repl
+julia> stirling2.(4,0:4)
+5-element Array{Int64,1}:  # Knuth calls this the trademark of stirling2
+ 0
+ 1
+ 7
+ 6
+ 1
+
+julia> [stirling2(i,j) for i in 0:6, j in 0:6]
+7×7 Array{Int64,2}:
+ 1  0   0   0   0   0  0 # Note the similarity with Pascal's triangle
+ 0  1   0   0   0   0  0
+ 0  1   1   0   0   0  0
+ 0  1   3   1   0   0  0
+ 0  1   7   6   1   0  0
+ 0  1  15  25  10   1  0
+ 0  1  31  90  65  15  1
+
+julia> stirling2(50,big(10))
+26154716515862881292012777396577993781727011
+```
+"""
+function stirling2( n, k )
+  if n<k return 0
+  elseif n==k return 1
+  elseif n<0 && k<0 return stirling1(-k,-n)
+  elseif k<=0 return 0
+  end
+  bin,sti,fib=1,0,1
+  for i in 1:k
+    bin=div(bin*(k-i+1),i)
+    sti=bin*i^n-sti
+    fib*=i
+  end
+  div(sti,fib)
+end
+
+"""
+`npartitions_set(set,k)`
+the  number  of  unordered  partitions  of  the set `set` into `k` pairwise
+disjoint  nonempty sets.
+
+```julia-repl
+julia> npartitions_set(1:10,3)
+9330
+```
+"""
+npartitions_set(set,k)=stirling2(length(set),k)
 end
