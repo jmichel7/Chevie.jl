@@ -694,7 +694,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-            map(x->toM(DiagonalMat(x,reflrep(T,T()))),u.prop[:AuAction].F0s))
+            map(x->toM(HasType.DiagonalMat(x,reflrep(T,T()))),u.prop[:AuAction].F0s))
         end
       end
       u
@@ -814,7 +814,7 @@ end
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
-  deep=get(io,:typeinfo,false)
+  deep=get(io,:typeinfo,false)!=false
   print(io,"UnipotentClasses(",uc.prop[:spets],")")
   if !repl || deep return end
   print(io,"\n")
@@ -1070,63 +1070,60 @@ struct GreenTable
   prop::Dict{Symbol,Any}
 end
 
+Base.getindex(t::GreenTable,k)=t.prop[k]
+
 # Green functions: Green(uc[,opt]) values on unipotent classes or local systems
 # opt: variable (default X(Cyclotomics))
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
-function GreenTable(uc;variable=:q)
-  W=Group(uc.spets)
-  if !IsBound(opt.variable) opt.variable=X(Cyclotomics) end
-  q=opt.variable
-  pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerSeries))
-  greenpieces=List(pieces,x->List(x.scalar,l->map((x,y)->x*q^y,l,x.dimBu)))
-  l=Concatenation(List(pieces,x->x.locsys))
-  p=SortingPerm(l)
-  res=rec(
-    scalar=TransposedMat(Permuted(ApplyFunc(DiagonalMat,greenpieces),p)),
-    uc=uc,
-    Y=OnMatrices(ApplyFunc(DiagonalMat,List(pieces,p->p.L)),p),
-    locsys=Permuted(l,p),
-    parameter=Concatenation(List(pieces,x->x.parameter)),
-    relgroups=List(uc.springerSeries,x->x.relgroup))
-  n=Length(res.locsys)
-  if IsBound(opt.classes) then
-    res.cardClass=[]
+function GreenTable(uc;q=Pol(:q),classes=false)
+  W=uc.prop[:spets].G
+  pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
+  greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^(x[:dimBu])...)),pieces)
+  l=vcat(getindex.(pieces,:locsys)...)
+  p=Perm(sortperm(l))
+  res=Dict(
+    :scalar=>permutedims(^(cat(greenpieces...,dims=(1,2)),p,dims=(1,2))),
+    :uc=>uc,
+    :Y=>^(cat(getindex.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
+    :locsys=>l^p,
+    :parameter=>vcat(getindex.(pieces,:parameter)...),
+    :relgroups=>getindex.(uc.springerseries,:relgroup))
+  n=length(res[:locsys])
+  if classes
+    res[:cardClass]=zeros(eltype(res[:scalar],length(res[:locsys])))
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au
-      b=Filtered(eachindex(res.locsys),j->res.locsys[j][1]==i)
-      res.scalar{1:n}{b}=res.scalar{1:n}{b}*CharTable(Au).irreducibles
-      res.cardClass{b}=res.Y[b[PositionId(Au)]]{b}*CharTable(Au).irreducibles
-      res.cardClass{b}=Zip(res.cardClass{b},ChevieClassInfo(Au).classes,
-        function(x,y)return x*y/Size(Au);end)
+      b=filter(j->res.locsys[j][1]==i,eachindex(res.locsys))
+      res[:scalar][1:n,b]*=CharTable(Au).irr
+      res[:cardClass][b]=res.Y[b[PositionId(Au)],b]*CharTable(Au).irr
+      res[:cardClass][b]=map((x,y)->x*y//length(Au),
+                             res[:cardClass][b],classinfo(Au)[:classes])
     end
-    res.classes=true
+    res[:classes]=true
   end
-  res.operations=rec()
-  res.operations.String=x->SPrint("GreenTable(",W,",rec(variable=",q,"))")
-  res.operations.Format=function(x,opt)local res,tbl,i,b
-    res=SPrint("Values of character sheaves on")
-    opt.rowLabels=Concatenation(List(x.relgroups,g->
-      List(CharNames(g,opt),n->SPrint("Q^{",ReflectionName(g),"}_{",n,"}"))))
-    opt.rowsLabel="Q"
-    tbl=Copy(x.scalar)
-    if IsBound(x.classes) then
-      PrintToString(res," unipotent classes\n")
-      opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
-	  Inherit(rec(class=p[2]),opt)))
-    else PrintToString(res," local systems\n")
-      opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
-        Inherit(rec(locsys=p[2]),opt)))
-    end
-    if not IsBound(opt.CycPol) then opt.CycPol=true end
-    if opt.CycPol then tbl=List(tbl,y->List(y,CycPol)) end
-    PrintToString(res,FormatTable(tbl,opt))
-    return String(res)
+  GreenTable(res)
+end
+
+function Base.show(io::IO,x::GreenTable)
+  if !get(io,:limit,false) && !get(io,:TeX,false)
+    print(io,"GreenTable(",x[:uc].prop[:spets],",variable=",x[:q],")")
+    return
   end
-  res.operations.Print=function(x)Print(String(x));end
-  res.operations.Display=function(x,opt)opt.screenColumns=SizeScreen()[1]
-               Print(Format(x,opt));end
-  return res
+  print(io,"Values of character sheaves on")
+  rowLabels=vcat(g->map(n->"Q^{"*ReflectionName(g)*"}_{"*n*"}",CharNames(io,g)),
+                        x[:relgroups])
+  rowsLabel="Q"
+  tbl=copy(x[:scalar])
+  if haskey(x.prop,:classes)
+    print(io," unipotent classes\n")
+    opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
+        Inherit(rec(class=p[2]),opt)))
+  else print(io," local systems\n")
+   columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x[:uc].classes[p[1]]),x[:locsys])
+  end
+  if get(io,:cycpol,false) tbl=CycPol.(tbl) end
+  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels)
 end
 
 """
