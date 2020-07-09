@@ -133,4 +133,5 @@ function GetRoot(x,n::Number=2,msg...)
 end
 
 Unbind(x)=x
+UnipotentClassesOps=Dict()
 #-------------------------------------------------------------------------

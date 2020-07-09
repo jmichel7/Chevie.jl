@@ -434,7 +434,7 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 ```
 """
 function fakedegrees(W,q)
-  map(p->fakedegree(W,p,q),charinfo(W)[:charparams])
+  improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
 end
 
 function charinfo(t::TypeIrred)
@@ -887,9 +887,14 @@ function CharTable(W::Spets)::CharTable
   end
 end
 
+function classes(ct::CharTable)
+  gets(ct,:classes)do
+    div.(ct.centralizers[1],ct.centralizers)
+  end
+end
+
 function scalarproduct(ct::CharTable,c1,c2)
-  cl=div.(ct.centralizers[1],ct.centralizers)
-  div(sum(map(*,c1,conj.(c2),cl)),ct.centralizers[1])
+  div(sum(map(*,c1,conj.(c2),classes(ct))),ct.centralizers[1])
 end
   
 function decompose(ct::CharTable,c)

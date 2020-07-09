@@ -271,7 +271,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
     n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
-    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$n_$cl"
+    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$(n)_$cl"
   end
   n
 end
@@ -427,12 +427,12 @@ function QuotientAu(Au,chars)
 #  Print(prod(map(x->Z(order(x)),gens(q)))," ",f,"\n");
     return finish(prod(map(x->Z(order(x)),gens(q))),f)
   else
-    p=findfirst(t->all(x->x in reflection_subgroup(Au,t.indices)),
-                       elements(k),refltype(Au))
+    p=findfirst(t->all(x->x in reflection_subgroup(Au,t.indices),
+                elements(k)),refltype(Au))
     if !isnothing(p)
       p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
-	return finish(reflection_subgroup(Au,Difference(gens(Au),p)),
+       return finish(reflection_subgroup(Au,setdiff(eachindex(gens(Au)),p)),
                       map(i->i in p ? [] : [i],gens(Au)))
       elseif length(p)==1
         t=copy(refltype(Au))
@@ -886,7 +886,7 @@ end
 function DecomposeTensor(W,c::Int...)
   ct=CharTable(W)
 # println("eltype=",eltype(irr))
-  Chars.decompose(ct,prod(ct.irr[collect(c),:],dims=1))
+  Chars.decompose(ct,prod(view(ct.irr,collect(c),:),dims=1))
 end
 
 struct ICCTable
@@ -1072,31 +1072,38 @@ end
 
 Base.getindex(t::GreenTable,k)=t.prop[k]
 
+function repair(u::Matrix) # can disappear with julia1.6
+  for i in 1:length(u)
+    if !isassigned(u,i) u[i]=0 end
+  end
+  u
+end
+  
 # Green functions: Green(uc[,opt]) values on unipotent classes or local systems
 # opt: variable (default X(Cyclotomics))
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
-function GreenTable(uc;q=Pol(:q),classes=false)
+function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
   W=uc.prop[:spets].G
   pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
   greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^(x[:dimBu])...)),pieces)
   l=vcat(getindex.(pieces,:locsys)...)
-  p=Perm(sortperm(l))
+  p=inv(Perm(sortperm(l)))
   res=Dict(
-    :scalar=>permutedims(^(cat(greenpieces...,dims=(1,2)),p,dims=(1,2))),
+    :scalar=>permutedims(repair(cat(greenpieces...,dims=(1,2)))^p),
     :uc=>uc,
-    :Y=>^(cat(getindex.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
+    :Y=>^(repair(cat(getindex.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
     :locsys=>l^p,
     :parameter=>vcat(getindex.(pieces,:parameter)...),
     :relgroups=>getindex.(uc.springerseries,:relgroup))
   n=length(res[:locsys])
   if classes
-    res[:cardClass]=zeros(eltype(res[:scalar],length(res[:locsys])))
+    res[:cardClass]=zeros(eltype(res[:scalar]),length(res[:locsys]))//1
     for i in eachindex(uc.classes)
-      Au=uc.classes[i].Au
-      b=filter(j->res.locsys[j][1]==i,eachindex(res.locsys))
+      Au=uc.classes[i].prop[:Au]
+      b=filter(j->res[:locsys][j][1]==i,eachindex(res[:locsys]))
       res[:scalar][1:n,b]*=CharTable(Au).irr
-      res[:cardClass][b]=res.Y[b[PositionId(Au)],b]*CharTable(Au).irr
+      res[:cardClass][b]=res[:Y][[b[charinfo(Au)[:positionId]]],b]*CharTable(Au).irr
       res[:cardClass][b]=map((x,y)->x*y//length(Au),
                              res[:cardClass][b],classinfo(Au)[:classes])
     end
@@ -1111,19 +1118,19 @@ function Base.show(io::IO,x::GreenTable)
     return
   end
   print(io,"Values of character sheaves on")
-  rowLabels=vcat(g->map(n->"Q^{"*ReflectionName(g)*"}_{"*n*"}",CharNames(io,g)),
-                        x[:relgroups])
-  rowsLabel="Q"
+  rowLabels=vcat(map(g->map(n->fromTeX(io,"Q^{"*sprint(show,g;context=io)*"}_{"*n*"}"),charnames(io,g)),
+                     x[:relgroups])...)
+  rowsLabel="Q\\locsys"
   tbl=copy(x[:scalar])
   if haskey(x.prop,:classes)
     print(io," unipotent classes\n")
-    opt.columnLabels=List(x.locsys,p->Name(x.uc.classes[p[1]],
-        Inherit(rec(class=p[2]),opt)))
+    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x[:uc].classes[p[1]]),
+                     x[:locsys])
   else print(io," local systems\n")
    columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x[:uc].classes[p[1]]),x[:locsys])
   end
   if get(io,:cycpol,false) tbl=CycPol.(tbl) end
-  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels)
+  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
 end
 
 """

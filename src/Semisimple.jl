@@ -217,9 +217,9 @@ function ComplexR.reflection_name(io::IO,W::ExtendedCox)
   sprint(show,W;context=io)
 end
 
-ExtendedReflectionGroup(W,mats::Vector{Matrix{Int}})=ExtendedCox(W,mats)
+ExtendedReflectionGroup(W,mats::AbstractVector{Matrix{Int}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
-ExtendedReflectionGroup(W,mats::Vector{Vector{Int}})=ExtendedCox(W,[toM(mats)])
+ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractVector{Int}})=ExtendedCox(W,[toM(mats)])
 
 function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
   if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))

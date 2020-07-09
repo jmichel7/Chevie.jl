@@ -1,14 +1,14 @@
 function RationalUnipotentClasses(WF, p)
   u=UnipotentClasses(WF, p)
-  t=GreenTable(u, Dict{Symbol, Any}(:classes => true))
+  t=Ucl.GreenTable(u;classes=true)
   map(i->Dict{Symbol, Any}(:card => CycPol(t[:cardClass][i]), 
-                           :class => u[:classes][t[:locsys][i][1]], 
+                           :class => u.classes[t[:locsys][i][1]], 
                            :classno => t[:locsys][i][1], 
                            :AuNo => t[:locsys][i][2]), 
-           1:length(t[:locsys]))
+           eachindex(t[:locsys]))
 end
 
-ClassTypesOps = OperationsRecord("ClassTypesOps")
+ClassTypesOps=Dict()
 ClassTypesOps[:Format] = function (r, opts)
   res = string(r)
   res = Append(res, "\n")
@@ -102,67 +102,50 @@ ClassTypes = function (W,p=0)
 end
 
 # returns the Poset of closed subsystems of the root system of W
-ClosedSubsets = function (W,)
-        local sum, closure, l, w, new, n, p, P, covered, f
-        if haskey(W, :closedsubsets)
-            return W[:closedsubsets]
-        end
-        sum = map((i->begin
-                        map(function (j,)
-                                local p
-                                p = Position(W[:roots], (W[:roots])[i] + (W[:roots])[j])
-                                if p != false
-                                    return p
-                                else
-                                    return 0
-                                end
-                            end, 1:2 * W[:N])
-                    end), 1:2 * W[:N])
-        closure = function (l, new)
-                local i, j, nnew
-                nnew = new
-                while true
-                    new = nnew
-                    nnew = []
-                    for i = new
-                        for j = l
-                            if (sum[i])[j] != 0
-                                AddSet(nnew, (sum[i])[j])
-                            end
-                        end
-                    end
-                    l = Union(l, new)
-                    nnew = Difference(nnew, l)
-                    if nnew == []
-                        break
-                    end
-                end
-                return l
-            end
-        l = [[]]
-        new = [1]
-        covered = [[]]
-        for w = new
-            for f = Difference(1:W[:N], l[w])
-                n = closure(l[w], [f, f + W[:N]])
-                p = Position(l, n)
-                if p == false
-                    push!(l, n)
-                    push!(covered, [w])
-                    push!(new, length(l))
-                else
-                    AddSet(covered[p], w)
-                end
-            end
-        end
-        P = Poset(covered)
-        P[:elements] = l
-        P[:label] = function (i, opt)
-                return Format(l[i], opt)
-            end
-        W[:closedsubsets] = P
-        return P
+ClosedSubsets = function(W)
+  gets(W, :closedsubsets)do
+  function possum(i,j)
+    p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
+    isnothing(p) ? 0 : p
+  end
+  psum=[possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
+  closure=function(l,new)
+    nnew = new
+    while true
+      new = nnew
+      nnew = Int[]
+      for i in new, j in l
+        if psum[i,j]!=0 push!(nnew, psum[i,j]) end
+      end
+      l = union(l, new)
+      nnew = setdiff(nnew, l)
+      if isempty(nnew) break end
     end
+    return sort(l)
+  end
+  l = [Int[]]
+  new = [1]
+  covered = [Int[]]
+  for w in new
+    for f in setdiff(1:nref(W), l[w])
+      n = closure(l[w], [f, f + nref(W)])
+      p = findfirst(==(n),l)
+      if isnothing(p)
+          push!(l, n)
+          push!(covered, [w])
+          push!(new, length(l))
+      else push!(covered[p], w)
+      end
+    end
+  end
+  covered=unique.(covered)
+  P=Poset(incidence(Poset(covered)))
+  P.prop[:elements]=l
+  P.prop[:label]=function(io,i) join(l[i]," ") end
+  P
+  end
+end
+
 # See Fleischmann-Janiszczak AAECC 1996 definition 2.1
 ClassTypesOps[:NrConjugacyClasses] = function (C,)
         local HF, W, H, o, P, l, less, mu, n, i, r, b

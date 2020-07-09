@@ -240,6 +240,8 @@ function linear_extension(P::Poset)
   res
 end
 
+hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
+
 """
 `hasse(P)`
 
@@ -261,8 +263,7 @@ julia> hasse(p)
 """
 function hasse(p::Poset)
   gets(p,:hasse)do
-    m=Int.(incidence(p))
-    map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
+    hasse(incidence(p))
   end
 end
 
