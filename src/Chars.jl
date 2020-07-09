@@ -824,8 +824,6 @@ function CharTable(t::TypeIrred)
             Dict{Symbol,Any}())
 end
 
-classes(ct::CharTable)=div.(maximum(ct.centralizers),ct.centralizers)
-
 function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt) 
    return CharTable(hcat(1),["Id"],["1"],[1],".",Dict{Symbol,Any}())

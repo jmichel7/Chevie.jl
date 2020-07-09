@@ -1,34 +1,64 @@
-function using_merge(mod::Symbol;reexport=false,debug=false)
+"""
+`using_merge(mod::Symbol;reexport=false,debug=0)`
+
+`using`  module `:mod`,  merging all  method definitions  exported by `mod`
+with methods of the same name in the current module.
+
+If  `reexport=true`  all  non-conflicting  names  exported  from  `mod` are
+(re-)exported from the current module.
+
+if `debug=1` every executed command is printed before execution.
+If `debug=2` more verbose debugging information is printed.
+
+It  is an error if  a name exported by  `mod` conflicts with anything but a
+method  (if there is good reason  for this not to be  an error I could just
+not import such names from `mod`).
+
+```julia-repl
+julia> include("using_merge.jl")
+using_merge
+
+julia> foo(x::Int)=2
+foo (generic function with 1 method)
+
+julia> module Bar
+       export foo
+       foo(x::Float64)=3
+       end
+Main.Bar
+
+julia> using_merge(:Bar;debug=1)
+Main.foo(x::Float64) = Bar.foo(x)
+```
+"""
+function using_merge(mod::Symbol;reexport=false,debug=0)
   function myeval(e)
-    if debug println(e) end
+    if debug>0 println(e) end
     eval(e)
   end
   mymodule=@__MODULE__
-  mynames=names(mymodule;all=true)
   if !isdefined(mymodule,mod) myeval(:(using $mod: $mod)) end
-  modnames=eval(:(names($mod)))
-# println("names(",mod,")=",modnames)
-  modnames=setdiff(modnames,[mod])
-# println("now names(",mod,")=",modnames)
-  noconflict=setdiff(modnames,mynames)
-# println("non-conflicting:",noconflict)
-  conflict=intersect(modnames,mynames)
-  wrap(s)=Expr(:.,s)
-  myeval(Expr(:using,Expr(:(:),Expr(:.,:.,mod),wrap.(noconflict)...)))
-  if debug println("# names in $mod conflicting with $mymodule:",conflict) end
-  for name in conflict
-    methofname=eval(:(methods($name)))
-    if isempty(methofname) modofname=nameof(mymodule)
-    else modofname=nameof(first(methofname).module)
+  if reexport myeval(:(export $mod)) end
+  modnames=setdiff(eval(:(names($mod))),[mod])
+  for name in modnames
+    if !isdefined(mymodule,name) 
+      myeval(Expr(:using,Expr(:(:),Expr(:.,:.,mod),Expr(:.,name))))
+      if reexport myeval(:(export $name)) end
+      continue
     end
-#   println("conflicting name:$modofname.$name")
+    methofname=eval(:(methods($name)))
+    if isempty(methofname)
+      error("$mod.$name is not a method in $mymodule")
+    end
+    modofname=nameof(first(methofname).module)
+    if debug>1 println("# conflicting name:$modofname.$name") end
     s=split(sprint(show,eval(:(methods($mod.$name)))),"\n")
     map(s[2:end]) do l
-#     println("   l=",l)
+      if debug>2 println("   l=",l) end
       l1=replace(l,r"^\[[0-9]*\] (.*) in .* at .*"=>s"\1")
       l1=replace(l1,r"#(s[0-9]*)"=>s"\1")
       e1=Meta.parse(l1)
-#     println("\n   =>",e1)
+      if debug>2 println("\n   =>",e1) end
       e2=e1.head==:where ? e1.args[1] : e1
       if e2.head!=:call || e2.args[1]!=name error("unexpected") end
       for (i,f) in enumerate(e2.args[2:end])
@@ -52,9 +82,5 @@ function using_merge(mod::Symbol;reexport=false,debug=false)
       e.args[1]=Expr(:.,mod,QuoteNode(e.args[1]))
       myeval(Expr(:(=),e1,e))
     end
-  end
-  if reexport
-    pushfirst!(noconflict,mod)
-    myeval(Expr(:export,noconflict...))
   end
 end

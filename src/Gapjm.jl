@@ -89,13 +89,13 @@ include("using_merge.jl")
 include("Util.jl");@reexport using .Util
 include("ModuleElts.jl");@reexport using .ModuleElts
 include("Combinat.jl");@reexport using .Combinat
-include("Groups.jl");using_merge(:Groups,debug=false,reexport=true)
-include("Perms.jl");using_merge(:Perms,debug=false,reexport=true)
-include("Cycs.jl");using_merge(:Cycs,debug=false,reexport=true)
-include("Pols.jl");using_merge(:Pols,debug=false,reexport=true)
-include("Mvps.jl");using_merge(:Mvps,debug=false,reexport=true)
-include("Posets.jl");using_merge(:Posets,debug=false,reexport=true)
-include("FFields.jl");using_merge(:FFields,debug=false,reexport=true)
+include("Groups.jl");using_merge(:Groups,debug=0,reexport=true)
+include("Perms.jl");using_merge(:Perms,debug=0,reexport=true)
+include("Cycs.jl");using_merge(:Cycs,debug=0,reexport=true)
+include("Pols.jl");using_merge(:Pols,debug=0,reexport=true)
+include("Mvps.jl");using_merge(:Mvps,debug=0,reexport=true)
+include("Posets.jl");using_merge(:Posets,debug=0,reexport=true)
+include("FFields.jl");using_merge(:FFields,debug=0,reexport=true)
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
