@@ -276,6 +276,7 @@ end
 # elements is much faster than collect(G), should not be
 function elements(G::PermGroup)
   t=reverse(values.(transversals(G)))
+  if isempty(t) return [one(G)] end
   res=collect(t[1])
   for i in 2:length(t)
     res=vcat(map(x->res.*x,t[i])...)

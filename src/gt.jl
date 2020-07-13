@@ -8,6 +8,51 @@ function RationalUnipotentClasses(WF, p)
            eachindex(t[:locsys]))
 end
 
+# returns the Poset of closed subsystems of the root system of W
+ClosedSubsets = function(W)
+  gets(W, :closedsubsets)do
+  function possum(i,j)
+    p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
+    isnothing(p) ? 0 : p
+  end
+  psum=[possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
+  closure=function(l,new)
+    nnew = new
+    while true
+      new = nnew
+      nnew = Int[]
+      for i in new, j in l
+        if psum[i,j]!=0 push!(nnew, psum[i,j]) end
+      end
+      l = union(l, new)
+      nnew = setdiff(nnew, l)
+      if isempty(nnew) break end
+    end
+    return sort(l)
+  end
+  l = [Int[]]
+  new = [1]
+  covered = [Int[]]
+  for w in new
+    for f in setdiff(1:nref(W), l[w])
+      n = closure(l[w], [f, f + nref(W)])
+      p = findfirst(==(n),l)
+      if isnothing(p)
+          push!(l, n)
+          push!(covered, [w])
+          push!(new, length(l))
+      else push!(covered[p], w)
+      end
+    end
+  end
+  covered=unique.(covered)
+  P=Poset(incidence(Poset(covered)))
+  P.prop[:elements]=l
+  P.prop[:label]=function(io,i) join(l[i]," ") end
+  P
+  end
+end
+
 ClassTypesOps=Dict()
 ClassTypesOps[:Format] = function (r, opts)
   res = string(r)
@@ -73,6 +118,7 @@ ClassTypesOps[:Value] = function (arg...,)
           end, r[:ss])
   return r
 end
+
 ClassTypesOps[:Display] = function (r, opts) print(Format(r, opts)) end
 ClassTypesOps[:String] = function (r,)
   res = SPrint("ClassTypes(", r[:spets])
@@ -84,66 +130,25 @@ ClassTypesOps[:String] = function (r,)
   end
   return res
 end
+
 ClassTypesOps[:Print] = function (r,)
         print(string(r))
     end
 
-# ClassTypes(W[,p])
-ClassTypes = function (W,p=0)
-  if IsSpets(W) WF = W
-      W = Group(W)
-  else WF = Spets(W)
-  end
-  l = SemisimpleCentralizerRepresentatives(Group(WF), p)
-  l = Concatenation(map(x->Twistings(WF, x), l))
-  Dict{Symbol, Any}(:p => p, :spets => WF, :ss => map((x->begin
-                          Dict{Symbol, Any}(:CGs => x, :cent => CycPol(GenericOrder(x, Mvp("q"))), :unip => RationalUnipotentClasses(x, p))
-                      end), l), :operations => ClassTypesOps)
+struct ClassType
+  CGs
+  cent::CycPol
+  unip
 end
 
-# returns the Poset of closed subsystems of the root system of W
-ClosedSubsets = function(W)
-  gets(W, :closedsubsets)do
-  function possum(i,j)
-    p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
-    isnothing(p) ? 0 : p
+# ClassTypes(W[,p])
+function ClassTypes(W,p=0)
+  if W isa Spets WF=W;W=Group(W)
+  else WF=spets(W)
   end
-  psum=[possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
-  closure=function(l,new)
-    nnew = new
-    while true
-      new = nnew
-      nnew = Int[]
-      for i in new, j in l
-        if psum[i,j]!=0 push!(nnew, psum[i,j]) end
-      end
-      l = union(l, new)
-      nnew = setdiff(nnew, l)
-      if isempty(nnew) break end
-    end
-    return sort(l)
-  end
-  l = [Int[]]
-  new = [1]
-  covered = [Int[]]
-  for w in new
-    for f in setdiff(1:nref(W), l[w])
-      n = closure(l[w], [f, f + nref(W)])
-      p = findfirst(==(n),l)
-      if isnothing(p)
-          push!(l, n)
-          push!(covered, [w])
-          push!(new, length(l))
-      else push!(covered[p], w)
-      end
-    end
-  end
-  covered=unique.(covered)
-  P=Poset(incidence(Poset(covered)))
-  P.prop[:elements]=l
-  P.prop[:label]=function(io,i) join(l[i]," ") end
-  P
-  end
+  l=vcat(twistings.(Ref(WF),SScentralizer_representatives(Group(WF), p))...)
+  (p=p,spets=WF,ss=map(x->ClassType(x,CycPol(generic_order(x,Pol(:q))),
+                             RationalUnipotentClasses(x, p)),l))
 end
 
 # See Fleischmann-Janiszczak AAECC 1996 definition 2.1

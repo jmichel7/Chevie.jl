@@ -1176,9 +1176,10 @@ end
 endomorphisms(C,o) 
 for category C, returns generators of the endomorphisms of C.obj[o]
 """
-function endomorphisms(C::Category,o)
+function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
   paths[o]=Tuple{Int,Int}[]
+  if isempty(C.atoms[o]) return TM[] end
   maps=[one(C.atoms[o][1][1]) for i in eachindex(C.obj)]
   function foo()
     reached=[o]

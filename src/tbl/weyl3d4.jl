@@ -59,3 +59,21 @@ chevieset(Symbol("3D4"), :UnipotentCharacters, function ()
         local res
         return Dict{Symbol, Any}(:harishChandra => [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "G", :indices => [1, 3], :rank => 2), :levi => [], :eigenvalue => 1, :parameterExponents => [3, 1], :cuspidalName => "", :charNumbers => [1, 2, 6, 5, 7, 3]), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:4, :eigenvalue => 1, :parameterExponents => [], :cuspidalName => "{}^3D_4[1]", :charNumbers => [4]), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:4, :eigenvalue => -1, :parameterExponents => [], :cuspidalName => "{}^3D_4[-1]", :charNumbers => [8])], :almostHarishChandra => [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:orbit => [Dict{Symbol, Any}(:series => "D", :indices => 1:4, :rank => 4)], :twist => perm"(1,2,4)"), :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => 1:7), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:orbit => [Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0)], :twist => Perm()), :levi => 1:4, :eigenvalue => -1, :cuspidalName => "D_4", :charNumbers => [8])], :families => [Family("C1", [1]), Family("C1", [2]), Family("C1", [5]), Family("C1", [6]), Family("C2", [7, 4, 3, 8])], :a => [0, 12, 3, 3, 1, 7, 3, 3], :A => [0, 12, 9, 9, 5, 11, 9, 9])
     end)
+chevieset(Symbol("3D4"), :UnipotentClasses, function (p,)
+        local uc, c, g, class
+        class = (n->begin
+                    First(uc[:classes], (x->begin
+                                x[:name] == n
+                            end))
+                end)
+        uc = deepcopy((chevieget(:D, :UnipotentClasses))(4, p))
+        for p = [["11111111", perm"(1,2,4)"], ["221111", perm"(1,2,3)"]]
+            (class(p[1]))[:F] = p[2]
+        end
+        c = class("3311")
+        g = CoxeterGroup("G", 2)
+        c[:red] = ReflectionSubgroup(g, [])
+        c[:F] = EltWord(g, [1, 2, 1, 2])
+        c[:AuAction] = ExtendedReflectionGroup(c[:red], EltWord(g, [1, 2, 1, 2, 1, 2]))
+        return uc
+    end)

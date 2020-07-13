@@ -1,3 +1,4 @@
+
 chevieset(:G32, :PrintDiagram, function (indices, title)
         print(title, " ", indices[1], "(3)--(3)", indices[2], "--(3)", indices[3], "--(3)", indices[4], "\n")
     end)

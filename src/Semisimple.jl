@@ -172,11 +172,9 @@ part. Here it is printed as a coset `C_𝐆 ⁰(s)ϕ` which generates `C_𝐆 (s
 """
 module Semisimple
 using Gapjm
-export algebraic_centre, SubTorus, weightinfo, fundamental_group,
+export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
-is_isolated, 
-StructureRationalPointsConnectedCentre,
-SemisimpleCentralizerRepresentatives
+StructureRationalPointsConnectedCentre, SScentralizer_representatives
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -848,32 +846,50 @@ function StructureRationalPointsConnectedCentre(MF,q)
   filter(!isone,map(i->Z0F[i][i],1:length(Z0F)))
 end
 
-#F SemisimpleCentralizerRepresentatives(W,p=0)
-## Representatives of G-classes of C_G(s)^0.
-## Same as W-orbits of subsets of Π∪{-α₀}
 """
-'SemisimpleCentralizerRepresentatives(<W> [,<p>])'
+`SemisimpleCentralizerRepresentatives(W [,p])`
 
-<W>  should  be  a  Weyl  group  record corresponding to an algebraic group
-bG.     This  function  returns  a  list  giving  representatives    bH  of
-bG-orbits     of reductive  subgroups of    bG  which  can be  the identity
-component  of the centralizer of a  semisimple element. Each group   bH  is
-specified  by  a  list  <h>  of  reflection  indices in <W> such that   bH
-corresponds  to  'ReflectionSubgroup(W,h)'.  If  a  second  argument <p> is
-given,  only the list of the centralizers which occur in characteristic <p>
-is returned.
+`W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
+function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of
+reductive  subgroups  of  `𝐆  `  which  are  the  identity component of the
+centralizer of a semisimple element. Each group `𝐇 ` is specified by a list
+`h`   of  reflection  indices  in  `W`   such  that  `𝐇  `  corresponds  to
+`reflection_subgroup(W,h)`.  If a  second argument  `p` is  given, only the
+list of the centralizers which occur in characteristic `p` is returned.
 
-gap> W:=CoxeterGroup("G",2);
-CoxeterGroup("G",2)
-gap> l:=SemisimpleCentralizerRepresentatives(W);
-[ [  ], [ 1 ], [ 1, 2 ], [ 1, 5 ], [ 2 ], [ 2, 6 ] ]
-gap> List(last,h->ReflectionName(ReflectionSubgroup(W,h)));
-[ "(q-1)^2", "A1.(q-1)", "G2", "A2<1,5>", "~A1<2>.(q-1)",
- "~A1<2>xA1<6>" ]
-gap> SemisimpleCentralizerRepresentatives(W,2);
-[ [  ], [ 1 ], [ 1, 2 ], [ 1, 5 ], [ 2 ] ]
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> SemisimpleCentralizerRepresentatives(W)
+6-element Array{Array{Int64,1},1}:
+ []
+ [1]
+ [2]
+ [1, 2]
+ [1, 5]
+ [2, 6]
+
+julia> reflection_subgroup.(Ref(W),SemisimpleCentralizerRepresentatives(W))
+6-element Array{FiniteCoxeterSubGroup{Perm{Int16},Int64},1}:
+ G₂₍₎=.
+ G₂₍₁₎=A₁
+ G₂₍₂₎=Ã₁
+ G₂
+ G₂₍₁₅₎=A₂
+ G₂₍₂₆₎=Ã₁×A₁
+
+julia> SemisimpleCentralizerRepresentatives(W,2)
+5-element Array{Array{Int64,1},1}:
+ []
+ [1]
+ [2]
+ [1, 2]
+ [1, 5]
+```
 """
-function SemisimpleCentralizerRepresentatives(W,p=0)
+function SScentralizer_representatives(W,p=0)
+# W-orbits of subsets of Π∪ {-α₀}
   l=map(refltype(W))do t
     cent=parabolic_representatives(reflection_subgroup(W,t.indices))
     cent=map(x->reflection_subgroup(W,t.indices[x]),cent)

@@ -30,9 +30,10 @@ const exclu=[
  ["Hk","D"],
  ["CharTable","2D"],
  ["HeckeCharTable","2D"],
- ["UnipotentClasses","3D4"],
  ["Discriminant","H4"],
  ["CharInfo","I"],
+ ["HeckeCharTable","imp"],
+ ["CharTable","imp"],
  ["PowerMaps","imp"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]

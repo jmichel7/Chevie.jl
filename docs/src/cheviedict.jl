@@ -275,7 +275,7 @@ const ChevieDict=Dict(
 #SchurElement
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",
-#SemisimpleCentralizerRepresentatives
+"SemisimpleCentralizerRepresentatives"=>"SScentralizer_representatives",
 "SemisimpleElement"=>"SS",
 "SemisimpleRank(W)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
