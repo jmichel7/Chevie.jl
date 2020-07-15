@@ -33,9 +33,9 @@ chevieset(Symbol("2D"), :ClassInfo, function (n,)
     end)
 chevieset(Symbol("2D"), :NrConjugacyClasses, function (n,)
         if mod(n, 2) == 1
-            return NrPartitionTuples(n, 2) // 2
+            return npartition_tuples(n, 2) // 2
         else
-            return (NrPartitionTuples(n, 2) - NrPartitions(n // 2)) // 2
+            return (npartition_tuples(n, 2) - npartitions(n // 2)) // 2
         end
     end)
 chevieset(Symbol("2D"), :ClassParameter, function (n, w)
@@ -73,7 +73,7 @@ chevieset(Symbol("2D"), :ClassParameter, function (n, w)
         return [reverse(res[1]), reverse(res[2])]
     end)
 chevieset(Symbol("2D"), :IsPreferred, function (pp,)
-        pp = SymbolPartitionTuple(pp, 0)
+        pp = symbol_partition_tuple(pp, 0)
         return pp[1] > pp[2]
     end)
 chevieset(Symbol("2D"), :IsGood, (pp->begin
@@ -108,7 +108,7 @@ chevieset(Symbol("2D"), :CharInfo, function (n,)
         return res
     end)
 chevieset(Symbol("2D"), :FakeDegree, function (n, c, q)
-        return Value(CycPolFakeDegreeSymbol(SymbolPartitionTuple(c, 0), 1), q)
+        return Value(fegsymbol(symbol_partition_tuple(c, 0), 1), q)
     end)
 chevieset(Symbol("2D"), :PhiFactors, function (n,)
         local res
@@ -137,8 +137,8 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
             FixRelativeType(s)
             uc[:charSymbols] = Append(uc[:charSymbols], symbols)
         end
-        uc[:a] = map(LowestPowerGenericDegreeSymbol, uc[:charSymbols])
-        uc[:A] = map(HighestPowerGenericDegreeSymbol, uc[:charSymbols])
+        uc[:a] = map(valuation_gendeg_symbol, uc[:charSymbols])
+        uc[:A] = map(degree_gendeg_symbol, uc[:charSymbols])
         uc[:almostCharSymbols] = map((i->begin
                         [[0], [0]]
                     end), 1:Sum(uc[:harishChandra], (x->begin
@@ -162,7 +162,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                 s[:relativeType] = Dict{Symbol, Any}(:orbit => [s[:relativeType]], :twist => perm"(1,2)")
                 s[:cuspidalName] = ""
                 symbols = map((x->begin
-                                SymbolPartitionTuple(x, 0)
+                                symbol_partition_tuple(x, 0)
                             end), (chevieget(Symbol("2D"), :CharParams))(rank))
             end
             Defect0to2 = function (ST,)
@@ -241,7 +241,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                                 end))
                     res[:name] = Concatenation(f[:Z1], f[:Z2], f[:Z2])
                     sort!(res[:name])
-                    res[:name] = IntListToString(res[:name])
+                    res[:name] = joindigits(res[:name])
                     res[:explanation] = "classical family"
                     res[:perm] = Perm()
                     res[:size] = length(res[:charNumbers])

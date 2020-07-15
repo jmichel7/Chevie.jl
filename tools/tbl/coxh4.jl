@@ -19,7 +19,7 @@ chevieset(:H4, :PowerMaps, [nothing, [1, 1, 10, 1, 5, 3, 10, 5, 4, 3, 15, 5, 3, 
 chevieset(:H4, :ClassInfo, function ()
         local res
         res = Dict{Symbol, Any}(:classtext => chevieget(:H4, :WordsClassRepresentatives), :orders => [1, 2, 5, 2, 3, 10, 10, 6, 4, 5, 30, 6, 10, 20, 15, 10, 12, 10, 10, 2, 10, 15, 20, 6, 6, 5, 5, 30, 4, 10, 10, 3, 5, 2], :classes => [1, 60, 144, 450, 400, 720, 720, 1200, 1800, 144, 480, 1200, 720, 720, 480, 720, 1200, 24, 288, 60, 144, 480, 720, 40, 400, 24, 288, 480, 60, 24, 144, 40, 24, 1])
-        res[:classnames] = map(IntListToString, res[:classtext])
+        res[:classnames] = map(joindigits, res[:classtext])
         (res[:classnames])[1] = "."
         res[:classparams] = res[:classnames]
         return res
@@ -99,7 +99,7 @@ chevieset(:H4, :UnipotentCharacters, function ()
 chevieset(:H4, :Invariants, function ()
         local r, C
         C = chevieget(:H4, :CartanMat)
-        r = RootsCartan(C) * C
+        r = roots(C) * C
         return map((d->begin
                         function (arg...,)
                             return Sum(r, (a->begin

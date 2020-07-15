@@ -624,7 +624,8 @@ function UnipotentClasses(t::TypeIrred,p=0)
     parameter= haskey(u,:parameter) ? u[:parameter] : u[:name]
     dimBu= haskey(u,:dimBu)  ? u[:dimBu] : -1
     if haskey(u,:dynkin)
-      weights=toM(roots(cartan(t)))*u[:dynkin]
+      c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
+      weights=toM(roots(c))*u[:dynkin]
       n0=count(iszero,weights)
       if dimBu==-1 dimBu=n0+div(count(isone,weights),2)
       elseif dimBu!=n0+div(count(isone,weights),2) error("theory")
@@ -648,25 +649,34 @@ function UnipotentClasses(t::TypeIrred,p=0)
   end
   orderclasses=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
   delete!.(Ref(uc),[:classes,:orderClasses,:springerSeries])
-  uc[:spets]=t
+# uc[:spets]=t
   UnipotentClasses(classes,p,Poset(orderclasses),springerseries,uc)
 end
 
 Base.length(uc::UnipotentClasses)=length(uc.classes)
 
-function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
-  t=refltype(W)
-  uc=UnipotentClasses.(t,p)
+function UnipotentClasses(W,p=0)
+  spets=W isa Spets
+  if spets 
+    WF=W
+    W=Group(WF)
+    t=refltype(W)
+    l=map(x->findfirst(y->any(z->sort(x.indices)==sort(z.indices),
+                                       y.orbit),refltype(WF)),t)
+    uc=UnipotentClasses.(refltype(WF)[l],p)
+  else t=refltype(W)
+    uc=UnipotentClasses.(t,p)
+  end
   if isempty(t)
     classes=[UnipotentClass("",[],0,
         Dict(:Au=>coxgroup(),:dynkin=>[],:balacarter=>[],
-             :dimunip=>0,:red=>Torus(rank(W))))]
-    uc=UnipotentClasses(classes,p,[Int[]],
+             :dimunip=>0,:red=>torus(rank(W))))]
+    uc=[UnipotentClasses(classes,p,Poset([Int[]]),
       [Dict(:Z=>Int[],:levi=>Int[],:locsys=>[[1,1]],:relgroup=>coxgroup())],
-     Dict{Symbol,Any}(:spets=>W))
+      Dict{Symbol,Any}(:spets=>W))]
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
-      l=getproperty.(t,:indices)
+      l=PermRoot.indices.(t)
       if length(v)==1 u=deepcopy(v[1])
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
@@ -694,7 +704,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-            map(x->toM(HasType.DiagonalMat(x,reflrep(T,T()))),u.prop[:AuAction].F0s))
+             map(x->cat(x,reflrep(T,T())...,dims=(1,2)),u.prop[:AuAction].F0s))
         end
       end
       u
@@ -708,7 +718,7 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
       u.prop[:balacarter]=bc[findfirst(p->p[1]==u.prop[:dynkin],bc)][2]
     end
   end
-  ll=map(length,uc)
+  ll=length.(uc)
   orderclasses=map(cartesian(map(x->1:x,ll)...)) do v
     o=cartesian(map(j->vcat(hasse(uc[j].orderclasses)[v[j]],[v[j]]),1:length(v))...)
     o=map(x->HasType.PositionCartesian(ll,x),o)
@@ -735,10 +745,13 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     end
     s
   end
-# adjust indices of levi, relativetype so they agree with Parent(Group(WF))
+# adjust indices of levi, relativetype so they agree with parent(Group(WF))
   for s in springerseries s[:levi]=inclusion.(Ref(W),s[:levi]) end
   if length(uc)==1 prop=uc[1].prop else prop=Dict{Symbol,Any}() end
-  prop[:spets]=W
+  prop[:spets]=spets ? WF : W
+  if spets
+   springerseries=filter(x->sort(x[:levi].^WF.phi)==sort(x[:levi]),springerseries)
+  end
 # To deal with a general group intermediate between Gad and Gsc, we discard
 # the  Springer series  corresponding to  a central  character which is not
 # trivial on the fundamental group (seen as a subgroup of ZGsc)
@@ -751,14 +764,18 @@ function UnipotentClasses(W::FiniteCoxeterGroup,p=0)
     AdjustAu!(classes,springerseries)
   end
   s=springerseries[1]
-# s[:relgroup]=RelativeCoset(WF,s[:levi])
-# s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+  if spets
+    s[:relgroup]=relative_coset(WF,s[:levi])
+    s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+  end
   l=filter(i->any(y->i==y[1],s[:locsys]),1:length(classes))
   s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
   # for now only springerseries[1] properly twisted
   for s in springerseries[2:end]
- #  s[:relgroup]=RelativeCoset(WF,s[:levi])
- #  s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+    if spets
+      s[:relgroup]=relative_coset(WF,restriction(WF,s[:levi]))
+      s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+    end
     s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
   end
   classes=classes[l]
@@ -824,6 +841,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
   W = uc.prop[:spets]
+  if W isa Spets W=Group(W) end
   if uc.p!=0 || !any(x->haskey(x.prop,:balacarter),uc.classes)
     io=IOContext(io,:balacarter=>false)
   end
@@ -996,6 +1014,7 @@ matrix  is  obtained  as  a  by-product  of  Lusztig's algorithm to compute
 """
 function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
   W=uc.prop[:spets] # W=Group(uc.spets)
+  if W isa Spets W=W.W end
   ss=uc.springerseries[i]
   res=Dict(:spets=>uc.prop[:spets],:relgroup=>ss[:relgroup],
            :series=>i,:q=>var,:p=>uc.p)
@@ -1084,7 +1103,6 @@ end
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
 function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
-  W=uc.prop[:spets].G
   pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
   greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^(x[:dimBu])...)),pieces)
   l=vcat(getindex.(pieces,:locsys)...)
@@ -1098,6 +1116,7 @@ function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
     :relgroups=>getindex.(uc.springerseries,:relgroup))
   n=length(res[:locsys])
   if classes
+    res[:scalar]=res[:scalar]*E(1)
     res[:cardClass]=zeros(eltype(res[:scalar]),length(res[:locsys]))//1
     for i in eachindex(uc.classes)
       Au=uc.classes[i].prop[:Au]
@@ -1107,6 +1126,7 @@ function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
       res[:cardClass][b]=map((x,y)->x*y//length(Au),
                              res[:cardClass][b],classinfo(Au)[:classes])
     end
+    res[:scalar]=improve_type(res[:scalar])
     res[:classes]=true
   end
   GreenTable(res)

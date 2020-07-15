@@ -16,7 +16,7 @@ chevieset(:imp, :PrintDiagram, function (arg...,)
             if length(indices) > 1
                 print("==")
             end
-            print(Join(indices[2:length(indices)], "--"), "\n")
+            print(join(indices[2:length(indices)], "--"), "\n")
         elseif p == q
             print(indices[1], "\n", g(0), "|\\\n")
             if p != 3
@@ -52,7 +52,7 @@ chevieset(:imp, :PrintDiagram, function (arg...,)
             if r >= 3
                 print("/")
             end
-            print("\n", pad(indices[3], indent + 1), "   ", IntListToString(indices[[1, 2, 3]]), "==", IntListToString(indices[[2, 3, 1]]), "==", IntListToString(indices[[3, 1, 2]]), "\n")
+            print("\n", pad(indices[3], indent + 1), "   ", joindigits(indices[[1, 2, 3]]), "==", joindigits(indices[[2, 3, 1]]), "==", joindigits(indices[[3, 1, 2]]), "\n")
         else
             print(indices[2], "\n", g(2), "/", q + 1, " ")
             if r >= 3
@@ -81,7 +81,7 @@ chevieset(:imp, :PrintDiagram, function (arg...,)
             print("\n", pad(indices[3], indent + 1))
             j = (chevieget(:imp, :BraidRelations))(p, q, r)
             for g = 1:Minimum(3, r)
-                print("   ", IntListToString(indices[(j[g])[1]]), "==", IntListToString(indices[(j[g])[2]]))
+                print("   ", joindigits(indices[(j[g])[1]]), "==", joindigits(indices[(j[g])[2]]))
             end
             print("\n")
         end
@@ -165,9 +165,9 @@ chevieset(:imp, :ReflectionName, function (arg...,)
             end
         end
         if haskey(option, :TeX)
-            n = SPrint("G_{", Join(arg[1:3]), "}")
+            n = SPrint("G_{", join(arg[1:3]), "}")
         else
-            n = SPrint("G", IntListToString(arg[1:3]))
+            n = SPrint("G", joindigits(arg[1:3]))
         end
         if length(arg) == 5
             n *= SPrint("(", Format(arg[4], option), ")")
@@ -282,7 +282,7 @@ chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
         if [q, r] == [2, 2]
             return div(p * (p + 6), 4)
         elseif q == 1
-            return NrPartitionTuples(r, p)
+            return npartition_tuples(r, p)
         else
             return length(((chevieget(:imp, :ClassInfo))(p, q, r))[:classtext])
         end
@@ -378,7 +378,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                         end), res[:classparams])
             res[:centralizers] = map((m->begin
                             p ^ Sum(m, length) * Product(map((pp->begin
-                                                Product(Collected(pp), (y->begin
+                                                Product(tally(pp), (y->begin
                                                             factorial(y[2]) * y[1] ^ y[2]
                                                         end))
                                             end), m))
@@ -475,7 +475,7 @@ chevieset(:imp, :ClassName, function (p,)
                 return PartitionTupleToString(p)
             end
         elseif IsList(p) && all(IsInt, p)
-            return IntListToString(p)
+            return joindigits(p)
         elseif IsList(p) && (all(IsList, p[1:length(p) - 1]) && IsInt(p[length(p)]))
             p1 = p[1:length(p) - 1]
             p1 = Append(p1, [length(p1), p[length(p)]])
@@ -493,7 +493,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
             s = fill(0, max(0, (1 + d) - 1))
             s[1] = 1
             res[:charSymbols] = map((x->begin
-                            SymbolPartitionTuple(x, s)
+                            symbol_partition_tuple(x, s)
                         end), res[:charparams])
         else
             res[:charparams] = []
@@ -516,7 +516,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
             end
             if d == 1
                 res[:charSymbols] = map((x->begin
-                                SymbolPartitionTuple(x, 0)
+                                symbol_partition_tuple(x, 0)
                             end), res[:charparams])
             end
             if d > 1 && (mod(e, 2) == 0 && r == 2)
@@ -578,10 +578,10 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                         Position(res[:charparams], v)
                     end), t)
         if e == 1 || d == 1
-            res[:A] = map(HighestPowerGenericDegreeSymbol, res[:charSymbols])
-            res[:a] = map(LowestPowerGenericDegreeSymbol, res[:charSymbols])
-            res[:B] = map(HighestPowerFakeDegreeSymbol, res[:charSymbols])
-            res[:b] = map(LowestPowerFakeDegreeSymbol, res[:charSymbols])
+            res[:A] = map(degree_gendeg_symbol, res[:charSymbols])
+            res[:a] = map(valuation_gendeg_symbol, res[:charSymbols])
+            res[:B] = map(degree_feg_symbol, res[:charSymbols])
+            res[:b] = map(valuation_feg_symbol, res[:charSymbols])
         end
         if e > 1 && d > 1
             res[:opdam] = PermListList(res[:charparams], map(function (s,)
@@ -641,16 +641,16 @@ chevieset(:imp, :CharSymbols, function (p, q, r)
     end)
 chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
         if q == 1
-            c = CycPolFakeDegreeSymbol(SymbolPartitionTuple(c, 1))
+            c = fegsymbol(symbol_partition_tuple(c, 1))
         elseif q == p
-            c = CycPolFakeDegreeSymbol(SymbolPartitionTuple(c, fill(0, max(0, (1 + p) - 1))))
+            c = fegsymbol(symbol_partition_tuple(c, fill(0, max(0, (1 + p) - 1))))
         else
             return false
         end
         return Value(c, v)
     end)
 chevieset(:imp, :CharName, function (p, q, r, s, option)
-        if RankSymbol(s) == 1
+        if ranksymbol(s) == 1
             return Format(E(length(s), Position(s, [1]) - 1), option)
         else
             return PartitionTupleToString(s, option)
@@ -772,7 +772,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, root)
         elseif p == q
             if IsInt(phi[length(phi)])
                 m = length(phi) - 2
-                phi = FullSymbol(phi)
+                phi = fullsymbol(phi)
             else
                 m = p
             end
@@ -782,7 +782,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, root)
         elseif para[2] == para[3]
             if IsInt(phi[length(phi)])
                 m = length(phi) - 2
-                phi = FullSymbol(phi)
+                phi = fullsymbol(phi)
             else
                 m = p
             end
@@ -818,7 +818,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
         elseif p == q
             if IsInt(phi[length(phi)])
                 m = length(phi) - 2
-                phi = FullSymbol(phi)
+                phi = fullsymbol(phi)
             else
                 m = p
             end
@@ -830,7 +830,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
         elseif para[2] == para[3]
             if IsInt(phi[length(phi)])
                 m = length(phi) - 2
-                phi = FullSymbol(phi)
+                phi = fullsymbol(phi)
             else
                 m = p
             end
@@ -1018,7 +1018,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                     ct = (p->begin
                                 (para[1])[p[1]] * Q ^ (p[3] - p[2])
                             end)
-                    T = Tableaux(S)
+                    T = tableaux(S)
                     return Concatenation([DiagonalMat(map((S->begin
                                                     ct(pos(S, 1))
                                                 end), T))], map((i->begin
@@ -1104,7 +1104,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
             if IsInt(S[length(S)])
                 extra = E(S[length(S) - 1], S[length(S)])
                 d = length(S) - 2
-                S = FullSymbol(S)
+                S = fullsymbol(S)
             end
             v = p1rRep()
             if p == q
@@ -1116,7 +1116,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                 m = PermListList(T, map((S->begin
                                     S[Concatenation(d + 1:p, 1:d)]
                                 end), T))
-                m = Cycles(m, 1:length(T))
+                m = orbits(m, 1:length(T))
                 l = map((i->begin
                                 extra ^ i
                             end), 0:-1 - 0:1 - p // d)
@@ -1151,8 +1151,8 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             return false
         end
         uc = Dict{Symbol, Any}(:charSymbols => (chevieget(:imp, :CharSymbols))(p, q, r))
-        uc[:a] = map(LowestPowerGenericDegreeSymbol, uc[:charSymbols])
-        uc[:A] = map(HighestPowerGenericDegreeSymbol, uc[:charSymbols])
+        uc[:a] = map(valuation_gendeg_symbol, uc[:charSymbols])
+        uc[:A] = map(degree_gendeg_symbol, uc[:charSymbols])
         ci = (chevieget(:imp, :CharInfo))(p, q, r)
         if q == 1
             cusp = gapSet(map((S->begin
@@ -1163,10 +1163,10 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                                         0:y - 1
                                     end), x)
                         end), cusp)
-            SortBy(cusp, RankSymbol)
+            SortBy(cusp, ranksymbol)
             uc[:harishChandra] = map(function (c,)
                         local cr, res
-                        cr = RankSymbol(c)
+                        cr = ranksymbol(c)
                         res = Dict{Symbol, Any}(:levi => 1:cr)
                         if cr < r
                             res[:parameterExponents] = [map(length, c)]
@@ -1183,9 +1183,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                                                 -((i ^ 2 + p * i)) * length(c[i + 1])
                                             end)))
                         res[:charNumbers] = map((x->begin
-                                        Position(uc[:charSymbols], SymbolPartitionTuple(x, map(length, c)))
+                                        Position(uc[:charSymbols], symbol_partition_tuple(x, map(length, c)))
                                     end), map((x->begin
-                                            map(PartBeta, x)
+                                            map(partβ, x)
                                         end), ((chevieget(:imp, :CharSymbols))(p, 1, r - cr))[1:length(partition_tuples(r - cr, p))]))
                         res[:cuspidalName] = ImprimitiveCuspidalName(c)
                         return res
@@ -1197,7 +1197,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             uc[:families] = map((y->begin
                             MakeFamilyImprimitive(y, uc)
                         end), CollectBy(uc[:charSymbols], (x->begin
-                                Collected(Concatenation(x))
+                                tally(Concatenation(x))
                             end)))
             SortBy(uc[:families], (x->begin
                         x[:charNumbers]
@@ -1237,9 +1237,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
         elseif p == q
             uc[:families] = []
             for f = CollectBy(1:length(uc[:charSymbols]), (i->begin
-                                Collected(Concatenation(FullSymbol((uc[:charSymbols])[i])))
+                                tally(Concatenation(fullsymbol((uc[:charSymbols])[i])))
                             end))
-                if length(gapSet(map(FullSymbol, (uc[:charSymbols])[f]))) > 1
+                if length(gapSet(map(fullsymbol, (uc[:charSymbols])[f]))) > 1
                     push!(uc[:families], Dict{Symbol, Any}(:charNumbers => f))
                 else
                     uc[:families] = Append(uc[:families], map((x->begin
@@ -1254,10 +1254,10 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                             Dict{Symbol, Any}(:charNumbers => l)
                         end), CollectBy(1:length(uc[:charSymbols]), function (i,)
                             local s, l
-                            s = FullSymbol((uc[:charSymbols])[i])
+                            s = fullsymbol((uc[:charSymbols])[i])
                             l = map(length, s)
                             return [Sum(s, (x->begin
-                                                Sum(PartBeta(x))
+                                                Sum(partβ(x))
                                             end)), l - Minimum(l)]
                         end))
             SortBy(uc[:harishChandra], (x->begin
@@ -1266,9 +1266,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             extra = []
             for f = uc[:harishChandra]
                 addextra = false
-                s = FullSymbol((uc[:charSymbols])[(f[:charNumbers])[1]])
+                s = fullsymbol((uc[:charSymbols])[(f[:charNumbers])[1]])
                 l = r - Sum(s, (x->begin
-                                    Sum(PartBeta(x))
+                                    Sum(partβ(x))
                                 end))
                 f[:levi] = 1:l
                 s = map(length, s)

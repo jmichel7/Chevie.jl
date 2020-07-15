@@ -102,9 +102,9 @@ chevieset(:D, :ClassInfo, function (n,)
     end)
 chevieset(:D, :NrConjugacyClasses, function (n,)
         if mod(n, 2) == 1
-            return NrPartitionTuples(n, 2) // 2
+            return npartition_tuples(n, 2) // 2
         else
-            return (NrPartitionTuples(n, 2) + 3 * NrPartitions(n // 2)) // 2
+            return (npartition_tuples(n, 2) + 3 * npartitions(n // 2)) // 2
         end
     end)
 chevieset(:D, :CharInfo, (n->begin
@@ -214,7 +214,7 @@ chevieset(:D, :PoincarePolynomial, function (n, para)
                         end))
     end)
 chevieset(:D, :symbolcharparam, (c->begin
-            SymbolPartitionTuple(c, 0)
+            symbol_partition_tuple(c, 0)
         end))
 chevieset(:D, :Invariants, function (n,)
         local m
@@ -226,13 +226,13 @@ chevieset(:D, :Invariants, function (n,)
                     end), ((CHEVIE[:imp])[:Invariants])(2, 2, n))
     end)
 chevieset(:D, :CycPolGenericDegree, (c->begin
-            CycPolGenericDegreeSymbol(SymbolPartitionTuple(c, 0))
+            CycPolGenericDegreeSymbol(symbol_partition_tuple(c, 0))
         end))
 chevieset(:D, :SchurElement, function (n, phi, q, sqrtparam)
         return (chevieget(:D, :PoincarePolynomial))(n, q) // Value((chevieget(:D, :CycPolGenericDegree))(phi), -((q[1])[1]) // (q[1])[2])
     end)
 chevieset(:D, :FakeDegree, function (n, c, q)
-        return Value(CycPolFakeDegreeSymbol(SymbolPartitionTuple(c, 0)), q)
+        return Value(fegsymbol(symbol_partition_tuple(c, 0)), q)
     end)
 chevieset(:D, :UnipotentCharacters, function (rank,)
         local uc, symbols, r, d, s
@@ -256,8 +256,8 @@ chevieset(:D, :UnipotentCharacters, function (rank,)
             FixRelativeType(s)
             uc[:charSymbols] = Append(uc[:charSymbols], symbols)
         end
-        uc[:a] = map(LowestPowerGenericDegreeSymbol, uc[:charSymbols])
-        uc[:A] = map(HighestPowerGenericDegreeSymbol, uc[:charSymbols])
+        uc[:a] = map(valuation_gendeg_symbol, uc[:charSymbols])
+        uc[:A] = map(degree_gendeg_symbol, uc[:charSymbols])
         uc[:families] = FamiliesClassical(uc[:charSymbols])
         return uc
     end)

@@ -223,8 +223,8 @@ chevieset(:G2, :UnipotentClasses, function (p, type_)
                 c[:Au] = Z(1)
             end
             c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                IdentityMat(Rank(c[:red]))
-                            end), 1:SemisimpleRank(c[:Au])))
+                                IdentityMat(rank(c[:red]))
+                            end), 1:semisimplerank(c[:Au])))
         end
         return uc
     end)

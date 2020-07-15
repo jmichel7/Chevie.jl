@@ -796,6 +796,8 @@ function refleigen(W::PermRootGroup)
   end
 end
 
+refleigen(W::PermRootGroup,i)=refleigen(W)[i]
+
 """
 `reflength(W,w)`
 

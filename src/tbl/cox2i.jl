@@ -22,7 +22,7 @@ chevieset(Symbol("2I"), :WordsClassRepresentatives, function (m,)
 chevieset(Symbol("2I"), :ClassInfo, function (m,)
         local res
         res = Dict{Symbol, Any}(:classtext => (chevieget(Symbol("2I"), :WordsClassRepresentatives))(m))
-        res[:classnames] = map(IntListToString, res[:classtext])
+        res[:classnames] = map(joindigits, res[:classtext])
         res[:classparams] = res[:classnames]
         res[:classes] = [m]
         res[:classes] = Append(res[:classes], fill(0, max(0, (1 + div(m, 2)) - 1)) + 2)
@@ -48,7 +48,7 @@ chevieset(Symbol("2I"), :ClassParameter, function (m, w)
                 l = l[2:length(l)]
                 push!(l, 1)
             end
-            return IntListToString(l)
+            return joindigits(l)
         end
     end)
 chevieset(Symbol("2I"), :CharName, function (m, x, option)
@@ -282,7 +282,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
         if e == 5
             (uc[:families])[3] = galois(uc[:families][3] , 13)
             for c = uc[:harishChandra]
-                c[:eigenvalue] = GaloisCyc(c[:eigenvalue], 13)
+                c[:eigenvalue] = galois(c[:eigenvalue], 13)
             end
         end
         return uc

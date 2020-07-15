@@ -192,9 +192,9 @@ function Base.:*(a::ExtendedCox,b::ExtendedCox)
   elseif isempty(gens(b.group)) return a
   end
   id(r)=one(fill(0,r,r))
-  ExtendedCox(a.group*b.group,vcat(
+  ExtendedCox(a.group*b.group,unique!(vcat(
                    map(m->cat(m,id(rank(b.group)),dims=(1,2)),a.F0s),
-                   map(m->cat(id(rank(b.group)),m,dims=(1,2)),b.F0s)))
+                   map(m->cat(id(rank(a.group)),m,dims=(1,2)),b.F0s))))
 end
 
 function Base.show(io::IO,W::ExtendedCox)

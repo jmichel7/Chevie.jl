@@ -275,8 +275,8 @@ chevieset(:F4, :UnipotentClasses, function (p, type_)
             end
             if !(haskey(c, :AuAction))
                 c[:AuAction] = ExtendedReflectionGroup(c[:red], map((x->begin
-                                    IdentityMat(Rank(c[:red]))
-                                end), 1:SemisimpleRank(c[:Au])))
+                                    IdentityMat(rank(c[:red]))
+                                end), 1:semisimplerank(c[:Au])))
             end
         end
         return uc

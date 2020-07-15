@@ -7,7 +7,7 @@ chevieset(:G4_22, :PrintDiagram, function (arg...,)
         print(title, " ")
         s = pad("\n", -(length(title)))
         f = function (arg...,)
-                return IntListToString(indices[arg])
+                return joindigits(indices[arg])
             end
         if ST == 4
             print(f(1), "(3)--", f(2), "(3)")
@@ -527,11 +527,11 @@ chevieset(:G4_22, :SchurModels, function (ST,)
     end)
 chevieset(:G4_22, :paramchars, function (ST,)
         if ST in 4:7
-            return Concatenation(Cartesian([1], 1:2, 1:3, 1:3), Cartesian([2], 1:2, 1:3, 1:3), Cartesian([3], 1:3, 1:2))
+            return Concatenation(cartesian([1], 1:2, 1:3, 1:3), cartesian([2], 1:2, 1:3, 1:3), cartesian([3], 1:3, 1:2))
         elseif ST in 8:15
-            return Concatenation(Cartesian([1], 1:2, 1:3, 1:4), Cartesian([2], 1:2, 1:3, 1:6), Cartesian([3], 1:3, 1:2, 1:4), Cartesian([4], 1:4, 1:3))
+            return Concatenation(cartesian([1], 1:2, 1:3, 1:4), cartesian([2], 1:2, 1:3, 1:6), cartesian([3], 1:3, 1:2, 1:4), cartesian([4], 1:4, 1:3))
         elseif ST in 16:22
-            return Concatenation(Cartesian([1], 1:2, 1:3, 1:5), Cartesian([2], 1:2, 1:3, 1:10), Cartesian([3], 1:3, 1:2, 1:10), Cartesian([4], 1:4, 1:3, 1:5), Cartesian([5], 1:5, 1:2, 1:3), Cartesian([6], 1:6, 1:5))
+            return Concatenation(cartesian([1], 1:2, 1:3, 1:5), cartesian([2], 1:2, 1:3, 1:10), cartesian([3], 1:3, 1:2, 1:10), cartesian([4], 1:4, 1:3, 1:5), cartesian([5], 1:5, 1:2, 1:3), cartesian([6], 1:6, 1:5))
         end
     end)
 chevieset(:G4_22, :SchurData, function (ST,)
@@ -597,14 +597,14 @@ G4_22FetchIndexChars = function (ST, para)
             (CHEVIE[:G4_22CachedIndexChars])[4:22] = map((i->begin
                             []
                         end), 4:22)
-            InfoChevie2("Creating G4_22CachedIndexChars\n")
+            InfoChevie("Creating G4_22CachedIndexChars\n")
         end
         p = PositionProperty((CHEVIE[:G4_22CachedIndexChars])[ST], (x->begin
                         x[1] == para
                     end))
         if p != false
             return (((CHEVIE[:G4_22CachedIndexChars])[ST])[p])[2]
-            InfoChevie2("Using G4_22CachedIndexChars(", para, ")\n")
+            InfoChevie("Using G4_22CachedIndexChars(", para, ")\n")
         else
             return ((chevieget(:G4_22, :HeckeCharTable))(ST, para, []))[:indexchars]
         end
@@ -712,13 +712,13 @@ G4_22Test = function (res, rows, i)
             CHEVIE[:G4_22CachedIndexChars] = map((i->begin
                             []
                         end), 1:22)
-            InfoChevie2("Creating G4_22CachedIndexChars\n")
+            InfoChevie("Creating G4_22CachedIndexChars\n")
         end
         p = PositionProperty((CHEVIE[:G4_22CachedIndexChars])[res[:ST]], (x->begin
                         x[1] == res[:parameter]
                     end))
         if p != false
-            InfoChevie2("Using G4_22CachedIndexChars(", res[:parameter], ")\n")
+            InfoChevie("Using G4_22CachedIndexChars(", res[:parameter], ")\n")
             ic = (((CHEVIE[:G4_22CachedIndexChars])[res[:ST]])[p])[2]
             res[:irreducibles] = rows[ic]
             if ic != i
@@ -1180,7 +1180,7 @@ chevieset(Symbol("2G5"), :NrConjugacyClasses, 9)
 chevieset(Symbol("2G5"), :ClassInfo, function ()
         local res
         res = Dict{Symbol, Any}(:classtext => [[], [1, 2, 2, 1, 2, 2, 1], [1, 2, 2, 1, 2, 2, 1, 1], [1], [1, 1, 2, 1, 1], [1, 1, 2, 2, 1, 1], [1, 2], [1, 2, 1], [2, 1, 2, 1]], :classes => [12, 6, 6, 6, 12, 6, 6, 6, 12], :orders => [2, 24, 24, 24, 6, 8, 24, 8, 6])
-        res[:classnames] = map(IntListToString, res[:classtext])
+        res[:classnames] = map(joindigits, res[:classtext])
         return res
     end)
 chevieset(Symbol("2G5"), :CharInfo, function ()

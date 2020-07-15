@@ -458,6 +458,15 @@ function charinfo(t::TypeIrred)
   for f in [:a,:A,:b,:B]
     if isnothing(c[f]) delete!(c,f) else c[f]=Int.(c[f]) end
   end
+  if haskey(t,:orbit) 
+    if !haskey(c,:charRestrictions)
+      c[:charRestrictions]=eachindex(c[:charparams])
+      c[:nrGroupClasses]=length(c[:charparams]) # assume ortit twist trivial
+    end
+    for f in [:a,:A,:b,:B]
+      if haskey(c,f) c[f]*=length(t.orbit) end
+    end
+  end
   c
 end
 
@@ -682,11 +691,35 @@ parameters for the characters used by Malle in [@Mal96].
 function charinfo(W)::Dict{Symbol,Any}
   gets(W,:charinfo)do
     p=charinfo.(refltype(W))
-    if isempty(p) return Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
+    if isempty(p) 
+      res=Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
       :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
+      if W isa Spets
+        res[:charRestrictions]=[1]
+        res[:nrGroupClasses]=1
+      end
+      return res
     end
     if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
     res[:charparams]=cartfields(p,:charparams)
+    if W isa Spets
+      gt=map(x->sort(x.indices),refltype(Group(W)))
+      t=refltype(W)
+      n=fill(0,length(gt))
+      for i in eachindex(t), f in t[i].orbit
+        n[findfirst(==(sort(f.indices)),gt)]=p[i][:nrGroupClasses]
+      end
+      res[:charRestrictions]=
+      map(cartesian(getindex.(p,:charRestrictions)...))do y
+        m=fill(0,length(gt))
+        for i in eachindex(t), f in t[i].orbit
+          m[findfirst(==(sort(f.indices)),gt)]=y[i]
+        end
+        return HasType.PositionCartesian(n,m)
+      end
+      res[:nrGroupClasses]=prod(i->p[i][:nrGroupClasses]^length(t[i].orbit),
+                                                          eachindex(t))
+    end
     if length(p)==1 return res end
     res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]

@@ -3,7 +3,7 @@ chevieset(:G24, :PrintDiagram, function (indices, title)
         local s
         print(title, " ", indices[1], "\n")
         s = pad("", length(title) - 1)
-        print(s, " / \\\n", s, indices[2], "===", indices[3], "  ", IntListToString(indices[[2, 3, 1, 2, 3, 1, 2, 3, 1]]), "==", IntListToString(indices[[3, 2, 3, 1, 2, 3, 1, 2, 3]]), "\n")
+        print(s, " / \\\n", s, indices[2], "===", indices[3], "  ", joindigits(indices[[2, 3, 1, 2, 3, 1, 2, 3, 1]]), "==", joindigits(indices[[3, 2, 3, 1, 2, 3, 1, 2, 3]]), "\n")
     end)
 chevieset(:G24, :GeneratingRoots, [[1, ER(-7), 0], [1, -(ER(-7)), 0], [(-1 - ER(-7)) // 2, (-7 - 3 * ER(-7)) // 6, -4 // 3]])
 chevieset(:G24, :GeneratingCoRoots, [[1, (-3 * ER(-7)) // 7, 0], [1, (3 * ER(-7)) // 7, 0], [(-1 + ER(-7)) // 2, (-7 + 3 * ER(-7)) // 14, -1 // 2]] // 2)

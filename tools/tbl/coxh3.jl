@@ -20,7 +20,7 @@ chevieset(:H3, :ParabolicRepresentatives, function (s,)
 chevieset(:H3, :ClassInfo, function ()
         local res
         res = Dict{Symbol, Any}(:classtext => chevieget(:H3, :WordsClassRepresentatives), :orders => [1, 2, 5, 2, 3, 10, 5, 6, 10, 2], :classes => [1, 15, 12, 15, 20, 12, 12, 20, 12, 1])
-        res[:classnames] = map(IntListToString, res[:classtext])
+        res[:classnames] = map(joindigits, res[:classtext])
         (res[:classnames])[1] = "."
         res[:classparams] = res[:classnames]
         return res
@@ -96,7 +96,7 @@ chevieset(:H3, :UnipotentCharacters, function ()
 chevieset(:H3, :Invariants, function ()
         local r, C
         C = chevieget(:H3, :CartanMat)
-        r = RootsCartan(C) * C
+        r = roots(C) * C
         return map((d->begin
                         function (arg...,)
                             return Sum(r, (a->begin

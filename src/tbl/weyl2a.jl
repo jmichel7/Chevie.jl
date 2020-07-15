@@ -60,7 +60,7 @@ chevieset(Symbol("2A"), :ClassInfo, function (n,)
         return res
     end)
 chevieset(Symbol("2A"), :NrConjugacyClasses, (n->begin
-            NrPartitions(n + 1)
+            npartitions(n + 1)
         end))
 chevieset(Symbol("2A"), :ClassParameter, function (n, w)
         local i, j, x, res, mark, cyc
@@ -89,7 +89,7 @@ chevieset(Symbol("2A"), :CharParams, (n->begin
             partitions(n + 1)
         end))
 chevieset(Symbol("2A"), :CharName, function (arg...,)
-        return IntListToString(arg[2])
+        return joindigits(arg[2])
     end)
 chevieset(Symbol("2A"), :CharInfo, (n->begin
             (chevieget(:A, :CharInfo))(n)
@@ -115,8 +115,8 @@ chevieset(Symbol("2A"), :Representation, function (n, i)
     end)
 PartitionTwoCoreQuotient = function (d, p)
         local x
-        x = SymbolPartitionTuple(reverse(p), -d)
-        return PartBeta(gapSet(Concatenation(2 * x[1], 2 * x[2] + 1)))
+        x = symbol_partition_tuple(reverse(p), -d)
+        return partβ(gapSet(Concatenation(2 * x[1], 2 * x[2] + 1)))
     end
 chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
         local uc, d, k, s, i, r
@@ -164,35 +164,6 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
             if 0 != mod((uc[:a])[i] + (uc[:A])[i], 2)
                 (uc[:families])[i] = Family("C'1", ((uc[:families])[i])[:charNumbers])
             end
-        end
-        return uc
-    end)
-chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
-        local uc, c, t, WF, m
-        uc = deepcopy((chevieget(:A, :UnipotentClasses))(r, p))
-        for c = uc[:classes]
-            t = Parent(c[:red])
-            if length(t[:type_]) > 1
-                error()
-            end
-            if length(t[:type_]) == 0 || Rank(t) == 1
-                WF = CoxeterCoset(Parent(c[:red]))
-            else
-                WF = CoxeterCoset(Parent(c[:red]), Product(1:div(t[:rank], 2), (i->begin
-                                    Perm(i, (t[:rank] + 1) - i)
-                                end)))
-            end
-            t = Twistings(WF, ((c[:red])[:rootInclusion])[(c[:red])[:generatingReflections]])
-            m = map((x->begin
-                            ReflectionEigenvalues(x, PositionClass(x, x[:phi]))
-                        end), t)
-            m = map((x->begin
-                            count((y->begin
-                                        y == 1 // 2
-                                    end), x)
-                        end), m)
-            p = Position(m, maximum(m))
-            c[:F] = (t[p])[:phi]
         end
         return uc
     end)

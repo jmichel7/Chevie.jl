@@ -25,18 +25,12 @@ Base.union(v::Vector)=union(v...)
 
 # correct translations of GAP3 functions
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
-BetaSet=βset
 CartanMat(s,a...)=cartan(Symbol(s),a...)
-Cartesian=cartesian
 CharParams(W)=charinfo(W)[:charparams]
 CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
-Collected=tally
 CollectBy(v,f)=collectby(f,v)
 ConcatenationString(s...)=prod(s)
-CoxeterWord(W,w)=word(W,w)
-Cycles(p,i)=orbits(p,i)
-CycPolFakeDegreeSymbol=fegsymbol
-DefectSymbol=defectsymbol
+CoxeterGroup()=coxgroup()
 function DiagonalMat(v...)
   arg=map(m->m isa Array ? toM(m) : hcat(m),v)
   R=cat(arg...;dims=(1,2))
@@ -46,17 +40,10 @@ function DiagonalMat(v...)
 end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
 Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
-Elements=elements
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
-FullSymbol=fullsymbol
-GaloisCyc=galois
-Hasse=hasse
-HighestPowerFakeDegreeSymbol=degree_feg_symbol
-HighestPowerGenericDegreeSymbol=degree_gendeg_symbol
 function Ignore() end
-InfoChevie2=InfoChevie
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end
@@ -64,53 +51,34 @@ function Inherit(a,b,c)
 end
 Intersection(x,y)=sort(intersect(x,y))
 Intersection(x::Vector)=sort(intersect(x...))
-IntListToString=joindigits
 Join(x,y)=join(x,y)
 Join(x)=join(x,",")
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
-LowestPowerFakeDegreeSymbol=valuation_feg_symbol
-LowestPowerGenericDegreeSymbol=valuation_gendeg_symbol
-MatXPerm=reflrep
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
-NrPartitions=npartitions
-NrPartitionTuples=npartition_tuples
 OnMatrices(a::Vector{<:Vector},b::Perm)=(a.^b)^b
-PartBeta=partβ
-PermutationMat=Matrix
-Rank=rank
-RankSymbol=ranksymbol
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 RootInt(a,b=2)=floor(Int,a^(1/b)+0.0001)
-RootsCartan=roots
 Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
-SignedPerm=SPerm
 SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
-SemisimpleRank(W)=semisimplerank(W)
 function SortParallel(a,b)
   v=sortperm(a)
   b.=b[v]
   a.=a[v]
 end
-ShiftBeta=shiftβ
-StringSymbol=stringsymbol
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
-SymbolPartitionTuple=symbol_partition_tuple
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
-Tableaux=tableaux
 function TeXBracket(s)
   s=string(s)
   length(s)==1  ? s : "{"*s*"}"
 end
-Torus(i::Int)=torus(i)
 Value(p,v)=p(v)
 ValuePol(v,c)=isempty(v) ? 0 : evalpoly(c,v)
 function CoxeterGroup(S::String,s...)
  if length(s)==1 return coxgroup(Symbol(S),Int(s[1])) end
  coxgroup(Symbol(S),Int(s[1]))*coxgroup(Symbol(s[2]),Int(s[3]))
 end
-CoxeterGroup()=coxgroup()
 FactorizedSchurElementsOps=Dict{Symbol,Any}(
 :Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
           map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))

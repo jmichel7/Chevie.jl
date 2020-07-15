@@ -247,3 +247,49 @@ chevieset(["F4", "G25", "G26", "G32"], :SchurElement, (t->begin
                 return VcycSchurElement(Y, (chevieget(t, :SchurModels))[Symbol(ci[:name])], ci)
             end
         end))
+VFactorSchurElement = function (arg...,)
+        local para, r, data, res, n, monomial, den, root
+        n = length(arg[1])
+        if length(arg) >= 3
+            data = arg[3]
+            para = (arg[1])[data[:order]]
+        else
+            para = copy(arg[1])
+        end
+        monomial = (v->begin
+                    Product(1:length(v), (i->begin
+                                para[i] ^ v[i]
+                            end))
+                end)
+        r = arg[2]
+        res = Dict{Symbol, Any}()
+        if haskey(r, :coeff)
+            res[:factor] = r[:coeff]
+        else
+            res[:factor] = 1
+        end
+        if haskey(r, :factor)
+            res[:factor] = res[:factor] * monomial(r[:factor])
+        end
+        if haskey(r, :root)
+            den = Lcm(map(denominator, r[:root]))
+            root = monomial(r[:root] * den)
+            if haskey(r, :rootCoeff)
+                root = root * r[:rootCoeff]
+            end
+            para[n + 1] = GetRoot(root, den)
+            if IsBound(data)
+                para[n + 1] = para[n + 1] * data[:rootPower]
+            end
+        elseif haskey(r, :rootUnity)
+            para[n + 1] = r[:rootUnity] ^ data[:rootUnityPower]
+        end
+        res[:vcyc] = map((v->begin
+                        Dict{Symbol, Any}(:monomial => monomial(v[1]), :pol => CycPol([1, 0, v[2]]))
+                    end), r[:vcyc])
+        if res[:factor] == 0 || res[:vcyc] == []
+            return res[:factor]
+        end
+        res[:operations] = FactorizedSchurElementsOps
+        return (FactorizedSchurElementsOps[:Simplify])(res)
+    end

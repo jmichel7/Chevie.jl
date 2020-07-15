@@ -3,7 +3,7 @@ chevieset(Symbol("2F4"), :NrConjugacyClasses, 11)
 chevieset(Symbol("2F4"), :ClassInfo, function ()
         local res
         res = Dict{Symbol, Any}(:classtext => [[], [2, 3, 2], [1], [1, 2, 1, 3, 2, 1, 4, 3, 2, 1], [1, 2], [2], [1, 2, 1, 3, 2, 1, 3, 2], [1, 2, 3, 2], [1, 2, 1, 3, 2, 1, 3, 2, 4, 3, 2, 1], [1, 2, 1, 3, 2, 1, 3, 2, 4, 3, 2, 1, 3, 2, 4, 3, 2, 1], [1, 2, 1, 3, 2, 1]], :orders => [2, 8, 4, 24, 24, 8, 8, 12, 4, 8, 8], :classes => [72, 144, 288, 96, 96, 144, 72, 192, 24, 12, 12], :classnames => ["2a", "8a", "4a", "24a", "24b", "8a", "8b", "12a", "4b", "8c", "8d"])
-        res[:classparams] = map(IntListToString, res[:classtext])
+        res[:classparams] = map(joindigits, res[:classtext])
         return res
     end)
 chevieset(Symbol("2F4"), :CharInfo, function ()

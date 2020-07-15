@@ -18,7 +18,7 @@ chevieset(:A, :ReflectionDegrees, (n->begin
         end))
 chevieset(:A, :PrintDiagram, function (r, indices, title)
         local i
-        print(title, " ", Join(indices, " - "), "\n")
+        print(title, " ", join(indices, " - "), "\n")
     end)
 chevieset(:A, :ReflectionName, function (r, option)
         local o
@@ -65,7 +65,7 @@ chevieset(:A, :WordClass, function (pi,)
 chevieset(:A, :ClassInfo, function (n,)
         local res
         res = Dict{Symbol, Any}(:classparams => partitions(n + 1))
-        res[:classnames] = map(IntListToString, res[:classparams])
+        res[:classnames] = map(joindigits, res[:classparams])
         res[:classtext] = map(chevieget(:A, :WordClass), res[:classparams])
         res[:classes] = map((pi->begin
                         factorial(n + 1) // ((CharTableSymmetric[:centralizers])[1])(n, pi)
@@ -74,7 +74,7 @@ chevieset(:A, :ClassInfo, function (n,)
         return res
     end)
 chevieset(:A, :NrConjugacyClasses, (n->begin
-            NrPartitions(n + 1)
+            npartitions(n + 1)
         end))
 chevieset(:A, :WeightInfo, (n->begin
             Dict{Symbol, Any}(:minusculeWeights => 1:n, :decompositions => map((i->begin
@@ -109,7 +109,7 @@ chevieset(:A, :HighestPowerFakeDegree, (p->begin
             (Sum(p) * (Sum(p) - 1)) // 2 - (chevieget(:A, :LowestPowerFakeDegree))(conjugate_partition(p))
         end))
 chevieset(:A, :CharName, function (arg...,)
-        return IntListToString(arg[2])
+        return joindigits(arg[2])
     end)
 chevieset(:A, :CharInfo, function (n,)
         local res
@@ -133,7 +133,7 @@ chevieset(:A, :PoincarePolynomial, function (n, param)
 chevieset(:A, :SchurElement, function (n, alpha, param, sqrtparam)
         local i, j, lambda, res, q
         q = -((param[1])[1]) // (param[1])[2]
-        lambda = BetaSet(alpha)
+        lambda = βset(alpha)
         res = q ^ binomial(length(lambda), 3)
         for i = lambda
             for j = 0:i - 1
@@ -163,7 +163,7 @@ chevieset(:A, :FakeDegree, function (n, p, q)
         return (chevieget(:A, :PoincarePolynomial))(Sum(p) - 1, [[q, -1]]) // (chevieget(:A, :SchurElement))(Sum(p) - 1, p, [[q, -1]], [])
     end)
 chevieset(:A, :DecompositionMatrix, function (l, p)
-        return [[1:NrPartitions(l + 1), MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), l + 1))]]
+        return [[1:npartitions(l + 1), MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), l + 1))]]
     end)
 chevieset(:A, :UnipotentCharacters, function (l,)
         local ci
@@ -171,7 +171,7 @@ chevieset(:A, :UnipotentCharacters, function (l,)
         return Dict{Symbol, Any}(:harishChandra => [Dict{Symbol, Any}(:levi => [], :relativeType => Dict{Symbol, Any}(:series => "A", :indices => 1:l, :rank => l), :parameterExponents => fill(0, max(0, (1 + l) - 1)) + 1, :cuspidalName => "", :eigenvalue => 1, :charNumbers => 1:length(ci[:charparams]))], :families => map((i->begin
                                 Family("C1", [i])
                             end), 1:length(ci[:charparams])), :charParams => ci[:charparams], :charSymbols => map((x->begin
-                                [BetaSet(x)]
+                                [βset(x)]
                             end), ci[:charparams]), :a => ci[:a], :A => ci[:A])
     end)
 chevieset(:A, :Invariants, function (n,)
@@ -207,7 +207,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
             cl = (uc[:classes])[i]
             p = cl[:parameter]
             d = gcd(p)
-            cl[:name] = IntListToString(p)
+            cl[:name] = joindigits(p)
             cl[:Au] = ComplexReflectionGroup(d, 1, 1)
             cl[:balacarter] = Concatenation(map((i->begin
                                 Sum(p[1:i - 1]) + (1:p[i] - 1)
@@ -221,12 +221,12 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                         end), 1:length(p) - 1)
             cl[:red] = []
             p = 1
-            for j = Collected(cl[:parameter])
+            for j = tally(cl[:parameter])
                 cl[:red] = Append(cl[:red], p:(p + j[2]) - 2)
                 p = p + j[2]
             end
             cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
-            cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat(Rank(cl[:red]))])
+            cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat(rank(cl[:red]))])
             if d == 2
                 push!((ss(1))[:locsys], [i, 2])
                 push!((ss(-1))[:locsys], [i, 1])
@@ -236,7 +236,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                 end
             end
         end
-        uc[:orderClasses] = Hasse(Poset(map((x->begin
+        uc[:orderClasses] = hasse(Poset(map((x->begin
                                 map((y->begin
                                             dominates(y[:parameter], x[:parameter])
                                         end), uc[:classes])
@@ -247,7 +247,7 @@ chevieset(:A, :KLeftCellRepresentatives, function (n,)
         local W, l, f
         f = function (i,)
                 if i != Perm()
-                    i = Product(CoxeterWord(W, i), (j->begin
+                    i = Product(word(W, i), (j->begin
                                     Perm(j, j + 1)
                                 end))
                 end
@@ -255,7 +255,7 @@ chevieset(:A, :KLeftCellRepresentatives, function (n,)
                 return Position(CharParams(W), [i])
             end
         W = CoxeterGroup("A", n)
-        l = Filtered(Elements(W), (x->begin
+        l = Filtered(elements(W), (x->begin
                         x ^ 2 == Perm()
                     end))
         return map((x->begin

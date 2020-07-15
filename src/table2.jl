@@ -238,7 +238,24 @@ chevieset(:imp,:GeneratingRoots,function(p,q,r)
     push!(roots, v)
   end
   return roots
- end)
+end)
+
+chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
+  uc=deepcopy(chevieget(:A, :UnipotentClasses)(r, p))
+  for c in uc[:classes]
+    t=parent(c[:red])
+    if length(refltype(t))>1 error() end
+    if length(refltype(t))==0 || rank(t)==1 WF=spets(parent(c[:red]))
+    else WF=spets(parent(c[:red]),prod(i->Perm(i,rank(t)+1-i),1:div(rank(t),2)))
+    end
+    t=twistings(WF,inclusiongens(c[:red]))
+    m=map(x->refleigen(x,position_class(x,x())),t)
+    m=map(x->count(y->y==Root1(-1),x),m)
+    p=findfirst(==(maximum(m)),m)
+    c[:F]=t[p]()
+  end
+  uc
+end)
 
 chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   part2dynkin=function(part)

@@ -271,6 +271,7 @@ end
 Groups.Group(WF::Spets)=WF.W
 PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
 PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
+PermRoot.semisimplerank(WF::Spets)=semisimplerank(WF.W)
 
 """
 `twistings(W,I)`
@@ -593,6 +594,8 @@ function PermRoot.refleigen(W::Spets)
   end
 end
   
+PermRoot.refleigen(W::Spets,i)=refleigen(W)[i]
+
 function Frobenius(WF::CoxeterCoset)
   f(w,i=1)=Frobenius(w,WF.phi^i)
 end

@@ -141,7 +141,7 @@ chevieset(:I, :WordsClassRepresentatives, function (m,)
 chevieset(:I, :ClassInfo, function (m,)
         local r, i, clnp, cl, g1, g2, gen, perm, m1
         r = (chevieget(:I, :WordsClassRepresentatives))(m)
-        clnp = map(IntListToString, r)
+        clnp = map(joindigits, r)
         g1 = Perm()
         i = 2
         while 2i <= m + 1

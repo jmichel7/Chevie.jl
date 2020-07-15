@@ -79,6 +79,7 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
   o=chevieget(d[1],f)
   if o isa Function
 #   o(vcat(collect(d)[2:end],collect(extra))...)
+    if haskey(t,:orbit) t=t.orbit[1] end
     if haskey(t,:cartanType) && f in needcartantype
 #     println("args=",(d[2:end]...,extra...,t.cartanType))
       o(d[2:end]...,extra...,t.cartanType)
