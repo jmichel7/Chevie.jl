@@ -258,7 +258,7 @@ struct UnipotentClasses
 end
 
 function nameclass(u::Dict,opt=Dict{Symbol,Any}())
-# println("u=$u")
+# println("u=$u, opt=$opt")
   if haskey(opt,:mizuno) && haskey(u,:mizuno) n=u[:mizuno]
   elseif haskey(opt,:shoji) && haskey(u,:shoji) n=u[:shoji]
   else n=u[:name]

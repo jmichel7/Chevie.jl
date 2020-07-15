@@ -53,61 +53,89 @@ ClosedSubsets = function(W)
   end
 end
 
-ClassTypesOps=Dict()
-ClassTypesOps[:Format] = function (r, opts)
-  res = string(r)
-  res = Append(res, "\n")
-  nc = function (p,)
-          local d
-          p = Mvp(p)
-          d = Lcm(map(denominator, p[:coeff]))
-          if d == 1 return Format(p, opts) end
-          return SPrint(BracketIfNeeded(Format(p * d, opts), "+-"), "/", d)
-      end
-  if haskey(opts, :nrClasses) NrConjugacyClasses(r) end
-  if haskey(opts, :unip)
-      o = Dict{Symbol, Any}(:rowLabels => [], :rowsLabel => "Type", :columnLabels => [])
-      if haskey(opts, :nrClasses) push!(o[:columnLabels], "nrClasses") end
-      push!(o[:columnLabels], "u")
-      push!(o[:columnLabels], "Centralizer")
-      t = []
-      for x = r[:ss]
-          u = RationalUnipotentClasses(x[:CGs], r[:p])
-          for c = u
-              v = []
-              if c[:card] == CycPol(1)
-                  if haskey(opts, :nrClasses) push!(v, nc(x[:nrClasses])) end
-                  push!(o[:rowLabels], ReflectionName(x[:CGs], opts))
-              else
-                  push!(o[:rowLabels], " ")
-                  if haskey(opts, :nrClasses) push!(v, "") end
-              end
-              push!(v, Name(c[:class], Inherit(Dict{Symbol, Any}(:class => c[:AuNo]), opts)))
-              push!(v, Format(x[:cent] // c[:card], Inherit(Dict{Symbol, Any}(:vname => "q"), opts)))
-              push!(t, v)
-          end
-      end
-  else
-      o = Dict{Symbol, Any}(:rowLabels => map((x->begin
-                              ReflectionName(x[:CGs], opts) end), r[:ss]))
-      o[:rowsLabel] = "Type"
-      t = []
-      o[:columnLabels] = []
-      if haskey(opts, :nrClasses)
-          push!(t, map(nc, NrConjugacyClasses(r)))
-          push!(o[:columnLabels], "nrClasses")
-      end
-      push!(t, map((x->begin
-                      Format(x[:cent], Inherit(Dict{Symbol, Any}(:vname => "q"), opts))
-                  end), r[:ss]))
-      push!(o[:columnLabels], "Centralizer")
-      t = TransposedMat(t)
-  end
-  res = Append(res, FormatTable(t, Inherit(o, opts)))
-  return res
+struct ClassType
+  CGs
+  cent::CycPol
+  unip
 end
-ClassTypesOps[:Value] = function (arg...,)
-  r=copy(arg[1])
+
+struct ClassTypes
+  p::Int
+  WF
+  ss::Vector{ClassType}
+  prop::Dict{Symbol,Any}
+end
+
+# ClassTypes(W[,p])
+function ClassTypes(W,p=0)
+  if W isa Spets WF=W;W=Group(W)
+  else WF=spets(W)
+  end
+  l=vcat(twistings.(Ref(WF),SScentralizer_representatives(Group(WF), p))...)
+  ClassTypes(p,WF,map(x->ClassType(x,CycPol(generic_order(x,Pol(:q))),
+    RationalUnipotentClasses(x,p)),l),Dict{Symbol,Any}())
+end
+
+function Base.show(io::IO,r::ClassTypes)
+  res=string("ClassTypes(",sprint(show,r.WF;context=io))
+  if r.p==0 res*=",good characteristic)"
+  else res*=string(",char. ",r.p,")")
+  end
+  if haskey(r.prop,:specialized)
+    res*=string(" ",join(map(x->string(x[1],"==",x[2]),r.prop[:specialized])," "))
+  end
+  println(io,res)
+  function nc(p)
+    local d
+    p=Mvp(p)
+    d=lcm(map(denominator,p[:coeff]))
+    if d==1 return Format(p, opts) end
+    return SPrint(BracketIfNeeded(Format(p*d,opts),"+-"),"/",d)
+  end
+  classes=get(io,:nClasses,false)
+  if classes NrConjugacyClasses(r) end
+  if get(io,:unip,false)
+    rowLabels=[]
+    columnLabels=[]
+    if classes push!(columnLabels, "nrClasses") end
+    push!(columnLabels,"u")
+    push!(columnLabels,"Centralizer")
+    t=[]
+    for x in r.ss
+      u=RationalUnipotentClasses(x.CGs, r.p)
+      for c in u
+        v=String[]
+        if isone(c[:card])
+          if classes push!(v, nc(x[:nrClasses])) end
+          push!(rowLabels,sprint(show,x.CGs;context=io))
+        else
+          push!(rowLabels," ")
+          if classes push!(v,"") end
+        end
+        push!(v,Ucl.nameclass(merge(c[:class].prop,Dict(:name=>c[:class].name)),
+                              merge(io.dict,Dict(:class=>c[:AuNo]))))
+        push!(v,sprint(show,x.cent//c[:card],context=io))
+        push!(t,v)
+      end
+    end
+    t=toM(t)
+  else
+    rowLabels=map(x->sprint(show,x.CGs;context=io),r.ss)
+    t=[]
+    columnLabels=String[]
+    if classes
+      push!(t,nc.(NrConjugacyClasses(r)))
+      push!(columnLabels, "nrClasses")
+    end
+    push!(t,map(x->sprint(show,x.cent;context=io),r.ss))
+    push!(columnLabels,"Centralizer")
+    t=permutedims(toM(t))
+  end
+  format(io,t;col_labels=columnLabels,row_labels=rowLabels,rows_label="Type")
+end
+
+function Value(r::ClassTypes,arg...)
+  r=copy(r)
   r[:specialized] = map(i->arg[2][i-1:i], 2:2:length(arg[2]))
   r[:ss] = map(function (x,)
               local res
@@ -119,111 +147,50 @@ ClassTypesOps[:Value] = function (arg...,)
   return r
 end
 
-ClassTypesOps[:Display] = function (r, opts) print(Format(r, opts)) end
-ClassTypesOps[:String] = function (r,)
-  res = SPrint("ClassTypes(", r[:spets])
-  if r[:p] == 0 res = Append(res, ",good characteristic)")
-  else res *= SPrint(",char. ", r[:p], ")")
-  end
-  if haskey(r, :specialized)
-    res*=SPrint(" ",Join(map(x->SPrint(x[1],"==",x[2]),r[:specialized])," "))
-  end
-  return res
-end
-
-ClassTypesOps[:Print] = function (r,)
-        print(string(r))
-    end
-
-struct ClassType
-  CGs
-  cent::CycPol
-  unip
-end
-
-# ClassTypes(W[,p])
-function ClassTypes(W,p=0)
-  if W isa Spets WF=W;W=Group(W)
-  else WF=spets(W)
-  end
-  l=vcat(twistings.(Ref(WF),SScentralizer_representatives(Group(WF), p))...)
-  (p=p,spets=WF,ss=map(x->ClassType(x,CycPol(generic_order(x,Pol(:q))),
-                             RationalUnipotentClasses(x, p)),l))
-end
-
 # See Fleischmann-Janiszczak AAECC 1996 definition 2.1
-ClassTypesOps[:NrConjugacyClasses] = function (C,)
-        local HF, W, H, o, P, l, less, mu, n, i, r, b
-        W = Group(C[:spets])
-        b = gapSet(Factors((PermRootOps[:BadNumber])(W)))
-        if Size(FundamentalGroup(W)) > 1
-            print("# Nr classes each type_ implemented only for simply connected groups")
-            return
-        end
-        for r = C[:ss]
-            if !(haskey(r, :nrClasses))
-                HF = r[:CGs]
-                H = Group(HF)
-                P = deepcopy(ClosedSubsets(W))
-                o = Filtered(1:Size(P), (i->begin
-                                OnSets((P[:elements])[i], HF[:phi]) == (P[:elements])[i]
-                            end))
-                o = Filtered(o, (i->begin
-                                all((j->begin
-                                            j in (P[:elements])[i]
-                                        end), (H[:rootInclusion])[H[:generatingReflections]])
-                            end))
-                P = Restricted(P, o)
-                P[:elements] = (P[:elements])[o]
-    # here P poset of HF.phi-stable closed subsets containing roots(H)
-                InfoChevie("# ", HF, "==>", P, "")
-                l = map((x->begin
-                                Spets(ReflectionSubgroup(W, x), HF[:phi])
-                            end), P[:elements])
-                l = map(function (RF,)
-                            local res, d, R
-                            R = Group(RF)
-                            res = Product(Filtered(ReflectionDegrees(RF), (y->begin
-                                                y[1] == 1
-                                            end)), (p->begin
-                                            Mvp("q") - p[2]
-                                        end))
-                            if R[:semisimpleRank] == 0
-                                return res
-                            end
-                            d = SmithNormalFormMat((R[:roots])[R[:generatingReflections]] * R[:simpleRoots])
-                            d = Filtered(Flat(d), (x->begin
-                                            !x in [0, 1, C[:p]]
-                                        end))
-                            return res * Product(d, function (i,)
-                                            if i == 2 && (2 in b && C[:p] != 2)
-                                                return 2
-                                            end
-                                            if mod(C[:p], i) == 1
-                                                return i
-                                            end
-                                            return Mvp(SPrint("q_", i))
-                                        end)
-                        end, l)
-                less = (i->begin
-                            Difference(ListBlist(1:length(l), (Incidence(P))[i]), [i])
-                        end)
-                o = LinearExtension(P)
-                mu = []
-                mu[o[Size(P)]] = 1
-                for i = o[Size(P) - 1:(Size(P) - 2) - (Size(P) - 1):1]
-                    mu[i] = -(Sum(mu[less(i)]))
-                end
-                n = Stabilizer(W, gapSet((H[:rootInclusion])[H[:generatingReflections]]), OnSets)
-                n = (mu * l) // Size(Centralizer(n, HF[:phi]))
-                InfoChevie("==>", n, ":", Stime(), "\n")
-                r[:nrClasses] = n
-            end
-        end
-        C[:ss] = Filtered(C[:ss], (x->begin
-                        x[:nrClasses] != 0
-                    end))
-        return map((x->begin
-                        x[:nrClasses]
-                    end), C[:ss])
+function NrConjugacyClasses(C::ClassTypes)
+  W=Group(C.WF)
+  b=keys(factors(BadNumber(W)))
+  if length(fundamental_group(W))>1
+    print("# Nr classes each type implemented only for simply connected groups")
+    return
+  end
+  for r in C.ss
+    if !haskey(r,:nrClasses)
+      HF=r.CGs
+      H=Group(HF)
+      P=deepcopy(ClosedSubsets(W))
+      o=Filtered(1:Size(P),i->OnSets(P[:elements][i],HF[:phi])==P[:elements][i])
+      o=Filtered(o,i-> all(j->j in P[:elements][i],inclusiongens(H)))
+      P=Restricted(P, o)
+      P[:elements] = P[:elements][o]
+# here P poset of HF.phi-stable closed subsets containing roots(H)
+      InfoChevie("# ", HF, "==>", P, "")
+      l = map(x->Spets(ReflectionSubgroup(W, x), HF[:phi]), P[:elements])
+      l = map(l)do RF
+        local res, d, R
+        R = Group(RF)
+        res=prod(p->Mvp(:q)-p[2],filter(y->y[1]==1,ReflectionDegrees(RF)))
+        if R[:semisimpleRank] == 0 return res end
+        d=SmithNormalFormMat(R[:roots][R[:generatingReflections]]*R[:simpleRoots])
+        d=Filtered(Flat(d), x->!x in [0,1,C[:p]])
+        res*Product(d, function (i,)
+                        if i == 2 && (2 in b && C[:p] != 2) return 2 end
+                        if mod(C[:p], i) == 1 return i end
+                        return Mvp(SPrint("q_", i))
+                    end)
+      end
+      less= i->Difference(ListBlist(1:length(l), Incidence(P)[i]), [i])
+      o = LinearExtension(P)
+      mu = []
+      mu[o[Size(P)]] = 1
+      for i in o[length(P)-1:-1:1] mu[i]=-Sum(mu[less(i)]) end
+      n=Stabilizer(W,gapSet(H[:rootInclusion][H[:generatingReflections]]),OnSets)
+      n = (mu * l) // Size(Centralizer(n, HF[:phi]))
+      InfoChevie("==>", n, ":", Stime(), "\n")
+      r[:nrClasses] = n
     end
+  end
+  C.ss=Filtered(C.ss, x->x[:nrClasses]!=0)
+  map(x->x[:nrClasses],C.ss)
+end
