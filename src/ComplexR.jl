@@ -74,7 +74,7 @@ function ComplexReflectionGroup(p,q,r)
   elseif p==2 
     if q==2 return coxgroup(:D,r)
     else return coxgroup(:B,r) end
-  elseif p==q && r==2 return coxgroup(:I,2,r)
+  elseif p==q && r==2 return coxgroup(:I,2,p)
   end
   t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   PRG(roots(t),coroots(t))

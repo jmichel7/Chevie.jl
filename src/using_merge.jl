@@ -14,7 +14,7 @@ It  is an error if  a name exported by  `mod` conflicts with anything but a
 method  (if there is good reason  for this not to be  an error I could just
 not import such names from `mod`).
 
-```julia-repl
+```julia-rep1
 julia> include("using_merge.jl")
 using_merge
 

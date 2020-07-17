@@ -180,6 +180,7 @@ DiaconisGraham
 # Finite fields
 ```@docs
 FFields
+mod(::Cyc,::Any)
 ```
 # Coxeter groups
 ```@docs
@@ -317,7 +318,7 @@ fundamental_group
 QuasiIsolatedRepresentatives
 torsion_subgroup
 algebraic_centre
-SemisimpleCentralizerRepresentatives
+SScentralizer_representatives
 StructureRationalPointsConnectedCentre
 ```
 # Reflection cosets
@@ -384,7 +385,10 @@ position_regular_class
 split_levis
 cuspidal_unipotent_characters
 ```
-
+# Classtypes
+```@docs
+ClassTypes
+```
 # Dictionary from GAP3/Chevie
 The dictionary from GAP3/Chevie is as follows:
 ```

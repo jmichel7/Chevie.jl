@@ -63,7 +63,7 @@ function VcycSchurElement(para,r,data=nothing)
 end
 
 function ImprimitiveCuspidalName(S)
-  r=RankSymbol(convert(Vector{Vector{Int}},S))
+  r=ranksymbol(convert(Vector{Vector{Int}},S))
   d=length(S)
   s=joindigits(map(length,S))
   if r==0 return "" end
@@ -265,7 +265,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     append!(res,p[2:end]-p[1:end-1])
   end
   addSpringer1=function(s,cc)
-    ss=First(uc[:springerSeries],x->x[:defect]==DefectSymbol(s[:symbol]))
+    ss=First(uc[:springerSeries],x->x[:defect]==defectsymbol(s[:symbol]))
     if s[:sp] == [[], []] p = 1
     elseif s[:sp] == [[1], []] p = 2
     elseif s[:sp] == [[], [1]] p = 1
@@ -282,7 +282,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   elseif ctype==1 ss=XSP(2,1,r)
   else ss=XSP(2,0,r)
   end
-  l = union(map(c->map(x->[DefectSymbol(x[:symbol]), Sum(x[:sp], Sum)], c), ss))
+  l = union(map(c->map(x->[defectsymbol(x[:symbol]), sum(sum,x[:sp])], c), ss))
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc = Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
@@ -356,19 +356,19 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     if char == 2 j = cc[:parameter][1]
     else j = cc[:parameter]
     end
-    for j in Collected(j)
+    for j in tally(j)
       if mod(j[1], 2) == mod(ctype, 2)
         cc[:red] = cc[:red] * coxgroup(:C, div(j[2],2))
       elseif mod(j[2], 2) != 0
         if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
        elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
-      else cc[:red]*=Torus(1)
+      else cc[:red]*=torus(1)
       end
     end
     push!(uc[:classes], cc)
     for s in cl addSpringer1(s,cc) end
   end
-  uc[:orderClasses] = Hasse(Poset(map(x->
+  uc[:orderClasses] = hasse(Poset(map(x->
     map(function(y)
       if char!=2 return dominates(y[:parameter], x[:parameter]) end
       m=maximum(x[:parameter][1][1], y[:parameter][1][1])
@@ -451,7 +451,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       d+=1
     end
     l=filter(i->all(c->mod(c[1],2)==0 || c[2]==1,
-             Collected(uc[:classes][i][:parameter])),eachindex(uc[:classes])) 
+             tally(uc[:classes][i][:parameter])),eachindex(uc[:classes])) 
     for i in l
       cl=uc[:classes][i]
       s=LuSpin(cl[:parameter])
@@ -757,7 +757,7 @@ chevieset(:I, :CharInfo, function(m)
   v=map(x->[0,1],1:m)
   v[m]=[2]
   pushfirst!(res[:charSymbols],v)
-  res[:malleParams] = map(x->Vector{Any}(map(PartBeta,x)),res[:charSymbols])
+  res[:malleParams] = map(x->Vector{Any}(map(partβ,x)),res[:charSymbols])
   if mod(m,2)==0
     res[:malleParams][2]=push!(res[:malleParams][2][1:m1],1)
     res[:malleParams][3]=push!(res[:malleParams][3][1:m1],-1)

@@ -315,11 +315,11 @@ function Base.show(io::IO,d::Diagram)
       join(io,node.*bar.(l[1:end-1]));println(io,node);join(io,ind," ")
     elseif series==:B
       print(io,node,rdarrow(max(l[1],2)));join(io,node.*bar.(l[2:end-1]))
-      prinln(io,node)
+      println(io,node)
       print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:C
       print(io,node,ldarrow(max(l[1],2)));join(io,node.*bar(l[2:end-1]))
-      prinln(io,node)
+      println(io,node)
       print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:D
       println(io," "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
@@ -905,7 +905,7 @@ function independent_roots(W::PermRootGroup)::Vector{Int}
   gets(W,:indeproots) do
     r=roots(W)
     if isempty(r) Int[]
-    else echelon(toM(roots(W)))[2]
+    else sort(echelon(toM(roots(W)))[2])
     end
   end
 end
@@ -1007,9 +1007,9 @@ julia> parabolic_representatives(coxgroup(:A,4))
  [1, 2, 3]
  [1, 2, 4]
  [1, 2, 3, 4]
+```
 gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3));
 [ [  ], [ 1 ], [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ], [ 1, 2, 3 ] ]
-```
 
 `parabolic_representatives(W,r)`
 
@@ -1020,9 +1020,9 @@ julia> parabolic_representatives(coxgroup(:A,4),2)
 2-element Array{Array{Int64,1},1}:
  [1, 2]
  [1, 3]
+```
 gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3),2);
 [ [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ] ]
-```
 """
 parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
           0:semisimplerank(W))...)
@@ -1086,7 +1086,8 @@ function parabolic_representatives(W::PermRootGroup,s)
 #    l:=List(l,x->Set(List(x,Set)));
 #    W.parabolicRepresentatives:=l;
 #  fi;
-        return PermRootOps.parabolic_representatives(R,c[i])
+        error("not implemented")
+        return parabolic_representatives(R,c[i])
       elseif all(x->all(y->y in 1:t[i].rank,x),r)
         return map(x->inclusion(W)[t[i].indices[x]],r)
       else R=reflection_subgroup(W,inclusion(W)[t[i].indices])
@@ -1228,6 +1229,9 @@ function cartan_coeff(W::PRG,i,j)
 end
 
 function Base.:*(W::PRG,V::PRG)
+  if rank(W)==0 return V
+  elseif rank(V)==0 return W
+  end
   PRG(toL(cat(toM(simpleroots(W)),toM(simpleroots(V)),dims=(1,2))),
       toL(cat(toM(simplecoroots(W)),toM(simplecoroots(V)),dims=(1,2))))
 end
@@ -1550,6 +1554,16 @@ function invariants(W)
     append!(i,map(v->function(arg...)return sum(v.*arg);end,N))
   end
   i
+end
+
+BadNumber(W)=prod(BadNumber.(refltype(W)))
+
+function BadNumber(t::TypeIrred)
+  r=rank(t)
+  if iszero(r) return 1 end
+  d=GLinearAlgebra.det(cartan(t))
+  if d==0 error(t," should be well generated") end
+  improve_type(prod(degrees(t))//(factorial(r)*d))
 end
 
 end

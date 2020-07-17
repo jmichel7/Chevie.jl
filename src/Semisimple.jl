@@ -188,13 +188,13 @@ function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
 end
 
 function Base.:*(a::ExtendedCox,b::ExtendedCox)
-  if isempty(gens(a.group)) return b
-  elseif isempty(gens(b.group)) return a
-  end
+# if isempty(gens(a.group)) return b
+# elseif isempty(gens(b.group)) return a
+# end
   id(r)=one(fill(0,r,r))
-  ExtendedCox(a.group*b.group,unique!(vcat(
+  ExtendedCox(a.group*b.group,vcat(
                    map(m->cat(m,id(rank(b.group)),dims=(1,2)),a.F0s),
-                   map(m->cat(id(rank(a.group)),m,dims=(1,2)),b.F0s))))
+                   map(m->cat(id(rank(a.group)),m,dims=(1,2)),b.F0s)))
 end
 
 function Base.show(io::IO,W::ExtendedCox)
@@ -847,7 +847,7 @@ function StructureRationalPointsConnectedCentre(MF,q)
 end
 
 """
-`SemisimpleCentralizerRepresentatives(W [,p])`
+`SScentralizer_representatives(W [,p])`
 
 `W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
 function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of
@@ -861,7 +861,7 @@ list of the centralizers which occur in characteristic `p` is returned.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> SemisimpleCentralizerRepresentatives(W)
+julia> SScentralizer_representatives(W)
 6-element Array{Array{Int64,1},1}:
  []
  [1]
@@ -870,7 +870,7 @@ julia> SemisimpleCentralizerRepresentatives(W)
  [1, 5]
  [2, 6]
 
-julia> reflection_subgroup.(Ref(W),SemisimpleCentralizerRepresentatives(W))
+julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
 6-element Array{FiniteCoxeterSubGroup{Perm{Int16},Int64},1}:
  G₂₍₎=.
  G₂₍₁₎=A₁
@@ -879,7 +879,7 @@ julia> reflection_subgroup.(Ref(W),SemisimpleCentralizerRepresentatives(W))
  G₂₍₁₅₎=A₂
  G₂₍₂₆₎=Ã₁×A₁
 
-julia> SemisimpleCentralizerRepresentatives(W,2)
+julia> SScentralizer_representatives(W,2)
 5-element Array{Array{Int64,1},1}:
  []
  [1]

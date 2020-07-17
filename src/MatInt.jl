@@ -3,7 +3,7 @@ module MatInt
 using ..Util: toL, toM
 
 export ComplementIntMat, NullspaceIntMat, SolutionIntMat, DiagonalizeIntMat,
- SmithNormalFormaIntegerMat, DiaconisGraham
+ SmithNormalFormIntegerMat, DiaconisGraham
 
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 NullMat(i,j)=[zeros(Int,j) for k in 1:i]

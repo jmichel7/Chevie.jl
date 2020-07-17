@@ -427,7 +427,7 @@ corresponds to the ordering of the characters in 'CharTable(W)'.
 
 ```julia-repl
 julia> fakedegrees(coxgroup(:A,2),Pol(:q))
-3-element Array{Pol,1}:
+3-element Array{Pol{Int64},1}:
  q³  
  q²+q
  1   

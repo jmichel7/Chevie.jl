@@ -25,7 +25,7 @@ end
 @test mytest("ct.charnames","6-element Array{String,1}:\n \"\\\\phi_{1,0}\"\n \"\\\\phi_{1,6}\"\n \"\\\\phi_{1,3}'\"\n \"\\\\phi_{1,3}''\"\n \"\\\\phi_{2,1}\"\n \"\\\\phi_{2,2}\"")
 @test mytest("ct.classnames","6-element Array{String,1}:\n \"A_0\"\n \"\\\\tilde A_1\"\n \"A_1\"\n \"G_2\"\n \"A_2\"\n \"A_1+\\\\tilde A_1\"")
 @test mytest("Chars.fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))","Pol{Cyc{Int64}}: q²+q")
-@test mytest("fakedegrees(coxgroup(:A,2),Pol(:q))","3-element Array{Pol,1}:\n q³\n q²+q\n 1")
+@test mytest("fakedegrees(coxgroup(:A,2),Pol(:q))","3-element Array{Pol{Int64},1}:\n q³\n q²+q\n 1")
 @test mytest("charinfo(coxgroup(:G,2))[:charparams]","6-element Array{Array{Array{Int64,1},1},1}:\n [[1, 0]]\n [[1, 6]]\n [[1, 3, 1]]\n [[1, 3, 2]]\n [[2, 1]]\n [[2, 2]]")
 @test mytest("charinfo(coxgroup(:D,4))[:positionId]","13")
 @test mytest("charinfo(coxgroup(:D,4))[:positionDet]","4")
@@ -119,7 +119,7 @@ end
 @test mytest("W=rootdatum(:so,8)","D₄")
 @test mytest("twistings(W)","2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:\n ²D₄\n D₄")
 @test mytest("W=rootdatum(:gl,3)","A₂")
-@test mytest("gu3=spets(W,-refrep(W,W()))","²A₂Φ₂")
+@test mytest("gu3=spets(W,-reflrep(W,W()))","²A₂Φ₂")
 @test mytest("F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])","F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎")
 @test mytest("torus([0 -1;1 -1])",".Φ₃")
 @test mytest("W=coxgroup(:A,3)","A₃")
@@ -445,6 +445,9 @@ end
 @test mytest("transporting_elt(g,[1,2,3,4],[2,3,4,5];action=(s,g)->sort(s.^g))","(1,2,3,4,5)(6,7,8)")
 @test mytest("transporting_elt(g,[1,2,3,4],[3,4,5,2];action=(s,g)->s.^g)","nothing")
 end
+@testset "Gt.jl" begin
+@test mytest("t=ClassTypes(rootdatum(:sl,3))","ClassTypes(A₂,good characteristic)\n    C_G(s)│ |C_G(s)|\n──────────┼──────────\nA₂₍₎=.Φ₁² │      Φ₁²\nA₂₍₎=.Φ₁Φ₂│     Φ₁Φ₂\nA₂₍₎=.Φ₃  │       Φ₃\nA₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂\nA₂        │q³Φ₁²Φ₂Φ₃")
+end
 @testset "HasType.jl" begin
 @test mytest("CycPol([3,-5,6,3//7])","3q⁻⁵Φ₆(q-ζ₇³)")
 @test mytest("W=coxgroup(:F,4)","F₄")
@@ -469,11 +472,11 @@ end
 @test mytest("H=hecke(W,9,rootpara=3)","hecke(B₂,9,rootpara=3)")
 @test mytest("H.para,rootpara(H)","([[9, -1], [9, -1]], [3, 3])")
 @test mytest("H=hecke(coxgroup(:F,4))","hecke(F₄,1)")
-@test mytest("isrepresentation(H,refrep(H))","true")
+@test mytest("isrepresentation(H,reflrep(H))","true")
 @test mytest("Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)","hecke(B₂,q)")
-@test mytest("refrep(H)","2-element Array{Array{Pol,2},1}:\n [-1 0; -q q]\n [q -2; 0 -1]")
+@test mytest("reflrep(H)","2-element Array{Array{Pol,2},1}:\n [-1 0; -q q]\n [q -2; 0 -1]")
 @test mytest("H=hecke(coxgroup(:H,3))","hecke(H₃,1)")
-@test mytest("refrep(H)","3-element Array{Array{Cyc{Rational{Int64}},2},1}:\n [-1 0 0; -1 1 0; 0 0 1]\n [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]\n [1 0 0; 0 1 -1; 0 0 -1]")
+@test mytest("reflrep(H)","3-element Array{Array{Cyc{Rational{Int64}},2},1}:\n [-1 0 0; -1 1 0; 0 0 1]\n [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]\n [1 0 0; 0 1 -1; 0 0 -1]")
 @test mytest("H=hecke(coxgroup(:H,3),Pol(:q))","hecke(H₃,q)")
 @test mytest("central_monomials(H)","10-element Array{Pol{Cyc{Int64}},1}:\n 1\n q³⁰\n q¹²\n q¹⁸\n q¹⁰\n q¹⁰\n q²⁰\n q²⁰\n q¹⁵\n q¹⁵")
 @test mytest("W=coxgroup(:G,2);Pol(:q);H=hecke(W,q)","hecke(G₂,q)")
@@ -514,7 +517,7 @@ end
 @test mytest("W=coxgroup(:B,3);Pol(:v);H=hecke(W,v^2)","hecke(B₃,v²)")
 @test mytest("T=Tbasis(H);C=Cbasis(H);T(C(1))","-vT.+v⁻¹T₁")
 @test mytest("C(T(1))","v²C.+vC₁")
-@test mytest("ref=refrep(H)","3-element Array{Array{Pol,2},1}:\n [-1 0 0; -v² v² 0; 0 0 v²]\n [v² -2 0; 0 -1 0; 0 -v² v²]\n [v² 0 0; 0 v² -1; 0 0 -1]")
+@test mytest("ref=reflrep(H)","3-element Array{Array{Pol,2},1}:\n [-1 0 0; -v² v² 0; 0 0 v²]\n [v² -2 0; 0 -1 0; 0 -v² v²]\n [v² 0 0; 0 v² -1; 0 0 -1]")
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","hecke(B₃,v²,rootpara=v)")
 @test mytest("C=Cpbasis(H);","nothing")
@@ -652,9 +655,11 @@ end
 @test mytest("semisimplerank(W)","2")
 @test mytest("rank(W)","3")
 @test mytest("W=reflection_subgroup(rootdatum(\"E7sc\"),1:6)","E₇₍₁₂₃₄₅₆₎=E₆")
-@test mytest("PermX(W,refrep(W,longest(W)))==longest(W)","true")
+@test mytest("PermX(W,reflrep(W,longest(W)))==longest(W)","true")
+@test mytest("parabolic_representatives(coxgroup(:A,4))","7-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]\n [1, 3]\n [1, 2, 3]\n [1, 2, 4]\n [1, 2, 3, 4]")
+@test mytest("parabolic_representatives(coxgroup(:A,4),2)","2-element Array{Array{Int64,1},1}:\n [1, 2]\n [1, 3]")
 @test mytest("W=reflection_subgroup(rootdatum(\"E7sc\"),1:6)","E₇₍₁₂₃₄₅₆₎=E₆")
-@test mytest("refrep(W,longest(W))","7×7 Array{Int64,2}:\n  0   0   0   0   0  -1  2\n  0  -1   0   0   0   0  2\n  0   0   0   0  -1   0  3\n  0   0   0  -1   0   0  4\n  0   0  -1   0   0   0  3\n -1   0   0   0   0   0  2\n  0   0   0   0   0   0  1")
+@test mytest("reflrep(W,longest(W))","7×7 Array{Int64,2}:\n  0   0   0   0   0  -1  2\n  0  -1   0   0   0   0  2\n  0   0   0   0  -1   0  3\n  0   0   0  -1   0   0  4\n  0   0  -1   0   0   0  3\n -1   0   0   0   0   0  2\n  0   0   0   0   0   0  1")
 @test mytest("catalan(8)","1430")
 @test mytest("catalan(coxgroup(:A,7))","1430")
 @test mytest("catalan(ComplexReflectionGroup(7),2)","16//1")
@@ -673,7 +678,7 @@ end
 @test mytest("W=ComplexReflectionGroup(24)","G₂₄")
 @test mytest("i=invariants(W)[1];","nothing")
 @test mytest("p=i(x,y,z)","Mvp{Rational{Int64}}: (14//1)x⁴+(-12//1)x²y²+(-42//1)x²yz+(21//2)x²z²+(18//7)y⁴+(-6//1)y³z+(-9//2)y²z²+(-21//8)z⁴")
-@test mytest("p^refrep(W,1)-p","Mvp{Cyc{Rational{Int64}}}: 0")
+@test mytest("p^reflrep(W,1)-p","Mvp{Cyc{Rational{Int64}}}: 0")
 end
 @testset "Perms.jl" begin
 @test mytest("a=Perm(1,2,3)","(1,2,3)")
@@ -776,7 +781,7 @@ end
 end
 @testset "Semisimple.jl" begin
 @test mytest("W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])","A₂")
-@test mytest("refrep(W,W(1))","3×3 Array{Int64,2}:\n 0  1  0\n 1  0  0\n 0  0  1")
+@test mytest("reflrep(W,W(1))","3×3 Array{Int64,2}:\n 0  1  0\n 1  0  0\n 0  0  1")
 @test mytest("rootdatum(:gl,3)","A₂")
 @test mytest("G=rootdatum(:sl,4)","A₃")
 @test mytest("L=reflection_subgroup(G,[1,3])","A₃₍₁₃₎=A₁×A₁")
@@ -813,6 +818,10 @@ end
 @test mytest("Semisimple.QuasiIsolatedRepresentatives(W,3)","2-element Array{SemisimpleElement{Root1},1}:\n <1,1,1,1,1,1>\n <-1,1,1,-1,1,-1>")
 @test mytest("l=twistings(rootdatum(:sl,4),Int[])","5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:\n A₃₍₎=.Φ₁³\n A₃₍₎=.Φ₁²Φ₂\n A₃₍₎=.Φ₁Φ₂²\n A₃₍₎=.Φ₁Φ₃\n A₃₍₎=.Φ₂Φ₄")
 @test mytest("StructureRationalPointsConnectedCentre.(l,3)","5-element Array{Array{Int64,1},1}:\n [2, 2, 2]\n [2, 8]\n [4, 8]\n [26]\n [40]")
+@test mytest("W=coxgroup(:G,2)","G₂")
+@test mytest("SScentralizer_representatives(W)","6-element Array{Array{Int64,1},1}:\n []\n [1]\n [2]\n [1, 2]\n [1, 5]\n [2, 6]")
+@test mytest("reflection_subgroup.(Ref(W),SScentralizer_representatives(W))","6-element Array{FiniteCoxeterSubGroup{Perm{Int16},Int64},1}:\n G₂₍₎=.\n G₂₍₁₎=A₁\n G₂₍₂₎=Ã₁\n G₂\n G₂₍₁₅₎=A₂\n G₂₍₂₆₎=Ã₁×A₁")
+@test mytest("SScentralizer_representatives(W,2)","5-element Array{Array{Int64,1},1}:\n []\n [1]\n [2]\n [1, 2]\n [1, 5]")
 end
 @testset "Symbols.jl" begin
 @test mytest("dominates([5,4],[4,4,1])","true")

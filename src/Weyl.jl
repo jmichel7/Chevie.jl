@@ -275,7 +275,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
      m[1:2,1:2]=Isym(2,5)
      m end,
    :I=>function(r,b)
-     b%2==0 ? [2 -1;-2-E(b)-E(b,-1) 2] : Isym(2,b)
+     b%2==0 ? b==2 ? [2 0;0 2] : [2 -1;-2-E(b)-E(b,-1) 2] : Isym(2,b)
    end,
    :Isym=>Isym)
   if haskey(cartanDict,t) cartanDict[t](r,b)
@@ -618,7 +618,7 @@ Base.in(w,W::FiniteCoxeterGroup)=w in W.G
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
- PermRoot.reflections, PermRoot.refleigen, PermRoot.reflrep,
+ PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.restriction, PermRoot.semisimplerank, PermRoot.simplecoroots,
  PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength 
 #--------------- FCG -----------------------------------------
@@ -810,13 +810,15 @@ function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
   return rootdatum(r,cr)
 end
 
+Base.:*(W1::FiniteCoxeterGroup,W2::PermRootGroup)=W1.G*W2
+Base.:*(W1::PermRootGroup,W2::FiniteCoxeterGroup)=W1*W2.G
+
 "for each root index of simple representative"
 PermRoot.simple_representatives(W::FCG)=simple_representatives(W.G)
   
 PermRoot.simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
 
-PermRoot.reflection(W::FCG,i::Integer)=reflection(W.G,i)
 #--------------- FCSG -----------------------------------------
 struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW

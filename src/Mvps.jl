@@ -102,7 +102,7 @@ function Base.show(io::IO,m::Monomial)
   start=true
   for (v,d) in m.d
     if !(start || TeX || repl) print(io,"*") end
-    print(io,v)
+    print(io,fromTeX(io,string(v)))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
       if TeX || repl print(io,fromTeX(io,"^{$d}")) 

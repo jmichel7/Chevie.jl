@@ -577,7 +577,7 @@ function Base.show(io::IO,c::LeftCell)
      i=f[:charNumbers][Families.special(f)]
      i=findfirst(==(i),uc.harishChandra[1][:charNumbers])
      p=findfirst(==(i),ch)
-     p=vcat([[i,1]],HasType.Collected(vcat(ch[1:p-1],ch[p+1:end])))
+     p=vcat([[i,1]],tally(vcat(ch[1:p-1],ch[p+1:end])))
      print(io," character=",join(
        map(p)do v
         (v[2]!=1 ? string(v[2]) : "")*charnames(io,c.group)[v[1]]
@@ -934,7 +934,7 @@ function WGraph(c::LeftCell)
     nodes=nodes[p]
     mu=mu[p,p]
     c.prop[:orderGraph]=p
-    nodes=vcat(map(HasType.Collected(nodes)) do p
+    nodes=vcat(map(tally(nodes)) do p
         p[2]==1  ? [p[1]] : [p[1],p[2]-1]
         end...)
     graph=[nodes,[]]

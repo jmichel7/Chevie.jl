@@ -10,7 +10,7 @@ module Util
 export 
   @forward,
   getp, gets, # helpers for objects with a Dict of properties
-  format, bracket_if_needed, format_coefficient, ordinal, rshow, printc, fromTeX, joindigits, 
+  format, format_coefficient, ordinal, rshow, printc, fromTeX, joindigits, 
   cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot #number theory
 
@@ -55,6 +55,7 @@ function ds(s)
   end
 end
 
+a=1
 #--------------------------------------------------------------------------
 """
   a variant of get! for objects O which have a Dict of properties named prop.
@@ -293,7 +294,7 @@ function prime_residues(n)
   filter(i->gcd(n,i)==1,1:n-1) # inefficient
 end
 
-# make Primes.factor fast by memoizing it
+# make Primes.factor fast for small Ints by memoizing it
 import Primes
 const dict_factor=Dict(2=>Primes.factor(2))
 function factor(n::Integer)
@@ -308,10 +309,7 @@ function divisors(n::Int)::Vector{Int}
 end
 
 " the Euler function ϕ "
-function phi(m::T)where T<:Integer
-  if m==1 return 1 end
-  prod(p->p[1]^(p[2]-1)*(p[1]-1),factor(m))
-end
+phi(m::Integer)=Primes.totient(m)
 
 """
   primitiveroot(m::Integer) a primitive root mod. m,

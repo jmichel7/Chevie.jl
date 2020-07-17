@@ -271,7 +271,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
     n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
-    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : "$(n)_$cl"
+    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : fromTeX("$(n)_{$cl}";opt...)
   end
   n
 end
@@ -345,10 +345,10 @@ function induced_linear_form(W,K,h)
 end
 
 function DistinguishedParabolicSubgroups(W)
-  filter(combinations(inclusion.(Ref(W),eachindex(gens(W))))) do J
+  filter(combinations(eachindex(gens(W)))) do J
     if isempty(J) return true end
     p=fill(1,semisimplerank(W))
-    p[restriction.(Ref(W),J)]=fill(0,length(J))
+    p[J]=fill(0,length(J))
     p=toM(W.rootdec[1:W.N])*p
     2*count(iszero,p)+semisimplerank(W)==count(isone,p)
   end
@@ -361,7 +361,7 @@ function BalaCarterLabels(W)
   map(l) do p
     L=reflection_subgroup(W,p[1])
     w=fill(2,semisimplerank(L))
-    w[restriction(L,p[2])]=p[2]*0
+    w[p[2]]=p[2]*0
     [induced_linear_form(W,L,w),map(i->i in p[2] ? -i : i,p[1])]
   end
 end
@@ -463,6 +463,7 @@ function AdjustAu!(classes,springerseries)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
+#   print(u.name,":");ds(u.prop[:AuAction])
     u.prop[:Au]=f[:Au]
     if haskey(u.prop,:AuAction)
       R=u.prop[:AuAction].group
@@ -677,7 +678,7 @@ function UnipotentClasses(W,p=0)
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
       l=PermRoot.indices.(t)
-      if length(v)==1 u=deepcopy(v[1])
+      if length(v)==1 && issorted(l[1]) u=deepcopy(v[1])
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
@@ -691,7 +692,7 @@ function UnipotentClasses(W,p=0)
         if all(x->haskey(x.prop,:AuAction),v)
           u.prop[:AuAction]=prod(x->x.prop[:AuAction],v) end
         if all(x->haskey(x.prop,:dynkin),v)
-          u.prop[:dynkin]=zeros(Int,sum(x->length(x.prop[:dynkin]),v))
+          u.prop[:dynkin]=zeros(Int,sum(length,l))
           for i in 1:length(l) u.prop[:dynkin][l[i]]=v[i].prop[:dynkin] end
         end
       end
@@ -704,7 +705,7 @@ function UnipotentClasses(W,p=0)
         u.prop[:red]*=T
         if haskey(u.prop,:AuAction)
           u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-             map(x->cat(x,reflrep(T,T())...,dims=(1,2)),u.prop[:AuAction].F0s))
+             map(x->cat(x,reflrep(T,T()),dims=(1,2)),u.prop[:AuAction].F0s))
         end
       end
       u
@@ -712,9 +713,11 @@ function UnipotentClasses(W,p=0)
   end
   if iszero(p) && !haskey(classes[1].prop,:balacarter)
     bc=BalaCarterLabels(W)
- #  println("W=$W bc=$bc")
- #  println(map(u->u.prop[:dynkin],classes))
+#   println("W=$W bc=$bc")
+#   println(map(u->u.prop[:dynkin],classes))
     for u in classes
+      pp=findfirst(p->p[1]==u.prop[:dynkin],bc)
+      if isnothing(pp) error("not found:",u.prop[:dynkin]) end
       u.prop[:balacarter]=bc[findfirst(p->p[1]==u.prop[:dynkin],bc)][2]
     end
   end
@@ -745,12 +748,11 @@ function UnipotentClasses(W,p=0)
     end
     s
   end
-# adjust indices of levi, relativetype so they agree with parent(Group(WF))
-  for s in springerseries s[:levi]=inclusion.(Ref(W),s[:levi]) end
   if length(uc)==1 prop=uc[1].prop else prop=Dict{Symbol,Any}() end
   prop[:spets]=spets ? WF : W
   if spets
-   springerseries=filter(x->sort(x[:levi].^WF.phi)==sort(x[:levi]),springerseries)
+    springerseries=filter(x->sort(inclusion(W,x[:levi]).^WF.phi)==
+                             sort(inclusion(W,x[:levi])),springerseries)
   end
 # To deal with a general group intermediate between Gad and Gsc, we discard
 # the  Springer series  corresponding to  a central  character which is not
@@ -773,7 +775,7 @@ function UnipotentClasses(W,p=0)
   # for now only springerseries[1] properly twisted
   for s in springerseries[2:end]
     if spets
-      s[:relgroup]=relative_coset(WF,restriction(WF,s[:levi]))
+      s[:relgroup]=relative_coset(WF,s[:levi])
       s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
     end
     s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])

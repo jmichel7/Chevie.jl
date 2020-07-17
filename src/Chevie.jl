@@ -71,7 +71,8 @@ const needcartantype=Set([:Invariants,
                           :PrintDiagram,
                           :ReflectionName,
                           :UnipotentClasses,
-                          :WeightInfo])
+                          :WeightInfo,
+                          :CartanMat])
 
 function getchev(t::TypeIrred,f::Symbol,extra...)
   d=field(t)

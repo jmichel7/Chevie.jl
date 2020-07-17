@@ -403,9 +403,9 @@ function restricted(p::Poset,ind::AbstractVector{<:Integer})
   end
   res.prop[:size] = length(ind)
   if haskey(p.prop, :label)
-    res.prop[:label]=(io,x, n)->p[:label](io, x, ind[n])
+    res.prop[:label]=(io,x, n)->p.prop[:label](io, x, ind[n])
   elseif haskey(p.prop, :labels)
-    res.prop[:labels]=p[:labels][ind]
+    res.prop[:labels]=p.prop[:labels][ind]
   end
   res
 end
