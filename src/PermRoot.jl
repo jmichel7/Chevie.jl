@@ -1141,7 +1141,7 @@ function isparabolic(H)
   W=parent(H)
   setr=s->Set(reflection.(Ref(W),s))
   if ngens(H)==0 return true end
-  v=toM(roots(W,inclusiongens(H)))
+  v=toM(simpleroots(H))
   gens=filter(i->!isnothing(solutionmat(v,roots(W,i))),eachindex(W.roots))
   setr(gens)==setr(inclusion(H))
 end

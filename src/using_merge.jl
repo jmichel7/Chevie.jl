@@ -14,7 +14,7 @@ It  is an error if  a name exported by  `mod` conflicts with anything but a
 method  (if there is good reason  for this not to be  an error I could just
 not import such names from `mod`).
 
-```julia-rep1
+```julia
 julia> include("using_merge.jl")
 using_merge
 
@@ -37,6 +37,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
     eval(e)
   end
   mymodule=@__MODULE__
+  # first, bring in scope mod in case it is not
   if !isdefined(mymodule,mod) myeval(:(using $mod: $mod)) end
   if reexport myeval(:(export $mod)) end
   modnames=setdiff(eval(:(names($mod))),[mod])
@@ -46,13 +47,15 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       if reexport myeval(:(export $name)) end
       continue
     end
-    methofname=eval(:(methods($name)))
+    # now we know name is conflicting
+    methofname=methods(eval(name))
     if isempty(methofname)
-      error("$mod.$name is not a method in $mymodule")
+      # we do no handle conflicting names which are not methods or macros
+      error("$mod.$name is not a method or macro in $mymodule")
     end
     modofname=nameof(first(methofname).module)
     if debug>1 println("# conflicting name:$modofname.$name") end
-    s=split(sprint(show,eval(:(methods($mod.$name)))),"\n")
+    s=split(sprint(show,methods(eval(:($mod.$name)))),"\n")
     map(s[2:end]) do l
       if debug>2 println("   l=",l) end
       l1=replace(l,r"^\[[0-9]*\] (.*) in .* at .*"=>s"\1")
@@ -60,7 +63,9 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       e1=Meta.parse(l1)
       if debug>2 println("\n   =>",e1) end
       e2=e1.head==:where ? e1.args[1] : e1
-      if e2.head!=:call || e2.args[1]!=name error("unexpected") end
+      if e2.head!=:call || e2.args[1]!=name 
+        error("conflicting macros are not yet implemented ($name)") 
+      end
       for (i,f) in enumerate(e2.args[2:end])
         if (f isa Expr) && f.head==:parameters
           e2.args[i+1]=:($(Expr(:parameters, :(kw...))))
@@ -75,8 +80,6 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
            if length(f.args)==2 e.args[i+1]=f.args[1]
            else e.args[i+1]=f.args[1].args[2]
            end
-#       elseif f.head==:parameters
-#          e.args[i+1]=:($(Expr(:parameters, :(kw...))))
         end
       end
       e.args[1]=Expr(:.,mod,QuoteNode(e.args[1]))
