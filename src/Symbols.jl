@@ -522,7 +522,7 @@ Works for symbols for:
        G(e,e,r) (d==0, defect==0)
       ²G(e,e,2) (d==0, defect==1) (this includes ²Dₙ, ²B₂, ²G₂)
 
-here d=Inhalt mod. e  See cite[3.9 and 6.4]{Malle Unipotente Grade}.
+here d=Inhalt mod. e, see [3.9 and 6.4 Malle1995](biblio.htm#Mal95).
 """
 function gendeg_symbol(S)
   S=fullsymbol(S)

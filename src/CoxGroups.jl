@@ -454,8 +454,8 @@ end
 `bruhatless(W, x, y)`
 
 whether `x≤y` in the Bruhat order, for `x,y∈ W`. We have `x≤y` if a reduced
-expression  for `x` can be extracted from  one for `w`). See cite[(5.9) and
-(5.10)]{Hum90} for properties of the Bruhat order.
+expression  for `x`  can be  extracted from  one for  `w`). See  [(5.9) and
+(5.10) Humphreys1990](biblio.htm#Hum90) for properties of the Bruhat order.
 
 ```julia-repl
 julia> W=coxgroup(:H,3)

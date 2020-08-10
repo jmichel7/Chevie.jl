@@ -82,13 +82,14 @@ PermGroup()=Group(Perm{Int16}[])
 
 function Base.show(io::IO,G::PermGroup)
   print(io,"Group([");join(io,gens(G),',');print(io,"])")
+# print(io,"Group(",gens(G),")")
 end
 
 Base.one(G::PermGroup{T}) where T=one(Perm{T})
 
 function degree(G::PermGroup)::Int
   gets(G,:degree)do 
-    maximum(map(largest_moved_point,gens(G)))
+    maximum(largest_moved_point.(gens(G)))
   end
 end
 
@@ -215,16 +216,21 @@ function Base.in(g::Perm,G::PermGroup)
   isone(g)
 end
 #-------------- iteration on product of lists of group elements ---------------
-struct GroupProdIterator{T}
+# if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
+struct ProdIterator{T}
   iterators::Vector{T}
 end
-# if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
 
-Base.length(I::GroupProdIterator)=prod(length.(I.iterators))
+Base.length(I::ProdIterator)=prod(length.(I.iterators))
+Base.eltype(::Type{ProdIterator{T}}) where T=eltype(T)
 
-function Base.iterate(I::GroupProdIterator{T})where T
-  state=Tuple{eltype(T),Int}[]
-  n=one(eltype(T))
+function Base.iterate(I::ProdIterator)
+  T=eltype(eltype(I.iterators))
+  state=Tuple{T,Int}[]
+  p=findfirst(!isempty,I.iterators)
+  if isnothing(p) n=one(T) # the best we can do in this case
+  else n=one(first(I.iterators[p]))
+  end
   for it in I.iterators
     u=iterate(it)
     if isnothing(u) return u end
@@ -234,7 +240,7 @@ function Base.iterate(I::GroupProdIterator{T})where T
   return n,state 
 end
 
-function Base.iterate(I::GroupProdIterator,state)
+function Base.iterate(I::ProdIterator,state)
   for i in length(state):-1:1
     u=iterate(I.iterators[i],last(state[i]))
     if isnothing(u) continue end
@@ -247,7 +253,6 @@ function Base.iterate(I::GroupProdIterator,state)
   end
 end
 
-Base.eltype(::Type{GroupProdIterator{T}}) where T=eltype(T)
 #------------------------- iteration for PermGroups -----------------------
 function Base.length(G::PermGroup)
   gets(G,:length)do
@@ -259,7 +264,7 @@ Base.eltype(::Type{<:PermGroup{T}}) where T=Perm{T}
 
 # iterating I directly is faster, but how to do that?
 function Base.iterate(G::PermGroup)
-  I=GroupProdIterator(reverse(values.(transversals(G))))
+  I=ProdIterator(reverse(values.(transversals(G))))
   u=iterate(I)
   if isnothing(u) return u end
   p,st=u

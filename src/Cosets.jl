@@ -2,10 +2,11 @@
 Let  `R` be a  root system in  the real vector  space `V`. We say that `F₀∈
 GL(V)`  is an  *automorphism of  `R`* if  it permutes  `R` and is of finite
 order  (finite  order  is  automatic  if  `R` generates `V`). It follows by
-cite[chap.  VI, S1.1, lemme 1]{Bou68} that  the dual `F₀*∈ GL(V*)` permutes
-the  coroots  `R*⊂  V*`;  thus  `F₀`  normalizes  the  reflection group `W`
-associated  to `R`, that is `w↦ F₀wF₀⁻¹` is an automorphism of `W`. Thus we
-get a reflection coset `WF₀`, which we call a *Coxeter coset*.
+[chap.  VI,  §1.1,  lemme  1  Bourbaki1968](biblio.htm#Bou68) that the dual
+`F₀*∈  GL(V*)`  permutes  the  coroots  `R*⊂  V*`; thus `F₀` normalizes the
+reflection  group  `W`  associated  to  `R`,  that  is  `w↦  F₀wF₀⁻¹` is an
+automorphism  of `W`. Thus we get a reflection coset `WF₀`, which we call a
+*Coxeter coset*.
 
 The  motivation for introducing Coxeter  cosets comes from automorphisms of
 algebraic  reductive groups, giving rise to non-split reductive groups over
@@ -37,12 +38,12 @@ It  turns out that  many interesting objects  attached to this datum depend
 only on `(V,W, F₀)`: the order of the maximal tori, the *fake degrees*, the
 order  of `𝐆^F`, symbols representing unipotent characters, Deligne-Lusztig
 induction  in  terms  of  *almost  characters*, the Fourier matrix relating
-characters  and almost  characters, etc…  (see, e.g.,  cite{BMM93}). It is
-thus  possible to extend their  construction to non-crystallographic groups
-(or  even to more general complex  reflection groups, see "Spets"); this is
-why  we did  not include  a root  system in  the definition of a reflection
-coset. However, unipotent conjugacy classes for instance depend on the root
-system.
+characters and almost characters, etc… (see, e.g.,
+[Broue-Malle-Michel1993](biblio.htm#BMM93)).  It is thus possible to extend
+their  construction to non-crystallographic groups (or even to more general
+complex  reflection groups, see "Spets"); this is  why we did not include a
+root  system in  the definition  of a  reflection coset. However, unipotent
+conjugacy classes for instance depend on the root system.
 
 We assume now that `𝐓` is contained in an `F`-stable Borel subgroup of `𝐆`.
 This  defines an order  on the roots,  and there is  a unique element `ϕ∈ W
@@ -52,11 +53,12 @@ automorphism  of the Coxeter system `(W,S)`.  This element is stored in the
 component  '.phi' of the coset record. It may be defined without mentioning
 the  roots,  as  follows:  `(W,F₀(S))`  is  another  Coxeter  system,  thus
 conjugate to `S` by a unique element of `W`, thus there is a unique element
-`ϕ∈ WF₀` which stabilizes `S` (a proof follows from cite[Theoreme 1, chap.
-V,  S  3]{Bou68}).  We  consider  thus  cosets  of the form `Wϕ` where `ϕ`
-stabilizes  `S`. The coset  `W ϕ` is  completely defined by the permutation
-'.phi'  when `𝐆` is semi-simple --- equivalently when `Φ` generates `V`; in
-this case we just need to specify 'phi' to define the coset.
+`ϕ∈  WF₀` which stabilizes `S` (a proof  follows from [Theoreme 1, chap. V,
+§3  Bourbaki1968](biblio.htm#Bou68)). We  consider thus  cosets of the form
+`Wϕ` where `ϕ` stabilizes `S`. The coset `W ϕ` is completely defined by the
+permutation  '.phi'  when  `𝐆`  is  semi-simple  ---  equivalently when `Φ`
+generates  `V`; in this  case we just  need to specify  'phi' to define the
+coset.
 
 There is a slight generalisation of the above setup, covering in particular
 the  case of the Ree  and Suzuki groups. We  consider `𝐆^F` where `F` not a

@@ -12,7 +12,8 @@ a finite reductive group `𝐆^F` and the Levi subgroup `𝐋^F` corresponding t
 `L`  has a cuspidal unipotent character. Then `N_W(L)/L` is a Coxeter group
 acting  on the  space `X(Z𝐋)⊗ℝ`.  A combinatorial  characterization of such
 parabolic  subgroups of Coxeter  groups is that  they are normalized by the
-longest element of larger parabolic subgroups (see cite[5.7.1]{Lus76}).
+longest element of larger parabolic subgroups (see [5.7.1
+Lusztig1976](biblio.htm#Lus76)).
 
 A  second  example  is  when  `L`  is  trivial  and  `wϕ` is a *`ζ`-regular
 element*,  that  is  the  `ζ`-eigenspace  `V_ζ`  of  `wϕ` contains a vector
@@ -23,7 +24,8 @@ A  similar but more general example is  when `V_ζ` is the `ζ`-eigenspace of
 some  element of  the reflection  coset `Wϕ`,  and is  of maximal dimension
 among such possible `ζ`-eigenspaces. Then the set of elements of `Wϕ` which
 act  by `ζ`  on `V_ζ`  is a  certain subcoset  `Lwϕ`, and `N_W(Lwϕ)/L` is a
-reflection group in its action on `V_ζ` (see cite[2.5]{LS99}).
+reflection group in its action on `V_ζ` (see [2.5
+Lehrer-Springer1999](biblio.htm#LS99)).
 
 Finally,  a  still  more  general  example,  but which only occurs for Weyl
 groups  or  Spetsial  reflection  groups,  is  when `𝐋` is a `ζ`-split Levi

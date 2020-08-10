@@ -568,7 +568,8 @@ julia> p=class_polynomials(h)
  q³-2q²+q 
  q³-q²+q-1
 ```
-The class polynomials were introduced in  cite{GP93}.
+The class polynomials were introduced in
+[Geck-Pfeiffer1993](biblio.htm#GP93).
 """
 function class_polynomials(h)
   H=h.H

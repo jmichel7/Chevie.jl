@@ -170,9 +170,11 @@ orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,trivial=true)=
   orbits(gens(G),v;action=action,trivial=trivial)
 
 """
-`centralizer(G,p;action=^)`
+`centralizer(G::Group,p;action=^)`
 
-computes the centralizer `C_G(p)`
+computes  the centralizer of  `p` in group  `G` (by default  for the action
+`action(g,p)=g^p`)
+
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> centralizer(G,1)
@@ -180,7 +182,7 @@ Group([(2,3)])
 ```
 """
 function centralizer(G::Group,p;action::Function=^)
-# this computes Schreier generators
+# compute Schreier generators
   t=transversal(G,p;action=action)
   C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)]
   Group(unique!(sort(C)))
@@ -189,19 +191,18 @@ end
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
 
 """
-`stabilizer(G,s)`
+`stabilizer(G::Group,s)`
 
-Assuming  that  `s`  is  a  set,  represented  as  a  sorted  list  without
-repetitions,   the  action   of  the   group  `G`   on  sets  is  given  by
-`(g,p)->sort(p.^g)`.  The *stabilizer* of `s` in  `G` is the centralizer of
-`s` for the action of `G` on sets.
+Assume that `s` is a set, represented as a sorted list without repetitions.
+The  action  of  `g∈  G`  on  sets  is  given  by  `(g,p)->sort(p.^g)`. The
+*stabilizer* of `s` in `G` is the centralizer of `s` for that action.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3,4)])
 Group([(1,2),(1,2,3,4)])
 
-julia> centralizer(G,[1,2];action=(s,g)->s.^g)
-Group([(3,4)])
+julia> centralizer(G,[1,2];action=(s,g)->sort(s.^g))
+Group([(3,4),(1,2),(1,2)(3,4)])
 
 julia> stabilizer(G,[1,2])
 Group([(3,4),(1,2),(1,2)(3,4)])

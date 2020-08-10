@@ -29,8 +29,9 @@ square  root  `wₛ`,  we  can  scale  the  basis  `Tₛ`  to  get  a new basis
 `tₛ=-Tₛ/wₛ`    with   quadratic    relations   `(tₛ-vₛ)(tₛ+vₛ⁻¹)=0`   where
 `vₛ=wₛ/uₛ₁`.   The  most  general  case   when  Kazhdan-Lusztig  bases  and
 polynomials  can be defined is when the parameters `vₛ` belong to a totally
-ordered  abelian group `Γ`  for multiplication, see  Lus83. We set `Γ⁺= {γ∈
-Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈ Γ⁺}={γ∈ Γ∣γ<0}`.
+ordered abelian group `Γ` for multiplication, see
+[Lusztig1983](biblio.htm#Lus83).  We set  `Γ⁺= {γ∈  Γ∣γ>0}` and `Γ⁻={γ⁻¹∣γ∈
+Γ⁺}={γ∈ Γ∣γ<0}`.
 
 Thus  we assume `ℋ ` defined over the ring `ℤ[Γ]`, the group algebra of `Γ`
 over  `ℤ`, and the quadratic  relations of `ℋ `  associate to each `s∈ S` a
@@ -307,8 +308,8 @@ HeckeAlgebras.basename(h::HeckeCElt)="C"
 `Cpbasis(H)`
     
 returns  a function which gives the `C'`-basis of the Iwahori-Hecke algebra
-`H` (see cite[(5.1)]Lus85). This basis is defined by `C'_x=
-∑_{y≤x}P_{y,x}q_x^{-1/2} T_y` for `x ∈ W`. We have
+`H`  (see [(5.1)Lusztig1985](biblio.htm#Lus85)).  This basis  is defined by
+`C'_x= ∑_{y≤x}P_{y,x}q_x^{-1/2} T_y` for `x ∈ W`. We have
 `C'_x=(-1)^(l(x))Alt(C_x)` for all `x ∈ W` (see `alt`).
 
 ```julia-repl
@@ -340,16 +341,15 @@ end
 
 returns  a function which gives the  `C`-basis of the Iwahori-Hecke algebra
 `H`. The algebra `H` should have the functon `rootpara` defined. This basis
-is  defined  as  follows  (see  e.g.  cite[(5.1)]Lus85).  Let  `W`  be  the
-underlying  Coxeter group. For `x,y ∈ W` let `P_{x,y}` be the corresponding
-Kazhdan--Lusztig  polynomial. If `{T_w ∣ w∈  W}` denotes the usual T-basis,
-then  ``C_x=\\sum_(y\\le x)(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1}
-T_y`` for `x ∈ W`.
-For   example,  we   have  `Cₛ=qₛ⁻½Tₛ-qₛ½T₁`   for  `s   ∈  S`.  Thus,  the
-transformation  matrix  between  the  `T`-basis  and the `C`-basis is lower
-unitriangular,   with  monomials  in  `qₛ`   along  the  diagonal.  In  the
-one-parameter  case (all `qₛ`  are equal to  `v²`) the multiplication rules
-for the `C` basis are given by:
+is  defined as follows (see e.g. [(5.1)Lusztig1985](biblio.htm#Lus85)). Let
+`W`  be the underlying  Coxeter group. For  `x,y ∈ W`  let `P_{x,y}` be the
+corresponding  Kazhdan--Lusztig polynomial. If  `{T_w ∣ w∈  W}` denotes the
+usual T-basis, then ``C_x=\\sum_(y\\le
+x)(-1)^{l(x)-l(y)}P_{y,x}(q^{-1})q_x^{1/2}q_y^{-1}  T_y`` for `x  ∈ W`. For
+example,  we have `Cₛ=qₛ⁻½Tₛ-qₛ½T₁`  for `s ∈  S`. Thus, the transformation
+matrix between the `T`-basis and the `C`-basis is lower unitriangular, with
+monomials  in `qₛ` along the diagonal.  In the one-parameter case (all `qₛ`
+are equal to `v²`) the multiplication rules for the `C` basis are given by:
 
 `Cₛ⋅Cₓ =-(v+v^-1)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
 
@@ -811,12 +811,12 @@ end
   `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
   for the 1-parameter Hecke algebra `hecke(W,q)`
 
-The program uses precomputed data(see cite{GH14}) for exceptional types and
-for  type `:A`, so  is quite fast  for these types  (it takes 13 seconds to
-compute  the 101796 left cells for type  `E₈`). For other types, left cells
-are  computed from  first principles,  thus computing  many Kazhdan-Lusztig
-polynomials.  It takes 60  seconds to compute  the left cells  of `D₆`, for
-example.
+The  program uses precomputed  data(see [Geck-Halls 2014](biblio.htm#GH14))
+for  exceptional types and for type `:A`,  so is quite fast for these types
+(it  takes 13 seconds to compute the  101796 left cells for type `E₈`). For
+other  types, left cells are computed from first principles, thus computing
+many  Kazhdan-Lusztig polynomials. It takes 60  seconds to compute the left
+cells of `D₆`, for example.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -957,9 +957,9 @@ end
 `Lusztigaw(W,w)'
 
 For  `w` an element  of the Coxeter  groups `W`, this  function returns the
-coefficients on the irreducible characters of the virtual Character  `ca_w`
-defined  in  cite[5.10.2]Lus85.   This character  has the property that the
-corresponding almost character is integral and positive.
+coefficients  on the irreducible characters of the virtual Character `ca_w`
+defined  in [5.10.2 Lusztig1985](biblio.htm#Lus85).  This character has the
+property that the corresponding almost character is integral and positive.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -988,9 +988,9 @@ end
 'LusztigAw( <W>, <w>)'
 
 For  <w> an element  of the Coxeter  groups <W>, this  function returns the
-coefficients on the irreducible characters of the virtual Character cA_w
-defined  in cite[5.11.6]{Lus85}. This character  has the property that the
-corresponding almost character is integral and positive.
+coefficients  on the irreducible  characters of the  virtual Character cA_w
+defined  in [5.11.6 Lusztig1985](biblio.htm#Lus85).  This character has the
+property that the corresponding almost character is integral and positive.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)

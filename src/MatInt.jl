@@ -3,7 +3,7 @@ module MatInt
 using ..Util: toL, toM
 
 export ComplementIntMat, NullspaceIntMat, SolutionIntMat, DiagonalizeIntMat,
- SmithNormalFormIntegerMat, DiaconisGraham
+ SmithNormalFormIntegerMat, DiaconisGraham, BaseIntMat
 
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 NullMat(i,j)=[zeros(Int,j) for k in 1:i]
@@ -642,7 +642,7 @@ end
 """
 `DiaconisGraham(m, moduli)`
 
-Diaconis  and Graham  (see citedg99)  defined a  normal form for generating
+[Diaconis-Graham1999](biblio.htm#dg99) defined a normal form for generating
 sets of abelian groups. Here `moduli` should be a list of positive integers
 such  that `moduli[i+1]` divides `moduli[i]`  for all `i`, representing the
 abelian group `A=Z/moduli[1]×…×Z/moduli[n]`. The integral matrix `m` should

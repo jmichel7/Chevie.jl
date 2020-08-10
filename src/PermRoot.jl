@@ -1320,9 +1320,9 @@ catalan(n::Int)=Int(prod(i->(n+i)//i,2:n))
 
 returns the Catalan Number of the irreducible complex reflection group `W`.
 For well-generated groups, this number is equal to the number of simples in
-the  dual  Braid  monoid.  For  other  groups  it was defined by Gordon and
-Griffeth  (cite{gg12}).  For  Weyl  groups,  it  also counts the number of
-antichains of roots.
+the  dual Braid  monoid. For  other groups  it was  defined by  [Gordon and
+Griffeth2012](biblio.htm#gg12).  For Weyl groups, it also counts the number
+of antichains of roots.
 
 ```julia-repl
 julia> catalan(coxgroup(:A,7))
@@ -1337,7 +1337,7 @@ the  number of chains  `s₁,…,sᵢ` of simples  in the dual  monoid where `s�
 divides  `sⱼ₊₁`. For these groups, it is also equal to `∏ⱼ(ih+dⱼ)/dⱼ` where
 the  product runs over the reflection degrees  of `W`, and where `h` is the
 Coxeter  number of `W`. For non-well generated groups, the definition is in
-cite{gg12}.
+[Gordon and Griffeth2012](biblio.htm#gg12).
 
 ```julia-repl
 julia> catalan(ComplexReflectionGroup(7),2)
@@ -1348,7 +1348,8 @@ julia> catalan(ComplexReflectionGroup(7),2)
 
 where  `q`  is  a  variable  (like  `Pol(:q)`  or  an  'Mvp')  returns  the
 `q`-Catalan number (resp. the `i`-th `q`-Fuss Catalan number) of `W`. Again
-the definitions in general are in cite{gg12}.
+the definitions in general are in [Gordon and
+Griffeth2012](biblio.htm#gg12).
 
 ```julia-repl
 julia> catalan(ComplexReflectionGroup(7),2,q)

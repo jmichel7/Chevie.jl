@@ -218,6 +218,7 @@ end
 ExtendedReflectionGroup(W,mats::AbstractVector{Matrix{Int}})=ExtendedCox(W,mats)
 ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
 ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractVector{Int}})=ExtendedCox(W,[toM(mats)])
+ExtendedReflectionGroup(W)=ExtendedReflectionGroup(W,Matrix{Int}[])
 
 function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
   if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
@@ -443,7 +444,7 @@ of semisimple elements.
 :ZD:  center  of  the  derived  subgroup  of    bG   given  as  a group of
 semisimple elements.
 
-:descAZ:  if <W>  is not  an extended  Weyl group,  describes  A(Z)   as a
+:descAZ:  if `W`  is not  an extended  Weyl group,  describes  A(Z)   as a
 quotient  of the center 'pi' of  the simply connected covering of   bG.
 It  contains a list of elements given as words in the generators of 'pi'
 which generate the kernel of the quotient map.
@@ -619,7 +620,7 @@ fundamental  group of a (not necessarily semisimple) reductive group is (P∩
 Y(𝐓))/Q where P is the coweight lattice (the dual lattice in Y(𝐓)⊗ ℚ of the
 root lattice) and Q is the coroot latice. The bijection between elements of
 P/Q   and   diagram   automorphisms   is   explained   in  the  context  of
-non-irreducible groups for example in cite[S 3.B]{Bon05}.
+non-irreducible groups for example in [§3.B Bonnafé2005](biblio.htm#Bon05).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -927,4 +928,5 @@ function IsomorphismType(W;torus=false)
   t
 end
 
+include("sscoset.jl")
 end
