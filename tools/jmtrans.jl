@@ -62,7 +62,7 @@ const ok2=[
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)
 
-# install("x/f") translates ~/ga3-dev/pkg/chevie/x/f" to "x/f"
+# install("x/f") translates ~/gap3-dev/pkg/chevie/x/f.g" to "x/f.jl"
 function install(n)
   println("installing $n")
   l=readf(n*".g")

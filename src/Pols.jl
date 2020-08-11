@@ -44,7 +44,6 @@ see also the individual documentation of divrem, gcd.
 module Pols
 using ..Util: format_coefficient, fromTeX, divisors
 export degree, valuation
-import ..Cycs: root
 export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
 
 const varname=Ref(:x)
@@ -204,8 +203,8 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
   res=fill(zero(T1)+zero(T2),max(length(a.c),d+length(b.c)))
-@inbounds res[eachindex(a.c)].=a.c
-@inbounds res[d.+eachindex(b.c)].+=b.c
+@inbounds view(res,eachindex(a.c)).=a.c
+@inbounds view(res,d+eachindex(b.c)).+=b.c
   Pol(res,a.v)
 end
 
@@ -308,14 +307,5 @@ function cyclotomic_polynomial(n::Integer)
     end
     res
   end
-end
-
-function root(x::Pol,n::Number=2)
-  n=Int(n)
-  if length(x.c)>1 || !iszero(x.v%n)
-    error("root($(repr(x;context=:limit=>true)),$n) not implemented") 
-  end
-  if isempty(x.c) return x end
-  Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 end

@@ -1,6 +1,6 @@
 module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
-  conjugate_partition, dominates, compositions, submultisets, cartesian,
+  conjugate_partition, compositions, submultisets, cartesian,
   npartition_tuples, narrangements, groupby, constant, tally, collectby,
   partitions_set, npartitions_set, bell, stirling2
 

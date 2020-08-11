@@ -238,19 +238,19 @@ Base.broadcastable(p::Perm)=Ref(p)
 
 # total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
-  da=length(a.d)
-  db=length(b.d)
-  for i in 1:min(da,db)
-@inbounds if a.d[i]<b.d[i] return -1 end
-@inbounds if a.d[i]>b.d[i] return  1 end
+  for (ai,bi) in zip(a.d,b.d)
+    if ai<bi return -1 end
+    if ai>bi return  1 end
   end
-  if     da<db for i in (da+1:db) b.d[i]==i || return -1 end
-  elseif da>db for i in (db+1:da) a.d[i]==i || return  1 end
+  la=length(a.d)
+  lb=length(b.d)
+@inbounds  if la<lb for i in la+1:lb if b.d[i]!=i return -1 end end
+  elseif la>lb for i in lb+1:la if a.d[i]!=i return  1 end end
   end
   0
 end
 
-Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+@inline Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
 Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 

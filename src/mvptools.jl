@@ -1,5 +1,14 @@
 # this should just be "tools". It contains simple functions but which need
 # several of the self-contained structural packages of Gapjm
+function Cycs.root(x::Pol,n::Number=2)
+  n=Int(n)
+  if length(x.c)>1 || !iszero(x.v%n)
+    error("root($(repr(x;context=:limit=>true)),$n) not implemented") 
+  end
+  if isempty(x.c) return x end
+  Pol([root(x.c[1],n)],div(x.v,n);check=false)
+end
+
 """
 `Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
 

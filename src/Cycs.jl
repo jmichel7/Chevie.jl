@@ -125,8 +125,7 @@ module Cycs
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, format_coefficient
-using ..Util: factor, prime_residues, phi
+using ..Util: fromTeX, format_coefficient, factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 

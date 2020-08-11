@@ -87,12 +87,12 @@ function words end; export words
 
 include("using_merge.jl")
 include("Util.jl");@reexport using .Util
+include("Perms.jl");using_merge(:Perms,debug=0,reexport=true)
+include("Groups.jl");using_merge(:Groups,debug=0,reexport=true)
+include("Pols.jl");using_merge(:Pols,debug=0,reexport=true)
 include("ModuleElts.jl");@reexport using .ModuleElts
 include("Combinat.jl");@reexport using .Combinat
-include("Groups.jl");using_merge(:Groups,debug=0,reexport=true)
-include("Perms.jl");using_merge(:Perms,debug=0,reexport=true)
 include("Cycs.jl");using_merge(:Cycs,debug=0,reexport=true)
-include("Pols.jl");using_merge(:Pols,debug=0,reexport=true)
 include("Mvps.jl");using_merge(:Mvps,debug=0,reexport=true)
 include("Posets.jl");using_merge(:Posets,debug=0,reexport=true)
 include("FFields.jl");using_merge(:FFields,debug=0,reexport=true)
