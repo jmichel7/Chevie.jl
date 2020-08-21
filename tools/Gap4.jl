@@ -5,9 +5,12 @@ using GAP, Gapjm, Reexport
 
 GAP.julia_to_gap(p::Perm)=GAP.Globals.PermList(GAP.julia_to_gap(Int.(vec(p))))
 
-GAP.julia_to_gap(g::Group)=GAP.Globals.Group(GAP.julia_to_gap.(gens(g))...)
+GAP.julia_to_gap(g::Group)=isempty(gens(g)) ?
+  GAP.Globals.Group(GAP.julia_to_gap(one(g))) :
+  GAP.Globals.Group(GAP.julia_to_gap.(gens(g))...)
 
 gapvec_to_julia(gv)=map(i->GAP.gap_to_julia(gv[i]),1:length(gv))
+gapvec_to_julia(f,gv)=map(i->f(gv[i]),1:length(gv))
 
 function Perm_to_julia(p)
   l=GAP.Globals.ListPerm(p)
@@ -21,13 +24,14 @@ end
 
 function class_reps(g::Group)
   gg=GAP.julia_to_gap(g)
-  l=gapvec_to_julia(GAP.Globals.ConjugacyClasses(gg))
-  Perm_to_julia.(GAP.Globals.Representative.(l))
+  gapvec_to_julia((Perm_to_julia∘GAP.Globals.Representative),
+                   GAP.Globals.ConjugacyClasses(gg))
 end
 
 function CharTable_to_julia(ct)
-  girr=GAP.gap_to_julia(GAP.Globals.Irr(ct))
-  irr=permutedims(hcat(map(x->Cyc_to_julia.(x),girr)...))
+  u=GAP.Globals.Irr(ct)
+  girr=gapvec_to_julia(x->gapvec_to_julia(Cyc_to_julia,x),u) 
+  irr=permutedims(hcat(girr...))
   n=gapvec_to_julia(GAP.Globals.ClassNames(ct))
   cn=gapvec_to_julia(GAP.Globals.CharacterNames(ct))
   sz=gapvec_to_julia(GAP.Globals.SizesCentralisers(ct))

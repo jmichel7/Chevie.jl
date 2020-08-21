@@ -532,7 +532,8 @@ charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
 `solutionmat(mat,v)`
 
 returns one solution of the equation `permutedims(x)*mat=permutedims(v)` or
-`nothing` if no such solution exists.
+`nothing` if no such solution exists. Similar to `permutedims(mat)\\v` when
+`mat` is invertible
 
 ```julia-repl
 julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])

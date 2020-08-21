@@ -629,9 +629,9 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   prop::Dict{Symbol,Any}
 end
 
-function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
-  print(io,"FiniteCoxeterGroup{Perm{$T},$T1}")
-end
+#function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
+#  print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
+#end
 
 "number of reflections of W"
 @inline CoxGroups.nref(W::FCG)=W.N

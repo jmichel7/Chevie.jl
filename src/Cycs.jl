@@ -650,6 +650,8 @@ end
 end
 
 galois(c::Rational,n::Int)=c
+
+galois(c::Integer,n::Int)=c
 """
   galois(c::Cyc,n::Int) applies to c the galois automorphism
   of Q(ζ_conductor(c)) raising all roots of unity to the n-th power.

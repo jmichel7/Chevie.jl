@@ -17,10 +17,9 @@ spets_ex=vcat(
   [ComplexReflectionGroup(3,1,2),
   ComplexReflectionGroup(3,3,3),
   ComplexReflectionGroup(3,3,4),
-  ComplexReflectionGroup(4,4,3)],
-  cox_ex)
+  ComplexReflectionGroup(4,4,3)])
 
-twisted=[ rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
+twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
   rootdatum(Symbol("2I"),5), rootdatum(Symbol("2I"),8), rootdatum(:psu,4),
   rootdatum(Symbol("3D4")), rootdatum(:psu,5), rootdatum(Symbol("pso-"),8),
   rootdatum(:psu,6), rootdatum(Symbol("2F4")), rootdatum(:psu,7),
@@ -37,7 +36,7 @@ end
 function FindRepresentation(W,gr,check=false)
   O=W
   if O isa HeckeAlgebra W=O.W end
-  t=map(x->restriction(W,x),classinfo(W)[:classtext])
+  t=classinfo(W)[:classtext]
   l=1:length(t)
   l=sort(l,by=i->length(t[i]))
   t=t[l]
@@ -160,7 +159,8 @@ function tCharTable(W)
 # ct=improve_type(Gap4.CharTable(W).irr)
   ct=Gap4.CharTable(W).irr
   ct1=CharTable(W).irr
-  p=Perm(ct,ct1;dims=1)
+#  p=Perm(ct,ct1;dims=1) investigate why not enough
+  p=Perm_rowcolmat(ct,ct1)
   if isnothing(p) error("irreducibles") 
   else println("permuted ",p)
   end
