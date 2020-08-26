@@ -506,7 +506,7 @@ function Perm_rowcolmat(m1, m2)
     if length(l)==1 return false end
     d=dist(mm[1], mm[2], dim, l)
     InfoChevie("l=",l,"\n")
-    for e in elements(Group(map(i->Perm(l[i],l[i+1]),1:length(l)-1)))
+    for e in Group(map(i->Perm(l[i],l[i+1]),1:length(l)-1))
       m=dist(^(mm[1], e;dims=dim), mm[2], dim, l)
       if m<d
         InfoChevie("\n",("rows","cols")[dim],joindigits(l),":$d->",m)
