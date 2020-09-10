@@ -438,16 +438,20 @@ julia> scal(w)
 julia> typeof(scal(w))
 Int64
 ```
-> if `p`  is a  list, then  apply `scal`
-> recursively to  it (but return `nothing`  if it contains any  `Mvp` which is
-> not a scalar). Else assume `p` is already a scalar and thus return `p`.
+if  `p` is an array, then apply `scal` to its elements and return `nothing`
+if it contains any `Mvp` which is not a scalar.
 """
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
-  if length(p.d)!=1 return nothing end
-  (m,c)=first(p.d)
-  if isone(m) return c end
-  return nothing
+  if length(p.d)==1 
+    (m,c)=first(p.d)
+    if isone(m) return c end
+  end
+end
+
+function scal(m::AbstractArray{<:Mvp})
+  p=scal.(m)
+  if !any(isnothing,p) return p end
 end
 
 """
