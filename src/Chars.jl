@@ -55,20 +55,20 @@ CharTable(W(G2))
 
 julia> ct.charnames
 6-element Array{String,1}:
- "\\phi_{1,0}"  
- "\\phi_{1,6}"  
- "\\phi_{1,3}'" 
+ "\\phi_{1,0}"
+ "\\phi_{1,6}"
+ "\\phi_{1,3}'"
  "\\phi_{1,3}''"
- "\\phi_{2,1}"  
- "\\phi_{2,2}"  
+ "\\phi_{2,1}"
+ "\\phi_{2,2}"
 
 julia> ct.classnames
 6-element Array{String,1}:
- "A_0"            
- "\\tilde A_1"    
- "A_1"            
- "G_2"            
- "A_2"            
+ "A_0"
+ "\\tilde A_1"
+ "A_1"
+ "G_2"
+ "A_2"
  "A_1+\\tilde A_1"
 ```
 
@@ -390,7 +390,8 @@ using Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
-  representations, InductionTable, classes, jInductionTable, JInductionTable
+  representations, InductionTable, classes, jInductionTable, JInductionTable,
+  decompose
 
 """
 `fakedegree(W, φ, q)`
@@ -411,7 +412,7 @@ function fakedegree(W,p,q)
 end
 
 fakedegree(t::TypeIrred,p,q)=haskey(t,:scalar) ?
-  getchev(t,:FakeDegree,p,prod(s->q*conj(s),t.scalar)) : 
+  getchev(t,:FakeDegree,p,prod(s->q*conj(s),t.scalar)) :
   haskey(t,:orbit) ? getchev(t,:FakeDegree,p,q^length(t.orbit)) :
   getchev(t,:FakeDegree,p,q)
 
@@ -428,9 +429,9 @@ corresponds to the ordering of the characters in 'CharTable(W)'.
 ```julia-repl
 julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 3-element Array{Pol{Int64},1}:
- q³  
+ q³
  q²+q
- 1   
+ 1
 ```
 """
 function fakedegrees(W,q)
@@ -448,7 +449,7 @@ function charinfo(t::TypeIrred)
   if !haskey(c,:B) c[:B]=getchev(t,:HighestPowerFakeDegrees) end
   if !haskey(c,:a) c[:a]=getchev(t,:LowestPowerGenericDegrees) end
   if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
-  if isnothing(c[:a]) 
+  if isnothing(c[:a])
     uc=getchev(t,:UnipotentCharacters)
     if uc!=false
     c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
@@ -458,7 +459,7 @@ function charinfo(t::TypeIrred)
   for f in [:a,:A,:b,:B]
     if isnothing(c[f]) delete!(c,f) else c[f]=Int.(c[f]) end
   end
-  if haskey(t,:orbit) 
+  if haskey(t,:orbit)
     if !haskey(c,:charRestrictions)
       c[:charRestrictions]=eachindex(c[:charparams])
       c[:nrGroupClasses]=length(c[:charparams]) # assume ortit twist trivial
@@ -493,12 +494,12 @@ first two invariants.
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))[:charparams]
 6-element Array{Array{Array{Int64,1},1},1}:
- [[1, 0]]   
- [[1, 6]]   
+ [[1, 0]]
+ [[1, 6]]
  [[1, 3, 1]]
  [[1, 3, 2]]
- [[2, 1]]   
- [[2, 2]]   
+ [[2, 1]]
+ [[2, 2]]
 ```
 
 `:charnames`:  strings describing the  irreducible characters, computed from
@@ -677,12 +678,12 @@ given by Spaltenstein.
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))[:spaltenstein]
 6-element Array{String,1}:
- "1"             
- "\\varepsilon"  
+ "1"
+ "\\varepsilon"
  "\\varepsilon_l"
  "\\varepsilon_c"
- "\\theta'"      
- "\\theta''"     
+ "\\theta'"
+ "\\theta''"
 ```
 
 for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  entry  `:malle`  gives  the
@@ -691,7 +692,7 @@ parameters for the characters used by Malle in [@Mal96].
 function charinfo(W)::Dict{Symbol,Any}
   gets(W,:charinfo)do
     p=charinfo.(refltype(W))
-    if isempty(p) 
+    if isempty(p)
       res=Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
       :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
       if W isa Spets
@@ -835,7 +836,7 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,ct::CharTable)
- if !get(io,:TeX,false) println(io,"CharTable(",fromTeX(io,ct.identifier),")") end
+  if !get(io,:TeX,false) printTeX(io,"CharTable(",ct.identifier,")\n") end
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
@@ -858,14 +859,14 @@ function CharTable(t::TypeIrred)
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
-  if isempty(ctt) 
+  if isempty(ctt)
    return CharTable(hcat(1),["Id"],["1"],[1],".",Dict{Symbol,Any}())
   end
   charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
   identifier=join(getfield.(ctt,:identifier),"×")
-  if length(ctt)==1 irr=ctt[1].irr 
+  if length(ctt)==1 irr=ctt[1].irr
   else irr=kron(getfield.(ctt,:irr)...)
   end
   CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
@@ -904,14 +905,14 @@ CharTable(W(3D4))
 function CharTable(W::Spets)::CharTable
   gets(W,:chartable)do
     ctt=CharTable.(refltype(W))
-    if isempty(ctt) 
+    if isempty(ctt)
      return CharTable(hcat(1),["Id"],["1"],[1],"$W",Dict{Symbol,Any}())
     end
     charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
     classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
     centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
     identifier=join(getfield.(ctt,:identifier),"×")
-    if length(ctt)==1 irr=ctt[1].irr 
+    if length(ctt)==1 irr=ctt[1].irr
     else irr=kron(getfield.(ctt,:irr)...)
     end
     CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
@@ -927,7 +928,7 @@ end
 function scalarproduct(ct::CharTable,c1,c2)
   div(sum(map(*,c1,conj.(c2),classes(ct))),ct.centralizers[1])
 end
-  
+
 function decompose(ct::CharTable,c)
   map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
 end
@@ -976,17 +977,17 @@ returns the representations of `W` (see `representation`).
 ```julia-repl
 julia> representations(coxgroup(:B,2))
 5-element Array{Array{Array{Int64,2},1},1}:
- [[1], [-1]]                
+ [[1], [-1]]
  [[1 0; -1 -1], [1 2; 0 -1]]
- [[-1], [-1]]               
- [[1], [1]]                 
- [[-1], [1]]                
+ [[-1], [-1]]
+ [[1], [1]]
+ [[-1], [1]]
 ```
 """
 representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
 
 """
-              Functions for W-graphs 
+              Functions for W-graphs
 (Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
 Naruse, Howlett,Yin)
    WGraphToRepresentation(semisimpleRank,graph,v)
@@ -1002,7 +1003,7 @@ with single rootparameter `v` on a space with basis `e_y_{y∈ C}` by:
              v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\}
 
 The W-graphs  are stored in a  compact format to save  space. They are
-represented  as a  pair. 
+represented  as a  pair.
 -The  first element is a list describing C; its elements are either a set
 I(x),  or an integer n  specifying to repeat the  previous element n more
 times.
@@ -1036,7 +1037,7 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   n=length(V)
   S=map(i->one(fill(T(0),n,n))*v^2,1:rk)
   for j in 1:n for i in V[j] S[i][j,j]=-one(v) end end
-  for i in gr[2] 
+  for i in gr[2]
     if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end
     for l in i[2]
       x=l[1]
@@ -1059,7 +1060,7 @@ function WGraph2Representation(a,vars)
   pos=function(n,j)
     if n[1] isa Vector p=findfirst(x->j in x,n)
       if isnothing(p) p=length(vars) end
-    elseif j in n p=1 
+    elseif j in n p=1
     else p=2 end
     p
   end
@@ -1070,9 +1071,9 @@ function WGraph2Representation(a,vars)
   R=map(x->toM(HasType.DiagonalMat(x...)),R)
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
-  for r in a[2] 
+  for r in a[2]
 #   println("r=$r")
-    for k in [3,4] 
+    for k in [3,4]
     if HasType.IsList(r[k])
       for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
     else
@@ -1080,7 +1081,7 @@ function WGraph2Representation(a,vars)
       j=filter(i->pos(nodes[r2[k-2]],i)<pos(nodes[r2[5-k]],i),1:n)
       for i in j R[i][r2[k-2],r2[5-k]]=r[k] end
     end
-    end 
+    end
   end
 # println("R=$(typeof(R))$R")
   toL.(R)
@@ -1108,39 +1109,39 @@ G₂
 
 julia> charnames(W;limit=true)
 6-element Array{String,1}:
- "φ₁‚₀" 
- "φ₁‚₆" 
+ "φ₁‚₀"
+ "φ₁‚₆"
  "φ′₁‚₃"
  "φ″₁‚₃"
- "φ₂‚₁" 
- "φ₂‚₂" 
+ "φ₂‚₁"
+ "φ₂‚₂"
 
 julia> charnames(W;TeX=true)
 6-element Array{String,1}:
- "\\phi_{1,0}"  
- "\\phi_{1,6}"  
- "\\phi_{1,3}'" 
+ "\\phi_{1,0}"
+ "\\phi_{1,6}"
+ "\\phi_{1,3}'"
  "\\phi_{1,3}''"
- "\\phi_{2,1}"  
- "\\phi_{2,2}"  
+ "\\phi_{2,1}"
+ "\\phi_{2,2}"
 
 julia> charnames(W;spaltenstein=true,limit=true)
 6-element Array{String,1}:
- "1"  
- "ε"  
- "εₗ" 
+ "1"
+ "ε"
+ "εₗ"
  "ε_c"
- "θ′" 
- "θ″" 
+ "θ′"
+ "θ″"
 
 julia> charnames(W;spaltenstein=true,TeX=true)
 6-element Array{String,1}:
- "1"             
- "\\varepsilon"  
+ "1"
+ "\\varepsilon"
  "\\varepsilon_l"
  "\\varepsilon_c"
- "\\theta'"      
- "\\theta''"     
+ "\\theta'"
+ "\\theta''"
 ```
 
 The  last two  commands show  the character  names used by Spaltenstein and
@@ -1158,7 +1159,7 @@ function charnames(io::IO,W)
   end
   fromTeX.(Ref(io),cn)
 end
- 
+
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 
 """
@@ -1261,7 +1262,7 @@ end
 function Base.show(io::IO,t::InductionTable)
   rep=!get(io,:TeX,false) && !get(io,:limit,false)
   if rep && haskey(t.prop,:repr) print(io,t.prop[:repr])
-  else print(io,fromTeX(io,t.identifier))
+  else printTeX(io,t.identifier)
   end
   if rep || get(io,:typeinfo,false)!=false return end
   println(io)
@@ -1272,7 +1273,7 @@ function Base.show(io::IO,t::InductionTable)
   end
   format(io,scal,row_labels=row_labels,col_labels=column_labels)
 end
-  
+
 """
 `jInductionTable(H, W)`
 

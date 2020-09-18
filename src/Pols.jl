@@ -42,7 +42,7 @@ Pol{Int64}: q⁸-q⁴+1
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: format_coefficient, fromTeX, divisors
+using ..Util: format_coefficient, printTeX, divisors
 export degree, valuation
 export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
 
@@ -176,7 +176,7 @@ function Base.show(io::IO,p::Pol)
     if s=="" s="0"
     elseif  s[1]=='+' s=s[2:end]
     end
-    print(io, fromTeX(io,s))
+    printTeX(io,s)
   else
     print(io,"Pol(",p.c,",",p.v,")")
   end

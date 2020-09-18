@@ -258,11 +258,11 @@ function Base.show(io::IO, t::TypeIrred)
         n=replorTeX ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
       end
     end
-    print(io,fromTeX(io,n))
+    printTeX(io,n)
   else
     o=order(t.twist)
     if replorTeX
-      if o!=1 print(io,fromTeX(io,"{}^{$o}")) end
+      if o!=1 printTeX(io,"{}^{$o}") end
       if length(t.orbit)==1 print(io,t.orbit[1]) 
       else print(io,"(")
         for t1 in t.orbit print(io,t1) end
@@ -353,6 +353,9 @@ Diagram(W::PermRootGroup)=Diagram(refltype(W))
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 # should use independent_roots
+
+Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W)==roots(W1) &&
+  coroots(W)[1:ngens(W)]==coroots(W1)[1:ngens(W1)]
 
 "return for each root the index of the first simple root conjugate to it"
 function simple_representatives(W::PermRootGroup)

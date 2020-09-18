@@ -802,7 +802,7 @@ end
 
 function Base.show(io::IO, W::CoxSym)
   if get(io,:TeX,false) || get(io,:limit,false)
-   print(io,fromTeX(io,"\\frakS _{$(W.n)}"))
+    printTeX(io,"\\frakS _{$(W.n)}")
   else print(io,"CoxSym($(W.n))")
   end
 end

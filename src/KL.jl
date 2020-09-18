@@ -555,7 +555,7 @@ function character(c::LeftCell)
     r=representation(c,hecke(c.group))
     cc=HasType.traces_words_mats(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
-    cc=Chars.decompose(ct,cc)
+    cc=decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
     c.prop[:a]=charinfo(c.group)[:a][char]
     if length(Set(c.prop[:a]))>1 error() else c.prop[:a]=c.prop[:a][1] end

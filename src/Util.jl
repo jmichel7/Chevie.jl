@@ -10,8 +10,8 @@ module Util
 export 
   @forward,
   getp, gets, # helpers for objects with a Dict of properties
-  format, format_coefficient, ordinal, rshow, printc, fromTeX, joindigits, 
-  cut, # formatting
+  format, format_coefficient, ordinal, rshow, rsprint, printc, fromTeX, 
+  printTeX,joindigits, cut, # formatting
   factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -149,6 +149,8 @@ end
 
 fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)
 
+printTeX(io::IO,s...)=print(io,fromTeX(io,prod(s)))
+
 """
   format(io, table; options )
 
@@ -249,6 +251,7 @@ end
 
 # show/print with attributes...
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
+rsprint(x;p...)=sprint(show,x;context=IOContext(stdout,:limit=>true,p...))
 
 function joindigits(l::AbstractVector,delim="()";always=false,sep=",")
   big=any(l.>=10)
@@ -269,24 +272,34 @@ function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
   a=split(s)
   if a[end]=="" a=a[1:end-1] end
   for s in a
-    pos=0
-    l=length(s)
-    while l>pos+width
-      pa=findlast(x->x in after,s[pos+(1:width)])
-      pb=findlast(x->x in before,s[pos+(2:width)])
-      if !isnothing(pa) && (isnothing(pb) || pa<=pb)
-        println(file,s[pos+(1:pa)])
-        pos+=pa
-      elseif !isnothing(pb)
-        println(file,s[pos+(1:pb)])
-        pos+=pb
-      else error("could not cut ",s[pos+(1:width)])
-      end
+    l=0
+    pa=pb=0
+    pos=1
+    for (i,c) in pairs(s)
+      n=textwidth(c)
+      if l+n>width
+#       println("pos=$pos pa=$pa pb=$pb l=$l n=$n i=$i")
+        if pa>0 && (pb==0 || pa>=pb)
+          pr=s[pos:pa]
+          pos=nextind(s,pa)
+        elseif pb>0
+          pr=s[pos:prevind(s,pb)]
+          pos=pb
+        else error("could not cut ",s[pos:i])
+        end
+        println(file,pr)
+        l-=textwidth(pr)
+        pa=pb=0
+      end  
+      l+=n
+      if c in after pa=i end
+      if c in before pb=i end
     end
-    println(file,s[pos+1:end])
+    println(file,s[pos:end])
   end
   if file!=stdout close(file) end
 end
+
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)

@@ -68,7 +68,7 @@ crystallographic:
 ```
        e        5         5
 I₂(e) O—O   H₃ O—O—O  H₄ O—O—O—O
-      1 2      1 2 3     1 2 3 4 
+      1 2      1 2 3     1 2 3 4
 ```
 
 Let  us  now  describe  how  the  root  systems  are  encoded in the Dynkin
@@ -183,7 +183,7 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
- dimension, with_inversions, standard_parabolic, describe_involution, 
+ dimension, with_inversions, standard_parabolic, describe_involution,
  relative_group, rootlengths
 # to use as a stand-alone module uncomment the next line
 # export roots
@@ -262,7 +262,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
      u=min(r,4); m[1:u,1:u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][1:u,1:u]
      m end,
    :F=>function(r,b)m=A(r)
-     m[3,2]=-2 
+     m[3,2]=-2
      m end,
    :Fsym=>function(r,b)m=convert.(Cyc{Int},A(r))
      m[3,2]=m[2,3]=-ER(2)
@@ -286,9 +286,9 @@ end
 
 function PermRoot.cartan(t::Dict{Symbol,Any})
 # println("t=$t")
-  if haskey(t,:cartanType) 
+  if haskey(t,:cartanType)
     ct=t[:cartanType]
-    if haskey(t,:bond) 
+    if haskey(t,:bond)
       C=convert.(typeof(ct),cartan(t[:series],length(t[:indices]),t[:bond]))
     else
       C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
@@ -320,7 +320,7 @@ end
  Given  a square  matrix m  with zeroes  (or falses,  for a boolean matrix)
  symmetric  with respect to the diagonal, let  G be the graph with vertices
  axes(m)[1] and an edge between i and j iff !iszero(m[i,j]).
- If G  is a line this function returns it as a Vector{Int}. 
+ If G  is a line this function returns it as a Vector{Int}.
  If  G  is  a  tree  with  one  vertex  c of valence 3 the function returns
  (c,b1,b2,b3)  where b1,b2,b3 are  the branches from  this vertex sorted by
  increasing length.
@@ -367,24 +367,24 @@ function type_fincox_cartan(m::AbstractMatrix)
   t=Dict{Symbol,Any}()
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
-    if length(b2)==1 t[:series]=:D 
+    if length(b2)==1 t[:series]=:D
       t[:indices]=[b1;b2;vertex;b3]::Vector{Int}
-    else t[:series]=:E 
+    else t[:series]=:E
       t[:indices]=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
-    end 
+    end
   else  # types A,B,C,F,G,H,I
     l=i->m[s[i],s[i+1]]
-    r=i->m[s[i+1],s[i]] 
+    r=i->m[s[i+1],s[i]]
     function rev() s=s[end:-1:1] end
-    if rank==1 t[:series]=:A 
-    elseif rank==2 
+    if rank==1 t[:series]=:A
+    elseif rank==2
 #     println("l(1)=",l(1)," r(1)=",r(1))
-      if l(1)*r(1)==1 t[:series]=:A 
-      elseif l(1)*r(1)==2 t[:series]=:B  
+      if l(1)*r(1)==1 t[:series]=:A
+      elseif l(1)*r(1)==2 t[:series]=:B
         if l(1)==-1 rev() end # B2 preferred to C2
         t[:cartanType]=-l(1)
-      elseif l(1)*r(1)==3 t[:series]=:G  
-        if r(1)==-1 rev() end 
+      elseif l(1)*r(1)==3 t[:series]=:G
+        if r(1)==-1 rev() end
         t[:cartanType]=-l(1)
       else n=conductor(l(1)*r(1))
         if r(1)==-1 rev() end
@@ -394,22 +394,22 @@ function type_fincox_cartan(m::AbstractMatrix)
         t[:bond]=bond
       end
     else
-      if l(rank-1)*r(rank-1)!=1 rev() end 
+      if l(rank-1)*r(rank-1)!=1 rev() end
       if l(1)*r(1)==1
-        if l(2)*r(2)==1 t[:series]=:A 
+        if l(2)*r(2)==1 t[:series]=:A
         else t[:series]=:F
-          if r(2)==-1 rev() end 
+          if r(2)==-1 rev() end
           t[:cartanType]=-l(2)
         end
       else n=conductor(l(1)*r(1))
         if n==5 t[:series]=:H
         else t[:series]=:B
           t[:cartanType]=-l(1)
-        end  
-      end  
-    end 
+        end
+      end
+    end
     t[:indices]=s::Vector{Int}
-  end 
+  end
 # println("t=$t")
 # println("indices=",t[:indices]," cartan=",cartan(t)," m=$m")
   if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
@@ -444,19 +444,19 @@ function Gapjm.roots(C::Matrix)
     a=R[j]
     c=C*a
     for i in axes(C,1)
-      if j!=i 
+      if j!=i
         v=copy(a)
         v[i]-=c[i]
         if !(v in R) push!(R,v) end
       end
     end
     j+=1
-  end 
-  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) 
+  end
+  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x))
   else R
   end
   # important roots are sorted as in CHEVIE for data (KLeftCells) to work
-end 
+end
 
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
 abstract type FiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
@@ -545,10 +545,10 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
 # complete basis of I with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
-   for x in v 
+   for x in v
      if (x isa Rational && x<0) || Real(x)<0 return true
-     elseif (x isa Rational && x>0) || Real(x)>0 return false 
-     end 
+     elseif (x isa Rational && x>0) || Real(x)>0 return false
+     end
    end end
   N=(1:W.N)[l]
 # find negative roots for associated order and make order standard
@@ -612,6 +612,8 @@ Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 @inline Base.parent(W::FiniteCoxeterGroup)=W
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
 
+Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
+
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Gapjm.degree,
  Gapjm.roots, Groups.gens, Groups.position_class, PermGroups.classreps,
@@ -620,7 +622,7 @@ Base.in(w,W::FiniteCoxeterGroup)=w in W.G
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
  PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, PermRoot.reflrep,
  PermRoot.restriction, PermRoot.semisimplerank, PermRoot.simplecoroots,
- PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength 
+ PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
@@ -629,9 +631,9 @@ struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   prop::Dict{Symbol,Any}
 end
 
-#function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
-#  print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
-#end
+function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
+  print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
+end
 
 "number of reflections of W"
 @inline CoxGroups.nref(W::FCG)=W.N
@@ -639,9 +641,9 @@ CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
 
 """
 `coxgroup(type,rank[,bond])`
-    
+
 This is equivalent to 'rootdatum(cartan(type,rank[,bond]))`.
-                          
+
 The  resulting object, that we will  call a *Coxeter datum*, has additional
 entries and functions describing various information on the root system and
 Coxeter group that we describe below.
@@ -661,7 +663,7 @@ of coroots as the root in the list of roots.
 shortest  roots in  an irreducible  subsystem are  given the  length 1. The
 others  then  have  length  2  (or  3  in  type  G_2).  The  matrix  of the
 `W`-invariant bilinear form is given by
-'map(i->(rootLengths)[i]*W.cartan[i,:],1:semisimplerank(W))'.
+'map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))'.
 
 'simple_representatives(W)[i]':  this gives the  smallest index of  a root in
 the same `W`-orbit as the `i`-th root.
@@ -687,17 +689,17 @@ julia> cartan(W)
 
 julia> W.rootdec
 12-element Array{Array{Int64,1},1}:
- [1, 0, 0]   
- [0, 1, 0]   
- [0, 0, 1]   
- [1, 1, 0]   
- [0, 1, 1]   
- [1, 1, 1]   
- [-1, 0, 0]  
- [0, -1, 0]  
- [0, 0, -1]  
- [-1, -1, 0] 
- [0, -1, -1] 
+ [1, 0, 0]
+ [0, 1, 0]
+ [0, 0, 1]
+ [1, 1, 0]
+ [0, 1, 1]
+ [1, 1, 1]
+ [-1, 0, 0]
+ [0, -1, 0]
+ [0, 0, -1]
+ [-1, -1, 0]
+ [0, -1, -1]
  [-1, -1, -1]
 
  julia> reflrep(W)
@@ -753,7 +755,7 @@ end
 coxgroup()=torus(0)
 
 Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
-  
+
 #function reflrep(W::FCG,w)
 #  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
@@ -780,8 +782,8 @@ function rootlengths(W::FCG)
         lengths[I[1]]=-C[I[3],I[2]]
       end
     end
-    for i in eachindex(lengths) 
-      lengths[i]=lengths[simple_representatives(W.G)[i]] 
+    for i in eachindex(lengths)
+      lengths[i]=lengths[simple_representatives(W.G)[i]]
     end
     lengths
   end
@@ -815,7 +817,7 @@ Base.:*(W1::PermRootGroup,W2::FiniteCoxeterGroup)=W1*W2.G
 
 "for each root index of simple representative"
 PermRoot.simple_representatives(W::FCG)=simple_representatives(W.G)
-  
+
 PermRoot.simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
 
@@ -837,7 +839,7 @@ CoxGroups.nref(W::FCSG)=W.N
 Base.parent(W::FCSG)=W.parent
 
 # if I are all the positive roots of a subsystem find the simple ones
-function SimpleRootsSubsystem(W,I) 
+function SimpleRootsSubsystem(W,I)
   filter(I) do i
     r=reflection(W,i)
     for j in I
@@ -930,16 +932,16 @@ the roots of the parent group.
 ```julia-repl
 julia> elH=word.(Ref(H),elements(H))
 4-element Array{Array{Int64,1},1}:
- []    
- [2]   
- [1]   
+ []
+ [2]
+ [1]
  [1, 2]
 
 julia> elW=word.(Ref(W),elements(H))
 4-element Array{Array{Int64,1},1}:
- []                
- [1, 2, 1, 2, 1]   
- [2]               
+ []
+ [1, 2, 1, 2, 1]
+ [2]
  [1, 2, 1, 2, 1, 2]
 
 julia> map(w->H(w...),elH)==map(w->W(w...),elW)
@@ -972,7 +974,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
   prop[:refltype]=map(prop[:refltype]) do t
    if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
-     for s in refltype(W) 
+     for s in refltype(W)
        if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
           getfield(t,:prop)[:short]=true
        end
@@ -987,17 +989,23 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
 end
 
 Base.show(io::IO, W::FCSG)=show(io,W.G)
-  
+
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
 @inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
 
+function rootlengths(W::FCSG)
+  gets(W,:rootlengths)do
+    rootlengths(parent(W))[inclusion(W)]
+  end
+end
+
 """
 relative_group(W::FiniteCoxeterGroup,J)
 
 `J` should be a if *distinguished* subset of `S==eachindex(gens(W))`,
-that is if for s∈ S-J we  set v(s,J)=w_0^{J∪ s}w_0^J then J  is stable 
+that is if for s∈ S-J we  set v(s,J)=w_0^{J∪ s}w_0^J then J  is stable
 by all v(s,J). Then
 R=N_W(W_J)/W_J  is a Coxeter group with  Coxeter system the v(s,J). The
 program  return  R  in  its  reflection  representation  on X(ZL_J/ZG).
@@ -1013,17 +1021,17 @@ elements of R
 """
 function relative_group(W::FiniteCoxeterGroup,J)
   S=eachindex(gens(W))
-  if !issubset(J,S) 
+  if !issubset(J,S)
     error("implemented only for standard parabolic subgroups")
   end
   I=setdiff(S,J) # keep the order of S
   vI=map(i->longest(W,vcat([i],J))*longest(W,J),I)
-  if any(g->sort(action.(Ref(W),J,g))!=sort(J),vI) 
-    error("$J is not distinguished in $W") 
+  if any(g->sort(action.(Ref(W),J,g))!=sort(J),vI)
+    error("$J is not distinguished in $W")
   end
   qr=i->W.rootdec[i][I]
   res=isempty(J) ? W : isempty(I) ? coxgroup() :
-    rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i)) 
+    rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
                                   for (ni,i) in enumerate(I), j in I])
   res.prop[:relativeIndices]=I
   res.prop[:parentMap]=vI

@@ -33,6 +33,8 @@ returns  a list  of two  linear forms  of which  `p` is the product if such
 exist, otherwise it returns [p].
 
 ```julia-repl
+julia> x=Mvp(:x);y=Mvp(:y);
+
 julia> factor(x^2-y^2+x+3y-2)
 2-element Array{Mvp{Int64,Int64},1}:
  x+y-1

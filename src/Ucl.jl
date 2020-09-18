@@ -906,7 +906,7 @@ end
 function DecomposeTensor(W,c::Int...)
   ct=CharTable(W)
 # println("eltype=",eltype(irr))
-  Chars.decompose(ct,prod(view(ct.irr,collect(c),:),dims=1))
+  decompose(ct,prod(view(ct.irr,collect(c),:),dims=1))
 end
 
 struct ICCTable

@@ -18,7 +18,7 @@ To install this package, at the Julia command line:
 ```
 (v1.0) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
-- exit package mode with backspace and then do 
+- exit package mode with backspace and then do
 ```
 julia> using Gapjm
 ```
@@ -31,8 +31,8 @@ To update later to the latest version, do
 ```
 
 The package currently contains as infrastructure:
-     * permutations  
-     * cyclotomic numbers  
+     * permutations
+     * cyclotomic numbers
      * univariate Laurent and multivariate Puiseux polynomials
      * combinatorics
      * linear algebra on any field/ring
@@ -51,11 +51,10 @@ despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome.
 
-Then  it contains about 75% of  Chevie functionality, ported from Gap3. The
-data  library has been automatically ported by  a transpiler so the code is
-"strange".  The  function  `gap`  can  help  you  discover  the  equivalent
-functionality  to a Gap3  function: it takes  a string and  gives you Julia
-translations of functions in Gap3 which match this string:
+This  package it  contains about  90% of  Chevie functionality, ported from
+Gap3. The function `gap` can help you discover the equivalent functionality
+to  a Gap3 function: it takes a  string and gives you Julia translations of
+functions  in  Gap3  which  match  this  string.
 
 ```julia-rep1
 julia> gap("words")
@@ -65,9 +64,10 @@ CharRepresentationWords  =>  traces_words_mats
 ```
 Then you can call on-line help on the discovered functions.
 
-The  code in this package is often 10 times faster than the equivalent GAP3
-Chevie   code  (after  the  maddeningly  long  compilation  time  on  first
-execution).
+The data library of Chevie has been automatically ported by a transpiler so
+its code is "strange". Otherwise the code in this package is often 10 times
+faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
+compilation time on first execution).
 
 I  tried  that  as  any  submodules  as  possible in my package can be used
 independently  of the rest, thus could be independent packages. This is the
@@ -122,5 +122,6 @@ include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Lusztig.jl");@reexport using .Lusztig
 include("HasType.jl");@reexport using .HasType
 include("Gt.jl");@reexport using .Gt
+include("Urad.jl");@reexport using .Urad
 include("../docs/src/cheviedict.jl");export gap
 end

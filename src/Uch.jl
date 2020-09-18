@@ -611,7 +611,7 @@ function UnipotentCharacters(WF::Spets)
     end
   end
   
-  for a in ["a", "A"]
+  for a in [:a, :A]
     if haskey(res,a) res[a]=sum.(res[a]) end
   end
 

@@ -910,10 +910,10 @@ function Base.show(io::IO,b::GarsideElm)
     return M.stringδ*(b.pd!=1 ? "^{$(b.pd)}" : "")*l
   end
   if greedy
-    print(io,fromTeX(io,p(b)))
+    printTeX(io,p(b))
   else
     den,num=map(x->fromTeX(io,p(x)),fraction(b))
-    if den!="" print(io,fromTeX(io,"($den)^{-1}"))
+    if den!="" printTeX(io,"($den)^{-1}")
       if num!="" print(io,"$num") end
     elseif num!="" print(io, num)
     else print(io,".")
@@ -931,7 +931,7 @@ function Base.show(io::IO,b::LocallyGarsideElm)
     isempty(b.elm) ? "." : 
        join(map(e->joindigits(word(M,e),"";sep=" "),b.elm),".")
   end
-  print(io,fromTeX(io,p(b)))
+  printTeX(io,p(b))
 end
 
 # like gap3 AddToNormal: multiply by simple

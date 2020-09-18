@@ -83,6 +83,14 @@ function install(n)
   end
 end
 
+function install_local(n)
+  println("installing $n")
+  l=Gap2Julia.myparse(read(n*".g",String),false)
+  open(n*".jl","w") do f
+    for e in l print(f,Gap2Julia.trans(e),"\n") end
+  end
+end
+
 function install1(n)
   println("installing $n")
   s=read(homedir()*"/gap3-dev/pkg/chevie/"*n*".g",String)

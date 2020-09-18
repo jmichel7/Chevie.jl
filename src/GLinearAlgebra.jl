@@ -96,6 +96,9 @@ function nullspace(m::Matrix)
   zz[:,nn]
 end
 
+# left nullspace of m
+lnullspace(m)=permutedims(nullspace(permutedims(m)))
+
 function det(A::Matrix)
   if size(A,1)==1 return A[1,1] end
   sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))

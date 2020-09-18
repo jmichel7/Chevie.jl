@@ -408,7 +408,7 @@ Base.cmp(a::Coset, b::Coset)=cmp(a.phi,b.phi)
 
 Base.isless(a::Coset, b::Coset)=cmp(a,b)==-1
 
-Base.:(==)(a::Coset, b::Coset)= cmp(a,b)==0
+Base.:(==)(a::Coset, b::Coset)= (Group(a)==Group(b)) && cmp(a,b)==0
 
 Base.hash(a::Coset, h::UInt)=hash(a.phi,h)
 

@@ -125,7 +125,7 @@ module Cycs
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, format_coefficient, factor, prime_residues, phi
+using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -752,7 +752,7 @@ function Base.show(io::IO, r::Root1)
     elseif c==2 print(io,"-1")
     else r="\\zeta"* (c==1 ? "" : c<10 ? "_$(c)" : "_{$(c)}")
       if d>=1 r*=(d==1 ? "" : d<10 ? "^$d" : "^{$d}") end
-      print(io,fromTeX(io,r))
+      printTeX(io,r)
     end
   else
     print(io,"Root1($d,$c)")

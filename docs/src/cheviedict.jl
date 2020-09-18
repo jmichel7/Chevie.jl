@@ -9,7 +9,7 @@ const ChevieDict=Dict(
 "AsFraction"=>"fraction",
 "AsRootOfUnity"=>"Root1",
 "AssociatedPartition"=>"conjugate_partition",
-#AsymptoticAlgebra
+"AsymptoticAlgebra"=>"AsymptoticAlgebra",
 "AsWord"=>"word",
 #BadPrimes
 "BetaSet"=>"βset",
@@ -36,7 +36,7 @@ const ChevieDict=Dict(
 "CheckHeckeDefiningRelations"=>"isrepresentation",
 "ChevieClassInfo"=>"classinfo",
 "ChevieCharInfo"=>"charinfo",
-#ClassTypes
+"ClassTypes"=>"ClassTypes",
 "Coefficient(p,i)"=>"p[i]",
 "Collected"=>"tally",
 "CollectBy"=>"collectby",
@@ -159,7 +159,7 @@ const ChevieDict=Dict(
 #IsNormalizing
 #IsQuasiIsolated
 "IsomorphismType"=>"IsomorphismType",
-#IsUnipotentElement
+"IsUnipotentElement(x)"=>"x isa UnipotentElement",
 "jInductionTable"=>"jInductionTable",
 "JInductionTable"=>"JInductionTable",
 "Join"=>"join",
@@ -310,13 +310,13 @@ const ChevieDict=Dict(
 "TriangulizeMat"=>"echelon!",
 "Twistings"=>"twistings",
 "TwoTree(m)"=>"twotree(m)",
-#UnipotentAbelianPart
+"UnipotentAbelianPart"=>"abelianpart",
 "UnipotentCharacter"=>"UniChar",
 "UnipotentCharacters"=>"UnipotentCharacters",
 "UnipotentClasses"=>"UnipotentClasses",
-#UnipotentDecompose
+"UnipotentDecompose"=>"decompose",
 "UnipotentDegrees(W,q)"=>"degrees(UnipotentCharacters(W),q)",
-#UnipotentGroup
+"UnipotentGroup"=>"UnipotentGroup",
 "UnorderedTuples"=>"submultisets",
 "Valuation(p)"=>"valuation(p)",
 "Value(p,x)"=>"p(x)",

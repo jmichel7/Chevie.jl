@@ -55,7 +55,7 @@ Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: fromTeX, ordinal
+using ..Util: fromTeX, ordinal, printTeX
 
 #import Gapjm: degree, coefficients, valuation
 #import ..Pols: positive_part, negative_part, bar
@@ -96,16 +96,15 @@ Base.:^(x::Monomial,p)=Monomial(x.d*p)
 Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
-  TeX=get(io,:TeX,false)
-  repl=get(io,:limit,false)
+  replorTeX=get(io,:TeX,false) || get(io,:limit,false)
   if isone(m) return end
   start=true
   for (v,d) in m.d
-    if !(start || TeX || repl) print(io,"*") end
-    print(io,fromTeX(io,string(v)))
+    if !(start || replorTeX) print(io,"*") end
+    print(io,replorTeX ? fromTeX(io,string(v)) : string(v))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
-      if TeX || repl print(io,fromTeX(io,"^{$d}")) 
+      if replorTeX printTeX(io,"^{$d}") 
       elseif d isa Integer print(io,"^$d")
       else print(io,"^($d)")
       end

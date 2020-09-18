@@ -170,18 +170,16 @@ Stacktrace:
 julia> W=coxgroup(:Bsym,2)
 Bsym₂
 
-julia> spets(W,Perm(1,2))
+julia> WF=spets(W,Perm(1,2))
 ²Bsym₂
 
-julia> CharTable(W)
-CharTable(H(G(2,1,2)))
-   │11. 1.1 .11 2. .2
-───┼──────────────────
-11.│  1   1   1 -1 -1
-1.1│  2   .  -2  .  .
-.11│  1  -1   1 -1  1
-2. │  1   1   1  1  1
-.2 │  1  -1   1  1 -1
+julia> CharTable(WF)
+CharTable(2B(4))
+   │    1 121
+───┼──────────
+2. │1   1   1
+.11│1  -1  -1
+1.1│. -√2  √2
 ```
 
 A *subcoset* `Hwϕ` of `Wϕ` is given by a reflection subgroup `H` of `W` and
@@ -240,7 +238,7 @@ julia> twistings(W,[2,4])
 module Cosets
 
 using ..Gapjm
-export twistings, spets, Frobenius, Spets, torusfactors, subspets, 
+export twistings, spets, Frobenius, Spets, torusfactors, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant
 
 abstract type Spets{TW}<:Coset{TW} end
@@ -279,7 +277,7 @@ PermRoot.semisimplerank(WF::Spets)=semisimplerank(WF.W)
 `twistings(W,I)`
 
 `W`  should be a  Coxeter group.
-                 
+
 The  function returns the list, up  to `W`-conjugacy, of Coxeter sub-cosets
 of  `W` whose  Coxeter group  is `reflection_subgroup(W,I)`  --- In term of
 algebraic groups, it corresponds to representatives of the possible twisted
@@ -312,7 +310,7 @@ julia> twistings(WF,2:5)
 twistings(W,J::AbstractVector{<:Integer})=
   subspets.(Ref(W),Ref(J),twisting_elements(W,J))
 
-"""  
+"""
 `twistings(W)`
 
 `W`  should be a Coxeter group which is not a proper reflection subgroup of
@@ -347,9 +345,9 @@ julia> twistings(W)
 2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
  ²D₄
  D₄
- 
+
 ```
-"""  
+"""
 function twistings(W::FiniteCoxeterGroup)
   if W!=parent(W)
     error(W," must not be a proper subgroup of another reflection group")
@@ -362,13 +360,13 @@ function twistings(W::FiniteCoxeterGroup)
     end
     J=inclusion(W,t[1].indices)
     rk=length(J)
-    if t[1].series==:A 
-      if rk>1  
+    if t[1].series==:A
+      if rk>1
         push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
       end
     elseif t[1].series==:D push!(gen,Perm(J[1],J[2]))
       if rk==4  push!(gen,Perm(J[1],J[4])) end
-    elseif t[1].series==:E && rk==6 
+    elseif t[1].series==:E && rk==6
       push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
     end
   end
@@ -389,9 +387,9 @@ struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   prop::Dict{Symbol,Any}
 end
 
-#function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
-#  print(io,"spets{",TW,"}")
-#end
+function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
+  print(io,"spets{",TW,"}")
+end
 
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,reflrep(W,w))
 Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
@@ -514,7 +512,7 @@ end
 
 function PhiOnDiscriminant(WF)
   tt=refltype(WF)
-  isempty(tt) ? 1 : prod(t->haskey(t,:scalar) ?  
+  isempty(tt) ? 1 : prod(t->haskey(t,:scalar) ?
     prod(t.scalar)^sum(degrees(t.orbit[1]).+codegrees(t.orbit[1])) : 1, tt)
 end
 
@@ -538,7 +536,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
           getfield(o[1],:prop)[:indices]=J[[1,4,3,2]]
         end
       end
-      for i in 2:length(c) 
+      for i in 2:length(c)
         getfield(o[i],:prop)[:indices]=PermRoot.indices(o[i-1]).^phires
       end
       TypeIrred(Dict(:orbit=>o,:twist=>twist))
@@ -551,7 +549,7 @@ function PermRoot.parabolic_representatives(WF::CoxeterCoset,s)
   res=Vector{Int}[]
   for I in parabolic_representatives(W,s)
     if sort(I.^WF.phi)==sort(I) push!(res,I)
-    else 
+    else
       c=filter(x->sort(x.^WF.phi)==sort(x),standard_parabolic_class(W,I))
       if !isempty(c) push!(res,c[1]) end
     end
@@ -564,7 +562,7 @@ PermRoot.Diagram(W::Spets)=PermRoot.Diagram(refltype(W))
 function Base.show(io::IO, WF::Spets)
   W=Group(WF)
   if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"spets(",W,",",WF.phi,")") 
+    print(io,"spets(",W,",",WF.phi,")")
     return
   end
   if isdefined(W,:parent)
@@ -580,7 +578,7 @@ function Base.show(io::IO, WF::Spets)
 end
 
 PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),w)
-  
+
 function PermGroups.classreps(W::Spets)
   gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
@@ -595,7 +593,7 @@ function PermRoot.refleigen(W::Spets)
     end
   end
 end
-  
+
 PermRoot.refleigen(W::Spets,i)=refleigen(W)[i]
 
 function Frobenius(WF::CoxeterCoset)
@@ -672,7 +670,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
   if !(w in W) error(w," should be in ",W) end
   phi=w*phi
   R=reflection_subgroup(W,I)
-  if (W isa CoxeterGroup) && 
+  if (W isa CoxeterGroup) &&
      (sort(action.(Ref(R),1:2nref(R),phi*WF.phi))!=1:2nref(R))
     error("w*WF.phi does not normalize subsystem")
   end
@@ -730,8 +728,8 @@ function PermRoot.refltype(WF::PRC)
   gets(WF,:refltype)do
     W=Group(WF)
     t=refltype(W)
-    if isone(WF.phi) 
-      return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t) 
+    if isone(WF.phi)
+      return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t)
     end
     subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
@@ -774,7 +772,7 @@ function PermRoot.refltype(WF::PRC)
           scal=v[m]
         end
         # simplify again by -1 in types 2A(>1), 2D(odd), 2E6
-        if mod(conductor(scal),4)==2 && 
+        if mod(conductor(scal),4)==2 &&
           (ti.series in [:A,:D] || (ti.series==:E && ti.rank==6))
           sb=coxgroup(ti.series,ti.rank)
           w0=sub(word(sb,longest(sb))...)
@@ -795,7 +793,7 @@ function PermRoot.refltype(WF::PRC)
         end
         push!(scalar,E(scal))
       end
-      to.scalar=scalar 
+      to.scalar=scalar
       to
     end
   end
@@ -850,20 +848,20 @@ end
 rootdata[:csp]=function(r)
   r=div(r,2)
   R=id(r+1)
-  R=R[1:r,:]-R[2:end,:] 
-  cR=copy(R) 
-  R[1,1:2]=[0,-1] 
+  R=R[1:r,:]-R[2:end,:]
+  cR=copy(R)
+  R[1,1:2]=[0,-1]
   cR[1,1:2]=[1,-2]
   rootdatum(cR,R)
 end
 rootdata[:psp]=r->coxgroup(:C,div(r,2))
 rootdata[:so]=function(r)
-  R=id(div(r,2)) 
+  R=id(div(r,2))
   for i in 2:div(r,2) R[i,i-1]=-1 end
   if isodd(r) R1=copy(R)
     R1[1,1]=2
     rootdatum(R,R1)
-  else R[1,2]=1 
+  else R[1,2]=1
     rootdatum(R,R)
   end
 end
