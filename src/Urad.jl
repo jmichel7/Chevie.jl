@@ -113,10 +113,9 @@ in their inversion set:
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> U=UnipotentGroup(W)
-UnipotentGroup(G₂)
+julia> U=UnipotentGroup(W);@Mvp x,y
 
-julia> u=U(1=>Mvp(:x),3=>Mvp(:y))
+julia> u=U(1=>x,3=>y)
 u1(x)u3(y)
 
 julia> u^W(2,1)
@@ -245,10 +244,11 @@ end
 
 function Base.:^(u::UnipotentElement,n::Perm)
   if isone(n) return u end
+  W=u.U.W
   s=firstleftdescent(W, n)
   p=filter(x->isleftdescent(W,n,x[1]),u.list)
   if !isempty(p) error(u," should have no coefficient on root ", p[1][1], "\n") end
-  u.U(map(i->Int(i[1]^n)=>η(U,s,i[1])*i[2], u.list)...)^(W(s)*n)
+  u.U(map(i->Int(i[1]^n)=>η(u.U,s,i[1])*i[2], u.list)...)^(W(s)*n)
 end
 
 Base.one(u::UnipotentElement)=UnipotentElement(u.U, Vector{Int}[])
@@ -500,10 +500,9 @@ function   returns  the  projection   of  the  unipotent   element  'u'  on
 `𝐔/D(𝐔)`, that is its coefficients on the simple roots.
 
 ```julia-repl
-julia> U=UnipotentGroup(coxgroup(:G,2))
-UnipotentGroup(G₂)
+julia> U=UnipotentGroup(coxgroup(:G,2));@Mvp x,y
 
-julia> u=U(2=>Mvp(:y),1=>Mvp(:x))
+julia> u=U(2=>y,1=>x)
 u1(x)u2(y)u3(-xy)u4(xy²)u5(-xy³)u6(2x²y³)
 
 julia> abelianpart(u)
@@ -526,10 +525,9 @@ opposite  Borel, this  function decomposes  `u` into  its component in `𝐔 ∩
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> U=UnipotentGroup(W)
-UnipotentGroup(G₂)
+julia> U=UnipotentGroup(W);@Mvp x,y
 
-julia> u=U(2=>Mvp(:y),1=>Mvp(:x))
+julia> u=U(2=>y,1=>x)
 u1(x)u2(y)u3(-xy)u4(xy²)u5(-xy³)u6(2x²y³)
 
 julia> decompose(W(1),u)
@@ -545,6 +543,7 @@ julia> decompose(W(2),u)
 """
 function Chars.decompose(w,u::UnipotentElement)
   U=u.U
+  W=U.W
   order=vcat(filter(i->isleftdescent(W,w,i),U.order),
              filter(i->!isleftdescent(W,w,i),U.order))
   l=norm(U,u.list, order)
