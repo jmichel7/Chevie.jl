@@ -77,7 +77,7 @@ Kazhdan-Lusztig bases.
 finally, benchmarks on julia 1.0.2
 ```benchmark
 julia> function test_kl(W)
-         q=Pol([1],1); H=hecke(W,q^2,rootpara=q)
+         q=Pol(); H=hecke(W,q^2,rootpara=q)
          C=Cpbasis(H); T=Tbasis(H)
          [T(C(w)) for w in elements(W)]
        end
@@ -979,7 +979,7 @@ julia> sum(l.*map(i->AlmostChar(W,i),eachindex(l)))
 ```
 """
 function Lusztigaw(W,w)
-  v=Pol([1],1)
+  v=Pol()
   l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*(-v)^-length(W,w)
   map((c,a)->c[-a],l,charinfo(W)[:a])
 end
@@ -1010,7 +1010,7 @@ julia> sum(l.*map(i->AlmostChar(W,i),eachindex(l)))
 ```
 """
 function LusztigAw(W,w)
-  v=Pol([1],1)
+  v=Pol()
   l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
   map((c,a)->c[nref(W)-a],l,charinfo(W)[:A])
 end
@@ -1094,7 +1094,7 @@ function AsymptoticAlgebra(W,i)
   for ee in e sort!(ee,by=x->length(W,x)) end
   e=vcat(e...)
   t=map(x->findfirst(==(x.prop[:duflo]),e),l)
-  v=Pol([1],1)
+  v=Pol()
   H=hecke(W,v^2,rootpara=v)
   T=Tbasis(H)
   Cp=Cpbasis(H)

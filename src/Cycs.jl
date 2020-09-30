@@ -348,14 +348,19 @@ else
   num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
 end
 
+function Base.convert(::Type{Real},c::Cyc)
+  if c.n==1 return num(c) end
+  Float64(c)
+end
+
 function Base.convert(::Type{T},c::Cyc)where T<:Union{Integer,Rational}
   if c.n==1 return convert(T,num(c)) end
   throw(InexactError(:convert,T,c))
 end
 
-function Base.convert(::Type{T},c::Cyc)where T<:AbstractFloat
-  if isreal(c) return real(convert(Complex{T},c)) end
-  throw(InexactError(:convert,T,c))
+function Base.convert(::Type{T},c::Cyc;check=true)where T<:AbstractFloat
+  if check && !isreal(c) throw(InexactError(:convert,T,c)) end
+  real(convert(Complex{T},c))
 end
 
 function Base.convert(::Type{Complex{T}},c::Cyc)where T<:AbstractFloat
@@ -393,9 +398,6 @@ function Base.imag(c::Cyc{T}) where T<:Real
   (c-conj(c))/2
 end
 
-Base.isless(c::Cyc,d::Real)=Float64(c)<d
-Base.isless(d::Real,c::Cyc)=d<Float64(c)
-
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
   l=lcm(a.n,b.n)
@@ -411,33 +413,20 @@ function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Cyc{T2}})where {T1,T2}
 end
 
 # total order is necessary to put Cycs in a sorted list
+# for c.n==1  a<b is as expected
 function Base.cmp(a::Cyc,b::Cyc)
   t=cmp(a.n,b.n)
   if !iszero(t) return t end
-  a.n==1  ? cmp(num(a),num(b)) : cmp(a.d,b.d)
+  a.n==1 ? cmp(num(a),num(b)) : cmp(a.d,b.d)
 end
 
+Base.:(==)(a::Cyc,b::Cyc)=cmp(a,b)==0
 Base.isless(a::Cyc,b::Cyc)=cmp(a,b)==-1
-Base.:(==)(a::Cyc,b::Cyc)=a.n==b.n && a.d==b.d
+Base.isless(c::Cyc,d::Real)=c<Cyc(d)
+Base.isless(d::Real,c::Cyc)=Cyc(d)<c
 
-# hash is necessary to put Cycs as keys of a Dict
-function Base.hash(a::Cyc, h::UInt)
-   b = 0x595dee0e71d271d0%UInt
-if use_list
-   for i in a.d
-     b = xor(b,xor(hash(i, h),h))
-     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-   end
-else
-   for (k,v) in a.d
-     b = xor(b,xor(hash(k, h),h))
-     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-     b = xor(b,xor(hash(v, h),h))
-     b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-   end
-end
-   return b
-end
+# hash is necessary to put Cycs as keys of a Dict or make a Set
+Base.hash(a::Cyc, h::UInt)=hash(a.d, hash(a.n, h))
 
 function Base.show(io::IO, ::MIME"text/html", a::Cyc)
   print(io, "\$")
@@ -514,7 +503,7 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Real,a::Cyc)=Cyc(b)+(-a)
 Base.:-(b::Cyc,a::Real)=b+Cyc(-a)
 
-Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(promote(a,c)[1]) : Cyc(c.n,c.d*a)
+Base.:*(a::Real,c::Cyc)= Cyc(iszero(a) ? 1 : c.n,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list
@@ -532,7 +521,7 @@ Base.:/(a::Real,c::Cyc)=a//c
 
 # l is a list of pairs i=>c representing E(n,i)*c
 function sumroots(n::Int,l)
-  res=empty(l)
+  res=eltype(l)[]
   for (i,c) in l 
     (s,v)=Elist(n,i)
     if !s c=-c end
@@ -558,7 +547,7 @@ if use_list
   lower(Cyc(a.n,res))
 else
   let ad=a.d,bd=b.d
-  res=sumroots(a.n,[i+j=>va*vb for (i,va) in ad for (j,vb) in bd])
+    res=sumroots(a.n,[i+j=>va*vb for (i,va) in ad, (j,vb) in bd])
   end
   lower(res)
 end
@@ -676,7 +665,7 @@ if use_list
        end
   end
 else
-  let cn=c.n
+  let cn=c.n, n=n
   sumroots(c.n,[(e*n)%cn=>p for (e,p) in c.d])
   end
 end
@@ -689,7 +678,8 @@ function Base.inv(c::Cyc)
     r=num(c)
     if r==1 || r==-1 return Cyc(r) else return Cyc(1//r) end
   end
-  r=prod(i->galois(c,i),prime_residues(c.n)[2:end])
+  l=setdiff(unique(map(i->galois(c,i),prime_residues(c.n))),[c])
+  r=prod(l)
   n=num(c*r)
   n==1 ? r : (n==-1 ? -r : r//n)
 end
@@ -826,6 +816,7 @@ Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
 Base.:inv(a::Root1)=Root1(;r=-a.r)
+Base.:/(a::Root1,b::Root1)=a*inv(b)
 
 E(a::Root1)=E(;r=a.r)
 #------------------- end of Root1 ----------------------------------------
@@ -857,8 +848,8 @@ julia> Quadratic(1+E(5))
 function Quadratic(cyc::Cyc{T})where T
   l1=coefficients(cyc)
   den=lcm(denominator.(l1))
-  l=numerator.(l1)
   cyc*=den
+  l=numerator.(coefficients(cyc))
   if cyc.n==1 return Quadratic(l[1],0,1,den) end
 
   f=factor(cyc.n)

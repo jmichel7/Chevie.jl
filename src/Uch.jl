@@ -650,7 +650,7 @@ Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
 
 Base.length(uc::UnipotentCharacters)=length(uc.prop[:TeXCharNames])
 
-function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol([1],1))
+function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
   if !haskey(uc.prop,:fakedegrees)
     uc.prop[:fakedegrees]=Dict{Any,Any}()
   end
@@ -689,7 +689,7 @@ function Families.fourier(uc::UnipotentCharacters)
 end
 
 """
-`degrees(uc::UnipotentCharacters,q=Pol([1],1))`
+`degrees(uc::UnipotentCharacters,q=Pol())`
 
 Returns  the  list  of  degrees  of  the unipotent characters of the finite
 reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
@@ -715,7 +715,7 @@ julia> degrees(uc)
  (1//3)q⁵+(-2//3)q³+(1//3)q                   
 ```
 """
-function Gapjm.degrees(uc::UnipotentCharacters,q=Pol([1],1))
+function Gapjm.degrees(uc::UnipotentCharacters,q=Pol())
   if !haskey(uc.prop,:degrees)
     uc.prop[:degrees]=Dict{Any,Any}()
   end

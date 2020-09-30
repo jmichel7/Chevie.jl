@@ -932,7 +932,7 @@ not  in the same Springer series), the  table given is for a given Springer
 series,  the series  whose number  is given  by the argument 'seriesNo' (if
 omitted  this defaults to 'seriesNo=1' which  is the principal series). The
 decomposition  multiplicities are graded,  and are given  as polynomials in
-one  variable (specified by the argument  `q`; if not given `Pol([1],1)` is
+one  variable  (specified  by  the  argument  `q`;  if not given `Pol()` is
 assumed).
 
 ```julia-repl

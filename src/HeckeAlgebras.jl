@@ -105,7 +105,7 @@ finally, benchmarks on julia 1.0.2
 ```benchmark
 julia> function test_w0(n)
          W=coxgroup(:A,n)
-         Tbasis(hecke(W,Pol([1],1)))(longest(W))^2
+         Tbasis(hecke(W,Pol()))(longest(W))^2
        end
 test_w0 (generic function with 1 method)
 
@@ -219,8 +219,8 @@ equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
 
 function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"hecke(",H.W,",")
-  tr(p)= p[2]==-one(p[2]) ? p[1] : p
-  if constant(H.para) print(io,tr(H.para[1]))
+  tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
+  if constant(tr.(H.para)) print(io,tr(H.para[1]))
   else print(io,map(tr,H.para))
   end
   if haskey(H.prop,:rootpara)
@@ -657,7 +657,7 @@ returns the list of Schur elements for the (cyclotomic) Hecke algebra `H`
 
 ```julia-repl
 julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
-hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])
+hecke(G₄,q)
 
 julia> s=schur_elements(H)
 7-element Array{Pol{Cyc{Rational{Int64}}},1}:
@@ -789,7 +789,7 @@ function Simplify(res::FactSchur)
     vcyc=map(collectby(x->x.monomial,evcyc))do fil
       D=lcm(map(x->denominator(x.power), fil))
       P=prod(x->descent_of_scalars(x.pol,D*x.power),fil)
-      p=P(Pol([1],1))
+      p=P(Pol())
       p=improve_type(p)
       f=filter(i->p.c[i]!=0,eachindex(p.c))-1
       f=gcd(gcd(f),D)

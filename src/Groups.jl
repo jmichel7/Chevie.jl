@@ -31,7 +31,7 @@ module Groups
 export Group, minimal_words, gens, ngens, classreps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, transporting_elt,
-  centre, normalizer, stabilizer
+  centre, normalizer, stabilizer, abelian_generators,iscyclic
 
 using ..Util: gets, InfoChevie
 #import Gapjm: word, elements, kernel, order
@@ -369,6 +369,11 @@ function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
   end
 end
 
+# horrible implementation
+function Base.intersect(G::Group, H::Group)
+  Group(intersect(elements(G),elements(H)))
+end
+
 #------------------- "abstract" concrete groups -------------------------------
 struct GroupofAny{T}<:Group{T}
   gens::Vector{T}
@@ -418,9 +423,11 @@ Base.one(C::Coset)=Coset(Group(C),one(C.phi))
 
 Base.inv(C::Coset)=Coset(Group(C),inv(C.phi))
 
-Base.length(C::Coset)=length(Group(C))
-
 Base.:*(a::Coset,b::Coset)=Coset(Group(a),a.phi*b.phi)
+
+Base.:/(a::Coset,b::Coset)=a*inv(b)
+
+Base.length(C::Coset)=length(Group(C))
 
 Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                                Base.power_by_squaring(inv(a),-n)
@@ -466,4 +473,17 @@ function fusion_conjugacy_classes(H::Coset,G::Coset)
   map(x->position_class(G,x),classreps(H))
 end
 
+#---------------------- miscellaneous functions ----------------------
+function abelian_generators(l::Array)
+  res=empty(l)
+  l=filter(!isone,l)
+  while !isempty(l)
+    o=order.(l)
+    push!(res,l[findfirst(isequal(maximum(o)),o)])
+    l=setdiff(l,elements(Group(res)))
+  end
+  res
+end
+
+iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
 end

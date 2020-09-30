@@ -172,6 +172,8 @@ end
 @inline ModuleElt(x::Pair...;u...)=ModuleElt(collect(x);u...)
 @inline ModuleElt(x::Base.Generator;u...)=ModuleElt(collect(x);u...)
 
+@inline Base.pairs(x::ModuleElt)=x.d
+
 Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
 

@@ -34,9 +34,9 @@ end
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
-function pad(s::String, i::Int)
-  if i>0 return lpad(s,i)
-  else return rpad(s,-i)
+function pad(s, i::Int)
+  if i>0 return lpad(string(s),i)
+  else return rpad(string(s),-i)
   end
 end
 
@@ -65,7 +65,7 @@ function Replace(s,p...)
   s
 end
 
-ChevieIndeterminate(a::Vector{<:Number})=Pol([1],0)
+ChevieIndeterminate(a::Vector{<:Number})=one(Pol)
 ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)
 
 """

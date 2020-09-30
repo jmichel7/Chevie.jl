@@ -39,11 +39,12 @@ const ChevieDict=Dict(
 "ClassTypes"=>"ClassTypes",
 "Coefficient(p,i)"=>"p[i]",
 "Collected"=>"tally",
-"CollectBy"=>"collectby",
+"CollectBy(l,f)"=>"collectby(f,l)",
 "Combinations"=>"combinations",
 "ComplexConjugate"=>"conj",
 "ComplexReflectionGroup"=>"ComplexReflectionGroup",
 "Compositions"=>"compositions",
+"Concatenation(s::Vector...)"=>"vcat(s...)",
 "ConcatenationString(s...)"=>"prod(s)",
 "ConjugacySet(b[,F][,type])"=>"conjcat(b[,F],ss=type).obj",
 "ConjugatePartition"=>"conjugate_partition",
@@ -108,6 +109,7 @@ const ChevieDict=Dict(
 "FullSymbol"=>"fullsymbol",
 "FundamentalGroup"=>"fundamental_group",
 "FusionAlgebra"=>"fusion_algebra",
+"FusionConjugacyClasses"=>"fusion_conjugacy_classes",
 "GaloisCyc"=>"galois",
 "GarsideAlpha"=>"α",
 "GarsideWords"=>"elements",
@@ -174,6 +176,7 @@ const ChevieDict=Dict(
 "LeftGcd"=>"leftgcd",
 #LeftLcm
 "LinearExtension"=>"linear_extension",
+"ListBlist(a,b)"=>"a[b]",
 "ListPerm(p)"=>"vec(p)",
 "List(ConjugacyClasses(G),Representative)"=>"classreps(G)",
 "LogFFE"=>"log",
@@ -245,6 +248,7 @@ const ChevieDict=Dict(
 "ReflectionDegrees(W)"=>"degrees(W)",
 "ReflectionCoDegrees(W)"=>"codegrees(W)",
 "ReflectionEigenvalues"=>"refleigen",
+"ReflectionGroup"=>"reflection_group",
 "ReflectionLength(W,w)"=>"reflength(W,w)",
 #ReflectionWord
 #ReflectionName

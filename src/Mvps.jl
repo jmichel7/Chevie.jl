@@ -233,6 +233,8 @@ Mvp(x::Number)=convert(Mvp,x)
 Mvp(x::Mvp)=convert(Mvp,x)
 
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
+Base.:(==)(a::Mvp,x)=a==Mvp(x)
+Base.:(==)(x,a::Mvp)=a==Mvp(x)
 
 function Base.convert(::Type{T},a::Mvp) where T<:Number
   if iszero(a) return zero(T) end
@@ -283,6 +285,7 @@ Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im
 Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
 
 function Base.:^(x::Mvp, p::Real)
+  if isinteger(p) p=Int(p) end
   if iszero(x) return x
   elseif !isinteger(p) return root(x,denominator(p))^numerator(p) 
   elseif iszero(p) return one(x)

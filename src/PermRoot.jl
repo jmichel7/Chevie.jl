@@ -586,8 +586,8 @@ function CheckRelation(gens,rel;f=function(x...)end)
   false
 end
 
-# g is a sublist of inclusion(H). Returns sublist k of g such that 
-# corresponding elements of H satisfy braid and order relations of type t
+# g is a sublist of 1:length(H.roots). Returns sublist k of g such that 
+# reflection.(Ref(H),k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
   orders=Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
   rels=groupby(r->maximum(r[1]),braid_relations(t))
@@ -596,35 +596,64 @@ function findgoodgens(H,g,t::TypeIrred)
   function findarr(gens,rest)::Vector{Int}
     if length(gens)==length(orders)
       if length(Group(gens))==length(H) return Int[]
-      else return false
+      else return nothing
       end
     end
     i=length(gens)+1
     for e in rest
 #     println("g=$g t=$t $e(",length(gens),")",restriction(H))
-      r=reflection(H,restriction(H)[e])
+      r=reflection(H,e)
       if order(r)==orders[i]
         newgens=vcat(gens,[r])
         if !haskey(rels,i) || all(r->CheckRelation(newgens,r),rels[i])
           res=findarr(newgens,setdiff(rest,[e]))
-          if res!=false return vcat([e],res) end
+          if !isnothing(res) return vcat([e],res) end
         end
       end
     end
-    return false
+    return nothing
   end
   return findarr(eltype(H)[],g)
+end
+
+# try to make indecomposable CartanMat(H,p) like C by rotating roots
+function fixCartan(H,C,p)
+  CH=cartan(H,p)
+  r=Weyl.type_fincox_cartan(CH)
+  if !isnothing(r) return [r,p] end
+  seen=[size(CH,1)]
+  for i in size(CH,1):-1:1
+  # go reverse for better luck in type B?
+    for j in i:-1:1
+      if CH[i,j]!=C[i,j]
+        if CH[i,j]==0 || (j in seen) return nothing end
+          r=C[i,j]//CH[i,j]
+          r=findfirst(==(roots(H,p[j])*r),roots(H))
+          if isnothing(r) return nothing end
+          p=copy(p)
+          p[j]=r
+          return fixCartan(H,C,p)
+        end
+      if C[i,j]!=0 push!(seen,j) end
+    end
+  end
+  return [r,p]
 end
 
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
   gets(W,:refltype)do
     map(diagblocks(cartan(W))) do I
-      R=reflection_subgroup(W,I)
+      R=reflection_subgroup(W,I;type=false)
       d=TypeIrred(type_irred(R))
       if cartan(d)==cartan(R)
         d.indices=I
       else 
-        d.indices=restriction(W)[findgoodgens(R,inclusion(R),d)]
+        good=findgoodgens(R,eachindex(roots(R)),d)
+        if cartan(R,good)!=cartan(d)
+          r=fixCartan(R,cartan(d),good)
+          if !isnothing(r) good=r[2] end
+        end
+        d.indices=restriction(W,inclusion(R,good))
       end
       d
     end
@@ -1167,10 +1196,11 @@ struct PRG{T,T1}<:PermRootGroup{T,T1}
   prop::Dict{Symbol,Any}
 end
 
-function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVector})
+function PRG(r::AbstractVector{<:AbstractVector},
+             cr::AbstractVector{<:AbstractVector};type=true)
   matgens=map(reflection,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
-  roots=map(x->convert.(T,x),r)
+  rr=map(x->convert.(T,x),r)
   cr=map(x->convert.(T,x),cr)
 
   # the following section is quite subtle: it has the (essential -- this is
@@ -1185,23 +1215,34 @@ function PRG(r::AbstractVector{<:AbstractVector},cr::AbstractVector{<:AbstractVe
   while newroots
     newroots=false
     for (j,refl) in enumerate(refls)
-      lr=length(roots)
-      for y in Ref(transpose(matgens[j])).*roots[length(refl)+1:end]
-        p=findfirst(==(y),roots) 
+      lr=length(rr)
+      for y in Ref(transpose(matgens[j])).*rr[length(refl)+1:end]
+        p=findfirst(==(y),rr) 
 	if isnothing(p) || p>lr
-          push!(roots,y)
-#         println("j=$j roots[$(length(refl)+1)...] ",length(roots),":",y)
+          push!(rr,y)
+#         println("j=$j rr[$(length(refl)+1)...] ",length(rr),":",y)
           newroots=true
-          push!(refl,length(roots))
+          push!(refl,length(rr))
         else push!(refl,p)
 	end
       end
     end
-#   println(" ",length(roots))
+#   println(" ",length(rr))
   end
-  coroots=Vector{eltype(cr)}(undef,length(roots))
-  coroots[eachindex(cr)].=cr
-  PRG(Perm{Int16}.(refls),matgens,roots,coroots,Dict{Symbol,Any}())
+  ncr=Vector{eltype(cr)}(undef,length(rr))
+  ncr[eachindex(cr)].=cr
+  W=PRG(Perm{Int16}.(refls),matgens,rr,ncr,Dict{Symbol,Any}())
+  if type
+    t=refltype(W)
+    l=PermRoot.indices(t)
+    if sort(l)!=eachindex(l)
+      InfoChevie("# changing generatingReflections to <",
+        join(l,","),"> for ",sprint(showtypes,t),"<",length(gens(W))," refs>\n")
+        W=PRG(roots(W,l),coroots(W,l);type=false)
+        W.prop[:type]=t
+    end
+  end
+  W
 end
 
 @inline Gapjm.roots(W::PRG)=W.roots
@@ -1272,20 +1313,33 @@ function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
 end
 
 # contrary to Chevie, I is indices in W and not parent(W)
-function reflection_subgroup(W::PRG,I::AbstractVector)
-  if isempty(I) inclusion=Int[]
-  else G=PRG(roots(W,I),coroots(W,I))
-       inclusion=map(x->findfirst(isequal(x),W.roots),G.roots)
+function reflection_subgroup(W::PRG,I::AbstractVector;type=true)
+  if isempty(I) inclu=Int[]
+  else G=PRG(roots(W,I),coroots(W,I);type=false)
+    inclu=map(x->findfirst(isequal(x),W.roots),G.roots)
   end
   prop=Dict{Symbol,Any}()
-  if isempty(inclusion) prop[:rank]=rank(W) end
+  if isempty(inclu) prop[:rank]=rank(W) end
   restriction=zeros(Int,length(W.roots))
-  restriction[inclusion]=1:length(inclusion)
-  PRSG(reflections(W)[I],inclusion,restriction,W,prop)
+  restriction[inclu]=1:length(inclu)
+  H=PRSG(reflections(W)[I],inclu,restriction,W,prop)
+  if type
+    t=refltype(H)
+    l=PermRoot.indices(t)
+    if sort(l)!=eachindex(gens(H))
+      InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
+        ","),"> for ",sprint(showtypes,t;context=:limit=>true),
+                 "<",length(inclusion(H))," refs>\n")
+      H=reflection_subgroup(W,inclusion(H,l);type=false)
+      for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
+      H.prop[:type]=t
+    end
+  end
+  H
 end
 
-reflection_subgroup(W::PRSG,I::AbstractVector{Int})=
-   reflection_subgroup(parent(W),inclusion(W)[I])
+reflection_subgroup(W::PRSG,I::AbstractVector{Int};type=false)=
+   reflection_subgroup(parent(W),inclusion(W)[I];type=type)
 
 function Base.show(io::IO, W::PRSG)
   I=inclusiongens(W)
@@ -1383,9 +1437,9 @@ length  as `size(s)[1]`. The function determines if  `s` is the matrix of a
 reflection  (resp. if `r` is  given if it is  the matrix of a reflection of
 root  `r`; the point of  giving `r` is to  specify exactly the desired root
 and  coroot, which  otherwise are  determined only  up to  a scalar and its
-inverse).  The returned result is `false` if `s` is not a reflection (resp.
-not  a  reflection  with  root  `r`),  and  otherwise is a record with four
-fields:
+inverse).  The function  returns `nothing`  if `s`  if is  not a reflection
+(resp. not a reflection with root `r`), and otherwise returns a named tuple
+with four fields:
 
 `.root`:   the root of the reflection `s` (equal to `r` if given)
 
@@ -1410,9 +1464,7 @@ function reflection(m::Matrix,r::AbstractVector)
   rc=map(j->ratio(rr[j,:],r),axes(m,1))
   zeta=ratio(permutedims(m)*r,r)
   rzeta=Root1(zeta)
-  if isnothing(zeta) || isnothing(rzeta)
-    error("# WARNING: ",m," is not a reflection of root ",r,"\n")
-  end
+  if isnothing(zeta) || isnothing(rzeta) return nothing end
   orth=(rc*sum(conj(r).*r)==(1-zeta)*conj(r))
   (root=r,coroot=rc,eig=rzeta,isOrthogonal=orth)
 end
@@ -1420,8 +1472,7 @@ end
 function reflection(m::Matrix)
   rr=one(m)-m
   r=findfirst(i->!all(iszero,rr[i,:]),axes(rr,1))
-  if isnothing(r) error("not a reflection") end
-  reflection(m,rr[r,:])
+  if !isnothing(r) reflection(m,rr[r,:]) end
 end
 
 """

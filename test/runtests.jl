@@ -489,7 +489,7 @@ end
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("H=hecke(W,q^2;rootpara=q)","hecke(B₂,q²,rootpara=q)")
 @test mytest("char_values(Cpbasis(H)(1,2,1))","5-element Array{Pol{Int64},1}:\n -q-q⁻¹\n q+q⁻¹\n 0\n q³+2q+2q⁻¹+q⁻³\n 0")
-@test mytest("H=hecke(ComplexReflectionGroup(4),Pol(:q))","hecke(G₄,Pol{Cyc{Int64}}[q, ζ₃, ζ₃²])")
+@test mytest("H=hecke(ComplexReflectionGroup(4),Pol(:q))","hecke(G₄,q)")
 @test mytest("s=schur_elements(H)","7-element Array{Pol{Cyc{Rational{Int64}}},1}:\n q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1\n 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴\n -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴\n 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴\n (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹\n (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹\n q²+2q+2+2q⁻¹+q⁻²")
 @test mytest("CycPol.(s)","7-element Array{CycPol{Cyc{Rational{Int64}}},1}:\n Φ₂²Φ₃Φ₄Φ₆\n (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆\n (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆\n 2q⁻⁴Φ₃Φ₄\n (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆\n (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆\n q⁻²Φ₂²Φ₄")
 @test mytest("W=ComplexReflectionGroup(4)","G₄")
@@ -1003,7 +1003,7 @@ end
 @testset "mvptools.jl" begin
 @test mytest("Pol(:q)","Pol{Int64}: q")
 @test mytest("Mvp(q^2+q)","Mvp{Int64}: q²+q")
-@test mytest("x=Mvp(:x);y=Mvp(:y);","nothing")
+@test mytest("@Mvp x,y","nothing")
 @test mytest("factor(x^2-y^2+x+3y-2)","2-element Array{Mvp{Int64,Int64},1}:\n x+y-1\n x-y+2")
 @test mytest("factor(x^2+x+1)","2-element Array{Mvp{Cyc{Int64},Int64},1}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("factor(x*y-1)","1-element Array{Mvp{Int64,Int64},1}:\n xy-1")

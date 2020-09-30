@@ -15,7 +15,7 @@ using ..PermGroups: symmetric_group
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
-using ..Util: toM
+using ..Util: toM, toL
 export echelon, echelon!, exterior_power, CoFactors, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
   permanent, blocks, symmetric_power, diagconj_elt
@@ -529,7 +529,7 @@ function ratio(v::AbstractVector, w::AbstractVector)
 end
 
 # characteristic polynomial
-charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol([1],1)).*one(M)-M)
+charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol()).*one(M)-M)
 
 """
 `solutionmat(mat,v)`

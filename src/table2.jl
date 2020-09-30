@@ -127,7 +127,7 @@ chevieset(Symbol("2A"),:CharTable,function(r)
 end)
 
 chevieset(Symbol("2A"),:FakeDegree,function(n,p,q)
-  res=chevieget(:A, :FakeDegree)(n, p, Pol([1],1))
+  res=chevieget(:A, :FakeDegree)(n, p, Pol())
   (-1)^valuation(res)*res(-q)
 end)
 
@@ -1007,4 +1007,59 @@ ExpandRep = function (r, d, l)
     end
   end
   return m
+end
+
+const G4_22IndexChars_dict=Dict{Int,Any}()
+for i in 4:22 G4_22IndexChars_dict[i]=Dict() end
+CHEVIE[:CheckIndexChars]=true
+
+function G4_22FetchIndexChars(ST, para)
+  if !CHEVIE[:CheckIndexChars]
+    return chevieget(:G4_22, :CharInfo)(ST)[:indexchars]
+  end
+  get!(G4_22IndexChars_dict[ST],para)do
+    chevieget(:G4_22, :HeckeCharTable)(ST, para, [])[:indexchars]
+  end
+end
+
+# test if res=Chartable(Hecke(G_ST,res[:parameter])) is correct
+# where rows is correspond irrs for generic group and i the selector from rows
+function G4_22Test(res,rows,i)
+  ST=res[:ST]
+  T(ST)=string("G",ST in 4:7 ? 7 : ST in 8:15 ? 11 : 19)
+  if haskey(G4_22IndexChars_dict[ST],res[:parameter])
+    InfoChevie("Using G4_22IndexChars_dict[$ST][",res[:parameter],"]\n")
+    ic=G4_22IndexChars_dict[ST][res[:parameter]]
+    res[:irreducibles]=rows[ic]
+    if ic!=i
+      println("*** WARNING: choice of character restrictions from ", T(ST), 
+        " for this specialization does not agree with group CharTable")
+      if !CHEVIE[:CheckIndexChars]
+        print("Try again with CHEVIE[:CheckIndexChars]=true\n")
+      end
+    end
+    return ic
+  end
+  ic=i
+  res[:irreducibles]=rows[ic]
+  if length(Set(res[:irreducibles]))==length(res[:classes]) l=i
+  else
+    l=map(x->findfirst(==(x),rows), rows)
+    if length(Set(l))!=length(res[:classes])
+      error("specialization not semi-simple")
+    end
+    l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
+    println("*** WARNING: bad choice of character restrictions from ", T(ST), 
+            " for this specialization\n")
+    if !CHEVIE[:CheckIndexChars]
+      print("Try again with CHEVIE[:CheckIndexChars]=true\n")
+    end
+    o=filter(x->count(j->j in x,i)>1,l)
+    println(" over-represented by ", intersect(union(o...), i)," : ", o)
+    println(" absent : ",filter(x->iszero(count(j->j in x,i)),l))
+    l= map(x->x[1],l)
+    print(" Choosing ",l,"\n")
+    res[:irreducibles]=rows[l]
+  end
+  G4_22IndexChars_dict[ST][res[:parameter]]=l
 end

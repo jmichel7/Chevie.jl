@@ -471,7 +471,7 @@ q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂�
 ```
 """
 function fegsymbol(s,p=0)
-  q=Pol([1],1)
+  q=Pol()
   if isempty(s) return one(CycPol) end
   s=fullsymbol(s)
   e=length(s)
@@ -532,7 +532,7 @@ function gendeg_symbol(S)
   if e==0 return CycPol(1) end
   m=div(sum(sh),e)
   d=sum(sh)% e
-  q=Pol([1],1)
+  q=Pol()
   defect=(binomial(e,2)*m.-sh.*(0:e-1)).%e 
   theta(S)=prod(l->prod(h->CycPol(q^h-1),(1:l)*e),S)
 

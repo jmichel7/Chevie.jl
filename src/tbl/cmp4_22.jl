@@ -7,7 +7,7 @@ chevieset(:G4_22, :PrintDiagram, function (arg...,)
         print(title, " ")
         s = pad("\n", -(length(title)))
         f = function (arg...,)
-                return joindigits(indices[arg])
+         return joindigits(indices[collect(arg)])
             end
         if ST == 4
             print(f(1), "(3)--", f(2), "(3)")
@@ -587,28 +587,6 @@ chevieset(:G4_22, :SchurData, function (ST,)
                     end, (chevieget(:G4_22, :paramchars))(ST))
         end
     end)
-G4_22FetchIndexChars = function (ST, para)
-        local p
-        if !(CHEVIE[:CheckIndexChars])
-            return ((chevieget(:G4_22, :CharInfo))(ST))[:indexchars]
-        end
-        if !(haskey(CHEVIE, :G4_22CachedIndexChars))
-            CHEVIE[:G4_22CachedIndexChars] = []
-            (CHEVIE[:G4_22CachedIndexChars])[4:22] = map((i->begin
-                            []
-                        end), 4:22)
-            InfoChevie("Creating G4_22CachedIndexChars\n")
-        end
-        p = PositionProperty((CHEVIE[:G4_22CachedIndexChars])[ST], (x->begin
-                        x[1] == para
-                    end))
-        if p != false
-            return (((CHEVIE[:G4_22CachedIndexChars])[ST])[p])[2]
-            InfoChevie("Using G4_22CachedIndexChars(", para, ")\n")
-        else
-            return ((chevieget(:G4_22, :HeckeCharTable))(ST, para, []))[:indexchars]
-        end
-    end
 chevieset(:G4_22, :FactorizedSchurElement, function (ST, p, para, rootpara)
         local Y, index, g
         g = (chevieget(:G4_22, :Generic))(ST)
@@ -703,73 +681,6 @@ G4_22Helper = function (c, e, x, n, p)
                         c[i] * root ^ (e[i] // r)
                     end), nz)
         return res
-    end
-G4_22Test = function (res, rows, i)
-        local l, o, p, ic, T
-        T = [nothing, nothing, nothing, 7, 7, 7, 7, 11, 11, 11, 11, 11, 11, 11, 11, 19, 19, 19, 19, 19, 19, 19]
-        T = SPrint("G", T[res[:ST]])
-        if !(haskey(CHEVIE, :G4_22CachedIndexChars))
-            CHEVIE[:G4_22CachedIndexChars] = map((i->begin
-                            []
-                        end), 1:22)
-            InfoChevie("Creating G4_22CachedIndexChars\n")
-        end
-        p = PositionProperty((CHEVIE[:G4_22CachedIndexChars])[res[:ST]], (x->begin
-                        x[1] == res[:parameter]
-                    end))
-        if p != false
-            InfoChevie("Using G4_22CachedIndexChars(", res[:parameter], ")\n")
-            ic = (((CHEVIE[:G4_22CachedIndexChars])[res[:ST]])[p])[2]
-            res[:irreducibles] = rows[ic]
-            if ic != i
-                print("*** WARNING: choice of character restrictions from ", T, " for this specialization does  !  agree with group CharTable\n")
-                if !(CHEVIE[:CheckIndexChars])
-                    print("Try again with CHEVIE.CheckIndexChars=true\n")
-                end
-            end
-            return ic
-        end
-        ic = i
-        res[:irreducibles] = rows[ic]
-        if length(gapSet(res[:irreducibles])) == length(res[:classes])
-            l = i
-        else
-            l = map((x->begin
-                            Position(rows, x)
-                        end), rows)
-            if length(gapSet(l)) != length(res[:classes])
-                error("specialization  !  semi-simple")
-            end
-            l = map((x->begin
-                            Filtered(1:length(l), (i->begin
-                                        l[i] == x
-                                    end))
-                        end), gapSet(l))
-            print("*** WARNING: bad choice of character restrictions from ", T, " for this specialization\n")
-            if !(CHEVIE[:CheckIndexChars])
-                print("Try again with CHEVIE.CheckIndexChars=true\n")
-            end
-            o = Filtered(l, (x->begin
-                            count((j->begin
-                                            j in x
-                                        end), i) > 1
-                        end))
-            print(" over-represented by ", Intersection(Union(o), i), " : ", o, "\n")
-            print(" absent : ", Filtered(l, (x->begin
-                            count((j->begin
-                                            j in x
-                                        end), i) == 0
-                        end)), "\n")
-            print(" Choosing ", map((x->begin
-                            x[1]
-                        end), l), "\n")
-            l = map((x->begin
-                            x[1]
-                        end), l)
-            res[:irreducibles] = rows[l]
-        end
-        push!((CHEVIE[:G4_22CachedIndexChars])[res[:ST]], [res[:parameter], l])
-        return l
     end
 chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
         local X, Y, Z, classes, GenericRow, res, ci, ic, c, p, c24, c23, rows, c25, c35, c23

@@ -734,15 +734,15 @@ function PermRoot.refltype(WF::PRC)
     subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     c=orbits(inv(c))
-    roots=parent(W).roots
+    prr=roots(parent(W))
     function scals(rr,img)
-      map(ratio,roots[inclusion(W)[rr].^WF.phi],roots[inclusion(W)[img]])
+      map(ratio,prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])
     end
     map(c) do orb
       to=TypeIrred(Dict{Symbol,Any}(:orbit=>map(copy,t[orb])))
       scalar=Cyc{Rational{Int}}[]
       for i in eachindex(orb)
-        if i==length(orb) next=1 else next=i+1 end
+        next=i==length(orb) ? 1 : i+1
         u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
         tn=t[orb[next]]
         ti=t[orb[i]]
@@ -764,7 +764,7 @@ function PermRoot.refltype(WF::PRC)
           e=collect(elements(zg))
           zg=e[findfirst(x->order(x)==z,e)]
           i=inclusion(sub)[1]
-          v=Root1(ratio(roots[i.^zg],roots[i]))
+          v=Root1(ratio(prr[i.^zg],prr[i]))
           zg^=invmod(exponent(v),conductor(v)) # distinguished
           v=scal.*Root1.(0:z-1,z)
           m=argmin(conductor.(v))
@@ -787,7 +787,7 @@ function PermRoot.refltype(WF::PRC)
             scal=scals(ti.indices,tn.indices^inv(u))
           end
           #println(" scal after:$scal")
-          if !constant(scal) error()
+          if !constant(scal) error(" scal after:$scal")
           else scal=Root1(scal[1])
           end
         end
@@ -801,9 +801,9 @@ end
 
 function torusfactors(WF::PRC)
   W=Group(WF)
-  M=baseX(W)
-  M*=WF.F*inv(M)
+  M=Cyc.(baseX(W))
   r=semisimplerank(W)
+  M*=WF.F*inv(M.//1)
   CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 #--------------------- Root data ---------------------------------

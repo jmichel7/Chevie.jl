@@ -64,10 +64,11 @@ end
 
 
 Pol(a::Number)=convert(Pol,a)
+Pol()=Pol([1],1;check=false)
 
 function Pol(t::Symbol)
   varname[]=t
-  Base.eval(Main,:($t=Pol([1],1;check=false)))
+  Base.eval(Main,:($t=Pol()))
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
@@ -135,6 +136,8 @@ end
 bar(p::Pol)=Pol(reverse(p.c),-degree(p);check=false)
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
+Base.:(==)(a::Pol,b)= a==Pol(b)
+Base.:(==)(b,a::Pol)= a==Pol(b)
 
 Base.one(a::Pol)=Pol([one(eltype(a.c))];check=false)
 Base.one(::Type{Pol{T}}) where T=Pol([one(T)];check=false)

@@ -81,10 +81,16 @@ function ComplexReflectionGroup(p,q,r)
   PRG(roots(t),coroots(t))
 end
 
+# converts a type back to a group
 function reflection_group(t::TypeIrred)
   if t.series==:ST return PRG(roots(t),coroots(t))
   else return rootdatum(cartan(t))
   end
+end
+
+function reflection_group(l::Vector{TypeIrred})
+  if isempty(l) return coxgroup() end
+  prod(reflection_group.(l))
 end
 
 """
@@ -227,9 +233,9 @@ end
 """
 `codegrees(W)`
 
-returns  a list holding the  codegrees of `W` as  a reflection group on the
-vector  space `V`  on which  it acts.  These are  one less than the degrees
-`d^*_1,ldots,d^*_(dim V)` of the basic derivations of ` W` on `SV⊗ V^vee`.
+returns  the vector of codegrees of `W`  as a reflection group on the space
+`V`  of `reflrep(W)`.  These are  one less  than the  degrees of  the basic
+derivations of ` W` on `SV⊗ V^vee`.
 
 ```julia-repl
 julia> W=ComplexReflectionGroup(4)
@@ -242,7 +248,7 @@ julia> codegrees(W)
 ```
 """
 function codegrees(W::Group)
-  vcat(fill(0,rank(W)-semisimplerank(W)),collect.(codegrees.(refltype(W)))...)
+  vcat(fill(-1,rank(W)-semisimplerank(W)),collect.(codegrees.(refltype(W)))...)
 end
 
 function codegrees(W::Spets)

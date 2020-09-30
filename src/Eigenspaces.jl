@@ -232,14 +232,12 @@ function Groups.normalizer(W::PermRootGroup,L::PermRootGroup)
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 
-iscyclic(W::Group)=length(Weyl.AbelianGenerators(elements(W)))<=1
-
 function GetRelativeRoot(W,L,i)
   J=vcat(inclusiongens(L,W),[i])
 # printc("W=",W," J=",J," L=",L,"\n")
   N=normalizer(reflection_subgroup(W,J),L)
   F=N/L
-# rshow(Weyl.AbelianGenerators(elements(F)))
+# rshow(abelian_generators(elements(F)))
   if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
   d=length(F)
 # println("d=$d ",order.(elements(F)))
@@ -322,9 +320,8 @@ function split_levis(WF,d::Root1,ad)
   if WF isa Spets W=WF.W
   else W=WF; WF=spets(W)
   end
-  refs=eachindex(reflections(W)[1:nref(W)]) #hum
-#  refs=filter(i->Position(reflections(W),reflection(W,i))==i,
-#              eachindex(roots(W)))
+  refs=filter(i->findfirst(==(reflection(W,i)),reflections(W))==i,
+             eachindex(roots(W)))
   mats=map(i->reflrep(W,reflection(W,i)),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
@@ -348,7 +345,7 @@ function split_levis(WF,d::Root1,ad)
       cl=setdiff(cl,f)
       H=HF.W
       P=standard_parabolic(W, H)
-      if P==false P=Perm() end
+      if isnothing(P) P=Perm() end
       J=inclusiongens(H).^P
       if P!=Perm() || J!=inclusiongens(H)
          HF=subspets(WF,J,HF.phi^P/WF.phi)
@@ -388,7 +385,7 @@ function PermRoot.standard_parabolic(W::PermRootGroup, H)
       if !isnothing(w) return w end
     end
   end
-  InfoChevie("\n# ****** ", hr, " not conjugate to a standard parabolic\n")
+  InfoChevie("# ****** ",H," is not conjugate to a standard parabolic\n")
   return nothing
 end
 

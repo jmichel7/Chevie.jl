@@ -7,7 +7,6 @@ const CHEVIE=Dict{Symbol,Any}(
  :compat=>Dict(:MakeCharacterTable=>x->x,
                :AdjustHeckeCharTable=>(x,y)->x,
                :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end),
- :CheckIndexChars=>false,
  :info=>false
 )
 

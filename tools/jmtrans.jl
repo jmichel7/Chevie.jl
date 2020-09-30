@@ -1,6 +1,7 @@
 # install_tbl() translates ~/gap3-dev/pkg/chevie/tbl to ./tbl
 using Gap2Julia
 
+# files translated from Chevie's tbl directory. compat3 is not
 const src=[ 
 "cmp4_22", "cmplxg24", "cmplxg25", "cmplxg26", 
 "cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
@@ -33,6 +34,7 @@ const exclu=[
  ["HeckeCharTable","2D"],
  ["Discriminant","H4"],
  ["CharInfo","I"],
+ ["GeneratingRoots","imp"],
  ["HeckeCharTable","imp"],
  ["CharTable","imp"],
  ["PowerMaps","imp"],
@@ -42,6 +44,9 @@ const exclu=[
 const ok=[:(CHEVIE.AddData), 
     :(CHEVIE.IndirectAddData)
    ]
+
+# other translated functions. Not translated (but put in table2):
+# EvalPolRoot, VcycSchurElement, ImprimitivfeCuspidalName, BDSymbols
 const ok2=[
     :((CHEVIE.families).HS4),
     :((CHEVIE.families).S5), 
@@ -54,8 +59,6 @@ const ok2=[
     :((CHEVIE.families).G4),
     :((CHEVIE.families).X2),
     :G4_22Helper,
-    :G4_22Test,
-    :G4_22FetchIndexChars,
     :VFactorSchurElement,
     :PartitionTwoCoreQuotient
    ]

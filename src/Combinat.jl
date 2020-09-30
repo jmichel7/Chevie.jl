@@ -41,7 +41,8 @@ Note: `l` is required to be non-empty since I do not know how to access the
 return type of a function
 """
 function groupby(f,l::AbstractArray{V})where V
-  res=Dict(f(l[1])=>[l[1]]) # l should be nonempty
+ if isempty(l) return Dict{Any,eltype(l)}() end
+  res=Dict(f(l[1])=>[l[1]])
   for val in l[2:end]
     push!(get!(res,f(val),V[]),val)
   end
@@ -52,26 +53,27 @@ end
 `tally(v)` 
 
 count  how many times  each element of  collection `v` occurs  and return a
-`Vector` of `(elt,count)` (a variation on StatsBase.countmap)
+`Vector` of `elt=>count` (a variation on StatsBase.countmap)
 """
 function tally(v)
-  res=Tuple{eltype(v),Int}[]
+  res=Pair{eltype(v),Int}[]
   if isempty(v) return res end
   v=sort(v)
   c=1
 @inbounds  for j in 2:length(v)
     if v[j]==v[j-1] c+=1
-    else push!(res,(v[j-1],c))
+    else push!(res,v[j-1]=>c)
       c=1
     end
   end
-  push!(res,(v[end],c))
+  push!(res,v[end]=>c)
 end
 
 """
 `collectby(f,v)`
 
-group the elements of `v` in packets (`Vector`s) where f takes the same value"
+group  the elements of `v` in packets  (`Vector`s) where `f` takes the same
+value. The resulting vector of vectors is sorted by the values of `f`.
 """
 function collectby(f,v)
   d=groupby(f,v)
@@ -398,6 +400,7 @@ julia> conjugate_partition([6])
 ```
 """
 function conjugate_partition(p)
+  if isempty(p) return p end
   res=zeros(eltype(p),maximum(p))
   for i in p, j in 1:i res[j]+=1 end
   res

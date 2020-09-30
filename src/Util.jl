@@ -18,9 +18,9 @@ export toL, toM # convert Gap matrices <-> Julia matrices
 export ds # dump struct
 export InfoChevie
 
-const info=Ref(false)
+const info=Ref(true)
 function InfoChevie(a...)
-  if Util.info[] print(a...) end
+  if Util.info[] printc(a...) end
 end
 
 """
@@ -65,16 +65,14 @@ a=1
 gets(f::Function,o,p::Symbol)=get!(f,o.prop,p)
 
 """
-  A  variation where it is assumed that f sets key p but not assumed that f
-  returns  the value  of property  p, because  f could  set several keys at
-  once...
+A  variation where it is assumed f(o) sets o.prop[p] but not assumed that f
+returns o.prop[p], because  f could  set several keys at once...
 """
 function getp(f::Function,o,p::Symbol)
   if haskey(o.prop,p) return o.prop[p] end
   f(o)
   o.prop[p]
 end
-#--------------------------------------------------------------------------
 #----------------------- Formatting -----------------------------------------
 const supchars  =
  "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
@@ -111,11 +109,14 @@ function TeXstrip(s::String)
   s=replace(s,r"\\BZ"=>"ℤ")
   s=replace(s,r"\\frakS"=>"𝔖")
   s=replace(s,r"\\wedge"=>"∧")
+  s=replace(s,r"\\#"=>"#")
+  s=replace(s,r"\\hbox{([^}]*)}"=>s"\1")
   s=replace(s,r"\\!"=>"")
   s=replace(s,r"{}"=>"")
   s=replace(s,r"\^\{1//2\}"=>"½")
   s=replace(s,r"\^\{-1//2\}"=>"⁻½")
   s=replace(s,r"\^\{1//3\}"=>"⅓")
+  s=replace(s,r"\^\{2//3\}"=>"⅔")
   s=replace(s,r"\^\{1//4\}"=>"¼")
   s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
   s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")

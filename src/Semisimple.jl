@@ -402,17 +402,6 @@ julia> elements(T)
 """
 torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.generators))
   
-function AbelianGenerators(l)
-  res=empty(l)
-  l=filter(!isone,l)
-  while !isempty(l)
-    o=order.(l)
-    push!(res,l[findfirst(isequal(maximum(o)),o)])
-    l=setdiff(l,elements(Group(res)))
-  end
-  res
-end
-
 #F  algebraic_centre(W)  . . . centre of algebraic group W
 ##  
 ##  <W>  should be a Weyl group record  (or an extended Weyl group record).
@@ -508,7 +497,7 @@ function algebraic_centre(W)
       end
     end
   end
-  res=Dict(:Z0=>Z0,:AZ=>Group(AbelianGenerators(AZ)))
+  res=Dict(:Z0=>Z0,:AZ=>Group(abelian_generators(AZ)))
   if W isa HasType.ExtendedCox && length(F0s)>0 return res end
   AZ=SS.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(AZ) res[:descAZ]=AZ
@@ -526,7 +515,7 @@ function algebraic_centre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  #println("ss=$ss")
+  println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)
@@ -644,7 +633,7 @@ function fundamental_group(W)
   e=filter(x->all(isinteger,sum(omega[x,:];dims=1)),e) # minusc. coweights in Y
   if isempty(e) return Group(Perm()) end
   e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
-  Group(AbelianGenerators(e))
+  Group(abelian_generators(e))
 end
 
 function affine(W)
@@ -682,7 +671,7 @@ function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
   W0s=reflection_subgroup(W,p)
   N=normalizer(W.G,W0s.G)
   l=filter(w->s==s^w,map(x->x.phi,elements(N/W0s)))
-  N=Group(AbelianGenerators(l))
+  N=Group(abelian_generators(l))
   if rank(W)!=semisimplerank(W)
     if length(gens(N))==0 N=Group([W.matgens[1]^0])
     else N=Group(reflrep.(Ref(W),gens(N)))

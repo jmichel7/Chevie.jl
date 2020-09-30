@@ -86,6 +86,7 @@ function roots end; export roots
 function words end; export words
 
 include("using_merge.jl")
+include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
 include("Groups.jl");using_merge(:Groups,debug=0,reexport=true)
 include("Perms.jl");using_merge(:Perms,debug=0,reexport=true)
@@ -123,5 +124,4 @@ include("Lusztig.jl");@reexport using .Lusztig
 include("HasType.jl");@reexport using .HasType
 include("Gt.jl");@reexport using .Gt
 include("Urad.jl");@reexport using .Urad
-include("../docs/src/cheviedict.jl");export gap
 end

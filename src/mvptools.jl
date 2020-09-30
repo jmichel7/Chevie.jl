@@ -9,6 +9,16 @@ function Cycs.root(x::Pol,n::Number=2)
   Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 
+# next function is sligtly faster that p(E(x))
+function (p::Pol{T})(x::Root1) where T
+  if iszero(p) return 0 end
+  res=zero(T)
+  for (i,c) in enumerate(p.c)
+    res+=c*E(x^(valuation(p)+i-1))
+  end
+  res
+end
+  
 """
 `Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
 
@@ -21,9 +31,23 @@ Mvp{Int64}: q²+q
 ```
 """
 Mvp(x::Pol)=convert(Mvp,x)
+
 Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
                      p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
 Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
+
+function Pol(x::Mvp)
+  l=variables(x)
+  if isempty(l) return scal(x) end
+  if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
+  v=l[1]
+  val=valuation(x)
+  p=zeros(eltype(values(x.d)),degree(x)-val+1)
+  for (deg,coeff) in pairs(coefficients(x,v))
+    p[deg-val+1]=coeff
+  end
+  Pol(p,val)
+end
 
 """
 `factor(p::Mvp)`
@@ -33,7 +57,7 @@ returns  a list  of two  linear forms  of which  `p` is the product if such
 exist, otherwise it returns [p].
 
 ```julia-repl
-julia> x=Mvp(:x);y=Mvp(:y);
+julia> @Mvp x,y
 
 julia> factor(x^2-y^2+x+3y-2)
 2-element Array{Mvp{Int64,Int64},1}:
@@ -132,4 +156,27 @@ function pblocks(G,p)
   classes=map(c->div(T.centralizers[1],c),T.centralizers)
   v=map(chi->map(j->mod(classes[j]*chi[j]//chi[1],p),1:l),eachrow(T.irr))
   sort(collect(values(groupby(improve_type(v),1:l))))
+end
+
+Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
+
+function Gapjm.gap(p::Cyc)
+  res=join(map(p.d) do (deg,v)
+    den=denominator(v)
+    v=numerator(v) 
+    if deg==0 t=string(v)
+    else 
+      v=format_coefficient(string(v))
+      t=v in ["","-"] ? v : v*"*"
+      r=(deg==1 ? "E($(p.n))" : "E($(p.n))^$deg")
+      t*=r
+    end
+    if t[1]!='-' t="+"*t end
+    if !isone(den) t*="/$den" end
+    t
+  end)
+  if res=="" res="0"
+  elseif res[1]=='+' res=res[2:end] 
+  end
+  res
 end

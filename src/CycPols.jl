@@ -84,6 +84,20 @@ end
 Base.convert(::Type{CycPol{T1}},p::CycPol{T}) where {T1,T}=T==T1 ? p :
                                CycPol(T1(p.coeff),p.valuation,p.v)
 
+Base.hash(a::CycPol, h::UInt)=hash(a.coeff,hash(a.valuation,hash(a.v,h)))
+
+function Base.cmp(a::CycPol,b::CycPol)
+  res=cmp(a.valuation,b.valuation)
+  if !iszero(res) return res end
+  res=cmp(a.v,b.v)
+  if !iszero(res) return res end
+  cmp(a.coeff,b.coeff)
+end
+
+Base.isless(a::CycPol,b::CycPol)=cmp(a,b)==-1
+
+Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
+
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v]))
 
@@ -152,11 +166,13 @@ julia> @btime u(1)  # gap 57μs
 =#
 
 Base.one(::Type{CycPol})=CycPol(1,0)
+Base.one(p::CycPol)=CycPol(one(p.coeff),0)
 Base.isone(p::CycPol)=isone(p.coeff) && iszero(p.valuation) && iszero(p.v)
 Base.zero(::Type{CycPol{T}}) where T=CycPol(zero(T),0)
 Base.zero(::Type{CycPol})=zero(CycPol{Int})
 Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 Base.iszero(a::CycPol)=iszero(a.coeff)
+Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 
 degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
 valuation(a::CycPol)=a.valuation
@@ -175,6 +191,9 @@ Base.:-(a::CycPol)=CycPol(-a.coeff,a.valuation,a.v)
 Base.inv(a::CycPol)=CycPol(a.coeff^2==1 ? a.coeff : inv(a.coeff), -a.valuation,
                                          -a.v)
 
+Base.:^(a::CycPol, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                               Base.power_by_squaring(inv(a),-n)
+
 Base.://(a::CycPol,b::CycPol)=a*inv(b)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
@@ -188,8 +207,8 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
  20=>[[1,3,7,9,11,13,17,19],[1,9,11,19],[3,7,13,17],[1,9,13,17],[3,7,11,19]],
  21=>[[1,2,4,5,8,10,11,13,16,17,19,20],[1,4,10,13,16,19],[2,5,8,11,17,20]],
  24=>[[1,5,7,11,13,17,19,23],[1,7,13,19],[5,11,17,23],[1,7,17,23],[5,11,13,19],
-      [1,5,19,23],[7,11,13,17],[1,11,17,19],[5,7,13,23],[1,5,13,17],
-      [7,11,19,23],[7,13],[1,19],[5,23],[11,17]],
+      [1,5,19,23],[7,11,13,17],[1,11,17,19],[5,7,13,23],
+      [7,13],[1,19],[5,23],[11,17],[1,5,13,17],[7,11,19,23]],
  30=>[[1,7,11,13,17,19,23,29],[1,11,19,29],[7,13,17,23],[1,7,13,19],
       [11,17,23,29],[11,29],[17,23],[1,19],[7,13]],
  36=>[[1,5,7,11,13,17,19,23,25,29,31,35],[1,7,13,19,25,31],[5,11,17,23,29,35],
@@ -340,15 +359,6 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
   sort(p,by=x->x/length(divisors(x)))
 end
 
-function (p::Pol{T})(x::Root1) where T
-  if iszero(p) return 0 end
-  res=zero(T)
-  for (i,c) in enumerate(p.c)
-    res+=p.c[i]*E(x^(valuation(p)+i-1))
-  end
-  res
-end
-  
 """
 `CycPol(p::Pol)`
     
@@ -443,6 +453,8 @@ function CycPol(p::Pol{T};trace=false)where T
   CycPol(degree(p)==0 ? coeff : p*coeff,val,ModuleElt(vcyc;check=true))
 end
 
+CycPol(x::Mvp)=CycPol(Pol(x))
+
 function (p::CycPol)(x)
   res=x^p.valuation
   if !isempty(p.v)
@@ -480,4 +492,11 @@ function descent_of_scalars(p::CycPol,n)
   CycPol(coeff,valuation,ModuleElt(vcyc;check=true))
 end
     
+# export positive CycPols to GAP3
+function Gapjm.gap(p::CycPol)
+  if any(x->x<0,values(p.v)) error("non-positive") end
+  res=string("[",gap(p.coeff),",",p.valuation,",")
+  res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
+end
+
 end

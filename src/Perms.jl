@@ -250,7 +250,7 @@ function Base.cmp(a::Perm, b::Perm)
   0
 end
 
-@inline Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
 Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
 

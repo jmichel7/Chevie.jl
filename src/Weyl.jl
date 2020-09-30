@@ -620,9 +620,11 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
- PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, PermRoot.reflrep,
- PermRoot.restriction, PermRoot.semisimplerank, PermRoot.simplecoroots,
+ PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, 
+ PermRoot.reflrep, PermRoot.restriction, PermRoot.semisimplerank, 
+ PermRoot.simplecoroots, PermRoot.simple_representatives,
  PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength
+
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW

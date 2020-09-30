@@ -5,7 +5,7 @@ export LusztigInductionTable
 # return a record with 2 fields: ser= found series
 #   op: an element of W which conjugates h.levi to ser.levi
 #       (never needed for Coxeter groups and standard levis H)
-FindSeriesInParent=function(h,HF,WF,sers)
+function FindSeriesInParent(h,HF,WF,sers)
   if WF isa Spets W=Group(WF) else W=WF end
   n=sort(filter(!isempty,split(h[:cuspidalName],"\\otimes ")))
   for y in sers
@@ -20,7 +20,7 @@ FindSeriesInParent=function(h,HF,WF,sers)
           sort(y[:levi]), action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
        p=transporting_elt(W, 
-          sort(reflections(reflection_subgroup(W, h[:levi]))), 
+          sort(reflections(reflection_subgroup(W, inclusion(HF,h[:levi])))), 
           sort(reflections(reflection_subgroup(W, y[:levi]))), 
                                   action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
@@ -31,7 +31,7 @@ FindSeriesInParent=function(h,HF,WF,sers)
 end
 
 # find the number of cuspidal of name n in UnipotentCharacters(HF)
-FindCuspidalInLevi=function(n,HF)
+function FindCuspidalInLevi(n,HF)
   strip=function(n,s)
     n=replace(n,Regex("^($s)*")=>"")
     replace(n,Regex("($s)*\$")=>"")
@@ -45,7 +45,7 @@ end
 ChevieErr=error
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
-FindIntSol=function(l)
+function FindIntSol(l)
   vars=vcat([1], map(i->Symbol("x$i"),2:length(l[1])))
 # println("l=$l vars=$vars")
   l= map(v->sum(v.*Mvp.(vars)),l)
@@ -178,16 +178,18 @@ function LusztigInductionPieces(LF,WF)
       WFGL=relative_coset(WF,ser[:levi],Jb)
       if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
-      rh=restriction(W,inclusion(cL,vcat(map(
+      rh=restriction(W,inclusion(L,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
        h[:relativeType])...))).^op
 #     printc("rh=",rh," op=",op,"\n")
       w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
-      rh=map(function(x) r=GetRelativeRoot(W,cL,x)
-              p=findfirst(i->reflection(WGL,restriction(WGL,i))==
+      rh=map(rh)do x
+         r=GetRelativeRoot(W,cL,x)
+         p=findfirst(i->reflection(WGL,restriction(WGL,i))==
               PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
-              inclusion(WGL)[p] end,rh)
+         inclusion(WGL)[p] 
+      end
 #     printc("WFGL=",WFGL," rh=",rh," w=",w,"\n")
       LFGL=subspets(WFGL,rh,w)
 #     printc("LFGL=",LFGL,"\n")
