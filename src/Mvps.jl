@@ -495,7 +495,8 @@ julia> p=x^(1//2)*y^(1//3)
 Mvp{Int64,Rational{Int64}}: x½y⅓
 
 julia> p(;x=y)
-Mvp{Int64,Rational{Int64}}: y^{5//6}
+Mvp{Int64,Rational{Int64}}: y⁵⁄₆
+
 
 julia> p(;x=4)
 Mvp{Int64,Rational{Int64}}: 2y⅓

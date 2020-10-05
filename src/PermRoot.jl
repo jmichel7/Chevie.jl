@@ -1011,7 +1011,8 @@ function PermGroups.reduced(W::PermRootGroup,F)
     m=minimum(map(x->length(unique(x)),ch))
     m=findall(x->length(unique(x))==m,ch)
     minimum(FF[m])
-  end  
+  end
+  if isone(F) return F end
   if issubset(inclusiongens(W).^F,inclusion(W))
     w=PermX(W,reflrep(W,F))
     if !isnothing(w) && w in W return redcentre(W,w\F)

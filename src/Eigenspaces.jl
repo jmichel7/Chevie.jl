@@ -304,7 +304,7 @@ julia> split_levis(W,3)
 3-element Array{Any,1}:
  ³D₄
  D₄₍₁₃₎=A₂Φ₃
- ³D₄
+ D₄₍₎=.Φ₃²
 
 julia> W=coxgroup(:E,8)
 E₈

@@ -131,7 +131,7 @@ end
 @test mytest("WF=spets(coxgroup(:F,4))","F₄")
 @test mytest("w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],action=(s,g)->s.^g);","nothing")
 @test mytest("LF=subspets(WF,[1,2,9,16],w)","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
-@test mytest("Diagram(LF)","ϕ acts as (1,4,2) on the component below\n  O 4\n  ￨\nO—O—O\n3 1 2")
+@test mytest("Diagram(LF)","ϕ acts as (2,4,3) on the component below\n  O 4\n  ￨\nO—O—O\n3 1 2")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=CoxSym(4)","𝔖 ₄")
@@ -253,7 +253,7 @@ end
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("split_levis(W,4)","2-element Array{Any,1}:\n A₃\n A₃₍₎=.Φ₂Φ₄")
 @test mytest("W=spets(coxgroup(:D,4),Perm(1,2,4))","³D₄")
-@test mytest("split_levis(W,3)","3-element Array{Any,1}:\n ³D₄\n D₄₍₁₃₎=A₂Φ₃\n ³D₄")
+@test mytest("split_levis(W,3)","3-element Array{Any,1}:\n ³D₄\n D₄₍₁₃₎=A₂Φ₃\n D₄₍₎=.Φ₃²")
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("split_levis(W,4,2)","3-element Array{Any,1}:\n E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
 @test mytest("W=coxgroup(:D,4)","D₄")
@@ -609,7 +609,7 @@ end
 @test mytest("p(x=y)","Mvp{Int64}: 7y⁴-2")
 @test mytest("p(x=y,y=x)","Mvp{Int64}: -2+7x⁻¹y⁵")
 @test mytest("p=x^(1//2)*y^(1//3)","Mvp{Int64,Rational{Int64}}: x½y⅓")
-@test mytest("p(;x=y)","Mvp{Int64,Rational{Int64}}: y^{5//6}")
+@test mytest("p(;x=y)","Mvp{Int64,Rational{Int64}}: y⁵⁄₆")
 @test mytest("p(;x=4)","Mvp{Int64,Rational{Int64}}: 2y⅓")
 @test mytest("p(;y=2.0)","Mvp{Float64,Rational{Int64}}: 1.2599210498948732x½")
 @test mytest("@Mvp x,y","nothing")
