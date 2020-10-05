@@ -23,7 +23,7 @@ end
 function PermutationOnCharacters(W,aut,chars=1:length(classreps(W)))
   p=PermutationOnClasses(W, aut)
   ct=CharTable(W).irr[chars,:]
-  PermListList(ct, map(r->Permuted(r, p), ct))
+  Perm(collect(eachrow(ct)), eachrow(ct).^p)
 end
 
 # Permutation of the unipotent characters induced by an automorphism of W
@@ -50,17 +50,17 @@ function FactorsSet(s)
   for i = s[1]
     s1 = filter(y->i in y,s)
     if length(s1) == length(s) // 2
-      i = Intersection(s1)
-      r = Difference(s[1], i)
-      s2 = filter(y->length(Intersection(y, i))==0,s)
-      a = PositionProperty(s2, y->IsSubset(y, r))
+      i = intersect(s1...)
+      r = setdiff(s[1], i)
+      s2 = filter(y->length(intersect(y, i))==0,s)
+      a = findfirst(y->issubset(r,y),s2)
       if length(s2) == length(s) // 2 && a != false
-        j = Difference(s2[a], r)
-        s1 = gapSet(map(x->Difference(x, i), s1))
-        s2 = gapSet(map(x->Difference(x, j), s2))
+        j = setdiff(s2[a], r)
+        s1 = sort(unique(map(x->setdiff(x, i), s1)))
+        s2 = sort(unique(map(x->setdiff(x, j), s2)))
         if length(i)==1 i=i[1] end
         if length(j)==1 j=j[1] end
-        if s1 == s2 return Concatenation([[i, j]], FactorsSet(s1))
+        if s1 == s2 return vcat([[i, j]], FactorsSet(s1))
         end
       end
     end
@@ -143,8 +143,10 @@ function SubsetsSum(S, l, v, lv)
         good = sol
         bad = setdiff(p[:cand], sol)
         if isempty(intersect(good, bad))
-           append!(res, map(r->vcat(good,r),inner(S-sum(l[good]),union(s, good), setdiff(t,
-          union(good, bad)), nonsolved, sievev(good, v), string(factor, ":", f))))
+           append!(res, map(r->vcat(good,r),
+            inner(isempty(l[good]) ? S : S-sum(l[good]),union(s, good), 
+          setdiff(t, union(good, bad)), nonsolved, sievev(good, v), 
+          string(factor, ":", f))))
         end
         f-=1
       end
@@ -259,12 +261,13 @@ function Series(WF, levi, cuspidal, d)
             UnipotentCharacters(levi).prop[:A][cuspidal]==0
 # find simplest regular eigenvalue q of s.levi
   eig=union(map(x->x isa Int ? prime_residues(x).//x : [x], 
-                   regular_eigenvalues(levi))...)
-  e=minimum(conductor.(eig))
-  e=minimum(filter(x->conductor(x)==e,eig))
+                map(x->x.r,regular_eigenvalues(levi)))...)
+  c=minimum(denominator.(eig))
+  c=minimum(filter(x->denominator(x)==c,eig))
+  c=Root1(;r=c)
   eig=refleigen(levi)
-  q=maximum(map(x->count(y->y==e,x), eig))
-  classno=findall(x->count(y->y==e,x)==q,eig)
+  q=maximum(map(x->count(==(c),x), eig))
+  classno=findall(x->count(==(c),x)==q,eig)
   if length(classno)>1 error("classno==",classno) end
   element=levi(classinfo(levi)[:classtext][classno[1]]...)
   q=minimum(map(x->count(==(d),x),refleigen(levi)))
@@ -301,10 +304,10 @@ function Base.show(io::IO,s::Series)
   if haskey(s.prop, :e)
     Util.printTeX(io,"$quad W_G(L,$n)==Z_{$(s.prop[:e])}")
   elseif haskey(s.prop, :WGL)
-    if haskey(WGL(s).prop, :reflections)
-      Util.printTeX(io,"$quad W_G(L,$n)==", reflection_name(io,WGL(s)))
+    if haskey(relative_group(s).prop, :reflections)
+      Util.printTeX(io,"$quad W_G(L,$n)==", reflection_name(io,relative_group(s)))
     else
-      Util.printTeX(io,"$quad |W_G(L,$n)|==$(length(WGL(s)))")
+      Util.printTeX(io,"$quad |W_G(L,$n)|==$(length(relative_group(s)))")
     end
   elseif haskey(s.prop, :WGLdims)
     Util.printTeX(io,"$quad |W_G(L,$n)|==$(sum(WGLdims(s).^2))")
@@ -334,7 +337,7 @@ function Util.format(io::IO,s::Series)
   m = []
   rowlab = []
   f("\\hbox{Character}", "Name", charnames(io,uw)[CharNumbers(s)])
-  f("\\hbox{specializes}", "specializes", charnames(io,WGL(s)))
+  f("\\hbox{specializes}", "specializes", charnames(io,relative_group(s)))
   f("\\varepsilon", "eps", s.prop[:eps])
   if haskey(s.prop, :eigen) f("\\hbox{eigen}", "eigen", s.prop[:eigen]) end
   if haskey(s.prop, :e)
@@ -357,7 +360,7 @@ ChevieErr(x...)=printc("!!!!!!! ",x...)
 # Degree in q of the parameters (normalized so the smallest is 0)
 function mC(s::Series)
   gets(s,:mC) do
-  e = hyperplane_orbits(WGL(s))
+  e = hyperplane_orbits(relative_group(s))
   if length(e)>1 return else e = e[1].order end
   uc = UnipotentCharacters(s.spets)
   cn = CharNumbers(s)[filter(i->s.prop[:dims][i]==1,1:length(s.prop[:dims]))]
@@ -390,7 +393,7 @@ function mC(s::Series)
     # the smallest mC is 0 since the above choice gives unpleasant
     # results for G27
     D0=maximum(aA)-minimum(aA) # just so that mC are positive
-    (D0+minimum(aA)-aA)//e
+    (D0+minimum(aA).-aA)//e
   end
   end
 end
@@ -533,7 +536,7 @@ function RelativeGroup(s::Series)
 end
 end
 else
-function RelativeGroup(s::Series)
+function Weyl.relative_group(s::Series)
   gets(s,:WGL) do
   W=Group(s.spets)
   L=Group(s.levi)
@@ -612,7 +615,7 @@ function RelativeGroup(s::Series)
   function getreflection(rr)
     local rH, H, r, res, n
     rH = hplane(rr[1]) # Hyperplane of W_G(L)
-    if length(rH)==length(V) return nothing end
+    if length(rH)==length(V) error("intersection not proper") end
     if length(rH)==0 # cyclic WGL
       H=W
     else
@@ -621,8 +624,8 @@ function RelativeGroup(s::Series)
     res=Dict{Symbol, Any}(:refs => inclusiongens(H))
     H = intersect(H, N)
     if length(L)!=1 H=H/L end
-    if length(H)==1 return nothing end
-    if !iscyclic(H) error("a") end
+    if length(H)==1 error("H trivial") end
+    if !iscyclic(H) error("H not cyclic") end
     res[:hom]=elements(H)[findfirst(y->order(y)==length(H),elements(H))]
     r=bigtosmall(reflrep(W, func(res[:hom])))
     ref=reflection(r)
@@ -639,6 +642,7 @@ function RelativeGroup(s::Series)
   end
   rrefs = collect(values(groupby(x->v(hplane(x)),refs)))
   rrefs=filter(x->!(any(y->inclusion(W,y) in inclusion(L),x)),rrefs)
+  sort!(rrefs)
   reflist = []
   for r in rrefs
     push!(reflist, getreflection(r))
@@ -660,15 +664,13 @@ end
 end
 
 function Groups.iscyclic(s::Series)
-  WGL(s)
+  relative_group(s)
   haskey(s.prop,:e)
 end
 
-WGL(s::Series)=RelativeGroup(s)
-
-WGLdims(s::Series)=getp(WGL,s,:WGLdims)
+WGLdims(s::Series)=getp(relative_group,s,:WGLdims)
     
-e(s::Series)=getp(WGL,s,:e)
+e(s::Series)=getp(relative_group,s,:e)
     
 function RLG(s::Series)
   gets(s,:RLG) do
@@ -685,7 +687,7 @@ end
 function CharNumbers(s::Series)
   gets(s,:charNumbers) do
   if s.levi==s.spets return [s.cuspidal] end
-  if !haskey(s.prop,:WGL) && isnothing(RelativeGroup(s)) return nothing end
+  if !haskey(s.prop,:WGL) && isnothing(relative_group(s)) return nothing end
   ud=Uch.CycPolUnipotentDegrees(s.spets)
   ad=count(!isone,relative_degrees(s.levi, s.d))
   cand=filter(i->ad==valuation(ud[i],s.d),1:length(ud))
@@ -783,12 +785,11 @@ function CharNumbers(s::Series)
     v=filter(a->c[:,foo(:charNumbers,a)]*(foo(:dims,a).*foo(:eps,a))==t,v)
   end
   if length(v)>1
-      ChevieErr(s," ",Join(map(x->FormatGAP(x), 
-        FactorsSet(map(x->foo(:charNumbers,x),v))),"x"),
-                " chars candidates: using RLG\n")
-      if isnothing(RLG(s)) return nothing end
-      v=filter(l->all(i->RLG(s).v[foo(:charNumbers,i)]!=0,l),v)
-      if length(v)!=1 error() end
+    ChevieErr(s," ",join(FactorsSet(map(x->foo(:charNumbers,x),v)),"x"),
+              " chars candidates: using RLG\n")
+    if isnothing(RLG(s)) return nothing end
+    v=filter(l->all(i->RLG(s).v[foo(:charNumbers,i)]!=0,l),v)
+    if length(v)!=1 error() end
   elseif length(v)==0
     ChevieErr(s," no candidates left\n")
     return nothing
@@ -802,7 +803,7 @@ eps(s::Series)=getp(CharNumbers,s,:eps)
 
 COMPACTCOHOMOLOGY=true
 function paramcyclic(s::Series)
-  if !iscyclic(s) error("fill assumes WGL(s) cyclic\n") end
+  if !iscyclic(s) error("fill assumes relative_group(s) cyclic\n") end
   if isnothing(CharNumbers(s)) return nothing end
   uc=UnipotentCharacters(s.spets)
   Schur=Uch.CycPolUnipotentDegrees(s.spets)[CharNumbers(s)]
@@ -893,7 +894,7 @@ function paramcyclic(s::Series)
     end
     s.prop[:translation]=p
   end
-  s.prop[:Hecke]=hecke(WGL(s), improve_type([map(i->param(i,i),1:e(s))]))
+  s.prop[:Hecke]=hecke(relative_group(s), improve_type([map(i->param(i,i),1:e(s))]))
   return s.prop[:Hecke]
 end
 
@@ -1010,7 +1011,7 @@ function CheckMaximalPairs(W)
       local Z
       Z = centralizer(Group(s.spets), x)
       Z = Group(vcat(gens(Z), gens(Group(s.levi))))
-      if length(Z) != length(RelativeGroup(s)) * length(s.levi) error() end
+      if length(Z) != length(relative_group(s)) * length(s.levi) error() end
       return true
     end, e)
   end
@@ -1038,7 +1039,7 @@ SpetsFromType(t)=spets(reflection_group(t.orbit), t.twist)
 
 # get Hecke of series s. If scalar-twisted untwist first
 function getHecke(s)
-  printc("s=",s.spets,"\n")
+  println("s=",s.spets,"\n")
   t=refltype(s.spets)
   if length(t)==1 && haskey(t[1],:scalar) && !all(isone,t[1].scalar)
     t=t[1]
@@ -1053,8 +1054,9 @@ function getHecke(s)
     if isnothing(g) return nothing end
     W=Group(s.spets)
     p=Group(g)(word(W,s.levi.phi/s.spets.phi)...)
-    l=subspets(g, map(x->findfirst(==(Group(g)(word(W,x)...)),
-                               Group(g)[:reflections]),gens(Group(s.levi))), p)
+    inds=convert(Vector{Int},map(x->findfirst(==(Group(g)(word(W,x)...)),
+                   reflections(Group(g))),gens(Group(s.levi))))
+    l=subspets(g,inds, p)
     if length(scal)>1
       ChevieErr("scal==", scal, " unimplemented\n")
       return nothing
@@ -1087,7 +1089,9 @@ end
 
 function RelativeSeries(s)
 # if !(haskey(s, :charNumbers)) CharNumbers(s) end
-  res=map(enumerate(WGL(s).prop[:reflists])) do (i,r)
+  WGL=relative_group(s)
+  res=map(enumerate(WGL.prop[:reflists])) do (i,r)
+    println("r=",r,"\nphi=",s.element/s.spets.phi)
     R=subspets(s.spets,r,s.element/s.spets.phi)
     l=inclusion(Group(s.levi))
     if !issubset(l,inclusion(Group(R)))
@@ -1108,15 +1112,16 @@ function RelativeSeries(s)
         end
       end
     end
+#   println("R=",R," L=",subspets(R,l,s.element/R.phi))
     p=Series(R,subspets(R,l,s.element/R.phi),s.cuspidal,s.d.r)
-    p.prop[:orbit]=simple_representatives(WGL(s))[i]
-    r=Int.(indexin(sort(unique(reflections(WGL(s)))),reflections(WGL(s))))
-    if gens(WGL(s))==WGL(s).prop[:parentMap]
-      r=filter(x->reflections(WGL(s))[x] in Group(p.spets),r)
+    p.prop[:orbit]=simple_representatives(WGL)[i]
+    r=Int.(indexin(sort(unique(reflections(WGL))),reflections(WGL)))
+    if gens(WGL)==WGL.prop[:parentMap]
+      r=filter(x->reflections(WGL)[x] in Group(p.spets),r)
     else
-      w=map(x->word(WGL(s),reflections(WGL(s))[x]), r)
-      w=map(x->prod(WGL(s).prop[:parentMap][x]), w)
-      printc(w,"\n")
+      w=map(x->word(WGL,reflections(WGL)[x]), r)
+      w=map(x->prod(WGL.prop[:parentMap][x]), w)
+#     printc(w,"\n")
       r=r[map(w)do x
           g=Group(p.spets)
           if !(x isa Perm) return x.phi in g
@@ -1124,8 +1129,8 @@ function RelativeSeries(s)
           end
          end]
     end
-    p.prop[:WGL]=reflection_subgroup(WGL(s), r)
-    p.prop[:WGLdims]=CharTable(WGL(p)).irr[:,1]
+    p.prop[:WGL]=reflection_subgroup(WGL, r)
+    p.prop[:WGLdims]=CharTable(relative_group(p)).irr[:,1]
     if all(isone,p.prop[:WGLdims])
       p.prop[:e]=length(p.prop[:WGLdims])
     end
@@ -1134,7 +1139,7 @@ function RelativeSeries(s)
   s.prop[:relativeSpets]=map(x->x.spets, res)
   p=getHecke.(res)
   if false in p return res end
-  s.prop[:Hecke]=hecke(WGL(s),improve_type(p))
+  s.prop[:Hecke]=hecke(WGL,improve_type(p))
   printc("Hecke=",s.prop[:Hecke],"\n")
   u1=schur_elements(s.prop[:Hecke])//1
   if any(x->any(y->!all(isinteger, values(y.d)), keys(x.d)),u1)
@@ -1149,17 +1154,17 @@ function RelativeSeries(s)
 # the permutation should also take in account eigenvalues
   if isnothing(p)
     printc("u1=",u1," ud=",ud,"\n")
-    println(sort(indexin(ud,ud1)))
-    println(sort(indexin(ud1,ud)))
+    println(sort(indexin(ud,u1)))
+    println(sort(indexin(u1,ud)))
     ChevieErr(s.prop[:Hecke], " wrong set of SchurElements")
     return res
   end
   s.prop[:charNumbers]^=p
   if haskey(s.prop,:span) s.prop[:span]^=p end
   aA=map(x->E(conductor(s.d)^2,valuation(x)+degree(x)),u1)
-  p=position_regular_class(WGL(s),s.d)
-  if p == false && length(WGL(s))==1 p=1 end
-  o=map(x->x[p]//x[1], eachrow(CharTable(WGL(s)).irr))
+  p=position_regular_class(WGL,s.d)
+  if p == false && length(WGL)==1 p=1 end
+  o=map(x->x[p]//x[1], eachrow(CharTable(WGL).irr))
   s.prop[:predictedEigen] = map(i->aA[i]*o[i], 1:length(o)) *
     Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   return res
@@ -1174,7 +1179,7 @@ function Checkzegen(W)
   aA = uc[:a] + uc[:A]
   for s = l
       e = gete(s[:Hecke])
-      z = OrderCenter(WGL(s))
+      z = OrderCenter(relative_group(s))
       ucL = UnipotentCharacters(s.levi)
       aAL = ucL[:A] + ucL[:a]
       aAL = aAL[s.cuspidal]
@@ -1240,9 +1245,9 @@ function CheckCoN(i)
   l=filter(x->haskey(x.prop,:Hecke),l)
   map(l)do s
     m=DeterminantMat(reflrep(W, s.element))
-    sg=(-1)^sum(degrees(WGL(s))-1)
-    if length(hyperplane_orbits(WGL(s)))>1 false
-    else m*sg*prod(s.Hecke.para[1])^hyperplane_orbits(WGL(s))[1].N_s
+    sg=(-1)^sum(degrees(relative_group(s))-1)
+    if length(hyperplane_orbits(relative_group(s)))>1 false
+    else m*sg*prod(s.Hecke.para[1])^hyperplane_orbits(relative_group(s))[1].N_s
     end
   end
 end
@@ -1255,13 +1260,13 @@ function datafor(W)
   l=map(d->PrincipalSeries(W, d),RegularEigenvalues(W))
   e=sum(degrees(W)+codegrees(W))
   map(s->[s.d, gcd(e*s.d,conductor(s.d)) // gcd(gcd(map(x->x[:N_s], 
-                      HyperplaneOrbits(WGL(s)))), denominator(s.d))], l)
+                      HyperplaneOrbits(relative_group(s)))), denominator(s.d))], l)
 end
 
 # description of centralizers of regular elements
 function cent(W)
   l = map((d->begin PrincipalSeries(W, d) end), RegularEigenvalues(W))
-  res = map((s->begin [s.d, ReflectionName(WGL(s))] end), l)
+  res = map((s->begin [s.d, ReflectionName(relative_group(s))] end), l)
   l = gapSet(map((x->begin x[2] end), res))
   res = map((x->begin [map((z->begin z[1] end), Filtered(res, (y->begin
                                       y[2] == x end))), x] end), l)

@@ -295,7 +295,8 @@ function Base.show(io::IO,d::Diagram)
       end
       if !isone(t.twist)
        println(io,"ϕ",act ? "^$(length(t.orbit))" : "",
-            " acts as ",t.twist," on the component below")
+        " acts as ",t.twist^mappingPerm(t.orbit[1].indices,1:rank(t.orbit[1])),
+        " on the component below")
       end
       show(io,Diagram(t.orbit))
     else
@@ -351,6 +352,7 @@ abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 
 Diagram(W::PermRootGroup)=Diagram(refltype(W))
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
+inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 # should use independent_roots
 
@@ -566,7 +568,7 @@ prim = [
   return Dict(:series=>:ST, :p=>de.d * de.e, :q=>de.e, :rank=>r)
 end
 
-function CheckRelation(gens,rel;f=function(x...)end)
+function check_relation(gens,rel;verbose=false)
   p(l,r)=joindigits(l)*"="*joindigits(r)
   L,R=rel
   l=gens[L[1]]
@@ -574,7 +576,9 @@ function CheckRelation(gens,rel;f=function(x...)end)
   i=1
   while i<length(L)
     if l==r
-      f(" relation ",p(L,R)," already holds as ",p(L[1:i],R[1:i]))
+      if verbose 
+        print(" relation ",p(L,R)," already holds as ",p(L[1:i],R[1:i]))
+      end
       return false
     end
     i+=1
@@ -582,18 +586,19 @@ function CheckRelation(gens,rel;f=function(x...)end)
     r*=gens[R[i]]
   end
   if l==r return true end
-  f(" relation ",p(L,R)," failed")
+  if verbose print(" relation ",p(L,R)," failed") end
   false
 end
 
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that 
 # reflection.(Ref(H),k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
+# println("H=$H\n g=$g\n t=$t")
   orders=Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
   rels=groupby(r->maximum(r[1]),braid_relations(t))
   # check gens satisfy relations concerning them, find if can add
   # another gen from rest
-  function findarr(gens,rest)::Vector{Int}
+  function findarr(gens,rest)
     if length(gens)==length(orders)
       if length(Group(gens))==length(H) return Int[]
       else return nothing
@@ -601,11 +606,11 @@ function findgoodgens(H,g,t::TypeIrred)
     end
     i=length(gens)+1
     for e in rest
-#     println("g=$g t=$t $e(",length(gens),")",restriction(H))
+#     println("$e(",length(gens),")")
       r=reflection(H,e)
       if order(r)==orders[i]
         newgens=vcat(gens,[r])
-        if !haskey(rels,i) || all(r->CheckRelation(newgens,r),rels[i])
+        if !haskey(rels,i) || all(r->check_relation(newgens,r),rels[i])
           res=findarr(newgens,setdiff(rest,[e]))
           if !isnothing(res) return vcat([e],res) end
         end
@@ -648,12 +653,12 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       if cartan(d)==cartan(R)
         d.indices=I
       else 
-        good=findgoodgens(R,eachindex(roots(R)),d)
+        good=findgoodgens(R,Int.(indexin(unique(reflections(R)),reflections(R))),d)
         if cartan(R,good)!=cartan(d)
           r=fixCartan(R,cartan(d),good)
           if !isnothing(r) good=r[2] end
         end
-        d.indices=restriction(W,inclusion(R,good))
+        d.indices=inclusion(R,W,good)
       end
       d
     end
@@ -1000,18 +1005,25 @@ function PermX(W::PermRootGroup,M::AbstractMatrix)
 end
 
 function PermGroups.reduced(W::PermRootGroup,F)
+  function redcentre(W,F)
+    FF=F.*elements(centre(W))
+    ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
+    m=minimum(map(x->length(unique(x)),ch))
+    m=findall(x->length(unique(x))==m,ch)
+    minimum(FF[m])
+  end  
   if issubset(inclusiongens(W).^F,inclusion(W))
     w=PermX(W,reflrep(W,F))
-    if !isnothing(w) && w in W return w\F 
+    if !isnothing(w) && w in W return redcentre(W,w\F)
     elseif length(W)==1 return F
     end
   end
   base=reflection.(Ref(W),eachindex(gens(W)))
   w=transporting_elt(W,base,base.^F;action=(x,y)->x.^y)
-  if !isnothing(w) return F/w end
+  if !isnothing(w) return redcentre(W,F/w) end
   ir=sort(base.^F)
   w=transporting_elt(W,sort(base),ir;action=(x,y)->sort(x.^y))
-  if !isnothing(w) return F/w end
+  if !isnothing(w) return redcentre(W,F/w) end
   return nothing
 end
 
@@ -1198,6 +1210,7 @@ end
 
 function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};type=true)
+# println("r=",r,"\ncr=",cr)
   matgens=map(reflection,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
   rr=map(x->convert.(T,x),r)

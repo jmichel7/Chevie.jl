@@ -137,14 +137,14 @@ function Det(m)
     for k in setdiff(v,[i]) n[k,:]-=m[k,j]*f.*m[i,:] end
     return (-1)^(i+j)*n[i,j]*Det(compl(n,i,j))
   end
-  print("m=");display(iszero.(m))
+# print("m=");display(iszero.(m))
   v=map(x->count(!iszero,x),toL(m))
   j=findfirst(isequal(minimum(v)),v)
   if length(m)>71 println("\n",length(m),":",v[j]) end
 # if v[j]>5 return det*DeterminantMat(m) end
   sum(function(i)
 #   if Length(m) mod 5=0 then Print(Length(m),":",i," \c");fi;
-    if iszero(m[i,j]) return 0
+    if iszero(m[i,j]) return m[i,j]
     else return (-1)^(i+1)*m[i,j]*Det(compl(m,i,j))
    end end,axes(m,1))
 end

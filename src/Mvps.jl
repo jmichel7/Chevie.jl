@@ -233,8 +233,8 @@ Mvp(x::Number)=convert(Mvp,x)
 Mvp(x::Mvp)=convert(Mvp,x)
 
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
-Base.:(==)(a::Mvp,x)=a==Mvp(x)
-Base.:(==)(x,a::Mvp)=a==Mvp(x)
+Base.:(==)(a::Mvp,x::Number)=a==Mvp(x)
+Base.:(==)(x::Number,a::Mvp)=a==Mvp(x)
 
 function Base.convert(::Type{T},a::Mvp) where T<:Number
   if iszero(a) return zero(T) end

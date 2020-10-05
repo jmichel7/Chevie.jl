@@ -205,7 +205,7 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
             TeXpref = SPrint("I_2(", e, ")")
         end
         uc[:harishChandra] = Concatenation([Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [1], :rank => 1), :parameterExponents => [e], :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => [2, 1])], map((x->begin
-                            Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(2e, Product(x)), :cuspidalName => SPrint("{}^2", TeXpref, "[", x[1], ",", x[2], "]"), :charNumbers => [2 + Position(symUnp, x)])
+                            Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(2 * e, Product(x)), :cuspidalName => SPrint("{}^2", TeXpref, "[", x[1], ",", x[2], "]"), :charNumbers => [2 + Position(symUnp, x)])
                         end), symUnp))
         uc[:almostHarishChandra] = Concatenation([Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:orbit => [Dict{Symbol, Any}(:series => "I", :indices => [1, 2], :rank => 2, :bond => e)], :twist => perm"(1,2)"), :parameterExponents => [1, 1], :levi => [], :eigenvalue => 1, :cuspidalName => "", :charNumbers => 1:n + 2)], map((x->begin
                             Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :parameterExponents => [], :levi => [1, 2], :eigenvalue => E(e, -(Product(x))), :cuspidalName => SPrint(TeXpref, "[", x[1], ",", x[2], "]"), :charNumbers => [n + 2 + Position(nc, x)])
@@ -262,10 +262,10 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
         ((uc[:charSymbols])[1])[[1, 2]] = [[0, 2], []]
         ((uc[:charSymbols])[2])[[1, 2]] = [[0, 1, 2], [1]]
         c = (a->begin
-                    E(2e, a) + E(2e, -a)
+                    E(2 * e, a) + E(2 * e, -a)
                 end)
         uc[:families] = [Family("C1", [1]), Family("C1", [2]), Family(Dict{Symbol, Any}(:eigenvalues => map((s->begin
-                                        E(2e, s[1] * s[2])
+                                        E(2 * e, s[1] * s[2])
                                     end), symUnp), :fourierMat => map((j->begin
                                         map((i->begin
                                                     (c(i * reverse(j)) - c(i * j)) // e

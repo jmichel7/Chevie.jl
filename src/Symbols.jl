@@ -520,7 +520,7 @@ Works for symbols for:
 
        G(e,1,r) (d==1, defect==0)
        G(e,e,r) (d==0, defect==0)
-      ²G(e,e,2) (d==0, defect==1) (this includes ²Dₙ, ²B₂, ²G₂)
+      ²G(e,e,r) (d==0, defect==1) (e,r even. This includes ²Dₙ, ²B₂, ²G₂)
 
 here d=Inhalt mod. e, see [3.9 and 6.4 Malle1995](biblio.htm#Mal95).
 """
@@ -541,7 +541,7 @@ function gendeg_symbol(S)
   elseif d==0 res=theta([r-1])*CycPol(q^r-E(e,defect))
   end
 
-  res*=(-1)^((0:e-1)*map(x->binomial(x,2),sh))*
+  res*=(-1)^(sum((0:e-1).*binomial.(sh,2)))*
     prod(i->prod(j->prod(l->reduce(*,map(m->CycPol(l-m),
     filter(m->i<j ||
            degree(m)<degree(l),map(l->q^l*E(e)^j,S[j+1])));init=CycPol(q^0)),

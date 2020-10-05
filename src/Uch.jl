@@ -548,14 +548,14 @@ function UnipotentCharacters(WF::Spets)
     inc=vcat(map(x->x.indices,t.orbit)...)
     for s in uc.harishChandra
       s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
-      s[:relativeType].indices=restriction(W,inclusion(H[1],s[:relativeType].indices))
+      s[:relativeType].indices=inclusion(H[1],W,s[:relativeType].indices)
     end
     for s in uc.almostHarishChandra
       s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
       s[:relativeType].orbit=vcat(map(x->
         map(s[:relativeType].orbit)do r
 	  r=copy(r)
-          r.indices=restriction(W,inclusion(x,r.indices))
+          r.indices=inclusion(x,W,r.indices)
 	  r
         end,H)...)
       s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H[1])),inclusion(H[1])))

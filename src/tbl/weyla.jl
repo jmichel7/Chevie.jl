@@ -18,7 +18,7 @@ chevieset(:A, :ReflectionDegrees, (n->begin
         end))
 chevieset(:A, :PrintDiagram, function (r, indices, title)
         local i
-        print(title, " ", join(indices, " - "), "\n")
+        print(title, " ", Join(indices, " - "), "\n")
     end)
 chevieset(:A, :ReflectionName, function (r, option)
         local o

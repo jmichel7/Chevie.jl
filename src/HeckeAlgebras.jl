@@ -186,10 +186,11 @@ function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
   HeckeAlgebra(W,para,d)
 end
 
-function hecke(W::Group,p::Vector{C};rootpara::Vector{C}=C[])where C
+function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   oo=order.(gens(W))
   if all(isequal(2),oo) z=0 else z=zero(Cyc) end
   para=map(p,oo)do p, o
+    if p isa Vector return p end
     if o==2 return [p,-one(p)].+z end
     map(i->iszero(i) ? p+z : zero(p)+E(o,i),0:o-1)
   end
@@ -256,7 +257,7 @@ function Chars.representation(H::HeckeAlgebra,i::Int)
   inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
   rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
   mm=map((t,j)->toM.(getchev(t,:HeckeRepresentation,H.para,rp,i)),tt,inds)
-  if any(x->x==false,mm) return false end
+  if any(==(false),mm) return false end
   mm=improve_type.(mm)
   n=length(tt)
   if n==1 return mm[1] end

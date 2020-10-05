@@ -38,6 +38,7 @@ const exclu=[
  ["HeckeCharTable","imp"],
  ["CharTable","imp"],
  ["PowerMaps","imp"],
+ ["ReflectionCoDegrees","imp"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 
@@ -46,7 +47,7 @@ const ok=[:(CHEVIE.AddData),
    ]
 
 # other translated functions. Not translated (but put in table2):
-# EvalPolRoot, VcycSchurElement, ImprimitivfeCuspidalName, BDSymbols
+# EvalPolRoot, VcycSchurElement, ImprimitiveCuspidalName, BDSymbols
 const ok2=[
     :((CHEVIE.families).HS4),
     :((CHEVIE.families).S5), 
@@ -59,7 +60,6 @@ const ok2=[
     :((CHEVIE.families).G4),
     :((CHEVIE.families).X2),
     :G4_22Helper,
-    :VFactorSchurElement,
     :PartitionTwoCoreQuotient
    ]
 
@@ -102,8 +102,6 @@ function install1(n)
   end
 end
 
-install_tbl()=for f in src install("tbl/$f") end
-
 function readall()
   l=Expr[]
   for n in src 
@@ -130,3 +128,5 @@ function writeall(l)
     end
   end
 end
+
+install_tbl()=for f in src install("tbl/$f") end

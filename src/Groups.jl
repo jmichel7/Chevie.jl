@@ -449,6 +449,8 @@ Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))),Coset(H))
 
 elements(C::Coset)=C.phi .* elements(Group(C))
 
+Base.:in(w,C::Coset)=C.phi\w in Group(C)
+
 function classreps(G::Coset{Group{T}})::Vector{T} where T
   gets(G,:classreps) do
     first.(conjugacy_classes(G))

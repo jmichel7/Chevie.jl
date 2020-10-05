@@ -494,7 +494,7 @@ end
     
 # export positive CycPols to GAP3
 function Gapjm.gap(p::CycPol)
-  if any(x->x<0,values(p.v)) error("non-positive") end
+  if any(<(0),values(p.v)) error("non-positive") end
   res=string("[",gap(p.coeff),",",p.valuation,",")
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
 end

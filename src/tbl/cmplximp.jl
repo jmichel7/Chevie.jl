@@ -16,7 +16,7 @@ chevieset(:imp, :PrintDiagram, function (arg...,)
             if length(indices) > 1
                 print("==")
             end
-            print(join(indices[2:length(indices)], "--"), "\n")
+            print(Join(indices[2:length(indices)], "--"), "\n")
         elseif p == q
             print(indices[1], "\n", g(0), "|\\\n")
             if p != 3
@@ -165,7 +165,7 @@ chevieset(:imp, :ReflectionName, function (arg...,)
             end
         end
         if haskey(option, :TeX)
-            n = SPrint("G_{", join(arg[1:3]), "}")
+            n = SPrint("G_{", Join(arg[1:3]), "}")
         else
             n = SPrint("G", joindigits(arg[1:3]))
         end
@@ -173,32 +173,6 @@ chevieset(:imp, :ReflectionName, function (arg...,)
             n *= SPrint("(", Format(arg[4], option), ")")
         end
         return n
-    end)
-chevieset(:imp, :GeneratingRoots, function (p, q, r)
-        local roots, v, i
-        if q == 1
-            roots = [Concatenation([1], fill(0, max(0, (1 + r) - 2)))]
-        else
-            if q != p
-                roots = [Concatenation([1], fill(0, max(0, (1 + r) - 2)))]
-            end
-            v = Concatenation([-(E(p)), 1], fill(0, max(0, (1 + r) - 3)))
-            if r == 2 && (q > 1 && mod(q, 2) == 1)
-                v = v * E(p)
-            end
-            if q == p
-                roots = [v]
-            else
-                push!(roots, v)
-            end
-        end
-        for i = 2:r
-            v = fill(0, max(0, (1 + r) - 1))
-            v[i] = 1
-            v[i - 1] = -1
-            push!(roots, v)
-        end
-        return roots
     end)
 chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
         local res
@@ -229,14 +203,6 @@ chevieset(:imp, :CartanMat, function (p, q, r)
     end)
 chevieset(:imp, :ReflectionDegrees, function (p, q, r)
         return Concatenation(p * (1:r - 1), [div(r * p, q)])
-    end)
-chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
-        local res
-        res = p * (0:r - 1)
-        if p == q && (p >= 2 && r > 2)
-            res[r] = res[r] - r
-        end
-        return res
     end)
 chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
         local t
@@ -657,7 +623,7 @@ chevieset(:imp, :CharName, function (p, q, r, s, option)
         end
     end)
 chevieset(:imp, :SchurModel, function (p, q, r, phi)
-        local l, i, j, res, s, t, ci, GenHooks, v, h, d
+        local l, i, j, res, s, t, ci, GenHooks, v, h, d, p2
         if q == 1
             GenHooks = function (l, m)
                     if length(l) == 0
@@ -697,39 +663,41 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
         elseif [q, r] == [2, 2]
             ci = (chevieget(:imp, :CharInfo))(p, q, r)
             phi = (ci[:malle])[Position(ci[:charparams], phi)]
+            p2 = div(p, 2)
             if phi[1] == 1
-                res = Dict{Symbol, Any}(:coeff => 1, :factor => fill(0, max(0, (1 + (4 + p // 2)) - 1)), :vcyc => [])
+                res = Dict{Symbol, Any}(:coeff => 1, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [])
                 for l = [[1, -1, 0, 0], [0, 0, 1, -1]]
-                    l = Append(l, fill(0, max(0, (1 + p // 2) - 1)))
+                    l = Append(l, fill(0, max(0, (1 + p2) - 1)))
                     push!(res[:vcyc], [l, 1])
                 end
-                for i = 2:p // 2
+                for i = 2:p2
                     for l = [[0, 0, 0, 0, 1], [1, -1, 1, -1, 1]]
-                        l = Append(l, fill(0, max(0, (1 + (p // 2 - 1)) - 1)))
+                        l = Append(l, fill(0, max(0, (1 + (p2 - 1)) - 1)))
                         l[4 + i] = -1
                         push!(res[:vcyc], [l, 1])
                     end
                 end
             else
-                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0, max(0, (1 + (4 + p // 2)) - 1)), :vcyc => [], :root => fill(0, max(0, (1 + (4 + p // 2)) - 1)))
-                res[:rootCoeff] = E(p // 2, (2 - phi[3]) - phi[4])
+                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0,
+                max(0, (1 + (4 + p2)) - 1)), :vcyc => [], :root => fill(0//1, max(0, (1 + (4 + p2)) - 1)))
+                res[:rootCoeff] = E(p2, (2 - phi[3]) - phi[4])
                 (res[:root])[1:6] = [1, 1, 1, 1, 1, 1] // 2
-                for i = 3:p // 2
+                for i = 3:p2
                     for j = [1, 2]
-                        l = fill(0, max(0, (1 + (4 + p // 2)) - 1))
+                        l = fill(0, max(0, (1 + (4 + p2)) - 1))
                         l[4 + [j, i]] = [1, -1]
                         push!(res[:vcyc], [l, 1])
                     end
                 end
                 if haskey(CHEVIE, :old)
                     for l = [[0, -1, 0, -1, -1, 0], [0, -1, -1, 0, -1, 0], [-1, 0, -1, 0, -1, 0], [-1, 0, 0, -1, -1, 0]]
-                        l = Append(l, fill(0, max(0, (1 + (p // 2 - 2)) - 1)))
+                        l = Append(l, fill(0, max(0, (1 + (p2 - 2)) - 1)))
                         push!(l, 1)
                         push!(res[:vcyc], [l, 1])
                     end
                 else
                     for l = [[0, -1, 0, -1, -1, 0], [0, -1, -1, 0, 0, -1], [-1, 0, -1, 0, -1, 0], [-1, 0, 0, -1, 0, -1]]
-                        l = Append(l, fill(0, max(0, (1 + (p // 2 - 2)) - 1)))
+                        l = Append(l, fill(0, max(0, (1 + (p2 - 2)) - 1)))
                         push!(l, 1)
                         push!(res[:vcyc], [l, 1])
                     end
@@ -747,11 +715,11 @@ chevieset(:imp, :SchurData, function (p, q, r, phi)
             phi = (ci[:malle])[Position(ci[:charparams], phi)]
             if phi[1] == 1
                 res = Dict{Symbol, Any}(:order => [phi[2], 3 - phi[2], 2 + phi[3], 5 - phi[3], 4 + phi[4]])
-                res[:order] = Append(res[:order], 4 + Difference(1:p // 2, [phi[4]]))
+                res[:order] = Append(res[:order], 4 + Difference(1:div(p, 2), [phi[4]]))
                 return res
             else
                 res = Dict{Symbol, Any}(:order => [1, 2, 3, 4, 4 + phi[3], 4 + phi[4]])
-                res[:order] = Append(res[:order], 4 + Difference(1:p // 2, phi[[3, 4]]))
+                res[:order] = Append(res[:order], 4 + Difference(1:div(p, 2), phi[[3, 4]]))
                 res[:rootPower] = phi[2] * E(p, (phi[3] + phi[4]) - 2)
                 return res
             end

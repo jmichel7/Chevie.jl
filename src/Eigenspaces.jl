@@ -220,18 +220,23 @@ function eigenspace_projector(WF, w, d::Root1)
   end
 end
 
+# W is a PermRootGroup, L a reflection subgroup and  w in N_W(L);
+# returns the matrix by which w acts on X(Z_L)
 function GetRelativeAction(W,L,w)
   m=reflrep(W,w)
   if size(m,2)==0 return m end
-  m=m^inv(baseX(L))
+  m=baseX(L)*m*inv(baseX(L))
   m[semisimplerank(L)+1:end,semisimplerank(L)+1:end]
 end
 
 function Groups.normalizer(W::PermRootGroup,L::PermRootGroup)
+  if length(L)==1 return W end
   r=unique!(sort(reflections(L)))
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 
+# return 'action' of reflection(W,i) on X(Z_L)
+# a record with root, coroot, eigenvalue, index=i and parentMap
 function GetRelativeRoot(W,L,i)
   J=vcat(inclusiongens(L,W),[i])
 # printc("W=",W," J=",J," L=",L,"\n")
@@ -320,8 +325,7 @@ function split_levis(WF,d::Root1,ad)
   if WF isa Spets W=WF.W
   else W=WF; WF=spets(W)
   end
-  refs=filter(i->findfirst(==(reflection(W,i)),reflections(W))==i,
-             eachindex(roots(W)))
+  refs=Int.(indexin(unique(reflections(W)),reflections(W)))
   mats=map(i->reflrep(W,reflection(W,i)),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
@@ -330,18 +334,19 @@ function split_levis(WF,d::Root1,ad)
     w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=reflrep(WF,w)
-      V=permutedims(GLinearAlgebra.nullspace(permutedims(m-E(d)*one(m))))
+      V=GLinearAlgebra.lnullspace(m-E(d)*one(m))
     end
     I=refs[map(m->V==V*m, mats)]
-    HF=subspets(WF, inclusion(W)[I], w/WF.phi)
+    HF=subspets(WF, I, w/WF.phi)
     if isnothing(HF)
-      error("subspets($WF,",inclusion(W)[I],",class#",cl[1],") failed")
+      error("subspets($WF,",I,",class#",cl[1],") failed")
     else
       f=intersect(fusion_conjugacy_classes(HF, WF), cl)
-      if length(f)==0
-          error("fusion is wrong")
-          return false
+      if isempty(f)
+        error("fusion is wrong")
+        return nothing
       end
+    println("class=",cl[1]," cl=",cl," f=",f)
       cl=setdiff(cl,f)
       H=HF.W
       P=standard_parabolic(W, H)
@@ -392,13 +397,10 @@ end
 function Weyl.relative_group(W,J,indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
-  if indices!=false
-      res[:callarg]*=","
-      res[:callarg]*=joindigits(indices)
-  end
+  if indices!=false res[:callarg]*=","*joindigits(indices) end
 # res = CHEVIE[:GetCached](W, "RelativeGroups", res, x->x[:callarg])
-  if length(keys(res))>1 return res end
-  L = reflection_subgroup(W, J)
+# if length(keys(res))>1 return res end
+  L=reflection_subgroup(W, J)
   if length(J)==0
     W.prop[:MappingFromNormalizer]=w->PermX(W,GetRelativeAction(W, L, w))
     W.prop[:relativeIndices] = eachindex(gens(W))

@@ -965,7 +965,7 @@ Ram-Halverson 2.17. These tuples have the following fields:
       else
         w=char[2]*root(X[1]*X[2]*Y[1]*Y[2]*Z[char[3]]*Z[char[4]]*
           E(div(p,q),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
-        class=map(i->count(j->i==j,class), 0:3)
+        class=map(i->count(==(i),class), 0:3)
         if class[2]>0 char=sum(x->x^class[2],Z[char[[3,4]]])
         elseif class[3]>0 char=sum(X)
         elseif class[4]>0 char=sum(Y)
@@ -1063,3 +1063,9 @@ function G4_22Test(res,rows,i)
   end
   G4_22IndexChars_dict[ST][res[:parameter]]=l
 end
+
+chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
+  res=collect(p*(0:r-1))
+  if p==q && p>=2 && r>2 res[r]-=r end
+  res
+end)

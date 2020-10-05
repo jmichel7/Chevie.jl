@@ -521,9 +521,10 @@ generic_sign(WF)=(-1)^rank(Group(WF))*
 
 function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   gets(WF,:refltype)do
-    t=refltype(WF.W)
+    W=Group(WF)
+    t=refltype(W)
     c=map(x->PermRoot.indices(x),t)
-    phires=Perm(inclusion(WF.W.G),inclusion(WF.W.G).^WF.phi)
+    phires=Perm(action.(Ref(W),eachindex(roots(W)),WF.phi))
     map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
       o=deepcopy(t[c])
       J=PermRoot.indices(o[1])
@@ -532,7 +533,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
         if order(twist)==2
           rf=reduce(vcat,cycles(twist))
           getfield(o[1],:prop)[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
-        elseif order(twist)==3 && J[1]^twist!=J[2]
+        elseif twist==Perm(1,4,2)
           getfield(o[1],:prop)[:indices]=J[[1,4,3,2]]
         end
       end
@@ -577,7 +578,7 @@ function Base.show(io::IO, WF::Spets)
   if !isone(t) show(io,t) end
 end
 
-PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),w)
+PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),WF.phi\w)
 
 function PermGroups.classreps(W::Spets)
   gets(W,:classreps)do
@@ -587,7 +588,7 @@ end
 
 function PermRoot.refleigen(W::Spets)
   gets(W,:refleigen)do
-    map(W.phi.\classreps(W)) do x
+    map(classreps(W)) do x
       p=CycPol(charpoly(reflrep(W,x)))
       vcat(map(r->fill(r[1],r[2]),p.v.d)...)
     end
@@ -692,7 +693,7 @@ function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
   F=reflrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
-  refltype(res) # changes phi
+  refltype(res) # changes phi and F
   res
 end
 
@@ -752,8 +753,11 @@ function PermRoot.refltype(WF::PRC)
           scal=scals(ti.indices,tn.indices^inv(u))
         end
         if any(isnothing,scal) || !constant(scal)
-          error("no element of coset acts as scalar on orbits")
-          return nothing
+          if ti.series==:B && ti.rank==2
+            scal=[root(prod(scal))]
+          else error("no element of coset acts as scalar on orbits")
+            return nothing
+          end
         end
         scal=Root1(scal[1])
         sub=reflection_subgroup(W,ti.indices)
@@ -769,6 +773,7 @@ function PermRoot.refltype(WF::PRC)
           v=scal.*Root1.(0:z-1,z)
           m=argmin(conductor.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
+          WF.F.=reflrep(Group(WF),WF.phi)
           scal=v[m]
         end
         # simplify again by -1 in types 2A(>1), 2D(odd), 2E6

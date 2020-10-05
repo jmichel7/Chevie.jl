@@ -188,8 +188,8 @@ function Perms.reflength(w::PPerm)
   p0=count(iszero,d)
   res=n+length(d)-2*p0-count(i->i==i^w,1:n)
   if p0==length(d) return res end
-  pos=filter(x->x>0,d)
-  neg=filter(x->x<0,d)
+  pos=filter(>(0),d)
+  neg=filter(<(0),d)
   m=min(length(pos),length(neg))
   r=m:-1:1
   res-2*r[findfirst(i->length(intersect(vec(pos,i),vec(neg,i)))>0,r)]

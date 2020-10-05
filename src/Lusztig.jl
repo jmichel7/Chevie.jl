@@ -15,14 +15,14 @@ function FindSeriesInParent(h,HF,WF,sers)
      p=sort(filter(!isempty,split(y[:cuspidalName],"\\otimes ")))
 #    print(" p=",p)
      if p==n
-       p=transporting_elt(W,
-          sort(restriction(WF,inclusion(HF,h[:levi]))), 
-          sort(y[:levi]), action=(s,g)->sort(action.(Ref(W),s,g)))
+       incHW=inclusion(HF,WF,h[:levi])
+       p=transporting_elt(W,sort(incHW),sort(y[:levi]), 
+                          action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=y, op=p) end
        p=transporting_elt(W, 
-          sort(reflections(reflection_subgroup(W, inclusion(HF,h[:levi])))), 
-          sort(reflections(reflection_subgroup(W, y[:levi]))), 
-                                  action=(s,g)->sort(action.(Ref(W),s,g)))
+          sort(reflections(reflection_subgroup(W,incHW))), 
+          sort(reflections(reflection_subgroup(W,y[:levi]))),
+                          action=(s,g)->sort(s.^g))
        if !isnothing(p) return (ser=y, op=p) end
       end
     end
@@ -162,7 +162,7 @@ function LusztigInductionPieces(LF,WF)
 #      h[:relativeType]),"\n")
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
     if W isa CoxeterGroup
-      WFGL=relative_coset(WF,restriction(W,inclusion(L,h[:levi])))
+      WFGL=relative_coset(WF,inclusion(L,W,h[:levi]))
       classreps(WFGL)
       WGL=Group(WFGL)
       LFGL=relative_coset(LF,h[:levi])
@@ -178,20 +178,23 @@ function LusztigInductionPieces(LF,WF)
       WFGL=relative_coset(WF,ser[:levi],Jb)
       if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
-      rh=restriction(W,inclusion(L,vcat(map(
+      rh=inclusion(L,W,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-       h[:relativeType])...))).^op
+       h[:relativeType])...)).^op
 #     printc("rh=",rh," op=",op,"\n")
       w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
       rh=map(rh)do x
-         r=GetRelativeRoot(W,cL,x)
-         p=findfirst(i->reflection(WGL,restriction(WGL,i))==
-              PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
-         inclusion(WGL)[p] 
+        r=GetRelativeRoot(W,cL,x)
+        pr=PermX(WGL,reflection(r[:root],r[:coroot]))
+        findfirst(i->reflection(WGL,i)==pr,eachindex(roots(WGL)))
+#       p=findfirst(i->reflection(WGL,restriction(WGL,i))==
+#            PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
+#       inclusion(WGL)[p] 
       end
 #     printc("WFGL=",WFGL," rh=",rh," w=",w,"\n")
-      LFGL=subspets(WFGL,rh,w)
+#     LFGL=subspets(WFGL,restriction(WFGL,rh),w)
+      LFGL=subspets(WFGL,Vector{Int}(rh),w)
 #     printc("LFGL=",LFGL,"\n")
 #     ReflectionName(LFGL)
 #     ReflectionName(WFGL)
@@ -284,7 +287,7 @@ function LusztigInductionTable(LF,WF;check=true)
   end
   smap = sum(maps)
   if all(v->all(isinteger, v), smap)
-    if LF.phi==WF.phi && !all(x->x>=0, Int.(smap))
+    if LF.phi==WF.phi && !all(>=(0), Int.(smap))
         ChevieErr("non-positive RLG for untwisted L")
     end
     return ret(smap)
@@ -303,7 +306,7 @@ function LusztigInductionTable(LF,WF;check=true)
       end
   end
   scalars=sum(i->maps[i]*scalars[i],1:length(scalars))
-  if LF.phi==WF.phi && !all(x->x>=0, Flat(scalars))
+  if LF.phi==WF.phi && !all(>=(0), Flat(scalars))
       ChevieErr("non-positive RLG for untwisted L")
   end
   return ret(scalars)
@@ -340,7 +343,7 @@ function HCInductionTable(HF, WF)
       else
         Hi=reflection_subgroup(Wi,
              map(x->Int(findfirst(y->x in orbit(WF.phi,y),Jb)), 
-       restriction(W,inclusion(H,vcat(map(x->x.indices,h[:relativeType])...)))))
+        inclusion(H,W,vcat(map(x->x.indices,h[:relativeType])...))))
       end
     else
       L = reflection_subgroup(W, ser[:levi])

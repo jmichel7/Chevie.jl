@@ -223,7 +223,7 @@ Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v;check=false)
 `divrem(a::Pol, b::Pol)`
 
 computes `(p,q)` such that `a=p*b+q`
-When the leading coefficient of b is ±1 does not change type
+When the leading coefficient of b is ±1 does not use inverse
 """
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
@@ -244,9 +244,9 @@ end
 
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 
-Base.:/(p::Pol,q::Pol)=p//q
+Base.://(p::Pol,q::Pol)=isone(q.c[end]^2) ? p/q : p/(q//1)
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v;check=false)
-function Base.://(p::Pol,q::Pol)
+function Base.:/(p::Pol,q::Pol)
   if q.c==[1] return shift(p,-q.v)
   elseif q.c==[-1] return shift(-p,-q.v)
   end
@@ -286,7 +286,8 @@ function Base.inv(p::Pol)
   Pol([inv(p.c[1])],-p.v;check=false)
 end
 
-const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1],0;check=false))
+# The  computed  cyclotomic  polynomials  are  cached 
+const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
 """
 `cyclotomic_polynomial(n)`
  
@@ -296,16 +297,13 @@ returns the `n`-th cyclotomic polynomial.
 julia> cyclotomic_polynomial(5)
 Pol{Int64}: q⁴+q³+q²+q+1
 ```
- 
-The  computed  cyclotomic  polynomials  are  cached  in  the global `Dict ̀
-`Pols.cyclotomic_polynomial_dict`
 """
 function cyclotomic_polynomial(n::Integer)
   get!(cyclotomic_polynomial_dict,n) do
-    v=fill(0,n+1);v[1]=-1;v[n+1]=1;res=Pol(v,0;check=false)
+    res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
-      if d!=n
-        res,foo=divrem(res,cyclotomic_polynomial(d))
+      if d!=1 && d!=n
+        res,_=divrem(res,cyclotomic_polynomial(d))
       end
     end
     res
