@@ -337,6 +337,7 @@ function split_levis(WF,d::Root1,ad)
       V=GLinearAlgebra.lnullspace(m-E(d)*one(m))
     end
     I=refs[map(m->V==V*m, mats)]
+    println("I=$I\nphi=",w/WF.phi)
     HF=subspets(WF, I, w/WF.phi)
     if isnothing(HF)
       error("subspets($WF,",I,",class#",cl[1],") failed")
@@ -361,24 +362,25 @@ function split_levis(WF,d::Root1,ad)
   return res
 end
 
-function PermRoot.standard_parabolic(W::PermRootGroup, H)
-  wr=inclusiongens(W)
-  hr=inclusiongens(H)
-  if issubset(hr,wr) return Perm() end
-  I=combinations(wr,length(hr))
+function Weyl.standard_parabolic(W::PermRootGroup, H)
+  hr=inclusiongens(H,W)
+  println("hr=",hr)
+  if issubset(hr,eachindex(gens(W))) return Perm() end
+  I=combinations(eachindex(gens(W)),length(hr))
+  # I=map(x->inclusion(W,x),parabolic_representatives(W))
   I=filter(l->length(reflection_subgroup(W,l))==length(H),I)
   try_=function(a)
     H1=H
     w=Perm()
+    C=W
     for i in 1:length(a)
-      C=centralizer(W, reflection_subgroup(W,a[1:i-1]))
-      t=transversal(C,inclusion(H1)[i])
-      if haskey(t,a[i]) w1=t[a[i]]
-      else
+      if i>1 C=centralizer(C, gens(W)[a[i-1]]) end
+      t=transversal(C,inclusion(H1,i))
+      w1=get(t,inclusion(W,a[i]))do
         t=transversal(C,H1(i))
-        r=reflection(W,restriction(W)[a[i]])
-        if haskey(t,r) w1=t[r] else return nothing end
+        get(t,W(a[i]),nothing)
       end
+      if isnothing(w1) return nothing end
       w=w*w1
       H1=H1^w1
     end

@@ -488,10 +488,10 @@ end
 end
 
 function Base.:+(x::Cyc,y::Cyc)
-  if iszero(x) return y
-  elseif iszero(y) return x
-  end
   a,b=promote(x,y)
+  if iszero(a) return b
+  elseif iszero(b) return a
+  end
   a,b=promote_conductor(a,b)
   lower(Cyc(a.n,a.d+b.d))
 end

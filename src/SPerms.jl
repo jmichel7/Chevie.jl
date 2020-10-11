@@ -508,8 +508,6 @@ function sstab_onmats(M,extra=nothing)
   return Group(gen)
 end
 
-comm(a,b)=inv(a)*inv(b)*a*b
-
 """
 `SPerm_onmats(M,N[,m,n])`
 
@@ -519,7 +517,7 @@ permutation `p` such that `onmats(M,p)=N` if such a permutation exists, and
 signed permutation `p` should also satisfy `m^p==n`.
 
 This  routine is  useful to  identify two  objects which are isomorphic but
-with  different  labelings.  It  is  used  in   CHEVIE  to identify Lusztig
+with  different  labelings.  It  is  used  in   Chevie  to identify Lusztig
 Fourier  transform matrices  with standard  (classified) data.  The program
 uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
 80×80.
@@ -528,7 +526,7 @@ Efficient version of
 `transporting_elt(CoxHyperoctaedral(size(M,1)),M,N;action=onmats)`
 
 ```julia-repl
-julia> f=SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+ER(-3))/2);
+julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+ER(-3))/2);
 
 julia> M=fourier(conj(f));
 

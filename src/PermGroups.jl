@@ -289,6 +289,9 @@ function elements(G::PermGroup)
   res
 end
 
+#------------------------- cosets for PermGroups -----------------------
+
+# computes "canonical" element of W.phi
 function reduced(W::PermGroup,phi)
   for i in eachindex(base(W))
     t=transversals(W)[i]
@@ -298,7 +301,6 @@ function reduced(W::PermGroup,phi)
   phi
 end
 
-# computes "canonical" element of W.phi
 function Groups.Coset(W::PermGroup,phi::Perm)
   Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
 end

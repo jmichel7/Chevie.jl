@@ -5,10 +5,17 @@ export CHEVIE, chevieget, chevieset, getchev
 
 const CHEVIE=Dict{Symbol,Any}(
  :compat=>Dict(:MakeCharacterTable=>x->x,
-               :AdjustHeckeCharTable=>(x,y)->x,
                :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end),
  :info=>false
 )
+
+CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)
+  r=eachindex(tbl[:classtext])
+  for i in r 
+    f=prod(-map(x->x[2],param[tbl[:classtext][i]]))
+    for j in r tbl[:irreducibles][j][i]*=f end
+  end
+end
 
 function chevieget(t::Symbol,w::Symbol)
   if haskey(CHEVIE[t],w) return CHEVIE[t][w] end

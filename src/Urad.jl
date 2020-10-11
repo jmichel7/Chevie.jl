@@ -265,7 +265,7 @@ function check_root_order(W)
   if length(unique(l))!=length(l)
     error("the linear form takes the same value on two roots")
   end
-  i=Perm(sortperm(l))
+  i=sortPerm(l)
   if !isone(i) error("Need ", i, " to sort the roots of ", W, "\n") end
 end
 

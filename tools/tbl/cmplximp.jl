@@ -624,7 +624,6 @@ chevieset(:imp, :CharName, function (p, q, r, s, option)
     end)
 chevieset(:imp, :SchurModel, function (p, q, r, phi)
         local l, i, j, res, s, t, ci, GenHooks, v, h, d, p2
-        println("passed here")
         if q == 1
             GenHooks = function (l, m)
                     if length(l) == 0
@@ -662,7 +661,6 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
             end
             return res
         elseif [q, r] == [2, 2]
-            println("got here")
             ci = (chevieget(:imp, :CharInfo))(p, q, r)
             phi = (ci[:malle])[Position(ci[:charparams], phi)]
             p2 = div(p, 2)
@@ -680,11 +678,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
                     end
                 end
             else
-            println("p2=",p2," type=",typeof(p2))
-                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0,
-                max(0, (1 + (4 + p2)) - 1)), :vcyc => [], :root => fill(0//1,
-                max(0, (1 + (4 + p2)) - 1)))
-                display(res[:root])
+                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [], :root => fill(0, max(0, (1 + (4 + p2)) - 1)) // 1)
                 res[:rootCoeff] = E(p2, (2 - phi[3]) - phi[4])
                 (res[:root])[1:6] = [1, 1, 1, 1, 1, 1] // 2
                 for i = 3:p2

@@ -205,7 +205,7 @@ Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
 function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
   if d<0 return b+a end
-  res=fill(zero(T1)+zero(T2),max(length(a.c),d+length(b.c)))
+  res=fill(zero(promote_type(T1,T2)),max(length(a.c),d+length(b.c)))
 @inbounds view(res,eachindex(a.c)).=a.c
 @inbounds view(res,d+eachindex(b.c)).+=b.c
   Pol(res,a.v)

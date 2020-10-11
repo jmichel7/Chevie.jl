@@ -501,21 +501,21 @@ prim = [
   (ST=20, r=2, s=180, o=3, h=30), 
   (ST=21, r=2, s=360, o=3, h=60), 
   (ST=22, r=2, s=120, o=2, h=30), 
-  (series="H", r=3, s=20, o=2, h=10), 
+  (series=:H, r=3, s=20, o=2, h=10), 
   (ST=24, r=3, s=56, o=2, h=14), 
   (ST=25, r=3, s=108, o=3, h=12), 
   (ST=26, r=3, s=216, o=3, h=18), 
   (ST=27, r=3, s=360, o=2, h=30), 
-  (series="F", r=4, s=48, o=2, h=12), 
+  (series=:F, r=4, s=48, o=2, h=12), 
   (ST=29, r=4, s=320, o=2, h=20), 
-  (series="H", r=4, s=600, o=2, h=30), 
+  (series=:H, r=4, s=600, o=2, h=30), 
   (ST=31, r=4, s=1920, o=2, h=30), 
   (ST=32, r=4, s=6480, o=3, h=30), 
   (ST=33, r=5, s=432, o=2, h=18), 
   (ST=34, r=6, s=54432, o=2, h=42), 
-  (series="E", r=6, s=72, o=2, h=12), 
-  (series="E", r=7, s=576, o=2, h=18), 
-  (series="E", r=8, s=17280, o=2, h=30)]
+  (series=:E, r=6, s=72, o=2, h=12), 
+  (series=:E, r=7, s=576, o=2, h=18), 
+  (series=:E, r=8, s=17280, o=2, h=30)]
 
   r=semisimplerank(W)
   s=div(length(W),factorial(r))
@@ -593,8 +593,9 @@ end
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that 
 # reflection.(Ref(H),k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
-# println("H=$H\n g=$g\n t=$t")
-  orders=Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
+# println("g=$g\n t=");ds(t)
+  orders=t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
+           Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
   rels=groupby(r->maximum(r[1]),braid_relations(t))
   # check gens satisfy relations concerning them, find if can add
   # another gen from rest
@@ -648,7 +649,7 @@ end
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
   gets(W,:refltype)do
     map(diagblocks(cartan(W))) do I
-      R=reflection_subgroup(W,I;type=false)
+      R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;type=false)
       d=TypeIrred(type_irred(R))
       if cartan(d)==cartan(R)
         d.indices=I
@@ -740,20 +741,16 @@ function bipartite_decomposition(W)
   L=Int[]
   R=Int[]
   rest=collect(eachindex(gens(W)))
-  function comm(x,y)
-    p=gens(W)[x]
-    q=gens(W)[y]
-    return p*q==q*p
-  end
+  commute(x,y)=W(x)*W(y)==W(y)*W(x)
   while length(rest)>0
-    r=findfirst(x->any(y->!comm(x,y),L),rest)
+    r=findfirst(x->any(y->!commute(x,y),L),rest)
     if r!=nothing 
-      if any(y->!comm(rest[r],y),R) 
+      if any(y->!commute(rest[r],y),R) 
         error(W," has no bipartite decomposition")
       end
       push!(R,rest[r])
       deleteat!(rest,r)
-    else r=findfirst(x->any(y->!comm(x,y),R),rest)
+    else r=findfirst(x->any(y->!commute(x,y),R),rest)
       if r!=nothing push!(L,rest[r]); deleteat!(rest,r)
       else push!(L,rest[1]); deleteat!(rest,1);
       end
@@ -967,7 +964,11 @@ julia> rank(W)
 3
 ```
 """
-semisimplerank(W::PermRootGroup)=length(independent_roots(W))
+function semisimplerank(W::PermRootGroup)
+  gets(W,:semisimplerank)do
+    length(independent_roots(W))
+  end
+end
 
 function baseX(W::PermRootGroup{T})where T
   gets(W,:baseX) do
@@ -1007,9 +1008,13 @@ end
 function PermGroups.reduced(W::PermRootGroup,F)
   function redcentre(W,F)
     FF=F.*elements(centre(W))
-    ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
-    m=minimum(map(x->length(unique(x)),ch))
-    m=findall(x->length(unique(x))==m,ch)
+    if F in parent(W)
+      ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
+    else
+      ch=map(x->roots(CycPol(charpoly(reflrep(W,x)))),FF)
+    end
+    m=minimum(map(x->sum(conductor.(x)),ch))
+    m=findall(x->sum(conductor.(x))==m,ch)
     minimum(FF[m])
   end
   if isone(F) return F end
@@ -1025,6 +1030,24 @@ function PermGroups.reduced(W::PermRootGroup,F)
   ir=sort(base.^F)
   w=transporting_elt(W,sort(base),ir;action=(x,y)->sort(x.^y))
   if !isnothing(w) return redcentre(W,F/w) end
+  t=refltype(W)
+  for a in t
+    subgroup=reflection_subgroup(W,a.indices)
+    base=gens(subgroup).^F
+    if !all(x->x in W,base) error("F must normalize W") end
+    if !all(x->x in subgroup,base) 
+      error("not implemented: F permutes components") 
+    end
+    if reflection_name(a)=="G333"
+     base=chevieget(:timp,:ReducedInRightCoset)(subgroup,F)
+      if base==false error( "should not happen" )
+      else a.indices=inclusion(subgroup,W,base[:gen])
+        F=base[:phi]
+      end
+      return (phi=F,reflectiongroup=reflection_subgroup(W,
+                     inclusion(subgroup,W,indices(t))))
+    end
+  end
   return nothing
 end
 
@@ -1212,6 +1235,7 @@ end
 function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};type=true)
 # println("r=",r,"\ncr=",cr)
+  if isempty(r) error("should call torus instead") end
   matgens=map(reflection,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
   rr=map(x->convert.(T,x),r)
@@ -1230,7 +1254,8 @@ function PRG(r::AbstractVector{<:AbstractVector},
     newroots=false
     for (j,refl) in enumerate(refls)
       lr=length(rr)
-      for y in Ref(transpose(matgens[j])).*rr[length(refl)+1:end]
+      if length(refl)<lr
+      for y in eachrow(toM(rr[length(refl)+1:end])*matgens[j])
         p=findfirst(==(y),rr) 
 	if isnothing(p) || p>lr
           push!(rr,y)
@@ -1239,6 +1264,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
           push!(refl,length(rr))
         else push!(refl,p)
 	end
+      end
       end
     end
 #   println(" ",length(rr))
@@ -1259,6 +1285,8 @@ function PRG(r::AbstractVector{<:AbstractVector},
   W
 end
 
+PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
+
 @inline Gapjm.roots(W::PRG)=W.roots
 @inline Gapjm.roots(W::PRG,i)=W.roots[i]
 simpleroots(W::PRG)=roots(W,eachindex(gens(W)))
@@ -1278,7 +1306,7 @@ function coroots(W::PRG,i::Integer)
   W.coroots[i]=r
 end
 
-coroots(W::PRG,i::AbstractVector{<:Integer})=coroots.(Ref(W),i)
+coroots(W::PRG,i::AbstractVector{<:Integer})=isempty(i) ? empty(W.coroots) : coroots.(Ref(W),i)
 
 function cartan_coeff(W::PRG,i,j)
   v=findfirst(!iszero,W.roots[i])
@@ -1326,29 +1354,37 @@ function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   reflection_subgroup(WW,inclusiongens(W).^p)
 end
 
-# contrary to Chevie, I is indices in W and not parent(W)
+# contrary to Chevie, W is guaranteed to be a parent here
 function reflection_subgroup(W::PRG,I::AbstractVector;type=true)
-  if isempty(I) inclu=Int[]
-  else G=PRG(roots(W,I),coroots(W,I);type=false)
-    inclu=map(x->findfirst(isequal(x),W.roots),G.roots)
+  if !haskey(W.prop,:reflection_subgroups)
+    W.prop[:reflection_subgroups]=Dict(
+      Int[]=>PRSG(empty(gens(W)),Int[],zeros(Int,length(W.roots)),W,
+                  Dict{Symbol,Any}(:rank=>rank(W),:refltype=>TypeIrred[])))
   end
-  prop=Dict{Symbol,Any}()
-  if isempty(inclu) prop[:rank]=rank(W) end
-  restriction=zeros(Int,length(W.roots))
-  restriction[inclu]=1:length(inclu)
-  H=PRSG(reflections(W)[I],inclu,restriction,W,prop)
-  if type
-    t=refltype(H)
-    l=PermRoot.indices(t)
-    if sort(l)!=eachindex(gens(H))
-      InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
-        ","),"> for ",sprint(showtypes,t;context=:limit=>true),
-                 "<",length(inclusion(H))," refs>\n")
-      H=reflection_subgroup(W,inclusion(H,l);type=false)
-      for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
-      H.prop[:type]=t
+  H=get!(W.prop[:reflection_subgroups],Vector{Int}(I))do
+    if I==eachindex(gens(W)) G=W
+      inclu=collect(eachindex(roots(W)))
+    else 
+      G=PRG(roots(W,I),coroots(W,I);type=false)
+      inclu=Int.(indexin(G.roots,W.roots))
     end
+    restr=zeros(Int,length(W.roots));restr[inclu]=1:length(inclu)
+    H=PRSG(reflections(W)[I],inclu,restr,W,Dict{Symbol,Any}())
+    if type
+      t=refltype(H)
+      l=PermRoot.indices(t)
+      if sort(l)!=eachindex(gens(H))
+        InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
+          ","),"> for ",sprint(showtypes,t;context=:limit=>true),
+                   "<",length(inclusion(H))," refs>\n")
+        H=reflection_subgroup(W,inclusion(H,l);type=false)
+        for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
+        H.prop[:type]=t
+      end
+    end
+    H
   end
+  if !haskey(H.prop,:refltype) delete!(W.prop[:reflection_subgroups],I) end
   H
 end
 
@@ -1361,7 +1397,7 @@ function Base.show(io::IO, W::PRSG)
     print(io,"reflection_subgroup(",W.parent,",",I,")") 
     return
   end
-  n=I[PermRoot.indices(refltype(W))]
+  n=inclusion(W,PermRoot.indices(refltype(W)))
   if n!=eachindex(gens(W.parent))
     print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}=")) 
   end
@@ -1568,7 +1604,7 @@ value  of the polynomial  function on `a₁e₁+…+aₙeₙ`  is obtained by ca
 `f(a₁,…,aₙ)`. This function depends on the classification, and is dependent
 on the exact reflection representation of `W`. So for the moment it is only
 implemented   when  the  reflection   representation  for  the  irreducible
-components has the same Cartan matrix as the one provided by CHEVIE for the
+components has the same Cartan matrix as the one provided by Chevie for the
 corresponding  irreducible  group.  The  polynomials  are invariant for the
 natural   action  of   the  group   elements  as   matrices;  that  is,  if
 `m==reflrep(W,w)`  for some  `w` in  `W`, then  an invariant  `f` satisfies

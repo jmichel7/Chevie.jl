@@ -258,7 +258,7 @@ end
 rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
 rsprint(x;p...)=sprint(show,x;context=IOContext(stdout,:limit=>true,p...))
 
-function joindigits(l::AbstractVector,delim="()";always=false,sep=",")
+function joindigits(l,delim="()";always=false,sep=",")
   big=any(l.>=10)
   s=big ? join(l,sep) : join(l)
   (big || always)&& !isempty(delim) ? delim[1]*s*delim[2] : s

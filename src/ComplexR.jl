@@ -271,4 +271,6 @@ function reflection_name(io::IO,W)
   fromTeX(io,r)
 end
 
+reflection_name(t::TypeIrred)=getchev(t,:ReflectionName,Dict())
+
 end

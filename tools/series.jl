@@ -88,7 +88,7 @@ function SubsetsSum(S, l, v, lv)
   found = 0
   # s assumed to be in P at this stage
   # S= initial S minus Sum(l{s})
-  # t= remaining elements of [1..Length(l)] which could be in P
+  # t= remaining elements of eachindex(l) which could be in P
   # nonsolved= indices of nonsolved entries of S
   # v= remaining v to match
   inner = function (S, s, t, nonsolved, v, factor)
@@ -112,9 +112,9 @@ function SubsetsSum(S, l, v, lv)
     if length(ll[1][:cand])>LIMSubsetsSum ll = [ll[1]]
     else ll=filter(x->length(x[:cand])<=LIMSubsetsSum,ll)
     end
-    solved = []
-    good = []
-    bad = []
+    solved = Int[]
+    good = Int[]
+    bad = Int[]
     for p in ll
      p[:sols]=filter(e->sum(getindex.(l[e],p[:pos]))==S[p[:pos]],combinations(p[:cand]))
       if length(p[:sols])==0 return []
@@ -625,8 +625,10 @@ function Weyl.relative_group(s::Series)
     H = intersect(H, N)
     if length(L)!=1 H=H/L end
     if length(H)==1 error("H trivial") end
-    if !iscyclic(H) error("H not cyclic") end
-    res[:hom]=elements(H)[findfirst(y->order(y)==length(H),elements(H))]
+    ee=elements(H)
+    gen=findfirst(y->order(y)==length(H),ee)
+    if isnothing(gen) error("H not cyclic") end
+    res[:hom]=ee[gen]
     r=bigtosmall(reflrep(W, func(res[:hom])))
     ref=reflection(r)
     n=ref.eig

@@ -89,7 +89,7 @@ end
 
 This function creates a new family in two possible ways.
 
-In  the first case `f` is a string which denotes a family known to  CHEVIE.
+In  the first case `f` is a string which denotes a family known to  Chevie.
 Examples are "S3",   "S4",   "S5"   which denote the family obtained as the
 Drinfeld  double of the symmetric group  on 3,4,5 elements, or "C2"   which
 denotes the Drinfeld double of the cyclic group of order 2.
@@ -436,17 +436,17 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
 end)
 
 chevieset(:families,:X5,SubFamilyij(chevieget(:families,:X)(6),1,3,1-E(3)))
-CHEVIE[:families][:X5][:cospecial]=5
+chevieget(:families,:X5)[:cospecial]=5
 chevieset(:families,:Z4,chevieget(:families,:ExtPowCyclic)(4,1))
-CHEVIE[:families][:Z4][:fourierMat]*=-E(4)
-CHEVIE[:families][:Z4][:eigenvalues]/=chevieget(:families,:Z4)[:eigenvalues][2]
-CHEVIE[:families][:Z4][:special]=2
-CHEVIE[:families][:Z4][:qEigen]=[1,0,1,0]//2
+chevieget(:families,:Z4)[:fourierMat]*=-E(4)
+chevieget(:families,:Z4)[:eigenvalues]/=chevieget(:families,:Z4)[:eigenvalues][2]
+chevieget(:families,:Z4)[:special]=2
+chevieget(:families,:Z4)[:qEigen]=[1,0,1,0]//2
 
 chevieset(:families,:Z9,chevieget(:families,:ExtPowCyclic)(9,1))
 #if CHEVIE.families.Z9.eigenvalues!=List([0..8],i->E(9)^(5*i^2))then Error();fi;
-CHEVIE[:families][:Z9][:perm]=perm"(2,9)(3,8)(4,7)(5,6)"
-CHEVIE[:families][:Z9][:qEigen]=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
+chevieget(:families,:Z9)[:perm]=perm"(2,9)(3,8)(4,7)(5,6)"
+chevieget(:families,:Z9)[:qEigen]=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
 
 chevieset(:families,:QZ,function(n)
   pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
@@ -930,7 +930,7 @@ end
     `FusionAlgebra(f::Family)`
     `FusionAlgebra(S,special=1)`
 
-All  the Fourier matrices `S` in CHEVIE are unitary, that is `S⁻¹=conj(S)`,
+All  the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=conj(S)`,
 and  have a  *special* line  `s` (the  line of  index `s=special(f)`  for a
 family  `f`) such that no entry `Sₛ,ᵢ`  is equal to `0`. Further, they have
 the  property that  the sums  `Cᵢ,ⱼ,ₖ=sumₗ Sᵢ,ₗ  Sⱼ,ₗ conj(Sₖ,ₗ)/Sₛ,ₗ` take

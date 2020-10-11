@@ -27,8 +27,7 @@ function EvalPolRoot(pol::Pol,x,n,p)
   if isnothing(j) return 0 end
   pol=Pol(P[1:j],0)
   l=pol.v-1+filter(i->!iszero(pol.c[i]),eachindex(pol.c))
-  push!(l,n)
-  r=gcd(l...)
+  r=gcd(n,l...)
   pol=Pol(pol.c[1:r:length(pol.c)],div(pol.v,r))
   pol(GetRoot(x,div(n,r))*p^r)
 end
@@ -65,7 +64,7 @@ end
 function ImprimitiveCuspidalName(S)
   r=ranksymbol(convert(Vector{Vector{Int}},S))
   d=length(S)
-  s=joindigits(map(length,S))
+  s=joindigits(length.(S))
   if r==0 return "" end
   if sum(length,S)%d==1 # G(d,1,r)
     if r==1 return d==3 ? "Z_3" : "Z_{$d}^{$s}"
@@ -78,7 +77,7 @@ function ImprimitiveCuspidalName(S)
         p=Dict("212010"=>"-1","221001"=>"1",
                "211200"=>"\\zeta^2","220110"=>"\\zeta_3")
         return "G_2[$(p[s])]"
-      else p=CHEVIE.R("SymbolToParameter","I")(S);
+      else p=chevieget(:I,:SymbolToParameter)(S);
 	return "I_2($d)",FormatGAP(p)
       end
       elseif r==3 && d==3 
@@ -110,7 +109,6 @@ chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
   end)
 
 chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
-chevieset(:D,:CharTable,n->chevieget(:imp,:CharTable)(2,2,n))
 chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 chevieset(:A,:CharTable,function(n)
   ct=chevieget(:imp,:CharTable)(1,1,n+1)
@@ -169,7 +167,57 @@ end)
 
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
 chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
-chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))
+
+#chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))
+
+chevieset(:D,:HeckeCharTable,function(n,para,root)
+function chard(n,q)
+  if n%2==0
+    n1=div(n,2)
+    if n1==2 AHk=[[1,-1],[1,q^2]]
+    else AHk=chevieget(:imp,:HeckeCharTable)(1,1,n1,fill([q^2,-1],n1-1),
+                                         [])[:irreducibles]
+    end
+    pA=partitions(n1)
+    Airr(x,y)=AHk[findfirst(==(x),pA)][findfirst(==(y),pA)]
+  end
+  BHk=chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
+  pB=chevieget(:B,:CharInfo)(n)[:charparams]
+  Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB)][findfirst(==(y),pB)]
+  function value(lambda,mu)
+    if length(lambda)>2
+      delta=[lambda[1], lambda[1]]
+      if !(mu[2] isa Vector)
+        vb=Birr(delta,[mu[1],Int[]])//2
+        va=(q+1)^length(mu[1])//2*Airr(lambda[1],div.(mu[1],2))
+        if "+-"[lambda[3]+1]==mu[2] val=vb+va
+        else val=vb-va
+        end
+      else val=Birr(delta,mu)//2
+      end
+    else
+      if !(mu[2] isa Vector) val=Birr(lambda, [mu[1], Int[]])
+      else val=Birr(lambda, mu)
+      end
+    end
+    return val
+  end
+  [[value(lambda,mu) for mu in chevieget(:D,:ClassInfo)(n)[:classparams]]
+   for lambda in chevieget(:D,:CharInfo)(n)[:charparams]] 
+end
+   u=-para[1][1]//para[1][2]
+   tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
+   tbl[:identifier]=tbl[:name]
+   tbl[:parameter]=fill(u,n)
+   tbl[:irreducibles]=chard(n,u)
+#  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
+#     rec(charparam:=p,charname:=PartitionTupleToString(p)));
+   merge!(tbl,chevieget(:D,:ClassInfo)(n))
+   CHEVIE[:compat][:AdjustHeckeCharTable](tbl,para);
+   tbl
+  end)
+chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
+
 chevieset(:imp,:PowerMaps,function(p,q,r)
   if q!=1
     InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
@@ -278,10 +326,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     ctype=2
     char=2
   end
-  if char==2 ss=XSP(4,2,r)
-  elseif ctype==1 ss=XSP(2,1,r)
-  else ss=XSP(2,0,r)
-  end
+  ss=char==2 ? XSP(4,2,r) : ctype==1 ? XSP(2,1,r) : XSP(2,0,r)
   l = union(map(c->map(x->[defectsymbol(x[:symbol]), sum(sum,x[:sp])], c), ss))
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc = Dict{Symbol, Any}(:classes=>[])
@@ -345,7 +390,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       cc[:name] = joindigits(cc[:parameter])
     else
       ctype = 1
-      cc[:dimBu] = (cl[1])[:dimBu]
+      cc[:dimBu] = cl[1][:dimBu]
       cc[:name] = join(map(function(x)
         res=joindigits(fill(0,max(0,x[2]))+x[1],"[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
@@ -357,11 +402,10 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     else j = cc[:parameter]
     end
     for j in tally(j)
-      if mod(j[1], 2) == mod(ctype, 2)
-        cc[:red] = cc[:red] * coxgroup(:C, div(j[2],2))
+      if mod(j[1],2)==mod(ctype,2) cc[:red]*=coxgroup(:C, div(j[2],2))
       elseif mod(j[2], 2) != 0
         if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
-       elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
+      elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
       else cc[:red]*=torus(1)
       end
     end
@@ -412,36 +456,36 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       b=reverse(filter(!iszero,b))
       sum(d)>=1 ? [a, b] : [b, a]
     end
-    addSpringer = function (f, i, s, k)
+    function addSpringer(f, i, s, k)
       ss = First(uc[:springerSeries], f)
-      if s in [[[], [1]], [[], []]] p=1
-      elseif s == [[1], []] p = 2
+      if s in [[Int[],[1]],[Int[],Int[]]] p=1
+      elseif s==[[1],Int[]] p=2
       else p = Position(CharParams(ss[:relgroup]), [s])
       end
       ss[:locsys][p] = [i, k]
     end
-    trspringer = function (i, old, new)
-        for ss in uc[:springerSeries]
-            for c in ss[:locsys]
-                if c[1] == i
-                    p = Position(old, c[2])
-                    if p != false c[2] = new[p] end
-                end
-            end
+    function trspringer(i, old, new)
+      for ss in uc[:springerSeries]
+        for c in ss[:locsys]
+          if c[1] == i
+            p=findfirst(==(c[2]),old)
+            if !isnothing(p) c[2]=new[p] end
+          end
         end
+      end
     end
     d = 0
     while 4d^2-3d<=r
       i=4d^2-3d
       if mod(r-d,2)==0
-          l = Concatenation(1:i, i + 2:(i + 4) - (i + 2):r)
+          l=vcat(1:i,i+2:2:r)
           ss=Dict{Symbol, Any}(:relgroup=>coxgroup(:B,div(r-i,2)),
                                :levi => l, :Z => [-1])
           ss[:locsys]=fill([0,0],NrConjugacyClasses(ss[:relgroup]))
           push!(uc[:springerSeries],ss)
-          i = 4 * d ^ 2 + 3d
-          if i <= r && d != 0
-            l = vcat(1:i,i+2:2:r)
+          i=4d^2+3d
+          if i<=r && d!=0
+            l=vcat(1:i,i+2:2:r)
             ss= Dict{Symbol, Any}(:relgroup=>coxgroup(:B,div(r-i,2)),
                                   :levi => l, :Z => [-1])
             ss[:locsys]=fill([0,0],NrConjugacyClasses(ss[:relgroup]))
@@ -451,18 +495,18 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       d+=1
     end
     l=filter(i->all(c->mod(c[1],2)==0 || c[2]==1,
-             tally(uc[:classes][i][:parameter])),eachindex(uc[:classes])) 
+       tally(uc[:classes][i][:parameter])),eachindex(uc[:classes])) 
     for i in l
       cl=uc[:classes][i]
       s=LuSpin(cl[:parameter])
       if length(cl[:Au]) == 1
-          cl[:Au] = CoxeterGroup("A", 1)
-          trspringer(i, [1], [2])
-          d = 1
+        cl[:Au] = CoxeterGroup("A", 1)
+        trspringer(i, [1], [2])
+        d = 1
       elseif length(cl[:Au]) == 4
-          cl[:Au] = CoxeterGroup("B", 2)
-          trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
-          d = 2
+        cl[:Au] = CoxeterGroup("B", 2)
+        trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
+        d = 2
       else
         error("Au non-commutative of order ",Size(cl[:Au])*2,"  !  implemented")
       end
@@ -474,13 +518,13 @@ end)
 
 chevieset(:D,:UnipotentClasses,function(n,char)
   addSpringer = function (s, i, cc)
-     ss = First(uc[:springerSeries], x->x[:defect] == DefectSymbol(s[:symbol]))
-     if s[:sp] in [[[], [1]], [[], []]] p = 1
-     elseif s[:sp] == [[1], []] p = 2
-     else p = Position(CharParams(ss[:relgroup]), [s[:sp]])
-     end
-     ss[:locsys][p] = [i, Position(CharParams(cc[:Au]), 
-                                   map(x->x ? [1,1] : [2], s[:Au]))]
+    ss = First(uc[:springerSeries], x->x[:defect] == DefectSymbol(s[:symbol]))
+    if s[:sp] in [[[], [1]], [[], []]] p = 1
+    elseif s[:sp] == [[1], []] p = 2
+    else p = Position(CharParams(ss[:relgroup]), [s[:sp]])
+    end
+    ss[:locsys][p] = [i, Position(CharParams(cc[:Au]), 
+                                  map(x->x ? [1,1] : [2], s[:Au]))]
   end
   function partition2DR(part)
     p=sort(reduce(vcat,map(x->1-x:2:x-1, part)))
@@ -488,30 +532,30 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     vcat([p[1]+p[2]], map(i->p[i+1]-p[i], 1:length(p)-1))
   end
   if char==2
-    ss = XSP(4, 0, n, 1)
+    ss=XSP(4, 0, n, 1)
     symbol2partition = function (S)
       c=sort(reduce(vcat,S))
       i = 1
       part = Int[]
       ex = Int[]
       while i <= length(c)
-          l = 2 * (c[i] - 2 * (i - 1))
-          if i == length(c) || c[i + 1] - c[i] > 1
-              push!(part, l + 2)
-              i+=1
-          elseif c[i + 1] - c[i] > 0
-              part = Append(part, [l+1, l+1])
-              i+=2
-          else
-              part = Append(part, [l, l])
-              i+=2
-              push!(ex, l)
-          end
+        l=2(c[i]-2(i-1))
+        if i==length(c) || c[i+1]-c[i]>1
+          push!(part,l+2)
+          i+=1
+        elseif c[i+1]-c[i]>0
+          append!(part,[l+1,l+1])
+          i+=2
+        else
+          append!(part,[l,l])
+          i+=2
+          push!(ex,l)
+        end
       end
       [reverse(filter(!iszero,sort(part))), ex]
     end
   else
-    ss = XSP(2, 0, n, 1)
+    ss=XSP(2, 0, n, 1)
     function symbol2partition(S)
       c=sort(reduce(vcat,S))
       i = 1
@@ -539,9 +583,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       else
           res[:Z]= mod(n, 2)==0  ? [-1, -1] : [-1]
       end
-      if d[1]==0 res[:relgroup]=coxgroup(:D, d[2])
-      else res[:relgroup] = coxgroup(:B, d[2])
-      end
+      res[:relgroup]=coxgroup(d[1]==0 ? :D : :B, d[2])
       res[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(res[:relgroup])]
       res
   end, l))
@@ -549,13 +591,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     cc = Dict{Symbol, Any}(:parameter => symbol2partition(cl[1][:symbol]))
     if char == 2
       cc[:dimBu] = (cl[1])[:dimBu]
-      cc[:name] = join(map(function(x)
-                            res=joindigits(fill(x[1], max(0, x[2])), "[]")
-             if x[1] in cc[:parameter][2]
-                 return SPrint("(", res, ")")
-             end
-             return res
-         end, reverse(Collected(cc[:parameter][1]))), "")
+      cc[:name] = join(map(reverse(Collected(cc[:parameter][1])))do x
+        res=joindigits(fill(x[1], max(0, x[2])), "[]")
+        if x[1] in cc[:parameter][2] return string("(", res, ")") end
+        res
+      end)
     else
       cc[:dynkin] = partition2DR(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
@@ -912,7 +952,7 @@ Ram-Halverson 2.17. These tuples have the following fields:
       end
     end
 # the function Delta of Ram-Halverson 2.17, modified to take in account that
-# our eigenvalues for T_2..T_r are Q[1] and Q[2] instead of q and -q^-1
+# our eigenvalues for T_2..T_r are (Q1,Q2) instead of (q,-q^-1)
     function Delta(k,hs,(Q1,Q2),v)local q
       delta=1
       if hs.cc>1
@@ -935,23 +975,25 @@ Ram-Halverson 2.17. These tuples have the following fields:
     chiCache=Dict{Pair{Vector{Vector{Int}},Vector{Vector{Int}}}, Any}()
     function entry(lambda,mu)
       get!(chiCache,lambda=>mu) do
-      n=sum(sum,lambda)
-      if iszero(n) return 1 end
-      bp=maximum(x for S in lambda for x in S)
-      i=findfirst(x->bp in x,lambda)
-      # choice of bp and i corresponds to choice (Sort) in classtext
-      strips=Strips(mu, bp)
-      if isempty(strips) return 0 end
-      rest=copy(lambda)
-      rest[i]=rest[i][2:end]
-      (-prod(para[2]))^((i-1)*(n-bp))*sum(strips) do x
-        d=Delta(i-1,x,para[2],para[1])
-        iszero(d) ? d : d*entry(rest, x.stripped)
-      end
+        n=sum(sum,lambda)
+        if iszero(n) return 1 end
+        bp=maximum(x for S in lambda for x in S)
+        i=findfirst(x->bp in x,lambda)
+        # choice of bp and i corresponds to choice (Sort) in classtext
+        strips=Strips(mu, bp)
+        if isempty(strips) return 0 end
+        rest=copy(lambda)
+        rest[i]=rest[i][2:end]
+        f1=(-prod(para[2]))^((i-1)*(n-bp))
+        f2=sum(strips) do x
+          d=Delta(i-1,x,para[2],para[1])
+          iszero(d) ? d : d*entry(rest, x.stripped)
+        end
+        f1*f2
       end
     end
-    res[:irreducibles]=map(x->map(y->entry(y,x),cl[:classparams]),
-                           map(x->map(βset,x),cl[:classparams]))
+    res[:irreducibles]=map(x->map(y->entry(y,x),partition_tuples(r,p)),
+                           map(x->βset.(x),partition_tuples(r,p)))
   elseif [q,r]==[2,2] && !haskey(CHEVIE,:othermethod)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
@@ -988,13 +1030,13 @@ Ram-Halverson 2.17. These tuples have the following fields:
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
   res[:parameter]=para
   res[:irreducibles]*=prod(prod,para)^0
-  return CHEVIE[:compat][:MakeCharacterTable](res)
+  res
 end)
 
 chevieset(:imp, :CharTable, function (p, q, r)
   oo=denominator.(chevieget(:imp,:EigenvaluesGeneratingReflections)(p,q,r))
   return chevieget(:imp, :HeckeCharTable)(p, q, r, 
-      map(o->o==2 ? [1,-1] : map(i->E(o,i),0:o-1),oo), [])
+      map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo), [])
 end)
 
 ExpandRep = function (r, d, l)
@@ -1068,4 +1110,26 @@ chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
   res=collect(p*(0:r-1))
   if p==q && p>=2 && r>2 res[r]-=r end
   res
+end)
+
+onsets(s,g)=sort(s.^g)
+
+chevieset(:timp, :ReducedInRightCoset, function (W, phi)
+  sets = [[1, 2, 3, 44], [21, 3, 1, 32], [3, 11, 2, 36], [22, 3, 2, 16]]
+  sets2 = [[1, 50, 3, 12, 2], [3, 52, 2, 23, 11], [1, 16, 3, 43, 38], 
+           [2, 37, 3, 15, 14], [50, 3, 52, 38, 53], [1, 23, 3, 22, 45]]
+  for i in sets
+    y=gapSet(map(j->reflection(W,j),i))
+    e=transporting_elt(W, y, onsets(y, phi);action=onsets)
+    if !isnothing(e)return Dict{Symbol,Any}(:gen=>i[1:3],:phi=>phi/e) end
+  end
+  for i in sets2
+    y=inclusion(W,i[1:4])
+    v=gapSet(y)
+    e=transporting_elt(W,v,onsets(v,phi);action=onsets)
+    if !isnothing(e) && Perm(y,y.^(phi/e))==Perm(1,2,3,4)
+      return Dict{Symbol, Any}(:gen => i[[1, 5, 3]], :phi=>phi/e)
+    end
+  end
+  return false
 end)

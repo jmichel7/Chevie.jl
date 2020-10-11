@@ -31,7 +31,7 @@ module Groups
 export Group, minimal_words, gens, ngens, classreps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, transporting_elt,
-  centre, normalizer, stabilizer, abelian_generators,iscyclic
+  centre, normalizer, stabilizer, abelian_generators,iscyclic,comm
 
 using ..Util: gets, InfoChevie
 #import Gapjm: word, elements, kernel, order
@@ -54,6 +54,8 @@ ngens(G::Group)=length(gens(G))
 " element of W corresponding to a sequence of generators and their inverses"
 (W::Group)(w...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
                                             for i in w)
+
+comm(a,b)=inv(a)*inv(b)*a*b
 
 """
 `orbit(gens::vector,p;action::Function=^)`
@@ -210,7 +212,11 @@ Group([(3,4),(1,2),(1,2)(3,4)])
 """
 stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
 
-centre(G::Group)=centralizer(G,G)
+function centre(G::Group)
+  gets(G,:centre) do
+    centralizer(G,G)
+  end
+end
 
 """
     `minimal_words(G)`
@@ -257,6 +263,8 @@ word(G::Group,w)=minimal_words(G)[w]
 
 "elements(G::Group): the list of elements of G"
 elements(G::Group)=sort(collect(keys(minimal_words(G))))
+
+Base.in(w,G::Group)=haskey(minimal_words(G),w)
 
 "length(G::Group): the number of elements of G"
 Base.length(G::Group)=length(minimal_words(G))
@@ -371,7 +379,10 @@ end
 
 # horrible implementation
 function Base.intersect(G::Group, H::Group)
-  Group(intersect(elements(G),elements(H)))
+  if min(length(G),length(H))>104000 error("too large intersect($G,$H)") end
+  if length(G)<length(H) Group(filter(x->x in H,elements(G)))
+  else Group(filter(x->x in G,elements(H)))
+  end
 end
 
 #------------------- "abstract" concrete groups -------------------------------
@@ -434,7 +445,7 @@ Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 
 Base.:^(a::Coset, b::Coset)= inv(b)*a*b
 
-order(a::Coset)=findfirst(i->isone(a^i),1:order(a.phi))
+order(a::Coset)=findfirst(i->a.phi^i in Group(a),1:order(a.phi))
 
 Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
 
@@ -449,7 +460,7 @@ Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))),Coset(H))
 
 elements(C::Coset)=C.phi .* elements(Group(C))
 
-Base.:in(w,C::Coset)=C.phi\w in Group(C)
+Base.in(w,C::Coset)=C.phi\w in Group(C)
 
 function classreps(G::Coset{Group{T}})::Vector{T} where T
   gets(G,:classreps) do

@@ -9,7 +9,8 @@ const src=[
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
 "weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "exceptio",
 "weyl2a", 
-"cmplximp"] 
+"cmplximp",
+"cmpxtimp"] 
 
 # functions whose translation does not work so they are not translated
 # an implementation is in table2.jl, with the useful code from compat3

@@ -1108,7 +1108,7 @@ function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
   pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
   greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^(x[:dimBu])...)),pieces)
   l=vcat(getindex.(pieces,:locsys)...)
-  p=inv(Perm(sortperm(l)))
+  p=inv(sortPerm(l))
   res=Dict(
     :scalar=>permutedims(repair(cat(greenpieces...,dims=(1,2)))^p),
     :uc=>uc,

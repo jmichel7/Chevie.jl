@@ -535,6 +535,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
           getfield(o[1],:prop)[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
         elseif twist==Perm(1,4,2)
           getfield(o[1],:prop)[:indices]=J[[1,4,3,2]]
+          twist=Perm(1,2,4)
         end
       end
       for i in 2:length(c)
@@ -567,8 +568,7 @@ function Base.show(io::IO, WF::Spets)
     return
   end
   if isdefined(W,:parent)
-    I=inclusiongens(W)
-    n=I[PermRoot.indices(refltype(WF))]
+    n=inclusion(W,PermRoot.indices(refltype(WF)))
     if n!=eachindex(gens(W.parent))
       print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}="))
     end
@@ -681,8 +681,8 @@ end
 
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 #-------------- spets ---------------------------------
-struct PRC{T,T1,TW<:PermRootGroup{T,T1}}<:Spets{TW}
-  phi::Perm{T1}
+struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
+  phi::Perm{T}
   F::Matrix
   W::TW
   prop::Dict{Symbol,Any}
@@ -690,6 +690,10 @@ end
 
 function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
   w=reduced(W,w)
+  if !(w isa Perm)
+    W=w.reflectiongroup
+    w=w.phi
+  end
   F=reflrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
@@ -699,8 +703,73 @@ end
 
 function spets(W::PermRootGroup,F::Matrix)
   w=PermX(W,F)
+  if !isnothing(w) return spets(W,w) end
+  if W isa PRSG error("that's all for subgroups") end
+# check if there exists a permutation perm and for each W-orbit of roots O 
+# a scalar l_O such that W.roots{O}*WF.F0Mat=l_O*W.roots{OnTuples(O,perm)}
+  t=collectby(j->simple_representatives(W)[j],eachindex(gens(W)))
+  s=map(t)do inds
+    scal=map(inds)do y
+      r=permutedims(F)*roots(W,y)
+      scals=ratio.(Ref(r),roots(W))
+      l=filter(i->!isnothing(scals[i]),eachindex(W.roots))
+      (ind=l,scal=scals[l])
+    end
+    if length(unique(map(x->unique(sort(x.scal)),scal)))>1 error("theory") end
+    l=intersect(map(x->x.scal,scal))
+    if isempty(l) return false end
+    l=Root1.(l)
+    if nothing in l
+      error("only reflection cosets of finite order implemented")
+      return false
+    end
+    # choose simplest scal
+    l=minimum(map(x->[conductor(x),exponent(x)],l))
+    l=E(l[1],l[2])
+    [l,map(x->x.ind[findfirst(==(l),x.scal)],scal)]
+  end
+  if false in s
+    ChevieErr("Spets(",ReflectionName(W),",F=",FormatGAP(F),
+    " must normalize set of roots of parent up to scalars.\n")
+    return false
+  end
+  scalars=map(x->x[1],s)[simple_representatives(W)[eachindex(gens(W))]]
+  perm=fill(0,length(roots(W)))
+  for i in eachindex(t) perm[t[i]]=s[i][2] end
+  while true
+    i=filter(j->!iszero(perm[j]),eachindex(perm))
+    if length(i)==length(perm) break end
+    for j in eachindex(gens(W))
+      perm[i.^W(j)].=perm[i].^W(perm[j])
+    end
+  end
+  if length(unique(perm))<length(perm) return false end
+  w=Perm(perm)
   if isnothing(w) error("matrix F must preserve the roots") end
-  spets(W,w)
+  res=PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
+end
+
+function spets(s::String)
+  if s=="3G422" 
+    W=PRG([2 (ER(3)-1)E(3);2 (-1+ER(3))E(3,2);2 ER(3)-1]./1,
+     [(3+ER(3))/2 ER(3)E(3,2);(3+ER(3))/2 ER(3)E(3);(3+ER(3))/2 ER(3)]./3)
+    return spets(W,reflrep(W,Perm(1,2,3)))
+  elseif s=="2G5" 
+    W=ComplexReflectionGroup(5)
+    return spets(W,reflrep(W,Perm(1,2)))
+  elseif s=="3G333" 
+    W=ComplexReflectionGroup(3,3,3)
+    return spets(W,reflrep(W,Perm(1,2,44)))
+  elseif s=="3pG333" 
+    W=ComplexReflectionGroup(3,3,3)
+    return spets(W,reflrep(W,Perm(1,44,2)))
+  elseif s=="4G333" 
+    W=ComplexReflectionGroup(3,3,3)
+    return spets(W,perm"(2,12,22,38)(3,35,14,32)(5,26,8,33)
+(6,39,13,20)(7,42,24,27)(9,51,29,54)(10,15,21,46)(16,50,30,44)(17,53,23,36)
+(18,47,28,49)(19,41,40,34)(31,45,37,43)")
+  else error("argument should be 2G5, 3G333, 3pG333 or 4G333")
+  end
 end
 
 function relative_coset(WF::Spets,J=Int[],a...)
@@ -734,6 +803,33 @@ function PermRoot.refltype(WF::PRC)
     end
     subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
+    if isnothing(c) && any(a->a.series==:ST && haskey(a,:p) &&
+                              [a.p,a.q,a.rank]==[3,3,3],t)
+      for a in t
+        if a.series==:ST && haskey(a,:p) && [a.p,a.q,a.rank]==[3,3,3]
+          a.subgroup=reflection_subgroup(W,a.indices)
+          c=chevieget(:timp,:ReducedInRightCoset)(a.subgroup,WF.phi)
+          if c!=false && (WF.phi!=c[:phi] ||
+                                      c[:gen]!=inclusion(a.subgroup,c[:gen]))
+            c.gen=inclusion(a.subgroup,c.gen)
+            a.indices=restriction(W,c.gen)
+            a.subgroup=reflection_subgroup(W,c.gen)
+            WF.phi=c.phi
+            WF.reflectionGroup=reflection_subgroup(W,
+                                 vcat(map(x->inclusion(W,x.indices),t)))
+            W=WF.reflectionGroup
+          end
+          if isone(comm(a.subgroup(3),WF.phi)) 
+               G333=[1,2,3,44]
+          else G333=[1,50,3,12]
+          end
+          a.subgens=map(i->reflection(a.subgroup,i),G333)
+          a.indices=inclusion(a.subgroup,W,G333)
+        end
+      end
+      subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
+      c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
+    end
     c=orbits(inv(c))
     prr=roots(parent(W))
     function scals(rr,img)

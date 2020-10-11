@@ -535,8 +535,28 @@ end
 """
 `standard_parabolic(W,H)`
 
-Given a parabolic subgroup H or the indices of its simple roots returns w such
-that H^w is a standard parabolic subgroup of W
+Given  a reflection subgroup `H` or the indices of its simple roots returns
+`nothing` if `H` is not parabolic, otherwise returns `w` such that `H^w` is
+a standard parabolic subgroup of `W`.
+
+```julia-repl
+julia> W=coxgroup(:E,6)
+E₆
+
+julia> R=reflection_subgroup(W,[20,30,19,22])
+E₆₍₁₉‚₁‚₉‚₂₀₎=A₄₍₃₁₂₄₎
+
+julia> p=standard_parabolic(W,R)
+(1,4,49,12,10)(2,54,62,3,19)(5,17,43,60,9)(6,21,34,36,20)(7,24,45,41,53)(8,65,50,15,22)(11,32,31,27,28)(13,48,46,37,40)(14,51,58,44,29)(16,23,35,33,30)(18,26,39,55,38)(42,57,70,72,56)(47,68,67,63,64)(52,59,71,69,66)
+
+julia> reflection_subgroup(W,[20,30,19,22].^p)
+E₆₍₂₄₅₆₎=A₄
+
+julia> R=reflection_subgroup(W,[1,2,3,5,6,35])
+E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆₎×A₂₍₄₅₎
+
+julia> standard_parabolic(W,R)
+```
 """
 function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   if isempty(hr) return Perm() end
@@ -559,7 +579,7 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
 end
 
 standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
-  standard_parabolic(W,restriction(W,inclusiongens(H)))
+  standard_parabolic(W,inclusiongens(H,W))
 
 """
 `describe_involution(W,w)`
@@ -639,7 +659,7 @@ end
 
 "number of reflections of W"
 @inline CoxGroups.nref(W::FCG)=W.N
-CoxGroups.isleftdescent(W::FCG,w,i::Int)=i^w>W.N
+CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 
 """
 `coxgroup(type,rank[,bond])`
