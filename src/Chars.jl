@@ -933,6 +933,7 @@ function decompose(ct::CharTable,c)
   map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
 end
 
+CharTable(W::CoxSym)=CharTable(refltype(W)[1])
 """
 `representation(W,i)`
 

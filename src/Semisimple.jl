@@ -639,7 +639,7 @@ end
 function affine(W)
   ex=vcat(1:semisimplerank(W),2*nref(W))
   C=Int.([PermRoot.cartan_coeff(W.G,i,j) for i in ex, j in ex])
-  CoxGroups.genCox(C)
+  CoxGroups.GenCox(C)
 end
 
 """

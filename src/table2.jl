@@ -395,7 +395,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
         res=joindigits(fill(0,max(0,x[2]))+x[1],"[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
-      end, reverse(Collected(cc[:parameter][1]))), "")
+      end, reverse(tally(cc[:parameter][1]))), "")
     end
     cc[:red] = coxgroup()
     if char == 2 j = cc[:parameter][1]
@@ -422,7 +422,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       for i in 1:m
         if fx[i]<fy[i] return false
         elseif fx[i]==fy[i] && i in y[:parameter][2]
-          if i in Difference(x[:parameter][1],x[:parameter][2]) return false end
+          if i in setdiff(x[:parameter][1],x[:parameter][2]) return false end
           if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
         end
       end
@@ -518,13 +518,13 @@ end)
 
 chevieset(:D,:UnipotentClasses,function(n,char)
   addSpringer = function (s, i, cc)
-    ss = First(uc[:springerSeries], x->x[:defect] == DefectSymbol(s[:symbol]))
-    if s[:sp] in [[[], [1]], [[], []]] p = 1
-    elseif s[:sp] == [[1], []] p = 2
-    else p = Position(CharParams(ss[:relgroup]), [s[:sp]])
+    ss = First(uc[:springerSeries], x->x[:defect] == defectsymbol(s[:symbol]))
+    if s[:sp] in [[Int[], [1]], [Int[], Int[]]] p = 1
+    elseif s[:sp] == [[1], Int[]] p = 2
+    else p = findfirst(==([s[:sp]]),CharParams(ss[:relgroup]))
     end
-    ss[:locsys][p] = [i, Position(CharParams(cc[:Au]), 
-                                  map(x->x ? [1,1] : [2], s[:Au]))]
+    ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s[:Au])),
+                                                  CharParams(cc[:Au]))]
   end
   function partition2DR(part)
     p=sort(reduce(vcat,map(x->1-x:2:x-1, part)))
@@ -533,7 +533,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   end
   if char==2
     ss=XSP(4, 0, n, 1)
-    symbol2partition = function (S)
+    symbol2partition=function(S)
       c=sort(reduce(vcat,S))
       i = 1
       part = Int[]
@@ -556,13 +556,13 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
   else
     ss=XSP(2, 0, n, 1)
-    function symbol2partition(S)
+    symbol2partition=function(S)
       c=sort(reduce(vcat,S))
       i = 1
       part = Int[]
       while i <= length(c)
-        l = 2 * (c[i] - (i - 1))
-        if i == length(c) || c[i + 1] - c[i] > 0
+        l = 2 * (c[i]-(i-1))
+        if i == length(c) || c[i+1]-c[i]>0
           push!(part, l+1)
           i+=1
         else
@@ -574,30 +574,28 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
   end
   l = union(map(c->map(x->
-        [DefectSymbol(x[:symbol]), Sum(FullSymbol(x[:sp]), Sum)], c), ss))
-  SortBy(l, x->[abs(x[1]), -sign(x[1])])
+        [defectsymbol(x[:symbol]), sum(sum,fullsymbol(x[:sp]))], c), ss))
+  sort!(l, by=x->[abs(x[1]), -sign(x[1])])
   uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
-      res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n - d[2])
-      if mod(n - d[2], 4) == 0 || char == 2
-          res[:Z]= mod(n, 2)==0  ? [1, 1] : [1]
-      else
-          res[:Z]= mod(n, 2)==0  ? [-1, -1] : [-1]
+      res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
+      if mod(n-d[2],4)==0 || char==2 res[:Z]=mod(n,2)==0  ? [1, 1] : [1]
+      else                           res[:Z]=mod(n,2)==0  ? [-1, -1] : [-1]
       end
       res[:relgroup]=coxgroup(d[1]==0 ? :D : :B, d[2])
       res[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(res[:relgroup])]
       res
   end, l))
   for cl in ss
-    cc = Dict{Symbol, Any}(:parameter => symbol2partition(cl[1][:symbol]))
-    if char == 2
-      cc[:dimBu] = (cl[1])[:dimBu]
-      cc[:name] = join(map(reverse(Collected(cc[:parameter][1])))do x
+    cc = Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1][:symbol]))
+    if char==2
+      cc[:dimBu] = cl[1][:dimBu]
+      cc[:name] = join(map(reverse(tally(cc[:parameter][1])))do x
         res=joindigits(fill(x[1], max(0, x[2])), "[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
       end)
     else
-      cc[:dynkin] = partition2DR(cc[:parameter])
+      cc[:dynkin]=partition2DR(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
     end
     cc[:Au] = isempty(cl[1][:Au]) ? coxgroup() : 
@@ -605,7 +603,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     if char != 2
      cc[:red] = coxgroup()
      j = cc[:parameter]
-     for j = Collected(j)
+     for j = tally(j)
        if mod(j[1], 2) == 0
          cc[:red]*=coxgroup(:C, div(j[2],2))
        elseif mod(j[2], 2) != 0
@@ -615,57 +613,56 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        end
      end
    end
-   if !IsList(cl[1][:sp][2]) cl[1][:sp][3]=1-mod(div(n,2),2) end
+   if !(cl[1][:sp][2] isa Vector) cl[1][:sp][3]=1-mod(div(n,2),2) end
    push!(uc[:classes], cc)
    for s in cl addSpringer(s, length(uc[:classes]), cc) end
-   if !IsList(cl[1][:sp][2])
+   if !(cl[1][:sp][2] isa Vector)
       cl[1][:sp][3]=1-cl[1][:sp][3]
       cc[:name]*="+"
       cc=deepcopy(cc)
       cc[:name]=replace(cc[:name],r".$"=>"-")
       if haskey(cc, :dynkin) cc[:dynkin][[1, 2]] = cc[:dynkin][[2, 1]] end
       push!(uc[:classes], cc)
-      for s = cl addSpringer(s, length(uc[:classes]), cc) end
+      for s in cl addSpringer(s, length(uc[:classes]), cc) end
     end
   end
   if char == 2
-    uc[:orderClasses] = Hasse(Poset(map((x->begin
-    map(function (y,)
-      m = maximum(((x[:parameter])[1])[1], ((y[:parameter])[1])[1])
+    uc[:orderClasses] = hasse(Poset(map(uc[:classes])do x
+                                    map(uc[:classes])do y
+      m = max(x[:parameter][1][1], y[:parameter][1][1])
       f = x-> map(i-> sum(filter(<(i),x))+i*count(>=(i),x) , 1:m)
       fx = f(x[:parameter][1])
       fy = f(y[:parameter][1])
-      for i = 1:m
-          if fx[i] < fy[i] return false
-          elseif fx[i] == fy[i] && i in (y[:parameter])[2]
-              if i in Difference(x[:parameter][1], x[:parameter][2])
-                  return false
-              end
-              if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
-          end
+      for i in 1:m
+        if fx[i] < fy[i] return false
+        elseif fx[i] == fy[i] && i in (y[:parameter])[2]
+          if i in setdiff(x[:parameter][1], x[:parameter][2]) return false end
+          if i<m && mod(fx[i+1]-fy[i+1],2)==1 return false end
+        end
       end
       if x[:parameter] == y[:parameter] && x != y return false end
       return true
-    end, uc[:classes])
-    end), uc[:classes])))
+    end
+    end))
   else
-    uc[:orderClasses] = Hasse(Poset(map((i->begin map((j->begin
+    uc[:orderClasses]=hasse(Poset(map(eachindex(uc[:classes]))do i
+                                  map(eachindex(uc[:classes]))do j
       dominates(uc[:classes][j][:parameter], uc[:classes][i][:parameter]) && 
-      (uc[:classes][j][:parameter]!=uc[:classes][i][:parameter] || i == j)
-                                 end), 1:length(uc[:classes]))
-                     end), 1:length(uc[:classes]))))
+      (uc[:classes][j][:parameter]!=uc[:classes][i][:parameter] || i==j)
+                     end
+                     end))
   end
   if char != 2
     d = 0
     while 4*d^2-d <= n
      i = 4*d^2-d
      if mod(n-d,2)==0
-       l=Concatenation(1:i,i+2:2:n)
+       l=vcat(1:i,i+2:2:n)
        s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n, 2) == 0 s[:Z]=[1, -1] else s[:Z] = [E(4)] end
        s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
        push!(uc[:springerSeries], s)
-       if d==0 l=Concatenation([1], 4:2:n) end
+       if d==0 l=vcat([1], 4:2:n) end
        s=Dict(:relgroup => coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n,2)==0 s[:Z] = [-1, 1]
        else s[:Z] = [-(E(4))]
@@ -675,11 +672,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        i=4d^2+d
        if d != 0 && i <= n
          l = vcat(1:i, i+2:2:n)
-         s = Dict(:relgroup=>coxgroup(:B, div(n - i,2)),:levi=>l)
+         s = Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
          if mod(n,2)==0 s[:Z]=[1, -1] else s[:Z]=[E(4)] end
          s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
          push!(uc[:springerSeries], s)
-         s=Dict(:relgroup=>oxgroup("B",div(n-i,2)),:levi=>l)
+         s=Dict(:relgroup=>coxgroup(:B,div(n-i,2)),:levi=>l)
          if mod(n, 2) == 0 s[:Z] = [1, 1] else s[:Z] = [-(E(4))] end
          s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
          push!(uc[:springerSeries], s)
@@ -728,7 +725,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
   end
   l=Filtered(1:length(uc[:classes]), i->all(c->mod(c[1], 2) == 0 || c[2] == 1,
-                 Collected(((uc[:classes])[i])[:parameter])))
+                 tally(((uc[:classes])[i])[:parameter])))
   for i in l
      cl=uc[:classes][i]
      s=LuSpin(cl[:parameter])

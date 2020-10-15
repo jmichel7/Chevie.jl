@@ -516,6 +516,12 @@ function Base.inv(a::HeckeTElt)
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
 end
 
+function Cosets.Frobenius(x::HeckeElt,phi)
+  y=deepcopy(x)
+  y.d.d .= [Frobenius(k,phi)=>v for (k,v) in y.d.d]
+  y
+end
+
 """
 `alt(a::HeckeTElt)`
 

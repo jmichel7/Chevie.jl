@@ -872,7 +872,6 @@ function PermRoot.reflection(W::CoxSym{T},i::Int)where T
 end
 
 PermRoot.reflections(W::CoxSym)=reflection.(Ref(W),1:nref(W))
-
 #------------------------ GenCox ------------------------------
 
 struct GenCox{T}<:CoxeterGroup{Matrix{T}}

@@ -33,6 +33,7 @@ const ChevieDict=Dict(
 "CharNames"=>"charnames",
 "CharParams(W)"=>"charinfo(W)[:charparams]",
 "CharRepresentationWords"=>"traces_words_mats",
+"CharTable"=>"CharTable",
 "CheckHeckeDefiningRelations"=>"isrepresentation",
 "ChevieClassInfo"=>"classinfo",
 "ChevieCharInfo"=>"charinfo",
@@ -122,6 +123,7 @@ const ChevieDict=Dict(
 #GoodCoxeterWord
 #GraphAutomorphisms
 "Hasse"=>"hasse",
+"Hecke"=>"hecke",
 "HeckeCharValues"=>"char_values",
 #HeckeCharValuesGood
 "HeckeCentralMonomials"=>"central_monomials",
@@ -168,6 +170,7 @@ const ChevieDict=Dict(
 "KroneckerProduct"=>"kron",
 "LcmPartitions"=>"lcm_partitions",
 "LargestMovedPoint"=>"largest_moved_point",
+"last"=>"ans",
 "LeadingCoefficient(p)"=>"p[end]",
 "LeftCell"=>"LeftCell",
 "LeftCells"=>"LeftCells",
@@ -196,6 +199,7 @@ const ChevieDict=Dict(
 "MatXPerm(W,p)"=>"reflrep(W,p)",
 "MatYPerm"=>"matY",
 "MovedPoints"=>"support",
+"Mvp(\"x\")"=>"Mvp(:x)",
 "NrArrangements"=>"narrangements",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",

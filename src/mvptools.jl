@@ -141,14 +141,31 @@ Let  `p` be a prime. This function returns the partition of the irreducible
 characters  of `G`  in `p`-blocks,  represented by  the list  of indices of
 irreducibles characters in each block.
 
-gap> W:=SymmetricGroup(5);
-Group( (1,5), (2,5), (3,5), (4,5) )
-gap> PBlocks(W,2);
-[ [ 1, 2, 5, 6, 7 ], [ 3, 4 ] ]
-gap> PBlocks(W,3);
-[ [ 1, 3, 6 ], [ 2, 4, 5 ], [ 7 ] ]
-gap> PBlocks(W,7);
-[ [ 1 ], [ 2 ], [ 3 ], [ 4 ], [ 5 ], [ 6 ], [ 7 ] ]
+```julia-repl
+julia> W=CoxSym(5)
+𝔖 ₅
+
+julia> pblocks(W,2)
+2-element Array{Array{Int64,1},1}:
+ [1, 3, 4, 5, 7]
+ [2, 6]
+
+julia> pblocks(W,3)
+3-element Array{Array{Int64,1},1}:
+ [1, 5, 6]
+ [2, 3, 7]
+ [4]
+
+julia> pblocks(W,7)
+7-element Array{Array{Int64,1},1}:
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+ [6]
+ [7]
+```
 """
 function pblocks(G,p)
   T=CharTable(G)

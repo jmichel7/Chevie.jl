@@ -14,6 +14,7 @@ Perm(::AbstractVector,::AbstractVector)
 largest_moved_point
 smallest_moved_point
 Base.:^(::AbstractVector,::Perm) 
+sortPerm
 Perms.orbit
 Perms.orbits
 Perms.order
@@ -98,10 +99,11 @@ tally
 collectby
 constant
 format
+cut
 prime_residues
 phi
 primitiveroot
-cut
+@forward
 ```
 # Combinatorics
 ```@docs
@@ -316,6 +318,7 @@ pblocks
 Semisimple
 fundamental_group
 QuasiIsolatedRepresentatives
+is_isolated
 torsion_subgroup
 algebraic_centre
 SScentralizer_representatives
@@ -357,6 +360,7 @@ Ucl
 UnipotentClasses
 ICCTable
 induced_linear_form
+special_pieces
 ```
 # Symbols
 ```@docs

@@ -240,7 +240,7 @@ module Ucl
 using Gapjm
 
 export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable,
- induced_linear_form
+ induced_linear_form, special_pieces
 
 struct UnipotentClass
   name::String
@@ -1156,16 +1156,15 @@ function Base.show(io::IO,x::GreenTable)
 end
 
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'SpecialPieces(<uc>)'
+'special_pieces(<uc>)'
 
 The  special  pieces  forme  a  partition  of  the  unipotent  variety of a
-reductive  group `𝐆` which  was defined the  first time in [@spalt82, chap.
-III]  as  the  fibers  of  `d^2`,  where  `d`  is  a "duality map". Another
-definition  is as the  set of classes  in the Zariski  closure of a special
-class  and not in the Zariski closure of any smaller special class, where a
-special  class in the  support of the  image of a  special character by the
-Springer correspondence.
+reductive  group `𝐆` which was defined  the first time in [Spaltenstein1982
+chap.  III](biblio.htm#spalt82)  as  the  fibers  of  `d^2`, where `d` is a
+"duality  map". Another definition is as the  set of classes in the Zariski
+closure  of a special class  and not in the  Zariski closure of any smaller
+special  class, where  a special  class in  the support  of the  image of a
+special character by the Springer correspondence.
 
 Each  piece is a union of unipotent  conjugacy classes so is represented in
 Chevie  as a  list of  class numbers.  Thus the  list of  special pieces is
@@ -1173,16 +1172,42 @@ returned  as  a  list  of  lists  of  class  numbers. The list is sorted by
 increasing  piece dimension, while each piece is sorted by decreasing class
 dimension, so the special class is listed first.
 
-|    gap> W:=CoxeterGroup("G",2);
-    CoxeterGroup("G",2)
-    gap> SpecialPieces(UnipotentClasses(W));
-    [ [ 1 ], [ 4, 3, 2 ], [ 5 ] ]
-    gap> SpecialPieces(UnipotentClasses(W,3));
-    [ [ 1 ], [ 4, 3, 2, 6 ], [ 5 ] ]|
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> special_pieces(UnipotentClasses(W))
+3-element Array{Array{Int64,1},1}:
+ [1]
+ [4, 3, 2]
+ [5]
+
+julia> special_pieces(UnipotentClasses(W,3))
+3-element Array{Array{Int64,1},1}:
+ [1]
+ [4, 3, 2, 6]
+ [5]
+```
 
 The   example  above  shows  that  the  special  pieces  are  different  in
 characteristic 3.
-
+"""
+function special_pieces(uc)
+  W=uc.prop[:spets]
+  ch=charinfo(W)
+  specialch=findall(iszero,ch[:a]-ch[:b]) # special characters of W
+  specialc=first.(uc.springerseries[1][:locsys][specialch])
+  sort!(specialc,by=c->-uc.classes[c].dimBu)
+  m=permutedims(incidence(uc.orderclasses))
+  map(eachindex(specialc))do i
+    p=m[specialc[i],:]
+    for j in 1:i-1 p.&=.!m[specialc[j],:] end
+    p=eachindex(p)[p]
+    sort!(p,by=c->uc.classes[c].dimBu)
+    p
+  end
+end
+"""
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %'GreenTable(<uc>,q)'
 %'UnipotentValues(<W>,<w>)'

@@ -608,6 +608,8 @@ Base.:/(M::LocallyGarsideMonoid,x,y)=/(IntervalStyle(M),M,x,y)
 Base.:/(::Interval,M,x,y)=x/y
 Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
 Base.inv(::Interval,M,x)=inv(x)
+isrightdescent(M::LocallyGarsideMonoid,w,i::Int)=isrightdescent(IntervalStyle(M),M,w,i)
+isrightdescent(::Interval,M,w,i)=isleftdescent(M.W,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=*(M,x,y)
 
 #-----------------------BraidMonoid-----------------------------------
@@ -628,8 +630,6 @@ Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 
 @inline CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 @inline CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
-
-isrightdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
 
 CoxGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
@@ -1062,7 +1062,7 @@ end
 
 function Cosets.Frobenius(x::GarsideElm,phi)
   y=deepcopy(x)
-  y.elm .= y.elm .^ phi
+  y.elm.=Frobenius.(y.elm,phi)
   y
 end
 

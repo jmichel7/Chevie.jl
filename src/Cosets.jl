@@ -379,6 +379,7 @@ function Groups.position_class(G::Spets,g)
   findfirst(c->g in c,conjugacy_classes(G))
 end
 
+twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------
 struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
   phi::Perm{T}
@@ -601,7 +602,8 @@ function Frobenius(WF::CoxeterCoset)
   f(w,i=1)=Frobenius(w,WF.phi^i)
 end
 
-Frobenius(w::Perm,phi)=w^phi
+Frobenius(w::Perm,phi)=w^(inv(phi))
+Frobenius(w::Integer,phi)=w^(inv(phi))
 
 function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   if isempty(J) return classreps(WF)./WF.phi end
