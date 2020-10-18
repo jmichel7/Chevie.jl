@@ -74,7 +74,7 @@ using ..Util: gets, getp, joindigits, InfoChevie
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
-  stab_onmats, Perm_onmats, Perm_rowcolmat
+  stab_onmats, Perm_onmats, Perm_rowcolmat, on_classes
 #-------------------- now permutation groups -------------------------
 abstract type PermGroup{T}<:Group{Perm{T}} end
 
@@ -288,6 +288,9 @@ function elements(G::PermGroup)
   end
   res
 end
+
+# Permutation of the conjugacy classes induced by an automorphism of W
+on_classes(W, aut)=Perm(map(c->position_class(W,c^aut),classreps(W)))
 
 #------------------------- cosets for PermGroups -----------------------
 

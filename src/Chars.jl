@@ -391,7 +391,7 @@ using Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose
+  decompose, on_chars
 
 """
 `fakedegree(W, φ, q)`
@@ -931,6 +931,13 @@ end
 
 function decompose(ct::CharTable,c)
   map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
+end
+
+# Permutation of the characters induced by a perm. automorphism of W
+# on_chars(W,aut [,charlist])
+function on_chars(W,aut,chars=1:length(classreps(W)))
+  ct=CharTable(W).irr[chars,:]
+  inv(Perm(ct,^(ct,on_classes(W, aut),dims=2),dims=1))
 end
 
 CharTable(W::CoxSym)=CharTable(refltype(W)[1])

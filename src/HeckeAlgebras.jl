@@ -913,7 +913,7 @@ struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
 end
 
 hecke(WF::Spets,H::HeckeAlgebra)=HeckeCoset(H,WF,Dict{Symbol,Any}())
-hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF)
+hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF,Dict{Symbol,Any}())
 
 function Base.show(io::IO, H::HeckeCoset)
   print(io,"hecke(",H.W,",")

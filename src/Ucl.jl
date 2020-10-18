@@ -1106,7 +1106,7 @@ end
 # Formatting: options of FormatTable + [.classes, .CycPol]
 function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
   pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
-  greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^(x[:dimBu])...)),pieces)
+  greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^x[:dimBu]...)),pieces)
   l=vcat(getindex.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=Dict(
@@ -1115,7 +1115,8 @@ function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
     :Y=>^(repair(cat(getindex.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
     :locsys=>l^p,
     :parameter=>vcat(getindex.(pieces,:parameter)...),
-    :relgroups=>getindex.(uc.springerseries,:relgroup))
+    :relgroups=>getindex.(uc.springerseries,:relgroup),
+    :classes=>classes)
   n=length(res[:locsys])
   if classes
     res[:scalar]=res[:scalar]*E(1)
@@ -1142,7 +1143,7 @@ function Base.show(io::IO,x::GreenTable)
   print(io,"Values of character sheaves on")
   rowLabels=vcat(map(g->map(n->fromTeX(io,"Q^{"*sprint(show,g;context=io)*"}_{"*n*"}"),charnames(io,g)),
                      x[:relgroups])...)
-  rowsLabel="Q\\locsys"
+  rowsLabel=fromTeX(io,"\\phi\\"*(x[:classes] ? "class" : "locsys"))
   tbl=copy(x[:scalar])
   if haskey(x.prop,:classes)
     print(io," unipotent classes\n")
@@ -1209,7 +1210,7 @@ function special_pieces(uc)
 end
 """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%'GreenTable(<uc>,q)'
 %'UnipotentValues(<W>,<w>)'
 """
+
 end

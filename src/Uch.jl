@@ -854,6 +854,30 @@ end
 
 const short=Ref(true)
 
+"""
+`:String' and 'Print`: the formatting of unipotent characters is affected by
+the  variable 'CHEVIE.PrintUniChars'. It is a  record; if the field 'short'
+is  bound (the default)  they are printed  in a compact  form. If the field
+`:long' is bound, they are printed one character per line:
+
+|    gap> CHEVIE.PrintUniChars:=rec(long:=true);
+    rec(
+      long := true )
+    gap> w;
+    [G2]=
+    <phi{1,0}>   1
+    <phi{1,6}>   0
+    <phi{1,3}'>  0
+    <phi{1,3}''> -1
+    <phi{2,1}>   0
+    <phi{2,2}>   0
+    <G2[-1]>     2
+    <G2[1]>      0
+    <G2[E3]>     0
+    <G2[E3^2]>   1
+    gap> CHEVIE.PrintUniChars:=rec(short:=true);;|
+
+"""
 function Base.show(io::IO,r::UniChar)
   res=""
   s=charnames(io,UnipotentCharacters(r.group))
@@ -1104,54 +1128,48 @@ DLLefschetzTable=function(H)
   return t'*fourier(uc)[uc.harishChandra[1][:charNumbers],:]
 end
 
-Frobenius=function(WF, x::UniChar, i)
-  W=x.group
-  p=Perm(map(x->position_class(W,x^WF.phi), classreps(W)))
+# on_unipotents(W,aut [,uniplist])
+# Permutation of the unipotent characters induced by an automorphism of W
+function on_unipotents(W,aut,l=1:length(UnipotentCharacters(W)))
   uc=UnipotentCharacters(W)
-  t=vcat(DLCharTable(W), permutedims(eigen(uc)))
-  pt=t^p
-  p = map(findall(i->x==t[:;i], axes(t,2)), eachcol(pt))
-  if any(x->length(x)>1,p) error("Rw + eigen cannot disambiguate\n") end
-  p=Perm(map(x->x[1], p))
-  UniChar(W,x.v^(p^-i))
+  t=Uch.DLCharTable(W)[:,l]
+  t=vcat(t,permutedims(Uch.eigen(uc)[l]))
+  if length(unique(eachcol(t)))<size(t,2)
+    t=indexin(l,uc.harishChandra[1][:charNumbers])
+    if all(!isnothing,t) return on_chars(W, aut, t)
+    else error("Rw + eigen cannot disambiguate\n")
+    end
+  end
+  inv(Perm(t,^(t,on_classes(W, aut),dims=1),dims=2))
 end
 
 """
-`:String' and 'Print`: the formatting of unipotent characters is affected by
-the  variable 'CHEVIE.PrintUniChars'. It is a  record; if the field 'short'
-is  bound (the default)  they are printed  in a compact  form. If the field
-`:long' is bound, they are printed one character per line:
+    Frobenius(WF)(x::UniChar,i=1)
 
-|    gap> CHEVIE.PrintUniChars:=rec(long:=true);
-    rec(
-      long := true )
-    gap> w;
-    [G2]=
-    <phi{1,0}>   1
-    <phi{1,6}>   0
-    <phi{1,3}'>  0
-    <phi{1,3}''> -1
-    <phi{2,1}>   0
-    <phi{2,2}>   0
-    <G2[-1]>     2
-    <G2[1]>      0
-    <G2[E3]>     0
-    <G2[E3^2]>   1
-    gap> CHEVIE.PrintUniChars:=rec(short:=true);;|
+If   `WF`  is  a  Coxeter  coset  associated  to  the  Coxeter  group  `W`,
+`Frobenius(WF)`  returns a  function `F`  such that  `x↦ F(x,i=1)` does the
+automorphism induced by `WF.phi^i` on the unipotent character `x`
 
-`Frobenius(  <WF> )`: If 'WF' is a  Coxeter coset associated to the Coxeter
-group  `W`, the function 'Frobenius(WF)' returns  a function which does the
-corresponding automorphism on the unipotent characters
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
 
-|    gap> W:=CoxeterGroup("D",4);WF:=CoxeterCoset(W,(1,2,4));
-    CoxeterGroup("D",4)
-    3D4
-    gap> u:=UnipotentCharacter(W,2);
-    [D4]=<11->
-    gap> Frobenius(WF)(u);
-    [D4]=<.211>
-    gap> Frobenius(WF)(u,-1);
-    [D4]=<11+>|
+julia> WF=spets(W,Perm(1,2,4))
+³D₄
 
+julia> u=UniChar(W,2)
+[D₄]:<11->
+
+julia> Frobenius(WF)(u)
+[D₄]:<.211>
+
+julia> Frobenius(WF)(u,-1)
+[D₄]:<11+>
+```
 """
+function Cosets.Frobenius(x::UniChar, phi)
+  W=x.group
+  UniChar(W,x.v^(on_unipotents(W,phi)))
+end
+
 end

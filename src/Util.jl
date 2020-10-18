@@ -80,8 +80,8 @@ const unicodesup=
  "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾⁼ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴿᵀᵁⱽᵂᵝᵞᵟᵋᶥᶿᵠᵡ"
 const supclass="["*supchars*"]"
 const sup=Dict(zip(supchars,unicodesup))
-const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ"
-const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ"
+const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
+const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."
 const sub=Dict(zip(subchars,unicodesub))
 const subclass="["*subchars*"]"
 

@@ -13,35 +13,6 @@ function CuspidalPairs(W,d=0)
   vcat(map(ad->CuspidalPairs(WF,d,ad),0:length(relative_degrees(WF,d)))...)
 end
 
-# Permutation of the conjugacy classes induced by an automorphism of W
-function PermutationOnClasses(W, aut)
-  Perm(map(c->position_class(W,c^aut),classreps(W)))
-end
-
-# Permutation of the characters induced by a perm. automorphism of W
-# PermutationOnCharacters(W,aut [,charlist])
-function PermutationOnCharacters(W,aut,chars=1:length(classreps(W)))
-  p=PermutationOnClasses(W, aut)
-  ct=CharTable(W).irr[chars,:]
-  Perm(collect(eachrow(ct)), eachrow(ct).^p)
-end
-
-# Permutation of the unipotent characters induced by an automorphism of W
-# PermutationOnUnipotents(W,aut [,uniplist])
-function PermutationOnUnipotents(W,aut,l=1:length(UnipotentCharacters(W)))
-  uc=UnipotentCharacters(W)
-  t=Uch.DLCharTable(W)[:,l]
-  vcat(t,permutedims(Uch.eigen(uc)[l]))
-  t = permutedims(t)
-  if length(unique(eachrow(t)))<size(t,1)
-    t=indexin(l,uc.harishChandra[1][:charNumbers])
-    if all(!isnothing,t) return PermutationOnCharacters(W, aut, t)
-    else error("Rw + eigen cannot disambiguate\n")
-    end
-  end
-  Perm(collect(eachrow(t)),map(r->r^PermutationOnClasses(W, aut), eachrow(t)))
-end
-
 # s is a Set of tuples. Return E_1,...,E_n such that
 # s=List(Cartesian(E_1,...,E_n),Concatenation)
 # Assumes all E_i but one are of size 2
@@ -500,7 +471,7 @@ function RelativeGroup(s::Series)
     if length(ud) > 1
       c = length(WGL(s))
       WGL(s) = Stabilizer(WGL(s), Position(ud, s.cuspidal), function (c, g)
-               return c ^ PermutationOnUnipotents(s.levi, func(g), ud) end)
+               return c^on_unipotents(s.levi, func(g), ud) end)
       if c!=length(WGL(s))ChevieErr("# WGL:",c,"/",length(WGL(s))," fix c\n")
         end
       for H in rel H[:WH] = Intersection(H[:WH], WGL(s)) end
@@ -579,7 +550,7 @@ function Weyl.relative_group(s::Series)
     if length(ud)>1
       c=length(N)
       N=centralizer(N,findfirst(==(s.cuspidal),ud);action=(c,g)->
-                  c^PermutationOnUnipotents(s.levi, g, ud))
+                  c^on_unipotents(s.levi, g, ud))
       if c!=length(N)
         ChevieErr("# WGL:",length(N)//length(L),"/",c//length(L)," fix c\n")
       end
