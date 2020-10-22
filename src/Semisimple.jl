@@ -515,7 +515,7 @@ function algebraic_centre(W)
   #println("AZ=$AZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(AZ))
-  println("ss=$ss")
+  #println("ss=$ss")
   res[:descAZ]=if isempty(gens(res[:AZ])) map(x->[x],eachindex(gens(AZ)))
                elseif gens(AZ)==ss Vector{Int}[]
                else # map of root data Y(Wsc)->Y(W)

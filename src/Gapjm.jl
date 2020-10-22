@@ -121,7 +121,7 @@ include("Uch.jl");@reexport using .Uch
 include("Ucl.jl");@reexport using .Ucl
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Lusztig.jl");@reexport using .Lusztig
-include("HasType.jl");@reexport using .HasType
 include("Gt.jl");@reexport using .Gt
 include("Urad.jl");@reexport using .Urad
+include("HasType.jl");@reexport using .HasType
 end

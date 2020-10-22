@@ -131,7 +131,7 @@ end
 @test mytest("WF=spets(coxgroup(:F,4))","F₄")
 @test mytest("w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],action=(s,g)->s.^g);","nothing")
 @test mytest("LF=subspets(WF,[1,2,9,16],w)","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
-@test mytest("Diagram(LF)","ϕ acts as (2,4,3) on the component below\n  O 4\n  ￨\nO—O—O\n3 1 2")
+@test mytest("Diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O\n3 1 2")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=CoxSym(4)","𝔖 ₄")
@@ -405,9 +405,9 @@ end
 @test mytest("b^c","1432.2.2")
 @test mytest("WF=spets(W,Perm(1,2,4))","³D₄")
 @test mytest("F=Frobenius(WF);","nothing")
-@test mytest("c=B(3,4,3,3,2,4)","343.324")
-@test mytest("conjugating_elt(b,c,F)","2312")
-@test mytest("^(b,B(2,3,1,2),F)","343.324")
+@test mytest("c=B(3,4,3,1,2,3)","343123")
+@test mytest("conjugating_elt(b,c,F)","124312")
+@test mytest("^(b,B(1,2,4,3,1,2),F)","343123")
 @test mytest("W=coxgroup(:D,4)","D₄")
 @test mytest("B=BraidMonoid(W)","BraidMonoid(D₄)")
 @test mytest("w=B(4,4,4)","4.4.4")
@@ -772,7 +772,7 @@ end
 @test mytest("uc=UnipotentCharacters(ComplexReflectionGroup(6));","nothing")
 @test mytest("g=sstab_onmats(fourier(uc.families[2]))","Group([(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15),(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18),(2,19)(4,-14)(5,20)(7,12),(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22),(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17),(1,-3)(2,-19)(4,14)(6,18)(8,-10)(9,-9)(11,-15)(13,-22)(16,-21),(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22),(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)])")
 @test mytest("length(g)","32")
-@test mytest("f=SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+ER(-3))/2);","nothing")
+@test mytest("f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+ER(-3))/2);","nothing")
 @test mytest("M=fourier(conj(f));","nothing")
 @test mytest("uc=UnipotentCharacters(ComplexReflectionGroup(6));","nothing")
 @test mytest("N=fourier(uc.families[2]);","nothing")
@@ -907,6 +907,13 @@ end
 @test mytest("T=Tbasis(H);","nothing")
 @test mytest("DLLefschetz(T(1,2))","[A₂]:<111>-q<21>+q²<3>")
 @test mytest("DLLefschetz((T(1)+T())*(T(2)+T()))","[A₂]:q<21>+(q²+2q+1)<3>")
+@test mytest("H=hecke(spets(W,Perm(1,2)),Pol(:q)^2)","hecke(²A₂,q²)")
+@test mytest("T=Tbasis(H);DLLefschetz(T(1))","[²A₂]:-<11>-q<²A₂>+q²<2>")
+@test mytest("W=coxgroup(:D,4)","D₄")
+@test mytest("WF=spets(W,Perm(1,2,4))","³D₄")
+@test mytest("u=UniChar(W,2)","[D₄]:<11->")
+@test mytest("Frobenius(WF)(u)","[D₄]:<.211>")
+@test mytest("Frobenius(WF)(u,-1)","[D₄]:<11+>")
 end
 @testset "Ucl.jl" begin
 @test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C          C(u) A₃(A₃₍₎=.) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄\n────┼──────────────────────────────────────────────────────────────────\n4   │222   0 222         q³.Z₄        1:4                -1:2    ζ₄:Id\n31  │202   1 22.   q⁴.A₁₍₎=.Φ₁      Id:31\n22  │020   2 2.2      q⁴.A₁.Z₂       2:22               11:11\n211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁     Id:211\n1111│000   6 ...            A₃    Id:1111\n\n   u│.(A₃)/-ζ₄\n────┼──────────\n4   │   -ζ₄:Id\n31  │\n22  │\n211 │\n1111│")
@@ -925,6 +932,9 @@ end
 @test mytest("uc=UnipotentClasses(W);","nothing")
 @test mytest("uc.classes","5-element Array{Gapjm.Ucl.UnipotentClass,1}:\n UnipotentClass(1111)\n UnipotentClass(211)\n UnipotentClass(22)\n UnipotentClass(31)\n UnipotentClass(4)")
 @test mytest("t=ICCTable(uc)","Coefficients of Xᵩ on Y_ψ for A₃\n     │4 31 22 211 1111\n─────┼─────────────────\nX4   │1  1  1   1    1\nX31  │0  1  1  Φ₂   Φ₃\nX22  │0  0  1   1   Φ₄\nX211 │0  0  0   1   Φ₃\nX1111│0  0  0   0    1")
+@test mytest("W=coxgroup(:G,2)","G₂")
+@test mytest("special_pieces(UnipotentClasses(W))","3-element Array{Array{Int64,1},1}:\n [1]\n [4, 3, 2]\n [5]")
+@test mytest("special_pieces(UnipotentClasses(W,3))","3-element Array{Array{Int64,1},1}:\n [1]\n [4, 3, 2, 6]\n [5]")
 end
 @testset "Urad.jl" begin
 @test mytest("W=coxgroup(:E,6)","E₆")
@@ -984,6 +994,12 @@ end
 @test mytest("inversions(W,[1,2,1])","3-element Array{Int16,1}:\n 1\n 4\n 2")
 @test mytest("W=coxgroup(:A,2)","A₂")
 @test mytest("map(N->with_inversions(W,N),combinations(1:nref(W)))","8-element Array{Union{Nothing, Perm{Int16}},1}:\n ()\n (1,4)(2,3)(5,6)\n (1,3)(2,5)(4,6)\n nothing\n nothing\n (1,6,2)(3,5,4)\n (1,2,6)(3,4,5)\n (1,5)(2,4)(3,6)")
+@test mytest("W=coxgroup(:E,6)","E₆")
+@test mytest("R=reflection_subgroup(W,[20,30,19,22])","E₆₍₁₉‚₁‚₉‚₂₀₎=A₄₍₃₁₂₄₎")
+@test mytest("p=standard_parabolic(W,R)","(1,4,49,12,10)(2,54,62,3,19)(5,17,43,60,9)(6,21,34,36,20)(7,24,45,41,53)(8,65,50,15,22)(11,32,31,27,28)(13,48,46,37,40)(14,51,58,44,29)(16,23,35,33,30)(18,26,39,55,38)(42,57,70,72,56)(47,68,67,63,64)(52,59,71,69,66)")
+@test mytest("reflection_subgroup(W,[20,30,19,22].^p)","E₆₍₂₄₅₆₎=A₄")
+@test mytest("R=reflection_subgroup(W,[1,2,3,5,6,35])","E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆₎×A₂₍₄₅₎")
+@test mytest("standard_parabolic(W,R)","nothing")
 @test mytest("W=coxgroup(:A,2)","A₂")
 @test mytest("w=longest(W)","(1,5)(2,4)(3,6)")
 @test mytest("describe_involution(W,w)","1-element Array{Int64,1}:\n 3")
@@ -1007,6 +1023,10 @@ end
 @test mytest("factor(x^2-y^2+x+3y-2)","2-element Array{Mvp{Int64,Int64},1}:\n x+y-1\n x-y+2")
 @test mytest("factor(x^2+x+1)","2-element Array{Mvp{Cyc{Int64},Int64},1}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("factor(x*y-1)","1-element Array{Mvp{Int64,Int64},1}:\n xy-1")
+@test mytest("W=CoxSym(5)","𝔖 ₅")
+@test mytest("pblocks(W,2)","2-element Array{Array{Int64,1},1}:\n [1, 3, 4, 5, 7]\n [2, 6]")
+@test mytest("pblocks(W,3)","3-element Array{Array{Int64,1},1}:\n [1, 5, 6]\n [2, 3, 7]\n [4]")
+@test mytest("pblocks(W,7)","7-element Array{Array{Int64,1},1}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7]")
 end
 @testset "sscoset.jl" begin
 @test mytest("WF=rootdatum(:u,6)","²A₅Φ₂")

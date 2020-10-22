@@ -658,7 +658,7 @@ julia> LF=subspets(WF,[1,2,9,16],w)
 F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
 
 julia> Diagram(LF)
-ϕ acts as (2,4,3) on the component below
+ϕ acts as (2,3,4) on the component below
   O 4
   ￨
 O—O—O

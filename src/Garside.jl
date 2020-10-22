@@ -608,7 +608,7 @@ Base.:/(M::LocallyGarsideMonoid,x,y)=/(IntervalStyle(M),M,x,y)
 Base.:/(::Interval,M,x,y)=x/y
 Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
 Base.inv(::Interval,M,x)=inv(x)
-isrightdescent(M::LocallyGarsideMonoid,w,i::Int)=isrightdescent(IntervalStyle(M),M,w,i)
+isrightdescent(M::LocallyGarsideMonoid,w,i::Integer)=isrightdescent(IntervalStyle(M),M,w,i)
 isrightdescent(::Interval,M,w,i)=isleftdescent(M.W,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=*(M,x,y)
 
@@ -1400,14 +1400,14 @@ julia> WF=spets(W,Perm(1,2,4))
 
 julia> F=Frobenius(WF);
 
-julia> c=B(3,4,3,3,2,4)
-343.324
+julia> c=B(3,4,3,1,2,3)
+343123
 
 julia> conjugating_elt(b,c,F)
-2312
+124312
 
-julia> ^(b,B(2,3,1,2),F)
-343.324
+julia> ^(b,B(1,2,4,3,1,2),F)
+343123
 ```
 """
 function conjugating_elt(b,c,F=(x,y=1)->x;ss::Symbol=:sc)
@@ -1542,7 +1542,7 @@ function TwistedPowerMonoid(M,n)
   TwistedPowerMonoid(δ,n*M.orderδ,M.stringδ*"_n",atoms,n,M,Dict{Symbol,Any}())
 end
 
-function isrightdescent(M::TwistedPowerMonoid,s,i)
+function isrightdescent(M::TwistedPowerMonoid,s,i::Integer)
   if i==1 return s.t end
   i1,i2=1 .+divrem(i-2,length(M.M.atoms))
   isrightdescent(M.M,s.v[i1],i2)
