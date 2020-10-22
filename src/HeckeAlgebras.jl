@@ -418,10 +418,11 @@ function central_monomials(H::HeckeAlgebra)
 end
 
 #--------------------------------------------------------------------------
-abstract type HeckeElt{P,C} end
+abstract type HeckeElt{P,C} end # P=typeof(keys) [Perms] C typeof(coeffs)
 
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
+clone(h::HeckeElt,d)=typeof(h)(d,h.H)
 
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
@@ -441,7 +442,7 @@ Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,a.d+b.d)
 Base.:-(a::HeckeElt)=clone(a,-a.d)
 Base.:-(a::HeckeElt, b::HeckeElt)=a+(-b)
 
-Base.:*(a::HeckeElt, b)=clone(a,a.d*b)
+Base.:*(a::HeckeElt, b::Number)=clone(a,a.d*b)
 Base.:*(a::HeckeElt, b::Pol)=clone(a,a.d*b)
 Base.:*(a::HeckeElt, b::Mvp)=clone(a,a.d*b)
 Base.:*(b::Pol, a::HeckeElt)=a*b
@@ -451,12 +452,12 @@ Base.:*(b::Number, a::HeckeElt)= a*b
 Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
                                    Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
-struct HeckeTElt{P,C1,TH<:HeckeAlgebra}<:HeckeElt{P,C1}
+struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
   d::ModuleElt{P,C1} # has better merge performance than Dict
   H::TH
 end
 
-clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
+#clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
 
 basename(h::HeckeTElt)="T"
  
@@ -580,11 +581,13 @@ The class polynomials were introduced in
 """
 function class_polynomials(h)
   H=h.H
-# if IsBound(h.coset) WF=Spets(h.coset); W=Group(WF);
-# else 
-    W=H.W
-    WF=W
-# end
+  WF=H.W
+  if H isa HeckeCoset  
+    W=Group(WF)
+    para=H.H.para
+  else W=WF
+    para=H.para
+  end
   minl=length.(classinfo(WF)[:classtext])
   h=Tbasis(H)(h)
 # Since  vF is not of minimal length in its class there exists wF conjugate
@@ -597,7 +600,7 @@ function class_polynomials(h)
         sw=W(s)*w
         sws=sw*W(s)
         if isleftdescent(W,inv(sw),s) 
-          q1,q2=H.para[s]
+          q1,q2=para[s]
           return (elm=[sws,sw],coeff=[-q1*q2,q1+q2])
         elseif !(sws in orbit) push!(orbit,sws)
         end
@@ -947,6 +950,41 @@ function Chars.CharTable(H::HeckeCoset)
     end
     prod(cts)
   end
+end
+
+function Chars.representation(H::HeckeCoset,i::Int)
+  tt=refltype(H.W)
+  dims=Tuple(getchev.(tt,:NrConjugacyClasses))
+  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
+  rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
+  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.H.para,rp,i),tt,inds)
+  if any(==(false),mm) return false end
+  ff=improve_type.(getindex.(mm,:F))
+  mm=improve_type.(toM.(getindex.(mm,:gens)))
+  n=length(tt)
+  if n==1 return Dict(:gens=>mm[1],:F=>ff[1]) end
+  id(i)=fill(1,i,i)^0
+  Dict(:gens=>vcat(map(1:n) do i
+         map(mm[i]) do m
+           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
+         end
+        end...), :F=>cat(ff...;dims=(1,2)))
+end
+
+struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}
+  d::ModuleElt{P,C1} # has better merge performance than Dict
+  H::HeckeCoset
+end
+
+basename(h::HeckeTCElt)="T"
+Tbasis(h::HeckeTCElt)=h
+
+function Tbasis(H::HeckeCoset{TH})where TH<:HeckeAlgebra{C} where C
+  f(w::Vararg{Integer})=HeckeTCElt(ModuleElt(H.W(w...)=>one(C)),H)
+  f(w::Vector{<:Integer})=f(w...)
+# f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
+# eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
+  f(h::HeckeElt)=Tbasis(h)
 end
 
 end

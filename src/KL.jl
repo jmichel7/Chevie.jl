@@ -298,8 +298,8 @@ struct HeckeCElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   H::TH
 end
 
-HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
-HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
+#HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
+#HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
 
 HeckeAlgebras.basename(h::HeckeCpElt)="C'"
 HeckeAlgebras.basename(h::HeckeCElt)="C"

@@ -272,6 +272,7 @@ Groups.Group(WF::Spets)=WF.W
 PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
 PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
 PermRoot.semisimplerank(WF::Spets)=semisimplerank(WF.W)
+CoxGroups.word(WF::Spets,w)=word(WF.W,w/WF.phi)
 
 """
 `twistings(W,I)`

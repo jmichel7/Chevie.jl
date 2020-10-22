@@ -146,10 +146,10 @@ Base.zero(::Type{Pol{T}}) where T=Pol(T[];check=false)
 Base.zero(::Type{Pol})=Pol(Int[];check=false)
 Base.zero(a::Pol)=Pol(empty(a.c);check=false)
 Base.iszero(a::Pol)=length(a.c)==0
-#Base.transpose(a::Pol)=a # next 3 stupid stuff to make inv using LU work
-Base.adjoint(a::Pol)=a
+# next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v;check=false)
+Base.adjoint(a::Pol)=conj(a)
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")

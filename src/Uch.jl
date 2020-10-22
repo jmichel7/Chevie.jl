@@ -1101,21 +1101,19 @@ desingularisation of the Coxeter element Deligne-Lusztig variety.
 
 We now show an example with a coset (corresponding to the unitary group).
 
-gap> H:=Hecke(CoxeterCoset(W,(1,2)),q^2);
-Hecke(2A2,q^2)
-gap> T:=Basis(H,"T");
-function ( arg ) ... end
-gap> DeligneLusztigLefschetz(T(1));
-[2A2]=-<11>-q<2A2>+q^2<2>
+```julia-repl
+julia> H=hecke(spets(W,Perm(1,2)),Pol(:q)^2)
+hecke(²A₂,q²)
+
+julia> T=Tbasis(H);DLLefschetz(T(1))
+[²A₂]:-<11>-q<²A₂>+q²<2>
+```
 """
 DLLefschetz=function(h,i=0)
-# if haskey(h, :coset) W = ReflectionCoset(h[:coset])
-# else 
   W=h.H.W
-# end
   uc=UnipotentCharacters(W)
-  UniChar(W, fourier(uc)[:,uc.harishChandra[1][:charNumbers]]*
-          conj.(char_values(h)).*Uch.eigen(uc).^i)
+  uniform=uc.almostHarishChandra[1][:charNumbers]
+  UniChar(W,(char_values(h)'*fourier(uc)[uniform,:])[1,:].*Uch.eigen(uc).^i)
 end
 
 DLLefschetzTable=function(H)
@@ -1125,7 +1123,7 @@ DLLefschetzTable=function(H)
 # end
   t=CharTable(H).irr
   uc=UnipotentCharacters(WF)
-  return t'*fourier(uc)[uc.harishChandra[1][:charNumbers],:]
+  return t'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:]
 end
 
 # on_unipotents(W,aut [,uniplist])

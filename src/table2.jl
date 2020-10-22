@@ -156,6 +156,7 @@ chevieset(Symbol("2A"),:HeckeCharTable, function (r, param, rootparam)
   ct=CharTable(H)
   tbl[:charnames]=ct.charnames
   tbl[:classnames]=ct.classnames
+  tbl[:classtext]=cli[:classtext]
   tbl[:centralizers]=ct.centralizers
   tbl[:irreducibles]=toL(permutedims(toM(map(char_values, cl))))
   A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
