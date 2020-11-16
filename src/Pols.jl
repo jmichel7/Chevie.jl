@@ -1,6 +1,6 @@
 """
  An implementation of univariate Laurent polynomials.
- A Pol contains two fields: its vector of coefficients, and its valuation.
+ A Pol contains two fields: a vector of coefficients, and the valuation.
 
 # Examples
 ```julia-repl
@@ -10,41 +10,43 @@ Pol{Int64}: q
 julia> Pol([1,2]) # valuation is 0 if not specified
 Pol{Int64}: 2q+1
 
-julia> p=Pol([1,2],-1)
+julia> p=Pol([1,2],-1) # here the valuation is specified to be -1
 Pol{Int64}: 2+q⁻¹
 
-julia> valuation(p)
--1
+julia> valuation(p),degree(p)
+(-1, 0)
 
 julia> p=(q+1)^2
 Pol{Int64}: q²+2q+1
 
-julia> degree(p)
-2
+julia> valuation(p),degree(p)
+(0, 2)
 
-julia> p(1//2) # a Pol is a callable object, where the call evaluates the Pol
+julia> p(1//2) # value of p at 1//2
 9//4
 
 julia> p[0], p[1], p[-1] # indexing gives the coefficients
 (1, 2, 0)
+
+julia> p[-1:1]
+3-element Array{Int64,1}:
+ 0
+ 1
+ 2
 
 julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
 (0.5q²-0.25q+0.125, 0.875)
 
 julia> divrem(q^3+1,q+2)  # keeps the ring, but needs leading coeff ±1
 (q²-2q+4, -7)
-
-julia> cyclotomic_polynomial(24) # the 24-th cyclotomic polynomial
-Pol{Int64}: q⁸-q⁴+1
-
 ```
 
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: format_coefficient, printTeX, divisors
+using ..Util: format_coefficient, printTeX
 export degree, valuation
-export Pol, cyclotomic_polynomial, shift, positive_part, negative_part, bar
+export Pol, shift, positive_part, negative_part, bar
 
 const varname=Ref(:x)
 
@@ -52,16 +54,15 @@ struct Pol{T}
   c::Vector{T}
   v::Int
   function Pol(c::AbstractVector{T},v::Integer=0;check=true)where T
-    if check
+    if check # normalize c so there are no leading or trailing zeroes
       b=findfirst(!iszero,c)
       if isnothing(b) return new{T}(empty(c),0) end
       e=findlast(!iszero,c)
-      if b!=1 || e!=length(c) return new{T}(c[b:e],v+b-1) end
+      if b!=1 || e!=length(c) return new{T}(view(c,b:e),v+b-1) end
     end
     new{T}(c,v)
   end
 end
-
 
 Pol(a::Number)=convert(Pol,a)
 Pol()=Pol([1],1;check=false)
@@ -75,18 +76,18 @@ Base.broadcastable(p::Pol)=Ref(p)
 
 Base.lastindex(p::Pol)=length(p.c)+p.v-1
 
-Base.getindex(p::Pol{T},i) where T=i in p.v:p.v+length(p.c)-1 ? 
+Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:p.v+length(p.c)-1 ? 
     p.c[i-p.v+1] : zero(T)
+
+Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
 
 Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
 Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) :
         Pol([T(a)];check=false)
-Base.convert(::Type{Pol},a::Number)=iszero(a) ? zero(Pol{typeof(a)}) :
-        Pol([a];check=false)
-(::Type{Pol{T}})(a::Number) where T=convert(Pol{T},a)
+Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
+(::Type{Pol{T}})(a) where T=convert(Pol{T},a)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p :
         Pol(convert.(T,p.c),p.v;check=false)
-(::Type{Pol{T}})(p::Pol) where T=convert(Pol{T},p)
 
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
   Pol{promote_type(T1,T2)}
@@ -96,11 +97,16 @@ function Base.promote_rule(a::Type{Pol{T1}},b::Type{T2})where {T1,T2<:Number}
   Pol{promote_type(T1,T2)}
 end
 
+degree(p::Pol)=length(p.c)-1+p.v
+valuation(p::Pol)=p.v
+
 Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
 function Base.convert(::Type{T},p::Pol) where T<:Number
   if iszero(p) return T(0) end
-  if !isone(length(p.c)) || !iszero(p.v) throw(InexactError(:convert,T,p)) end
+  if !iszero(degree(p)) || !iszero(valuation(p)) 
+    throw(InexactError(:convert,T,p)) 
+  end
   convert(T,p.c[1]) 
 end
 
@@ -110,26 +116,20 @@ Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
 Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 
-degree(p::Pol)=length(p.c)-1+p.v
-
-valuation(p::Pol)=p.v
 
 (p::Pol{T})(x) where T=iszero(p) ? zero(T) : evalpoly(x,p.c)*x^p.v
 
 # efficient p↦ qˢ p
 shift(p::Pol,s)=Pol(p.c,p.v+s;check=false)
 
-# degree ≥0
 function positive_part(p::Pol)
-  v=max(0,-p.v)
-  if v==0 return p end
-  Pol(p.c[1+v:end],p.v+v)
+  if p.v>=0 return p end
+  Pol(view(p.c,1-p.v:length(p.c)),0)
 end
 
-# degree ≤0
 function negative_part(p::Pol)
   if degree(p)<=0 return p end
-  Pol(p.c[1:1-p.v],p.v)
+  Pol(view(p.c,1:1-p.v),p.v)
 end
 
 # q↦ q⁻¹ on p
@@ -139,13 +139,13 @@ Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 Base.:(==)(a::Pol,b)= a==Pol(b)
 Base.:(==)(b,a::Pol)= a==Pol(b)
 
-Base.one(a::Pol)=Pol([one(eltype(a.c))];check=false)
+Base.one(a::Pol{T}) where T=Pol([one(T)];check=false)
 Base.one(::Type{Pol{T}}) where T=Pol([one(T)];check=false)
-Base.one(::Type{Pol})=Pol([1];check=false)
+Base.one(::Type{Pol})=one(Pol{Int})
 Base.zero(::Type{Pol{T}}) where T=Pol(T[];check=false)
-Base.zero(::Type{Pol})=Pol(Int[];check=false)
+Base.zero(::Type{Pol})=zero(Pol{Int})
 Base.zero(a::Pol)=Pol(empty(a.c);check=false)
-Base.iszero(a::Pol)=length(a.c)==0
+Base.iszero(a::Pol)=isempty(a.c)
 # next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v;check=false)
@@ -163,31 +163,28 @@ function Base.show(io::IO, ::MIME"text/plain", a::Pol)
 end
 
 function Base.show(io::IO,p::Pol)
-  if get(io,:limit,false) || get(io,:TeX,false)
-    s=join(map(reverse(collect(enumerate(p.c))))do (i,c)
-      if iszero(c) return "" end
-      c=sprint(show,c; context=io)
-      deg=i+p.v-1
+  if !get(io,:limit,false) && !get(io,:TeX,false)
+    print(io,"Pol(",p.c,",",p.v,")")
+  elseif iszero(p) print(io,"0")
+  else
+    for deg in degree(p):-1:valuation(p)
+      c=p[deg]
+      if iszero(c) continue end
+      c=sprint(show,c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg) 
         mon=String(varname[])
         if deg!=1 mon*="^{$deg}" end
         c=format_coefficient(c)*mon
       end
-      if isempty(c) || c[1]!='-' c="+"*c end
-      c
-    end)
-    if s=="" s="0"
-    elseif  s[1]=='+' s=s[2:end]
+      if c[1]!='-' && deg!=degree(p) c="+"*c end
+      printTeX(io,c)
     end
-    printTeX(io,s)
-  else
-    print(io,"Pol(",p.c,",",p.v,")")
   end
 end
 
 function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(a) || iszero(b) return zero(a) end
-  res=fill(zero(T1)*zero(T2),length(a.c)+length(b.c)-1)
+  res=fill(zero(promote_type(T1,T2)),length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
@@ -219,6 +216,8 @@ Base.:-(a::Pol, b::Number)=a-Pol(b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v;check=false)
 
+bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
+
 """
 `divrem(a::Pol, b::Pol)`
 
@@ -227,18 +226,16 @@ When the leading coefficient of b is ±1 does not use inverse
 """
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
-  c=b.c[end]
-  if isone(c^2) d=c else d=inv(c) end
+  d=bestinv(b.c[end])
   T=promote_type(T1,T2,typeof(d))
   v=convert(Vector{T},copy(a.c))
-  res=T[]
-  for i=length(a.c):-1:length(b.c)
+  res=reverse(map(length(a.c):-1:length(b.c)) do i
     if iszero(v[i]) c=zero(d)
     else c=v[i]*d
-         v[i-length(b.c)+1:i] .-= c .* b.c
+      view(v,i-length(b.c)+1:i) .-= c .* b.c
     end
-    pushfirst!(res,c)
-  end
+    c
+  end)
   Pol(res,a.v-b.v;check=false),Pol(v,a.v)
 end
 
@@ -281,32 +278,7 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 function Base.inv(p::Pol)
-  if length(p.c)!=1 throw(InexactError(:inv,Int,p)) end
-  if p.c[1]^2==1 return Pol([p.c[1]],-p.v;check=false) end
-  Pol([inv(p.c[1])],-p.v;check=false)
-end
-
-# The  computed  cyclotomic  polynomials  are  cached 
-const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
-"""
-`cyclotomic_polynomial(n)`
- 
-returns the `n`-th cyclotomic polynomial.
- 
-```julia-repl
-julia> cyclotomic_polynomial(5)
-Pol{Int64}: q⁴+q³+q²+q+1
-```
-"""
-function cyclotomic_polynomial(n::Integer)
-  get!(cyclotomic_polynomial_dict,n) do
-    res=Pol(fill(1,n),0;check=false)
-    for d in divisors(n)
-      if d!=1 && d!=n
-        res,_=divrem(res,cyclotomic_polynomial(d))
-      end
-    end
-    res
-  end
+  if length(p.c)!=1 throw(InexactError(:inv,typeof(p),p)) end
+  Pol([bestinv(p.c[1])],-p.v;check=false)
 end
 end

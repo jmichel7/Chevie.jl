@@ -63,7 +63,7 @@ julia> CycPols.show_factors(24)
 """
 module CycPols
 
-export CycPol,descent_of_scalars,ennola_twist
+export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
 # to use as a stand-alone module uncomment the next line
 # export roots, degree, valuation
 import ..Gapjm: roots, degree, valuation
@@ -74,6 +74,33 @@ using ..Cycs: Root1, E, conductor, Cyc
 #using ..Pols
 using ..Util: printTeX, prime_residues, primitiveroot, phi
 import Primes
+
+# The  computed  cyclotomic  polynomials  are  cached 
+const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
+"""
+`cyclotomic_polynomial(n)`
+ 
+returns the `n`-th cyclotomic polynomial.
+ 
+```julia-repl
+julia> cyclotomic_polynomial(5)
+Pol{Int64}: q⁴+q³+q²+q+1
+
+julia> cyclotomic_polynomial(24)
+Pol{Int64}: q⁸-q⁴+1
+```
+"""
+function cyclotomic_polynomial(n::Integer)
+  get!(cyclotomic_polynomial_dict,n) do
+    res=Pol(fill(1,n),0;check=false)
+    for d in divisors(n)
+      if d!=1 && d!=n
+        res,_=divrem(res,cyclotomic_polynomial(d))
+      end
+    end
+    res
+  end
+end
 
 struct CycPol{T}
   coeff::T
@@ -109,7 +136,7 @@ function roots(c::CycPol)
   vcat([f(e,m) for (e,m) in c.v]...)
 end
 
-# 281st generic degree of G34; p(Pol(:x)) 2ms back to CycPol 14ms (gap3 10ms)
+# 281st generic degree of G34; p(Pol()) 2ms back to CycPol 14ms (gap3 10ms)
 const p=CycPol((1//6)E(3),19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 1//5=>1, 2//5=>1, 3//5=>1, 4//5=>1, 1//6=>4, 5//6=>4, 1//7=>1, 2//7=>1,
 3//7=>1, 4//7=>1, 5//7=>1, 6//7=>1, 1//8=>1, 3//8=>1, 5//8=>1, 7//8=>1,
@@ -385,7 +412,7 @@ function CycPol(p::Pol{T};trace=false)where T
   end
   val=valuation(p)
   coeff=p.c[end]
-  p=improve_type(Pol(p.c.//coeff,0))
+  p=improve_type(coeff^2==1 ? Pol(p.c.*coeff,0) : Pol(p.c.//coeff,0))
   vcyc=Pair{Root1,Int}[]
 
   # find factors Phi_i
@@ -450,7 +477,7 @@ function CycPol(p::Pol{T};trace=false)where T
   end
 # println("now p=$p val=$val")
   
-  CycPol(degree(p)==0 ? coeff : p*coeff,val,ModuleElt(vcyc;check=true))
+  CycPol(degree(p)==0 ? coeff : improve_type(p*coeff),val,ModuleElt(vcyc;check=true))
 end
 
 CycPol(x::Mvp)=CycPol(Pol(x))

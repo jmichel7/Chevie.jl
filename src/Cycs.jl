@@ -527,7 +527,7 @@ function sumroots(n::Int,l)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
-  Cyc(n,ModuleElt(res;check=length(l)>1))
+  Cyc(n,ModuleElt(res;check=true))
 end
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -559,10 +559,10 @@ function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
 if use_list
   res=zeros(eltype(c.d),length(zumbroich_basis(n)))
   z=zumbroich_basis(c.n).*m
-  for i in eachindex(c.d)
-    if iszero(c.d[i]) continue end
-    (v,k)=Elist(n,z[i])
-    @inbounds res[k].+=v ? c.d[i] : -c.d[i]
+  for (i,v) in enumerate(c.d)
+    if iszero(v) continue end
+    (b,k)=Elist(n,z[i])
+    @inbounds res[k].+=b ? v : -v
   end
   Cyc(n,res)
 else

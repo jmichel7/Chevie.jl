@@ -264,7 +264,7 @@ function Base.show(io::IO,s::Series)
   end
   cname = charnames(io,UnipotentCharacters(s.levi))[s.cuspidal]
   n=repl || TeX ? "\\lambda" : "c"
-  quad=repl || TeX ? "    " : " "
+  quad=TeX ? "\\quad" : " "
   if s.spets == s.levi
     print(io,s.d, "-cuspidal ",cname," of ", s.spets)
   else
@@ -871,10 +871,9 @@ function paramcyclic(s::Series)
   return s.prop[:Hecke]
 end
 
-CHEVIE[:relativeSeries]=false
+CHEVIE[:relativeSeries]=true
 function Hecke(s::Series)
   if haskey(s.prop,:Hecke) return s.prop[:Hecke] end
-  CharNumbers(s)
   if iscyclic(s) paramcyclic(s)
   elseif CHEVIE[:relativeSeries]
     InfoChevie("\n      # Relative: ",s,"\n")
@@ -892,50 +891,46 @@ function AllProperSeries(W)
 end
 
 function findfractionalpowers(W)
-  if W[:nbGeneratingReflections] == 0 return [0] end
-  uc = UnipotentCharacters(W)
-  UNBOUND = 99
-  uc[:fractions] = fill(0, max(0, (1 + length(uc)) - 1)) + UNBOUND
-  reasons = map((x->begin [] end), 1:length(uc))
+  if length(gens(W))==0 return [0] end
+  uc=UnipotentCharacters(W)
+  uc[:fractions]=fill(nothing,length(uc))
+  reasons = map(x->[], 1:length(uc))
   for h in uc[:harishChandra]
-      if length(h.levi) != W[:nbGeneratingReflections]
-          L = ReflectionSubgroup(W, h.levi)
-          cusp = FindCuspidalInLevi(h[:cuspidalName], L)
-          n = findfractionalpowers(L)
-          if n[cusp] != UNBOUND
-              (uc[:fractions])[h[:charNumbers]] = h[:charNumbers] * 0 + n[cusp]
-              for i = h[:charNumbers] push!(reasons[i], joindigits(h.levi)) end
-          end
+    if length(h.levi)!=length(gens(W))
+      L=reflection_subgroup(W, h.levi)
+      cusp=FindCuspidalInLevi(h[:cuspidalName], L)
+      n=findfractionalpowers(L)
+      if !isnothing(n[cusp])
+        uc[:fractions][h[:charNumbers]]=h[:charNumbers]*0+n[cusp]
+        for i in h[:charNumbers] push!(reasons[i], joindigits(h.levi)) end
       end
+    end
   end
-  sers = AllProperSeries(W)
+  sers=AllProperSeries(W)
   map(Hecke, sers)
-  sers = gapSet(filter(x->haskey(x, :mC) && iscyclic(x),sers))
-  while length(sers) != 0
+  sers=gapSet(filter(x->haskey(x, :mC) && iscyclic(x),sers))
+  while !isempty(sers)
     for s in sers
-      p = PositionProperty(charNumbers(s), (i->uc.fractions[i] !== nothing))
-      if p == false
-        print("reticent series", s, "\n")
+      p = findfirst(i->uc.fractions[i]!==nothing,charNumbers(s))
+      if isnothing(p) print("reticent series", s, "\n")
       else
-       frac = (mC(s))[p] * e(s) * s.d
-        fix = Mod1((uc[:fractions])[(charNumbers(s))[p]] - frac)
+        frac = mC(s)[p]*e(s)*s.d
+        fix = Mod1(uc[:fractions][charNumbers(s)[p]]-frac)
         if fix != 0
             print(" **** Badly normalized series ", s, " adding ", fix, "\n")
         end
         print("\n", s, "==>")
         for i in 1:e(s)
-          print((charNumbers(s))[i], ".c")
-          frac = Mod1((mC(s))[i] * e(s) * s.d + fix)
-          if uc[:fractions][charNumbers(s)[i]] == UNBOUND
-            uc[:fractions][charNumbers(s)[i]] = frac
-            push!(reasons[charNumbers(s)[i]], s.d)
-          elseif (uc[:fractions])[charNumbers(s)[i]] != frac
-            print("Failed! ",charNumbers(s)[i], "==",
-                 TeXStrip(uc[:TeXCharNames][charNumbers(s)[i]]),
+          cn=charNumbers(s)[i]
+          print(cn,".c")
+          frac = Mod1(mC(s)[i] * e(s) * s.d + fix)
+          if isnothing(uc[:fractions][cn]) push!(reasons[cn], s.d)
+            uc[:fractions][cn] = frac
+          elseif uc[:fractions][cn] != frac
+            print("Failed! ",cn, "==", TeXStrip(uc[:TeXCharNames][cn]),
                  " in ", s, "\n     where mC mod1==", frac, "\n
-                 conflicts with ", reasons[charNumbers(s)[i]], "\n")
-          else
-            push!(reasons[charNumbers(s)[i]], s.d)
+                 conflicts with ", reasons[cn], "\n")
+          else push!(reasons[cn], s.d)
           end
         end
         sers = Difference(sers, [s])
@@ -944,24 +939,23 @@ function findfractionalpowers(W)
   end
   for i = uc[:harishChandra]
     if length(i[:charNumbers])>1
-      print(Format([uc[:fractions][i[:charNumbers]], map(length, reasons[i[:charNumbers]])]), "\n")
+      print(Format([uc[:fractions][i[:charNumbers]], 
+                    map(length, reasons[i[:charNumbers]])]), "\n")
     else
       print(uc[:fractions][i[:charNumbers][1]],reasons[i[:charNumbers][1]],"\n")
     end
-    p = gapSet((uc[:fractions])[i[:charNumbers]])
+    p=gapSet(uc[:fractions][i[:charNumbers]])
     if haskey(i, :qEigen)
-      if p != [i[:qEigen]]
-        if p == [UNBOUND]
-          print("!!!!!!!!!!!! for ", i[:charNumbers], " qEigen should be UNBOUND is ", i[:qEigen], "\n")
+      if p!=[i[:qEigen]]
+        if p == [nothing]
+          print("!!!!!!!!!!!! for ", i[:charNumbers], 
+                " qEigen should be nothing is ", i[:qEigen], "\n")
         else
-          error("for HCseries $i of ",ReflectionName(W)," qEigen should be ", p)
+          error("for HCseries $i of ",ReflectionName(W)," qEigen should be ",p)
           uc[:fractions][i[:charNumbers]] = i[:qEigen]+0*i[:charNumbers]
         end
       end
-    else
-      if p != [0]
-        print("!!!!!!!!!!!!!! qEigen unbound should be ", p, "\n")
-      end
+    elseif p!=[0] print("!!!!!!!!!!!!!! qEigen unbound should be ", p, "\n")
     end
   end
   return uc[:fractions]
@@ -972,7 +966,7 @@ function PrincipalSeries(W, d)
   s=split_levis(W, d, length(relative_degrees(W, d)))
   if length(s)!=1 error(" not one ", d, "-Sylow") end
   s=s[1]
-  Series(W, s, findfirst(iszero,UnipotentCharacters(s).prop[:A]), d)
+  Series(W,s,findfirst(iszero,UnipotentCharacters(s).prop[:A]), d)
 end
 
 function CheckMaximalPairs(W)
@@ -1012,12 +1006,11 @@ SpetsFromType(t)=spets(reflection_group(t.orbit), t.twist)
 
 # get Hecke of series s. If scalar-twisted untwist first
 function getHecke(s)
-  println("s=",s.spets,"\n")
+# println("s=",s.spets,"\n")
   t=refltype(s.spets)
   if length(t)==1 && haskey(t[1],:scalar) && !all(isone,t[1].scalar)
-    t=t[1]
+    t=copy(t[1])
     scal=t.scalar
-    t=copy(t)
     InfoChevie("   # removing scal==", scal, "\n")
     t.scalar=map(x->1,t.scalar)
     if t.orbit[1].series=="B" && t.orbit[1].rank==2 && t.twist==perm"(1,2)"
@@ -1064,29 +1057,29 @@ function RelativeSeries(s)
 # if !(haskey(s, :charNumbers)) CharNumbers(s) end
   WGL=relative_group(s)
   res=map(enumerate(WGL.prop[:reflists])) do (i,r)
-    println("r=",r,"\nphi=",s.element/s.spets.phi)
+ #  println("r=",r,"\nphi=",s.element/s.spets.phi)
     R=subspets(s.spets,r,s.element/s.spets.phi)
-    l=inclusion(Group(s.levi))
-    if !issubset(l,inclusion(Group(R)))
+    l=inclusion(s.levi)
+    if !issubset(l,inclusion(R))
       r=map(r)do w
         rr=roots(Group(s.spets))
         p=findfirst(y->!isnothing(ratio(rr[w],rr[y])),l)
         !isnothing(p) ? l[p] :  w
       end
       R=subspets(s.spets,r,s.element/s.spets.phi)
-      if !issubset(r,inclusion(Group(R)))
+      if !issubset(r,inclusion(R))
         l=sort(unique(map(l)do w
           rr=roots(Group(s.spets))
           p=findfirst(y->!isnothing(ratio(rr[w],rr[y])),inclusion(Group(R)))
-          !isnothing(p) ? inclusion(Group(R),p) : w
+          !isnothing(p) ? inclusion(R,p) : w
         end))
-        if !issubset(l,inclusion(Group(R)))
+        if !issubset(l,inclusion(R))
           error("could not change r==",r," so that Subspets(r) contains",l,"\n")
         end
       end
     end
 #   println("R=",R," L=",subspets(R,l,s.element/R.phi))
-    p=Series(R,subspets(R,l,s.element/R.phi),s.cuspidal,s.d.r)
+    p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r)
     p.prop[:orbit]=simple_representatives(WGL)[i]
     r=Int.(indexin(sort(unique(reflections(WGL))),reflections(WGL)))
     if gens(WGL)==WGL.prop[:parentMap]
@@ -1104,16 +1097,14 @@ function RelativeSeries(s)
     end
     p.prop[:WGL]=reflection_subgroup(WGL, r)
     p.prop[:WGLdims]=CharTable(relative_group(p)).irr[:,1]
-    if all(isone,p.prop[:WGLdims])
-      p.prop[:e]=length(p.prop[:WGLdims])
-    end
+    if all(isone,p.prop[:WGLdims]) p.prop[:e]=length(p.prop[:WGLdims]) end
     return p
   end
   s.prop[:relativeSpets]=map(x->x.spets, res)
   p=getHecke.(res)
   if false in p return res end
   s.prop[:Hecke]=hecke(WGL,improve_type(p))
-  printc("Hecke=",s.prop[:Hecke],"\n")
+# printc("Hecke=",s.prop[:Hecke],"\n")
   u1=schur_elements(s.prop[:Hecke])//1
   if any(x->any(y->!all(isinteger, values(y.d)), keys(x.d)),u1)
     ChevieErr(s.prop[:Hecke], " fractional: wrong set of SchurElements")
@@ -1126,9 +1117,9 @@ function RelativeSeries(s)
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues
   if isnothing(p)
-    printc("u1=",u1," ud=",ud,"\n")
-    println(sort(indexin(ud,u1)))
-    println(sort(indexin(u1,ud)))
+#   printc("u1=",u1," ud=",ud,"\n")
+#   println(sort(indexin(ud,u1)))
+#   println(sort(indexin(u1,ud)))
     ChevieErr(s.prop[:Hecke], " wrong set of SchurElements")
     return res
   end

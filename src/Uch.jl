@@ -172,10 +172,10 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> T=spets(reflection_subgroup(W,Int[]),W(1,2))
-G₂₍₎=.Φ₆
+G₂₍₎=Φ₆
 
 julia> u=UniChar(T,1)
-[G₂₍₎=.Φ₆]:<.>
+[G₂₍₎=Φ₆]:<.>
 ```
 
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
@@ -855,27 +855,25 @@ end
 const short=Ref(true)
 
 """
-`:String' and 'Print`: the formatting of unipotent characters is affected by
-the  variable 'CHEVIE.PrintUniChars'. It is a  record; if the field 'short'
-is  bound (the default)  they are printed  in a compact  form. If the field
-`:long' is bound, they are printed one character per line:
+The  formatting  of  unipotent  characters  is  affected  by  the  variable
+`Uch.short`.  If 'true' (the  default) they are  printed in a compact form.
+Otherwise, they are printed one character per line:
 
-|    gap> CHEVIE.PrintUniChars:=rec(long:=true);
-    rec(
-      long := true )
-    gap> w;
-    [G2]=
-    <phi{1,0}>   1
-    <phi{1,6}>   0
-    <phi{1,3}'>  0
-    <phi{1,3}''> -1
-    <phi{2,1}>   0
-    <phi{2,2}>   0
-    <G2[-1]>     2
-    <G2[1]>      0
-    <G2[E3]>     0
-    <G2[E3^2]>   1
-    gap> CHEVIE.PrintUniChars:=rec(short:=true);;|
+julia> Uch.short[]=false
+false
+
+julia> w
+[G₂]:
+<φ₁‚₀>    1
+<φ₁‚₆>    0
+<φ′₁‚₃>   0
+<φ″₁‚₃>   -1
+<φ₂‚₁>    0
+<φ₂‚₂>    0
+<G₂[-1]>  2
+<G₂[1]>   0
+<G₂[ζ₃]>  0
+<G₂[ζ₃²]> 1
 
 """
 function Base.show(io::IO,r::UniChar)
@@ -935,10 +933,10 @@ julia> WF=spets(W)
 G₂
 
 julia> T=subspets(WF,Int[],W(1))
-G₂₍₎=.Φ₁Φ₂
+G₂₍₎=Φ₁Φ₂
 
 julia> u=UniChar(T,1)
-[G₂₍₎=.Φ₁Φ₂]:<.>
+[G₂₍₎=Φ₁Φ₂]:<.>
 
 julia> LusztigInduce(WF,u)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
@@ -968,19 +966,19 @@ julia> WF=spets(W)
 G₂
 
 julia> T=subspets(WF,Int[],W(1))
-G₂₍₎=.Φ₁Φ₂
+G₂₍₎=Φ₁Φ₂
 
 julia> u=DLChar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
 julia> Uch.LusztigRestrict(T,u)
-[G₂₍₎=.Φ₁Φ₂]:4<.>
+[G₂₍₎=Φ₁Φ₂]:4<.>
 
 julia> T=subspets(WF,Int[],W(2))
-G₂₍₎=.Φ₁Φ₂
+G₂₍₎=Φ₁Φ₂
 
 julia> Uch.LusztigRestrict(T,u)
-[G₂₍₎=.Φ₁Φ₂]:0
+[G₂₍₎=Φ₁Φ₂]:0
 ```
 """
 LusztigRestrict(HF,u)=UniChar(HF,permutedims(LusztigInductionTable(HF,

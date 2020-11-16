@@ -30,7 +30,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> CharTable(W)
-CharTable(H(G(1,1,4)))
+CharTable(A₃)
     │1111 211 22 31  4
 ────┼──────────────────
 1111│   1  -1  1  1 -1
@@ -43,7 +43,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> ct=CharTable(W)
-CharTable(W(G2))
+CharTable(G₂)
      │A₀ Ã₁ A₁ G₂ A₂ A₁+Ã₁
 ─────┼─────────────────────
 φ₁‚₀ │ 1  1  1  1  1     1
@@ -391,7 +391,7 @@ using Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars
+  decompose, on_chars, detPerm
 
 """
 `fakedegree(W, φ, q)`
@@ -740,6 +740,26 @@ function charinfo(W)::Dict{Symbol,Any}
   end
 end
 
+"""
+`detPerm(W)`
+
+return  the permutation of the characters of the reflection group `W` which
+is effected when tensoring by the determinant character (for Coxeter groups
+this is the sign character).
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> detPerm(W)
+(1,8)(2,9)(3,11)(4,13)(7,12)
+```
+"""
+function detPerm(W)
+  t=permutedims(CharTable(W).irr)
+  Perm(t,t.*t[:,charinfo(W)[:positionDet]];dims=2)
+end
+
 function classinfo(t::TypeIrred)
   cl=deepcopy(getchev(t,:ClassInfo))
   if haskey(t,:orbit)
@@ -754,6 +774,8 @@ function classinfo(t::TypeIrred)
   cl[:classes]=Int.(cl[:classes])
   cl
 end
+
+Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 
 """
 `classinfo(W)`
@@ -825,7 +847,7 @@ struct CharTable{T}
   charnames::Vector{String}
   classnames::Vector{String}
   centralizers::Vector{Int}
-  identifier::String
+  order::Int
   prop::Dict{Symbol,Any}
 end
 
@@ -836,7 +858,7 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,ct::CharTable)
-  if !get(io,:TeX,false) printTeX(io,"CharTable(",ct.identifier,")\n") end
+  printTeX(io,"CharTable(",ct.prop[:name],")\n")
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
@@ -854,26 +876,39 @@ function CharTable(t::TypeIrred)
   if all(isinteger,irr) irr=Int.(irr)
   else irr=Cyc{Int}.(irr)
   end
-  CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),ct[:identifier],
-            Dict{Symbol,Any}())
+  CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),
+            ct[:size],Dict{Symbol,Any}())
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt)
-   return CharTable(hcat(1),["Id"],["1"],[1],".",Dict{Symbol,Any}())
+   return CharTable(hcat(1),["Id"],["1"],[1],1,Dict{Symbol,Any}())
   end
   charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
-  identifier=join(getfield.(ctt,:identifier),"×")
+  order=prod(getfield.(ctt,:order))
   if length(ctt)==1 irr=ctt[1].irr
   else irr=kron(getfield.(ctt,:irr)...)
   end
-  CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
+  CharTable(irr,charnames,classnames,centralizers,order,Dict{Symbol,Any}())
 end
 
-CharTable(W::PermRootGroup)=gets(()->prod(CharTable.(refltype(W))),W,:chartable)
-CharTable(W::FiniteCoxeterGroup)=gets(()->prod(CharTable.(refltype(W))),W,:chartable)
+function CharTable(W::PermRootGroup)
+  gets(W,:chartable)do
+    ct=prod(CharTable.(refltype(W)))
+    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
+    ct
+  end
+end
+
+function CharTable(W::FiniteCoxeterGroup)
+  gets(W,:chartable)do
+    ct=prod(CharTable.(refltype(W)))
+    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
+    ct
+  end
+end
 
 """
 `CharTable(WF::Spets)`
@@ -890,7 +925,7 @@ julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
 
 julia> CharTable(W)
-CharTable(W(3D4))
+CharTable(³D₄)
      │C₃ Ã₂ C₃+A₁ Ã₂+A₁ F₄ Ã₂+A₂ F₄(a₁)
 ─────┼──────────────────────────────────
 .4   │ 1  1     1     1  1     1      1
@@ -904,24 +939,15 @@ CharTable(W(3D4))
 """
 function CharTable(W::Spets)::CharTable
   gets(W,:chartable)do
-    ctt=CharTable.(refltype(W))
-    if isempty(ctt)
-     return CharTable(hcat(1),["Id"],["1"],[1],"$W",Dict{Symbol,Any}())
-    end
-    charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
-    classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
-    centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
-    identifier=join(getfield.(ctt,:identifier),"×")
-    if length(ctt)==1 irr=ctt[1].irr
-    else irr=kron(getfield.(ctt,:irr)...)
-    end
-    CharTable(irr,charnames,classnames,centralizers,identifier,Dict{Symbol,Any}())
+    ct=prod(CharTable.(refltype(W)))
+    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
+    ct
   end
 end
 
 function classes(ct::CharTable)
   gets(ct,:classes)do
-    div.(ct.centralizers[1],ct.centralizers)
+    div.(ct.order,ct.centralizers)
   end
 end
 
@@ -1296,10 +1322,10 @@ julia> W=coxgroup(:D,4)
 D₄
 
 julia> H=reflection_subgroup(W,[1,3])
-D₄₍₁₃₎=A₂
+D₄₍₁₃₎=A₂Φ₁²
 
 julia> jInductionTable(H,W)
-j-Induction Table from D₄₍₁₃₎=A₂ to D₄
+j-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
      │111 21 3
 ─────┼─────────
 11+  │  .  . .
@@ -1346,10 +1372,10 @@ julia> W=coxgroup(:D,4)
 D₄
 
 julia> H=reflection_subgroup(W,[1,3])
-D₄₍₁₃₎=A₂
+D₄₍₁₃₎=A₂Φ₁²
 
-julia> Chars.JInductionTable(H,W)
-J-Induction Table from D₄₍₁₃₎=A₂ to D₄
+julia> JInductionTable(H,W)
+J-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
      │111 21 3
 ─────┼─────────
 11+  │  .  . .

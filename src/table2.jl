@@ -1,16 +1,16 @@
 # replacements for non-usable parts of chevie's tbl
 
 CharTableSymmetric=Dict(:centralizers=>[
-     function(n,pp) res=k=1;last=0
-        for p in pp
-          res*=p
-          if p==last k+=1;res*=k
-          else k=1
-          end
-          last=p
-        end
-        res
-     end])
+function(n,pp) res=k=1;last=0
+  for p in pp
+    res*=p
+    if p==last k+=1;res*=k
+    else k=1
+    end
+    last=p
+  end
+  res
+end])
 
 """
  EvalPolRoot(pol, x, n, p) compute pol(p*x^(1/n))
@@ -131,7 +131,7 @@ end)
 
 chevieset(:A,:HeckeCharTable,
    function(n,para,root)
-    if n==1 Dict(:irreducibles=>[[1,para[1][2]],[1,para[1][1]]],
+     if n==1 Dict(:irreducibles=>[[1,para[1][2]],[1,para[1][1]]],
                   :charnames=>["11","2"],
                   :classnames=>["11","2"],
                   :centralizers=>[2,2],
@@ -140,26 +140,23 @@ chevieset(:A,:HeckeCharTable,
      end
    end)
 
-chevieset(Symbol("2A"),:HeckeCharTable, function (r, param, rootparam)
-  q = -param[1][1] // param[1][2]
-  if isnothing(rootparam[1]) v=GetRoot(q,2,"CharTable(Hecke(2A))")
-  else v = rootparam[1]
-  end
-  W=coxgroup(:A,r)
-  qE=central_monomials(hecke(W,v))
-  H=hecke(W, v^-2)
-  T=Tbasis(H)
+chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
+  q=-param[1][1]//param[1][2]
+  v=rootparam[1]
+  if isnothing(v) v=root(q,2) end
   tbl=Dict{Symbol,Any}(:identifier=>"H(^2A_$r)")
-  cli=chevieget(Symbol("2A"),:ClassInfo)(r)
-  cl=map(x->T(W(x...)*longest(W)), cli[:classtext])
-  merge(tbl,cli)
+  merge!(tbl,chevieget(Symbol("2A"),:ClassInfo)(r))
+  W=coxgroup(:A,r)
+  H=hecke(W, v^-2)
   ct=CharTable(H)
   tbl[:charnames]=ct.charnames
-  tbl[:classnames]=ct.classnames
-  tbl[:classtext]=cli[:classtext]
   tbl[:centralizers]=ct.centralizers
-  tbl[:irreducibles]=toL(permutedims(toM(map(char_values, cl))))
-  A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
+  T=Tbasis(H)
+  cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
+  tbl[:irreducibles]=toL(permutedims(toM(char_values.(cl))))
+  charparams=chevieget(:A,:CharInfo)(r)[:charparams]
+  A=chevieget(:A,:LowestPowerFakeDegree).(charparams)
+  qE=central_monomials(hecke(W,v))
   A=(-1).^A .* qE
   tbl[:irreducibles]=map((x,y)->x.*y,A,tbl[:irreducibles])
   CHEVIE[:compat][:AdjustHeckeCharTable](tbl, param)
@@ -169,17 +166,12 @@ end)
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
 chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
 
-#chevieset(:D,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,2,n,para,root))
-
 chevieset(:D,:HeckeCharTable,function(n,para,root)
 function chard(n,q)
   if n%2==0
-    n1=div(n,2)
-    if n1==2 AHk=[[1,-1],[1,q^2]]
-    else AHk=chevieget(:imp,:HeckeCharTable)(1,1,n1,fill([q^2,-1],n1-1),
-                                         [])[:irreducibles]
-    end
-    pA=partitions(n1)
+    n1=div(n,2)-1
+    AHk=chevieget(:A,:HeckeCharTable)(n1,fill([q^2,-1],n1),[])[:irreducibles]
+    pA=partitions(n1+1)
     Airr(x,y)=AHk[findfirst(==(x),pA)][findfirst(==(y),pA)]
   end
   BHk=chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
@@ -211,6 +203,7 @@ end
    tbl[:identifier]=tbl[:name]
    tbl[:parameter]=fill(u,n)
    tbl[:irreducibles]=chard(n,u)
+   tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(4))
 #  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
 #     rec(charparam:=p,charname:=PartitionTupleToString(p)));
    merge!(tbl,chevieget(:D,:ClassInfo)(n))
@@ -239,9 +232,7 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
   pp = chevieget(:imp, :ClassInfo)(p,q,r)[:classparams]
   l=keys(factor(factorial(r)*p))
   res=fill(Int[],maximum(l))
-  for pw in l
-    res[pw] = map(x->Position(pp, pow(x, pw)), pp)
-  end
+  for pw in l res[pw]=map(x->findfirst(==(pow(x,pw)),pp),pp) end
   res
  end)
 
@@ -281,12 +272,7 @@ chevieset(:imp,:GeneratingRoots,function(p,q,r)
     if r==2 && q>1 && q%2==1 v*=E(p) end
     if q==p roots=[v] else push!(roots, v) end
   end
-  for i=2:r
-    v=fill(0,r)
-    v[[i-1,i]]=[-1,1]
-    push!(roots, v)
-  end
-  return roots
+  append!(roots,map(i->vcat(fill(0,i-2),[-1;1],fill(0,r-i)),2:r))
 end)
 
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
@@ -307,21 +293,22 @@ chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
 end)
 
 chevieset(:B,:UnipotentClasses,function(r,char,ctype)
-  part2dynkin=function(part)
+  function part2dynkin(part)
     p=sort(reduce(vcat,map(d->1-d:2:d-1, part)))
     p=p[div(3+length(p),2):end]
     res= ctype==1 ? [2*p[1]] : [p[1]]
     append!(res,p[2:end]-p[1:end-1])
   end
-  addSpringer1=function(s,cc)
-    ss=First(uc[:springerSeries],x->x[:defect]==defectsymbol(s[:symbol]))
-    if s[:sp] == [[], []] p = 1
-    elseif s[:sp] == [[1], []] p = 2
-    elseif s[:sp] == [[], [1]] p = 1
-    else p = Position(CharParams(ss[:relgroup]), [s[:sp]])
+  function addSpringer1(s,cc)
+    ss=first(x for x in uc[:springerSeries] 
+                     if x[:defect]==defectsymbol(s[:symbol]))
+    if s[:sp] == [Int[], Int[]] p = 1
+    elseif s[:sp] == [[1], Int[]] p = 2
+    elseif s[:sp] == [Int[], [1]] p = 1
+    else p = findfirst(==([s[:sp]]),CharParams(ss[:relgroup]))
     end
-    ss[:locsys][p] = [length(uc[:classes]), Position(CharParams(cc[:Au]),
-      map(x->x ? [1, 1] : [2], s[:Au]))]
+    ss[:locsys][p] = [length(uc[:classes]), 
+          findfirst(==(map(x->x ? [1, 1] : [2], s[:Au])),CharParams(cc[:Au]))]
   end
   if ctype==ER(2)
     ctype=2
@@ -341,29 +328,11 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     end
     res
   end
-  if char != 2
-    symbol2para = function(S)
-      c=sort(reduce(vcat,S))
-      i=1
-      part=Int[]
-      d=mod(ctype,2)
-      while i<=length(c)
-        l=2*(c[i]-(i-1))-d
-        if i==length(c) || c[i+1]>c[i]
-          push!(part, l+1)
-          i+=1
-        else
-          append!(part,[l,l])
-          i+=2
-        end
-      end
-      reverse(filter(!iszero,sort(part)))
-    end
-  else
-    symbol2para = function (S,)
-      c=sort(reduce(vcat,S))
-      i=1
-      part=Int[]
+  function symbol2para(S)
+    c=sort(reduce(vcat,S))
+    i=1
+    part=Int[]
+    if char==2
       ex=Int[]
       while i<=length(c)
         l=2*(c[i]-2*(i-1))
@@ -380,10 +349,23 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
         end
       end
       [reverse(filter(y->y!=0,sort(part))), ex]
+    else
+      d=mod(ctype,2)
+      while i<=length(c)
+        l=2*(c[i]-(i-1))-d
+        if i==length(c) || c[i+1]>c[i]
+          push!(part, l+1)
+          i+=1
+        else
+          append!(part,[l,l])
+          i+=2
+        end
+      end
+      reverse(filter(!iszero,sort(part)))
     end
   end
   if char==2 ctype=1 end
-  for cl = ss
+  for cl in ss
     cc = Dict{Symbol, Any}(:parameter => symbol2para((cl[1])[:symbol]))
     cc[:Au] = CoxeterGroup(Concatenation(map(x->["A",1], cl[1][:Au]))...)
     if char != 2
@@ -400,7 +382,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     end
     cc[:red] = coxgroup()
     if char == 2 j = cc[:parameter][1]
-    else j = cc[:parameter]
+    else j=cc[:parameter]
     end
     for j in tally(j)
       if mod(j[1],2)==mod(ctype,2) cc[:red]*=coxgroup(:C, div(j[2],2))
@@ -430,7 +412,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       return true
     end, uc[:classes]), uc[:classes])))
   if char!=2 && ctype==2
-    LuSpin=function(p)
+    function LuSpin(p)
       sort!(p)
       a=Int[]
       b=Int[]
@@ -458,10 +440,10 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       sum(d)>=1 ? [a, b] : [b, a]
     end
     function addSpringer(f, i, s, k)
-      ss = First(uc[:springerSeries], f)
+      ss=first(x for x in uc[:springerSeries] if f(x))
       if s in [[Int[],[1]],[Int[],Int[]]] p=1
       elseif s==[[1],Int[]] p=2
-      else p = Position(CharParams(ss[:relgroup]), [s])
+      else p = findfirst(==([s]),CharParams(ss[:relgroup]))
       end
       ss[:locsys][p] = [i, k]
     end
@@ -517,9 +499,21 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   return uc
 end)
 
+# References for unipotent classes:
+# [Lu] G.Lusztig, Character sheaves on disconnected groups, II 
+#   Representation Theory 8 (2004) 72--124
+#
+# [GM]  M.Geck and G.Malle, On the existence of a unipotent support for the
+# irreducible  characters of  a finite  group of  Lie type,  Trans. AMS 352
+# (1999) 429--456
+# 
+# [S]  N.Spaltenstein,  Classes  unipotentes  et  sous-groupes  de
+# Borel, Springer LNM 946 (1982)
+# 
 chevieset(:D,:UnipotentClasses,function(n,char)
-  addSpringer = function (s, i, cc)
-    ss = First(uc[:springerSeries], x->x[:defect] == defectsymbol(s[:symbol]))
+  function addSpringer(s, i, cc)
+    ss=first(x for x in uc[:springerSeries] 
+                     if x[:defect]==defectsymbol(s[:symbol]))
     if s[:sp] in [[Int[], [1]], [Int[], Int[]]] p = 1
     elseif s[:sp] == [[1], Int[]] p = 2
     else p = findfirst(==([s[:sp]]),CharParams(ss[:relgroup]))
@@ -627,7 +621,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       for s in cl addSpringer(s, length(uc[:classes]), cc) end
     end
   end
-  if char == 2
+  if char == 2 # see [Spaltenstein] 2.10 page 24
     uc[:orderClasses] = hasse(Poset(map(uc[:classes])do x
                                     map(uc[:classes])do y
       m = max(x[:parameter][1][1], y[:parameter][1][1])
@@ -685,7 +679,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      end
      d+=1
   end
-  function LuSpin(p)
+  function LuSpin(p) # see [Lusztig] 14.2
     sort!(p)
     a=Int[]
     b=Int[]
@@ -712,21 +706,21 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     b=reverse(filter(!iszero,b))
     sum(d)>=1 ? [a, b] : [b, a]
   end
-  addSpringer1= function (f, i, s, k)
-    ss = First(uc[:springerSeries], f)
-    if s in [[[], [1]], [[], []]] p = 1
-    elseif s == [[1], []] p = 2
-    else p = Position(CharParams(ss[:relgroup]), [s])
+  function addSpringer1(f, i, s, k)
+    ss=first(x for x in uc[:springerSeries] if f(x))
+    if s in [[Int[], [1]], [Int[], Int[]]] p = 1
+    elseif s == [[1], Int[]] p = 2
+    else p = findfirst(==([s]),CharParams(ss[:relgroup]))
     end
     ss[:locsys][p] = [i, k]
   end
-  trspringer = function (i, new)
+  function trspringer(i, new)
     for ss in uc[:springerSeries]
-      for c in ss[:locsys] if c[1] == i c[2] = new[c[2]] end end
+      for c in ss[:locsys] if c[1]==i c[2]=new[c[2]] end end
     end
   end
-  l=Filtered(1:length(uc[:classes]), i->all(c->mod(c[1], 2) == 0 || c[2] == 1,
-                 tally(((uc[:classes])[i])[:parameter])))
+  l=filter(i->all(c->mod(c[1],2)==0 || c[2]==1,
+                  tally(uc[:classes][i][:parameter])),eachindex(uc[:classes]))
   for i in l
      cl=uc[:classes][i]
      s=LuSpin(cl[:parameter])
@@ -747,62 +741,64 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      end
      if !('-' in cl[:name])
          addSpringer1(ss->ss[:Z] in [[1, -1], [E(4)]] && 
-                     rank(ss[:relgroup]) == Sum(s, Sum) , i, s, k[1])
+                     rank(ss[:relgroup]) == sum(sum,s) , i, s, k[1])
      end
      if !('+' in cl[:name])
          addSpringer1(ss->ss[:Z] in [[-1, 1], [-(E(4))]] && 
-                     rank(ss[:relgroup]) == Sum(s, Sum), i, s, k[2])
+                     rank(ss[:relgroup]) == sum(sum,s), i, s, k[2])
      end
   end
 end
   uc
 end)
+
+##  The  characters of I_2(m) are uniquely parametrized by [d,b] where d is
+##  their  degree and b is  the valuation of the  fake degrees, except that
+##  when  m is even,  there are two  characters with [d,b]=[1,m/2]. The one
+##  which  maps the generators to [1,-1] is denoted [1,m/2,"'"] and the one
+##  which maps them to [-1,1] is denoted [1,m/2,"''"].
 chevieset(:I, :CharInfo, function(m)
-  local res, applyf, v, m1
-  res = Dict{Symbol, Any}(:charparams => [Any[1, 0]])
-  if mod(m, 2) == 0
-      res[:extRefl] = [1, 5, 4]
-      m1 = div(m, 2)
-      push!(res[:charparams], [1, m1, "'"], [1, m1, "''"])
+  res=Dict{Symbol, Any}()
+  charparams=[Any[1,0]]
+  if iseven(m)
+    res[:extRefl]=[1,5,4]
+    m1=div(m,2)
+    push!(charparams,[1,m1,"'"],[1,m1,"''"])
   else
-      res[:extRefl] = [1, 3, 2]
+    res[:extRefl]=[1,3,2]
   end
-  push!(res[:charparams], [1, m])
-  append!(res[:charparams], map(i->[2, i], 1:div(m - 1, 2)))
-  res[:b]=map(x->x[2], res[:charparams])
-  res[:B]=map(phi->phi[1] == 1 ? phi[2] : m - phi[2], res[:charparams])
-  res[:a]=map(phi->phi[1]!=1 || phi[2]==div(m,2) ? 1 : phi[2], res[:charparams])
-  res[:A]=map(phi->phi[1]==1 || phi[2]==div(m,2) ? m-1 : phi[2], res[:charparams])
-  res[:charSymbols] = map(function (l)
-              S = map(i->[0], 1:m)
-              k = 0
-              if k != 0
-                  S[1] = [0, 1]
-                  S[1 + mod(k + l, m)] = [0, 1]
-                  S[k + 1] = []
-                  S[l + 1] = []
-              else
-                  S[1] = [1]
-                  S[l + 1] = [1]
-              end
-              S
-          end, 1:div(m - 1, 2))
-  v=map(x->[0],1:m);v[m]=[1,2];pushfirst!(res[:charSymbols],v)
-  if mod(m,2)==0
-    v=map(x->[0],1:m);v[m]=[1];v[m1]=[1];pushfirst!(res[:charSymbols],v)
-    v=map(x->[0], 1:m); v[m]=[1];v[m1]=[1]; pushfirst!(res[:charSymbols],v)
+  push!(charparams,[1,m])
+  append!(charparams,map(i->[2,i],1:div(m-1,2)))
+  res[:charparams]=charparams
+  res[:b]=map(x->x[2], charparams)
+  res[:B]=map(phi->phi[1] == 1 ? phi[2] : m - phi[2], charparams)
+  res[:a]=map(phi->phi[1]!=1 || phi[2]==div(m,2) ? 1 : phi[2], charparams)
+  res[:A]=map(phi->phi[1]==1 || phi[2]==div(m,2) ? m-1 : phi[2], charparams)
+  charSymbols=map(1:div(m-1,2))do l
+    S=map(i->[0],1:m)
+    S[1]=[1]
+    S[l+1]=[1]
+    S
   end
-  v=map(x->[0,1],1:m)
-  v[m]=[2]
-  pushfirst!(res[:charSymbols],v)
-  res[:malleParams] = map(x->Vector{Any}(map(partβ,x)),res[:charSymbols])
-  if mod(m,2)==0
+  v=map(x->[0],1:m);v[m]=[1,2];pushfirst!(charSymbols,v)
+  if iseven(m)
+    v=map(x->[0],1:m);v[m]=[1];v[m1]=[1];pushfirst!(charSymbols,v)
+    pushfirst!(charSymbols,copy(v))
+  end
+  v=map(x->[0,1],1:m);v[m]=[2];pushfirst!(charSymbols,v)
+  res[:charSymbols]=charSymbols
+  res[:malleParams]=map(x->Vector{Any}(map(partβ,x)),charSymbols)
+  if iseven(m)
     res[:malleParams][2]=push!(res[:malleParams][2][1:m1],1)
     res[:malleParams][3]=push!(res[:malleParams][3][1:m1],-1)
   end
   return res
 end)
 
+# see Halverson and Ram,
+# Murnaghan-Nakayama rules for characters of Iwahori-Hecke algebras of the 
+# complex reflection groups G(r,p,n) Canad. J. Math. 50 (1998) 167--192
+# page 172
 struct Hook
   area::Int       # area of the hook
   startpos::Int   # the position of the decreased βnumber in the βlist
@@ -887,8 +883,7 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
     res[:irreducibles]=map(i->map(j->para[1][i]^j,0:p-1),1:p)
   elseif q==1
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
-# according to "Characters of Iwahori-Hecke algebras of G(r,p,n)"
-# Halverson and Ram, Canadian Journal of math. 50 (1998) 167--192
+# according to [Halverson-Ram]
     merge!(res,cl)
     T=NamedTuple{(:area,:cc,:hooklength,:DC,:SC,:stripped),
        Tuple{Int,Int,Int,Vector{Pair{Int,Int}},Vector{Pair{Int,Int}},
@@ -899,7 +894,7 @@ Strips(S,s)  returns the list  of collections of  broken border strips of
 total  area equal to  s coming from  the various βlists  in the symbol S.
 Each  collection is represented by named tuple containing the statistical
 information   about  it  necessary  to  compute  the  function  Delta  in
-Ram-Halverson 2.17. These tuples have the following fields:
+[Halverson-Ram] 2.17. These tuples have the following fields:
    area       total area
    cc         number of connected components (hooks)
    hooklength Sum of hooklengths of individual hooks (the # of rows -1 of the
@@ -908,7 +903,7 @@ Ram-Halverson 2.17. These tuples have the following fields:
                 which βlist they come from, axial position
    SC         the list of all sharp corners, represented by a pair:
                 which βlist they come from, axial position
-   stripped  the symbol left after removing the strip collection
+   stripped   the symbol left after removing the strip collection
 """
     function Strips(S,s)local e, res, hs, ss, a
       get!(StripsCache,S=>s) do
@@ -949,7 +944,7 @@ Ram-Halverson 2.17. These tuples have the following fields:
       res
       end
     end
-# the function Delta of Ram-Halverson 2.17, modified to take in account that
+# the function Delta of Halverson-Ram 2.17, modified to take in account that
 # our eigenvalues for T_2..T_r are (Q1,Q2) instead of (q,-q^-1)
     function Delta(k,hs,(Q1,Q2),v)local q
       delta=1
@@ -1037,13 +1032,14 @@ chevieset(:imp, :CharTable, function (p, q, r)
       map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo), [])
 end)
 
-ExpandRep = function (r, d, l)
+function ExpandRep(r, d, l) # decompress representation of r gens of dim d
   T=reduce(promote_type,typeof.(first.(l)))
   m=map(i->map(j->fill(zero(T),d),1:d), 1:r)
   for v in l
-    for k in Int.(v[2:end])
-      i=k%(d^2)
-      m[div(k,d^2)+1][div(i,d)+1][mod(i,d)+1]=v[1]
+    for k in @view v[2:end]
+      q,i=divrem(Int(k),d^2)
+      q1,r1=divrem(i,d)
+      m[q+1][q1+1][d1+1]=v[1]
     end
   end
   return m

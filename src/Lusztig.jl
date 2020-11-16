@@ -201,13 +201,15 @@ function LusztigInductionPieces(LF,WF)
     end
     lu=sprint(show,LF;context=:TeX=>true)
     lg=sprint(show,WF;context=:TeX=>true)
+    lfgl=sprint(show,LFGL;context=:TeX=>true)
+    wfgl=sprint(show,WFGL;context=:TeX=>true)
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
                    uW.prop[:almostTeXCharNames][ser[:charNumbers]],
                    uL.prop[:almostTeXCharNames][h[:charNumbers]],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
-     "piece from \$W_{$lu}($(join(h[:levi])),$(h[:cuspidalName]))\$=$LFGL"*
-     "to \$W_{$lg}($(join(h[:levi])),$(h[:cuspidalName]))\$=$WFGL",
+     "piece from \$W_{$lu}($(join(h[:levi])),$(h[:cuspidalName]))\$=$lfgl"*
+     "to \$W_{$lg}($(join(h[:levi])),$(h[:cuspidalName]))\$=$wfgl",
     Dict{Symbol,Any}(:repr=>"piece($(repr(LF)),$(repr(WF)))",
                      :wnum=>ser[:charNumbers], :hnum=>h[:charNumbers]))
   end
@@ -268,7 +270,7 @@ function LusztigInductionTable(LF,WF;check=true)
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
   res.prop[:pieces]=LusztigInductionPieces(LF,WF)
-  if res==false return false end
+  if res.prop[:pieces]==false return false end
   fL=fourier(uL)
   hh=uL.almostHarishChandra
   fWinv=fourierinverse(uW)

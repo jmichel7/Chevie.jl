@@ -31,7 +31,7 @@ the root datum of the linear group of rank 3 can be specified as:
 
 ```julia-repl
 julia> W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])
-A₂
+A₂Φ₁
 
 julia> reflrep(W,W(1))
 3×3 Array{Int64,2}:
@@ -67,7 +67,7 @@ the appropriate matrices 'simpleroots(W)' and 'simplecoroots(W)':
 
 ```julia-repl
 julia> rootdatum(:gl,3)   # same as the previous example
-A₂
+A₂Φ₁
 ```
 
 ##{Semisimple elements}
@@ -86,13 +86,13 @@ julia> G=rootdatum(:sl,4)
 A₃
 
 julia> L=reflection_subgroup(G,[1,3])
-A₃₍₁₃₎=A₁×A₁
+A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_centre(L)
 Dict{Symbol,Any} with 3 entries:
   :descAZ => [[1, 2]]
   :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
-  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[1, 2, 1]])
+  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[[1, 2, 1]])
 
 julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
@@ -259,6 +259,8 @@ Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 SS(W::FiniteCoxeterGroup,v::AbstractVector{<:Rational{<:Integer}})=
   SemisimpleElement(W,map(x->Root1(;r=x),v))
 
+SS(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(Root1(1),rank(W)))
+
 Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 
 Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
@@ -292,16 +294,21 @@ Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)=a.v==b.v
 
 Gapjm.order(a::SemisimpleElement{Root1})=conductor(a.v)
 
+# we need "one" since we cannot define one(SemisimpleElement{T})
 struct SSGroup{T}<:Group{SemisimpleElement{T}}
   gens::Vector{SemisimpleElement{T}}
+  one::SemisimpleElement{T}
   prop::Dict{Symbol,Any}
 end
 
 Base.show(io::IO,G::SSGroup)=print(io,"SSGroup(",gens(G),")")
 
-function Groups.Group(a::AbstractVector{<:SemisimpleElement})
-  SSGroup(filter(!isone,a),Dict{Symbol,Any}())
+# the optional argument is necessary when a is empty
+function Groups.Group(a::AbstractVector{<:SemisimpleElement},o=one(a[1]))
+  SSGroup(filter(!isone,a),o,Dict{Symbol,Any}())
 end
+
+Base.one(G::SSGroup)=G.one
 
 struct SubTorus
   generators::Vector{Vector{Int}}
@@ -382,13 +389,13 @@ julia> G=rootdatum(:sl,4)
 A₃
 
 julia> L=reflection_subgroup(G,[1,3])
-A₃₍₁₃₎=A₁×A₁
+A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_centre(L)
 Dict{Symbol,Any} with 3 entries:
   :descAZ => [[1, 2]]
   :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
-  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[1, 2, 1]])
+  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[[1, 2, 1]])
 
 julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
@@ -497,7 +504,7 @@ function algebraic_centre(W)
       end
     end
   end
-  res=Dict(:Z0=>Z0,:AZ=>Group(abelian_generators(AZ)))
+  res=Dict(:Z0=>Z0,:AZ=>Group(abelian_generators(AZ),SS(W)))
   if W isa HasType.ExtendedCox && length(F0s)>0 return res end
   AZ=SS.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(AZ) res[:descAZ]=AZ
@@ -808,11 +815,11 @@ runs over all the maximal tori of `SL`₄.
 ```julia-repl
 julia> l=twistings(rootdatum(:sl,4),Int[])
 5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- A₃₍₎=.Φ₁³
- A₃₍₎=.Φ₁²Φ₂
- A₃₍₎=.Φ₁Φ₂²
- A₃₍₎=.Φ₁Φ₃
- A₃₍₎=.Φ₂Φ₄
+ A₃₍₎=Φ₁³
+ A₃₍₎=Φ₁²Φ₂
+ A₃₍₎=Φ₁Φ₂²
+ A₃₍₎=Φ₁Φ₃
+ A₃₍₎=Φ₂Φ₄
 
 julia> StructureRationalPointsConnectedCentre.(l,3)
 5-element Array{Array{Int64,1},1}:
@@ -862,9 +869,9 @@ julia> SScentralizer_representatives(W)
 
 julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
 6-element Array{FiniteCoxeterSubGroup{Perm{Int16},Int64},1}:
- G₂₍₎=.
- G₂₍₁₎=A₁
- G₂₍₂₎=Ã₁
+ G₂₍₎=Φ₁²
+ G₂₍₁₎=A₁Φ₁
+ G₂₍₂₎=Ã₁Φ₁
  G₂
  G₂₍₁₅₎=A₂
  G₂₍₂₆₎=Ã₁×A₁

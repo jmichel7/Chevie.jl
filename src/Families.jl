@@ -950,7 +950,7 @@ G₄
 
 julia> uc=UnipotentCharacters(W);f=uc.families[4];
 
-julia> A=Algebras.fusion_algebra(fourier(f),1)
+julia> A=fusion_algebra(fourier(f),1)
 Fusion Algebra dim.5
 
 julia> b=basis(A)
@@ -1039,7 +1039,7 @@ function Chars.CharTable(A::FusionAlgebra)
   labels=string.(1:dim(A))
   centralizers=fill(dim(A),dim(A))
   CharTable(irr,A.prop[:charnames],A.prop[:classnames],centralizers,
-            string(A),Dict{Symbol,Any}())
+         dim(A),Dict{Symbol,Any}(:name=>sprint(show,A;context=:TeX=>true)))
 end
 
 function involution(e::AlgebraElt{FusionAlgebra})

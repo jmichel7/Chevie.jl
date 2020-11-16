@@ -63,14 +63,14 @@ julia> @btime minimal_words(symmetric_group(8));
   10.477 ms (122062 allocations: 15.22 MiB)
   
 julia> @btime length(elements(symmetric_group(8)))
-  2.136 ms (98328 allocations: 5.94 MiB)
+  1.713 ms (49599 allocations: 5.19 MiB)
 ```
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
 """
 module PermGroups
 using ..Perms
 using ..Groups
-using ..Util: gets, getp, joindigits, InfoChevie
+using ..Util: gets, getp, InfoChevie
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
@@ -93,7 +93,11 @@ function degree(G::PermGroup)::Int
   end
 end
 
-" describe the orbit of Int p under PermGroup G as a Schreier vector "
+"""
+describe the orbit of Int p under PermGroup G as a Schreier vector v.
+That is, v[p]==-1 and v[k]=i means that k^inv(G(i)) is the antecessor of k
+in the orbit of p.
+"""
 function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
   res=zeros(Int,degree(G))
   res[p]=-1
@@ -115,16 +119,17 @@ end
 
 """
  The input is
- -  g: an element of a PermGroup G
- -  B: a base (or partial base) of G
- -  Δ: Δ[i] is the transversal of C_G(B[1:i-1]) on B[i]
- The function returns g "stripped" of its components in all C_G(B[1:i])
+ -  g: a permutation
+ -  B: a base (or partial base) of a PermGroup G
+ -  Δ: Δ[i]==transversal(C_G(B[1:i-1]),B[i])
+ The function returns g "stripped" of its components in all C_G(B[1:i]),
+ that is a pair (an element which fixes B[1:i],i+1)
 """
 function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T
   for i in eachindex(B)
     β=B[i]^g
     if !haskey(Δ[i],β) return g,i end
-    g*=inv(Δ[i][β])
+    g/=Δ[i][β]
   end
   g,length(B)+1
 end
@@ -136,58 +141,46 @@ end
   transversals. See the description in the functions with the same name.
 """
 function schreier_sims(G::PermGroup{T})where T
-  B=T[]
-  S=Vector{Perm{T}}[]
+  B=T[]  # base
+  C=PG{T}[]  # C[i] will become C_G(B[1:i-1])
   for x in gens(G)
     j=1
     while j<=length(B)
-      push!(S[j],x)
+      push!(gens(C[j]),x)
       if B[j]^x!=B[j] break end
       j+=1
     end
     if j>length(B)
       push!(B,smallest_moved_point(x))
-      push!(S,[x])
+      push!(C,Group([x]))
     end
   end
-  H=[Group(s) for s in S]
-  Δ=map(transversal,H,B)
-  rep(v)=join(map(repr,v),',')
+  Δ=transversal.(C,B)
   i=length(B)
   while i>=1
-   for β in keys(Δ[i]), x in S[i]
-     h=Δ[i][β]* x *inv(Δ[i][β^x])
-     if !isone(h)
-       y=true
-       h,j=strip(h,B,Δ)
-       if j<=length(B)
-         y=false
-       elseif !isone(h)
-         y=false
-         push!(B,smallest_moved_point(h))
-         push!(S,Perm{T}[])
-       end
-       if y==false
-         for l in i+1:j
-           push!(S[l],h)
-           if l>length(H)
-            push!(H,Group(S[l]))
-            push!(Δ,transversal(H[l],B[l]))
-           else
-           H[l]=Group(S[l])
-           Δ[l]=transversal(H[l],B[l])
-           end
-         end
-         i=j
-         @goto nexti
-       end
-     end
-   end
-   i-=1
-   @label nexti
+    for (β,wβ) in Δ[i], x in gens(C[i])
+      h=wβ*x/Δ[i][β^x] # possibly new elt of C_G(B[1:i])
+      if isone(h) continue end
+      h,j=strip(h,B,Δ)
+      if isone(h) continue end
+      for l in i+1:j # now h is in C[l] for those l
+        if l>length(C)
+          push!(B,smallest_moved_point(h))
+          push!(C,Group([h]))
+          push!(Δ,transversal(C[l],B[l]))
+        else
+          push!(gens(C[l]),h)
+          Δ[l]=transversal(C[l],B[l])
+        end
+      end
+      i=j
+      @goto nexti
+    end
+    i-=1
+    @label nexti
   end
   G.prop[:base]=B
-  G.prop[:centralizers]=H
+  G.prop[:centralizers]=C
   G.prop[:transversals]=Δ
 end
 
@@ -262,7 +255,7 @@ end
 
 Base.eltype(::Type{<:PermGroup{T}}) where T=Perm{T}
 
-# iterating I directly is faster, but how to do that?
+# iterating I directly is 30% faster unfortunately
 function Base.iterate(G::PermGroup)
   I=ProdIterator(reverse(values.(transversals(G))))
   u=iterate(I)
@@ -305,10 +298,10 @@ function reduced(W::PermGroup,phi)
 end
 
 function Groups.Coset(W::PermGroup,phi::Perm)
-  Groups.CosetofAny(reduced(W,phi),W,Dict{Symbol,Any}())
+  Groups.Cosetof(reduced(W,phi),W,Dict{Symbol,Any}())
 end
 
-#-------------------------- now the concrete type-------------------------
+#-------------------------- now a concrete type-------------------------
 struct PG{T}<:PermGroup{T}
   gens::Vector{Perm{T}}
   prop::Dict{Symbol,Any}
@@ -514,7 +507,7 @@ function Perm_rowcolmat(m1, m2)
     for e in Group(map(i->Perm(l[i],l[i+1]),1:length(l)-1))
       m=dist(^(mm[1], e;dims=dim), mm[2], dim, l)
       if m<d
-        InfoChevie("\n",("rows","cols")[dim],joindigits(l),":$d->",m)
+        InfoChevie("\n",("rows","cols")[dim],l,":$d->",m)
         rcperm[dim][1]*=e
         mm[1]=^(mm[1],e;dims=dim)
         return true

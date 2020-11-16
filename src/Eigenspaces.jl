@@ -295,7 +295,7 @@ A₃
 julia> split_levis(W,4)
 2-element Array{Any,1}:
  A₃
- A₃₍₎=.Φ₂Φ₄
+ A₃₍₎=Φ₂Φ₄
 
 julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
@@ -304,7 +304,7 @@ julia> split_levis(W,3)
 3-element Array{Any,1}:
  ³D₄
  D₄₍₁₃₎=A₂Φ₃
- D₄₍₎=.Φ₃²
+ D₄₍₎=Φ₃²
 
 julia> W=coxgroup(:E,8)
 E₈
@@ -337,7 +337,7 @@ function split_levis(WF,d::Root1,ad)
       V=GLinearAlgebra.lnullspace(m-E(d)*one(m))
     end
     I=refs[map(m->V==V*m, mats)]
-    println("I=$I\nphi=",w/WF.phi)
+#   println("I=$I\nphi=",w/WF.phi)
     HF=subspets(WF, I, w/WF.phi)
     if isnothing(HF)
       error("subspets($WF,",I,",class#",cl[1],") failed")
@@ -347,7 +347,7 @@ function split_levis(WF,d::Root1,ad)
         error("fusion is wrong")
         return nothing
       end
-    println("class=",cl[1]," cl=",cl," f=",f)
+#   println("class=",cl[1]," cl=",cl," f=",f)
       cl=setdiff(cl,f)
       H=HF.W
       P=standard_parabolic(W, H)
@@ -364,7 +364,7 @@ end
 
 function Weyl.standard_parabolic(W::PermRootGroup, H)
   hr=inclusiongens(H,W)
-  println("hr=",hr)
+# println("hr=",hr)
   if issubset(hr,eachindex(gens(W))) return Perm() end
   I=combinations(eachindex(gens(W)),length(hr))
   # I=map(x->inclusion(W,x),parabolic_representatives(W))

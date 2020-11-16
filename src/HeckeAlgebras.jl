@@ -245,9 +245,11 @@ function Chars.CharTable(H::HeckeAlgebra)
       else                     names=charinfo(W)[:charnames]
       end
       CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-             map(Int,ct[:centralizers]),ct[:identifier],Dict{Symbol,Any}())
+            map(Int,ct[:centralizers]),ct[:size],Dict{Symbol,Any}())
     end
-    prod(cts)
+    ct=prod(cts)
+    ct.prop[:name]=sprint(show,H;context=:TeX=>true)
+    ct
   end
 end
 
@@ -660,6 +662,14 @@ julia> char_values(Cpbasis(H)(1,2,1))
 """
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
+function schur_element(H::HeckeAlgebra,p)
+  t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices], 
+      haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : []),
+      refltype(H.W),p)
+  if any(==(false),t) return nothing end
+  prod(t)
+end
+
 """
 `schur_elements(H)`
 
@@ -690,12 +700,9 @@ julia> CycPol.(s)
  q⁻²Φ₂²Φ₄              
 ```
 """
-function schur_elements(H::HeckeAlgebra)
-  W=H.W
-  map(p->getchev(W,:SchurElement,p,H.para,
-     haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para)))[1],
-      first.(charinfo(W)[:charparams]))
-end
+schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
+                                    charinfo(H.W)[:charparams])
+
 #----------------------- Factorized Schur elements
 struct FactSchur
   factor::Mvp{Cyc{Rational{Int}},Int}
@@ -946,7 +953,8 @@ function Chars.CharTable(H::HeckeCoset)
       else                     names=charinfo(W)[:charnames]
       end
       CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-                map(Int,ct[:centralizers]),ct[:identifier],Dict{Symbol,Any}())
+                map(Int,ct[:centralizers]),length(W),
+               Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
     prod(cts)
   end

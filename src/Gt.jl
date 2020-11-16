@@ -4,12 +4,12 @@ export RationalUnipotentClasses, ClosedSubsets, ClassTypes
 
 function RationalUnipotentClasses(WF, p)
   u=UnipotentClasses(WF, p)
-  t=Ucl.GreenTable(u;classes=true)
-  map(i->Dict{Symbol, Any}(:card => CycPol(t[:cardClass][i]), 
-                           :class => u.classes[t[:locsys][i][1]], 
-                           :classno => t[:locsys][i][1], 
-                           :AuNo => t[:locsys][i][2]), 
-           eachindex(t[:locsys]))
+  t=Ucl.XTable(u;classes=true)
+  map(i->Dict{Symbol, Any}(:card => CycPol(t.cardClass[i]), 
+                           :class => u.classes[t.classes[i][1]], 
+                           :classno => t.classes[i][1], 
+                           :AuNo => t.classes[i][2]), 
+           eachindex(t.classes))
 end
 
 # returns the Poset of closed subsystems of the root system of W
@@ -97,9 +97,9 @@ julia> t=ClassTypes(rootdatum(:sl,3))
 ClassTypes(A₂,good characteristic)
     C_G(s)│ |C_G(s)|
 ──────────┼──────────
-A₂₍₎=.Φ₁² │      Φ₁²
-A₂₍₎=.Φ₁Φ₂│     Φ₁Φ₂
-A₂₍₎=.Φ₃  │       Φ₃
+A₂₍₎=Φ₁²  │      Φ₁²
+A₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂
+A₂₍₎=Φ₃   │       Φ₃
 A₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂
 A₂        │q³Φ₁²Φ₂Φ₃
 ```

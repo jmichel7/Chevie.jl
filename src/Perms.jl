@@ -435,7 +435,7 @@ function orbit(a::Perm{T},i::Integer,check=false)where T
   while true
     if check && j in res error("point $j occurs twice") end
     push!(res,j)
-@inbounds j=a.d[j]
+    j=a.d[j] # no @inbounds to catch invalid perms
     if j==i return res end
   end
 end
@@ -458,11 +458,11 @@ function orbits(a::Perm,domain=1:degree(a);trivial=true,check=false)
   cycles=Vector{eltype(a.d)}[]
   if isempty(a.d) return cycles end
   to_visit=falses(max(degree(a),maximum(domain)))
-  to_visit[domain].=true
+@inbounds  to_visit[domain].=true
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
     cyc=orbit(a,i,check)
-    to_visit[cyc].=false
+@inbounds  to_visit[cyc].=false
     if length(cyc)>1 || trivial push!(cycles,cyc) end
   end
   cycles

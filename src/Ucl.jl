@@ -101,13 +101,13 @@ We illustrate these computations on some examples:
 julia> UnipotentClasses(rootdatum(:sl,4))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C          C(u) A₃(A₃₍₎=.) A₁(A₃₍₁₃₎=A₁×A₁)/-1 .(A₃)/ζ₄
-────┼──────────────────────────────────────────────────────────────────
-4   │222   0 222         q³.Z₄        1:4                -1:2    ζ₄:Id
-31  │202   1 22.   q⁴.A₁₍₎=.Φ₁      Id:31
-22  │020   2 2.2      q⁴.A₁.Z₂       2:22               11:11
-211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁     Id:211
-1111│000   6 ...            A₃    Id:1111
+   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³) A₁(A₃₍₁₃₎=A₁×A₁Φ₁)/-1 .(A₃)/ζ₄
+────┼──────────────────────────────────────────────────────────────────────
+4   │222   0 222         q³.Z₄          1:4                  -1:2    ζ₄:Id
+31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31                               
+22  │020   2 2.2      q⁴.A₁.Z₂         2:22                 11:11         
+211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211                               
+1111│000   6 ...            A₃      Id:1111
 
    u│.(A₃)/-ζ₄
 ────┼──────────
@@ -163,13 +163,13 @@ group:
 julia> UnipotentClasses(coxgroup(:A,3))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C          C(u) A₃(A₃₍₎=.)
-────┼─────────────────────────────────────
-4   │222   0 222            q³       Id:4
-31  │202   1 22.   q⁴.A₁₍₎=.Φ₁      Id:31
-22  │020   2 2.2         q⁴.A₁      Id:22
-211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁     Id:211
-1111│000   6 ...            A₃    Id:1111
+   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³)
+────┼───────────────────────────────────────
+4   │222   0 222            q³         Id:4
+31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31
+22  │020   2 2.2         q⁴.A₁        Id:22
+211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211
+1111│000   6 ...            A₃      Id:1111
 ```
 
 Here is another example:
@@ -178,13 +178,13 @@ Here is another example:
 julia> UnipotentClasses(coxgroup(:G,2))
 UnipotentClasses(G₂)
 1<A₁<Ã₁<G₂(a₁)<G₂
-     u│D-R dBu B-C  C(u)      G₂(G₂₍₎=.)  .(G₂)
+     u│D-R dBu B-C  C(u)    G₂(G₂₍₎=Φ₁²)  .(G₂)
 ──────┼─────────────────────────────────────────
-G₂    │ 22   0  22    q²         Id:φ₁‚₀
+G₂    │ 22   0  22    q²         Id:φ₁‚₀       
 G₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id
-Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂
-A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃
-1     │ 00   6  ..    G₂         Id:φ₁‚₆
+Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂       
+A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃       
+1     │ 00   6  ..    G₂         Id:φ₁‚₆       
 ```
 
 which illustrates that on class `G₂(a₁)` there are two local systems in the
@@ -201,14 +201,14 @@ second argument to the function 'UnipotentClasses':
 julia> UnipotentClasses(coxgroup(:G,2),3)
 UnipotentClasses(G₂)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
-     u│dBu B-C  C(u) G₂(G₂₍₎=.) .(G₂) .(G₂)  .(G₂)
-──────┼────────────────────────────────────────────
-G₂    │  0  22 q².Z₃     1:φ₁‚₀       ζ₃:Id ζ₃²:Id
-G₂(a₁)│  1  20 q⁴.Z₂     2:φ₂‚₁ 11:Id
-Ã₁    │  2  .2    q⁶    Id:φ₂‚₂
-A₁    │  3  2. q⁵.A₁   Id:φ″₁‚₃
-(Ã₁)₃ │  3  ?? q⁵.A₁   Id:φ′₁‚₃
-1     │  6  ..    G₂    Id:φ₁‚₆
+     u│dBu B-C  C(u) G₂(G₂₍₎=Φ₁²) .(G₂) .(G₂)  .(G₂)
+──────┼──────────────────────────────────────────────
+G₂    │  0  22 q².Z₃       1:φ₁‚₀       ζ₃:Id ζ₃²:Id
+G₂(a₁)│  1  20 q⁴.Z₂       2:φ₂‚₁ 11:Id             
+Ã₁    │  2  .2    q⁶      Id:φ₂‚₂                   
+A₁    │  3  2. q⁵.A₁     Id:φ″₁‚₃                   
+(Ã₁)₃ │  3  ?? q⁵.A₁     Id:φ′₁‚₃                   
+1     │  6  ..    G₂      Id:φ₁‚₆
 ```
 
 The  function 'ICCTable' gives the  transition matrix between the functions
@@ -217,7 +217,7 @@ The  function 'ICCTable' gives the  transition matrix between the functions
 ```julia-repl
 julia> uc=UnipotentClasses(coxgroup(:G,2));
 julia> t=ICCTable(uc)
-Coefficients of Xᵩ on Y_ψ for G₂
+Coefficients of Xᵪ on Yᵩ for G₂
       │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1
 ──────┼──────────────────────────────
 Xφ₁‚₀ │ 1          0      1  1  1  1
@@ -304,7 +304,7 @@ julia> W=coxgroup(:F,4)
 F₄
 
 julia> H=reflection_subgroup(W,[1,3])
-F₄₍₁₃₎=A₁×Ã₁
+F₄₍₁₃₎=A₁×Ã₁Φ₁²
 
 julia> Ucl.induced_linear_form(W,H,[2,2])
 4-element Array{Int64,1}:
@@ -367,13 +367,13 @@ function BalaCarterLabels(W)
 end
 
 # QuotientAu(Au,chars): chars is a list of indices of characters of Au.
-# If  k is the common kernel of chars, QuotientAu returns a record
-# rec(Au:=Au/k,
-#     chars:=index of chars as characters of Au/k,
-#     gens:=words in Au preimages of generators of Au/k)
-# Since  GAP3  has  many  problems  with  quotient groups, we are forced to
-# program an ad hoc solution which works only for Au actually occuring for
-# unipotent classes of a reductive group G.
+# If  k is the common kernel of chars, QuotientAu returns a
+# Dict(Au=>Au/k,
+#      chars=>index of chars as characters of Au/k,
+#      gens=>words in Au preimages of generators of Au/k)
+# Since  we have problems with quotient groups, we are forced to program an
+# ad  hoc solution which works only  for Au actually occuring for unipotent
+# classes of a reductive group G.
 function QuotientAu(Au,chars)
   AbGens=function(g)
     res=empty(gens(g))
@@ -646,6 +646,7 @@ function UnipotentClasses(t::TypeIrred,p=0)
   springerseries=uc[:springerSeries]
   for s in springerseries
     if isempty(s[:levi]) s[:levi]=Int[] end
+#   s[:levi]=PermRoot.indices(t)[s[:levi]]
     s[:locsys]=Vector{Int}.(s[:locsys])
   end
   orderclasses=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
@@ -675,6 +676,7 @@ function UnipotentClasses(W,p=0)
     uc=[UnipotentClasses(classes,p,Poset([Int[]]),
       [Dict(:Z=>Int[],:levi=>Int[],:locsys=>[[1,1]],:relgroup=>coxgroup())],
       Dict{Symbol,Any}(:spets=>W))]
+    l=Vector{Int}[]
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
       l=PermRoot.indices.(t)
@@ -728,8 +730,12 @@ function UnipotentClasses(W,p=0)
     setdiff(o,[HasType.PositionCartesian(ll,v)])
   end
   springerseries=map(cartesian(map(x->x.springerseries,uc)...)) do v
-    if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
-    elseif length(v)==1 return deepcopy(v[1])
+#   if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
+    if length(v)==1 
+      if !isempty(l)
+        v[1]=deepcopy(v[1]); v[1][:levi]=l[1][v[1][:levi]]; 
+      end
+      return v[1]
     end
     s=Dict{Symbol,Any}(:levi=>reduce(vcat,map(i->l[i][v[i][:levi]],eachindex(v))))
     s[:Z]=reduce(vcat,getindex.(v,:Z))
@@ -765,6 +771,7 @@ function UnipotentClasses(W,p=0)
              algebraic_centre(W)[:descAZ]),springerseries)
     AdjustAu!(classes,springerseries)
   end
+# println(springerseries[1])
   s=springerseries[1]
   if spets
     s[:relgroup]=relative_coset(WF,s[:levi])
@@ -806,7 +813,8 @@ function showcentralizer(io::IO,u)
          length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
         c*=reflection_name(io,u.prop[:AuAction])
       elseif all(isone,u.prop[:AuAction].F0s)
-        c*=reflection_name(io,u.prop[:AuAction].group)*AuName(u)
+#       c*=reflection_name(io,u.prop[:AuAction].group)*AuName(u)
+        c*=sprint(show,u.prop[:AuAction].group;context=io)*AuName(u)
       else
         c*=reflection_name(io,u.prop[:AuAction])*AuName(u)
       end
@@ -814,7 +822,7 @@ function showcentralizer(io::IO,u)
       c*=AuName(u)
     end
   elseif haskey(u.prop,:red)
-    n=reflection_name(io,u.prop[:red])
+    n=sprint(show,u.prop[:red];context=io)
     if n!="." c*="."*n end
     c*=AuName(u)
   else
@@ -913,31 +921,32 @@ struct ICCTable
   prop::Dict{Symbol,Any}
 end
 
-Base.getindex(t::ICCTable,k)=t.prop[k]
+Base.getproperty(t::ICCTable,k::Symbol)=getfield(t,:prop)[k]
+Base.setproperty!(t::ICCTable,k::Symbol,x)=getfield(t,:prop)[k]=x
+
 
 """
-`ICCTable(uc[,seriesNo[,q]])`
+`ICCTable(uc,seriesNo=1;q=Pol())`
 
-This  function gives the table of decompositions of the functions `X_{u,φ}`
-in  terms of the functions  `Y_{u,φ}`. Here `u` is  an unipotent element of
-the  reductive group `𝐆` and `φ` is  a character of the group of components
-`A(u)`;  such a pair describes a  `𝐆`-equivariant local system on the class
-`C`  of `u`. The function `Y_{u,φ}`  is the characteristic function of this
-local   system  and  `X_{u,φ}`  is   the  characteristic  function  of  the
-corresponding  intersection cohomology  complex on  `C̄`. The local systems
-can  also be indexed by characters of  the relative Weyl group occurring in
-the Springer correspondence, and since the coefficient of `Xᵪ` on `Y_ψ` is
-`0`  if `χ` and `ψ` do not correspond  to the same relative Weyl group (are
-not  in the same Springer series), the  table given is for a given Springer
-series,  the series  whose number  is given  by the argument 'seriesNo' (if
-omitted  this defaults to 'seriesNo=1' which  is the principal series). The
-decomposition  multiplicities are graded,  and are given  as polynomials in
-one  variable  (specified  by  the  argument  `q`;  if not given `Pol()` is
-assumed).
+This  function gives the table of  decompositions of the functions `X_ι` in
+terms of the functions `Y_ι`. Here `ι` is a `𝐆`-equivariant local system on
+the  class  `C`  of  a  unipotent  element  `u`.  Such  a  local  system is
+parametrized  by the pair  `(u,ϕ)` of `u`  and a character  of the group of
+components  `A(u)` of `C_𝐆  (u)`. The function  `Y_ι` is the characteristic
+function  of this local system and  `X_ι` is the characteristic function of
+the  corresponding intersection  cohomology complex  on `C̄`.  The Springer
+correspondence  says  that  the  local  systems  can  also  be  indexed  by
+characters  of a relative Weyl group. Since the coefficient of `Xᵪ` on `Yᵩ`
+is  `0` if `χ` and  `φ` are not characters  of the same relative Weyl group
+(are  not  in  the  same  Springer  series),  the table is for one Springer
+series, specified by the argument 'seriesNo' (this defaults to 'seriesNo=1'
+which  is  the  principal  series).  The  decomposition  multiplicities are
+graded,  and are  given as  polynomials in  one variable  (specified by the
+argument `q`; if not given `Pol()` is assumed).
 
 ```julia-repl
 julia> t=ICCTable(uc)
-Coefficients of Xᵩ on Y_ψ for A₃
+Coefficients of Xᵪ on Yᵩ for A₃
      │4 31 22 211 1111
 ─────┼─────────────────
 X4   │1  1  1   1    1
@@ -947,7 +956,7 @@ X211 │0  0  0   1   Φ₃
 X1111│0  0  0   0    1
 ```
 In  the  above  the  multiplicities  are  given  as  products of cyclotomic
-polynomials  to display them more compactly. However the 'format' of such a
+polynomials  to display them  more compactly. However  the format of such a
 table can be controlled more precisely.
 
 For  instance,  one  can  ask  to  not  display  the entries as products of
@@ -955,7 +964,7 @@ cyclotomic polynomials:
 
 ```julia-rep1
 julia> rshow(t;cycpol=false)
-Coefficients of X_φ on Y_ψ for A3
+Coefficients of Xᵪ on Yᵩ for A3
      │4 31 22 211   1111
 ─────┼───────────────────
 X4   │1  1  1   1      1
@@ -965,18 +974,18 @@ X211 │0  0  0   1 q²+q+1
 X1111│0  0  0   0      1
 ```
 
-Since  'format'  uses  the  function  `format` for tables, all the
-options  of this function are  also available. We can  use this to restrict
-the  entries displayed to a given sublist of the rows and columns (here the
-indices correspond to the number in Chevie of the corresponding character
-of the relative Weyl group of the given Springer series):
+Since `show` uses the function `format` for tables, all the options of this
+function  are  also  available.  We  can  use  this to restrict the entries
+displayed  to a  given sublist  of the  rows and  columns (here the indices
+correspond  to the number  in Chevie of  the corresponding character of the
+relative Weyl group of the given Springer series):
 
 ```julia-rep1
 julia> uc=UnipotentClasses(coxgroup(:F,4));
 julia> t=ICCTable(uc);
 julia> sh=[13,24,22,18,14,9,11,19];
 julia> show(IOContext(stdout,:rows=>sh,:cols=>sh,:limit=>true),t);
-Coefficients of X_φ on Y_ψ for F₄
+Coefficients of Xᵪ on Yᵩ for F₄
       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾
 ──────┼─────────────────────────────────────────────
 Xφ₉‚₁₀│    1  0  0     0     0      0  0          0
@@ -989,39 +998,38 @@ Xφ″₉‚₆│   Φ₄ Φ₄  0     1     0      0  1          0
 Xφ′₄‚₇│   q²  0 Φ₄     0     1      0  0          1
 ```
 
-The function 'ICCTable' returns a Dict with various pieces of information
-which can help further computations.
+The   function  'ICCTable'  returns  an   object  with  various  pieces  of
+information which can help further computations.
 
-`:scalar`: this contains the table of multiplicities `P_{ψ,χ}` of the `X_ψ`
-on  the `Yᵪ`. One should  pay attention that by  default, the table is not
+`.scalar`:  this contains the table of  multiplicities `Pᵪᵩ` of the `Xᵪ` on
+the  `Yᵩ`.  One  should  pay  attention  that  by default, the table is not
 displayed  in the same order as the  stored |.scalar|, which is in order in
 Chevie  of  the  characters  in  the  relative  Weyl  group;  the  table is
 transposed,  then lines  and rows  are sorted  by |dimBu,class  no,index of
 character in A(u)| while displayed.
 
-`:group`: The group <W>.
+`.group`: The group `W`.
 
-`:relgroup`: The relative Weyl group for the Springer series.
+`.relgroup`: The relative Weyl group for the Springer series.
 
-`:series`: The index of the Springer series given for <W>.
+`.series`: The index of the Springer series given for `W`.
 
-`:dimBu`: The list of `dim𝓑ᵤ` for each local system `(u,φ)` in the series.
+`.dimBu`: The list of `dim𝓑ᵤ` for each local system `(u,φ)` in the series.
 
-`:L`:  The matrix of (unnormalized) scalar  products of the functions `Y_ψ`
-with  themselves,  that  is  the  `(φ,ψ)`  entry  is  `∑_{g∈𝐆(𝔽_q)}  Yᵩ(g)
-Ȳ_ψ(g)`.  This  is  thus  a  symmetric,  block-diagonal  matrix  where the
-diagonal  blocks correspond to geometric  unipotent conjugacy classes. This
-matrix  is  obtained  as  a  by-product  of  Lusztig's algorithm to compute
-`P_{ψ,χ}`.
+`:L`:  The matrix of  (unnormalized) scalar products  of the functions `Yᵩ`
+with themselves, that is the `(φ,χ)` entry is `∑_{g∈𝐆(𝔽_q)} Yᵩ(g) Yᵪ(g)`.
+This  is thus a symmetric, block-diagonal  matrix where the diagonal blocks
+correspond  to  geometric  unipotent  conjugacy  classes.  This  matrix  is
+obtained as a by-product of Lusztig's algorithm to compute `Pᵩᵪ`.
 """
-function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
+function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   W=uc.prop[:spets] # W=Group(uc.spets)
   if W isa Spets W=W.W end
   ss=uc.springerseries[i]
-  res=Dict(:spets=>uc.prop[:spets],:relgroup=>ss[:relgroup],
-           :series=>i,:q=>var,:p=>uc.p)
+  res=ICCTable(Dict(:spets=>uc.prop[:spets],:relgroup=>ss[:relgroup],
+                    :series=>i,:q=>q,:p=>uc.p))
   if haskey(ss,:warning) println("# ",ss[:warning])
-    res[:warning]=ss[:warning]
+    res.warning=ss[:warning]
   end
 # We are going to solve the equation in "unipotent support", page 151
 # ᵗPΛP=Ω  where $Λ_{i,j}$ is  $∑_{g∈ G^F} Yᵢ(g)Ȳⱼ(g)$ and $Ω_{i,j}$ is equal
@@ -1032,66 +1040,60 @@ function ICCTable(uc::UnipotentClasses,i=1,var=Pol(:q))
 # res[:scalar] is the matrix $P$
   R=ss[:relgroup]
   ct=CharTable(R)
-  q=Pol(:q)
+  var=q
+  q=Pol()
   f=fakedegrees(R,q)
   k=charinfo(R)[:positionDet]
   n=length(f)
 # Partition on characters of ss.relgroup induced by poset of unipotent classes
-  res[:dimBu]=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
-  res[:blocks]=HasType.CollectBy(eachindex(ss[:locsys]),-res[:dimBu])
+  res.dimBu=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
+  res.blocks=HasType.CollectBy(eachindex(ss[:locsys]),-res.dimBu)
   # matrix of q^{-bᵢ-bⱼ}*fakedegree(χᵢ ⊗ χⱼ ⊗ sgn)
-  tbl=bigcell_decomposition([q^(-res[:dimBu][i]-res[:dimBu][j])*
+  tbl=bigcell_decomposition([q^(-res.dimBu[i]-res.dimBu[j])*
                             sum(map(*,f,DecomposeTensor(R,i,j,k)))
-     for i in 1:n,j in 1:n], res[:blocks])
-  res[:scalar]=tbl[1]
-  res[:locsys]=ss[:locsys]
+     for i in 1:n,j in 1:n], res.blocks)
+  res.scalar=tbl[1]
+  res.locsys=ss[:locsys]
 # res[:L]=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
 #   q^(W.semisimplerank-R.semisimplerank);
-  res[:L]=tbl[2]*q^(W.N+semisimplerank(R)-semisimplerank(W))
-  res[:uc]=uc
-  if haskey(ss,:parameter) res[:parameter]=ss[:parameter]
-  else res[:parameter]=1:length(ss[:locsys])
+  res.L=tbl[2]*q^(W.N+semisimplerank(R)-semisimplerank(W))
+  res.uc=uc
+  if haskey(ss,:parameter) res.parameter=ss[:parameter]
+  else res.parameter=1:length(ss[:locsys])
   end
-  if var!=q
-    q=var
-    res[:scalar]=map(x->x(q),res[:scalar])
-    res[:L]=map(x->x(q),res[:L])
+  if !(var isa Pol)
+    res.scalar=improve_type(map(x->x(var),res.scalar))
+    res.L=improve_type(map(x->x(var),res.L))
   end
-  ICCTable(res)
+  res
 end
 
 function Base.show(io::IO,x::ICCTable)
   repl=get(io,:limit,false)
-  if !repl
-   print(io,"ICCTable(");show(io,x[:uc])
-   print(io,",",x.prop[:series],")")
-   return
-  end
-  text="Coefficients of \$X_\\phi\$ on \$Y_\\psi\$ for \$"*
-        reflection_name(io,x[:relgroup])*"\$\n"
-  if get(io,:TeX,false) text*="\\medskip\n\n"
-  else text=fromTeX(io,text) end
+  TeX=get(io,:TeX,false)
+  if !(repl || TeX) print(io,"ICCTable(",x.uc,",",x.series,")"); return end
+  text="Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for \$"*
+        sprint(show,x.relgroup;context=io)*"\$\n"
+  if TeX text*="\\medskip\n\n" else text=fromTeX(io,text) end
   print(io,text)
   if get(io,:cols,false)==false && get(io,:rows,false)==false
-    rows=collect(1:length(x[:dimBu]))
-    sort!(rows,by=i->[x[:dimBu][i],x[:locsys][i]])
+    rows=collect(eachindex(x.dimBu))
+    sort!(rows,by=i->[x.dimBu[i],x.locsys[i]])
     io=IOContext(io,:rows=>rows,:cols=>rows)
   end
-  tbl=copy(x[:scalar])
-  if get(io,:cycpol,true) tbl=map(CycPol,tbl) end
-  tbl=repr.(tbl,context=:limit=>true)
-  col_labels=map(p->name(IOContext(io,:locsys=>p[2]),x[:uc].classes[p[1]]),
-                  x[:locsys])
-  rowLabels=map(x->get(io,:TeX,false) ? "X_{$x}" : "X$x",
-                charnames(io,x[:relgroup]))
+  tbl=get(io,:cycpol,true) ? map(CycPol,x.scalar) : x.scalar
+  col_labels=map(p->name(IOContext(io,:locsys=>p[2]),x.uc.classes[p[1]]),
+                  x.locsys)
+  rowLabels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
   format(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
 end
 
-struct GreenTable
+struct XTable
   prop::Dict{Symbol,Any}
 end
 
-Base.getindex(t::GreenTable,k)=t.prop[k]
+Base.getproperty(t::XTable,k::Symbol)=getfield(t,:prop)[k]
+Base.setproperty!(t::XTable,k::Symbol,x)=getfield(t,:prop)[k]=x
 
 function repair(u::Matrix) # can disappear with julia1.6
   for i in 1:length(u)
@@ -1100,60 +1102,174 @@ function repair(u::Matrix) # can disappear with julia1.6
   u
 end
   
-# Green functions: Green(uc[,opt]) values on unipotent classes or local systems
-# opt: variable (default X(Cyclotomics))
+# XTable(uc[,opt]) values of Xᵪ on unipotent classes or local systems
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
-function GreenTable(uc::UnipotentClasses;q=Pol(:q),classes=false)
-  pieces=map(i->ICCTable(uc,i,q),eachindex(uc.springerseries))
-  greenpieces=map(x->x[:scalar]*toM(HasType.DiagonalMat(q.^x[:dimBu]...)),pieces)
-  l=vcat(getindex.(pieces,:locsys)...)
+function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
+  pieces=map(i->ICCTable(uc,i;q=q),eachindex(uc.springerseries))
+  greenpieces=map(x->x.scalar*toM(HasType.DiagonalMat(q.^x.dimBu...)),pieces)
+  l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
-  res=Dict(
+  res=XTable(Dict(
     :scalar=>permutedims(repair(cat(greenpieces...,dims=(1,2)))^p),
     :uc=>uc,
-    :Y=>^(repair(cat(getindex.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
-    :locsys=>l^p,
-    :parameter=>vcat(getindex.(pieces,:parameter)...),
-    :relgroups=>getindex.(uc.springerseries,:relgroup),
-    :classes=>classes)
-  n=length(res[:locsys])
+    :Y=>^(repair(cat(getproperty.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
+    :parameter=>vcat(getproperty.(pieces,:parameter)...),
+    :relgroups=>getindex.(uc.springerseries,:relgroup)))
+  n=length(l)
   if classes
-    res[:scalar]=res[:scalar]*E(1)
-    res[:cardClass]=zeros(eltype(res[:scalar]),length(res[:locsys]))//1
+    res.scalar*=E(1)
+    res.cardClass=zeros(eltype(res.scalar),n)//1
+    res.classes=l^p
     for i in eachindex(uc.classes)
       Au=uc.classes[i].prop[:Au]
-      b=filter(j->res[:locsys][j][1]==i,eachindex(res[:locsys]))
-      res[:scalar][1:n,b]*=CharTable(Au).irr
-      res[:cardClass][b]=res[:Y][[b[charinfo(Au)[:positionId]]],b]*CharTable(Au).irr
-      res[:cardClass][b]=map((x,y)->x*y//length(Au),
-                             res[:cardClass][b],classinfo(Au)[:classes])
+      b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
+      res.scalar[1:n,b]*=CharTable(Au).irr
+      res.cardClass[b]=res.Y[[b[charinfo(Au)[:positionId]]],b]*CharTable(Au).irr
+      res.cardClass[b]=map((x,y)->x*y//length(Au),
+                             res.cardClass[b],classinfo(Au)[:classes])
     end
-    res[:scalar]=improve_type(res[:scalar])
-    res[:classes]=true
+    res.scalar=improve_type(res.scalar)
+  else
+    res.locsys=l^p
   end
-  GreenTable(res)
+  res
+end
+
+function Base.show(io::IO,x::XTable)
+  if !get(io,:limit,false) && !get(io,:TeX,false)
+    print(io,"XTable(",x.uc.prop[:spets],",variable=",x.q,")")
+    return
+  end
+  class=haskey(getfield(x,:prop),:classes)
+  print(io,"Values of character sheaves Xᵪ on")
+  rowLabels=vcat(map(g->map(n->fromTeX(io,"X^{"*sprint(show,g;context=io)
+             *"}_{"*n*"}"),charnames(io,g)),x.relgroups)...)
+  rowsLabel=fromTeX(io,"X_\\chi\\"*(class ? "class" : "locsys"))
+  if class
+    print(io," unipotent classes\n")
+    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
+                     x.classes)
+  else print(io," local systems\n")
+    columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x.uc.classes[p[1]]),x.locsys)
+  end
+  tbl=x.scalar
+  if get(io,:cycpol,false) tbl=CycPol.(tbl) end
+  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+end
+
+struct GreenTable
+  prop::Dict{Symbol,Any}
+end
+
+Base.getproperty(t::GreenTable,k::Symbol)=getfield(t,:prop)[k]
+Base.setproperty!(t::GreenTable,k::Symbol,x)=getfield(t,:prop)[k]=x
+
+# GreenTable(uc;q=Pol())
+# values of Green functions Q_{wF} on unipotent classes
+function GreenTable(uc::UnipotentClasses;q=Pol())
+  t=GreenTable(getfield(XTable(uc;classes=true,q=q),:prop))
+  m=cat(map(g->permutedims(CharTable(g).irr),t.relgroups)...;dims=(1,2))
+  t.scalar=m*t.scalar
+  t.indices=Vector{Int}[]
+  i=0
+  for g in t.relgroups
+    push!(t.indices,(1:nconjugacy_classes(g))+i)
+    i+=nconjugacy_classes(g)
+  end
+  t
 end
 
 function Base.show(io::IO,x::GreenTable)
   if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"GreenTable(",x[:uc].prop[:spets],",variable=",x[:q],")")
+    print(io,"GreenTable(",x.uc.prop[:spets],",variable=",x[:q],")")
     return
   end
-  print(io,"Values of character sheaves on")
-  rowLabels=vcat(map(g->map(n->fromTeX(io,"Q^{"*sprint(show,g;context=io)*"}_{"*n*"}"),charnames(io,g)),
-                     x[:relgroups])...)
-  rowsLabel=fromTeX(io,"\\phi\\"*(x[:classes] ? "class" : "locsys"))
-  tbl=copy(x[:scalar])
-  if haskey(x.prop,:classes)
-    print(io," unipotent classes\n")
-    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x[:uc].classes[p[1]]),
-                     x[:locsys])
-  else print(io," local systems\n")
-   columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x[:uc].classes[p[1]]),x[:locsys])
-  end
-  if get(io,:cycpol,false) tbl=CycPol.(tbl) end
+  print(io,"Values of Green functions Q_{wF} on unipotent classes\n")
+  rowLabels=vcat(map(x.relgroups) do g
+    classnames=map(x->fromTeX(io,x),classinfo(g)[:classnames])
+    map(n->string("Q^{",sprint(show,g;context=io),"}_{",n,"}"),classnames)
+    end...)
+  rowsLabel="Q^I_{wF}\\class"
+  columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
+                     x.classes)
+  tbl=x.scalar
+  if get(io,:cycpol,true) tbl=CycPol.(tbl) end
   format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+end
+
+struct TwoVarGreenTable
+  prop::Dict{Symbol,Any}
+end
+
+Base.getproperty(t::TwoVarGreenTable,k::Symbol)=getfield(t,:prop)[k]
+Base.setproperty!(t::TwoVarGreenTable,k::Symbol,x)=getfield(t,:prop)[k]=x
+
+# two-variable green functions table.
+# for now only implemented when W is split.
+function TwoVarGreen(W,L)
+  if !(W isa Spets) W=spets(W) end
+  if !(L isa Spets) L=spets(L) end
+  uG=UnipotentClasses(W)
+  uL=UnipotentClasses(L)
+  tG=GreenTable(uG)
+  tL=GreenTable(uL)
+  q=Pol()
+  mm=map(eachindex(uL.springerseries))do i
+    s=uL.springerseries[i]
+    p=findfirst(S->S[:levi]==inclusion(L,s[:levi]),uG.springerseries)
+    if isnothing(p) error("not found ",s[:levi]) end
+    RG=relative_coset(W,inclusion(L,s[:levi]))
+    RLF=relative_coset(L,s[:levi])
+    RL=Group(RLF)
+    l=map(x->findfirst(==(x),Group(RG).prop[:relativeIndices]),
+      inclusion(L,RL.prop[:relativeIndices]))
+    if nothing in l error("not implemented") end
+    RLF=subspets(RG,convert(Vector{Int},l),
+                Group(RG).prop[:MappingFromNormalizer](L.phi))
+    RL=Group(RLF)
+    f=fusion_conjugacy_classes(RLF,RG)
+    cl=classreps(RLF)
+    d=map(cl)do w
+      if isempty(s[:levi]) pw=w
+      elseif isone(w) pw=L.phi
+      else pw=word(RLF,w)
+        if isempty(pw) pw=L.phi
+        else pw=prod(Group(RG).prop[:parentMap][pw])*L.phi
+        end
+      end
+      Lo=subspets(L,Int.(s[:levi]),pw/L.phi)
+      r=map(last,filter(x->isone(first(x)),degrees(Lo)))
+      prod(x->q-x,r)/length(centralizer(RL,w))
+    end
+    q^(rank(W)-count(isone,degrees(reflection_subgroup(Group(W),s[:levi]))))*
+    permutedims(tL.scalar[tL.indices[i],:])*
+    toM(HasType.DiagonalMat(d...))*tG.scalar[tG.indices[p][f],:]
+  end
+  oL=generic_order(L,q)
+  mm=toM(map((x,y)->x*y/oL,eachrow(sum(mm)),tL.cardClass))
+  res=TwoVarGreenTable(Dict(:W=>W,:L=>L,:scalar=>mm,:uL=>uL,:uG=>uG))
+  res.classL=tL.classes
+  res.classG=tG.classes
+  res
+end
+
+function Base.show(io::IO,x::TwoVarGreenTable)
+  if !get(io,:limit,false) && !get(io,:TeX,false)
+    print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
+    return
+  end
+  print(io,"Values of two-variable Green functions for ",x.W," and ",x.L,"\n")
+  rowLabels=map(x.classL)do p
+    name(IOContext(io,:class=>p[2]),x.uL.classes[p[1]])
+  end
+  columnLabels=map(x.classG)do p
+    name(IOContext(io,:class=>p[2]),x.uG.classes[p[1]])
+  end
+  tbl=x.scalar
+  if get(io,:cycpol,true) tbl=CycPol.(tbl) end
+  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,
+    rows_label="classL\\classG")
 end
 
 """

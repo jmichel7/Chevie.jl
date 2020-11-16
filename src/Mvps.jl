@@ -725,16 +725,16 @@ end
 
 
 """
-Finally we  mention the  function 'evalf' which
-is defined on coefficients
+```julia-repl
+julia> p=E(3)x+E(5)
+Mvp{Cyc{Int64}}: ζ₃x+ζ₅
 
-|    gap> p:=E(3)*x+E(5);
-    E5+E3x
-    gap> evalf(p);
-    0.3090169944+0.9510565163I+(-0.5+0.8660254038I)x
-    gap> ComplexConjugate(last);
-    0.3090169944-0.9510565163I+(-0.5-0.8660254038I)x|
+julia> q=convert(Mvp{Complex{Float64},Int},p)
+Mvp{Complex{Float64}}: (-0.4999999999999998 + 0.8660254037844387im)x+0.30901699437494745 + 0.9510565162951535im
 
+julia> conj(q)
+Mvp{Complex{Float64}}: (-0.4999999999999998 - 0.8660254037844387im)x+0.30901699437494745 - 0.9510565162951535im
+```
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The next functions have been provided by Gwenaëlle Genet
@@ -756,6 +756,5 @@ polynomials.
 
 |    gap> MvpLcm(x^2-y^2,(x+y)^2);
     xy^2-x^2y-x^3+y^3|
-
 """
 end

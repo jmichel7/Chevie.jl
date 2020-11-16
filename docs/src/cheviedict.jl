@@ -53,7 +53,7 @@ const ChevieDict=Dict(
 "CoxeterSubCoset"=>"subspets",
 "CoxeterElements(W[,l])"=>"elements(W[,l])",
 "CoxeterGroup(\"A\",5)"=>"coxgroup(:A,5)",
-"CoxeterGroupByCoxeterMatrix"=>"gencox(cartan(C))",
+"CoxeterGroupByCoxeterMatrix(C)"=>"gencox(cartan(C))",
 "CoxeterGroupByCartanMatrix(C)"=>"gencox(C)",
 "CoxeterGroupHyperoctaedralGroup(n)"=>"CoxHyperoctaedral(n)",
 "CoxeterGroupSymmetricGroup(n)"=>"CoxSym(n)",
@@ -77,7 +77,7 @@ const ChevieDict=Dict(
 "DeligneLusztigCharacter"=>"DLChar",
 "DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",
-#DetPerm
+"DetPerm"=>"detPerm",
 #DifferenceMultiSet
 "Digits"=>"digits",
 #Discriminant
@@ -130,9 +130,9 @@ const ChevieDict=Dict(
 "HeckeClassPolynomials"=>"class_polynomials",
 "HeckeReflectionRepresentation"=>"reflrep",
 #HeckeSubAlgebra
-#HighestPowerFakeDegrees
+"HighestPowerFakeDegrees(W)"=>"charinfo(W)[:B]",
 "HighestPowerFakeDegreeSymbol"=>"degree_feg_symbol",
-#HighestPowerGenericDegrees
+"HighestPowerGenericDegrees(W)"=>"charinfo(W)[:A]",
 "HighestPowerGenericDegreeSymbol"=>"degree_gendeg_symbol",
 #HighestShortRoot
 "KazhdanLusztigPolynomial"=>"KLPol",
@@ -185,9 +185,9 @@ const ChevieDict=Dict(
 "LogFFE"=>"log",
 "LongestCoxeterElement(W)"=>"longest(W)",
 "LongestCoxeterWord(W)"=>"word(W,longest(W))",
-#LowestPowerFakeDegrees
+"LowestPowerFakeDegrees(W)"=>"charinfo(W)[:b]",
 "LowestPowerFakeDegreeSymbol"=>"valuation_feg_symbol",
-#LowestPowerGenericDegrees
+"LowestPowerGenericDegrees(W)"=>"charinfo(W)[:a]",
 "LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
 "Lusztigaw"=>"Lusztigaw",
 "LusztigAw"=>"LusztigAw",
@@ -230,10 +230,11 @@ const ChevieDict=Dict(
 "PermutedByCols(m,p)"=>"^(m,p;dims=2)",
 #PoincarePolynomial
 "Poset"=>"Poset",
+"Position(l,x)"=>"findfirst(==(x),l)",
 "PositionClass"=>"position_class",
 "PositionCartesian(a,b)"=>"LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]",
-#PositionDet
-#PositionId
+"PositionDet"=>"charinfo(W)[:PositionDet]",
+"PositionId"=>"charinfo(W)[:PositionId]",
 "PositionRegularClass"=>"position_regular_class",
 #Presentation
 "PrintDiagram(W)"=>"Diagram(W)",
@@ -285,7 +286,7 @@ const ChevieDict=Dict(
 "SchurFunctor"=>"schur_functor",
 "SemisimpleCentralizerRepresentatives"=>"SScentralizer_representatives",
 "SemisimpleElement"=>"SS",
-"SemisimpleRank(W)"=>"coxrank(W)",
+"SemisimpleRank(W::CoxeterGroup)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
 "SemisimpleSubgroup"=>"torsion_subgroup",
 "ShiftBeta"=>"shiftβ",

@@ -174,7 +174,7 @@ julia> WF=spets(W,Perm(1,2))
 ²Bsym₂
 
 julia> CharTable(WF)
-CharTable(2B(4))
+CharTable(²Bsym₂)
    │    1 121
 ───┼──────────
 2. │1   1   1
@@ -197,7 +197,7 @@ julia> WF=spets(W,Perm(1,2))
 ²Bsym₂
 
 julia> subspets(WF,Int[],W(1))
-Bsym₂₍₎=.Φ‴₈
+Bsym₂₍₎=Φ‴₈
 ```
 
 A subgroup `H` which is a parabolic subgroup corresponds to a rational form
@@ -273,6 +273,7 @@ PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
 PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
 PermRoot.semisimplerank(WF::Spets)=semisimplerank(WF.W)
 CoxGroups.word(WF::Spets,w)=word(WF.W,w/WF.phi)
+PermRoot.rank(WF::Spets)=rank(Group(WF))
 
 """
 `twistings(W,I)`
@@ -422,7 +423,7 @@ unitary group `GU_3(q)` over the finite field `FF(q)`.
 
 ```julia-repl
 julia> W=rootdatum(:gl,3)
-A₂
+A₂Φ₁
 
 julia> gu3=spets(W,-reflrep(W,W()))
 ²A₂Φ₂
@@ -456,7 +457,7 @@ by `m` on `X(𝐓)`.
 
 ```julia-repl
 julia> torus([0 -1;1 -1])
-.Φ₃
+Φ₃
 ```
 """
 Weyl.torus(m::Matrix)=spets(torus(size(m,1)),m)
@@ -473,28 +474,28 @@ A₃
 
 julia> twistings(W,Int[])
 5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- A₃₍₎=.Φ₁³
- A₃₍₎=.Φ₁²Φ₂
- A₃₍₎=.Φ₁Φ₂²
- A₃₍₎=.Φ₁Φ₃
- A₃₍₎=.Φ₂Φ₄
+ A₃₍₎=Φ₁³
+ A₃₍₎=Φ₁²Φ₂
+ A₃₍₎=Φ₁Φ₂²
+ A₃₍₎=Φ₁Φ₃
+ A₃₍₎=Φ₂Φ₄
 
 julia> torus(W,2)
-A₃₍₎=.Φ₁²Φ₂
+A₃₍₎=Φ₁²Φ₂
 
 julia> WF=spets(W,Perm(1,3))
 ²A₃
 
 julia> twistings(WF,Int[])
 5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- A₃₍₎=.Φ₂³
- A₃₍₎=.Φ₁Φ₂²
- A₃₍₎=.Φ₁²Φ₂
- A₃₍₎=.Φ₂Φ₆
- A₃₍₎=.Φ₁Φ₄
+ A₃₍₎=Φ₂³
+ A₃₍₎=Φ₁Φ₂²
+ A₃₍₎=Φ₁²Φ₂
+ A₃₍₎=Φ₂Φ₆
+ A₃₍₎=Φ₁Φ₄
 
 julia> torus(WF,2)
-A₃₍₎=.Φ₁Φ₂²
+A₃₍₎=Φ₁Φ₂²
 ```
 """
 Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
@@ -667,19 +668,16 @@ O—O—O
 """
 function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
 # printc("WF=",WF," I=",I," w=",w,"\n")
-  RF=WF
-  WF=parent(WF)
-  phi=RF.phi/WF.phi
   W=Group(WF)
   if !(w in W) error(w," should be in ",W) end
-  phi=w*phi
+  phi=w*WF.phi
   R=reflection_subgroup(W,I)
   if (W isa CoxeterGroup) &&
-     (sort(action.(Ref(R),1:2nref(R),phi*WF.phi))!=1:2nref(R))
+     (sort(action.(Ref(R),1:2nref(R),phi))!=1:2nref(R))
     error("w*WF.phi does not normalize subsystem")
   end
-  phi=reduced(R,phi*WF.phi)
-  spets(phi,reflrep(W,phi/WF.phi)*WF.F,R,Dict{Symbol,Any}(:parent=>WF))
+  phi=reduced(R,phi)
+  spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}(:parent=>WF))
 end
 
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)

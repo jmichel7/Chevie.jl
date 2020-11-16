@@ -38,7 +38,7 @@ Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
 
 function Pol(x::Mvp)
   l=variables(x)
-  if isempty(l) return scal(x) end
+  if isempty(l) return Pol(scal(x)) end
   if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
   v=l[1]
   val=valuation(x)

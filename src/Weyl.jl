@@ -544,13 +544,13 @@ julia> W=coxgroup(:E,6)
 E₆
 
 julia> R=reflection_subgroup(W,[20,30,19,22])
-E₆₍₁₉‚₁‚₉‚₂₀₎=A₄₍₃₁₂₄₎
+E₆₍₁₉‚₁‚₉‚₂₀₎=A₄₍₃₁₂₄₎Φ₁²
 
 julia> p=standard_parabolic(W,R)
 (1,4,49,12,10)(2,54,62,3,19)(5,17,43,60,9)(6,21,34,36,20)(7,24,45,41,53)(8,65,50,15,22)(11,32,31,27,28)(13,48,46,37,40)(14,51,58,44,29)(16,23,35,33,30)(18,26,39,55,38)(42,57,70,72,56)(47,68,67,63,64)(52,59,71,69,66)
 
 julia> reflection_subgroup(W,[20,30,19,22].^p)
-E₆₍₂₄₅₆₎=A₄
+E₆₍₂₄₅₆₎=A₄Φ₁²
 
 julia> R=reflection_subgroup(W,[1,2,3,5,6,35])
 E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆₎×A₂₍₄₅₎
@@ -611,13 +611,6 @@ describe_involution(W,w)=SimpleRootsSubsystem(W,
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-# the type computation is better than general case
-function PermRoot.refltype(W::FiniteCoxeterGroup)::Vector{TypeIrred}
-  gets(W,:refltype)do
-    W.G.prop[:refltype]=type_cartan(cartan(W))
-  end
-end
-
 #"""
 #  The reflection degrees of W
 #"""
@@ -641,9 +634,10 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
  PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, 
- PermRoot.reflrep, PermRoot.restriction, PermRoot.semisimplerank, 
- PermRoot.simplecoroots, PermRoot.simple_representatives,
- PermRoot.simpleroots, PermRoot.torus_order, Perms.reflength
+ PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction, 
+ PermRoot.semisimplerank, PermRoot.simplecoroots, 
+ PermRoot.simple_representatives, PermRoot.simpleroots, PermRoot.torus_order, 
+ Perms.reflength
 
 #--------------- FCG -----------------------------------------
 struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
@@ -750,7 +744,8 @@ function rootdatum(rr::Matrix,cr::Matrix)
   rank=size(C,1)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)
-  G=PRG(gens,mats,r,coroots,Dict{Symbol,Any}(:cartan=>C))
+  G=PRG(gens,mats,r,coroots,
+        Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C)))
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
@@ -765,18 +760,14 @@ useful.
 
 ```julia-repl
 julia> torus(3)
-.
+Φ₁³
 ```
 """
-function torus(i)
-  G=PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-    Dict{Symbol,Any}(:rank=>i))
-  FCG(G,Vector{Int}[],0,Dict{Symbol,Any}())
-end
+torus(i)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
 
 coxgroup()=torus(0)
 
-Base.show(io::IO, W::FCG)=PermRoot.showtypes(io,refltype(W))
+Base.show(io::IO, W::FCG)=show(io,W.G)
 
 #function reflrep(W::FCG,w)
 #  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
@@ -1026,27 +1017,25 @@ end
 """
 relative_group(W::FiniteCoxeterGroup,J)
 
-`J` should be a if *distinguished* subset of `S==eachindex(gens(W))`,
-that is if for s∈ S-J we  set v(s,J)=w_0^{J∪ s}w_0^J then J  is stable
-by all v(s,J). Then
-R=N_W(W_J)/W_J  is a Coxeter group with  Coxeter system the v(s,J). The
-program  return  R  in  its  reflection  representation  on X(ZL_J/ZG).
-(according to Lusztig's "Coxeter Orbits...", the images of the roots of
-W in X(ZL_J/ZG) form a root system).
+`J`  should be a if *distinguished* subset of `S==eachindex(gens(W))`, that
+is  if for `s∈ S-J` we set `v(s,J)=w₀^{J∪  s}w₀ᴶ` then `J` is stable by all
+`v(s,J)`.  Then `R=N_W(W_J)/W_J` is a Coxeter group with Coxeter system the
+`v(s,J)`.  The  program  returns  `R`  in  its reflection representation on
+`X(ZL_J/ZG)`.  (according to  Lusztig's "Coxeter  Orbits...", the images of
+the roots of `W` in `X(ZL_J/ZG)` form a root system).
 
-R.prop has the fields:
-:relativeIndices=setdiff(S,J)
-:parentMap:=the list of v(s,J)
-:MappingFromNormalizer maps J-reduced elements of N_W(W_J) to
-elements of R
-
+`R.prop` has the fields:
+`:relativeIndices=setdiff(S,J)`
+`:parentMap=` the list of `v(s,J)`
+`:MappingFromNormalizer` maps `J`-reduced elements of `N_W(W_J)` to
+  elements of `R`
 """
 function relative_group(W::FiniteCoxeterGroup,J)
   S=eachindex(gens(W))
   if !issubset(J,S)
     error("implemented only for standard parabolic subgroups")
   end
-  I=setdiff(S,J) # keep the order of S
+  I=setdiff(S,J) # keeps the order of S
   vI=map(i->longest(W,vcat([i],J))*longest(W,J),I)
   if any(g->sort(action.(Ref(W),J,g))!=sort(J),vI)
     error("$J is not distinguished in $W")
@@ -1057,7 +1046,7 @@ function relative_group(W::FiniteCoxeterGroup,J)
                                   for (ni,i) in enumerate(I), j in I])
   res.prop[:relativeIndices]=I
   res.prop[:parentMap]=vI
-  res.prop[:MappingFromNormalizer]=# maps w∈N_W(W_J) to elt of R
+  res.prop[:MappingFromNormalizer]=
     function(w)c=Perm()
       while true
         r=findfirst(x->isleftdescent(W,w,x),I)

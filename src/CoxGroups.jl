@@ -223,22 +223,21 @@ returns the length of a reduced expression in the Coxeter generators of the
 element `w` of `W`.
 
 ```julia-repl
-julia> W=coxgroup(:F,4)
-F₄
+julia> W=CoxSym(4)
+𝔖 ₄
 
-julia> p=W(1,2,3,4,2)
-(1,44,38,25,20,14)(2,5,40,47,48,35)(3,7,13,21,19,15)(4,6,12,28,30,36)(8,34,41,32,10,17)(9,18)(11,26,29,16,23,24)(27,31,37,45,43,39)(33,42)
+julia> p=W(1,2,3,1,2,3)
+Perm{UInt8}: (1,3)(2,4)
 
 julia> length(W,p)
-5
+4
 
 julia> word(W,p)
-5-element Array{Int64,1}:
- 1
+4-element Array{Int64,1}:
  2
+ 1
  3
  2
- 4
 ```
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))

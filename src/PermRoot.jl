@@ -917,7 +917,6 @@ end
 
 function showtypes(io::IO, t::Vector{TypeIrred})
   replorTeX=get(io,:limit,false) || get(io,:TeX,false)
-  if isempty(t) print(io,replorTeX ? "." : "W()") end
   r=0
   n=join(map(t)do t
     n=sprint(show,t; context=io)
@@ -933,7 +932,22 @@ function showtypes(io::IO, t::Vector{TypeIrred})
   print(io,n)
 end
 
-Base.show(io::IO, W::PermRootGroup)=showtypes(io,refltype(W))
+function showtorus(io::IO,W)
+  replorTeX=get(io,:limit,false) || get(io,:TeX,false)
+  t=rank(W)-semisimplerank(W)
+  e=isempty(refltype(W))
+  if t>0 
+    if replorTeX print(io,fromTeX(io,"\\Phi_1"*(t>1 ? "^{$t}" : "")))
+    else print(io,(e ? "" : "*"),"PRG($t)")
+    end
+  elseif e print(io,replorTeX ? "." : "W()")
+  end
+end
+
+function Base.show(io::IO, W::PermRootGroup)
+  showtypes(io,refltype(W))
+  showtorus(io,W)
+end
 
 function independent_roots(W::PermRootGroup)::Vector{Int}
   gets(W,:indeproots) do
@@ -955,7 +969,7 @@ semisimple rank. `W` is called *essential* if `V₁=V`.
 
 ```julia-repl
 julia> W=reflection_subgroup(coxgroup(:A,3),[1,3])
-A₃₍₁₃₎=A₁×A₁
+A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> semisimplerank(W)
 2
@@ -995,7 +1009,7 @@ not normalize the set of roots.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
-E₇₍₁₂₃₄₅₆₎=E₆
+E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
 julia> PermX(W,reflrep(W,longest(W)))==longest(W)
 true
@@ -1055,6 +1069,10 @@ function Groups.classreps(W::PermRootGroup)
   gets(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
+end
+
+function Groups.nconjugacy_classes(W::PermRootGroup)
+ prod(nconjugacy_classes.(refltype(W)))
 end
 
 """
@@ -1157,9 +1175,9 @@ function parabolic_representatives(W::PermRootGroup,s)
         error("not implemented")
         return parabolic_representatives(R,c[i])
       elseif all(x->all(y->y in 1:t[i].rank,x),r)
-        return map(x->inclusion(W)[t[i].indices[x]],r)
-      else R=reflection_subgroup(W,inclusion(W)[t[i].indices])
-        return map(x->inclusion(R)[x],r);
+        return map(x->inclusion(W,t[i].indices[x]),r)
+      else R=reflection_subgroup(W,inclusion(W,t[i].indices))
+        return map(x->inclusion(R,x),r);
       end
     end...)),sols)...)
 end
@@ -1176,7 +1194,7 @@ the normalizer of `W` in the whole permutation group of the roots.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
-E₇₍₁₂₃₄₅₆₎=E₆
+E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
 julia> reflrep(W,longest(W))
 7×7 Array{Int64,2}:
@@ -1287,6 +1305,9 @@ end
 
 PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
 
+PRG(i::Integer)=PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],
+    Dict{Symbol,Any}(:rank=>i))
+
 @inline Gapjm.roots(W::PRG)=W.roots
 @inline Gapjm.roots(W::PRG,i)=W.roots[i]
 simpleroots(W::PRG)=roots(W,eachindex(gens(W)))
@@ -1389,7 +1410,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;type=true)
 end
 
 reflection_subgroup(W::PRSG,I::AbstractVector{Int};type=false)=
-   reflection_subgroup(parent(W),inclusion(W)[I];type=type)
+   reflection_subgroup(parent(W),inclusion(W,I);type=type)
 
 function Base.show(io::IO, W::PRSG)
   I=inclusiongens(W)
@@ -1402,6 +1423,7 @@ function Base.show(io::IO, W::PRSG)
     print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}=")) 
   end
   showtypes(io,refltype(W))
+  showtorus(io,W)
 end
 
 cartan_coeff(W::PRSG,i,j)=
