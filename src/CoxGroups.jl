@@ -290,11 +290,11 @@ G₂
 julia> H=reflection_subgroup(W,[2,6])
 G₂₍₂₆₎=Ã₁×A₁
 
-julia> word.(Ref(W),Set(reduced.(Ref(H),elements(W))))
+julia> word.(Ref(W),unique(reduced.(Ref(H),elements(W))))
 3-element Array{Array{Int64,1},1}:
  []
- [1, 2]
  [1]
+ [1, 2]
 ```
 """
 function PermGroups.reduced(W::CoxeterGroup,w)
@@ -306,9 +306,11 @@ function PermGroups.reduced(W::CoxeterGroup,w)
 end
 
 """
-`reduced(H,W)`
+`reduced(H,W,i=nref(W))`
 
-The elements `w∈ W` which are `H`-reduced (of minimal length in the coset `Hw`)
+The  elements `w∈ W` which are `H`-reduced  (of minimal length in the coset
+`Hw`), and of length `≤i` (by default all of them), grouped by length.
+
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
@@ -323,10 +325,10 @@ julia> [word(W,w) for S in reduced(H,W) for w in S]
  [1, 2]
 ```
 """
-function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup)
-  res=[Set([one(W)])]
-  while true
-    new=reduced(H,W,res[end])
+function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,i::Integer=nref(W))
+  res=[[one(W)]]
+  while length(res)<=i
+    new=reducedfrom(H,W,res[end])
     if isempty(new) break
     else push!(res,new)
     end
@@ -334,12 +336,10 @@ function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup)
   vcat(res)
 end
 
-"""
-reduced(H,W,S)
-  The elements in `W` which are `H`-reduced of length `i` given the set `S`
-  of those of length `i-1`
-"""
-function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,S)
+#reduced(H,W,S)
+#  The elements in `W` which are `H`-reduced of length `i` given the set `S`
+#  of those of length `i-1`
+function reducedfrom(H::CoxeterGroup,W::CoxeterGroup,S)
   res=empty(S)
   for w in S
     for i in eachindex(gens(W))
@@ -349,7 +349,7 @@ function PermGroups.reduced(H::CoxeterGroup,W::CoxeterGroup,S)
       end
     end
   end
-  res
+  unique(res)
 end
 
 """
@@ -376,9 +376,9 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   if haskey(elts,l) return elts[l] end
   if coxrank(W)==1 return l>1 ? T[] : gens(W) end
   H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)#::CoxeterGroup{T}
-  rc=gets(()->[Set([one(W)])],W,:rc)#::Vector{Set{T}}
+  rc=gets(()->[[one(W)]],W,:rc)#::Vector{Vector{T}}
   while length(rc)<=l
-    new=reduced(H,W,rc[end])
+    new=reducedfrom(H,W,rc[end])
     if isempty(new) break
     else push!(rc,new)
     end
@@ -410,7 +410,7 @@ function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
   H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=gets(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
-    new=reduced(H,W,Set((x->W(x...)).(rc[end])))
+    new=reducedfrom(H,W,(x->W(x...)).(rc[end]))
     if isempty(new) break
     else push!(rc,Wtype.(word.(Ref(W),new)))
     end

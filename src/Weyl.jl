@@ -193,14 +193,13 @@ using LinearAlgebra: SymTridiagonal
 #------------------------ Cartan matrices ----------------------------------
 
 """
-`cartan(m::AbstractMatrix)`
+`cartan(M::AbstractMatrix)` Cartan matrix from Coxeter matrix
 
-The  argument is a Coxeter matrix for a Coxeter group `W` and the result is
-a  Cartan Matrix  for the  standard reflection  representation of  `W`. Its
-diagonal   terms  are  `2`  and  the  coefficient  between  two  generating
-reflections   `s`  and  `t`  is   `-2cos(π/m[s,t])`  (where  by  convention
-`π/m[s,t]==0`  if  `m[s,t]==infty`,  which  is  represented here by setting
-'m[s,t]=0').  The matrix  `m` is  symmetric, and  the result  is symmetric,
+The  argument should be the Coxeter matrix  `M` for a Coxeter group `W` and
+the   result  is  the  Cartan  Matrix   `C`  for  the  standard  reflection
+representation  of `W`. We have `C[s,t]=-2cos(π/M[s,t])`, where `M[s,s]==1`
+and  by convention `π/M[s,t]==0` if  `M[s,t]==infty`, which we represent by
+'M[s,t]==0'.  Since  `M`  is  symmetric,  the  resulting  `C` is symmetric,
 meaning  that all roots  in the constructed  reflection representation have
 same length.
 
@@ -285,33 +284,17 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
 end
 
 function PermRoot.cartan(t::Dict{Symbol,Any})
-# println("t=$t")
-  if haskey(t,:cartanType)
-    ct=t[:cartanType]
-    if haskey(t,:bond)
-      C=convert.(typeof(ct),cartan(t[:series],length(t[:indices]),t[:bond]))
-    else
-      C=convert.(typeof(ct),cartan(t[:series],length(t[:indices])))
+  C=cartan(t[:series],length(t[:indices]),haskey(t,:bond) ? t[:bond] : 0)
+  if haskey(t,:cartanType) ct=t[:cartanType]
+    T=promote_type(typeof(ct),eltype(C))
+    if T!=eltype(C) C=convert.(T,C) end
+    if     t[:series]==:B C[1,2]=-ct;C[2,1]=-2//ct
+    elseif t[:series]==:G C[1,2]=-ct;C[2,1]=-3//ct
+    elseif t[:series]==:F C[2,3]=-ct;C[3,2]=-2//ct
+    elseif t[:series]==:I C[1,2]=-ct;C[2,1]=(-2-E(t[:bond])-E(t[:bond],-1))/ct
     end
-    if t[:series]==:B
-      C[1,2]=-t[:cartanType]
-      C[2,1]=-2//t[:cartanType]
-    elseif t[:series]==:G
-      C[1,2]=-t[:cartanType]
-      C[2,1]=-3//t[:cartanType]
-    elseif t[:series]==:F
-      C[2,3]=-t[:cartanType]
-      C[3,2]=-2//t[:cartanType]
-    elseif t[:series]==:I
-      C[1,2]=-t[:cartanType]
-      b=t[:bond]
-      C[2,1]=(-2-E(b)-E(b,-1))/t[:cartanType]
-    end
-    if all(isinteger,C) C=Int.(C) end
-    C
-  elseif haskey(t,:bond) cartan(t[:series],length(t[:indices]),t[:bond])
-  else cartan(t[:series],length(t[:indices]))
   end
+  improve_type(C)
 end
 
 """
@@ -364,7 +347,7 @@ function type_fincox_cartan(m::AbstractMatrix)
   rank=size(m,1)
   s=two_tree(m)
   if isnothing(s) return nothing end
-  t=Dict{Symbol,Any}()
+  t=Dict{Symbol,Any}(:rank=>rank)
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
     if length(b2)==1 t[:series]=:D
@@ -558,12 +541,12 @@ E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆�
 julia> standard_parabolic(W,R)
 ```
 """
-function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
-  if isempty(hr) return Perm() end
-  b=W.rootdec[hr]
+function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
+  if isempty(I) return Perm() end
+  b=W.rootdec[I]
   heads=map(x->findfirst(y->!iszero(y),x),filter(!iszero,toL(echelon(toM(b))[1])))
   b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
-# complete basis of I with part of S to make basis
+  # complete basis of <roots(W,I)> with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
    for x in v
      if (x isa Rational && x<0) || Real(x)<0 return true
@@ -573,7 +556,7 @@ function standard_parabolic(W::FiniteCoxeterGroup,hr::AbstractVector{<:Integer})
   N=(1:W.N)[l]
 # find negative roots for associated order and make order standard
   w=with_inversions(W,N)
-  if issubset(action.(Ref(W),hr,w),eachindex(gens(W))) return w
+  if issubset(action.(Ref(W),I,w),eachindex(gens(W))) return w
   else return nothing
   end
 end
@@ -833,6 +816,12 @@ PermRoot.simple_representatives(W::FCG)=simple_representatives(W.G)
 
 PermRoot.simple_conjugating_element(W::FCG,i)=
    simple_conjugating_element(W.G,i)
+
+function Base.:^(W::FiniteCoxeterGroup,p::Perm)
+  WW=parent(W)
+  if !(p in WW) error("can only conjugate in parent") end
+  reflection_subgroup(WW,inclusiongens(W).^p)
+end
 
 #--------------- FCSG -----------------------------------------
 struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}

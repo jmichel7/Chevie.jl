@@ -125,8 +125,8 @@ Base.:-(x::Mod{p}, y::Mod{p}) where p = Mod{p}(Int(x.val)-y.val)
 Base.:-(x::Mod{p}) where {p} = Mod{p}(-Int(x.val))
 Base.:/(x::Mod{p}, y::Mod{p}) where p = x * inv(y)
 Base.inv(x::Mod{p}) where p = Mod{p}(invmod(x.val,p))
-Base.:^(x::Mod{p},m::Integer) where p=(m>=0) ? Base.power_by_squaring(x,m) :
-                                     Base.power_by_squaring(inv(x),-m)
+Base.:^(x::Mod,m::Integer)=m>=0 ? Base.power_by_squaring(x,m) :
+                                  Base.power_by_squaring(inv(x),-m)
 Base.cmp(x::Mod{p}, y::Mod{p}) where p=cmp(x.val,y.val)
 Base.isless(x::Mod{p}, y::Mod{p}) where p=cmp(x,y)==-1
 Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
@@ -267,8 +267,6 @@ struct FFE{p}<:Number
   Fi::Int16
 end
 
-printc(x...)=println(IOContext(stdout,:limit=>true),x...)
-
 const FFi=Dict{Int,Int}()
 const FFvec=FF[]
 
@@ -296,7 +294,7 @@ function iFF(q)
         dic[1:div(q-1,p^l[i]-1):q].=l[i]
       end
     end
-  # printc("conway=",pol)
+#   xprint("conway=",pol)
     zz=map(i->fill(Mod{p}(0),n),1:q)
     zz[1][1]=Mod{p}(1)
     for i in 2:q-1
@@ -305,14 +303,14 @@ function iFF(q)
     end
     z=collect(enumerate(reverse.(zz)))
     sort!(z,by=x->x[2])
-#   for i in 1:q printc(i,"->",(z[i][1]-1,z[i][2])) end
+#   for i in 1:q xprint(i,"->",(z[i][1]-1,z[i][2])) end
     zz=Vector{Int16}(undef,q)
     for i in 1:q
       if z[i][2][end]==Mod{p}(p-1) zz[z[i][1]]=z[i-p+1][1]-1
       else zz[z[i][1]]=z[i+1][1]-1
       end
     end
-#   for i in 0:q-1 printc(i,"=>",zz[i+1]) end
+#   for i in 0:q-1 xprint(i,"=>",zz[i+1]) end
     push!(FFvec,FF(p,n,q,pol,zz,dic))
     return length(FFvec)
   end

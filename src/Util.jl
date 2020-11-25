@@ -10,17 +10,16 @@ module Util
 export 
   @forward,
   getp, gets, # helpers for objects with a Dict of properties
-  format, format_coefficient, ordinal, rshow, rsprint, printc, fromTeX, 
-  printTeX,joindigits, cut, # formatting
+  format, format_coefficient, ordinal, fromTeX, printTeX,joindigits, cut, 
+  rio, xprint, xprintln, ds, # formatting
   factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
-export ds # dump struct
 export InfoChevie
 
 const info=Ref(true)
 function InfoChevie(a...)
-  if Util.info[] printc(a...) end
+  if Util.info[] xprint(a...) end
 end
 
 """
@@ -45,17 +44,6 @@ end
 toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
 
-printc(xs...;p...)=print(IOContext(stdout,:limit=>true,p...),xs...)
-function ds(s)
-  println(typeof(s),":")
-  for f in fieldnames(typeof(s))
-    if !isdefined(s,f) println(f,"=#undef")
-    else printc(f,"=",getfield(s,f),"\n")
-    end
-  end
-end
-
-a=1
 #--------------------------------------------------------------------------
 """
   a variant of get! for objects O which have a Dict of properties named prop.
@@ -74,6 +62,22 @@ function getp(f::Function,o,p::Symbol)
   o.prop[p]
 end
 #----------------------- Formatting -----------------------------------------
+# print with attributes...
+rio(io::IO=stdout;p...)=IOContext(io,:limit=>true,p...)
+xprint(x...;p...)=print(rio(;p...),x...)
+xprint(io::IO,x...;p...)=print(IOContext(io,p...),x...)
+xprintln(x...;p...)=println(rio(;p...),x...)
+xprintln(io::IO,x...;p...)=println(IOContext(io,p...),x...)
+
+function ds(s) # "dump struct"
+  println(typeof(s),":")
+  for f in fieldnames(typeof(s))
+    if !isdefined(s,f) println(f,"=#undef")
+    else xprintln(f,"=",getfield(s,f))
+    end
+  end
+end
+
 const supchars  =
  "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
 const unicodesup=
@@ -254,10 +258,6 @@ function ordinal(n)
   str
 end
 
-# show/print with attributes...
-rshow(x;p...)=show(IOContext(stdout,:limit=>true,p...),"text/plain",x)
-rsprint(x;p...)=sprint(show,x;context=IOContext(stdout,:limit=>true,p...))
-
 function joindigits(l,delim="()";always=false,sep=",")
   big=any(l.>=10)
   s=big ? join(l,sep) : join(l)
@@ -349,12 +349,6 @@ function primitiveroot(m::Integer)
 end
 
 #--------------------------------------------------------------------------
-# written since should allow negative powers with inv
-#function Base.:^(a::T, p::Integer) where T
-#    if p ≥ 0 Base.power_by_squaring(a, p)
-#    else     Base.power_by_squaring(inv(a)::T, -p)
-#    end
-#end
 
 # better display of Rationals at the REPL
 #function Base.show(io::IO, x::Rational)

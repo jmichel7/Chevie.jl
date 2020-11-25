@@ -63,7 +63,7 @@ It is possible to display the decomposition of the roots in simple roots
 instead of their index:
 
 ```julia-rep1
-julia> rshow(U(4=>5,2=>4);:root=>true)
+julia> xprint(U(4=>5,2=>4);root=true)
 u₀₁₀₀₀₀(4)u₀₀₀₁₀₀(5)u₀₁₀₁₀₀(-20)
 ```
 
@@ -79,7 +79,7 @@ u1(1₂x₁)u2(1₂x₂)u3(1₂x₃)u4(1₂x₄)u5(1₂x₅)u6(1₂x₆)u7(1₂x
 ```
 
 ```julia-rep1
-julia> cut(rsprint(u^16;:root=>true),before="u",width=60)
+julia> cut(sprint(show,u^16;context=rio(root=true)),before="u",width=60)
 u₂₂₃₄₃₂₁₀(1₂x₁²x₂²x₃³x₄⁴x₅³x₆²x₇)
 u₁₂₃₄₃₂₁₁(1₂x₁x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
 u₁₂₂₄₃₂₂₁(1₂x₁x₂²x₃²x₄⁴x₅³x₆²x₇²x₈)
@@ -253,8 +253,8 @@ end
 
 Base.one(u::UnipotentElement)=UnipotentElement(u.U, Vector{Int}[])
 
-Base.:^(u::UnipotentElement, n::Integer)= n>=0 ? Base.power_by_squaring(u,n) :
-                               Base.power_by_squaring(inv(u),-n)
+Base.:^(u::UnipotentElement, n::Integer)=n>=0 ? Base.power_by_squaring(u,n) :
+                                            Base.power_by_squaring(inv(u),-n)
 
 # Let  < be  the ordering  of the  roots of  W according to the linear form
 # determined by the weights cumsum((1//2).^(1:rank(W))) on the simple roots

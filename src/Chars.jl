@@ -411,10 +411,12 @@ function fakedegree(W,p,q)
   prod(map((t,p)->fakedegree(t,p,q),typ,p))
 end
 
-fakedegree(t::TypeIrred,p,q)=haskey(t,:scalar) ?
-  getchev(t,:FakeDegree,p,prod(s->q*conj(s),t.scalar)) :
-  haskey(t,:orbit) ? getchev(t,:FakeDegree,p,q^length(t.orbit)) :
+function fakedegree(t::TypeIrred,p,q)
+  if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
+  elseif haskey(t,:orbit) q=q^length(t.orbit)
+  end
   getchev(t,:FakeDegree,p,q)
+end
 
 """
 `fakedegrees(W , q)`
@@ -435,7 +437,21 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 ```
 """
 function fakedegrees(W,q)
-  improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
+  res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
+  if !any(iszero,res) return res end
+  # need general routine
+  InfoChevie("# using PermRootOps.FakeDegrees\n")
+  qq=Pol()
+  P=generic_order(W,qq)
+  P=shift(P,-valuation(P))
+  ct=CharTable(W)
+  P=ct.irr*map(1:length(ct.centralizers))do i
+    P/(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i)))
+  end
+  charinfo(W)[:B]=degree.(P)
+  charinfo(W)[:b]=valuation.(P)
+  P=map(x->x(q),P)
+  W isa Spets ?  P.*(-1)^rank(W)*generic_sign(W) : P
 end
 
 function charinfo(t::TypeIrred)
@@ -1253,7 +1269,7 @@ G₂
 julia> u=reflection_subgroup(g,[1,6])
 G₂₍₁₅₎=A₂
 
-julia> InductionTable(u,g)
+julia> t=InductionTable(u,g)
 Induction Table from G₂₍₁₅₎=A₂ to G₂
      │111 21 3
 ─────┼─────────
@@ -1265,14 +1281,14 @@ Induction Table from G₂₍₁₅₎=A₂ to G₂
 φ₂‚₂ │  .  1 .
 ```
 
-the rshow method allows to transmit attributes to the format method
+using an `IOContext` allows to transmit attributes to the table format method
 
 ```julia-rep1
-julia> rshow(t;rows=[5],cols=[3,2])
+julia> xprint(t;rows=[5],cols=[3,2])
 Induction Table
-    │2,11 11,2
-────┼──────────
-φ₂‚₁│   1    1
+    │3 21
+────┼─────
+φ₂‚₁│.  1
 ```
 
 It is also possible to TeX induction tables

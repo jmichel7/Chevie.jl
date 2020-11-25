@@ -588,7 +588,7 @@ our data with the original paper of Spaltenstein):
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:E6sc));
 
-julia> rshow(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
+julia> xprint(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
       order=false)
 UnipotentClasses(E₆)
      u│            E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃ G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃²
@@ -963,7 +963,7 @@ For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
 ```julia-rep1
-julia> rshow(t;cycpol=false)
+julia> xprint(t;cycpol=false)
 Coefficients of Xᵪ on Yᵩ for A3
      │4 31 22 211   1111
 ─────┼───────────────────

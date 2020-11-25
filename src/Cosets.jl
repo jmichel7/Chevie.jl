@@ -589,17 +589,6 @@ function PermGroups.classreps(W::Spets)
   end
 end
 
-function PermRoot.refleigen(W::Spets)
-  gets(W,:refleigen)do
-    map(classreps(W)) do x
-      p=CycPol(charpoly(reflrep(W,x)))
-      vcat(map(r->fill(r[1],r[2]),p.v.d)...)
-    end
-  end
-end
-
-PermRoot.refleigen(W::Spets,i)=refleigen(W)[i]
-
 function Frobenius(WF::CoxeterCoset)
   f(w,i=1)=Frobenius(w,WF.phi^i)
 end
@@ -667,7 +656,7 @@ O—O—O
 ```
 """
 function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
-# printc("WF=",WF," I=",I," w=",w,"\n")
+# xprintln("WF=",WF," I=",I," w=",w)
   W=Group(WF)
   if !(w in W) error(w," should be in ",W) end
   phi=w*WF.phi
@@ -682,7 +671,7 @@ end
 
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 #-------------- spets ---------------------------------
-struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
+mutable struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
   phi::Perm{T}
   F::Matrix
   W::TW
@@ -690,6 +679,11 @@ struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
 end
 
 function spets(W::PermRootGroup{T,T1},w::Perm{T1}=one(W))where {T,T1}
+  if isone(w)
+    gets(W,:trivialspets)do
+      PRC(w,reflrep(W,w),W,Dict{Symbol,Any}())
+    end
+  end
   w=reduced(W,w)
   if !(w isa Perm)
     W=w.reflectiongroup
@@ -750,6 +744,26 @@ function spets(W::PermRootGroup,F::Matrix)
   res=PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
 end
 
+"""
+spets(s::String)
+builds a few of the exceptional spets
+```julia-repl
+julia> spets("3G422")
+³G₄‚₂‚₂
+
+julia> spets("2G5")
+²G₅
+
+julia> spets("3G333")
+G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+
+julia> spets("3pG333")
+G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+
+julia> spets("4G333")
+G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎=⁴G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎
+```
+"""
 function spets(s::String)
   if s=="3G422" 
     W=PRG([2 (ER(3)-1)E(3);2 (-1+ER(3))E(3,2);2 ER(3)-1]./1,
@@ -774,7 +788,7 @@ function spets(s::String)
 end
 
 function relative_coset(WF::Spets,J=Int[],a...)
-# printc("relative_coset(",WF,",",J,")\n");
+# xprintln("relative_coset(",WF,",",J,")");
   W=Group(WF)
   R=relative_group(W,J,a...)
   res=spets(R,GetRelativeAction(W,reflection_subgroup(W,J),WF.phi))
@@ -802,7 +816,7 @@ function PermRoot.refltype(WF::PRC)
     if isone(WF.phi)
       return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t)
     end
-    subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
+    subgens=map(x->reflection.(Ref(W),x.indices),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     if isnothing(c) && any(a->a.series==:ST && haskey(a,:p) &&
                               [a.p,a.q,a.rank]==[3,3,3],t)
@@ -817,7 +831,7 @@ function PermRoot.refltype(WF::PRC)
             a.subgroup=reflection_subgroup(W,c.gen)
             WF.phi=c.phi
             WF.reflectionGroup=reflection_subgroup(W,
-                                 vcat(map(x->inclusion(W,x.indices),t)))
+                           vcat(map(x->inclusion(W,x.indices),t));type=false)
             W=WF.reflectionGroup
           end
           if isone(comm(a.subgroup(3),WF.phi)) 
@@ -828,7 +842,8 @@ function PermRoot.refltype(WF::PRC)
           a.indices=inclusion(a.subgroup,W,G333)
         end
       end
-      subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
+  #   subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
+      subgens=map(x->reflection.(Ref(W),x.indices),t)
       c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     end
     c=orbits(inv(c))
@@ -870,7 +885,7 @@ function PermRoot.refltype(WF::PRC)
           v=scal.*Root1.(0:z-1,z)
           m=argmin(conductor.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
-          WF.F.=reflrep(Group(WF),WF.phi)
+          WF.F=reflrep(Group(WF),WF.phi)
           scal=v[m]
         end
         # simplify again by -1 in types 2A(>1), 2D(odd), 2E6
@@ -903,9 +918,8 @@ end
 
 function torusfactors(WF::PRC)
   W=Group(WF)
-  M=Cyc.(baseX(W))
   r=semisimplerank(W)
-  M*=WF.F*inv(M.//1)
+  M=baseX(W)*WF.F*invbaseX(W)
   CycPol(charpoly(M[r+1:end,r+1:end]))
 end
 #--------------------- Root data ---------------------------------

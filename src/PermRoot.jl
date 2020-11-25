@@ -127,7 +127,7 @@ export PermRootGroup, PRG, PRSG, catalan,
  reflections, reflection, Diagram, refltype, cartan, independent_roots, 
  inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, reflrep, 
- PermX, coroots, baseX, semisimplerank, invariant_form, generic_order,
+ PermX, coroots, baseX, invbaseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants,improve_type, matY, simpleroots,
  simplecoroots, action
 using Gapjm
@@ -241,7 +241,7 @@ function Base.show(io::IO, t::TypeIrred)
           if t.cartanType==1 s=:C
           elseif t.cartanType==2 s=:B
           elseif t.cartanType==ER(2) s=:Bsym
-          else s=Symbol(":B(",sprint(show,t.cartanType;context=io),")")
+          else s=Symbol("B(",sprint(show,t.cartanType;context=io),")")
           end
         elseif s==:G
           if t.cartanType==ER(3) s=:Gsym end
@@ -397,21 +397,28 @@ reflection for `i`-th root of `W`
 reflection(W::PermRootGroup,i)=reflections(W)[i]
 
 """
-`cartan(W::Group)`
+`cartan(W::PermRootGroup,i,j)`
+the cartan coefficient `cᵢ(rⱼ)` of the `i`-th coroot and the `j`-th root of `W`
+"""
+function cartan(W::PermRootGroup,i,j)
+  r=roots(W,j)-roots(W,action(W,j,reflection(W,i)))
+  v=findfirst(!iszero,roots(W,i))
+  r[v]//roots(W,i)[v]
+end
 
-Let  `s₁,…,sₙ` be a  list of reflections  with associated root vectors `rᵢ`
-and  coroots `cᵢ`.  Then the  matrix `Cᵢ,ⱼ`  of the  `cᵢ(rⱼ)` is called the
-*Cartan  matrix* of the  list of reflections.  It is uniquely determined by
-the reflections up to conjugating by  a diagonal matrix.
+"""
+`cartan(W::PermRootGroup)`    Cartan matrix of `W`.
 
-If  `s₁,…,sₙ` are the generators of a  reflection group `W`, the matrix `C`
-up  to conjugation by a  diagonal matrix is an  invariant of the reflection
-representation   of   `W`.   It   actually   completely   determines   this
-representation if the `rᵢ` are linearly independent (which is e.g. the case
-if  `C` is  invertible), since  in the  `rᵢ` basis  the matrix for the `sᵢ`
-differs  from the identity only on the `i`-th line, where the corresponding
-line of `C` has been subtracted. This function returns the Cartan matrix of
-the reflection group `W`.
+Let  `s₁,…,sₙ` be reflections with associated  roots `rᵢ` and coroots `cᵢ`.
+The  matrix `C` with  entries `Cᵢ,ⱼ=cᵢ(rⱼ)` is  called a *Cartan matrix* of
+`s₁,…,sₙ`.  It is uniquely  determined by `s₁,…,sₙ`  up to conjugation by a
+diagonal matrix.
+
+If `s₁,…,sₙ` generate a reflection group `W`, then `C` up to conjugation by
+a  diagonal matrix is an invariant of the reflection representation of `W`.
+If invertible `C` determines this representation since then the `rᵢ` form a
+basis  in which the matrix  for `sᵢ` differs from  the identity only on the
+`i`-th line, where the corresponding line of `C` has been subtracted.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -426,14 +433,14 @@ julia> cartan(W)
 """
 function cartan(W::PermRootGroup)
   gets(W,:cartan)do
-    improve_type([cartan_coeff(W,i,j) for i in eachindex(gens(W)), j in
+    improve_type([cartan(W,i,j) for i in eachindex(gens(W)), j in
                   eachindex(gens(W))])
   end
 end
 
 cartan(t::TypeIrred)=toM(getchev(t,:CartanMat))
 
-cartan(W::PermRootGroup,I)=[cartan_coeff(W,i,j) for i in I, j in I]
+cartan(W::PermRootGroup,I)=[cartan(W,i,j) for i in I, j in I]
 
 """
 rank(W::Group)
@@ -458,9 +465,9 @@ type_irred classifies W (returns a type record) using:
 
     r=semisimplerank(W)
     s=length(W)/factorial(r)
-    D=set of distinguished reflections of W=orbit of S
-    o=the maximum order of a reflection=max_{s∈ D}o(s)
-    h=the Coxeter number=div(sum(degrees(W)+codegrees(W)),r)=sum_{s∈ D}o(s)
+    D=all distinguished reflections of W=orbit of S,    which gives
+      o=the maximum order of a reflection=max_{s∈ D}o(s)
+      h=the Coxeter number=sum_{s∈ D}o(s)
 
 G(de,e,r) has s=(de)ʳ/e, o=max(2,d), h=ed(r-1)+d-δ_{d,1}
 
@@ -481,41 +488,44 @@ cases (which are resolved by h):
  G21/G(120,40,2)
 """
 function type_irred(W::PermRootGroup)
-prim = [
-  (ST=4, r=2, s=12, o=3, h=6), 
-  (ST=5, r=2, s=36, o=3, h=12), 
-  (ST=6, r=2, s=24, o=3, h=12), 
-  (ST=7, r=2, s=72, o=3, h=18), 
-  (ST=8, r=2, s=48, o=4, h=12), 
-  (ST=9, r=2, s=96, o=4, h=24), 
-  (ST=10, r=2, s=144, o=4, h=24), 
-  (ST=11, r=2, s=288, o=4, h=36), 
-  (ST=12, r=2, s=24, o=2, h=12), 
-  (ST=13, r=2, s=48, o=2, h=18), 
-  (ST=14, r=2, s=72, o=3, h=24), 
-  (ST=15, r=2, s=144, o=3, h=30), 
-  (ST=16, r=2, s=300, o=5, h=30), 
-  (ST=17, r=2, s=600, o=5, h=60), 
-  (ST=18, r=2, s=900, o=5, h=60), 
-  (ST=19, r=2, s=1800, o=5, h=90), 
-  (ST=20, r=2, s=180, o=3, h=30), 
-  (ST=21, r=2, s=360, o=3, h=60), 
-  (ST=22, r=2, s=120, o=2, h=30), 
-  (series=:H, r=3, s=20, o=2, h=10), 
-  (ST=24, r=3, s=56, o=2, h=14), 
-  (ST=25, r=3, s=108, o=3, h=12), 
-  (ST=26, r=3, s=216, o=3, h=18), 
-  (ST=27, r=3, s=360, o=2, h=30), 
-  (series=:F, r=4, s=48, o=2, h=12), 
-  (ST=29, r=4, s=320, o=2, h=20), 
-  (series=:H, r=4, s=600, o=2, h=30), 
-  (ST=31, r=4, s=1920, o=2, h=30), 
-  (ST=32, r=4, s=6480, o=3, h=30), 
-  (ST=33, r=5, s=432, o=2, h=18), 
-  (ST=34, r=6, s=54432, o=2, h=42), 
-  (series=:E, r=6, s=72, o=2, h=12), 
-  (series=:E, r=7, s=576, o=2, h=18), 
-  (series=:E, r=8, s=17280, o=2, h=30)]
+prim=[
+  (r=0, s=0, o=0, h=0),  # 3 dummy items to get right Shephard-Todd number
+  (r=0, s=0, o=0, h=0), 
+  (r=0, s=0, o=0, h=0), 
+  (r=2, s=12, o=3, h=6), 
+  (r=2, s=36, o=3, h=12), 
+  (r=2, s=24, o=3, h=12), 
+  (r=2, s=72, o=3, h=18), 
+  (r=2, s=48, o=4, h=12), 
+  (r=2, s=96, o=4, h=24), 
+  (r=2, s=144, o=4, h=24), 
+  (r=2, s=288, o=4, h=36), 
+  (r=2, s=24, o=2, h=12), 
+  (r=2, s=48, o=2, h=18), 
+  (r=2, s=72, o=3, h=24), 
+  (r=2, s=144, o=3, h=30), 
+  (r=2, s=300, o=5, h=30), 
+  (r=2, s=600, o=5, h=60), 
+  (r=2, s=900, o=5, h=60), 
+  (r=2, s=1800, o=5, h=90), 
+  (r=2, s=180, o=3, h=30), 
+  (r=2, s=360, o=3, h=60), 
+  (r=2, s=120, o=2, h=30), 
+  (r=3, s=20, o=2, h=10), 
+  (r=3, s=56, o=2, h=14), 
+  (r=3, s=108, o=3, h=12), 
+  (r=3, s=216, o=3, h=18), 
+  (r=3, s=360, o=2, h=30), 
+  (r=4, s=48, o=2, h=12), 
+  (r=4, s=320, o=2, h=20), 
+  (r=4, s=600, o=2, h=30), 
+  (r=4, s=1920, o=2, h=30), 
+  (r=4, s=6480, o=3, h=30), 
+  (r=5, s=432, o=2, h=18), 
+  (r=6, s=54432, o=2, h=42), 
+  (r=6, s=72, o=2, h=12), 
+  (r=7, s=576, o=2, h=18), 
+  (r=8, s=17280, o=2, h=30)]
 
   r=semisimplerank(W)
   s=div(length(W),factorial(r))
@@ -525,50 +535,50 @@ prim = [
                        for (p,m) in factor(s))
     de=vec((x->(d=prod(first.(x)),e=prod(last.(x)))).(Iterators.product(l...)))
   end
-  o = maximum(order.(gens(W)))
+  o=maximum(order.(gens(W)))
 # println("de=$de, o=$o, h=$h")
-  de = filter(x->o==max(2,x.d),de)
-  ST = filter(f->r==f.r && s==f.s && o==f.o,prim)
+  de=filter(x->o==max(2,x.d),de) #  here we have length(de)<=2
+  ST=filter(i->r==prim[i].r && s==prim[i].s && o==prim[i].o,eachindex(prim))
   h=div(sum(order,Set(reflections(W))),r) # Coxeter number
   if length(de)>1
-    if length(de)!=2 error("theory") end
     de=sort(de)
     if h==de[1].e de=[de[1]]
-    elseif h==2*de[2].e+2 de = [de[2]]
-    elseif length(ST) != 1 || h != ST[1].h error("theory")
-    else return Dict(:series=>:ST, :ST=>ST[1].ST, :rank=> r)
+    elseif h==2*de[2].e+2 de=[de[2]]
+    else return Dict(:series=>:ST, :ST=>only(ST), :rank=> r)
     end
   end
-  if length(de) > 0 && length(ST) > 0
-    ST = filter(i->i.h==h,ST)
-    if length(ST) > 1 error("theory")
-    elseif length(ST) > 0
-      if h == de[1].d*((r-1)*de[1].e+1) error("theory") end
-      return Dict(:series => :ST, :ST =>ST[1].ST, :rank=>r)
+  if length(de)>0 && length(ST)>0
+    ST=filter(i->prim[i].h==h,ST)
+    if !isempty(ST) return Dict(:series=>:ST, :ST=>only(ST), :rank=>r) end
+  end
+  if length(de)==0
+    if only(ST) in [23,30] return Dict(:series=>:H, :rank => r)
+    elseif only(ST)==28 return Dict(:series=>:F, :rank => r)
+    elseif only(ST) in 35:37 return Dict(:series=>:E, :rank => r)
+    else return Dict(:series=>:ST,:ST =>only(ST),:rank => r)
     end
   end
-  if length(de) == 0
-    if length(ST) != 1 error("theory")
-    elseif haskey(ST[1], :ST)
-         return Dict(:series=>:ST, :ST =>ST[1].ST, :rank => r)
-    else return Dict(:series=>ST[1].series, :rank => r)
+  d=only(de)
+  if d.d==2 && d.e==1 return Dict(:series=>:B, :rank=>r) end
+  if d.d==1 && d.e==2 return Dict(:series=>:D,:rank=>r) end
+  if d.d==1 && r==2
+    if d.e==4 return Dict(:series=>:B, :rank=>2)
+    elseif d.e==6 return Dict(:series=>:G, :rank=>2)
+    else return Dict(:series=>:I, :rank=>2, :bond=>d.e)
     end
   end
-  de = de[1]
-  if de.d == 2 && de.e == 1 return Dict(:series=>:B, :rank=>r) end
-  if de.d == 1
-      if de.e == 2 return Dict(:series=>:D,:rank=>r)
-      elseif r == 2
-        if de.e == 4 return Dict(:series=>:B, :rank=>2)
-        elseif de.e == 6 return Dict(:series=>:G, :rank=>2)
-        else return Dict(:series=>:I, :rank=>2, :bond=>de[:e])
-        end
-      end
-  end
-  return Dict(:series=>:ST, :p=>de.d * de.e, :q=>de.e, :rank=>r)
+  Dict(:series=>:ST, :p=>d.d*d.e, :q=>d.e, :rank=>r)
 end
 
-function check_relation(gens,rel;verbose=false)
+"""
+`check_minimal_relation(gens,rel;verbose=false)`
+
+returns `true` iff the homogeneous relation
+`prod(gens[rel[1]])==prod(gens[rel[2]])` is a minimal relation between gens
+(in  particular,  no  left  factor  homogeneous  relation  holds),  `false`
+otherwise. If `verbose=true` prints a description of failure.
+"""
+function check_minimal_relation(gens,rel;verbose=false)
   p(l,r)=joindigits(l)*"="*joindigits(r)
   L,R=rel
   l=gens[L[1]]
@@ -576,9 +586,7 @@ function check_relation(gens,rel;verbose=false)
   i=1
   while i<length(L)
     if l==r
-      if verbose 
-        print(" relation ",p(L,R)," already holds as ",p(L[1:i],R[1:i]))
-      end
+      if verbose print(" relation ",p(L[1:i],R[1:i])," already holds") end
       return false
     end
     i+=1
@@ -609,17 +617,36 @@ function findgoodgens(H,g,t::TypeIrred)
     for e in rest
 #     println("$e(",length(gens),")")
       r=reflection(H,e)
-      if order(r)==orders[i]
-        newgens=vcat(gens,[r])
-        if !haskey(rels,i) || all(r->check_relation(newgens,r),rels[i])
-          res=findarr(newgens,setdiff(rest,[e]))
-          if !isnothing(res) return vcat([e],res) end
-        end
+      if order(r)!=orders[i] continue end
+      newgens=vcat(gens,[r])
+      if !haskey(rels,i) || all(r->check_minimal_relation(newgens,r),rels[i])
+        res=findarr(newgens,setdiff(rest,[e]))
+        if !isnothing(res) return vcat([e],res) end
       end
     end
     return nothing
   end
   return findarr(eltype(H)[],g)
+end
+
+# findgoodcartan(H,g,C):  g is a sublist of eachindex(H.roots). 
+# Returns sublist k of g such that cartan(H,k)=C or nothing if none exists.
+function findgoodcartan(H,g,C)
+  function find(k,rest) # k has good cartan, see if can add some e∈ rest
+    if length(k)==size(C,1) return k end
+    i=length(k)+1
+    for e in rest
+#     println("$e(",length(k),")")
+      if cartan(H,e,e)==C[i,i] &&
+         all(j->cartan(H,e,k[j])==C[i,j],1:i-1) &&
+         all(j->cartan(H,k[j],e)==C[j,i],1:i-1)
+        res=find(vcat(k,[e]),setdiff(rest,[e]))
+        if !isnothing(res) return res end
+      end
+    end
+    return nothing
+  end
+  return find(Int[],g)
 end
 
 # try to make indecomposable CartanMat(H,p) like C by rotating roots
@@ -651,16 +678,22 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
     map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;type=false)
       d=TypeIrred(type_irred(R))
-      if cartan(d)==cartan(R)
-        d.indices=I
+      C=cartan(d)
+      if C==cartan(R) indices=I
       else 
-        good=findgoodgens(R,Int.(indexin(unique(reflections(R)),reflections(R))),d)
-        if cartan(R,good)!=cartan(d)
-          r=fixCartan(R,cartan(d),good)
-          if !isnothing(r) good=r[2] end
+        good=findgoodcartan(R,eachindex(gens(R)),C)
+        if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end
+        if isnothing(good) good=findgoodgens(R,
+                       Int.(indexin(unique(reflections(R)),reflections(R))),d)
+          better=fixCartan(R,C,good)
+          if !isnothing(better) good=better[2] end
+          if d.series!=:ST 
+            d=TypeIrred(Weyl.type_fincox_cartan(cartan(R,good)))
+          end
         end
-        d.indices=inclusion(R,W,good)
+        indices=inclusion(R,W,good)
       end
+      d.indices=indices
       d
     end
   end
@@ -814,23 +847,40 @@ julia> refleigen(coxgroup(:B,2))
  [ζ₄, ζ₄³]
 ```
 """
-function refleigen(W::PermRootGroup)
-# very inefficient for now
+function refleigen(W)
   gets(W,:refleigen) do
-    ll=map(classreps(W)) do x
-      p=CycPol(charpoly(reflrep(W,x)))
-      vcat(map(r->fill(r[1],r[2]),p.v.d)...)
+    t=refltype(W)
+    if isempty(t) ll=[Root1[]]
+    elseif any(x->haskey(x,:orbit) && 
+        (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
+      ll=map(classreps(W)) do x
+        p=CycPol(charpoly(reflrep(W,x)))
+        vcat(map(r->fill(r[1],r[2]),p.v.d)...)
+      end
+    else
+      ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
+      if W isa Spets
+        extra=vcat(map(r->fill(r[1],r[2]),torusfactors(W).v.d)...)
+      else
+        extra=fill(Root1(1),rank(W)-semisimplerank(W))
+      end
+      ll=map(x->vcat(x,extra),ll)
     end
-#   t=CharTable(W).irr[charinfo(W)[:extRefl],:]
-#   v=map(i->Pol([-1],1)^i,size(t,1)-1:-1:0)
-#   l=CycPol.((permutedims(v)*t)[1,:])
-#   ll=map(c->reduce(vcat,map(p->fill(p[1].r,p[2]),c.v)),l)
     W.prop[:reflengths]=map(x->count(!isone,x),ll)
     ll
   end
 end
 
-refleigen(W::PermRootGroup,i)=refleigen(W)[i]
+function refleigen(t::TypeIrred)
+  ct=CharTable(t).irr[charinfo(t)[:extRefl],:]
+  v=map(i->Pol([-1],1)^i,size(ct,1)-1:-1:0)
+  l=CycPol.((permutedims(v)*ct)[1,:])
+  ll=map(p->vcat(map(r->fill(r[1],r[2]),p.v.d)...),l)
+  if haskey(t,:scalar) ll.*=Root1(prod(t.scalar)) end
+  ll
+end
+
+refleigen(W,i)=refleigen(W)[i]
 
 """
 `reflength(W,w)`
@@ -998,6 +1048,13 @@ function baseX(W::PermRootGroup{T})where T
   end
 end
 
+function invbaseX(W::PermRootGroup)
+  gets(W,:invbaseX)do
+    X=baseX(W)
+    improve_type(inv(X//1))
+  end
+end
+
 """
 `PermX(W,M::AbstractMatrix)`
 
@@ -1059,7 +1116,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
         F=base[:phi]
       end
       return (phi=F,reflectiongroup=reflection_subgroup(W,
-                     inclusion(subgroup,W,indices(t))))
+                     inclusion(subgroup,W,indices(t));type=false))
     end
   end
   return nothing
@@ -1212,12 +1269,7 @@ function reflrep(W::PermRootGroup,w)
   X=baseX(W)
   ir=independent_roots(W)
   if isempty(ir) return X end
-  if eltype(X)<:Integer
-    Xinv=inv(Rational.(X))
-    improve_type(Xinv*vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:]))
-  else
-    inv(X)*vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:])
-  end
+  improve_type(invbaseX(W)*vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:]))
 end
 
 matY(W::PermRootGroup,w)=permutedims(reflrep(W,inv(w)))
@@ -1322,25 +1374,27 @@ function coroots(W::PRG,i::Integer)
   if isassigned(W.coroots,i) return W.coroots[i] end
   m=reflrep(W,reflection(W,i))
   j=findfirst(!iszero,roots(W,i))
-  r=map(v->v[j]//roots(W,i)[j],toL(one(m)-m))
-  if all(isinteger,r) r=Int.(r) end
-  W.coroots[i]=r
+  r=(one(m)-m)[:,j].//roots(W,i)[j]
+  W.coroots[i]=improve_type(r)
 end
 
 coroots(W::PRG,i::AbstractVector{<:Integer})=isempty(i) ? empty(W.coroots) : coroots.(Ref(W),i)
-
-function cartan_coeff(W::PRG,i,j)
-  v=findfirst(!iszero,W.roots[i])
-  r=W.roots[j]-W.roots[j^reflection(W,i)]
-  return r[v]//W.roots[i][v];
-end
 
 function Base.:*(W::PRG,V::PRG)
   if rank(W)==0 return V
   elseif rank(V)==0 return W
   end
-  PRG(toL(cat(toM(simpleroots(W)),toM(simpleroots(V)),dims=(1,2))),
-      toL(cat(toM(simplecoroots(W)),toM(simplecoroots(V)),dims=(1,2))))
+  if iszero(semisimplerank(V))
+    r=map(x->vcat(x,fill(0,rank(V))),simpleroots(W))
+    cr=map(x->vcat(x,fill(0,rank(V))),simplecoroots(W))
+  elseif iszero(semisimplerank(W))
+    r=map(x->vcat(fill(0,rank(V)),x),simpleroots(W))
+    cr=map(x->vcat(fill(0,rank(V)),x),simplecoroots(W))
+  else
+    r=toL(cat(toM(simpleroots(W)),toM(simpleroots(V)),dims=(1,2)))
+    cr=toL(cat(toM(simplecoroots(W)),toM(simplecoroots(V)),dims=(1,2)))
+  end
+  PRG(r,cr)
 end
   
 reflrep(W::PRG)=W.matgens
@@ -1409,7 +1463,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;type=true)
   H
 end
 
-reflection_subgroup(W::PRSG,I::AbstractVector{Int};type=false)=
+reflection_subgroup(W::PRSG,I::AbstractVector{Int};type=true)=
    reflection_subgroup(parent(W),inclusion(W,I);type=type)
 
 function Base.show(io::IO, W::PRSG)
@@ -1425,9 +1479,6 @@ function Base.show(io::IO, W::PRSG)
   showtypes(io,refltype(W))
   showtorus(io,W)
 end
-
-cartan_coeff(W::PRSG,i,j)=
-     cartan_coeff(parent(W),inclusion(W,i),inclusion(W,j))
 
 reflrep(W::PRSG)=map(i->reflrep(parent(W),i),inclusiongens(W))
 reflrep(W::PRSG,i::Integer)=reflrep(parent(W),inclusion(W,i))
@@ -1559,7 +1610,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> invariant_form(W)
-2×2 Array{Cyc{Rational{Int64}},2}:
+2×2 Array{Int64,2}:
  1  0
  0  2
 ```
@@ -1590,9 +1641,9 @@ function invariant_form(W::PermRootGroup)
   end
   d=rank(W)-semisimplerank(W)
   F=cat(F,one(zeros(T,d,d)),dims=(1,2))
-  N=(baseX(W).//1)^-1
+  N=invbaseX(W)
   F=N*F*N'
-  F.//F[1,1]
+  improve_type(F.//F[1,1])
 end
 
 """

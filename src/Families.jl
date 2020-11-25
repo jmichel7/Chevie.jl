@@ -67,7 +67,7 @@ module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
  FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, ndrinfeld_double,
- fusion_algebra, involution, duality
+ fusion_algebra, involution, duality, eigen
 
 using ..Gapjm
 
@@ -150,29 +150,27 @@ end
 
 special(f::Family)::Int=gets(()->1,f,:special)
 
+eigen(f::Family)=f[:eigenvalues]
+
+"`length(f::Family)`: how many characters are in the family."
+Base.length(f::Family)=length(eigen(f))
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 Base.getindex(f::Family,k)=f.prop[k]
 Base.haskey(f::Family,k)=haskey(f.prop,k)
 Base.setindex!(f::Family,v,k)=setindex!(f.prop,v,k)
+
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
   if f[:fourierMat] isa Vector f[:fourierMat]=improve_type(toM(f[:fourierMat])) end
-  if !haskey(f,:charLabels)
-    f[:charLabels]=map(string,1:length(f[:eigenvalues]))
-  end
+  if !haskey(f,:charLabels) f[:charLabels]=map(string,1:length(f)) end
   if haskey(d,:signs)
     signs=d[:signs]
     m=f[:fourierMat]
-    for i in axes(m,1), j in axes(m,2)
-      m[i,j]*=signs[i]*signs[j]
-    end
+    for i in axes(m,1), j in axes(m,2) m[i,j]*=signs[i]*signs[j] end
     f[:fourierMat]=m
   end
   f
 end
-
-"`length(f::Family)`: how many characters are in the family."
-Base.length(f::Family)=length(f[:eigenvalues])
 
 position_cartesian(a,b)=LinearIndices(reverse(a))[CartesianIndex(reverse(b))]
 
@@ -185,9 +183,7 @@ function Base.:*(f::Family,g::Family)
 # println(f,"*",g)
   arg=(f,g)
   for ff in arg
-    if !haskey(ff,:charLabels) 
-      ff[:charLabels]=map(string,eachindex(ff[:eigenvalues])) 
-    end
+    if !haskey(ff,:charLabels) ff[:charLabels]=map(string,1:length(ff)) end
   end
   res=Dict{Symbol,Any}(
     :charLabels=>join.(cartesian(getindex.(arg,:charLabels)...),"\\otimes"),
@@ -651,14 +647,14 @@ end, classreps(g), CharTable(g).classnames)
   end
   res[:size] = length(res[:charLabels])
   res[:eigenvalues]=vcat(map(r->
-       r[:chars][:,position_class(r[:centralizer],r[:elt])].// 
-       r[:chars][:,position_class(r[:centralizer],one(g))],res[:classinfo])...)
+    r[:chars][:,position_class(r[:centralizer],r[:elt])].// 
+    r[:chars][:,position_class(r[:centralizer],one(g))],res[:classinfo])...)
   if lu
-      res[:name] = "L"
-      res[:explanation] = "Lusztig's"
+    res[:name] = "L"
+    res[:explanation] = "Lusztig's"
   else
-      res[:name] = ""
-      res[:explanation] = ""
+    res[:name] = ""
+    res[:explanation] = ""
   end
   res[:name] *= "D($g)"
   res[:explanation] *= "DrinfeldDouble($g)"
@@ -995,8 +991,8 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   d=size(S,1)
   multable=map(i->map(j->filter(x->x[2]!=0,
             map((x,y)->x=>y,1:d,s*(S[i,:].*S[j,:]))),1:i),1:d)
-  if all(r->all(c->all(p->p[2]>=0,c),r),multable)
-      InfoChevie( "# positive structure constants\n" );
+  if d>1 && all(r->all(c->all(p->p[2]>=0,c),r),multable)
+    InfoChevie("# Algebra dim. ",d,": positive structure constants\n");
   end
   if !all(r->all(c->all(p->isinteger(p[2]),c),r),multable)
       error("structure constants are not integral")
@@ -1014,8 +1010,10 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
 end
 
 function fusion_algebra(f::Family)
+  gets(f,:fusion_algebra)do
   fusion_algebra(fourier(f),special(f);charnames=f[:charLabels],
                                        classnames=f[:charLabels])
+  end
 end
 
 Algebras.dim(A::FusionAlgebra)=size(A.fourier,1)

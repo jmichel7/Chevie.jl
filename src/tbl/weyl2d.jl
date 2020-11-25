@@ -247,7 +247,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                     res[:size] = length(res[:charNumbers])
                     res[:operations] = FamilyOps
                     return res
-                end, gapSet(map(z, uc[:charSymbols])))
+                   end, map(z, gapSet(uc[:charSymbols])))
         return uc
     end)
 chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)

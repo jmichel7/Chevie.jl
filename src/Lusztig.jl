@@ -42,7 +42,7 @@ function FindCuspidalInLevi(n,HF)
   cusp
 end
 
-ChevieErr=error
+ChevieErr(x...)=println("*****ERROR: ",x...)
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
 function FindIntSol(l)
@@ -157,9 +157,9 @@ function LusztigInductionPieces(LF,WF)
   uW=UnipotentCharacters(WF)
   hw=uW.almostHarishChandra
   map(uL.almostHarishChandra) do h
-#     printc( "LF=",LF," ",
-#      map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-#      h[:relativeType]),"\n")
+#   xprintln("LF=",LF," ",
+#     map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
+#     h[:relativeType]))
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
     if W isa CoxeterGroup
       WFGL=relative_coset(WF,inclusion(L,W,h[:levi]))
@@ -178,10 +178,10 @@ function LusztigInductionPieces(LF,WF)
       WFGL=relative_coset(WF,ser[:levi],Jb)
       if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
-      rh=inclusion(L,W,vcat(map(
+      rh=map(x->action(W,x,op),inclusion(L,W,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-       h[:relativeType])...)).^op
-#     printc("rh=",rh," op=",op,"\n")
+       h[:relativeType])...)))
+#     xprintln("rh=",rh," op=",op)
       w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
       rh=map(rh)do x
@@ -192,10 +192,10 @@ function LusztigInductionPieces(LF,WF)
 #            PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
 #       inclusion(WGL)[p] 
       end
-#     printc("WFGL=",WFGL," rh=",rh," w=",w,"\n")
+#     xprintln("WFGL=",WFGL," rh=",rh," w=",w)
 #     LFGL=subspets(WFGL,restriction(WFGL,rh),w)
       LFGL=subspets(WFGL,Vector{Int}(rh),w)
-#     printc("LFGL=",LFGL,"\n")
+#     xprintln("LFGL=",LFGL)
 #     ReflectionName(LFGL)
 #     ReflectionName(WFGL)
     end
@@ -270,7 +270,7 @@ function LusztigInductionTable(LF,WF;check=true)
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
   res.prop[:pieces]=LusztigInductionPieces(LF,WF)
-  if res.prop[:pieces]==false return false end
+  if res.prop[:pieces]==false return nothing end
   fL=fourier(uL)
   hh=uL.almostHarishChandra
   fWinv=fourierinverse(uW)
@@ -282,7 +282,7 @@ function LusztigInductionTable(LF,WF;check=true)
   ret=function(mapping)
     if mapping == false
       ChevieErr("Failed\n")
-      return check ? false : res
+      return check ? nothing : res
     end
     res.scalar.=mapping
     return res
@@ -290,22 +290,22 @@ function LusztigInductionTable(LF,WF;check=true)
   smap = sum(maps)
   if all(v->all(isinteger, v), smap)
     if LF.phi==WF.phi && !all(>=(0), Int.(smap))
-        ChevieErr("non-positive RLG for untwisted L")
+      ChevieErr("non-positive RLG for untwisted L")
     end
     return ret(smap)
   end
   scalars=FindIntSol(unique(toL(hcat(vec.(maps)...))))
   if scalars == false return ret(scalars) end
   if length(scalars) > 1
-    ChevieErr("#I WARNING: ambiguity in scalars:", FormatGAP(scalars), "\n")
+    ChevieErr("#I WARNING: ambiguity in scalars:", scalars, "\n")
   end
   scalars = scalars[1]
   if any(x->x isa Mvp, scalars) error() end
   if any(!isone,scalars)
-      res.prop[:scalars] = scalars
-      if all(isinteger, scalars) p = "#I signs are "
-      else InfoChevie("#I non-sign scalars needed:", scalars, "\n")
-      end
+    res.prop[:scalars]=scalars
+    if all(isinteger, scalars) p="#I signs are "
+    else InfoChevie("#I non-sign scalars needed:", scalars, "\n")
+    end
   end
   scalars=sum(i->maps[i]*scalars[i],1:length(scalars))
   if LF.phi==WF.phi && !all(>=(0), Flat(scalars))

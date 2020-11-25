@@ -218,12 +218,15 @@ end
 
 equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
 
-function Base.show(io::IO, H::HeckeAlgebra)
-  print(io,"hecke(",H.W,",")
+function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
-  if constant(tr.(H.para)) print(io,tr(H.para[1]))
-  else print(io,map(tr,H.para))
+  if constant(tr.(para)) tr(para[1])
+  else map(tr,para)
   end
+end
+
+function Base.show(io::IO, H::HeckeAlgebra)
+  print(io,"hecke(",H.W,",",simplify_para(H.para))
   if haskey(H.prop,:rootpara)
     rp=rootpara(H)
     if constant(rp) print(io,",rootpara=",rp[1])
@@ -451,8 +454,8 @@ Base.:*(b::Pol, a::HeckeElt)=a*b
 Base.:*(b::Mvp, a::HeckeElt)=a*b
 Base.:*(b::Number, a::HeckeElt)= a*b
 
-Base.:^(a::HeckeElt, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
-                                   Base.power_by_squaring(inv(a),-n)
+Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                        Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
 struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
   d::ModuleElt{P,C1} # has better merge performance than Dict
@@ -664,7 +667,8 @@ char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
 function schur_element(H::HeckeAlgebra,p)
   t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices], 
-      haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : []),
+      haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : 
+      fill(nothing,length(H.para))),
       refltype(H.W),p)
   if any(==(false),t) return nothing end
   prod(t)

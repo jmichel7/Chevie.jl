@@ -286,15 +286,15 @@ Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
 
 function Base.:^(x::Mvp, p::Real)
   if isinteger(p) p=Int(p) end
-  if iszero(x) return x
+  if iszero(p) return one(x)
+  elseif iszero(x) return x
   elseif !isinteger(p) return root(x,denominator(p))^numerator(p) 
-  elseif iszero(p) return one(x)
   elseif isone(p) return x 
   elseif length(x.d)==1
     (m,c)=first(x.d)
     return Mvp(m^p=>c^p)
-  elseif p<0 return Base.power_by_squaring(inv(x),-p) 
-  else return Base.power_by_squaring(x,p)
+  else return p>=0 ? Base.power_by_squaring(x,p) :
+                     Base.power_by_squaring(inv(x),-p)
   end
 end
 

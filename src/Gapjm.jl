@@ -31,17 +31,17 @@ To update later to the latest version, do
 ```
 
 The package currently contains as infrastructure:
-     * permutations
-     * cyclotomic numbers
-     * univariate Laurent and multivariate Puiseux polynomials
-     * combinatorics
-     * linear algebra on any field/ring
-     * posets
-     * cyclotomic polynomials
-     * signed permutations
-     * finite fields
-     * groups
-     * permutation groups
+  * permutations
+  * cyclotomic numbers
+  * univariate Laurent and multivariate Puiseux polynomials
+  * combinatorics
+  * linear algebra on any field/ring
+  * posets
+  * cyclotomic polynomials
+  * signed permutations
+  * finite fields
+  * groups
+  * permutation groups
 
 for  permutation groups I have  often replaced the sophisticated algorithms
 of  GAP by naive but  easy to write methods  only suitable for small groups
@@ -109,19 +109,21 @@ include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("mvptools.jl");
 include("SPerms.jl");@reexport using .SPerms
-include("CycPols.jl");@reexport using .CycPols
 include("Algebras.jl");@reexport using .Algebras
+include("Garside.jl");@reexport using .Garside
+include("Chevie.jl");@reexport using .Chevie
+include("Urad.jl");@reexport using .Urad
+include("Lusztig.jl");@reexport using .Lusztig
+include("Eigenspaces.jl");@reexport using .Eigenspaces
+#if false
+include("CycPols.jl");@reexport using .CycPols
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
 include("Symbols.jl");@reexport using .Symbols
-include("Garside.jl");@reexport using .Garside
-include("Chevie.jl");@reexport using .Chevie
+include("Ucl.jl");@reexport using .Ucl
+include("Gt.jl");@reexport using .Gt
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
-include("Ucl.jl");@reexport using .Ucl
-include("Eigenspaces.jl");@reexport using .Eigenspaces
-include("Lusztig.jl");@reexport using .Lusztig
-include("Gt.jl");@reexport using .Gt
-include("Urad.jl");@reexport using .Urad
 include("HasType.jl");@reexport using .HasType
+#end
 end

@@ -53,7 +53,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       # we do no handle conflicting names which are not methods or macros
       error("$mod.$name is not a method or macro in $mymodule")
     end
-    modofname=nameof(first(methofname).module)
+    modofname=nameof(first(methofname).module) # use parentmodule
     if debug>1 println("# conflicting name:$modofname.$name") end
     s=split(sprint(show,methods(eval(:($mod.$name)))),"\n")
     map(s[2:end]) do l

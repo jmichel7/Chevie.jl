@@ -51,7 +51,7 @@ end
 @test mytest("charnames(W;spaltenstein=true,TeX=true)","6-element Array{String,1}:\n \"1\"\n \"\\\\varepsilon\"\n \"\\\\varepsilon_l\"\n \"\\\\varepsilon_c\"\n \"\\\\theta'\"\n \"\\\\theta''\"")
 @test mytest("g=coxgroup(:G,2)","G₂")
 @test mytest("u=reflection_subgroup(g,[1,6])","G₂₍₁₅₎=A₂")
-@test mytest("InductionTable(u,g)","Induction Table from G₂₍₁₅₎=A₂ to G₂\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
+@test mytest("t=InductionTable(u,g)","Induction Table from G₂₍₁₅₎=A₂ to G₂\n     │111 21 3\n─────┼─────────\nφ₁‚₀ │  .  . 1\nφ₁‚₆ │  1  . .\nφ′₁‚₃│  1  . .\nφ″₁‚₃│  .  . 1\nφ₂‚₁ │  .  1 .\nφ₂‚₂ │  .  1 .")
 @test mytest("W=coxgroup(:D,4)","D₄")
 @test mytest("H=reflection_subgroup(W,[1,3])","D₄₍₁₃₎=A₂Φ₁²")
 @test mytest("jInductionTable(H,W)","j-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄\n     │111 21 3\n─────┼─────────\n11+  │  .  . .\n11-  │  .  . .\n1.111│  .  . .\n.1111│  .  . .\n11.2 │  .  . .\n1.21 │  1  . .\n.211 │  .  . .\n2+   │  .  . .\n2-   │  .  . .\n.22  │  .  . .\n1.3  │  .  1 .\n.31  │  .  . .\n.4   │  .  . 1")
@@ -134,6 +134,11 @@ end
 @test mytest("w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],action=(s,g)->s.^g);","nothing")
 @test mytest("LF=subspets(WF,[1,2,9,16],w)","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
 @test mytest("Diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O\n3 1 2")
+@test mytest("spets(\"3G422\")","³G₄‚₂‚₂")
+@test mytest("spets(\"2G5\")","²G₅")
+@test mytest("spets(\"3G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
+@test mytest("spets(\"3pG333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
+@test mytest("spets(\"4G333\")","G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎=⁴G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=CoxSym(4)","𝔖 ₄")
@@ -160,7 +165,7 @@ end
 @test mytest("longest(CoxSym(4))","Perm{UInt8}: (1,4)(2,3)")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
-@test mytest("word.(Ref(W),Set(reduced.(Ref(H),elements(W))))","3-element Array{Array{Int64,1},1}:\n []\n [1, 2]\n [1]")
+@test mytest("word.(Ref(W),unique(reduced.(Ref(H),elements(W))))","3-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]")
 @test mytest("W=coxgroup(:G,2)","G₂")
 @test mytest("H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
 @test mytest("[word(W,w) for S in reduced(H,W) for w in S]","3-element Array{Array{Int64,1},1}:\n []\n [1]\n [1, 2]")
@@ -191,7 +196,7 @@ end
 @test mytest("W=CoxGroups.GenCox([2 -2;-2 2])","GenCox{Int64}([[-1 0; 2 1], [1 2; 0 -1]], Dict{Symbol,Any}())")
 end
 @testset "CycPols.jl" begin
-@test mytest("Pol(:q)","Pol{Int64}: q")
+@test mytest("q=Pol(:q)","Pol{Int64}: q")
 @test mytest("p=CycPol(q^25-q^24-2q^23-q^2+q+2)","(q-2)Φ₁Φ₂Φ₂₃")
 @test mytest("p(q)","Pol{Cyc{Int64}}: q²⁵-q²⁴-2q²³-q²+q+2")
 @test mytest("p*inv(CycPol(q^2+q+1))","(q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃")
@@ -260,9 +265,6 @@ end
 @test mytest("split_levis(W,3)","3-element Array{Any,1}:\n ³D₄\n D₄₍₁₃₎=A₂Φ₃\n D₄₍₎=Φ₃²")
 @test mytest("W=coxgroup(:E,8)","E₈")
 @test mytest("split_levis(W,4,2)","3-element Array{Any,1}:\n E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
-@test mytest("W=coxgroup(:D,4)","D₄")
-@test mytest("cuspidal_unipotent_characters(W)","1-element Array{Int64,1}:\n 14")
-@test mytest("cuspidal_unipotent_characters(W,6)","8-element Array{Int64,1}:\n  1\n  2\n  6\n  7\n  8\n  9\n 10\n 12")
 end
 @testset "FFields.jl" begin
 @test mytest("a=Mod{19}(5)","Mod{19}(5)")
@@ -674,7 +676,7 @@ end
 @test mytest("reflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isOrthogonal = false)")
 @test mytest("reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isOrthogonal = false)")
 @test mytest("W=ComplexReflectionGroup(4)","G₄")
-@test mytest("invariant_form(W)","2×2 Array{Cyc{Rational{Int64}},2}:\n 1  0\n 0  2")
+@test mytest("invariant_form(W)","2×2 Array{Int64,2}:\n 1  0\n 0  2")
 @test mytest("Pol(:q)","Pol{Int64}: q")
 @test mytest("PermRoot.generic_order(ComplexReflectionGroup(4),q)","Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴")
 @test mytest("W=coxgroup(:A,2)","A₂")
@@ -920,6 +922,9 @@ end
 @test mytest("u=UniChar(W,2)","[D₄]:<11->")
 @test mytest("Frobenius(WF)(u)","[D₄]:<.211>")
 @test mytest("Frobenius(WF)(u,-1)","[D₄]:<11+>")
+@test mytest("W=coxgroup(:D,4)","D₄")
+@test mytest("cuspidal(UnipotentCharacters(W))","1-element Array{Int64,1}:\n 14")
+@test mytest("cuspidal(UnipotentCharacters(W),6)","8-element Array{Int64,1}:\n  1\n  2\n  6\n  7\n  8\n  9\n 10\n 12")
 end
 @testset "Ucl.jl" begin
 @test mytest("UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(A₃)\n1111<211<22<31<4\n   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³) A₁(A₃₍₁₃₎=A₁×A₁Φ₁)/-1 .(A₃)/ζ₄\n────┼──────────────────────────────────────────────────────────────────────\n4   │222   0 222         q³.Z₄          1:4                  -1:2    ζ₄:Id\n31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31\n22  │020   2 2.2      q⁴.A₁.Z₂         2:22                 11:11\n211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211\n1111│000   6 ...            A₃      Id:1111\n\n   u│.(A₃)/-ζ₄\n────┼──────────\n4   │   -ζ₄:Id\n31  │\n22  │\n211 │\n1111│")

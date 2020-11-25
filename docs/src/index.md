@@ -75,6 +75,7 @@ cyclotomic_polynomial
 # Multivariate (Puiseux) polynomials
 ```@docs
 Mvps
+Mvp
 variables
 Mvps.coefficients(::Mvp,::Symbol)
 Mvps.valuation
@@ -94,6 +95,7 @@ CycPol
 # Utilities
 ```@docs
 Util
+@forward
 groupby
 tally
 collectby
@@ -103,7 +105,6 @@ cut
 prime_residues
 phi
 primitiveroot
-@forward
 ```
 # Combinatorics
 ```@docs
@@ -284,6 +285,8 @@ AsymptoticAlgebra
 Garside
 left_divisors
 leftgcd
+rightgcd
+rightlcm
 α
 DualBraidMonoid
 fraction
@@ -302,6 +305,7 @@ shrink
 Chars
 CharTable
 charinfo
+charnames
 classinfo
 fakedegree
 fakedegrees
@@ -310,6 +314,7 @@ representations
 InductionTable
 jInductionTable
 JInductionTable
+detPerm
 WGraphToRepresentation
 pblocks
 ```
@@ -387,7 +392,7 @@ regular_eigenvalues
 eigenspace_projector
 position_regular_class
 split_levis
-cuspidal_unipotent_characters
+cuspidal
 ```
 # Classtypes
 ```@docs
@@ -432,17 +437,19 @@ CharFFE(x)                                  field(x).p
 CharNames                                   charnames
 CharParams(W)                               charinfo(W)[:charparams]
 CharRepresentationWords                     traces_words_mats
+CharTable                                   CharTable
 CheckHeckeDefiningRelations                 isrepresentation
 ChevieCharInfo                              charinfo
 ChevieClassInfo                             classinfo
 ClassTypes                                  ClassTypes
 Coefficient(p,i)                            p[i]
-CollectBy                                   collectby
+CollectBy(l,f)                              collectby(f,l)
 Collected                                   tally
 Combinations                                combinations
 ComplexConjugate                            conj
 ComplexReflectionGroup                      ComplexReflectionGroup
 Compositions                                compositions
+Concatenation(s::Vector...)                 vcat(s...)
 ConcatenationString(s...)                   prod(s)
 ConjugacySet(b[,F][,type])                  conjcat(b[,F],ss=type).obj
 ConjugatePartition                          conjugate_partition
@@ -450,7 +457,7 @@ CoxeterCoset                                spets
 CoxeterElements(W[,l])                      elements(W[,l])
 CoxeterGroup("A",5)                         coxgroup(:A,5)
 CoxeterGroupByCartanMatrix(C)               gencox(C)
-CoxeterGroupByCoxeterMatrix                 gencox(cartan(C))
+CoxeterGroupByCoxeterMatrix(C)              gencox(cartan(C))
 CoxeterGroupHyperoctaedralGroup(n)          CoxHyperoctaedral(n)
 CoxeterGroupSymmetricGroup(n)               CoxSym(n)
 CoxeterLength(W,w)                          length(W,w)
@@ -459,7 +466,7 @@ CoxeterMatrixFromCartanMat                  coxmat
 CoxeterSubCoset                             subspets
 CoxeterWord(W,w)                            word(W,w)
 CoxeterWords(W[,l])                         word.(Ref(W),elements(W[,l]))
-CuspidalUnipotentCharacters                 cuspidal_unipotent_characters
+CuspidalUnipotentCharacters(W)              cuspidal(UnipotentCharacters(W))
 CycPol                                      CycPol
 CycPolFakeDegreeSymbol                      fegsymbol
 CycPolGenericDegreeSymbol                   gendeg_symbol
@@ -474,6 +481,7 @@ DegreeFFE(x)                                field(x).n
 DeligneLusztigCharacter                     DLChar
 DeligneLusztigLefschetz                     DLLeftschetz
 DescribeInvolution                          describe_involution
+DetPerm                                     detPerm
 Digits                                      digits
 Dominates                                   dominates
 DrinfeldDouble                              drinfeld_double
@@ -500,6 +508,7 @@ ForEachElement(W,f)                         for w in W f(w) end
 FullSymbol                                  fullsymbol
 FundamentalGroup                            fundamental_group
 FusionAlgebra                               fusion_algebra
+FusionConjugacyClasses                      fusion_conjugacy_classes
 GaloisCyc                                   galois
 GarsideAlpha                                α
 GarsideWords                                elements
@@ -509,12 +518,15 @@ GenericOrder                                generic_order
 GenericSign                                 generic_sign
 GetRoot                                     root
 Hasse                                       hasse
+Hecke                                       hecke
 HeckeCentralMonomials                       central_monomials
 HeckeCharValues                             char_values
 HeckeClassPolynomials                       class_polynomials
 HeckeReflectionRepresentation               reflrep
 HighestPowerFakeDegreeSymbol                degree_feg_symbol
+HighestPowerFakeDegrees(W)                  charinfo(W)[:B]
 HighestPowerGenericDegreeSymbol             degree_gendeg_symbol
+HighestPowerGenericDegrees(W)               charinfo(W)[:A]
 HyperplaneOrbits                            hyperplane_orbits
 ICCTable                                    ICCTable
 Incidence                                   incidence
@@ -553,12 +565,15 @@ LeftDivisorsSimple                          left_divisors
 LeftGcd                                     leftgcd
 LinearExtension                             linear_extension
 List(ConjugacyClasses(G),Representative)    classreps(G)
+ListBlist(a,b)                              a[b]
 ListPerm(p)                                 vec(p)
 LogFFE                                      log
 LongestCoxeterElement(W)                    longest(W)
 LongestCoxeterWord(W)                       word(W,longest(W))
 LowestPowerFakeDegreeSymbol                 valuation_feg_symbol
+LowestPowerFakeDegrees(W)                   charinfo(W)[:b]
 LowestPowerGenericDegreeSymbol              valuation_gendeg_symbol
+LowestPowerGenericDegrees(W)                charinfo(W)[:a]
 LusztigAw                                   LusztigAw
 LusztigInduction                            LusztigInduce
 LusztigInductionTable                       LusztigInductionTable
@@ -569,6 +584,7 @@ MatStab                                     stab_onmats
 MatXPerm(W,p)                               reflrep(W,p)
 MatYPerm                                    matY
 MovedPoints                                 support
+Mvp("x")                                    Mvp(:x)
 NrArrangements                              narrangements
 NrDrinfeldDouble                            ndrinfeld_double
 NrPartitionTuples                           npartition_tuples
@@ -594,8 +610,11 @@ PermutationMat(p,dim)                       Matrix(p,dim)
 Permuted(v,p)                               v^p
 PermutedByCols(m,p)                         ^(m,p;dims=2)
 Poset                                       Poset
+Position(l,x)                               findfirst(==(x),l)
 PositionCartesian(a,b)                      LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]
 PositionClass                               position_class
+PositionDet                                 charinfo(W)[:PositionDet]
+PositionId                                  charinfo(W)[:PositionId]
 PositionRegularClass                        position_regular_class
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)
@@ -611,6 +630,7 @@ ReflectionCharacter                         reflchar
 ReflectionCoDegrees(W)                      codegrees(W)
 ReflectionDegrees(W)                        degrees(W)
 ReflectionEigenvalues                       refleigen
+ReflectionGroup                             reflection_group
 ReflectionLength(W,w)                       reflength(W,w)
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
@@ -638,7 +658,7 @@ SchurFunctor                                schur_functor
 SemisimpleCentralizerRepresentatives        SScentralizer_representatives
 SemisimpleElement                           SS
 SemisimpleRank                              semisimplerank
-SemisimpleRank(W)                           coxrank(W)
+SemisimpleRank(W::CoxeterGroup)             coxrank(W)
 SemisimpleSubgroup                          torsion_subgroup
 ShiftBeta                                   shiftβ
 ShrinkGarsideGeneratingSet                  shrink
@@ -682,4 +702,5 @@ W.orbitRepresentativeElements[i]            simple_conjugating_element(W,i)
 W.rootLengths                               rootlengths(W)
 WeightInfo                                  weightinfo
 jInductionTable                             jInductionTable
+last                                        ans
 ```

@@ -196,8 +196,8 @@ Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
-Base.:^(a::Pol, n::Real)= n>=0 ? Base.power_by_squaring(a,Int(n)) :
-                                 Base.power_by_squaring(inv(a),-Int(n))
+Base.:^(a::Pol, n::Real)=n>=0 ? Base.power_by_squaring(a,Int(n)) :
+                                Base.power_by_squaring(inv(a),Int(-n))
 
 function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v

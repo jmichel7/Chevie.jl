@@ -107,7 +107,7 @@ By   default,  only  information  about  semisimple  centralizer  types  is
 returned:   the type, and its generic order.
 
 ```julia-rep1
-julia> rshow(t;unip=true)
+julia> xprint(t;unip=true)
 ClassTypes(A₂,good characteristic)
     C_G(s)│      u |C_G(su)|
 ──────────┼──────────────────
@@ -126,7 +126,7 @@ Here  we  have  displayed  information  on  unipotent  classes,  with their
 centralizer.
 
 ```julia-rep1
-julia> rshow(t;nClasses=true)
+julia> xprint(t;nClasses=true)
 ClassTypes(A₂,good characteristic)
     C_G(s)│       nClasses  |C_G(s)|
 ──────────┼──────────────────────────
@@ -143,7 +143,7 @@ form `qₐ` which represent `gcd(q-1,a)`.
 Finally an example in bad characteristic:
 
 ```julia-rep1
-julia> t=ClassTypes(coxgroup(:G,2),2);rshow(t;nClasses=true)
+julia> t=ClassTypes(coxgroup(:G,2),2);xprint(t;nClasses=true)
 ClassTypes(G₂,char. 2)
     C_G(s)│         nClasses     |C_G(s)|
 ──────────┼───────────────────────────────
@@ -166,7 +166,7 @@ We  notice that if `q` is  a power of `2` such  that `q≡2 (mod 3)`, so that
 specific value to `q₃`:
 
 ```julia-rep1
-julia> rshow(t(;q_3=1);nClasses=true)
+julia> xprint(t(;q_3=1);nClasses=true)
 ClassTypes(G₂,char. 2) q_3=1
     C_G(s)│     nClasses     |C_G(s)|
 ──────────┼───────────────────────────

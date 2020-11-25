@@ -121,6 +121,9 @@ end;
 testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 """
 module Cycs
+# testmat(12)^2:
+#  346.079 ms (4367402 allocations: 366.17 MiB) # good 1.5
+#  439.877 ms (8291076 allocations: 496.75 MiB) # bad  1.5
 #import Gapjm: coefficients, root
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
@@ -240,7 +243,7 @@ const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
   true  if coefficients are all 1 and false otherwise, and inds is the list
   of i in 0:n-1 such that ζₙⁱ occurs with a non-zero coefficient.
 """
-function Elist(n::Int,i1::Int=1)::Pair{Bool,Vector{Int}}
+function Elist(n::Int,i1::Int=1)
   i=mod(i1,n)
   get!(Elist_dict,(n,i)) do
     mp=Int[]
@@ -398,6 +401,41 @@ function Base.imag(c::Cyc{T}) where T<:Real
   (c-conj(c))/2
 end
 
+# l is a list of pairs i=>c representing E(n,i)*c
+function sumroots(n::Int,l)
+  res=eltype(l)[]
+  for (i,c) in l 
+    (s,v)=Elist(n,i)
+    if !s c=-c end
+    for k in v push!(res,k=>c) end
+  end
+# Cyc(n,ModuleElt(res;check=true))
+  Cyc(n,ModuleElt(res;check=length(l)>1))
+end
+
+function sumroot(res,n,i,c)
+  (s,v)=Elist(n,i)
+  if !s c=-c end
+  for k in v push!(res,k=>c) end
+end
+
+function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
+  if n==c.n return c end
+  m=div(n,c.n)
+if use_list
+  res=zeros(eltype(c.d),length(zumbroich_basis(n)))
+  z=zumbroich_basis(c.n).*m
+  for (i,v) in enumerate(c.d)
+    if iszero(v) continue end
+    (b,k)=Elist(n,z[i])
+    @inbounds res[k].+=b ? v : -v
+  end
+  Cyc(n,res)
+else
+  sumroots(n,[i*m=>u for (i,u) in c.d])
+end
+end
+
 function promote_conductor(a::Cyc,b::Cyc)
   if a.n==b.n return (a, b) end
   l=lcm(a.n,b.n)
@@ -488,12 +526,26 @@ end
 end
 
 function Base.:+(x::Cyc,y::Cyc)
+if use_list
   a,b=promote(x,y)
   if iszero(a) return b
   elseif iszero(b) return a
   end
   a,b=promote_conductor(a,b)
   lower(Cyc(a.n,a.d+b.d))
+else
+  a,b=promote(x,y)
+  if iszero(a) return b
+  elseif iszero(b) return a
+  end
+  n=lcm(a.n,b.n)
+  na=div(n,a.n)
+  nb=div(n,b.n)
+  res=empty(a.d.d)
+  for (i,va) in a.d sumroot(res,n,na*i,va) end
+  for (i,vb) in b.d sumroot(res,n,nb*i,vb) end
+  lower(Cyc(n,ModuleElt(res;check=true)))
+end
 end
 
 Base.:+(a::Cyc,b::Real)=a+Cyc(b)
@@ -519,23 +571,12 @@ Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
-# l is a list of pairs i=>c representing E(n,i)*c
-function sumroots(n::Int,l)
-  res=eltype(l)[]
-  for (i,c) in l 
-    (s,v)=Elist(n,i)
-    if !s c=-c end
-    for k in v push!(res,k=>c) end
-  end
-  Cyc(n,ModuleElt(res;check=true))
-end
-
 function Base.:*(a::Cyc,b::Cyc)
   if a.n==1 return num(a)*b end
   if b.n==1 return num(b)*a end
   a,b=promote(a,b)
-  a,b=promote_conductor(a,b)
 if use_list
+  a,b=promote_conductor(a,b)
   zb=zumbroich_basis(a.n)
   res=zero(a.d)
   for i in eachindex(a.d), j in eachindex(b.d)
@@ -546,27 +587,21 @@ if use_list
   end
   lower(Cyc(a.n,res))
 else
-  let ad=a.d,bd=b.d
-    res=sumroots(a.n,[i+j=>va*vb for (i,va) in ad, (j,vb) in bd])
-  end
-  lower(res)
-end
-end
-
-function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
-  if n==c.n return c end
-  m=div(n,c.n)
-if use_list
-  res=zeros(eltype(c.d),length(zumbroich_basis(n)))
-  z=zumbroich_basis(c.n).*m
-  for (i,v) in enumerate(c.d)
-    if iszero(v) continue end
-    (b,k)=Elist(n,z[i])
-    @inbounds res[k].+=b ? v : -v
-  end
-  Cyc(n,res)
-else
-  sumroots(n,[i*m=>u for (i,u) in c.d])
+# a,b=promote_conductor(a,b)
+# let ad=a.d,bd=b.d
+#   res=sumroots(a.n,[i+j=>va*vb for (i,va) in ad, (j,vb) in bd])
+# end
+# lower(res)
+#---------------------------------------
+  n=lcm(a.n,b.n)
+  na=div(n,a.n)
+  nb=div(n,b.n)
+# let ad=a.d,bd=b.d,na=na,nb=nb
+#   lower(sumroots(n,[na*i+nb*j=>va*vb for (i,va) in ad, (j,vb) in bd]))
+# end
+  res=empty(a.d.d)
+  for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
+  lower(Cyc(n,ModuleElt(res;check=true)))
 end
 end
 
@@ -684,8 +719,8 @@ function Base.inv(c::Cyc)
   n==1 ? r : (n==-1 ? -r : r//n)
 end
 
-Base.:^(a::Cyc, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                                    Base.power_by_squaring(inv(a),-n)
+Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                   Base.power_by_squaring(inv(a),-n)
 
 const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
 """
@@ -815,6 +850,7 @@ Base.one(a::Root1)=Root1(0,1)
 Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
+Base.:^(a::Root1,n::Rational)=Root1(;r=n*a.r)
 Base.:inv(a::Root1)=Root1(;r=-a.r)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 
@@ -911,7 +947,7 @@ function Base.show(io::IO,q::Quadratic)
     elseif q.b>0 rq*="+" end
     rq*=q.b==1 ? "" : q.b==-1 ? "-" : string(q.b)
     r=string(q.root)
-    rq*=repl ? "√$r" : TeX ? "\\sqrt{$r)}" : "ER($r)"
+    rq*=TeX ? "\\sqrt{$r}" : repl ? "√$r" : "ER($r)"
     if !iszero(q.a) && q.den!=1 rq="("*rq*")" end
   end
   print(io,rq)

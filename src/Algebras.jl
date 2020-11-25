@@ -38,7 +38,10 @@ Base.:-(a::AlgebraElt, b::AlgebraElt)=a+(-b)
 Base.:*(a::AlgebraElt, b)=AlgebraElt(a.A,a.d*b)
 Base.:*(b,a::AlgebraElt)=AlgebraElt(a.A,a.d*b)
 Base.zero(a::AlgebraElt)=AlgebraElt(a.A,zero(a.d))
-Base.:^(a::AlgebraElt, n::Integer)=Base.power_by_squaring(a,n)
+Base.:^(a::AlgebraElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                          Base.power_by_squaring(inv(a),-n)
+Base.isless(a::AlgebraElt,b::AlgebraElt)=isless(a.d,b.d)
+Base.:(==)(a::AlgebraElt,b::AlgebraElt)=a.d==b.d
 
 function Cycs.coefficients(a::AlgebraElt{T})where T
   v=fill(T(0),dim(a.A))

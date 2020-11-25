@@ -12,8 +12,8 @@ const src=[
 "cmplximp",
 "cmpxtimp"] 
 
-# functions whose translation does not work so they are not translated
-# an implementation is in table2.jl, with the useful code from compat3
+# functions whose translation does not work so they are hand-translated
+# to files xxx_t.jl in tbl. The useful code from compat3 is in Chevie.jl
 const exclu=[
  ["CharTable","A"],
  ["HeckeCharTable","A"],
@@ -23,6 +23,7 @@ const exclu=[
  ["HeckeCharTable","2A"],
  ["UnipotentClasses","2A"],
  ["CharTable","B"],
+ ["CartanMat","B"],
  ["Hk","B"],
  ["HeckeCharTable","B"],
  ["UnipotentClasses","B"],
@@ -40,6 +41,7 @@ const exclu=[
  ["CharTable","imp"],
  ["PowerMaps","imp"],
  ["ReflectionCoDegrees","imp"],
+ ["ReducedInRightCoset","timp"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 
@@ -47,7 +49,7 @@ const ok=[:(CHEVIE.AddData),
     :(CHEVIE.IndirectAddData)
    ]
 
-# other translated functions. Not translated (but put in table2):
+# other translated functions. Not translated (but put in tbl/):
 # EvalPolRoot, VcycSchurElement, ImprimitiveCuspidalName, BDSymbols
 const ok2=[
     :((CHEVIE.families).HS4),

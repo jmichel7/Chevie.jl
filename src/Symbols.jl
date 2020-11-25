@@ -60,8 +60,9 @@ dominates
 """
 `dominates(μ,ν)`
 
-The dominance order is an important partial order in representation theory.
-`μ` dominates `ν` if and only if for all `i` we have `sumⱼ₌₁ⁱ μ≥sumⱼ₌₁ⁱ ν`.
+The  dominance  order  on  partitions  is  an  important  partial  order in
+representation theory. `μ` dominates `ν` if and only if for all `i` we have
+`sum(μ[1:i])≥sum(ν[1:i])`.
 
 ```julia-repl
 julia> dominates([5,4],[4,4,1])

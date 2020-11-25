@@ -1,17 +1,4 @@
 
-chevieset(:B, :CartanMat, function (arg...,)
-        local n, type_, a
-        n = arg[1]
-        if length(arg) == 2
-            type_ = arg[2]
-        else
-            type_ = 2
-        end
-        a = (chevieget(:A, :CartanMat))(n)
-        (a[1])[2] = -type_
-        (a[2])[1] = 2 // (a[1])[2]
-        return a
-    end)
 chevieset(:B, :PrintDiagram, function (r, indices, title, type_)
         local i
         print(title, " ")

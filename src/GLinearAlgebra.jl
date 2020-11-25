@@ -547,10 +547,10 @@ julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])
 julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, 20, -10])
 ```
 """
-function solutionmat(m,vec::AbstractVector)
-  m=permutedims(m)//1
-  if length(vec)!=size(m,1) error("dimension mismatch") end
-  vec=vec//1
+function solutionmat(m,v::AbstractVector)
+  m=permutedims(m).//1
+  if length(v)!=size(m,1) error("dimension mismatch") end
+  v=v.//1
   r=0
   c=1
   while c<=size(m,2) && r<size(m,1)
@@ -560,36 +560,36 @@ function solutionmat(m,vec::AbstractVector)
       r+=1
       piv=inv(m[s,c])
       m[s,:],m[r,:]=m[r,:],m[s,:].*piv
-      vec[s],vec[r]=vec[r],vec[s]*piv
+      v[s],v[r]=v[r],v[s]*piv
       for s in 1:size(m,1)
         if s!=r && !iszero(m[s,c])
           tmp=m[s,c]
           m[s,:]-=tmp*m[r,:]
-          vec[s]-=tmp*vec[r]
+          v[s]-=tmp*v[r]
         end
       end
     end
     c+=1
   end
-  if any(!iszero,vec[r+1:end]) return nothing end
+  if any(!iszero,v[r+1:end]) return nothing end
   h=eltype(m)[]
   s=size(m,2)
-  v=zero(eltype(m))
+  z=zero(eltype(m))
   r=1
   c=1
   while c<=s && r<=size(m,1)
     while c<=s && iszero(m[r,c])
       c+=1
-      push!(h, v)
+      push!(h, z)
     end
     if c<=s
-      push!(h, vec[r])
+      push!(h, v[r])
       r+=1
       c+=1
     end
   end
   while c<=s
-    push!(h,v)
+    push!(h,z)
     c+=1
   end
   return h

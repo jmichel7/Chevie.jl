@@ -1003,7 +1003,8 @@ end
 
 Base.:^(y::GarsideElm{T},r::T,F=x->x) where T=inv(y.M(r))*(y*F(r))
 
-Base.:^(a::LocallyGarsideElm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : Base.power_by_squaring(inv(a),-n)
+Base.:^(a::LocallyGarsideElm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                             Base.power_by_squaring(inv(a),-n)
 
 Base.:^(a::GarsideElm,b::GarsideElm,F=x->x)=inv(b)*a*F(b)
 

@@ -76,7 +76,7 @@ function SPerm{T}(x::Integer...)where T<:Integer
   SPerm(d)
 end
 
-SPerm(x::Integer...)=SPerm{Int16}(x...)
+SPerm(x::Integer...)=SPerm{Perms.Idef}(x...)
 
 """
    @sperm"..."
@@ -110,7 +110,7 @@ function Groups.Group(a::AbstractVector{SPerm{T}}) where T
   SPermGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
 
-SPermGroup()=Group(SPerm{Int16}[])
+SPermGroup()=Group(SPerm{Perms.Idef}[])
 
 Base.one(p::SPerm)=SPerm(empty(p.d))
 Base.one(::Type{SPerm{T}}) where T=SPerm(T[])
@@ -120,6 +120,7 @@ Base.vec(a::SPerm)=a.d
 
 "`Perm(p::SPerm)` returns the underlying Perm of an SPerm"
 Perms.Perm(p::SPerm)=Perm(abs.(p.d))
+SPerm(p::Perm)=SPerm(vec(p))
 signs(p::SPerm)=sign.(p.d)
 
 # SPerms are scalars for broadcasting"
@@ -201,7 +202,7 @@ function Base.show(io::IO, a::SPerm)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T
-  if T!=Int16 && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
+  if T!=Perms.Idef && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
   show(io,p)
 end
 
@@ -237,14 +238,15 @@ function Base.inv(a::SPerm)
 end
 
 Base.:^(a::SPerm, b::SPerm)=inv(b)*a*b
+Base.:^(a::SPerm, b::Perm)=a^SPerm(b)
 
 @inline function Base.:^(n::Integer, a::SPerm{T}) where T
   if abs(n)>length(a.d) return T(n) end
 @inbounds n<0 ? -a.d[-n] : a.d[n]
-  end
+end
 
-Base.:^(a::SPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
+Base.:^(a::SPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                     Base.power_by_squaring(inv(a),-n)
 
 """
 `Base.:^(l::AbstractVector,p::SPerm)`
@@ -308,7 +310,7 @@ function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   SPerm{T}(res)
 end
 
-SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Int16}(l,l1)
+SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Perms.Idef}(l,l1)
 
 """
 `Matrix(a::SPerm)` is the permutation matrix for a
@@ -447,9 +449,9 @@ dedup(M::AbstractMatrix)=M[1:2:size(M,1),1:2:size(M,2)]
 
 # transform SPerm on -n:n to Perm acting on  1:2n
 dup(p::SPerm)=isone(p) ? Perm() : 
-    Perm{Int16}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
+    Perm{Perms.Idef}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
 
-dedup(p::Perm)=SPerm{Int16}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
+dedup(p::Perm)=SPerm{Perms.Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
                          p.d[1:2:length(p.d)-1]))
 
 dup(g::CoxHyperoctaedral)=Group(dup.(gens(g)))
@@ -492,15 +494,15 @@ function sstab_onmats(M,extra=nothing)
   if M!=permutedims(M) error("M should be symmetric") end
   if isnothing(extra) extra=fill(1,size(M,1)) end
   blocks=sort(invblocks(M),by=length)
-  gen=SPerm{Int16}[]
+  gen=SPerm{Perms.Idef}[]
   I=Int[]
   for r in blocks
     if length(r)>5 InfoChevie("#IS Large Block:",r,"\n") end
     gr=stab_onmats(dup(CoxHyperoctaedral(length(r))),dup(M[r,r]))
-    p=SPerm{Int16}(mappingPerm(1:length(r),r).d)
+    p=SPerm(mappingPerm(1:length(r),r).d)
     append!(gen,map(x->dedup(x)^p,gens(gr)))
     append!(I,r)
-    p=SPerm{Int16}(mappingPerm(I,eachindex(I)).d)
+    p=SPerm(mappingPerm(I,eachindex(I)).d)
     gen=gen.^p
     gen=dedup.(gens(stab_onmats(Group(dup.(gen)),dup(M[I,I]))))
     gen=gen.^inv(p)
@@ -577,7 +579,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     n=length(r[1])
 #   q=mappingPerm(eachindex(I),eachindex(I))
     q=SPerm()
-    p=SPerm{Int16}(mappingPerm(1:n,(1:n)+length(I)).d)
+    p=SPerm(mappingPerm(1:n,(1:n)+length(I)).d)
     append!(I,r[1]);append!(J,r[2])
 #   Print("#I=",Length(I),"\c");
     if comm(r[3]^p,tr^q)!=SPerm() error("noncomm") end
@@ -595,7 +597,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     g=Group(dedup.(gens(g)))
   end
   # transporter of a ps from [1..Length(I)] to I
-  trans=I->SPerm{Int16}(mappingPerm(eachindex(I),I).d)
+  trans=I->SPerm(mappingPerm(eachindex(I),I).d)
   trans(I)^-1*tr*trans(J)
 end
 end

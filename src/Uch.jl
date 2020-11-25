@@ -223,7 +223,7 @@ module Uch
 using Gapjm
 
 export UnipotentCharacters, FixRelativeType, fourierinverse, UniChar,
-AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict
+AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -308,7 +308,7 @@ function UnipotentCharacters(t::TypeIrred)
   a=params_and_names(uc[:almostHarishChandra])
   uc[:almostCharParams]=a[:charParams]
   uc[:almostTeXCharNames]=a[:TeXCharNames]
-  uc[:group]=t
+  uc[:type]=t
   uch=UnipotentCharacters(uc[:harishChandra],uc[:almostHarishChandra],
                           Family.(copy(uc[:families])),uc)
   delete!(uc,:families)
@@ -317,7 +317,11 @@ function UnipotentCharacters(t::TypeIrred)
   uch
 end
 
-UnipotentCharacters(W::Group)=UnipotentCharacters(spets(W))
+function UnipotentCharacters(W::Group)
+  gets(W,:UnipotentCharacters) do
+    UnipotentCharacters(spets(W))
+  end
+end
 
 """
 `UnipotentCharacters(W)`
@@ -327,14 +331,7 @@ gives  back a record containing  information about the unipotent characters
 of the associated algebraic group (or Spetses). This contains the following
 fields:
 
-`:group`: a pointer to `W`
-
-`:charNames`:  the list of names of the unipotent characters.
-
-`:charSymbols`: the list of symbols associated to unipotent characters,
-for classical groups.
-
-`:harishChandra`:  information  about  Harish-Chandra  series  of  unipotent
+`.harishChandra`:  information  about  Harish-Chandra  series  of  unipotent
 characters.  This is itself a list of records, one for each pair `(𝐋,λ)` of
 a  Levi  of  an  `F`-stable  parabolic  subgroup  and  a cuspidal unipotent
 character of `𝐋^F`. These records themselves have the following fields:
@@ -354,9 +351,24 @@ holds the list of exponents `a_s`.
 `:charNumbers`:  the  indices  of  the  unipotent  characters indexed by the
 irreducible characters of `W_𝐆 (𝐋)`.
 
-`:families`:  information  about  Lusztig  families of unipotent characters.
+`.almostHarishChandra`:   information   about   Harish-Chandra   series  of
+unipotent  character sheaves.  This is  identical to  ̀harishChandra` for a
+split  reductive group,  and reflects  the situation  for the corresponding
+split group for a nonsplit group.
+
+`.families`:  information  about  Lusztig  families of unipotent characters.
 This  is itself a list  of records, one for  each family. These records are
 described in the section about families below.
+
+the following information is computed on demand from
+`uc=UnipotentCharacters(W)`:
+
+`spets(uc)`: the reductive group `W`.
+
+`charnames(uc)`:  the list of names of the unipotent characters.
+
+`:charSymbols`: the list of symbols associated to unipotent characters,
+for classical groups.
 
 ```julia-repl
 julia> W=coxgroup(:Bsym,2)
@@ -535,7 +547,7 @@ function UnipotentCharacters(WF::Spets)
       :size=>1,
       :a => [ 0 ],
       :A => [ 0 ],
-      :group=>WF))
+      :spets=>WF))
   end
 
   W=WF.W
@@ -575,7 +587,7 @@ function UnipotentCharacters(WF::Spets)
   f=keys(r.prop)
   res=Dict{Symbol,Any}()
   for a in f
-    if a!=:group 
+    if a!=:type 
     if length(simp)==1 
       res[a]=map(x->[x],r.prop[a])
     elseif all(x->haskey(x.prop,a),simp)
@@ -616,7 +628,7 @@ function UnipotentCharacters(WF::Spets)
   end
 
 
-  res[:group]=WF
+  res[:spets]=WF
   UnipotentCharacters(hh,ah,ff,res)
   end
 end
@@ -633,7 +645,7 @@ Chars.charnames(io::IO,uc::UnipotentCharacters)=
 function Base.show(io::IO,uc::UnipotentCharacters)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if !TeX print(io,"UnipotentCharacters(",uc.prop[:group],")") end
+  if !TeX print(io,"UnipotentCharacters(",spets(uc),")") end
   if !repl && !TeX return end
   println(io,"")
   strip(x)=fromTeX(io,x)
@@ -646,7 +658,7 @@ function Base.show(io::IO,uc::UnipotentCharacters)
          col_labels=strip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
 end
 
-Groups.Group(uc::UnipotentCharacters)=uc.prop[:group]
+Cosets.spets(uc::UnipotentCharacters)=uc.prop[:spets]
 
 Base.length(uc::UnipotentCharacters)=length(uc.prop[:TeXCharNames])
 
@@ -656,7 +668,7 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
   end
   d=uc.prop[:fakedegrees]
   if haskey(d,q) return d[q] end
-  f=fakedegrees(Group(uc),q)
+  f=fakedegrees(spets(uc),q)
   if isa(q,Pol) f=improve_type(f) end
   fd=fill(zero(f[1]),length(uc))
   fd[uc.almostHarishChandra[1][:charNumbers]]=f
@@ -730,7 +742,7 @@ function CycPoldegrees(uc::UnipotentCharacters)
   end
 end
 
-function eigen(uc::UnipotentCharacters)
+function Families.eigen(uc::UnipotentCharacters)
   gets(uc,:eigen)do
     eig=fill(E(1),length(uc))
     for f in uc.families eig[f[:charNumbers]]=f[:eigenvalues] end
@@ -1132,11 +1144,11 @@ function on_unipotents(W,aut,l=1:length(UnipotentCharacters(W)))
   t=vcat(t,permutedims(Uch.eigen(uc)[l]))
   if length(unique(eachcol(t)))<size(t,2)
     t=indexin(l,uc.harishChandra[1][:charNumbers])
-    if all(!isnothing,t) return on_chars(W, aut, t)
+    if !any(isnothing,t) return on_chars(W, aut, t)
     else error("Rw + eigen cannot disambiguate\n")
     end
   end
-  inv(Perm(t,^(t,on_classes(W, aut),dims=1),dims=2))
+  Perm(t,^(t,on_classes(W, aut),dims=1),dims=2)
 end
 
 """
@@ -1165,7 +1177,49 @@ julia> Frobenius(WF)(u,-1)
 """
 function Cosets.Frobenius(x::UniChar, phi)
   W=x.group
-  UniChar(W,x.v^(on_unipotents(W,phi)))
+  UniChar(W,x.v^inv(on_unipotents(W,phi)))
+end
+
+cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,Root1(1,d))
+cuspidal(uc::UnipotentCharacters,d::Rational)=cuspidal(uc,Root1(;r=d))
+"""
+`cuspidal(uc::UnipotentCharacters[,e])`
+
+A  unipotent character `γ` of a  finite reductive group `𝐆` is `e`-cuspidal
+if  its  Lusztig  restriction  to  any  proper `e`-split Levi is zero. When
+`e==1`  (the default when  `e` is omitted)  we recover the  usual notion of
+cuspidal character. Equivalently the `Φₑ`-part of the generic degree of `γ`
+is equal to the `Φₑ`-part of the generic order of the adjoint group of `𝐆`.
+
+The  function returns the list of indices of unipotent characters which are
+`e`-cuspidal.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> cuspidal(UnipotentCharacters(W))
+1-element Array{Int64,1}:
+ 14
+
+julia> cuspidal(UnipotentCharacters(W),6)
+8-element Array{Int64,1}:
+  1
+  2
+  6
+  7
+  8
+  9
+ 10
+ 12
+```
+"""
+function cuspidal(uc::UnipotentCharacters,d=Root1(0,1))
+  if length(uc)==1 return [1] end
+  WF=spets(uc)
+  ud=CycPolUnipotentDegrees(WF)
+  ad=count(!isone,relative_degrees(WF,d))
+  filter(i->ad==valuation(ud[i],d),eachindex(ud))
 end
 
 end

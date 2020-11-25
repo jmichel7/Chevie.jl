@@ -176,6 +176,7 @@ end
 
 Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
+Base.isless(x::ModuleElt,y::ModuleElt)=cmp(x,y)==-1
 
 function Base.hash(x::ModuleElt, h::UInt)
    b = 0x595dee0e71d271d0%UInt

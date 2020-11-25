@@ -19,29 +19,6 @@ chevieset(:timp, :PhiFactors, function (p, q, r, phi)
         end
         error("wrong arguments")
     end)
-chevieset(:timp, :ReducedInRightCoset, function (W, phi)
-        local e, y, sets, sets2, i, v
-        sets = [[1, 2, 3, 44], [21, 3, 1, 32], [3, 11, 2, 36], [22, 3, 2, 16]]
-        sets2 = [[1, 50, 3, 12, 2], [3, 52, 2, 23, 11], [1, 16, 3, 43, 38], [2, 37, 3, 15, 14], [50, 3, 52, 38, 53], [1, 23, 3, 22, 45]]
-        for i = sets
-            y = gapSet(map((j->begin
-                                Reflection(W, j)
-                            end), i))
-            e = RepresentativeOperation(W, y, OnSets(y, phi), OnSets)
-            if e != false
-                return Dict{Symbol, Any}(:gen => i[1:3], :phi => phi // e)
-            end
-        end
-        for i = sets2
-            y = (W[:rootInclusion])[i[1:4]]
-            v = gapSet(y)
-            e = RepresentativeOperation(W, v, OnSets(v, phi), OnSets)
-            if e != false && PermListList(y, OnTuples(y, phi // e)) == perm"(1,2,3,4)"
-                return Dict{Symbol, Any}(:gen => i[[1, 5, 3]], :phi => phi // e)
-            end
-        end
-        return false
-    end)
 chevieset(:timp, :ClassInfo, function (p, q, r, phi)
         if [p, q, r] == [3, 3, 3]
             if phi == perm"(1,4,2)"

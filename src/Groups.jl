@@ -474,8 +474,8 @@ Base.:/(a::Coset,b::Coset)=a*inv(b)
 
 Base.length(C::Coset)=length(Group(C))
 
-Base.:^(a::Coset, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
+Base.:^(a::Coset, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                     Base.power_by_squaring(inv(a),-n)
 
 Base.:^(a::Coset, b::Coset)= inv(b)*a*b
 

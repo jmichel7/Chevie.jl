@@ -350,8 +350,8 @@ Base.:/(a::Perm, b::Perm)=a*inv(b)
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
   n>degree(a) ? T(n) : @inbounds a.d[n] 
 
-Base.:^(a::Perm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
+Base.:^(a::Perm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                    Base.power_by_squaring(inv(a),-n)
 
 """
 `Base.:^(l::AbstractVector,p::Perm)` 

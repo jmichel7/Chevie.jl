@@ -101,8 +101,10 @@ chevieset(:D, :ClassInfo, function (n,)
         return res
     end)
 chevieset(:D, :NrConjugacyClasses, function (n,)
-        if mod(n, 2) == 1 div(npartition_tuples(n, 2),2)
-        else div(npartition_tuples(n, 2) + 3 * npartitions(div(n,2)),2)
+        if mod(n, 2) == 1
+            return div(npartition_tuples(n, 2), 2)
+        else
+            return div(npartition_tuples(n, 2) + 3 * npartitions(div(n, 2)), 2)
         end
     end)
 chevieset(:D, :CharInfo, (n->begin

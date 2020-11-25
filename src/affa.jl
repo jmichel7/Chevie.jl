@@ -101,10 +101,8 @@ function Base.:^(i::Int,p::PPerm)
 end
 
 Base.:^(q::PPerm,p::PPerm)= inv(p)*q*p
-
-Base.:^(a::PPerm, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                               Base.power_by_squaring(inv(a),-n)
-
+Base.:^(a::PPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                     Base.power_by_squaring(inv(a),-n)
 Base.:/(a::PPerm,b::PPerm)=a*inv(b)
 Base.:\(a::PPerm,b::PPerm)=inv(a)*b
 
@@ -178,7 +176,7 @@ CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
 
 # for this function see [Digne],2.8
 function Perms.reflength(w::PPerm)
-  function vec(pp,i)
+  function v(pp,i)
     pp=map(x->sum.(getindex.(Ref(pp),x)),partitions_set(eachindex(pp),i))
     if pp[1][1]<0 pp=-pp end
     return tally.(pp)
@@ -192,7 +190,7 @@ function Perms.reflength(w::PPerm)
   neg=filter(<(0),d)
   m=min(length(pos),length(neg))
   r=m:-1:1
-  res-2*r[findfirst(i->length(intersect(vec(pos,i),vec(neg,i)))>0,r)]
+  res-2*r[findfirst(i->length(intersect(v(pos,i),v(neg,i)))>0,r)]
 end
 
 function refword(w::PPerm)

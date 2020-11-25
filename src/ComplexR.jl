@@ -83,8 +83,9 @@ end
 
 # converts a type back to a group
 function reflection_group(t::TypeIrred)
-  if t.series==:ST return PRG(roots(t),coroots(t))
-  else return rootdatum(cartan(t))
+  if t.series==:ST PRG(roots(t),coroots(t))
+  else C=cartan(t)
+    all(isreal,C) ? rootdatum(C) : PRG(one(C),C)
   end
 end
 

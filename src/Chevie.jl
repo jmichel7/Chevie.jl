@@ -1,3 +1,4 @@
+# mostly translations of chevie/init.g and chevie/tbl/compat3.g
 module Chevie
 
 using ..Gapjm
