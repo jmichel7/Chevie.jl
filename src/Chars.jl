@@ -438,7 +438,7 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 """
 function fakedegrees(W,q)
   res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
-  if !any(iszero,res) return res end
+  if !any(isnothing,res) && !any(iszero,res) return res end
   # need general routine
   InfoChevie("# using PermRootOps.FakeDegrees\n")
   qq=Pol()
@@ -787,7 +787,7 @@ function classinfo(t::TypeIrred)
   end
   inds=t.indices
   cl[:classtext]=map(x->inds[x],cl[:classtext])
-  cl[:classes]=Int.(cl[:classes])
+  if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
   cl
 end
 
@@ -1211,19 +1211,6 @@ function charnames(io::IO,W)
 end
 
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
-
-"""
-'DetPerm( `W` )'
-
-return  the permutation of the characters of the reflection group `W` which
-is effected when tensoring by the determinant character (for Coxeter groups
-this is the sign character).
-
-|    gap> W = coxgroup( :D, 4 );;
-    gap> DetPerm( W );
-    [ 8, 9, 11, 13, 5, 6, 12, 1, 2, 10, 3, 7, 4 ]|
-
-"""
 
 struct InductionTable{T}
   scalar::Matrix{T}

@@ -54,7 +54,7 @@ julia> transversals(G)
  Dict(2 => (),3 => (2,3))
 ```
 
-finally, benchmarks on julia 1.0.1
+finally, benchmarks on julia 1.1
 ```benchmark
 julia> @btime length(collect(symmetric_group(8)))
   5.995 ms (391728 allocations: 13.89 MiB)
@@ -65,7 +65,7 @@ julia> @btime minimal_words(symmetric_group(8));
 julia> @btime length(elements(symmetric_group(8)))
   1.713 ms (49599 allocations: 5.19 MiB)
 ```
-Compare to GAP3 Elements(SymmetricGroup(8)); takes 3.8 ms
+Compare to GAP3 Elements(SymmetricGroup(8)); takes 9.5 ms (GAP4 17ms)
 """
 module PermGroups
 using ..Perms
@@ -215,18 +215,18 @@ struct ProdIterator{T}
 end
 
 Base.length(I::ProdIterator)=prod(length.(I.iterators))
-Base.eltype(::Type{ProdIterator{T}}) where T=eltype(T)
+Base.eltype(::ProdIterator{T}) where T=eltype(T)
 
 function Base.iterate(I::ProdIterator)
   T=eltype(eltype(I.iterators))
   state=Tuple{T,Int}[]
   p=findfirst(!isempty,I.iterators)
-  if isnothing(p) n=one(T) # the best we can do in this case
+  if p===nothing n=one(T) # the best we can do in this case
   else n=one(first(I.iterators[p]))
   end
   for it in I.iterators
     u=iterate(it)
-    if isnothing(u) return u end
+    if u===nothing return u end
     n*=first(u)
     push!(state, (n,last(u)))
   end
@@ -236,10 +236,11 @@ end
 function Base.iterate(I::ProdIterator,state)
   for i in length(state):-1:1
     u=iterate(I.iterators[i],last(state[i]))
-    if isnothing(u) continue end
+    if u===nothing continue end
     state[i]= i==1 ? u : (first(state[i-1])*first(u),last(u))
     for j in i+1:length(state)
       u=iterate(I.iterators[j])
+      if u===nothing error() end
       state[j]=(first(state[j-1])*first(u),last(u))
     end
     return first(state[end]),state
@@ -255,23 +256,23 @@ end
 
 Base.eltype(::Type{<:PermGroup{T}}) where T=Perm{T}
 
-# iterating I directly is 30% faster unfortunately
-function Base.iterate(G::PermGroup)
+# iterating I directly is 25% faster unfortunately
+function Base.iterate(G::PermGroup{T}) where T
   I=ProdIterator(reverse(values.(transversals(G))))
   u=iterate(I)
-  if isnothing(u) return u end
+  if u===nothing return u end
   p,st=u
   p,(I,st)
 end
 
 function Base.iterate(G::PermGroup,(I,state))
   u=iterate(I,state)
-  if isnothing(u) return u end
+  if u===nothing return u end
   p,st=u
   p,(I,st)
 end
 
-# elements is much faster than collect(G), should not be
+# elements is twice faster than collect(G), should not be
 function elements(G::PermGroup)
   t=reverse(values.(transversals(G)))
   if isempty(t) return [one(G)] end

@@ -507,7 +507,7 @@ function with_inversions(W,N)
   n=N
   while !isempty(n)
     p=findfirst(x->x>0 && x<=semisimplerank(W),n)
-    if isnothing(p) return nothing end
+    if p===nothing return nothing end
     r=reflection(W,n[p])
     n=action.(Ref(W),setdiff(n,[n[p]]),r)
     w=r*w

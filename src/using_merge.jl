@@ -8,7 +8,8 @@ If  `reexport=true`  all  non-conflicting  names  exported  from  `mod` are
 (re-)exported from the current module.
 
 if `debug=1` every executed command is printed before execution.
-If `debug=2` more verbose debugging information is printed.
+If `debug=2` conflicting methods are printed.
+If `debug=3` boths happens.
 
 It  is an error if  a name exported by  `mod` conflicts with anything but a
 method  (if there is good reason  for this not to be  an error I could just
@@ -27,13 +28,14 @@ julia> module Bar
        end
 Main.Bar
 
-julia> using_merge(:Bar;debug=1)
+julia> using_merge(:Bar;debug=3)
+# Bar.foo conflicts with Main.foo
 Main.foo(x::Float64) = Bar.foo(x)
 ```
 """
 function using_merge(mod::Symbol;reexport=false,debug=0)
   function myeval(e)
-    if debug>0 println(e) end
+    if !iszero(debug&1) println(e) end
     eval(e)
   end
   mymodule=@__MODULE__
@@ -53,15 +55,17 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       # we do no handle conflicting names which are not methods or macros
       error("$mod.$name is not a method or macro in $mymodule")
     end
-    modofname=nameof(first(methofname).module) # use parentmodule
-    if debug>1 println("# conflicting name:$modofname.$name") end
+    modofname=nameof(parentmodule(eval(name)))
+    if !iszero(debug&2) 
+      println("# $mod.$name conflicts with $modofname.$name") 
+    end
     s=split(sprint(show,methods(eval(:($mod.$name)))),"\n")
     map(s[2:end]) do l
-      if debug>2 println("   l=",l) end
+      if !iszero(debug&4) println("   l=",l) end
       l1=replace(l,r"^\[[0-9]*\] (.*) in .* at .*"=>s"\1")
       l1=replace(l1,r"#(s[0-9]*)"=>s"\1")
       e1=Meta.parse(l1)
-      if debug>2 println("\n   =>",e1) end
+      if !iszero(debug&4) println("\n   =>",e1) end
       e2=e1.head==:where ? e1.args[1] : e1
       if e2.head!=:call || e2.args[1]!=name 
         error("conflicting macros are not yet implemented ($name)") 
@@ -84,6 +88,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       end
       e.args[1]=Expr(:.,mod,QuoteNode(e.args[1]))
       myeval(Expr(:(=),e1,e))
+    # add something like @doc (@doc mod.name) modofname.name
     end
   end
 end

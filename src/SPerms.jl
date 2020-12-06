@@ -395,16 +395,15 @@ end
 PermRoot.refltype(W::CoxHyperoctaedral)=[TypeIrred(Dict(:series=>:B,
                                         :indices=>collect(1:W.n)))]
 
-CoxGroups.nref(W::CoxHyperoctaedral)=length(gens(W))^2
+CoxGroups.nref(W::CoxHyperoctaedral)=ngens(W)^2
 
-Gapjm.degrees(W::CoxHyperoctaedral)=2*(1:length(gens(W)))
+Gapjm.degrees(W::CoxHyperoctaedral)=2*(1:ngens(W))
 
 Base.length(W::CoxHyperoctaedral)=prod(degrees(W))
 
 function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
-  if i^w<0 return true end
-  if i==1 return false end
-  return (i-1)^w>0 && (i-1)^w>i^w
+  if i==1 return i^w<0 end
+  i^w<(i-1)^w
 end
 
 function PermRoot.reflection(W::CoxHyperoctaedral,i::Int)

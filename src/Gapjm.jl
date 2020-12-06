@@ -88,15 +88,15 @@ function words end; export words
 include("using_merge.jl")
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Groups.jl");using_merge(:Groups,debug=0,reexport=true)
-include("Perms.jl");using_merge(:Perms,debug=0,reexport=true)
-include("Pols.jl");using_merge(:Pols,debug=0,reexport=true)
-include("ModuleElts.jl");@reexport using .ModuleElts
+include("Groups.jl");using_merge(:Groups,debug=2,reexport=true)
 include("Combinat.jl");@reexport using .Combinat
-include("Cycs.jl");using_merge(:Cycs,debug=0,reexport=true)
-include("Mvps.jl");using_merge(:Mvps,debug=0,reexport=true)
-include("Posets.jl");using_merge(:Posets,debug=0,reexport=true)
-include("FFields.jl");using_merge(:FFields,debug=0,reexport=true)
+include("Perms.jl");using_merge(:Perms,debug=2,reexport=true)
+include("Pols.jl");using_merge(:Pols,debug=2,reexport=true)
+include("ModuleElts.jl");@reexport using .ModuleElts
+include("Cycs.jl");using_merge(:Cycs,debug=2,reexport=true)
+include("Mvps.jl");using_merge(:Mvps,debug=2,reexport=true)
+include("Posets.jl");using_merge(:Posets,debug=2,reexport=true)
+include("FFields.jl");using_merge(:FFields,debug=2,reexport=true)
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
@@ -115,13 +115,14 @@ include("Chevie.jl");@reexport using .Chevie
 include("Urad.jl");@reexport using .Urad
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
-#if false
 include("CycPols.jl");@reexport using .CycPols
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
 include("Symbols.jl");@reexport using .Symbols
 include("Ucl.jl");@reexport using .Ucl
 include("Gt.jl");@reexport using .Gt
+include("Murphy.jl");@reexport using .Murphy
+#if false
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
 include("HasType.jl");@reexport using .HasType

@@ -120,6 +120,7 @@ export restricted, orbit, orbits, order
 export Perm, largest_moved_point, cycles, cycletype, support,
   @perm_str, smallest_moved_point, reflength, mappingPerm, sortPerm
 
+using ..Combinat: tally
 """
 `struct Perm{T<:Integer}`
 
@@ -171,7 +172,7 @@ macro perm_str(s::String)
   res=Perm()
   while true
     m=match(r"\((\s*\d+\s*,)+\s*\d+\)",s[start:end])
-    if isnothing(m) break end
+    if m===nothing break end
     start+=m.match.ncodeunits
     res*=Perm(Meta.parse(m.match).args...)
   end
@@ -241,6 +242,8 @@ end
 # Perms are scalars for broadcasting"
 Base.broadcastable(p::Perm)=Ref(p)
 
+Base.typeinfo_implicit(::Type{Perm{T}}) where T=T!=Idef
+
 # total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
   for (ai,bi) in zip(a.d,b.d)
@@ -282,6 +285,7 @@ largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 " `smallest_moved_point(a::Perm)` is the smallest integer moved by a"
 smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 
+" `support(a::Perm)` is the set of all points moved by `a`"
 support(a::Perm)=findall(x->a.d[x]!=x,eachindex(a.d))
 
 " for convenience: `sortPerm(a)=Perm(sortperm(a))`"
@@ -356,7 +360,7 @@ Base.:^(a::Perm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 """
 `Base.:^(l::AbstractVector,p::Perm)` 
 
-   returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
+returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
 
 # Examples
 ```julia-repl
@@ -423,19 +427,17 @@ end
 
 #---------------------- cycles -------------------------
 
-# takes 20% more time than GAP CyclePermInt for rand(Perm,1000)
+# 15% slower than GAP CyclePermInt for rand(Perm,1000)
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
-function orbit(a::Perm{T},i::Integer,check=false)where T
-  if i>degree(a) return T[i] end
-  res=T[]
+function orbit(a::Perm,i::Integer)
+  res=empty(a.d)
   sizehint!(res,degree(a))
   j=i
   while true
-    if check && j in res error("point $j occurs twice") end
     push!(res,j)
-    j=a.d[j] # no @inbounds to catch invalid perms
+    j^=a
     if j==i return res end
   end
 end
@@ -454,14 +456,14 @@ julia> orbits(Perm(1,2)*Perm(4,5),1:5)
  [4, 5]
 ```
 """
-function orbits(a::Perm,domain=1:degree(a);trivial=true,check=false)
+function orbits(a::Perm,domain=1:degree(a);trivial=true)
   cycles=Vector{eltype(a.d)}[]
   if isempty(a.d) return cycles end
   to_visit=falses(max(degree(a),maximum(domain)))
 @inbounds  to_visit[domain].=true
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
-    cyc=orbit(a,i,check)
+    cyc=orbit(a,i)
 @inbounds  to_visit[cyc].=false
     if length(cyc)>1 || trivial push!(cycles,cyc) end
   end
@@ -479,15 +481,17 @@ julia> cycles(Perm(1,2)*Perm(4,5))
  [4, 5]
 ```
 """
-cycles(a::Perm;check=false)=orbits(a;trivial=false,check=check)
+cycles(a::Perm)=orbits(a;trivial=false)
 
 function Base.show(io::IO, a::Perm)
-  cyc=orbits(a;trivial=false,check=true)
-  if !get(io,:limit,false) print(io,"perm\"") end
+  if !isperm(a.d) error("malformed permutation") end
+  replorTeX=get(io,:limit,false)||get(io,:TeX,false)
+  if !replorTeX print(io,"perm\"") end
+  cyc=orbits(a;trivial=false)
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
-  if !get(io,:limit,false) print(io,"\"") end
+  if !replorTeX print(io,"\"") end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T
@@ -501,12 +505,12 @@ end
 order(a::Perm)=lcm(length.(cycles(a)))
 
 """
-`cycletype(a::Perm)`
+`cycletype(a::Perm,domain=1:degree(a))`
 
 describes the partition of `degree(a)` associated to the conjugacy class of
-`a`  in the symmetric group, with ones  removed (thus it does not depend on
-`debree(a)`  bt just on  the moved points).  It is represented  as a sorted
-list of pairs `cyclesize=>multiplicity`.
+`a` in the symmetric group of `domain`, with ones removed (thus it does not
+depend on `degree(a)` but just on the moved points). It is represented as a
+sorted list of pairs `cyclesize=>multiplicity`.
 
 # Example
 ```julia-repl
@@ -515,42 +519,23 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
  2 => 2
 ```
 """
-function cycletype(a::Perm;domain=nothing)
-  res=Dict{Tuple{Int,Int},Int}()
-  if isnothing(domain) to_visit=ones(degree(a))
-  else to_visit=domain[1:degree(a)] # this makes a copy
-  end
-  for i in eachindex(to_visit)
-    if iszero(to_visit[i]) continue end
-    l=0
-    j=i
-    color=to_visit[i]
-    while true
-      to_visit[j]=0
-      l+=1
-      if (j=a.d[j])==i break end
-    end
-    if l>1 
-      if haskey(res,(l,color)) res[(l,color)]+=1
-      else res[(l,color)]=1
-      end
-    end
-  end
-  if isnothing(domain) sort!(map(x->x[1][1]=>x[2],collect(res)))
-  else sort!(collect(res))
-  end
-end
+cycletype(a::Perm;domain=1:degree(a))=tally(length.(orbits(a,
+                                                        domain;trivial=false)))
+"""
+`reflength(a::Perm)`
 
-" reflength(a::Perm) minimum number of transpositions of which a is product"
+is   the  "reflection   length"  of   `a`,  that   is,  minimum  number  of
+transpositions of which `a` is the product
+"""
 function reflength(a::Perm)
-  to_visit=ones(Bool,degree(a))
+  to_visit=trues(degree(a))
   l=0
   for i in eachindex(to_visit)
 @inbounds if !to_visit[i] continue end
     j=i
     while true
 @inbounds to_visit[j]=false
-@inbounds j=a.d[j]
+@inbounds j=Int(a.d[j])
       if j==i break end
       l+=1
     end
@@ -558,13 +543,13 @@ function reflength(a::Perm)
   l
 end
 
-" sign(a::Perm) is the signature of  the permutation a"
+" `sign(a::Perm)` is the signature of  the permutation `a`"
 Base.sign(a::Perm)=(-1)^reflength(a)
-#---------------------- other -------------------------
-"""
-   restricted(a::Perm{T},l::AbstractVector{<:Integer})
 
-l should be a union of cycles of p; returns p restricted to l
+"""
+`restricted(a::Perm,l::AbstractVector{<:Integer})`
+
+`l` should be a union of cycles of `p`; returns `p` restricted to `l`
 
 ```julia-repl
 julia> restricted(Perm(1,2)*Perm(3,4),3:4)

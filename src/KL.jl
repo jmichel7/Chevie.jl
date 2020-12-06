@@ -298,9 +298,6 @@ struct HeckeCElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   H::TH
 end
 
-#HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
-#HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
-
 HeckeAlgebras.basename(h::HeckeCpElt)="C'"
 HeckeAlgebras.basename(h::HeckeCElt)="C"
 
@@ -614,7 +611,7 @@ end
 leftstars(W)=map(st->(w->leftstar(W,st,w)),
                  filter(r->length(r[1])>2,braid_relations(W)))
 
-function Gapjm.elements(c::LeftCell)
+function Groups.elements(c::LeftCell)
   gets(c,:elements)do
     elements=orbit(leftstars(c.group),duflo(c);action=(x,f)->f(x))
     for w in c.prop[:reps]

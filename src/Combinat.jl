@@ -528,7 +528,7 @@ call  `pp`  recursively  for  each  candidate.  If  `o`  is the position of
   function pp(part)
     local l,o
     l=findfirst(m)
-    if isnothing(l) return [part] end
+    if l===nothing return [part] end
     m[l]=false
     npart=copy.(part)
     push!(npart,[set[l]])
@@ -603,7 +603,7 @@ every   element  of   `set`  not   yet  taken.   `o`  is  the  position  of
       end
       return [part]
     end
-    if isnothing(l) return parts end
+    if l===nothing return parts end
     m[l]=false
     npart=copy(part)
     push!(npart,[set[l]])

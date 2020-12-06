@@ -42,6 +42,7 @@ const exclu=[
  ["PowerMaps","imp"],
  ["ReflectionCoDegrees","imp"],
  ["ReducedInRightCoset","timp"],
+ ["CharName","timp"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 

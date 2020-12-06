@@ -100,6 +100,10 @@ end
 @test mytest("codegrees(W)","2-element Array{Int64,1}:\n 0\n 2")
 end
 @testset "Cosets.jl" begin
+@test mytest("W=ComplexReflectionGroup(14)","G₁₄")
+@test mytest("R=reflection_subgroup(W,[2,4])","G₁₄₍₂₄₎=G₅")
+@test mytest("RF=spets(R,W(1))","G₁₄₍₂₄₎=²G₅")
+@test mytest("degrees(RF)","2-element Array{Tuple{Int64,Cyc},1}:\n (6, 1)\n (12, -1)")
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("W=coxgroup(:Bsym,2)","Bsym₂")
 @test mytest("WF=spets(W,Perm(1,2))","²Bsym₂")
@@ -123,6 +127,9 @@ end
 @test mytest("W=rootdatum(:gl,3)","A₂Φ₁")
 @test mytest("gu3=spets(W,-reflrep(W,W()))","²A₂Φ₂")
 @test mytest("F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])","F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎")
+@test mytest("spets(D4,[1 0 0 0;0 1 2 0;0 0 0 1;0 0 -1 -1])","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
+@test mytest("W=coxgroup(:A,3)","A₃")
+@test mytest("spets(W,Perm(1,3))","²A₃")
 @test mytest("torus([0 -1;1 -1])","Φ₃")
 @test mytest("W=coxgroup(:A,3)","A₃")
 @test mytest("twistings(W,Int[])","5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:\n A₃₍₎=Φ₁³\n A₃₍₎=Φ₁²Φ₂\n A₃₍₎=Φ₁Φ₂²\n A₃₍₎=Φ₁Φ₃\n A₃₍₎=Φ₂Φ₄")
@@ -138,7 +145,7 @@ end
 @test mytest("spets(\"2G5\")","²G₅")
 @test mytest("spets(\"3G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
 @test mytest("spets(\"3pG333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
-@test mytest("spets(\"4G333\")","G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎=⁴G₃‚₃‚₃₍₁‚₅₀‚₃‚₁₂₎")
+@test mytest("spets(\"4G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("W=CoxSym(4)","𝔖 ₄")
@@ -220,8 +227,8 @@ end
 @test mytest("c=E(9)","Cyc{Int64}: -ζ₉⁴-ζ₉⁷")
 @test mytest("Root1(c)","Root1: ζ₉")
 @test mytest("Root1(1+E(4))","nothing")
-@test mytest("Root1(1,4)","Root1: ζ₄")
-@test mytest("c=Root1(;r=1//4)*Root1(1,3)","Root1: ζ₁₂⁷")
+@test mytest("Root1(4,1)","Root1: ζ₄")
+@test mytest("c=Root1(;r=1//4)*Root1(3,1)","Root1: ζ₁₂⁷")
 @test mytest("E(c)","Cyc{Int64}: ζ₁₂⁷")
 @test mytest("c=Complex{Float64}(E(3))","-0.4999999999999998 + 0.8660254037844387im")
 @test mytest("-1<Cyc(0)<1","true")
@@ -329,7 +336,7 @@ end
 @test mytest("m=[1 2;3 4]","2×2 Array{Int64,2}:\n 1  2\n 3  4")
 @test mytest("Int.(symmetric_power(m,2))","3×3 Array{Int64,2}:\n 1   2   4\n 6  10  16\n 9  12  16")
 @test mytest("m=cartan(:A,3)","3×3 Array{Int64,2}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
-@test mytest("schur_functor(m,[2,2])","6×6 Array{Rational{Int64},2}:\n 10//1   12//1  -16//1   16//1  -16//1   12//1\n  3//2    9//1   -6//1    4//1   -2//1    1//1\n -4//1  -12//1   16//1  -16//1    8//1   -4//1\n  2//1    4//1   -8//1   16//1   -8//1    4//1\n -4//1   -4//1    8//1  -16//1   16//1  -12//1\n  3//2    1//1   -2//1    4//1   -6//1    9//1")
+@test mytest("schur_functor(m,[2,2])","6×6 Array{Rational{Int64},2}:\n   9//1   -6//1    4//1   3//2   -2//1    1//1\n -12//1   16//1  -16//1  -4//1    8//1   -4//1\n   4//1   -8//1   16//1   2//1   -8//1    4//1\n  12//1  -16//1   16//1  10//1  -16//1   12//1\n  -4//1    8//1  -16//1  -4//1   16//1  -12//1\n   1//1   -2//1    4//1   3//2   -6//1    9//1")
 @test mytest("m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]","4×4 Array{Int64,2}:\n 0  0  0  1\n 0  0  1  0\n 0  1  0  0\n 1  0  0  0")
 @test mytest("diagblocks(m)","2-element Array{Array{Int64,1},1}:\n [1, 4]\n [2, 3]")
 @test mytest("m[[1,4],[1,4]]","2×2 Array{Int64,2}:\n 0  1\n 1  0")
@@ -433,6 +440,7 @@ end
 @test mytest("G(2,1,-2)","(1,3)")
 @test mytest("orbit([Perm(1,2),Perm(2,3)],1)","3-element Array{Int64,1}:\n 1\n 2\n 3")
 @test mytest("orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)","6-element Array{Array{Int64,1},1}:\n [1, 3]\n [2, 3]\n [1, 2]\n [3, 2]\n [2, 1]\n [3, 1]")
+@test mytest("orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g))","3-element Array{Array{Int64,1},1}:\n [1, 3]\n [2, 3]\n [1, 2]")
 @test mytest("G=Group([Perm(1,2),Perm(2,3)]);","nothing")
 @test mytest("transversal(G,1)","Dict{Int64,Perm{Int16}} with 3 entries:\n  2 => (1,2)\n  3 => (1,3,2)\n  1 => ()")
 @test mytest("transversal(G,[1,2],action=(x,y)->x.^y)","Dict{Array{Int64,1},Perm{Int16}} with 6 entries:\n  [1, 3] => (2,3)\n  [2, 1] => (1,2)\n  [1, 2] => ()\n  [3, 1] => (1,3,2)\n  [2, 3] => (1,2,3)\n  [3, 2] => (1,3)")
@@ -852,8 +860,8 @@ end
 @test mytest("stringsymbol.(symbols(3,3,0))","10-element Array{String,1}:\n \"(1,1,1)\"\n \"(01,12,02)\"\n \"(01,02,12)\"\n \"(012,012,123)\"\n \"(0,1,2)\"\n \"(0,2,1)\"\n \"(01,01,13)\"\n \"(0,0,3)\"\n \"(012,,)\"\n \"(012,012,)\"")
 @test mytest("fegsymbol([[1,5,6],[1,2]])","q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂")
 @test mytest("Symbols.gendeg_symbol([[1,2],[1,5,6]])","q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2")
-@test mytest("tableaux([[2,1],[1]])","8-element Array{Any,1}:\n [[[2, 4], [3]], [[1]]]\n [[[1, 4], [3]], [[2]]]\n [[[1, 4], [2]], [[3]]]\n [[[2, 3], [4]], [[1]]]\n [[[1, 3], [4]], [[2]]]\n [[[1, 2], [4]], [[3]]]\n [[[1, 3], [2]], [[4]]]\n [[[1, 2], [3]], [[4]]]")
-@test mytest("tableaux([2,2])","2-element Array{Array{Array{Int64,1},1},1}:\n [[1, 3], [2, 4]]\n [[1, 2], [3, 4]]")
+@test mytest("tableaux([[2,1],[1]])","8-element Array{Array{Array{Array{Int64,1},1},1},1}:\n [[[1, 2], [3]], [[4]]]\n [[[1, 2], [4]], [[3]]]\n [[[1, 3], [2]], [[4]]]\n [[[1, 3], [4]], [[2]]]\n [[[1, 4], [2]], [[3]]]\n [[[1, 4], [3]], [[2]]]\n [[[2, 3], [4]], [[1]]]\n [[[2, 4], [3]], [[1]]]")
+@test mytest("tableaux([2,2])","2-element Array{Array{Array{Int64,1},1},1}:\n [[1, 2], [3, 4]]\n [[1, 3], [2, 4]]")
 end
 @testset "Uch.jl" begin
 @test mytest("W=coxgroup(:G,2)","G₂")

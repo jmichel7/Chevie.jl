@@ -6,7 +6,7 @@ export ComplexReflectionGroup, reflection_name, diagram, charname, codegrees,
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
 
-function Gapjm.coroots(t::TypeIrred)
+function PermRoot.coroots(t::TypeIrred)
   if t.series==:ST
     cr=getchev(t,:GeneratingCoRoots)
     if isnothing(cr)

@@ -56,7 +56,7 @@ struct Pol{T}
   function Pol(c::AbstractVector{T},v::Integer=0;check=true)where T
     if check # normalize c so there are no leading or trailing zeroes
       b=findfirst(!iszero,c)
-      if isnothing(b) return new{T}(empty(c),0) end
+      if b===nothing return new{T}(empty(c),0) end
       e=findlast(!iszero,c)
       if b!=1 || e!=length(c) return new{T}(view(c,b:e),v+b-1) end
     end
@@ -115,7 +115,6 @@ end
 Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
 Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
-
 
 (p::Pol{T})(x) where T=iszero(p) ? zero(T) : evalpoly(x,p.c)*x^p.v
 
@@ -204,7 +203,7 @@ function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if d<0 return b+a end
   res=fill(zero(promote_type(T1,T2)),max(length(a.c),d+length(b.c)))
 @inbounds view(res,eachindex(a.c)).=a.c
-@inbounds view(res,d+eachindex(b.c)).+=b.c
+@inbounds view(res,d.+eachindex(b.c)).+=b.c
   Pol(res,a.v)
 end
 

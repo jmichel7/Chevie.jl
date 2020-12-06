@@ -77,7 +77,7 @@ const ChevieDict=Dict(
 "DeligneLusztigCharacter"=>"DLChar",
 "DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",
-"DetPerm"=>"detPerm",
+"DetPerm(W)"=>"vec(detPerm(W))",
 #DifferenceMultiSet
 "Digits"=>"digits",
 #Discriminant

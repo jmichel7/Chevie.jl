@@ -460,7 +460,7 @@ function CoxGroups.word(M::LocallyGarsideMonoid,w)
   res=Int[]
   while true
     i=firstleftdescent(M,w)
-    if isnothing(i) return res end
+    if i===nothing return res end
     push!(res,i)
     w=\(M,M.atoms[i],w)
   end
@@ -847,7 +847,7 @@ julia> word(W,α(b))
  1
 ```
 """
-function α(b)
+function α(b::GarsideElm)
   if b.pd<0 error("α: element should be positive");
   elseif b.pd>0 return b.M.δ
   end
@@ -1119,7 +1119,7 @@ function Category(atomsfrom::Function,o;action::Function=^)
       target=action(b,m)
       p=findfirst(isequal(target),C.obj)
   #	Print(b,"^",m.map,"->",m.tgt,"\n");
-      if isnothing(p)
+      if p===nothing
          push!(C.obj,target)
          push!(C.atoms,empty(C.atoms[1]))
          p=length(C.obj)
@@ -1142,9 +1142,9 @@ function showgraph(io,C::Category;showobj=show,showmap=show)
     new=empty(maps)
     for m in maps
       p=findfirst(x->x[end]==m[1],new)
-      if isnothing(p)
+      if p===nothing
         p=findfirst(x->x[1]==m[end],new)
-        if isnothing(p) 
+        if p===nothing
           push!(new,m)
         else 
           new[p]=vcat(m[1:end-1],new[p])
@@ -1222,7 +1222,7 @@ function AtomicMaps(a,s::Symbol=:sc,F=(x,y=1)->x)
   res=typeof(a)[]
   for i in eachindex(M.atoms)
     m=minc(a,M.atoms[i],Val(s),F)
-    if !isnothing(m) && !any(k->isleftdescent(M,m,k),i+1:length(M.atoms))
+    if m!==nothing && !any(k->isleftdescent(M,m,k),i+1:length(M.atoms))
       push!(res,M(m))
     end
   end
@@ -1303,7 +1303,7 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
       if x==one(M) return [one(M)] end
       y=^(y,r,F)
       p=findfirst(==((y,x)),f)
-      if !isnothing(p) break end
+      if p!==nothing break end
     end
     map(last,filter(x->x[1]==a,f[p:end]))
   end
@@ -1311,7 +1311,7 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
   f=ggF(a,x,F)
   if f!=[one(M)]
     p=findfirst(s->leftgcd(M,x,s)[2][1]==one(M),f)
-    isnothing(p) ? nothing : f[p]
+    p===nothing ? nothing : f[p]
   else p=preferred_prefix(a,F)
     if leftgcd(M,x,p)[2][1]!=one(M) return nothing end
 #   l:=Filtered(Concatenation(LeftDivisorsSimple(M,p)),
@@ -1649,7 +1649,7 @@ function shrink(b1::Vector{T})where T<:GarsideElm
   function test(el,j)
     p=f(el)
     pos=findfirst(isequal(p),bs)
-    if !isnothing(pos) && pos!=j
+    if pos!==nothing && pos!=j
       print(" eliminated")
       simplified=true
       splice!(bs,max(pos,j))

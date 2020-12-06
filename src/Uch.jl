@@ -365,11 +365,6 @@ the following information is computed on demand from
 
 `spets(uc)`: the reductive group `W`.
 
-`charnames(uc)`:  the list of names of the unipotent characters.
-
-`:charSymbols`: the list of symbols associated to unipotent characters,
-for classical groups.
-
 ```julia-repl
 julia> W=coxgroup(:Bsym,2)
 Bsym₂
@@ -400,9 +395,8 @@ label│eigen    1     2
 2    │  -ζ₈ √2/2  √2/2
 ```
 
-`:charnames`:  returns  the  names  of  the  unipotent characters. Using the
-version  with an additional  option record as  the second argument, one can
-control the display in various ways.
+`charnames(uc)`:  the list of names of the unipotent characters.  Using
+   appropriate keywords, one can control the display in various ways.
 
 ```julia-repl
 julia> uc=UnipotentCharacters(coxgroup(:G,2));
@@ -434,36 +428,25 @@ julia> charnames(uc;TeX=true)
  "G_2[\\zeta_3^2]"
 ```
 
-`:Display`:  One can control the display  of unipotent characters in various
-ways.  In the record controlling 'Display', a field 'items' specifies which
-columns are displayed. The possible values are
+One  can control  the display  of unipotent  characters in  various ways by
+`IOContext`  properties. In the display, the row labels are the nems of the
+unipotent characters. Then the following column numbers display:
 
-`:n0`:  The index of the character in the list of unipotent characters.
+    1: The index of the character in the list of unipotent characters.
+    2: The degree of the unipotent character.
+    3: The degree of the corresponding almost character.
+    4: for classical groups, the symbol attached to the unipotent character.
+    5: The eigenvalue of Frobenius attached to the unipotent character.
+    6: The parameter the character has in its Lusztig family.
+    7: The sign attached to the character in the Fourier transform.
 
-`:Name`:   The name of the unipotent character.
+Which  columns  are  displayed  can  be  controlled by the property `:cols`
+(default [2,3,5,6]).
 
-`:Degree`:  The degree of the unipotent character.
-
-`:FakeDegree`: The degree of the corresponding almost character.
-
-`:Eigenvalue`:  The eigenvalue of Frobenius attached to the unipotent
-character.
-
-`:Symbol`: for classical groups, the symbol attached to the unipotent
-character.
-
-`:Family`: The parameter the character has in its Lusztig family.
-
-`:Signs`: The signs attached to the character in the Fourier transform.
-
-The default value is
- 'items:=[:Name,:Degree,:FakeDegree,:Eigenvalue,:Family]`
-
-This  can be changed by setting the variable 'UnipotentCharactersOps.items`
-which holds this default value. In addition if the field 'byFamily' is set,
-the  characters are displayed  family by family  instead of in index order.
-Finally,  the field 'chars' can be  set, indicating which characters are to
-be displayed in which order.
+In  addition if  ':byfamily=true', the  characters are  displayed family by
+family  instead  of  in  index  order.  Finally,  the properties `rows` and
+`columnrepartition`  of  `format`  can  be  set,  giving more tuning of the
+table.
 
 ```julia-repl
 julia> W=coxgroup(:B,2)
@@ -481,28 +464,32 @@ UnipotentCharacters(B₂)
 B₂ │qΦ₁²/2   0    -1   -,-
 ```
 
-    gap> Display(uc,rec(byFamily:=true));
-    Unipotent characters for B2
-    Name |  Degree FakeDegree Eigenvalue Label
-    ___________________________________________
-    *.11 |     q^4        q^4          1
-    ___________________________________________
-    11.  |  1/2qP4        q^2          1   +,-
-    *1.1 |1/2qP2^2        qP4          1   +,+
-    .2   |  1/2qP4        q^2          1   -,+
-    B2   |1/2qP1^2          0         -1   -,-
-    ___________________________________________
-    *2.  |'|'|       1          1          1
-    gap> Display(uc,items=[:n0,:Name,:Symbol]));
-    Unipotent characters for B2
-    n0 |Name   Symbol
-    __________________
-    1  | 11.   (12,0)
-    2  | 1.1   (02,1)
-    3  | .11 (012,12)
-    4  |  2.     (2,)
-    5  |  .2   (01,2)
-    6  |  B2   (012,)|
+```julia-rep1
+julia> xprint(uc;byfamily=true)
+UnipotentCharacters(B₂)
+   γ│Deg(γ) Feg Fr(γ) label
+────┼───────────────────────
+2.ˢ │     1   1     1      
+────┼───────────────────────
+11. │ qΦ₄/2  q²     1   +,-
+1.1ˢ│qΦ₂²/2 qΦ₄     1   +,+
+.2  │ qΦ₄/2  q²     1   -,+
+B₂  │qΦ₁²/2   0    -1   -,-
+────┼───────────────────────
+.11ˢ│    q⁴  q⁴     1      
+────┼───────────────────────
+
+julia> xprint(uc;cols=[1,4])
+UnipotentCharacters(B₂)
+  γ│n₀   Symbol
+───┼────────────
+11.│ 1   (12,0)
+1.1│ 2   (02,1)
+.11│ 3 (012,12)
+2. │ 4     (2,)
+.2 │ 5   (01,2)
+B₂ │ 6   (012,)
+```
 """
 function UnipotentCharacters(WF::Spets) 
   gets(WF,:UnipotentCharacters) do
@@ -647,15 +634,37 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   TeX=get(io,:TeX,false)
   if !TeX print(io,"UnipotentCharacters(",spets(uc),")") end
   if !repl && !TeX return end
+  cycpol=get(io,:cycpol,true)
+  cols=get(io,:cols,[2,3,5,6])
   println(io,"")
   strip(x)=fromTeX(io,x)
-  m=hcat(sprint.(show,CycPoldegrees(uc); context=io),
-         sprint.(show,CycPol.(fakedegrees(uc)); context=io),
-         sprint.(show,Root1.(eigen(uc)); context=io),
-         strip.(labels(uc)))
-  format(io,m,row_labels=charnames(io,uc),
-         rows_label=strip("\\gamma"),
-         col_labels=strip.(["Deg(\\gamma)","Feg","Fr(\\gamma)","label"]))
+  m=hcat(sprint.(show,1:length(uc)))
+  m=hcat(m,sprint.(show,cycpol ? CycPoldegrees(uc) : degrees(uc); context=io))
+  feg=fakedegrees(uc)
+  m=hcat(m,sprint.(show,cycpol ? CycPol.(feg) : feg; context=io))
+  if haskey(uc.prop,:charSymbols) && 
+     (uc.prop[:charSymbols]!=uc.prop[:charParams])
+    m=hcat(m,map(x->stringsymbol(io,x[1]),uc.prop[:charSymbols]))
+  else m=hcat(m,fill("",length(uc)))
+  end
+  m=hcat(m,sprint.(show,Root1.(eigen(uc)); context=io))
+  m=hcat(m,strip.(labels(uc)))
+  row_labels=charnames(io,uc)
+  if get(io,:byfamily,false)
+    rows=vcat(map(x->x[:charNumbers],uc.families)...)
+    rowseps=vcat([0],reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)))
+    for f in uc.families
+      if !haskey(f,:special) continue end
+      row_labels[f[:charNumbers][f[:special]]]*=strip("^{s}")
+      if !haskey(f,:cospecial) || f[:special]==f[:cospecial] continue end
+      row_labels[f[:charNumbers][f[:cospecial]]]*=strip("^{c}")
+    end
+  else
+    rows=get(io,:rows,1:length(uc))
+    rowseps=get(io,:rowseps,[0])
+  end
+   format(io,m;row_labels,cols,rows,rows_label=strip("\\gamma"),rowseps,
+  col_labels=strip.(["n_0","Deg(\\gamma)","Feg","Symbol","Fr(\\gamma)","label"]))
 end
 
 Cosets.spets(uc::UnipotentCharacters)=uc.prop[:spets]
@@ -1180,7 +1189,7 @@ function Cosets.Frobenius(x::UniChar, phi)
   UniChar(W,x.v^inv(on_unipotents(W,phi)))
 end
 
-cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,Root1(1,d))
+cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,Root1(d,1))
 cuspidal(uc::UnipotentCharacters,d::Rational)=cuspidal(uc,Root1(;r=d))
 """
 `cuspidal(uc::UnipotentCharacters[,e])`
@@ -1214,7 +1223,7 @@ julia> cuspidal(UnipotentCharacters(W),6)
  12
 ```
 """
-function cuspidal(uc::UnipotentCharacters,d=Root1(0,1))
+function cuspidal(uc::UnipotentCharacters,d=Root1(1))
   if length(uc)==1 return [1] end
   WF=spets(uc)
   ud=CycPolUnipotentDegrees(WF)

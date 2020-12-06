@@ -16,6 +16,7 @@ using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
 using ..Util: toM, toL
+using ..PermRoot: improve_type
 export echelon, echelon!, exterior_power, CoFactors, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
   permanent, blocks, symmetric_power, diagconj_elt
@@ -37,7 +38,7 @@ function echelon!(m::Matrix)
   inds=collect(axes(m,1))
   for k in axes(m,2)
     j=findfirst(!iszero,m[rk+1:end,k])
-    if isnothing(j) continue end
+    if j===nothing continue end
     j+=rk
     rk+=1
     row=m[j,:]
@@ -81,7 +82,7 @@ function nullspace(m::Matrix)
   lim=size(m,1)
   for i in axes(m,1)
     f=findfirst(!iszero,m[i,j+1:end])
-    if isnothing(f)
+    if f===nothing
       lim=i-1
       break
     end
@@ -121,7 +122,7 @@ function Det(m)
     m[setdiff(v,[i]),setdiff(v,[j])]
   end
   i=findfirst(i->count(!iszero,m[i,:])<=2,axes(m,1))
-  if !isnothing(i)
+  if i!==nothing
     j=findall(!iszero,m[i,:])
     if isempty(j) return 0 end
     return sum(k->(-1)^(i+k)*m[i,k]*Det(compl(m,i,k)),j)
@@ -130,7 +131,7 @@ function Det(m)
 # if length(v)<=3 return det*Det(m) end
   for j in v
     i=findfirst(isunit,m[v,j])
-    if isnothing(i) continue end
+    if i===nothing continue end
 #   println(size(m,1),":",[j,i])
     n=copy(m)
     f=inv(m[i,j])
@@ -359,12 +360,12 @@ julia> m=cartan(:A,3)
 
 julia> schur_functor(m,[2,2])
 6×6 Array{Rational{Int64},2}:
- 10//1   12//1  -16//1   16//1  -16//1   12//1
-  3//2    9//1   -6//1    4//1   -2//1    1//1
- -4//1  -12//1   16//1  -16//1    8//1   -4//1
-  2//1    4//1   -8//1   16//1   -8//1    4//1
- -4//1   -4//1    8//1  -16//1   16//1  -12//1
-  3//2    1//1   -2//1    4//1   -6//1    9//1
+   9//1   -6//1    4//1   3//2   -2//1    1//1
+ -12//1   16//1  -16//1  -4//1    8//1   -4//1
+   4//1   -8//1   16//1   2//1   -8//1    4//1
+  12//1  -16//1   16//1  10//1  -16//1   12//1
+  -4//1    8//1  -16//1  -4//1   16//1  -12//1
+   1//1   -2//1    4//1   3//2   -6//1    9//1
 ```julia-repl
 """
 function schur_functor(A,la)
@@ -376,14 +377,14 @@ function schur_functor(A,la)
   f=j->prod(factorial,last.(tally(j)))
   basis=submultisets(axes(A,1),n) 
   M=sum(x->kron(rep(x),toM(map(function(i)i^=x
-      return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
+  return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
 # Print(Length(M),"=>");
   M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
   M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
   m=sort.(values(groupby(i->M[:,i],axes(M,2))))
   m=sort(m)
   M=M[:,first.(m)]
-  toM(map(x->sum(M[x,:],dims=1)[1,:],m))
+  improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
 end
 
 """
@@ -474,11 +475,11 @@ function blocks(M)
     if !iszero(M[l,c])
       p=findfirst(x->l in x[1],comps)
       q=findfirst(x->c in x[2],comps)
-      if isnothing(p)
-        if isnothing(q)  push!(comps, ([l], [c]))
+      if p===nothing
+        if q===nothing  push!(comps, ([l], [c]))
         else union!(comps[q][1], l)
         end
-      elseif isnothing(q) union!(comps[p][2], c)
+      elseif q===nothing union!(comps[p][2], c)
       elseif p==q 
         union!(comps[p][1], l)
         union!(comps[p][2], c)
@@ -522,10 +523,9 @@ transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 "ratio of two vectors"
 function ratio(v::AbstractVector, w::AbstractVector)
  i=findfirst(x->!iszero(x),w)
- if isnothing(i) return nothing end
+ if i===nothing return nothing end
  r=v[i]//w[i]
- if v!= r.* w  return nothing end
- r
+ if v==r.*w return r end
 end
 
 # characteristic polynomial
@@ -555,7 +555,7 @@ function solutionmat(m,v::AbstractVector)
   c=1
   while c<=size(m,2) && r<size(m,1)
     s=findfirst(!iszero,m[r+1:end,c])
-    if !isnothing(s)
+    if s!==nothing
       s+=r
       r+=1
       piv=inv(m[s,c])

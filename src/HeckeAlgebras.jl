@@ -125,7 +125,7 @@ using Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
-  VFactorSchurElement, alt
+  VFactorSchurElement, alt, coefftype
 
 struct HeckeAlgebra{C,TW}
   W::TW
@@ -218,6 +218,8 @@ end
 
 equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
 
+coefftype(H::HeckeAlgebra{C}) where C=C
+
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
   if constant(tr.(para)) tr(para[1])
@@ -279,9 +281,9 @@ Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjug
 """
 `isrepresentation(H::HeckeAlgebra,r)`
 
-returns `true` or `false`, according  to whether a  given set `r` of matrices
-corresponding to the standard generators  of the Coxeter group `H.W`
-defines a representation of the Iwahori-Hecke algebra `H` or not.
+returns `true` or `false`, according to whether a given set `r` of matrices
+corresponding  to  the  standard  generators  of the reflection group `H.W`
+defines a representation of the Hecke algebra `H` or not.
 
 ```julia-repl
 julia> H=hecke(coxgroup(:F,4))
@@ -349,7 +351,7 @@ function PermRoot.reflrep(H::HeckeAlgebra)
           "Hecke algebras with unequal parameters not implemented")
   end
   q=-1*H.para[1][1]//H.para[1][2]
-  r=length(gens(W))
+  r=ngens(W)
   C=fill(q*E(1),r,r)
   CM=coxmat(W)
   for i  in eachindex(gens(W))
@@ -428,6 +430,7 @@ abstract type HeckeElt{P,C} end # P=typeof(keys) [Perms] C typeof(coeffs)
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
 clone(h::HeckeElt,d)=typeof(h)(d,h.H)
+Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
 
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
@@ -466,25 +469,24 @@ end
 
 basename(h::HeckeTElt)="T"
  
-function Base.one(H::HeckeAlgebra{C}) where C
-  HeckeTElt(ModuleElt(one(H.W)=>one(C)),H)
+function Base.one(H::HeckeAlgebra)
+  HeckeTElt(ModuleElt(one(H.W)=>one(coefftype(H))),H)
 end
 
-function Base.zero(H::HeckeAlgebra{C}) where C
-  HeckeTElt(zero(ModuleElt{typeof(one(H.W)),C}),H)
+function Base.zero(H::HeckeAlgebra)
+  HeckeTElt(zero(ModuleElt{typeof(one(H.W)),coefftype(H)}),H)
 end
-
-Tbasis(h::HeckeTElt)=h
 
 function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
   function f(w::Vararg{Integer})
     if isempty(w) return one(H) end
-    HeckeTElt(ModuleElt(H.W(w...)=>one(C)),H)
+    HeckeTElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
   end
   f(w::Vector{<:Integer})=f(w...)
-  f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
 # eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
+  f(h::HeckeTElt)=h
   f(h::HeckeElt)=Tbasis(h)
+  f(w::P)=HeckeTElt(ModuleElt(w=>one(coefftype(H))),H)
 end
 
 function Base.:*(a::HeckeTElt, b::HeckeTElt)
@@ -519,6 +521,7 @@ function Base.inv(a::HeckeTElt)
   H=a.H
   T=Tbasis(H)
   l=reverse(word(H.W,w))
+  if isempty(l) return inv(coeff)*T() end
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
 end
 
@@ -550,6 +553,14 @@ function alt(a::HeckeTElt)
   clone(a,ModuleElt(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
                 for i in word(a.H.W,w))* bar(c) for (w,c) in a.d))
 end
+
+"""
+`α(a::HeckeTElt)`
+
+the anti-involution on the Hecke algebra defined by `T_w↦T_inv(w)`.
+"""
+Garside.α(h::HeckeTElt)=HeckeTElt(ModuleElt(inv(p)=>c for (p,c) in h.d;
+                                               check=true),h.H)
 
 """
 `class_polynomials(h)`
@@ -739,7 +750,7 @@ function Base.:*(a::FactSchur, b::FactSchur)
   vcyc=copy(a.vcyc)
   for t in b.vcyc
     p = findfirst(x->x.monomial == t.monomial,vcyc)
-    if isnothing(p) push!(vcyc, t)
+    if p===nothing push!(vcyc, t)
     else vcyc[p]=(pol=vcyc[p].pol*t.pol,monomial=vcyc[p].monomial)
     end
   end
@@ -756,7 +767,7 @@ function Base.://(a::FactSchur,b::FactSchur)
   vcyc=copy(a.vcyc)
   for t in b.vcyc
     p=findfirst(x->x.monomial==t.monomial,vcyc)
-    if isnothing(p) push!(vcyc,(pol=1//t.pol,monomial=t.monomial))
+    if p===nothing push!(vcyc,(pol=1//t.pol,monomial=t.monomial))
     else vcyc[p]=(pol=vcyc[p].pol//t.pol,monomial=vcyc[p].monomial)
     end
   end
@@ -775,7 +786,7 @@ function Simplify(res::FactSchur)
   factor=res.factor
   for (pol,monomial) in res.vcyc
     k=scal(monomial)
-    if !isnothing(k)
+    if k!==nothing
       factor*=pol(k)
       continue
     end
@@ -833,7 +844,7 @@ end
 
 function VFactorSchurElement(para,r,data=nothing,u=nothing)
   n=length(para)
-  if isnothing(data) para=copy(para)
+  if data===nothing para=copy(para)
   else para=para[data[:order]]
   end
   function monomial(v)
@@ -989,7 +1000,6 @@ struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}
 end
 
 basename(h::HeckeTCElt)="T"
-Tbasis(h::HeckeTCElt)=h
 
 function Tbasis(H::HeckeCoset{TH})where TH<:HeckeAlgebra{C} where C
   f(w::Vararg{Integer})=HeckeTCElt(ModuleElt(H.W(w...)=>one(C)),H)
@@ -997,6 +1007,7 @@ function Tbasis(H::HeckeCoset{TH})where TH<:HeckeAlgebra{C} where C
 # f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
 # eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
   f(h::HeckeElt)=Tbasis(h)
+  f(h::HeckeTCElt)=h
 end
 
 end

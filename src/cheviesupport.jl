@@ -39,7 +39,7 @@ function DiagonalMat(v...)
   toL(R)
 end
 DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
-Drop(a::AbstractVector,i::Int)=deleteat!(collect(a),i)
+Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])

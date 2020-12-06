@@ -350,16 +350,17 @@ function valuation_feg_symbol(s)
 end
 
 " stringsymbol(S) string for symbol S"
-function stringsymbol(S)
+function stringsymbol(io,S)
   if isempty(S) return "()" end
-  if S[end] isa AbstractVector 
-    return "("*join(joindigits.(S),",")*")"
+  if S[end] isa AbstractVector "("*join(joindigits.(S),",")*")"
   else
     v=E(S[end-1],S[end])
-    n= v==1 ? "+" : v==-1 ? "-" : string(v)
-   return "("*join(joindigits.(S[1:end-2]),",")*"$n)"
+    n= v==1 ? "+" : v==-1 ? "-" : sprint(show,v;context=io)
+    "("*join(joindigits.(S[1:end-2]),",")*"$n)"
   end
 end
+
+stringsymbol(S)=stringsymbol(stdout,S)
 
 """
   lesssymbols( <x>, <y> )  < for symbols
@@ -592,39 +593,34 @@ single partition, the standard tableaux for that partition are returned.
 
 ```julia-repl
 julia> tableaux([[2,1],[1]])
-8-element Array{Any,1}:
- [[[2, 4], [3]], [[1]]]
- [[[1, 4], [3]], [[2]]]
- [[[1, 4], [2]], [[3]]]
- [[[2, 3], [4]], [[1]]]
- [[[1, 3], [4]], [[2]]]
+8-element Array{Array{Array{Array{Int64,1},1},1},1}:
+ [[[1, 2], [3]], [[4]]]
  [[[1, 2], [4]], [[3]]]
  [[[1, 3], [2]], [[4]]]
- [[[1, 2], [3]], [[4]]]
+ [[[1, 3], [4]], [[2]]]
+ [[[1, 4], [2]], [[3]]]
+ [[[1, 4], [3]], [[2]]]
+ [[[2, 3], [4]], [[1]]]
+ [[[2, 4], [3]], [[1]]]
 
 julia> tableaux([2,2])
 2-element Array{Array{Array{Int64,1},1},1}:
- [[1, 3], [2, 4]]
  [[1, 2], [3, 4]]
+ [[1, 3], [2, 4]]
 ```
 """
 function tableaux(S)
   if isempty(S) return S end
   w=sum(sum,S)
-  if w==0 return [map(x->map(y->Int[],x),S)] end
-  res=reduce(vcat,map(function(i) local rim, l
-    l=length(S[i])
-    rim = filter(j->S[i][j+1]<S[i][j],1:l-1)
-    if l!=0 && S[i][l]!=0 push!(rim,l) end
-    return vcat(map(function(p)
-          n=deepcopy(S)
-          n[i][p]-=1
-          n=tableaux(n)
-          for t=n push!(t[i][p], w) end
-          return n
-      end, rim)...)
-    end, 1:length(S)))
-  res
+  if iszero(w) return [map(x->map(y->Int[],x),S)] end
+  res=Vector{Vector{Vector{Int}}}[]
+  for i in eachindex(S), p in eachindex(S[i])
+    if iszero(S[i][p]) || (p<length(S[i]) && S[i][p+1]==S[i][p]) continue end
+    S[i][p]-=1; tt=tableaux(S); S[i][p]+=1
+    for t in tt push!(t[i][p], w) end
+    append!(res,tt)
+  end
+  sort(res)
 end
 
 # XSP(ρ,s,n[,d]) returns the union of the Lusztig-Spaltenstein 

@@ -5,6 +5,10 @@
 
 onsets(s,g)=sort(s.^g)
 
+chevieset(:timp, :CharName, function (p,q,r,phi,para,opt)
+           CHEVIE[:imp][:CharName](p,q,r,convert.(Vector{Int},para),opt)
+    end)
+
 chevieset(:timp, :ReducedInRightCoset, function (W, phi)
   sets = [[1, 2, 3, 44], [21, 3, 1, 32], [3, 11, 2, 36], [22, 3, 2, 16]]
   sets2 = [[1, 50, 3, 12, 2], [3, 52, 2, 23, 11], [1, 16, 3, 43, 38], 

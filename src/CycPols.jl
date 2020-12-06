@@ -102,6 +102,15 @@ function cyclotomic_polynomial(n::Integer)
   end
 end
 
+function lindivrem(a::Pol,z::Root1) # divrem(a,Pol()-z) where z root of 1
+  res=Vector{promote_type(eltype(a.c),Cyc{Int})}(a.c[2:end])
+  for i in length(res):-1:2
+    res[i-1]+=res[i]*z
+  end
+  if iszero(res[1]*z+a.c[1]) return Pol(res,a.v;check=false) end
+  # else return nothing since remainder is not zero
+end
+
 struct CycPol{T}
   coeff::T
   valuation::Int
@@ -148,7 +157,7 @@ Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
 valuation(a::CycPol)=a.valuation
 valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-valuation(a::CycPol,d::Integer)=valuation(a,Root1(1,d))
+valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
 valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
@@ -363,7 +372,7 @@ function CycPol(p::Pol{T};trace=false)where T
     while true
       np,r=divrem(p,cyclotomic_polynomial(c))
       if iszero(r) 
-        append!(vcyc,[Root1(j,c)=>1 for j in (c==1 ? [1] : prime_residues(c))])
+        append!(vcyc,[Root1(c,j)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
         if trace print("(d°$(degree(p)) c$(conductor(p.c)))") end
         found=true
@@ -383,16 +392,29 @@ function CycPol(p::Pol{T};trace=false)where T
       if isempty(to_test) return found end
       found=true
       p=divrem(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
-      append!(vcyc,Root1.(to_test,i).=>1)
+      append!(vcyc,Root1.(i,to_test).=>1)
       if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$to_test)") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
     end
+#   for r in to_test
+#     while true 
+#       p1=lindivrem(p,Root1(i,r))
+#       if !isnothing(p1)
+#         p=p1
+#         found=true
+#         push!(vcyc,Root1(i,r)=>1)
+#         if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$r)") end
+#         if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
+#       else break
+#       end
+#     end
+#   end
   end
 
   # first try commonly occuring fields
   for i in tested 
     if degree(p)>=phi(i) testcyc(i) end
-    testall(i)
+    if degree(p)>0 testall(i) end
     if degree(p)==0 return CycPol(coeff,val,ModuleElt(vcyc;check=true)) end
   end
   

@@ -90,7 +90,7 @@ const sub=Dict(zip(subchars,unicodesub))
 const subclass="["*subchars*"]"
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
-function TeXstrip(s::String)
+function unicodeTeX(s::String)
   s=replace(s,r"\$"=>"")
   s=replace(s,r"\\varepsilon"=>"ε")
   s=replace(s,r"\\beta"=>"β")
@@ -144,9 +144,7 @@ function format_coefficient(c::String)
   else c end
 end
 
-function fromTeX(io::IO,n::String)
-  if get(io,:TeX,false) return n 
-  elseif get(io,:limit,false) return TeXstrip(n) end
+function TeXstrip(n::String) # plain ASCII rendering of TeX code
   n=replace(n,r"\\tilde *"=>"~")
   n=replace(n,"_"=>"")
   n=replace(n,"}"=>"")
@@ -156,20 +154,35 @@ function fromTeX(io::IO,n::String)
   n=replace(n,r"\bi\b"=>"I")
 end
 
+function fromTeX(io::IO,n::String)
+  if     get(io,:TeX,false) n 
+  elseif get(io,:limit,false) unicodeTeX(n) 
+  else   TeXstrip(n)
+  end
+end
+
 fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)
 
-printTeX(io::IO,s...)=print(io,fromTeX(io,prod(s)))
+function printTeX(io::IO,s...)
+  res=""
+  for x in s 
+    if x isa String res*=x
+    else res*=sprint(show,x;context=IOContext(io,:TeX=>true)) end
+  end
+  print(io,fromTeX(io,res))
+end
 
 """
-  format(io, table; options )
+`format(io, table; options )`
 
-  General routine to format a table. Used for character tables.
-  Options:
+General routine to format a table. Used for character tables. the following
+options can be passed as properties of the `io` or as keywords
+
      row_labels          Labels for rows
      col_labels          Labels for columns
      rows_label          Label for column of rowLabels
-     separators          line numbers after which to put a separator
-     column_repartition  display in pieces of sizes these numbers of cols
+     rowseps          line numbers after which to put a separator
+     column_repartition  display in vertical pieces of sizes indicated
      rows                show only these rows
      cols                show only these columns
 
@@ -179,7 +192,7 @@ function format(io::IO,t::Matrix; opt...)
   row_labels=get(io,:row_labels,axes(t,1))
   col_labels=get(io,:col_labels,nothing)
   rows_label=get(io,:rows_label,"")
-  separators=get(io,:separators,[0])
+  rowseps=get(io,:rowseps,[0])
   rows=get(io,:rows,axes(t,1))
   cols=get(io,:cols,axes(t,2))
   column_repartition=get(io,:column_repartition,nothing)
@@ -233,7 +246,7 @@ function format(io::IO,t::Matrix; opt...)
         println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
       else println(io,rows_label,"\u2502",join(col_labels[ci]," "))
       end
-      if 0 in separators hline(ci) end
+      if 0 in rowseps hline(ci) end
     end
     for l in axes(t,1)
       if TeX
@@ -241,7 +254,7 @@ function format(io::IO,t::Matrix; opt...)
       else
         println(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],colwidth[ci])," "))
       end
-      if l in separators hline(ci) end
+      if l in rowseps hline(ci) end
     end
     if ci[end]!=length(colwidth) print(io,"\n") end
     if TeX println(io,"\\end{array}") end

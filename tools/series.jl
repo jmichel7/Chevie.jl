@@ -275,7 +275,7 @@ function Base.show(io::IO,s::Series)
   if haskey(s.prop, :e)
     Util.printTeX(io,"$quad W_G(L,$n)==Z_{$(s.prop[:e])}")
   elseif haskey(s.prop, :WGL)
-    if haskey(relative_group(s).prop, :reflections)
+    if haskey(relative_group(s).prop, :refltype)
       Util.printTeX(io,"$quad W_G(L,$n)==");print(io,relative_group(s))
     else
       Util.printTeX(io,"$quad |W_G(L,$n)|==$(length(relative_group(s)))")
@@ -532,13 +532,18 @@ function Weyl.relative_group(s::Series)
     else #   N:=Stabilizer(N,s.levi); # is shorter but slower...
       NF=centralizer(N, s.levi.phi)
       if length(NF)==length(L)*prod(relative_degrees(s.spets, s.d)) N=NF
-      else
+      else N=centralizer(N,s.levi.phi;action=function(p,g)
+                  w=reduced(s.levi.W,p^g)
+                  w isa Perm ? w : w.phi
+                 end)
+      if false
         NF=Group(vcat(gens(N),[s.levi.phi]))
         NFQ=NF/L
         N=N/L
         NF=centralizer(NFQ, s.levi) # image of s.levi.phi in NFQ
         NFQ=intersect(NF, N)
         N=Group(vcat(gens(L),map(x->x.phi,gens(NFQ))))
+      end
       end
     end
   end
@@ -574,8 +579,9 @@ function Weyl.relative_group(s::Series)
     WGL=N/L
     func = x->x.phi
   end
-  V = GLinearAlgebra.lnullspace(s.projector-one(s.projector)) # The E(d)-eigenspace
-  m = vcat(V, GLinearAlgebra.lnullspace(s.projector))^-1
+  V=GLinearAlgebra.lnullspace(s.projector-one(s.projector))#The E(d)-eigenspace
+  m=vcat(V, GLinearAlgebra.lnullspace(s.projector))^-1
+  # V∩ fix(r)
   hplane(r)=sum_intersection(GLinearAlgebra.lnullspace(reflrep(W,
                      reflection(W,r))-one(s.projector)),V)[2]
   smalltobig(h)=hcat(h, fill(0,size(h,1),max(0,rank(W)-size(V,1))))*m^-1
@@ -620,6 +626,7 @@ function Weyl.relative_group(s::Series)
   for r in rrefs
     push!(reflist, getreflection(r))
     if length(Group(map(x->x[:hom],reflist))) == length(WGL)
+      println(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
       WGL=PRG(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
       reflist=map(x->smalltobig(GLinearAlgebra.lnullspace(x-x^0)),reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->v(hplane(rr[1]))==v(h),rrefs)], reflist)

@@ -81,9 +81,15 @@ julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
  [3, 2]
  [2, 1]
  [3, 1]
+
+julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g))
+3-element Array{Array{Int64,1},1}:
+ [1, 3]
+ [2, 3]
+ [1, 2]
 ```
 """
-function orbit(gens::Vector,pnt;action::Function=^)
+function orbit(gens::Vector,pnt;action::F=^) where F<:Function
   set=Set([pnt])
   orb=[pnt]
   for pnt in orb, gen in gens
@@ -96,7 +102,7 @@ function orbit(gens::Vector,pnt;action::Function=^)
   orb
 end
 
-orbit(G::Group,pnt;action::Function=^)=orbit(gens(G),pnt;action=action)
+orbit(G::Group,pnt;action::F=^) where F<:Function=orbit(gens(G),pnt;action)
 
 """
 `transversal(G::Group,p;action::Function=^)`
@@ -125,7 +131,7 @@ Dict{Array{Int64,1},Perm{Int16}} with 6 entries:
   [3, 2] => (1,3)
 ```
 """
-function transversal(G::Group,pnt;action::Function=^)
+function transversal(G::Group,pnt;action::F=^) where F<:Function
   trans=Dict(pnt=>one(G))
   orb=[pnt]
   for pnt in orb, gen in gens(G)
@@ -138,10 +144,11 @@ function transversal(G::Group,pnt;action::Function=^)
   trans
 end
 
-function orbits(gens::Vector,v::AbstractVector;action::Function=^,trivial=true)
+function orbits(gens::Vector,v;action::F=^,
+                trivial=true) where F<:Function
   res=Vector{eltype(v)}[]
   while !isempty(v)
-    o=orbit(gens,v[1],action=action)
+    o=orbit(gens,first(v);action)
     if length(o)>1 || trivial push!(res,o) end
     v=setdiff(v,o)
   end
@@ -153,9 +160,9 @@ end
 
 `orbits(G,v;action=^)`
     
-the  orbits on `v` of reapted action  of `gens`; the elements of `v` should
-be  hashable. If a  group is given  instead of generators,  the orbit under
-`gens(G)` is returned.
+the  orbits on `v`  of the repeated  action of `gens`;  the elements of `v`
+should  be hashable. If a  group is given instead  of generators, the orbit
+under `gens(G)` is returned.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
@@ -165,8 +172,8 @@ julia> orbits(G,1:4)
  [4]
 ```
 """
-orbits(G::Group,v::AbstractVector=1:degree(G);action::Function=^,trivial=true)=
-  orbits(gens(G),v;action=action,trivial=trivial)
+orbits(G::Group,v;action::F=^,trivial=true) where F<:Function=
+           orbits(gens(G),v;action,trivial)
 
 """
 `centralizer(G::Group,p;action=^)`

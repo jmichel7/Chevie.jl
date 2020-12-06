@@ -206,11 +206,11 @@ julia> word(W,w)
 The  result  of   `word`  is  the  lexicographically  smallest reduced word
 for~`w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
-function Gapjm.word(W::CoxeterGroup,w)
+function Groups.word(W::CoxeterGroup,w)
   ww=Int[]
   while true
     i=firstleftdescent(W,w)
-    if isnothing(i) return ww end
+    if i===nothing return ww end
     push!(ww,i)
     w=W(i)*w
   end
@@ -242,7 +242,7 @@ julia> word(W,p)
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
 Base.eltype(W::CoxeterGroup{T}) where T=T
-coxrank(W::CoxeterGroup)=length(gens(W))
+coxrank(W::CoxeterGroup)=ngens(W)
 PermRoot.semisimplerank(W::CoxeterGroup)=coxrank(W)
 function nref end
 
@@ -300,7 +300,7 @@ julia> word.(Ref(W),unique(reduced.(Ref(H),elements(W))))
 function PermGroups.reduced(W::CoxeterGroup,w)
   while true
     i=firstleftdescent(W,w)
-    if isnothing(i) return w end
+    if i===nothing return w end
     w=W(i)*w
   end
 end
@@ -371,7 +371,7 @@ julia> e[1]==longest(W)
 true
 ```
 """
-function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
+function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=gets(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
   if coxrank(W)==1 return l>1 ? T[] : gens(W) end
@@ -389,11 +389,11 @@ function Gapjm.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
     for x in rc[1+l-i] append!(elts[l],elements(H,i).*Ref(x)) end
   end
 # N=nref(W)
-# if !isnothing(N) && N-l>l elts[N-l]=elts[l].*longest(W) end
+# if N!==nothing && N-l>l elts[N-l]=elts[l].*longest(W) end
   elts[l]
 end
 
-function Gapjm.elements(W::CoxeterGroup)
+function Groups.elements(W::CoxeterGroup)
   reduce(vcat,map(i->elements(W,i),0:nref(W)))
 end
 
@@ -571,7 +571,7 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
       for h in p.prop[:action][s][hasse(p)[i]]
         if h>l push!(hasse(p)[j],h)
           k=findfirst(isequal(p.prop[:elts][h]/p.prop[:elts][j]),gens(W))
-          if !isnothing(k) p.prop[:action][k][j]=h;p.prop[:action][k][h]=j end
+          if k!==nothing p.prop[:action][k][j]=h;p.prop[:action][k][h]=j end
         end
       end
     end
@@ -838,7 +838,7 @@ true
 """
 isleftdescent(W::CoxSym,w,i::Int)=i^w>(i+1)^w
 
-Gapjm.degrees(W::CoxSym)=2:length(gens(W))+1
+Gapjm.degrees(W::CoxSym)=2:ngens(W)+1
 
 Base.length(W::CoxSym)=prod(degrees(W))
 

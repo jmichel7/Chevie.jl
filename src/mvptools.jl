@@ -9,12 +9,11 @@ function Cycs.root(x::Pol,n::Number=2)
   Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 
-# next function is sligtly faster that p(E(x))
+# next function is twice the speed of p(E(x))
 function (p::Pol{T})(x::Root1) where T
-  if iszero(p) return 0 end
   res=zero(T)
   for (i,c) in enumerate(p.c)
-    res+=c*E(x^(valuation(p)+i-1))
+    res+=c*x^(valuation(p)+i-1)
   end
   res
 end

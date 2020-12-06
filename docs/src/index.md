@@ -20,6 +20,7 @@ Perms.orbits
 Perms.order
 cycles
 cycletype
+support
 sign
 Base.Matrix(::Perm,n)
 Base.:^(::AbstractMatrix,::Perm)
@@ -258,6 +259,7 @@ central_monomials
 class_polynomials
 char_values
 alt
+α(::HeckeTElt)
 schur_elements
 FactorizedSchurElement
 FactorizedSchurElements
@@ -287,7 +289,7 @@ left_divisors
 leftgcd
 rightgcd
 rightlcm
-α
+α(::Garside.GarsideElm)
 DualBraidMonoid
 fraction
 word(::Garside.GarsideMonoid,w)
@@ -357,6 +359,7 @@ drinfeld_double
 ndrinfeld_double
 family_imprimitive
 FamiliesClassical
+*(f::Family, g::Family)
 fusion_algebra
 ```
 # Unipotent classes of reductive groups

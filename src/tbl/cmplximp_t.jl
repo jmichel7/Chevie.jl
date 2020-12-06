@@ -268,10 +268,14 @@ information   about  it  necessary  to  compute  the  function  Delta  in
   res
 end)
 
+const impchartableDict=Dict{Tuple{Int,Int,Int},Any}()
+
 chevieset(:imp, :CharTable, function (p, q, r)
+  get!(impchartableDict,(p,q,r))do
   oo=denominator.(chevieget(:imp,:EigenvaluesGeneratingReflections)(p,q,r))
-  return chevieget(:imp, :HeckeCharTable)(p, q, r, 
-      map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo), [])
+  chevieget(:imp, :HeckeCharTable)(p,q,r,
+                                   map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
+  end
 end)
 
 chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)

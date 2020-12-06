@@ -680,7 +680,7 @@ function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
   l=filter(w->s==s^w,map(x->x.phi,elements(N/W0s)))
   N=Group(abelian_generators(l))
   if rank(W)!=semisimplerank(W)
-    if length(gens(N))==0 N=Group([W.matgens[1]^0])
+    if ngens(N)==0 N=Group([W.matgens[1]^0])
     else N=Group(reflrep.(Ref(W),gens(N)))
     end
   end

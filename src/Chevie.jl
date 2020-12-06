@@ -39,6 +39,7 @@ end
 
 function field(t::TypeIrred)
   if haskey(t,:orbit)
+    phi=t.twist
     orderphi=order(t.twist)
     t=t.orbit[1]
   else
@@ -65,7 +66,7 @@ function field(t::TypeIrred)
       else return (Symbol(string("G",t.ST)),)
       end
     elseif orderphi!=1
-      return (:timp, t.p, t.q, t.rank)
+      return (:timp, t.p, t.q, t.rank, phi)
     else
       return (:imp, t.p, t.q, t.rank)
     end
@@ -91,7 +92,7 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
     if haskey(t,:cartanType) && f in needcartantype
 #     println("args=",(d[2:end]...,extra...,t.cartanType))
       o(d[2:end]...,extra...,t.cartanType)
-     else o(d[2:end]...,extra...)
+    else o(d[2:end]...,extra...)
     end
   else o
   end

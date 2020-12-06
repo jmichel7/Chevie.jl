@@ -75,10 +75,10 @@ Root1: ζ₉
 
 julia> Root1(1+E(4)) # it returns nothing for a non-root
 
-julia> Root1(1,4)
+julia> Root1(4,1)
 Root1: ζ₄
 
-julia> c=Root1(;r=1//4)*Root1(1,3) # faster computation for roots of unity
+julia> c=Root1(;r=1//4)*Root1(3,1) # faster computation for roots of unity
 Root1: ζ₁₂⁷
 
 julia> E(c) # convert back to Cyc
@@ -755,10 +755,21 @@ Base.abs(c::Cyc)=c*conj(c)
 #------------------------ type Root1 ----------------------------------
 struct Root1 <: Number # E(c,n)
   r::Rational{Int}
-  Root1(n::Int,c::Int)=new(mod(n,c)//c)
+  Root1(c::Int,n::Int)=new(mod(n,c)//c)
 end
 
-Root1(;r=0)=Root1(numerator(r),denominator(r)) # does a mod1
+Cycs.conductor(a::Root1)=denominator(a.r)
+Base.exponent(a::Root1)=numerator(a.r)
+
+Root1(;r=0)=Root1(denominator(r),numerator(r)) # does a mod1
+E(a::Root1)=E(;r=a.r)
+
+function Root1(c::Real)
+  if c==1 Root1(1,0)
+  elseif c==-1 Root1(2,1)
+  else nothing
+  end
+end
 
 Base.broadcastable(r::Root1)=Ref(r)
 
@@ -780,7 +791,7 @@ function Base.show(io::IO, r::Root1)
       printTeX(io,r)
     end
   else
-    print(io,"Root1($d,$c)")
+    print(io,"Root1($c,$d)")
   end
 end
 
@@ -818,25 +829,15 @@ else
   end
 end
   for i in 0:c.n-1
-    if c==E(c.n,i) return Root1(i,c.n) end
+    if c==E(c.n,i) return Root1(c.n,i) end
     if -c==E(c.n,i) 
-      if c.n%2==0 return Root1(div(c.n,2)+i,c.n)
-      else return Root1(c.n+2*i,2*c.n)
+      if c.n%2==0 return Root1(c.n,div(c.n,2)+i)
+      else return Root1(2*c.n,c.n+2*i)
       end
     end
   end
   return nothing
 end
-
-function Root1(c::Real)
-  if c==1 Root1(0,1)
-  elseif c==-1 Root1(1,2)
-  else nothing
-  end
-end
-
-Cycs.conductor(a::Root1)=a.r.den
-Base.exponent(a::Root1)=a.r.num
 
 function Base.cmp(a::Root1,b::Root1)
   r=cmp(conductor(a),conductor(b))
@@ -846,7 +847,7 @@ end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
 #Base.:(==)(a::Root1,b::Root1)=iszero(cmp(a,b))
-Base.one(a::Root1)=Root1(0,1)
+Base.one(a::Root1)=Root1(1,0)
 Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
@@ -854,7 +855,19 @@ Base.:^(a::Root1,n::Rational)=Root1(;r=n*a.r)
 Base.:inv(a::Root1)=Root1(;r=-a.r)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 
-E(a::Root1)=E(;r=a.r)
+function Base.:*(a::Cyc,b::Root1)
+  n=lcm(conductor(a),conductor(b))
+  na=div(n,conductor(a))
+  nb=div(n,conductor(b))
+  res=empty(a.d.d)
+  for (i,va) in a.d sumroot(res,n,na*i+nb*exponent(b),va) end
+  lower(Cyc(n,ModuleElt(res;check=true)))
+end
+
+Base.:*(b::Root1,a::Cyc)=a*b
+Base.:*(a::Union{Integer,Rational},b::Root1)=Cyc(a)*b
+Base.:*(b::Root1,a::Integer)=Cyc(a)*b
+
 #------------------- end of Root1 ----------------------------------------
 
 struct Quadratic
