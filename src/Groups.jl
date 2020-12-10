@@ -1,10 +1,15 @@
 """
-This module is a port of some GAP functionality on groups.
+This module gives some basic functionality on groups.
 
-The only field of a Group G at the start is gens, the list of generators of
-G.  To  mimic  GAP  records  where  attributes/properties  of an object are
-computed  on demand when asked for, other attributes computed on demand are
-stored in the field .prop of the Group, which starts as Dict{Symbol,Any}()
+`Group`  is  an  abstract  type,  but  the  following is assumed of all its
+concrete implementations:
+
+  - The function `gens(G)` returns the list of generators of the group `G`. 
+  - The function `one(G)` returns the identity element of `G`.
+  
+Further,  a group  is the  kind of  object where  attributes/properties are
+computed on demand when asked for; such attributes when computed are stored
+in the field `.prop` of `G`, which should be of type `Dict{Symbol,Any}()`.
 
 # Examples
 ```julia-repl
@@ -18,13 +23,19 @@ julia> gens(G)
 
 julia> ngens(G)
 2
-```
 
-The group itself, applied to a sequence of integers, returns the element
-defined by the corresponding word in the generators
-```julia-repl
-julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]*inv(gens(G)[2])
-(1,3)
+julia> minimal_words(G)
+Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
+  ()      => Int64[]
+  (2,3)   => [2, 1]
+  (1,3,2) => [1, 2, 1]
+  (1,3)   => [1, 2]
+  (1,2)   => [1]
+  (1,2,3) => [2]
+
+julia> G.prop
+Dict{Symbol,Any} with 1 entry:
+  :words => Dict{Perm{Int16},Array{Int64,1}}(()=>[],(2,3)=>[2, 1],(1,3,2)=>[1, …
 ```
 """
 module Groups
@@ -48,8 +59,23 @@ Base.one(G::Group{T}) where T=one(T)
 gens(G::Group)=G.gens
 ngens(G::Group)=length(gens(G))
 
-" element of W corresponding to a sequence of generators and their inverses"
-(W::Group)(w...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
+"""
+`(G::Group)(i...)`
+
+A  Group  may  be  used  as  a  function  wich  takes  integer arguments in
+`eachindex(gens(W))`.  This constructs  the element  of `G`  product of the
+generators  with the specified  indices. An argument  can also be negative,
+then the inverse of the corresponding generator is used.
+
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)])
+Group([(1,2),(1,2,3)])
+
+julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]/gens(G)[2]
+(1,3)
+```
+"""
+(W::Group)(w::Integer...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
                                             for i in w)
 
 comm(a,b)=inv(a)*inv(b)*a*b
@@ -299,7 +325,9 @@ function word2(W::Group,w)
 end
 
 "elements(G::Group): the list of elements of G"
-elements(G::Group)=sort(collect(keys(minimal_words(G))))
+function elements(G::Group)
+  collect(keys(minimal_words(G)))
+end
 
 Base.in(w,G::Group)=haskey(minimal_words(G),w)
 
@@ -431,13 +459,33 @@ struct Groupof{T}<:Group{T}
   prop::Dict{Symbol,Any}
 end
 
+"""
+`Group(l::AbstractVector{T}[,one]) where T`
+
+A  group may be constructed  from a list of  `l` elements of the same type.
+These  elements must respond  to the function  `*` and `inv`.  If it is not
+possible to compute `one` from the elements (because they do not respond to
+`one`,  or  `l`  is  empty  and  `T`  does  not respond to `one`), then the
+identity element of the group must be given as a second argument.
+
+```julia-repl
+julia> G=Group([[-1 -1;1 0]])
+Gapjm.Groups.Groupof{Array{Int64,2}}([[-1 -1; 1 0]], [1 0; 0 1], Dict{Symbol,Any}())
+
+julia> elements(G)
+3-element Array{Array{Int64,2},1}:
+ [-1 -1; 1 0]
+ [0 1; -1 -1]
+ [1 0; 0 1]
+```
+"""
 function Group(a::AbstractVector{T}) where T
   Groupof(filter(!isone,a),!isempty(a) ? one(a[1]) : one(T),Dict{Symbol,Any}())
 end
 
 # for the case one(a::T) is defined but not one(T)
 function Group(a::AbstractVector{T},one) where T
-  Groupof(filter(!isone,a),one,Dict{Symbol,Any}())
+  Groupof(filter(!=(one),a),one,Dict{Symbol,Any}())
 end
 
 Base.one(G::Groupof)=G.one

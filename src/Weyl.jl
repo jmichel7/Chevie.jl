@@ -188,7 +188,7 @@ export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
 # to use as a stand-alone module uncomment the next line
 # export roots
 
-using Gapjm
+using ..Gapjm
 using LinearAlgebra: SymTridiagonal
 #------------------------ Cartan matrices ----------------------------------
 

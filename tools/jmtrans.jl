@@ -34,6 +34,7 @@ const exclu=[
  ["Hk","D"],
  ["CharTable","2D"],
  ["HeckeCharTable","2D"],
+ ["WGraph","E8"],
  ["Discriminant","H4"],
  ["CharInfo","I"],
  ["GeneratingRoots","imp"],
@@ -43,6 +44,7 @@ const exclu=[
  ["ReflectionCoDegrees","imp"],
  ["ReducedInRightCoset","timp"],
  ["CharName","timp"],
+ ["CharTable","G31"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 

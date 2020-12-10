@@ -386,7 +386,7 @@ regular element for the highest reflection degree).
 """
 module Chars
 
-using Gapjm
+using ..Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
@@ -868,13 +868,11 @@ struct CharTable{T}
 end
 
 function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
-  print(io, "\$")
   show(IOContext(io,:TeX=>true),ct)
-  print(io, "\$")
 end
 
 function Base.show(io::IO,ct::CharTable)
-  printTeX(io,"CharTable(",ct.prop[:name],")\n")
+  printTeX(io,"CharTable(\$",ct.prop[:name],"\$)\n")
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
@@ -1007,7 +1005,8 @@ function representation(W::Group,i::Int)
   dims=Tuple(getchev(W,:NrConjugacyClasses))
   tt=refltype(W)
   inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
-  mm=map((t,j)->toM.(getchev(t,:Representation,j)),tt,inds)
+  mm=map((t,j)->getchev(t,:Representation,j),tt,inds)
+  if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm)
   n=length(tt)
   if n==1 return mm[1] end
@@ -1037,41 +1036,46 @@ julia> representations(coxgroup(:B,2))
 representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
 
 """
-              Functions for W-graphs
+`WGraphToRepresentation(coxrank::Integer,graph,v)`
+
 (Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
 Naruse, Howlett,Yin)
-   WGraphToRepresentation(semisimpleRank,graph,v)
-or WGraphToRepresentation(H,graph)
-Chevie stores some representations of some equal-parameter Hecke algebras
-as  `W`-graphs. For a Coxeter system `(W,S)`  a `W`-graph is defined by a
-set  of vertices  `C`; to  `x∈ C`  is attached  `I(x)⊂ S`  and to
-`(x,y)∈  C^2`  is  attached  an  ``edge''  `μ(x,y)`  in  the field of
-definition  of `W`;  this defines  a representation  of the Hecke algebra
-with single rootparameter `v` on a space with basis `e_y_{y∈ C}` by:
+We  store  some  representations  of  some  Hecke  algebras  with  only one
+parameter  `v` as `W`-graphs. For a  Coxeter system `(W,S)` where `coxrank`
+is  the length of `S`, a `W`-graph is  defined by a set of vertices `C`; to
+`x∈  C` is  attached `I(x)⊂  S` and  to `(x,y)∈  C^2` is attached an "edge"
+`μ(x,y)`  in the field of definition  of `W`; this defines a representation
+of  the Hecke algebra with  single rootparameter `v` on  a space with basis
+`e_y_{y∈ C}` by:
 
-  T_s(e_y)=cases{-e_y&                            if `s∈ I(y)`\\
-             v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\}
+``T_s(e_y)=\\begin{cases}-e_y& if s∈ I(y)\\
+       v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\end{cases}``
 
-The W-graphs  are stored in a  compact format to save  space. They are
-represented  as a  pair.
--The  first element is a list describing C; its elements are either a set
-I(x),  or an integer n  specifying to repeat the  previous element n more
-times.
--The  second element is a list which  specifies mu. We first describe the
-mu-list  for symmetric  W-graphs (when  μ(x,y)=μ(y,x)). There  is one
-element  of the  mu-list for  each non-zero  value m  taken by μ, which
-consists of a pair whose first element is m and whose second element is a
-list  of  lists;  if  l  is  one  of  these  lists  each pair [l[1],l[i]]
-represents  an  edge  (x=l[1],y=l[i])  such that μ(x,y)=μ(y,x)=m. For
-non-symmetric  W-graphs, the first element of each pair in the mu-list is
-a  pair [m1,m2] and each edge [x,y] obtained from the lists in the second
-element has to be interpreted as mu(x,y)=m1 and mu(y,x)=m2.
+The  `W`-graphs are  stored in  a compact  format to  save space.  They are
+represented as a pair.
+  - The  first element is a list describing `C`.
+Its  elements are  either a  set `I(x)`,  or an  integer `n`  specifying to
+repeat the previous element `n` more times.
 
-The next function given a W-graph gr for some Hecke algebra of rank rk
-with rootparameter v constructs the rk matrices it specifies
+  - The  second element is a list which  specifies `μ`. 
+We   first   describe   the   `μ`-list   for   symmetric  `W`-graphs  (when
+`μ(x,y)=μ(y,x)`).  There is one  element of the  `μ`-list for each non-zero
+value `m` taken by `μ`, which consists of a pair whose first element is `m`
+and  whose second element is a list of  lists; if `l` is one of these lists
+each  pair `[l[1],l[i]]`  represents an  edge (`x=l[1]`,`y=l[i]`) such that
+`μ(x,y)=μ(y,x)=m`.  For non-symmetric `W`-graphs, the first element of each
+pair  in the `μ`-list  is a pair  `[m1,m2]` and each  edge `[x,y]` obtained
+from  the lists in the second element  has to be interpreted as `μ(x,y)=m1`
+and `μ(y,x)=m2`.
 """
 function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   V=Vector{Int}[]
+  for S in gr[1]
+    if S isa Integer append!(V,map(i->V[end],1:S))
+    else push!(V,S)
+    end
+  end
+  dim=length(V)
   T=Int
   function prom(a)
     if a isa Vector for u in a prom(u) end
@@ -1079,14 +1083,8 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
     end
   end
   prom(gr[2])
-  for S in gr[1]
-    if S isa Integer append!(V,map(i->V[end],1:S))
-    else push!(V,S)
-    end
-  end
-  n=length(V)
-  S=map(i->one(fill(T(0),n,n))*v^2,1:rk)
-  for j in 1:n for i in V[j] S[i][j,j]=-one(v) end end
+  S=map(i->one(fill(T(0),dim,dim))*v^2,1:rk)
+  for j in 1:dim for i in V[j] S[i][j,j]=-one(v) end end
   for i in gr[2]
     if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end
     for l in i[2]
@@ -1115,9 +1113,9 @@ function WGraph2Representation(a,vars)
     p
   end
   flat(l)=l[1] isa Vector ? flat(reduce(vcat,l)) : l
-  n=maximum(Int.(flat(nodes))) # number of generators
+  rk=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
-  R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:n)
+  R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:rk)
   R=map(x->toM(HasType.DiagonalMat(x...)),R)
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
@@ -1128,7 +1126,7 @@ function WGraph2Representation(a,vars)
       for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
     else
       r2=Int.(r[1:2])
-      j=filter(i->pos(nodes[r2[k-2]],i)<pos(nodes[r2[5-k]],i),1:n)
+      j=filter(i->pos(nodes[r2[k-2]],i)<pos(nodes[r2[5-k]],i),1:rk)
       for i in j R[i][r2[k-2],r2[5-k]]=r[k] end
     end
     end
@@ -1294,6 +1292,10 @@ function InductionTable(u,g)
   InductionTable(improve_type(sc),tg.charnames,tu.charnames,
   "Induction Table from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"InductionTable($(repr(u)),$(repr(g)))"))
+end
+
+function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
+  show(IOContext(io,:TeX=>true),t)
 end
 
 function Base.show(io::IO,t::InductionTable)

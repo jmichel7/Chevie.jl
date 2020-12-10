@@ -22,6 +22,7 @@ Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 Base.length(a::Symbol)=length(string(a))
 Base.union(v::Vector)=union(v...)
+Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 
 # correct translations of GAP3 functions
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)

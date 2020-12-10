@@ -145,7 +145,7 @@ julia> c=LeftCells(W)
  LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>
 ```
 see  also  the  functions  `elements`,  `character`,  `representation`  and
-`WGraph`  for left  cells. The  operations `length`,  `in` (which  refer to
+`Wgraph`  for left  cells. The  operations `length`,  `in` (which  refer to
 `elements`)  and `==` (which  compares Duflo involutions)  are also defined
 for  left cells. When  `Character(c)` has been  computed, then `c.prop[:a]`
 also  has been bound which holds the common value of Lusztig's `a`-function
@@ -153,8 +153,8 @@ for the elements of `c` and The irreducible constituents of `character(c)`.
 """
 module KL
 export KLPol, Cpbasis, Cbasis, LeftCell, LeftCells, character, Lusztigaw, 
- LusztigAw, AsymptoticAlgebra
-using Gapjm
+ LusztigAw, AsymptoticAlgebra, Wgraph
+using ..Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
 """
@@ -202,12 +202,12 @@ function critical_pair(W::CoxeterGroup,y,w)::typeof(y)
 end
 
 """
-  KLMue(W, y, w) highest coefficient of KLPol(W,y,w)
+  KLμ(W, y, w) highest coefficient of KLPol(W,y,w)
 
-KLMue returns the coefficient of highest possible degree (l(w)-l(y)-1)/2
+KLμ returns the coefficient of highest possible degree (l(w)-l(y)-1)/2
 of  KLPol(W,y,w). This is 0 unless y≤w for the Bruhat order.
 """
-function KLMue(W::CoxeterGroup,y,w)
+function KLμ(W::CoxeterGroup,y,w)
   ly=length(W,y)
   lw=length(W,w)
   if ly>=lw || !bruhatless(W,y,w) return 0 end
@@ -272,7 +272,7 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
    for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
       if div(lw-lz,2)<=degree(pol) && pol.c[div(lw-lz,2)+1]>0 &&
         isleftdescent(W,z,s) && bruhatless(W,y,z)
-        let z=z, m=m=KLMue(W,z,v)
+        let z=z, m=m=KLμ(W,z,v)
         if m!=0
           pol-=m*shift(KLPol(W,y,z),div(lw-lz,2))
         end
@@ -627,18 +627,17 @@ Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 
 Base.in(w,c::LeftCell)=w in elements(c)
 
-#F  KLMueMat( <W>, <list> )  . . . . (symmetrized) matrix of leading
-#F coefficients of Kazhdan-Lusztig polynomials of elements in a given list
-##
-function KLMueMat(W,c)
+# KLμMat(W, list)  . . . . (symmetrized) matrix of highest coefficients 
+# μ(x,y) of Kazhdan-Lusztig polynomials P_{x,y} for x,y∈ list
+function KLμMat(W,c)
   w0c=longest(W).*c
   lc=length.(Ref(W),c)
   m=zeros(Int,length(c),length(c))
   for k in 0:maximum(lc)-minimum(lc)
     for i in eachindex(c)
       for j in filter(j->lc[i]-lc[j]==k,eachindex(c))
-        if lc[i]+lc[j]>W.N m[i,j]=KLMue(W,w0c[i],w0c[j])
-        else m[i,j]=KLMue(W,c[j],c[i])
+        if lc[i]+lc[j]>W.N m[i,j]=KLμ(W,w0c[i],w0c[j])
+        else m[i,j]=KLμ(W,c[j],c[i])
         end
         m[j,i]=m[i,j]
       end
@@ -647,9 +646,9 @@ function KLMueMat(W,c)
   return m
 end
 
-function Mu(c::LeftCell)
+function μ(c::LeftCell)
   gets(c,:mu)do
-    KLMueMat(c.group,elements(c))
+    KLμMat(c.group,elements(c))
   end
 end
 
@@ -682,7 +681,7 @@ function Chars.representation(c::LeftCell,H)
     error("cell representations for unequal parameters not yet implemented")
   else v=rootpara(H)[1]
   end
-  toM.(WGraphToRepresentation(semisimplerank(c.group),WGraph(c),v))
+  toM.(WGraphToRepresentation(semisimplerank(c.group),Wgraph(c),v))
 end
 
 # returns right star operation st (a BraidRelation) of LeftCell c
@@ -753,7 +752,7 @@ function OldLeftCellRepresentatives(W)
   while length(rw)>0
     c=rw[1].elements
     InfoChevie("#I R(w)=",rw[1].rd," : #Elts=",length(c))
-    mu=KLMueMat(W,c)
+    mu=KLμMat(W,c)
     n=1:length(c)
     Lleq=[x==y || (mu[x,y]!=0 && any(i->isleftdescent(W,c[x],i) &&
        !isleftdescent(W,c[y],i),eachindex(gens(W)))) for x in n, y in n]
@@ -920,11 +919,16 @@ function LeftCell(W,w)
   return cell
 end
 
-# WGraph of LeftCell c
-function WGraph(c::LeftCell)
+"""
+`Wgraph(c::LeftCell)`
+    
+return the W-graph for a left cell for the one-parameter Hecke algebra
+of a finite Coxeter group. 
+"""
+function Wgraph(c::LeftCell)
   gets(c,:graph)do
     e=elements(c)
-    mu=Mu(c)
+    mu=μ(c)
     n=length(e)
     nodes=leftdescents.(Ref(c.group),e)
     p=sortperm(nodes)
@@ -949,6 +953,16 @@ function WGraph(c::LeftCell)
     graph
   end
 end
+
+"""
+`Wgraph(W::CoxeterGroup,i)`
+    
+return the W-graph for the `i`-th irreducible representation of `W` (or of the
+1-parameter Hecke algebra of `W `).
+
+Only implemented for irreducible groups of type `E`, `F` or `H`.
+"""
+Wgraph(W,i)=getchev(W,:Wgraph,i)
 
 """
 `Lusztigaw(W,w)'

@@ -362,7 +362,7 @@ module Cosets
 
 using ..Gapjm
 export twistings, spets, Frobenius, Spets, torusfactors, subspets,
-  relative_coset, generic_sign, PhiOnDiscriminant
+  relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms
 
 abstract type Spets{TW}<:Coset{TW} end
 
@@ -436,11 +436,51 @@ twistings(W,J::AbstractVector{<:Integer})=
   subspets.(Ref(W),Ref(J),twisting_elements(W,J))
 
 """
+`graph_automorphisms(t::Vector{TypeIrred})`
+
+Given  the `refltype` of a  finite Coxeter group, returns  the group of all
+Graph automorphisms of `t`.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> Cosets.graph_automorphisms(refltype(W*W))
+Group([(1,5)(2,6)(3,7)(4,8),(1,2),(1,4)])
+```
+"""
+function graph_automorphisms(t::Vector{TypeIrred})
+  gen=empty([Perm()])
+  for (n,t) in groupby(repr,t)
+    for i in 1:length(t)-1
+      push!(gen,prod(Perm.(t[i].indices,t[i+1].indices)))
+    end
+    J=t[1].indices
+    rk=length(J)
+    if t[1].series==:A
+    if rk>1
+    push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
+    end
+    elseif t[1].series==:B && t[1].cartanType==ER(2) push!(gen,Perm(J[1],J[2]))
+    elseif t[1].series==:D push!(gen,Perm(J[1],J[2]))
+    if rk==4  push!(gen,Perm(J[1],J[4])) end
+    elseif t[1].series==:E && rk==6
+    push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
+    elseif t[1].series==:F && t[1].cartanType==ER(2)
+    push!(gen,Perm(J[1],J[4])*Perm(J[2],J[3]))
+    elseif t[1].series==:G && t[1].cartanType==ER(3) push!(gen,Perm(J[1],J[2]))
+    end
+  end
+  Group(gen)
+end
+
+"""
 `twistings(W)`
 
 `W`  should be a Coxeter group which is not a proper reflection subgroup of
-another  reflection group.  The function  returns all  'spets' representing
-twisted forms of algebraic groups of type `W`.
+another reflection group (so that `inclusion(W)==eachindex(roots(W))`). The
+function returns all 'spets' representing twisted forms of algebraic groups
+of type `W`.
 
 ```julia-repl
 julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
@@ -477,25 +517,8 @@ function twistings(W::FiniteCoxeterGroup)
   if W!=parent(W)
     error(W," must not be a proper subgroup of another reflection group")
   end
-  gen=empty(gens(W))
-  for (n,t) in groupby(repr,refltype(W))
-    for i in 1:length(t)-1
-      push!(gen,prod(Perm.(inclusion(W,t[i].indices),
-                           inclusion(W,t[i+1].indices))))
-    end
-    J=inclusion(W,t[1].indices)
-    rk=length(J)
-    if t[1].series==:A
-      if rk>1
-        push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
-      end
-    elseif t[1].series==:D push!(gen,Perm(J[1],J[2]))
-      if rk==4  push!(gen,Perm(J[1],J[4])) end
-    elseif t[1].series==:E && rk==6
-      push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
-    end
-  end
-  l=filter(y->all(isinteger,matY(W.G,y)),elements(Group(gen)))
+  l=elements(graph_automorphisms(refltype(W)))
+  l=filter(y->all(isinteger,matY(W.G,y)),l)
   spets.(Ref(W),l)
 end
 
@@ -712,7 +735,7 @@ function Base.show(io::IO, WF::Spets)
   if isdefined(W,:parent)
     n=inclusion(W,PermRoot.indices(refltype(WF)))
     if n!=eachindex(gens(W.parent))
-      print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}="))
+      printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
     end
   end
   PermRoot.showtypes(io,refltype(WF))
@@ -750,7 +773,7 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
       return map(x->h(x).phi,e)
     end
   end
-  return map(x->x.phi,classreps(W_L))
+  sort(map(x->x.phi,classreps(W_L)))
 end
 
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
@@ -759,7 +782,7 @@ function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   s=unique!(sort(reflections(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L
-  map(x->reduced(L,x.phi),classreps(W_L))
+  sort(map(x->reduced(L,x.phi),classreps(W_L)))
 end
 
 function relative_coset(WF::CoxeterCoset,J)
@@ -1027,7 +1050,7 @@ function PermRoot.refltype(WF::PRC)
         z=length(zg)
  #      println("zg=$zg")
         if z>1 # simplify scalars using centre
-          ee=collect(elements(zg))
+          ee=sort(elements(zg))
           zg=ee[findfirst(x->order(x)==z,ee)]
           i=inclusion(sub)[1]
           v=Root1(ratio(prr[i.^zg],prr[i]))

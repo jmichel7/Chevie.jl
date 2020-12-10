@@ -145,7 +145,7 @@ u1(x)u3(x+y)u4(-x-2y)u5(x+3y)u6(x²+3xy+3y²)
 ```
 """
 module Urad
-using Gapjm
+using ..Gapjm
 export UnipotentElement, UnipotentGroup, norm, abelianpart
 
 """

@@ -107,24 +107,26 @@ function unicodeTeX(s::String)
   s=replace(s,r"\\chi"=>"χ")
   s=replace(s,r"\\zeta"=>"ζ")
   s=replace(s,r"\\otimes"=>"⊗")
-  s=replace(s,r"\\tilde A"=>"Ã")
-  s=replace(s,r"\\tilde D"=>"D̃")
-  s=replace(s,r"\\times"=>"×")
-  s=replace(s,r"\\BZ"=>"ℤ")
+  s=replace(s,r"\\tilde ([A-Z])"=>s"\1\U303")
+  s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
   s=replace(s,r"\\frakS"=>"𝔖")
+  s=replace(s,r"\\times"=>"×")
+  s=replace(s,r"\\par"=>"\n")
+  s=replace(s,r"\\hfill\\break"=>"\n")
+  s=replace(s,r"\\BZ"=>"ℤ")
   s=replace(s,r"\\wedge"=>"∧")
   s=replace(s,r"\\#"=>"#")
-  s=replace(s,r"\\hbox{([^}]*)}"=>s"\1")
+  s=replace(s,r"\\(h|m)box{([^}]*)}"=>s"\2")
   s=replace(s,r"\\!"=>"")
   s=replace(s,r"{}"=>"")
-  s=replace(s,r"\^\{1//2\}"=>"½")
-  s=replace(s,r"\^\{-1//2\}"=>"⁻½")
-  s=replace(s,r"\^\{1//3\}"=>"⅓")
-  s=replace(s,r"\^\{2//3\}"=>"⅔")
-  s=replace(s,r"\^\{1//4\}"=>"¼")
-  s=replace(s,r"\^\{([0-9]*)//([0-9]*)\}"=>function(t)
-       t=split(t[3:end-1],"/")
-       map(x->sup[x],t[1])*"⁄"*map(x->sub[x],t[3])
+  s=replace(s,r"\^\{\\frac\{1\}\{2\}\}"=>"½")
+  s=replace(s,r"\^\{\\frac\{-1\}\{2\}\}"=>"⁻½")
+  s=replace(s,r"\^\{\\frac\{1\}\{3\}\}"=>"⅓")
+  s=replace(s,r"\^\{\\frac\{2\}\{3\}\}"=>"⅔")
+  s=replace(s,r"\^\{\\frac\{1\}\{4\}\}"=>"¼")
+  s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>function(t)
+             t=split(t[9:end-2],"}{")
+             map(x->sup[x],t[1])*"⁄"*map(x->sub[x],t[2])
       end)
   s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
   s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
@@ -133,15 +135,17 @@ function unicodeTeX(s::String)
   s=replace(s,Regex("\\^\\{$supclass*\\}")=>t->map(x->sup[x],t[3:end-1]))
   q(l)=l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : map(x->sup[x],"($l)")
   s=replace(s,r"''*"=>t->q(length(t)))
-  s=replace(s,r"\{\+\}"=>"+")
+  s=replace(s,r"\{([^}]*)\}"=>s"\1")
   s
 end
 
-function format_coefficient(c::String)
+function format_coefficient(c::String;allow_frac=false)
   if c=="1" ""
   elseif c=="-1" "-"
-  elseif occursin(r"[-+*/]",c[nextind(c,0,2):end]) "("*c*")" 
-  else c end
+  elseif match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?$",c)!==nothing c
+  elseif allow_frac && match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?/[0-9]*$",c)!==nothing c
+  else "("*c*")" 
+  end
 end
 
 function TeXstrip(n::String) # plain ASCII rendering of TeX code
@@ -189,9 +193,11 @@ options can be passed as properties of the `io` or as keywords
 """
 function format(io::IO,t::Matrix; opt...)
   io=IOContext(io,opt...)
-  row_labels=get(io,:row_labels,axes(t,1))
+  strip(x)=fromTeX(io,x)
+  row_labels=strip.(get(io,:row_labels,string.(axes(t,1))))
   col_labels=get(io,:col_labels,nothing)
-  rows_label=get(io,:rows_label,"")
+  if col_labels!=nothing col_labels=strip.(col_labels) end
+  rows_label=strip(get(io,:rows_label,""))
   rowseps=get(io,:rowseps,[0])
   rows=get(io,:rows,axes(t,1))
   cols=get(io,:cols,axes(t,2))
@@ -287,7 +293,7 @@ end
    - file=stdout                    where to print result
 """
 function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
-  a=split(s)
+  a=split(s,"\n")
   if a[end]=="" a=a[1:end-1] end
   for s in a
     l=0

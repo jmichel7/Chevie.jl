@@ -157,7 +157,7 @@ const src=[
 "cmplxg26",
 "cmplxg27",
 "cmplxg29",
-"cmplxg31",
+"cmplxg31", "cmplxg31_t",
 "cmplxg32",
 "cmplxg33", 
 "cmplxg34",
@@ -177,7 +177,7 @@ const src=[
 "weyl3d4",
 "weyle6", 
 "weyle7", 
-"weyle8",
+"weyle8", "weyle8_t",
 "weylf4", 
 "weylg2",
 "exceptio", "exceptio_t"

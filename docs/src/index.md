@@ -31,6 +31,7 @@ mappingPerm
 # Groups
 ```@docs
 Groups
+Group
 orbit(::Vector,::Any)
 orbits(::Group,::AbstractVector)
 elements(::Group)
@@ -132,12 +133,13 @@ ModuleElts
 ```@docs
 Posets
 Poset
-lcm_partitions
-gcd_partitions
-transitive_closure
-linear_extension
 hasse
 incidence
+setlabels!
+transitive_closure
+lcm_partitions
+gcd_partitions
+linear_extension
 reverse
 partition
 Posets.restricted(::Poset,::AbstractVector{<:Integer})
@@ -276,6 +278,7 @@ Cbasis
 Cpbasis
 character
 representation(::LeftCell,H)
+Wgraph
 LeftCells
 LeftCell
 Lusztigaw
@@ -337,6 +340,7 @@ Cosets
 degrees(::Spets)
 spets
 twistings
+graph_automorphisms
 subspets
 ```
 # Unipotent characters
@@ -484,7 +488,7 @@ DegreeFFE(x)                                field(x).n
 DeligneLusztigCharacter                     DLChar
 DeligneLusztigLefschetz                     DLLeftschetz
 DescribeInvolution                          describe_involution
-DetPerm                                     detPerm
+DetPerm(W)                                  vec(detPerm(W))
 Digits                                      digits
 Dominates                                   dominates
 DrinfeldDouble                              drinfeld_double
@@ -520,6 +524,7 @@ GcdRepresentation(x,y)                      gcdx(x,y)[2:3]
 GenericOrder                                generic_order
 GenericSign                                 generic_sign
 GetRoot                                     root
+GraphAutomorphisms                          graph_automorphisms
 Hasse                                       hasse
 Hecke                                       hecke
 HeckeCentralMonomials                       central_monomials
@@ -702,7 +707,9 @@ W.N                                         nref(W)
 W.matgens[i]                                reflrep(W,i)
 W.orbitRepresentative                       simple_representatives(W)
 W.orbitRepresentativeElements[i]            simple_conjugating_element(W,i)
+W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
+W.rootRestriction                           restriction(W)
 WeightInfo                                  weightinfo
 jInductionTable                             jInductionTable
 last                                        ans

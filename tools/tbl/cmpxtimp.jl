@@ -7,7 +7,9 @@ chevieset(:timp, :PhiFactors, function (p, q, r, phi)
                 if phi == perm"(1,2,4)"
                     return [1, 1, E(3, 2)]
                 else
-                    res = fill(0, max(0, (1 + r) - 1)) + 1
+                    res = map((x->begin
+                                    E(1)
+                                end), 1:r)
                     res[length(res)] = E(o)
                     return res
                 end
@@ -55,9 +57,6 @@ chevieset(:timp, :CharInfo, function (p, q, r, phi)
             ChevieErr("CharInfo  !  implemented")
             return false
         end
-    end)
-chevieset(:timp, :CharName, function (arg...,)
-        return ApplyFunc((CHEVIE[:imp])[:CharName], Drop(arg, 4))
     end)
 chevieset(:timp, :CharTable, function (p, q, r, phi)
         local res

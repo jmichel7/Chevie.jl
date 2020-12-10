@@ -29,6 +29,7 @@ julia> uc.families
 
 julia> uc.families[1]
 Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
+Drinfeld double of S3, Lusztig′s version
    label│eigen                                               
 ────────┼─────────────────────────────────────────────────────
 (1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
@@ -109,6 +110,7 @@ unipotent degrees.
 ```julia-repl
 julia> Family("C2")
 Family(C₂:4)
+DrinfeldDouble(Z/2)
  label│eigen                       
 ──────┼─────────────────────────────
 (1,1) │    1 1//2  1//2  1//2  1//2
@@ -118,6 +120,7 @@ Family(C₂:4)
 
 julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
 Family(C₂:4:7)
+DrinfeldDouble(Z/2)
  label│eigen signs                       
 ──────┼───────────────────────────────────
 (1,1) │    1     1  1//2 -1//2 1//2 -1//2
@@ -234,6 +237,7 @@ Frobenius of the family.
 ```julia-repl
 julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
 Family(0011:[4, 3, 2])
+classical family
 label│eigen      1         2         3
 ─────┼─────────────────────────────────
 1    │  ζ₃²  √-3/3     √-3/3    -√-3/3
@@ -242,6 +246,7 @@ label│eigen      1         2         3
 
 julia> galois(f,-1)
 Family(overline 0011:[4, 3, 2])
+ComplexConjugate(classical family)
 label│eigen      1         2         3
 ─────┼─────────────────────────────────
 1    │   ζ₃ -√-3/3    -√-3/3     √-3/3
@@ -283,6 +288,7 @@ of  the  family  `f`  with  the  Fourier  matrix, eigenvalues of Frobenius,
 ```julia-repl
 julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
 Family(0011:[4, 3, 2])
+classical family
 label│eigen      1         2         3
 ─────┼─────────────────────────────────
 1    │  ζ₃²  √-3/3     √-3/3    -√-3/3
@@ -291,6 +297,7 @@ label│eigen      1         2         3
 
 julia> f^Perm(1,2,3)
 Family(0011:[2, 4, 3])
+Permuted((1,2,3),classical family)
 label│eigen         3      1         2
 ─────┼─────────────────────────────────
 3    │    1 (3-√-3)/6 -√-3/3 (3+√-3)/6
@@ -700,8 +707,9 @@ ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
 
 ```julia-repl
-julia> HasType.Family(family_imprimitive([[0,1],[1],[0]]))
+julia> Family(family_imprimitive([[0,1],[1],[0]]))
 Family(0011:3)
+classical family
 label│eigen      1         2         3
 ─────┼─────────────────────────────────
 1    │  ζ₃²  √-3/3    -√-3/3     √-3/3
@@ -880,6 +888,8 @@ FamiliesClassical=function(sym)
   end
 end
 
+Base.show(io::IO, ::MIME"text/html", f::Family)=show(IOContext(io,:TeX=>true),f)
+
 "`show(f)`: displays the labels, eigenvalues and Fourier matrix for the family."
 function Base.show(io::IO,f::Family)
   TeX=get(io,:TeX,false)
@@ -894,15 +904,18 @@ function Base.show(io::IO,f::Family)
   else print(io,length(f[:eigenvalues]),")")
   end
   if !(repl || TeX) || deep return end
+  println(io)
+  if haskey(f,:explanation) && f[:explanation]!=name 
+    println(io,fromTeX(io,f[:explanation])) 
+  end
   if haskey(f,:charLabels) rowLabels=fromTeX.(Ref(io),f[:charLabels])
   else  rowLabels=string.(1:length(f))
   end
-  print(io,"\n")
   t=[sprint.(show,f[:eigenvalues];context=io)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs) 
     push!(t,string.(f[:signs]))
-    push!(col_labels,"signs")
+    push!(col_labels,"\\mbox{signs}")
   end
   append!(t,toL(map(y->sprint(show,y;context=io),fourier(f))))
   if maximum(length.(rowLabels))<=4 append!(col_labels,rowLabels)
@@ -910,7 +923,7 @@ function Base.show(io::IO,f::Family)
   end
   format(io,permutedims(toM(t)),row_labels=rowLabels,
         col_labels=col_labels,
-        rows_label=TeX ? "\\hbox{label}" : "label")
+        rows_label="\\mbox{label}")
 end
 #------------------------ Fusion algebras -------------------------------
 struct FusionAlgebra<:FiniteDimAlgebra

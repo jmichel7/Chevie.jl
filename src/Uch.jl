@@ -151,6 +151,7 @@ family by asking
 ```julia-repl
 julia> uc.families[1]
 Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
+Drinfeld double of S3, Lusztig′s version
    label│eigen                                               
 ────────┼─────────────────────────────────────────────────────
 (1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
@@ -204,23 +205,23 @@ Spetses, as defined in [@BMM14]. An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│               Deg(γ)    Feg Fr(γ)   label
-─────┼───────────────────────────────────────────
-φ₁‚₀ │                    1      1     1        
-φ₁‚₄ │   (-√-3)q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
-φ₁‚₈ │    (√-3)q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
-φ₂‚₅ │            q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
-φ₂‚₃ │(-ζ₃-2ζ₃²)qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1   1∧ζ₃²
-φ₂‚₁ │(-2ζ₃-ζ₃²)qΦ′₃Φ₄Φ″₆/3    qΦ₄     1    1∧ζ₃
-φ₃‚₂ │               q²Φ₃Φ₆ q²Φ₃Φ₆     1        
-Z₃:2 │      (-√-3)qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
-Z₃:11│     (-√-3)q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
-G₄   │           -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
+    γ│            Deg(γ)    Feg Fr(γ)   label
+─────┼────────────────────────────────────────
+φ₁‚₀ │                 1      1     1        
+φ₁‚₄ │  -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
+φ₁‚₈ │   √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
+φ₂‚₅ │         q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
+φ₂‚₃ │(3+√-3)qΦ″₃Φ₄Φ′₆/6   q³Φ₄     1   1∧ζ₃²
+φ₂‚₁ │(3-√-3)qΦ′₃Φ₄Φ″₆/6    qΦ₄     1    1∧ζ₃
+φ₃‚₂ │            q²Φ₃Φ₆ q²Φ₃Φ₆     1        
+Z₃:2 │     -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
+Z₃:11│    -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
+G₄   │        -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
 ```
 """
 module Uch
 
-using Gapjm
+using ..Gapjm
 
 export UnipotentCharacters, FixRelativeType, fourierinverse, UniChar,
 AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal
@@ -637,7 +638,6 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   cycpol=get(io,:cycpol,true)
   cols=get(io,:cols,[2,3,5,6])
   println(io,"")
-  strip(x)=fromTeX(io,x)
   m=hcat(sprint.(show,1:length(uc)))
   m=hcat(m,sprint.(show,cycpol ? CycPoldegrees(uc) : degrees(uc); context=io))
   feg=fakedegrees(uc)
@@ -648,23 +648,24 @@ function Base.show(io::IO,uc::UnipotentCharacters)
   else m=hcat(m,fill("",length(uc)))
   end
   m=hcat(m,sprint.(show,Root1.(eigen(uc)); context=io))
-  m=hcat(m,strip.(labels(uc)))
+  m=hcat(m,fromTeX.(Ref(io),labels(uc)))
   row_labels=charnames(io,uc)
   if get(io,:byfamily,false)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
     rowseps=vcat([0],reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)))
     for f in uc.families
       if !haskey(f,:special) continue end
-      row_labels[f[:charNumbers][f[:special]]]*=strip("^{s}")
+      row_labels[f[:charNumbers][f[:special]]]*="^{s}"
       if !haskey(f,:cospecial) || f[:special]==f[:cospecial] continue end
-      row_labels[f[:charNumbers][f[:cospecial]]]*=strip("^{c}")
+      row_labels[f[:charNumbers][f[:cospecial]]]*="^{c}"
     end
   else
     rows=get(io,:rows,1:length(uc))
     rowseps=get(io,:rowseps,[0])
   end
-   format(io,m;row_labels,cols,rows,rows_label=strip("\\gamma"),rowseps,
-  col_labels=strip.(["n_0","Deg(\\gamma)","Feg","Symbol","Fr(\\gamma)","label"]))
+  format(io,m;row_labels,cols,rows,rows_label="\\gamma",rowseps,
+          col_labels=["n_0","\\mbox{Deg}(\\gamma)","\\mbox{Feg}",
+                  "\\mbox{Symbol}","\\mbox{Fr}(\\gamma)","\\mbox{label}"])
 end
 
 Cosets.spets(uc::UnipotentCharacters)=uc.prop[:spets]
@@ -877,9 +878,10 @@ const short=Ref(true)
 
 """
 The  formatting  of  unipotent  characters  is  affected  by  the  variable
-`Uch.short`.  If 'true' (the  default) they are  printed in a compact form.
+`Uch.short[]`.  If `true` (the default) they are printed in a compact form.
 Otherwise, they are printed one character per line:
 
+```julia-repl
 julia> Uch.short[]=false
 false
 
@@ -895,6 +897,9 @@ julia> w
 <G₂[1]>   0
 <G₂[ζ₃]>  0
 <G₂[ζ₃²]> 1
+
+julia> Uch.short[]=true;
+```
 
 """
 function Base.show(io::IO,r::UniChar)

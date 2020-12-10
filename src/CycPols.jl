@@ -275,23 +275,16 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  c=a.coeff
-  if c isa Rational 
-    den=denominator(c)
-    c=numerator(c)
-  elseif c isa Cyc
-    den=denominator(c)
-    c*=den
-  else
-    den=1
-  end
   nov=iszero(a.valuation) && isempty(a.v)
-  if !isone(c) || nov
-    s=sprint(show,c; context=io)
-    if s=="-1" && !nov s="-" end
-    if occursin(r"[+\-*/]",s[nextind(s,1):end]) && !nov s="($s)" end
-    print(io,s) 
+  s=sprint(show,a.coeff; context=io)
+  m=match(r"//*[0-9]*$",s)
+  if m!==nothing 
+    den=replace(m.match,"//"=>"/")
+    s=s[1:prevind(s,m.offset)]
+  else den=""
   end
+  if !nov s=format_coefficient(s) end
+  print(io,s) 
   if a.valuation==1 print(io,"q")
   elseif a.valuation!=0 printTeX(io,"q^{$(a.valuation)}") end
   for (e,pow) in decompose(a.v)
@@ -301,14 +294,14 @@ function Base.show(io::IO,a::CycPol)
     end
     if pow!=1 printTeX(io,"^{$pow}") end
   end
-  if !isone(den) print(io,"/",den) end
+  if den!="/1" && den!="//1" print(io,den) end
 end
 
 # fields to test first: all n such that phi(n)<=12 except 11,13,22,26
 const tested=[1,2,4,3,6,8,12,5,10,9,18,24,16,20,7,14,15,30,36,28,21,42]
 
-# list of i such that phi_i/phi(gcd(i,conductor))<=d
-# so a pol of degree <=d with coeffs in Q(ζ_conductor) could have roots ζ_i^h
+# list of i such that φᵢ/φ_(i∩ conductor))≤d, so a polynomial of
+# degree ≤d with coeffs in Q(ζ_conductor) could have roots power of ζᵢ
 function bounds(conductor::Int,d::Int)::Vector{Int}
   if d==0 return Int[] end
   f=factor(conductor)

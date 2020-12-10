@@ -19,7 +19,7 @@ equivalent for the `Poset` are printed together separated by commas.
 
 ```julia-repl
 julia> p=Poset(coxgroup(:A,2))
-<1,2<21,12<121
+.<1,2<21,12<121
 
 julia> hasse(p)
 6-element Array{Array{Int64,1},1}:
@@ -42,13 +42,18 @@ julia> incidence(p)
  0  0  0  0  1  1
  0  0  0  0  0  1
 ```
+note in the above example that the poset has been printed with labels which
+are the words in `coxgroup(:A,2)`. If not given, the default labels for the
+poset  are  `1:length(p)`.  The  function  `setlabels!`  can be used to set
+labels for the poset.
 """
 module Posets
 using ..Combinat: groupby
-using ..Util: gets, toM
+using ..Util: gets
 #import ..Gapjm: restricted
 export lcm_partitions, gcd_partitions, Poset, linear_extension, hasse,
- incidence, partition, transitive_closure, is_join_lattice, is_meet_lattice
+ incidence, partition, transitive_closure, is_join_lattice, is_meet_lattice,
+ setlabels!
 export restricted
 
 """
@@ -161,8 +166,7 @@ julia> Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])
 1<2,3<4,5
 ```
 """
-Poset(m::Matrix{Bool})=Poset(Dict(:incidence=>m,:size=>size(m,1)))
-Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
+Poset(m::Matrix{Bool})=Poset(Dict{Symbol,Any}(:incidence=>m))
 
 """
 `Poset(h::Vector{<:Vector{<:Integer}})`
@@ -177,8 +181,25 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 1<2,3<4,5
 ```
 """
-Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict(:hasse=>m,:size=>length(m)))
-Base.length(p::Poset)=p.prop[:size]
+Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
+Base.length(p::Poset)=haskey(p.prop,:hasse) ? length(hasse(p)) : size(incidence(p),1)
+
+"""
+`setlabels!(p::Poset,v)`
+
+sets labels to `p` for printing.
+```julia-repl
+julia> p=Poset([[2,3],[4,5],[4,5],Int[],Int[]])
+1<2,3<4,5
+
+julia> setlabels!(p,"abcde")
+"abcde"
+
+julia> p
+a<b,c<d,e
+```
+"""
+setlabels!(p::Poset,v)=p.prop[:labels]=v
 
 function label(io::IO,p::Poset,n)
   haskey(p.prop,:labels) ? p.prop[:labels][n] :
@@ -195,7 +216,7 @@ function Base.show(io::IO,x::Poset)
   TeX=get(io,:TeX,false)
   if sep==false sep=TeX ? "{<}" : "<" end
   s=map(x->join(labels[x],sep), chains(s)) 
-  if TeX print(io,"\\noindent"*join(map(x->"\$$x\$\\hfill\\break\n",s)))
+  if TeX print(io,join(map(x->"\$\$$x\$\$\n",s)))
   else join(io,s,"\n")
   end
 end
@@ -372,10 +393,12 @@ function partition(p::Poset)
 end
 
 """
-`restricted(P,indices)`
+`restricted(P::Poset,inds::AbstractVector{<:Integer})`
 
-returns  the  sub-poset  of  `P`  determined  by `indices`, which must be a
-sublist` of `1:length(P)`.
+returns  the sub-poset of `P` determined by `inds`, which must be a sublist
+of `1:length(P)`. The indices in this sub-poset will be renumbered to their
+position in `inds`. If `P` has labels, they will be transmitted to the
+sub-poset.
 
 ```julia-repl
 julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
@@ -383,6 +406,12 @@ julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
 
 julia> restricted(p,2:6)
 3<4<1,5<2
+
+julia> setlabels!(p,1:8)
+1:8
+
+julia> restricted(p,2:6)
+4<5<2,6<3
 ```
 """
 function restricted(p::Poset,ind::AbstractVector{<:Integer})
@@ -401,7 +430,6 @@ function restricted(p::Poset,ind::AbstractVector{<:Integer})
                             for i in 1:length(ind), j in 1:length(ind)]
     delete!(res.prop, :hasse)
   end
-  res.prop[:size] = length(ind)
   if haskey(p.prop, :label)
     res.prop[:label]=(io,x, n)->p.prop[:label](io, x, ind[n])
   elseif haskey(p.prop, :labels)

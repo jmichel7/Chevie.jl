@@ -208,18 +208,6 @@ chevieset(:G31, :HeckeCharTable, function (para, root)
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         return tbl
     end)
-chevieset(:G31, :CharTable, function ()
-        local res
-        res = (chevieget(:G31, :HeckeCharTable))(map((x->begin
-                            [1, -1]
-                        end), 1:4), [])
-        res[:identifier] = "G31"
-        res[:name] = "G31"
-        res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")
-        res[:text] = "origin: mostly CharTable(H(G31))"
-        ((res[:irreducibles])[Concatenation([39, 40, 41], 50:53, [58, 59])])[[14, 19, 21, 35, 37, 41]] = [[1, E(4), -(E(4)), -(E(4)), E(4), -1], [1, -(E(4)), E(4), E(4), -(E(4)), -1], [0, 0, 0, 0, 0, 0], [0, E(4) + 1, -(E(4)) + 1, E(4) - 1, -(E(4)) - 1, 0], [0, -(E(4)) - 1, E(4) - 1, -(E(4)) + 1, E(4) + 1, 0], [0, -(E(4)) + 1, E(4) + 1, -(E(4)) - 1, E(4) - 1, 0], [0, E(4) - 1, -(E(4)) - 1, E(4) + 1, -(E(4)) + 1, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
-        return res
-    end)
 chevieset(:G31, :HeckeRepresentation, function (para, root, i)
         local x, y, rep, f1, f6, f7, f9, f11, f14, f16, f19, f21, f23, f25, f26, f27, f31, f35, f37, f42, f46, f48, f54, f56
         x = (para[1])[1]
@@ -313,7 +301,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, root, i)
 chevieset(:G31, :Representation, function (i,)
         local r, f
         r = (chevieget(:G31, :HeckeRepresentation))(map((j->begin
-                            [1, -1]
+                            [1//1, -1//1]
                         end), 1:5), [], i)
         if r != false
             return r

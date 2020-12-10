@@ -21,7 +21,7 @@ function ExpandRep(r, d, l) # decompress representation of r gens of dim d
     for k in @view v[2:end]
       q,i=divrem(Int(k),d^2)
       q1,r1=divrem(i,d)
-      m[q+1][q1+1][d1+1]=v[1]
+      m[q+1][q1+1][r1+1]=v[1]
     end
   end
   return m

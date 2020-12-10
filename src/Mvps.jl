@@ -104,7 +104,10 @@ function Base.show(io::IO,m::Monomial)
     print(io,replorTeX ? fromTeX(io,string(v)) : string(v))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
-      if replorTeX printTeX(io,"^{$d}") 
+      if replorTeX 
+        if d isa Integer printTeX(io,"^{$d}") 
+        else printTeX(io,"^{\\frac{$(numerator(d))}{$(denominator(d))}}") 
+        end
       elseif d isa Integer print(io,"^$d")
       else print(io,"^($d)")
       end
@@ -204,6 +207,10 @@ Base.broadcastable(p::Mvp)=Ref(p)
 Base.cmp(a::Mvp,b::Mvp)=cmp(a.d,b.d)
 Base.isless(a::Mvp,b::Mvp)=cmp(a,b)==-1
 Base.hash(a::Mvp,h::UInt)=hash(a.d,h)
+
+function Base.show(io::IO, ::MIME"text/html", a::Mvp)
+  print(IOContext(io,:TeX=>true),"\$",a,"\$")
+end
 
 function Base.show(io::IO, ::MIME"text/plain", a::Mvp{T,N}) where{T,N}
   if !haskey(io,:typeinfo) print(io,N==Int ? "Mvp{$T}" : "Mvp{$T,$N}",": ") end
@@ -355,7 +362,8 @@ valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
 """
   `coefficients(p::Mvp, var::Symbol)` 
 
-returns as a Dict the list of coefficients of `p` with respect to `var`.
+returns  a Dict with keys the degree  in `var` and values the corresponding
+coefficient of `p` with respect to `var`.
 
 ```julia-repl
 julia> p=(x+y+inv(y))^4
@@ -382,9 +390,10 @@ Dict{Int64,Mvp{Int64,Int64}} with 9 entries:
   1  => 4x³+12x
 ```
 
-The  same caveat is  applicable to `coefficients`  as to values: the values
-are  always `Mvp`s.  To get  a list  of scalars  for univariate polynomials
-represented as `Mvp`s, one should use `scal`.
+The  same  caveat  is  applicable  to  `coefficients` as to evaluating: the
+values  are always `Mvp`s. To get a list of scalars for the coefficients of
+a  univariate polynomial represented  as a `Mvp`,  one should use `scal` on
+the values of `coefficients`.
 """
 function coefficients(p::Mvp,v::Symbol)
   if iszero(p) return Dict{Int,typeof(p)}() end
@@ -574,7 +583,7 @@ function ExactDiv(p::Mvp,q::Mvp)
     mp=maximum(keys(cp))
 #   println("mp=$mp cp=$cp")
     t=ExactDiv(cp[mp],cq[mq])
-    if isnothing(t) return nothing end
+    if t===nothing return nothing end
     if mp!=mq t=Monomial(var=>mp-mq)*t end
     res+=t
 #   print("t=$t res=$res p=$p=>")
@@ -692,7 +701,7 @@ julia> derivative(p,:x)
 Mvp{Rational{Int64},Rational{Int64}}: (1//2)x⁻½y⅓
 
 julia> derivative(p,:y)
-Mvp{Rational{Int64},Rational{Int64}}: (1//3)x½y^{-2//3}
+Mvp{Rational{Int64},Rational{Int64}}: (1//3)x½y⁻²⁄₃
 
 julia> derivative(p,:z)
 Mvp{Rational{Int64},Rational{Int64}}: 0

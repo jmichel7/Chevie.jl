@@ -64,7 +64,7 @@ export relative_degrees, regular_eigenvalues,
   position_regular_class, eigenspace_projector, GetRelativeAction,
   GetRelativeRoot, split_levis
 
-using Gapjm
+using ..Gapjm
 """
 `relative_degrees(WF,d)`
 

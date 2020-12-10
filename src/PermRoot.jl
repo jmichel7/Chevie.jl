@@ -130,7 +130,7 @@ export PermRootGroup, PRG, PRSG, catalan,
  PermX, coroots, baseX, invbaseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants,improve_type, matY, simpleroots,
  simplecoroots, action
-using Gapjm
+using ..Gapjm
 
 best_type(x)=typeof(x)
 best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : x.n==1 ? 
@@ -981,7 +981,7 @@ function showtypes(io::IO, t::Vector{TypeIrred})
     inds=indices(t)
     if isnothing(inds) n*="?"
     elseif inds!=r .+eachindex(inds) && replorTeX
-      n*="_{"*joindigits(inds;always=true)*"}"
+      n="{"*n*"}"*"_{"*joindigits(inds;always=true)*"}"
     end
     r+=rank(t)
     n
@@ -1487,7 +1487,7 @@ function Base.show(io::IO, W::PRSG)
   end
   n=inclusion(W,PermRoot.indices(refltype(W)))
   if n!=eachindex(gens(W.parent))
-    print(io,W.parent,fromTeX(io,"_{"*joindigits(n;always=true)*"}=")) 
+    printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
   end
   showtypes(io,refltype(W))
   showtorus(io,W)

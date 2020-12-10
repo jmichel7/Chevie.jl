@@ -121,7 +121,7 @@ end;
 ```
 """
 module HeckeAlgebras
-using Gapjm
+using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
@@ -697,9 +697,9 @@ hecke(G₄,q)
 julia> s=schur_elements(H)
 7-element Array{Pol{Cyc{Rational{Int64}}},1}:
  q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
- 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³+(-2√-3)q⁻⁴
- -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+(2√-3)q⁻⁴
- 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴                        
+ 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴
+ -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴
+ 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴
  (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹
  (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹
  q²+2q+2+2q⁻¹+q⁻²                             
@@ -707,9 +707,9 @@ julia> s=schur_elements(H)
 julia> CycPol.(s)
 7-element Array{CycPol{Cyc{Rational{Int64}}},1}:
  Φ₂²Φ₃Φ₄Φ₆             
- (2√-3)q⁻⁴Φ₂²Φ′₃Φ′₆    
- (-2√-3)q⁻⁴Φ₂²Φ″₃Φ″₆   
- 2q⁻⁴Φ₃Φ₄              
+ 2√-3q⁻⁴Φ₂²Φ′₃Φ′₆
+ -2√-3q⁻⁴Φ₂²Φ″₃Φ″₆
+ 2q⁻⁴Φ₃Φ₄
  (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆
  (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆
  q⁻²Φ₂²Φ₄              

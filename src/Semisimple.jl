@@ -97,7 +97,7 @@ Dict{Symbol,Any} with 3 entries:
 julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
-julia> e=elements(T)
+julia> e=sort(elements(T))
 3-element Array{SemisimpleElement{Root1},1}:
  <1,1,1>
  <ζ₃,ζ₃²,ζ₃>
@@ -171,7 +171,7 @@ the  Weyl group of `C_𝐆 ⁰(s)` and  the extended part are representatives of
 part. Here it is printed as a coset `C_𝐆 ⁰(s)ϕ` which generates `C_𝐆 (s)`.
 """
 module Semisimple
-using Gapjm
+using ..Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
 StructureRationalPointsConnectedCentre, SScentralizer_representatives
@@ -400,7 +400,7 @@ Dict{Symbol,Any} with 3 entries:
 julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
-julia> elements(T)
+julia> sort(elements(T))
 3-element Array{SemisimpleElement{Root1},1}:
  <1,1,1>
  <ζ₃,ζ₃²,ζ₃>

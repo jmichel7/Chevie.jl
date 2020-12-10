@@ -678,7 +678,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
                     end
                 end
             else
-                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [], :root => fill(0//1, max(0, (1 + (4 + p2)) - 1)))
+                res = Dict{Symbol, Any}(:coeff => -2, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [], :root => fill(0, max(0, (1 + (4 + p2)) - 1)) // 1)
                 res[:rootCoeff] = E(p2, (2 - phi[3]) - phi[4])
                 (res[:root])[1:6] = [1, 1, 1, 1, 1, 1] // 2
                 for i = 3:p2

@@ -134,7 +134,7 @@ export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
 
 export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
 
-using Gapjm
+using ..Gapjm
 #-------------------------- Coxeter groups
 abstract type CoxeterGroup{T}<:Group{T} end
 
@@ -540,23 +540,24 @@ julia> W=coxgroup(:A,2)
 A₂
 
 julia> Poset(W)
-<1,2<21,12<121
+.<1,2<21,12<121
 
 julia> W=coxgroup(:A,3)
 A₃
 
 julia> Poset(W,W(1,3))
-<3,1<13
+.<3,1<13
 ```
 """
 function Posets.Poset(W::CoxeterGroup,w=longest(W))
- if w==one(W) return Poset(Dict(:elts=>[w],:labels=>["."],:hasse=>[Int[]],
-    :action=>map(x->[0],gens(W)),:size=>1,
-    :W=>W))
+  if w==one(W) return Poset(Dict(:elts=>[w],:hasse=>[Int[]],
+    :labels=>["."],:action=>map(x->[0],gens(W)),:W=>W))
   end
   s=firstleftdescent(W,w)
   p=Poset(W,W(s)*w)
   l=length(p)
+  # action: the Cayley graph: for generator i, action[i][w]=sw
+  # where w and sw are represented by their index in :elts
   new=filter(k->iszero(p.prop[:action][s][k]),1:l)
   append!(p.prop[:elts],W(s).*(p.prop[:elts][new]))
   append!(hasse(p),map(x->Int[],new))
@@ -576,8 +577,7 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
       end
     end
   end
-  p.prop[:size]=length(hasse(p))
-  p.prop[:labels]=map(x->joindigits(word(W,x)),p.prop[:elts])
+  setlabels!(p,map(x->isone(x) ? "." : joindigits(word(W,x)),p.prop[:elts]))
   p
 end
 

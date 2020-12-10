@@ -196,7 +196,7 @@ end
 `coefficients(c::Cyc)`
 
 for  a cyclotomic `c` of conductor `n`,  returns a vector `v` of length `n`
-such that `c==∑ᵢ v[i-1]ζⁱ`.
+such that `c==∑ᵢ vᵢ₋₁ ζⁱ`.
 
 ```julia-repl
 julia> coefficients(E(9))
@@ -477,17 +477,9 @@ function Base.show(io::IO, ::MIME"text/plain", r::Cyc)
   show(io,r)
 end
 
-function Base.show(io::IO, p::Cyc{T})where T
-  quadratic=get(io,:quadratic,true)
+function normal_show(io::IO,p::Cyc{T})where T
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  rq=""
-  if quadratic && (T<:Integer || T<:Rational{<:Integer})
-    q=Quadratic(p)
-    if !isnothing(q)
-      rq=sprint(show,q;context=io)
-    end
-  end
 if use_list
   it=zip(zumbroich_basis(p.n),p.d)
 else
@@ -521,7 +513,32 @@ end
   if res=="" res="0"
   elseif res[1]=='+' res=res[2:end] 
   end
-  res=fromTeX(io,res)
+  fromTeX(io,res)
+end
+
+function Base.show(io::IO, p::Cyc{T})where T
+  quadratic=get(io,:quadratic,true)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  rq=""
+  if quadratic && (T<:Integer || T<:Rational{<:Integer})
+    q=Quadratic(p)
+    if !isnothing(q)
+      rq=sprint(show,q;context=io)
+    else
+     for test in
+      [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2),ER(-3)]
+        q=Quadratic(p/test)
+        if !isnothing(q)
+          rq=sprint(show,q;context=io)
+          rq=format_coefficient(rq;allow_frac=true)
+          t=format_coefficient(sprint(show,test;context=io))
+          if rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
+        end
+      end
+    end
+  end
+  res=normal_show(io,p)
   print(io, (!isempty(rq) && length(rq)<length(res)) ? rq : res)
 end
 

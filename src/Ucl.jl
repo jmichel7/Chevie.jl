@@ -237,7 +237,7 @@ that class corresponding to the 2-dimensional character of `A(u)=A₂`.
 """
 module Ucl
 
-using Gapjm
+using ..Gapjm
 
 export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable,
  induced_linear_form, special_pieces
@@ -271,7 +271,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
     n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
-    n=TeX ? "\\hbox{\$$n\$}_{($cl)}" : fromTeX("$(n)_{$cl}";opt...)
+    n=TeX ? "\\mbox{\$$n\$}_{($cl)}" : fromTeX("$(n)_{$cl}";opt...)
   end
   n
 end
@@ -838,12 +838,16 @@ function showcentralizer(io::IO,u)
   c
 end
 
+function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
+  show(IOContext(io,:TeX=>true),uc)
+end
+
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
   repl=get(io,:limit,false)
   deep=get(io,:typeinfo,false)!=false
-  print(io,"UnipotentClasses(",uc.prop[:spets],")")
-  if !repl || deep return end
+  printTeX(io,"UnipotentClasses(\$",uc.prop[:spets],"\$)")
+  if !(repl||TeX) || deep return end
   print(io,"\n")
   if get(io,:order,true) println(io,uc.orderclasses) end
   sp = map(copy, uc.springerseries)
@@ -877,17 +881,17 @@ function Base.show(io::IO,uc::UnipotentClasses)
                 c2 = charnames(io,ss[:relgroup])[i]
                 (c1=="") ? c2 : c1*":"*c2
            end, findall(y->y[1]==i,ss[:locsys]))
-      append!(res, map(ss->join(cc(ss), TeX ? "\\kern 0[:8]em " : " "),sp))
+      append!(res, map(ss->join(cc(ss), TeX ? "\\kern 0.8em " : " "),sp))
     end
     res
   end
   col_labels= String[]
   if iszero(uc.p)
-    push!(col_labels, TeX ? "\\hbox{Dynkin-Richardson}" : "D-R")
+    push!(col_labels, TeX ? "\\mbox{Dynkin-Richardson}" : "D-R")
   end
     push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dBu")
   if get(io,:balaCarter,true)
-     push!(col_labels, TeX ? "\\hbox{Bala-Carter}" : "B-C")
+     push!(col_labels, TeX ? "\\mbox{Bala-Carter}" : "B-C")
   end
   if get(io,:centralizer,true)
      push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")

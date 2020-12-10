@@ -116,12 +116,11 @@ const ChevieDict=Dict(
 "GarsideWords"=>"elements",
 "GcdPartitions"=>"gcd_partitions",
 "GcdRepresentation(x,y)"=>"gcdx(x,y)[2:3]",
-#GenericDegrees
 "GenericOrder"=>"generic_order",
 "GenericSign"=>"generic_sign",
 "GetRoot"=>"root",
 #GoodCoxeterWord
-#GraphAutomorphisms
+"GraphAutomorphisms"=>"graph_automorphisms",
 "Hasse"=>"hasse",
 "Hecke"=>"hecke",
 "HeckeCharValues"=>"char_values",
@@ -278,6 +277,8 @@ const ChevieDict=Dict(
 "RightLcm"=>"rightlcm",
 "RootDatum"=>"rootdatum",
 "RootsCartan(m)"=>"roots(m)",
+"W.rootInclusion"=>"inclusion(W)",
+"W.rootRestriction"=>"restriction(W)",
 "Rotation(v,i)"=>"circshift(v,-i)",
 "Rotations(v)"=>"circshift.(Ref(a),length(a):-1:1)",
 "ScalMvp"=>"scal",

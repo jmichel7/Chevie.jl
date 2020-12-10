@@ -7,7 +7,9 @@ chevieset(:timp, :PhiFactors, function (p, q, r, phi)
                 if phi == perm"(1,2,4)"
                     return [1, 1, E(3, 2)]
                 else
-                    res=fill(E(1),r)
+                    res = map((x->begin
+                                    E(1)
+                                end), 1:r)
                     res[length(res)] = E(o)
                     return res
                 end

@@ -50,7 +50,7 @@ of  rank n and  odd defect parameterize  unipotent characters of symplectic
 groups of dimension 2n or orthogonal groups of dimension 2n+1.
 """
 module Symbols
-using Gapjm
+using ..Gapjm
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_feg_symbol,
 valuation_feg_symbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,

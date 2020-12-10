@@ -1,5 +1,5 @@
 module Gt
-using Gapjm
+using ..Gapjm
 export RationalUnipotentClasses, ClosedSubsets, ClassTypes
 
 function RationalUnipotentClasses(WF, p)

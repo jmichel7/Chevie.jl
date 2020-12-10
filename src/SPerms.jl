@@ -14,7 +14,7 @@ julia> p=SPerm(-1)
 julia> q=SPerm(1,2)
 (1,2)
 
-julia> elements(Group([p,q]))
+julia> sort(elements(Group([p,q])))
 8-element Array{SPerm{Int16},1}:
  (1,-2)
  (1,-2,-1,2)
@@ -42,7 +42,7 @@ true
 SPerms are considered as scalars for broadcasting.
 """
 module SPerms
-using Gapjm
+using ..Gapjm
 export SPerm, CoxHyperoctaedral, sstab_onmats, SPerm_onmats, @sperm_str, signs
 
 """
