@@ -658,15 +658,17 @@ end
 Base.length(uc::UnipotentClasses)=length(uc.classes)
 
 function UnipotentClasses(W,p=0)
-  spets=W isa Spets
-  if spets 
+  println("UnipotentClasses(",W,")")
+  spetscase=W isa Spets
+  if spetscase
     WF=W
     W=Group(WF)
     t=refltype(W)
     l=map(x->findfirst(y->any(z->sort(x.indices)==sort(z.indices),
                                        y.orbit),refltype(WF)),t)
     uc=UnipotentClasses.(refltype(WF)[l],p)
-  else t=refltype(W)
+   else WF=spets(W)
+    t=refltype(W)
     uc=UnipotentClasses.(t,p)
   end
   if isempty(t)
@@ -686,11 +688,13 @@ function UnipotentClasses(W,p=0)
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
         u.prop[:Au]=prod(x->x.prop[:Au],v)
         if all(x->haskey(x.prop,:dimred),v)
-          u.prop[:dimred]=sum(x->x.prop[:dimred],v) end
+          u.prop[:dimred]=sum(x->x.prop[:dimred],v)+rank(W)-semisimplerank(W) 
+        end
         if all(x->haskey(x.prop,:dimunip),v)
           u.prop[:dimunip]=sum(x->x.prop[:dimunip],v) end
         if all(x->haskey(x.prop,:red),v)
-          u.prop[:red]=prod(x->x.prop[:red],v) end
+          println(map(x->x.prop[:red],v))
+          u.prop[:red]=reduce(Cosets.extprod,map(x->x.prop[:red],v)) end
         if all(x->haskey(x.prop,:AuAction),v)
           u.prop[:AuAction]=prod(x->x.prop[:AuAction],v) end
         if all(x->haskey(x.prop,:dynkin),v)
@@ -702,12 +706,15 @@ function UnipotentClasses(W,p=0)
         u.prop[:balacarter]=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
                     v[i].prop[:balacarter]) for (i,x) in enumerate(l)])
       end
-      if rank(W)>semisimplerank(W) && haskey(u.prop, :red)
-        T=torus(rank(W)-semisimplerank(W))
-        u.prop[:red]*=T
-        if haskey(u.prop,:AuAction)
-          u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-             map(x->cat(x,reflrep(T,T()),dims=(1,2)),u.prop[:AuAction].F0s))
+      if haskey(u.prop, :red)
+        if !(u.prop[:red] isa Spets) u.prop[:red]=spets(u.prop[:red]) end
+        if rank(W)>semisimplerank(W) && haskey(u.prop, :red)
+          u.prop[:red]=Cosets.extprod(u.prop[:red],radical(WF))
+          if haskey(u.prop,:AuAction)
+            T=radical(W)
+            u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
+               map(x->cat(x,reflrep(T,T()),dims=(1,2)),u.prop[:AuAction].F0s))
+          end
         end
       end
       u
@@ -755,8 +762,8 @@ function UnipotentClasses(W,p=0)
     s
   end
   if length(uc)==1 prop=uc[1].prop else prop=Dict{Symbol,Any}() end
-  prop[:spets]=spets ? WF : W
-  if spets
+  prop[:spets]=spetscase ? WF : W
+  if spetscase
     springerseries=filter(x->sort(inclusion(W,x[:levi]).^WF.phi)==
                              sort(inclusion(W,x[:levi])),springerseries)
   end
@@ -773,19 +780,19 @@ function UnipotentClasses(W,p=0)
   end
 # println(springerseries[1])
   s=springerseries[1]
-  if spets
+  if spetscase
     s[:relgroup]=relative_coset(WF,s[:levi])
     s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
   end
   l=filter(i->any(y->i==y[1],s[:locsys]),1:length(classes))
-  s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
+  s[:locsys]=map(((c,s),)->[findfirst(==(c),l),s],s[:locsys])
   # for now only springerseries[1] properly twisted
   for s in springerseries[2:end]
-    if spets
+    if spetscase
       s[:relgroup]=relative_coset(WF,s[:levi])
       s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
     end
-    s[:locsys]=map(y->[findfirst(isequal(y[1]),l),y[2]],s[:locsys])
+    s[:locsys]=map(((c,s),)->[findfirst(==(c),l),s],s[:locsys])
   end
   classes=classes[l]
   AdjustAu!(classes,springerseries)
@@ -809,12 +816,16 @@ function showcentralizer(io::IO,u)
   if haskey(u.prop,:AuAction)
     if rank(u.prop[:red])>0
       c*="."
-      if length(u.prop[:Au])==1 ||
+      if all(isone,u.prop[:AuAction].F0s)
+        c*=sprint(show,u.prop[:red];context=io)*AuName(u)
+      elseif length(u.prop[:Au])==1 ||
          length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
-        c*=reflection_name(io,u.prop[:AuAction])
-      elseif all(isone,u.prop[:AuAction].F0s)
-#       c*=reflection_name(io,u.prop[:AuAction].group)*AuName(u)
-        c*=sprint(show,u.prop[:AuAction].group;context=io)*AuName(u)
+        if length(u.prop[:Au])==1 || isone(u.prop[:red].phi)
+          c*=sprint(show,u.prop[:AuAction];context=io)
+        else
+          c*="["*sprint(show,u.prop[:red];context=io)*"]"*
+                 sprint(show,u.prop[:AuAction];context=io)
+        end
       else
         c*=reflection_name(io,u.prop[:AuAction])*AuName(u)
       end
@@ -854,8 +865,9 @@ function Base.show(io::IO,uc::UnipotentClasses)
   if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
-  W = uc.prop[:spets]
-  if W isa Spets W=Group(W) end
+  WF=uc.prop[:spets]
+  if WF isa Spets W=Group(WF)
+  else W=WF;WF=spets(W) end
   if uc.p!=0 || !any(x->haskey(x.prop,:balacarter),uc.classes)
     io=IOContext(io,:balacarter=>false)
   end
@@ -899,8 +911,8 @@ function Base.show(io::IO,uc::UnipotentClasses)
   if get(io,:springer,true)
    append!(col_labels,
       map(function (ss,)
-        res = string(repr(ss[:relgroup],context=:limit=>true),"(",
-          repr(reflection_subgroup(W,ss[:levi]),context=:limit=>true),")")
+        res=string(sprint(show,ss[:relgroup];context=io),"(",
+          sprint(show,subspets(WF,ss[:levi]);context=io),")")
         if !all(isone,ss[:Z])
           res*=string("/", join(map(q->sprint(show,q;context=io),ss[:Z]),","))
         end
@@ -914,11 +926,11 @@ function Base.show(io::IO,uc::UnipotentClasses)
   format(io,toM(tbl);rows_label="u",col_labels=col_labels,row_labels=row_labels)
 end
 
-# decompose tensor product of characteres (given as their indices in CharTable)
+# decompose tensor product of characters (given as their indices in CharTable)
 function DecomposeTensor(W,c::Int...)
   ct=CharTable(W)
 # println("eltype=",eltype(irr))
-  decompose(ct,prod(view(ct.irr,collect(c),:),dims=1))
+  decompose(ct,vec(prod(view(ct.irr,collect(c),:),dims=1)))
 end
 
 struct ICCTable
@@ -1086,7 +1098,7 @@ function Base.show(io::IO,x::ICCTable)
     io=IOContext(io,:rows=>rows,:cols=>rows)
   end
   tbl=get(io,:cycpol,true) ? map(CycPol,x.scalar) : x.scalar
-  col_labels=map(p->name(IOContext(io,:locsys=>p[2]),x.uc.classes[p[1]]),
+  col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
   rowLabels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
   format(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
@@ -1110,6 +1122,7 @@ end
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
 function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
+  println("here uc=",uc)
   pieces=map(i->ICCTable(uc,i;q=q),eachindex(uc.springerseries))
   greenpieces=map(x->x.scalar*toM(HasType.DiagonalMat(q.^x.dimBu...)),pieces)
   l=vcat(getproperty.(pieces,:locsys)...)
@@ -1120,15 +1133,15 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
     :Y=>^(repair(cat(getproperty.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
     :parameter=>vcat(getproperty.(pieces,:parameter)...),
     :relgroups=>getindex.(uc.springerseries,:relgroup)))
-  n=length(l)
   if classes
     res.scalar*=E(1)
-    res.cardClass=zeros(eltype(res.scalar),n)//1
+    res.cardClass=zeros(eltype(res.scalar),length(l))//1
     res.classes=l^p
     for i in eachindex(uc.classes)
       Au=uc.classes[i].prop[:Au]
       b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
-      res.scalar[1:n,b]*=CharTable(Au).irr
+ #    println("i=",i," b=",b," Au=",Au)
+      res.scalar[:,b]*=CharTable(Au).irr
       res.cardClass[b]=res.Y[[b[charinfo(Au)[:positionId]]],b]*CharTable(Au).irr
       res.cardClass[b]=map((x,y)->x*y//length(Au),
                              res.cardClass[b],classinfo(Au)[:classes])

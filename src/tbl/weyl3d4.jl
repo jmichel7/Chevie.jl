@@ -67,13 +67,15 @@ chevieset(Symbol("3D4"), :UnipotentClasses, function (p,)
                             end))
                 end)
         uc = deepcopy((chevieget(:D, :UnipotentClasses))(4, p))
-        for p = [["11111111", perm"(1,2,4)"], ["221111", perm"(1,2,3)"]]
-            (class(p[1]))[:F] = p[2]
+        for c = [["11111111", perm"(1,2,4)"], ["221111", perm"(1,2,3)"]]
+            if p != 2
+                (class(c[1]))[:red] = spets((class(c[1]))[:red], c[2])
+            end
         end
         c = class("3311")
         g = CoxeterGroup("G", 2)
-        c[:red] = ReflectionSubgroup(g, [])
+        c[:red] = torus(g, 5)
         c[:F] = EltWord(g, [1, 2, 1, 2])
-        c[:AuAction] = ExtendedReflectionGroup(c[:red], EltWord(g, [1, 2, 1, 2, 1, 2]))
+        c[:AuAction] = ExtendedReflectionGroup(Group(c[:red]), EltWord(g, [1, 2, 1, 2, 1, 2]))
         return uc
     end)

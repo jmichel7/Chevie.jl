@@ -142,36 +142,16 @@ end
 Base.isless(a::Monomial, b::Monomial)=cmp(a,b)==-1
 Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
-# gcd(m_1,...,m_k)= largest m such that m_i>=m
 function Base.gcd(l::Monomial...)
-  if length(l)==0 return Monomial()
-  elseif length(l)==1 return l[1]
-  elseif length(l)>2 return reduce(gcd,l)
-  else (a,b)=l
+  if length(l)!=2 reduce(gcd,l;init=Monomial())
+  else Monomial(merge(min,l[1].d,l[2].d))
   end
-  res=empty(a.d.d)
-  ai=bi=1
-  la=length(a.d)
-  lb=length(b.d)
-  while ai<=la || bi<=lb
-    if ai<=la 
-      (va,pa)=a.d.d[ai] 
-    end
-    if bi<=lb 
-      (vb,pb)=b.d.d[bi] 
-    end
-    if     ai>la if pb<0 push!(res,b.d.d[bi]) end; bi+=1
-    elseif bi>lb if pa<0 push!(res,a.d.d[ai]) end; ai+=1
-    else c=cmp(va,vb)
-      if     c>0 if pb<0 push!(res,b.d.d[bi]) end; bi+=1
-      elseif c<0 if pa<0 push!(res,a.d.d[ai]) end; ai+=1
-      else s=min(pa,pb)
-        if !iszero(s) push!(res,va=>s) end
-        ai+=1; bi+=1
-      end
-    end
+end
+
+function Base.lcm(l::Monomial...)
+  if length(l)!=2 reduce(lcm,l;init=Monomial())
+  else Monomial(merge(max,l[1].d,l[2].d))
   end
-  Monomial(res...)
 end
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
@@ -515,26 +495,42 @@ Mvp{Float64,Rational{Int64}}: 1.2599210498948732x½
 ```
 """
 function value(p::Mvp,k::Pair...)
-  vv=Dict(k)
-  res=res1=zero(p)
-  badi=Int[]
+  res1=badi=nothing
+  if length(k)==1 (key,val)=k[1] 
+  # special code when length(k)==1 and !(key∈ variables(p)) is 10x faster
+  elseif isempty(k) return p
+  else vv=Dict(k) 
+  end 
   for (i,(m,c1)) in enumerate(p.d)
-    badj=Int[]
+    res=badj=nothing
     for (j,(v,c)) in enumerate(m.d)
-      if haskey(vv,v) 
-        if isempty(badj) res=Mvp(c1) end
-        if isinteger(c) res*=vv[v]^c
-        else res*=root(vv[v],denominator(c))^numerator(c)
+      if length(k)==1 && key!=v continue end
+      if length(k)>1 
+        if !haskey(vv,v) continue 
+        else val=vv[v] 
         end
-        push!(badj,j)
       end
+      if badj==nothing 
+        badj=Int[]
+        res=Mvp(c1) 
+      end
+      if isinteger(c) res*=val^Int(c)
+      else res*=root(val,denominator(c))^numerator(c)
+      end
+      push!(badj,j)
     end
-    if !isempty(badj) res1+=Monomial(deleteat!(collect(m.d),badj)...)*res
+    if badj!==nothing
+      res*=Monomial(deleteat!(collect(m.d),badj)...)
+      badj=nothing
+      if badi===nothing res1=res
+        badi=Int[]
+      else res1+=res
+      end
       push!(badi,i)
     end
  #  println("badi=$badi m=$m c=$c res1=$res1")
   end
-  if !isempty(badi) Mvp(deleteat!(collect(p.d),badi)...)+res1
+  if badi!==nothing Mvp(deleteat!(collect(p.d),badi)...)+res1
   else p
   end
 end
@@ -555,7 +551,7 @@ function Base.inv(p::Mvp)
   if length(p.d)>1 || iszero(p) throw(InexactError(:inv,Mvp,p)) end
   (m,c)=first(p.d)
   if c==1 || c==-1 return Mvp(inv(m)=>c) end
-  Mvp(inv(m)=>inv(c))
+  Mvp(inv(m)=>1//c)
 end
 
 function Base.://(p::Mvp,q::Mvp)

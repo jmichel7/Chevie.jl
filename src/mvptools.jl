@@ -60,8 +60,8 @@ julia> @Mvp x,y
 
 julia> factor(x^2-y^2+x+3y-2)
 2-element Array{Mvp{Int64,Int64},1}:
- x+y-1
  x-y+2
+ x+y-1
 
 julia> factor(x^2+x+1)
 2-element Array{Mvp{Cyc{Int64},Int64},1}:
@@ -89,7 +89,7 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   end
   if size(m,1)==2 t=one(m)
   else n=copy(m)
-    m,ind=echelon!(m)
+    _,ind=echelon(m)
     m=m[ind,:]
     if size(m,1)>2 return [p] end
     t=permutedims(solutionmat(m,n))
@@ -176,6 +176,8 @@ end
 
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
+Gapjm.gap(p::Integer)=string(p)
+
 function Gapjm.gap(p::Cyc)
   res=join(map(p.d) do (deg,v)
     den=denominator(v)
@@ -196,3 +198,5 @@ function Gapjm.gap(p::Cyc)
   end
   res
 end
+
+Gapjm.gap(v::AbstractVector)="["*join(gap.(v),",")*"]"

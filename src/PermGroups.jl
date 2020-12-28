@@ -308,7 +308,7 @@ struct PG{T}<:PermGroup{T}
   prop::Dict{Symbol,Any}
 end
 
-function Groups.Group(a::AbstractVector{Perm{T}}) where T
+function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T
   PG(filter(!isone,a),Dict{Symbol,Any}())
 end
 

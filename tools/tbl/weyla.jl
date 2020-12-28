@@ -153,8 +153,8 @@ chevieset(:A, :FactorizedSchurElement, function (arg...,)
     end)
 chevieset(:A, :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H
-        H = Hecke(CoxeterGroup("A", n), -((param[1])[1]) // (param[1])[2])
-        return -((param[1])[2]) * SpechtModel(H, (partitions(n + 1))[i])
+        H = hecke(CoxeterGroup("A", n), -((param[1])[1]) // (param[1])[2])
+        return -((param[1])[2]) * Spechtmodel(H, (partitions(n + 1))[i])
     end)
 chevieset(:A, :Representation, function (n, i)
         return ((chevieget(:imp, :Representation))(1, 1, n + 1, i))[2:n + 1]

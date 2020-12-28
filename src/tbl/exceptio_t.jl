@@ -8,10 +8,8 @@ chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,(t->r->fill(1//2,r)))
 chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
   function(t)
     r=chevieget(t,:GeneratingRoots)
-    e=chevieget(t,:EigenvaluesGeneratingReflections)
-    e=map(x->E(denominator(x),numerator(x)),e)
-    e=map(i->e[i]*conj(r[i])//(sum(conj(r[i]).*r[i])),eachindex(e))
-    map(x->map(y->x*y,r),e)
+    eig=map(x->E(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
+    toL(toM(coroot.(r,eig))*permutedims(toM(r)))
   end)
 
 function ExpandRep(r, d, l) # decompress representation of r gens of dim d

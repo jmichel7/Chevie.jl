@@ -185,8 +185,8 @@ function LusztigInductionPieces(LF,WF)
       w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
       rh=map(rh)do x
-        r=GetRelativeRoot(W,cL,x)
-        pr=PermX(WGL,reflection(r[:root],r[:coroot]))
+        r=relative_root(W,cL,x)
+        pr=PermX(WGL,reflection(r.root,r.coroot))
         findfirst(i->reflection(WGL,i)==pr,eachindex(roots(WGL)))
 #       p=findfirst(i->reflection(WGL,restriction(WGL,i))==
 #            PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
@@ -364,13 +364,10 @@ function HCInductionTable(HF, WF)
         sH=length(relative_group(H, h[:levi]))
         rr=Int[]
         for x in rh
-          r=GetRelativeRoot(W, L, x)
+          r=relative_root(W, L, x)
           p=findfirst(i->reflection(Wi,restriction(Wi,i))==
-                       PermX(Wi,reflection(r[:root],r[:coroot])),inclusion(Wi))
-          if !isnothing(p) 
-            push!(rr,p) 
-            rr=unique(rr)
-          end
+                       PermX(Wi,reflection(r.root,r.coroot)),inclusion(Wi))
+          if p!==isnothing && !(p in rr) push!(rr,p) end
           Hi = reflection_subgroup(Wi, rr)
           if length(Hi) == sH return Hi end
         end

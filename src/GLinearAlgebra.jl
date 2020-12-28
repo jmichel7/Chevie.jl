@@ -37,16 +37,20 @@ function echelon!(m::Matrix)
   rk=0
   inds=collect(axes(m,1))
   for k in axes(m,2)
-    j=findfirst(!iszero,m[rk+1:end,k])
+    j=findfirst(!iszero,@view m[rk+1:end,k])
     if j===nothing continue end
     j+=rk
     rk+=1
-    row=m[j,:]
-    m[j,:].=m[rk,:]
-    m[rk,:].=inv(row[k]).*row
-    inds[[j,rk]]=inds[[rk,j]]
+    if rk!=j
+      row=m[j,:]
+      m[j,:].=m[rk,:]
+      m[rk,:].=inv(row[k]).*row
+    elseif !isone(m[rk,k])
+      m[rk,:].=inv(m[rk,k]).*@view m[rk,:]
+    end
+    inds[j],inds[rk]=inds[rk],inds[j]
     for j in axes(m,1)
-      if rk!=j && !iszero(m[j,k]) m[j,:].-=m[j,k].*m[rk,:] end
+      if rk!=j && !iszero(m[j,k]) view(m,j,:).-=m[j,k].*view(m,rk,:) end
     end
 #   println(m)
   end

@@ -3,7 +3,7 @@
 # Data for the coset W(A_r).F where F induces -w0.
 
 chevieset(Symbol("2A"),:CharTable,function(r)
-  tbl = chevieget(:A, :CharTable)(r)
+  tbl = copy(chevieget(:A, :CharTable)(r))
   tbl[:identifier] = "W(^2A_$r)"
   A=chevieget(:A,:LowestPowerFakeDegree).(chevieget(:A,:CharInfo)(r)[:charparams])
   tbl[:irreducibles]= (-1).^A .* tbl[:irreducibles]
@@ -54,8 +54,8 @@ chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
     t=twistings(WF,inclusiongens(c[:red]))
     m=map(x->refleigen(x,position_class(x,x())),t)
     m=map(x->count(y->y==Root1(-1),x),m)
-    p=findfirst(==(maximum(m)),m)
-    c[:F]=t[p]()
+    p=findmax(m)[2]
+    c[:red]=spets(c[:red],t[p].F)
   end
   uc
 end)

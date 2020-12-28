@@ -160,7 +160,7 @@ const src=[
 "cmplxg31", "cmplxg31_t",
 "cmplxg32",
 "cmplxg33", 
-"cmplxg34",
+"cmplxg34", "cmplxg34_t",
 "cmplximp", "cmplximp_t",
 "cmpxtimp", "cmpxtimp_t",
 "coxh3", 

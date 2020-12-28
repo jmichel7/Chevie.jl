@@ -229,38 +229,33 @@ Base.copy(p::Perm)=Perm(copy(p.d))
 
 # hash is needed for using Perms in Sets/Dicts
 function Base.hash(a::Perm, h::UInt)
-  b = 0x595dee0e71d271d0%UInt
   for (i,v) in enumerate(a.d)
-    if v!=i
-      b = xor(b,xor(hash(v, h),h))
-      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-    end
+    if v!=i h=hash(v,h) end
   end
-  b
+  h
 end
 
 # Perms are scalars for broadcasting"
 Base.broadcastable(p::Perm)=Ref(p)
 
-Base.typeinfo_implicit(::Type{Perm{T}}) where T=T!=Idef
+Base.typeinfo_implicit(::Type{Perm{T}}) where T=T==Idef
 
 # total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
+  a,b=promote_degree(a,b)
   for (ai,bi) in zip(a.d,b.d)
-    if ai<bi return -1 end
-    if ai>bi return  1 end
-  end
-  la=degree(a)
-  lb=degree(b)
-@inbounds  if la<lb for i in la+1:lb if b.d[i]!=i return -1 end end
-  elseif la>lb for i in lb+1:la if a.d[i]!=i return  1 end end
+    ai<bi && return -1
+    ai>bi && return  1 
   end
   0
 end
 
-Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+@inline Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
-Base.:(==)(a::Perm, b::Perm)= cmp(a,b)==0
+function Base.:(==)(a::Perm, b::Perm)
+  a,b=promote_degree(a,b)
+  a.d==b.d
+end
 
 """
 `Matrix(a::Perm,n=Perms.degree(a))` 
@@ -487,7 +482,7 @@ function Base.show(io::IO, a::Perm)
   if !isperm(a.d) error("malformed permutation") end
   replorTeX=get(io,:limit,false)||get(io,:TeX,false)
   if !replorTeX print(io,"perm\"") end
-  cyc=orbits(a;trivial=false)
+  cyc=cycles(a)
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end

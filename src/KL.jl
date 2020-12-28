@@ -655,8 +655,7 @@ end
 """
 `representation(c::LeftCell,H)`
 
-returns  a list of  matrices giving the  representation of `H`  on the left
-cell `c`.
+returns matrices giving the representation of `H` on the left cell `c`.
 
 ```julia-repl
 julia> W=coxgroup(:H,3)

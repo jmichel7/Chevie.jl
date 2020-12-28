@@ -109,7 +109,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime testmat(12)^2;
-  453.005 ms (10790333 allocations: 626.01 MiB)
+  346.079 ms (4367402 allocations: 366.17 MiB)
 ```
 The equivalent in GAP:
 
@@ -121,9 +121,6 @@ end;
 testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 """
 module Cycs
-# testmat(12)^2:
-#  346.079 ms (4367402 allocations: 366.17 MiB) # good 1.5
-#  439.877 ms (8291076 allocations: 496.75 MiB) # bad  1.5
 #import Gapjm: coefficients, root
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
@@ -132,7 +129,7 @@ using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
-                     # This selects the fastest.
+                     # The ModuleElt is twice the speed of the list one
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int       # conductor
@@ -217,7 +214,7 @@ function coefficients(c::Cyc{T})where T
 if use_list
   for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[p] end
 else
-  for (i,v) in c.d.d res[i+1]=v end
+  for (i,v) in c.d res[i+1]=v end
 end
   res
 end
@@ -348,7 +345,7 @@ end
 if use_list
   num(c::Cyc)=c.d[1]
 else
-  num(c::Cyc{T}) where T =iszero(c) ? zero(T) : first(c.d)[2]
+  num(c::Cyc{T}) where T =iszero(c) ? zero(T) : last(first(c.d))
 end
 
 function Base.convert(::Type{Real},c::Cyc)
@@ -424,10 +421,10 @@ function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   m=div(n,c.n)
 if use_list
   res=zeros(eltype(c.d),length(zumbroich_basis(n)))
-  z=zumbroich_basis(c.n).*m
+  z=zumbroich_basis(c.n)
   for (i,v) in enumerate(c.d)
     if iszero(v) continue end
-    (b,k)=Elist(n,z[i])
+    @inbounds (b,k)=Elist(n,z[i]*m)
     @inbounds res[k].+=b ? v : -v
   end
   Cyc(n,res)
@@ -458,7 +455,7 @@ function Base.cmp(a::Cyc,b::Cyc)
   a.n==1 ? cmp(num(a),num(b)) : cmp(a.d,b.d)
 end
 
-Base.:(==)(a::Cyc,b::Cyc)=cmp(a,b)==0
+Base.:(==)(a::Cyc,b::Cyc)=a.n==b.n && a.d==b.d
 Base.isless(a::Cyc,b::Cyc)=cmp(a,b)==-1
 Base.isless(c::Cyc,d::Real)=c<Cyc(d)
 Base.isless(d::Real,c::Cyc)=Cyc(d)<c
@@ -543,22 +540,18 @@ function Base.show(io::IO, p::Cyc{T})where T
 end
 
 function Base.:+(x::Cyc,y::Cyc)
-if use_list
   a,b=promote(x,y)
   if iszero(a) return b
   elseif iszero(b) return a
   end
+if use_list
   a,b=promote_conductor(a,b)
   lower(Cyc(a.n,a.d+b.d))
 else
-  a,b=promote(x,y)
-  if iszero(a) return b
-  elseif iszero(b) return a
-  end
   n=lcm(a.n,b.n)
   na=div(n,a.n)
   nb=div(n,b.n)
-  res=empty(a.d.d)
+  res=eltype(a.d)[]
   for (i,va) in a.d sumroot(res,n,na*i,va) end
   for (i,vb) in b.d sumroot(res,n,nb*i,vb) end
   lower(Cyc(n,ModuleElt(res;check=true)))
@@ -616,7 +609,7 @@ else
 # let ad=a.d,bd=b.d,na=na,nb=nb
 #   lower(sumroots(n,[na*i+nb*j=>va*vb for (i,va) in ad, (j,vb) in bd]))
 # end
-  res=empty(a.d.d)
+  res=eltype(a.d)[]
   for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
   lower(Cyc(n,ModuleElt(res;check=true)))
 end
@@ -645,7 +638,7 @@ end
   for (p,np) in factor(n)
     m=div(n,p)
 if use_list
-    let p=p, m=m, zb=zb
+    let m=m, zb=zb
     if np>1
       if all(z->z%p==0,zb[nz])
         return lower(Cyc(m,div.(zb[nz],p),c.d[nz]))
@@ -657,10 +650,10 @@ if use_list
       end
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(!iszero,cnt).-1
-        kk=[div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]
+        kk=@. div(u+m*mod(-u,p)*invmod(m,p),p)%m
         if p==2 return lower(Cyc(m,kk,c.d[indexin((kk*p).%n,zb)]))
         elseif all(k->constant(c.d[indexin((m*(1:p-1).+k*p).%n,zb)]),kk)
-         return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
+          return lower(Cyc(m,kk,-c.d[indexin((m.+kk*p).%n,zb)]))
         end
       end
     end
@@ -673,16 +666,16 @@ else
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
-      let p=p, m=m, n=n
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(!iszero,cnt).-1
 #       kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))
         kk=sort(@. div(u+m*mod(-u,p)*invmod(m,p),p)%m)
+    let m=m
         if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
         elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
           return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in kk)))
         end
-      end
+    end
       end
     end
 end
@@ -845,7 +838,7 @@ else
     return nothing
   end
 end
-  for i in 0:c.n-1
+  for i in 0:c.n-1 # should loop over prime_residues if it was efficient
     if c==E(c.n,i) return Root1(c.n,i) end
     if -c==E(c.n,i) 
       if c.n%2==0 return Root1(c.n,div(c.n,2)+i)
@@ -1049,6 +1042,8 @@ function root(x::Cyc,n=2)
   end
 end
 
+# 347.534 ms (4367402 allocations: 366.17 MiB) in 1.5.3
+# 565.431 ms (5861810 allocations: 775.28 MiB) in 1.5.3, ModuleElts Dict
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
   ss=reduce(vcat,[[[i,j] for j in i+1:p-1] for i in 0:p-1])
   [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]

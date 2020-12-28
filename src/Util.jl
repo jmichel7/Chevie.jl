@@ -25,8 +25,8 @@ end
 """
 @forward T.f f1,f2,...
   generates 
-f1(x::T,y...)=f1(x.f,y...)
-f2(x::T,y...)=f2(x.f,y...)
+f1(a::T,args...)=f1(a.f,args...)
+f2(a::T,args...)=f2(a.f,args...)
 ...
 """
 macro forward(ex, fs)
@@ -150,9 +150,7 @@ end
 
 function TeXstrip(n::String) # plain ASCII rendering of TeX code
   n=replace(n,r"\\tilde *"=>"~")
-  n=replace(n,"_"=>"")
-  n=replace(n,"}"=>"")
-  n=replace(n,"{"=>"")
+  n=replace(n,r"[_{}$]"=>"")
   n=replace(n,"\\phi"=>"phi")
   n=replace(n,"\\zeta"=>"E")
   n=replace(n,r"\bi\b"=>"I")

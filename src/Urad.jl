@@ -215,14 +215,14 @@ Base.:*(u::UnipotentElement,v::UnipotentElement)=u.U(vcat(u.list, v.list)...)
 
 Base.:/(u::UnipotentElement,v::UnipotentElement)=u*inv(v)
 
-Base.inv(u::UnipotentElement)=u.U(reverse(map(p->p[1]=>-p[2],u.list))...)
+Base.inv(u::UnipotentElement)=u.U(reverse(map(((r,c),)->r=>-c,u.list))...)
 
 Base.:^(u::UnipotentElement,v::UnipotentElement)=inv(v)*u*v
 
 Base.:(==)(u::UnipotentElement,v::UnipotentElement)=u.U==v.U && u.list==v.list
 
 function Base.:^(u::UnipotentElement,v::SemisimpleElement)
-  UnipotentElement(u.U, map(p->p[1]=>v^roots(u.U.W,p[1])*p[2],u.list))
+  UnipotentElement(u.U,map(((r,c),)->r=>v^roots(u.U.W,r)*c,u.list))
 end
 
 # Computes the constants ηᵣₛ defined in [Carter1972, 6.4.2 and 6.4.3]
@@ -248,7 +248,7 @@ function Base.:^(u::UnipotentElement,n::Perm)
   s=firstleftdescent(W, n)
   p=filter(x->isleftdescent(W,n,x[1]),u.list)
   if !isempty(p) error(u," should have no coefficient on root ", p[1][1], "\n") end
-  u.U(map(i->Int(i[1]^n)=>η(u.U,s,i[1])*i[2], u.list)...)^(W(s)*n)
+  u.U(map(((r,c),)->Int(r^n)=>η(u.U,s,r)*c,u.list)...)^(W(s)*n)
 end
 
 Base.one(u::UnipotentElement)=UnipotentElement(u.U, Vector{Int}[])

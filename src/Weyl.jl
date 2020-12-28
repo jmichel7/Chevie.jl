@@ -620,6 +620,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction, 
  PermRoot.semisimplerank, PermRoot.simplecoroots, 
  PermRoot.simple_representatives, PermRoot.simpleroots, PermRoot.torus_order, 
+ PermRoot.baseX, PermRoot.central_action,
  Perms.reflength
 
 #--------------- FCG -----------------------------------------
@@ -718,6 +719,8 @@ function rootdatum(rr::Matrix,cr::Matrix)
   C=cr*transpose(rr) # Cartan matrix
   rootdec=roots(C) # difference with PermRootGroup is order of roots here
   N=length(rootdec)
+  if isempty(rr) G=PRG(size(rr,2))
+  else
   r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
@@ -729,6 +732,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   coroots[axes(cr,1)].=eachrow(cr)
   G=PRG(gens,mats,r,coroots,
         Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C)))
+  end
   FCG(G,rootdec,N,Dict{Symbol,Any}())
 end
 
@@ -747,6 +751,8 @@ julia> torus(3)
 ```
 """
 torus(i)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
+
+PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
 
 coxgroup()=torus(0)
 
@@ -786,26 +792,18 @@ function rootlengths(W::FCG)
 end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
-  mroots(W)=toM(simpleroots(W))
-  mcoroots(W)=toM(simplecoroots(W))
-  r=roots(W1.G)
-  cr=roots(W2.G)
-  if isempty(r)
-    if isempty(cr) return torus(Gapjm.rank(W1)+Gapjm.rank(W2)) end
-    r=mroots(W2)
-    r=hcat(r,zeros(eltype(r),size(r,1),Gapjm.rank(W1)))
-    cr=mcoroots(W2)
-    cr=hcat(cr,zeros(eltype(cr),size(cr,1),Gapjm.rank(W1)))
-  elseif isempty(cr)
-    r=mroots(W1)
-    r=hcat(r,zeros(eltype(r),size(r,1),Gapjm.rank(W2)))
-    cr=mcoroots(W1)
-    cr=hcat(cr,zeros(eltype(cr),size(cr,1),Gapjm.rank(W2)))
-  else
-    r=cat(mroots(W1),mroots(W2),dims=[1,2])
-    cr=cat(mcoroots(W1),mcoroots(W2),dims=[1,2])
-  end
-  return rootdatum(r,cr)
+  mroots(W)=iszero(W.N) ? fill(0,0,rank(W)) : toM(simpleroots(W))
+  mcoroots(W)=iszero(W.N) ? fill(0,0,rank(W)) : toM(simplecoroots(W))
+  r=cat(mroots(parent(W1)),mroots(parent(W2)),dims=[1,2])
+  cr=cat(mcoroots(parent(W1)),mcoroots(parent(W2)),dims=[1,2])
+  res=rootdatum(r,cr)
+  if W1==parent(W1) && W2==parent(W2) return res end
+  if !issubset(inclusiongens(W1),1:ngens(parent(W1))) 
+    error("not implemented") end
+  if !issubset(inclusiongens(W2),1:ngens(parent(W2))) 
+    error("not implemented") end
+  reflection_subgroup(res,vcat(inclusiongens(W1),
+                               inclusiongens(W2).+ngens(parent(W1))))
 end
 
 Base.:*(W1::FiniteCoxeterGroup,W2::PermRootGroup)=W1.G*W2
@@ -1030,7 +1028,7 @@ function relative_group(W::FiniteCoxeterGroup,J)
     error("$J is not distinguished in $W")
   end
   qr=i->W.rootdec[i][I]
-  res=isempty(J) ? W : isempty(I) ? coxgroup() :
+  res=isempty(I) ? coxgroup() :
     rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
                                   for (ni,i) in enumerate(I), j in I])
   res.prop[:relativeIndices]=I

@@ -57,14 +57,17 @@ chevieset(Symbol("2E6"), :UnipotentCharacters, function ()
         return uc
     end)
 chevieset(Symbol("2E6"), :UnipotentClasses, function (p,)
-        local uc, l
+        local uc, l, u
         uc = deepcopy((chevieget(:E6, :UnipotentClasses))(p))
         uc[:springerSeries] = Filtered(uc[:springerSeries], (x->begin
                         x[:Z] == [1]
                     end))
         l = [["1", perm"(1,6)(3,5)"], ["A_1", perm"(1,5)(2,4)"], ["A_2", perm"(1,2)(3,4)"], ["D_4", perm"(1,2)"], ["D_5", [[-1]]], ["D_5(a_1)", [[-1]]], ["A_4{+}A_1", [[-1]]], ["A_4", [[1, 0], [0, -1]]], ["D_4(a_1)", [[-1, 0], [0, -1]]], ["A_3{+}A_1", [[1, 0], [0, -1]]], ["A_2{+}2A_1", [[1, 0], [0, -1]]], ["A_3", DiagonalMat(1, 1, -1)], ["A_2{+}A_1", [[0, 1, 0], [1, 0, 0], [0, 0, -1]]], ["3A_1", perm"(1,2)"], ["2A_1", DiagonalMat(1, 1, 1, -1)]]
         for p = l
-            (First(uc[:classes], (x->(x[:name] == p[1];))))[:F] = p[2]
+            u = First(uc[:classes], (x->begin
+                            x[:name] == p[1]
+                        end))
+            u[:red] = spets(u[:red], p[2])
         end
         return uc
     end)

@@ -224,7 +224,8 @@ module Uch
 using ..Gapjm
 
 export UnipotentCharacters, FixRelativeType, fourierinverse, UniChar,
-AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal
+AlmostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal,
+cuspidal_pairs
 
 struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -1236,4 +1237,32 @@ function cuspidal(uc::UnipotentCharacters,d=Root1(1))
   filter(i->ad==valuation(ud[i],d),eachindex(ud))
 end
 
+"""
+`cuspidal_pairs(W[,d[,ad]])`
+
+returns  the pairs `LF=>λ` where `LF`  is a `d`-split Levi (with `d`-center
+of  dimension `ad` if `ad` is given) and `λ` is a `d`-cuspidal character of
+`LF`.  If `d`  is omitted  it is  assumed to  be `1`,  which means ordinary
+cuspidal  pairs.  The  character  `λ`  is  returned  as  its  index amongst
+unipotent characters.
+
+```julia-repl
+julia> cuspidal_pairs(coxgroup(:F,4))
+9-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},Int64}},1}:
+ (levi = F₄, cuspidal = 31)
+ (levi = F₄, cuspidal = 32)
+ (levi = F₄, cuspidal = 33)
+ (levi = F₄, cuspidal = 34)
+ (levi = F₄, cuspidal = 35)
+ (levi = F₄, cuspidal = 36)
+ (levi = F₄, cuspidal = 37)
+ (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6)
+ (levi = F₄₍₎=Φ₁⁴, cuspidal = 1)
+```
+"""
+cuspidal_pairs(W,d,ad)=[(levi=L,cuspidal=char) for L in split_levis(W, d, ad) 
+                        for char in cuspidal(UnipotentCharacters(L),d)]
+
+cuspidal_pairs(W,d=Root1(1))=[p for ad in 0:length(relative_degrees(W,d))
+                                for p in cuspidal_pairs(W,d,ad)]
 end

@@ -104,3 +104,4 @@ end
 Unbind(x)=x
 UnipotentClassesOps=Dict()
 #-------------------------------------------------------------------------
+Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))

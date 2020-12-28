@@ -45,6 +45,7 @@ const exclu=[
  ["ReducedInRightCoset","timp"],
  ["CharName","timp"],
  ["CharTable","G31"],
+ ["CharTable","G34"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
 ]
 

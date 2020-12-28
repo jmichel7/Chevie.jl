@@ -1337,7 +1337,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
         end
         H[:mul] = function (x, y)
                 local H, res, ops, W, temp, i, xi, temp1, j, e, pol, d
-                H = Hecke(y)
+                H = hecke(y)
                 if !(IsRec(x)) || (!(haskey(x, :hecke)) || !(haskey(x, :elm)))
                     if x == x * 0
                         return HeckeElt(H, y[:basis], [], [])
@@ -1345,7 +1345,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                         return HeckeElt(H, y[:basis], y[:elm], y[:coeff] * (x * H[:unit]))
                     end
                 end
-                if !(IsIdentical(H, Hecke(x)))
+                if !(IsIdentical(H, hecke(x)))
                     error(" !  elements of the same algebra")
                 end
                 ops = H[:operations]
@@ -1392,7 +1392,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                 if length(h[:elm]) != 1
                     error("inverse implemented only for single T_w")
                 end
-                H = Hecke(h)
+                H = hecke(h)
                 pol = Coefficients(Product((H[:parameter])[1], (u->begin
                                     Mvp("xxx") - u
                                 end)), "xxx")

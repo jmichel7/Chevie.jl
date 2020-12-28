@@ -5,7 +5,7 @@ chevieset(:G31, :CharTable, function()
   res[:text]="origin: mostly CharTable(H(G31))"
   l=vcat(39:41, 50:53, 58:59)
   for i in l
-   res[:irreducibles][i][[14, 19, 21, 35, 37, 41]]=[
+    res[:irreducibles][i][[14, 19, 21, 35, 37, 41]]=[
        [1, E(4), -E(4), -E(4), E(4), -1], 
        [1, -E(4), E(4), E(4), -E(4), -1], 
        [0, 0, 0, 0, 0, 0], 
@@ -15,5 +15,5 @@ chevieset(:G31, :CharTable, function()
        [0, E(4)-1, -E(4)-1, E(4)+1, -E(4)+1, 0], 
        [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]][findfirst(==(i),l)]
   end
-  return res
+  res
 end)

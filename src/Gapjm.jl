@@ -88,15 +88,15 @@ function words end; export words
 include("using_merge.jl")
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Groups.jl");using_merge(:Groups,debug=2,reexport=true)
+include("Groups.jl");using_merge(:Groups,debug=1,reexport=true)
 include("Combinat.jl");@reexport using .Combinat
-include("Perms.jl");using_merge(:Perms,debug=2,reexport=true)
-include("Pols.jl");using_merge(:Pols,debug=2,reexport=true)
+include("Perms.jl");using_merge(:Perms,debug=1,reexport=true)
+include("Pols.jl");using_merge(:Pols,debug=1,reexport=true)
 include("ModuleElts.jl");@reexport using .ModuleElts
-include("Cycs.jl");using_merge(:Cycs,debug=2,reexport=true)
-include("Mvps.jl");using_merge(:Mvps,debug=2,reexport=true)
-include("Posets.jl");using_merge(:Posets,debug=2,reexport=true)
-include("FFields.jl");using_merge(:FFields,debug=2,reexport=true)
+include("Cycs.jl");using_merge(:Cycs,debug=1,reexport=true)
+include("Mvps.jl");using_merge(:Mvps,debug=1,reexport=true)
+include("Posets.jl");using_merge(:Posets,debug=1,reexport=true)
+include("FFields.jl");using_merge(:FFields,debug=1,reexport=true)
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot

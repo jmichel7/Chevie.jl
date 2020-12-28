@@ -256,9 +256,9 @@ julia> b^d
 
 julia> centralizer_generators(b)
 3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+ 4
  21.1         
  321432.213243
- 4
 
 julia> C=conjcat(b;ss=:ss)
 category with 10 objects and 32 generating maps
@@ -547,18 +547,18 @@ BraidMonoid(A₂)
 
 julia> elements(M,4)
 12-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- Δ.1    
- 21.1.1 
- 2.2.2.2
- 12.2.2 
- 1.1.12 
- 12.21  
- Δ.2    
- 2.2.21 
- 1.12.2 
  1.1.1.1
- 21.12  
- 2.21.1 
+ 2.2.2.2
+ 21.12
+ 1.1.12
+ 2.21.1
+ 12.21
+ 2.2.21
+ 1.12.2
+ 12.2.2
+ Δ.1
+ Δ.2
+ 21.1.1
 ```
 """
 function PermGroups.elements(M::LocallyGarsideMonoid,l)
@@ -770,16 +770,13 @@ end
 Base.isless(a::GarsideElm,b::GarsideElm)=cmp(a,b)==-1
 Base.:(==)(a::GarsideElm,b::GarsideElm)=a.pd==b.pd && a.elm==b.elm
 
-# hash is needed for using permutations in Sets/Dicts
+# hash is needed for using GarsideElm in Sets/Dicts
 function Base.hash(a::GarsideElm, h::UInt)
-  b = 0x595dee0e71d271d0%UInt
-  b = xor(b,xor(hash(a.pd, h),h))
-  b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+  h=hash(a.pd, h)
   for e in a.elm
-    b = xor(b,xor(hash(e, h),h))
-    b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
+    h=hash(e, h)
   end
-  b
+  h
 end
 
 function norm(a::GarsideElm)
@@ -1135,7 +1132,8 @@ end
 showgraph(C;k...)=showgraph(IOContext(stdout,:limit=>true),C;k...)
 
 function showgraph(io,C::Category;showobj=show,showmap=show)
- maps=vcat(map(i->map(p->[i,p[1],p[2]],sort(C.atoms[i],by=x->abs(x[2]-i))),eachindex(C.obj))...)
+  maps=vcat(map(i->map(((m,t),)->[i,m,t],sort(C.atoms[i],by=x->abs(x[2]-i))),
+                 eachindex(C.obj))...)
   found=true
   while found
     found=false
@@ -1465,14 +1463,14 @@ julia> w=B(4,4,4)
 
 julia> cc=centralizer_generators(w)
 8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- (31432)⁻¹231432
- 1              
- (2)⁻¹34.432    
- (1)⁻¹34.431    
- 34.43          
- 4              
+ (2)⁻¹34.432
+ 4
  (32431)⁻¹132431
- 2              
+ 2
+ 1
+ (31432)⁻¹231432
+ (1)⁻¹34.431
+ 34.43
 
 julia> shrink(cc)
 5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
@@ -1490,8 +1488,8 @@ julia> F=Frobenius(spets(W,Perm(1,2,4)));
 
 julia> centralizer_generators(w,F)
 2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- 124      
  312343123
+ 124      
 ```
 """
 function centralizer_generators(b,F=(x,y=1)->x;ss::Symbol=:sc)
@@ -1524,8 +1522,7 @@ end
 
 Base.:(==)(a::TPMSimple,b::TPMSimple)=(a.v==b.v)&&(a.t==b.t)&&(a.M==b.M)
 
-Base.hash(a::TPMSimple, h::UInt)=
- hash(a.v,hash(a.t,hash(a.M,0x595dee0e71d271d0%UInt)))
+Base.hash(a::TPMSimple, h::UInt)=hash(a.v,hash(a.t,hash(a.M,h)))
 
 function Base.show(io::IO,r::TPMSimple)
   if r.t print(io,"t") end

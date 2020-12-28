@@ -5,7 +5,7 @@ export combinations, arrangements, partitions, npartitions, partition_tuples,
   partitions_set, npartitions_set, bell, stirling2
 
 """
-`groupby(v::AbstractVector,l)`
+`groupby(v,l)`
 
 group  elements of collection `l` according  to the corresponding values in
 the coillection `v`
@@ -19,9 +19,9 @@ Dict{Int64,Array{Symbol,1}} with 3 entries:
   30 => Symbol[:Apr, :Jun, :Sep, :Nov]
 ```
 """
-function groupby(v::AbstractArray{K},l::AbstractArray{V})where {K,V}
-  res=Dict{K,Vector{V}}()
-  for (k,val) in zip(v,l) push!(get!(res,k,V[]),val) end
+function groupby(v,l)
+  res=Dict{eltype(v),Vector{eltype(l)}}()
+  for (k,val) in zip(v,l) push!(get!(res,k,empty(l)),val) end
   res
 end
 
@@ -40,11 +40,11 @@ Dict{Bool,Array{Int64,1}} with 2 entries:
 Note: `l` is required to be non-empty since I do not know how to access the
 return type of a function
 """
-function groupby(f,l::AbstractArray{V})where V
- if isempty(l) return Dict{Any,eltype(l)}() end
+function groupby(f::Function,l)
+  if isempty(l) return Dict{Any,eltype(l)}() end
   res=Dict(f(l[1])=>[l[1]])
   for val in l[2:end]
-    push!(get!(res,f(val),V[]),val)
+    push!(get!(res,f(val),empty(l)),val)
   end
   res
 end
@@ -80,9 +80,10 @@ function collectby(f,v)
   [d[k] for k in sort(collect(keys(d)))]
 end
 
-" whether all elements in list a are equal"
-function constant(a::AbstractArray)
-   all(i->a[i]==a[1],2:length(a))
+" whether all elements in collection a are equal"
+function constant(a)
+  f=first(a)
+  all(==(f),a)
 end
 
 # faster than unique! for sorted vectors
@@ -101,11 +102,13 @@ function cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
-function combinations_sorted(mset::AbstractVector,k)
+function combinations_sorted(mset,k)
   if iszero(k) return [eltype(mset)[]] end
   res=Vector{eltype(mset)}[]
+  if k<=length(mset)
   for (i,e) in enumerate(mset)
-    append!(res,map(x->vcat([e],x),combinations_sorted(mset[i+1:end],k-1)))
+    append!(res,map(x->pushfirst!(x,e),combinations_sorted(mset[i+1:end],k-1)))
+  end
   end
   res
 end
@@ -138,9 +141,9 @@ julia> combinations([1,2,2,3])
  [1, 2, 2, 3]
 ```
 """
-combinations(mset,k)=unique(combinations_sorted(sort(mset),k))
+combinations(mset,k)=unique_sorted(combinations_sorted(sort(mset),k))
 combinations(mset)=isempty(mset) ? [Int[]] :
-   union(combinations.(Ref(mset),0:length(mset)))
+  vcat(combinations.(Ref(mset),0:length(mset))...)
 
 
 """
@@ -168,15 +171,16 @@ The  result  returned  by  'arrangements'  is  sorted,  which means in this
 example  that the possibilities are listed in the same order as they appear
 in the dictionary.
 """
-function arrangements(mset::AbstractVector{K},k)where K
+function arrangements(mset,k)
   blist=trues(length(mset))
   function arr(mset,k)
-    if iszero(k) return [K[]] end
-    combs=Vector{K}[]
+    if iszero(k) return [empty(mset)] end
+    combs=Vector{eltype(mset)}[]
     for i in eachindex(blist)
       if blist[i] && (i==length(blist) || mset[i+1]!=mset[i] || !blist[i+1])
         blist[i]=false
-        append!(combs,pushfirst!.(arr(mset,k-1)::Vector{Vector{K}},Ref(mset[i])))
+        append!(combs,pushfirst!.(arr(mset,k-1)::Vector{Vector{eltype(mset)}},
+                                   Ref(mset[i])))
         blist[i]=true
       end
     end
@@ -185,7 +189,7 @@ function arrangements(mset::AbstractVector{K},k)where K
   arr(sort(mset),k)
 end
 
-arrangements(mset::AbstractArray)=vcat(arrangements.(Ref(mset),0:length(mset))...)
+arrangements(mset)=vcat(arrangements.(Ref(mset),0:length(mset))...)
 
 function narrangements(mset,k)
   blist=trues(length(mset))
@@ -502,7 +506,7 @@ julia> partitions_set(1:3)
  [[1, 3], [2]]
 ```
 
-Note  that `partitions_set` does currently  not support multisets and that
+Note  that `partitions_set` does not currently support multisets and that
 there is currently no ordered counterpart.
 """
 function partitions_set(set)

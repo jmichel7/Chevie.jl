@@ -361,12 +361,17 @@ julia> twistings(W,[2,4])
 module Cosets
 
 using ..Gapjm
-export twistings, spets, Frobenius, Spets, torusfactors, subspets,
+export twistings, spets, Frobenius, Spets, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms
 
 abstract type Spets{TW}<:Coset{TW} end
 
 abstract type CoxeterCoset{TW}<:Spets{TW} end
+
+extprod(W1::Spets,W2::Spets)=spets(W1.W*W2.W,cat(W1.F,W2.F,dims=(1,2)))
+extprod(W1::Spets,W2::FiniteCoxeterGroup)=extprod(W1,spets(W2))
+extprod(W1::FiniteCoxeterGroup,W2::Spets)=extprod(spets(W1),W2)
+extprod(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)=W1*W2
 
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) C=W
@@ -392,11 +397,12 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
 end
 
 Groups.Group(WF::Spets)=WF.W
-PermRoot.inclusion(WF::Spets,a...)=inclusion(WF.W,a...)
-PermRoot.restriction(WF::Spets,a...)=restriction(WF.W,a...)
-PermRoot.semisimplerank(WF::Spets)=semisimplerank(WF.W)
-CoxGroups.word(WF::Spets,w)=word(WF.W,w/WF.phi)
-PermRoot.rank(WF::Spets)=rank(Group(WF))
+@forward Spets.W PermRoot.inclusion, PermRoot.restriction,
+  PermRoot.semisimplerank, PermRoot.rank
+
+Weyl.dimension(WF::CoxeterCoset)=dimension(WF.W)
+
+CoxGroups.word(WF::CoxeterCoset,w)=word(WF.W,w/WF.phi)
 
 """
 `twistings(W,I)`
@@ -601,13 +607,7 @@ end
 
 spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,reflrep(W,w))
 
-function torusfactors(WF::CoxeterCoset)
-  M=baseX(WF.W.G)
-  M*=WF.F*inv(M*E(1)//1)
-  M=improve_type(M)
-  r=semisimplerank(WF.W)
-  CycPol(charpoly(M[r+1:end,r+1:end]))
-end
+PermRoot.radical(WF::CoxeterCoset)=torus(central_action(Group(WF),WF.F))
 
 """
 `torus(m::Matrix)`
@@ -739,7 +739,7 @@ function Base.show(io::IO, WF::Spets)
     end
   end
   PermRoot.showtypes(io,refltype(WF))
-  t=torusfactors(WF)
+  t=CycPol(charpoly(central_action(W,WF.F)))
   if !isone(t) show(io,t) end
 end
 
@@ -766,7 +766,7 @@ function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   W_L=N/L
   if !isone(WF.phi) error( "not implemented for twisted parent Spets" ) end
   if length(W_L)>=10
-    H=Group(map(x->GetRelativeAction(W,L,x.phi),gens(W_L)))
+    H=Group(map(x->central_action(L,reflrep(L,x.phi)),gens(W_L)))
     if length(H)==length(W_L)
       h=Hom(H,W_L,gens(W_L))
       e=classreps(H)
@@ -788,8 +788,7 @@ end
 function relative_coset(WF::CoxeterCoset,J)
 # Print("CoxeterCosetOps.RelativeCoset ",WF,J," called \n");
   res=relative_group(Group(WF),J)
-  p=isempty(J) ? WF.phi : Perm(res.prop[:parentMap],res.prop[:parentMap].^WF.phi)
-  spets(res,p)
+  spets(res,Perm(res.prop[:parentMap],res.prop[:parentMap].^WF.phi))
 end
 #-------------- subcoset ---------------------------------
 """
@@ -963,7 +962,8 @@ function relative_coset(WF::Spets,J=Int[],a...)
 # xprintln("relative_coset(",WF,",",J,")");
   W=Group(WF)
   R=relative_group(W,J,a...)
-  res=spets(R,GetRelativeAction(W,reflection_subgroup(W,J),WF.phi))
+  L=reflection_subgroup(W,J)
+  res=spets(R,central_action(L,reflrep(L,WF.phi)))
   if isempty(J)
     Group(res).prop[:MappingFromNormalizer]=R.prop[:MappingFromNormalizer]
 # else Group(res).MappingFromNormalizer:=function(x)Error("MappingFromNormalizer failed");return false;end;
@@ -1113,12 +1113,6 @@ function PermRoot.refltype(WF::PRC)
   end
 end
 
-function torusfactors(WF::PRC)
-  W=Group(WF)
-  r=semisimplerank(W)
-  M=baseX(W)*WF.F*invbaseX(W)
-  CycPol(charpoly(M[r+1:end,r+1:end]))
-end
 #--------------------- Root data ---------------------------------
 Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
 " root datum from type "

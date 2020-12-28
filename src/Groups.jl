@@ -27,15 +27,15 @@ julia> ngens(G)
 julia> minimal_words(G)
 Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   ()      => Int64[]
+  (1,3)   => [1, 2]
+  (1,2,3) => [2]
+  (1,2)   => [1]
   (2,3)   => [2, 1]
   (1,3,2) => [1, 2, 1]
-  (1,3)   => [1, 2]
-  (1,2)   => [1]
-  (1,2,3) => [2]
 
 julia> G.prop
 Dict{Symbol,Any} with 1 entry:
-  :words => Dict{Perm{Int16},Array{Int64,1}}(()=>[],(2,3)=>[2, 1],(1,3,2)=>[1, …
+  :words => Dict(()=>[],(1,3)=>[1, 2],(1,2,3)=>[2],(1,2)=>[1],(2,3)=>[2, 1],(1,…
 ```
 """
 module Groups
@@ -258,11 +258,11 @@ julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> minimal_words(G)
 Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
   ()      => Int64[]
+  (1,3)   => [1, 2]
+  (1,2,3) => [2]
+  (1,2)   => [1]
   (2,3)   => [2, 1]
   (1,3,2) => [1, 2, 1]
-  (1,3)   => [1, 2]
-  (1,2)   => [1]
-  (1,2,3) => [2]
 ```
 """
 function minimal_words(G::Group)
@@ -379,7 +379,7 @@ end
 function kernel(h::Hom)
   if all(isone,h.images) return h.source
   elseif length(h.source)==length(Group(h.images)) 
-    return Group(empty(gens(h.source)))
+    return Group(empty(gens(h.source)),one(h.source))
   elseif length(h.source)<1000
     return Group(filter(x->isone(h(x)),elements(h.source)))
   else error("not implemented: kernel(",h,")")

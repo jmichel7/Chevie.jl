@@ -137,6 +137,7 @@ Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v]))
 
+# all the Root1 roots of c
 function roots(c::CycPol)
   function f(e,m)
     if m<0 error("should be a true polynomial") end
@@ -174,6 +175,11 @@ Base.:^(a::CycPol, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.://(a::CycPol,b::CycPol)=a*inv(b)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
+
+function Base.lcm(l::CycPol...)
+  if length(l)!=2 reduce(lcm,l;init=one(CycPol)) end
+  CycPol(1,max(l[1].valuation,l[2].valuation),merge(max,l[1].v,l[2].v))
+end
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
   8=>[[1,3,5,7],[1,5],[3,7],[1,7],[3,5],[1,3],[5,7]],

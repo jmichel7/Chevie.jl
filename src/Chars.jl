@@ -467,9 +467,9 @@ function charinfo(t::TypeIrred)
   if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
   if isnothing(c[:a])
     uc=getchev(t,:UnipotentCharacters)
-    if uc!=false
-    c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
-    c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
+    if uc!=false && uc!==nothing
+      c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
+      c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
     end
   end
   for f in [:a,:A,:b,:B]
@@ -910,7 +910,10 @@ end
 
 function CharTable(W::PermRootGroup)
   gets(W,:chartable)do
-    ct=prod(CharTable.(refltype(W)))
+    t=refltype(W)
+    ct=isempty(t) ? 
+      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
+      prod(CharTable.(t))
     ct.prop[:name]=sprint(show,W;context=:TeX=>true)
     ct
   end
@@ -918,7 +921,10 @@ end
 
 function CharTable(W::FiniteCoxeterGroup)
   gets(W,:chartable)do
-    ct=prod(CharTable.(refltype(W)))
+    t=refltype(W)
+    ct=isempty(t) ? 
+      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
+      prod(CharTable.(t))
     ct.prop[:name]=sprint(show,W;context=:TeX=>true)
     ct
   end
@@ -953,7 +959,10 @@ CharTable(³D₄)
 """
 function CharTable(W::Spets)::CharTable
   gets(W,:chartable)do
-    ct=prod(CharTable.(refltype(W)))
+    t=refltype(W)
+    ct=isempty(t) ? 
+      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
+      prod(CharTable.(t))
     ct.prop[:name]=sprint(show,W;context=:TeX=>true)
     ct
   end
@@ -969,8 +978,14 @@ function scalarproduct(ct::CharTable,c1,c2)
   div(sum(map(*,c1,conj.(c2),classes(ct))),ct.centralizers[1])
 end
 
-function decompose(ct::CharTable,c)
-  map(i->scalarproduct(ct,ct.irr[i,:],c),eachindex(c))
+"""
+`decompose(ct::CharTable,c::Vector)` 
+
+decompose character `c` (given by its values on conjugacy classes) 
+on irreducible characters as given by `CharTable` `ct`
+"""
+function decompose(ct::CharTable,c::Vector)
+  map(i->scalarproduct(ct,ct.irr[i,:],c),axes(ct.irr,1))
 end
 
 # Permutation of the characters induced by a perm. automorphism of W
@@ -988,10 +1003,9 @@ returns a list holding, for the `i`-th irreducible character of the complex
 reflection  group  `W`,  a  list  of  matrices  images  of  the  generating
 reflections  of `W`  in a  model of  the corresponding representation. This
 function  is based on the classification,  and is not yet fully implemented
-for   `G₃₄`;  88  representations  are  missing  out  of  169,  that  is  4
-representations of dim. 105, 3 of dim. 315, 6 of dim. 420, 4 of dim.840 and
-those  of dim. 120, 140, 189, 280, 384,  504, 540, 560, 630, 720, 729, 756,
-896, 945, 1260 and 1280.
+for   `G₃₄`;  78  representations   are  missing  out   of  169,  that  is,
+representations  of dimension ≥140, except half of those of dimensions 315,
+420 and 840.
 
 ```julia-repl
 julia> representation(ComplexReflectionGroup(24),3)
@@ -1139,7 +1153,7 @@ end
 # rank rk). A dual W-graph corresponds to a Curtis Dual representation.
 function DualWGraph(rk,gr)
   [map(x->x isa Integer ? x : setdiff(1:rk,x),gr[1]),
-   map(x->x[1] isa Vector ? [-reverse(x[1]),x[2]] : [-x[1],x[2]],gr[2])]
+   map(((x,y),)->x isa Vector ? [-reverse(x),y] : [-x,y],gr[2])]
 end
 
 """

@@ -46,7 +46,7 @@ end
    tbl[:identifier]=tbl[:name]
    tbl[:parameter]=fill(u,n)
    tbl[:irreducibles]=chard(n,u)
-   tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(4))
+   tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
 #  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
 #     rec(charparam:=p,charname:=PartitionTupleToString(p)));
    merge!(tbl,chevieget(:D,:ClassInfo)(n))

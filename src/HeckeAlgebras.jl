@@ -465,8 +465,6 @@ struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
   H::TH
 end
 
-#clone(h::HeckeTElt,d)=HeckeTElt(d,h.H)
-
 basename(h::HeckeTElt)="T"
  
 function Base.one(H::HeckeAlgebra)
@@ -477,7 +475,7 @@ function Base.zero(H::HeckeAlgebra)
   HeckeTElt(zero(ModuleElt{typeof(one(H.W)),coefftype(H)}),H)
 end
 
-function Tbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
+function Tbasis(H::HeckeAlgebra{C,TW})where {C,TW<:CoxeterGroup{P}} where P
   function f(w::Vararg{Integer})
     if isempty(w) return one(H) end
     HeckeTElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
@@ -836,10 +834,8 @@ function Simplify(res::FactSchur)
 end
 
 function Base.lcm(l::FactSchur...)
-  l=vcat(map(x->x.vcyc,l)...)
-  l=collectby(x->x.monomial,l)
-  l=map(x->[x[1].monomial, lcm(map(y->y.pol,x)...)] , l)
-  FactSchur(1,map(x->(pol=x[2],monomial=x[1]),l))
+  v=collectby(x->x.monomial,vcat(map(x->x.vcyc,l)...))
+  FactSchur(1,map(x->(pol=lcm(map(y->y.pol,x)...),monomial=x[1].monomial),v))
 end
 
 function VFactorSchurElement(para,r,data=nothing,u=nothing)

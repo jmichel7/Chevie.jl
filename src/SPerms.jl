@@ -76,7 +76,9 @@ function SPerm{T}(x::Integer...)where T<:Integer
   SPerm(d)
 end
 
-SPerm(x::Integer...)=SPerm{Perms.Idef}(x...)
+const Idef=Int16 # you can change the default type T for SPerm here
+
+SPerm(x::Integer...)=SPerm{Idef}(x...)
 
 """
    @sperm"..."
@@ -95,6 +97,8 @@ macro sperm_str(s::String)
   res::SPerm
 end
 
+Base.convert(::Type{SPerm{T}},p::SPerm{T1}) where {T,T1}=T==T1 ? p : SPerm(T.(p.d))
+
 struct SPermGroup{T}<:Group{SPerm{T}}
   gens::Vector{SPerm{T}}
   prop::Dict{Symbol,Any}
@@ -110,7 +114,7 @@ function Groups.Group(a::AbstractVector{SPerm{T}}) where T
   SPermGroup(filter(!isone,a),Dict{Symbol,Any}())
 end
 
-SPermGroup()=Group(SPerm{Perms.Idef}[])
+SPermGroup()=Group(SPerm{Idef}[])
 
 Base.one(p::SPerm)=SPerm(empty(p.d))
 Base.one(::Type{SPerm{T}}) where T=SPerm(T[])
@@ -128,34 +132,28 @@ Base.broadcastable(p::SPerm)=Ref(p)
 
 # hash is needed for using SPerms in Sets/Dicts
 function Base.hash(a::SPerm, h::UInt)
-  b = 0x595dee0e71d271d0%UInt
   for (i,v) in enumerate(a.d)
-    if v!=i
-      b = xor(b,xor(hash(v, h),h))
-      b = (b << 1) | (b >> (sizeof(Int)*8 - 1))
-    end
+    if v!=i h=hash(v,h) end
   end
-  b
+  h
 end
 
 # total order is needed to use SPerms in sorted lists
 function Base.cmp(a::SPerm, b::SPerm)
-  da=length(a.d)
-  db=length(b.d)
-  for i in 1:min(da,db)
-@inbounds if a.d[i]<b.d[i] return -1 end
-@inbounds if a.d[i]>b.d[i] return  1 end
-  end
-  if     da<db for i in (da+1:db) b.d[i]==i || return -1 end
-  elseif da>db for i in (db+1:da) a.d[i]==i || return  1 end
+  a,b=promote_degree(a,b)
+  for (ai,bi) in zip(a.d,b.d)
+    ai<bi && return -1
+    ai>bi && return  1 
   end
   0
 end
 
 Base.isless(a::SPerm, b::SPerm)=cmp(a,b)==-1
 
-Base.:(==)(a::SPerm, b::SPerm)= cmp(a,b)==0
-
+function Base.:(==)(a::SPerm, b::SPerm)
+  a,b=promote_degree(a,b)
+  a.d==b.d
+end
 
 """
   orbit(a::SPerm,i::Integer) returns the orbit of a on i
@@ -172,14 +170,13 @@ function Groups.orbit(a::SPerm{T},i::Integer)where T
   end
 end
 
-# argument SignedPerm
 function Perms.cycles(p::SPerm)
   cycles=Vector{eltype(p.d)}[]
   to_visit=trues(length(p.d))
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
     cyc=orbit(p,i)
-    to_visit[abs.(cyc)].=false
+@inbounds to_visit[abs.(cyc)].=false
     if length(cyc)>1 push!(cycles,cyc) end
   end
   cycles
@@ -193,35 +190,36 @@ order of the signed permutation a
 Gapjm.order(a::SPerm) = lcm(length.(cycles(a)))
 
 function Base.show(io::IO, a::SPerm)
+  replorTeX=get(io,:limit,false)||get(io,:TeX,false)
+  if !replorTeX print(io,"sperm\"") end
   cyc=cycles(a)
-  if !get(io,:limit,false) print(io,"sperm\"") end
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
-  if !get(io,:limit,false) print(io,"\"") end
+  if !replorTeX print(io,"\"") end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T
-  if T!=Perms.Idef && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
+  if T!=Idef && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
   show(io,p)
 end
 
-" `promote(a::Perm, b::Perm)` promotes `a` and `b` to the same degree"
-function Base.promote(a::SPerm,b::SPerm)
-  da=length(a.d)
-  db=length(b.d)
-  if da<db
-    resize!(a.d,db)
-@inbounds    a.d[da+1:db]=da+1:db
-  elseif db<da
-    resize!(b.d,da)
-@inbounds    b.d[db+1:da]=db+1:da
-  end
+function Base.promote_rule(a::Type{SPerm{T1}},b::Type{SPerm{T2}})where {T1,T2}
+  SPerm{promote_type(T1,T2)}
+end
+
+extend!(a::SPerm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+
+# `promote_degree(a::SPerm, b::SPerm)` extends `a` and `b` to the same degree"
+function promote_degree(a::SPerm,b::SPerm)
+  a,b=promote(a,b)
+  extend!(a,length(b.d))
+  extend!(b,length(a.d))
   (a,b)
 end
 
 function Base.:*(a::SPerm, b::SPerm)
-  a,b=promote(a,b)
+  a,b=promote_degree(a,b)
   r=similar(a.d)
   for (i,v) in enumerate(a.d) 
 @inbounds if v<0 r[i]=-b.d[-v] else r[i]=b.d[v] end
@@ -310,7 +308,7 @@ function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   SPerm{T}(res)
 end
 
-SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Perms.Idef}(l,l1)
+SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Idef}(l,l1)
 
 """
 `Matrix(a::SPerm)` is the permutation matrix for a
@@ -448,9 +446,9 @@ dedup(M::AbstractMatrix)=M[1:2:size(M,1),1:2:size(M,2)]
 
 # transform SPerm on -n:n to Perm acting on  1:2n
 dup(p::SPerm)=isone(p) ? Perm() : 
-    Perm{Perms.Idef}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
+    Perm{Idef}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
 
-dedup(p::Perm)=SPerm{Perms.Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
+dedup(p::Perm)=SPerm{Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
                          p.d[1:2:length(p.d)-1]))
 
 dup(g::CoxHyperoctaedral)=Group(dup.(gens(g)))
@@ -493,7 +491,7 @@ function sstab_onmats(M,extra=nothing)
   if M!=permutedims(M) error("M should be symmetric") end
   if isnothing(extra) extra=fill(1,size(M,1)) end
   blocks=sort(invblocks(M),by=length)
-  gen=SPerm{Perms.Idef}[]
+  gen=SPerm{Idef}[]
   I=Int[]
   for r in blocks
     if length(r)>5 InfoChevie("#IS Large Block:",r,"\n") end

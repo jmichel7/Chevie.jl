@@ -129,7 +129,8 @@ export PermRootGroup, PRG, PRSG, catalan,
  refleigen, reflchar, bipartite_decomposition, torus_order, rank, reflrep, 
  PermX, coroots, baseX, invbaseX, semisimplerank, invariant_form, generic_order,
  parabolic_representatives, invariants,improve_type, matY, simpleroots,
- simplecoroots, action
+ simplecoroots, action, radical, parabolic_closure, is_parabolic,
+ central_action
 using ..Gapjm
 
 best_type(x)=typeof(x)
@@ -148,7 +149,8 @@ improve_type(m)=convert(best_type(m),m)
 
 # coroot for an orthogonal reflection
 function coroot(root::Vector,eigen::Number=-1)
-  conj.(root)*(1-eigen)//(root'* root)
+  cr=conj.(root)
+  cr.*((1-eigen)//sum(cr.*root))
 end
 
 """
@@ -384,7 +386,7 @@ function reflections(W::PermRootGroup)
   getp(simple_representatives,W,:reflections)
 end
 
-"for each root element conjugative representative to root"
+"for each root element conjugating simple representative to root"
 function simple_conjugating_element(W::PermRootGroup,i)
   getp(simple_representatives,W,:repelms)[i]
 end
@@ -541,6 +543,9 @@ prim=[
 # println("de=$de, o=$o, h=$h")
   de=filter(x->o==max(2,x.d),de) #  here we have length(de)<=2
   ST=filter(i->r==prim[i].r && s==prim[i].s && o==prim[i].o,eachindex(prim))
+# if isempty(de) && length(ST)==1 # shortcut
+#   return Dict(:series=>:ST, :ST=>only(ST), :rank=> r)
+# end
   h=div(sum(order,Set(reflections(W))),r) # Coxeter number
   if length(de)>1
     de=sort(de)
@@ -855,19 +860,13 @@ function refleigen(W)
     if isempty(t) ll=[Root1[]]
     elseif any(x->haskey(x,:orbit) && 
         (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
-      ll=map(classreps(W)) do x
-        p=CycPol(charpoly(reflrep(W,x)))
-        vcat(map(r->fill(r[1],r[2]),p.v.d)...)
-      end
+      ll=map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
     else
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
-      if W isa Spets
-        extra=vcat(map(r->fill(r[1],r[2]),torusfactors(W).v.d)...)
-      else
-        extra=fill(Root1(1),rank(W)-semisimplerank(W))
-      end
-      ll=map(x->vcat(x,extra),ll)
     end
+    central=W isa Spets ? torusfactors(W) : 
+                          fill(Root1(1),rank(W)-semisimplerank(W))
+    ll=map(x->vcat(x,central),ll)
     W.prop[:reflengths]=map(x->count(!isone,x),ll)
     ll
   end
@@ -877,7 +876,7 @@ function refleigen(t::TypeIrred)
   ct=CharTable(t).irr[charinfo(t)[:extRefl],:]
   v=map(i->Pol([(-1)^i],i),size(ct,1)-1:-1:0)
   l=CycPol.((permutedims(v)*ct)[1,:])
-  ll=map(p->vcat(map(r->fill(r[1],r[2]),p.v.d)...),l)
+  ll=map(p->vcat(map(((r,c),)->fill(r,c),p.v.d)...),l)
   if haskey(t,:scalar) ll.*=Root1(prod(t.scalar)) end
   ll
 end
@@ -1061,6 +1060,15 @@ function invbaseX(W::PermRootGroup)
     X=baseX(W)
     improve_type(inv(X//1))
   end
+end
+
+# L is a reflection subgroup and  m a matrix which normalizes L in its
+# reflection representation. Returns the matrix by which m acts on X(Z_L)
+function central_action(L,m)
+  if size(m,2)==0 return m end
+  m=baseX(L)*m*invbaseX(L)
+  r=semisimplerank(L)
+  improve_type(m[r+1:end,r+1:end])
 end
 
 """
@@ -1283,23 +1291,58 @@ end
 
 matY(W::PermRootGroup,w)=permutedims(reflrep(W,inv(w)))
 
-# detects if H is a parabolic subgroup  of Parent(H)
-function isparabolic(H)
+"""
+`is_parabolic(W)`
+
+whether the reflection group `W` is a parabolic subgroup of `parent(W)`.
+```julia-repl
+julia> W=ComplexReflectionGroup(7)
+G₇
+
+julia> is_parabolic(reflection_subgroup(W,[1,2]))
+false
+
+julia> is_parabolic(reflection_subgroup(W,[1]))
+true
+```
+
+"""
+function is_parabolic(H)
   W=parent(H)
   setr=s->Set(reflection.(Ref(W),s))
-  if ngens(H)==0 return true end
+  if iszero(ngens(H)) return true end
   v=toM(simpleroots(H))
-  gens=filter(i->!isnothing(solutionmat(v,roots(W,i))),eachindex(W.roots))
+  gens=filter(i->solutionmat(v,roots(W,i))!==nothing,eachindex(roots(W)))
   setr(gens)==setr(inclusion(H))
 end
 
+"""
+`parabolic_closure(W,I)`
+
+`I`  should be a  list of indices  of reflections of  `W`. Returns `J` such
+that  `reflection_subgroup(W,J)` is the smallest  parabolic subgroup of `W`
+containing `reflection_subgroup(W,I)`.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(7)
+G₇
+
+julia> parabolic_closure(W,[1])
+1-element Array{Int64,1}:
+ 1
+
+julia> parabolic_closure(W,[1,2])
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+```
+"""
 function parabolic_closure(W,I)
-  if isempty(I) return Int[] end
+  if isempty(I) return I end
   v=toM(roots(W,I))
-  WI=reflection_subgroup(W,
-    inclusion(W,filter(i->!isnothing(solutionmat(v,roots(W,i))),
-                       eachindex(W.roots))))
-  inclusiongens(WI)
+  gens=filter(i->solutionmat(v,roots(W,i))!==nothing,eachindex(roots(W)))
+  inclusiongens(reflection_subgroup(W,gens),W)
 end
 
 #--------------- PRG: an implementation of PermRootGroups--------------------
@@ -1336,7 +1379,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
       if length(refl)<lr
       for y in eachrow(toM(rr[length(refl)+1:end])*matgens[j])
         p=findfirst(==(y),rr) 
-	if isnothing(p) || p>lr
+	if p===nothing || p>lr
           push!(rr,y)
 #         println("j=$j rr[$(length(refl)+1)...] ",length(rr),":",y)
           newroots=true
@@ -1367,6 +1410,8 @@ PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
 
 PRG(i::Integer)=PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],
     Dict{Symbol,Any}(:rank=>i))
+
+radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 
 @inline Gapjm.roots(W::PRG)=W.roots
 @inline Gapjm.roots(W::PRG,i)=W.roots[i]

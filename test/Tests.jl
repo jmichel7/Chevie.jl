@@ -1,7 +1,7 @@
 module Tests
 using Gapjm
 
-nspets=ComplexReflectionGroup.([5,7,9,10,11,12,16,17,18,20,22,13,15,21])
+nspets=ComplexReflectionGroup.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
 
 cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
       coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
@@ -28,8 +28,8 @@ twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
 
 function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
   for g in l
-    printc("creating $fun(",g,")\n")
-    printc(eval(Expr(:call,fun,g)))
+    xprintln("creating $fun(",g,")")
+    xprint(eval(Expr(:call,fun,g)))
   end
 end
 
@@ -105,7 +105,7 @@ end
 
 function tLusztigInduction(WF,L)
   if L.phi==WF.phi print("Split ") end
-  printc("Lusztig Induction from ",L," to ",WF)
+  xprint("Lusztig Induction from ",L," to ",WF)
   t=LusztigInductionTable(L,WF)
   if isnothing(t) return end
   if haskey(t.prop,:scalars) 
@@ -129,7 +129,7 @@ function tLusztigInduction(WF,L)
   ind=map(x->UniChar(WF,x),eachcol(t.scalar))
   for j in 1:length(hd)
     if pred[j]!=degree(ind[j])
-     printc("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j],"\n!!",
+     xprint("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j],"\n!!",
         CycPol(degree(ind[j]))," instead of ",CycPol(pred[j]),
         " quotient ", CycPol(degree(ind[j]))*inv(CycPol(pred[j])),"\n")
     end

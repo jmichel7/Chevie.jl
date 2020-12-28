@@ -1,7 +1,7 @@
 module ComplexR
 using ..Gapjm
 export ComplexReflectionGroup, reflection_name, diagram, charname, codegrees,
-  traces_words_mats, reflection_group
+  traces_words_mats, reflection_group, torusfactors
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -123,6 +123,8 @@ function Gapjm.degrees(W::Group)
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
 end
+ 
+torusfactors(WF::Spets)=roots(CycPol(charpoly(central_action(Group(WF),WF.F))))
 
 """
 `degrees(WF::Spets)`
@@ -167,7 +169,7 @@ julia> degrees(HF)
 """
 function Gapjm.degrees(W::Spets)
   gets(W,:degrees)do
-    vcat(map(x->(1,x),E.(roots(torusfactors(W)))),degrees.(refltype(W))...)
+    vcat(map(x->(1,x),E.(torusfactors(W))),degrees.(refltype(W))...)
   end
 end
 
@@ -253,8 +255,10 @@ function codegrees(W::Group)
 end
 
 function codegrees(W::Spets)
-  vcat(map(x->(-1,x),E.(inv.(roots(torusfactors(W))))),
+  gets(W,:codegrees)do
+    vcat(map(x->(-1,x),E.(inv.(torusfactors(W)))),
          collect.(codegrees.(refltype(W)))...)
+  end
 end
 
 function diagram(W)

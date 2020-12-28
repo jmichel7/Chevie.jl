@@ -7,8 +7,8 @@ exported by `mod` with methods of the same name in the current module.
 If  `reexport=true`  all  non-conflicting  names  exported  from  `mod` are
 (re-)exported from the current module.
 
-if `debug=1` every executed command is printed before execution.
-If `debug=2` conflicting methods are printed.
+If `debug=1` conflicting methods are printed.
+if `debug=2` every executed command is printed before execution.
 If `debug=3` boths happens.
 
 It  is an error if a name exported  by `mod` conflicts with a name which is
@@ -37,7 +37,7 @@ Main.foo(x::Float64) = Bar.foo(x)
 """
 function using_merge(mod::Symbol;reexport=false,debug=0)
   function myeval(e)
-    if !iszero(debug&1) println(e) end
+    if !iszero(debug&2) println(e) end
     eval(e)
   end
   mymodule=@__MODULE__
@@ -58,7 +58,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       error("$mod.$name is not a method or macro in $mymodule")
     end
     modofname=nameof(parentmodule(eval(name)))
-    if !iszero(debug&2) 
+    if !iszero(debug&1) 
       print("# $mod.$name conflicts with $modofname.$name --- adding methods") 
     end
     s=split(sprint(show,methods(eval(:($mod.$name)))),"\n")
@@ -66,7 +66,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
       if j==1 
         if !isempty(eval(:(@doc $mod.$name)).meta[:results])
           myeval(:(@doc (@doc $mod.$name) $modofname.$name))
-          if !iszero(debug&2) println(" and docs") end
+          if !iszero(debug&1) println(" and docs") end
         else println() 
         end
       end

@@ -102,9 +102,9 @@ chevieset(Symbol("2A"), :PhiFactors, (n->begin
 chevieset(Symbol("2A"), :HeckeRepresentation, function (n, param, sqrtparam, i)
         local H, res, W, p
         W = CoxeterGroup("A", n)
-        H = Hecke(W, -((param[1])[1]) // (param[1])[2])
+        H = hecke(W, -((param[1])[1]) // (param[1])[2])
         p = (partitions(n + 1))[i]
-        res = Dict{Symbol, Any}(:gens => SpechtModel(H, p))
+        res = Dict{Symbol, Any}(:gens => Spechtmodel(H, p))
         res[:F] = Product((res[:gens])[LongestCoxeterWord(W)]) // GetRoot((HeckeCentralMonomials(H))[i]) * (-1) ^ (chevieget(:A, :LowestPowerFakeDegree))(p)
         return res
     end)
