@@ -83,7 +83,14 @@ end
 
 # converts a type back to a group
 function reflection_group(t::TypeIrred)
-  if t.series==:ST PRG(roots(t),coroots(t))
+  if haskey(t,:orbit)
+    W=reflection_group(t.orbit)
+    if length(t.orbit)>1
+      spets(W,reflrep(W,Perm(vcat(circshift(map(x->x.indices,
+                                        refltype(W)),-1)...))*t.twist))
+    else spets(W,t.twist)
+    end
+  elseif t.series==:ST PRG(roots(t),coroots(t))
   else C=cartan(t)
     all(isreal,C) ? rootdatum(C) : PRG(one(C),C)
   end

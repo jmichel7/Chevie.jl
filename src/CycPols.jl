@@ -281,14 +281,10 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  nov=iszero(a.valuation) && isempty(a.v)
-  s=sprint(show,a.coeff; context=io)
-  m=match(r"//*[0-9]*$",s)
-  if m!==nothing 
-    den=replace(m.match,"//"=>"/")
-    s=s[1:prevind(s,m.offset)]
-  else den=""
-  end
+  den=denominator(a.coeff)
+  s=sprint(show,improve_type(den*a.coeff); context=IOContext(io,:varname=>:q))
+  if !isone(den) den="/$den" else den="" end
+  nov=iszero(a.valuation) && isempty(a.v) && isempty(den)
   if !nov s=format_coefficient(s) end
   print(io,s) 
   if a.valuation==1 print(io,"q")
@@ -300,7 +296,7 @@ function Base.show(io::IO,a::CycPol)
     end
     if pow!=1 printTeX(io,"^{$pow}") end
   end
-  if den!="/1" && den!="//1" print(io,den) end
+  print(io,den)
 end
 
 # fields to test first: all n such that phi(n)<=12 except 11,13,22,26

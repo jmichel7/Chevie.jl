@@ -1,12 +1,14 @@
 """
-This module implements permutations with the same semantics as permutations
-in the GAP language.
+This  module implements permutations with the  same semantics as in the GAP
+language.
 
-`Perm`s  are permutations of the set `1:n`,  represented as a vector of `n`
-integers  holding the images of `1:n`. The integer `n` is called the degree
-of  the permutation, even if it is not moved. Two permutations are equal if
-they move the same points in the same way, so two permutations of different
-degree can be equal.
+`Perm`s  are permutations  of the  set `1:n`,  represented internally  as a
+vector  of `n`  integers holding  the images  of `1:n`.  The integer `n` is
+called  the degree  of the  permutation; two  permutations are equal if and
+only  if they move the same points in  the same way, so two permutations of
+different  degree can be equal; the degree is thus an implementation detail
+so  usually  it  should  not  be  used.  One should rather use the function
+`largest_moved_point`.
 
 This follows the GAP design: it is possible to multiply, or to store in the
 same  group,  permutations  of  different  degrees;  this is implemented by
@@ -14,9 +16,7 @@ promoting both to the higher degree. Slightly different is the MAGMA design
 where any permutation has to belong to a group and the degree is determined
 by  that group; then multiplication of permutations within a given group is
 (very  slightly) faster, but it is  more difficult to multiply permutations
-coming  from different groups, like  a group and one  of its subgroups. The
-degree  of a permutation  is an implementation  detail so usually it should
-not be used. One should rather use the function `largest_moved_point`.
+coming  from different groups, like  a group and one  of its subgroups.
 
 The default constructor for a permutation uses the list of images of `1:n`,
 like  `Perm([2,3,1,5,4])`.  Often  it  is  more  convenient  to  use  cycle
@@ -142,9 +142,9 @@ Base.vec(a::Perm)=a.d
    returns  a cycle.  For example  `Perm{Int8}(1,2,3)` constructs the cycle
    `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken to be `Int16`.
 """
-function Perm{T}(x::Integer...)where T<:Integer
+function Perm{T}(x::Vararg{<:Integer,N})where {T<:Integer,N}
   if isempty(x) return Perm(T[]) end
-  d=T.(1:max(x...))
+  d=T.(1:maximum(x))
   for i in 1:length(x)-1
     d[x[i]]=x[i+1]
   end
@@ -235,7 +235,7 @@ function Base.hash(a::Perm, h::UInt)
   h
 end
 
-# Perms are scalars for broadcasting"
+# Perms are scalars for broadcasting
 Base.broadcastable(p::Perm)=Ref(p)
 
 Base.typeinfo_implicit(::Type{Perm{T}}) where T=T==Idef

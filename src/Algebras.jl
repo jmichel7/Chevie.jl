@@ -35,6 +35,7 @@ end
 Base.:+(a::AlgebraElt,b::AlgebraElt)=AlgebraElt(a.A,a.d+b.d)
 Base.:-(a::AlgebraElt)=AlgebraElt(a.A,-a.d)
 Base.:-(a::AlgebraElt, b::AlgebraElt)=a+(-b)
+Base.:*(a::AlgebraElt, b::Vector)=Ref(a).*b #for tbl
 Base.:*(a::AlgebraElt, b)=AlgebraElt(a.A,a.d*b)
 Base.:*(b,a::AlgebraElt)=AlgebraElt(a.A,a.d*b)
 Base.zero(a::AlgebraElt)=AlgebraElt(a.A,zero(a.d))

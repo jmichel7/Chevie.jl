@@ -280,7 +280,7 @@ const ChevieDict=Dict(
 "W.rootInclusion"=>"inclusion(W)",
 "W.rootRestriction"=>"restriction(W)",
 "Rotation(v,i)"=>"circshift(v,-i)",
-"Rotations(v)"=>"circshift.(Ref(a),length(a):-1:1)",
+"Rotations(v)"=>"circshift.(Ref(v),length(v):-1:1)",
 "ScalMvp"=>"scal",
 #SchurElement
 "SchurElements"=>"schur_elements",

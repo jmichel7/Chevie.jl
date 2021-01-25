@@ -962,6 +962,28 @@ chevieset(:G4_22, :UnipotentCharacters, function (ST,)
             return false
         end
     end)
+chevieset(:G4_22, :Ennola, function (ST,)
+        local uc, res, p, A, b, f
+        uc = (chevieget(:G4_22, :UnipotentCharacters))(ST)
+        if uc == false
+            return false
+        end
+        res = uc[:a] * 0
+        for f = uc[:families]
+            A = fusion_algebra(f)
+            b = basis(A)
+            if !(haskey(f, :ennola))
+                f[:ennola] = f[:special]
+            end
+            if f[:ennola] > 0
+                p = SPerm(b, b[f[:ennola]] * b)
+            else
+                p = SPerm(b, -(b[-(f[:ennola])]) * b)
+            end
+            res[f[:charNumbers]] = Permuted(f[:charNumbers], p)
+        end
+        return SPerm(res)
+    end)
 chevieset(:G4_22, :Invariants, function (ST,)
         local d
         d = Dict{Symbol, Any}(Symbol("4") => [function (x1, x2)

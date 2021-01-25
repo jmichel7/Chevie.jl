@@ -223,7 +223,7 @@ end
 `R`  should be a parabolic subgroup of the Coxeter group `W` or a parabolic
 subcoset  of  the  Coxeter  coset  `W`,  in  each  case representing a Levi
 subgroup  `𝐋` of  the algebraic  group `𝐆`  associated to `W`. The function
-returns  an  `InductionTable`  representing  the  Lusztig induction `R_𝐋^𝐆`
+returns  an `InductionTable`  representing the  Lusztig induction ``R_𝐋^𝐆``
 between unipotent characters.
 
 ```julia-repl
@@ -273,7 +273,7 @@ function LusztigInductionTable(LF,WF;check=true)
   if res.prop[:pieces]==false return nothing end
   fL=fourier(uL)
   hh=uL.almostHarishChandra
-  fWinv=fourierinverse(uW)
+  fWinv=fourier(uW)'
   maps=map(res.prop[:pieces])do piece
     mapping=fill(zero(eltype(piece.scalar)),length(uW),length(uL))
     mapping[piece.prop[:wnum],piece.prop[:hnum]]=piece.scalar

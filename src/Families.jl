@@ -1,15 +1,15 @@
 """
 Families of unipotent characters
 
-The  blocks of the (rectangular) matrix  `⟨Rᵪ,ρ⟩_{𝐆 ^F}` when `χ` runs over
+The blocks of the (rectangular) matrix ``⟨Rᵪ,ρ⟩_{𝐆 ^F}`` when `χ` runs over
 `Irr(W)`  and  `ρ`  runs  over  the  unipotent  characters,  are called the
 *Lusztig  families*. When  `𝐆 `  is split  and `W`  is a Coxeter group they
 correspond  on the `Irr(W)` side to two-sided Kazhdan-Lusztig cells --- for
 split  Spetses they  correspond to  Rouquier blocks  of the  Spetsial Hecke
-algebra.  The matrix of scalar products `⟨Rᵪ,ρ⟩_{𝐆 ^F}` can be completed to
-a  square matrix `⟨A_{ρ'},ρ⟩_{𝐆 ^F}` where `A_{ρ'}` are the *characteristic
-functions of character sheaves* on `𝐆 ^F`; this square matrix is called the
-*Fourier matrix* of the family.
+algebra.  The matrix of scalar products  ``⟨Rᵪ,ρ⟩_{𝐆 ^F}`` can be completed
+to   a  square  matrix  ``⟨A_{ρ'},ρ⟩_{𝐆  ^F}``  where  ``A_{ρ'}``  are  the
+*characteristic  functions of character  sheaves* on ``𝐆  ^F``; this square
+matrix is called the *Fourier matrix* of the family.
 
 The  'UnipotentCharacters' record in Chevie contains a field '.families', a
 list of family records containing information on each family, including the
@@ -382,7 +382,7 @@ chevieset(:families,:S3,
 
 chevieset(:families,:X,function(p)
     ss=combinations(0:p-1,2)
-    Family(Dict(:name=>"R_{\\BZ/$p}^{\\wedge 2}",
+    Family(Dict(:name=>"R_{\\bbZ/$p}^{\\wedge 2}",
          :explanation=>"DoubleTaft($p)",
          :charSymbols=>ss,
          :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
@@ -429,9 +429,9 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   diag(m)=map(i->m[i,i],axes(m,1))
   g[:eigenvalues]=diag(exterior_power(cat(g[:eigenvalues]...;dims=(1,2)),n))
   g[:fourierMat]=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
-  if n>1 g[:name]="R(\\BZ/$e)^{\\wedge $n}"
+  if n>1 g[:name]="R(\\bbZ/$e)^{\\wedge $n}"
     g[:explanation]=ordinal(n)*" exterior power of char. ring of Z/$e"
-  else g[:name]="R(\\BZ/$e)"
+  else g[:name]="R(\\bbZ/$e)"
        g[:explanation]="character ring of Z/$e"
   end
   g[:eigenvalues]=g[:eigenvalues]/g[:eigenvalues][1]
@@ -453,7 +453,7 @@ chevieget(:families,:Z9)[:qEigen]=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
 
 chevieset(:families,:QZ,function(n)
   pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
-  res=Dict{Symbol,Any}(:name=>"D(\\BZ/$n)")
+  res=Dict{Symbol,Any}(:name=>"D(\\bbZ/$n)")
   res[:explanation]="Drinfeld double "*res[:name]
   res[:fourierMat]=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
   res[:eigenvalues]=[E(n,x*c) for (x,c) in pairs]
@@ -527,38 +527,38 @@ that we use in Spetses, from `Γ`.
 The  elements of the family are in bijection  with the set `𝓜 (Γ)` of pairs
 `(x,χ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `χ` is an irreducible
 complex-valued   character  of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,χ)`  is
-associated  an eigenvalue of Frobenius defined by `ω_ρ:=χ(x)/χ(1)`. Lusztig
-then defines a Fourier matrix `S₀` whose coefficient is given, for `ρ=(x,χ)`
-and `ρ'=(x', χ')`, by:
+associated  an  eigenvalue  of  Frobenius  defined  by  ``ω_ρ:=χ(x)/χ(1)``.
+Lusztig  then defines a Fourier matrix `S₀` whose coefficient is given, for
+`ρ=(x,χ)` and `ρ'=(x', χ')`, by:
 
-`S₀_{ρ,ρ'}:=#C_Γ(x)⁻¹ ∑_{ρ₁=(x₁,χ₁)}χ̄₁(x)χ(y₁)`
+``S₀_{ρ,ρ'}:=|C_Γ(x)⁻¹|∑_{ρ₁=(x₁,χ₁)}χ̄₁(x)χ(y₁)``
 
-where the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
-and  such that `y₁∈  C_Γ(x)`. This coefficient  also represents the scalar
-product `⟨ρ,ρ'⟩_{𝐆^F}` of the corresponding unipotent characters.
+where  the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
+and  such that ``y₁∈ C_Γ(x)``. This  coefficient also represents the scalar
+product ``⟨ρ,ρ'⟩_{𝐆^F}`` of the corresponding unipotent characters.
 
-A  way  to  understand  the  formula  for  `S₀_{ρ,ρ'}` better is to consider
+A  way to  understand the  formula for  ``S₀_{ρ,ρ'}`` better is to consider
 another  basis of the complex  vector space with basis  `𝓜 (Γ)`, indexed by
 the  pairs  `(x,y)`  taken  up  to  `Γ`-conjugacy,  where  `x`  and `y` are
 commuting  elements  of  `Γ`.  This  basis  is  called  the basis of Mellin
 transforms, and given by:
 
-`(x,y)=∑_{χ∈ Irr(C_Γ(x))}χ(y)(x,χ)`
+``(x,y)=∑_{χ∈ Irr(C_Γ(x))}χ(y)(x,χ)``
 
 In  the  basis  of  Mellin  transforms,  the  linear  map  `S₀` is given by
 `(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation  `T` which sends `ρ` to
 `ω_ρρ`   becomes  `(x,y)↦(x,xy)`.   These  are   particular  cases  of  the
-permutation  representation of `GL₂(ℤ)` on  the basis of Mellin transforms
-where ``\\begin{pmatrix}{cc}a&b\\cr c&d\\end{pmatrix}``
-acts by `(x,y)↦(x^ay^b,x^cy^d)`.
+permutation  representation of `GL₂(ℤ)`  on the basis  of Mellin transforms
+where ``\\begin{pmatrix}a&b\\cr c&d\\end{pmatrix}`` acts by
+`(x,y)↦(xᵃyᵇ,xᶜyᵈ)`.
 
 Fourier  matrices in finite reductive groups  are given by the above matrix
-`S₀`.  But for non-rational Spetses, we use  a different matrix `S` which in
+`S₀`.  But for non-rational Spetses, we use a different matrix `S` which in
 the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
-the  formula `S_{ρ,ρ'}`  differs from  the formula  for `S₀_{ρ,ρ'}`  in that
-there  is no complex conjugation of `χ₁`;  thus the matrix `S` is equal to
-`S₀`  multiplied on the right by the permutation matrix which corresponds to
-`(x,χ)↦(x,χ̄)`.  The advantage of the matrix `S`  over `S₀` is that the pair
+the formula ``S_{ρ,ρ'}`` differs from the formula for ``S₀_{ρ,ρ'}`` in that
+there  is no complex conjugation  of `χ₁`; thus the  matrix `S` is equal to
+`S₀` multiplied on the right by the permutation matrix which corresponds to
+`(x,χ)↦(x,χ̄)`.  The advantage of the matrix `S` over `S₀` is that the pair
 `S,T`  satisfies directly the axioms for a fusion algebra (see below); also
 the matrix `S` is symmetric, while `S₀` is Hermitian.
 
@@ -566,7 +566,7 @@ Thus there are two variants of 'drinfeld_double`:
 
 `drinfeld_double(g,lu=true)`
 
-returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and  an extra
+returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
 `(x,χ)↦(x,χ̄)`,  which allows  to recover  `S`, as  well as  an extra field
 `:lusztig', set to 'true'.
@@ -995,9 +995,9 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   involution=SPerm(collect(eachrow(S)),collect(eachrow(conj.(S))))
   if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
   if order(involution)>2 error("complex conjugacy is of order 4") end
-  irr=mapslices(x->x.//x[special],S;dims=2)
-  duality=SPerm(collect(eachcol(^(irr,Perm(involution)))),
-                 collect(eachcol(irr)))
+  irr=mapslices(x->x.//x[special],S;dims=1)
+  duality=SPerm(collect(eachrow(^(irr,Perm(involution)))),
+                 collect(eachrow(irr)))
   if isnothing(duality) error("the matrix does not have the * involution") end
   if order(duality)>2 error("duality is not an involution") end
   s=mapslices(x->x.//conj(x[special]),conj.(S);dims=1)
@@ -1012,11 +1012,11 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   else multable=map(r->map(c->[k=>Int(i) for (k,i) in c],r),multable)
   end
   A=FusionAlgebra(S,special,involution,duality,multable,Dict{Symbol,Any}())
-  d=map(ratio,eachrow(irr),eachcol(S)) # d=inv.(S[special,:]) ?
+  d=map(ratio,eachcol(irr),eachcol(S)) # d=inv.(S[special,:]) ?
   if nothing in d  error() end
   A.prop[:cDim]=d[special]^2
   A.prop[:qDim]=d[special].//d
-  A.prop[:irr]=irr
+  A.prop[:irr]=permutedims(irr)
   A.prop[:charnames]=haskey(opt,:charnames) ? opt[:charnames] : string.(1:dim(A))
   A.prop[:classnames]=haskey(opt,:classnames) ? opt[:classnames] : string.(1:dim(A))
   A

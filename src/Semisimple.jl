@@ -70,7 +70,7 @@ julia> rootdatum(:gl,3)   # same as the previous example
 A₂Φ₁
 ```
 
-##{Semisimple elements}
+## Semisimple elements
 
 It  is also possible  to compute with  semi-simple elements. The first type
 are  finite order elements of `𝐓`, which over an algebraically closed field
@@ -151,7 +151,7 @@ julia> orbit(G,s)
  <Z₄²,Z₄,Z₄²>
 ```
 
-We  can  compute  the  centralizer  `C_𝐆 (s)`  of  a semisimple element in
+We  can  compute  the  centralizer  ``C_𝐆 (s)``  of  a semisimple element in
 `𝐆 `:
 
 ```julia-repl
@@ -166,9 +166,10 @@ A₃₍₁₃₎=(A₁A₁)Φ₂
 ```
 
 The  result is an  extended reflection group;  the reflection group part is
-the  Weyl group of `C_𝐆 ⁰(s)` and  the extended part are representatives of
-`C_𝐆 (s)` modulo `C_𝐆⁰(s)` taken as diagram automorphisms of the reflection
-part. Here it is printed as a coset `C_𝐆 ⁰(s)ϕ` which generates `C_𝐆 (s)`.
+the Weyl group of ``C_𝐆 ⁰(s)`` and the extended part are representatives of
+``C_𝐆  (s)``  modulo  ``C_𝐆⁰(s)``  taken  as  diagram  automorphisms of the
+reflection  part.  Here  it  is  printed  as  a  coset  ``C_𝐆 ⁰(s)ϕ`` which
+generates ``C_𝐆 (s)``.
 """
 module Semisimple
 using ..Gapjm
@@ -379,7 +380,7 @@ function Base.:in(s::SemisimpleElement{Root1},T::SubTorus)
 end
 
 """
-`torsion_subgroup(S::SubTorus,n)'
+`torsion_subgroup(S::SubTorus,n)`
 
 This  function  returns  the  subgroup  of  semi-simple  elements  of order
 dividing `n` in the subtorus `S`.
@@ -428,22 +429,22 @@ torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.generators))
 """
 `algebraic_centre(W)`
 
-`W` should be a Weyl group,  or an extended Weyl group. This
-function  returns a description of the centre  ZbG   of the algebraic group
-bG    defined by <W> as a Dict with the following fields:
+`W`  should  be  a  Weyl  group,  or  an extended Weyl group. This function
+returns  a description  of the  centre `Z𝐆  ` of  the algebraic  group `𝐆 `
+defined by <W> as a Dict with the following fields:
 
-:Z0:  the neutral component  Z^0   of  ZbG   as a subtorus of   bT.
+:Z0: the neutral component `Z^0` of `Z𝐆 ` as a subtorus of `𝐓`.
 
-:AZ:  representatives in  ZbG   of  A(Z):=ZbG/(ZbG)^0     given as a group
-of semisimple elements.
-
-:ZD:  center  of  the  derived  subgroup  of    bG   given  as  a group of
+:AZ:  representatives in  `Z𝐆` of  ``A(Z):=Z𝐆/(Z𝐆)^0`` given  as a group of
 semisimple elements.
 
-:descAZ:  if `W`  is not  an extended  Weyl group,  describes  A(Z)   as a
-quotient  of the center 'pi' of  the simply connected covering of   bG.
-It  contains a list of elements given as words in the generators of 'pi'
-which generate the kernel of the quotient map.
+:ZD:  center of the derived subgroup of  `𝐆` given as a group of semisimple
+elements.
+
+:descAZ:  if  `W`  is  not  an  extended  Weyl group, describes `A(Z)` as a
+quotient  of the center  `pi` of the  simply connected covering  of `𝐆`. It
+contains  a list of elements given as words in the generators of `pi` which
+generate the kernel of the quotient map.
 
 ```julia_repl
 julia> G=rootdatum(:sl,4)
@@ -654,10 +655,10 @@ end
 
 `W`  should  be  a  Weyl  group  or  an extended reflection group and `s` a
 semisimple  element of the  algebraic group `G`  corresponding to `W`. This
-function  returns  the  Weyl  group  of  `C_G(s)`,  which describes it. The
+function  returns the  Weyl group  of ``C_G(s)``,  which describes  it. The
 stabilizer  is an extended reflection group, with the reflection group part
-equal  to the Weyl group of `C_{G⁰}(s)`, and the diagram automorphism part
-being those induced by `C_G(s)`.
+equal to the Weyl group of ``C_{G⁰}(s)``, and the diagram automorphism part
+being those induced by ``C_G(s)``.
 
 ```julia-repl
 julia> G=coxgroup(:A,3)
@@ -690,17 +691,13 @@ end
 """
 `QuasiIsolatedRepresentatives(W,p=0)`
 
-`W`  should be a Weyl group corresponding  to an algebraic group bG over an
+`W`  should be a Weyl  group corresponding to an  algebraic group 𝐆 over an
 algebraically  closed field  of characteristic  0. This  function returns a
-list  of  semisimple  elements  for  bG,  which  are representatives of the
-bG-orbits  of quasi-isolated semisimple elements.  It follows the algorithm
-given in
-
-    C.Bonnafe, ``Quasi-Isolated Elements in Reductive Groups''
-    Comm. in Algebra 33 (2005), 2315--2337
-
-If  a  second  argument  `p`  is  given,  it gives representatives of those
-quasi-isolated elements which exist in characteristic `p`.
+list  of  semisimple  elements  for  𝐆,  which  are  representatives of the
+𝐆-orbits  of quasi-isolated  semisimple elements.  It follows the algorithm
+given  in  [Bonnafe2005](biblio.htm#Bon05).  If  a  second  argument `p` is
+given,  it  gives  representatives  of  those quasi-isolated elements which
+exist in characteristic `p`.
 
 ```julia-repl
 julia> W=coxgroup(:E,6);l=Semisimple.QuasiIsolatedRepresentatives(W)
@@ -805,9 +802,9 @@ is_isolated(W,s)=rank(algebraic_centre(centralizer(W,s).group)[:Z0])==
 `StructureRationalPointsConnectedCentre(W,q)`
     
 `W`  should be  a Coxeter  group or  a Coxeter  coset representing a finite
-reductive group `𝐆 ^F`, and `q` should be the prime power associated to the
-isogeny  `F`. The  function returns  the abelian  invariants of  the finite
-abelian group `Z⁰𝐆 ^F` where `Z⁰𝐆 ` is the connected center of `𝐆 `.
+reductive  group ``𝐆 ^F``, and `q` should  be the prime power associated to
+the  isogeny `F`. The function returns the abelian invariants of the finite
+abelian group ``Z⁰𝐆 ^F`` where `Z⁰𝐆 ` is the connected center of `𝐆 `.
 
 In  the following example one determines the structure of `𝐓(𝔽₃)` where `𝐓`
 runs over all the maximal tori of `SL`₄.
@@ -848,7 +845,7 @@ end
 
 `W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
 function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of
-reductive  subgroups  of  `𝐆  `  which  are  the  identity component of the
+reductive  subgroups  of  `𝐆 `  which  are  the  identity component of the
 centralizer of a semisimple element. Each group `𝐇 ` is specified by a list
 `h`   of  reflection  indices  in  `W`   such  that  `𝐇  `  corresponds  to
 `reflection_subgroup(W,h)`.  If a  second argument  `p` is  given, only the

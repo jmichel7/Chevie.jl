@@ -121,6 +121,8 @@ Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 # efficient p↦ qˢ p
 shift(p::Pol,s)=Pol(p.c,p.v+s;check=false)
 
+Base.denominator(p::Pol)=iszero(p) ? 1 : lcm(denominator.(p.c))
+
 function positive_part(p::Pol)
   if p.v>=0 return p end
   Pol(view(p.c,1-p.v:length(p.c)),0)
@@ -166,14 +168,14 @@ function Base.show(io::IO,p::Pol)
     print(io,"Pol(",p.c,",",p.v,")")
   elseif iszero(p) print(io,"0")
   else
+    mon=string(get(io,:varname,varname[]))
     for deg in degree(p):-1:valuation(p)
       c=p[deg]
       if iszero(c) continue end
       c=sprint(show,c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg) 
-        mon=String(varname[])
-        if deg!=1 mon*="^{$deg}" end
         c=format_coefficient(c)*mon
+        if !isone(deg) c*="^{$deg}" end
       end
       if c[1]!='-' && deg!=degree(p) c="+"*c end
       printTeX(io,c)

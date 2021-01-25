@@ -1354,7 +1354,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                                 end)), "xxx")
                 d = length(pol) - 1
                 if x[:basis] != y[:basis]
-                    return (Basis(H, "T"))(x) * (Basis(H, "T"))(y)
+                    return (basis(H, "T"))(x) * (basis(H, "T"))(y)
                 elseif x[:basis] == "T"
                     W = Group(H)
                     res = HeckeElt(H, x[:basis], [], [])
@@ -1384,7 +1384,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                     end
                     return res
                 else
-                    return (Basis(H, x[:basis]))((Basis(H, "T"))(x) * (Basis(H, "T"))(y))
+                    return (basis(H, x[:basis]))((basis(H, "T"))(x) * (basis(H, "T"))(y))
                 end
             end
         H[:inverse] = function (h,)
@@ -1397,7 +1397,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                                     Mvp("xxx") - u
                                 end)), "xxx")
                 d = length(pol) - 1
-                return (h[:coeff])[1] ^ -1 * (Basis(H, "T"))(map((i->begin
+                return (h[:coeff])[1] ^ -1 * (basis(H, "T"))(map((i->begin
                                             fill(0, max(0, (1 + i) - 1)) + 1
                                         end), 0:d - 1), -(pol[2:d + 1]) // pol[1]) ^ length((h[:elm])[1])
             end

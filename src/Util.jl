@@ -79,46 +79,30 @@ function ds(s) # "dump struct"
 end
 
 const supchars  =
- "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNORTUVWβγδειθφχ"
+ "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNOPRTUVWαβγδειθφχ"
 const unicodesup=
- "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾⁼ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴿᵀᵁⱽᵂᵝᵞᵟᵋᶥᶿᵠᵡ"
+ "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾⁼ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵅᵝᵞᵟᵋᶥᶿᵠᵡ"
 const supclass="["*supchars*"]"
 const sup=Dict(zip(supchars,unicodesup))
 const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
 const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."
 const sub=Dict(zip(subchars,unicodesub))
 const subclass="["*subchars*"]"
+const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
+  "frakS"=>"𝔖", "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗",
+  "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
+  "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
+  "zeta"=>"ζ")
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)
   s=replace(s,r"\$"=>"")
-  s=replace(s,r"\\varepsilon"=>"ε")
-  s=replace(s,r"\\beta"=>"β")
-  s=replace(s,r"\\delta"=>"δ")
-  s=replace(s,r"\\gamma"=>"γ")
-  s=replace(s,r"\\iota"=>"ι")
-  s=replace(s,r"\\lambda"=>"λ")
-  s=replace(s,r"\\phi"=>"φ")
-  s=replace(s,r"\\Phi"=>"Φ")
-  s=replace(s,r"\\psi"=>"ψ")
-  s=replace(s,r"\\rho"=>"ρ")
-  s=replace(s,r"\\sigma"=>"σ")
-  s=replace(s,r"\\theta"=>"θ")
-  s=replace(s,r"\\chi"=>"χ")
-  s=replace(s,r"\\zeta"=>"ζ")
-  s=replace(s,r"\\otimes"=>"⊗")
   s=replace(s,r"\\tilde ([A-Z])"=>s"\1\U303")
   s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
-  s=replace(s,r"\\frakS"=>"𝔖")
-  s=replace(s,r"\\times"=>"×")
-  s=replace(s,r"\\par"=>"\n")
   s=replace(s,r"\\hfill\\break"=>"\n")
-  s=replace(s,r"\\BZ"=>"ℤ")
-  s=replace(s,r"\\wedge"=>"∧")
-  s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\(h|m)box{([^}]*)}"=>s"\2")
+  s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\!"=>"")
-  s=replace(s,r"{}"=>"")
   s=replace(s,r"\^\{\\frac\{1\}\{2\}\}"=>"½")
   s=replace(s,r"\^\{\\frac\{-1\}\{2\}\}"=>"⁻½")
   s=replace(s,r"\^\{\\frac\{1\}\{3\}\}"=>"⅓")
@@ -128,6 +112,8 @@ function unicodeTeX(s::String)
              t=split(t[9:end-2],"}{")
              map(x->sup[x],t[1])*"⁄"*map(x->sub[x],t[2])
       end)
+  s=replace(s,r"\\([a-zA-Z]+)"=>t->TeXmacros[t[2:end]])
+  s=replace(s,r"{}"=>"")
   s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
   s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
   s=replace(s,Regex("_\\{$subclass*\\}")=>t->map(x->sub[x],t[3:end-1]))
@@ -203,7 +189,7 @@ function format(io::IO,t::Matrix; opt...)
   lpad(s,n)=" "^(n-textwidth(s))*s # because lpad not what expected
   rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
   t=t[rows,cols]
-  if eltype(t)!=String t=sprint.(show,t; context=io) end
+  t=map(x->x isa String ? x : sprint(show,x; context=io),t)
   TeX=get(io,:TeX,false)
   row_labels=string.(row_labels[rows])
   colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))

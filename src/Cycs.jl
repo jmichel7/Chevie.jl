@@ -50,13 +50,13 @@ julia> convert(Int,E(4))
 ERROR: InexactError: convert(Int64, E(4))
 
 julia> inv(1+E(4)) # inverses often need Rational coefficients
-Cyc{Rational{Int64}}: 1/2-ζ₄/2
+Cyc{Rational{Int64}}: (1-ζ₄)/2
 
 julia> inv(E(5)+E(5,4)) # but not always
 Cyc{Int64}: -ζ₅²-ζ₅³
 
 julia> Cyc(1//2+im) # one can convert Gaussian integers or rationals
-Cyc{Rational{Int64}}: 1/2+ζ₄
+Cyc{Rational{Int64}}: (1+2ζ₄)/2
 
 julia> conj(1+E(4)) # complex conjugate
 Cyc{Int64}: 1-ζ₄
@@ -65,7 +65,7 @@ julia> real(E(5))  # real part
 Cyc{Rational{Int64}}: (-1+√5)/4
 
 julia> imag(E(5))  # imaginary part
-Cyc{Rational{Int64}}: ζ₅/2-ζ₅⁴/2
+Cyc{Rational{Int64}}: (ζ₅-ζ₅⁴)/2
 
 julia> c=E(9)   # an effect of the Zumbroich basis
 Cyc{Int64}: -ζ₉⁴-ζ₉⁷
@@ -477,6 +477,12 @@ end
 function normal_show(io::IO,p::Cyc{T})where T
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
+  if T<:Rational{<:Integer}
+    den=denominator(p)
+    p=Cyc{Int}(p*den)
+  else
+    den=1
+  end
 if use_list
   it=zip(zumbroich_basis(p.n),p.d)
 else
@@ -486,12 +492,6 @@ end
 if use_list
     if iszero(v) return "" end
 end
-    if T<:Rational{<:Integer}
-      den=denominator(v)
-      v=numerator(v) 
-    else
-      den=1
-    end
     if deg==0 t=string(v)
     else 
       t=format_coefficient(string(v))
@@ -504,11 +504,16 @@ end
       t*=r
     end
     if t[1]!='-' t="+"*t end
-    if !isone(den) t*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) end
     t
   end)
   if res=="" res="0"
   elseif res[1]=='+' res=res[2:end] 
+  end
+  if !isone(den) 
+    res=format_coefficient(res)
+    if res=="" res="1" end
+    if res=="-" res="-1" end
+    res*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) 
   end
   fromTeX(io,res)
 end
@@ -834,11 +839,11 @@ if use_list
     return nothing
   end
 else
-  if !(all(x->x[2]==1,c.d) || all(x->x[2]==-1,c.d))
+  if !(all(x->last(x)==1,c.d) || all(x->last(x)==-1,c.d))
     return nothing
   end
 end
-  for i in 0:c.n-1 # should loop over prime_residues if it was efficient
+  for i in prime_residues(c.n)
     if c==E(c.n,i) return Root1(c.n,i) end
     if -c==E(c.n,i) 
       if c.n%2==0 return Root1(c.n,div(c.n,2)+i)
@@ -1045,7 +1050,7 @@ end
 # 347.534 ms (4367402 allocations: 366.17 MiB) in 1.5.3
 # 565.431 ms (5861810 allocations: 775.28 MiB) in 1.5.3, ModuleElts Dict
 function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
-  ss=reduce(vcat,[[[i,j] for j in i+1:p-1] for i in 0:p-1])
+  ss=[[i,j] for i in 0:p-1 for j in i+1:p-1]
   [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
 end
 end

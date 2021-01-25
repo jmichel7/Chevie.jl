@@ -194,12 +194,15 @@ function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
     if o==2 return [p,-one(p)].+z end
     map(i->iszero(i) ? p+z : zero(p)+E(o,i),0:o-1)
   end
+  if isempty(para) 
+   return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
+  end
   hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
   
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
   rootpara= iszero(rootpara) ? C[] : fill(rootpara,ngens(W))
-  hecke(W,fill(p,ngens(W));rootpara=rootpara)
+  hecke(W,fill(p,ngens(W));rootpara)
 end
 
 function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
@@ -222,16 +225,18 @@ coefftype(H::HeckeAlgebra{C}) where C=C
 
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
-  if constant(tr.(para)) tr(para[1])
+  if isempty(para) para
+  elseif constant(tr.(para)) tr(para[1])
   else map(tr,para)
   end
 end
 
 function Base.show(io::IO, H::HeckeAlgebra)
+  if isempty(H.para) print(io,"hecke(",H.W,")"); return end
   print(io,"hecke(",H.W,",",simplify_para(H.para))
   if haskey(H.prop,:rootpara)
     rp=rootpara(H)
-    if constant(rp) print(io,",rootpara=",rp[1])
+    if !isempty(rp) && constant(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
     end
   end
@@ -281,7 +286,7 @@ Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjug
 """
 `isrepresentation(H::HeckeAlgebra,r)`
 
-returns `true` or `false`, according to whether a given set `r` of matrices
+returns `true` or `false`, according to whether a given set `r` of elements
 corresponding  to  the  standard  generators  of the reflection group `H.W`
 defines a representation of the Hecke algebra `H` or not.
 
@@ -291,29 +296,26 @@ hecke(F₄,1)
 
 julia> isrepresentation(H,reflrep(H))
 true
+
+julia> isrepresentation(H,Tbasis(H).(1:4))
+true
 ```
 """
 function isrepresentation(H::HeckeAlgebra,t;verbose=false)
   W=H.W
   res=true
   for i in eachindex(gens(W))
-    e=prod(q->(t[i]-q.*one(t[i])),H.para[i])
-    if !iszero(e)
-      if verbose
-        println("Error in ",ordinal(i)," parameter relation");
-        res=false
-      else return false
-      end
+    if !iszero(prod(q->(t[i]-q.*one(t[i])),H.para[i]))
+      if !verbose return false end
+      println("Error in ",ordinal(i)," parameter relation");
+      res=false
     end
   end
   for (l,r) in braid_relations(W)
-    e=prod(t[l])-prod(t[r])
-    if !iszero(e)
-       if verbose
-          println("Error in relation ",l,"=",r)
-          res=false
-       else return false
-       end
+    if !iszero(prod(t[l])-prod(t[r]))
+      if !verbose return false end
+      println("Error in relation ",l,"=",r)
+      res=false
     end
   end
   res
@@ -432,6 +434,9 @@ Base.iszero(h::HeckeElt)=iszero(h.d)
 clone(h::HeckeElt,d)=typeof(h)(d,h.H)
 Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
 
+# HeckeElts are scalars for broadcasting
+Base.broadcastable(h::HeckeElt)=Ref(h)
+
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
     w=word(h.H.W,e)
@@ -470,6 +475,8 @@ basename(h::HeckeTElt)="T"
 function Base.one(H::HeckeAlgebra)
   HeckeTElt(ModuleElt(one(H.W)=>one(coefftype(H))),H)
 end
+
+Base.one(h::HeckeTElt)=one(h.H)
 
 function Base.zero(H::HeckeAlgebra)
   HeckeTElt(zero(ModuleElt{typeof(one(H.W)),coefftype(H)}),H)

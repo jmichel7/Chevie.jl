@@ -251,5 +251,30 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
         return uc
     end)
 chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
-        return (chevieget(:D, :UnipotentClasses))(r, p)
+        local uc, cc, j
+        uc = deepcopy((chevieget(:D, :UnipotentClasses))(r, p))
+        if p != 2
+            for cc = uc[:classes]
+                cc[:red] = CoxeterGroup()
+                j = cc[:parameter]
+                for j = tally(j)
+                    if mod(j[1], 2) == 0
+                        cc[:red] = cc[:red] * CoxeterGroup("C", div(j[2], 2))
+                    elseif mod(j[2], 2) != 0
+                        if j[2] > 1
+                            cc[:red] = cc[:red] * CoxeterGroup("B", div(j[2] - 1, 2))
+                        end
+                    elseif j[2] > 2
+                        if div(j[2], 2) == 3
+                            cc[:red] = cc[:red] * spets(CoxeterGroup("D", div(j[2], 2)), perm"(1,3)")
+                        else
+                            cc[:red] = cc[:red] * spets(CoxeterGroup("D", div(j[2], 2)), perm"(1,2)")
+                        end
+                    else
+                        cc[:red] = cc[:red] * torus([[-1]])
+                    end
+                end
+            end
+        end
+        return uc
     end)

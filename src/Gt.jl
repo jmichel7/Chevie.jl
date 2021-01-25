@@ -75,20 +75,20 @@ end
 `ClassTypes(G[,p])`
 
 `G`  should be a root  datum or a twisted  root datum representing a finite
-reductive  group `𝐆 ^F` and `p` should be a prime. The function returns the
-class  types of `G` in characteristic `p` (in good characteristic if `p` is
-omitted).  Two  elements  of  `𝐆  ^F`  have  the  same  class type if their
+reductive  group ``𝐆 ^F`` and  `p` should be a  prime. The function returns
+the class types of `G` in characteristic `p` (in good characteristic if `p`
+is  omitted). Two elements  of ``𝐆 ^F``  have the same  class type if their
 centralizers  are  conjugate.  If  `su`  is  the Jordan decomposition of an
 element  `x`, the class type of `x` is  determined by the class type of its
-semisimple part `s` and the unipotent class of `u` in `C_𝐆 (s)`.
+semisimple part `s` and the unipotent class of `u` in ``C_𝐆 (s)``.
 
 The   function  `ClassTypes`  is  presently  only  implemented  for  simply
-connected  groups, where  `C_𝐆 (s)`  is  connected. This  section is  a bit
+connected  groups, where  ``C_𝐆 (s)``  is connected.  This section is a bit
 experimental and may change in the future.
 
 `ClassTypes`  returns a  `struct` which  contains a  list of classtypes for
 semisimple  elements,  which  are  represented  by  `subspets`  and contain
-additionnaly information on the unipotent classes of `C_𝐆 (s)`.
+additionnaly information on the unipotent classes of ``C_𝐆 (s)``.
 
 Let us give some examples:
 

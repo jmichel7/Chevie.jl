@@ -51,10 +51,10 @@ despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome.
 
-This  package it  contains about  90% of  Chevie functionality, ported from
-Gap3. The function `gap` can help you discover the equivalent functionality
-to  a Gap3 function: it takes a  string and gives you Julia translations of
-functions  in  Gap3  which  match  this  string.
+This  package contains about 90% of Chevie functionality, ported from Gap3.
+The  function `gap` can help you discover the equivalent functionality to a
+Gap3  function:  it  takes  a  string  and  gives you Julia translations of
+functions in Gap3 which match this string.
 
 ```julia-rep1
 julia> gap("words")
@@ -125,6 +125,7 @@ include("Murphy.jl");@reexport using .Murphy
 #if false
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
+include("dSeries.jl");@reexport using .dSeries
 include("HasType.jl");@reexport using .HasType
 #end
 end

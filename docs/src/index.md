@@ -50,6 +50,7 @@ PermGroups
 base
 centralizers
 transversals
+on_classes
 symmetric_group
 stab_onmats
 Perm_onmats
@@ -251,6 +252,8 @@ invariants
 generic_order
 torus_order
 parabolic_representatives
+parabolic_closure
+is_parabolic
 ComplexReflectionGroup
 ```
 # Hecke algebras
@@ -309,6 +312,7 @@ shrink
 ```@docs
 Chars
 CharTable
+on_chars
 charinfo
 charnames
 classinfo
@@ -351,7 +355,8 @@ degrees(::UnipotentCharacters,q)
 Uch.CycPolUnipotentDegrees
 UniChar
 DLChar
-AlmostChar
+almostChar
+on_unipotents
 DLLefschetz
 LusztigInduce
 LusztigRestrict
@@ -365,6 +370,13 @@ family_imprimitive
 FamiliesClassical
 *(f::Family, g::Family)
 fusion_algebra
+```
+# d-Harish-Chandra series
+```@docs
+dSeries
+cuspidal_pairs
+Series
+ennola
 ```
 # Unipotent classes of reductive groups
 ```@docs
@@ -659,7 +671,7 @@ RightLcm                                    rightlcm
 RootDatum                                   rootdatum
 RootsCartan(m)                              roots(m)
 Rotation(v,i)                               circshift(v,-i)
-Rotations(v)                                circshift.(Ref(a),length(a):-1:1)
+Rotations(v)                                circshift.(Ref(v),length(v):-1:1)
 ScalMvp                                     scal
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor

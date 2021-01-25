@@ -44,8 +44,8 @@ function G4_22Test(res,rows,i)
   ST=res[:ST]
   T(ST)=string("G",ST in 4:7 ? 7 : ST in 8:15 ? 11 : 19)
   if haskey(G4_22IndexChars_dict[ST],res[:parameter])
-    InfoChevie("IndexChars(Hecke(G_$ST,",
-               HeckeAlgebras.simplify_para(res[:parameter]),"))\n")
+#   InfoChevie("IndexChars(Hecke(G_$ST,",
+#              HeckeAlgebras.simplify_para(res[:parameter]),"))\n")
     ic=G4_22IndexChars_dict[ST][res[:parameter]]
     res[:irreducibles]=rows[ic]
     if ic!=i
@@ -65,17 +65,20 @@ function G4_22Test(res,rows,i)
     if length(Set(l))!=length(res[:classes])
       error("specialization not semi-simple")
     end
-    l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
-    println("*** WARNING: bad choice of character restrictions from ", T(ST), 
-            " for this specialization\n")
+    xprintln("*** WARNING: bad choice of char. restrictions from ",T(ST), 
+             " for H(G$ST,",HeckeAlgebras.simplify_para(res[:parameter]),")")
     if !CHEVIE[:CheckIndexChars]
       print("Try again with CHEVIE[:CheckIndexChars]=true\n")
     end
+ #  l=map(x->filter(i->l[i]==x,eachindex(l)), sort(unique(l)))
+    l=map(x->findall(==(x),l), unique(sort(l)))
     o=filter(x->count(j->j in x,i)>1,l)
-    println(" over-represented by ", intersect(union(o...), i)," : ", o)
-    println(" absent : ",filter(x->iszero(count(j->j in x,i)),l))
-    l= map(x->x[1],l)
-    print(" Choosing ",l,"\n")
+  # println(" over-represented by ", intersect(union(o...), i)," : ", o)
+  # println(" absent : ",filter(x->iszero(count(j->j in x,i)),l))
+    l=first.(l)
+    o=filter(p->first(p)!=last(p),collect(zip(i,l)))
+    println("changing choice ",join(first.(o),",")," → ",join(last.(o),","))
+  # println(" Choosing ",l)
     res[:irreducibles]=rows[l]
   end
   G4_22IndexChars_dict[ST][res[:parameter]]=l

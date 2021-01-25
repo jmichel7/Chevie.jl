@@ -1,5 +1,5 @@
 "generates a runtests.jl from julia-repr docstrings in file arguments"
-function gentests(ff::Vector{String})
+function gentests(ff::Vector{String};j16=false)
   open("runtests.jl","w")do io
     write(io,
 """
@@ -36,6 +36,15 @@ end
         for v in l[2:end-1]
           v=replace(v,r"# .*"=>"")
           v=replace(v,r" *$"=>"")
+          if j16 
+            v=replace(v,r"Array{([^{}]*),1}"=>s"Vector{\1}") 
+            v=replace(v,r"Array{([^{}]*),2}"=>s"Matrix{\1}") 
+            v=replace(v,r"Array{([^{}]*{[^{}]*}),1}"=>s"Vector{\1}") 
+            v=replace(v,r"Array{([^{}]*{[^{}]*}),2}"=>s"Matrix{\1}") 
+            v=replace(v,r"Array{([^{}]*{[^{}]*{[^{}]*}}),1}"=>s"Vector{\1}") 
+            v=replace(v,r"Array{([^{}]*{[^{}]*{[^{}]*}}),2}"=>s"Matrix{\1}") 
+            v=replace(v,r"Dict{([^{},]*),"=>s"Dict{\1, ") 
+          end
           if occursin(r"^julia>",v)
             if c!="" push!(res,c=>out) end
             out=String[]

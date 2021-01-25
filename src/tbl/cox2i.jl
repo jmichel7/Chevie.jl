@@ -279,11 +279,47 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
         uc[:A] = Concatenation([0, e], map((x->begin
                             e - 1
                         end), ac))
+        if e == 4
+            ((uc[:families])[3])[:ennola] = -2
+        end
         if e == 5
             uc[:families][3] = galois(uc[:families][3],13)
             for c = uc[:harishChandra]
                 c[:eigenvalue] = galois(c[:eigenvalue], 13)
             end
         end
+        if e == 6
+            ((uc[:families])[3])[:ennola] = [-5, -2, -3, -6, -1, -4]
+        end
         return uc
+    end)
+chevieset(Symbol("2I"), :Ennola, function (e,)
+        local uc, res, p, A, b, f
+        uc = (chevieget(Symbol("2I"), :UnipotentCharacters))(e)
+        if uc isa Function
+            uc = uc()
+        end
+        res = uc[:a] * 0
+        for f = uc[:families]
+            if haskey(f, :ennola)
+                if IsList(f[:ennola])
+                    p = SPerm(f[:ennola])
+                else
+                    A = fusion_algebra(f)
+                    b = basis(A)
+                    if !(haskey(f, :ennola))
+                        f[:ennola] = f[:special]
+                    end
+                    if f[:ennola] > 0
+                        p = SPerm(b, b[f[:ennola]] * b)
+                    else
+                        p = SPerm(b, -(b[-(f[:ennola])]) * b)
+                    end
+                end
+            else
+                p = SPerm()
+            end
+            res[f[:charNumbers]] = Permuted(f[:charNumbers], p)
+        end
+        return SPerm(res)
     end)

@@ -3,7 +3,7 @@ A  suitable  reference  for  the  general  theory of Coxeter groups is, for
 example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
 
 A *Coxeter group* is a group which has the presentation
-``W=⟨S|(st)^{m(s,t)}=1\\hbox{  for  }s,t∈  S⟩``  for some symmetric integer
+``W=⟨S|(st)^{m(s,t)}=1 for s,t∈  S⟩``  for some symmetric integer
 matrix `m(s,t)` called the *Coxeter matrix*, where `m(s,t)>1` for `s≠t` and
 `m(s,s)=1`.  It is true (but a non-trivial theorem) that in a Coxeter group
 the  order of `st` is exactly `m(s,t)`, thus a Coxeter group is the same as

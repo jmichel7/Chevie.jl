@@ -10,14 +10,14 @@ bijection with nilpotent orbits on the Lie algebra.
 We  give  the  following  information  for  a unipotent element `u` of each
 class:
 
-- the centralizer `C_𝐆 (u)`, that we describe by the reductive part of
-  `C_𝐆 (u)^0`,  by the group  of components `A(u):=C_𝐆 (u)/C_𝐆 (u)^0`,
+- the centralizer ``C_𝐆 (u)``, that we describe by the reductive part of
+  ``C_𝐆  (u)^0``, by the  group of components  ``A(u):=C_𝐆 (u)/C_𝐆 (u)^0``,
   and by the dimension of its radical.
 
 - in good characteristic, the  Dynkin-Richardson  diagram.
 
--  the Springer correspondence,  attaching characters of  the Weyl group or
-relative Weyl groups to each character of `A(u)`.
+- the Springer correspondence,  attaching characters of  the Weyl group or
+  relative Weyl groups to each character of `A(u)`.
 
 The  Dynkin-Richarson diagram is attached to a nilpotent element `e` of the
 Lie  algebra `𝔤`.  By the  Jacobson-Morozov theorem  there exists an `𝔰𝔩₂`
@@ -25,19 +25,19 @@ subalgebra of `𝔤` containing `e` as the element ``\\begin{pmatrix}1&0\\\\0&1
 \\end{pmatrix}``. Let `𝐒` be the torus ``\\begin{pmatrix}h&0\\\\0&h^{-1}
 \\end{pmatrix}`` of `SL₂` and let `𝐓` be a
 maximal  torus containing `𝐒`, so that `𝐒`  is the image of a one-parameter
-subgroup `σ∈ Y(𝐓)`. Consider the root decomposition `𝔤=∑_{α∈Σ}𝔤_α` given by
-`𝐓`;  then `α↦⟨σ,α⟩` defines a linear form  on `Σ`, determined by its value
-on  simple roots. It is possible to choose  a system of simple roots `Π` so
-that  `⟨σ,α⟩≥ 0`  for `α∈Π`,  and then  `⟨σ,α⟩∈{0,1,2}` for  any `α∈Π`. The
-Dynkin  diagram  of  `Π`  decorated  by  these values `0,1,2` is called the
+subgroup  `σ∈ Y(𝐓)`. Consider the root decomposition ``𝔤=∑_{α∈Σ}𝔤_α`` given
+by  `𝐓`; then  `α↦⟨σ,α⟩` defines  a linear  form on  `Σ`, determined by its
+value  on simple roots. It  is possible to choose  a system of simple roots
+`Π`  so that `⟨σ,α⟩≥ 0` for `α∈Π`,  and then `⟨σ,α⟩∈{0,1,2}` for any `α∈Π`.
+The  Dynkin diagram of `Π` decorated by  these values `0,1,2` is called the
 Dynkin-Richardson  diagram of `e`, and in good characteristic is a complete
 invariant of its `𝔤`-orbit.
 
-Let  `𝓑`  be  the  variety  of  all  Borel  subgroups  and let `𝓑ᵤ` be the
+Let  `𝓑`  be  the  variety  of  all  Borel  subgroups  and  let `𝓑ᵤ` be the
 subvariety  of Borel subgroups  containing the unipotent  element `u`. Then
-`dim C_𝐆(u)=rank𝐆+2dim𝓑ᵤ` and in good characteristic this dimension can be
-computed  from the Dynkin-Richardson diagram: the dimension of the class of
-`u` is the number of roots `α` such that `⟨σ,α⟩∉{0,1}`.
+`dim C_𝐆(u)=rank 𝐆 + 2 dim 𝓑_u` and in good characteristic this dimension
+can  be computed from  the Dynkin-Richardson diagram:  the dimension of the
+class of `u` is the number of roots `α` such that `⟨σ,α⟩∉{0,1}`.
 
 We   describe  now  the  Springer  correspondence.  Indecomposable  locally
 constant  `𝐆`-equivariant  sheaves  on  `C`,  called  *local  systems*, are
@@ -50,50 +50,51 @@ associates  to each local  system a (unique  up to `𝐆`-conjugacy) *cuspidal
 pair*  of a Levi  subgroup `𝐋` of  `𝐆` and a  `cuspidal` local system on an
 unipotent  class of `𝐋`, such that the set of local systems associated to a
 given cuspidal pair is parameterized by the characters of the relative Weyl
-group `W_𝐆(𝐋):=N_𝐆(𝐋)/𝐋`. There are only few cuspidal pairs.
+group ``W_𝐆 (𝐋):=N_𝐆 (𝐋)/𝐋``. There are only few cuspidal pairs.
 
 The  Springer correspondence gives information on the character values of a
 finite  reductive  groups  as  follows:  assume  that  `k` is the algebraic
-closure  of a finite field `𝔽_q` and  that `F` is the Frobenius attached to
-an `𝔽_q`-structure of `𝐆`. Let `C` be an `F`-stable unipotent class and let
-`u∈  C^F`; we call `C`  the *geometric class* of  `u` and the `𝐆^F`-classes
-inside  `C^F`  are  parameterized  by  the `F`-conjugacy classes of `A(u)`,
-denoted  `H^1(F,A(u))` (most of the time we can find `u` such that `F` acts
-trivially  on `A(u)` and `H^1(F,A(u))` is then just the conjugacy classes).
-To  an `F`-stable character `φ` of  `A(u)` we associate the *characteristic
-function*  of  the  corresponding  local  system (actually associated to an
-extension  `φ̃` of `φ`  to `A(u).F`); it  is a class  function `Y_{u,φ}` on
-`𝐆^F`  which can be  normalized so that:  `Y_{u,φ}(u₁)=φ̃(cF)` if `u₁` is
-geometrically  conjugate to `u` and its `𝐆^F`-class is parameterized by the
-`F`-conjugacy class `cF` of `A(u)`, otherwise `Y_{u,φ}(u₁)=0`. If the pair
-`u,φ`  corresponds via the Springer correspondence  to the character `χ` of
-`W_𝐆(𝐋)`,  then `Y_{u,φ}` is also denoted `Yᵪ`. There is another important
-class of functions indexed by local systems: to a local system on class `C`
-is  attached  an  intersection  cohomology  complex,  which is a complex of
-sheaves  supported on  the closure  `C̄`. To  such a  complex of sheaves is
-associated  its  *characteristic  function*,  a  class  function  of  `𝐆^F`
-obtained  by taking  the alternating  trace of  the Frobenius acting on the
-stalks  of the cohomology sheaves. If  `Y_ψ` is the characteristic function
-of  a  local  system,  the  characteristic  function  of  the corresponding
-intersection  cohomology  complex  is  denoted  by  `X_ψ`. This function is
-supported  on `C̄`, and Lusztig has  shown that `X_ψ=∑ᵩ P_{ψ,χ} Yᵪ` where
-`P_{ψ,χ}`  are integer polynomials  in `q` and  `Yᵪ` are attached to local
-systems on classes lying in `C̄`.
+closure of a finite field ``𝔽_q`` and that `F` is the Frobenius attached to
+an  ``𝔽_q``-structure of `𝐆`. Let `C`  be an `F`-stable unipotent class and
+let  ``u∈ C^F``;  we  call  `C`  the  *geometric  class*  of  `u`  and the
+``𝐆^F``-classes  inside  ``C^F``  are  parameterized  by  the `F`-conjugacy
+classes  of `A(u)`, denoted `H¹(F,A(u))` (most of  the time we can find `u`
+such  that `F` acts trivially  on `A(u)` and `H¹(F,A(u))`  is then just the
+conjugacy  classes). To an `F`-stable character  `φ` of `A(u)` we associate
+the  *characteristic function* of the  corresponding local system (actually
+associated to an extension `φ̃` of `φ` to `A(u).F`); it is a class function
+``Y_{u,φ}`` on ``𝐆^F`` which can be normalized so that:
+``Y_{u,φ}(u₁)=φ̃(cF)``  if `u₁` is  geometrically conjugate to  `u` and its
+``𝐆^F``-class  is parameterized by the  `F`-conjugacy class `cF` of `A(u)`,
+otherwise ``Y_{u,φ}(u₁)=0``. If the pair `u,φ` corresponds via the Springer
+correspondence to the character `χ` of ``W_𝐆(𝐋)``, then ``Y_{u,φ}`` is also
+denoted  `Yᵪ`. There  is another  important class  of functions  indexed by
+local  systems: to a local system on  class `C` is attached an intersection
+cohomology  complex, which is a complex of sheaves supported on the closure
+`C̄`.  To  such  a  complex  of  sheaves  is associated its *characteristic
+function*,  a class function of ``𝐆^F``  obtained by taking the alternating
+trace  of the Frobenius acting on the  stalks of the cohomology sheaves. If
+``Y_ψ``   is   the   characteristic   function   of  a  local  system,  the
+characteristic   function  of  the  corresponding  intersection  cohomology
+complex  is denoted  by ``X_ψ``.  This function  is supported  on `C̄`, and
+Lusztig  has shown that ``X_ψ=∑ᵩ P_{ψ,χ} Yᵪ`` where ``P_{ψ,χ}`` are integer
+polynomials  in `q` and `Yᵪ` are attached to local systems on classes lying
+in `C̄`.
 
-Lusztig  and Shoji have given an algorithm to compute the matrix `P_{ψ,χ}`,
-which  is  implemented  in  Chevie.  The  relationship  with  characters of
-`𝐆(𝔽_q)`,  taking to simplify the ordinary Springer correspondence, is that
-the  restriction to the unipotent elements of the almost character `R_χ` is
-equal  to `q^{bᵪ} Xᵪ`, where `bᵪ` is `dim  𝓑ᵤ` for an element `u` of the
-class  `C` such  that the  support of  `χ` is  `C̄`. The restriction of the
-Deligne-Lusztig  characters `R_w` to  the unipotents are  called the *Green
-functions*  and can also be computed by Chevie. The values of all unipotent
-characters  on  unipotent  elements  can  also  be computed in principle by
-applying Lusztig's Fourier transform matrix (see the section on the Fourier
-matrix)  but  there  is  a  difficulty  in  that  the  `Xᵪ`  must be first
-multiplied  by some roots  of unity which  are not known  in all cases (and
-when  known may  depend on  the congruence  class of  `q` modulo some small
-primes).
+Lusztig   and  Shoji  have  given  an   algorithm  to  compute  the  matrix
+``P_{ψ,χ}``,   which  is  implemented  in  Chevie.  The  relationship  with
+characters   of  ``𝐆(𝔽_q)``,  taking  to  simplify  the  ordinary  Springer
+correspondence,  is that the  restriction to the  unipotent elements of the
+almost  character ``R_χ`` is equal to ``q^{bᵪ} Xᵪ``, where `bᵪ` is `dim 𝓑ᵤ`
+for  an element `u` of the class `C`  such that the support of `χ` is `C̄`.
+The restriction of the Deligne-Lusztig characters ``R_w`` to the unipotents
+are  called the *Green functions*  and can also be  computed by Chevie. The
+values  of  all  unipotent  characters  on  unipotent  elements can also be
+computed  in principle by applying  Lusztig's Fourier transform matrix (see
+the  section on the Fourier  matrix) but there is  a difficulty in that the
+`Xᵪ` must be first multiplied by some roots of unity which are not known in
+all  cases (and when known may depend on the congruence class of `q` modulo
+some small primes).
 
 We illustrate these computations on some examples:
 
@@ -123,25 +124,25 @@ here  is  a  partition  describing  the  Jordan  form. The partial order on
 unipotent  classes given by Zariski closure  is given before the table. The
 column   'D-R',   displayed   only   in   good  characteristic,  gives  the
 Dynkin-Richardson  diagram  for  each  class;  the  column  'dBu' gives the
-dimension  of the  variety `𝓑ᵤ`.  The column  'B-C' gives  the Bala-Carter
-classification  of `u`, that is in the case  of `sl₄` it displays `u` as a
+dimension  of  the  variety  `𝓑ᵤ`.  The  column 'B-C' gives the Bala-Carter
+classification  of `u`, that is  in the case of  `sl₄` it displays `u` as a
 regular  unipotent  in  a  Levi  subgroup  by  giving the Dynkin-Richardson
 diagram  of a regular  unipotent (all 2's)  at entries corresponding to the
 Levi  and '.' at  entries which do  not correspond to  the Levi. The column
-'C(u)'  describes  the  group  `C_𝐆(u)`:  a  power `q^d` describes that the
-unipotent  radical  of  `C_𝐆(u)`  has  dimension  `d`  (thus `q^d` rational
+'C(u)'  describes the  group ``C_𝐆(u)``:  a power  `qᵈ` describes  that the
+unipotent  radical  of  ``C_𝐆(u)``  has  dimension  `d` (thus `qᵈ` rational
 points);  then follows a  description of the  reductive part of the neutral
-component  of  `C_𝐆(u)`,  given  by  the  name  of  its root datum. Then if
-`C_𝐆(u)` is not connected, the description of `A(u)` is given using another
-vocabulary:  a cyclic group  of order 4  is given as  'Z4', and a symmetric
-group on 3 points would be given as 'S3'.
+component  of ``C_𝐆(u)``,  given by  the name  of its  root datum.  Then if
+``C_𝐆(u)``  is  not  connected,  the  description  of `A(u)` is given using
+another  vocabulary: a  cyclic group  of order  4 is  given as  'Z4', and a
+symmetric group on 3 points would be given as 'S3'.
 
-For instance, the first class '4' has `C_𝐆(u)^0` unipotent of dimension `3`
-and  `A(u)` equal to 'Z4', the cyclic group  of order 4. The class '22' has
-`C_G(u)`  with unipotent radical  of dimension `4`,  reductive part of type
-'A1'  and `A(u)` is  'Z2', that is  the cyclic group  of order 2. The other
-classes  have `C_𝐆(u)` connected. For the  class '31' the reductive part of
-`C_G(u)` is a torus of rank 1.
+For  instance, the first class '4'  has ``C_𝐆(u)^0`` unipotent of dimension
+`3`  and `A(u)` equal to 'Z4', the cyclic  group of order 4. The class '22'
+has  ``C_G(u)`` with unipotent radical of  dimension `4`, reductive part of
+type  'A1' and  `A(u)` is  'Z2', that  is the  cyclic group of order 2. The
+other  classes have ``C_𝐆(u)`` connected. For  the class '31' the reductive
+part of ``C_G(u)`` is a torus of rank 1.
 
 Then  there is one column for each *Springer series*, giving for each class
 the pairs 'a:b' where 'a' is the name of the character of `A(u)` describing
@@ -149,7 +150,7 @@ the  local system  involved and  'b' is  the name  of the  character of the
 (relative)  Weyl group corresponding by the Springer correspondence. At the
 top  of the column is  written the name of  the relative Weyl group, and in
 brackets  the name  of the  Levi affording  a cuspidal  local system; next,
-separated  by a |/| is a description of the central character associated to
+separated  by a `/` is a description of the central character associated to
 the  Springer series  (omitted if  this central  character is trivial): all
 local  systems  in  a  given  Springer  series have same restriction to the
 center of `𝐆`. To find what the picture becomes for another algebraic group
@@ -527,7 +528,7 @@ describing the Jordan form, for classical groups).
 diagram,  given  as  a  list  of  0,1,2  describing  the coefficient on the
 corresponding simple root.
 
-`red`:  the reductive part of `C_𝐆(u)`.
+`red`:  the reductive part of ``C_𝐆(u)``.
 
 `dimBu`:  the dimension of the variety `𝓑ᵤ`.
 
@@ -542,14 +543,14 @@ fields:
 `𝐋`  where  lives  the  cuspidal  local  system `ι` from which the Springer
 series is induced.
 
-`relgroup`:  The  relative  Weyl  group `N_𝐆(𝐋,ι)/𝐋`. The first
-series is the principal series for which `.levi=[]` and `.relgroup=W`.
+`relgroup`: The relative Weyl group ``N_𝐆(𝐋,ι)/𝐋``. The first series is the
+principal series for which `.levi=[]` and `.relgroup=W`.
 
 `locsys`:  a  list  of  length  `NrConjugacyClasses(.relgroup)`, holding in
 `i`-th  position a  pair describing  which local  system corresponds to the
-`i`-th  character of `N_𝐆(𝐋,ι)`. The first element of the pair is the index
-of  the concerned unipotent class  `u`, and the second  is the index of the
-corresponding character of `A(u)`.
+`i`-th  character of  ``N_𝐆(𝐋,ι)``. The  first element  of the  pair is the
+index  of the concerned unipotent class `u`, and the second is the index of
+the corresponding character of `A(u)`.
 
 `Z`:  the central character associated  to the Springer series, specified
 by its value on the generators of the centre.
@@ -658,7 +659,7 @@ end
 Base.length(uc::UnipotentClasses)=length(uc.classes)
 
 function UnipotentClasses(W,p=0)
-  println("UnipotentClasses(",W,")")
+# println("UnipotentClasses(",W,")")
   spetscase=W isa Spets
   if spetscase
     WF=W
@@ -944,21 +945,21 @@ Base.setproperty!(t::ICCTable,k::Symbol,x)=getfield(t,:prop)[k]=x
 """
 `ICCTable(uc,seriesNo=1;q=Pol())`
 
-This  function gives the table of  decompositions of the functions `X_ι` in
-terms of the functions `Y_ι`. Here `ι` is a `𝐆`-equivariant local system on
-the  class  `C`  of  a  unipotent  element  `u`.  Such  a  local  system is
+This function gives the table of decompositions of the functions ``X_ι`` in
+terms  of the functions ``Y_ι``. Here `ι` is a `𝐆`-equivariant local system
+on  the  class  `C`  of  a  unipotent  element  `u`. Such a local system is
 parametrized  by the pair  `(u,ϕ)` of `u`  and a character  of the group of
-components  `A(u)` of `C_𝐆  (u)`. The function  `Y_ι` is the characteristic
-function  of this local system and  `X_ι` is the characteristic function of
-the  corresponding intersection  cohomology complex  on `C̄`.  The Springer
-correspondence  says  that  the  local  systems  can  also  be  indexed  by
-characters  of a relative Weyl group. Since the coefficient of `Xᵪ` on `Yᵩ`
-is  `0` if `χ` and  `φ` are not characters  of the same relative Weyl group
-(are  not  in  the  same  Springer  series),  the table is for one Springer
-series, specified by the argument 'seriesNo' (this defaults to 'seriesNo=1'
-which  is  the  principal  series).  The  decomposition  multiplicities are
-graded,  and are  given as  polynomials in  one variable  (specified by the
-argument `q`; if not given `Pol()` is assumed).
+components   `A(u)`   of   ``C_𝐆   (u)``.   The  function  ``Y_ι``  is  the
+characteristic   function  of  this   local  system  and   ``X_ι``  is  the
+characteristic   function  of  the  corresponding  intersection  cohomology
+complex  on `C̄`. The  Springer correspondence says  that the local systems
+can  also be  indexed by  characters of  a relative  Weyl group.  Since the
+coefficient of `Xᵪ` on `Yᵩ` is `0` if `χ` and `φ` are not characters of the
+same  relative Weyl group (are not in  the same Springer series), the table
+is  for one  Springer series,  specified by  the argument  'seriesNo' (this
+defaults  to 'seriesNo=1' which is the principal series). The decomposition
+multiplicities  are graded,  and are  given as  polynomials in one variable
+(specified by the argument `q`; if not given `Pol()` is assumed).
 
 ```julia-repl
 julia> t=ICCTable(uc)
@@ -1021,8 +1022,8 @@ information which can help further computations.
 the  `Yᵩ`.  One  should  pay  attention  that  by default, the table is not
 displayed  in the same order as the  stored |.scalar|, which is in order in
 Chevie  of  the  characters  in  the  relative  Weyl  group;  the  table is
-transposed,  then lines  and rows  are sorted  by |dimBu,class  no,index of
-character in A(u)| while displayed.
+transposed,  then lines  and rows  are sorted  by `dimBu,class  no,index of
+character in A(u)` while displayed.
 
 `.group`: The group `W`.
 
@@ -1033,7 +1034,7 @@ character in A(u)| while displayed.
 `.dimBu`: The list of `dim𝓑ᵤ` for each local system `(u,φ)` in the series.
 
 `:L`:  The matrix of  (unnormalized) scalar products  of the functions `Yᵩ`
-with themselves, that is the `(φ,χ)` entry is `∑_{g∈𝐆(𝔽_q)} Yᵩ(g) Yᵪ(g)`.
+with themselves, that is the `(φ,χ)` entry is ``∑_{g∈𝐆(𝔽_q)} Yᵩ(g) Yᵪ(g)``.
 This  is thus a symmetric, block-diagonal  matrix where the diagonal blocks
 correspond  to  geometric  unipotent  conjugacy  classes.  This  matrix  is
 obtained as a by-product of Lusztig's algorithm to compute `Pᵩᵪ`.
@@ -1118,11 +1119,12 @@ function repair(u::Matrix) # can disappear with julia1.6
   u
 end
   
-# XTable(uc[,opt]) values of Xᵪ on unipotent classes or local systems
+# XTable(uc[,opt]) values of X̃ᵪ on unipotent classes or local systems
+# Note that c_ι=βᵤ+(rkss L_\CI)/2
 #
 # Formatting: options of FormatTable + [.classes, .CycPol]
 function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
-  println("here uc=",uc)
+# println("here uc=",uc)
   pieces=map(i->ICCTable(uc,i;q=q),eachindex(uc.springerseries))
   greenpieces=map(x->x.scalar*toM(HasType.DiagonalMat(q.^x.dimBu...)),pieces)
   l=vcat(getproperty.(pieces,:locsys)...)
@@ -1159,10 +1161,10 @@ function Base.show(io::IO,x::XTable)
     return
   end
   class=haskey(getfield(x,:prop),:classes)
-  print(io,"Values of character sheaves Xᵪ on")
+  print(io,"Values of character sheaves X̃ᵪ on")
   rowLabels=vcat(map(g->map(n->fromTeX(io,"X^{"*sprint(show,g;context=io)
              *"}_{"*n*"}"),charnames(io,g)),x.relgroups)...)
-  rowsLabel=fromTeX(io,"X_\\chi\\"*(class ? "class" : "locsys"))
+  rowsLabel=fromTeX(io,"\\tilde X_\\chi\\"*(class ? "class" : "locsys"))
   if class
     print(io," unipotent classes\n")
     columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
@@ -1183,7 +1185,9 @@ Base.getproperty(t::GreenTable,k::Symbol)=getfield(t,:prop)[k]
 Base.setproperty!(t::GreenTable,k::Symbol,x)=getfield(t,:prop)[k]=x
 
 # GreenTable(uc;q=Pol())
-# values of Green functions Q_{wF} on unipotent classes
+# values of Green functions Q^\CI_{wF} on unipotent classes
+# method: use formula DLM3 (3.1)
+# Lines indexed by (\CI,wF). Columns by unip. classes or local systems
 function GreenTable(uc::UnipotentClasses;q=Pol())
   t=GreenTable(getfield(XTable(uc;classes=true,q=q),:prop))
   m=cat(map(g->permutedims(CharTable(g).irr),t.relgroups)...;dims=(1,2))
@@ -1234,7 +1238,8 @@ function TwoVarGreen(W,L)
   q=Pol()
   mm=map(eachindex(uL.springerseries))do i
     s=uL.springerseries[i]
-    p=findfirst(S->S[:levi]==inclusion(L,s[:levi]),uG.springerseries)
+    p=findfirst(S->S[:levi]==inclusion(L,s[:levi]) &&
+                S[:Z][1]==s[:Z][1],uG.springerseries)
     if isnothing(p) error("not found ",s[:levi]) end
     RG=relative_coset(W,inclusion(L,s[:levi]))
     RLF=relative_coset(L,s[:levi])
@@ -1259,9 +1264,8 @@ function TwoVarGreen(W,L)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
       prod(x->q-x,r)/length(centralizer(RL,w))
     end
-    q^(rank(W)-count(isone,degrees(reflection_subgroup(Group(W),s[:levi]))))*
-    permutedims(tL.scalar[tL.indices[i],:])*
-    toM(HasType.DiagonalMat(d...))*tG.scalar[tG.indices[p][f],:]
+    q^(length(s[:levi]))*permutedims(tL.scalar[tL.indices[i],:])*
+    toM(HasType.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
   end
   oL=generic_order(L,q)
   mm=toM(map((x,y)->x*y/oL,eachrow(sum(mm)),tL.cardClass))
@@ -1269,6 +1273,10 @@ function TwoVarGreen(W,L)
   res.classL=tL.classes
   res.classG=tG.classes
   res
+end
+
+function Base.show(io::IO, ::MIME"text/html", x::TwoVarGreenTable)
+  show(IOContext(io,:TeX=>true),x)
 end
 
 function Base.show(io::IO,x::TwoVarGreenTable)
@@ -1283,10 +1291,9 @@ function Base.show(io::IO,x::TwoVarGreenTable)
   columnLabels=map(x.classG)do p
     name(IOContext(io,:class=>p[2]),x.uG.classes[p[1]])
   end
-  tbl=x.scalar
+  tbl=improve_type(x.scalar)
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,
-    rows_label="classL\\classG")
+  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label="v/u")
 end
 
 """

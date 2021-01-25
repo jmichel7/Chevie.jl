@@ -4,58 +4,59 @@ Eigenspaces and `d`-Harish-Chandra series
 Let `Wϕ` be a reflection coset on a vector space `V` and `Lwϕ` a reflection
 subcoset  where `L` is a  parabolic subgroup (the fixator  of a subspace of
 `V`).  There  are  several  interesting  cases  where  the *relative group*
-`N_W(Lwϕ)/L`, or a subgroup of it normalizing some further data attached to
-`L`, is itself a reflection group.
+``N_W(Lwϕ)/L``,  or a subgroup of it normalizing some further data attached
+to `L`, is itself a reflection group.
 
 A first example is the case where `ϕ=1` and `w=1`, `W` is the Weyl group of
-a finite reductive group `𝐆^F` and the Levi subgroup `𝐋^F` corresponding to
-`L`  has a cuspidal unipotent character. Then `N_W(L)/L` is a Coxeter group
-acting  on the  space `X(Z𝐋)⊗ℝ`.  A combinatorial  characterization of such
-parabolic  subgroups of Coxeter  groups is that  they are normalized by the
-longest element of larger parabolic subgroups (see [5.7.1
-Lusztig1976](biblio.htm#Lus76)).
+a   finite  reductive   group  ``𝐆^F``   and  the   Levi  subgroup  ``𝐋^F``
+corresponding  to `L` has a cuspidal unipotent character. Then ``N_W(L)/L``
+is  a  Coxeter  group  acting  on  the  space  `X(Z𝐋)⊗ℝ`.  A  combinatorial
+characterization of such parabolic subgroups of Coxeter groups is that they
+are  normalized by the  longest element of  larger parabolic subgroups (see
+[5.7.1 Lusztig1976](biblio.htm#Lus76)).
 
 A  second  example  is  when  `L`  is  trivial  and  `wϕ` is a *`ζ`-regular
-element*,  that  is  the  `ζ`-eigenspace  `V_ζ`  of  `wϕ` contains a vector
-outside all the reflecting hyperplanes of `W`. Then `N_W(Lwϕ)/L=C_W(wϕ)` is
-a reflection group in its action on `V_ζ`.
+element*,  that is  the `ζ`-eigenspace  ``V_ζ`` of  `wϕ` contains  a vector
+outside  all the reflecting hyperplanes of `W`. Then ``N_W(Lwϕ)/L=C_W(wϕ)``
+is a reflection group in its action on ``V_ζ``.
 
-A  similar but more general example is  when `V_ζ` is the `ζ`-eigenspace of
+A similar but more general example is when ``V_ζ`` is the `ζ`-eigenspace of
 some  element of  the reflection  coset `Wϕ`,  and is  of maximal dimension
 among such possible `ζ`-eigenspaces. Then the set of elements of `Wϕ` which
-act  by `ζ`  on `V_ζ`  is a  certain subcoset  `Lwϕ`, and `N_W(Lwϕ)/L` is a
-reflection group in its action on `V_ζ` (see [2.5
+act  by `ζ` on ``V_ζ`` is a certain subcoset `Lwϕ`, and ``N_W(Lwϕ)/L`` is a
+reflection group in its action on ``V_ζ`` (see [2.5
 Lehrer-Springer1999](biblio.htm#LS99)).
 
 Finally,  a  still  more  general  example,  but which only occurs for Weyl
 groups  or  Spetsial  reflection  groups,  is  when `𝐋` is a `ζ`-split Levi
 subgroup  (which means that  the corresponding subcoset  `Lwϕ` is formed of
-all  the elements which act by `ζ` on  some subspace `V_ζ` of `V`), and `λ`
+all the elements which act by `ζ` on some subspace ``V_ζ`` of `V`), and `λ`
 is  a  `d`-cuspidal  unipotent  character  of  `𝐋`  (which  means  that the
 multiplicity  of `ζ`  as a  root of  the degree  of `λ`  is the same as the
 multiplicity  of `ζ` as a root of the generic order of the semi-simple part
-of `𝐆`); then `N_W(Lwϕ,λ)/L` is a complex reflection group in its action on
-`V_ζ`.
+of  `𝐆`); then ``N_W(Lwϕ,λ)/L`` is a complex reflection group in its action
+on ``V_ζ``.
 
 Further,  in the above cases the relative group describes the decomposition
 of a Lusztig induction.
 
-When  `𝐆^F`  is  a  finite  reductive  group,  and `λ` a cuspidal unipotent
-character  of the Levi subgroup  `𝐋^F`, then the `𝐆^F`-endomorphism algebra
-of  the Harish-Chandra induced representation `R_𝐋^𝐆(λ)` is a Hecke algebra
-attached  to the group `N_W(L)/L`, thus  the dimension of the characters of
-this group describe the multiplicities in the Harish-Chandra induced.
+When  ``𝐆^F`` is  a finite  reductive group,  and `λ`  a cuspidal unipotent
+character  of  the  Levi  subgroup  ``𝐋^F``,  then the ``𝐆^F``-endomorphism
+algebra  of  the  Harish-Chandra  induced  representation ``R_𝐋^𝐆(λ)`` is a
+Hecke algebra attached to the group ``N_W(L)/L``, thus the dimension of the
+characters  of this group describe the multiplicities in the Harish-Chandra
+induced.
 
 Similarly, when `𝐋` is a `ζ`-split Levi subgroup, and `λ` is a `d`-cuspidal
-unipotent  character  of  `𝐋`  then  (conjecturally) the `𝐆^F`-endomorphism
-algebra of the Lusztig induced `R_𝐋^𝐆(λ)` is a cyclotomic Hecke algebra for
-to  the group `N_W(Lwϕ,λ)/L`.  The constituents of  `R_𝐋^𝐆(λ)` are called a
-`ζ`-Harish-Chandra  series.  In  the  case  of  rational  groups or cosets,
-corresponding  to  finite  reductive  groups,  the conjugacy class of `Lwϕ`
-depends only on the order `d` of `ζ`, so one also talks of
+unipotent  character of  `𝐋` then  (conjecturally) the ``𝐆^F``-endomorphism
+algebra  of the Lusztig induced ``R_𝐋^𝐆(λ)``  is a cyclotomic Hecke algebra
+for  to the  group ``N_W(Lwϕ,λ)/L``.  The constituents  of ``R_𝐋^𝐆(λ)`` are
+called  a  `ζ`-Harish-Chandra  series.  In  the  case of rational groups or
+cosets,  corresponding to finite  reductive groups, the  conjugacy class of
+`Lwϕ`  depends  only  on  the  order  `d`  of  `ζ`,  so  one  also talks of
 `d`-Harish-Chandra  series. These series correspond to `ℓ`-blocks where `l`
 is  a prime divisor of `Φ_d(q)` which  does not divide any other cyclotomic
-factor of the order of `𝐆^F`.
+factor of the order of ``𝐆^F``.
 
 The functions described in this module allow to explore these situations.
 """
@@ -70,10 +71,10 @@ using ..Gapjm
 Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
 root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)` or is a
 fraction  smaller `a/b` with `0<a<b`  and specifies `ζ=E(b,a)`. If omitted,
-`d`   is  taken  to  be  `1`,  specifying  `ζ=1`.  Then  if  `V_ζ`  is  the
+`d`  is  taken  to  be  `1`,  specifying  `ζ=1`.  Then  if  ``V_ζ``  is the
 `ζ`-eigenspace  of some element of `WF`,  and is of maximal dimension among
 such   possible  `ζ`-eigenspaces,  and  `W`  is  the  group  of  `WF`  then
-`N_W(V_ζ)/C_W(V_ζ)`  is  a  reflection  group  in  its action on `V_ζ`. The
+``N_W(V_ζ)/C_W(V_ζ)``  is a reflection group in  its action on ``V_ζ``. The
 function  `relative_degrees` returns the reflection degrees of this complex
 reflection group, which are a subset of those of `W`.
 
@@ -200,9 +201,9 @@ julia> w=W(1:3...)
 
 julia> p=eigenspace_projector(W,w,1//4)
 3×3 Array{Cyc{Rational{Int64}},2}:
-  1/4+ζ₄/4   ζ₄/2  -1/4+ζ₄/4
-  1/4-ζ₄/4    1/2   1/4+ζ₄/4
- -1/4-ζ₄/4  -ζ₄/2   1/4-ζ₄/4
+  (1+ζ₄)/4   ζ₄/2  (-1+ζ₄)/4
+  (1-ζ₄)/4    1/2   (1+ζ₄)/4
+ (-1-ζ₄)/4  -ζ₄/2   (1-ζ₄)/4
 
 julia> GLinearAlgebra.rank(p)
 1
@@ -271,9 +272,11 @@ subgroup* of `W`, that is the centralizer of some subspace of `V`.
 
 The  function returns  a list  of representatives  of conjugacy  classes of
 `d`-split  Levis of `W`. A  `d`-split Levi is a  subcoset of `WF` formed of
-all  the  elements  which  act  by  `ζ`  on  a given subspace `V_ζ`. If the
+all  the elements  which act  by `ζ`  on a  given subspace  ``V_ζ``. If the
 additional  argument `ad`  is given,  it returns  only those subcosets such
-that the common `ζ`-eigenspace of their elements is of dimension `ad`.
+that  the common  `ζ`-eigenspace of  their elements  is of  dimension `ad`.
+These  notions  make  sense  and  thus  are  implemented  for  any  complex
+reflection group.
 
 In  terms of algebraic groups, an `F`-stable Levi subgroup of the reductive
 group  `𝐆  `  is  `d`-split  if  and  only  if it is the centralizer of the
@@ -307,6 +310,13 @@ julia> split_levis(W,4,2)
  E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²
  E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
  E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
+
+julia> split_levis(ComplexReflectionGroup(5))
+4-element Array{Gapjm.Cosets.PRC{Int16,PRSG{Cyc{Rational{Int64}},Int16}},1}:
+ G₅
+ G₅₍₁₎=G₃‚₁‚₁Φ₁
+ G₅₍₂₎=G₃‚₁‚₁Φ₁
+ G₅₍₎=Φ₁²
 ```
 """
 split_levis(W,d=Root1(1))=[L for ad in 0:length(relative_degrees(W,d))

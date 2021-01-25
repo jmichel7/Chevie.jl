@@ -2,7 +2,7 @@ module Combinat
 export combinations, arrangements, partitions, npartitions, partition_tuples,
   conjugate_partition, compositions, submultisets, cartesian,
   npartition_tuples, narrangements, groupby, constant, tally, collectby,
-  partitions_set, npartitions_set, bell, stirling2
+  partitions_set, npartitions_set, bell, stirling2, unique_sorted!
 
 """
 `groupby(v,l)`
@@ -58,6 +58,7 @@ count  how many times  each element of  collection `v` occurs  and return a
 function tally(v)
   res=Pair{eltype(v),Int}[]
   if isempty(v) return res end
+  if !(v isa AbstractArray) v=collect(v) end
   v=sort(v)
   c=1
 @inbounds  for j in 2:length(v)
@@ -80,14 +81,14 @@ function collectby(f,v)
   [d[k] for k in sort(collect(keys(d)))]
 end
 
-" whether all elements in collection a are equal"
+" whether all elements in nonempty collection a are equal"
 function constant(a)
   f=first(a)
   all(==(f),a)
 end
 
 # faster than unique! for sorted vectors
-function unique_sorted(v::Vector)
+function unique_sorted!(v::Vector)
   i=1
 @inbounds  for j in 2:length(v)
     if v[j]==v[i]
@@ -102,15 +103,12 @@ function cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
-function combinations_sorted(mset,k)
-  if iszero(k) return [eltype(mset)[]] end
-  res=Vector{eltype(mset)}[]
-  if k<=length(mset)
-  for (i,e) in enumerate(mset)
-    append!(res,map(x->pushfirst!(x,e),combinations_sorted(mset[i+1:end],k-1)))
-  end
-  end
-  res
+# k<=length(mset) && k>0
+function combinations_sorted(sorted_mset,k)
+  if k==1 return map(x->[x],sorted_mset) end
+  reduce(vcat,map(enumerate(sorted_mset[1:end-k+1]))do (i,e)
+    map(x->pushfirst!(x,e),combinations_sorted(sorted_mset[i+1:end],k-1))
+  end)
 end
 
 """
@@ -141,7 +139,11 @@ julia> combinations([1,2,2,3])
  [1, 2, 2, 3]
 ```
 """
-combinations(mset,k)=unique_sorted(combinations_sorted(sort(mset),k))
+function combinations(mset,k)
+  if k>length(mset) return Vector{eltype(mset)}[] end
+  if iszero(k) return [empty(mset)] end
+  unique_sorted!(combinations_sorted(sort(mset),k))
+end
 combinations(mset)=isempty(mset) ? [Int[]] :
   vcat(combinations.(Ref(mset),0:length(mset))...)
 

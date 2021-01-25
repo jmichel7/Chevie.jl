@@ -80,11 +80,11 @@ For  almost  all  irreducible  complex  reflection  groups,  the generating
 matrices  for `W`  we give  have coefficients  in `K`.  Further, the set of
 matrices  for all  elements of  `W` is  globally invariant under the Galois
 group  of `K/ℚ `, thus the Galois  action induces automorphisms of `W`. The
-exceptions are `G₂₂, G₂₇` where the matrices are in a degree two extension
+exceptions  are `G₂₂, G₂₇` where the matrices are in a degree two extension
 of   `K`  (this  is  needed  to   have  a  globally  invariant  model,  see
-[MarinMichel10]) and some dihedral groups as well as `H_3` and `H_4`, where
-the  matrices given (the usual  Coxeter reflection representation over `K`)
-are not globally invariant.
+[MarinMichel2010](biblio.htm#MarinMichel10))  and  some  dihedral groups as
+well  as  `H_3`  and  `H_4`,  where  the  matrices given (the usual Coxeter
+reflection representation over `K`) are not globally invariant.
 
 It turns out that all representations of a complex reflection group `W` are
 defined  over the  field of  definition of  `W` (cf.  [Ben76] and D.~Bessis
@@ -442,7 +442,10 @@ function cartan(W::PermRootGroup)
   end
 end
 
-cartan(t::TypeIrred)=toM(getchev(t,:CartanMat))
+function cartan(t::TypeIrred)
+  c=getchev(t,:CartanMat)
+  if isempty(c) fill(0,0,0) else toM(c) end
+end
 
 cartan(W::PermRootGroup,I)=[cartan(W,i,j) for i in I, j in I]
 

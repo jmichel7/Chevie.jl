@@ -345,7 +345,7 @@ abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
 `elts`  should be simples of  the monoid `M`. The  function return the left
 gcd `d` of the `elts`, followed by a tuple of the complements `d^-1*elts[1],…`
 """
-function leftgcd(M::LocallyGarsideMonoid,elts...)
+function leftgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N})where {T,N}
   x=one(M)
   found=true
   while found
@@ -518,9 +518,9 @@ function left_divisors(M::LocallyGarsideMonoid,s)
   map(x->first.(x),res)
 end
 
-@inline rightcomplδ(M::GarsideMonoid,x)=\(M,x,M.δ)
+rightcomplδ(M::GarsideMonoid,x)=\(M,x,M.δ)
 leftcomplδ(M::GarsideMonoid,x)=/(M,M.δ,x)
-@inline isrightascent(M::GarsideMonoid,x,i)=isleftdescent(M,rightcomplδ(M,x),i)
+isrightascent(M::GarsideMonoid,x,i)=isleftdescent(M,rightcomplδ(M,x),i)
 
 # w^(M.δ^i)
 function δad(M::GarsideMonoid,x,i::Integer)
@@ -628,8 +628,8 @@ BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"Δ",gens(W),W,
 
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 
-@inline CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
-@inline CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
+CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
+CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
 CoxGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
@@ -652,8 +652,8 @@ BraidMonoid(W::GenCox)=GenBraidMonoid(gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::GenBraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 
-@inline CoxGroups.isleftdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
-@inline CoxGroups.firstleftdescent(M::GenBraidMonoid,w)=firstleftdescent(M.W,w)
+CoxGroups.isleftdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
+CoxGroups.firstleftdescent(M::GenBraidMonoid,w)=firstleftdescent(M.W,w)
 
 isrightdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
 isrightascent(M::GenBraidMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
@@ -1025,8 +1025,8 @@ end
 """
 `leftgcd(a1,..,an)` 
 
-a_1,ldots,a_n  should  be  elements  of  the same (locally) Garside monoid.
-returns (d,(d⁻¹a₁,…,d⁻¹aₙ)) where d=leftgcd(a₁,…,aₙ)
+`a₁,…,aₙ`  should be elements of the same (locally) Garside monoid. returns
+`(d,(d⁻¹a₁,…,d⁻¹aₙ))` where `d=leftgcd(a₁,…,aₙ)`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -1065,10 +1065,10 @@ function Cosets.Frobenius(x::GarsideElm,phi)
 end
 
 """
-'image(b::GarsideElm)'
+`image(b::GarsideElm)`
     
-This  function is defined only if <b>  is an element of an interval monoid,
-for instance a braid. It returns the image of <b> in the group of which the
+This  function is defined only if `b`  is an element of an interval monoid,
+for instance a braid. It returns the image of `b` in the group of which the
 monoid  is an interval  monoid. For instance  it gives the  projection of a
 braid in an Artin monoid back to the Coxeter group.
 

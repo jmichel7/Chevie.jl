@@ -174,6 +174,13 @@ chevieset(:A, :UnipotentCharacters, function (l,)
                                 [βset(x)]
                             end), ci[:charparams]), :a => ci[:a], :A => ci[:A])
     end)
+chevieset(:A, :Ennola, function (l,)
+        if l == 1
+            return SPerm([-1, 2])
+        else
+            return SPerm()
+        end
+    end)
 chevieset(:A, :Invariants, function (n,)
         local m
         m = ((CHEVIE[:A])[:GeneratingRoots])(n)

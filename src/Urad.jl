@@ -269,7 +269,8 @@ function check_root_order(W)
   if !isone(i) error("Need ", i, " to sort the roots of ", W, "\n") end
 end
 
-# Compute N_{a,b} for non-necessarily positive roots [@Car72b, 4.2.1 (ii)]
+# Compute N_{a,b} for non-necessarily positive roots [Carter1972b, 4.2.1
+# (ii)](biblio.htm#Car72b]
 function N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)
   W=U.W
   ra= a<0 ? -roots(W,-a) : roots(W,a)
@@ -360,7 +361,8 @@ function UnipotentGroup(W::FiniteCoxeterGroup)
   # we initialize U with the order on U_α given by 1:nref(W)
   U=UnipotentGroup(W,special,ns,fill(0,2*ns),1:nref(W),fill(Vector{Int}[],2*ns))
   l(r)=isnothing(r) ? 1 : rootlengths(W)[r] # length of root r
-# Compute Nᵣₛ for each special pair. See formula in proof of [@Car72b, 4.2.2]
+# Compute Nᵣₛ for each special pair. See formula in proof of [Carter1972b,
+# 4.2.2](biblio.htm#Car72b)
   r=s=rs=0
   for i in 1:U.ns
    if i==1 || U.specialPairs[i-1][3]!=U.specialPairs[i][3] #extraspecial

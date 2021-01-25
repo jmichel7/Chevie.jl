@@ -12,10 +12,11 @@
 #  reflection groups.
 
 chevieset(:B, :CartanMat, function(n,ct=2)
-  a=chevieget(:A, :CartanMat)(n)
-  a=map(x->convert.(typeof(1//ct),x),a)
-  a[1][2]=-ct
-  a[2][1]=-2//ct
+  a=chevieget(:A, :CartanMat)(n)//1
+  if n>=2
+    a[1][2]=-ct
+    a[2][1]=-2//ct
+  end
   improve_type(a)
 end)
 

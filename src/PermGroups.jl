@@ -283,7 +283,21 @@ function elements(G::PermGroup)
   res
 end
 
-# Permutation of the conjugacy classes induced by an automorphism of W
+"""
+`on_classes(G, aut)`
+
+`aut`  is an automorphism of  the group `G` (for  a permutation group, this
+could  be  given  as  a  permutation  normalizing  `G`).  The result is the
+permutation of `1:nconjugacy_classes(G)` induced ny `aut`.
+
+```julia-repl
+julia> WF=rootdatum("3D4")
+³D₄
+
+julia> on_classes(Group(WF),WF.phi)
+Perm{Int64}: (2,8,7)(5,13,12)
+```
+"""
 on_classes(W, aut)=Perm(map(c->position_class(W,c^aut),classreps(W)))
 
 #------------------------- cosets for PermGroups -----------------------
