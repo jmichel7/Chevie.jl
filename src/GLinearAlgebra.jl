@@ -156,7 +156,7 @@ end
 
 # Cofactors of the square matrix M, defined by CoFactors(M)*M=Det(M)*one(M)
 function CoFactors(m)
-  if size(m,1)==1 return fill(1,1,1) end
+  if size(m,1)==1 return fill(one(eltype(m)),1,1) end
   v=axes(m,1)
   permutedims([(-1)^(i+j)*Det(m[filter(x->x!=i,v),filter(x->x!=j,v)])
                for i in v, j in v])
@@ -236,8 +236,7 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
         if j>1 P[b[i],b[j]]-=
           sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1)
         end
-        P[b[i],b[j]]*=cb
-        P[b[i],b[j]]=div.(block(P,i,j),db)
+        P[b[i],b[j]]=improve_type(div.(block(P,i,j)*cb,db*1//1))
       end
     end
     return permutedims(P),L
@@ -251,10 +250,10 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
     for i in j+1:length(b)
       P[b[i],b[j]]=block(M,i,j)-sum(k->block(P,i,k)*block(L,k,k)*
                                      block(tP,k,j),1:j-1)
-      P[b[i],b[j]]=div.(P[b[i],b[j]]*cb,db)
+      P[b[i],b[j]]=improve_type(div.(block(P,i,j)*cb,db*1//1))
       tP[b[j],b[i]]=cb*(block(M,j,i)-sum(k->block(P,j,k)*
                                          block(L,k,k)*block(tP,k,i),1:j-1))
-      tP[b[i],b[j]]=div.(tP[b[i],b[j]],db)
+      tP[b[i],b[j]]=improve_type(div.(block(tP,i,j),db*1//1))
     end
   end
   (P,L,tP)

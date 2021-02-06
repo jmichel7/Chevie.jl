@@ -279,47 +279,36 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
         uc[:A] = Concatenation([0, e], map((x->begin
                             e - 1
                         end), ac))
-        if e == 4
-            ((uc[:families])[3])[:ennola] = -2
-        end
         if e == 5
             (uc[:families])[3] = (uc[:families])[3] ^ 13
             for c = uc[:harishChandra]
                 c[:eigenvalue] = galois(c[:eigenvalue], 13)
             end
         end
-        if e == 6
-            ((uc[:families])[3])[:ennola] = [-5, -2, -3, -6, -1, -4]
-        end
         return uc
     end)
 chevieset(Symbol("2I"), :Ennola, function (e,)
-        local uc, res, p, A, b, f
+        local uc, l
+        if mod(e, 2) == 1
+            return SPerm()
+        end
         uc = (chevieget(Symbol("2I"), :UnipotentCharacters))(e)
-        if uc isa Function
-            uc = uc()
-        end
-        res = uc[:a] * 0
-        for f = uc[:families]
-            if haskey(f, :ennola)
-                if IsList(f[:ennola])
-                    p = SPerm(f[:ennola])
-                else
-                    A = fusion_algebra(f)
-                    b = basis(A)
-                    if !(haskey(f, :ennola))
-                        f[:ennola] = f[:special]
-                    end
-                    if f[:ennola] > 0
-                        p = SPerm(b, b[f[:ennola]] * b)
-                    else
-                        p = SPerm(b, -(b[-(f[:ennola])]) * b)
-                    end
-                end
-            else
-                p = SPerm()
-            end
-            res[f[:charNumbers]] = Permuted(f[:charNumbers], p)
-        end
-        return SPerm(res)
+        l = uc[:charSymbols]
+        return SPerm(map(function (i,)
+                        local s, p, a, u
+                        s = EnnolaSymbol(l[i])
+                        if IsList(s[length(s)])
+                            u = Rotations(s)
+                        else
+                            u = map((x->begin
+                                            Concatenation(x, s[[length(s) - 1, length(s)]])
+                                        end), Rotations(s[1:length(s) - 2]))
+                        end
+                        for a = u
+                            p = Position(l, a)
+                            if p != false
+                                return p * (-1) ^ (uc[:A])[i]
+                            end
+                        end
+                    end, 1:length(l)))
     end)

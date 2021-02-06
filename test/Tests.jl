@@ -1,7 +1,16 @@
 module Tests
 using Gapjm
 
+const test=Dict{Symbol,NamedTuple{(:fn, :applicable,:comment),
+        Tuple{Function,Function,String}}}()
+
+isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
+isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
+isspetsial=W->UnipotentCharacters(W)!==nothing
+
 nspets=ComplexReflectionGroup.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
+
+ChevieErr(x...)=xprintln("**! ",x...)
 
 cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
       coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
@@ -26,14 +35,42 @@ twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
   rootdatum(Symbol("pso-"),10), rootdatum(Symbol("2E6")), rootdatum(:psu,8),
   rootdatum(Symbol("pso-"),12), rootdatum(Symbol("pso-"),14)]
 
-function check(fun,l) # fun can be :CharTable or :UnipotentCharacters
-  for g in l
-    xprintln("creating $fun(",g,")")
-    xprint(eval(Expr(:call,fun,g)))
+all_ex=vcat(cox_ex,spets_ex,twisted)
+sort!(all_ex,by=nconjugacy_classes)
+
+function RG(s::Symbol)
+  t=test[s]
+  println("testing ",s,"\n",t.comment)
+  for W in all_ex if t.applicable(W) 
+  xprintln(s,"(",W,")")
+@time  t.fn(W) 
+  end end
+end
+
+# compares lists a and b (whose descriptions are strings na and nb)
+function cmpvec(a,b;na="a",nb="b")
+  if a==b return end
+  if length(a)!=length(b)
+    ChevieErr("length($na)=",length(a)," while length($nb)=",length(b))
+  end
+  if -a==b ChevieErr("$na=-$nn");return end
+  pa=Perm(a,b)
+  if pa!==nothing ChevieErr("$na=$nb^",pa);return end
+  pa=Perm(a,-b)
+  if pa!==nothing ChevieErr("$na=-$nb^",pa);return end
+  for j in eachindex(a)
+    if a[j]==b[j] continue end
+    if a[j]==-b[j] ChevieErr("$na[$j]=-$nb[$j]");continue end
+    t=findall(==(a[j]),b)
+    if length(t)>0 ChevieErr("$na[$j] found at $t");continue end
+    t=findall(==(-a[j]),b)
+    if length(t)>0 ChevieErr("-$na[$j] found at $t");continue end
+    ChevieErr("$na[$j] not found")
   end
 end
 
-function FindRepresentation(W,gr,check=false)
+# find matrices gr as a representation of a group or Hecke algebra
+function findrepresentation(W,gr,check=false)
   O=W
   if O isa HeckeAlgebra W=O.W end
   t=classinfo(W)[:classtext]
@@ -43,6 +80,7 @@ function FindRepresentation(W,gr,check=false)
   ct=CharTable(O).irr
   pos=1:length(l)
   gens=gr
+  if isempty(gens) return 1 end
   for (i,w) in enumerate(t)
     r=traces_words_mats(gens,[w])[1]
 #   println("w=$w r=$r")
@@ -58,7 +96,7 @@ function FindRepresentation(W,gr,check=false)
   end
 end
 
-function tRepresentations(W,l=Int[])
+function representations(W,l=Int[])
   O=W
   if W isa HeckeAlgebra
     H=W
@@ -69,41 +107,56 @@ function tRepresentations(W,l=Int[])
   ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
-    print("Representation #$i");
+    print("Representation #$i")
     gr=representation(O,i)
     if gr==false println("=false")
     else
       r=gr
-      print(" dim:",size(r[1]),"...")
-      isrepresentation(H,r)
-      pos=FindRepresentation(O,gr,true)
-      if pos==i println("")
+      if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1]) :
+                          size(r.gens[1]),"...") end
+      if isrepresentation(H,r) print("is ") end
+      if r isa NamedTuple println();continue end # for now... Should be fixed
+      pos=findrepresentation(O,gr,true)
+      if pos==i println("found")
       elseif !isnothing(pos) println("character found at ",pos)
       else println("character does not match")
 	pos=TransposedMat([ct[i],traces_words_mats(gr,cl)])
 	f=List(pos,x->x[1]!=x[2])
 	pos=List(pos,x->List(x,FormatGAP))
 	Print(FormatTable(ListBlist(pos,f),
-	  rec(rowLabels=ListBlist(1:Length(pos),f),
+	  rec(rowLabels=ListBlist(1:length(pos),f),
 	      columnLabels=["is","should be"])))
       end
     end
   end
 end
+test[:representations]=(fn=representations, 
+   applicable=function(W)
+     if nconjugacy_classes(W)>=55 return false end
+     t=refltype(W)
+     if isempty(t) return true end
+     t=t[1]
+     if !haskey(t,:orbit) || order(t.twist)!=2 return true end
+     t=t.orbit[1]
+     return !(t.series in [:D,:E])
+   end,
+   comment="Check reprs exist and match characters")
 
-function tLusztigInduction(WF)
+function lusztiginduction(WF)
   if !(WF isa Spets) WF=spets(WF) end
   W=Group(WF)
   for J in filter(x->length(x)<length(gens(W)),parabolic_representatives(W))
-    tLusztigInduction(WF,J)
+    lusztiginduction(WF,J)
   end
 end
+test[:lusztiginduction]=(fn=lusztiginduction, applicable=isspetsial,
+   comment="Check induction computable and mackey with tori")
 
-function tLusztigInduction(WF,J::AbstractVector{<:Integer})
-  for L in twistings(WF,J) tLusztigInduction(WF,L) end
+function lusztiginduction(WF,J::AbstractVector{<:Integer})
+  for L in twistings(WF,J) lusztiginduction(WF,L) end
 end
 
-function tLusztigInduction(WF,L)
+function lusztiginduction(WF,L)
   if L.phi==WF.phi print("Split ") end
   xprint("Lusztig Induction from ",L," to ",WF)
   t=LusztigInductionTable(L,WF)
@@ -166,9 +219,125 @@ function tCharTable(W)
   end
 end
 
-function tposition_class(W)
-  cl=map(x->position_class(W,x),class_reps(W))
+function position_class(W)
+  cl=map(x->Gapjm.position_class(W,x),class_reps(W))
   if cl!=1:length(cl) error("classes") end
 end
 
+test[:position_class]=(fn=position_class, applicable=W->true,
+   comment="classreps")
+
+function unipotentclasses(W,p=nothing)
+  function PosetFromICC(t)local l,o
+    l=uc.springerseries[1][:locsys]
+    o=map(i->map(j->any(a->any(b->!iszero(t.scalar[a,b]),
+                        findall(x->x[1]==j,l)),findall(x->x[1]==i,l)),
+        eachindex(uc.classes)),eachindex(uc.classes))
+    Poset(o)
+  end
+  if W isa Spets WF=W;W=Group(WF)
+  else WF=spets(W)
+  end
+  if isnothing(p)
+    for p in vcat([0],badprimes(W)) unipotentclasses(WF,p) end
+    return
+  end
+  uc=UnipotentClasses(WF,p)
+  s=uc.springerseries[1]
+  b=charinfo(W)[:b]
+  du=[]
+  pl(n0,u,i)=string("$n0.$i=",u.name,".",charnames(u.Au)[i])
+  for (n0,u) in enumerate(uc.classes)
+    nid=charinfo(u.Au)[:positionId]
+    a=u.dimBu
+    if haskey(u,:dynkin) && W.N!=0
+      ad=W.N-div(count(x->!(x in [0,1]),toM(W.rootdec)*u.dynkin),2)
+      if a!=ad ChevieErr(pl(n0,u,nid)," dimBu=>",a," and from Dynkin=>",ad)
+      else a=ad
+      end
+    end
+    push!(du,a)
+    i=findfirst(y->y[1]==n0 && y[2]==nid,s[:locsys])
+    bu=b[i]
+    if a!=bu
+      ChevieErr("p=$p ",pl(n0,u,nid)," dimBu=>$a and Springer[1.$i]=>$bu")
+    end
+    if a!=u.dimBu
+      ChevieErr(pl(n0,u,nid)," dynkin=>",a," and dimBu=",u.dimBu,"\n")
+    end
+    for i in 1:nconjugacy_classes(u.Au) a=[]
+      for j in 1:length(uc.springerseries)
+        for k in 1:length(uc.springerseries[j][:locsys])
+          if [n0,i]==uc.springerseries[j][:locsys][k]
+	    push!(a,[j,k])
+          end
+        end
+      end
+      if isempty(a) ChevieErr(pl(n0,u,i)," not accounted for")
+      elseif length(a)>1 ChevieErr(pl(n0,u,i)," at ",a)
+      end
+    end
+  end
+  for i in 1:length(uc.orderclasses)
+    for a in hasse(uc.orderclasses)[i]
+      if du[i]<=du[a]
+        ChevieErr("bu($i:",uc.classes[i].name,")=",du[i]," <=bu($a:",
+                  uc.classes[a].name,")=",du[a])
+      end
+    end
+  end
+  for s in uc.springerseries
+    cl=first.(s[:locsys])
+    order=incidence(uc.orderclasses)[cl,cl]
+    t=ICCTable(uc,findfirst(==(s),uc.springerseries))
+    for i in 1:length(cl), j in 1:length(cl)
+      if !iszero(t.scalar[i,j]) && !order[i,j]
+       ChevieErr(findfirst(==(s),uc.springerseries),"[$i,$j]!=0 and not ",
+	uc.classes[cl[i]].name,"<",uc.classes[cl[j]].name)
+      end
+    end
+    if s==uc.springerseries[1]
+      if incidence(uc.orderclasses)!=incidence(PosetFromICC(t))
+        ChevieErr("order bad")
+      end
+    end
+  end
+  bc=Ucl.BalaCarterLabels(W)
+  if all(cl->haskey(cl,:dynkin),uc.classes)
+    for cl in uc.classes
+      j=findfirst(x->x[1]==cl.dynkin,bc)
+      if haskey(cl,:balacarter)
+        if cl.balacarter!=bc[j][2] error("balacarter") end
+      else print("bala-carter[",cl.name,"] unbound, should be",bc[j][2])
+      end
+    end
+  if all(x->x.series in [:E,:F,:G],refltype(W))
+    for cl in uc.classes
+      j=findfirst(x->x[1]==cl.dynkin,bc)
+      name=Semisimple.IsomorphismType(reflection_subgroup(W,abs.(bc[j][2]));TeX=true)
+      if name=="" name="1" end
+      l=count(x->x<0,bc[j][2])
+      if l!=0 
+        if '+' in name name=replace(name,"+"=>string("(a_",l,")+"))
+        else name*=string("(a_",l,")")
+        end
+      end
+      name=replace(name,"+"=>"{+}")
+      if name!=cl.name
+       ChevieErr("name=<",fromTeX(rio(),cl.name),
+                  "> but from Bala-Carter <",fromTeX(rio(),name),">")
+      end
+    end
+  end
+  end
+  for u in uc.classes
+    if haskey(u,:dimred) && haskey(u,:red) && u.dimred!=dimension(u.red)
+       ChevieErr("for ",u.name," dimred=",u.dimred,"!= Dim(",
+          Semisimple.IsomorphismType(u.red,torus=true),")=",dimension(u.red))
+    end
+  end
+end
+
+test[:unipotentclasses]=(fn=unipotentclasses, applicable=isrootdatum,
+   comment="Check dimBu from DR, from b, with < ; Check BalaCarter, dimred")
 end

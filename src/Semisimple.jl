@@ -910,8 +910,9 @@ function SScentralizer_representatives(W,p=0)
   map(x->vcat(x...),cartesian(l...))
 end
 
-function IsomorphismType(W;torus=false)
-  t=reverse(tally(map(x->sprint(show,x;context=:limit=>true),refltype(W))))
+function IsomorphismType(W;torus=false,TeX=false)
+  if TeX context=:TeX=>true else context=:limit=>true end
+  t=reverse(tally(map(x->sprint(show,x;context=context),refltype(W))))
   t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
   d=rank(W)-semisimplerank(W)
   if d>0 && torus

@@ -129,7 +129,7 @@ chevieset(:E6, :UnipotentClasses, function (p,)
             end
         elseif p == 3
             uc[:springerSeries] = (uc[:springerSeries])[[1]]
-            ((((uc[:springerSeries])[1])[:locsys])[[7, 15]])[2] = [1, 2]
+            (((uc[:springerSeries])[1])[:locsys])[[7, 15]] = [[4, 1], [4, 2]]
             for c = [2, 3]
                 push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:6, :Z => [1], :locsys => [[1, c]]))
             end

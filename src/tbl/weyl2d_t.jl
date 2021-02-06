@@ -29,7 +29,7 @@ function (l,param,rootparam)
   tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
       :charname=>chevieget(Symbol("2D"),:CharName)(l,para[i])),eachindex(para))
   para=chevieget(:B,:CharParams)(l)
-  chr=filter(i->chevieget(Symbol("2D"),:testchar)(para[i]),chr)
+  chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
   tbl[:irreducibles]=toL(permutedims(toM(map(x->char_values(
    Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
    toM(hi[:irreducibles][chr])),tbl[:classtext]))))
@@ -38,3 +38,24 @@ function (l,param,rootparam)
 end)
 
 chevieset(Symbol("2D"),:CharTable,l->chevieget(Symbol("2D"),:HeckeCharTable)(l,fill([1,-1],l),fill(1,l)))
+
+chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
+  uc=deepcopy(chevieget(:D, :UnipotentClasses)(r, p))
+  if p==2 return uc end
+  for cc in uc[:classes]
+    cc[:red]=coxgroup()
+    for j in tally(cc[:parameter])
+      d=div(j[2],2)
+      if mod(j[1],2)==0 cc[:red]=cc[:red]*coxgroup(:C,d)
+      elseif mod(j[2],2)!=0
+        if j[2]>1 cc[:red]=Cosets.extprod(cc[:red],coxgroup(:B,d)) end
+      elseif j[2]>2
+        if d==3 cc[:red]=Cosets.extprod(cc[:red],spets(coxgroup(:A,d),perm"(1,3)"))
+        else    cc[:red]=Cosets.extprod(cc[:red],spets(coxgroup(:D,d),perm"(1,2)"))
+        end
+      else cc[:red]=Cosets.extprod(cc[:red],torus([[-1]]))
+      end
+    end
+  end
+  uc
+end)

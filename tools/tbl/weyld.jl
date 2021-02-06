@@ -261,6 +261,26 @@ chevieset(:D, :UnipotentCharacters, function (rank,)
         uc[:families] = FamiliesClassical(uc[:charSymbols])
         return uc
     end)
+chevieset(:D, :Ennola, function (n,)
+        local uc, l
+        if mod(n, 2) == 1
+            return SPerm()
+        end
+        uc = (chevieget(:D, :UnipotentCharacters))(n)
+        l = uc[:charSymbols]
+        return SPerm(map(function (i,)
+                        local s, p
+                        if !(IsList((l[i])[2]))
+                            return i * (-1) ^ (uc[:A])[i]
+                        end
+                        s = EnnolaSymbol(l[i])
+                        p = Position(l, s)
+                        if p == false
+                            p = Position(l, reverse(s))
+                        end
+                        return p * (-1) ^ (uc[:A])[i]
+                    end, 1:length(l)))
+    end)
 chevieset(:D, :ReflectionDegrees, (n->begin
             Concatenation(2 * (1:n - 1), [n])
         end))

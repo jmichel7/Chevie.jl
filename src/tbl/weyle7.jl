@@ -151,7 +151,8 @@ chevieset(:E7, :UnipotentClasses, function (p,)
             delete!(c, :dynkin)
             delete!(c, :AuAction)
             ((uc[:springerSeries])[1])[:locsys] = [[1, 1], [45, 1], [44, 1], [2, 2], [39, 1], [9, 1], [5, 1], [40, 1], [41, 1], [4, 2], [3, 2], [43, 1], [29, 1], [12, 1], [7, 2], [42, 1], [40, 2], [5, 2], [33, 1], [18, 1], [22, 2], [46, 1], [38, 1], [6, 1], [9, 2], [36, 1], [20, 1], [24, 2], [6, 2], [38, 2], [10, 2], [34, 1], [15, 1], [28, 1], [37, 1], [8, 1], [32, 1], [13, 2], [11, 2], [35, 1], [19, 1], [25, 1], [30, 1], [16, 1], [29, 2], [12, 2], [14, 1], [31, 1], [29, 3], [12, 3], [26, 1], [21, 1], [27, 1], [17, 1], [15, 2], [28, 2], [21, 2], [26, 2], [23, 1], [23, 2]]
-            (uc[:springerSeries])[2:4] = [Dict{Symbol, Any}(:relgroup => CoxeterGroup("C", 3), :levi => [2, 3, 4, 5], :Z => [1], :locsys => [[22, 1], [11, 1], [13, 1], [24, 1], [7, 1], [4, 1], [3, 1], [10, 1], [2, 1], [1, 3]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 4]])]
+            (uc[:springerSeries])[2] = Dict{Symbol, Any}(:relgroup => CoxeterGroup("C", 3), :levi => [2, 3, 4, 5], :Z => [1], :locsys => [[22, 1], [11, 1], [13, 1], [24, 1], [7, 1], [4, 1], [3, 1], [10, 1], [2, 1], [1, 3]])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 2]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:7, :Z => [1], :locsys => [[1, 4]])])
         elseif p == 3
             (((uc[:springerSeries])[1])[:locsys])[1] = [1, 1]
             (((uc[:springerSeries])[2])[:locsys])[1] = [1, 4]

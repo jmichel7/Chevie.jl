@@ -1034,21 +1034,31 @@ julia> representation(ComplexReflectionGroup(24),3)
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
-function representation(W::Group,i::Int)
+function representation(W::Union{Group,Spets},i::Int)
   dims=Tuple(getchev(W,:NrConjugacyClasses))
+  if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)
   inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
   mm=map((t,j)->getchev(t,:Representation,j),tt,inds)
+  if any(isnothing,mm) error("no representation for ",W) end
+  if W isa Spets
+    FF=map(x->x[:F],mm)
+    if !(FF[1] isa Matrix) FF=map(toM,FF) end
+    F=length(FF)==1 ? FF[1] : kron(FF...)
+    mm=map(x->x[:gens],mm)
+  end
   if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm)
   n=length(tt)
-  if n==1 return mm[1] end
-  id(i)=fill(1,i,i)^0
-  vcat(map(1:n) do i
-         map(mm[i]) do m
-           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
-         end
-       end...)
+  if n==1 reps=mm[1] 
+  else reps=vcat(map(1:n) do i
+           map(mm[i]) do m
+             kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
+           end
+         end...)
+  end
+  if !(W isa Spets) return reps end
+  (gens=reps,F=F)
 end
 
 """
@@ -1066,7 +1076,7 @@ julia> representations(coxgroup(:B,2))
  [[-1], [1]]
 ```
 """
-representations(W::Group)=representation.(Ref(W),1:HasType.NrConjugacyClasses(W))
+representations(W::Union{Group,Spets})=representation.(Ref(W),1:nconjugacy_classes(W))
 
 """
 `WGraphToRepresentation(coxrank::Integer,graph,v)`

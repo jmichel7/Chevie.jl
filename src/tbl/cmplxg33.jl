@@ -173,7 +173,7 @@ chevieset(:G33, :HeckeRepresentation, function (para, root, i)
     end)
 chevieset(:G33, :Representation, (i->begin
             (chevieget(:G33, :HeckeRepresentation))(map((i->begin
-                            [1, -1]
+                            [1, -1]//1
                         end), 1:5), [], i)
         end))
 chevieset(:G33, :UnipotentCharacters, function ()

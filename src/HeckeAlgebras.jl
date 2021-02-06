@@ -281,7 +281,7 @@ function Chars.representation(H::HeckeAlgebra,i::Int)
        end...)
 end
 
-Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:HasType.NrConjugacyClasses(H.W))
+Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:nconjugacy_classes(H.W))
 
 """
 `isrepresentation(H::HeckeAlgebra,r)`
@@ -985,16 +985,22 @@ function Chars.representation(H::HeckeCoset,i::Int)
   rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
   mm=map((t,j)->getchev(t,:HeckeRepresentation,H.H.para,rp,i),tt,inds)
   if any(==(false),mm) return false end
-  ff=improve_type.(getindex.(mm,:F))
-  mm=improve_type.(toM.(getindex.(mm,:gens)))
+  ff=improve_type(map(toM,getindex.(mm,:F)))
+  mm=improve_type(map(x->map(toM,x),getindex.(mm,:gens)))
   n=length(tt)
-  if n==1 return Dict(:gens=>mm[1],:F=>ff[1]) end
-  id(i)=fill(1,i,i)^0
-  Dict(:gens=>vcat(map(1:n) do i
+  if n==1 return (gens=mm[1],F=ff[1]) end
+  (gens=vcat(map(1:n) do i
          map(mm[i]) do m
-           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
+           kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
          end
-        end...), :F=>cat(ff...;dims=(1,2)))
+        end...), F=kron(ff...))
+end
+
+Chars.representations(H::HeckeCoset)=representation.(Ref(H),1:nconjugacy_classes(H.W))
+
+function isrepresentation(H::HeckeCoset,r)
+  all(i->iszero(r.gens[i]*r.F-r.F*r.gens[action(Group(H.W),i,H.W.phi)]),
+      eachindex(r.gens)) && isrepresentation(H.H,r.gens)
 end
 
 struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}

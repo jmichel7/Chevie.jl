@@ -81,17 +81,15 @@ function collectby(f,v)
   [d[k] for k in sort(collect(keys(d)))]
 end
 
-" whether all elements in nonempty collection a are equal"
-function constant(a)
-  f=first(a)
-  all(==(f),a)
-end
+" `constant(a)` whether all elements in collection `a` are equal"
+constant(a)=isempty(a) || all(==(first(a)),a)
 
 # faster than unique! for sorted vectors
 function unique_sorted!(v::Vector)
   i=1
 @inbounds  for j in 2:length(v)
-    if v[j]==v[i]
+    if v[j]<v[i] error("not sorted")
+    elseif v[j]==v[i]
     else i+=1; v[i]=v[j]
     end
   end
@@ -211,16 +209,14 @@ function narrangements(mset,k)
 end
 narrangements(mset)=sum(narrangements.(Ref(mset),0:length(mset)))
 
-# partitions of n of first (greatest) part <=m
-function partitions_less(n,m)
-  if m==1 return [fill(1,n)]
-  elseif iszero(n) return [Int[]]
+@inbounds function partitions_less(v,n)
+  l=v[end]
+  k=length(l)
+  for i in 1:(isempty(l) ? n : min(l[end],n))
+    if i>1 push!(v,v[end][1:k]) end
+    push!(v[end],i)
+    if n>i partitions_less(v,n-i) end
   end
-  res=Vector{Int}[]
-  for i in 1:min(m,n)
-    append!(res,pushfirst!.(partitions_less(n-i,i),i))
-  end
-  res
 end
 
 """
@@ -229,8 +225,8 @@ end
 `partitions` returns the set of all partitions of the positive integer `n`.
 
 A  *partition*  is  a  decomposition  `n=p₁+p₂+…+pₖ`  in integers such that
-`p₁≥p₂≥…≥pₖ>0`,  and is represented by  the list `p=[p₁,p₂,…,pₖ]`. We write
-`p⊢n`. There are approximately `exp(π√(2n/3))/(4√3 n)` such partitions.
+`p₁≥p₂≥…≥pₖ>0`,  and is represented by  the vector `p=[p₁,p₂,…,pₖ]`. We write
+`p⊢n`. 
 
 ```julia-repl
 julia> partitions(7)
@@ -252,7 +248,12 @@ julia> partitions(7)
  [7]
 ```
 """
-partitions(n)=partitions_less(n,n)
+function partitions(n)
+  v=[Int[]]
+  partitions_less(v,n)
+  v
+end
+
 # partitions of n of first (greatest) part <=m with k parts
 function partitions_less(n,m,k)
 # if m==1 return [fill(1,n)] end
@@ -264,9 +265,26 @@ function partitions_less(n,m,k)
   end
   res
 end
+"""
+`partitions(n,k)`
+
+The set of all partitions of the positive integer `n` with `k` parts.
+
+```julia-repl
+julia> partitions(7,3)
+4-element Array{Array{Int64,1},1}:
+ [3, 2, 2]
+ [3, 3, 1]
+ [4, 2, 1]
+ [5, 1, 1]
+```
+"""
 partitions(n,k)=partitions_less(n,n,k)
 
-" npartitions(n) number of partitions of n"
+"""
+`npartitions(n)` The number of partitions of `n`.
+There are approximately `exp(π√(2n/3))/(4√3 n)` such partitions.
+"""
 function npartitions(n)
   s=one(n)
   p=fill(s,n+1)
@@ -297,16 +315,24 @@ function npartitions(n,k)
   p[n-k+1]
 end
 
-function partition_tuples2(n,r)
-  if r==1 return map(x->[x],partitions(n)) end
-  res=Vector{Vector{Int}}[]
-  for i in  n:-1:1
-    for p1 in partitions(i)
-      append!(res,pushfirst!.(partition_tuples2(n-i,r-1),Ref(p1)))
-    end
+function partition_tuples_inner(v,n,r,l)
+  k=length(v[end])
+  start=true
+  for i in (r==1 ? (n:n) : (0:n)), p in l[i+1]
+    if !start push!(v,v[end][1:k]) end
+    start=false
+    push!(v[end],p)
+    if r>1 partition_tuples_inner(v,n-i,r-1,l) end
   end
-  append!(res,pushfirst!.(partition_tuples2(n,r-1),Ref(Int[])))
-  res
+end
+
+# the `r`-tuples of  partitions that together partition `n`.
+function partition_tuples2(n,r)
+  l=partitions.(0:n)
+  v=[Vector{Int}[]]
+  if iszero(r) if n>0 error("non-sensical 0-tuples of sum $n") end
+  else partition_tuples_inner(v,n,r,l) end
+  v
 end
 
 # bad implementation but which is ordered as GAP3; needed for
@@ -374,7 +400,7 @@ end
 "`npartition_tuples(n,k)` number of `r`-tuples of  partitions of `n`."
 function npartition_tuples(n,k)
   res=0
-  for l in 1:k
+  for l in 1:min(n,k)
     r=binomial(k,l)
     res+=r*sum(a->narrangements(a,l)*prod(npartitions.(a)),partitions(n,l))
   end
@@ -413,12 +439,12 @@ function conjugate_partition(p)
 end
 
 """
-`compositions(n[,k])`
+`compositions(n[,k];start=1)`
 
 This  function returns the compositions of  `n` (the compositions of length
 `k`  if a second argument `k` is given), where a composition of the integer
-`n` is a decomposition `n=p₁+…+pₖ` in positive integers, represented as the
-list `[p₁,…,pₖ]`.
+`n` is a decomposition `n=p₁+…+pₖ` in integers `≥start`, represented as the
+vector `[p₁,…,pₖ]`. Unless `k` is given, `start` must be `>0`.
 
 ```julia-repl
 julia> compositions(4)
@@ -437,16 +463,25 @@ julia> compositions(4,2)
  [3, 1]
  [2, 2]
  [1, 3]
+
+julia> compositions(4,2;start=0)
+5-element Array{Array{Int64,1},1}:
+ [4, 0]
+ [3, 1]
+ [2, 2]
+ [1, 3]
+ [0, 4]
 ```
 """
-function compositions(n)
+function compositions(n;start=1)
   if iszero(n) return [Int[]] end
-  vcat(map(i->map(c->push!(c,i),compositions(n-i)),1:n)...)
+  if start<=0 error("start must be ≥1") end
+  vcat(map(i->map(c->push!(c,i),compositions(n-i;start)),start:n)...)
 end
 
-function compositions(n,k)
+function compositions(n,k;start=1)
   if isone(k) return [[n]] end
-  vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1)),1:n-1)...)
+  vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1;start)),start:n-start)...)
 end
 
 """

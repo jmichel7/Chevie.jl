@@ -448,3 +448,28 @@ chevieset(:I, :UnipotentCharacters, function (e,)
         end
         return uc
     end)
+chevieset(:I, :Ennola, function (e,)
+        local uc, l
+        if mod(e, 2) == 1
+            return SPerm()
+        end
+        uc = (chevieget(:I, :UnipotentCharacters))(e)
+        l = uc[:charSymbols]
+        return SPerm(map(function (i,)
+                        local s, p, a, u
+                        s = EnnolaSymbol(l[i])
+                        if IsList(s[length(s)])
+                            u = Rotations(s)
+                        else
+                            u = map((x->begin
+                                            Concatenation(x, s[[length(s) - 1, length(s)]])
+                                        end), Rotations(s[1:length(s) - 2]))
+                        end
+                        for a = u
+                            p = Position(l, a)
+                            if p != false
+                                return p * (-1) ^ (uc[:A])[i]
+                            end
+                        end
+                    end, 1:length(l)))
+    end)

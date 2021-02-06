@@ -198,12 +198,12 @@ function transversals(G::PermGroup{T})::Vector{Dict{T,Perm{T}}} where T
   getp(schreier_sims,G,:transversals)
 end
 
-" A list of points stabilized by no element of G "
+" `base(G)` A list of points stabilized by no element of `G` "
 function base(G::PermGroup{T})::Vector{T} where T
   getp(schreier_sims,G,:base)
 end
 
-" Tells whether permutation g is an element of G "
+" `g in G` Tells whether permutation `g` is an element of `G` "
 function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)

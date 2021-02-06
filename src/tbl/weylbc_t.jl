@@ -12,7 +12,7 @@
 #  reflection groups.
 
 chevieset(:B, :CartanMat, function(n,ct=2)
-  a=chevieget(:A, :CartanMat)(n)//1
+  a=chevieget(:A, :CartanMat)(n)//one(ct)
   if n>=2
     a[1][2]=-ct
     a[2][1]=-2//ct
@@ -46,21 +46,21 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   end
   function addSpringer1(s,cc)
     ss=first(x for x in uc[:springerSeries] 
-                     if x[:defect]==defectsymbol(s[:symbol]))
-    if s[:sp] == [Int[], Int[]] p = 1
-    elseif s[:sp] == [[1], Int[]] p = 2
-    elseif s[:sp] == [Int[], [1]] p = 1
-    else p = findfirst(==([s[:sp]]),CharParams(ss[:relgroup]))
+                     if x[:defect]==defectsymbol(s.symbol))
+    if s.sp==[Int[], Int[]] p=1
+    elseif s.sp==[[1], Int[]] p=2
+    elseif s.sp==[Int[], [1]] p=1
+    else p=findfirst(==([s.sp]),CharParams(ss[:relgroup]))
     end
-    ss[:locsys][p] = [length(uc[:classes]), 
-          findfirst(==(map(x->x ? [1, 1] : [2], s[:Au])),CharParams(cc[:Au]))]
+    ss[:locsys][p]=[length(uc[:classes]), 
+          findfirst(==(map(x->x ? [1,1] : [2], s.Au)),CharParams(cc[:Au]))]
   end
   if ctype==ER(2)  #treat 2B2 as B2; make sure char=2
     ctype=2
     char=2
   end
   ss=char==2 ? XSP(4,2,r) : ctype==1 ? XSP(2,1,r) : XSP(2,0,r)
-  l = union(map(c->map(x->[defectsymbol(x[:symbol]), sum(sum,x[:sp])], c), ss))
+  l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss))
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc = Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
@@ -111,27 +111,27 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   end
   if char==2 ctype=1 end
   for cl in ss
-    cc = Dict{Symbol, Any}(:parameter => symbol2para((cl[1])[:symbol]))
-    cc[:Au] = CoxeterGroup(Concatenation(map(x->["A",1], cl[1][:Au]))...)
+    cc = Dict{Symbol, Any}(:parameter => symbol2para(cl[1].symbol))
+    cc[:Au]=CoxeterGroup(Concatenation(map(x->["A",1],cl[1].Au))...)
     if char != 2
       cc[:dynkin] = part2dynkin(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
     else
       ctype = 1
-      cc[:dimBu] = cl[1][:dimBu]
+      cc[:dimBu] = cl[1].dimBu
       cc[:name] = join(map(function(x)
         res=joindigits(fill(0,max(0,x[2]))+x[1],"[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
       end, reverse(tally(cc[:parameter][1]))), "")
     end
-    cc[:red] = coxgroup()
-    if char == 2 j = cc[:parameter][1]
+    cc[:red]=coxgroup()
+    if char==2 j=cc[:parameter][1]
     else j=cc[:parameter]
     end
     for j in tally(j)
       if mod(j[1],2)==mod(ctype,2) cc[:red]*=coxgroup(:C, div(j[2],2))
-      elseif mod(j[2], 2) != 0
+      elseif mod(j[2],2)!=0
         if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
       elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
       else cc[:red]*=torus(1)
@@ -144,7 +144,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     map(function(y)
       if char!=2 return dominates(y[:parameter], x[:parameter]) end
       # cf. [S] 2.10 page 24
-      m=maximum(x[:parameter][1][1], y[:parameter][1][1])
+      m=max(x[:parameter][1][1], y[:parameter][1][1])
       f=x-> map(i->sum(filter(<(i),x))+i*count(>=(i),x) ,1:m)
       fx=f(x[:parameter][1])
       fy=f(y[:parameter][1])

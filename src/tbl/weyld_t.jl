@@ -70,11 +70,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   function addSpringer(s, i, cc)
     ss=first(x for x in uc[:springerSeries] 
                      if x[:defect]==defectsymbol(s[:symbol]))
-    if s[:sp] in [[Int[], [1]], [Int[], Int[]]] p = 1
-    elseif s[:sp] == [[1], Int[]] p = 2
-    else p = findfirst(==([s[:sp]]),CharParams(ss[:relgroup]))
+    if s.sp in [[Int[],[1]],[Int[],Int[]]] p=1
+    elseif s.sp==[[1], Int[]] p=2
+    else p=findfirst(==([s.sp]),CharParams(ss[:relgroup]))
     end
-    ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s[:Au])),
+    ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s.Au)),
                                                   CharParams(cc[:Au]))]
   end
   function partition2DR(part)
@@ -124,8 +124,8 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       reverse(filter(!iszero,sort(part)))
     end
   end
-  l = union(map(c->map(x->
-        [defectsymbol(x[:symbol]), sum(sum,fullsymbol(x[:sp]))], c), ss))
+  l=union(map(c->map(x->[defectsymbol(x.symbol),
+                         sum(sum,fullsymbol(x.sp))],c),ss))
   sort!(l, by=x->[abs(x[1]), -sign(x[1])])
   uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
       res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
@@ -137,9 +137,9 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       res
   end, l))
   for cl in ss
-    cc = Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1][:symbol]))
+    cc = Dict{Symbol, Any}(:parameter=>symbol2partition(cl[1].symbol))
     if char==2
-      cc[:dimBu] = cl[1][:dimBu]
+      cc[:dimBu] = cl[1].dimBu
       cc[:name] = join(map(reverse(tally(cc[:parameter][1])))do x
         res=joindigits(fill(x[1], max(0, x[2])), "[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
@@ -149,26 +149,26 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       cc[:dynkin]=partition2DR(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
     end
-    cc[:Au] = isempty(cl[1][:Au]) ? coxgroup() : 
-       prod(coxgroup(:A,1) for i in eachindex(cl[1][:Au]))
+    cc[:Au] = isempty(cl[1].Au) ? coxgroup() : 
+       prod(coxgroup(:A,1) for i in eachindex(cl[1].Au))
     if char != 2
-     cc[:red] = coxgroup()
-     j = cc[:parameter]
-     for j = tally(j)
-       if mod(j[1], 2) == 0
-         cc[:red]*=coxgroup(:C, div(j[2],2))
-       elseif mod(j[2], 2) != 0
-         if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
-       elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
-       else cc[:red]*=torus(1)
-       end
-     end
-   end
-   if !(cl[1][:sp][2] isa Vector) cl[1][:sp][3]=1-mod(div(n,2),2) end
-   push!(uc[:classes], cc)
-   for s in cl addSpringer(s, length(uc[:classes]), cc) end
-   if !(cl[1][:sp][2] isa Vector)
-      cl[1][:sp][3]=1-cl[1][:sp][3]
+      cc[:red] = coxgroup()
+      j = cc[:parameter]
+      for j = tally(j)
+        if mod(j[1], 2) == 0
+          cc[:red]*=coxgroup(:C, div(j[2],2))
+        elseif mod(j[2], 2) != 0
+          if j[2]>1 cc[:red]*=coxgroup(:B, div(j[2]-1,2)) end
+        elseif j[2]>2 cc[:red]*=coxgroup(:D, div(j[2],2))
+        else cc[:red]*=torus(1)
+        end
+      end
+    end
+    if !(cl[1].sp[2] isa Vector) cl[1].sp[3]=1-mod(div(n,2),2) end
+    push!(uc[:classes], cc)
+    for s in cl addSpringer(s, length(uc[:classes]), cc) end
+    if !(cl[1].sp[2] isa Vector)
+      cl[1].sp[3]=1-cl[1].sp[3]
       cc[:name]*="+"
       cc=deepcopy(cc)
       cc[:name]=replace(cc[:name],r".$"=>"-")

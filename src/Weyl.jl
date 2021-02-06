@@ -184,7 +184,7 @@ module Weyl
 
 export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
  dimension, with_inversions, standard_parabolic, describe_involution,
- relative_group, rootlengths
+ relative_group, rootlengths, badprimes
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -564,6 +564,29 @@ end
 
 standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
   standard_parabolic(W,inclusiongens(H,W))
+
+"""
+`badprimes(W)`
+    
+Let  `W`  be  a  Weyl  group.  A  prime  is  *bad*  for `W` if it divides a
+coefficient  of some  root on  the simple  roots. The  function `badprimes`
+returns the list of primes which are bad for `W`.
+
+```julia-repl
+julia> W=coxgroup(:E,8)
+E₈
+
+julia> badprimes(W)
+3-element Array{Int64,1}:
+ 2
+ 3
+ 5
+```
+"""
+function badprimes(W::FiniteCoxeterGroup)
+  if isempty(W.rootdec) return Int[] end
+  collect(setdiff(union(keys.(factor.(Set(vcat(W.rootdec...))))),[0,-1]))
+end
 
 """
 `describe_involution(W,w)`

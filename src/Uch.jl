@@ -864,6 +864,8 @@ function UniChar(W,v::String)
   UniChar(W,findfirst(==(v),n))
 end
 
+UniChar(W,v::AbstractVector)=UniChar(W,collect(v))
+
 const short=Ref(true)
 
 """

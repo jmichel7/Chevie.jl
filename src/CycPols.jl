@@ -340,8 +340,6 @@ Converts a polynomial to `CycPol`
 julia> CycPol(3*q^3-3)
 3Φ₁Φ₃
 ```
-Special code makes the conversion fast if `p` has not more than two nonzero
-coefficients.
 """
 function CycPol(p::Pol{T};trace=false)where T
  # lot of code to be as efficient as possible in all cases
@@ -352,7 +350,7 @@ function CycPol(p::Pol{T};trace=false)where T
     a=Root1(-p.c[1]//p.c[end])
     if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1
-    vcyc=[Root1(;r=u)=>1 for u in (a.r .+(0:d-1))//d]
+    vcyc=(Root1(;r=(a.r+i)//d)=>1 for i in 0:d-1)
     return CycPol(p.c[end],valuation(p),ModuleElt(vcyc;check=true))
   end
   val=valuation(p)

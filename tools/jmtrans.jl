@@ -34,6 +34,7 @@ const exclu=[
  ["Hk","D"],
  ["CharTable","2D"],
  ["HeckeCharTable","2D"],
+ ["UnipotentClasses","2D"],
  ["WGraph","E8"],
  ["Discriminant","H4"],
  ["CharInfo","I"],

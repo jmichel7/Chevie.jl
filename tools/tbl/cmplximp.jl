@@ -546,8 +546,8 @@ chevieset(:imp, :CharInfo, function (de, e, r)
         if e == 1 || d == 1
             res[:A] = map(degree_gendeg_symbol, res[:charSymbols])
             res[:a] = map(valuation_gendeg_symbol, res[:charSymbols])
-            res[:B] = map(degree_feg_symbol, res[:charSymbols])
-            res[:b] = map(valuation_feg_symbol, res[:charSymbols])
+            res[:B] = map(degree_fegsymbol, res[:charSymbols])
+            res[:b] = map(valuation_fegsymbol, res[:charSymbols])
         end
         if e > 1 && d > 1
             res[:opdam] = PermListList(res[:charparams], map(function (s,)
@@ -588,19 +588,7 @@ chevieset(:imp, :CharSymbols, function (p, q, r)
         if q == 1
             return SymbolsDefect(p, r, 0, 1)
         elseif q == p
-            ss = SymbolsDefect(p, r, 0, 0)
-            res = []
-            for s = ss
-                p = Position((Rotations(s))[2:length(s)], s)
-                if p == false
-                    push!(res, s)
-                else
-                    res = Append(res, map((i->begin
-                                        Concatenation(map(copy, s[1:p]), [length(s) // p, i])
-                                    end), 0:length(s) // p - 1))
-                end
-            end
-            return res
+            return SymbolsDefect(p, r, 0, 0)
         else
             return false
         end

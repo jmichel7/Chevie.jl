@@ -1,75 +1,92 @@
 """
-The  combinatorial objects  in this  module are  *partitions*, *β-sets* and
-*symbols*.
+The  combinatorial  objects  in  the  module  `Symbols`  are  *partitions*,
+*β-sets* and *symbols*.
 
-A partition is a decreasing list of strictly positive integers p₁≥p₂≥…pₙ>0,
-represented as a `Vector` of `Int`.
+A  partition is a  non-increasing list of  positive integers `p₁≥p₂≥…pₙ>0`,
+represented as a `Vector{Int}`.
 
-A  *β-set* is  a set  of positive  integers, up  to the *shift* equivalence
-relation.  This  equivalence  relation  is  the  transitive  closure of the
-elementary  equivalence  of  [s₁,…,sₙ]  and [0,1+s₁,…,1+sₙ]. An equivalence
-class  has exactly one  member which does  not contain 0:  it is called the
-normalized  β-set. A β-set is represented as a strictly increasing `Vector`
-of `Int`.
+A  *β-set*  is  a  strictly  increasing  `Vector{Int}`,  up  to the *shift*
+equivalence   relation,  the  transitive  closure  of  the  equivalence  of
+`[b₁,…,bₙ]`  and  its  elementary  shift  `[0,1+b₁,…,1+bₙ]`. An equivalence
+class  has exactly one member which does  not contain `0`: it is called the
+normalized β-set.
 
-To  a  partition  p₁≥p₂≥…pₙ>0  is  associated  a  β-set,  whose  normalized
-representative   is  pₙ,pₙ₋₁+1,…,p₁+n-1.  Conversely,   to  each  β-set  is
-associated  a partition, the one giving by the above formula its normalized
-representative.
+To  a  partition  `p₁≥p₂≥…pₙ>0`  is  associated  a  β-set, whose normalized
+representative   is   `pₙ,pₙ₋₁+1,…,p₁+n-1`.   Conversely,   to  each  β-set
+`b₁<b₂<…<bₙ` is associated the partition `bₙ-n+1≥…≥b₂-1≥b₁` (which may have
+some trailing zeros if starting from a non-normalized representative).
 
-An   `n`-symbol  is  a  tuple  S=[S₁,…,Sₙ]  of  β-sets,  taken  modulo  the
-equivalence   relation  generated  by   two  elementary  equivalences:  the
-simultaneous  shift of all β-sets, and  the cyclic permutation of the tuple
-(in  the particular case where n=2 it is thus an unordered pair of β-sets).
-This  time  there  is  a  unique  normalized  symbol  where 0 is not in the
-intersection of the Sᵢ. The *content* of `S` is `sum(length(S))`; it is not
-an invariant of the symbol, but the *rank* is, defined for an `n`-symbol of
-content `c` as `sum(sum,S)-div((c-1)*(c-n+1),2*n)`.
+`2`-symbols  where introduced by [Lusztig1977] and more general `e`-symbols
+by  [Malle1995](biblio.htm#Mal95). An `e`-symbol  is a vector `S=[S₁,…,Sₑ]`
+of   β-sets,  taken  modulo  the  equivalence  relation  generated  by  the
+simultaneous  elementary shift of all β-sets, and the cyclic permutation of
+the vector (in the particular case where `e=2` it is thus an unordered pair
+of  β-sets). This  time there  is a  cyclic permutation class of normalized
+symbols  where `0` is not in the intersection of the `Sᵢ`. The *content* of
+`S`  is `mod(sum(length(S)),e)`; it is an  invariant of the symbol, as well
+as the *rank*, defined for an `e`-symbol as
+`sum(sum,S)-div((c-1)*(c-e+1),2*e)`   where   `c=sum(length(S))`   and  the
+*shape* `s-minimum(s)` where `s=map(length,S)`.
 
-Another  function attached to symbols  is the *shape* 'map(length,S)'; when
-n=2  one can  assume that  S₁ has  at least  the same  length as S₂ and the
-difference  of cardinals 'length(S[1])-length(S[2])',  called the *defect*,
-is then an invariant of the symbol.
+When  `e=2`  up  to  cyclic  permutation  we  choose representatives of the
+symbols `[S₁,S₂]` such that `length(S₁)≥length(S₂)` so the shape is `[d,0]`
+where  `d` is called  the *defect* of  the symbol (the  content is equal to
+`mod(d,2)`).  For symbols `[S₁,S₂]` with `length(S₁)==length(S₂)` we choose
+representatives  such that `P₁≤P₂` lexicographically  where `P₁,P₂` are the
+partitions associated to `S₁,S₂`.
 
 Partitions  and pairs  of partitions  are parameters  for characters of the
 Weyl groups of classical types, and tuples of partitions are parameters for
-characters  of  imprimitive  complex  reflection  groups.  Symbols with two
-β-sets  are parameters for the  unipotent characters of classical Chevalley
-groups,   and  more  general  symbols  are  parameters  for  the  unipotent
-characters  of Spetses associated to complex reflection groups. The rank of
-the  symbol is the semi-simple rank of the corresponding Chevalley group or
-Spets.
+characters   of  imprimitive  complex   reflection  groups.  2-Symbols  are
+parameters  for the unipotent characters of classical Chevalley groups, and
+more  general `e`-symbols  are parameters  for the  unipotent characters of
+Spetses  associated to spetsial imprimitive  complex reflection groups. The
+rank  of a  symbol is  the semi-simple  rank of the corresponding Chevalley
+group or Spets.
 
-Symbols of rank n and defect 0 parameterize characters of the Weyl group of
-type  Dₙ, and  symbols of  rank n  and defect  divisible by  4 parameterize
-unipotent characters of split orthogonal groups of dimension 2n. Symbols of
-rank n and defect congruent to 2 mod 4 parameterize unipotent characters of
-non-split orthogonal groups of dimension 2n. Symbols of rank n and defect 1
-parameterize  characters of the Weyl group  of type Bₙ, and finally symbols
-of  rank n and  odd defect parameterize  unipotent characters of symplectic
-groups of dimension 2n or orthogonal groups of dimension 2n+1.
+Symbols  of rank  `n` and  defect `0`  parameterize characters  of the Weyl
+group  of type `Dₙ`,  and symbols of  rank `n` and  defect divisible by `4`
+parameterize  unipotent characters of split  orthogonal groups of dimension
+`2n`.  Symbols of  rank `n`  and defect`≡2  (mod 4)` parameterize unipotent
+characters  of non-split  orthogonal groups  of dimension  `2n`. Symbols of
+rank  `n` and defect `1` parameterize characters  of the Weyl group of type
+`Bₙ`,  and  symbols  of  rank  `n`  and  odd  defect parameterize unipotent
+characters  of symplectic groups of dimension  `2n` or orthogonal groups of
+dimension `2n+1`.
+
+`e`-symbols  of rank `n` and  content `1` parameterize unipotent characters
+of  `G(e,1,n)`. Those of  content `0` parameterize  unipotent characters of
+`G(e,e,n)`.  The principal series  (characters of the  reflection group) is
+parametrized  by symbols of shape  `[1,0,…,0]` for `G(e,1,n)` and `[0,…,0]`
+for `G(e,e,n)`. 
 """
 module Symbols
 using ..Gapjm
 export shiftβ, βset, partβ, symbol_partition_tuple,
-valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_feg_symbol,
-valuation_feg_symbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
+valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
+valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
 fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol,
-dominates
+dominates, EnnolaSymbol
 
 """
-`dominates(μ,ν)`
+`dominates(λ,μ)`
 
 The  dominance  order  on  partitions  is  an  important  partial  order in
-representation theory. `μ` dominates `ν` if and only if for all `i` we have
-`sum(μ[1:i])≥sum(ν[1:i])`.
+representation theory. `λ` dominates `μ` if and only if for all `i` we have
+`sum(λ[1:i])≥sum(μ[1:i])`.
 
 ```julia-repl
 julia> dominates([5,4],[4,4,1])
 true
 ```
 """
-dominates(mu,nu)=all(i->i>length(nu) || sum(mu[1:i])>=sum(nu[1:i]),eachindex(mu))
+function dominates(λ,μ)
+  sλ=sμ=0
+  for (l,m) in zip(λ,μ)
+    if (sλ+=l)<(sμ+=m) return false end
+  end
+  true
+end
 
 """
 `PartitionTupleToString(tuple)`
@@ -106,24 +123,23 @@ julia> PartitionTupleToString.(d)
 ```
 """
 function PartitionTupleToString(n,a=Dict())
-  if n[end] isa Vector return join(map(join,n),".") end
+  if n[end] isa Vector return join(joindigits.(n),".") end
   r=repr(E(n[end-1],n[end]),context=:limit=>true)
   if r=="1" r="+" end
   if r=="-1" r="-" end
-  join(map(join,n[1:end-2]),".")*r
+  join(joindigits.(n[1:end-2]),".")*r
 end
 
 """
 `shiftβ( β, n)` shift β-set β by n
 
 ```julia-repl
-julia> shiftβ([4,5],3)
-5-element Array{Int64,1}:
+julia> shiftβ([2,3],2)
+4-element Array{Int64,1}:
  0
  1
- 2
- 7
- 8
+ 4
+ 5
 
 julia> shiftβ([0,1,4,5],-2)
 2-element Array{Int64,1}:
@@ -150,7 +166,20 @@ julia> βset([3,3,1])
  5
 ```
 """
-βset(α)=isempty(α) ? α : reverse(α) .+(0:length(α)-1)
+function βset(p,s=0)
+# shorter code if we don't care about allocations:
+#  p=vcat(p,fill(0,s))  
+#  reverse(p).+(0:length(p)-1)
+  if !iszero(s) 
+    q=fill(0,length(p)+s)
+    @inbounds for i in eachindex(p) q[i]=p[i] end
+  else q=p
+  end
+  if isempty(q) return q end
+  p=collect(0:length(q)-1)
+  @inbounds for i in eachindex(p) p[i]+=q[1+length(q)-i] end
+  p
+end
 
 """
 'partβ(β)' partition defined by β-set β
@@ -167,17 +196,18 @@ partβ(β)=filter(!iszero,reverse(β.-(0:length(β)-1)))
 """
 `symbol_partition_tuple(p, s)` symbol of shape `s` for partition tuple `p`.
 
-In  the most  general case,  `s` is  a `Vector`  of positive `Int`s of same
-length  as `p` and the  β-sets for `p` are  shifted accordingly (a constant
-integer may be added to `s` to make the shifts possible).
+In  the general case, `s` is a `Vector{Int}`  of same length as `p` and the
+`i`-th  element of the result is the β-set for `pᵢ` shifted to be of length
+`sᵢ` (the minimal integer which makes this possible is added to `s`).
 
 When  `s` is  a positive  integer it  is interpreted  as `[s,0,0,…]`  and a
 negative  integer is interpreted  as `[0,-s,-s,…]` so  when `p` is a double
 partition  one gets the  symbol of defect  `s` associated to  `p`; as other
-uses  the principal  series of  `G(e,1,r)` is `symbol_partition_tuple(p,1)`
-and that of `G(e,e,r)` is `symbol_partition_tuple(p,0)`.
-
-Note. The function works also for periodic `p` for `G(e,e,r)` provided `s=0`.
+uses  the  unipotent  symbol  for  a  character  of the principal series of
+`G(e,1,r)`   parameterized   by   an   `e`-tuple   `p`   of  partitions  is
+`symbol_partition_tuple(p,1)` and for `G(e,e,r)` the similar computation is
+`symbol_partition_tuple(p,0)`  (the function handles coded periodic `p` for
+`G(e,e,r)`).
 
 ```julia-repl
 julia> symbol_partition_tuple([[1,2],[1]],1)
@@ -196,26 +226,24 @@ julia> symbol_partition_tuple([[1,2],[1]],-1)
  [0, 1, 3]
 ```
 """
-function symbol_partition_tuple(p,s)
+function symbol_partition_tuple(p,S)
   if p[end] isa Number
-    l= length(p) - 2
-    e= l*p[end-1]
-  else e=l=length(p)
+    l=1:length(p)-2
+    return vcat(symbol_partition_tuple(p[l],S isa Integer ? S : S[l]),
+                         p[end-1:end])
   end
-  if s isa Integer
-    if s<0  s=[0;fill(-s,l-1)]
-    else    s=[s;zeros(Int,l-1)]
+  if S isa Integer
+    if S<0 s=fill(-S,length(p));s[1]=0
+    else   s=fill(0,length(p));s[1]=S
     end
-  else s=s[1:l]
+  else s=copy(S)
   end
-  s= map(length, p[1:l]) .- s
-  s= maximum(s) .- s
-  p= copy(p)
-  p[1:l]=map(i->shiftβ(βset(p[i]),s[i]),1:l)
-  p
+  s.-=length.(p)
+  s.-=minimum(s)
+  βset.(p,s)
 end
 
-function fullsymbol(S)
+function fullsymbol(S)::Vector{Vector{Int}}
   if isempty(S) || S[end] isa AbstractVector return S end
   reduce(vcat,map(i->map(copy,S[1:end-2]),1:S[end-1]))
 end
@@ -229,9 +257,9 @@ julia> ranksymbol([[1,2],[1,5,6]])
 ```
 """
 function ranksymbol(s)
+  if isempty(s) return 0 end
   s=fullsymbol(s)
   ss=sum(length,s)
-  if isempty(s) return 0 end
   e=length(s)
   sum(sum,s)-div((ss-1)*(ss-e+1),2*e)
 end
@@ -239,8 +267,8 @@ end
 """
 `valuation_gendeg_symbol(s)`
 
-Let  `s=[S₁,…,Sₙ]` be a  symbol. The function  returns the valuation of the
-generic degree of the unipotent character parameterized by `s`.
+the   valuation  of   the  generic   degree  of   the  unipotent  character
+parameterized by the `e`-symbol `s`.
 
 ```julia-repl
 julia> valuation_gendeg_symbol([[1,2],[1,5,6]])
@@ -258,9 +286,8 @@ end
 """
 `degree_gendeg_symbol(s)`
     
-Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
-returns  the  degree  of  the  generic  degree  of  the unipotent character
-parameterized by `s`.
+the  degree of the generic degree  of the unipotent character parameterized
+by the `e`-symbol `s`.
 
 ```julia-repl
 julia> degree_gendeg_symbol([[1,5,6],[1,2]])
@@ -282,9 +309,7 @@ end
 """
 `defectsymbol(s)'
 
-Let  `s=[S,T]` be  a symbol  given as  a pair  of lists  (see the whelp for
-`?Symbols`).   'defectsymbol'  returns   the  defect   of  `s`,   equal  to
-`length(S)-length(T)`.
+For an `e`-symbol `[S₁,S₂,…,Sₑ]` returns `length(S₁)-length(S₂)`.
 
 ```julia-repl
 julia> defectsymbol([[1,2],[1,5,6]])
@@ -296,18 +321,17 @@ function defectsymbol(S)
 end
 
 """
-`degree_feg_symbol(s)`
+`degree_fegsymbol(s)`
     
-Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
-returns  the degree  of the  fake degree  of the character parameterized by
-`s`.
+the  degree  of  the  fake  degree  of  the  character parameterized by the
+`e`-symbol `s`.
 
 ```julia-repl
-julia> degree_feg_symbol([[1,5,6],[1,2]])
+julia> degree_fegsymbol([[1,5,6],[1,2]])
 88
 ```
 """
-function degree_feg_symbol(s,p=length(fullsymbol(s)))
+function degree_fegsymbol(s)
   s=fullsymbol(s)
   e=length(s)
   d=defectsymbol(s)
@@ -326,17 +350,17 @@ function degree_feg_symbol(s,p=length(fullsymbol(s)))
 end
 
 """
-`valuation_feg_symbol(s)`
+`valuation_fegsymbol(s)`
 
-Let  `s=[S₁,…,Sₙ]` be a symbol `valuation_feg_symbol` returns the valuation
-of the fake degree of the character parameterized by `s`.
+the  valuation of  the fake  degree of  the character  parameterized by the
+`e`-symbol `s`.
 
 ```julia-repl
-julia> valuation_feg_symbol([[1,2],[1,5,6]])
+julia> valuation_fegsymbol([[1,2],[1,5,6]])
 -1
 ```
 """
-function valuation_feg_symbol(s)
+function valuation_fegsymbol(s)
   s=fullsymbol(s)
   d=defectsymbol(s)
   if !(d in [0,1]) return -1 end
@@ -363,21 +387,85 @@ end
 stringsymbol(S)=stringsymbol(stdout,S)
 
 """
-  lesssymbols( <x>, <y> )  < for symbols
+  `lesssymbols(x,y)`  `<` for symbols
   
   A symbol is smaller than another if the shape is lexicographically smaller,
   or the shape is the same and the the symbol is lexicographically bigger
 """
 function lesssymbols(x,y)
-  map(length,x)<map(length,y) || (map(length,x)==map(length,y) && x>y)
+  c=cmp(length.(x),length.(y))
+  c==-1 || (c==0 && x>y)
+end
+
+# Malle-defect; invariant of shift but not cyclic perm
+function defshape(s) 
+  e=length(s)
+  mod(binomial(e,2)*div(sum(s),e)-sum(i->(i-1)*s[i],1:e),e)
+end
+
+"All shapes for e-symbols of rank r, content c, malle-defect def"
+shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
+  function f(lim2,sum,nb,max)local res,a
+    if nb==1   
+      if sum==0   return [[sum]]
+      else return Vector{Int}[] end 
+    end
+    res=Vector{Int}[]
+    a=div(sum,nb-1)
+    while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum  
+      append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
+      a+=1 
+    end
+    return res
+  end
+
+  res=Vector{Int}[]
+  m=0
+  while true
+    new=f(r+div((m*e+c-1)*(m*e+c-e+1),2*e),c+m*e,e,c+m*e)
+    if length(new)==0 break end
+    append!(res,new)
+    m+=1
+  end
+  res=reduce(vcat,map(x->arrangements(x,e),res))
+  # for symbols of content 1 only one cyclic shift of the shape has defshape=0
+  filter(s->defshape(s)==def  &&  
+    all(x->defshape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
+end
+
+function symbolsshape(r,s)
+  S=map(x->symbol_partition_tuple(x,s),
+       partition_tuples(r-ranksymbol(map(x->0:x-1,s)),length(s)))
+  if !iszero(sum(s)%length(s)) return S end
+  S=filter(S)do s
+    all(1:length(s)-1)do i
+      x=circshift(s,i)
+      x==s || lesssymbols(x,s)
+    end
+  end
+  if !iszero(defshape(s)) return S end
+  res=[]
+  for s in S 
+    p=findfirst(i->s==circshift(s,1-i),2:length(s))
+    if p===nothing push!(res,s)
+    else append!(res,map(i->vcat(map(copy,s[1:p]),[div(length(s),p),i]),
+                      0:div(length(s),p)-1))
+    end
+  end
+  res
 end
 
 """
-`symbols(e,r,c)` e-symbols of rank r and content=c mode e
+`symbols(e,r,c=1,def=0)` `e`-symbols of rank `r`, content `c` and Malle-defect
+`def`
 
-The content of a symbol `S`is `sum(length,S)%length(S)`.
-The symbols for unipotent  characters of  `G(d,1,r)` are  `symbols(d,r,1)`
-and those for unipotent characters of `G(e,e,r)` are `symbols(e,r,0)`.
+An `e`-symbol is a symbol of length `e`.
+The content of an `e`-symbol `S` is `sum(length,S)%e`.
+The symbols for unipotent  characters of:
+  - `G(d,1,r)` are `symbols(d,r)`
+  - `G(e,e,r)` are `symbols(e,r,0)`.
+  - `G(e,e,r).s₁ᵗ` where `s₁` is the first generator of `G(e,1,r)` and `t|e` 
+    are `symbols(e,r,0,t)`
 
 ```julia-repl
 julia> stringsymbol.(symbols(3,2,1))
@@ -411,146 +499,110 @@ julia> stringsymbol.(symbols(3,3,0))
  "(012,012,)"   
 ```
 """
-function symbols(e,r,c=1)
-  function defShape(s)local e
-    e=length(s)
-    (binomial(e,2)*div(sum(s),e)-sum(i->(i-1)*s[i],1:e))%e
-  end
- 
-  function IsReducedSymbol(s)
-    all(1:length(s)-1)do i
-      x=circshift(s,i)
-      return x==s || lesssymbols(x,s)
-      end
-  end
+symbols(e,r,c=1,def=0)=vcat(map(s->symbolsshape(r,s),shapesSymbols(e,r,c,def))...)
 
-  shapesSymbols=function(r,e,c)local f,res,m,new
-    f=function(lim2,sum,nb,max)local res,a
-      if nb==1   
-        if sum==0   return [[sum]]
-        else return Vector{Int}[] end 
-      end
-      res=Vector{Int}[]
-      a=div(sum,nb-1)
-      while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum  
-        append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
-        a+=1 
-      end
-      return res
-    end
-
-    res=[]
-    m=0
-    while true
-      new=f(r+div((m*e+c-1)*(m*e+c-e+1),2*e),c+m*e,e,c+m*e)
-      append!(res,new)
-      m+=1
-      if length(new)==0 break end
-    end
-    res=reduce(vcat,map(x->arrangements(x,e),res))
-    filter(s->defShape(s)==0  &&  
-      all(x->defShape(x)!=0  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
-  end
-
-  c=c%e
-  S=reduce(vcat,map(shapesSymbols(r,e,c)) do s
-    map(x->symbol_partition_tuple(x,s),
-       partition_tuples(r-ranksymbol(map(x->0:x-1,s)),e)) end)
-  !iszero(c) ? S : filter(IsReducedSymbol,S)
-end
-
-# When given a second argument p dividing e, works for the coset G(e,e,r).s_1^p
-# See Malle, "Unipotente Grade", 2.11 and 5.7
+# See Mal95, 2.11 and 5.7
 """
-`fegsymbol(S)` 
+`fegsymbol(S,p=0)` 
 
-Let  `s=[S₁,…,Sₙ]` be  a symbol  given as  a list  of lists.  This function
-returns as a CycPol the fake degree of the character of symbol `S`.
+Let  `s=[S₁,…,Sₑ]` be an `e`-symbol  given as a `Vector{Vector{Int}}`. This
+function  returns as a `CycPol` the fake  degree of the character of symbol
+`S`.
 
 ```julia-repl
 julia> fegsymbol([[1,5,6],[1,2]])
 q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂
 ```
+
+When  given a  second argument  `p` dividing  `e`, and  a first argument of
+shape  `(0,…,0)` representing the restriction  to `G(e,e,r)`, works for the
+coset `G(e,e,r).s₁ᵖ`.
 """
 function fegsymbol(s,p=0)
-  q=Pol()
   if isempty(s) return one(CycPol) end
   s=fullsymbol(s)
   e=length(s)
   r=ranksymbol(s)
-  p= p==0 ? 1 : E(e,p)
+  ep=E(e,p)
   function delta(S)
     l=length(S)
     if l<2 return one(CycPol) end
-    prod(CycPol(q^(e*S[j])-q^(e*S[i])) for i in 1:l for j in i+1:l)
+    prod(CycPol(Pol([1],e*S[j])-Pol([1],e*S[i])) for i in 1:l for j in i+1:l)
   end
   function theta(S)
-    s1=filter(>(0),S)
-    if isempty(s1) return one(CycPol) end
-    prod(l->prod(h->CycPol(q^(e*h)-1),1:l),s1)
+    if iszero(sum(S)) return one(CycPol) end
+    prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
   end
+  if !constant(length.(s[2:end])) return zero(CycPol) end
   d=defectsymbol(s)
   if d==1 res=theta([r])
-  elseif d==0 res=theta([r-1])*CycPol(q^r-p)
+  elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-Pol(ep))
   else return zero(CycPol)
   end
   res*=prod(S->delta(S)//theta(S),s)
-  res//=CycPol(q^sum([div(x*(x-1),2) for x in e*(1:div(sum(length,s),e)-1)+d%2]))
-  if d==1 res*=CycPol(q^sum(map((x,y)->x*sum(y),0:e-1,s)))
+  res//=CycPol(1,sum([div(x*(x-1),2) for x in e*(1:div(sum(length,s),e)-1)+d%2]))
+  if d==1 res*=CycPol(1,sum((0:e-1).*map(sum,s)))
   else
-    rot=circshift.(Ref(s),0:e-1)
-    res*=div(CycPol(sum(map(j->p^j,0:e-1).* map(s->q^sum((0:e-1).*map(sum,s)),
-                                                rot))),count(==(s), rot))
-    if e == 2 && p == -1 res=-res end
+    rot=circshift.(Ref(s),e:-1:1)
+    u=map(j->ep^j,0:e-1).*map(s->Pol([1],sum((0:e-1).*map(sum,s))),rot)
+    res*=CycPol(sum(u))
+    res=div(res,count(==(s), rot))
+    if e==2 && ep==-1 res=-res end
   end
-  if r==2 && (e>2 && p==E(e)) res=CycPol(res(E(2e)*q)//E(2e, degree(res))) end
+  if r==2 && (e>2 && ep==E(e)) 
+    res=CycPols.ennola_twist(res,Root1(;r=1//2e))//E(2e,degree(res))
+  end
   return res
 end
 
 """
 `gendeg_symbol(s)`
 
-Let  `s=[S₁,…,Sₙ]`  be  a  symbol.  The  function returns as a `CycPol` the
-generic degree of the unipotent character parameterized by `s`.
+Let  `s=[S₁,…,Sₑ]` be an `e`-symbol  given as a `Vector{Vector{Int}}`. This
+function  returns  as  a  `CycPol`  the  generic  degree  of  the unipotent
+character parameterized by `s`.
 
 ```julia-repl
 julia> Symbols.gendeg_symbol([[1,2],[1,5,6]])
 q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2
 ```
-
 Works for symbols for:
 
-       G(e,1,r) (d==1, defect==0)
-       G(e,e,r) (d==0, defect==0)
-      ²G(e,e,r) (d==0, defect==1) (e,r even. This includes ²Dₙ, ²B₂, ²G₂)
+    G(e,1,r) (c==1, d==0)
+    G(e,e,r) (c==0, d==0)
+   ²G(e,e,r) (c==0, d==1) (e,r even. This includes ²Dₙ, ²B₂, ²G₂)
 
-here d=Inhalt mod. e, see [3.9 and 6.4 Malle1995](biblio.htm#Mal95).
+here  `c` is the content  of the symbol and  `d` the Malle-defect, see [3.9
+and 6.4 Malle1995](biblio.htm#Mal95).
 """
 function gendeg_symbol(S)
   S=fullsymbol(S)
   r=ranksymbol(S)
   e=length(S)
   sh=length.(S)
-  if e==0 return CycPol(1) end
+  if e==0 return one(CycPol) end
   m=div(sum(sh),e)
   d=sum(sh)% e
-  q=Pol()
-  defect=(binomial(e,2)*m.-sh.*(0:e-1)).%e 
-  theta(S)=prod(l->prod(h->CycPol(q^h-1),(1:l)*e),S)
+  defect=(binomial(e,2)*m-sum(sh.*(0:e-1)))%e 
+  function theta(S)
+    if iszero(sum(S)) return one(CycPol) end
+    prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
+  end
 
   # initialize with the q'-part of the group order
   if d==1 res=theta([r])
-  elseif d==0 res=theta([r-1])*CycPol(q^r-E(e,defect))
+  elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-E(e,defect))
   end
 
   res*=(-1)^(sum((0:e-1).*binomial.(sh,2)))*
-    prod(i->prod(j->prod(l->reduce(*,map(m->CycPol(l-m),
-    filter(m->i<j ||
-           degree(m)<degree(l),map(l->q^l*E(e)^j,S[j+1])));init=CycPol(q^0)),
-                       map(l->q^l*E(e,i),S[i+1])),i:e-1),0:e-1)//
+    prod(i->prod(j->reduce(*,map(l->reduce(*,map(m->CycPol(l-m),
+    filter(m->i<j || degree(m)<degree(l),
+           map(l->Pol([E(e,j)],l),S[j+1])));init=one(CycPol)),
+           map(l->Pol([E(e,i)],l),S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
      (prod(theta,S)*(E(4)^binomial(e-1,2)*ER(e)^e)^m
-      *CycPol(q^sum(x->binomial(x,2),e.*(1:m-1).+d)))
+      *CycPol(1,sum(map(x->binomial(x,2),e.*(1:m-1).+d))))
   
+  # Dudas' sign change
   if r==1 m=findfirst(isempty,S)
     if !isnothing(m) res*=(-1)^m end
   elseif r==2 && e==3 && S in 
@@ -570,12 +622,40 @@ function gendeg_symbol(S)
    [[0,1,4],[0,1,2],Int[]],[[0,1,2],[0,1,4],Int[]],[[0,1,2,3],[0,1,2,3],[2]]] 
     res=-res
   end
-  # Dudas' sign change
   
   if d==0 res*=findfirst(i->circshift(S,-i)==S,1:e) end
   if defect==0 || r!=2 || e<=2 return res
   else return E(e)^-1*ennola_twist(res,E(2*e)) # 2I(e)
   end
+end
+
+# Ennola of e-symbol s (of content 1 or 0)
+# The order of Ennola (order of center of group) is computed automatically:
+# it is e for content 1 and gcd(e,rank(s)) for content 0.
+function EnnolaSymbol(s)
+  repeat=!(s[end] isa Vector)
+  if repeat
+    times=s[end-1]
+    ind=s[end]
+    s=fullsymbol(s)
+  end
+  e=length(s)
+  z=sum(length,s)%e==1 ? e : gcd(e,ranksymbol(s))
+  if isone(z) return s end
+  res=map(x->Int[],s)
+  for i in eachindex(s), k in s[i]
+    push!(res[1+(i+k*div(e,z))%e],k)
+  end
+  res=map(sort,res)
+  if repeat
+    if div(e,times)!=findfirst(i->circshift(res,-i)==res,1:e)
+      error("period changed!")
+    end
+    if e%2==0 ind=(ind+div(e,2)-1)%times end
+    # works for types D,I and G(3,3,3) but ???
+    res=[res[1:div(e,times)]...,times,ind]
+  end
+  res
 end
 
 function tableaux(S::Vector{Int})
@@ -623,25 +703,6 @@ function tableaux(S)
   sort(res)
 end
 
-# XSP(ρ,s,n[,d]) returns the union of the Lusztig-Spaltenstein 
-# X̃^{ρ-s,s}_{n,d} for all d even when the 4th argument is present
-#                     all d odd otherwise
-# In "Character sheaves on disconnected groups II, 13.2" the notation is
-#  {}^ρ Xˢₙ,d.
-# The result is a list of lists, each one corresponding to a similarity class.
-# If s = 0, only positive defects are considered.
-# XSP(2,1,n) LS symbols for Sp₂ₙ
-# XSP(4,2,n) LS symbols for Sp₂ₙ in char.2
-# XSP(2,0,n) LS symbols for SO₂ₙ₊₁ [defect odd]
-# XSP(2,0,n,true) LS symbols for SO₂ₙ [defect even]
-# XSP(4,0,n,true) LS symbols for SO₂ₙ in char 2
-# returns records with fields:
-# .symbol  
-# .dimBu
-# .sp  parameter (double partition) of the generalized Springer correspondent
-#                              character of the relative Weyl group
-# .Au  describes a character of A(u) as a list: true->sgn, false->Id
-#      representing the local system of the Springer correspondent
 function xsp(rho,s,n,d)
   nrsd=rho*div(d^2,4)-s*div(d-mod(d,2),2)
   if n<nrsd return Vector{Vector{Int}}[] end
@@ -652,12 +713,37 @@ function xsp(rho,s,n,d)
   end
 end
 
+"""
+`XSP(ρ,s,n,even=false)` 
+
+returns the union of the Lusztig-Spaltenstein 
+``X̃^{ρ-s,s}_{n,d}`` for all `d` even when `even=true`, all `d` odd otherwise.
+In "Character sheaves on disconnected groups II, 13.2" the notation is
+``{}^ρ X^s_{n,d}``.
+The result is a list of lists, each one corresponding to a similarity class.
+If `s==0`, only positive defects are considered.
+
+  - `XSP(2,1,n)` gives L-S symbols for Sp₂ₙ
+  - `XSP(4,2,n)` gives L-S symbols for Sp₂ₙ in char.2
+  - `XSP(2,0,n)` gives L-S symbols for SO₂ₙ₊₁ [defect odd]
+  - `XSP(2,0,n,true)` gives L-S symbols for SO₂ₙ [defect even]
+  - `XSP(4,0,n,true)` gives L-S symbols for SO₂ₙ in char 2
+
+returns named tuples with fields:
+
+  - `symbol`
+  - `dimBu`
+  - `Au`  describes a character of `A(u)` as a list: `true`->sgn, `false`->Id
+     representing the local system of the Springer correspondent
+  - `sp`  parameter (double partition) of the generalized Springer
+     correspondent (character of the relative Weyl group)
+"""
 function XSP(rho,s,n,even=false)
   d=Int(!Bool(even))
   res = Vector{Vector{Int}}[]
   while true
     S=xsp(rho, s, n, d)
-    if iszero(d) S=unique!(sort(map(sort,S))) end
+    if iszero(d) S=unique!(sort!(sort.(S))) end
     append!(res,S)
     d+=2
     if isempty(S) break end
@@ -703,31 +789,24 @@ function XSP(rho,s,n,even=false)
       function rr(x,s)
         isempty(x) ? x : reverse(filter(!iszero,x-(0:length(x)-1)*rho-s))
       end
-      r=Dict(:symbol=>S,:sp=>[rr(S[1],0), rr(S[2],s)],:dimBu=>n)
+      sp=[rr(S[1],0), rr(S[2],s)]
       if defectsymbol(S) == 0
-        if r[:sp]>reverse(r[:sp]) reverse!(r[:sp]) end
-        if r[:sp][1]==r[:sp][2] r[:sp]=[r[:sp][1],2,0] end
-      elseif defectsymbol(S)<0 reverse!(r[:sp])
+        if sp>reverse(sp) reverse!(sp) end
+        if sp[1]==sp[2] sp=[sp[1],2,0] end
+      elseif defectsymbol(S)<0 reverse!(sp)
       end
-      r[:Au] = map(i->intersect(S[1],i)!=intersect(dist[1],i), ii)
+      Au=map(i->intersect(S[1],i)!=intersect(dist[1],i), ii)
       if iszero(s) && S[1]!=S[2]
-        if r[:Au][end] r[:Au]=.!(r[:Au]) end
-        r[:Au]=r[:Au][1:end-1]
+        if Au[end] Au=.!(Au) end
+        Au=Au[1:end-1]
       end
-      r[:operations]=Dict(:Display=>function(r,opt)
-        println(joindigits(r[:symbol][1]))
-        println(joindigits(r[:symbol][2]))
-      end)
-      return r
+      (symbol=S,Au=Au,dimBu=n,sp=sp)
   end
 end
 end
 
-function showxsp(r)
-   println("(symbol=", PartitionTupleToString(r[:symbol]),
-       ", sp=", PartitionTupleToString(r[:sp]), ", dimBu=", r[:dimBu], 
-       ", Au=", r[:Au], ")")
-end
+showxsp(r)=println("(symbol=",PartitionTupleToString(r.symbol),
+    ", sp=",PartitionTupleToString(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
 
 function RobinsonSchensted(n,p)
   Perms.extend(p,n);pi=vec(p)

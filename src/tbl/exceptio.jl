@@ -247,7 +247,7 @@ chevieset(["F4", "G25", "G26", "G32"], :SchurElement, (t->begin
                 return VcycSchurElement(Y, (chevieget(t, :SchurModels))[Symbol(ci[:name])], ci)
             end
         end))
-chevieset(["E7", "E8", "F4", "2F4", "G2", "H3", "H4", "G24", "G25", "G26", "G27", "G29", "G32", "G33", "G34"], :Ennola, (t->begin
+chevieset(["E7", "E8", "F4", "2F4", "G2", "3D4", "H3", "H4", "G24", "G25", "G26", "G27", "G29", "G32", "G33", "G34"], :Ennola, (t->begin
             function (arg...,)
                 local uc, res, p, A, b, f
                 uc = chevieget(t, :UnipotentCharacters)

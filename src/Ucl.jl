@@ -250,6 +250,19 @@ struct UnipotentClass
   prop::Dict{Symbol,Any}
 end
 
+function Base.getproperty(c::UnipotentClass, s::Symbol)
+  if s===:name return getfield(c, :name)
+  elseif s===:parameter return getfield(c, :parameter)
+  elseif s===:dimBu return getfield(c, :dimBu)
+  elseif s===:prop return getfield(c, :prop)
+  else return getfield(c, :prop)[s]
+  end
+end
+
+Base.setproperty!(c::UnipotentClass,s::Symbol,v)=getfield(c,:prop)[s]=v
+
+Base.haskey(c::UnipotentClass, s::Symbol)=haskey(c.prop,s)
+
 struct UnipotentClasses
   classes::Vector{UnipotentClass}
   p::Int
@@ -356,15 +369,14 @@ function DistinguishedParabolicSubgroups(W)
 end
 
 function BalaCarterLabels(W)
-  l=vcat(map(parabolic_representatives(W)) do J
-    map(D->[J,D],DistinguishedParabolicSubgroups(reflection_subgroup(W,J)))
+  vcat(map(parabolic_representatives(W)) do J
+    L=reflection_subgroup(W,J)
+    map(DistinguishedParabolicSubgroups(L))do D
+      w=fill(2,length(J));w[D].=0
+      u=copy(J);u[D]=-u[D]
+      [induced_linear_form(W,L,w),u]
+    end
   end...)
-  map(l) do p
-    L=reflection_subgroup(W,p[1])
-    w=fill(2,semisimplerank(L))
-    w[p[2]]=p[2]*0
-    [induced_linear_form(W,L,w),map(i->i in p[2] ? -i : i,p[1])]
-  end
 end
 
 # QuotientAu(Au,chars): chars is a list of indices of characters of Au.
@@ -379,7 +391,6 @@ function QuotientAu(Au,chars)
   AbGens=function(g)
     res=empty(gens(g))
     l=gens(g)
-#   println("l=$l")
     while !isempty(l)
       sort!(l,by=order,rev=true)
       if isempty(res) t=[l[1]] else t=Ref(l[1]).*elements(Group(res)) end
@@ -434,12 +445,12 @@ function QuotientAu(Au,chars)
       p=refltype(Au)[p].indices
       if length(k)==length(reflection_subgroup(Au,p))
        return finish(reflection_subgroup(Au,setdiff(eachindex(gens(Au)),p)),
-                      map(i->i in p ? [] : [i],gens(Au)))
+                     map(i->i in p ? [] : [i],eachindex(gens(Au))))
       elseif length(p)==1
         t=copy(refltype(Au))
         p=findfirst(t->t.indices==p,refltype(Au))
 	t[p].p/=length(k)
-        return finish(ReflectionGroup(t...),map(x->[x],gens(Au)))
+        return finish(ReflectionGroup(t...),map(x->[x],eachindex(gens(Au))))
       end
     elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
@@ -460,23 +471,23 @@ function AdjustAu!(classes,springerseries)
 #   println(springerseries)
     chars=reduce(vcat,map(j->last.(springerseries[j][:locsys][l[j]]),
                    eachindex(l)))
-    f=QuotientAu(u.prop[:Au],chars)
+    f=QuotientAu(u.Au,chars)
 #   if Size(Au)<>Size(f.Au) then
 #     Print("class ",i,"=",classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
-#   print(u.name,":");ds(u.prop[:AuAction])
-    u.prop[:Au]=f[:Au]
-    if haskey(u.prop,:AuAction)
-      R=u.prop[:AuAction].group
+#   print(u.name,":");ds(u.AuAction)
+    u.Au=f[:Au]
+    if haskey(u,:AuAction)
+      R=u.AuAction.group
       if rank(R)==0
-        u.prop[:AuAction]=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
+        u.AuAction=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
       else
        if isempty(f[:gens]) F0s=[reflrep(R,R())]
-       else F0s=map(x->prod(u.prop[:AuAction].F0s[x]),f[:gens])
+       else F0s=map(x->prod(u.AuAction.F0s[x]),f[:gens])
        end
-       u.prop[:AuAction]=ExtendedCox(R,F0s)
+       u.AuAction=ExtendedCox(R,F0s)
       end
-#     u[:AuAction].phis=map(x->prod(u[:AuAction].phis[x]),f[:gens])
+#     u.AuAction.phis=map(x->prod(u.AuAction.phis[x]),f[:gens])
     end
     k=1
     for j in eachindex(l)
@@ -619,6 +630,7 @@ A₁    │              Id:6ₚ′
 """
 function UnipotentClasses(t::TypeIrred,p=0)
   uc=getchev(t,:UnipotentClasses,p)
+  if uc===nothing error("no UnipotentClasses for ",t) end
   rank=PermRoot.rank(t)
   classes=UnipotentClass[]
   for u in uc[:classes] # fill omitted fields
@@ -687,48 +699,48 @@ function UnipotentClasses(W,p=0)
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
-        u.prop[:Au]=prod(x->x.prop[:Au],v)
-        if all(x->haskey(x.prop,:dimred),v)
-          u.prop[:dimred]=sum(x->x.prop[:dimred],v)+rank(W)-semisimplerank(W) 
+        u.Au=prod(x->x.Au,v)
+        if all(x->haskey(x,:dimred),v)
+          u.dimred=sum(x->x.dimred,v)+rank(W)-semisimplerank(W) 
         end
-        if all(x->haskey(x.prop,:dimunip),v)
-          u.prop[:dimunip]=sum(x->x.prop[:dimunip],v) end
-        if all(x->haskey(x.prop,:red),v)
-          println(map(x->x.prop[:red],v))
-          u.prop[:red]=reduce(Cosets.extprod,map(x->x.prop[:red],v)) end
-        if all(x->haskey(x.prop,:AuAction),v)
-          u.prop[:AuAction]=prod(x->x.prop[:AuAction],v) end
-        if all(x->haskey(x.prop,:dynkin),v)
-          u.prop[:dynkin]=zeros(Int,sum(length,l))
-          for i in 1:length(l) u.prop[:dynkin][l[i]]=v[i].prop[:dynkin] end
+        if all(x->haskey(x,:dimunip),v)
+          u.dimunip=sum(x->x.dimunip,v) end
+        if all(x->haskey(x,:red),v)
+#         println(map(x->x.red,v))
+          u.red=reduce(Cosets.extprod,map(x->x.red,v)) end
+        if all(x->haskey(x,:AuAction),v)
+          u.AuAction=prod(x->x.AuAction,v) end
+        if all(x->haskey(x,:dynkin),v)
+          u.dynkin=zeros(Int,sum(length,l))
+          for i in 1:length(l) u.dynkin[l[i]]=v[i].dynkin end
         end
       end
-      if all(x->haskey(x.prop,:balacarter),v)
-        u.prop[:balacarter]=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
-                    v[i].prop[:balacarter]) for (i,x) in enumerate(l)])
+      if all(x->haskey(x,:balacarter),v)
+        u.balacarter=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
+                    v[i].balacarter) for (i,x) in enumerate(l)])
       end
-      if haskey(u.prop, :red)
-        if !(u.prop[:red] isa Spets) u.prop[:red]=spets(u.prop[:red]) end
-        if rank(W)>semisimplerank(W) && haskey(u.prop, :red)
-          u.prop[:red]=Cosets.extprod(u.prop[:red],radical(WF))
-          if haskey(u.prop,:AuAction)
+      if haskey(u, :red)
+        if !(u.red isa Spets) u.red=spets(u.red) end
+        if rank(W)>semisimplerank(W) && haskey(u, :red)
+          u.red=Cosets.extprod(u.red,radical(WF))
+          if haskey(u,:AuAction)
             T=radical(W)
-            u.prop[:AuAction]=ExtendedCox(u.prop[:AuAction].group*T,
-               map(x->cat(x,reflrep(T,T()),dims=(1,2)),u.prop[:AuAction].F0s))
+            u.AuAction=ExtendedCox(u.AuAction.group*T,
+               map(x->cat(x,reflrep(T,T()),dims=(1,2)),u.AuAction.F0s))
           end
         end
       end
       u
     end
   end
-  if iszero(p) && !haskey(classes[1].prop,:balacarter)
+  if iszero(p) && !haskey(classes[1],:balacarter)
     bc=BalaCarterLabels(W)
 #   println("W=$W bc=$bc")
-#   println(map(u->u.prop[:dynkin],classes))
+#   println(map(u->u.dynkin,classes))
     for u in classes
-      pp=findfirst(p->p[1]==u.prop[:dynkin],bc)
-      if isnothing(pp) error("not found:",u.prop[:dynkin]) end
-      u.prop[:balacarter]=bc[findfirst(p->p[1]==u.prop[:dynkin],bc)][2]
+      pp=findfirst(p->p[1]==u.dynkin,bc)
+      if isnothing(pp) error("not found:",u.dynkin) end
+      u.balacarter=bc[findfirst(p->p[1]==u.dynkin,bc)][2]
     end
   end
   ll=length.(uc)
@@ -749,7 +761,7 @@ function UnipotentClasses(W,p=0)
     s[:Z]=reduce(vcat,getindex.(v,:Z))
     s[:locsys]=map(cartesian(getindex.(v,:locsys)...)) do v
       v=collect.(zip(v...))
-      u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].prop[:Au]),
+      u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].Au),
               eachindex(v[1]))
       [HasType.PositionCartesian(ll,v[1]),HasType.PositionCartesian(u,v[2])]
     end
@@ -806,40 +818,39 @@ end
 function showcentralizer(io::IO,u)
   c=""
   function AuName(u)
-    if length(u.prop[:Au])==1 return "" end
-    res=haskey(u.prop,:AuAction) ||
-        (haskey(u.prop,:dimred) && iszero(u.prop[:dimred])) ? "." : "?"
-        res*=reflection_name(IOContext(io,:Au=>true),u.prop[:Au])
+    if length(u.Au)==1 return "" end
+    res=haskey(u,:AuAction) ||
+        (haskey(u,:dimred) && iszero(u.dimred)) ? "." : "?"
+        res*=reflection_name(IOContext(io,:Au=>true),u.Au)
   end
-  if haskey(u.prop,:dimunip)
-    if u.prop[:dimunip]>0 c*=HasType.Format(Mvp(:q)^u.prop[:dimunip],io.dict) end
+  if haskey(u,:dimunip)
+    if u.dimunip>0 c*=HasType.Format(Mvp(:q)^u.dimunip,io.dict) end
   else c*="q^?" end
-  if haskey(u.prop,:AuAction)
-    if rank(u.prop[:red])>0
+  if haskey(u,:AuAction)
+    if rank(u.red)>0
       c*="."
-      if all(isone,u.prop[:AuAction].F0s)
-        c*=sprint(show,u.prop[:red];context=io)*AuName(u)
-      elseif length(u.prop[:Au])==1 ||
-         length(u.prop[:Au])==length(Group(u.prop[:AuAction].phis...))
-        if length(u.prop[:Au])==1 || isone(u.prop[:red].phi)
-          c*=sprint(show,u.prop[:AuAction];context=io)
+      if all(isone,u.AuAction.F0s)
+        c*=sprint(show,u.red;context=io)*AuName(u)
+      elseif length(u.Au)==1 ||
+         length(u.Au)==length(Group(u.AuAction.phis...))
+        if length(u.Au)==1 || isone(u.red.phi)
+          c*=sprint(show,u.AuAction;context=io)
         else
-          c*="["*sprint(show,u.prop[:red];context=io)*"]"*
-                 sprint(show,u.prop[:AuAction];context=io)
+          c*="["*sprint(show,u.red;context=io)*"]"*
+                 sprint(show,u.AuAction;context=io)
         end
       else
-        c*=reflection_name(io,u.prop[:AuAction])*AuName(u)
+        c*=reflection_name(io,u.AuAction)*AuName(u)
       end
     else
       c*=AuName(u)
     end
-  elseif haskey(u.prop,:red)
-    n=sprint(show,u.prop[:red];context=io)
+  elseif haskey(u,:red)
+    n=sprint(show,u.red;context=io)
     if n!="." c*="."*n end
     c*=AuName(u)
   else
-    if haskey(u.prop,:dimred)
-      if u.prop[:dimred]>0 c*="[red dim ",u.prop[:dimred],"]" end
+    if haskey(u,:dimred) if u.dimred>0 c*="[red dim ",u.dimred,"]" end
     else c*="[red??]"
     end
     c*=AuName(u)
@@ -869,16 +880,16 @@ function Base.show(io::IO,uc::UnipotentClasses)
   WF=uc.prop[:spets]
   if WF isa Spets W=Group(WF)
   else W=WF;WF=spets(W) end
-  if uc.p!=0 || !any(x->haskey(x.prop,:balacarter),uc.classes)
+  if uc.p!=0 || !any(x->haskey(x,:balacarter),uc.classes)
     io=IOContext(io,:balacarter=>false)
   end
   tbl = map(uc.classes)do u
-    res= iszero(uc.p) ? [joindigits(u.prop[:dynkin])] : String[]
+    res= iszero(uc.p) ? [joindigits(u.dynkin)] : String[]
     push!(res, string(u.dimBu))
     if get(io,:balaCarter,true)
-      if haskey(u.prop, :balacarter)
+      if haskey(u, :balacarter)
         b=fill('.',coxrank(W))
-        for i in u.prop[:balacarter] if i>0 b[i]='2' else b[-i]='0' end end
+        for i in u.balacarter if i>0 b[i]='2' else b[-i]='0' end end
       else
         b=fill('?',coxrank(W))
       end
@@ -890,7 +901,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
     if get(io,:springer,true)
       i=findfirst(isequal(u),uc.classes)
       cc(ss)=map(function (i)
-                c1 = charnames(io,u.prop[:Au])[ss[:locsys][i][2]]
+                c1 = charnames(io,u.Au)[ss[:locsys][i][2]]
                 c2 = charnames(io,ss[:relgroup])[i]
                 (c1=="") ? c2 : c1*":"*c2
            end, findall(y->y[1]==i,ss[:locsys]))
@@ -1068,7 +1079,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   # matrix of q^{-bᵢ-bⱼ}*fakedegree(χᵢ ⊗ χⱼ ⊗ sgn)
   tbl=bigcell_decomposition([q^(-res.dimBu[i]-res.dimBu[j])*
                             sum(map(*,f,DecomposeTensor(R,i,j,k)))
-     for i in 1:n,j in 1:n], res.blocks)
+     for i in 1:n,j in 1:n], res.blocks) # //1 needed in D7
   res.scalar=tbl[1]
   res.locsys=ss[:locsys]
 # res[:L]=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
@@ -1140,7 +1151,7 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
     res.cardClass=zeros(eltype(res.scalar),length(l))//1
     res.classes=l^p
     for i in eachindex(uc.classes)
-      Au=uc.classes[i].prop[:Au]
+      Au=uc.classes[i].Au
       b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
  #    println("i=",i," b=",b," Au=",Au)
       res.scalar[:,b]*=CharTable(Au).irr

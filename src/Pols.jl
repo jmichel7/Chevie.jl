@@ -10,11 +10,20 @@ Pol{Int64}: q
 julia> Pol([1,2]) # valuation is 0 if not specified
 Pol{Int64}: 2q+1
 
+julia> 2q+1       # same result
+Pol{Int64}: 2q+1
+
 julia> p=Pol([1,2],-1) # here the valuation is specified to be -1
 Pol{Int64}: 2+q⁻¹
 
+julia> Pol()   # omitting all arguments gives Pol([1],1)
+Pol{Int64}: q
+
 julia> valuation(p),degree(p)
 (-1, 0)
+
+julia> derivative(p)
+Pol{Int64}: -x⁻²
 
 julia> p=(q+1)^2
 Pol{Int64}: q²+2q+1
@@ -37,7 +46,10 @@ julia> p[-1:1]
 julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
 (0.5q²-0.25q+0.125, 0.875)
 
-julia> divrem(q^3+1,q+2)  # keeps the ring, but needs leading coeff ±1
+julia> divrem(q^3+1,2q+1//1) # case of field elements
+((1//2)q²+(-1//4)q+1//8, 7//8)
+
+julia> divrem(q^3+1,q+2)  # keeps the ring if leading coeff of divisor is ±1
 (q²-2q+4, -7)
 ```
 
@@ -46,7 +58,7 @@ see also the individual documentation of divrem, gcd.
 module Pols
 using ..Util: format_coefficient, printTeX
 export degree, valuation
-export Pol, shift, positive_part, negative_part, bar
+export Pol, shift, positive_part, negative_part, bar, derivative
 
 const varname=Ref(:x)
 
@@ -74,9 +86,10 @@ end
 
 Base.broadcastable(p::Pol)=Ref(p)
 
-Base.lastindex(p::Pol)=length(p.c)+p.v-1
-
-Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:p.v+length(p.c)-1 ? 
+degree(p::Pol)=length(p.c)-1+p.v
+valuation(p::Pol)=p.v
+Base.lastindex(p::Pol)=degree(p)
+Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ? 
     p.c[i-p.v+1] : zero(T)
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
@@ -96,9 +109,6 @@ end
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{T2})where {T1,T2<:Number}
   Pol{promote_type(T1,T2)}
 end
-
-degree(p::Pol)=length(p.c)-1+p.v
-valuation(p::Pol)=p.v
 
 Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
@@ -197,8 +207,9 @@ Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
-Base.:^(a::Pol, n::Real)=n>=0 ? Base.power_by_squaring(a,Int(n)) :
-                                Base.power_by_squaring(inv(a),Int(-n))
+Base.:^(a::Pol, n::Real)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
+         n>=0 ? Base.power_by_squaring(a,Int(n)) :
+                Base.power_by_squaring(inv(a),Int(-n))
 
 function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   d=b.v-a.v
@@ -216,6 +227,8 @@ Base.:-(a::Pol, b::Pol)=a+(-b)
 Base.:-(a::Pol, b::Number)=a-Pol(b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v;check=false)
+
+derivative(a::Pol)=Pol([(i+a.v-1)*v for (i,v) in enumerate(a.c)],a.v-1)
 
 bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 
@@ -253,7 +266,7 @@ function Base.:/(p::Pol,q::Pol)
   error("r=$r division $p//$q not implemented")
 end
 
-Base.://(p::Pol,q::T) where T=Pol(p.c//q,p.v;check=false)
+Base.://(p::Pol,q::T) where T=iszero(p) ? p : Pol(p.c//q,p.v;check=false)
 Base.://(p::T,q::Pol) where T=Pol(p)//q
 
 """

@@ -55,6 +55,7 @@ symmetric_group
 stab_onmats
 Perm_onmats
 Perm_rowcolmat
+Base.in(::Perm,::PermGroup)
 ```
 # Cyclotomic numbers
 ```@docs
@@ -86,7 +87,7 @@ Mvps.value
 Mvps.degree
 Mvps.conj
 factor(::Mvp)
-derivative
+Mvps.derivative
 laurent_denominator
 scal
 ```
@@ -220,6 +221,7 @@ reflection_subgroup
 coxgroup
 rootdatum
 describe_involution
+badprimes
 Weyl.standard_parabolic
 inversions
 with_inversions
@@ -394,14 +396,16 @@ shiftβ
 partβ
 ranksymbol
 defectsymbol
+symbol_partition_tuple
 fegsymbol
 gendeg_symbol
-degree_feg_symbol
+degree_fegsymbol
 degree_gendeg_symbol
-valuation_feg_symbol
+valuation_fegsymbol
 valuation_gendeg_symbol
 tableaux
 symbols
+XSP
 ```
 # Eigenspaces
 ```@docs
@@ -437,6 +441,7 @@ AsRootOfUnity                               Root1
 AsWord                                      word
 AssociatedPartition                         conjugate_partition
 AsymptoticAlgebra                           AsymptoticAlgebra
+BadPrimes                                   badprimes
 BetaSet                                     βset
 BigCellDecomposition                        bigcell_decomposition
 Binomial                                    binomial
@@ -543,7 +548,7 @@ HeckeCentralMonomials                       central_monomials
 HeckeCharValues                             char_values
 HeckeClassPolynomials                       class_polynomials
 HeckeReflectionRepresentation               reflrep
-HighestPowerFakeDegreeSymbol                degree_feg_symbol
+HighestPowerFakeDegreeSymbol                degree_fegsymbol
 HighestPowerFakeDegrees(W)                  charinfo(W)[:B]
 HighestPowerGenericDegreeSymbol             degree_gendeg_symbol
 HighestPowerGenericDegrees(W)               charinfo(W)[:A]
@@ -590,7 +595,7 @@ ListPerm(p)                                 vec(p)
 LogFFE                                      log
 LongestCoxeterElement(W)                    longest(W)
 LongestCoxeterWord(W)                       word(W,longest(W))
-LowestPowerFakeDegreeSymbol                 valuation_feg_symbol
+LowestPowerFakeDegreeSymbol                 valuation_fegsymbol
 LowestPowerFakeDegrees(W)                   charinfo(W)[:b]
 LowestPowerGenericDegreeSymbol              valuation_gendeg_symbol
 LowestPowerGenericDegrees(W)                charinfo(W)[:a]
@@ -633,8 +638,8 @@ Poset                                       Poset
 Position(l,x)                               findfirst(==(x),l)
 PositionCartesian(a,b)                      LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]
 PositionClass                               position_class
-PositionDet                                 charinfo(W)[:PositionDet]
-PositionId                                  charinfo(W)[:PositionId]
+PositionDet                                 charinfo(W)[:positionDet]
+PositionId                                  charinfo(W)[:positionId]
 PositionRegularClass                        position_regular_class
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)

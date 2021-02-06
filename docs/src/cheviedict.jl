@@ -11,7 +11,7 @@ const ChevieDict=Dict(
 "AssociatedPartition"=>"conjugate_partition",
 "AsymptoticAlgebra"=>"AsymptoticAlgebra",
 "AsWord"=>"word",
-#BadPrimes
+"BadPrimes"=>"badprimes",
 "BetaSet"=>"βset",
 "BigCellDecomposition"=>"bigcell_decomposition",
 "Binomial"=>"binomial",
@@ -130,7 +130,7 @@ const ChevieDict=Dict(
 "HeckeReflectionRepresentation"=>"reflrep",
 #HeckeSubAlgebra
 "HighestPowerFakeDegrees(W)"=>"charinfo(W)[:B]",
-"HighestPowerFakeDegreeSymbol"=>"degree_feg_symbol",
+"HighestPowerFakeDegreeSymbol"=>"degree_fegsymbol",
 "HighestPowerGenericDegrees(W)"=>"charinfo(W)[:A]",
 "HighestPowerGenericDegreeSymbol"=>"degree_gendeg_symbol",
 #HighestShortRoot
@@ -185,7 +185,7 @@ const ChevieDict=Dict(
 "LongestCoxeterElement(W)"=>"longest(W)",
 "LongestCoxeterWord(W)"=>"word(W,longest(W))",
 "LowestPowerFakeDegrees(W)"=>"charinfo(W)[:b]",
-"LowestPowerFakeDegreeSymbol"=>"valuation_feg_symbol",
+"LowestPowerFakeDegreeSymbol"=>"valuation_fegsymbol",
 "LowestPowerGenericDegrees(W)"=>"charinfo(W)[:a]",
 "LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
 "Lusztigaw"=>"Lusztigaw",
@@ -232,8 +232,8 @@ const ChevieDict=Dict(
 "Position(l,x)"=>"findfirst(==(x),l)",
 "PositionClass"=>"position_class",
 "PositionCartesian(a,b)"=>"LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]",
-"PositionDet"=>"charinfo(W)[:PositionDet]",
-"PositionId"=>"charinfo(W)[:PositionId]",
+"PositionDet"=>"charinfo(W)[:positionDet]",
+"PositionId"=>"charinfo(W)[:positionId]",
 "PositionRegularClass"=>"position_regular_class",
 #Presentation
 "PrintDiagram(W)"=>"Diagram(W)",

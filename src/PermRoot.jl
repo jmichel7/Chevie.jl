@@ -227,11 +227,15 @@ end
 
 function Base.show(io::IO, t::TypeIrred)
   replorTeX=get(io,:limit,false) || get(io,:TeX,false)
+  function sub(p,n)
+    s=string(n)
+    string(p)*(length(s)==1 ? "_"*s : "_{"*s*"}")
+  end
   if haskey(t,:series)
     s=t.series
     if s==:ST 
       if haskey(t,:ST) 
-        n=replorTeX ? "G_{$(t.ST)}" : "ComplexReflectionGroup($(t.ST))"
+        n=replorTeX ? sub("G",t.ST) : "ComplexReflectionGroup($(t.ST))"
       else 
         n=replorTeX ? "G_{$(t.p),$(t.q),$(t.rank)}" : 
           "ComplexReflectionGroup($(t.p),$(t.q),$(t.rank))"
@@ -253,11 +257,11 @@ function Base.show(io::IO, t::TypeIrred)
       end
       if haskey(t,:bond)
         b=t.bond
-        n=replorTeX ? "$(s)_{$r}($b)" : "coxgroup(:$s,$r,$b)"
+        n=replorTeX ? sub(s,r)*"($b)" : "coxgroup(:$s,$r,$b)"
       elseif haskey(t,:short)
-        n=replorTeX ? "\\tilde $(s)_{$r}" : "coxgroup(:$s,$r)"
+        n=replorTeX ? "\\tilde "*sub(s,r) : "coxgroup(:$s,$r)"
       else
-        n=replorTeX ? "$(s)_{$r}" : "coxgroup(:$s,$r)"
+        n=replorTeX ? sub(s,r) : "coxgroup(:$s,$r)"
       end
     end
     printTeX(io,n)
@@ -1186,7 +1190,7 @@ julia> parabolic_representatives(coxgroup(:A,4),2)
 gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3),2);
 [ [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ] ]
 """
-parabolic_representatives(W)=union(parabolic_representatives.(Ref(W),
+parabolic_representatives(W)=vcat(parabolic_representatives.(Ref(W),
           0:semisimplerank(W))...)
 
 parabolic_representatives(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)

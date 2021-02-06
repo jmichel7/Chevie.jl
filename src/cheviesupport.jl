@@ -5,6 +5,8 @@ Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
 Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
 Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
+Base.:*(W1::Spets,W2::FiniteCoxeterGroup)=Cosets.extprod(W1,spets(W2))
+Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
 Base.:/(a::AbstractArray,b::Pol)=a ./ b
 Base.://(a::AbstractArray,b::Pol)=a .// b
@@ -16,6 +18,7 @@ Base.://(a::AbstractArray,b::Mvp)=a .// b
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*E(1))*m*n
 Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n)*toM(m)*n
+Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Integer)=toL(toM(m)^n)
 Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*E(1)//1)*toM(m)*toM(n))
 Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
@@ -44,6 +47,7 @@ Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
+HeckeCentralMonomials=central_monomials
 function Ignore() end
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
@@ -55,6 +59,7 @@ Intersection(x::Vector)=sort(intersect(x...))
 Join(x,y)=join(x,y)
 Join(x)=join(x,",")
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
+LongestCoxeterWord(W)=word(W,longest(W))
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=(a.^b)^b
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
@@ -74,11 +79,13 @@ function TeXBracket(s)
   s=string(s)
   length(s)==1  ? s : "{"*s*"}"
 end
+Weyl.torus(m::Vector{<:Vector})=torus(toM(m))
 Value(p,v)=p(v)
 ValuePol(v,c)=isempty(v) ? 0 : evalpoly(c,v)
 function CoxeterGroup(S::String,s...)
- if length(s)==1 return coxgroup(Symbol(S),Int(s[1])) end
- coxgroup(Symbol(S),Int(s[1]))*coxgroup(Symbol(s[2]),Int(s[3]))
+ res=coxgroup(Symbol(S),Int(s[1])) 
+ for i in 2:2:length(s) res*=coxgroup(Symbol(s[i]),Int(s[i+1])) end
+ res
 end
 FactorizedSchurElementsOps=Dict{Symbol,Any}(
 :Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],

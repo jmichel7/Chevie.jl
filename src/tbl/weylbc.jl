@@ -262,6 +262,19 @@ chevieset(:B, :UnipotentCharacters, function (arg...,)
         end
         return uc
     end)
+chevieset(:B, :Ennola, function (n,)
+        local uc, l
+        uc = (chevieget(:B, :UnipotentCharacters))(n)
+        l = uc[:charSymbols]
+        return SPerm(map(function (i,)
+                        local s
+                        s = EnnolaSymbol(l[i])
+                        if length(s[1]) < length(s[2])
+                            s = s[[2, 1]]
+                        end
+                        return Position(l, s) * (-1) ^ (uc[:A])[i]
+                    end, 1:length(l)))
+    end)
 chevieset(:B, :Invariants, function (n, type_)
         local m
         m = fill(0, max(0, (1 + n) - 1)) + 1

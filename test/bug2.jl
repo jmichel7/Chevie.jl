@@ -1,5 +1,5 @@
 using Reexport, BenchmarkTools
-if false # @btime sort(v,by=first) differs dramatically whether true/false
+if true # @btime sort(v,by=first) differs dramatically whether true/false
 degree(a::Number)=0; export degree
 include("../src/using_merge.jl")
 include("../src/Combinat.jl");using .Combinat

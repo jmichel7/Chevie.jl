@@ -6,10 +6,7 @@ chevieset(:F4, :CartanMat, function (arg...,)
         else
             type_ = 1
         end
-        a = (chevieget(:A, :CartanMat))(4)
-        (a[2])[3] = -type_
-        (a[3])[2] = 2 // (a[2])[3]
-        return a
+        return [[2, -1, 0, 0], [-1, 2, -type_, 0], [0, -2 // type_, 2, -1], [0, 0, -1, 2]]
     end)
 chevieset(:F4, :PrintDiagram, function (indices, title, type_)
         print(title, " ", indices[1], " - ", indices[2])

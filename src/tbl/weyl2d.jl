@@ -33,9 +33,9 @@ chevieset(Symbol("2D"), :ClassInfo, function (n,)
     end)
 chevieset(Symbol("2D"), :NrConjugacyClasses, function (n,)
         if mod(n, 2) == 1
-            return npartition_tuples(n, 2) // 2
+            return div(npartition_tuples(n, 2), 2)
         else
-            return (npartition_tuples(n, 2) - npartitions(n // 2)) // 2
+            return div(npartition_tuples(n, 2) - npartitions(div(n, 2)), 2)
         end
     end)
 chevieset(Symbol("2D"), :ClassParameter, function (n, w)
@@ -76,12 +76,8 @@ chevieset(Symbol("2D"), :IsPreferred, function (pp,)
         pp = symbol_partition_tuple(pp, 0)
         return pp[1] > pp[2]
     end)
-chevieset(Symbol("2D"), :IsGood, (pp->begin
-            pp[1] > pp[2]
-        end))
-chevieset(Symbol("2D"), :testchar, chevieget(Symbol("2D"), :IsPreferred))
 chevieset(Symbol("2D"), :CharParams, (n->begin
-            Filtered((chevieget(:B, :CharParams))(n), chevieget(Symbol("2D"), :testchar))
+            Filtered((chevieget(:B, :CharParams))(n), chevieget(Symbol("2D"), :IsPreferred))
         end))
 chevieset(Symbol("2D"), :CharName, function (arg...,)
         return PartitionTupleToString(arg[2])
@@ -247,34 +243,26 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                     res[:size] = length(res[:charNumbers])
                     res[:operations] = FamilyOps
                     return res
-                   end, map(z, gapSet(uc[:charSymbols])))
+                   end, unique(map(z,uc[:charSymbols])))
         return uc
     end)
-chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
-        local uc, cc, j
-        uc = deepcopy((chevieget(:D, :UnipotentClasses))(r, p))
-        if p != 2
-            for cc = uc[:classes]
-                cc[:red] = CoxeterGroup()
-                j = cc[:parameter]
-                for j = tally(j)
-                    if mod(j[1], 2) == 0
-                        cc[:red] = cc[:red] * CoxeterGroup("C", div(j[2], 2))
-                    elseif mod(j[2], 2) != 0
-                        if j[2] > 1
-                            cc[:red] = cc[:red] * CoxeterGroup("B", div(j[2] - 1, 2))
-                        end
-                    elseif j[2] > 2
-                        if div(j[2], 2) == 3
-                            cc[:red] = cc[:red] * spets(CoxeterGroup("D", div(j[2], 2)), perm"(1,3)")
-                        else
-                            cc[:red] = cc[:red] * spets(CoxeterGroup("D", div(j[2], 2)), perm"(1,2)")
-                        end
-                    else
-                        cc[:red] = cc[:red] * torus([[-1]])
-                    end
-                end
-            end
+chevieset(Symbol("2D"), :Ennola, function (n,)
+        local uc, l
+        if mod(n, 2) == 1
+            return SPerm()
         end
-        return uc
+        uc = (chevieget(Symbol("2D"), :UnipotentCharacters))(n)
+        l = uc[:charSymbols]
+        return SPerm(map(function (i,)
+                        local s, p
+                        if !(IsList((l[i])[2]))
+                            return i * (-1) ^ (uc[:A])[i]
+                        end
+                        s = EnnolaSymbol(l[i])
+                        p = Position(l, s)
+                        if p == false
+                            p = Position(l, reverse(s))
+                        end
+                        return p * (-1) ^ (uc[:A])[i]
+                    end, 1:length(l)))
     end)
