@@ -1148,7 +1148,7 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
     :relgroups=>getindex.(uc.springerseries,:relgroup)))
   if classes
     res.scalar*=E(1)
-    res.cardClass=zeros(eltype(res.scalar),length(l))//1
+    res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
     res.classes=l^p
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au

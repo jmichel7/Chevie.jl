@@ -447,7 +447,7 @@ function cartan(W::PermRootGroup)
 end
 
 function cartan(t::TypeIrred)
-  c=getchev(t,:CartanMat)
+  c=improve_type(getchev(t,:CartanMat))
   if isempty(c) fill(0,0,0) else toM(c) end
 end
 

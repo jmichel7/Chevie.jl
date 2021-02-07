@@ -678,7 +678,7 @@ G4_22Helper = function (c, e, x, n, p)
         root = GetRoot(x, n // r) * E(n, p * r)
         res = c * root ^ 0
         res[nz] = map((i->begin
-                        c[i] * root ^ (e[i] // r)
+                        c[i] * root ^ div(e[i], r)
                     end), nz)
         return res
     end

@@ -708,8 +708,7 @@ end
 # .character: decomposition of left cell in irreducibles
 function LeftCellRepresentatives(W)
   res=map(refltype(W))do t
-#   R=ReflectionGroup(t)
-    R=rootdatum(cartan(t)) # above implemented for now like that
+    R=reflection_group(t)
     rr=getchev(t,:KLeftCellRepresentatives)
     if isnothing(rr) return nothing end
     return map(rr)do r

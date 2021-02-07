@@ -23,7 +23,7 @@ julia> valuation(p),degree(p)
 (-1, 0)
 
 julia> derivative(p)
-Pol{Int64}: -x⁻²
+Pol{Int64}: -q⁻²
 
 julia> p=(q+1)^2
 Pol{Int64}: q²+2q+1

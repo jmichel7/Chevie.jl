@@ -362,7 +362,7 @@ function FitParameter(sch, m)
     p=map(x->collect(0:e-1),a)
     avail=eachindex(a)
     good=Int[]
-    term(j,k)=CycPol(1-E(e,j)*Pol()^(den*(m[i]-first(a[k]))))
+    term(j,k)=CycPol(1-E(e,j)*Pol([1],Int(den*(m[i]-first(a[k])))))
     v=sch[i]
     while true
       for k in avail
@@ -394,7 +394,7 @@ function FitParameter(sch, m)
   if sum(length,v)>e error("non-unique solution\n") end
   res=collectby(G,eachindex(G))
   pp=vcat(v...)[sortperm(vcat(res...))]
-  para=map(i->E(e,pp[i])*Pol()^(den*m[i]),1:e)
+  para=map(i->E(e,pp[i])*Pol([1],Int(den*m[i])),1:e)
   if map(k->prod(j->CycPol(1-para[k]//para[j]),filter(j->j!=k,1:e)),1:e)!=sch
     error("schur elms don't match\n")
   end
