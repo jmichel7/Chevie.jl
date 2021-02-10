@@ -80,7 +80,7 @@ hecke(A₂,0)
 julia> T=Tbasis(H);             # Create the `T` basis
 
 julia> el=words(W)
-6-element Array{Array{Int8,1},1}:
+6-element Vector{Vector{Int8}}:
  []       
  [2]      
  [1]      
@@ -89,7 +89,7 @@ julia> el=words(W)
  [1, 2, 1]
 
 julia> T.(el)*permutedims(T.(el))        # multiplication table
-6×6 Array{HeckeTElt{Perm{Int16},Int64,HeckeAlgebra{Int64,FiniteCoxeterGroup{Perm{Int16},Int64}}},2}:
+6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
@@ -148,7 +148,7 @@ julia> H=hecke(W,q)
 hecke(B₂,q)
 
 julia> H.para
-2-element Array{Array{Pol{Int64},1},1}:
+2-element Vector{Vector{Pol{Int64}}}:
  [q, -1]
  [q, -1]
 
@@ -156,13 +156,13 @@ julia> H=hecke(W,q^2,rootpara=q)
 hecke(B₂,q²,rootpara=q)
 
 julia> H.para,rootpara(H)
-(Array{Pol{Int64},1}[[q², -1], [q², -1]], Pol{Int64}[q, q])
+(Vector{Pol{Int64}}[[q², -1], [q², -1]], Pol{Int64}[q, q])
 
 julia> H=hecke(W,[q^2,q^4],rootpara=[q,q^2])
 hecke(B₂,Pol{Int64}[q², q⁴],rootpara=Pol{Int64}[q, q²])
 
 julia> H.para,rootpara(H)
-(Array{Pol{Int64},1}[[q², -1], [q⁴, -1]], Pol{Int64}[q, q²])
+(Vector{Pol{Int64}}[[q², -1], [q⁴, -1]], Pol{Int64}[q, q²])
 
 julia> H=hecke(W,9,rootpara=3)
 hecke(B₂,9,rootpara=3)
@@ -332,7 +332,7 @@ julia> Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)
 hecke(B₂,q)
 
 julia> reflrep(H)
-2-element Array{Array{Pol,2},1}:
+2-element Vector{Matrix{Pol}}:
  [-1 0; -q q]
  [q -2; 0 -1]
 
@@ -340,7 +340,7 @@ julia> H=hecke(coxgroup(:H,3))
 hecke(H₃,1)
 
 julia> reflrep(H)
-3-element Array{Array{Cyc{Rational{Int64}},2},1}:
+3-element Vector{Matrix{Cyc{Rational{Int64}}}}:
  [-1 0 0; -1 1 0; 0 0 1]
  [1 (-3-√5)/2 0; 0 -1 0; 0 -1 1]
  [1 0 0; 0 1 -1; 0 0 -1]
@@ -397,7 +397,7 @@ julia> H=hecke(coxgroup(:H,3),Pol(:q))
 hecke(H₃,q)
 
 julia> central_monomials(H)
-10-element Array{Pol{Cyc{Int64}},1}:
+10-element Vector{Pol{Cyc{Int64}}}:
  1  
  q³⁰
  q¹²
@@ -590,7 +590,7 @@ julia> h=Tbasis(H)(longest(W))
 T₁₂₁₃₂₁
 
 julia> p=class_polynomials(h)
-5-element Array{Pol{Int64},1}:
+5-element Vector{Pol{Int64}}:
  0        
  0        
  q²       
@@ -671,7 +671,7 @@ julia> H=hecke(W,q^2;rootpara=q)
 hecke(B₂,q²,rootpara=q)
 
 julia> char_values(Cpbasis(H)(1,2,1))
-5-element Array{Pol{Int64},1}:
+5-element Vector{Pol{Int64}}:
  -q-q⁻¹        
  q+q⁻¹         
  0             
@@ -700,7 +700,7 @@ julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
 hecke(G₄,q)
 
 julia> s=schur_elements(H)
-7-element Array{Pol{Cyc{Rational{Int64}}},1}:
+7-element Vector{Pol{Cyc{Rational{Int64}}}}:
  q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
  2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴
  -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴
@@ -710,7 +710,7 @@ julia> s=schur_elements(H)
  q²+2q+2+2q⁻¹+q⁻²                             
 
 julia> CycPol.(s)
-7-element Array{CycPol{Cyc{Rational{Int64}}},1}:
+7-element Vector{CycPol{Cyc{Rational{Int64}}}}:
  Φ₂²Φ₃Φ₄Φ₆             
  2√-3q⁻⁴Φ₂²Φ′₃Φ′₆
  -2√-3q⁻⁴Φ₂²Φ″₃Φ″₆
@@ -883,7 +883,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64,Int64}[1, x, y])
+hecke(G₄,Mvp{Int64, Int64}[1, x, y])
 
 julia> FactorizedSchurElement(H,[[2,5]])
 -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
@@ -917,10 +917,10 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64,Int64}[1, x, y])
+hecke(G₄,Mvp{Int64, Int64}[1, x, y])
 
 julia> FactorizedSchurElements(H)
-7-element Array{Gapjm.HeckeAlgebras.FactSchur,1}:
+7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:
  x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)
  Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
  -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)

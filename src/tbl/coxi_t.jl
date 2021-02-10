@@ -38,8 +38,9 @@ chevieset(:I, :CharInfo, function(m)
   end
   v=map(x->[0,1],1:m);v[m]=[2];pushfirst!(charSymbols,v)
   res[:charSymbols]=charSymbols
-  res[:malleParams]=map(x->Vector{Any}(map(partβ,x)),charSymbols)
+  res[:malleParams]=map(x->map(partβ,x),charSymbols)
   if iseven(m)
+    res[:malleParams]=convert.(Vector{Any},res[:malleParams])
     res[:malleParams][2]=push!(res[:malleParams][2][1:m1],1)
     res[:malleParams][3]=push!(res[:malleParams][3][1:m1],-1)
   end

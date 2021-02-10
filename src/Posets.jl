@@ -22,7 +22,7 @@ julia> p=Poset(coxgroup(:A,2))
 .<1,2<21,12<121
 
 julia> hasse(p)
-6-element Array{Array{Int64,1},1}:
+6-element Vector{Vector{Int64}}:
  [2, 3]
  [4, 5]
  [4, 5]
@@ -34,7 +34,7 @@ julia> length(p) # the number of elements of the `Poset`
 6
 
 julia> incidence(p)
-6×6 Array{Bool,2}:
+6×6 Matrix{Bool}:
  1  1  1  1  1  1
  0  1  0  1  1  1
  0  0  1  1  1  1
@@ -69,7 +69,7 @@ by the arguments.
 
 ```julia-repl
 julia> lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [1, 2, 5, 6]
  [3, 4]      
 ```
@@ -101,7 +101,7 @@ arguments.
 
 ```julia-repl
 julia> gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-6-element Array{Array{Int64,1},1}:
+6-element Vector{Vector{Int64}}:
  [1]
  [2]
  [3]
@@ -131,7 +131,7 @@ quite fast even for large matrices.
 
 ```julia-repl
 julia> m=[j-i in [0,1] for i in 1:5, j in 1:5]
-5×5 Array{Bool,2}:
+5×5 Matrix{Bool}:
  1  1  0  0  0
  0  1  1  0  0
  0  0  1  1  0
@@ -139,7 +139,7 @@ julia> m=[j-i in [0,1] for i in 1:5, j in 1:5]
  0  0  0  0  1
 
 julia>transitive_closure(m)
-5×5 Array{Bool,2}:
+5×5 Matrix{Bool}:
  1  1  1  1  1
  0  1  1  1  1
  0  0  1  1  1
@@ -235,7 +235,7 @@ julia> p=Poset([j%i==0 for i in 1:5, j in 1:5])
 1<2<4
 
 julia> linear_extension(p)
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
  1
  2
  3
@@ -274,7 +274,7 @@ julia> p=Poset([j%i==0 for i in 1:5, j in 1:5])
 1<2<4
 
 julia> hasse(p)
-5-element Array{Array{Int64,1},1}:
+5-element Vector{Vector{Int64}}:
  [2, 3, 5]
  [4]      
  []       
@@ -298,7 +298,7 @@ julia> p=Poset(push!([[i+1] for i in 1:5],Int[]))
 1<2<3<4<5<6
 
 julia> incidence(p)
-6×6 Array{Bool,2}:
+6×6 Matrix{Bool}:
  1  1  1  1  1  1
  0  1  1  1  1  1
  0  0  1  1  1  1
@@ -372,7 +372,7 @@ julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
 4,8<1,5<2,6<3,7
 
 julia> partition(p)
-4-element Array{Array{Int64,1},1}:
+4-element Vector{Vector{Int64}}:
  [4, 8]
  [2, 6]
  [3, 7]

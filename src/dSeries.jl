@@ -29,12 +29,12 @@ julia> W=rootdatum("3D4")
 ³D₄
 
 julia> l=cuspidal_pairs(W,3)
-2-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},Int64}},1}:
+2-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
  (levi = ³D₄, cuspidal = 8)
  (levi = D₄₍₎=Φ₃², cuspidal = 1)
 
 julia> Series(W,l[2]...,3)
-ζ₃-series R^{³D₄}_{D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,Mvp{Cyc{Int64},Int64}[ζ₃q², ζ₃, ζ₃q])
+ζ₃-series R^{³D₄}_{D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,Mvp{Cyc{Int64}, Int64}[ζ₃q², ζ₃, ζ₃q])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -63,7 +63,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> l=cuspidal_pairs(W,3)
-5-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.PRC{Int16,PRSG{Cyc{Rational{Int64}},Int16}},Int64}},1}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 3)
  (levi = G₄, cuspidal = 6)
  (levi = G₄, cuspidal = 7)
@@ -100,7 +100,7 @@ with:
 
 ```julia-repl
 julia> cuspidal_pairs(W,Root1(;r=2//3))
-5-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.PRC{Int16,PRSG{Cyc{Rational{Int64}},Int16}},Int64}},1}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 2)
  (levi = G₄, cuspidal = 5)
  (levi = G₄, cuspidal = 7)
@@ -493,7 +493,7 @@ julia> s.d
 Root1: ζ₃
 
 julia> hecke(s)
-hecke(G₆‚₁‚₁,Mvp{Cyc{Int64},Int64}[ζ₃q², -ζ₃q, ζ₃, -ζ₃²q, ζ₃², -ζ₃])
+hecke(G₆‚₁‚₁,Mvp{Cyc{Int64}, Int64}[ζ₃q², -ζ₃q, ζ₃, -ζ₃²q, ζ₃², -ζ₃])
 
 julia> degree(s)
 ζ₃Φ₁Φ₂²Φ″₃Φ₄Φ₆
@@ -502,7 +502,7 @@ julia> dSeries.RLG(s)
 [G₄]:<φ₁‚₀>-<φ₁‚₄>-<φ₂‚₅>+<φ₂‚₃>-<Z₃:2>-<Z₃:11>
 
 julia> dSeries.char_numbers(s)
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
  1
  5
  2
@@ -511,7 +511,7 @@ julia> dSeries.char_numbers(s)
  4
 
 julia> dSeries.eps(s)
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
   1
   1
  -1

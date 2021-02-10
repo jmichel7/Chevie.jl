@@ -186,7 +186,7 @@ julia> Pol(:q)
 Pol{Int64}: q
 
 julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]
-6×6 Array{Pol{Int64},2}:
+6×6 Matrix{Pol{Int64}}:
  q⁶     1      q³     q³     q⁵+q        q⁴+q²
  1      q⁶     q³     q³     q⁵+q        q⁴+q²
  q³     q³     q⁶     1      q⁴+q²       q⁵+q
@@ -199,7 +199,7 @@ julia> bb=[[2],[4],[6],[3,5],[1]];
 julia> (P,L)=bigcell_decomposition(M,bb);
 
 julia> P
-6×6 Array{Pol{Int64},2}:
+6×6 Matrix{Pol{Int64}}:
  1    0  0    0    0        0
  q⁻⁶  1  q⁻³  q⁻³  q⁻¹+q⁻⁵  q⁻²+q⁻⁴
  0    0  1    0    0        0
@@ -208,7 +208,7 @@ julia> P
  q⁻²  0  q⁻¹  0    q⁻¹      1
 
 julia> L
-6×6 Array{Pol{Int64},2}:
+6×6 Matrix{Pol{Int64}}:
  q⁶-q⁴-1+q⁻²  0   0            0     0            0
  0            q⁶  0            0     0            0
  0            0   q⁶-q⁴-1+q⁻²  0     0            0
@@ -268,14 +268,14 @@ where`r=size(mat,1)`
 
 ```julia-repl
 julia> M=[1 2 3 4;2 3 4 1;3 4 1 2;4 1 2 3]
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
  1  2  3  4
  2  3  4  1
  3  4  1  2
  4  1  2  3
 
 julia> exterior_power(M,2)
-6×6 Array{Int64,2}:
+6×6 Matrix{Int64}:
   -1   -2   -7   -1  -10  -13
   -2   -8  -10  -10  -12    2
   -7  -10  -13    1    2    1
@@ -327,12 +327,12 @@ naturally indexed by the `submultisets` of `1:n`, where `n=size(m,1)`.
 
 ```julia-repl
 julia> m=[1 2;3 4]
-2×2 Array{Int64,2}:
+2×2 Matrix{Int64}:
  1  2
  3  4
 
 julia> Int.(symmetric_power(m,2))
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  1   2   4
  6  10  16
  9  12  16
@@ -356,13 +356,13 @@ where `n>6`.
 
 ```julia-repl
 julia> m=cartan(:A,3)
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
   2  -1   0
  -1   2  -1
   0  -1   2
 
 julia> schur_functor(m,[2,2])
-6×6 Array{Rational{Int64},2}:
+6×6 Matrix{Rational{Int64}}:
    9//1   -6//1    4//1   3//2   -2//1    1//1
  -12//1   16//1  -16//1  -4//1    8//1   -4//1
    4//1   -8//1   16//1   2//1   -8//1    4//1
@@ -402,19 +402,19 @@ are diagonal blocks of `M`.
 
 ```julia-repl
 julia> m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
  0  0  0  1
  0  0  1  0
  0  1  0  0
  1  0  0  0
 
 julia> diagblocks(m)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [1, 4]
  [2, 3]
 
 julia> m[[1,4],[1,4]]
-2×2 Array{Int64,2}:
+2×2 Matrix{Int64}:
  0  1
  1  0
 ```
@@ -450,7 +450,7 @@ This  function may  also be  applied to  boolean matrices.
 
 ```julia-repl
 julia> m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]
-5×4 Array{Int64,2}:
+5×4 Matrix{Int64}:
  1  0  0  0
  0  1  0  0
  1  0  1  0
@@ -458,13 +458,13 @@ julia> m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]
  0  0  1  0
 
 julia> blocks(m)
-3-element Array{Tuple{Array{Int64,1},Array{Int64,1}},1}:
+3-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:
  ([1, 3, 5], [1, 3])
  ([2], [2])
  ([4], [4])
 
 julia> m[[1,3,5,2,4],[1,3,2,4]]
-5×4 Array{Int64,2}:
+5×4 Matrix{Int64}:
  1  0  0  0
  1  1  0  0
  0  1  0  0
@@ -543,7 +543,7 @@ returns one solution of the equation `permutedims(x)*mat=permutedims(v)` or
 
 ```julia-repl
 julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])
-3-element Array{Rational{Int64},1}:
+3-element Vector{Rational{Int64}}:
   5//1
  15//4
   0//1
@@ -610,12 +610,12 @@ exists, and `nothing` otherwise.
 
 ```julia_repl
 julia> M=[1 2;2 1];N=[1 4;1 1]
-2×2 Array{Int64,2}:
+2×2 Matrix{Int64}:
  1  4
  1  1
 
 julia> diagconj_elt(M,N)
-2-element Array{Rational{Int64},1}:
+2-element Vector{Rational{Int64}}:
  1//1
  2//1
 ```

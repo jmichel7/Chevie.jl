@@ -385,7 +385,7 @@ UnipotentCharacters(²Bsym₂)
 ²B₂[1,5]│√2qΦ₁Φ₂/2     0   ζ₈⁵     2
 
 julia> uc.families
-3-element Array{Family,1}:
+3-element Vector{Family}:
  Family(C₁:[1]) 
  Family(C₁:[2]) 
  Family(?4:3:4)
@@ -405,7 +405,7 @@ label│eigen    1     2
 julia> uc=UnipotentCharacters(coxgroup(:G,2));
 
 julia> charnames(uc;limit=true)
-10-element Array{String,1}:
+10-element Vector{String}:
  "φ₁‚₀"   
  "φ₁‚₆"   
  "φ′₁‚₃"  
@@ -418,7 +418,7 @@ julia> charnames(uc;limit=true)
  "G₂[ζ₃²]"
 
 julia> charnames(uc;TeX=true)
-10-element Array{String,1}:
+10-element Vector{String}:
  "\\phi_{1,0}"    
  "\\phi_{1,6}"    
  "\\phi_{1,3}'"   
@@ -513,7 +513,7 @@ function UnipotentCharacters(WF::Spets)
       ser[:qEigen]=0
     end
     if all(haskey.(sers,:parameterExponents))
-      ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents))
+      ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
     end
     ser[:charNumbers]=cartesian(getindex.(sers,:charNumbers)...)
     ser[:cuspidalName]=join(getindex.(sers,:cuspidalName),"\\otimes ")
@@ -713,7 +713,7 @@ G₂
 julia> uc=UnipotentCharacters(W);
 
 julia> degrees(uc)
-10-element Array{Pol{Rational{Int64}},1}:
+10-element Vector{Pol{Rational{Int64}}}:
  1//1                                         
  (1//1)q⁶                                     
  (1//3)q⁵+(1//3)q³+(1//3)q                    
@@ -795,7 +795,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> CycPolUnipotentDegrees(W)
-10-element Array{CycPol{Rational{Int64}},1}:
+10-element Vector{CycPol{Rational{Int64}}}:
  1     
  q⁶       
  qΦ₃Φ₆/3  
@@ -1221,11 +1221,11 @@ julia> W=coxgroup(:D,4)
 D₄
 
 julia> cuspidal(UnipotentCharacters(W))
-1-element Array{Int64,1}:
+1-element Vector{Int64}:
  14
 
 julia> cuspidal(UnipotentCharacters(W),6)
-8-element Array{Int64,1}:
+8-element Vector{Int64}:
   1
   2
   6
@@ -1236,7 +1236,7 @@ julia> cuspidal(UnipotentCharacters(W),6)
  12
 
 julia> cuspidal(UnipotentCharacters(ComplexReflectionGroup(4)),3)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
   3
   6
   7
@@ -1262,7 +1262,7 @@ unipotent characters.
 
 ```julia-repl
 julia> cuspidal_pairs(coxgroup(:F,4))
-9-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},Int64}},1}:
+9-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
  (levi = F₄, cuspidal = 31)
  (levi = F₄, cuspidal = 32)
  (levi = F₄, cuspidal = 33)
@@ -1274,7 +1274,7 @@ julia> cuspidal_pairs(coxgroup(:F,4))
  (levi = F₄₍₎=Φ₁⁴, cuspidal = 1)
 
 julia> cuspidal_pairs(ComplexReflectionGroup(4),3)
-5-element Array{NamedTuple{(:levi, :cuspidal),Tuple{Gapjm.Cosets.PRC{Int16,PRSG{Cyc{Rational{Int64}},Int16}},Int64}},1}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 3)
  (levi = G₄, cuspidal = 6)
  (levi = G₄, cuspidal = 7)
@@ -1287,4 +1287,15 @@ cuspidal_pairs(W,d,ad)=[(levi=L,cuspidal=char) for L in split_levis(W, d, ad)
 
 cuspidal_pairs(W,d=Root1(1))=[p for ad in 0:length(relative_degrees(W,d))
                                 for p in cuspidal_pairs(W,d,ad)]
+
+function relative_hecke(uc::UnipotentCharacters,i,q)
+  hw=uc.harishChandra[i]
+  return hecke(reflection_group(hw[:relativeType]),
+    map(hw[:parameterExponents])do i
+    if i isa Vector return map(j->E(length(i),j-1)*q^i[j],1:length(i))
+#   elif i<0  then return -q^-i; # JM 14/2/2018 I think obsolete
+    else return q^i
+    end end)
+end
+
 end

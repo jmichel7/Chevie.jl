@@ -87,7 +87,7 @@ julia> W=coxgroup(:E,8)
 E₈
 
 julia> relative_degrees(W,4)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
   8
  12
  20
@@ -109,7 +109,7 @@ which   lies   outside   of   the   reflecting  hyperplanes.  The  function
 `regular_eigenvalues` returns the list of regular eigenvalues for `W`.
 ```julia-repl
 julia> regular_eigenvalues(coxgroup(:G,2))
-6-element Array{Root1,1}:
+6-element Vector{Root1}:
    1
   -1
   ζ₃
@@ -124,7 +124,7 @@ julia> L=twistings(W,[2])[4]
 G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> regular_eigenvalues(L)
-3-element Array{Root1,1}:
+3-element Vector{Root1}:
     ζ₄
   ζ₁₂⁷
  ζ₁₂¹¹
@@ -200,7 +200,7 @@ julia> w=W(1:3...)
 (1,12,3,2)(4,11,10,5)(6,9,8,7)
 
 julia> p=eigenspace_projector(W,w,1//4)
-3×3 Array{Cyc{Rational{Int64}},2}:
+3×3 Matrix{Cyc{Rational{Int64}}}:
   (1+ζ₄)/4   ζ₄/2  (-1+ζ₄)/4
   (1-ζ₄)/4    1/2   (1+ζ₄)/4
  (-1-ζ₄)/4  -ζ₄/2   (1-ζ₄)/4
@@ -289,7 +289,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> split_levis(W,4)
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃
  A₃₍₎=Φ₂Φ₄
 
@@ -297,7 +297,7 @@ julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
 
 julia> split_levis(W,3)
-3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  ³D₄
  D₄₍₁₃₎=A₂Φ₃
  D₄₍₎=Φ₃²
@@ -306,13 +306,13 @@ julia> W=coxgroup(:E,8)
 E₈
 
 julia> split_levis(W,4,2)
-3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²
  E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
  E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
 
 julia> split_levis(ComplexReflectionGroup(5))
-4-element Array{Gapjm.Cosets.PRC{Int16,PRSG{Cyc{Rational{Int64}},Int16}},1}:
+4-element Vector{spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:
  G₅
  G₅₍₁₎=G₃‚₁‚₁Φ₁
  G₅₍₂₎=G₃‚₁‚₁Φ₁

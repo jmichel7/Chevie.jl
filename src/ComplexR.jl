@@ -34,7 +34,7 @@ julia> G=ComplexReflectionGroup(4)
 G₄
 
 julia> degrees(G)
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  4
  6
 
@@ -42,7 +42,7 @@ julia> length(G)
 24
 
 julia> fakedegrees(G,Pol(:q))
-7-element Array{Pol{Int64},1}:
+7-element Vector{Pol{Int64}}:
  1       
  q⁴      
  q⁸      
@@ -115,7 +115,7 @@ julia> W=ComplexReflectionGroup(30)
 H₄
 
 julia> degrees(W)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
   2
  12
  20
@@ -165,7 +165,7 @@ O—O—O
 1 3 4
 
 julia> degrees(HF)
-6-element Array{Tuple{Int64,Cyc{Int64}},1}:
+6-element Vector{Tuple{Int64, Cyc{Int64}}}:
  (1, ζ₃) 
  (1, ζ₃²)
  (2, 1)  
@@ -252,7 +252,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> codegrees(W)
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  0
  2
 ```

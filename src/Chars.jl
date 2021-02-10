@@ -55,7 +55,7 @@ CharTable(G₂)
 φ₂‚₂ │ 2  .  . -1 -1     2
 
 julia> ct.charnames
-6-element Array{String,1}:
+6-element Vector{String}:
  "\\phi_{1,0}"
  "\\phi_{1,6}"
  "\\phi_{1,3}'"
@@ -64,7 +64,7 @@ julia> ct.charnames
  "\\phi_{2,2}"
 
 julia> ct.classnames
-6-element Array{String,1}:
+6-element Vector{String}:
  "A_0"
  "\\tilde A_1"
  "A_1"
@@ -434,7 +434,7 @@ corresponds to the ordering of the characters in 'CharTable(W)'.
 
 ```julia-repl
 julia> fakedegrees(coxgroup(:A,2),Pol(:q))
-3-element Array{Pol{Int64},1}:
+3-element Vector{Pol{Int64}}:
  q³
  q²+q
  1
@@ -513,7 +513,7 @@ first two invariants.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))[:charparams]
-6-element Array{Array{Array{Int64,1},1},1}:
+6-element Vector{Vector{Vector{Int64}}}:
  [[1, 0]]
  [[1, 6]]
  [[1, 3, 1]]
@@ -548,7 +548,7 @@ representation in the character table.
 
 ```julia-repl
 julia> charinfo(coxgroup(:D,4))[:extRefl]
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
  13
  11
   5
@@ -566,7 +566,7 @@ degrees.
 
 ```julia-repl
 julia> charinfo(coxgroup(:D,4))[:b]
-13-element Array{Int64,1}:
+13-element Vector{Int64}:
   6
   6
   7
@@ -592,7 +592,7 @@ degrees.
 
 ```julia-repl
 julia> charinfo(coxgroup(:D,4))[:B]
-13-element Array{Int64,1}:
+13-element Vector{Int64}:
  10
  10
  11
@@ -617,7 +617,7 @@ corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
 julia> charinfo(coxgroup(:D,4))[:a]
-13-element Array{Int64,1}:
+13-element Vector{Int64}:
   6
   6
   7
@@ -642,7 +642,7 @@ corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
 julia> charinfo(coxgroup(:D,4))[:A]
-13-element Array{Int64,1}:
+13-element Vector{Int64}:
  10
  10
  11
@@ -671,7 +671,7 @@ julia> charinfo(ComplexReflectionGroup(22))[:opdam]
 
 ```julia-repl
 julia> charinfo(coxgroup(:A,2))
-Dict{Symbol,Any} with 9 entries:
+Dict{Symbol, Any} with 9 entries:
   :a           => [3, 1, 0]
   :b           => [3, 1, 0]
   :positionId  => 3
@@ -698,7 +698,7 @@ given by Spaltenstein.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))[:spaltenstein]
-6-element Array{String,1}:
+6-element Vector{String}:
  "1"
  "\\varepsilon"
  "\\varepsilon_l"
@@ -825,7 +825,7 @@ of the information in `:classparams`.
 
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
-Dict{Symbol,Any} with 5 entries:
+Dict{Symbol, Any} with 5 entries:
   :classes     => [1, 3, 2]
   :orders      => [1, 2, 3]
   :classtext   => [Int64[], [1], [1, 2]]
@@ -877,7 +877,8 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,ct::CharTable)
-  printTeX(io,"CharTable(\$",ct.prop[:name],"\$)\n")
+  name=haskey(ct.prop,:name) ? ct.prop[:name] : "no name"
+  printTeX(io,"CharTable(\$",name,"\$)\n")
   irr=map(ct.irr)do e
     if iszero(e) "." else sprint(show,e; context=io) end
   end
@@ -979,8 +980,8 @@ function classes(ct::CharTable)
   end
 end
 
-function scalarproduct(ct::CharTable,c1,c2)
-  div(sum(map(*,c1,conj.(c2),classes(ct))),ct.centralizers[1])
+function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector)
+  div(c2'*(c1.*classes(ct)),ct.centralizers[1])
 end
 
 """
@@ -990,7 +991,7 @@ decompose character `c` (given by its values on conjugacy classes)
 on irreducible characters as given by `CharTable` `ct`
 """
 function decompose(ct::CharTable,c::Vector)
-  map(i->scalarproduct(ct,ct.irr[i,:],c),axes(ct.irr,1))
+  map(i->scalarproduct(ct,view(ct.irr,i,:),c),axes(ct.irr,1))
 end
 
 """
@@ -1028,7 +1029,7 @@ representations  of dimension ≥140, except half of those of dimensions 315,
 
 ```julia-repl
 julia> representation(ComplexReflectionGroup(24),3)
-3-element Array{Array{Cyc{Int64},2},1}:
+3-element Vector{Matrix{Cyc{Int64}}}:
  [1 0 0; -1 -1 0; -1 0 -1]
  [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
@@ -1068,7 +1069,7 @@ returns the representations of `W` (see `representation`).
 
 ```julia-repl
 julia> representations(coxgroup(:B,2))
-5-element Array{Array{Array{Int64,2},1},1}:
+5-element Vector{Vector{Matrix{Int64}}}:
  [[1], [-1]]
  [[1 0; -1 -1], [1 2; 0 -1]]
  [[-1], [-1]]
@@ -1199,7 +1200,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> charnames(W;limit=true)
-6-element Array{String,1}:
+6-element Vector{String}:
  "φ₁‚₀"
  "φ₁‚₆"
  "φ′₁‚₃"
@@ -1208,7 +1209,7 @@ julia> charnames(W;limit=true)
  "φ₂‚₂"
 
 julia> charnames(W;TeX=true)
-6-element Array{String,1}:
+6-element Vector{String}:
  "\\phi_{1,0}"
  "\\phi_{1,6}"
  "\\phi_{1,3}'"
@@ -1217,7 +1218,7 @@ julia> charnames(W;TeX=true)
  "\\phi_{2,2}"
 
 julia> charnames(W;spaltenstein=true,limit=true)
-6-element Array{String,1}:
+6-element Vector{String}:
  "1"
  "ε"
  "εₗ"
@@ -1226,7 +1227,7 @@ julia> charnames(W;spaltenstein=true,limit=true)
  "θ″"
 
 julia> charnames(W;spaltenstein=true,TeX=true)
-6-element Array{String,1}:
+6-element Vector{String}:
  "1"
  "\\varepsilon"
  "\\varepsilon_l"

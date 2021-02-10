@@ -272,7 +272,7 @@ chevieset(:I, :PoincarePolynomial, function (m, param)
         end
     end)
 chevieset(:I, :SchurElement, function (m, phi, para, rootpara)
-        local u, v, ruv, e, ci
+        local u, v, ruv, e, ci, m2
         if mod(m, 2) == 1
             ci = (chevieget(:I, :CharInfo))(m)
             ci = (ci[:malleParams])[Position(ci[:charparams], phi)]
@@ -282,24 +282,25 @@ chevieset(:I, :SchurElement, function (m, phi, para, rootpara)
         end
         u = -((para[1])[1]) // (para[1])[2]
         v = -((para[2])[1]) // (para[2])[2]
+        m2 = div(m, 2)
         if phi[1] == 1
-            if phi[2] == m // 2
-                e = (Sum(0:m // 2 - 1, (i->begin
+            if phi[2] == m2
+                e = (Sum(0:m2 - 1, (i->begin
                                         (u // v) ^ i
                                     end)) * (u + 1) * (v + 1)) // v
                 if phi[3] == "'"
                     return e
                 else
-                    return (v // u) ^ (m // 2) * e
+                    return (v // u) ^ m2 * e
                 end
             else
-                e = Sum(0:m // 2 - 1, (i->begin
+                e = Sum(0:m2 - 1, (i->begin
                                     (u * v) ^ i
                                 end)) * (u + 1) * (v + 1)
                 if phi[2] == 0
                     return e
                 else
-                    return (u * v) ^ (-m // 2) * e
+                    return (u * v) ^ -m2 * e
                 end
             end
         else

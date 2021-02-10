@@ -1,19 +1,21 @@
 module Combinat
-export combinations, arrangements, partitions, npartitions, partition_tuples,
-  conjugate_partition, compositions, submultisets, cartesian,
-  npartition_tuples, narrangements, groupby, constant, tally, collectby,
-  partitions_set, npartitions_set, bell, stirling2, unique_sorted!
+export combinations, ncombinations, arrangements, narrangements,
+  partitions, npartitions, partition_tuples, npartition_tuples,
+  partitions_set, npartitions_set, compositions, submultisets,
+  conjugate_partition, dominates, cartesian, groupby, constant, tally,
+  collectby, bell, stirling2, unique_sorted!
 
+#--------------------- Structural manipulations -------------------
 """
 `groupby(v,l)`
 
 group  elements of collection `l` according  to the corresponding values in
-the coillection `v`
+the collection `v`.
 
 ```julia-rep1
 julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
   [:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec])
-Dict{Int64,Array{Symbol,1}} with 3 entries:
+Dict{Int64,Vector{Symbol}} with 3 entries:
   31 => Symbol[:Jan, :Mar, :May, :Jul, :Aug, :Oct, :Dec]
   28 => Symbol[:Feb]
   30 => Symbol[:Apr, :Jun, :Sep, :Nov]
@@ -29,13 +31,13 @@ end
 `groupby(f::Function,l)`
 
 group  elements of collection `l` according to the values taken by function
-`f` on them
+`f` on them.
 
 ```julia-repl
 julia> groupby(iseven,1:10)
-Dict{Bool,Array{Int64,1}} with 2 entries:
-  false => [1, 3, 5, 7, 9]
-  true  => [2, 4, 6, 8, 10]
+Dict{Bool, Vector{Int64}} with 2 entries:
+  0 => [1, 3, 5, 7, 9]
+  1 => [2, 4, 6, 8, 10]
 ```
 Note: `l` is required to be non-empty since I do not know how to access the
 return type of a function
@@ -49,17 +51,9 @@ function groupby(f::Function,l)
   res
 end
 
-"""
-`tally(v)` 
-
-count  how many times  each element of  collection `v` occurs  and return a
-`Vector` of `elt=>count` (a variation on StatsBase.countmap)
-"""
-function tally(v)
+function tally_sorted(v)
   res=Pair{eltype(v),Int}[]
   if isempty(v) return res end
-  if !(v isa AbstractArray) v=collect(v) end
-  v=sort(v)
   c=1
 @inbounds  for j in 2:length(v)
     if v[j]==v[j-1] c+=1
@@ -71,10 +65,49 @@ function tally(v)
 end
 
 """
+`tally(v)`
+
+count  how many times  each element of  collection `v` occurs  and return a
+sorted  `Vector` of  `elt=>count` (a  variation on  StatsBase.countmap; the
+elements of `v` must be sortable).
+
+```julia-repl
+julia> tally("a tally test")
+7-element Vector{Pair{Char, Int64}}:
+ ' ' => 2
+ 'a' => 2
+ 'e' => 1
+ 'l' => 2
+ 's' => 1
+ 't' => 3
+ 'y' => 1
+```
+"""
+tally(v::AbstractArray)=tally_sorted(sort(v))
+
+tally(v)=tally(collect(v)) # for iterables
+
+"""
 `collectby(f,v)`
 
 group  the elements of `v` in packets  (`Vector`s) where `f` takes the same
 value. The resulting vector of vectors is sorted by the values of `f`.
+
+```julia-repl
+julia> l=[:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec];
+
+julia> collectby(x->first(string(x)),l)
+8-element Vector{Vector{Symbol}}:
+ [:Apr, :Aug]
+ [:Dec]
+ [:Feb]
+ [:Jan, :Jun, :Jul]
+ [:Mar, :May]
+ [:Nov]
+ [:Oct]
+ [:Sep]
+```julia-repl
+
 """
 function collectby(f,v)
   d=groupby(f,v)
@@ -88,7 +121,7 @@ constant(a)=isempty(a) || all(==(first(a)),a)
 function unique_sorted!(v::Vector)
   i=1
 @inbounds  for j in 2:length(v)
-    if v[j]<v[i] error("not sorted")
+    if v[j]<v[i] error("not sorted:",v)
     elseif v[j]==v[i]
     else i+=1; v[i]=v[j]
     end
@@ -96,33 +129,49 @@ function unique_sorted!(v::Vector)
   resize!(v,i)
 end
 
-# reverse to get the same order as GAP
+# mimics Gap's cartesian. Use Iterators.product otherwise
+# reverse twice to get the same order as GAP
 function cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
-# k<=length(mset) && k>0
-function combinations_sorted(sorted_mset,k)
-  if k==1 return map(x->[x],sorted_mset) end
-  reduce(vcat,map(enumerate(sorted_mset[1:end-k+1]))do (i,e)
-    map(x->pushfirst!(x,e),combinations_sorted(sorted_mset[i+1:end],k-1))
-  end)
+#--------------------- Classical enumerations -------------------
+
+# list[end] contains a combination from the beginning of tally(mset).
+# Extend it in all ways possible.
+function combinations(list,tly,k)
+  n=length(list[end])
+  e=first(first(tly))
+  rest=@view tly[2:end]
+  start=true
+  for i in min(last(first(tly)),k):-1:max(0,k-sum(last,rest;init=0))
+    if !start push!(list,list[end][1:n]) end
+    start=false
+    for j in 1:i push!(list[end],e) end
+    if k>i combinations(list,rest,k-i) end
+  end
 end
 
 """
 `combinations(mset[,k])`
 
-'combinations'  returns  all  combinations  of  the  multiset `mset` (a not
-necessarily  sorted list with  possible repetitions). If  a second argument
-`k` is given, it returns the combinations with `k` elements.
+`ncombinations(mset[,k])`
 
-A  *combination*  is  an  unordered  selection  without  repetitions and is
-represented  by a sorted sublist of `mset`.  If `mset` is a proper set, the
-set of all combinations is just the *powerset* of `mset`.
+'combinations'  returns  all  combinations  of  the  multiset `mset` (a not
+necessarily  sorted  collection  with  possible  repetitions).  If a second
+argument  `k`  is  given,  it  returns  the combinations with `k` elements.
+`ncombinations` returns the number of combinations.
+
+A  *combination* is an unordered subsequence and is represented by a sorted
+`Vector`  (the  elements  of  `mset`  must  be  sortable). If `mset` has no
+repetitions, the list of all combinations is just the *powerset* of `mset`.
 
 ```julia-repl
+julia> ncombinations([1,2,2,3])
+12
+
 julia> combinations([1,2,2,3])
-12-element Array{Array{Int64,1},1}:
+12-element Vector{Vector{Int64}}:
  []
  [1]
  [2]
@@ -139,37 +188,82 @@ julia> combinations([1,2,2,3])
 """
 function combinations(mset,k)
   if k>length(mset) return Vector{eltype(mset)}[] end
-  if iszero(k) return [empty(mset)] end
-  unique_sorted!(combinations_sorted(sort(mset),k))
+  list=[empty(mset)]
+  if k>0 combinations(list,tally(mset),k) end
+  list
 end
-combinations(mset)=isempty(mset) ? [Int[]] :
-  vcat(combinations.(Ref(mset),0:length(mset))...)
 
+function combinations(mset)
+  list=Vector{eltype(mset)}[]
+  tly=tally(mset)
+  for k in 0:length(mset)
+    push!(list,empty(mset))
+    if k>0 combinations(list,tly,k) end
+  end
+  list
+end
+
+@doc (@doc combinations) ncombinations
+ncombinations(mset)=prod(1 .+last.(tally(mset)))
+
+ncombinations(mset,k)=ncombinations(last.(tally(mset)),1,k)
+
+function ncombinations(mul,m,k)
+  if k==0 return 1 end
+  if m>length(mul) return 0 end
+  sum(i->ncombinations(mul,m+1,k-i),0:min(mul[m],k))
+end
 
 """
 `arrangements(mset[,k])`
 
-`arrangements`  returns  the  arrangements  of  the  multiset `mset` (a not
-necessarily  sorted list with  possible repetitions). If  a second argument
-`k` is given, it returns arrangements with `k` elements.
+`narrangements(mset[,k])`
 
-An  *arrangement* of  `mset` is  a selection  without repetitions  and thus
-lists a subset `mset`, but in arbitrary order.
+`arrangements`  returns  the  arrangements  of  the  multiset `mset` (a not
+necessarily  sorted  collection  with  possible  repetitions).  If a second
+argument   `k`  is  given,  it  returns  arrangements  with  `k`  elements.
+`narrangements` returns the number of arrangements.
+
+An  *arrangement*  of  `mset`  is  a  subsequence taken in arbitrary order,
+representated as a `Vector`.
 
 As  an example of arrangements  of a multiset, think  of the game Scrabble.
 Suppose  you have the six  characters of the word  'settle' and you have to
 make a four letter word. Then the possibilities are given by
 
 ```julia-repl
-julia> length(arrangements(collect("settle"),4))
+julia> narrangements(collect("settle"),4)
 102
+```
+while all possible words (including the empty one) are:
 
-julia> length(arrangements(collect("settle")))
+```julia-repl
+julia> narrangements(collect("settle"))
 523
 ```
-The  result  returned  by  'arrangements'  is  sorted,  which means in this
-example  that the possibilities are listed in the same order as they appear
-in the dictionary.
+The  result returned  by 'arrangements'  is sorted  (the elements of `mset`
+must  be sortable), which means in  this example that the possibilities are
+listed  in the same  order as they  appear in the  dictionary. Here are the
+two-letter words:
+
+```julia-repl
+julia> String.(arrangements(collect("settle"),2))
+14-element Vector{String}:
+ "ee"
+ "el"
+ "es"
+ "et"
+ "le"
+ "ls"
+ "lt"
+ "se"
+ "sl"
+ "st"
+ "te"
+ "tl"
+ "ts"
+ "tt"
+```
 """
 function arrangements(mset,k)
   blist=trues(length(mset))
@@ -191,6 +285,7 @@ end
 
 arrangements(mset)=vcat(arrangements.(Ref(mset),0:length(mset))...)
 
+@doc (@doc arrangements) narrangements
 function narrangements(mset,k)
   blist=trues(length(mset))
   function arr(mset,k)
@@ -220,17 +315,26 @@ narrangements(mset)=sum(narrangements.(Ref(mset),0:length(mset)))
 end
 
 """
-`partitions(n)`
+`partitions(n[,k])`
 
-`partitions` returns the set of all partitions of the positive integer `n`.
+`npartitions(n[,k])`
+
+`partitions` returns the set of all partitions of the positive integer `n`
+(the partitions with `k` parts if `k` is given).
+`npartitions` is the number of partitions.
+
+There are approximately `exp(π√(2n/3))/(4√3 n)` partitions of `n`.
 
 A  *partition*  is  a  decomposition  `n=p₁+p₂+…+pₖ`  in integers such that
-`p₁≥p₂≥…≥pₖ>0`,  and is represented by  the vector `p=[p₁,p₂,…,pₖ]`. We write
-`p⊢n`. 
+`p₁≥p₂≥…≥pₖ>0`, and is represented by the vector `p=[p₁,p₂,…,pₖ]`. We write
+`p⊢n`.
 
 ```julia-repl
+julia> npartitions(7)
+15
+
 julia> partitions(7)
-15-element Array{Array{Int64,1},1}:
+15-element Vector{Vector{Int64}}:
  [1, 1, 1, 1, 1, 1, 1]
  [2, 1, 1, 1, 1, 1]
  [2, 2, 1, 1, 1]
@@ -246,6 +350,16 @@ julia> partitions(7)
  [5, 2]
  [6, 1]
  [7]
+
+julia> npartitions(7,3)
+4
+
+julia> partitions(7,3)
+4-element Vector{Vector{Int64}}:
+ [3, 2, 2]
+ [3, 3, 1]
+ [4, 2, 1]
+ [5, 1, 1]
 ```
 """
 function partitions(n)
@@ -265,26 +379,10 @@ function partitions_less(n,m,k)
   end
   res
 end
-"""
-`partitions(n,k)`
 
-The set of all partitions of the positive integer `n` with `k` parts.
-
-```julia-repl
-julia> partitions(7,3)
-4-element Array{Array{Int64,1},1}:
- [3, 2, 2]
- [3, 3, 1]
- [4, 2, 1]
- [5, 1, 1]
-```
-"""
 partitions(n,k)=partitions_less(n,n,k)
 
-"""
-`npartitions(n)` The number of partitions of `n`.
-There are approximately `exp(π√(2n/3))/(4√3 n)` such partitions.
-"""
+@doc (@doc partitions) npartitions
 function npartitions(n)
   s=one(n)
   p=fill(s,n+1)
@@ -303,7 +401,6 @@ function npartitions(n)
   s
 end
 
-" npartitions(n,k) number of partitions of n with k parts"
 function npartitions(n,k)
   if n==k return 1
   elseif n<k || k==0 return 0
@@ -315,24 +412,76 @@ function npartitions(n,k)
   p[n-k+1]
 end
 
-function partition_tuples_inner(v,n,r,l)
-  k=length(v[end])
+"""
+`conjugate_partition(λ)`
+
+returns  the  conjugate  partition  of  the  partition  `λ`,  that  is, the
+partition having the transposed of the Young diagram of `λ`.
+
+```julia-repl
+julia> conjugate_partition([4,2,1])
+4-element Vector{Int64}:
+ 3
+ 2
+ 1
+ 1
+
+julia> conjugate_partition([6])
+6-element Vector{Int64}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+```
+"""
+function conjugate_partition(p)
+  if isempty(p) return p end
+  res=zeros(eltype(p),maximum(p))
+  for i in p, j in 1:i res[j]+=1 end
+  res
+end
+
+"""
+`dominates(λ,μ)`
+
+The  dominance  order  on  partitions  is  an  important  partial  order in
+representation theory. `λ` dominates `μ` if and only if for all `i` we have
+`sum(λ[1:i])≥sum(μ[1:i])`.
+
+```julia-repl
+julia> dominates([5,4],[4,4,1])
+true
+```
+"""
+function dominates(λ,μ)
+  sλ=sμ=0
+  for (l,m) in zip(λ,μ)
+    if (sλ+=l)<(sμ+=m) return false end
+  end
+  true
+end
+
+# add to list partitions_tuples(n,r) using l[i] list of partitions of i
+function partition_tuples(list,n,r,l)
+  k=length(list[end])
   start=true
-  for i in (r==1 ? (n:n) : (0:n)), p in l[i+1]
-    if !start push!(v,v[end][1:k]) end
+  for i in (r==1 ? n : 0):n, p in l[i+1]
+    if !start push!(list,list[end][1:k]) end
     start=false
-    push!(v[end],p)
-    if r>1 partition_tuples_inner(v,n-i,r-1,l) end
+    push!(list[end],p)
+    if r>1 partition_tuples(list,n-i,r-1,l) end
   end
 end
 
-# the `r`-tuples of  partitions that together partition `n`.
+# decent implementation
 function partition_tuples2(n,r)
   l=partitions.(0:n)
-  v=[Vector{Int}[]]
+  list=[Vector{Int}[]]
   if iszero(r) if n>0 error("non-sensical 0-tuples of sum $n") end
-  else partition_tuples_inner(v,n,r,l) end
-  v
+  else partition_tuples(list,n,r,l) end
+  list
 end
 
 # bad implementation but which is ordered as GAP3; needed for
@@ -340,11 +489,17 @@ end
 """
 `partition_tuples(n,r)`
 
-the `r`-tuples of  partitions that together partition `n`.
+`npartition_tuples(n,r)`
+
+the `r`-tuples of partitions that together partition `n`.
+`npartition_tuples` is the number of partition tuples.
 
 ```julia-repl
+julia> npartition_tuples(3,2)
+10
+
 julia> partition_tuples(3,2)
-10-element Array{Array{Array{Int64,1},1},1}:
+10-element Vector{Vector{Vector{Int64}}}:
  [[1, 1, 1], []]
  [[1, 1], [1]]
  [[1], [1, 1]]
@@ -397,7 +552,7 @@ function partition_tuples(n, r)
    res
 end
 
-"`npartition_tuples(n,k)` number of `r`-tuples of  partitions of `n`."
+@doc (@doc partition_tuples) npartition_tuples
 function npartition_tuples(n,k)
   res=0
   for l in 1:min(n,k)
@@ -408,47 +563,18 @@ function npartition_tuples(n,k)
 end
 
 """
-`conjugate_partition(λ)`
-
-returns  the  conjugate  partition  of  the  partition  `λ`,  that  is, the
-partition having the transposed of the Young diagram of `λ`.
-
-```julia-repl
-julia> conjugate_partition([4,2,1])
-4-element Array{Int64,1}:
- 3
- 2
- 1
- 1
-
-julia> conjugate_partition([6])
-6-element Array{Int64,1}:
- 1
- 1
- 1
- 1
- 1
- 1
-```
-"""
-function conjugate_partition(p)
-  if isempty(p) return p end
-  res=zeros(eltype(p),maximum(p))
-  for i in p, j in 1:i res[j]+=1 end
-  res
-end
-
-"""
 `compositions(n[,k];start=1)`
 
 This  function returns the compositions of  `n` (the compositions of length
 `k`  if a second argument `k` is given), where a composition of the integer
 `n` is a decomposition `n=p₁+…+pₖ` in integers `≥start`, represented as the
-vector `[p₁,…,pₖ]`. Unless `k` is given, `start` must be `>0`.
+vector  `[p₁,…,pₖ]`. Unless `k`  is given, `start`  must be `>0`. There are
+``2^{n-1}``  compositions of `n` in  integers `≥1`, and `binomial(n-1,k-1)`
+compositions of `n` in `k` parts `≥1`.
 
 ```julia-repl
 julia> compositions(4)
-8-element Array{Array{Int64,1},1}:
+8-element Vector{Vector{Int64}}:
  [1, 1, 1, 1]
  [2, 1, 1]
  [1, 2, 1]
@@ -459,13 +585,13 @@ julia> compositions(4)
  [4]
 
 julia> compositions(4,2)
-3-element Array{Array{Int64,1},1}:
+3-element Vector{Vector{Int64}}:
  [3, 1]
  [2, 2]
  [1, 3]
 
 julia> compositions(4,2;start=0)
-5-element Array{Array{Int64,1},1}:
+5-element Vector{Vector{Int64}}:
  [4, 0]
  [3, 1]
  [2, 2]
@@ -487,16 +613,17 @@ end
 """
 `submultisets(set,k)`
 
-`submultisets`  returns the set of all  multisets of length `k` of elements
-of the set `set`.
+`submultisets`  returns  the  set  of  all  multisets of length `k` made of
+elements of the set `set`.
 
-An  *multiset* of length `k` is a  selection with repetitions of length `k`
-from `set` and is represented by a vector of length `k` containing elements
-from `set`. There are `binomial(|set|+k-1,k)` such sub-multisets.
+An  *multiset* of length `k` is  an unordered selection with repetitions of
+length  `k` from `set` and is represented  by a sorted vector of length `k`
+made  of  elements  from  `set`.  There  are  `binomial(|set|+k-1,k)`  such
+sub-multisets.
 
 ```julia-repl
-julia> Combinat.submultisets(1:4,3)
-20-element Array{Array{Int64,1},1}:
+julia> submultisets(1:4,3)
+20-element Vector{Vector{Int64}}:
  [1, 1, 1]
  [1, 1, 2]
  [1, 1, 3]
@@ -526,21 +653,41 @@ function submultisets(A,i)
 end
 
 """
-`partitions_set(set)`
+`partitions_set(set[,k])`
 
-the set of all unordered partitions of the set `set`.
+`npartitions_set(set[,k])`
+
+the  set of all unordered  partitions of the set  `set` (a `Vector` without
+repetitions);  if  `k`  is  given  the  unordered  partitions  in `k` sets.
+`npartitions_set` returns the number od unordered partitions.
 
 An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
-sets with union `set`  and is represented by  a sorted list of such sets.
+sets with union `set`  and is represented by  a sorted Vector of Vectors.
 
 ```julia-repl
+julia> npartitions_set(1:3)
+5
+
 julia> partitions_set(1:3)
-5-element Array{Array{Array{Int64,1},1},1}:
+5-element Vector{Vector{Vector{Int64}}}:
  [[1], [2], [3]]
  [[1], [2, 3]]
  [[1, 2], [3]]
  [[1, 2, 3]]
  [[1, 3], [2]]
+
+julia> npartitions_set(1:4,2)
+7
+
+julia> partitions_set(1:4,2)
+7-element Vector{Vector{Vector{Int64}}}:
+ [[1], [2, 3, 4]]
+ [[1, 2], [3, 4]]
+ [[1, 2, 3], [4]]
+ [[1, 2, 4], [3]]
+ [[1, 3], [2, 4]]
+ [[1, 3, 4], [2]]
+ [[1, 4], [2, 3]]
 ```
 
 Note  that `partitions_set` does not currently support multisets and that
@@ -554,7 +701,7 @@ function partitions_set(set)
 `pp(part)`
 all  partitions  of  `set`  that  begin  with `part[1:end-1]` and where the
 `length(part)`-th set begins with `part[end]`.
- 
+
 To find that first we consider the set `part[end]` to be complete and add a
 new  set to `part`, which must start with the smallest element of `set` not
 yet  taken,  because  we  require  the  returned  partitions  to  be sorted
@@ -592,23 +739,6 @@ call  `pp`  recursively  for  each  candidate.  If  `o`  is the position of
   pp([[set[1]]])
 end
 
-"""
-`partitions_set(set,k)`
-the set of  all unordered partitions of the  set `set` into  `k` pairwise
-disjoint nonempty sets.
-
-```julia-repl
-julia> partitions_set(1:4,2)
-7-element Array{Array{Array{Int64,1},1},1}:
- [[1], [2, 3, 4]]
- [[1, 2], [3, 4]]
- [[1, 2, 3], [4]]
- [[1, 2, 4], [3]]
- [[1, 3], [2, 4]]
- [[1, 3, 4], [2]]
- [[1, 4], [2, 3]]
-```
-"""
 function partitions_set(set,k)
   if unique(set)!=set error("partitions_set: ",set," must be a set") end
   if isempty(set)
@@ -667,16 +797,21 @@ every   element  of   `set`  not   yet  taken.   `o`  is  the  position  of
   pp(k,[[set[1]]])
 end
 
+@doc (@doc partitions_set) npartitions_set
+npartitions_set(set,k)=stirling2(length(set),k)
+
+npartitions_set(set)=bell(length(set))
+
 """
 'bell(n)'
 
 The  Bell numbers are  defined by `bell(0)=1`  and ``bell(n+1)=∑_{k=0}^n {n
 \\choose  k}bell(k)``, or by the fact  that `bell(n)/n!` is the coefficient
 of `x^n` in the formal series `e^(e^x-1)`.
-    
+
 ```julia-repl
 julia> bell.(0:6)
-7-element Array{Int64,1}:
+7-element Vector{Int64}:
    1
    1
    2
@@ -699,29 +834,17 @@ function bell(n)
 end
 
 """
-`npartitions_set(set)`
-
-the number of  unordered partitions of the set `set`.
-
-```julia-repl
-julia> npartitions_set(1:6)
-203
-```
-"""
-npartitions_set(set)=bell(length(set))
-
-"""
 `stirling2(n,k)`
 
 the   *Stirling  number   of  the   second  kind*.   They  are  defined  by
 `stirling2(0,0)=1`,  `stirling2(n,0)=stirling2(0,k)=0`  if  `n,  k!=0`  and
 `stirling2(n,k)=k   stirling2(n-1,k)+stirling2(n-1,k-1)`,   and   also   as
-coefficients of the generating function 
-``x^n=\\sum_{k=0}^{n}stirling2(n,k) k!{x\\choose k}``.
+coefficients of the generating function ``x^n=\\sum_{k=0}^{n}stirling2(n,k)
+k!{x\\choose k}``.
 
 ```julia-repl
 julia> stirling2.(4,0:4)
-5-element Array{Int64,1}:  # Knuth calls this the trademark of stirling2
+5-element Vector{Int64}:  # Knuth calls this the trademark of stirling2
  0
  1
  7
@@ -729,7 +852,7 @@ julia> stirling2.(4,0:4)
  1
 
 julia> [stirling2(i,j) for i in 0:6, j in 0:6]
-7×7 Array{Int64,2}:
+7×7 Matrix{Int64}:
  1  0   0   0   0   0  0 # Note the similarity with Pascal's triangle
  0  1   0   0   0   0  0
  0  1   1   0   0   0  0
@@ -756,16 +879,4 @@ function stirling2( n, k )
   end
   div(sti,fib)
 end
-
-"""
-`npartitions_set(set,k)`
-the  number  of  unordered  partitions  of  the set `set` into `k` pairwise
-disjoint  nonempty sets.
-
-```julia-repl
-julia> npartitions_set(1:10,3)
-9330
-```
-"""
-npartitions_set(set,k)=stirling2(length(set),k)
 end

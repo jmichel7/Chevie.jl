@@ -15,7 +15,7 @@ julia> q=SPerm(1,2)
 (1,2)
 
 julia> sort(elements(Group([p,q])))
-8-element Array{SPerm{Int16},1}:
+8-element Vector{SPerm{Int16}}:
  (1,-2)
  (1,-2,-1,2)
  (1,-1)(2,-2)
@@ -257,7 +257,7 @@ julia> p=SPerm([-2,-1,-3])
 SPerm{Int64}: (1,-2)(3,-3)
 
 julia> [20,30,40]^p
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  -30
  -20
  -40
@@ -291,7 +291,7 @@ julia> p=SPerm([20,30,40],[-40,-20,-30])
 (1,-2,3,-1,2,-3)
 
 julia> [20,30,40]^p
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  -40
  -20
  -30
@@ -315,7 +315,7 @@ SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Idef}(l,l1)
 # Examples
 ```julia-repl
 julia> Matrix(SPerm([-2,-1,-3]))
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
   0  -1   0
  -1   0   0
   0   0  -1
@@ -369,7 +369,7 @@ group  of type  B, with  generators (1,-1)  and (i,i+1)(-i,-i-1); it is the
 group of all signed permutations of `1:n`.
 ```julia-repl
 julia> elements(CoxHyperoctaedral(2))
-8-element Array{SPerm{Int8},1}:
+8-element Vector{SPerm{Int8}}:
  ()          
  (1,2)       
  (1,-1)      

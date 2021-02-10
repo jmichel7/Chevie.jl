@@ -34,7 +34,7 @@ julia> W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])
 A₂Φ₁
 
 julia> reflrep(W,W(1))
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  0  1  0
  1  0  0
  0  0  1
@@ -89,7 +89,7 @@ julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_centre(L)
-Dict{Symbol,Any} with 3 entries:
+Dict{Symbol, Any} with 3 entries:
   :descAZ => [[1, 2]]
   :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
   :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[[1, 2, 1]])
@@ -98,7 +98,7 @@ julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
 julia> e=sort(elements(T))
-3-element Array{SemisimpleElement{Root1},1}:
+3-element Vector{SemisimpleElement{Root1}}:
  <1,1,1>
  <ζ₃,ζ₃²,ζ₃>
  <ζ₃²,ζ₃,ζ₃²>
@@ -119,7 +119,7 @@ julia> e[3]^G(2)
 SemisimpleElement{Root1}: <ζ₃²,1,ζ₃²>
 
 julia> orbit(G,e[3])
-6-element Array{SemisimpleElement{Root1},1}:
+6-element Vector{SemisimpleElement{Root1}}:
  <ζ₃²,ζ₃,ζ₃²>
  <ζ₃²,1,ζ₃²>
  <ζ₃,1,ζ₃²>
@@ -142,7 +142,7 @@ julia> s^G(2)
 SemisimpleElement{FFE{2}}: <Z₄,1₂,Z₄>
 
 julia> orbit(G,s)
-6-element Array{SemisimpleElement{FFE{2}},1}:
+6-element Vector{SemisimpleElement{FFE{2}}}:
  <Z₄,Z₄²,Z₄>
  <Z₄,1₂,Z₄>
  <Z₄²,1₂,Z₄>
@@ -189,16 +189,17 @@ function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
 end
 
 function Base.:*(a::ExtendedCox,b::ExtendedCox)
-# if isempty(gens(a.group)) return b
-# elseif isempty(gens(b.group)) return a
-# end
   id(r)=one(fill(0,r,r))
-  ExtendedCox(a.group*b.group,vcat(
+  ExtendedCox(a.group*b.group,improve_type(vcat(
                    map(m->cat(m,id(rank(b.group)),dims=(1,2)),a.F0s),
-                   map(m->cat(id(rank(a.group)),m,dims=(1,2)),b.F0s)))
+                   map(m->cat(id(rank(a.group)),m,dims=(1,2)),b.F0s))))
 end
 
 function Base.show(io::IO,W::ExtendedCox)
+  if !get(io,:limit,false)
+     print(io,"ExtendedCox(",W.group,",",W.F0s,",",W.phis,")")
+     return
+  end
   if isempty(W.phis) print(io,"Extended(",W.group,")")
   elseif length(W.phis)==1 print(io,spets(W.group,W.phis[1]))
   elseif all(x->isone(x^2),W.phis) && length(Group(W.phis))==6
@@ -341,7 +342,7 @@ julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
 ERROR: not a pure sublattice
 Stacktrace:
  [1] error(::String) at ./error.jl:33
- [2] Gapjm.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Array{Int64,2}) at /home/jmichel/julia/Gapjm.jl/src/Weyl.jl:1082
+ [2] Gapjm.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Matrix{Int64}) at /home/jmichel/julia/Gapjm.jl/src/Weyl.jl:1082
  [3] top-level scope at REPL[25]:1
 ```
 """
@@ -393,7 +394,7 @@ julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_centre(L)
-Dict{Symbol,Any} with 3 entries:
+Dict{Symbol, Any} with 3 entries:
   :descAZ => [[1, 2]]
   :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])
   :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[[1, 2, 1]])
@@ -402,7 +403,7 @@ julia> T=torsion_subgroup(C[:Z0],3)
 SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
 julia> sort(elements(T))
-3-element Array{SemisimpleElement{Root1},1}:
+3-element Vector{SemisimpleElement{Root1}}:
  <1,1,1>
  <ζ₃,ζ₃²,ζ₃>
  <ζ₃²,ζ₃,ζ₃²>
@@ -701,7 +702,7 @@ exist in characteristic `p`.
 
 ```julia-repl
 julia> W=coxgroup(:E,6);l=Semisimple.QuasiIsolatedRepresentatives(W)
-5-element Array{SemisimpleElement{Root1},1}:
+5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,ζ₃,1,1>
  <1,-1,1,1,1,1>
@@ -709,7 +710,7 @@ julia> W=coxgroup(:E,6);l=Semisimple.QuasiIsolatedRepresentatives(W)
  <ζ₃,1,1,1,1,ζ₃>
 
 julia> map(s->is_isolated(W,s),l)
-5-element Array{Bool,1}:
+5-element Vector{Bool}:
  1
  1
  1
@@ -717,7 +718,7 @@ julia> map(s->is_isolated(W,s),l)
  0
 
 julia> W=rootdatum(:E6sc);l=Semisimple.QuasiIsolatedRepresentatives(W)
-7-element Array{SemisimpleElement{Root1},1}:
+7-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <-1,1,1,-1,1,-1>
  <ζ₃,1,ζ₃²,1,ζ₃,ζ₃²>
@@ -727,7 +728,7 @@ julia> W=rootdatum(:E6sc);l=Semisimple.QuasiIsolatedRepresentatives(W)
  <ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²>
 
 julia> map(s->is_isolated(W,s),l)
-7-element Array{Bool,1}:
+7-element Vector{Bool}:
  1
  1
  1
@@ -737,7 +738,7 @@ julia> map(s->is_isolated(W,s),l)
  1
 
 julia> Semisimple.QuasiIsolatedRepresentatives(W,3)
-2-element Array{SemisimpleElement{Root1},1}:
+2-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <-1,1,1,-1,1,-1>
 ```
@@ -811,7 +812,7 @@ runs over all the maximal tori of `SL`₄.
 
 ```julia-repl
 julia> l=twistings(rootdatum(:sl,4),Int[])
-5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₁³
  A₃₍₎=Φ₁²Φ₂
  A₃₍₎=Φ₁Φ₂²
@@ -819,7 +820,7 @@ julia> l=twistings(rootdatum(:sl,4),Int[])
  A₃₍₎=Φ₂Φ₄
 
 julia> StructureRationalPointsConnectedCentre.(l,3)
-5-element Array{Array{Int64,1},1}:
+5-element Vector{Vector{Int64}}:
  [2, 2, 2]
  [2, 8]
  [4, 8]
@@ -856,7 +857,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> SScentralizer_representatives(W)
-6-element Array{Array{Int64,1},1}:
+6-element Vector{Vector{Int64}}:
  []
  [1]
  [2]
@@ -865,7 +866,7 @@ julia> SScentralizer_representatives(W)
  [2, 6]
 
 julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
-6-element Array{FiniteCoxeterSubGroup{Perm{Int16},Int64},1}:
+6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:
  G₂₍₎=Φ₁²
  G₂₍₁₎=A₁Φ₁
  G₂₍₂₎=Ã₁Φ₁
@@ -874,7 +875,7 @@ julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
  G₂₍₂₆₎=Ã₁×A₁
 
 julia> SScentralizer_representatives(W,2)
-5-element Array{Array{Int64,1},1}:
+5-element Vector{Vector{Int64}}:
  []
  [1]
  [2]

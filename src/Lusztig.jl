@@ -231,7 +231,7 @@ julia> W=coxgroup(:B,3)
 B₃
 
 julia> t=twistings(W,[1,3])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₃₍₁₃₎=Ã₁×A₁Φ₁
  B₃₍₁₃₎=Ã₁×A₁Φ₂
 

@@ -59,17 +59,17 @@ exist, otherwise it returns [p].
 julia> @Mvp x,y
 
 julia> factor(x^2-y^2+x+3y-2)
-2-element Array{Mvp{Int64,Int64},1}:
+2-element Vector{Mvp{Int64, Int64}}:
  x-y+2
  x+y-1
 
 julia> factor(x^2+x+1)
-2-element Array{Mvp{Cyc{Int64},Int64},1}:
+2-element Vector{Mvp{Cyc{Int64}, Int64}}:
  x-ζ₃
  x-ζ₃²
 
 julia> factor(x*y-1)
-1-element Array{Mvp{Int64,Int64},1}:
+1-element Vector{Mvp{Int64, Int64}}:
  xy-1
 ```
 """
@@ -145,18 +145,18 @@ julia> W=CoxSym(5)
 𝔖 ₅
 
 julia> pblocks(W,2)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [1, 3, 4, 5, 7]
  [2, 6]
 
 julia> pblocks(W,3)
-3-element Array{Array{Int64,1},1}:
+3-element Vector{Vector{Int64}}:
  [1, 5, 6]
  [2, 3, 7]
  [4]
 
 julia> pblocks(W,7)
-7-element Array{Array{Int64,1},1}:
+7-element Vector{Vector{Int64}}:
  [1]
  [2]
  [3]

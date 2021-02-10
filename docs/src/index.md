@@ -75,6 +75,7 @@ Pols
 divrem
 gcd
 cyclotomic_polynomial
+Pols.derivative
 ```
 # Multivariate (Puiseux) polynomials
 ```@docs
@@ -114,16 +115,13 @@ primitiveroot
 ```@docs
 arrangements
 combinations
-compositions
-conjugate_partition
-dominates
 partitions
-npartitions
 partition_tuples
-npartition_tuples
+compositions
 submultisets
 partitions_set
-npartitions_set
+conjugate_partition
+dominates
 bell
 stirling2
 ```
@@ -455,6 +453,7 @@ BruhatPoset                                 Poset
 BruhatSmaller                               bruhatless
 CartanMat("A",5)                            cartan(:A,5)
 CartanMatFromCoxeterMatrix                  cartan
+Cartesian                                   cartesian
 Catalan                                     catalan
 CentralizerGenerators                       centralizer_generators
 CharFFE(x)                                  field(x).p
@@ -611,9 +610,11 @@ MatYPerm                                    matY
 MovedPoints                                 support
 Mvp("x")                                    Mvp(:x)
 NrArrangements                              narrangements
+NrCombinations                              ncombinations
 NrDrinfeldDouble                            ndrinfeld_double
 NrPartitionTuples                           npartition_tuples
 NrPartitions                                npartitions
+NrPartitionsSet                             npartitions_set
 OnFamily(f,p::Int)                          galois(f,p)
 OnFamily(f,p::Perm)                         f^p
 OnMatrices(m,p)                             ^(m,p;dims=(1,2))
@@ -622,11 +623,13 @@ OnSets(s,g)                                 unique!(sort(s.^g))
 OnTuples(l,p)                               l.^p
 OrderFFE                                    order
 OrderMod(n,m)                               order(Mod{m}(n))
+OrderedPartitions                           compositions
 ParabolicRepresentatives                    parabolic_representatives
 PartBeta                                    partβ
 Partition                                   partition
 PartitionTuples                             partition_tuples
 Partitions                                  partitions
+PartitionsSet                               partitions_set
 PermList(v)                                 Perm(v)
 PermListList(l1,l2)                         Perm(l1,l2)
 PermMatMat                                  Perm_onmats
@@ -678,6 +681,7 @@ RootsCartan(m)                              roots(m)
 Rotation(v,i)                               circshift(v,-i)
 Rotations(v)                                circshift.(Ref(v),length(v):-1:1)
 ScalMvp                                     scal
+ScalarProduct                               scalarproduct
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor
 SemisimpleCentralizerRepresentatives        SScentralizer_representatives

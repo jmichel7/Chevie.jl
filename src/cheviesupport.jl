@@ -1,10 +1,10 @@
 # extensions to get closer to GAP semantics
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
-Base.:*(a::AbstractVector,b::AbstractVector)=toL(toM(a)*toM(b))
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector)=toL(permutedims(a)*toM(b))[1]
+Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(permutedims(a)*toM(b))[1]
 Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
-Base.:*(a::AbstractVector{Pol},b::AbstractVector{Pol})=sum(a.*b)
+Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
 Base.:*(W1::Spets,W2::FiniteCoxeterGroup)=Cosets.extprod(W1,spets(W2))
 Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b

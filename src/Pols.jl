@@ -38,7 +38,7 @@ julia> p[0], p[1], p[-1] # indexing gives the coefficients
 (1, 2, 0)
 
 julia> p[-1:1]
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  0
  1
  2

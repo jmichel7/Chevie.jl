@@ -111,7 +111,7 @@ F₄
 julia> r=classinfo(W)[:classtext];
 
 julia> R=representation(W,17)
-4-element Array{Array{Int64,2},1}:
+4-element Vector{Matrix{Int64}}:
  [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
  [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]
  [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]

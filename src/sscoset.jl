@@ -36,7 +36,7 @@ of transpose, inverse and the longest element of `W`.
 
 ```julia-repl
 julia> l=QuasiIsolatedRepresentatives(WF)
-4-element Array{SemisimpleElement{Root1},1}:
+4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <ζ₄,1,1,1,1,ζ₄³>
  <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
@@ -52,7 +52,7 @@ chosen `σ`-stable.
 
 ```julia-repl
 julia> centralizer.(Ref(WF),l)
-4-element Array{ExtendedCox{FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}},1}:
+4-element Vector{ExtendedCox{FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:
  Extended(C₃₍₃₂₁₎)
  B₂Φ₁
  (A₁A₁)₍₁₃₎×A₁₍₂₎
@@ -69,7 +69,7 @@ the definition for connected groups.
 
 ```julia-repl
 julia> is_isolated.(Ref(WF),l)
-4-element BitArray{1}:
+4-element BitVector:
  1
  0
  1
@@ -221,7 +221,7 @@ julia> WF=rootdatum(Symbol("2E6sc"))
 ²E₆
 
 julia> QuasiIsolatedRepresentatives(WF)
-5-element Array{SemisimpleElement{Root1},1}:
+5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,-1,1,1>
  <1,-1,ζ₄,1,ζ₄,1>
@@ -229,12 +229,12 @@ julia> QuasiIsolatedRepresentatives(WF)
  <1,ζ₄³,1,-1,1,1>
 
 julia> QuasiIsolatedRepresentatives(WF,2)
-2-element Array{SemisimpleElement{Root1},1}:
+2-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,ζ₃²,1,ζ₃,1,1>
 
 julia> QuasiIsolatedRepresentatives(WF,3)
-4-element Array{SemisimpleElement{Root1},1}:
+4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,-1,1,1>
  <1,-1,ζ₄,1,ζ₄,1>
@@ -261,14 +261,14 @@ julia> WF=rootdatum(:u,6)
 ²A₅Φ₂
 
 julia> l=QuasiIsolatedRepresentatives(WF)
-4-element Array{SemisimpleElement{Root1},1}:
+4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <ζ₄,1,1,1,1,ζ₄³>
  <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
  <ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³>
 
 julia> is_isolated.(Ref(WF),l)
-4-element BitArray{1}:
+4-element BitVector:
  1
  0
  1

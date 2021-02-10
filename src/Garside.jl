@@ -3,7 +3,7 @@ Garside  monoids are a general class  of monoids whose most famous examples
 are  the braid  and dual  braid monoids.  The implementation  of these last
 monoids is in the framework of a general implementation of Garside monoids.
 
-To   define  them  we  first  need   to  introduce  some  vocabulary  about
+To  define Garside monoids we first need to introduce some vocabulary about
 divisibility  in monoids. A *left divisor* of  `x` is a `d` such that there
 exists  `y` with `x=dy` (and then we say  that `x` is a *right multiple* of
 `d`).  We say that a monoid `M`  is left cancellable if an equality `dx=dy`
@@ -118,7 +118,7 @@ julia> w^3
 121321432.343
 
 julia> word(W,α(w^3))
-9-element Array{Int64,1}:
+9-element Vector{Int64}:
  1
  2
  1
@@ -255,16 +255,16 @@ julia> b^d
 14.143
 
 julia> centralizer_generators(b)
-3-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- 4
- 21.1         
+3-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  321432.213243
+ 21.1
+ 4
 
 julia> C=conjcat(b;ss=:ss)
 category with 10 objects and 32 generating maps
 
 julia> C.obj
-10-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+10-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  214.14
  124.24
@@ -289,7 +289,7 @@ Continuing from the above example,
 
 ```julia-repl
 julia> word(W,preferred_prefix(b))
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  1
 
@@ -303,7 +303,7 @@ julia> C=conjcat(b)
 category with 2 objects and 6 generating maps
 
 julia> C.obj
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  1343.1
 ```
@@ -334,7 +334,7 @@ module Garside
 using ..Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_generators, preferred_prefix, left_divisors, Category,
-endomorphisms, image, leftgcd, rightgcd, rightlcm, conjugating_elt
+endomorphisms, image, leftgcd, rightgcd, rightlcm, conjugating_elt, GarsideElm
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
@@ -367,7 +367,7 @@ end
 `elts`  should be simples of the monoid  `M`. The function return the right
 gcd `d` of the `elts`, followed by a tuple of the complements `elts[1]*d^-1,…`
 """
-function rightgcd(M::LocallyGarsideMonoid,elts...)
+function rightgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N})where {T,N}
   x=one(M)
   found=true
   while found
@@ -413,7 +413,7 @@ end
 `elts`  should be simples of the monoid  `M`. The function return the right
 lcm `m` of the `elts`, followed by a tuple of the complements `elts[1]^-1*m,…`
 """
-function rightlcm(M::GarsideMonoid,elts...)
+function rightlcm(M::GarsideMonoid{T},elts::Vararg{T,N})where {T,N}
   x,c=rightgcd(M,rightcomplδ.(Ref(M),elts)...)
   *(M,elts[1],c[1]),c
 end
@@ -447,7 +447,7 @@ julia> B=BraidMonoid(coxgroup(:A,3))
 BraidMonoid(A₃)
 
 julia> word(B,B.δ)
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
  1
  2
  1
@@ -483,7 +483,7 @@ julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1},1}:
+4-element Vector{Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]   
  [1, 3]
  [13]  
@@ -493,7 +493,7 @@ julia> B=DualBraidMonoid(W)
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Array{Array{Gapjm.Garside.GarsideElm{Perm{Int16},DualBraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1},1}:
+4-element Vector{Vector{GarsideElm{Perm{Int16}, DualBraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]                     
  [1, 2, 3, 4, 5, 6]      
  [12, 13, 15, 25, 34, 45]
@@ -546,19 +546,19 @@ julia> M=BraidMonoid(coxgroup(:A,2))
 BraidMonoid(A₂)
 
 julia> elements(M,4)
-12-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+12-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+ 12.21
+ 21.12
  1.1.1.1
  2.2.2.2
- 21.12
  1.1.12
- 2.21.1
- 12.21
- 2.2.21
  1.12.2
  12.2.2
+ 2.2.21
+ 21.1.1
+ 2.21.1
  Δ.1
  Δ.2
- 21.1.1
 ```
 """
 function PermGroups.elements(M::LocallyGarsideMonoid,l)
@@ -838,7 +838,7 @@ julia> b=BraidMonoid(W)(2,1,2,1,1)
 121.1.1
 
 julia> word(W,α(b))
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  2
  1
@@ -869,7 +869,7 @@ julia> b=B(2,1,2,1,1)*inv(B(2,2))
 (21)⁻¹1.12.21
 
 julia> word(b)
-7-element Array{Int64,1}:
+7-element Vector{Int64}:
  -1
  -2
   1
@@ -1083,7 +1083,7 @@ julia> p=image(b)
 Perm{UInt8}: (1,3)
 
 julia> word(W,p)
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  2
  1
@@ -1347,12 +1347,12 @@ julia> conjcat(w)
 category with 2 objects and 4 generating maps
 
 julia> conjcat(w).obj
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  21324
 
 julia> conjcat(w;ss=:ss).obj
-4-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+4-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  13243
  21432
@@ -1462,18 +1462,18 @@ julia> w=B(4,4,4)
 4.4.4
 
 julia> cc=centralizer_generators(w)
-8-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- (2)⁻¹34.432
- 4
- (32431)⁻¹132431
- 2
+8-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1
  (31432)⁻¹231432
  (1)⁻¹34.431
+ (2)⁻¹34.432
+ (32431)⁻¹132431
+ 4
  34.43
+ 2
 
 julia> shrink(cc)
-5-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
+5-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  4            
  2            
  1            
@@ -1481,15 +1481,15 @@ julia> shrink(cc)
  (3243)⁻¹13243
 
 julia> centralizer_generators(w;ss=:cyc)
-Set{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
+Set{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
   4
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)));
 
 julia> centralizer_generators(w,F)
-2-element Array{Gapjm.Garside.GarsideElm{Perm{Int16},BraidMonoid{Perm{Int16},FiniteCoxeterGroup{Perm{Int16},Int64}}},1}:
- 312343123
+2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  124      
+ 312343123
 ```
 """
 function centralizer_generators(b,F=(x,y=1)->x;ss::Symbol=:sc)
@@ -1625,14 +1625,14 @@ julia> B=BraidMonoid(CoxSym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
-4-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:
+4-element Vector{GarsideElm{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  1.1.1              
  2.2.2              
  (1.12)⁻¹2.2.2.21.12
  1.1.12             
 
 julia> shrink(b)
-2-element Array{Gapjm.Garside.GarsideElm{Perm{UInt8},BraidMonoid{Perm{UInt8},CoxSym{UInt8}}},1}:
+2-element Vector{GarsideElm{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  2  
  1  
 ```

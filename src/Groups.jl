@@ -9,7 +9,7 @@ concrete implementations:
   
 Further,  a group  is the  kind of  object where  attributes/properties are
 computed on demand when asked for; such attributes when computed are stored
-in the field `.prop` of `G`, which should be of type `Dict{Symbol,Any}()`.
+in the field `.prop` of `G`, which should be of type `Dict{Symbol, Any}()`.
 
 # Examples
 ```julia-repl
@@ -17,7 +17,7 @@ julia> G=Group([Perm(1,2),Perm(1,2,3)])
 Group([(1,2),(1,2,3)])
 
 julia> gens(G)
-2-element Array{Perm{Int16},1}:
+2-element Vector{Perm{Int16}}:
  (1,2)  
  (1,2,3)
 
@@ -25,17 +25,17 @@ julia> ngens(G)
 2
 
 julia> minimal_words(G)
-Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
-  ()      => Int64[]
+Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
+  ()      => []
+  (1,2)   => [1]
   (1,3)   => [1, 2]
   (1,2,3) => [2]
-  (1,2)   => [1]
   (2,3)   => [2, 1]
   (1,3,2) => [1, 2, 1]
 
 julia> G.prop
-Dict{Symbol,Any} with 1 entry:
-  :words => Dict(()=>[],(1,3)=>[1, 2],(1,2,3)=>[2],(1,2)=>[1],(2,3)=>[2, 1],(1,…
+Dict{Symbol, Any} with 1 entry:
+  :words => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2, 1]…
 ```
 """
 module Groups
@@ -75,8 +75,9 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]/gens(G)[2]
 (1,3)
 ```
 """
-(W::Group)(w::Integer...)=isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i]))
-                                            for i in w)
+function (W::Group)(w::Vararg{Integer,N}where N)
+  isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i])) for i in w)
+end
 
 comm(a,b)=inv(a)*inv(b)*a*b
 
@@ -94,13 +95,13 @@ example  if `g` is a permutation and `p`  an integer, `p^g` is the image of
 
 ```julia-repl
 julia> orbit([Perm(1,2),Perm(2,3)],1) 
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  2
  3
 
 julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
-6-element Array{Array{Int64,1},1}:
+6-element Vector{Vector{Int64}}:
  [1, 3]
  [2, 3]
  [1, 2]
@@ -109,7 +110,7 @@ julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
  [3, 1]
 
 julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g))
-3-element Array{Array{Int64,1},1}:
+3-element Vector{Vector{Int64}}:
  [1, 3]
  [2, 3]
  [1, 2]
@@ -139,7 +140,7 @@ where `g` is such that `x=action(p,g)`
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> transversal(G,1)
-Dict{Int64,Perm{Int16}} with 3 entries:
+Dict{Int64, Perm{Int16}} with 3 entries:
   2 => (1,2)
   3 => (1,3,2)
   1 => ()
@@ -148,13 +149,13 @@ orbit functions can take any action of `G` as keyword argument
 
 ```julia-repl
 julia> transversal(G,[1,2],action=(x,y)->x.^y)
-Dict{Array{Int64,1},Perm{Int16}} with 6 entries:
-  [1, 3] => (2,3)
-  [2, 1] => (1,2)
-  [1, 2] => ()
-  [3, 1] => (1,3,2)
-  [2, 3] => (1,2,3)
+Dict{Vector{Int64}, Perm{Int16}} with 6 entries:
   [3, 2] => (1,3)
+  [1, 2] => ()
+  [2, 1] => (1,2)
+  [1, 3] => (2,3)
+  [2, 3] => (1,2,3)
+  [3, 1] => (1,3,2)
 ```
 """
 function transversal(G::Group,pnt;action::F=^) where F<:Function
@@ -193,7 +194,7 @@ under `gens(G)` is returned.
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
 julia> orbits(G,1:4)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [1, 2, 3]
  [4]
 ```
@@ -256,11 +257,11 @@ end
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
 julia> minimal_words(G)
-Dict{Perm{Int16},Array{Int64,1}} with 6 entries:
-  ()      => Int64[]
+Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
+  ()      => []
+  (1,2)   => [1]
   (1,3)   => [1, 2]
   (1,2,3) => [2]
-  (1,2)   => [1]
   (2,3)   => [2, 1]
   (1,3,2) => [1, 2, 1]
 ```
@@ -470,13 +471,13 @@ identity element of the group must be given as a second argument.
 
 ```julia-repl
 julia> G=Group([[-1 -1;1 0]])
-Gapjm.Groups.Groupof{Array{Int64,2}}([[-1 -1; 1 0]], [1 0; 0 1], Dict{Symbol,Any}())
+Gapjm.Groups.Groupof{Matrix{Int64}}([[-1 -1; 1 0]], [1 0; 0 1], Dict{Symbol, Any}())
 
 julia> elements(G)
-3-element Array{Array{Int64,2},1}:
- [-1 -1; 1 0]
+3-element Vector{Matrix{Int64}}:
  [0 1; -1 -1]
  [1 0; 0 1]
+ [-1 -1; 1 0]
 ```
 """
 function Group(a::AbstractVector{T}) where T

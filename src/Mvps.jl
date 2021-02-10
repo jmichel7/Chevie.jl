@@ -350,7 +350,7 @@ julia> p=(x+y+inv(y))^4
 Mvp{Int64}: x⁴+4x³y+4x³y⁻¹+6x²y²+12x²+6x²y⁻²+4xy³+12xy+12xy⁻¹+4xy⁻³+y⁴+4y²+6+4y⁻²+y⁻⁴
 
 julia> coefficients(p,:x)
-Dict{Int64,Mvp{Int64,Int64}} with 5 entries:
+Dict{Int64, Mvp{Int64, Int64}} with 5 entries:
   0 => y⁴+4y²+6+4y⁻²+y⁻⁴
   4 => 1
   2 => 6y²+12+6y⁻²
@@ -358,14 +358,14 @@ Dict{Int64,Mvp{Int64,Int64}} with 5 entries:
   1 => 4y³+12y+12y⁻¹+4y⁻³
 
 julia> coefficients(p,:y)
-Dict{Int64,Mvp{Int64,Int64}} with 9 entries:
+Dict{Int64, Mvp{Int64, Int64}} with 9 entries:
   0  => x⁴+12x²+6
   4  => 1
-  -4 => 1
-  -3 => 4x
-  2  => 6x²+4
-  -2 => 6x²+4
   -1 => 4x³+12x
+  2  => 6x²+4
+  -3 => 4x
+  -2 => 6x²+4
+  -4 => 1
   3  => 4x
   1  => 4x³+12x
 ```
@@ -402,7 +402,7 @@ returns the list of variables of all `p` as a sorted list of `Symbol`s.
 julia> @Mvp x,y,z
 
 julia> variables(x+y+1,z)
-3-element Array{Symbol,1}:
+3-element Vector{Symbol}:
  :x
  :y
  :z
@@ -734,11 +734,11 @@ end
 julia> p=E(3)x+E(5)
 Mvp{Cyc{Int64}}: ζ₃x+ζ₅
 
-julia> q=convert(Mvp{Complex{Float64},Int},p)
-Mvp{Complex{Float64}}: (-0.4999999999999998 + 0.8660254037844387im)x+0.30901699437494745 + 0.9510565162951535im
+julia> q=convert(Mvp{ComplexF64,Int},p)
+Mvp{ComplexF64}: (-0.4999999999999998 + 0.8660254037844387im)x+0.30901699437494745 + 0.9510565162951535im
 
 julia> conj(q)
-Mvp{Complex{Float64}}: (-0.4999999999999998 - 0.8660254037844387im)x+0.30901699437494745 - 0.9510565162951535im
+Mvp{ComplexF64}: (-0.4999999999999998 - 0.8660254037844387im)x+0.30901699437494745 - 0.9510565162951535im
 ```
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

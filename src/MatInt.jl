@@ -666,7 +666,7 @@ Here is an example:
 
 ```julia-repl
 julia> DiaconisGraham([[3,0],[4,1]],[10,5])
-Dict{Symbol,Any} with 2 entries:
+Dict{Symbol, Any} with 2 entries:
   :normal   => [[1, 0], [0, 2]]
   :rowtrans => [[-13, 10], [4, -3]]
 ```

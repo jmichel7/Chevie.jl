@@ -58,7 +58,7 @@ dimension `2n+1`.
 of  `G(e,1,n)`. Those of  content `0` parameterize  unipotent characters of
 `G(e,e,n)`.  The principal series  (characters of the  reflection group) is
 parametrized  by symbols of shape  `[1,0,…,0]` for `G(e,1,n)` and `[0,…,0]`
-for `G(e,e,n)`. 
+for `G(e,e,n)`.
 """
 module Symbols
 using ..Gapjm
@@ -66,27 +66,7 @@ export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
 valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
 fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol,
-dominates, EnnolaSymbol
-
-"""
-`dominates(λ,μ)`
-
-The  dominance  order  on  partitions  is  an  important  partial  order in
-representation theory. `λ` dominates `μ` if and only if for all `i` we have
-`sum(λ[1:i])≥sum(μ[1:i])`.
-
-```julia-repl
-julia> dominates([5,4],[4,4,1])
-true
-```
-"""
-function dominates(λ,μ)
-  sλ=sμ=0
-  for (l,m) in zip(λ,μ)
-    if (sλ+=l)<(sμ+=m) return false end
-  end
-  true
-end
+EnnolaSymbol
 
 """
 `PartitionTupleToString(tuple)`
@@ -96,30 +76,30 @@ separated by a dot.
 
 ```julia-repl
 julia> d=partition_tuples(3,2)
-10-element Array{Array{Array{Int64,1},1},1}:
+10-element Vector{Vector{Vector{Int64}}}:
  [[1, 1, 1], []]
- [[1, 1], [1]]  
- [[1], [1, 1]]  
+ [[1, 1], [1]]
+ [[1], [1, 1]]
  [[], [1, 1, 1]]
- [[2, 1], []]   
- [[1], [2]]     
- [[2], [1]]     
- [[], [2, 1]]   
- [[3], []]      
- [[], [3]]      
+ [[2, 1], []]
+ [[1], [2]]
+ [[2], [1]]
+ [[], [2, 1]]
+ [[3], []]
+ [[], [3]]
 
 julia> PartitionTupleToString.(d)
-10-element Array{String,1}:
+10-element Vector{String}:
  "111."
  "11.1"
  "1.11"
  ".111"
- "21." 
- "1.2" 
- "2.1" 
- ".21" 
- "3."  
- ".3"  
+ "21."
+ "1.2"
+ "2.1"
+ ".21"
+ "3."
+ ".3"
 ```
 """
 function PartitionTupleToString(n,a=Dict())
@@ -135,14 +115,14 @@ end
 
 ```julia-repl
 julia> shiftβ([2,3],2)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
  0
  1
  4
  5
 
 julia> shiftβ([0,1,4,5],-2)
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  2
  3
 
@@ -157,10 +137,10 @@ end
 
 """
 `βset(p)` normalized β-set of a partition
-    
+
 ```julia-repl
 julia> βset([3,3,1])
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  4
  5
@@ -168,9 +148,9 @@ julia> βset([3,3,1])
 """
 function βset(p,s=0)
 # shorter code if we don't care about allocations:
-#  p=vcat(p,fill(0,s))  
+#  p=vcat(p,fill(0,s))
 #  reverse(p).+(0:length(p)-1)
-  if !iszero(s) 
+  if !iszero(s)
     q=fill(0,length(p)+s)
     @inbounds for i in eachindex(p) q[i]=p[i] end
   else q=p
@@ -186,7 +166,7 @@ end
 
 ```julia-repl
 julia> partβ([0,4,5])
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  3
  3
 ```
@@ -211,18 +191,18 @@ uses  the  unipotent  symbol  for  a  character  of the principal series of
 
 ```julia-repl
 julia> symbol_partition_tuple([[1,2],[1]],1)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [2, 2]
- [1]   
+ [1]
 
 julia> symbol_partition_tuple([[1,2],[1]],0)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [2, 2]
  [0, 2]
 
 julia> symbol_partition_tuple([[1,2],[1]],-1)
-2-element Array{Array{Int64,1},1}:
- [2, 2]   
+2-element Vector{Vector{Int64}}:
+ [2, 2]
  [0, 1, 3]
 ```
 """
@@ -285,7 +265,7 @@ end
 
 """
 `degree_gendeg_symbol(s)`
-    
+
 the  degree of the generic degree  of the unipotent character parameterized
 by the `e`-symbol `s`.
 
@@ -322,7 +302,7 @@ end
 
 """
 `degree_fegsymbol(s)`
-    
+
 the  degree  of  the  fake  degree  of  the  character parameterized by the
 `e`-symbol `s`.
 
@@ -346,7 +326,7 @@ function degree_fegsymbol(s)
   if d==1 res+=gamma(0)
   else res+=maximum(gamma.(0:e-1))
   end
-  res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2))) 
+  res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2)))
 end
 
 """
@@ -370,7 +350,7 @@ function valuation_fegsymbol(s)
   if d==1 res+=gamma(0)
   else res+=minimum(gamma.(0:e-1))
   end
-  res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2))) 
+  res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2)))
 end
 
 " stringsymbol(S) string for symbol S"
@@ -388,7 +368,7 @@ stringsymbol(S)=stringsymbol(stdout,S)
 
 """
   `lesssymbols(x,y)`  `<` for symbols
-  
+
   A symbol is smaller than another if the shape is lexicographically smaller,
   or the shape is the same and the the symbol is lexicographically bigger
 """
@@ -398,7 +378,7 @@ function lesssymbols(x,y)
 end
 
 # Malle-defect; invariant of shift but not cyclic perm
-function defshape(s) 
+function defshape(s)
   e=length(s)
   mod(binomial(e,2)*div(sum(s),e)-sum(i->(i-1)*s[i],1:e),e)
 end
@@ -406,15 +386,15 @@ end
 "All shapes for e-symbols of rank r, content c, malle-defect def"
 shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
   function f(lim2,sum,nb,max)local res,a
-    if nb==1   
+    if nb==1
       if sum==0   return [[sum]]
-      else return Vector{Int}[] end 
+      else return Vector{Int}[] end
     end
     res=Vector{Int}[]
     a=div(sum,nb-1)
-    while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum  
+    while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum
       append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
-      a+=1 
+      a+=1
     end
     return res
   end
@@ -429,7 +409,7 @@ shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
   end
   res=reduce(vcat,map(x->arrangements(x,e),res))
   # for symbols of content 1 only one cyclic shift of the shape has defshape=0
-  filter(s->defshape(s)==def  &&  
+  filter(s->defshape(s)==def  &&
     all(x->defshape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
 end
 
@@ -445,7 +425,7 @@ function symbolsshape(r,s)
   end
   if !iszero(defshape(s)) return S end
   res=[]
-  for s in S 
+  for s in S
     p=findfirst(i->s==circshift(s,1-i),2:length(s))
     if p===nothing push!(res,s)
     else append!(res,map(i->vcat(map(copy,s[1:p]),[div(length(s),p),i]),
@@ -464,29 +444,29 @@ The content of an `e`-symbol `S` is `sum(length,S)%e`.
 The symbols for unipotent  characters of:
   - `G(d,1,r)` are `symbols(d,r)`
   - `G(e,e,r)` are `symbols(e,r,0)`.
-  - `G(e,e,r).s₁ᵗ` where `s₁` is the first generator of `G(e,1,r)` and `t|e` 
+  - `G(e,e,r).s₁ᵗ` where `s₁` is the first generator of `G(e,1,r)` and `t|e`
     are `symbols(e,r,0,t)`
 
 ```julia-repl
 julia> stringsymbol.(symbols(3,2,1))
-14-element Array{String,1}:
- "(12,0,0)"   
- "(02,1,0)"   
- "(02,0,1)"   
+14-element Vector{String}:
+ "(12,0,0)"
+ "(02,1,0)"
+ "(02,0,1)"
  "(012,12,01)"
- "(01,1,1)"   
+ "(01,1,1)"
  "(012,01,12)"
- "(2,,)"      
- "(01,2,0)"   
- "(01,0,2)"   
+ "(2,,)"
+ "(01,2,0)"
+ "(01,0,2)"
  "(1,012,012)"
- "(,02,01)"   
- "(,01,02)"   
- "(0,,012)"   
- "(0,012,)"   
+ "(,02,01)"
+ "(,01,02)"
+ "(0,,012)"
+ "(0,012,)"
 
 julia> stringsymbol.(symbols(3,3,0))
-12-element Array{String,1}:
+12-element Vector{String}:
  "(1+)"
  "(1E(3))"
  "(1E(3,2))"
@@ -505,7 +485,7 @@ symbols(e,r,c=1,def=0)=vcat(map(s->symbolsshape(r,s),shapesSymbols(e,r,c,def))..
 
 # See Mal95, 2.11 and 5.7
 """
-`fegsymbol(S,p=0)` 
+`fegsymbol(S,p=0)`
 
 Let  `s=[S₁,…,Sₑ]` be an `e`-symbol  given as a `Vector{Vector{Int}}`. This
 function  returns as a `CycPol` the fake  degree of the character of symbol
@@ -551,7 +531,7 @@ function fegsymbol(s,p=0)
     res=div(res,count(==(s), rot))
     if e==2 && ep==-1 res=-res end
   end
-  if r==2 && (e>2 && ep==E(e)) 
+  if r==2 && (e>2 && ep==E(e))
     res=CycPols.ennola_twist(res,Root1(;r=1//2e))//E(2e,degree(res))
   end
   return res
@@ -585,7 +565,7 @@ function gendeg_symbol(S)
   if e==0 return one(CycPol) end
   m=div(sum(sh),e)
   d=sum(sh)% e
-  defect=(binomial(e,2)*m-sum(sh.*(0:e-1)))%e 
+  defect=(binomial(e,2)*m-sum(sh.*(0:e-1)))%e
   function theta(S)
     if iszero(sum(S)) return one(CycPol) end
     prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
@@ -603,28 +583,28 @@ function gendeg_symbol(S)
            map(l->Pol([E(e,i)],l),S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
      (prod(theta,S)*(E(4)^binomial(e-1,2)*ER(e)^e)^m
       *CycPol(1,sum(map(x->binomial(x,2),e.*(1:m-1).+d))))
-  
+
   # Dudas' sign change
   if r==1 m=findfirst(isempty,S)
     if !isnothing(m) res*=(-1)^m end
-  elseif r==2 && e==3 && S in 
+  elseif r==2 && e==3 && S in
     [[[1],[0,1,2],[0,1,2]],[Int[],[0,2],[0,1]],[Int[],[0,1],[0,2]]] res=-res
-  elseif r==3 && e==3 && d==0 && S in 
+  elseif r==3 && e==3 && d==0 && S in
     [[[0,1,2],Int[],Int[]],[[0,1,2],[0,1,2],Int[]]] res=-res
-  elseif r==4 && e==3 && d==0 && S in 
+  elseif r==4 && e==3 && d==0 && S in
     [[[0,1,3],Int[],Int[]],[[0,1,2,3],[1],[0]],[[0,1,2,3],[0],[1]],
     [[0,1,3],[0,1,2],Int[]],[[0,1,2],[0,1,3],Int[]],[[0,1,2,3],[0,1,2,3],[1]]]
     res=-res
-  elseif r==5 && e==3 && d==0 && S in 
+  elseif r==5 && e==3 && d==0 && S in
   [[[0,2,3],Int[],Int[]],[[0,1,2,4],[1],[0]],[[0,1,2,4],[0],[1]],
    [[0,1,2,3,4],[1,2],[0,1]],[[0,1,2,3],[1],[1]],[[0,1,2,3,4],[0,1],[1,2]],
    [[0,1,4],Int[],Int[]],[[0,1,2,3],[2],[0]],[[0,1,2,3],[0],[2]],
    [[0,2,3],[0,1,2],Int[]],[[0,1,3],[0,1,3],Int[]],[[0,1,2,4],[0,1,2,3],[1]],
    [[0,1,2],[0,2,3],Int[]],[[0,1,2,3],[0,1,2,4],[1]],[[0,1,2,3,4],[0,1,2,3,4],[1,2]],
-   [[0,1,4],[0,1,2],Int[]],[[0,1,2],[0,1,4],Int[]],[[0,1,2,3],[0,1,2,3],[2]]] 
+   [[0,1,4],[0,1,2],Int[]],[[0,1,2],[0,1,4],Int[]],[[0,1,2,3],[0,1,2,3],[2]]]
     res=-res
   end
-  
+
   if d==0 res*=findfirst(i->circshift(S,-i)==S,1:e) end
   if defect==0 || r!=2 || e<=2 return res
   else return E(e)^-1*ennola_twist(res,E(2*e)) # 2I(e)
@@ -675,7 +655,7 @@ single partition, the standard tableaux for that partition are returned.
 
 ```julia-repl
 julia> tableaux([[2,1],[1]])
-8-element Array{Array{Array{Array{Int64,1},1},1},1}:
+8-element Vector{Vector{Vector{Vector{Int64}}}}:
  [[[1, 2], [3]], [[4]]]
  [[[1, 2], [4]], [[3]]]
  [[[1, 3], [2]], [[4]]]
@@ -686,7 +666,7 @@ julia> tableaux([[2,1],[1]])
  [[[2, 4], [3]], [[1]]]
 
 julia> tableaux([2,2])
-2-element Array{Array{Array{Int64,1},1},1}:
+2-element Vector{Vector{Vector{Int64}}}:
  [[1, 2], [3, 4]]
  [[1, 3], [2, 4]]
 ```
@@ -716,9 +696,9 @@ function xsp(rho,s,n,d)
 end
 
 """
-`XSP(ρ,s,n,even=false)` 
+`XSP(ρ,s,n,even=false)`
 
-returns the union of the Lusztig-Spaltenstein 
+returns the union of the Lusztig-Spaltenstein
 ``X̃^{ρ-s,s}_{n,d}`` for all `d` even when `even=true`, all `d` odd otherwise.
 In "Character sheaves on disconnected groups II, 13.2" the notation is
 ``{}^ρ X^s_{n,d}``.

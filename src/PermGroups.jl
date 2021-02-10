@@ -14,7 +14,7 @@ Group([(1,2),(2,3)])
 
 # PermGroups are iterators over their elements
 julia> collect(G)  
-6-element Array{Perm{Int16},1}:
+6-element Vector{Perm{Int16}}:
  (1,2)
  (1,3,2)
  ()
@@ -37,21 +37,21 @@ false
 
 # a list of points that no element of G fixes
 julia> base(G) 
-2-element Array{Int16,1}:
+2-element Vector{Int16}:
  1
  2
 
 # the i-th element is the centralizer of base[1:i-1]
 julia> centralizers(G) 
-2-element Array{PermGroup{Int16},1}:
+2-element Vector{PermGroup{Int16}}:
  Group([(1,2),(2,3)])
  Group([(2,3)])
 
 # i-th element is transversal of centralizer[i] on base[i]
 julia> transversals(G)
-2-element Array{Dict{Int16,Perm{Int16}},1}:
- Dict(2 => (1,2),3 => (1,3,2),1 => ())
- Dict(2 => (),3 => (2,3))
+2-element Vector{Dict{Int16, Perm{Int16}}}:
+ Dict(2 => (1,2), 3 => (1,3,2), 1 => ())
+ Dict(2 => (), 3 => (2,3))
 ```
 
 finally, benchmarks on julia 1.1

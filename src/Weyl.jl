@@ -131,7 +131,7 @@ julia> W=coxgroup(:D,4)
 D₄
 
 julia> cartan(W)
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
   2   0  -1   0
   0   2  -1   0
  -1  -1   2  -1
@@ -146,7 +146,7 @@ julia> W=coxgroup(:A,2)*coxgroup(:B,2)
 A₂×B₂
 
 julia> cartan(W)
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
   2  -1   0   0
  -1   2   0   0
   0   0   2  -2
@@ -164,7 +164,7 @@ julia> p=W(1,3,2,1,3)
 (1,14,13,2)(3,17,8,18)(4,12)(5,20,6,15)(7,10,11,9)(16,24)(19,22,23,21)
 
 julia> word(W,p)
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
  1
  3
  1
@@ -205,7 +205,7 @@ same length.
 
 ```julia-repl
 julia> cartan([1 3;3 1])
-2×2 Array{Cyc{Int64},2}:
+2×2 Matrix{Cyc{Int64}}:
   2  -1
  -1   2
 ```
@@ -223,19 +223,19 @@ where all roots have the same length.
 
 ```julia-repl
 julia> cartan(:F,4)
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
   2  -1   0   0
  -1   2  -1   0
   0  -2   2  -1
   0   0  -1   2
 
 julia> cartan(:I,2,5)
-2×2 Array{Cyc{Int64},2}:
+2×2 Matrix{Cyc{Int64}}:
        2  ζ₅²+ζ₅³
  ζ₅²+ζ₅³        2
 
 julia> cartan(:Bsym,2)
-2×2 Array{Cyc{Int64},2}:
+2×2 Matrix{Cyc{Int64}}:
    2  -√2
  -√2    2
 ```
@@ -311,7 +311,7 @@ length. Otherwise the function returns `nothing`
 
 ```julia-repl
 julia> Weyl.two_tree(cartan(:A,4))
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
  1
  2
  3
@@ -461,13 +461,13 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> inversions(W,W(1,2,1))
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  2
  4
 
 julia> inversions(W,[1,2,1])
-3-element Array{Int16,1}:
+3-element Vector{Int16}:
  1
  4
  2
@@ -492,7 +492,7 @@ julia> W=coxgroup(:A,2)
 A₂
 
 julia> map(N->with_inversions(W,N),combinations(1:nref(W)))
-8-element Array{Union{Nothing, Perm{Int16}},1}:
+8-element Vector{Union{Nothing, Perm{Int16}}}:
  ()
  (1,4)(2,3)(5,6)
  (1,3)(2,5)(4,6)
@@ -577,10 +577,10 @@ julia> W=coxgroup(:E,8)
 E₈
 
 julia> badprimes(W)
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
+ 5
  2
  3
- 5
 ```
 """
 function badprimes(W::FiniteCoxeterGroup)
@@ -605,7 +605,7 @@ julia> w=longest(W)
 (1,5)(2,4)(3,6)
 
 julia> describe_involution(W,w)
-1-element Array{Int64,1}:
+1-element Vector{Int64}:
  3
 
 julia> w==longest(reflection_subgroup(W,[3]))
@@ -706,13 +706,13 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> cartan(W)
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
   2  -1   0
  -1   2  -1
   0  -1   2
 
 julia> W.rootdec
-12-element Array{Array{Int64,1},1}:
+12-element Vector{Vector{Int64}}:
  [1, 0, 0]
  [0, 1, 0]
  [0, 0, 1]
@@ -727,7 +727,7 @@ julia> W.rootdec
  [-1, -1, -1]
 
  julia> reflrep(W)
-3-element Array{Array{Int64,2},1}:
+3-element Vector{Matrix{Int64}}:
  [-1 0 0; 1 1 0; 0 0 1]
  [1 1 0; 0 -1 0; 0 1 1]
  [1 0 0; 0 1 1; 0 0 -1]
@@ -912,14 +912,14 @@ of `W`. The inverse (partial) map is `restriction`.
 
 ```julia-repl
 julia> inclusion(H)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
   2
   6
   8
  12
 
 julia> restriction(H)
-12-element Array{Int64,1}:
+12-element Vector{Int64}:
  0
  1
  0
@@ -941,7 +941,7 @@ for arbitrary reflection subgroups of `W`:
 
 ```julia-repl
 julia> word(W,H(2))
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
  1
  2
  1
@@ -956,14 +956,14 @@ the roots of the parent group.
 
 ```julia-repl
 julia> elH=word.(Ref(H),elements(H))
-4-element Array{Array{Int64,1},1}:
+4-element Vector{Vector{Int64}}:
  []
  [2]
  [1]
  [1, 2]
 
 julia> elW=word.(Ref(W),elements(H))
-4-element Array{Array{Int64,1},1}:
+4-element Vector{Vector{Int64}}:
  []
  [1, 2, 1, 2, 1]
  [2]

@@ -181,7 +181,7 @@ G5 1(3)==2(3)
 
 ```julia-repl
 julia> degrees(RF)
-2-element Array{Tuple{Int64,Cyc},1}:
+2-element Vector{Tuple{Int64, Cyc}}:
  (6, 1)
  (12, -1)
 ```
@@ -287,7 +287,7 @@ julia> spets(W,Perm(1,2))
 ERROR: matrix F must preserve the roots
 Stacktrace:
  [1] error(::String) at ./error.jl:33
- [2] spets(::Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}, ::Array{Int64,2}) at /home/jmichel/julia/Gapjm/src/Cosets.jl:241 (repeats 2 times)
+ [2] spets(::Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}, ::Matrix{Int64}) at /home/jmichel/julia/Gapjm/src/Cosets.jl:241 (repeats 2 times)
  [3] top-level scope at REPL[19]:1
 
 julia> W=coxgroup(:Bsym,2)
@@ -332,12 +332,12 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[1])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₁₎=Ã₁Φ₁
  B₂₍₁₎=Ã₁Φ₂
 
 julia> twistings(W,[2])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₂₎=A₁Φ₂
  B₂₍₂₎=A₁Φ₁
 ```
@@ -353,7 +353,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[2,4])
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₂₄₎=(A₁A₁)
  B₂₍₂₄₎=A₁×A₁
 ```
@@ -426,16 +426,17 @@ julia> WF=spets(W,Perm(1,6)*Perm(3,5))
 ²E₆
 
 julia> twistings(W,2:5)
-3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- E₆₍₂₃₄₅₎=²D₄Φ₁Φ₂
- E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₃
+3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+ E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
+ E₆₍₂₃₄₅₎=³D₄Φ₃
  E₆₍₂₃₄₅₎=D₄Φ₁²
 
+
 julia> twistings(WF,2:5)
-3-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
- E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆
- E₆₍₂₃₄₅₎=²D₄Φ₁Φ₂
+3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+ E₆₍₃₅₄₂₎=²D₄₍₂₄₃₁₎Φ₁Φ₂
  E₆₍₂₃₄₅₎=D₄Φ₂²
+ E₆₍₂₃₄₅₎=³D₄Φ₆
 ```
 """
 twistings(W,J::AbstractVector{<:Integer})=
@@ -490,18 +491,18 @@ of type `W`.
 
 ```julia-repl
 julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
-8-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+8-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  (A₃A₃)
  ²(A₃A₃)
- ²A₃×A₃
- ²A₃×²A₃
  ²(A₃A₃)₍₁₂₃₆₅₄₎
  (A₃A₃)₍₁₂₃₆₅₄₎
+ ²A₃×A₃
+ ²A₃×²A₃
  A₃×A₃
  A₃×²A₃
 
 julia> twistings(coxgroup(:D,4))
-6-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+6-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  ³D₄₍₁₄₃₂₎
  ²D₄₍₁₄₃₂₎
  ³D₄
@@ -513,7 +514,7 @@ julia> W=rootdatum(:so,8)
 D₄
 
 julia> twistings(W)
-2-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+2-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  ²D₄
  D₄
 
@@ -535,14 +536,15 @@ end
 
 twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------
-struct FCC{T,TW<:FiniteCoxeterGroup{Perm{T}}}<:CoxeterCoset{TW}
-  phi::Perm{T}
+struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{TW}
+  phi::T
   F::Matrix
   W::TW
   prop::Dict{Symbol,Any}
 end
 
-function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
+function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
+#function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
   print(io,"spets{",TW,"}")
 end
 
@@ -635,7 +637,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> twistings(W,Int[])
-5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₁³
  A₃₍₎=Φ₁²Φ₂
  A₃₍₎=Φ₁Φ₂²
@@ -649,7 +651,7 @@ julia> WF=spets(W,Perm(1,3))
 ²A₃
 
 julia> twistings(WF,Int[])
-5-element Array{Gapjm.Cosets.FCC{Int16,FiniteCoxeterSubGroup{Perm{Int16},Int64}},1}:
+5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₂³
  A₃₍₎=Φ₁Φ₂²
  A₃₍₎=Φ₁²Φ₂
@@ -837,6 +839,8 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
   RF
 end
 
+PermRoot.reflection_subgroup(WF::Spets,I::AbstractVector{<:Integer})=subspets(WF,I)
+
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 
 #-------------- spets ---------------------------------
@@ -845,6 +849,10 @@ mutable struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
   F::Matrix
   W::TW
   prop::Dict{Symbol,Any}
+end
+
+function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
+  print(io,"spets{",TW,"}")
 end
 
 function spets(W::PermRootGroup)
@@ -970,10 +978,6 @@ function relative_coset(WF::Spets,J=Int[],a...)
   end
   res
 end
-
-#function Base.show(io::IO,::MIME"text/plain",t::Type{PRC{T,T1,TW}})where {T,T1,TW}
-#  print(io,"Spets{",TW,"}")
-#end
 
 Groups.Coset(W::PermRootGroup,w::Perm=one(W))=spets(W,w)
 

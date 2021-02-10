@@ -110,6 +110,7 @@ ftrans=Dict{Symbol,Symbol}(
   :CoxeterWord=>:word,
   :Cycles=>:orbits,
   :CycPolFakeDegreeSymbol=>:fegsymbol,
+  :CycPolGenericDegreeSymbol=>:gendeg_symbol,
   :DefectSymbol=>:defectsymbol,
   :Degree=>:degree,
   :Denominator=>:denominator,

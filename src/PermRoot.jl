@@ -174,7 +174,7 @@ in  the standard  bases of  `V` and  `Vᵛ`, so  that `rᵛ(r)`  is obtained as
 
 ```
 julia> r=reflection([1,0,0],[2,-1,0])
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  -1  0  0
   1  1  0
   0  0  1
@@ -183,13 +183,13 @@ julia> r==reflrep(coxgroup(:A,3),1)
 true
 
 julia> r*[2,-1,0]
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  -2
   1
   0
 
 julia> [1 0 0]*r
-1×3 Array{Int64,2}:
+1×3 Matrix{Int64}:
  -1  0  0
 ```
 As  we see in the last lines, in our package the matrices operate an `V` as
@@ -433,7 +433,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> cartan(W)
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
   2  -1   0
  -1   2  -1
   0  -1   2
@@ -736,16 +736,16 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> hyperplane_orbits(W)
-2-element Array{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s),Tuple{Int64,Array{Int64,1},Int64,Int64,Array{Int64,1}}},1}:
+2-element Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}:
+ (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
- (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [3])
 ```
 """
 function hyperplane_orbits(W::PermRootGroup)
   sr=simple_representatives(W)
   rr=reflections(W)
   cr=classreps(W)
-  orb=collect(Set(sr))
+  orb=unique(sort(sr))
   class=map(orb)do s
     map(1:order(reflection(W,s))-1)do o
 #     return position_class(W,reflection(W,s)^o)
@@ -759,13 +759,14 @@ function hyperplane_orbits(W::PermRootGroup)
     end
   end
   chars=CharTable(W).irr
-  map(zip(orb,class)) do (s,c)
+  pairs=zip(orb,class)
+  map(pairs) do (s,c)
     ord=order(W(s))
-    Ns=classinfo(W)[:classes][c[1]]
     dets=map(1:ord-1) do j
-      findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j),axes(chars,1))
+      findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
+         all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
     end
-    (s=s,cl_s=c,order=ord,N_s=Ns,det_s=dets)
+    (s=s,cl_s=c,order=ord,N_s=classinfo(W)[:classes][c[1]],det_s=dets)
   end
 end
   
@@ -834,7 +835,7 @@ is also `CharTable(W).irr[charinfo(W)[:extRefl][2]]`.
 
 ```julia-repl
 julia> reflchar(coxgroup(:A,3))
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
   3
   1
  -1
@@ -853,7 +854,7 @@ returns   for  each  conjugacy   class  representative  `x`   of  `W`  (see
 
 ```julia-repl
 julia> refleigen(coxgroup(:B,2))
-5-element Array{Array{Root1,1},1}:
+5-element Vector{Vector{Root1}}:
  [1, 1]
  [1, -1]
  [-1, -1]
@@ -928,7 +929,7 @@ subgroup and a representative of the `i`-th conjugacy class.
 julia> W=ComplexReflectionGroup(4);Pol(:q);
 
 julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),q)
-7-element Array{Pol{Cyc{Int64}},1}:
+7-element Vector{Pol{Cyc{Int64}}}:
  q²-2q+1
  q²+2q+1
  q²+1
@@ -1165,7 +1166,7 @@ each   orbit  has   a  representative   whose  indices   is  a   subset  of
 
 ```julia-repl
 julia> parabolic_representatives(coxgroup(:A,4))
-7-element Array{Array{Int64,1},1}:
+7-element Vector{Vector{Int64}}:
  []
  [1]
  [1, 2]
@@ -1183,7 +1184,7 @@ If  a second  argument `r`  is given,  returns only  representatives of the
 parabolic subgroups of semisimple rank `r`.
 ```julia-repl
 julia> parabolic_representatives(coxgroup(:A,4),2)
-2-element Array{Array{Int64,1},1}:
+2-element Vector{Vector{Int64}}:
  [1, 2]
  [1, 3]
 ```
@@ -1277,7 +1278,7 @@ julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
 julia> reflrep(W,longest(W))
-7×7 Array{Int64,2}:
+7×7 Matrix{Int64}:
   0   0   0   0   0  -1  2
   0  -1   0   0   0   0  2
   0   0   0   0  -1   0  3
@@ -1335,11 +1336,11 @@ julia> W=ComplexReflectionGroup(7)
 G₇
 
 julia> parabolic_closure(W,[1])
-1-element Array{Int64,1}:
+1-element Vector{Int64}:
  1
 
 julia> parabolic_closure(W,[1,2])
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  1
  2
  3
@@ -1675,7 +1676,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> invariant_form(W)
-2×2 Array{Int64,2}:
+2×2 Matrix{Int64}:
  1  0
  0  2
 ```

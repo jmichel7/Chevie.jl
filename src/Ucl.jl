@@ -321,7 +321,7 @@ julia> H=reflection_subgroup(W,[1,3])
 F₄₍₁₃₎=A₁×Ã₁Φ₁²
 
 julia> Ucl.induced_linear_form(W,H,[2,2])
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
  0
  1
  0
@@ -330,7 +330,7 @@ julia> Ucl.induced_linear_form(W,H,[2,2])
 julia> uc=UnipotentClasses(W);
 
 julia> uc.classes[4].prop
-Dict{Symbol,Any} with 7 entries:
+Dict{Symbol, Any} with 7 entries:
   :dynkin     => [0, 1, 0, 0]
   :dimred     => 6
   :red        => A₁×A₁
@@ -573,7 +573,7 @@ A₃
 julia> uc=UnipotentClasses(W);
 
 julia> uc.classes
-5-element Array{Gapjm.Ucl.UnipotentClass,1}:
+5-element Vector{Gapjm.Ucl.UnipotentClass}:
  UnipotentClass(1111)
  UnipotentClass(211)
  UnipotentClass(22)
@@ -1329,13 +1329,13 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> special_pieces(UnipotentClasses(W))
-3-element Array{Array{Int64,1},1}:
+3-element Vector{Vector{Int64}}:
  [1]
  [4, 3, 2]
  [5]
 
 julia> special_pieces(UnipotentClasses(W,3))
-3-element Array{Array{Int64,1},1}:
+3-element Vector{Vector{Int64}}:
  [1]
  [4, 3, 2, 6]
  [5]
@@ -1360,6 +1360,7 @@ function special_pieces(uc)
   end
 end
 """
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %'UnipotentValues(<W>,<w>)'
 """

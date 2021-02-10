@@ -26,7 +26,7 @@ const G4_22IndexChars_dict=Dict{Int,Any}()
 
 for i in 4:22 G4_22IndexChars_dict[i]=Dict() end
 
-CHEVIE[:CheckIndexChars]=true
+CHEVIE[:CheckIndexChars]=false
 
 function G4_22FetchIndexChars(ST, para)
   if !CHEVIE[:CheckIndexChars]

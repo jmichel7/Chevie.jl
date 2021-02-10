@@ -35,6 +35,7 @@ end
  this was in lib/util.g but is used only here
 """
 function EvalPolRoot(pol::Pol,x,n,p)
+# println("pol=",pol,"\nx=",x,"\nn=",n,"\np=",p)
   if isempty(pol.c) return 0 end
   P=vcat(fill(0,mod(pol.v,n)),pol.c)
   P=map(i->Pol(P[i:n:length(P)],div(pol.v-mod(pol.v,n),n))(x*p^n),1:n)
@@ -64,12 +65,15 @@ end
 #   order: in which order to take the variables
 #   rootPower: by which E(root)^i multiply .root
 function VcycSchurElement(para,r,data=nothing)
+# println("para=",para,"\nr=",r,"\ndata=",data)
   n=length(para)
   if !isnothing(data) para=para[data[:order]] else para = copy(para) end
   monomial(mon)=prod(map(^,para,Int.(mon[1:n])))
   if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end
-  if haskey(r, :factor) res*=monomial(r[:factor]) end
+  if haskey(r, :factor) res*=monomial(r[:factor]) 
+     res=Pol([res],0)
+  end
   function term(v)
     mon,pol=v
     if haskey(r,:rootUnity)

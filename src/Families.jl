@@ -22,7 +22,7 @@ G₂
 julia> uc=UnipotentCharacters(W);
 
 julia> uc.families
-3-element Array{Family,1}:
+3-element Vector{Family}:
  Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
  Family(C₁:[1])                         
  Family(C₁:[2])                         
@@ -42,7 +42,7 @@ Drinfeld double of S3, Lusztig′s version
 (g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3
 
 julia> charnames(uc)[uc.families[1][:charNumbers]]
-8-element Array{String,1}:
+8-element Vector{String}:
  "phi2,1"  
  "phi2,2"  
  "phi1,3''"
@@ -820,19 +820,19 @@ end
 `FamiliesClassical(l)`
 
 The  list  `l`  should  be  a  list  of symbols as returned by the function
-`Symbols`,  which classify the unipotent characters of groups of type `:B`,
+`symbols`,  which classify the unipotent characters of groups of type `:B`,
 `:C`  or `:D`. `FamiliesClassical` returns  the list of families determined
 by these symbols.
 
 ```julia-repl
-julia> FamiliesClassical(HasType.BDSymbols(3,1))
-6-element Array{Family,1}:
- Family(01123:[1, 3, 8])
- Family(112:[2])
- Family(3:[9])
- Family(013:[5, 7, 10])
- Family(022:[6])
+julia> FamiliesClassical(symbols(2,3,1))
+6-element Vector{Family}:
  Family(0112233:[4])
+ Family(3:[9])
+ Family(013:[5, 7, 10, 12])
+ Family(112:[2])
+ Family(022:[6])
+ Family(01123:[1, 3, 8, 11])
 ```
 The  above example shows the families of unipotent characters for the group
 `B_3`.
@@ -963,7 +963,7 @@ julia> A=fusion_algebra(fourier(f),1)
 Fusion Algebra dim.5
 
 julia> b=basis(A)
-5-element Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},1}:
+5-element Vector{AlgebraElt{Int64, Gapjm.Families.FusionAlgebra}}:
  B₁
  B₂
  B₃
@@ -971,7 +971,7 @@ julia> b=basis(A)
  B₅
 
 julia> b*permutedims(b)
-5×5 Array{AlgebraElt{Int64,Gapjm.Families.FusionAlgebra},2}:
+5×5 Matrix{AlgebraElt{Int64, Gapjm.Families.FusionAlgebra}}:
  B₁  B₂      B₃      B₄        B₅
  B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
  B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂

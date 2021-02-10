@@ -226,7 +226,7 @@ chevieset(:D, :Invariants, function (n,)
                     end), ((CHEVIE[:imp])[:Invariants])(2, 2, n))
     end)
 chevieset(:D, :CycPolGenericDegree, (c->begin
-            CycPolGenericDegreeSymbol(symbol_partition_tuple(c, 0))
+            gendeg_symbol(symbol_partition_tuple(c, 0))
         end))
 chevieset(:D, :SchurElement, function (n, phi, q, sqrtparam)
         return (chevieget(:D, :PoincarePolynomial))(n, q) // Value((chevieget(:D, :CycPolGenericDegree))(phi), -((q[1])[1]) // (q[1])[2])

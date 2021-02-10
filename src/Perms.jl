@@ -42,7 +42,7 @@ julia> a=Perm(1,2,3)
 (1,2,3)
 
 julia> vec(a)
-3-element Array{Int16,1}:
+3-element Vector{Int16}:
  2
  3
  1
@@ -93,7 +93,7 @@ julia> Perm{Int8}(a) # convert a to Perm{Int8}
 Perm{Int8}: (1,2,3)
 
 julia> Matrix(b)  # permutation matrix of b
-4×4 Array{Bool,2}:
+4×4 Matrix{Bool}:
  0  1  0  0
  0  0  1  0
  0  0  0  1
@@ -264,7 +264,7 @@ should be larger than `largest_moved_point(a)`.
 
 ```julia-repl
 julia> Matrix(Perm(2,3,4),5)
-5×5 Array{Bool,2}:
+5×5 Matrix{Bool}:
  1  0  0  0  0
  0  0  1  0  0
  0  0  0  1  0
@@ -360,7 +360,7 @@ returns `l` permuted by `p`, a vector `r` such that `r[i^p]==l[i]`
 # Examples
 ```julia-repl
 julia> [5,4,6,1,7,5]^Perm(1,3,5,6,4)
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
  1
  4
  5
@@ -386,7 +386,7 @@ depending on the value of `dims`
 
 ```julia-repl
 julia> m=[3*i+j for i in 0:2,j in 1:3]
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  1  2  3
  4  5  6
  7  8  9
@@ -395,19 +395,19 @@ julia> p=Perm(1,2,3)
 (1,2,3)
 
 julia> m^p
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  7  8  9
  1  2  3
  4  5  6
 
 julia> ^(m,p;dims=2)
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  3  1  2
  6  4  5
  9  7  8
 
 julia> ^(m,p;dims=(1,2))
-3×3 Array{Int64,2}:
+3×3 Matrix{Int64}:
  9  7  8
  3  1  2
  6  4  5
@@ -445,7 +445,7 @@ returns the orbits of a on domain d
 # Example
 ```julia-repl
 julia> orbits(Perm(1,2)*Perm(4,5),1:5)
-3-element Array{Array{Int16,1},1}:
+3-element Vector{Vector{Int16}}:
  [1, 2]
  [3]
  [4, 5]
@@ -471,7 +471,7 @@ end
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
-2-element Array{Array{Int16,1},1}:
+2-element Vector{Vector{Int16}}:
  [1, 2]
  [4, 5]
 ```
@@ -510,7 +510,7 @@ sorted list of pairs `cyclesize=>multiplicity`.
 # Example
 ```julia-repl
 julia> cycletype(Perm(1,2)*Perm(3,4))
-1-element Array{Pair{Int64,Int64},1}:
+1-element Vector{Pair{Int64, Int64}}:
  2 => 2
 ```
 """

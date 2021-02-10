@@ -197,7 +197,7 @@ such that `c==∑ᵢ vᵢ₋₁ ζⁱ`.
 
 ```julia-repl
 julia> coefficients(E(9))
-9-element Array{Int64,1}:
+9-element Vector{Int64}:
   0
   0
   0

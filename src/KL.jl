@@ -122,7 +122,7 @@ julia> W=coxgroup(:H,3)
 H₃
 
 julia> c=LeftCells(W)
-22-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Cyc{Int64}}},1}:
+22-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Cyc{Int64}}}}:
  LeftCell<H₃: duflo= character=φ₁‚₀>
  LeftCell<H₃: duflo=123 character=φ₁‚₁₅>
  LeftCell<H₃: duflo=(15) character=φ₅‚₅>
@@ -246,7 +246,7 @@ julia> W=coxgroup(:B,3)
 B₃
 
 julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
-9-element Array{Array{Pol{Int64},1},1}:
+9-element Vector{Vector{Pol{Int64}}}:
  [1, 1, 1]
  [1, 1, 1, 1, 1]
  [1, 1, 1, 1, 1, 1, 1]
@@ -371,7 +371,7 @@ follows:
 
 ```julia-repl
 julia> ref=reflrep(H)
-3-element Array{Array{Pol,2},1}:
+3-element Vector{Matrix{Pol}}:
  [-1 0 0; -v² v² 0; 0 0 v²]
  [v² -2 0; 0 -1 0; 0 -v² v²]
  [v² 0 0; 0 v² -1; 0 0 -1]
@@ -379,11 +379,11 @@ julia> ref=reflrep(H)
 
 ```julia-rep1
 julia> c=CharTable(H).irr[charinfo(W)[:extRefl][[2]],:]
-1×10 Array{Pol{Int64},2}:
+1×10 Matrix{Pol{Int64}}:
  3  2v²-1  v⁸-2v⁴  -3v¹²  2v²-1  v⁴  v⁴-2v²  -v⁶  v⁴-v²  0
 
 julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
-1×10 Array{Pol{Int64},2}:
+1×10 Matrix{Pol{Int64}}:
  3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
 ``` 
 """
@@ -542,7 +542,7 @@ julia> c=LeftCells(coxgroup(:G,2))[3]
 LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
 
 julia> character(c)
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  3
  5
  6
@@ -669,7 +669,7 @@ julia> @Mvp q;H=hecke(W,q)
 hecke(H₃,q)
 
 julia> representation(c,H)
-3-element Array{Array{Mvp{Int64,Rational{Int64}},2},1}:
+3-element Vector{Matrix{Mvp{Int64, Rational{Int64}}}}:
  [-1 0 … 0 0; 0 -1 … 0 q½; … ; 0 0 … q 0; 0 0 … 0 q]
  [-1 q½ … 0 0; 0 q … 0 0; … ; 0 0 … -1 0; 0 q½ … 0 -1]
  [q 0 … 0 0; q½ -1 … 0 0; … ; 0 0 … q 0; 0 0 … 0 -1]
@@ -818,7 +818,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> LeftCells(W)
-4-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+4-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  LeftCell<G₂: duflo= character=φ₁‚₀>
  LeftCell<G₂: duflo=12 character=φ₁‚₆>
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
@@ -837,7 +837,7 @@ which  are in the `i`-th two-sided cell,  that is whose character is in the
 ```julia-repl
 julia> W=coxgroup(:G,2);
 julia> LeftCells(W,1)
-2-element Array{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}},1}:
+2-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
  LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
 ```
@@ -976,7 +976,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> l=Lusztigaw(W,W(1))
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
  0
  0
  1
@@ -1007,7 +1007,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> l=LusztigAw(W,W(1))
-6-element Array{Int64,1}:
+6-element Vector{Int64}:
  0
  0
  0
@@ -1061,7 +1061,7 @@ julia> A=AsymptoticAlgebra(W,1)
 Asymptotic Algebra dim.10
 
 julia> b=basis(A)
-10-element Array{AlgebraElt{Int64,AsymptoticAlgebra},1}:
+10-element Vector{AlgebraElt{Int64, AsymptoticAlgebra}}:
  t₂
  t₁₂
  t₂₁₂
@@ -1074,7 +1074,7 @@ julia> b=basis(A)
  t₁₂₁₂₁
 
 julia> b*permutedims(b)
-10×10 Array{AlgebraElt{Int64,AsymptoticAlgebra},2}:
+10×10 Matrix{AlgebraElt{Int64, AsymptoticAlgebra}}:
  t₂      0            t₂₁₂            …  0               t₂₁₂₁        0
  t₁₂     0            t₁₂+t₁₂₁₂          0               t₁₂₁+t₁₂₁₂₁  0
  t₂₁₂    0            t₂+t₂₁₂+t₂₁₂₁₂     0               t₂₁+t₂₁₂₁    0

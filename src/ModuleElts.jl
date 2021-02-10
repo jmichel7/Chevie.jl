@@ -52,17 +52,17 @@ julia> first(a)
 :xy => 1
 
 julia> collect(a)
-2-element Array{Pair{Symbol,Int64},1}:
+2-element Vector{Pair{Symbol, Int64}}:
  :xy => 1
  :yx => -1
 
 julia> keys(a)
-2-element Array{Symbol,1}:
+2-element Vector{Symbol}:
  :xy
  :yx
 
 julia> values(a)
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
   1
  -1
 
@@ -70,7 +70,7 @@ julia> length(a)
 2
 
 julia> eltype(a)
-Pair{Symbol,Int64}
+Pair{Symbol, Int64}
 ```
 
 both  implementations provide  an option  `check` in  the constructor which

@@ -307,7 +307,7 @@ julia> U=UnipotentGroup(W)
 UnipotentGroup(G₂)
 
 julia> U.specialPairs
-10-element Array{Array{Int64,1},1}:
+10-element Vector{Vector{Int64}}:
  [1, 2, 3]
  [2, 3, 4]
  [2, 4, 5]
@@ -320,7 +320,7 @@ julia> U.specialPairs
  [4, 3, 6]
 
 julia> U.N
-10-element Array{Int64,1}:
+10-element Vector{Int64}:
   1
   2
   3
@@ -333,7 +333,7 @@ julia> U.N
  -3
 
 julia> U.commutatorConstants
-10-element Array{Array{Array{Int64,1},1},1}:
+10-element Vector{Vector{Vector{Int64}}}:
  [[1, 1, 3, 1], [1, 2, 4, -1], [1, 3, 5, 1], [2, 3, 6, 2]]
  [[1, 1, 4, 2], [2, 1, 5, 3], [1, 2, 6, -3]]
  [[1, 1, 5, 3]]
@@ -418,7 +418,7 @@ julia> U=UnipotentGroup(coxgroup(:G,2))
 UnipotentGroup(G₂)
 
 julia> l=norm(U,[2=>4,1=>2])
-6-element Array{Pair{Int64,Int64},1}:
+6-element Vector{Pair{Int64, Int64}}:
  1 => 2
  2 => 4
  3 => -8
@@ -427,7 +427,7 @@ julia> l=norm(U,[2=>4,1=>2])
  6 => 512
 
 julia> norm(U,l,6:-1:1)
-2-element Array{Pair{Int64,Int64},1}:
+2-element Vector{Pair{Int64, Int64}}:
  2 => 4
  1 => 2
 ```
@@ -533,12 +533,12 @@ julia> u=U(2=>y,1=>x)
 u1(x)u2(y)u3(-xy)u4(xy²)u5(-xy³)u6(2x²y³)
 
 julia> decompose(W(1),u)
-2-element Array{UnipotentElement{Mvp{Int64,Int64}},1}:
+2-element Vector{UnipotentElement{Mvp{Int64, Int64}}}:
  u1(x)
  u2(y)u3(-xy)u4(xy²)u5(-xy³)u6(2x²y³)
 
 julia> decompose(W(2),u)
-2-element Array{UnipotentElement{Mvp{Int64,Int64}},1}:
+2-element Vector{UnipotentElement{Mvp{Int64, Int64}}}:
  u2(y)
  u1(x)
 ```
