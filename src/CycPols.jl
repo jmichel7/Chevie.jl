@@ -16,7 +16,7 @@ julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2)
 (q-2)Φ₁Φ₂Φ₂₃
 
 julia> p(q) # a CycPol is a callable object, this call evaluates p at q
-Pol{Cyc{Int64}}: q²⁵-q²⁴-2q²³-q²+q+2
+Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 
 julia> p*inv(CycPol(q^2+q+1))
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
@@ -66,13 +66,16 @@ module CycPols
 export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
 # to use as a stand-alone module uncomment the next line
 # export roots, degree, valuation
-import ..Gapjm: roots, degree, valuation
-using ..Gapjm
+import ..Gapjm: roots, degree, valuation, gap
 
 using ..ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
-#using ..Pols
-using ..Util: printTeX, prime_residues, primitiveroot, phi
+using ..Pols: Pol, Pols
+using ..Combinat: collectby
+using ..Mvps: Mvps, Mvp
+using ..Util: printTeX, prime_residues, primitiveroot, phi,
+              format_coefficient, divisors, factor
+using ..PermRoot: improve_type
 import Primes: Primes, primes
 
 # The  computed  cyclotomic  polynomials  are  cached 
@@ -90,7 +93,7 @@ julia> cyclotomic_polynomial(24)
 Pol{Int64}: q⁸-q⁴+1
 ```
 """
-function cyclotomic_polynomial(n::Integer)
+function cyclotomic_polynomial(n::Integer)::Pol{Int}
   get!(cyclotomic_polynomial_dict,n) do
     res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
@@ -222,16 +225,16 @@ pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
 
 CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
   
-function segment(v::ModuleElt{Root1,Int})
-  res=typeof(v.d)[]
-  n=empty(v.d)
+function segment(v::Vector{Pair{Root1,Int}})
+  res=typeof(v)[]
+  n=empty(v)
   c=0
-  for p in v.d
+  for p in v
     c1=conductor(p[1])
     if c!=c1 
       if !iszero(c) push!(res,n) end
       c=c1
-      n=empty(v.d)
+      n=empty(v)
     end
     push!(n,p)
   end
@@ -240,13 +243,13 @@ function segment(v::ModuleElt{Root1,Int})
 end
 
 # decompose the .v of a CycPol in subsets Φ^i (for printing)
-function decompose(v::ModuleElt{Root1,Int})
-  rr=Pair{NamedTuple{(:cond, :no),Tuple{Int,Int}},Int}[]
+function decompose(v::Vector{Pair{Root1,Int}})
+  rr=Pair{NamedTuple{(:conductor, :no),Tuple{Int,Int}},Int}[]
   for t in segment(v)
     c=conductor(t[1][1])
     t=[(exponent(e),p) for (e,p) in t]
     if c==1 
-      push!(rr,(cond=c,no=1)=>t[1][2])
+      push!(rr,(conductor=c,no=1)=>t[1][2])
       continue
     end
     res=[]
@@ -258,10 +261,10 @@ function decompose(v::ModuleElt{Root1,Int})
       elseif (n=maximum(v[r]))<0 v[r].-=n 
       else n=0 
       end
-      if n!=0 push!(res,(cond=c,no=i)=>n) end
+      if n!=0 push!(res,(conductor=c,no=i)=>n) end
     end
     for i in 1:c  
-      if v[i]!=0 push!(res,(cond=c,no=-i)=>v[i]) end 
+      if v[i]!=0 push!(res,(conductor=c,no=-i)=>v[i]) end 
     end
     append!(rr,res)
   end
@@ -281,17 +284,26 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  den=denominator(a.coeff)
-  s=sprint(show,improve_type(den*a.coeff); context=IOContext(io,:varname=>:q))
-  if !isone(den) den="/$den" else den="" end
-  nov=iszero(a.valuation) && isempty(a.v) && isempty(den)
-  if !nov s=format_coefficient(s) end
+  s=repr(a.coeff; context=IOContext(io,:varname=>:q))
+  if iszero(a.valuation) && isempty(a.v)
+    print(io,replace(s,r"/+1$"=>""));return
+  end
+  s=format_coefficient(s;allow_frac=true)
+  den=match(r"/+[0-9]*",s)
+  if den!==nothing
+    den=replace(den.match,r"//"=>"/")
+    if den=="/1" den="" end
+    s=replace(s,r"/[0-9]*"=>"")
+    if s=="-1" s="-" end
+    if s=="1" s="" end
+  else den=""
+  end
   print(io,s) 
   if a.valuation==1 print(io,"q")
   elseif a.valuation!=0 printTeX(io,"q^{$(a.valuation)}") end
-  for (e,pow) in decompose(a.v)
+  for (e,pow) in decompose(a.v.d)
 #   println(e)
-    if e.no>0  printTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.cond)}")
+    if e.no>0  printTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.conductor)}")
     else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
     end
     if pow!=1 printTeX(io,"^{$pow}") end
@@ -367,7 +379,7 @@ function CycPol(p::Pol{T};trace=false)where T
       if iszero(r) 
         append!(vcyc,[Root1(c,j)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
-        if trace print("(d°$(degree(p)) c$(conductor(p.c)))") end
+        if trace print("(d°$(degree(p))c$(conductor(p.c)))") end
         found=true
       else break
       end
@@ -386,7 +398,7 @@ function CycPol(p::Pol{T};trace=false)where T
       found=true
       p=divrem(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
       append!(vcyc,Root1.(i,to_test).=>1)
-      if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$to_test)") end
+      if trace print("[d°$(degree(p))c$(conductor(p.c))]") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
     end
 #   for r in to_test
@@ -441,11 +453,15 @@ CycPol(x::Mvp)=CycPol(Pol(x))
 function (p::CycPol)(x)
   res=x^p.valuation
   if !isempty(p.v)
-    for v in segment(p.v)
-      pp=prod((x-E(r))^m for (r,m) in v)
-#     pp=improve_type(pp)
-      res*=pp
-      if iszero(res) return res end
+    v=decompose(p.v.d)
+    for ((cond,no),mul) in filter(x->x[1].no==1,v)
+      res*=(cyclotomic_polynomial(cond)(x))^mul
+    end
+    for ((cond,no),mul) in filter(x->x[1].no>1,v)
+      res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul
+    end
+    for v in collectby(x->x[1].conductor,filter(x->x[1].no<0,v))
+      res*=prod((x-E(cond,-no))^mul for ((cond,no),mul) in v)
     end
   end
   if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
@@ -477,7 +493,7 @@ function descent_of_scalars(p::CycPol,n)
 end
     
 # export positive CycPols to GAP3
-function Gapjm.gap(p::CycPol)
+function gap(p::CycPol)
   if any(<(0),values(p.v)) error("non-positive") end
   res=string("[",gap(p.coeff),",",p.valuation,",")
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
@@ -497,7 +513,7 @@ const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
 37//42=>1, 41//42=>1)
 
-# a worse polynomial; p2(Pol()) 23ms (gap3 13ms) back to CycPol 1.8sec(gap3 1.8)
+# a worse polynomial; p2(Pol()) 28ms (gap3 13ms) back to CycPol 1.8sec(gap3 1.8)
 const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8=>1,
 2//9=>1,5//9=>1,8//9=>1,7//12=>1,11//12=>1,1//16=>1,3//16=>1,5//16=>1,
 9//16=>1,11//16=>1,13//16=>1,5//18=>2,11//18=>2,17//18=>2,2//21=>1,5//21=>1,
@@ -530,13 +546,16 @@ const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 julia> @btime u=CycPols.p(Pol()) # gap 2ms
   868.139 μs (14931 allocations: 1.03 MiB)
     1.827 ms (90128 allocations: 4.62 MiB)
+  763.055 μs (18850 allocations: 1.15 MiB)
 julia> @btime CycPol(u) # gap 12ms
   44.270 ms (500873 allocations: 56.74 MiB)
   31.011 ms (666125 allocations: 41.54 MiB)
   14.205 ms (371324 allocations: 23.16 MiB)
+  14.055 ms (237536 allocations: 17.07 MiB)
 julia> @btime u(1)  # gap 57μs
   107.098 μs (2559 allocations: 196.03 KiB)
    69.927 μs (2819 allocations: 149.95 KiB)
+   77.146 μs (1875 allocations: 126.95 KiB)
 =#
 
 end

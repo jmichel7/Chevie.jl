@@ -562,12 +562,10 @@ julia> elements(M,4)
 ```
 """
 function PermGroups.elements(M::LocallyGarsideMonoid,l)
-  if !haskey(M.prop,:elements)
-    M.prop[:elements]=Dict(0=>[M()],1=>M.(eachindex(M.atoms)))
-  end
+  if !haskey(M,:elements) M.elements=Dict(0=>[M()],1=>M.(eachindex(M.atoms))) end
   RA(w)=filter(i->isrightascent(M,w,i),eachindex(M.atoms))
-  if !haskey(M.prop[:elements],l)
-    res=empty(M.prop[:elements][1])
+  if !haskey(M.elements,l)
+    res=empty(M.elements[1])
     for b in elements(M,l-1)
       lb=length(b.elm)
       if iszero(lb) r=Int[]
@@ -587,9 +585,9 @@ function PermGroups.elements(M::LocallyGarsideMonoid,l)
         push!(res,norm(clone(b,vcat(b.elm,[M.atoms[i]]))))
       end
     end
-    M.prop[:elements][l]=collect(Set(res))
+    M.elements[l]=collect(Set(res))
   end
-  M.prop[:elements][l]
+  M.elements[l]
 end
 
 #--------------------Interval: a trait-----------------------------------
@@ -613,13 +611,12 @@ isrightdescent(::Interval,M,w,i)=isleftdescent(M.W,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=*(M,x,y)
 
 #-----------------------BraidMonoid-----------------------------------
-struct BraidMonoid{T,TW}<:GarsideMonoid{T}
+@GapObj struct BraidMonoid{T,TW}<:GarsideMonoid{T}
   δ::T
   orderδ::Int
   stringδ::String
   atoms::Vector{T}
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 IntervalStyle(M::BraidMonoid)=Interval()
@@ -640,10 +637,9 @@ end
 
 mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
 #-----------------------GenBraidMonoid-----------------------------------
-struct GenBraidMonoid{T,TW}<:LocallyGarsideMonoid{T}
+@GapObj struct GenBraidMonoid{T,TW}<:LocallyGarsideMonoid{T}
   atoms::Vector{T}
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 # The repetitions below reflect the poor type system of Julia
@@ -666,13 +662,12 @@ function rightgcd(M::GenBraidMonoid{T,TW},elts::T...)where {T,TW}
 end
 
 #-----------------------DualBraidMonoid-------------------------------
-struct DualBraidMonoid{T,TW}<:GarsideMonoid{T}
+@GapObj struct DualBraidMonoid{T,TW}<:GarsideMonoid{T}
   δ::T
   orderδ::Int
   stringδ::String
   atoms::Vector{T}
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 IntervalStyle(M::DualBraidMonoid)=Interval()
@@ -713,7 +708,7 @@ Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             word(M.W,M.δ),")")
 
 function atomsinbraidmonoid(M::DualBraidMonoid)
-  gets(M,:atomsinbraidmonoid)do
+  get!(M,:atomsinbraidmonoid)do
     W=M.W
     h=order(M.δ)
     δ=word(W,M.δ)
@@ -1504,14 +1499,13 @@ function centralizer_generators(b,F=(x,y=1)->x;ss::Symbol=:sc)
 end
 
 #----------------------------------------------------------------------------
-struct TwistedPowerMonoid{T,TM}<:GarsideMonoid{T}
+@GapObj struct TwistedPowerMonoid{T,TM}<:GarsideMonoid{T}
   δ::T
   orderδ::Int
   stringδ::String
   atoms::Vector{T}
   n::Int # twisting
   M::TM
-  prop::Dict{Symbol,Any}
 end
 
 struct TPMSimple{T,TM}

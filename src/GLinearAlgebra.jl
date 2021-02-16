@@ -10,7 +10,7 @@ any ring).
 module GLinearAlgebra
 using ..Pols: Pol # for isunit
 using ..Cycs: Cyc # for isunit
-using ..Combinat: combinations, submultisets, tally, groupby, partitions
+using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
@@ -384,7 +384,7 @@ function schur_functor(A,la)
 # Print(Length(M),"=>");
   M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
   M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
-  m=sort.(values(groupby(i->M[:,i],axes(M,2))))
+  m=sort.(collectby(i->M[:,i],axes(M,2)))
   m=sort(m)
   M=M[:,first.(m)]
   improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
@@ -432,7 +432,7 @@ function diagblocks(M::Matrix)::Vector{Vector{Int}}
       end
     end
   end
-  sort(collect(values(groupby(cc,collect(1:l)))))
+  sort(collectby(cc,collect(1:l)))
 end
 
 """

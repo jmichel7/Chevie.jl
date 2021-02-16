@@ -168,9 +168,9 @@ function LusztigInductionPieces(LF,WF)
       LFGL=relative_coset(LF,h[:levi])
       LFGL=subspets(WFGL,convert(Vector{Int},
                     map(x->findfirst(==(x),
-                        inclusion(W,WGL.prop[:relativeIndices])),
-                        inclusion(L,Group(LFGL).prop[:relativeIndices]))),
-                    WGL.prop[:MappingFromNormalizer](LF.phi*WF.phi^-1))
+                        inclusion(W,WGL.relativeIndices)),
+                        inclusion(L,Group(LFGL).relativeIndices))),
+                    WGL.MappingFromNormalizer(LF.phi*WF.phi^-1))
     else
       cL=reflection_subgroup(W,ser[:levi]) # cL^op is in LF
       Jb=vcat(map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) :
@@ -182,7 +182,7 @@ function LusztigInductionPieces(LF,WF)
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
        h[:relativeType])...)))
 #     xprintln("rh=",rh," op=",op)
-      w=WGL.prop[:MappingFromNormalizer]((LF.phi^op)*WF.phi^-1)
+      w=WGL.MappingFromNormalizer((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
       rh=map(rh)do x
         r=relative_root(W,cL,x)
@@ -199,10 +199,10 @@ function LusztigInductionPieces(LF,WF)
 #     ReflectionName(LFGL)
 #     ReflectionName(WFGL)
     end
-    lu=sprint(show,LF;context=:TeX=>true)
-    lg=sprint(show,WF;context=:TeX=>true)
-    lfgl=sprint(show,LFGL;context=:TeX=>true)
-    wfgl=sprint(show,WFGL;context=:TeX=>true)
+    lu=repr(LF;context=:TeX=>true)
+    lg=repr(WF;context=:TeX=>true)
+    lfgl=repr(LFGL;context=:TeX=>true)
+    wfgl=repr(WFGL;context=:TeX=>true)
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
                    uW.prop[:almostTeXCharNames][ser[:charNumbers]],
@@ -259,8 +259,8 @@ function LusztigInductionTable(LF,WF;check=true)
   uW=UnipotentCharacters(WF)
   uL=UnipotentCharacters(LF)
   if isnothing(uL)||isnothing(uW) return nothing end
-  lu=sprint(show,LF;context=:TeX=>true)
-  lg=sprint(show,WF;context=:TeX=>true)
+  lu=repr(LF;context=:TeX=>true)
+  lg=repr(WF;context=:TeX=>true)
   res=InductionTable(fill(0, length(uW),length(uL)),
     uW.prop[:TeXCharNames],uL.prop[:TeXCharNames],
     "Lusztig Induction from \$$lu\$ to \$$lg\$",
@@ -269,14 +269,14 @@ function LusztigInductionTable(LF,WF;check=true)
 #       x->[inclusion(Group(x[:u]))[1:ngens(Group(x[:u]))],
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
-  res.prop[:pieces]=LusztigInductionPieces(LF,WF)
-  if res.prop[:pieces]==false return nothing end
+  res.pieces=LusztigInductionPieces(LF,WF)
+  if res.pieces==false return nothing end
   fL=fourier(uL)
   hh=uL.almostHarishChandra
   fWinv=fourier(uW)'
-  maps=map(res.prop[:pieces])do piece
+  maps=map(res.pieces)do piece
     mapping=fill(zero(eltype(piece.scalar)),length(uW),length(uL))
-    mapping[piece.prop[:wnum],piece.prop[:hnum]]=piece.scalar
+    mapping[piece.wnum,piece.hnum]=piece.scalar
     fWinv*mapping*fL
   end
   ret=function(mapping)
@@ -302,7 +302,7 @@ function LusztigInductionTable(LF,WF;check=true)
   scalars = scalars[1]
   if any(x->x isa Mvp, scalars) error() end
   if any(!isone,scalars)
-    res.prop[:scalars]=scalars
+    res.scalars=scalars
     if all(isinteger, scalars) p="#I signs are "
     else InfoChevie("#I non-sign scalars needed:", scalars, "\n")
     end
@@ -321,8 +321,8 @@ function HCInductionTable(HF, WF)
   if !(HF isa Spets) HF=spets(HF) end
   uh=UnipotentCharacters(HF)
   H=Group(HF)
-  lu=sprint(show,HF;context=:TeX=>true)
-  lg=sprint(show,WF;context=:TeX=>true)
+  lu=repr(HF;context=:TeX=>true)
+  lg=repr(WF;context=:TeX=>true)
   res = InductionTable(fill(0, length(uw),length(uh)),
     uw.prop[:TeXCharNames],uh.prop[:TeXCharNames],
     "Harish-Chandra Induction from \$$lu\$ to \$$lg\$",
@@ -330,7 +330,7 @@ function HCInductionTable(HF, WF)
 # res = CHEVIE[:GetCached](uw, "HCInductionMaps", res, (x->begin
 #  Group(x[:u])[:rootInclusion][Group(x[:u])[:generatingReflections]] end))
 # if haskey(res, :scalar) return res end
-  res.prop[:pieces]=map(uh.harishChandra)do h
+  res.pieces=map(uh.harishChandra)do h
     ser,op = FindSeriesInParent(h, HF, WF, uw.harishChandra)
     Jb = vcat(map(x->x.indices, ser[:relativeType])...)
 #   println("Jb=$Jb")
@@ -375,8 +375,8 @@ function HCInductionTable(HF, WF)
       end
       Hi = getHi()
     end
-    lu=sprint(show,Hi;context=:TeX=>true)
-    lg=sprint(show,Wi;context=:TeX=>true)
+    lu=repr(Hi;context=:TeX=>true)
+    lg=repr(Wi;context=:TeX=>true)
     piece = InductionTable(InductionTable(Hi, Wi).scalar, 
      uw.prop[:TeXCharNames][ser[:charNumbers]],
      uh.prop[:TeXCharNames][h[:charNumbers]],

@@ -48,78 +48,15 @@ poset  are  `1:length(p)`.  The  function  `setlabels!`  can be used to set
 labels for the poset.
 """
 module Posets
-using ..Combinat: groupby
-using ..Util: gets
+using ..Combinat: collectby
+#using ..Util: @GapObj
+using ..Util
 #import ..Gapjm: restricted
-export lcm_partitions, gcd_partitions, Poset, linear_extension, hasse,
- incidence, partition, transitive_closure, is_join_lattice, is_meet_lattice,
- setlabels!
+export Poset, linear_extension, hasse, incidence, partition,
+transitive_closure, is_join_lattice, is_meet_lattice, setlabels!
 export restricted
 
-"""
-`lcm_partitions(p1,...,pn)`
-
-each  argument is  a partition  of the  same set  `S`, given  as a  list of
-disjoint  vectors whose  union is  `S`. Equivalently  each argument  can be
-interpreted as an equivalence relation on `S`.
-
-The result is the finest partition of `S` such that each argument partition
-refines it. It represents the 'or' of the equivalence relations represented
-by the arguments.
-
-```julia-repl
-julia> lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-2-element Vector{Vector{Int64}}:
- [1, 2, 5, 6]
- [3, 4]      
-```
-"""
-function lcm_partitions(arg...)
-  function lcm2(a,b)
-    res = Set(Vector{Int}[])
-    for p in b
-     push!(res, sort(union(filter(x->!isempty(intersect(x, p)),a)...)))
-    end
-    b = Set(Vector{Int}[])
-    for p in res
-     push!(b, sort(union(filter(x->!isempty(intersect(x, p)),res)...)))
-    end
-    b
-  end
-  sort(collect(reduce(lcm2,arg)))
-end
-
-"""
-`gcd_partitions(p1,...,pn)`
-Each  argument is  a partition  of the  same set  `S`, given  as a  list of
-disjoint  vectors whose  union is  `S`. Equivalently  each argument  can be
-interpreted as an equivalence relation on `S`.
-
-The result is the coarsest partition which refines all argument partitions.
-It  represents the  'and' of  the equivalence  relations represented by the
-arguments.
-
-```julia-repl
-julia> gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
-6-element Vector{Vector{Int64}}:
- [1]
- [2]
- [3]
- [4]
- [5]
- [6]
-```
-"""
-function gcd_partitions(arg...)
-  sort(collect(reduce(arg)do a,b
-    res = map(x->map(y->intersect(x, y), b), a)
-    Set(filter(!isempty,reduce(vcat,res)))
-  end))
-end
-
-struct Poset
-  prop::Dict{Symbol,Any}
-end
+@GapObj struct Poset end
 
 """
 `transitive_closure(M)`
@@ -182,7 +119,7 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 ```
 """
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
-Base.length(p::Poset)=haskey(p.prop,:hasse) ? length(hasse(p)) : size(incidence(p),1)
+Base.length(p::Poset)=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
 
 """
 `setlabels!(p::Poset,v)`
@@ -199,11 +136,10 @@ julia> p
 a<b,c<d,e
 ```
 """
-setlabels!(p::Poset,v)=p.prop[:labels]=v
+setlabels!(p::Poset,v)=p.labels=v
 
 function label(io::IO,p::Poset,n)
-  haskey(p.prop,:labels) ? p.prop[:labels][n] :
-    (haskey(p.prop,:label) ? p.prop[:label](io,n) : string(n))
+  haskey(p,:labels) ? p.labels[n] : (haskey(p,:label) ? p.label(io,n) : string(n))
 end
   
 function Base.show(io::IO,x::Poset)
@@ -282,11 +218,7 @@ julia> hasse(p)
  []       
 ```
 """
-function hasse(p::Poset)
-  gets(p,:hasse)do
-    hasse(incidence(p))
-  end
-end
+hasse(p::Poset)=get!(()->hasse(incidence(p)),p,:hasse)
 
 """
 `incidence(P)`
@@ -308,7 +240,7 @@ julia> incidence(p)
 ```
 """
 function incidence(p::Poset)::Matrix{Bool}
-  gets(p,:incidence)do
+  get!(p,:incidence)do
     n = linear_extension(p)
     incidence = one(Matrix{Bool}(undef,length(n),length(n)))
     for i in length(n)-1:-1:1
@@ -346,15 +278,11 @@ julia> reverse(p)
 ```
 """
 function Base.reverse(p::Poset)
-  res = deepcopy(p)
-  if haskey(p.prop, :incidence)
-    res.prop[:incidence]=permutedims(incidence(p))
-  end
-  if haskey(p.prop,:hasse)
-    res.prop[:hasse] = map(empty,hasse(p))
-    for i in 1:length(p)
-      for j in hasse(p)[i] push!(hasse(res)[j], i) end
-    end
+  res=deepcopy(p)
+  if haskey(p,:incidence) res.incidence=permutedims(incidence(p)) end
+  if haskey(p,:hasse)
+    res.hasse=map(empty,hasse(p))
+    for i in 1:length(p), j in hasse(p)[i] push!(hasse(res)[j], i) end
   end
   return res
 end
@@ -380,10 +308,9 @@ julia> partition(p)
 ```
 """
 function partition(p::Poset)
-  if haskey(p.prop, :hasse)
+  if haskey(p,:hasse)
     l=reverse(p)
-    res=groupby(i->[hasse(l)[i], hasse(p)[i]],1:length(p))
-    sort(collect(values(res)),by=v->[hasse(l)[v[1]], hasse(p)[v[1]]])
+    collectby(i->(hasse(l)[i], hasse(p)[i]),1:length(p))
   else
     I=incidence(p)
     ind=1:length(p)
@@ -415,25 +342,20 @@ julia> restricted(p,2:6)
 ```
 """
 function restricted(p::Poset,ind::AbstractVector{<:Integer})
-  res = Poset(copy(p.prop))
+  res=Poset(copy(p.prop))
   if length(ind) == length(p) && sort(ind) == 1:length(p)
-    if haskey(res.prop, :hasse)
-     res.prop[:hasse] = Vector{Int}.(map(x->map(y->findfirst(isequal(y),ind),x),
-       res.prop[:hasse][ind]))
+    if haskey(res,:hasse)
+      res.hasse=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),res.hasse[ind]))
     end
-    if haskey(res.prop, :incidence)
-      res.prop[:incidence] = incidence(res)[ind,ind]
-    end
+    if haskey(res, :incidence) res.incidence=incidence(res)[ind,ind] end
   else
     inc=incidence(p)
-    res.prop[:incidence] = [i!=j && ind[i]==ind[j] ? false : inc[ind[i],ind[j]]
-                            for i in 1:length(ind), j in 1:length(ind)]
+    res.incidence=[i!=j && ind[i]==ind[j] ? false : inc[ind[i],ind[j]]
+                            for i in eachindex(ind), j in eachindex(ind)]
     delete!(res.prop, :hasse)
   end
-  if haskey(p.prop, :label)
-    res.prop[:label]=(io,x, n)->p.prop[:label](io, x, ind[n])
-  elseif haskey(p.prop, :labels)
-    res.prop[:labels]=p.prop[:labels][ind]
+  if haskey(p, :label) res.label=(io,x, n)->p.label(io, x, ind[n])
+  elseif haskey(p, :labels) res.labels=p.labels[ind]
   end
   res
 end

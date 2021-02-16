@@ -201,15 +201,7 @@ function reflection(root::AbstractVector,coroot::AbstractVector)
   one(m)-m
 end
 #------------------------------------------------------------------------
-struct TypeIrred
-  prop::Dict{Symbol,Any}
-end
-
-Base.haskey(t::TypeIrred,k)=haskey(getfield(t,:prop),k)
-
-Base.getproperty(t::TypeIrred,k::Symbol)=getfield(t,:prop)[k]
-
-Base.setproperty!(t::TypeIrred,k::Symbol,v)=getfield(t,:prop)[k]=v
+@GapObj struct TypeIrred end
 
 Base.copy(t::TypeIrred)=TypeIrred(copy(getfield(t,:prop)))
 
@@ -247,7 +239,7 @@ function Base.show(io::IO, t::TypeIrred)
           if t.cartanType==1 s=:C
           elseif t.cartanType==2 s=:B
           elseif t.cartanType==ER(2) s=:Bsym
-          else s=Symbol("B(",sprint(show,t.cartanType;context=io),")")
+          else s=Symbol("B(",repr(t.cartanType;context=io),")")
           end
         elseif s==:G
           if t.cartanType==ER(3) s=:Gsym end
@@ -367,7 +359,7 @@ Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W)==roots(W1) &&
 
 "return for each root the index of the first simple root conjugate to it"
 function simple_representatives(W::PermRootGroup)
-  gets(W,:rootreps)do
+  get!(W,:rootreps)do
     reps=fill(0,length(roots(W)))
     repelts=fill(one(W),length(roots(W)))
     for i in eachindex(gens(W))
@@ -379,8 +371,8 @@ function simple_representatives(W::PermRootGroup)
         end
       end
     end
-    W.prop[:repelms]=repelts
-    W.prop[:reflections]=map((i,p)->gens(W)[i]^p,reps,repelts)
+    W.repelms=repelts
+    W.reflections=map((i,p)->gens(W)[i]^p,reps,repelts)
     reps
   end
 end
@@ -440,7 +432,7 @@ julia> cartan(W)
 ```
 """
 function cartan(W::PermRootGroup)
-  gets(W,:cartan)do
+  get!(W,:cartan)do
     improve_type([cartan(W,i,j) for i in eachindex(gens(W)), j in
                   eachindex(gens(W))])
   end
@@ -465,7 +457,7 @@ julia> rank(ComplexReflectionGroup(31))
 ```
 """
 function rank(W::PermRootGroup)
-  if isempty(roots(W)) W.prop[:rank]
+  if isempty(roots(W)) W.rank
   else length(roots(W,1))
   end
 end
@@ -688,7 +680,7 @@ function fixCartan(H,C,p)
 end
 
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
-  gets(W,:refltype)do
+  get!(W,:refltype)do
     map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroupNC(W,I)
       d=TypeIrred(type_irred(R))
@@ -863,19 +855,19 @@ julia> refleigen(coxgroup(:B,2))
 ```
 """
 function refleigen(W)
-  gets(W,:refleigen) do
+  get!(W,:refleigen) do
     t=refltype(W)
     if isempty(t) ll=[Root1[]]
     elseif any(x->haskey(x,:orbit) && 
         (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
-      ll=map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
+      return map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
     else
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
     central=W isa Spets ? torusfactors(W) : 
                           fill(Root1(1),rank(W)-semisimplerank(W))
     ll=map(x->vcat(x,central),ll)
-    W.prop[:reflengths]=map(x->count(!isone,x),ll)
+    W.reflengths=map(x->count(!isone,x),ll)
     ll
   end
 end
@@ -942,20 +934,20 @@ julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),q)
 torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
 
 function Groups.orbits(W::PermRootGroup)
-  gets(W,:orbits)do
+  get!(W,:orbits)do
     orbits(W,eachindex(roots(parent(W)));trivial=false)
   end
 end
  
 function classinv(W::PermRootGroup)
-  gets(W,:classinv)do
+  get!(W,:classinv)do
     oo=orbits(W)
     map(x->map(o->cycletype(W(x...),domain=o),oo),classinfo(W)[:classtext])
   end
 end
 
 function Groups.conjugacy_classes(W::PermRootGroup)
-  gets(W,:classes)do
+  get!(W,:classes)do
     map(x->orbit(W,x),classreps(W))
   end
 end
@@ -984,7 +976,7 @@ function showtypes(io::IO, t::Vector{TypeIrred})
   replorTeX=get(io,:limit,false) || get(io,:TeX,false)
   r=0
   n=join(map(t)do t
-    n=sprint(show,t; context=io)
+    n=repr(t; context=io)
     inds=indices(t)
     if isnothing(inds) n*="?"
     elseif inds!=r .+eachindex(inds) && replorTeX
@@ -1015,7 +1007,7 @@ function Base.show(io::IO, W::PermRootGroup)
 end
 
 function independent_roots(W::PermRootGroup)::Vector{Int}
-  gets(W,:indeproots) do
+  get!(W,:indeproots) do
     r=roots(W)
     if isempty(r) Int[]
     else sort(echelon(toM(roots(W)))[2])
@@ -1044,13 +1036,13 @@ julia> rank(W)
 ```
 """
 function semisimplerank(W::PermRootGroup)
-  gets(W,:semisimplerank)do
+  get!(W,:semisimplerank)do
     length(independent_roots(W))
   end
 end
 
 function baseX(W::PermRootGroup{T})where T
-  gets(W,:baseX) do
+  get!(W,:baseX) do
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
     res=toM(roots(W,ir))
@@ -1064,7 +1056,7 @@ function baseX(W::PermRootGroup{T})where T
 end
 
 function invbaseX(W::PermRootGroup)
-  gets(W,:invbaseX)do
+  get!(W,:invbaseX)do
     X=baseX(W)
     improve_type(inv(X//1))
   end
@@ -1147,7 +1139,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
 end
 
 function Groups.classreps(W::PermRootGroup)
-  gets(W,:classreps)do
+  get!(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
@@ -1354,12 +1346,11 @@ function parabolic_closure(W,I)
 end
 
 #--------------- PRG: an implementation of PermRootGroups--------------------
-struct PRG{T,T1}<:PermRootGroup{T,T1}
+@GapObj struct PRG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
   matgens::Vector{Matrix{T}}
   roots::Vector{Vector{T}}
   coroots::Vector{Vector{T}}
-  prop::Dict{Symbol,Any}
 end
 
 function PRG(r::AbstractVector{<:AbstractVector},
@@ -1463,12 +1454,11 @@ reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] :
                                          reflrep(W,reflection(W,i))
 
 #--------------- type of subgroups of PRG----------------------------------
-struct PRSG{T,T1}<:PermRootGroup{T,T1}
+@GapObj struct PRSG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
   inclusion::Vector{Int}
   restriction::Vector{Int}
   parent::PRG{T,T1}
-  prop::Dict{Symbol,Any}
 end
 
 inclusion(W::PRSG)=W.inclusion
@@ -1504,13 +1494,13 @@ end
 
 # contrary to Chevie, W is guaranteed to be a parent here
 function reflection_subgroup(W::PRG,I::AbstractVector)
-  if !haskey(W.prop,:reflsubgroups)
-    W.prop[:reflsubgroups]=Dict(
+  if !haskey(W,:reflsubgroups)
+    W.reflsubgroups=Dict(
       Int[]=>PRSG(empty(gens(W)),Int[],zeros(Int,length(W.roots)),W,
                   Dict{Symbol,Any}(:rank=>rank(W),:refltype=>TypeIrred[])))
   end
   I=Vector{Int}(I)
-  if haskey(W.prop[:reflsubgroups],I) return W.prop[:reflsubgroups][I] end
+  if haskey(W.reflsubgroups,I) return W.reflsubgroups[I] end
   H=reflection_subgroupNC(W,I)
   t=refltype(H)
   l=PermRoot.indices(t)
@@ -1521,8 +1511,8 @@ function reflection_subgroup(W::PRG,I::AbstractVector)
     H=reflection_subgroupNC(W,inclusion(H,l))
     for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
   end
-  H.prop[:refltype]=t
-  W.prop[:reflsubgroups][I]=H
+  H.refltype=t
+  W.reflsubgroups[I]=H
   H
 end
 

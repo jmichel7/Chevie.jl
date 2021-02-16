@@ -70,7 +70,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 9.5 ms (GAP4 17ms)
 module PermGroups
 using ..Perms
 using ..Groups
-using ..Util: gets, getp, InfoChevie
+using ..Util: getp, InfoChevie, @GapObj
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
@@ -88,7 +88,7 @@ end
 Base.one(G::PermGroup{T}) where T=one(Perm{T})
 
 function degree(G::PermGroup)::Int
-  gets(G,:degree)do 
+  get!(G,:degree)do 
     maximum(largest_moved_point.(gens(G)))
   end
 end
@@ -179,9 +179,9 @@ function schreier_sims(G::PermGroup{T})where T
     i-=1
     @label nexti
   end
-  G.prop[:base]=B
-  G.prop[:centralizers]=C
-  G.prop[:transversals]=Δ
+  G.base=B
+  G.centralizers=C
+  G.transversals=Δ
 end
 
 " centralizers: the i-th element is the centralizer of base[1:i-1]"
@@ -249,7 +249,7 @@ end
 
 #------------------------- iteration for PermGroups -----------------------
 function Base.length(G::PermGroup)
-  gets(G,:length)do
+  get!(G,:length)do
     prod(length.(transversals(G)))
   end
 end
@@ -317,9 +317,8 @@ function Groups.Coset(W::PermGroup,phi::Perm)
 end
 
 #-------------------------- now a concrete type-------------------------
-struct PG{T}<:PermGroup{T}
+@GapObj struct PG{T}<:PermGroup{T}
   gens::Vector{Perm{T}}
-  prop::Dict{Symbol,Any}
 end
 
 function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T

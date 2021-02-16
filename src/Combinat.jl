@@ -1,16 +1,39 @@
+"""
+This  self-contained module (it has no dependencies) is a port of some GAP3
+combinatorics  functions needed by my port  of the Chevie GAP3 package. The
+list of functions it exports are:
+
+Classical enumerations:
+
+`combinations, ncombinations, arrangements, narrangements,
+  partitions, npartitions, partition_tuples, npartition_tuples,
+  partitions_set, npartitions_set, compositions, submultisets`
+
+some more functions on partitions and set partitions, and counting functions:
+
+`lcm_partitions, gcd_partitions, conjugate_partition, dominates, bell, 
+stirling2`
+
+and finally some structural manipulations not yet in Julia:
+
+`groupby, constant, tally, collectby, cartesian, unique_sorted!`
+
+Have  a  look  at  the  individual  docstrings  and  enjoy (any feedback is
+welcome).
+"""
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
   partitions, npartitions, partition_tuples, npartition_tuples,
-  partitions_set, npartitions_set, compositions, submultisets,
-  conjugate_partition, dominates, cartesian, groupby, constant, tally,
-  collectby, bell, stirling2, unique_sorted!
+  partitions_set, npartitions_set, lcm_partitions, gcd_partitions,
+  compositions, submultisets, conjugate_partition, dominates, cartesian,
+  groupby, constant, tally, collectby, bell, stirling2, unique_sorted!
 
 #--------------------- Structural manipulations -------------------
 """
 `groupby(v,l)`
 
 group  elements of collection `l` according  to the corresponding values in
-the collection `v`.
+the collection `v` (which should have same length as `l`).
 
 ```julia-rep1
 julia> groupby([31,28,31,30,31,30,31,31,30,31,30,31],
@@ -31,7 +54,7 @@ end
 `groupby(f::Function,l)`
 
 group  elements of collection `l` according to the values taken by function
-`f` on them.
+`f` on them. The values of `f` must be hashable.
 
 ```julia-repl
 julia> groupby(iseven,1:10)
@@ -39,8 +62,8 @@ Dict{Bool, Vector{Int64}} with 2 entries:
   0 => [1, 3, 5, 7, 9]
   1 => [2, 4, 6, 8, 10]
 ```
-Note: `l` is required to be non-empty since I do not know how to access the
-return type of a function
+Note:  keys of the result will  have type `Any` if `l`  is empty since I do
+not know how to access the return type of a function
 """
 function groupby(f::Function,l)
   if isempty(l) return Dict{Any,eltype(l)}() end
@@ -91,7 +114,10 @@ tally(v)=tally(collect(v)) # for iterables
 `collectby(f,v)`
 
 group  the elements of `v` in packets  (`Vector`s) where `f` takes the same
-value. The resulting vector of vectors is sorted by the values of `f`.
+value.  The resulting `Vector{Vector}` is sorted  by the values of `f` (the
+values  of  `f`  must  be  sortable;  otherwise  you  can  use  the  slower
+`values(groupby(f,v))`).  Here `f` can  be a function  of one variable or a
+collection of same length as `v`.
 
 ```julia-repl
 julia> l=[:Jan,:Feb,:Mar,:Apr,:May,:Jun,:Jul,:Aug,:Sep,:Oct,:Nov,:Dec];
@@ -106,12 +132,32 @@ julia> collectby(x->first(string(x)),l)
  [:Nov]
  [:Oct]
  [:Sep]
+
+julia> collectby("JFMAMJJASOND",l)
+8-element Vector{Vector{Symbol}}:
+ [:Apr, :Aug]
+ [:Dec]
+ [:Feb]
+ [:Jan, :Jun, :Jul]
+ [:Mar, :May]
+ [:Nov]
+ [:Oct]
+ [:Sep]
 ```julia-repl
 
 """
 function collectby(f,v)
-  d=groupby(f,v)
-  [d[k] for k in sort(collect(keys(d)))]
+  res=Vector{eltype(v)}[]
+  if isempty(v) return res end
+  l=f isa Function ? [(f(x),x) for x in v] : collect(zip(f,v))
+  sort!(l,by=first)
+  push!(res,[last(first(l))])
+  for i in 2:length(l)
+    if first(l[i])==first(l[i-1]) push!(res[end],last(l[i]))
+    else push!(res,[last(l[i])])
+    end
+  end
+  res
 end
 
 " `constant(a)` whether all elements in collection `a` are equal"
@@ -144,12 +190,21 @@ function combinations(list,tly,k)
   e=first(first(tly))
   rest=@view tly[2:end]
   start=true
+if VERSION.minor<6
+  for i in min(last(first(tly)),k):-1:max(0,k-reduce(+,last.(rest);init=0)) # 1.5
+    if !start push!(list,list[end][1:n]) end
+    start=false
+    for j in 1:i push!(list[end],e) end
+    if k>i combinations(list,rest,k-i) end
+  end
+else
   for i in min(last(first(tly)),k):-1:max(0,k-sum(last,rest;init=0))
     if !start push!(list,list[end][1:n]) end
     start=false
     for j in 1:i push!(list[end],e) end
     if k>i combinations(list,rest,k-i) end
   end
+end
 end
 
 """
@@ -368,19 +423,25 @@ function partitions(n)
   v
 end
 
-# partitions of n of first (greatest) part <=m with k parts
-function partitions_less(n,m,k)
-# if m==1 return [fill(1,n)] end
-  res=Vector{Int}[]
-  if n<k return res end
-  if k==1 return m<n ? res : [[n]] end
-  for i in 1:min(m,n)
-    append!(res,pushfirst!.(partitions_less(n-i,i,k-1),i))
+# we have l[end][offset-1]==m; m given since at start this does not make sense
+function partitions2(l,n,k,offset,m)
+  if k==1 l[end][offset]=n; return end
+  start=true
+  d,r=divrem(n,k)
+  for i in (iszero(r) ? d : d+1):min(n-k+1,m)
+    if !start push!(l,copy(l[end])) end
+    start=false
+    l[end][offset]=i
+    partitions2(l,n-i,k-1,offset+1,i)
   end
-  res
 end
 
-partitions(n,k)=partitions_less(n,n,k)
+function partitions(n,k)
+  if k>n || k==0 return Vector{Int}[] end
+  l=[fill(0,k)]
+  partitions2(l,n,k,1,n-k+1)
+  l
+end
 
 @doc (@doc partitions) npartitions
 function npartitions(n)
@@ -477,15 +538,15 @@ end
 
 # decent implementation
 function partition_tuples2(n,r)
-  l=partitions.(0:n)
+  if r==1 return map(x->[x],partitions(n)) end
   list=[Vector{Int}[]]
-  if iszero(r) if n>0 error("non-sensical 0-tuples of sum $n") end
-  else partition_tuples(list,n,r,l) end
+  if iszero(r) return  n>0 ? empty(list) : list end
+  partition_tuples(list,n,r,partitions.(0:n))
   list
 end
 
 # bad implementation but which is ordered as GAP3; needed for
-# compatibility with CHEVIE data library
+# compatibility with Chevie data library (specially type B2)
 """
 `partition_tuples(n,r)`
 
@@ -517,37 +578,32 @@ function partition_tuples(n, r)
    empty=(tup=[Int[] for i in 1:r], pos=fill(1,n-1))
    pm=[typeof(empty)[] for i in 1:n-1]
    for m in 1:div(n,2)
-      for i in 1:r
-         t1=map(copy,empty)
-         t1.tup[i]=[m]
-         t1.pos[m]=i
-         push!(pm[m],t1)
+      for i in 1:r # the m-cycle in all possible places.
+        t=map(copy,empty)
+        t.tup[i]=[m]
+        t.pos[m]=i
+        push!(pm[m],t)
       end
-      for k in m+1:n-m
-         for t in pm[k-m]
-            for i in t.pos[m]:r
-               t1=map(copy,t)
-               t1.tup[i]=vcat([m],t1.tup[i])
-               t1.pos[m]= i
-               push!(pm[k], t1)
-            end
-         end
+       # add the m-cycle to everything you know.
+      for k in m+1:n-m, t in pm[k-m], i in t.pos[m]:r
+        t1=map(copy,t)
+        t1.tup[i]=copy(t1.tup[i])
+        pushfirst!(t1.tup[i],m)
+        t1.pos[m]=i
+        push!(pm[k], t1)
       end
    end
    res= Vector{Vector{Int}}[]
-   for k in 1:n-1
-      for t in pm[n-k]
-         for i in t.pos[k]:r
-            s=copy(t.tup)
-            s[i]=vcat([k],s[i])
-            push!(res,s)
-         end
-      end
+   for k in 1:n-1, t in pm[n-k], i in t.pos[k]:r # collect
+     s=copy(t.tup)
+     s[i]=copy(s[i])
+     pushfirst!(s[i],k)
+     push!(res,s)
    end
    for i in 1:r
-      s=copy(empty.tup)
-      s[i]=[n]
-      push!(res,s)
+     s=copy(empty.tup)
+     s[i]=[n]
+     push!(res,s)
    end
    res
 end
@@ -614,7 +670,7 @@ end
 `submultisets(set,k)`
 
 `submultisets`  returns  the  set  of  all  multisets of length `k` made of
-elements of the set `set`.
+elements of the set `set` (a collection without repetitions).
 
 An  *multiset* of length `k` is  an unordered selection with repetitions of
 length  `k` from `set` and is represented  by a sorted vector of length `k`
@@ -657,9 +713,9 @@ end
 
 `npartitions_set(set[,k])`
 
-the  set of all unordered  partitions of the set  `set` (a `Vector` without
+the  set of all unordered partitions of the set `set` (a collection without
 repetitions);  if  `k`  is  given  the  unordered  partitions  in `k` sets.
-`npartitions_set` returns the number od unordered partitions.
+`npartitions_set` returns the number of unordered partitions.
 
 An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
 sets with union `set`  and is represented by  a sorted Vector of Vectors.
@@ -803,11 +859,73 @@ npartitions_set(set,k)=stirling2(length(set),k)
 npartitions_set(set)=bell(length(set))
 
 """
+`lcm_partitions(p1,…,pn)`
+
+each  argument is  a partition  of the  same set  `S`, given  as a  list of
+disjoint  vectors whose  union is  `S`. Equivalently  each argument  can be
+interpreted as an equivalence relation on `S`.
+
+The result is the finest partition of `S` such that each argument partition
+refines it. It represents the 'or' of the equivalence relations represented
+by the arguments.
+
+```julia-repl
+julia> lcm_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
+2-element Vector{Vector{Int64}}:
+ [1, 2, 5, 6]
+ [3, 4]      
+```
+"""
+function lcm_partitions(arg...)
+  function lcm2(a,b)
+    res = Set(Vector{Int}[])
+    for p in b
+     push!(res, sort(union(filter(x->!isempty(intersect(x, p)),a)...)))
+    end
+    b = Set(Vector{Int}[])
+    for p in res
+     push!(b, sort(union(filter(x->!isempty(intersect(x, p)),res)...)))
+    end
+    b
+  end
+  sort(collect(reduce(lcm2,arg)))
+end
+
+"""
+`gcd_partitions(p1,…,pn)`
+
+Each  argument is  a partition  of the  same set  `S`, given  as a  list of
+disjoint  vectors whose  union is  `S`. Equivalently  each argument  can be
+interpreted as an equivalence relation on `S`.
+
+The result is the coarsest partition which refines all argument partitions.
+It  represents the  'and' of  the equivalence  relations represented by the
+arguments.
+
+```julia-repl
+julia> gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
+6-element Vector{Vector{Int64}}:
+ [1]
+ [2]
+ [3]
+ [4]
+ [5]
+ [6]
+```
+"""
+function gcd_partitions(arg...)
+  sort(collect(reduce(arg)do a,b
+    res = map(x->map(y->intersect(x, y), b), a)
+    Set(filter(!isempty,reduce(vcat,res)))
+  end))
+end
+
+"""
 'bell(n)'
 
 The  Bell numbers are  defined by `bell(0)=1`  and ``bell(n+1)=∑_{k=0}^n {n
 \\choose  k}bell(k)``, or by the fact  that `bell(n)/n!` is the coefficient
-of `x^n` in the formal series `e^(e^x-1)`.
+of `xⁿ` in the formal series `e^(eˣ-1)`.
 
 ```julia-repl
 julia> bell.(0:6)

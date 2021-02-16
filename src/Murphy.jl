@@ -15,9 +15,9 @@ us convert from the T-basis to the Murphy basis since
 As with the T-basis, Murphy basis elements are implemented by `ModuleElts`.
 Here the keys are standard tableaux pairs. These are represented by a tuple
 `(mu,s,t)` where `mu`, `s` and `t` are all integers and
-`H.prop[:Murphy].partitions[mu]`    is   the   associated   partition   and
-`H.prop[:Murphy].tableaux[mu][s]`  (resp `t`)  is a  named tuple describing
-`s` (this tuple is described in the function `initMurphy()` below).
+`H.Murphy.partitions[mu]` is the associated partition and
+`H.Murphy.tableaux[mu][s]` (resp `t`) is a named tuple describing `s` (this
+tuple is described in the function `initMurphy()` below).
 
 Throughout memory considerations are thrown to the wind as we cache many of
 the  more horrible expansions as we go along  in order to save time when we
@@ -93,16 +93,16 @@ Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,
 Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
 basename(h::HeckeMElt)="M"
 
-# Create H.prop[:Murphy] with various components.
+# Create H.Murphy with various components.
 # initMurphy(H) is called the first time that the Murphy basis is used.
 function initMurphy(H)
-  if haskey(H.prop, :Murphy) return end
+  if haskey(H, :Murphy) return end
   t=refltype(H.W)
   if length(t)!=1 || t[1].series!=:A
     error("the Murphy basis is implemented only for irreducible type A")
   end
   mu=fill(1,semisimplerank(H.W)+1) # first partition of n
-  H.prop[:Murphy]=(partitions=[mu],
+  H.Murphy=(partitions=[mu],
   # H.tableaux=[partitions][ (ind = index of tableau in H.Tableaux[mu]
   #                         mu = index of tableau shape in H.partition
   #             wd=associated word in S_n (as a CoxeterGroup permutation)
@@ -129,13 +129,13 @@ end
 # index of <mu> in the list H.partitions, or add <mu> to this list if it is not
 # already there AND initialize the list H.tableaux[mu] and H.Tableaux[...].
 function code_partition(H::HeckeAlgebra, mu)
- t=findfirst(==(mu),H.prop[:Murphy].partitions)
+ t=findfirst(==(mu),H.Murphy.partitions)
   if t!==nothing return t end
-  push!(H.prop[:Murphy].partitions,deepcopy(mu))
-  t=length(H.prop[:Murphy].partitions)
-  push!(H.prop[:Murphy].tableaux,[(ind=1,mu=t,wd=one(H.W),
+  push!(H.Murphy.partitions,deepcopy(mu))
+  t=length(H.Murphy.partitions)
+  push!(H.Murphy.tableaux,[(ind=1,mu=t,wd=one(H.W),
                     Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}())])
-  push!(H.prop[:Murphy].Tableaux,[firsttableau(mu)])
+  push!(H.Murphy.Tableaux,[firsttableau(mu)])
   t
 end
 
@@ -143,27 +143,26 @@ end
 # corresponding  element of <H>.tableau  (a "CoxeterGroup tableau"). Here,
 # <mu> is the index of the shape of <tab> in H.partitions[].
 function code_tableau(H::HeckeAlgebra, mu::Integer, tab)
-  tabs=H.prop[:Murphy].Tableaux[mu]
+  tabs=H.Murphy.Tableaux[mu]
   ind=findfirst(==(tab),tabs)
   if ind===nothing
     ind=length(tabs)+1
-    push!(H.prop[:Murphy].tableaux[mu],(ind=ind,mu=mu,
-            wd=H.W(Permtableaux(tabs[1],tab)...),
+    push!(H.Murphy.tableaux[mu],(ind=ind,mu=mu,wd=H.W(Permtableaux(tabs[1],tab)...),
                                  Garnir=Dict{Int,Any}(),toT=Dict{Int,Any}()))
     push!(tabs,deepcopy(tab))
   end
-  H.prop[:Murphy].tableaux[mu][ind]
+  H.Murphy.tableaux[mu][ind]
 end
 
 CodedTableau{P}=NamedTuple{(:ind, :mu, :wd, :Garnir, :toT),Tuple{Int64,Int64,P,Dict{Int64,Any},Dict{Int64,Any}}}
 
-firsttableau(H::HeckeAlgebra,t::CodedTableau)=H.prop[:Murphy].tableaux[t.mu][1]
+firsttableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.tableaux[t.mu][1]
 
-tableau(H::HeckeAlgebra,t::CodedTableau)=H.prop[:Murphy].tableaux[t.mu][t.ind]
+tableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.tableaux[t.mu][t.ind]
 
-firstTableau(H::HeckeAlgebra,t::CodedTableau)=H.prop[:Murphy].Tableaux[t.mu][1]
+firstTableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.Tableaux[t.mu][1]
 
-Tableau(H::HeckeAlgebra,t::CodedTableau)=H.prop[:Murphy].Tableaux[t.mu][t.ind]
+Tableau(H::HeckeAlgebra,t::CodedTableau)=H.Murphy.Tableaux[t.mu][t.ind]
 
 # given a tableau <t> return the basis element x_mu*T_<t> in the T-basis
 function Xt(H::HeckeAlgebra,t::CodedTableau)
@@ -191,7 +190,7 @@ end
 
 # convert Murphy basis to T-basis
 function HeckeAlgebras.Tbasis(M::HeckeMElt)
-  tt=M.H.prop[:Murphy].tableaux
+  tt=M.H.Murphy.tableaux
   sum([c*MurphyToT(M.H,tt[i][t1],tt[i][t2]) for ((i,t1,t2),c) in M.d])
 end
 
@@ -200,7 +199,7 @@ end
 # how to write 1 in terms of the Murphy basis. 
 # As we go along we cache these expansions in the dict H.TtoMurphy
 function TtoMurphy(H::HeckeAlgebra,w)
-  get!(H.prop[:Murphy].TtoMurphy,w)do
+  get!(H.Murphy.TtoMurphy,w)do
     if SpechtModules[]
       println("\n# WARNING: because Murphy.SpechtModules[]==true the answer\n",
             "# TtoMurphy returns will almost certainly be incorrect.")
@@ -208,7 +207,7 @@ function TtoMurphy(H::HeckeAlgebra,w)
     W=H.W
     r=firstleftdescent(W, w^-1)
     res=TtoMurphy(H,w*W(r))*Tbasis(H)(r)
-    if w!=w^-1 H.prop[:Murphy].TtoMurphy[w^-1]=α(res) end
+    if w!=w^-1 H.Murphy.TtoMurphy[w^-1]=α(res) end
     res
   end
 end
@@ -241,11 +240,11 @@ function Base.show(io::IO, h::HeckeMElt)
     TeXTableau(tab)="\\tab("*join(map(join,tab),",")*")"
     StringTableau(t)=repl ? shortTableau(t) :
       "["*join(map(p->"["*join(p,",")*"]",t),",")*"]"
-      u=H.prop[:Murphy].Tableaux[mu][t]
+      u=H.Murphy.Tableaux[mu][t]
     if SpechtModules[] 
       TeX ? TeXTableau(u)*"\n" : string("S(",StringTableau(u),")")
     else 
-     t=H.prop[:Murphy].Tableaux[mu][s]
+     t=H.Murphy.Tableaux[mu][s]
       if TeX string(basename(h),"(",join(TeXTableau.((t,u)),", "),")\n")
       else string(basename(h),"(",StringTableau(t),", ",StringTableau(u),")")
       end
@@ -276,7 +275,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
     for r in word(W,w) # multiply one simple reflection at a time
       mr=zero(m.d).d
       for ((mu,is,it),coeff) in mw.d
-       t=H.prop[:Murphy].tableaux[mu][it]
+       t=H.Murphy.tableaux[mu][it]
         # we are interested in the two nodes, <nodeR> and <nodeS> 
         # which are swapped by the transposition r=(r,r+1). Thus,
         # these are the nodeRs such that t<nodeR>=r and t<nodeS>=r+1.
@@ -285,7 +284,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
         if nodeR.row == nodeS.row
           push!(mr,(mu,is,it)=>q*coeff)
         elseif nodeR.col!=nodeS.col# then t*r is still standard
-         tabr=deepcopy(H.prop[:Murphy].Tableaux[mu][it])
+         tabr=deepcopy(H.Murphy.Tableaux[mu][it])
           tabr[nodeR.row][nodeR.col]=r+1
           tabr[nodeS.row][nodeS.col]=r
           tr=code_tableau(H, mu, tabr)
@@ -298,7 +297,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
         else  # The hard part: here in the tableau t, r+1 occupies the nodeR 
               # below r; so nodeS.row=nodeR.row+1 and nodeS.col=nodeR.col and
               # interchanging them gives a non-standard tableau.
-              s=H.prop[:Murphy].tableaux[mu][is]
+              s=H.Murphy.tableaux[mu][is]
               append!(mr,(coeff*GarnirExpansion(H, nodeR, s, t)).d.d)
         end
       end
@@ -388,7 +387,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
         # partition. Our <tab> above becomes [[5,6,7,8],[1,2,3],[4],[9]].
         sort!(tab, by=x->(-length(x),x[1]))
         # which gives us the (shape of the) new tableau
-        tnu = H.prop[:Murphy].tableaux[code_partition(H, map(length, tab))][1]
+        tnu = H.Murphy.tableaux[code_partition(H, map(length, tab))][1]
         # and finally we have <d>. The point is that tab = T_d^-1*tnu*T_d.
         d=W(Permtableaux(Tableau(H,tnu), tab)...)
         # <tab> is now under control, but we still need to compute <h>

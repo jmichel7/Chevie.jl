@@ -278,12 +278,12 @@ function Base.show(io::IO,m::ModuleElt)
   if iszero(m) print(io,"0"); return end
   showbasis=get(io,:showbasis,nothing)
   if isnothing(showbasis) 
-    showbasis=(io,x)->sprint(show,x;context=io)
+    showbasis=(io,x)->repr(x;context=io)
   end
   start=true
   res=""
   for (k,v) in m 
-    v=sprint(show,v;context=io)
+    v=repr(v;context=io)
     k=showbasis(io,k)
     if !isempty(k) v=format_coefficient(v) end
     if (isempty(v) || v[1]!='-') && !start v="+"*v end

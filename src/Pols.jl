@@ -175,14 +175,16 @@ end
 
 function Base.show(io::IO,p::Pol)
   if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"Pol(",p.c,",",p.v,")")
+    if p.c==[1] && p.v==1 print(io,"Pol()")
+    else print(io,"Pol(",p.c,",",p.v,")")
+    end
   elseif iszero(p) print(io,"0")
   else
     mon=string(get(io,:varname,varname[]))
     for deg in degree(p):-1:valuation(p)
       c=p[deg]
       if iszero(c) continue end
-      c=sprint(show,c; context=IOContext(io,:typeinfo=>typeof(c)))
+      c=repr(c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg) 
         c=format_coefficient(c)*mon
         if !isone(deg) c*="^{$deg}" end
@@ -254,6 +256,7 @@ function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
 end
 
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
+Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
 
 Base.://(p::Pol,q::Pol)=isone(q.c[end]^2) ? p/q : p/(q//1)
 Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v;check=false)
@@ -263,7 +266,7 @@ function Base.:/(p::Pol,q::Pol)
   end
   r=divrem(p,q)
   if iszero(r[2]) return r[1] end
-  error("r=$r division $p//$q not implemented")
+  error("divrem=$r division $p//$q not implemented")
 end
 
 Base.://(p::Pol,q::T) where T=iszero(p) ? p : Pol(p.c//q,p.v;check=false)
@@ -276,7 +279,7 @@ type-stable
 
 # Examples
 ```julia-repl
-julia> gcd(q+1,q^2-1)
+julia> gcd(2q+2,q^2-1)
 Pol{Float64}: 1.0q+1.0
 
 julia> gcd(q+1//1,q^2-1//1)
@@ -285,10 +288,10 @@ Pol{Rational{Int64}}: (1//1)q+1//1
 """
 function Base.gcd(p::Pol,q::Pol)
   while !iszero(q)
-    q=q/q.c[end]
+    q=q*bestinv(q.c[end])
     (q,p)=(divrem(p,q)[2],q)
   end
-  return p/p.c[end]
+  return p*bestinv(p.c[end])
 end
 
 function Base.inv(p::Pol)

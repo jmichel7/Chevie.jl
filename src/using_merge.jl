@@ -61,7 +61,7 @@ function using_merge(mod::Symbol;reexport=false,debug=0)
     if !iszero(debug&1) 
       print("# $mod.$name conflicts with $modofname.$name --- adding methods") 
     end
-    s=split(sprint(show,methods(eval(:($mod.$name)))),"\n")
+    s=split(repr(methods(eval(:($mod.$name)))),"\n")
     for (j,l) in enumerate(s[2:end])
       if j==1 
         if !isempty(eval(:(@doc $mod.$name)).meta[:results])

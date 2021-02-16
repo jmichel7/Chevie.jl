@@ -127,10 +127,9 @@ export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
   VFactorSchurElement, alt, coefftype
 
-struct HeckeAlgebra{C,TW}
+@GapObj struct HeckeAlgebra{C,TW}
   W::TW
   para::Vector{Vector{C}}
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -211,7 +210,7 @@ function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
 end
 
 function rootpara(H::HeckeAlgebra)
-  gets(H,:rootpara)do
+  get!(H,:rootpara)do
     map(eachindex(H.para)) do i
        if isone(-prod(H.para[i])) return -prod(H.para[i]) end
        return root(-prod(H.para[i]))
@@ -219,7 +218,7 @@ function rootpara(H::HeckeAlgebra)
   end
 end
 
-equalpara(H::HeckeAlgebra)::Bool=H.prop[:equal]
+equalpara(H::HeckeAlgebra)::Bool=H.equal
 
 coefftype(H::HeckeAlgebra{C}) where C=C
 
@@ -234,7 +233,7 @@ end
 function Base.show(io::IO, H::HeckeAlgebra)
   if isempty(H.para) print(io,"hecke(",H.W,")"); return end
   print(io,"hecke(",H.W,",",simplify_para(H.para))
-  if haskey(H.prop,:rootpara)
+  if haskey(H,:rootpara)
     rp=rootpara(H)
     if !isempty(rp) && constant(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
@@ -244,11 +243,13 @@ function Base.show(io::IO, H::HeckeAlgebra)
 end
 
 function Chars.CharTable(H::HeckeAlgebra)
-  gets(H,:chartable)do
+  get!(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
-       getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H.prop,:rootpara) ? 
+      ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
                rootpara(H)[t.indices] : fill(nothing,length(H.para)))
+      if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
+      ct
     end
     cts=map(cts) do ct
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
@@ -258,7 +259,8 @@ function Chars.CharTable(H::HeckeAlgebra)
             map(Int,ct[:centralizers]),ct[:size],Dict{Symbol,Any}())
     end
     ct=prod(cts)
-    ct.prop[:name]=sprint(show,H;context=:TeX=>true)
+    ct.name=repr(H;context=:TeX=>true)
+    ct.group=H
     ct
   end
 end
@@ -267,7 +269,7 @@ function Chars.representation(H::HeckeAlgebra,i::Int)
   tt=refltype(H.W)
   dims=Tuple(getchev.(tt,:NrConjugacyClasses))
   inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
-  rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
+  rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
   mm=map((t,j)->toM.(getchev(t,:HeckeRepresentation,H.para,rp,i)),tt,inds)
   if any(==(false),mm) return false end
   mm=improve_type.(mm)
@@ -683,7 +685,7 @@ char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
 function schur_element(H::HeckeAlgebra,p)
   t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices], 
-      haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : 
+      haskey(H,:rootpara) ?  H.rootpara[t.indices] : 
       fill(nothing,length(H.para))),
       refltype(H.W),p)
   if any(==(false),t) return nothing end
@@ -705,19 +707,19 @@ julia> s=schur_elements(H)
  2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴
  -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴
  2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴
- (-2ζ₃-ζ₃²)q³+(3-√-3)q²+3q+3+√-3+(-ζ₃-2ζ₃²)q⁻¹
- (-ζ₃-2ζ₃²)q³+(3+√-3)q²+3q+3-√-3+(-2ζ₃-ζ₃²)q⁻¹
- q²+2q+2+2q⁻¹+q⁻²                             
+ ζ₃²√-3q³+(3-√-3)q²+3q+3+√-3-ζ₃√-3q⁻¹
+ -ζ₃√-3q³+(3+√-3)q²+3q+3-√-3+ζ₃²√-3q⁻¹
+ q²+2q+2+2q⁻¹+q⁻²
 
 julia> CycPol.(s)
 7-element Vector{CycPol{Cyc{Rational{Int64}}}}:
- Φ₂²Φ₃Φ₄Φ₆             
+ Φ₂²Φ₃Φ₄Φ₆
  2√-3q⁻⁴Φ₂²Φ′₃Φ′₆
  -2√-3q⁻⁴Φ₂²Φ″₃Φ″₆
  2q⁻⁴Φ₃Φ₄
- (-2ζ₃-ζ₃²)q⁻¹Φ₂²Φ′₃Φ″₆
- (-ζ₃-2ζ₃²)q⁻¹Φ₂²Φ″₃Φ′₆
- q⁻²Φ₂²Φ₄              
+ ζ₃²√-3q⁻¹Φ₂²Φ′₃Φ″₆
+ -ζ₃√-3q⁻¹Φ₂²Φ″₃Φ′₆
+ q⁻²Φ₂²Φ₄
 ```
 """
 schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
@@ -733,15 +735,15 @@ end
 function Base.show(io::IO,x::FactSchur)
  v=map(x.vcyc) do l
     if get(io,:Maple,false)
-      "("*sprint(show,l.pol(l.monomial);context=io)*")"
+      "("*repr(l.pol(l.monomial);context=io)*")"
     else
-      sprint(show,l.pol;context=io)*"("*sprint(show,l.monomial;context=io)*")"
+      repr(l.pol;context=io)*"("*repr(l.monomial;context=io)*")"
     end
   end
   if get(io,:GAP,false) || get(io,:Maple,false) v=join(v,"*")
   else v=join(v,"")
   end
-  c=sprint(show,x.factor;context=io)
+  c=repr(x.factor;context=io)
   if length(v)>0 && degree(x.factor)==0 c=format_coefficient(c) end
   print(io,c,v)
 end
@@ -893,7 +895,7 @@ function FactorizedSchurElement(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
      getchev(t,:FactorizedSchurElement,psi, 
              H.para[t.indices], 
-   haskey(H.prop,:rootpara) ?  H.prop[:rootpara][t.indices] : nothing)
+   haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
   end
   if false in t return false
   else return prod(t)
@@ -934,10 +936,9 @@ FactorizedSchurElements(H::HeckeAlgebra)=
     map(p->FactorizedSchurElement(H,p),charinfo(H.W)[:charparams])
 #---------------------- Hecke Cosets
 
-struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
+@GapObj struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
   H::TH
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 hecke(WF::Spets,H::HeckeAlgebra)=HeckeCoset(H,WF,Dict{Symbol,Any}())
@@ -949,7 +950,7 @@ function Base.show(io::IO, H::HeckeCoset)
   if constant(H.H.para) print(io,tr(H.H.para[1]))
   else print(io,map(tr,H.H.para))
   end
-  if haskey(H.H.prop,:rootpara)
+  if haskey(H.H,:rootpara)
     rp=rootpara(H.H)
     if constant(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
@@ -959,11 +960,11 @@ function Base.show(io::IO, H::HeckeCoset)
 end
 
 function Chars.CharTable(H::HeckeCoset)
-  gets(H,:chartable)do
+  get!(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H.prop,:rootpara) ? 
+      getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ? 
                rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
     end
     cts=map(cts) do ct
@@ -974,7 +975,10 @@ function Chars.CharTable(H::HeckeCoset)
                 map(Int,ct[:centralizers]),length(W),
                Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
-    prod(cts)
+    ct=prod(cts)
+    ct.name=repr(H;context=:TeX=>true)
+    ct.group=H
+    ct
   end
 end
 
@@ -982,7 +986,7 @@ function Chars.representation(H::HeckeCoset,i::Int)
   tt=refltype(H.W)
   dims=Tuple(getchev.(tt,:NrConjugacyClasses))
   inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
-  rp=haskey(H.prop,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
+  rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
   mm=map((t,j)->getchev(t,:HeckeRepresentation,H.H.para,rp,i),tt,inds)
   if any(==(false),mm) return false end
   ff=improve_type(map(toM,getindex.(mm,:F)))

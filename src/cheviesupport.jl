@@ -27,7 +27,7 @@ Base.length(a::Symbol)=length(string(a))
 Base.union(v::Vector)=union(v...)
 Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 
-# correct translations of GAP3 functions
+# translations of GAP3 functions for the Cyhevie library
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W)[:charparams]
@@ -90,12 +90,66 @@ end
 FactorizedSchurElementsOps=Dict{Symbol,Any}(
 :Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
           map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
+
+function Replace(s,p...)
+# print("Replace s=$s p=$p")
+  for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
+    i=0
+    while i+length(src)<=length(s)
+     if src==s[i+(1:length(src))]
+        if tgt isa String
+          s=s[1:i]*tgt*s[i+length(src)+1:end]
+        else
+          s=vcat(s[1:i],tgt,s[i+length(src)+1:end])
+        end
+        i+=length(tgt)
+      else
+        i+=1
+      end
+    end
+  end
+# println("=>",s)
+  s
+end
+
+ChevieIndeterminate(a::Vector{<:Number})=one(Pol)
+ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)
+
+"""
+`CycPol(v::AbstractVector)`
+
+This  form is an  compact way unsed  in the Chevie  library of specifying a
+`CycPol`  with only  positive multiplicities:  `v` should  be a vector. The
+first  element is taken as the `.coeff`  of the `CycPol`, the second as the
+`.valuation`.   Subsequent  elements  are   rationals  `i//d`  representing
+`(q-E(d)^i)` or are integers `d` representing `Φ_d(q)`.
+
+```julia-repl
+julia> CycPol([3,-5,6,3//7])
+3q⁻⁵Φ₆(q-ζ₇³)
+```
+"""
+function CycPols.CycPol(v::AbstractVector)
+  coeff=v[1]
+  valuation=convert(Int,v[2])
+  vv=Pair{Root1,Int}[]
+  v1=convert.(Rational{Int},v[3:end])
+  for i in v1
+    if denominator(i)==1
+      k=convert(Int,i)
+      for j in prime_residues(k) push!(vv,Root1(;r=j//k)=>1) end
+    else
+      push!(vv,Root1(;r=i)=>1)
+    end
+  end
+  CycPol(coeff,valuation,ModuleElt(vv))
+end
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
 Format(x)=string(x)
 FormatTeX(x)=repr(x,context=:TeX=>true)
 FormatGAP(x)=replace(repr(x)," "=>"")
-Format(x,opt)=sprint((io,x)->show(IOContext(io,opt...),x),x)
+Format(x,opt)=repr(x;context=IOContext(stdout,opt...))
 
 function ReadChv(s) end
 Groups.Group(a::Perm...)=Group(collect(a))
@@ -109,6 +163,5 @@ function GetRoot(x,n::Number=2,msg...)
 end
 
 Unbind(x)=x
-UnipotentClassesOps=Dict()
 #-------------------------------------------------------------------------
 Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))

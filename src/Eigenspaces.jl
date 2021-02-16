@@ -152,11 +152,12 @@ end
 `position_regular_class(WF,d=0)`
 
 Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
-root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)' or is a
-fraction  smaller `a/b` with `0<a<b`  and specifies `ζ=E(b,a)'. If omitted,
-`d`  is taken to be `0`, specifying `ζ=1`. The root `ζ` should be a regular
-eigenvalue  for `WF` (see "regular_eigenvalues").  The function returns the
-index of the conjugacy class of `WF` which has a `ζ`-regular eigenvector.
+root  of unity `ζ`:  either `d` is  a `Root1`, or  an integer and specifies
+`ζ=E(d)`  or is a fraction `a//b` with `0<a<b` and specifies `ζ=E(b,a)`. If
+omitted, `d` is taken to be `0`, specifying `ζ=1`. The root `ζ` should be a
+regular  eigenvalue  for  `WF`  (see  "regular_eigenvalues").  The function
+returns  the index of the  conjugacy class of `WF`  which has a `ζ`-regular
+eigenvector.
 
 ```julia-repl
 julia> W=coxgroup(:E,8)
@@ -406,8 +407,8 @@ function Weyl.relative_group(W,J,indices=false)
 # if length(keys(res))>1 return res end
   L=reflection_subgroup(W, J)
   if length(J)==0
-    W.prop[:MappingFromNormalizer]=w->PermX(W,central_action(L, reflrep(L,w)))
-    W.prop[:relativeIndices] = eachindex(gens(W))
+    W.MappingFromNormalizer=w->PermX(W,central_action(L, reflrep(L,w)))
+    W.relativeIndices=eachindex(gens(W))
     return W
   end
   if indices==false
@@ -436,12 +437,12 @@ function Weyl.relative_group(W,J,indices=false)
   res[:simpleCoroots]=improve_type(res[:simpleCoroots])
 # println(res[:roots],res[:simpleCoroots])
   R=PRG(res[:roots], res[:simpleCoroots])
-  R.prop[:MappingFromNormalizer] = w->PermX(R, central_action(L, reflrep(L,w)))
+  R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
   if N==length(R)
     merge!(R.prop,res)
 #   InfoChevie("W_",W,"(L_",res[:callarg],")==",R,"<",join(R.prop[:relativeIndices]),">")
     printTeX(rio(),"W_",W,"(L_{",res[:callarg],"})==",R,
-                  "<",joindigits(R.prop[:relativeIndices]),">\n")
+                  "<",joindigits(R.relativeIndices),">\n")
     return R
   end
   printTeX("# warning: W_",W,"(L_{",res[:callarg],"})",":size ",N,

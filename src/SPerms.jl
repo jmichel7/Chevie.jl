@@ -99,9 +99,8 @@ end
 
 Base.convert(::Type{SPerm{T}},p::SPerm{T1}) where {T,T1}=T==T1 ? p : SPerm(T.(p.d))
 
-struct SPermGroup{T}<:Group{SPerm{T}}
+@GapObj struct SPermGroup{T}<:Group{SPerm{T}}
   gens::Vector{SPerm{T}}
-  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO,G::SPermGroup)
@@ -143,7 +142,7 @@ function Base.cmp(a::SPerm, b::SPerm)
   a,b=promote_degree(a,b)
   for (ai,bi) in zip(a.d,b.d)
     ai<bi && return -1
-    ai>bi && return  1 
+    ai>bi && return  1
   end
   0
 end
@@ -183,7 +182,7 @@ function Perms.cycles(p::SPerm)
 end
 
 """
-order(a) 
+order(a)
 
 order of the signed permutation a
 """
@@ -221,7 +220,7 @@ end
 function Base.:*(a::SPerm, b::SPerm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-  for (i,v) in enumerate(a.d) 
+  for (i,v) in enumerate(a.d)
 @inbounds if v<0 r[i]=-b.d[-v] else r[i]=b.d[v] end
   end
   SPerm(r)
@@ -229,7 +228,7 @@ end
 
 function Base.inv(a::SPerm)
   r=similar(a.d)
-  for (i,v) in enumerate(a.d) 
+  for (i,v) in enumerate(a.d)
  @inbounds if v<0 r[-v]=-i  else r[v]=i end
   end
   SPerm(r)
@@ -354,10 +353,9 @@ end
 #
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 
-struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
+@GapObj struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
   G::SPermGroup{T}
   n::Int
-  prop::Dict{Symbol,Any}
 end
 
 Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
@@ -370,13 +368,13 @@ group of all signed permutations of `1:n`.
 ```julia-repl
 julia> elements(CoxHyperoctaedral(2))
 8-element Vector{SPerm{Int8}}:
- ()          
- (1,2)       
- (1,-1)      
- (1,2,-1,-2) 
- (1,-2,-1,2) 
- (2,-2)      
- (1,-2)      
+ ()
+ (1,2)
+ (1,-1)
+ (1,2,-1,-2)
+ (1,-2,-1,2)
+ (2,-2)
+ (1,-2)
  (1,-1)(2,-2)
 ```
 """
@@ -405,13 +403,12 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
 end
 
 function PermRoot.reflection(W::CoxHyperoctaedral,i::Int)
-  ref=gets(W,:reflections)do
+  get!(W,:reflections)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
     for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
     for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
     refs
-  end
-  ref[i]
+  end[i]
 end
 
 PermRoot.reflections(W::CoxHyperoctaedral)=reflection.(Ref(W),1:nref(W))
@@ -445,7 +442,7 @@ end
 dedup(M::AbstractMatrix)=M[1:2:size(M,1),1:2:size(M,2)]
 
 # transform SPerm on -n:n to Perm acting on  1:2n
-dup(p::SPerm)=isone(p) ? Perm() : 
+dup(p::SPerm)=isone(p) ? Perm() :
     Perm{Idef}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
 
 dedup(p::Perm)=SPerm{Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
@@ -521,7 +518,7 @@ Fourier  transform matrices  with standard  (classified) data.  The program
 uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
 80×80.
 
-Efficient version of 
+Efficient version of
 `transporting_elt(CoxHyperoctaedral(size(M,1)),M,N;action=onmats)`
 
 ```julia-repl

@@ -150,8 +150,8 @@ family by asking
 
 ```julia-repl
 julia> uc.families[1]
-Family(D(S₃):[5, 6, 4, 3, 8, 7, 9, 10])
-Drinfeld double of S3, Lusztig′s version
+Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
+Drinfeld double of 𝔖 ₃, Lusztig′s version
    label│eigen                                               
 ────────┼─────────────────────────────────────────────────────
 (1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
@@ -205,18 +205,18 @@ Spetses, as defined in [BroueMalleMichel2014](biblio.htm#BMM14). An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│               Deg(γ)    Feg Fr(γ)   label
-─────┼───────────────────────────────────────────
-φ₁‚₀ │                    1      1     1        
-φ₁‚₄ │     -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
-φ₁‚₈ │      √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
-φ₂‚₅ │            q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
-φ₂‚₃ │(-ζ₃-2ζ₃²)qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1   1∧ζ₃²
-φ₂‚₁ │(-2ζ₃-ζ₃²)qΦ′₃Φ₄Φ″₆/3    qΦ₄     1    1∧ζ₃
-φ₃‚₂ │               q²Φ₃Φ₆ q²Φ₃Φ₆     1        
-Z₃:2 │        -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
-Z₃:11│       -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
-G₄   │           -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
+    γ│           Deg(γ)    Feg Fr(γ)   label
+─────┼───────────────────────────────────────
+φ₁‚₀ │                1      1     1        
+φ₁‚₄ │ -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
+φ₁‚₈ │  √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
+φ₂‚₅ │        q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
+φ₂‚₃ │-ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1   1∧ζ₃²
+φ₂‚₁ │ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1    1∧ζ₃
+φ₃‚₂ │           q²Φ₃Φ₆ q²Φ₃Φ₆     1        
+Z₃:2 │    -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
+Z₃:11│   -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
+G₄   │       -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
 ```
 """
 module Uch
@@ -227,11 +227,10 @@ export UnipotentCharacters, FixRelativeType, UniChar,
 almostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal,
 cuspidal_pairs, CycPolUnipotentDegrees, on_unipotents
 
-struct UnipotentCharacters
+@GapObj struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
   almostHarishChandra::Vector{Dict{Symbol,Any}}
   families::Vector{Family}
-  prop::Dict{Symbol,Any}
 end
 
 function maketype(s)
@@ -321,7 +320,7 @@ function UnipotentCharacters(t::TypeIrred)
 end
 
 function UnipotentCharacters(W::Group)
-  gets(W,:UnipotentCharacters) do
+  get!(W,:UnipotentCharacters) do
     UnipotentCharacters(spets(W))
   end
 end
@@ -386,12 +385,12 @@ UnipotentCharacters(²Bsym₂)
 
 julia> uc.families
 3-element Vector{Family}:
- Family(C₁:[1]) 
- Family(C₁:[2]) 
- Family(?4:3:4)
+ Family(C₁,[1]) 
+ Family(C₁,[2]) 
+ Family(?4,3:4)
 
 julia> uc.families[3]
-Family(?4:3:4)
+Family(?4,3:4)
 label│eigen    1     2
 ─────┼─────────────────
 1    │  ζ₈³ √2/2 -√2/2
@@ -468,7 +467,7 @@ B₂ │qΦ₁²/2   0    -1   -,-
 ```
 
 ```julia-rep1
-julia> xprint(uc;byfamily=true)
+julia> xdisplay(uc;byfamily=true)
 UnipotentCharacters(B₂)
    γ│Deg(γ) Feg Fr(γ) label
 ────┼───────────────────────
@@ -482,7 +481,7 @@ B₂  │qΦ₁²/2   0    -1   -,-
 .11ˢ│    q⁴  q⁴     1      
 ────┼───────────────────────
 
-julia> xprint(uc;cols=[1,4])
+julia> xdisplay(uc;cols=[1,4])
 UnipotentCharacters(B₂)
   γ│n₀   Symbol
 ───┼────────────
@@ -495,7 +494,7 @@ B₂ │ 6   (012,)
 ```
 """
 function UnipotentCharacters(WF::Spets) 
-  gets(WF,:UnipotentCharacters) do
+  get!(WF,:UnipotentCharacters) do
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
     ser[:levi]=reduce(vcat,getindex.(sers,:levi))
@@ -564,10 +563,8 @@ function UnipotentCharacters(WF::Spets)
     end
 
     for f in uc.families
-      f[:fourierMat]=fourier(f)
-      if !haskey(f,:charLabels) 
-        f[:charLabels]=string.(1:length(f[:eigenvalues]))
-      end
+      f.fourierMat=fourier(f)
+      if !haskey(f,:charLabels) f.charLabels=string.(1:length(f)) end
     end
     uc
   end
@@ -609,7 +606,7 @@ function UnipotentCharacters(WF::Spets)
   else 
     ff=Family.(prod.(cartesian(map(x->x.families,simp)...)))
     for f in ff
-      f[:charNumbers]=map(y->findfirst(isequal(y),tmp),f[:charNumbers])
+      f.charNumbers=map(y->findfirst(isequal(y),tmp),f.charNumbers)
     end
   end
   
@@ -623,33 +620,35 @@ function UnipotentCharacters(WF::Spets)
   end
 end
 
-function Base.show(io::IO, ::MIME"text/html", uc::UnipotentCharacters)
+Chars.charnames(io::IO,uc::UnipotentCharacters)=
+   fromTeX.(Ref(io),uc.TeXCharNames)
+
+function Base.show(io::IO,::MIME"text/html", uc::UnipotentCharacters)
   print(io, "\$")
-  show(IOContext(io,:TeX=>true),uc)
+  show(IOContext(io,:TeX=>true),"text/plain",uc)
   print(io, "\$")
 end
 
-Chars.charnames(io::IO,uc::UnipotentCharacters)=
-   fromTeX.(Ref(io),uc.prop[:TeXCharNames])
-
 function Base.show(io::IO,uc::UnipotentCharacters)
+  print(io,"UnipotentCharacters(",spets(uc),")")
+end
+
+function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if !TeX print(io,"UnipotentCharacters(",spets(uc),")") end
-  if !repl && !TeX return end
   cycpol=get(io,:cycpol,true)
   cols=get(io,:cols,[2,3,5,6])
   println(io,"")
-  m=hcat(sprint.(show,1:length(uc)))
-  m=hcat(m,sprint.(show,cycpol ? CycPoldegrees(uc) : degrees(uc); context=io))
+  m=hcat(repr.(1:length(uc)))
+  m=hcat(m,repr.(cycpol ? CycPoldegrees(uc) : degrees(uc); context=io))
   feg=fakedegrees(uc)
-  m=hcat(m,sprint.(show,cycpol ? CycPol.(feg) : feg; context=io))
-  if haskey(uc.prop,:charSymbols) && 
-     (uc.prop[:charSymbols]!=uc.prop[:charParams])
-    m=hcat(m,map(x->stringsymbol(io,x[1]),uc.prop[:charSymbols]))
+  m=hcat(m,repr.(cycpol ? CycPol.(feg) : feg; context=io))
+  if haskey(uc,:charSymbols) && (uc.charSymbols!=uc.charParams)
+    m=hcat(m,map(x->stringsymbol(io,x[1]),uc.charSymbols))
   else m=hcat(m,fill("",length(uc)))
   end
-  m=hcat(m,sprint.(show,Root1.(eigen(uc)); context=io))
+  m=hcat(m,repr.(Root1.(eigen(uc)); context=io))
   m=hcat(m,fromTeX.(Ref(io),labels(uc)))
   row_labels=charnames(io,uc)
   if get(io,:byfamily,false)
@@ -657,28 +656,26 @@ function Base.show(io::IO,uc::UnipotentCharacters)
     rowseps=vcat([0],reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)))
     for f in uc.families
       if !haskey(f,:special) continue end
-      row_labels[f[:charNumbers][f[:special]]]*="^{s}"
-      if !haskey(f,:cospecial) || f[:special]==f[:cospecial] continue end
-      row_labels[f[:charNumbers][f[:cospecial]]]*="^{c}"
+      row_labels[f.charNumbers[f.special]]*="^{s}"
+      if !haskey(f,:cospecial) || f.special==f.cospecial continue end
+      row_labels[f.charNumbers[f.cospecial]]*="^{c}"
     end
   else
     rows=get(io,:rows,1:length(uc))
     rowseps=get(io,:rowseps,[0])
   end
-  format(io,m;row_labels,cols,rows,rows_label="\\gamma",rowseps,
+  showtable(io,m;row_labels,cols,rows,rows_label="\\gamma",rowseps,
           col_labels=["n_0","\\mbox{Deg}(\\gamma)","\\mbox{Feg}",
                   "\\mbox{Symbol}","\\mbox{Fr}(\\gamma)","\\mbox{label}"])
 end
 
-Cosets.spets(uc::UnipotentCharacters)=uc.prop[:spets]
+Cosets.spets(uc::UnipotentCharacters)=uc.spets
 
-Base.length(uc::UnipotentCharacters)=length(uc.prop[:TeXCharNames])
+Base.length(uc::UnipotentCharacters)=length(uc.TeXCharNames)
 
 function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
-  if !haskey(uc.prop,:fakedegrees)
-    uc.prop[:fakedegrees]=Dict{Any,Any}()
-  end
-  d=uc.prop[:fakedegrees]
+  if !haskey(uc,:fakedegrees) uc.fakedegrees=Dict{Any,Any}() end
+  d=uc.fakedegrees
   if haskey(d,q) return d[q] end
   f=fakedegrees(spets(uc),q)
   if isa(q,Pol) f=improve_type(f) end
@@ -688,12 +685,12 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
 end
 
 function Families.fourier(uc::UnipotentCharacters)
-  gets(uc,:fourier)do
+  get!(uc,:fourier)do
     l=length(uc)
-    T=reduce(promote_type,map(eltype,getindex.(uc.families,:fourierMat)))
+    T=reduce(promote_type,map(eltype,getproperty.(uc.families,:fourierMat)))
     i=fill(T(0),l,l)
     for f in uc.families
-      i[f[:charNumbers],f[:charNumbers]]=f[:fourierMat]
+      i[f.charNumbers,f.charNumbers]=f.fourierMat
     end
     i
   end
@@ -727,36 +724,34 @@ julia> degrees(uc)
 ```
 """
 function Gapjm.degrees(uc::UnipotentCharacters,q=Pol())
-  if !haskey(uc.prop,:degrees)
-    uc.prop[:degrees]=Dict{Any,Any}()
-  end
-  d=uc.prop[:degrees]
+  if !haskey(uc,:degrees) uc.degrees=Dict{Any,Any}() end
+  d=uc.degrees
   if haskey(d,q) return d[q] end
   d[q]=fourier(uc)'*fakedegrees(uc,q)
 end
 
 function CycPoldegrees(uc::UnipotentCharacters)
-  gets(uc,:cycpoldegrees) do
+  get!(uc,:cycpoldegrees) do
     CycPol.(degrees(uc))
   end
 end
 
 function Families.eigen(ff::Vector{Family})
   eig=fill(E(1),sum(length,ff))
-  for f in ff eig[f[:charNumbers]]=eigen(f) end
+  for f in ff eig[f.charNumbers]=eigen(f) end
   eig
 end
 
 function Families.eigen(uc::UnipotentCharacters)
-  gets(uc,:eigen)do
+  get!(uc,:eigen)do
     eigen(uc.families)
   end
 end
 
 function labels(uc::UnipotentCharacters)::Vector{String}
-  gets(uc,:labels)do
+  get!(uc,:labels)do
     lab=fill("",length(uc))
-    for f in uc.families lab[f[:charNumbers]]=f[:charLabels]
+    for f in uc.families lab[f.charNumbers]=f.charLabels
     end
     lab
   end
@@ -866,18 +861,13 @@ end
 
 UniChar(W,v::AbstractVector)=UniChar(W,collect(v))
 
-const short=Ref(true)
-
 """
-The  formatting  of  unipotent  characters  is  affected  by  the  variable
-`Uch.short[]`.  If `true` (the default) they are printed in a compact form.
+The  formatting  of  unipotent  characters  is  affected  by  IO property
+:compact .  If `true` (the default) they are printed in a compact form.
 Otherwise, they are printed one character per line:
 
-```julia-repl
-julia> Uch.short[]=false
-false
-
-julia> w
+```julia-rep1
+julia> xdisplay(w;compact=false)
 [G₂]:
 <φ₁‚₀>    1
 <φ₁‚₆>    0
@@ -889,23 +879,22 @@ julia> w
 <G₂[1]>   0
 <G₂[ζ₃]>  0
 <G₂[ζ₃²]> 1
-
-julia> Uch.short[]=true;
 ```
 
 """
 function Base.show(io::IO,r::UniChar)
+  print(io,"[",r.group,"]:")
   res=""
   s=charnames(io,UnipotentCharacters(r.group))
   m=maximum(length.(s))+3
   for (i,c) in enumerate(r.v)
     n = "<"*s[i]*">"
-    if short[]
+    if get(io,:compact,true)
       if !iszero(c)
         if isone(c) res*= "+"
         elseif isone(-c) res*="-"
         else
-          c=sprint(show,c;context=io)
+          c=repr(c;context=io)
           if occursin(r".[+-]",c) c = "("* c* ")" end
           if !(c[1] in "+-") res*="+" end
           res*=c
@@ -913,12 +902,12 @@ function Base.show(io::IO,r::UniChar)
         res*=n
       end
      elseif !iszero(c) || !get(io,:nozero,false)
-      res *= "\n"* rpad(n,m)* sprint(show,c;context=io)
+      res *= "\n"* rpad(n,m)* repr(c;context=io)
     end
   end
   if length(res) == 0 res = "0" end
   if res[1] == '+' res = res[2:end] end
-  print(io,"[",sprint(show,r.group; context=io),"]:",res)
+  print(io,res)
 end
 
 Base.:+(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v+u2.v)
@@ -1002,7 +991,7 @@ HCInduce(WF,u)=UniChar(WF,improve_type(HCInductionTable(u.group,WF).scalar*u.v))
 HCRestrict(HF,u)=UniChar(HF,improve_type(u.v*HCInductionTable(HF,u.group).scalar))
 
 function DLCharTable(W)
-  gets(W,:rwTable)do
+  get!(W,:rwTable)do
     uc=UnipotentCharacters(W)
     improve_type(CharTable(W).irr'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:])
   end
@@ -1151,7 +1140,7 @@ and is implemented for them.
 julia> WF=rootdatum("3D4")
 ³D₄
 
-julia> Uch.on_unipotents(Group(WF),WF.phi)
+julia> on_unipotents(Group(WF),WF.phi)
 (1,7,2)(8,12,9)
 ```
 """
@@ -1167,7 +1156,8 @@ function on_unipotents(W,aut)
     error("Rw + eigen + principal series cannot disambiguate\n")
   end
   t1=^(t[1:end-1,:],on_classes(W, aut),dims=1)
-  t1=vcat(t1,permutedims(l.^inv(on_chars(W,aut))))
+  l[n]=l[n].^inv(on_chars(W,aut))
+  t1=vcat(t1,permutedims(l))
   Perm(t,t1,dims=2)
 end
 

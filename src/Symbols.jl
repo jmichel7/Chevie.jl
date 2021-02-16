@@ -232,7 +232,7 @@ end
 `ranksymbol(S)` rank of symbol `S`.
 
 ```julia-repl
-julia> ranksymbol([[1,2],[1,5,6]])
+julia> ranksymbol([[1,5,6],[1,2]])
 11
 ```
 """
@@ -251,7 +251,7 @@ the   valuation  of   the  generic   degree  of   the  unipotent  character
 parameterized by the `e`-symbol `s`.
 
 ```julia-repl
-julia> valuation_gendeg_symbol([[1,2],[1,5,6]])
+julia> valuation_gendeg_symbol([[1,5,6],[1,2]])
 13
 ```
 """
@@ -292,12 +292,12 @@ end
 For an `e`-symbol `[S₁,S₂,…,Sₑ]` returns `length(S₁)-length(S₂)`.
 
 ```julia-repl
-julia> defectsymbol([[1,2],[1,5,6]])
--1
+julia> defectsymbol([[1,5,6],[1,2]])
+1
 ```
 """
 function defectsymbol(S)
- S[end] isa AbstractVector && length(S)>1 ? length(S[1])-length(S[2]) : 0
+ S[end] isa AbstractVector && length(S)>1 ? abs(length(S[1])-length(S[2])) : 0
 end
 
 """
@@ -336,8 +336,8 @@ the  valuation of  the fake  degree of  the character  parameterized by the
 `e`-symbol `s`.
 
 ```julia-repl
-julia> valuation_fegsymbol([[1,2],[1,5,6]])
--1
+julia> valuation_fegsymbol([[1,5,6],[1,2]])
+16
 ```
 """
 function valuation_fegsymbol(s)
@@ -359,7 +359,7 @@ function stringsymbol(io,S)
   if S[end] isa AbstractVector "("*join(joindigits.(S),",")*")"
   else
     v=E(S[end-1],S[end])
-    n= v==1 ? "+" : v==-1 ? "-" : sprint(show,v;context=io)
+    n= v==1 ? "+" : v==-1 ? "-" : repr(v;context=io)
     "("*join(joindigits.(S[1:end-2]),",")*"$n)"
   end
 end
@@ -739,7 +739,7 @@ function XSP(rho,s,n,even=false)
       if isempty(S) break end
     end
   end
-  map(values(groupby(x->[Set(union(x...)),Set(intersect(x...))],res))) do f
+  map(collectby(x->[Set(union(x...)),Set(intersect(x...))],res)) do f
     ii=Vector{Int}[]
     d=sort(symdiff(f[1]...))
     if length(d)>0

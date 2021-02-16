@@ -240,35 +240,20 @@ module Ucl
 
 using ..Gapjm
 
-export UnipotentClasses, UnipotentClassOps, UnipotentClassesOps, ICCTable,
+export UnipotentClasses, UnipotentClassOps, ICCTable,
  induced_linear_form, special_pieces
 
-struct UnipotentClass
+@GapObj struct UnipotentClass
   name::String
   parameter::Any
   dimBu::Int
-  prop::Dict{Symbol,Any}
 end
 
-function Base.getproperty(c::UnipotentClass, s::Symbol)
-  if s===:name return getfield(c, :name)
-  elseif s===:parameter return getfield(c, :parameter)
-  elseif s===:dimBu return getfield(c, :dimBu)
-  elseif s===:prop return getfield(c, :prop)
-  else return getfield(c, :prop)[s]
-  end
-end
-
-Base.setproperty!(c::UnipotentClass,s::Symbol,v)=getfield(c,:prop)[s]=v
-
-Base.haskey(c::UnipotentClass, s::Symbol)=haskey(c.prop,s)
-
-struct UnipotentClasses
+@GapObj struct UnipotentClasses
   classes::Vector{UnipotentClass}
   p::Int
   orderclasses::Poset
   springerseries::Vector{Dict}
-  prop::Dict{Symbol,Any}
 end
 
 function nameclass(u::Dict,opt=Dict{Symbol,Any}())
@@ -298,7 +283,7 @@ function Base.show(io::IO,u::UnipotentClass)
   print(io,"UnipotentClass(",name(io,u),")")
 end
 
-UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
+const UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 
 """
 `induced_linear_form(W, K, h)`
@@ -600,7 +585,7 @@ our data with the original paper of Spaltenstein):
 ```julia-rep1
 julia> uc=UnipotentClasses(rootdatum(:E6sc));
 
-julia> xprint(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
+julia> xdisplay(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
       order=false)
 UnipotentClasses(E₆)
      u│            E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃ G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃²
@@ -810,7 +795,7 @@ function UnipotentClasses(W,p=0)
   classes=classes[l]
   AdjustAu!(classes,springerseries)
   orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)))
-  orderclasses.prop[:label]=(io,n)->name(io,classes[n])
+  orderclasses.label=(io,n)->name(io,classes[n])
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
 end
@@ -830,14 +815,13 @@ function showcentralizer(io::IO,u)
     if rank(u.red)>0
       c*="."
       if all(isone,u.AuAction.F0s)
-        c*=sprint(show,u.red;context=io)*AuName(u)
+        c*=repr(u.red;context=io)*AuName(u)
       elseif length(u.Au)==1 ||
          length(u.Au)==length(Group(u.AuAction.phis...))
         if length(u.Au)==1 || isone(u.red.phi)
-          c*=sprint(show,u.AuAction;context=io)
+          c*=repr(u.AuAction;context=io)
         else
-          c*="["*sprint(show,u.red;context=io)*"]"*
-                 sprint(show,u.AuAction;context=io)
+          c*="["*repr(u.red;context=io)*"]"*repr(u.AuAction;context=io)
         end
       else
         c*=reflection_name(io,u.AuAction)*AuName(u)
@@ -846,7 +830,7 @@ function showcentralizer(io::IO,u)
       c*=AuName(u)
     end
   elseif haskey(u,:red)
-    n=sprint(show,u.red;context=io)
+    n=repr(u.red;context=io)
     if n!="." c*="."*n end
     c*=AuName(u)
   else
@@ -862,22 +846,22 @@ function showcentralizer(io::IO,u)
 end
 
 function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
-  show(IOContext(io,:TeX=>true),uc)
+  show(IOContext(io,:TeX=>true),"text/plain",uc)
 end
 
 function Base.show(io::IO,uc::UnipotentClasses)
+  print(io,"UnipotentClasses(",uc.spets,")")
+end
+
+function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
+  println(io,uc)
   TeX=get(io,:TeX,false)
-  repl=get(io,:limit,false)
-  deep=get(io,:typeinfo,false)!=false
-  printTeX(io,"UnipotentClasses(\$",uc.prop[:spets],"\$)")
-  if !(repl||TeX) || deep return end
-  print(io,"\n")
   if get(io,:order,true) println(io,uc.orderclasses) end
   sp = map(copy, uc.springerseries)
   if get(io,:fourier,false)
     for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
   end
-  WF=uc.prop[:spets]
+  WF=uc.spets
   if WF isa Spets W=Group(WF)
   else W=WF;WF=spets(W) end
   if uc.p!=0 || !any(x->haskey(x,:balacarter),uc.classes)
@@ -923,10 +907,10 @@ function Base.show(io::IO,uc::UnipotentClasses)
   if get(io,:springer,true)
    append!(col_labels,
       map(function (ss,)
-        res=string(sprint(show,ss[:relgroup];context=io),"(",
-          sprint(show,subspets(WF,ss[:levi]);context=io),")")
+        res=string(repr(ss[:relgroup];context=io),"(",
+          repr(subspets(WF,ss[:levi]);context=io),")")
         if !all(isone,ss[:Z])
-          res*=string("/", join(map(q->sprint(show,q;context=io),ss[:Z]),","))
+          res*=string("/", join(map(q->repr(q;context=io),ss[:Z]),","))
         end
         return res
     end, sp))
@@ -935,7 +919,7 @@ function Base.show(io::IO,uc::UnipotentClasses)
   if get(io,:rows,false)==false
     io=IOContext(io,:rows=>sortperm(map(x->x.dimBu, uc.classes)))
   end
-  format(io,toM(tbl);rows_label="u",col_labels=col_labels,row_labels=row_labels)
+  showtable(io,toM(tbl);rows_label="u",col_labels=col_labels,row_labels=row_labels)
 end
 
 # decompose tensor product of characters (given as their indices in CharTable)
@@ -945,13 +929,7 @@ function DecomposeTensor(W,c::Int...)
   decompose(ct,vec(prod(view(ct.irr,collect(c),:),dims=1)))
 end
 
-struct ICCTable
-  prop::Dict{Symbol,Any}
-end
-
-Base.getproperty(t::ICCTable,k::Symbol)=getfield(t,:prop)[k]
-Base.setproperty!(t::ICCTable,k::Symbol,x)=getfield(t,:prop)[k]=x
-
+@GapObj struct ICCTable end
 
 """
 `ICCTable(uc,seriesNo=1;q=Pol())`
@@ -991,7 +969,7 @@ For  instance,  one  can  ask  to  not  display  the entries as products of
 cyclotomic polynomials:
 
 ```julia-rep1
-julia> xprint(t;cycpol=false)
+julia> xdisplay(t;cycpol=false)
 Coefficients of Xᵪ on Yᵩ for A3
      │4 31 22 211   1111
 ─────┼───────────────────
@@ -1051,10 +1029,10 @@ correspond  to  geometric  unipotent  conjugacy  classes.  This  matrix  is
 obtained as a by-product of Lusztig's algorithm to compute `Pᵩᵪ`.
 """
 function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
-  W=uc.prop[:spets] # W=Group(uc.spets)
+  W=uc.spets # W=Group(uc.spets)
   if W isa Spets W=W.W end
   ss=uc.springerseries[i]
-  res=ICCTable(Dict(:spets=>uc.prop[:spets],:relgroup=>ss[:relgroup],
+  res=ICCTable(Dict(:spets=>uc.spets,:relgroup=>ss[:relgroup],
                     :series=>i,:q=>q,:p=>uc.p))
   if haskey(ss,:warning) println("# ",ss[:warning])
     res.warning=ss[:warning]
@@ -1096,14 +1074,15 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   res
 end
 
-function Base.show(io::IO,x::ICCTable)
-  repl=get(io,:limit,false)
+function Base.show(io::IO, ::MIME"text/html", x::ICCTable)
+  show(IOContext(io,:TeX=>true),"text/plain",x)
+end
+
+Base.show(io::IO,x::ICCTable)=print(io,"ICCTable(",x.uc,",",x.series,")")
+
+function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
+  printTeX(io,"Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for \$",x.relgroup,"\$\n")
   TeX=get(io,:TeX,false)
-  if !(repl || TeX) print(io,"ICCTable(",x.uc,",",x.series,")"); return end
-  text="Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for \$"*
-        sprint(show,x.relgroup;context=io)*"\$\n"
-  if TeX text*="\\medskip\n\n" else text=fromTeX(io,text) end
-  print(io,text)
   if get(io,:cols,false)==false && get(io,:rows,false)==false
     rows=collect(eachindex(x.dimBu))
     sort!(rows,by=i->[x.dimBu[i],x.locsys[i]])
@@ -1113,27 +1092,26 @@ function Base.show(io::IO,x::ICCTable)
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
   rowLabels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
-  format(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
+  showtable(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
 end
 
-struct XTable
-  prop::Dict{Symbol,Any}
-end
+@GapObj struct XTable end
 
-Base.getproperty(t::XTable,k::Symbol)=getfield(t,:prop)[k]
-Base.setproperty!(t::XTable,k::Symbol,x)=getfield(t,:prop)[k]=x
-
-function repair(u::Matrix) # can disappear with julia1.6
+if VERSION.minor<6
+function repair(u::Matrix) # to repair output of cat in 1.≤5
   for i in 1:length(u)
     if !isassigned(u,i) u[i]=0 end
   end
   u
 end
+else
+repair(u::Matrix)=u
+end
   
 # XTable(uc[,opt]) values of X̃ᵪ on unipotent classes or local systems
 # Note that c_ι=βᵤ+(rkss L_\CI)/2
 #
-# Formatting: options of FormatTable + [.classes, .CycPol]
+# Formatting: options of showtable + [:classes, :CycPol]
 function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
 # println("here uc=",uc)
   pieces=map(i->ICCTable(uc,i;q=q),eachindex(uc.springerseries))
@@ -1145,7 +1123,9 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
     :uc=>uc,
     :Y=>^(repair(cat(getproperty.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
     :parameter=>vcat(getproperty.(pieces,:parameter)...),
-    :relgroups=>getindex.(uc.springerseries,:relgroup)))
+    :relgroups=>getindex.(uc.springerseries,:relgroup),
+    :q=>q,
+    :class=>classes))
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
@@ -1166,41 +1146,39 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
   res
 end
 
-function Base.show(io::IO,x::XTable)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"XTable(",x.uc.prop[:spets],",variable=",x.q,")")
-    return
-  end
-  class=haskey(getfield(x,:prop),:classes)
-  print(io,"Values of character sheaves X̃ᵪ on")
-  rowLabels=vcat(map(g->map(n->fromTeX(io,"X^{"*sprint(show,g;context=io)
+function Base.show(io::IO, ::MIME"text/html", x::XTable)
+  show(IOContext(io,:TeX=>true),"text/plain",x)
+end
+
+Base.show(io::IO,x::XTable)=print(io,"XTable(",x.uc,",q=",x.q,",classes=$(x.class))")
+
+function Base.show(io::IO,::MIME"text/plain",x::XTable)
+  printTeX(io,"Values of character sheaves \$\\tilde X_\\chi\$ on")
+  rowLabels=vcat(map(g->map(n->fromTeX(io,"X^{"*repr(g;context=io)
              *"}_{"*n*"}"),charnames(io,g)),x.relgroups)...)
-  rowsLabel=fromTeX(io,"\\tilde X_\\chi\\"*(class ? "class" : "locsys"))
-  if class
+  rowsLabel="\\tilde X_\\chi\\backslash "
+  if x.class
+    rowsLabel*="class"
     print(io," unipotent classes\n")
-    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
-                     x.classes)
-  else print(io," local systems\n")
+    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),x.classes)
+  else 
+    rowsLabel*="locsys"
+    print(io," local systems\n")
     columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x.uc.classes[p[1]]),x.locsys)
   end
   tbl=x.scalar
   if get(io,:cycpol,false) tbl=CycPol.(tbl) end
-  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+  showtable(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
 end
 
-struct GreenTable
-  prop::Dict{Symbol,Any}
-end
-
-Base.getproperty(t::GreenTable,k::Symbol)=getfield(t,:prop)[k]
-Base.setproperty!(t::GreenTable,k::Symbol,x)=getfield(t,:prop)[k]=x
+@GapObj struct GreenTable end
 
 # GreenTable(uc;q=Pol())
 # values of Green functions Q^\CI_{wF} on unipotent classes
 # method: use formula DLM3 (3.1)
 # Lines indexed by (\CI,wF). Columns by unip. classes or local systems
 function GreenTable(uc::UnipotentClasses;q=Pol())
-  t=GreenTable(getfield(XTable(uc;classes=true,q=q),:prop))
+  t=GreenTable(XTable(uc;classes=true,q=q).prop)
   m=cat(map(g->permutedims(CharTable(g).irr),t.relgroups)...;dims=(1,2))
   t.scalar=m*t.scalar
   t.indices=Vector{Int}[]
@@ -1212,30 +1190,27 @@ function GreenTable(uc::UnipotentClasses;q=Pol())
   t
 end
 
-function Base.show(io::IO,x::GreenTable)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"GreenTable(",x.uc.prop[:spets],",variable=",x[:q],")")
-    return
-  end
-  print(io,"Values of Green functions Q_{wF} on unipotent classes\n")
+function Base.show(io::IO, ::MIME"text/html", x::GreenTable)
+  show(IOContext(io,:TeX=>true),"text/plain",x)
+end
+
+Base.show(io::IO,x::GreenTable)=print(io,"GreenTable(",x.uc,",q=",x.q,")")
+
+function Base.show(io::IO,::MIME"text/plain",x::GreenTable)
+  print(io,"Values of Green functions \$Q_{wF}\$ on unipotent classes\n")
   rowLabels=vcat(map(x.relgroups) do g
     classnames=map(x->fromTeX(io,x),classinfo(g)[:classnames])
-    map(n->string("Q^{",sprint(show,g;context=io),"}_{",n,"}"),classnames)
+    map(n->string("Q^{",repr(g;context=io),"}_{",n,"}"),classnames)
     end...)
-  rowsLabel="Q^I_{wF}\\class"
+  rowsLabel="Q^I_{wF}\\backslash class"
   columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
                      x.classes)
   tbl=x.scalar
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+  showtable(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
 end
 
-struct TwoVarGreenTable
-  prop::Dict{Symbol,Any}
-end
-
-Base.getproperty(t::TwoVarGreenTable,k::Symbol)=getfield(t,:prop)[k]
-Base.setproperty!(t::TwoVarGreenTable,k::Symbol,x)=getfield(t,:prop)[k]=x
+@GapObj struct TwoVarGreenTable end
 
 # two-variable green functions table.
 # for now only implemented when W is split.
@@ -1250,26 +1225,23 @@ function TwoVarGreen(W,L)
   mm=map(eachindex(uL.springerseries))do i
     s=uL.springerseries[i]
     p=findfirst(S->S[:levi]==inclusion(L,s[:levi]) &&
-                S[:Z][1]==s[:Z][1],uG.springerseries)
+                (isempty(S[:Z]) || S[:Z][1]==s[:Z][1]),uG.springerseries)
     if isnothing(p) error("not found ",s[:levi]) end
     RG=relative_coset(W,inclusion(L,s[:levi]))
     RLF=relative_coset(L,s[:levi])
     RL=Group(RLF)
-    l=map(x->findfirst(==(x),Group(RG).prop[:relativeIndices]),
-      inclusion(L,RL.prop[:relativeIndices]))
+    l=map(x->findfirst(==(x),Group(RG).relativeIndices),
+      inclusion(L,RL.relativeIndices))
     if nothing in l error("not implemented") end
     RLF=subspets(RG,convert(Vector{Int},l),
-                Group(RG).prop[:MappingFromNormalizer](L.phi))
+                Group(RG).MappingFromNormalizer(L.phi))
     RL=Group(RLF)
     f=fusion_conjugacy_classes(RLF,RG)
     cl=classreps(RLF)
     d=map(cl)do w
-      if isempty(s[:levi]) pw=w
-      elseif isone(w) pw=L.phi
-      else pw=word(RLF,w)
-        if isempty(pw) pw=L.phi
-        else pw=prod(Group(RG).prop[:parentMap][pw])*L.phi
-        end
+      pw=word(RLF,w)
+      if isempty(pw) pw=L.phi
+      else pw=prod(Group(RG).parentMap[pw])*L.phi
       end
       Lo=subspets(L,Int.(s[:levi]),pw/L.phi)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
@@ -1287,15 +1259,14 @@ function TwoVarGreen(W,L)
 end
 
 function Base.show(io::IO, ::MIME"text/html", x::TwoVarGreenTable)
-  show(IOContext(io,:TeX=>true),x)
+  show(IOContext(io,:TeX=>true),"text/plain",x)
 end
 
-function Base.show(io::IO,x::TwoVarGreenTable)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
-    print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
-    return
-  end
-  print(io,"Values of two-variable Green functions for ",x.W," and ",x.L,"\n")
+Base.show(io::IO,x::TwoVarGreenTable)=print(io,"TwoVarGreenTable(",x.W,",",x.L,")")
+
+function Base.show(io::IO,::MIME"text/plain",x::TwoVarGreenTable)
+  print(io,"Values of two-variable Green functions for \$",x.W,"\$ and \$",
+        x.L,"\$\n")
   rowLabels=map(x.classL)do p
     name(IOContext(io,:class=>p[2]),x.uL.classes[p[1]])
   end
@@ -1304,7 +1275,7 @@ function Base.show(io::IO,x::TwoVarGreenTable)
   end
   tbl=improve_type(x.scalar)
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  format(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label="v/u")
+  showtable(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label="v/u")
 end
 
 """
@@ -1345,7 +1316,7 @@ The   example  above  shows  that  the  special  pieces  are  different  in
 characteristic 3.
 """
 function special_pieces(uc)
-  W=uc.prop[:spets]
+  W=uc.spets
   ch=charinfo(W)
   specialch=findall(iszero,ch[:a]-ch[:b]) # special characters of W
   specialc=first.(uc.springerseries[1][:locsys][specialch])

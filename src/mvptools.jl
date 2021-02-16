@@ -171,7 +171,7 @@ function pblocks(G,p)
   l=length(T.charnames)
   classes=map(c->div(T.centralizers[1],c),T.centralizers)
   v=map(chi->map(j->mod(classes[j]*chi[j]//chi[1],p),1:l),eachrow(T.irr))
-  sort(collect(values(groupby(improve_type(v),1:l))))
+  sort(collectby(improve_type(v),1:l))
 end
 
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))

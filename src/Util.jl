@@ -9,9 +9,9 @@ module Util
 
 export 
   @forward,
-  getp, gets, # helpers for objects with a Dict of properties
-  format, format_coefficient, ordinal, fromTeX, printTeX,joindigits, cut, 
-  rio, xprint, xprintln, ds, # formatting
+  getp, @GapObj, # helpers for GapObjs
+  showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
+  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, # formatting
   factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -45,31 +45,40 @@ toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
 
 #--------------------------------------------------------------------------
-"""
-  a variant of get! for objects O which have a Dict of properties named prop.
-  Usually called as
-    gets(O,:p) do ---code to compute property :p --- end
-"""
-gets(f::Function,o,p::Symbol)=get!(f,o.prop,p)
+# a GapObj is an object which has a field prop::Dict{Symbol,Any}
 
 """
-A  variation where it is assumed f(o) sets o.prop[p] but not assumed that f
-returns o.prop[p], because  f could  set several keys at once...
+A  variation of get! where it is assumed f(o) sets o.prop[p] but not assumed
+that f returns o.prop[p], because  f could  set several keys at once...
 """
 function getp(f::Function,o,p::Symbol)
-  if haskey(o.prop,p) return o.prop[p] end
-  f(o)
+  if !haskey(o.prop,p) f(o) end
   o.prop[p]
 end
+
+macro GapObj(e)
+  push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
+  if e.args[2] isa Symbol T=e.args[2]
+  elseif e.args[2].args[1] isa Symbol T=e.args[2].args[1]
+  else T=e.args[2].args[1].args[1]
+  end
+  esc(Expr(:block,
+   e,
+   :(Base.getproperty(o::$T, s::Symbol)=hasfield($T,s) ? getfield(o, s) : 
+         getfield(o, :prop)[s]),
+   :(Base.setproperty!(o::$T,s::Symbol,v)=getfield(o,:prop)[s]=v),
+   :(Base.haskey(o::$T, s::Symbol)=haskey(o.prop,s)),
+   :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,o.prop,s))))
+end
+
 #----------------------- Formatting -----------------------------------------
 # print with attributes...
 rio(io::IO=stdout;p...)=IOContext(io,:limit=>true,p...)
 xprint(x...;p...)=print(rio(;p...),x...)
-xprint(io::IO,x...;p...)=print(IOContext(io,p...),x...)
 xprintln(x...;p...)=println(rio(;p...),x...)
-xprintln(io::IO,x...;p...)=println(IOContext(io,p...),x...)
+xdisplay(x;p...)=display(TextDisplay(IOContext(stdout,p...)),x)
 
-function ds(s) # "dump struct"
+function ds(s) # "dump struct"; not recursive like dump
   println(typeof(s),":")
   for f in fieldnames(typeof(s))
     if !isdefined(s,f) println(f,"=#undef")
@@ -89,14 +98,13 @@ const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢ�
 const sub=Dict(zip(subchars,unicodesub))
 const subclass="["*subchars*"]"
 const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
-  "frakS"=>"𝔖", "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗",
+  "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗ ",
   "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
   "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
-  "zeta"=>"ζ")
+  "zeta"=>"ζ", "backslash"=>"\\")
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)
-  s=replace(s,r"\$"=>"")
   s=replace(s,r"\\tilde ([A-Z])"=>s"\1\U303")
   s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
   s=replace(s,r"\\hfill\\break"=>"\n")
@@ -112,7 +120,9 @@ function unicodeTeX(s::String)
              t=split(t[9:end-2],"}{")
              map(x->sup[x],t[1])*"⁄"*map(x->sub[x],t[2])
       end)
-  s=replace(s,r"\\([a-zA-Z]+)"=>t->TeXmacros[t[2:end]])
+  s=replace(s,r"\\mathfrak  *S"=>"\U1D516 ")
+  s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
+  s=replace(s,r"\$"=>"")
   s=replace(s,r"{}"=>"")
   s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
   s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
@@ -126,10 +136,12 @@ function unicodeTeX(s::String)
 end
 
 function format_coefficient(c::String;allow_frac=false)
+  ok="([^-+*/]|√-|{-)*"
+  par="(\\([^()]*\\))"
   if c=="1" ""
   elseif c=="-1" "-"
-  elseif match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?$",c)!==nothing c
-  elseif allow_frac && match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?/[0-9]*$",c)!==nothing c
+  elseif match(Regex("^[-+]?$ok$par*$ok\$"),c)!==nothing c
+  elseif allow_frac && match(Regex("^[-+]?$ok$par*$ok/+[0-9]*\$"),c)!==nothing c
   else "("*c*")" 
   end
 end
@@ -140,6 +152,7 @@ function TeXstrip(n::String) # plain ASCII rendering of TeX code
   n=replace(n,"\\phi"=>"phi")
   n=replace(n,"\\zeta"=>"E")
   n=replace(n,r"\bi\b"=>"I")
+  n=replace(n,r"\\mathfrak *"=>"")
 end
 
 function fromTeX(io::IO,n::String)
@@ -155,59 +168,80 @@ function printTeX(io::IO,s...)
   res=""
   for x in s 
     if x isa String res*=x
-    else res*=sprint(show,x;context=IOContext(io,:TeX=>true)) end
+    else res*=repr(x;context=IOContext(io,:TeX=>true)) end
   end
   print(io,fromTeX(io,res))
 end
 
 """
-`format(io, table; options )`
+`showtable(io, table::AbstractMatrix; options )`
 
-General routine to format a table. Used for character tables. the following
-options can be passed as properties of the `io` or as keywords
+General  routine to format a table. The  following options can be passed as
+properties of the `io` or as keywords.
 
-     row_labels          Labels for rows
-     col_labels          Labels for columns
-     rows_label          Label for column of rowLabels
-     rowseps          line numbers after which to put a separator
-     column_repartition  display in vertical pieces of sizes indicated
-     rows                show only these rows
-     cols                show only these columns
+  - `row_labels`         labels for rows (default `axes(table,1)`)
+  - `rows_label`         label for first column (column of row labels)
+  - `col_labels`         labels for other columns
+  - `rowseps`            line numbers after which to put a separator
+  - `rows`               show only these rows
+  - `cols`               show only these columns
+  - `TeX`                give LaTeX output (useful in Jupyter or Pluto)
+  - `column_repartition` display in vertical pieces of sizes indicated
+    (default if not `TeX`: take in account `displaysize(io,2)`)
 
+```julia-rep1
+julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];
+
+julia> showtable(stdout,m)
+1│1 2 3 4
+2│5 6 7 8
+3│9 1 2 3
+4│4 5 6 7
+
+julia> labels=["x","y","z","t"];
+
+julia> showtable(stdout,m;cols=2:4,col_labels=labels,rowseps=[0,2,4])
+ │y z t
+─┼──────
+1│2 3 4
+2│6 7 8
+─┼──────
+3│1 2 3
+4│5 6 7
+─┴──────
+```
 """
-function format(io::IO,t::Matrix; opt...)
+function showtable(io::IO,t::AbstractMatrix; opt...)
   io=IOContext(io,opt...)
   strip(x)=fromTeX(io,x)
-  row_labels=strip.(get(io,:row_labels,string.(axes(t,1))))
-  col_labels=get(io,:col_labels,nothing)
-  if col_labels!=nothing col_labels=strip.(col_labels) end
-  rows_label=strip(get(io,:rows_label,""))
-  rowseps=get(io,:rowseps,[0])
   rows=get(io,:rows,axes(t,1))
   cols=get(io,:cols,axes(t,2))
-  column_repartition=get(io,:column_repartition,nothing)
-  lpad(s,n)=" "^(n-textwidth(s))*s # because lpad not what expected
-  rpad(s,n)=s*" "^(n-textwidth(s)) # because rpad not what expected
   t=t[rows,cols]
-  t=map(x->x isa String ? x : sprint(show,x; context=io),t)
+  row_labels=(strip.(get(io,:row_labels,string.(axes(t,1)))))[rows]
+  col_labels=get(io,:col_labels,nothing)
+  if col_labels!=nothing col_labels=(strip.(col_labels))[cols] end
+  rows_label=strip(get(io,:rows_label,""))
+  rowseps=get(io,:rowseps,col_labels!=nothing ? [0] : Int[])
+  column_repartition=get(io,:column_repartition,nothing)
+  lpad(s,n)=" "^(n-textwidth(s))*s # because Base.lpad does not use textwidth
+  rpad(s,n)=s*" "^(n-textwidth(s)) # because Base.rpad does not use textwidth
+  t=map(x->x isa String ? x : repr(x; context=io),t)
   TeX=get(io,:TeX,false)
-  row_labels=string.(row_labels[rows])
-  colwidth=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
+  cols_widths=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
   if !isnothing(col_labels)
-    col_labels=string.(col_labels[cols])
-    colwidth=map(max,colwidth,textwidth.(col_labels))
-    if !TeX col_labels=map(lpad,col_labels,colwidth) end
+    cols_widths=map(max,cols_widths,textwidth.(col_labels))
+    if !TeX col_labels=map(lpad,col_labels,cols_widths) end
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
   if !TeX
     rows_label=lpad(rows_label,labwidth)
     row_labels=rpad.(row_labels,labwidth)
   end
-  function hline(ci)
+  function hline(ci;last=false,first=false)
     if TeX println(io,"\\hline")
     else
-    print(io,"\u2500"^labwidth,"\u253C")
-    print(io,"\u2500"^sum(colwidth[ci].+1),"\n")
+    print(io,"\u2500"^labwidth,first ? "\u252C" : last ? "\u2534" : "\u253C")
+    print(io,"\u2500"^sum(cols_widths[ci].+1),"\n")
     end
   end
   function cut(l,max) # cut Integer list l in parts of sum<max
@@ -223,31 +257,31 @@ function format(io::IO,t::Matrix; opt...)
     push!(res,n)
   end
   if isnothing(column_repartition)
-     if TeX column_repartition=[length(colwidth)]
-     else column_repartition=cut(1 .+colwidth,displaysize(io)[2]-labwidth-1)
+     if TeX column_repartition=[length(cols_widths)]
+     else column_repartition=cut(1 .+cols_widths,displaysize(io)[2]-labwidth-1)
      end
   end
   ci=[0]
   for k in column_repartition
     ci=ci[end].+(1:k)
+    if TeX println(io,"\$\$\n\\begin{array}{c|","c"^length(ci),"}") end
     if !isnothing(col_labels)
       if TeX
-        println(io,"\\begin{array}{c|","c"^length(ci),"}")
         println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
       else println(io,rows_label,"\u2502",join(col_labels[ci]," "))
       end
-      if 0 in rowseps hline(ci) end
     end
+    if 0 in rowseps hline(ci;first=isnothing(col_labels)) end
     for l in axes(t,1)
       if TeX
         println(io,row_labels[l],"&",join(t[l,ci],"&"),"\\\\")
       else
-        println(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],colwidth[ci])," "))
+        println(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],cols_widths[ci])," "))
       end
-      if l in rowseps hline(ci) end
+      if l in rowseps hline(ci,last=l==size(t,1)) end
     end
-    if ci[end]!=length(colwidth) print(io,"\n") end
-    if TeX println(io,"\\end{array}") end
+    if ci[end]!=length(cols_widths) print(io,"\n") end
+    if TeX println(io,"\\end{array}\n\$\$") end
   end
 end
 
@@ -308,6 +342,23 @@ function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
   if file!=stdout close(file) end
 end
 
+TeXs(x;p...)=repr("text/plain",x;context=IOContext(stdout,:TeX=>true,p...))
+
+function TeX(x;p...)
+  s=tempname(".")
+  open("$s.tex","w")do f
+    println(f,"\\documentclass{article}")
+    println(f,"\\usepackage{amsmath}")
+    println(f,"\\usepackage{amssymb}")
+    println(f,"\\begin{document}")
+    print(f,TeXs(x;p...))
+    println(f,"\\end{document}")
+  end
+  run(`latex $s.tex`)
+  run(`xdvi -expert -s 5 $s.dvi`)
+  run(`rm $s.tex $s.aux $s.log $s.dvi`)
+end
+
 #----------------------- Number theory ---------------------------
 " the numbers less than n and prime to n "
 function prime_residues(n)
@@ -317,12 +368,8 @@ end
 
 # make Primes.factor fast for small Ints by memoizing it
 import Primes
-const dict_factor=Dict(2=>Primes.factor(2))
-function factor(n::Integer)
-  get!(dict_factor,n) do 
-    Primes.factor(Dict,n) 
-  end
-end
+const dict_factor=Dict(2=>Primes.factor(Dict,2))
+factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
 
 function divisors(n::Int)::Vector{Int}
   if n==1 return [1] end

@@ -69,6 +69,50 @@ function cmpvec(a,b;na="a",nb="b")
   end
 end
 
+# cmptable(t1,t2[,nz]) nz: show all non-zero columns anyway
+# compare two chevie tables or inductiontables
+function cmptables(t1,t2,nz=false)
+  t=[copy(t1),copy(t2)]
+  opt=[]
+  m=[]
+  for i in [1,2]
+    if t[i] isa InductionTable
+      opt[i]=(rowLabels=t[i].gcharnames,columnLabels=t[i].ucharnames)
+      m[i]=t[i].identifier
+      t[i]=t[i].scalar
+    elseif t[i] isa NamedTuple
+      opt[i]=(rowLabels=t[i].rowLabels,columnLabels=t[i].columnLabels)
+      m[i]=""
+      t[i]=t[i].scalar
+    else opt[i]=(rowLabels=axes(t[i],1),columnLabels=axes(t[i],2))
+      m[i]=""
+    end
+  end
+  if nz r=filter(i->t[1][i,:]!=t[2][i,:],axes(t[1],1))
+  else r=filter(i->any(!iszero,t[1][i,:])|| any(!iszero,t[2][i,:]),axes(t[1],1))
+  end
+  msg=string("[",length(r),"/",length(t[1]),",")
+  if isempty(r) InfoChevie("Tables agree!\n");return end
+  p=Perm(t[1][r,:],t[2][r,:],dims=1)
+  if p!==nothing
+    ChevieErr("Permuted lines:\n",join(map(x->join(x,"->"),permutedims(
+       [opt[1].rowLabels[r],Permuted(opt[1].rowLabels[r],p)])),"\n"),"\n")
+    return
+  end
+  p=Perm(t[1],t[2],dims=2)
+  if p!==nothing
+    ChevieErr("Permuted columns:\n",
+     join(map(c->join(opt[1].columnLabels[c],"->"),cycles(p))," "),"\n")
+    return
+  end
+  if nz==2 c=filter(i->t[1][r,i]!=t[2][r,i],axes(t[1],2))
+  else c=axes(t[1],2)
+  end
+  msg*=string(length(c),"/",size(t[1],2),"] of ")
+  ChevieErr(msg,"\n",join(List([1,2],i->string(m[i],"\n",
+     showtable(t[i];opt[i]...,rows=r,columns=c,screenColumns=70)))))
+end
+
 # find matrices gr as a representation of a group or Hecke algebra
 function findrepresentation(W,gr,check=false)
   O=W
@@ -161,8 +205,8 @@ function lusztiginduction(WF,L)
   xprint("Lusztig Induction from ",L," to ",WF)
   t=LusztigInductionTable(L,WF)
   if isnothing(t) return end
-  if haskey(t.prop,:scalars) 
-    print("\t****** scalars=",t.prop[:scalars]) 
+  if haskey(t,:scalars) 
+    print("\t****** scalars=",t.scalars) 
   end
   println()
   if L.phi==WF.phi
@@ -196,7 +240,7 @@ function lusztiginduction(WF,L)
     return isempty(l) ? u[1,:].*0 : sum(j->u[j,:].*c[j],l)
   end)
   rhs=Dict{Symbol,Any}(:scalar=>rhs, :u=>L,:g=>WF,
-    :uNames=>UnipotentCharacters(L).prop[:TeXCharNames],
+    :uNames=>UnipotentCharacters(L).TeXCharNames,
     :gNames=>classinfo(WF)[:classnames])
   m=copy(rhs)
   m[:scalar]=Uch.DLCharTable(WF)*t.scalar
@@ -624,7 +668,7 @@ function HCdegrees(W,i,rel=false)
 # check parameters of relative algebra by the formula
 # u_{s,j}=ζ_s^j  q^(([a+A]_ρ_{det_s^j}-[a+A]_ρ_{\Id})/order#class(s)
 # where ρ_χ is the unip. char corresp. to χ in relative group
-  aA=map(x->uw.prop[:a][x]+uw.prop[:A][x],hw[:charNumbers])
+  aA=map(x->uw.a[x]+uw.A[x],hw[:charNumbers])
   para=map(hyperplane_orbits(R))do h
     l=map(i->(aA[i]-aA[charinfo(R)[:positionId]])//h.order//h.N_s,h.det_s)
     max(maximum(l),0).-vcat([0],l)
@@ -658,5 +702,95 @@ end
 
 test[:HCdegrees]=(fn=HCdegrees, applicable=isspetsial,
  comment="check generic degrees from relative Hecke algebras of HCinduction")
+
+# EigenAndDegHecke(s) 
+# s is a series. Uses only s.Hecke, s.d, 
+# (and s.degree, s.levi and s.cuspidal for non-principal series)
+# 
+# Assume H=s.Hecke is a spetsial exp(2i pi d)-cyclotomic algebra, 
+# for d in Q/Z describing a central element of Group(H).
+# Returns a list of records for each character chi of H with fields
+#   deg:=Generic degree = S_Id/S_chi
+#   eig:=rootUnity part of Eigenvalue of Frobenius
+#   frac:= fractional power in q-part of Eigenvalue of Frobenius
+function EigenAndDegHecke(s)
+  FractionToRoot(x)=E(denominator(x),numerator(x))
+  H=hecke(s)
+  d=s.d
+  zeta=E(d)
+  W=H.W
+  ct=CharTable(H).irr
+  ct1=CharTable(W).irr
+  ct2=improve_type(scal(value.(ct,Ref(:q=>zeta))))
+  n=axes(ct2,1)
+  good=filter(i->!any(x->x isa HasType.Unknown,ct2[:,i]),n)
+  p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
+  if !isone(p) println("***** perm=",p) 
+    if iscyclic(W) ChevieErr("should not have perm")end 
+  end
+  d1=exponent(d)//gcd(conductor(d),gcd(degrees((W))))
+  i=position_regular_class(W,d1) # this class represents F
+  omegachi=map(x->scal(value(x[i]/x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
+  frac=degree.(central_monomials(H)).*d1
+  om2=map((o,p)->o*d^-p,map(x->x[i]/x[1],eachrow(ct1)),frac)
+  if omegachi!=om2 
+    omegachi=om2
+    ChevieErr(classinfo(W)[:classtext][i],"^",1//d1," not equal to π(",W,")\n")
+  end
+  ss=CycPol.(schur_elements(H)^p)
+  ss=map(x->s.degree/x,ss)
+# omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
+  zeta=E(Root1(;r=d1)^frac[PositionId(W)])
+  if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
+    omegachi=map(i->Root1(;r=s.d*s.e*s.delta*
+              ((i-1)/s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
+    zeta=Root1(;r=s.d*s.e*s.delta*s.d*dSeries.mC(s)[1])
+  end
+  map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=Mod1(frac)),ss,omegachi,frac)
+end
+
+function CheckSerie(s)
+  W=s.spets
+  InfoChevie("\n   # ",s)
+  relative_group(s)
+  if s.principal
+    Ed=s.d
+    c=(generic_order(s.spets,Pol())//sum(x->x^2,s.WGLdims)//
+       generic_order(s.levi,Pol()))(Ed)
+    if c!=1 ChevieErr(s," => |G|/(|L||WGL|) mod Φ=",c,"\n") end
+    e=generic_sign(s.spets)*Ed^(sum(codegrees(Group(s.spets)))-
+       sum(codegrees(Group(s.levi))))/generic_sign(s.levi)
+    if e!=1 ChevieErr(s," => εL/c mod Φ=",e,"\n")end
+  end
+  if isnothing(dSeries.char_numbers(s)) return end
+  e=eigen(UnipotentCharacters(W))[dSeries.char_numbers(s)]
+  if haskey(s,:hecke)
+    pred=map(x->x.eig,EigenAndDegHecke(s))*
+      eigen(UnipotentCharacters(s.levi))[s.cuspidal]
+    if e!=pred && (!haskey(s,:delta) || s.delta==1 || is_cyclic(s.WGL))
+     n=charnames(UnipotentCharacters(W))[s.charNumbers]
+      ChevieErr(s," actual eigen differ from predicted eigen")
+      c=Set(map((x,y)->x/y,pred,e))
+      if length(c)==1 ChevieErr("predicted=",c[1],"*actual")
+      else cmptables(
+                 (rowLabels=["actual   "],columnLabels=n,scalar=[e]),
+                 (rowLabels=["predicted"],columnLabels=n,scalar=[pred]))
+      end
+    end
+  end
+end
+
+# checkSeries(WF[,d[,ad]])
+function checkSeries(W,arg...)
+  if length(arg)>=1 l=filter(s->s.levi!=s.spets,Series(W,arg...))
+  else l=dSeries.ProperSeries(W)
+  end
+  for s in l CheckSerie(s)end
+  InfoChevie("\n   ")
+  l
+end
+
+test[:series]=(fn=checkSeries, applicable=isspetsial,
+ comment="check d-HC series")
 
 end

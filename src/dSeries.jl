@@ -72,7 +72,7 @@ julia> l=cuspidal_pairs(W,3)
 
 julia> Series(W,l[5]...,3)
 ζ₃-series R^{G₄}_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
- │   γᵩ φ mod(3)  ε parameter family #
+ │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
 5│ φ₂‚₃     -ζ₃²  1      -ζ₃q        2
@@ -127,8 +127,8 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   # EnnolaBete[i]: possible action of ξ-Ennola on i-th family
   # list of possible destinations for each char, taking just degree in account
   EnnolaBete=map(ff)do f
-    m=f[:fourierMat];if !(m isa Matrix) m=toM(m) end
-    ud=CycPol.(m'*fd[f[:charNumbers]])
+    m=f.fourierMat;if !(m isa Matrix) m=toM(m) end
+    ud=CycPol.(m'*fd[f.charNumbers])
     map(p->positionssgn(ud, ennola_twist(p, ξ)), ud)
   end
 
@@ -146,8 +146,8 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   # EnnolaBE(i,f): More sophisticated than EnnolaBete: take in account predeigen
   function EnnolaBE(f,e)
     for j in 1:length(f)
-      if f[:charNumbers][j] in uc[:harishChandra][1][:charNumbers]
-        e[j]=filter(k->eigen(f)[abs(k)]==predeigen(f[:charNumbers][j]),e[j])
+      if f.charNumbers[j] in uc[:harishChandra][1][:charNumbers]
+        e[j]=filter(k->eigen(f)[abs(k)]==predeigen(f.charNumbers[j]),e[j])
       end
     end
     e
@@ -174,7 +174,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   l=cartesian(l...)[1]
   res=fill(0,length(uc[:a]))
   for (i,p) in enumerate(l)
-    res[ff[i][:charNumbers]]=ff[i][:charNumbers]^p
+    res[ff[i].charNumbers]=ff[i].charNumbers^p
   end
   SPerm(res)
 end
@@ -350,7 +350,7 @@ positive(p::CycPol)=all(>(0),values(p.v))
 # translation.
 #
 # The  result is  a list  of pairs  [v1,v2] telling that globally σ(v1)=v2,
-# where the v1 are sort(collect(values(groupby(sch,eachindex(sch)))),by=minimum)
+# where the v1 are sort(collectby(sch,eachindex(sch)),by=minimum)
 function FitParameter(sch, m)
   den=lcm(denominator.(m))
   e=length(m)
@@ -416,13 +416,12 @@ end
 #  .WGL         W_𝐆(L,λ)
 #  .Hecke       H_𝐆(L,λ)
 #  .e           |W_𝐆(L,λ)|
-struct Series
+@GapObj struct Series
   spets
   levi
   cuspidal::Int
   d::Root1
   principal::Bool
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -470,7 +469,7 @@ G₄
 
 julia> s=Series(W,3,1)[1]
 ζ₃-series R^{G₄}_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
- │   γᵩ φ mod(3)  ε parameter family #
+ │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
 5│ φ₂‚₃     -ζ₃²  1      -ζ₃q        2
@@ -527,8 +526,8 @@ function Series(WF, levi, cuspidal, d;NC=false)
   if d isa Int && d>0 d=1//d end
   if !(d isa Root1) d=Root1(;r=d) end
   if !(WF isa Spets) WF=spets(WF) end
-  principal=UnipotentCharacters(levi).prop[:a][cuspidal]==0 && 
-            UnipotentCharacters(levi).prop[:A][cuspidal]==0
+  principal=UnipotentCharacters(levi).a[cuspidal]==0 && 
+            UnipotentCharacters(levi).A[cuspidal]==0
   s=Series(WF,levi,cuspidal,d,principal,Dict{Symbol,Any}())
   if !NC hecke(s) end
   s
@@ -544,7 +543,7 @@ function ProperSeries(W;NC=false)
 end
 
 function Gapjm.degree(s::Series)
-  gets(s,:degree) do
+  get!(s,:degree) do
     deg=conj(generic_sign(s.spets))*generic_order(s.spets,Pol()) // 
     (conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))
     CycPol(shift(deg,-deg.v))*Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
@@ -568,33 +567,33 @@ function Base.show(io::IO,s::Series)
     print(io,"R^{",s.spets,"}_","{",s.levi,"}(")
     Util.printTeX(io,"$n==",cname,")")
   end
-  if haskey(s.prop, :WGL)
-    if iscyclic(s) && (!haskey(s.prop,:Hecke) || e(s)>4)
+  if haskey(s, :WGL)
+    if iscyclic(s) && (!haskey(s,:Hecke) || e(s)>4)
       Util.printTeX(io,"$quad W_G(L,$n)==Z_{$(e(s))}")
-    elseif haskey(s.prop, :Hecke)
+    elseif haskey(s, :Hecke)
       Util.printTeX(io,"$quad H_G(L,$n)==");print(io,hecke(s))
-    elseif haskey(relative_group(s).prop, :refltype)
+    elseif haskey(relative_group(s), :refltype)
       Util.printTeX(io,"$quad W_G(L,$n)==");print(io,relative_group(s))
     else
       Util.printTeX(io,"$quad |W_G(L,$n)|==$(length(relative_group(s)))")
     end
-  elseif haskey(s.prop, :WGLdims)
+  elseif haskey(s, :WGLdims)
     Util.printTeX(io,"$quad |W_G(L,$n)|==$(sum(WGLdims(s).^2))")
   end
-# if haskey(s.prop, :translation)
-#   Util.print(io,"$quad translation==",s.prop[:translation])
+# if haskey(s, :translation)
+#   Util.print(io,"$quad translation==",s.translation)
 # end
-  if !haskey(s.prop,:charNumbers) return end
+  if !haskey(s,:charNumbers) return end
   if get(io,:typeinfo,Any)==typeof(s) return end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", s::Series)
   show(io,s)
   if haskey(io,:typeinfo) return end
-  if haskey(s.prop,:charNumbers) && !isnothing(char_numbers(s)) format(io,s) end
+  if haskey(s,:charNumbers) && !isnothing(char_numbers(s)) format(io,s) end
 end
 
-function Util.format(io::IO,s::Series)
+function format(io::IO,s::Series)
   uw = UnipotentCharacters(s.spets)
   e = length(char_numbers(s))
   TeX=get(io,:TeX,false)
@@ -607,23 +606,23 @@ function Util.format(io::IO,s::Series)
   rowlab = String[]
   f("\\gamma_\\phi", charnames(io,uw)[char_numbers(s)])
   n="\\varphi"
-  if haskey(s.prop,:translation) n*=" mod($(s.prop[:translation]))" end
+  if haskey(s,:translation) n*="(mod $(s.translation))" end
   f(n, charnames(io,relative_group(s)))
-  f("\\varepsilon", s.prop[:eps])
-# if haskey(s.prop, :eigen) f("\\hbox{eigen}", s.prop[:eigen]) end
-  if s.prop[:cyclic]
-    if haskey(s.prop, :Hecke) f("\\hbox{parameter}", s.prop[:Hecke].para[1])
-    elseif haskey(s.prop, :mC) f("\\hbox{mC}",mC(s))
+  f("\\varepsilon", s.eps)
+# if haskey(s, :eigen) f("\\hbox{eigen}", s.eigen) end
+  if s.cyclic
+    if haskey(s, :Hecke) f("\\hbox{parameter}", s.Hecke.para[1])
+    elseif haskey(s, :mC) f("\\hbox{mC}",mC(s))
     end
   end
-  f("\\hbox{family \\#}", map(j->findfirst(k->j in k[:charNumbers],
+  f("\\hbox{family \\#}", map(j->findfirst(k->j in k.charNumbers,
                                     uw.families), char_numbers(s)))
-  if haskey(s.prop, :permutable) && any(x->x!=false,s.prop[:permutable])
-      f("\\hbox{permutable}", s.prop[:permutable])
+  if haskey(s, :permutable) && any(x->x!=false,s.permutable)
+      f("\\hbox{permutable}", s.permutable)
   end
   m = permutedims(toM(m))
   println(io)
-  format(io,m;row_labels=string.(char_numbers(s)),col_labels=rowlab)
+  showtable(io,m;row_labels=string.(char_numbers(s)),col_labels=rowlab)
 end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
@@ -632,15 +631,15 @@ ChevieErr(x...)=xprint("!!!!!!! ",x...)
 #               and reflists (generators->gens of parab of W)
 #  .WGLdims     irr dims of WGL
 function Weyl.relative_group(s::Series)
-  gets(s,:WGL) do
+  get!(s,:WGL) do
   W=Group(s.spets)
   L=Group(s.levi)
   if isone(projector(s)) #central series
     WGL=deepcopy(W)
-    WGL.prop[:parentMap] = gens(WGL)
-    WGL.prop[:reflists] = map(x->[x],inclusiongens(W))
-    s.prop[:WGLdims]=CharTable(WGL).irr[:,1]
-    s.prop[:e] = length(WGL)
+    WGL.parentMap=gens(WGL)
+    WGL.reflists=map(x->[x],inclusiongens(W))
+    s.WGLdims=CharTable(WGL).irr[:,1]
+    s.e=length(WGL)
     return WGL
   end
   if W isa FiniteCoxeterGroup N=normalizer(W.G, L.G)
@@ -678,8 +677,8 @@ function Weyl.relative_group(s::Series)
     ud=filter(i->ud[i]==ud[s.cuspidal],eachindex(eig))
     if length(ud)>1
       c=length(N)
-      N=centralizer(N,findfirst(==(s.cuspidal),ud);action=(c,g)->
-                  c^Uch.on_unipotents(s.levi, g, ud))
+      N=centralizer(N,s.cuspidal;
+                    action=(c,g)->c^on_unipotents(s.levi, g))
       if c!=length(N)
         ChevieErr("# WGL:",length(N)//length(L),"/",c//length(L)," fix c\n")
       end
@@ -694,9 +693,9 @@ function Weyl.relative_group(s::Series)
       return nothing
     end
     WGL=coxgroup()
-    WGL.prop[:reflists]=[]
-    s.prop[:WGLdims]=[1]
-    s.prop[:e]=1
+    WGL.reflists=[]
+    s.WGLdims=[1]
+    s.:e=1
     return WGL
   else
     WGL=N/L
@@ -747,22 +746,22 @@ function Weyl.relative_group(s::Series)
     h=GLinearAlgebra.echelon(h)[1]
     h[1:count(!iszero,eachrow(h)),:]
   end
-  rrefs = collect(values(groupby(x->v(hplane(x)),refs)))
+  rrefs=collect(values(groupby(x->v(hplane(x)),refs)))#hplanes hashable!sortable
   rrefs=filter(x->!(any(y->inclusion(W,y) in inclusion(L),x)),rrefs)
   sort!(rrefs)
   reflist = []
   for r in rrefs
     push!(reflist, getreflection(r))
     if length(Group(map(x->x[:hom],reflist))) == length(WGL)
- #    println(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
+#     println("r=",map(x->x[:root],reflist),"\ncr=",map(x->x[:coroot],reflist))
       WGL=PRG(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
       reflist=map(x->smalltobig(GLinearAlgebra.lnullspace(x-x^0)),reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->v(hplane(rr[1]))==v(h),rrefs)], reflist)
-      WGL.prop[:reflists] = map(getreflection, reflist)
-      WGL.prop[:parentMap] = map(x->x[:hom], WGL.prop[:reflists])
-      WGL.prop[:reflists] = map(x->x[:refs], WGL.prop[:reflists])
-      s.prop[:WGLdims]=CharTable(WGL).irr[:,1]
-      s.prop[:e]=length(WGL)
+      WGL.reflists = map(getreflection, reflist)
+      WGL.parentMap = map(x->x[:hom], WGL.reflists)
+      WGL.reflists = map(x->x[:refs], WGL.reflists)
+      s.WGLdims=CharTable(WGL).irr[:,1]
+      s.e=length(WGL)
       return WGL
     end
   end
@@ -772,12 +771,12 @@ end
 
 # Degree in q of the parameters (normalized so the smallest is 0)
 function mC(s::Series)
-  gets(s,:mC) do
+  get!(s,:mC) do
   e = hyperplane_orbits(relative_group(s))
   if length(e)!=1 return else e = e[1].order end
   uc = UnipotentCharacters(s.spets)
-  cn = char_numbers(s)[filter(i->s.prop[:dims][i]==1,1:length(s.prop[:dims]))]
-  aA = uc.prop[:a][cn] + uc.prop[:A][cn]
+  cn = char_numbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
+  aA = uc.:a[cn] + uc.A[cn]
   lpi(W)=sum(degrees(W)+codegrees(W))
   if s.principal
     if minimum(aA)!=0 error("id not in RLG(1)") end
@@ -824,20 +823,20 @@ end
 
 #  .projector   .element-equivariant projector on V_ζ
 function projector(s)
-  gets(s,:projector)do
+  get!(s,:projector)do
     ad=count(x->x==(1,E(s.d)), degrees(s.levi))
     q=minimum(map(x->count(==(s.d),x),refleigen(s.levi)))
     if q!=ad error("bad start") end
     q=findall(x->count(==(s.d),x)==q,refleigen(s.levi))
 # found an element w∈ Levi such that V_ζ=ζ-eigenspace of w
 # .projector= w-equivariant projector on V_ζ
-    s.prop[:ad]=ad
+    s.ad=ad
     eigenspace_projector(s.spets,classreps(s.levi)[q[1]],s.d)
   end
 end
 
 function Groups.iscyclic(s::Series)
-  gets(s,:cyclic)do
+  get!(s,:cyclic)do
     iscyclic(relative_group(s))
   end
 end
@@ -847,7 +846,7 @@ WGLdims(s::Series)=getp(relative_group,s,:WGLdims)
 e(s::Series)=getp(relative_group,s,:e)
     
 function RLG(s::Series)
-  gets(s,:RLG) do
+  get!(s,:RLG) do
   RLG=LusztigInduce(s.spets, UniChar(s.levi, s.cuspidal))
   if isnothing(RLG) && isone(s.levi.phi)
     RLG=HarishChandraInduction(s.spets, UnipotentCharacter(s.levi,s.cuspidal))
@@ -862,6 +861,7 @@ end
 
 function canfromdeg(s::Series)
   ad=count(!isone,relative_degrees(s.levi, s.d))
+  ud=Uch.CycPolUnipotentDegrees(s.spets)
   cand=filter(i->ad==valuation(ud[i],s.d),1:length(ud))
 # now use that   S_\phi(q)=\eps_\phi Deg(RLG(λ))/Deg(γ_\phi)
   cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
@@ -888,23 +888,23 @@ end
 
 # takes a d-series s with s.spets split; fills in s.charNumbers, s.eps, s.dims
 function char_numbers(s::Series)
-  gets(s,:charNumbers) do
+  get!(s,:charNumbers) do
   if s.levi==s.spets 
-    s.prop[:eps]=[1]
-    s.prop[:dims]=[1]
+    s.eps=[1]
+    s.dims=[1]
     return [s.cuspidal] 
   end
-  if !haskey(s.prop,:WGL) && isnothing(relative_group(s)) return nothing end
+  if !haskey(s,:WGL) && isnothing(relative_group(s)) return nothing end
   rlg=RLG(s)
   uc=UnipotentCharacters(s.spets)
   if rlg!==nothing
     charNumbers=findall(!iszero,rlg.v)
-    s.prop[:eps]=map(sign,rlg.v[charNumbers])
-    s.prop[:dims]=map(abs,rlg.v[charNumbers])
-    s.prop[:span]=degree(degree(s))-valuation(degree(s))+uc.prop[:a]-uc.prop[:A]
+    s.eps=map(sign,rlg.v[charNumbers])
+    s.dims=map(abs,rlg.v[charNumbers])
+    s.span=degree(degree(s))-valuation(degree(s))+uc.a-uc.A
     return charNumbers
   end
-  can=canfromdeg(s)
+  cand=canfromdeg(s)
   ud=Uch.CycPolUnipotentDegrees(s.spets)
   eig=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   eig*=map(i->E(conductor(s.d)^2,i),1:conductor(s.d)^2)
@@ -923,13 +923,12 @@ function char_numbers(s::Series)
   end
   check=function ()
     local n
-    for n in [:charNumbers, :eps, :dims, :span] s.prop[n]=foo(n) end
+    for n in [:charNumbers, :eps, :dims, :span] setproperty!(s,n,foo(n)) end
     if !isnothing(RLG(s)) && (filter(i->RLG(s).v[i]!=0,eachindex(RLG(s).v))!=
-                              sort(s.prop[:charNumbers]) ||
-              RLG(s).v[s.prop[:charNumbers]]!=s.prop[:dims].*s.prop[:eps])
+                   sort(s.charNumbers) || RLG(s).v[s.charNumbers]!=s.dims.*s.eps)
       ChevieErr(s, ":RLG does not match")
     end
-    s.prop[:charNumbers]
+    s.charNumbers
   end
   if length(cand)==length(WGLdims(s)) return check() end
   ud=foo(:dims).*Uch.CycPolUnipotentDegrees(s.spets)[foo(:charNumbers)].*foo(:eps)
@@ -948,8 +947,8 @@ function char_numbers(s::Series)
     return nothing
   end
   if iscyclic(s)
-    s.prop[:charNumbers] = foo(:charNumbers)
-    s.prop[:dims] = foo(:dims)
+    s.charNumbers=foo(:charNumbers)
+    s.dims=foo(:dims)
     mC(s)
     if length(v)>1
       v=filter(a->foo(:span,a)==map(i->
@@ -961,9 +960,7 @@ function char_numbers(s::Series)
       ChevieErr(s, " no combination has right span\n")
       return nothing
     end
-    delete!(s.prop,:charNumbers)
-    delete!(s.prop,:dims)
-    delete!(s.prop,:mC)
+    delete!.(Ref(s.prop),[:charNumbers,:dims,:mC])
   end
   if length(v)>1
     InfoChevie("# after span ", length(v), " combinations\n")
@@ -997,14 +994,14 @@ COMPACTCOHOMOLOGY=true
 function paramcyclic(s::Series)
   if !iscyclic(s) error("fill assumes relative_group(s) cyclic\n") end
   if isnothing(char_numbers(s)) return nothing end
-  if e(s)==1 return (s.prop[:Hecke]=hecke(relative_group(s))) end
+  if e(s)==1 return (s.Hecke=hecke(relative_group(s))) end
   uc=UnipotentCharacters(s.spets)
   Schur=Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)]
   Schur=map(x->degree(s)//Schur[x]*eps(s)[x],1:e(s))
-  s.prop[:eigen]=Uch.eigen(uc)[char_numbers(s)]
+  s.eigen=Uch.eigen(uc)[char_numbers(s)]
   LFrob=Root1(Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal])
   m=degrees(Group(s.spets))
-  s.prop[:delta]=lcm(map(x->conductor(Root1(x[2])),
+  s.delta=lcm(map(x->conductor(Root1(x[2])),
                          filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
   param(j,i)=Mvp(:q)^mC(s)[j]*E(Root1(;r=rr(j,i)))
@@ -1015,38 +1012,37 @@ function paramcyclic(s::Series)
   nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets)[:positionId]]
   function predeigen(j, i)#eigenvalue for mC[j] and ζ_e^{i-1}
     if nid in char_numbers(s)# id should correspond to id(WGL)
-      Root1(;r=s.d.r*e(s)*s.prop[:delta]*
+      Root1(;r=s.d.r*e(s)*s.delta*
                    (rr(j,i)+s.d.r*mC(s)[findfirst(==(nid),char_numbers(s))]))
-    else Root1(;r=s.prop[:delta]*rr(j,i)*e(s)*s.d.r+LFrob.r)
+    else Root1(;r=s.delta*rr(j,i)*e(s)*s.d.r+LFrob.r)
               # as fraction predeigen_i:=delta di -delta m_i d^2e 
     end
   end
-  series=map(x->findfirst(y->x in
-                          y[:charNumbers],uc.harishChandra),char_numbers(s))
+  series=map(x->findfirst(y->x in y[:charNumbers],uc.harishChandra),char_numbers(s))
   unique=filter(p->length(p[1])==1,mmp)
-  ratio=map(p->s.prop[:eigen][p[1][1]]//E(predeigen(p[1][1], p[2][1])), unique)
+  ratio=map(p->s.eigen[p[1][1]]//E(predeigen(p[1][1], p[2][1])), unique)
   if length(Set(ratio))>1
     ChevieErr(s, " eigenvalue ratios==", ratio, "\n")
     return nothing
   end
   ratio=Root1(ratio[1]).r
 # now find integer translation t such that mod 1. we have t delta d=ratio
-  ratio*=conductor(s.d^s.prop[:delta])
+  ratio*=conductor(s.d^s.delta)
   if !isinteger(ratio)
     ChevieErr(s, "non-integral ratio==", ratio, "\n")
     return nothing
   end
   if ratio==0 r=0
-  else r=s.d^s.prop[:delta]
+  else r=s.d^s.delta
     r=ratio*invmod(exponent(r),conductor(r))
   end
   mmp=map(x->(x[1],map(y->mod(y,e(s))+1,x[2]+r-1)), mmp)
   r=fill(0,e(s))
-  s.prop[:permutable]=map(x->0,char_numbers(s))
+  s.permutable=map(x->0,char_numbers(s))
   j=1
   for i in mmp
     a=arrangements(i[2], length(i[2]))
-    p=findall(A->s.prop[:eigen][i[1]]==map(j->E(predeigen(i[1][1],j)),A),a)
+    p=findall(A->s.eigen[i[1]]==map(j->E(predeigen(i[1][1],j)),A),a)
     if isempty(p)
       ChevieErr(s, "predicted eigenvalues cannot match actual\n")
       return nothing
@@ -1055,7 +1051,7 @@ function paramcyclic(s::Series)
         o=orbits(Group(map(x->Perm(a[p[1]],x),a[p])), 1:length(i[2]))
         if length(p)!=prod(x->factorial(length(x)),o) error() end
         for u in o
-          s.prop[:permutable][i[1][u]]=fill(j,length(u))
+          s.permutable[i[1][u]]=fill(j,length(u))
           j+=1
         end
       end
@@ -1064,32 +1060,30 @@ function paramcyclic(s::Series)
   end
   p=inv(Perm(sortperm(r)))
   for i in [:mC, :charNumbers, :eigen, :span, :eps, :dims, :permutable]
-    s.prop[i]^=p
+    setproperty!(s,i,getproperty(s,i)^p)
   end
-  s.prop[:translation]=filter(t->
-       s.prop[:eigen]==map(i->E(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
-  if length(s.prop[:translation])==1 delete!(s.prop,:translation)
+  s.translation=filter(t->
+       s.eigen==map(i->E(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
+  if length(s.translation)==1 delete!(s.prop,:translation)
   else
-    p=s.prop[:translation][2]
-    if any(x->mod(x, p)!=0,s.prop[:translation]) || 
-       length(s.prop[:translation])!=e(s)//p
+    p=s.translation[2]
+    if any(x->mod(x, p)!=0,s.translation) || length(s.translation)!=e(s)//p
         error()
     end
-    quality=map(t->map(i->param(mod(t+i-1,e(s))+1,i),1:e(s)), s.prop[:translation])
+    quality=map(t->map(i->param(mod(t+i-1,e(s))+1,i),1:e(s)), s.translation)
     quality=map(x->conductor(values(prod(y->Mvp(:x)-y,x).d)),quality)
-    quality=1+s.prop[:translation][filter(i->quality[i]==minimum(quality),
-                                          eachindex(quality))]
+    quality=1+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
     if isempty(quality) quality=[1] end
     m=HasType.Rotations(mC(s))
     m=findfirst(==(maximum(m[quality])),m)
     m=circshift(1:e(s),m-1)
     for i in [:mC,:charNumbers,:eigen,:span,:eps,:dims,:permutable]
-      s.prop[i]=s.prop[i][m]
+      setproperty!(s,i,getproperty(s,i)[m])
     end
-    s.prop[:translation]=p
+    s.translation=p
   end
-  s.prop[:Hecke]=hecke(relative_group(s), improve_type([map(i->param(i,i),1:e(s))]))
-  return s.prop[:Hecke]
+  s.Hecke=hecke(relative_group(s), improve_type([map(i->param(i,i),1:e(s))]))
+  s.Hecke
 end
 
 # get Hecke of series s. If scalar-twisted untwist first
@@ -1101,9 +1095,11 @@ function getHecke(s)
     scal=t.scalar
     InfoChevie("# removing scal==", scal, "\n")
     t.scalar=map(x->1,t.scalar)
-    if t.orbit[1].series=="B" && t.orbit[1].rank==2 && t.twist==perm"(1,2)"
+    if t.orbit[1].series==:B && t.orbit[1].rank==2 && t.twist==perm"(1,2)"
       t.orbit[1].cartanType=E(8)-E(8, 3)
     end
+    ds(t)
+    ds(t.orbit[1])
     g=reflection_group(t)
     if isnothing(g) return nothing end
     W=Group(s.spets)
@@ -1119,7 +1115,7 @@ function getHecke(s)
 # one should do an Ennola of the Levi's cuspidal by the absorbed part
 # of scal by the center of the levi
     if !(s.cuspidal in cuspidal(UnipotentCharacters(l),s.d/scal))
-      e = qqennola(Group(l))[1]
+      e = ennola(Group(l))
       c = abs(s.cuspidal^e)
       if !(c in cuspidal(UnipotentCharacters(l), s.d/scal))
         c=abs(s.cuspidal^(e^-1))
@@ -1138,7 +1134,7 @@ function getHecke(s)
 #     return nothing
     end
     paramcyclic(s)
-    haskey(s.prop,:Hecke) ? s.prop[:Hecke].para[1] : nothing
+    haskey(s,:Hecke) ? s.Hecke.para[1] : nothing
   end
 end
 
@@ -1154,13 +1150,13 @@ function RelativeSeries(s)
   c=Root1(;r=c)
   eig=refleigen(s.levi)
   q=maximum(map(x->count(==(c),x), eig))
-  s.prop[:classno]=findall(x->count(==(c),x)==q,eig)
-  if length(s.prop[:classno])>1 error("classno==",s.prop[:classno]) end
-  s.prop[:element]=s.levi(classinfo(s.levi)[:classtext][s.prop[:classno][1]]...)
+  s.classno=findall(x->count(==(c),x)==q,eig)
+  if length(s.classno)>1 error("classno==",s.classno) end
+  s.element=s.levi(classinfo(s.levi)[:classtext][s.classno[1]]...)
   WGL=relative_group(s)
-  res=map(enumerate(WGL.prop[:reflists])) do (i,r)
-   #  println("r=",r,"\nphi=",s.prop[:element]/s.spets.phi)
-   R=subspets(s.spets,r,s.prop[:element]/s.spets.phi)
+  res=map(enumerate(WGL.reflists)) do (i,r)
+   #  println("r=",r,"\nphi=",s.element/s.spets.phi)
+   R=subspets(s.spets,r,s.element/s.spets.phi)
     l=inclusion(s.levi)
     if !issubset(l,inclusion(R))
       r=map(r)do w
@@ -1168,7 +1164,7 @@ function RelativeSeries(s)
         p=findfirst(y->!isnothing(ratio(rr[w],rr[y])),l)
         !isnothing(p) ? l[p] :  w
       end
-      R=subspets(s.spets,r,s.prop[:element]/s.spets.phi)
+      R=subspets(s.spets,r,s.element/s.spets.phi)
       if !issubset(r,inclusion(R))
         l=sort(unique(map(l)do w
           rr=roots(Group(s.spets))
@@ -1180,16 +1176,16 @@ function RelativeSeries(s)
         end
       end
     end
-    #   println("R=",R," L=",subspets(R,l,s.prop[:element]/R.phi))
-    #   println("R=",R," l=",l," s.prop[:element]/R.phi=",s.prop[:element]/R.phi)
-    p=Series(R,subspets(R,restriction(R,l),s.prop[:element]/R.phi),s.cuspidal,s.d.r;NC=true)
-    p.prop[:orbit]=simple_representatives(WGL)[i]
+    #   println("R=",R," L=",subspets(R,l,s.element/R.phi))
+    #   println("R=",R," l=",l," s.element/R.phi=",s.element/R.phi)
+    p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r;NC=true)
+    p.orbit=simple_representatives(WGL)[i]
     r=Int.(indexin(sort(unique(reflections(WGL))),reflections(WGL)))
-    if gens(WGL)==WGL.prop[:parentMap]
+    if gens(WGL)==WGL.parentMap
       r=filter(x->reflections(WGL)[x] in Group(p.spets),r)
     else
       w=map(x->word(WGL,reflections(WGL)[x]), r)
-      w=map(x->prod(WGL.prop[:parentMap][x]), w)
+      w=map(x->prod(WGL.parentMap[x]), w)
 #     xprint(w,"\n")
       r=r[map(w)do x
           g=Group(p.spets)
@@ -1198,19 +1194,19 @@ function RelativeSeries(s)
           end
          end]
     end
-    p.prop[:WGL]=reflection_subgroup(WGL, r)
-    p.prop[:WGLdims]=CharTable(relative_group(p)).irr[:,1]
-    p.prop[:e]=length(p.prop[:WGL])
+    p.WGL=reflection_subgroup(WGL, r)
+    p.WGLdims=CharTable(relative_group(p)).irr[:,1]
+    p.e=length(p.WGL)
     return p
   end
-  s.prop[:relativeSpets]=map(x->x.spets, res)
+  s.relativeSpets=map(x->x.spets, res)
   p=getHecke.(res)
   if nothing in p return res end
-  s.prop[:Hecke]=hecke(WGL,improve_type(p))
-# xprint("Hecke=",s.prop[:Hecke],"\n")
-  u1=schur_elements(s.prop[:Hecke])//1
+  s.Hecke=hecke(WGL,improve_type(p))
+# xprint("Hecke=",s.Hecke,"\n")
+  u1=schur_elements(s.Hecke)//1
   if any(x->any(y->!all(isinteger, values(y.d)), keys(x.d)),u1)
-    ChevieErr(s.prop[:Hecke], " fractional: wrong set of SchurElements")
+    ChevieErr(s.Hecke, " fractional: wrong set of SchurElements")
     return res
   end
   u1=map(x->degree(s)//CycPol(x), u1)
@@ -1223,29 +1219,29 @@ function RelativeSeries(s)
 #   xprint("u1=",u1," ud=",ud,"\n")
 #   println(sort(indexin(ud,u1)))
 #   println(sort(indexin(u1,ud)))
-    ChevieErr(s.prop[:Hecke], " wrong set of SchurElements")
+    ChevieErr(s.Hecke, " wrong set of SchurElements")
     return res
   end
-  s.prop[:charNumbers]^=p
-  if haskey(s.prop,:span) s.prop[:span]^=p end
+  s.charNumbers^=p
+  if haskey(s,:span) s.span^=p end
   aA=map(x->E(conductor(s.d)^2,valuation(x)+degree(x)),u1)
   p=position_regular_class(WGL,s.d)
   if p == false && length(WGL)==1 p=1 end
   o=map(x->x[p]//x[1], eachrow(CharTable(WGL).irr))
-  s.prop[:predictedEigen] = map(i->aA[i]*o[i], 1:length(o)) *
+  s.predictedEigen=map(i->aA[i]*o[i], 1:length(o)) *
     Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   return res
 end
 
 CHEVIE[:relativeSeries]=true
 function HeckeAlgebras.hecke(s::Series)
-  if haskey(s.prop,:Hecke) return s.prop[:Hecke] end
+  if haskey(s,:Hecke) return s.Hecke end
   if iscyclic(s) paramcyclic(s)
   elseif CHEVIE[:relativeSeries]
     InfoChevie("# Relative: ",s,"\n")
     RelativeSeries(s)
   end
-  if haskey(s.prop, :Hecke) return s.prop[:Hecke]
+  if haskey(s,:Hecke) return s.Hecke
   else return nothing
   end
 end

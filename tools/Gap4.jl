@@ -36,7 +36,8 @@ function CharTable_to_julia(ct)
   cn=gapvec_to_julia(GAP.Globals.CharacterNames(ct))
   sz=gapvec_to_julia(GAP.Globals.SizesCentralisers(ct))
   s=GAP.gap_to_julia(GAP.Globals.Size(ct))
-  Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}())
+  id=GAP.gap_to_julia(GAP.Globals.Identifier(ct))
+  Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id))
 end
 
 function CharTable(g::Group)

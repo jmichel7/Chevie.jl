@@ -1,11 +1,13 @@
 """
 What   is  implemented  here  is  "Puiseux  polynomials",  that  is  linear
 combinations  of monomials  of the  type `x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ` are
-variables  and `aᵢ` are exponents which  can be arbitrary rational numbers.
-Some  functions  described  below  need  their  argument  to  involve  only
-variables  to integral  powers; we  will refer  to such objects as "Laurent
-polynomials"; some functions require further that variables are raised only
-to positive powers: we refer then to "true polynomials".
+variables  and `aᵢ` are  exponents which can  be arbitrary rational numbers
+(we   need  them  with  cyclotomic  coefficients  as  splitting  fields  of
+cyclotomic  Hecke  algebras).  Some  functions  described  below need their
+argument  to involve  only variables  to integral  powers; we will refer to
+such  objects as "Laurent polynomials"; some functions require further that
+variables  are  raised  only  to  positive  powers:  we refer then to "true
+polynomials".
 
 `@Mvp x₁,…,xₙ`
 
@@ -51,6 +53,10 @@ Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 julia> root(2.0x)
 Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 ```
+
+Despite the degree of generality of our polynomials, we are not too shabby.
+For  the Fateman test  f(f+1) where f=(1+x+y+z+t)^n  with n=15, we take 4.5
+sec. According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6.
 """
 module Mvps
 # benchmark: (x+y+z)^3     2.7μs 141 alloc
@@ -80,6 +86,7 @@ Base.convert(::Type{Monomial{T}},v::Symbol) where T=Monomial(v=>T(1))
 Base.convert(::Type{Monomial{T}},m::Monomial{N}) where {T,N}= 
   Monomial(convert(ModuleElt{Symbol,T},m.d))
 
+# we need a promote rule to mix fractional momonials with others in an Mvp
 Base.promote_rule(::Type{Monomial{N}},::Type{Monomial{M}}) where {N,M}=
   Monomial{promote_type(N,M)}
 
@@ -122,13 +129,10 @@ function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
 end
 
 # cmp must define a monomial order (a<b => a*m<b*m for all monomials a, b, m)
-# We take the sign of the power of the first variable in a/b
+# We take a<b if the first variable in a/b occurs to a negative power
 function Base.cmp(a::Monomial, b::Monomial)
   for ((ca,pa),(cb,pb)) in zip(a.d,b.d)
-    c=cmp(ca,cb)
-    if c<0 return -sign(pa)
-    elseif c>0 return sign(pb)
-    end
+    if ca!=cb return ca<cb ? -sign(pa) : sign(pb) end
     if pa!=pb return cmp(pb,pa) end
   end
   la=length(a.d)
@@ -139,7 +143,7 @@ function Base.cmp(a::Monomial, b::Monomial)
   end
 end
 
-Base.isless(a::Monomial, b::Monomial)=cmp(a,b)==-1
+Base.isless(a::Monomial, b::Monomial)=cmp(a,b)<0
 Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
 function Base.gcd(l::Monomial...)
@@ -235,29 +239,36 @@ end
 Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d)) &&
              isone(first(first(p.d))) && isinteger(last(first(p.d))))
 
-function Base.promote_rule(::Type{Mvp{T1,N1}},::Type{Mvp{T2,N2}})where {T1,T2,N1,N2}
+# we need a promote rule to handle Vectors of Mvps of different types
+Base.promote_rule(::Type{Mvp{T1,N1}},::Type{Mvp{T2,N2}}) where {T1,T2,N1,N2} =
   Mvp{promote_type(T1,T2),promote_type(N1,N2)}
-end
 
-function Base.promote_rule(::Type{Mvp{T1,N}},::Type{T2})where {T1,N,T2<:Number}
+# and this rule to handle Vectors mixing Mvps with numbers
+Base.promote_rule(::Type{Mvp{T1,N}},::Type{T2}) where {T1,N,T2<:Number} =
   Mvp{promote_type(T1,T2),N}
-end
 
-Base.:+(a::Mvp, b::Mvp)=Mvp(a.d+b.d)
+Base.:+(a::Mvp, b::Mvp)=Mvp(a.d+b.d) # ModuleElts.+ takes care of promotion
 Base.:+(a::Number, b::Mvp)=Mvp(a)+b
 Base.:+(a::Mvp, b::Number)=b+a
+
 Base.:-(a::Mvp)=Mvp(-a.d)
-Base.:-(a::Mvp, b::Mvp)=a+(-b)
+Base.:-(a::Mvp, b::Mvp)=a+(-b) # not Mvp(a.d-b.d) because 0-x != x (merge)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(b)-a
+
+Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
+Base.:*(b::Mvp, a::Number)=a*b
+# we use we have a monomial order so there is no order check in next line
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
 Base.:*(b::Mvp,a::Monomial)=a*b
 function Base.:*(a::Mvp, b::Mvp)
- iszero(a) ? a : iszero(b) ? b : Mvp(ModuleElt(
-            [m*m1=>c*c1 for (m1,c1) in b.d for (m,c) in a.d];check=true))
+  if length(a.d)>length(b.d) a,b=(b,a) end
+  if iszero(a) return a end
+  let b=b # needed !!!!
+    sum(b*m*c for (m,c) in a.d)
+  end
 end
-Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
-Base.:*(b::Mvp, a::Number)=a*b
+
 Base.:(//)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
 Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d))
 
@@ -271,7 +282,7 @@ Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im
 """
 Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
 
-function Base.:^(x::Mvp, p::Real)
+function Base.:^(x::Mvp, p::Union{Integer,Rational})
   if isinteger(p) p=Int(p) end
   if iszero(p) return one(x)
   elseif iszero(x) return x
@@ -567,7 +578,7 @@ function ExactDiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
   elseif length(q.d)==1 return p*inv(q)
   elseif length(p.d)<2 return iszero(p) ? p : nothing
-  end
+  end 
   var=first(first(p.d)[1].d)[1]
   res=zero(p)
   cq=coefficients(q,var)
@@ -662,7 +673,7 @@ julia> (x+y)^[1 2;3 1]
 Mvp{Int64}: 3x+4y
 ```
 """
-Base.:^(p::Mvp,m;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
+Base.:^(p::Mvp,m::AbstractMatrix;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
 positive_part(p::Mvp)=
   Mvp(ModuleElt([m=>c for (m,c) in p.d if all(>(0),values(m.d))]))
@@ -762,4 +773,13 @@ polynomials.
 |    gap> MvpLcm(x^2-y^2,(x+y)^2);
     xy^2-x^2y-x^3+y^3|
 """
+
+#julia1.6.0-rc1> @btime Mvps.fateman(15)
+# 4.523 s (15219388 allocations: 5.10 GiB)
+function fateman(n)
+  f=(1+Mvp(:x)+Mvp(:y)+Mvp(:z)+Mvp(:t))*one(n)
+  f=f^n
+  length((f*(f+1)).d)
+end
+
 end

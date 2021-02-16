@@ -113,6 +113,7 @@ primitiveroot
 ```
 # Combinatorics
 ```@docs
+Combinat
 arrangements
 combinations
 partitions
@@ -120,6 +121,8 @@ partition_tuples
 compositions
 submultisets
 partitions_set
+lcm_partitions
+gcd_partitions
 conjugate_partition
 dominates
 bell
@@ -137,8 +140,6 @@ hasse
 incidence
 setlabels!
 transitive_closure
-lcm_partitions
-gcd_partitions
 linear_extension
 reverse
 partition

@@ -147,9 +147,9 @@ julia> c=LeftCells(W)
 see  also  the  functions  `elements`,  `character`,  `representation`  and
 `Wgraph`  for left  cells. The  operations `length`,  `in` (which  refer to
 `elements`)  and `==` (which  compares Duflo involutions)  are also defined
-for  left cells. When  `Character(c)` has been  computed, then `c.prop[:a]`
-also  has been bound which holds the common value of Lusztig's `a`-function
-for the elements of `c` and The irreducible constituents of `character(c)`.
+for  left cells. When `Character(c)` has been computed, then `c.a` also has
+been  bound which holds the common  value of Lusztig's `a`-function for the
+elements of `c` and The irreducible constituents of `character(c)`.
 """
 module KL
 export KLPol, Cpbasis, Cbasis, LeftCell, LeftCells, character, Lusztigaw, 
@@ -263,7 +263,7 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   y=critical_pair(W,y,w)
   lw=length(W,w)
   if lw-length(W,y)<=2 return Pol(1) end
-  d=gets(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
+  d=get!(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
   if haskey(d,(w,y)) return  d[(w,y)] end
   s=firstleftdescent(W,w)
   v=gens(W)[s]*w
@@ -436,7 +436,7 @@ occurs in the formula for ``μᵥ``).
 """
 function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   W=H.W
-  cdict=gets(()->Dict{P,Any}(one(W)=>one(H)),H,Symbol("C'->T"))
+  cdict=get!(()->Dict{P,Any}(one(W)=>one(H)),H,Symbol("C'->T"))
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)
@@ -507,9 +507,8 @@ end
 Base.:*(a::HeckeCpElt,b::HeckeCpElt)=Cpbasis(Tbasis(a)*Tbasis(b))
 
 #----------------------------------Left cells --------------------------
-struct LeftCell{G<:Group}
+@GapObj struct LeftCell{G<:Group}
   group::G
-  prop::Dict{Symbol,Any}
 # Optional (computed) fields are:
 # .reps representatives of the cell
 # .duflo the Duflo involution of the cell
@@ -520,13 +519,13 @@ end
 
 Base.copy(c::LeftCell)=LeftCell(c.group,copy(c.prop))
 
-duflo(c::LeftCell)=c.prop[:duflo]
+duflo(c::LeftCell)=c.duflo
 
 Base.hash(c::LeftCell, h::UInt)=hash(duflo(c),h)
 
 function Base.length(c::LeftCell)
-  if haskey(c.prop,:character)
-    sum(first.(CharTable(c.group).irr)[c.prop[:character]])
+  if haskey(c,:character)
+    sum(first.(CharTable(c.group).irr)[c.character])
   else length(elements(c))
   end
 end
@@ -549,30 +548,30 @@ julia> character(c)
 ```
 """
 function character(c::LeftCell)
-  gets(c,:character)do
+  get!(c,:character)do
     r=representation(c,hecke(c.group))
     cc=HasType.traces_words_mats(r,classinfo(c.group)[:classtext])
     ct=CharTable(c.group)
     cc=decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
-    c.prop[:a]=charinfo(c.group)[:a][char]
-    if length(Set(c.prop[:a]))>1 error() else c.prop[:a]=c.prop[:a][1] end
+    c.a=charinfo(c.group)[:a][char]
+    if length(Set(c.a))>1 error() else c.a=c.a[1] end
     char
   end
 end
 
 function Base.show(io::IO,c::LeftCell)
    print(io,"LeftCell<",c.group,": ")
-   if haskey(c.prop,:duflo)
+   if haskey(c,:duflo)
      print(io,"duflo=",joindigits(describe_involution(c.group,duflo(c))))
    end
-   if haskey(c.prop,:character)
+   if haskey(c,:character)
      uc=UnipotentCharacters(c.group)
-     ch=c.prop[:character]
+     ch=c.character
      i=findfirst(f->uc.harishChandra[1][:charNumbers][ch[1]] in f[:charNumbers],
                  uc.families)
      f=uc.families[i]
-     i=f[:charNumbers][Families.special(f)]
+     i=f.charNumbers[Families.special(f)]
      i=findfirst(==(i),uc.harishChandra[1][:charNumbers])
      p=findfirst(==(i),ch)
      p=vcat([[i,1]],tally(vcat(ch[1:p-1],ch[p+1:end])))
@@ -613,9 +612,9 @@ leftstars(W)=map(st->(w->leftstar(W,st,w)),
                  filter(r->length(r[1])>2,braid_relations(W)))
 
 function Groups.elements(c::LeftCell)
-  gets(c,:elements)do
+  get!(c,:elements)do
     elements=orbit(leftstars(c.group),duflo(c);action=(x,f)->f(x))
-    for w in c.prop[:reps]
+    for w in c.reps
       append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
     end
     sort(collect(Set(elements)))
@@ -648,7 +647,7 @@ function KLμMat(W,c)
 end
 
 function μ(c::LeftCell)
-  gets(c,:mu)do
+  get!(c,:mu)do
     KLμMat(c.group,elements(c))
   end
 end
@@ -689,16 +688,16 @@ function RightStar(st,c)
   res=copy(c)
   W=c.group
   rs(w)=leftstar(W,st,w^-1)^-1
-  if haskey(c.prop,:duflo)
-   res.prop[:duflo]=rs(rs(duflo(c))^-1)
+  if haskey(c,:duflo)
+   res.duflo=rs(rs(duflo(c))^-1)
   end
-  if haskey(c.prop,:reps) res.prop[:reps]=rs.(c.prop[:reps]) end
-  if haskey(c.prop,:elements)
-    res.prop[:elements]=rs.(c.prop[:elements])
-    n=sortperm(res.prop[:elements])
-    res.prop[:elements]=res.prop[:elements][n]
-    if haskey(c.prop,:mu) res.prop[:mu]=c.prop[:mu][n,n] end
-    if haskey(c.prop,:graph) res.prop[:orderGraph]=c.prop[:orderGraph][n] end
+  if haskey(c,:reps) res.reps=rs.(c.reps) end
+  if haskey(c,:elements)
+    res.elements=rs.(c.elements)
+    n=sortperm(res.elements)
+    res.elements=res.elements[n]
+    if haskey(c,:mu) res.mu=c.mu[n,n] end
+    if haskey(c,:graph) res.orderGraph=c.orderGraph[n] end
   end
   res
 end
@@ -761,16 +760,16 @@ function OldLeftCellRepresentatives(W)
 #   println("split ",length.(x))
     while length(x)>0
       c=x[1]
-      i=filter(x->isone(x^2),c.prop[:elements])
-      if length(i)==1 c.prop[:duflo]=i[1]
+      i=filter(x->isone(x^2),c.elements)
+      if length(i)==1 c.duflo=i[1]
       else m=map(x->length(W,x)-2*degree(KLPol(W,one(W),x)),i)
         p=argmin(m)
-        c.prop[:a]=m[p]
-        c.prop[:duflo]=i[p] # Duflo involutions minimize Delta
+        c.a=m[p]
+        c.duflo=i[p] # Duflo involutions minimize Delta
       end
-      i=filter(x->!(c.prop[:duflo] in x),
-               orbits(leftstars(W),c.prop[:elements];action=(x,f)->f(x)))
-      c.prop[:reps]=first.(i)
+      i=filter(x->!(c.duflo in x),
+               orbits(leftstars(W),c.elements;action=(x,f)->f(x)))
+      c.reps=first.(i)
       push!(cells0,c)
 #     xprintln("c=",c," length=",length(c))
       n=orbit(st,c;action=(x,f)->f(x))
@@ -780,7 +779,7 @@ function OldLeftCellRepresentatives(W)
       for e in n
         rd=leftdescents(W,duflo(e))
         i=findfirst(x->x.rd==rd,rw)
-        if i==1 x=filter(c->!(c.prop[:elements][1] in elements(e)),x)
+        if i==1 x=filter(c->!(c.elements[1] in elements(e)),x)
         elseif i!=nothing
 	  setdiff!(rw[i].elements,elements(e))
         end
@@ -795,7 +794,7 @@ function OldLeftCellRepresentatives(W)
 end
 
 function cellreps(W)
-  gets(W,:cellreps)do
+  get!(W,:cellreps)do
     cc=LeftCellRepresentatives(W)
     if isnothing(cc) cc=OldLeftCellRepresentatives(W) end
     cc
@@ -841,7 +840,6 @@ julia> LeftCells(W,1)
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
  LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
 ```
-
 """
 function LeftCells(W,i=0)
   cc=cellreps(W)
@@ -869,7 +867,7 @@ function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
     new=map(1+sum(nbLength[1:end-1]):length(elements))do h
       map(g->[action(elements[h],gens[g]),[h,g]],eachindex(gens))
     end
-    new=first.(values(groupby(first,vcat(new...))))
+    new=unique(first,vcat(new...))
     new=filter(x->!(x[1] in bag),new)
     append!(cayleyGraph,map(x->x[2],new))
     new=first.(new)
@@ -925,7 +923,7 @@ return the W-graph for a left cell for the one-parameter Hecke algebra
 of a finite Coxeter group. 
 """
 function Wgraph(c::LeftCell)
-  gets(c,:graph)do
+  get!(c,:graph)do
     e=elements(c)
     mu=μ(c)
     n=length(e)
@@ -933,7 +931,7 @@ function Wgraph(c::LeftCell)
     p=sortperm(nodes)
     nodes=nodes[p]
     mu=mu[p,p]
-    c.prop[:orderGraph]=p
+    c.orderGraph=p
     nodes=vcat(map(tally(nodes)) do p
         p[2]==1  ? [p[1]] : [p[1],p[2]-1]
         end...)
@@ -941,12 +939,12 @@ function Wgraph(c::LeftCell)
     l=vcat(map(i->map(j->[mu[i,j],mu[j,i],i,j],1:i-1),1:n)...)
     l=filter(x->x[1]!=0 || x[2]!=0,l)
     if isempty(l) return graph end
-    l=groupby(x->x[[1,2]],l)
-    for u in values(l)
+    for u in collectby(x->x[[1,2]],l)
       if u[1][1]==u[1][2] value=u[1][1] else value=u[1][[1,2]] end
       w=[value,[]]
-      s=groupby(first,map(x->x[[3,4]],u))
-      for k in values(s) push!(w[2],vcat([k[1][1]],map(x->x[2],k))) end
+      for k in collectby(first,map(x->x[[3,4]],u)) 
+        push!(w[2],vcat([k[1][1]],map(x->x[2],k)))
+      end
       push!(graph[2],w)
     end
     graph
@@ -1026,12 +1024,11 @@ function LusztigAw(W,w)
 end
 
 #----------------- Asymptotic algebra ------------------------------------
-struct AsymptoticAlgebra<:FiniteDimAlgebra
+@GapObj struct AsymptoticAlgebra<:FiniteDimAlgebra
   e::Vector{Perm{Int16}}
   a::Int
   multable::Vector{Vector{Vector{Pair{Int,Int}}}}
   W
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -1099,11 +1096,11 @@ CharTable(Asymptotic Algebra dim.10)
 function AsymptoticAlgebra(W,i)
   l=LeftCells(W,i)
   f=union(character.(l)...)
-  a=l[1].prop[:a]
+  a=l[1].a
   e=elements.(l)
   for ee in e sort!(ee,by=x->length(W,x)) end
   e=vcat(e...)
-  t=map(x->findfirst(==(x.prop[:duflo]),e),l)
+  t=map(x->findfirst(==(x.duflo),e),l)
   v=Pol()
   H=hecke(W,v^2,rootpara=v)
   T=Tbasis(H)
@@ -1138,8 +1135,8 @@ function AsymptoticAlgebra(W,i)
 #  A.operations.underlyingspace(A);
 #  A.one:=Sum(A.basis{t});
   A=AsymptoticAlgebra(e,a,multable,W,Dict{Symbol,Any}(:irr=>irr))
-  A.prop[:classnames]=joindigits.(word.(Ref(W),e))
-  A.prop[:charnames]=charnames(W;TeX=true)[f]
+  A.classnames=joindigits.(word.(Ref(W),e))
+  A.charnames=charnames(W;TeX=true)[f]
   A
 end
 
@@ -1162,8 +1159,8 @@ Algebras.iscommutative(A::AsymptoticAlgebra)=false
 
 function Chars.CharTable(A::AsymptoticAlgebra)
   centralizers=fill(dim(A),dim(A))
-  CharTable(A.prop[:irr],A.prop[:charnames],A.prop[:classnames],centralizers,
-            dim(A),Dict{Symbol,Any}(:name=>sprint(show,A;context=:TeX=>true)))
+  CharTable(A.irr,A.charnames,A.classnames,centralizers,
+            dim(A),Dict{Symbol,Any}(:name=>repr(A;context=:TeX=>true)))
 end
 
 end

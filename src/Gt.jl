@@ -14,7 +14,7 @@ end
 
 # returns the Poset of closed subsystems of the root system of W
 function ClosedSubsets(W)
-  gets(W, :closedsubsets)do
+  get!(W, :closedsubsets)do
   function possum(i,j)
     p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
     isnothing(p) ? 0 : p
@@ -51,24 +51,22 @@ function ClosedSubsets(W)
   end
   covered=unique.(covered)
   P=Poset(incidence(Poset(covered)))
-  P.prop[:elements]=l
-  P.prop[:labels]=map(x->join(x," "),l)
+  P.elements=l
+  P.labels=map(x->join(x," "),l)
   P
   end
 end
 
-struct ClassType
+@GapObj struct ClassType
   CGs
   cent::CycPol
   unip
-  prop::Dict{Symbol,Any}
 end
 
-struct ClassTypes
+@GapObj struct ClassTypes
   p::Int
   WF
   ss::Vector{ClassType}
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -107,7 +105,7 @@ By   default,  only  information  about  semisimple  centralizer  types  is
 returned:   the type, and its generic order.
 
 ```julia-rep1
-julia> xprint(t;unip=true)
+julia> xdisplay(t;unip=true)
 ClassTypes(A₂,good characteristic)
     C_G(s)│      u |C_G(su)|
 ──────────┼──────────────────
@@ -126,7 +124,7 @@ Here  we  have  displayed  information  on  unipotent  classes,  with their
 centralizer.
 
 ```julia-rep1
-julia> xprint(t;nClasses=true)
+julia> xdisplay(t;nClasses=true)
 ClassTypes(A₂,good characteristic)
     C_G(s)│       nClasses  |C_G(s)|
 ──────────┼──────────────────────────
@@ -143,7 +141,7 @@ form `qₐ` which represent `gcd(q-1,a)`.
 Finally an example in bad characteristic:
 
 ```julia-rep1
-julia> t=ClassTypes(coxgroup(:G,2),2);xprint(t;nClasses=true)
+julia> t=ClassTypes(coxgroup(:G,2),2);xdisplay(t;nClasses=true)
 ClassTypes(G₂,char. 2)
     C_G(s)│         nClasses     |C_G(s)|
 ──────────┼───────────────────────────────
@@ -166,7 +164,7 @@ We  notice that if `q` is  a power of `2` such  that `q≡2 (mod 3)`, so that
 specific value to `q₃`:
 
 ```julia-rep1
-julia> xprint(t(;q_3=1);nClasses=true)
+julia> xdisplay(t(;q_3=1);nClasses=true)
 ClassTypes(G₂,char. 2) q_3=1
     C_G(s)│     nClasses     |C_G(s)|
 ──────────┼───────────────────────────
@@ -195,20 +193,19 @@ end
 bracket_if_needed(v)=occursin(r"[-+*/]",v[nextind(v,0,2):end]) ? "("*v*")" : v
 
 function Base.show(io::IO,r::ClassTypes)
-  res=string("ClassTypes(",sprint(show,r.WF;context=io))
+  res=string("ClassTypes(",repr(r.WF;context=io))
   if r.p==0 res*=",good characteristic)"
   else res*=string(",char. ",r.p,")")
   end
-  if haskey(r.prop,:specialized)
-    res*=string(" ",join(map(x->string(x[1],"=",x[2]),
-                             collect(r.prop[:specialized]))," "))
+  if haskey(r,:specialized)
+    res*=string(" ",join(map(x->string(x[1],"=",x[2]),collect(r.specialized))," "))
   end
   println(io,res)
   function nc(p)
     local d
     p=Mvp(p)
     d=lcm(map(denominator,values(p.d)))
-    p=bracket_if_needed(sprint(show,improve_type(p*d);context=io))
+    p=bracket_if_needed(repr(improve_type(p*d);context=io))
     d==1 ? p : string(p,"/",d)
   end
   classes=get(io,:nClasses,false)
@@ -225,36 +222,36 @@ function Base.show(io::IO,r::ClassTypes)
         v=String[]
         if isone(c[:card])
           if classes push!(v, nc(nconjugacy_classes(x,r.WF,r.p))) end
-          push!(rowLabels,sprint(show,x.CGs;context=io))
+          push!(rowLabels,repr(x.CGs;context=io))
         else
           push!(rowLabels," ")
           if classes push!(v,"") end
         end
         push!(v,Ucl.nameclass(merge(c[:class].prop,Dict(:name=>c[:class].name)),
                               merge(io.dict,Dict(:class=>c[:AuNo]))))
-        push!(v,sprint(show,x.cent//c[:card],context=io))
+        push!(v,repr(x.cent//c[:card],context=io))
         push!(t,v)
       end
     end
     t=toM(t)
   else
-    rowLabels=map(x->sprint(show,x.CGs;context=io),r.ss)
+    rowLabels=map(x->repr(x.CGs;context=io),r.ss)
     t=[]
     if classes push!(t,nc.(nconjugacy_classes(r))) end
-    push!(t,map(x->sprint(show,x.cent;context=io),r.ss))
+    push!(t,map(x->repr(x.cent;context=io),r.ss))
     push!(columnLabels,fromTeX(io,"|C_G(s)|"))
     t=permutedims(toM(t))
   end
-  format(io,t;col_labels=columnLabels,row_labels=rowLabels,
+  showtable(io,t;col_labels=columnLabels,row_labels=rowLabels,
          rows_label=fromTeX(io,"C_G(s)"))
 end
 
 function (C::ClassTypes)(;arg...)
   C=deepcopy(C)
-  C.prop[:specialized]=arg
+  C.specialized=arg
   C.ss.=map(function (x)
            res=deepcopy(x)
-           res.prop[:nClasses]=nconjugacy_classes(x,C.WF,C.p)(;arg...)
+           res.nClasses=nconjugacy_classes(x,C.WF,C.p)(;arg...)
            res
           end, C.ss)
   filter!(r->!iszero(nconjugacy_classes(r,C.WF,C.p)),C.ss)
@@ -283,19 +280,19 @@ end
 
 # See Fleischmann-Janiszczak AAECC 1996 definition 2.1
 function nconjugacy_classes(r::ClassType,WF,p)
-  gets(r,:nClasses)do
+  get!(r,:nClasses)do
     HF=r.CGs
     H=Group(HF)
     W=Group(WF)
     P=deepcopy(ClosedSubsets(W))
-    elts=P.prop[:elements]
+    elts=P.elements
     o=filter(i->sort(elts[i].^HF.phi)==elts[i],1:length(P))
     o=filter(i->issubset(inclusiongens(H),elts[i]),o)
     P=restricted(P,o)
-    P.prop[:elements]=elts[o]
+    P.elements=elts[o]
 # here P poset of HF.phi-stable closed subsets containing roots(H)
     InfoChevie("# ", HF, "==>", P, "")
-    l=map(x->spets(reflection_subgroup(W, x), HF.phi), P.prop[:elements])
+    l=map(x->spets(reflection_subgroup(W, x), HF.phi), P.elements)
     b=collect(keys(factor(PermRoot.BadNumber(W))))
     l=map(l)do RF
       R=Group(RF)

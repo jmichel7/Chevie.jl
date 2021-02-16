@@ -82,11 +82,7 @@ function PPerm(n::Int,cc...)
   p
 end
 
-function Base.:*(x::PPerm,y::PPerm)
-  n=length(x.d)
-  ymodn=mod1.(y.d,n)
-  PPerm(x.d[ymodn].+y.d.-ymodn)
-end
+Base.:*(x::PPerm,y::PPerm)=PPerm(x.d[ymodn].+y.d.-mod1.(y.d,length(x.d)))
 
 function Base.inv(x::PPerm)
   n=length(x.d)
@@ -284,9 +280,8 @@ end
 #  return PPerm([1+pos,2+pos+ecart+p*n],n);
 #end;
 
-struct Atilde{T} <: CoxeterGroup{PPerm{T}}
+@GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
   gens::Vector{PPerm{T}}
-  prop::Dict{Symbol,Any}
 end
 
 Base.show(io::IO,G::Atilde)=print(io,"Atilde(",G.gens,")")
@@ -299,16 +294,16 @@ function Atilde(n)
 end
 
 Base.length(W::Atilde,w)=length(w)
+Base.one(W::Atilde)=PPerm(length(W.gens))
 CoxGroups.isleftdescent(W::Atilde,w,i)=isleftdescent(w,i)
 Perms.reflength(W::Atilde,w)=reflength(w)
 
 PermRoot.reflection_subgroup(W::Atilde,I)=Atilde(gens(W)[I],Dict{Symbol,Any}())
 
-struct AffaDualBraidMonoid{T,TW}<:Garside.GarsideMonoid{T}
+@GapObj struct AffaDualBraidMonoid{T,TW}<:Garside.GarsideMonoid{T}
   δ::T
   stringδ::String
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 Garside.IntervalStyle(M::AffaDualBraidMonoid)=Garside.Interval()
@@ -332,7 +327,7 @@ end
 
 CoxGroups.word(M::AffaDualBraidMonoid,w)=refword(w)
 function CoxGroups.word(io::IO,M::AffaDualBraidMonoid,w)
-  join(map(x->sprint(show,x;context=io),refword(w)))
+  join(map(x->repr(x;context=io),refword(w)))
 end
 
 Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)

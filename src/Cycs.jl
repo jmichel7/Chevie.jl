@@ -108,7 +108,7 @@ julia> function testmat(p)
        end
 testmat (generic function with 1 method)
 
-julia> @btime testmat(12)^2;
+julia> @btime Cycs.testmat(12)^2;
   346.079 ms (4367402 allocations: 366.17 MiB)
 ```
 The equivalent in GAP:
@@ -522,26 +522,24 @@ function Base.show(io::IO, p::Cyc{T})where T
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  rq=""
+  rqq=[normal_show(io,p)]
   if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)
     if !isnothing(q)
-      rq=sprint(show,q;context=io)
-    else
-     for test in
-      [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2),ER(-3)]
-        q=Quadratic(p/test)
-        if !isnothing(q)
-          rq=sprint(show,q;context=io)
-          rq=format_coefficient(rq;allow_frac=true)
-          t=format_coefficient(sprint(show,test;context=io))
-          if rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
-        end
+      push!(rqq,repr(q;context=io))
+    end
+    for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
+      q=Quadratic(p/test)
+      if !isnothing(q)
+        rq=repr(q;context=io)
+        rq=format_coefficient(rq;allow_frac=true)
+        t=format_coefficient(normal_show(io,test))
+        if !isempty(rq) && rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
+        push!(rqq,rq)
       end
     end
   end
-  res=normal_show(io,p)
-  print(io, (!isempty(rq) && length(rq)<length(res)) ? rq : res)
+  print(io,rqq[argmin(length.(rqq))])
 end
 
 function Base.:+(x::Cyc,y::Cyc)
@@ -866,7 +864,18 @@ Base.one(a::Root1)=Root1(1,0)
 Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
-Base.:^(a::Root1,n::Rational)=Root1(;r=n*a.r)
+function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
+  n=denominator(r)
+  d=conductor(a)
+  j=1
+  while true
+    k=gcd(n,d)
+    n=div(n,k)
+    j*=k
+    if k==1 break end
+  end
+  Root1(j*d,numerator(r)*exponent(a)*gcdx(n,d)[2])
+end
 Base.:inv(a::Root1)=Root1(;r=-a.r)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 

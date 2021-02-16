@@ -396,7 +396,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     if mod(d, q) != 0
                         error()
                     elseif d != 0
-                        res = Concatenation(1 + res, fill(0, max(0, (1 + d // q) - 1)) + 1)
+                    res = Concatenation(1 + res, fill(1, max(0, div(d,q))))
                     elseif p != q
                         res = 1 + res
                     end

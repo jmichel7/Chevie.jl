@@ -536,11 +536,10 @@ end
 
 twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------
-struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{TW}
+@GapObj struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{TW}
   phi::T
   F::Matrix
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
@@ -551,7 +550,7 @@ end
 Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
-Base.parent(W::Spets)=gets(()->W,W,:parent)
+Base.parent(W::Spets)=get!(()->W,W,:parent)
 
 """
 `spets(W::FiniteCoxeterGroup,F::Matrix=I(rank(W)))`
@@ -666,7 +665,7 @@ Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
 Weyl.torus(W,i)=subspets(W,Int[],classreps(W)[i])
 
 function Groups.conjugacy_classes(WF::Spets)
-  gets(WF,:classes)do
+  get!(WF,:classes)do
     map(x->orbit(Group(WF),x),classreps(WF))
   end
 end
@@ -687,7 +686,7 @@ generic_sign(WF)=(-1)^rank(Group(WF))*
    prod(last.(degrees(WF)))*conj(PhiOnDiscriminant(WF))
 
 function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
-  gets(WF,:refltype)do
+  get!(WF,:refltype)do
     W=Group(WF)
     t=refltype(W)
     c=map(x->PermRoot.indices(x),t)
@@ -699,15 +698,13 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
       if o[1].series==:D && length(J)==4
         if order(twist)==2
           rf=reduce(vcat,cycles(twist))
-          getfield(o[1],:prop)[:indices]=J[vcat(rf,[3],setdiff([1,2,4],rf))]
+          o[1].indices=J[vcat(rf,[3],setdiff([1,2,4],rf))]
         elseif twist==Perm(1,4,2)
-          getfield(o[1],:prop)[:indices]=J[[1,4,3,2]]
+          o[1].indices=J[[1,4,3,2]]
           twist=Perm(1,2,4)
         end
       end
-      for i in 2:length(c)
-        getfield(o[i],:prop)[:indices]=PermRoot.indices(o[i-1]).^phires
-      end
+      for i in 2:length(c) o[i].indices=PermRoot.indices(o[i-1]).^phires end
       TypeIrred(Dict(:orbit=>o,:twist=>twist))
     end
   end
@@ -748,7 +745,7 @@ end
 PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),WF.phi\w)
 
 function PermGroups.classreps(W::Spets)
-  gets(W,:classreps)do
+  get!(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
   end
 end
@@ -790,7 +787,7 @@ end
 function relative_coset(WF::CoxeterCoset,J)
 # Print("CoxeterCosetOps.RelativeCoset ",WF,J," called \n");
   res=relative_group(Group(WF),J)
-  spets(res,Perm(res.prop[:parentMap],res.prop[:parentMap].^WF.phi))
+  spets(res,Perm(res.parentMap,res.parentMap.^WF.phi))
 end
 #-------------- subcoset ---------------------------------
 """
@@ -844,11 +841,10 @@ PermRoot.reflection_subgroup(WF::Spets,I::AbstractVector{<:Integer})=subspets(WF
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 
 #-------------- spets ---------------------------------
-mutable struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
+@GapObj mutable struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
   phi::Perm{T}
   F::Matrix
   W::TW
-  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
@@ -856,7 +852,7 @@ function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
 end
 
 function spets(W::PermRootGroup)
-  gets(W,:trivialspets)do
+  get!(W,:trivialspets)do
     PRC(one(W),reflrep(W,one(W)),W,Dict{Symbol,Any}())
   end
 end
@@ -973,7 +969,7 @@ function relative_coset(WF::Spets,J=Int[],a...)
   L=reflection_subgroup(W,J)
   res=spets(R,central_action(L,reflrep(L,WF.phi)))
   if isempty(J)
-    Group(res).prop[:MappingFromNormalizer]=R.prop[:MappingFromNormalizer]
+    Group(res).MappingFromNormalizer=R.MappingFromNormalizer
 # else Group(res).MappingFromNormalizer:=function(x)Error("MappingFromNormalizer failed");return false;end;
   end
   res
@@ -988,7 +984,7 @@ Groups.Group(W::PRC)=W.W
 isG333(t::TypeIrred)=haskey(t,:p) && (t.p,t.q,t.rank)==(3,3,3)
 
 function PermRoot.refltype(WF::PRC)
-  gets(WF,:refltype)do
+  get!(WF,:refltype)do
     W=Group(WF)
     t=deepcopy(refltype(W))
     if isone(WF.phi)
@@ -1015,7 +1011,7 @@ function PermRoot.refltype(WF::PRC)
           end
           a.subgens=reflection.(Ref(a.subgroup),G333)
           a.indices=inclusion(a.subgroup,W,G333)
-          WF.W.prop[:refltype]=t
+          WF.W.refltype=t
         end
       end
   #   subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)

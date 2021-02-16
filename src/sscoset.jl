@@ -95,7 +95,7 @@ end
 # Computes X_σ X^σ, Y_σ, Y^σ, R(σ) of ss
 # see 1.1 to 1.7 of [Digne-Michel2018](biblio.htm#ss)
 function RelativeDatum(WF)
-  gets(WF,:Rs)do
+  get!(WF,:Rs)do
     W=Group(WF)
     n=order(WF.F) # matrix of sigma on X
     π=sum(i->WF.F^i,0:n-1)//n
@@ -110,18 +110,18 @@ function RelativeDatum(WF)
       res
     end
     cPhis=map(c->sum(coroots(W,c))//length(c), cc)
-    WF.prop[:pi]=π
-    WF.prop[:X_s]=Xₛ
-    WF.prop[:Y_s]=Yₛ
-    WF.prop[:Xs]=Xˢ
-    WF.prop[:Ys]=Yˢ
-    rootdatum(improve_type(toM(map(x->solutionmat(Xˢ, x), Phis))), 
+    WF.pi=π
+    WF.X_s=Xₛ
+    WF.Y_s=Yₛ
+    WF.Xs=Xˢ
+    WF.Ys=Yˢ
+    rootdatum(improve_type(toM(map(x->solutionmat(Xˢ, x), Phis))),
               improve_type(toM(map(x->solutionmat(Yₛ, x), cPhis))))
   end
 end
 
 function Cso(WF)# compute constants C_σ,α
-  gets(WF,:Cso)do
+  get!(WF,:Cso)do
     W=Group(WF)
     res=fill(1,nref(W))
     for o in refltype(WF)
@@ -172,8 +172,7 @@ Extended(C₃₍₃₂₁₎)
 function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   W=Group(WF)
   Rs=RelativeDatum(WF)
-  refC=centralizer(Rs,SS(Rs,solutionmat(WF.prop[:Y_s], 
-                   WF.prop[:pi]*map(x->x.r,t.v))))
+  refC=centralizer(Rs,SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v))))
   Rs=map(restriction.(Ref(W),orbits(WF.phi,inclusion(W,1:nref(W)))))do c
     res=(c,sum(roots(W,c))//length(c),sum(coroots(W,c)))
     if IsSpecial(WF,c) res[3]=2res[3] end
@@ -184,20 +183,20 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   Rs=Rs[good]
   labels=labels[good]
   cRs=map(x->x[3], Rs)
-  cRs=map(x->solutionmat(WF.prop[:Ys], x), cRs)
+  cRs=map(x->solutionmat(WF.Ys, x), cRs)
   cRs=filter(x->!(x in sum.(cartesian(cRs, cRs))),cRs)
   Rs=map(x->x[2], Rs)
-  Rs=map(x->solutionmat(WF.prop[:X_s], x), Rs)
+  Rs=map(x->solutionmat(WF.X_s, x), Rs)
   good=map(x->!(x in sum.(cartesian(Rs, Rs))), Rs)
   Rs=Rs[good]
   labels=labels[good]
   if length(Rs)>0 C=rootdatum(toM(Rs), toM(cRs))
-  else C=torus(size(WF.prop[:Xs],1))
+  else C=torus(size(WF.Xs,1))
   end
 # C[:operations][:ReflectionFromName] = function (W, x)
-#         return Position(W[:rootInclusion], x)
+#         return Position(W.rootInclusion, x)
 #     end
-  p=solutionmat(WF.prop[:X_s],WF.prop[:Xs])
+  p=solutionmat(WF.X_s,WF.Xs)
 # transfer matrix on X^σ to X_σ
   if isempty(refC.F0s) return ExtendedReflectionGroup(C) end
   ExtendedReflectionGroup(C,map(x->Int.(inv(p)*x*p), refC.F0s))
@@ -242,7 +241,7 @@ julia> QuasiIsolatedRepresentatives(WF,3)
 ```
 """
 function Semisimple.QuasiIsolatedRepresentatives(WF::Spets,p=0)
-  map(x->SS(Group(WF),permutedims(WF.prop[:Y_s])*map(x->x.r,x.v)), 
+  map(x->SS(Group(WF),permutedims(WF.Y_s)*map(x->x.r,x.v)), 
       QuasiIsolatedRepresentatives(RelativeDatum(WF), p))
 end
 
@@ -277,6 +276,6 @@ julia> is_isolated.(Ref(WF),l)
 """
 function Semisimple.is_isolated(WF::Spets,t::SemisimpleElement{Root1})
   Rs=RelativeDatum(WF)
-  t=SS(Rs,solutionmat(WF.prop[:Y_s],WF.prop[:pi]*map(x->x.r,t.v)))
+  t=SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
   is_isolated(Rs, t)
 end

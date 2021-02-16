@@ -126,7 +126,7 @@ julia> length(W)
 ```
 """
 function Gapjm.degrees(W::Group)
-  gets(W,:degrees)do
+  get!(W,:degrees)do
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
 end
@@ -175,7 +175,7 @@ julia> degrees(HF)
 ```
 """
 function Gapjm.degrees(W::Spets)
-  gets(W,:degrees)do
+  get!(W,:degrees)do
     vcat(map(x->(1,x),E.(torusfactors(W))),degrees.(refltype(W))...)
   end
 end
@@ -262,7 +262,7 @@ function codegrees(W::Group)
 end
 
 function codegrees(W::Spets)
-  gets(W,:codegrees)do
+  get!(W,:codegrees)do
     vcat(map(x->(-1,x),E.(inv.(torusfactors(W)))),
          collect.(codegrees.(refltype(W)))...)
   end
@@ -270,8 +270,7 @@ end
 
 function diagram(W)
   for t in refltype(W)
-    getchev(t,:PrintDiagram,t[:indices],
-               getchev(t,:ReflectionName,Dict()))
+    getchev(t,:PrintDiagram,t.indices,getchev(t,:ReflectionName,Dict()))
   end
 end
 

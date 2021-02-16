@@ -13,7 +13,7 @@ idempotents(A::FiniteDimAlgebra)=error("not implemented in general")
 iscommutative(A::FiniteDimAlgebra)=error("not implemented in general")
 
 function basis(A::FiniteDimAlgebra)
-  gets(A,:basis)do
+  get!(A,:basis)do
     map(i->AlgebraElt(A,ModuleElt(i=>1)),1:dim(A))
   end
 end

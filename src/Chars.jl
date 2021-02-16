@@ -711,7 +711,7 @@ for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  entry  `:malle`  gives  the
 parameters for the characters used by Malle in [Malle1996](biblio.htm#Mal96).
 """
 function charinfo(W)::Dict{Symbol,Any}
-  gets(W,:charinfo)do
+  get!(W,:charinfo)do
     p=charinfo.(refltype(W))
     if isempty(p)
       res=Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
@@ -836,7 +836,7 @@ Dict{Symbol, Any} with 5 entries:
 See also the introduction of this section.
 """
 function classinfo(W)::Dict{Symbol,Any}
-  gets(W,:classinfo)do
+  get!(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
                       :classparams=>[Int[]],:orders=>[1],:classes=>[1])
@@ -859,30 +859,36 @@ function classinfo(W)::Dict{Symbol,Any}
 end
 
 #--------------- CharTables -----------------------------------------
-"""
- CharTable is a structure to hold character tables of groups and Hecke
- algebras
-"""
-struct CharTable{T}
+@GapObj struct CharTable{T}
   irr::Matrix{T}
   charnames::Vector{String}
   classnames::Vector{String}
   centralizers::Vector{Int}
   order::Int
-  prop::Dict{Symbol,Any}
 end
+
+@doc """
+ CharTable is a structure to hold character tables of groups and Hecke
+ algebras
+""" CharTable
 
 function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
-  show(IOContext(io,:TeX=>true),ct)
+  show(IOContext(io,:TeX=>true), "text/plain",ct)
 end
 
-function Base.show(io::IO,ct::CharTable)
-  name=haskey(ct.prop,:name) ? ct.prop[:name] : "no name"
-  printTeX(io,"CharTable(\$",name,"\$)\n")
-  irr=map(ct.irr)do e
-    if iszero(e) "." else sprint(show,e; context=io) end
+function Base.show(io::IO,t::CharTable)
+  if get(io,:TeX,false) || get(io,:limit,false) || !haskey(t,:repr) 
+    printTeX(io,"CharTable(\$",t.name,"\$)")
+  else  print(io,t.repr)
   end
-  format(io,irr,row_labels=map(s->fromTeX(io,s),ct.charnames),
+end
+
+function Base.show(io::IO, ::MIME"text/plain", ct::CharTable)
+  println(io,ct)
+  irr=map(ct.irr)do e
+    if iszero(e) "." else repr(e; context=io) end
+  end
+  showtable(io,irr,row_labels=map(s->fromTeX(io,s),ct.charnames),
                 col_labels=map(s->fromTeX(io,s),ct.classnames))
 end
 
@@ -897,12 +903,12 @@ function CharTable(t::TypeIrred)
   else irr=Cyc{Int}.(irr)
   end
   CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),
-            ct[:size],Dict{Symbol,Any}())
+            ct[:size],Dict{Symbol,Any}(:name=>""))
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt)
-   return CharTable(hcat(1),["Id"],["1"],[1],1,Dict{Symbol,Any}())
+    return CharTable(hcat(1),["Id"],["1"],[1],1,Dict{Symbol,Any}(:name=>"."))
   end
   charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
@@ -911,29 +917,7 @@ function Base.prod(ctt::Vector{<:CharTable})
   if length(ctt)==1 irr=ctt[1].irr
   else irr=kron(getfield.(ctt,:irr)...)
   end
-  CharTable(irr,charnames,classnames,centralizers,order,Dict{Symbol,Any}())
-end
-
-function CharTable(W::PermRootGroup)
-  gets(W,:chartable)do
-    t=refltype(W)
-    ct=isempty(t) ? 
-      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
-      prod(CharTable.(t))
-    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
-    ct
-  end
-end
-
-function CharTable(W::FiniteCoxeterGroup)
-  gets(W,:chartable)do
-    t=refltype(W)
-    ct=isempty(t) ? 
-      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
-      prod(CharTable.(t))
-    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
-    ct
-  end
+  CharTable(irr,charnames,classnames,centralizers,order,Dict{Symbol,Any}(:name=>"x"))
 end
 
 """
@@ -963,19 +947,20 @@ CharTable(³D₄)
 1.21 │ .  2    -2     .  .     2     -2
 ```
 """
-function CharTable(W::Spets)::CharTable
-  gets(W,:chartable)do
+function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets})::CharTable
+  get!(W,:chartable)do
     t=refltype(W)
     ct=isempty(t) ? 
       CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
       prod(CharTable.(t))
-    ct.prop[:name]=sprint(show,W;context=:TeX=>true)
+    ct.name=repr(W;context=:TeX=>true)
+    ct.repr="CharTable($W)"
     ct
   end
 end
 
 function classes(ct::CharTable)
-  gets(ct,:classes)do
+  get!(ct,:classes)do
     div.(ct.order,ct.centralizers)
   end
 end
@@ -1254,12 +1239,11 @@ end
 
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 
-struct InductionTable{T}
+@GapObj struct InductionTable{T}
   scalar::Matrix{T}
   gcharnames::Vector{String}
   ucharnames::Vector{String}
   identifier::String
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -1330,8 +1314,8 @@ function InductionTable(u,g)
   f=fusion_conjugacy_classes(u,g)
   cl=div.(length(u),tu.centralizers)
   scal(c,c1)=sum(map(*,conj.(c),c1,cl))//length(u)
-  lu=sprint(show,u;context=:TeX=>true)
-  lg=sprint(show,g;context=:TeX=>true)
+  lu=repr(u;context=:TeX=>true)
+  lg=repr(g;context=:TeX=>true)
   sc=[scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1),i in axes(tu.irr,1)]
   InductionTable(improve_type(sc),tg.charnames,tu.charnames,
   "Induction Table from \$$lu\$ to \$$lg\$",
@@ -1339,22 +1323,24 @@ function InductionTable(u,g)
 end
 
 function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
-  show(IOContext(io,:TeX=>true),t)
+  show(IOContext(io,:TeX=>true),"text/plain",t)
 end
 
 function Base.show(io::IO,t::InductionTable)
-  rep=!get(io,:TeX,false) && !get(io,:limit,false)
-  if rep && haskey(t.prop,:repr) print(io,t.prop[:repr])
+  if !get(io,:TeX,false) && !get(io,:limit,false) && haskey(t,:repr) 
+    print(io,t.repr)
   else printTeX(io,t.identifier)
   end
-  if rep || get(io,:typeinfo,false)!=false return end
-  println(io)
+end
+
+function Base.show(io::IO,::MIME"text/plain",t::InductionTable)
+  println(io,t)
   column_labels=fromTeX.(Ref(io),t.ucharnames)
   row_labels=fromTeX.(Ref(io),t.gcharnames)
   scal=map(t.scalar)do e
-    if iszero(e) "." else sprint(show,e; context=io) end
+    if iszero(e) "." else repr(e; context=io) end
   end
-  format(io,scal,row_labels=row_labels,col_labels=column_labels)
+  showtable(io,scal,row_labels=row_labels,col_labels=column_labels)
 end
 
 """
@@ -1400,8 +1386,8 @@ function jInductionTable(u,g)
   for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
     if bi!=bj t[j,i]=0 end
   end
-  lu=sprint(show,u;context=:TeX=>true)
-  lg=sprint(show,g;context=:TeX=>true)
+  lu=repr(u;context=:TeX=>true)
+  lg=repr(g;context=:TeX=>true)
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
   "j-Induction Table from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"jInductionTable($(repr(u)),$(repr(g)))"))
@@ -1450,8 +1436,8 @@ function JInductionTable(u,g)
   for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
     if bi!=bj t[j,i]=0 end
   end
-  lu=sprint(show,u;context=:TeX=>true)
-  lg=sprint(show,g;context=:TeX=>true)
+  lu=repr(u;context=:TeX=>true)
+  lg=repr(g;context=:TeX=>true)
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
   "J-Induction Table from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"JInductionTable($(repr(u)),$(repr(g)))"))

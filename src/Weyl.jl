@@ -622,9 +622,8 @@ Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 #  The reflection degrees of W
 #"""
 #function Gapjm.degrees(W::FiniteCoxeterGroup)
-#  if iszero(W.N) return Int[] end
-#  l=sort(map(length,values(groupby(sum,W.rootdec[1:W.N]))),rev=true)
-#  reverse(1 .+conjugate_partition(l))
+#  l=sort(tally(sum.(W.rootdec[1:W.N])),by=last,rev=true)
+#  reverse(1 .+conjugate_partition(last.(l)))
 #end
 
 dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
@@ -648,11 +647,10 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  Perms.reflength
 
 #--------------- FCG -----------------------------------------
-struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
+@GapObj struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
   rootdec::Vector{Vector{T1}}
   N::Int
-  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
@@ -795,7 +793,7 @@ end
 
 # root lengths for parent group
 function rootlengths(W::FCG)
-  gets(W,:rootlengths)do
+  get!(W,:rootlengths)do
     C=cartan(W)
     lengths=fill(eltype(C)(1),2*W.N)
     for t in refltype(W)
@@ -846,12 +844,11 @@ function Base.:^(W::FiniteCoxeterGroup,p::Perm)
 end
 
 #--------------- FCSG -----------------------------------------
-struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
+@GapObj struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
   G::TW
   rootdec::Vector{Vector{T1}}
   N::Int
   parent::FCG{T,T1}
-  prop::Dict{Symbol,Any}
 end
 
 function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
@@ -1021,7 +1018,7 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
 @inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
 
 function rootlengths(W::FCSG)
-  gets(W,:rootlengths)do
+  get!(W,:rootlengths)do
     rootlengths(parent(W))[inclusion(W)]
   end
 end
@@ -1056,9 +1053,9 @@ function relative_group(W::FiniteCoxeterGroup,J)
   res=isempty(I) ? coxgroup() :
     rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
                                   for (ni,i) in enumerate(I), j in I])
-  res.prop[:relativeIndices]=I
-  res.prop[:parentMap]=vI
-  res.prop[:MappingFromNormalizer]=
+  res.relativeIndices=I
+  res.parentMap=vI
+  res.MappingFromNormalizer=
     function(w)c=Perm()
       while true
         r=findfirst(x->isleftdescent(W,w,x),I)

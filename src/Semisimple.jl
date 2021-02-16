@@ -214,7 +214,7 @@ function Base.show(io::IO,W::ExtendedCox)
 end
 
 function ComplexR.reflection_name(io::IO,W::ExtendedCox)
-  sprint(show,W;context=io)
+  repr(W;context=io)
 end
 
 ExtendedReflectionGroup(W,mats::AbstractVector{Matrix{Int}})=ExtendedCox(W,mats)
@@ -297,10 +297,9 @@ Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)=a.v==b.v
 Gapjm.order(a::SemisimpleElement{Root1})=conductor(a.v)
 
 # we need "one" since we cannot define one(SemisimpleElement{T})
-struct SSGroup{T}<:Group{SemisimpleElement{T}}
+@GapObj struct SSGroup{T}<:Group{SemisimpleElement{T}}
   gens::Vector{SemisimpleElement{T}}
   one::SemisimpleElement{T}
-  prop::Dict{Symbol,Any}
 end
 
 Base.show(io::IO,G::SSGroup)=print(io,"SSGroup(",gens(G),")")
@@ -913,7 +912,7 @@ end
 
 function IsomorphismType(W;torus=false,TeX=false)
   if TeX context=:TeX=>true else context=:limit=>true end
-  t=reverse(tally(map(x->sprint(show,x;context=context),refltype(W))))
+  t=reverse(tally(map(x->repr(x;context=context),refltype(W))))
   t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
   d=rank(W)-semisimplerank(W)
   if d>0 && torus

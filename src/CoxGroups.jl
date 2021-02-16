@@ -372,11 +372,11 @@ true
 ```
 """
 function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
-  elts=gets(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
+  elts=get!(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
   if coxrank(W)==1 return l>1 ? T[] : gens(W) end
-  H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)#::CoxeterGroup{T}
-  rc=gets(()->[[one(W)]],W,:rc)#::Vector{Vector{T}}
+  H=get!(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)#::CoxeterGroup{T}
+  rc=get!(()->[[one(W)]],W,:rc)#::Vector{Vector{T}}
   while length(rc)<=l
     new=reducedfrom(H,W,rc[end])
     if isempty(new) break
@@ -400,15 +400,15 @@ end
 const Wtype=Vector{Int8}
 #CoxeterWords
 function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
- ww=gets(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
+  ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if coxrank(W)==1
     if l!=1 return Vector{Int}[]
     else return [[1]]
     end
   end
-  H=gets(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
-  rc=gets(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
+  H=get!(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  rc=get!(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
     new=reducedfrom(H,W,(x->W(x...)).(rc[end]))
     if isempty(new) break
@@ -558,26 +558,26 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
   l=length(p)
   # action: the Cayley graph: for generator i, action[i][w]=sw
   # where w and sw are represented by their index in :elts
-  new=filter(k->iszero(p.prop[:action][s][k]),1:l)
-  append!(p.prop[:elts],W(s).*(p.prop[:elts][new]))
+  new=filter(k->iszero(p.action[s][k]),1:l)
+  append!(p.elts,W(s).*(p.elts[new]))
   append!(hasse(p),map(x->Int[],new))
-  p.prop[:action][s][new]=l.+(1:length(new))
+  p.action[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W)) 
-    append!(p.prop[:action][i],i==s ? new : zeros(Int,length(new)))
+    append!(p.action[i],i==s ? new : zeros(Int,length(new)))
   end
   for i in 1:length(new) push!(hasse(p)[new[i]],l+i) end
   for i in 1:l 
-    j=p.prop[:action][s][i]
+    j=p.action[s][i]
     if j>i
-      for h in p.prop[:action][s][hasse(p)[i]]
+      for h in p.action[s][hasse(p)[i]]
         if h>l push!(hasse(p)[j],h)
-          k=findfirst(isequal(p.prop[:elts][h]/p.prop[:elts][j]),gens(W))
-          if k!==nothing p.prop[:action][k][j]=h;p.prop[:action][k][h]=j end
+          k=findfirst(isequal(p.elts[h]/p.elts[j]),gens(W))
+          if k!==nothing p.action[k][j]=h;p.action[k][h]=j end
         end
       end
     end
   end
-  setlabels!(p,map(x->isone(x) ? "." : joindigits(word(W,x)),p.prop[:elts]))
+  setlabels!(p,map(x->isone(x) ? "." : joindigits(word(W,x)),p.elts))
   p
 end
 
@@ -760,10 +760,9 @@ end
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
 #--------------------- CoxSymmetricGroup ---------------------------------
-struct CoxSym{T} <: CoxeterGroup{Perm{T}}
+@GapObj struct CoxSym{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
   n::Int
-  prop::Dict{Symbol,Any}
 end
 
 Base.iterate(W::CoxSym,r...)=iterate(W.G,r...)
@@ -801,7 +800,7 @@ end
 
 function Base.show(io::IO, W::CoxSym)
   if get(io,:TeX,false) || get(io,:limit,false)
-    printTeX(io,"\\frakS _{$(W.n)}")
+    printTeX(io,"\\mathfrak S_{$(W.n)}")
   else print(io,"CoxSym($(W.n))")
   end
 end
@@ -810,10 +809,10 @@ PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
 # the following two methods shoud be derived from a trait "HasType" of CoxSym 
-Groups.conjugacy_classes(W::CoxSym)=gets(()->map(x->orbit(W,x),classreps(W)),
+Groups.conjugacy_classes(W::CoxSym)=get!(()->map(x->orbit(W,x),classreps(W)),
                                       W,:classes)
 
-Groups.classreps(W::CoxSym)=gets(()->map(x->W(x...),classinfo(W)[:classtext]),
+Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
                                       W,:classreps)
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
@@ -864,7 +863,7 @@ end
 PermRoot.simple_representatives(W::CoxSym)=fill(1,nref(W))
 
 function PermRoot.reflection(W::CoxSym{T},i::Int)where T
-  ref=gets(W,:reflections)do
+  ref=get!(W,:reflections)do
     [Perm{T}(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
   end::Vector{Perm{T}}
   ref[i]
@@ -873,9 +872,8 @@ end
 PermRoot.reflections(W::CoxSym)=reflection.(Ref(W),1:nref(W))
 #------------------------ GenCox ------------------------------
 
-struct GenCox{T}<:CoxeterGroup{Matrix{T}}
+@GapObj struct GenCox{T}<:CoxeterGroup{Matrix{T}}
   gens::Vector{Matrix{T}}
-  prop::Dict{Symbol,Any}
 end
 
 Groups.gens(W::GenCox)=W.gens

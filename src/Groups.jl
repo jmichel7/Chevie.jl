@@ -7,9 +7,9 @@ concrete implementations:
   - The function `gens(G)` returns the list of generators of the group `G`. 
   - The function `one(G)` returns the identity element of `G`.
   
-Further,  a group  is the  kind of  object where  attributes/properties are
-computed on demand when asked for; such attributes when computed are stored
-in the field `.prop` of `G`, which should be of type `Dict{Symbol, Any}()`.
+Further,  a group  is a  `GapObj`, a  kind of  object where  properties are
+computed on demand when asked for; such properties when computed are stored
+in the field `.prop` of `G`, which is of type `Dict{Symbol, Any}()`.
 
 # Examples
 ```julia-repl
@@ -45,7 +45,7 @@ export Group, minimal_words, gens, ngens, classreps, centralizer,
   centre, normalizer, stabilizer, abelian_generators,iscyclic,comm,
   nconjugacy_classes
 
-using ..Util: gets, InfoChevie
+using ..Util: InfoChevie, @GapObj
 #import Gapjm: word, elements, kernel, order
 # to use as a stand-alone module comment above line and uncomment next line
 export word, elements, kernel, order
@@ -244,7 +244,7 @@ Group([(3,4),(1,2),(1,2)(3,4)])
 stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
 
 function centre(G::Group)
-  gets(G,:centre) do
+  get!(G,:centre) do
     centralizer(G,G)
   end
 end
@@ -267,7 +267,7 @@ Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
 ```
 """
 function minimal_words(G::Group)
-  gets(G,:words)do
+  get!(G,:words)do
     words=Dict(one(G)=>Int[])
     for i in eachindex(gens(G))
       nwords=copy(words)
@@ -290,7 +290,7 @@ function minimal_words(G::Group)
 end
 
 function minimal2(G::Group)
-  gets(G,:words)do
+  get!(G,:words)do
     words=Dict(one(G)=>0)
     for i in eachindex(gens(G))
       nwords=copy(words)
@@ -336,13 +336,10 @@ Base.in(w,G::Group)=haskey(minimal_words(G),w)
 Base.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
-  gets(G,:classes) do
-    if haskey(G.prop,:classreps)
-      map(x->orbit(G,x),classreps(G))
-    elseif length(G)>10000
-      error("length(G)=",length(G),": should call Gap4")
-    else
-      orbits(G,elements(G))
+  get!(G,:classes) do
+    if haskey(G,:classreps) map(x->orbit(G,x),classreps(G))
+    elseif length(G)>10000 error("length(G)=",length(G),": should call Gap4")
+    else orbits(G,elements(G))
     end
   end
 end
@@ -357,7 +354,7 @@ end
 
 "classreps(G::Group): representatives of conjugacy classes of G"
 function classreps(G::Group{T})::Vector{T} where T
-  gets(G,:classreps) do
+  get!(G,:classreps) do
     if length(G)>10000 Gap4.classreps(G)
     else first.(conjugacy_classes(G))
     end
@@ -454,10 +451,9 @@ function Base.intersect(G::Group, H::Group)
 end
 
 #------------------- "abstract" concrete groups -------------------------------
-struct Groupof{T}<:Group{T}
+@GapObj struct Groupof{T}<:Group{T}
   gens::Vector{T}
   one::T
-  prop::Dict{Symbol,Any}
 end
 
 """
@@ -495,10 +491,9 @@ Base.one(G::Groupof)=G.one
 # for now normal cosets (phi normalizes G)
 abstract type Coset{TW<:Group} end
 
-struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
+@GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
   phi::T
   G::TW
-  prop::Dict{Symbol,Any}
 end
 
 Base.isone(a::Coset)=isone(a.phi)
@@ -539,10 +534,9 @@ order(a::Coset)=findfirst(i->a.phi^i in Group(a),1:order(a.phi))
 
 Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
 
-struct CosetGroup{TW}<:Group{Coset{TW}}
+@GapObj struct CosetGroup{TW}<:Group{Coset{TW}}
   gens::Vector{Coset{TW}}
   one::Coset{TW}
-  prop::Dict{Symbol,Any}
 end
 
 Groups.Group(g::Vector{Coset},o=one(g[1]))=CosetGroup(filter(!isone,g),o,Dict{Symbol,Any}())
@@ -556,7 +550,7 @@ elements(C::Coset)=C.phi .* elements(Group(C))
 Base.in(w,C::Coset)=C.phi\w in Group(C)
 
 function classreps(G::Coset{Group{T}})::Vector{T} where T
-  gets(G,:classreps) do
+  get!(G,:classreps) do
     first.(conjugacy_classes(G))
   end
 end
@@ -564,7 +558,7 @@ end
 nconjugacy_classes(G::Coset)=length(classreps(G))
 
 function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
-  gets(G,:classes) do
+  get!(G,:classes) do
     if length(G)>10000
       error("length(G)=",length(G),": should call Gap4")
     else
