@@ -577,7 +577,7 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
       end
     end
   end
-  setlabels!(p,map(x->isone(x) ? "." : joindigits(word(W,x)),p.elts))
+  p.labels=map(x->isone(x) ? "." : joindigits(word(W,x)),p.elts)
   p
 end
 
@@ -618,7 +618,7 @@ function Gapjm.words(W::CoxeterGroup,w)
 end
 
 "diagram of finite Coxeter group"
-PermRoot.Diagram(W::CoxeterGroup)=Diagram(refltype(W))
+PermRoot.Diagram(W::CoxeterGroup)=Diagram.(refltype(W))
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
    Category(collect(sort(I));action=(J,e)->sort(action.(Ref(W),J,e)))do J
@@ -650,7 +650,7 @@ julia> CoxGroups.standard_parabolic_class(coxgroup(:E,8),[7,8])
 standard_parabolic_class(W,I::Vector{Int})=parabolic_category(W,I).obj
 
 # representatives of parabolic classes
-function PermRoot.parabolic_representatives(W::CoxeterGroup,s)
+function PermRoot.parabolic_reps(W::CoxeterGroup,s)
   l=collect(combinations(1:coxrank(W),s))
   orbits=[]
   while !isempty(l)
@@ -795,7 +795,7 @@ julia> length.(Ref(W),e)
 ```
 """
 function CoxSym(n::Int)
-  CoxSym{UInt8}(Group([Perm{UInt8}(i,i+1) for i in 1:n-1]),n,Dict{Symbol,Any}())
+  CoxSym(Group(map(i->Perm{UInt8}(i,i+1;degree=n),1:n-1)),n,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -860,7 +860,7 @@ function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   CoxSym(Group(gens(W)[I]),n+1,Dict{Symbol,Any}())
 end
 
-PermRoot.simple_representatives(W::CoxSym)=fill(1,nref(W))
+PermRoot.simple_reps(W::CoxSym)=fill(1,nref(W))
 
 function PermRoot.reflection(W::CoxSym{T},i::Int)where T
   ref=get!(W,:reflections)do

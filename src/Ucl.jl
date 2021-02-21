@@ -354,7 +354,7 @@ function DistinguishedParabolicSubgroups(W)
 end
 
 function BalaCarterLabels(W)
-  vcat(map(parabolic_representatives(W)) do J
+  vcat(map(parabolic_reps(W)) do J
     L=reflection_subgroup(W,J)
     map(DistinguishedParabolicSubgroups(L))do D
       w=fill(2,length(J));w[D].=0

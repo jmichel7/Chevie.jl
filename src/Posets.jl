@@ -1,14 +1,14 @@
 """
-Posets  are represented as  Dicts where at  least one of  the two following
+Posets  are represented as objects where at  least one of the two following
 fields is present:
 
-  `:incidence`:  a  boolean  matrix  such that `:incidence[i][j]==true` iff
-  `i<=j` in the poset.
+  - `incidence`:  a  boolean  matrix  such that `incidence[i][j]==true` iff
+   `i<=j` in the poset.
 
-  `:hasse`:  a list representing  the Hasse diagram  of the poset: the i-th
-  entry  is the list of indices  of elements which are immediate successors
-  (covers)  of the i-th element, that is the  list of j such that `i<j` and
-  such that there is no k such that i<k<j.
+  - `hasse`:  a list representing  the Hasse diagram  of the poset: the i-th
+    entry is the list of indices of elements which are immediate successors
+    (covers) of the i-th element, that is the list of j such that `i<j` and
+    such that there is no k such that i<k<j.
 
 There   are  thus  two   constructors,  `Poset(I::Matrix{Bool})`  from  the
 incidence  matrix `I`, and `Poset(H::Vector{<:Vector{<:Integer}})` from the
@@ -21,6 +21,19 @@ equivalent for the `Poset` are printed together separated by commas.
 julia> p=Poset(coxgroup(:A,2))
 .<1,2<21,12<121
 
+julia> length(p) # the number of elements of the `Poset`
+6
+```
+
+note in the above example that the poset has been printed with labels which
+are  the words in `coxgroup(:A,2)`. If no labels have been set for `p`, the
+labels  shown are `1:length(p)`. The labels should have same length as  `p`
+but can be any objects.
+
+```julia-repl
+julia> p.labels="abcdef"; p
+a<b,c<d,e<f
+
 julia> hasse(p)
 6-element Vector{Vector{Int64}}:
  [2, 3]
@@ -29,9 +42,6 @@ julia> hasse(p)
  [6]   
  [6]   
  []    
-
-julia> length(p) # the number of elements of the `Poset`
-6
 
 julia> incidence(p)
 6×6 Matrix{Bool}:
@@ -42,19 +52,14 @@ julia> incidence(p)
  0  0  0  0  1  1
  0  0  0  0  0  1
 ```
-note in the above example that the poset has been printed with labels which
-are the words in `coxgroup(:A,2)`. If not given, the default labels for the
-poset  are  `1:length(p)`.  The  function  `setlabels!`  can be used to set
-labels for the poset.
 """
-module Posets
+module Posets 
+# this module has only the 2 dependencies below which could be copied (27 lines)
 using ..Combinat: collectby
-#using ..Util: @GapObj
-using ..Util
-#import ..Gapjm: restricted
+using ..Util: @GapObj
 export Poset, linear_extension, hasse, incidence, partition,
-transitive_closure, is_join_lattice, is_meet_lattice, setlabels!
-export restricted
+transitive_closure, is_join_lattice, is_meet_lattice
+export restricted #import ..Gapjm: restricted to not use using_merge
 
 @GapObj struct Poset end
 
@@ -121,39 +126,22 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
 Base.length(p::Poset)=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
 
-"""
-`setlabels!(p::Poset,v)`
-
-sets labels to `p` for printing.
-```julia-repl
-julia> p=Poset([[2,3],[4,5],[4,5],Int[],Int[]])
-1<2,3<4,5
-
-julia> setlabels!(p,"abcde")
-"abcde"
-
-julia> p
-a<b,c<d,e
-```
-"""
-setlabels!(p::Poset,v)=p.labels=v
-
 function label(io::IO,p::Poset,n)
   haskey(p,:labels) ? p.labels[n] : (haskey(p,:label) ? p.label(io,n) : string(n))
 end
   
 function Base.show(io::IO,x::Poset)
   s=hasse(x)
-  p=partition(x)
-  s=Poset(map(x->unique!(sort(convert(Vector{Int},map(y->findfirst(z->y in z,p),
-                                                     s[x[1]])))), p))
-  labels=map(y->join(map(n->label(io,x,n),y),","),p)
+  pp=partition(x)
+  labels=map(y->join(map(n->label(io,x,n),y),","),pp)
+  p=Poset(map(x->unique!(sort(convert(Vector{Int},
+                        map(y->findfirst(z->y in z,pp),s[x[1]])))),pp))
   sep=get(io,:Symbol,false)
   TeX=get(io,:TeX,false)
   if sep==false sep=TeX ? "{<}" : "<" end
-  s=map(x->join(labels[x],sep), chains(s)) 
-  if TeX print(io,join(map(x->"\$\$$x\$\$\n",s)))
-  else join(io,s,"\n")
+  ch=map(x->join(labels[x],sep), chains(p)) 
+  if TeX print(io,join(map(x->"\$\$$x\$\$\n",ch)))
+  else join(io,ch,"\n")
   end
 end
 
@@ -162,21 +150,24 @@ end
 
 returns  a  linear  extension  of  the  poset  `P`,  that  is  a vector `l`
 containing  a permutation of the integers  `1:length(P)` such that if `i<j`
-in  `P`,  then  `findfirst(isequal(i),l)<findfirst(isequal(j),l)`.  This is
-also called a topological sort of `P`.
+in `P`, then `findfirst(==(i),l)<findfirst(==(j),l)`. This is also called a
+topological sort of `P`.
 
 ```julia-repl
-julia> p=Poset([j%i==0 for i in 1:5, j in 1:5])
-1<3,5
+julia> p=Poset([j%i==0 for i in 1:6, j in 1:6])
+1<5
 1<2<4
+1<3<6
+2<6
 
 julia> linear_extension(p)
-5-element Vector{Int64}:
+6-element Vector{Int64}:
  1
  2
  3
  5
  4
+ 6
 ```
 """
 function linear_extension(P::Poset)
@@ -241,8 +232,8 @@ julia> incidence(p)
 """
 function incidence(p::Poset)::Matrix{Bool}
   get!(p,:incidence)do
-    n = linear_extension(p)
-    incidence = one(Matrix{Bool}(undef,length(n),length(n)))
+    n=linear_extension(p)
+    incidence=one(Matrix{Bool}(undef,length(n),length(n)))
     for i in length(n)-1:-1:1
       for x in hasse(p)[n[i]] incidence[n[i],:].|= incidence[x,:] end
     end
@@ -250,15 +241,14 @@ function incidence(p::Poset)::Matrix{Bool}
   end
 end
 
+"A (greedy: the first is longest possible) list of covering chains of P."
 function chains(P::Poset)
-  ch = Vector{Int}[]
-  h = hasse(P)
-  for i in linear_extension(P)
-    for j in h[i]
-      p = findfirst(c->i==c[end],ch)
-      if isnothing(p) push!(ch, [i, j])
-      else push!(ch[p], j)
-      end
+  ch=Vector{Int}[]
+  h=hasse(P)
+  for i in linear_extension(P), j in h[i]
+    p=findfirst(c->i==c[end],ch)
+    if p===nothing push!(ch,[i,j])
+    else push!(ch[p],j)
     end
   end
   ch
@@ -267,7 +257,7 @@ end
 """
 `reverse(P)`
 
-returns the opposed poset to `P`.
+the opposed poset to `P`.
 
 ```julia-repl
 julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
@@ -334,10 +324,7 @@ julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
 julia> restricted(p,2:6)
 3<4<1,5<2
 
-julia> setlabels!(p,1:8)
-1:8
-
-julia> restricted(p,2:6)
+julia> p.labels=1:8; restricted(p,2:6)
 4<5<2,6<3
 ```
 """
@@ -363,22 +350,20 @@ end
 function checkl(ord::Matrix{Bool})
   subl=Set(Vector{Bool}[])
   n=size(ord,1)
-  for i in 1:n
-    for j in 1:i-1
-      if !ord[j,i] || ord[i,j]
-        l=ord[i,:].&ord[j,:]
-        if !(l in subl)
-          if !any(y->l==l.&y,ord[l,:])
-            for k in (1:n)[l]
-              ll=copy(ord[k,:])
-              ll[k]=false
-              l.&=.!ll
-            end
-            println("# $i  &&  $j have bounds ", (1:n)[l])
-            return false
+  for i in 1:n, j in 1:i-1
+    if !ord[j,i] || ord[i,j]
+      l=ord[i,:].&ord[j,:]
+      if !(l in subl)
+        if !any(y->l==l.&y,ord[l,:])
+          for k in (1:n)[l]
+            ll=copy(ord[k,:])
+            ll[k]=false
+            l.&=.!ll
           end
-          push!(subl, l)
+          println("# $i  &&  $j have bounds ", (1:n)[l])
+          return false
         end
+        push!(subl, l)
       end
     end
   end
@@ -400,6 +385,7 @@ false
 ```
 """
 is_join_lattice(P::Poset)=checkl(incidence(P))
+
 """
 `is_meet_lattice(P)`
 

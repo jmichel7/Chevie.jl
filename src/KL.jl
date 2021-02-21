@@ -408,7 +408,7 @@ function toKL(h::HeckeTElt,klbasis,index::Function)
   while !iszero(h)
     l=length.(Ref(H.W),keys(h.d))
     l=findall(isequal(index(l)),l)
-    tmp=klbasis(ModuleElt(x[1]=>x[2]*rootpara(H,x[1]) for x in h.d.d[l]),H)
+    tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) for (w,c) in h.d.d[l];check=false),H)
     res+=tmp
     h-=Tbasis(H)(tmp)
   end
@@ -475,7 +475,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
           bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
-    res=HeckeTElt(ModuleElt(Pair.(elm,coeff);check=true),H)
+    res=HeckeTElt(ModuleElt(Pair.(elm,coeff)),H)
   end
   cdict[w]=res
 end
@@ -1058,7 +1058,7 @@ julia> A=AsymptoticAlgebra(W,1)
 Asymptotic Algebra dim.10
 
 julia> b=basis(A)
-10-element Vector{AlgebraElt{Int64, AsymptoticAlgebra}}:
+10-element Vector{AlgebraElt{AsymptoticAlgebra, Int64}}:
  t₂
  t₁₂
  t₂₁₂
@@ -1071,7 +1071,7 @@ julia> b=basis(A)
  t₁₂₁₂₁
 
 julia> b*permutedims(b)
-10×10 Matrix{AlgebraElt{Int64, AsymptoticAlgebra}}:
+10×10 Matrix{AlgebraElt{AsymptoticAlgebra, Int64}}:
  t₂      0            t₂₁₂            …  0               t₂₁₂₁        0
  t₁₂     0            t₁₂+t₁₂₁₂          0               t₁₂₁+t₁₂₁₂₁  0
  t₂₁₂    0            t₂+t₂₁₂+t₂₁₂₁₂     0               t₂₁+t₂₁₂₁    0
@@ -1144,7 +1144,7 @@ Algebras.dim(A::AsymptoticAlgebra)=length(A.e)
 
 Base.show(io::IO,A::AsymptoticAlgebra)=print(io,"Asymptotic Algebra dim.",dim(A))
 
-function Base.show(io::IO, h::AlgebraElt{T,AsymptoticAlgebra}) where T
+function Base.show(io::IO, h::AlgebraElt{AsymptoticAlgebra})
   function showbasis(io::IO,i)
     replorTeX=get(io,:limit,false) || get(io,:TeX,false)
     if replorTeX res="t_"*joindigits(word(h.A.W,h.A.e[i]),"{}";always=true)

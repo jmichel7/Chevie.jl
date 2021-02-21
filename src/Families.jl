@@ -67,8 +67,8 @@ this construction.
 module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
- FamiliesClassical, MakeFamilyImprimitive, SubFamilyij, ndrinfeld_double,
- fusion_algebra, involution, duality, eigen
+ FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, 
+ involution, duality, eigen
 
 using ..Gapjm
 
@@ -390,7 +390,7 @@ chevieset(:families,:X,function(p)
     :special=>1,:cospecial=>p-1))
    end)
 
-function SubFamily(f,ind,scal,label)
+function SubFamily(f::Family,ind,scal,label)
   ind=filter(i->ind(f,i),1:length(f.eigenvalues))
   res=Family(Dict{Symbol,Any}())
   res.fourierMat=f.fourierMat[ind,ind].*scal
@@ -404,7 +404,7 @@ function SubFamily(f,ind,scal,label)
   res
 end
 
-function SubFamilyij(f,i,j,scal)
+function SubFamilyij(f::Family,i,j,scal)
   g=SubFamily(f,(f,k)->sum(f.charSymbols[k])%j==i,scal,join([i,j]))
   g.explanation="subfamily(sum(charsymbols)mod $j=$i of $(f.explanation))"
   g
@@ -431,7 +431,7 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   g
 end)
 
-f=SubFamilyij(chevieget(:families,:X)(6),1,3,1-E(3))
+let f=SubFamilyij(chevieget(:families,:X)(6),1,3,1-E(3))
 f.cospecial=5
 chevieset(:families,:X5,f)
 
@@ -447,6 +447,7 @@ f.perm=perm"(2,9)(3,8)(4,7)(5,6)"
 f.qEigen=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
 #if f.eigenvalues!=map(i->E(9)^(5*i^2),0:8) error() end
 chevieset(:families,:Z9,f)
+end
 
 chevieset(:families,:QZ,function(n)
   pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
@@ -460,15 +461,15 @@ chevieset(:families,:QZ,function(n)
   res
 end)
 
-# The big family in dihedral groups. For e=5 occurs in H3, H4
+# The big family f of dihedral groups. For e=5 occurs in H3, H4
 chevieset(:families,:Dihedral,function(e)
   e1=div(e,2)
 # the cuspidal chars are S(k,l) where 0<k<l<e-k
   nc=[[k,l] for k in 1:e1-1 for l in k+1:e-k-1]
-  if iszero(e%2) nc=vcat([[0,e1,1],[0,e1,-1]],map(l->[0,l],1:e1-1),nc)
-# the principal series chars in f are:[S(0,l) with 0<l<e1]+[S(0,e1)',S(0,e1)'']
+  if iseven(e) nc=vcat([[0,e1,1],[0,e1,-1]],map(l->[0,l],1:e1-1),nc)
+# the principal series for even e are:[S(0,l) with 0<l<e1]+[S(0,e1)',S(0,e1)'']
   else nc=vcat(map(l->[0,l],1:e1),nc)
-# The principal series chars in f are:[S(0,l) with 0<l<e1+1]
+# The principal series for odd e are:[S(0,l) with 0<l<e1+1]
   end
   c=a->E(e,a)+E(e,-a)
   f=Family(Dict{Symbol,Any}())
@@ -478,34 +479,37 @@ chevieset(:families,:Dihedral,function(e)
   f.charLabels=map(repr,nc)
   f.name="0"^(e-2)*"11"
   f.explanation="Dihedral($e) family"
-  if iszero(e%2)
-    f.fourierMat=map(i->map(function(j)
-       if length(i)==2 
-         if length(j)==2 return (c(j*[i[2],-i[1]])-c(j*[-i[1],i[2]]))/e
-         else return  ((-1)^i[1]-(-1)^i[2])/e
-         end
-       elseif length(i)==3 
-         if length(j)==2 return ((-1)^j[1]-(-1)^j[2])/e
-         elseif i==j return (1-(-1)^e1+e)/2/e
-         else return (1-(-1)^e1-e)/2/e
-         end
-         end end,nc),nc)
+  if iseven(e)
+    f.fourierMat=map(nc)do i
+      map(nc)do j
+        if length(i)==2 
+          i1,i2=i
+          if length(j)==2 return (c(j'*[i2,-i1])-c(j'*[-i1,i2]))//e
+          else return  ((-1)^i1-(-1)^i2)//e
+          end
+        elseif length(i)==3 
+          if length(j)==2 return ((-1)^j[1]-(-1)^j[2])//e
+          elseif i==j return (1-(-1)^e1+e)//2//e
+          else return (1-(-1)^e1-e)//2//e
+          end
+        end 
+      end
+    end
+    f.fourierMat=improve_type(toM(f.fourierMat))
     f.special=3
     f.lusztig=true
   else
-# The associated symbol to S(0,l) is s_i=[0] for i\ne 0,l and s_0=s_l=[1].
-    f.fourierMat=map(i->map(j->
-# (-1)^count(iszero,[i[1],j[1]])*  This sign is in
+# The associated symbol to S(0,l) is s_i=[0] for i≠0,l and s_0=s_l=[1].
+    f.fourierMat=[(c(i'*reverse(j))-c(i'*j))/e for i in nc, j in nc]
+# *(-1)^count(iszero,[i[1],j[1]])*  This sign is in
 # [Malle, "Unipotente Grade", Beispiel 6.29]
-          (c(i[1]*j[2]+i[2]*j[1])-c(i[1]*j[1]+i[2]*j[2]))/e,nc),nc)
     f.special=1
   end
-  f.fourierMat=toM(f.fourierMat)
   c=filter(function(i)
             p=findfirst(isequal([nc[i][1],e-nc[i][2]]),nc)
             return !isnothing(p) && p>i
           end,1:length(nc))
-  f.perm=prod(c) do i
+  f.perm=prod(c;init=Perm()) do i
     Perm(i,findfirst(==([nc[i][1],e-nc[i][2]]),nc))
   end
   f
@@ -801,17 +805,6 @@ function family_imprimitive(S)
   res
 end
 
-function MakeFamilyImprimitive(S, uc)
-  f=x->findfirst(==(x),uc[:charSymbols])
-  if length(S)==1 return Family("C1", map(f, S)) end
-  r=Family(family_imprimitive(fullsymbol(S[1])))
-  r.charNumbers=map(f, r.symbols)
-  r.special= findfirst(x->uc[:a][x]==uc[:b][x],r.charNumbers)
-  r.cospecial= findfirst(x->uc[:A][x]==uc[:B][x],r.charNumbers)
-# if length(diagblocks(r[:fourierMat])) > 1 error() end
-  Family(r)
-end
-
 """
 `FamiliesClassical(l)`
 
@@ -960,7 +953,7 @@ julia> A=fusion_algebra(fourier(f),1)
 Fusion Algebra dim.5
 
 julia> b=basis(A)
-5-element Vector{AlgebraElt{Int64, Gapjm.Families.FusionAlgebra}}:
+5-element Vector{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:
  B₁
  B₂
  B₃
@@ -968,7 +961,7 @@ julia> b=basis(A)
  B₅
 
 julia> b*permutedims(b)
-5×5 Matrix{AlgebraElt{Int64, Gapjm.Families.FusionAlgebra}}:
+5×5 Matrix{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:
  B₁  B₂      B₃      B₄        B₅
  B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
  B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂
@@ -1030,7 +1023,7 @@ Algebras.dim(A::FusionAlgebra)=size(A.fourier,1)
 Base.show(io::IO,A::FusionAlgebra)=print(io,"Fusion Algebra dim.",dim(A))
 
 using LinearAlgebra: LinearAlgebra
-function idempotents(A::FusionAlgebra)
+function Algebras.idempotents(A::FusionAlgebra)
   get!(A,:idempotents)do
     LinearAlgebra.Diagonal(A.fourier[A.special,:])*
       conj.(permutedims(A.fourier))*basis(A)
@@ -1040,8 +1033,8 @@ end
 Algebras.iscommutative(A::FusionAlgebra)=true
 
 function Chars.CharTable(A::FusionAlgebra)
-  irr=toM(map(e->map(b->ratio(coefficients(b*e),coefficients(e)), basis(A)),
-              idempotents(A)))
+  irr=improve_type(toM(map(e->map(b->ratio(coefficients(b*e),coefficients(e)),
+                                  basis(A)), idempotents(A))))
   if irr!=A.irr error() end
   labels=string.(1:dim(A))
   centralizers=fill(dim(A),dim(A))
@@ -1050,15 +1043,13 @@ function Chars.CharTable(A::FusionAlgebra)
 end
 
 function involution(e::AlgebraElt{FusionAlgebra})
-  p=Perm(e.A.involution)
-  s=signs(e.A.involution)
-  AlgebraElt(e.A,ModuleElt([Int(b^p)=>c*s[b] for (b,c) in e.d]))
+  p=e.A.involution
+  AlgebraElt(e.A,ModuleElt([Int(abs(b^p))=>c*sign(b^p) for (b,c) in e.d]))
 end
 
 function duality(e::AlgebraElt{FusionAlgebra})
-  p=Perm(e.A.duality)
-  s=signs(e.A.duality)
-  AlgebraElt(e.A,ModuleElt([Int(b^p)=>c*s[b] for (b,c) in e.d]))
+  p=e.A.duality
+  AlgebraElt(e.A,ModuleElt([Int(abs(b^p))=>c*sign(b^p) for (b,c) in e.d]))
 end
 
 end

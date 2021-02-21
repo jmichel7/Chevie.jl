@@ -137,8 +137,9 @@ Base.isless(a::CycPol,b::CycPol)=cmp(a,b)==-1
 
 Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
 
+# see if check should be false
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
-  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v]))
+  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check=false)) 
 
 # all the Root1 roots of c
 function roots(c::CycPol)
@@ -363,7 +364,7 @@ function CycPol(p::Pol{T};trace=false)where T
     if a===nothing return CycPol(Pol(p.c,0),valuation(p)) end
     d=length(p.c)-1
     vcyc=(Root1(;r=(a.r+i)//d)=>1 for i in 0:d-1)
-    return CycPol(p.c[end],valuation(p),ModuleElt(vcyc;check=true))
+    return CycPol(p.c[end],valuation(p),ModuleElt(vcyc))
   end
   val=valuation(p)
   coeff=p.c[end]
@@ -420,7 +421,7 @@ function CycPol(p::Pol{T};trace=false)where T
   for i in tested 
     if degree(p)>=phi(i) testcyc(i) end
     if degree(p)>0 testall(i) end
-    if degree(p)==0 return CycPol(coeff,val,ModuleElt(vcyc;check=true)) end
+    if degree(p)==0 return CycPol(coeff,val,ModuleElt(vcyc)) end
   end
   
   # if not finished do a general search.
@@ -445,7 +446,7 @@ function CycPol(p::Pol{T};trace=false)where T
   end
 # println("now p=$p val=$val")
   
-  CycPol(degree(p)==0 ? coeff : improve_type(p*coeff),val,ModuleElt(vcyc;check=true))
+  CycPol(degree(p)==0 ? coeff : improve_type(p*coeff),val,ModuleElt(vcyc))
 end
 
 CycPol(x::Mvp)=CycPol(Pol(x))
@@ -473,7 +474,7 @@ function ennola_twist(p::CycPol,e)
   coeff=improve_type(p.coeff*e^degree(p))
   re=Root1(e)
   vcyc=[r*inv(re)=>m for (r,m) in p.v]
-  CycPol(coeff,p.valuation,ModuleElt(vcyc,check=true))
+  CycPol(coeff,p.valuation,ModuleElt(vcyc))
 end
 
 # Fast routine for  CycPol(Value(p,q^n))
@@ -489,7 +490,7 @@ function descent_of_scalars(p::CycPol,n)
     coeff=p.coeff*(-1)^sum(values(p.v))*E(prod(r^p for (r,p) in p.v))
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:-n-1).-r.r)/-n) for (r,pow) in p.v)...)
   end
-  CycPol(coeff,valuation,ModuleElt(vcyc;check=true))
+  CycPol(coeff,valuation,ModuleElt(vcyc))
 end
     
 # export positive CycPols to GAP3

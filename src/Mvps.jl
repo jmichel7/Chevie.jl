@@ -69,7 +69,7 @@ import ..Cycs: root
 # to use as a stand-alone module comment above line, uncomment next, and
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
-export degree, coefficients, valuation
+export degree, coefficients, coefficient, valuation
 export positive_part, negative_part, bar
 export Mvp, Monomial, @Mvp, variables, value, scal, derivative,
   laurent_denominator
@@ -78,9 +78,9 @@ struct Monomial{T}
   d::ModuleElt{Symbol,T}   
 end
 
-Monomial(a::Pair...)=Monomial(ModuleElt(a...))
+Monomial(a::Pair...)=Monomial(ModuleElt(a...;check=false)) # check about check
 Monomial()=one(Monomial{Int})
-Monomial(v::Symbol)=convert(Monomial{Int},v)
+Monomial(v::Symbol...)=Monomial(ModuleElt(a=>1 for a in v))
 
 Base.convert(::Type{Monomial{T}},v::Symbol) where T=Monomial(v=>T(1))
 Base.convert(::Type{Monomial{T}},m::Monomial{N}) where {T,N}= 
@@ -100,7 +100,7 @@ Base.div(a::Monomial, b::Monomial)=a*inv(b)
 Base.:/(a::Monomial, b::Monomial)=a*inv(b)
 Base.://(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial,p)=Monomial(x.d*p)
-Base.getindex(a::Monomial,k)=getindex(a.d,k)
+#Base.getindex(a::Monomial,k)=getindex(a.d,k)
 
 function Base.show(io::IO,m::Monomial)
   replorTeX=get(io,:TeX,false) || get(io,:limit,false)
@@ -161,7 +161,7 @@ end
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
 degree(m::Monomial)=sum(values(m.d))
-degree(m::Monomial,var::Symbol)=m[var]
+degree(m::Monomial,var::Symbol)=m.d[var]
 
 function root(m::Monomial,n::Integer=2)
  if all(x->iszero(x%n),last.(m.d)) Monomial((k=>div(v,n) for (k,v) in m.d)...)
@@ -175,7 +175,7 @@ struct Mvp{T,N} # N=type of exponents T=type of coeffs
 end
 
 Mvp(a::Pair...;c...)=Mvp(ModuleElt(a...;c...))
-Mvp()=Mvp(ModuleElt(Pair{Monomial{Int},Int}[]))
+Mvp(;c...)=zero(Mvp{Int,Int}) # for some calls to map() to work
 
 macro Mvp(t) # @Mvp x,y,z defines variables to be Mvp
   if t isa Expr
@@ -205,7 +205,7 @@ end
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
-Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(ModuleElt(Pair{Monomial{N},T}[]))
+Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(zero(ModuleElt{Monomial{N},T}))
 Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T))
 Base.one(::Type{Mvp{T}}) where T=one(Mvp{T,Int})
 Base.one(::Type{Mvp})=Mvp(1)
@@ -259,7 +259,7 @@ Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
 # we use we have a monomial order so there is no order check in next line
-Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d))
+Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d;check=false))
 Base.:*(b::Mvp,a::Monomial)=a*b
 function Base.:*(a::Mvp, b::Mvp)
   if length(a.d)>length(b.d) a,b=(b,a) end
@@ -269,8 +269,8 @@ function Base.:*(a::Mvp, b::Mvp)
   end
 end
 
-Base.:(//)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d))
-Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d))
+Base.:(//)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d;check=false))
+Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d;check=false))
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -280,7 +280,7 @@ julia> @Mvp x;conj(im*x+1)
 Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im
 ```
 """
-Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d))
+Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d;check=false))
 
 function Base.:^(x::Mvp, p::Union{Integer,Rational})
   if isinteger(p) p=Int(p) end
@@ -351,6 +351,24 @@ valuation(m::Mvp)=iszero(m) ? 0 : minimum(degree.(keys(m.d)))
 valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
 
 """
+`coefficient(p::Mvp,m::Monomial)`
+
+The coefficient of the polynomial `p` on the monomial `m`.
+
+```julia-repl
+julia> @Mvp x,y;p=(x-y)^3
+Mvp{Int64}: x³-3x²y+3xy²-y³
+
+julia> coefficient(p,Monomial(:x,:x,:y)) # coefficient on x²y
+-3
+
+julia> coefficient(p,Monomial()) # constant coefficient
+0
+```
+"""
+coefficient(p::Mvp,m::Monomial)=p.d[m]
+
+"""
   `coefficients(p::Mvp, var::Symbol)` 
 
 returns  a Dict with keys the degree  in `var` and values the corresponding
@@ -401,7 +419,7 @@ function coefficients(p::Mvp,v::Symbol)
     end
     if !found  d[0]=push!(get(d,0,empty(p.d.d)),m=>c) end
   end
-  Dict(dg=>Mvp(c...) for (dg,c) in d) # c... is sorted by defn of monomial order
+  Dict(dg=>Mvp(c...;check=false) for (dg,c) in d) # c... is sorted by defn of monomial order
 end
 
 """
@@ -541,7 +559,7 @@ function value(p::Mvp,k::Pair...)
     end
  #  println("badi=$badi m=$m c=$c res1=$res1")
   end
-  if badi!==nothing Mvp(deleteat!(collect(p.d),badi)...)+res1
+  if badi!==nothing Mvp(deleteat!(collect(p.d),badi)...;check=false)+res1
   else p
   end
 end
@@ -676,12 +694,12 @@ Mvp{Int64}: 3x+4y
 Base.:^(p::Mvp,m::AbstractMatrix;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
 positive_part(p::Mvp)=
-  Mvp(ModuleElt([m=>c for (m,c) in p.d if all(>(0),values(m.d))]))
+  Mvp(ModuleElt(m=>c for (m,c) in p.d if all(x->last(x)>0,m.d.d);check=false))
 
 negative_part(p::Mvp)=
-  Mvp(ModuleElt([m=>c for (m,c) in p.d if all(<(0),values(m.d))]))
+  Mvp(ModuleElt(m=>c for (m,c) in p.d if all(x->last(x)<0,m.d.d);check=false))
 
-bar(p::Mvp)=Mvp((inv(m)=>c for (m,c) in p.d)...)
+bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in p.d))
 
 """
 The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
@@ -715,7 +733,8 @@ Mvp{Rational{Int64},Rational{Int64}}: 0
 ```
 """
 function derivative(p::Mvp,v=first(variables(p)))
-  Mvp(ModuleElt([m*Monomial(v)^-1=>c*m[v] for (m,c) in p.d];check=true))
+  # check needed because 0 could appear in coeffs
+  Mvp(ModuleElt(m*Monomial(v)^-1=>c*degree(m,v) for (m,c) in p.d))
 end
 
 """

@@ -126,6 +126,7 @@ include("Murphy.jl");@reexport using .Murphy
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
 include("dSeries.jl");@reexport using .dSeries
+include("Sscoset.jl");@reexport using .Sscoset
 include("HasType.jl");@reexport using .HasType
 #end
 end

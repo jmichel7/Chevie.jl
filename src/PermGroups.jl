@@ -70,7 +70,7 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 9.5 ms (GAP4 17ms)
 module PermGroups
 using ..Perms
 using ..Groups
-using ..Util: getp, InfoChevie, @GapObj
+using ..Util: getp, InfoChevie, @GapObj, printTeX
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
@@ -81,8 +81,13 @@ abstract type PermGroup{T}<:Group{Perm{T}} end
 PermGroup()=Group(Perm{Int16}[])
 
 function Base.show(io::IO,G::PermGroup)
-  print(io,"Group([");join(io,gens(G),',');print(io,"])")
-# print(io,"Group(",gens(G),")")
+  if (get(io,:limit,false) || get(io,:TeX,false))
+    if haskey(G,:name) printTeX(io,G.name)
+    else print(io,"Group([");join(io,gens(G),",");print(io,"])")
+    end
+  else
+    print(io,"Group(",gens(G),")")
+  end
 end
 
 Base.one(G::PermGroup{T}) where T=one(Perm{T})
@@ -125,7 +130,7 @@ end
  The function returns g "stripped" of its components in all C_G(B[1:i]),
  that is a pair (an element which fixes B[1:i],i+1)
 """
-function strip(g::Perm{T},B::Vector{T},Δ::Vector{Dict{T,Perm{T}}}) where T
+function strip(g::Perm,B::Vector{<:Integer},Δ::Vector{Dict{T,Perm{T}}}) where T
   for i in eachindex(B)
     β=B[i]^g
     if !haskey(Δ[i],β) return g,i end
@@ -312,7 +317,7 @@ function reduced(W::PermGroup,phi)
   phi
 end
 
-function Groups.Coset(W::PermGroup,phi::Perm)
+function Groups.Coset(W::PermGroup,phi::Perm=one(W))
   Groups.Cosetof(reduced(W,phi),W,Dict{Symbol,Any}())
 end
 

@@ -170,9 +170,9 @@ function Xt(H::HeckeAlgebra,t::CodedTableau)
     HeckeTElt(if t.ind==1 
       J=vcat(map(x->x[1:end-1],firstTableau(H,t))...)
       WJ=elements(reflection_subgroup(H.W,J))
-      ModuleElt(map(x->x=>one(coefftype(H)),WJ);check=true)
+      ModuleElt(map(x->x=>one(coefftype(H)),WJ))
     else 
-      ModuleElt([k*t.wd=>c for (k,c) in Xt(H,firsttableau(H,t)).d];check=true)
+      ModuleElt([k*t.wd=>c for (k,c) in Xt(H,firsttableau(H,t)).d])
     end,H)
   end
 end
@@ -301,7 +301,7 @@ function Base.:*(m::HeckeMElt, h::HeckeTElt)
               append!(mr,(coeff*GarnirExpansion(H, nodeR, s, t)).d.d)
         end
       end
-      mw=HeckeMElt(ModuleElt(mr;check=true),H)
+      mw=HeckeMElt(ModuleElt(mr),H)
     end
     mh+=hcoeff*mw
   end
@@ -367,7 +367,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
           push!(mres,(g.mu,1,code_tableau(H,g.mu,gtab).ind)=>-1)
         end
       end
-      tableau(H,g).Garnir[rg]=HeckeMElt(ModuleElt(mres;check=true),H)
+      tableau(H,g).Garnir[rg]=HeckeMElt(ModuleElt(mres),H)
       # Next, if Murphy.SpechtModules[]=false (in which case we 
       # just work in the Specht module), we look after the right hand term
       # in (*) above. In general it won't correspond to a partition but we
@@ -401,7 +401,7 @@ function GarnirExpansion(H::HeckeAlgebra,node,s::CodedTableau,t::CodedTableau)
         K=setdiff(J,[a-1,b])
         h=map(inv,vcat(reduced(reflection_subgroup(W,K),
                                reflection_subgroup(W,J))...))
-        h=HeckeTElt(ModuleElt([w=>one(coefftype(H)) for w in h]),H)
+        h=HeckeTElt(ModuleElt([w=>one(coefftype(H)) for w in h];check=false),H)
         # the multiplication below is quite costly as it is recursive; 
         # but it is only done once as we store the result in g.Garnir.
         tab1=firstTableau(H,tnu)
@@ -429,7 +429,7 @@ Base.:*(a::HeckeMElt,b::HeckeMElt)=a*Tbasis(a.H)(b)
 # This is the anti-isomorphism of the Hecke algebra given by T_i -> T_i;
 # on the Murphy basis we have M_{s,t} -> M_{t,s} (also called * by many)
 function Garside.α(h::HeckeMElt)
-  HeckeMElt(ModuleElt([(mu,t,s)=>c for ((mu,s,t),c) in h.d];check=true),h.H)
+  HeckeMElt(ModuleElt([(mu,t,s)=>c for ((mu,s,t),c) in h.d]),h.H)
 end
 
 # Compute the Gram matrix of a Specht module w.r.t. its Murphy basis.

@@ -142,9 +142,9 @@ Base.vec(a::Perm)=a.d
    returns  a cycle.  For example  `Perm{Int8}(1,2,3)` constructs the cycle
    `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken to be `Int16`.
 """
-function Perm{T}(x::Vararg{<:Integer,N})where {T<:Integer,N}
+function Perm{T}(x::Vararg{<:Integer,N};degree=0)where {T<:Integer,N}
   if isempty(x) return Perm(T[]) end
-  d=T.(1:maximum(x))
+  d=T.(1:(degree==0 ? maximum(x) : degree))
   for i in 1:length(x)-1
     d[x[i]]=x[i+1]
   end
@@ -243,14 +243,12 @@ Base.typeinfo_implicit(::Type{Perm{T}}) where T=T==Idef
 # total order is needed to use Perms in sorted lists
 function Base.cmp(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
-  for (ai,bi) in zip(a.d,b.d)
-    ai<bi && return -1
-    ai>bi && return  1 
-  end
+# for (ai,bi) in zip(a.d,b.d) ai!=bi && return cmp(ai,bi) end
+@inbounds  for i in eachindex(a.d) a.d[i]!=b.d[i] && return cmp(a.d[i],b.d[i]) end
   0
 end
 
-@inline Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
 
 function Base.:(==)(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
@@ -297,7 +295,7 @@ function Base.promote_rule(a::Type{Perm{T1}},b::Type{Perm{T2}})where {T1,T2}
   Perm{promote_type(T1,T2)}
 end
 
-extend!(a::Perm,n::Integer)=if degree(a)<n append!(a.d,degree(a)+1:n) end
+@inline extend!(a::Perm,n::Integer)=if degree(a)<n append!(a.d,degree(a)+1:n) end
 
 # `promote_degree(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
 function promote_degree(a::Perm,b::Perm)

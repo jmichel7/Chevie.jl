@@ -45,17 +45,19 @@ toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
 
 #--------------------------------------------------------------------------
-# a GapObj is an object which has a field prop::Dict{Symbol,Any}
 
 """
-A  variation of get! where it is assumed f(o) sets o.prop[p] but not assumed
-that f returns o.prop[p], because  f could  set several keys at once...
+A  variation of get! where it is assumed f(o) sets o.p but not assumed that
+f returns o.p, because f sets several keys at once...
 """
 function getp(f::Function,o,p::Symbol)
-  if !haskey(o.prop,p) f(o) end
-  o.prop[p]
+  if !haskey(o,p) f(o) end
+  getproperty(o,p)
 end
 
+# a GapObj is an object which has a field prop::Dict{Symbol,Any}
+# so has fixed fields but can dynamically have new ones
+# usage: @GapObj struct ...
 macro GapObj(e)
   push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
   if e.args[2] isa Symbol T=e.args[2]
@@ -64,11 +66,11 @@ macro GapObj(e)
   end
   esc(Expr(:block,
    e,
-   :(Base.getproperty(o::$T, s::Symbol)=hasfield($T,s) ? getfield(o, s) : 
-         getfield(o, :prop)[s]),
+   :(Base.getproperty(o::$T,s::Symbol)=hasfield($T,s) ? getfield(o,s) : 
+         getfield(o,:prop)[s]),
    :(Base.setproperty!(o::$T,s::Symbol,v)=getfield(o,:prop)[s]=v),
-   :(Base.haskey(o::$T, s::Symbol)=haskey(o.prop,s)),
-   :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,o.prop,s))))
+   :(Base.haskey(o::$T,s::Symbol)=haskey(getfield(o,:prop),s)),
+   :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,getfield(o,:prop),s))))
 end
 
 #----------------------- Formatting -----------------------------------------

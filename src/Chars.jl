@@ -444,7 +444,7 @@ function fakedegrees(W,q)
   res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
   if !any(isnothing,res) && !any(iszero,res) return res end
   # need general routine
-  InfoChevie("# using PermRootOps.FakeDegrees\n")
+  InfoChevie("# using PermRootOps.FakeDegrees for ",W,"\n")
   qq=Pol()
   P=generic_order(W,qq)
   P=shift(P,-valuation(P))
@@ -903,7 +903,7 @@ function CharTable(t::TypeIrred)
   else irr=Cyc{Int}.(irr)
   end
   CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),
-            ct[:size],Dict{Symbol,Any}(:name=>""))
+            ct[:size],Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
 end
 
 function Base.prod(ctt::Vector{<:CharTable})

@@ -48,6 +48,5 @@ function CharTable(g::Group)
   ct.classnames[l]=ct.classnames
   ct
 end
-Chars.CharTable(g::CoxSym)=CharTable(g.G)
 
 end

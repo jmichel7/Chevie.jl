@@ -42,8 +42,8 @@ function Pol(x::Mvp)
   v=l[1]
   val=valuation(x)
   p=zeros(eltype(values(x.d)),degree(x)-val+1)
-  for (deg,coeff) in pairs(coefficients(x,v))
-    p[deg-val+1]=coeff
+  for (mon,coeff) in pairs(x.d)
+    p[degree(mon)-val+1]=coeff
   end
   Pol(p,val)
 end
@@ -174,6 +174,7 @@ function pblocks(G,p)
   sort(collectby(improve_type(v),1:l))
 end
 
+#-------------------- define function to backport to gap3 some values
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
 Gapjm.gap(p::Integer)=string(p)
@@ -200,3 +201,8 @@ function Gapjm.gap(p::Cyc)
 end
 
 Gapjm.gap(v::AbstractVector)="["*join(gap.(v),",")*"]"
+
+function Gapjm.gap(p::Pol)
+ l=filter(x->x[2]!=0,collect(enumerate(p.c)))
+  join(map(((i,c),)->"($(gap(c)))*q^$(i+p.v-1)",l),"+")
+end

@@ -172,7 +172,7 @@ julia> H.para,rootpara(H)
 """
 function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
   para=map(eachindex(gens(W)))do i
-    j=simple_representatives(W)[i]
+    j=simple_reps(W)[i]
     if i<=length(para) 
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
@@ -503,20 +503,18 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
   sum(a.d) do (ea,pa)
     h=b.d*pa
     for i in reverse(word(W,ea))
-      s=gens(W)[i]
+      s=W(i)
       up=empty(h.d)
       down=empty(h.d)
       for (e,p)  in h
-        if isleftdescent(W,e,i) push!(down,e=>p) 
-        else push!(up,s*e=>p) end
+        if isleftdescent(W,e,i) push!(down,e=>p) else push!(up,s*e=>p) end
       end
-      h=ModuleElt(up;check=true)
+      h=ModuleElt(up)
       if isempty(down) continue end
       pp=a.H.para[i]
       ss,p=(sum(pp),-prod(pp))
-      if !iszero(ss) h+=ModuleElt(down)*ss end
-      if iszero(p) continue end
-      h+=ModuleElt(s*e=>c*p for (e,c) in down;check=true)
+      if !iszero(ss) h+=ModuleElt(down;check=false)*ss end
+      if !iszero(p) h+=ModuleElt(s*e=>c*p for (e,c) in down) end
     end
     HeckeTElt(h,a.H)
   end
@@ -558,7 +556,7 @@ q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁
 """
 function alt(a::HeckeTElt)
   clone(a,ModuleElt(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
-                for i in word(a.H.W,w))* bar(c) for (w,c) in a.d))
+                for i in word(a.H.W,w))* bar(c) for (w,c) in a.d;check=false))
 end
 
 """
@@ -566,8 +564,7 @@ end
 
 the anti-involution on the Hecke algebra defined by `T_w↦T_inv(w)`.
 """
-Garside.α(h::HeckeTElt)=HeckeTElt(ModuleElt(inv(p)=>c for (p,c) in h.d;
-                                               check=true),h.H)
+Garside.α(h::HeckeTElt)=HeckeTElt(ModuleElt(inv(p)=>c for (p,c) in h.d),h.H)
 
 """
 `class_polynomials(h)`
@@ -652,7 +649,7 @@ function class_polynomials(h)
         end
       end
     end
-    h=clone(h,ModuleElt(Pair.(elms,coeffs);check=true))
+    h=clone(h,ModuleElt(Pair.(elms,coeffs)))
   end
   return min
 end

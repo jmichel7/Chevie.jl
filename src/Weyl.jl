@@ -642,7 +642,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, 
  PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction, 
  PermRoot.semisimplerank, PermRoot.simplecoroots, 
- PermRoot.simple_representatives, PermRoot.simpleroots, PermRoot.torus_order, 
+ PermRoot.simple_reps, PermRoot.simpleroots, PermRoot.torus_order, 
  PermRoot.baseX, PermRoot.central_action,
  Perms.reflength
 
@@ -652,6 +652,10 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
   rootdec::Vector{Vector{T1}}
   N::Int
 end
+
+#forwarded
+PermRoot.simple_conjugating(W::FCG,i)=simple_conjugating(W.G,i)
+Base.show(io::IO, W::FCG)=show(io,W.G)
 
 function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
@@ -670,34 +674,36 @@ The  resulting object, that we will  call a *Coxeter datum*, has additional
 entries and functions describing various information on the root system and
 Coxeter group that we describe below.
 
-`nref(W)`:   the number of positive roots
+  - `nref(W)`:   the number of positive roots
 
-`W.rootdec`:  the  root  vectors,  given  as  linear combinations of simple
-roots.  The first `nref(W)` roots are  positive, the next `nref(W)` are the
-corresponding negative roots. Moreover, the first `semisimplerank(W)` roots
-are the simple roots. The positive roots are ordered by increasing height.
+  - `W.rootdec`: the root vectors, given  as linear combinations of simple
+    roots. The first `nref(W)` roots are positive, the next `nref(W)` are the
+    corresponding  negative  roots.  Moreover,  the first `semisimplerank(W)`
+    roots  are the simple roots. The positive roots are ordered by increasing
+    height.
 
-`coroots(W)`:  the  same  information  for  the  simple coroots. The coroot
-corresponding  to a given root is in the same relative position in the list
-of coroots as the root in the list of roots.
+  - `coroots(W)`: the same information for  the simple coroots. The coroot
+    corresponding  to a given root has same index in the list of coroots as
+    the root in the list of roots.
 
-`rootlengths(W)`:  the  vector  of  length  of  roots the simple roots. The
-shortest  roots in  an irreducible  subsystem are  given the  length 1. The
-others  then  have  length  2  (or  3  in  type  G_2).  The  matrix  of the
-`W`-invariant bilinear form is given by
-`map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))`.
+  - `rootlengths(W)`: the vector  of the (squared)  length of the roots.
+    The  shortest roots in an irreducible subsystem are given the length 1.
+    The  others then have  length 2 (or  3 in type `G₂`). The matrix of the
+    `W`-invariant bilinear form is given by
+    `map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))`.
 
-`simple_representatives(W)[i]`:  this gives the  smallest index of  a root in
-the same `W`-orbit as the `i`-th root.
+  - `simple_reps(W,i)`: this  gives the  smallest index  of a root in the
+    same `W`-orbit as the `i`-th root.
 
-`simple_conjugating_element(W,i)`: returns an element `w` of `W` of minimal
-length such that `i==simple_representative(W,i)^w'.
+  - `simple_conjugating(W,i)`: returns  an element  `w` of  `W` of minimal
+    length such that `i==simple_reps(W,i)^w'.
 
-`reflrep(W)`:    the  matrices  (in  row  convention  ---  that is the matrices
-     operate  *from the right*) of the  simple reflections of the Coxeter group.
+  - `reflrep(W)`:  the  reflection  representation  of  `W`, that is the
+    matrices  (in row convention --- the matrices operate *from the right*)
+    of the simple reflections generating `W`.
 
-`gens(W)`:   the generators as permutations of the root vectors.  They
-       are given in the same order as the first `semisimplerank(W)` roots.
+  - `gens(W)`: the generators, as permutations of the root vectors. They are
+    in the same order as the simple roots.
 
 ```julia_repl
 julia> W=coxgroup(:A,3)
@@ -778,8 +784,6 @@ PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
 
 coxgroup()=torus(0)
 
-Base.show(io::IO, W::FCG)=show(io,W.G)
-
 #function reflrep(W::FCG,w)
 #  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
@@ -806,9 +810,7 @@ function rootlengths(W::FCG)
         lengths[I[1]]=-C[I[3],I[2]]
       end
     end
-    for i in eachindex(lengths)
-      lengths[i]=lengths[simple_representatives(W.G)[i]]
-    end
+    for i in eachindex(lengths) lengths[i]=lengths[simple_reps(W.G,i)] end
     lengths
   end
 end
@@ -831,12 +833,6 @@ end
 Base.:*(W1::FiniteCoxeterGroup,W2::PermRootGroup)=W1.G*W2
 Base.:*(W1::PermRootGroup,W2::FiniteCoxeterGroup)=W1*W2.G
 
-"for each root index of simple representative"
-PermRoot.simple_representatives(W::FCG)=simple_representatives(W.G)
-
-PermRoot.simple_conjugating_element(W::FCG,i)=
-   simple_conjugating_element(W.G,i)
-
 function Base.:^(W::FiniteCoxeterGroup,p::Perm)
   WW=parent(W)
   if !(p in WW) error("can only conjugate in parent") end
@@ -850,6 +846,8 @@ end
   N::Int
   parent::FCG{T,T1}
 end
+
+Base.show(io::IO, W::FCSG)=show(io,W.G)
 
 function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
   print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")
@@ -998,7 +996,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
    if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
      for s in refltype(W)
        if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
-          getfield(t,:prop)[:short]=true
+         t.short=true
        end
      end
    end
@@ -1007,10 +1005,8 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   gens=isempty(I) ? Perm{T}[] : reflection.(Ref(W),I)
   G=PRSG(gens,inclusion,restriction,W.G,prop)
-  FCSG(G,rootdec,N,W,prop)
+  FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
 end
-
-Base.show(io::IO, W::FCSG)=show(io,W.G)
 
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])

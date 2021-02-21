@@ -294,7 +294,7 @@ if use_list
   v[l].=ifelse(s,1,-1)
   lower(Cyc(n,v))
 else
-  lower(Cyc(n,ModuleElt(l.=>ifelse(s,1,-1))))
+  lower(Cyc(n,ModuleElt(l.=>ifelse(s,1,-1);check=false)))
 end
   end
 end
@@ -321,7 +321,7 @@ if use_list
   end
 else
   if iszero(real(c)) return Cyc(4,ModuleElt(1=>imag(c)))
-  else return Cyc(4,ModuleElt(0=>real(c),1=>imag(c)))
+  else return Cyc(4,ModuleElt(0=>real(c),1=>imag(c);check=false))
   end
 end
 end
@@ -406,7 +406,6 @@ function sumroots(n::Int,l)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
-# Cyc(n,ModuleElt(res;check=true))
   Cyc(n,ModuleElt(res;check=length(l)>1))
 end
 
@@ -557,7 +556,7 @@ else
   res=eltype(a.d)[]
   for (i,va) in a.d sumroot(res,n,na*i,va) end
   for (i,vb) in b.d sumroot(res,n,nb*i,vb) end
-  lower(Cyc(n,ModuleElt(res;check=true)))
+  lower(Cyc(n,ModuleElt(res)))
 end
 end
 
@@ -575,8 +574,10 @@ if use_list
 Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
-Base.div(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>div(v,a) for (k,v) in c.d))
-Base.://(c::Cyc,a::Real)=Cyc(c.n,ModuleElt(k=>v//a for (k,v) in c.d))
+Base.div(c::Cyc,a::Real)=Cyc(c.n,
+                         ModuleElt(k=>div(v,a) for (k,v) in c.d;check=false))
+Base.://(c::Cyc,a::Real)=Cyc(c.n,
+                         ModuleElt(k=>v//a for (k,v) in c.d;check=false))
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
@@ -614,7 +615,7 @@ else
 # end
   res=eltype(a.d)[]
   for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
-  lower(Cyc(n,ModuleElt(res;check=true)))
+  lower(Cyc(n,ModuleElt(res)))
 end
 end
 
@@ -663,20 +664,21 @@ if use_list
     end
 else
     if np>1 
-      if all(k->k[1]%p==0,c.d) 
-        return lower(Cyc(m,ModuleElt(div(k,p)=>v for (k,v) in c.d)))
+      if all(k->first(k)%p==0,c.d) 
+        return lower(Cyc(m,ModuleElt(div(k,p)=>v for (k,v) in c.d;check=false)))
       end
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(!iszero,cnt).-1
-#       kk=sort(Int.([div(k+m*mod(-k,p)*invmod(m,p),p)%m for k in u]))
         kk=sort(@. div(u+m*mod(-u,p)*invmod(m,p),p)%m)
     let m=m
-        if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
+        if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in
+                                             kk;check=false)))
         elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
-          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in kk)))
+          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in
+                                       kk;check=false)))
         end
     end
       end
@@ -885,7 +887,7 @@ function Base.:*(a::Cyc,b::Root1)
   nb=div(n,conductor(b))
   res=empty(a.d.d)
   for (i,va) in a.d sumroot(res,n,na*i+nb*exponent(b),va) end
-  lower(Cyc(n,ModuleElt(res;check=true)))
+  lower(Cyc(n,ModuleElt(res)))
 end
 
 Base.:*(b::Root1,a::Cyc)=a*b

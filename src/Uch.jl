@@ -574,12 +574,11 @@ function UnipotentCharacters(WF::Spets)
   f=keys(r.prop)
   res=Dict{Symbol,Any}()
   for a in f
-    if a!=:type 
+    if a==:type continue end
     if length(simp)==1 
-      res[a]=map(x->[x],r.prop[a])
-    elseif all(x->haskey(x.prop,a),simp)
-      res[a]=cartesian(map(x->x.prop[a],simp)...)
-    end
+      res[a]=map(x->[x],getproperty(r,a))
+    elseif all(x->haskey(x,a),simp)
+      res[a]=cartesian(map(x->getproperty(x,a),simp)...)
     end
   end
   
@@ -590,7 +589,7 @@ function UnipotentCharacters(WF::Spets)
   res[:size]=length(res[:TeXCharNames])
   
   # finally the new 'charNumbers' lists
-  tmp=cartesian(map(a->1:length(a.prop[:TeXCharNames]),simp)...)
+  tmp=cartesian(map(a->1:length(a.TeXCharNames),simp)...)
 
   hh=CartesianSeries.(cartesian(map(x->x.harishChandra,simp)...))
   ah=CartesianSeries.(cartesian(map(x->x.almostHarishChandra,simp)...))
@@ -1252,7 +1251,7 @@ unipotent characters.
 
 ```julia-repl
 julia> cuspidal_pairs(coxgroup(:F,4))
-9-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
+9-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
  (levi = F₄, cuspidal = 31)
  (levi = F₄, cuspidal = 32)
  (levi = F₄, cuspidal = 33)
@@ -1264,7 +1263,7 @@ julia> cuspidal_pairs(coxgroup(:F,4))
  (levi = F₄₍₎=Φ₁⁴, cuspidal = 1)
 
 julia> cuspidal_pairs(ComplexReflectionGroup(4),3)
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 3)
  (levi = G₄, cuspidal = 6)
  (levi = G₄, cuspidal = 7)

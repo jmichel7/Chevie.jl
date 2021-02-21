@@ -42,7 +42,7 @@ module Groups
 export Group, minimal_words, gens, ngens, classreps, centralizer,
   conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
   position_class, fusion_conjugacy_classes, Coset, transporting_elt,
-  centre, normalizer, stabilizer, abelian_generators,iscyclic,comm,
+  centre, normalizer, stabilizer, abelian_gens,iscyclic,comm,
   nconjugacy_classes
 
 using ..Util: InfoChevie, @GapObj
@@ -442,12 +442,30 @@ function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
   end
 end
 
+# suppress unneeded generators
+function weedgens(G::Group)
+  l=length(G)
+  gen=empty(gens(G))
+  if l==1 return Group(gen) end
+  lr=1
+  for g in gens(G)
+    N=Group(vcat(gen,[g]))
+    ln=length(N)
+    if ln==l return N end
+    if ln>lr
+      lr=ln
+      gen=vcat(gen,[g])
+    end
+  end
+end
+
 # horrible implementation
 function Base.intersect(G::Group, H::Group)
   if min(length(G),length(H))>104000 error("too large intersect($G,$H)") end
-  if length(G)<length(H) Group(filter(x->x in H,elements(G)))
-  else Group(filter(x->x in G,elements(H)))
+  if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
+  else res=Group(filter(x->x in G,elements(H)))
   end
+  weedgens(res)
 end
 
 #------------------- "abstract" concrete groups -------------------------------
@@ -488,7 +506,7 @@ end
 Base.one(G::Groupof)=G.one
 
 #------------------- cosets ----------------------------------------
-# for now normal cosets (phi normalizes G)
+# for now only normal cosets (phi normalizes G)
 abstract type Coset{TW<:Group} end
 
 @GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
@@ -496,10 +514,9 @@ abstract type Coset{TW<:Group} end
   G::TW
 end
 
-Base.isone(a::Coset)=isone(a.phi)
+Base.isone(a::Coset)=a.phi in a.G
 
-Coset(G::Group,phi)=Cosetof(phi,G,Dict{Symbol,Any}())
-Coset(G::Group)=Cosetof(one(G),G,Dict{Symbol,Any}())
+Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
 
@@ -515,7 +532,7 @@ Base.hash(a::Coset, h::UInt)=hash(a.phi,h)
 
 Base.copy(C::Coset)=Coset(Group(C),C.phi)
 
-Base.one(C::Coset)=Coset(Group(C),one(C.phi))
+Base.one(C::Coset)=Coset(Group(C))
 
 Base.inv(C::Coset)=Coset(Group(C),inv(C.phi))
 
@@ -576,7 +593,7 @@ function fusion_conjugacy_classes(H::Coset,G::Coset)
 end
 
 #---------------------- miscellaneous functions ----------------------
-function abelian_generators(l::Array)
+function abelian_gens(l::Array)
   res=empty(l)
   l=filter(!isone,l)
   while !isempty(l)

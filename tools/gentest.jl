@@ -22,6 +22,7 @@ function mytest(a::String,b::String)
   if a!=b print("exec=\$(repr(a[i:end]))\\nmanl=\$(repr(b[i:end]))\\n") end
   a==b
 end
+@testset verbose = true "Gapjm" begin
 """
 )
     for f in ff 
@@ -79,6 +80,7 @@ end
       write(io,"end\n")
       end
     end
+    write(io,"end\n")
   end
 end
 

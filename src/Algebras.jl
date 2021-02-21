@@ -3,7 +3,7 @@ using ..Gapjm
 export FiniteDimAlgebra, AlgebraElt, basis, dim, idempotents, iscommutative
 abstract type FiniteDimAlgebra end
 
-struct AlgebraElt{T,TA}
+struct AlgebraElt{TA,T}
   A::TA
   d::ModuleElt{Int,T}
 end
@@ -44,13 +44,13 @@ Base.:^(a::AlgebraElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.isless(a::AlgebraElt,b::AlgebraElt)=isless(a.d,b.d)
 Base.:(==)(a::AlgebraElt,b::AlgebraElt)=a.d==b.d
 
-function Cycs.coefficients(a::AlgebraElt{T})where T
+function Cycs.coefficients(a::AlgebraElt{A,T})where {A,T}
   v=fill(T(0),dim(a.A))
   for (i,c) in a.d v[i]=c end
   v
 end
 
-function Base.:*(a::AlgebraElt{T1}, b::AlgebraElt{T2})where {T1,T2}
+function Base.:*(a::AlgebraElt{A,T1}, b::AlgebraElt{A,T2})where {A,T1,T2}
   res=Pair{Int,promote_type(T1,T2)}[]
   for (i,c) in a.d
     for (i1,c1) in b.d
@@ -58,7 +58,7 @@ function Base.:*(a::AlgebraElt{T1}, b::AlgebraElt{T2})where {T1,T2}
       append!(res,[k=>c*c1*c2 for (k,c2) in l])
     end
   end
-  AlgebraElt(a.A,ModuleElt(res;check=true))
+  AlgebraElt(a.A,ModuleElt(res))
 end
 
 end

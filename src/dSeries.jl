@@ -29,7 +29,7 @@ julia> W=rootdatum("3D4")
 ³D₄
 
 julia> l=cuspidal_pairs(W,3)
-2-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
+2-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
  (levi = ³D₄, cuspidal = 8)
  (levi = D₄₍₎=Φ₃², cuspidal = 1)
 
@@ -63,7 +63,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> l=cuspidal_pairs(W,3)
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 3)
  (levi = G₄, cuspidal = 6)
  (levi = G₄, cuspidal = 7)
@@ -100,7 +100,7 @@ with:
 
 ```julia-repl
 julia> cuspidal_pairs(W,Root1(;r=2//3))
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
+5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
  (levi = G₄, cuspidal = 2)
  (levi = G₄, cuspidal = 5)
  (levi = G₄, cuspidal = 7)
@@ -671,14 +671,13 @@ function Weyl.relative_group(s::Series)
     end
   end
   eig=Uch.eigen(UnipotentCharacters(s.levi))
-  eig=filter(i->eig[i]==eig[s.cuspidal],eachindex(eig))
-  if length(eig)>1
+  inds=filter(i->eig[i]==eig[s.cuspidal],eachindex(eig))
+  if length(inds)>1
     ud=Uch.CycPolUnipotentDegrees(s.levi)
-    ud=filter(i->ud[i]==ud[s.cuspidal],eachindex(eig))
-    if length(ud)>1
+    inds=filter(i->ud[i]==ud[s.cuspidal],inds)
+    if length(inds)>1
       c=length(N)
-      N=centralizer(N,s.cuspidal;
-                    action=(c,g)->c^on_unipotents(s.levi, g))
+      N=centralizer(N,s.cuspidal;action=(c,g)->c^on_unipotents(s.levi, g))
       if c!=length(N)
         ChevieErr("# WGL:",length(N)//length(L),"/",c//length(L)," fix c\n")
       end
@@ -698,7 +697,8 @@ function Weyl.relative_group(s::Series)
     s.:e=1
     return WGL
   else
-    WGL=N/L
+    WGL=N/Group(gens(L)) # while problem with G333 not solved
+ #  WGL=N/L
   end
   V=GLinearAlgebra.lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
   m=vcat(V,GLinearAlgebra.lnullspace(projector(s)))^-1
@@ -717,7 +717,7 @@ function Weyl.relative_group(s::Series)
   # :coroot     of refl. of WGL
   function getreflection(rr)
     local rH, H, r, res, n
-    rH = hplane(rr[1]) # Hyperplane of W_G(L)
+    rH = hplane(rr[1]) # Hyperplane of WGL
     if length(rH)==0 # cyclic WGL
       H=W
     else
@@ -725,7 +725,8 @@ function Weyl.relative_group(s::Series)
     end
     res=Dict{Symbol, Any}(:refs => inclusiongens(H))
     H = intersect(H, N)
-    if length(L)!=1 H=H/L end
+  # if length(L)!=1 H=H/L end
+    if length(L)!=1 H=H/Group(gens(L)) end # until problem in G333
     if length(H)==1 error("H=L") end
     ee=elements(H)
     gen=findfirst(y->order(y)==length(H),ee)
@@ -752,7 +753,7 @@ function Weyl.relative_group(s::Series)
   reflist = []
   for r in rrefs
     push!(reflist, getreflection(r))
-    if length(Group(map(x->x[:hom],reflist))) == length(WGL)
+    if length(Group(map(x->x[:hom],reflist)))==length(WGL)
 #     println("r=",map(x->x[:root],reflist),"\ncr=",map(x->x[:coroot],reflist))
       WGL=PRG(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
       reflist=map(x->smalltobig(GLinearAlgebra.lnullspace(x-x^0)),reflrep(WGL))
@@ -1179,7 +1180,7 @@ function RelativeSeries(s)
     #   println("R=",R," L=",subspets(R,l,s.element/R.phi))
     #   println("R=",R," l=",l," s.element/R.phi=",s.element/R.phi)
     p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r;NC=true)
-    p.orbit=simple_representatives(WGL)[i]
+    p.orbit=simple_reps(WGL)[i]
     r=Int.(indexin(sort(unique(reflections(WGL))),reflections(WGL)))
     if gens(WGL)==WGL.parentMap
       r=filter(x->reflections(WGL)[x] in Group(p.spets),r)

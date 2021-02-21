@@ -332,12 +332,12 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[1])
-2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₁₎=Ã₁Φ₁
  B₂₍₁₎=Ã₁Φ₂
 
 julia> twistings(W,[2])
-2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₂₎=A₁Φ₂
  B₂₍₂₎=A₁Φ₁
 ```
@@ -353,7 +353,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> twistings(W,[2,4])
-2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  B₂₍₂₄₎=(A₁A₁)
  B₂₍₂₄₎=A₁×A₁
 ```
@@ -426,14 +426,14 @@ julia> WF=spets(W,Perm(1,6)*Perm(3,5))
 ²E₆
 
 julia> twistings(W,2:5)
-3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
  E₆₍₂₃₄₅₎=³D₄Φ₃
  E₆₍₂₃₄₅₎=D₄Φ₁²
 
 
 julia> twistings(WF,2:5)
-3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  E₆₍₃₅₄₂₎=²D₄₍₂₄₃₁₎Φ₁Φ₂
  E₆₍₂₃₄₅₎=D₄Φ₂²
  E₆₍₂₃₄₅₎=³D₄Φ₆
@@ -491,7 +491,7 @@ of type `W`.
 
 ```julia-repl
 julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
-8-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
+8-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  (A₃A₃)
  ²(A₃A₃)
  ²(A₃A₃)₍₁₂₃₆₅₄₎
@@ -502,7 +502,7 @@ julia> twistings(coxgroup(:A,3)*coxgroup(:A,3))
  A₃×²A₃
 
 julia> twistings(coxgroup(:D,4))
-6-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
+6-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  ³D₄₍₁₄₃₂₎
  ²D₄₍₁₄₃₂₎
  ³D₄
@@ -514,7 +514,7 @@ julia> W=rootdatum(:so,8)
 D₄
 
 julia> twistings(W)
-2-element Vector{spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
+2-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  ²D₄
  D₄
 
@@ -543,8 +543,8 @@ twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 end
 
 function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
-#function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
-  print(io,"spets{",TW,"}")
+##function Base.show(io::IO,::MIME"text/plain",t::Type{FCC{T,TW}})where {T,TW}
+  print(io,"Spets{",TW,"}")
 end
 
 Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
@@ -636,7 +636,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> twistings(W,Int[])
-5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₁³
  A₃₍₎=Φ₁²Φ₂
  A₃₍₎=Φ₁Φ₂²
@@ -650,7 +650,7 @@ julia> WF=spets(W,Perm(1,3))
 ²A₃
 
 julia> twistings(WF,Int[])
-5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₂³
  A₃₍₎=Φ₁Φ₂²
  A₃₍₎=Φ₁²Φ₂
@@ -710,10 +710,10 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   end
 end
 
-function PermRoot.parabolic_representatives(WF::CoxeterCoset,s)
+function PermRoot.parabolic_reps(WF::CoxeterCoset,s)
   W=Group(WF)
   res=Vector{Int}[]
-  for I in parabolic_representatives(W,s)
+  for I in parabolic_reps(W,s)
     if sort(I.^WF.phi)==sort(I) push!(res,I)
     else
       c=filter(x->sort(x.^WF.phi)==sort(x),standard_parabolic_class(W,I))
@@ -723,7 +723,7 @@ function PermRoot.parabolic_representatives(WF::CoxeterCoset,s)
   res
 end
 
-PermRoot.Diagram(W::Spets)=PermRoot.Diagram(refltype(W))
+PermRoot.Diagram(W::Spets)=Diagram.(refltype(W))
 
 function Base.show(io::IO, WF::Spets)
   W=Group(WF)
@@ -737,7 +737,7 @@ function Base.show(io::IO, WF::Spets)
       printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
     end
   end
-  PermRoot.showtypes(io,refltype(WF))
+  show(io,refltype(WF))
   t=CycPol(charpoly(central_action(W,WF.F)))
   if !isone(t) show(io,t) end
 end
@@ -848,7 +848,7 @@ subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 end
 
 function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
-  print(io,"spets{",TW,"}")
+  print(io,"Spets{",TW,"}")
 end
 
 function spets(W::PermRootGroup)
@@ -877,7 +877,7 @@ function spets(W::PermRootGroup,F::Matrix)
 # if W isa PRSG error("that's all for subgroups") end
 # check if there exists a permutation perm and for each W-orbit of roots O 
 # a scalar l_O such that W.roots{O}*WF.F0Mat=l_O*W.roots{OnTuples(O,perm)}
-  t=collectby(j->simple_representatives(W)[j],eachindex(gens(W)))
+  t=collectby(j->simple_reps(W)[j],eachindex(gens(W)))
   s=map(t)do inds
     scal=map(inds)do y
       r=permutedims(F)*roots(W,y)
@@ -903,7 +903,7 @@ function spets(W::PermRootGroup,F::Matrix)
     " must normalize set of roots of parent up to scalars.\n")
     return false
   end
-  scalars=map(x->x[1],s)[simple_representatives(W)[eachindex(gens(W))]]
+  scalars=map(x->x[1],s)[simple_reps(W)[eachindex(gens(W))]]
   perm=fill(0,length(roots(W)))
   for i in eachindex(t) perm[t[i]]=s[i][2] end
   while true
@@ -995,15 +995,14 @@ function PermRoot.refltype(WF::PRC)
     if isnothing(c) && any(isG333,t)
       for a in t
         if isG333(a)
-          a.subgroup=PermRoot.reflection_subgroupNC(W,a.indices)
+          a.subgroup=reflection_subgroup(W,a.indices;NC=true)
           c=chevieget(:timp,:ReducedInRightCoset)(a.subgroup,WF.phi)
-          if c!=false && (WF.phi!=c[:phi] ||
-                             a.indices!=inclusion(a.subgroup,W,c[:gen]))
-            c[:gen]=inclusion(a.subgroup,W,c[:gen])
+          if c!=false && (WF.phi!=c[:phi] || a.indices!=restriction(W,c[:gen]))
+            c[:gen]=restriction(W,c[:gen])
             a.indices=c[:gen]
-            a.subgroup=reflection_subgroup(W,c[:gen],t=false)
+            a.subgroup=reflection_subgroup(W,c[:gen];NC=true)
             WF.phi=c[:phi]
-            WF.W=PermRoot.reflection_subgroupNC(W,vcat(map(x->x.indices,t)...))
+            WF.W=reflection_subgroup(W,vcat(map(x->x.indices,t)...);NC=true)
             W=WF.W
           end
           if isone(comm(a.subgroup(3),WF.phi)) G333=[1,2,3,44]
@@ -1045,7 +1044,7 @@ function PermRoot.refltype(WF::PRC)
           end
         end
         scal=Root1(scal[1])
-        sub=PermRoot.reflection_subgroupNC(W,ti.indices)
+        sub=reflection_subgroup(W,ti.indices;NC=true)
         zg=Groups.centre(sub)
         z=length(zg)
  #      println("zg=$zg")

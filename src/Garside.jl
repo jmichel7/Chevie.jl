@@ -254,7 +254,7 @@ julia> d=conjugating_elt(b,c)
 julia> b^d
 14.143
 
-julia> centralizer_generators(b)
+julia> centralizer_gens(b)
 3-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  321432.213243
  21.1
@@ -333,7 +333,7 @@ julia> root(Pi,4)
 module Garside
 using ..Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
-centralizer_generators, preferred_prefix, left_divisors, Category,
+centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, rightgcd, rightlcm, conjugating_elt, GarsideElm
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
@@ -1435,7 +1435,7 @@ function conjugating_elt(b,c,F=(x,y=1)->x;ss::Symbol=:sc)
 end
 
 """
-`centralizer_generators(b[,F];ss=:sc)`
+`centralizer_gens(b[,F];ss=:sc)`
 
 a  list of generators of the centralizer of `b`. The computation is done by
 computing  the  endomorphisms  of  the  object  `b`  in the category of its
@@ -1456,7 +1456,7 @@ BraidMonoid(D₄)
 julia> w=B(4,4,4)
 4.4.4
 
-julia> cc=centralizer_generators(w)
+julia> cc=centralizer_gens(w)
 8-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1
  (31432)⁻¹231432
@@ -1475,19 +1475,19 @@ julia> shrink(cc)
  34.43        
  (3243)⁻¹13243
 
-julia> centralizer_generators(w;ss=:cyc)
+julia> centralizer_gens(w;ss=:cyc)
 Set{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
   4
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)));
 
-julia> centralizer_generators(w,F)
+julia> centralizer_gens(w,F)
 2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  124      
  312343123
 ```
 """
-function centralizer_generators(b,F=(x,y=1)->x;ss::Symbol=:sc)
+function centralizer_gens(b,F=(x,y=1)->x;ss::Symbol=:sc)
   if ss==:ss || ss==:sc
     b=representativeSC(b,F)
     a=b.conj

@@ -234,7 +234,7 @@ function relative_root(W,L,i)
 # xprintln("W=",W," i=",i," L=",L)
   N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
   F=N/L
-# xprintln(abelian_generators(elements(F)))
+# xprintln(abelian_gens(elements(F)))
   if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
   d=length(F)
 # println("d=$d ",order.(elements(F)))
@@ -290,7 +290,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> split_levis(W,4)
-2-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃
  A₃₍₎=Φ₂Φ₄
 
@@ -298,7 +298,7 @@ julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 ³D₄
 
 julia> split_levis(W,3)
-3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  ³D₄
  D₄₍₁₃₎=A₂Φ₃
  D₄₍₎=Φ₃²
@@ -307,13 +307,13 @@ julia> W=coxgroup(:E,8)
 E₈
 
 julia> split_levis(W,4,2)
-3-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²
  E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
  E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
 
 julia> split_levis(ComplexReflectionGroup(5))
-4-element Vector{spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:
+4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:
  G₅
  G₅₍₁₎=G₃‚₁‚₁Φ₁
  G₅₍₂₎=G₃‚₁‚₁Φ₁
@@ -370,7 +370,7 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
 # println("hr=",hr)
   if issubset(hr,eachindex(gens(W))) return Perm() end
   I=combinations(eachindex(gens(W)),length(hr))
-  # I=map(x->inclusion(W,x),parabolic_representatives(W))
+  # I=map(x->inclusion(W,x),parabolic_reps(W))
   I=filter(l->length(reflection_subgroup(W,l))==length(H),I)
   try_=function(a)
     H1=H

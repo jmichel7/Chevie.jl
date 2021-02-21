@@ -73,18 +73,17 @@ julia> eltype(a)
 Pair{Symbol, Int64}
 ```
 
-both  implementations provide  an option  `check` in  the constructor which
-normalizes  an element,  removing zero  coefficients and  merging duplicate
-basis elements (and sorting the basis in the default implementation).
+In both implementations the constructor normalizes the constructed element,
+removing  zero  coefficients  and  merging  duplicate  basis  elements (and
+sorting  the  basis  in  the  default  implementation).  If  you know it is
+unnecessary,  to  het  maximum  speed  you  can  disable this by giving the
+keyword `check=false`.
 
 ```julia-repl
-julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
+julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1;check=false)
 :yy+2:yx+3:xy-:yy
 
-julia> a=ModuleElt([:yy=>1, :yx=>2, :xy=>3, :yy=>-1];check=true)
-3:xy+2:yx
-
-julia> a
+julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
 3:xy+2:yx
 ```
 
@@ -112,7 +111,7 @@ export ModuleElt # data structure
 if false # change to true to use this implementation
 struct ModuleElt{K,V}
   d::Dict{K,V} # the keys K should be hashable
-  function ModuleElt(d::Dict{K,V};check::Bool=false)where {K,V}
+  function ModuleElt(d::Dict{K,V};check::Bool=true)where {K,V}
     if check
       for (k,v) in d if iszero(v) delete!(d,k) end end
     end
@@ -123,15 +122,15 @@ end
 ModuleElt(x::Pair{K,V}...;u...) where{K,V}=ModuleElt(collect(x);u...)
 ModuleElt(x::Base.Generator;u...)=ModuleElt(Dict(x);u...)
 
-function ModuleElt(x::Vector{Pair{K,V}};check=false) where{K,V}
-  if !check return ModuleElt(Dict(x)) end
+function ModuleElt(x::Vector{Pair{K,V}};check=true) where{K,V}
+  if !check || length(x)<=1 return ModuleElt(Dict(x)) end
   res=Dict{K,V}()
   for (k,v) in x
     if haskey(res,k) res[k]+=v 
     else res[k]=v 
     end
   end
-  ModuleElt(res;check=true)
+  ModuleElt(res)
 end
 
 # forwarded methods
@@ -141,21 +140,25 @@ Base.values(x::ModuleElt)=values(x.d)
 Base.getindex(x::ModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
 
 Base.merge(op::Function,a::ModuleElt,b::ModuleElt)::ModuleElt=
-  ModuleElt(merge(op,a.d,b.d);check=true)
+  ModuleElt(merge(op,a.d,b.d))
 
 else
 #-------------- faster implementation -------------------------------------
 """
-The  type below has a similar interface  to Dict{K,V}, but merge(+,..) is 3
-times faster than the `Dict` implementation. It also has the advantage that
-ModuleElts are naturally sortable (since type K is assumed sortable).
+The  type  below  has  a  similar  interface to `Dict{K,V}`, but instead of
+assuming  that `K` is hashable, it assumes that `K` is sortable. With this,
+`merge(+,..)` is 3 times faster than the `Dict` implementation. It also has
+the advantage that ModuleElts are naturally sortable.
+
+The unique field, a `Vector{Pair{K,V}}`, is kept sorted by `K`; 
+the constructor checks sorting by default if `length(d)>1`. 
+This can be bypassed by setting `check=false`.
 """
-# The vector d is kept sorted by K 
 struct ModuleElt{K,V}
   d::Vector{Pair{K,V}}
-  function ModuleElt(d::AbstractVector{Pair{K,V}};check::Bool=false)where {K,V}
-    if check && !isempty(d) 
-      sort!(d,by=first)
+  function ModuleElt(d::AbstractVector{Pair{K,V}};check::Bool=true)where {K,V}
+    if check && length(d)>0
+      if length(d)>1 sort!(d,by=first) end
       ri=1
 @inbounds for j in 2:length(d)
         if first(d[j])==first(d[ri])
@@ -200,7 +203,7 @@ function Base.merge(op::Function,a::ModuleElt,b::ModuleElt)
       end
     end
   end
-  ModuleElt(resize!(res,ri))
+  ModuleElt(resize!(res,ri);check=false)
 end
 
 function Base.getindex(x::ModuleElt{K,V},i) where {K,V}
@@ -230,14 +233,14 @@ function Base.:*(a::ModuleElt{K,V},b)where {K,V}
     return zero(ModuleElt{K,promote_type(V,typeof(b))})
   end
   let b=b
-    ModuleElt(k=>v*b for (k,v) in a)
+    ModuleElt(k=>v*b for (k,v) in a;check=false)
   end
 end
 
 @inline Base.iszero(x::ModuleElt)=isempty(x.d)
 Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
 Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
-Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for (k,v) in a)
+Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for (k,v) in a;check=false)
 # forwarded methods
 @inline Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
 @inline Base.first(x::ModuleElt)=first(x.d)
@@ -246,16 +249,17 @@ Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for (k,v) in a)
 @inline Base.eltype(x::ModuleElt)=eltype(x.d)
 @inline Base.hash(x::ModuleElt, h::UInt)=hash(x.d,h)
 
+# we assume that converting the keys does not change sorting/hashing
 function Base.convert(::Type{ModuleElt{K,V}},a::ModuleElt{K1,V1}) where {K,K1,V,V1}
   if K==K1
     if V==V1 a
     elseif iszero(a) zero(ModuleElt{K,V})
-    else ModuleElt(k=>convert(V,v) for (k,v) in a.d)
+    else ModuleElt(k=>convert(V,v) for (k,v) in a.d;check=false)
     end
   else 
     if iszero(a) zero(ModuleElt{K,V})
-    elseif V==V1  ModuleElt(convert(K,k)=>v for (k,v) in a.d)
-    else ModuleElt(convert(K,k)=>convert(V,v) for (k,v) in a.d)
+    elseif V==V1  ModuleElt(convert(K,k)=>v for (k,v) in a.d;check=false)
+    else ModuleElt(convert(K,k)=>convert(V,v) for (k,v) in a.d;check=false)
     end
   end
 end

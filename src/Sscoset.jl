@@ -1,28 +1,21 @@
-## An  algebraic coset G.σ  quasi-central is represented  by a CoxeterCoset
-## WF, where WF.F is the action of σ on X(T).
-##
-## A  finite  order  quasi-semisimple  element  tσ  is represented as t, an
-## element  of Y(T)⊗ Q/Z=(Q/Z)^n, that is a list of length n of rationals r
-## such that 0≤r<1.
 """
 Section{Quasi-Semisimple elements of non-connected reductive groups}
 
-We  may  also  use  Coxeter  cosets  to represented non-connected reductive
-groups  of the form `𝐆 ⋊  σ` where `𝐆 ` is  a connected reductive group and
-`σ`  is an algebraic automorphism of `𝐆  `, and more specifically the coset
-`𝐆 .σ`. We may always choose `σ∈ 𝐆 ⋅σ` *quasi-semisimple*, which means that
+We also use Coxeter cosets to represented non-connected reductive groups of
+the  form `𝐆 ⋊ σ` where  `𝐆 ` is a connected  reductive group and `σ` is an
+algebraic automorphism of `𝐆 `; more specifically to represent the coset `𝐆
+.σ`.  We may always  choose `σ∈ 𝐆  ⋅σ` *quasi-semisimple*, which means that
 `σ`  preserves a pair `𝐓 ⊂ 𝐁` of a maximal torus and a Borel subgroup of `𝐆
-`.  If `σ` is of finite order, it then defines an automorphism `F_0` of the
-root  datum `(X(𝐓 ), Φ,  Y(𝐓 ),  Φ^∨)`, thus  a Coxeter coset. We refer to
+`,  and further  *quasi-central*, which  means that  the Weyl group of `C_𝐆
+(σ)`  is `W^σ`. Then  `σ` defines an  automorphism `F_0` of  the root datum
+`(X(𝐓 ), Φ, Y(𝐓 ), Φ^∨)`, thus a Coxeter coset. We refer to
 [Digne-Michel2018](biblio.htm#ss) for details.
 
 We  have  extended  the  functions  for  semi-simple  elements to work with
 quasi-semisimple elements `tσ∈ 𝐓 ⋅σ`. Here, as in
 [Digne-Michel2018](biblio.htm#ss),  `σ`  is  a  quasi-central  automorphism
 uniquely   defined  by  a  diagram  automorphism  of  `(W,S)`,  taking  `σ`
-symplectic  in type `A_{2n}`.  We recall that  a quasi-central element is a
-quasi-semisimple  element such that the Weyl group of `C_𝐆 (σ)` is equal to
-`W^σ`; such an element always exists in the coset `𝐆 ⋅σ`.
+symplectic in type `A₂ₙ`.
 
 Here are some examples:
 
@@ -31,8 +24,8 @@ julia> WF=rootdatum(:u,6)
 ²A₅Φ₂
 ```
 
-The above defines the coset `GL_6⋅σ` where `σ` is the composed
-of transpose, inverse and the longest element of `W`.
+We  can  see  `WF`  as  the  coset  `GL₆⋅σ`  where  `σ`  is the composed of
+transpose, inverse and the longest element of `W`.
 
 ```julia-repl
 julia> l=QuasiIsolatedRepresentatives(WF)
@@ -59,9 +52,9 @@ julia> centralizer.(Ref(WF),l)
  ²A₃₍₃₁₂₎
 ```
 
-in  the above, the groups `C_𝐆 (tσ)` are computed and displayed as extended
-Coxeter  groups  (following  the  same  convention  as  for centralisers in
-connected reductive groups).
+in  the above example, the groups `C_𝐆  (tσ)` are computed and displayed as
+extended  Coxeter groups (following the same convention as for centralisers
+in connected reductive groups).
 
 We  define an element `tσ∈ 𝐓  ⋅σ` to be isolated if  the Weyl group of `C_𝐆
 (tσ)⁰`  is not in any proper  parabolic subgroup of `W^σ`. This generalizes
@@ -76,6 +69,9 @@ julia> is_isolated.(Ref(WF),l)
  1
 ```
 """
+module Sscoset
+
+using Gapjm
 
 # IsSpecial(WF,c) c is an orbit of WF.phi on roots(Group(WF))
 # return true iff c is special in the sense of Digne-Michel
@@ -145,7 +141,7 @@ function Cso(WF)# compute constants C_σ,α
 end
 
 """
-`centralizer(WF::Spets,t)`  centralizer of `WF.F t` for semisimple `t`
+`centralizer(WF::Spets,t::SemisimpleElement{Root1})`  
 
 `WF`  should be  a Coxeter  coset representing  an algebraic coset `𝐆 ⋅σ`,
 where `𝐆 ` is a connected reductive group (represented by 'W:=Group(WF)'),
@@ -203,7 +199,7 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
 end
 
 """
-`QuasiIsolatedRepresentatives(WF,p=0)`
+`QuasiIsolatedRepresentatives(WF::Spets,p=0)`
 
 `WF`  should be  a Coxeter  coset representing  an algebraic  coset `𝐆 ⋅σ`,
 where  `𝐆 ` is a connected  reductive group (represented by `W=Group(WF)`),
@@ -246,7 +242,7 @@ function Semisimple.QuasiIsolatedRepresentatives(WF::Spets,p=0)
 end
 
 """
-`is_isolated(WF,t)`
+`is_isolated(WF::Spets,t::SemisimpleElement{Root1})`
 
 `WF`  should be  a Coxeter  coset representing  an algebraic  coset `𝐆 ⋅σ`,
 where  `𝐆 ` is a connected  reductive group (represented by `W=Group(WF)`),
@@ -278,4 +274,6 @@ function Semisimple.is_isolated(WF::Spets,t::SemisimpleElement{Root1})
   Rs=RelativeDatum(WF)
   t=SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
   is_isolated(Rs, t)
+end
+
 end

@@ -1,5 +1,5 @@
 const ChevieDict=Dict(
-#AbelianGenerators
+"AbelianGenerators"=>"abelian_gens",
 #Affine
 #AffineRootAction
 "AlgebraicCentre"=>"algebraic_centre",
@@ -28,7 +28,7 @@ const ChevieDict=Dict(
 "CartanMat(\"A\",5)"=>"cartan(:A,5)",
 "Cartesian"=>"cartesian",
 "CartanMatFromCoxeterMatrix"=>"cartan",
-"CentralizerGenerators"=>"centralizer_generators",
+"CentralizerGenerators"=>"centralizer_gens",
 "CharFFE(x)"=>"field(x).p",
 #CharName
 "CharNames"=>"charnames",
@@ -215,7 +215,7 @@ const ChevieDict=Dict(
 "OrderedPartitions"=>"compositions",
 "OrderFFE"=>"order",
 "OrderMod(n,m)"=>"order(Mod{m}(n))",
-"ParabolicRepresentatives"=>"parabolic_representatives",
+"ParabolicRepresentatives"=>"parabolic_reps",
 #ParabolicSubgroups
 "PartBeta"=>"partβ",
 "Partition"=>"partition",
@@ -223,7 +223,7 @@ const ChevieDict=Dict(
 "PartitionsSet"=>"partitions_set",
 "PartitionTuples"=>"partition_tuples",
 #PartitionTupleToString
-#PermCosetsSubgroup
+"PermCosetsSubgroup(H,W)"=>"D=reduced(H,W);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",
 "PermListList(l1,l2)"=>"Perm(l1,l2)",
 "PermList(v)"=>"Perm(v)",
 "PermMatMat"=>"Perm_onmats",
@@ -291,7 +291,7 @@ const ChevieDict=Dict(
 #SchurElement
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",
-"SemisimpleCentralizerRepresentatives"=>"SScentralizer_representatives",
+"SemisimpleCentralizerRepresentatives"=>"SScentralizer_reps",
 "SemisimpleElement"=>"SS",
 "SemisimpleRank(W::CoxeterGroup)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
@@ -341,8 +341,8 @@ const ChevieDict=Dict(
 #WGraphToRepresentation
 "W.matgens[i]"=>"reflrep(W,i)",
 "W.N"=>"nref(W)",
-"W.orbitRepresentative"=>"simple_representatives(W)",
-"W.orbitRepresentativeElements[i]"=>"simple_conjugating_element(W,i)",
+"W.orbitRepresentative"=>"simple_reps(W)",
+"W.orbitRepresentativeElements[i]"=>"simple_conjugating(W,i)",
 "W.rootLengths"=>"rootlengths(W)",
 )
 

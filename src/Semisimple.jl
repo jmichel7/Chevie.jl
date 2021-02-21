@@ -175,7 +175,7 @@ module Semisimple
 using ..Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
-StructureRationalPointsConnectedCentre, SScentralizer_representatives
+StructureRationalPointsConnectedCentre, SScentralizer_reps
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -312,7 +312,7 @@ end
 Base.one(G::SSGroup)=G.one
 
 struct SubTorus
-  generators::Vector{Vector{Int}}
+  gens::Vector{Vector{Int}}
   complement::Vector{Vector{Int}}
   group
 end
@@ -324,9 +324,9 @@ The  function  returns  the  subtorus  𝐒  of  the  maximal torus `𝐓` of th
 reductive  group represented by the Weyl group  `W` such that `Y(𝐒)` is the
 (pure)  sublattice of  `Y(𝐓)` generated  by the  (integral) vectors  `Y`. A
 basis  of `Y(𝐒)`  adapted to  `Y(𝐓)` is  computed and  stored in  the field
-'S.generators'  of the returned  SubTorus struct. Here,  adapted means that
-there  is a  set of  integral vectors,  stored in 'S.complement', such that
-'M=vcat(S.generators,S.complement)'  is  a  basis  of  `Y(𝐓)` (equivalently
+'S.gens' of the returned SubTorus struct. Here, adapted means that there is
+a   set  of   integral  vectors,   stored  in   'S.complement',  such  that
+'M=vcat(S.gens,S.complement)'   is   a   basis   of   `Y(𝐓)`  (equivalently
 `M∈GL(Z^{rank(W)})`.  An  error  is  raised  if  `Y` does not define a pure
 sublattice.
 
@@ -354,14 +354,14 @@ function SubTorus(W,V=reflrep(W,one(W)))
   SubTorus(V[:sub],V[:complement],W)
 end
 
-Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.generators,")")
+Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
 
-Gapjm.rank(T::SubTorus)=length(T.generators)
+Gapjm.rank(T::SubTorus)=length(T.gens)
 
 function Base.:in(s::SemisimpleElement{Root1},T::SubTorus)
   n=order(s)
   s=map(x->Int(n*x.r),s.v)
-  V=map(x->mod.(x,n),T.generators)
+  V=map(x->mod.(x,n),T.gens)
   i=1
   for v in filter(!iszero,V)
     while v[i]==0 
@@ -408,7 +408,7 @@ julia> sort(elements(T))
  <ζ₃²,ζ₃,ζ₃²>
 ```
 """
-torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.generators))
+torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.gens))
   
 #F  algebraic_centre(W)  . . . centre of algebraic group W
 ##  
@@ -505,7 +505,7 @@ function algebraic_centre(W)
       end
     end
   end
-  res=Dict(:Z0=>Z0,:AZ=>Group(abelian_generators(AZ),SS(W)))
+  res=Dict(:Z0=>Z0,:AZ=>Group(abelian_gens(AZ),SS(W)))
   if W isa HasType.ExtendedCox && length(F0s)>0 return res end
   AZ=SS.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(AZ) res[:descAZ]=AZ
@@ -515,7 +515,7 @@ function algebraic_centre(W)
   toAZ=function(s)
     s=vec(permutedims(map(x->x.r,s.v))*toM(simplecoroots(W)))
     s=permutedims(s)*
-       inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].generators))))
+       inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].gens))))
        return SS(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*
                                       toM(res[:Z0].complement)))
   end
@@ -641,7 +641,7 @@ function fundamental_group(W)
   e=filter(x->all(isinteger,sum(omega[x,:];dims=1)),e) # minusc. coweights in Y
   if isempty(e) return Group(Perm()) end
   e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
-  Group(abelian_generators(e))
+  Group(abelian_gens(e))
 end
 
 function affine(W)
@@ -671,7 +671,7 @@ A₃₍₁₃₎=(A₁A₁)Φ₂
 """
 function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
 # if IsExtendedGroup(W) then 
-#   totalW:=Subgroup(Parent(W.group),Concatenation(W.group.generators,W.phis));
+#   totalW:=Subgroup(Parent(W.group),Concatenation(W.group.gens,W.phis));
 #   W:=W.group;
 # else totalW:=W;
 # fi;
@@ -679,7 +679,7 @@ function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
   W0s=reflection_subgroup(W,p)
   N=normalizer(W.G,W0s.G)
   l=filter(w->s==s^w,map(x->x.phi,elements(N/W0s)))
-  N=Group(abelian_generators(l))
+  N=Group(abelian_gens(l))
   if rank(W)!=semisimplerank(W)
     if ngens(N)==0 N=Group([W.matgens[1]^0])
     else N=Group(reflrep.(Ref(W),gens(N)))
@@ -811,7 +811,7 @@ runs over all the maximal tori of `SL`₄.
 
 ```julia-repl
 julia> l=twistings(rootdatum(:sl,4),Int[])
-5-element Vector{spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
+5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  A₃₍₎=Φ₁³
  A₃₍₎=Φ₁²Φ₂
  A₃₍₎=Φ₁Φ₂²
@@ -834,14 +834,14 @@ function StructureRationalPointsConnectedCentre(MF,q)
   W=parent(M)
   Z0=algebraic_centre(M)[:Z0]
   Phi=matY(W.G,MF.phi)
-  Z0F=toM(Z0.generators)*(Phi*q-one(Phi))
-  Z0F=map(x->SolutionIntMat(Z0.generators,x),eachrow(Z0F))
+  Z0F=toM(Z0.gens)*(Phi*q-one(Phi))
+  Z0F=map(x->SolutionIntMat(Z0.gens,x),eachrow(Z0F))
   Z0F=DiagonalizeIntMat(Z0F)[:normal]
   filter(!isone,map(i->Z0F[i][i],1:length(Z0F)))
 end
 
 """
-`SScentralizer_representatives(W [,p])`
+`SScentralizer_reps(W [,p])`
 
 `W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
 function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of
@@ -855,7 +855,7 @@ list of the centralizers which occur in characteristic `p` is returned.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> SScentralizer_representatives(W)
+julia> SScentralizer_reps(W)
 6-element Vector{Vector{Int64}}:
  []
  [1]
@@ -864,7 +864,7 @@ julia> SScentralizer_representatives(W)
  [1, 5]
  [2, 6]
 
-julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
+julia> reflection_subgroup.(Ref(W),SScentralizer_reps(W))
 6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:
  G₂₍₎=Φ₁²
  G₂₍₁₎=A₁Φ₁
@@ -873,7 +873,7 @@ julia> reflection_subgroup.(Ref(W),SScentralizer_representatives(W))
  G₂₍₁₅₎=A₂
  G₂₍₂₆₎=Ã₁×A₁
 
-julia> SScentralizer_representatives(W,2)
+julia> SScentralizer_reps(W,2)
 5-element Vector{Vector{Int64}}:
  []
  [1]
@@ -882,10 +882,10 @@ julia> SScentralizer_representatives(W,2)
  [1, 5]
 ```
 """
-function SScentralizer_representatives(W,p=0)
+function SScentralizer_reps(W,p=0)
 # W-orbits of subsets of Π∪ {-α₀}
   l=map(refltype(W))do t
-    cent=parabolic_representatives(reflection_subgroup(W,t.indices))
+    cent=parabolic_reps(reflection_subgroup(W,t.indices))
     cent=map(x->reflection_subgroup(W,t.indices[x]),cent)
     npara=length(cent)
     r=filter(i->sum(W.rootdec[i])==sum(W.rootdec[i][t.indices]),1:nref(W))
@@ -921,6 +921,4 @@ function IsomorphismType(W;torus=false,TeX=false)
   end
   t
 end
-
-include("sscoset.jl")
 end

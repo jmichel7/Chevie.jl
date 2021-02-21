@@ -105,7 +105,7 @@ groupby
 tally
 collectby
 constant
-format
+showtable
 cut
 prime_residues
 phi
@@ -138,7 +138,6 @@ Posets
 Poset
 hasse
 incidence
-setlabels!
 transitive_closure
 linear_extension
 reverse
@@ -247,12 +246,12 @@ reflections
 refleigen
 reflchar
 simple_conjugating_element
-simple_representatives
+simple_reps
 invariant_form
 invariants
 generic_order
 torus_order
-parabolic_representatives
+parabolic_reps
 parabolic_closure
 is_parabolic
 ComplexReflectionGroup
@@ -304,7 +303,7 @@ word(::Garside.GarsideElm)
 elements(::Garside.LocallyGarsideMonoid,l)
 image
 conjugating_elt
-centralizer_generators
+centralizer_gens
 conjcat
 endomorphisms
 shrink
@@ -332,11 +331,12 @@ pblocks
 ```@docs
 Semisimple
 fundamental_group
-QuasiIsolatedRepresentatives
+QuasiIsolatedRepresentatives(::FiniteCoxeterGroup)
 is_isolated
 torsion_subgroup
 algebraic_centre
-SScentralizer_representatives
+centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
+SScentralizer_reps
 StructureRationalPointsConnectedCentre
 ```
 # Reflection cosets
@@ -347,6 +347,13 @@ spets
 twistings
 graph_automorphisms
 subspets
+```
+# Non-connected reductive groups
+```@docs
+Sscoset
+centralizer(::Spets,::SemisimpleElement{Root1})
+QuasiIsolatedRepresentatives(::Spets)
+is_isolated(::Spets,::SemisimpleElement{Root1})
 ```
 # Unipotent characters
 ```@docs
@@ -456,7 +463,7 @@ CartanMat("A",5)                            cartan(:A,5)
 CartanMatFromCoxeterMatrix                  cartan
 Cartesian                                   cartesian
 Catalan                                     catalan
-CentralizerGenerators                       centralizer_generators
+CentralizerGenerators                       centralizer_gens
 CharFFE(x)                                  field(x).p
 CharNames                                   charnames
 CharParams(W)                               charinfo(W)[:charparams]
@@ -625,7 +632,7 @@ OnTuples(l,p)                               l.^p
 OrderFFE                                    order
 OrderMod(n,m)                               order(Mod{m}(n))
 OrderedPartitions                           compositions
-ParabolicRepresentatives                    parabolic_representatives
+ParabolicRepresentatives                    parabolic_reps
 PartBeta                                    partβ
 Partition                                   partition
 PartitionTuples                             partition_tuples
@@ -685,7 +692,7 @@ ScalMvp                                     scal
 ScalarProduct                               scalarproduct
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor
-SemisimpleCentralizerRepresentatives        SScentralizer_representatives
+SemisimpleCentralizerRepresentatives        SScentralizer_reps
 SemisimpleElement                           SS
 SemisimpleRank                              semisimplerank
 SemisimpleRank(W::CoxeterGroup)             coxrank(W)
@@ -727,7 +734,7 @@ Valuation(p)                                valuation(p)
 Value(p,x)                                  p(x)
 W.N                                         nref(W)
 W.matgens[i]                                reflrep(W,i)
-W.orbitRepresentative                       simple_representatives(W)
+W.orbitRepresentative                       simple_reps(W)
 W.orbitRepresentativeElements[i]            simple_conjugating_element(W,i)
 W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
