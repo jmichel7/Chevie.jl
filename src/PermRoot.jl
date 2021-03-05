@@ -971,43 +971,46 @@ julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),q)
 """
 torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
 
-function Groups.orbits(W::PermRootGroup)
-  get!(W,:orbits)do
-    orbits(W,eachindex(roots(parent(W)));trivial=false)
+function Groups.centre(W::PermRootGroup)
+  get!(W,:centre)do
+    ci=classinfo(W)
+    ct=ci[:classtext]
+    pos=findall(i->ci[:classes][i]==1 && length(ct[i])>0,eachindex(ct))
+    if isempty(pos) return Group([one(W)]) end
+    central=map(x->W(ct[x]...),pos)
+    Group(abelian_gens(central))
   end
 end
- 
+     
+cycletypes(W,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
+
+# eventually rewrite this dispatching on types
 function classinv(W::PermRootGroup)
   get!(W,:classinv)do
-    oo=orbits(W)
-    map(x->map(o->cycletype(W(x...),domain=o),oo),classinfo(W)[:classtext])
+    cycletypes.(Ref(W),classreps(W))
   end
 end
 
-function Groups.conjugacy_classes(W::PermRootGroup)
-  get!(W,:classes)do
-    map(x->orbit(W,x),classreps(W))
-  end
-end
-  
 function Groups.position_class(W::PermRootGroup,w)
-  i=map(o->cycletype(w,domain=o),orbits(W))
-  l=findall(isequal(i),classinv(W))
-  if length(l)>1 
-    if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W))
-    else 
-      ncl=classinfo(W)[:classes][l]
-      s=sortperm(ncl)
-      cl=classreps(W)
-      while s[1]<100
-        if w in orbit(W,cl[l[s[1]]]) return l[s[1]] end
-        s=s[2:end]
-        if length(s)==1 return l[s[1]] end
-      end
-      error("ambiguity: classes $l match")
-    end
+  l=findall(==(cycletypes(W,w)),classinv(W))
+  if length(l)==1 return l[1] end
+  if length(centre(W))>1
+    central=gens(centre(W))
+    l=filter(i->cycletypes.(Ref(W),classreps(W)[i].*central)==
+                cycletypes.(Ref(W),w.*central),l)
+    if length(l)==1 return l[1] end
   end
-  l[1]
+  # doit type by type
+  if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
+  ncl=classinfo(W)[:classes][l]
+  s=sortperm(ncl)
+  for i in s 
+    if length(s)==1 return l[i] end
+    if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i])
+      println("!! computing class ",l[i]," of cardinal ",ncl[i])
+    end
+    if w in conjugacy_class(W,l[i]) return l[i] end
+  end
 end
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)

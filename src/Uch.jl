@@ -594,10 +594,10 @@ function UnipotentCharacters(WF::Spets)
   hh=CartesianSeries.(cartesian(map(x->x.harishChandra,simp)...))
   ah=CartesianSeries.(cartesian(map(x->x.almostHarishChandra,simp)...))
   for s in hh
-    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
+    s[:charNumbers]=map(y->findfirst(==(y),tmp),s[:charNumbers])
   end
   for s in ah
-    s[:charNumbers]=map(y->findfirst(isequal(y),tmp),s[:charNumbers])
+    s[:charNumbers]=map(y->findfirst(==(y),tmp),s[:charNumbers])
   end
 
   if length(tt)==1
@@ -605,7 +605,7 @@ function UnipotentCharacters(WF::Spets)
   else 
     ff=Family.(prod.(cartesian(map(x->x.families,simp)...)))
     for f in ff
-      f.charNumbers=map(y->findfirst(isequal(y),tmp),f.charNumbers)
+      f.charNumbers=map(y->findfirst(==(y),tmp),f.charNumbers)
     end
   end
   

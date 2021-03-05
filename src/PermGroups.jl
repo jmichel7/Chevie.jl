@@ -69,7 +69,8 @@ Compare to GAP3 Elements(SymmetricGroup(8)); takes 9.5 ms (GAP4 17ms)
 """
 module PermGroups
 using ..Perms
-using ..Groups
+using ..Groups: orbits
+using ..Gapjm
 using ..Util: getp, InfoChevie, @GapObj, printTeX
 import ..Gapjm: degree, elements
 using ..Combinat: tally, collectby
@@ -98,6 +99,12 @@ function degree(G::PermGroup)::Int
   end
 end
 
+function Groups.orbits(G::PermGroup)
+  get!(G,:orbits)do
+    orbits(G,1:degree(G);trivial=false)
+  end
+end
+ 
 """
 describe the orbit of Int p under PermGroup G as a Schreier vector v.
 That is, v[p]==-1 and v[k]=i means that k^inv(G(i)) is the antecessor of k

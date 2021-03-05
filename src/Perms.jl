@@ -512,8 +512,26 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
  2 => 2
 ```
 """
-cycletype(a::Perm;domain=1:degree(a))=tally(length.(orbits(a,
-                                                        domain;trivial=false)))
+function cycletype(a::Perm;domain=1:degree(a))
+  lengths=Int[]
+  if isempty(a.d) return lengths end
+  to_visit=falses(max(degree(a),maximum(domain)))
+@inbounds  to_visit[domain].=true
+  for i in eachindex(to_visit)
+    if !to_visit[i] continue end
+    j=i
+    l=0
+    while true
+      l+=1
+      to_visit[j]=false
+      j^=a
+      if j==i break end
+    end
+    if l>1 push!(lengths,l) end
+  end
+  tally(lengths)
+end
+
 """
 `reflength(a::Perm)`
 

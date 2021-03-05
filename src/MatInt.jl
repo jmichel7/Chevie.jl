@@ -119,9 +119,9 @@ function mgcdex(N, a, v)
   end)
 end
 
-#  bezout(a,b,c,d) - returns P to transform [a b;c d] to hnf (PA=H);
+#  bezout(a,b,c,d) - returns P to transform A=[a b;c d] to hnf (PA=H);
 #
-#  [s t;u v][a b;c d]=[e f;0 g]
+#  (P=[coeff1 coeff2;coeff3 coeff4])*A=[e f;0 g]
 #
 function bezout(a, b, c, d)
   e=Gcdex(a, c)
@@ -205,20 +205,20 @@ function SNFofREF(R, destroy)
   return T
 end
 
-BITLISTS_NFIM = [
-  [false, false, false, false, false], 
+const BITLISTS_NFIM = [
+  [false, false, false, false, false],  # 1
   [true, false, false, false, false], 
   [false, true, false, false, false], 
   [true, true, false, false, false], 
-  [false, false, true, false, false], 
+  [false, false, true, false, false],  # 5
   [true, false, true, false, false], 
   [false, true, true, false, false], 
   [true, true, true, false, false], 
-  [false, false, false, true, false], 
+  [false, false, false, true, false],  # 9
   [true, false, false, true, false], 
   [false, true, false, true, false], 
   [true, true, false, true, false], 
-  [false, false, true, true, false], 
+  [false, false, true, true, false],  # 13
   [true, false, true, true, false], 
   [false, true, true, true, false], 
   [true, true, true, true, false], 
@@ -286,7 +286,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
   #Embed mat in 2 larger "id" matrix
   n=length(mat)+2
   m=length(mat[1])+2
-  k=fill(0, max(0,m))
+  k=fill(zero(eltype(mat[1])), m)
   if INPLACE
     A=mat
     for i in n-1:-1:2
@@ -345,9 +345,10 @@ function DoNFIM(mat::AbstractVector, opt::Int)
                     end
                 end
                 N = 0
-                for i = r:n
-                  if N != 1 N = gcd(N, A[i][c1] - div(A[i][c2], b) * a) end
+                for i in r:n
+                  if N!=1 N=gcd(N, A[i][c1]-div(A[i][c2], b)*Int128(a)) end
                 end
+                N=Int(N)
             else
               c=mgcdex(N, A[r][j], map(x->x[j],A[r+1:n]))
               b=A[r][j] + c*map(x->x[j],A[r+1:n])
@@ -415,7 +416,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
     return R
   end
   # hermite or (smith w/ column transforms)
-  if !TRIANG && REDDIAG || TRIANG && COLTRANS
+  if (!TRIANG && REDDIAG) || (TRIANG && COLTRANS)
     for i in r:-1:1
       for j in i+1:r+1
         q = div(A[i][rp[j]]-mod(A[i][rp[j]], A[j][rp[j]]), A[j][rp[j]])
@@ -435,7 +436,7 @@ function DoNFIM(mat::AbstractVector, opt::Int)
   if TRIANG && ROWTRANS && !COLTRANS
     for i in 1:r-1
       t=A[i][i]
-      A[i]=map(x->0, 1:m)
+      A[i]=fill(0,m)
       A[i][i] = t
     end
     for j in r+1:m-1
@@ -489,6 +490,69 @@ function DoNFIM(mat::AbstractVector, opt::Int)
   return R
 end
 
+"""
+This general operation for computation of various Normal Forms
+is probably the most efficient.  
+
+Options bit values:
+  - 0/1 Triangular Form / Smith Normal Form.
+  - 2 Reduce off diagonal entries.
+  - 4 Row Transformations.
+  - 8 Col Transformations.
+  - 16 Destructive (the original matrix may be destroyed)
+
+Compute  a Triangular, Hermite or  Smith form of the  `n × m` integer input
+matrix `A`. Optionally, compute `n × n` and `m × m` unimodular transforming
+matrices `Q, P` which satisfy `Q A = H` or `Q A P = S`.
+
+The routines used are based on work by Arne Storjohann and were implemented
+in GAP4 by him and R.Wainwright.
+
+Note:  `option` is a  value ranging from  0 to 15  but not all options make
+sense  (e.g.,  reducing  off  diagonal  entries  with  SNF  option selected
+already). If an option makes no sense it is ignored.
+
+Returns a record with component `:normal` containing the
+computed normal form and optional components `:rowtrans` 
+and/or `:coltrans` which hold the respective transformation matrix.
+Also in the record are components holding the sign of the determinant, 
+`:signdet`, and the rank of the matrix, `:rank`.
+
+```julia-repl
+julia> m=[[1,15,28],[4,5,6],[7,8,9]]
+3-element Vector{Vector{Int64}}:
+ [1, 15, 28]
+ [4, 5, 6]
+ [7, 8, 9]
+
+julia> MatInt.NormalFormIntMat(m,6)
+Dict{Symbol, Any} with 6 entries:
+  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+  :normal   => [[1, 0, 1], [0, 1, 1], [0, 0, 3]]
+  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :rank     => 3
+  :signdet  => 1
+  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+
+julia> r=MatInt.NormalFormIntMat(m,13) # Smith Normal Form with both transforms
+Dict{Symbol, Any} with 9 entries:
+  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+  :normal   => [[1, 0, 0], [0, 1, 0], [0, 0, 3]]
+  :colQ     => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
+  :coltrans => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
+  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :rank     => 3
+  :colC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :signdet  => 1
+  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+
+julia> toM(r[:rowtrans])*toM(m)*toM(r[:coltrans])
+3×3 Matrix{Int64}:
+ 1  0  0
+ 0  1  0
+ 0  0  3
+```
+"""
 function NormalFormIntMat(mat, options)
   r=DoNFIM(mat, options)
   opt=BITLISTS_NFIM[options+1]
@@ -497,18 +561,121 @@ function NormalFormIntMat(mat, options)
   r
 end
 
+"""
+Changes  `mat` to be in  upper triangular form. (The  result is the same as
+that  of `TriangulizedIntegerMat`, but  `mat` will be  modified, thus using
+less memory.)
+
+gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
+gap> TriangulizedIntegerMat(m);
+[ [ 1, 15, 28 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ]
+gap> n:=TriangulizedIntegerMatTransform(m);
+rec( normal := [ [ 1, 15, 28 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ], 
+  rank := 3, rowC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ], 
+  rowQ := [ [ 1, 0, 0 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  rowtrans := [ [ 1, 0, 0 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  signdet := 1 )
+gap> n.rowtrans*m=n.normal;
+true
+gap> TriangulizeIntegerMat(m); m;
+[ [ 1, 15, 28 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ]
+"""
 TriangulizedIntegerMat(mat)=DoNFIM(mat,0)[:normal]
 TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat,4)
 TriangulizeIntegerMat(mat)=DoNFIM(mat,16)
 HermiteNormalFormIntegerMat(mat)=DoNFIM(mat,2)[:normal]
+
+"""
+This operation computes the Hermite normal form of a matrix `mat`
+with integer entries.
+It returns a record with components `:normal` (a matrix `H`) and
+`:rowtrans` (a matrix `Q`) such that `Q A = H`.
+<Example><![CDATA[
+gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
+gap> HermiteNormalFormIntegerMat(m);          
+[ [ 1, 0, 1 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ]
+gap> n:=HermiteNormalFormIntegerMatTransform(m);
+rec( normal := [ [ 1, 0, 1 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ], rank := 3, 
+  rowC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ], 
+  rowQ := [ [ -2, 62, -35 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  rowtrans := [ [ -2, 62, -35 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  signdet := 1 )
+gap> n.rowtrans*m=n.normal;
+true
+"""
 HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat, 6)
 SmithNormalFormIntegerMat(mat)=DoNFIM(mat,1)[:normal]
 SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat,13)
+"""
+This function changes `mat` to its SNF.
+(The result is the same as
+that of <Ref Func="SmithNormalFormIntegerMat"/>,
+but `mat` will be modified, thus using less memory.)
+If `mat` is immutable an error will be triggered.
+<Example><![CDATA[
+gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
+gap> SmithNormalFormIntegerMat(m);          
+[ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
+gap> n:=SmithNormalFormIntegerMatTransforms(m);  
+rec( colC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ], 
+  colQ := [ [ 1, 0, -1 ], [ 0, 1, -1 ], [ 0, 0, 1 ] ], 
+  coltrans := [ [ 1, 0, -1 ], [ 0, 1, -1 ], [ 0, 0, 1 ] ], 
+  normal := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ], rank := 3, 
+  rowC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ], 
+  rowQ := [ [ -2, 62, -35 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  rowtrans := [ [ -2, 62, -35 ], [ 1, -30, 17 ], [ -3, 97, -55 ] ], 
+  signdet := 1 )
+gap> n.rowtrans*m*n.coltrans=n.normal;
+true
+gap> DiagonalizeIntMat(m);m;
+[ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
+]]></Example>
+"""
 DiagonalizeIntMat(mat)=DoNFIM(mat,17)
+
+"""
+If `mat` is a matrix with integral entries, this function returns a list of
+vectors  that forms a basis of the integral row space of `mat`, i.e. of the
+set of integral linear combinations of the rows of `mat`.
+
+```julia-repl
+julia> mat=[[1,2,7],[4,5,6],[10,11,19]]
+3-element Vector{Vector{Int64}}:
+ [1, 2, 7]
+ [4, 5, 6]
+ [10, 11, 19]
+
+julia> BaseIntMat(mat)
+3-element Vector{Vector{Int64}}:
+ [1, 2, 7]
+ [0, 3, 7]
+ [0, 0, 15]
+```
+"""
 function BaseIntMat(mat)
   norm=NormalFormIntMat(mat, 2)
   norm[:normal][1:norm[:rank]]
 end
+
+"""
+If  `m` and `n` are matrices with integral entries, this function returns a
+list  of vectors that forms a basis of the intersection of the integral row
+spaces of `m` and `n`.
+
+```julia-repl
+julia> nat=[[5,7,2],[4,2,5],[7,1,4]]
+3-element Vector{Vector{Int64}}:
+ [5, 7, 2]
+ [4, 2, 5]
+ [7, 1, 4]
+
+julia> MatInt.BaseIntersectionIntMats(mat,nat)
+3-element Vector{Vector{Int64}}:
+ [1, 5, 509]
+ [0, 6, 869]
+ [0, 0, 960]
+```
+"""
 function BaseIntersectionIntMats(M1, M2)
   M = vcat(M1, M2)
   r = NormalFormIntMat(M,4)
@@ -517,6 +684,38 @@ function BaseIntersectionIntMats(M1, M2)
   BaseIntMat(T)
 end
 
+"""
+ Let  `full` be a list of integer vectors generating an integral row module
+ `M`  and `sub`  a list  of vectors  defining a  submodule `S` of `M`. This
+ function  computes a  free basis  for `M`  that extends  `S`. I.e., if the
+ dimension  of `S` is `n`  it determines a basis  `B={b₁,…,bₘ}` for `M`, as
+ well  as `n` integers  `xᵢ` such that  the `n` vectors  `sᵢ:=xᵢ⋅bᵢ` form a
+ basis for `S`.
+
+ It returns a `Dict` with the following components:
+   - `:complement` the vectors `bₙ₊₁,…,bₘ` (generating a complement to `S`).
+   - `:sub` the vectors `sᵢ` (a basis for `S`).
+   - `:moduli` the factors `xᵢ`.
+
+```julia-repl
+julia> m=MatInt.IdentityMat(3)
+3-element Vector{Vector{Int64}}:
+ [1, 0, 0]
+ [0, 1, 0]
+ [0, 0, 1]
+
+julia> n=[[1,2,3],[4,5,6]]
+2-element Vector{Vector{Int64}}:
+ [1, 2, 3]
+ [4, 5, 6]
+
+julia> ComplementIntMat(m,n)
+Dict{Symbol, Vector{T} where T} with 3 entries:
+  :moduli     => [1, 3]
+  :sub        => [[1, 2, 3], [0, 3, 6]]
+  :complement => [[0, 0, 1]]
+```
+"""
 function ComplementIntMat(full, sub)
   F = BaseIntMat(full)
   if length(sub) == 0 || iszero(sub)
@@ -534,29 +733,91 @@ function ComplementIntMat(full, sub)
       :moduli=>map(i->r[:normal][i][i],1:r[:rank]))
 end
 
+"""
+If `mat` is a matrix with integral entries, this function returns a list of
+vectors  that forms a  basis of the  integral nullspace of  `mat`, i.e., of
+those vectors in the nullspace of `mat` that have integral entries.
+
+```julia-repl
+julia> mat=[[1,2,7],[4,5,6],[7,8,9],[10,11,19],[5,7,12]]
+5-element Vector{Vector{Int64}}:
+ [1, 2, 7]
+ [4, 5, 6]
+ [7, 8, 9]
+ [10, 11, 19]
+ [5, 7, 12]
+
+julia> NullspaceIntMat(mat)
+2-element Vector{Vector{Int64}}:
+ [1, 18, -9, 2, -6]
+ [0, 24, -13, 3, -7]
+```
+"""
 function NullspaceIntMat(mat)
   norm=NormalFormIntMat(mat, 4)
   kern=norm[:rowtrans][norm[:rank]+1:length(mat)]
   return BaseIntMat(kern)
 end
 
+"""
+If `mat` is a matrix with integral entries and `vec` a vector with integral
+entries,  this function returns a vector `x` with integer entries that is a
+solution  of the equation `x*mat=vec`. It returns `false` if no such vector
+exists.
+
+```julia-repl
+julia> mat=[[1,2,7],[4,5,6],[7,8,9],[10,11,19],[5,7,12]]
+5-element Vector{Vector{Int64}}:
+ [1, 2, 7]
+ [4, 5, 6]
+ [7, 8, 9]
+ [10, 11, 19]
+ [5, 7, 12]
+
+julia> solutionmat(toM(mat),[95,115,182])
+5-element Vector{Rational{Int64}}:
+  47//4
+ -17//2
+  67//4
+   0//1
+   0//1
+
+julia> SolutionIntMat(mat,[95,115,182])
+5-element view(::Matrix{Int64}, 1, :) with eltype Int64:
+  2285
+ -5854
+  4888
+ -1299
+     0
+```
+"""
 function SolutionIntMat(mat, v)
   if iszero(mat)
-      if iszero(v) return fill(0, max(0, (1 + length(mat)) - 1))
-      else return false
-      end
+    if iszero(v) return fill(0,length(mat))
+    else return false
+    end
   end
   norm = NormalFormIntMat(mat, 4)
   t = norm[:rowtrans]
-  rs = (norm[:normal])[1:norm[:rank]]
+  rs = norm[:normal][1:norm[:rank]]
   M = vcat(rs, [v])
   r = NormalFormIntMat(M, 4)
   if r[:rank]==length(r[:normal]) || r[:rowtrans][length(M)][length(M)]!=1
       return false
   end
-  return -r[:rowtrans][length(M)][1:r[:rank]]*t[1:r[:rank]]
+  -r[:rowtrans][length(M)][1:r[:rank]]*t[1:r[:rank]]
 end
     
+"""
+This  function returns  a list  of length  two, its  first entry  being the
+result  of a call  to `SolutionIntMat` with  same arguments, the second the
+result of `NullspaceIntMat` applied to the matrix `mat`. The calculation is
+performed faster than if two separate calls would be used.
+gap> mat:=[[1,2,7],[4,5,6],[7,8,9],[10,11,19],[5,7,12]];;
+gap> SolutionNullspaceIntMat(mat,[95,115,182]);
+[ [ 2285, -5854, 4888, -1299, 0 ], 
+  [ [ 1, 18, -9, 2, -6 ], [ 0, 24, -13, 3, -7 ] ] ]
+"""
 function SolutionNullspaceIntMat(mat, v)
   if iszero(mat)
     len = length(mat)

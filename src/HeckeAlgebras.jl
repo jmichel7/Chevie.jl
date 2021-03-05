@@ -187,7 +187,7 @@ end
 
 function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   oo=order.(gens(W))
-  if all(isequal(2),oo) z=0 else z=zero(Cyc) end
+  z=all(==(2),oo) ? 0 : zero(Cyc)
   para=map(p,oo)do p, o
     if p isa Vector return p end
     if o==2 return [p,-one(p)].+z end

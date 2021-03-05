@@ -1044,6 +1044,7 @@ function PermRoot.refltype(WF::PRC)
           end
         end
         scal=Root1(scal[1])
+        if !isone(scal)
         sub=reflection_subgroup(W,ti.indices;NC=true)
         zg=Groups.centre(sub)
         z=length(zg)
@@ -1079,6 +1080,7 @@ function PermRoot.refltype(WF::PRC)
           if !constant(scal) error(" scal after:$scal")
           else scal=Root1(scal[1])
           end
+        end
         end
         push!(scalar,E(scal))
       end

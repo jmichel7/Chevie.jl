@@ -143,8 +143,8 @@ function Det(m)
     return (-1)^(i+j)*n[i,j]*Det(compl(n,i,j))
   end
 # print("m=");display(iszero.(m))
-  v=map(x->count(!iszero,x),toL(m))
-  j=findfirst(isequal(minimum(v)),v)
+  v=map(x->count(!iszero,x),eachrow(m))
+  j=argmin(v)
   if length(m)>71 println("\n",length(m),":",v[j]) end
 # if v[j]>5 return det*DeterminantMat(m) end
   sum(function(i)

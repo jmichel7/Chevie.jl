@@ -407,7 +407,7 @@ function toKL(h::HeckeTElt,klbasis,index::Function)
   res=klbasis(zero(h.d),H)
   while !iszero(h)
     l=length.(Ref(H.W),keys(h.d))
-    l=findall(isequal(index(l)),l)
+    l=findall(==(index(l)),l)
     tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) for (w,c) in h.d.d[l];check=false),H)
     res+=tmp
     h-=Tbasis(H)(tmp)
@@ -469,7 +469,7 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
       x=elm[i]
       qx=rootpara(H,x)
       z=critical_pair(W,x,w)
-      if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(isequal(z),elm)]
+      if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(==(z),elm)]
       else
         coeff[i]=-negative_part(sum(j->
           bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)

@@ -83,9 +83,10 @@ Mvps
 Mvp
 variables
 Mvps.coefficients(::Mvp,::Symbol)
-Mvps.valuation
+Mvps.coefficient
+valuation
 Mvps.value
-Mvps.degree
+Mvps.degree(::Mvp)
 Mvps.conj
 factor(::Mvp)
 Mvps.derivative
@@ -245,7 +246,7 @@ PermX
 reflections
 refleigen
 reflchar
-simple_conjugating_element
+simple_conjugating
 simple_reps
 invariant_form
 invariants
@@ -294,8 +295,10 @@ Garside
 left_divisors
 leftgcd
 rightgcd
+leftlcm
 rightlcm
-α(::Garside.GarsideElm)
+α(::Garside.LocallyGarsideElm)
+α(::GarsideElm,::AbstractVector)
 DualBraidMonoid
 fraction
 word(::Garside.GarsideMonoid,w)
@@ -306,6 +309,7 @@ conjugating_elt
 centralizer_gens
 conjcat
 endomorphisms
+Presentation
 shrink
 ```
 # Classes/characters of reflection groups

@@ -39,11 +39,11 @@ Dict{Symbol, Any} with 1 entry:
 ```
 """
 module Groups
-export Group, minimal_words, gens, ngens, classreps, centralizer,
-  conjugacy_classes, orbit, transversal, orbits, Hom, isabelian,
-  position_class, fusion_conjugacy_classes, Coset, transporting_elt,
-  centre, normalizer, stabilizer, abelian_gens,iscyclic,comm,
-  nconjugacy_classes
+export Group, abelian_gens, centralizer, centre, classreps, comm,
+  conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
+  gens, Hom, isabelian, iscyclic, minimal_words, nconjugacy_classes,
+  ngens, normalizer, orbit, orbits, position_class, stabilizer,
+  transporting_elt, transversal
 
 using ..Util: InfoChevie, @GapObj
 #import Gapjm: word, elements, kernel, order
@@ -337,11 +337,20 @@ Base.length(G::Group)=length(minimal_words(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   get!(G,:classes) do
-    if haskey(G,:classreps) map(x->orbit(G,x),classreps(G))
+    if haskey(G,:classreps) 
+      for i in 1:nconjugacy_class(G) conjugacyclass(W,i) end
     elseif length(G)>10000 error("length(G)=",length(G),": should call Gap4")
     else orbits(G,elements(G))
     end
   end
+end
+
+function conjugacy_class(G::Group{T},i::Int)::Vector{T} where T
+  if !haskey(G,:classes) 
+    G.classes=Vector{Vector{T}}(undef,nconjugacy_classes(G))
+  end
+  if !isassigned(G.classes,i) G.classes[i]=orbit(G,classreps(G)[i]) end
+  G.classes[i]
 end
 
 function position_class(G::Group,g)
@@ -598,7 +607,7 @@ function abelian_gens(l::Array)
   l=filter(!isone,l)
   while !isempty(l)
     o=order.(l)
-    push!(res,l[findfirst(isequal(maximum(o)),o)])
+    push!(res,l[argmax(o)])
     l=setdiff(l,elements(Group(res)))
   end
   res

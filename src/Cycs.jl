@@ -330,8 +330,8 @@ if use_list
 Cyc(i::Real)=Cyc(1,[i])
 else
 Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,ModuleElt(0=>i))
-Cyc{T}(i::Real) where T<:Real=Cyc(convert(T,i))
 end
+Cyc{T}(i::Real) where T<:Real=Cyc(convert(T,i))
 
 function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
@@ -398,15 +398,30 @@ function Base.imag(c::Cyc{T}) where T<:Real
   (c-conj(c))/2
 end
 
+if false
 # l is a list of pairs i=>c representing E(n,i)*c
 function sumroots(n::Int,l)
-  res=eltype(l)[]
+  res=typeof(first(l))[]
+# res=eltype(l)[]
   for (i,c) in l 
     (s,v)=Elist(n,i)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
   Cyc(n,ModuleElt(res;check=length(l)>1))
+end
+else # 10% slower for small fields, faster for big ones
+function sumroots(n::Int,l)
+  res=fill(zero(last(first(l))),n)
+  for (i,c) in l 
+    (s,v)=Elist(n,i)
+    if !s c=-c end
+    for k in v res[k+1]+=c end
+  end
+  zb=zumbroich_basis(n)
+  Cyc(n,ModuleElt(filter(x->!iszero(last(x)),map(i->i=>res[i+1],zb));check=false))
+# Cyc(n,ModuleElt(i=>res[i+1] for i in zb if res[i+1]!=0;check=false))
+end
 end
 
 function sumroot(res,n,i,c)
@@ -428,7 +443,7 @@ if use_list
   end
   Cyc(n,res)
 else
-  sumroots(n,[i*m=>u for (i,u) in c.d])
+  sumroots(n,i*m=>u for (i,u) in c.d)
 end
 end
 
@@ -610,12 +625,12 @@ else
   n=lcm(a.n,b.n)
   na=div(n,a.n)
   nb=div(n,b.n)
-# let ad=a.d,bd=b.d,na=na,nb=nb
-#   lower(sumroots(n,[na*i+nb*j=>va*vb for (i,va) in ad, (j,vb) in bd]))
-# end
-  res=eltype(a.d)[]
-  for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
-  lower(Cyc(n,ModuleElt(res)))
+  let ad=a.d,bd=b.d,na=na,nb=nb
+    lower(sumroots(n,na*i+nb*j=>va*vb for (i,va) in ad, (j,vb) in bd))
+  end
+# res=empty(a.d.d)
+# for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
+# lower(Cyc(n,ModuleElt(res)))
 end
 end
 
@@ -672,15 +687,12 @@ else
       for (k,v) in c.d cnt[1+(k%m)]+=1 end
       if all(x->iszero(x) || x==p-1,cnt) 
         u=findall(!iszero,cnt).-1
-        kk=sort(@. div(u+m*mod(-u,p)*invmod(m,p),p)%m)
-    let m=m
-        if p==2 return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in
-                                             kk;check=false)))
+        kk=@. div(u+m*mod(-u,p)*invmod(m,p),p)%m
+        if p==2  
+          return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
         elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
-          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in
-                                       kk;check=false)))
+          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in kk)))
         end
-    end
       end
     end
 end
@@ -715,8 +727,9 @@ if use_list
        end
   end
 else
+  if iszero(c) return c end
   let cn=c.n, n=n
-  sumroots(c.n,[(e*n)%cn=>p for (e,p) in c.d])
+  sumroots(c.n,(e*n)%cn=>p for (e,p) in c.d)
   end
 end
 end

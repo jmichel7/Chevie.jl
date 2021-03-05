@@ -506,8 +506,8 @@ chevieset(:families,:Dihedral,function(e)
     f.special=1
   end
   c=filter(function(i)
-            p=findfirst(isequal([nc[i][1],e-nc[i][2]]),nc)
-            return !isnothing(p) && p>i
+            p=findfirst(==([nc[i][1],e-nc[i][2]]),nc)
+            !isnothing(p) && p>i
           end,1:length(nc))
   f.perm=prod(c;init=Perm()) do i
     Perm(i,findfirst(==([nc[i][1],e-nc[i][2]]),nc))

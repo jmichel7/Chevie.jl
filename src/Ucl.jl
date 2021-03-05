@@ -396,7 +396,7 @@ function QuotientAu(Au,chars)
     fusion=map(c->position_class(q,h(c)),classreps(Au))
     ctu=CharTable(Au).irr
     cth=CharTable(q).irr
-    ch(c)=map(j->ctu[c,findfirst(isequal(j),fusion)],1:HasType.NrConjugacyClasses(q))
+    ch(c)=map(j->ctu[c,findfirst(==(j),fusion)],1:HasType.NrConjugacyClasses(q))
     return Dict(:Au=>q,
       :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
       :gens=>map(x->word(Au,HasType.First(elements(Au),y->h(y)==x)),gens(q)))
@@ -629,7 +629,7 @@ function UnipotentClasses(t::TypeIrred,p=0)
       if dimBu==-1 dimBu=n0+div(count(isone,weights),2)
       elseif dimBu!=n0+div(count(isone,weights),2) error("theory")
       end
-      n0=2*n0-count(isequal(2),weights)
+      n0=2*n0-count(==(2),weights)
       u[:dimunip]=2*dimBu-n0
       u[:dimred]=n0+rank
     elseif haskey(u,:red)
@@ -883,7 +883,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
       push!(res,showcentralizer(io,u))
     end
     if get(io,:springer,true)
-      i=findfirst(isequal(u),uc.classes)
+      i=findfirst(==(u),uc.classes)
       cc(ss)=map(function (i)
                 c1 = charnames(io,u.Au)[ss[:locsys][i][2]]
                 c2 = charnames(io,ss[:relgroup])[i]

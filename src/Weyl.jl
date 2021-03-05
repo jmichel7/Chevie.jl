@@ -9,13 +9,12 @@ algebraic groups.
 
 Let  us give precise definitions. Let `V`  be a real vector space, `Vⱽ` its
 dual  and let `(,)`  be the natural  pairing between `Vⱽ`  and `V`. A *root
-system*  is a finite set  of vectors `R` which  generate `V` (the *roots*),
-together  with  a  map  `r↦  rⱽ`  from  `R`  to  a subset `Rⱽ` of `Vⱽ` (the
-*coroots*) such that:
+system*  is a finite set  of vectors `R⊂ V`  (the *roots*), together with a
+map `r↦ rⱽ` from `R` to a subset `Rⱽ` of `Vⱽ` (the *coroots*) such that:
 
--  For any `r∈  R`, we have  `(rⱽ,r)=2` so that  the formula `x↦ x-(rⱽ,x)r`
-defines a reflection `sᵣ:V→ V` with root `r` and coroot `rⱽ`.
-- The reflection `sᵣ` stabilizes `R`.
+  - For any `r∈ R`,  we have `(rⱽ,r)=2`, so  that the formula `x↦ x-(rⱽ,x)r`
+    defines  a  reflection  `sᵣ:V→  V`  with  root  `r`  and coroot `rⱽ`. 
+  - The reflection `sᵣ` stabilizes `R`.
 
 We  will only  consider *reduced*  root systems,  i.e., such  that the only
 elements  of `R` colinear with `r∈ R` are `r` and `-r`; for Weyl groups, we
@@ -27,7 +26,7 @@ finite  Coxeter group; when `R` is crystallographic, the representation `V`
 of  `W`  is  defined  over  the  rational  numbers.  All finite-dimensional
 (complex) representations of a finite reflection group can be realized over
 the  same field as `V`. Weyl groups can also be characterized as the finite
-Coxeter  groups such that all numbers `m(s,t)` in the Coxeter matrix are in
+Coxeter  groups such that all entries `m(s,t)` of the Coxeter matrix are in
 `{2,3,4,6}`.
 
 If  we identify  `V` with  `Vⱽ` by  choosing a  `W`-invariant bilinear form
@@ -784,16 +783,10 @@ PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
 
 coxgroup()=torus(0)
 
+#reflection representation in the basis of rootdec
 #function reflrep(W::FCG,w)
 #  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
 #end
-
-function cartancoeff(W::FCG,i,j)
-  v=findfirst(!iszero,roots(W,i))
-  r=roots(W,j)-roots(W,j^reflection(W,i))
-  c=r[v]//roots(W,i)[v]
-  isinteger(c) ? Int(c) : c
-end
 
 # root lengths for parent group
 function rootlengths(W::FCG)
@@ -976,32 +969,28 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
 # contrary to Chevie, I is indices in W and not parent(W)
   inclusion=sort!(vcat(orbits(reflection.(Ref(W),I),I)...))
   N=div(length(inclusion),2)
-  if all(i->i in 1:coxrank(W),I)
-    C=cartan(W)[I,I]
-  else
-    I=SimpleRootsSubsystem(W,inclusion[1:N])
-    C=T1[cartancoeff(W,i,j) for i in I, j in I]
-  end
+  if !all(i->i in 1:coxrank(W),I) I=SimpleRootsSubsystem(W,inclusion[1:N]) end
+  C=cartan(W,I)
   rootdec=isempty(C) ? Vector{T1}[] : roots(C)
   rootdec=vcat(rootdec,-rootdec)
   if isempty(rootdec) inclusion=Int[]
   else inclusion=map(rootdec)do r
-    findfirst(isequal(sum(r.*W.rootdec[I])),W.rootdec)
+    findfirst(==(sum(r.*W.rootdec[I])),W.rootdec)
     end
   end
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
-  prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C))
-  prop[:refltype]=map(prop[:refltype]) do t
-   if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
-     for s in refltype(W)
-       if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
-         t.short=true
-       end
-     end
-   end
-   t
+  refltypes=map(type_cartan(C)) do t
+    if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
+      for s in refltype(W)
+        if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
+          t.short=true
+        end
+      end
+    end
+    t
   end
+  prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>refltypes)
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   gens=isempty(I) ? Perm{T}[] : reflection.(Ref(W),I)
   G=PRSG(gens,inclusion,restriction,W.G,prop)

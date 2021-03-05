@@ -110,6 +110,7 @@ include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("mvptools.jl");
 include("SPerms.jl");@reexport using .SPerms
 include("Algebras.jl");@reexport using .Algebras
+include("Presentations.jl");@reexport using .Presentations
 include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
 include("Urad.jl");@reexport using .Urad
