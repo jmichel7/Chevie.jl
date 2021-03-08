@@ -17,15 +17,16 @@ Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*1//1)*m*n
-Base.:^(m::Vector{<:Vector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
+Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
 Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Integer)=toL(toM(m)^n)
-Base.:^(m::Vector,n::Vector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
+Base.:^(m::AbstractVector,n::AbstractVector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
 Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 Base.length(a::Symbol)=length(string(a))
 Base.union(v::Vector)=union(v...)
 Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
+PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 
 # translations of GAP3 functions for the Chevie library
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)

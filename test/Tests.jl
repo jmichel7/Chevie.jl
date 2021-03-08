@@ -113,6 +113,7 @@ function cmptables(t1,t2,nz=false)
      showtable(t[i];opt[i]...,rows=r,columns=c,screenColumns=70)))))
 end
 
+#---------------- test: representations ------------------------
 # find matrices gr as a representation of a group or Hecke algebra
 function findrepresentation(W,gr,check=false)
   O=W
@@ -174,6 +175,7 @@ function representations(W,l=Int[])
     end
   end
 end
+
 test[:representations]=(fn=representations, 
    applicable=function(W)
      if nconjugacy_classes(W)>=55 return false end
@@ -186,6 +188,7 @@ test[:representations]=(fn=representations,
    end,
    comment="Check reprs exist and match characters")
 
+#---------------- test: lusztiginduction ------------------------
 function lusztiginduction(WF)
   if !(WF isa Spets) WF=spets(WF) end
   W=Group(WF)
@@ -251,18 +254,40 @@ function lusztiginduction(WF,L)
   end
 end
 
-using ..Gap4
-function tCharTable(W)
-# ct=improve_type(Gap4.CharTable(W).irr)
-  ct=Gap4.CharTable(W).irr
+#----------------test: chartable ------------------------
+using GAP
+function checkCharTable(W)
+  G=Group(gens(W))
+  G.classreps=classreps(W)
+  ct=CharTable(G).irr
   ct1=CharTable(W).irr
-#  p=Perm(ct,ct1;dims=1) investigate why not enough
-  p=Perm_rowcolmat(ct,ct1)
+  p=Perm(ct,ct1;dims=1)
   if isnothing(p) error("irreducibles") 
   else println("permuted ",p)
   end
 end
 
+test[:chartable]=(fn=checkCharTable, applicable=W->!(W isa Spets),
+   comment="CharTable")
+
+#----------------test: powermaps ------------------------
+
+function powermaps(W)
+  cl=classreps(W)
+  p=classinfo(W)[:powermap]
+  for i in echindex(p)
+    if isdefine(p,i) cmap=map(x->position_class(W,x^i),cl)
+      if cmap!=p[i]
+        ChevieErr(i,"-th power map is ",p[i],"\nshould be:",cmap,"\n")
+      end
+    end
+  end
+end
+
+test[:powermaps]=(fn=powermaps, applicable=W->!(W isa Spets),
+                  comment="powermaps")
+
+#---------------- test: positionclasses ------------------------
 function positionclasses(W)
   cl=map(x->Gapjm.position_class(W,x),class_reps(W))
   if cl!=1:length(cl) error("classes") end
@@ -271,6 +296,7 @@ end
 test[:positionclasses]=(fn=positionclasses, applicable=W->true,
    comment="classreps")
 
+#---------------- test: unipotentclasses ------------------------
 function unipotentclasses(W,p=nothing)
   function PosetFromICC(t)local l,o
     l=uc.springerseries[1][:locsys]
@@ -385,13 +411,14 @@ end
 test[:unipotentclasses]=(fn=unipotentclasses, applicable=isrootdatum,
    comment="Check dimBu from DR, from b, with < ; Check BalaCarter, dimred")
 
-#############################################################################
-#A  Jean Michel and Ulrich Thiel
-#Y  Copyright (C) 2017  University  Paris VII and Universitat Stuttgart
-##
-## This function checks that the parameters/names for characters of Complex
-#  reflection groups agree with the description (since 2016) in the CHEVIE 
-#  manual. If not, it tells what permutation of the data is needed.
+#---------------- test: charparams ------------------------
+"""
+Jean Michel and Ulrich Thiel (2017)
+
+this function checks that the parameters/names for characters of Complex
+eflection groups agree with the description whcih is since 2016 in the CHEVIE 
+manual. If not, it tells what permutation of the data is needed.
+"""
 function charparams(W)
   ct=CharTable(W).irr
   fd=fakedegrees(W,Pol())
@@ -644,6 +671,7 @@ end
 test[:charparams]=(fn=charparams, applicable=W->W isa Group,
    comment="Check charparams for consistency with Michel/Thiel rules")
 
+#---------------- test: HCdegrees ------------------------
 function HCdegrees(W)
   uw=UnipotentCharacters(W)
   for i in eachindex(uw.harishChandra)
@@ -749,6 +777,7 @@ function EigenAndDegHecke(s)
   map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=Mod1(frac)),ss,omegachi,frac)
 end
 
+#---------------- test: series ------------------------
 function CheckSerie(s)
   W=s.spets
   InfoChevie("\n   # ",s)
@@ -792,5 +821,169 @@ end
 
 test[:series]=(fn=checkSeries, applicable=isspetsial,
  comment="check d-HC series")
+
+#---------------- test: extrefl ------------------------
+using LinearAlgebra: tr
+# test ReflectionEigenvalues, ChevieCharInfo.extRefl, .positionDet, .positionId
+function checkextrefl(W)
+  ct=CharTable(W)
+  # compute first using ReflectionEigenvalues
+  n=nconjugacy_classes(W)
+  v=reverse(permutedims(toM(map(r->prod(n->Pol()+E(n),r).c,refleigen(W))));dims=1)
+  # check v[2,:] using reflrep
+  if v[2,:]!=map(w->tr(reflrep(W,W(w...))),classinfo(W)[:classtext])
+   ChevieErr("refleigen disagrees with reflrep")
+  end
+  extRefl=map(x->findfirst(==(x),collect(eachrow(ct.irr))),eachrow(v))
+  ci=charinfo(W)
+  function checkfield(f,v)
+    if !haskey(ci,f)
+      ChevieErr(".",f," not bound but should be ",v,"\n");
+    elseif v!=ci[f]
+      ChevieErr(".",f," is ",ci[f]," should be ",v,"\n");
+    end
+  end
+  if haskey(ci,:extrefl) checkfield(:extRefl,extRefl) end
+  checkfield(:positionDet,extRefl[end])
+  checkfield(:positionId,extRefl[1])
+end
+
+test[:extrefl]=(fn=checkextrefl, applicable=x->x isa Group,
+ comment="check extrefl")
+
+#---------------- test: degrees ------------------------
+"""
+The function below uses the formula
+``∏_{g∈ W}det(g-t)=∏_i(t^{d_i}-1)^{|W|/d_i}``
+Superseded by degrees using refltype but can recompute data
+"""
+function reflectiondegrees(W)
+  c=classinfo(W)[:classes]
+  if isempty(c) return Int[] end
+  l=vcat(map((r,c)->map(x->(x,c),r),refleigen(W),c)...)
+  e=collectby(first,l)
+  eig=map(x->first(first(x)),e)
+  mul=map(x->sum(last,x),e)
+  res=Int[]
+  for d in sort(unique(conductor.(eig)),rev=true)
+    p=findfirst(==(Root1(d,1)),eig)
+    if p!==nothing && mul[p]>0
+      for i in 1:div(d*mul[p],length(W)) push!(res,d) end
+      n=mul[p]
+      for j in 0:d-1 mul[findfirst(==(Root1(d,j)),eig)]-=n end
+    end
+  end
+  reverse(res)
+end
+
+"""
+the function below uses the formula cite[page 164]{BLM06}
+``∏_{g∈ W}det(t-gϕ)=∏_i(t^{d_i}-εᵢ)^{|W|/d_i}``
+Superseded by degrees using refltype but can recompute data
+"""
+function reflectiondegrees(W::Spets)
+  c=classinfo(W)[:classes].//length(W)
+  l=vcat(map((v,t)->map(x->(x,t),v),refleigen(W),c)...)
+  l=collectby(first,l)
+  e=map(x->(x[1][1],sum(last,x)),l)
+  # here we got LHS of formula as ∏ᵢ(t-eig[i])^mul[i]
+  # more exactly a list of pairs [eig in Q/Z, mul/|W|]
+  searchdeg=function(e,card,degs)local res,d,f,g,p,pos,ne
+#   @show degs,card
+    if isempty(degs) return [Pair{Int,Root1}[]] end
+    e=filter(x->x[2]!=0,e)
+    res=Vector{Pair{Int,Root1}}[]
+    d=degs[1]
+    f=findall(i->last(i)>=1//d,e)
+    g=first.(filter(x->first(x).r<1/d,e[f]))
+    for p in g
+      pos=map(i->findfirst(j->first(e[j])==p*i,f),Root1.(d,0:d-1))
+      if !(nothing in pos)
+#       @show d,p
+        ne=copy(e)
+        ne[f[pos]]=map(x->(x[1],x[2]-1//d),ne[f[pos]])
+        for ne in searchdeg(ne,div(card,d),degs[2:end])
+          push!(res,pushfirst!(ne,d=>p^d))
+        end
+      end
+    end
+    res
+  end
+  mul=searchdeg(e,length(W),sort(degrees(Group(W)),rev=true))
+  e=unique(sort(sort.(mul)))
+#  @show mul
+  map(x->(x[1],E(x[2])),only(e))
+end
+
+function checkrefldegrees(W)
+  d=sort(degrees(W))
+  d1=sort(reflectiondegrees(W))
+  cmpvec(d,d1;na="degrees",nb="reflectiondegrees")
+  if isweylgroup(W) && length(refltype(W))==1 && rank(W)==semisimplerank(W)
+    d1=last.(tally(sum.(W.rootdec[1:nref(W)])))
+    d1=sort(1+conjugate_partition(d1))
+    cmpvec(d,d1;na="degrees",nb="dual partition of root heights")
+  end
+end
+
+test[:degrees]=(fn=checkrefldegrees,applicable=x->true, comment="check degrees")
+
+#---------------- test: fakedegrees ------------------------
+
+function checkfeg(W)
+  q=Pol()
+  fd=fakedegrees(W,q)
+  ffd=fakedegrees(W,q;recompute=true)
+  cmpvec(ffd,fd;na="recomputed",nb="fakedegrees")
+  cmpvec(valuation.(fd),charinfo(W)[:b];na="computed b",nb="charinfo b")
+  cmpvec(degree.(fd),charinfo(W)[:B];na="computed B",nb="charinfo B")
+end
+
+test[:feg]=(fn=checkfeg,applicable=x->true, comment="check fakedegrees")
+
+#---------------- test: fakedegrees induce ------------------------
+
+function fakedegreesinduce(W)
+  for J in parabolic_reps(W) fakedegreesinduce(W,J) end
+end
+
+function fakedegreesinduce(W,J)
+  q=Pol()
+  if !(W isa Spets) W=spets(W) end
+  for L in twistings(W,J)
+    t=InductionTable(L,W)
+    hd=fakedegrees(L,q)
+    ud=fakedegrees(W,q)
+    index=generic_sign(L)*generic_order(W,q)/generic_order(L,q)/generic_sign(W)
+    index=shift(index,-valuation(index))
+    pred=hd*index
+    found=(permutedims(ud)*t.scalar)[1,:]
+    InfoChevie("\n   # R^{",W,"}_{",L,"}")
+    if pred!=found ChevieErr("quotient ",
+                map((a,b)->a*inv(b),CycPol.(pred),CycPol.(found)),"\n")
+    end
+  end
+end
+
+test[:feginduce]=(fn=fakedegreesinduce,applicable=x->true, 
+                  comment="check fakedegrees induce")
+
+#---------------- test: invariants ------------------------
+
+function checkinvar(W)
+  ii=invariants(W)
+  vars=map(i->Mvp(Symbol("x",i)),1:rank(W))
+  ii=map(f->f(vars...),ii)
+  InfoChevie(" #")
+  for i in eachindex(ii), j in eachindex(gens(W))
+    InfoChevie("W.",j,"*I",i,",")
+    if ii[i]^reflrep(W,i)!=ii[i]  ChevieErr("not invariant\n") end
+  end
+end
+
+test[:invariants]=(fn=checkinvar,
+                   applicable=W->!(W isa Spets) && length(W)<14400, 
+                   comment="check invariants")
+#x->not IsSpets(x) and Size(x)<14400); # H4 first painful client
 
 end

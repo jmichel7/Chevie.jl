@@ -95,6 +95,7 @@ Base.one(G::PermGroup{T}) where T=one(Perm{T})
 
 function degree(G::PermGroup)::Int
   get!(G,:degree)do 
+    if isempty(gens(G)) return 0 end
     maximum(largest_moved_point.(gens(G)))
   end
 end
@@ -286,9 +287,9 @@ end
 
 # elements is twice faster than collect(G), should not be
 function elements(G::PermGroup)
-  t=reverse(values.(transversals(G)))
+  t=reverse(sort.(collect.(values.(transversals(G)))))
   if isempty(t) return [one(G)] end
-  res=collect(t[1])
+  res=t[1]
   for i in 2:length(t)
     res=vcat(map(x->res.*x,t[i])...)
   end

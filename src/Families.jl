@@ -633,37 +633,37 @@ Family(LD(CoxSym(3)):8)
 function drinfeld_double(g;lu=false)
   res=Family(Dict{Symbol,Any}(:group=> g))
   res.classinfo=map(function (c, n)
-    r = Dict{Symbol, Any}(:elt => c,:name => n)
+    r=Dict{Symbol, Any}(:elt => c,:name => n)
     if r[:elt]==one(g) r[:name]="1" end
-    r[:centralizer] = centralizer(g, r[:elt])
-    r[:centelms] = classreps(r[:centralizer])
-    t = CharTable(r[:centralizer])
+    r[:centralizer]=centralizer(g, r[:elt])
+    r[:centelms]=classreps(r[:centralizer])
+    t=CharTable(r[:centralizer])
 #   println("t=$t")
-    r[:charNames] = charnames(r[:centralizer]; TeX = true)
+    r[:charNames]=charnames(r[:centralizer]; TeX=true)
     r[:names]=t.classnames
-    r[:names][findfirst(==(one(g)),r[:centelms])] = "1"
+    r[:names][findfirst(==(one(g)),r[:centelms])]="1"
     r[:chars]=t.irr
-    r[:charNames][findfirst(isone,r[:chars])] = "1"
-    r[:centralizers] = t.centralizers
-    return r
-end, classreps(g), CharTable(g).classnames)
+    r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
+    r[:centralizers]=t.centralizers
+    r
+  end, classreps(g), CharTable(g).classnames)
   res.charLabels=vcat(
       map(r->map(c->"($(r[:name]),$c)",r[:charNames]),res.classinfo)...)
   if isabelian(g)
     for r in res.classinfo
-      r[:names]=map(x->First(res.classinfo,s->s[:elt]==x)[:name],r[:centelms])
+      r[:names]=map(x->res.classinfo[findfirst(s->s[:elt]==x,
+                                           res.classinfo)][:name],r[:centelms])
     end
   end
-  res.size=length(res.charLabels)
   res.eigenvalues=vcat(map(r->
     r[:chars][:,position_class(r[:centralizer],r[:elt])].// 
     r[:chars][:,position_class(r[:centralizer],one(g))],res.classinfo)...)
   if lu
     res.name="L"
-    res.explanation = "Lusztig's"
+    res.explanation="Lusztig's"
   else
     res.name=""
-    res.explanation = ""
+    res.explanation=""
   end
   res.name*="D($g)"
   res.explanation*="DrinfeldDouble($g)"
@@ -672,13 +672,13 @@ end, classreps(g), CharTable(g).classnames)
     res.classinfo)...,dims=(1,2))
   res.mellinLabels=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res.classinfo))
   res.xy=reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res.classinfo))
-  p=vcat(map(r->map(function(y)
-           r1=res.classinfo[position_class(g, y^-1)]
-          return findfirst( ==([r1[:elt],
-                  r1[:centelms][position_class(r1[:centralizer],
-            r[:elt]^transporting_elt(g, y^-1, r1[:elt]))]]),res[:xy])
-                          end, r[:centelms]), res.classinfo)...)
-  delete!(res, :classinfo)
+  p=vcat(map(r->map(r[:centelms])do y
+    r1=res.classinfo[position_class(g, y^-1)]
+    el=transporting_elt(g, y^-1, r1[:elt])
+    findfirst(==([r1[:elt],r1[:centelms][position_class(r1[:centralizer],
+                                             r[:elt]^el)]]),res[:xy])
+  end, res.classinfo)...)
+  delete!(res.prop, :classinfo)
   res.fourierMat=inv(res.mellin)*one(res.mellin)[p,:]*res.mellin
   if lu
     res.perm=Perm(conj(res.mellin),res.mellin;dims=2)

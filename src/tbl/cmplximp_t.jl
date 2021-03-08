@@ -325,3 +325,12 @@ function MakeFamilyImprimitive(S, uc)
   # if length(diagblocks(fourier(r)))>1 error() end
   r
 end
+
+chevieset(:imp, :Invariants, function (p, q, r)
+  map(1:r)do i
+    if i==r function(arg...)prod(arg)^div(p,q) end
+    else
+      function(arg...) sum(a->prod(collect(arg[a]))^p,arrangements(1:r,i)) end
+    end
+  end
+end)

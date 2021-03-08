@@ -93,18 +93,6 @@ chevieset(:H3, :UnipotentCharacters, function ()
         res = Dict{Symbol, Any}(:harishChandra => [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "H", :indices => 1:3, :rank => 3), :levi => [], :eigenvalue => 1, :parameterExponents => [1, 1, 1], :cuspidalName => "", :charNumbers => 1:10), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [3], :rank => 1), :levi => 1:2, :eigenvalue => E(5, 2), :parameterExponents => [5], :cuspidalName => "I_2(5)[1,3]", :charNumbers => [11, 13]), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [3], :rank => 1), :levi => 1:2, :eigenvalue => E(5, 3), :parameterExponents => [5], :cuspidalName => "I_2(5)[1,2]", :charNumbers => [12, 14]), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :eigenvalue => E(4), :qEigen => 1 // 2, :parameterExponents => [], :cuspidalName => "H_3[i]", :charNumbers => [15]), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :eigenvalue => -(E(4)), :qEigen => 1 // 2, :parameterExponents => [], :cuspidalName => "H_3[-i]", :charNumbers => [16])], :families => [Family("C1", [2]), Family(((CHEVIE[:families])[:Dihedral])(5), [7, 8, 14, 13], Dict{Symbol, Any}(:ennola => -1)), Family("C1", [4]), Family("C'\"2", [9, 10, 15, 16], Dict{Symbol, Any}(:ennola => 3)), Family("C1", [3], Dict{Symbol, Any}(:ennola => -1)), Family(((CHEVIE[:families])[:Dihedral])(5), [5, 6, 12, 11], Dict{Symbol, Any}(:ennola => 1)), Family("C1", [1], Dict{Symbol, Any}(:ennola => -1))], :a => [15, 0, 5, 2, 6, 6, 1, 1, 3, 3, 6, 6, 1, 1, 3, 3], :A => [15, 0, 13, 10, 14, 14, 9, 9, 12, 12, 14, 14, 9, 9, 12, 12])
         return res
     end)
-chevieset(:H3, :Invariants, function ()
-        local r, C
-        C = chevieget(:H3, :CartanMat)
-        r = roots(C) * C
-        return map((d->begin
-                        function (arg...,)
-                            return Sum(r, (a->begin
-                                            (arg * a) ^ d
-                                        end))
-                        end
-                    end), chevieget(:H3, :ReflectionDegrees))
-    end)
 chevieset(:H3, :Discriminant, function ()
         return function (a, b, c)
                 return (((((((131835937500 * a * b ^ 3 * c - 100195312500 * a ^ 2 * b * c ^ 2) + 395507812500 * c ^ 3) - 28369140625 * a ^ 3 * b ^ 4) + 1371093750 * a ^ 4 * b ^ 2 * c + 175781250000 * b ^ 5 + 1191796875 * a ^ 5 * c ^ 2 + 1162187500 * a ^ 6 * b ^ 3) - 74250000 * a ^ 7 * b * c) - 22233750 * a ^ 9 * b ^ 2) + 438750 * a ^ 10 * c + 213700 * a ^ 12 * b) - 829 * a ^ 15

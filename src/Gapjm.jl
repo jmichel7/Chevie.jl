@@ -78,6 +78,7 @@ use one or two functions from `Util`.
 """
 module Gapjm
 using Reexport
+using Requires
 
 #--------------------------------------------------------------------------
 degree(a::Number)=0; export degree
@@ -130,4 +131,7 @@ include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
 include("HasType.jl");@reexport using .HasType
 #end
+function __init__()
+  @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" include("Gap4.jl")
+end
 end

@@ -440,21 +440,27 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
  1
 ```
 """
-function fakedegrees(W,q)
-  res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
-  if !any(isnothing,res) && !any(iszero,res) return res end
+function fakedegrees(W,q;recompute=false)
+  if !recompute
+    res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
+    if !any(isnothing,res) && !any(iszero,res) return res end
+  end
   # need general routine
-  InfoChevie("# using PermRootOps.FakeDegrees for ",W,"\n")
+  InfoChevie("# recomputing fakedegrees for ",W,"\n")
   qq=Pol()
   P=generic_order(W,qq)
   P=shift(P,-valuation(P))
   ct=CharTable(W)
-  P=ct.irr*map(1:length(ct.centralizers))do i
-    P/(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i)))
+  if rank(W)==0 P=[one(qq)]
+  else
+    P=ct.irr*map(1:length(ct.centralizers))do i
+      P/(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i)))
+    end
   end
   charinfo(W)[:B]=degree.(P)
   charinfo(W)[:b]=valuation.(P)
   P=map(x->x(q),P)
+  P=improve_type(P)
   W isa Spets ?  P.*(-1)^rank(W)*generic_sign(W) : P
 end
 

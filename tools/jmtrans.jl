@@ -43,11 +43,13 @@ const exclu=[
  ["CharTable","imp"],
  ["PowerMaps","imp"],
  ["ReflectionCoDegrees","imp"],
+ ["Invariants","imp"],
  ["ReducedInRightCoset","timp"],
  ["CharName","timp"],
  ["CharTable","G31"],
  ["CharTable","G34"],
- ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])]
+ ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])],
+ ["Invariants",:(["E7", "E8", "H3", "H4"])]
 ]
 
 const ok=[:(CHEVIE.AddData), 

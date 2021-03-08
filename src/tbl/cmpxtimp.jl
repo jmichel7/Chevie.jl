@@ -24,11 +24,11 @@ chevieset(:timp, :PhiFactors, function (p, q, r, phi)
 chevieset(:timp, :ClassInfo, function (p, q, r, phi)
         if [p, q, r] == [3, 3, 3]
             if phi == perm"(1,4,2)"
-                return Dict{Symbol, Any}(:classtext => [[], [3], [1], [2, 1], [3, 1], [3, 2, 1], [2, 3, 1, 2, 3, 1]], :classparams => [[], [3], [1], [2, 1], [3, 1], [3, 2, 1], [2, 3, 1, 2, 3, 1]], :classnames => ["Id", "3", "1", "21", "31", "321", "231231"])
+                return Dict{Symbol, Any}(:classes => [3, 9, 9, 3, 18, 9, 3], :classtext => [[], [3], [1], [2, 1], [3, 1], [3, 2, 1], [2, 3, 1, 2, 3, 1]], :classparams => [[], [3], [1], [2, 1], [3, 1], [3, 2, 1], [2, 3, 1, 2, 3, 1]], :classnames => ["Id", "3", "1", "21", "31", "321", "231231"])
             elseif phi == perm"(1,2,4)"
-                return Dict{Symbol, Any}(:classtext => [[], [3], [1], [1, 2], [3, 1], [3, 1, 2], [1, 3, 2, 1, 3, 2]], :classparams => [[], [3], [1], [1, 2], [3, 1], [3, 1, 2], [1, 3, 2, 1, 3, 2]], :classnames => ["Id", "3", "1", "12", "31", "312", "132132"])
+                return Dict{Symbol, Any}(:classes => [3, 9, 9, 3, 18, 9, 3], :classtext => [[], [3], [1], [1, 2], [3, 1], [3, 1, 2], [1, 3, 2, 1, 3, 2]], :classparams => [[], [3], [1], [1, 2], [3, 1], [3, 1, 2], [1, 3, 2, 1, 3, 2]], :classnames => ["Id", "3", "1", "12", "31", "312", "132132"])
             elseif phi == perm"(1,2,3,4)"
-                return Dict{Symbol, Any}(:classtext => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classparams => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classnames => ["Id", "1", "12", "123", "121", "1213"])
+                return Dict{Symbol, Any}(:classes => [9, 9, 9, 9, 9, 9], :classtext => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classparams => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classnames => ["Id", "1", "12", "123", "121", "1213"])
             else
                 error("should  !  happen")
             end

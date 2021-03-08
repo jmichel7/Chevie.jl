@@ -215,9 +215,9 @@ Group([(2,3)])
 ```
 """
 function centralizer(G::Group,p;action::Function=^)
-# compute Schreier generators
   t=transversal(G,p;action=action)
-  C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)]
+  if length(t)==1 return G end
+  C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)] #Schreier generators
   Group(unique!(sort(C)))
 end
 
@@ -338,8 +338,7 @@ Base.length(G::Group)=length(minimal_words(G))
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   get!(G,:classes) do
     if haskey(G,:classreps) 
-      for i in 1:nconjugacy_class(G) conjugacyclass(W,i) end
-    elseif length(G)>10000 error("length(G)=",length(G),": should call Gap4")
+      [conjugacy_class(G,i) for i in 1:nconjugacy_classes(G)]
     else orbits(G,elements(G))
     end
   end
@@ -364,7 +363,7 @@ end
 "classreps(G::Group): representatives of conjugacy classes of G"
 function classreps(G::Group{T})::Vector{T} where T
   get!(G,:classreps) do
-    if length(G)>10000 Gap4.classreps(G)
+    if length(G)>10000 error("length(G)=",length(G),": should call Gap4")
     else first.(conjugacy_classes(G))
     end
   end

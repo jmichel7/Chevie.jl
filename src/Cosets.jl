@@ -759,20 +759,21 @@ Frobenius(w::Integer,phi)=w^(inv(phi))
 
 function twisting_elements(WF::Spets,J::AbstractVector{<:Integer})
   if isempty(J) return classreps(WF)./WF.phi end
-  W=Group(WF)
-  L=reflection_subgroup(W,J)
-  N=normalizer(W,L)
-  W_L=N/L
   if !isone(WF.phi) error( "not implemented for twisted parent Spets" ) end
-  if length(W_L)>=10
-    H=Group(map(x->central_action(L,reflrep(L,x.phi)),gens(W_L)))
-    if length(H)==length(W_L)
-      h=Hom(H,W_L,gens(W_L))
-      e=classreps(H)
-      return map(x->h(x).phi,e)
-    end
-  end
-  sort(map(x->x.phi,classreps(W_L)))
+  twisting_elements(Group(WF),J)
+# W=Group(WF)
+# L=reflection_subgroup(W,J)
+# N=normalizer(W,L)
+# W_L=N/L
+# if length(W_L)>=10
+#   H=Group(map(x->central_action(L,reflrep(L,x.phi)),gens(W_L)))
+#   if length(H)==length(W_L)
+#     h=Hom(H,W_L,gens(W_L))
+#     e=classreps(H)
+#     return map(x->h(x).phi,e)
+#   end
+# end
+# sort(map(x->x.phi,classreps(W_L)))
 end
 
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
@@ -781,7 +782,7 @@ function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   s=unique!(sort(reflections(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L
-  sort(map(x->reduced(L,x.phi),classreps(W_L)))
+  map(x->x.phi,classreps(W_L))
 end
 
 function relative_coset(WF::CoxeterCoset,J)
@@ -944,9 +945,12 @@ function spets(s::String)
     W=PRG([2 (ER(3)-1)E(3);2 (-1+ER(3))E(3,2);2 ER(3)-1]./1,
      [(3+ER(3))/2 ER(3)E(3,2);(3+ER(3))/2 ER(3)E(3);(3+ER(3))/2 ER(3)]./3)
     return spets(W,reflrep(W,Perm(1,2,3)))
-  elseif s=="2G5" 
-    W=ComplexReflectionGroup(5)
-    return spets(W,reflrep(W,Perm(1,2)))
+   elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
+    W=PRG([[(-E(3)-2E(3,2))*(-3+ER(6))//3,E(3)],
+           [(-E(3)-2E(3,2))*(3-ER(6))//3, E(3)]],
+          [[E(3)//2,(-E(3)-2E(3,2))*(-3-ER(6))//6],
+           [-E(3)//2,(-E(3)-2E(3,2))*(-3-ER(6))//6]])
+    return spets(W,[-1 0;0 1])
   elseif s=="3G333" 
     W=ComplexReflectionGroup(3,3,3)
     return spets(W,reflrep(W,Perm(1,2,44)))

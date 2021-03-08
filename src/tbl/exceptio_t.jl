@@ -3,7 +3,7 @@
 # data common to several (but not all) types of reflection groups
 
 # an addition
-chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,(t->r->fill(1//2,r)))
+chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
 
 chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
   function(t)
@@ -11,6 +11,15 @@ chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
     eig=map(x->E(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
     toL(toM(coroot.(r,eig))*permutedims(toM(r)))
   end)
+
+chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->
+  function()
+    C=chevieget(t, :CartanMat)
+    r=roots(C)*C
+    map(d->function(arg...)sum(a->sum(arg.*a)^d,r) end, 
+        chevieget(t, :ReflectionDegrees))
+  end
+)
 
 function ExpandRep(r, d, l) # decompress representation of r gens of dim d
   T=reduce(promote_type,typeof.(first.(l)))

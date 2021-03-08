@@ -1230,71 +1230,70 @@ parabolic_reps(W)=vcat(parabolic_reps.(Ref(W),0:semisimplerank(W))...)
 
 parabolic_reps(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)
 
+function recompute_parabolic_reps(W) # W irreducible
+  by=1+ngens(W)-semisimplerank(W)
+  stoi=s->findfirst(i->reflection(W,i)==s,eachindex(roots(W)))
+  l=[map(x->reflection_subgroup(W,[x]),sort(unique(simple_reps(W))))]
+  for i in 2:semisimplerank(W)-1
+   new=[];ref=Vector{Pair{Int,Int}}[]
+    for v in l[i-1]
+      InfoChevie("# Extending ",v)
+      S=normalizer(W,v)
+      if ngens(v)==i-1
+        c=union(map(i->combinations(map(stoi,unique(reflections(W))),i),1:by))
+      else c=combinations(map(stoi,Set(reflections(W))),1)
+      end
+      c=map(x->union(x,restriction(W,inclusiongens(v))),c)
+      c=filter(x->GLinearAlgebra.rank(toM(roots(W,x)))==i,c)
+      InfoChevie(" ",length(c)," new subgroups")
+      c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
+      c=filter(is_parabolic,c)
+      c=sort(unique(map(x->sort(unique(reflections(x))),c)))
+      O=orbits(S,c;action=(x,g)->sort(x.^g))
+      O=map(o->o[argmin(map(x->sum(stoi,x),o))],O)
+      O=map(x->reflection_subgroup(W,stoi.(x)),O)
+      InfoChevie("# ",length(O)," to go\n")
+      for c in O
+        rr=tally(degrees(c))
+        cand=filter(i->ref[i]==rr,eachindex(ref))
+        InfoChevie("# candidates for ",c," to be conjugate:",new[cand],"\n")
+        if all(v->transporting_elt(W,v,c)===nothing,new[cand])
+             InfoChevie("# new:",c,"\n")
+             push!(new,c);push!(ref,rr);
+        end
+      end
+    end
+    InfoChevie("# i=",i," found:",new,"\n")
+    push!(l,new)
+  end
+  l=map(vcat(l...))do v
+    p=standard_parabolic(W,v)
+    if p!==nothing v=v^p end
+    v
+  end
+  l=collectby(semisimplerank,l)
+  l=map(v->inclusiongens.(v),l)
+  l=vcat([[Int[]]],l)
+  push!(l,[inclusiongens(W)])
+  l=map(v->map(x->map(y->Int(stoi(reflection(W,restriction(W,y)))),x),v),l)
+  [sort(sort.(x)) for x in l]
+end
+
 function parabolic_reps(W::PermRootGroup,s)
   t=refltype(W)
   sols=filter(l->sum(l)==s,cartesian(map(x->0:rank(x),t)...))
-  vcat(map(c->map(x->vcat(x...),cartesian(map(eachindex(c))
-    do i
-      r=parabolic_reps(t[i],c[i])
-      if r==false
-        R=reflection_subgroup(W,inclusion(W,t[i].indices))
-#    by:=1+W.nbGeneratingReflections-W.semisimpleRank;
-#    Reflections(W); # make sure they are computed all
-#    stoi:=s->W.rootInclusion[Position(W.reflections,s)];
-#    l:=[List(Set(W.orbitRepresentative),x->ReflectionSubgroup(W,[x]))];
-#    for i in [2..W.semisimpleRank-1] do
-#      new:=[];ref:=[];
-#      for v in l[i-1] do
-#        InfoChevie("# Extending ",ReflectionName(v),"\c");
-#        S:=Normalizer(W,v);
-#        if v.nbGeneratingReflections=i-1 then
-#          c:=Union(List([1..by],i->Combinations(List(Reflections(W),stoi),i)));
-#        else c:=Combinations(List(Reflections(W),stoi),1);
-#        fi;
-#        c:=List(c,x->Union(x,v.rootInclusion{v.generatingReflections}));
-#        c:=Filtered(c,x->RankMat(W.roots{W.rootRestriction{x}})=i);
-#        InfoChevie(" ",Length(c)," new subgroups\c");
-#        c:=List(c,function(x)InfoChevie("*\c");
-#                             return ReflectionSubgroup(W,x);end);
-#        c:=Filtered(c,IsParabolic);
-#        c:=Set(List(c,x->Set(Reflections(x))));
-#        O:=Orbits(S,c,OnSets);
-#        O:=List(O,function(o)local m;m:=Minimum(List(o,x->Sum(x,stoi)));
-#             return First(o,x->Sum(x,stoi)=m);end);
-#        O:=List(O,x->ReflectionSubgroup(W,List(x,stoi)));
-#        InfoChevie("# ",Length(O)," to go\n");
-#        for c in O do
-#          rr:=Collected(ReflectionDegrees(c));
-#          cand:=Filtered([1..Length(ref)],i->ref[i]=rr);
-#          InfoChevie("# candidates for ",c," to be conjugate:",new{cand},"\n");
-#          if ForAll(new{cand},v->RepresentativeOperation(W,v,c)=false)
-#          then InfoChevie("# new:",ReflectionName(c),"\n");
-#               Add(new,c);Add(ref,rr);
-#          fi;
-#        od;
-#      od;
-#      InfoChevie("# i=",i," found:",new,"\n");
-#      Add(l,new);
-#    od;
-#    l:=List(Concatenation(l),function(v)local p;
-#      p:=StandardParabolic(W,v);if p<>false then v:=v^p;fi;return v;end);
-#    l:=CollectBy(l,SemisimpleRank);
-#    l:=List(l,v->List(v,x->x.rootInclusion{x.generatingReflections}));
-#    l:=Concatenation([[[]]],l);
-#    Add(l,[W.rootInclusion{W.generatingReflections}]);
-#    l:=List(l,v->List(v,x->List(x,y->stoi(Reflection(W,
-#                                            W.rootRestriction[y])))));
-#    l:=List(l,x->Set(List(x,Set)));
-#    W.parabolicRepresentatives:=l;
-#  fi;
-        error("not implemented")
-        return parabolic_reps(R,c[i])
-      elseif all(x->all(y->y in 1:t[i].rank,x),r)
-        return map(x->inclusion(W,t[i].indices[x]),r)
-      else R=reflection_subgroup(W,inclusion(W,t[i].indices))
-        return map(x->inclusion(R,x),r);
-      end
-    end...)),sols)...)
+  vcat(map(sols)do c
+        map(x->vcat(x...),cartesian(map(eachindex(c))do i
+    r=parabolic_reps(t[i],c[i])
+    if r==false
+      R=reflection_subgroup(W,t[i].indices)
+      return recompute_parabolic_reps(R)[c[i]+1]
+    elseif all(x->all(y->y in 1:t[i].rank,x),r)
+      return map(x->inclusion(W,t[i].indices[x]),r)
+    else R=reflection_subgroup(W,inclusion(W,t[i].indices))
+      return map(x->inclusion(R,x),r);
+    end
+    end...))end...)
 end
 
 """
@@ -1789,7 +1788,7 @@ julia> PermRoot.generic_order(ComplexReflectionGroup(4),q)
 Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
 ```
 """
-generic_order(W,q)=q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
+generic_order(W,q)=rank(W)==0 ? one(q) : q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
 
 """
 `invariants(W)`

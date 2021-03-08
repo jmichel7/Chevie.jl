@@ -396,7 +396,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     if mod(d, q) != 0
                         error()
                     elseif d != 0
-                    res = Concatenation(1 + res, fill(1, max(0, div(d,q))))
+                        res = Concatenation(1 + res, fill(0, max(0, (1 + div(d, q)) - 1)) + 1)
                     elseif p != q
                         res = 1 + res
                     end
@@ -1304,20 +1304,6 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             end
             return uc
         end
-    end)
-chevieset(:imp, :Invariants, function (p, q, r)
-        local v
-        v = map((i->begin
-                        function (arg...,)
-                            return Sum(arrangements(1:r, i), (a->begin
-                                            Product(arg[a]) ^ p
-                                        end))
-                        end
-                    end), 1:r - 1)
-        push!(v, function (arg...,)
-                return Product(arg) ^ (p // q)
-            end)
-        return v
     end)
 chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
         if q != 1 || r != 1
