@@ -2,23 +2,24 @@
 What   is  implemented  here  is  "Puiseux  polynomials",  that  is  linear
 combinations  of monomials  of the  type `x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ` are
 variables  and `aᵢ` are  exponents which can  be arbitrary rational numbers
-(we   need  them  with  cyclotomic  coefficients  as  splitting  fields  of
-cyclotomic  Hecke  algebras).  Some  functions  described  below need their
-argument  to involve  only variables  to integral  powers; we will refer to
-such  objects as "Laurent polynomials"; some functions require further that
-variables  are  raised  only  to  positive  powers:  we refer then to "true
-polynomials".
+(we  need  Puiseux  polynomial  with  cyclotomic  coefficients as splitting
+fields  of cyclotomic Hecke algebras).  Some functions described below work
+only  with polynomials  where variables  are raised  to integral powers; we
+will refer to such objects as "Laurent polynomials"; some functions require
+further that variables are raised only to positive powers: we refer then to
+"true   polynomials".  We  implement  also  rational  fractions  where  the
+numerator and denominator are true polynomials.
 
 `@Mvp x₁,…,xₙ`
 
-declares   that  `xᵢ`are  indeterminates  suitable  to  build  multivariate
+declares  that  `xᵢ`  are  indeterminates  suitable  to  build multivariate
 polynomials.
 
 ```julia-repl
 julia> @Mvp x,y
 
-julia> (x+y)^3
-Mvp{Int64}: x³+3x²y+3xy²+y³
+julia> (x+y^-1)^3
+Mvp{Int64}: x³+3x²y⁻¹+3xy⁻²+y⁻³
 ```
 
 `Mvp(x::Number)`   returns  the  constant   multivariate  polynomial  whose
@@ -29,19 +30,14 @@ julia> degree(Mvp(1))
 0
 ```
 
-One can divide an `Mvp` by another when the division is exact
-(this is equivalent to `ExactDiv`, see below).
-
-```julia-repl
-julia> (x^2-y^2)//(x-y)
-Mvp{Int64}: x+y
-```
-
-Only monomials can be raised to a non-integral power; they can be raised to
-a  fractional power of denominator `b` only if `root(x,b)` is defined where
-`x`   is  their  leading  coefficient.  For  an  `Mvp`  `m`,  the  function
-`root(m,n)`  is equivalent  to `m^(1//n)`.  Raising a  non-monomial Laurent
-polynomial to a negative power returns a rational fraction.
+Only  monomials and one-term `Mvp`s can  be raised to a non-integral power;
+the  `Mvp` with one  term `cm` which  is `c` times  the monomial `m` can be
+raised  to a fractional power of denominator `b` if and only if `root(c,b)`
+is  defined. For  an `Mvp`  `p`, the  function `root(p,n)` is equivalent to
+`p^(1//n)`.  Raising a non-monomial Laurent  polynomial to a negative power
+returns  a rational fraction. For the  moment we have implemented arbitrary
+roots  of  roots  of  unity  and  square  roots of integers (in the package
+`Cycs`; higher roots exist if the integer is itself a power).
 
 ```julia-repl
 julia> (4x)^(1//2)
@@ -54,25 +50,34 @@ julia> root(2.0x)
 Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 ```
 
-Despite the degree of generality of our polynomials, we are not too shabby.
-For  the Fateman test  f(f+1) where f=(1+x+y+z+t)^n  with n=15, we take 4.5
-sec. According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6.
+One can divide an `Mvp` by another when the division is exact
+
+```julia-repl
+julia> exactdiv(x^2-y^2,x-y)
+Mvp{Int64}: x+y
+```
+
+Despite  the degree of generality of our  polynomials, the speed is not too
+shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4.5sec.
+According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 """
 module Mvps
-# benchmark: (x+y+z)^3     2.7μs 141 alloc
+# benchmark: (x+y+z)^3     2.3μs 48 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: fromTeX, ordinal, printTeX
+using ..Util: Util, exactdiv, fromTeX, ordinal, printTeX, bracket_if_needed
+using ..Pols: Pols, Pol, srgcd
 
 #import Gapjm: degree, coefficients, valuation
 #import ..Pols: positive_part, negative_part, bar
 import ..Cycs: root
+using ..Cycs: Cyc
 # to use as a stand-alone module comment above line, uncomment next, and
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
 export degree, coefficients, coefficient, valuation
 export positive_part, negative_part, bar
 export Mvp, Monomial, @Mvp, variables, value, scal, derivative,
-  laurent_denominator
+  laurent_denominator, Mvrf
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   
@@ -96,7 +101,7 @@ Base.isone(a::Monomial)=iszero(a.d)
 Base.one(::Type{Monomial{N}}) where N=Monomial(zero(ModuleElt{Symbol,N}))
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
-Base.div(a::Monomial, b::Monomial)=a*inv(b)
+Util.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
 Base.:/(a::Monomial, b::Monomial)=a*inv(b)
 Base.://(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial,p)=Monomial(x.d*p)
@@ -201,7 +206,7 @@ function Base.show(io::IO, ::MIME"text/plain", a::Mvp{T,N}) where{T,N}
   show(io,a)
 end
 
-# necessary to clean up a ModuleElt upstream
+# necessary if called when already showing a ModuleElt
 Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
@@ -404,40 +409,89 @@ values  are always `Mvp`s. To get a list of scalars for the coefficients of
 a  univariate polynomial represented  as a `Mvp`,  one should use `scal` on
 the values of `coefficients`.
 """
-function coefficients(p::Mvp,v::Symbol)
+function coefficients(p::Mvp{T,N},v::Symbol)where {T,N}
   if iszero(p) return Dict{Int,typeof(p)}() end
-  d=Dict{Int,typeof(p.d.d)}()
+  d=Dict{N,typeof(p.d.d)}()
   for (m,c) in p.d
-#   print("$m=>$c d=$d\n")
     found=false
     for (i,(v1,deg)) in enumerate(m.d)
       if v1==v 
         found=true
-        d[deg]=push!(get(d,deg,empty(p.d.d)),
+        d[deg]=push!(get!(d,deg,empty(p.d.d)),
                         Monomial(deleteat!(collect(m.d),i)...)=>c)
       end
     end
-    if !found  d[0]=push!(get(d,0,empty(p.d.d)),m=>c) end
+    if !found  d[0]=push!(get!(d,0,empty(p.d.d)),m=>c) end
   end
   Dict(dg=>Mvp(c...;check=false) for (dg,c) in d) # c... is sorted by defn of monomial order
 end
 
+function coefficient(p::Mvp,var::Symbol,d)
+  res=empty(p.d.d)
+  for (m,c) in p.d
+    found=false
+    for (i,(v1,deg)) in enumerate(m.d)
+      if v1==var && deg==d
+        found=true
+        push!(res,Monomial(ModuleElt(deleteat!(copy(m.d.d),i);check=false))=>c)
+        break
+      elseif v1>var break
+      end
+    end
+    if d==0 && !found push!(res,m=>c) end
+  end
+  Mvp(ModuleElt(res;check=false))
+end
+
+function Pol(x::Mvp{T})where T
+  l=variables(x)
+  if isempty(l) return Pol(scal(x)) end
+  if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
+  val=valuation(x)
+  p=zeros(T,degree(x)-val+1)
+  for (mon,coeff) in x.d p[degree(mon)-val+1]=coeff end
+  Pol(p,val)
+end
+
+function Pols.Pol(p::Mvp{T,N},var::Symbol)where{T,N}
+  d=degree(p,var)
+  v=Int(valuation(p,var))
+  res=[Pair{Monomial{N},T}[] for i in v:d]
+  for (m,c) in p.d
+    found=false
+    for (i,(v1,deg)) in enumerate(m.d)
+      if v1==var 
+        found=true
+        push!(res[Int(deg)-v+1],
+             Monomial(ModuleElt(deleteat!(copy(m.d.d),i);check=false))=>c)
+        break
+      elseif v1>var break
+      end
+    end
+    if !found push!(res[-v+1],m=>c) end
+  end
+  Pol(map(x->Mvp(ModuleElt(x;check=false)),res),v)
+end
+
 """
-`variables(p::Mvp...)`
+`variables(p::Mvp)`
+`variables(v::Array{Mvp})`
 
 returns the list of variables of all `p` as a sorted list of `Symbol`s.
 
 ```julia-repl
 julia> @Mvp x,y,z
 
-julia> variables(x+y+1,z)
+julia> variables([x+y+1,z])
 3-element Vector{Symbol}:
  :x
  :y
  :z
 ```
 """
-variables(pp::Mvp...)=unique!(sort([k1 for p in pp for (k,v) in p.d for (k1,v1) in k.d]))
+variables(pp::AbstractArray{<:Mvp})=sort(unique!([k1 for p in pp for (k,v) in p.d for (k1,v1) in k.d]))
+
+variables(p::Mvp)=sort(unique!([k1 for (k,v) in p.d for (k1,v1) in k.d]))
 
 """
 `scal(p::Mvp)`
@@ -576,105 +630,6 @@ function root(p::Mvp,n::Real=2)
   Mvp(root(m,n)=>root(c,n))
 end
 
-function Base.inv(p::Mvp)
-  if length(p.d)>1 || iszero(p) throw(InexactError(:inv,Mvp,p)) end
-  (m,c)=first(p.d)
-  if c==1 || c==-1 return Mvp(inv(m)=>c) end
-  Mvp(inv(m)=>1//c)
-end
-
-function Base.://(p::Mvp,q::Mvp)
-  res=ExactDiv(p,q)
-  if isnothing(res) return p*inv(q) end
-  res
-end
-Base.:/(p::Mvp,q::Mvp)=p//q
-Base.://(p::Number,q::Mvp)=Mvp(p)//q
-
-function ExactDiv(p::Mvp,q::Mvp)
-# println("p=$p q=$q")
-  if iszero(q) error("cannot divide by 0")
-  elseif length(q.d)==1 return p*inv(q)
-  elseif length(p.d)<2 return iszero(p) ? p : nothing
-  end 
-  var=first(first(p.d)[1].d)[1]
-  res=zero(p)
-  cq=coefficients(q,var)
-  mq=maximum(keys(cq))
-# println("var=$var mq=$mq cq=$cq q=$q")
-  while length(p.d)!=0
-    if length(p.d)<length(q.d) return nothing end
-    cp=coefficients(p,var)
-    mp=maximum(keys(cp))
-#   println("mp=$mp cp=$cp")
-    t=ExactDiv(cp[mp],cq[mq])
-    if t===nothing return nothing end
-    if mp!=mq t=Monomial(var=>mp-mq)*t end
-    res+=t
-#   print("t=$t res=$res p=$p=>")
-    p-=t*q
-#   println("$p")
-  end
-  res
-end
-
-function Base.gcd(a::Mvp,b::Mvp)
-  if any(x->length(x.d)==1,[a,b]) 
-    return Mvp([gcd(reduce(vcat,map(x->x[1],a.d),map(x->x[1],b.d)))=>1])
-  end
-  listvar=(variables(a),variables(b))
-  v=symdiff(listvar...)
-  listvar=union(listvar...)
-  nvar=length(listvar)
-# if nvar==2 Print("v=",v," listvar=",listvar,"\n");end
-  v=length(v)>0 ? v[1] : listvar[1]
-  coef=[coefficients(a,v),coefficients(b,v)]
-# if nvar==2 Print("coef=",coef,"\n");end
-
-  function Vecmod(p, q)
-    lq=length(q)
-    if lq==1 return [] end
-    qlq=q[lq]
-    lp=length(p)
-    p=copy(p)
-    f=scal(qlq)
-    q=q[1:lq-1]
-    if f!=false q=q/f end
-    while lp>=lq
-      plp=p[lp]
-      lp-=1 
-      if f==false p=p*qlq end
-      p[lp-lq+2:lp]=p[lp-lq+2:lp]-plp*q
-      while lp>0 && p[lp]==0*p[lp] lp-=1 end
-    end
-    p=p[1:lp]
-    if lp==0 return p end
-    plp=scal(p[lp])
-    if plp==false return p/ApplyFunc(MvpGcd,p) end
-    p/plp
-  end
-
-  function VecGcd(p,q)
-    while length(q)>0 (q,p)=(Vecmod(p,q),q) end
-    p/p[end]
-  end
-  
-  if nvar==1 return Mvp(v,VecGcd(coef[1],coef[2])) end # faster
-  cont=map(x->MvpGcd(x...),coef)
-  for i in 1:2
-     if scal(cont[i]==false) coef[i]=List(coef[i],x->ExactDiv(x,cont[i]))
-     else coef[i]=List(coef[i],Mvp)
-          cont[i]=Mvp(cont[i])
-     end
-  end
-  reseuc=VecGcd(coef[1],coef[2])
-  l=MvpLcm(map(x->RatFrac(x).den,reseuc)...)
-  reseuc=map(p->IsRatFrac(p) ? p.num*ExactDiv(l,p.den) : p*l,reseuc)
-# if not ForAll(reseuc,IsMvp) Error() end
-# if not IsMvp(MvpGcd(cont[1],cont[2])) Error() end
-  MvpGcd(cont[1],cont[2])* ValuePol(reseuc,Mvp(v))
-end
-
 """
 `Base.:^(p,m;vars=variables(p))`
 
@@ -737,11 +692,56 @@ function derivative(p::Mvp,v=first(variables(p)))
   Mvp(ModuleElt(m*Monomial(v)^-1=>c*degree(m,v) for (m,c) in p.d))
 end
 
+Base.://(p::Number,q::Mvp)=Mvp(p)//q
+
+function Util.exactdiv(p::Mvp,q::Mvp)
+  if iszero(q) error("cannot divide by 0")
+  elseif length(q.d)==1 
+    m,c=first(q.d)
+    return Mvp(ModuleElt(inv(m)*m1=>exactdiv(c1,c) for (m1,c1) in p.d;check=false))
+  elseif length(p.d)<2 return iszero(p) ? p : nothing
+  end 
+  var=first(first(p.d)[1].d)[1]
+  res=zero(p)
+  mq=degree(q,var)
+  cq=coefficient(q,var,mq)
+  while length(p.d)!=0
+    if length(p.d)<length(q.d) return nothing end
+    mp=degree(p,var)
+    t=exactdiv(coefficient(p,var,mp),cq)
+    if t===nothing return nothing end
+    if mp!=mq t=Monomial(var=>mp-mq)*t end
+    res+=t
+    p-=t*q
+  end
+  res
+end
+
+Util.exactdiv(p::Mvp,q::Number)=exactdiv(p,Mvp(q))
+ 
+"""
+Returns  the Gcd  of the  'Mvp' arguments.  The arguments  must be  true
+polynomials.
+
+|    gap> MvpGcd(x^2-y^2,(x+y)^2);
+    x+y|
+"""
+function Base.gcd(a::Mvp,b::Mvp)
+  vars=variables([a,b])
+  if isempty(vars) return Mvp(1) end
+  v=first(vars)
+  if length(vars)==1 srgcd(Pol(a),Pol(b))(Mvp(v))
+  else               srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
+  end
+end
+
+Base.gcd(v::Vector{<:Mvp})=reduce(gcd,v;init=Mvp(0))
+
 """
 `laurent_denominator(p1,p2,…)`
 
-returns  the unique monomial  `m` of minimal  degree such that  for all the
-Laurent  polynomial  arguments  `p1,p2,…`  the  product  `m*pᵢ`  is  a true
+returns  the unique true monomial  `m` of minimal degree  such that for all
+the  Laurent polynomial  arguments `p1,p2,…`  the product  `m*pᵢ` is a true
 polynomial.
 
 ```julia-repl
@@ -751,14 +751,164 @@ Monomial{Int64}:xy²
 """
 function laurent_denominator(p::Mvp...)
   res=Monomial()
-  for v in variables(p...)
+  for v in variables(collect(p))
     val=minimum(valuation.(p,v))
     if val<0 res*=Monomial(v)^-val end
   end
   return res
 end
 
+"""
+`lcm(p1,p2,...)`
 
+Returns  the Lcm  of the  `Mvp` arguments.  The arguments  must be  true
+polynomials.
+
+```julia-repl
+julia> lcm(x^2-y^2,(x+y)^2)
+Mvp{Int64}: x³+x²y-xy²-y³
+```
+"""
+Base.lcm(a::Mvp,b::Mvp)=exactdiv(a*b,gcd(a,b))
+
+Base.eltype(p::Mvp{T,N}) where{T,N} =T
+
+#----------------------------- Mvrf -----------------------------------
+struct Mvrf{T}
+  num::Mvp{T,Int}
+  den::Mvp{T,Int}
+  function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};check=true,check1=true)where{T}
+    if check
+      d=laurent_denominator(a,b)
+      a*=d
+      b*=d
+      if check1
+        d=gcd(a,b)
+        a=exactdiv(a,d)
+        b=exactdiv(b,d)
+        T1=promote_type(eltype(a),eltype(b))
+        return new{T1}(a,b)
+      end
+    end
+    new{T}(a,b)
+  end
+end
+
+function Mvrf(a::Mvp{T1,Int},b::Mvp{T2,Int};check=true,check1=true)where{T1,T2}
+  T=promote_type(T1,T2)
+  Mvrf(convert(Mvp{T,Int},a),convert(Mvp{T,Int},b);check,check1)
+end
+
+function Base.convert(::Type{Mvrf{T}},p::Mvrf{T1}) where {T,T1}
+  Mvrf(convert(Mvp{T,Int},p.num),convert(Mvp{T,Int},p.den);check=false)
+end
+
+function Base.convert(::Type{Mvp{T,Int}},p::Mvrf{T1}) where {T,T1}
+  if isone(length(p.den.d)) 
+    (m,c)=first(p.den.d)
+    return convert(Mvp{T,Int},p.num*inv(m)*inv(c)) 
+  end
+  error("cannot convert ",p," to Mvp{",T,"}")
+end
+
+function Base.convert(::Type{Mvrf{T}},p::Mvp{T1,N}) where {T,T1,N}
+  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));check1=false)
+end
+
+function Base.convert(::Type{Mvrf{T}},p::Number) where {T}
+  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));check=false)
+end
+
+function Base.promote_rule(a::Type{Mvp{T1,Int}},b::Type{Mvrf{T2}})where {T1,T2}
+  Mvrf{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Mvrf{T1}},b::Type{Mvrf{T2}})where {T1,T2}
+  Mvrf{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{T1},b::Type{Mvrf{T2}})where {T1<:Integer,T2}
+  Mvrf{promote_type(T1,T2)}
+end
+
+(::Type{Mvrf{T}})(a) where T=convert(Mvrf{T},a)
+
+Mvp(a::Mvrf{T}) where T =convert(Mvp{T,Int},a)
+
+Base.broadcastable(p::Mvrf)=Ref(p)
+Mvrf(a::Number)=Mvrf(Mvp(a),Mvp(1);check=false)
+Mvrf(a::Mvp)=Mvrf(a,Mvp(1);check1=false)
+Base.copy(a::Mvrf)=Mvrf(a.num,a.den;check=false)
+Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);check=false)
+Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});check=false)
+Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});check=false)
+# next 3 stuff to make inv using LU work (abs is stupid)
+Base.abs(p::Mvrf)=p
+Base.conj(p::Mvrf)=Mvrf(conj(p.num),conj(p.den);check=false)
+Base.adjoint(a::Mvrf)=conj(a)
+Base.cmp(a::Mvrf,b::Mvrf)=cmp([a.num,a.den],[b.num,b.den])
+Base.isless(a::Mvrf,b::Mvrf)=cmp(a,b)==-1
+
+function Base.show(io::IO, ::MIME"text/plain", a::Mvrf)
+  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
+  show(io,a)
+end
+
+function Base.show(io::IO,a::Mvrf)
+  if a.den==-1 a=Mvrf(-a.num,-a.den;check=false) end
+  n=sprint(show,a.num; context=io)
+  if  get(io, :limit,true) && a.den==one(a.den)
+    print(io,n)
+  else
+    print(io,Util.bracket_if_needed(n))
+    n=sprint(show,a.den; context=io)
+    print(io,"/",Util.bracket_if_needed(n))
+  end
+end
+
+Base.inv(a::Mvrf)=Mvrf(a.den,a.num;check=false)
+
+function Base.://(a::Mvp,b::Mvp)
+  if length(b.d)==1
+    (m,c)=first(b.d)
+    return c^2==1 ? Mvp([m1/m=>c1*c for (m1,c1) in a.d]...) : 
+                    Mvp([m1/m=>c1//c for (m1,c1) in a.d]...)
+  end
+  Mvrf(a,b)
+end
+
+Base.:/(p::Mvp,q::Mvp)=Mvrf(p,q)
+
+function Base.inv(p::Mvp)
+  if length(p.d)==1 return Mvp(1)//p end
+  Mvrf(Mvp(1),p;check1=false)
+end
+
+Base.://(a::Mvrf,b::Mvrf)=a*inv(b)
+Base.:/(a::Mvrf,b::Union{Mvrf,Number,Mvp})=a*inv(b)
+Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
+Base.://(p::Number,q::Mvp)=Mvrf(Mvp(p),q;check1=false)
+Base.:/(p::Number,q::Mvp)=p//q
+Base.:/(p::Mvp,q)=Mvp(p.d/q,p.v)
+Base.://(p::Mvp,q)=iszero(p) ? p : Mvp(p.d//q,p.v)
+
+Base.:*(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.num,a.den*b.den)
+
+Base.:*(a::Mvrf,b::Mvp)=Mvrf(a.num*b,a.den)
+Base.:*(b::Mvp,a::Mvrf)=Mvrf(a.num*b,a.den)
+Base.:*(a::Mvrf,b::T) where T =Mvrf(a.num*b,a.den;check=false)
+Base.:*(b::T,a::Mvrf) where T =a*b
+
+Base.:^(a::Mvrf, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+                              Base.power_by_squaring(inv(a),-n)
+Base.:+(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.den+a.den*b.num,a.den*b.den)
+Base.:+(a::Mvrf,b::Union{Number,Mvp})=a+Mvrf(b)
+Base.:+(b::Union{Number,Mvp},a::Mvrf)=a+Mvrf(b)
+Base.:-(a::Mvrf)=Mvrf(-a.num,a.den;check=false)
+Base.:-(a::Mvrf,b::Mvrf)=a+(-b)
+Base.:-(a::Mvrf,b)=a-Mvrf(b)
+Base.:-(b,a::Mvrf)=Mvrf(b)-a
+Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);check=false)
 """
 ```julia-repl
 julia> p=E(3)x+E(5)
@@ -770,27 +920,7 @@ Mvp{ComplexF64}: (-0.4999999999999998 + 0.8660254037844387im)x+0.309016994374947
 julia> conj(q)
 Mvp{ComplexF64}: (-0.4999999999999998 - 0.8660254037844387im)x+0.30901699437494745 - 0.9510565162951535im
 ```
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The next functions have been provided by Gwenaëlle Genet
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'MvpGcd( <p1>, <p2>, ...)'
-
-Returns  the Gcd  of the  'Mvp' arguments.  The arguments  must be  true
-polynomials.
-
-|    gap> MvpGcd(x^2-y^2,(x+y)^2);
-    x+y|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-'MvpLcm( <p1>, <p2>, ...)'
-
-Returns  the Lcm  of the  'Mvp' arguments.  The arguments  must be  true
-polynomials.
-
-|    gap> MvpLcm(x^2-y^2,(x+y)^2);
-    xy^2-x^2y-x^3+y^3|
 """
 
 #julia1.6.0-rc1> @btime Mvps.fateman(15)

@@ -1,4 +1,4 @@
-"""
+      """
 `d`-Harish-Chandra   series  describe  unipotent  `l`-blocks  of  a  finite
 reductive  group ``𝐆(𝔽_q)`` for ``l|Φ_d(q)`` (at least, when `l` is not too
 small which means mostly not a bad prime for `𝐆`). Some of the facts stated
@@ -395,7 +395,7 @@ function FitParameter(sch, m)
   res=collectby(G,eachindex(G))
   pp=vcat(v...)[sortperm(vcat(res...))]
   para=map(i->E(e,pp[i])*Pol([1],Int(den*m[i])),1:e)
-  if map(k->prod(j->CycPol(1-para[k]//para[j]),filter(j->j!=k,1:e)),1:e)!=sch
+  if map(k->prod(j->CycPol(1-exactdiv(para[k],para[j])),filter(j->j!=k,1:e)),1:e)!=sch
     error("schur elms don't match\n")
   end
   map((x,y)->[x,y],res, v)
@@ -544,8 +544,8 @@ end
 
 function Gapjm.degree(s::Series)
   get!(s,:degree) do
-    deg=conj(generic_sign(s.spets))*generic_order(s.spets,Pol()) // 
-    (conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))
+    deg=exactdiv(conj(generic_sign(s.spets))*generic_order(s.spets,Pol()),
+    conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))
     CycPol(shift(deg,-deg.v))*Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
   end
 end
@@ -700,10 +700,10 @@ function Weyl.relative_group(s::Series)
     WGL=N/Group(gens(L)) # while problem with G333 not solved
  #  WGL=N/L
   end
-  V=GLinearAlgebra.lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
-  m=vcat(V,GLinearAlgebra.lnullspace(projector(s)))^-1
+  V=lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
+  m=vcat(V,lnullspace(projector(s)))^-1
   # V∩ fix(r)
-  hplane(r)=sum_intersection(GLinearAlgebra.lnullspace(reflrep(W,
+  hplane(r)=sum_intersection(lnullspace(reflrep(W,
                                  reflection(W,r))-one(projector(s))),V)[2]
   smalltobig(h)=hcat(h, fill(0,size(h,1),max(0,rank(W)-size(V,1))))*m^-1
   # restriction of matrix x to V
@@ -733,18 +733,18 @@ function Weyl.relative_group(s::Series)
     if isnothing(gen) error("H not cyclic") end
     res[:hom]=ee[gen]
     r=restrV(reflrep(W, length(L)==1 ? res[:hom] : res[:hom].phi))
-    ref=reflection(r)
+    ref=reflection(improve_type(r))
     n=ref.eig
     n=invmod(exponent(n), conductor(n))
     r^=n # distinguished reflection
     res[:hom]^=n
-    merge!(res,pairs(reflection(r)))
+    merge!(res,pairs(reflection(improve_type(r))))
     res[:WH] = H
     res
   end
   function v(h) # normalize a space (what "VectorSpace" could do)
     if size(h,1)==0 return  h end
-    h=GLinearAlgebra.echelon(h)[1]
+    h=echelon(h)[1]
     h[1:count(!iszero,eachrow(h)),:]
   end
   rrefs=collect(values(groupby(x->v(hplane(x)),refs)))#hplanes hashable!sortable
@@ -755,8 +755,8 @@ function Weyl.relative_group(s::Series)
     push!(reflist, getreflection(r))
     if length(Group(map(x->x[:hom],reflist)))==length(WGL)
 #     println("r=",map(x->x[:root],reflist),"\ncr=",map(x->x[:coroot],reflist))
-      WGL=PRG(map(x->x[:root],reflist),map(x->x[:coroot],reflist))
-      reflist=map(x->smalltobig(GLinearAlgebra.lnullspace(x-x^0)),reflrep(WGL))
+      WGL=PRG(map(x->x[:root],reflist),improve_type(map(x->x[:coroot],reflist)))
+      reflist=map(x->smalltobig(lnullspace(x-x^0)),reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->v(hplane(rr[1]))==v(h),rrefs)], reflist)
       WGL.reflists = map(getreflection, reflist)
       WGL.parentMap = map(x->x[:hom], WGL.reflists)

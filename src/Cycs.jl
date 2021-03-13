@@ -125,7 +125,8 @@ module Cycs
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, phi
+using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, phi,
+              bracket_if_needed
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -524,9 +525,7 @@ end
   elseif res[1]=='+' res=res[2:end] 
   end
   if !isone(den) 
-    res=format_coefficient(res)
-    if res=="" res="1" end
-    if res=="-" res="-1" end
+    res=bracket_if_needed(res)
     res*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) 
   end
   fromTeX(io,res)
@@ -556,6 +555,11 @@ function Base.show(io::IO, p::Cyc{T})where T
   print(io,rqq[argmin(length.(rqq))])
 end
 
+Base.gcd(v::Vector{<:Cyc})=one(v[1])
+Base.gcd(a::Cyc,b::Cyc)=one(b)
+Base.gcd(a::Cyc,b::Integer)=one(a)
+Base.gcd(b::Integer,a::Cyc)=one(a)
+
 function Base.:+(x::Cyc,y::Cyc)
   a,b=promote(x,y)
   if iszero(a) return b
@@ -582,7 +586,7 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Real,a::Cyc)=Cyc(b)+(-a)
 Base.:-(b::Cyc,a::Real)=b+Cyc(-a)
 
-Base.:*(a::Real,c::Cyc)= Cyc(iszero(a) ? 1 : c.n,c.d*a)
+Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(c) : Cyc(c.n ,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list

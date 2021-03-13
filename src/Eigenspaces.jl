@@ -120,7 +120,7 @@ julia> regular_eigenvalues(coxgroup(:G,2))
 julia> W=ComplexReflectionGroup(6)
 G₆
 
-julia> L=twistings(W,[2])[4]
+julia> L=twistings(W,[2])[2]
 G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> regular_eigenvalues(L)
@@ -169,7 +169,7 @@ julia> position_regular_class(W,30)
 julia> W=ComplexReflectionGroup(6)
 G₆
 
-julia> L=twistings(W,[2])[4]
+julia> L=twistings(W,[2])[2]
 G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> position_regular_class(L,7//12)
@@ -337,7 +337,7 @@ function split_levis(WF,d::Root1,ad)
     w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=reflrep(WF,w)
-      V=GLinearAlgebra.lnullspace(m-E(d)*one(m))
+      V=lnullspace(m-E(d)*one(m))
     end
     I=refs[map(m->V==V*m, mats)]
 #   println("I=$I\nphi=",w/WF.phi)

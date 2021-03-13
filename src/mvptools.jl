@@ -35,19 +35,6 @@ Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
                      p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
 Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
 
-function Pol(x::Mvp)
-  l=variables(x)
-  if isempty(l) return Pol(scal(x)) end
-  if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
-  v=l[1]
-  val=valuation(x)
-  p=zeros(eltype(values(x.d)),degree(x)-val+1)
-  for (mon,coeff) in pairs(x.d)
-    p[degree(mon)-val+1]=coeff
-  end
-  Pol(p,val)
-end
-
 """
 `factor(p::Mvp)`
 

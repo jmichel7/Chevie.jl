@@ -133,17 +133,26 @@ export PermRootGroup, PRG, PRSG, catalan,
  central_action
 using ..Gapjm
 
+best_eltype(m)=reduce(promote_type,best_type.(m))
+best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
+best_eltype(p::Mvp)=iszero(p) ? Int : best_eltype(values(p.d))
 best_type(x)=typeof(x)
 best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : x.n==1 ? 
   best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
 best_type(x::Cyc{T}) where T<:Integer=x.n==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : 
-  Array{reduce(promote_type,best_type.(m)),N}
-best_type(p::Pol)=iszero(p) ? Pol{Int} : 
-  Pol{reduce(promote_type,best_type.(p.c))}
+best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
+best_type(p::Pol)=Pol{best_eltype(p)}
+function best_type(q::RatFrac)
+  if isone(q.den) return best_type(q.num) end
+  RatFrac{promote_type(best_eltype(q.num), best_eltype(q.den))}
+end
+function best_type(q::Mvrf)
+  if isone(q.den) return best_type(q.num) end
+  Mvrf{promote_type(best_eltype(q.num), best_eltype(q.den))}
+end
 best_type(p::Mvp{T,N}) where {T,N}=iszero(p) ? Mvp{Int,Int} : 
-    Mvp{reduce(promote_type,best_type.(values(p.d))),N}
+                                       Mvp{best_eltype(p),N}
   
 improve_type(m)=convert(best_type(m),m)
 
@@ -898,7 +907,9 @@ function refleigen(W)
     if isempty(t) ll=[Root1[]]
     elseif any(x->haskey(x,:orbit) && 
         (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
-      return map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
+      ll=map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
+      W.reflengths=map(x->count(!isone,x),ll)
+      return ll
     else
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
@@ -1089,7 +1100,7 @@ function baseX(W::PermRootGroup{T})where T
     ir=independent_roots(W)
     if isempty(ir) return one(zeros(T,rank(W),rank(W))) end
     res=toM(roots(W,ir))
-    u=permutedims(GLinearAlgebra.nullspace(toM(coroots(W,ir))))
+    u=lnullspace(permutedims(toM(coroots(W,ir))))
     if eltype(u) <:Rational
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
       u=Int.(u)
@@ -1109,7 +1120,7 @@ end
 # reflection representation. Returns the matrix by which m acts on X(Z_L)
 function central_action(L,m)
   if size(m,2)==0 return m end
-  m=baseX(L)*m*invbaseX(L)
+  m=improve_type(baseX(L)*m*invbaseX(L))
   r=semisimplerank(L)
   improve_type(m[r+1:end,r+1:end])
 end
@@ -1646,7 +1657,7 @@ Coxeter  number of `W`. For non-well generated groups, the definition is in
 
 ```julia-repl
 julia> catalan(ComplexReflectionGroup(7),2)
-16//1
+16
 ```
 
 `Catalan(W,q)`, resp. `Catalan(W,i,q)`
@@ -1674,7 +1685,7 @@ function catalan(W,m=1,q=1)
   complex=Perm(ct,conj(ct))
   fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
   fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
-  prod(map((e,d)->f(m*h+e)//f(d),fd,d))
+  prod(map((e,d)->exactdiv(f(m*h+e),f(d)),fd,d))
 end
 
 """
@@ -1853,7 +1864,7 @@ function invariants(W)
   i=vcat(i...)
   N=toM(W.roots[independent_roots(W)])
   if !isempty(N)
-    N=GLinearAlgebra.nullspace(N)
+    N=lnullspace(permutedims(N))
     append!(i,map(v->function(arg...)return sum(v.*arg);end,N))
   end
   i

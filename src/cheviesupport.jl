@@ -1,6 +1,12 @@
 # extensions to get closer to GAP semantics; suppress when chevie library gone
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
+Base.:*(a::AbstractArray,b::RatFrac)=a .* b
+Base.:*(a::RatFrac,b::AbstractArray)=a .* b
+Base.:*(a::AbstractArray,b::Mvp)=a .* b
+Base.:*(a::Mvp,b::AbstractArray)=a .* b
+Base.:*(a::AbstractArray,b::Mvrf)=a .* b
+Base.:*(a::Mvrf,b::AbstractArray)=a .* b
 Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(permutedims(a)*toM(b))[1]
 Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
@@ -10,8 +16,6 @@ Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
 Base.:/(a::AbstractArray,b::Pol)=a ./ b
 Base.://(a::AbstractArray,b::Pol)=a .// b
-Base.:*(a::Array,b::Mvp)=a .* b
-Base.:*(a::Mvp,b::Array)=a .* b
 Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
@@ -37,13 +41,17 @@ CollectBy(v,f)=collectby(f,v)
 ConcatenationString(s...)=prod(s)
 CoxeterGroup()=coxgroup()
 function DiagonalMat(v...)
-  arg=map(m->m isa Array ? toM(m) : hcat(m),v)
+  arg=map(v)do m
+    if m isa Array toM(m)
+    else hcat(m)
+    end
+  end
   R=cat(arg...;dims=(1,2))
   u=reshape(R,(prod(size(R),)))
   for i in eachindex(u) if !isassigned(u,i) u[i]=zero(u[1]) end end
   toL(R)
 end
-DiagonalMat(v::Vector{<:Number})=DiagonalMat(v...)
+DiagonalMat(v::Vector)=DiagonalMat(v...)
 Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))

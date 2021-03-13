@@ -8,18 +8,18 @@ Here we are interested in functions which work over any field (or sometimes
 any ring).
 """
 module GLinearAlgebra
-using ..Pols: Pol # for isunit
-using ..Cycs: Cyc # for isunit
+using ..Pols: Pol # for charpoly
+#using ..Cycs: Cyc # for isunit
 using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
-using ..Util: toM, toL
+using ..Util: exactdiv, toM, toL
 using ..PermRoot: improve_type
-export echelon, echelon!, exterior_power, CoFactors, bigcell_decomposition, 
+export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
-  permanent, blocks, symmetric_power, diagconj_elt
+  permanent, blocks, symmetric_power, diagconj_elt, lnullspace
 
 """
     `echelon!(m)`
@@ -101,66 +101,61 @@ function nullspace(m::Matrix)
   zz[:,nn]
 end
 
-# left nullspace of m
+" `lnullspace(m)`: left nullspace of `m`"
 lnullspace(m)=permutedims(nullspace(permutedims(m)))
 
-function det(A::Matrix)
-  if size(A,1)==1 return A[1,1] end
-  sum(i->A[i,1]*det(A[vcat(1:i-1,i+1:size(A,1)),2:end])*(-1)^(i-1),axes(A,1))
-end
+"""
+  `det(m)`
 
-isunit(p::Pol)=length(p.c)==1 && p.c[1]^2==1
-isunit(c::Cyc)=true
-isunit(c::Any)=false
-
-function Det(m)
-  if isempty(m) return 0 end
+determinant of a matrix over an integral domain.
+`div` is exact division; it works over a field where `exactdiv` is division.
+See Cohen, "Computational algebraic number theory", 2.2.6
+"""
+function det(m::Matrix)
+  s=1
+  c=one(eltype(m))
   n=size(m,1)
-  if n==1 return m[1,1]
+  if n==0 return one(eltype(m))
+  elseif n==1 return m[1,1]
   elseif n==2 return m[1,1]*m[2,2]-m[1,2]*m[2,1]
-  elseif n==3
-    return sum(p->prod(i->m[i,i^p],1:n)*sign(p),elements(symmetric_group(n)))
   end
-  function compl(m,i,j)
-    v=axes(m,1)
-    m[setdiff(v,[i]),setdiff(v,[j])]
+  m=copy(m)
+  for k in 1:n
+    if k==n return m[n,n] end
+    p=m[k,k]
+    i=findfirst(!iszero,m[k:end,k])
+    if i===nothing return m[1,k] end
+    i+=k-1
+    if i!=k m[[i,k],:]=m[[k,i],:] end
+    s=-s
+    p=m[k,k]
+    for i in k+1:n, j in k+1:n
+      m[i,j]=exactdiv(p*m[i,j]-m[i,k]m[k,j],c)
+    end
+    c=p
   end
-  i=findfirst(i->count(!iszero,m[i,:])<=2,axes(m,1))
-  if i!==nothing
-    j=findall(!iszero,m[i,:])
-    if isempty(j) return 0 end
-    return sum(k->(-1)^(i+k)*m[i,k]*Det(compl(m,i,k)),j)
-  end
-  v=axes(m,1)
-# if length(v)<=3 return det*Det(m) end
-  for j in v
-    i=findfirst(isunit,m[v,j])
-    if i===nothing continue end
-#   println(size(m,1),":",[j,i])
-    n=copy(m)
-    f=inv(m[i,j])
-    for k in setdiff(v,[i]) n[k,:]-=m[k,j]*f.*m[i,:] end
-    return (-1)^(i+j)*n[i,j]*Det(compl(n,i,j))
-  end
-# print("m=");display(iszero.(m))
-  v=map(x->count(!iszero,x),eachrow(m))
-  j=argmin(v)
-  if length(m)>71 println("\n",length(m),":",v[j]) end
-# if v[j]>5 return det*DeterminantMat(m) end
-  sum(function(i)
-#   if Length(m) mod 5=0 then Print(Length(m),":",i," \c");fi;
-    if iszero(m[i,j]) return m[i,j]
-    else return (-1)^(i+1)*m[i,j]*Det(compl(m,i,j))
-   end end,axes(m,1))
 end
 
-# Cofactors of the square matrix M, defined by CoFactors(M)*M=Det(M)*one(M)
-function CoFactors(m)
-  if size(m,1)==1 return fill(one(eltype(m)),1,1) end
-  v=axes(m,1)
-  permutedims([(-1)^(i+j)*Det(m[filter(x->x!=i,v),filter(x->x!=j,v)])
-               for i in v, j in v])
+# see Cohen computational algebraic number theory 2.2.7
+function charpolyandcomatrix(m)
+  C=one(m)
+  res=C
+  n=size(m,1)
+  a=ones(eltype(m),n+1)
+  for i in 1:n
+    if i==n res=(-1)^(n-1)*C end
+    C=m*C
+    a[n+1-i]=-sum(C[i,i] for i in axes(C,1))//i
+    if i!=n C+=a[n+1-i]*one(C) end
+  end
+  improve_type(a),improve_type(res)
 end
+
+" charpoly(M)  characteristic polynomial"
+charpoly(m)=Pol(charpolyandcomatrix(m)[1])
+
+"the comatrix of the square matrix M is defined by comatrix(M)*M=det(M)*one(M)"
+comatrix(m)=charpolyandcomatrix(m)[2]
 
 """
 `bigcell_decomposition(M [, b])`
@@ -229,14 +224,14 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
       L[b[j],b[j]]=block(M,j,j)
       if j>1 L[b[j],b[j]]-=sum(k->block(P,j,k)*block(L,k,k)*
                               permutedims(block(P,j,k)),1:j-1) end
-      cb=CoFactors(block(L,j,j))
-      db=Det(block(L,j,j))
+      cb=comatrix(block(L,j,j))
+      db=det(block(L,j,j))
       for i in j+1:length(b)
         P[b[i],b[j]]=block(M,i,j)
         if j>1 P[b[i],b[j]]-=
           sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1)
         end
-        P[b[i],b[j]]=improve_type(div.(block(P,i,j)*cb,db*1//1))
+        P[b[i],b[j]]=improve_type((block(P,i,j)*cb).//db)
       end
     end
     return permutedims(P),L
@@ -245,15 +240,15 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
   for j in eachindex(b)
     L[b[j],b[j]]=block(M,j,j)-sum(k->block(P,j,k)*block(L,k,k)*
                                   permutedims(block(P,j,k)),1:j-1)
-    cb=CoFactors(block(L,j,j))
-    db=Det(block(L,j,j))
+    cb=comatrix(block(L,j,j))
+    db=det(block(L,j,j))
     for i in j+1:length(b)
       P[b[i],b[j]]=block(M,i,j)-sum(k->block(P,i,k)*block(L,k,k)*
                                      block(tP,k,j),1:j-1)
-      P[b[i],b[j]]=improve_type(div.(block(P,i,j)*cb,db*1//1))
+      P[b[i],b[j]]=improve_type((block(P,i,j)*cb).//db)
       tP[b[j],b[i]]=cb*(block(M,j,i)-sum(k->block(P,j,k)*
                                          block(L,k,k)*block(tP,k,i),1:j-1))
-      tP[b[i],b[j]]=improve_type(div.(block(tP,i,j),db*1//1))
+      tP[b[i],b[j]]=improve_type(block(tP,i,j).//db)
     end
   end
   (P,L,tP)
@@ -530,9 +525,6 @@ function ratio(v::AbstractVector, w::AbstractVector)
  r=v[i]//w[i]
  if v==r.*w return r end
 end
-
-# characteristic polynomial
-charpoly(M)=isempty(M) ? Pol(1) : Det(Ref(Pol()).*one(M)-M)
 
 """
 `solutionmat(mat,v)`

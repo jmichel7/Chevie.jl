@@ -12,7 +12,7 @@ export
   getp, @GapObj, # helpers for GapObjs
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, # formatting
-  factor, prime_residues, divisors, phi, primitiveroot #number theory
+  exactdiv, factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
@@ -137,14 +137,19 @@ function unicodeTeX(s::String)
   s
 end
 
-function format_coefficient(c::String;allow_frac=false)
+function bracket_if_needed(c::String;allow_frac=false)
   ok="([^-+*/]|√-|{-)*"
   par="(\\([^()]*\\))"
-  if c=="1" ""
-  elseif c=="-1" "-"
-  elseif match(Regex("^[-+]?$ok$par*$ok\$"),c)!==nothing c
+  if match(Regex("^[-+]?$ok$par*$ok\$"),c)!==nothing c
   elseif allow_frac && match(Regex("^[-+]?$ok$par*$ok/+[0-9]*\$"),c)!==nothing c
   else "("*c*")" 
+  end
+end
+
+function format_coefficient(c::String;allow_frac=false)
+  if c=="1" ""
+  elseif c=="-1" "-"
+  else bracket_if_needed(c;allow_frac)
   end
 end
 
@@ -362,6 +367,13 @@ function TeX(x;p...)
 end
 
 #----------------------- Number theory ---------------------------
+exactdiv(a,b)=a/b  # generic version for fields
+function exactdiv(a::Integer,b::Integer) # define for integral domains
+  (d,r)=divrem(a,b)
+  if !iszero(r) error(b," does not divide ",a) end
+  d
+end
+
 " the numbers less than n and prime to n "
 function prime_residues(n)
   if n==1 return [0] end

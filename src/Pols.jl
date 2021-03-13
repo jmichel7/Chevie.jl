@@ -51,14 +51,25 @@ julia> divrem(q^3+1,2q+1//1) # case of field elements
 
 julia> divrem(q^3+1,q+2)  # keeps the ring if leading coeff of divisor is ±1
 (q²-2q+4, -7)
+
+julia> m=[q+1 q+2;q-2 q-3]
+2×2 Matrix{Pol{Int64}}:
+ q+1  q+2
+ q-2  q-3
+
+julia> inv(m)
+2×2 Matrix{RatFrac{Int64}}:
+ (-q+3)/(2q-1)   (q+2)/(2q-1)
+ (-q+2)/(-2q+1)  (q+1)/(-2q+1)
 ```
 
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: format_coefficient, printTeX
+using ..Util: Util, format_coefficient, printTeX, exactdiv
 export degree, valuation
-export Pol, shift, positive_part, negative_part, bar, derivative
+export Pol, shift, positive_part, negative_part, bar, derivative, srgcd,
+       RatFrac
 
 const varname=Ref(:x)
 
@@ -100,7 +111,7 @@ Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) :
 Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
 (::Type{Pol{T}})(a) where T=convert(Pol{T},a)
 Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p :
-        Pol(convert.(T,p.c),p.v;check=false)
+     Pol(convert(Vector{T},p.c),p.v;check=false)
 
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
   Pol{promote_type(T1,T2)}
@@ -237,65 +248,232 @@ bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 """
 `divrem(a::Pol, b::Pol)`
 
-computes `(p,q)` such that `a=p*b+q`
-When the leading coefficient of b is ±1 does not use inverse
+computes  `(q,r)` such  that `a=q*b+r`  and `degree(r)<degree(b)`. When the
+leading  coefficient  of  b  is  ±1  does  not  use  inverse. 
+For true polynomials (errors if the valuation of `a` or of `b` is negative).
 """
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
+  if degree(b)>degree(a) return (Pol(0),b) end
   d=bestinv(b.c[end])
   T=promote_type(T1,T2,typeof(d))
-  v=convert(Vector{T},copy(a.c))
-  res=reverse(map(length(a.c):-1:length(b.c)) do i
-    if iszero(v[i]) c=zero(d)
-    else c=v[i]*d
-      view(v,i-length(b.c)+1:i) .-= c .* b.c
+  r=zeros(T,1+degree(a))
+  view(r,a.v+1:length(r)).=a.c
+  q=zeros(T,length(r)-degree(b))
+  for i in length(r):-1:degree(b)+1
+    if iszero(r[i]) c=zero(d)
+    else c=r[i]*d
+         view(r,i-length(b.c)+1:i) .-= c .* b.c
     end
-    c
-  end)
-  Pol(res,a.v-b.v;check=false),Pol(v,a.v)
+    q[i-degree(b)]=c
+  end
+  Pol(q),Pol(r)
 end
 
+"""
+`pseudodiv(a::Pol, b::Pol)`
+
+pseudo-division  of `a` by `b`.  If `d` is the  leading coefficient of `b`,
+computes   `(q,r)`   such   that   `d^(degree(a)+1-degree(b))a=p*b+q`   and
+`degree(r)<degree(b)`. Does not do division so works over any ring.
+For true polynomials (errors if the valuation of `a` or of `b` is negative).
+"""
+function pseudodiv(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+  if iszero(b) throw(DivideError) end
+  d=b.c[end]
+  r=zeros(promote_type(T1,T2),1+degree(a))
+  view(r,a.v+1:length(r)).=a.c
+  q=zeros(promote_type(T1,T2),length(r)-degree(b))
+  for i in length(r):-1:degree(b)+1
+    c=r[i]
+    r.*=d
+    q.*=d
+    if !iszero(c)
+      for j in eachindex(b.c) r[j+i-length(b.c)]-=c*b.c[j] end
+    end
+    q[i-degree(b)]=c
+  end
+  Pol(q),Pol(r)
+end
+
+# sub-resultant gcd: gcd of polynomials over a unique factorization domain
+# see Cohen 3.3.1
+function srgcd(a::Pol,b::Pol)
+  if degree(b)>degree(a) a,b=b,a end
+  if iszero(b) return a end
+  ca=gcd(a.c)
+  cb=gcd(b.c)
+  d=gcd(ca,cb)
+  a=Pol(exactdiv.(a.c,ca),a.v;check=false)
+  b=Pol(exactdiv.(b.c,cb),b.v;check=false)
+  g=1
+  h=1
+  while true
+    δ=degree(a)-degree(b)
+    q,r=Pols.pseudodiv(a,b)
+    if iszero(r) 
+      cb=gcd(b.c)
+      b=Pol(exactdiv.(b.c,cb),b.v;check=false)
+      return Pol(b.c .*d,b.v;check=false)
+    end
+    a=b
+    b=Pol(exactdiv.(r.c,g*h^δ),r.v;check=false)
+    g=a[end]
+    h=exactdiv(g^δ,h^(δ-1))
+  end
+end
+
+Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
+ 
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
 
-Base.://(p::Pol,q::Pol)=isone(q.c[end]^2) ? p/q : p/(q//1)
-Base.:/(p::Pol,q::T) where T=Pol(p.c/q,p.v;check=false)
-function Base.:/(p::Pol,q::Pol)
-  if q.c==[1] return shift(p,-q.v)
-  elseif q.c==[-1] return shift(-p,-q.v)
-  end
-  r=divrem(p,q)
-  if iszero(r[2]) return r[1] end
-  error("divrem=$r division $p//$q not implemented")
+function Util.exactdiv(a::Pol,b::Pol)
+  if iszero(a) return a end
+  d,r=divrem(shift(a,-a.v),shift(b,-b.v))
+  if !iszero(r) error(b," does not divide exactly ",a) end
+  shift(d,a.v-b.v)
 end
 
-Base.://(p::Pol,q::T) where T=iszero(p) ? p : Pol(p.c//q,p.v;check=false)
-Base.://(p::T,q::Pol) where T=Pol(p)//q
+#---------------------- RatFrac-------------------------------------
+struct RatFrac{T}
+  num::Pol{T}
+  den::Pol{T}
+  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,check1=true)where {T1,T2}
+    T=promote_type(T1,T2)
+    if check
+      if iszero(a) return new{T}(a,one(a))
+      elseif iszero(b) error("zero denominator")
+      end
+      v=a.v-b.v
+      a=shift(a,max(v,0)-a.v)
+      b=shift(b,-min(v,0)-b.v)
+      if check1
+        d=gcd(a,b)
+        a=div(a,d)
+        b=div(b,d)
+      end
+    end
+    new{T}(a,b)
+  end
+end
+
+function Base.convert(::Type{RatFrac{T}},p::RatFrac{T1}) where {T,T1}
+  RatFrac(convert(Pol{T},p.num),convert(Pol{T},p.den);check=false)
+end
+
+function Base.convert(::Type{Pol{T}},p::RatFrac{T1}) where {T,T1}
+  if length(p.den.c)==1 
+    return convert(Pol{T},Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)) 
+  end
+  error("cannot convert ",p," to Pol{",T,"}")
+end
+
+function Base.convert(::Type{RatFrac{T}},p::Pol{T1}) where {T,T1}
+  RatFrac(convert(Pol{T},p),Pol(T(1));check1=false)
+end
+
+function Base.convert(::Type{RatFrac{T}},p::Number) where {T}
+  RatFrac(convert(Pol{T},p),Pol(T(1));check=false)
+end
+
+function Base.promote_rule(a::Type{Pol{T1}},b::Type{RatFrac{T2}})where {T1,T2}
+  RatFrac{promote_type(T1,T2)}
+end
+
+(::Type{RatFrac{T}})(a) where T=convert(RatFrac{T},a)
+
+Base.broadcastable(p::RatFrac)=Ref(p)
+RatFrac(a::Number)=RatFrac(Pol(a),Pol(1);check=false)
+RatFrac(a::Pol)=RatFrac(a,Pol(1);check1=false)
+Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
+Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
+Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
+Base.zero(::Type{RatFrac{T}}) where T =RatFrac(zero(Pol{T}),one(Pol{T});check=false)
+# next 3 stuff to make inv using LU work (abs is stupid)
+Base.abs(p::RatFrac)=p
+Base.conj(p::RatFrac)=RatFrac(conj(p.num),conj(p.den);check=false)
+Base.adjoint(a::RatFrac)=conj(a)
+Base.cmp(a::RatFrac,b::RatFrac)=cmp([a.num,a.den],[b.num,b.den])
+Base.isless(a::RatFrac,b::RatFrac)=cmp(a,b)==-1
+
+function Base.show(io::IO, ::MIME"text/plain", a::RatFrac)
+  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
+  show(io,a)
+end
+
+function Base.show(io::IO,a::RatFrac)
+  n=sprint(show,a.num; context=io)
+  if  get(io, :limit,true) && a.den==one(a.den)
+    print(io,n)
+  else
+    print(io,Util.bracket_if_needed(n))
+    n=sprint(show,a.den; context=io)
+    print(io,"/",Util.bracket_if_needed(n))
+  end
+end
+
+Base.inv(a::RatFrac)=RatFrac(a.den,a.num;check=false)
+
+function Base.://(a::Pol,b::Pol)
+  if b.c==[1] return shift(a,-b.v)
+  elseif b.c==[-1] return shift(-a,-b.v)
+  end
+  RatFrac(a,b)
+end
+
+Base.:/(p::Pol,q::Pol)=RatFrac(p,q)
+
+function Base.inv(p::Pol)
+  if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
+  RatFrac(Pol(1),p;check1=false)
+end
+
+Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
+Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
+Base.://(p,q::Pol)=RatFrac(Pol(p),q;check1=false)
+Base.:/(p,q::Pol)=p//q
+Base.:/(p::Pol,q)=Pol(p.c ./q,p.v)
+Base.://(p::Pol,q)=iszero(p) ? p : Pol(p.c//q,p.v)
+
+Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den)
+
+Base.:*(a::RatFrac,b::Pol)=RatFrac(a.num*b,a.den)
+Base.:*(b::Pol,a::RatFrac)=RatFrac(a.num*b,a.den)
+Base.:*(a::RatFrac,b::T) where T =RatFrac(a.num*b,a.den;check=false)
+Base.:*(b::T,a::RatFrac) where T =a*b
+
+Base.:^(a::RatFrac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+                              Base.power_by_squaring(inv(a),-n)
+Base.:+(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.den+a.den*b.num,a.den*b.den)
+Base.:+(a::RatFrac,b::Number)=a+RatFrac(b)
+Base.:+(b::Number,a::RatFrac)=a+RatFrac(b)
+Base.:-(a::RatFrac)=RatFrac(-a.num,a.den;check=false)
+Base.:-(a::RatFrac,b::RatFrac)=a+(-b)
+Base.:-(a::RatFrac,b)=a-RatFrac(b)
+Base.:-(b,a::RatFrac)=RatFrac(b)-a
+Base.zero(a::RatFrac)=RatFrac(zero(a.num),one(a.num);check=false)
 
 """
   gcd(p::Pol, q::Pol)
-the  coefficients of  p and  q must  be elements  of a  field for gcd to be
-type-stable
 
 # Examples
 ```julia-repl
 julia> gcd(2q+2,q^2-1)
-Pol{Float64}: 1.0q+1.0
+Pol{Int64}: q+1
 
 julia> gcd(q+1//1,q^2-1//1)
 Pol{Rational{Int64}}: (1//1)q+1//1
 ```
 """
 function Base.gcd(p::Pol,q::Pol)
+  if degree(q)>degree(p) 
+    p,q=q,p 
+  end
   while !iszero(q)
     q=q*bestinv(q.c[end])
     (q,p)=(divrem(p,q)[2],q)
   end
   return p*bestinv(p.c[end])
-end
-
-function Base.inv(p::Pol)
-  if length(p.c)!=1 throw(InexactError(:inv,typeof(p),p)) end
-  Pol([bestinv(p.c[1])],-p.v;check=false)
 end
 end

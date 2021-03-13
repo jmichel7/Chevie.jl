@@ -803,6 +803,8 @@ function Base.show(io::IO, W::CoxSym)
   end
 end
 
+PermRoot.action(W::CoxSym,i,p)=i^p
+
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 

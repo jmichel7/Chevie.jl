@@ -187,7 +187,7 @@ function Base.show(io::IO,a::AbsWord)
   end
 end
 
-Base.one(AbsWord)=AbsWord(Pair{Symbol,Int}[])
+Base.one(::Type{AbsWord})=AbsWord(Pair{Symbol,Int}[])
 Base.isone(a::AbsWord)=isempty(a.d)
 Base.:*(a::AbsWord,b::AbsWord)=AbsWord(vcat(a.d,b.d))
 Base.inv(a::AbsWord)=AbsWord([k=>-v for (k,v) in reverse(a.d)];check=false)
