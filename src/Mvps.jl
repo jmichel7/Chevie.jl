@@ -1,19 +1,21 @@
 """
-What   is  implemented  here  is  "Puiseux  polynomials",  that  is  linear
-combinations  of monomials  of the  type `x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ` are
-variables  and `aᵢ` are  exponents which can  be arbitrary rational numbers
-(we  need  Puiseux  polynomial  with  cyclotomic  coefficients as splitting
-fields  of cyclotomic Hecke algebras).  Some functions described below work
-only  with polynomials  where variables  are raised  to integral powers; we
-will refer to such objects as "Laurent polynomials"; some functions require
-further that variables are raised only to positive powers: we refer then to
-"true   polynomials".  We  implement  also  rational  fractions  where  the
-numerator and denominator are true polynomials.
+The  type `Mvp`  ("multivariate polynomials")  implemented here is "Puiseux
+polynomials",  that  is  linear  combinations  of  monomials  of  the  type
+`x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ`  are variables and  `aᵢ` are exponents which
+can  be  arbitrary  rational  numbers  (we  need  Puiseux  polynomial  with
+cyclotomic  coefficients as splitting fields of cyclotomic Hecke algebras).
+Some  functions described below work  only with polynomials where variables
+are  raised to integral powers;  we will refer to  such objects as "Laurent
+polynomials"; some functions require further that variables are raised only
+to  positive powers: we refer then to "true polynomials". We implement also
+multivariate  rational  fractions  (type  `Mvrf`)  where  the numerator and
+denominator are true polynomials.
 
 `@Mvp x₁,…,xₙ`
 
-declares  that  `xᵢ`  are  indeterminates  suitable  to  build multivariate
-polynomials.
+assigns   to  the  Julia  names   `xᵢ`  indeterminates  suitable  to  build
+multivariate  polynomials  or  rational  fractions.  `Mvp(:x1)` creates the
+indeterminate `x1` without assigning a Julia variable.
 
 ```julia-repl
 julia> @Mvp x,y
@@ -32,12 +34,11 @@ julia> degree(Mvp(1))
 
 Only  monomials and one-term `Mvp`s can  be raised to a non-integral power;
 the  `Mvp` with one  term `cm` which  is `c` times  the monomial `m` can be
-raised  to a fractional power of denominator `b` if and only if `root(c,b)`
-is  defined. For  an `Mvp`  `p`, the  function `root(p,n)` is equivalent to
-`p^(1//n)`.  Raising a non-monomial Laurent  polynomial to a negative power
-returns  a rational fraction. For the  moment we have implemented arbitrary
-roots  of  roots  of  unity  and  square  roots of integers (in the package
-`Cycs`; higher roots exist if the integer is itself a power).
+raised  to a fractional power of denominator `d` if and only if `root(c,d)`
+is  defined (this is  equivalent to `c^{1//d}`  but one may  want to define
+`root`  differently;  for  instance,  in  my  other package `Cycs` I define
+square  roots of rationals as cyclotomics;  I also have implement in `Cycs`
+arbitrary roots of roots of unity).
 
 ```julia-repl
 julia> (4x)^(1//2)
@@ -50,15 +51,77 @@ julia> root(2.0x)
 Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½
 ```
 
+Using the package `Cycs`:
+
+```julia-repl
+julia> (2x)^(1//2)
+Mvp{Cyc{Int64},Rational{Int64}}: √2x½
+
+julia> (E(3)*x)^(2//3)
+Mvp{Cyc{Int64},Rational{Int64}}: ζ₉²x⅔
+```
+
 One can divide an `Mvp` by another when the division is exact
 
 ```julia-repl
 julia> exactdiv(x^2-y^2,x-y)
 Mvp{Int64}: x+y
+
+julia> (x+y)/(2x^2)   # or by a monomial
+Mvp{Rational{Int64}}: (1//2)x⁻¹+(1//2)x⁻²y
+
+julia> (x+y)/(x-y)    # otherwise one gets a rational fraction.
+Mvrf{Int64}: (x+y)/(x-y)
 ```
 
+Raising  a non-monomial  Laurent polynomial  to a  negative power returns a
+rational fraction.
+
+```julia-repl
+julia> (x+1)^-2
+Mvrf{Int64}: 1/(x²+2x+1)
+```
+
+One can compute the value `Mvp` or a `Ratfrac` when setting some variables 
+by the call syntax:
+
+```julia-repl
+julia> p=x+y
+Mvp{Int64}: x+y
+
+julia> p(x=2)
+Mvp{Int64}: y+2
+
+julia> p(x=2,y=x)
+Mvp{Int64}: x+2
+
+julia> ((x+y)/(x-y))(x=y+1)
+Mvp{Int64}: 2y+1
+```
+
+Note  that the value of  an `Mvp` is always  an `Mvp`, for consistency. The
+function  `scal` converts  a constant  `Mvp` to  that constant (and returns
+`nothing` if the argument is not constant:
+
+```julia-repl
+julia> p(x=1,y=2)
+Mvp{Int64}: 3
+
+julia> scal(p(x=1,y=2))
+3
+
+julia> v=(x^(1//2))(x=2.0)
+Mvp{Float64}: 1.4142135623730951
+
+julia> scal(v)
+1.4142135623730951
+```
+
+see the functions `coefficient`, `coefficients, `Pol` to take apart `Mvp`s.
+`Mvrf` are dissected using `numerator` and `denominator`.
+
 Despite  the degree of generality of our  polynomials, the speed is not too
-shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4.5sec.
+shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4sec.
 According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 """
 module Mvps
@@ -133,35 +196,30 @@ function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
   show(io,m)
 end
 
-# cmp must define a monomial order (a<b => a*m<b*m for all monomials a, b, m)
-# We take a<b if the first variable in a/b occurs to a negative power
-function Base.cmp(a::Monomial, b::Monomial)
-  for ((ca,pa),(cb,pb)) in zip(a.d,b.d)
-    if ca!=cb return ca<cb ? -sign(pa) : sign(pb) end
-    if pa!=pb return cmp(pb,pa) end
+"""
+`isless(a::Monomial,b::Monomial)`
+
+For  our implementation of `Mvp`s to  work, `isless` must define a monomial
+order  (that is, for any monomial `m` we have `a<b => a*m<b*m`). By default
+we define `a<b` if the first variable in `a/b` occurs to a positive power.
+"""
+function Base.isless(a::Monomial, b::Monomial)
+  for ((va,pa),(vb,pb)) in zip(a.d,b.d)
+    if va!=vb return va<vb ? pa>0 : pb<0 end
+    if pa!=pb return isless(pb,pa) end
   end
   la=length(a.d)
   lb=length(b.d)
-  if    la==lb return 0
-  elseif la>lb return -sign(last(a.d.d[lb+1]))
-  else         return sign(last(b.d.d[la+1]))
-  end
+  @inbounds la>lb ? last(a.d.d[lb+1])>0 : lb>la ? last(b.d.d[la+1])<0 : false
 end
 
-Base.isless(a::Monomial, b::Monomial)=cmp(a,b)<0
 Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
-function Base.gcd(l::Monomial...)
-  if length(l)!=2 reduce(gcd,l;init=Monomial())
-  else Monomial(merge(min,l[1].d,l[2].d))
-  end
-end
+Base.gcd(m::Monomial,n::Monomial)=Monomial(ModuleElts.merge2(min,m.d,n.d))
+Base.gcd(v::AbstractArray{<:Monomial})=reduce(gcd,v)
 
-function Base.lcm(l::Monomial...)
-  if length(l)!=2 reduce(lcm,l;init=Monomial())
-  else Monomial(merge(max,l[1].d,l[2].d))
-  end
-end
+Base.lcm(m::Monomial,n::Monomial)=Monomial(ModuleElts.merge2(max,m.d,n.d))
+Base.lcm(v::AbstractArray{<:Monomial})=reduce(lcm,v)
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
@@ -220,6 +278,8 @@ Base.iszero(p::Mvp)=iszero(p.d)
 Base.convert(::Type{Mvp},a::Number)=convert(Mvp{typeof(a),Int},a)
 Base.convert(::Type{Mvp{T,N}},a::Number) where {T,N}=iszero(a) ? 
  zero(Mvp{T,N}) : Mvp(one(Monomial{N})=>convert(T,a))
+(::Type{Mvp{T,N}})(a::Number) where {T,N}=convert(Mvp{T,N},a)
+(::Type{Mvp{T,N}})(a::Mvp) where {T,N}=convert(Mvp{T,N},a)
 Base.convert(::Type{Mvp{T,N}},a::Mvp{T1,N1}) where {T,T1,N,N1}=
   Mvp(convert(ModuleElt{Monomial{N},T},a.d))
 Base.convert(::Type{Mvp},x::Mvp)=x
@@ -227,6 +287,9 @@ Base.convert(::Type{Mvp},v::Symbol)=Mvp(Monomial(v)=>1)
 Mvp(x::Symbol)=convert(Mvp,x)
 Mvp(x::Number)=convert(Mvp,x)
 Mvp(x::Mvp)=convert(Mvp,x)
+# stupid stuff to make LU work
+Base.adjoint(a::Mvp)=conj(a)
+Base.abs(a::Mvp)=a
 
 Base.:(==)(a::Mvp, b::Mvp)=a.d==b.d
 Base.:(==)(a::Mvp,x::Number)=a==Mvp(x)
@@ -333,7 +396,7 @@ The `valuation` of an `Mvp` is the minimal degree of a monomial.
 
 
 ```julia-repl
-julia> a=x^2+x*y
+julia> @Mvp x,y; a=x^2+x*y
 Mvp{Int64}: x²+xy
 
 julia> valuation(a)
@@ -361,7 +424,7 @@ valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
 The coefficient of the polynomial `p` on the monomial `m`.
 
 ```julia-repl
-julia> @Mvp x,y;p=(x-y)^3
+julia> @Mvp x,y; p=(x-y)^3
 Mvp{Int64}: x³-3x²y+3xy²-y³
 
 julia> coefficient(p,Monomial(:x,:x,:y)) # coefficient on x²y
@@ -426,6 +489,22 @@ function coefficients(p::Mvp{T,N},v::Symbol)where {T,N}
   Dict(dg=>Mvp(c...;check=false) for (dg,c) in d) # c... is sorted by defn of monomial order
 end
 
+"""
+  `coefficient(p::Mvp, var::Symbol, d)` 
+
+returns  the coefficient of degree `d` in the variable `var` in the `Mvp` `p`.
+
+```julia-repl
+julia> @Mvp x,y; p=(x+y^(1//2)+1)^3
+Mvp{Int64,Rational{Int64}}: x³+3x²y½+3x²+3xy+6xy½+3x+y³⁄₂+3y+3y½+1
+
+julia> coefficient(p,:y,1//2)
+Mvp{Int64,Rational{Int64}}: 3x²+6x+3
+
+julia> coefficient(p,:x,1)
+Mvp{Int64,Rational{Int64}}: 3y+6y½+3
+```
+"""
 function coefficient(p::Mvp,var::Symbol,d)
   res=empty(p.d.d)
   for (m,c) in p.d
@@ -443,6 +522,17 @@ function coefficient(p::Mvp,var::Symbol,d)
   Mvp(ModuleElt(res;check=false))
 end
 
+"""
+  `Pol(p::Mvp)`
+
+  converts the one-variable `Mvp` `p` to a polynomial. It is an error if `p`
+  has more than one variable.
+
+```julia-repl
+julia> @Mvp x; Pol(x^2+x)
+Pol{Int64}: x²+x
+```
+"""
 function Pol(x::Mvp{T})where T
   l=variables(x)
   if isempty(l) return Pol(scal(x)) end
@@ -453,6 +543,21 @@ function Pol(x::Mvp{T})where T
   Pol(p,val)
 end
 
+"""
+  `Pol(p::Mvp,v::Symbol)`
+
+returns  a polynomial whose coefficients are  the coefficients of the `Mvp`
+`p`  with respect to the variable `v`.  The variable `v` should appear only
+with integral powers in `p`.
+
+```julia-repl
+julia> p=(x+y^(1//2))^3
+Mvp{Int64,Rational{Int64}}: x³+3x²y½+3xy+y³⁄₂
+
+julia> Pol(p,:x)
+Pol{Mvp{Int64, Rational{Int64}}}: x³+3y½x²+3yx+y³⁄₂
+```
+"""
 function Pols.Pol(p::Mvp{T,N},var::Symbol)where{T,N}
   d=degree(p,var)
   v=Int(valuation(p,var))
@@ -496,8 +601,7 @@ variables(p::Mvp)=sort(unique!([k1 for (k,v) in p.d for (k1,v1) in k.d]))
 """
 `scal(p::Mvp)`
 
-If  `p`  is a  scalar,  return that  scalar,
-otherwise return  `nothing`. 
+If `p` is a scalar, return that scalar, otherwise return `nothing`.
 
 ```julia-repl
 julia> p=Mvp(:x)+1
@@ -529,11 +633,11 @@ function scal(m::AbstractArray{<:Mvp})
 end
 
 """
-`value(p::Mvp,:x1=>v1,:x2=>v2,...)`
+    `value(p::Mvp,:x₁=>v₁,:x₂=>v₂,...)`
+     ̀(p::Mvp)(x₁=v₁,…,xₙ=vₙ)`
 
-gives  the value  of `p`  when doing  the simultaneous  substitution of the
-variable  `:x1`  by  `v1`,  of  `x2`  by  `v2`,  … This can also be written
-`p(;x1=v1,x2=v2,...)`.
+returns  the value of  `p` when doing  the simultaneous substitution of the
+variable `:x1` by `v1`, of `x2` by `v2`, …
 
 ```julia-repl
 julia> p=-2+7x^5*inv(y)
@@ -706,7 +810,7 @@ function Util.exactdiv(p::Mvp,q::Mvp)
   mq=degree(q,var)
   cq=coefficient(q,var,mq)
   while length(p.d)!=0
-    if length(p.d)<length(q.d) return nothing end
+#   if length(p.d)<length(q.d) return nothing end
     mp=degree(p,var)
     t=exactdiv(coefficient(p,var,mp),cq)
     if t===nothing return nothing end
@@ -723,40 +827,34 @@ Util.exactdiv(p::Mvp,q::Number)=exactdiv(p,Mvp(q))
 Returns  the Gcd  of the  'Mvp' arguments.  The arguments  must be  true
 polynomials.
 
-|    gap> MvpGcd(x^2-y^2,(x+y)^2);
-    x+y|
+```julia-repl
+julia> gcd(x^2-y^2,(x+y)^2)
+Mvp{Int64}: x+y
+```
 """
 function Base.gcd(a::Mvp,b::Mvp)
   vars=variables([a,b])
   if isempty(vars) return Mvp(1) end
   v=first(vars)
-  if length(vars)==1 srgcd(Pol(a),Pol(b))(Mvp(v))
+  if length(vars)==1 gcd(Pol(a),Pol(b))(Mvp(v))
   else               srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
   end
 end
 
-Base.gcd(v::Vector{<:Mvp})=reduce(gcd,v;init=Mvp(0))
+Base.gcd(v::AbstractArray{<:Mvp})=reduce(gcd,v;init=Mvp(0))
 
 """
 `laurent_denominator(p1,p2,…)`
 
 returns  the unique true monomial  `m` of minimal degree  such that for all
-the  Laurent polynomial  arguments `p1,p2,…`  the product  `m*pᵢ` is a true
-polynomial.
+the Laurent polynomials `p1,p2,…` the product `m*pᵢ` is a true polynomial.
 
 ```julia-repl
 julia> laurent_denominator(x^-1,y^-2+x^4)
 Monomial{Int64}:xy²
 ```
 """
-function laurent_denominator(p::Mvp...)
-  res=Monomial()
-  for v in variables(collect(p))
-    val=minimum(valuation.(p,v))
-    if val<0 res*=Monomial(v)^-val end
-  end
-  return res
-end
+laurent_denominator(pp::Mvp...)=inv(gcd([m for p in pp for (m,c) in p.d]))
 
 """
 `lcm(p1,p2,...)`
@@ -773,11 +871,16 @@ Base.lcm(a::Mvp,b::Mvp)=exactdiv(a*b,gcd(a,b))
 
 Base.eltype(p::Mvp{T,N}) where{T,N} =T
 
+Base.denominator(p::Mvp)=lcm(denominator.(values(p.d)))
+Base.numerator(p::Mvp{<:Rational{T},N}) where{T,N} =convert(Mvp{T,N},p*denominator(p))
+Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
 #----------------------------- Mvrf -----------------------------------
 struct Mvrf{T}
   num::Mvp{T,Int}
   den::Mvp{T,Int}
   function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};check=true,check1=true)where{T}
+    if iszero(b) error("division by 0") end
+    if a==0 return new{T}(a,Mvp(T(1))) end
     if check
       d=laurent_denominator(a,b)
       a*=d
@@ -786,6 +889,11 @@ struct Mvrf{T}
         d=gcd(a,b)
         a=exactdiv(a,d)
         b=exactdiv(b,d)
+        if T<:Rational{<:Integer} || T<:Cyc{<:Rational{<:Integer}}
+          d=lcm(denominator(a),denominator(b))
+          a=numerator(a*d)
+          b=numerator(b*d)
+        end
         T1=promote_type(eltype(a),eltype(b))
         return new{T1}(a,b)
       end
@@ -793,6 +901,9 @@ struct Mvrf{T}
     new{T}(a,b)
   end
 end
+
+Base.numerator(p::Mvrf)=p.num
+Base.denominator(p::Mvrf)=p.den
 
 function Mvrf(a::Mvp{T1,Int},b::Mvp{T2,Int};check=true,check1=true)where{T1,T2}
   T=promote_type(T1,T2)
@@ -841,7 +952,9 @@ Mvrf(a::Mvp)=Mvrf(a,Mvp(1);check1=false)
 Base.copy(a::Mvrf)=Mvrf(a.num,a.den;check=false)
 Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);check=false)
 Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});check=false)
+Base.one(::Type{Mvrf})=Mvrf(one(Mvp{Int,Int}),one(Mvp{Int,Int});check=false)
 Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});check=false)
+Base.zero(::Type{Mvrf})=Mvrf(zero(Mvp{Int,Int}),one(Mvp{Int,Int});check=false)
 # next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::Mvrf)=p
 Base.conj(p::Mvrf)=Mvrf(conj(p.num),conj(p.den);check=false)
@@ -869,6 +982,7 @@ end
 Base.inv(a::Mvrf)=Mvrf(a.den,a.num;check=false)
 
 function Base.://(a::Mvp,b::Mvp)
+  if iszero(a) return a end
   if length(b.d)==1
     (m,c)=first(b.d)
     return c^2==1 ? Mvp([m1/m=>c1*c for (m1,c1) in a.d]...) : 
@@ -877,7 +991,7 @@ function Base.://(a::Mvp,b::Mvp)
   Mvrf(a,b)
 end
 
-Base.:/(p::Mvp,q::Mvp)=Mvrf(p,q)
+Base.:/(p::Mvp,q::Mvp)=p//q
 
 function Base.inv(p::Mvp)
   if length(p.d)==1 return Mvp(1)//p end
@@ -885,7 +999,9 @@ function Base.inv(p::Mvp)
 end
 
 Base.://(a::Mvrf,b::Mvrf)=a*inv(b)
-Base.:/(a::Mvrf,b::Union{Mvrf,Number,Mvp})=a*inv(b)
+Base.:/(a::Mvrf,b::Mvrf)=a*inv(b)
+Base.:/(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
+Base.://(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
 Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
 Base.://(p::Number,q::Mvp)=Mvrf(Mvp(p),q;check1=false)
 Base.:/(p::Number,q::Mvp)=p//q
@@ -909,22 +1025,12 @@ Base.:-(a::Mvrf,b::Mvrf)=a+(-b)
 Base.:-(a::Mvrf,b)=a-Mvrf(b)
 Base.:-(b,a::Mvrf)=Mvrf(b)-a
 Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);check=false)
-"""
-```julia-repl
-julia> p=E(3)x+E(5)
-Mvp{Cyc{Int64}}: ζ₃x+ζ₅
 
-julia> q=convert(Mvp{ComplexF64,Int},p)
-Mvp{ComplexF64}: (-0.4999999999999998 + 0.8660254037844387im)x+0.30901699437494745 + 0.9510565162951535im
+value(p::Mvrf,k::Pair...)=value(p.num,k...)/value(p.den,k...)
+(p::Mvrf)(;arg...)=value(p,arg...)
 
-julia> conj(q)
-Mvp{ComplexF64}: (-0.4999999999999998 - 0.8660254037844387im)x+0.30901699437494745 - 0.9510565162951535im
-```
-
-"""
-
-#julia1.6.0-rc1> @btime Mvps.fateman(15)
-# 4.523 s (15219388 allocations: 5.10 GiB)
+#julia1.6.0-rc2> @btime Mvps.fateman(15)
+# 4.040 s (15219390 allocations: 5.10 GiB)
 function fateman(n)
   f=(1+Mvp(:x)+Mvp(:y)+Mvp(:z)+Mvp(:t))*one(n)
   f=f^n

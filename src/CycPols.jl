@@ -74,7 +74,7 @@ using ..Pols: Pol, Pols
 using ..Combinat: collectby
 using ..Mvps: Mvps, Mvp
 using ..Util: printTeX, prime_residues, primitiveroot, phi,
-              format_coefficient, divisors, factor
+              format_coefficient, divisors, factor, xprintln
 using ..PermRoot: improve_type
 import Primes: Primes, primes
 
@@ -180,10 +180,9 @@ Base.://(a::CycPol,b::CycPol)=a*inv(b)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
-function Base.lcm(l::CycPol...)
-  if length(l)!=2 reduce(lcm,l;init=one(CycPol)) end
-  CycPol(1,max(l[1].valuation,l[2].valuation),merge(max,l[1].v,l[2].v))
-end
+Base.lcm(a::CycPol,b::CycPol)=CycPol(1,max(a.valuation,b.valuation),
+                                       merge(max,a.v,b.v))
+Base.lcm(v::AbstractArray{<:CycPol})=reduce(lcm,v;init=one(CycPol))
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
   8=>[[1,3,5,7],[1,5],[3,7],[1,7],[3,5],[1,3],[5,7]],
@@ -202,7 +201,6 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
       [7,11,19,23,31,35],[1,5,13,17,25,29]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
 
-
 # returns list of subsets of primitive_roots(d) wich have a `name` Φ^i
 function dec(d::Int)
   get!(dec_dict,d) do
@@ -216,16 +214,17 @@ function dec(d::Int)
   end
 end
 
+CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
+  
 function show_factors(d)
   for i in eachindex(CycPols.dec(d))
     p=CycPol(;cond=d,no=i)
-    println(IOContext(stdout,:limit=>true),p,"=",p(Pol(:q)))
+    xprintln(p,"=",p(Pol()))
   end
 end
+
 pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
 
-CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
-  
 function segment(v::Vector{Pair{Root1,Int}})
   res=typeof(v)[]
   n=empty(v)

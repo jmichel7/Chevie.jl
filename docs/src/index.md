@@ -73,9 +73,8 @@ Cycs.root
 ```@docs
 Pols
 divrem
-gcd
+gcd(::Pol,::Pol)
 cyclotomic_polynomial
-Pols.derivative
 ```
 # Multivariate (Puiseux) polynomials
 ```@docs
@@ -84,13 +83,18 @@ Mvp
 variables
 Mvps.coefficients(::Mvp,::Symbol)
 Mvps.coefficient
+Pol(::Mvp)
+Pol(::Mvp,::Symbol)
 valuation
+degree
 Mvps.value
 Mvps.degree(::Mvp)
 Mvps.conj
 factor(::Mvp)
 Mvps.derivative
 laurent_denominator
+gcd(::Mvp,::Mvp)
+lcm(::Mvp,::Mvp)
 scal
 ```
 # Cyclotomic polynomials

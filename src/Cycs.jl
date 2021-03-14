@@ -220,9 +220,6 @@ end
   res
 end
   
-if use_list
-Base.denominator(c::Cyc)=lcm(denominator.(c.d))
-else
 """
 `denominator(c::Cyc{Rational})`
 
@@ -230,7 +227,8 @@ returns the smallest `d` such that `d*c` has integral coefficients (thus is
 an algebraic integer).
 """
 Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
-end
+
+Base.numerator(c::Cyc{<:Rational{T}}) where T =convert(Cyc{T},c*denominator(c))
 
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
 """
@@ -556,9 +554,9 @@ function Base.show(io::IO, p::Cyc{T})where T
 end
 
 Base.gcd(v::Vector{<:Cyc})=one(v[1])
-Base.gcd(a::Cyc,b::Cyc)=one(b)
-Base.gcd(a::Cyc,b::Integer)=one(a)
-Base.gcd(b::Integer,a::Cyc)=one(a)
+Base.gcd(a::Cyc,b::Cyc)=one(a)
+Base.gcd(a::Cyc,b::Number)=one(a)
+Base.gcd(b::Number,a::Cyc)=one(a)
 
 function Base.:+(x::Cyc,y::Cyc)
   a,b=promote(x,y)

@@ -184,7 +184,8 @@ end
 """
 + is like merge(op,a,b) for Dicts, except keys with value 0 are deleted
 """
-function Base.merge(op::Function,a::ModuleElt,b::ModuleElt)
+function merge(op::Function,a::ModuleElt,b::ModuleElt)
+# this version is correct only if op(0,x)=x always
   (a,b)=promote(a,b)
   la=length(a.d)
   lb=length(b.d)
@@ -197,6 +198,46 @@ function Base.merge(op::Function,a::ModuleElt,b::ModuleElt)
     else c=cmp(first(a.d[ai]),first(b.d[bi]))
       if     c>0 res[ri+=1]=b.d[bi]; bi+=1
       elseif c<0 res[ri+=1]=a.d[ai]; ai+=1
+      else s=op(last(a.d[ai]),last(b.d[bi]))
+        if !iszero(s) res[ri+=1]=first(a.d[ai])=>s end
+        ai+=1; bi+=1
+      end
+    end
+  end
+  ModuleElt(resize!(res,ri);check=false)
+end
+
+# version below more accurate for general ops, but too much overhead now to
+# be used for + or other ops such that op(0,x)=x
+function merge2(op::Function,a::ModuleElt,b::ModuleElt)
+  (a,b)=promote(a,b)
+  la=length(a.d)
+  lb=length(b.d)
+  res=similar(a.d,la+lb)
+  ai=bi=1
+  ri=0
+@inbounds while ai<=la || bi<=lb
+    if     ai>la 
+      be=b.d[bi]
+      s=op(zero(last(be)),last(be))
+      if !iszero(s) res[ri+=1]=first(be)=>s end
+      bi+=1
+    elseif bi>lb 
+      ae=a.d[ai]
+      s=op(zero(last(ae)),last(ae))
+      if !iszero(s) res[ri+=1]=first(ae)=>s end
+      ai+=1
+    else c=cmp(first(a.d[ai]),first(b.d[bi]))
+      if     c>0 
+        be=b.d[bi]
+        s=op(zero(last(be)),last(be))
+        if !iszero(s) res[ri+=1]=first(be)=>s end
+        bi+=1
+      elseif c<0 
+        ae=a.d[ai]
+        s=op(zero(last(ae)),last(ae))
+        if !iszero(s) res[ri+=1]=first(ae)=>s end
+        ai+=1
       else s=op(last(a.d[ai]),last(b.d[bi]))
         if !iszero(s) res[ri+=1]=first(a.d[ai])=>s end
         ai+=1; bi+=1

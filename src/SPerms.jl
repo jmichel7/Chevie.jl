@@ -32,9 +32,9 @@ This  can used to save space or time when possible. If `T` is not specified
 we  take it to be `Int16` since this is a good compromise between speed and
 compactness.
 
-SPerms have methods `copy, hash, ==, cmp, isless` (total order) so they can
-be  keys in hashes or elements of sets; two `SPerms` are equal if they move
-the same points to the same images. For instance,
+SPerms  have methods `copy, hash, ==, isless`  (total order) so they can be
+keys in hashes or elements of sets; two `SPerms` are equal if they move the
+same points to the same images. For instance,
 ```julia-repl
 julia> SPerm([-2,-1,-3])==SPerm([-2,-1,-3,4])
 true
@@ -137,17 +137,29 @@ function Base.hash(a::SPerm, h::UInt)
   h
 end
 
-# total order is needed to use SPerms in sorted lists
-function Base.cmp(a::SPerm, b::SPerm)
-  a,b=promote_degree(a,b)
-  for (ai,bi) in zip(a.d,b.d)
-    ai<bi && return -1
-    ai>bi && return  1
-  end
-  0
+function Base.promote_rule(a::Type{SPerm{T1}},b::Type{SPerm{T2}})where {T1,T2}
+  SPerm{promote_type(T1,T2)}
 end
 
-Base.isless(a::SPerm, b::SPerm)=cmp(a,b)==-1
+extend!(a::SPerm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+
+"""
+ `promote_degree(a::SPerm, b::SPerm)` promotes `a` and `b` to the same type,
+ then extends `a` and `b` to the same degree
+"""
+function promote_degree(a::SPerm,b::SPerm)
+  a,b=promote(a,b)
+  extend!(a,length(b.d))
+  extend!(b,length(a.d))
+  (a,b)
+end
+
+# total order is needed to use SPerms in sorted lists
+function Base.isless(a::SPerm, b::SPerm)
+  a,b=promote_degree(a,b)
+  for (ai,bi) in zip(a.d,b.d) ai!=bi && return ai<bi end
+  false
+end
 
 function Base.:(==)(a::SPerm, b::SPerm)
   a,b=promote_degree(a,b)
@@ -201,20 +213,6 @@ end
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T
   if T!=Idef && !haskey(io,:typeinfo) print(io,typeof(p),": ") end
   show(io,p)
-end
-
-function Base.promote_rule(a::Type{SPerm{T1}},b::Type{SPerm{T2}})where {T1,T2}
-  SPerm{promote_type(T1,T2)}
-end
-
-extend!(a::SPerm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
-
-# `promote_degree(a::SPerm, b::SPerm)` extends `a` and `b` to the same degree"
-function promote_degree(a::SPerm,b::SPerm)
-  a,b=promote(a,b)
-  extend!(a,length(b.d))
-  extend!(b,length(a.d))
-  (a,b)
 end
 
 function Base.:*(a::SPerm, b::SPerm)

@@ -112,7 +112,7 @@ broadcasting.
 """
 module Perms
 
-#import Gapjm: degree, restricted, order
+#import Gapjm: restricted, order
 #import ..Groups: orbit, orbits
 # to use as a stand-alone module comment above 2 lines and uncomment next
 export restricted, orbit, orbits, order
@@ -152,7 +152,9 @@ function Perm{T}(x::Vararg{<:Integer,N};degree=0)where {T<:Integer,N}
   Perm(d)
 end
 
-Perm(x::Integer...)=Perm{Idef}(x...)
+Perm(x::Integer...;degree=0)=Perm{Idef}(x...;degree)
+
+Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))
 
 """
    `Perm{T}(p::Perm) where T<:Integer`
@@ -160,12 +162,12 @@ Perm(x::Integer...)=Perm{Idef}(x...)
    change the type of `p` to `Perm{T}`
    for example `Perm{Int8}(Perm(1,2,3))==Perm{Int8}(1,2,3)`
 """
-Perm{T}(p::Perm) where T<:Integer=convert(Perm{T},p)
+Perm{T}(p::Perm) where {T<:Integer}=convert(Perm{T},p)
 
 """
-   @perm"..."
+  @perm"..."
 
- make a `Perm` from a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
+make a `Perm` from a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
 """
 macro perm_str(s::String)
   start=1
@@ -225,8 +227,6 @@ Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
-@inline degree(a::Perm)=length(a.d)
-
 # hash is needed for using Perms in Sets/Dicts
 function Base.hash(a::Perm, h::UInt)
   for (i,v) in enumerate(a.d)
@@ -240,15 +240,30 @@ Base.broadcastable(p::Perm)=Ref(p)
 
 Base.typeinfo_implicit(::Type{Perm{T}}) where T=T==Idef
 
-# total order is needed to use Perms in sorted lists
-function Base.cmp(a::Perm, b::Perm)
-  a,b=promote_degree(a,b)
-# for (ai,bi) in zip(a.d,b.d) ai!=bi && return cmp(ai,bi) end
-@inbounds  for i in eachindex(a.d) a.d[i]!=b.d[i] && return cmp(a.d[i],b.d[i]) end
-  0
+function Base.promote_rule(a::Type{Perm{T1}},b::Type{Perm{T2}})where {T1,T2}
+  Perm{promote_type(T1,T2)}
 end
 
-Base.isless(a::Perm, b::Perm)=cmp(a,b)==-1
+extend!(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+
+"""
+ `promote_degree(a::Perm, b::Perm)` promotes `a` and `b` to the same type,
+ then extends `a` and `b` to the same degree
+"""
+function promote_degree(a::Perm,b::Perm)
+  a,b=promote(a,b)
+  extend!(a,length(b.d))
+  extend!(b,length(a.d))
+  (a,b)
+end
+
+# permutations need to be totally ordered to use them in sorted lists
+function Base.isless(a::Perm, b::Perm)
+  a,b=promote_degree(a,b)
+# for (ai,bi) in zip(a.d,b.d) ai!=bi && return ai<bi end # 20% slower
+@inbounds  for i in eachindex(a.d) a.d[i]!=b.d[i] && return a.d[i]<b.d[i] end
+  false
+end
 
 function Base.:(==)(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
@@ -256,9 +271,9 @@ function Base.:(==)(a::Perm, b::Perm)
 end
 
 """
-`Matrix(a::Perm,n=Perms.degree(a))` 
-the  permutation  matrix  for  `a`  operating  on `n` points. If given, `n`
-should be larger than `largest_moved_point(a)`.
+`Matrix(a::Perm,n=length(a.d))` 
+the  permutation matrix  for `a`  operating on  `n` points (by default, the
+degree of `a`). If given, `n` should be larger than `largest_moved_point(a)`.
 
 ```julia-repl
 julia> Matrix(Perm(2,3,4),5)
@@ -270,7 +285,7 @@ julia> Matrix(Perm(2,3,4),5)
  0  0  0  0  1
 ```
 """
-Base.Matrix(a::Perm,n=degree(a))=[j==i^a for i in 1:n, j in 1:n]
+Base.Matrix(a::Perm,n=length(a.d))=[j==i^a for i in 1:n, j in 1:n]
 
 " `largest_moved_point(a::Perm)` is the largest integer moved by a"
 largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
@@ -288,22 +303,6 @@ sortPerm(a::AbstractVector)=sortPerm(Idef,a)
 Base.rand(::Type{Perm{T}},i::Integer) where T=sortPerm(T,rand(1:i,i))
 Base.rand(::Type{Perm},i::Integer)=rand(Perm{Idef},i)
 #------------------ operations on permutations --------------------------
-
-Base.convert(::Type{Perm{T}},p::Perm{T1}) where {T,T1}=T==T1 ? p : Perm(T.(p.d))
-
-function Base.promote_rule(a::Type{Perm{T1}},b::Type{Perm{T2}})where {T1,T2}
-  Perm{promote_type(T1,T2)}
-end
-
-@inline extend!(a::Perm,n::Integer)=if degree(a)<n append!(a.d,degree(a)+1:n) end
-
-# `promote_degree(a::Perm, b::Perm)` extends `a` and `b` to the same degree"
-function promote_degree(a::Perm,b::Perm)
-  a,b=promote(a,b)
-  extend!(a,degree(b))
-  extend!(b,degree(a))
-  (a,b)
-end
 
 function Base.:*(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
@@ -345,7 +344,7 @@ end
 Base.:/(a::Perm, b::Perm)=a*inv(b)
 
 @inline Base.:^(n::Integer, a::Perm{T}) where T=
-  n>degree(a) ? T(n) : @inbounds a.d[n] 
+  n>length(a.d) ? T(n) : @inbounds a.d[n] 
 
 Base.:^(a::Perm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                     Base.power_by_squaring(inv(a),-n)
@@ -426,7 +425,7 @@ end
 """
 function orbit(a::Perm,i::Integer)
   res=empty(a.d)
-  sizehint!(res,degree(a))
+  sizehint!(res,length(a.d))
   j=i
   while true
     push!(res,j)
@@ -436,9 +435,9 @@ function orbit(a::Perm,i::Integer)
 end
   
 """
-`orbits(a::Perm,d::Vector=1:degree(a))` 
+`orbits(a::Perm,d::Vector=1:length(a.d))` 
 
-returns the orbits of a on domain d
+returns the orbits of `a` on domain `d`
 
 # Example
 ```julia-repl
@@ -449,10 +448,10 @@ julia> orbits(Perm(1,2)*Perm(4,5),1:5)
  [4, 5]
 ```
 """
-function orbits(a::Perm,domain=1:degree(a);trivial=true)
+function orbits(a::Perm,domain=1:length(a.d);trivial=true)
   cycles=Vector{eltype(a.d)}[]
   if isempty(a.d) return cycles end
-  to_visit=falses(max(degree(a),maximum(domain)))
+  to_visit=falses(max(length(a.d),maximum(domain)))
 @inbounds  to_visit[domain].=true
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
@@ -465,7 +464,7 @@ end
 
 # 15 times faster than GAP Cycles for rand(Perm,1000)
 """
-  cycles(a::Perm) returns the non-trivial cycles of a
+  `cycles(a::Perm)` returns the non-trivial cycles of `a`
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
@@ -498,11 +497,11 @@ end
 order(a::Perm)=lcm(length.(cycles(a)))
 
 """
-`cycletype(a::Perm,domain=1:degree(a))`
+`cycletype(a::Perm,domain=1:length(a.d))`
 
-describes the partition of `degree(a)` associated to the conjugacy class of
+describes the partition of `length(a.d)` associated to the conjugacy class of
 `a` in the symmetric group of `domain`, with ones removed (thus it does not
-depend on `degree(a)` but just on the moved points). It is represented as a
+depend on `length(a.d)` but just on the moved points). It is represented as a
 sorted list of pairs `cyclesize=>multiplicity`.
 
 # Example
@@ -512,10 +511,10 @@ julia> cycletype(Perm(1,2)*Perm(3,4))
  2 => 2
 ```
 """
-function cycletype(a::Perm;domain=1:degree(a))
+function cycletype(a::Perm;domain=1:length(a.d))
   lengths=Int[]
   if isempty(a.d) return lengths end
-  to_visit=falses(max(degree(a),maximum(domain)))
+  to_visit=falses(max(length(a.d),maximum(domain)))
 @inbounds  to_visit[domain].=true
   for i in eachindex(to_visit)
     if !to_visit[i] continue end
@@ -539,7 +538,7 @@ is   the  "reflection   length"  of   `a`,  that   is,  minimum  number  of
 transpositions of which `a` is the product
 """
 function reflength(a::Perm)
-  to_visit=trues(degree(a))
+  to_visit=trues(length(a.d))
   l=0
   for i in eachindex(to_visit)
 @inbounds if !to_visit[i] continue end
