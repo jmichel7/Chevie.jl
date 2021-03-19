@@ -39,7 +39,7 @@ function echelon!(m::Matrix)
   for k in axes(m,2)
     j=findfirst(!iszero,@view m[rk+1:end,k])
     if j===nothing continue end
-    j+=rk
+    j+=rk # m[j,k]!=0
     rk+=1
     if rk!=j
       row=m[j,:]

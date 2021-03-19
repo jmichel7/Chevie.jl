@@ -385,15 +385,15 @@ end
 
 "All shapes for e-symbols of rank r, content c, malle-defect def"
 shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
-  function f(lim2,sum,nb,max)local res,a
+  function f(lim2,len,nb,max)local res,a # possible decreasing shapes
     if nb==1
-      if sum==0   return [[sum]]
+      if len==0   return [[len]]
       else return Vector{Int}[] end
     end
     res=Vector{Int}[]
-    a=div(sum,nb-1)
-    while a<=max  &&  binomial(a,2)<=lim2  &&  a<=sum
-      append!(res,map(x->vcat([a],x),f(lim2-binomial(a,2),sum-a,nb-1,a)))
+    a=div(len,nb-1)
+    while a<=max  &&  binomial(a,2)<=lim2  &&  a<=len
+      append!(res,map(x->pushfirst!(x,a),f(lim2-binomial(a,2),len-a,nb-1,a)))
       a+=1
     end
     return res
@@ -408,7 +408,7 @@ shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
     m+=1
   end
   res=reduce(vcat,map(x->arrangements(x,e),res))
-  # for symbols of content 1 only one cyclic shift of the shape has defshape=0
+  # for symbols of content 1 only one circshift of the shape has defshape=0
   filter(s->defshape(s)==def  &&
     all(x->defshape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
 end

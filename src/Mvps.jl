@@ -796,8 +796,6 @@ function derivative(p::Mvp,v=first(variables(p)))
   Mvp(ModuleElt(m*Monomial(v)^-1=>c*degree(m,v) for (m,c) in p.d))
 end
 
-Base.://(p::Number,q::Mvp)=Mvp(p)//q
-
 function Util.exactdiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
   elseif length(q.d)==1 
@@ -1003,7 +1001,7 @@ Base.:/(a::Mvrf,b::Mvrf)=a*inv(b)
 Base.:/(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
 Base.://(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
 Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
-Base.://(p::Number,q::Mvp)=Mvrf(Mvp(p),q;check1=false)
+Base.://(p::Number,q::Mvp)=Mvp(p)//q
 Base.:/(p::Number,q::Mvp)=p//q
 Base.:/(p::Mvp,q)=Mvp(p.d/q,p.v)
 Base.://(p::Mvp,q)=iszero(p) ? p : Mvp(p.d//q,p.v)

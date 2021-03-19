@@ -189,7 +189,10 @@ end
 
 Gapjm.gap(v::AbstractVector)="["*join(gap.(v),",")*"]"
 
+Gapjm.gap(m::AbstractMatrix)=gap(toL(m))
+
 function Gapjm.gap(p::Pol)
- l=filter(x->x[2]!=0,collect(enumerate(p.c)))
+  if iszero(p) return "0*q" end
+  l=filter(x->x[2]!=0,collect(enumerate(p.c)))
   join(map(((i,c),)->"($(gap(c)))*q^$(i+p.v-1)",l),"+")
 end

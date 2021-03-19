@@ -1,6 +1,8 @@
 """
- An implementation of univariate Laurent polynomials.
- A Pol contains two fields: a vector of coefficients, and the valuation.
+An   implementation  of  univariate  Laurent  polynomials,  and  univariate
+rational fractions.
+
+A Pol contains two fields: a vector of coefficients, and the valuation.
 
 # Examples
 ```julia-repl
@@ -57,7 +59,7 @@ julia> m=[q+1 q+2;q-2 q-3]
  q+1  q+2
  q-2  q-3
 
-julia> inv(m)
+julia> inv(m)  # when dividing by a non-monomial, get rational fraction
 2×2 Matrix{RatFrac{Int64}}:
  (-q+3)/(2q-1)   (q+2)/(2q-1)
  (-q+2)/(-2q+1)  (q+1)/(-2q+1)
@@ -324,6 +326,8 @@ function srgcd(a::Pol,b::Pol)
 end
 
 Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
+Base.lcm(p::Pol,q::Pol)=exactdiv(p*q,gcd(p,q))
+Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
  
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
@@ -389,7 +393,11 @@ RatFrac(a::Pol)=RatFrac(a,Pol(1);check1=false)
 Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
 Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
 Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
+Base.one(::Type{RatFrac}) where T =one(RatFrac{Int})
+Base.zero(::Type{RatFrac}) where T =zero(RatFrac{Int})
 Base.zero(::Type{RatFrac{T}}) where T =RatFrac(zero(Pol{T}),one(Pol{T});check=false)
+Base.zero(a::RatFrac)=RatFrac(zero(a.num),one(a.num);check=false)
+Base.iszero(a::RatFrac)=iszero(a.num)
 # next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::RatFrac)=p
 Base.conj(p::RatFrac)=RatFrac(conj(p.num),conj(p.den);check=false)
@@ -430,6 +438,7 @@ function Base.inv(p::Pol)
 end
 
 Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
+Base.://(a::RatFrac,b::Number)=RatFrac(a.num,a.den*b)
 Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
 Base.://(p,q::Pol)=RatFrac(Pol(p),q;check1=false)
 Base.:/(p,q::Pol)=p//q
@@ -452,7 +461,8 @@ Base.:-(a::RatFrac)=RatFrac(-a.num,a.den;check=false)
 Base.:-(a::RatFrac,b::RatFrac)=a+(-b)
 Base.:-(a::RatFrac,b)=a-RatFrac(b)
 Base.:-(b,a::RatFrac)=RatFrac(b)-a
-Base.zero(a::RatFrac)=RatFrac(zero(a.num),one(a.num);check=false)
+
+(p::RatFrac)(x)=p.num(x)//p.den(x)
 
 """
   gcd(p::Pol, q::Pol)
