@@ -307,6 +307,14 @@ end
 
 SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Idef}(l,l1)
 
+function SPerm{T}(l::AbstractMatrix,l1::AbstractMatrix;dims=1)where T<:Integer
+  if     dims==1 SPerm{T}(collect(eachrow(l)),collect(eachrow(l1)))
+  elseif dims==2 SPerm{T}(collect(eachcol(l)),collect(eachcol(l1)))
+  end
+end
+
+SPerm(l::AbstractMatrix,l1::AbstractMatrix;dims=1)=SPerm{Idef}(l,l1,dims=dims)
+
 """
 `Matrix(a::SPerm)` is the permutation matrix for a
 # Examples

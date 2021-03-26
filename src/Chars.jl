@@ -454,7 +454,7 @@ function fakedegrees(W,q;recompute=false)
   if rank(W)==0 P=[one(qq)]
   else
     P=ct.irr*map(1:length(ct.centralizers))do i
-      P/(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i)))
+      exactdiv(P,(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i))))
     end
   end
   charinfo(W)[:B]=degree.(P)

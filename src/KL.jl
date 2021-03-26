@@ -371,7 +371,7 @@ follows:
 
 ```julia-repl
 julia> ref=reflrep(H)
-3-element Vector{Matrix{Pol}}:
+3-element Vector{Matrix{Pol{Int64}}}:
  [-1 0 0; -v² v² 0; 0 0 v²]
  [v² -2 0; 0 -1 0; 0 -v² v²]
  [v² 0 0; 0 v² -1; 0 0 -1]

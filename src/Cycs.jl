@@ -584,7 +584,8 @@ Base.:-(a::Cyc,b::Cyc)=a+(-b)
 Base.:-(b::Real,a::Cyc)=Cyc(b)+(-a)
 Base.:-(b::Cyc,a::Real)=b+Cyc(-a)
 
-Base.:*(a::Real,c::Cyc)= iszero(a) ? zero(c) : Cyc(c.n ,c.d*a)
+Base.:*(a::T1,c::Cyc{T}) where {T1<:Real,T}= iszero(a) ?  
+                      zero(Cyc{promote_type(T1,T)}) : Cyc(c.n ,c.d*a)
 Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list

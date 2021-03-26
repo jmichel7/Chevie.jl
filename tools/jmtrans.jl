@@ -31,6 +31,7 @@ const exclu=[
  ["CartanMat","D"],
  ["UnipotentClasses","D"],
  ["HeckeCharTable","D"],
+ ["SchurElement","D"],
  ["Hk","D"],
  ["CharTable","2D"],
  ["HeckeCharTable","2D"],

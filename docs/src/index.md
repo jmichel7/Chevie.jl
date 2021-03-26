@@ -176,6 +176,8 @@ diagblocks
 blocks
 ratio
 exterior_power
+charpoly
+comatrix
 permanent
 symmetric_power
 schur_functor
@@ -303,6 +305,7 @@ leftlcm
 rightlcm
 α(::Garside.LocallyGarsideElm)
 α(::GarsideElm,::AbstractVector)
+Brieskorn_normal_form
 DualBraidMonoid
 fraction
 word(::Garside.GarsideMonoid,w)
@@ -446,6 +449,7 @@ Urad.decompose
 # Dictionary from GAP3/Chevie
 The dictionary from GAP3/Chevie is as follows:
 ```
+AbelianGenerators                           abelian_gens
 AlgebraicCentre                             algebraic_centre
 AlmostCharacter                             AlmostChar
 Arrangements                                arrangements
@@ -603,6 +607,7 @@ LeftCells                                   LeftCells
 LeftDescentSet(W,w)                         leftdescents(W,w)
 LeftDivisorsSimple                          left_divisors
 LeftGcd                                     leftgcd
+LeftLcm                                     leftlcm
 LinearExtension                             linear_extension
 List(ConjugacyClasses(G),Representative)    classreps(G)
 ListBlist(a,b)                              a[b]
@@ -627,6 +632,7 @@ MovedPoints                                 support
 Mvp("x")                                    Mvp(:x)
 NrArrangements                              narrangements
 NrCombinations                              ncombinations
+NrConjugacyClasses                          nconjugacy_classes
 NrDrinfeldDouble                            ndrinfeld_double
 NrPartitionTuples                           npartition_tuples
 NrPartitions                                npartitions
@@ -646,6 +652,7 @@ Partition                                   partition
 PartitionTuples                             partition_tuples
 Partitions                                  partitions
 PartitionsSet                               partitions_set
+PermCosetsSubgroup(H,W)                     D=reduced(H,W);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))
 PermList(v)                                 Perm(v)
 PermListList(l1,l2)                         Perm(l1,l2)
 PermMatMat                                  Perm_onmats
@@ -660,6 +667,7 @@ PositionClass                               position_class
 PositionDet                                 charinfo(W)[:positionDet]
 PositionId                                  charinfo(W)[:positionId]
 PositionRegularClass                        position_regular_class
+Presentation                                Presentation
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)
 QuasiIsolatedRepresentatives                QuasiIsolatedRepresentatives
@@ -714,6 +722,7 @@ SignedPermMatMat                            SPerm_onmats
 Size(W)                                     length(W)
 SmallestMovedPoint                          smallest_moved_point
 SolutionMat                                 solutionmat
+SpecialPieces                               special_pieces
 Spets                                       spets
 SplitLevis                                  split_levis
 StandardParabolic                           standard_parabolic
@@ -721,10 +730,12 @@ StandardParabolicClass                      standard_parabolic_class
 StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
 SubSpets                                    subspets
 SubTorus                                    SubTorus
+SymbolsDefect(e,r,def,ct)                   symbols(e,r,ct,def)
 SymmetricDifference                         symdiff
 SymmetricPower                              symmetric_power
 Tableaux                                    tableaux
 Torus                                       torus
+TorusOrder                                  torus_order
 TransitiveClosure                           transitive_closure
 Transporter                                 transporter
 TriangulizeMat                              echelon!
@@ -743,7 +754,7 @@ Value(p,x)                                  p(x)
 W.N                                         nref(W)
 W.matgens[i]                                reflrep(W,i)
 W.orbitRepresentative                       simple_reps(W)
-W.orbitRepresentativeElements[i]            simple_conjugating_element(W,i)
+W.orbitRepresentativeElements[i]            simple_conjugating(W,i)
 W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
 W.rootRestriction                           restriction(W)

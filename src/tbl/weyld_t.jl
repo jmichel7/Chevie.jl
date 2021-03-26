@@ -55,6 +55,11 @@ end
   end)
 chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
 
+chevieset(:D, :SchurElement, function (n, phi, q, sqrtparam)
+  exactdiv(chevieget(:D, :PoincarePolynomial)(n, q),
+    Value(chevieget(:D, :CycPolGenericDegree)(phi), -q[1][1]//q[1][2]))
+end)
+
 # References for unipotent classes:
 # [Lu] G.Lusztig, Character sheaves on disconnected groups, II 
 #   Representation Theory 8 (2004) 72--124

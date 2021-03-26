@@ -362,7 +362,8 @@ module Cosets
 
 using ..Gapjm
 export twistings, spets, Frobenius, Spets, subspets,
-  relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms
+  relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
+  CoxeterCoset, twisted_power
 
 abstract type Spets{TW}<:Coset{TW} end
 

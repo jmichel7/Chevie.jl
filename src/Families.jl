@@ -170,11 +170,13 @@ function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
   if f.fourierMat isa Vector f.fourierMat=improve_type(toM(f.fourierMat)) end
   if !haskey(f,:charLabels) f.charLabels=map(string,1:length(f)) end
+  if !haskey(f,:special) f.special=1 end
   if haskey(d,:signs)
     signs=d[:signs]
     m=f.fourierMat
     for i in axes(m,1), j in axes(m,2) m[i,j]*=signs[i]*signs[j] end
     f.fourierMat=m
+    if haskey(f,:perm) && -1 in f.fourierMat^2 delete!(f.prop,:perm) end
   end
   f
 end
@@ -209,19 +211,17 @@ function Base.:*(f::Family,g::Family)
                           map(f->get(f.prop,:cospecial,f.special),arg))
     if res.cospecial==res.special delete!(res.prop,:cospecial) end
   end
-#  if ForAll(arg,f->IsBound(f.perm) or Size(f)=1) then 
-#    res.perm:=PermListList(cartesian(List(arg,x->[1..Size(x)])),
-#        cartesian(List(arg,function(x)if IsBound(x.perm) then return
-#          Permuted([1..Size(x)],x.perm);else return [1];fi;end)));
-#  fi;
-#  if ForAll(arg,f->IsBound(f.lusztig) or Size(f)=1) then 
-#    res.lusztig:=true;
-#  fi;
-#  if any(haskey.(arg,:qEigen))
-#    res.qEigen:=List(cartesian(List(arg,function(f) 
-#      if IsBound(f.qEigen) then return f.qEigen;else return f.eigenvalues*0;fi;
-#      end)),Sum);
-#  fi;
+  if all(x->haskey(x,:perm) || length(x)==1,arg)
+    res.perm=Perm(cartesian(map(x->1:length(x),arg)...),
+        cartesian(map(x->haskey(x,:perm) ? (1:length(x))^x.perm : [1],arg)...))
+  end
+  if all(x->haskey(x,:lusztig) || length(x)==1,arg)
+    res.lusztig=true
+  end
+  if any(haskey.(arg,:qEigen))
+    res.qEigen=map(sum,cartesian(map(f->
+      haskey(f,:qEigen) ? f.qEigen : zeros(Int,length(f)),arg)...))
+  end
   res
 end
 
@@ -335,7 +335,7 @@ chevieset(:families,:C2,
   :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
   :eigenvalues=>[1,1,1,-1],
-  :perm=>(),
+  :perm=>Perm(),
   :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
   :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"])))
 
@@ -358,6 +358,7 @@ chevieset(:families,Symbol("C'\"2"),
   :eigenvalues=>[1,1,E(4),-E(4)],
   :qEigen=>[0,0,1,1]//2,
   :perm=>Perm(3,4),
+  :special=>1,
   :cospecial=>2)))
 
 chevieset(:families,:S3,
@@ -444,7 +445,7 @@ chevieset(:families,:Z4,f)
 
 f=chevieget(:families,:ExtPowCyclic)(9,1)
 f.perm=perm"(2,9)(3,8)(4,7)(5,6)"
-f.qEigen=[0,2/3,1/3,0,2/3,1/3,0,2/3,1/3]
+f.qEigen=[0,2,1,0,2,1,0,2,1].//3
 #if f.eigenvalues!=map(i->E(9)^(5*i^2),0:8) error() end
 chevieset(:families,:Z9,f)
 end

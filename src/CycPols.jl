@@ -170,6 +170,8 @@ function Base.:*(a::CycPol,b::CycPol)
   CycPol(a.coeff*b.coeff,a.valuation+b.valuation,a.v+b.v)
 end
 
+Base.conj(a::CycPol)=CycPol(conj(a.coeff),a.valuation,ModuleElt(
+           inv(r)=>m for (r,m) in a.v))
 Base.:*(a::CycPol,b::Number)=iszero(b) ? zero(a) : CycPol(a.coeff*b,a.valuation,a.v)
 Base.:*(b::Number,a::CycPol)=a*b
 Base.:-(a::CycPol)=CycPol(-a.coeff,a.valuation,a.v)

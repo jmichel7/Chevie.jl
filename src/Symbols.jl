@@ -297,7 +297,7 @@ julia> defectsymbol([[1,5,6],[1,2]])
 ```
 """
 function defectsymbol(S)
- S[end] isa AbstractVector && length(S)>1 ? abs(length(S[1])-length(S[2])) : 0
+ S[end] isa AbstractVector && length(S)>1 ? length(S[1])-length(S[2]) : 0
 end
 
 """
@@ -739,7 +739,7 @@ function XSP(rho,s,n,even=false)
       if isempty(S) break end
     end
   end
-  map(collectby(x->[Set(union(x...)),Set(intersect(x...))],res)) do f
+  map(collectby(x->[sort(unique!(union(x...))),sort(unique!(intersect(x...)))],res)) do f
     ii=Vector{Int}[]
     d=sort(symdiff(f[1]...))
     if length(d)>0

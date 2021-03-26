@@ -334,7 +334,7 @@ julia> Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)
 hecke(B₂,q)
 
 julia> reflrep(H)
-2-element Vector{Matrix{Pol}}:
+2-element Vector{Matrix{Pol{Int64}}}:
  [-1 0; -q q]
  [q -2; 0 -1]
 
@@ -367,14 +367,14 @@ function PermRoot.reflrep(H::HeckeAlgebra)
     end
     C[i,i]=q+1
   end
-  map(eachindex(gens(W)))do i
+  improve_type(map(eachindex(gens(W)))do i
     a=fill(0*q*E(1),r,r)
     for j  in eachindex(gens(W))
       a[j,j]=q
       a[j,i]-=C[i,j]
     end
     -H.para[1][2]*a
-  end
+  end)
 end 
 
 function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)

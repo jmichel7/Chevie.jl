@@ -254,7 +254,7 @@ function Base.show(io::IO, t::TypeIrred)
           if t.cartanType==ER(3) s=:Gsym end
         elseif s==:I
           if t.cartanType==1 s=:I
-          elseif t.cartanType==-(E(2*t.bond)+E(2*t.bond)) s=:Isym 
+          elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym 
           else s=Symbol("I(",repr(t.cartanType;context=io),")")
           end
         end

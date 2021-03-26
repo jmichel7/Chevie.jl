@@ -335,7 +335,7 @@ using ..Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, rightgcd, leftlcm, rightlcm, 
-conjugating_elt, GarsideElm
+conjugating_elt, GarsideElm, Brieskorn_normal_form
 
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
@@ -437,7 +437,7 @@ end
 
 function (M::LocallyGarsideMonoid{T})(l::Integer...)where T
   if isempty(l) return GarsideElm(M,T[];check=false) end
-  if l[1]>0 res=GarsideElm(M,[M.atoms[l[1]]];check=false)
+  if l[1]>0 res=GarsideElm(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
   else res=inv(M(-l[1]))
   end
   for s in l[2:end]
@@ -782,7 +782,7 @@ struct GarsideElm{T,TM}<:LocallyGarsideElm{T,TM}
   function GarsideElm(M::TM,elm::Vector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
     if check
       i=1
-@inbounds while i<length(elm) && elm[i]==M.δ 
+@inbounds while i<=length(elm) && elm[i]==M.δ 
         i+=1
         pd+=1
       end
@@ -837,9 +837,39 @@ function Base.hash(a::GarsideElm, h::UInt)
   h
 end
 
-CoxGroups.leftdescents(b::GarsideElm)=filter(i->isleftdescent(b.M,b[1],i),
-                                              eachindex(b.M.atoms))
+CoxGroups.leftdescents(b::LocallyGarsideElm)=filter(i->isleftdescent(b.M,b[1],
+                                   i),eachindex(b.M.atoms))
 
+"""
+`Brieskorn_normal_form(b)`
+
+Brieskorn  citeBri71 has noticed that if `L(b)`  is the left descent set of
+`b`  (see "leftdescents"),  and if  `b_(L(b))` is  the right lcm of `L(b)`,
+then  `b_(L(b))` left-divides `b`. We can  now divide `b` by `b_(L(b))` and
+continue  this  process  with  the  quotient.  In  this  way,  we obtain an
+expression  `b=b_(L₁)⋯ b_(Lᵣ)`  where `Lᵢ=L(b_(Lᵢ)⋯  b_(Lᵣ))` for  all `i`,
+which   we  call  the   *Brieskorn  normal  form*   of  `b`.  The  function
+`Brieskorn_normal_form`  returns a  description of  this form, by returning
+the list of sets `L(b)` which describe the above decomposition.
+ 
+```julia-repl
+julia> W=coxgroup(:E,8);B=BraidMonoid(W)
+BraidMonoid(E₈)
+
+julia> w=B(2,3,4,2,3,4,5,4,2,3,4,5,6,5,4,2,3,4,5,6,7,6,5,4,2,3,4,5,6,7,8)
+2342345423456542345676542345678
+
+julia> Brieskorn_normal_form(w)
+2-element Vector{Vector{Int64}}:
+ [2, 3, 4, 5, 6, 7]
+ [8]
+
+julia> Brieskorn_normal_form(w^2)
+2-element Vector{Vector{Int64}}:
+ [2, 3, 4, 5, 6, 7, 8]
+ [2, 3, 4, 5, 6]
+```
+"""
 function Brieskorn_normal_form(b::LocallyGarsideElm)
   res=Vector{Int}[]
   while !isone(b)
@@ -1096,7 +1126,7 @@ function Base.:*(a::GarsideElm,x)
     else v[i-1]=x;v[i]=y
     end
   end
-  clone(a,v;check=false)
+  clone(a,v;check=length(v)==1)
 end
 
 function Base.:*(a::LocallyGarsideElm,b::LocallyGarsideElm)

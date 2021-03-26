@@ -177,7 +177,7 @@ const ChevieDict=Dict(
 "LeftDescentSet(W,w)"=>"leftdescents(W,w)",
 "LeftDivisorsSimple"=>"left_divisors",
 "LeftGcd"=>"leftgcd",
-#LeftLcm
+"LeftLcm"=>"leftlcm",
 "LinearExtension"=>"linear_extension",
 "ListBlist(a,b)"=>"a[b]",
 "ListPerm(p)"=>"vec(p)",
@@ -202,6 +202,7 @@ const ChevieDict=Dict(
 "Mvp(\"x\")"=>"Mvp(:x)",
 "NrArrangements"=>"narrangements",
 "NrCombinations"=>"ncombinations",
+"NrConjugacyClasses"=>"nconjugacy_classes",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",
 "NrPartitionsSet"=>"npartitions_set",
@@ -240,7 +241,7 @@ const ChevieDict=Dict(
 "PositionDet"=>"charinfo(W)[:positionDet]",
 "PositionId"=>"charinfo(W)[:positionId]",
 "PositionRegularClass"=>"position_regular_class",
-#Presentation
+"Presentation"=>"Presentation",
 "PrintDiagram(W)"=>"Diagram(W)",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
 "QuasiIsolatedRepresentatives"=>"QuasiIsolatedRepresentatives",
@@ -305,7 +306,7 @@ const ChevieDict=Dict(
 "Size(W)"=>"length(W)",
 "SmallestMovedPoint"=>"smallest_moved_point",
 "SolutionMat"=>"solutionmat",
-#SpecialPieces
+"SpecialPieces"=>"special_pieces",
 "Spets"=>"spets",
 "SplitLevis"=>"split_levis",
 "StandardParabolic"=>"standard_parabolic",
@@ -314,12 +315,12 @@ const ChevieDict=Dict(
 "SubSpets"=>"subspets",
 "SubTorus"=>"SubTorus",
 #Symbols
-#SymbolsDefect
+"SymbolsDefect(e,r,def,ct)"=>"symbols(e,r,ct,def)",
 "SymmetricDifference"=>"symdiff",
 "SymmetricPower"=>"symmetric_power",
 "Tableaux"=>"tableaux",
 "Torus"=>"torus",
-#TorusOrder
+"TorusOrder"=>"torus_order",
 "TransitiveClosure"=>"transitive_closure",
 "Transporter"=>"transporter",
 #Transversals

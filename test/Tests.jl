@@ -10,7 +10,7 @@ isspetsial=W->UnipotentCharacters(W)!==nothing
 
 nspets=ComplexReflectionGroup.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
 
-ChevieErr(x...)=xprintln("**! ",x...)
+ChevieErr(x...)=printstyled(rio(),x...;color=:red);
 
 cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
       coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
@@ -35,7 +35,7 @@ twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
   rootdatum(Symbol("pso-"),10), rootdatum(Symbol("2E6")), rootdatum(:psu,8),
   rootdatum(Symbol("pso-"),12), rootdatum(Symbol("pso-"),14)]
 
-all_ex=vcat(cox_ex,spets_ex,twisted)
+all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
 function RG(s::Symbol)
@@ -47,25 +47,38 @@ function RG(s::Symbol)
   end end
 end
 
+function RG(W)
+  printstyled(rio(),"Tests for W=",W," -------------------------------\n";
+            bold=true,color=:magenta)
+  for (s,t) in test
+    if t.applicable(W) 
+      printstyled("  ",s,": ",t.comment,"\n";color=:green)
+@time  t.fn(W) 
+    end 
+  end
+end
+
+RG()=for W in all_ex RG(W) end
+
 # compares lists a and b (whose descriptions are strings na and nb)
 function cmpvec(a,b;na="a",nb="b")
   if a==b return end
   if length(a)!=length(b)
-    ChevieErr("length($na)=",length(a)," while length($nb)=",length(b))
+    ChevieErr("length($na)=",length(a)," while length($nb)=",length(b),"\n")
   end
-  if -a==b ChevieErr("$na=-$nn");return end
+  if -a==b ChevieErr("$na=-$nn\n");return end
   pa=Perm(a,b)
-  if pa!==nothing ChevieErr("$na=$nb^",pa);return end
+  if pa!==nothing ChevieErr("$na=$nb^",pa,"\n");return end
   pa=Perm(a,-b)
-  if pa!==nothing ChevieErr("$na=-$nb^",pa);return end
+  if pa!==nothing ChevieErr("$na=-$nb^",pa,"\n");return end
   for j in eachindex(a)
     if a[j]==b[j] continue end
-    if a[j]==-b[j] ChevieErr(a[j],"=-",b[j]);continue end
+    if a[j]==-b[j] ChevieErr(a[j],"=-",b[j],"\n");continue end
     t=findall(==(a[j]),b)
-    if length(t)>0 ChevieErr(a[j]," found at ",t);continue end
+    if length(t)>0 ChevieErr(a[j]," found at ",t,"\n");continue end
     t=findall(==(-a[j]),b)
-    if length(t)>0 ChevieErr("-",a[j]," found at ",t);continue end
-    ChevieErr(na,"[$j]=",a[j]," not found")
+    if length(t)>0 ChevieErr("-",a[j]," found at ",t,"\n");continue end
+    ChevieErr(na,"[$j]=",a[j]," not found\n")
   end
 end
 
@@ -113,6 +126,18 @@ function cmptables(t1,t2,nz=false)
      showtable(t[i];opt[i]...,rows=r,columns=c,screenColumns=70)))))
 end
 
+function cmpcycpol(a,b;na="a",nb="b")
+  if a==b return end
+  if b.coeff==0
+    if a.coeff!=0 ChevieErr(na,"=",a," but ",nb,"=",b,"\n") end
+    return
+  end
+  q=a*inv(b)
+  if isempty(q.v) ChevieErr(na,"=",
+    format_coefficient(repr(q;context=rio())),nb," where ",nb,"=",b,"\n");
+  else ChevieErr(na,"=",a," but ",nb,"=",b,"\n")
+  end
+end
 #---------------- test: representations ------------------------
 # find matrices gr as a representation of a group or Hecke algebra
 function findrepresentation(W,gr,check=false)
@@ -141,7 +166,7 @@ function findrepresentation(W,gr,check=false)
   end
 end
 
-function representations(W,l=Int[])
+function Trepresentations(W,l=Int[])
   O=W
   if W isa HeckeAlgebra
     H=W
@@ -152,7 +177,7 @@ function representations(W,l=Int[])
   ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
-    print("Representation #$i")
+    InfoChevie("  #Representation #$i")
     gr=representation(O,i)
     if gr==false println("=false")
     else
@@ -176,7 +201,7 @@ function representations(W,l=Int[])
   end
 end
 
-test[:representations]=(fn=representations, 
+test[:representations]=(fn=Trepresentations, 
    applicable=function(W)
      if nconjugacy_classes(W)>=55 return false end
      t=refltype(W)
@@ -189,23 +214,24 @@ test[:representations]=(fn=representations,
    comment="Check reprs exist and match characters")
 
 #---------------- test: lusztiginduction ------------------------
-function lusztiginduction(WF)
+function Tlusztiginduction(WF)
   if !(WF isa Spets) WF=spets(WF) end
   W=Group(WF)
-  for J in filter(x->length(x)<length(gens(W)),parabolic_representatives(W))
-    lusztiginduction(WF,J)
+  for J in filter(x->length(x)<length(gens(W)),parabolic_reps(W))
+    Tlusztiginduction(WF,J)
   end
 end
-test[:lusztiginduction]=(fn=lusztiginduction, applicable=isspetsial,
+test[:lusztiginduction]=(fn=Tlusztiginduction, applicable=isspetsial,
    comment="Check induction computable and mackey with tori")
 
-function lusztiginduction(WF,J::AbstractVector{<:Integer})
-  for L in twistings(WF,J) lusztiginduction(WF,L) end
+function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
+  for L in twistings(WF,J) Tlusztiginduction(WF,L) end
 end
 
-function lusztiginduction(WF,L)
-  if L.phi==WF.phi print("Split ") end
-  xprint("Lusztig Induction from ",L," to ",WF)
+function Tlusztiginduction(WF,L)
+  InfoChevie("  #")
+  if L.phi==WF.phi InfoChevie("Split ") end
+  InfoChevie("Lusztig Induction from ",L," to ",WF)
   t=LusztigInductionTable(L,WF)
   if isnothing(t) return end
   if haskey(t,:scalars) 
@@ -214,7 +240,7 @@ function lusztiginduction(WF,L)
   println()
   if L.phi==WF.phi
     h=Lusztig.HCInductionTable(L,WF)
-    if h.scalar!=t.scalar error("HC!=Lusztig") end
+    if h.scalar!=t.scalar ChevieErr("HC!=Lusztig\n") end
   end
   uh=UnipotentCharacters(L)
   uw=UnipotentCharacters(WF)
@@ -222,7 +248,7 @@ function lusztiginduction(WF,L)
   nh=charnames(uh)
   hd=degrees(uh,q)
   ud=degrees(uw,q)
-  index=generic_order(WF,q)/generic_order(L,q)
+  index=exactdiv(generic_order(WF,q),generic_order(L,q))
   index*=q^-index.v
   index*=generic_sign(L)/generic_sign(WF)
   pred=hd.*index
@@ -256,23 +282,23 @@ end
 
 #----------------test: chartable ------------------------
 using GAP
-function checkCharTable(W)
+function Tchartable(W)
   G=Group(gens(W))
   G.classreps=classreps(W)
   ct=CharTable(G).irr
   ct1=CharTable(W).irr
   p=Perm(ct,ct1;dims=1)
   if isnothing(p) error("irreducibles") 
-  else println("permuted ",p)
+  elseif !isone(p) InfoChevie("  #permuted ",p,"\n")
   end
 end
 
-test[:chartable]=(fn=checkCharTable, applicable=W->!(W isa Spets),
+test[:chartable]=(fn=Tchartable, applicable=W->!(W isa Spets),
    comment="CharTable")
 
 #----------------test: powermaps ------------------------
 
-function powermaps(W)
+function Tpowermaps(W)
   cl=classreps(W)
   p=classinfo(W)[:powermap]
   for i in echindex(p)
@@ -284,20 +310,21 @@ function powermaps(W)
   end
 end
 
-test[:powermaps]=(fn=powermaps, applicable=W->!(W isa Spets),
+test[:powermaps]=(fn=Tpowermaps, applicable=W->false,
+#test[:powermaps]=(fn=Tpowermaps, applicable=W->!(W isa Spets),
                   comment="powermaps")
 
 #---------------- test: positionclasses ------------------------
-function positionclasses(W)
-  cl=map(x->Gapjm.position_class(W,x),class_reps(W))
+function Tpositionclasses(W)
+  cl=map(x->Gapjm.position_class(W,x),classreps(W))
   if cl!=1:length(cl) error("classes") end
 end
 
-test[:positionclasses]=(fn=positionclasses, applicable=W->true,
+test[:positionclasses]=(fn=Tpositionclasses, applicable=W->true,
    comment="classreps")
 
 #---------------- test: unipotentclasses ------------------------
-function unipotentclasses(W,p=nothing)
+function Tunipotentclasses(W,p=nothing)
   function PosetFromICC(t)local l,o
     l=uc.springerseries[1][:locsys]
     o=map(i->map(j->any(a->any(b->!iszero(t.scalar[a,b]),
@@ -309,7 +336,7 @@ function unipotentclasses(W,p=nothing)
   else WF=spets(W)
   end
   if isnothing(p)
-    for p in vcat([0],badprimes(W)) unipotentclasses(WF,p) end
+    for p in vcat([0],badprimes(W)) Tunipotentclasses(WF,p) end
     return
   end
   uc=UnipotentClasses(WF,p)
@@ -330,7 +357,7 @@ function unipotentclasses(W,p=nothing)
     i=findfirst(y->y[1]==n0 && y[2]==nid,s[:locsys])
     bu=b[i]
     if a!=bu
-      ChevieErr("p=$p ",pl(n0,u,nid)," dimBu=>$a and Springer[1.$i]=>$bu")
+      ChevieErr("p=$p ",pl(n0,u,nid)," dimBu=>$a and Springer[1.$i]=>$bu\n")
     end
     if a!=u.dimBu
       ChevieErr(pl(n0,u,nid)," dynkin=>",a," and dimBu=",u.dimBu,"\n")
@@ -395,7 +422,7 @@ function unipotentclasses(W,p=nothing)
       name=replace(name,"+"=>"{+}")
       if name!=cl.name
        ChevieErr("name=<",fromTeX(rio(),cl.name),
-                  "> but from Bala-Carter <",fromTeX(rio(),name),">")
+                  "> but from Bala-Carter <",fromTeX(rio(),name),">\n")
       end
     end
   end
@@ -408,8 +435,8 @@ function unipotentclasses(W,p=nothing)
   end
 end
 
-test[:unipotentclasses]=(fn=unipotentclasses, applicable=isrootdatum,
-   comment="Check dimBu from DR, from b, with < ; Check BalaCarter, dimred")
+test[:unipotentclasses]=(fn=Tunipotentclasses, applicable=isrootdatum,
+   comment="Check dimBu from DR, from b, with < ; BalaCarter, dimred")
 
 #---------------- test: charparams ------------------------
 """
@@ -419,11 +446,11 @@ this function checks that the parameters/names for characters of Complex
 eflection groups agree with the description whcih is since 2016 in the CHEVIE 
 manual. If not, it tells what permutation of the data is needed.
 """
-function charparams(W)
+function Tcharparams(W)
   ct=CharTable(W).irr
   fd=fakedegrees(W,Pol())
   db=map(x->[x(1),valuation(x)],fd)
-  n=sprint(show,W;context=:limit=>true)
+  n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
     nm=map(x->CHEVIE[:G2][:CharName](x,Dict()),l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
@@ -497,7 +524,7 @@ function charparams(W)
     mul(x)=mult!=0 ? x==mult : x>0
     ok(mul(t.scalar[n0(a),charinfo(L)[:positionId]]),
      a," should occur",mult!=0 ? " $mult times" : "",
-     " in the induced of Id from ", sprint(show,L;context=:limit=>true))
+     " in the induced of Id from ", repr(L;context=rio()))
   end
   function value(a,c,v)
     c=position_class(W,W(c))
@@ -668,30 +695,30 @@ function charparams(W)
   end
 end
 
-test[:charparams]=(fn=charparams, applicable=W->W isa Group,
+test[:charparams]=(fn=Tcharparams, applicable=W->W isa Group,
    comment="Check charparams for consistency with Michel/Thiel rules")
 
 #---------------- test: HCdegrees ------------------------
-function HCdegrees(W)
+function THCdegrees(W)
   uw=UnipotentCharacters(W)
   for i in eachindex(uw.harishChandra)
-   if !isempty(uw.harishChandra[i][:relativeType]) HCdegrees(W,i) end
+   if !isempty(uw.harishChandra[i][:relativeType]) THCdegrees(W,i) end
   end
 end
 
 # HCdegrees(W [,ser [,guess]])
 # Checks that unipotent degrees from Harish-Chandra series no. i of the Spets
 # W agree with degrees coming from Schur elements of relative Hecke algebra
-function HCdegrees(W,i,rel=false)
+function THCdegrees(W,i,rel=false)
   uw=UnipotentCharacters(W)
   hw=uw.harishChandra[i]
   L=reflection_subgroup(W,hw[:levi])
-  index=CycPol(generic_order(W,Pol())/generic_order(L,Pol()))
-  index*=CycPol(Pol()^-valuation(index))
+  index=CycPol(generic_order(W,Pol()))//CycPol(generic_order(L,Pol()))
+  index*=CycPol(1,-valuation(index))
   n=hw[:cuspidalName]
   if n=="" n="." end
   cusp=CycPolUnipotentDegrees(L)[Lusztig.FindCuspidalInLevi(n,L)]
-  xprintln("#HC_",L,"(cusp=",n,":",cusp,")[G:L]=",index)
+  InfoChevie("  #HC_",L,"(cusp=",n,":",cusp,")[G:L]=",index,"\n")
   R=reflection_group(hw[:relativeType]...)
 # check parameters of relative algebra by the formula
 # u_{s,j}=ζ_s^j  q^(([a+A]_ρ_{det_s^j}-[a+A]_ρ_{\Id})/order#class(s)
@@ -701,7 +728,7 @@ function HCdegrees(W,i,rel=false)
     l=map(i->(aA[i]-aA[charinfo(R)[:positionId]])//h.order//h.N_s,h.det_s)
     max(maximum(l),0).-vcat([0],l)
   end
-  ss=simple_representatives(R)
+  ss=simple_reps(R)
   o=unique(ss)
   para=para[map(i->findfirst(==(ss[i]),o),eachindex(gens(R)))]
   para=map(l->all(iszero,l[2:end]) ? l[1] : l,para)
@@ -722,13 +749,13 @@ function HCdegrees(W,i,rel=false)
     return false
   end
   sch=CycPol.(sch)
-  cmpvec(sch,reldeg;na=string("Schur(",sprint(show,R;context=rio()),")"),nb="ud")
+  cmpvec(sch,reldeg;na=string("Schur(",repr(R;context=rio()),")"),nb="ud")
   if rel reldeg
   else  Ref(descent_of_scalars(cusp*index,den)).//(sch*1//1)
   end
 end
 
-test[:HCdegrees]=(fn=HCdegrees, applicable=isspetsial,
+test[:HCdegrees]=(fn=THCdegrees, applicable=isspetsial,
  comment="check generic degrees from relative Hecke algebras of HCinduction")
 
 # EigenAndDegHecke(s) 
@@ -778,9 +805,9 @@ function EigenAndDegHecke(s)
 end
 
 #---------------- test: series ------------------------
-function CheckSerie(s)
+function TSerie(s)
   W=s.spets
-  InfoChevie("\n   # ",s)
+  InfoChevie("  # ",s,"\n")
   relative_group(s)
   if s.principal
     Ed=s.d
@@ -810,28 +837,26 @@ function CheckSerie(s)
 end
 
 # checkSeries(WF[,d[,ad]])
-function checkSeries(W,arg...)
+function Tseries(W,arg...)
   if length(arg)>=1 l=filter(s->s.levi!=s.spets,Series(W,arg...))
   else l=dSeries.ProperSeries(W)
   end
-  for s in l CheckSerie(s)end
-  InfoChevie("\n   ")
+  for s in l TSerie(s)end
   l
 end
 
-test[:series]=(fn=checkSeries, applicable=isspetsial,
- comment="check d-HC series")
+test[:series]=(fn=Tseries,applicable=isspetsial,comment="check d-HC series")
 
 #---------------- test: extrefl ------------------------
 using LinearAlgebra: tr
 # test ReflectionEigenvalues, ChevieCharInfo.extRefl, .positionDet, .positionId
-function checkextrefl(W)
+function Textrefl(W)
   ct=CharTable(W)
   # compute first using ReflectionEigenvalues
   n=nconjugacy_classes(W)
-  v=reverse(permutedims(toM(map(r->prod(n->Pol()+E(n),r).c,refleigen(W))));dims=1)
+  v=reverse(permutedims(toM(map(r->prod(n->Pol()+E(n),r;init=Pol(1)).c,refleigen(W))));dims=1)
   # check v[2,:] using reflrep
-  if v[2,:]!=map(w->tr(reflrep(W,W(w...))),classinfo(W)[:classtext])
+  if size(v,1)>1 && v[2,:]!=map(w->tr(reflrep(W,W(w...))),classinfo(W)[:classtext])
    ChevieErr("refleigen disagrees with reflrep")
   end
   extRefl=map(x->findfirst(==(x),collect(eachrow(ct.irr))),eachrow(v))
@@ -848,8 +873,7 @@ function checkextrefl(W)
   checkfield(:positionId,extRefl[1])
 end
 
-test[:extrefl]=(fn=checkextrefl, applicable=x->x isa Group,
- comment="check extrefl")
+test[:extrefl]=(fn=Textrefl,applicable=x->x isa Group,comment="check extrefl")
 
 #---------------- test: degrees ------------------------
 """
@@ -915,7 +939,7 @@ function reflectiondegrees(W::Spets)
   map(x->(x[1],E(x[2])),only(e))
 end
 
-function checkrefldegrees(W)
+function Tdegrees(W)
   d=sort(degrees(W))
   d1=sort(reflectiondegrees(W))
   cmpvec(d,d1;na="degrees",nb="reflectiondegrees")
@@ -926,11 +950,11 @@ function checkrefldegrees(W)
   end
 end
 
-test[:degrees]=(fn=checkrefldegrees,applicable=x->true, comment="check degrees")
+test[:degrees]=(fn=Tdegrees,applicable=x->true, comment="check degrees")
 
 #---------------- test: fakedegrees ------------------------
 
-function checkfeg(W)
+function Tfeg(W)
   q=Pol()
   fd=fakedegrees(W,q)
   ffd=fakedegrees(W,q;recompute=true)
@@ -939,51 +963,666 @@ function checkfeg(W)
   cmpvec(degree.(fd),charinfo(W)[:B];na="computed B",nb="charinfo B")
 end
 
-test[:feg]=(fn=checkfeg,applicable=x->true, comment="check fakedegrees")
+test[:feg]=(fn=Tfeg,applicable=x->true, comment="check fakedegrees")
 
 #---------------- test: fakedegrees induce ------------------------
 
-function fakedegreesinduce(W)
-  for J in parabolic_reps(W) fakedegreesinduce(W,J) end
-end
+Tfeginduce(W)=for J in parabolic_reps(W) Tfeginduce(W,J) end
 
-function fakedegreesinduce(W,J)
+function Tfeginduce(W,J)
   q=Pol()
   if !(W isa Spets) W=spets(W) end
   for L in twistings(W,J)
     t=InductionTable(L,W)
     hd=fakedegrees(L,q)
     ud=fakedegrees(W,q)
-    index=generic_sign(L)*generic_order(W,q)/generic_order(L,q)/generic_sign(W)
+    index=exactdiv(generic_sign(L)*generic_order(W,q),generic_order(L,q))/generic_sign(W)
     index=shift(index,-valuation(index))
     pred=hd*index
     found=(permutedims(ud)*t.scalar)[1,:]
-    InfoChevie("\n   # R^{",W,"}_{",L,"}")
+    InfoChevie("  # R^{",W,"}_{",L,"}\n")
     if pred!=found ChevieErr("quotient ",
                 map((a,b)->a*inv(b),CycPol.(pred),CycPol.(found)),"\n")
     end
   end
 end
 
-test[:feginduce]=(fn=fakedegreesinduce,applicable=x->true, 
+test[:feginduce]=(fn=Tfeginduce,applicable=x->true, 
                   comment="check fakedegrees induce")
 
 #---------------- test: invariants ------------------------
 
-function checkinvar(W)
+function Tinvariants(W)
   ii=invariants(W)
   vars=map(i->Mvp(Symbol("x",i)),1:rank(W))
-  ii=map(f->f(vars...),ii)
-  InfoChevie(" #")
+  ii=map(f->f(vars...),ii)*Int128(1)
+  InfoChevie("  #")
   for i in eachindex(ii), j in eachindex(gens(W))
     InfoChevie("W.",j,"*I",i,",")
     if ii[i]^reflrep(W,i)!=ii[i]  ChevieErr("not invariant\n") end
   end
+  InfoChevie("\n")
 end
 
-test[:invariants]=(fn=checkinvar,
-                   applicable=W->!(W isa Spets) && length(W)<14400, 
+test[:invariants]=(fn=Tinvariants,
+  applicable=W->!(W isa Spets) && length(W)<14400, # H4 first painful client
                    comment="check invariants")
-#x->not IsSpets(x) and Size(x)<14400); # H4 first painful client
+
+#---------------- test: classical ud fd  ------------------------
+
+function Tudfdimprimitive(W)
+  ud=CycPolUnipotentDegrees(W)
+  uc=UnipotentCharacters(W)
+  cs=first.(uc.charSymbols)
+  vud=gendeg_symbol.(cs)
+  for i in eachindex(cs)
+    cmpcycpol(vud[i],ud[i];na=string("Deg",stringsymbol(cs[i])),nb="ud");
+  end
+  n=refltype(W)
+  if isempty(n) return end # a corriger
+  n=n[1]
+  cs=first.(uc.almostCharSymbols[uc.almostHarishChandra[1][:charNumbers]])
+  fd=CycPol.(fakedegrees(W,Pol()))
+  if haskey(n,:orbit)&& n.orbit[1].series in [:D,:I,:B,:G] && order(n.twist)==2
+       vfd=map(x->fegsymbol(x,1),cs)
+  else vfd=fegsymbol.(cs)
+  end
+  for i in eachindex(cs) 
+    cmpcycpol(vfd[i],fd[i];na=string("Deg",stringsymbol(cs[i])),nb="fd")
+  end
+end
+
+test[:udfdimprimitive]=(fn=Tudfdimprimitive,
+  applicable=function(W)
+    n=refltype(W)
+    if length(n)>1 return false
+    elseif length(n)==0 return true end
+    n=n[1]
+    if haskey(n,:orbit) n.orbit[1].series in [:B,:C,:D,:I] && 
+      order(n.twist)!=3 # type 2A excluded for now....???
+    else n.series in [:A,:B,:C,:D,:G,:I] || (n.series==:ST && haskey(n,:p))
+    end
+  end,
+comment="Test unideg and feg of classical Spets against formulas")
+
+#---------------- test: families ------------------------
+# test that a family satisfies Lusztig's "exotic fourier transform" properties.
+# Families(W) or 
+# Families(W,famno) or
+# Families(family record [,opt])
+# option: hard:=show details
+
+function Tfamilies(W;hard=false)
+  uc=UnipotentCharacters(W)
+  for i in eachindex(uc.families) Tfamilies(W,i;hard) end
+end
+
+function Tfamilies(W,i;hard=false)
+  uc=UnipotentCharacters(W)
+  f=uc.families[i]
+  v=" "*repr(W;context=rio())*".$i"
+# else f:=arg[1]; arg:=arg{[2..Length(arg)]};v:=""; fi;
+  if length(f.eigenvalues)==1 return end # nothing interesting to test
+  O=toM(HasType.DiagonalMat(f.eigenvalues))
+  if haskey(f,:sh) Sh=toM(HasType.DiagonalMat(f.sh)) end
+  S=f.fourierMat
+  if f isa Vector t=toM(f) end
+  Sbar=conj(S)
+  Id=one(S)
+  tS=permutedims(S)
+  v*="#$(size(S,1))"
+  if haskey(f,:name) v*="("*Util.unicodeTeX(f.name)*")" end
+  InfoChevie("  # family ",v)
+  ps=SPerm(Sbar,S;dims=1)
+  if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
+  wreal=haskey(f,:perm)
+  if !haskey(f,:sh) && wreal!=all(>(0),vec(ps))
+    error("weakly real=",wreal," but ps=",ps,"\n")
+  end
+  if wreal # S^2 is perm
+    real=Perm(conj(f.eigenvalues),f.eigenvalues)
+    if !isnothing(real) v*="+" else v*="P" end
+  else real=false
+  end
+  if hard print("[",v,"] ...\n| ") end
+  function check(a,msg)
+    if !a InfoChevie("\n");ChevieErr("failed:",msg,"\n| ");
+    elseif hard InfoChevie(" ",msg,",") 
+    end
+  end
+  inds=1:length(f.eigenvalues)
+  if @isdefined W
+    ud=CycPolUnipotentDegrees(W)[f.charNumbers]
+    a=unique(valuation.(ud))
+    A=unique(degree.(ud))
+    if length(a)!=1 || length(A)!=1 ChevieErr("a or A not constant");
+    else a=a[1];A=A[1]
+    end
+    fd=fakedegrees(uc,Pol())[f.charNumbers]
+    special=findall(==(a),valuation.(fd))
+    cospecial=findall(==(A),degree.(fd))
+    if length(special)!=1 || length(cospecial)!=1
+      ChevieErr("special or cospecial not unique")
+    else special=special[1];cospecial=cospecial[1]
+    end
+    if haskey(f,:special)
+      check(f.special==special,".special=$(f.special) min b=$special")
+    end
+    if special!=cospecial
+      if !haskey(f,:cospecial)
+        ChevieErr(" .cospecial is not bound; should be ",cospecial,"\n| ")
+      else check(f.cospecial==cospecial,
+                 ".cospecial=$(f.cospecial) max B=$cospecial")
+      end
+    elseif haskey(f,:cospecial) && f.special!=f.cospecial
+      ChevieErr("\n.cospecial=$(f.cospecial) should be $special\n")
+    end
+    check(conj(ud)==ud^ps,"ud*=ud^p")
+    if real!==nothing && real!=false
+      check(f.eigenvalues^(real/f.perm)==f.eigenvalues,"eig*=eig^perm")
+    end
+    if hard
+      if S==Sbar print("\n|  S real")
+      else print("\n|  S->S* is p=",ps,"\n| ")
+      end
+      if wreal # check ps is a sub-permutation of perm
+        if !all(x->x^ps==x || x^ps==x^f.perm,inds)
+          ChevieErr("*** S->S* is not a sub-perm of .perm\n| ")
+        end
+      end
+    end
+    # check Shintani preserves ud. We have Sh=O^-1 SO^-1
+    ud=map(x->x(Pol()),ud)
+    if haskey(f,:sh) check(Sh*S*ud==S*ud,"Shud=ud")
+    elseif haskey(f,:lusztig) check((S*O)*ud==O*ud,"Shud=ud")
+    else check(S*O^-1*ud==O*ud,"Shud=ud")
+    end
+  elseif haskey(f,:special) special=f.special
+  else ChevieErr(".special not bound\n| ");special=1
+  end
+  check(!(0 in S[special]),"not 0 in S[special]")
+  check(S*permutedims(Sbar)==Id,"S unitary")
+  if wreal P=Id^f.perm;check(S*P==P*S,"[S,P]=1") end
+  if haskey(f,:sh)
+    check((O*tS*Sh^-1*S)^2==Id,"(O*tS*Sh-1*S)^2=1")
+  else 
+    if haskey(f,:lusztig)
+      if !f.lusztig error(".lusztig bound but false") end
+      if !wreal error(".lusztig bound but not .perm") end
+      check((O*S*P)^3==Id,"(OSP)^3=1")
+    else check((O*S)^3==Id,"(OS)^3=1")
+    end
+    check(S==tS,"\n|  S symmetric")
+    check(O*S^2==S^2*O,"[S^2,O]=1")
+  end
+  check((S*tS)^2==Id,"(S*tS)^2=1")
+# Print("\n| ");
+# check(O=S*O*S,"O=SOS");
+# if real then Print(" evalf(S[special]): ",
+#     List(S[special]/S[special][special],evalf));
+# fi;
+  if hard print("\n| ") end
+  if length(S)<=40 || hard
+    s=map(x->x/x[special],eachcol(Sbar))
+    _max=0
+    for i in inds
+      if length(S)>10 || hard print(".") end
+      for j in inds
+        v=map(k->S[i,k]*S[i,k],inds)*s
+        _max=max(_max,count(!=(0),v))
+     #  Print("e[",i,"]*e[",j,"]=",v,"\n");
+        if !all(isinteger,v)
+          error("not integral:",i,",",j,":",v,"\n| ")
+        end
+        p=all(>=(0),v)
+        if wreal && !p
+          if all(<=(0),v)
+               ChevieErr("family is wreal but Sums[",i,",",j,"]<=0\n| ")
+          else ChevieErr("family is wreal but Sums[",i,",",j,"]=",v,"\n| ")
+          end
+        end
+        if hard print(p ? "+" : ".") end
+      end
+    end
+  # Print("max=",_max,"\n");
+  end
+  if hard && length(S)<50 print("\n") end
+  InfoChevie("\n")
+end
+
+test[:families]=(fn=Tfamilies,applicable=isspetsial,comment="testing families")
+#------------------------- HCinduce gendegs -----------------------------
+
+function TdegsHCInduce(W)
+  for J in parabolic_reps(W) TdegsHCInduce(W,J) end
+end
+
+function TdegsHCInduce(W,J)
+  q=Pol()
+  if W isa Spets L=subspets(W,J)
+  else L=reflection_subgroup(W,J)
+  end
+  index=exactdiv(generic_order(W,q),generic_order(L,q))
+  index=shift(index,-index.v)
+  if W isa Spets index*=generic_sign(L)//generic_sign(W) end
+  uL=UnipotentCharacters(L)
+  pred=degrees(uL,q)*index
+  tbl=Lusztig.HCInductionTable(L,W)
+  ind=map(x->UniChar(W,x),eachcol(tbl.scalar))
+  inddeg=improve_type(degree.(ind))
+  if pred!=inddeg
+    nh=charnames(uL)
+    ChevieErr("Relgroups:",tbl.pieces)
+    cmpvec(pred,inddeg;na="udLevi*index",nb="viaHCInductionTable")
+  end
+end
+
+test[:degsHCinduce]=(fn=TdegsHCInduce,applicable=isspetsial,comment=
+  "unidegs are consistent with HC induction from split levis")
+
+#------------------------- Curtis duality -----------------------------
+# For a Group generated by true reflections,
+# check that deg(rho_chi)=q^N deg(rho_{\chi tensor sign})(q^-1)
+function Tcurtisduality(W)
+  q=Pol()
+  ud=UnipotentCharacters(W)
+  ud=degrees(ud,q)[ud.harishChandra[1][:charNumbers]]
+  p=detPerm(W)
+  N=sum(degrees(W)-1)
+  cmpvec(ud^p,map(x->q^N*x(q^-1),ud);
+         na="ud sign permuted",nb="computed Curtis dual ud")
+end
+
+test[:curtisduality]=(fn=Tcurtisduality,applicable=
+  W->!(W isa Spets) && all(x->order(x)==2,gens(W)) && isspetsial(W),
+  comment="check degrees of Curtis duals")
+
+#------------------------- AlmosHC -----------------------------
+# check UnipotentCharacters(W).almostHarishChandra
+
+function TalmostHC(W::Spets)
+  uc=UnipotentCharacters(W)
+  for h in uc.almostHarishChandra
+    r=relative_coset(W,h[:levi])
+    t=refltype(r)
+    if length(t)!=length(h[:relativeType]) error() end
+    for i in eachindex(t)
+      if length(t[i].orbit)>1 error("not irred") end
+      tt=t[i].orbit[1]
+      if !haskey(h[:relativeType][i],:orbit)
+        if t[i].twist!=Perm() error("should be twisted") end
+        hh=h[:relativeType][i]
+      else hh=h[:relativeType][i].orbit[1]
+      end
+      if hh.series!=tt.series
+          ChevieErr("series do not match: is ",hh.series,
+                   " should be ",tt.series,"\n") end
+      if hh.indices!=Group(r).relativeIndices[tt.indices]
+        ChevieErr("indices do not match: are ",hh.indices,
+                 " should be ",Group(r).relativeIndices[tt.indices],"\n") end
+    end
+  end
+end
+
+function TalmostHC(W)
+  uc=UnipotentCharacters(W)
+  for h in uc.almostHarishChandra
+    if W isa CoxeterGroup r=relative_group(W,h[:levi])
+    else r=relative_group(W,h[:levi],vcat(map(
+             x->vcat(map(y->y.indices,x.orbit)...),h[:relativeType])...))
+    end
+    t=refltype(r)
+    if length(t)!=length(h[:relativeType]) error() end
+    for i in eachindex(t)
+      tt=t[i]
+      if h[:relativeType][i].orbit[1].series!=tt.series
+       ChevieErr("stored series is ",h[:relativeType][i].orbit[1].series,
+                " should be ",tt.series,"\n") end
+      if !haskey(tt,:indices)
+        ChevieErr("could not find indices (expected ",
+                  h[:relativeType][i].orbit[1].indices,")")
+      elseif maximum(tt.indices)>length(r.relativeIndices)
+        ChevieErr("use non-simple roots:",tt.indices," of ",r,
+            "<",join(r.relativeIndices,","),">\n")
+      elseif h[:relativeType][i].orbit[1].indices!=r.relativeIndices[tt.indices]
+        ChevieErr("stored indices are ",
+                h[:relativeType][i].orbit[1].indices,
+               " should be ",r.relativeIndices[tt.indices],"\n")
+      end
+    end
+  end
+end
+
+test[:almostHC]=(fn=TalmostHC,applicable=isspetsial,comment="almostHC series")
+
+#------------------------- sum squares -----------------------------
+# The sum of squares of fakedegrees should equal the sum of
+# normsquares of unipotent degrees
+function Tsumsquares(W)
+  q=Pol()
+  if sum(x->x^2,fakedegrees(W,q))!=
+     sum(x->x*conj(x),degrees(UnipotentCharacters(W),q))
+    ChevieErr("fails\n")
+  end
+end
+
+test[:sumsquares]=(fn=Tsumsquares,applicable=isspetsial,comment="Sum squares")
+
+#------------------------- aA -----------------------------
+# check that stored a and A are correct
+function TaA(W)
+  uc=UnipotentCharacters(W)
+  q=Pol()
+  ud=degrees(uc,q)
+  if haskey(uc,:a)
+    cmpvec(uc.a,valuation.(ud);na="stored a",nb="computed a")
+  end
+  if haskey(uc,:A)
+    cmpvec(uc.A,degree.(ud);na="stored A",nb="computed A")
+  end
+end
+
+test[:aA]=(fn=TaA,applicable=isspetsial,comment="aA")
+
+#------------------------- eigen -----------------------------
+# check eigenvalues in families agree with those in HC series
+
+function Teigen(W)
+  uc=UnipotentCharacters(W)
+  e=eigen(uc)
+  for i in eachindex(uc.harishChandra)
+    f=uc.harishChandra[i]
+    for j in eachindex(f[:charNumbers])
+      n=f[:charNumbers][j]
+      if e[n]!=f[:eigenvalue]
+        ChevieErr("HCfamily ",i,"#",j,":",uc.TeXCharNames[n],"=",n,
+          " eigen from fam.=",e[n]," but from HC=",f.eigenvalue,"\n")
+      end
+    end
+  end
+end
+
+test[:eigen]=(fn=Teigen,applicable=isspetsial,comment="eigen")
+
+#------------------------- qeigen -----------------------------
+## check fractional eigenvalues of Frobenius wrt. values stored in HC series
+
+function Tqeigen(W)
+  uc=UnipotentCharacters(W)
+  e=Uch.qeigen(uc)
+  for i in eachindex(uc.families)
+    f=uc.families[i]
+    if haskey(f,:qEigen) q=f.qEigen
+    else q=fill(0,length(f))
+    end
+    for j in 1:length(f)
+      n=f.charNumbers[j]
+      if e[n]!=q[j] ChevieErr("HCfamily ",i,"#",j,":",
+          Util.unicodeTeX(uc.TeXCharNames[n]),"=",n,
+          " eigen from HC.=",e[n]," but from fam=",q[j],"\n")
+      end
+    end
+  end
+end
+
+test[:qeigen]=(fn=Tqeigen,applicable=isspetsial,comment="qeigen")
+
+#------------------------- braidrel -----------------------------
+
+# CheckRelation(gens,rel[,f])
+# Check  that  the  homogeneous  relation  rel[1]=rel[2] holds for gens (in
+# particular  that no  left factor  homogeneous relation  holds). If given,
+# call f in case of failure.
+function check_relation(gens,rel;f=x->x)
+  p=r->string(joindigits(r[1]),"=",joindigits(r[2]))
+  l=gens[rel[1][1]]
+  r=gens[rel[2][1]]
+  i=1
+  while i<length(rel[1])
+    if l==r
+      f(" relation ",p(rel)," already holds as ",p(map(x->x[1:i],rel)))
+      return false
+    end
+    i+=1
+    l*=gens[rel[1][i]]
+    r*=gens[rel[2][i]]
+  end
+  if l==r return true end
+  f(" relation ",p(rel),"failed")
+  false
+end
+
+function Tbraidrel(W,r=braid_relations(W))
+  for rel in r check_relation(gens(W),rel;f=ChevieErr) end
+end
+
+test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
+"(W[,t=W.type]) check that W satisfies braid relations of type t")
+
+#------------------------- root system -----------------------------
+
+# Check that all elements of the list of vectors l have coefficients
+#  in the ring R when expressed as linear combinations of l{indices}
+#function rootsystem(W)
+#  integrality:=function(l,indices,R)local rb;
+#    rb:=List(l,r->SolutionMat(l{indices},r));
+#    return ForAll(Flat(rb),y->y in R);
+#  end
+#  Coroots:=W->List([1..Length(W.roots)],i->PermRootOps.Coroot(W,i));
+## Find representatives up to scalar multiple of elements of the list of
+## vectors vec. Check that other elements differ from such a representative
+## by a unit of the ring R
+#  replines:=function(vec,R)local found,res,v,p;res:=[];
+#    for v in vec do found:=false;
+#      for x in res do p:=ProportionalityCoefficient(x,v);
+#        if p<>false then 
+#	  if not (p in R and 1/p in R) then return false;fi;
+#	  found:=true;
+#        fi;
+#      od;
+#      if not found then Add(res,v);fi;
+#    od;
+#    return res;
+#  end;
+#  R:=DefaultRing(Flat(CartanMat(W)));
+#  try:=Combinations(W.generatingReflections,W.rank);
+#  p:=PositionProperty(try,v->integrality(W.roots,v,R));
+#  if p=false then ChevieErr("found no root basis");else;fi;
+#  cr:=Coroots(W);
+#  p:=PositionProperty(try,v->integrality(cr,v,R));
+#  if p=false then ChevieErr("found no coroot basis");else;fi;
+#  p:=replines(W.roots,R);
+#  if p=false then ChevieErr("not reduced");fi;
+#  m:=replines(cr,R);
+#  if m=false then ChevieErr("coroots not reduced??");fi;
+#  if Length(m)>0 and not ForAll(Set(Flat(p*TransposedMat(m))),x->x in R) then 
+#    ChevieErr("not a root system");fi;
+#end,
+#W->not IsSpets(W),
+#"Check that W.roots define a distinguished root system",
+#" in the sense of Broue-Corran-Michel");
+#
+#CHEVIE.AddTest("GaloisAutomorphisms",
+#function(W)local k,Wk,m,g,gm,p;
+#  k:=Field(Flat(W.matgens));
+#  Wk:=Field(Flat(CartanMat(W)));
+#  if k<>Wk then 
+#    ChevieErr("k_W=",Wk," but matrices over ",k,"\n");
+#  fi;
+#  if k=Rationals then return;fi;
+#  for g in GaloisGroup(k).generators do
+#    for m in W.matgens do
+#      gm:=List(m,x->OnTuples(x,g)); p:=PermMatX(W,gm);
+#      if not p in W or gm<>MatXPerm(W,p) then 
+#        ChevieErr("not Galois stable\n");fi;
+#    od;
+#  od;
+#end,
+#W->not IsSpets(W),
+#"check that W's reflection representation is globally",
+#"invariant by Gal(k_W/Q)");
+
+#function frombraidrel(W)
+#  n=nbgens(W)
+#  F=FreeGroup(n)
+#  r=List(BraidRelations(W),x->List(x,y->Product(y,z->F.(z))))
+#  r=List(r,x->x[1]/x[2])
+#  Append(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
+#  Size(W)=Size(F/r)
+#end
+#W->not IsSpets(W) and Size(W)<64000,
+#"check that the finitely presented group defined by the",
+#" braid and order relations has the expected Size");
+
+#------------------------- very good classreps -----------------------------
+
+function Tclassreps(W)
+  cl=classinfo(W)
+  for i in 1:nconjugacy_classes(W)
+    ww=cl[:classtext][i]
+    if W isa CoxeterGroup
+      w=BraidMonoid(W)(ww...)
+      o=cl[:orders][i]
+      l=Brieskorn_normal_form(w^o)
+    elseif W isa CoxeterCoset
+      w=BraidMonoid(Group(W))(ww...)
+      wF=W(ww...)
+      o=findfirst(j->(wF)^j==W.phi^j,1:order(wF))
+      l=Brieskorn_normal_form(twisted_power(w,o,Frobenius(W)))
+    end
+    if isodd(length(l)) || any(j->l[2*j-1]!=l[2*j],1:div(length(l),2)) || 
+      any(j->!issubset(l[j+1],l[j]),1:length(l)-1)
+      ChevieErr("class ",i," is not good\n")
+    end
+    if iseven(o)
+      if W isa CoxeterGroup l=Brieskorn_normal_form(w^div(o,2))
+      elseif W isa CoxeterCoset
+	l=Brieskorn_normal_form(twisted_power(w,o,Frobenius(W)))
+      end
+      if any(j->!issubset(l[j+1],l[j]),1:length(l)-1)
+	ChevieErr("class ",i," is not very good\n")
+      end
+    end
+  end
+end
+
+test[:classreps]=(fn=Tclassreps,applicable=W->(W isa CoxeterGroup) ||
+                  W isa CoxeterCoset, comment=
+"check that classreps are very good in the sense of Geck-Michel")
+
+#------------------------- minuscule weights -----------------------------
+
+function Tminusculeweights(W)
+  w=weightinfo(W)
+  l=map(refltype(W)) do t
+    n=t.indices
+    r=map(i->sum(roots(W,i)[n]),1:2*nref(W))
+    r=argmax(r)
+    vcat(filter(i->roots(W,r)[i]==1,n),[0])
+  end
+  l=map(x->filter(!iszero,x),cartesian(l...))
+  l=filter(!isempty,l)
+  if l!=w[:minusculeCoweights] ChevieErr("minuscule coweights") end
+  l=map(refltype(W))do t
+    n=t.indices
+    m=toM(coroots.(Ref(W),n))
+    r=map(i->sum(solutionmat(m,coroots(W,i))[n]),1:2*nref(W))
+    r=argmax(r)
+    vcat(filter(i->solutionmat(m,coroots(W,r))[i]==1,n),[0])
+  end
+  l=map(x->filter(!iszero,x),cartesian(l...))
+  l=filter(!isempty,l)
+  if l!=w[:minusculeWeights] ChevieErr("minuscule weights") end
+end
+
+test[:minusculeweights]=(fn=Tminusculeweights,applicable=isweylgroup,
+  comment="correspond to coeff 1 of highest coroot on simple")
+
+#------------------------- CharTable(3D4) -----------------------------
+
+#  2 methods to check CharTable(hecke(3D4,q))
+function Thecke3d4(triality)
+  F4=coxgroup(:F,4)
+  q=Pol()
+  T=Tbasis(hecke(F4,[q,q,1,1]))
+  v=[T(2),T(3,2,3),T(1),T(4,3,2,3,4)] # embedding of Hecke(triality,q)
+  m=permutedims(toM(map(x->char_values(prod(v[x];init=T())*T(4,3)),
+                        classinfo(triality)[:classtext])))
+  WF=spets(F4)
+  tbis=subspets(WF,[2,9,1,16],F4(4,3)) # inside F4
+  ct=CharTable(hecke(triality,q)).irr
+  cmpvec(toL(ct), toL(m[findfirst.(==(1),
+        toL(permutedims(InductionTable(tbis,WF).scalar))),:]);
+   na="charTable(Hecke(3D4))",nb="computed by coset induction")
+  D4=reflection_subgroup(F4,[2,9,1,16])
+  v=permutedims(InductionTable(D4,F4).scalar)
+  v=v[charinfo(triality)[:charRestrictions],:]
+  cmpvec(toL(ct),toL(-m[findfirst.(==(2),toL(v)),:]);
+   na="charTable(Hecke(3D4))",nb="computed by subgroup induction");
+end
+
+test[:hecke3d4]=(fn=Thecke3d4,
+  applicable=function(W)
+    t=refltype(W)
+    if length(t)!=1 return false end
+    t=only(t)
+    haskey(t,:orbit) && t.orbit[1].series==:D && order(t.twist)==3
+  end,
+    comment="3d4")
+
+#------------------------- G4_22indexclasses -----------------------------
+
+function TG4_22index(W)
+  t=refltype(W)[1]
+  O=ComplexReflectionGroup(getchev(t,:Generic))
+  e=getchev(t,:Embed)
+  c=map(c->vcat(map(x->e[x],c)...),classinfo(W)[:classtext])
+  c=map(x->position_class(O,O(x...)),c)
+  l=map(x->findfirst(i->reflection(O,i)==O(x...),eachindex(roots(O))),e)
+  a=classinfo(W)[:indexclasses]
+  if nothing in l # for G13, G15 gen is square of gen of G11
+    b=c
+  else 
+    W=reflection_subgroup(O,l)
+    b=fusion_conjugacy_classes(W,O)
+  end
+  if a!=b || b!=c
+    a=hcat(filter(x->length(unique(x))>1,collect(eachcol(toM([a,b,c]))))...)
+    showtable(stdout,a[[2,3],:];
+      row_labels=[string("fusion to ",repr(O;context=rio())),"classtext"],
+      col_labels=string.(a[1,:]),rows_label="indexclasses")
+  end
+end
+
+test[:G4_22index]=(fn=TG4_22index,applicable=
+function(W)t=refltype(W)
+  length(t)==1 && haskey(t[1],:ST) && t[1].ST in 4:22
+ end, comment="Check classinfo(W).indexclasses for W in G₄-G₂₂")
+
+#------------------------- Opdam -----------------------------
+
+function Topdam(W)
+  ct=CharTable(W).irr
+  complex=Perm(ct,conj(ct);dims=1)
+  x=Mvp(:x)
+  fd=fakedegrees(W,x)
+  ci=charinfo(W)
+  if haskey(ci,:opdam) opdam=ci[:opdam] else opdam=Perm() end
+  # c_\chi in Gordon-Griffeth
+  function c(W,i)
+    cl=classinfo(W)[:classes]
+    if cl==[1] return 0 end
+    sum(degrees(W)-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),
+                                 h.cl_s),hyperplane_orbits(W))
+  end
+  for i in 1:nconjugacy_classes(W)
+    f=fd[i^complex]
+    if fd[i^opdam]!=x^Int(c(W,i))*f(x=x^-1)
+      ChevieErr("Opdam wrong for ",i,"\n")
+    end
+  end
+end
+
+test[:opdam]=(fn=Topdam,applicable=W->!(W isa Spets),comment="Opdam")
 
 end

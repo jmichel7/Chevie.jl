@@ -335,7 +335,9 @@ function HCInductionTable(HF, WF)
     Jb = vcat(map(x->x.indices, ser[:relativeType])...)
 #   println("Jb=$Jb")
     if Group(WF) isa CoxeterGroup
-      Wi=rootdatum(cat(cartan.(ser[:relativeType])...;dims=(1,2)))
+      if isempty(ser[:relativeType]) Wi=coxgroup()
+      else Wi=rootdatum(cat(cartan.(ser[:relativeType])...;dims=(1,2)))
+      end
       if !isone(op)
         rh=gens(relative_group(H, h[:levi]))
         rh=filter(a->order.(gens(Wi)[a])==order.(rh),
@@ -371,7 +373,7 @@ function HCInductionTable(HF, WF)
           Hi = reflection_subgroup(Wi, rr)
           if length(Hi) == sH return Hi end
         end
-        return reflection_subgroup(Wi, Int[])
+        reflection_subgroup(Wi, Int[])
       end
       Hi = getHi()
     end

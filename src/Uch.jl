@@ -267,11 +267,12 @@ function params_and_names(sers)
 end
 
 function UnipotentCharacters(t::TypeIrred) 
-  uc=copy(getchev(t,:UnipotentCharacters))
-  if uc==false 
+  uc=getchev(t,:UnipotentCharacters)
+  if uc===nothing
     println("Warning: $t is not a Spets!!")
-    return false 
+    return
   end
+  uc=copy(uc)
   merge!(uc,params_and_names(uc[:harishChandra]))
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   # adjust things for descent of scalars
@@ -532,7 +533,7 @@ function UnipotentCharacters(WF::Spets)
      Dict( :charParams => [ [ "", [ 1 ] ] ],
       :TeXCharNames => [ "." ],
       :almostTeXCharNames => [ "." ],
-      :charSymbols => [ [ "", [ 1 ] ] ],
+      :charSymbols => [ [ Int[], [ 1 ] ] ],
       :size=>1,
       :a => [ 0 ],
       :A => [ 0 ],
@@ -544,7 +545,7 @@ function UnipotentCharacters(WF::Spets)
 # adjust indices of Levis, almostLevis, relativetypes so they agree with
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
-    if uc==false return false end
+    if isnothing(uc) return end
     H=map(x->reflection_subgroup(W,x.indices),t.orbit)
     inc=vcat(map(x->x.indices,t.orbit)...)
     for s in uc.harishChandra
@@ -571,6 +572,7 @@ function UnipotentCharacters(WF::Spets)
 
   # "Kronecker product" of records in simp:
   r=simp[1]
+  if isnothing(r) return end
   f=keys(r.prop)
   res=Dict{Symbol,Any}()
   for a in f
@@ -692,6 +694,18 @@ function Families.fourier(uc::UnipotentCharacters)
       i[f.charNumbers,f.charNumbers]=f.fourierMat
     end
     i
+  end
+end
+
+function qeigen(uc::UnipotentCharacters)
+  get!(uc,:qeigen)do
+    res=zeros(Rational{Int},length(uc))
+    for f in uc.harishChandra
+      if haskey(f,:qEigen) 
+        res[f[:charNumbers]]=fill(f[:qEigen],length(f[:charNumbers]))
+      end
+    end
+    res
   end
 end
 

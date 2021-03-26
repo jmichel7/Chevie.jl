@@ -538,9 +538,11 @@ Series(W,d,ad;NC=false)=map(x->Series(W,x...,d;NC),cuspidal_pairs(W,d,ad))
 
 function ProperSeries(W;NC=false)
   l=sort(unique(conductor.(refleigen(W))))
-  vcat(map(d->vcat(map(i->Series(W, d, i;NC), 
-                             1:length(relative_degrees(W,d)))...),l)...)
+  vcat(map(d->ProperSeries(W,d;NC),l)...)
 end
+
+ProperSeries(W,d;NC=false)=vcat(map(i->Series(W,d,i;NC),
+                                       1:length(relative_degrees(W,d)))...)
 
 function Gapjm.degree(s::Series)
   get!(s,:degree) do
@@ -754,8 +756,10 @@ function Weyl.relative_group(s::Series)
   for r in rrefs
     push!(reflist, getreflection(r))
     if length(Group(map(x->x[:hom],reflist)))==length(WGL)
-#     println("r=",map(x->x[:root],reflist),"\ncr=",map(x->x[:coroot],reflist))
-      WGL=PRG(map(x->x[:root],reflist),improve_type(map(x->x[:coroot],reflist)))
+      rr=improve_type(map(x->x[:root],reflist))
+      crr=improve_type(map(x->x[:coroot],reflist))
+#     println("r=",rr,"\ncr=",crr)
+      WGL=PRG(rr,crr)
       reflist=map(x->smalltobig(lnullspace(x-x^0)),reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->v(hplane(rr[1]))==v(h),rrefs)], reflist)
       WGL.reflists = map(getreflection, reflist)

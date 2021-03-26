@@ -121,13 +121,14 @@ function det(m::Matrix)
   end
   m=copy(m)
   for k in 1:n
-    if k==n return m[n,n] end
-    p=m[k,k]
-    i=findfirst(!iszero,m[k:end,k])
-    if i===nothing return m[1,k] end
-    i+=k-1
-    if i!=k m[[i,k],:]=m[[k,i],:] end
-    s=-s
+    if k==n return s*m[n,n] end
+    if iszero(m[k,k])
+      i=findfirst(!iszero,m[k+1:end,k])
+      if i===nothing return m[k+1,k] end
+      i+=k
+      m[[i,k],k:n]=m[[k,i],k:n]
+      s=-s
+    end
     p=m[k,k]
     for i in k+1:n, j in k+1:n
       m[i,j]=exactdiv(p*m[i,j]-m[i,k]m[k,j],c)

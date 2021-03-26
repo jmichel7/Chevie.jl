@@ -529,8 +529,8 @@ end
   has more than one variable.
 
 ```julia-repl
-julia> @Mvp x; Pol(x^2+x)
-Pol{Int64}: x²+x
+julia> @Mvp x; Pol(:q); Pol(x^2+x)
+Pol{Int64}: q²+q
 ```
 """
 function Pol(x::Mvp{T})where T
@@ -554,8 +554,8 @@ with integral powers in `p`.
 julia> p=(x+y^(1//2))^3
 Mvp{Int64,Rational{Int64}}: x³+3x²y½+3xy+y³⁄₂
 
-julia> Pol(p,:x)
-Pol{Mvp{Int64, Rational{Int64}}}: x³+3y½x²+3yx+y³⁄₂
+julia> Pol(:q); Pol(p,:x)
+Pol{Mvp{Int64, Rational{Int64}}}: q³+3y½q²+3yq+y³⁄₂
 ```
 """
 function Pols.Pol(p::Mvp{T,N},var::Symbol)where{T,N}

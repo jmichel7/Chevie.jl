@@ -62,7 +62,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   ss=char==2 ? XSP(4,2,r) : ctype==1 ? XSP(2,1,r) : XSP(2,0,r)
   l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss))
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
-  uc = Dict{Symbol, Any}(:classes=>[])
+  uc=Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
     res=Dict(:relgroup=>coxgroup(:C,d[2]),:defect=>d[1],:levi=>1:r-d[2])
     res[:locsys]=fill([0, 0],NrConjugacyClasses(res[:relgroup]))
