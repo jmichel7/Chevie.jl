@@ -670,7 +670,7 @@ function UnipotentClasses(W,p=0)
     uc=UnipotentClasses.(t,p)
   end
   if isempty(t)
-    classes=[UnipotentClass("",[],0,
+    classes=[UnipotentClass("1",[],0,
         Dict(:Au=>coxgroup(),:dynkin=>[],:balacarter=>[],
              :dimunip=>0,:red=>torus(rank(W))))]
     uc=[UnipotentClasses(classes,p,Poset([Int[]]),
@@ -1097,17 +1097,6 @@ end
 
 @GapObj struct XTable end
 
-if VERSION.minor<6
-function repair(u::Matrix) # to repair output of cat in 1.≤5
-  for i in 1:length(u)
-    if !isassigned(u,i) u[i]=0 end
-  end
-  u
-end
-else
-repair(u::Matrix)=u
-end
-  
 # XTable(uc[,opt]) values of X̃ᵪ on unipotent classes or local systems
 # Note that c_ι=βᵤ+(rkss L_\CI)/2
 #
@@ -1119,9 +1108,9 @@ function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=XTable(Dict(
-    :scalar=>permutedims(repair(cat(greenpieces...,dims=(1,2)))^p),
+    :scalar=>permutedims(cat(greenpieces...,dims=(1,2))^p),
     :uc=>uc,
-    :Y=>^(repair(cat(getproperty.(pieces,:L)...,dims=(1,2))),p,dims=(1,2)),
+    :Y=>^(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
     :parameter=>vcat(getproperty.(pieces,:parameter)...),
     :relgroups=>getindex.(uc.springerseries,:relgroup),
     :q=>q,

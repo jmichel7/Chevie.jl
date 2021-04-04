@@ -27,7 +27,7 @@ function FindSeriesInParent(h,HF,WF,sers)
       end
     end
   end
-  error("series ", n," not found in ",WF)
+  error("series ",h[:cuspidalName]," not found in ",WF)
 end
 
 # find the number of cuspidal of name n in UnipotentCharacters(HF)

@@ -377,9 +377,38 @@ function PermRoot.reflrep(H::HeckeAlgebra)
   end)
 end 
 
+"""
+`WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)'
+    
+`H`  should be  a one-parameter  Hecke algebra  for a  finite Coxeter group
+where  `rootpara`  is  defined.  The  function  returns the matrices of the
+representation defined by `gr` of `H`.
+
+```julia-repl
+julia> W=coxgroup(:H,3)
+H₃
+
+julia> H=hecke(W,Pol(:x)^2)
+hecke(H₃,x²)
+
+julia> g=Wgraph(W,3)
+2-element Vector{Vector{Vector{Any}}}:
+ [[2], [1, 2], [1, 3], [1, 3], [2, 3]]
+ [[-1, [[1, 3], [2, 4], [3, 5], [4, 5]]]]
+
+julia> WGraphToRepresentation(H,g)
+3-element Vector{Matrix{Pol{Int64}}}:
+ [x² 0 … 0 0; 0 -1 … 0 0; … ; 0 0 … -1 x; 0 0 … 0 x²]
+ [-1 0 … 0 0; 0 -1 … x 0; … ; 0 0 … x² 0; 0 0 … x -1]
+ [x² 0 … 0 0; 0 x² … 0 0; … ; 0 x … -1 0; 0 0 … 0 -1]
+```
+"""
 function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
-  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
-                                   rootpara(H)[1]//H.para[1][2])
+  if !equalpara(H)
+    error("cell representations for unequal parameters not yet implemented")
+  end
+  S=toM.(-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
+                                              rootpara(H)[1]//H.para[1][2]))
   if !isrepresentation(H,S;verbose=true) error() end
   S
 end

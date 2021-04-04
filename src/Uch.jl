@@ -268,7 +268,7 @@ end
 
 function UnipotentCharacters(t::TypeIrred) 
   uc=getchev(t,:UnipotentCharacters)
-  if uc===nothing
+  if uc===nothing || uc==false
     println("Warning: $t is not a Spets!!")
     return
   end
@@ -523,10 +523,10 @@ function UnipotentCharacters(WF::Spets)
   tt=refltype(WF)
   if isempty(tt) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(
-      [Dict(:relativeType=>Dict[], 
+      [Dict(:relativeType=>TypeIrred[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
-      [Dict(:relativeType=>Dict[], 
+      [Dict(:relativeType=>TypeIrred[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],

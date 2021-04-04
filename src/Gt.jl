@@ -298,7 +298,7 @@ function nconjugacy_classes(r::ClassType,WF,p)
       R=Group(RF)
       res=reduce(*,map(p->Mvp(:q)-p[2],filter(y->y[1]==1,degrees(RF)));init=Mvp(1))
       if semisimplerank(R)==0 return res end
-      d=SmithNormalFormIntegerMat(simpleroots(R))
+      d=smith_normal_form(simpleroots(R))
       d=filter(x->!(x in [0,1,p]),toM(d))
       if isempty(d) return res end
       res*prod(d)do i

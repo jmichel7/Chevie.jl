@@ -132,7 +132,7 @@ module CoxGroups
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox
 
-export isleftdescent, nref # 'virtual' methods (exist only for concrete types)
+export isleftdescent # 'virtual' methods (exist only for concrete types)
 
 using ..Gapjm
 #-------------------------- Coxeter groups
@@ -244,7 +244,6 @@ Base.length(W::CoxeterGroup,w)=length(word(W,w))
 Base.eltype(W::CoxeterGroup{T}) where T=T
 coxrank(W::CoxeterGroup)=ngens(W)
 PermRoot.semisimplerank(W::CoxeterGroup)=coxrank(W)
-function nref end
 
 """
 `longest(W)`
@@ -817,7 +816,7 @@ Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
 
-nref(W::CoxSym)=div(W.n*(W.n-1),2)
+PermRoot.nref(W::CoxSym)=div(W.n*(W.n-1),2)
 PermRoot.rank(W::CoxSym)=W.n-1
 
 """

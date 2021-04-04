@@ -1,5 +1,7 @@
 # this should just be "tools". It contains simple functions but which need
 # several of the self-contained structural packages of Gapjm
+export pblocks, abelian_gens
+
 function Cycs.root(x::Pol,n::Number=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
@@ -161,6 +163,40 @@ function pblocks(G,p)
   sort(collectby(improve_type(v),1:l))
 end
 
+"""
+`abelian_gens(A)`
+    
+`A`  should be an abelian group or the list of its generators. Such a group
+has  a unique decomposition  up to isomorphism  of the form `C₁×…×Cₙ` where
+the  order of `Cᵢ` divides the order of `Cᵢ₊₁`. The function returns a list
+of generators for each of the `Cᵢ`.
+
+```julia-repl
+julia> abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])
+2-element Vector{Perm{Int16}}:
+ (6,7)
+ (1,2)(3,5,4)(6,7)
+```
+"""
+abelian_gens(l::Vector)=isempty(l) ? l : abelian_gens(Group(l))
+function abelian_gens(G::Group)
+# thanks to Klaus Lux for the algorithm
+  l=filter(!isone,gens(G))
+  if isempty(l) return l end
+  rels=Vector{Int}[]
+  for i in eachindex(l)
+    H=i==1 ? Group([one(l[1])]) : Group(l[1:i-1])
+    d=findfirst(o->l[i]^o in H,1:order(l[i]))
+    rel=fill(0,length(l))
+    for p in tally(word(H,l[i]^d)) rel[p[1]]=p[2] end
+    rel[i]=-d
+    push!(rels,rel)
+  end
+  rels=inv(toM(MatInt.SmithNormalFormIntegerMatTransforms(rels)[:coltrans])//1)
+  rels=Int.(rels)
+  filter(!isone,map(r->prod(l.^r),eachrow(rels)))
+end
+
 #-------------------- define function to backport to gap3 some values
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
@@ -195,4 +231,16 @@ function Gapjm.gap(p::Pol)
   if iszero(p) return "0*q" end
   l=filter(x->x[2]!=0,collect(enumerate(p.c)))
   join(map(((i,c),)->"($(gap(c)))*q^$(i+p.v-1)",l),"+")
+end
+
+Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
+
+function Gapjm.gap(p::Mvp)
+  res=""
+  join(map(p.d)do (k,c)
+    c=Util.bracket_if_needed(gap(c))
+    if isempty(c) gap(k)
+    else c*"*"*gap(k)
+    end
+  end,"+")
 end

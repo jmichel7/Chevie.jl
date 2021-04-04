@@ -395,7 +395,7 @@ using ..Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars, detPerm
+  decompose, on_chars, detPerm, discriminant
 
 """
 `fakedegree(W, φ, q)`
@@ -972,7 +972,7 @@ function classes(ct::CharTable)
 end
 
 function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector)
-  div(c2'*(c1.*classes(ct)),ct.centralizers[1])
+  div(c2'*(c1.*classes(ct)),ct.order)
 end
 
 """
@@ -1073,15 +1073,13 @@ representations(W::Union{Group,Spets})=representation.(Ref(W),1:nconjugacy_class
 """
 `WGraphToRepresentation(coxrank::Integer,graph,v)`
 
-(Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
-Naruse, Howlett,Yin)
-We  store  some  representations  of  some  Hecke  algebras  with  only one
-parameter  `v` as `W`-graphs. For a  Coxeter system `(W,S)` where `coxrank`
-is  the length of `S`, a `W`-graph is  defined by a set of vertices `C`; to
-`x∈  C` is  attached `I(x)⊂  S` and  to `(x,y)∈  C^2` is attached an "edge"
-`μ(x,y)`  in the field of definition  of `W`; this defines a representation
-of  the Hecke algebra with  single rootparameter `v` on  a space with basis
-``{e_y}_{y∈ C}`` by:
+We  store some representations one-parameter  Hecke algebras as `W`-graphs.
+For  a  Coxeter  system  `(W,S)`  where `coxrank=length(S)`, a `W`-graph is
+defined  by a set of vertices `C` with a function `I` which attaches to `x∈
+C`  a subset  `I(x)⊂ S`,  and "edge  labels" which  to `(x,y)∈  C^2` attach
+`μ(x,y)∈  K` where `K`  is the field  of definition of  `W`; this defines a
+representation  of the  Hecke algebra  with parameters  `v` and `-v⁻¹` on a
+space with basis ``{e_y}_{y∈ C}`` by:
 
 ``T_s(e_y)=\\begin{cases}-e_y& if s∈ I(y)\\\\
        v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\end{cases}``
@@ -1102,8 +1100,26 @@ each  pair `[l[1],l[i]]`  represents an  edge (`x=l[1]`,`y=l[i]`) such that
 pair  in the `μ`-list  is a pair  `[m1,m2]` and each  edge `[x,y]` obtained
 from  the lists in the second element  has to be interpreted as `μ(x,y)=m1`
 and `μ(y,x)=m2`.
+
+```julia-repl
+julia> W=coxgroup(:H,3)
+H₃
+
+julia> g=Wgraph(W,3)
+2-element Vector{Vector{Vector{Any}}}:
+ [[2], [1, 2], [1, 3], [1, 3], [2, 3]]
+ [[-1, [[1, 3], [2, 4], [3, 5], [4, 5]]]]
+
+julia> toM.(WGraphToRepresentation(3,g,Pol(:x)))
+3-element Vector{Matrix{Pol{Int64}}}:
+ [x² 0 … 0 0; 0 -1 … 0 0; … ; 0 0 … -1 -x; 0 0 … 0 x²]
+ [-1 0 … 0 0; 0 -1 … -x 0; … ; 0 0 … x² 0; 0 0 … -x -1]
+ [x² 0 … 0 0; 0 x² … 0 0; … ; 0 -x … -1 0; 0 0 … 0 -1]
+```
 """
 function WGraphToRepresentation(rk::Integer,gr::Vector,v)
+# Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
+# Naruse, Howlett,Yin)
   V=Vector{Int}[]
   for S in gr[1]
     if S isa Integer append!(V,map(i->V[end],1:S))
@@ -1448,4 +1464,33 @@ function JInductionTable(u,g)
   "J-Induction Table from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"JInductionTable($(repr(u)),$(repr(g)))"))
 end
+
+"""
+`discriminant(W)`
+
+returns  the  discriminant  of  the  complex  reflection  group  `W`,  as a
+polynomial in the fundamental invariants. The discriminant is the invariant
+obtained  by  taking  the  product  of  the  linear  forms  describing  the
+reflecting   hyperplanes  of  `W`,   each  raised  to   the  order  of  the
+corresponding  reflection. The discriminant  is returned as  a function `f`
+such  that  the  discriminant  in  the  variables  `a₁,…,aₙ` is obtained by
+calling `f(a₁,…,aₙ)`. For the moment, this function is implemented only for
+the exceptional complex reflection groups `G₄` to `G₃₃`.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(4);@Mvp x,y
+
+julia> discriminant(W)(x,y)
+Mvp{Int64}: x³-y²
+```
+"""
+
+function discriminant(W)
+  t=refltype(W)
+  if isempty(t) return ()->Mvp(1)
+  elseif length(t)==1 return getchev(t[1],:Discriminant)
+  else error("not implemented for non-irreducible ",W)
+  end
+end
+  
 end

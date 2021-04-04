@@ -31,10 +31,10 @@ julia> W=rootdatum("3D4")
 julia> l=cuspidal_pairs(W,3)
 2-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
  (levi = ³D₄, cuspidal = 8)
- (levi = D₄₍₎=Φ₃², cuspidal = 1)
+ (levi = ³D₄₍₎=Φ₃², cuspidal = 1)
 
 julia> Series(W,l[2]...,3)
-ζ₃-series R^{³D₄}_{D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,Mvp{Cyc{Int64}, Int64}[ζ₃q², ζ₃, ζ₃q])
+ζ₃-series R^{³D₄}_{³D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,Mvp{Cyc{Int64}, Int64}[ζ₃q², ζ₃, ζ₃q])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -723,7 +723,7 @@ function Weyl.relative_group(s::Series)
     if length(rH)==0 # cyclic WGL
       H=W
     else
-      H=reflection_subgroup(W,vcat(inclusion(W,rr),inclusiongens(L)))
+     H=reflection_subgroup(W,restriction(W,vcat(inclusion(W,rr),inclusiongens(L))))
     end
     res=Dict{Symbol, Any}(:refs => inclusiongens(H))
     H = intersect(H, N)
@@ -782,7 +782,7 @@ function mC(s::Series)
   uc = UnipotentCharacters(s.spets)
   cn = char_numbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
   aA = uc.:a[cn] + uc.A[cn]
-  lpi(W)=sum(degrees(W)+codegrees(W))
+  lpi(W)=nref(W)+nhyp(W)
   if s.principal
     if minimum(aA)!=0 error("id not in RLG(1)") end
     pG=lpi(Group(s.spets))

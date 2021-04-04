@@ -492,7 +492,7 @@ function normal_show(io::IO,p::Cyc{T})where T
   TeX=get(io,:TeX,false)
   if T<:Rational{<:Integer}
     den=denominator(p)
-    p=Cyc{Int}(p*den)
+    p=Cyc{typeof(den)}(p*den)
   else
     den=1
   end
@@ -570,7 +570,7 @@ else
   n=lcm(a.n,b.n)
   na=div(n,a.n)
   nb=div(n,b.n)
-  res=eltype(a.d)[]
+  res=empty(a.d.d)
   for (i,va) in a.d sumroot(res,n,na*i,va) end
   for (i,vb) in b.d sumroot(res,n,nb*i,vb) end
   lower(Cyc(n,ModuleElt(res)))

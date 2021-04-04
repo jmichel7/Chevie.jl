@@ -320,7 +320,7 @@ julia> WF=spets(W,Perm(1,2))
 ²Bsym₂
 
 julia> subspets(WF,Int[],W(1))
-Bsym₂₍₎=Φ‴₈
+²Bsym₂₍₎=Φ‴₈
 ```
 
 A subgroup `H` which is a parabolic subgroup corresponds to a rational form
@@ -436,9 +436,9 @@ julia> twistings(W,2:5)
 
 julia> twistings(WF,2:5)
 3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
- E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
- E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆
- E₆₍₂₃₄₅₎=D₄Φ₂²
+ ²E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
+ ²E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆
+ ²E₆₍₂₃₄₅₎=D₄Φ₂²
 ```
 """
 twistings(W,J::AbstractVector{<:Integer})=
@@ -653,14 +653,14 @@ julia> WF=spets(W,Perm(1,3))
 
 julia> twistings(WF,Int[])
 5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
- A₃₍₎=Φ₂³
- A₃₍₎=Φ₁Φ₂²
- A₃₍₎=Φ₁²Φ₂
- A₃₍₎=Φ₂Φ₆
- A₃₍₎=Φ₁Φ₄
+ ²A₃₍₎=Φ₂³
+ ²A₃₍₎=Φ₁Φ₂²
+ ²A₃₍₎=Φ₁²Φ₂
+ ²A₃₍₎=Φ₂Φ₆
+ ²A₃₍₎=Φ₁Φ₄
 
 julia> torus(WF,2)
-A₃₍₎=Φ₁Φ₂²
+²A₃₍₎=Φ₁Φ₂²
 ```
 """
 Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
@@ -725,6 +725,9 @@ function PermRoot.parabolic_reps(WF::CoxeterCoset,s)
   res
 end
 
+PermRoot.parabolic_reps(WF::Spets,s)=if !isone(WF.phi) error() else
+  parabolic_reps(Group(WF)) end
+
 PermRoot.Diagram(W::Spets)=Diagram.(refltype(W))
 
 function Base.show(io::IO, WF::Spets)
@@ -733,7 +736,12 @@ function Base.show(io::IO, WF::Spets)
     print(io,"spets(",W,",",WF.phi,")")
     return
   end
-  if isdefined(W,:parent)
+  if haskey(WF,:parent)
+    n=inclusion(WF,PermRoot.indices(refltype(WF)))
+    if n!=eachindex(gens(Group(WF.parent)))
+      printTeX(io,"{",WF.parent,"}_{"*joindigits(n;always=true)*"}=")
+    end
+  elseif isdefined(W,:parent)
     n=inclusion(W,PermRoot.indices(refltype(WF)))
     if n!=eachindex(gens(W.parent))
       printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")

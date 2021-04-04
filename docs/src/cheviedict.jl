@@ -20,7 +20,7 @@ const ChevieDict=Dict(
 "Braid"=>"BraidMonoid",
 "BraidMonoid"=>"BraidMonoid",
 "BraidRelations"=>"braid_relations",
-#BrieskornNormalForm
+"BrieskornNormalForm"=>"Brieskorn_normal_form",
 "Bruhat"=>"bruhatless",
 "BruhatPoset"=>"Poset",
 "BruhatSmaller"=>"bruhatless",
@@ -106,8 +106,8 @@ const ChevieDict=Dict(
 "FirstLeftDescending(W,w)"=>"firstleftdescent(W,w)",
 "ForEachCoxeterWord(W,f)"=>"for w in W f(word(W,w)) end",
 "ForEachElement(W,f)"=>"for w in W f(w) end",
-#FormatTable
-#Frobenius
+"FormatTable"=>"showtable",
+"Frobenius"=>"Frobenius",
 "FullSymbol"=>"fullsymbol",
 "FundamentalGroup"=>"fundamental_group",
 "FusionAlgebra"=>"fusion_algebra",
@@ -143,9 +143,9 @@ const ChevieDict=Dict(
 "IndependentRoots"=>"independent_roots",
 "InducedLinearForm"=>"induced_linear_form",
 "InductionTable"=>"InductionTable",
-#Inherit
+"Inherit"=>"look at merge for hashes",
 "Intersection"=>"intersect",
-#IntermediateGroup
+"IntermediateGroup"=>"intermediate_group",
 "IntFFE"=>"Int",
 "IntListToString"=>"joindigits",
 "InvariantForm"=>"invariant_form",
@@ -268,7 +268,7 @@ const ChevieDict=Dict(
 "ReflectionType"=>"refltype",
 "RegularEigenvalues"=>"regular_eigenvalues",
 "RelativeDegrees"=>"relative_degrees",
-#Replace
+"Replace"=>"replace",
 "Representations"=>"representations",
 "RepresentativeConjugation(b,b'[,F][,type])"=>"conjugating_elt(b,b'[,F],ss=type)",
 "RepresentativeDiagonalConjugation"=>"diagconj_elt",
@@ -314,7 +314,7 @@ const ChevieDict=Dict(
 "StructureRationalPointsConnectedCentre"=>"StructureRationalPointsConnectedCentre",
 "SubSpets"=>"subspets",
 "SubTorus"=>"SubTorus",
-#Symbols
+"Symbols"=>"HasType.BDSymbols",
 "SymbolsDefect(e,r,def,ct)"=>"symbols(e,r,ct,def)",
 "SymmetricDifference"=>"symdiff",
 "SymmetricPower"=>"symmetric_power",
@@ -323,7 +323,7 @@ const ChevieDict=Dict(
 "TorusOrder"=>"torus_order",
 "TransitiveClosure"=>"transitive_closure",
 "Transporter"=>"transporter",
-#Transversals
+"Transversals"=>"related to transversals",
 "TriangulizeMat"=>"echelon!",
 "Twistings"=>"twistings",
 "TwoTree(m)"=>"twotree(m)",
@@ -338,8 +338,8 @@ const ChevieDict=Dict(
 "Valuation(p)"=>"valuation(p)",
 "Value(p,x)"=>"p(x)",
 "WeightInfo"=>"weightinfo",
-#WGraph
-#WGraphToRepresentation
+"WGraph"=>"Wgraph",
+"WGraphToRepresentation"=>"WGraphToRepresentation",
 "W.matgens[i]"=>"reflrep(W,i)",
 "W.N"=>"nref(W)",
 "W.orbitRepresentative"=>"simple_reps(W)",

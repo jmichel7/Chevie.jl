@@ -130,7 +130,7 @@ export PermRootGroup, PRG, PRSG, catalan,
  PermX, coroots, baseX, invbaseX, semisimplerank, invariant_form, generic_order,
  parabolic_reps, invariants,improve_type, matY, simpleroots,
  simplecoroots, action, radical, parabolic_closure, is_parabolic,
- central_action
+ central_action, nhyp, nref
 using ..Gapjm
 
 best_eltype(m)=reduce(promote_type,best_type.(m))
@@ -370,13 +370,22 @@ Diagram(W::PermRootGroup)=Diagram.(refltype(W))
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
+nref(W::PermRootGroup)=sum(degrees(W).-1)
+"""
+`nhyp(W)`
+
+number of reflecting hyperplanes of `W`
+"""
+nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
 # should use independent_roots
 
 Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W)==roots(W1) &&
   coroots(W)[1:ngens(W)]==coroots(W1)[1:ngens(W1)]
 
 """
-return for each root the index of the first simple root conjugate to it"
+`simple_reps(W)`
+
+for each root, the index of the first simple root conjugate to it
 """
 function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
   get!(W,:rootreps)do
@@ -397,9 +406,18 @@ function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
   end
 end
 
+"""
+`simple_reps(W,i)`
+
+the  smallest index  of a root in the same `W`-orbit as the `i`-th root.
+"""
 simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 
-"list of same length as W.roots giving corresponding reflections"
+"""
+`reflections(W)`
+
+list of same length as `W.roots` giving corresponding reflections
+"""
 function reflections(W::PermRootGroup)
   getp(simple_reps,W,:reflections)
 end
@@ -411,9 +429,18 @@ reflection for `i`-th root of `W`
 """
 reflection(W::PermRootGroup,i)=reflections(W)[i]
 
+"""
+`simple_conjugating(W)`
+
+For each root `i`, an element conjugating it to `simple_reps(W,i)`.
+"""
 simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:repelms)
 
-"element `w` such that `simple_reps(W,i)^w==i`"
+"""
+`simple_conjugating(W,i)`
+
+an element `w` such that `simple_reps(W,i)^w==i`
+"""
 simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
 
 """
@@ -1630,7 +1657,6 @@ julia> catalan(8)
 """
 catalan(n::Int)=Int(prod(i->(n+i)//i,2:n))
 
-# Catalan(W [,m] [,q]]) [q][Fuss-]Catalan numbers of W
 """
 `Catalan(W)`
 
@@ -1660,32 +1686,33 @@ julia> catalan(ComplexReflectionGroup(7),2)
 16
 ```
 
-`Catalan(W,q)`, resp. `Catalan(W,i,q)`
+`Catalan(W;q=1)`, resp. `Catalan(W,i;q=1)`
 
-where  `q`  is  a  variable  (like  `Pol(:q)`  or  an  'Mvp')  returns  the
-`q`-Catalan number (resp. the `i`-th `q`-Fuss Catalan number) of `W`. Again
-the definitions in general are in [Gordon and
-Griffeth2012](biblio.htm#gg12).
+for  `q`  a  variable  (like  `Pol()`  or an 'Mvp') returns the `q`-Catalan
+number  (resp.  the  `i`-th  `q`-Fuss  Catalan  number)  of  `W`. Again the
+definitions in general are in [Gordon and Griffeth2012](biblio.htm#gg12).
 
 ```julia-repl
-julia> catalan(ComplexReflectionGroup(7),2,q)
+julia> catalan(ComplexReflectionGroup(7),2;q=Pol())
 Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1
 ```
 """
-function catalan(W,m=1,q=1)
+function catalan(W,m=1;q=1)
   if length(refltype(W))>1 error(W," should be irreducible") end
   d=sort(degrees(W))
   d=filter(x->x!=1,d)
-  h=div(sum(d)+sum(codegrees(W)),length(d))
+  fd=d
+  if length(d)!=ngens(W) 
+    ci=charinfo(W)
+    if haskey(ci,:opdam) opdam=ci[:opdam]^-1 else opdam=Perm() end
+    ct=toL(CharTable(W).irr)
+    complex=Perm(ct,conj(ct))
+    fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
+    fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
+  end
   f(i)=sum(j->q^j,0:i-1)
-  if length(d)==ngens(W) return Int(prod(x->f(m*h+x)//f(x),d)) end
-  ci=charinfo(W)
-  if haskey(ci,:opdam) opdam=ci[:opdam]^-1 else opdam=Perm() end
-  ct=toL(CharTable(W).irr)
-  complex=Perm(ct,conj(ct))
-  fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
-  fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
-  prod(map((e,d)->exactdiv(f(m*h+e),f(d)),fd,d))
+  h=div(nhyp(W)+nref(W),length(d))
+  exactdiv(prod(x->f(m*h+x),fd),prod(x->f(x),d))
 end
 
 """
@@ -1870,7 +1897,7 @@ function invariants(W)
   i
 end
 
-BadNumber(W)=prod(BadNumber.(refltype(W)))
+BadNumber(W)=prod(BadNumber.(refltype(W));init=1)
 
 function BadNumber(t::TypeIrred)
   r=rank(t)

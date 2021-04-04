@@ -629,6 +629,7 @@ dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 @inline Base.parent(W::FiniteCoxeterGroup)=W
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
+PermRoot.nhyp(W::FiniteCoxeterGroup)=nref(W)
 
 Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
@@ -640,50 +641,56 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
  PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, 
  PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction, 
- PermRoot.semisimplerank, PermRoot.simplecoroots, 
+ PermRoot.semisimplerank, PermRoot.simplecoroots, PermRoot.simple_conjugating,
  PermRoot.simple_reps, PermRoot.simpleroots, PermRoot.torus_order, 
  PermRoot.baseX, PermRoot.central_action,
  Perms.reflength
 
 #--------------- FCG -----------------------------------------
-@GapObj struct FCG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
-  G::TW
+@GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T},T1}
+  G::PRG{T1,T}
   rootdec::Vector{Vector{T1}}
   N::Int
 end
 
 #forwarded
-PermRoot.simple_conjugating(W::FCG,i)=simple_conjugating(W.G,i)
 Base.show(io::IO, W::FCG)=show(io,W.G)
 
-function Base.show(io::IO,t::Type{FCG{T,T1,TW}})where {T,T1,TW}
+function Base.show(io::IO,t::Type{FCG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
 end
 
-"number of reflections of W"
+"""
+`nref(W)`
+
+number of reflections of `W`
+"""
 @inline CoxGroups.nref(W::FCG)=W.N
 CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
+# the next is good also:
+#CoxGroups.isleftdescent(W::FCG,w,i::Int)=action(W,i,w)>nref(W)
 
 """
 `coxgroup(type,rank[,bond])`
 
 This is equivalent to 'rootdatum(cartan(type,rank[,bond]))`.
 
-The  resulting object, that we will  call a *Coxeter datum*, has additional
-entries and functions describing various information on the root system and
-Coxeter group that we describe below.
+The  resulting object, that we will  call a *Coxeter datum*, has an 
+additional entry
+  - `W.rootdec`:  the root vectors, given  as linear combinations of simple
+    roots.  The first `nref(W)` roots are  positive, the next `nref(W)` are
+    the corresponding negative roots. Moreover, the first
+    `semisimplerank(W)`  roots are the simple roots. The positive roots are
+    ordered by increasing height.
+
+The  following functions  get various  information on  the root  system and
+Coxeter group
 
   - `nref(W)`:   the number of positive roots
 
-  - `W.rootdec`: the root vectors, given  as linear combinations of simple
-    roots. The first `nref(W)` roots are positive, the next `nref(W)` are the
-    corresponding  negative  roots.  Moreover,  the first `semisimplerank(W)`
-    roots  are the simple roots. The positive roots are ordered by increasing
-    height.
-
-  - `coroots(W)`: the same information for  the simple coroots. The coroot
-    corresponding  to a given root has same index in the list of coroots as
-    the root in the list of roots.
+  - `coroots(W)`: The list of coroots. The coroot corresponding  to a given
+    root has same index in the list of coroots as the root in the list of
+    roots.
 
   - `rootlengths(W)`: the vector  of the (squared)  length of the roots.
     The  shortest roots in an irreducible subsystem are given the length 1.
@@ -694,8 +701,8 @@ Coxeter group that we describe below.
   - `simple_reps(W,i)`: this  gives the  smallest index  of a root in the
     same `W`-orbit as the `i`-th root.
 
-  - `simple_conjugating(W,i)`: returns  an element  `w` of  `W` of minimal
-    length such that `i==simple_reps(W,i)^w'.
+  - `simple_conjugating(W,i)`: returns  an element  `w` of  `W` such that
+    `i==simple_reps(W,i)^w'.
 
   - `reflrep(W)`:  the  reflection  representation  of  `W`, that is the
     matrices  (in row convention --- the matrices operate *from the right*)
@@ -833,8 +840,8 @@ function Base.:^(W::FiniteCoxeterGroup,p::Perm)
 end
 
 #--------------- FCSG -----------------------------------------
-@GapObj struct FCSG{T,T1,TW<:PermRootGroup{T1,T}} <: FiniteCoxeterGroup{Perm{T},T1}
-  G::TW
+@GapObj struct FCSG{T,T1} <: FiniteCoxeterGroup{Perm{T},T1}
+  G::PRSG{T1,T}
   rootdec::Vector{Vector{T1}}
   N::Int
   parent::FCG{T,T1}
@@ -842,7 +849,7 @@ end
 
 Base.show(io::IO, W::FCSG)=show(io,W.G)
 
-function Base.show(io::IO,t::Type{FCSG{T,T1,TW}})where {T,T1,TW}
+function Base.show(io::IO,t::Type{FCSG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterSubGroup{Perm{$T},$T1}")
 end
 
@@ -1000,7 +1007,7 @@ end
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
-@inbounds CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>W.parent.N
+CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>nref(parent(W))
 
 function rootlengths(W::FCSG)
   get!(W,:rootlengths)do

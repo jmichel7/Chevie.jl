@@ -42,7 +42,7 @@ end
 
 #--------------------------------------------------------------------------
 toL(m)=collect(eachrow(m)) # to Gap
-toM(m)=isempty(m) ? permutedims(hcat(m...)) : permutedims(reduce(hcat,m)) # to julia
+toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia
 
 #--------------------------------------------------------------------------
 

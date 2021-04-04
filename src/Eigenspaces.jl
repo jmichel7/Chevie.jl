@@ -300,8 +300,8 @@ julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 julia> split_levis(W,3)
 3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
  ³D₄
- D₄₍₁₃₎=A₂Φ₃
- D₄₍₎=Φ₃²
+ ³D₄₍₁₃₎=A₂Φ₃
+ ³D₄₍₎=Φ₃²
 
 julia> W=coxgroup(:E,8)
 E₈

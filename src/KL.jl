@@ -669,19 +669,12 @@ hecke(H₃,q)
 
 julia> representation(c,H)
 3-element Vector{Matrix{Mvp{Int64, Rational{Int64}}}}:
- [-1 0 … 0 0; 0 -1 … 0 q½; … ; 0 0 … q 0; 0 0 … 0 q]
- [-1 q½ … 0 0; 0 q … 0 0; … ; 0 0 … -1 0; 0 q½ … 0 -1]
- [q 0 … 0 0; q½ -1 … 0 0; … ; 0 0 … q 0; 0 0 … 0 -1]
+ [-1 0 … 0 0; 0 -1 … 0 -q½; … ; 0 0 … q 0; 0 0 … 0 q]
+ [-1 -q½ … 0 0; 0 q … 0 0; … ; 0 0 … -1 0; 0 -q½ … 0 -1]
+ [q 0 … 0 0; -q½ -1 … 0 0; … ; 0 0 … q 0; 0 0 … 0 -1]
 ```
 """
-function Chars.representation(c::LeftCell,H)
-  W=H.W
-  if !equalpara(H)
-    error("cell representations for unequal parameters not yet implemented")
-  else v=rootpara(H)[1]
-  end
-  toM.(WGraphToRepresentation(semisimplerank(c.group),Wgraph(c),v))
-end
+Chars.representation(c::LeftCell,H)=WGraphToRepresentation(H,Wgraph(c))
 
 # returns right star operation st (a BraidRelation) of LeftCell c
 function RightStar(st,c)
@@ -959,7 +952,13 @@ return the W-graph for the `i`-th irreducible representation of `W` (or of the
 
 Only implemented for irreducible groups of type `E`, `F` or `H`.
 """
-Wgraph(W,i)=getchev(W,:Wgraph,i)
+function Wgraph(W,i)
+  t=refltype(W)
+  if length(t)!=1 error(W," should be irreducible") end
+  g=getchev(t[1],:WGraph,i)
+  if isnothing(g) error(W," should be of type `E`, `F` or `H`.") end
+  g
+end
 
 """
 `Lusztigaw(W,w)`

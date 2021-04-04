@@ -2,8 +2,8 @@ module MatInt
 #using ..Gapjm
 using ..Util: toL, toM
 
-export ComplementIntMat, NullspaceIntMat, SolutionIntMat, DiagonalizeIntMat,
- SmithNormalFormIntegerMat, DiaconisGraham, BaseIntMat
+export complementInt, leftnullspaceInt, SolutionIntMat, DiagonalizeIntMat,
+ smith_normal_form, DiaconisGraham, baseInt
 
 IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
 NullMat(i,j)=[zeros(Int,j) for k in 1:i]
@@ -604,18 +604,28 @@ gap> n.rowtrans*m=n.normal;
 true
 """
 HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat, 6)
-SmithNormalFormIntegerMat(mat)=DoNFIM(mat,1)[:normal]
-SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat,13)
 """
-This function changes `mat` to its SNF.
-(The result is the same as
-that of <Ref Func="SmithNormalFormIntegerMat"/>,
-but `mat` will be modified, thus using less memory.)
-If `mat` is immutable an error will be triggered.
-<Example><![CDATA[
+smith_normal_form(m)
+
+The Smith normal from
+
+```julia-repl
+julia> m=[[1,15,28],[4,5,6],[7,8,9]]
+3-element Vector{Vector{Int64}}:
+ [1, 15, 28]
+ [4, 5, 6]
+ [7, 8, 9]
+
+julia> smith_normal_form(m)
+3×3 Matrix{Int64}:
+ 1  0  0
+ 0  1  0
+ 0  0  3
+```
+"""
+smith_normal_form(mat)=toM(DoNFIM(mat,1)[:normal])
+"""
 gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
-gap> SmithNormalFormIntegerMat(m);          
-[ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
 gap> n:=SmithNormalFormIntegerMatTransforms(m);  
 rec( colC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ], 
   colQ := [ [ 1, 0, -1 ], [ 0, 1, -1 ], [ 0, 0, 1 ] ], 
@@ -627,6 +637,10 @@ rec( colC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ],
   signdet := 1 )
 gap> n.rowtrans*m*n.coltrans=n.normal;
 true
+"""
+SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat,13)
+"""
+gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
 gap> DiagonalizeIntMat(m);m;
 [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
 ]]></Example>
@@ -634,24 +648,28 @@ gap> DiagonalizeIntMat(m);m;
 DiagonalizeIntMat(mat)=DoNFIM(mat,17)
 
 """
-If `mat` is a matrix with integral entries, this function returns a list of
-vectors  that forms a basis of the integral row space of `mat`, i.e. of the
-set of integral linear combinations of the rows of `mat`.
+`baseInt(m::Matrix{<:Integer})`
+
+If  `m` is a matrix with integral  entries, this function returns a list of
+vectors  that forms a basis  of the integral row  space of `m`, i.e. of the
+set of integral linear combinations of the rows of `m`.
 
 ```julia-repl
-julia> mat=[[1,2,7],[4,5,6],[10,11,19]]
-3-element Vector{Vector{Int64}}:
- [1, 2, 7]
- [4, 5, 6]
- [10, 11, 19]
+julia> m=[1 2 7;4 5 6;10 11 19]
+3×3 Matrix{Int64}:
+  1   2   7
+  4   5   6
+ 10  11  19
 
-julia> BaseIntMat(mat)
-3-element Vector{Vector{Int64}}:
- [1, 2, 7]
- [0, 3, 7]
- [0, 0, 15]
+julia> baseInt(m)
+3×3 Matrix{Int64}:
+ 1  2   7
+ 0  3   7
+ 0  0  15
 ```
 """
+baseInt(m::Matrix{<:Integer})=toM(BaseIntMat(toL(m)))
+
 function BaseIntMat(mat)
   norm=NormalFormIntMat(mat, 2)
   norm[:normal][1:norm[:rank]]
@@ -663,7 +681,7 @@ list  of vectors that forms a basis of the intersection of the integral row
 spaces of `m` and `n`.
 
 ```julia-repl
-julia> nat=[[5,7,2],[4,2,5],[7,1,4]]
+julia> mat=[[1,2,7],[4,5,6],[10,11,19]]; nat=[[5,7,2],[4,2,5],[7,1,4]]
 3-element Vector{Vector{Int64}}:
  [5, 7, 2]
  [4, 2, 5]
@@ -685,78 +703,78 @@ function BaseIntersectionIntMats(M1, M2)
 end
 
 """
- Let  `full` be a list of integer vectors generating an integral row module
- `M`  and `sub`  a list  of vectors  defining a  submodule `S` of `M`. This
- function  computes a  free basis  for `M`  that extends  `S`. I.e., if the
- dimension  of `S` is `n`  it determines a basis  `B={b₁,…,bₘ}` for `M`, as
- well  as `n` integers  `xᵢ` such that  the `n` vectors  `sᵢ:=xᵢ⋅bᵢ` form a
- basis for `S`.
+`complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})`
 
- It returns a `Dict` with the following components:
-   - `:complement` the vectors `bₙ₊₁,…,bₘ` (generating a complement to `S`).
-   - `:sub` the vectors `sᵢ` (a basis for `S`).
-   - `:moduli` the factors `xᵢ`.
+ Let  `full` be the integral row module of  `M` and let `S`, a submodule of
+ `M`,  be the integral row  module of `sub`. This  function computes a free
+ basis for `M` that extends `S`, that is, if the dimension of `S` is `n` it
+ determines  a basis  `B={b₁,…,bₘ}` for  `M`, as  well as `n` integers `xᵢ`
+ such that the `n` vectors `sᵢ:=xᵢ⋅bᵢ` form a basis for `S`.
+
+ It returns a named tuple with the following components:
+  - `complement` a matrix with rows `bₙ₊₁,…,bₘ`.
+  - `sub` the rows are `sᵢ` (a basis for `S`).
+  - `moduli` the factors `xᵢ`.
 
 ```julia-repl
-julia> m=MatInt.IdentityMat(3)
-3-element Vector{Vector{Int64}}:
- [1, 0, 0]
- [0, 1, 0]
- [0, 0, 1]
+julia> m=one(rand(Int,3,3))
+3×3 Matrix{Int64}:
+ 1  0  0
+ 0  1  0
+ 0  0  1
 
-julia> n=[[1,2,3],[4,5,6]]
-2-element Vector{Vector{Int64}}:
- [1, 2, 3]
- [4, 5, 6]
+julia> n=[1 2 3;4 5 6]
+2×3 Matrix{Int64}:
+ 1  2  3
+ 4  5  6
 
-julia> ComplementIntMat(m,n)
-Dict{Symbol, Vector{T} where T} with 3 entries:
-  :moduli     => [1, 3]
-  :sub        => [[1, 2, 3], [0, 3, 6]]
-  :complement => [[0, 0, 1]]
+julia> MatInt.complementInt(m,n)
+(complement = [[0, 0, 1]], sub = [[1, 2, 3], [0, 3, 6]], moduli = [1, 3])
 ```
 """
-function ComplementIntMat(full, sub)
-  F = BaseIntMat(full)
-  if length(sub) == 0 || iszero(sub)
-    return Dict(:complement => F, :sub => Vector{Int}[], :moduli => Int[])
+function complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})
+  F=BaseIntMat(toL(full))
+  if isempty(sub) || iszero(sub)
+    return (complement=F, sub=toL(sub), moduli=Int[])
   end
-  S = BaseIntersectionIntMats(F, sub)
-  if S!=BaseIntMat(sub) error("sub must be submodule of full") end
-  M = vcat(F, S)
-  T = toL(Int.(inv(Rational.(toM(NormalFormIntMat(M,4)[:rowtrans])))))
-  T = map(x->x[1:length(F)],T[length(F)+1:length(T)])
-  r = NormalFormIntMat(T, 13)
-  M = toL(Int.(inv(Rational.(toM(r[:coltrans])))*toM(F)))
-  Dict(:complement=>BaseIntMat(M[1+r[:rank]:length(M)]),
-      :sub=>MatMul(MatMul(r[:rowtrans],T),F), 
-      :moduli=>map(i->r[:normal][i][i],1:r[:rank]))
+  sub=toL(sub)
+  S=BaseIntersectionIntMats(F, sub)
+  if S!=BaseIntMat(sub) error(sub," must be submodule of ",full) end
+  M=vcat(F,S)
+  T=toL(Int.(inv(Rational.(toM(NormalFormIntMat(M,4)[:rowtrans])))))
+  T=map(x->x[1:length(F)],T[length(F)+1:length(T)])
+  r=NormalFormIntMat(T, 13)
+  M=toL(Int.(inv(Rational.(toM(r[:coltrans])))*toM(F)))
+  (complement=BaseIntMat(M[1+r[:rank]:length(M)]),
+   sub=MatMul(MatMul(r[:rowtrans],T),F), 
+   moduli=map(i->r[:normal][i][i],1:r[:rank]))
 end
 
 """
-If `mat` is a matrix with integral entries, this function returns a list of
-vectors  that forms a  basis of the  integral nullspace of  `mat`, i.e., of
-those vectors in the nullspace of `mat` that have integral entries.
+`leftnullspaceInt(m::Matrix{<:Integer})
+
+returns  a list of vectors that forms a basis of the integral leftnullspace
+of  `m`, that is  of those vectors  in the left  nullspace of `m` that have
+integral entries.
 
 ```julia-repl
-julia> mat=[[1,2,7],[4,5,6],[7,8,9],[10,11,19],[5,7,12]]
-5-element Vector{Vector{Int64}}:
- [1, 2, 7]
- [4, 5, 6]
- [7, 8, 9]
- [10, 11, 19]
- [5, 7, 12]
+julia> m=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]
+5×3 Matrix{Int64}:
+  1   2   7
+  4   5   6
+  7   8   9
+ 10  11  19
+  5   7  12
 
-julia> NullspaceIntMat(mat)
+julia> MatInt.leftnullspaceInt(m)
 2-element Vector{Vector{Int64}}:
  [1, 18, -9, 2, -6]
  [0, 24, -13, 3, -7]
 ```
 """
-function NullspaceIntMat(mat)
-  norm=NormalFormIntMat(mat, 4)
-  kern=norm[:rowtrans][norm[:rank]+1:length(mat)]
-  return BaseIntMat(kern)
+function leftnullspaceInt(mat)
+  norm=NormalFormIntMat(toL(mat), 4)
+  BaseIntMat(norm[:rowtrans][norm[:rank]+1:size(mat,1)])
 end
 
 """

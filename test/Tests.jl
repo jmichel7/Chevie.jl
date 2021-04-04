@@ -42,7 +42,7 @@ function RG(s::Symbol)
   t=test[s]
   println("testing ",s,"\n",t.comment)
   for W in all_ex if t.applicable(W) 
-  xprintln(s,"(",W,")")
+    printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
 @time  t.fn(W) 
   end end
 end
@@ -50,15 +50,16 @@ end
 function RG(W)
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
-  for (s,t) in test
+  @time for (i,(s,t)) in enumerate(sort(collect(test),by=first))
     if t.applicable(W) 
-      printstyled("  ",s,": ",t.comment,"\n";color=:green)
-@time  t.fn(W) 
+      printstyled(i,"/",length(test),"  ",s,": ",t.comment,"\n";color=:green)
+      t.fn(W) 
     end 
   end
 end
 
-RG()=for W in all_ex RG(W) end
+RG(v::Vector)=for W in v RG(W) end
+RG()=RG(all_ex)
 
 # compares lists a and b (whose descriptions are strings na and nb)
 function cmpvec(a,b;na="a",nb="b")
@@ -217,7 +218,7 @@ test[:representations]=(fn=Trepresentations,
 function Tlusztiginduction(WF)
   if !(WF isa Spets) WF=spets(WF) end
   W=Group(WF)
-  for J in filter(x->length(x)<length(gens(W)),parabolic_reps(W))
+  for J in filter(x->length(x)<length(gens(W)),parabolic_reps(WF))
     Tlusztiginduction(WF,J)
   end
 end
@@ -436,8 +437,62 @@ function Tunipotentclasses(W,p=nothing)
 end
 
 test[:unipotentclasses]=(fn=Tunipotentclasses, applicable=isrootdatum,
-   comment="Check dimBu from DR, from b, with < ; BalaCarter, dimred")
+   comment="dimBu from DR, from b, with < ; BalaCarter, dimred")
 
+#---------------- test: unipotentcentralizers ------------------------
+function Tunipotentcentralizers(W,p=0)
+  t=RationalUnipotentClasses(W,p)
+  q=Pol()
+  sum=0
+  u=UnipotentClasses(W,p)
+  g=CycPol(generic_order(W,q))
+  for c in t
+    cl=u.classes[c[:classno]]
+    cc=q^cl.dimunip
+    if nconjugacy_classes(cl.Au)>1
+      if rank(cl.red)>0 && haskey(cl,:AuAction)
+        ww=classinfo(cl.Au)[:classtext][c[:AuNo]]
+        w=cl.red.F
+        if !isempty(ww) w*=prod(cl.AuAction.F0s[ww]) end
+        cc*=generic_order(spets(Group(cl.red),w),q)
+      else cc*=generic_order(cl.red,q)
+      end
+      cc*=div(length(cl.Au),classinfo(cl.Au)[:classes][c[:AuNo]])
+    else cc*=generic_order(cl.red,q);
+    end
+    sum+=c[:card](q)
+    cc=CycPol(cc)
+    if cc!=g//c[:card]
+     ChevieErr(fromTeX(rio(),cl.name),".",c[:AuNo],":",
+        Ucl.showcentralizer(rio(),cl)," => ",cc," (is ",g//c[:card],")\n");
+    end
+  end
+  if W isa Spets N=Group(W).N else N=W.N end
+  if sum!=q^(2*N)
+    ChevieErr("found nr. unip=",sum," instead of ",q^(2*N),"\n")
+  end
+end
+
+test[:unipotentcentralizers]=(fn=Tunipotentcentralizers,applicable=isrootdatum,
+                         comment="info on centralizers agrees with ICCTable")
+
+#---------------- test: nrssclasses ------------------------
+# Check classtypes gives nrclasses (for simply connected groups)
+function Tnsemisimple(WF)
+  q=Mvp(:q)
+  g=generic_order(WF,q)
+  l=ClassTypes(WF)()
+  v=map(l.ss) do x
+    x.nClasses*exactdiv(g,x.cent(q))*q^(2*Group(x.CGs).N)
+  end
+  if sum(v)!=g
+    ChevieErr("found nr elem=",sum(v)," instead of ",g,"\n");
+   end
+end
+
+test[:nsemisimple]=(fn=Tnsemisimple,applicable=W->isweylgroup(W) && 
+                    length(fundamental_group(W))==1 && length(W)<10^8,
+           comment="classtypes gives nr. semisimple classes")
 #---------------- test: charparams ------------------------
 """
 Jean Michel and Ulrich Thiel (2017)
@@ -756,7 +811,7 @@ function THCdegrees(W,i,rel=false)
 end
 
 test[:HCdegrees]=(fn=THCdegrees, applicable=isspetsial,
- comment="check generic degrees from relative Hecke algebras of HCinduction")
+  comment="gendegs from relative Hecke algebras of 1-HC cuspidals")
 
 # EigenAndDegHecke(s) 
 # s is a series. Uses only s.Hecke, s.d, 
@@ -1397,7 +1452,7 @@ function Tbraidrel(W,r=braid_relations(W))
 end
 
 test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
-"(W[,t=W.type]) check that W satisfies braid relations of type t")
+"W satisfies braid relations of type t")
 
 #------------------------- root system -----------------------------
 
@@ -1625,4 +1680,115 @@ end
 
 test[:opdam]=(fn=Topdam,applicable=W->!(W isa Spets),comment="Opdam")
 
+#------------------------- ParameterExponents -----------------------------
+# check that the parameter exponents of the relative hecke algebras
+# agree with unipotent degrees corresponding to cyclic
+# relative groups of sub-series
+
+function Tparameterexponents(W)
+  ser=UnipotentCharacters(W).harishChandra
+  for i in eachindex(ser) Tparameterexponents(W,i) end
+end
+
+function Tparameterexponents(W,i)
+  h=UnipotentCharacters(W).harishChandra[i]
+  I=PermRoot.indices(h[:relativeType])
+  if W isa Spets I=map(x->orbit(W.phi,x),I)
+  else 
+    G=relative_group(W,h[:levi])
+    if haskey(G,:relativeIndices) && G.relativeIndices[PermRoot.indices(refltype(G))]!=I 
+      ChevieErr("indices computed=",
+      joindigits(G.relativeIndices[PermRoot.indices(refltype(G))]),
+      " stored=",joindigits(I),"\n");
+    end
+    I=map(x->[x],I)
+  end
+  for i in eachindex(I)
+    L=reflection_subgroup(W,vcat(h[:levi],I[i]))
+    t=refltype(L)
+    H=reflection_subgroup(L,restriction(L,inclusion(W,h[:levi])))
+    InfoChevie("  # ParameterExponents from ",H,":",I[i])
+    if !haskey(t[1],:indices) && !haskey(t[1],:orbit)
+      ChevieErr("Levi ",vcat(h[:levi],I[i])," could not be identified\n")
+    else
+      if !(L isa Spets) L=spets(L)
+        H=subspets(L,restriction(L,inclusion(W,h[:levi]))) 
+      end
+      h1=copy(h)
+ #    h1[:levi]=restriction(H,inclusion(W,h[:levi]))
+      h1[:levi]=1:ngens(Group(H))
+      hh=Lusztig.FindSeriesInParent(h1,H,L,UnipotentCharacters(L).harishChandra).ser
+      if length(hh[:charNumbers])!=2
+        cusp=h[:cuspidalName]
+        cusp=cusp=="" ? "." : cusp
+        s=Series(L,H,findfirst(==(cusp),
+                      UnipotentCharacters(H).TeXCharNames),1;NC=true)
+        if isnothing(dSeries.char_numbers(s)) || isnothing(dSeries.fill(s))
+          error("could not fill ",s)
+        else 
+          if hh[:parameterExponents][1] isa Vector
+            exp=hh[:parameterExponents][1]
+          else
+            exp=fill(0,s.e)
+            exp[1]=hh[:parameterExponents][1]
+          end
+          if haskey(s,:translation)
+            t=filter(0:s.translation:s.e)do d
+              local v
+              v=1 .+map(x->x%s.e,(1:s.e).+d)
+              s.mC[v]==exp && s.charNumbers[v]==hh.charNumbers
+            end
+          else t=[1]
+          end
+          if length(t)==0 error("unexpected") end
+#    Ok("decs=",t);
+        end
+      else
+        ud=degrees(UnipotentCharacters(L),Pol())
+        ud=exactdiv(ud[hh[:charNumbers][1]],ud[hh[:charNumbers][2]])
+        if length(ud.c)!=1 || ud.c[1]!=1
+          ChevieErr("not monomial")
+        elseif h[:parameterExponents][i]!=valuation(ud)
+          ChevieErr(L,": wrong parameter ",
+            h.parameterExponents[i]," instead of ",valuation(ud),"\n");
+        end
+#         Ok("=",ud.valuation);
+      end
+    end
+  end
+end
+
+test[:parameterexponents]=(fn=Tparameterexponents,applicable=isspetsial,
+  comment="of rel. Hecke algebras agree with cyclic formula")
+
+#------------------------- discriminant -----------------------------
+
+# for a reflection group of rank r: Discriminant(G)
+#          returns a list of linear factors as Mvps in x1,x2,...,xr
+function reflection_discriminant(W)
+  res=[]
+  for h in hyperplane_orbits(W)
+    cr=coroots(W,h.s)
+    for w in map(x->transporting_elt(W,gens(W)[h.s],x),
+                 conjugacy_class(W,h.cl_s[1]))
+      append!(res,map(i->reflrep(W,w^-1)*cr,1:h.order))
+    end
+  end
+  vars=map(i->Mvp(Symbol("x",i)),eachindex(degrees(W)))
+  map(x->sum(map(*,vars,x)),res)
+end
+
+function Tdiscriminant(W)
+  r=prod(reflection_discriminant(W).*big(1);init=Mvp(1))
+  j=discriminant(W)
+  if isnothing(j) InfoChevie("not implemented\n");return end
+  ii=invariants(W)
+  ii=map(x->x(map(i->Mvp(Symbol("x",i))*big(1),1:rank(W))...),ii).*big(1)
+  j=j(ii...)
+  if r*last(first(j.d))!=j*last(first(r.d)) ChevieErr("disagrees\n") end
+end
+
+test[:discriminant]=(fn=Tdiscriminant,
+  applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful clientend
+  comment="discriminant")
 end

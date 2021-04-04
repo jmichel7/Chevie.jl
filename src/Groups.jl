@@ -39,7 +39,7 @@ Dict{Symbol, Any} with 1 entry:
 ```
 """
 module Groups
-export Group, abelian_gens, centralizer, centre, classreps, comm,
+export Group, centralizer, centre, classreps, comm,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
   gens, Hom, isabelian, iscyclic, minimal_words, nconjugacy_classes,
   ngens, normalizer, orbit, orbits, position_class, stabilizer,
@@ -397,6 +397,8 @@ end
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
+iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
+
 rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 
 """
@@ -599,18 +601,4 @@ end
 function fusion_conjugacy_classes(H::Coset,G::Coset)
   map(x->position_class(G,x),classreps(H))
 end
-
-#---------------------- miscellaneous functions ----------------------
-function abelian_gens(l::Array)
-  res=empty(l)
-  l=filter(!isone,l)
-  while !isempty(l)
-    o=order.(l)
-    push!(res,l[argmax(o)])
-    l=setdiff(l,elements(Group(res)))
-  end
-  res
-end
-
-iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
 end

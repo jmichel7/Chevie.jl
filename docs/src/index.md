@@ -43,6 +43,7 @@ length(::Group)
 classreps(::Group)
 minimal_words
 transporting_elt
+abelian_gens
 ```
 # Permutation groups
 ```@docs
@@ -188,6 +189,9 @@ solutionmat
 ```
 # Integral matrices and lattices
 ```@docs
+smith_normal_form
+baseInt
+complementInt
 DiaconisGraham
 ```
 # Finite fields
@@ -342,6 +346,7 @@ pblocks
 ```@docs
 Semisimple
 fundamental_group
+intermediate_group
 QuasiIsolatedRepresentatives(::FiniteCoxeterGroup)
 is_isolated
 torsion_subgroup
@@ -468,6 +473,7 @@ BlocksMat                                   blocks
 Braid                                       BraidMonoid
 BraidMonoid                                 BraidMonoid
 BraidRelations                              braid_relations
+BrieskornNormalForm                         Brieskorn_normal_form
 Bruhat                                      bruhatless
 BruhatPoset                                 Poset
 BruhatSmaller                               bruhatless
@@ -548,6 +554,8 @@ FiniteCoxeterTypeFromCartanMat(m)           type_cartan(m)
 FirstLeftDescending(W,w)                    firstleftdescent(W,w)
 ForEachCoxeterWord(W,f)                     for w in W f(word(W,w)) end
 ForEachElement(W,f)                         for w in W f(w) end
+FormatTable                                 showtable
+Frobenius                                   Frobenius
 FullSymbol                                  fullsymbol
 FundamentalGroup                            fundamental_group
 FusionAlgebra                               fusion_algebra
@@ -578,8 +586,10 @@ IndependentLines(M)                         echelon(M)[2]
 IndependentRoots                            independent_roots
 InducedLinearForm                           induced_linear_form
 InductionTable                              InductionTable
+Inherit                                     look at merge for hashes
 IntFFE                                      Int
 IntListToString                             joindigits
+IntermediateGroup                           intermediate_group
 Intersection                                intersect
 InvariantForm                               invariant_form
 Invariants                                  invariants
@@ -689,6 +699,7 @@ ReflectionType                              refltype
 Reflections                                 reflections
 RegularEigenvalues                          regular_eigenvalues
 RelativeDegrees                             relative_degrees
+Replace                                     replace
 Representations                             representations
 RepresentativeConjugation(b,b'[,F][,type])  conjugating_elt(b,b'[,F],ss=type)
 RepresentativeDiagonalConjugation           diagconj_elt
@@ -730,6 +741,7 @@ StandardParabolicClass                      standard_parabolic_class
 StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
 SubSpets                                    subspets
 SubTorus                                    SubTorus
+Symbols                                     HasType.BDSymbols
 SymbolsDefect(e,r,def,ct)                   symbols(e,r,ct,def)
 SymmetricDifference                         symdiff
 SymmetricPower                              symmetric_power
@@ -738,6 +750,7 @@ Torus                                       torus
 TorusOrder                                  torus_order
 TransitiveClosure                           transitive_closure
 Transporter                                 transporter
+Transversals                                related to transversals
 TriangulizeMat                              echelon!
 Twistings                                   twistings
 TwoTree(m)                                  twotree(m)
@@ -758,6 +771,8 @@ W.orbitRepresentativeElements[i]            simple_conjugating(W,i)
 W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
 W.rootRestriction                           restriction(W)
+WGraph                                      Wgraph
+WGraphToRepresentation                      WGraphToRepresentation
 WeightInfo                                  weightinfo
 jInductionTable                             jInductionTable
 last                                        ans
