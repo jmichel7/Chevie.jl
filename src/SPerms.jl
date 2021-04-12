@@ -232,6 +232,17 @@ function Base.inv(a::SPerm)
   SPerm(r)
 end
 
+# less allocations than inv(a)*b
+function Base.:\(a::SPerm, b::SPerm)
+  a,b=promote_degree(a,b)
+  r=similar(a.d)
+  @inbounds for (i,v) in enumerate(a.d) 
+     if v<0 r[-v]=-b.d[i] else r[v]=b.d[i] end
+  end
+  SPerm(r)
+end
+
+Base.:/(a::SPerm,b::SPerm)=a*inv(b)
 Base.:^(a::SPerm, b::SPerm)=inv(b)*a*b
 Base.:^(a::SPerm, b::Perm)=a^SPerm(b)
 
@@ -408,16 +419,16 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
   i^w<(i-1)^w
 end
 
-function PermRoot.reflection(W::CoxHyperoctaedral,i::Int)
+function PermRoot.reflections(W::CoxHyperoctaedral)
   get!(W,:reflections)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
     for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
     for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
     refs
-  end[i]
+  end
 end
 
-PermRoot.reflections(W::CoxHyperoctaedral)=reflection.(Ref(W),1:nref(W))
+PermRoot.reflection(W::CoxHyperoctaedral,i)=reflections(W)[i]
 
 function Perms.reflength(W::CoxHyperoctaedral,w)
   c=cycles(w)

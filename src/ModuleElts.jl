@@ -1,27 +1,51 @@
 """
+Module Elements --- elements of free modules.
+
 A  `ModuleElt{K,V}`  represents  an  element  of  a free module where basis
 elements  are of type  `K` and coefficients  of type `V`.  Usually you want
 objects  of type `V` to be elements of  a ring, but it could also be useful
-if they just belong to an abelian group. 
+if  they just belong to  an abelian group. This  is similar to the SageMath
+CombinatorialFreeModule.
 
 This  basic data structure is  used in the package  `Gapjm` as an efficient
-representation   for  multivariate   polynomials  (and   their  monomials),
-cyclotomics, CycPols, elements of Hecke algebras, etc…
+representation  at  many  places.  For  example, multivariate monomials are
+represented by `ModuleElt{Symbol,Int}`:
 
-A  `ModuleElt` is essentially a  list of pairs `b=>c`  where `b` is a basis
-element  and `c` its coefficient. The  constructor takes as argument a list
-of  pairs, or a variable number of pair arguments, or a generator of pairs.
+`x^2y^-3 ` is represented by `ModuleElt(:x=>2,:y=>-3)`
+
+And  multivariate  polynomials  are  represented by `ModuleElt{Monomial,C}`
+where `C` is the type of the coefficients:
+
+`x*y-z^2` is represented by ``ModuleElt(x*y=>1,z^2=>-1)
+
+`ModuleElts`  are  also  used  for  cyclotomics, CycPols, elements of Hecke
+algebras, etc…
+
+A  `ModuleElt{K,V}` is essentially a  list of `Pairs{K,V}`. The constructor
+takes  as argument a list of pairs, or a variable number of pair arguments,
+or a generator of pairs.
 
 We provide two implementations:
 
   - one by `Dict`s 
-this is easy since the interface of the type is close to that of dicts; the
-only  difference is weeding out keys which have a zero cofficient --- which
-thus demands that the keys are hashable.
 
-  - a faster  one (the default)  by sorting pairs by key
-this  demands that keys are comparable.  This implementation is two to four
-times faster than the `Dict` one and requires half the memory.
+This  requires  that  the  type  `K`  is  hashable.  It  is  a  very simple
+implementation  since the interface of the type  is close to that of dicts;
+the  only difference is weeding  out keys which have  a zero cofficient ---
+which  is necessary since for testing equality of module elements one needs
+a caconical form for each element.
+
+  - a faster  one (the default)  by keeping a list of pairs sorted by key.
+This  demands that the type `K`  has a `isless` method. This implementation
+is  two to four  times faster than  the `Dict` one  (for addition, the most
+important operation) and requires half the memory.
+
+The  interface has the  same methods as  `Dict`. In addition, adding module
+elements  corresponds  to  `merge(+,...)`  for  `Dict`s  (here  `+`  can be
+replaced  by  any  operation  `op`  with  the property that `op(0,x)=x`). A
+module  element can  also be  multiplied by  a an  element of  type `V` (by
+multiplying  the  coefficients)  or  negated;  there  are  also  `zero` and
+`iszero` methods.
 
 Here  is an example where basis elements are `Symbol`s and coefficients are
 `Int`.
@@ -74,10 +98,11 @@ Pair{Symbol, Int64}
 ```
 
 In both implementations the constructor normalizes the constructed element,
-removing  zero  coefficients  and  merging  duplicate  basis  elements (and
-sorting  the  basis  in  the  default  implementation).  If  you know it is
-unnecessary,  to  het  maximum  speed  you  can  disable this by giving the
-keyword `check=false`.
+removing zero coefficients and merging duplicate basis elements, adding the
+corresponding   coefficients  (and   sorting  the   basis  in  the  default
+implementation).  If  you  know  this  normalisation is unnecessary, to get
+maximum  speed you can disable this  by giving the keyword `check=false` to
+the constructor.
 
 ```julia-repl
 julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1;check=false)
@@ -87,11 +112,23 @@ julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
 3:xy+2:yx
 ```
 
-setting  the `IOContext` property `showbasis` to a custom printing function
-changes how the basis elements are printed.
+As  you can see in the above examples, at the REPL (or in Jupyter or Pluto,
+when  `IO`  has  the  `:limit`  attribute)  the  `show`  method  shows  the
+coefficients (bracketed if necessary, that is if they have inner occurences
+of  `+-*`),  followed  by  showing  the  basis  elements.  Setting the `IO`
+property  `:showbasis` to a custom printing  function changes how the basis
+elements are printed.
+
 ```julia-rep1
 julia> show(IOContext(stdout,:showbasis=>(io,s)->string("<",s,">")),a)
 3<xy>+2<yx>
+```
+
+The `repr` method shows a representation which can be read back in julia:
+
+```julia-repl
+julia> repr(a)
+"ModuleElt([:xy => 3, :yx => 2])"
 ```
 
 Adding  or subtracting `ModuleElt`s does promotion  on the type of the keys
@@ -137,6 +174,7 @@ end
 Base.haskey(x::ModuleElt,y...)=haskey(x.d,y...)
 Base.keys(x::ModuleElt)=keys(x.d)
 Base.values(x::ModuleElt)=values(x.d)
+
 Base.getindex(x::ModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
 
 Base.merge(op::Function,a::ModuleElt,b::ModuleElt)::ModuleElt=
@@ -207,8 +245,9 @@ function merge(op::Function,a::ModuleElt,b::ModuleElt)
   ModuleElt(resize!(res,ri);check=false)
 end
 
-# version below more accurate for general ops, but too much overhead now to
-# be used for + or other ops such that op(0,x)=x
+# version below works for general ops, but too much overhead now compared
+# to version above to be used for + or other ops such that op(0,x)=x.
+# It is useful for max or min which do lcm and gcd of monomials or CycPol.
 function merge2(op::Function,a::ModuleElt,b::ModuleElt)
   (a,b)=promote(a,b)
   la=length(a.d)
@@ -320,6 +359,10 @@ function format_coefficient(c::String)
 end
 
 function Base.show(io::IO,m::ModuleElt)
+  if !get(io,:limit,false)
+    print(io,"ModuleElt(",m.d,")")
+    return
+  end
   if iszero(m) print(io,"0"); return end
   showbasis=get(io,:showbasis,nothing)
   if isnothing(showbasis) 

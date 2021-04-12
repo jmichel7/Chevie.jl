@@ -22,8 +22,8 @@ julia> collect(G)
  (1,3)
  (2,3)
 
-# maximum degree of an element of G
-julia> degree(G)  
+# maximum moved point of an element of G
+julia> largest_moved_point(G)  
 3
 
 julia> Perm(1,2) in G
@@ -72,7 +72,7 @@ using ..Perms
 using ..Groups: orbits
 using ..Gapjm
 using ..Util: getp, InfoChevie, @GapObj, printTeX
-import ..Gapjm: degree, elements
+import ..Gapjm: elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
   stab_onmats, Perm_onmats, Perm_rowcolmat, on_classes
@@ -91,10 +91,10 @@ function Base.show(io::IO,G::PermGroup)
   end
 end
 
-Base.one(G::PermGroup{T}) where T=one(Perm{T})
+Base.one(G::PermGroup)=G.one # PermGroups should have fields gens and one
 
-function degree(G::PermGroup)::Int
-  get!(G,:degree)do 
+function Perms.largest_moved_point(G::PermGroup)::Int
+  get!(G,:largest_moved)do 
     if isempty(gens(G)) return 0 end
     maximum(largest_moved_point.(gens(G)))
   end
@@ -102,7 +102,7 @@ end
 
 function Groups.orbits(G::PermGroup)
   get!(G,:orbits)do
-    orbits(G,1:degree(G);trivial=false)
+    orbits(G,1:largest_moved_point(G);trivial=false)
   end
 end
  
@@ -112,7 +112,7 @@ That is, v[p]==-1 and v[k]=i means that k^inv(G(i)) is the antecessor of k
 in the orbit of p.
 """
 function schreier_vector(G::PermGroup,p::Integer;action::Function=^)
-  res=zeros(Int,degree(G))
+  res=zeros(Int,largest_moved_point(G))
   res[p]=-1
   new=BitSet([p])
   while true
@@ -332,10 +332,11 @@ end
 #-------------------------- now a concrete type-------------------------
 @GapObj struct PG{T}<:PermGroup{T}
   gens::Vector{Perm{T}}
+  one::Perm{T}
 end
 
 function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T
-  PG(filter(!isone,a),Dict{Symbol,Any}())
+  PG(filter(!isone,a),one,Dict{Symbol,Any}())
 end
 
 " The symmetric group of degree n "

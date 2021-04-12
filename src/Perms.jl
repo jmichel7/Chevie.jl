@@ -332,7 +332,7 @@ function Base.:\(a::Perm, b::Perm)
   Perm(r)
 end
 
-# less allocations than inv(a)*b*a
+# less allocations than inv(b)*a*b
 function Base.:^(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
   r=similar(a.d)

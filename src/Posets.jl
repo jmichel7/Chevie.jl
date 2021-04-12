@@ -1,9 +1,8 @@
 """
-Posets  are represented as objects where at  least one of the two following
-fields is present:
+Posets must be initialized by  at least one of the two following fields:
 
-  - `incidence`:  a  boolean  matrix  such that `incidence[i][j]==true` iff
-   `i<=j` in the poset.
+  - `incidence`:  a  boolean  matrix  such that `incidence[i,j]==true` iff
+    `i<=j` in the poset.
 
   - `hasse`:  a list representing  the Hasse diagram  of the poset: the i-th
     entry is the list of indices of elements which are immediate successors
@@ -14,8 +13,9 @@ There   are  thus  two   constructors,  `Poset(I::Matrix{Bool})`  from  the
 incidence  matrix `I`, and `Poset(H::Vector{<:Vector{<:Integer}})` from the
 Hasse diagram.
 
-`Poset`s  are  printed  as  a  list  of covering chains. Elements which are
-equivalent for the `Poset` are printed together separated by commas.
+`Poset`s  are printed at  the REPL as  a list of  covering chains. Elements
+which  are equivalent  for the  `Poset` are  printed together  separated by
+commas.
 
 ```julia-repl
 julia> p=Poset(coxgroup(:A,2))

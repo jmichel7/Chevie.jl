@@ -634,7 +634,7 @@ PermRoot.nhyp(W::FiniteCoxeterGroup)=nref(W)
 Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
-@forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Gapjm.degree,
+@forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Base.one,
  Gapjm.roots, Groups.gens, Groups.position_class, PermGroups.classreps,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
@@ -764,7 +764,7 @@ function rootdatum(rr::Matrix,cr::Matrix)
   rank=size(C,1)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)
-  G=PRG(gens,mats,r,coroots,
+  G=PRG(gens,one(gens[1]),mats,r,coroots,
         Dict{Symbol,Any}(:cartan=>C,:refltype=>type_cartan(C)))
   end
   FCG(G,rootdec,N,Dict{Symbol,Any}())
@@ -1000,7 +1000,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>refltypes)
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   gens=isempty(I) ? Perm{T}[] : reflection.(Ref(W),I)
-  G=PRSG(gens,inclusion,restriction,W.G,prop)
+  G=PRSG(gens,one(W.G),inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
 end
 

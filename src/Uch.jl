@@ -929,7 +929,7 @@ Base.:*(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
 Base.:*(a,u1::UniChar)=u1*a
 
-Gapjm.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
+Pols.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
                                      degrees(UnipotentCharacters(u.group),q)))
 
 """
@@ -1122,21 +1122,18 @@ julia> T=Tbasis(H);DLLefschetz(T(1))
 [²A₂]:-<11>-q<²A₂>+q²<2>
 ```
 """
-DLLefschetz=function(h,i=0)
+function DLLefschetz(h,i=0)
   W=h.H.W
   uc=UnipotentCharacters(W)
   uniform=uc.almostHarishChandra[1][:charNumbers]
-  UniChar(W,(char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i)
+  UniChar(W,improve_type((char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
-DLLefschetzTable=function(H)
-# if haskey(H, :spets) WF = ReflectionCoset(H)
-# else 
+function DLLefschetzTable(H)
   WF=H.W
-# end
   t=CharTable(H).irr
   uc=UnipotentCharacters(WF)
-  return t'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:]
+  improve_type(t'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:])
 end
 
 """

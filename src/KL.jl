@@ -266,8 +266,8 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   d=get!(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
   if haskey(d,(w,y)) return  d[(w,y)] end
   s=firstleftdescent(W,w)
-  v=gens(W)[s]*w
-  pol=KLPol(W,gens(W)[s]*y,v)+shift(KLPol(W,y,v),1)
+  v=W(s)*w
+  pol=KLPol(W,W(s)*y,v)+shift(KLPol(W,y,v),1)
   lz=lw-2
   while div(lw-lz,2)<=degree(pol)
    for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
@@ -317,22 +317,18 @@ hecke(B₂,Pol{Int64}[v⁴, v²])
 julia> Cp=Cpbasis(H);h=Cp(1)^2
 (v²+v⁻²)C′₁
 
-julia> k=Tbasis(H)(h)
+julia> k=Tbasis(h)
 (1+v⁻⁴)T.+(1+v⁻⁴)T₁
 
 julia> Cp(k)
 (v²+v⁻²)C′₁
 ```
 """
-function Cpbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
-  function f(w::Vector{<:Integer})
-    if isempty(w) return HeckeCpElt(ModuleElt(one(H.W)=>one(C)),H) end
-    HeckeCpElt(ModuleElt(H.W(w...)=>one(C)),H)
-  end
-  f(w::Vararg{Integer})=f(collect(w))
-  f(w::P)=f(word(H.W,w))
-  f(h::HeckeElt)=Cpbasis(h)
-end
+Cpbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCpElt(ModuleElt(one(H.W)=>one(coefftype(H))),H) : Cpbasis(H,x...)
+Cpbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCpElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
+Cpbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cpbasis(H,collect(w))
+Cpbasis(H::HeckeAlgebra,w)=Cpbasis(H,word(H.W,w))
+Cpbasis(H::HeckeAlgebra,h::HeckeElt)=Cpbasis(h)
 
 """
 `Cbasis(H::HeckeAlgebra)`
@@ -387,15 +383,11 @@ julia> hcat(char_values.(C.(classreps(W)),Ref(c))...)
  3  -v-v⁻¹  0  0  -v-v⁻¹  2  0  0  1  0
 ``` 
 """
-function Cbasis(H::HeckeAlgebra{C,TW})where C where TW<:CoxeterGroup{P} where P
-  function f(w::Vector{<:Integer})
-    if isempty(w) return HeckeCElt(ModuleElt(one(H.W)=>one(C)),H) end
-    HeckeCElt(ModuleElt(H.W(w...)=>one(C)),H)
-  end
-  f(w::Vararg{Integer})=f(collect(w))
-  f(w::P)=f(word(H.W,w))
-  f(h::HeckeElt)=Cbasis(h)
-end
+Cbasis(H::HeckeAlgebra)=(x...)->isempty(x) ? HeckeCElt(ModuleElt(one(H.W)=>one(coefftype(H))),H) : Cbasis(H,x...)
+Cbasis(H::HeckeAlgebra,w::Vector{<:Integer})=HeckeCElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
+Cbasis(H::HeckeAlgebra,w::Vararg{Integer})=Cbasis(H,collect(w))
+Cbasis(H::HeckeAlgebra,w)=Cbasis(H,word(H.W,w))
+Cbasis(H::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 
 # To convert from "T", we use the fact that the transition matrix M from
 # any  KL  bases to  the  standard  basis  is triangular  with  diagonal
@@ -410,7 +402,7 @@ function toKL(h::HeckeTElt,klbasis,index::Function)
     l=findall(==(index(l)),l)
     tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) for (w,c) in h.d.d[l];check=false),H)
     res+=tmp
-    h-=Tbasis(H)(tmp)
+    h-=Tbasis(H,tmp)
   end
   res
 end
@@ -488,11 +480,7 @@ B₃
 julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
 hecke(B₃,v²,rootpara=v)
 
-julia> C=Cpbasis(H);
-
-julia> T=Tbasis(H);
-
-julia> T(C(1,2))
+julia> C=Cpbasis(H); Tbasis(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
 """
@@ -621,7 +609,7 @@ function Groups.elements(c::LeftCell)
   end
 end
 
-Gapjm.words(c::LeftCell)=word.(Ref(c.group),elements(c))
+CoxGroups.words(c::LeftCell)=word.(Ref(c.group),elements(c))
 
 Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 
@@ -987,7 +975,7 @@ julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
 """
 function Lusztigaw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*(-v)^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*(-v)^-length(W,w)
   map((c,a)->c[-a],l,charinfo(W)[:a])
 end
 
@@ -1018,7 +1006,7 @@ julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
 """
 function LusztigAw(W,w)
   v=Pol()
-  l=char_values(Tbasis(hecke(W,v^2;rootpara=v))(w))*v^-length(W,w)
+  l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*v^-length(W,w)
   map((c,a)->c[nref(W)-a],l,charinfo(W)[:A])
 end
 

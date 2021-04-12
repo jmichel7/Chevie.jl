@@ -69,9 +69,8 @@ see also the individual documentation of divrem, gcd.
 """
 module Pols
 using ..Util: Util, format_coefficient, printTeX, exactdiv
-export degree, valuation
-export Pol, shift, positive_part, negative_part, bar, derivative, srgcd,
-       RatFrac
+export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
+       bar, derivative, srgcd, RatFrac
 
 const varname=Ref(:x)
 
@@ -99,6 +98,7 @@ end
 
 Base.broadcastable(p::Pol)=Ref(p)
 
+degree(a::Number)=0 # convenient
 degree(p::Pol)=length(p.c)-1+p.v
 valuation(p::Pol)=p.v
 Base.lastindex(p::Pol)=degree(p)
@@ -135,7 +135,7 @@ end
 
 (::Type{T})(p::Pol) where T<:Number=convert(T,p)
 
-Base.cmp(a::Pol,b::Pol)=cmp([a.c,a.v],[b.c,b.v])
+Base.cmp(a::Pol,b::Pol)=cmp((a.c,a.v),(b.c,b.v))
 Base.isless(a::Pol,b::Pol)=cmp(a,b)==-1
 Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 

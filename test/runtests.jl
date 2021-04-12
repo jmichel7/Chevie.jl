@@ -548,7 +548,7 @@ end
 @test mytest("alt(h)","q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁")
 @test mytest("W=CoxSym(4)","𝔖 ₄")
 @test mytest("H=hecke(W,Pol(:q))","hecke(𝔖 ₄,q)")
-@test mytest("h=Tbasis(H)(longest(W))","T₁₂₁₃₂₁")
+@test mytest("h=Tbasis(H,longest(W))","T₁₂₁₃₂₁")
 @test mytest("p=class_polynomials(h)","5-element Vector{Pol{Int64}}:\n 0\n 0\n q²\n q³-2q²+q\n q³-q²+q-1")
 @test mytest("W=coxgroup(:B,2)","B₂")
 @test mytest("H=hecke(W,q^2;rootpara=q)","hecke(B₂,q²,rootpara=q)")
@@ -562,6 +562,9 @@ end
 @test mytest("W=ComplexReflectionGroup(4)","G₄")
 @test mytest("@Mvp x,y; H=hecke(W,[[1,x,y]])","hecke(G₄,Mvp{Int64, Int64}[1, x, y])")
 @test mytest("FactorizedSchurElements(H)","7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:\n x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)\n Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)\n -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)\n -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)\n -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)\n x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)\n x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)")
+@test mytest("WF=rootdatum(\"u\",3)","²A₂Φ₂")
+@test mytest("HF=hecke(WF,Pol(:v)^2;rootpara=Pol())","hecke(²A₂Φ₂,v²,rootpara=v)")
+@test mytest("CharTable(HF)","CharTable(hecke(²A₂Φ₂,v²,rootpara=v))\n   │ 111 21  3\n───┼───────────\n111│  -1  1 -1\n21 │-2v³  .  v\n3  │  v⁶  1 v²")
 end
 @testset "KL.jl" begin
 @test mytest("W=coxgroup(:H,3)","H₃")
@@ -576,7 +579,7 @@ end
 @test mytest("map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Vector{Vector{Pol{Int64}}}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
 @test mytest("W=coxgroup(:B,2);Pol(:v);H=hecke(W,[v^4,v^2])","hecke(B₂,Pol{Int64}[v⁴, v²])")
 @test mytest("Cp=Cpbasis(H);h=Cp(1)^2","(v²+v⁻²)C′₁")
-@test mytest("k=Tbasis(H)(h)","(1+v⁻⁴)T.+(1+v⁻⁴)T₁")
+@test mytest("k=Tbasis(h)","(1+v⁻⁴)T.+(1+v⁻⁴)T₁")
 @test mytest("Cp(k)","(v²+v⁻²)C′₁")
 @test mytest("W=coxgroup(:B,3);Pol(:v);H=hecke(W,v^2)","hecke(B₃,v²)")
 @test mytest("T=Tbasis(H);C=Cbasis(H);T(C(1))","-vT.+v⁻¹T₁")
@@ -584,9 +587,7 @@ end
 @test mytest("ref=reflrep(H)","3-element Vector{Matrix{Pol{Int64}}}:\n [-1 0 0; -v² v² 0; 0 0 v²]\n [v² -2 0; 0 -1 0; 0 -v² v²]\n [v² 0 0; 0 v² -1; 0 0 -1]")
 @test mytest("W=coxgroup(:B,3)","B₃")
 @test mytest("Pol(:v);H=hecke(W,v^2,rootpara=v)","hecke(B₃,v²,rootpara=v)")
-@test mytest("C=Cpbasis(H);","nothing")
-@test mytest("T=Tbasis(H);","nothing")
-@test mytest("T(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
+@test mytest("C=Cpbasis(H); Tbasis(C(1,2))","v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂")
 @test mytest("c=LeftCells(coxgroup(:G,2))[3]","LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>")
 @test mytest("character(c)","3-element Vector{Int64}:\n 3\n 5\n 6")
 @test mytest("W=coxgroup(:H,3)","H₃")
@@ -656,6 +657,7 @@ end
 @test mytest("eltype(a)","Pair{Symbol, Int64}")
 @test mytest("a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1;check=false)",":yy+2:yx+3:xy-:yy")
 @test mytest("a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)","3:xy+2:yx")
+@test mytest("repr(a)","\"ModuleElt([:xy => 3, :yx => 2])\"")
 @test mytest("a+ModuleElt([:z=>1.0])","3.0:xy+2.0:yx+1.0:z")
 end
 @testset "Mvps.jl" begin
@@ -733,7 +735,7 @@ end
 @testset "PermGroups.jl" begin
 @test mytest("G=Group([Perm(i,i+1) for i in 1:2])","Group([(1,2),(2,3)])")
 @test mytest("collect(G)","6-element Vector{Perm{Int16}}:\n (1,2)\n (1,3,2)\n ()\n (1,2,3)\n (1,3)\n (2,3)")
-@test mytest("degree(G)","3")
+@test mytest("largest_moved_point(G)","3")
 @test mytest("Perm(1,2) in G","true")
 @test mytest("Perm(1,2,4) in G","false")
 @test mytest("base(G)","2-element Vector{Int16}:\n 1\n 2")

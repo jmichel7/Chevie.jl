@@ -605,9 +605,9 @@ true
 """
 HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat, 6)
 """
-smith_normal_form(m)
+`smith_normal_form(m)`
 
-The Smith normal from
+The Smith normal form
 
 ```julia-repl
 julia> m=[[1,15,28],[4,5,6],[7,8,9]]
@@ -650,9 +650,8 @@ DiagonalizeIntMat(mat)=DoNFIM(mat,17)
 """
 `baseInt(m::Matrix{<:Integer})`
 
-If  `m` is a matrix with integral  entries, this function returns a list of
-vectors  that forms a basis  of the integral row  space of `m`, i.e. of the
-set of integral linear combinations of the rows of `m`.
+returns  a list of vectors that forms a  basis of the integral row space of
+`m`, i.e. of the set of integral linear combinations of the rows of `m`.
 
 ```julia-repl
 julia> m=[1 2 7;4 5 6;10 11 19]
@@ -705,15 +704,15 @@ end
 """
 `complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})`
 
- Let  `full` be the integral row module of  `M` and let `S`, a submodule of
+ Let  `M` be the integral row module of  `full` and let `S`, a submodule of
  `M`,  be the integral row  module of `sub`. This  function computes a free
  basis for `M` that extends `S`, that is, if the dimension of `S` is `n` it
  determines  a basis  `B={b₁,…,bₘ}` for  `M`, as  well as `n` integers `xᵢ`
  such that the `n` vectors `sᵢ:=xᵢ⋅bᵢ` form a basis for `S`.
 
  It returns a named tuple with the following components:
-  - `complement` a matrix with rows `bₙ₊₁,…,bₘ`.
-  - `sub` the rows are `sᵢ` (a basis for `S`).
+  - `complement` a vector of the `bₙ₊₁,…,bₘ`.
+  - `sub` a vector of the `sᵢ` (a basis for `S`).
   - `moduli` the factors `xᵢ`.
 
 ```julia-repl

@@ -544,7 +544,7 @@ end
 ProperSeries(W,d;NC=false)=vcat(map(i->Series(W,d,i;NC),
                                        1:length(relative_degrees(W,d)))...)
 
-function Gapjm.degree(s::Series)
+function Pols.degree(s::Series)
   get!(s,:degree) do
     deg=exactdiv(conj(generic_sign(s.spets))*generic_order(s.spets,Pol()),
     conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))

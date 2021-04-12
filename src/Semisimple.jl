@@ -845,7 +845,7 @@ end
 This  computes  a  `rootdatum`  representing  a  semisimple algebraic group
 intermediate  between  the  adjoint  group  ---  obtained  by  a  call like
 `rootdatum(:pgl,4)`---  and  the  simply  connected  semi-simple  group ---
-obtained  by  a  call  like  'rootdatum(:sl,4)`.  The group is specified by
+obtained  by  a  call  like  `rootdatum(:sl,4)`.  The group is specified by
 specifying  a subset  of the  *minuscule weights*,  which are weights whose
 scalar  product  with  every  coroot  is  in  `-1,0,1` (the weights are the
 elements  of the *weight  lattice*, the lattice  in `X(𝐓)⊗ ℚ  ` dual to the

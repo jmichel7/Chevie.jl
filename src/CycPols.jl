@@ -65,12 +65,12 @@ module CycPols
 
 export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
 # to use as a stand-alone module uncomment the next line
-# export roots, degree, valuation
-import ..Gapjm: roots, degree, valuation, gap
+# export roots
+import ..Gapjm: roots, gap
 
 using ..ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
-using ..Pols: Pol, Pols
+using ..Pols: Pol, Pols, degree, valuation
 using ..Combinat: collectby
 using ..Mvps: Mvps, Mvp
 using ..Util: printTeX, prime_residues, primitiveroot, phi,
@@ -159,11 +159,11 @@ Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 Base.iszero(a::CycPol)=iszero(a.coeff)
 Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 
-degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
-valuation(a::CycPol)=a.valuation
-valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
-valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
+Pols.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
+Pols.valuation(a::CycPol)=a.valuation
+Pols.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
+Pols.valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
+Pols.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
   if iszero(a) || iszero(b) return zero(a) end

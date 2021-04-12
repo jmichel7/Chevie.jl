@@ -128,19 +128,17 @@ module Mvps
 # benchmark: (x+y+z)^3     2.3μs 48 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
 using ..Util: Util, exactdiv, fromTeX, ordinal, printTeX, bracket_if_needed
-using ..Pols: Pols, Pol, srgcd
+using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
+              valuation, degree
 
-#import Gapjm: degree, coefficients, valuation
-#import ..Pols: positive_part, negative_part, bar
+#import Gapjm: coefficients, valuation
 import ..Cycs: root
 using ..Cycs: Cyc
 # to use as a stand-alone module comment above line, uncomment next, and
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
-export degree, coefficients, coefficient, valuation
-export positive_part, negative_part, bar
-export Mvp, Monomial, @Mvp, variables, value, scal, derivative,
-  laurent_denominator, Mvrf
+export coefficients, coefficient
+export Mvp, Monomial, @Mvp, variables, value, scal, laurent_denominator, Mvrf
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   
@@ -223,8 +221,8 @@ Base.lcm(v::AbstractArray{<:Monomial})=reduce(lcm,v)
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
-degree(m::Monomial)=sum(values(m.d))
-degree(m::Monomial,var::Symbol)=m.d[var]
+Pols.degree(m::Monomial)=sum(values(m.d))
+Pols.degree(m::Monomial,var::Symbol)=m.d[var]
 
 function root(m::Monomial,n::Integer=2)
  if all(x->iszero(x%n),last.(m.d)) Monomial((k=>div(v,n) for (k,v) in m.d)...)
@@ -388,8 +386,8 @@ julia> degree(a,:x)
 ```
 
 """
-degree(m::Mvp)=iszero(m) ? 0 : maximum(degree.(keys(m.d)))
-degree(m::Mvp,v::Symbol)=iszero(m) ? 0 : maximum(degree.(keys(m.d),v))
+Pols.degree(m::Mvp)=iszero(m) ? 0 : maximum(degree.(keys(m.d)))
+Pols.degree(m::Mvp,v::Symbol)=iszero(m) ? 0 : maximum(degree.(keys(m.d),v))
 
 """
 The `valuation` of an `Mvp` is the minimal degree of a monomial.
@@ -415,8 +413,8 @@ julia> valuation(a,:x)
 ```
 
 """
-valuation(m::Mvp)=iszero(m) ? 0 : minimum(degree.(keys(m.d)))
-valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
+Pols.valuation(m::Mvp)=iszero(m) ? 0 : minimum(degree.(keys(m.d)))
+Pols.valuation(m::Mvp,v::Symbol)=iszero(m) ? 0 : minimum(degree.(keys(m.d),v))
 
 """
 `coefficient(p::Mvp,m::Monomial)`
@@ -752,13 +750,13 @@ Mvp{Int64}: 3x+4y
 """
 Base.:^(p::Mvp,m::AbstractMatrix;vars=variables(p))=p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
-positive_part(p::Mvp)=
+Pols.positive_part(p::Mvp)=
   Mvp(ModuleElt(m=>c for (m,c) in p.d if all(x->last(x)>0,m.d.d);check=false))
 
-negative_part(p::Mvp)=
+Pols.negative_part(p::Mvp)=
   Mvp(ModuleElt(m=>c for (m,c) in p.d if all(x->last(x)<0,m.d.d);check=false))
 
-bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in p.d))
+Pols.bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in p.d))
 
 """
 The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
@@ -791,7 +789,7 @@ julia> derivative(p,:z)
 Mvp{Rational{Int64},Rational{Int64}}: 0
 ```
 """
-function derivative(p::Mvp,v=first(variables(p)))
+function Pols.derivative(p::Mvp,v=first(variables(p)))
   # check needed because 0 could appear in coeffs
   Mvp(ModuleElt(m*Monomial(v)^-1=>c*degree(m,v) for (m,c) in p.d))
 end

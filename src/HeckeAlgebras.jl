@@ -74,10 +74,10 @@ In  the  following  example,  we  compute  the multiplication table for the
 julia> W=coxgroup(:A,2)
 A₂
 
-julia> H=hecke(W,0)             # One-parameter algebra with `q=0`
+julia> H=hecke(W,0)            # One-parameter algebra with `q=0`
 hecke(A₂,0)
 
-julia> T=Tbasis(H);             # Create the `T` basis
+julia> T=Tbasis(H);            # Create the `T` basis
 
 julia> el=words(W)
 6-element Vector{Vector{Int8}}:
@@ -125,7 +125,7 @@ using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
-  VFactorSchurElement, alt, coefftype
+  VFactorSchurElement, alt, coefftype, HeckeCoset
 
 @GapObj struct HeckeAlgebra{C,TW}
   W::TW
@@ -504,7 +504,9 @@ end
 basename(h::HeckeTElt)="T"
  
 function Base.one(H::HeckeAlgebra)
-  HeckeTElt(ModuleElt(one(H.W)=>one(coefftype(H))),H)
+  get!(H,:one)do
+    HeckeTElt(ModuleElt(one(H.W)=>one(coefftype(H));check=false),H)
+  end
 end
 
 Base.one(h::HeckeTElt)=one(h.H)
@@ -513,22 +515,20 @@ function Base.zero(H::HeckeAlgebra)
   HeckeTElt(zero(ModuleElt{typeof(one(H.W)),coefftype(H)}),H)
 end
 
-function Tbasis(H::HeckeAlgebra{C,TW})where {C,TW<:CoxeterGroup{P}} where P
-  function f(w::Vararg{Integer})
-    if isempty(w) return one(H) end
-    HeckeTElt(ModuleElt(H.W(w...)=>one(coefftype(H))),H)
-  end
-  f(w::Vector{<:Integer})=f(w...)
-# eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
-  f(h::HeckeTElt)=h
-  f(h::HeckeElt)=Tbasis(h)
-  f(w::P)=HeckeTElt(ModuleElt(w=>one(coefftype(H))),H)
-end
+Tbasis(H::HeckeAlgebra)=(x...)->x==() ? one(H) : Tbasis(H,x...)
+Tbasis(H::HeckeAlgebra,w::Vararg{Integer})=Tbasis(H,H.W(w...))
+Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
+Tbasis(H::HeckeAlgebra,h::HeckeTElt)=h
+Tbasis(H::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
+Tbasis(H::HeckeAlgebra,w)=HeckeTElt(ModuleElt(w=>one(coefftype(H));check=false),H)
 
-function Base.:*(a::HeckeTElt, b::HeckeTElt)
-  if iszero(a) return a end
-  if iszero(b) return b end
-  W=a.H.W
+function polynomial_relations(H::HeckeAlgebra)
+  get!(H,:polrel)do
+    map(p->Pol([1],length(p))-prod(x->Pol([-x,1]),p),H.para)
+  end
+end
+    
+function innermul(W::CoxeterGroup,a,b)
   sum(a.d) do (ea,pa)
     h=b.d*pa
     for i in reverse(word(W,ea))
@@ -547,6 +547,35 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
     end
     HeckeTElt(h,a.H)
   end
+end
+
+function innermul(W::PermRootGroup,a,b)
+  sum(a.d) do (ea,pa)
+    h=b.d*pa
+    for i in reverse(word(W,ea))
+      if length(refltype(W))==1 && iscyclic(W)
+        new=zero(h)
+        for (eb,pb) in h
+          lb=length(word(W,eb))
+          if 1+lb<length(W) push!(new.d,W(1)*eb=>pb)
+          else
+            p=polynomial_relations(a.H)[1]
+            append!(new.d,[W(1)^(i+p.v+1)=>pb*c for (i,c) in enumerate(p.c)])
+          end
+        end
+        h=new
+      else error("not implemented")
+      end
+    end
+    HeckeTElt(ModuleElt(h.d),a.H)
+  end
+end
+
+function Base.:*(a::HeckeTElt, b::HeckeTElt)
+  if iszero(a) return a end
+  if iszero(b) return b end
+  W=a.H.W
+  innermul(W,a,b)  # function barrier needed for performance
 end
 
 function Base.inv(a::HeckeTElt)
@@ -614,7 +643,7 @@ julia> W=CoxSym(4)
 julia> H=hecke(W,Pol(:q))
 hecke(𝔖 ₄,q)
 
-julia> h=Tbasis(H)(longest(W))
+julia> h=Tbasis(H,longest(W))
 T₁₂₁₃₂₁
 
 julia> p=class_polynomials(h)
@@ -638,7 +667,7 @@ function class_polynomials(h)
     para=H.para
   end
   minl=length.(classinfo(WF)[:classtext])
-  h=Tbasis(H)(h)
+  h=Tbasis(H,h)
 # Since  vF is not of minimal length in its class there exists wF conjugate
 # by   cyclic  shift  to  vF  and  a  generating  reflection  s  such  that
 # l(swFs)=l(vF)-2. Return T_sws.T_s^2
@@ -961,12 +990,45 @@ julia> FactorizedSchurElements(H)
 FactorizedSchurElements(H::HeckeAlgebra)=
     map(p->FactorizedSchurElement(H,p),charinfo(H.W)[:charparams])
 #---------------------- Hecke Cosets
+@doc """
+`HeckeCoset`s  are `Hϕ` where `H` is a  Hecke algebra of some Coxeter group
+`W`  on  which  the  reduced  element  `ϕ`  acts by `ϕ(T_w)=T_{ϕ(w)}`. This
+corresponds  to the action  of the Frobenius  automorphism on the commuting
+algebra  of the  induced of  the trivial  representation from  the rational
+points of some `F`-stable Borel subgroup to `𝐆 ^F`.
 
+```julia-repl
+julia> WF=rootdatum("u",3)
+²A₂Φ₂
+
+julia> HF=hecke(WF,Pol(:v)^2;rootpara=Pol())
+hecke(²A₂Φ₂,v²,rootpara=v)
+
+julia> CharTable(HF)
+CharTable(hecke(²A₂Φ₂,v²,rootpara=v))
+   │ 111 21  3
+───┼───────────
+111│  -1  1 -1
+21 │-2v³  .  v
+3  │  v⁶  1 v²
+```
+Thanks  to the work of Xuhua  He and Sian Nie, 'HeckeClassPolynomials' also
+make sense for these cosets. This is used to compute such character tables.
+""" HeckeCoset
 @GapObj struct HeckeCoset{TH<:HeckeAlgebra,TW<:Spets}
   H::TH
   W::TW
 end
 
+"""
+`hecke(WF::Spets, H)`
+
+`hecke(WF::Spets, params)`
+
+Construct  a `HeckeCoset`  from a  Coxeter coset  `WF` and an Hecke algebra
+associated  to the CoxeterGroup  of `WF`. The  second form is equivalent to
+`Hecke(WF,Hecke(Group(WF),params))`. See the doc for `HeckeCoset`.
+"""
 hecke(WF::Spets,H::HeckeAlgebra)=HeckeCoset(H,WF,Dict{Symbol,Any}())
 hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF,Dict{Symbol,Any}())
 
@@ -1040,13 +1102,11 @@ end
 
 basename(h::HeckeTCElt)="T"
 
-function Tbasis(H::HeckeCoset{TH})where TH<:HeckeAlgebra{C} where C
-  f(w::Vararg{Integer})=HeckeTCElt(ModuleElt(H.W(w...)=>one(C)),H)
-  f(w::Vector{<:Integer})=f(w...)
-# f(w::P)=HeckeTElt(ModuleElt(w=>one(C)),H)
-# eval(:(Base.show(io::IO,t::typeof($f))=print(io,"Tbasis(",$H,")")))
-  f(h::HeckeElt)=Tbasis(h)
-  f(h::HeckeTCElt)=h
-end
+Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? one(H) : Tbasis(H,x...)
+Tbasis(H::HeckeCoset,w::Vararg{Integer})=Tbasis(H,H.W(w...))
+Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
+Tbasis(H::HeckeCoset,h::HeckeTCElt)=h
+Tbasis(H::HeckeCoset,h::HeckeElt)=Tbasis(h)
+Tbasis(H::HeckeCoset,w)=HeckeTCElt(ModuleElt(w=>one(coefftype(H.H))),H)
 
 end

@@ -1427,6 +1427,7 @@ end
 #--------------- PRG: an implementation of PermRootGroups--------------------
 @GapObj struct PRG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
+  one::Perm{T1}
   matgens::Vector{Matrix{T}}
   roots::Vector{Vector{T}}
   coroots::Vector{Vector{T}}
@@ -1471,7 +1472,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   end
   ncr=Vector{eltype(cr)}(undef,length(rr))
   ncr[eachindex(cr)].=cr
-  W=PRG(Perm{Int16}.(refls),matgens,rr,ncr,Dict{Symbol,Any}())
+  W=PRG(Perm{Int16}.(refls),Perm{Int16}(),matgens,rr,ncr,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=PermRoot.indices(t)
@@ -1486,8 +1487,8 @@ end
 
 PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
 
-PRG(i::Integer)=PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],
-    Dict{Symbol,Any}(:rank=>i))
+PRG(i::Integer)=PRG(Perm{Int16}[],Perm{Int16}(),Matrix{Int}[],Vector{Int}[],
+                    Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 
 radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 
@@ -1535,6 +1536,7 @@ reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] :
 #--------------- type of subgroups of PRG----------------------------------
 @GapObj struct PRSG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}
+  one::Perm{T1}
   inclusion::Vector{Int}
   restriction::Vector{Int}
   parent::PRG{T,T1}
@@ -1597,7 +1599,7 @@ end
 function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if !haskey(W,:reflsubgroups)
     W.reflsubgroups=Dict(
-      Int[]=>PRSG(empty(gens(W)),Int[],zeros(Int,length(W.roots)),W,
+         Int[]=>PRSG(empty(gens(W)),one(W),Int[],zeros(Int,length(W.roots)),W,
                   Dict{Symbol,Any}(:rank=>rank(W),:refltype=>TypeIrred[])))
   end
   I=Vector{Int}(I)
@@ -1609,7 +1611,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
       inclu=Int.(indexin(G.roots,W.roots))
     end
     restr=zeros(Int,length(W.roots));restr[inclu]=1:length(inclu)
-    return PRSG(reflections(W)[I],inclu,restr,W,Dict{Symbol,Any}())
+    return PRSG(reflections(W)[I],one(W),inclu,restr,W,Dict{Symbol,Any}())
   end
   if haskey(W.reflsubgroups,I) return W.reflsubgroups[I] end
   H=reflection_subgroup(W,I;NC=true)

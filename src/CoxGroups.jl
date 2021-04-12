@@ -130,7 +130,8 @@ groups given its type.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
-  longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox
+  longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
+  words
 
 export isleftdescent # 'virtual' methods (exist only for concrete types)
 
@@ -398,7 +399,7 @@ end
 
 const Wtype=Vector{Int8}
 #CoxeterWords
-function Gapjm.words(W::CoxeterGroup{T}, l::Int)where T
+function words(W::CoxeterGroup{T}, l::Int)where T
   ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if coxrank(W)==1
@@ -444,7 +445,7 @@ julia> e[1]==longest(W)
 true
 ```
 """
-function Gapjm.words(W::CoxeterGroup)
+function words(W::CoxeterGroup)
   reduce(vcat,map(i->words(W,i),0:nref(W)))
 end
 
@@ -610,7 +611,7 @@ julia> words(W,longest(W))
  [3, 2, 3, 1, 2, 3]
 ```
 """
-function Gapjm.words(W::CoxeterGroup,w)
+function words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
   reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
