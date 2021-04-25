@@ -30,16 +30,16 @@ julia> uc.families
 julia> uc.families[1]
 Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
 Drinfeld double of 𝔖 ₃, Lusztig′s version
-   label│eigen                                               
-────────┼─────────────────────────────────────────────────────
-(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
-(g₂,1)  │    1 1//2  1//2  0//1  0//1 -1//2 -1//2  0//1  0//1
-(g₃,1)  │    1 1//3  0//1  2//3 -1//3  1//3  0//1 -1//3 -1//3
-(1,ρ)   │    1 1//3  0//1 -1//3  2//3  1//3  0//1 -1//3 -1//3
-(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3
-(g₂,ε)  │   -1 1//2 -1//2  0//1  0//1 -1//2  1//2  0//1  0//1
-(g₃,ζ₃) │   ζ₃ 1//3  0//1 -1//3 -1//3  1//3  0//1  2//3 -1//3
-(g₃,ζ₃²)│  ζ₃² 1//3  0//1 -1//3 -1//3  1//3  0//1 -1//3  2//3
+   label│eigen                                       
+────────┼─────────────────────────────────────────────
+(1,1)   │    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
+(g₂,1)  │    1 1/2  1/2    0    0 -1/2 -1/2    0    0
+(g₃,1)  │    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
+(1,ρ)   │    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
+(1,ε)   │    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
+(g₂,ε)  │   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
+(g₃,ζ₃) │   ζ₃ 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
+(g₃,ζ₃²)│  ζ₃² 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
 
 julia> charnames(uc)[uc.families[1].charNumbers]
 8-element Vector{String}:
@@ -112,22 +112,22 @@ unipotent degrees.
 julia> Family("C2")
 Family(C₂,4)
 DrinfeldDouble(Z/2)
- label│eigen                       
-──────┼─────────────────────────────
-(1,1) │    1 1//2  1//2  1//2  1//2
-(g₂,1)│    1 1//2  1//2 -1//2 -1//2
-(1,ε) │    1 1//2 -1//2  1//2 -1//2
-(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2
+ label│eigen                   
+──────┼─────────────────────────
+(1,1) │    1 1/2  1/2  1/2  1/2
+(g₂,1)│    1 1/2  1/2 -1/2 -1/2
+(1,ε) │    1 1/2 -1/2  1/2 -1/2
+(g₂,ε)│   -1 1/2 -1/2 -1/2  1/2
 
 julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
 Family(C₂,4:7)
 DrinfeldDouble(Z/2)
- label│eigen signs                       
-──────┼───────────────────────────────────
-(1,1) │    1     1  1//2 -1//2 1//2 -1//2
-(g₂,1)│    1    -1 -1//2  1//2 1//2 -1//2
-(1,ε) │    1     1  1//2  1//2 1//2  1//2
-(g₂,ε)│   -1    -1 -1//2 -1//2 1//2  1//2
+ label│eigen signs                   
+──────┼───────────────────────────────
+(1,1) │    1     1  1/2 -1/2 1/2 -1/2
+(g₂,1)│    1    -1 -1/2  1/2 1/2 -1/2
+(1,ε) │    1     1  1/2  1/2 1/2  1/2
+(g₂,ε)│   -1    -1 -1/2 -1/2 1/2  1/2
 ```
 """
 function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
@@ -766,7 +766,7 @@ function family_imprimitive(S)
         if schon[i]
             orb = gapSet(Rotations(symbs[i]))
             push!(mult, e // length(orb))
-            for j = Filtered(i + 1:nrSymbols, (j->symbs[j] in orb))
+            for j = filter(j->symbs[j] in orb,i+1:nrSymbols)
                 schon[j] = false
             end
         end
@@ -899,22 +899,18 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
   if haskey(f,:explanation) # && f.explanation!=name 
     printTeX(io,f.explanation,"\n") 
   end
-  if haskey(f,:charLabels) rowLabels=fromTeX.(Ref(io),f.charLabels)
-  else  rowLabels=string.(1:length(f))
-  end
+  row_labels=haskey(f,:charLabels) ? f.charLabels : string.(1:length(f))
   t=[repr.(f.eigenvalues;context=io)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs) 
     push!(t,string.(f.signs))
     push!(col_labels,"\\mbox{signs}")
   end
-  append!(t,toL(map(y->repr(y;context=io),fourier(f))))
-  if maximum(length.(rowLabels))<=4 append!(col_labels,rowLabels)
-  else append!(col_labels,map(x->" ",rowLabels))
+  append!(t,toL(map(y->repr(y;context=io),Cyc.(fourier(f)))))
+  if maximum(length.(row_labels))<=4 append!(col_labels,row_labels)
+  else append!(col_labels,map(x->" ",row_labels))
   end
-  showtable(io,permutedims(toM(t)),row_labels=rowLabels,
-        col_labels=col_labels,
-        rows_label="\\mbox{label}")
+  showtable(io,permutedims(toM(t));row_labels,col_labels,rows_label="\\mbox{label}")
 end
 
 #------------------------ Fusion algebras -------------------------------

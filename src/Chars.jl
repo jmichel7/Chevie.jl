@@ -891,11 +891,8 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", ct::CharTable)
   println(io,ct)
-  irr=map(ct.irr)do e
-    if iszero(e) "." else repr(e; context=io) end
-  end
-  showtable(io,irr,row_labels=map(s->fromTeX(io,s),ct.charnames),
-                col_labels=map(s->fromTeX(io,s),ct.classnames))
+  irr=map(e->iszero(e) ? "." : repr(e;context=io),ct.irr)
+  showtable(io,irr,row_labels=ct.charnames,col_labels=ct.classnames)
 end
 
 function CharTable(t::TypeIrred)
@@ -1357,12 +1354,8 @@ end
 
 function Base.show(io::IO,::MIME"text/plain",t::InductionTable)
   println(io,t)
-  column_labels=fromTeX.(Ref(io),t.ucharnames)
-  row_labels=fromTeX.(Ref(io),t.gcharnames)
-  scal=map(t.scalar)do e
-    if iszero(e) "." else repr(e; context=io) end
-  end
-  showtable(io,scal,row_labels=row_labels,col_labels=column_labels)
+  scal=map(e->iszero(e) ? "." : TeX(io,e),t.scalar)
+  showtable(io,scal;row_labels=t.gcharnames,col_labels=t.ucharnames)
 end
 
 """

@@ -242,5 +242,6 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       addSpringer(ss->ss[:Z]==[-1] && rank(ss[:relgroup])==sum(sum,s),i,s,d)
     end
   end
+  for ss in uc[:springerSeries] if !all(isone,ss[:Z]) ss[:hc]=0 end end
   return uc
 end)

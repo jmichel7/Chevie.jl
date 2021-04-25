@@ -31,11 +31,13 @@ Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
   (1,3)   => [1, 2]
   (1,2,3) => [2]
   (2,3)   => [2, 1]
-  (1,3,2) => [1, 2, 1]
+  (1,3,2) => [2, 2]
+  
 
 julia> G.prop
 Dict{Symbol, Any} with 1 entry:
-  :words => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2, 1]…
+  :minwords => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2,…
+  
 ```
 """
 module Groups
@@ -263,10 +265,27 @@ Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
   (1,3)   => [1, 2]
   (1,2,3) => [2]
   (2,3)   => [2, 1]
-  (1,3,2) => [1, 2, 1]
+  (1,3,2) => [2, 2]
 ```
 """
 function minimal_words(G::Group)
+  get!(G,:minwords)do
+    words=Dict(one(G)=>Int[])
+    l=words
+    while !isempty(l)
+      newl=Dict{eltype(G),Vector{Int}}()
+      for (i,g) in enumerate(gens(G)), (h,w) in l
+        e=h*g
+        if !haskey(words,e) newl[e]=vcat(w,i) end
+      end
+      l=newl
+      merge!(words,l)
+    end
+    words
+  end
+end
+
+function words(G::Group) # faster than minimal_words but words not minimal
   get!(G,:words)do
     words=Dict(one(G)=>Int[])
     for i in eachindex(gens(G))
@@ -289,8 +308,8 @@ function minimal_words(G::Group)
   end
 end
 
-function minimal2(G::Group)
-  get!(G,:words)do
+function words2(G::Group) # faster than words but longer to retrieve word
+  get!(G,:words2)do
     words=Dict(one(G)=>0)
     for i in eachindex(gens(G))
       nwords=copy(words)
@@ -311,12 +330,12 @@ function minimal2(G::Group)
   end
 end
 
-"word(G::Group,w): a word in  gens(G) representing element w of G"
+"word(G::Group,w): a minimal word in  gens(G) representing element w of G"
 word(G::Group,w)=minimal_words(G)[w]
 
 function word2(W::Group,w)
   res=Int[]
-  d=minimal2(W)
+  d=words2(W)
   while !isone(w)
     i=d[w]
     w/=gens(W)[i]
@@ -327,13 +346,13 @@ end
 
 "elements(G::Group): the list of elements of G"
 function elements(G::Group)
-  collect(keys(minimal_words(G)))
+  collect(keys(words2(G)))
 end
 
-Base.in(w,G::Group)=haskey(minimal_words(G),w)
+Base.in(w,G::Group)=haskey(words2(G),w)
 
 "length(G::Group): the number of elements of G"
-Base.length(G::Group)=length(minimal_words(G))
+Base.length(G::Group)=length(words2(G))
 
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   get!(G,:classes) do
@@ -364,7 +383,7 @@ end
 function classreps(G::Group{T})::Vector{T} where T
   get!(G,:classreps) do
     if length(G)>10000 error("length(G)=",length(G),": should call Gap4")
-    else first.(conjugacy_classes(G))
+    else minimum.(conjugacy_classes(G))
     end
   end
 end

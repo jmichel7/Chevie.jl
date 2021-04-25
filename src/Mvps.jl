@@ -535,9 +535,9 @@ function Pol(x::Mvp{T})where T
   l=variables(x)
   if isempty(l) return Pol(scal(x)) end
   if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
-  val=valuation(x)
-  p=zeros(T,degree(x)-val+1)
-  for (mon,coeff) in x.d p[degree(mon)-val+1]=coeff end
+  val=Int(valuation(x))
+  p=zeros(T,Int(degree(x))-val+1)
+  for (mon,coeff) in x.d p[Int(degree(mon))-val+1]=coeff end
   Pol(p,val)
 end
 

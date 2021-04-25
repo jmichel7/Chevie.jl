@@ -359,7 +359,7 @@ function format_coefficient(c::String)
 end
 
 function Base.show(io::IO,m::ModuleElt)
-  if !get(io,:limit,false)
+  if !(get(io,:limit,false) || get(io,:TeX,false))
     print(io,"ModuleElt(",m.d,")")
     return
   end

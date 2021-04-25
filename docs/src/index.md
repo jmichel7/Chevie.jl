@@ -407,6 +407,9 @@ ennola
 Ucl
 UnipotentClasses
 ICCTable
+XTable
+GreenTable
+UnipotentValues
 induced_linear_form
 special_pieces
 ```

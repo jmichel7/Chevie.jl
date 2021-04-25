@@ -222,7 +222,7 @@ function eigenspace_projector(W,w,d::Root1)
   end
 end
 
-function Groups.normalizer(W::PermRootGroup,L::PermRootGroup)
+function Groups.normalizer(W,L::PermRootGroup)
   if length(L)==1 return W end
   r=unique!(sort(reflections(L)))
   centralizer(W,r;action=(x,g)->sort(x.^g))

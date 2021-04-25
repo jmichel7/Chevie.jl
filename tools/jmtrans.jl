@@ -47,6 +47,7 @@ const exclu=[
  ["Invariants","imp"],
  ["ReducedInRightCoset","timp"],
  ["CharName","timp"],
+ ["PrintDiagram","G4_22"],
  ["CharTable","G31"],
  ["CharTable","G34"],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])],
@@ -138,6 +139,12 @@ function writeall(l)
       end
     end
   end
+end
+
+function install_tbl2()
+  Gap2Julia.ftrans[:(+)]=:(∔)
+  Gap2Julia.ftrans[:(*)]=:(⨰)
+  for f in src install("tbl/$f") end
 end
 
 install_tbl()=for f in src install("tbl/$f") end

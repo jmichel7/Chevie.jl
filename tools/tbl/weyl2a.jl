@@ -24,11 +24,11 @@ chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
             end
         guesslongest = function (p,)
                 local x, off, i
-                p = Concatenation(Filtered(p, (i->begin
+                p = Concatenation(filter((i->begin
                                     mod(i, 2) == 0
-                                end)), Filtered(p, (i->begin
+                                end), p), filter((i->begin
                                     i != 1 && mod(i, 2) == 1
-                                end)))
+                                end), p))
                 x = Perm()
                 off = 0
                 for i = p

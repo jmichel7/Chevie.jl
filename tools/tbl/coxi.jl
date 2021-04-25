@@ -340,7 +340,7 @@ chevieset(:I, :DecompositionMatrix, function (n, p)
 chevieset(:I, :FactorizedSchurElement, function (arg...,)
         local ci
         if mod(arg[1], 2) == 0 && (arg[3])[1] != (arg[3])[2]
-            error(" !  implemented")
+            error("not implemented")
         end
         ci = (chevieget(:I, :CharInfo))(arg[1])
         ci = (ci[:malleParams])[Position(ci[:charparams], arg[2])]

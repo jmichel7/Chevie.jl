@@ -404,15 +404,15 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                 end
             I = (chevieget(:imp, :ClassInfo))(p, 1, r)
             res = Dict{Symbol, Any}(:classtext => [], :classparams => [], :classnames => [], :orders => [], :centralizers => [])
-            for i = Filtered(1:length(I[:classparams]), (i->begin
+            for i = filter((i->begin
                                 mod(map(length, (I[:classparams])[i]) * (0:p - 1), q) == 0
-                            end))
+                            end), 1:length(I[:classparams]))
                 S = (I[:classparams])[i]
                 a = Concatenation(S)
                 push!(a, q)
-                a = Append(a, Filtered(1:p, (j->begin
+                a = Append(a, filter((j->begin
                                         length(S[j]) != 0
-                                    end)) - 1)
+                                    end), 1:p) - 1)
                 a = ApplyFunc(gcd, a)
                 for j = 0:a - 1
                     push!(res[:classtext], trans(Concatenation(fill(0, max(0, (1 + j) - 1)) + 1, (I[:classtext])[i], fill(0, max(0, (1 + (p - j)) - 1)) + 1)))
@@ -496,9 +496,9 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                                 end
                             else
                                 de = div(length(t), 2)
-                                pos = Filtered(1:length(t), (i->begin
+                                pos = filter((i->begin
                                                 length(t[i]) > 0
-                                            end))
+                                            end), 1:length(t))
                                 if length(pos) == 1
                                     if t[pos[1]] == [2]
                                         return [1, 1, 1, pos[1] - de]
@@ -572,14 +572,14 @@ chevieset(:imp, :CharInfo, function (de, e, r)
 chevieset(:imp, :LowestPowerFakeDegrees, function (p, q, r)
         local ci
         if q == 1 || p == q
-            error("should  !  be called")
+            error("should not be called")
         end
         return false
     end)
 chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
         local ci
         if q == 1 || p == q
-            error("should  !  be called")
+            error("should not be called")
         end
         return false
     end)
@@ -692,7 +692,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
             end
             return res
         else
-            error(" !  implemented")
+            error("not implemented")
         end
     end)
 chevieset(:imp, :SchurData, function (p, q, r, phi)
@@ -711,7 +711,7 @@ chevieset(:imp, :SchurData, function (p, q, r, phi)
                 return res
             end
         else
-            error(" !  implemented")
+            error("not implemented")
         end
     end)
 chevieset(:imp, :SchurElement, function (p, q, r, phi, para, root)
@@ -756,7 +756,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, root)
             end
             return (p // q * ((CHEVIE[:imp])[:SchurElement])(p, 1, r, phi, para, [])) // m
         else
-            ((CHEVIE[:compat])[:InfoChevie])("# SchurElements(H(G(", p, ",", q, ",", r, "),", para, ")  !  implemented\n")
+            ((CHEVIE[:compat])[:InfoChevie])("# SchurElements(H(G(", p, ",", q, ",", r, "),", para, ") not implemented\n")
             return false
         end
     end)
@@ -806,7 +806,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
             F[:factor] = p // (q * m) * F[:factor]
             return F
         else
-            ((CHEVIE[:compat])[:InfoChevie])("# FactorizedSchurElements(H(G(", p, ",", q, ",", r, "),", para, ")  !  implemented\n")
+            ((CHEVIE[:compat])[:InfoChevie])("# FactorizedSchurElements(H(G(", p, ",", q, ",", r, "),", para, ") not implemented\n")
             return false
         end
     end)
@@ -831,9 +831,9 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                     return X[1] ^ 0 * [[[Y[p]]], [[X[2]]]]
                 end
             else
-                p = Filtered(1:length(t), (i->begin
+                p = filter((i->begin
                                 t[i] != []
-                            end))
+                            end), 1:length(t))
                 return X[1] ^ 0 * [[[Y[p[1]], 0], [-1, Y[p[2]]]], [[X[1], X[1] * Y[p[1]] + X[2] * Y[p[2]]], [0, X[2]]]]
             end
         elseif [p, q, r] == [3, 3, 3]
@@ -1039,7 +1039,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                                                 end)) - X[2] // v * Sum(T)], [0, X[2]]]) ^ (q // 2), [[Sum(Y), 1 // X[1]], [-(Product(Y)) * X[1], 0]], [[0, -(Product(T)) // v], [v, Sum(T)]]]
                         end
                     else
-                        error("should  !  happen")
+                        error("should not happen")
                     end
                 elseif para[1] == map((i->begin
                                     E(p // q, i - 1)
@@ -1320,7 +1320,7 @@ chevieset(:imp, :InitHeckeBasis, function (p, q, r, H)
                     end
                 end
                 if !(IsIdentical(H, hecke(x)))
-                    error(" !  elements of the same algebra")
+                    error("not elements of the same algebra")
                 end
                 ops = H[:operations]
                 pol = Coefficients(Product((H[:parameter])[1], (u->begin

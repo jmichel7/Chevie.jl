@@ -102,6 +102,7 @@ include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
+#if false
 include("ComplexR.jl");@reexport using .ComplexR
 include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
@@ -122,7 +123,6 @@ include("Symbols.jl");@reexport using .Symbols
 include("Ucl.jl");@reexport using .Ucl
 include("Gt.jl");@reexport using .Gt
 include("Murphy.jl");@reexport using .Murphy
-#if false
 include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
 include("dSeries.jl");@reexport using .dSeries

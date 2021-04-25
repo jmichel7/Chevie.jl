@@ -1,14 +1,3 @@
-# extensions to get closer to GAP semantics
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
-Base.:-(a::AbstractVector,b::Number)=a .- b
-Base.:+(a::AbstractArray,b::Number)=a .+ b
-Base.:+(a::Integer,b::AbstractVector)=a .+ b
-Base.:-(a::Integer,b::AbstractVector)=a .- b
-Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
-Base.isless(a::Array,b::Number)=true
-Base.isless(b::Number,a::Array)=false
-Base.copy(x::Char)=x
-
 Append(a::Vector,b::AbstractVector)=vcat(a,b)
 Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
@@ -24,7 +13,6 @@ function Position(a::Vector,b)
   x=findfirst(isequal(b),a)
   isnothing(x) ? false : x
 end
-Filtered(l,f)=isempty(l) ? l : filter(f,l)
 First(a,b)=a[findfirst(b,a)]::eltype(a)
 Flat(v)=collect(Iterators.flatten(v))
 gapSet(v)=unique!(sort(v))

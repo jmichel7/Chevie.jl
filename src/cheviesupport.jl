@@ -1,4 +1,28 @@
-# extensions to get closer to GAP semantics; suppress when chevie library gone
+# pirating extensions to get closer to GAP semantics
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
+Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(permutedims(a)*toM(b))[1]
+Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
+Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
+Base.:+(a::AbstractArray,b::Number)=a .+ b
+Base.:+(a::Integer,b::AbstractVector)=a .+ b
+Base.:-(a::AbstractVector,b::Number)=a .- b
+Base.:-(a::Integer,b::AbstractVector)=a .- b
+Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*1//1)*m*n
+Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
+Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Integer)=toL(toM(m)^n)
+Base.:^(m::AbstractVector,n::AbstractVector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
+Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
+Base.getindex(a::Symbol,i::Int)=string(a)[i]
+#Base.isless(a::Array,b::Number)=true
+#Base.isless(b::Number,a::Array)=false
+Base.copy(x::Char)=x
+Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
+Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
+Base.length(a::Symbol)=length(string(a))
+Base.union(v::Vector)=union(v...)
+
+# other extensions
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::RatFrac)=a .* b
@@ -7,10 +31,6 @@ Base.:*(a::AbstractArray,b::Mvp)=a .* b
 Base.:*(a::Mvp,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Mvrf)=a .* b
 Base.:*(a::Mvrf,b::AbstractArray)=a .* b
-Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(permutedims(a)*toM(b))[1]
-Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
-Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
 Base.:*(W1::Spets,W2::FiniteCoxeterGroup)=Cosets.extprod(W1,spets(W2))
 Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
@@ -20,15 +40,7 @@ Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
 Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
-Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*1//1)*m*n
-Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
-Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Integer)=toL(toM(m)^n)
-Base.:^(m::AbstractVector,n::AbstractVector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
-Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
-Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
-Base.getindex(a::Symbol,i::Int)=string(a)[i]
-Base.length(a::Symbol)=length(string(a))
-Base.union(v::Vector)=union(v...)
+Base.:^(f::Family,n::Int)=galois(f,n)
 Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 

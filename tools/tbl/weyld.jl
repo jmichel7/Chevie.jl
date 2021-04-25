@@ -150,7 +150,7 @@ chevieset(:D, :ClassParameter, function (n, w)
                 tmp = CoxeterGroup("D", n)
                 gens = PermCosetsSubgroup(tmp, ReflectionSubgroup(tmp, 2:n))
                 tmp = (chevieget(:D, :ClassInfo))(n)
-                tmp = (tmp[:classtext])[Filtered(1:length(tmp[:classnames]), (i->('+' in (tmp[:classnames])[i] || '-' in (tmp[:classnames])[i];)))]
+                tmp = (tmp[:classtext])[filter((i->('+' in (tmp[:classnames])[i] || '-' in (tmp[:classnames])[i];)), 1:length(tmp[:classnames]))]
                 tmp = map((a->begin
                                 CycleStructurePerm(Product(gens[a]))
                             end), tmp)

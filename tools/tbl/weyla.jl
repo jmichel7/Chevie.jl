@@ -200,9 +200,9 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                                 Dict{Symbol, Any}(:parameter => p)
                             end), partitions(n + 1)), :springerSeries => Concatenation(map((d->begin
                                     map((i->begin
-                                                Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", (n + 1) // d - 1), :Z => [E(d, i)], :levi => Filtered(1:n + 1, (i->begin
+                                                Dict{Symbol, Any}(:relgroup => CoxeterGroup("A", (n + 1) // d - 1), :Z => [E(d, i)], :levi => filter((i->begin
                                                                     mod(i, d) != 0
-                                                                end)), :locsys => [])
+                                                                end), 1:n + 1), :locsys => [])
                                             end), prime_residues(d))
                                 end), divisors(n + 1))))
         ss = (z->begin
@@ -243,6 +243,9 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                 end
             end
         end
+        for ss = (uc[:springerSeries])[2:length(uc[:springerSeries])]
+            ss[:hc] = 0
+        end
         uc[:orderClasses] = hasse(Poset(map((x->begin
                                 map((y->begin
                                             dominates(y[:parameter], x[:parameter])
@@ -262,9 +265,9 @@ chevieset(:A, :KLeftCellRepresentatives, function (n,)
                 return Position(CharParams(W), [i])
             end
         W = CoxeterGroup("A", n)
-        l = Filtered(elements(W), (x->begin
+        l = filter((x->begin
                         x ^ 2 == Perm()
-                    end))
+                    end), elements(W))
         return map((x->begin
                         Dict{Symbol, Any}(:duflo => OnTuples(1:n, x), :reps => [], :character => [f(x)])
                     end), l)

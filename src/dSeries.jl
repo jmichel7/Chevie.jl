@@ -34,7 +34,7 @@ julia> l=cuspidal_pairs(W,3)
  (levi = ³D₄₍₎=Φ₃², cuspidal = 1)
 
 julia> Series(W,l[2]...,3)
-ζ₃-series R^{³D₄}_{³D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,Mvp{Cyc{Int64}, Int64}[ζ₃q², ζ₃, ζ₃q])
+ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,MvpCyc{Int64, Int64}[ζ₃q², ζ₃, ζ₃q])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -71,7 +71,7 @@ julia> l=cuspidal_pairs(W,3)
  (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1)
 
 julia> Series(W,l[5]...,3)
-ζ₃-series R^{G₄}_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
+ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
@@ -468,7 +468,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> s=Series(W,3,1)[1]
-ζ₃-series R^{G₄}_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
+ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
@@ -563,24 +563,23 @@ function Base.show(io::IO,s::Series)
   n=repl || TeX ? "\\lambda" : "c"
   quad=TeX ? "\\quad" : " "
   if s.spets == s.levi
-    print(io,s.d, "-cuspidal ",cname," of ", s.spets)
+    printTeX(io,s.d, "-cuspidal ",cname," of \$", s.spets,"\$")
   else
     print(io,s.d, "-series ")
-    print(io,"R^{",s.spets,"}_","{",s.levi,"}(")
-    Util.printTeX(io,"$n==",cname,")")
+    printTeX(io,"\$R^{",s.spets,"}_","{",s.levi,"}($n==",cname,")\$")
   end
   if haskey(s, :WGL)
     if iscyclic(s) && (!haskey(s,:Hecke) || e(s)>4)
-      Util.printTeX(io,"$quad W_G(L,$n)==Z_{$(e(s))}")
+      printTeX(io,"\$$quad W_G(L,$n)==Z_{$(e(s))}\$")
     elseif haskey(s, :Hecke)
-      Util.printTeX(io,"$quad H_G(L,$n)==");print(io,hecke(s))
+      printTeX(io,"\$$quad H_G(L,$n)==",repr(hecke(s),context=io),"\$")
     elseif haskey(relative_group(s), :refltype)
-      Util.printTeX(io,"$quad W_G(L,$n)==");print(io,relative_group(s))
+      printTeX(io,"\$$quad W_G(L,$n)==",repr(relative_group(s),context=io),"\$")
     else
-      Util.printTeX(io,"$quad |W_G(L,$n)|==$(length(relative_group(s)))")
+      printTeX(io,"\$$quad |W_G(L,$n)|==$(length(relative_group(s)))\$")
     end
   elseif haskey(s, :WGLdims)
-    Util.printTeX(io,"$quad |W_G(L,$n)|==$(sum(WGLdims(s).^2))")
+    printTeX(io,"\$$quad |W_G(L,$n)|==$(sum(WGLdims(s).^2))\$")
   end
 # if haskey(s, :translation)
 #   Util.print(io,"$quad translation==",s.translation)
@@ -598,14 +597,12 @@ end
 function format(io::IO,s::Series)
   uw = UnipotentCharacters(s.spets)
   e = length(char_numbers(s))
-  TeX=get(io,:TeX,false)
-  repl=get(io,:limit,false)
   function f(texn,val)
-    push!(rowlab, fromTeX(io,texn))
-    push!(m, val)
+    push!(col_labels,texn)
+    push!(m,val)
   end
   m = []
-  rowlab = String[]
+  col_labels = String[]
   f("\\gamma_\\phi", charnames(io,uw)[char_numbers(s)])
   n="\\varphi"
   if haskey(s,:translation) n*="(mod $(s.translation))" end
@@ -624,7 +621,7 @@ function format(io::IO,s::Series)
   end
   m = permutedims(toM(m))
   println(io)
-  showtable(io,m;row_labels=string.(char_numbers(s)),col_labels=rowlab)
+  showtable(io,m;row_labels=string.(char_numbers(s)),col_labels)
 end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)

@@ -2,9 +2,9 @@
 chevieset(Symbol("2D"), :ClassParams, function (n,)
         local B
         B = (chevieget(:B, :ClassParams))(n)
-        return Filtered(B, (a->begin
+        return filter((a->begin
                         mod(length(a[2]), 2) == 1
-                    end))
+                    end), B)
     end)
 chevieset(Symbol("2D"), :WordsClassRepresentatives, function (n,)
         return ((chevieget(Symbol("2D"), :ClassInfo))(n))[:classtext]
@@ -12,9 +12,9 @@ chevieset(Symbol("2D"), :WordsClassRepresentatives, function (n,)
 chevieset(Symbol("2D"), :ClassInfo, function (n,)
         local l, B
         B = (chevieget(:B, :ClassInfo))(n)
-        l = Filtered(1:length(B[:classtext]), (i->begin
+        l = filter((i->begin
                         mod(length(((B[:classparams])[i])[2]), 2) == 1
-                    end))
+                    end), 1:length(B[:classtext]))
         return Dict{Symbol, Any}(:classnames => (B[:classnames])[l], :classparams => (B[:classparams])[l], :classes => (B[:classes])[l], :classtext => map(function (l,)
                             local res, i, n
                             res = []
@@ -77,7 +77,7 @@ chevieset(Symbol("2D"), :IsPreferred, function (pp,)
         return pp[1] > pp[2]
     end)
 chevieset(Symbol("2D"), :CharParams, (n->begin
-            Filtered((chevieget(:B, :CharParams))(n), chevieget(Symbol("2D"), :IsPreferred))
+            filter(chevieget(Symbol("2D"), :IsPreferred), (chevieget(:B, :CharParams))(n))
         end))
 chevieset(Symbol("2D"), :CharName, function (arg...,)
         return PartitionTupleToString(arg[2])
@@ -188,9 +188,9 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                     sharp = (s->begin
                                 SymmetricDifference(Difference(s[2], f[:Z2]), (f[:Z1])[1:3 - 1:length(f[:Z1]) - 1])
                             end)
-                    res = Dict{Symbol, Any}(:charNumbers => Filtered(1:length(uc[:charSymbols]), (i->begin
+                    res = Dict{Symbol, Any}(:charNumbers => filter((i->begin
                                             z((uc[:charSymbols])[i]) == f
-                                        end)))
+                                        end), 1:length(uc[:charSymbols])))
                     res[:almostCharNumbers] = res[:charNumbers]
                     res[:fourierMat] = map((u->begin
                                     map((a->begin

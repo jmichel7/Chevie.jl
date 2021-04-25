@@ -193,14 +193,14 @@ end
 bracket_if_needed(v)=occursin(r"[-+*/]",v[nextind(v,0,2):end]) ? "("*v*")" : v
 
 function Base.show(io::IO,r::ClassTypes)
-  res=string("ClassTypes(",repr(r.WF;context=io))
+  res=string("ClassTypes(\$",TeX(io,r.WF),"\$")
   if r.p==0 res*=",good characteristic)"
   else res*=string(",char. ",r.p,")")
   end
   if haskey(r,:specialized)
-    res*=string(" ",join(map(x->string(x[1],"=",x[2]),collect(r.specialized))," "))
+    res*=string(" \$",join(map(x->string(x[1],"=",x[2]),collect(r.specialized))," "),"\$")
   end
-  println(io,res)
+  printTeX(io,res*"\n")
   function nc(p)
     local d
     p=Mvp(p)
@@ -209,12 +209,12 @@ function Base.show(io::IO,r::ClassTypes)
     d==1 ? p : string(p,"/",d)
   end
   classes=get(io,:nClasses,false)
-  columnLabels=String[]
-  if classes push!(columnLabels, "nClasses") end
+  col_labels=String[]
+  if classes push!(col_labels, "nClasses") end
   if get(io,:unip,false)
-    rowLabels=[]
-    push!(columnLabels,"u")
-    push!(columnLabels,fromTeX(io,"|C_G(su)|"))
+    row_labels=[]
+    push!(col_labels,"u")
+    push!(col_labels,"|C_G(su)|")
     t=[]
     for x in r.ss
       u=RationalUnipotentClasses(x.CGs, r.p)
@@ -222,9 +222,9 @@ function Base.show(io::IO,r::ClassTypes)
         v=String[]
         if isone(c[:card])
           if classes push!(v, nc(nconjugacy_classes(x,r.WF,r.p))) end
-          push!(rowLabels,repr(x.CGs;context=io))
+          push!(row_labels,TeX(io,x.CGs))
         else
-          push!(rowLabels," ")
+          push!(row_labels," ")
           if classes push!(v,"") end
         end
         push!(v,Ucl.nameclass(merge(c[:class].prop,Dict(:name=>c[:class].name)),
@@ -235,15 +235,14 @@ function Base.show(io::IO,r::ClassTypes)
     end
     t=toM(t)
   else
-    rowLabels=map(x->repr(x.CGs;context=io),r.ss)
+    row_labels=map(x->TeX(io,x.CGs),r.ss)
     t=[]
     if classes push!(t,nc.(nconjugacy_classes(r))) end
     push!(t,map(x->repr(x.cent;context=io),r.ss))
-    push!(columnLabels,fromTeX(io,"|C_G(s)|"))
+    push!(col_labels,"|C_G(s)|")
     t=permutedims(toM(t))
   end
-  showtable(io,t;col_labels=columnLabels,row_labels=rowLabels,
-         rows_label=fromTeX(io,"C_G(s)"))
+  showtable(io,t;col_labels,row_labels,rows_label="C_G(s)")
 end
 
 function (C::ClassTypes)(;arg...)

@@ -310,5 +310,6 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      end
   end
 end
+  for ss in uc[:springerSeries] if !all(isone,ss[:Z]) ss[:hc]=0 end end
   uc
 end)

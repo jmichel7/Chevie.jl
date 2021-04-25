@@ -1,55 +1,4 @@
 
-chevieset(:G4_22, :PrintDiagram, function (arg...,)
-        local ST, indices, title, s, f
-        ST = arg[1]
-        indices = arg[2]
-        title = arg[3]
-        print(title, " ")
-        s = pad("\n", -(length(title)))
-        f = function (arg...,)
-                return joindigits(indices[arg])
-            end
-        if ST == 4
-            print(f(1), "(3)--", f(2), "(3)")
-        elseif ST == 5
-            print(f(1), "(3)==", f(2), "(3)")
-        elseif ST == 6
-            print(f(1), "--6--", f(2), "(3)")
-        elseif ST == 7
-            print(f(2), "(3)", s, " /3\\", s, f(1), "---", f(3), "(3) ", f(1, 2, 3), "==", f(2, 3, 1), "==", f(3, 1, 2))
-        elseif ST == 8
-            print(f(1), "(4)--", f(2), "(4)")
-        elseif ST == 9
-            print(f(1), "--6--", f(2), "(4)")
-        elseif ST == 10
-            print(f(1), "(3)==", f(2), "(4)")
-        elseif ST == 11
-            print(f(2), "(3)", s, " /3\\", s, f(1), "---", f(3), "(4) ", f(1, 2, 3), "==", f(2, 3, 1), "==", f(3, 1, 2))
-        elseif ST == 12
-            print(f(2), s, " /4\\", s, f(1), "---", f(3), " ", f(1, 2, 3, 1), "==", f(2, 3, 1, 2), "==", f(3, 1, 2, 3))
-        elseif ST == 13
-            print(f(1), s, " / \\", s, f(3), "---", f(2), " ", f(2, 3, 1, 2), "==", f(3, 1, 2, 3), " ", f(1, 2, 3, 1, 2), "==", f(3, 1, 2, 3, 1))
-        elseif ST == 14
-            print(f(1), "--8--", f(2), "(3)")
-        elseif ST == 15
-            print(f(1), s, " /5", s, f(3), s, " \\", s, "  ", f(2), "(3) ", f(1, 2, 3), "==", f(3, 1, 2), " ", f(2, 3, 1, 2, 1), "==", f(3, 1, 2, 1, 2))
-        elseif ST == 16
-            print(f(1), "(5)--", f(2), "(5)")
-        elseif ST == 17
-            print(f(1), "--6--", f(2), "(5)")
-        elseif ST == 18
-            print(f(1), "(3)==", f(2), "(5)")
-        elseif ST == 19
-            print(f(2), "(3)", s, " /3\\", s, f(1), "---", f(3), "(5) ", f(1, 2, 3), "==", f(2, 3, 1), "==", f(3, 1, 2))
-        elseif ST == 20
-            print(f(1), "(3)--5--", f(2), "(3)")
-        elseif ST == 21
-            print(f(1), "--10--", f(2), "(3)")
-        elseif ST == 22
-            print(f(2), s, " /5\\", s, f(1), "---", f(3), " ", f(1, 2, 3, 1, 2), "==", f(2, 3, 1, 2, 3), "==", f(3, 1, 2, 3, 1))
-        end
-        print("\n")
-    end)
 chevieset(:G4_22, :BraidRelations, function (ST,)
         local d
         d = Dict{Symbol, Any}(Symbol("4") => [[[1, 2, 1], [2, 1, 2]]], Symbol("5") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("6") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("7") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("8") => [[[1, 2, 1], [2, 1, 2]]], Symbol("9") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("10") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("11") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("12") => [[[1, 2, 3, 1], [2, 3, 1, 2]], [[1, 2, 3, 1], [3, 1, 2, 3]]], Symbol("13") => [[[3, 1, 2, 3], [2, 3, 1, 2]], [[1, 2, 3, 1, 2], [3, 1, 2, 3, 1]]], Symbol("14") => [[[1, 2, 1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1, 2, 1]]], Symbol("15") => [[[3, 1, 2], [1, 2, 3]], [[2, 3, 1, 2, 1], [3, 1, 2, 1, 2]]], Symbol("16") => [[[1, 2, 1], [2, 1, 2]]], Symbol("17") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("18") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("19") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("20") => [[[1, 2, 1, 2, 1], [2, 1, 2, 1, 2]]], Symbol("21") => [[[1, 2, 1, 2, 1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1, 2, 1, 2, 1]]], Symbol("22") => [[[1, 2, 3, 1, 2], [2, 3, 1, 2, 3]], [[1, 2, 3, 1, 2], [3, 1, 2, 3, 1]]])
@@ -179,153 +128,153 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
                 return r
             end
         if ST == 4
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 6, [0, 3, 2, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
             z = "121212"
         elseif ST == 5
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 2, [0, 1, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
             z = "1212"
         elseif ST == 6
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 3, [0, 0, 2, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
             z = "212121"
         elseif ST == 7
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 1, [0, 0, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
             z = "123"
         elseif ST == 8
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 6, [0, 3, 2, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
             z = "121212"
         elseif ST == 9
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 3, [0, 0, 2, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
             z = "212121"
         elseif ST == 10
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 2, [0, 1, 0, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
             z = "1212"
         elseif ST == 11
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 1, [0, 0, 0, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
             z = "123"
         elseif ST == 12
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 12, [0, 0, 8, 3, 6])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [2, 1, 2, 1, 2], [2, 3])
                         end), p[res[:indexclasses]])
             z = "123123123123"
         elseif ST == 13
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 6, [0, 0, 2, 3, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(x, [0], [1, 2, 3, 1, 2, 3, 1, 2, 3])
                         end), [[], [0], [0, 0], [0, 0, 0], [2], [2, 0], [3, 1, 2], [3, 1, 2, 0], [3, 1, 2, 0, 0], [3, 1, 2, 0, 0, 0], [2, 3, 1, 2, 1], [2, 3, 1, 2, 1, 0], [2, 3, 1, 2, 1, 0, 0], [2, 3, 1, 2, 1, 0, 0, 0], [1], [1, 0]])
             z = "123123123"
         elseif ST == 14
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 4, [0, 0, 0, 3, 2])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [])
                         end), p[res[:indexclasses]])
             z = "12121212"
         elseif ST == 15
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 2, [0, 0, 0, 1, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2, 3]), [3, 3], [4], [3, 1, 2, 3], [4, 1, 2], [4], [3])
                         end), p[res[:indexclasses]])
             z = "12312"
         elseif ST == 16
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 6, [0, 3, 2, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((c->begin
                             Replace(f(c, [3, 1]), [2], [], [1, 3, 1], [2], [3], [1])
                         end), p[res[:indexclasses]])
             z = "121212"
         elseif ST == 17
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 3, [0, 0, 2, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [3, 1]), [2], [], [3], [2])
                         end), p[res[:indexclasses]])
             z = "212121"
         elseif ST == 18
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 2, [0, 1, 0, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [2, 3]), [1], [], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
             z = "1212"
         elseif ST == 19
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 1, [0, 0, 0, 0, 0])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             f(x, [1, 2, 3])
                         end), p[res[:indexclasses]])
             z = "123"
         elseif ST == 20
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 10, [0, 5, 0, 4, 8])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [1, 1], [], [1, 2, 1], [3], [2], [1], [3], [2])
                         end), p[res[:indexclasses]])
             z = "2121212121"
         elseif ST == 21
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 5, [0, 0, 0, 4, 3])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [])
                         end), p[res[:indexclasses]])
             z = "1212121212"
         elseif ST == 22
-            res[:indexclasses] = Filtered(1:length(p), (i->begin
+            res[:indexclasses] = filter((i->begin
                             g(p[i], 15, [0, 0, 5, 9, 3])
-                        end))
+                        end), 1:length(p))
             res[:classtext] = map((x->begin
                             Replace(f(x, [1, 2]), [3], [], [2, 1, 2, 1, 2], [2, 3])
                         end), p[res[:indexclasses]])
@@ -367,9 +316,9 @@ chevieset(:G4_22, :ParabolicRepresentatives, function (ST, s)
         if s == 0
             return [[]]
         elseif s == 1
-            return Filtered(((chevieget(:G4_22, :ClassInfo))(ST))[:classtext], (x->begin
+            return filter((x->begin
                             length(x) == 1
-                        end))
+                        end), ((chevieget(:G4_22, :ClassInfo))(ST))[:classtext])
         else
             return [1:length((chevieget(:G4_22, :GeneratingRoots))(ST))]
         end
@@ -671,9 +620,9 @@ chevieset(:G4_22, :Embed, function (ST,)
     end)
 G4_22Helper = function (c, e, x, n, p)
         local nz, r, res, root
-        nz = Filtered(1:length(c), (i->begin
+        nz = filter((i->begin
                         c[i] != 0 * c[i]
-                    end))
+                    end), 1:length(c))
         r = gcd(Concatenation(e[nz], [n]))
         root = GetRoot(x, n // r) * E(n, p * r)
         res = c * root ^ 0

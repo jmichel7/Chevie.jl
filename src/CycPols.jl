@@ -286,31 +286,24 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  s=repr(a.coeff; context=IOContext(io,:varname=>:q))
-  if iszero(a.valuation) && isempty(a.v)
-    print(io,replace(s,r"/+1$"=>""));return
-  end
-  s=format_coefficient(s;allow_frac=true)
-  den=match(r"/+[0-9]*",s)
-  if den!==nothing
-    den=replace(den.match,r"//"=>"/")
-    if den=="/1" den="" end
-    s=replace(s,r"/[0-9]*"=>"")
-    if s=="-1" s="-" end
-    if s=="1" s="" end
-  else den=""
-  end
-  print(io,s) 
-  if a.valuation==1 print(io,"q")
-  elseif a.valuation!=0 printTeX(io,"q^{$(a.valuation)}") end
-  for (e,pow) in decompose(a.v.d)
-#   println(e)
-    if e.no>0  printTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.conductor)}")
-    else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
+  den=denominator(a.coeff)
+  c=improve_type(a.coeff*den)
+  s=repr(c; context=IOContext(io,:varname=>:q))
+  if iszero(a.valuation) && isempty(a.v) print(io,s)
+  else
+    s=format_coefficient(s)
+    print(io,s) 
+    if a.valuation==1 print(io,"q")
+    elseif a.valuation!=0 printTeX(io,"q^{$(a.valuation)}") end
+    for (e,pow) in decompose(a.v.d)
+  #   println(e)
+      if e.no>0  printTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.conductor)}")
+      else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
+      end
+      if pow!=1 printTeX(io,"^{$pow}") end
     end
-    if pow!=1 printTeX(io,"^{$pow}") end
   end
-  print(io,den)
+  if !isone(den) print(io,"/",den) end
 end
 
 # fields to test first: all n such that phi(n)<=12 except 11,13,22,26
@@ -450,7 +443,11 @@ function CycPol(p::Pol{T};trace=false)where T
   CycPol(degree(p)==0 ? coeff : improve_type(p*coeff),val,ModuleElt(vcyc))
 end
 
-CycPol(x::Mvp)=CycPol(Pol(x))
+function CycPol(x::Mvp)
+  if !isinteger(degree(x)) CycPol(x,0)
+  else CycPol(Pol(x))
+  end
+end
 
 function (p::CycPol)(x)
   res=x^p.valuation

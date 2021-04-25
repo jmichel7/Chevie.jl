@@ -410,41 +410,51 @@ julia> sort(elements(T))
 """
 torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.gens))
   
-#F  algebraic_centre(W)  . . . centre of algebraic group W
-##  
-##  <W>  should be a Weyl group record  (or an extended Weyl group record).
-##  The  function returns information  about the centre  Z of the algebraic
-##  group defined by <W> as a record with fields:
-##   Z0:         subtorus Z⁰
-##   complement: S=complement torus of Z⁰in T
-##   AZ:         representatives of Z/Z⁰ given as a group of ss elts
-##   [implemented only for connected groups 18/1/2010]
-##   [I added something hopefully correct in general. JM 22/3/2010]
-##   [introduced subtori JM 2017 and corrected AZ computation]
-##   descAZ:  describes AZ as a quotient  of the fundamental group Pi (seen
-##   as  the centre of  the simply connected  goup with same isogeny type).
-##   Returns words in the generators of Pi which generate the kernel of the
-##   map Pi->AZ
-##
+# returns (Tso,s-stable representatives of T/Tso) for automorphism s of T
+# here m is the matrix of s on Y(T)
+# use ss 1.2(1): Ker(1+m+m^2+...)/Im(m-Id)
+function FixedPoints(T::SubTorus,m)
+  @show T,m
+  n=map(z->solutionmat(toM(T.gens),permutedims(m)*z),T.gens) #action on subtorus
+  if nothing in n || !all(isinteger,toM(n))
+    error(m," does not stabilize ",T)
+  end
+  n=Int.(toM(n))
+  fix=toM(leftnullspaceInt(n-n^0)) # pure sublattice Y(Tso)
+  o=order(n)
+  Y1=leftnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where 
+  # T=T1.Tso almost direct product, thus spaces Y.(1-s) and Y1.(1-s) coincide
+  n=baseInt(n-n^0) # basis of Im(1-s)
+  m=map(v->solutionmat(n,v),Y1) # basis of Im[(1-s)^{-1} restricted to Y1]
+  # generates elements y of Y1⊗ ℚ such that (1-s)y\in Y1
+  [SubTorus(T.group,fix*toM(T.gens)),
+   abelian_gens(map(v->SS(T.group,permutedims(toM(Y1)*toM(T.gens))*v),m))]
+end
+
 """
 `algebraic_centre(W)`
 
 `W`  should  be  a  Weyl  group,  or  an extended Weyl group. This function
-returns  a description  of the  centre `Z𝐆  ` of  the algebraic  group `𝐆 `
-defined by <W> as a Dict with the following fields:
+returns  a description  of the  centre `Z` of  the algebraic  group `𝐆 `
+defined by `W` as a Dict with the following fields:
 
-:Z0: the neutral component `Z^0` of `Z𝐆 ` as a subtorus of `𝐓`.
+:Z0: the neutral component `Z⁰` of `Z` as a subtorus of `𝐓`.
 
-:AZ:  representatives in  `Z𝐆` of  ``A(Z):=Z𝐆/(Z𝐆)^0`` given  as a group of
-semisimple elements.
+:AZ:  representatives in `Z` of `A(Z):=Z/Z⁰` given as a group of semisimple
+elements.
+
+##   [implemented only for connected groups 18/1/2010]
+##   [I added something hopefully correct in general. JM 22/3/2010]
+##   [introduced subtori JM 2017 and corrected AZ computation]
 
 :ZD:  center of the derived subgroup of  `𝐆` given as a group of semisimple
 elements.
 
 :descAZ:  if  `W`  is  not  an  extended  Weyl group, describes `A(Z)` as a
-quotient  of the center  `pi` of the  simply connected covering  of `𝐆`. It
-contains  a list of elements given as words in the generators of `pi` which
-generate the kernel of the quotient map.
+quotient  of the center  `pi` of the  simply connected covering  of `𝐆` (an
+incarnation  of the  fundamental group).  It contains  a list  of elements
+given  as words in the generators of  `pi` which generate the kernel of the
+quotient map.
 
 ```julia_repl
 julia> G=rootdatum(:sl,4)
@@ -469,19 +479,15 @@ julia> C=centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
 
 julia> algebraic_centre(C)
-Dict{Symbol,Any} with 3 entries:
-  :descAZ => [[1], [2]]
-  :AZ     => SSGroup(SemisimpleElement{Root1}[])
-  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁,[[0, 1, 0]])
+Dict{Symbol, Any} with 2 entries:
+  :AZ => SSGroup(SemisimpleElement{Root1}[<1,-1,1>])
+  :Z0 => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,Vector{Int64}[])
 ```
-gap> AlgebraicCentre(C);
-rec(
-Z0 := SubTorus(ReflectionSubgroup(CoxeterGroup("A",3), [ 1, 3 ]),),
-AZ := Group( <0,1/2,0> ) )
 """
 function algebraic_centre(W)
-  if W isa HasType.ExtendedCox
-    F0s=map(permutedims,W.F0s)
+  extended=W isa ExtendedCox
+  if extended
+    F0s=W.F0s
     W=W.group
   end
   if iszero(semisimplerank(W))
@@ -496,17 +502,17 @@ function algebraic_centre(W)
            toM(Z0.complement))
   end
   AZ=SS.(Ref(W),AZ)
-  if W isa HasType.ExtendedCox # compute fixed space of F0s in Y(T)
+  if extended # compute fixed space of F0s in Y(T)
     for m in F0s
-      AZ=Filtered(AZ,s->(s/SS(W,s.v*m)) in Z0)
-      if Rank(Z0)>0 Z0=FixedPoints(Z0,m)
-        Append(AZ,Z0[2])
+      AZ=filter(s->s/SS(W,m*map(x->x.r,s.v)) in Z0,AZ)
+      if rank(Z0)>0 Z0=FixedPoints(Z0,permutedims(m))
+        append!(AZ,Z0[2])
         Z0=Z0[1]
       end
     end
   end
   res=Dict(:Z0=>Z0,:AZ=>Group(abelian_gens(AZ),SS(W)))
-  if W isa HasType.ExtendedCox && length(F0s)>0 return res end
+  if extended && length(F0s)>0 return res end
   AZ=SS.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(AZ) res[:descAZ]=AZ
     return res
@@ -668,19 +674,19 @@ julia> centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
 ```
 """
-function Groups.centralizer(W::FiniteCoxeterGroup,s::SemisimpleElement)
-# if IsExtendedGroup(W) then 
-#   totalW:=Subgroup(Parent(W.group),Concatenation(W.group.gens,W.phis));
-#   W:=W.group;
-# else totalW:=W;
-# fi;
+function Groups.centralizer(W::Group,s::SemisimpleElement)
+  if W isa ExtendedCox
+    totalW=Group(vcat(gens(W.group),W.phis))
+    W=W.group
+  else totalW=W.G
+  end
   p=filter(i->isone(s^roots(W,i)),1:nref(W))
   W0s=reflection_subgroup(W,p)
-  N=normalizer(W.G,W0s.G)
+  N=normalizer(totalW,W0s.G)
   l=filter(w->s==s^w,map(x->x.phi,elements(N/W0s)))
   N=Group(abelian_gens(l))
   if rank(W)!=semisimplerank(W)
-    if ngens(N)==0 N=Group([W.matgens[1]^0])
+    if ngens(N)==0 N=Group([reflrep(W,1)^0])
     else N=Group(reflrep.(Ref(W),gens(N)))
     end
   end

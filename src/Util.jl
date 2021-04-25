@@ -171,12 +171,12 @@ end
 
 fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)
 
+TeX(io::IO;k...)=IOContext(io,:TeX=>true,pairs(k)...)
+TeX(io::IO,x)=repr(x;context=TeX(io))
+
 function printTeX(io::IO,s...)
   res=""
-  for x in s 
-    if x isa String res*=x
-    else res*=repr(x;context=IOContext(io,:TeX=>true)) end
-  end
+  for x in s res*=x isa String ? x : TeX(io,x) end
   print(io,fromTeX(io,res))
 end
 

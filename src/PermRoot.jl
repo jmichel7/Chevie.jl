@@ -151,8 +151,11 @@ function best_type(q::Mvrf)
   if isone(q.den) return best_type(q.num) end
   Mvrf{promote_type(best_eltype(q.num), best_eltype(q.den))}
 end
-best_type(p::Mvp{T,N}) where {T,N}=iszero(p) ? Mvp{Int,Int} : 
-                                       Mvp{best_eltype(p),N}
+function best_type(p::Mvp{T,N}) where {T,N}
+  if iszero(p) return  Mvp{Int,Int} end
+  n=all(m->all(isinteger,values(m.d)),keys(p.d)) ? Int : N
+  Mvp{best_eltype(p),n}
+end
   
 improve_type(m)=convert(best_type(m),m)
 

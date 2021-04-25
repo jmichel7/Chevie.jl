@@ -240,8 +240,8 @@ module Ucl
 
 using ..Gapjm
 
-export UnipotentClasses, UnipotentClassOps, ICCTable,
- induced_linear_form, special_pieces
+export UnipotentClasses, UnipotentClassOps, ICCTable, XTable, GreenTable,
+ UnipotentValues, induced_linear_form, special_pieces
 
 @GapObj struct UnipotentClass
   name::String
@@ -268,7 +268,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
     cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
     n*="^{$cl}"
     n=fromTeX(n;opt...)
-  elseif haskey(opt,:class) && opt[:class]!=charinfo(u[:Au])[:positionId]
+  elseif haskey(opt,:class) && opt[:class]!=position_class(u[:Au],one(u[:Au]))
     cl=classinfo(u[:Au])[:classnames][opt[:class]]
     n=TeX ? "\\mbox{\$$n\$}_{($cl)}" : fromTeX("$(n)_{$cl}";opt...)
   end
@@ -1065,7 +1065,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   res.L=tbl[2]*q^(W.N+semisimplerank(R)-semisimplerank(W))
   res.uc=uc
   if haskey(ss,:parameter) res.parameter=ss[:parameter]
-  else res.parameter=1:length(ss[:locsys])
+  else res.parameter=(1:length(ss[:locsys])).+100*(i-1)
   end
   if !(var isa Pol)
     res.scalar=improve_type(map(x->x(var),res.scalar))
@@ -1097,24 +1097,113 @@ end
 
 @GapObj struct XTable end
 
-# XTable(uc[,opt]) values of X̃ᵪ on unipotent classes or local systems
-# Note that c_ι=βᵤ+(rkss L_\CI)/2
-#
-# Formatting: options of showtable + [:classes, :CycPol]
-function XTable(uc::UnipotentClasses;q=Pol(),classes=false)
+"""
+`XTable(uc;classes=false)`
+
+This  function presents  in a  different way  the information obtained from
+`ICCTable`.  Let  `X̃_{u,ϕ}=q^{1/2(codim  C-dim  Z(𝐋 ))}` where `C` is the
+class  of `u` and `Z(𝐋 )` is the center of Levi subgroup on which lives the
+cuspidal local system attached to the local system `(u,ϕ)`.
+
+Then  `XTable` gives the decomposition of the functions `X̃_{u,ϕ}` on local
+systems,  by  default.  If  `classes==true`,  it  gives  the  values of the
+functions `X̃_{u,ϕ}` on unipotent classes.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> XTable(UnipotentClasses(W))
+Values of character sheaves X̃ᵪ on local systems φ
+      X̃ᵪ|φ│   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂
+──────────┼────────────────────────────────────────────
+X_φ₁‚₀^G₂ │   1  1  1           0          0      1  1
+X_φ₁‚₆^G₂ │  q⁶  0  0           0          0      0  0
+X_φ′₁‚₃^G₂│  q³  0  q           0          q      0  0
+X_φ″₁‚₃^G₂│  q³ q³  0           0          0      0  0
+X_φ₂‚₁^G₂ │ qΦ₈  q  q           0          0      q  0
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²           0          0      0  0
+X_Id^.    │   0  0  0          q²          0      0  0
+```
+
+The functions `X̃` in the first column are decorated by putting as an
+exponent the relative groups ``W_𝐆 (𝐋)``.
+
+```julia-repl
+julia> XTable(UnipotentClasses(W);classes=true)
+Values of character sheaves X̃ᵪ on unipotent classes
+  X̃ᵪ|class│   1 A₁ Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
+──────────┼──────────────────────────────────────────
+X_φ₁‚₀^G₂ │   1  1  1      1          1         1  1
+X_φ₁‚₆^G₂ │  q⁶  0  0      0          0         0  0
+X_φ′₁‚₃^G₂│  q³  0  q     2q          0        -q  0
+X_φ″₁‚₃^G₂│  q³ q³  0      0          0         0  0
+X_φ₂‚₁^G₂ │ qΦ₈  q  q      q          q         q  0
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²      0          0         0  0
+X_Id^.    │   0  0  0     q²        -q²        q²  0
+
+julia> XTable(UnipotentClasses(W,2))
+Values of character sheaves X̃ᵪ on local systems φ
+      X̃ᵪ|φ│   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂⁽¹¹⁾ G₂
+──────────┼───────────────────────────────────────────────────
+X_φ₁‚₀^G₂ │   1  1  1           0          0      1      0  1
+X_φ₁‚₆^G₂ │  q⁶  0  0           0          0      0      0  0
+X_φ′₁‚₃^G₂│  q³  0  q           0          q      0      0  0
+X_φ″₁‚₃^G₂│  q³ q³  0           0          0      0      0  0
+X_φ₂‚₁^G₂ │ qΦ₈  q  q           0          0      q      0  0
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²           0          0      0      0  0
+X_Id^.    │   0  0  0          q²          0      0      0  0
+X_Id^.    │   0  0  0           0          0      0      q  0
+
+julia> XTable(UnipotentClasses(rootdatum(:sl,4)))
+Values of character sheaves X̃ᵪ on local systems φ
+    X̃ᵪ|φ│1111 211 22⁽¹¹⁾ 22 31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(-ζ₄)
+────────┼─────────────────────────────────────────────
+X₁₁₁₁^A₃│  q⁶   0      0  0  0 0      0     0       0
+X₂₁₁^A₃ │q³Φ₃  q³      0  0  0 0      0     0       0
+X₂₂^A₃  │q²Φ₄  q²      0 q²  0 0      0     0       0
+X₃₁^A₃  │ qΦ₃ qΦ₂      0  q  q 0      0     0       0
+X₄^A₃   │   1   1      0  1  1 1      0     0       0
+X₁₁^A₁  │   0   0     q³  0  0 0      0     0       0
+X₂^A₁   │   0   0     q²  0  0 0      0     q       0
+X_Id^.  │   0   0      0  0  0 0   q³⁄₂     0       0
+X_Id^.  │   0   0      0  0  0 0      0     0    q³⁄₂
+```
+
+A  side effect  of calling  `XTable` with  `classes=true` is to compute the
+cardinal of the unipotent conjugacy classes:
+
+```julia-repl
+julia> t=Ucl.XTable(UnipotentClasses(coxgroup(:G,2));classes=true);
+
+julia> CycPol.(t.cardClass)
+7-element Vector{CycPol{Cyc{Rational{Int64}}}}:
+ 1
+ Φ₁Φ₂Φ₃Φ₆
+ q²Φ₁Φ₂Φ₃Φ₆
+ q²Φ₁²Φ₂²Φ₃Φ₆/6
+ q²Φ₁²Φ₂²Φ₃Φ₆/2
+ q²Φ₁²Φ₂²Φ₃Φ₆/3
+ q⁴Φ₁²Φ₂²Φ₃Φ₆
+```
+"""
+function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
 # println("here uc=",uc)
-  pieces=map(i->ICCTable(uc,i;q=q),eachindex(uc.springerseries))
-  greenpieces=map(x->x.scalar*toM(HasType.DiagonalMat(q.^x.dimBu...)),pieces)
+  pieces=map(i->ICCTable(uc,i),eachindex(uc.springerseries))
+# Note that c_ι=βᵤ+(rkss L_\CI)/2
+  greenpieces=map((x,y)->map(x->x(q),x.scalar)*
+                  toM(HasType.DiagonalMat(q.^x.dimBu...))*
+                  q^(length(y[:levi])//2),pieces,uc.springerseries)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=XTable(Dict(
     :scalar=>permutedims(cat(greenpieces...,dims=(1,2))^p),
     :uc=>uc,
     :Y=>^(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
-    :parameter=>vcat(getproperty.(pieces,:parameter)...),
     :relgroups=>getindex.(uc.springerseries,:relgroup),
     :q=>q,
     :class=>classes))
+  res.Y=map(x->x(q),res.Y)
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
@@ -1143,38 +1232,98 @@ Base.show(io::IO,x::XTable)=print(io,"XTable(",x.uc,",q=",x.q,",classes=$(x.clas
 
 function Base.show(io::IO,::MIME"text/plain",x::XTable)
   printTeX(io,"Values of character sheaves \$\\tilde X_\\chi\$ on")
-  rowLabels=vcat(map(g->map(n->fromTeX(io,"X^{"*repr(g;context=io)
-             *"}_{"*n*"}"),charnames(io,g)),x.relgroups)...)
-  rowsLabel="\\tilde X_\\chi\\backslash "
+  row_labels=vcat(map(g->map(n->"X_{"*n*"}^{"*TeX(io,g)*"}",
+                             charnames(TeX(io),g)),x.relgroups)...)
+  rows_label="\\tilde X_\\chi|"
   if x.class
-    rowsLabel*="class"
+    rows_label*="class"
     print(io," unipotent classes\n")
-    columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),x.classes)
+    col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
   else 
-    rowsLabel*="locsys"
-    print(io," local systems\n")
-    columnLabels=map(p->name(IOContext(io,:locsys=>p[2]),x.uc.classes[p[1]]),x.locsys)
+    rows_label*=fromTeX(io,"\\phi")
+    printTeX(io," local systems \$\\phi\$\n")
+    col_labels=map(p->name(TeX(io,locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
   end
   tbl=x.scalar
-  if get(io,:cycpol,false) tbl=CycPol.(tbl) end
-  showtable(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+  if get(io,:cycpol,true) tbl=CycPol.(tbl) end
+  showtable(io,tbl;row_labels,col_labels,rows_label)
 end
 
 @GapObj struct GreenTable end
 
-# GreenTable(uc;q=Pol())
-# values of Green functions Q^\CI_{wF} on unipotent classes
-# method: use formula DLM3 (3.1)
-# Lines indexed by (\CI,wF). Columns by unip. classes or local systems
-function GreenTable(uc::UnipotentClasses;q=Pol())
-  t=GreenTable(XTable(uc;classes=true,q=q).prop)
+"""
+`GreenTable(uc;classes=false)`
+
+Keeping the same notations as in the description of 'XTable', this function
+returns  a  table  of  the  functions  `Q_{wF}`,  attached to elements `wF∈
+W_𝐆 (𝐋)⋅F` where `W_𝐆 (𝐋)` are the relative weyl groups attached to cuspidal
+local  systems.  These  functions  are  defined  by  `Q_{wF}=∑_{u,ϕ} ϕ̃(wF)
+X̃_{u,ϕ}`.  An point to note is that in the principal Springer series, when
+`𝐓`   is  a  maximal  torus,  the  function  `Q_{wF}`  coincides  with  the
+Deligne-Lusztig  character `R^𝐆 _{𝐓_W}(1)`. As for 'XTable', by default the
+table gives the values of the functions on local systems. If `classes=true`
+is  given, then it gives the values  of the functions `Q_{wF}` on conjugacy
+classes.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> GreenTable(UnipotentClasses(W))
+Values of Green functions Q_wF on local systems φ
+   Qᴵ_wF|φ│        1     A₁       Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂
+──────────┼───────────────────────────────────────────────────────────
+Q_A₀^G₂   │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂           0          q   2q+1  1
+Q_Ã₁^G₂   │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂           0          q      1  1
+Q_A₁^G₂   │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁           0         -q      1  1
+Q_G₂^G₂   │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂           0         -q     Φ₂  1
+Q_A₂^G₂   │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂           0          q    -Φ₁  1
+Q_A₁+Ã₁^G₂│  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁           0         -q  -2q+1  1
+Q_^.      │        0      0        0          q²          0      0  0
+```
+
+The  functions ``Q_{wF}`` depend only on the conjugacy class of `wF`, so in
+the  first column the indices of 'Q' are the names of the conjugacy classes
+of ``W_𝐆(𝐋)``. The exponents are the names of the groups ``W_𝐆(𝐋)``.
+
+```julia-repl
+julia> GreenTable(UnipotentClasses(W);classes=true)
+Values of Green functions Q_wF on unipotent classes
+Qᴵ_wF|class│        1     A₁       Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
+───────────┼─────────────────────────────────────────────────────────
+Q_A₀^G₂    │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂   4q+1       2q+1        Φ₂  1
+Q_Ã₁^G₂    │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂   2q+1          1       -Φ₁  1
+Q_A₁^G₂    │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁  -2q+1          1        Φ₂  1
+Q_G₂^G₂    │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂    -Φ₁         Φ₂      2q+1  1
+Q_A₂^G₂    │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂     Φ₂        -Φ₁     -2q+1  1
+Q_A₁+Ã₁^G₂ │  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁  -4q+1      -2q+1       -Φ₁  1
+Q_^.       │        0      0        0     q²        -q²        q²  0
+
+julia> GreenTable(UnipotentClasses(rootdatum(:sl,4)))
+Values of Green functions Q_wF on local systems φ
+ Qᴵ_wF|φ│     1111          211 22⁽¹¹⁾       22   31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(-ζ₄)
+────────┼───────────────────────────────────────────────────────────────────
+Q₁₁₁₁^A₃│  Φ₂²Φ₃Φ₄ (3q²+2q+1)Φ₂      0 (2q+1)Φ₂ 3q+1 1      0     0       0
+Q₂₁₁^A₃ │-Φ₁Φ₂Φ₃Φ₄   -q³+q²+q+1      0       Φ₂   Φ₂ 1      0     0       0
+Q₂₂^A₃  │  Φ₁²Φ₃Φ₄        -Φ₁Φ₄      0  2q²-q+1  -Φ₁ 1      0     0       0
+Q₃₁^A₃  │ Φ₁²Φ₂²Φ₄        -Φ₁Φ₂      0    -Φ₁Φ₂    1 1      0     0       0
+Q₄^A₃   │ -Φ₁³Φ₂Φ₃        Φ₁²Φ₂      0      -Φ₁  -Φ₁ 1      0     0       0
+Q₁₁^A₁  │        0            0   q²Φ₂        0    0 0      0     q       0
+Q₂^A₁   │        0            0  -q²Φ₁        0    0 0      0     q       0
+Q_^.    │        0            0      0        0    0 0   q³⁄₂     0       0
+Q_^.    │        0            0      0        0    0 0      0     0    q³⁄₂
+```
+"""
+function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
+  t=GreenTable(XTable(uc;classes,q).prop)
   m=cat(map(g->permutedims(CharTable(g).irr),t.relgroups)...;dims=(1,2))
   t.scalar=m*t.scalar
   t.indices=Vector{Int}[]
   i=0
   for g in t.relgroups
-    push!(t.indices,(1:nconjugacy_classes(g))+i)
-    i+=nconjugacy_classes(g)
+    n=nconjugacy_classes(g)
+    push!(t.indices,(1:n)+i)
+    i+=n
   end
   t
 end
@@ -1186,17 +1335,116 @@ end
 Base.show(io::IO,x::GreenTable)=print(io,"GreenTable(",x.uc,",q=",x.q,")")
 
 function Base.show(io::IO,::MIME"text/plain",x::GreenTable)
-  print(io,"Values of Green functions \$Q_{wF}\$ on unipotent classes\n")
-  rowLabels=vcat(map(x.relgroups) do g
-    classnames=map(x->fromTeX(io,x),classinfo(g)[:classnames])
-    map(n->string("Q^{",repr(g;context=io),"}_{",n,"}"),classnames)
+  printTeX(io,"Values of Green functions \$Q_{wF}\$ on")
+  row_labels=vcat(map(x.relgroups) do g
+     map(n->string("Q_{",n,"}^{",TeX(io,g),"}"),classinfo(g)[:classnames])
     end...)
-  rowsLabel="Q^I_{wF}\\backslash class"
-  columnLabels=map(p->name(IOContext(io,:class=>p[2]),x.uc.classes[p[1]]),
-                     x.classes)
+  rows_label="Q^I_{wF}|"
+  if x.class
+    println(io," unipotent classes")
+    rows_label*="class"
+    col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
+  else
+    rows_label*="\\varphi"
+    printTeX(io," local systems \$\\varphi\$\n")
+    col_labels=map(p->name(TeX(io;locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
+  end
   tbl=x.scalar
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  showtable(io,tbl,row_labels=rowLabels,col_labels=columnLabels,rows_label=rowsLabel)
+  showtable(io,tbl;row_labels,col_labels,rows_label)
+end
+
+@GapObj struct ValuesTable end
+
+# values of unipotent characters
+# UnipotentValues(uc[,opt]) values on unipotent classes (opt.classes bound)
+# or local systems (opt.classes unbound)
+"""
+`UnipotentValues(uc,classes=false)`
+
+This  function returns  a table  of the  values of  unipotent characters on
+local systems (by default) or on unipotent classes (if `classes=true`).
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> UnipotentValues(UnipotentClasses(W);classes=true)
+Values of unipotent characters for G₂ on unipotent classes
+       │        1          A₁     Ã₁   G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
+───────┼──────────────────────────────────────────────────────────────
+φ₁‚₀   │        1           1      1        1          1         1  1
+φ₁‚₆   │       q⁶           0      0        0          0         0  0
+φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3      q (q+5)q/3     -qΦ₁/3     qΦ₁/3  0
+φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
+φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  qΦ₂/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  0
+φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2  qΦ₂/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  0
+G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2 -qΦ₁/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  0
+G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 -qΦ₁/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  0
+G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
+G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
+
+
+julia> UnipotentValues(UnipotentClasses(W,3);classes=true)
+Values of unipotent characters for G₂ on unipotent classes
+       │        1          A₁         Ã₁ G₂(a₁) G₂(a₁)₍₂₎    G₂       G₂_(ζ₃)
+───────┼──────────────────────────────────────────────────────────────────────
+φ₁‚₀   │        1           1          1      1         1     1             1
+φ₁‚₆   │       q⁶           0          0      0         0     0             0
+φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3
+φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3
+φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  (3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3
+φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2      qΦ₂/2 -qΦ₁/2     qΦ₂/2     0             0
+G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2     -qΦ₁/2 -qΦ₁/2     qΦ₂/2     0             0
+G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 (-3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3
+G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3 (-ζ₃+2ζ₃²)q/3
+G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3  (2ζ₃-ζ₃²)q/3
+
+       │     G₂_(ζ₃²)       (Ã₁)₃
+───────┼──────────────────────────
+φ₁‚₀   │            1           1
+φ₁‚₆   │            0           0
+φ′₁‚₃  │          q/3  (2q²+1)q/3
+φ″₁‚₃  │          q/3    -qΦ₁Φ₂/3
+φ₂‚₁   │         -q/3 (2q+1)qΦ₂/6
+φ₂‚₂   │            0       qΦ₂/2
+G₂[-1] │            0      -qΦ₁/2
+G₂[1]  │         -q/3 (2q-1)qΦ₁/6
+G₂[ζ₃] │ (2ζ₃-ζ₃²)q/3    -qΦ₁Φ₂/3
+G₂[ζ₃²]│(-ζ₃+2ζ₃²)q/3    -qΦ₁Φ₂/3
+```
+"""
+function UnipotentValues(uc;q=Mvp(:q),classes=false)
+  t=ValuesTable(XTable(uc;classes,q).prop)
+  uw=UnipotentCharacters(uc.spets)
+  f=toL(fourier(uw))
+  m=Vector{eltype(f[1])}[]
+  for (i,ss) in enumerate(uc.springerseries)
+    if i==1 append!(m,f[uw.harishChandra[1][:charNumbers]])
+    elseif !haskey(ss,:hc) error("not implemented") 
+    elseif ss[:hc]==0 append!(m,map(i->zero(f[1]),eachindex(ss[:locsys])))
+    else append!(m,f[uw.harishChandra[ss[:hc]][:charNumbers]])
+    end
+  end
+  t.scalar=permutedims(toM(m))*t.scalar
+  t
+end
+
+Base.show(io::IO,x::ValuesTable)=print(io,"UnipotentValues(",x.uc,",q=",x.q,")")
+
+function Base.show(io::IO,::MIME"text/plain",x::ValuesTable)
+  printTeX(io,"Values of unipotent characters for \$",x.uc.spets,"\$ on ")
+  if x.class
+    println(io,"unipotent classes")
+    col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
+  else 
+    col_labels=map(p->name(TeX(io;locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
+    println(io,"local systems")
+  end
+  row_labels=charnames(TeX(io),UnipotentCharacters(x.uc.spets))
+  tbl=improve_type(x.scalar)
+  if get(io,:cycpol,true) tbl=CycPol.(tbl) end
+  showtable(io,tbl;row_labels,col_labels)
 end
 
 @GapObj struct TwoVarGreenTable end
@@ -1210,7 +1458,7 @@ function TwoVarGreen(W,L)
   uL=UnipotentClasses(L)
   tG=GreenTable(uG)
   tL=GreenTable(uL)
-  q=Pol()
+  q=Mvp(:q)
   mm=map(eachindex(uL.springerseries))do i
     s=uL.springerseries[i]
     p=findfirst(S->S[:levi]==inclusion(L,s[:levi]) &&
@@ -1236,11 +1484,12 @@ function TwoVarGreen(W,L)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
       prod(x->q-x,r)/length(centralizer(RL,w))
     end
-    q^(length(s[:levi]))*permutedims(tL.scalar[tL.indices[i],:])*
+    permutedims(tL.scalar[tL.indices[i],:])*
     toM(HasType.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
   end
   oL=generic_order(L,q)
-  mm=toM(map((x,y)->x*y/oL,eachrow(sum(mm)),tL.cardClass))
+  mm=improve_type(mm)
+  mm=toM(map((x,y)->exactdiv(x*y,oL),eachrow(sum(mm)),tL.cardClass))
   res=TwoVarGreenTable(Dict(:W=>W,:L=>L,:scalar=>mm,:uL=>uL,:uG=>uG))
   res.classL=tL.classes
   res.classG=tG.classes

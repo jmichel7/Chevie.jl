@@ -301,7 +301,7 @@ chevieset(:G31, :HeckeRepresentation, function (para, root, i)
 chevieset(:G31, :Representation, function (i,)
         local r, f
         r = (chevieget(:G31, :HeckeRepresentation))(map((j->begin
-                            [1//1, -1//1]
+                            [1 // 1, -1 // 1]
                         end), 1:5), [], i)
         if r != false
             return r

@@ -1,11 +1,12 @@
-using Reexport, BenchmarkTools
-if false # @btime sort(v,by=first) differs dramatically whether true/false
+using BenchmarkTools
+using UsingMerge
+if true # @btime sort(v,by=first) differs dramatically whether true/false
 degree(a::Number)=0; export degree
-include("../src/using_merge.jl")
+println(names(UsingMerge))
 include("../src/Combinat.jl");using .Combinat
-include("../src/Perms.jl");using_merge(:Perms)
+include("../src/Perms.jl");@usingmerge verbose=true Perms
 include("../src/Util.jl");using .Util
-include("../src/Pols.jl");using_merge(:Pols)
+include("../src/Pols.jl");@usingmerge verbose=true Pols
 else
 using Gapjm
 end

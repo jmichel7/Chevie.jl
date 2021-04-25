@@ -30,12 +30,12 @@ chevieset(:timp, :ClassInfo, function (p, q, r, phi)
             elseif phi == perm"(1,2,3,4)"
                 return Dict{Symbol, Any}(:classes => [9, 9, 9, 9, 9, 9], :classtext => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classparams => [[], [1], [1, 2], [1, 2, 3], [1, 2, 1], [1, 2, 1, 3]], :classnames => ["Id", "1", "12", "123", "121", "1213"])
             else
-                error("should  !  happen")
+                error("should not happen")
             end
         elseif [p, q, r] == [4, 2, 2]
             return Dict{Symbol, Any}(:classtext => [[], [1], [1, 2, 3, 1, 2, 3], [1, 2, 3, 1, 2, 3, 1, 2, 3]], :classes => [4, 4, 4, 4], :classnames => ["Id", "1", "cc", "z"])
         else
-            ChevieErr("ClassInfo  !  implemented")
+            ChevieErr("ClassInfo not implemented")
             return false
         end
     end)
@@ -49,12 +49,12 @@ chevieset(:timp, :CharInfo, function (p, q, r, phi)
             elseif phi == perm"(1,2,3,4)"
                 return Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 4, 5, 2])
             else
-                error("should  !  happen")
+                error("should not happen")
             end
         elseif [p, q, r] == [4, 2, 2]
             return Dict{Symbol, Any}(:charparams => [[[], [], [2], []], [[], [], [], [1, 1]], [[], [1], [1], []], [[], [], [1], [1]]], :extRefl => [1, 4, 2])
         else
-            ChevieErr("CharInfo  !  implemented")
+            ChevieErr("CharInfo not implemented")
             return false
         end
     end)
@@ -68,12 +68,12 @@ chevieset(:timp, :CharTable, function (p, q, r, phi)
             elseif phi == perm"(1,2,3,4)"
                 res = Dict{Symbol, Any}(:size => 54, :order => 54, :centralizers => [6, 6, 6, 6, 6, 6], :identifier => "4G(3,3,3)", :name => "4G(3,3,3)", :classes => [9, 9, 9, 9, 9, 9], :irreducibles => [[1, 1, 1, 1, 1, 1], [1, -1, 1, -1, -1, 1], [1, E(3), E(3, 2), 1, E(3, 2), E(3)], [1, -(E(3)), E(3, 2), -1, -(E(3, 2)), E(3)], [1, E(3, 2), E(3), 1, E(3), E(3, 2)], [1, -(E(3, 2)), E(3), -1, -(E(3)), E(3, 2)]])
             else
-                error("should  !  happen")
+                error("should not happen")
             end
         elseif [p, q, r] == [4, 2, 2]
             res = Dict{Symbol, Any}(:size => 16, :order => 16, :centralizers => [4, 4, 4, 4], :classes => [4, 4, 4, 4], :identifier => "3G(4,2,2)", :name => "3G(4,2,2)", :irreducibles => [[1, 1, 1, 1], [1, -1, 1, -1], [-1, E(4), 1, -(E(4))], [-1, -(E(4)), 1, E(4)]])
         else
-            ChevieErr("CharTable  !  implemented")
+            ChevieErr("CharTable not implemented")
             return false
         end
         res[:text] = "origin: Dixon's Algorithm"
@@ -95,11 +95,13 @@ chevieset(:timp, :UnipotentCharacters, function (p, q, r, phi)
                 (((res[:families])[4])[:fourierMat])[3] = galois(a, -1) * (((res[:families])[4])[:fourierMat])[3]
                 return res
             else
-                error("should  !  happen")
+                error("should not happen")
                 return false
             end
         else
-            ChevieErr("UnipotentCharacters  !  implemented")
+            if q == 1 || q == p
+                ChevieErr("UnipotentCharacters not implemented")
+            end
             return false
         end
     end)

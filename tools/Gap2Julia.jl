@@ -35,11 +35,21 @@ function lex(s::String)
   s=replace(s,r"\bod\s*;"s=>" end;")
   s=replace(s,r"\bthen\b"=>" ")
   s=replace(s,r"\btype\b"=>"type_")
+  s=replace(s,r"(\"[^\"\n]*\b)do(\b[^\"\n]*\")"=>s"\1duu\2")
   s=replace(s,r"\bdo\b"=>" ")
+  s=replace(s,r"(\"[^\"\n]*\b)duu(\b[^\"\n]*\")"=>s"\1do\2")
+  s=replace(s,r"(\"[^\"\n]*\b)not(\b[^\"\n]*\")"=>s"\1nuu\2")
   s=replace(s,r"\bnot\b"=>" ! ")
+  s=replace(s,r"(\"[^\"\n]*\b)nuu(\b[^\"\n]*\")"=>s"\1not\2")
+  s=replace(s,r"(\"[^\"\n]*\b)and(\b[^\"\n]*\")"=>s"\1auu\2")
   s=replace(s,r"\band\b"=>" && ")
+  s=replace(s,r"(\"[^\"\n]*\b)auu(\b[^\"\n]*\")"=>s"\1and\2")
+  s=replace(s,r"(\"[^\"\n]*\b)or(\b[^\"\n]*\")"=>s"\1ouu\2")
   s=replace(s,r"\bor\b"=>" || ")
+  s=replace(s,r"(\"[^\"\n]*\b)ouu(\b[^\"\n]*\")"=>s"\1or\2")
+  s=replace(s,r"(\"[^\"\n]*\b)mod(\b[^\"\n]*\")"=>s"\1muu\2")
   s=replace(s,r"\bmod\b"=>" % ")
+  s=replace(s,r"(\"[^\"\n]*\b)muu(\b[^\"\n]*\")"=>s"\1mod\2")
   s=replace(s,r"\btry\b"=>"try_")
   s=replace(s,r"\)in"=>") in")
   #s=replace(s,r"local\s*\w*\s*;"=>" ")
@@ -182,7 +192,9 @@ ftrans1=Dict{Symbol,Symbol}(
   :Number=>:count,
   :ForAny=>:any,
   :ForAll=>:all,
+  :Filtered=>:filter,
 )
+
 function trans(e)
   sym=x->Core.QuoteNode(Symbol(x))
   if e isa Expr
