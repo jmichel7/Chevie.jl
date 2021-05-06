@@ -176,7 +176,7 @@ julia> T=spets(reflection_subgroup(W,Int[]),W(1,2))
 G₂₍₎=Φ₆
 
 julia> u=UniChar(T,1)
-[G₂₍₎=Φ₆]:<.>
+[G₂₍₎=Φ₆]:<Id>
 ```
 
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
@@ -225,7 +225,7 @@ using ..Gapjm
 
 export UnipotentCharacters, FixRelativeType, UniChar,
 almostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal,
-cuspidal_pairs, CycPolUnipotentDegrees, on_unipotents
+cuspidal_pairs, CycPolUnipotentDegrees, on_unipotents, almostcharnames
 
 @GapObj struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -243,28 +243,56 @@ function maketype(s)
   TypeIrred(convert(Dict{Symbol,Any},s))
 end
 
-function params_and_names(sers)
+function params(sers)
   for ser in sers ser[:relativeType]=maketype(ser[:relativeType]) end
   chh=map(ser->charinfo(ser[:relativeType]),sers)
   l=sum(x->length(x[:charnames]),chh)
-  res=Dict{Symbol,Any}()
-  res[:charParams]=fill([],l)
-  res[:TeXCharNames]=fill("",l)
+  res=fill([],l)
   for (i,ser) in enumerate(sers)
     t=ser[:relativeType]
+#   t.rank=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
     n=ser[:cuspidalName]
     ch=chh[i]
-    res[:charParams][ser[:charNumbers]]=map(x->[n,x],ch[:charparams])
-    res[:TeXCharNames][ser[:charNumbers]]=map(ch[:charnames])do x
-      rk=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
-      s=n
-      if length(s)>0 && rk>0 s*=":" end
-      if rk>0 s*=x end
-      s
-      end
+    res[ser[:charNumbers]]=map(x->[n,x],ch[:charparams])
   end
   res
 end
+
+function SerNames(io::IO,sers)
+  res=fill("",sum(x->length(x[:charNumbers]),sers))
+  for ser in sers
+    tt=ser[:relativeType]
+    n=fromTeX(io,ser[:cuspidalName])
+    if isempty(tt) res[ser[:charNumbers]]=[n]
+    else 
+      nn=map(tt)do t
+        ci=charinfo(t)
+        for k in [:spaltenstein, :frame, :malle, :kondo, :lusztig] 
+          if get(io,k,false) && haskey(ci,k) return ci[k] end
+        end
+        ci[:charnames]
+      end
+      nn=map(x->join(x,"\\otimes "),cartesian(nn...))
+      nn=map(x->fromTeX(io,x),nn)
+      if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end
+      res[ser[:charNumbers]]=nn
+    end
+  end
+  res
+end
+
+function Chars.charnames(io::IO,uc::UnipotentCharacters)
+  if get(io,:cyclicparam,false) && haskey(uc,:cyclicparam)
+    map(uc.cyclicparam)do x
+      if length(x[1])==1 "Id"
+      else fromTeX(io,string("\\rho_{",x[1][1],",",x[1][2],"}"))
+      end
+    end
+  else SerNames(io,uc.harishChandra)
+  end
+end
+
+almostcharnames(io::IO,uc::UnipotentCharacters)=SerNames(io,uc.almostHarishChandra)
 
 function UnipotentCharacters(t::TypeIrred) 
   uc=getchev(t,:UnipotentCharacters)
@@ -273,7 +301,7 @@ function UnipotentCharacters(t::TypeIrred)
     return
   end
   uc=copy(uc)
-  merge!(uc,params_and_names(uc[:harishChandra]))
+  uc[:charParams]=params(uc[:harishChandra])
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   # adjust things for descent of scalars
   # we would like to adjust indices so they fit with those stored in t
@@ -285,6 +313,7 @@ function UnipotentCharacters(t::TypeIrred)
     for s in uc[:harishChandra]
       s[:parameterExponents].*=a
       s[:eigenvalue]^=a
+      if s[:cuspidalName]=="" s[:cuspidalName]="Id" end
       s[:cuspidalName]=join(map(i->s[:cuspidalName],1:a),"\\otimes ")
     end
   end
@@ -308,9 +337,7 @@ function UnipotentCharacters(t::TypeIrred)
     end
   end
   if !haskey(uc,:almostCharSymbols) uc[:almostCharSymbols]=uc[:charSymbols] end
-  a=params_and_names(uc[:almostHarishChandra])
-  uc[:almostCharParams]=a[:charParams]
-  uc[:almostTeXCharNames]=a[:TeXCharNames]
+  uc[:almostCharParams]=params(uc[:almostHarishChandra])
   uc[:type]=t
   uch=UnipotentCharacters(uc[:harishChandra],uc[:almostHarishChandra],
                           Family.(copy(uc[:families])),uc)
@@ -516,7 +543,8 @@ function UnipotentCharacters(WF::Spets)
       ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
     end
     ser[:charNumbers]=cartesian(getindex.(sers,:charNumbers)...)
-    ser[:cuspidalName]=join(getindex.(sers,:cuspidalName),"\\otimes ")
+    ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" : 
+                                     x[:cuspidalName], sers),"\\otimes ")
     ser
   end
 
@@ -525,14 +553,12 @@ function UnipotentCharacters(WF::Spets)
     return UnipotentCharacters(
       [Dict(:relativeType=>TypeIrred[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
-	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
+	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
       [Dict(:relativeType=>TypeIrred[], 
 	    :levi=>Int[], :parameterExponents=>Int[],
-	    :cuspidalName=>"", :eigenvalue=>1, :charNumbers =>[ 1 ])],
+	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],
      Dict( :charParams => [ [ "", [ 1 ] ] ],
-      :TeXCharNames => [ "." ],
-      :almostTeXCharNames => [ "." ],
       :charSymbols => [ [ Int[], [ 1 ] ] ],
       :size=>1,
       :a => [ 0 ],
@@ -584,14 +610,10 @@ function UnipotentCharacters(WF::Spets)
     end
   end
   
-  for a in [:TeXCharNames,:almostTeXCharNames]
-    res[a]=join.(res[a],"\\otimes ")
-  end
-
-  res[:size]=length(res[:TeXCharNames])
+  res[:size]=length(res[:charParams])
   
   # finally the new 'charNumbers' lists
-  tmp=cartesian(map(a->1:length(a.TeXCharNames),simp)...)
+  tmp=cartesian(map(a->1:length(a.charParams),simp)...)
 
   hh=CartesianSeries.(cartesian(map(x->x.harishChandra,simp)...))
   ah=CartesianSeries.(cartesian(map(x->x.almostHarishChandra,simp)...))
@@ -620,9 +642,6 @@ function UnipotentCharacters(WF::Spets)
   UnipotentCharacters(hh,ah,ff,res)
   end
 end
-
-Chars.charnames(io::IO,uc::UnipotentCharacters)=
-   fromTeX.(Ref(io),uc.TeXCharNames)
 
 function Base.show(io::IO,::MIME"text/html", uc::UnipotentCharacters)
   print(io, "\$")
@@ -672,7 +691,7 @@ end
 
 Cosets.spets(uc::UnipotentCharacters)=uc.spets
 
-Base.length(uc::UnipotentCharacters)=length(uc.TeXCharNames)
+Base.length(uc::UnipotentCharacters)=length(uc.charParams)
 
 function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
   if !haskey(uc,:fakedegrees) uc.fakedegrees=Dict{Any,Any}() end
@@ -951,7 +970,7 @@ julia> T=subspets(WF,Int[],W(1))
 G₂₍₎=Φ₁Φ₂
 
 julia> u=UniChar(T,1)
-[G₂₍₎=Φ₁Φ₂]:<.>
+[G₂₍₎=Φ₁Φ₂]:<Id>
 
 julia> LusztigInduce(WF,u)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
@@ -987,7 +1006,7 @@ julia> u=DLChar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
 julia> LusztigRestrict(T,u)
-[G₂₍₎=Φ₁Φ₂]:4<.>
+[G₂₍₎=Φ₁Φ₂]:4<Id>
 
 julia> T=subspets(WF,Int[],W(2))
 G₂₍₎=Φ₁Φ₂

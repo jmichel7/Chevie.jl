@@ -311,7 +311,7 @@ returns  a function which gives the `C'`-basis of the Iwahori-Hecke algebra
 ``C'_x=(-1)^{l(x)}alt(C_x)`` for all `x ∈ W` (see `alt`).
 
 ```julia-repl
-julia> W=coxgroup(:B,2);Pol(:v);H=hecke(W,[v^4,v^2])
+julia> W=coxgroup(:B,2);@Pol v;H=hecke(W,[v^4,v^2])
 hecke(B₂,Pol{Int64}[v⁴, v²])
 
 julia> Cp=Cpbasis(H);h=Cp(1)^2
@@ -352,7 +352,7 @@ The  coefficient `μ(t,x)` is the coefficient of degree `(l(x)-l(t)-1)/2` in
 the Kazhdan--Lusztig polynomial ``P_{x,t}``.
 
 ```julia-repl
-julia> W=coxgroup(:B,3);Pol(:v);H=hecke(W,v^2)
+julia> W=coxgroup(:B,3);H=hecke(W,Pol(:v)^2)
 hecke(B₃,v²)
 
 julia> T=Tbasis(H);C=Cbasis(H);T(C(1))
@@ -477,7 +477,7 @@ end
 julia> W=coxgroup(:B,3)
 B₃
 
-julia> Pol(:v);H=hecke(W,v^2,rootpara=v)
+julia> @Pol v;H=hecke(W,v^2,rootpara=v)
 hecke(B₃,v²,rootpara=v)
 
 julia> C=Cpbasis(H); Tbasis(C(1,2))

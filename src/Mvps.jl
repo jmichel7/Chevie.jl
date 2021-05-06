@@ -170,6 +170,12 @@ Base.:^(x::Monomial,p)=Monomial(x.d*p)
 
 function Base.show(io::IO,m::Monomial)
   replorTeX=get(io,:TeX,false) || get(io,:limit,false)
+  if !replorTeX && all(x->isinteger(x) && x>=0,values(m.d))
+    print(io,"Monomial(")
+    join(io,[join(fill(repr(s),c),",") for (s,c) in m.d],",")
+    print(io,")")
+    return
+  end
   if isone(m) return end
   start=true
   for (v,d) in m.d

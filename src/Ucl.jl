@@ -776,6 +776,11 @@ function UnipotentClasses(W,p=0)
              algebraic_centre(W)[:descAZ]),springerseries)
     AdjustAu!(classes,springerseries)
   end
+  if spetscase
+    g=Group(weightinfo(W)[:AdjointFundamentalGroup])
+    permZ=map(x->word(g,x),gens(g).^WF.phi)
+    springerseries=filter(x->map(i->prod(x[:Z][i]),permZ)==x[:Z],springerseries)
+  end
 # println(springerseries[1])
   s=springerseries[1]
   if spetscase

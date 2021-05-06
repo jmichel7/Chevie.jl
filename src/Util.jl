@@ -103,7 +103,7 @@ const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗ ",
   "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
   "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
-  "zeta"=>"ζ", "backslash"=>"\\")
+  "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)

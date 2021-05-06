@@ -997,9 +997,9 @@ generic  order of the reflection subcoset  of `W` determined by the trivial
 subgroup and a representative of the `i`-th conjugacy class.
 
 ```julia-repr
-julia> W=ComplexReflectionGroup(4);Pol(:q);
+julia> W=ComplexReflectionGroup(4)
 
-julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),q)
+julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),Pol(:q))
 7-element Vector{Pol{Cyc{Int64}}}:
  q²-2q+1
  q²+2q+1
@@ -1824,7 +1824,7 @@ associated  semisimple  finite  reductive  group  over  the  field with `q`
 elements.
 
 ```julia-repl
-julia> Pol(:q)
+julia> @Pol q
 Pol{Int64}: q
 
 julia> PermRoot.generic_order(ComplexReflectionGroup(4),q)

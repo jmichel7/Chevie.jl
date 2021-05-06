@@ -178,7 +178,7 @@ functions  and the example  below is extracted  from the computation of the
 Green functions for `G₂`.
 
 ```julia-repl
-julia> Pol(:q)
+julia> @Pol q
 Pol{Int64}: q
 
 julia> M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]

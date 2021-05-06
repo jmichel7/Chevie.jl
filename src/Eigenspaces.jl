@@ -418,7 +418,7 @@ function Weyl.relative_group(W,J,indices=false)
     res[:relativeIndices]=Int[]
     res[:MappingFromNormalizer]=w->Perm()
     res[:rank]=0
-    return PRG(Perm{Int16}[],Matrix{Int}[],Vector{Int}[],Vector{Int}[],res)
+    return PRG(Perm{Int16}[],one(W),Matrix{Int}[],Vector{Int}[],Vector{Int}[],res)
   end
   res[:roots] = []
   res[:simpleCoroots] = []

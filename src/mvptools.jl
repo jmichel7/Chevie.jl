@@ -11,20 +11,11 @@ function Cycs.root(x::Pol,n::Number=2)
   Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 
-# next function is twice the speed of p(E(x))
-function (p::Pol{T})(x::Root1) where T
-  res=zero(T)
-  for (i,c) in enumerate(p.c)
-    res+=c*x^(valuation(p)+i-1)
-  end
-  res
-end
-  
 """
 `Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
 
 ```julia-repl
-julia> Pol(:q)
+julia> @Pol q
 Pol{Int64}: q
 
 julia> Mvp(q^2+q)

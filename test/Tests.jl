@@ -1,3 +1,4 @@
+# defines RG
 module Tests
 using Gapjm
 
@@ -270,7 +271,7 @@ function Tlusztiginduction(WF,L)
     return isempty(l) ? u[1,:].*0 : sum(j->u[j,:].*c[j],l)
   end)
   rhs=Dict{Symbol,Any}(:scalar=>rhs, :u=>L,:g=>WF,
-    :uNames=>UnipotentCharacters(L).TeXCharNames,
+                       :uNames=>charnames(UnipotentCharacters(L);TeX=true),
     :gNames=>classinfo(WF)[:classnames])
   m=copy(rhs)
   m[:scalar]=Uch.DLCharTable(WF)*t.scalar
@@ -1390,7 +1391,7 @@ function Teigen(W)
     for j in eachindex(f[:charNumbers])
       n=f[:charNumbers][j]
       if e[n]!=f[:eigenvalue]
-        ChevieErr("HCfamily ",i,"#",j,":",uc.TeXCharNames[n],"=",n,
+        ChevieErr("HCfamily ",i,"#",j,":",charnames(uc;TeX=true)[n],"=",n,
           " eigen from fam.=",e[n]," but from HC=",f.eigenvalue,"\n")
       end
     end
@@ -1413,7 +1414,7 @@ function Tqeigen(W)
     for j in 1:length(f)
       n=f.charNumbers[j]
       if e[n]!=q[j] ChevieErr("HCfamily ",i,"#",j,":",
-          Util.unicodeTeX(uc.TeXCharNames[n]),"=",n,
+          charnames(uc;limit=true)[n],"=",n,
           " eigen from HC.=",e[n]," but from fam=",q[j],"\n")
       end
     end
@@ -1722,7 +1723,7 @@ function Tparameterexponents(W,i)
         cusp=h[:cuspidalName]
         cusp=cusp=="" ? "." : cusp
         s=Series(L,H,findfirst(==(cusp),
-                      UnipotentCharacters(H).TeXCharNames),1;NC=true)
+                     charnames(UnipotentCharacters(H);TeX=true)),1;NC=true)
         if isnothing(dSeries.char_numbers(s)) || isnothing(dSeries.fill(s))
           error("could not fill ",s)
         else 

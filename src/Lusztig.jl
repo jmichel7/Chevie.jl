@@ -7,13 +7,12 @@ export LusztigInductionTable
 #       (never needed for Coxeter groups and standard levis H)
 function FindSeriesInParent(h,HF,WF,sers)
   if WF isa Spets W=Group(WF) else W=WF end
-  n=sort(filter(!isempty,split(h[:cuspidalName],"\\otimes ")))
+  n=sort(filter(!(x->isempty(x) || x=="Id"),split(h[:cuspidalName],"\\otimes ")))
   for y in sers
 #  println("h[:levi]=",h[:levi]," y[:levi]=",y[:levi])
 #  println("h[:eigenvalue]=",h[:eigenvalue]," y[:eigenvalue]=",y[:eigenvalue])
    if h[:eigenvalue]==y[:eigenvalue] && length(h[:levi])==length(y[:levi])
-     p=sort(filter(!isempty,split(y[:cuspidalName],"\\otimes ")))
-#    print(" p=",p)
+     p=sort(filter(!(x->isempty(x) || x=="Id"),split(y[:cuspidalName],"\\otimes ")))
      if p==n
        incHW=inclusion(HF,WF,h[:levi])
        p=transporting_elt(W,sort(incHW),sort(y[:levi]), 
@@ -37,7 +36,7 @@ function FindCuspidalInLevi(n,HF)
     replace(n,Regex("($s)*\$")=>"")
   end
   cusp=findfirst(==(strip(n,"\\\\otimes ")),
-    map(x->strip(x,"\\\\otimes "),UnipotentCharacters(HF).TeXCharNames))
+    map(x->strip(x,"\\\\otimes "),charnames(UnipotentCharacters(HF);TeX=true)))
   if isnothing(cusp) error("cuspidal ",n," not found in ",HF,"\n") end
   cusp
 end
@@ -205,8 +204,8 @@ function LusztigInductionPieces(LF,WF)
     wfgl=repr(WFGL;context=:TeX=>true)
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
-                   uW.almostTeXCharNames[ser[:charNumbers]],
-                   uL.almostTeXCharNames[h[:charNumbers]],
+                   almostcharnames(rio(TeX=true),uW)[ser[:charNumbers]],
+                   almostcharnames(rio(TeX=true),uL)[h[:charNumbers]],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
      "piece from \$W_{$lu}($(join(h[:levi])),$(h[:cuspidalName]))\$=$lfgl"*
      "to \$W_{$lg}($(join(h[:levi])),$(h[:cuspidalName]))\$=$wfgl",
@@ -262,7 +261,7 @@ function LusztigInductionTable(LF,WF;check=true)
   lu=repr(LF;context=:TeX=>true)
   lg=repr(WF;context=:TeX=>true)
   res=InductionTable(fill(0,length(uW),length(uL)),
-    uW.TeXCharNames,uL.TeXCharNames,
+                     charnames(uW;TeX=true), charnames(uL;TeX=true),
     "Lusztig Induction from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"LusztigInductionTable($(repr(LF)),$(repr(WF)))"))
 # res=CHEVIE[:GetCached](uW, "LusztigInductionMaps", res,
@@ -324,7 +323,7 @@ function HCInductionTable(HF, WF)
   lu=repr(HF;context=:TeX=>true)
   lg=repr(WF;context=:TeX=>true)
   res = InductionTable(fill(0, length(uw),length(uh)),
-    uw.TeXCharNames,uh.TeXCharNames,
+    charnames(uw;TeX=true), charnames(uh;TeX=true),
     "Harish-Chandra Induction from \$$lu\$ to \$$lg\$",
   Dict{Symbol,Any}(:repr=>"HCInductionTable($(repr(HF)),$(repr(WF)))"))
 # res = CHEVIE[:GetCached](uw, "HCInductionMaps", res, (x->begin
@@ -380,7 +379,8 @@ function HCInductionTable(HF, WF)
     lu=repr(Hi;context=:TeX=>true)
     lg=repr(Wi;context=:TeX=>true)
     piece = InductionTable(InductionTable(Hi, Wi).scalar, 
-     uw.TeXCharNames[ser[:charNumbers]],uh.TeXCharNames[h[:charNumbers]],
+     charnames(uw;TeX=true)[ser[:charNumbers]], 
+     charnames(uh;TeX=true)[h[:charNumbers]],
     "Harish-Chandra Induction piece from \$$lu\$ to \$$lg\$",
     Dict{Symbol,Any}())
     res.scalar[ser[:charNumbers],h[:charNumbers]] = piece.scalar

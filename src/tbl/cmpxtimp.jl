@@ -49,7 +49,7 @@ chevieset(:timp, :CharInfo, function (p, q, r, phi)
             elseif phi == perm"(1,2,3,4)"
                 return Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 4, 5, 2])
             else
-                error("should not happen")
+                error("phi=",phi,": should not happen")
             end
         elseif [p, q, r] == [4, 2, 2]
             return Dict{Symbol, Any}(:charparams => [[[], [], [2], []], [[], [], [], [1, 1]], [[], [1], [1], []], [[], [], [1], [1]]], :extRefl => [1, 4, 2])

@@ -6,7 +6,10 @@ A Pol contains two fields: a vector of coefficients, and the valuation.
 
 # Examples
 ```julia-repl
-julia> Pol(:q) # define string used for printing and set variable q
+julia> Pol(:q) # define string used for printing and returns Pol([1],1)
+Pol{Int64}: q
+
+julia> @Pol q # same as q=Pol(:q)
 Pol{Int64}: q
 
 julia> Pol([1,2]) # valuation is 0 if not specified
@@ -15,11 +18,11 @@ Pol{Int64}: 2q+1
 julia> 2q+1       # same result
 Pol{Int64}: 2q+1
 
-julia> p=Pol([1,2],-1) # here the valuation is specified to be -1
-Pol{Int64}: 2+q⁻¹
-
 julia> Pol()   # omitting all arguments gives Pol([1],1)
 Pol{Int64}: q
+
+julia> p=Pol([1,2],-1) # here the valuation is specified to be -1
+Pol{Int64}: 2+q⁻¹
 
 julia> valuation(p),degree(p)
 (-1, 0)
@@ -51,8 +54,8 @@ julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
 julia> divrem(q^3+1,2q+1//1) # case of field elements
 ((1//2)q²+(-1//4)q+1//8, 7//8)
 
-julia> divrem(q^3+1,q+2)  # keeps the ring if leading coeff of divisor is ±1
-(q²-2q+4, -7)
+julia> Pols.pseudodiv(q^3+1,2q+1) # pseudo-division keeps the ring
+(4q²-2q+1, 7)
 
 julia> m=[q+1 q+2;q-2 q-3]
 2×2 Matrix{Pol{Int64}}:
@@ -70,7 +73,7 @@ see also the individual documentation of divrem, gcd.
 module Pols
 using ..Util: Util, format_coefficient, printTeX, exactdiv
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
-       bar, derivative, srgcd, RatFrac
+       bar, derivative, srgcd, RatFrac, @Pol
 
 const varname=Ref(:x)
 
@@ -82,7 +85,7 @@ struct Pol{T}
       b=findfirst(!iszero,c)
       if b===nothing return new{T}(empty(c),0) end
       e=findlast(!iszero,c)
-      if b!=1 || e!=length(c) return new{T}(view(c,b:e),v+b-1) end
+      return new{T}(view(c,b:e),v+b-1)
     end
     new{T}(c,v)
   end
@@ -93,7 +96,13 @@ Pol()=Pol([1],1;check=false)
 
 function Pol(t::Symbol)
   varname[]=t
-  Base.eval(Main,:($t=Pol()))
+  Pol()
+end
+
+"@Pol q is equivalent to q=Pol(:q)"
+macro Pol(t)
+  if !(t isa Symbol) error("usage: @Pol <variable name>") end
+  Base.eval(Main,:($t=Pol($(Core.QuoteNode(t)))))
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
@@ -257,7 +266,7 @@ For true polynomials (errors if the valuation of `a` or of `b` is negative).
 function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
   if degree(b)>degree(a) return (Pol(0),b) end
-  d=bestinv(b.c[end])
+  d=inv(b.c[end])
   T=promote_type(T1,T2,typeof(d))
   r=zeros(T,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
@@ -272,20 +281,43 @@ function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Pol(q),Pol(r)
 end
 
+function Util.exactdiv(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+  if iszero(a) return a end
+  if iszero(b) throw(DivideError) end
+  d=a.v-b.v
+  if !iszero(a.v) a=shift(a,-a.v) end
+  if !iszero(b.v) b=shift(b,-b.v) end
+  if degree(b)>degree(a) return (Pol(0),b) end
+  T=promote_type(T1,T2)
+  r=zeros(T,1+degree(a))
+  view(r,a.v+1:length(r)).=a.c
+  q=zeros(T,length(r)-degree(b))
+  for i in length(r):-1:degree(b)+1
+    c=exactdiv(r[i],b.c[end])
+    view(r,i-length(b.c)+1:i) .-= c .* b.c
+    q[i-length(b.c)+1]=c
+  end
+  if !iszero(r) error(b," does not divide exactly ",a) end
+  res=Pol(q)
+  !iszero(d) ? shift(res,d) : res
+end
+
 """
 `pseudodiv(a::Pol, b::Pol)`
 
 pseudo-division  of `a` by `b`.  If `d` is the  leading coefficient of `b`,
-computes   `(q,r)`   such   that   `d^(degree(a)+1-degree(b))a=p*b+q`   and
+computes   `(q,r)`   such   that   `d^(degree(a)+1-degree(b))a=q*b+r`   and
 `degree(r)<degree(b)`. Does not do division so works over any ring.
 For true polynomials (errors if the valuation of `a` or of `b` is negative).
 """
 function pseudodiv(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   if iszero(b) throw(DivideError) end
   d=b.c[end]
-  r=zeros(promote_type(T1,T2),1+degree(a))
+  if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
+  T=promote_type(T1,T2)
+  r=zeros(T,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
-  q=zeros(promote_type(T1,T2),length(r)-degree(b))
+  q=zeros(T,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     c=r[i]
     r.*=d
@@ -332,13 +364,6 @@ Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
 
-function Util.exactdiv(a::Pol,b::Pol)
-  if iszero(a) return a end
-  d,r=divrem(shift(a,-a.v),shift(b,-b.v))
-  if !iszero(r) error(b," does not divide exactly ",a) end
-  shift(d,a.v-b.v)
-end
-
 #---------------------- RatFrac-------------------------------------
 struct RatFrac{T}
   num::Pol{T}
@@ -354,8 +379,8 @@ struct RatFrac{T}
       b=shift(b,-min(v,0)-b.v)
       if check1
         d=gcd(a,b)
-        a=div(a,d)
-        b=div(b,d)
+        a=exactdiv(a,d)
+        b=exactdiv(b,d)
       end
     end
     new{T}(a,b)
@@ -481,9 +506,9 @@ function Base.gcd(p::Pol,q::Pol)
     p,q=q,p 
   end
   while !iszero(q)
-    q=q*bestinv(q.c[end])
+    q=q*inv(q.c[end])
     (q,p)=(divrem(p,q)[2],q)
   end
-  return p*bestinv(p.c[end])
+  p*inv(p.c[end])
 end
 end

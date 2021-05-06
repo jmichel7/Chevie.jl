@@ -443,7 +443,8 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 function fakedegrees(W,q;recompute=false)
   if !recompute
     res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
-    if !any(isnothing,res) && !any(iszero,res) return res end
+    if !any(isnothing,res) #&& !any(iszero,res) 
+        return res end
   end
   # need general routine
   InfoChevie("# recomputing fakedegrees for ",W,"\n")
@@ -451,17 +452,16 @@ function fakedegrees(W,q;recompute=false)
   P=generic_order(W,qq)
   P=shift(P,-valuation(P))
   ct=CharTable(W)
-  if rank(W)==0 P=[one(qq)]
-  else
-    P=ct.irr*map(1:length(ct.centralizers))do i
-      exactdiv(P,(ct.centralizers[i]*prod(l->(qq*E(inv(l))-1),refleigen(W,i))))
-    end
+  P=ct.irr*map(enumerate(ct.centralizers))do (i,c)
+    exactdiv(P,
+        improve_type(prod(l->(qq*conj(l)-1),refleigen(W,i);init=one(qq))))//c
   end
+  charinfo(W)[:b]=valuation.(P) # horrible hack; fix it!
   charinfo(W)[:B]=degree.(P)
-  charinfo(W)[:b]=valuation.(P)
-  P=map(x->x(q),P)
+  if q!=qq P=map(x->x(q),P) end
   P=improve_type(P)
-  W isa Spets ?  P.*(-1)^rank(W)*generic_sign(W) : P
+  if W isa Spets P.*=(-1)^rank(W)*generic_sign(W) end
+  P
 end
 
 function charinfo(t::TypeIrred)
@@ -618,7 +618,7 @@ julia> charinfo(coxgroup(:D,4))[:B]
 `a`-function  for  all  irreducible  characters  of  the  Coxeter  group or
 Spetsial  reflection  group  `W`,  that  is,  for  each  character `χ`, the
 valuation  of the generic degree of `χ` (in the one-parameter Hecke algebra
-`hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+`hecke(W,Pol())`  corresponding  to  `W`).  The  ordering  of  the result
 corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
@@ -643,7 +643,7 @@ julia> charinfo(coxgroup(:D,4))[:a]
 `A`-function  for  all  irreducible  characters  of  the  Coxeter  group or
 Spetsial  reflection group `W`, that is, for each character `χ`, the degree
 of   the  generic  degree  of  `χ`  (in  the  one-parameter  Hecke  algebra
-`hecke(W,Pol(:q))`  corresponding  to  `W`).  The  ordering  of  the result
+`hecke(W,Pol())`  corresponding  to  `W`).  The  ordering  of  the result
 corresponds to the ordering of the characters in `CharTable(W)`.
 
 ```julia-repl
@@ -667,7 +667,7 @@ julia> charinfo(coxgroup(:D,4))[:A]
 `:opdam`:  Contains the permutation of  the characters obtained by composing
 the  Opdam  involution  with  complex  conjugation. This permutation has an
 interpretation as a Galois action on the characters of
-`H=hecke(W,Pol(:x))`:  if `H` splits  by taking `v`  an `e`-th root of `x`,
+`H=hecke(W,Pol())`:  if `H` splits  by taking `v`  an `e`-th root of `Pol()`,
 `.opdam` records the permutation effected by the Galois action `v->E(e)*v`.
 
 ```julia-repl

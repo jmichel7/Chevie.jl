@@ -91,6 +91,7 @@ include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
 include("Pols.jl");@reexport using .Pols
+#if false
 include("ModuleElts.jl");@reexport using .ModuleElts
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
@@ -102,7 +103,6 @@ include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
-#if false
 include("ComplexR.jl");@reexport using .ComplexR
 include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars

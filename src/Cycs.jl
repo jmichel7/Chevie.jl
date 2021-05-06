@@ -125,8 +125,8 @@ module Cycs
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, phi,
-              bracket_if_needed
+using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, 
+              phi, bracket_if_needed
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -894,9 +894,13 @@ function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
   end
   Root1(j*d,numerator(r)*exponent(a)*gcdx(n,d)[2])
 end
-Base.:inv(a::Root1)=Root1(;r=-a.r)
+Base.inv(a::Root1)=Root1(;r=-a.r)
+Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 
+if use_list
+Base.:*(a::Cyc,b::Root1)=a*E(b)
+else
 function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
   na=div(n,conductor(a))
@@ -905,10 +909,11 @@ function Base.:*(a::Cyc,b::Root1)
   for (i,va) in a.d sumroot(res,n,na*i+nb*exponent(b),va) end
   lower(Cyc(n,ModuleElt(res)))
 end
+end
 
 Base.:*(b::Root1,a::Cyc)=a*b
-Base.:*(a::Union{Integer,Rational},b::Root1)=Cyc(a)*b
-Base.:*(b::Root1,a::Integer)=Cyc(a)*b
+Base.:*(a::Union{Integer,Rational},b::Root1)=a*E(b)
+Base.:*(b::Root1,a::Integer)=E(b)*a
 
 #------------------- end of Root1 ----------------------------------------
 

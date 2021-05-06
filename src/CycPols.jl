@@ -9,7 +9,7 @@ multiplication,  division and evaluation. The drawback is that addition and
 subtraction are not implemented!
 
 ```julia-repl
-julia> q=Pol(:q)
+julia> @Pol q
 Pol{Int64}: q
 
 julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2)
@@ -98,7 +98,7 @@ function cyclotomic_polynomial(n::Integer)::Pol{Int}
     res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
       if d!=1 && d!=n
-        res,_=divrem(res,cyclotomic_polynomial(d))
+        res,_=Pols.pseudodiv(res,cyclotomic_polynomial(d))
       end
     end
     res
@@ -338,6 +338,9 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
   sort(p,by=x->x/length(divisors(x)))
 end
 
+# next function is twice the speed of p(E(x))
+(p::Pol)(x::Root1)=sum(map(*,p.c,x.^(p.v:degree(p))))
+  
 """
 `CycPol(p::Pol)`
     
@@ -370,7 +373,7 @@ function CycPol(p::Pol{T};trace=false)where T
     if trace print("C$c") end
     found=false
     while true
-      np,r=divrem(p,cyclotomic_polynomial(c))
+      np,r=Pols.pseudodiv(p,cyclotomic_polynomial(c))
       if iszero(r) 
         append!(vcyc,[Root1(c,j)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
@@ -388,10 +391,10 @@ function CycPol(p::Pol{T};trace=false)where T
     found=false
     to_test=prime_residues(i)
     while true 
-      to_test=filter(r->iszero(p(Root1(;r=r//i))),to_test)
+      to_test=filter(r->iszero(p(Root1(i,r))),to_test)
       if isempty(to_test) return found end
       found=true
-      p=divrem(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
+      p=Pols.pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
       append!(vcyc,Root1.(i,to_test).=>1)
       if trace print("[d°$(degree(p))c$(conductor(p.c))]") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end

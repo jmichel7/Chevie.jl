@@ -140,7 +140,7 @@ end
 julia> W=coxgroup(:B,2)
 B₂
 
-julia> Pol(:q)
+julia> @Pol q
 Pol{Int64}: q
 
 julia> H=hecke(W,q)
@@ -330,7 +330,7 @@ returns  a list of matrices which give the reflection representation of the
 Iwahori-Hecke algebra `H`.
 
 ```julia-repl
-julia> Pol(:q);W=coxgroup(:B,2);H=hecke(W,q)
+julia> W=coxgroup(:B,2);H=hecke(W,Pol(:q))
 hecke(B₂,q)
 
 julia> reflrep(H)
@@ -602,7 +602,7 @@ and `Tₛ↦ uₛ,₀uₛ,₁Tₛ`. Essentially it corresponds to tensoring with
 representation.
 
 ```julia-repl
-julia> W=coxgroup(:G,2);Pol(:q);H=hecke(W,q)
+julia> W=coxgroup(:G,2);H=hecke(W,Pol(:q))
 hecke(G₂,q)
 
 julia> T=Tbasis(H);h=T(1,2)*T(2,1)

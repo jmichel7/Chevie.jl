@@ -34,7 +34,7 @@ julia> l=cuspidal_pairs(W,3)
  (levi = ³D₄₍₎=Φ₃², cuspidal = 1)
 
 julia> Series(W,l[2]...,3)
-ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==.)  H_G(L,λ)==hecke(G₄,MvpCyc{Int64, Int64}[ζ₃q², ζ₃, ζ₃q])
+ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,MvpCyc{Int64, Int64}[ζ₃q², ζ₃, ζ₃q])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -71,7 +71,7 @@ julia> l=cuspidal_pairs(W,3)
  (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1)
 
 julia> Series(W,l[5]...,3)
-ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
+ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
@@ -468,7 +468,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> s=Series(W,3,1)[1]
-ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==.)  W_G(L,λ)==Z₆
+ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1

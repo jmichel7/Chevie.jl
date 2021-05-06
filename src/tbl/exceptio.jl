@@ -2,7 +2,7 @@
 chevieset(["2E6", "E6", "E7", "E8", "2F4", "F4", "G2", "H3", "H4", "2G5", "G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34"], :CharName, (t->begin
             function (x, option)
                 local s, f
-                for f = ["frame", "kondo", "spaltenstein", "gp"]
+                for f = ["frame", "kondo", "spaltenstein", "gp", "lusztig"]
                     if haskey(option, (f,))
                         s = (chevieget(t, :CharInfo))()
                         if haskey(s, (f,))
