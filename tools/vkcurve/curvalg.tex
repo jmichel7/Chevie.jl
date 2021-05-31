@@ -1,0 +1,244 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{FollowMonodromy}
+\index{FollowMonodromy}
+
+'FollowMonodromy(<r>,<segno>,<print>)'
+
+This function computes the monodromy braid  of the solution in $x$ of an
+equation  $P(x,y)=0$  along  a  segment $[y_0,y_1]$.  It  is  called  by
+'FundamentalGroup', once for each of the segments. The first argument is
+a global record, similar to  the one produced by 'FundamentalGroup' (see
+the  documentation of  this function)  but only  containing intermediate
+information.  The second  argument is  the  position of  the segment  in
+'r.segments'. The third argument is  a print function, determined by the
+printlevel  set by  the user  (typically, by  calling 'FundamentalGroup'
+with a second argument).
+
+The function returns an element of the ambient braid group 'r.B'.
+
+This function has no reason to be  called directly by the user, so we do
+not illustrate its  behavior. Instead, we explain what  is displayed on
+screen when the user sets the printlevel to $2$.
+
+What is quoted below is an excerpt of what is displayed on screen
+during the execution of
+|    gap>  FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);
+
+    <1/16>    1 time=          0   ?2?1?3
+    <1/16>    2 time=      0.125   R2. ?3
+    <1/16>    3 time=    0.28125   R2. ?2
+    <1/16>    4 time=   0.453125   ?2R1?2
+    <1/16>    5 time=   0.578125   R1. ?2
+    ======================================
+    =    Nontrivial braiding = 2         =
+    ======================================
+    <1/16>    6 time=   0.734375   R1. ?1
+    <1/16>    7 time=    0.84375   . ?0. 
+    <1/16>    8 time=   0.859375   ?1R0?1
+    # The following braid was computed by FollowMonodromy in 8 steps.
+    monodromy[1]:=B(2);
+    # segment 1/16 Time=0.1sec|
+
+'FollowMonodromy' computes  its results by subdividing  the segment into
+smaller  subsegments  on which  the  approximations  are controlled.  It
+starts at one  end and moves subsegment after subsegment.  A new line is
+displayed at each step.
+
+The  first column  indicates which  segment is  studied. In  the example
+above, the function  is computing the monodromy along  the first segment
+(out  of  $16$).  This  gives  a  rough  indication  of  the  time  left
+before  completion of  the total  procedure.  The second  column is  the
+number of  iterations so  far (number of  subsegments). In  our example,
+'FollowMonodromy'  had to  cut the  segment into  $8$ subsegments.  Each
+subsegment has its own length. The cumulative length at a given step, as
+a  fraction of  the  total length  of the  segment,  is displayed  after
+'time='.  This  gives  a  rough  indication  of  the  time  left  before
+completion  of the  computation of  the monodromy  of this  segment. The
+segment is completed when this fraction reaches $1$.
+
+The last column has to do with the piecewise-linear approximation of the
+geometric monodromy  braid. It is  subdivided into sub-columns  for each
+string. In  the example above,  there are  three strings. At  each step,
+some strings are fixed (they are  indicated by '. ' in the corresponding
+column). A symbol like 'R5' or '?3' indicates that the string is moving.
+The exact meaning of the symbol has to do with the complexity of certain
+sub-computations.
+
+As  some strings  are moving,  it  happens that  their real  projections
+cross. When such a crossing occurs, it is detected and the corresponding
+element of $B_n$ is displayed on screen ('Nontrivial braiding ='...) The
+monodromy braid is the product of these elements of $B_n$, multiplied in
+the order in which they occur.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{ApproxFollowMonodromy}
+\index{ApproxFollowMonodromy}
+
+'ApproxFollowMonodromy(<r>,<segno>,<pr>)'
+
+This function  computes an approximation  of the monodromy braid  of the
+solution in $x$  of an equation $P(x,y)=0$ along  a segment $[y_0,y_1]$.
+It is called  by 'FundamentalGroup', once for each of  the segments. The
+first  argument is  a  global record,  similar to  the  one produced  by
+'FundamentalGroup'  (see the  documentation of  this function)  but only
+containing intermediate information. The second argument is the position
+of the segment in 'r.segments'. The  third argument is a print function,
+determined  by the  printlevel set  by the  user (typically,  by calling
+'FundamentalGroup' with a second argument).
+
+Contrary to 'FollowMonodromy',  'ApproxFollowMonodromy' does not control
+the approximations; it just uses a  heuristic for how much to move along
+the segment  between linear braid  computations, and this  heuristic may
+possibly fail. However,  we have not yet found an  example for which the
+result is actually incorrect, and thus the existence is justified by the
+fact that  for some difficult  computations, it is sometimes  many times
+faster  than 'FollowMonodromy'.  We illustrate  its typical  output when
+<printlevel> is 2.
+
+|   VKCURVE.monodromyApprox:=true;
+    FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);|
+
+  ....
+
+|    5.3.6. ***rejected
+    4.3.6.<15/16>mindist=3 step=1/2 total=0 logdisc=1 ***rejected
+    3.3.4.<15/16>mindist=3 step=1/4 total=0 logdisc=1 ***rejected
+    3.3.4.<15/16>mindist=3 step=1/8 total=0 logdisc=1 ***rejected
+    3.3.3.<15/16>mindist=3 step=1/16 total=0 logdisc=1
+    3.2.3.<15/16>mindist=2.92 step=1/16 total=1/16 logdisc=1
+    3.3.3.<15/16>mindist=2.83 step=1/16 total=1/8 logdisc=1
+    3.2.3.<15/16>mindist=2.75 step=1/16 total=3/16 logdisc=1
+    3.3.3.<15/16>mindist=2.67 step=1/16 total=1/4 logdisc=1
+    ======================================
+    =    Nontrivial braiding = 2         =
+    ======================================
+    3.2.3.<15/16>mindist=2.63 step=1/16 total=5/16 logdisc=1
+    3.2.3.<15/16>mindist=2.75 step=1/16 total=3/8 logdisc=1
+    3.3.3.<15/16>mindist=2.88 step=1/16 total=7/16 logdisc=1
+    3.2.3.<15/16>mindist=3 step=1/16 total=1/2 logdisc=1
+    3.3.3.<15/16>mindist=3.13 step=1/16 total=9/16 logdisc=1
+    3.2.3.<15/16>mindist=3.25 step=1/16 total=5/8 logdisc=1
+    3.3.3.<15/16>mindist=3.38 step=1/16 total=11/16 logdisc=1
+    3.2.3.<15/16>mindist=3.5 step=1/16 total=3/4 logdisc=1
+    3.2.3.<15/16>mindist=3.63 step=1/16 total=13/16 logdisc=1
+    3.2.3.<15/16>mindist=3.75 step=1/16 total=7/8 logdisc=1
+    3.2.3.<15/16>mindist=3.88 step=1/16 total=15/16 logdisc=1 ***up
+    # Monodromy error=0
+    # Minimal distance=2.625
+    # Minimal step=1/16=-0.05208125+0.01041875I
+    # Adaptivity=10
+    monodromy[15]:=B(2);
+    # segment 15/16 Time=0.2sec|
+
+Here at each  step the following information is  displayed\:\ first, how
+many iterations of  the Newton method were necessary to  compute each of
+the 3  roots of the current  polynomial $f(x,y_0)$ if we  are looking at
+the point $y_0$ of the segment.  Then, which segment we are dealing with
+(here the  15th of  16 in  all). Then the  minimum distance  between two
+roots of  $f(x,y_0)$ (used in our  heuristic). Then the current  step in
+fractions of the length of the segment  we are looking at, and the total
+fraction of the segment we have  done. Finally, the decimal logarithm of
+the absolute  value of the discriminant  at the current point  (used in
+the heuristic). Finally, an indication if the heuristic predicts that we
+should  halve the  step  ('\*\*\*rejected')  or that  we  may double  it
+('\*\*\*up').
+
+The function returns an element of the ambient braid group 'r.B'.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{LBraidToWord}
+\index{LBraidToWord}
+
+'LBraidToWord(<v1>,<v2>,<B>)'
+
+This function converts  the linear braid given by <v1>  and <v2> into an
+element of the braid group <B>.
+
+|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3)); 
+    function ( arg ) ... end
+    gap> i:=Complex(0,1);
+    I
+    gap> LBraidToWord([1+i,2+i,3+i],[2+i,1+2*i,4-6*i],B);
+    1|
+
+The  list <v1> and <v2> must have the same length, say $n$. The braid group
+<B>   should  be  the   braid  group  on   $n$  strings,  in  its  \CHEVIE\
+implementation.  The elements of  <v1> (resp. <v2>)  should be $n$ distinct
+complex  rational  numbers.  We  use  the  Brieskorn  basepoint, namely the
+contractible  set  $C+iV_\R$  where  $C$  is  a real chamber; therefore the
+endpoints need not be equal (hence, if the path is indeed a loop, the final
+endpoint must be given). The linear braid considered is the one with affine
+strings  connecting each point in <v1>  to the corresponding point in <v2>.
+These strings should be non-crossing. When the numbers in <v1> (resp. <v2>)
+have  distinct real parts, the  real picture of the  braid defines a unique
+element  of <B>. When some real parts are equal, we apply a lexicographical
+desingularization,  corresponding  to  a  rotation  of  <v1> and <v2> by an
+arbitrary small positive angle.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{BnActsOnFn}
+\index{BnActsOnFn}
+
+'BnActsOnFn(<braid b>,<Free group F>)'
+
+This function  implements the Hurwitz action  of the braid group  on $n$
+strings  on  the  free  group  on $n$  generators,  where  the  standard
+generator  $\sigma_i$ of  $B_n$  fixes  the generators  $f_1,\dots,f_n$,
+except $f_i$ which is mapped to  $f_{i+1}$ and $f_{i+1}$ which is mapped
+to $f_{i+1}^{-1}f_if_{i+1}$.
+
+|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
+    function ( arg ) ... end
+    gap> b:=B(1);
+    1
+    gap> BnActsOnFn(b,FreeGroup(3));
+    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
+    [ f.1, f.2, f.3 ], [ f.2, f.2^-1*f.1*f.2, f.3 ] )
+    gap> BnActsOnFn(b^2,FreeGroup(3));
+    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
+    [ f.1, f.2, f.3 ], [ f.2^-1*f.1*f.2, f.2^-1*f.1^-1*f.2*f.1*f.2, f.3 ] )|
+
+The second input is the free group on $n$ generators. The first input is
+an  element  of  the  braid  group  on  $n$  strings,  in  its  \CHEVIE\
+implementation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{VKQuotient}
+\index{VKQuotient}
+
+'VKQuotient(<braids>,[<bad>])'
+
+The input  <braid> is a  list of  braids $b_1,\dots,b_d$, living  in the
+braid group  on $n$ strings.  Each $b_i$  defines by Hurwitz  action an
+automorphism $\phi_i$ of  the free group $F_n$. The  function return the
+group  defined by  the abstract  presentation\: $$\<  f_1,\dots,f_n \mid
+\forall i,j, \phi_i(f_j)=f_j > $$
+
+The  optional   second  argument  <bad>   is  another  list   of  braids
+$c_1,\dots,c_e$  (representing the  monodromy  around bad  roots of  the
+discriminant). For each  $c_k$, we denote by  $\psi_k$ the corresponding
+Hurwitz automorphism of  $F_n$. When a second argument  is supplied, the
+function  returns  the  group  defined by  the  abstract  presentation\:
+$$\<  f_1,\dots,f_n,g_1,\dots,g_k \mid  \forall i,j,k,  \phi_i(f_j)=f_j,
+\psi_k(f_j) g_k=g_k f_j > $$
+
+
+|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
+    function ( arg ) ... end
+    gap> b1:=B(1)^3; b2:=B(2);                   
+    1.1.1
+    2
+    gap> g:=VKQuotient([b1,b2]);                 
+    Group( f.1, f.2, f.3 )
+    gap>  last.relators;  
+    [ f.2^-1*f.1^-1*f.2*f.1*f.2*f.1^-1, IdWord,
+      f.2^-1*f.1^-1*f.2^-1*f.1*f.2*f.1, f.3*f.2^-1, IdWord, f.3^-1*f.2 ]
+    gap> p:=PresentationFpGroup(g);DisplayPresentation(p);
+    << presentation with 3 gens and 4 rels of total length 16 >>
+    1: c=b
+    2: b=c
+    3: bab=aba
+    4: aba=bab
+    gap> SimplifyPresentation(p);DisplayPresentation(p);
+    #I  there are 2 generators and 1 relator of total length 6
+    1: bab=aba|

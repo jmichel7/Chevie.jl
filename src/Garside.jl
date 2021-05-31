@@ -1383,6 +1383,9 @@ function Base.show(io::IO,C::Category)
         sum(length,C.atoms)," generating maps")
 end
 
+# constructs a category from an initial object o and a function
+# atomsfrom which given object o returns atoms from o as "maps" m such
+# that the target object is action(o,m)
 function Category(atomsfrom::Function,o;action::Function=^)
   TM=eltype(atomsfrom(o))
   C=Category([o],[Pair{TM,Int}[]])
@@ -1492,6 +1495,7 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   gens
 end
 
+# returns atoms from a in F-twisted s-conjugacy category
 function AtomicMaps(a,s::Symbol=:sc,F=(x,y=1)->x)
   M=a.M
   res=typeof(a)[]

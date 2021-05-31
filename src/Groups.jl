@@ -543,7 +543,7 @@ abstract type Coset{TW<:Group} end
   G::TW
 end
 
-Base.isone(a::Coset)=a.phi in a.G
+Base.isone(a::Coset)=a.phi in Group(a)
 
 Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
 

@@ -1,0 +1,28 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{DecimalLog}
+\index{DecimalLog}
+
+'DecimalLog(<r>)'
+
+Given  a rational number <r>, returns an  integer <k> such that $10^k\< |r|
+\le 10^{k+1}$.
+
+|    gap> List([1,1/10,1/2,2,10],DecimalLog);
+    [ -1, -2, -1, 0, 1 ]|
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\Section{ComplexRational}
+\index{ComplexRational}
+
+'ComplexRational(<c>)'
+
+<c> is a cyclotomic or a 'Complex' number with 'Decimal' or real cyclotomic
+real  and imaginary parts. This function returns the corresponding rational
+complex number.
+
+|    gap> evalf(E(3)/3);
+    -0.1666666667+0.2886751346I
+    gap> ComplexRational(last);
+    -16666666667/100000000000+28867513459/100000000000I
+    gap> ComplexRational(E(3)/3);
+    -1/6+28867513457/100000000000I|

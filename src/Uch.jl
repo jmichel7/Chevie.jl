@@ -572,7 +572,7 @@ function UnipotentCharacters(WF::Spets)
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
     if isnothing(uc) return end
-    H=map(x->reflection_subgroup(W,x.indices),t.orbit)
+    H=map(x->reflection_subgroup(W,x.indices[1:x.rank]),t.orbit)
     inc=vcat(map(x->x.indices,t.orbit)...)
     for s in uc.harishChandra
       s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))

@@ -802,10 +802,11 @@ end
 
 function Util.exactdiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
+  elseif iszero(p) return p
   elseif length(q.d)==1 
     m,c=first(q.d)
     return Mvp(ModuleElt(inv(m)*m1=>exactdiv(c1,c) for (m1,c1) in p.d;check=false))
-  elseif length(p.d)<2 return iszero(p) ? p : nothing
+  elseif length(p.d)==1 return nothing
   end 
   var=first(first(p.d)[1].d)[1]
   res=zero(p)

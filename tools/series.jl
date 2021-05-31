@@ -93,7 +93,6 @@ function CheckMaximalPairs(W)
   res
 end
 
-
 function Checkzegen(W)
   l = ProperSeries(W)
   print("with no Hecke:",filter(s->isnothing(Hecke(s)),l),"\n")
@@ -117,7 +116,7 @@ end
 
 # checks minimal polynomials for Cyclotomic hecke algebras
 function CheckRatCyc(s)
-  if !(haskey(s, :Hecke)) return SPrint(FormatTeX(s), " Hecke  !  bound") end
+  if !(haskey(s, :Hecke)) return SPrint(FormatTeX(s), " Hecke not bound") end
   l = CollectBy(((s[:Hecke])[:parameter])[1], degree)
   fact = map((x->begin Product(x, (y->begin Mvp("T") - y end)) end), l)
   F = FieldOfDefinition(Group(s.spets))
@@ -179,42 +178,40 @@ end
 CheckLuCox(s)=[prod(x->1-x,filter(x->x!=1,s.Hecke.para[1])),degree(s)(Mvp(:q))]
 
 # data for linear char:
-# returns d, e_W/d (mod d), \omega_c (mod d)
+# returns d, e_W/d (mod d), ω_c (mod d)
 function datafor(W)
-  l=map(d->PrincipalSeries(W, d),RegularEigenvalues(W))
+  l=map(d->PrincipalSeries(W, d),regular_eigenvalues(W))
   e=sum(degrees(W)+codegrees(W))
   map(s->[s.d, gcd(e*s.d,conductor(s.d)) // gcd(gcd(map(x->x[:N_s], 
-                      HyperplaneOrbits(relative_group(s)))), denominator(s.d))], l)
+          hyperplane_orbits(relative_group(s)))), conductor(s.d))], l)
 end
 
 # description of centralizers of regular elements
 function cent(W)
-  l = map((d->begin PrincipalSeries(W, d) end), RegularEigenvalues(W))
-  res = map((s->begin [s.d, ReflectionName(relative_group(s))] end), l)
-  l = gapSet(map((x->begin x[2] end), res))
-  res = map((x->begin [map((z->begin z[1] end), Filtered(res, (y->begin
-                                      y[2] == x end))), x] end), l)
-  sort!(res)
-  return map((x->begin SPrint(Join(x[1]), ":", x[2]) end), res)
+  l=map(d->PrincipalSeries(W, d),regular_eigenvalues(W))
+  res=map(s->(r=s.d, g=repr(relative_group(s);context=:limit=>true)), l)
+  l=sort(unique(map(x->x.g,res)))
+  res=map(x->[map(z->z[1],filter(y->y.g==x,res)), x],l)
+  for x in sort(res) xprintln(x[1]," ",x[2]) end
 end
 
 function EigenspaceNumbers(W)
-  d = ReflectionDegrees(W)
-  if !(IsSpets(W)) return Union(map(divisors, d)) end
-  e = map((p->begin Lcm(p[1], denominator(AsRootOfUnity(p[2]))) end), d)
-  e = Union(map(divisors, e))
-  return Filtered(e, (x->begin any((p->begin E(x, p[1]) == p[2] end), d) end))
+  d = degrees(W)
+  if !(W isa Spets) return union(divisors.(d)...) end
+  e=map(p->lcm(p[1],conductor(Root1(p[2]))),d)
+  e=union(divisors.(e))
+  filter(x->any(p->E(x,p[1])==p[2],d),e)
 end
 
 # nrconjecture: si kd est le multiple maximum de d tq
 # RelativeDegrees(W,kd)<>[], alors
 # Length(RelativeDegrees(W,d))=Length(RelativeDegrees(W,kd))*Phi(kd)/Phi(d)
 function nrconjecture(W)
-  e = Difference(EigenspaceNumbers(W), RegularEigenvalues(W))
-  e = Filtered(e, (x->begin !(x[1]) in r end))
+  e=setdiff(EigenspaceNumbers(W), regular_eigenvalues(W))
+  e=filter(x->!(x[1] in r),e)
   for d in e
-    f = Filtered(r, (x->begin mod(x, d) == 0 end))
-    if length(f) > 0
+    f = filter(x->mod(x,d)==0,r)
+    if length(f)>0
         print("**** failed: ", ReflectionName(W), d, f, "\n")
     end
     p = First(reverse(e), (i->begin mod(i[1], d) == 0 end))
@@ -227,10 +224,10 @@ function nrconjecture(W)
 end
 
 # An element which has a maximal ζ_d-eigenspace lives in the minimal
-# parabolic subgroup such that the d-rank is the same
+# d-split levi of same d-rank as W
 function minimaldparabolic(W,d)
-  l=map(i->Difference(eachindex(gens(W)),[i]),eachindex(gens(W)))
-  l=Filtered(l, (x-> length(RelativeDegrees(ReflectionSubgroup(W, x), d)) 
-                 == length(RelativeDegrees(W, d))))
-  map(x->ReflectionName(ReflectionSubgroup(W, x)),l)
+  l=map(i->setdiff(eachindex(gens(W)),[i]),eachindex(gens(W)))
+  l=filter(x->length(relative_degrees(reflection_subgroup(W, x), d)) 
+            ==length(relative_degrees(W, d)),l)
+  map(x->reflection_subgroup(W, x),l)
 end

@@ -370,13 +370,26 @@ else
 end
 end
 
+function complexgaussian(c::Cyc{T})where T
+if use_list
+  c.d[1]+im*c.d[2]
+else
+  r=i=zero(T)
+  for (e,c) in c.d.d
+    if e==0 r=c
+    else i=c
+    end
+  end
+  Complex(r,i)
+end
+end
+  
+Base.complex(c::Cyc)=c.n==1 ? num(c) : c.n==4 ? complexgaussian(c) : 
+                                                           Complex{Float64}(c)
+
 function Base.convert(::Type{Complex{T}},c::Cyc)where T<:Union{Integer,Rational}
   if c.n==1 return Complex{T}(num(c)) end
-if use_list
-  if c.n==4 return Complex{T}(c.d[1]+im*c.d[2]) end
-else
-  if c.n==4 return Complex{T}(c.d[0]+im*c.d[1]) end
-end
+  if c.n==4 return Complex{T}(complexgaussian(c)) end
   throw(InexactError(:convert,Complex{T},c))
 end
 

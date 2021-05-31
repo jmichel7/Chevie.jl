@@ -837,10 +837,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
     error("w*WF.phi does not normalize subsystem")
   end
   phi=reduced(R,phi)
-  if !(phi isa Perm)
-    R=phi.reflectiongroup
-    phi=phi.phi
-  end
+  if !(phi isa Perm) phi=phi.phi end
   RF=spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}(:parent=>WF))
   # perhaps no parent?
   refltype(RF)
@@ -858,9 +855,9 @@ subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
   W::TW
 end
 
-function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
-  print(io,"Spets{",TW,"}")
-end
+#function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
+#  print(io,"Spets{",TW,"}")
+#end
 
 function spets(W::PermRootGroup)
   get!(W,:trivialspets)do
@@ -871,10 +868,7 @@ end
 function spets(W::PermRootGroup,w::Perm)
   if isone(w) return spets(W) end
   w=reduced(W,w)
-  if !(w isa Perm)
-    W=w.reflectiongroup
-    w=w.phi
-  end
+  if !(w isa Perm) w=w.phi end
   F=reflrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
@@ -969,9 +963,9 @@ function spets(s::String)
     return spets(W,reflrep(W,Perm(1,44,2)))
   elseif s=="4G333" 
     W=ComplexReflectionGroup(3,3,3)
-    return spets(W,perm"(2,12,22,38)(3,35,14,32)(5,26,8,33)
-(6,39,13,20)(7,42,24,27)(9,51,29,54)(10,15,21,46)(16,50,30,44)(17,53,23,36)
-(18,47,28,49)(19,41,40,34)(31,45,37,43)")
+    return spets(W,perm"(1,44,32,37)(2,12,16,53)(3,50,30,15)
+    ( 4,49,39,19)( 5, 9, 6,48)( 7,41,54,25)( 8,33,18,51)(10,43,36,11)
+    (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)")
   elseif s=="3G422" 
     W=PRG([[2,(-1+ER(3))*E(3)],[2,(-1+ER(3))*E(3,2)],[2,(-1+ER(3))]],
 [[(3+ER(3))/2,ER(3)*E(3,2)],[(3+ER(3))/2,ER(3)*E(3)],[(3+ER(3))/2,ER(3)]]/3)
@@ -1015,16 +1009,15 @@ function PermRoot.refltype(WF::PRC)
         if isG333(a)
           a.subgroup=reflection_subgroup(W,a.indices;NC=true)
           c=chevieget(:timp,:ReducedInRightCoset)(a.subgroup,WF.phi)
-          if c!=false && (WF.phi!=c[:phi] || a.indices!=restriction(W,c[:gen]))
-            c[:gen]=restriction(W,c[:gen])
-            a.indices=c[:gen]
-            a.subgroup=reflection_subgroup(W,c[:gen];NC=true)
-            WF.phi=c[:phi]
-            WF.W=reflection_subgroup(W,vcat(map(x->x.indices,t)...);NC=true)
-            W=WF.W
-          end
-          if isone(comm(a.subgroup(3),WF.phi)) G333=[1,2,3,44]
-          else G333=[1,50,3,12]
+          c.gen=restriction(W,c.gen)
+          a.indices=c.gen
+          a.subgroup=reflection_subgroup(W,c.gen;NC=true)
+          WF.phi=c.phi
+          WF.W=reflection_subgroup(W,vcat(map(x->x.indices,t)...);NC=true)
+          W=WF.W
+          if order(WF.phi) in [3,6] G333=[1,2,3,44]
+          elseif order(WF.phi)==4  G333=[1,2,3,32,16,36,30,10]
+          else G333=1:3
           end
           a.subgens=reflection.(Ref(a.subgroup),G333)
           a.indices=inclusion(a.subgroup,W,G333)
@@ -1122,7 +1115,7 @@ function PermRoot.refltype(WF::PRC)
            for j in a.orbit j.indices=j.indices[[1,4,3,2]] end
           end
         end
-      elseif isG333(b)
+      elseif isG333(b) # needless?
         if order(a.twist)==4
           for j in a.orbit j.indices[2]=inclusion(j.subgroup,W,2) end
         end

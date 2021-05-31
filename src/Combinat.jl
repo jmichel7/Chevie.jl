@@ -183,30 +183,6 @@ end
 
 #--------------------- Classical enumerations -------------------
 
-# list[end] contains a combination from the beginning of tally(mset).
-# Extend it in all ways possible.
-function combinations(list,tly,k)
-  n=length(list[end])
-  e=first(first(tly))
-  rest=@view tly[2:end]
-  start=true
-if VERSION.minor<6
-  for i in min(last(first(tly)),k):-1:max(0,k-reduce(+,last.(rest);init=0)) # 1.5
-    if !start push!(list,list[end][1:n]) end
-    start=false
-    for j in 1:i push!(list[end],e) end
-    if k>i combinations(list,rest,k-i) end
-  end
-else
-  for i in min(last(first(tly)),k):-1:max(0,k-sum(last,rest;init=0))
-    if !start push!(list,list[end][1:n]) end
-    start=false
-    for j in 1:i push!(list[end],e) end
-    if k>i combinations(list,rest,k-i) end
-  end
-end
-end
-
 """
 `combinations(mset[,k])`
 
@@ -243,8 +219,8 @@ julia> combinations([1,2,2,3])
 """
 function combinations(mset,k)
   if k>length(mset) return Vector{eltype(mset)}[] end
-  list=[empty(mset)]
-  if k>0 combinations(list,tally(mset),k) end
+  list=[Vector{eltype(mset)}(undef,k)]
+  if k>0 combinations(list,tally(mset),0,k) end
   list
 end
 
@@ -252,20 +228,35 @@ function combinations(mset)
   list=Vector{eltype(mset)}[]
   tly=tally(mset)
   for k in 0:length(mset)
-    push!(list,empty(mset))
-    if k>0 combinations(list,tly,k) end
+    push!(list,Vector{eltype(mset)}(undef,k))
+    if k>0 combinations(list,tly,0,k) end
   end
   list
+end
+
+# list[end] starts with n elements from the beginning of tally(mset). Extend it
+# in all ways possible adding k more elements from the end tly of tally(mset).
+function combinations(list,tly,n,k)
+  rest=@view tly[2:end]
+  start=true
+  for i in min(last(first(tly)),k):-1:max(0,k-sum(last,rest;init=0))
+    if !start push!(list,copy(list[end])) end
+    start=false
+    e=first(first(tly))
+    for j in n+1:n+i list[end][j]=e end
+    if k>i combinations(list,rest,n+i,k-i) end
+  end
 end
 
 @doc (@doc combinations) ncombinations
 ncombinations(mset)=prod(1 .+last.(tally(mset)))
 
-ncombinations(mset,k)=ncombinations(last.(tally(mset)),1,k)
+ncombinations(mset,k)=ncombinations(sort(last.(tally(mset)),rev=true),1,k)
 
 function ncombinations(mul,m,k)
   if k==0 return 1 end
   if m>length(mul) return 0 end
+  if mul[1]==1 return binomial(length(mul),k) end
   sum(i->ncombinations(mul,m+1,k-i),0:min(mul[m],k))
 end
 

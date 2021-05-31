@@ -1210,10 +1210,9 @@ function PermGroups.reduced(W::PermRootGroup,F)
         error("not implemented: F permutes components") 
       end
       base=chevieget(:timp,:ReducedInRightCoset)(subgroup,F)
-      if base==false error( "should not happen" ,
-            " subgroup=$subgroup F=$F")
-      else indices=restriction(W,base[:gen])
-        F=base[:phi]
+      if isnothing(base) error("should not happen subgroup=$subgroup F=$F")
+      else indices=restriction(W,base.gen)
+        F=base.phi
       end
       return (phi=F,reflectiongroup=reflection_subgroup(W,indices;NC=true))
     end

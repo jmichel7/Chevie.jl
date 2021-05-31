@@ -59,9 +59,7 @@ chevieset(:G31, :SchurElement, function (p, para, root)
         if haskey(r, :root)
             q = GetRoot(q, 2) * (-1) ^ data[:rootPower]
         end
-        return r[:coeff] * q ^ r[:factor] * Product(r[:vcyc], (x->begin
-                            Value(CyclotomicPolynomial(Cyclotomics, x), q)
-                        end))
+        r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
     end)
 chevieset(:G31, :HeckeCharTable, function (para, root)
         local tbl, x, I, r, p, adj, f1, f6, f7, f9, f11, f14, f16, f17, f21, f23, f25, f26, f27, f31, f35, f37, f39, f41, f42, f46, f48, f50, f54, f56, f58
