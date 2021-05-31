@@ -855,9 +855,9 @@ subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
   W::TW
 end
 
-#function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
-#  print(io,"Spets{",TW,"}")
-#end
+function Base.show(io::IO,t::Type{PRC{T,TW}})where {T,TW}
+  print(io,"Spets{",TW,"}")
+end
 
 function spets(W::PermRootGroup)
   get!(W,:trivialspets)do
@@ -935,13 +935,13 @@ julia> spets("2G5")
 ²G₅
 
 julia> spets("3G333")
-G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
 
 julia> spets("3pG333")
-G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
 
 julia> spets("4G333")
-G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎
+⁴G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎
 ```
 """
 function spets(s::String)
@@ -1009,10 +1009,10 @@ function PermRoot.refltype(WF::PRC)
         if isG333(a)
           a.subgroup=reflection_subgroup(W,a.indices;NC=true)
           c=chevieget(:timp,:ReducedInRightCoset)(a.subgroup,WF.phi)
-          c.gen=restriction(W,c.gen)
-          a.indices=c.gen
-          a.subgroup=reflection_subgroup(W,c.gen;NC=true)
           WF.phi=c.phi
+          c=restriction(W,c.gen)
+          a.indices=c
+          a.subgroup=reflection_subgroup(W,c;NC=true)
           WF.W=reflection_subgroup(W,vcat(map(x->x.indices,t)...);NC=true)
           W=WF.W
           if order(WF.phi) in [3,6] G333=[1,2,3,44]
