@@ -2,7 +2,7 @@
 BigNorm(x)=abs(real(x))+abs(imag(x))
 
 # another alternative
-SmallNorm(x)=maximum(abs(real(x)),abs(imag(x)))
+SmallNorm(x)=max(abs(real(x)),abs(imag(x)))
 
 # For a non-zero rational x, returns k such that 10^k<|x|<=10^(k+1) 
 function DecimalLog(x)
@@ -50,7 +50,7 @@ function DistSeg(z,a,b)
   b-=a
   z-=a
   r=abs(b)
-  z=r//b*z
+  z*=r/b
   real(z)<0 ? abs(z) : real(z)>r ? abs(z-b) : imag(z)>0 ? imag(z) : -imag(z)
 end
 

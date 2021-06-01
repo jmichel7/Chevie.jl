@@ -132,7 +132,7 @@ function SeparateRoots(p,safety)
     if VKCURVE[:showNewton] && cnt>0
       println("****** ", cnt, " guess failed for p degree ", degree(p))
     end
-    v=NewtonRoot(p,e,safety*10.0^-(degree(p)+4);show)
+    v=NewtonRoot(p,e,safety*10.0^-(degree(p)+4))
     e*=5/4*Complex{Float64}(E(2*(degree(p)+1)))
     cnt+=1
   end

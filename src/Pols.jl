@@ -358,6 +358,7 @@ function srgcd(a::Pol,b::Pol)
 end
 
 Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
+Base.gcd(v::Vector{<:Pol})=length(v)==1 ? v[1] : gcd(v[1],gcd(v[2:end]))
 Base.lcm(p::Pol,q::Pol)=exactdiv(p*q,gcd(p,q))
 Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
  

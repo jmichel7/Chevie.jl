@@ -4,22 +4,22 @@ function cycorder(list, center)
   left=empty(list)
   top=empty(list)
   bottom=empty(list)
-  for y=list-center
-    if real(y)>0 push!(right, y)
-    elseif real(y)<0 push!(left, y)
-    elseif imag(y)>0 push!(top, y)
+  for y in list
+    if real(y)>real(center) push!(right, y)
+    elseif real(y)<real(center) push!(left, y)
+    elseif imag(y)>imag(center) push!(top, y)
     else push!(bottom, y)
     end
   end
-  sort!(right,by=x->imag(x)/real(x))
-  sort!(left,by=x->imag(x)/real(x))
-  vcat(right, top, left, bottom).+center
+  sort!(right,by=x->imag(x-center)/real(x-center))
+  sort!(left,by=x->imag(x-center)/real(x-center))
+  vcat(right, top, left, bottom)
 end
 
 # Input: (list of complex numbers,complex number)
 # Output: sublist of "neighbours" of the second input,
 #   x and y are neighbours iff no z is in the disk of diameter [x,y]
-function neighbours(list, center)
+function neighbours(l, center)
   function isneighbour(y)
     d=abs2(y-center)
     for z in l
@@ -27,9 +27,9 @@ function neighbours(list, center)
     end
     return true
   end
-  l=filter(y->y!=center, list)
+  l=filter(y->y!=center,l)
   l=filter(isneighbour, l)
-  return cycorder(l, center)
+  cycorder(l, center)
 end
 
 # value at z of an equation of the line (x,y)
@@ -129,41 +129,33 @@ function convert(oldres)
       isnothing(p) ? -findfirst(==(reverse(seg)),segments) : p
     end
   end
-  return Dict{Symbol, Any}(:points=>points, :segments=>segments, :loops=>loops)
+  Dict{Symbol, Any}(:points=>points, :segments=>segments, :loops=>loops)
 end
 
-# Computes a list of generators of the fundamental group of
-#       C - {y1,...,yn}
-# Input: list of complex numbers, [y1,...,yn].
-# Output: list of PL-loops encoded as a record with 3 fields
-#         .points : list of all endpoints of all segments
-#         .segments : list of all segments, each of them being
-#                     encoded as the list of the position of its 2
-#		      endpoints in .points
-# 	  .loops  : list of the generators, each of them being encoded
-#	             as a list of the positions in .segments of its 
-#		     successive linear pieces 
 """
-'LoopsAroundPunctures(<points>)'
+'LoopsAroundPunctures(points)'
 
 The input is  a list of complex rational numbers.  The function computes
 piecewise-linear loops representing generators  of the fundamental group
-of the complement of <points> in the complex line.
+of `ℂ -{points}`.
 
-|    gap> LoopsAroundPunctures([Complex(0,0)]);
-    rec(
-      points := [ -I, -1, 1, I ],
-      segments := [ [ 1, 2 ], [ 1, 3 ], [ 2, 4 ], [ 3, 4 ] ],
-      loops := [ [ 4, -3, -1, 2 ] ] )|
+```julia-repl
+julia> LoopsAroundPunctures([0])
+Dict{Symbol, Any} with 3 entries:
+  :segments => [[1, 2], [1, 3], [2, 4], [3, 4]]
+  :points   => Complex{Int64}[0-1im, -1+0im, 1+0im, 0+1im]
+  :loops    => [[4, -3, -1, 2]]
+```
 
-The output is a record with  three fields. The field 'points' contains a
-list of complex  rational numbers. The field 'segments'  contains a list
-of oriented segments, each of them  encoded by the list of the positions
-in 'points' of  its two endpoints. The field 'loops'  contains a list of
-list of  integers. Each list  of integers represents a  piecewise linear
-loop, obtained  by concatenating the  elements of 'segments'  indexed by
-the integers (a negative integer is used when the opposed orientation of
-the segment has to be taken).
+The output is a record with  three fields. 
+
+`points`: a list of complex  numbers. 
+`segments`:  a list of oriented segments, each of them  encoded by the list 
+   of the positions in 'points' of  its two endpoints. 
+`loops`: a list of list of  integers. Each list  of integers represents a 
+   piecewise linear loop, obtained  by concatenating the  elements of 
+   `segments`  indexed by the integers (a negative integer is used when the
+   opposed orientation of the segment has to be taken).
 """
 function LoopsAroundPunctures(originalroots)
   roots=originalroots
@@ -172,11 +164,11 @@ function LoopsAroundPunctures(originalroots)
   sort!(roots, by=x->abs2(x-average))
   if n==1 return convert([roots[1].+[1,im,-1,-im,1]]) end
   ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
-  sy=y->ys[findfirst(==(y),roots)]
+  sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
     y[:neighbours]=neighbours(roots, y[:y])
     y[:friends]=[y[:y]]
-    y[:lovers]=[]
+    y[:lovers]=empty(y[:friends])
   end
   if VKCURVE[:showLoops] println("neighbours computed") end
   for y in ys
@@ -201,7 +193,7 @@ function LoopsAroundPunctures(originalroots)
 # we make a box around all the points;
   box=[Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
        Complex(maxr+2, mini-2), Complex(maxr+2, maxi+2),
-       Complex((maxr+minr)/2, mini-(maxr-minr)/2)-2,
+       Complex((maxr+minr)/2, mini-(maxr-minr)/2-2),
        Complex((maxr+minr)/2, maxi+(maxr-minr)/2+2),
        Complex(minr-(maxi-mini)/2-2, (maxi+mini)/2),
        Complex(maxr+(maxi-mini)/2+2, (maxi+mini)/2)]
@@ -243,14 +235,17 @@ function LoopsAroundPunctures(originalroots)
   end
   for y in ys
     k=length(y[:path])
-    y[:handle]=vcat(map(1:k-1)do i
+    y[:handle]=Vector{Complex{Float64}}(vcat(map(1:k-1)do i
       l=sy(y[:path][i])[:circle]
       l[1:findfirst(≈((y[:path][i]+y[:path][i+1])/2),l)]
-    end...)
+     end...))
     y[:loop]=vcat(y[:handle], y[:circle], reverse(y[:handle]))
   end
-  for y in ys y[:loop]=shrink(y[:loop]) end
   sort!(ys,by=y->findfirst(==(y[:y]),originalroots))
+  for y in ys 
+    y[:loop]=map(x->round(x;sigdigits=8),y[:loop])
+    y[:loop]=shrink(y[:loop])
+  end
   convert(map(y->y[:loop], ys))
 end
 
