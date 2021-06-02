@@ -69,30 +69,3 @@ cross. When such a crossing occurs, it is detected and the corresponding
 element of $B_n$ is displayed on screen ('Nontrivial braiding ='...) The
 monodromy braid is the product of these elements of $B_n$, multiplied in
 the order in which they occur.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\Section{BnActsOnFn}
-\index{BnActsOnFn}
-
-'BnActsOnFn(<braid b>,<Free group F>)'
-
-This function  implements the Hurwitz action  of the braid group  on $n$
-strings  on  the  free  group  on $n$  generators,  where  the  standard
-generator  $\sigma_i$ of  $B_n$  fixes  the generators  $f_1,\dots,f_n$,
-except $f_i$ which is mapped to  $f_{i+1}$ and $f_{i+1}$ which is mapped
-to $f_{i+1}^{-1}f_if_{i+1}$.
-
-|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
-    function ( arg ) ... end
-    gap> b:=B(1);
-    1
-    gap> BnActsOnFn(b,FreeGroup(3));
-    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
-    [ f.1, f.2, f.3 ], [ f.2, f.2^-1*f.1*f.2, f.3 ] )
-    gap> BnActsOnFn(b^2,FreeGroup(3));
-    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
-    [ f.1, f.2, f.3 ], [ f.2^-1*f.1*f.2, f.2^-1*f.1^-1*f.2*f.1*f.2, f.3 ] )|
-
-The second input is the free group on $n$ generators. The first input is
-an  element  of  the  braid  group  on  $n$  strings,  in  its  \CHEVIE\
-implementation.
