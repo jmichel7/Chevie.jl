@@ -364,9 +364,9 @@ end
 
 function Base.convert(::Type{Complex{T}},c::Cyc)where T<:AbstractFloat
 if use_list
-  sum(x->x[2]*exp(2*x[1]*im*T(pi)/c.n), zip(zumbroich_basis(c.n),c.d))
+  sum(x->x[2]*cispi(2*T(x[1])/c.n), zip(zumbroich_basis(c.n),c.d))
 else
-  iszero(c) ? Complex{T}(0.0) : sum(v*exp(2*k*im*T(pi)/c.n) for (k,v) in c.d)
+  iszero(c) ? Complex{T}(0.0) : sum(v*cispi(2*T(k)/c.n) for (k,v) in c.d)
 end
 end
 

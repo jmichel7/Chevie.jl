@@ -668,44 +668,41 @@ functions  'SeparateRoots', etc... described in  the previous chapter, this
 function handles quite well polynomials with multiple roots. We rely on the
 algorithms explained in detail in cite{HSS01}.
 
-|    gap> FindRoots((x-1)^5,1/100000000000);
-    [ 6249999999993/6250000000000+29/12500000000000I, 
-      12499999999993/12500000000000-39/12500000000000I, 
-      12500000000023/12500000000000+11/6250000000000I, 
-      12500000000023/12500000000000+11/6250000000000I, 
-      312499999999/312500000000-3/6250000000000I ]
-    gap> evalf(last);
-    [ 1, 1, 1, 1, 1 ]
-    gap> FindRoots(x^3-1,1/10);            
-    [ -1/2-108253175473/125000000000I, 1, -1/2+108253175473/125000000000I ]
-    gap> evalf(last);
-    [ -0.5-0.8660254038I, 1, -0.5+0.8660254038I ]
-    gap> List(last,x->x^3);
-    [ 1, 1, 1 ]|
+julia> FindRoots((Pol()-1.0)^5,1/5000)
+5-element Vector{ComplexF64}:
+ 1.0009973168670234 - 6.753516026574732e-9im
+ 1.0004572203796391 - 0.00033436001135679156im
+  0.999029224439348 + 5.075797152907413e-12im
+  0.999723670720127 - 0.0008487747754577878im
+ 1.0007950023584915 - 0.0005779801979057327im
+
+julia> FindRoots(Pol()^3-1,10^-5)
+3-element Vector{ComplexF64}:
+ -0.5 - 0.8660254037844386im
+  1.0 - 1.232595164407831e-32im
+ -0.5 + 0.8660254037844387im
+
+julia> map(x->x^3,ans)
+3-element Vector{ComplexF64}:
+ 0.9999999999999998 - 1.1102230246251565e-16im
+                1.0 - 3.697785493223493e-32im
+ 1.0000000000000002 - 1.1102230246251565e-16im
 """
-#FindRoots:=function(p,prec)local v,subtractroot,e;
-#  subtractroot:=function(p,r)local d,res,i;
-#    d:=Length(p);
-#    res:=[];res[d-1]:=p[d];
-#    for i in [d-1,d-2..2] do res[i-1]:=p[i]+res[i]*r;od;
-#    return res;
-#  end;
-#  if IsMvp(p) then v:=Variables(p);
-#    if Length(v)>1 then Error(p," is not univariate");
-#    elif Length(v)=0 then v:=["x"];
-#    fi;
-#    p:=ScalMvp(Coefficients(p,v[1]));
-#  fi;
-#  if Length(p)=2 then return [-p[1]/p[2]];fi;
-#  p:=List(p,ComplexRational);
-#  e:=evalf(E(7),10);v:=false;
-#  while v=false do
-#    v:=NewtonRoot(p,ComplexRational(e),10^(-Length(p)-3))[1];
-#    e:=e*evalf(E(Length(p)),10);
-#  od;
-#  v:=Concatenation([v],FindRoots(subtractroot(p,ComplexRational(v)),prec));
-#  return List(v,e->NewtonRoot(p,ComplexRational(e),prec)[1]);
-#end;
+function FindRoots(p,prec)
+  subtractroot(p,r)=divrem(p,Pol([-r,1]))[1]
+  if degree(p)<1 return empty(p.c)
+  elseif degree(p)==1 return [-p[0]/p[1]]
+  end
+  e=Complex{Float64}(E(7))
+  v=nothing
+  while isnothing(v)
+    v=NewtonRoot(p,e,10.0^(-degree(p)-1))
+    e*=Complex{Float64}(E(degree(p)+1))
+  end
+   v=vcat([v[1]],FindRoots(subtractroot(p,v[1]),prec))
+   map(e->NewtonRoot(p,e,prec)[1],v)
+end
+
 #------------------ Loops --------------------------------------------
 # Ordonne une liste de points trigonometriquement autour d'un centre
 function cycorder(list, center)
@@ -944,6 +941,7 @@ function LoopsAroundPunctures(originalroots)
     y[:loop]=map(x->round(x;sigdigits=8),y[:loop])
     y[:loop]=shrink(y[:loop])
   end
+  @show ys[1]
   convert(map(y->y[:loop], ys))
 end
 
@@ -1074,7 +1072,6 @@ function ApproxFollowMonodromy(r,segno,pr)
   if VKCURVE[:showInsideSegments] ipr=print
   else ipr=function(x...)end
   end
-  iszero=x->x+1≈1
   p,q=r.segments[segno]
   res=r.B()
   prevzeros=r.zeros[p]
@@ -1093,7 +1090,7 @@ function ApproxFollowMonodromy(r,segno,pr)
     P=Pol(complexmvp(r.curve)(y=next))
     nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
     if isnothing(nextzeros) || 
-       (iszero(maximum(BigNorm.(nextzeros-prevzeros))) && step>1//16)
+       (1+maximum(BigNorm.(nextzeros-prevzeros))≈1) && step>1//16)
       rejected=true
     else
       dm=map(i->minimum(BigNorm.(prevzeros[i].-prevzeros[filter(j->j!=i,1:n)])),1:n)
@@ -1228,7 +1225,6 @@ function LBraidToWord(v1, v2, B)
     end
   end
   tcrit=sort(unique(crit))
-  @show tcrit
   res=B()
   u=0
   for t in tcrit
@@ -1236,12 +1232,11 @@ function LBraidToWord(v1, v2, B)
     yt=map(k->y1[k]+t*(y2[k]-y1[k]),1:n)
     ut=(u+t)/2
     xut=map(k->x1[k]+ut*(x2[k]-x1[k]),1:n)
-    put=sortPerm(xut)
+    put=inv(sortPerm(xut))
     xt=xt^put
     yt=yt^put
     xcrit=sort(unique(xt))
     for x in xcrit
-      @show x,xt
       posx=findfirst(==(x),xt)
       nx=count(==(x),xt)
       res*=starbraid(yt[posx:(posx+nx)-1], posx-1, B)
