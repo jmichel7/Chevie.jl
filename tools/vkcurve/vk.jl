@@ -1,49 +1,18 @@
 #------------------- utilities -------------------------------
-# alternative to ComplexOps.Norm(x)
-BigNorm(x)=abs(real(x))+abs(imag(x))
-
-# another alternative
-SmallNorm(x)=max(abs(real(x)),abs(imag(x)))
-
-# For a non-zero rational x, returns k such that 10^k<|x|<=10^(k+1) 
-function DecimalLog(x)
-  if iszero(x) error("trying to take decimal log of 0") end
-  d = div(denominator(x), numerator(x))
-  if iszero(d)
-    d=div(numerator(x), denominator(x))
-    return length(string(abs(d)))-1
-  else return -length(string(abs(d)))
-  end
-end
-
-# a complex rational approximation of a (a Cyc or ??)
-function ComplexRational(a)
-  if a isa Cyc
-      a = Complex(a)
-      if !(IsRat(a[:r]))
-          a[:r] = evalf(a[:r])
-      end
-      if !(IsRat(a[:i]))
-          a[:i] = evalf(a[:i])
-      end
-  end
-  return Complex(Rational(a[:r]), Rational(a[:i]))
-end
-
 """
 `Dispersal(v)`
-`v`  is a list of complex numbers  representing points in the real plane.
-The  result is a pair  whose first element is  the minimum distance between
-two  elements of `v`, and the second is a pair of indices `[i,j]` such that
-`v[i]`, `v[j]` achieves this minimum distance.
+`v`  is a list of complex numbers. The result is a pair whose first element
+is the minimum distance (in the complex plane) between two elements of `v`,
+and  the  second  is  a  pair  of  indices `[i,j]` such that `v[i]`, `v[j]`
+achieves this minimum distance.
 
 julia> Dispersal([1+im,0,1])
 (1, [1,3])
 """
 function Dispersal(v)
   l=combinations(eachindex(v),2)
-  p=findmin(map(x->BigNorm(v[x[1]]-v[x[2]]),l))
-  (p[1],l[p[2]])
+  m,c=findmin(map(x->abs(v[x[1]]-v[x[2]]),l))
+  (m,l[c])
 end
 
 # distance of z to segment [a,b]
@@ -55,16 +24,17 @@ function DistSeg(z,a,b)
   real(z)<0 ? abs(z) : real(z)>r ? abs(z-b) : imag(z)>0 ? imag(z) : -imag(z)
 end
 
-InterpolatedPolynomial=function(x,y)
-  t=copy(y)*1//1 # make sure coeffs are in a field
-  a=map(1:length(x))do i
+# find Pol of smallest degree taking values y at points x
+function Pols.Pol(x::AbstractVector,y::AbstractVector)
+  t=collect(y).*1//1 # make sure coeffs are in a field
+  a=map(eachindex(x))do i
     for k in i-1:-1:1
+      if x[i]==x[k] error("interpolating points must be distinct") end
       t[k]=(t[k+1]-t[k])/(x[i]-x[k])
-      if isnothing(t[k]) error("cannot interpolate polynomial") end
     end
     t[1]
   end
-  p=a[length(x)]
+  p=Pol([a[end]])
   for i in length(x)-1:-1:1
     p=p*(Pol()-x[i])+a[i]
   end
@@ -92,7 +62,7 @@ function discy2(p)
     else return GLinearAlgebra.det(resultant(q,map(*,q[2:end],1:length(q)-1)))
     end
   end
-  InterpolatedPolynomial(1:n,v)
+  Pol(1:n,v)
 end
 
 Chars.discriminant(p::Pol)=GLinearAlgebra.det(resultant(p[0:end],
@@ -156,7 +126,7 @@ VKCURVE=Dict(
 :homepage=>"http://webusers.imj-prg.fr/~jean.michel/vkcurve.html",
 :copyright=>
 "(C) David Bessis, Jean Michel -- compute Pi_1 of hypersurface complements",
-:monodromyApprox=>true, ##########################
+:monodromyApprox=>false, ##########################
 :showSingularProj=>false, 
 :showBraiding=>false,
 :showLoops=>false,
@@ -208,9 +178,8 @@ end
 #  .basepoint -- holds the chosen basepoint
 #
 function Loops(r)
-  merge!(r.prop,pairs(LoopsAroundPunctures(r.roots)))
 # here we  have loops around the  'true' roots and around  the 'extra'
-# roots Difference(r.roots,r.trueroots). We get rid of the extra loops
+# roots setdiff(r.roots,r.trueroots). We get rid of the extra loops
 # and the associated segments and points, first saving the basepoint.
 # (its location is known now, and maybe not later? J.M.) 
   r.basepoint=r.loops[1][1]<0 ? r.segments[-r.loops[1][1]][2] :
@@ -251,8 +220,6 @@ function Loops(r)
     r.dispersal=1/1000
   end
 # and round points to m/100
-# m=-DecimalLog(Rational(r.dispersal)//100)
-# r.points=map(y->evalf(y, m),r.points)
 end
 
 # Zeros(r)  r should have fields
@@ -266,10 +233,9 @@ function Zeros(r)
   mins=Tuple{Float64,Int}[]
   r.zeros=map(1:length(r.points))do i
     if VKCURVE[:showZeros] print("<",i,"/",length(r.points),">") end
-    zz=SeparateRoots(Pol(complexmvp(r.curve)(y=r.points[i])), 1000)
+    zz=SeparateRoots(Pol(r.curve(y=r.points[i])), 10^4)
     if length(zz)>1
       m=Dispersal(zz)
-#     m[1]=evalf(m[1], -(DecimalLog(m[1] // 1000)))
       if VKCURVE[:showZeros] println(" d==", m) end
       push!(mins,(m[1],i))
     end
@@ -347,10 +313,9 @@ complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
 function GetDiscyRoots(r)
   if VKCURVE[:showRoots] println("Computing roots of discriminant...") end
   if degree(r.curveVerticalPart)==0 r.roots=Complex{Float64}[]
-  else r.roots=SeparateRoots(complexpol(r.curveVerticalPart), 1000)
+  else r.roots=SeparateRoots(r.curveVerticalPart, 1000)
   end
-  append!(r.roots,vcat(map(p->SeparateRoots(complexpol(p),1000),
-                           r.discyFactored)...))
+  append!(r.roots,vcat(map(p->SeparateRoots(p,1000),r.discyFactored)...))
 end
 
 function Braids(r)
@@ -416,8 +381,8 @@ function Finish(r)
   end
   r.presentation=Presentation(F)
   r.rawPresentation=Presentation(F)
-# simplify(r.presentation)
-  r
+  return r
+  simplify(r.presentation)
 end
 
 function SearchHorizontal(r)
@@ -442,7 +407,7 @@ function SearchHorizontal(r)
   r1.trueroots=r.roots
   r1.verticallines=r.roots[1:degree(r.curveVerticalPart)]
   r1.roots=copy(r1.trueroots)
-  append!(r1.roots,SeparateRoots(complexpol(section),1000))
+  append!(r1.roots,SeparateRoots(section,1000))
   r1
 end
 
@@ -454,11 +419,14 @@ function FundamentalGroup(c::Mvp;printlevel=0)
   GetDiscyRoots(r)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
+  loops=convert_loops(LoopsAroundPunctures(r.roots))
+  merge!(r.prop,pairs(loops))
   Loops(r)
   Zeros(r)
   if isempty(r.zeros[1]) return TrivialCase(r) end
   r.B=BraidMonoid(CoxSym(length(r.zeros[1])))
   r.monodromy=fill(r.B(),length(r.segments))
+# return r
   for i in eachindex(r.segments) Segment(r, i) end
   Finish(r)
 end
@@ -480,12 +448,13 @@ function PrepareFundamentalGroup(curve, name)
   GetDiscyRoots(r)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
+  merge!(r.prop,pairs(convert_loops(LoopsAroundPunctures(r.roots))))
   Loops(r)
   Zeros(r)
   if isempty(r.zeros[1]) return TrivialCase(r) end
   fname=r.name*".tmp"
   for f in [:curve,:discy,:ismonic,:roots,:loops,:segments,:points,:zeros]
-    cut(string(r.name,".$f=",r[f],"\n\n");before=>"+*",file=fname)
+    cut(string(r.name,".$f=",getproperty(r,f),"\n\n");before="+*",file=fname)
   end
   println("     ----------------------------------")
   println("Data saved in ", fname)
@@ -504,7 +473,7 @@ function FinishFundamentalGroup(r)
   if !haskey(r, :monodromy) r.monodromy=[] end
   r[:B]=BraidMonoid(CoxSym(length(r.zeros[1])))
   for i in 1:length(r.segments)
-    read(Strin(r.name,".",i))
+    read(string(r.name,".",i))
     if isnothing(r.monodromy[i]) println("***** ", i, " missing ****") end
     r.monodromy[i]=r[:B](r.monodromy[i]...)
   end
@@ -544,29 +513,24 @@ p=x²+1 initial=-1.0 prec=1.0000000000000004e-7
 """
 function NewtonRoot(p::Pol,z,precision;showall=VKCURVE[:showallnewton],
                           show=VKCURVE[:showNewton],lim=VKCURVE[:NewtonLim])
-  deriv = derivative(p)
+  deriv=derivative(p)
   for cnt in 1:lim
     a=p(z)
     b=deriv(z)
     c=iszero(b) ? a : a/b
-    err=abs(BigNorm(c))
+    err=abs(c)
     if iszero(err) err=(precision/100)/(degree(p)+1) end
     if err>precision err=precision end
-#   pr=maximum(0,-1-DecimalLog(err))
-#   z=ComplexRational(evalf(z-c,pr+1))
-#   if showall println(cnt,": ",evalf(z, pr)) end
     z-=c
     if showall println(cnt,": ",z) end
-#   if 10^-pr*(length(p)-1)<=precision
-    if err*degree(p)<=precision
+    if err<=(precision/100)/(degree(p)+1)
       if show print(cnt) end
-#     return [z,10^-pr]
       return (z,err)
     end
   end
   if show
     println("\n****** Non-Convergent Newton after ", lim," iterations ******")
-    xprintln("p=",p," initial=",z," prec=",precision)
+    @show p,z,precision
   end
 end
 
@@ -599,10 +563,14 @@ julia> SeparateRootsInitialGuess(p,[1+im,2+im],1000)
 function SeparateRootsInitialGuess(p, v, safety)
   if degree(p)==1 return [-p[0]/p[1]] end
   radv=Dispersal(v)[1]/safety/2
-  v=map(e->NewtonRoot(p,e,radv),v)
-  if !any(isnothing,v) && Dispersal(first.(v))[1]/safety/2>=maximum(last.(v))
-    return first.(v)
+  res=map(e->NewtonRoot(p,e,radv),v)
+  if !any(isnothing,res) && Dispersal(v)[1]/2>=maximum(last.(res))
+    return first.(res)
   end
+  @show p,v,safety
+  println("dispersal required=",Dispersal(first.(res))[1]/safety/2)
+  println("obtained=",maximum(last.(res)))
+  error()
 end
 
 """
@@ -818,7 +786,7 @@ end
 #  .segments : set of all segments used, where endpoints are indexed
 #              as in points
 #     .loops : list of sequence of numbers of used segments
-function convert(ll)
+function convert_loops(ll)
   points=sort(unique(vcat(ll...)),by=x->(imag(x),real(x)))
   np(p)=findfirst(==(p),points)
   loops=map(l->map(i->np.(l[i-1:i]),2:length(l)),ll)
@@ -829,7 +797,7 @@ function convert(ll)
                     -findfirst(==(reverse(seg)),segments)
     end
   end
-  (points=points, segments, loops)
+  (;points, segments, loops)
 end
 
 """
@@ -857,7 +825,7 @@ function LoopsAroundPunctures(originalroots)
   n=length(roots)
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
-  if n==1 return convert([roots[1].+[1,im,-1,-im,1]]) end
+  if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
   sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
@@ -941,8 +909,7 @@ function LoopsAroundPunctures(originalroots)
     y[:loop]=map(x->round(x;sigdigits=8),y[:loop])
     y[:loop]=shrink(y[:loop])
   end
-  @show ys[1]
-  convert(map(y->y[:loop], ys))
+  map(y->y[:loop], ys)
 end
 
 function segs(r,v)
@@ -967,34 +934,31 @@ function loops(r,v)
   rp,ip
 end
 #-------------------- ApproxMonodromy ----------------------------
-Gapjm.gap(f::Float64)="evalf(\"$f\")"
-Gapjm.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"
 # for each point of a find closest point in b
 # Complain if the result is not a bijection between a and b of if
 # the distance between an a and the correponding b is bigger than 1/10
 # of minimum distance between two b's
 function fit(a, b)
-# a=map(ComplexRational, a)
-# b=map(ComplexRational, b)
-  dm=map(p->minimum(BigNorm.(b.-p)),a)
-  monodromyError=maximum(dm)
-  println("# Monodromy error==",monodromyError)
-  if maximum(dm)>Dispersal(b)[1]/10 error("monodromy error too big") end
-  dm=map(i->findfirst(z->BigNorm(z-a[i])==dm[i],b),1:length(dm))
-  if sort(dm)!=1:length(dm) error("monodromy cannot find perm") end
-  return b[dm]
+  dm=map(p->findmin(abs.(b.-p)),a)
+  monodromyError=maximum(first.(dm))
+# println("# Monodromy error==",monodromyError)
+  if monodromyError>Dispersal(b)[1]/10 error("monodromy error too big") end
+  pos=last.(dm)
+  if sort(pos)!=1:length(pos) error("monodromy cannot find perm") end
+  return b[pos]
 end
 
 # Decimal Log of Norm of polynomial d evaluated at point p
 function normdisc(d, p)
-  p=SmallNorm(prod(map(f->f(p), d)))
-  if log10(p)==0 return round(-log10(1/p);digits=3)
-  else return round(log10(p);digits=3)
+  p=abs(prod(map(f->f(p), d)))
+  if log10(p)==0 return round(Float64(-log10(1/p));digits=3)
+  else return round(Float64(log10(p));digits=3)
   end
 end
 
 # keep only 3 significant digits of x
-approx=x->round(x;digits=3)
+approx(x::Real)=round(Float64(x);sigdigits=3)
+approx(x::Complex)=round(Complex{Float64}(x);sigdigits=3)
 
 """
 'ApproxFollowMonodromy(<r>,<segno>,<pr>)'
@@ -1019,39 +983,41 @@ faster  than 'FollowMonodromy'.  We illustrate  its typical  output when
 <printlevel> is 2.
 
 |   VKCURVE.monodromyApprox:=true;
-    FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);|
+julia-rep1```
+julia> FundamentalGroup((x+3*y)*(x+y-1)*(x-y);printlevel=2)
 
   ....
 
-|    5.3.6. ***rejected
-    4.3.6.<15/16>mindist=3 step=1/2 total=0 logdisc=1 ***rejected
-    3.3.4.<15/16>mindist=3 step=1/4 total=0 logdisc=1 ***rejected
-    3.3.4.<15/16>mindist=3 step=1/8 total=0 logdisc=1 ***rejected
-    3.3.3.<15/16>mindist=3 step=1/16 total=0 logdisc=1
-    3.2.3.<15/16>mindist=2.92 step=1/16 total=1/16 logdisc=1
-    3.3.3.<15/16>mindist=2.83 step=1/16 total=1/8 logdisc=1
-    3.2.3.<15/16>mindist=2.75 step=1/16 total=3/16 logdisc=1
-    3.3.3.<15/16>mindist=2.67 step=1/16 total=1/4 logdisc=1
-    ======================================
-    =    Nontrivial braiding = 2         =
-    ======================================
-    3.2.3.<15/16>mindist=2.63 step=1/16 total=5/16 logdisc=1
-    3.2.3.<15/16>mindist=2.75 step=1/16 total=3/8 logdisc=1
-    3.3.3.<15/16>mindist=2.88 step=1/16 total=7/16 logdisc=1
-    3.2.3.<15/16>mindist=3 step=1/16 total=1/2 logdisc=1
-    3.3.3.<15/16>mindist=3.13 step=1/16 total=9/16 logdisc=1
-    3.2.3.<15/16>mindist=3.25 step=1/16 total=5/8 logdisc=1
-    3.3.3.<15/16>mindist=3.38 step=1/16 total=11/16 logdisc=1
-    3.2.3.<15/16>mindist=3.5 step=1/16 total=3/4 logdisc=1
-    3.2.3.<15/16>mindist=3.63 step=1/16 total=13/16 logdisc=1
-    3.2.3.<15/16>mindist=3.75 step=1/16 total=7/8 logdisc=1
-    3.2.3.<15/16>mindist=3.88 step=1/16 total=15/16 logdisc=1 ***up
-    # Monodromy error=0
-    # Minimal distance=2.625
-    # Minimal step=1/16=-0.05208125+0.01041875I
-    # Adaptivity=10
-    monodromy[15]:=B(2);
-    # segment 15/16 Time=0.2sec|
+546 ***rejected
+447<15/16>mindist=2.55 step=0.5 total=0 logdisc=0.55 ***rejected
+435<15/16>mindist=2.55 step=0.25 total=0 logdisc=0.455 ***rejected
+334<15/16>mindist=2.55 step=0.125 total=0 logdisc=0.412 ***rejected
+334<15/16>mindist=2.55 step=0.0625 total=0 logdisc=0.393
+334<15/16>mindist=2.55 step=0.0625 total=0.0625 logdisc=0.412
+334<15/16>mindist=2.56 step=0.0625 total=0.125 logdisc=0.433
+334<15/16>mindist=2.57 step=0.0625 total=0.1875 logdisc=0.455
+334<15/16>mindist=2.58 step=0.0625 total=0.25 logdisc=0.477
+======================================
+==    Nontrivial braiding B(2)      ==
+======================================
+334<15/16>mindist=2.6 step=0.0625 total=0.3125 logdisc=0.501
+334<15/16>mindist=2.63 step=0.0625 total=0.375 logdisc=0.525
+334<15/16>mindist=2.66 step=0.0625 total=0.4375 logdisc=0.55
+334<15/16>mindist=2.69 step=0.0625 total=0.5 logdisc=0.576
+334<15/16>mindist=2.72 step=0.0625 total=0.5625 logdisc=0.602
+334<15/16>mindist=2.76 step=0.0625 total=0.625 logdisc=0.628
+334<15/16>mindist=2.8 step=0.0625 total=0.6875 logdisc=0.655
+334<15/16>mindist=2.85 step=0.0625 total=0.75 logdisc=0.682
+334<15/16>mindist=2.9 step=0.0625 total=0.8125 logdisc=0.709
+334<15/16>mindist=2.95 step=0.0625 total=0.875 logdisc=0.736
+334<15/16>mindist=3.01 step=0.0625 total=0.9375 logdisc=0.764
+# Minimal distance==2.55
+# Minimal step==0.0625==-0.0521 + 0.0104im
+# Adaptivity==10
+monodromy[15]=[2]
+
+# segment 15/16 Time==0.002741098403930664sec
+```
 
 Here at each  step the following information is  displayed: first, how
 many iterations of  the Newton method were necessary to  compute each of
@@ -1081,25 +1047,26 @@ function ApproxFollowMonodromy(r,segno,pr)
   p=r.points[p]
   v=r.points[q]-p
   prev=p
-  step=1
+  step=1//1
   minstep=step
-  total=0
+  total=0//1
   nextzeros=nothing
   while true
     next=prev+step*v
-    P=Pol(complexmvp(r.curve)(y=next))
+    P=Pol(r.curve(y=next))
     nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
     if isnothing(nextzeros) || 
-       (1+maximum(BigNorm.(nextzeros-prevzeros))≈1) && step>1//16)
+       (1+maximum(abs.(nextzeros-prevzeros))≈1 && step>1//16)
       rejected=true
     else
-      dm=map(i->minimum(BigNorm.(prevzeros[i].-prevzeros[filter(j->j!=i,1:n)])),1:n)
+      dm=map(i->minimum(abs.(prevzeros[i]-prevzeros[j] for j in 1:n if j!=i)),
+                                                                          1:n)
       mdm=minimum(dm)
-      if step<1 ipr("<$segno/",length(r.segments),">mindist==",approx(mdm),
-         " step==$step total==$total logdisc==",normdisc(r.discyFactored,next))
+      if step<1 ipr("<$segno/",length(r.segments),">mindist=",approx(mdm),
+         " step=$step total=$total logdisc=",normdisc(r.discyFactored,next))
       end
-      dn=map(i->BigNorm(prevzeros[i]-nextzeros[i]),1:n)
-      rejected=any(i->dm[i]<VKCURVE[:AdaptivityFactor]*dn[i],1:n)
+      dn=abs.(prevzeros-nextzeros)
+      rejected=any(dm.<VKCURVE[:AdaptivityFactor].*dn)
       if !rejected && mdm<mindm mindm=mdm end
     end
     if rejected
@@ -1108,7 +1075,7 @@ function ApproxFollowMonodromy(r,segno,pr)
       if step<minstep minstep=step end
     else
       total+=step
-      if all(i->dm[i]>2*VKCURVE[:AdaptivityFactor]*dn[i],1:n) && total+step!=1
+      if all(dm.>2 .*VKCURVE[:AdaptivityFactor] .*dn) && total+step!=1
         step*=2
         ipr(" ***up")
       end
@@ -1122,12 +1089,255 @@ function ApproxFollowMonodromy(r,segno,pr)
     if total+step>1 step=1-total end
     if total==1 break end
   end
-  res*=LBraidToWord(prevzeros,fit(nextzeros,r.zeros[q]),r.B)
-  pr("# Minimal distance==", approx(mindm), "\n")
-  pr("# Minimal step==", minstep, "==", approx(v*minstep), "\n")
-  pr("# Adaptivity==", VKCURVE[:AdaptivityFactor], "\n")
+  pr("# Minimal distance=", approx(mindm), "\n")
+  pr("# Minimal step=", minstep, "=", approx(v*minstep), "\n")
+  pr("# Adaptivity=", VKCURVE[:AdaptivityFactor], "\n")
+  res*LBraidToWord(prevzeros,fit(nextzeros,r.zeros[q]),r.B)
+end
+#-------------------- Monodromy ----------------------------
+# ceil(-log2(p)) for 0<p<1
+function Intlog2(p)
+  k=0
+  q=p
+  while q<1
+    q=2q
+    k+=1
+  end
+  k
+end
+
+# computes the lower approximation of the rational a by a
+# rational with denominator 2^k
+function binlowevalf(a, time)
+  k=Intlog2(a-time)+3
+  b=floor(Int,a*2^k)
+  a>=0 ? b//2^k : (b-1)//2^k
+end
+
+# truncated iteration of the Newton method
+function mynewton(p,z)
+  a=p(z)
+  b=derivative(p)(z)
+  if iszero(b) c=a
+    print("NewtonError\n")
+  else c=a/b
+  end
+  err=degree(p)*abs(c)
+  if err==0 prec=1
+  else prec=max(0,ceil(Int,-log10(err)))+2
+  end
+  round(z-c;digits=prec)
+end
+
+# for each point of a find closest point in b
+function myfit(a, b)
+  d=length(a)
+  dist=fill(0.0,d,d)
+  for k in 1:d, l in k+1:d
+    dist[k,k]=dist[l,k]=dist[k,l]=abs2(a[k]-a[l])
+  end
+  dist[d,d]=dist[d,d-1]
+  R=map(k->minimum(dist[k,:])/4,1:d)
+  map(k->only(filter(i->abs2(i-a[k])<R[k], b)),1:d)
+end
+
+Base.setindex!(p::Pol{T},x::T,i::Integer) where T=p.c[i+1-p.v]=x
+
+# Sturm(pp,time) 
+# if polynomial pp is positive  at time
+# returns some rational number t such that
+#    time<t<=1  and  pp  is positive on [time,t]
+# otherwise returns 0
+# [third input and second output is an adaptive factor to 
+#  accelerate the computation]
+function Sturm(pp::Pol, time, adapt::Integer;pr=print)
+  q=Pol()
+  pol=pp((1-q)*time+q)
+  if pol[0]<=0
+    print("*****",Float32(pol[0]))
+    return [0, 0]
+  end
+  k=1
+  while k<degree(pol) && pol[k]>=0 k+=1 end
+  while k<degree(pol) && pol[k]<=0 k+=1 end
+  for i in k:degree(pol) if pol[i]>0 pol[i]=zero(pol[i]) end end
+  t=big(1//2)^adapt
+  m=adapt
+  while pol(t)<=0
+    t//=2
+    m+=1
+  end
+  pr(m)
+  if m==adapt && adapt>0
+    if pol(3t//2)>0
+      if pol(2t)>0 res=[(1-2t)*time+2t, adapt-1]
+      else res=[(1-3t//2)*time+3t//2, adapt-1]
+      end
+    else res=[(1-t)*time+t, adapt]
+    end
+  else res=[(1-t)*time+t, m]
+  end
   res
 end
+
+Base.real(p::Pol)=Pol(real.(p.c),p.v)
+Base.imag(p::Pol)=Pol(imag.(p.c),p.v)
+
+"""
+'FollowMonodromy(<r>,<segno>,<print>)'
+This function computes the monodromy braid  of the solution in `x` of an
+equation  `P(x,y)=0`  along  a  segment `[y_0,y_1]`.  It  is  called  by
+'FundamentalGroup', once for each of the segments. The first argument is
+a global record, similar to  the one produced by 'FundamentalGroup' (see
+the  documentation of  this function)  but only  containing intermediate
+information.  The second  argument is  the  position of  the segment  in
+'r.segments'. The third argument is  a print function, determined by the
+printlevel  set by  the user  (typically, by  calling 'FundamentalGroup'
+with a second argument).
+
+The function returns an element of the ambient braid group 'r.B'.
+
+This function has no reason to be  called directly by the user, so we do
+not illustrate its  behavior. Instead, we explain what  is displayed on
+screen when the user sets the printlevel to `2`.
+
+What is quoted below is an excerpt of what is displayed on screen
+during the execution of
+|    gap>  FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);
+
+    <1/16>    1 time=          0   ?2?1?3
+    <1/16>    2 time=      0.125   R2. ?3
+    <1/16>    3 time=    0.28125   R2. ?2
+    <1/16>    4 time=   0.453125   ?2R1?2
+    <1/16>    5 time=   0.578125   R1. ?2
+    ======================================
+    =    Nontrivial braiding = 2         =
+    ======================================
+    <1/16>    6 time=   0.734375   R1. ?1
+    <1/16>    7 time=    0.84375   . ?0. 
+    <1/16>    8 time=   0.859375   ?1R0?1
+    # The following braid was computed by FollowMonodromy in 8 steps.
+    monodromy[1]:=B(2);
+    # segment 1/16 Time=0.1sec|
+
+'FollowMonodromy' computes  its results by subdividing  the segment into
+smaller  subsegments  on which  the  approximations  are controlled.  It
+starts at one  end and moves subsegment after subsegment.  A new line is
+displayed at each step.
+
+The  first column  indicates which  segment is  studied. In  the example
+above, the function  is computing the monodromy along  the first segment
+(out  of  `16`).  This  gives  a  rough  indication  of  the  time  left
+before  completion of  the total  procedure.  The second  column is  the
+number of  iterations so  far (number of  subsegments). In  our example,
+'FollowMonodromy'  had to  cut the  segment into  `8` subsegments.  Each
+subsegment has its own length. The cumulative length at a given step, as
+a  fraction of  the  total length  of the  segment,  is displayed  after
+'time='.  This  gives  a  rough  indication  of  the  time  left  before
+completion  of the  computation of  the monodromy  of this  segment. The
+segment is completed when this fraction reaches `1`.
+
+The last column has to do with the piecewise-linear approximation of the
+geometric monodromy  braid. It is  subdivided into sub-columns  for each
+string. In  the example above,  there are  three strings. At  each step,
+some strings are fixed (they are  indicated by '. ' in the corresponding
+column). A symbol like 'R5' or '?3' indicates that the string is moving.
+The exact meaning of the symbol has to do with the complexity of certain
+sub-computations.
+
+As  some strings  are moving,  it  happens that  their real  projections
+cross. When such a crossing occurs, it is detected and the corresponding
+element of `B_n` is displayed on screen ('Nontrivial braiding ='...) The
+monodromy braid is the product of these elements of `B_n`, multiplied in
+the order in which they occur.
+"""
+# Exact computation of the monodromy braid along a segment
+# r: global VKCURVE record
+# seg: segment number
+# sprint: Print function (to screen, to file, or none)
+function FollowMonodromy(r,seg,sPrint)
+  if VKCURVE[:showInsideSegments] iPrint=print
+  else iPrint=function(arg...) end
+  end
+  p=r.curve
+  dpdx=derivative(r.curve,:x)
+  a,b=r.segments[seg]
+  v=r.zeros[a]
+  B=r.B
+  res=B()
+  # If there is only one string, the braid is trivial
+  if length(v)==1 return res end
+  d=length(r.zeros[1])
+  t=Mvp(:t)
+  time=big(0)
+  pt=p(;y=r.points[b]*t+r.points[a]*(1-t))
+  dpdxt=dpdx(;y=r.points[b]*t+r.points[a]*(1-t))
+  RR=fill(big(0.0),d)
+  adapt=fill(0,d)
+  protected=fill(0//1,d)
+  protp=map(i->zero(Pol(real(v[1]))),1:d)
+  protdpdx=map(i->zero(Pol(real(v[1]))),1:d)
+  steps=0
+  dist=fill(big(0.0),d,d)
+  while true
+    steps+=1
+#   if steps>540 error() end
+    iPrint("<$seg/",length(r.segments),">",lpad(steps,5))
+    iPrint(" time=",lpad(time,11),"   ")
+    for k in 1:d, l in k+1:d
+      dist[k,k]=dist[l,k]=dist[k,l]=abs2(big(v[k]-v[l]))
+    end
+    dist[d,d]=dist[d,d-1]
+    for k in 1:d
+      Rk=minimum(dist[k,:])/4
+      z=v[k]
+      if protected[k]>time && Rk>=RR[k]
+        iPrint(". ")
+      elseif protected[k]>time
+        if adapt[k]+2<maximum(adapt) Rk/=2 end
+        iPrint("R")
+        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], time, adapt[k])
+        if s>time protected[k]=binlowevalf(s,time)
+        else iPrint("How bizarre...")
+#         @show Rk,protdpdx[k],protp[k]
+#         @show Rk*protdpdx[k]-protp[k], time, adapt[k]
+        end
+        RR[k]=Rk
+      else
+        iPrint("?")
+        cptz=Pol(pt(;x=z))
+#       @show pt
+#       @show z
+#       @show cptz
+        protp[k]=d^2*(real(cptz)^2+imag(cptz)^2)
+        cdpdxtz=Pol(dpdxt(;x=z))
+        protdpdx[k]=real(cdpdxtz)^2+imag(cdpdxtz)^2
+        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], time, adapt[k])
+        if s>time protected[k]=binlowevalf(s,time)
+        else error("Something's wrong...")
+#         @show R[k],protdpdx[k],protp[k]
+#         @show R[k]*protdpdx[k]-protp[k], time, adapt[k]
+        end
+        RR[k]=Rk
+      end
+    end
+    allowed=minimum(protected)
+    time=allowed
+    py=Pol(p(;y=r.points[a]*(1-time)+r.points[b]*time))
+    iPrint("\n")
+    newv=map(1:d)do k
+      if protected[k]>allowed v[k]
+      else mynewton(py,v[k])
+      end
+    end
+    res*=LBraidToWord(v, newv, B)
+    v=newv
+    if time==1 break end
+  end
+  sPrint("# The following braid was computed by FollowMonodromy in $steps steps.\n")
+  res*LBraidToWord(v, myfit(v, r.zeros[b]), B)
+end
+
 #------------------- Compute PLBraid ----------------------------------
 # Deals with "star" linear braids, those with associated permutation w_0
 function starbraid(y, offset, B)
@@ -1143,63 +1353,55 @@ end
 function desingularized(v1, v2)
   n=length(v1)
   tan=1
-  for k in 1:n
-    for l in k+1:n
-      rv=(real(v1[k])-real(v1[l]))
-      iv=(imag(v1[k])-imag(v1[l]))
-      if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
-      rv=(real(v2[k])-real(v2[l]))
-      iv=(imag(v2[k])-imag(v2[l]))
-      if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
-    end
+  splt(v)=(real(v),imag(v))
+  for k in 1:n, l in k+1:n
+    rv,iv=splt(v1[k]-v1[l])
+    if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
+    rv,iv=splt(v2[k]-v2[l])
+    if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
   end
-  [v1, v2]*Complex(1,-tan/2)
+  [v1, v2].*Complex(1,-tan/2)
+end
+
+function setapprox(l)
+  if isempty(l) return l end
+  l=sort(l)
+  prev=1
+  for next in 2:length(l)
+    if isapprox(l[prev],l[next];rtol=10^-8,atol=10^-10) continue end
+    prev+=1
+    l[prev]=l[next]
+  end
+  l[1:prev]
 end
 
 """
 'LBraidToWord(v1,v2,B)'
 
-This function converts  the linear braid given by `v1`  and `v2` into an
-element of the braid group `B`.
+This function converts  the linear braid joining the points in `v1` to the
+corresponding ones in `v2` into an element of the braid group.
 
-|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3)); 
-    function ( arg ) ... end
-    gap> i:=Complex(0,1);
-    I
-    gap> LBraidToWord([1+i,2+i,3+i],[2+i,1+2*i,4-6*i],B);
-    1|
+```julia-repl
+julia> B=BraidMonoid(CoxSym(3))
+BraidMonoid(𝔖 ₃)
 
-The  list `v1` and `v2` must have the same length, say `n`. The braid group
-`B`   should  be  the   braid  group  on   `n`  strings,  in  its  CHEVIE
-implementation.  The elements of  `v1` (resp. `v2`)  should be `n` distinct
-complex  rational  numbers.  We  use  the  Brieskorn  basepoint, namely the
-contractible  set  `C+iV_ℝ`  where  `C`  is  a real chamber; therefore the
-endpoints need not be equal (hence, if the path is indeed a loop, the final
-endpoint must be given). The linear braid considered is the one with affine
-strings  connecting each point in `v1`  to the corresponding point in `v2`.
-These strings should be non-crossing. When the numbers in `v1` (resp. `v2`)
-have  distinct real parts, the  real picture of the  braid defines a unique
-element  of `B`. When some real parts are equal, we apply a lexicographical
-desingularization,  corresponding  to  a  rotation  of  `v1` and `v2` by an
-arbitrary small positive angle.
+julia> LBraidToWord([1+im,2+im,3+im],[2+im,1+2im,4-6im],B)
+1
+```
+
+The lists `v1` and `v2` must have the same length, say `n`. Then `B` should
+be  `BraidMonoid(CoxSym(n))`, the braid group  on `n` strings. The elements
+of  `v1` (resp. `v2`)  should be `n`  distinct complex rational numbers. We
+use the Brieskorn basepoint, namely the contractible set `C+iV_ℝ` where `C`
+is  a real chamber; therefore the endpoints  need not be equal. The strings
+defined  by `v1` and `v2` should be  non-crossing. When the numbers in `v1`
+(resp.  `v2`)  have  distinct  real  parts,  the  real picture of the braid
+defines a unique element of `B`. When some real parts are equal, we apply a
+lexicographical  desingularization, corresponding to a rotation of `v1` and
+`v2` by an arbitrary small positive angle.
 """
-# Computes, from a piecewise linear braid, the corresponding element of B_n.
-# Convention:
-#    we  use the  Brieskorn basepoint,  namely the  contractible set C+iV_R
-#    where  C is a real chamber; therefore  the endpoints need not be equal
-#    (hence,  if the  path is  indeed a  loop, the  final endpoint  must be
-#    given).
-#    To get rid of singular projections, a lexicographical
-#    desingularization is applied.
-##########################################
-# Input: pair of n-tuples of complex rational numbers, ambient braid function
-#         (the ambient braid group should be B_n)
-# Output: the corresponding element of B_n
-#########################################
 # two printlevel control fields: VKCURVE.showSingularProj
 #				 VKCURVE.showBraiding
-#########################################
-
 # Deals with linear braids
 # 1) singular real projections are identified
 # 2) calls starbraid for each
@@ -1209,9 +1411,7 @@ function LBraidToWord(v1, v2, B)
   y1=imag.(v1)
   x2=real.(v2)
   y2=imag.(v2)
-  c=combinations(1:n,2)
-  if any(x->isapprox(x1[x[1]],x1[x[2]];rtol=10^-8),c) || 
-     any(x->isapprox(x2[x[1]],x2[x[2]];rtol=10^-8),c)
+  if length(setapprox(x1))<length(x1) || length(setapprox(x2))<length(x2) 
     if VKCURVE[:showSingularProj]
       println("WARNING: singular projection(resolved)")
     end
@@ -1224,7 +1424,7 @@ function LBraidToWord(v1, v2, B)
       push!(crit,(x1[i^q]-x1[j^q])/((x2[j^q]-x1[j^q]+x1[i^q])-x2[i^q]))
     end
   end
-  tcrit=sort(unique(crit))
+  tcrit=setapprox(crit)
   res=B()
   u=0
   for t in tcrit
@@ -1235,11 +1435,11 @@ function LBraidToWord(v1, v2, B)
     put=inv(sortPerm(xut))
     xt=xt^put
     yt=yt^put
-    xcrit=sort(unique(xt))
+    xcrit=setapprox(xt)
     for x in xcrit
-      posx=findfirst(==(x),xt)
-      nx=count(==(x),xt)
-      res*=starbraid(yt[posx:(posx+nx)-1], posx-1, B)
+      posx=findfirst(≈(x;atol=10^-10),xt)
+      nx=count(≈(x;atol=10^-10),xt)
+      res*=starbraid(yt[posx:posx+nx-1], posx-1, B)
     end
     u=t
   end
@@ -1247,9 +1447,11 @@ function LBraidToWord(v1, v2, B)
    if !isempty(tcrit)
       if VKCURVE[:showInsideSegments]
         println("======================================")
-        println("==    Nontrivial braiding == ",lpad(res,10),"==")
+        println("==    Nontrivial braiding ",rpad(res,10),"==")
         println("======================================")
-      else println("==    Nontrivial braiding == ",lpad(res,10),"==")
+#       print("v1:=[",join(gg.(v1),","),"];\n")
+#       print("v2:=[",join(gg.(v2),","),"];\n")
+      else println("==    Nontrivial braiding ",rpad(res,10),"==")
       end
     end
   end
@@ -1281,22 +1483,24 @@ generator  `σ_i` of  `B_n`  fixes  the generators  `f_1,…,f_n`,
 except `f_i` which is mapped to  `f_{i+1}` and `f_{i+1}` which is mapped
 to `f_{i+1}^{-1}f_if_{i+1}`.
 
-|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
-    function ( arg ) ... end
-    gap> b:=B(1);
-    1
-    gap> BnActsOnFn(b,FreeGroup(3));
-    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
-    [ f.1, f.2, f.3 ], [ f.2, f.2^-1*f.1*f.2, f.3 ] )
-    gap> BnActsOnFn(b^2,FreeGroup(3));
-    GroupHomomorphismByImages( Group( f.1, f.2, f.3 ), Group( f.1, f.2, f.3 ), 
-    [ f.1, f.2, f.3 ], [ f.2^-1*f.1*f.2, f.2^-1*f.1^-1*f.2*f.1*f.2, f.3 ] )|
+```julia-repl
+julia> B=BraidMonoid(CoxSym(3))
+BraidMonoid(𝔖 ₃)
 
+julia> b=B(1)
+1
+
+julia> BnActsOnFn(b,FpGroup(:a,:b,:c))
+Aut(FreeGroup(a,b,c);AbsWord[a, b, c]↦ AbsWord[b, b⁻¹ab, c]
+
+julia> BnActsOnFn(b^2,FpGroup(:a,:b,:c))
+Aut(FreeGroup(a,b,c);AbsWord[a, b, c]↦ AbsWord[b⁻¹ab, b⁻¹a⁻¹bab, c]
+```
 The second input is the free group on `n` generators. The first input is
 an  element  of  the  braid  group  on  `n`  strings,  in  its  CHEVIE
 implementation.
 """
-BnActsOnFn(b,F)=GroupHomomorphismByImages(F,F,gens(F),hurwitz(b,gens(F)))
+BnActsOnFn(b,F)=Hom(F,F,hurwitz(b,gens(F)))
 
 """
 'VKQuotient(braids)'
@@ -1348,40 +1552,66 @@ function DBVKQuotient(r)
   F=FpGroup(Symbol.('a'.+(0:n+length(r.verticallines)-1))...)
 # above the basepoint for the loops, locate the position of the string
 # corresponding to the trivializing horizontal line
-  zero=r.zeros[r.basepoint]
-  dist=abs2.(zero-r.height)
-  height=zero[argmin(dist)]
-  basestring=count(z->(real(z),imag(z))<(real(height),imag(height)),zero)
-  @show basestring,r.braids
-  fbase=gens(F)[basestring]
-  rels=[]
+  bzero=r.zeros[r.basepoint]
+  dist=abs2.(bzero-r.height)
+  height=bzero[argmin(dist)]
+  basestring=count(z->(real(z),imag(z))<=(real(height),imag(height)),bzero)
+  fbase=F(basestring)
+  rels=AbsWord[]
   auts=map(b->BnActsOnFn(b, F),r.braids)
-  for aut in auts
+  for (i,aut) in enumerate(auts)
 # Find an element conjugator such that aut(fbase)^inv(conjugator)=fbase
-    ifbase=Image(aut, fbase)
-    conjugator=F.gens[1]/F.gens[1]
-    choices=vcat(map(f->[f,f^-1], gens(f)[1:n])...)
+    ifbase=aut(fbase)
+    conjugator=F.gens[1]*inv(F.gens[1])
+    choices=vcat(map(f->[f,inv(f)], gens(F)[1:n])...)
     while true
       k=0
       while true
         k+=1
-        if LengthWord(choices[k]*ifbase) < LengthWord(ifbase) break end
+        if length(choices[k]*ifbase)<length(ifbase) break end
       end
-      ifbase=(choices[k]*ifbase) // choices[k]
+      ifbase=choices[k]*ifbase*inv(choices[k])
       conjugator=choices[k]*conjugator
-      if LengthWord(ifbase)==1 break end
+      if length(ifbase)==1 break end
     end
 # Replacing aut by  correctaut:= Conj(conjugator)*aut
-    conj=GroupHomomorphismByImages(F, F, gens(F), gens(F).^inv(conjugator))
-    conj[:isMapping]=true
-    correctaut=CompositionMapping(conj, aut)
-    if Position(auts, aut) > length(r.verticallines)
-      rels=Append(rels, map(f->Image(correctaut, f)/ f, gens(F)[1:n]))
+    conj=Hom(F, F, gens(F).^Ref(inv(conjugator)))
+    correctaut=x->conj(aut(x))
+    if i>length(r.verticallines)
+      append!(rels, map(f->correctaut(f)*inv(f), gens(F)[1:n]))
     else
-      g=gens(F)[Position(auts, aut)+n]
-      append!(rels, map(f->(Image(correctaut, f)*g)/ (g*f), gens(F)[1:n]))
+      g=F(i+n)
+      append!(rels, map(f->correctaut(f)*g*inv(g*f), gens(F)[1:n]))
     end
   end
   push!(rels, fbase)
   F/rels
 end
+
+gg(x)="Complex(evalf(\"$(real(x))\"),evalf(\"$(imag(x))\"))"
+VKCURVE[:showInsideSegments]=true
+VKCURVE[:showBraiding]=true
+VKCURVE[:showNewton]=true
+
+data=Dict()
+
+@Mvp x,y,z,t
+d=discriminant(ComplexReflectionGroup(24))(x,y,z)
+data[24]=d(;x=1,z=x)
+d=discriminant(ComplexReflectionGroup(27))(x,y,z)
+data[27]=d(;x=1,z=x)
+d=discriminant(ComplexReflectionGroup(23))(x,y,z)
+data[23]=d(;x=1,z=x)
+d=discriminant(ComplexReflectionGroup(29))(x,y,z,t)
+data[29]=d(;t=y+1,z=x)
+d=discriminant(ComplexReflectionGroup(31))(x,y,z,t)
+data[31]=d(;t=x+1,z=y)
+data[34]=
+95864732434895657396628326400//164799823*x*y^3-598949723065092000//
+1478996726054382501274179923886253687929138281*x*y^7-
+67840632073999787861633181671139840000*x^2-
+7622790471072621273612030528032173587500421120000*y^2-273861000//
+27158981660831329*x^2*y^4+37130333513291749382400//7130353846013*x^3*y-
+13608525//50841945969352380915996169*x^4*y^2-2606867429323404078970327//
+1675017448527954334139901265590107596081497211494411528*x^6+
+3269025273548225517660538475128200000//390195840687434028022928452202401489*y^6

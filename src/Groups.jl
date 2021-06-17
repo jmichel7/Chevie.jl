@@ -398,7 +398,11 @@ struct Hom{T,T1}
 end
 
 function Base.show(io::IO,h::Hom)
-  print(io,"Hom(",h.source,"→ ",h.target,";",gens(h.source),"↦ ",h.images)
+  if h.source==h.target
+    print(io,"Aut(",h.source,";",gens(h.source),"↦ ",h.images)
+  else
+    print(io,"Hom(",h.source,"→ ",h.target,";",gens(h.source),"↦ ",h.images)
+  end
 end
 
 function kernel(h::Hom)
@@ -412,7 +416,8 @@ function kernel(h::Hom)
 end
 
 # h(w) is the image of w by h
-(h::Hom)(w)=isone(w) ? one(h.target) : prod(h.images[word(h.source,w)])
+(h::Hom)(w)=isone(w) ? one(h.target) : prod(
+  (i>0 ? h.images[i] : inv(h.images[-i])) for i in word(h.source,w))
 
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 

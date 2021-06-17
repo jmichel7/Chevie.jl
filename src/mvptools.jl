@@ -235,3 +235,6 @@ function Gapjm.gap(p::Mvp)
     end
   end,"+")
 end
+
+Gapjm.gap(f::Float64)="evalf(\"$f\")"
+Gapjm.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"

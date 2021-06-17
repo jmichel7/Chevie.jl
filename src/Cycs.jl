@@ -228,7 +228,7 @@ an algebraic integer).
 """
 Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
 
-Base.numerator(c::Cyc{<:Rational{T}}) where T =convert(Cyc{T},c*denominator(c))
+Base.numerator(c::Cyc{<:Rational{T}}) where T =Cyc{T}(c*denominator(c))
 
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
 """
@@ -330,12 +330,14 @@ Cyc(i::Real)=Cyc(1,[i])
 else
 Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,ModuleElt(0=>i))
 end
-Cyc{T}(i::Real) where T<:Real=Cyc(convert(T,i))
+Cyc{T}(i::Real) where T<:Real=Cyc(T(i))
 
-function Base.convert(::Type{Cyc{T}},c::Cyc{T1}) where {T,T1}
+Cyc{T}(c::Complex{T1}) where {T,T1}=T(real(c))+E(4)*T(imag(c))
+
+function Cyc{T}(c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
 if use_list
-  Cyc(c.n,convert.(T,c.d))
+  Cyc(c.n,T.(c.d))
 else
   Cyc(c.n,convert(ModuleElt{Int,T},c.d))
 end
@@ -347,13 +349,8 @@ else
   num(c::Cyc{T}) where T =iszero(c) ? zero(T) : last(first(c.d))
 end
 
-function Base.convert(::Type{Real},c::Cyc)
-  if c.n==1 return num(c) end
-  Float64(c)
-end
-
-function Base.convert(::Type{T},c::Cyc)where T<:Union{Integer,Rational}
-  if c.n==1 return convert(T,num(c)) end
+function (::Type{T})(c::Cyc)where T<:Union{Integer,Rational}
+  if c.n==1 return T(num(c)) end
   throw(InexactError(:convert,T,c))
 end
 
@@ -362,7 +359,7 @@ function Base.convert(::Type{T},c::Cyc;check=true)where T<:AbstractFloat
   real(convert(Complex{T},c))
 end
 
-function Base.convert(::Type{Complex{T}},c::Cyc)where T<:AbstractFloat
+function Complex{T}(c::Cyc)where T<:AbstractFloat
 if use_list
   sum(x->x[2]*cispi(2*T(x[1])/c.n), zip(zumbroich_basis(c.n),c.d))
 else
@@ -387,14 +384,11 @@ end
 Base.complex(c::Cyc)=c.n==1 ? num(c) : c.n==4 ? complexgaussian(c) : 
                                                            Complex{Float64}(c)
 
-function Base.convert(::Type{Complex{T}},c::Cyc)where T<:Union{Integer,Rational}
+function Complex{T}(c::Cyc)where T<:Union{Integer,Rational}
   if c.n==1 return Complex{T}(num(c)) end
   if c.n==4 return Complex{T}(complexgaussian(c)) end
   throw(InexactError(:convert,Complex{T},c))
 end
-
-(::Type{T})(c::Cyc) where T<:Number=convert(T,c)
-(::Type{Cyc{T}})(c::T1) where {T,T1<:Real}=convert(Cyc{T},c)
 
 Base.isinteger(c::Cyc)=c.n==1 && isinteger(num(c))
 
@@ -465,7 +459,27 @@ function promote_conductor(a::Cyc,b::Cyc)
   (raise(l,a),raise(l,b))
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Real}
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:AbstractFloat}
+  Complex{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:AbstractFloat}
+  Complex{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:Integer}
+  Cyc{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:Rational{<:Integer}}
+  Cyc{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Integer}
+  Cyc{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Rational{<:Integer}}
   Cyc{promote_type(T1,T2)}
 end
 
@@ -590,16 +604,8 @@ else
 end
 end
 
-Base.:+(a::Cyc,b::Real)=a+Cyc(b)
-Base.:+(b::Real,a::Cyc)=a+Cyc(b)
 Base.:-(a::Cyc)=Cyc(a.n,-a.d)
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
-Base.:-(b::Real,a::Cyc)=Cyc(b)+(-a)
-Base.:-(b::Cyc,a::Real)=b+Cyc(-a)
-
-Base.:*(a::T1,c::Cyc{T}) where {T1<:Real,T}= iszero(a) ?  
-                      zero(Cyc{promote_type(T1,T)}) : Cyc(c.n ,c.d*a)
-Base.:*(c::Cyc,a::Real)=a*c
 
 if use_list
 Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
@@ -617,9 +623,9 @@ Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
 
 function Base.:*(a::Cyc,b::Cyc)
-  if a.n==1 return num(a)*b end
-  if b.n==1 return num(b)*a end
   a,b=promote(a,b)
+  if iszero(a) return a end
+  if iszero(b) return b end
 if use_list
   a,b=promote_conductor(a,b)
   zb=zumbroich_basis(a.n)
@@ -638,6 +644,9 @@ else
 # end
 # lower(res)
 #---------------------------------------
+  if a.n==1 return Cyc(b.n,b.d*num(a))
+  elseif b.n==1 return Cyc(a.n,a.d*num(b))
+  end
   n=lcm(a.n,b.n)
   na=div(n,a.n)
   nb=div(n,b.n)

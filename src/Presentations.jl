@@ -194,8 +194,9 @@ Base.inv(a::AbsWord)=AbsWord([k=>-v for (k,v) in reverse(a.d)];check=false)
 Base.:^(a::AbsWord, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                        Base.power_by_squaring(inv(a),-n)
 Base.:^(a::AbsWord, b::AbsWord)=inv(b)*a*b
-Base.length(a::AbsWord)=sum(x->abs(last(x)),a.d)
+Base.length(a::AbsWord)=sum(x->abs(last(x)),a.d;init=0)
 Base.copy(a::AbsWord)=AbsWord(copy(a.d))
+Base.:(==)(a::AbsWord,b::AbsWord)=a.d==b.d
 
 function mon(w::AbsWord)
   if length(w.d)!=1 || last(w.d[1])!=1 error("not generator") end
@@ -220,6 +221,16 @@ end
 function Base.:/(G::FpGroup,rel::Vector{AbsWord})
   append!(G.rels,rel)
   G
+end
+
+function CoxGroups.word(G::FpGroup,w::AbsWord)
+  res=Int[]
+  for (s,m) in w.d
+   p=findfirst(==(AbsWord(s)),gens(G))
+   if isnothing(p) error(w," is not a word for ",G) end
+   append!(res,fill(m<0 ? -p : p,abs(m)))
+  end
+  res
 end
 #--------------------------  Tietze words and structs -------------
 """
@@ -433,7 +444,7 @@ function reduceword(w::Vector{Int},T::TietzeStruct)
   for j in eachindex(w)
     if isempty(res) ||  (T[res[end]]!=-T[w[j]]  && T[w[j]]!=0) 
          push!(res,T[w[j]])
-    else pop!(res)
+    elseif T[w[j]]!=0 pop!(res)
     end
   end
   b=1;e=length(res)
@@ -474,11 +485,11 @@ function HandleLength1Or2Relators(P::Presentation)
     i=0
     while i<numrels
       i+=1
-      length=lengths[i]
-      if 0<length<=2 && flags[i]<=2
+      lg=lengths[i]
+      if 0<lg<=2 && flags[i]<=2
         rep1=rels[i][1]
         if T[rep1]!=rep1 rep1=T[rep1] end
-        if length==1
+        if lg==1
           rep1=abs(rep1)
           if rep1>protected
             T[rep1]=T[-rep1]=0
@@ -2616,7 +2627,7 @@ function Search(P::Presentation)
         end
         if k>numrels j=lastj end
         if i<=j
-          modified=modified || SearchC(T,i,j)>0
+          modified=modified || Presentations.SearchC(T,i,j)>0
           i=j
         end
       end
