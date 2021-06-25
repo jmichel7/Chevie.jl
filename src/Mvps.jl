@@ -144,9 +144,9 @@ struct Monomial{T}
   d::ModuleElt{Symbol,T}   
 end
 
-Monomial(a::Pair...)=Monomial(ModuleElt(a...;check=false)) # check about check
+Monomial(a::Union{Pair,Symbol}...)=Monomial(ModuleElt(map(x->x isa Symbol ?
+          x=>1 : x,a)...)) # to be avoided when preformance needed
 Monomial()=one(Monomial{Int})
-Monomial(v::Symbol...)=Monomial(ModuleElt(a=>1 for a in v))
 
 Base.convert(::Type{Monomial{T}},v::Symbol) where T=Monomial(v=>T(1))
 Base.convert(::Type{Monomial{T}},m::Monomial{N}) where {T,N}= 
@@ -159,7 +159,7 @@ Base.promote_rule(::Type{Monomial{N}},::Type{Monomial{M}}) where {N,M}=
 Base.:*(a::Monomial, b::Monomial)=Monomial(a.d+b.d)
 Base.isone(a::Monomial)=iszero(a.d)
 #Base.iszero(a::Monomial)=false
-Base.one(::Type{Monomial{N}}) where N=Monomial(zero(ModuleElt{Symbol,N}))
+Base.one(::Type{Monomial{T}}) where T=Monomial(zero(ModuleElt{Symbol,T}))
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
 Util.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
@@ -170,9 +170,14 @@ Base.:^(x::Monomial,p)=Monomial(x.d*p)
 
 function Base.show(io::IO,m::Monomial)
   replorTeX=get(io,:TeX,false) || get(io,:limit,false)
-  if !replorTeX && all(x->isinteger(x) && x>=0,values(m.d))
+  if !replorTeX
     print(io,"Monomial(")
-    join(io,[join(fill(repr(s),c),",") for (s,c) in m.d],",")
+    join(io,map(m.d)do (s,c)
+      if c==1 repr(s)
+      elseif c==2 join([repr(s),repr(s)],",")
+      else repr(s=>c)
+      end
+    end,",")
     print(io,")")
     return
   end
@@ -268,8 +273,16 @@ function Base.show(io::IO, ::MIME"text/plain", a::Mvp{T,N}) where{T,N}
   show(io,a)
 end
 
-# necessary if called when already showing a ModuleElt
-Base.show(io::IO, x::Mvp)=show(IOContext(io,:showbasis=>nothing),x.d)
+function Base.show(io::IO, x::Mvp)
+  if get(io,:limit,false) || get(io,:TeX,false)
+    show(IOContext(io,:showbasis=>nothing),x.d)
+    # :showbasis=>nothing necessary if called when already showing a ModuleElt
+  else
+    print(io,"Mvp(")
+    join(io,repr.(x.d),",")
+    print(io,")")
+  end
+end
 
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(zero(ModuleElt{Monomial{N},T}))
@@ -827,8 +840,8 @@ end
 Util.exactdiv(p::Mvp,q::Number)=exactdiv(p,Mvp(q))
  
 """
-Returns  the Gcd  of the  'Mvp' arguments.  The arguments  must be  true
-polynomials.
+`gcd(p::Mvp,  q::Mvp)`  computes  the  `gcd`  of  the  'Mvp' arguments. The
+arguments must be true polynomials.
 
 ```julia-repl
 julia> gcd(x^2-y^2,(x+y)^2)

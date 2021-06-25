@@ -2,7 +2,7 @@
 # several of the self-contained structural packages of Gapjm
 export pblocks, abelian_gens
 
-function Cycs.root(x::Pol,n::Number=2)
+function Cycs.root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
   n=Int(n)
   if length(x.c)>1 || !iszero(x.v%n)
     error("root($(repr(x;context=:limit=>true)),$n) not implemented") 

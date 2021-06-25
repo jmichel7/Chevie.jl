@@ -124,6 +124,7 @@ arrangements
 combinations
 partitions
 partition_tuples
+restrictedpartitions
 compositions
 submultisets
 partitions_set

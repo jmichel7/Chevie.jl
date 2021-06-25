@@ -23,7 +23,8 @@ welcome).
 """
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
-  partitions, npartitions, partition_tuples, npartition_tuples,
+  partitions, npartitions, restrictedpartitions,nrestrictedpartitions,
+  partition_tuples, npartition_tuples,
   partitions_set, npartitions_set, lcm_partitions, gcd_partitions,
   compositions, submultisets, conjugate_partition, dominates, cartesian,
   groupby, constant, tally, collectby, bell, stirling2, unique_sorted!
@@ -367,7 +368,7 @@ end
 
 `partitions` returns the set of all partitions of the positive integer `n`
 (the partitions with `k` parts if `k` is given).
-`npartitions` is the number of partitions.
+`npartitions` returns (faster) the number of partitions.
 
 There are approximately `exp(π√(2n/3))/(4√3 n)` partitions of `n`.
 
@@ -462,6 +463,125 @@ function npartitions(n,k)
     for m  in l+1:n-l+1 p[m]+=p[m-l] end
   end
   p[n-k+1]
+end
+
+"""
+`restrictedpartitions(n,set[,k])`   
+    
+`restrictedpartitions`  returns the list of partitions of `n` restricted to
+have  parts  in  `set`  (the  partitions  with  `k` parts if `k` is given).
+`nrestrictedpartitions`  with the same arguments  gives (faster) the number
+of restricted partitions.
+
+The next example shows how many ways there are to pay 17 cents using coins
+of 2,5 and 10 cents.
+```julia-repl
+julia> restrictedpartitions(17,[10,5,2])
+3-element Vector{Vector{Int64}}:
+ [5, 2, 2, 2, 2, 2, 2]
+ [5, 5, 5, 2]
+ [10, 5, 2]
+
+julia> nrestrictedpartitions(17,[10,5,2])
+3
+
+julia> restrictedpartitions(17,[10,5,2])
+3-element Vector{Vector{Int64}}:
+ [5, 2, 2, 2, 2, 2, 2]
+ [5, 5, 5, 2]
+ [10, 5, 2]
+
+julia> restrictedpartitions(17,[10,5,2],3)
+1-element Vector{Vector{Int64}}:
+ [10, 5, 2]
+
+julia> nrestrictedpartitions(17,[10,5,2],3)
+1
+```
+"""
+restrictedpartitions(n,set)=restrictedpartitions(n,sort(set),length(set),Int[],1)
+
+function restrictedpartitions(n,set,m,part,i)
+  if n==0 return [part] end
+  if mod(n,set[1])==0 parts=[part]
+  else parts=Vector{Int}[]
+  end
+  for l in 2:m
+    if set[l]<=n
+      if length(part)<i push!(part,set[l]) else part[i]=set[l] end
+      append!(parts,restrictedpartitions(n-set[l],set,l,copy(part),i+1))
+    end
+  end
+  if mod(n,set[1])==0
+    for l in i:length(part) part[l]=set[1] end
+    append!(part,fill(set[1],i+div(n,set[1])-length(part)-1))
+  end
+  parts
+end
+
+function restrictedpartitions(n,set,k)
+  if n==0
+    k==0 ? [Int[]] : Vector{Int}[]
+  else
+    if k==0 Vector{Int}[]
+    else restrictedpartitions(n,sort(set),length(set),k,Int[],1)
+    end
+  end
+end
+
+#  'restrictedpartitions(n,set,m,k,part,i)'   returns   the   set   of  all
+#  partitions  of 'n+sum(part[1:i-1])' that contain only elements of `set`,
+#  that have length 'k+i-1', and that begin with 'part[1:i-1]'. To do so it
+#  finds  all elements of `set`  that can go at  'part[i]' and calls itself
+#  recursively  for each candidate.  `m` is the  position of `part[i-1]` in
+#  `set`,  so the candidates  for `part[i]` are  the elements of `set[1:m]`
+#  that   are  less  than  `n`,  since   we  require  that  partitions  are
+#  nonincreasing.
+function restrictedpartitions(n,set,m,k,part,i)
+  if k==1
+    if n in set part=copy(part)
+      if length(part)<i push!(part,n) else part[i]=n end
+      parts=[part]
+    else parts=Vector{Int}[]
+    end
+  else
+    part=copy(part)
+    parts=Vector{Int}[]
+    for l in 1:m
+      if set[l]+(k-1)*set[1]<= n && n<=k*set[l]
+        if length(part)<i push!(part,set[l]) else part[i]=set[l] end
+        part[i]=set[l]
+        append!(parts,restrictedpartitions(n-set[l],set,l,k-1,part,i+1))
+      end
+    end
+  end
+  parts
+end
+
+@doc (@doc restrictedpartitions) nrestrictedpartitions
+function nrestrictedpartitions(n,set)
+  p=map(m->Int(iszero(mod(m-1,set[1]))),1:n+1)
+  for l in set[2:end], m in l+1:n+1 p[m]+=p[m-l] end
+  p[n+1]
+end
+
+function nrestrictedpartitions(n,set,k)
+  if n==0 && k==0  1
+  elseif n<k || k==0 0
+  else nrestrictedpartitions(n,sort(set),length(set),k,fill(0,n),1)
+  end
+end
+
+function nrestrictedpartitions(n,set,m,k,part,i)
+  if k==1 return n in set end
+  parts=0
+  for l in 1:m
+    if set[l]+(k-1)*set[1]<=n && n<=k*set[l]
+      part[i]=set[l]
+      parts+=nrestrictedpartitions(n-set[l],set,l,k-1,copy(part),i+1)
+    end
+  end
+  parts
 end
 
 """

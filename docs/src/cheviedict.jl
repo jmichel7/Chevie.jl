@@ -209,6 +209,7 @@ const ChevieDict=Dict(
 "NrPartitions"=>"npartitions",
 "NrPartitionsSet"=>"npartitions_set",
 "NrPartitionTuples"=>"npartition_tuples",
+"NrRestrictedPartitions"=>"nrestrictedpartitions",
 "NullspaceIntMat"=>"leftnullspaceInt",
 "OnFamily(f,p::Perm)"=>"f^p",
 "OnFamily(f,p::Int)"=>"galois(f,p)",
@@ -278,6 +279,7 @@ const ChevieDict=Dict(
 "RepresentativeOperation"=>"transporting_elt",
 "RepresentativeRowColPermutation"=>"Perm_rowcolmat",
 "Restricted"=>"restricted",
+"RestrictedPartitions"=>"restrictedpartitions",
 "RestrictedPerm(p,d)"=>"restricted(p,d)",
 "Reversed"=>"reverse",
 #ReversedWord

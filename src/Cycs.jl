@@ -85,7 +85,7 @@ julia> E(c) # convert back to Cyc
 Cyc{Int64}: ζ₁₂⁷
 
 julia> c=Complex{Float64}(E(3))  # convert to float is sometimes useful
--0.4999999999999998 + 0.8660254037844387im
+-0.4999999999999999 + 0.8660254037844387im
 ```
 
 `Cyc`s have methods `copy, hash, ==, cmp, isless` (total order) so they can

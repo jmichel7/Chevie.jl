@@ -75,24 +75,24 @@ julia> W=coxgroup(:E,8);U=UnipotentGroup(W)
 UnipotentGroup(E₈)
 
 julia> u=U(map(i->i=>Z(2)*Mvp(Symbol("x_",i)),1:8)...)
-u1(1₂x₁)u2(1₂x₂)u3(1₂x₃)u4(1₂x₄)u5(1₂x₅)u6(1₂x₆)u7(1₂x₇)u8(1₂x₈)
+u1(x₁)u2(x₂)u3(x₃)u4(x₄)u5(x₅)u6(x₆)u7(x₇)u8(x₈)
 ```
 
 ```julia-rep1
 julia> cut(repr(u^16;context=rio(root=true)),before="u",width=60)
-u₂₂₃₄₃₂₁₀(1₂x₁²x₂²x₃³x₄⁴x₅³x₆²x₇)
-u₁₂₃₄₃₂₁₁(1₂x₁x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
-u₁₂₂₄₃₂₂₁(1₂x₁x₂²x₃²x₄⁴x₅³x₆²x₇²x₈)
-u₁₂₂₃₃₃₂₁(1₂x₁x₂²x₃²x₄³x₅³x₆³x₇²x₈)
-u₂₂₃₄₃₂₁₁(1₂x₁²x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
-u₁₂₂₄₃₃₂₁(1₂x₁x₂²x₃²x₄⁴x₅³x₆³x₇²x₈)
-u₁₂₂₄₄₃₂₁(1₂x₁x₂²x₃²x₄⁴x₅⁴x₆³x₇²x₈)
-u₂₂₃₄₃₃₂₁(1₂x₁²x₂²x₃³x₄⁴x₅³x₆³x₇²x₈)
-u₁₂₃₄₄₃₂₁(1₂x₁x₂²x₃³x₄⁴x₅⁴x₆³x₇²x₈)
-u₂₂₃₄₄₃₂₁(1₂x₁²x₂²x₃³x₄⁴x₅⁴x₆³x₇²x₈)
-u₂₃₃₅₄₃₂₁(1₂x₁²x₂³x₃³x₄⁵x₅⁴x₆³x₇²x₈)
-u₂₂₄₅₄₃₂₁(1₂x₁²x₂²x₃⁴x₄⁵x₅⁴x₆³x₇²x₈)
-u₂₃₄₆₅₄₃₂(1₂x₁²x₂³x₃⁴x₄⁶x₅⁵x₆⁴x₇³x₈²)
+u₂₂₃₄₃₂₁₀(x₁²x₂²x₃³x₄⁴x₅³x₆²x₇)
+u₁₂₃₄₃₂₁₁(x₁x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
+u₁₂₂₄₃₂₂₁(x₁x₂²x₃²x₄⁴x₅³x₆²x₇²x₈)
+u₁₂₂₃₃₃₂₁(x₁x₂²x₃²x₄³x₅³x₆³x₇²x₈)
+u₂₂₃₄₃₂₁₁(x₁²x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
+u₁₂₂₄₃₃₂₁(x₁x₂²x₃²x₄⁴x₅³x₆³x₇²x₈)
+u₁₂₂₄₄₃₂₁(x₁x₂²x₃²x₄⁴x₅⁴x₆³x₇²x₈)
+u₂₂₃₄₃₃₂₁(x₁²x₂²x₃³x₄⁴x₅³x₆³x₇²x₈)
+u₁₂₃₄₄₃₂₁(x₁x₂²x₃³x₄⁴x₅⁴x₆³x₇²x₈)
+u₂₂₃₄₄₃₂₁(x₁²x₂²x₃³x₄⁴x₅⁴x₆³x₇²x₈)
+u₂₃₃₅₄₃₂₁(x₁²x₂³x₃³x₄⁵x₅⁴x₆³x₇²x₈)
+u₂₂₄₅₄₃₂₁(x₁²x₂²x₃⁴x₄⁵x₅⁴x₆³x₇²x₈)
+u₂₃₄₆₅₄₃₂(x₁²x₂³x₃⁴x₄⁶x₅⁵x₆⁴x₇³x₈²)
 ```
 
 ```julia-repl

@@ -370,8 +370,7 @@ end
 exactdiv(a,b)=a/b  # generic version for fields
 function exactdiv(a::Integer,b::Integer) # define for integral domains
   (d,r)=divrem(a,b)
-  if !iszero(r) error(b," does not divide ",a) end
-  d
+  !iszero(r) ? nothing : d
 end
 
 " the numbers less than n and prime to n "

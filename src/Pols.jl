@@ -172,16 +172,17 @@ Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 Base.:(==)(a::Pol,b)= a==Pol(b)
 Base.:(==)(b,a::Pol)= a==Pol(b)
 
-Base.one(a::Pol{T}) where T=Pol([one(T)];check=false)
+Base.one(a::Pol{T}) where T=Pol([iszero(a) ? one(T) : one(a.c[1])];check=false)
 Base.one(::Type{Pol{T}}) where T=Pol([one(T)];check=false)
 Base.one(::Type{Pol})=one(Pol{Int})
+Base.isone(a::Pol)=iszero(a.v) && length(a.c)==1 && isone(a.c[1])
 Base.zero(::Type{Pol{T}}) where T=Pol(T[];check=false)
 Base.zero(::Type{Pol})=zero(Pol{Int})
 Base.zero(a::Pol)=Pol(empty(a.c);check=false)
 Base.iszero(a::Pol)=isempty(a.c)
 # next 3 stuff to make inv using LU work (abs is stupid)
-Base.abs(p::Pol)=p
 Base.conj(p::Pol)=Pol(conj.(p.c),p.v;check=false)
+Base.abs(p::Pol)=p
 Base.adjoint(a::Pol)=conj(a)
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
@@ -197,7 +198,7 @@ end
 
 function Base.show(io::IO,p::Pol)
   if !get(io,:limit,false) && !get(io,:TeX,false)
-    if p.c==[1] && p.v==1 print(io,"Pol()")
+    if length(p.c)==1 && isone(p.c[1]) && p.v==1 print(io,"Pol()")
     else print(io,"Pol(",p.c,",",p.v,")")
     end
   elseif iszero(p) print(io,"0")
@@ -217,9 +218,10 @@ function Base.show(io::IO,p::Pol)
   end
 end
 
-function Base.:*(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+function Base.:*(a::Pol,b::Pol)
   if iszero(a) || iszero(b) return zero(a) end
-  res=fill(zero(promote_type(T1,T2)),length(a.c)+length(b.c)-1)
+  z=zero(a.c[1]+b.c[1])
+  res=fill(z,length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
@@ -235,10 +237,12 @@ Base.:^(a::Pol, n::Real)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
          n>=0 ? Base.power_by_squaring(a,Int(n)) :
                 Base.power_by_squaring(inv(a),Int(-n))
 
-function Base.:+(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+function Base.:+(a::Pol,b::Pol)
   d=b.v-a.v
   if d<0 return b+a end
-  res=fill(zero(promote_type(T1,T2)),max(length(a.c),d+length(b.c)))
+  if iszero(a) return b elseif iszero(b) return a end
+  z=zero(a.c[1]+b.c[1])
+  res=fill(z,max(length(a.c),d+length(b.c)))
 @inbounds view(res,eachindex(a.c)).=a.c
 @inbounds view(res,d.+eachindex(b.c)).+=b.c
   Pol(res,a.v)
@@ -263,14 +267,14 @@ computes  `(q,r)` such  that `a=q*b+r`  and `degree(r)<degree(b)`. When the
 leading  coefficient  of  b  is  ±1  does  not  use  inverse. 
 For true polynomials (errors if the valuation of `a` or of `b` is negative).
 """
-function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+function Base.divrem(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
-  if degree(b)>degree(a) return (Pol(0),b) end
+  if degree(b)>degree(a) return (zero(a),a) end
   d=inv(b.c[end])
-  T=promote_type(T1,T2,typeof(d))
-  r=zeros(T,1+degree(a))
+  z=zero(a.c[1]+b.c[1]+d)
+  r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
-  q=zeros(T,length(r)-degree(b))
+  q=fill(z,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     if iszero(r[i]) c=zero(d)
     else c=r[i]*d
@@ -281,17 +285,17 @@ function Base.divrem(a::Pol{T1}, b::Pol{T2})where {T1,T2}
   Pol(q),Pol(r)
 end
 
-function Util.exactdiv(a::Pol{T1}, b::Pol{T2})where {T1,T2}
-  if iszero(a) return a end
+function Util.exactdiv(a::Pol,b::Pol)
+  if iszero(a)return a end
   if iszero(b) throw(DivideError) end
   d=a.v-b.v
   if !iszero(a.v) a=shift(a,-a.v) end
   if !iszero(b.v) b=shift(b,-b.v) end
-  if degree(b)>degree(a) return (Pol(0),b) end
-  T=promote_type(T1,T2)
-  r=zeros(T,1+degree(a))
+  if degree(b)>degree(a) error(b," does not divide exactly ",a) end
+  z=zero(a.c[1]+b.c[1])
+  r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
-  q=zeros(T,length(r)-degree(b))
+  q=fill(z,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     c=exactdiv(r[i],b.c[end])
     view(r,i-length(b.c)+1:i) .-= c .* b.c
@@ -310,14 +314,14 @@ computes   `(q,r)`   such   that   `d^(degree(a)+1-degree(b))a=q*b+r`   and
 `degree(r)<degree(b)`. Does not do division so works over any ring.
 For true polynomials (errors if the valuation of `a` or of `b` is negative).
 """
-function pseudodiv(a::Pol{T1}, b::Pol{T2})where {T1,T2}
+function pseudodiv(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
   d=b.c[end]
   if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
-  T=promote_type(T1,T2)
-  r=zeros(T,1+degree(a))
+  z=zero(a.c[1]+b.c[1])
+  r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
-  q=zeros(T,length(r)-degree(b))
+  q=fill(z,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     c=r[i]
     r.*=d
@@ -438,7 +442,7 @@ end
 
 function Base.show(io::IO,a::RatFrac)
   n=sprint(show,a.num; context=io)
-  if  get(io, :limit,true) && a.den==one(a.den)
+  if  get(io, :limit,true) && isone(a.den)
     print(io,n)
   else
     print(io,Util.bracket_if_needed(n))
@@ -491,9 +495,9 @@ Base.:-(b,a::RatFrac)=RatFrac(b)-a
 (p::RatFrac)(x)=p.num(x)//p.den(x)
 
 """
-  gcd(p::Pol, q::Pol)
+`gcd(p::Pol,  q::Pol)` computes the  `gcd` of the  polynomials. It uses the
+subresultant algorithms for the `gcd` of integer polynomials.
 
-# Examples
 ```julia-repl
 julia> gcd(2q+2,q^2-1)
 Pol{Int64}: q+1
@@ -506,10 +510,35 @@ function Base.gcd(p::Pol,q::Pol)
   if degree(q)>degree(p) 
     p,q=q,p 
   end
+  p,q=promote(p,q)
   while !iszero(q)
-    q=q*inv(q.c[end])
+    q=q/q.c[end]
     (q,p)=(divrem(p,q)[2],q)
   end
   p*inv(p.c[end])
 end
+
+"""
+  `gcdx` works for polynomials over a field:
+```julia-repl
+julia> gcdx(q^3-1//1,q^2-1//1)
+((1//1)q-1//1, 1//1, (-1//1)q)
+```
+"""
+function Base.gcdx(a::Pol, b::Pol)
+  a,b=promote(a, b)
+  # a0, b0=a, b
+  s0, s1=one(a), zero(a)
+  t0, t1=s1, s0
+  # The loop invariant is: s0*a0 + t0*b0 == a
+  x,y=a,b
+  while y != 0
+    q,q1=divrem(x, y)
+    x, y=y, q1
+    s0, s1=s1, s0 - q*s1
+    t0, t1=t1, t0 - q*t1
+  end
+  (x, s0, t0)./x[end]
+end
+
 end

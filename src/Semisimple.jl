@@ -139,15 +139,15 @@ julia> s=SemisimpleElement(G,Z(4).^[1,2,1])
 SemisimpleElement{FFE{2}}: <Z₄,Z₄²,Z₄>
 
 julia> s^G(2)
-SemisimpleElement{FFE{2}}: <Z₄,1₂,Z₄>
+SemisimpleElement{FFE{2}}: <Z₄,1,Z₄>
 
 julia> orbit(G,s)
 6-element Vector{SemisimpleElement{FFE{2}}}:
  <Z₄,Z₄²,Z₄>
- <Z₄,1₂,Z₄>
- <Z₄²,1₂,Z₄>
- <Z₄,1₂,Z₄²>
- <Z₄²,1₂,Z₄²>
+ <Z₄,1,Z₄>
+ <Z₄²,1,Z₄>
+ <Z₄,1,Z₄²>
+ <Z₄²,1,Z₄²>
  <Z₄²,Z₄,Z₄²>
 ```
 

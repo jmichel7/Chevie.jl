@@ -5,63 +5,66 @@ The ring of integers mod. `n` is given by the type `Mod{n}`.
 
 Example:
 ```julia-repl
-julia> a=Mod{19}(5)
-Mod{19}(5)
+julia> Mod(5,19)
+Mod{UInt64}: 5₁₉
+
+julia> a=Mod(5,19)
+Mod{UInt64}: 5₁₉
 
 julia> a^2
-Mod{19}(6)
+Mod{UInt64}: 6₁₉
 
 julia> inv(a)
-Mod{19}(4)
+Mod{UInt64}: 4₁₉
 
 julia> a*inv(a)
-Mod{19}(1)
+Mod{UInt64}: 1₁₉
 
 julia> a+2
-Mod{19}(7)
+Mod{UInt64}: 7₁₉
 
 julia> a*2
-Mod{19}(10)
+Mod{UInt64}: -9₁₉
 
 julia> a+1//2
-Mod{19}(15)
+Mod{UInt64}: -4₁₉
 
-julia> Int(a) # get back an integer from a
+julia> Integer(a) # get back an integer from a
 5
 
 julia> order(a) # multiplicative order of a
 9
 ```
 
-The finite field with `p^n` elements is obtained as `FF(p^n)`. To work with
+The Galois field with `p^n` elements is obtained as `GF(p^n)`. To work with
 elements  of this  field, the  function `Z(p^n)`  returns a genertor of the
-multiplicative group of `FF(p^n)` (this is a particular generator, obtained
+multiplicative group of `GF(p^n)` (this is a particular generator, obtained
 as a root of the `n`-th Conway polynomial of characteristic `p`). All other
-elements  of  `FF(p^n)`  can  be  obtained  as  a  power  of `Z(p^n)` or as
+elements  of  `GF(p^n)`  can  be  obtained  as  a  power  of `Z(p^n)` or as
 `0*Z(p^n)`.
 
 ```julia-repl
 julia> a=Z(64)
-Z₆₄
+FFE{2}: Z₆₄
 
 julia> a^9
-Z₈
+FFE{2}: Z₈
 
 julia> a^21
-Z₄
+FFE{2}: Z₄
 
 julia> a+1
-Z₆₄⁵⁶
+FFE{2}: Z₆₄⁵⁶
 ```
 
-Elements of the prime field can be converted back to integers `Mod{p}`
+Elements of the prime field can be converted back to integers `Mod(,p)` 
 
 ```julia-repl
 julia> a=Z(19)+3
-Z₁₉¹⁶
+FFE{19}: 5
 
-julia> Mod{19}(a)
-Mod{19}(5)
+julia> Mod(a)
+Mod{UInt64}: 5₁₉
 
 julia> order(a) # order as element of the multiplicative group
 9
@@ -72,76 +75,85 @@ of `Z(p^n)` is considered
 
 ```julia-repl
 julia> a=Z(8)^5
-Z₈⁵
+FFE{2}: Z₈⁵
 
 julia> F=field(a)
-FF(2^3)
+GF(2^3)
 
-julia> F.p
+julia> char(F)
 2
 
-julia> F.n
+julia> degree(F)
 3
 
-julia> F.q
+julia> length(F)
 8
 
 julia> log(a)
 5
 ```
 
-The type of an element of `FF(p^n)` is `FFE{p}`. An integer or a `Mod{p}` can
+The type of an element of `GF(p^n)` is `FFE{p}`. An integer or a `Mod(,p)` can
 be converted to the prime field using this type as constructor.
 
 ```julia-repl
 julia> FFE{19}(2)
-Z₁₉
+FFE{19}: 2
 
-julia> FFE{19}(Mod{19}(2))
-Z₁₉
+julia> FFE{19}(Mod(2,19))
+FFE{19}: 2
 ```
 """
 module FFields
 using ..Util: factor, divisors
-export Mod, FF, FFE, Z, field, order
+export Mod, GF, FFE, Z, field, order, degree, char
 
-const T=UInt8 # this allows moduli up to 255
-
-struct Mod{p} <: Number
-   val::T
-   function Mod{p}(a::Integer) where {p}
-   	new(T(mod(a,p)))
-   end
-end
-
-Base.promote_rule(::Type{Mod{p}},::Type{<:Integer}) where p=Mod{p}
-Base.promote_rule(::Type{Mod{p}},::Type{<:Rational{<:Integer}}) where p=Mod{p}
-Mod{p}(i::Rational{<:Integer}) where p=Mod{p}(invmod(denominator(i),p)*numerator(i))
-Base.zero(::Type{Mod{p}}) where p = Mod{p}(0)
-Base.:(==)(x::Mod,y::Mod) = x.val==y.val
-Base.:+(x::Mod{p}, y::Mod{p}) where p = Mod{p}(Int(x.val)+y.val)
-Base.:*(x::Mod{p}, y::Mod{p}) where p = Mod{p}(Int(x.val)*y.val)
-Base.:-(x::Mod{p}, y::Mod{p}) where p = Mod{p}(Int(x.val)-y.val)
-Base.:-(x::Mod{p}) where {p} = Mod{p}(-Int(x.val))
-Base.:/(x::Mod{p}, y::Mod{p}) where p = x * inv(y)
-Base.inv(x::Mod{p}) where p = Mod{p}(invmod(x.val,p))
-Base.:^(x::Mod,m::Integer)=m>=0 ? Base.power_by_squaring(x,m) :
-                                  Base.power_by_squaring(inv(x),-m)
-Base.cmp(x::Mod{p}, y::Mod{p}) where p=cmp(x.val,y.val)
-Base.isless(x::Mod{p}, y::Mod{p}) where p=cmp(x,y)==-1
-Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
-Base.conj(x::Mod)=x     # needed for inv(Matrix) to work
-(::Type{T})(x::Mod) where T<:Integer=T(x.val)
-
-function Base.show(io::IO, m::Mod{p}) where p 
-  if get(io,:limit,false) && get(io,:typeinfo,Any)==typeof(m) print(io,m.val)
-  else print(io,typeof(m),"(",m.val,")")
+struct Mod{T}<:Number
+  val::T
+  n::T
+  function Mod(a::Integer,n)
+    new{n isa BigInt ? BigInt : typeof(unsigned(n))}(mod(a,n),n)
   end
 end
 
-function order(x::Mod{n}) where n
-  if n==1 return 1 end
-  d=gcd(x.val,n)
+Mod(i::Rational{<:Integer},p)=Mod(numerator(i),p)/Mod(denominator(i),p)
+Exact=Union{Integer,Rational{<:Integer}}
+Base.zero(n::Mod)=Mod(0,n.n)
+Base.one(n::Mod)=Mod(1,n.n)
+Base.:(==)(x::Mod,y::Mod)=x.n==y.n && x.val==y.val
+Base.:+(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val+y.val,x.n)
+Base.:+(x::Mod, y::Exact)=x+Mod(y,x.n)
+Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val*y.val,x.n)
+Base.:*(x::Mod, y::Exact)=x*Mod(y,x.n)
+Base.:-(x::Mod)=Mod(-signed(Integer(x.val)),x.n)
+Base.:-(x::Mod, y::Mod)=x+(-y)
+Base.:/(x::Mod,y::Mod)=x*inv(y)
+Base.:/(x::Mod,y::Number)=x*inv(Mod(y,x.n))
+Base.inv(x::Mod)=Mod(invmod(x.val,x.n),x.n)
+Base.:^(x::Mod,m::Integer)=m>=0 ? Base.power_by_squaring(x,m) :
+                                  Base.power_by_squaring(inv(x),-m)
+Base.cmp(x::Mod,y::Mod)=cmp(x.val,y.val)
+Base.isless(x::Mod,y::Mod)=cmp(x,y)==-1
+Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
+Base.conj(x::Mod)=x     # needed for inv(Matrix) to work
+(::Type{T})(x::Mod) where T<:Integer=2x.val<=x.n ? signed(T(x.val)) : signed(T(x.val))-signed(T(x.n))
+
+function Base.show(io::IO, ::MIME"text/plain", x::Mod)
+  if !haskey(io,:typeinfo) print(io,typeof(x),": ") end
+  show(io,x)
+end
+
+const sub=Dict(zip("-0123456789,+()=aehijklmnoprstuvxβγρφχ.",
+                   "₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."))
+
+function Base.show(io::IO, m::Mod) where p 
+  if get(io,:limit,false) print(io,Integer(m),map(x->sub[x],string(m.n)))
+  else print(io,"Mod(",Integer(m),",",m.n,")")
+  end
+end
+
+function order(x::Mod)
+  d=gcd(x.val,x.n)
   if d!=1 error("$x should be invertible") end
   o=1
   res=x
@@ -249,33 +261,57 @@ const conway_polynomials=Dict{Tuple{Int,Int},Vector{Int}}(
 
 function conway_polynomial(p,n)
   get!(conway_polynomials,(p,n)) do
+    if n==1 
+      x=2
+      while x<=p-1
+        if order(Mod(x,p))==p-1 return [p-x] end
+        x+=1
+      end
+    end
     error("missing conway($p,$n)") 
   end
 end
 
-struct FF
-  p::Int16
-  n::Int16
-  q::Int16
+struct GF # finite field with q=p^n elements
+  p::Int16 # characteristic
+  d::Int16 # degree
+  q::Int16 # cardinality
   conway::Vector
-  zech::Vector{Int16}
+  zech::Vector{Int16} 
   dict::Vector{Int16}
 end
 
+@inline char(F::GF)=Int(F.p)
+@inline degree(F::GF)=F.d
+@inline Base.length(F::GF)=F.q
+
 struct FFE{p}<:Number
-  i::Int16
-  Fi::Int16
+  i::Int16  # the number is Z(field.q)^i
+  Fi::Int16 # the field is FFvec[Fi]
+end
+@inbounds @inline field(x::FFE)=FFvec[x.Fi]
+
+#Base.:(==)(::Type{FFE{p}},::Type{FFE{q}}) where{p,q}=p==q
+
+function Base.promote_rule(::Type{FFE{p}},::Type{FFE{q}})where {p,q}
+  if p!=q error("cannot mix characteristics $p and $q") end
+  FFE{p}
 end
 
+#function Base.promote_type(::Type{FFE{p}},::Type{FFE{q}})where {p,q}
+#  if p!=q error("cannot mix characteristics $p and $q") end
+#  FFE{p}
+#end
+
 const FFi=Dict{Int,Int}()
-const FFvec=FF[]
+const FFvec=GF[]
 
 function iFF(q)
   get!(FFi,q) do
     l=collect(factor(q))
     if length(l)>1 error(q," should be a prime power") end
     p,n=l[1]
-    pol=-Mod{p}.(conway_polynomial(p,n))
+    pol=-Mod.(conway_polynomial(p,n),p)
     if n==1
       dic=Vector{Int16}(undef,q)
       val=pol[1].val
@@ -295,8 +331,8 @@ function iFF(q)
       end
     end
 #   xprint("conway=",pol)
-    zz=map(i->fill(Mod{p}(0),n),1:q)
-    zz[1][1]=Mod{p}(1)
+    zz=map(i->fill(Mod(0,p),n),1:q)
+    zz[1][1]=Mod(1,p)
     for i in 2:q-1
       for j in 2:n zz[i][j]=zz[i-1][j-1] end
       zz[i].+= zz[i-1][n].*pol
@@ -306,36 +342,44 @@ function iFF(q)
 #   for i in 1:q xprint(i,"->",(z[i][1]-1,z[i][2])) end
     zz=Vector{Int16}(undef,q)
     for i in 1:q
-      if z[i][2][end]==Mod{p}(p-1) zz[z[i][1]]=z[i-p+1][1]-1
+      if z[i][2][end]==Mod(p-1,p) zz[z[i][1]]=z[i-p+1][1]-1
       else zz[z[i][1]]=z[i+1][1]-1
       end
     end
 #   for i in 0:q-1 xprint(i,"=>",zz[i+1]) end
-    push!(FFvec,FF(p,n,q,pol,zz,dic))
+    push!(FFvec,GF(p,n,q,pol,zz,dic))
     return length(FFvec)
   end
 end
 
-FF(q)=FFvec[iFF(q)]
+GF(q)=FFvec[iFF(q)]
 
-Base.show(io::IO,F::FF)=print(io,"FF(",F.p,"^",F.n,")")
+Base.show(io::IO,F::GF)=print(io,"GF(",char(F),"^",degree(F),")")
 
-@inbounds @inline field(x::FFE)=FFvec[x.Fi]
-@inline q(x::FFE)=field(x).q
-@inline n(x::FFE)=field(x).n
-@inbounds @inline zech(x::FFE,i)=field(x).zech[1+i]
-@inbounds @inline dict(x::FFE,i)=field(x).dict[1+i]
+@inline sizefield(x::FFE)=field(x).q
+@inline degree(x::FFE)=degree(field(x))
+# the Zech logarithm of x=Z(q)^i is defined by 1+x=Z(q)^(zech(x,i))
+@inline zech(x::FFE,i)=@inbounds field(x).zech[1+i]
+@inline dict(x::FFE,i)=@inbounds field(x).dict[1+i]
 @inline clone(x::FFE{p},i) where p=FFE{p}(i,x.Fi)
 
 Base.iszero(x::FFE{p}) where p=x.i==-1
 
 Base.:^(a::FFE{p},n::Integer) where p=iszero(a) ? a : 
-                 lower(clone(a,mod(a.i*n,q(a)-1)))
+                 lower(clone(a,mod(a.i*n,sizefield(a)-1)))
+
+Base.rand(F::GF)=Z(F.p,F.d)^rand(0:F.q-2)
+Base.rand(F::GF,n::Int)=map(i->rand(F),1:n)
 
 function Z(q)
   if q==2 return FFE{2}(0,iFF(2)) end
   Fi=iFF(q)
-  FFE{FFvec[Fi].p}(1,Fi)
+  FFE{Int(char(FFvec[Fi]))}(1,Fi)
+end
+
+function Z(p,n)
+  if p==2 && n==1 return FFE{2}(0,iFF(2)) end
+  FFE{Int(p)}(1,iFF(p^n))
 end
 
 Base.promote_rule(::Type{FFE{p}},::Type{<:Integer}) where p=FFE{p}
@@ -343,133 +387,142 @@ Base.promote_rule(::Type{FFE{p}},::Type{<:Rational{<:Integer}}) where p=FFE{p}
 
 Base.copy(a::FFE{p}) where p=clone(a,a.i)
 Base.one(::Type{FFE{p}}) where p=FFE{p}(0,iFF(p))
-Base.one(x::FFE{p}) where p=q(x)==p ? clone(x,0) : one(FFE{p})
+Base.one(x::FFE{p}) where p=sizefield(x)==p ? clone(x,0) : one(FFE{p})
 Base.zero(::Type{FFE{p}}) where p=FFE{p}(-1,iFF(p))
-Base.zero(x::FFE{p}) where p=q(x)==p ? clone(x,-1) : zero(FFE{p})
+Base.zero(x::FFE{p}) where p=sizefield(x)==p ? clone(x,-1) : zero(FFE{p})
 Base.abs(a::FFE)=a
 Base.conj(a::FFE)=a
 
-function Base.cmp(x::FFE{p}, y::FFE{p}) where {p}
-  l=cmp(q(x),q(y))
+function Base.cmp(x::FFE, y::FFE)
+  l=cmp(sizefield(x),sizefield(y))
   if !iszero(l) return l end
   cmp(x.i,y.i)
 end
 
 Base.isless(x::FFE, y::FFE)=cmp(x,y)==-1
-Base.:(==)(x::FFE, y::FFE)=cmp(x,y)==0
+Base.:(==)(x::FFE, y::FFE)=x.i==y.i && x.Fi==y.Fi
+
+function Base.show(io::IO, ::MIME"text/plain", x::FFE{p})where p
+  if !haskey(io,:typeinfo) print(io,typeof(x),": ") end
+  show(io,x)
+end
 
 function Base.show(io::IO, x::FFE{p})where p
   sup=Dict(zip("0123456789","⁰¹²³⁴⁵⁶⁷⁸⁹"))
   sub=Dict(zip("0123456789,()","₀₁₂₃₄₅₆₇₈₉‚₍₎"))
-  repl=get(io,:limit,false)
-  function printz()
-    if repl print(io,"Z",map(x->sub[x],repr(q(x))))
-    else print(io,"Z(",q(x),")")
+  if !get(io,:limit,false)
+    if iszero(x) print(io,"0*Z(",sizefield(x),")")
+    else print(io,"Z(",sizefield(x),")^",x.i)
     end
+    return
   end
-  if iszero(x) 
-     if repl print(io,"0",map(x->sub[x],repr(p)))
-     else print(io,"0*");printz()
-     end
-  elseif isone(x) 
-     if repl print(io,"1",map(x->sub[x],repr(p)))
-     else printz();print(io,"^",x.i)
-     end
-  else  printz()
+  if sizefield(x)==p
+    if iszero(x) print(io,"0")
+    else n=(Mod(field(x).conway[1].val,p)^x.i).val
+      if 2n<=p print(io,n)
+      else print(io,Int(n)-p)
+      end
+    end
+  else print(io,"Z",map(x->sub[x],repr(sizefield(x))))
     if x.i!=1
-      if repl print(io,map(x->sup[x],repr(x.i))) else print(io,"^",x.i) end
+      print(io,map(x->sup[x],repr(x.i)))
     end
   end
 end
 
-function (::Type{FFE{p}})(i::Integer)where p
+function Zi(p,i) # assume i is already modp
   Fi=iFF(p)
-  FFE{p}(FFvec[Fi].dict[1+mod(i,p)],Fi)
+  FFE{Int(p)}(FFvec[Fi].dict[1+i],Fi)
 end
 
-function (::Type{FFE{p}})(i::Mod{p})where p
-  Fi=iFF(p)
-  FFE{p}(FFvec[Fi].dict[1+i.val],Fi)
-end
+FFE{p}(i::Integer) where p=Zi(p,mod(i,p))
+FFE{p}(i::Mod) where p=Zi(i.n,i.val)
 
-function (::Type{Mod{r}})(x::FFE{p})where {r,p}
-  if r!=p || q(x)!=p throw(InexactError(:convert,Mod{r},x)) end
-  iszero(x) ? Mod{p}(0) : Mod{p}(field(x).conway[1].val)^x.i
-end
-
-function (::Type{FFE{p}})(i::Rational{<:Integer})where p
-  Fi=iFF(p)
+function FFE{p}(i::Rational{<:Integer})where p
   i=mod(invmod(denominator(i),p)*numerator(i),p)
-  FFE{p}(FFvec[Fi].dict[1+i],Fi)
+  Zi(p,i)
+end
+
+FFE{p}(x::FFE{q}) where {p,q}=p!=q ? error("cannot mix chars $p and $q") : x
+
+function (::Type{Mod})(x::FFE{p})where {p}
+  if sizefield(x)!=p throw(InexactError(:convert,Mod,x)) end
+  iszero(x) ? Mod(0,p) : Mod(field(x).conway[1].val,p)^x.i
+end
+
+function (::Type{T})(x::FFE{p})where {T<:Integer,p}
+  if sizefield(x)!=p throw(InexactError(:convert,T,x)) end
+  iszero(x) ? T(0) : T(Mod(field(x).conway[1].val,p)^x.i)
 end
 
 function promote_field(r::Integer,x::FFE{p})where {p}
-  if r==q(x) return x end
-  if r<q(x) error("cannot promote to smaller field") end
+  if r==sizefield(x) return x end
+  if r<sizefield(x) error("cannot promote to smaller field") end
   Fi=iFF(r)
 @inbounds  F=FFvec[Fi]
-  if F.p!=p error("different characteristic!") end
-  if mod(F.n,n(x))!=0 error("not an extension field") end
-  FFE{p}(x.i*div(r-1,q(x)-1),Fi)
+  if char(F)!=p error("cannot mix characteristics $p and ",char(F)) end
+  if mod(degree(F),degree(x))!=0 error("not an extension field") end
+  FFE{p}(x.i*div(r-1,sizefield(x)-1),Fi)
 end
   
-function promote_field(x::FFE{p},y::FFE{p})where {p}
+function Base.promote(x::FFE{p},y::FFE{q})where {p,q}
+  if p!=q error("cannot mix characteristics $p and $q") end
   if x.Fi==y.Fi return (x,y) end
-  nq=p^lcm(n(x),n(y))
+  nq=p^lcm(degree(x),degree(y))
   (promote_field(nq,x),promote_field(nq,y))
 end
 
-function Base.:+(x::FFE{p},y::FFE{p}) where {p}
+function Base.:+(x::FFE{p},y::FFE{p}) where p
   if iszero(x) return y
   elseif iszero(y) return x
   end
-  x,y=promote_field(x,y)
+  x,y=promote(x,y)
   if x.i>y.i x,y=y,x end
   @inbounds res=zech(x,y.i-x.i)
-  if res==q(x)-1 return zero(x) end
+  if res==sizefield(x)-1 return zero(x) end
   res+=x.i
-  if res>=q(x)-1 res-=Int16(q(x)-1) end
+  if res>=sizefield(x)-1 res-=Int16(sizefield(x)-1) end
   lower(clone(x,res))
 end
 
 function Base.:-(x::FFE{p})where p
   if iseven(p) || iszero(x) return x end
-  res=x.i+div(q(x)-1,2)
-  if res>=q(x)-1 res-=Int16(q(x)-1) end
+  res=x.i+div(sizefield(x)-1,2)
+  if res>=sizefield(x)-1 res-=Int16(sizefield(x)-1) end
   clone(x,res)
 end
 
 Base.:-(x::FFE,y::FFE)=x+(-y)
 
-function Base.:*(x::FFE{p},y::FFE{p}) where {p}
+function Base.:*(x::FFE{p},y::FFE{p}) where p
   if iszero(x) return x
   elseif iszero(y) return y
   end
-  (x,y)=promote_field(x,y)
+  (x,y)=promote(x,y)
   res=x.i+y.i
-  if res>=q(x)-1 res-=Int16(q(x)-1) end
+  if res>=sizefield(x)-1 res-=Int16(sizefield(x)-1) end
   lower(clone(x,res))
 end
 
 function Base.inv(x::FFE{p}) where p
   if iszero(x) error("inv(0)") end
   if x.i==0 return x end
-  clone(x,q(x)-1-x.i)
+  clone(x,sizefield(x)-1-x.i)
 end
 
 Base.:/(x::FFE,y::FFE)=x*inv(y)
 Base.://(x::FFE,y::FFE)=x*inv(y)
 
 function lower(x::FFE{p}) where p
-  if q(x)==p return x end
+  if sizefield(x)==p return x end
   l=dict(x,x.i)
-  if l==n(x) return x end
-  FFE{p}(div(x.i,div(q(x)-1,p^l-1)),iFF(p^l))
+  if l==degree(x) return x end
+  FFE{p}(div(x.i,div(sizefield(x)-1,p^l-1)),iFF(p^l))
 end
 
 function order(x::FFE{p}) where p
   if iszero(x) error(x," must be invertible") end
-  div(q(x)-1,gcd(x.i,q(x)-1))
+  div(sizefield(x)-1,gcd(x.i,sizefield(x)-1))
 end
 
 function Base.log(x::FFE)
