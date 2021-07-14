@@ -18,7 +18,7 @@ Base.isless(a::Array,b::Number)=true # to sort [[1,2], 2, 0]
 Base.isless(b::Number,a::Array)=false
 Base.copy(x::Char)=x
 Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
-Base.inv(m::Vector)=toL(inv(toM(m).+zero(E(1)//1)))
+Base.inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
 Base.length(a::Symbol)=length(string(a))
 Base.union(v::Vector)=union(v...)
 

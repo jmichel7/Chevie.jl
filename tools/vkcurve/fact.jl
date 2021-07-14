@@ -197,22 +197,21 @@ function MinimizeBombieriNorm(f)
   f[:minimization]
 end
 
-function Util.factor(f::Pol{<:Rational})
+function Util.factor(f::Pol{<:Union{Integer,Rational}})
   InfoPoly2("#I  starting integer factorization: ", time(), "\n")
   if iszero(f)
     InfoPoly2("#I  f is zero\n")
     return [f]
   end
-  f*=lcm(denominator.(f.c))
+  d=lcm(denominator.(f.c))
+  f*=d
   f=Pol(Integer.(f.c),f.v)
-
-    # remove a valuation
   v=f.v
   f=shift(f,-f.v)
   if 0==degree(f)
     InfoPoly2("#I  f is a power of x\n")
     s=map(f->Pol(),1:v)
-    s[1]*=f.c[1]
+    s[1]*=f.c[1]*lc
     return s
   end
   if 1==degree(f)
@@ -221,7 +220,7 @@ function Util.factor(f::Pol{<:Rational})
     push!(s,f)
     return s
   end
-    # shift the zeros of f if appropriate
+  # shift the zeros of f if appropriate
   if degree(f)>20
     g=MinimizeBombieriNorm(f)
     f=g[1]
@@ -246,15 +245,14 @@ function Util.factor(f::Pol{<:Rational})
     end
     append!(s, factorSQF(q))
   end
-    # find factors of <g>
-  for r in s
+  for r in s # find multiple factors
     if 0<degree(g) && degree(g)>=degree(r)
-      q=Quotient(R, g, r)
-      while 0<degree(g) && q!=false
+      q=exactdiv(g, r)
+      while 0<degree(g) && !isnothing(q)
         push!(s, r)
         g=q
-        if degree(g)>=degree(r) q=Quotient(R, g, r)
-        else q=false
+        if degree(g)>=degree(r) q=exactdiv(g,r)
+        else q=nothing
         end
       end
     end
@@ -262,26 +260,40 @@ function Util.factor(f::Pol{<:Rational})
     # reshift
   if shft!=0
     InfoPoly2("#I shifting zeros back\n")
-    Apply(s, (i->begin Value(i, x+shft) end))
+    s=map(i->Value(i,Pol()+shft),s)
   end
   append!(s,map(f->Pol(),1:v))
   sort!(s)
+  s[1]//=d
   s
 end
 
+"""
+`LogInt(n,base)`
+
+returns  Int(floor(log(base,n))) but very accurately. Assumes n>0 and base>1.
+
+```julia-repl
+julia> LogInt(1030,2)
+10
+
+julia> LogInt(1,10)
+0
+```
+"""
 function LogInt(n, base)
   if n <= 0 error("<n> must be positive") end
   if base <= 1 error("<base> must be greater than 1") end
-  log=function (b)
-     local i
-     if b>n return 0 end
-     i=log(b^2)
-     if b>n return 2i
-     else n=div(n, b)
-         return 2i+1
-     end
-   end
-  return log(base)
+  function log(b)
+    local i
+    if b>n return 0 end
+    i=2log(b^2)
+    if b>n return i
+    else n=div(n, b)
+        return i+1
+    end
+  end
+  log(base)
 end
 
 FFields.Mod(x::Pol,p)=Pol(Mod.(x.c,p),x.v)
@@ -357,7 +369,7 @@ local   p,              # prime
   # try to find true factors
       if max<=q || ofb<q
         InfoPoly2("#I  searching for factors: ", time(), "\n")
-        fcn=TryCombinations(f, lc, map(x->Pol(Integer.(x.c),x.v),l), q, t[:degrees], bounds, false)
+        fcn=TryCombinations(f, lc, l, q, t[:degrees], bounds, false)
         InfoPoly2("#I  finishing search:      ", time(), "\n")
       else
         fcn=Dict{Symbol, Any}(:irreducibles => [], :reducibles => [])
@@ -539,7 +551,7 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
             if !(act in combi) push!(combi, act);sort!(combi) end
   # make sure that the quotient has a chance, compute the
   # extremal coefficient of the product:
-            q=Integer(prod(map(i->Mod(i.c[1],p), l[combi]))*lc)
+            q=Integer(prod(map(i->i.c[1],l[combi]))*lc)
             if length(combi)==2
 #           @show q,l[combi]
             end
@@ -558,7 +570,7 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
               q=nothing
             else
               InfoPoly2("#I  testing combination ", combi, "\n")
-              prd=prod(x->Mod(x,p),l[combi])
+              prd=prod(l[combi])
               cof=Integer.(prd.c*lc)
   # make the product primitive
               cof*=1//gcd(cof)
@@ -616,115 +628,6 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
     push!(res[:irrFactors], f)
   end
   res
-end
-
-Base.rand(::Type{Pol{T}},d::Integer) where T=Pol(rand(T,d+1))
-
-Base.rand(::Type{FFE{p}},n::Integer...) where p=FFE{p}.(rand(1:p,n...))
-
-#  `f` must be a  square free product of unitary irreducible factors of  
-#  degree  `d` over a finite field of size `p^k`.
-function FactorsCommonDegree(f::Pol{FFE{p}}, d,F)where p
-  if degree(f)==d return [f] end
-  g=copy(f)
-  while true
-    g=Pol(rand(F,2d))
-    k=maximum(degree.(f.c))
-    if p==2 # take g+g^2+g^(2^2)+ ... +g^(2^(k*d-1)) for GF(2^k)
-      h=g
-      for i in 1:k*d-1
-        g=powermod(g,2,f)
-        h+=g
-      end
-    else # take g^((p^(k*d)-1)/2)-1
-      h=powermod(g, div(p^(k*d)-1,2),f)-1
-    end
-    g=gcd(f,h)
-    if degree(f)>degree(g)>0 break end
-  end
-  vcat(FactorsCommonDegree(exactdiv(f,g),d,F),FactorsCommonDegree(g,d,F))
-end
-
-# `f` must be a squarefree unitary polynomial with nonzero constant term 
-#  over a finite field
-function factorSQF(f::Pol{FFE{p}},F)where p
-  facs=Pol{FFE{p}}[]
-  deg=0
-  k=degree(F)
-  q=Pol([one(FFE{p})],1)
-  pow=powermod(q, p^k, f)
-  # in the following pow=q^(p^(k(deg+1)))
-  while 2*(deg+1)<=degree(f) # while f could still have two irreducible factors
-    deg+=1
-    cyc=pow-q
-    pow=powermod(pow,p^k,f)
-    g=gcd(f,cyc)
-    if degree(g)>0
-      append!(facs, FactorsCommonDegree(g,deg,F))
-      f=exactdiv(f,g)
-    end
-  end
-  if degree(f)>0 push!(facs, f) end
-  facs
-end
-
-function Cycs.root(f::Pol{FFE{p}},n::Integer)where p
-  d=maximum(degree.(f.c))
-  z=Z(p^d)
-  r=map(0:div(degree(f),n)) do i
-    e=f[i*n]
-    iszero(e) ? 0 : z^(div(log(e),n))
-  end
-  Pol(r,div(f.v,n))
-end
-
-function Base.powermod(p::Pol, x::Integer, q::Pol)
-  x==0 && return one(q)
-  b=rem(p,q)
-  t=prevpow(2, x)
-  r=one(q)
-  while true
-    if x>=t
-      r=rem(r*b,q)
-      x-=t
-    end
-    t >>>= 1
-    t<=0 && break
-    r=rem(r*r,q)
-  end
-  r
-end
-
-function Util.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
-  facs=Pol{FFE{p}}[]
-  # make the polynomial unitary, remember the leading coefficient for later
-  l=f[end]
-  f=f/l
-  append!(facs,map(x->Pol(), 1:f.v))
-  f=shift(f,-f.v)
-  if degree(f)==1 facs=[f]
-  elseif degree(f)>=2
-    d=derivative(f)
-    if iszero(d) # f is the p-th power of another polynomial
-      h=factor(Cycs.root(f,p),F)
-      facs=vcat(fill(h,p)...)
-    else
-      g=gcd(f,d)
-      facs=factorSQF(exactdiv(f,g),F)
-      for h in facs
-        while true
-          g1,r=divrem(g,h)
-          if !iszero(r) break end
-          g=g1
-          push!(facs, copy(h))
-        end
-      end
-      if degree(g)>1 append!(facs, factor(g,F)) end
-    end
-  end
-  sort!(facs)
-  facs[1]*=l
-  facs
 end
 
 function OneFactorBound(f)
@@ -916,6 +819,7 @@ function HenselBound(pol,arg...)
   bound
 end
 
+@Pol q
 testf=
 q^17 + (28475495154853885209666581640806568193580138878464//35)*q^13 + (
 -230113592530021909980533244143226208753492718798402862328238781356987464425343796365306003458195456//1225)*q^9 + (

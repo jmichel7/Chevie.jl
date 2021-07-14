@@ -1,3 +1,4 @@
+include("fact.jl")
 #------------------- utilities -------------------------------
 """
 `Dispersal(v)`
@@ -50,7 +51,7 @@ The  function  returns the  discriminant  of  `p`  with respect  to  'x'
 discriminants of univariate polynomials,  and works reasonably fast (not
 hundreds of times slower than MAPLE...).
 
-|    gap> discy2(x+y^2+x^3+y^3);      
+|    gap> discy2(x+y^2+x^3+y^3);
     4+27y^4+54y^5+27y^6|
 """
 function discy2(p)
@@ -69,7 +70,7 @@ Chars.discriminant(p::Pol)=GLinearAlgebra.det(resultant(p[0:end],
                                                  derivative(p)[0:end]))
 
 discy(p)=Pol(discriminant(Pol(p,:x)))
-  
+
 """
 `resultant(v,w)`
 
@@ -127,7 +128,7 @@ VKCURVE=Dict(
 :copyright=>
 "(C) David Bessis, Jean Michel -- compute Pi_1 of hypersurface complements",
 :monodromyApprox=>false, ##########################
-:showSingularProj=>false, 
+:showSingularProj=>false,
 :showBraiding=>false,
 :showLoops=>false,
 :showAction=>false,
@@ -181,7 +182,7 @@ function Loops(r)
 # here we  have loops around the  'true' roots and around  the 'extra'
 # roots setdiff(r.roots,r.trueroots). We get rid of the extra loops
 # and the associated segments and points, first saving the basepoint.
-# (its location is known now, and maybe not later? J.M.) 
+# (its location is known now, and maybe not later? J.M.)
   r.basepoint=r.loops[1][1]<0 ? r.segments[-r.loops[1][1]][2] :
                                 r.segments[r.loops[1][1]][1]
   r.loops=r.loops[indexin(r.ismonic ? r.roots : r.trueroots,r.roots)]
@@ -304,8 +305,8 @@ function Discy(r)
   d=exactdiv(d,common)
   d//=d[end]
   r.discy=d
-  r.discyFactored=[d]
-  # r.discyFactored=Factors(r.discy)
+# r.discyFactored=[d]
+  r.discyFactored=factor(r.discy)
 end
 
 complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
@@ -709,10 +710,10 @@ end
 # value at z of an equation of the line (x,y)
 function lineq(x, y, z)
   if real(x)≈real(y)
-    if imag(x)≈imag(y) error("Undefined line\n") 
+    if imag(x)≈imag(y) error("Undefined line\n")
     else return real(z)-real(x)
     end
-  else 
+  else
     return (imag(y)-imag(x))*(real(z)-real(x))/(real(y)-real(x))+imag(x)-imag(z)
   end
 end
@@ -786,6 +787,16 @@ end
 #  .segments : set of all segments used, where endpoints are indexed
 #              as in points
 #     .loops : list of sequence of numbers of used segments
+"""
+The output is a named tuple with fields
+  - `points`: a list of complex  numbers.
+  - `segments`:  a list of oriented segments, each of them  encoded by the
+    list of the positions in 'points' of  its two endpoints.
+  - `loops`: a list of loops. Each loops is a list  of integers representing
+    a  piecewise  linear  loop,  obtained  by  concatenating the `segments`
+    indexed  by the  integers, where  a negative  integer is  used when the
+    opposed orientation of the segment is taken.
+"""
 function convert_loops(ll)
   points=sort(unique(vcat(ll...)),by=x->(imag(x),real(x)))
   np(p)=findfirst(==(p),points)
@@ -808,24 +819,16 @@ loops representing generators of the fundamental group of `ℂ -{points}`.
 
 ```julia-repl
 julia> LoopsAroundPunctures([0])
-(points = Complex{Int64}[0 - 1im, -1 + 0im, 1 + 0im, 0 + 1im], segments = [[1, 2], [1, 3], [2, 4], [3, 4]], loops = [[4, -3, -1, 2]])
+1-element Vector{Vector{Complex{Int64}}}:
+ [1 + 0im, 0 + 1im, -1 + 0im, 0 - 1im, 1 + 0im]
 ```
-
-The output is a named tuple with fields 
-  - `points`: a list of complex  numbers. 
-  - `segments`:  a list of oriented segments, each of them  encoded by the
-    list of the positions in 'points' of  its two endpoints. 
-  - `loops`: a list of loops. Each loops is a list  of integers representing
-    a  piecewise  linear  loop,  obtained  by  concatenating the `segments`
-    indexed  by the  integers, where  a negative  integer is  used when the
-    opposed orientation of the segment is taken.
 """
 function LoopsAroundPunctures(originalroots)
   roots=originalroots
   n=length(roots)
+  if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
-  if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
   sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
@@ -905,7 +908,7 @@ function LoopsAroundPunctures(originalroots)
     y[:loop]=vcat(y[:handle], y[:circle], reverse(y[:handle]))
   end
   sort!(ys,by=y->findfirst(==(y[:y]),originalroots))
-  for y in ys 
+  for y in ys
     y[:loop]=map(x->round(x;sigdigits=8),y[:loop])
     y[:loop]=shrink(y[:loop])
   end
@@ -1055,7 +1058,7 @@ function ApproxFollowMonodromy(r,segno,pr)
     next=prev+step*v
     P=Pol(r.curve(y=next))
     nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
-    if isnothing(nextzeros) || 
+    if isnothing(nextzeros) ||
        (1+maximum(abs.(nextzeros-prevzeros))≈1 && step>1//16)
       rejected=true
     else
@@ -1143,12 +1146,12 @@ end
 
 Base.setindex!(p::Pol{T},x::T,i::Integer) where T=p.c[i+1-p.v]=x
 
-# Sturm(pp,time) 
+# Sturm(pp,time)
 # if polynomial pp is positive  at time
 # returns some rational number t such that
 #    time<t<=1  and  pp  is positive on [time,t]
 # otherwise returns 0
-# [third input and second output is an adaptive factor to 
+# [third input and second output is an adaptive factor to
 #  accelerate the computation]
 function Sturm(pp::Pol, time, adapt::Integer;pr=print)
   q=Pol()
@@ -1214,7 +1217,7 @@ during the execution of
     =    Nontrivial braiding = 2         =
     ======================================
     <1/16>    6 time=   0.734375   R1. ?1
-    <1/16>    7 time=    0.84375   . ?0. 
+    <1/16>    7 time=    0.84375   . ?0.
     <1/16>    8 time=   0.859375   ?1R0?1
     # The following braid was computed by FollowMonodromy in 8 steps.
     monodromy[1]:=B(2);
@@ -1411,7 +1414,7 @@ function LBraidToWord(v1, v2, B)
   y1=imag.(v1)
   x2=real.(v2)
   y2=imag.(v2)
-  if length(setapprox(x1))<length(x1) || length(setapprox(x2))<length(x2) 
+  if length(setapprox(x1))<length(x1) || length(setapprox(x2))<length(x2)
     if VKCURVE[:showSingularProj]
       println("WARNING: singular projection(resolved)")
     end
@@ -1420,7 +1423,7 @@ function LBraidToWord(v1, v2, B)
   q=sortPerm(x1)
   crit=Float64[]
   for i in 1:n-1, j in i+1:n
-    if x2[i^q]>x2[j^q] 
+    if x2[i^q]>x2[j^q]
       push!(crit,(x1[i^q]-x1[j^q])/((x2[j^q]-x1[j^q]+x1[i^q])-x2[i^q]))
     end
   end
@@ -1512,12 +1515,12 @@ presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ > ``
 
 |    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
     function ( arg ) ... end
-    gap> b1:=B(1)^3; b2:=B(2);                   
+    gap> b1:=B(1)^3; b2:=B(2);
     1.1.1
     2
-    gap> g:=VKQuotient([b1,b2]);                 
+    gap> g:=VKQuotient([b1,b2]);
     Group( f.1, f.2, f.3 )
-    gap>  last.relators;  
+    gap>  last.relators;
     [ f.2^-1*f.1^-1*f.2*f.1*f.2*f.1^-1, IdWord,
       f.2^-1*f.1^-1*f.2^-1*f.1*f.2*f.1, f.3*f.2^-1, IdWord, f.3^-1*f.2 ]
     gap> p:=PresentationFpGroup(g);DisplayPresentation(p);

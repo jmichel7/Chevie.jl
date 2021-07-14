@@ -82,6 +82,11 @@ end
 @test mytest("partitions(7)","15-element Vector{Vector{Int64}}:\n [1, 1, 1, 1, 1, 1, 1]\n [2, 1, 1, 1, 1, 1]\n [2, 2, 1, 1, 1]\n [2, 2, 2, 1]\n [3, 1, 1, 1, 1]\n [3, 2, 1, 1]\n [3, 2, 2]\n [3, 3, 1]\n [4, 1, 1, 1]\n [4, 2, 1]\n [4, 3]\n [5, 1, 1]\n [5, 2]\n [6, 1]\n [7]")
 @test mytest("npartitions(7,3)","4")
 @test mytest("partitions(7,3)","4-element Vector{Vector{Int64}}:\n [3, 2, 2]\n [3, 3, 1]\n [4, 2, 1]\n [5, 1, 1]")
+@test mytest("restrictedpartitions(17,[10,5,2])","3-element Vector{Vector{Int64}}:\n [5, 2, 2, 2, 2, 2, 2]\n [5, 5, 5, 2]\n [10, 5, 2]")
+@test mytest("nrestrictedpartitions(17,[10,5,2])","3")
+@test mytest("restrictedpartitions(17,[10,5,2])","3-element Vector{Vector{Int64}}:\n [5, 2, 2, 2, 2, 2, 2]\n [5, 5, 5, 2]\n [10, 5, 2]")
+@test mytest("restrictedpartitions(17,[10,5,2],3)","1-element Vector{Vector{Int64}}:\n [10, 5, 2]")
+@test mytest("nrestrictedpartitions(17,[10,5,2],3)","1")
 @test mytest("conjugate_partition([4,2,1])","4-element Vector{Int64}:\n 3\n 2\n 1\n 1")
 @test mytest("conjugate_partition([6])","6-element Vector{Int64}:\n 1\n 1\n 1\n 1\n 1\n 1")
 @test mytest("dominates([5,4],[4,4,1])","true")
@@ -298,6 +303,12 @@ end
 @test mytest("split_levis(W,4,2)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
 @test mytest("split_levis(ComplexReflectionGroup(5))","4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:\n G₅\n G₅₍₁₎=G₃‚₁‚₁Φ₁\n G₅₍₂₎=G₃‚₁‚₁Φ₁\n G₅₍₎=Φ₁²")
 end
+@testset "FFfac.jl" begin
+@test mytest("@Pol q","Pol{Int64}: q")
+@test mytest("p=(q^4-1)*Z(3)^0","Pol{FFE{3}}: q⁴-1")
+@test mytest("factor(p)","3-element Vector{Pol{FFE{3}}}:\n q²+1\n q+1\n q-1")
+@test mytest("factor(p,GF(9))","4-element Vector{Pol{FFE{3}}}:\n q+1\n q-1\n q+Z₉²\n q+Z₉⁶")
+end
 @testset "FFields.jl" begin
 @test mytest("Mod(5,19)","Mod{UInt64}: 5₁₉")
 @test mytest("a=Mod(5,19)","Mod{UInt64}: 5₁₉")
@@ -322,7 +333,7 @@ end
 @test mytest("degree(F)","3")
 @test mytest("length(F)","8")
 @test mytest("log(a)","5")
-@test mytest("FFE{19}(2)","Z₁₉")
+@test mytest("FFE{19}(2)","FFE{19}: 2")
 @test mytest("FFE{19}(Mod(2,19))","FFE{19}: 2")
 end
 @testset "Families.jl" begin
@@ -851,6 +862,7 @@ end
 @test mytest("inv(m)","2×2 Matrix{RatFrac{Int64}}:\n (-q+3)/(2q-1)   (q+2)/(2q-1)\n (-q+2)/(-2q+1)  (q+1)/(-2q+1)")
 @test mytest("gcd(2q+2,q^2-1)","Pol{Int64}: q+1")
 @test mytest("gcd(q+1//1,q^2-1//1)","Pol{Rational{Int64}}: (1//1)q+1//1")
+@test mytest("gcdx(q^3-1//1,q^2-1//1)","((1//1)q-1//1, 1//1, (-1//1)q)")
 end
 @testset "Posets.jl" begin
 @test mytest("p=Poset(coxgroup(:A,2))",".<1,2<21,12<121")

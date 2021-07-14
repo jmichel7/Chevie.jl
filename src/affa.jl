@@ -1,5 +1,5 @@
 """
-# affa.g                             (C) François Digne (Amiens university)
+# affa.jl          translated from  (C) François Digne (Amiens university)
 #
 # This file contains:
 #   -functions for computing with periodic permutations of the integers
@@ -82,7 +82,10 @@ function PPerm(n::Int,cc...)
   p
 end
 
-Base.:*(x::PPerm,y::PPerm)=PPerm(x.d[ymodn].+y.d.-mod1.(y.d,length(x.d)))
+function Base.:*(x::PPerm,y::PPerm)
+  ymodn=mod1.(y.d,length(y.d))
+  PPerm(x.d[ymodn].+y.d.-ymodn)
+end
 
 function Base.inv(x::PPerm)
   n=length(x.d)

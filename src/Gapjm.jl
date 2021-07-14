@@ -97,6 +97,7 @@ include("Cycs.jl");@usingmerge verbose=true reexport Cycs
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
+include("FFfac.jl")
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
@@ -107,7 +108,7 @@ include("ComplexR.jl");@reexport using .ComplexR
 include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
-include("mvptools.jl");
+include("mvptools.jl")
 include("SPerms.jl");@reexport using .SPerms
 include("Algebras.jl");@reexport using .Algebras
 include("Presentations.jl");@reexport using .Presentations

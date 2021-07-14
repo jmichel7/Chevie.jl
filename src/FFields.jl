@@ -530,4 +530,7 @@ function Base.log(x::FFE)
   x.i
 end
 
+# random elements of the prime field
+Base.rand(::Type{FFE{p}},n::Integer...) where p=FFE{p}.(rand(1:p,n...))
+
 end

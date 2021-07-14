@@ -111,7 +111,7 @@ degree(a::Number)=0 # convenient
 degree(p::Pol)=length(p.c)-1+p.v
 valuation(p::Pol)=p.v
 Base.lastindex(p::Pol)=degree(p)
-Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ? 
+Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ?
     p.c[i-p.v+1] : zero(T)
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
@@ -136,10 +136,10 @@ Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
                                      isinteger(p.c[1]))
 function Base.convert(::Type{T},p::Pol) where T<:Number
   if iszero(p) return T(0) end
-  if !iszero(degree(p)) || !iszero(valuation(p)) 
-    throw(InexactError(:convert,T,p)) 
+  if !iszero(degree(p)) || !iszero(valuation(p))
+    throw(InexactError(:convert,T,p))
   end
-  convert(T,p.c[1]) 
+  convert(T,p.c[1])
 end
 
 (::Type{T})(p::Pol) where T<:Number=convert(T,p)
@@ -208,7 +208,7 @@ function Base.show(io::IO,p::Pol)
       c=p[deg]
       if iszero(c) continue end
       c=repr(c; context=IOContext(io,:typeinfo=>typeof(c)))
-      if !iszero(deg) 
+      if !iszero(deg)
         c=format_coefficient(c)*mon
         if !isone(deg) c*="^{$deg}" end
       end
@@ -264,7 +264,7 @@ bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 `divrem(a::Pol, b::Pol)`
 
 computes  `(q,r)` such  that `a=q*b+r`  and `degree(r)<degree(b)`. When the
-leading  coefficient  of  b  is  ±1  does  not  use  inverse. 
+leading  coefficient  of  b  is  ±1  does  not  use  inverse.
 For true polynomials (errors if the valuation of `a` or of `b` is negative).
 """
 function Base.divrem(a::Pol, b::Pol)
@@ -349,7 +349,7 @@ function srgcd(a::Pol,b::Pol)
   while true
     δ=degree(a)-degree(b)
     q,r=Pols.pseudodiv(a,b)
-    if iszero(r) 
+    if iszero(r)
       cb=gcd(b.c)
       b=Pol(exactdiv.(b.c,cb),b.v;check=false)
       return Pol(b.c .*d,b.v;check=false)
@@ -365,9 +365,80 @@ Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
 Base.gcd(v::Vector{<:Pol})=length(v)==1 ? v[1] : gcd(v[1],gcd(v[2:end]))
 Base.lcm(p::Pol,q::Pol)=exactdiv(p*q,gcd(p,q))
 Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
- 
+
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
+Base.:%(a::Pol{<:Integer}, b::Pol{<:Integer})=isone(b[end]) ?
+                                      pseudodiv(a,b)[2] : divrem(a,b)[2]
+
+"""
+`gcd(p::Pol,  q::Pol)` computes the  `gcd` of the  polynomials. It uses the
+subresultant algorithms for the `gcd` of integer polynomials.
+
+```julia-repl
+julia> gcd(2q+2,q^2-1)
+Pol{Int64}: q+1
+
+julia> gcd(q+1//1,q^2-1//1)
+Pol{Rational{Int64}}: (1//1)q+1//1
+```
+"""
+function Base.gcd(p::Pol,q::Pol)
+  if degree(q)>degree(p)
+    p,q=q,p
+  end
+  p,q=promote(p,q)
+  while !iszero(q)
+    q=q/q.c[end]
+    (q,p)=(divrem(p,q)[2],q)
+  end
+  p*inv(p.c[end])
+end
+
+"""
+  `gcdx` works for polynomials over a field:
+```julia-repl
+julia> gcdx(q^3-1//1,q^2-1//1)
+((1//1)q-1//1, 1//1, (-1//1)q)
+```
+"""
+function Base.gcdx(a::Pol, b::Pol)
+  a,b=promote(a, b)
+  # a0, b0=a, b
+  s0, s1=one(a), zero(a)
+  t0, t1=s1, s0
+  # The loop invariant is: s0*a0 + t0*b0 == a
+  x,y=a,b
+  while y != 0
+    q,q1=divrem(x, y)
+    x, y=y, q1
+    s0, s1=s1, s0 - q*s1
+    t0, t1=t1, t0 - q*t1
+  end
+  (x, s0, t0)./x[end]
+end
+
+
+#powermod for Pols over a field
+function Base.powermod(p::Pol, x::Integer, q::Pol)
+  x==0 && return one(q)
+  b=p%q
+  t=prevpow(2, x)
+  r=one(q)
+  while true
+    if x>=t
+     r=(r*b)%q
+      x-=t
+    end
+    t >>>= 1
+    t<=0 && break
+    r=(r*r)%q
+  end
+  r
+end
+
+# random polynomial of degree d
+Base.rand(::Type{Pol{T}},d::Integer) where T=Pol(rand(T,d+1))
 
 #---------------------- RatFrac-------------------------------------
 struct RatFrac{T}
@@ -397,8 +468,8 @@ function Base.convert(::Type{RatFrac{T}},p::RatFrac{T1}) where {T,T1}
 end
 
 function Base.convert(::Type{Pol{T}},p::RatFrac{T1}) where {T,T1}
-  if length(p.den.c)==1 
-    return convert(Pol{T},Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)) 
+  if length(p.den.c)==1
+    return convert(Pol{T},Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v))
   end
   error("cannot convert ",p," to Pol{",T,"}")
 end
@@ -460,18 +531,18 @@ function Base.://(a::Pol,b::Pol)
   RatFrac(a,b)
 end
 
-Base.:/(p::Pol,q::Pol)=RatFrac(p,q)
-
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
   RatFrac(Pol(1),p;check1=false)
 end
 
+Base.:/(p::Pol,q::Pol)=p*inv(q)
+
 Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
 Base.://(a::RatFrac,b::Number)=RatFrac(a.num,a.den*b)
 Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
 Base.://(p,q::Pol)=RatFrac(Pol(p),q;check1=false)
-Base.:/(p,q::Pol)=p//q
+Base.:/(p,q::Pol)=p*inv(q)
 Base.:/(p::Pol,q)=Pol(p.c ./q,p.v)
 Base.://(p::Pol,q)=iszero(p) ? p : Pol(p.c//q,p.v)
 
@@ -482,7 +553,7 @@ Base.:*(b::Pol,a::RatFrac)=RatFrac(a.num*b,a.den)
 Base.:*(a::RatFrac,b::T) where T =RatFrac(a.num*b,a.den;check=false)
 Base.:*(b::T,a::RatFrac) where T =a*b
 
-Base.:^(a::RatFrac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
+Base.:^(a::RatFrac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                               Base.power_by_squaring(inv(a),-n)
 Base.:+(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.den+a.den*b.num,a.den*b.den)
 Base.:+(a::RatFrac,b::Number)=a+RatFrac(b)
@@ -493,52 +564,5 @@ Base.:-(a::RatFrac,b)=a-RatFrac(b)
 Base.:-(b,a::RatFrac)=RatFrac(b)-a
 
 (p::RatFrac)(x)=p.num(x)//p.den(x)
-
-"""
-`gcd(p::Pol,  q::Pol)` computes the  `gcd` of the  polynomials. It uses the
-subresultant algorithms for the `gcd` of integer polynomials.
-
-```julia-repl
-julia> gcd(2q+2,q^2-1)
-Pol{Int64}: q+1
-
-julia> gcd(q+1//1,q^2-1//1)
-Pol{Rational{Int64}}: (1//1)q+1//1
-```
-"""
-function Base.gcd(p::Pol,q::Pol)
-  if degree(q)>degree(p) 
-    p,q=q,p 
-  end
-  p,q=promote(p,q)
-  while !iszero(q)
-    q=q/q.c[end]
-    (q,p)=(divrem(p,q)[2],q)
-  end
-  p*inv(p.c[end])
-end
-
-"""
-  `gcdx` works for polynomials over a field:
-```julia-repl
-julia> gcdx(q^3-1//1,q^2-1//1)
-((1//1)q-1//1, 1//1, (-1//1)q)
-```
-"""
-function Base.gcdx(a::Pol, b::Pol)
-  a,b=promote(a, b)
-  # a0, b0=a, b
-  s0, s1=one(a), zero(a)
-  t0, t1=s1, s0
-  # The loop invariant is: s0*a0 + t0*b0 == a
-  x,y=a,b
-  while y != 0
-    q,q1=divrem(x, y)
-    x, y=y, q1
-    s0, s1=s1, s0 - q*s1
-    t0, t1=t1, t0 - q*t1
-  end
-  (x, s0, t0)./x[end]
-end
 
 end

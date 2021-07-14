@@ -738,6 +738,16 @@ julia> char_values(Cpbasis(H)(1,2,1))
 """
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
+function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
+  W=H.W
+  if W isa CoxeterGroup return char_values(Tbasis(H)(w)) end
+  p=findfirst(==(w),classinfo(W)[:classtext])
+  if !isnothing(p) return CharTable(H).irr[:,p] end
+  improve_type(map(representations(H))do r
+    first(traces_words_mats(r,[w]))
+  end)
+end
+
 function schur_element(H::HeckeAlgebra,p)
   t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices], 
       haskey(H,:rootpara) ?  H.rootpara[t.indices] : 

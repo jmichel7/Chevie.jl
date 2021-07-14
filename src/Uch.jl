@@ -1148,6 +1148,13 @@ function DLLefschetz(h,i=0)
   UniChar(W,improve_type((char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
+function DLLefschetz(H::HeckeAlgebra,w,i=0)
+  W=H.W
+  uc=UnipotentCharacters(W)
+  uniform=uc.almostHarishChandra[1][:charNumbers]
+  UniChar(W,improve_type((char_values(H,w)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
+end
+
 function DLLefschetzTable(H)
   WF=H.W
   t=CharTable(H).irr
