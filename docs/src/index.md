@@ -198,7 +198,9 @@ DiaconisGraham
 # Finite fields
 ```@docs
 FFields
-mod(::Cyc,::Any)
+FFE
+FFE(i::Integer)
+Z(::Any)
 ```
 # Coxeter groups
 ```@docs

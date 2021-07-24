@@ -396,7 +396,8 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 """
-  `gcdx` works for polynomials over a field:
+  `gcdx(a,b)` works for polynomials over a field.
+  returns `d,u,v` such that `d=ua+vb` and `d=gcd(a,b)`.
 ```julia-repl
 julia> gcdx(q^3-1//1,q^2-1//1)
 ((1//1)q-1//1, 1//1, (-1//1)q)
@@ -418,7 +419,6 @@ function Base.gcdx(a::Pol, b::Pol)
   (x, s0, t0)./x[end]
 end
 
-
 #powermod for Pols over a field
 function Base.powermod(p::Pol, x::Integer, q::Pol)
   x==0 && return one(q)
@@ -439,6 +439,23 @@ end
 
 # random polynomial of degree d
 Base.rand(::Type{Pol{T}},d::Integer) where T=Pol(rand(T,d+1))
+
+# Interpolation: find Pol of smallest degree taking values y at points x
+function Pol(x::AbstractVector,y::AbstractVector)
+  t=collect(y).*1//1 # make sure coeffs are in a field
+  a=map(eachindex(x))do i
+    for k in i-1:-1:1
+      if x[i]==x[k] error("interpolating points must be distinct") end
+      t[k]=(t[k+1]-t[k])/(x[i]-x[k])
+    end
+    t[1]
+  end
+  p=Pol([a[end]])
+  for i in length(x)-1:-1:1
+    p=p*(Pol()-x[i])+a[i]
+  end
+  p
+end
 
 #---------------------- RatFrac-------------------------------------
 struct RatFrac{T}

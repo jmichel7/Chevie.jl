@@ -596,6 +596,23 @@ function Pols.Pol(p::Mvp{T,N},var::Symbol)where{T,N}
 end
 
 """
+`Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
+
+```julia-repl
+julia> @Pol q
+Pol{Int64}: q
+
+julia> Mvp(q^2+q)
+Mvp{Int64}: q²+q
+```
+"""
+Mvp(x::Pol)=convert(Mvp,x)
+
+Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
+                     p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
+Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
+
+"""
 `variables(p::Mvp)`
 `variables(v::Array{Mvp})`
 

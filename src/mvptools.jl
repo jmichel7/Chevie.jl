@@ -12,23 +12,6 @@ function Cycs.root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
 end
 
 """
-`Mvp(p)` converts  the `Pol`  `p` to  an  `Mvp`. 
-
-```julia-repl
-julia> @Pol q
-Pol{Int64}: q
-
-julia> Mvp(q^2+q)
-Mvp{Int64}: q²+q
-```
-"""
-Mvp(x::Pol)=convert(Mvp,x)
-
-Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
-                     p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
-Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
-
-"""
 `factor(p::Mvp)`
 
 `p`  should be of degree <=2 thus represents a quadratic form. The function
@@ -89,28 +72,26 @@ function Util.factor(p::Mvp{T,N})where {T,N}
 end
 
 """
-`mod(z::Cyc,p::Integer)`
-
-`p`  should be a  prime and `z`  a cyclotomic number  which is `p`-integral
-(that  is, `z` times some number prime to `p` is a cyclotomic integer). The
-function  returns  the  reduction  of  `z`  mod.  `p`,  an  element of some
-extension  `F_(p^r)` of the prime field  `F_p`.
+`FFE{p}(z::Cyc)`  where `z` is  a `p`-integral cyclotomic  number (that is,
+`z`  times some number prime  to `p` is a  cyclotomic integer), returns the
+reduction  of `z` mod.  `p`, an element  of some extension  `𝔽_{pʳ}` of the
+prime field `𝔽ₚ`.
 
 ```julia_repl
-julia> mod(E(7),3)
+julia> FFE{3}(E(7))
 Z₇₂₉¹⁰⁴
 ```
 """
-function Base.mod(c::Cyc,p)
+function FFields.FFE{p}(c::Cyc)where p
   x=coefficients(c) 
   n=conductor(c)
   np=MatInt.prime_part(n,p)
   pp=div(n,np)
-  r=order(Mod{np}(p)) # order of p mod np
+  r=order(Mod(p,np)) # order of p mod np
   zeta=Z(p^r)^(div(p^r-1,np)*gcdx(pp,p^r-1)[2]) #n-th root of unity
   if !isone(zeta^n) error() end
   sum(i->zeta^(i-1)*x[i],1:n)
-end;
+end
 
 export pblocks
 """
@@ -150,7 +131,7 @@ function pblocks(G,p)
   T=CharTable(G)
   l=length(T.charnames)
   classes=map(c->div(T.centralizers[1],c),T.centralizers)
-  v=map(chi->map(j->mod(classes[j]*chi[j]//chi[1],p),1:l),eachrow(T.irr))
+  v=map(chi->map(j->FFE{p}(classes[j]*chi[j]//chi[1]),1:l),eachrow(T.irr))
   sort(collectby(improve_type(v),1:l))
 end
 

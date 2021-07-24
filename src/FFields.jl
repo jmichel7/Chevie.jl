@@ -37,11 +37,9 @@ julia> order(a) # multiplicative order of a
 ```
 
 The Galois field with `p^n` elements is obtained as `GF(p^n)`. To work with
-elements  of this  field, the  function `Z(p^n)`  returns a genertor of the
-multiplicative group of `GF(p^n)` (this is a particular generator, obtained
-as a root of the `n`-th Conway polynomial of characteristic `p`). All other
-elements  of  `GF(p^n)`  can  be  obtained  as  a  power  of `Z(p^n)` or as
-`0*Z(p^n)`.
+elements  of  this  field,  (as  in  GAP)  the  function `Z(p^n)` returns a
+generator  of  the  multiplicative  group  of  `GF(p^n)`. Other elements of
+`GF(p^n)` are obtained as a power of `Z(p^n)` or as `0*Z(p^n)`.
 
 ```julia-repl
 julia> a=Z(64)
@@ -57,7 +55,8 @@ julia> a+1
 FFE{2}: Z₆₄⁵⁶
 ```
 
-Elements of the prime field can be converted back to integers `Mod(,p)` 
+Elements  of the prime field can be converted back to integers `Mod(,p)` or
+to integers:
 
 ```julia-repl
 julia> a=Z(19)+3
@@ -65,6 +64,9 @@ FFE{19}: 5
 
 julia> Mod(a)
 Mod{UInt64}: 5₁₉
+
+julia> Int(a)
+5
 
 julia> order(a) # order as element of the multiplicative group
 9
@@ -83,7 +85,13 @@ GF(2^3)
 julia> char(F)
 2
 
+julia> char(a)
+2
+
 julia> degree(F)
+3
+
+julia> degree(a)
 3
 
 julia> length(F)
@@ -91,10 +99,21 @@ julia> length(F)
 
 julia> log(a)
 5
+
+julia> elements(F)
+8-element Vector{FFE{2}}:
+   0
+   1
+  Z₈
+ Z₈²
+ Z₈³
+ Z₈⁴
+ Z₈⁵
+ Z₈⁶
 ```
 
-The type of an element of `GF(p^n)` is `FFE{p}`. An integer or a `Mod(,p)` can
-be converted to the prime field using this type as constructor.
+The type of an element of `GF(p^n)` is `FFE{p}`. A `p`-integral number or a
+`Mod(,p)` can be converted to the prime field using this type as constructor.
 
 ```julia-repl
 julia> FFE{19}(2)
@@ -106,7 +125,7 @@ FFE{19}: 2
 """
 module FFields
 using ..Util: factor, divisors
-export Mod, GF, FFE, Z, field, order, degree, char
+export Mod, GF, FFE, Z, field, order, degree, char, elements
 
 struct Mod{T}<:Number
   val::T
@@ -285,11 +304,16 @@ end
 @inline degree(F::GF)=F.d
 @inline Base.length(F::GF)=F.q
 
+"""
+`FFE{p}` is the type of the elements of a finite field of characteristic `p`.
+"""
 struct FFE{p}<:Number
   i::Int16  # the number is Z(field.q)^i
   Fi::Int16 # the field is FFvec[Fi]
 end
+
 @inbounds @inline field(x::FFE)=FFvec[x.Fi]
+@inline char(x::FFE{p}) where p=p
 
 #Base.:(==)(::Type{FFE{p}},::Type{FFE{q}}) where{p,q}=p==q
 
@@ -297,11 +321,6 @@ function Base.promote_rule(::Type{FFE{p}},::Type{FFE{q}})where {p,q}
   if p!=q error("cannot mix characteristics $p and $q") end
   FFE{p}
 end
-
-#function Base.promote_type(::Type{FFE{p}},::Type{FFE{q}})where {p,q}
-#  if p!=q error("cannot mix characteristics $p and $q") end
-#  FFE{p}
-#end
 
 const FFi=Dict{Int,Int}()
 const FFvec=GF[]
@@ -371,6 +390,31 @@ Base.:^(a::FFE{p},n::Integer) where p=iszero(a) ? a :
 Base.rand(F::GF)=Z(F.p,F.d)^rand(0:F.q-2)
 Base.rand(F::GF,n::Int)=map(i->rand(F),1:n)
 
+"""
+`Z(p^d)` or `Z(p,d)`
+
+This  returns a generator  of the multiplicative  group of the finite field
+`𝔽_{pᵈ}`,  where   `p`  must be  prime and  `p^d` smaller  than `2¹⁵`. This
+multiplicative  group is  cyclic thus  `Z(p^d)^a` runs  over it  for `a` in
+`0:p^d-1`.  The zero of the  field is `0*Z(p)` (the  same as `0*Z(p^d)`; we
+automatically lower an element to the smallest field which contains it).
+
+The  various generators returned by `Z` for finite fields of characteristic
+`p`  are compatible. That  is, if the  field `𝔽_{pⁿ}` is  a subfield of the
+field `𝔽_{pᵐ}`, that is, `n` divides `m`, then
+`Z(p^n)=Z(p^m)^div(p^m-1,p^n-1)`.  This is  achieved by  choosing `Z(p)` as
+the smallest primitive root modulo `p` and `Z(p^n)` as a root of the `n`-th
+Conway polynomial of characteristic `p`. Those polynomials where defined by
+J.H.~Conway and computed by R.A.~Parker.
+
+```julia-repl
+julia> z=Z(16)
+FFE{2}: Z₁₆
+
+julia> z^5
+FFE{2}: Z₄
+```
+"""
 function Z(q)
   if q==2 return FFE{2}(0,iFF(2)) end
   Fi=iFF(q)
@@ -380,6 +424,12 @@ end
 function Z(p,n)
   if p==2 && n==1 return FFE{2}(0,iFF(2)) end
   FFE{Int(p)}(1,iFF(p^n))
+end
+
+function elements(F::GF)
+  l=Z(length(F)).^(0:length(F)-2)
+  pushfirst!(l,0*Z(length(F)))
+  l
 end
 
 Base.promote_rule(::Type{FFE{p}},::Type{<:Integer}) where p=FFE{p}
@@ -435,6 +485,10 @@ function Zi(p,i) # assume i is already modp
   FFE{Int(p)}(FFvec[Fi].dict[1+i],Fi)
 end
 
+"""
+`FFE{p}(i)`  for `i` an integer or a fraction with denominator prime to `p`
+returns the reduction mod `p` of `i`, an element of the prime field `𝔽ₚ`.
+"""
 FFE{p}(i::Integer) where p=Zi(p,mod(i,p))
 FFE{p}(i::Mod) where p=Zi(i.n,i.val)
 

@@ -25,23 +25,6 @@ function DistSeg(z,a,b)
   real(z)<0 ? abs(z) : real(z)>r ? abs(z-b) : imag(z)>0 ? imag(z) : -imag(z)
 end
 
-# find Pol of smallest degree taking values y at points x
-function Pols.Pol(x::AbstractVector,y::AbstractVector)
-  t=collect(y).*1//1 # make sure coeffs are in a field
-  a=map(eachindex(x))do i
-    for k in i-1:-1:1
-      if x[i]==x[k] error("interpolating points must be distinct") end
-      t[k]=(t[k+1]-t[k])/(x[i]-x[k])
-    end
-    t[1]
-  end
-  p=Pol([a[end]])
-  for i in length(x)-1:-1:1
-    p=p*(Pol()-x[i])+a[i]
-  end
-  p
-end
-
 """
 `discy2(p::Mvp)`
 
