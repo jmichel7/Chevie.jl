@@ -63,6 +63,7 @@ Base.in(::Perm,::PermGroup)
 Cycs
 conductor
 coefficients(c::Cyc)
+denominator(c::Cyc{Rational})
 E
 galois
 ER
@@ -73,8 +74,10 @@ Cycs.root
 # Univariate (Laurent) polynomials
 ```@docs
 Pols
+Pol
 divrem
 gcd(::Pol,::Pol)
+gcdx(::Pol,::Pol)
 cyclotomic_polynomial
 ```
 # Multivariate (Puiseux) polynomials

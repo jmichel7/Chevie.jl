@@ -421,16 +421,14 @@ simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 
 list of same length as `W.roots` giving corresponding reflections
 """
-function reflections(W::PermRootGroup)
-  getp(simple_reps,W,:reflections)
-end
+reflections(W::PermRootGroup)=getp(simple_reps,W,:reflections)
 
 """
 `reflection(W,i)`
 
 reflection for `i`-th root of `W`
 """
-reflection(W::PermRootGroup,i)=reflections(W)[i]
+reflection(W::PermRootGroup,i)=i<=ngens(W) ? W(i) : reflections(W)[i]
 
 """
 `simple_conjugating(W)`
@@ -1090,11 +1088,11 @@ function Base.show(io::IO, W::PermRootGroup)
   showtorus(io,W)
 end
 
-function independent_roots(W::PermRootGroup)::Vector{Int}
+function independent_roots(W::PermRootGroup)
   get!(W,:indeproots) do
     r=roots(W)
     if isempty(r) Int[]
-    else sort(echelon(toM(roots(W)))[2])
+    else sort(echelon(toM(roots(W)))[2])::Vector{Int}
     end
   end
 end
@@ -1506,10 +1504,10 @@ simplecoroots(W::PRG)=W.coroots[eachindex(gens(W))]
 
 function coroots(W::PRG,i::Integer)
   if isassigned(W.coroots,i) return W.coroots[i] end
-  m=reflrep(W,reflection(W,i))
   j=findfirst(!iszero,roots(W,i))
-  r=(one(m)-m)[:,j].//roots(W,i)[j]
-  W.coroots[i]=improve_type(r)
+  m=reflrep(W,i)
+  m=one(m)-m
+  W.coroots[i]=improve_type(m[:,j].//roots(W,i)[j])
 end
 
 coroots(W::PRG,i::AbstractVector{<:Integer})=isempty(i) ? empty(W.coroots) : coroots.(Ref(W),i)
@@ -1531,6 +1529,7 @@ function Base.:*(W::PRG,V::PRG)
   PRG(r,cr)
 end
   
+"`reflrep(W)` returns the list of `reflrep(W,x)` for `x` in `gens(W)`"
 reflrep(W::PRG)=W.matgens
 reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : 
                                          reflrep(W,reflection(W,i))
@@ -1647,8 +1646,8 @@ function Base.show(io::IO, W::PRSG)
   showtorus(io,W)
 end
 
-reflrep(W::PRSG)=map(i->reflrep(parent(W),i),inclusiongens(W))
 reflrep(W::PRSG,i::Integer)=reflrep(parent(W),inclusion(W,i))
+reflrep(W::PRSG)=map(i->reflrep(W,i),eachindex(gens(W)))
 
 #-------------------------------------------------
 """

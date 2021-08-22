@@ -329,7 +329,7 @@ function split_levis(WF,d::Root1,ad)
   else W=WF; WF=spets(W)
   end
   refs=Int.(indexin(unique(reflections(W)),reflections(W)))
-  mats=map(i->reflrep(W,reflection(W,i)),refs)
+  mats=reflrep.(Ref(W),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
   res=typeof(subspets(WF,Int[]))[]

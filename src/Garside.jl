@@ -1097,10 +1097,18 @@ Base.:^(a::LocallyGarsideElm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.:^(a::GarsideElm,b::GarsideElm,F=x->x)=inv(b)*a*F(b)
 
 function Base.reverse(b::GarsideElm)
-  if isempty(b.elm) return b end
-  res=GarsideElm(b.M,empty(b.elm),b.pd;check=false)
-  for s in reverse(b.elm)
-    res*=δad(b.M,reverse(b.M,s),-b.pd)
+  if haskey(b.M,:revMonoid)
+    res=GarsideElm(b.M.revMonoid,empty(b.elm),b.pd;check=false)
+    if isempty(b.elm) return res end
+    for s in reverse(b.elm)
+      res*=δad(b.M.revMonoid,s^-1,b.pd)
+    end
+  else
+    if isempty(b.elm) return b end
+    res=GarsideElm(b.M,empty(b.elm),b.pd;check=false)
+    for s in reverse(b.elm)
+      res*=δad(b.M,reverse(b.M,s),-b.pd)
+    end
   end
   res
 end
@@ -1340,16 +1348,6 @@ end
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             word(M.W,M.δ),")")
-
-function Base.reverse(M::DualBraidMonoid,b::GarsideElm)
-  if !haskey(M,:revMonoid) error("no revMonoid") end
-  res=GarsideElm(M.revMonoid,empty(b.elm),b.pd;check=false)
-  if isempty(b.elm) return res end
-  for s in reverse(b.elm)
-    res*=δad(M.revMonoid,s^-1,b.pd)
-  end
-  res
-end
 
 function atomsinbraidmonoid(M::DualBraidMonoid)
   get!(M,:atomsinbraidmonoid)do

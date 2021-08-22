@@ -91,9 +91,9 @@ include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
 include("Pols.jl");@reexport using .Pols
-#if false
 include("ModuleElts.jl");@reexport using .ModuleElts
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
+#if false
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields

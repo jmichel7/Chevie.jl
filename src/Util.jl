@@ -50,10 +50,7 @@ toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hca
 A  variation of get! where it is assumed f(o) sets o.p but not assumed that
 f returns o.p, because f sets several keys at once...
 """
-function getp(f::Function,o,p::Symbol)
-  if !haskey(o,p) f(o) end
-  getproperty(o,p)
-end
+getp(f::Function,o,p::Symbol)=get!(()->(f(o);o.prop[p]),o.prop,p)
 
 # a GapObj is an object which has a field prop::Dict{Symbol,Any}
 # so has fixed fields but can dynamically have new ones

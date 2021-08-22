@@ -62,7 +62,7 @@ julia> m=[q+1 q+2;q-2 q-3]
  q+1  q+2
  q-2  q-3
 
-julia> inv(m)  # when dividing by a non-monomial, get rational fraction
+julia> inv(RatFrac.(m))
 2×2 Matrix{RatFrac{Int64}}:
  (-q+3)/(2q-1)   (q+2)/(2q-1)
  (-q+2)/(-2q+1)  (q+1)/(-2q+1)
