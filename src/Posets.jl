@@ -354,7 +354,7 @@ function checkl(ord::Matrix{Bool})
     if !ord[j,i] || ord[i,j]
       l=ord[i,:].&ord[j,:]
       if !(l in subl)
-        if !any(y->l==l.&y,ord[l,:])
+        if !any(y->l==l.&y,eachrow(ord[l,:]))
           for k in (1:n)[l]
             ll=copy(ord[k,:])
             ll[k]=false
