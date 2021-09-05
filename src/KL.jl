@@ -293,11 +293,13 @@ struct HeckeCpElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict
   H::TH
 end
+clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
 
 struct HeckeCElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict
   H::TH
 end
+clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
 
 HeckeAlgebras.basename(h::HeckeCpElt)="C'"
 HeckeAlgebras.basename(h::HeckeCElt)="C"

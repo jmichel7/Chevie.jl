@@ -133,7 +133,31 @@ export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
 end
 
 """
-   hecke( W [, parameter][,rootpara=r]) return a Hecke algebra for W
+`hecke( W [, parameter][,rootpara=r])`
+
+Hecke algebra for the  complex reflection group or Coxeter group `W`.
+
+The  following forms are accepted for  `parameter`: if `parameter` is not a
+vector, it is replaced by `fill(para,ngens(W))`. If it is a vector with one
+entry, it is replaced with `fill(para[1],ngens(W))`. Otherwise, `parameter`
+should be a list of length `ngens(W)`. Entries of `parameter` corresponding
+to the same `W`-orbit of generators should be identical. `parameter` can be
+shorter than `ngens(W)` provided there is at least one entry bound for each
+orbit of reflections.
+
+An  entry in  `parameter` for  a reflection  of order  `e` can  be either a
+single  value or  a `Vector`  of length  'e'. If  it is  a `Vector`,  it is
+interpreted as the list `[u₀,…,u_(e-1)]` of parameters for that reflection.
+If  it is a single  value `q`, it is  interpreted as the partly specialized
+list  of parameters `[q,ζ_e,…,ζ_{e-1}]` (thus  `[q,-1]` for Coxeter groups,
+and  `hecke(W,1)` is  the group  algebra of  `W` with `Cyc` coefficients).
+
+Computing characters or representations of Hecke algebra needs sometimes to
+extract  roots of the  parameters. These roots  are extracted automatically
+(when  possible). For Coxeter groups it  is possible to give explicit roots
+by  giving a keyword argument `rootpara`:  it should be a vector containing
+at the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`
+(if `rootpara` is not a `Vector` it is repaced by `fill(rootpara,ngens(W))`).
 
 # Example
 ```julia-repl
@@ -168,6 +192,22 @@ hecke(B₂,9,rootpara=3)
 
 julia> H.para,rootpara(H)
 ([[9, -1], [9, -1]], [3, 3])
+
+julia> @Mvp x,y,z,t
+
+julia> H=hecke(W,[[x,y]])
+hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y]])
+
+julia> H.para,rootpara(H)
+root(-1,2)=E(4)
+(Vector{Mvp{Int64, Int64}}[[x, y], [x, y]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄x½y½])
+
+julia> H=hecke(W,[[x,y],[z,t]])
+hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])
+
+julia> H.para,rootpara(H)
+(Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
+
 ```
 """
 function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
@@ -176,6 +216,7 @@ function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
     if i<=length(para) 
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
+    elseif length(para)==1 return para[1]
     elseif j<i return para[j]
     else error("parameters should be given for first reflection in a class")
     end
@@ -225,7 +266,9 @@ coefftype(H::HeckeAlgebra{C}) where C=C
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
   if isempty(para) para
-  elseif constant(tr.(para)) tr(para[1])
+  elseif constant(tr.(para)) 
+    p=tr(para[1])
+    p isa Vector ? [p] : p
   else map(tr,para)
   end
 end
@@ -462,7 +505,6 @@ abstract type HeckeElt{P,C} end # P=typeof(keys) [Perms] C typeof(coeffs)
 
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
-clone(h::HeckeElt,d)=typeof(h)(d,h.H)
 Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
 
 # HeckeElts are scalars for broadcasting
@@ -501,6 +543,7 @@ struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
   H::TH
 end
 
+clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
 basename(h::HeckeTElt)="T"
  
 function Base.one(H::HeckeAlgebra)
