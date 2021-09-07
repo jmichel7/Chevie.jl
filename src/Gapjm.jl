@@ -93,13 +93,13 @@ include("Perms.jl");@usingmerge verbose=true reexport Perms
 include("Pols.jl");@reexport using .Pols
 include("ModuleElts.jl");@reexport using .ModuleElts
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
-#if false
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl")
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
+#if false
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl

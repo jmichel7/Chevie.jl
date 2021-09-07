@@ -1798,7 +1798,7 @@ julia> p=Presentation(M)
 ```
 
 ```julia-rep1
-julia> Presentations.DisplayPresentation(p)
+julia> display_balanced(p)
 1: ab=da
 2: ac=ca
 3: ec=cb
@@ -1819,7 +1819,7 @@ julia> simplify(p)
 << presentation with 3 generators, 4 relators of total length 26>>
 << presentation with 3 generators, 3 relators of total length 16>>
 
-julia> Presentations.DisplayPresentation(p)
+julia> display_balanced(p)
 1: ab=ba
 2: cac=aca
 3: cbc=bcb

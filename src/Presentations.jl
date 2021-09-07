@@ -1,5 +1,6 @@
 """
-This is a port of some GAP3/VkCurve routines on presentations.
+This is a port of some GAP3/VkCurve functionality on presentations and
+finitely presented groups.
 
 *finitely  presented groups*  are distinguished  from *group presentations*
 which  are objects of their own. The  reason is that when a presentation is
@@ -33,6 +34,13 @@ FreeGroup(a,b)/[a²,b⁷,a⁻¹b⁻¹a⁻¹bab⁻¹ab,a⁻¹b⁻²a⁻¹b²ab⁻
 
 julia> P=Presentation(G)
 << presentation with 2 gens and 4 rels of total length 30 >>
+
+julia> relators(P)
+4-element Vector{AbsWord}:
+ a²
+ b⁷
+ ab⁻¹abab⁻¹ab
+ b⁻²ab²ab⁻²ab²ab⁻¹
 ```
 
 ```julia-rep1
@@ -40,24 +48,23 @@ julia> Presentations.PrintGenerators(P)
 #I 1. a 10 occurrences involution
 #I 2. b 20 occurrences
 
-julia> Presentations.PrintRelators(P)
-#I 1. a²
-#I 2. b⁷
-#I 3. ab⁻¹abab⁻¹ab
-#I 4. b⁻²ab²ab⁻²ab²ab⁻¹
-
-julia> Presentations.Print(P)
-#I  generators: AbsWord[a, b]
-#I  relators:
-#I  1.  2  [1, 1]
-#I  2.  7  [2, 2, 2, 2, 2, 2, 2]
-#I  3.  8  [1, -2, 1, 2, 1, -2, 1, 2]
-#I  4.  13  [-2, -2, 1, 2, 2, 1, -2, -2, 1, 2, 2, 1, -2]
-
-julia> Presentations.PrintStatus(P)
-<< presentation with 2 generators, 4 relators of total length 30>>
+julia> Presentations.display_balanced(P)
+1: a=A
+2: bbbbbbb=1
+3: aBab=BAbA
+4: BBabbaBBabbaB=1
 ```
 
+for more information look at the help strings of 
+AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
+       tryconjugate, simplify, relators, display_balanced
+"""
+module Presentations
+using ..Gapjm
+export AbsWord, @AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
+       tryconjugate, simplify, relators, display_balanced
+
+"""
 # Changing Presentations
 
 The  functions `AddGenerator`, `AddRelator`, `RemoveRelator` can be used to
@@ -114,12 +121,7 @@ also  the  *Tietze  options*:  parameters  which  essentially influence the
 performance  of the  functions mentioned  above; they  are not specified as
 arguments of function calls. Instead, they are stored in the presentation.
 """
-module Presentations
-using ..Gapjm
-export AbsWord, @AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
-       tryconjugate, simplify
-
-plural(n)=n==1 ? "" : "s"
+plural(n,w)=string(n)*" "*w*(n==1 ? "" : "s")
 
 #------------------ Abstract Words ----------------------------------
 struct AbsWord 
@@ -143,9 +145,11 @@ struct AbsWord
   end
 end
 
+"A positive `AbsWord` is obtained by giving `Symbols` as arguments"
 AbsWord(x::Symbol...)=AbsWord([s=>1 for s in x])
 
-macro AbsWord(t) # @Mvp x,y,z defines variables to be Mvp
+"`@AbsWord x,y,z` defines the variables `x,y,z` to be `AbsWord`s"
+macro AbsWord(t) 
   if t isa Expr
     for v in t.args
       Base.eval(Main,:($v=AbsWord($(Core.QuoteNode(Symbol(v))))))
@@ -155,6 +159,7 @@ macro AbsWord(t) # @Mvp x,y,z defines variables to be Mvp
   end
 end
 
+"AbsWord(s::String) defines an `AbsWord` from a line of display_balanced"
 function AbsWord(s::AbstractString)
   ss=split(s,"=")
   if ss[end]=="1" pop!(ss) end
@@ -167,16 +172,6 @@ function AbsWord(s::AbstractString)
     end
   end
   AbsWord(res)
-end
-
-function fromgap(s::String)
-  l=split(s,"\n")
-  l=map(s->replace(s,r"^ *[0-9]*: *"=>""),l)
-  l=filter(x->match(r"^ *$",x)===nothing,l)
-  rels=AbsWord.(l)
-  atoms=union(map(x->first.(x.d),rels)...)
-  sort!(atoms)
-  Presentation(AbsWord.(atoms),rels)
 end
 
 function Base.show(io::IO,a::AbsWord)
@@ -194,10 +189,13 @@ Base.inv(a::AbsWord)=AbsWord([k=>-v for (k,v) in reverse(a.d)];check=false)
 Base.:^(a::AbsWord, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                        Base.power_by_squaring(inv(a),-n)
 Base.:^(a::AbsWord, b::AbsWord)=inv(b)*a*b
+Base.:/(a::AbsWord, b::AbsWord)=a*inv(b)
+Base.:\(a::AbsWord, b::AbsWord)=inv(a)*b
 Base.length(a::AbsWord)=sum(x->abs(last(x)),a.d;init=0)
 Base.copy(a::AbsWord)=AbsWord(copy(a.d))
 Base.:(==)(a::AbsWord,b::AbsWord)=a.d==b.d
 
+"returns symbol for an AbsWord of length 1"
 function mon(w::AbsWord)
   if length(w.d)!=1 || last(w.d[1])!=1 error("not generator") end
   first(w.d[1])
@@ -336,20 +334,19 @@ function PrintStatus(P::Presentation;norepeat=false)
   status=[T.numgens-T.numredunds, T.numrels, T.total]
   if !(status==T.status && norepeat)
     T.status=status
-    print("<< presentation")
+    print("Presentation:")
     if haskey(P, :name) print(" ",P.name)end
-    print(" with ",status[1], " generator",plural(status[1]))
-    print(", ", status[2], " relator",plural(status[2]))
-    print(" of total length ", status[3], ">>")
+    print(" ",plural(status[1],"generator"))
+    print(", ",plural(status[2],"relator"))
+    print(", total length ",status[3])
     println()
   end
 end
 
 function Base.show(io::IO, T::Presentation)
-  tietze=T.tietze
-  numgens=tietze.numgens-tietze.numredunds
-  print(io,"<< presentation with ",numgens," gens and ",tietze.numrels,
-        " rels of total length ",tietze.total, " >>")
+  t=T.tietze
+  print(io,"Presentation: ",plural(t.numgens-t.numredunds,"generator"),
+        ", ",plural(t.numrels,"relator"),", total length ",t.total)
 end
 
 function Base.sort!(P::Presentation)
@@ -411,7 +408,7 @@ function AddGenerator(P::Presentation,gen=nothing)
     T.numgens+=1
     T.inverses=vcat([T.numgens],T.inverses, [-T.numgens])
   end
-  if haskey(P, :imagesOldGens) UpdateGeneratorImages(P, -1, 0) end
+  if haskey(P, :imagesOldGens) StopTracingGeneratorImages(P) end
   T.modified=true
 end
 
@@ -434,7 +431,7 @@ function AddRelator(P::Presentation, word)
     T.total+=T.lengths[end]
     T.modified=true
   end
-  if haskey(P,:imagesOldGens) UpdateGeneratorImages(P, -1, 0) end
+  if haskey(P,:imagesOldGens) StopTracingGeneratorImages(P) end
 end
 
 # reduce cyclically a Tietze word using the table of inverses
@@ -647,6 +644,19 @@ these  functions. A  `printlevel` value  of 0  will suppress these messages,
 whereas a `printlevel` value of 2 will enforce some additional output.
 """
 Presentation(G::FpGroup,printlevel::Integer=1)=Presentation(G.gens,G.rels)
+
+# takes as input the output of display_balanced
+function Presentation(s::String)
+  s=replace(s,r"\n\s*="=>"=")
+  l=split(s,"\n")
+  l=map(s->replace(s,r"^ *[0-9]*: *"=>""),l)
+  l=filter(x->match(r"^ *$",x)===nothing,l)
+  rels=AbsWord.(l)
+  l=map(x->first.(x.d),rels)
+  atoms=length(l)==1 ? unique(l[1]) : union(map(x->first.(x.d),rels)...)
+  sort!(atoms)
+  Presentation(AbsWord.(atoms),rels)
+end
 
 """
 RelsViaCosetTable(G,cosets)  . . . . . . . construct relators for the
@@ -913,7 +923,7 @@ uses coset enumeration methods to find a defining set of relators for `G`.
     2016
     gap> P := PresentationViaCosetTable( G );
     << presentation with 2 gens and 5 rels of total length 46 >>
-    gap> PrintRelators( P );
+    gap> relators( P );
     &I  1. f.2^3
     &I  2. f.1^6
     &I  3. f.1*f.2*f.1*f.2*f.1*f.2*f.1*f.2*f.1*f.2*f.1*f.2
@@ -1083,7 +1093,7 @@ function RemoveRelator(P::Presentation, n)
   T.total=T.total-leng
   sort!(P)
   if P.printLevel>=2 PrintStatus(P;norepeat= true) end
-  if haskey(P, :imagesOldGens) UpdateGeneratorImages(P, -1, 0) end
+  if haskey(P, :imagesOldGens) StopTracingGeneratorImages(P) end
 end
 
 """
@@ -1603,30 +1613,29 @@ end
 """
 `Go(P::Presentation[,silent])`
 
-`simplify`  performs Tietze transformations on a presentation
-`P`.   It  is perhaps  the  most  convenient  of  the interactive  Tietze
-transformation commands.  It offers  a kind of default strategy which, in
-general,  saves you from explicitly  calling the lower-level commands  it
-involves.
+`Go`  performs Tietze transformations on a  presentation `P`. It is perhaps
+the  most convenient of the  interactive Tietze transformation commands. It
+offers  a  kind  of  default  strategy  which,  in  general, saves you from
+explicitly calling the lower-level commands it involves.
 
-Roughly  speaking,  `simplify`  consists  of  a  loop  over a
-procedure which  involves two  phases: In the *search phase* it  calls
-`Search` and `SearchEqual`  described  below which  try to reduce the
-relator lengths  by  substituting  common  subwords  of relators,  in the
-*elimination phase*  it calls the command  `Eliminate`  described below
-(or, more  precisely, a subroutine of `Eliminate` in order to save some
-administrative overhead) which tries to eliminate generators that can  be
-expressed as words in the remaining generators.
+Roughly  speaking, `Go` consists of a  loop over a procedure which involves
+two  phases:  In  the  *search  phase*  it calls `Search` and `SearchEqual`
+described  below which  try to  reduce the  relator lengths by substituting
+common  subwords  of  relators,  in  the  *elimination  phase* it calls the
+command  `Eliminate` described below  (or, more precisely,  a subroutine of
+`Eliminate`  in order to save some  administrative overhead) which tries to
+eliminate  generators  that  can  be  expressed  as  words in the remaining
+generators.
 
-If `simplify` succeeds in reducing the number of  generators,
-the  number of  relators,  or the total length of all  relators, then  it
-displays the  new  status before returning (provided that you did not set
-the print level to zero).  However, it does not provide any output if all
-these three  values  have remained unchanged, even if the `SearchEqual`
-command involved has changed the presentation such  that  another call of
-`simplify` might provide further  progress.  Hence, in such a
-case it makes sense  to repeat the call of the command for  several times
-(or to call instead the `GoGo` command which we will describe next).
+If  `Go`  succeeds  in  reducing  the  number  of generators, the number of
+relators,  or the total  length of all  relators, then it  displays the new
+status  before returning (provided that you did  not set the print level to
+zero).  However, it does not  provide any output if  all these three values
+have  remained unchanged,  even if  the `SearchEqual`  command involved has
+changed  the  presentation  such  that  another  call of `Go` might provide
+further  progress. Hence, in such a case  it makes sense to repeat the call
+of  the command for  several times (or  to call instead  the `GoGo` command
+which we will describe next).
 
 As an example  we  compute  a presentation of a  subgroup of index 408 in
 `PSL(2,17)`.
@@ -1655,7 +1664,7 @@ As an example  we  compute  a presentation of a  subgroup of index 408 in
     &I  there are 2 generators and 4 relators of total length 14
     &I  there are 2 generators and 4 relators of total length 13
     &I  there are 2 generators and 3 relators of total length 9
-    gap> PrintRelators( P );
+    gap> relators( P );
     &I  1. _x1^2
     &I  2. _x2^3
     &I  3. _x2*_x1*_x2*_x1 |
@@ -1703,14 +1712,10 @@ simplify(P::Presentation)=GoGo(P)
 """
 `GoGo(P)`
 
-`GoGo`  performs  Tietze  transformations  on  a presentation  <P>.  It
-repeatedly   calls  the  `Go`  command  until  neither  the  number  of
-generators  nor  the number  of relators  nor  the total  length  of  all
-relators have changed during five consecutive calls of `Go`.
-
-This  may  remarkably  save  you  time  and effort  if you  handle  small
-presentations, however it may  lead  to  annoyingly  long  and  fruitless
-waiting times in case of large presentations.
+`GoGo` performs Tietze transformations on a presentation `P`. It repeatedly
+calls  the  `Go`  command  until  neither  the number of generators nor the
+number of relators nor the total length of all relators have changed during
+five consecutive calls of `Go`.
 """
 function GoGo(T::Presentation)
   tietze=T.tietze
@@ -1924,7 +1929,7 @@ positive  or negative  generator numbers,  i.e., each  factor of the proper
 generator  with  respect  to  the  current  list  of  generators, or by the
 respective  negative number,  if the  factor is  the inverse of a generator
 which  is  not  known  to  be  an  involution.  In contrast to the commands
-`PrintRelators`  and `PrintPresentation` described  above, `Print` does not
+`relators`  and `PrintPresentation` described  above, `Print` does not
 convert these lists back to the corresponding {GAP} words.
 
 `Print`  prints the current  list of generators,  and then for each relator
@@ -1976,7 +1981,7 @@ function PrintGenerators(P::Presentation,list::AbstractVector{Int}=1:P.tietze.nu
   if _min==_max
     occur=Occurrences(T, _max)
     num=occur[1][1]
-    print("#I ", _max,". ",gens[_max]," ",num," occurrence",plural(num))
+    print("#I ", _max,". ",gens[_max]," ",plural(num,"occurrence"))
     if T[-_max]>0 print(" involution") end
     println()
   elseif _min<_max
@@ -1984,7 +1989,7 @@ function PrintGenerators(P::Presentation,list::AbstractVector{Int}=1:P.tietze.nu
     for i in list
       if 1<=i<=numgens
         num=occur[1][i]
-        print("#I ", i, ". ", gens[i], " ", num, " occurrence",plural(num))
+        print("#I ", i, ". ", gens[i], " ",plural(num,"occurrence"))
         if T[-i]>0 print(" involution") end
         println()
       end
@@ -2173,9 +2178,9 @@ the best results which we can get without substituting new generators.
 
 |    gap> F3 := FreeGroup( "a", "b", "c" );;
     gap> G := F3 / [ F3.1^3, F3.2^3, F3.3^3, (F3.1*F3.2)^5,
-    >       (F3.1^-1*F3.2)^5, (F3.1*F3.3)^4, (F3.1*F3.3^-1)^4,
-    >       F3.1*F3.2^-1*F3.1*F3.2*F3.3^-1*F3.1*F3.3*F3.1*F3.3^-1,
-    >       (F3.2*F3.3)^3, (F3.2^-1*F3.3)^4 ];;
+            (F3.1^-1*F3.2)^5, (F3.1*F3.3)^4, (F3.1*F3.3^-1)^4,
+            F3.1*F3.2^-1*F3.1*F3.2*F3.3^-1*F3.1*F3.3*F3.1*F3.3^-1,
+            (F3.2*F3.3)^3, (F3.2^-1*F3.3)^4 ];;
     gap> a := G.1;;  b := G.2;;  c := G.3;;
     gap> H := Subgroup( G, [ a, c ] );;
     gap> P := PresentationSubgroup( G, H );
@@ -2186,7 +2191,7 @@ the best results which we can get without substituting new generators.
     >       Print( "&I  eliminationsLimit set to ", i, "\n" );
     >       Pi.printLevel := 0;
     >       GoGo( Pi );
-    >       PrintStatus( Pi );
+    >       print( Pi );
     >    od;
     &I  eliminationsLimit set to 28
     &I  there are 2 generators and 95 relators of total length 10817
@@ -2211,7 +2216,7 @@ changing the `eliminationsLimit`  parameter which keeps its default value
     >       Print( "&I  saveLimit set to ", i, "\n" );
     >       Pi.printLevel := 0;
     >       GoGo( Pi );
-    >       PrintStatus( Pi );
+    >       print( Pi );
     >    od;
     &I  saveLimit set to 9
     &I  there are 3 generators and 97 relators of total length 5545
@@ -2278,26 +2283,18 @@ end
 
 `PrintPresentation` prints the current lists of generators and relators
 and the current state of a presentation `P`.  In fact, the command
-
-|    PrintPresentation( P ) |
-
-is an abbreviation of the command sequence
-
-|    Print( "generators:\n" ); PrintGenerators( P );
-    Print( "relators:\n" ); PrintRelators( P );
-    PrintStatus( P ); |
 """
 function PrintPresentation(T::Presentation)
   Check(T)
   print("#I  generators:\n")
   PrintGenerators(T)
   print("#I  relators:\n")
-  PrintRelators(T)
-  PrintStatus(T)
+  println(relators(T))
+  print(T)
 end
 
 """
-`PrintRelators(P[,list])`
+`relators(P)`
 
 prints the current list of relators  of  a presentation `P`.
 
@@ -2308,16 +2305,10 @@ The relators are printed as Tietze words in  the order  in  which (and as
 often as)  their numbers occur in  `list`.  Position numbers out of range
 (with respect to the list of relators) will be ignored.
 """
-function PrintRelators(P::Presentation,list=nothing)
+function relators(P::Presentation)
   Check(P)
   T=P.tietze
-  if T.numrels==0 print("#I there are no relators\n") end
-  if isnothing(list) list=1:T.numrels end
-  for i in list
-    if i in 1:T.numrels 
-      xprintln("#I ",i,". ",AbsWord(T.relators[i],T.generators)) 
-    end
-  end
+  map(i->AbsWord(T.relators[i],T.generators),1:T.numrels)
 end
 
 """
@@ -2765,7 +2756,7 @@ As an example we handle a subgroup of index 266 in the Janko group `J₁`.
 
 |    gap> F2 := FreeGroup( "a", "b" );;
     gap> J1 := F2 / [ F2.1^2, F2.2^3, (F2.1*F2.2)^7,
-    >    Comm(F2.1,F2.2)^10, Comm(F2.1,F2.2^-1*(F2.1*F2.2)^2)^6 ];;
+         Comm(F2.1,F2.2)^10, Comm(F2.1,F2.2^-1*(F2.1*F2.2)^2)^6 ];;
     gap> a := J1.1;;  b := J1.2;;
     gap> H := Subgroup ( J1, [ a, b^(a*b*(a*b^-1)^2) ] );;
     gap> P := PresentationSubgroup( J1, H );
@@ -2843,7 +2834,7 @@ As an example we handle a subgroup of index 266 in the Janko group `J₁`.
     gap> GoGo( P );
     &I  there are 2 generators and 7 relators of total length 56
     &I  there are 2 generators and 5 relators of total length 36
-    gap> PrintRelators( P );
+    gap> relators(P);
     &I  1. _x32^5
     &I  2. _x31^5
     &I  3. _x31^-1*_x32^-1*_x31^-1*_x32^-1*_x31^-1*_x32^-1
@@ -3058,7 +3049,7 @@ function Substitute(P::Presentation,word::Union{Vector{Int},AbsWord},arg...)
 end
 
 """
-UpdateGeneratorImage( T, n, word )  . . . . update the generator images
+UpdateGeneratorImages( T, n, word )  . . . . update the generator images
                                             after a Tietze transformation
 
 `UpdateGeneratorImages`  assumes  that  it  is  called  by  a function that
@@ -3077,16 +3068,13 @@ been  eliminated from  the presentation.  It updates  the images of the old
 generators  by replacing  each occurrence  of the  `n`-th generator  by the
 given Tietze word `word`.
 
-If `n` is less than zero, it terminates the tracing of generator images, i.
-e., it deletes the corresponding components of `T`.
-
 Note:  `UpdateGeneratorImages` is  considered to  be an  internal function.
 Hence it does not check the arguments.
 """
 function UpdateGeneratorImages(T::Presentation, n, word)
   if n==0
     newim=Int[]
-    for num=word
+    for num in word
       if num>0 append!(newim, T.preImagesNewGens[num])
       else     append!(newim, -reverse(T.preImagesNewGens[-num]))
       end
@@ -3106,12 +3094,18 @@ function UpdateGeneratorImages(T::Presentation, n, word)
       end
       T.imagesOldGens[i]=reduceword(newim)
     end
-  else
-    delete!(T, :imagesOldGens)
-    delete!(T, :preImagesNewGens)
-    if haskey(T, :oldGenerators) delete!(T, :oldGenerators) end
-    if T.printLevel>=1 println("#I  terminated the tracing of generator images")
-    end
+  end
+end
+
+"""
+Terminates   the  tracing  of  generator   images,  i.e.,  it  deletes  the
+corresponding components of `T`.
+"""
+function StopTracingGeneratorImages(T::Presentation)
+  delete!(T, :imagesOldGens)
+  delete!(T, :preImagesNewGens)
+  if haskey(T, :oldGenerators) delete!(T, :oldGenerators) end
+  if T.printLevel>=1 println("#I  terminated the tracing of generator images")
   end
 end
 
@@ -3181,7 +3175,7 @@ giving a second  parameter `tries` to the function.  Another useful tool
 to deal  with presentations  is `tryconjugate`  described in
 the utility functions.
 
-|    gap> DisplayPresentation(p);
+|    gap> display_balanced(p);
     1: ab=ba
     2: dbd=bdb
     3: bcb=cbc
@@ -3227,7 +3221,7 @@ the utility functions.
     #I  there are 4 generators and 12 relators of total length 118
     #I  there are 4 generators and 12 relators of total length 116
     #I  there are 4 generators and 11 relators of total length 100
-    gap> DisplayPresentation(p);
+    gap> display_balanced(p);
     1: ba=ab
     2: dbd=bdb
     3: cac=aca
@@ -3287,7 +3281,7 @@ function invertcase(s::String)
   end)
 end
 
-function DisplayPresentation(g,dumb=false)
+function display_balanced(g,dumb=false)
   f(i,w)=(w*w)[i:i+div(length(w),2)-1]
   minusc="abcdefghijklmnopqrstuvwxyz"
   used=Set{Int}()
@@ -3317,24 +3311,22 @@ end
 
 This program modifies a presentation by conjugating a generator by another.
 The  conjugation to  apply is  described by  a length-3  string of the same
-style  as  the  result  of  `DisplayPresentation`,  that is `"abA"` means
+style  as  the  result  of  `display_balanced`,  that is `"abA"` means
 replace  the second generator by its  conjugate by the first, and  `"Aba"`
 means replace it by its conjugate by the inverse of the first.
 
-|    gap> F:=FreeGroup(4);;
-    gap> p:=Presentation(F/[F.4*F.1*F.2*F.3*F.4*F.1^-1*F.4^-1*
-    > F.3^-1*F.2^-1*F.1^-1,F.4*F.1*F.2*F.3*F.4*F.2*F.1^-1*F.4^-1*F.3^-1*
-    > F.2^-1*F.1^-1*F.3^-1,F.2*F.3*F.4*F.1*F.2*F.3*F.4*F.3^-1*F.2^-1*
-    > F.4^-1*F.3^-1*F.2^-1*F.1^-1*F.4^-1]);
-    gap> DisplayPresentation(p);
-    1: dabcd=abcda
-    2: dabcdb=cabcda
-    3: bcdabcd=dabcdbc
-    gap> DisplayPresentation(conjugate(p,"cdC"));
-    #I  there are 4 generators and 3 relators of total length 36
-    1: cabdca=dcabdc
-    2: dcabdc=bdcabd
-    3: cabdca=abdcab|
+```julia-rep1
+julia> Presentations.display_balanced(P)
+1: dabcd=abcda
+2: dabcdb=cabcda
+3: bcdabcd=dabcdbc
+
+julia> Presentations.display_balanced(conjugate(P,"Cdc"))
+<< presentation with 4 generators, 3 relators of total length 36>>
+1: dcabdc=cabdca
+2: abdcab=cabdca
+3: bdcabd=cabdca
+```
 """
 function conjugate(p::Presentation, s)
   minmaj="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -3362,7 +3354,7 @@ argument are displayed. Due to the non-deterministic nature of the program,
 it  may be useful to  run it several times  on the same input. Upon failure
 (to improve the presentation), the program returns `p`.
 
-|    gap> Display(p);
+|    gap> display_balanced(p);
     1: ba=ab
     2: dbd=bdb
     3: cac=aca
@@ -3392,7 +3384,7 @@ it  may be useful to  run it several times  on the same input. Upon failure
     #I  there are 4 generators and 7 relators of total length 52
     # d->adA gives length 52
     << presentation with 4 gens and 7 rels of total length 52 >>
-    gap> Display(p); 
+    gap> display_balanced(p); 
     1: ba=ab
     2: dc=cd
     3: aca=cac
@@ -3408,7 +3400,7 @@ it  may be useful to  run it several times  on the same input. Upon failure
     #I  there are 4 generators and 7 relators of total length 48
     # d->bdB gives length 48
     << presentation with 4 gens and 7 rels of total length 48 >>
-    gap> Display(last);
+    gap> display_balanced(last);
     1: ba=ab
     2: bcb=cbc
     3: cac=aca
@@ -3439,14 +3431,14 @@ function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
   if iszero(tp) tp=perf(p) end
   p1=[]
   for c in triples(p)
-    println("trying ",pr(c),"...")
+    print(pr(c),"=> ")
     n=deepcopy(p);SubstituteGen(n.tietze,c[2],[-c[1],c[2],-c[3]]);GoGo(n)
     if perf(n)<=info
       println("# ",pr(c)," gives rels/len ", perf(n))
-      DisplayPresentation(n)
+      display_balanced(n)
     end
     if perf(n)<tp
-      println("# ",pr(c)," gives rels/len ", perf(n))
+      println("# ",pr(c)," gives ",n)
       return n
     end
     push!(p1,(c,n))
@@ -3454,19 +3446,18 @@ function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
   sort!(p1,by=x->perf(x[2]))
   for p2 in p1, c in triples(p2[2])
     n=deepcopy(p2[2]);SubstituteGen(n.tietze,c[2],[-c[1],c[2],-c[3]]);GoGo(n)
-    println("trying ",pr(p2[1]),"+",pr(c),"...")
+    print(pr(p2[1]),"+",pr(c),"=>")
     if perf(n)<=info
       println("# ",pr(p2[1]),"->",pr(c)," gives rels/len ", perf(n))
-      DisplayPresentation(n)
+      display_balanced(n)
     end
     if perf(n)<tp
-      println("# ",pr(p2[1]),"->",pr(c)," gives rels/len ", perf(n))
+      println("# ",pr(p2[1]),"->",pr(c)," gives ",n)
       return n
     end
   end
-  println("# could not shrink presentation with")
-  PrintStatus(p)
-  return p
+  println("\n# could not shrink ",p)
+  p
 end
 
 end

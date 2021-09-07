@@ -135,29 +135,30 @@ end
 """
 `hecke( W [, parameter][,rootpara=r])`
 
-Hecke algebra for the  complex reflection group or Coxeter group `W`.
+Hecke  algebra for the complex reflection group or Coxeter group `W`. If no
+`parameter` is given, `1` is assumed which gives the group algebra of `W`.
 
 The  following forms are accepted for  `parameter`: if `parameter` is not a
-vector, it is replaced by `fill(para,ngens(W))`. If it is a vector with one
-entry, it is replaced with `fill(para[1],ngens(W))`. Otherwise, `parameter`
-should be a list of length `ngens(W)`. Entries of `parameter` corresponding
-to the same `W`-orbit of generators should be identical. `parameter` can be
-shorter than `ngens(W)` provided there is at least one entry bound for each
-orbit of reflections.
+vector,  it is  replaced by  `fill(parameter,ngens(W))`. If  it is a vector
+with   one  entry,  it   is  replaced  with  `fill(parameter[1],ngens(W))`.
+Otherwise,  `parameter` should be  a list of  length `ngens(W)`. Entries of
+`parameter`  corresponding to  the same  `W`-orbit of  generators should be
+identical.  `parameter` can be shorter than `ngens(W)` provided there is at
+least one entry bound for each orbit of reflections.
 
 An  entry in  `parameter` for  a reflection  of order  `e` can  be either a
 single  value or  a `Vector`  of length  'e'. If  it is  a `Vector`,  it is
 interpreted as the list `[u₀,…,u_(e-1)]` of parameters for that reflection.
 If  it is a single  value `q`, it is  interpreted as the partly specialized
-list  of parameters `[q,ζ_e,…,ζ_{e-1}]` (thus  `[q,-1]` for Coxeter groups,
-and  `hecke(W,1)` is  the group  algebra of  `W` with `Cyc` coefficients).
+list of parameters `[q,ζ_e,…,ζ_{e-1}]` (thus `[q,-1]` for Coxeter groups).
 
 Computing characters or representations of Hecke algebra needs sometimes to
 extract  roots of the  parameters. These roots  are extracted automatically
 (when  possible). For Coxeter groups it  is possible to give explicit roots
 by  giving a keyword argument `rootpara`:  it should be a vector containing
-at the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`
-(if `rootpara` is not a `Vector` it is repaced by `fill(rootpara,ngens(W))`).
+at  the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`
+(if `rootpara` is not a `Vector` it is replaced by
+`fill(rootpara,ngens(W))`).
 
 # Example
 ```julia-repl
