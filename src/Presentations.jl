@@ -33,7 +33,7 @@ julia> G=F/[a^2,b^7,comm(a,a^b),comm(a,a^(b^2))*inv(b^a)]
 FreeGroup(a,b)/[a²,b⁷,a⁻¹b⁻¹a⁻¹bab⁻¹ab,a⁻¹b⁻²a⁻¹b²ab⁻²ab²a⁻¹b⁻¹a]
 
 julia> P=Presentation(G)
-<< presentation with 2 gens and 4 rels of total length 30 >>
+Presentation: 2 generators, 4 relators, total length 30
 
 julia> relators(P)
 4-element Vector{AbsWord}:

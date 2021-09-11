@@ -200,7 +200,6 @@ julia> H=hecke(W,[[x,y]])
 hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y]])
 
 julia> H.para,rootpara(H)
-root(-1,2)=E(4)
 (Vector{Mvp{Int64, Int64}}[[x, y], [x, y]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄x½y½])
 
 julia> H=hecke(W,[[x,y],[z,t]])
@@ -994,7 +993,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64, Int64}[1, x, y])
+hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> FactorizedSchurElement(H,[[2,5]])
 -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
@@ -1028,7 +1027,7 @@ julia> W=ComplexReflectionGroup(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
-hecke(G₄,Mvp{Int64, Int64}[1, x, y])
+hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> FactorizedSchurElements(H)
 7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:
@@ -1155,6 +1154,7 @@ struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}
 end
 
 basename(h::HeckeTCElt)="T"
+clone(h::HeckeTCElt,d)=HeckeTCElt(d,h.H)
 
 Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? one(H) : Tbasis(H,x...)
 Tbasis(H::HeckeCoset,w::Vararg{Integer})=Tbasis(H,H.W(w...))

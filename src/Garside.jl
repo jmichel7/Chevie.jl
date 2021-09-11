@@ -1654,7 +1654,7 @@ julia> C.obj
  21324
 ```
 
-```julia-repl
+```julia-rep1
 julia> xprint(C;graph=true)
 category with 2 objects and 4 generating maps
      32143      21343      21324      13214 
@@ -1826,7 +1826,7 @@ julia> M=DualBraidMonoid(coxgroup(:A,3))
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> p=Presentation(M)
-<< presentation with 6 gens and 15 rels of total length 62 >>
+Presentation: 6 generators, 15 relators, total length 62
 ```
 
 ```julia-rep1

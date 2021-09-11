@@ -34,7 +34,7 @@ julia> l=cuspidal_pairs(W,3)
  (levi = ³D₄₍₎=Φ₃², cuspidal = 1)
 
 julia> Series(W,l[2]...,3)
-ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,MvpCyc{Int64, Int64}[ζ₃q², ζ₃, ζ₃q])
+ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,Vector{Mvp{Cyc{Int64, Int64}}}[[ζ₃q², ζ₃, ζ₃q]])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -492,7 +492,7 @@ julia> s.d
 Root1: ζ₃
 
 julia> hecke(s)
-hecke(G₆‚₁‚₁,Mvp{Cyc{Int64}, Int64}[ζ₃q², -ζ₃q, ζ₃, -ζ₃²q, ζ₃², -ζ₃])
+hecke(G₆‚₁‚₁,Vector{Mvp{Cyc{Int64}, Int64}}[[ζ₃q², -ζ₃q, ζ₃, -ζ₃²q, ζ₃², -ζ₃]])
 
 julia> degree(s)
 ζ₃Φ₁Φ₂²Φ″₃Φ₄Φ₆
