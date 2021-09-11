@@ -2282,7 +2282,7 @@ end
 `PrintPresentation(P)`
 
 `PrintPresentation` prints the current lists of generators and relators
-and the current state of a presentation `P`.  In fact, the command
+and the current state of a presentation `P`.
 """
 function PrintPresentation(T::Presentation)
   Check(T)
@@ -2294,16 +2294,9 @@ function PrintPresentation(T::Presentation)
 end
 
 """
-`relators(P)`
+`relators(P::Presentation)`
 
-prints the current list of relators  of  a presentation `P`.
-
-If  a  list  `list`  has been specified  as  second argument, then it  is
-expected  to  be a list  of the position numbers  of the  relators  to be
-printed.  `list` need  not be sorted  and may contain duplicate elements.
-The relators are printed as Tietze words in  the order  in  which (and as
-often as)  their numbers occur in  `list`.  Position numbers out of range
-(with respect to the list of relators) will be ignored.
+prints the list of relators of `P`.
 """
 function relators(P::Presentation)
   Check(P)
@@ -3175,27 +3168,27 @@ giving a second  parameter `tries` to the function.  Another useful tool
 to deal  with presentations  is `tryconjugate`  described in
 the utility functions.
 
-|    gap> display_balanced(p);
-    1: ab=ba
-    2: dbd=bdb
-    3: bcb=cbc
-    4: cac=aca
-    5: adca=cadc
-    6: dcdc=cdcd
-    7: adad=dada
-    8: Dbdcbd=cDbdcb
-    9: adcDad=dcDadc
-    10: dcdadc=adcdad
-    11: dcabdcbda=adbcbadcb
-    12: caCbdcbad=bdcbadBcb
-    13: cbDadcbad=bDadcbadc
-    14: cdAbCadBc=bdcAbCdBa
-    15: cdCbdcabdc=bdcbadcdaD
-    16: DDBcccbdcAb=cAbCdcBCddc
-    17: CdaBdbAdcbCad=abdcAbDadBCbb
-    18: bdbcabdcAADAdBDa=cbadcbDadcBDABDb
-    19: CbdbadcDbbdCbDDadcBCDAdBCDbdaDCDbdcbadcBCDAdBCDBBdacDbdccb
-        =abdbcabdcAdcbCDDBCDABDABDbbdcbDadcbCDAdBCabDACbdBadcaDbAdd
+```julia-rep1
+julia> display_balanced(p)
+1: ab=ba
+2: dbd=bdb
+3: bcb=cbc
+4: cac=aca
+5: adca=cadc
+6: dcdc=cdcd
+7: adad=dada
+8: Dbdcbd=cDbdcb
+9: adcDad=dcDadc
+10: dcdadc=adcdad
+11: dcabdcbda=adbcbadcb
+12: caCbdcbad=bdcbadBcb
+13: cbDadcbad=bDadcbadc
+14: cdAbCadBc=bdcAbCdBa
+15: cdCbdcabdc=bdcbadcdaD
+16: DDBcccbdcAb=cAbCdcBCddc
+17: CdaBdbAdcbCad=abdcAbDadBCbb
+18: bdbcabdcAADAdBDa=cbadcbDadcBDABDb
+19: CbdbadcDbbdCbDDadcBCDAdBCDbdaDCDbdcbadcBCDAdBCDBBdacDbdccb=abdbcabdcAdcbCDDBCDABDABDbbdcbDadcbCDAdBCabDACbdBadcaDbAdd
     gap> Shrink(p);   
     #I  there are 4 generators and 19 relators of total length 332
     #I  there are 4 generators and 17 relators of total length 300
@@ -3233,6 +3226,7 @@ the utility functions.
     9: dcdadc=adcdad
     10: adcDad=dcDadc
     11: BcccbdcAb=dcbACdddc|
+```
 """
 function Shrink(g::Presentation,lim=1000)
   T=g.tietze
@@ -3354,60 +3348,83 @@ argument are displayed. Due to the non-deterministic nature of the program,
 it  may be useful to  run it several times  on the same input. Upon failure
 (to improve the presentation), the program returns `p`.
 
-|    gap> display_balanced(p);
-    1: ba=ab
-    2: dbd=bdb
-    3: cac=aca
-    4: bcb=cbc
-    5: dAca=Acad
-    6: dcdc=cdcd
-    7: adad=dada
-    8: dcDbdc=bdcbdB
-    9: dcdadc=adcdad
-    10: adcDad=dcDadc
-    11: BcccbdcAb=dcbACdddc
-    gap> p:=tryconjugate(p); 
-    #I  there are 4 generators and 11 relators of total length 100
-    #I  there are 4 generators and 11 relators of total length 120
-    #I  there are 4 generators and 10 relators of total length 100
-    #I  there are 4 generators and 11 relators of total length 132
-    #I  there are 4 generators and 11 relators of total length 114
-    #I  there are 4 generators and 11 relators of total length 110
-    #I  there are 4 generators and 11 relators of total length 104
-    #I  there are 4 generators and 11 relators of total length 114
-    #I  there are 4 generators and 11 relators of total length 110
-    #I  there are 4 generators and 11 relators of total length 104
-    #I  there are 4 generators and 8 relators of total length 76
-    #I  there are 4 generators and 8 relators of total length 74
-    #I  there are 4 generators and 8 relators of total length 72
-    #I  there are 4 generators and 8 relators of total length 70
-    #I  there are 4 generators and 7 relators of total length 52
-    # d->adA gives length 52
-    << presentation with 4 gens and 7 rels of total length 52 >>
-    gap> display_balanced(p); 
-    1: ba=ab
-    2: dc=cd
-    3: aca=cac
-    4: dbd=bdb
-    5: bcb=cbc
-    6: adad=dada
-    7: aBcADbdac=dBCacbdaB
-    gap> tryconjugate(p,48);
-    #I  there are 4 generators and 7 relators of total length 54
-    #I  there are 4 generators and 7 relators of total length 54
-    #I  there are 4 generators and 7 relators of total length 60
-    #I  there are 4 generators and 7 relators of total length 60
-    #I  there are 4 generators and 7 relators of total length 48
-    # d->bdB gives length 48
-    << presentation with 4 gens and 7 rels of total length 48 >>
-    gap> display_balanced(last);
-    1: ba=ab
-    2: bcb=cbc
-    3: cac=aca
-    4: dbd=bdb
-    5: cdc=dcd
-    6: adad=dada
-    7: dAbcBa=bAcBad|
+```julia-rep1
+julia> display_balanced(p)
+1: ba=ab
+2: dbd=bdb
+3: cac=aca
+4: bcb=cbc
+5: dAca=Acad
+6: dcdc=cdcd
+7: adad=dada
+8: dcDbdc=bdcbdB
+9: dcdadc=adcdad
+10: adcDad=dcDadc
+11: BcccbdcAb=dcbACdddc
+julia> p=tryconjugate(p)
+Presentation: 4 generators, 11 relators, total length 100
+dcD=> Presentation: 4 generators, 10 relators, total length 90
+# dcD gives Presentation: 4 generators, 10 relators, total length 90
+Presentation: 4 generators, 10 relators, total length 90
+
+julia> p=tryconjugate(p)
+Dcd=> Presentation: 4 generators, 10 relators, total length 88
+# Dcd gives Presentation: 4 generators, 10 relators, total length 88
+Presentation: 4 generators, 10 relators, total length 88
+
+julia> p=tryconjugate(p)
+dcD=> Presentation: 4 generators, 10 relators, total length 90
+Dbd=> Presentation: 4 generators, 10 relators, total length 96
+Aca=> Presentation: 4 generators, 9 relators, total length 84
+Presentation: 4 generators, 8 relators, total length 76
+# Aca gives Presentation: 4 generators, 8 relators, total length 76
+Presentation: 4 generators, 8 relators, total length 76
+
+julia> p=tryconjugate(p)
+Bcb=> Presentation: 4 generators, 8 relators, total length 70
+# Bcb gives Presentation: 4 generators, 8 relators, total length 70
+Presentation: 4 generators, 8 relators, total length 70
+
+julia> p=tryconjugate(p)
+Cac=> Presentation: 4 generators, 8 relators, total length 64
+# Cac gives Presentation: 4 generators, 8 relators, total length 64
+Presentation: 4 generators, 8 relators, total length 64
+
+julia> p=tryconjugate(p)
+caC=> Presentation: 4 generators, 8 relators, total length 58
+# caC gives Presentation: 4 generators, 8 relators, total length 58
+Presentation: 4 generators, 8 relators, total length 58
+
+julia> p=tryconjugate(p)
+Cac=> Presentation: 4 generators, 8 relators, total length 64
+Cbc=> Presentation: 4 generators, 7 relators, total length 50
+# Cbc gives Presentation: 4 generators, 7 relators, total length 50
+Presentation: 4 generators, 7 relators, total length 50
+
+julia> p=tryconjugate(p)
+cdC=> Presentation: 4 generators, 7 relators, total length 56
+Dcd=> Presentation: 4 generators, 7 relators, total length 54
+Cac=> Presentation: 4 generators, 7 relators, total length 48
+# Cac gives Presentation: 4 generators, 7 relators, total length 48
+Presentation: 4 generators, 7 relators, total length 48
+
+julia> p=tryconjugate(p)
+caC=> Presentation: 4 generators, 7 relators, total length 50
+Cdc=> Presentation: 4 generators, 7 relators, total length 50
+Dbd=> Dcd=> Presentation: 4 generators, 7 relators, total length 60
+Bab=> Aba=> Aca=> Presentation: 4 generators, 7 relators, total length 46
+# Aca gives Presentation: 4 generators, 7 relators, total length 46
+Presentation: 4 generators, 7 relators, total length 46
+
+julia> display_balanced(p)
+1: db=bd
+2: ba=ab
+3: cac=aca
+4: ada=dad
+5: bcb=cbc
+6: cdcd=dcdc
+7: AdCacd=cAdCac
+```
 """
 function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
   perf(p)=[p.tietze.numrels, p.tietze.total]

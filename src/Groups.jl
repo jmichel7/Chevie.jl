@@ -84,7 +84,7 @@ end
 comm(a,b)=inv(a)*inv(b)*a*b
 
 """
-`orbit(gens::vector,p;action::Function=^)`
+`orbit(gens::AbstractVector,p;action::Function=^)`
 
 `orbit(G::Group,p;action::Function=^)`
 
@@ -118,7 +118,7 @@ julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g))
  [1, 2]
 ```
 """
-function orbit(gens::Vector,pnt;action::F=^) where F<:Function
+function orbit(gens::AbstractVector,pnt;action::F=^) where F<:Function
   set=Set([pnt])
   orb=[pnt]
   for pnt in orb, gen in gens

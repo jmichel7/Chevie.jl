@@ -205,6 +205,17 @@ FFE
 FFE(i::Integer)
 Z(::Any)
 ```
+# Presentations
+```@docs
+Presentations
+@AbsWord
+FpGroup
+Presentation(::FpGroup)
+relators
+simplify
+conjugate
+tryconjugate
+```
 # Coxeter groups
 ```@docs
 CoxGroups
@@ -293,7 +304,6 @@ reflrep(::HeckeAlgebra)
 KL
 KLPol
 Tbasis
-KL.getCp
 Cbasis
 Cpbasis
 character
@@ -316,7 +326,9 @@ rightlcm
 α(::Garside.LocallyGarsideElm)
 α(::GarsideElm,::AbstractVector)
 Brieskorn_normal_form
+BraidMonoid
 DualBraidMonoid
+hurwitz
 fraction
 word(::Garside.GarsideMonoid,w)
 word(::Garside.GarsideElm)
@@ -326,7 +338,7 @@ conjugating_elt
 centralizer_gens
 conjcat
 endomorphisms
-Presentation
+Presentation(::GarsideMonoid)
 shrink
 ```
 # Classes/characters of reflection groups

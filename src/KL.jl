@@ -74,7 +74,7 @@ as   long   as   methods   `bar`:``∑_{γ∈   Γ}   a_γγ↦  ∑_{γ∈  Γ}
 operations   will   be   used   internally   by  the  programs  to  compute
 Kazhdan-Lusztig bases.
 
-finally, benchmarks on julia 1.0.2
+finally, benchmarks on julia 1.6.2
 ```benchmark
 julia> function test_kl(W)
          q=Pol(); H=hecke(W,q^2,rootpara=q)
@@ -84,7 +84,7 @@ julia> function test_kl(W)
 test_kl (generic function with 1 method)
 
 julia> @btime test_kl(coxgroup(:F,4));
-2.265 s (22516606 allocations: 1.81 GiB)
+2.019 s (17905502 allocations: 2.64 GiB)
 ```
 Compare to GAP3 where the following function takes 11s for F4
 ```
@@ -104,7 +104,7 @@ end
 test_kl2 (generic function with 1 method)
 
 julia>@btime test_kl2(coxgroup(:F,4));
-  8s (97455915 allocations: 6.79 GiB)
+5.915 s (49702830 allocations: 6.98 GiB)
 ```
 Compare to GAP3 where the following function takes 42s for F4
 ```
@@ -413,21 +413,6 @@ Cpbasis(h::HeckeTElt)=toKL(h,HeckeCpElt,maximum)
 
 Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
-"""
-    getCp(H,w)
-
-return ``C_w`` expressed in the basis T of the Hecke algebra H.
-
-Implementation JM and FD 1999. We use the formulae:
-``C'_w=Σ_{y≤w}P_{y,w}(q)q^{-l(w)/2}T_y``
-and if ``sw<w`` then
-``C'ₛ C'_{sw}=C'w+Σ_{y<sw}μ(y,sw)C'y=Σ_{v≤w}μᵥ Tᵥ``
-where
-``μᵥ=P_{v,w}(q)q^{-l(w)/2}+Σ_{v≤y≤sw}μ(y,sw)P_{v,y}(q)q^{-l(y)/2}``
-It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leading
-coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
-occurs in the formula for ``μᵥ``).
-"""
 function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
   W=H.W
   cdict=get!(()->Dict{P,Any}(one(W)=>one(H)),H,Symbol("C'->T"))
@@ -447,15 +432,6 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
       res-=tmp
     end
   else
-# we follow formula 2.2 in Lusztig's 'Left cells in Weyl groups'
-#
-# bar(P̄̄_{x,w})-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}
-#
-#  where R_{x,y}=bar(T_{y^-1}^{-1}|T_x)
-#  where T is the basis with parameters q_s,-q_s^-1
-#
-# thus we compute P_{x,w} by induction on l(w)-l(x) by
-# P_{x,w}=\neg ∑_{x<y≤w} R_{x,y} P_{y,w}
     elm=reduce(vcat,reverse(bruhatless(W,w)))
     coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
     f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
@@ -475,6 +451,26 @@ function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
 end
 
 """
+`Tbasis(h::HeckeCpElt)` 
+
+converts the element `h` of the `C'` basis to the `T` basis.
+
+Implementation Jean Michel and François Digne 1999. 
+
+For one-parameter Hecke algebras, we use the formulae:
+``C'_w=Σ_{y≤w}P_{y,w}(q)q^{-l(w)/2}T_y``
+and if ``sw<w`` then
+
+``C'ₛ C'_{sw}=C'_w+Σ_{y<sw}μ(y,sw)C'_y=Σ_{v≤w}μᵥ Tᵥ``
+
+where
+
+``μᵥ=P_{v,w}(q)q^{-l(w)/2}+Σ_{v≤y≤sw}μ(y,sw)P_{v,y}(q)q^{-l(y)/2}``
+
+It  follows that if ``deg(μᵥ)>=-l(v)``  then ``deg(μᵥ)=-l(v)`` with leading
+coefficient  ``μ(v,sw)`` (this happens exactly for ``y=v`` in the sum which
+occurs in the formula for ``μᵥ``).
+
 ```julia-repl
 julia> W=coxgroup(:B,3)
 B₃
@@ -485,6 +481,16 @@ hecke(B₃,v²,rootpara=v)
 julia> C=Cpbasis(H); Tbasis(C(1,2))
 v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 ```
+
+For general Hecke algebras, we follow formula 2.2 in 
+[Lusztig1983](biblio.htm#Lus83)
+
+`` \\overline{P̄̄_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
+
+where ``R_{x,y}=\\overline{(t_{y⁻¹}⁻¹|t_x)}`` where `t`  is the basis with
+parameters  `qₛ,-qₛ⁻¹`. It follows that ``P_{x,w}`` is the negative part of
+``∑_{x<y≤w}  R_{x,y} P_{y,w}`` which  allows to compute  it by induction on
+`l(w)-l(x)`.
 """
 HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
 

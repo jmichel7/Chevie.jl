@@ -335,7 +335,7 @@ export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, rightgcd, leftlcm, rightlcm, 
 conjugating_elt, GarsideElm, Brieskorn_normal_form, GarsideMonoid, 
-LocallyGarsideMonoid
+LocallyGarsideMonoid, hurwitz
 
 """
 `LocallyGarsideMonoid{T}` where  `T` is the type of simples.
@@ -661,6 +661,11 @@ Base.reverse(::Interval,M,x)=inv(x)
 end
 
 IntervalStyle(M::BraidMonoid)=Interval()
+"""
+`BraidMonoid(W)`
+
+The ordinary monoid of the Artin group associated to the Coxeter group `W`
+"""
 BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"Δ",one(W),gens(W),W,
                                          Dict{Symbol,Any}())
 
@@ -1355,10 +1360,8 @@ function atomsinbraidmonoid(M::DualBraidMonoid)
     h=order(M.δ)
     δ=word(W,M.δ)
     w=repeat(δ,outer=div(h,2))
-    if h%2!=0 append!(w,δ[1:div(length(δ),2)]) end
-    if length(W,W(w...))!=length(w)
-      w=repeat(δ,outer=h)
-    end
+    if isodd(h) append!(w,δ[1:div(length(δ),2)]) end
+    if length(W,W(w...))!=length(w) w=repeat(δ,outer=h) end
     w=map(i->vcat(w[1:i],-w[i-1:-1:1]),eachindex(w))
     B=BraidMonoid(W)
     w=unique!(map(x->B(x...),w))
@@ -1366,8 +1369,27 @@ function atomsinbraidmonoid(M::DualBraidMonoid)
   end
 end
 
-# give expression in ordinary monoid of simple s
-ordinary(M::DualBraidMonoid,s)=prod(atomsinbraidmonoid(M)[word(M,s)])
+"""
+(B::BraidMonoid)(M::DualBraidMonoid,i::Integer)
+
+give an expression as a braid of `B` of the `i`-th atom of `M`.
+"""
+(B::BraidMonoid)(M::DualBraidMonoid,i::Integer)=atomsinbraidmonoid(M)[i]
+"""
+(B::BraidMonoid)(M::DualBraidMonoid,s)
+
+give an expression as a braid of `B` of the dual simple `s`.
+"""
+(B::BraidMonoid)(M::DualBraidMonoid,s)=prod(B.(Ref(M),word(M,s)))
+
+"""
+(B::BraidMonoid)(b)
+
+give an expression as a braid of `B` of the dual braid `b`.
+"""
+function (B::BraidMonoid)(b::GarsideElm{T,<:DualBraidMonoid})where T 
+  B(B.δ)^b.pd*prod(x->B(b.M,x),b.elm)
+end
 
 #----------------------------------------------------------------------------
 struct Category{TO,TM} # TO type of objs TM type of maps
@@ -1376,9 +1398,10 @@ struct Category{TO,TM} # TO type of objs TM type of maps
   # atoms[i] is a list of (m=>j): map m from obj[i] to obj[j]
 end
 
-function Base.show(io::IO,C::Category)
+function Base.show(io::IO,C::Category;graph=false)
   print(io,"category with ",length(C.obj)," objects and ",
         sum(length,C.atoms)," generating maps")
+  if get(io,:graph,false) println(io);showgraph(io,C) end
 end
 
 # constructs a category from an initial object o and a function
@@ -1407,9 +1430,7 @@ function Category(atomsfrom::Function,o;action::Function=^)
   C
 end
 
-showgraph(C;k...)=showgraph(IOContext(stdout,:limit=>true),C;k...)
-
-function showgraph(io,C::Category;showobj=show,showmap=show)
+function showgraph(io,C::Category)
   maps=vcat(map(i->map(((m,t),)->[i,m,t],sort(C.atoms[i],by=x->abs(x[2]-i))),
                  eachindex(C.obj))...)
   found=true
@@ -1432,6 +1453,8 @@ function showgraph(io,C::Category;showobj=show,showmap=show)
     end
     maps=new
   end
+  showobj=get(io,:showobj,show)
+  showmap=get(io,:showobj,show)
   for f in maps
     l1=l2=""
     for i in 1:2:length(f)-2
@@ -1622,14 +1645,23 @@ A₄
 julia> w=BraidMonoid(W)(4,3,3,2,1)
 43.321
 
-julia> conjcat(w)
+julia> C=conjcat(w)
 category with 2 objects and 4 generating maps
 
-julia> conjcat(w).obj
+julia> C.obj
 2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  21324
+```
 
+```julia-repl
+julia> xprint(C;graph=true)
+category with 2 objects and 4 generating maps
+     32143      21343      21324      13214 
+32143────→ 32143────→ 21324────→ 21324────→ 32143
+```
+
+```julia-repl
 julia> conjcat(w;ss=:ss).obj
 4-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
@@ -2030,6 +2062,34 @@ function shrink(b1::Vector{T})where T<:GarsideElm
   end
   return map(x->x.b,bs)
 end
+
+"""
+`hurwitz(l,i::Integer)`
+the  Hurwitz action of the  generator σᵢ of the  braid group Bₙ on the list
+`l`  of  length  `n`  of  group  elements.  If  `i<0`  does  the  action of
+`înv(σ₋ᵢ)`.
+"""
+function hurwitz(l,i::Integer)
+  l=copy(l)
+  if i>0 l[i:i+1]=[l[i+1],l[i]^l[i+1]] 
+  else l[-i:-i+1]=[l[-i]*l[-i+1]*inv(l[-i]),l[-i]]
+  end
+  l
+end
+
+function hurwitz(l,v::AbstractVector)
+  for i in v l=hurwitz(l,i) end
+  l
+end
+
+"""
+`hurwitz(l,b)`
+the  Hurwitz action of the braid  `b∈ Bₙ` on the list  `l` of length `n` of
+group elements.
+"""
+hurwitz(l,b::GarsideElm)=hurwitz(l,word(b))
+  
+# example
 B=BraidMonoid(CoxSym(21))
 b=[
 B(19,19,19),B(11,11),B(10,10,10,10),B(8,8,8),B(3,3,3),B(-1,-1,2,2,1,1),B(2,2,
