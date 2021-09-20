@@ -225,7 +225,7 @@ using ..Gapjm
 
 export UnipotentCharacters, FixRelativeType, UniChar,
 almostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal,
-cuspidal_pairs, CycPolUnipotentDegrees, on_unipotents, almostcharnames
+cuspidal_data, CycPolUnipotentDegrees, on_unipotents, almostcharnames
 
 @GapObj struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -1278,41 +1278,57 @@ function cuspidal(uc::UnipotentCharacters,d=Root1(1))
 end
 
 """
-`cuspidal_pairs(W[,d[,ad]])`
+`cuspidal_data(W[,d[,ad]];proper=false,all=false)`
 
-returns  the pairs `(LF,λ)` where `LF` is a `d`-split Levi (with `d`-center
-of  dimension `ad` if `ad` is given) and `λ` is a `d`-cuspidal character of
-`LF`.  If `d`  is omitted  it is  assumed to  be `1`,  which means ordinary
-cuspidal  pairs.  The  character  `λ`  is  returned  as  its  index amongst
-unipotent characters.
+returns  named tuples `(levi=LF,cuspidal=λ,d=d)` where  `LF` is a `d`-split
+Levi  (with `d`-center  of dimension  `ad` if  `ad` is  given) and `λ` is a
+`d`-cuspidal  character of  `LF`. If  `d=1` this  returns ordinary cuspidal
+characters.  The  character  `λ`  is  given  as  its  index  in the list of
+unipotent  characters. If `d` was given as  an integer, it is returned as a
+`Root1` representing `E(d)`.
+
+If  the keyword  `proper=true` is  given, only  the data  where `LF!=W` (or
+equivalently `ad>0`) are returned.
+
+If  `d` is omitted, data  for all `d` orders  of eigenvalues of elements of
+`W`  is returned. If in addition  the keyword argument `all=true` is given,
+data for all eigenvalues of elements of `W` is returned.
 
 ```julia-repl
-julia> cuspidal_pairs(coxgroup(:F,4))
-9-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
- (levi = F₄, cuspidal = 31)
- (levi = F₄, cuspidal = 32)
- (levi = F₄, cuspidal = 33)
- (levi = F₄, cuspidal = 34)
- (levi = F₄, cuspidal = 35)
- (levi = F₄, cuspidal = 36)
- (levi = F₄, cuspidal = 37)
- (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6)
- (levi = F₄₍₎=Φ₁⁴, cuspidal = 1)
+julia> cuspidal_data(coxgroup(:F,4),1)
+9-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:
+ (levi = F₄, cuspidal = 31, d = 1)
+ (levi = F₄, cuspidal = 32, d = 1)
+ (levi = F₄, cuspidal = 33, d = 1)
+ (levi = F₄, cuspidal = 34, d = 1)
+ (levi = F₄, cuspidal = 35, d = 1)
+ (levi = F₄, cuspidal = 36, d = 1)
+ (levi = F₄, cuspidal = 37, d = 1)
+ (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)
+ (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)
 
-julia> cuspidal_pairs(ComplexReflectionGroup(4),3)
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
- (levi = G₄, cuspidal = 3)
- (levi = G₄, cuspidal = 6)
- (levi = G₄, cuspidal = 7)
- (levi = G₄, cuspidal = 10)
- (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1)
+julia> cuspidal_data(ComplexReflectionGroup(4),3)
+5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+ (levi = G₄, cuspidal = 3, d = ζ₃)
+ (levi = G₄, cuspidal = 6, d = ζ₃)
+ (levi = G₄, cuspidal = 7, d = ζ₃)
+ (levi = G₄, cuspidal = 10, d = ζ₃)
+ (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)
 ```
 """
-cuspidal_pairs(W,d,ad)=[(levi=L,cuspidal=char) for L in split_levis(W, d, ad) 
+cuspidal_data(W,d::Integer,ad)=cuspidal_data(W,Root1(d,1),ad)
+cuspidal_data(W,d::Rational,ad)=cuspidal_data(W,Root1(;r=d),ad)
+cuspidal_data(W,d::Root1,ad)=[(levi=L,cuspidal=char,d=d) 
+                        for L in split_levis(W, d, ad) 
                         for char in cuspidal(UnipotentCharacters(L),d)]
 
-cuspidal_pairs(W,d=Root1(1))=[p for ad in 0:length(relative_degrees(W,d))
-                                for p in cuspidal_pairs(W,d,ad)]
+cuspidal_data(W,d;proper=false)=[p for ad in 
+         (proper ? 1 : 0):length(relative_degrees(W,d))
+         for p in cuspidal_data(W,d,ad)]
+
+cuspidal_data(W;proper=false,all=false)=[p for d in 
+  sort(unique(all ? vcat(refleigen(W)...) : conductor.(refleigen(W))))
+  for p in cuspidal_data(W,d;proper)]
 
 function relative_hecke(uc::UnipotentCharacters,i,q)
   hw=uc.harishChandra[i]

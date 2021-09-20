@@ -868,7 +868,7 @@ julia> exponent(r)
 julia> E(r)
 Cyc{Int64}: -ζ₉²-ζ₉⁵
 
-julia> Root1(-E(9,4)-E(9,5))
+julia> Root1(-E(9,4)-E(9,5)) # nothing
 ```
 """ 
 function Root1(c::Cyc)

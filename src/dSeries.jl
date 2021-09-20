@@ -28,13 +28,13 @@ allows to explore a `d`-Harish-Chandra series.
 julia> W=rootdatum("3D4")
 ³D₄
 
-julia> l=cuspidal_pairs(W,3)
-2-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64}}}:
- (levi = ³D₄, cuspidal = 8)
- (levi = ³D₄₍₎=Φ₃², cuspidal = 1)
+julia> l=cuspidal_data(W,3)
+2-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:
+ (levi = ³D₄, cuspidal = 8, d = ζ₃)
+ (levi = ³D₄₍₎=Φ₃², cuspidal = 1, d = ζ₃)
 
-julia> Series(W,l[2]...,3)
-ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,Vector{Mvp{Cyc{Int64, Int64}}}[[ζ₃q², ζ₃, ζ₃q]])
+julia> Series(W,l[2]...)
+ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,Vector{Mvp{Cyc{Int64}, Int64}}[[ζ₃q², ζ₃, ζ₃q]])
  │    γᵩ    φ  ε family #
 ─┼────────────────────────
 1│  φ₁‚₀ φ₁‚₀  1        1
@@ -62,15 +62,15 @@ reflection groups using some axioms. We show below an example.
 julia> W=ComplexReflectionGroup(4)
 G₄
 
-julia> l=cuspidal_pairs(W,3)
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
- (levi = G₄, cuspidal = 3)
- (levi = G₄, cuspidal = 6)
- (levi = G₄, cuspidal = 7)
- (levi = G₄, cuspidal = 10)
- (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1)
+julia> l=cuspidal_data(W,3)
+5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+ (levi = G₄, cuspidal = 3, d = ζ₃)
+ (levi = G₄, cuspidal = 6, d = ζ₃)
+ (levi = G₄, cuspidal = 7, d = ζ₃)
+ (levi = G₄, cuspidal = 10, d = ζ₃)
+ (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)
 
-julia> Series(W,l[5]...,3)
+julia> Series(W,l[5]...)
 ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
@@ -99,13 +99,13 @@ a  root of unity. For instance, in the above case we get a different answer
 with:
 
 ```julia-repl
-julia> cuspidal_pairs(W,Root1(;r=2//3))
-5-element Vector{NamedTuple{(:levi, :cuspidal), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64}}}:
- (levi = G₄, cuspidal = 2)
- (levi = G₄, cuspidal = 5)
- (levi = G₄, cuspidal = 7)
- (levi = G₄, cuspidal = 10)
- (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1)
+julia> cuspidal_data(W,Root1(;r=2//3))
+5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+ (levi = G₄, cuspidal = 2, d = ζ₃²)
+ (levi = G₄, cuspidal = 5, d = ζ₃²)
+ (levi = G₄, cuspidal = 7, d = ζ₃²)
+ (levi = G₄, cuspidal = 10, d = ζ₃²)
+ (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1, d = ζ₃²)
 ```
 """
 module dSeries
@@ -429,8 +429,8 @@ end
 
 If the reflection coset or group `W` corresponds to the algebraic group `𝐆`
 and  `cuspidal`  to  the  `d`-cuspidal  unipotent  character  `λ`  of  `𝐋`,
-constructs  the  `d`-series  corresponding  to  ``R_𝐋^𝐆(λ)``. If `s` is the
-result, it is a record with the following fields and functions:
+constructs  the `d`-series corresponding to ``R_𝐋^𝐆(λ)``. The result `s` it
+is a record with the following fields and functions:
 
 `s.spets`: the reflection group or coset `W`.
 
@@ -457,15 +457,19 @@ constituents of `RLG(s)`.
 
 The function `Series` has another form:
 
-`Series(<W> [,<d> [,<ad>]])`
+`Series(<W> [,<d> [,<ad>]];k...)`
 
-returns  all the  `d`-series of  `W` corresponding  to a  `d`-eigenspace of
-dimension   `ad`  (default  `d=1`,  and  if  `ad`  not  given  returns  all
-`d`-series).
+where  it returns a  vector of `Series`  corresponding to the cuspidal data
+described   by  the   arguments  and   the  keywords   (see  the  help  for
+`cuspidal_data`).
 
 ```julia-repl
 julia> W=ComplexReflectionGroup(4)
 G₄
+
+julia> Series(W,3;proper=true)
+1-element Vector{Series}:
+ ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆
 
 julia> s=Series(W,3,1)[1]
 ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆
@@ -477,7 +481,6 @@ julia> s=Series(W,3,1)[1]
 8│ Z₃:2       -1 -1     -ζ₃²q        2
 9│Z₃:11      ζ₃² -1       ζ₃²        4
 4│ φ₂‚₅      -ζ₃ -1       -ζ₃        4
-
 
 julia> s.spets
 G₄
@@ -533,16 +536,7 @@ function Series(WF, levi, cuspidal, d;NC=false)
   s
 end
 
-Series(W,d=1;NC=false)=map(x->Series(W,x...,d;NC),cuspidal_pairs(W,d))
-Series(W,d,ad;NC=false)=map(x->Series(W,x...,d;NC),cuspidal_pairs(W,d,ad))
-
-function ProperSeries(W;NC=false)
-  l=sort(unique(conductor.(refleigen(W))))
-  vcat(map(d->ProperSeries(W,d;NC),l)...)
-end
-
-ProperSeries(W,d;NC=false)=vcat(map(i->Series(W,d,i;NC),
-                                       1:length(relative_degrees(W,d)))...)
+Series(W,r...;NC=false,k...)=map(x->Series(W,x...;NC),cuspidal_data(W,r...;k...))
 
 function Pols.degree(s::Series)
   get!(s,:degree) do
@@ -553,15 +547,15 @@ function Pols.degree(s::Series)
 end
   
 function Base.show(io::IO,s::Series)
-  TeX=get(io,:TeX,false)
+  tex=get(io,:TeX,false)
   repl=get(io,:limit,false)
-  if !(repl || TeX)
+  if !(repl || tex)
     print(io,"Series($(s.spets),$(s.levi),$(s.cuspidal),$(s.d))")
     return
   end
   cname = charnames(io,UnipotentCharacters(s.levi))[s.cuspidal]
-  n=repl || TeX ? "\\lambda" : "c"
-  quad=TeX ? "\\quad" : " "
+  n=repl || tex ? "\\lambda" : "c"
+  quad=tex ? "\\quad" : " "
   if s.spets == s.levi
     printTeX(io,s.d, "-cuspidal ",cname," of \$", s.spets,"\$")
   else
@@ -572,9 +566,9 @@ function Base.show(io::IO,s::Series)
     if iscyclic(s) && (!haskey(s,:Hecke) || e(s)>4)
       printTeX(io,"\$$quad W_G(L,$n)==Z_{$(e(s))}\$")
     elseif haskey(s, :Hecke)
-      printTeX(io,"\$$quad H_G(L,$n)==",repr(hecke(s),context=io),"\$")
+      printTeX(io,"\$$quad H_G(L,$n)==",TeX(io,hecke(s)),"\$")
     elseif haskey(relative_group(s), :refltype)
-      printTeX(io,"\$$quad W_G(L,$n)==",repr(relative_group(s),context=io),"\$")
+      printTeX(io,"\$$quad W_G(L,$n)==",TeX(io,relative_group(s)),"\$")
     else
       printTeX(io,"\$$quad |W_G(L,$n)|==$(length(relative_group(s)))\$")
     end
@@ -609,7 +603,7 @@ function format(io::IO,s::Series)
   f(n, charnames(io,relative_group(s)))
   f("\\varepsilon", s.eps)
 # if haskey(s, :eigen) f("\\hbox{eigen}", s.eigen) end
-  if s.cyclic
+  if s.cyclic && s.e>1
     if haskey(s, :Hecke) f("\\hbox{parameter}", s.Hecke.para[1])
     elseif haskey(s, :mC) f("\\hbox{mC}",mC(s))
     end
@@ -626,8 +620,9 @@ end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
 
-#  .WGL         W_\BG(\BL,λ) as a relgroup, contains parentMap (refs->elts of W)
-#               and reflists (generators->gens of parab of W)
+#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains parentMap 
+#  (lifting reflections to elts of W) and reflists (lifting a generator s to
+#   reflections of the parabolic 𝕄  of W such that W_𝕄 (𝕃,λ)=<s>)
 #  .WGLdims     irr dims of WGL
 function Weyl.relative_group(s::Series)
   get!(s,:WGL) do
@@ -646,7 +641,12 @@ function Weyl.relative_group(s::Series)
   end
   if !isone(s.levi.phi)
     if length(L) == 1
-      N=centralizer(N, s.levi.phi)
+      sz=classinfo(W)[:classes][position_class(W,s.levi.phi)]
+      if sz>100000 println("*** class too big ($sz) calling GAP4.centralizer") 
+         N=Gapjm.Gap4.centralizer(N,s.levi.phi)
+      else
+         N=centralizer(N, s.levi.phi)
+      end
     elseif s.spets isa Cosets.CoxeterCoset
       N=Group(map(x->reduced(Group(s.levi), x),gens(N)))
       N=centralizer(N, s.levi.phi)
@@ -695,15 +695,15 @@ function Weyl.relative_group(s::Series)
     s.WGLdims=[1]
     s.:e=1
     return WGL
+  elseif W isa CoxeterGroup
+    WGL=N/L
   else
     WGL=N/Group(gens(L)) # while problem with G333 not solved
- #  WGL=N/L
   end
   V=lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
   m=vcat(V,lnullspace(projector(s)))^-1
   # V∩ fix(r)
-  hplane(r)=sum_intersection(lnullspace(reflrep(W,
-                                 reflection(W,r))-one(projector(s))),V)[2]
+  hplane(r)=intersect_rowspace(lnullspace(reflrep(W,r)-one(projector(s))),V)
   smalltobig(h)=hcat(h, fill(0,size(h,1),max(0,rank(W)-size(V,1))))*m^-1
   # restriction of matrix x to V
   restrV(x)=(inv(m)*x*m)[axes(V,1),axes(V,1)]
@@ -723,14 +723,14 @@ function Weyl.relative_group(s::Series)
      H=reflection_subgroup(W,restriction(W,vcat(inclusion(W,rr),inclusiongens(L))))
     end
     res=Dict{Symbol, Any}(:refs => inclusiongens(H))
-    H = intersect(H, N)
-  # if length(L)!=1 H=H/L end
-    if length(L)!=1 H=H/Group(gens(L)) end # until problem in G333
+    if H isa CoxeterGroup H=H.G end
+    H=intersect(H, N)
+    if length(L)!=1 H=H/L end
+  # if length(L)!=1 H=H/Group(gens(L)) end # until problem in G333
     if length(H)==1 error("H=L") end
-    ee=elements(H)
-    gen=findfirst(y->order(y)==length(H),ee)
-    if isnothing(gen) error("H not cyclic") end
-    res[:hom]=ee[gen]
+    gen=abelian_gens(H)
+    if length(gen)>1 error("H not cyclic |H|=",length(H),order.(gen)) end
+    res[:hom]=only(gen)
     r=restrV(reflrep(W, length(L)==1 ? res[:hom] : res[:hom].phi))
     ref=reflection(improve_type(r))
     n=ref.eig
@@ -810,17 +810,6 @@ function mC(s::Series)
     (D0+minimum(aA).-aA)//e
   end
   end
-end
-
-function sum_intersection(m::Matrix,n::Matrix)
-  mat=[m m;n zero(n)]
-  mat=echelon(mat)[1]
-  sm=mat[:,axes(m,2)]
-  in=mat[:,size(m,2)+axes(m,2)]
-  sm=sm[1:count(!iszero,eachrow(sm)),:]
-  in=in[size(sm,1)+1:end,:]
-  in=in[1:count(!iszero,eachrow(in)),:]
-  (sm,in)
 end
 
 #  .projector   .element-equivariant projector on V_ζ

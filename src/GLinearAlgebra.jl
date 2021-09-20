@@ -19,7 +19,8 @@ using ..Util: exactdiv, toM, toL
 using ..PermRoot: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
-  permanent, blocks, symmetric_power, diagconj_elt, lnullspace
+  permanent, blocks, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
+  intersect_rowspace
 
 """
     `echelon!(m)`
@@ -103,6 +104,22 @@ end
 
 " `lnullspace(m)`: left nullspace of `m`"
 lnullspace(m)=permutedims(nullspace(permutedims(m)))
+
+"sum of the rowspaces of matrices m and n"
+function sum_rowspace(m::Matrix,n::Matrix)
+  mat=[m m;n zero(n)]
+  sm=echelon(mat)[1][:,axes(m,2)]
+  sm[1:count(!iszero,eachrow(sm)),:]
+end
+
+"intersection of the rowspaces of matrices m and n"
+function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
+  mat=[m m;n zero(n)]
+  mat=echelon(mat)[1]
+  in=mat[:,size(m,2)+axes(m,2)]
+  in=in[count(!iszero,eachrow(mat[:,axes(m,2)]))+1:end,:]
+  in[1:count(!iszero,eachrow(in)),:]
+end
 
 """
   `det(m)`

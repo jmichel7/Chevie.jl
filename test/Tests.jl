@@ -894,10 +894,8 @@ end
 
 # checkSeries(WF[,d[,ad]])
 function Tseries(W,arg...)
-  if length(arg)>=1 l=filter(s->s.levi!=s.spets,Series(W,arg...))
-  else l=dSeries.ProperSeries(W)
-  end
-  for s in l TSerie(s)end
+  l=Series(W,arg...;proper=true)
+  for s in l TSerie(s) end
   l
 end
 

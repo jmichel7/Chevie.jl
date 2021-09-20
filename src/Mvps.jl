@@ -705,8 +705,7 @@ julia> p=x^(1//2)*y^(1//3)
 Mvp{Int64,Rational{Int64}}: x½y⅓
 
 julia> p(;x=y)
-Mvp{Int64,Rational{Int64}}: y⁵⁄₆
-
+Mvp{Int64,Rational{Int64}}: y⅚
 
 julia> p(;x=4)
 Mvp{Int64,Rational{Int64}}: 2y⅓
@@ -819,7 +818,7 @@ julia> derivative(p,:x)
 Mvp{Rational{Int64},Rational{Int64}}: (1//2)x⁻½y⅓
 
 julia> derivative(p,:y)
-Mvp{Rational{Int64},Rational{Int64}}: (1//3)x½y⁻²⁄₃
+Mvp{Rational{Int64},Rational{Int64}}: (1//3)x½y⁻⅔
 
 julia> derivative(p,:z)
 Mvp{Rational{Int64},Rational{Int64}}: 0

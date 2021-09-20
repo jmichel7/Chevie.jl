@@ -718,6 +718,7 @@ ReflectionLength(W,w)                       reflength(W,w)
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
 Reflections                                 reflections
+RelativeGroup                               relative_group
 RegularEigenvalues                          regular_eigenvalues
 RelativeDegrees                             relative_degrees
 Replace                                     replace
@@ -762,6 +763,7 @@ StandardParabolicClass                      standard_parabolic_class
 StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
 SubSpets                                    subspets
 SubTorus                                    SubTorus
+SumIntersectionMat(m,n)                     (sum_rowspace(m,n),intersect_rowspace(m,n))
 Symbols                                     HasType.BDSymbols
 SymbolsDefect(e,r,def,ct)                   symbols(e,r,ct,def)
 SymmetricDifference                         symdiff

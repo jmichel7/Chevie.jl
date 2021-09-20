@@ -60,4 +60,19 @@ function Chars.CharTable(g::Group)
   ct
 end
 
+function centralizer(g::PermGroup,p::Perm)
+  gg=GAP.julia_to_gap(g)
+  pp=GAP.julia_to_gap(p)
+  c=GAP.Globals.Centralizer(gg,pp)
+  Group(Perm.(GAP.Globals.GeneratorsOfGroup(c)))
 end
+
+function intersect(g1::PermGroup,g2::PermGroup)
+  gg1=GAP.julia_to_gap(g1)
+  gg2=GAP.julia_to_gap(g2)
+  gg=GAP.Globals.Intersection(gg1,gg2)
+  Group(Perm.(GAP.Globals.GeneratorsOfGroup(gg)))
+end
+
+end
+using .Gap4

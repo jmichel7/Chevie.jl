@@ -90,17 +90,20 @@ const supchars  =
  "-0123456789+()=abcdefghijklmnoprstuvwxyzABDEGHIJKLMNOPRTUVWαβγδειθφχ"
 const unicodesup=
  "⁻⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁽⁾⁼ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂᵅᵝᵞᵟᵋᶥᶿᵠᵡ"
-const supclass="["*supchars*"]"
 const sup=Dict(zip(supchars,unicodesup))
 const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
 const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."
 const sub=Dict(zip(subchars,unicodesub))
-const subclass="["*subchars*"]"
 const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗ ",
   "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
   "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
   "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
+const unicodeFrac=Dict(("1","2")=>"½",("1","3")=>"⅓",("2","3")=>"⅔",
+  ("1","4")=>"¼",("3","4")=>"¾",("1","5")=>"⅕",("2","5")=>"⅖",("3","5")=>"⅗",
+  ("4","5")=>"⅘",("1","6")=>"⅙",("5","6")=>"⅚",("1","8")=>"⅛",("3","8")=>"⅜",
+  ("5","8")=>"⅝",("7","8")=>"⅞",("1","9")=>"⅑",("1","10")=>"⅒",("1","7")=>"⅐")
+const unicodeQuotes=["′","″","‴","⁗"]
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)
@@ -108,29 +111,28 @@ function unicodeTeX(s::String)
   s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
   s=replace(s,r"\\hfill\\break"=>"\n")
   s=replace(s,r"\\(h|m)box{([^}]*)}"=>s"\2")
-  s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\!"=>"")
-  s=replace(s,r"\^\{\\frac\{1\}\{2\}\}"=>"½")
-  s=replace(s,r"\^\{\\frac\{-1\}\{2\}\}"=>"⁻½")
-  s=replace(s,r"\^\{\\frac\{1\}\{3\}\}"=>"⅓")
-  s=replace(s,r"\^\{\\frac\{2\}\{3\}\}"=>"⅔")
-  s=replace(s,r"\^\{\\frac\{1\}\{4\}\}"=>"¼")
   s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>function(t)
-             t=split(t[9:end-2],"}{")
-             map(x->sup[x],t[1])*"⁄"*map(x->sub[x],t[2])
-      end)
+    n,d=split(t[9:end-2],"}{")
+    if n[1]=='-' res=sup[n[1]];n=n[2:end] else res="" end
+    res*get(unicodeFrac,(n,d),(n=="1" ? "\U215F" : map(x->sup[x],n)*"⁄")*
+                 map(x->sub[x],d))
+  end)
+  s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\mathfrak  *S"=>"\U1D516 ")
   s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
   s=replace(s,r"\$"=>"")
   s=replace(s,r"{}"=>"")
-  s=replace(s,Regex("_$subclass")=>t->sub[t[2]])
-  s=replace(s,Regex("(_\\{$subclass*\\})('*)")=>s"\2\1")
-  s=replace(s,Regex("_\\{$subclass*\\}")=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,Regex("\\^$supclass")=>t->sup[t[2]])
-  s=replace(s,Regex("\\^\\{$supclass*\\}")=>t->map(x->sup[x],t[3:end-1]))
-  q(l)=l==1 ? "′" : l==2 ? "″" : l==3 ? "‴" : l==4 ? "⁗" : map(x->sup[x],"($l)")
+  s=replace(s,Regex("_[$subchars]")=>t->sub[t[2]])
+  s=replace(s,Regex("(_\\{[$subchars]*\\})('*)")=>s"\2\1")
+  s=replace(s,Regex("_\\{[$subchars]*\\}")=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,Regex("\\^[$supchars]")=>t->sup[t[2]])
+  s=replace(s,Regex("\\^\\{[$supchars]*\\}")=>t->map(x->sup[x],t[3:end-1]))
+  q(l)=l<5 ? unicodeQuotes[l] : map(x->sup[x],"($l)")
   s=replace(s,r"''*"=>t->q(length(t)))
-  s=replace(s,r"\{([^}]*)\}"=>s"\1")
+# s=replace(s,r"\{([^}]*)\}"=>s"\1")
+  s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")
+  s=replace(s,r"([^a-zA-Z0-9])\{([^}{,]*)\}"=>s"\1\2")
   s
 end
 

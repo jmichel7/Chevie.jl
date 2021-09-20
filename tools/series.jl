@@ -14,7 +14,7 @@ function findfractionalpowers(W)
       end
     end
   end
-  sers=ProperSeries(W)
+  sers=Series(W;proper=true)
   map(Hecke, sers)
   sers=gapSet(filter(x->haskey(x, :mC) && iscyclic(x),sers))
   while !isempty(sers)
@@ -71,10 +71,9 @@ end
 
 # series of d-regular element w
 function PrincipalSeries(W, d)
-  s=split_levis(W, d, length(relative_degrees(W, d)))
+  s=cuspidal_data(W, d, length(relative_degrees(W, d)))
   if length(s)!=1 error(" not one ", d, "-Sylow") end
-  s=s[1]
-  Series(W,s,findfirst(iszero,UnipotentCharacters(s).prop[:A]), d)
+  Series(W,s[1]...)
 end
 
 function CheckMaximalPairs(W)
@@ -94,7 +93,7 @@ function CheckMaximalPairs(W)
 end
 
 function Checkzegen(W)
-  l = ProperSeries(W)
+  l = Series(W;proper=true)
   print("with no Hecke:",filter(s->isnothing(Hecke(s)),l),"\n")
   print("    center==",OrderCenter(W),"\n")
   l=Filtered(l, (s->begin haskey(s, :Hecke) end))
@@ -124,7 +123,7 @@ end
 
 function CheckRatSer(arg...)
   W = ApplyFunc(ComplexReflectionGroup, arg)
-  s = ProperSeries(W)
+  s = Series(W;proper=true)
   s = Filtered(s, (x->begin x.spets != x.levi end))
   c = Join(map(CheckRatCyc, s), "\\hfill\\break\n")
   return c
@@ -132,7 +131,7 @@ end
 
 function CheckPiGPiL(n)
   W = ComplexReflectionGroup(n)
-  s = ProperSeries(W)
+  s = Series(W;proper=true)
   map(Hecke, s)
   s = Filtered(s, (ser->iscyclic(ser) && ser.principal))
   D0 = (s->begin Sum(ReflectionDegrees(Group(s.spets)) +
@@ -145,7 +144,7 @@ end
 
 function Checkdovere(n)
   W=ComplexReflectionGroup(n)
-  s=ProperSeries(W)
+  s=Series(W;proper=true)
   map(Hecke,s)
   s=filter(ser->iscyclic(ser) && ser.principal,s)
   filter(x->e(x)//x.d>2,s)
@@ -153,7 +152,7 @@ end
 
 function CheckxiL(n)
   W=ComplexReflectionGroup(n)
-  l=ProperSeries(W)
+  l=Series(W;proper=true)
   map(Hecke,l)
   l=filter(s->iscyclic(s) && s.principal,l)
   filter(x->!isone(Root1(PhiOnDiscriminant(x.levi))^x.d),l)
@@ -162,7 +161,7 @@ end
 # check formula for product parameters
 function CheckCoN(i)
   W=ComplexReflectionGroup(i)
-  l=ProperSeries(W)
+  l=Series(W;proper=true)
   l=filter(x->length(x.levi)==1,l)
   map(Hecke, l)
   l=filter(x->haskey(x.prop,:Hecke),l)

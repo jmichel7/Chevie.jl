@@ -221,6 +221,20 @@ function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)
 end
+
+function Base.intersect(G::PermGroup, H::PermGroup)
+  if all(x->x in H,gens(G)) return G end
+  if all(x->x in G,gens(H)) return H end
+  if min(length(G),length(H))>104000 
+    println("*** too large intersect($G,$H) -- calling Gap4.intersect") 
+    return Gapjm.Gap4.intersect(G,H)
+  end
+  if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
+  else res=Group(filter(x->x in G,elements(H)))
+  end
+  Groups.weedgens(res)
+end
+
 #-------------- iteration on product of lists of group elements ---------------
 # if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
 struct ProdIterator{T}
