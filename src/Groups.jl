@@ -449,6 +449,7 @@ julia> transporting_elt(g,[1,2,3,4],[3,4,5,2];action=(s,g)->s.^g)
 """
 function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
   if isnothing(dist)
+    if x==y return one(W) end
     t=transversal(W,x;action=action)
     if haskey(t,y) return t[y] else return nothing end
   end

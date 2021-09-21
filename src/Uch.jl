@@ -300,7 +300,7 @@ function UnipotentCharacters(t::TypeIrred)
     println("Warning: $t is not a Spets!!")
     return
   end
-  uc=copy(uc)
+  uc=deepcopy(uc)
   uc[:charParams]=params(uc[:harishChandra])
   if !haskey(uc,:charSymbols) uc[:charSymbols]=uc[:charParams] end
   # adjust things for descent of scalars

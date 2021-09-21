@@ -1,28 +1,32 @@
 module Lusztig 
 using ..Gapjm
 export LusztigInductionTable
-# find series h of levi HF in WF (sers may be .harish or .almostHarish)
-# return a record with 2 fields: ser= found series
-#   op: an element of W which conjugates h.levi to ser.levi
-#       (never needed for Coxeter groups and standard levis H)
-function FindSeriesInParent(h,HF,WF,sers)
+"""
+`FindSeriesInParent(h,HF,WF,ww)`
+
+find series `h` of levi `HF` in `WF` (`ww` is `uw.harish` or `uw.almostHarish`)
+returns a namedtuple with 2 fields: ser= series found
+  op: an element of `W` conjugating h.levi to ser.levi
+      (not needed for Coxeter groups and standard levis H)
+"""
+function FindSeriesInParent(h,HF,WF,ww)
   if WF isa Spets W=Group(WF) else W=WF end
   n=sort(filter(!(x->isempty(x) || x=="Id"),split(h[:cuspidalName],"\\otimes ")))
-  for y in sers
-#  println("h[:levi]=",h[:levi]," y[:levi]=",y[:levi])
-#  println("h[:eigenvalue]=",h[:eigenvalue]," y[:eigenvalue]=",y[:eigenvalue])
-   if h[:eigenvalue]==y[:eigenvalue] && length(h[:levi])==length(y[:levi])
-     p=sort(filter(!(x->isempty(x) || x=="Id"),split(y[:cuspidalName],"\\otimes ")))
+  for w in ww
+#  println("h[:levi]=",h[:levi]," w[:levi]=",w[:levi])
+#  println("h[:eigenvalue]=",h[:eigenvalue]," w[:eigenvalue]=",w[:eigenvalue])
+   if h[:eigenvalue]==w[:eigenvalue] && length(h[:levi])==length(w[:levi])
+     p=sort(filter(!(x->isempty(x) || x=="Id"),split(w[:cuspidalName],"\\otimes ")))
      if p==n
        incHW=inclusion(HF,WF,h[:levi])
-       p=transporting_elt(W,sort(incHW),sort(y[:levi]), 
+       p=transporting_elt(W,sort(incHW),sort(w[:levi]), 
                           action=(s,g)->sort(action.(Ref(W),s,g)))
-       if !isnothing(p) return (ser=y, op=p) end
+       if !isnothing(p) return (ser=w, op=p) end
        p=transporting_elt(W, 
           sort(reflections(reflection_subgroup(W,incHW))), 
-          sort(reflections(reflection_subgroup(W,y[:levi]))),
+          sort(reflections(reflection_subgroup(W,w[:levi]))),
                           action=(s,g)->sort(s.^g))
-       if !isnothing(p) return (ser=y, op=p) end
+       if !isnothing(p) return (ser=w, op=p) end
       end
     end
   end
@@ -92,7 +96,7 @@ function FindIntSol(l)
     return true
   end
   # if p has small norm must evaluate to 0
-  smallnorm(p)=sum(x->sqrt(Real(x*conj(x))),values(p.d))<15//16
+  smallnorm(p)=sum(x->sqrt(real(Complex{Float64}(x*conj(x)))),values(p.d))<15//16
   simple = function (p)
     if length(keys(p.d))>2 || length(keys(p.d))==2 && valuation(p)>0 return false end
     if length(keys(p.d)) == 1

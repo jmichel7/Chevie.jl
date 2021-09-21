@@ -95,7 +95,7 @@ const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
 const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."
 const sub=Dict(zip(subchars,unicodesub))
 const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
-  "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "otimes"=>"⊗ ",
+  "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "nu"=>"ν", "otimes"=>"⊗ ",
   "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
   "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
   "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
