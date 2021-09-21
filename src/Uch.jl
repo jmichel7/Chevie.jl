@@ -325,6 +325,7 @@ function UnipotentCharacters(t::TypeIrred)
     res[:relativeType]=TypeIrred(Dict(:orbit=>[copy(s[:relativeType])],:twist=>Perm()))
     if !isone(t.twist)
       a=t.orbit[1].indices[s.relativeType[:indices]]
+      @show a,t.twist
       res[:relativeType][:twist]=prod(map(Perm,a,a.^t.twist))
     end
     res

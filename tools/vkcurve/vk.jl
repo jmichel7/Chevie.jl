@@ -143,7 +143,7 @@ SetPrintLevel(2) # while developping
 end
 
 function Base.show(io::IO,r::VK)
-  if haskey(r,:presentation) Presentations.DisplayPresentation(r.presentation)
+  if haskey(r,:presentation) display_balanced(r.presentation)
   else xdisplay(r.prop)
   end
 end
@@ -832,12 +832,8 @@ function LoopsAroundPunctures(originalroots)
     end
   end
   for y in ys sort!(y[:neighbours],by=z->abs2(y[:y]-z)) end
-  rs=map(y->real(y[:y]), ys)
-  is=map(y->imag(y[:y]), ys)
-  minr=real(ys[argmin(rs)][:y])
-  maxr=real(ys[argmax(rs)][:y])
-  mini=imag(ys[argmin(is)][:y])
-  maxi=imag(ys[argmax(is)][:y])
+  minr,maxr=extrema(map(y->real(y[:y]), ys))
+  mini,maxi=extrema(map(y->imag(y[:y]), ys))
 # To avoid trouble with points on the border of the convex hull,
 # we make a box around all the points;
   box=[Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
@@ -1339,11 +1335,10 @@ end
 function desingularized(v1, v2)
   n=length(v1)
   tan=1
-  splt(v)=(real(v),imag(v))
   for k in 1:n, l in k+1:n
-    rv,iv=splt(v1[k]-v1[l])
+    rv,iv=reim(v1[k]-v1[l])
     if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
-    rv,iv=splt(v2[k]-v2[l])
+    rv,iv=reim(v2[k]-v2[l])
     if abs(iv*rv)>10^-8 tan=min(tan,abs(rv/iv)) end
   end
   [v1, v2].*Complex(1,-tan/2)
@@ -1393,10 +1388,8 @@ lexicographical  desingularization, corresponding to a rotation of `v1` and
 # 2) calls starbraid for each
 function LBraidToWord(v1, v2, B)
   n=length(v1)
-  x1=real.(v1)
-  y1=imag.(v1)
-  x2=real.(v2)
-  y2=imag.(v2)
+  x1,y1=reim(v1)
+  x2,y2=reim(v2)
   if length(setapprox(x1))<length(x1) || length(setapprox(x2))<length(x2)
     if VKCURVE[:showSingularProj]
       println("WARNING: singular projection(resolved)")
@@ -1506,13 +1499,13 @@ presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ > ``
     gap>  last.relators;
     [ f.2^-1*f.1^-1*f.2*f.1*f.2*f.1^-1, IdWord,
       f.2^-1*f.1^-1*f.2^-1*f.1*f.2*f.1, f.3*f.2^-1, IdWord, f.3^-1*f.2 ]
-    gap> p:=PresentationFpGroup(g);DisplayPresentation(p);
+    gap> p:=PresentationFpGroup(g);display_balanced(p);
     << presentation with 3 gens and 4 rels of total length 16 >>
     1: c=b
     2: b=c
     3: bab=aba
     4: aba=bab
-    gap> SimplifyPresentation(p);DisplayPresentation(p);
+    gap> SimplifyPresentation(p);display_balanced(p);
     #I  there are 2 generators and 1 relator of total length 6
     1: bab=aba|
 """
@@ -1541,7 +1534,7 @@ function DBVKQuotient(r)
   bzero=r.zeros[r.basepoint]
   dist=abs2.(bzero-r.height)
   height=bzero[argmin(dist)]
-  basestring=count(z->(real(z),imag(z))<=(real(height),imag(height)),bzero)
+  basestring=count(z->reim(z)<=reim(height),bzero)
   fbase=F(basestring)
   rels=AbsWord[]
   auts=map(b->BnActsOnFn(b, F),r.braids)
