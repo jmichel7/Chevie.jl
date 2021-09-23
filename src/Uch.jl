@@ -320,15 +320,15 @@ function UnipotentCharacters(t::TypeIrred)
 
   if !haskey(uc,:almostHarishChandra)
     uc[:almostHarishChandra]=map(uc[:harishChandra])do s
-    res=Dict{Symbol,Any}()
-    for f in [:levi, :cuspidalName, :eigenvalue, :charNumbers] res[f]=s[f] end
-    res[:relativeType]=TypeIrred(Dict(:orbit=>[copy(s[:relativeType])],:twist=>Perm()))
-    if !isone(t.twist)
-      a=t.orbit[1].indices[s.relativeType[:indices]]
-      @show a,t.twist
-      res[:relativeType][:twist]=prod(map(Perm,a,a.^t.twist))
-    end
-    res
+      res=Dict{Symbol,Any}()
+      for f in [:levi, :cuspidalName, :eigenvalue, :charNumbers] res[f]=s[f] end
+      res[:relativeType]=TypeIrred(Dict(:orbit=>[copy(s[:relativeType])],
+                                        :twist=>Perm()))
+      if !isone(t.twist)
+        a=t.orbit[1].indices[s.relativeType[:indices]]
+        res[:relativeType][:twist]=prod(Perm.(a,a.^t.twist))
+      end
+      res
     end
   else
     for s in uc[:almostHarishChandra]
@@ -559,12 +559,8 @@ function UnipotentCharacters(WF::Spets)
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],
-     Dict( :charParams => [ [ "", [ 1 ] ] ],
-      :charSymbols => [ [ Int[], [ 1 ] ] ],
-      :size=>1,
-      :a => [ 0 ],
-      :A => [ 0 ],
-      :spets=>WF))
+     Dict(:charParams=>[["",[1]]], :charSymbols=>[[Int[],[1]]],
+      :size=>1, :a =>[0], :A =>[0], :spets=>WF))
   end
 
   W=WF.W
@@ -573,21 +569,24 @@ function UnipotentCharacters(WF::Spets)
 # Parent(Group(WF))
     uc=UnipotentCharacters(t)
     if isnothing(uc) return end
-    H=map(x->reflection_subgroup(W,x.indices[1:x.rank]),t.orbit)
-    inc=vcat(map(x->x.indices,t.orbit)...)
+ #  H=map(x->reflection_subgroup(W,x.indices[1:x.rank]),t.orbit)
+    i=PermRoot.indices(t)
+    H=reflection_subgroup(W,sort(i))
+    p=mappingPerm(sort(i),i)^mappingPerm(sort(i),eachindex(i))
+#   @show t,i,H,p
     for s in uc.harishChandra
-      s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
-      s[:relativeType].indices=inclusion(H[1],W,s[:relativeType].indices)
+      s[:levi]=inclusion(H,W,s[:levi].^p)
+      s[:relativeType].indices=inclusion(H,W,s[:relativeType].indices.^p)
     end
     for s in uc.almostHarishChandra
-      s[:levi]=restriction(W,vcat(map(R->inclusion(R,s[:levi]),H)...))
-      s[:relativeType].orbit=vcat(map(x->
+      s[:levi]=inclusion(H,W,s[:levi].^p)
+      s[:relativeType].orbit=vcat(
         map(s[:relativeType].orbit)do r
 	  r=copy(r)
-          r.indices=inclusion(x,W,r.indices)
+          r.indices=inclusion(H,W,r.indices.^p)
 	  r
-        end,H)...)
-      s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H[1])),inclusion(H[1])))
+        end...)
+      s[:relativeType].twist^=prod(map(Perm,1:length(inclusion(H)),inclusion(H)))
     end
 
     for f in uc.families

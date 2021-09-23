@@ -1146,8 +1146,8 @@ function RelativeSeries(s)
   s.element=s.levi(classinfo(s.levi)[:classtext][s.classno[1]]...)
   WGL=relative_group(s)
   res=map(enumerate(WGL.reflists)) do (i,r)
-   #  println("r=",r,"\nphi=",s.element/s.spets.phi)
-   R=subspets(s.spets,r,s.element/s.spets.phi)
+ # println("r=",r,"\nphi=",s.element/s.spets.phi)
+   R=subspets(s.spets,restriction(s.spets,r),s.element/s.spets.phi)
     l=inclusion(s.levi)
     if !issubset(l,inclusion(R))
       r=map(r)do w
@@ -1207,9 +1207,9 @@ function RelativeSeries(s)
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues
   if isnothing(p)
-#   xprint("u1=",u1," ud=",ud,"\n")
-#   println(sort(indexin(ud,u1)))
-#   println(sort(indexin(u1,ud)))
+    xprint("u1=",u1," ud=",ud,"\n")
+    println(indexin(ud,u1))
+    println(indexin(u1,ud))
     ChevieErr(s.Hecke, " wrong set of SchurElements")
     return res
   end
