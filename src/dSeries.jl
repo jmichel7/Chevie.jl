@@ -626,7 +626,8 @@ ChevieErr(x...)=xprint("!!!!!!! ",x...)
 #  .WGLdims     irr dims of WGL
 function Weyl.relative_group(s::Series)
   get!(s,:WGL) do
-  W=Group(s.spets)
+  WF=s.spets
+  W=Group(WF)
   L=Group(s.levi)
   if isone(projector(s)) #central series
     WGL=deepcopy(W)
@@ -641,7 +642,7 @@ function Weyl.relative_group(s::Series)
   end
   if !isone(s.levi.phi)
     if length(L) == 1
-      sz=classinfo(W)[:classes][position_class(W,s.levi.phi)]
+      sz=classinfo(WF)[:classes][position_class(WF,s.levi.phi)]
       if sz>100000 println("*** class too big ($sz) calling GAP4.centralizer") 
          N=Gapjm.Gap4.centralizer(N,s.levi.phi)
       else

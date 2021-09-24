@@ -33,7 +33,7 @@ This  requires  that  the  type  `K`  is  hashable.  It  is  a  very simple
 implementation  since the interface of the type  is close to that of dicts;
 the  only difference is weeding  out keys which have  a zero cofficient ---
 which  is necessary since for testing equality of module elements one needs
-a caconical form for each element.
+a canonical form for each element.
 
   - a faster  one (the default)  by keeping a list of pairs sorted by key.
 This  demands that the type `K`  has a `isless` method. This implementation

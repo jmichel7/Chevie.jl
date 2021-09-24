@@ -38,7 +38,7 @@ function Groups.classreps(g::Group)
   end
 end
 
-function Chars.CharTable(ct::GapObj)
+function CharTable(ct::GapObj)
   u=GAP.Globals.Irr(ct)
   girr=mapgap(x->mapgap(Cyc,x),u) 
   irr=permutedims(hcat(girr...))
@@ -50,7 +50,7 @@ function Chars.CharTable(ct::GapObj)
   Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id))
 end
 
-function Chars.CharTable(g::Group)
+function CharTable(g::Group)
   gg=GAP.julia_to_gap(g)
   # in case :classreps not computed using gapclassreps
   l=map(x->position_class(g,x),gapclassreps(g))

@@ -962,6 +962,8 @@ function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets})::CharTable
   end
 end
 
+CharTable(W::PermGroup)=Gapjm.Gap4.CharTable(W)
+
 function classes(ct::CharTable)
   get!(ct,:classes)do
     div.(ct.order,ct.centralizers)
