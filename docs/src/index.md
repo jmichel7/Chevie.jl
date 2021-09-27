@@ -110,10 +110,6 @@ CycPol
 ```@docs
 Util
 @forward
-groupby
-tally
-collectby
-constant
 showtable
 cut
 prime_residues
@@ -123,20 +119,27 @@ primitiveroot
 # Combinatorics
 ```@docs
 Combinat
-arrangements
 combinations
+arrangements
 partitions
 partition_tuples
+partitions_set
 restrictedpartitions
 compositions
 submultisets
-partitions_set
 lcm_partitions
 gcd_partitions
 conjugate_partition
 dominates
 bell
 stirling2
+catalan(::Integer)
+groupby
+constant
+tally
+collectby
+cartesian
+unique_sorted!
 ```
 # Module Elements
 ```@docs
@@ -268,7 +271,7 @@ codegrees
 nref
 nhyp
 bipartite_decomposition
-catalan
+catalan(W,m)
 reflrep(::PermRootGroup,w)
 reflrep(::PRG)
 PermX

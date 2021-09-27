@@ -286,7 +286,7 @@ function Base.divrem(a::Pol, b::Pol)
 end
 
 function Util.exactdiv(a::Pol,b::Pol)
-  if iszero(a)return a end
+  if isone(b) || iszero(a) return a end
   if iszero(b) throw(DivideError) end
   d=a.v-b.v
   if !iszero(a.v) a=shift(a,-a.v) end
@@ -313,12 +313,14 @@ pseudo-division  of `a` by `b`.  If `d` is the  leading coefficient of `b`,
 computes   `(q,r)`   such   that   `d^(degree(a)+1-degree(b))a=q*b+r`   and
 `degree(r)<degree(b)`. Does not do division so works over any ring.
 For true polynomials (errors if the valuation of `a` or of `b` is negative).
+
+See Knuth AOCP2 4.6.1 Algorithm R
 """
 function pseudodiv(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
   d=b.c[end]
   if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
-  z=zero(a.c[1]+b.c[1])
+  z=zero(promote_type(eltype(a.c),eltype(b.c)))
   r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
   q=fill(z,length(r)-degree(b))
@@ -334,13 +336,18 @@ function pseudodiv(a::Pol, b::Pol)
   Pol(q),Pol(r)
 end
 
-# sub-resultant gcd: gcd of polynomials over a unique factorization domain
-# see Cohen 3.3.1
+"""
+`srgcd(a::Pol,b::Pol)`
+
+sub-resultant gcd: gcd of polynomials over a unique factorization domain
+
+See Knuth AOCP2 4.6.1 Algorithm C
+"""
 function srgcd(a::Pol,b::Pol)
   if degree(b)>degree(a) a,b=b,a end
   if iszero(b) return a end
-  ca=gcd(a.c);a=Pol(exactdiv.(a.c,ca),a.v;check=false)
-  cb=gcd(b.c);b=Pol(exactdiv.(b.c,cb),b.v;check=false)
+  ca=gcd(a.c);if !isone(ca) a=Pol(exactdiv.(a.c,ca),a.v;check=false) end
+  cb=gcd(b.c);if !isone(cb) b=Pol(exactdiv.(b.c,cb),b.v;check=false) end
   d=gcd(ca,cb)
   g=1
   h=1
@@ -348,21 +355,21 @@ function srgcd(a::Pol,b::Pol)
     δ=degree(a)-degree(b)
     q,r=pseudodiv(a,b)
     if iszero(r)
-      cb=gcd(b.c)
-      b=Pol(exactdiv.(b.c,cb),b.v;check=false)
-      return Pol(b.c .*d,b.v;check=false)
+      cb=gcd(b.c);if !isone(cb) b=Pol(exactdiv.(b.c,cb),b.v;check=false) end
+      return isone(d) ? b : Pol(b.c .*d,b.v;check=false)
     elseif degree(r)==0
       return Pol([d];check=false)
     end
     a=b
-    b=Pol(exactdiv.(r.c,g*h^δ),r.v;check=false)
+    gh=g*h^δ
+    b=isone(gh) ? r : Pol(exactdiv.(r.c,gh),r.v;check=false)
     g=a[end]
-    h=δ==0 ? h : exactdiv(g^δ,h^(δ-1))
+    if δ>0 h=exactdiv(g^δ,h^(δ-1)) end
   end
 end
 
 Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
-Base.gcd(v::Vector{<:Pol})=length(v)==1 ? v[1] : gcd(v[1],gcd(v[2:end]))
+Base.gcd(v::Array{<:Pol})=reduce(gcd,v)
 Base.lcm(p::Pol,q::Pol)=exactdiv(p*q,gcd(p,q))
 Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
 

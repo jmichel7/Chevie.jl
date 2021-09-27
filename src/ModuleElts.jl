@@ -40,7 +40,7 @@ by  key.  This  demands  that  the  type  `K`  has  a `isless` method. This
 implementation  is  two  to  four  times  faster  than  the `Dict` one (for
 addition, the most important operation) and requires half the memory.
 
-A  ̀ModuleElt` has mostly the same methods as a `Dict`. Adding `ModuleElt`s
+A `ModuleElt` has mostly the same methods as a `Dict`. Adding `ModuleElt`s
 is  a variation on `merge(+,...)` for `Dict`s  (here `+` can be replaced by
 any operation `op` with the property that `op(0,x)=x`) where keys with zero
 value  are deleted  afterwards. Further,  a `ModuleElt`  can be negated, or

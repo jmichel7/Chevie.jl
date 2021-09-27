@@ -1,18 +1,18 @@
 """
 This  self-contained module (it has no dependencies) is a port of some GAP3
-combinatorics  functions needed by my port  of the Chevie GAP3 package. The
-list of functions it exports are:
+functions used in my Chevie package. The list of functions it exports are:
 
 Classical enumerations:
 
 `combinations, ncombinations, arrangements, narrangements,
-  partitions, npartitions, partition_tuples, npartition_tuples,
-  partitions_set, npartitions_set, compositions, submultisets`
+ partitions, npartitions, partition_tuples, npartition_tuples,
+ restrictedpartitions, nrestrictedpartitions,
+ partitions_set, npartitions_set, compositions, submultisets`
 
 some more functions on partitions and set partitions, and counting functions:
 
 `lcm_partitions, gcd_partitions, conjugate_partition, dominates, bell, 
-stirling2`
+stirling2,catalan`
 
 and finally some structural manipulations not yet in Julia:
 
@@ -23,11 +23,12 @@ welcome).
 """
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
-  partitions, npartitions, restrictedpartitions,nrestrictedpartitions,
-  partition_tuples, npartition_tuples,
-  partitions_set, npartitions_set, lcm_partitions, gcd_partitions,
-  compositions, submultisets, conjugate_partition, dominates, cartesian,
-  groupby, constant, tally, collectby, bell, stirling2, unique_sorted!
+  partitions, npartitions, partition_tuples, npartition_tuples,
+  restrictedpartitions,nrestrictedpartitions,
+  partitions_set, npartitions_set, compositions, submultisets, 
+  lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
+  bell, stirling2, catalan,
+  groupby, constant, tally, collectby, cartesian, unique_sorted!
 
 #--------------------- Structural manipulations -------------------
 """
@@ -164,7 +165,7 @@ end
 " `constant(a)` whether all elements in collection `a` are equal"
 constant(a)=isempty(a) || all(==(first(a)),a)
 
-# faster than unique! for sorted vectors
+" faster than unique! for sorted vectors"
 function unique_sorted!(v::Vector)
   i=1
 @inbounds  for j in 2:length(v)
@@ -176,8 +177,12 @@ function unique_sorted!(v::Vector)
   resize!(v,i)
 end
 
-# mimics Gap's cartesian. Use Iterators.product otherwise
-# reverse twice to get the same order as GAP
+"""
+`cartesian(a::AbstractVector...)`
+
+A variation on ``Iterators.product` which gives the same result as GAP's
+`Cartesian`. `reverse` is done twice to get the same order as GAP.
+"""
 function cartesian(a::AbstractVector...)
   reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
@@ -189,7 +194,7 @@ end
 
 `ncombinations(mset[,k])`
 
-'combinations'  returns  all  combinations  of  the  multiset `mset` (a not
+`combinations`  returns  all  combinations  of  the  multiset `mset` (a not
 necessarily  sorted  collection  with  possible  repetitions).  If a second
 argument  `k`  is  given,  it  returns  the combinations with `k` elements.
 `ncombinations` returns the number of combinations.
@@ -476,12 +481,6 @@ of restricted partitions.
 The next example shows how many ways there are to pay 17 cents using coins
 of 2,5 and 10 cents.
 ```julia-repl
-julia> restrictedpartitions(17,[10,5,2])
-3-element Vector{Vector{Int64}}:
- [5, 2, 2, 2, 2, 2, 2]
- [5, 5, 5, 2]
- [10, 5, 2]
-
 julia> nrestrictedpartitions(17,[10,5,2])
 3
 
@@ -1108,4 +1107,15 @@ function stirling2( n, k )
   end
   div(sti,fib)
 end
+
+"""
+`Catalan(n)` `n`-th Catalan Number
+
+```julia-repl
+julia> catalan(8)
+1430
+```
+"""
+catalan(n::Integer)=Integer(prod(i->(n+i)//i,2:n))
+
 end

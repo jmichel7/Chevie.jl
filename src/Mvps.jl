@@ -311,7 +311,7 @@ Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T))
 Base.one(::Type{Mvp{T}}) where T=one(Mvp{T,Int})
 Base.one(::Type{Mvp})=Mvp(1)
 Base.one(p::Mvp{T,N}) where {T,N}=one(Mvp{T,N})
-Base.isone(x::Mvp)=monom(x) && all(isone,first(x.d))
+Base.isone(x::Mvp)=monom(x) && isone(first(first(x.d)))&&isone(last(first(x.d)))
 Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=iszero(p.d)
 Base.convert(::Type{Mvp},a::Number)=convert(Mvp{typeof(a),Int},a)
@@ -859,7 +859,7 @@ end
 # Arguments must be true polynomials
 function Util.exactdiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
-  elseif iszero(p) return p
+  elseif iszero(p) || isone(q) return p
   elseif monom(q)
     m,c=first(q.d)
     return Mvp(ModuleElt(inv(m)*m1=>exactdiv(c1,c) for (m1,c1) in p.d;check=false))
@@ -883,6 +883,8 @@ end
 
 Util.exactdiv(p::Mvp,q::Number)=exactdiv(p,Mvp(q))
  
+Base.gcd(a::AbstractFloat,b::AbstractFloat)=one(a)*one(b)
+
 """
 `gcd(p::Mvp,  q::Mvp)`  computes  the  `gcd`  of  the  'Mvp' arguments. The
 arguments must be true polynomials.
@@ -893,6 +895,13 @@ Mvp{Int64}: -x-y
 ```
 """
 function Base.gcd(a::Mvp,b::Mvp)
+  if iszero(a) return b
+  elseif iszero(b) return a
+  elseif monom(a)
+    (m,c)=first(a.d)
+    return Mvp(gcd(m,reduce(gcd,keys(b.d)))=>gcd(c,reduce(gcd,values(b.d))))
+  elseif monom(b) return gcd(b,a)
+  end
   va=variables(a)
   vb=variables(b)
   vars=intersect(va,vb)
@@ -903,10 +912,9 @@ function Base.gcd(a::Mvp,b::Mvp)
     end
   end
   v=first(vars)
-# if length(union(va,vb))==1 gcd(Pol(a),Pol(b))(Mvp(v))
-# else              
-    srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
-# end
+  if length(union(va,vb))==1 srgcd(Pol(a),Pol(b))(Mvp(v))
+  else              srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
+  end
 end
 
 Base.gcd(v::AbstractArray{<:Mvp})=reduce(gcd,v;init=Mvp(0))
@@ -946,6 +954,9 @@ Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},
 struct Mvrf{T}
   num::Mvp{T,Int}
   den::Mvp{T,Int}
+  # to speedup the constructor it can be told:
+  # pol: we know a and b are true polynomials
+  # prime: we know a and b are prime to each other
   function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};pol=false,prime=false)where{T}
     if iszero(b) error("division by 0") end
     if iszero(a) return new{T}(a,one(Mvp{T,Int})) end
@@ -953,8 +964,7 @@ struct Mvrf{T}
       d=laurent_denominator(a,b)
       if !isone(d) a*=d;b*=d end
     end
-    if prime return new{T}(a,b) end
-    if !isone(b)
+    if !prime && !isone(b)
       d=gcd(a,b)
       if !isone(d) a=exactdiv(a,d);b=exactdiv(b,d) end
     end
@@ -1022,9 +1032,7 @@ Mvrf(a::Mvp)=Mvrf(a,Mvp(1);prime=true)
 Base.copy(a::Mvrf)=Mvrf(a.num,a.den;pol=true,prime=true)
 Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);pol=true,prime=true)
 Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
-#Base.one(::Type{Mvrf})=Mvrf(one(Mvp{Int,Int}),one(Mvp{Int,Int});pol=true,prime=true)
 Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
-#Base.zero(::Type{Mvrf})=Mvrf(zero(Mvp{Int,Int}),one(Mvp{Int,Int});pol=true,prime=true)
 Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);pol=true,prime=true)
 # next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::Mvrf)=p
@@ -1055,14 +1063,17 @@ Base.inv(a::Mvrf)=Mvrf(a.den,a.num;pol=true,prime=true)
 function Base.inv(p::Mvp)
   if monom(p)
     (m,c)=first(p.d)
-    return Mvp(inv(m)=>c^2==1 ? c : 1//c) 
+    return Mvp(inv(m)=>c^2==1 ? c : 1/c) 
   end
   Mvrf(Mvp(1),p;pol=false,prime=true)
 end
 
 function Base.://(a::Mvp,b::Mvp)
   if iszero(a) return a end
-  if monom(b) return a*inv(b) end
+  if monom(b) 
+    (m,c)=first(b.d)
+    return Mvp(ModuleElt(m1/m=>c^2==1 ? c1*c : c1//c for (m1,c1) in a.d))
+  end
   Mvrf(a,b)
 end
 
@@ -1073,8 +1084,8 @@ Base.://(a::Mvrf,b::Number)=Mvrf(a.num,a.den*b;pol=true,prime=true)
 Base.://(a::Mvrf,b::Mvp)=Mvrf(a.num,a.den*b)
 Base.:/(a::Mvrf,b::Union{Mvrf,Number,Mvp})=a//b
 Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
-Base.://(p::Number,q::Mvp)=p*inv(q)
-Base.:/(p::Number,q::Mvp)=p//q
+Base.://(p::Number,q::Mvp)=Mvp(p)//q
+Base.:/(p::Number,q::Mvp)=Mvp(p)/q
 
 Base.:*(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.num,a.den*b.den;pol=true)
 

@@ -122,14 +122,13 @@ the  graded multiplicity  of a  character `φ`  of `W`  in the graded module
 """
 module PermRoot
 
-export PermRootGroup, PRG, PRSG, catalan,
- reflection_subgroup, simple_reps, simple_conjugating, 
- reflections, reflection, Diagram, refltype, cartan, independent_roots, 
- inclusion, inclusiongens, restriction, coroot, hyperplane_orbits, TypeIrred,
- refleigen, reflchar, bipartite_decomposition, torus_order, rank, reflrep, 
- PermX, coroots, baseX, invbaseX, semisimplerank, invariant_form, generic_order,
- parabolic_reps, invariants,improve_type, matY, simpleroots,
- simplecoroots, action, radical, parabolic_closure, is_parabolic,
+export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, 
+ simple_conjugating, reflections, reflection, Diagram, refltype, cartan, 
+ independent_roots, inclusion, inclusiongens, restriction, coroot, 
+ hyperplane_orbits, TypeIrred, refleigen, reflchar, bipartite_decomposition,
+ torus_order, rank, reflrep, PermX, coroots, baseX, invbaseX, semisimplerank,
+ invariant_form, generic_order, parabolic_reps, invariants,improve_type, matY,
+ simpleroots, simplecoroots, action, radical, parabolic_closure, is_parabolic,
  central_action, nhyp, nref
 using ..Gapjm
 
@@ -1651,16 +1650,6 @@ reflrep(W::PRSG)=map(i->reflrep(W,i),eachindex(gens(W)))
 
 #-------------------------------------------------
 """
-Catalan(n) `n`-th Catalan Number
-
-```julia-repl
-julia> catalan(8)
-1430
-```
-"""
-catalan(n::Int)=Int(prod(i->(n+i)//i,2:n))
-
-"""
 `Catalan(W)`
 
 returns the Catalan Number of the irreducible complex reflection group `W`.
@@ -1700,7 +1689,7 @@ julia> catalan(ComplexReflectionGroup(7),2;q=Pol())
 Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1
 ```
 """
-function catalan(W,m=1;q=1)
+function Combinat.catalan(W,m=1;q=1)
   if length(refltype(W))>1 error(W," should be irreducible") end
   d=sort(degrees(W))
   d=filter(x->x!=1,d)

@@ -811,7 +811,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
         end
     end)
 chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
-        local X, Y, t, x, a, v, d, T, S, m, extra, l, m1, p1rRep, f
+        local X, Y, t, x, a, v, d, T, S, m, extra, l, m1, p1rRep, f, e
         if !(IsList(para))
             para = [para]
         end
@@ -1013,45 +1013,40 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                     E(p, i)
                                 end), 0:p - 1), para[1]]
             else
+                e = div(p, q)
                 if para[2] != para[3]
                     if mod(q, 2) == 0 && r == 2
                         S = (((chevieget(:imp, :CharInfo))(p, q, r))[:malle])[i]
                         if S[1] == 1
-                            return [[[(para[1])[1 + mod(S[4] - 1, p // q)]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
+                            return [[[(para[1])[1 + mod(S[4] - 1, e)]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
                         else
                             Y = para[2]
                             T = para[3]
                             if q > 2
                                 X = map((y->begin
-                                                GetRoot(y, q // 2)
+                                                GetRoot(y, div(q, 2))
                                             end), para[1])
                                 X = Concatenation(map((i->begin
-                                                    E(q // 2, i) * X
-                                                end), 1:q // 2))
+                                                    E(div(q, 2), i) * X
+                                                end), 1:div(q, 2)))
                             else
                                 X = para[1]
                             end
                             X = X[S[[3, 4]]]
-                            v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(p // q, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
+                            v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(e, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
                             d = 1 + Sum(X) * 0 + Sum(Y) * 0 + Sum(T) * 0
-                            return [(d * [[X[1], Sum(Y, (y->begin
-                                                                    1 // y
-                                                                end)) - X[2] // v * Sum(T)], [0, X[2]]]) ^ (q // 2), [[Sum(Y), 1 // X[1]], [-(Product(Y)) * X[1], 0]], [[0, -(Product(T)) // v], [v, Sum(T)]]]
+                            return [(d*[[X[1],Sum(Y,y->1//y)-X[2]//v*Sum(T)], 
+                 [0, X[2]]])^div(q,2),
+        [[Sum(Y),1//X[1]],[-Product(Y)*X[1],0]],[[0,-Product(T)//v],[v,Sum(T)]]]
                         end
                     else
                         error("should not happen")
                     end
-                elseif para[1] == map((i->begin
-                                    E(p // q, i - 1)
-                                end), 1:p // q)
-                    para = [map((i->begin
-                                        E(p, i)
-                                    end), 0:p - 1), para[2]]
+                elseif para[1] == map((i->begin E(e, i - 1) end), 1:e)
+                    para = [map((i->begin E(p, i) end), 0:p - 1), para[2]]
                 else
                     para = [Concatenation(TransposedMat(map((i->begin
-                                                map((j->begin
-                                                                E(q, j)
-                                                            end), 0:q - 1) * GetRoot(i, q)
+                              map(j->E(q,j), 0:q - 1) * GetRoot(i, q)
                                             end), para[1]))), para[2]]
                 end
             end

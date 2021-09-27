@@ -250,6 +250,7 @@ const ChevieDict=Dict(
 "PrintDiagram(W)"=>"Diagram(W)",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
 "QuasiIsolatedRepresentatives"=>"QuasiIsolatedRepresentatives",
+"QuoInt"=>"div",
 "Rank"=>"rank",
 "RankSymbol"=>"ranksymbol",
 "ReducedCoxeterWord(W,w)"=>"word(W,W(w...))",
