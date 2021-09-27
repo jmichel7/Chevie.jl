@@ -42,7 +42,7 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   m=zeros(T,r,r)//1
   for (e,t) in p.d
     n=map(x->findfirst(==(x),v),keys(e.d))
-    c=values(e.d)
+    c=collect(values(e.d))
     if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t//2
     elseif c==[2] m[n[1],n[1]]=t
     elseif c==[1] m[n[1],r]=m[r,n[1]]=t//2

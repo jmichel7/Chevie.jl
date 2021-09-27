@@ -183,7 +183,7 @@ Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
 Base.lcm(a::CycPol,b::CycPol)=CycPol(1,max(a.valuation,b.valuation),
-                                       merge(max,a.v,b.v))
+                                       ModuleElts.merge2(max,a.v,b.v))
 Base.lcm(v::AbstractArray{<:CycPol})=reduce(lcm,v;init=one(CycPol))
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
@@ -203,7 +203,7 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
       [7,11,19,23,31,35],[1,5,13,17,25,29]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
 
-# returns list of subsets of primitive_roots(d) wich have a `name` Φ^i
+# returns list of subsets of primitive_roots(d) wich have a `name` Φ_d^i
 function dec(d::Int)
   get!(dec_dict,d) do
     dd=[prime_residues(d)]

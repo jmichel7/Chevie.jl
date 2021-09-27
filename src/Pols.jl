@@ -64,8 +64,8 @@ julia> m=[q+1 q+2;q-2 q-3]
 
 julia> inv(RatFrac.(m))
 2×2 Matrix{RatFrac{Int64}}:
- (-q+3)/(2q-1)   (q+2)/(2q-1)
- (-q+2)/(-2q+1)  (q+1)/(-2q+1)
+ (-q+3)/(2q-1)  (-q-2)/(-2q+1)
+ (q-2)/(2q-1)   (q+1)/(-2q+1)
 ```
 
 see also the individual documentation of divrem, gcd.
@@ -339,25 +339,25 @@ end
 function srgcd(a::Pol,b::Pol)
   if degree(b)>degree(a) a,b=b,a end
   if iszero(b) return a end
-  ca=gcd(a.c)
-  cb=gcd(b.c)
+  ca=gcd(a.c);a=Pol(exactdiv.(a.c,ca),a.v;check=false)
+  cb=gcd(b.c);b=Pol(exactdiv.(b.c,cb),b.v;check=false)
   d=gcd(ca,cb)
-  a=Pol(exactdiv.(a.c,ca),a.v;check=false)
-  b=Pol(exactdiv.(b.c,cb),b.v;check=false)
   g=1
   h=1
   while true
     δ=degree(a)-degree(b)
-    q,r=Pols.pseudodiv(a,b)
+    q,r=pseudodiv(a,b)
     if iszero(r)
       cb=gcd(b.c)
       b=Pol(exactdiv.(b.c,cb),b.v;check=false)
       return Pol(b.c .*d,b.v;check=false)
+    elseif degree(r)==0
+      return Pol([d];check=false)
     end
     a=b
     b=Pol(exactdiv.(r.c,g*h^δ),r.v;check=false)
     g=a[end]
-    h=exactdiv(g^δ,h^(δ-1))
+    h=δ==0 ? h : exactdiv(g^δ,h^(δ-1))
   end
 end
 

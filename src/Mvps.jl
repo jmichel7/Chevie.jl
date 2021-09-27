@@ -14,8 +14,8 @@ denominator are true polynomials.
 `@Mvp x₁,…,xₙ`
 
 assigns   to  the  Julia  names   `xᵢ`  indeterminates  suitable  to  build
-multivariate  polynomials  or  rational  fractions.  `Mvp(:x1)` creates the
-indeterminate `x1` without assigning a Julia variable.
+multivariate  polynomials  or  rational  fractions.  `Mvp(:x₁)` creates the
+indeterminate `x₁` without assigning a Julia variable.
 
 ```julia-repl
 julia> @Mvp x,y
@@ -24,8 +24,8 @@ julia> (x+y^-1)^3
 Mvp{Int64}: x³+3x²y⁻¹+3xy⁻²+y⁻³
 ```
 
-`Mvp(x::Number)`   returns  the  constant   multivariate  polynomial  whose
-constant term is `x`.
+`Mvp(x::Number)`  returns the multivariate polynomial  with only a constant
+term, equal to `x`.
 
 ```julia-repl
 julia> degree(Mvp(1))
@@ -82,8 +82,8 @@ julia> (x+1)^-2
 Mvrf{Int64}: 1/(x²+2x+1)
 ```
 
-One can compute the value `Mvp` or a `Ratfrac` when setting some variables 
-by the call syntax:
+One  can  compute  the  value  of  `Mvp`  or  a `Ratfrac` when setting some
+variables by using the function call syntax:
 
 ```julia-repl
 julia> p=x+y
@@ -206,13 +206,11 @@ function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
 end
 
 """
-`isless(a::Monomial,b::Monomial)`
-
-For  our implementation of `Mvp`s to  work, `isless` must define a monomial
-order  (that is, for any monomial `m` we have `a<b => a*m<b*m`). By default
-we define `a<b` if the first variable in `a/b` occurs to a positive power.
+`lexless(a::Monomial, b::Monomial)`
+The  "lex" ordering,  where `a<b`  if the  first variable  in `a/b`
+occurs to a positive power.
 """
-function Base.isless(a::Monomial, b::Monomial)
+function lexless(a::Monomial, b::Monomial)
   for ((va,pa),(vb,pb)) in zip(a.d,b.d)
     if va!=vb return va<vb ? pa>0 : pb<0 end
     if pa!=pb return isless(pb,pa) end
@@ -222,17 +220,39 @@ function Base.isless(a::Monomial, b::Monomial)
   @inbounds la>lb ? last(a.d.d[lb+1])>0 : lb>la ? last(b.d.d[la+1])<0 : false
 end
 
+"""
+`deglexless(a::Monomial, b::Monomial)`
+The "deglex" ordering, where `a<b̀` if `degree(a)<degree(b)` or the degrees
+are equal but `lexless(a,b)`.
+"""
+function deglexless(a::Monomial, b::Monomial)
+  da=degree(a);db=degree(b)
+  if da!=db return isless(da,db) end
+  lexless(a,b)
+end
+
+"""
+`isless(a::Monomial,b::Monomial)`
+
+For  our implementation of `Mvp`s to  work, `isless` must define a monomial
+order (that is, for monomials `m,a,b` we have `a<b => a*m<b*m`). By default
+we  use the  "lex" ordering.
+"""
+@inline Base.isless(a::Monomial, b::Monomial)=lexless(a,b)
+
 Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
+#monomial d of greatest degree in each variable such that (m/d,n/d) positive
 Base.gcd(m::Monomial,n::Monomial)=Monomial(ModuleElts.merge2(min,m.d,n.d))
 Base.gcd(v::AbstractArray{<:Monomial})=reduce(gcd,v)
 
+#monomial l of smallest degree in each variable such that (l/m,l/n) positive
 Base.lcm(m::Monomial,n::Monomial)=Monomial(ModuleElts.merge2(max,m.d,n.d))
 Base.lcm(v::AbstractArray{<:Monomial})=reduce(lcm,v)
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
-Pols.degree(m::Monomial)=sum(values(m.d))
+Pols.degree(m::Monomial)=sum(values(m.d);init=0)
 Pols.degree(m::Monomial,var::Symbol)=m.d[var]
 
 function root(m::Monomial,n::Integer=2)
@@ -284,12 +304,14 @@ function Base.show(io::IO, x::Mvp)
   end
 end
 
+monom(x::Mvp)=length(x.d)==1 # x is a non-zero monomial
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(zero(ModuleElt{Monomial{N},T}))
 Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T))
 Base.one(::Type{Mvp{T}}) where T=one(Mvp{T,Int})
 Base.one(::Type{Mvp})=Mvp(1)
 Base.one(p::Mvp{T,N}) where {T,N}=one(Mvp{T,N})
+Base.isone(x::Mvp)=monom(x) && all(isone,first(x.d))
 Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=iszero(p.d)
 Base.convert(::Type{Mvp},a::Number)=convert(Mvp{typeof(a),Int},a)
@@ -314,14 +336,14 @@ Base.:(==)(x::Number,a::Mvp)=a==Mvp(x)
 
 function Base.convert(::Type{T},a::Mvp) where T<:Number
   if iszero(a) return zero(T) end
-  if length(a.d)>1 || !isone(first(first(a.d)))
+  if !monom(a) || !isone(first(first(a.d)))
       throw(InexactError(:convert,T,a)) 
   end
   convert(T,last(first(a.d)))
 end
 (::Type{T})(a::Mvp) where T<: Number=convert(T,a)
 
-Base.isinteger(p::Mvp)=iszero(p) || (isone(length(p.d)) &&
+Base.isinteger(p::Mvp)=iszero(p) || (monom(p) &&
              isone(first(first(p.d))) && isinteger(last(first(p.d))))
 
 # we need a promote rule to handle Vectors of Mvps of different types
@@ -337,25 +359,29 @@ Base.:+(a::Number, b::Mvp)=Mvp(a)+b
 Base.:+(a::Mvp, b::Number)=b+a
 
 Base.:-(a::Mvp)=Mvp(-a.d)
-Base.:-(a::Mvp, b::Mvp)=a+(-b) # not Mvp(a.d-b.d) because 0-x != x (merge)
+Base.:-(a::Mvp, b::Mvp)=Mvp(a.d-b.d)
 Base.:-(a::Mvp, b::Number)=a-Mvp(b)
 Base.:-(b::Number, a::Mvp)=Mvp(b)-a
 
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
-# we use we have a monomial order so there is no order check in next line
+# we have a monomial order so there is no ordering check in next line
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in b.d;check=false))
 Base.:*(b::Mvp,a::Monomial)=a*b
 function Base.:*(a::Mvp, b::Mvp)
   if length(a.d)>length(b.d) a,b=(b,a) end
-  if iszero(a) return a end
+  if iszero(a) return a 
+  elseif iszero(b) return b
+  elseif isone(a) return b
+  elseif isone(b) return a
+  end
   let b=b # needed !!!!
     sum(b*m*c for (m,c) in a.d)
   end
 end
 
-Base.:(//)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c//b for (m,c) in a.d;check=false))
-Base.:(/)(a::Mvp, b::Number)=Mvp(ModuleElt(m=>c/b for (m,c) in a.d;check=false))
+Base.:/(p::Mvp,q::Number)=Mvp(p.d/q)
+Base.://(p::Mvp,q::Number)=Mvp(p.d//q)
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -373,7 +399,7 @@ function Base.:^(x::Mvp, p::Union{Integer,Rational})
   elseif iszero(x) return x
   elseif !isinteger(p) return root(x,denominator(p))^numerator(p) 
   elseif isone(p) return x 
-  elseif length(x.d)==1
+  elseif monom(x)
     (m,c)=first(x.d)
     return Mvp(m^p=>c^p)
   else return p>=0 ? Base.power_by_squaring(x,p) :
@@ -405,8 +431,8 @@ julia> degree(a,:x)
 ```
 
 """
-Pols.degree(m::Mvp)=iszero(m) ? 0 : maximum(degree.(keys(m.d)))
-Pols.degree(m::Mvp,v::Symbol)=iszero(m) ? 0 : maximum(degree.(keys(m.d),v))
+Pols.degree(p::Mvp)=maximum(degree,keys(p.d);init=0)
+Pols.degree(m::Mvp,v::Symbol)=maximum(x->degree(x,v),keys(m.d);init=0)
 
 """
 The `valuation` of an `Mvp` is the minimal degree of a monomial.
@@ -655,7 +681,7 @@ if it contains any `Mvp` which is not a scalar.
 """
 function scal(p::Mvp{T})where T
   if iszero(p) return zero(T) end
-  if length(p.d)==1 
+  if monom(p)
     (m,c)=first(p.d)
     if isone(m) return c end
   end
@@ -760,7 +786,7 @@ end
 function root(p::Mvp,n::Real=2)
   if iszero(p) return p end
   n=Int(n)
-  if length(p.d)>1 
+  if !monom(p)
    throw(DomainError(p,"$(ordinal(n)) root of non-monomial not implemented")) 
   end
   (m,c)=first(p.d)
@@ -826,16 +852,18 @@ Mvp{Rational{Int64},Rational{Int64}}: 0
 """
 function Pols.derivative(p::Mvp,v=first(variables(p)))
   # check needed because 0 could appear in coeffs
-  Mvp(ModuleElt(m*Monomial(v)^-1=>c*degree(m,v) for (m,c) in p.d))
+  Mvp(ModuleElt(m*Monomial(v=>-1)=>c*degree(m,v) for (m,c) in p.d))
 end
 
+# returns p/q when the division is exact, nothing otherwise
+# Arguments must be true polynomials
 function Util.exactdiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
   elseif iszero(p) return p
-  elseif length(q.d)==1 
+  elseif monom(q)
     m,c=first(q.d)
     return Mvp(ModuleElt(inv(m)*m1=>exactdiv(c1,c) for (m1,c1) in p.d;check=false))
-  elseif length(p.d)==1 return nothing
+  elseif monom(p) return nothing
   end 
   var=first(first(p.d)[1].d)[1]
   res=zero(p)
@@ -861,16 +889,24 @@ arguments must be true polynomials.
 
 ```julia-repl
 julia> gcd(x^2-y^2,(x+y)^2)
-Mvp{Int64}: x+y
+Mvp{Int64}: -x-y
 ```
 """
 function Base.gcd(a::Mvp,b::Mvp)
-  vars=variables([a,b])
-  if isempty(vars) return Mvp(1) end
-  v=first(vars)
-  if length(vars)==1 gcd(Pol(a),Pol(b))(Mvp(v))
-  else               srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
+  va=variables(a)
+  vb=variables(b)
+  vars=intersect(va,vb)
+  if isempty(vars) 
+    if iszero(a) return b
+    elseif iszero(b) return a
+    else return Mvp(gcd(reduce(gcd,values(a.d)),reduce(gcd,values(b.d))))
+    end
   end
+  v=first(vars)
+# if length(union(va,vb))==1 gcd(Pol(a),Pol(b))(Mvp(v))
+# else              
+    srgcd(Pol(a,v),Pol(b,v))(Mvp(v))
+# end
 end
 
 Base.gcd(v::AbstractArray{<:Mvp})=reduce(gcd,v;init=Mvp(0))
@@ -896,7 +932,7 @@ polynomials.
 
 ```julia-repl
 julia> lcm(x^2-y^2,(x+y)^2)
-Mvp{Int64}: x³+x²y-xy²-y³
+Mvp{Int64}: -x³-x²y+xy²+y³
 ```
 """
 Base.lcm(a::Mvp,b::Mvp)=exactdiv(a*b,gcd(a,b))
@@ -910,44 +946,46 @@ Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},
 struct Mvrf{T}
   num::Mvp{T,Int}
   den::Mvp{T,Int}
-  function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};check=true,check1=true)where{T}
+  function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};pol=false,prime=false)where{T}
     if iszero(b) error("division by 0") end
-    if a==0 return new{T}(a,Mvp(T(1))) end
-    if check
+    if iszero(a) return new{T}(a,one(Mvp{T,Int})) end
+    if !pol
       d=laurent_denominator(a,b)
-      a*=d
-      b*=d
-      if check1
-        d=gcd(a,b)
-        a=exactdiv(a,d)
-        b=exactdiv(b,d)
-        if T<:Rational{<:Integer} || T<:Cyc{<:Rational{<:Integer}}
-          d=lcm(denominator(a),denominator(b))
-          a=numerator(a*d)
-          b=numerator(b*d)
-        end
-        T1=promote_type(eltype(a),eltype(b))
-        return new{T1}(a,b)
-      end
+      if !isone(d) a*=d;b*=d end
     end
-    new{T}(a,b)
+    if prime return new{T}(a,b) end
+    if !isone(b)
+      d=gcd(a,b)
+      if !isone(d) a=exactdiv(a,d);b=exactdiv(b,d) end
+    end
+    return new{T}(a,b)
   end
+end
+
+function Mvrf(a::Mvp{T1,Int},b::Mvp{T2,Int};pol=false,prime=false)where{T1,T2}
+  T=promote_type(T1,T2)
+  Mvrf(convert(Mvp{T,Int},a),convert(Mvp{T,Int},b);pol,prime)
+end
+
+function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int})where T<:Rational
+  Mvrf(numerator(a)*denominator(b),numerator(b)*denominator(a))
+end
+
+function Mvrf(a::Mvp{Cyc{T},Int},b::Mvp{Cyc{T},Int})where T<:Rational
+  Mvrf(numerator(a)*denominator(b),numerator(b)*denominator(a))
 end
 
 Base.numerator(p::Mvrf)=p.num
 Base.denominator(p::Mvrf)=p.den
-
-function Mvrf(a::Mvp{T1,Int},b::Mvp{T2,Int};check=true,check1=true)where{T1,T2}
-  T=promote_type(T1,T2)
-  Mvrf(convert(Mvp{T,Int},a),convert(Mvp{T,Int},b);check,check1)
-end
+Base.:(==)(a::Mvrf,b::Mvrf)=a.num==b.num && a.den==b.den
 
 function Base.convert(::Type{Mvrf{T}},p::Mvrf{T1}) where {T,T1}
-  Mvrf(convert(Mvp{T,Int},p.num),convert(Mvp{T,Int},p.den);check=false)
+  Mvrf(convert(Mvp{T,Int},p.num),convert(Mvp{T,Int},p.den);pol=true,prime=true)
 end
 
 function Base.convert(::Type{Mvp{T,Int}},p::Mvrf{T1}) where {T,T1}
-  if isone(length(p.den.d)) 
+  if isone(p.den) return p.num
+  elseif monom(p.den) 
     (m,c)=first(p.den.d)
     return convert(Mvp{T,Int},p.num*inv(m)*inv(c)) 
   end
@@ -955,11 +993,11 @@ function Base.convert(::Type{Mvp{T,Int}},p::Mvrf{T1}) where {T,T1}
 end
 
 function Base.convert(::Type{Mvrf{T}},p::Mvp{T1,N}) where {T,T1,N}
-  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));check1=false)
+  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));prime=true)
 end
 
 function Base.convert(::Type{Mvrf{T}},p::Number) where {T}
-  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));check=false)
+  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));pol=true)
 end
 
 function Base.promote_rule(a::Type{Mvp{T1,Int}},b::Type{Mvrf{T2}})where {T1,T2}
@@ -979,17 +1017,18 @@ end
 Mvp(a::Mvrf{T}) where T =convert(Mvp{T,Int},a)
 
 Base.broadcastable(p::Mvrf)=Ref(p)
-Mvrf(a::Number)=Mvrf(Mvp(a),Mvp(1);check=false)
-Mvrf(a::Mvp)=Mvrf(a,Mvp(1);check1=false)
-Base.copy(a::Mvrf)=Mvrf(a.num,a.den;check=false)
-Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);check=false)
-Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});check=false)
-Base.one(::Type{Mvrf})=Mvrf(one(Mvp{Int,Int}),one(Mvp{Int,Int});check=false)
-Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});check=false)
-Base.zero(::Type{Mvrf})=Mvrf(zero(Mvp{Int,Int}),one(Mvp{Int,Int});check=false)
+Mvrf(a::Number)=Mvrf(Mvp(a),Mvp(1);pol=true)
+Mvrf(a::Mvp)=Mvrf(a,Mvp(1);prime=true)
+Base.copy(a::Mvrf)=Mvrf(a.num,a.den;pol=true,prime=true)
+Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);pol=true,prime=true)
+Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
+#Base.one(::Type{Mvrf})=Mvrf(one(Mvp{Int,Int}),one(Mvp{Int,Int});pol=true,prime=true)
+Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
+#Base.zero(::Type{Mvrf})=Mvrf(zero(Mvp{Int,Int}),one(Mvp{Int,Int});pol=true,prime=true)
+Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);pol=true,prime=true)
 # next 3 stuff to make inv using LU work (abs is stupid)
 Base.abs(p::Mvrf)=p
-Base.conj(p::Mvrf)=Mvrf(conj(p.num),conj(p.den);check=false)
+Base.conj(p::Mvrf)=Mvrf(conj(p.num),conj(p.den);pol=true,prime=true)
 Base.adjoint(a::Mvrf)=conj(a)
 Base.cmp(a::Mvrf,b::Mvrf)=cmp([a.num,a.den],[b.num,b.den])
 Base.isless(a::Mvrf,b::Mvrf)=cmp(a,b)==-1
@@ -1000,7 +1039,7 @@ function Base.show(io::IO, ::MIME"text/plain", a::Mvrf)
 end
 
 function Base.show(io::IO,a::Mvrf)
-  if a.den==-1 a=Mvrf(-a.num,-a.den;check=false) end
+  if a.den==-1 a=Mvrf(-a.num,-a.den;pol=true) end
   n=sprint(show,a.num; context=io)
   if  get(io, :limit,true) && a.den==one(a.den)
     print(io,n)
@@ -1011,60 +1050,56 @@ function Base.show(io::IO,a::Mvrf)
   end
 end
 
-Base.inv(a::Mvrf)=Mvrf(a.den,a.num;check=false)
+Base.inv(a::Mvrf)=Mvrf(a.den,a.num;pol=true,prime=true)
+
+function Base.inv(p::Mvp)
+  if monom(p)
+    (m,c)=first(p.d)
+    return Mvp(inv(m)=>c^2==1 ? c : 1//c) 
+  end
+  Mvrf(Mvp(1),p;pol=false,prime=true)
+end
 
 function Base.://(a::Mvp,b::Mvp)
   if iszero(a) return a end
-  if length(b.d)==1
-    (m,c)=first(b.d)
-    return c^2==1 ? Mvp([m1/m=>c1*c for (m1,c1) in a.d]...) : 
-                    Mvp([m1/m=>c1//c for (m1,c1) in a.d]...)
-  end
+  if monom(b) return a*inv(b) end
   Mvrf(a,b)
 end
 
 Base.:/(p::Mvp,q::Mvp)=p//q
 
-function Base.inv(p::Mvp)
-  if length(p.d)==1 return Mvp(1)//p end
-  Mvrf(Mvp(1),p;check1=false)
-end
-
 Base.://(a::Mvrf,b::Mvrf)=a*inv(b)
-Base.:/(a::Mvrf,b::Mvrf)=a*inv(b)
-Base.:/(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
-Base.://(a::Mvrf,b::Union{Number,Mvp})=Mvrf(a.num,a.den*b)
+Base.://(a::Mvrf,b::Number)=Mvrf(a.num,a.den*b;pol=true,prime=true)
+Base.://(a::Mvrf,b::Mvp)=Mvrf(a.num,a.den*b)
+Base.:/(a::Mvrf,b::Union{Mvrf,Number,Mvp})=a//b
 Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
-Base.://(p::Number,q::Mvp)=Mvp(p)//q
+Base.://(p::Number,q::Mvp)=p*inv(q)
 Base.:/(p::Number,q::Mvp)=p//q
-Base.:/(p::Mvp,q)=Mvp(p.d/q,p.v)
-Base.://(p::Mvp,q)=iszero(p) ? p : Mvp(p.d//q,p.v)
 
-Base.:*(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.num,a.den*b.den)
+Base.:*(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.num,a.den*b.den;pol=true)
 
 Base.:*(a::Mvrf,b::Mvp)=Mvrf(a.num*b,a.den)
-Base.:*(b::Mvp,a::Mvrf)=Mvrf(a.num*b,a.den)
-Base.:*(a::Mvrf,b::T) where T =Mvrf(a.num*b,a.den;check=false)
+Base.:*(b::Mvp,a::Mvrf)=a*b
+Base.:*(a::Mvrf,b::T) where T =Mvrf(a.num*b,a.den;pol=true)
 Base.:*(b::T,a::Mvrf) where T =a*b
 
 Base.:^(a::Mvrf, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
                               Base.power_by_squaring(inv(a),-n)
-Base.:+(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.den+a.den*b.num,a.den*b.den)
+Base.:+(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.den+a.den*b.num,a.den*b.den;pol=true)
 Base.:+(a::Mvrf,b::Union{Number,Mvp})=a+Mvrf(b)
 Base.:+(b::Union{Number,Mvp},a::Mvrf)=a+Mvrf(b)
-Base.:-(a::Mvrf)=Mvrf(-a.num,a.den;check=false)
+Base.:-(a::Mvrf)=Mvrf(-a.num,a.den;pol=true,prime=true)
 Base.:-(a::Mvrf,b::Mvrf)=a+(-b)
 Base.:-(a::Mvrf,b)=a-Mvrf(b)
 Base.:-(b,a::Mvrf)=Mvrf(b)-a
-Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);check=false)
 
 value(p::Mvrf,k::Pair...)=value(p.num,k...)/value(p.den,k...)
 (p::Mvrf)(;arg...)=value(p,arg...)
 
-#julia1.6.0-rc2> @btime Mvps.fateman(15)
+#julia1.6.3> @btime Mvps.fateman(15)
 # 4.040 s (15219390 allocations: 5.10 GiB)
 function fateman(n)
-  f=(1+Mvp(:x)+Mvp(:y)+Mvp(:z)+Mvp(:t))*one(n)
+  f=(1+sum(Mvp.((:x,:y,:z,:t))))*one(n)
   f=f^n
   length((f*(f+1)).d)
 end

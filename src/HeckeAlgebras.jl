@@ -526,14 +526,10 @@ end
 
 Base.:+(a::HeckeElt, b::HeckeElt)=clone(a,a.d+b.d)
 Base.:-(a::HeckeElt)=clone(a,-a.d)
-Base.:-(a::HeckeElt, b::HeckeElt)=a+(-b)
+Base.:-(a::HeckeElt, b::HeckeElt)=clone(a,a.d-b.d)
 
-Base.:*(a::HeckeElt, b::Number)=clone(a,a.d*b)
-Base.:*(a::HeckeElt, b::Pol)=clone(a,a.d*b)
-Base.:*(a::HeckeElt, b::Mvp)=clone(a,a.d*b)
-Base.:*(b::Pol, a::HeckeElt)=a*b
-Base.:*(b::Mvp, a::HeckeElt)=a*b
-Base.:*(b::Number, a::HeckeElt)= a*b
+Base.:*(a::HeckeElt, b::Union{Number,Pol,Mvp})=clone(a,a.d*b)
+Base.:*(b::Union{Number,Pol,Mvp}, a::HeckeElt)=a*b
 
 Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                         Base.power_by_squaring(inv(a),-n)
@@ -905,7 +901,7 @@ function Simplify(res::FactSchur)
       factor*=pol(k)
       continue
     end
-    k=values(first(monomial.d)[1].d)
+    k=collect(values(first(monomial.d)[1].d))
     if k[1]<0
       pol=descent_of_scalars(pol,-1)
       k=-k

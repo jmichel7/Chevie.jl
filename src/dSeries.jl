@@ -1063,7 +1063,7 @@ function paramcyclic(s::Series)
         error()
     end
     quality=map(t->map(i->param(mod(t+i-1,e(s))+1,i),1:e(s)), s.translation)
-    quality=map(x->conductor(values(prod(y->Mvp(:x)-y,x).d)),quality)
+    quality=map(x->conductor(collect(values(prod(y->Mvp(:x)-y,x).d))),quality)
     quality=1+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
     if isempty(quality) quality=[1] end
     m=HasType.Rotations(mC(s))

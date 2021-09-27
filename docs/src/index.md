@@ -231,7 +231,6 @@ bruhatless
 CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
 longest
-nref
 braid_relations
 coxmat
 standard_parabolic_class
@@ -266,9 +265,12 @@ rank
 semisimplerank
 degrees(::Group)
 codegrees
+nref
+nhyp
 bipartite_decomposition
 catalan
 reflrep(::PermRootGroup,w)
+reflrep(::PRG)
 PermX
 reflections
 refleigen
@@ -416,7 +418,7 @@ fusion_algebra
 # d-Harish-Chandra series
 ```@docs
 dSeries
-cuspidal_pairs
+cuspidal_data
 Series
 ennola
 ```
