@@ -43,6 +43,7 @@ const ChevieDict=Dict(
 "Coefficient(p,i)"=>"p[i]",
 "Collected"=>"tally",
 "CollectBy(l,f)"=>"collectby(f,l)",
+"Comm"=>"comm",
 "Combinations"=>"combinations",
 "ComplementIntMat"=>"ComplementInt",
 "ComplexConjugate"=>"conj",

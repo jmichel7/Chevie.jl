@@ -409,7 +409,7 @@ julia> Chars.fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
 Pol{Cyc{Int64}}: q²+q
 ```
 """
-function fakedegree(W,p,q)
+function fakedegree(W,p,q=Pol())
   typ=refltype(W)
   if isempty(typ) return one(q) end
   prod(map((t,p)->fakedegree(t,p,q),typ,p))
@@ -423,7 +423,7 @@ function fakedegree(t::TypeIrred,p,q)
 end
 
 """
-`fakedegrees(W , q)`
+`fakedegrees(W , q=Pol())`
 
 returns  a list holding the fake degrees of the reflection group `W` on the
 vector  space `V`, evaluated at `q`. These are the graded multiplicities of
@@ -440,13 +440,12 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
  1
 ```
 """
-function fakedegrees(W,q;recompute=false)
+function fakedegrees(W,q=Pol();recompute=false)
   if !recompute
     res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
-    if !any(isnothing,res) #&& !any(iszero,res) 
-        return res end
+    if !any(isnothing,res) return res end
   end
-  # need general routine
+  # recompute from general principles
   InfoChevie("# recomputing fakedegrees for ",W,"\n")
   qq=Pol()
   P=generic_order(W,qq)

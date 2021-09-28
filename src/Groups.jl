@@ -56,18 +56,21 @@ abstract type Group{T} end # T is the type of elements of G
 
 function normalizer end
 
+"`one(G::Group)` returns the identity element of `G`."
 Base.one(G::Group{T}) where T=one(T)
 
+"`gens(G::Group)` returns the `Vector` of generators of `G`."
 gens(G::Group)=G.gens
+"`gens(G::Group)` returns the number of generators of `G`."
 ngens(G::Group)=length(gens(G))
 
 """
 `(G::Group)(i...)`
 
-A  Group  may  be  used  as  a  function  wich  takes  integer arguments in
-`eachindex(gens(W))`.  This constructs  the element  of `G`  product of the
-generators  with the specified  indices. An argument  can also be negative,
-then the inverse of the corresponding generator is used.
+A Group used as a function takes integer arguments in `eachindex(gens(W))`.
+This  constructs  the  element  of  `G`  product of the generators with the
+specified  indices. An argument  can also be  negative, then the inverse of
+the corresponding generator is used.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
@@ -81,6 +84,7 @@ function (W::Group)(w::Vararg{Integer,N}where N)
   isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i])) for i in w)
 end
 
+"`comm(a,b)` the commutator of `a` and `b`"
 comm(a,b)=inv(a)*inv(b)*a*b
 
 """

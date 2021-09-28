@@ -851,7 +851,7 @@ PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 """
 `reflection_subgroup(W::CoxSym,I)`
 
-Only parabolics defined are `I=1:m` for `m≤n`
+The only parabolics defined for `CoxSym(n)` are for `I=1:m` for `m≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I)
