@@ -8,17 +8,6 @@ chevieset(:F4, :CartanMat, function (arg...,)
         end
         return [[2, -1, 0, 0], [-1, 2, -type_, 0], [0, -2 // type_, 2, -1], [0, 0, -1, 2]]
     end)
-chevieset(:F4, :PrintDiagram, function (indices, title, type_)
-        print(title, " ", indices[1], " - ", indices[2])
-        if type_ == 1
-            print(" >=> ")
-        elseif type_ == ER(2)
-            print(" == ")
-        else
-            print(" ?==? ")
-        end
-        print(indices[3], " - ", indices[4], "\n")
-    end)
 chevieset(:F4, :ReflectionName, function (arg...,)
         local i, opt, type_
         if length(arg) == 1

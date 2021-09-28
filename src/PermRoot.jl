@@ -328,40 +328,90 @@ function Base.show(io::IO,d::Diagram)
     else ind=repr.(indices)
     end
     l=length.(ind)
-    bar(n)="\u2014"^n
+    bar="\u2014"
     rdarrow(n)="\u21D0"^(n-1)*" "
     ldarrow(n)="\u21D2"^(n-1)
     tarrow(n)="\u21DB"^(n-1)*" "
     vbar="\UFFE8" # "\u2503"
     node="O"
     if series==:A
-      join(io,node.*bar.(l[1:end-1]));println(io,node);join(io,ind," ")
+      join(io,node.*bar.^l[1:end-1]);println(io,node);join(io,ind," ")
     elseif series==:B
-      print(io,node,rdarrow(max(l[1],2)));join(io,node.*bar.(l[2:end-1]))
+      print(io,node,rdarrow(max(l[1],2)));join(io,node.*bar.^l[2:end-1])
       println(io,node)
       print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:C
-      print(io,node,ldarrow(max(l[1],2)));join(io,node.*bar(l[2:end-1]))
+      print(io,node,ldarrow(max(l[1],2)));join(io,node.*bar.^l[2:end-1])
       println(io,node)
       print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
     elseif series==:D
-      println(io," "^l[1]," O $(ind[2])\n"," "^l[1]," ",vbar)
-      println(io,node,bar(l[1]),map(l->node*bar(l),l[3:end-1])...,node)
-      print(io,ind[1]," ",join(ind[3:end]," "))
+      println(io," "^(l[1]+1),node," $(ind[2])")
+      println(io," "^(l[1]+1),vbar)
+      println(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      join(io,ind[[1;3:end]]," ")
     elseif series==:E
-      dec=2+l[1]+l[3]
-      println(io," "^dec,"O $(ind[2])\n"," "^dec,vbar)
-      println(io,node,bar(l[1]),node,bar(l[3]),
-                join(map(l->node*bar(l),l[4:end-1])),node)
-      print(io,join(ind[[1;3:end]]," "))
+      println(io," "^(2+l[1]+l[3]),node," $(ind[2])")
+      println(io," "^(2+l[1]+l[3]),vbar)
+      println(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      join(io,ind[[1;3:end]]," ")
     elseif series==:F
-      println(io,node,bar(l[1]),node,ldarrow(max(l[2],2)),node,bar(l[3]),node)
+      println(io,node,bar^l[1],node,ldarrow(max(l[2],2)),node,bar^l[3],node)
       print(io,ind[1]," ",ind[2]," "^max(2-l[2],1),ind[3]," ",ind[4])
     elseif series==:G
       println(io,node,tarrow(max(l[1],2)),node)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
+      println(io,node,bar^l[1],node,ldarrow(max(l[2],2)),node,bar^l[3],node)
+    elseif series==:H
+      println(io," "^l[1],"₅")
+      println(io,map(i->node*bar^l[i],1:t.rank-1)...,node)
+      join(io,ind," ")
+    elseif series==:I
+      println(io," "^l[1],t.bond)
+      println(io,node,bar^l[1],node)
+      join(io,ind," ")
     elseif series==:ST
-      if haskey(t,:ST) getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+      if haskey(t,:ST) 
+        if t.ST>22 getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+        else
+# print(title, " ");s=pad("\n", -length(title))
+  s="\n"
+  f(arg...)=joindigits(indices[collect(arg)])
+  dbar="\u2550"
+  c2="O" #c2="\u2461"
+  c3="\u2462"
+  c4="\u2463"
+  c5="\u2464"
+  if t.ST==4 print(c3," ",bar^2,c3,s,f(1)," "^3,f(2))
+  elseif t.ST==5 print(c3," ",dbar^2,c3,s,f(1)," "^3,f(2))
+  elseif t.ST==6 print(c2,bar,"⁶",bar,c3,s,f(1)," "^3,f(2))
+  elseif t.ST==7 print("  ",c3," ",f(2),s)
+               print(" /3\\",s)
+               print(c2,bar^3,c3,s)
+               print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
+  elseif t.ST==8 print(c4," ",bar^2,c4,s,f(1)," "^3,f(2))
+  elseif t.ST==9 print(c2,bar,"⁶",bar,c4,s,f(1)," "^3,f(2))
+  elseif t.ST==10 print(c3," ",dbar^2,c4,s,f(1)," "^3,f(2))
+  elseif t.ST==11 print(" ",c3," ",f(2),s," /3\\",s,c2,bar^3,c4,s)
+    print(f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
+  elseif t.ST==12 print("  ",c2," ",f(2),s," /4\\",s,c2,bar^3,c2,s)
+    print(f(1)," "^3,f(3)," ",f(1,2,3,1),"=",f(2,3,1,2),"=",f(3,1,2,3))
+  elseif t.ST==13 print("  ",c2," ",f(1),s," / \\",s,c2,bar^3,c2,s)
+    print(f(3)," "^3,f(2)," ",f(2,3,1,2),"=",f(3,1,2,3)," ",f(1,2,3,1,2),"=")
+                print(f(3,1,2,3,1))
+  elseif t.ST==14 print(" ₈",s,c2,bar,c3,s,f(1)," ",f(2))
+  elseif t.ST==15 print("  ",c2," ",f(1),s," /5",s,c2," ",f(3),s," \\",s,"  ",c3," ",f(2)," ")
+                print(f(1,2,3),"=",f(3,1,2)," ",f(2,3,1,2,1),"=",f(3,1,2,1,2))
+  elseif t.ST==16 print(c5," ",bar^2,c5,s,f(1)," "^3,f(2))
+  elseif t.ST==17 print(c2,bar,"⁶",bar,c5,s,f(1)," "^3,f(2))
+  elseif t.ST==18 print(c3," ",dbar^2,c5,s,f(1)," "^3,f(2))
+  elseif t.ST==19 print(" ",c3," ",f(2),s," /3\\",s,c2,bar^3,c5,s)
+   print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2, 3, 1),"=",f(3, 1, 2))
+  elseif t.ST==20 print("  ₅",s,c3," ",bar,c3,s,f(1)," "^2,f(2))
+  elseif t.ST==21 print(" ₁₀",s,c2,bar^2,c3,s,f(1)," "^3,f(2))
+  elseif t.ST==22 print("  ",c2," ",f(2),s," /5\\",s,c2,bar^3,c2,s)
+   print(f(1)," "^3,f(3)," ",f(1,2,3,1,2),"=",f(2,3,1,2,3),"=",f(3,1,2,3,1))
+  end
+  end
       else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))") 
       end
     end

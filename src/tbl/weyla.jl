@@ -16,10 +16,6 @@ chevieset(:A, :CartanMat, function (n,)
 chevieset(:A, :ReflectionDegrees, (n->begin
             2:n + 1
         end))
-chevieset(:A, :PrintDiagram, function (r, indices, title)
-        local i
-        print(title, " ", Join(indices, " - "), "\n")
-    end)
 chevieset(:A, :ReflectionName, function (r, option)
         local o
         if haskey(option, :arg)

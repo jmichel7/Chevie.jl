@@ -17,24 +17,6 @@ chevieset(:I, :CartanMat, function (arg...,)
         (m[2])[1] = (2 + E(bond) + E(bond, -1)) // (m[1])[2]
         return m
     end)
-chevieset(:I, :PrintDiagram, function (arg...,)
-        local bond, indices, type_
-        print(arg[3], " ")
-        bond = arg[1]
-        indices = arg[2]
-        if length(arg) == 4
-            type_ = arg[4]
-        else
-            type_ = E(2bond) + E(2bond, -1)
-        end
-        if type_ == E(2bond) + E(2bond, -1)
-            print(indices[1], " -", string(bond), "- ", indices[2], "\n")
-        elseif type_ == 1
-            print(indices[1], " >", string(bond), "> ", indices[2], "\n")
-        else
-            print(indices[1], " ?", string(bond), "? ", indices[2], "\n")
-        end
-    end)
 chevieset(:I, :ReflectionName, function (arg...,)
         local bond, type_, opt
         bond = arg[1]

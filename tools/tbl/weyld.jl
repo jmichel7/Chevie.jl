@@ -2,17 +2,6 @@
 chevieset(:D, :Size, function (arg...,)
         return 2 ^ (arg[1] - 1) * factorial(arg[1])
     end)
-chevieset(:D, :PrintDiagram, function (r, indices, title)
-        local i, s
-        print(title, " ", indices[1], "\n")
-        s = pad("", length(title) + 1)
-        print(s, " \\\n", s, "  ", indices[3])
-        for i = 4:r
-            print(" - ", indices[i])
-        end
-        print("\n")
-        print(s, " /\n", s, indices[2], "\n")
-    end)
 chevieset(:D, :GeneratingRoots, function (l,)
         local r, rts, i
         rts = []

@@ -1,21 +1,4 @@
 
-chevieset(:B, :PrintDiagram, function (r, indices, title, type_)
-        local i
-        print(title, " ")
-        if type_ == 1
-            print(indices[1], " >=> ", indices[2])
-        elseif type_ == 2
-            print(indices[1], " <=< ", indices[2])
-        elseif type_ == ER(2)
-            print(indices[1], " == ", indices[2])
-        else
-            print(indices[1], " ?==? ", indices[2])
-        end
-        for i = 3:r
-            print(" - ", indices[i])
-        end
-        print("\n")
-    end)
 chevieset(:B, :ReflectionName, function (arg...,)
         local i, r, type_, option
         r = arg[1]

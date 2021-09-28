@@ -1035,18 +1035,24 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                             X = X[S[[3, 4]]]
                             v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(e, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
                             d = 1 + Sum(X) * 0 + Sum(Y) * 0 + Sum(T) * 0
-                            return [(d*[[X[1],Sum(Y,y->1//y)-X[2]//v*Sum(T)], 
-                 [0, X[2]]])^div(q,2),
-        [[Sum(Y),1//X[1]],[-Product(Y)*X[1],0]],[[0,-Product(T)//v],[v,Sum(T)]]]
+                            return [(d * [[X[1], Sum(Y, (y->begin
+                                                                    1 // y
+                                                                end)) - X[2] // v * Sum(T)], [0, X[2]]]) ^ div(q, 2), [[Sum(Y), 1 // X[1]], [-(Product(Y)) * X[1], 0]], [[0, -(Product(T)) // v], [v, Sum(T)]]]
                         end
                     else
                         error("should not happen")
                     end
-                elseif para[1] == map((i->begin E(e, i - 1) end), 1:e)
-                    para = [map((i->begin E(p, i) end), 0:p - 1), para[2]]
+                elseif para[1] == map((i->begin
+                                    E(e, i - 1)
+                                end), 1:e)
+                    para = [map((i->begin
+                                        E(p, i)
+                                    end), 0:p - 1), para[2]]
                 else
                     para = [Concatenation(TransposedMat(map((i->begin
-                              map(j->E(q,j), 0:q - 1) * GetRoot(i, q)
+                                                map((j->begin
+                                                                E(q, j)
+                                                            end), 0:q - 1) * GetRoot(i, q)
                                             end), para[1]))), para[2]]
                 end
             end

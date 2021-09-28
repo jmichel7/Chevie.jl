@@ -15,44 +15,31 @@ const src=[
 # functions whose translation does not work so they are hand-translated
 # to files xxx_t.jl in tbl. The useful code from compat3 is in Chevie.jl
 const exclu=[
- ["CharTable","A"],
- ["HeckeCharTable","A"],
- ["Hk","A"],
- ["CharTable","2A"],
- ["FakeDegree","2A"],
- ["HeckeCharTable","2A"],
- ["UnipotentClasses","2A"],
- ["CharTable","B"],
- ["CartanMat","B"],
- ["Hk","B"],
- ["HeckeCharTable","B"],
- ["UnipotentClasses","B"],
- ["CharTable","D"],
- ["CartanMat","D"],
- ["UnipotentClasses","D"],
- ["HeckeCharTable","D"],
- ["SchurElement","D"],
- ["Hk","D"],
- ["CharTable","2D"],
- ["HeckeCharTable","2D"],
- ["UnipotentClasses","2D"],
- ["WGraph","E8"],
- ["Discriminant","H4"],
- ["CharInfo","I"],
- ["GeneratingRoots","imp"],
- ["HeckeCharTable","imp"],
- ["CharTable","imp"],
- ["PowerMaps","imp"],
- ["ReflectionCoDegrees","imp"],
- ["Invariants","imp"],
- ["ReducedInRightCoset","timp"],
- ["CharName","timp"],
- ["PrintDiagram","G4_22"],
- ["CharTable","G31"],
- ["CharTable","G34"],
+ ["CartanMat",["B","D"]],
  ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])],
- ["Invariants",:(["E7", "E8", "H3", "H4"])]
+ ["CharInfo","I"],
+ ["CharName","timp"],
+ ["CharTable",["A","2A","B","D","2D","G31","G34","imp"]],
+ ["Discriminant","H4"],
+ ["FakeDegree","2A"],
+ ["GeneratingRoots","imp"],
+ ["HeckeCharTable",["imp","2A","2D","A","B","D"]],
+ ["Hk",["A","B","D"]],
+ ["Invariants",["imp"]],
+ ["Invariants",:(["E7", "E8", "H3", "H4"])],
+ ["PowerMaps","imp"],
+ ["PrintDiagram",["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22"]],
+ ["ReducedInRightCoset","timp"],
+ ["ReflectionCoDegrees","imp"],
+ ["SchurElement","D"],
+ ["UnipotentClasses",["2A","2D","B","D"]],
+ ["WGraph","E8"],
 ]
+
+function exclude(e)
+ any(p->e.args[2]==p[1] &&
+     (p[2] isa Vector ? e.args[3] in p[2] : e.args[3]==p[2]),exclu)
+end
 
 const ok=[:(CHEVIE.AddData), 
     :(CHEVIE.IndirectAddData)
@@ -83,8 +70,7 @@ function install(n)
   l=readf(n*".g")
   open(n*".jl","w")do f 
     for e in l 
-      if (e.head==:call && (e.args[1] in ok) &&
-          all(p->e.args[2]!=p[1] || (length(p)==2 && e.args[3]!=p[2]),exclu))
+     if (e.head==:call && (e.args[1] in ok) && !exclude(e))
         if e.args[3] isa String print(e.args[3])
         else print(join(e.args[3].args,","))
         end
@@ -126,8 +112,7 @@ end
 function writeall(l)
   open("tables.jl","w")do f
     for e in l 
-      if (e.head==:call && (e.args[1] in ok) &&
-          all(p->e.args[2]!=p[1] || (length(p)==2 && e.args[3]!=p[2]),exclu))
+      if (e.head==:call && (e.args[1] in ok) && !exclude(e))
         if e.args[3] isa String print(e.args[3])
         else print(join(e.args[3].args,","))
         end
