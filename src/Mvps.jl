@@ -994,7 +994,7 @@ function Base.convert(::Type{Mvrf{T}},p::Mvrf{T1}) where {T,T1}
 end
 
 function Base.convert(::Type{Mvp{T,Int}},p::Mvrf{T1}) where {T,T1}
-  if isone(p.den) return p.num
+  if isone(p.den) return convert(Mvp{T,Int},p.num)
   elseif monom(p.den) 
     (m,c)=first(p.den.d)
     return convert(Mvp{T,Int},p.num*inv(m)*inv(c)) 

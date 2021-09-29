@@ -534,8 +534,10 @@ Base.:*(b::Union{Number,Pol,Mvp}, a::HeckeElt)=a*b
 Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                         Base.power_by_squaring(inv(a),-n)
 #--------------------------------------------------------------------------
+const MM=ModuleElt # HModuleElt is 3 times slower
+
 struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
-  d::ModuleElt{P,C1} # has better merge performance than Dict
+  d::MM{P,C1} # has better merge performance than Dict
   H::TH
 end
 
@@ -544,14 +546,14 @@ basename(h::HeckeTElt)="T"
  
 function Base.one(H::HeckeAlgebra)
   get!(H,:one)do
-    HeckeTElt(ModuleElt(one(H.W)=>one(coefftype(H));check=false),H)
+    HeckeTElt(MM(one(H.W)=>one(coefftype(H));check=false),H)
   end
 end
 
 Base.one(h::HeckeTElt)=one(h.H)
 
 function Base.zero(H::HeckeAlgebra)
-  HeckeTElt(zero(ModuleElt{typeof(one(H.W)),coefftype(H)}),H)
+  HeckeTElt(zero(MM{typeof(one(H.W)),coefftype(H)}),H)
 end
 
 Tbasis(H::HeckeAlgebra)=(x...)->x==() ? one(H) : Tbasis(H,x...)
@@ -559,7 +561,7 @@ Tbasis(H::HeckeAlgebra,w::Vararg{Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeAlgebra,h::HeckeTElt)=h
 Tbasis(H::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
-Tbasis(H::HeckeAlgebra,w)=HeckeTElt(ModuleElt(w=>one(coefftype(H));check=false),H)
+Tbasis(H::HeckeAlgebra,w)=HeckeTElt(MM(w=>one(coefftype(H));check=false),H)
 
 function polynomial_relations(H::HeckeAlgebra)
   get!(H,:polrel)do
@@ -577,12 +579,12 @@ function innermul(W::CoxeterGroup,a,b)
       for (e,p)  in h
         if isleftdescent(W,e,i) push!(down,e=>p) else push!(up,s*e=>p) end
       end
-      h=ModuleElt(up)
+      h=MM(up)
       if isempty(down) continue end
       pp=a.H.para[i]
       ss,p=(sum(pp),-prod(pp))
-      if !iszero(ss) h+=ModuleElt(down;check=false)*ss end
-      if !iszero(p) h+=ModuleElt(s*e=>c*p for (e,c) in down) end
+      if !iszero(ss) h+=MM(down;check=false)*ss end
+      if !iszero(p) h+=MM(s*e=>c*p for (e,c) in down) end
     end
     HeckeTElt(h,a.H)
   end
@@ -606,7 +608,7 @@ function innermul(W::PermRootGroup,a,b)
       else error("not implemented")
       end
     end
-    HeckeTElt(ModuleElt(h.d),a.H)
+    HeckeTElt(MM(h.d),a.H)
   end
 end
 
@@ -652,7 +654,7 @@ q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁
 ```
 """
 function alt(a::HeckeTElt)
-  clone(a,ModuleElt(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
+  clone(a,MM(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
                 for i in word(a.H.W,w))* bar(c) for (w,c) in a.d;check=false))
 end
 
@@ -661,7 +663,7 @@ end
 
 the anti-involution on the Hecke algebra defined by `T_w↦T_inv(w)`.
 """
-Garside.α(h::HeckeTElt)=HeckeTElt(ModuleElt(inv(p)=>c for (p,c) in h.d),h.H)
+Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
 
 """
 `class_polynomials(h)`
@@ -746,7 +748,7 @@ function class_polynomials(h)
         end
       end
     end
-    h=clone(h,ModuleElt(Pair.(elms,coeffs)))
+    h=clone(h,MM(Pair.(elms,coeffs)))
   end
   return min
 end
@@ -1145,7 +1147,7 @@ function isrepresentation(H::HeckeCoset,r)
 end
 
 struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}
-  d::ModuleElt{P,C1} # has better merge performance than Dict
+  d::MM{P,C1} # has better merge performance than Dict
   H::HeckeCoset
 end
 
@@ -1157,6 +1159,6 @@ Tbasis(H::HeckeCoset,w::Vararg{Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeCoset,h::HeckeTCElt)=h
 Tbasis(H::HeckeCoset,h::HeckeElt)=Tbasis(h)
-Tbasis(H::HeckeCoset,w)=HeckeTCElt(ModuleElt(w=>one(coefftype(H.H))),H)
+Tbasis(H::HeckeCoset,w)=HeckeTCElt(MM(w=>one(coefftype(H.H))),H)
 
 end

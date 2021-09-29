@@ -468,7 +468,7 @@ end
 struct RatFrac{T}
   num::Pol{T}
   den::Pol{T}
-  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,check1=true)where {T1,T2}
+  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=true)where {T1,T2}
     T=promote_type(T1,T2)
     if check
       if iszero(a) return new{T}(a,one(a))
@@ -477,7 +477,7 @@ struct RatFrac{T}
       v=a.v-b.v
       a=shift(a,max(v,0)-a.v)
       b=shift(b,-min(v,0)-b.v)
-      if check1
+      if prime
         d=gcd(a,b)
         a=exactdiv(a,d)
         b=exactdiv(b,d)
@@ -499,7 +499,7 @@ function Base.convert(::Type{Pol{T}},p::RatFrac{T1}) where {T,T1}
 end
 
 function Base.convert(::Type{RatFrac{T}},p::Pol{T1}) where {T,T1}
-  RatFrac(convert(Pol{T},p),Pol(T(1));check1=false)
+  RatFrac(convert(Pol{T},p),Pol(T(1));prime=false)
 end
 
 function Base.convert(::Type{RatFrac{T}},p::Number) where {T}
@@ -514,7 +514,7 @@ end
 
 Base.broadcastable(p::RatFrac)=Ref(p)
 RatFrac(a::Number)=RatFrac(Pol(a),Pol(1);check=false)
-RatFrac(a::Pol)=RatFrac(a,Pol(1);check1=false)
+RatFrac(a::Pol)=RatFrac(a,Pol(1);prime=false)
 Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
 Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
 Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
@@ -551,24 +551,28 @@ Base.inv(a::RatFrac)=RatFrac(a.den,a.num;check=false)
 function Base.://(a::Pol,b::Pol)
   if b.c==[1] return shift(a,-b.v)
   elseif b.c==[-1] return shift(-a,-b.v)
+  elseif length(b.c)==1 return Pol(a.c.//b.c[1],a.v-b.v)
   end
   RatFrac(a,b)
 end
 
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
-  RatFrac(Pol(1),p;check1=false)
+  RatFrac(Pol(1),p;prime=false)
 end
 
 Base.:/(p::Pol,q::Pol)=p*inv(q)
 
 Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
-Base.://(a::RatFrac,b::Number)=RatFrac(a.num,a.den*b)
+Base.://(a::RatFrac,b::Union{Number,Pol})=RatFrac(a.num,a.den*b)
+Base.:/(a::RatFrac,b::Union{Number,Pol})=a//b
+Base.://(a::Union{Number,Pol},b::RatFrac)=a*inv(b)
+Base.:/(a::Union{Number,Pol},b::RatFrac)=a//b
 Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
-Base.://(p,q::Pol)=RatFrac(Pol(p),q;check1=false)
-Base.:/(p,q::Pol)=p*inv(q)
-Base.:/(p::Pol,q)=Pol(p.c ./q,p.v)
-Base.://(p::Pol,q)=iszero(p) ? p : Pol(p.c//q,p.v)
+Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=false)
+Base.:/(p::Number,q::Pol)=p*inv(q)
+Base.:/(p::Pol,q::Number)=Pol(p.c ./q,p.v)
+Base.://(p::Pol,q::Number)=iszero(p) ? p : Pol(p.c//q,p.v)
 
 Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den)
 

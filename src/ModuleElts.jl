@@ -7,7 +7,7 @@ objects  of type `V` to be elements of  a ring, but it could also be useful
 if  they just belong to  an abelian group. This  is similar to the SageMath
 CombinatorialFreeModule.
 
-This  basic data structure is  used in the package  `Gapjm` as an efficient
+This  basic  data  structure  is  used  in  my  packages  as  an  efficient
 representation  at  many  places.  For  example, multivariate monomials are
 represented by `ModuleElt{Symbol,Int}`:
 
@@ -27,7 +27,7 @@ or a generator of pairs.
 
 We provide two implementations:
 
-  - an implementation by `Dict`s 
+  - `HModuleElt`, an implementation by `Dict`s 
 
 This  requires  that  the  type  `K`  is  hashable.  It  is  a  very simple
 implementation  since the interface of the type  is close to that of dicts;
@@ -40,20 +40,33 @@ by  key.  This  demands  that  the  type  `K`  has  a `isless` method. This
 implementation  is  two  to  four  times  faster  than  the `Dict` one (for
 addition, the most important operation) and requires half the memory.
 
-A `ModuleElt` has mostly the same methods as a `Dict`. Adding `ModuleElt`s
-is  a variation on `merge(+,...)` for `Dict`s  (here `+` can be replaced by
-any operation `op` with the property that `op(0,x)=x`) where keys with zero
-value  are deleted  afterwards. Further,  a `ModuleElt`  can be negated, or
-multiplied or divided (`/`or `//`) by some element (acting on coefficients)
-if  the method is defined between type `V` and that element; there are also
-`zero` and `iszero` methods.
+Both implementations have the same methods, with some exceptions; they have
+mostly  the  same  methods  as  a  `Dict`  (`haskey`,  `getindex`,  `keys`,
+`values`. `pairs`, `first`, `iterate`, `length`, `eltype`). Adding elements
+is a variation on `merge(+,...)` for `Dict`s where keys with zero value are
+deleted afterwards (here `+` can be replaced by any operation `op` with the
+property  that  `op(0,x)=op(x,0)=x`).  Further,  a  module  element  can be
+negated,  or multiplied or divided (`/`or  `//`) by some element (acting on
+coefficients)  if the method is defined  between type `V` and that element;
+there are also `zero` and `iszero` methods.
+
+The  exception is that  `ModuleElt`s have methods  `cmp` and `isless` which
+`HModuleElt`s  don't have. There is also `ModuleElts.merge2` which does the
+same as merge but is valid for more general operations.
 
 Here  is an example where basis elements are `Symbol`s and coefficients are
-`Int`.
+`Int`. As you can see in the examples, at the REPL (or in Jupyter or Pluto,
+when  `IO`  has  the  `:limit`  attribute)  the  `show`  method  shows  the
+coefficients  (bracketed  if  necessary,  which  is  when  they  have inner
+occurences  of `+-*`), followed  by showing the  basis elements. The `repr`
+method gives a representation which can be read back in julia:
 
 ```julia-repl
 julia> a=ModuleElt(:xy=>1,:yx=>-1)
 :xy-:yx
+
+julia> repr(a)
+"ModuleElt([:xy => 1, :yx => -1])"
 
 julia> a-a
 0
@@ -119,23 +132,12 @@ julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
 3:xy+2:yx
 ```
 
-As  you can see in the above examples, at the REPL (or in Jupyter or Pluto,
-when  `IO`  has  the  `:limit`  attribute)  the  `show`  method  shows  the
-coefficients (bracketed if necessary, which is when they have inner occurences
-of  `+-*`),  followed  by  showing  the  basis  elements.  Setting the `IO`
-property  `:showbasis` to a custom printing  function changes how the basis
-elements are printed.
+Setting  the  `IO`  property  `:showbasis`  to  a  custom printing function
+changes how the basis elements are printed.
 
 ```julia-rep1
 julia> show(IOContext(stdout,:showbasis=>(io,s)->string("<",s,">")),a)
 3<xy>+2<yx>
-```
-
-The `repr` method gives a representation which can be read back in julia:
-
-```julia-repl
-julia> repr(a)
-"ModuleElt([:xy => 3, :yx => 2])"
 ```
 
 Adding  or subtracting `ModuleElt`s does promotion  on the type of the keys
@@ -149,13 +151,12 @@ julia> a+ModuleElt([:z=>1.0])
 """
 module ModuleElts
 
-export ModuleElt # data structure
+export ModuleElt, HModuleElt # data structure
 
 #------------- implementation with Dicts ----------------------
-if false # change to true to use this implementation
-struct ModuleElt{K,V}
+struct HModuleElt{K,V}
   d::Dict{K,V} # the keys K should be hashable
-  function ModuleElt(d::Dict{K,V};check::Bool=true)where {K,V}
+  function HModuleElt(d::Dict{K,V};check::Bool=true)where {K,V}
     if check
       for (k,v) in d if iszero(v) delete!(d,k) end end
     end
@@ -163,37 +164,31 @@ struct ModuleElt{K,V}
   end
 end
 
-ModuleElt(x::Pair{K,V}...;u...) where{K,V}=ModuleElt(collect(x);u...)
-ModuleElt(x::Base.Generator;u...)=ModuleElt(Dict(x);u...)
-
-function ModuleElt(x::Vector{Pair{K,V}};check=true) where{K,V}
-  if !check || length(x)<=1 return ModuleElt(Dict(x)) end
+function HModuleElt(x::Vector{Pair{K,V}};check=true) where{K,V}
+  if !check || length(x)<=1 return HModuleElt(Dict(x)) end
   res=Dict{K,V}()
   for (k,v) in x
     if haskey(res,k) res[k]+=v 
     else res[k]=v 
     end
   end
-  ModuleElt(res)
+  HModuleElt(res)
 end
 
 # forwarded methods
-Base.haskey(x::ModuleElt,y...)=haskey(x.d,y...)
-Base.keys(x::ModuleElt)=keys(x.d)
-Base.values(x::ModuleElt)=values(x.d)
+Base.haskey(x::HModuleElt,y...)=haskey(x.d,y...)
+Base.keys(x::HModuleElt)=keys(x.d)
+Base.values(x::HModuleElt)=values(x.d)
 
-Base.getindex(x::ModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
+Base.getindex(x::HModuleElt{K,V},i) where{K,V}=haskey(x,i) ?  x.d[i] : zero(V)
 
 # Valid for ops such that op(0,x)=x otherwise the result is wrong.
-Base.merge(op::Function,a::ModuleElt,b::ModuleElt)::ModuleElt=
-  ModuleElt(merge(op,a.d,b.d))
+Base.merge(op::Function,a::HModuleElt,b::HModuleElt)=HModuleElt(merge(op,a.d,b.d))
 
-else
 #-------------- faster implementation -------------------------------------
 """
-The  type  below  has  a  similar  interface to `Dict{K,V}`, but instead of
-assuming  that `K` is hashable, it assumes that `K` is sortable. With this,
-`merge(+,..)` is 3 times faster than the `Dict` implementation. It also has
+`ModuleElt{K,V}`  has a  similar interface  to `Dict{K,V}`,  but instead of
+assuming that `K` is hashable, it assumes that `K` is sortable. It also has
 the advantage that ModuleElts are naturally sortable.
 
 The unique field, a `Vector{Pair{K,V}}`, is kept sorted by `K`; 
@@ -221,16 +216,19 @@ struct ModuleElt{K,V}
   end
 end
 
-@inline ModuleElt(x::Base.Generator;u...)=ModuleElt(collect(x);u...)
-@inline Base.pairs(x::ModuleElt)=x.d
-
 @inline Base.cmp(x::ModuleElt,y::ModuleElt)=cmp(x.d,y.d)
 @inline Base.isless(x::ModuleElt,y::ModuleElt)=cmp(x,y)==-1
 
-# Like  merge(op,a,b) for  Dicts, except  keys with  value 0 are deleted. 
-# Valid for commutative ops such that op(0,x)=x otherwise the result is wrong.
+"""
+`merge(op::Function,a::ModuleElt,b::ModuleElt)`
+
+is  like merge(op,a,b) for Dicts, except that keys with value 0 are deleted
+after the operation is done.
+
+The  code is only  valid for `op`s  such that `op(0,x)=op(x,0)=x` otherwise
+the result is wrong.
+"""
 function Base.merge(op::Function,a::ModuleElt,b::ModuleElt)
-# this version is correct only if op(0,x)==x always
   (a,b)=promote(a,b)
   la=length(a.d)
   lb=length(b.d)
@@ -252,10 +250,15 @@ function Base.merge(op::Function,a::ModuleElt,b::ModuleElt)
   ModuleElt(resize!(res,ri);check=false)
 end
 
-# The  version below works for general  ops (not commutative or which don't
-# satisfy always op(0,x)=x), but has too much overhead currently to replace
-# the  above version for + or other  ops such that op(0,x)==x. It is useful
-# for max or min which do lcm and gcd of `Monomial`s or `CycPol`s.
+"""
+`merge2(op::Function,a::ModuleElt,b::ModuleElt)`
+
+does  `op` between coefficients of  the same basis element  in `a` and `b`.
+This  version works for  general ops (not  necessarily commutative or which
+need not satisfy op(0,x)=op(x,0)=x), but has too much overhead currently to
+replace  `merge` for  + or  other ops  such that  op(0,x)==op(x,0)=x. It is
+useful for max or min which do lcm and gcd of `Monomial`s or `CycPol`s.
+"""
 function merge2(op::Function,a::ModuleElt,b::ModuleElt)
   (a,b)=promote(a,b)
   la=length(a.d)
@@ -300,8 +303,7 @@ It returns zero if the key does not occur in `x`.
 """
 function Base.getindex(x::ModuleElt{K,V},i) where {K,V}
   r=searchsorted(x.d,Ref(i);by=first)
-  if r.start!=r.stop return zero(V) end
-  last(x.d[r.start])
+  r.start==r.stop ? last(x.d[r.start]) : zero(V)
 end
 
 function Base.haskey(x::ModuleElt,i)
@@ -309,54 +311,22 @@ function Base.haskey(x::ModuleElt,i)
   r.start==r.stop
 end
 
+@inline Base.pairs(x::ModuleElt)=x.d
 Base.keys(x::ModuleElt)=(first(p) for p in x.d)
 Base.values(x::ModuleElt)=(last(p) for p in x.d)
+
+# copied from Util.jl in order to have a self-contained file.
+# Tries to determine which coefficients should be bracketed for unambiguous
+# display
+function format_coefficient(c::String)
+  if c=="1" ""
+  elseif c=="-1" "-"
+  elseif match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?$",c)!==nothing c
+  else "("*c*")" 
+  end
 end
+
 #-------------- methods which have same code in both implementations-------
-
-@inline ModuleElt(x::Pair...;u...)=ModuleElt(collect(x);u...)
-
-@inline Base.:+(a::ModuleElt,b::ModuleElt)=merge(+,a,b)
-Base.:-(a::ModuleElt)=iszero(a) ? a : ModuleElt(k=>-v for(k,v) in a;check=false)
-@inline Base.:-(a::ModuleElt,b::ModuleElt)=a+(-b)
-
-# multiply module element by scalar
-function Base.:*(a::ModuleElt{K,V},b)where {K,V}
-  if iszero(b) || iszero(a) 
-    return zero(ModuleElt{K,promote_type(V,typeof(b))})
-  end
-  let b=b
-    ModuleElt(k=>v*b for (k,v) in a;check=false)
-  end
-end
-
-# divide by scalar
-function Base.:/(a::ModuleElt{K,V},b)where {K,V}
-  if iszero(a) return zero(ModuleElt{K,promote_type(V,typeof(b))}) end
-  let b=b
-   ModuleElt(k=>v/b for (k,v) in a;check=false)
-  end
-end
-
-# divide by scalar
-function Base.:(//)(a::ModuleElt{K,V},b)where {K,V}
-  if iszero(a) return zero(ModuleElt{K,promote_type(V,typeof(b))}) end
-  let b=b
-   ModuleElt(k=>v//b for (k,v) in a;check=false)
-  end
-end
-
-@inline Base.iszero(x::ModuleElt)=isempty(x.d)
-Base.zero(x::ModuleElt)=ModuleElt(empty(x.d))
-Base.zero(::Type{ModuleElt{K,V}}) where{K,V}=ModuleElt(Pair{K,V}[])
-# forwarded methods
-@inline Base.:(==)(a::ModuleElt,b::ModuleElt)=a.d==b.d
-@inline Base.first(x::ModuleElt)=first(x.d)
-@inline Base.iterate(x::ModuleElt,y...)=iterate(x.d,y...)
-@inline Base.length(x::ModuleElt)=length(x.d)
-@inline Base.eltype(x::ModuleElt)=eltype(x.d)
-@inline Base.hash(x::ModuleElt, h::UInt)=hash(x.d,h)
-
 # we assume that converting the keys from K to K1 does not change hashing
 # for the Dict implementation or sorting for the other implementation
 function Base.convert(::Type{ModuleElt{K,V}},a::ModuleElt{K1,V1}) where {K,K1,V,V1}
@@ -373,25 +343,75 @@ function Base.convert(::Type{ModuleElt{K,V}},a::ModuleElt{K1,V1}) where {K,K1,V,
   end
 end
 
-function Base.promote_rule(a::Type{ModuleElt{K1,V1}},
-                           b::Type{ModuleElt{K2,V2}})where {K1,K2,V1,V2}
-  ModuleElt{promote_type(K1,K2),promote_type(V1,V2)}
-end
-
-# copied from Util.jl in order to have a self-contained file.
-# Tries to determine which coefficients should be bracketed for unambiguous
-# display
-function format_coefficient(c::String)
-  if c=="1" ""
-  elseif c=="-1" "-"
-  elseif match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?$",c)!==nothing c
-  else "("*c*")" 
+# I get a bug when putting this routine in the next loop. So here duplicated
+function Base.convert(::Type{HModuleElt{K,V}},a::HModuleElt{K1,V1}) where {K,K1,V,V1}
+  if K==K1
+    if V==V1 a
+    elseif iszero(a) zero(HModuleElt{K,V})
+    else HModuleElt(k=>convert(V,v) for (k,v) in a.d;check=false)
+    end
+  else 
+    if iszero(a) zero(HModuleElt{K,V})
+    elseif V==V1  HModuleElt(convert(K,k)=>v for (k,v) in a.d;check=false)
+    else HModuleElt(convert(K,k)=>convert(V,v) for (k,v) in a.d;check=false)
+    end
   end
 end
 
-function Base.show(io::IO,m::ModuleElt)
+for M in (:HModuleElt, :ModuleElt)
+  @eval begin
+@inline $M(x::Pair...;u...)=$M(collect(x);u...)
+@inline $M(x::Base.Generator;u...)=$M(collect(x);u...)
+
+@inline Base.:+(a::$M,b::$M)=merge(+,a,b)
+Base.:-(a::$M)=iszero(a) ? a : $M(k=>-v for(k,v) in a;check=false)
+@inline Base.:-(a::$M,b::$M)=a+(-b)
+
+# multiply module element by scalar
+function Base.:*(a::$M{K,V},b)where {K,V}
+  if iszero(b) || iszero(a) 
+    return zero($M{K,promote_type(V,typeof(b))})
+  end
+  let b=b
+    $M(k=>v*b for (k,v) in a;check=false)
+  end
+end
+
+# divide by scalar
+function Base.:/(a::$M{K,V},b)where {K,V}
+  if iszero(a) return zero($M{K,promote_type(V,typeof(b))}) end
+  let b=b
+   $M(k=>v/b for (k,v) in a;check=false)
+  end
+end
+
+# divide by scalar
+function Base.:(//)(a::$M{K,V},b)where {K,V}
+  if iszero(a) return zero($M{K,promote_type(V,typeof(b))}) end
+  let b=b
+   $M(k=>v//b for (k,v) in a;check=false)
+  end
+end
+
+@inline Base.iszero(x::$M)=isempty(x.d)
+Base.zero(x::$M)=$M(empty(x.d))
+Base.zero(::Type{$M{K,V}}) where{K,V}=$M(Pair{K,V}[])
+# forwarded methods
+@inline Base.:(==)(a::$M,b::$M)=a.d==b.d
+@inline Base.first(x::$M)=first(x.d)
+@inline Base.iterate(x::$M,y...)=iterate(x.d,y...)
+@inline Base.length(x::$M)=length(x.d)
+@inline Base.eltype(x::$M)=eltype(x.d)
+@inline Base.hash(x::$M, h::UInt)=hash(x.d,h)
+
+function Base.promote_rule(a::Type{$M{K1,V1}},
+                           b::Type{$M{K2,V2}})where {K1,K2,V1,V2}
+  $M{promote_type(K1,K2),promote_type(V1,V2)}
+end
+
+function Base.show(io::IO,m::$M)
   if !(get(io,:limit,false) || get(io,:TeX,false))
-    print(io,"ModuleElt(",m.d,")")
+    print(io,Symbol($M),"(",m.d,")")
     return
   end
   if iszero(m) print(io,"0"); return end
@@ -412,5 +432,6 @@ function Base.show(io::IO,m::ModuleElt)
   if res=="" res="1" end
   print(io,res)
 end
-#--------------------------------------------------------------------------
+end
+end
 end

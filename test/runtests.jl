@@ -82,7 +82,6 @@ end
 @test mytest("partitions(7)","15-element Vector{Vector{Int64}}:\n [1, 1, 1, 1, 1, 1, 1]\n [2, 1, 1, 1, 1, 1]\n [2, 2, 1, 1, 1]\n [2, 2, 2, 1]\n [3, 1, 1, 1, 1]\n [3, 2, 1, 1]\n [3, 2, 2]\n [3, 3, 1]\n [4, 1, 1, 1]\n [4, 2, 1]\n [4, 3]\n [5, 1, 1]\n [5, 2]\n [6, 1]\n [7]")
 @test mytest("npartitions(7,3)","4")
 @test mytest("partitions(7,3)","4-element Vector{Vector{Int64}}:\n [3, 2, 2]\n [3, 3, 1]\n [4, 2, 1]\n [5, 1, 1]")
-@test mytest("restrictedpartitions(17,[10,5,2])","3-element Vector{Vector{Int64}}:\n [5, 2, 2, 2, 2, 2, 2]\n [5, 5, 5, 2]\n [10, 5, 2]")
 @test mytest("nrestrictedpartitions(17,[10,5,2])","3")
 @test mytest("restrictedpartitions(17,[10,5,2])","3-element Vector{Vector{Int64}}:\n [5, 2, 2, 2, 2, 2, 2]\n [5, 5, 5, 2]\n [10, 5, 2]")
 @test mytest("restrictedpartitions(17,[10,5,2],3)","1-element Vector{Vector{Int64}}:\n [10, 5, 2]")
@@ -107,6 +106,7 @@ end
 @test mytest("stirling2.(4,0:4)","5-element Vector{Int64}:\n 0\n 1\n 7\n 6\n 1")
 @test mytest("[stirling2(i,j) for i in 0:6, j in 0:6]","7×7 Matrix{Int64}:\n 1  0   0   0   0   0  0\n 0  1   0   0   0   0  0\n 0  1   1   0   0   0  0\n 0  1   3   1   0   0  0\n 0  1   7   6   1   0  0\n 0  1  15  25  10   1  0\n 0  1  31  90  65  15  1")
 @test mytest("stirling2(50,big(10))","26154716515862881292012777396577993781727011")
+@test mytest("catalan(8)","1430")
 end
 @testset "ComplexR.jl" begin
 @test mytest("G=ComplexReflectionGroup(4)","G₄")
@@ -803,7 +803,6 @@ end
 @test mytest("W=ComplexReflectionGroup(7)","G₇")
 @test mytest("parabolic_closure(W,[1])","1-element Vector{Int64}:\n 1")
 @test mytest("parabolic_closure(W,[1,2])","3-element Vector{Int64}:\n 1\n 2\n 3")
-@test mytest("catalan(8)","1430")
 @test mytest("catalan(coxgroup(:A,7))","1430")
 @test mytest("catalan(ComplexReflectionGroup(7),2)","16")
 @test mytest("catalan(ComplexReflectionGroup(7),2;q=Pol())","Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1")
@@ -874,7 +873,7 @@ end
 @test mytest("divrem(q^3+1,2q+1//1)","((1//2)q²+(-1//4)q+1//8, 7//8)")
 @test mytest("Pols.pseudodiv(q^3+1,2q+1)","(4q²-2q+1, 7)")
 @test mytest("m=[q+1 q+2;q-2 q-3]","2×2 Matrix{Pol{Int64}}:\n q+1  q+2\n q-2  q-3")
-@test mytest("inv(RatFrac.(m))","2×2 Matrix{RatFrac{Int64}}:\n (-q+3)/(2q-1)   (-q-2)/(-2q+1)\n (q-2)/(2q-1)  (q+1)/(-2q+1)")
+@test mytest("inv(RatFrac.(m))","2×2 Matrix{RatFrac{Int64}}:\n (-q+3)/(2q-1)  (-q-2)/(-2q+1)\n (q-2)/(2q-1)   (q+1)/(-2q+1)")
 @test mytest("gcd(2q+2,q^2-1)","Pol{Int64}: q+1")
 @test mytest("gcd(q+1//1,q^2-1//1)","Pol{Rational{Int64}}: (1//1)q+1//1")
 @test mytest("gcdx(q^3-1//1,q^2-1//1)","((1//1)q-1//1, 1//1, (-1//1)q)")

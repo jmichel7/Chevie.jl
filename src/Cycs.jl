@@ -137,10 +137,11 @@ struct Cyc{T <: Real}<: Number   # a cyclotomic number
   d::Vector{T} # the i-th element is the coefficient on zumbroich_basis[i]
 end
 else
-using ..ModuleElts: ModuleElt
+using ..ModuleElts
+const MM=ModuleElt # HModuleElt is twice slower
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int              # conductor
-  d::ModuleElt{Int,T} # list of pairs: i=>coeff on zumbroich_basis[i]
+  d::MM{Int,T} # list of pairs: i=>coeff on zumbroich_basis[i]
 end
 end
 
@@ -279,7 +280,7 @@ end
   end
 end
 
-const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : ModuleElt(0=>1)))
+const E_dict=Dict((1,0)=>Cyc(1, use_list ? [1] : MM(0=>1)))
 """
   E(n::Integer,k::Integer=1) is exp(2i k π/n)
 """
@@ -293,7 +294,7 @@ if use_list
   v[l].=ifelse(s,1,-1)
   lower(Cyc(n,v))
 else
-  lower(Cyc(n,ModuleElt(l.=>ifelse(s,1,-1);check=false)))
+  lower(Cyc(n,MM(l.=>ifelse(s,1,-1);check=false)))
 end
   end
 end
@@ -306,7 +307,7 @@ Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
 Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
 else
 Base.zero(c::Cyc)=Cyc(1,zero(c.d))
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(ModuleElt{Int,T}))
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(MM{Int,T}))
 Base.iszero(c::Cyc)=iszero(c.d)
 end
 #Base.zero(m::Array{Cyc})=zero.(m)
@@ -319,8 +320,8 @@ if use_list
   else return Cyc(4,[real(c),imag(c)])
   end
 else
-  if iszero(real(c)) return Cyc(4,ModuleElt(1=>imag(c)))
-  else return Cyc(4,ModuleElt(0=>real(c),1=>imag(c);check=false))
+  if iszero(real(c)) return Cyc(4,MM(1=>imag(c)))
+  else return Cyc(4,MM(0=>real(c),1=>imag(c);check=false))
   end
 end
 end
@@ -328,7 +329,7 @@ end
 if use_list
 Cyc(i::Real)=Cyc(1,[i])
 else
-Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,ModuleElt(0=>i))
+Cyc(i::Real)=iszero(i) ? zero(Cyc{typeof(i)}) : Cyc(1,MM(0=>i))
 end
 Cyc{T}(i::Real) where T<:Real=Cyc(T(i))
 
@@ -339,7 +340,7 @@ function Cyc{T}(c::Cyc{T1}) where {T,T1}
 if use_list
   Cyc(c.n,T.(c.d))
 else
-  Cyc(c.n,convert(ModuleElt{Int,T},c.d))
+  Cyc(c.n,convert(MM{Int,T},c.d))
 end
 end
 
@@ -372,7 +373,7 @@ if use_list
   c.d[1]+im*c.d[2]
 else
   r=i=zero(T)
-  for (e,c) in c.d.d
+  for (e,c) in c.d
     if e==0 r=c
     else i=c
     end
@@ -414,7 +415,7 @@ function sumroots(n::Int,l)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
-  Cyc(n,ModuleElt(res;check=length(l)>1))
+  Cyc(n,MM(res;check=length(l)>1))
 end
 else # 10% slower for small fields, faster for big ones
 function sumroots(n::Int,l)
@@ -425,8 +426,8 @@ function sumroots(n::Int,l)
     for k in v res[k+1]+=c end
   end
   zb=zumbroich_basis(n)
-  Cyc(n,ModuleElt(filter(x->!iszero(last(x)),map(i->i=>res[i+1],zb));check=false))
-# Cyc(n,ModuleElt(i=>res[i+1] for i in zb if res[i+1]!=0;check=false))
+  Cyc(n,MM(filter(x->!iszero(last(x)),map(i->i=>res[i+1],zb));check=false))
+# Cyc(n,MM(i=>res[i+1] for i in zb if res[i+1]!=0;check=false))
 end
 end
 
@@ -597,10 +598,10 @@ else
   n=lcm(a.n,b.n)
   na=div(n,a.n)
   nb=div(n,b.n)
-  res=empty(a.d.d)
+  res=eltype(a.d)[]
   for (i,va) in a.d sumroot(res,n,na*i,va) end
   for (i,vb) in b.d sumroot(res,n,nb*i,vb) end
-  lower(Cyc(n,ModuleElt(res)))
+  lower(Cyc(n,MM(res)))
 end
 end
 
@@ -612,9 +613,9 @@ Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
 Base.div(c::Cyc,a::Real)=Cyc(c.n,
-                         ModuleElt(k=>div(v,a) for (k,v) in c.d;check=false))
+                         MM(k=>div(v,a) for (k,v) in c.d;check=false))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,
-                         ModuleElt(k=>v//a for (k,v) in c.d;check=false))
+                         MM(k=>v//a for (k,v) in c.d;check=false))
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
@@ -653,9 +654,9 @@ else
   let ad=a.d,bd=b.d,na=na,nb=nb
     lower(sumroots(n,na*i+nb*j=>va*vb for (i,va) in ad, (j,vb) in bd))
   end
-# res=empty(a.d.d)
+# res=eltype(a.d)[]
 # for (i,va) in a.d, (j,vb) in b.d sumroot(res,n,na*i+nb*j,va*vb) end
-# lower(Cyc(n,ModuleElt(res)))
+# lower(Cyc(n,MM(res)))
 end
 end
 
@@ -705,7 +706,7 @@ if use_list
 else
     if np>1 
       if all(k->first(k)%p==0,c.d) 
-        return lower(Cyc(m,ModuleElt(div(k,p)=>v for (k,v) in c.d;check=false)))
+        return lower(Cyc(m,MM(div(k,p)=>v for (k,v) in c.d;check=false)))
       end
     elseif iszero(length(c.d)%(p-1))
       cnt=zeros(Int,m)
@@ -714,9 +715,9 @@ else
         u=findall(!iszero,cnt).-1
         kk=@. div(u+m*mod(-u,p)*invmod(m,p),p)%m
         if p==2  
-          return lower(Cyc(m,ModuleElt(k=>c.d[(k*p)%n] for k in kk)))
+          return lower(Cyc(m,MM(k=>c.d[(k*p)%n] for k in kk)))
         elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
-          return lower(Cyc(m,ModuleElt(k=>-c.d[(m+k*p)%n] for k in kk)))
+          return lower(Cyc(m,MM(k=>-c.d[(m+k*p)%n] for k in kk)))
         end
       end
     end
@@ -927,9 +928,9 @@ function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
   na=div(n,conductor(a))
   nb=div(n,conductor(b))
-  res=empty(a.d.d)
+  res=eltype(a.d)[]
   for (i,va) in a.d sumroot(res,n,na*i+nb*exponent(b),va) end
-  lower(Cyc(n,ModuleElt(res)))
+  lower(Cyc(n,MM(res)))
 end
 end
 

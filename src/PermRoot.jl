@@ -360,7 +360,6 @@ function Base.show(io::IO,d::Diagram)
     elseif series==:G
       println(io,node,tarrow(max(l[1],2)),node)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
-      println(io,node,bar^l[1],node,ldarrow(max(l[2],2)),node,bar^l[3],node)
     elseif series==:H
       println(io," "^l[1],"₅")
       println(io,map(i->node*bar^l[i],1:t.rank-1)...,node)
