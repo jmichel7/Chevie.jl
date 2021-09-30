@@ -11,6 +11,8 @@ function Cycs.root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
   Pol([root(x.c[1],n)],div(x.v,n);check=false)
 end
 
+Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
+
 """
 `factor(p::Mvp)`
 
