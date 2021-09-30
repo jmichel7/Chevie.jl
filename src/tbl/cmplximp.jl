@@ -1014,35 +1014,35 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, root, i)
                                 end), 0:p - 1), para[1]]
             else
                 e = div(p, q)
-                if para[2] != para[3]
-                    if mod(q, 2) == 0 && r == 2
-                        S = (((chevieget(:imp, :CharInfo))(p, q, r))[:malle])[i]
-                        if S[1] == 1
-                            return [[[(para[1])[1 + mod(S[4] - 1, e)]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
-                        else
-                            Y = para[2]
-                            T = para[3]
-                            if q > 2
-                                X = map((y->begin
-                                                GetRoot(y, div(q, 2))
-                                            end), para[1])
-                                X = Concatenation(map((i->begin
-                                                    E(div(q, 2), i) * X
-                                                end), 1:div(q, 2)))
-                            else
-                                X = para[1]
-                            end
-                            X = X[S[[3, 4]]]
-                            v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(e, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
-                            d = 1 + Sum(X) * 0 + Sum(Y) * 0 + Sum(T) * 0
-                            return [(d * [[X[1], Sum(Y, (y->begin
-                                                                    1 // y
-                                                                end)) - X[2] // v * Sum(T)], [0, X[2]]]) ^ div(q, 2), [[Sum(Y), 1 // X[1]], [-(Product(Y)) * X[1], 0]], [[0, -(Product(T)) // v], [v, Sum(T)]]]
-                        end
+                if mod(q, 2) == 0 && r == 2
+                    S = (((chevieget(:imp, :CharInfo))(p, q, r))[:malle])[i]
+                    if S[1] == 1
+                        return [[[(para[1])[1 + mod(S[4] - 1, e)]]], [[(para[2])[S[2]]]], [[(para[3])[S[3]]]]]
                     else
-                        error("should not happen")
+                        Y = para[2]
+                        T = para[3]
+                        if q > 2
+                            X = map((y->begin
+                                            GetRoot(y, div(q, 2))
+                                        end), para[1])
+                            X = Concatenation(map((i->begin
+                                                E(div(q, 2), i) * X
+                                            end), 1:div(q, 2)))
+                        else
+                            X = para[1]
+                        end
+                        X = X[S[[3, 4]]]
+                        v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(e, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
+                        d = 1 + Sum(X) * 0 + Sum(Y) * 0 + Sum(T) * 0
+                        return [(d * [[X[1], Sum(Y, (y->begin
+                                                                1 // y
+                                                            end)) - X[2] // v * Sum(T)], [0, X[2]]]) ^ div(q, 2), [[Sum(Y), 1 // X[1]], [-(Product(Y)) * X[1], 0]], [[0, -(Product(T)) // v], [v, Sum(T)]]]
                     end
-                elseif para[1] == map((i->begin
+                end
+                if para[2] != para[3]
+                    error("should not happen")
+                end
+                if para[1] == map((i->begin
                                     E(e, i - 1)
                                 end), 1:e)
                     para = [map((i->begin

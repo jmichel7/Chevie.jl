@@ -80,12 +80,13 @@ const varname=Ref(:x)
 struct Pol{T}
   c::Vector{T}
   v::Int
+  # beware that c is not necessarily copied
   function Pol(c::AbstractVector{T},v::Integer=0;check=true)where T
     if check # normalize c so there are no leading or trailing zeroes
       b=findfirst(!iszero,c)
       if b===nothing return new{T}(empty(c),0) end
       e=findlast(!iszero,c)
-      return new{T}(view(c,b:e),v+b-1)
+      if b!=1 || e!=length(c) return new{T}(view(c,b:e),v+b-1) end
     end
     new{T}(c,v)
   end
@@ -116,7 +117,7 @@ Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ?
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
 
-Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
+Base.copy(p::Pol)=Pol(copy(p.c),p.v;check=false)
 Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) :
         Pol([T(a)];check=false)
 Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
@@ -468,7 +469,7 @@ end
 struct RatFrac{T}
   num::Pol{T}
   den::Pol{T}
-  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=true)where {T1,T2}
+  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
     T=promote_type(T1,T2)
     if check
       if iszero(a) return new{T}(a,one(a))
@@ -477,11 +478,12 @@ struct RatFrac{T}
       v=a.v-b.v
       a=shift(a,max(v,0)-a.v)
       b=shift(b,-min(v,0)-b.v)
-      if prime
+      if !prime
         d=gcd(a,b)
         a=exactdiv(a,d)
         b=exactdiv(b,d)
       end
+      if isone(-b) a,b=(-a,-b) end
     end
     new{T}(a,b)
   end
@@ -499,7 +501,7 @@ function Base.convert(::Type{Pol{T}},p::RatFrac{T1}) where {T,T1}
 end
 
 function Base.convert(::Type{RatFrac{T}},p::Pol{T1}) where {T,T1}
-  RatFrac(convert(Pol{T},p),Pol(T(1));prime=false)
+  RatFrac(convert(Pol{T},p),Pol(T(1));prime=true)
 end
 
 function Base.convert(::Type{RatFrac{T}},p::Number) where {T}
@@ -514,7 +516,7 @@ end
 
 Base.broadcastable(p::RatFrac)=Ref(p)
 RatFrac(a::Number)=RatFrac(Pol(a),Pol(1);check=false)
-RatFrac(a::Pol)=RatFrac(a,Pol(1);prime=false)
+RatFrac(a::Pol)=RatFrac(a,Pol(1);prime=true)
 Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
 Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
 Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
@@ -558,7 +560,7 @@ end
 
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
-  RatFrac(Pol(1),p;prime=false)
+  RatFrac(Pol(1),p;prime=true)
 end
 
 Base.:/(p::Pol,q::Pol)=p*inv(q)
@@ -569,7 +571,7 @@ Base.:/(a::RatFrac,b::Union{Number,Pol})=a//b
 Base.://(a::Union{Number,Pol},b::RatFrac)=a*inv(b)
 Base.:/(a::Union{Number,Pol},b::RatFrac)=a//b
 Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
-Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=false)
+Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
 Base.:/(p::Pol,q::Number)=Pol(p.c ./q,p.v)
 Base.://(p::Pol,q::Number)=iszero(p) ? p : Pol(p.c//q,p.v)

@@ -1,27 +1,31 @@
 """
-The  type `Mvp`  ("multivariate polynomials")  implemented here is "Puiseux
-polynomials",  that  is  linear  combinations  of  monomials  of  the  type
+The  type  `Mvp`  ("multivariate  polynomials")  in  this  file  implements
+"Puiseux polynomials", that is linear combinations of monomials of the type
 `x₁^{a₁}…  xₙ^{aₙ}` where `xᵢ`  are variables and  `aᵢ` are exponents which
-can  be  arbitrary  rational  numbers  (we  need  Puiseux  polynomial  with
+can   be  arbitrary  rational  numbers  (we  use  Puiseux  polynomial  with
 cyclotomic  coefficients as splitting fields of cyclotomic Hecke algebras).
 Some  functions described below work  only with polynomials where variables
 are  raised to integral powers;  we will refer to  such objects as "Laurent
 polynomials"; some functions require further that variables are raised only
-to  positive powers: we refer then to "true polynomials". We implement also
-multivariate  rational  fractions  (type  `Mvrf`)  where  the numerator and
-denominator are true polynomials.
+to positive powers: we refer then to "true polynomials".
+
+This  file implements  also multivariate  rational fractions  (type `Mvrf`)
+where the numerator and denominator are true polynomials.
 
 `@Mvp x₁,…,xₙ`
 
-assigns   to  the  Julia  names   `xᵢ`  indeterminates  suitable  to  build
-multivariate  polynomials  or  rational  fractions.  `Mvp(:x₁)` creates the
-indeterminate `x₁` without assigning a Julia variable.
+assigns  to each  Julia name  `xᵢ` an  `Mvp` representing  an indeterminate
+suitable   to  build   multivariate  polynomials   or  rational  fractions.
+`Mvp(:x₁)` creates the same `Mvp` without assigning it to a Julia variable.
 
 ```julia-repl
 julia> @Mvp x,y
 
 julia> (x+y^-1)^3
 Mvp{Int64}: x³+3x²y⁻¹+3xy⁻²+y⁻³
+
+julia> x+Mvp(:z)
+Mvp{Int64}: x+z
 ```
 
 `Mvp(x::Number)`  returns the multivariate polynomial  with only a constant
@@ -82,7 +86,7 @@ julia> (x+1)^-2
 Mvrf{Int64}: 1/(x²+2x+1)
 ```
 
-One  can  compute  the  value  of  `Mvp`  or  a `Ratfrac` when setting some
+One  can evaluate an  `Mvp` or a  `Ratfrac` when setting  the value of some
 variables by using the function call syntax:
 
 ```julia-repl
@@ -99,7 +103,7 @@ julia> ((x+y)/(x-y))(x=y+1)
 Mvp{Int64}: 2y+1
 ```
 
-Note  that the value of  an `Mvp` is always  an `Mvp`, for consistency. The
+Note  that  an  `Mvp`  always  evaluates  to an `Mvp`, for consistency. The
 function  `scal` converts  a constant  `Mvp` to  that constant (and returns
 `nothing` if the argument is not constant:
 

@@ -75,7 +75,7 @@ end
 rio(io::IO=stdout;p...)=IOContext(io,:limit=>true,p...)
 xprint(x...;p...)=print(rio(;p...),x...)
 xprintln(x...;p...)=println(rio(;p...),x...)
-xdisplay(x;p...)=display(TextDisplay(IOContext(stdout,p...)),x)
+xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 
 function ds(s) # "dump struct"; not recursive like dump
   println(typeof(s),":")
