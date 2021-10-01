@@ -380,22 +380,6 @@ function Base.:*(a::$M{K,V},b)where {K,V}
   end
 end
 
-# divide by scalar
-function Base.:/(a::$M{K,V},b)where {K,V}
-  if iszero(a) return zero($M{K,promote_type(V,typeof(b))}) end
-  let b=b
-   $M(k=>v/b for (k,v) in a;check=false)
-  end
-end
-
-# divide by scalar
-function Base.:(//)(a::$M{K,V},b)where {K,V}
-  if iszero(a) return zero($M{K,promote_type(V,typeof(b))}) end
-  let b=b
-   $M(k=>v//b for (k,v) in a;check=false)
-  end
-end
-
 @inline Base.iszero(x::$M)=isempty(x.d)
 Base.zero(x::$M)=$M(empty(x.d))
 Base.zero(::Type{$M{K,V}}) where{K,V}=$M(Pair{K,V}[])
@@ -435,6 +419,23 @@ function Base.show(io::IO,m::$M)
   if res=="" res="1" end
   print(io,res)
 end
+
+function Base.merge(f,m::$M{K,V},b;check=true)where {K,V}
+  let b=b, f=f
+    $M(k=>f(v,b) for (k,v) in m;check)
+  end
 end
+
+function Base.merge(f,m::$M;check=true)
+  $M(k=>f(v) for (k,v) in m;check)
+end
+
+end
+end
+
+for M in (:HModuleElt, :ModuleElt), op in (:/,:(//))
+  @eval begin
+    Base.$op(m::$M,b)=merge($op,m,b)
+  end
 end
 end

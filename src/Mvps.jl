@@ -386,8 +386,8 @@ end
 
 Base.:/(p::Mvp,q::Number)=Mvp(p.d/q)
 Base.://(p::Mvp,q::Number)=Mvp(p.d//q)
-Base.div(a::Mvp,b::Number)=iszero(a) ? a : Mvp(ModuleElt(m=>div(c,b) for (m,c) in a.d;check=false))
-Util.exactdiv(a::Mvp,b::Number)=iszero(a) ? a : Mvp(ModuleElt(m=>exactdiv(c,b) for (m,c) in a.d;check=false))
+Base.div(a::Mvp,b::Number)=Mvp(merge(div,a.d,b))
+Util.exactdiv(a::Mvp,b::Number)=Mvp(merge(exactdiv,a.d,b;check=false))
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -397,7 +397,7 @@ julia> @Mvp x;conj(im*x+1)
 Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im
 ```
 """
-Base.conj(a::Mvp)=Mvp(ModuleElt(m=>conj(c) for (m,c) in a.d;check=false))
+Base.conj(a::Mvp)=Mvp(merge(conj,a.d;check=false))
 
 function Base.:^(x::Mvp, p::Union{Integer,Rational})
   if isinteger(p) p=Int(p) end

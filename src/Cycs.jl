@@ -612,16 +612,19 @@ if use_list
 Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
-Base.div(c::Cyc,a::Real)=Cyc(c.n,
-                         MM(k=>div(v,a) for (k,v) in c.d;check=false))
-Base.://(c::Cyc,a::Real)=Cyc(c.n,
-                         MM(k=>v//a for (k,v) in c.d;check=false))
+function Base.div(c::Cyc,a::Real)
+  n=merge(div,c.d,a)
+  Cyc(iszero(n) ? 1 : c.n,n)
+end
+Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d//a)
+Base.:*(c::Cyc,a::Real)=Cyc(iszero(a) ? 1 : c.n,c.d*a)
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
 Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
+Base.:*(a::Real,c::Cyc)=c*a
 
 function Base.:*(a::Cyc,b::Cyc)
   a,b=promote(a,b)
