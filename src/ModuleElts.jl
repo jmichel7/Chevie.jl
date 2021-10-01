@@ -8,12 +8,12 @@ if  they just belong to  an abelian group. This  is similar to the SageMath
 CombinatorialFreeModule.
 
 This  basic  data  structure  is  used  in  my  packages  as  an  efficient
-representation  at  many  places.  For  example, multivariate monomials are
-represented by `ModuleElt{Symbol,Int}`:
+representation   at  many   places.  For   example,  the   `Monomial`  type
+representing multivariate monomials is a `ModuleElt{Symbol,Int}`:
 
 `x^2y^-3 ` is represented by `ModuleElt(:x=>2,:y=>-3)`
 
-And  multivariate  polynomials  are  represented by `ModuleElt{Monomial,C}`
+And  multivariate polynomials are  represented by a `ModuleElt{Monomial,C}`
 where `C` is the type of the coefficients:
 
 `x*y-z^2` is represented by ``ModuleElt(x*y=>1,z^2=>-1)
@@ -35,10 +35,10 @@ the  only difference is weeding  out keys which have  a zero cofficient ---
 which  is necessary since for testing equality of module elements one needs
 a canonical form for each element.
 
-  - a faster implementation (the default) by  keeping a list of pairs sorted
-by  key.  This  demands  that  the  type  `K`  has  a `isless` method. This
-implementation  is  two  to  four  times  faster  than  the `Dict` one (for
-addition, the most important operation) and requires half the memory.
+-  a faster implementation  `ModuleElt` is obtained  by keeping the list of
+pairs  sorted by key. This demands that the type `K` has a `isless` method.
+This  implementation is two  to four times  faster than the  `Dict` one and
+requires half the memory.
 
 Both implementations have the same methods, with some exceptions; they have
 mostly  the  same  methods  as  a  `Dict`  (`haskey`,  `getindex`,  `keys`,
@@ -67,7 +67,18 @@ julia> a=ModuleElt(:xy=>1,:yx=>-1)
 
 julia> repr(a)
 "ModuleElt([:xy => 1, :yx => -1])"
+```
 
+Setting  the  `IO`  property  `:showbasis`  to  a  custom printing function
+changes how the basis elements are printed.
+
+```julia-rep1
+julia> show(IOContext(stdout,:showbasis=>(io,s)->string("<",s,">")),a)
+3<xy>+2<yx>
+```
+We illustrate basic operations on `ModuleElt`s:
+
+```julia-repl
 julia> a-a
 0
 
@@ -130,14 +141,6 @@ julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1;check=false)
 
 julia> a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)
 3:xy+2:yx
-```
-
-Setting  the  `IO`  property  `:showbasis`  to  a  custom printing function
-changes how the basis elements are printed.
-
-```julia-rep1
-julia> show(IOContext(stdout,:showbasis=>(io,s)->string("<",s,">")),a)
-3<xy>+2<yx>
 ```
 
 Adding  or subtracting `ModuleElt`s does promotion  on the type of the keys

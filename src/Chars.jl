@@ -970,7 +970,7 @@ function classes(ct::CharTable)
 end
 
 function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector)
-  div(c2'*(c1.*classes(ct)),ct.order)
+  exactdiv(c2'*(c1.*classes(ct)),ct.order)
 end
 
 """

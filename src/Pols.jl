@@ -255,7 +255,10 @@ Base.:-(a::Pol)=Pol(-a.c,a.v;check=false)
 Base.:-(a::Pol, b::Pol)=a+(-b)
 Base.:-(a::Pol, b::Number)=a-Pol(b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
-Base.div(a::Pol,b::Int)=Pol(div.(a.c,b),a.v;check=false)
+Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false)
+Util.exactdiv(a::Pol,b::Number)=Pol(exactdiv.(a.c,b),a.v;check=false)
+Base.:/(p::Pol,q::Number)=Pol(p.c./q,p.v;check=false)
+Base.://(p::Pol,q::Number)=Pol(p.c.//q,p.v;check=false)
 
 derivative(a::Pol)=Pol([(i+a.v-1)*v for (i,v) in enumerate(a.c)],a.v-1)
 
@@ -573,8 +576,6 @@ Base.:/(a::Union{Number,Pol},b::RatFrac)=a//b
 Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
 Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
-Base.:/(p::Pol,q::Number)=Pol(p.c ./q,p.v)
-Base.://(p::Pol,q::Number)=iszero(p) ? p : Pol(p.c//q,p.v)
 
 Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den)
 

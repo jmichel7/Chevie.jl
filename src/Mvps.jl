@@ -386,6 +386,8 @@ end
 
 Base.:/(p::Mvp,q::Number)=Mvp(p.d/q)
 Base.://(p::Mvp,q::Number)=Mvp(p.d//q)
+Base.div(a::Mvp,b::Number)=iszero(a) ? a : Mvp(ModuleElt(m=>div(c,b) for (m,c) in a.d;check=false))
+Util.exactdiv(a::Mvp,b::Number)=iszero(a) ? a : Mvp(ModuleElt(m=>exactdiv(c,b) for (m,c) in a.d;check=false))
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -885,8 +887,6 @@ function Util.exactdiv(p::Mvp,q::Mvp)
   res
 end
 
-Util.exactdiv(p::Mvp,q::Number)=exactdiv(p,Mvp(q))
- 
 Base.gcd(a::AbstractFloat,b::AbstractFloat)=one(a)*one(b)
 
 """

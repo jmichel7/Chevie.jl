@@ -1,3 +1,9 @@
+"""
+Operations on integral GAP matrices (vectors of vectors)
+
+Quickly ported from GAP; the code is still horrible (unreadable) like the
+original one.
+"""
 module MatInt
 #using ..Gapjm
 using ..Util: toL, toM

@@ -666,6 +666,7 @@ end
 end
 @testset "ModuleElts.jl" begin
 @test mytest("a=ModuleElt(:xy=>1,:yx=>-1)",":xy-:yx")
+@test mytest("repr(a)","\"ModuleElt([:xy => 1, :yx => -1])\"")
 @test mytest("a-a","0")
 @test mytest("a*99","99:xy-99:yx")
 @test mytest("a//2","(1//2):xy+(-1//2):yx")
@@ -682,12 +683,12 @@ end
 @test mytest("eltype(a)","Pair{Symbol, Int64}")
 @test mytest("a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1;check=false)",":yy+2:yx+3:xy-:yy")
 @test mytest("a=ModuleElt(:yy=>1, :yx=>2, :xy=>3, :yy=>-1)","3:xy+2:yx")
-@test mytest("repr(a)","\"ModuleElt([:xy => 3, :yx => 2])\"")
 @test mytest("a+ModuleElt([:z=>1.0])","3.0:xy+2.0:yx+1.0:z")
 end
 @testset "Mvps.jl" begin
 @test mytest("@Mvp x,y","nothing")
 @test mytest("(x+y^-1)^3","Mvp{Int64}: x³+3x²y⁻¹+3xy⁻²+y⁻³")
+@test mytest("x+Mvp(:z)","Mvp{Int64}: x+z")
 @test mytest("degree(Mvp(1))","0")
 @test mytest("(4x)^(1//2)","Mvp{Int64,Rational{Int64}}: 2x½")
 @test mytest("(2.0x)^(1//2)","Mvp{Float64,Rational{Int64}}: 1.4142135623730951x½")
