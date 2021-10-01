@@ -183,7 +183,6 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
         ct = Append(ct, map((j->begin
                             map(function (i,)
                                     local k
-                                    k = length(r[i]) // 2
                                     if r[i] == []
                                         return 2 * v ^ 0
                                     elseif r[i] == [1]
@@ -191,6 +190,7 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
                                     elseif r[i] == [2]
                                         return v - 1
                                     else
+                                        k = div(length(r[i]), 2)
                                         return squv ^ k * (E(m, k * j) + E(m, -k * j))
                                     end
                                 end, 1:length(r))
