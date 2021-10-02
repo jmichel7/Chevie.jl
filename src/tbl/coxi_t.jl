@@ -22,9 +22,9 @@ chevieset(:I, :CharInfo, function(m)
   append!(charparams,map(i->[2,i],1:div(m-1,2)))
   res[:charparams]=charparams
   res[:b]=map(x->x[2], charparams)
-  res[:B]=map(phi->phi[1] == 1 ? phi[2] : m - phi[2], charparams)
+  res[:B]=map(phi->phi[1]==1 ? phi[2] : m-phi[2], charparams)
   res[:a]=map(phi->phi[1]!=1 || phi[2]==div(m,2) ? 1 : phi[2], charparams)
-  res[:A]=map(phi->phi[1]==1 || phi[2]==div(m,2) ? m-1 : phi[2], charparams)
+  res[:A]=vcat([0,m],fill(m-1,length(charparams)-2))
   charSymbols=map(1:div(m-1,2))do l
     S=map(i->[0],1:m)
     S[1]=[1]

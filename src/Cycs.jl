@@ -126,7 +126,7 @@ module Cycs
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
 using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, 
-              phi, bracket_if_needed
+              phi, bracket_if_needed, xprint
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -1040,7 +1040,14 @@ function Base.show(io::IO,q::Quadratic)
   if q.den!=1 && rq!="0" print(io,(repl||TeX) ? "/" : "//",q.den) end
 end
 
-const inforoot=true
+const inforoot=Ref(true)
+function proot(x,n,r)
+  if inforoot[] 
+    xprint("root(",x)
+    if n!=2 xprint(",",n) end
+    xprint(")=",r,"\n")
+  end
+end
 const Irootdict=Dict{Tuple{Int,Int},Any}()
 
 """
@@ -1072,7 +1079,7 @@ function root(x::Integer,n=2)
     a=prod(p^div(pow,n) for (p,pow) in l)
     b=[p for (p,pow) in l if pow%n!=0]
     res=isempty(b) ? a : a*ER(prod(b))
-    if inforoot  println("root($x,$n)=$res") end
+    proot(x,n,res)
     res
   end
 end
@@ -1085,7 +1092,6 @@ function root(x::Cyc,n=2)
   if isone(n) || isone(x) return x end
   if !(n isa Int) n=Int(n) end
   get!(Crootdict,(n,x)) do
-  if inforoot print("root($x,$n)=") end
   r=Root1(x)
   if isnothing(r) 
     if conductor(x)>1 return nothing end
@@ -1093,14 +1099,15 @@ function root(x::Cyc,n=2)
   end
   d=conductor(r)
   j=1
+  n1=n
   while true
-    k=gcd(n,d)
-    n=div(n,k)
+    k=gcd(n1,d)
+    n1=div(n1,k)
     j*=k
     if k==1 break end
   end
-  res=E(j*d,exponent(r)*gcdx(n,d)[2])
-  if inforoot println(res) end
+  res=E(j*d,exponent(r)*gcdx(n1,d)[2])
+  proot(x,n,res)
   res
   end
 end
