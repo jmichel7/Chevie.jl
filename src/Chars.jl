@@ -747,7 +747,7 @@ function charinfo(W)::Dict{Symbol,Any}
         for i in eachindex(t), f in t[i].orbit
           m[findfirst(==(sort(f.indices)),gt)]=y[i]
         end
-        return HasType.PositionCartesian(n,m)
+        return cart2lin(n,m)
       end
       res[:nrGroupClasses]=prod(i->p[i][:nrGroupClasses]^length(t[i].orbit),
                                                           eachindex(t))
@@ -756,7 +756,7 @@ function charinfo(W)::Dict{Symbol,Any}
     res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]
      if all(d->haskey(d,f),p)
-       res[f]=HasType.PositionCartesian(map(x->length(x[:charparams]),p),getindex.(p,f))
+       res[f]=cart2lin(map(x->length(x[:charparams]),p),getindex.(p,f))
       end
     end
     for f in [:b, :B, :a, :A]
@@ -1030,11 +1030,10 @@ julia> representation(ComplexReflectionGroup(24),3)
 ```
 """
 function representation(W::Union{Group,Spets},i::Int)
-  dims=Tuple(getchev(W,:NrConjugacyClasses))
+  dims=getchev(W,:NrConjugacyClasses)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)
-  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
-  mm=map((t,j)->getchev(t,:Representation,j),tt,inds)
+  mm=map((t,j)->getchev(t,:Representation,j),tt,lin2cart(dims,i))
   if any(isnothing,mm) error("no representation for ",W) end
   if W isa Spets
     FF=map(x->x[:F],mm)

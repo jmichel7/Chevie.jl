@@ -309,21 +309,22 @@ function Chars.CharTable(H::HeckeAlgebra)
 end
 
 function Chars.representation(H::HeckeAlgebra,i::Int)
+  dims=getchev(H.W,:NrConjugacyClasses)
+  if isempty(dims) return Matrix{Int}[] end
   tt=refltype(H.W)
-  dims=Tuple(getchev.(tt,:NrConjugacyClasses))
-  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
-  mm=map((t,j)->toM.(getchev(t,:HeckeRepresentation,H.para,rp,i)),tt,inds)
-  if any(==(false),mm) return false end
+  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.para,rp,j),tt,
+                                                    lin2cart(dims,i))
+  if any(==(false),mm) return nothing end
+  if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm)
   n=length(tt)
   if n==1 return mm[1] end
-  id(i)=fill(1,i,i)^0
   vcat(map(1:n) do i
-         map(mm[i]) do m
-           cat(map(j->j==i ? m : mm[j][1]^0,1:n)...;dims=(1,2))
-         end
-       end...)
+     map(mm[i]) do m
+       kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
+    end
+  end...)
 end
 
 Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:nconjugacy_classes(H.W))
@@ -1122,14 +1123,21 @@ function Chars.CharTable(H::HeckeCoset)
 end
 
 function Chars.representation(H::HeckeCoset,i::Int)
+  dims=getchev(H.W,:NrConjugacyClasses)
+  if isempty(dims) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
   tt=refltype(H.W)
-  dims=Tuple(getchev.(tt,:NrConjugacyClasses))
-  inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
-  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.H.para,rp,i),tt,inds)
+  mm=map(tt,lin2cart(dims,i)) do t,j
+    r=getchev(t,:HeckeRepresentation,H.H.para,rp,j)
+    if r isa Vector 
+       r=toM.(r)
+       (gens=r,F=one(r[1]))
+    else (gens=toM.(r[:gens]),F=toM(r[:F]))
+    end
+  end
   if any(==(false),mm) return false end
-  ff=improve_type(map(toM,getindex.(mm,:F)))
-  mm=improve_type(map(x->map(toM,x),getindex.(mm,:gens)))
+  ff=improve_type(getindex.(mm,:F))
+  mm=improve_type(getindex.(mm,:gens))
   n=length(tt)
   if n==1 return (gens=mm[1],F=ff[1]) end
   (gens=vcat(map(1:n) do i

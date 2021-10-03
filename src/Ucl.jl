@@ -731,8 +731,8 @@ function UnipotentClasses(W,p=0)
   ll=length.(uc)
   orderclasses=map(cartesian(map(x->1:x,ll)...)) do v
     o=cartesian(map(j->vcat(hasse(uc[j].orderclasses)[v[j]],[v[j]]),1:length(v))...)
-    o=map(x->HasType.PositionCartesian(ll,x),o)
-    setdiff(o,[HasType.PositionCartesian(ll,v)])
+    o=map(x->cart2lin(ll,x),o)
+    setdiff(o,[cart2lin(ll,v)])
   end
   springerseries=map(cartesian(map(x->x.springerseries,uc)...)) do v
 #   if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
@@ -748,7 +748,7 @@ function UnipotentClasses(W,p=0)
       v=collect.(zip(v...))
       u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].Au),
               eachindex(v[1]))
-      [HasType.PositionCartesian(ll,v[1]),HasType.PositionCartesian(u,v[2])]
+      [cart2lin(ll,v[1]),cart2lin(u,v[2])]
     end
     if all(haskey.(v,:parameter)) s[:parameter]=getindex.(v,:parameter) end
     s[:relgroup]=prod(getindex.(v,:relgroup))

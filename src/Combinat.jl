@@ -16,7 +16,7 @@ stirling2,catalan`
 
 and finally some structural manipulations not yet in Julia:
 
-`groupby, constant, tally, collectby, cartesian, unique_sorted!`
+`groupby, constant, tally, collectby, unique_sorted!`
 
 Have  a  look  at  the  individual  docstrings  and  enjoy (any feedback is
 welcome).
@@ -28,7 +28,7 @@ export combinations, ncombinations, arrangements, narrangements,
   partitions_set, npartitions_set, compositions, submultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
   bell, stirling2, catalan,
-  groupby, constant, tally, collectby, cartesian, unique_sorted!
+  groupby, constant, tally, collectby, unique_sorted!
 
 #--------------------- Structural manipulations -------------------
 """
@@ -175,16 +175,6 @@ function unique_sorted!(v::Vector)
     end
   end
   resize!(v,i)
-end
-
-"""
-`cartesian(a::AbstractVector...)`
-
-A variation on ``Iterators.product` which gives the same result as GAP's
-`Cartesian`. `reverse` is done twice to get the same order as GAP.
-"""
-function cartesian(a::AbstractVector...)
-  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
 end
 
 #--------------------- Classical enumerations -------------------

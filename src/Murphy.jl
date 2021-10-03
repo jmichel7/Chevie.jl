@@ -89,6 +89,7 @@ struct HeckeMElt{C,TH}<:HeckeElt{Tuple{Int,Int,Int},C}
   H::TH
 end
 
+HeckeAlgebras.clone(h::HeckeMElt,d)=HeckeMElt(d,h.H)
 Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,Int,Int},coefftype(H)}),H)
 Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
 basename(h::HeckeMElt)="M"
@@ -488,7 +489,7 @@ function Spechtmodel(H, mu)
     St = S(t)
     for i in 1:n
       ti=St*T(i)
-      mats[i][St.d.d[1][1][3]][map(x->x[3],keys(ti.d))]=values(ti.d)
+      mats[i][St.d.d[1][1][3]][map(x->x[3],keys(ti.d))]=collect(values(ti.d))
     end
   end
   mats

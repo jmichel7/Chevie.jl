@@ -721,7 +721,7 @@ function LeftCellRepresentatives(W)
     duflo=W(vcat(map(x->x[:duflo],l)...)...)
     reps=map(v->W(vcat(v...)...),cartesian(map(x->x[:reps],l)...))
     reps=setdiff(reps,[duflo])
-    character=map(p->HasType.PositionCartesian(n,p),cartesian(map(x->x[:character],l)...))
+    character=map(p->cart2lin(n,p),cartesian(map(x->x[:character],l)...))
     a=charinfo(W)[:a][character]
     if length(Set(a))>1 error() else a=a[1] end
     return LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,

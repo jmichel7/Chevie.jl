@@ -181,8 +181,6 @@ function Base.merge!(f::Family,d::Dict)
   f
 end
 
-position_cartesian(a,b)=LinearIndices(reverse(a))[CartesianIndex(reverse(b))]
-
 """
 `<f>*<g>`:  returns the  tensor product  of two  families <f> and <g>; the
 Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
@@ -206,9 +204,8 @@ function Base.:*(f::Family,g::Family)
                           cartesian(getproperty.(arg,:charNumbers)...))
   end
   if all(haskey.(arg,:special))
-    res.special=position_cartesian(length.(arg),getproperty.(arg,:special))
-    res.cospecial=position_cartesian(length.(arg),
-                          map(f->get(f.prop,:cospecial,f.special),arg))
+    res.special=cart2lin(length.(arg),getproperty.(arg,:special))
+    res.cospecial=cart2lin(length.(arg),map(f->get(f.prop,:cospecial,f.special),arg))
     if res.cospecial==res.special delete!(res.prop,:cospecial) end
   end
   if all(x->haskey(x,:perm) || length(x)==1,arg)

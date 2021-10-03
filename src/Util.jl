@@ -16,6 +16,7 @@ export
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
+export cartesian, cart2lin, lin2cart
 
 const info=Ref(true)
 function InfoChevie(a...)
@@ -39,10 +40,6 @@ macro forward(ex, fs)
   end
   Expr(:block, fdefs...)
 end
-
-#--------------------------------------------------------------------------
-toL(m)=collect(eachrow(m)) # to Gap
-toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia
 
 #--------------------------------------------------------------------------
 
@@ -425,4 +422,34 @@ end
 #       show(io, denominator(x))
 #   end
 #end
+#--------------------------- Chevie compatibility--------------------------
+toL(m)=collect(eachrow(m)) # to Gap
+toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia
+
+# The following functions should be eventually evicted by adpoting Julia
+# order for products.
+
+"""
+`cartesian(a::AbstractVector...)`
+
+A variation on ``Iterators.product` which gives the same result as GAP's
+`Cartesian`. `reverse` is done twice to get the same order as GAP.
+"""
+function cartesian(a::AbstractVector...)
+  reverse.(vec(collect.(Iterators.product(reverse(a)...))))
+end
+
+"""
+`cart2lin([l₁,…,lₙ],[i₁,…,iₙ])` is GAP3 PositionCartesian
+returns findfirst(==([i1,…,iₙ]),cartesian(1:l₁,…,1:lₙ))
+very fast with 2 Tuple arguments
+"""
+cart2lin(l,ind)=LinearIndices(Tuple(reverse(l)))[reverse(ind)...]
+
+"""
+`lin2cart([l],i)` is GAP3 CartesianAt
+returns cartesian(map(j->1:j,l))[i]
+"""
+lin2cart(dims,i)=reverse(Tuple(CartesianIndices(reverse(Tuple(dims)))[i]))
+
 end

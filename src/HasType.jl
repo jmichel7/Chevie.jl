@@ -18,20 +18,6 @@ charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
 
 charname(W,x;TeX=false,opt...)=join(map((t,p)->charname(t,p;TeX=TeX,opt...),
                            refltype(W),x),",")
-
-# PositionCartesian([l₁,…,lₙ],[i₁,…,iₙ]) returns
-#  Position(Cartesian([1…l₁],…,[1…lₙ]),[i1,…,iₙ])
-function PositionCartesian(l,ind)
-  res=prod=1
-  for i in length(l):-1:1
-    res+=(ind[i]-1)*prod
-    prod*=l[i]
-  end
-  res
-end
-
-# inds=reverse(Tuple(CartesianIndices(reverse(dims))[i]))
-
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
