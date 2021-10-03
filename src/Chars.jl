@@ -477,8 +477,13 @@ function charinfo(t::TypeIrred)
   if isnothing(c[:a])
     uc=getchev(t,:UnipotentCharacters)
     if uc!=false && uc!==nothing
-      c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
-      c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
+      if haskey(uc,:almostHarishChandra)
+        c[:a]=uc[:a][uc[:almostHarishChandra][1][:charNumbers]]
+        c[:A]=uc[:A][uc[:almostHarishChandra][1][:charNumbers]]
+      else
+        c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
+        c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
+      end
     end
   end
   for f in [:a,:A,:b,:B]

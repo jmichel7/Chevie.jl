@@ -1,0 +1,517 @@
+======== diagnostics for . =========
+ 0:00:00.001
+======== diagnostics for A1 =========
+ 0:00:00.002
+======== diagnostics for 2A2 =========
+[aA(2A2)]Length(uc a)=2 while Length(charinfo a)=3
+[aA(2A2)]uc a[2] found at [ 3 ]
+[aA(2A2)]Length(uc a)=2 while Length(charinfo a)=3
+[aA(2A2)]uc a[2] found at [ 3 ]
+ 0:00:00.006
+======== diagnostics for A2 =========
+ 0:00:00.001
+======== diagnostics for I2(5) =========
+ 0:00:00.002
+======== diagnostics for B2 =========
+ 0:00:00.003
+======== diagnostics for G2 =========
+ 0:00:00.001
+======== diagnostics for A3 =========
+ 0:00:00.002
+======== diagnostics for 2Bsym2 =========
+ 0:00:00.001
+======== diagnostics for 2Gsym2 =========
+ 0:00:00.002
+======== diagnostics for 2I2(5) =========
+ 0:00:00.001
+======== diagnostics for 2Isym2(8) =========
+ 0:00:00.004
+======== diagnostics for G5 =========
+ 0:00:00.000
+======== diagnostics for 2A3 =========
+[aA(2A3)]uc a=Permuted(charinfo a),(1,3,2,5,4)
+[aA(2A3)]uc a=Permuted(charinfo a),(1,3,2,5,4)
+ 0:00:00.002
+======== diagnostics for G4 =========
+ 0:00:00.003
+======== diagnostics for G9 =========
+ 0:00:00.000
+======== diagnostics for G12 =========
+ 0:00:00.000
+======== diagnostics for G13 =========
+ 0:00:00.000
+======== diagnostics for 3D4 =========
+ 0:00:00.002
+======== diagnostics for 2A4 =========
+[aA(2A4)]Length(uc a)=5 while Length(charinfo a)=7
+[aA(2A4)]uc a[1] found at [ 5 ]
+[aA(2A4)]uc a[2] found at [ 4 ]
+[aA(2A4)]uc a[3] found at [ 1 ]
+[aA(2A4)]uc a[4] found at [ 7 ]
+[aA(2A4)]uc a[5] found at [ 3 ]
+[aA(2A4)]Length(uc a)=5 while Length(charinfo a)=7
+[aA(2A4)]uc a[1] found at [ 5 ]
+[aA(2A4)]uc a[2] found at [ 4 ]
+[aA(2A4)]uc a[3] found at [ 1 ]
+[aA(2A4)]uc a[4] found at [ 7 ]
+[aA(2A4)]uc a[5] found at [ 3 ]
+ 0:00:00.003
+======== diagnostics for G312 =========
+ 0:00:00.008
+======== diagnostics for G333 =========
+ 0:00:00.011
+======== diagnostics for B3 =========
+ 0:00:00.007
+======== diagnostics for C3 =========
+ 0:00:00.007
+======== diagnostics for A4 =========
+ 0:00:00.003
+======== diagnostics for G7 =========
+ 0:00:00.000
+======== diagnostics for G10 =========
+ 0:00:00.000
+======== diagnostics for G22 =========
+ 0:00:00.000
+======== diagnostics for G443 =========
+ 0:00:00.020
+======== diagnostics for H3 =========
+ 0:00:00.005
+======== diagnostics for 2D4 =========
+ 0:00:00.011
+======== diagnostics for G6 =========
+ 0:00:00.015
+======== diagnostics for 2A5 =========
+[aA(2A5)]Length(uc a)=10 while Length(charinfo a)=11
+[aA(2A5)]uc a[1] found at [ 2 ]
+[aA(2A5)]uc a[2] found at [ 4, 5 ]
+[aA(2A5)]uc a[4] found at [ 1 ]
+[aA(2A5)]uc a[5] found at [ 7, 8 ]
+[aA(2A5)]uc a[6] found at [ 7, 8 ]
+[aA(2A5)]uc a[7] found at [ 9 ]
+[aA(2A5)]uc a[8] found at [ 4, 5 ]
+[aA(2A5)]uc a[9] found at [ 11 ]
+[aA(2A5)]Length(uc a)=10 while Length(charinfo a)=11
+[aA(2A5)]uc a[1] found at [ 2 ]
+[aA(2A5)]uc a[2] found at [ 4, 5 ]
+[aA(2A5)]uc a[4] found at [ 1 ]
+[aA(2A5)]uc a[5] found at [ 7, 8 ]
+[aA(2A5)]uc a[6] found at [ 7, 8 ]
+[aA(2A5)]uc a[7] found at [ 9 ]
+[aA(2A5)]uc a[8] found at [ 4, 5 ]
+[aA(2A5)]uc a[9] found at [ 11 ]
+ 0:00:00.007
+======== diagnostics for 2Fsym4 =========
+ 0:00:00.005
+======== diagnostics for G8 =========
+ 0:00:00.008
+======== diagnostics for G24 =========
+ 0:00:00.007
+======== diagnostics for D4 =========
+ 0:00:00.013
+======== diagnostics for A5 =========
+ 0:00:00.005
+======== diagnostics for G334 =========
+ 0:00:00.036
+======== diagnostics for B4 =========
+ 0:00:00.130
+======== diagnostics for C4 =========
+ 0:00:00.015
+======== diagnostics for F4 =========
+ 0:00:00.008
+======== diagnostics for G15 =========
+ 0:00:00.001
+======== diagnostics for G16 =========
+ 0:00:00.000
+======== diagnostics for G20 =========
+ 0:00:00.000
+======== diagnostics for G25 =========
+ 0:00:00.210
+======== diagnostics for 2A6 =========
+[aA(2A6)]Length(uc a)=10 while Length(charinfo a)=15
+[aA(2A6)]uc a[1] found at [ 6 ]
+[aA(2A6)]uc a[2] found at [ 7, 9 ]
+[aA(2A6)]uc a[3] found at [ 5 ]
+[aA(2A6)]uc a[4] found at [ 1 ]
+[aA(2A6)]uc a[5] found at [ 13 ]
+[aA(2A6)]uc a[6] found at [ 8 ]
+[aA(2A6)]uc a[7] found at [ 11, 12 ]
+[aA(2A6)]uc a[8] found at [ 3 ]
+[aA(2A6)]uc a[9] found at [ 15 ]
+[aA(2A6)]Length(uc a)=10 while Length(charinfo a)=15
+[aA(2A6)]uc a[1] found at [ 6 ]
+[aA(2A6)]uc a[2] found at [ 7 ]
+[aA(2A6)]uc a[3] found at [ 4, 5 ]
+[aA(2A6)]uc a[4] found at [ 1 ]
+[aA(2A6)]uc a[5] found at [ 13 ]
+[aA(2A6)]uc a[6] found at [ 8, 9 ]
+[aA(2A6)]uc a[7] found at [ 12 ]
+[aA(2A6)]uc a[8] found at [ 3 ]
+[aA(2A6)]uc a[9] found at [ 15 ]
+ 0:00:00.008
+======== diagnostics for A6 =========
+ 0:00:00.006
+======== diagnostics for D5 =========
+ 0:00:00.020
+======== diagnostics for 2D5 =========
+ 0:00:00.022
+======== diagnostics for G14 =========
+ 0:00:00.022
+======== diagnostics for E6 =========
+ 0:00:00.011
+======== diagnostics for G11 =========
+ 0:00:00.000
+======== diagnostics for G29 =========
+ 0:00:00.021
+======== diagnostics for B5 =========
+ 0:00:00.041
+======== diagnostics for C5 =========
+ 0:00:00.041
+======== diagnostics for G26 =========
+ 0:00:00.156
+======== diagnostics for A7 =========
+ 0:00:00.012
+======== diagnostics for 2E6 =========
+ 0:00:00.009
+======== diagnostics for 2A7 =========
+[aA(2A7)]Length(uc a)=20 while Length(charinfo a)=22
+[aA(2A7)]uc a[1] found at [ 2 ]
+[aA(2A7)]uc a[2] found at [ 4 ]
+[aA(2A7)]uc a[3] found at [ 5 ]
+[aA(2A7)]uc a[4] found at [ 3 ]
+[aA(2A7)]uc a[5] found at [ 1 ]
+[aA(2A7)]uc a[6] found at [ 11 ]
+[aA(2A7)]uc a[7] found at [ 10, 12 ]
+[aA(2A7)]uc a[8] found at [ 13, 16 ]
+[aA(2A7)]uc a[11] found at [ 6 ]
+[aA(2A7)]uc a[12] found at [ 14 ]
+[aA(2A7)]uc a[13] found at [ 15, 17 ]
+[aA(2A7)]uc a[14] found at [ 8 ]
+[aA(2A7)]uc a[15] found at [ 18, 19 ]
+[aA(2A7)]uc a[16] found at [ 18, 19 ]
+[aA(2A7)]uc a[17] found at [ 20 ]
+[aA(2A7)]uc a[18] found at [ 13, 16 ]
+[aA(2A7)]uc a[19] found at [ 22 ]
+[aA(2A7)]uc a[20] found at [ 21 ]
+[aA(2A7)]Length(uc a)=20 while Length(charinfo a)=22
+[aA(2A7)]uc a[1] found at [ 2 ]
+[aA(2A7)]uc a[2] found at [ 4, 6 ]
+[aA(2A7)]uc a[3] found at [ 5, 7 ]
+[aA(2A7)]uc a[4] found at [ 3 ]
+[aA(2A7)]uc a[5] found at [ 1 ]
+[aA(2A7)]uc a[6] found at [ 9, 11 ]
+[aA(2A7)]uc a[7] found at [ 10, 12 ]
+[aA(2A7)]uc a[8] found at [ 13 ]
+[aA(2A7)]uc a[11] found at [ 4, 6 ]
+[aA(2A7)]uc a[12] found at [ 14 ]
+[aA(2A7)]uc a[13] found at [ 15 ]
+[aA(2A7)]uc a[14] found at [ 8 ]
+[aA(2A7)]uc a[15] found at [ 19 ]
+[aA(2A7)]uc a[16] found at [ 18 ]
+[aA(2A7)]uc a[17] found at [ 20 ]
+[aA(2A7)]uc a[18] found at [ 16 ]
+[aA(2A7)]uc a[19] found at [ 22 ]
+[aA(2A7)]uc a[20] found at [ 21 ]
+ 0:00:00.014
+======== diagnostics for G17 =========
+ 0:00:00.001
+======== diagnostics for H4 =========
+ 0:00:00.052
+======== diagnostics for G33 =========
+ 0:00:00.029
+======== diagnostics for 2D6 =========
+ 0:00:00.050
+======== diagnostics for D6 =========
+ 0:00:00.054
+======== diagnostics for B6 =========
+ 0:00:00.100
+======== diagnostics for C6 =========
+ 0:00:00.110
+======== diagnostics for E7 =========
+ 0:00:00.174
+======== diagnostics for D7 =========
+ 0:00:00.108
+======== diagnostics for G27 =========
+ 0:00:00.073
+======== diagnostics for G18 =========
+ 0:00:00.000
+======== diagnostics for G21 =========
+ 0:00:00.000
+======== diagnostics for G32 =========
+ 0:00:00.164
+======== diagnostics for B7 =========
+ 0:00:00.365
+======== diagnostics for C7 =========
+ 0:00:00.236
+======== diagnostics for 2D7 =========
+ 0:00:00.117
+======== diagnostics for E8 =========
+ 0:00:00.350
+======== diagnostics for G34 =========
+ 0:00:00.372
+======== diagnostics for . =========
+ 0:00:00.001
+======== diagnostics for A1 =========
+ 0:00:00.003
+======== diagnostics for 2A2 =========
+ 0:00:00.001
+======== diagnostics for A2 =========
+ 0:00:00.001
+======== diagnostics for I2(5) =========
+ 0:00:00.001
+======== diagnostics for B2 =========
+ 0:00:00.003
+======== diagnostics for G2 =========
+ 0:00:00.002
+======== diagnostics for A3 =========
+ 0:00:00.001
+======== diagnostics for 2Bsym2 =========
+[aA(2Bsym2)]Length(uc a)=3 while Length(charinfo a)=2
+[aA(2Bsym2)]uc a[1] found at [ 2 ]
+[aA(2Bsym2)]uc a[2] found at [ 1 ]
+======== diagnostics for . =========
+ 0:00:00.003
+======== diagnostics for A1 =========
+ 0:00:00.002
+======== diagnostics for 2A2 =========
+ 0:00:00.001
+======== diagnostics for A2 =========
+ 0:00:00.001
+======== diagnostics for I2(5) =========
+ 0:00:00.002
+======== diagnostics for B2 =========
+ 0:00:00.003
+======== diagnostics for G2 =========
+ 0:00:00.002
+======== diagnostics for A3 =========
+ 0:00:00.002
+======== diagnostics for 2Bsym2 =========
+ 0:00:00.001
+======== diagnostics for 2Gsym2 =========
+ 0:00:00.002
+======== diagnostics for 2I2(5) =========
+ 0:00:00.002
+======== diagnostics for 2Isym2(8) =========
+ 0:00:00.003
+======== diagnostics for G5 =========
+ 0:00:00.000
+======== diagnostics for 2A3 =========
+ 0:00:00.001
+======== diagnostics for G4 =========
+ 0:00:00.002
+======== diagnostics for G9 =========
+ 0:00:00.000
+======== diagnostics for G12 =========
+ 0:00:00.000
+======== diagnostics for G13 =========
+ 0:00:00.000
+======== diagnostics for 3D4 =========
+ 0:00:00.002
+======== diagnostics for 2A4 =========
+ 0:00:00.003
+======== diagnostics for G312 =========
+ 0:00:00.008
+======== diagnostics for G333 =========
+ 0:00:00.012
+======== diagnostics for B3 =========
+ 0:00:00.007
+======== diagnostics for C3 =========
+ 0:00:00.008
+======== diagnostics for A4 =========
+ 0:00:00.003
+======== diagnostics for G7 =========
+ 0:00:00.000
+======== diagnostics for G10 =========
+ 0:00:00.000
+======== diagnostics for G22 =========
+ 0:00:00.000
+======== diagnostics for G443 =========
+ 0:00:00.020
+======== diagnostics for H3 =========
+ 0:00:00.004
+======== diagnostics for 2D4 =========
+ 0:00:00.009
+======== diagnostics for G6 =========
+ 0:00:00.014
+======== diagnostics for 2A5 =========
+ 0:00:00.004
+======== diagnostics for 2Fsym4 =========
+ 0:00:00.004
+======== diagnostics for G8 =========
+ 0:00:00.005
+======== diagnostics for G24 =========
+ 0:00:00.006
+======== diagnostics for D4 =========
+ 0:00:00.010
+======== diagnostics for A5 =========
+ 0:00:00.004
+======== diagnostics for G334 =========
+ 0:00:00.030
+======== diagnostics for B4 =========
+ 0:00:00.016
+======== diagnostics for C4 =========
+ 0:00:00.016
+======== diagnostics for F4 =========
+ 0:00:00.007
+======== diagnostics for G15 =========
+ 0:00:00.000
+======== diagnostics for G16 =========
+ 0:00:00.000
+======== diagnostics for G20 =========
+ 0:00:00.000
+======== diagnostics for G25 =========
+======== diagnostics for . =========
+ 0:00:00.005
+======== diagnostics for A1 =========
+ 0:00:00.001
+======== diagnostics for 2A2 =========
+ 0:00:00.001
+======== diagnostics for A2 =========
+ 0:00:00.001
+======== diagnostics for I2(5) =========
+ 0:00:00.001
+======== diagnostics for B2 =========
+ 0:00:00.003
+======== diagnostics for G2 =========
+ 0:00:00.002
+======== diagnostics for A3 =========
+ 0:00:00.002
+======== diagnostics for 2Bsym2 =========
+ 0:00:00.002
+======== diagnostics for 2Gsym2 =========
+ 0:00:00.002
+======== diagnostics for 2I2(5) =========
+ 0:00:00.001
+======== diagnostics for 2Isym2(8) =========
+ 0:00:00.003
+======== diagnostics for G5 =========
+ 0:00:00.000
+======== diagnostics for 2A3 =========
+ 0:00:00.002
+======== diagnostics for G4 =========
+ 0:00:00.002
+======== diagnostics for G9 =========
+ 0:00:00.000
+======== diagnostics for G12 =========
+ 0:00:00.000
+======== diagnostics for G13 =========
+ 0:00:00.000
+======== diagnostics for 3D4 =========
+ 0:00:00.002
+======== diagnostics for 2A4 =========
+ 0:00:00.003
+======== diagnostics for G312 =========
+ 0:00:00.008
+======== diagnostics for G333 =========
+ 0:00:00.011
+======== diagnostics for B3 =========
+ 0:00:00.008
+======== diagnostics for C3 =========
+ 0:00:00.008
+======== diagnostics for A4 =========
+ 0:00:00.003
+======== diagnostics for G7 =========
+ 0:00:00.001
+======== diagnostics for G10 =========
+ 0:00:00.001
+======== diagnostics for G22 =========
+ 0:00:00.000
+======== diagnostics for G443 =========
+ 0:00:00.020
+======== diagnostics for H3 =========
+ 0:00:00.004
+======== diagnostics for 2D4 =========
+ 0:00:00.012
+======== diagnostics for G6 =========
+ 0:00:00.016
+======== diagnostics for 2A5 =========
+ 0:00:00.006
+======== diagnostics for 2Fsym4 =========
+ 0:00:00.006
+======== diagnostics for G8 =========
+ 0:00:00.008
+======== diagnostics for G24 =========
+ 0:00:00.007
+======== diagnostics for D4 =========
+ 0:00:00.012
+======== diagnostics for A5 =========
+ 0:00:00.005
+======== diagnostics for G334 =========
+ 0:00:00.037
+======== diagnostics for B4 =========
+ 0:00:00.128
+======== diagnostics for C4 =========
+ 0:00:00.016
+======== diagnostics for F4 =========
+ 0:00:00.007
+======== diagnostics for G15 =========
+ 0:00:00.000
+======== diagnostics for G16 =========
+ 0:00:00.000
+======== diagnostics for G20 =========
+ 0:00:00.000
+======== diagnostics for G25 =========
+ 0:00:00.204
+======== diagnostics for 2A6 =========
+ 0:00:00.008
+======== diagnostics for A6 =========
+ 0:00:00.007
+======== diagnostics for D5 =========
+ 0:00:00.020
+======== diagnostics for 2D5 =========
+ 0:00:00.022
+======== diagnostics for G14 =========
+ 0:00:00.022
+======== diagnostics for E6 =========
+ 0:00:00.010
+======== diagnostics for G11 =========
+ 0:00:00.000
+======== diagnostics for G29 =========
+ 0:00:00.021
+======== diagnostics for B5 =========
+ 0:00:00.039
+======== diagnostics for C5 =========
+ 0:00:00.040
+======== diagnostics for G26 =========
+ 0:00:00.152
+======== diagnostics for A7 =========
+ 0:00:00.012
+======== diagnostics for 2E6 =========
+ 0:00:00.009
+======== diagnostics for 2A7 =========
+ 0:00:00.012
+======== diagnostics for G17 =========
+ 0:00:00.000
+======== diagnostics for H4 =========
+ 0:00:00.050
+======== diagnostics for G33 =========
+ 0:00:00.027
+======== diagnostics for 2D6 =========
+ 0:00:00.049
+======== diagnostics for D6 =========
+ 0:00:00.050
+======== diagnostics for B6 =========
+ 0:00:00.094
+======== diagnostics for C6 =========
+ 0:00:00.107
+======== diagnostics for E7 =========
+ 0:00:00.171
+======== diagnostics for D7 =========
+ 0:00:00.101
+======== diagnostics for G27 =========
+ 0:00:00.070
+======== diagnostics for G18 =========
+ 0:00:00.000
+======== diagnostics for G21 =========
+ 0:00:00.000
+======== diagnostics for G32 =========
+ 0:00:00.156
+======== diagnostics for B7 =========
+ 0:00:00.349
+======== diagnostics for C7 =========
+ 0:00:00.220
+======== diagnostics for 2D7 =========
+ 0:00:00.112
+======== diagnostics for E8 =========
+ 0:00:00.338
+======== diagnostics for G34 =========
+ 0:00:00.353
