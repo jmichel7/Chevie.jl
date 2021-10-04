@@ -1655,29 +1655,38 @@ function(W)t=refltype(W)
 
 #------------------------- Opdam -----------------------------
 
-function Topdam(W)
+# c_\chi in Gordon-Griffeth
+function coxeter_number(W,i)
+  cl=classinfo(W)[:classes]
+  if cl==[1] return 0 end
+  ct=CharTable(W).irr
+  Int(sum(degrees(W)-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),
+                                   h.cl_s),hyperplane_orbits(W)))
+end
+
+function Thgal(W)
   ct=CharTable(W).irr
   complex=Perm(ct,conj(ct);dims=1)
   x=Mvp(:x)
+  z=gcd(degrees(W))
+  H=hecke(W,x^z)
+  ct=CharTable(H).irr
+  gal=Perm(ct,map(u->u(;x=x*E(z)),ct))
   fd=fakedegrees(W,x)
   ci=charinfo(W)
-  if haskey(ci,:opdam) opdam=ci[:opdam] else opdam=Perm() end
-  # c_\chi in Gordon-Griffeth
-  function c(W,i)
-    cl=classinfo(W)[:classes]
-    if cl==[1] return 0 end
-    sum(degrees(W)-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),
-                                 h.cl_s),hyperplane_orbits(W))
+  if haskey(ci,:hgal) hgal=ci[:hgal] else hgal=Perm() end
+  if isnothing(gal) ChevieErr("could not compute gal")
+  elseif gal!=hgal ChevieErr("hgal wwwwwrong")
   end
+  # following test is [Malle, Rationality... Theorem 6.5]
   for i in 1:nconjugacy_classes(W)
-    f=fd[i^complex]
-    if fd[i^opdam]!=x^Int(c(W,i))*f(x=x^-1)
-      ChevieErr("Opdam wrong for ",i,"\n")
+    if fd[i^(hgal*complex)]!=x^coxeter_number(W,i)*fd[i](x=x^-1)
+      ChevieErr("hgal wrong for ",i,"\n")
     end
   end
 end
 
-test[:opdam]=(fn=Topdam,applicable=W->!(W isa Spets),comment="Opdam")
+test[:hgal]=(fn=Thgal,applicable=W->!(W isa Spets),comment="Opdam")
 
 #------------------------- ParameterExponents -----------------------------
 # check that the parameter exponents of the relative hecke algebras

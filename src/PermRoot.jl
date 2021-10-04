@@ -1748,10 +1748,10 @@ function Combinat.catalan(W,m=1;q=1)
   fd=d
   if length(d)!=ngens(W) 
     ci=charinfo(W)
-    if haskey(ci,:opdam) opdam=ci[:opdam]^-1 else opdam=Perm() end
+    if haskey(ci,:hgal) hgal=ci[:hgal] else hgal=Perm() end
     ct=toL(CharTable(W).irr)
     complex=Perm(ct,conj(ct))
-    fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(opdam^m*complex)]
+    fd=fakedegrees(W,Pol(:q))[ci[:extRefl][2]^(hgal^m*complex)]
     fd=vcat(map(i->fill(i+1,fd[i]),0:degree(fd))...)
   end
   f(i)=sum(j->q^j,0:i-1)

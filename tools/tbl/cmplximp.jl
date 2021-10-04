@@ -550,7 +550,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
             res[:b] = map(valuation_fegsymbol, res[:charSymbols])
         end
         if e > 1 && d > 1
-            res[:opdam] = PermListList(res[:charparams], map(function (s,)
+            res[:hgal] = PermListList(res[:charparams], map(function (s,)
                             if !(IsList(s[length(s)]))
                                 s = deepcopy(s)
                                 t = div(length(s) - 2, d)

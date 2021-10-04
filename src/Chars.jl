@@ -668,14 +668,15 @@ julia> charinfo(coxgroup(:D,4))[:A]
   0
 ```
 
-`:opdam`:  Contains the permutation of  the characters obtained by composing
-the  Opdam  involution  with  complex  conjugation. This permutation has an
-interpretation as a Galois action on the characters of
-`H=hecke(W,Pol())`:  if `H` splits  by taking `v`  an `e`-th root of `Pol()`,
-`.opdam` records the permutation effected by the Galois action `v->E(e)*v`.
+`:hgal`: Contains the permutation of the characters resulting from a Galois
+action  on the characters of `H=hecke(W,Pol()^e)` where `e` is the order of
+the  center of `W`. `H` splits by taking `v` an `e`-th root of `Pol()`, and
+`.hgal`  records the permutation effected by the Galois action `v->E(e)*v`.
+`.hgal*conj`,  where  `conj`  is  the  complex  conjugaison,  is  the Opdam
+involution.
 
 ```julia-repl
-julia> charinfo(ComplexReflectionGroup(22))[:opdam]
+julia> charinfo(ComplexReflectionGroup(22))[:hgal]
 (3,5)(4,6)(11,13)(12,14)(17,18)
 ```
 
@@ -762,10 +763,10 @@ function charinfo(W)::Dict{Symbol,Any}
     for f in [:b, :B, :a, :A]
       if all(d->haskey(d,f),p) res[f]=Int.(map(sum,cartfields(p,f))) end
     end
-    if any(x->haskey(x, :opdam),p)
-      res[:opdam]=map(x->haskey(x,:opdam) ? x[:opdam] : Perm(), p)
+    if any(x->haskey(x, :hgal),p)
+      res[:hgal]=map(x->haskey(x,:hgal) ? x[:hgal] : Perm(), p)
       gt=cartesian(map(x->1:length(x[:charparams]), p))
-      res[:opdam]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:opdam]),gt))
+      res[:hgal]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:hgal]),gt))
     end
     res
   end

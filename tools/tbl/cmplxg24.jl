@@ -29,7 +29,7 @@ chevieset(:G24, :PowerMaps, [nothing, [1, 1, 7, 4, 9, 10, 1, 4, 9, 10, 7, 1], [1
 chevieset(:G24, :ClassInfo, Dict{Symbol, Any}(:classtext => chevieget(:G24, :WordsClassRepresentatives), :classnames => chevieget(:G24, :ClassNames), :classparams => chevieget(:G24, :ClassNames), :orders => [1, 2, 4, 3, 14, 14, 2, 6, 7, 7, 4, 2], :classes => [1, 21, 42, 56, 24, 24, 21, 56, 24, 24, 42, 1]))
 chevieset(:G24, :CharInfo, function ()
         local res
-        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 21], [3, 8], [3, 1], [3, 10], [3, 3], [6, 2], [6, 9], [7, 6], [7, 3], [8, 4], [8, 5]], :opdam => perm"(11,12)", :extRefl => [1, 4, 5, 2])
+        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 21], [3, 8], [3, 1], [3, 10], [3, 3], [6, 2], [6, 9], [7, 6], [7, 3], [8, 4], [8, 5]], :hgal => perm"(11,12)", :extRefl => [1, 4, 5, 2])
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
