@@ -476,7 +476,7 @@ function charinfo(t::TypeIrred)
   if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
   if isnothing(c[:a])
     uc=getchev(t,:UnipotentCharacters)
-    if uc!=false && uc!==nothing
+    if !isnothing(uc) && uc!=false
       if haskey(uc,:almostHarishChandra)
         c[:a]=uc[:a][uc[:almostHarishChandra][1][:charNumbers]]
         c[:A]=uc[:A][uc[:almostHarishChandra][1][:charNumbers]]
@@ -484,10 +484,16 @@ function charinfo(t::TypeIrred)
         c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
         c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
       end
+    else
+      para=map(x->Int(1/x),getchev(t,:EigenvaluesGeneratingReflections))
+      para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
+      s=map(p->getchev(t,:SchurElement,p,para,Any[]),c[:charparams])
+      c[:a]=valuation(s[c[:positionId]])-valuation.(s)
+      c[:A]=degree(s[c[:positionId]])-degree.(s)
     end
   end
   for f in [:a,:A,:b,:B]
-    if isnothing(c[f]) delete!(c,f) else c[f]=Int.(c[f]) end
+    if isnothing(c[f]) delete!(c,f) else c[f]=improve_type(c[f]) end
   end
   if haskey(t,:orbit)
     if !haskey(c,:charRestrictions)
