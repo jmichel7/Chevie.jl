@@ -35,7 +35,7 @@ end
 @test mytest("charinfo(coxgroup(:D,4))[:B]","13-element Vector{Int64}:\n 10\n 10\n 11\n 12\n  8\n  9\n 10\n  6\n  6\n  8\n  5\n  6\n  0")
 @test mytest("charinfo(coxgroup(:D,4))[:a]","13-element Vector{Int64}:\n  6\n  6\n  7\n 12\n  3\n  3\n  6\n  2\n  2\n  3\n  1\n  2\n  0")
 @test mytest("charinfo(coxgroup(:D,4))[:A]","13-element Vector{Int64}:\n 10\n 10\n 11\n 12\n  9\n  9\n 10\n  6\n  6\n  9\n  5\n  6\n  0")
-@test mytest("charinfo(ComplexReflectionGroup(22))[:opdam]","(3,5)(4,6)(11,13)(12,14)(17,18)")
+@test mytest("charinfo(ComplexReflectionGroup(22))[:hgal]","(3,5)(4,6)(11,13)(12,14)(17,18)")
 @test mytest("charinfo(coxgroup(:A,2))","Dict{Symbol, Any} with 9 entries:\n  :a           => [3, 1, 0]\n  :b           => [3, 1, 0]\n  :positionId  => 3\n  :charnames   => [\"111\", \"21\", \"3\"]\n  :A           => [3, 2, 0]\n  :B           => [3, 2, 0]\n  :extRefl     => [3, 2, 1]\n  :charparams  => [[[1, 1, 1]], [[2, 1]], [[3]]]\n  :positionDet => 1")
 @test mytest("charinfo(coxgroup(:G,2))[:spaltenstein]","6-element Vector{String}:\n \"1\"\n \"\\\\varepsilon\"\n \"\\\\varepsilon_l\"\n \"\\\\varepsilon_c\"\n \"\\\\theta'\"\n \"\\\\theta''\"")
 @test mytest("W=coxgroup(:D,4)","D₄")

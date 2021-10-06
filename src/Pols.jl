@@ -71,7 +71,7 @@ julia> inv(RatFrac.(m))
 see also the individual documentation of divrem, gcd.
 """
 module Pols
-using ..Util: Util, format_coefficient, printTeX, exactdiv
+using ..Util: Util, exactdiv, format_coefficient, bracket_if_needed, stringexp
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
        bar, derivative, srgcd, RatFrac, @Pol
 
@@ -211,10 +211,10 @@ function Base.show(io::IO,p::Pol)
       c=repr(c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg)
         c=format_coefficient(c)*mon
-        if !isone(deg) c*="^{$deg}" end
+        if !isone(deg) c*=stringexp(io,deg) end
       end
       if c[1]!='-' && deg!=degree(p) c="+"*c end
-      printTeX(io,c)
+      print(io,c)
     end
   end
 end
@@ -545,9 +545,9 @@ function Base.show(io::IO,a::RatFrac)
   if  get(io, :limit,true) && isone(a.den)
     print(io,n)
   else
-    print(io,Util.bracket_if_needed(n))
+    print(io,bracket_if_needed(n))
     n=sprint(show,a.den; context=io)
-    print(io,"/",Util.bracket_if_needed(n))
+    print(io,"/",bracket_if_needed(n))
   end
 end
 

@@ -11,7 +11,7 @@ export
   @forward,
   getp, @GapObj, # helpers for GapObjs
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
-  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, # formatting
+  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, # formatting
   exactdiv, factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -133,11 +133,14 @@ function unicodeTeX(s::String)
   s
 end
 
+const ok="([^-+*/]|√-|{-)*"
+const par="(\\([^()]*\\))"
+const nobf=Regex("^[-+]?$ok$par*$ok/+[0-9]*\$")
+const nob=Regex("^[-+]?$ok$par*$ok\$")
+
 function bracket_if_needed(c::String;allow_frac=false)
-  ok="([^-+*/]|√-|{-)*"
-  par="(\\([^()]*\\))"
-  if match(Regex("^[-+]?$ok$par*$ok\$"),c)!==nothing c
-  elseif allow_frac && match(Regex("^[-+]?$ok$par*$ok/+[0-9]*\$"),c)!==nothing c
+  e= allow_frac ? nobf : nob
+  if match(e,c)!==nothing c
   else "("*c*")" 
   end
 end
@@ -174,6 +177,38 @@ function printTeX(io::IO,s...)
   res=""
   for x in s res*=x isa String ? x : TeX(io,x) end
   print(io,fromTeX(io,res))
+end
+
+const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
+
+function stringexp(io::IO,n::Integer)
+  if isone(n) ""
+  elseif get(io,:TeX,false) 
+    n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if isone(n) return res end
+    if n<0 push!(res,'⁻'); n=-n end
+    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
+    String(res)
+  else "^"*string(n)
+  end
+end
+
+const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
+
+function stringind(io::IO,n::Integer)
+  if isone(n) ""
+  elseif get(io,:TeX,false) 
+    n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if isone(n) return res end
+    if n<0 push!(res,'₋'); n=-n end
+    for i in reverse(digits(n)) push!(res,subvec[i+1]) end
+    String(res)
+  else "_"*string(n)
+  end
 end
 
 """

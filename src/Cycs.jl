@@ -126,7 +126,7 @@ module Cycs
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
 using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, 
-              phi, bracket_if_needed, xprint
+              phi, bracket_if_needed, xprint, stringexp, stringind
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -537,8 +537,8 @@ end
     else 
       t=format_coefficient(string(v))
       if repl || TeX
-        r="\\zeta"* (p.n==1 ? "" : p.n<10 ? "_$(p.n)" : "_{$(p.n)}")
-        if deg>=1 r*= deg==1 ? "" : deg<10 ? "^$deg" : "^{$deg}" end
+        r=(TeX ? "\\zeta" : "ζ") * stringind(io,p.n)
+        r*= stringexp(io,deg)
       else
         r=(deg==1 ? "E($(p.n))" : "E($(p.n),$deg)")
       end
@@ -550,9 +550,9 @@ end
   if res[1]=='+' res=res[2:end] end
   if !isone(den) 
     res=bracket_if_needed(res)
-    res*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) 
+    res*=repl||TeX ? "/$den" : "//$den"
   end
-  fromTeX(io,res)
+  res
 end
 
 function Base.show(io::IO, p::Cyc{T})where T
@@ -561,6 +561,7 @@ function Base.show(io::IO, p::Cyc{T})where T
   TeX=get(io,:TeX,false)
   if iszero(p)
     if repl||TeX print(io,"0")
+    elseif haskey(io,:typeinfo) print(io,"0")
     else print(io,"zero(Cyc{",T,"})")
     end
     return
