@@ -744,8 +744,7 @@ function Weyl.relative_group(s::Series)
   end
   function v(h) # normalize a space (what "VectorSpace" could do)
     if size(h,1)==0 return  h end
-    h=echelon(h)[1]
-    h[1:count(!iszero,eachrow(h)),:]
+    echelon(h)[1]
   end
   rrefs=collect(values(groupby(x->v(hplane(x)),refs)))#hplanes hashable!sortable
   rrefs=filter(x->!(any(y->inclusion(W,y) in inclusion(L),x)),rrefs)

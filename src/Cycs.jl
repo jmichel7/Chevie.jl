@@ -547,9 +547,7 @@ end
     if t[1]!='-' t="+"*t end
     t
   end)
-  if res=="" res="0"
-  elseif res[1]=='+' res=res[2:end] 
-  end
+  if res[1]=='+' res=res[2:end] end
   if !isone(den) 
     res=bracket_if_needed(res)
     res*=fromTeX(io,TeX ? "/{$den}" : repl ? "/$den" : "//$den" ) 
@@ -561,6 +559,12 @@ function Base.show(io::IO, p::Cyc{T})where T
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
+  if iszero(p)
+    if repl||TeX print(io,"0")
+    else print(io,"zero(Cyc{",T,"})")
+    end
+    return
+  end
   rqq=[normal_show(io,p)]
   if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)

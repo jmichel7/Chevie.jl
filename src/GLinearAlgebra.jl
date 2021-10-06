@@ -61,13 +61,22 @@ end
 """
   `echelon(m)`
 
-  returns: (echelon form of `m`, indices of linearly independent rows of `m`)
-  works in any field.
-  The  echelon form transforms the rows of m into a particular basis of the
-  rowspace  of `m`: the first non-zero element  of each line is 1, and such
-  an element is also the only non-zero in its column.
+  returns: (echelon form of `m`, indices of linearly independent rows of `m`).
+  Works over any field.
+
+  The  echelon form returns a particular basis of the row space of `m`: the
+  first non-zero element of each line is 1, and such an element is also the
+  only non-zero in its column.
+
+  The second element of `echelon` is the indices of a subset of the rows
+  which forms a basis of the row space.
 """
-echelon(m::Matrix)=echelon!(copy(m))
+function echelon(m::Matrix)
+  m=copy(m)
+  m,ind=echelon!(m)
+  m=m[1:count(!iszero,eachrow(m)),:]
+  m,ind
+end
 
 """
  computes rank of m
