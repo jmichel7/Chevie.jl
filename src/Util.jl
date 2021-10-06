@@ -135,7 +135,7 @@ end
 
 const ok="([^-+*/]|√-|{-)*"
 const par="(\\([^()]*\\))"
-const nobf=Regex("^[-+]?$ok$par*$ok/+[0-9]*\$")
+const nobf=Regex("^[-+]?$ok$par*$ok(/+)?[0-9]*\$")
 const nob=Regex("^[-+]?$ok$par*$ok\$")
 
 function bracket_if_needed(c::String;allow_frac=false)
