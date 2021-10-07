@@ -131,7 +131,7 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 module Mvps
 # benchmark: (x+y+z)^3     2.3μs 48 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: Util, exactdiv, fromTeX, ordinal, printTeX, bracket_if_needed
+using ..Util: Util, exactdiv, ordinal, printTeX, bracket_if_needed, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
               valuation, degree
 
@@ -189,13 +189,10 @@ function Base.show(io::IO,m::Monomial)
   start=true
   for (v,d) in m.d
     if !(start || replorTeX) print(io,"*") end
-    print(io,replorTeX ? fromTeX(io,string(v)) : string(v))
+    if replorTeX printTeX(io,string(v)) else print(io,string(v)) end
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
-      if replorTeX 
-        if d isa Integer printTeX(io,"^{$d}") 
-        else printTeX(io,"^{\\frac{$(numerator(d))}{$(denominator(d))}}") 
-        end
+      if replorTeX print(io,stringexp(io,d))
       elseif d isa Integer print(io,"^$d")
       else print(io,"^($d)")
       end

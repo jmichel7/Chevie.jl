@@ -234,7 +234,7 @@ chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
                     t = [[[]], [[1], [2]], [[1, 2]]]
                     return t[s + 1]
                 else
-                    t = [[], [1], [1, 2]]
+                    t = [[[]], [[1]], [[1, 2]]]
                     return t[s + 1]
                 end
             else

@@ -666,7 +666,7 @@ IntervalStyle(M::BraidMonoid)=Interval()
 
 The ordinary monoid of the Artin group associated to the Coxeter group `W`
 """
-BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"Δ",one(W),gens(W),W,
+BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),gens(W),W,
                                          Dict{Symbol,Any}())
 
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
@@ -968,13 +968,13 @@ function Base.show(io::IO,b::GarsideElm)
     l=join(map(e->word(io,M,e),b.elm),".")
     if b.pd==0 return l end
     if !isempty(l) l="."*l end
-    return M.stringδ*(b.pd!=1 ? "^{$(b.pd)}" : "")*l
+    return fromTeX(io,M.stringδ)*stringexp(io,b.pd)*l
   end
   if greedy
     printTeX(io,p(b))
   else
-    den,num=map(x->fromTeX(io,p(x)),fraction(b))
-    if den!="" printTeX(io,"($den)^{-1}")
+    den,num=map(x->p(x),fraction(b))
+    if den!="" print(io,"(",den,")",stringexp(io,-1))
       if num!="" print(io,"$num") end
     elseif num!="" print(io, num)
     else print(io,".")

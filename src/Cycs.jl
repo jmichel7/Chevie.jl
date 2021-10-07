@@ -125,8 +125,8 @@ module Cycs
 # to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: fromTeX, printTeX, format_coefficient, factor, prime_residues, 
-              phi, bracket_if_needed, xprint, stringexp, stringind
+using ..Util: format_coefficient, bracket_if_needed, xprint, stringexp, 
+              stringind,  factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -559,28 +559,29 @@ function Base.show(io::IO, p::Cyc{T})where T
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if iszero(p)
-    if repl||TeX print(io,"0")
-    elseif haskey(io,:typeinfo) print(io,"0")
-    else print(io,"zero(Cyc{",T,"})")
+  if conductor(p)==1
+    n=num(p)
+    if T<:Integer || (T<:Rational{<:Integer} && denominator(n)==1)
+      if repl||TeX||haskey(io,:typeinfo) print(io,numerator(n))
+      else print(io,"Cyc{",T,"}(",numerator(n),")")
+      end
+      return
     end
-    return
   end
   rqq=[normal_show(io,p)]
   if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)
-    if !isnothing(q)
-      push!(rqq,repr(q;context=io))
-    end
-    for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
-      q=Quadratic(p/test)
-      if !isnothing(q)
+    if isnothing(q)
+      for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
+        q=Quadratic(p/test)
+        if isnothing(q) continue end
         rq=repr(q;context=io)
         rq=format_coefficient(rq;allow_frac=true)
         t=format_coefficient(normal_show(io,test))
         if !isempty(rq) && rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
         push!(rqq,rq)
       end
+    else  push!(rqq,repr(q;context=io))
     end
   end
   print(io,rqq[argmin(length.(rqq))])
@@ -848,9 +849,9 @@ function Base.show(io::IO, r::Root1)
   if repl || TeX
     if c==1 print(io,"1")
     elseif c==2 print(io,"-1")
-    else r="\\zeta"* (c==1 ? "" : c<10 ? "_$(c)" : "_{$(c)}")
-      if d>=1 r*=(d==1 ? "" : d<10 ? "^$d" : "^{$d}") end
-      printTeX(io,r)
+    else r=(TeX ? "\\zeta" : "ζ")*stringind(io,c)
+      if d>=1 r*=stringexp(io,d) end
+      print(io,r)
     end
   else
     print(io,"Root1($c,$d)")

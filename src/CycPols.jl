@@ -73,8 +73,8 @@ using ..Cycs: Root1, E, conductor, Cyc
 using ..Pols: Pol, Pols, degree, valuation
 using ..Combinat: collectby
 using ..Mvps: Mvps, Mvp
-using ..Util: printTeX, prime_residues, primitiveroot, phi,
-              format_coefficient, divisors, factor, xprintln
+using ..Util: prime_residues, primitiveroot, phi, divisors, factor, 
+              stringexp, stringprime, format_coefficient, xprintln, stringind
 using ..PermRoot: improve_type
 import Primes: Primes, primes
 
@@ -294,13 +294,15 @@ function Base.show(io::IO,a::CycPol)
     s=format_coefficient(s)
     print(io,s) 
     if a.valuation==1 print(io,"q")
-    elseif a.valuation!=0 printTeX(io,"q^{$(a.valuation)}") end
+    elseif a.valuation!=0 print(io,"q",stringexp(io,a.valuation)) end
     for (e,pow) in decompose(a.v.d)
   #   println(e)
-      if e.no>0  printTeX(io,"\\Phi"*"'"^(e.no-1)*"_{$(e.conductor)}")
+      if e.no>0  print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
+        print(io,stringprime(io,e.no-1))
+        print(io,stringind(io,e.conductor))
       else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
       end
-      if pow!=1 printTeX(io,"^{$pow}") end
+      if pow!=1 print(io,stringexp(io,pow)) end
     end
   end
   if !isone(den) print(io,"/",den) end

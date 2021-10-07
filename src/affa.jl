@@ -136,7 +136,7 @@ function Base.show(io::IO,a::PPerm)
     if get(io,:sgn,false)
       d>0 ? "₊"^d : "₋"^(-d)
     else
-      d==0 ? "" : fromTeX(io,"_{$d}")
+      d==0 ? "" : stringind(io,d)
     end
   end
   if !get(io,:limit,false) && !get(io,:TeX,false) 

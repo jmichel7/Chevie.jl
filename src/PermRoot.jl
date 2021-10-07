@@ -1127,7 +1127,7 @@ function showtorus(io::IO,W)
   t=rank(W)-semisimplerank(W)
   e=isempty(refltype(W))
   if t>0 
-    if replorTeX print(io,fromTeX(io,"\\Phi_1"*(t>1 ? "^{$t}" : "")))
+    if replorTeX print(io,CycPol(1,0,0//1=>t))
     else print(io,(e ? "" : "*"),"PRG($t)")
     end
   elseif e print(io,replorTeX ? "." : "W()")

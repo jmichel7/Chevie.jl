@@ -92,29 +92,81 @@ const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
 const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."
 const sub=Dict(zip(subchars,unicodesub))
 const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
-  "gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "nu"=>"ν", "otimes"=>"⊗ ",
-  "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ",
+  "Delta"=>"Δ","gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "nu"=>"ν",
+  "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ",
+  "psi"=>"ψ", "rho"=>"ρ",
   "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
   "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
-const unicodeFrac=Dict(("1","2")=>"½",("1","3")=>"⅓",("2","3")=>"⅔",
-  ("1","4")=>"¼",("3","4")=>"¾",("1","5")=>"⅕",("2","5")=>"⅖",("3","5")=>"⅗",
-  ("4","5")=>"⅘",("1","6")=>"⅙",("5","6")=>"⅚",("1","8")=>"⅛",("3","8")=>"⅜",
-  ("5","8")=>"⅝",("7","8")=>"⅞",("1","9")=>"⅑",("1","10")=>"⅒",("1","7")=>"⅐")
+
 const unicodeQuotes=["′","″","‴","⁗"]
+
+function stringprime(io::IO,n)
+  if iszero(n) return "" end
+  if get(io,:TeX,false) return "'"^n end
+  n<5 ? unicodeQuotes[n] : map(x->sup[x],"($n)")
+end
+  
+const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
+  (1,4)=>'¼',(3,4)=>'¾',(1,5)=>'⅕',(2,5)=>'⅖',(3,5)=>'⅗',
+  (4,5)=>'⅘',(1,6)=>'⅙',(5,6)=>'⅚',(1,8)=>'⅛',(3,8)=>'⅜',
+  (5,8)=>'⅝',(7,8)=>'⅞',(1,9)=>'⅑',(1,10)=>'⅒',(1,7)=>'⅐')
+
+function stringexp(io::IO,r::Rational{<:Integer})
+  d=denominator(r); n=numerator(r)
+  if isone(d) return stringexp(io,n) end
+  if get(io,:TeX,false) return "^{\\frac{$n}{$d}}" end
+  res=Char[]
+  if n<0 push!(res,'⁻'); n=-n end
+  if haskey(unicodeFrac,(n,d)) push!(res,unicodeFrac[(n,d)])
+  else
+   if isone(n) push!(res,'\U215F')
+   else append!(res,map(x->sup[x],collect(string(n))))
+     push!(res,'⁄')
+   end
+   append!(res,map(x->sub[x],collect(string(d))))
+  end
+  String(res)
+end
+
+const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
+
+function stringexp(io::IO,n::Integer)
+  if isone(n) ""
+  elseif get(io,:TeX,false) 
+    n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if n<0 push!(res,'⁻'); n=-n end
+    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
+    String(res)
+  else "^"*string(n)
+  end
+end
+
+const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
+
+function stringind(io::IO,n::Integer)
+  if get(io,:TeX,false) 
+    n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if n<0 push!(res,'₋'); n=-n end
+    for i in reverse(digits(n)) push!(res,subvec[i+1]) end
+    String(res)
+  else "_"*string(n)
+  end
+end
 
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)
+  if all(x->x in 'a':'z' || x in 'A':'Z' || x in '0':'9',s) return s end
   s=replace(s,r"\\tilde ([A-Z])"=>s"\1\U303")
   s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
   s=replace(s,r"\\hfill\\break"=>"\n")
   s=replace(s,r"\\(h|m)box{([^}]*)}"=>s"\2")
   s=replace(s,r"\\!"=>"")
-  s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>function(t)
-    n,d=split(t[9:end-2],"}{")
-    if n[1]=='-' res=sup[n[1]];n=n[2:end] else res="" end
-    res*get(unicodeFrac,(n,d),(n=="1" ? "\U215F" : map(x->sup[x],n)*"⁄")*
-                 map(x->sub[x],d))
-  end)
+  s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>
+    t->stringexp(rio(),Rational(parse.(Int,split(t[9:end-2],"}{"))...)))
   s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\mathfrak  *S"=>"\U1D516 ")
   s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
@@ -125,8 +177,7 @@ function unicodeTeX(s::String)
   s=replace(s,Regex("_\\{[$subchars]*\\}")=>t->map(x->sub[x],t[3:end-1]))
   s=replace(s,Regex("\\^[$supchars]")=>t->sup[t[2]])
   s=replace(s,Regex("\\^\\{[$supchars]*\\}")=>t->map(x->sup[x],t[3:end-1]))
-  q(l)=l<5 ? unicodeQuotes[l] : map(x->sup[x],"($l)")
-  s=replace(s,r"''*"=>t->q(length(t)))
+  s=replace(s,r"''*"=>t->stringprime(rio(),length(t)))
 # s=replace(s,r"\{([^}]*)\}"=>s"\1")
   s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")
   s=replace(s,r"([^a-zA-Z0-9])\{([^}{,]*)\}"=>s"\1\2")
@@ -177,38 +228,6 @@ function printTeX(io::IO,s...)
   res=""
   for x in s res*=x isa String ? x : TeX(io,x) end
   print(io,fromTeX(io,res))
-end
-
-const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
-
-function stringexp(io::IO,n::Integer)
-  if isone(n) ""
-  elseif get(io,:TeX,false) 
-    n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
-  elseif get(io,:limit,false)
-    res=Char[]
-    if isone(n) return res end
-    if n<0 push!(res,'⁻'); n=-n end
-    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
-    String(res)
-  else "^"*string(n)
-  end
-end
-
-const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
-
-function stringind(io::IO,n::Integer)
-  if isone(n) ""
-  elseif get(io,:TeX,false) 
-    n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
-  elseif get(io,:limit,false)
-    res=Char[]
-    if isone(n) return res end
-    if n<0 push!(res,'₋'); n=-n end
-    for i in reverse(digits(n)) push!(res,subvec[i+1]) end
-    String(res)
-  else "_"*string(n)
-  end
 end
 
 """
