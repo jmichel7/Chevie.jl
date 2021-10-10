@@ -69,7 +69,7 @@ function FindIntSol(l)
   function usevals(v,val)
     for i in filter(j->haskey(vals,j) && vals[j] isa Mvp,vars)
       vals[i]=value(vals[i], v=>val)
-      f=scal(vals[i])
+      f=scalar(vals[i])
       if !isnothing(f) vals[i]=[f] end
     end
     l=map(x->value(x,v=>val),l)

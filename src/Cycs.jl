@@ -571,17 +571,16 @@ function Base.show(io::IO, p::Cyc{T})where T
   rqq=[normal_show(io,p)]
   if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)
-    if isnothing(q)
-      for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
-        q=Quadratic(p/test)
-        if isnothing(q) continue end
-        rq=repr(q;context=io)
-        rq=format_coefficient(rq;allow_frac=true)
-        t=format_coefficient(normal_show(io,test))
-        if !isempty(rq) && rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
-        push!(rqq,rq)
-      end
-    else  push!(rqq,repr(q;context=io))
+    if !isnothing(q) push!(rqq,repr(q;context=io)) end
+    for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
+      if !iszero(conductor(p)%conductor(test)) continue end
+      q=Quadratic(p/test)
+      if isnothing(q) continue end
+      rq=repr(q;context=io)
+      rq=format_coefficient(rq;allow_frac=true)
+      t=format_coefficient(normal_show(io,test))
+      if !isempty(rq) && rq[1]=='-' rq="-"*t*rq[2:end] else rq=t*rq end
+      push!(rqq,rq)
     end
   end
   print(io,rqq[argmin(length.(rqq))])

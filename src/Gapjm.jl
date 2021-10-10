@@ -30,7 +30,8 @@ To update later to the latest version, do
 (v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
 ```
 
-The package currently contains as infrastructure:
+This  package  require  julia  1.6  or  later.  It  currently  contains  as
+infrastructure:
   * permutations
   * cyclotomic numbers
   * univariate Laurent and multivariate Puiseux polynomials

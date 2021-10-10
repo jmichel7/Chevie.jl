@@ -912,10 +912,7 @@ function CharTable(t::TypeIrred)
   else                     names=charinfo(t)[:charnames]
   end
   if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-  irr=toM(ct[:irreducibles])
-  if all(isinteger,irr) irr=Int.(irr)
-  else irr=Cyc{Int}.(irr)
-  end
+  irr=improve_type(toM(ct[:irreducibles]))
   CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),
             ct[:size],Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
 end
@@ -1036,7 +1033,7 @@ julia> representation(ComplexReflectionGroup(24),3)
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
-function representation(W::Union{Group,Spets},i::Int)
+function representation(W::Union{Group,Spets},i::Integer)
   dims=getchev(W,:NrConjugacyClasses)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)

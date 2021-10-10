@@ -899,7 +899,7 @@ function Simplify(res::FactSchur)
   evcyc=NamedTuple{(:pol,:monomial,:power),Tuple{CycPol{T},Mvp{T,R},R}}[]
   factor=res.factor
   for (pol,monomial) in res.vcyc
-    k=scal(monomial)
+    k=scalar(monomial)
     if k!==nothing
       factor*=pol(k)
       continue

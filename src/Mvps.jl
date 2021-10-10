@@ -104,20 +104,20 @@ Mvp{Int64}: 2y+1
 ```
 
 Note  that  an  `Mvp`  always  evaluates  to an `Mvp`, for consistency. The
-function  `scal` converts  a constant  `Mvp` to  that constant (and returns
+function  `scalar` converts a constant `Mvp`  to that constant (and returns
 `nothing` if the argument is not constant:
 
 ```julia-repl
 julia> p(x=1,y=2)
 Mvp{Int64}: 3
 
-julia> scal(p(x=1,y=2))
+julia> scalar(p(x=1,y=2))
 3
 
 julia> v=(x^(1//2))(x=2.0)
 Mvp{Float64}: 1.4142135623730951
 
-julia> scal(v)
+julia> scalar(v)
 1.4142135623730951
 ```
 
@@ -133,7 +133,7 @@ module Mvps
 using ..ModuleElts: ModuleElt, ModuleElts
 using ..Util: Util, exactdiv, ordinal, printTeX, bracket_if_needed, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
-              valuation, degree
+              valuation, degree, scalar
 
 #import Gapjm: coefficients, valuation
 import ..Cycs: root
@@ -142,7 +142,7 @@ using ..Cycs: Cyc
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
 export coefficients, coefficient
-export Mvp, Monomial, @Mvp, variables, value, scal, laurent_denominator, Mvrf
+export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, Mvrf
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   
@@ -515,7 +515,7 @@ Dict{Int64, Mvp{Int64, Int64}} with 9 entries:
 
 The  same  caveat  is  applicable  to  `coefficients` as to evaluating: the
 values  are always `Mvp`s. To get a list of scalars for the coefficients of
-a  univariate polynomial represented  as a `Mvp`,  one should use `scal` on
+a  univariate polynomial represented as a `Mvp`, one should use `scalar` on
 the values of `coefficients`.
 """
 function coefficients(p::Mvp{T,N},v::Symbol)where {T,N}
@@ -569,19 +569,19 @@ function coefficient(p::Mvp,var::Symbol,d)
 end
 
 """
-  `Pol(p::Mvp)`
+  `Pol(p::Mvp{T}) where T`
 
-  converts the one-variable `Mvp` `p` to a polynomial. It is an error if `p`
+  converts the one-variable `Mvp{T}` `p` to a `Pol{T}`. It is an error if `p`
   has more than one variable.
 
 ```julia-repl
-julia> @Mvp x; Pol(:q); Pol(x^2+x)
+julia> @Mvp x; @Pol q; Pol(x^2+x)
 Pol{Int64}: q²+q
 ```
 """
 function Pol(x::Mvp{T})where T
   l=variables(x)
-  if isempty(l) return Pol(scal(x)) end
+  if isempty(l) return Pol(scalar(x)) end
   if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
   val=Int(valuation(x))
   p=zeros(T,Int(degree(x))-val+1)
@@ -662,7 +662,7 @@ variables(pp::AbstractArray{<:Mvp})=sort(unique!([k1 for p in pp for (k,v) in p.
 variables(p::Mvp)=sort(unique!([k1 for (k,v) in p.d for (k1,v1) in k.d]))
 
 """
-`scal(p::Mvp)`
+`scalar(p::Mvp)`
 
 If `p` is a scalar, return that scalar, otherwise return `nothing`.
 
@@ -673,16 +673,16 @@ Mvp{Int64}: x+1
 julia> w=p(x=4)
 Mvp{Int64}: 5
 
-julia> scal(w)
+julia> scalar(w)
 5
 
-julia> typeof(scal(w))
+julia> typeof(scalar(w))
 Int64
 ```
-if  `p` is an array, then apply `scal` to its elements and return `nothing`
+if  `p` is an array, then apply `scalar` to its elements and return `nothing`
 if it contains any `Mvp` which is not a scalar.
 """
-function scal(p::Mvp{T})where T
+function Pols.scalar(p::Mvp{T})where T
   if iszero(p) return zero(T) end
   if monom(p)
     (m,c)=first(p.d)
@@ -690,8 +690,8 @@ function scal(p::Mvp{T})where T
   end
 end
 
-function scal(m::AbstractArray{<:Mvp})
-  p=scal.(m)
+function Pols.scalar(m::AbstractArray{<:Mvp})
+  p=scalar.(m)
   if !any(isnothing,p) return p end
 end
 
@@ -717,8 +717,8 @@ Mvp{Int64}: 222
 ```
 
 One should pay attention to the fact that the last value is not an integer,
-but  a constant `Mvp` (for consistency). See the function `scal` for how to
-convert such constants to their base ring.
+but  a constant `Mvp` (for consistency).  See the function `scalar` for how
+to convert such constants to their base ring.
 
 ```julia-repl
 julia> p(x=y)

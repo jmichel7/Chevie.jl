@@ -1,8 +1,23 @@
 """
-An   implementation  of  univariate  Laurent  polynomials,  and  univariate
-rational fractions.
+This package implements univariate  Laurent  polynomials (type `Pol`), 
+and  univariate rational fractions (type `RatFrac').
 
-A Pol contains two fields: a vector of coefficients, and the valuation.
+The  initial motivation was to have a simple way to port GAP polynomials to
+Julia. The reasons for having my own package are multiple:
+
+  - I need to have a simple and flexible interface, which I hope this provides.
+  - There was no convenient Laurent polynomials when I started.
+  - I need my polynomials to behave well when coefficients are in a ring,
+    in which case I use pseudo-division and subresultant gcd.
+
+The  parametric  type  `Pol{T}`  is  constructed  by  giving  a  vector  of
+coefficients  of type `T`, and a valuation  (an `Int`). If the valuation is
+omitted, it is taken to be `0`.
+
+There  is a current  variable name (a  `String`) used to print polynomials.
+This  name can be  changed globally, or  just changed for  printing a given
+polynomial.  But polynomials do  not record individually  with which string
+they should be printed.
 
 # Examples
 ```julia-repl
@@ -15,38 +30,76 @@ Pol{Int64}: q
 julia> Pol([1,2]) # valuation is 0 if not specified
 Pol{Int64}: 2q+1
 
-julia> 2q+1       # same result
+julia> 2q+1       # same polynomial
 Pol{Int64}: 2q+1
 
 julia> Pol()   # omitting all arguments gives Pol([1],1)
 Pol{Int64}: q
 
-julia> p=Pol([1,2],-1) # here the valuation is specified to be -1
-Pol{Int64}: 2+q⁻¹
+julia> p=Pol([1,2,1],-1) # here the valuation is specified to be -1
+Pol{Int64}: q+2+q⁻¹
 
+julia> q+2+q^-1 # same polynomial
+Pol{Int64}: q+2+q⁻¹
+```
+
+```julia-rep1
+julia> print(p) # if not in the repl, jupyter or pluto give interpretable output
+Pol([1, 2, 1],-1)
+
+# change the variable for printing just this time
+julia> print(IOContext(stdout,:limit=>true,:varname=>"x"),p)
+x+2+x⁻¹
+
+julia> print(IOContext(stdout,:TeX=>true),p) # TeXable output
+q+2+q^{-1}
+```
+
+A  polynomial can be  taken apart with  the functions `valuation`, `degree`
+and `getindex`. An index `p[i]` gives the coefficient of degree `i` of `p`.
+
+```julia-repl
 julia> valuation(p),degree(p)
-(-1, 0)
+(-1, 1)
 
+julia> p[0], p[1], p[-1], p[10]
+(2, 1, 1, 0)
+
+julia> p[valuation(p):degree(p)]
+3-element Vector{Int64}:
+ 1
+ 2
+ 1
+
+julia> p[begin:end]  # the same as the above line
+3-element Vector{Int64}:
+ 1
+ 2
+ 1
+```
+Usual arithmetic works.
+
+```julia-repl
 julia> derivative(p)
-Pol{Int64}: -q⁻²
+Pol{Int64}: 1-q⁻²
 
 julia> p=(q+1)^2
 Pol{Int64}: q²+2q+1
 
-julia> valuation(p),degree(p)
-(0, 2)
+julia> p=(q+1)^2
+Pol{Int64}: q²+2q+1
+
+julia> p/2
+Pol{Float64}: 0.5q²+1.0q+0.5
+
+julia> p//2
+Pol{Rational{Int64}}: (1//2)q²+(1//1)q+1//2
 
 julia> p(1//2) # value of p at 1//2
 9//4
 
-julia> p[0], p[1], p[-1] # indexing gives the coefficients
-(1, 2, 0)
-
-julia> p[-1:1]
-3-element Vector{Int64}:
- 0
- 1
- 2
+julia> p(0.5)
+2.25
 
 julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
 (0.5q²-0.25q+0.125, 0.875)
@@ -56,6 +109,16 @@ julia> divrem(q^3+1,2q+1//1) # case of field elements
 
 julia> Pols.pseudodiv(q^3+1,2q+1) # pseudo-division keeps the ring
 (4q²-2q+1, 7)
+
+julia> (4q^2-2q+1)*(2q+1)+7 # but we get a multiple of the polynomial
+Pol{Int64}: 8q³+8
+```
+
+Rational fractions allow to invert polynomials.
+
+```julia-repl
+julia> 1/(q+1)
+RatFrac{Int64}: 1/(q+1)
 
 julia> m=[q+1 q+2;q-2 q-3]
 2×2 Matrix{Pol{Int64}}:
@@ -73,57 +136,85 @@ see also the individual documentation of divrem, gcd.
 module Pols
 using ..Util: Util, exactdiv, format_coefficient, bracket_if_needed, stringexp
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
-       bar, derivative, srgcd, RatFrac, @Pol
+       bar, derivative, srgcd, RatFrac, @Pol, scalar
 
 const varname=Ref(:x)
 
 struct Pol{T}
   c::Vector{T}
   v::Int
-  # beware that c is not necessarily copied
-  function Pol(c::AbstractVector{T},v::Integer=0;check=true)where T
-    if check # normalize c so there are no leading or trailing zeroes
-      b=findfirst(!iszero,c)
-      if b===nothing return new{T}(empty(c),0) end
-      e=findlast(!iszero,c)
-      if b!=1 || e!=length(c) return new{T}(view(c,b:e),v+b-1) end
-    end
-    new{T}(c,v)
-  end
+  # Unexported inner constructor that bypasses all checks
+  global Pol_(c::AbstractVector{T},v::Integer) where T=new{T}(c,v)
 end
 
-Pol(a::Number)=convert(Pol,a)
-Pol()=Pol([1],1;check=false)
+"""
+  `Pol(c::AbstractVector,v::Integer=0;check=true,copy=true)`
 
+  Make a polynomial of valuation `v` with coefficients `c`.
+
+  Unless  `check` is `false`  normalize the result  by making sure that `c`
+  has  no leading or  trailing zeroes (do  not set `check=false` unless you
+  are sure this is the case).
+
+  Unless  `copy=false` the  contents of  `c` are  copied (you  can gain one
+  allocation by setting `copy=false` if you know the contents can be shared)
+"""
+function Pol(c::AbstractVector{T},v::Integer=0;check=true,copy=true)where T
+  if check # normalize c so there are no leading or trailing zeroes
+    b=findfirst(!iszero,c)
+    if b===nothing return Pol_(T[],0) end
+    e=findlast(!iszero,c)
+    if b!=1 || e!=length(c) || copy return Pol_(view(c,b:e),v+b-1) end
+  end
+  Pol_(copy ? c[:] : c,v)
+end
+
+Pol()=Pol_([1],1)
+Pol(a::T) where T<:Number=iszero(a) ? Pol_(T[],0) : Pol_([a],0)
+
+"""
+ `Pol(t::Symbol)`
+
+ Sets the name of the variable for printing `Pol`s to `t`, and returns
+ the polynomial of degree 1 equal to that variable.
+"""
 function Pol(t::Symbol)
   varname[]=t
   Pol()
 end
 
-"@Pol q is equivalent to q=Pol(:q)"
+"""
+ `@Pol q`
+ is equivalent to `q=Pol(:q)` excepted it creates `q`in the gloval scope of
+ the current module, since it uses `eval`.
+"""
 macro Pol(t)
   if !(t isa Symbol) error("usage: @Pol <variable name>") end
   Base.eval(Main,:($t=Pol($(Core.QuoteNode(t)))))
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
+Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
 
 degree(a::Number)=0 # convenient
 degree(p::Pol)=length(p.c)-1+p.v
 valuation(p::Pol)=p.v
 Base.lastindex(p::Pol)=degree(p)
+Base.firstindex(p::Pol)=valuation(p)
 Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ?
     p.c[i-p.v+1] : zero(T)
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
 
-Base.copy(p::Pol)=Pol(copy(p.c),p.v;check=false)
-Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? zero(Pol{T}) :
-        Pol([T(a)];check=false)
-Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
+#Base.copy(p::Pol{T}) where T=Pol{T}(p.c,p.v)
+Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? Pol_(T[],0) :
+                                                           Pol_([T(a)],0)
+
+#Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
 (::Type{Pol{T}})(a) where T=convert(Pol{T},a)
-Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}= T==T1 ? p :
-     Pol(convert(Vector{T},p.c),p.v;check=false)
+
+# like convert for vectors does not always make a copy
+Base.convert(::Type{Pol{T}},p::Pol{T1}) where {T,T1}=Pol_(Vector{T}(p.c),p.v)
 
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{Pol{T2}})where {T1,T2}
   Pol{promote_type(T1,T2)}
@@ -133,14 +224,18 @@ function Base.promote_rule(a::Type{Pol{T1}},b::Type{T2})where {T1,T2<:Number}
   Pol{promote_type(T1,T2)}
 end
 
-Base.isinteger(p::Pol)=iszero(p) || (iszero(p.v) && isone(length(p.c)) &&
-                                     isinteger(p.c[1]))
-function Base.convert(::Type{T},p::Pol) where T<:Number
-  if iszero(p) return T(0) end
-  if !iszero(degree(p)) || !iszero(valuation(p))
-    throw(InexactError(:convert,T,p))
+Base.isinteger(p::Pol)=isinteger(scalar(p))
+
+function scalar(p::Pol{T})where T
+  if iszero(p) T(0)
+  elseif iszero(p.v) && isone(length(p.c)) p.c[1]
   end
-  convert(T,p.c[1])
+end
+
+function Base.convert(::Type{T},p::Pol) where T<:Number
+  res=scalar(p)
+  if res===nothing throw(InexactError(:convert,T,p)) end
+  convert(T,res)
 end
 
 (::Type{T})(p::Pol) where T<:Number=convert(T,p)
@@ -152,17 +247,17 @@ Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 (p::Pol{T})(x) where T=iszero(p) ? zero(T) : evalpoly(x,p.c)*x^p.v
 
 # efficient p↦ qˢ p
-shift(p::Pol,s)=Pol(p.c,p.v+s;check=false)
+shift(p::Pol{T},s) where T=Pol_(p.c,p.v+s)
 
 Base.denominator(p::Pol)=iszero(p) ? 1 : lcm(denominator.(p.c))
 
 function positive_part(p::Pol)
-  if p.v>=0 return p end
+  if p.v>=0 return Pol(p.c,p.v;check=false) end
   Pol(view(p.c,1-p.v:length(p.c)),0)
 end
 
 function negative_part(p::Pol)
-  if degree(p)<=0 return p end
+  if degree(p)<=0 return Pol(p.c,p.v;check=false) end
   Pol(view(p.c,1:1-p.v),p.v)
 end
 
@@ -170,19 +265,19 @@ end
 bar(p::Pol)=Pol(reverse(p.c),-degree(p);check=false)
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
-Base.:(==)(a::Pol,b)= a==Pol(b)
-Base.:(==)(b,a::Pol)= a==Pol(b)
+Base.:(==)(a::Pol,b)= b!==nothing && scalar(a)==b
+Base.:(==)(b,a::Pol)= a==b
 
-Base.one(a::Pol{T}) where T=Pol([iszero(a) ? one(T) : one(a.c[1])];check=false)
-Base.one(::Type{Pol{T}}) where T=Pol([one(T)];check=false)
+Base.one(a::Pol{T}) where T=Pol_([iszero(a) ? one(T) : one(a.c[1])],0)
+Base.one(::Type{Pol{T}}) where T=Pol_([one(T)],0)
 Base.one(::Type{Pol})=one(Pol{Int})
-Base.isone(a::Pol)=iszero(a.v) && length(a.c)==1 && isone(a.c[1])
-Base.zero(::Type{Pol{T}}) where T=Pol(T[];check=false)
+Base.isone(a::Pol)=scalar(a)==1
+Base.zero(::Type{Pol{T}}) where T=Pol_(T[],0)
 Base.zero(::Type{Pol})=zero(Pol{Int})
-Base.zero(a::Pol)=Pol(empty(a.c);check=false)
+Base.zero(a::Pol{T}) where T=Pol_(T[],0)
 Base.iszero(a::Pol)=isempty(a.c)
 # next 3 stuff to make inv using LU work (abs is stupid)
-Base.conj(p::Pol)=Pol(conj.(p.c),p.v;check=false)
+Base.conj(p::Pol{T}) where T=Pol_(conj.(p.c),p.v)
 Base.abs(p::Pol)=p
 Base.adjoint(a::Pol)=conj(a)
 
@@ -200,18 +295,19 @@ end
 function Base.show(io::IO,p::Pol)
   if !get(io,:limit,false) && !get(io,:TeX,false)
     if length(p.c)==1 && isone(p.c[1]) && p.v==1 print(io,"Pol()")
-    else print(io,"Pol(",p.c,",",p.v,")")
+    else print(io,"Pol(",p.c)
+      if !iszero(p.v) print(io,",",p.v) end
+      print(io,")")
     end
   elseif iszero(p) print(io,"0")
   else
-    mon=string(get(io,:varname,varname[]))
+    var=string(get(io,:varname,varname[]))
     for deg in degree(p):-1:valuation(p)
       c=p[deg]
       if iszero(c) continue end
       c=repr(c; context=IOContext(io,:typeinfo=>typeof(c)))
       if !iszero(deg)
-        c=format_coefficient(c)*mon
-        if !isone(deg) c*=stringexp(io,deg) end
+        c=format_coefficient(c)*var*stringexp(io,deg)
       end
       if c[1]!='-' && deg!=degree(p) c="+"*c end
       print(io,c)
@@ -219,24 +315,26 @@ function Base.show(io::IO,p::Pol)
   end
 end
 
-function Base.:*(a::Pol,b::Pol)
-  if iszero(a) || iszero(b) return zero(a) end
-  z=zero(a.c[1]+b.c[1])
-  res=fill(z,length(a.c)+length(b.c)-1)
+function Base.:*(a::Pol{T1},b::Pol{T2})where {T1,T2}
+  T=promote_type(T1,T2)
+  if iszero(a) || iszero(b) return zero(Pol{T}) end
+  res=zeros(T,length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
-  Pol(res,a.v+b.v;check=false)
+  Pol_(res,a.v+b.v)
 end
 
-Base.:*(a::Pol, b::Number)=Pol(a.c.*b,a.v)
-Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v)
+Base.:*(a::Pol, b::Number)=Pol(a.c.*b,a.v;copy=false)
+Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v;copy=false)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
-Base.:^(a::Pol, n::Real)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
-         n>=0 ? Base.power_by_squaring(a,Int(n)) :
-                Base.power_by_squaring(inv(a),Int(-n))
+Base.:^(a::Pol, n::Real)=a^Int(n)
+
+Base.:^(a::Pol, n::Int)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
+         n>=0 ? Base.power_by_squaring(a,n) :
+                Base.power_by_squaring(inv(a),-n)
 
 function Base.:+(a::Pol,b::Pol)
   d=b.v-a.v
@@ -246,30 +344,27 @@ function Base.:+(a::Pol,b::Pol)
   res=fill(z,max(length(a.c),d+length(b.c)))
 @inbounds view(res,eachindex(a.c)).=a.c
 @inbounds view(res,d.+eachindex(b.c)).+=b.c
-  Pol(res,a.v)
+  Pol(res,a.v;copy=false)
 end
 
 Base.:+(a::Pol, b::Number)=a+Pol(b)
 Base.:+(b::Number, a::Pol)=Pol(b)+a
-Base.:-(a::Pol)=Pol(-a.c,a.v;check=false)
-Base.:-(a::Pol, b::Pol)=a+(-b)
-Base.:-(a::Pol, b::Number)=a-Pol(b)
+Base.:-(a::Pol{T}) where T=Pol_(-a.c,a.v)
+Base.:-(a::Pol, b)=a+(-b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
-Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false)
-Util.exactdiv(a::Pol,b::Number)=Pol(exactdiv.(a.c,b),a.v;check=false)
-Base.:/(p::Pol,q::Number)=Pol(p.c./q,p.v;check=false)
-Base.://(p::Pol,q::Number)=Pol(p.c.//q,p.v;check=false)
+Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false,copy=false)
+Util.exactdiv(a::Pol,b::Number)=Pol(exactdiv.(a.c,b),a.v;check=false,copy=false)
+Base.:/(p::Pol,q::Number)=Pol(p.c./q,p.v;check=false,copy=false)
+Base.://(p::Pol,q::Number)=Pol(p.c.//q,p.v;check=false,copy=false)
 
-derivative(a::Pol)=Pol([(i+a.v-1)*v for (i,v) in enumerate(a.c)],a.v-1)
-
-bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
+derivative(a::Pol)=Pol([(i+a.v-1)*v for (i,v) in enumerate(a.c)],a.v-1,copy=false)
 
 """
 `divrem(a::Pol, b::Pol)`
 
-computes  `(q,r)` such  that `a=q*b+r`  and `degree(r)<degree(b)`. When the
-leading  coefficient  of  b  is  ±1  does  not  use  inverse.
-For true polynomials (errors if the valuation of `a` or of `b` is negative).
+`a` and `b` should be true polynomials (nonnegative valuation).
+Computes  `(q,r)` such  that `a=q*b+r`  and `degree(r)<degree(b)`.
+Type stable if the coefficients of `b` are in a field.
 """
 function Base.divrem(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
@@ -302,6 +397,7 @@ function Util.exactdiv(a::Pol,b::Pol)
   q=fill(z,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     c=exactdiv(r[i],b.c[end])
+    if isnothing(c) error(b.c[end]," does not divide exactly ",r[i]) end
     view(r,i-length(b.c)+1:i) .-= c .* b.c
     q[i-length(b.c)+1]=c
   end
@@ -373,9 +469,9 @@ function srgcd(a::Pol,b::Pol)
 end
 
 Base.gcd(p::Pol{<:Integer},q::Pol{<:Integer})=srgcd(p,q)
-Base.gcd(v::Array{<:Pol})=reduce(gcd,v)
+Base.gcd(v::AbstractArray{<:Pol})=reduce(gcd,v)
 Base.lcm(p::Pol,q::Pol)=exactdiv(p*q,gcd(p,q))
-Base.lcm(m::Array{<:Pol})=reduce(lcm,m)
+Base.lcm(m::AbstractArray{<:Pol})=reduce(lcm,m)
 
 Base.div(a::Pol, b::Pol)=divrem(a,b)[1]
 Base.:%(a::Pol, b::Pol)=divrem(a,b)[2]
@@ -407,8 +503,11 @@ function Base.gcd(p::Pol,q::Pol)
 end
 
 """
-  `gcdx(a,b)` works for polynomials over a field.
-  returns `d,u,v` such that `d=ua+vb` and `d=gcd(a,b)`.
+  `gcdx(a::Pol,b::Pol)` 
+
+for  polynomials  over  a  field  returns `d,u,v`  such  that `d=ua+vb` and
+`d=gcd(a,b)`.
+
 ```julia-repl
 julia> gcdx(q^3-1//1,q^2-1//1)
 ((1//1)q-1//1, 1//1, (-1//1)q)
@@ -430,7 +529,13 @@ function Base.gcdx(a::Pol, b::Pol)
   (x, s0, t0)./x[end]
 end
 
-#powermod for Pols over a field
+"""
+`powermod(p::Pol, x::Integer, q::Pol)` computes ``p^x \\pmod m``.
+```julia-repl
+julia> powermod(q-1,3,q^2+q+1)
+Pol{Int64}: 6q+3
+```
+"""
 function Base.powermod(p::Pol, x::Integer, q::Pol)
   x==0 && return one(q)
   b=p%q
@@ -449,21 +554,46 @@ function Base.powermod(p::Pol, x::Integer, q::Pol)
 end
 
 # random polynomial of degree d
-Base.rand(::Type{Pol{T}},d::Integer) where T=Pol(rand(T,d+1))
+randpol(T,d::Integer)=Pol(rand(T,d+1))
 
-# Interpolation: find Pol of smallest degree taking values y at points x
-function Pol(x::AbstractVector,y::AbstractVector)
-  t=collect(y).*1//1 # make sure coeffs are in a field
-  a=map(eachindex(x))do i
+"""
+`Pol(x::AbstractVector,y::AbstractVector)`
+
+Interpolation:  find a `Pol` (of  nonnegative valuation) of smallest degree
+taking  values `y` at points  `x`. The values `y`  should be in a field for
+the function to be type stable.
+
+```julia-repl
+julia> p=Pol([1,1,1])
+Pol{Int64}: q²+q+1
+
+julia> vals=p.(1:5)
+5-element Vector{Int64}:
+  3
+  7
+ 13
+ 21
+ 31
+
+julia> Pol(1:5,vals*1//1)
+Pol{Rational{Int64}}: (1//1)q²+(1//1)q+1//1
+
+julia> Pol(1:5,vals*1.0)
+Pol{Float64}: 1.0q²+1.0q+1.0
+```
+"""
+function Pol(pts::AbstractVector,vals::AbstractVector)
+  vals=copy(vals)
+  a=map(eachindex(pts))do i
     for k in i-1:-1:1
-      if x[i]==x[k] error("interpolating points must be distinct") end
-      t[k]=(t[k+1]-t[k])/(x[i]-x[k])
+      if pts[i]==pts[k] error("interpolating points must be distinct") end
+      vals[k]=(vals[k+1]-vals[k])/(pts[i]-pts[k])
     end
-    t[1]
+    vals[1]
   end
   p=Pol([a[end]])
-  for i in length(x)-1:-1:1
-    p=p*(Pol()-x[i])+a[i]
+  for i in length(pts)-1:-1:1
+    p=p*(Pol()-pts[i])+a[i]
   end
   p
 end
@@ -472,36 +602,41 @@ end
 struct RatFrac{T}
   num::Pol{T}
   den::Pol{T}
-  function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
-    T=promote_type(T1,T2)
-    if check
-      if iszero(a) return new{T}(a,one(a))
-      elseif iszero(b) error("zero denominator")
-      end
-      v=a.v-b.v
-      a=shift(a,max(v,0)-a.v)
-      b=shift(b,-min(v,0)-b.v)
-      if !prime
-        d=gcd(a,b)
-        a=exactdiv(a,d)
-        b=exactdiv(b,d)
-      end
-      if isone(-b) a,b=(-a,-b) end
-    end
-    new{T}(a,b)
+  global RatFrac_(num::Pol{T},den::Pol{T}) where T=new{T}(num,den)
+end
+
+function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
+  T=promote_type(T1,T2)
+  a,b=promote(a,b)
+  if iszero(a) return RatFrac_(a,one(a))
+  elseif iszero(b) error("zero denominator")
   end
+  if check
+    v=a.v-b.v
+    a=shift(a,max(v,0)-a.v)
+    b=shift(b,-min(v,0)-b.v)
+    if !prime
+      d=gcd(a,b)
+      a=exactdiv(a,d)
+      b=exactdiv(b,d)
+    end
+    if isone(-b) a,b=(-a,-b) end
+  end
+  RatFrac_(a,b)
 end
 
 function Base.convert(::Type{RatFrac{T}},p::RatFrac{T1}) where {T,T1}
   RatFrac(convert(Pol{T},p.num),convert(Pol{T},p.den);check=false)
 end
 
-function Base.convert(::Type{Pol{T}},p::RatFrac{T1}) where {T,T1}
+function Pol(p::RatFrac)
   if length(p.den.c)==1
-    return convert(Pol{T},Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v))
+    return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
   end
-  error("cannot convert ",p," to Pol{",T,"}")
+  error("cannot convert ",p," to Pol")
 end
+
+Base.convert(::Type{Pol{T}},p::RatFrac) where {T}=convert(Pol{T},Pol(p))
 
 function Base.convert(::Type{RatFrac{T}},p::Pol{T1}) where {T,T1}
   RatFrac(convert(Pol{T},p),Pol(T(1));prime=true)
@@ -515,11 +650,18 @@ function Base.promote_rule(a::Type{Pol{T1}},b::Type{RatFrac{T2}})where {T1,T2}
   RatFrac{promote_type(T1,T2)}
 end
 
-(::Type{RatFrac{T}})(a) where T=convert(RatFrac{T},a)
+(::Type{RatFrac{T}})(a::RatFrac{T}) where T=a
+(::Type{RatFrac{T}})(a::Number) where T=convert(RatFrac{T},a)
 
 Base.broadcastable(p::RatFrac)=Ref(p)
 RatFrac(a::Number)=RatFrac(Pol(a),Pol(1);check=false)
-RatFrac(a::Pol)=RatFrac(a,Pol(1);prime=true)
+Base.convert(::Type{RatFrac},a::Pol)=RatFrac(a,Pol(1);prime=true)
+
+function RatFrac(a::Pol{T})where T 
+  if a.v>0 return RatFrac_{T}(a,Pol(T(1))) end
+  RatFrac(a,Pol(T(1));prime=false)
+end
+
 Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
 Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
 Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
@@ -528,7 +670,7 @@ Base.zero(::Type{RatFrac}) where T =zero(RatFrac{Int})
 Base.zero(::Type{RatFrac{T}}) where T =RatFrac(zero(Pol{T}),one(Pol{T});check=false)
 Base.zero(a::RatFrac)=RatFrac(zero(a.num),one(a.num);check=false)
 Base.iszero(a::RatFrac)=iszero(a.num)
-# next 3 stuff to make inv using LU work (abs is stupid)
+# next 3 methods are to make inv using LU work (abs is stupid)
 Base.abs(p::RatFrac)=p
 Base.conj(p::RatFrac)=RatFrac(conj(p.num),conj(p.den);check=false)
 Base.adjoint(a::RatFrac)=conj(a)
@@ -561,6 +703,7 @@ function Base.://(a::Pol,b::Pol)
   RatFrac(a,b)
 end
 
+bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
   RatFrac(Pol(1),p;prime=true)
@@ -569,15 +712,15 @@ end
 Base.:/(p::Pol,q::Pol)=p*inv(q)
 
 Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
+Base.:/(a::RatFrac,b::RatFrac)=a//b
 Base.://(a::RatFrac,b::Union{Number,Pol})=RatFrac(a.num,a.den*b)
 Base.:/(a::RatFrac,b::Union{Number,Pol})=a//b
 Base.://(a::Union{Number,Pol},b::RatFrac)=a*inv(b)
 Base.:/(a::Union{Number,Pol},b::RatFrac)=a//b
-Base.:/(a::RatFrac,b::RatFrac)=a*inv(b)
 Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
 
-Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den)
+Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den;check=true)
 
 Base.:*(a::RatFrac,b::Pol)=RatFrac(a.num*b,a.den)
 Base.:*(b::Pol,a::RatFrac)=RatFrac(a.num*b,a.den)
@@ -594,6 +737,5 @@ Base.:-(a::RatFrac,b::RatFrac)=a+(-b)
 Base.:-(a::RatFrac,b)=a-RatFrac(b)
 Base.:-(b,a::RatFrac)=RatFrac(b)-a
 
-(p::RatFrac)(x)=p.num(x)//p.den(x)
-
+(p::RatFrac)(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
 end
