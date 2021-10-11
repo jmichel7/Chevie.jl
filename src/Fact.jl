@@ -1,4 +1,12 @@
+module Fact
 using Primes: nextprime
+using ..Pols: Pol, @Pol, shift, degree, derivative, exactdiv
+using ..FFields: FFields, FFE, Mod
+using ..Util: Util, factor
+using ..Combinat: combinations, nrestrictedpartitions
+
+#export factor
+
 InfoPoly2=print
 ##  <f> must be squarefree.  We test 3 "small" and 2 "big" primes.
 function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
@@ -197,6 +205,13 @@ function MinimizeBombieriNorm(f)
   f[:minimization]
 end
 
+"""
+`factor(f::Pol{<:Union{Integer,Rational}})`
+
+Factor over the integers a polynomial with integral coefficients, or do the
+same over the rationals.
+
+"""
 function Util.factor(f::Pol{<:Union{Integer,Rational}})
   InfoPoly2("#I  starting integer factorization: ", time(), "\n")
   if iszero(f)
@@ -274,10 +289,10 @@ end
 returns  Int(floor(log(base,n))) but very accurately. Assumes n>0 and base>1.
 
 ```julia-repl
-julia> LogInt(1030,2)
+julia> Fact.LogInt(1030,2)
 10
 
-julia> LogInt(1,10)
+julia> Fact.LogInt(1,10)
 0
 ```
 """
@@ -819,10 +834,11 @@ function HenselBound(pol,arg...)
   bound
 end
 
-@Pol q
+q=Pol(:q)
 testf=
 q^17 + (28475495154853885209666581640806568193580138878464//35)*q^13 + (
 -230113592530021909980533244143226208753492718798402862328238781356987464425343796365306003458195456//1225)*q^9 + (
 -1331663813192583136877354316616861253307245376897389186616397648441393194005806591992969924972327944810995692943683480696873183913411848253822992384//
 42875)*q^5 + (
 -11476141319715558689839068201773325238493770231736218788232819936653287068633455026978626687107040865767792194345449338617565687175571484254603185906485112033995725244553550967874479529656320//343)*q
+end

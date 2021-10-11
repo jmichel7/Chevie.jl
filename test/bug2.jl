@@ -1,6 +1,6 @@
 using BenchmarkTools
 using UsingMerge
-if true # @btime sort(v,by=first) differs dramatically whether true/false
+if false # @btime sort(v,by=first) differs dramatically whether true/false
 degree(a::Number)=0; export degree
 println(names(UsingMerge))
 include("../src/Combinat.jl");using .Combinat

@@ -3,6 +3,7 @@ using ..Gapjm
 export FiniteDimAlgebra, AlgebraElt, basis, dim, idempotents, iscommutative
 abstract type FiniteDimAlgebra end
 
+# properties of Algebras: have .multable, dim
 struct AlgebraElt{TA,T}
   A::TA
   d::ModuleElt{Int,T}
@@ -10,7 +11,13 @@ end
 
 dim(A::FiniteDimAlgebra)=error("not implemented in general")
 idempotents(A::FiniteDimAlgebra)=error("not implemented in general")
-iscommutative(A::FiniteDimAlgebra)=error("not implemented in general")
+
+function iscommutative(A::FiniteDimAlgebra)
+  get!(A,:iscommutative)do
+    l=haskey(A,:generators) ? A.generators : basis(A)
+    all(x*y==y*x for x in l, y in l)
+  end
+end
 
 function basis(A::FiniteDimAlgebra)
   get!(A,:basis)do

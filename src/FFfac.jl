@@ -1,8 +1,19 @@
 # code for factoring a polynomial over a finite field
+module FFfac
 
-#  `f` must be a  square free product of unitary irreducible factors of  
-#  degree  `d` over a finite field of size `p^k`.
-function FactorsCommonDegree(f::Pol{FFE{p}}, d,F)where p
+export factor
+
+using ..Pols: Pol, degree, shift, derivative, exactdiv
+using ..FFields: FFE, GF
+
+"""
+`factors_same_degree(f::Pol{FFE{p}}, d,F)where p`
+
+find  the irreducible factors of `f` assumed to be a square free product of
+monic   irreducible  factors  of   degree  `d`  over   a  finite  field  of
+characteristic `p`.
+"""
+function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
   if degree(f)==d return [f] end
   g=copy(f)
   while true
@@ -20,12 +31,17 @@ function FactorsCommonDegree(f::Pol{FFE{p}}, d,F)where p
     g=gcd(f,h)
     if degree(f)>degree(g)>0 break end
   end
-  vcat(FactorsCommonDegree(exactdiv(f,g),d,F),FactorsCommonDegree(g,d,F))
+  vcat(factors_same_degree(exactdiv(f,g),d,F),factors_same_degree(g,d,F))
 end
 
-# `f` must be a squarefree unitary polynomial with nonzero constant term 
-#  over a finite field
-function factorSQF(f::Pol{FFE{p}},F)where p
+"""
+`factors_squarefree(f::Pol{FFE{p}},F)where p`
+
+find  the irreducible  factors of  `f` assumed  to be  a square  free monic
+polynomial with nonzero constant term over a finite field of characteristic
+`p`.
+"""
+function factors_squarefree(f::Pol{FFE{p}},F)where p
   facs=Pol{FFE{p}}[]
   deg=0
   k=degree(F)
@@ -38,7 +54,7 @@ function factorSQF(f::Pol{FFE{p}},F)where p
     pow=powermod(pow,p^k,f)
     g=gcd(f,cyc)
     if degree(g)>0
-      append!(facs, FactorsCommonDegree(g,deg,F))
+      append!(facs, factors_same_degree(g,deg,F))
       f=exactdiv(f,g)
     end
   end
@@ -47,7 +63,8 @@ function factorSQF(f::Pol{FFE{p}},F)where p
 end
 
 # n-th root of a pol which is an n-th power
-function Cycs.root(f::Pol{FFE{p}},n::Integer)where p
+# not exported since does not check that f is a power
+function root(f::Pol{FFE{p}},n::Integer)where p
   d=maximum(degree.(f.c))
   z=Z(p^d)
   r=map(0:div(degree(f),n)) do i
@@ -60,7 +77,7 @@ end
 """
 `factor(f::Pol{FFE{p}}[, F])`
 
-Factor  the polynomial over  a finite field  of characteristic `p` given by
+Given  `f` a polynomial  over a finite  field of characteristic `p`, factor
 `f`,  by default over the  field of its coefficients,  or if specified over
 the field `F`.
 
@@ -68,16 +85,16 @@ the field `F`.
 julia> @Pol q
 Pol{Int64}: q
 
-julia> p=(q^4-1)*Z(3)^0
+julia> f=(q^4-1)*Z(3)^0
 Pol{FFE{3}}: q⁴-1
 
-julia> factor(p)
+julia> factor(f)
 3-element Vector{Pol{FFE{3}}}:
  q²+1
  q+1
  q-1
 
-julia> factor(p,GF(9))
+julia> factor(f,GF(9))
 4-element Vector{Pol{FFE{3}}}:
  q+1
  q-1
@@ -85,7 +102,7 @@ julia> factor(p,GF(9))
  q+Z₉⁶
 ```
 """
-function Util.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
+function factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
   facs=Pol{FFE{p}}[]
   # make the polynomial unitary, remember the leading coefficient for later
   l=f[end]
@@ -100,7 +117,7 @@ function Util.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
       facs=vcat(fill(h,p)...)
     else
       g=gcd(f,d)
-      facs=factorSQF(exactdiv(f,g),F)
+      facs=factors_squarefree(exactdiv(f,g),F)
       for h in facs
         while true
           g1,r=divrem(g,h)
@@ -115,4 +132,6 @@ function Util.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
   sort!(facs)
   facs[1]*=l
   facs
+end
+
 end

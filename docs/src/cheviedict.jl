@@ -299,7 +299,7 @@ const ChevieDict=Dict(
 "Rotation(v,i)"=>"circshift(v,-i)",
 "Rotations(v)"=>"circshift.(Ref(v),length(v):-1:1)",
 "ScalarProduct"=>"scalarproduct",
-"ScalMvp"=>"scal",
+"ScalMvp"=>"scalar",
 #SchurElement
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",

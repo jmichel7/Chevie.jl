@@ -129,11 +129,11 @@ shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4sec.
 According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 """
 module Mvps
-# benchmark: (x+y+z)^3     2.3μs 48 alloc
+# benchmar: (x+y+z)^3     2.3μs 48 alloc
 using ..ModuleElts: ModuleElt, ModuleElts
-using ..Util: Util, exactdiv, ordinal, printTeX, bracket_if_needed, stringexp
+using ..Util: ordinal, printTeX, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
-              valuation, degree, scalar
+              valuation, degree, scalar, exactdiv
 
 #import Gapjm: coefficients, valuation
 import ..Cycs: root
@@ -166,7 +166,7 @@ Base.isone(a::Monomial)=iszero(a.d)
 Base.one(::Type{Monomial{T}}) where T=Monomial(zero(ModuleElt{Symbol,T}))
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
-Util.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
+Pols.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
 Base.:/(a::Monomial, b::Monomial)=a*inv(b)
 Base.://(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial,p)=Monomial(x.d*p)
@@ -384,7 +384,7 @@ end
 Base.:/(p::Mvp,q::Number)=Mvp(p.d/q)
 Base.://(p::Mvp,q::Number)=Mvp(p.d//q)
 Base.div(a::Mvp,b::Number)=Mvp(merge(div,a.d,b))
-Util.exactdiv(a::Mvp,b::Number)=Mvp(merge(exactdiv,a.d,b;check=false))
+Pols.exactdiv(a::Mvp,b::Number)=Mvp(merge(exactdiv,a.d,b;check=false))
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -860,7 +860,7 @@ end
 
 # returns p/q when the division is exact, nothing otherwise
 # Arguments must be true polynomials
-function Util.exactdiv(p::Mvp,q::Mvp)
+function Pols.exactdiv(p::Mvp,q::Mvp)
   if iszero(q) error("cannot divide by 0")
   elseif iszero(p) || isone(q) return p
   elseif monom(q)
@@ -1053,9 +1053,9 @@ function Base.show(io::IO,a::Mvrf)
   if  get(io, :limit,true) && a.den==one(a.den)
     print(io,n)
   else
-    print(io,Util.bracket_if_needed(n))
+    print(io,Pols.bracket_if_needed(n))
     n=sprint(show,a.den; context=io)
-    print(io,"/",Util.bracket_if_needed(n))
+    print(io,"/",Pols.bracket_if_needed(n))
   end
 end
 

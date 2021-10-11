@@ -39,6 +39,7 @@ transversal
 centralizer
 stabilizer
 word(::Group,w)
+comm
 length(::Group)
 classreps(::Group)
 minimal_words
@@ -75,9 +76,13 @@ Cycs.root
 ```@docs
 Pols
 Pol
+@Pol
 divrem
 gcd(::Pol,::Pol)
 gcdx(::Pol,::Pol)
+Pols.pseudodiv
+srgcd
+RatFrac
 cyclotomic_polynomial
 ```
 # Multivariate (Puiseux) polynomials
@@ -99,7 +104,7 @@ Mvps.derivative
 laurent_denominator
 gcd(::Mvp,::Mvp)
 lcm(::Mvp,::Mvp)
-scal
+scalar
 ```
 # Cyclotomic polynomials
 ```@docs
@@ -207,6 +212,7 @@ FFields
 FFE
 FFE(i::Integer)
 Z(::Any)
+factor(::Pol)
 ```
 # Presentations
 ```@docs
@@ -742,7 +748,7 @@ RootDatum                                   rootdatum
 RootsCartan(m)                              roots(m)
 Rotation(v,i)                               circshift(v,-i)
 Rotations(v)                                circshift.(Ref(v),length(v):-1:1)
-ScalMvp                                     scal
+ScalMvp                                     scalar
 ScalarProduct                               scalarproduct
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor

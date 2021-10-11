@@ -12,7 +12,7 @@ export
   getp, @GapObj, # helpers for GapObjs
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, # formatting
-  exactdiv, factor, prime_residues, divisors, phi, primitiveroot #number theory
+  factor, prime_residues, divisors, phi, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
@@ -417,21 +417,18 @@ function TeX(x;p...)
 end
 
 #----------------------- Number theory ---------------------------
-exactdiv(a,b)=a/b  # generic version for fields
-function exactdiv(a::Integer,b::Integer) # define for integral domains
-  (d,r)=divrem(a,b)
-  !iszero(r) ? nothing : d
-end
-
 " the numbers less than n and prime to n "
 function prime_residues(n)
   if n==1 return [0] end
   filter(i->gcd(n,i)==1,1:n-1) # inefficient
 end
 
-# make Primes.factor fast for small Ints by memoizing it
 import Primes
 const dict_factor=Dict(2=>Primes.factor(Dict,2))
+"""
+`factor(n::Integer)`
+make `Primes.factor` fast for small Ints by memoizing it
+"""
 factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
 
 function divisors(n::Int)::Vector{Int}

@@ -305,9 +305,9 @@ end
 end
 @testset "FFfac.jl" begin
 @test mytest("@Pol q","Pol{Int64}: q")
-@test mytest("p=(q^4-1)*Z(3)^0","Pol{FFE{3}}: q⁴-1")
-@test mytest("factor(p)","3-element Vector{Pol{FFE{3}}}:\n q²+1\n q+1\n q-1")
-@test mytest("factor(p,GF(9))","4-element Vector{Pol{FFE{3}}}:\n q+1\n q-1\n q+Z₉²\n q+Z₉⁶")
+@test mytest("f=(q^4-1)*Z(3)^0","Pol{FFE{3}}: q⁴-1")
+@test mytest("factor(f)","3-element Vector{Pol{FFE{3}}}:\n q²+1\n q+1\n q-1")
+@test mytest("factor(f,GF(9))","4-element Vector{Pol{FFE{3}}}:\n q+1\n q-1\n q+Z₉²\n q+Z₉⁶")
 end
 @testset "FFields.jl" begin
 @test mytest("Mod(5,19)","Mod{UInt64}: 5₁₉")
@@ -341,6 +341,10 @@ end
 @test mytest("FFE{19}(Mod(2,19))","FFE{19}: 2")
 @test mytest("z=Z(16)","FFE{2}: Z₁₆")
 @test mytest("z^5","FFE{2}: Z₄")
+end
+@testset "Fact.jl" begin
+@test mytest("Fact.LogInt(1030,2)","10")
+@test mytest("Fact.LogInt(1,10)","0")
 end
 @testset "Families.jl" begin
 @test mytest("W=coxgroup(:G,2)","G₂")
@@ -868,6 +872,13 @@ end
 @test mytest("p[0], p[1], p[-1], p[10]","(2, 1, 1, 0)")
 @test mytest("p[valuation(p):degree(p)]","3-element Vector{Int64}:\n 1\n 2\n 1")
 @test mytest("p[begin:end]","3-element Vector{Int64}:\n 1\n 2\n 1")
+@test mytest("coefficients(p)","3-element Vector{Int64}:\n 1\n 2\n 1")
+@test mytest("Pol(1)","Pol{Int64}: 1")
+@test mytest("convert(Pol{Int},1)","Pol{Int64}: 1")
+@test mytest("scalar(Pol(1))","1")
+@test mytest("convert(Int,Pol(1))","1")
+@test mytest("Int(Pol(1))","1")
+@test mytest("scalar(q+1)","nothing")
 @test mytest("derivative(p)","Pol{Int64}: 1-q⁻²")
 @test mytest("p=(q+1)^2","Pol{Int64}: q²+2q+1")
 @test mytest("p=(q+1)^2","Pol{Int64}: q²+2q+1")
@@ -875,13 +886,21 @@ end
 @test mytest("p//2","Pol{Rational{Int64}}: (1//2)q²+(1//1)q+1//2")
 @test mytest("p(1//2)","9//4")
 @test mytest("p(0.5)","2.25")
+@test mytest("Pol([1,2,3],[2.0,1.0,3.0])","Pol{Float64}: 1.5q²-5.5q+6.0")
 @test mytest("divrem(q^3+1,2q+1)","(0.5q²-0.25q+0.125, 0.875)")
 @test mytest("divrem(q^3+1,2q+1//1)","((1//2)q²+(-1//4)q+1//8, 7//8)")
 @test mytest("Pols.pseudodiv(q^3+1,2q+1)","(4q²-2q+1, 7)")
 @test mytest("(4q^2-2q+1)*(2q+1)+7","Pol{Int64}: 8q³+8")
-@test mytest("1/(q+1)","RatFrac{Int64}: 1/(q+1)")
+@test mytest("exactdiv(q+1,2)","nothing")
+@test mytest("exactdiv(q+1,2.0)","Pol{Float64}: 0.5q+0.5")
+@test mytest("a=1/(q+1)","RatFrac{Int64}: 1/(q+1)")
+@test mytest("Pol(2/a)","Pol{Int64}: 2q+2")
+@test mytest("numerator(a)","Pol{Int64}: 1")
+@test mytest("denominator(a)","Pol{Int64}: q+1")
 @test mytest("m=[q+1 q+2;q-2 q-3]","2×2 Matrix{Pol{Int64}}:\n q+1  q+2\n q-2  q-3")
-@test mytest("inv(RatFrac.(m))","2×2 Matrix{RatFrac{Int64}}:\n (-q+3)/(2q-1)  (-q-2)/(-2q+1)\n (q-2)/(2q-1)   (q+1)/(-2q+1)")
+@test mytest("n=inv(RatFrac.(m))","2×2 Matrix{RatFrac{Int64}}:\n (-q+3)/(2q-1)  (-q-2)/(-2q+1)\n (q-2)/(2q-1)   (q+1)/(-2q+1)")
+@test mytest("map(x->x(1),n)","2×2 Matrix{Float64}:\n  2.0   3.0\n -1.0  -2.0")
+@test mytest("map(x->x(1;Rational=true),n)","2×2 Matrix{Rational{Int64}}:\n  2//1   3//1\n -1//1  -2//1")
 @test mytest("gcd(2q+2,q^2-1)","Pol{Int64}: q+1")
 @test mytest("gcd(q+1//1,q^2-1//1)","Pol{Rational{Int64}}: (1//1)q+1//1")
 @test mytest("gcdx(q^3-1//1,q^2-1//1)","((1//1)q-1//1, 1//1, (-1//1)q)")

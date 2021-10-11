@@ -15,7 +15,8 @@ using ..PermGroups: symmetric_group
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
-using ..Util: exactdiv, toM, toL
+using ..Util: toM, toL
+using ..Pols: exactdiv
 using ..PermRoot: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 

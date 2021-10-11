@@ -1,23 +1,30 @@
 """
-This package implements univariate  Laurent  polynomials (type `Pol`), 
-and  univariate rational fractions (type `RatFrac').
+This  package,  which  depends  on  no other package, implements univariate
+Laurent  polynomials (type `Pol`), and  univariate rational fractions (type
+`RatFrac`).
 
 The  initial motivation was to have a simple way to port GAP polynomials to
-Julia. The reasons for having my own package are multiple:
+Julia. The reasons for still having my own package are multiple:
 
-  - I need to have a simple and flexible interface, which I hope this provides.
+  - I need  to have  a simple  and flexible  interface, which  I hope this
+    provides.
   - There was no convenient Laurent polynomials when I started.
-  - I need my polynomials to behave well when coefficients are in a ring,
+  - I need my polynomials to behave  well when coefficients are in a ring,
     in which case I use pseudo-division and subresultant gcd.
+  - For my use my polynomials are several times faster than those in the
+    package `Polynomials`.
+  - I need to  work with coefficients  of types `T`  where elements have a
+    `zero`  method but `T` itself does not  have one (because `T` does not
+    contain the necessary information. An example is `Mod{BigInt}`).
 
-The  parametric  type  `Pol{T}`  is  constructed  by  giving  a  vector  of
-coefficients  of type `T`, and a valuation  (an `Int`). If the valuation is
-omitted, it is taken to be `0`.
+Here  Laurent  polynomials  have  the  parametric  type  `Pol{T}`. They are
+constructed by giving a vector of coefficients of type `T`, and a valuation
+(an `Int`). We call true polynomials those whose valuation is `≥0`.
 
-There  is a current  variable name (a  `String`) used to print polynomials.
-This  name can be  changed globally, or  just changed for  printing a given
-polynomial.  But polynomials do  not record individually  with which string
-they should be printed.
+There  is a  current variable  name (a  `String`) used to print polynomials
+nicely  at  the  repl  or  in  Jupyter  or  Pluto. This name can be changed
+globally,  or just changed for printing a given polynomial. But polynomials
+do not record individually with which string they should be printed.
 
 # Examples
 ```julia-repl
@@ -27,7 +34,7 @@ Pol{Int64}: q
 julia> @Pol q # same as q=Pol(:q)
 Pol{Int64}: q
 
-julia> Pol([1,2]) # valuation is 0 if not specified
+julia> Pol([1,2]) # valuation is taken to be 0 if omitted
 Pol{Int64}: 2q+1
 
 julia> 2q+1       # same polynomial
@@ -44,7 +51,7 @@ Pol{Int64}: q+2+q⁻¹
 ```
 
 ```julia-rep1
-julia> print(p) # if not in the repl, jupyter or pluto give interpretable output
+julia> print(p) # if not nice printing give an output which can be read back
 Pol([1, 2, 1],-1)
 
 # change the variable for printing just this time
@@ -76,8 +83,44 @@ julia> p[begin:end]  # the same as the above line
  1
  2
  1
+
+julia> coefficients(p)  # the same again
+3-element Vector{Int64}:
+ 1
+ 2
+ 1
 ```
-Usual arithmetic works.
+
+A  polynomial  is  a  *scalar*  if  the  valuation  and degree are `0`. The
+function  `scalar` returns the constant coefficient  if the polynomial is a
+scalar, and *nothing* otherwise.
+
+```julia-repl
+julia> Pol(1)
+Pol{Int64}: 1
+
+julia> convert(Pol{Int},1) # the same thing
+Pol{Int64}: 1
+
+julia> scalar(Pol(1))
+1
+
+julia> convert(Int,Pol(1)) # the same thing
+1
+
+julia> Int(Pol(1))         # the same thing
+1
+
+julia> scalar(q+1) # nothing
+```
+
+`Pol{T}` in arrays are promoted to the same type `T` (when the `T` involved
+have a promotion) and a number is promoted to a polynomial. 
+
+Usual  arithmetic (`+`, `-`,  `*`, `^`, `/`,  `//`, `one`, `isone`, `zero`,
+`iszero`,  `==`) works. Elements  of type `<:Number`  or of type  `T` for a
+`Pol{T}`   are  considered  as   scalars  for  scalar   operations  on  the
+coefficients.
 
 ```julia-repl
 julia> derivative(p)
@@ -101,6 +144,23 @@ julia> p(1//2) # value of p at 1//2
 julia> p(0.5)
 2.25
 
+# interpolation: find p taking values [2.0,1.0,3.0] at [1,2,3]
+julia> Pol([1,2,3],[2.0,1.0,3.0])  
+Pol{Float64}: 1.5q²-5.5q+6.0
+```
+
+Polynomials  are scalars  for broadcasting.  They can  be sorted (they have
+`cmp`   and  `isless`  functions  which   compare  the  valuation  and  the
+coefficients), be keys in a `Dict` (they have a `hash` function).
+
+The  functions  `divrem`,  `div`,  `%`,  `gcd`,  `gcdx`,  `lcm`, `powermod`
+operate  between  true  polynomials  over  a  field,  using  the polynomial
+division.  Over a  ring it  is better  to use  `pseudodiv` and  `srgcd`. By
+default `gcd` between integer polynomials uses `srgcd`. `exactdiv` does the
+division  (over a  field or  a ring)  when it  is exact,  otherwise returns
+`nothing`.
+
+```julia-repl
 julia> divrem(q^3+1,2q+1) # changes coefficients to field elements
 (0.5q²-0.25q+0.125, 0.875)
 
@@ -112,31 +172,65 @@ julia> Pols.pseudodiv(q^3+1,2q+1) # pseudo-division keeps the ring
 
 julia> (4q^2-2q+1)*(2q+1)+7 # but we get a multiple of the polynomial
 Pol{Int64}: 8q³+8
+
+julia> exactdiv(q+1,2) # nothing
+
+julia> exactdiv(q+1,2.0)
+Pol{Float64}: 0.5q+0.5
 ```
 
-Rational fractions allow to invert polynomials.
+Finally,   `Pol`s  have   methods  `conj`,   `adjoint`  which   operate  on
+coefficients,    a    `derivative`    methods,   methods   `positive_part`,
+`negative_part`  and `bar` (useful for Kazhdan-Lusztig theory) and a method
+`randpol` to produce random polynomials.
+
+Rational  fractions allow to invert  polynomials. `RatFrac`s are normalized
+so  that the numerator  and denominator are  true polynomials prime to each
+other.  They have the arithmetic operations `+`, `-` , `*`, `/`, `//`, `^`,
+`inv`,  `one`, `isone`, `zero`, `iszero` (which can operate between a `Pol`
+and a `RatFrac`).
+
 
 ```julia-repl
-julia> 1/(q+1)
+julia> a=1/(q+1)
 RatFrac{Int64}: 1/(q+1)
+
+julia> Pol(2/a) # convert back to `Pol`
+Pol{Int64}: 2q+2
+
+julia> numerator(a)
+Pol{Int64}: 1
+
+julia> denominator(a)
+Pol{Int64}: q+1
 
 julia> m=[q+1 q+2;q-2 q-3]
 2×2 Matrix{Pol{Int64}}:
  q+1  q+2
  q-2  q-3
 
-julia> inv(RatFrac.(m))
+julia> n=inv(RatFrac.(m))
 2×2 Matrix{RatFrac{Int64}}:
  (-q+3)/(2q-1)  (-q-2)/(-2q+1)
  (q-2)/(2q-1)   (q+1)/(-2q+1)
+
+julia> map(x->x(1),n) # evaluate at 1
+2×2 Matrix{Float64}:
+  2.0   3.0
+ -1.0  -2.0
+
+julia> map(x->x(1;Rational=true),n) # evaluate at 1 using //
+2×2 Matrix{Rational{Int64}}:
+  2//1   3//1
+ -1//1  -2//1
 ```
 
-see also the individual documentation of divrem, gcd.
+Rational fractions are also scalars for broadcasting and can be sorted
+(have `cmp` and `isless` methods).
 """
 module Pols
-using ..Util: Util, exactdiv, format_coefficient, bracket_if_needed, stringexp
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
-       bar, derivative, srgcd, RatFrac, @Pol, scalar
+       bar, derivative, srgcd, RatFrac, @Pol, scalar, coefficients, exactdiv
 
 const varname=Ref(:x)
 
@@ -199,18 +293,17 @@ Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
 degree(a::Number)=0 # convenient
 degree(p::Pol)=length(p.c)-1+p.v
 valuation(p::Pol)=p.v
+coefficients(p::Pol)=p.c
 Base.lastindex(p::Pol)=degree(p)
 Base.firstindex(p::Pol)=valuation(p)
-Base.getindex(p::Pol{T},i::Integer) where T=i in p.v:lastindex(p) ?
-    p.c[i-p.v+1] : zero(T)
+@inbounds Base.getindex(p::Pol{T},i::Integer) where T=
+  i in firstindex(p):lastindex(p) ? p.c[i-p.v+1] : zero(T)
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
 
-#Base.copy(p::Pol{T}) where T=Pol{T}(p.c,p.v)
 Base.convert(::Type{Pol{T}},a::Number) where T=iszero(a) ? Pol_(T[],0) :
                                                            Pol_([T(a)],0)
 
-#Base.convert(::Type{Pol},a::Number)=convert(Pol{typeof(a)},a)
 (::Type{Pol{T}})(a) where T=convert(Pol{T},a)
 
 # like convert for vectors does not always make a copy
@@ -228,7 +321,7 @@ Base.isinteger(p::Pol)=isinteger(scalar(p))
 
 function scalar(p::Pol{T})where T
   if iszero(p) T(0)
-  elseif iszero(p.v) && isone(length(p.c)) p.c[1]
+  elseif iszero(valuation(p)) && iszero(degree(p)) p[0]
   end
 end
 
@@ -265,7 +358,7 @@ end
 bar(p::Pol)=Pol(reverse(p.c),-degree(p);check=false)
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
-Base.:(==)(a::Pol,b)= b!==nothing && scalar(a)==b
+Base.:(==)(a::Pol,b)= (iszero(a) && iszero(b))||(b!==nothing && scalar(a)==b)
 Base.:(==)(b,a::Pol)= a==b
 
 Base.one(a::Pol{T}) where T=Pol_([iszero(a) ? one(T) : one(a.c[1])],0)
@@ -290,6 +383,37 @@ end
 function Base.show(io::IO, ::MIME"text/plain", a::Pol)
   if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
   show(io,a)
+end
+
+# 3 next methods copied from Util.jl in order to have a self-contained file.
+
+# determines which coefficients should be bracketed for unambiguous display
+function bracket_if_needed(c::String)
+  if match(r"^[-+]?([^-+*/]|√-|{-)*(\(.*\))?$",c)!==nothing c
+  else "("*c*")" 
+  end
+end
+
+function format_coefficient(c::String)
+  if c=="1" ""
+  elseif c=="-1" "-"
+  else bracket_if_needed(c)
+  end
+end
+
+const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
+
+function stringexp(io::IO,n::Integer)
+  if isone(n) ""
+  elseif get(io,:TeX,false) 
+    n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if n<0 push!(res,'⁻'); n=-n end
+    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
+    String(res)
+  else "^"*string(n)
+  end
 end
 
 function Base.show(io::IO,p::Pol)
@@ -318,7 +442,8 @@ end
 function Base.:*(a::Pol{T1},b::Pol{T2})where {T1,T2}
   T=promote_type(T1,T2)
   if iszero(a) || iszero(b) return zero(Pol{T}) end
-  res=zeros(T,length(a.c)+length(b.c)-1)
+  # below not zero(T) for types T like Mod{T1} which have no zero method
+  res=fill(zero(a.c[1]*b.c[1]),length(a.c)+length(b.c)-1)
   for i in eachindex(a.c), j in eachindex(b.c)
 @inbounds res[i+j-1]+=a.c[i]*b.c[j]
   end
@@ -332,7 +457,7 @@ Base.:*(b::T, a::Pol{T}) where T=a*b
 
 Base.:^(a::Pol, n::Real)=a^Int(n)
 
-Base.:^(a::Pol, n::Int)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
+Base.:^(a::Pol, n::Integer)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
          n>=0 ? Base.power_by_squaring(a,n) :
                 Base.power_by_squaring(inv(a),-n)
 
@@ -353,7 +478,18 @@ Base.:-(a::Pol{T}) where T=Pol_(-a.c,a.v)
 Base.:-(a::Pol, b)=a+(-b)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false,copy=false)
-Util.exactdiv(a::Pol,b::Number)=Pol(exactdiv.(a.c,b),a.v;check=false,copy=false)
+
+exactdiv(a,b)=a/b  # generic version for fields
+function exactdiv(a::Integer,b::Integer) # define for integral domains
+  (d,r)=divrem(a,b)
+  !iszero(r) ? nothing : d
+end
+
+function exactdiv(a::Pol,b)
+  if isone(b) return a end
+  c=exactdiv.(a.c,b)
+  if !any(isnothing,c) Pol(c,a.v;check=false,copy=false) end
+end
 Base.:/(p::Pol,q::Number)=Pol(p.c./q,p.v;check=false,copy=false)
 Base.://(p::Pol,q::Number)=Pol(p.c.//q,p.v;check=false,copy=false)
 
@@ -369,6 +505,7 @@ Type stable if the coefficients of `b` are in a field.
 function Base.divrem(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
   if degree(b)>degree(a) return (zero(a),a) end
+  if a.v<0 || b.v<0 error("arguments should be true polynomials") end
   d=inv(b.c[end])
   z=zero(a.c[1]+b.c[1]+d)
   r=fill(z,1+degree(a))
@@ -384,26 +521,25 @@ function Base.divrem(a::Pol, b::Pol)
   Pol(q),Pol(r)
 end
 
-function Util.exactdiv(a::Pol,b::Pol)
+function exactdiv(a::Pol,b::Pol)
   if isone(b) || iszero(a) return a end
   if iszero(b) throw(DivideError) end
   d=a.v-b.v
   if !iszero(a.v) a=shift(a,-a.v) end
   if !iszero(b.v) b=shift(b,-b.v) end
-  if degree(b)>degree(a) error(b," does not divide exactly ",a) end
+  if degree(b)>degree(a) return nothing end
   z=zero(a.c[1]+b.c[1])
   r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
   q=fill(z,length(r)-degree(b))
   for i in length(r):-1:degree(b)+1
     c=exactdiv(r[i],b.c[end])
-    if isnothing(c) error(b.c[end]," does not divide exactly ",r[i]) end
+    if isnothing(c) return nothing end
     view(r,i-length(b.c)+1:i) .-= c .* b.c
     q[i-length(b.c)+1]=c
   end
-  if !iszero(r) error(b," does not divide exactly ",a) end
-  res=Pol(q)
-  !iszero(d) ? shift(res,d) : res
+  if !iszero(r) return nothing end
+  res=Pol(q,d)
 end
 
 """
@@ -420,6 +556,7 @@ function pseudodiv(a::Pol, b::Pol)
   if iszero(b) throw(DivideError) end
   d=b.c[end]
   if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
+  if a.v<0 || b.v<0 error("arguments should be true polynomials") end
   z=zero(promote_type(eltype(a.c),eltype(b.c)))
   r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
@@ -446,8 +583,8 @@ See Knuth AOCP2 4.6.1 Algorithm C
 function srgcd(a::Pol,b::Pol)
   if degree(b)>degree(a) a,b=b,a end
   if iszero(b) return a end
-  ca=gcd(a.c);if !isone(ca) a=Pol(exactdiv.(a.c,ca),a.v;check=false) end
-  cb=gcd(b.c);if !isone(cb) b=Pol(exactdiv.(b.c,cb),b.v;check=false) end
+  ca=gcd(a.c);a=exactdiv(a,ca)
+  cb=gcd(b.c);b=exactdiv(b,cb)
   d=gcd(ca,cb)
   g=1
   h=1
@@ -455,14 +592,14 @@ function srgcd(a::Pol,b::Pol)
     δ=degree(a)-degree(b)
     q,r=pseudodiv(a,b)
     if iszero(r)
-      cb=gcd(b.c);if !isone(cb) b=Pol(exactdiv.(b.c,cb),b.v;check=false) end
+      cb=gcd(b.c);b=exactdiv(b,cb)
       return isone(d) ? b : Pol(b.c .*d,b.v;check=false)
     elseif degree(r)==0
       return Pol([d];check=false)
     end
     a=b
     gh=g*h^δ
-    b=isone(gh) ? r : Pol(exactdiv.(r.c,gh),r.v;check=false)
+    b=exactdiv(r,gh)
     g=a[end]
     if δ>0 h=exactdiv(g^δ,h^(δ-1)) end
   end
@@ -602,9 +739,19 @@ end
 struct RatFrac{T}
   num::Pol{T}
   den::Pol{T}
+  # Unexported inner constructor that bypasses all checks
   global RatFrac_(num::Pol{T},den::Pol{T}) where T=new{T}(num,den)
 end
 
+"""
+`RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}`
+
+Polynomials  `a`  and  `b`  are  promoted  to  same  coefficient  type.  It
+`check=true`  they are checked  for being true  polynomials (otherwise they
+are  both multiplied by the same power  of the variable so they become true
+polynomials),  and  unless  `prime=true`  they  are  checked  for  having a
+non-trivial `gcd`.
+"""
 function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
   T=promote_type(T1,T2)
   a,b=promote(a,b)
@@ -625,13 +772,18 @@ function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
   RatFrac_(a,b)
 end
 
+Base.numerator(a::RatFrac)=a.num
+Base.denominator(a::RatFrac)=a.den
+
 function Base.convert(::Type{RatFrac{T}},p::RatFrac{T1}) where {T,T1}
   RatFrac(convert(Pol{T},p.num),convert(Pol{T},p.den);check=false)
 end
 
 function Pol(p::RatFrac)
   if length(p.den.c)==1
-    return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
+    if isone(p.den.c[1]) return Pol(p.num.c .*p.den.c[1],p.num.v-p.den.v)
+    else return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
+    end
   end
   error("cannot convert ",p," to Pol")
 end
@@ -686,6 +838,8 @@ function Base.show(io::IO,a::RatFrac)
   n=sprint(show,a.num; context=io)
   if  get(io, :limit,true) && isone(a.den)
     print(io,n)
+  elseif !get(io, :limit, false) && !get(io, :TeX, false)
+    print(io,"RatFrac(",a.num,",",a.den,")")
   else
     print(io,bracket_if_needed(n))
     n=sprint(show,a.den; context=io)

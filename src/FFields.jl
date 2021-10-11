@@ -140,6 +140,7 @@ Exact=Union{Integer,Rational{<:Integer}}
 Base.zero(n::Mod)=Mod(0,n.n)
 Base.one(n::Mod)=Mod(1,n.n)
 Base.:(==)(x::Mod,y::Mod)=x.n==y.n && x.val==y.val
+Base.:(==)(x::Mod,y::Integer)=false
 Base.:+(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val+y.val,x.n)
 Base.:+(x::Mod, y::Exact)=x+Mod(y,x.n)
 Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val*y.val,x.n)
