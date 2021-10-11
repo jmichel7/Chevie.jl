@@ -24,11 +24,14 @@ function InfoChevie(a...)
 end
 
 """
-@forward T.f f1,f2,...
-  generates 
+`@forward T.f f1,f2,...`
+
+is a macro which delegates definitions. The above generates 
+```
 f1(a::T,args...)=f1(a.f,args...)
 f2(a::T,args...)=f2(a.f,args...)
 ...
+```
 """
 macro forward(ex, fs)
   T, field = esc(ex.args[1]), ex.args[2].value
@@ -359,13 +362,14 @@ function joindigits(l,delim="()";always=false,sep=",")
 end
 
 """
- cut(string;options)
+ `cut(string;options)`
 
-   options:
-   - width=displaysize(stdout)[2]-2 cutting width
-   - after=","                      cutting after these chars
-   - before=""                      cutting before these chars
-   - file=stdout                    where to print result
+ This function prints the string argument cut across several lines
+ for improved display. It can take the following keyword options:
+  - width=displaysize(stdout)[2]-2 the cutting width
+  - after=","                      cut after these chars
+  - before=""                      cut before these chars
+  - file=stdout                    to which file print the string
 """
 function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
   a=split(s,"\n")
@@ -461,18 +465,13 @@ end
 #--------------------------------------------------------------------------
 
 # better display of Rationals at the REPL
-#function Base.show(io::IO, x::Rational)
-#   show(io, numerator(x))
-#   if get(io, :limit, true)
-#       if denominator(x)!=1
-#          print(io, "/")
-#          show(io, denominator(x))
-#       end
-#   else
-#       print(io, "//")
-#       show(io, denominator(x))
-#   end
-#end
+function Base.show(io::IO, x::Rational)
+   show(io, numerator(x))
+   if !haskey(io,:typeinfo) || !isone(denominator(x))
+       print(io, "//")
+       show(io, denominator(x))
+   end
+end
 #--------------------------- Chevie compatibility--------------------------
 toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia

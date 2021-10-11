@@ -75,7 +75,9 @@ Cycs.root
 # Univariate (Laurent) polynomials
 ```@docs
 Pols
-Pol
+Pol(t::Symbol)
+Pol(c::AbstractVector, v::Integer; check, copy)
+Pol(pts::AbstractVector, vals::AbstractVector)
 @Pol
 divrem
 gcd(::Pol,::Pol)
@@ -83,6 +85,8 @@ gcdx(::Pol,::Pol)
 Pols.pseudodiv
 srgcd
 RatFrac
+FFfac.factor(::Pol{FFE{p}}where p, F)
+Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 cyclotomic_polynomial
 ```
 # Multivariate (Puiseux) polynomials
@@ -92,14 +96,14 @@ Mvp
 variables
 Mvps.coefficients(::Mvp,::Symbol)
 Mvps.coefficient
-Pol(::Mvp)
-Pol(::Mvp,::Symbol)
+Pol(x::Mvp{T, N} where N) where T
+Pol(p::Mvp{T, N}, var::Symbol) where {T, N}
 valuation
 degree
 Mvps.value
 Mvps.degree(::Mvp)
 Mvps.conj
-factor(::Mvp)
+factor(p::Mvp{T, N}) where {T, N}
 Mvps.derivative
 laurent_denominator
 gcd(::Mvp,::Mvp)
@@ -212,7 +216,6 @@ FFields
 FFE
 FFE(i::Integer)
 Z(::Any)
-factor(::Pol)
 ```
 # Presentations
 ```@docs
