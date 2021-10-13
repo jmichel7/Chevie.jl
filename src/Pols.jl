@@ -21,14 +21,14 @@ Here  Laurent  polynomials  have  the  parametric  type  `Pol{T}`. They are
 constructed by giving a vector of coefficients of type `T`, and a valuation
 (an `Int`). We call true polynomials those whose valuation is `≥0`.
 
-There  is a  current variable  name (a  `String`) used to print polynomials
+There  is a  current variable  name (a  `Symbol`) used to print polynomials
 nicely  at  the  repl  or  in  Jupyter  or  Pluto. This name can be changed
 globally,  or just changed for printing a given polynomial. But polynomials
-do not record individually with which string they should be printed.
+do not record individually with which symbol they should be printed.
 
 # Examples
 ```julia-repl
-julia> Pol(:q) # define string used for printing and returns Pol([1],1)
+julia> Pol(:q) # define symbol used for printing and returns Pol([1],1)
 Pol{Int64}: q
 
 julia> @Pol q # same as q=Pol(:q)
@@ -93,7 +93,7 @@ julia> coefficients(p)  # the same again
 
 A  polynomial  is  a  *scalar*  if  the  valuation  and degree are `0`. The
 function  `scalar` returns the constant coefficient  if the polynomial is a
-scalar, and *nothing* otherwise.
+scalar, and `nothing` otherwise.
 
 ```julia-repl
 julia> Pol(1)
@@ -279,7 +279,8 @@ end
 
 """
  `@Pol q`
- is equivalent to `q=Pol(:q)` excepted it creates `q`in the gloval scope of
+
+ is equivalent to `q=Pol(:q)` excepted it creates `q` in the global scope of
  the current module, since it uses `eval`.
 """
 macro Pol(t)
@@ -297,7 +298,7 @@ coefficients(p::Pol)=p.c
 Base.lastindex(p::Pol)=degree(p)
 Base.firstindex(p::Pol)=valuation(p)
 @inbounds Base.getindex(p::Pol{T},i::Integer) where T=
-  i in firstindex(p):lastindex(p) ? p.c[i-p.v+1] : zero(T)
+i in firstindex(p):lastindex(p) ? p.c[i-p.v+1] : iszero(p) ? zero(T) : zero(p.c[1])
 
 Base.getindex(p::Pol,i::AbstractVector{<:Integer})=getindex.(Ref(p),i)
 
@@ -364,7 +365,7 @@ Base.:(==)(b,a::Pol)= a==b
 Base.one(a::Pol{T}) where T=Pol_([iszero(a) ? one(T) : one(a.c[1])],0)
 Base.one(::Type{Pol{T}}) where T=Pol_([one(T)],0)
 Base.one(::Type{Pol})=one(Pol{Int})
-Base.isone(a::Pol)=scalar(a)==1
+Base.isone(a::Pol)=!iszero(a) && scalar(a)==1
 Base.zero(::Type{Pol{T}}) where T=Pol_(T[],0)
 Base.zero(::Type{Pol})=zero(Pol{Int})
 Base.zero(a::Pol{T}) where T=Pol_(T[],0)
@@ -553,11 +554,12 @@ For true polynomials (errors if the valuation of `a` or of `b` is negative).
 See Knuth AOCP2 4.6.1 Algorithm R
 """
 function pseudodiv(a::Pol, b::Pol)
+  if isone(b) || iszero(a) return a end
   if iszero(b) throw(DivideError) end
   d=b.c[end]
   if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
   if a.v<0 || b.v<0 error("arguments should be true polynomials") end
-  z=zero(promote_type(eltype(a.c),eltype(b.c)))
+  z=zero(a.c[1]+b.c[1])
   r=fill(z,1+degree(a))
   view(r,a.v+1:length(r)).=a.c
   q=fill(z,length(r)-degree(b))

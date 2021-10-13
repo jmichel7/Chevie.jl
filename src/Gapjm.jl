@@ -30,7 +30,7 @@ To update later to the latest version, do
 (v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
 ```
 
-This  package  require  julia  1.6  or  later.  It  currently  contains  as
+This  package  requires julia  1.6  or  later.  It  currently  contains  as
 infrastructure:
   * permutations
   * cyclotomic numbers
@@ -70,12 +70,12 @@ its code is "strange". Otherwise the code in this package is often 10 times
 faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
 compilation time on first execution).
 
-I  tried  that  as  any  submodules  as  possible in my package can be used
+I  tried  that  as  many submodules  as  possible in my package can be used
 independently  of the rest, thus could be independent packages. This is the
-case  for the  modules `Combinat`,  `Groups`, `ModuleElts`, `Perms`, `Util`
-which  can  be  used  stand-alone.  In  addition  modules `MatInt`, `Cycs`,
-`Pols`, `Mvp`, `Posets`, `FFields` can be used stand-alone except they each
-use one or two functions from `Util`.
+case  for the modules `Combinat`,  `Groups`, `Perms`, `Util`, `Pols`, which
+can  be  used  stand-alone.  In  addition  modules `MatInt`, `Cycs`, `Mvp`,
+`Posets`, `FFields` can be used stand-alone except they each use one or two
+functions from `Util` and `Mvp` uses `Pols`.
 """
 module Gapjm
 using Reexport
