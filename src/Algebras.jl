@@ -1,5 +1,6 @@
 module Algebras
 using ..Gapjm
+using ModuleElts
 export FiniteDimAlgebra, AlgebraElt, basis, dim, idempotents, iscommutative
 abstract type FiniteDimAlgebra end
 

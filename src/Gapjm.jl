@@ -81,6 +81,7 @@ module Gapjm
 using Reexport
 using Requires
 using UsingMerge
+using ModuleElts
 
 #--------------------------------------------------------------------------
 function degrees end; export degrees
@@ -91,7 +92,6 @@ include("Util.jl");@reexport using .Util
 include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("ModuleElts.jl");@reexport using .ModuleElts
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
 include("Pols.jl");@usingmerge verbose=true reexport Pols
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps

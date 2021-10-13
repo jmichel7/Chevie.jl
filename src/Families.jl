@@ -71,6 +71,7 @@ export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
  involution, duality, eigen
 
 using ..Gapjm
+using ModuleElts
 
 FamilyOps=Dict()
 

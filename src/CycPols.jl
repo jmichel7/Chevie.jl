@@ -68,7 +68,7 @@ export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
 # export roots
 import ..Gapjm: roots, gap
 
-using ..ModuleElts: ModuleElt
+using ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
 using ..Pols: Pol, Pols, degree, valuation
 using ..Combinat: collectby

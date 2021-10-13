@@ -122,6 +122,7 @@ end;
 """
 module HeckeAlgebras
 using ..Gapjm
+using ModuleElts
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,

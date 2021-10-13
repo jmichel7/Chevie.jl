@@ -21,6 +21,7 @@ charname(W,x;TeX=false,opt...)=join(map((t,p)->charname(t,p;TeX=TeX,opt...),
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 
+using ModuleElts
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 

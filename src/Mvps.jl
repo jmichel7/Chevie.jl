@@ -130,7 +130,7 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 """
 module Mvps
 # benchmar: (x+y+z)^3     2.3μs 48 alloc
-using ..ModuleElts: ModuleElt, ModuleElts
+using ModuleElts: ModuleElt, ModuleElts
 using ..Util: ordinal, printTeX, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
               valuation, degree, scalar, exactdiv

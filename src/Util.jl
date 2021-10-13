@@ -464,13 +464,14 @@ end
 
 #--------------------------------------------------------------------------
 
+if false
 # better display of Rationals at the REPL
 function Base.show(io::IO, x::Rational)
    show(io, numerator(x))
-   if !haskey(io,:typeinfo) || !isone(denominator(x))
-       print(io, "//")
-       show(io, denominator(x))
-   end
+   if haskey(io,:typeinfo) && isone(denominator(x)) return end
+   print(io, "//")
+   show(io, denominator(x))
+end
 end
 #--------------------------- Chevie compatibility--------------------------
 toL(m)=collect(eachrow(m)) # to Gap

@@ -137,7 +137,7 @@ struct Cyc{T <: Real}<: Number   # a cyclotomic number
   d::Vector{T} # the i-th element is the coefficient on zumbroich_basis[i]
 end
 else
-using ..ModuleElts
+using ModuleElts
 const MM=ModuleElt # HModuleElt is twice slower
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int              # conductor
