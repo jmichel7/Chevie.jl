@@ -25,8 +25,8 @@ Base.union(v::Vector)=union(v...)
 # other extensions
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
-Base.:*(a::AbstractArray,b::RatFrac)=a .* b
-Base.:*(a::RatFrac,b::AbstractArray)=a .* b
+Base.:*(a::AbstractArray,b::Frac)=a .* b
+Base.:*(a::Frac,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Mvp)=a .* b
 Base.:*(a::Mvp,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Mvrf)=a .* b

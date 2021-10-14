@@ -1,7 +1,7 @@
 """
 This  package,  which  depends  on  no other package, implements univariate
-Laurent  polynomials (type `Pol`), and  univariate rational fractions (type
-`RatFrac`).
+Laurent  polynomials (type `Pol{T}`), and  univariate rational fractions (type
+`Frac{Pol{T}}`).
 
 The  initial motivation was to have a simple way to port GAP polynomials to
 Julia. The reasons for still having my own package are multiple:
@@ -184,16 +184,16 @@ coefficients,    a    `derivative`    methods,   methods   `positive_part`,
 `negative_part`  and `bar` (useful for Kazhdan-Lusztig theory) and a method
 `randpol` to produce random polynomials.
 
-Rational  fractions allow to invert  polynomials. `RatFrac`s are normalized
+Rational  fractions allow to invert  polynomials. `Frac{Pol{T}}`s are normalized
 so  that the numerator  and denominator are  true polynomials prime to each
 other.  They have the arithmetic operations `+`, `-` , `*`, `/`, `//`, `^`,
 `inv`,  `one`, `isone`, `zero`, `iszero` (which can operate between a `Pol`
-and a `RatFrac`).
+and a `Frac{Pol{T}}`).
 
 
 ```julia-repl
 julia> a=1/(q+1)
-RatFrac{Int64}: 1/(q+1)
+Frac{Pol{Int64}}: 1/(q+1)
 
 julia> Pol(2/a) # convert back to `Pol`
 Pol{Int64}: 2q+2
@@ -209,8 +209,8 @@ julia> m=[q+1 q+2;q-2 q-3]
  q+1  q+2
  q-2  q-3
 
-julia> n=inv(RatFrac.(m))
-2×2 Matrix{RatFrac{Int64}}:
+julia> n=inv(Frac.(m))
+2×2 Matrix{Frac{Pol{Int64}}}:
  (-q+3)/(2q-1)  (-q-2)/(-2q+1)
  (q-2)/(2q-1)   (q+1)/(-2q+1)
 
@@ -230,7 +230,7 @@ Rational fractions are also scalars for broadcasting and can be sorted
 """
 module Pols
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
-       bar, derivative, srgcd, RatFrac, @Pol, scalar, coefficients, exactdiv
+       bar, derivative, srgcd, Frac, @Pol, scalar, coefficients, exactdiv
 
 const varname=Ref(:x)
 
@@ -760,16 +760,75 @@ function Pol(pts::AbstractVector,vals::AbstractVector)
   p
 end
 
-#---------------------- RatFrac-------------------------------------
-struct RatFrac{T}
-  num::Pol{T}
-  den::Pol{T}
+#---------------------- Frac-------------------------------------
+## cannot use Rational{T} since T<:Integer
+struct Frac{T}
+  num::T
+  den::T
   # Unexported inner constructor that bypasses all checks
-  global RatFrac_(num::Pol{T},den::Pol{T}) where T=new{T}(num,den)
+  global Frac_(num::T,den::T) where T=new{T}(num,den)
 end
 
+Base.numerator(a::Frac)=a.num
+Base.denominator(a::Frac)=a.den
+
+function Base.convert(::Type{Frac{T}},p::Frac{T1}) where {T,T1}
+  Frac(convert(T,p.num),convert(T,p.den);check=false)
+end
+
+(::Type{Frac{T}})(a::Frac{T}) where T=a
+(::Type{Frac{T}})(a::Number) where T=convert(Frac{T},a)
+
+Base.broadcastable(p::Frac)=Ref(p)
+
+Base.copy(a::Frac)=Frac(a.num,a.den;check=false)
+Base.one(a::Frac)=Frac(one(a.num),one(a.den);check=false)
+Base.one(::Type{Frac{T}}) where T =Frac(one(T),one(T);check=false)
+Base.zero(::Type{Frac{T}}) where T =Frac(zero(T),one(T);check=false)
+Base.zero(a::Frac)=Frac(zero(a.num),one(a.num);check=false)
+Base.iszero(a::Frac)=iszero(a.num)
+# next 3 methods are to make inv using LU work (abs is stupid)
+Base.abs(p::Frac)=p
+Base.conj(p::Frac)=Frac(conj(p.num),conj(p.den);check=false)
+Base.adjoint(a::Frac)=conj(a)
+Base.cmp(a::Frac,b::Frac)=cmp([a.num,a.den],[b.num,b.den])
+Base.isless(a::Frac,b::Frac)=cmp(a,b)==-1
+
+function Base.show(io::IO, ::MIME"text/plain", a::Frac)
+  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
+  show(io,a)
+end
+
+function Base.show(io::IO,a::Frac)
+  n=sprint(show,a.num; context=io)
+  if  get(io, :limit,true) && isone(a.den)
+    print(io,n)
+  elseif !get(io, :limit, false) && !get(io, :TeX, false)
+    print(io,"Frac(",a.num,",",a.den,")")
+  else
+    print(io,bracket_if_needed(n))
+    n=sprint(show,a.den; context=io)
+    print(io,"/",bracket_if_needed(n))
+  end
+end
+
+Base.inv(a::Frac)=Frac(a.den,a.num;check=false)
+
+Base.://(a::Frac,b::Frac)=a*inv(b)
+Base.:/(a::Frac,b::Frac)=a//b
+Base.:*(a::Frac,b::Frac)=Frac(a.num*b.num,a.den*b.den;check=true)
+Base.:*(a::Frac{T},b::T) where T =Frac(a.num*b,a.den;check=false)
+Base.:*(b::T,a::Frac{T}) where T =a*b
+
+Base.:^(a::Frac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
+                              Base.power_by_squaring(inv(a),-n)
+Base.:+(a::Frac,b::Frac)=Frac(a.num*b.den+a.den*b.num,a.den*b.den)
+Base.:-(a::Frac)=Frac(-a.num,a.den;check=false)
+Base.:-(a::Frac,b::Frac)=a+(-b)
+
+#----------------------------------------------------------------------
 """
-`RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}`
+`Frac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}`
 
 Polynomials  `a`  and  `b`  are  promoted  to  same  coefficient  type.  It
 `check=true`  they are checked  for being true  polynomials (otherwise they
@@ -777,10 +836,10 @@ are  both multiplied by the same power  of the variable so they become true
 polynomials),  and  unless  `prime=true`  they  are  checked  for  having a
 non-trivial `gcd`.
 """
-function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
+function Frac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
   T=promote_type(T1,T2)
   a,b=promote(a,b)
-  if iszero(a) return RatFrac_(a,one(a))
+  if iszero(a) return Frac_(a,one(a))
   elseif iszero(b) error("zero denominator")
   end
   if check
@@ -794,17 +853,10 @@ function RatFrac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
     end
     if isone(-b) a,b=(-a,-b) end
   end
-  RatFrac_(a,b)
+  Frac_(a,b)
 end
 
-Base.numerator(a::RatFrac)=a.num
-Base.denominator(a::RatFrac)=a.den
-
-function Base.convert(::Type{RatFrac{T}},p::RatFrac{T1}) where {T,T1}
-  RatFrac(convert(Pol{T},p.num),convert(Pol{T},p.den);check=false)
-end
-
-function Pol(p::RatFrac)
+function Pol(p::Frac{<:Pol})
   if length(p.den.c)==1
     if isone(p.den.c[1]) return Pol(p.num.c .*p.den.c[1],p.num.v-p.den.v)
     else return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
@@ -813,108 +865,54 @@ function Pol(p::RatFrac)
   error("cannot convert ",p," to Pol")
 end
 
-Base.convert(::Type{Pol{T}},p::RatFrac) where {T}=convert(Pol{T},Pol(p))
+Base.convert(::Type{Pol{T}},p::Frac) where {T}=convert(Pol{T},Pol(p))
 
-function Base.convert(::Type{RatFrac{T}},p::Pol{T1}) where {T,T1}
-  RatFrac(convert(Pol{T},p),Pol(T(1));prime=true)
+function Base.convert(::Type{Frac{T}},p::Pol) where T
+  Frac(convert(T,p),one(T);prime=true)
 end
 
-function Base.convert(::Type{RatFrac{T}},p::Number) where {T}
-  RatFrac(convert(Pol{T},p),Pol(T(1));check=false)
+function Base.convert(::Type{Frac{Pol{T}}},p::Number) where {T}
+  Frac(convert(Pol{T},p),Pol(T(1));check=false)
 end
 
-function Base.promote_rule(a::Type{Pol{T1}},b::Type{RatFrac{T2}})where {T1,T2}
-  RatFrac{promote_type(T1,T2)}
+function Base.promote_rule(a::Type{Pol{T1}},b::Type{Frac{Pol{T2}}})where {T1,T2}
+  Frac{Pol{promote_type(T1,T2)}}
 end
 
-(::Type{RatFrac{T}})(a::RatFrac{T}) where T=a
-(::Type{RatFrac{T}})(a::Number) where T=convert(RatFrac{T},a)
-
-Base.broadcastable(p::RatFrac)=Ref(p)
-RatFrac(a::Number)=RatFrac(Pol(a),Pol(1);check=false)
-Base.convert(::Type{RatFrac},a::Pol)=RatFrac(a,Pol(1);prime=true)
-
-function RatFrac(a::Pol{T})where T 
-  if a.v>0 return RatFrac_{T}(a,Pol(T(1))) end
-  RatFrac(a,Pol(T(1));prime=false)
+function Frac(a::T)where T<:Pol
+  if a.v>0 return Frac_{T}(a,one(a)) end
+  Frac(a,one(a);prime=false)
 end
-
-Base.copy(a::RatFrac)=RatFrac(a.num,a.den;check=false)
-Base.one(a::RatFrac)=RatFrac(one(a.num),one(a.den);check=false)
-Base.one(::Type{RatFrac{T}}) where T =RatFrac(one(Pol{T}),one(Pol{T});check=false)
-Base.one(::Type{RatFrac}) where T =one(RatFrac{Int})
-Base.zero(::Type{RatFrac}) where T =zero(RatFrac{Int})
-Base.zero(::Type{RatFrac{T}}) where T =RatFrac(zero(Pol{T}),one(Pol{T});check=false)
-Base.zero(a::RatFrac)=RatFrac(zero(a.num),one(a.num);check=false)
-Base.iszero(a::RatFrac)=iszero(a.num)
-# next 3 methods are to make inv using LU work (abs is stupid)
-Base.abs(p::RatFrac)=p
-Base.conj(p::RatFrac)=RatFrac(conj(p.num),conj(p.den);check=false)
-Base.adjoint(a::RatFrac)=conj(a)
-Base.cmp(a::RatFrac,b::RatFrac)=cmp([a.num,a.den],[b.num,b.den])
-Base.isless(a::RatFrac,b::RatFrac)=cmp(a,b)==-1
-
-function Base.show(io::IO, ::MIME"text/plain", a::RatFrac)
-  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
-  show(io,a)
-end
-
-function Base.show(io::IO,a::RatFrac)
-  n=sprint(show,a.num; context=io)
-  if  get(io, :limit,true) && isone(a.den)
-    print(io,n)
-  elseif !get(io, :limit, false) && !get(io, :TeX, false)
-    print(io,"RatFrac(",a.num,",",a.den,")")
-  else
-    print(io,bracket_if_needed(n))
-    n=sprint(show,a.den; context=io)
-    print(io,"/",bracket_if_needed(n))
-  end
-end
-
-Base.inv(a::RatFrac)=RatFrac(a.den,a.num;check=false)
 
 function Base.://(a::Pol,b::Pol)
   if b.c==[1] return shift(a,-b.v)
   elseif b.c==[-1] return shift(-a,-b.v)
   elseif length(b.c)==1 return Pol(a.c.//b.c[1],a.v-b.v)
   end
-  RatFrac(a,b)
+  Frac(a,b)
 end
 
 bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
-  RatFrac(Pol(1),p;prime=true)
+  Frac(Pol(1),p;prime=true)
 end
 
 Base.:/(p::Pol,q::Pol)=p*inv(q)
 
-Base.://(a::RatFrac,b::RatFrac)=a*inv(b)
-Base.:/(a::RatFrac,b::RatFrac)=a//b
-Base.://(a::RatFrac,b::Union{Number,Pol})=RatFrac(a.num,a.den*b)
-Base.:/(a::RatFrac,b::Union{Number,Pol})=a//b
-Base.://(a::Union{Number,Pol},b::RatFrac)=a*inv(b)
-Base.:/(a::Union{Number,Pol},b::RatFrac)=a//b
-Base.://(p::Number,q::Pol)=RatFrac(Pol(p),q;prime=true)
+Base.://(a::Frac{<:Pol},b::Union{Number,Pol})=Frac(a.num,a.den*b)
+Base.:/(a::Frac{<:Pol},b::Union{Number,Pol})=a//b
+Base.://(a::Union{Number,Pol},b::Frac{<:Pol})=a*inv(b)
+Base.:/(a::Union{Number,Pol},b::Frac{<:Pol})=a//b
+Base.://(p::Number,q::Pol)=Frac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
 
-Base.:*(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.num,a.den*b.den;check=true)
+Base.:*(a::Frac{<:Pol},b::Union{Number,Pol})=Frac(a.num*b,a.den)
+Base.:*(b::Union{Number,Pol},a::Frac{<:Pol})=Frac(a.num*b,a.den)
+Base.:+(a::Frac{<:Pol},b::Number)=a+Frac(Pol(b))
+Base.:+(b::Number,a::Frac{<:Pol})=a+Frac(Pol(b))
+Base.:-(a::Frac{<:Pol},b::Number)=a-Frac(Pol(b))
+Base.:-(b::Number,a::Frac{<:Pol})=Frac(Pol(b))-a
 
-Base.:*(a::RatFrac,b::Pol)=RatFrac(a.num*b,a.den)
-Base.:*(b::Pol,a::RatFrac)=RatFrac(a.num*b,a.den)
-Base.:*(a::RatFrac,b::T) where T =RatFrac(a.num*b,a.den;check=false)
-Base.:*(b::T,a::RatFrac) where T =a*b
-
-Base.:^(a::RatFrac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
-                              Base.power_by_squaring(inv(a),-n)
-Base.:+(a::RatFrac,b::RatFrac)=RatFrac(a.num*b.den+a.den*b.num,a.den*b.den)
-Base.:+(a::RatFrac,b::Number)=a+RatFrac(b)
-Base.:+(b::Number,a::RatFrac)=a+RatFrac(b)
-Base.:-(a::RatFrac)=RatFrac(-a.num,a.den;check=false)
-Base.:-(a::RatFrac,b::RatFrac)=a+(-b)
-Base.:-(a::RatFrac,b)=a-RatFrac(b)
-Base.:-(b,a::RatFrac)=RatFrac(b)-a
-
-(p::RatFrac)(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
+(p::Frac{<:Pol})(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
 end

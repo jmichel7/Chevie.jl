@@ -74,7 +74,7 @@ Here is an example using `Mvp`'s:
 julia> W=coxgroup(:E,8);U=UnipotentGroup(W)
 UnipotentGroup(E₈)
 
-julia> u=U(map(i->i=>Z(2)*Mvp(Symbol("x_",i)),1:8)...)
+julia> u=U(map(i->i=>Z(2)*Mvp(Symbol("x",Char(i+0x2080))),1:8)...)
 u1(x₁)u2(x₂)u3(x₃)u4(x₄)u5(x₅)u6(x₆)u7(x₇)u8(x₈)
 ```
 

@@ -114,7 +114,8 @@ julia> m[:y] # power of y in m
 -2
 ```
 
-The valuation and degree of an Mvp can be  inspected globally of variable by variable.
+The valuation and degree of an Mvp can be inspected globally or variable by
+variable.
 
 ```julia-repl
 julia> p
@@ -191,7 +192,8 @@ julia> scalar(v)
 1.4142135623730951
 ```
 
-One can divide an `Mvp` by another when the division is exact
+One  can divide an `Mvp` by another when the division is exact, compute the
+`gcd` and `lcm` of two `Mvp`.
 
 ```julia-repl
 julia> exactdiv(x^2-y^2,x-y)
@@ -200,7 +202,7 @@ Mvp{Int64}: x+y
 julia> (x+y)/(2x^2)   # or by a monomial
 Mvp{Rational{Int64}}: (1//2)x⁻¹+(1//2)x⁻²y
 
-julia> (x+y)/(x-y)    # otherwise one gets a rational fraction.
+julia> (x+y)/(x-y)    # otherwise one gets a rational fraction `Mvrf`
 Mvrf{Int64}: (x+y)/(x-y)
 ```
 
@@ -212,7 +214,7 @@ julia> (x+1)^-2
 Mvrf{Int64}: 1/(x²+2x+1)
 ```
 
-One  can evaluate a  `Ratfrac` when setting  the value of some
+One  can evaluate an  `Mvrf` when setting  the value of some
 variables by using the function call syntax:
 
 ```julia-repl
@@ -222,6 +224,19 @@ Mvp{Int64}: 2y+1
 
 `Mvrf` are dissected using `numerator` and `denominator`.
 
+julia> m=[x+y x-y;x+1 y+1]
+2×2 Matrix{Mvp{Int64, Int64}}:
+ x+y  x-y
+ x+1  y+1
+
+julia> n=inv(Mvrf.(m))
+2×2 Matrix{Mvrf{Int64}}:
+ (-y-1)/(x²-2xy-y²-2y)  (x-y)/(x²-2xy-y²-2y)
+ (x+1)/(x²-2xy-y²-2y)   (-x-y)/(x²-2xy-y²-2y)
+
+julia> lcm(denominator.(n))
+Mvp{Int64}: x²-2xy-y²-2y
+
 Despite  the degree of generality of our  polynomials, the speed is not too
 shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4sec.
 According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
@@ -229,16 +244,15 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 module Mvps
 # benchmar: (x+y+z)^3     2.3μs 48 alloc
 using ModuleElts: ModuleElt, ModuleElts
-using ..Util: ordinal, printTeX, stringexp
+using ..Util: ordinal, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
               valuation, degree, scalar, exactdiv
-
-#import Gapjm: coefficients, valuation
 import ..Cycs: root
 using ..Cycs: Cyc
 # to use as a stand-alone module comment above line, uncomment next, and
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
+#import Gapjm: coefficients, valuation
 export coefficients, coefficient
 export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, Mvrf, term
 #------------------ Monomials ---------------------------------------------
@@ -288,7 +302,7 @@ function Base.show(io::IO,m::Monomial)
   start=true
   for (v,d) in m.d
     if !(start || replorTeX) print(io,"*") end
-    if replorTeX printTeX(io,string(v)) else print(io,string(v)) end
+    print(io,string(v))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
       if replorTeX print(io,stringexp(io,d))
@@ -929,9 +943,8 @@ Pols.negative_part(p::Mvp)=
 Pols.bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in p.d))
 
 """
-The  function 'Derivative(p,v)' returns the  derivative of 'p' with respect
-to  the variable given by the string 'v'; if 'v' is not given, with respect
-to the first variable in alphabetical order.
+The  function 'derivative(p,v₁,…,vₙ)' returns the  derivative of 'p' with 
+respect to  the variable given by the symbol 'v₁', then `v₂`, ...
 
 ```julia-repl
 julia> @Mvp x,y;p=7x^5*y^-1-2
@@ -943,8 +956,8 @@ Mvp{Int64}: 35x⁴y⁻¹
 julia> derivative(p,:y)
 Mvp{Int64}: -7x⁵y⁻²
 
-julia> derivative(p)
-Mvp{Int64}: 35x⁴y⁻¹
+julia> derivative(p,:x,:y)
+Mvp{Int64}: -35x⁴y⁻²
 
 julia> p=x^(1//2)*y^(1//3)
 Mvp{Int64,Rational{Int64}}: x½y⅓
@@ -959,9 +972,12 @@ julia> derivative(p,:z)
 Mvp{Rational{Int64},Rational{Int64}}: 0
 ```
 """
-function Pols.derivative(p::Mvp,v=first(variables(p)))
+function Pols.derivative(p::Mvp,vv...)
   # check needed because 0 could appear in coeffs
-  Mvp(ModuleElt(m*Monomial(v=>-1)=>c*degree(m,v) for (m,c) in p.d))
+  for v in vv
+    p=Mvp(ModuleElt(m*Monomial(v=>-1)=>c*degree(m,v) for (m,c) in p.d))
+  end
+  p
 end
 
 # returns p/q when the division is exact, nothing otherwise
@@ -1051,6 +1067,7 @@ Mvp{Int64}: -x³-x²y+xy²+y³
 ```
 """
 Base.lcm(a::Mvp,b::Mvp)=exactdiv(a*b,gcd(a,b))
+Base.lcm(a::AbstractArray{<:Mvp})=reduce(lcm,a)
 
 Base.eltype(p::Mvp{T,N}) where{T,N} =T
 
