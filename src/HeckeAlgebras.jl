@@ -593,22 +593,20 @@ function innermul(W::CoxeterGroup,a,b)
 end
 
 function innermul(W::PermRootGroup,a,b)
+  if length(refltype(W))>1 || !iscyclic(W) error("not implemented") end
   sum(a.d) do (ea,pa)
     h=b.d*pa
     for i in reverse(word(W,ea))
-      if length(refltype(W))==1 && iscyclic(W)
-        new=zero(h)
-        for (eb,pb) in h
-          lb=length(word(W,eb))
-          if 1+lb<length(W) push!(new.d,W(1)*eb=>pb)
-          else
-            p=polynomial_relations(a.H)[1]
-            append!(new.d,[W(1)^(i+p.v+1)=>pb*c for (i,c) in enumerate(p.c)])
-          end
+      new=zero(h)
+      for (eb,pb) in h
+        lb=length(word(W,eb))
+        if 1+lb<length(W) push!(new.d,W(1)*eb=>pb)
+        else
+          p=polynomial_relations(a.H)[1]
+          append!(new.d,[W(1)^(i+p.v+1)=>pb*c for (i,c) in enumerate(p.c)])
         end
-        h=new
-      else error("not implemented")
       end
+      h=new
     end
     HeckeTElt(MM(h.d),a.H)
   end

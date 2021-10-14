@@ -463,21 +463,44 @@ Base.:^(a::Pol, n::Integer)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
                 Base.power_by_squaring(inv(a),-n)
 
 function Base.:+(a::Pol,b::Pol)
-  d=b.v-a.v
-  if d<0 return b+a end
   if iszero(a) return b elseif iszero(b) return a end
   z=zero(a.c[1]+b.c[1])
-  res=fill(z,max(length(a.c),d+length(b.c)))
-@inbounds view(res,eachindex(a.c)).=a.c
-@inbounds view(res,d.+eachindex(b.c)).+=b.c
-  Pol(res,a.v;copy=false)
+  d=b.v-a.v
+  if d>=0
+    res=fill(z,max(length(a.c),d+length(b.c)))
+  @inbounds view(res,eachindex(a.c)).=a.c
+  @inbounds view(res,d.+eachindex(b.c)).+=b.c
+    Pol(res,a.v;copy=false)
+  else
+    res=fill(z,max(length(a.c)-d,length(b.c)))
+  @inbounds view(res,eachindex(a.c).-d).=a.c
+  @inbounds view(res,eachindex(b.c)).+=b.c
+    Pol(res,b.v;copy=false)
+  end
+end
+
+function Base.:-(a::Pol,b::Pol)
+  if iszero(a) return b elseif iszero(b) return a end
+  z=zero(a.c[1]+b.c[1])
+  d=b.v-a.v
+  if d>=0
+    res=fill(z,max(length(a.c),d+length(b.c)))
+  @inbounds view(res,eachindex(a.c)).=a.c
+  @inbounds view(res,d.+eachindex(b.c)).-=b.c
+    Pol(res,a.v;copy=false)
+  else
+    res=fill(z,max(length(a.c)-d,length(b.c)))
+  @inbounds view(res,eachindex(a.c).-d).=a.c
+  @inbounds view(res,eachindex(b.c)).-=b.c
+    Pol(res,b.v;copy=false)
+  end
 end
 
 Base.:+(a::Pol, b::Number)=a+Pol(b)
 Base.:+(b::Number, a::Pol)=Pol(b)+a
-Base.:-(a::Pol{T}) where T=Pol_(-a.c,a.v)
-Base.:-(a::Pol, b)=a+(-b)
+Base.:-(a::Pol)=Pol_(-a.c,a.v)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
+Base.:-(a::Pol,b::Number)=a-Pol(b)
 Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false,copy=false)
 
 exactdiv(a,b)=a/b  # generic version for fields

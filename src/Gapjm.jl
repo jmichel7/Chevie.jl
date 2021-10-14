@@ -95,13 +95,13 @@ include("Perms.jl");@usingmerge verbose=true reexport Perms
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
 include("Pols.jl");@usingmerge verbose=true reexport Pols
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
+#if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@usingmerge verbose=true reexport FFfac
 include("Fact.jl");@usingmerge verbose=true reexport Fact
 include("MatInt.jl");@reexport using .MatInt
 include("PermGroups.jl");@reexport using .PermGroups
-#if false
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
