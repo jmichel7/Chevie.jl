@@ -5,13 +5,13 @@ of  the  type  `x₁^{a₁}…  xₙ^{aₙ}`  where  `xᵢ`  are variables and `
 exponents   which  can  be  arbitrary  rational  numbers  (we  use  Puiseux
 polynomial  with cyclotomic coefficients as  splitting fields of cyclotomic
 Hecke  algebras), and also implements multivariate rational fractions (type
-`Mvrf`).
+`Frac{Mvp{T,Int}}`).
 
 Some  functions described below work  only with polynomials where variables
 are  raised to integral powers;  we will refer to  such objects as "Laurent
 polynomials"; some functions require further that variables are raised only
 to  positive powers: we refer then to "true polynomials" (the numerator and
-denominator of `Mvrf` are true polynomials).
+denominator of `Frac{Mvp{T,Int}}` are true polynomials).
 
 Puiseux  polynomials have the  parametric type `Mvp{M,C}`  where `M` is the
 type   of   the   monomials   (`Monomial{Int}`   for  Laurent  polynomials;
@@ -202,8 +202,8 @@ Mvp{Int64}: x+y
 julia> (x+y)/(2x^2)   # or by a monomial
 Mvp{Rational{Int64}}: (1//2)x⁻¹+(1//2)x⁻²y
 
-julia> (x+y)/(x-y)    # otherwise one gets a rational fraction `Mvrf`
-Mvrf{Int64}: (x+y)/(x-y)
+julia> (x+y)/(x-y)    # otherwise one gets a rational fraction
+Frac{Mvp{Int64, Int64}}: (x+y)/(x-y)
 ```
 
 Raising  a non-monomial  Laurent polynomial  to a  negative power returns a
@@ -211,10 +211,10 @@ rational fraction.
 
 ```julia-repl
 julia> (x+1)^-2
-Mvrf{Int64}: 1/(x²+2x+1)
+Frac{Mvp{Int64, Int64}}: 1/(x²+2x+1)
 ```
 
-One  can evaluate an  `Mvrf` when setting  the value of some
+One  can evaluate a `Frac` when setting  the value of some
 variables by using the function call syntax:
 
 ```julia-repl
@@ -222,15 +222,15 @@ julia> ((x+y)/(x-y))(x=y+1)
 Mvp{Int64}: 2y+1
 ```
 
-`Mvrf` are dissected using `numerator` and `denominator`.
+`Frac` are dissected using `numerator` and `denominator`.
 
 julia> m=[x+y x-y;x+1 y+1]
 2×2 Matrix{Mvp{Int64, Int64}}:
  x+y  x-y
  x+1  y+1
 
-julia> n=inv(Mvrf.(m))
-2×2 Matrix{Mvrf{Int64}}:
+julia> n=inv(Frac.(m))
+2×2 Matrix{Frac{Int64}}:
  (-y-1)/(x²-2xy-y²-2y)  (x-y)/(x²-2xy-y²-2y)
  (x+1)/(x²-2xy-y²-2y)   (-x-y)/(x²-2xy-y²-2y)
 
@@ -246,7 +246,7 @@ module Mvps
 using ModuleElts: ModuleElt, ModuleElts
 using ..Util: ordinal, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
-              valuation, degree, scalar, exactdiv
+              valuation, degree, scalar, exactdiv, Frac
 import ..Cycs: root
 using ..Cycs: Cyc
 # to use as a stand-alone module comment above line, uncomment next, and
@@ -254,7 +254,7 @@ using ..Cycs: Cyc
 #export root
 #import Gapjm: coefficients, valuation
 export coefficients, coefficient
-export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, Mvrf, term
+export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   
@@ -983,6 +983,7 @@ end
 # returns p/q when the division is exact, nothing otherwise
 # Arguments must be true polynomials
 function Pols.exactdiv(p::Mvp,q::Mvp)
+  if isone(q) return p end
   if iszero(q) error("cannot divide by 0")
   elseif iszero(p) || isone(q) return p
   elseif monom(q)
@@ -1074,122 +1075,81 @@ Base.eltype(p::Mvp{T,N}) where{T,N} =T
 Base.denominator(p::Mvp)=lcm(denominator.(values(p.d)))
 Base.numerator(p::Mvp{<:Rational{T},N}) where{T,N} =convert(Mvp{T,N},p*denominator(p))
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
-#----------------------------- Mvrf -----------------------------------
-struct Mvrf{T}
-  num::Mvp{T,Int}
-  den::Mvp{T,Int}
+#----------------------------- Frac{Mvp{T,Int}} -------------------------------
+# make both pols without common monomial factor
+function make_positive(a::Mvp,b::Mvp)
+  d=laurent_denominator(a,b)
+  isone(d) ? (a,b) : (a*d,b*d)
+end
+  
   # to speedup the constructor it can be told:
   # pol: we know a and b are true polynomials
   # prime: we know a and b are prime to each other
-  function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int};pol=false,prime=false)where{T}
-    if iszero(b) error("division by 0") end
-    if iszero(a) return new{T}(a,one(Mvp{T,Int})) end
-    if !pol
-      d=laurent_denominator(a,b)
-      if !isone(d) a*=d;b*=d end
-    end
-    if !prime && !isone(b)
-      d=gcd(a,b)
-      if !isone(d) a=exactdiv(a,d);b=exactdiv(b,d) end
-    end
-    return new{T}(a,b)
+function Frac(a::Mvp,b::Mvp;pol=false,prime=false)
+  a,b=promote(a,b)
+  if iszero(a) return Pols.Frac_(a,one(a))
+  elseif iszero(b) error("division by 0")
   end
+  if !pol
+    (a,b)=make_positive(a,b)
+  end
+  if !prime && !monom(b)
+    d=gcd(a,b)
+    a,b=exactdiv(a,d),exactdiv(b,d)
+  end
+  if scalar(b)==-1 a,b=(-a,-b) end
+  return Pols.Frac_(a,b)
 end
 
-function Mvrf(a::Mvp{T1,Int},b::Mvp{T2,Int};pol=false,prime=false)where{T1,T2}
-  T=promote_type(T1,T2)
-  Mvrf(convert(Mvp{T,Int},a),convert(Mvp{T,Int},b);pol,prime)
+Pols.Frac(a::Mvp)=Frac(a,Mvp(1);prime=true)
+
+function Frac(a::Mvp{T,Int},b::Mvp{T,Int})where T<:Rational
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a))
 end
 
-function Mvrf(a::Mvp{T,Int},b::Mvp{T,Int})where T<:Rational
-  Mvrf(numerator(a)*denominator(b),numerator(b)*denominator(a))
+function Frac(a::Mvp{Cyc{T},Int},b::Mvp{Cyc{T},Int})where T<:Rational
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a))
 end
 
-function Mvrf(a::Mvp{Cyc{T},Int},b::Mvp{Cyc{T},Int})where T<:Rational
-  Mvrf(numerator(a)*denominator(b),numerator(b)*denominator(a))
-end
-
-Base.numerator(p::Mvrf)=p.num
-Base.denominator(p::Mvrf)=p.den
-Base.:(==)(a::Mvrf,b::Mvrf)=a.num==b.num && a.den==b.den
-
-function Base.convert(::Type{Mvrf{T}},p::Mvrf{T1}) where {T,T1}
-  Mvrf(convert(Mvp{T,Int},p.num),convert(Mvp{T,Int},p.den);pol=true,prime=true)
-end
-
-function Base.convert(::Type{Mvp{T,Int}},p::Mvrf{T1}) where {T,T1}
-  if isone(p.den) return convert(Mvp{T,Int},p.num)
+function Mvp(a::Frac{<:Mvp})
+  if isone(p.den) return p.num
   elseif monom(p.den) 
     (m,c)=first(p.den.d)
-    return convert(Mvp{T,Int},p.num*inv(m)*inv(c)) 
+    return p.num*inv(m)*inv(c)
   end
-  error("cannot convert ",p," to Mvp{",T,"}")
+  error("cannot convert ",p," to Mvp")
 end
 
-function Base.convert(::Type{Mvrf{T}},p::Mvp{T1,N}) where {T,T1,N}
-  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));prime=true)
+Base.convert(::Type{Mvp{T,Int}},p::Frac{<:Mvp}) where T=convert(Mvp{T,Int},Mvp(p))
+
+function Base.convert(::Type{Frac{T}},p::Mvp) where T
+  Frac(convert(T,p),one(T);prime=true)
 end
 
-function Base.convert(::Type{Mvrf{T}},p::Number) where {T}
-  Mvrf(convert(Mvp{T,Int},p),Mvp(T(1));pol=true)
+function Base.convert(::Type{Frac{Mvp{T,Int}}},p::Number) where T
+  Frac(convert(Mvp{T,Int},p),Mvp(T(1));pol=true)
 end
 
-function Base.promote_rule(a::Type{Mvp{T1,Int}},b::Type{Mvrf{T2}})where {T1,T2}
-  Mvrf{promote_type(T1,T2)}
+function Base.promote_rule(a::Type{Mvp{T1,Int}},b::Type{Frac{T2}})where {T1,T2}
+  Frac{promote_type(Mvp{T1,Int},T2)}
 end
 
-function Base.promote_rule(a::Type{Mvrf{T1}},b::Type{Mvrf{T2}})where {T1,T2}
-  Mvrf{promote_type(T1,T2)}
+function Base.promote_rule(a::Type{Frac{Mvp{T1}}},b::Type{Frac{Mvp{T2}}})where {T1,T2}
+  Frac{Mvp{promote_type(T1,T2)}}
 end
 
-function Base.promote_rule(a::Type{T1},b::Type{Mvrf{T2}})where {T1<:Integer,T2}
-  Mvrf{promote_type(T1,T2)}
+function Base.promote_rule(a::Type{T1},b::Type{Frac{Mvp{T2}}})where {T1<:Number,T2}
+  Frac{Mvp{promote_type(T1,T2)}}
 end
 
-(::Type{Mvrf{T}})(a) where T=convert(Mvrf{T},a)
-
-Mvp(a::Mvrf{T}) where T =convert(Mvp{T,Int},a)
-
-Base.broadcastable(p::Mvrf)=Ref(p)
-Mvrf(a::Number)=Mvrf(Mvp(a),Mvp(1);pol=true)
-Mvrf(a::Mvp)=Mvrf(a,Mvp(1);prime=true)
-Base.copy(a::Mvrf)=Mvrf(a.num,a.den;pol=true,prime=true)
-Base.one(a::Mvrf)=Mvrf(one(a.num),one(a.den);pol=true,prime=true)
-Base.one(::Type{Mvrf{T}}) where T =Mvrf(one(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
-Base.zero(::Type{Mvrf{T}}) where T =Mvrf(zero(Mvp{T,Int}),one(Mvp{T,Int});pol=true,prime=true)
-Base.zero(a::Mvrf)=Mvrf(zero(a.num),one(a.num);pol=true,prime=true)
-# next 3 stuff to make inv using LU work (abs is stupid)
-Base.abs(p::Mvrf)=p
-Base.conj(p::Mvrf)=Mvrf(conj(p.num),conj(p.den);pol=true,prime=true)
-Base.adjoint(a::Mvrf)=conj(a)
-Base.cmp(a::Mvrf,b::Mvrf)=cmp([a.num,a.den],[b.num,b.den])
-Base.isless(a::Mvrf,b::Mvrf)=cmp(a,b)==-1
-
-function Base.show(io::IO, ::MIME"text/plain", a::Mvrf)
-  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
-  show(io,a)
-end
-
-function Base.show(io::IO,a::Mvrf)
-  if a.den==-1 a=Mvrf(-a.num,-a.den;pol=true) end
-  n=sprint(show,a.num; context=io)
-  if  get(io, :limit,true) && a.den==one(a.den)
-    print(io,n)
-  else
-    print(io,Pols.bracket_if_needed(n))
-    n=sprint(show,a.den; context=io)
-    print(io,"/",Pols.bracket_if_needed(n))
-  end
-end
-
-Base.inv(a::Mvrf)=Mvrf(a.den,a.num;pol=true,prime=true)
+(::Type{Frac{Mvp{T}}})(a) where T=convert(Frac{Mvp{T}},a)
 
 function Base.inv(p::Mvp)
   if monom(p)
     (m,c)=first(p.d)
     return Mvp(inv(m)=>c^2==1 ? c : 1/c) 
   end
-  Mvrf(Mvp(1),p;pol=false,prime=true)
+  Frac(Mvp(1),p;pol=false,prime=true)
 end
 
 function Base.://(a::Mvp,b::Mvp)
@@ -1198,38 +1158,30 @@ function Base.://(a::Mvp,b::Mvp)
     (m,c)=first(b.d)
     return Mvp(ModuleElt(m1/m=>c^2==1 ? c1*c : c1//c for (m1,c1) in a.d))
   end
-  Mvrf(a,b)
+  Frac(a,b)
 end
 
-Base.:/(p::Mvp,q::Mvp)=p//q
-
-Base.://(a::Mvrf,b::Mvrf)=a*inv(b)
-Base.://(a::Mvrf,b::Number)=Mvrf(a.num,a.den*b;pol=true,prime=true)
-Base.://(a::Mvrf,b::Mvp)=Mvrf(a.num,a.den*b)
-Base.:/(a::Mvrf,b::Union{Mvrf,Number,Mvp})=a//b
-Base.:/(a::Union{Number,Mvp},b::Mvrf)=a*inv(b)
+Base.://(a::Frac{<:Mvp},b::Number)=Frac(a.num,a.den*b;pol=true,prime=true)
+Base.://(a::Frac{<:Mvp},b::Mvp)=Frac(a.num,a.den*b)
+Base.:/(a::Frac{<:Mvp},b::Union{Frac{<:Mvp},Number,Mvp})=a//b
+Base.:/(a::Union{Number,Mvp},b::Frac{<:Mvp})=a*inv(b)
+Base.:/(a::Mvp,b::Mvp)=a//b
 Base.://(p::Number,q::Mvp)=Mvp(p)//q
 Base.:/(p::Number,q::Mvp)=Mvp(p)/q
 
-Base.:*(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.num,a.den*b.den;pol=true)
+Base.:*(a::Frac{<:Mvp},b::Mvp)=Frac(a.num*b,a.den)
+Base.:*(b::Mvp,a::Frac{<:Mvp})=a*b
+Base.:*(a::Frac{<:Mvp},b::Number) where T =Frac(a.num*b,a.den;pol=true)
+Base.:*(b::Number,a::Frac{<:Mvp}) where T =a*b
 
-Base.:*(a::Mvrf,b::Mvp)=Mvrf(a.num*b,a.den)
-Base.:*(b::Mvp,a::Mvrf)=a*b
-Base.:*(a::Mvrf,b::T) where T =Mvrf(a.num*b,a.den;pol=true)
-Base.:*(b::T,a::Mvrf) where T =a*b
+FracMvp(a::Number)=convert(Frac{Mvp{typeof(a),Int}},a)
+Base.:+(a::Frac{<:Mvp},b::Union{Number,Mvp})=a+FracMvp(b)
+Base.:+(b::Union{Number,Mvp},a::Frac{<:Mvp})=a+b
+Base.:-(a::Frac{<:Mvp},b::Union{Number,Mvp})=a-FracMvp(b)
+Base.:-(b::Union{Number,Mvp},a::Frac{<:Mvp})=FracMvp(b)-a
 
-Base.:^(a::Mvrf, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) : 
-                              Base.power_by_squaring(inv(a),-n)
-Base.:+(a::Mvrf,b::Mvrf)=Mvrf(a.num*b.den+a.den*b.num,a.den*b.den;pol=true)
-Base.:+(a::Mvrf,b::Union{Number,Mvp})=a+Mvrf(b)
-Base.:+(b::Union{Number,Mvp},a::Mvrf)=a+Mvrf(b)
-Base.:-(a::Mvrf)=Mvrf(-a.num,a.den;pol=true,prime=true)
-Base.:-(a::Mvrf,b::Mvrf)=a+(-b)
-Base.:-(a::Mvrf,b)=a-Mvrf(b)
-Base.:-(b,a::Mvrf)=Mvrf(b)-a
-
-value(p::Mvrf,k::Pair...)=value(p.num,k...)/value(p.den,k...)
-(p::Mvrf)(;arg...)=value(p,arg...)
+value(p::Frac{<:Mvp},k::Pair...)=value(p.num,k...)/value(p.den,k...)
+(p::Frac{<:Mvp})(;arg...)=value(p,arg...)
 
 #julia1.6.3> @btime Mvps.fateman(15)
 # 4.040 s (15219390 allocations: 5.10 GiB)
@@ -1239,4 +1191,6 @@ function fateman(n)
   length((f*(f+1)).d)
 end
 
+# @btime inv(Frac.([x+y x-y;x+1 y+1])) setup=(x=Mvp(:x);y=Mvp(:y))
+# 252.902 μs (4805 allocations: 295.33 KiB)
 end

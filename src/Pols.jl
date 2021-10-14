@@ -773,7 +773,7 @@ Base.numerator(a::Frac)=a.num
 Base.denominator(a::Frac)=a.den
 
 function Base.convert(::Type{Frac{T}},p::Frac{T1}) where {T,T1}
-  Frac(convert(T,p.num),convert(T,p.den);check=false)
+  Frac_(convert(T,p.num),convert(T,p.den))
 end
 
 (::Type{Frac{T}})(a::Frac{T}) where T=a
@@ -781,84 +781,89 @@ end
 
 Base.broadcastable(p::Frac)=Ref(p)
 
-Base.copy(a::Frac)=Frac(a.num,a.den;check=false)
-Base.one(a::Frac)=Frac(one(a.num),one(a.den);check=false)
-Base.one(::Type{Frac{T}}) where T =Frac(one(T),one(T);check=false)
-Base.zero(::Type{Frac{T}}) where T =Frac(zero(T),one(T);check=false)
-Base.zero(a::Frac)=Frac(zero(a.num),one(a.num);check=false)
+Base.copy(a::Frac)=Frac_(a.num,a.den)
+Base.one(a::Frac)=Frac_(one(a.num),one(a.den))
+Base.one(::Type{Frac{T}}) where T =Frac_(one(T),one(T))
+Base.isone(a::Frac)=a.num==a.den
+Base.zero(::Type{Frac{T}}) where T =Frac_(zero(T),one(T))
+Base.zero(a::Frac)=Frac_(zero(a.num),one(a.num))
 Base.iszero(a::Frac)=iszero(a.num)
 # next 3 methods are to make inv using LU work (abs is stupid)
 Base.abs(p::Frac)=p
-Base.conj(p::Frac)=Frac(conj(p.num),conj(p.den);check=false)
+Base.conj(p::Frac)=Frac_(conj(p.num),conj(p.den))
 Base.adjoint(a::Frac)=conj(a)
+Base.:(==)(a::Frac,b::Frac)=a.num==b.num && a.den==b.den
 Base.cmp(a::Frac,b::Frac)=cmp([a.num,a.den],[b.num,b.den])
 Base.isless(a::Frac,b::Frac)=cmp(a,b)==-1
 
 function Base.show(io::IO, ::MIME"text/plain", a::Frac)
-  if !haskey(io,:typeinfo) print(io,typeof(a),": ") end
+  if !haskey(io,:typeinfo) 
+    print(io,typeof(a),": ") 
+    io=IOContext(io,:typeinfo=>typeof(a))
+  end
   show(io,a)
 end
 
 function Base.show(io::IO,a::Frac)
-  n=sprint(show,a.num; context=io)
-  if  get(io, :limit,true) && isone(a.den)
-    print(io,n)
-  elseif !get(io, :limit, false) && !get(io, :TeX, false)
+  if !get(io, :limit, false) && !get(io, :TeX, false)
     print(io,"Frac(",a.num,",",a.den,")")
-  else
-    print(io,bracket_if_needed(n))
-    n=sprint(show,a.den; context=io)
-    print(io,"/",bracket_if_needed(n))
+    return
   end
+  if haskey(io,:typeinfo) && isone(a.den) 
+    print(io,a.num)
+    return 
+  end
+  n=sprint(show,a.num; context=io)
+  print(io,bracket_if_needed(n))
+  n=sprint(show,a.den; context=io)
+  print(io,"/",bracket_if_needed(n))
 end
 
-Base.inv(a::Frac)=Frac(a.den,a.num;check=false)
+Base.inv(a::Frac)=Frac_(a.den,a.num)
 
-Base.://(a::Frac,b::Frac)=a*inv(b)
+Base.:*(a::Frac,b::Frac)=Frac(a.num*b.num,a.den*b.den)
+Base.://(a::Frac,b::Frac)=Frac(a.num*b.den,a.den*b.num)
 Base.:/(a::Frac,b::Frac)=a//b
-Base.:*(a::Frac,b::Frac)=Frac(a.num*b.num,a.den*b.den;check=true)
-Base.:*(a::Frac{T},b::T) where T =Frac(a.num*b,a.den;check=false)
-Base.:*(b::T,a::Frac{T}) where T =a*b
 
 Base.:^(a::Frac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
                               Base.power_by_squaring(inv(a),-n)
 Base.:+(a::Frac,b::Frac)=Frac(a.num*b.den+a.den*b.num,a.den*b.den)
-Base.:-(a::Frac)=Frac(-a.num,a.den;check=false)
-Base.:-(a::Frac,b::Frac)=a+(-b)
+Base.:-(a::Frac)=Frac_(-a.num,a.den)
+Base.:-(a::Frac,b::Frac)=Frac(a.num*b.den-a.den*b.num,a.den*b.den)
 
 #----------------------------------------------------------------------
-"""
-`Frac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}`
 
-Polynomials  `a`  and  `b`  are  promoted  to  same  coefficient  type.  It
-`check=true`  they are checked  for being true  polynomials (otherwise they
-are  both multiplied by the same power  of the variable so they become true
-polynomials),  and  unless  `prime=true`  they  are  checked  for  having a
-non-trivial `gcd`.
+# make both pols, one of valuation 0
+function make_positive(a::Pol,b::Pol)
+  v=a.v-b.v
+  shift(a,max(v,0)-a.v),shift(b,-min(v,0)-b.v)
+end
+  
 """
-function Frac(a::Pol{T1},b::Pol{T2};check=true,prime=false)where {T1,T2}
-  T=promote_type(T1,T2)
+`Frac(a::Pol,b::Pol;prime=false)
+
+Polynomials  `a` and `b` are promoted to same coefficient type, and checked
+for  being true polynomials (otherwise they are both multiplied by the same
+power  of  the  variable  so  they  become  true  polynomials),  and unless
+`prime=true` they are checked for having a non-trivial `gcd`.
+"""
+function Frac(a::Pol,b::Pol;prime=false)
   a,b=promote(a,b)
   if iszero(a) return Frac_(a,one(a))
-  elseif iszero(b) error("zero denominator")
+  elseif iszero(b) error("division by 0")
   end
-  if check
-    v=a.v-b.v
-    a=shift(a,max(v,0)-a.v)
-    b=shift(b,-min(v,0)-b.v)
-    if !prime
-      d=gcd(a,b)
-      a=exactdiv(a,d)
-      b=exactdiv(b,d)
-    end
-    if isone(-b) a,b=(-a,-b) end
+  a,b=make_positive(a,b)
+  if !prime && !(length(b.c)==1)
+    d=gcd(a,b)
+    a,b=exactdiv(a,d),exactdiv(b,d)
   end
+  if scalar(b)==-1 a,b=(-a,-b) end
   Frac_(a,b)
 end
 
 function Pol(p::Frac{<:Pol})
   if length(p.den.c)==1
-    if isone(p.den.c[1]) return Pol(p.num.c .*p.den.c[1],p.num.v-p.den.v)
+    if isone(p.den.c[1]^2) return Pol(p.num.c .*p.den.c[1],p.num.v-p.den.v)
     else return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
     end
   end
@@ -872,7 +877,7 @@ function Base.convert(::Type{Frac{T}},p::Pol) where T
 end
 
 function Base.convert(::Type{Frac{Pol{T}}},p::Number) where {T}
-  Frac(convert(Pol{T},p),Pol(T(1));check=false)
+  Frac_(convert(Pol{T},p),Pol(T(1)))
 end
 
 function Base.promote_rule(a::Type{Pol{T1}},b::Type{Frac{Pol{T2}}})where {T1,T2}
@@ -881,21 +886,19 @@ end
 
 function Frac(a::T)where T<:Pol
   if a.v>0 return Frac_{T}(a,one(a)) end
-  Frac(a,one(a);prime=false)
-end
-
-function Base.://(a::Pol,b::Pol)
-  if b.c==[1] return shift(a,-b.v)
-  elseif b.c==[-1] return shift(-a,-b.v)
-  elseif length(b.c)==1 return Pol(a.c.//b.c[1],a.v-b.v)
-  end
-  Frac(a,b)
+  Frac(a,one(a);prime=true)
 end
 
 bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
+
+function Base.://(a::Pol,b::Pol)
+  if length(b.c)==1 return Pol(a.c.*bestinv(b.c[1]),a.v-b.v) end
+  Frac(a,b)
+end
+
 function Base.inv(p::Pol)
   if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
-  Frac(Pol(1),p;prime=true)
+  Frac_(make_positive(Pol(1),p)...)
 end
 
 Base.:/(p::Pol,q::Pol)=p*inv(q)
@@ -907,12 +910,16 @@ Base.:/(a::Union{Number,Pol},b::Frac{<:Pol})=a//b
 Base.://(p::Number,q::Pol)=Frac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
 
-Base.:*(a::Frac{<:Pol},b::Union{Number,Pol})=Frac(a.num*b,a.den)
-Base.:*(b::Union{Number,Pol},a::Frac{<:Pol})=Frac(a.num*b,a.den)
+Base.:*(a::Frac{<:Pol},b::Pol)=Frac(a.num*b,a.den)
+Base.:*(b::Pol,a::Frac{<:Pol})=a*b
+Base.:*(a::Frac{<:Pol},b::Number)=Frac_(a.num*b,a.den)
+Base.:*(b::Number,a::Frac{<:Pol})=a*b
 Base.:+(a::Frac{<:Pol},b::Number)=a+Frac(Pol(b))
 Base.:+(b::Number,a::Frac{<:Pol})=a+Frac(Pol(b))
 Base.:-(a::Frac{<:Pol},b::Number)=a-Frac(Pol(b))
 Base.:-(b::Number,a::Frac{<:Pol})=Frac(Pol(b))-a
 
 (p::Frac{<:Pol})(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
+# timing @btime inv(Frac.([q+1 q+2;q-2 q-3])) setup=(q=Pol())
+#   87.975 μs (931 allocations: 67.33 KiB)
 end

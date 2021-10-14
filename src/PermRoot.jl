@@ -149,10 +149,6 @@ function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
-function best_type(q::Mvrf)
-  if isone(q.den) return best_type(q.num) end
-  Mvrf{promote_type(best_eltype(q.num), best_eltype(q.den))}
-end
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{Int,Int} end
   n=all(m->all(isinteger,values(m.d)),keys(p.d)) ? Int : N

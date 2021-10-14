@@ -84,7 +84,7 @@ gcd(::Pol,::Pol)
 gcdx(::Pol,::Pol)
 Pols.pseudodiv
 srgcd
-RatFrac
+Frac
 FFfac.factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 cyclotomic_polynomial
@@ -149,10 +149,6 @@ tally
 collectby
 cartesian
 unique_sorted!
-```
-# Module Elements
-```@docs
-ModuleElts
 ```
 # Posets
 ```@docs
