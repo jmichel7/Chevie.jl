@@ -89,7 +89,7 @@ There are various ways to take an `Mvp` apart. Here are the most direct;
 look also at the functions `coefficient` and `coefficients`.
 
 ```julia-repl
-julia> p
+julia> p=3x*y^-2+4
 Mvp{Int64}: 3xy⁻²+4
 
 julia> term(p,1)
@@ -240,7 +240,7 @@ using ..Cycs: Cyc
 # define root for the coefficients you want (at least root(1,n)=1)
 #export root
 export coefficients, coefficient
-export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, Mvrf
+export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, Mvrf, term
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T}
   d::ModuleElt{Symbol,T}   

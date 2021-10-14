@@ -480,7 +480,7 @@ function Base.:+(a::Pol,b::Pol)
 end
 
 function Base.:-(a::Pol,b::Pol)
-  if iszero(a) return b elseif iszero(b) return a end
+  if iszero(a) return -b elseif iszero(b) return a end
   z=zero(a.c[1]+b.c[1])
   d=b.v-a.v
   if d>=0
@@ -577,7 +577,7 @@ For true polynomials (errors if the valuation of `a` or of `b` is negative).
 See Knuth AOCP2 4.6.1 Algorithm R
 """
 function pseudodiv(a::Pol, b::Pol)
-  if isone(b) || iszero(a) return a end
+ if isone(b) || iszero(a) return a,zero(a) end
   if iszero(b) throw(DivideError) end
   d=b.c[end]
   if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
