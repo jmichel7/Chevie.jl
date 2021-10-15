@@ -8,7 +8,6 @@ Julia. The reasons for still having my own package are multiple:
 
   - I need  to have  a simple  and flexible  interface, which  I hope this
     provides.
-  - There was no convenient Laurent polynomials when I started.
   - I need my polynomials to behave  well when coefficients are in a ring,
     in which case I use pseudo-division and subresultant gcd.
   - For my use my polynomials are several times faster than those in the
@@ -58,7 +57,7 @@ Pol([1, 2, 1],-1)
 julia> print(IOContext(stdout,:limit=>true,:varname=>"x"),p)
 x+2+x⁻¹
 
-julia> print(IOContext(stdout,:TeX=>true),p) # TeXable output
+julia> print(IOContext(stdout,:TeX=>true),p) # TeXable output (used in Pluto, Jupyter)
 q+2+q^{-1}
 ```
 
@@ -831,6 +830,8 @@ Base.:+(a::Frac,b::Frac)=Frac(a.num*b.den+a.den*b.num,a.den*b.den)
 Base.:-(a::Frac)=Frac_(-a.num,a.den)
 Base.:-(a::Frac,b::Frac)=Frac(a.num*b.den-a.den*b.num,a.den*b.den)
 
+Base.denominator(p::Pol)=lcm(denominator.(p.c))
+Base.numerator(p::Pol{<:Rational{T}}) where T=convert(Pol{T},p*denominator(p))
 #----------------------------------------------------------------------
 
 # make both pols, one of valuation 0
@@ -839,6 +840,8 @@ function make_positive(a::Pol,b::Pol)
   shift(a,max(v,0)-a.v),shift(b,-min(v,0)-b.v)
 end
   
+Frac(a::Pol,b::Pol;prime=false)=Frac(promote(a,b)...;prime)
+
 """
 `Frac(a::Pol,b::Pol;prime=false)
 
@@ -847,8 +850,7 @@ for  being true polynomials (otherwise they are both multiplied by the same
 power  of  the  variable  so  they  become  true  polynomials),  and unless
 `prime=true` they are checked for having a non-trivial `gcd`.
 """
-function Frac(a::Pol,b::Pol;prime=false)
-  a,b=promote(a,b)
+function Frac(a::T,b::T;prime=false)::Frac{T} where T<:Pol
   if iszero(a) return Frac_(a,one(a))
   elseif iszero(b) error("division by 0")
   end
@@ -859,6 +861,10 @@ function Frac(a::Pol,b::Pol;prime=false)
   end
   if scalar(b)==-1 a,b=(-a,-b) end
   Frac_(a,b)
+end
+
+function Frac(a::Pol{<:Rational},b::Pol{<:Rational};k...)
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
 function Pol(p::Frac{<:Pol})
@@ -876,12 +882,16 @@ function Base.convert(::Type{Frac{T}},p::Pol) where T
   Frac(convert(T,p),one(T);prime=true)
 end
 
-function Base.convert(::Type{Frac{Pol{T}}},p::Number) where {T}
-  Frac_(convert(Pol{T},p),Pol(T(1)))
+function Base.convert(::Type{Frac{T}},p::Number) where {T<:Pol}
+  Frac_(convert(T,p),convert(T,1))
 end
 
-function Base.promote_rule(a::Type{Pol{T1}},b::Type{Frac{Pol{T2}}})where {T1,T2}
-  Frac{Pol{promote_type(T1,T2)}}
+function Base.promote_rule(a::Type{T1},b::Type{Frac{T2}})where {T1<:Pol,T2<:Pol}
+  Frac{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{T1},b::Type{Frac{T2}})where {T1<:Number,T2<:Pol}
+  Frac{promote_type(T1,T2)}
 end
 
 function Frac(a::T)where T<:Pol
@@ -914,12 +924,12 @@ Base.:*(a::Frac{<:Pol},b::Pol)=Frac(a.num*b,a.den)
 Base.:*(b::Pol,a::Frac{<:Pol})=a*b
 Base.:*(a::Frac{<:Pol},b::Number)=Frac_(a.num*b,a.den)
 Base.:*(b::Number,a::Frac{<:Pol})=a*b
-Base.:+(a::Frac{<:Pol},b::Number)=a+Frac(Pol(b))
-Base.:+(b::Number,a::Frac{<:Pol})=a+Frac(Pol(b))
-Base.:-(a::Frac{<:Pol},b::Number)=a-Frac(Pol(b))
-Base.:-(b::Number,a::Frac{<:Pol})=Frac(Pol(b))-a
+Base.:+(a::Frac{<:Pol},b::Union{Number,Pol})=+(promote(a,b)...)
+Base.:+(b::Union{Number,Pol},a::Frac{<:Pol})=+(promote(a,b)...)
+Base.:-(a::Frac{<:Pol},b::Union{Number,Pol})=-(promote(a,b)...)
+Base.:-(b::Union{Number,Pol},a::Frac{<:Pol})=-(promote(b,a)...)
 
 (p::Frac{<:Pol})(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
 # timing @btime inv(Frac.([q+1 q+2;q-2 q-3])) setup=(q=Pol())
-#   87.975 μs (931 allocations: 67.33 KiB)
+#   38.876 μs (1018 allocations: 76.39 KiB)
 end

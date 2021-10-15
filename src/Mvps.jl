@@ -1076,17 +1076,18 @@ Base.denominator(p::Mvp)=lcm(denominator.(values(p.d)))
 Base.numerator(p::Mvp{<:Rational{T},N}) where{T,N} =convert(Mvp{T,N},p*denominator(p))
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
 #----------------------------- Frac{Mvp{T,Int}} -------------------------------
-# make both pols without common monomial factor
+# make both pols positive without common monomial factor
 function make_positive(a::Mvp,b::Mvp)
   d=laurent_denominator(a,b)
   isone(d) ? (a,b) : (a*d,b*d)
 end
   
-  # to speedup the constructor it can be told:
-  # pol: we know a and b are true polynomials
-  # prime: we know a and b are prime to each other
-function Frac(a::Mvp,b::Mvp;pol=false,prime=false)
-  a,b=promote(a,b)
+Frac(a::Mvp,b::Mvp;prime=false)=Frac(promote(a,b)...;prime)
+  
+# to speedup the constructor it can be told:
+# pol: we know a and b are true polynomials without common monomial factor
+# prime: we know a and b are prime to each other
+function Frac(a::Mvp{T,Int},b::Mvp{T,Int};pol=false,prime=false)::Frac{Mvp{T,Int}} where T
   if iszero(a) return Pols.Frac_(a,one(a))
   elseif iszero(b) error("division by 0")
   end
@@ -1101,17 +1102,19 @@ function Frac(a::Mvp,b::Mvp;pol=false,prime=false)
   return Pols.Frac_(a,b)
 end
 
-Pols.Frac(a::Mvp)=Frac(a,Mvp(1);prime=true)
-
-function Frac(a::Mvp{T,Int},b::Mvp{T,Int})where T<:Rational
-  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a))
+function Pols.Frac(a::Mvp)
+  Frac(a,convert(typeof(a),1);prime=true)
 end
 
-function Frac(a::Mvp{Cyc{T},Int},b::Mvp{Cyc{T},Int})where T<:Rational
-  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a))
+function Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
-function Mvp(a::Frac{<:Mvp})
+function Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
+end
+
+function Mvp(p::Frac{<:Mvp})
   if isone(p.den) return p.num
   elseif monom(p.den) 
     (m,c)=first(p.den.d)
@@ -1122,34 +1125,35 @@ end
 
 Base.convert(::Type{Mvp{T,Int}},p::Frac{<:Mvp}) where T=convert(Mvp{T,Int},Mvp(p))
 
-function Base.convert(::Type{Frac{T}},p::Mvp) where T
-  Frac(convert(T,p),one(T);prime=true)
+function Base.convert(::Type{Frac{T}},p::Mvp) where T<:Mvp
+  q=convert(T,p)
+  Frac(q,one(q);prime=true)
 end
 
-function Base.convert(::Type{Frac{Mvp{T,Int}}},p::Number) where T
-  Frac(convert(Mvp{T,Int},p),Mvp(T(1));pol=true)
+function Base.convert(::Type{Frac{T}},p::Number) where T<:Mvp
+  Frac(convert(T,p),convert(T,1);pol=true,prime=true)
 end
 
-function Base.promote_rule(a::Type{Mvp{T1,Int}},b::Type{Frac{T2}})where {T1,T2}
+function Base.promote_rule(a::Type{T1},b::Type{Frac{T2}})where {T1<:Mvp,T2<:Mvp}
+  Frac{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{Frac{T1}},b::Type{Frac{T2}})where {T1<:Mvp,T2<:Mvp}
+  Frac{promote_type(T1,T2)}
+end
+
+function Base.promote_rule(a::Type{T1},b::Type{Frac{T2}})where {T1<:Number,T2<:Mvp}
   Frac{promote_type(Mvp{T1,Int},T2)}
 end
 
-function Base.promote_rule(a::Type{Frac{Mvp{T1}}},b::Type{Frac{Mvp{T2}}})where {T1,T2}
-  Frac{Mvp{promote_type(T1,T2)}}
-end
-
-function Base.promote_rule(a::Type{T1},b::Type{Frac{Mvp{T2}}})where {T1<:Number,T2}
-  Frac{Mvp{promote_type(T1,T2)}}
-end
-
-(::Type{Frac{Mvp{T}}})(a) where T=convert(Frac{Mvp{T}},a)
+#(::Type{Frac{T}})(a) where T<:Mvp=convert(Frac{T},a)
 
 function Base.inv(p::Mvp)
   if monom(p)
     (m,c)=first(p.d)
     return Mvp(inv(m)=>c^2==1 ? c : 1/c) 
   end
-  Frac(Mvp(1),p;pol=false,prime=true)
+  Frac(Mvp(1),p;prime=true)
 end
 
 function Base.://(a::Mvp,b::Mvp)
@@ -1171,7 +1175,7 @@ Base.:/(p::Number,q::Mvp)=Mvp(p)/q
 
 Base.:*(a::Frac{<:Mvp},b::Mvp)=Frac(a.num*b,a.den)
 Base.:*(b::Mvp,a::Frac{<:Mvp})=a*b
-Base.:*(a::Frac{<:Mvp},b::Number) where T =Frac(a.num*b,a.den;pol=true)
+Base.:*(a::Frac{<:Mvp},b::Number) where T =Frac(a.num*b,a.den;pol=true,prime=true)
 Base.:*(b::Number,a::Frac{<:Mvp}) where T =a*b
 
 FracMvp(a::Number)=convert(Frac{Mvp{typeof(a),Int}},a)
@@ -1192,5 +1196,5 @@ function fateman(n)
 end
 
 # @btime inv(Frac.([x+y x-y;x+1 y+1])) setup=(x=Mvp(:x);y=Mvp(:y))
-# 252.902 μs (4805 allocations: 295.33 KiB)
+# 195.739 μs (4483 allocations: 296.94 KiB)
 end
