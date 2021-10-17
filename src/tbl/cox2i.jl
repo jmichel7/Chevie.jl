@@ -212,10 +212,10 @@ chevieset(Symbol("2I"), :UnipotentCharacters, function (e,)
                         end), nc))
         if e == 4
             ((uc[:almostHarishChandra])[2])[:cuspidalName] = "B_2"
-            ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "B", :indices => [1, 2], :rank => 2, :cartanType => ER(2))
+            ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "B", :indices => [1, 2], :rank => 2, :cartanType => root(2))
         elseif e == 6
             eig = [E(3, 2), -1, E(3), 1]
-            ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "G", :indices => [1, 2], :rank => 2, :cartanType => ER(3))
+            ((((uc[:almostHarishChandra])[1])[:relativeType])[:orbit])[1] = Dict{Symbol, Any}(:series => "G", :indices => [1, 2], :rank => 2, :cartanType => root(3))
             for i = 1:4
                 ((uc[:almostHarishChandra])[i + 1])[:cuspidalName] = SPrint("G2[", FormatTeX(eig[i]), "]")
             end

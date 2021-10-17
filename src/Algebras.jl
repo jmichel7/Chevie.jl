@@ -1,6 +1,5 @@
 module Algebras
 using ..Gapjm
-using ModuleElts
 export FiniteDimAlgebra, AlgebraElt, basis, dim, idempotents, iscommutative
 abstract type FiniteDimAlgebra end
 
@@ -52,7 +51,7 @@ Base.:^(a::AlgebraElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.isless(a::AlgebraElt,b::AlgebraElt)=isless(a.d,b.d)
 Base.:(==)(a::AlgebraElt,b::AlgebraElt)=a.d==b.d
 
-function Cycs.coefficients(a::AlgebraElt{A,T})where {A,T}
+function Gapjm.coefficients(a::AlgebraElt{A,T})where {A,T}
   v=fill(T(0),dim(a.A))
   for (i,c) in a.d v[i]=c end
   v

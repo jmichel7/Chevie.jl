@@ -23,7 +23,7 @@ chevieset(:F4, :ReflectionName, function (arg...,)
             else
                 return "F4"
             end
-        elseif type_ == ER(2)
+        elseif type_ == root(2)
             if haskey(opt, :TeX)
                 return "F_{\\hbox{sym}4}"
             elseif haskey(opt, :arg)

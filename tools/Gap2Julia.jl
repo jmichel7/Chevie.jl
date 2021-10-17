@@ -127,6 +127,7 @@ ftrans=Dict{Symbol,Symbol}(
   :DivisorsInt=>:divisors,
   :Dominates=>:dominates,
   :Elements=>:elements,
+  :ER=>:root,
   :Error=>:error,
   :Factorial=>:factorial,
   :FullSymbol=>:fullsymbol,

@@ -68,7 +68,7 @@ chevieset(:I, :GeneratingRoots, function (m,)
         a = E(2m, m - 1)
         b = ComplexConjugate(a)
         if mod(m, 2) == 0
-            r = ER(m // 2)
+            r = root(m // 2)
         else
             r = 1
         end

@@ -30,7 +30,7 @@ chevieset(:B, :ReflectionName, function (arg...,)
             else
                 return SPrint("C", r)
             end
-        elseif type_ == ER(2)
+        elseif type_ == root(2)
             if haskey(option, :TeX)
                 return SPrint("B^{\\hbox{sym}}_", TeXBracket(r))
             elseif haskey(option, :arg)

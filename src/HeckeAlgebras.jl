@@ -122,7 +122,6 @@ end;
 """
 module HeckeAlgebras
 using ..Gapjm
-using ModuleElts
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
@@ -455,7 +454,7 @@ function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
   S=toM.(-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
                                               rootpara(H)[1]//H.para[1][2]))
   if !isrepresentation(H,S;verbose=true) error() end
-  S
+  improve_type(S)
 end
 
 """

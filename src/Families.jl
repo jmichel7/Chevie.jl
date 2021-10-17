@@ -71,7 +71,6 @@ export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
  involution, duality, eigen
 
 using ..Gapjm
-using ModuleElts
 
 FamilyOps=Dict()
 
@@ -420,7 +419,7 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   end
   diag(m)=map(i->m[i,i],axes(m,1))
   g.eigenvalues=diag(exterior_power(cat(g.eigenvalues...;dims=(1,2)),n))
-  g.fourierMat=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/ER(e),n)
+  g.fourierMat=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/root(e),n)
   g.name="R(\\bbZ/$e)"
   g.explanation="character ring of Z/$e"
   if n>1 g.name*="^{\\wedge $n}"
@@ -745,7 +744,7 @@ function family_imprimitive(S)
   prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
               i[:aa][l]),
           1:length(i[:aa])), 1:nrSymbols), equiv)
-  mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*ER(e)^e)^m
+  mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
   frobs = E(12,-(e^2-1)*m)*map(i->E(2e,-(sum(j->j*j,i))-e*sum(sum,i)),ll)
   symbs = map(function (l)local sy, j
               sy = map(j->Int[], 1:e)

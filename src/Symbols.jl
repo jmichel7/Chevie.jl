@@ -581,7 +581,7 @@ function gendeg_symbol(S)
     filter(m->i<j || degree(m)<degree(l),
            map(l->Pol([E(e,j)],l),S[j+1])));init=one(CycPol)),
            map(l->Pol([E(e,i)],l),S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
-     (prod(theta,S)*(E(4)^binomial(e-1,2)*ER(e)^e)^m
+     (prod(theta,S)*(E(4)^binomial(e-1,2)*root(e)^e)^m
       *CycPol(1,sum(map(x->binomial(x,2),e.*(1:m-1).+d))))
 
   # Dudas' sign change

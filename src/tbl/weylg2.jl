@@ -23,7 +23,7 @@ chevieset(:G2, :ReflectionName, function (arg...,)
             else
                 return "G2"
             end
-        elseif type_ == ER(3)
+        elseif type_ == root(3)
             if haskey(opt, :TeX)
                 return "G_{\\hbox{sym}2}"
             elseif haskey(opt, :arg)

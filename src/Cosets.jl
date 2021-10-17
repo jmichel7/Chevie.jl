@@ -470,14 +470,14 @@ function graph_automorphisms(t::Vector{TypeIrred})
     if rk>1
     push!(gen,prod(i->Perm(J[i],J[rk+1-i]),1:div(rk,2)))
     end
-    elseif t[1].series==:B && t[1].cartanType==ER(2) push!(gen,Perm(J[1],J[2]))
+    elseif t[1].series==:B && t[1].cartanType==root(2) push!(gen,Perm(J[1],J[2]))
     elseif t[1].series==:D push!(gen,Perm(J[1],J[2]))
     if rk==4  push!(gen,Perm(J[1],J[4])) end
     elseif t[1].series==:E && rk==6
     push!(gen,Perm(J[1],J[6])*Perm(J[3],J[5]))
-    elseif t[1].series==:F && t[1].cartanType==ER(2)
+    elseif t[1].series==:F && t[1].cartanType==root(2)
     push!(gen,Perm(J[1],J[4])*Perm(J[2],J[3]))
-    elseif t[1].series==:G && t[1].cartanType==ER(3) push!(gen,Perm(J[1],J[2]))
+    elseif t[1].series==:G && t[1].cartanType==root(3) push!(gen,Perm(J[1],J[2]))
     end
   end
   Group(gen)
@@ -946,14 +946,14 @@ julia> spets("4G333")
 """
 function spets(s::String)
   if s=="3G422" 
-    W=PRG([2 (ER(3)-1)E(3);2 (-1+ER(3))E(3,2);2 ER(3)-1]./1,
-     [(3+ER(3))/2 ER(3)E(3,2);(3+ER(3))/2 ER(3)E(3);(3+ER(3))/2 ER(3)]./3)
+    W=PRG([2 (root(3)-1)E(3);2 (-1+root(3))E(3,2);2 root(3)-1]./1,
+     [(3+root(3))/2 root(3)E(3,2);(3+root(3))/2 root(3)E(3);(3+root(3))/2 root(3)]./3)
     return spets(W,reflrep(W,Perm(1,2,3)))
    elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
-    W=PRG([[(-E(3)-2E(3,2))*(-3+ER(6))//3,E(3)],
-           [(-E(3)-2E(3,2))*(3-ER(6))//3, E(3)]],
-          [[E(3)//2,(-E(3)-2E(3,2))*(-3-ER(6))//6],
-           [-E(3)//2,(-E(3)-2E(3,2))*(-3-ER(6))//6]])
+    W=PRG([[(-E(3)-2E(3,2))*(-3+root(6))//3,E(3)],
+           [(-E(3)-2E(3,2))*(3-root(6))//3, E(3)]],
+          [[E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6],
+           [-E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6]])
     return spets(W,[-1 0;0 1])
   elseif s=="3G333" 
     W=ComplexReflectionGroup(3,3,3)
@@ -967,8 +967,8 @@ function spets(s::String)
     ( 4,49,39,19)( 5, 9, 6,48)( 7,41,54,25)( 8,33,18,51)(10,43,36,11)
     (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)")
   elseif s=="3G422" 
-    W=PRG([[2,(-1+ER(3))*E(3)],[2,(-1+ER(3))*E(3,2)],[2,(-1+ER(3))]],
-[[(3+ER(3))/2,ER(3)*E(3,2)],[(3+ER(3))/2,ER(3)*E(3)],[(3+ER(3))/2,ER(3)]]/3)
+    W=PRG([[2,(-1+root(3))*E(3)],[2,(-1+root(3))*E(3,2)],[2,(-1+root(3))]],
+[[(3+root(3))/2,root(3)*E(3,2)],[(3+root(3))/2,root(3)*E(3)],[(3+root(3))/2,root(3)]]/3)
     return spets(W,[1 0;0 E(3)])
   else error("argument should be 2G5, 3G422, 3G333, 3pG333 or 4G333")
   end

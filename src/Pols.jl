@@ -21,7 +21,7 @@ constructed by giving a vector of coefficients of type `T`, and a valuation
 (an `Int`). We call true polynomials those whose valuation is `≥0`.
 
 There  is a  current variable  name (a  `Symbol`) used to print polynomials
-nicely  at  the  repl  or  in  Jupyter  or  Pluto. This name can be changed
+nicely  at  the  repl  or  in  IJulia  or  Pluto. This name can be changed
 globally,  or just changed for printing a given polynomial. But polynomials
 do not record individually with which symbol they should be printed.
 
@@ -57,7 +57,7 @@ Pol([1, 2, 1],-1)
 julia> print(IOContext(stdout,:limit=>true,:varname=>"x"),p)
 x+2+x⁻¹
 
-julia> print(IOContext(stdout,:TeX=>true),p) # TeXable output (used in Pluto, Jupyter)
+julia> print(IOContext(stdout,:TeX=>true),p) # TeXable output (used in Pluto, IJulia)
 q+2+q^{-1}
 ```
 
@@ -229,7 +229,7 @@ Rational fractions are also scalars for broadcasting and can be sorted
 """
 module Pols
 export degree, valuation, Pol, derivative, shift, positive_part, negative_part,
-       bar, derivative, srgcd, Frac, @Pol, scalar, coefficients, exactdiv
+       bar, derivative, srgcd, Frac, @Pol, scalar, coefficients, exactdiv, root
 
 const varname=Ref(:x)
 
@@ -342,8 +342,6 @@ Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 # efficient p↦ qˢ p
 shift(p::Pol{T},s) where T=Pol_(p.c,p.v+s)
 
-Base.denominator(p::Pol)=iszero(p) ? 1 : lcm(denominator.(p.c))
-
 function positive_part(p::Pol)
   if p.v>=0 return Pol(p.c,p.v;check=false) end
   Pol(view(p.c,1-p.v:length(p.c)),0)
@@ -373,6 +371,8 @@ Base.iszero(a::Pol)=isempty(a.c)
 Base.conj(p::Pol{T}) where T=Pol_(conj.(p.c),p.v)
 Base.abs(p::Pol)=p
 Base.adjoint(a::Pol)=conj(a)
+
+ismonomial(p::Pol)=length(p.c)==1
 
 function Base.show(io::IO, ::MIME"text/html", a::Pol)
   print(io, "\$")
@@ -418,7 +418,7 @@ end
 
 function Base.show(io::IO,p::Pol)
   if !get(io,:limit,false) && !get(io,:TeX,false)
-    if length(p.c)==1 && isone(p.c[1]) && p.v==1 print(io,"Pol()")
+    if ismonomial(p) && isone(p.c[1]) && p.v==1 print(io,"Pol()")
     else print(io,"Pol(",p.c)
       if !iszero(p.v) print(io,",",p.v) end
       print(io,")")
@@ -455,9 +455,9 @@ Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v;copy=false)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
-Base.:^(a::Pol, n::Real)=a^Int(n)
+Base.:^(a::Pol, n::Real)=isinteger(n) ? a^Int(n) : root(a,1//n)
 
-Base.:^(a::Pol, n::Integer)=length(a.c)==1 ? Pol([a.c[1]^n],n*a.v) :
+Base.:^(a::Pol, n::Integer)=ismonomial(a) ? Pol([a.c[1]^n],n*a.v) :
          n>=0 ? Base.power_by_squaring(a,n) :
                 Base.power_by_squaring(inv(a),-n)
 
@@ -759,6 +759,18 @@ function Pol(pts::AbstractVector,vals::AbstractVector)
   p
 end
 
+Base.denominator(p::Pol)=iszero(p) ? 1 : lcm(denominator.(p.c))
+Base.numerator(p::Pol{<:Rational{T}}) where T=convert(Pol{T},p*denominator(p))
+
+function root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
+  n=Int(n)
+  if iszero(x) return x end
+  if !ismonomial(x) || !iszero(x.v%n) error("root($x,$n) not implemented") end
+  c=x.c[1]
+  Pol([isone(c) ? c : root(c,n)],div(x.v,n);check=false)
+end
+
+root(x::AbstractFloat,n=2)=x^(1/n)
 #---------------------- Frac-------------------------------------
 ## cannot use Rational{T} since T<:Integer
 struct Frac{T}
@@ -792,7 +804,7 @@ Base.abs(p::Frac)=p
 Base.conj(p::Frac)=Frac_(conj(p.num),conj(p.den))
 Base.adjoint(a::Frac)=conj(a)
 Base.:(==)(a::Frac,b::Frac)=a.num==b.num && a.den==b.den
-Base.cmp(a::Frac,b::Frac)=cmp([a.num,a.den],[b.num,b.den])
+Base.cmp(a::Frac,b::Frac)=cmp((a.num,a.den),(b.num,b.den))
 Base.isless(a::Frac,b::Frac)=cmp(a,b)==-1
 
 function Base.show(io::IO, ::MIME"text/plain", a::Frac)
@@ -830,8 +842,6 @@ Base.:+(a::Frac,b::Frac)=Frac(a.num*b.den+a.den*b.num,a.den*b.den)
 Base.:-(a::Frac)=Frac_(-a.num,a.den)
 Base.:-(a::Frac,b::Frac)=Frac(a.num*b.den-a.den*b.num,a.den*b.den)
 
-Base.denominator(p::Pol)=lcm(denominator.(p.c))
-Base.numerator(p::Pol{<:Rational{T}}) where T=convert(Pol{T},p*denominator(p))
 #----------------------------------------------------------------------
 
 # make both pols, one of valuation 0
@@ -855,7 +865,7 @@ function Frac(a::T,b::T;prime=false)::Frac{T} where T<:Pol
   elseif iszero(b) error("division by 0")
   end
   a,b=make_positive(a,b)
-  if !prime && !(length(b.c)==1)
+  if !(prime || ismonomial(b) || ismonomial(a))
     d=gcd(a,b)
     a,b=exactdiv(a,d),exactdiv(b,d)
   end
@@ -868,7 +878,7 @@ function Frac(a::Pol{<:Rational},b::Pol{<:Rational};k...)
 end
 
 function Pol(p::Frac{<:Pol})
-  if length(p.den.c)==1
+  if ismonomial(p.den)==1
     if isone(p.den.c[1]^2) return Pol(p.num.c .*p.den.c[1],p.num.v-p.den.v)
     else return Pol(p.num.c .//p.den.c[1],p.num.v-p.den.v)
     end
@@ -899,15 +909,15 @@ function Frac(a::T)where T<:Pol
   Frac(a,one(a);prime=true)
 end
 
-bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
-
 function Base.://(a::Pol,b::Pol)
-  if length(b.c)==1 return Pol(a.c.*bestinv(b.c[1]),a.v-b.v) end
+  if ismonomial(b) return Pol(a.c.//b.c[1],a.v-b.v) end
   Frac(a,b)
 end
 
+bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
+
 function Base.inv(p::Pol)
-  if length(p.c)==1 return Pol([bestinv(p.c[1])],-p.v) end
+  if ismonomial(p) return Pol([bestinv(p.c[1])],-p.v) end
   Frac_(make_positive(Pol(1),p)...)
 end
 

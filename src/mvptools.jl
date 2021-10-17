@@ -2,16 +2,13 @@
 # several of the self-contained structural packages of Gapjm
 export pblocks, abelian_gens
 
-function Cycs.root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
-  n=Int(n)
-  if length(x.c)>1 || !iszero(x.v%n)
-    error("root($(repr(x;context=:limit=>true)),$n) not implemented") 
-  end
-  if isempty(x.c) return x end
-  Pol([root(x.c[1],n)],div(x.v,n);check=false)
-end
-
 Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
+
+Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
+
+function Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
+end
 
 """
 `factor(p::Mvp)`
@@ -209,13 +206,15 @@ end
 Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
 
 function Gapjm.gap(p::Mvp)
-  res=""
-  join(map(p.d)do (k,c)
+  res=join(map(p.d)do (k,c)
     c=Util.bracket_if_needed(gap(c))
-    if isempty(c) gap(k)
-    else c*"*"*gap(k)
+    kk=gap(k)
+    if isempty(c) kk
+    elseif isempty(kk) c
+    else c*"*"*kk
     end
   end,"+")
+  isempty(res) ? "0" : res
 end
 
 Gapjm.gap(f::Float64)="evalf(\"$f\")"

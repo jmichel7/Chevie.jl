@@ -5,8 +5,8 @@ chevieset(:G24, :PrintDiagram, function (indices, title)
         s = pad("", length(title) - 1)
         print(s, " / \\\n", s, indices[2], "===", indices[3], "  ", joindigits(indices[[2, 3, 1, 2, 3, 1, 2, 3, 1]]), "==", joindigits(indices[[3, 2, 3, 1, 2, 3, 1, 2, 3]]), "\n")
     end)
-chevieset(:G24, :GeneratingRoots, [[1, ER(-7), 0], [1, -(ER(-7)), 0], [(-1 - ER(-7)) // 2, (-7 - 3 * ER(-7)) // 6, -4 // 3]])
-chevieset(:G24, :GeneratingCoRoots, [[1, (-3 * ER(-7)) // 7, 0], [1, (3 * ER(-7)) // 7, 0], [(-1 + ER(-7)) // 2, (-7 + 3 * ER(-7)) // 14, -1 // 2]] // 2)
+chevieset(:G24, :GeneratingRoots, [[1, root(-7), 0], [1, -(root(-7)), 0], [(-1 - root(-7)) // 2, (-7 - 3 * root(-7)) // 6, -4 // 3]])
+chevieset(:G24, :GeneratingCoRoots, [[1, (-3 * root(-7)) // 7, 0], [1, (3 * root(-7)) // 7, 0], [(-1 + root(-7)) // 2, (-7 + 3 * root(-7)) // 14, -1 // 2]] // 2)
 chevieset(:G24, :CartanMat, function ()
         return chevieget(:G24, :GeneratingCoRoots) * TransposedMat(chevieget(:G24, :GeneratingRoots))
     end)
@@ -35,9 +35,9 @@ chevieset(:G24, :CharInfo, function ()
                     end), res[:charparams])
         return res
     end)
-chevieset(:G24, :CycPolSchurElements, [[1, 0, 2, 2, 2, 3, 4, 6, 7, 14], [1, -21, 2, 2, 2, 3, 4, 6, 7, 14], [2 * ER(-7), -8, 2, 2, 2, 1 // 7, 2 // 7, 4 // 7, 3 // 14, 5 // 14, 13 // 14], [-2 * ER(-7), -1, 2, 2, 2, 3 // 7, 5 // 7, 6 // 7, 1 // 14, 9 // 14, 11 // 14], [-2 * ER(-7), -8, 2, 2, 2, 3 // 7, 5 // 7, 6 // 7, 1 // 14, 9 // 14, 11 // 14], [2 * ER(-7), -1, 2, 2, 2, 1 // 7, 2 // 7, 4 // 7, 3 // 14, 5 // 14, 13 // 14], [2, -1, 2, 4, 7], [2, -8, 2, 4, 7], [1, -6, 2, 2, 2, 3, 4, 6], [1, -3, 2, 2, 2, 3, 4, 6], [2, -4, 3, 7], [2, -4, 3, 7]])
+chevieset(:G24, :CycPolSchurElements, [[1, 0, 2, 2, 2, 3, 4, 6, 7, 14], [1, -21, 2, 2, 2, 3, 4, 6, 7, 14], [2 * root(-7), -8, 2, 2, 2, 1 // 7, 2 // 7, 4 // 7, 3 // 14, 5 // 14, 13 // 14], [-2 * root(-7), -1, 2, 2, 2, 3 // 7, 5 // 7, 6 // 7, 1 // 14, 9 // 14, 11 // 14], [-2 * root(-7), -8, 2, 2, 2, 3 // 7, 5 // 7, 6 // 7, 1 // 14, 9 // 14, 11 // 14], [2 * root(-7), -1, 2, 2, 2, 1 // 7, 2 // 7, 4 // 7, 3 // 14, 5 // 14, 13 // 14], [2, -1, 2, 4, 7], [2, -8, 2, 4, 7], [1, -6, 2, 2, 2, 3, 4, 6], [1, -3, 2, 2, 2, 3, 4, 6], [2, -4, 3, 7], [2, -4, 3, 7]])
 chevieset(:G24, :sparseFakeDegrees, [[1, 0], [1, 21], [1, 8, 1, 16, 1, 18], [1, 1, 1, 9, 1, 11], [1, 10, 1, 12, 1, 20], [1, 3, 1, 5, 1, 13], [1, 2, 1, 4, 1, 6, 1, 8, 1, 10, 1, 12], [1, 9, 1, 11, 1, 13, 1, 15, 1, 17, 1, 19], [1, 6, 1, 8, 1, 10, 1, 12, 1, 14, 1, 16, 1, 18], [1, 3, 1, 5, 1, 7, 1, 9, 1, 11, 1, 13, 1, 15], [1, 4, 1, 6, 1, 8, 1, 10, 1, 12, 2, 14, 1, 16], [1, 5, 2, 7, 1, 9, 1, 11, 1, 13, 1, 15, 1, 17]])
-chevieset(:G24, :HeckeCharTable, function (param, root)
+chevieset(:G24, :HeckeCharTable, function (param, roots)
         local r, tbl, p, f1, f3, f6, f7, f8, u
         r = (param[1])[1]
         p = (param[1])[2]
@@ -57,7 +57,7 @@ chevieset(:G24, :HeckeCharTable, function (param, root)
         f8 = function (p, r, u)
                 return [8, 4p + 4r, 2 * p * r + p ^ 2 + r ^ 2, 3 * p * r + p ^ 2 + r ^ 2, u * p ^ 4 * r ^ 4, -p * r * u, -2 * p ^ 2 * r ^ 2 + p ^ 4 + r ^ 4, p ^ 3 * r ^ 3 * u, -(p ^ 9) * r ^ 9, -(p ^ 3) * r ^ 3, 0, 8 * p ^ 10 * r ^ 10 * u]
             end
-        tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, ER(-7)), f3(r, p, ER(-7)), f3(p, r, -(ER(-7))), f3(r, p, -(ER(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(perm"( 5, 6)( 9,10)"), :irredinfo => chevieget(:G24, :IrredInfo))
+        tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, root(-7)), f3(r, p, root(-7)), f3(p, r, -(root(-7))), f3(r, p, -(root(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(perm"( 5, 6)( 9,10)"), :irredinfo => chevieget(:G24, :IrredInfo))
         Inherit(tbl, chevieget(:G24, :ClassInfo))
         tbl[:centralizers] = map((x->begin
                         tbl[:size] // x
@@ -67,7 +67,7 @@ chevieset(:G24, :HeckeCharTable, function (param, root)
 chevieset(:G24, :CharTable, function ()
         return (chevieget(:G24, :HeckeCharTable))([[1, -1], [1, -1], [1, -1]], [])
     end)
-chevieset(:G24, :HeckeRepresentation, function (para, root, i)
+chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
         local p, r, rep, f1, f3, f7, f9, f11
         p = (para[1])[2]
         r = (para[1])[1]
@@ -90,10 +90,10 @@ chevieset(:G24, :HeckeRepresentation, function (para, root, i)
                 v = e * GetRoot(-x * y)
                 return [[[0, 0, 0, 0, 0, 0, 0, -x], [0, x + y, 0, 0, y, 0, 0, 0], [0, 0, x, -v * y + x * y, 0, 0, -(x ^ 2), 0], [0, 0, 0, y, 0, 0, 0, 0], [0, -x, 0, 0, 0, 0, 0, 0], [0, 0, 0, x, 0, x, -v - y, 0], [0, 0, 0, 0, 0, 0, y, 0], [y, 0, 0, 0, 0, 0, 0, x + y]], [[x, 0, 0, v, 0, 0, 0, -y], [0, x, 0, v, x, 0, 0, 0], [0, 0, x + y, 0, 0, 0, -x * y, 0], [0, 0, 0, y, 0, 0, 0, 0], [0, 0, 0, 0, y, 0, 0, 0], [0, 0, -1, x, -v, x, x, v], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, y]], [[y, 0, 0, 0, 0, 0, 0, 0], [0, x, 0, 0, x, 0, -v, 0], [-x * y, 0, x, 0, -v * y, v * y, (v * y - x * y) - x ^ 2, 0], [0, 0, 0, x, 0, -y, -v - y, 0], [0, 0, 0, 0, y, 0, 0, 0], [0, 0, 0, 0, 0, y, 0, 0], [0, 0, 0, 0, 0, 0, y, 0], [x, 0, 0, 0, 0, 0, x, x]]]
             end
-        rep = [[f1, r], [f1, p], [f3, p, r, ER(-7)], [f3, r, p, ER(-7)], [f3, p, r, -(ER(-7))], [f3, r, p, -(ER(-7))], [f7, p, r], [f7, r, p], [f9, p, r], [f9, r, p], [f11, p, r, 1], [f11, p, r, -1]]
+        rep = [[f1, r], [f1, p], [f3, p, r, root(-7)], [f3, r, p, root(-7)], [f3, p, r, -(root(-7))], [f3, r, p, -(root(-7))], [f7, p, r], [f7, r, p], [f9, p, r], [f9, r, p], [f11, p, r, 1], [f11, p, r, -1]]
         return ApplyFunc((rep[i])[1], (rep[i])[2:length(rep[i])]) + 0 * Product(para[1])
     end)
-(CHEVIE[:families])[:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat => [[-1 // 2, 1 // 2, ER(-7) // 2, ER(-7) // 2, -1, -1, -1], [1 // 2, -1 // 2, ER(-7) // 2, ER(-7) // 2, 1, 1, 1], [ER(-7) // 2, ER(-7) // 2, ER(-7) // 2, -(ER(-7)) // 2, 0, 0, 0], [ER(-7) // 2, ER(-7) // 2, -(ER(-7)) // 2, ER(-7) // 2, 0, 0, 0], [-1, 1, 0, 0, -(E(7, 6)) - E(7), -(E(7, 5)) - E(7, 2), -(E(7, 4)) - E(7, 3)], [-1, 1, 0, 0, -(E(7, 5)) - E(7, 2), -(E(7, 4)) - E(7, 3), -(E(7, 6)) - E(7)], [-1, 1, 0, 0, -(E(7, 4)) - E(7, 3), -(E(7, 6)) - E(7), -(E(7, 5)) - E(7, 2)]] // ER(-7), :eigenvalues => [1, 1, 1, -1, E(7, 4), E(7, 2), E(7)], :explanation => "mystery G24", :special => 1, :cospecial => 2)
+(CHEVIE[:families])[:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat => [[-1 // 2, 1 // 2, root(-7) // 2, root(-7) // 2, -1, -1, -1], [1 // 2, -1 // 2, root(-7) // 2, root(-7) // 2, 1, 1, 1], [root(-7) // 2, root(-7) // 2, root(-7) // 2, -(root(-7)) // 2, 0, 0, 0], [root(-7) // 2, root(-7) // 2, -(root(-7)) // 2, root(-7) // 2, 0, 0, 0], [-1, 1, 0, 0, -(E(7, 6)) - E(7), -(E(7, 5)) - E(7, 2), -(E(7, 4)) - E(7, 3)], [-1, 1, 0, 0, -(E(7, 5)) - E(7, 2), -(E(7, 4)) - E(7, 3), -(E(7, 6)) - E(7)], [-1, 1, 0, 0, -(E(7, 4)) - E(7, 3), -(E(7, 6)) - E(7), -(E(7, 5)) - E(7, 2)]] // root(-7), :eigenvalues => [1, 1, 1, -1, E(7, 4), E(7, 2), E(7)], :explanation => "mystery G24", :special => 1, :cospecial => 2)
 chevieset(:G24, :UnipotentCharacters, function ()
         return Dict{Symbol, Any}(:harishChandra => [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST", :indices => 1:3, :rank => 3, :ST => 24), :levi => [], :parameterExponents => [1, 1, 1], :charNumbers => 1:12, :eigenvalue => 1, :cuspidalName => ""), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [1], :rank => 1), :levi => [2, 3], :parameterExponents => [7], :charNumbers => [19, 13], :eigenvalue => -1, :cuspidalName => "B_2"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [17], :eigenvalue => E(4), :qEigen => 1 // 2, :cuspidalName => "G_{24}[i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [18], :eigenvalue => -(E(4)), :qEigen => 1 // 2, :cuspidalName => "G_{24}[-i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [20], :eigenvalue => E(7, 3), :cuspidalName => "G_{24}[\\zeta_7^3]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [21], :eigenvalue => E(7, 5), :cuspidalName => "G_{24}[\\zeta_7^5]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [22], :eigenvalue => E(7, 6), :cuspidalName => "G_{24}[\\zeta_7^6]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [14], :eigenvalue => E(7, 4), :cuspidalName => "G_{24}[\\zeta_7^4]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [15], :eigenvalue => E(7, 2), :cuspidalName => "G_{24}[\\zeta_7^2]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:3, :parameterExponents => [], :charNumbers => [16], :eigenvalue => E(7), :cuspidalName => "G_{24}[\\zeta_7]")], :families => [Family("C1", [1]), Family("X7", [4, 6, 7, 13, 14, 15, 16], Dict{Symbol, Any}(:ennola => 2)), Family("C1", [10], Dict{Symbol, Any}(:ennola => -1)), Family("C'\"2", [11, 12, 17, 18], Dict{Symbol, Any}(:ennola => -3)), Family("C1", [9]), ComplexConjugate(Family("X7", [3, 5, 8, 19, 20, 21, 22], Dict{Symbol, Any}(:ennola => -2))), Family("C1", [2], Dict{Symbol, Any}(:ennola => -1))], :a => [0, 21, 8, 1, 8, 1, 1, 8, 6, 3, 4, 4, 1, 1, 1, 1, 4, 4, 8, 8, 8, 8], :A => [0, 21, 20, 13, 20, 13, 13, 20, 18, 15, 17, 17, 13, 13, 13, 13, 17, 17, 20, 20, 20, 20], :curtis => [2, 1, 6, 5, 4, 3, 8, 7, 10, 9, 12, 11, 19, -20, -21, -22, -18, -17, 13, -14, -15, -16])
     end)

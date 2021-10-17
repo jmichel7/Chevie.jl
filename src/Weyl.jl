@@ -267,7 +267,7 @@ function PermRoot.cartan(t::Symbol,r::Int,b::Int=0)
      m[3,2]=-2
      m end,
    :Fsym=>function(r,b)m=convert.(Cyc{Int},A(r))
-     m[3,2]=m[2,3]=-ER(2)
+     m[3,2]=m[2,3]=-root(2)
      m end,
    :G=>function(r,b)m=A(r)
      m[2,1]=-3

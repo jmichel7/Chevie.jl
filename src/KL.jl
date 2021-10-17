@@ -155,7 +155,6 @@ module KL
 export KLPol, Cpbasis, Cbasis, LeftCell, LeftCells, character, Lusztigaw, 
  LusztigAw, AsymptoticAlgebra, Wgraph
 using ..Gapjm
-using ModuleElts
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
 """

@@ -97,7 +97,7 @@ julia> -1<Cyc(0)<1
 true
 ```
 For more information see the methods conductor, coefficients, denominator,
-ER, Quadratic, galois, root. 
+Quadratic, galois, root. 
 
 Finally, a benchmark:
 
@@ -123,7 +123,7 @@ testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 module Cycs
 #import Gapjm: coefficients, root
 # to use as a stand-alone module comment above line and uncomment next
-export coefficients, root, E, ER, Cyc, conductor, galois, Root1, Quadratic
+export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic
 
 using ..Util: format_coefficient, bracket_if_needed, xprint, stringexp, 
               stringind,  factor, prime_residues, phi
@@ -572,7 +572,7 @@ function Base.show(io::IO, p::Cyc{T})where T
   if quadratic && (T<:Integer || T<:Rational{<:Integer})
     q=Quadratic(p)
     if !isnothing(q) push!(rqq,repr(q;context=io)) end
-    for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2)]
+    for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2),root(-3)]
       if !iszero(conductor(p)%conductor(test)) continue end
       q=Quadratic(p/test)
       if isnothing(q) continue end
@@ -746,7 +746,7 @@ galois(c::Integer,n::Int)=c
 julia> galois(1+E(4),-1) # galois(c,-1) is the same as conj(c)
 Cyc{Int64}: 1-ζ₄
 
-julia> galois(ER(5),2)==-ER(5)
+julia> galois(root(5),2)==-root(5)
 true
 ```
 """
@@ -783,34 +783,6 @@ end
 
 Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                    Base.power_by_squaring(inv(a),-n)
-
-const ER_dict=Dict(1=>Cyc(1),-1=>E(4))
-"""
-  ER(n::Int) computes as a Cyc the square root of the integer n.
-# Examples
-```julia-repl
-julia> ER(-1)
-Cyc{Int64}: ζ₄
-
-julia> ER(3)
-Cyc{Int64}: √3
-```
-"""
-function ER(n::Integer)
-  get!(ER_dict,n) do 
-  for (p,d) in factor(n)
-    h=p^div(d,2)
-    if h>1 return h*ER(div(n,h^2)) end
-  end
-  if n==0       return 0
-  elseif n<0    return E(4)*ER(-n)
-  elseif n%4==1 return sum(k->E(n,k^2),1:n)
-  elseif n%4==2 return (E(8)-E(8,3))*ER(div(n,2))
-  elseif n%4==3 return E(4,3)*sum(k->E(n,k^2),1:n)
-  else          return 2*ER(div(n,4))
-  end
-  end
-end 
 
 Base.abs(c::Cyc)=c*conj(c)
 
@@ -958,10 +930,10 @@ end
 """
   `Quadratic(c::Cyc)` 
   
-determines  if `c`  lives in  a quadratic  extension of  `ℚ`. It  returns a
-`Quadratic`  struct with fields `a`, `b`, `root`, `den` representing `c` as
-`(a  + b ER(root))//den`  if such a  representation is possibe or `nothing`
-otherwise
+determines  if `c` lives in a  quadratic extension of `ℚ `. `q=Quadratic(c)`
+returns  a struct with fields  `q.a`, `q.b`, `q.root`, `q.den` representing
+`c`  as  `(q.a  +  q.b  root(q.root))//q.den`  if  such a representation is
+possible or returns `q===nothing` otherwise
 
 # Examples
 ```julia-repl
@@ -989,8 +961,8 @@ function Quadratic(cyc::Cyc{T})where T
 
   f=keys(f)
   if v2==0
-    root=cyc.n
-    if root%4==3 root=-root end
+    sqr=cyc.n
+    if sqr%4==3 sqr=-sqr end
     gal=Set(galois.(cyc,prime_residues(cyc.n)))
     if length(gal)!=2 return nothing end
     a=numerator(convert(T,sum(gal)))      # trace of 'cyc' over the rationals
@@ -1001,32 +973,32 @@ function Quadratic(cyc::Cyc{T})where T
     else d=2
     end
   elseif v2==2
-    root=cyc.n>>2
-    if root==1 a=l[1];b=-l[2]
+    sqr=cyc.n>>2
+    if sqr==1 a=l[1];b=-l[2]
     else
       a=l[5]
       if length(f)%2==0 a=-a end
-      b=-l[root+5]
+      b=-l[sqr+5]
     end
-    if root%4==1 root=-root; b=-b end
+    if sqr%4==1 sqr=-sqr; b=-b end
     d=1
   else		# v2 = 3
-    root=cyc.n>>2
-    if root==2
+    sqr=cyc.n>>2
+    if sqr==2
       a=l[1];b=l[2]
-      if b==l[4] root=-2 end
+      if b==l[4] sqr=-2 end
     else
       a=l[9]
       if length(f)%2==0 a=-a end
-      b=l[(root>>1)+9]
-      if b!=-l[3*(root>>1)-7] root=-root
-      elseif (root>>1)%4==3 b=-b
+      b=l[(sqr>>1)+9]
+      if b!=-l[3*(sqr>>1)-7] sqr=-sqr
+      elseif (sqr>>1)%4==3 b=-b
       end
     end
     d=1
   end
-  if d*cyc!=a+b*ER(root) return nothing end
-  return Quadratic(a,b,root,den*d)
+  if d*cyc!=a+b*root(sqr) return nothing end
+  return Quadratic(a,b,sqr,den*d)
 end
 
 function Base.show(io::IO,q::Quadratic)
@@ -1038,20 +1010,18 @@ function Base.show(io::IO,q::Quadratic)
     elseif q.b>0 rq*="+" end
     rq*=q.b==1 ? "" : q.b==-1 ? "-" : string(q.b)
     r=string(q.root)
-    rq*=TeX ? "\\sqrt{$r}" : repl ? "√$r" : "ER($r)"
+    rq*=TeX ? "\\sqrt{$r}" : repl ? "√$r" : "root($r)"
     if !iszero(q.a) && q.den!=1 rq="("*rq*")" end
   end
   print(io,rq)
   if q.den!=1 && rq!="0" print(io,(repl||TeX) ? "/" : "//",q.den) end
 end
 
-const inforoot=Ref(true)
+const inforoot=Ref(false)
 function proot(x,n,r)
-  if inforoot[] 
-    xprint("root(",x)
-    if n!=2 xprint(",",n) end
-    xprint(")=",r,"\n")
-  end
+  xprint("root(",x)
+  if n!=2 xprint(",",n) end
+  xprint(")=",r,"\n")
 end
 const Irootdict=Dict{Tuple{Int,Int},Any}()
 
@@ -1060,8 +1030,8 @@ const Irootdict=Dict{Tuple{Int,Int},Any}()
 
 computes  the `n`-th root of `x` when we know  how to do it. We know how to
 compute  `n`-th  roots  for  roots  of  unity, square roots of integers and
-`n`-th  roots of  integers wich  are perfect  `n`-th powers  of integers or
-square roots of integers.
+`n`-th  roots  of  perfect  `n`-th  powers  of  integers or square roots of
+integers.
 
 ```julia-repl
 julia> root(-1)
@@ -1079,18 +1049,23 @@ function root(x::Integer,n=2)
   if !(n isa Int) n=Int(n) end
   get!(Irootdict,(n,x)) do
     if x==1 || (x==-1 && n%2==1) return x end
+    if x<0 && n==2 return E(4)*root(-x) end
     l=factor(x)
     if any(y->(2y)%n!=0,values(l)) error("root($x,$n) not implemented") end
     a=prod(p^div(pow,n) for (p,pow) in l)
     b=[p for (p,pow) in l if pow%n!=0]
-    res=isempty(b) ? a : a*ER(prod(b))
-    proot(x,n,res)
-    res
+    for p in b
+      if p%4==1 a*=sum(k->E(p,k^2),1:p)
+      elseif p==2 a*=E(8)-E(8,3)
+      elseif p%4==3 a*=E(4,3)*sum(k->E(p,k^2),1:p)
+      end
+    end
+    if inforoot[] proot(x,n,a) end
+    a
   end
 end
 
-root(x::AbstractFloat,n)=x^(1//n);
-root(x::Rational{<:Integer},n::Number=2)=root(numerator(x),n)//root(denominator(x),n)
+root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
 const Crootdict=Dict{Tuple{Int,Cyc},Any}()
 function root(x::Cyc,n=2)
@@ -1112,7 +1087,7 @@ function root(x::Cyc,n=2)
     if k==1 break end
   end
   res=E(j*d,exponent(r)*gcdx(n1,d)[2])
-  proot(x,n,res)
+  if inforoot[] proot(x,n,res) end
   res
   end
 end

@@ -99,6 +99,7 @@ const ChevieDict=Dict(
 "ElementWithInversions(W,l)"=>"with_inversions(W,l)",
 "EltBraid"=>"image",
 "EltWord(W,w)"=>"W(w...)",
+"ER"=>"root",
 "ExteriorPower"=>"exterior_power",
 "FactorizedSchurElement"=>"FactorizedSchurElement",
 "FactorizedSchurElements"=>"FactorizedSchurElements",
