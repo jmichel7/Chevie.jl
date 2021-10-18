@@ -242,18 +242,20 @@ Mvp{Int64}: 2y+1
 `Frac`  are dissected using `numerator` and `denominator`. They are scalars
 for broadcasting and can be sorted (have `cmp` and `isless` methods).
 
+```julia-repl
 julia> m=[x+y x-y;x+1 y+1]
 2×2 Matrix{Mvp{Int64, Int64}}:
  x+y  x-y
  x+1  y+1
 
 julia> n=inv(Frac.(m))
-2×2 Matrix{Frac{Int64}}:
+2×2 Matrix{Frac{Mvp{Int64, Int64}}}:
  (-y-1)/(x²-2xy-y²-2y)  (x-y)/(x²-2xy-y²-2y)
  (x+1)/(x²-2xy-y²-2y)   (-x-y)/(x²-2xy-y²-2y)
 
 julia> lcm(denominator.(n))
 Mvp{Int64}: x²-2xy-y²-2y
+```
 
 Finally,   `Mvp`s  have   methods  `conj`,   `adjoint`  which   operate  on
 coefficients,   a  `derivative`   methods,  and   methods  `positive_part`,

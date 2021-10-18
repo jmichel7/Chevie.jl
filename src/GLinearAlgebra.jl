@@ -45,7 +45,7 @@ function echelon!(m::Matrix)
     rk+=1
     if rk!=j
       row=m[j,:]
-      m[j,:].=m[rk,:]
+      m[j,:].=@view m[rk,:]
       m[rk,:].=inv(row[k]).*row
     elseif !isone(m[rk,k])
       m[rk,:].=inv(m[rk,k]).*@view m[rk,:]
@@ -153,7 +153,7 @@ function det(m::Matrix)
       i=findfirst(!iszero,m[k+1:end,k])
       if i===nothing return m[k+1,k] end
       i+=k
-      m[[i,k],k:n]=m[[k,i],k:n]
+      m[[i,k],k:n].=@view m[[k,i],k:n]
       s=-s
     end
     p=m[k,k]
@@ -173,10 +173,10 @@ function charpolyandcomatrix(m)
   for i in 1:n
     if i==n res=(-1)^(n-1)*C end
     C=m*C
-    a[n+1-i]=-sum(C[i,i] for i in axes(C,1))//i
+    a[n+1-i]=exactdiv(-sum(C[i,i] for i in axes(C,1)),i)
     if i!=n C+=a[n+1-i]*one(C) end
   end
-  improve_type(a),improve_type(res)
+  a,res
 end
 
 " charpoly(M)  characteristic polynomial"
@@ -529,29 +529,29 @@ as  a vector of matrices, empty if the vector space is 0. This is useful to
 find whether two representations are isomorphic.
 """
 function transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
- n=size(l1[1],1)
- M=Vector{eltype(l1[1])}[]
- for i in 1:n, j in 1:n,  m in 1:length(l1)
-   v=zero(l1[1])
-   v[i,:]+=l1[m][:,j]
-   v[:,j]-=l2[m][i,:]
-   push!(M, vec(v))
- end
- M=echelon(toM(M))[1]
- M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
- v=nullspace(M)
- if isempty(v) return v end
- map(w->reshape(w,(n,n)), eachcol(v))
+  n=size(l1[1],1)
+  M=Vector{eltype(l1[1])}[]
+  for i in 1:n, j in 1:n,  m in 1:length(l1)
+    v=zero(l1[1])
+    v[i,:]+=l1[m][:,j]
+    v[:,j]-=l2[m][i,:]
+    push!(M, vec(v))
+  end
+  M=echelon(toM(M))[1]
+  M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
+  v=nullspace(M)
+  if isempty(v) return v end
+  map(w->reshape(w,(n,n)), eachcol(v))
 end
 
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
 "ratio of two vectors"
 function ratio(v::AbstractVector, w::AbstractVector)
- i=findfirst(x->!iszero(x),w)
- if i===nothing return nothing end
- r=v[i]//w[i]
- if v==r.*w return r end
+  i=findfirst(x->!iszero(x),w)
+  if i===nothing return nothing end
+  r=v[i]//w[i]
+  if v==r.*w return r end
 end
 
 """

@@ -93,15 +93,15 @@ cyclotomic_polynomial
 ```@docs
 Mvps
 Mvp
+valuation
+degree
+Mvps.degree(::Mvp)
 variables
 Mvps.coefficients(::Mvp,::Symbol)
 Mvps.coefficient
 Pol(x::Mvp{T, N} where N) where T
 Pol(p::Mvp{T, N}, var::Symbol) where {T, N}
-valuation
-degree
 Mvps.value
-Mvps.degree(::Mvp)
 Mvps.conj
 factor(p::Mvp{T, N}) where {T, N}
 Mvps.derivative
