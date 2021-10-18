@@ -211,11 +211,21 @@ Frac{Mvp{Int64, Int64}}: (x+y)/(x-y)
 ```
 
 Raising  a non-monomial  Laurent polynomial  to a  negative power returns a
-rational fraction.
+rational   fraction.  Rational  fractions  are  normalized  such  that  the
+numerator  and denominators are true polynomials  prime to each other. They
+have  the  arithmetic  operations  `+`,  `-`  , `*`, `/`, `//`, `^`, `inv`,
+`one`,  `isone`, `zero`, `iszero` (which can  operate between an `Mvp` or a
+`Number` and a `Frac{<:Mvp}`).
 
 ```julia-repl
 julia> (x+1)^-2
 Frac{Mvp{Int64, Int64}}: 1/(x²+2x+1)
+
+julia> x+1/(y+1)
+Frac{Mvp{Int64, Int64}}: (xy+x+1)/(y+1)
+
+julia> 1-1/(y+1)
+Frac{Mvp{Int64, Int64}}: y/(y+1)
 ```
 
 One  can evaluate a `Frac` when setting  the value of some
@@ -229,7 +239,8 @@ julia> value((x+y)/(x-y),:x=>y+1;Rational=true) # use // for division
 Mvp{Int64}: 2y+1
 ```
 
-`Frac` are dissected using `numerator` and `denominator`.
+`Frac`  are dissected using `numerator` and `denominator`. They are scalars
+for broadcasting and can be sorted (have `cmp` and `isless` methods).
 
 julia> m=[x+y x-y;x+1 y+1]
 2×2 Matrix{Mvp{Int64, Int64}}:
@@ -244,6 +255,10 @@ julia> n=inv(Frac.(m))
 julia> lcm(denominator.(n))
 Mvp{Int64}: x²-2xy-y²-2y
 
+Finally,   `Mvp`s  have   methods  `conj`,   `adjoint`  which   operate  on
+coefficients,   a  `derivative`   methods,  and   methods  `positive_part`,
+`negative_part` and `bar` (useful for Kazhdan-Lusztig theory).
+
 Despite  the degree of generality of our  polynomials, the speed is not too
 shabby. For the Fateman test f(f+1) where f=(1+x+y+z+t)^15, we take 4sec.
 According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
@@ -251,7 +266,6 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 module Mvps
 # benchmark: (x+y+z)^3     2.3μs 48 alloc
 using ModuleElts: ModuleElt, ModuleElts
-using ..Util: ordinal, stringexp
 using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
               valuation, degree, scalar, exactdiv, Frac, root, coefficients
 export coefficient, monomials, powers
@@ -288,6 +302,30 @@ Base.length(a::Monomial)=length(a.d)
 variables(a::Monomial)=keys(a.d)
 powers(a::Monomial)=values(a.d)
 
+const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
+  (1,4)=>'¼',(3,4)=>'¾',(1,5)=>'⅕',(2,5)=>'⅖',(3,5)=>'⅗',
+  (4,5)=>'⅘',(1,6)=>'⅙',(5,6)=>'⅚',(1,8)=>'⅛',(3,8)=>'⅜',
+  (5,8)=>'⅝',(7,8)=>'⅞',(1,9)=>'⅑',(1,10)=>'⅒',(1,7)=>'⅐')
+
+const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
+
+function Pols.stringexp(io::IO,r::Rational{<:Integer})
+  d=denominator(r); n=numerator(r)
+  if isone(d) return Pols.stringexp(io,n) end
+  if get(io,:TeX,false) return "^{\\frac{$n}{$d}}" end
+  res=Char[]
+  if n<0 push!(res,'⁻'); n=-n end
+  if haskey(unicodeFrac,(n,d)) push!(res,unicodeFrac[(n,d)])
+  else
+   if isone(n) push!(res,'\U215F')
+   else append!(res,map(x->Pols.supvec[x+1],reverse(digits(n))))
+     push!(res,'⁄')
+   end
+   append!(res,map(x->subvec[x+1],reverse(digits(d))))
+  end
+  String(res)
+end
+
 function Base.show(io::IO,m::Monomial)
   replorTeX=get(io,:TeX,false) || get(io,:limit,false)
   if !replorTeX
@@ -308,7 +346,7 @@ function Base.show(io::IO,m::Monomial)
     print(io,string(v))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
-      if replorTeX print(io,stringexp(io,d))
+      if replorTeX print(io,Pols.stringexp(io,d))
       elseif d isa Integer print(io,"^$d")
       else print(io,"^($d)")
       end
@@ -433,22 +471,22 @@ term(x::Mvp,i)=x.d.d[i]
 ismonomial(x::Mvp)=length(x.d)==1 # x is a non-zero monomial
 Base.zero(p::Mvp)=Mvp(zero(p.d))
 Base.zero(::Type{Mvp{T,N}}) where {T,N}=Mvp(zero(ModuleElt{Monomial{N},T}))
-Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T))
+Base.one(::Type{Mvp{T,N}}) where {T,N}=Mvp(one(Monomial{N})=>one(T);check=false)
 Base.one(::Type{Mvp{T}}) where T=one(Mvp{T,Int})
 Base.one(::Type{Mvp})=Mvp(1)
-Base.one(p::Mvp{T,N}) where {T,N}=one(Mvp{T,N})
+Base.one(p::Mvp{T,N}) where {T,N}=iszero(p) ? one(Mvp{T,N}) : Mvp(one(Monomial{N})=>one(first(coefficients(p)));check=false)
 Base.isone(x::Mvp)=ismonomial(x) && isone(first(term(x,1)))&&isone(last(term(x,1)))
 Base.copy(p::Mvp)=Mvp(p.d)
 Base.iszero(p::Mvp)=iszero(p.d)
 Base.convert(::Type{Mvp},a::Number)=convert(Mvp{typeof(a),Int},a)
 Base.convert(::Type{Mvp{T,N}},a::Number) where {T,N}=iszero(a) ? 
- zero(Mvp{T,N}) : Mvp(one(Monomial{N})=>convert(T,a))
+ zero(Mvp{T,N}) : Mvp(one(Monomial{N})=>convert(T,a);check=false)
 (::Type{Mvp{T,N}})(a::Number) where {T,N}=convert(Mvp{T,N},a)
 (::Type{Mvp{T,N}})(a::Mvp) where {T,N}=convert(Mvp{T,N},a)
 Base.convert(::Type{Mvp{T,N}},a::Mvp{T1,N1}) where {T,T1,N,N1}=
   Mvp(convert(ModuleElt{Monomial{N},T},a.d))
 Base.convert(::Type{Mvp},x::Mvp)=x
-Base.convert(::Type{Mvp},v::Symbol)=Mvp(Monomial(v)=>1)
+Base.convert(::Type{Mvp},v::Symbol)=Mvp(Monomial(v)=>1;check=false)
 Mvp(x::Symbol)=convert(Mvp,x)
 Mvp(x::Number)=convert(Mvp,x)
 Mvp(x::Mvp)=x
@@ -480,13 +518,13 @@ Base.promote_rule(::Type{Mvp{T1,N}},::Type{T2}) where {T1,N,T2<:Number} =
   Mvp{promote_type(T1,T2),N}
 
 Base.:+(a::Mvp, b::Mvp)=Mvp(a.d+b.d) # ModuleElts.+ takes care of promotion
-Base.:+(a::Number, b::Mvp)=Mvp(a)+b
-Base.:+(a::Mvp, b::Number)=b+a
+Base.:+(a::Number, b::Mvp)=+(promote(a,b)...)
+Base.:+(a::Mvp, b::Number)=+(promote(a,b)...)
 
 Base.:-(a::Mvp)=Mvp(-a.d)
 Base.:-(a::Mvp, b::Mvp)=Mvp(a.d-b.d)
-Base.:-(a::Mvp, b::Number)=a-Mvp(b)
-Base.:-(b::Number, a::Mvp)=Mvp(b)-a
+Base.:-(a::Mvp, b::Number)=-(promote(a,b)...)
+Base.:-(b::Number, a::Mvp)=-(promote(b,a)...)
 
 Base.:*(a::Number, b::Mvp)=Mvp(b.d*a)
 Base.:*(b::Mvp, a::Number)=a*b
@@ -526,7 +564,7 @@ function Base.:^(x::Mvp, p::Union{Integer,Rational})
   elseif iszero(x) || isone(p) return x
   elseif !(p isa Int) return root(x,denominator(p))^numerator(p) 
   elseif ismonomial(x) 
-    (m,c)=term(x,1);return isone(c) ? Mvp(m^p=>c) : Mvp(m^p=>c^p)
+    (m,c)=term(x,1);return isone(c) ? Mvp(m^p=>c;check=false) : Mvp(m^p=>c^p;check=false)
   elseif p>=0 return Base.power_by_squaring(x,p) 
   else return Base.power_by_squaring(inv(x),-p)
   end
@@ -917,10 +955,10 @@ function Pols.root(p::Mvp,n::Real=2)
   if iszero(p) return p end
   n=Int(n)
   if !ismonomial(p)
-   throw(DomainError(p,"$(ordinal(n)) root of non-monomial not implemented")) 
+    throw(DomainError("root($p,$n) non-monomial not implemented")) 
   end
   (m,c)=term(p,1)
-  isone(c) ? Mvp(root(m,n)=>c) : Mvp(root(m,n)=>root(c,n))
+  isone(c) ? Mvp(root(m,n)=>c;check=false) : Mvp(root(m,n)=>root(c,n))
 end
 
 """
@@ -1031,7 +1069,7 @@ function Base.gcd(a::Mvp,b::Mvp)
   elseif iszero(b) return a
   elseif ismonomial(a)
     (m,c)=term(a,1)
-    return Mvp(gcd(m,reduce(gcd,monomials(b)))=>gcd(c,reduce(gcd,coefficients(b))))
+    return Mvp(gcd(m,reduce(gcd,monomials(b)))=>gcd(c,reduce(gcd,coefficients(b)));check=false)
   elseif ismonomial(b) return gcd(b,a)
   end
   va=variables(a)
@@ -1090,7 +1128,7 @@ function make_positive(a::Mvp,b::Mvp)
   isone(d) ? (a,b) : (a*d,b*d)
 end
   
-Frac(a::Mvp,b::Mvp;prime=false)=Frac(promote(a,b)...;prime)
+Frac(a::Mvp,b::Mvp;k...)=Frac(promote(a,b)...;k...)
   
 """
 `Frac(a::Mvp,b::Mvp;pol=false,prime=false)`
@@ -1115,9 +1153,7 @@ function Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
   return Pols.Frac_(a,b)
 end
 
-function Pols.Frac(a::Mvp)
-  Frac(a,convert(typeof(a),1);prime=true)
-end
+Pols.Frac(a::Mvp)=Frac(a,one(a);prime=true)
 
 function Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
@@ -1188,16 +1224,8 @@ Base.:/(a::Union{Number,Mvp},b::Frac{<:Mvp})=a*inv(b)
 Base.://(p::Number,q::Mvp)=Mvp(p)//q
 Base.:/(p::Number,q::Mvp)=Mvp(p)/q
 
-Base.:*(a::Frac{<:Mvp},b::Mvp)=Frac(a.num*b,a.den)
-Base.:*(b::Mvp,a::Frac{<:Mvp})=a*b
-Base.:*(a::Frac{<:Mvp},b::Number) where T =Frac(a.num*b,a.den;pol=true,prime=true)
-Base.:*(b::Number,a::Frac{<:Mvp}) where T =a*b
-
-FracMvp(a::Number)=convert(Frac{Mvp{typeof(a),Int}},a)
-Base.:+(a::Frac{<:Mvp},b::Union{Number,Mvp})=a+FracMvp(b)
-Base.:+(b::Union{Number,Mvp},a::Frac{<:Mvp})=a+b
-Base.:-(a::Frac{<:Mvp},b::Union{Number,Mvp})=a-FracMvp(b)
-Base.:-(b::Union{Number,Mvp},a::Frac{<:Mvp})=FracMvp(b)-a
+Base.:*(a::Frac{<:Mvp},b::Number)=Frac(a.num*b,a.den;pol=true,prime=true)
+Base.:*(b::Number,a::Frac{<:Mvp})=a*b
 
 value(p::Frac{<:Mvp},k::Pair...;Rational=false)=Rational ? 
   value(p.num,k...)//value(p.den,k...) : value(p.num,k...)/value(p.den,k...)

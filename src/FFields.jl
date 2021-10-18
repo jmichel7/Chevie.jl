@@ -130,21 +130,28 @@ export Mod, GF, FFE, Z, field, order, degree, char, elements
 struct Mod{T}<:Number
   val::T
   n::T
-  function Mod(a::Integer,n)
-    new{n isa BigInt ? BigInt : typeof(unsigned(n))}(mod(a,n),n)
-  end
+  global Mod_(a::T,n::T) where T=new{T}(a,n)
+end
+
+function Mod(a::Integer,n)
+  if n isa BigInt Mod_(mod(a,n),n) end
+  Mod_(unsigned(mod(a,n)),unsigned(n))
 end
 
 Mod(i::Rational{<:Integer},p)=Mod(numerator(i),p)/Mod(denominator(i),p)
-Exact=Union{Integer,Rational{<:Integer}}
+Base.promote(a::Integer,b::Mod)=(Mod(a,b.n),b)
+Base.promote(b::Mod,a::Integer)=(b,Mod(a,b.n))
+Base.promote(a::Rational{<:Integer},b::Mod)=(Mod(a,b.n),b)
+Base.promote(b::Mod,a::Rational{<:Integer})=(b,Mod(a,b.n))
+Base.promote(a,b::Mod)=(a*one(b),one(a)*b)
 Base.zero(n::Mod)=Mod(0,n.n)
 Base.one(n::Mod)=Mod(1,n.n)
+Base.one(::Type{<:Mod})=Mod_(unsigned(1),unsigned(0))
+Base.isone(n::Mod)=isone(n.val)
 Base.:(==)(x::Mod,y::Mod)=x.n==y.n && x.val==y.val
 Base.:(==)(x::Mod,y::Integer)=false
 Base.:+(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val+y.val,x.n)
-Base.:+(x::Mod, y::Exact)=x+Mod(y,x.n)
 Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val*y.val,x.n)
-Base.:*(x::Mod, y::Exact)=x*Mod(y,x.n)
 Base.:-(x::Mod)=Mod(-signed(Integer(x.val)),x.n)
 Base.:-(x::Mod, y::Mod)=x+(-y)
 Base.:/(x::Mod,y::Mod)=x*inv(y)
@@ -153,6 +160,7 @@ Base.inv(x::Mod)=Mod(invmod(x.val,x.n),x.n)
 Base.:^(x::Mod,m::Integer)=m>=0 ? Base.power_by_squaring(x,m) :
                                   Base.power_by_squaring(inv(x),-m)
 Base.cmp(x::Mod,y::Mod)=cmp(x.val,y.val)
+Base.gcd(x::Mod,y::Mod)=Mod(gcd(x.val,y.val),x.n)
 Base.isless(x::Mod,y::Mod)=cmp(x,y)==-1
 Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
 Base.conj(x::Mod)=x     # needed for inv(Matrix) to work
@@ -184,6 +192,7 @@ function order(x::Mod)
   end
 end
 
+#-------------------------------------------------------------------------
 const conway_polynomials=Dict{Tuple{Int,Int},Vector{Int}}(
 (2, 1) => [1],
 (2, 2) => [1, 1],
@@ -443,6 +452,8 @@ Base.zero(::Type{FFE{p}}) where p=FFE{p}(-1,iFF(p))
 Base.zero(x::FFE{p}) where p=sizefield(x)==p ? clone(x,-1) : zero(FFE{p})
 Base.abs(a::FFE)=a
 Base.conj(a::FFE)=a
+Base.gcd(x::FFE,y::FFE)=one(x)
+Base.gcd(x::AbstractVector{<:FFE})=one(x[1])
 
 function Base.cmp(x::FFE, y::FFE)
   l=cmp(sizefield(x),sizefield(y))

@@ -419,7 +419,8 @@ function fakedegree(t::TypeIrred,p,q)
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
-  getchev(t,:FakeDegree,p,q)
+  r=getchev(t,:FakeDegree,p,q)
+  if r!=false && r!==nothing r end
 end
 
 """
@@ -488,8 +489,8 @@ function charinfo(t::TypeIrred)
       para=map(x->Int(1/x),getchev(t,:EigenvaluesGeneratingReflections))
       para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
       s=map(p->getchev(t,:SchurElement,p,para,Any[]),c[:charparams])
-      c[:a]=valuation(s[c[:positionId]])-valuation.(s)
-      c[:A]=degree(s[c[:positionId]])-degree.(s)
+      c[:a]=valuation(s[c[:positionId]]).-valuation.(s)
+      c[:A]=degree(s[c[:positionId]]).-degree.(s)
     end
   end
   for f in [:a,:A,:b,:B]

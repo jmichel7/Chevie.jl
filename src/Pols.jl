@@ -15,6 +15,7 @@ Julia. The reasons for still having my own package are multiple:
   - I need to  work with coefficients  of types `T`  where elements have a
     `zero`  method but `T` itself does not  have one (because `T` does not
     contain the necessary information. An example is `Mod{BigInt}`).
+  - a final justification is that `Pols` is used by `Mvps`.
 
 Here  Laurent  polynomials  have  the  parametric  type  `Pol{T}`. They are
 constructed by giving a vector of coefficients of type `T`, and a valuation
@@ -183,11 +184,11 @@ coefficients,    a    `derivative`    methods,   methods   `positive_part`,
 `negative_part`  and `bar` (useful for Kazhdan-Lusztig theory) and a method
 `randpol` to produce random polynomials.
 
-Rational  fractions allow to invert  polynomials. `Frac{Pol{T}}`s are normalized
-so  that the numerator  and denominator are  true polynomials prime to each
-other.  They have the arithmetic operations `+`, `-` , `*`, `/`, `//`, `^`,
-`inv`,  `one`, `isone`, `zero`, `iszero` (which can operate between a `Pol`
-and a `Frac{Pol{T}}`).
+Rational   fractions  allow  to  invert  polynomials.  `Frac{Pol{T}}`s  are
+normalized so that the numerator and denominator are true polynomials prime
+to  each other. They  have the arithmetic  operations `+`, `-`  , `*`, `/`,
+`//`,  `^`,  `inv`,  `one`,  `isone`,  `zero`,  `iszero` (which can operate
+between a `Pol` or a `Number` and a `Frac{Pol{T}}`).
 
 
 ```julia-repl
@@ -772,7 +773,7 @@ end
 
 root(x::AbstractFloat,n=2)=x^(1/n)
 #---------------------- Frac-------------------------------------
-## cannot use Rational{T} since T<:Integer
+## cannot use Rational{T} since it forces T<:Integer
 struct Frac{T}
   num::T
   den::T
@@ -841,6 +842,12 @@ Base.:^(a::Frac, n::Integer)= n>=0 ? Base.power_by_squaring(a,n) :
 Base.:+(a::Frac,b::Frac)=Frac(a.num*b.den+a.den*b.num,a.den*b.den)
 Base.:-(a::Frac)=Frac_(-a.num,a.den)
 Base.:-(a::Frac,b::Frac)=Frac(a.num*b.den-a.den*b.num,a.den*b.den)
+Base.:+(a::Frac{<:T},b::Union{Number,T}) where T=+(promote(a,b)...)
+Base.:+(b::Union{Number,T},a::Frac{<:T}) where T=+(promote(a,b)...)
+Base.:-(a::Frac{<:T},b::Union{Number,T}) where T=-(promote(a,b)...)
+Base.:-(b::Union{Number,T},a::Frac{<:T}) where T=-(promote(b,a)...)
+Base.:*(a::Frac{<:T},b::T) where T=Frac(a.num*b,a.den)
+Base.:*(b::T,a::Frac{<:T}) where T=Frac(a.num*b,a.den)
 
 #----------------------------------------------------------------------
 
@@ -904,8 +911,8 @@ function Base.promote_rule(a::Type{T1},b::Type{Frac{T2}})where {T1<:Number,T2<:P
   Frac{promote_type(T1,T2)}
 end
 
-function Frac(a::T)where T<:Pol
-  if a.v>0 return Frac_{T}(a,one(a)) end
+function Frac(a::Pol)
+  if a.v>0 return Frac_(a,one(a)) end
   Frac(a,one(a);prime=true)
 end
 
@@ -918,28 +925,23 @@ bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 
 function Base.inv(p::Pol)
   if ismonomial(p) return Pol([bestinv(p.c[1])],-p.v) end
-  Frac_(make_positive(Pol(1),p)...)
+  Frac_(make_positive(one(p),p)...)
 end
 
 Base.:/(p::Pol,q::Pol)=p*inv(q)
 
-Base.://(a::Frac{<:Pol},b::Union{Number,Pol})=Frac(a.num,a.den*b)
+Base.://(a::Frac{<:Pol},b::Pol)=Frac(a.num,a.den*b)
+Base.://(a::Frac{<:Pol},b::Number)=Frac(a.num,a.den*b;prime=true)
 Base.:/(a::Frac{<:Pol},b::Union{Number,Pol})=a//b
 Base.://(a::Union{Number,Pol},b::Frac{<:Pol})=a*inv(b)
 Base.:/(a::Union{Number,Pol},b::Frac{<:Pol})=a//b
 Base.://(p::Number,q::Pol)=Frac(Pol(p),q;prime=true)
 Base.:/(p::Number,q::Pol)=p*inv(q)
 
-Base.:*(a::Frac{<:Pol},b::Pol)=Frac(a.num*b,a.den)
-Base.:*(b::Pol,a::Frac{<:Pol})=a*b
-Base.:*(a::Frac{<:Pol},b::Number)=Frac_(a.num*b,a.den)
+Base.:*(a::Frac{<:Pol},b::Number)=Frac(a.num*b,a.den;prime=true)
 Base.:*(b::Number,a::Frac{<:Pol})=a*b
-Base.:+(a::Frac{<:Pol},b::Union{Number,Pol})=+(promote(a,b)...)
-Base.:+(b::Union{Number,Pol},a::Frac{<:Pol})=+(promote(a,b)...)
-Base.:-(a::Frac{<:Pol},b::Union{Number,Pol})=-(promote(a,b)...)
-Base.:-(b::Union{Number,Pol},a::Frac{<:Pol})=-(promote(b,a)...)
 
 (p::Frac{<:Pol})(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
-# timing @btime inv(Frac.([q+1 q+2;q-2 q-3])) setup=(q=Pol())
-#   38.876 μs (1018 allocations: 76.39 KiB)
+# @btime inv(Frac.([q+1 q+2;q-2 q-3])) setup=(q=Pol())
+# 38.876 μs (1018 allocations: 76.39 KiB)
 end
