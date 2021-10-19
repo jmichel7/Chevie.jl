@@ -7,7 +7,7 @@
 #  take an argument after the rank, the cartanType.
 #    cartanType=1 type C
 #    cartanType=2 type B
-#    cartanType=ER(2) and rank=2 Suzuki groups.
+#    cartanType=root(2) and rank=2 Suzuki groups.
 #  other  values  happen  for  root  systems  which  occur  inside complex
 #  reflection groups.
 
@@ -55,7 +55,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     ss[:locsys][p]=[length(uc[:classes]), 
           findfirst(==(map(x->x ? [1,1] : [2], s.Au)),CharParams(cc[:Au]))]
   end
-  if ctype==ER(2)  #treat 2B2 as B2; make sure char=2
+  if ctype==root(2)  #treat 2B2 as B2; make sure char=2
     ctype=2
     char=2
   end
@@ -68,7 +68,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     res[:locsys]=fill([0, 0],NrConjugacyClasses(res[:relgroup]))
     if char==2 res[:Z]=[1]
     elseif ctype==1 res[:Z]=[(-1)^(r-d[2])]
-    elseif conductor(ER(2*(r-d[2])+1))==1 res[:Z]=[1]
+    elseif conductor(root(2*(r-d[2])+1))==1 res[:Z]=[1]
     else res[:Z]=[-1]
     end
     res
