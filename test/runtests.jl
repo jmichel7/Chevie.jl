@@ -710,7 +710,7 @@ end
 @test mytest("Mvps.jl","((x+y)/(x-y))(x=y+1)","Mvp{Float64}: 2.0y+1.0")
 @test mytest("Mvps.jl","value((x+y)/(x-y),:x=>y+1;Rational=true)","Mvp{Int64}: 2y+1")
 @test mytest("Mvps.jl","m=[x+y x-y;x+1 y+1]","2×2 Matrix{Mvp{Int64, Int64}}:\n x+y  x-y\n x+1  y+1")
-@test mytest("Mvps.jl","n=inv(Frac.(m))","2×2 Matrix{Frac{Mvp{Int64,Int64}}}:\n (-y-1)/(x²-2xy-y²-2y)  (x-y)/(x²-2xy-y²-2y)\n (x+1)/(x²-2xy-y²-2y)   (-x-y)/(x²-2xy-y²-2y)")
+@test mytest("Mvps.jl","n=inv(Frac.(m))","2×2 Matrix{Frac{Mvp{Int64, Int64}}}:\n (-y-1)/(x²-2xy-y²-2y)  (x-y)/(x²-2xy-y²-2y)\n (x+1)/(x²-2xy-y²-2y)   (-x-y)/(x²-2xy-y²-2y)")
 @test mytest("Mvps.jl","lcm(denominator.(n))","Mvp{Int64}: x²-2xy-y²-2y")
 @test mytest("Mvps.jl","@Mvp x;conj(im*x+1)","Mvp{Complex{Int64}}: (0 - 1im)x+1 + 0im")
 @test mytest("Mvps.jl","a=x^2+x*y","Mvp{Int64}: x²+xy")

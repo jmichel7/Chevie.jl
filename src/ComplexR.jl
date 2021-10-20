@@ -1,6 +1,6 @@
 module ComplexR
 using ..Gapjm
-export ComplexReflectionGroup, reflection_name, diagram, charname, codegrees,
+export ComplexReflectionGroup, reflection_name, diagram, codegrees,
   traces_words_mats, reflection_group, torusfactors
 
 Gapjm.roots(t::TypeIrred)=

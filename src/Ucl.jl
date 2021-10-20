@@ -241,7 +241,7 @@ module Ucl
 using ..Gapjm
 
 export UnipotentClasses, UnipotentClassOps, ICCTable, XTable, GreenTable,
- UnipotentValues, induced_linear_form, special_pieces
+ UnipotentValues, induced_linear_form, special_pieces, name
 
 @GapObj struct UnipotentClass
   name::String
@@ -278,6 +278,8 @@ end
 function name(io::IO,u::UnipotentClass)
   nameclass(merge(u.prop,Dict(:name=>u.name)),io.dict)
 end
+
+name(u;opt...)=name(IOContext(stdout,opt...),u)
 
 function Base.show(io::IO,u::UnipotentClass)
   print(io,"UnipotentClass(",name(io,u),")")
@@ -928,7 +930,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
 end
 
 # decompose tensor product of characters (given as their indices in CharTable)
-function DecomposeTensor(W,c::Int...)
+function decompose_tensor(W,c::Int...)
   ct=CharTable(W)
 # println("eltype=",eltype(irr))
   decompose(ct,vec(prod(view(ct.irr,collect(c),:),dims=1)))
@@ -1051,21 +1053,24 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 # res[:scalar] is the matrix $P$
   R=ss[:relgroup]
   ct=CharTable(R)
-  f=fakedegrees(R,q)
   k=charinfo(R)[:positionDet]
-  n=length(f)
 # Partition on characters of ss.relgroup induced by poset of unipotent classes
   res.dimBu=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
   res.blocks=HasType.CollectBy(eachindex(ss[:locsys]),-res.dimBu)
+  subst=!(q isa Pol)
+  if subst var=q; q=Pol() end
+  f=fakedegrees(R,q)
+  n=length(f)
   # matrix of q^{-bᵢ-bⱼ}*fakedegree(χᵢ ⊗ χⱼ ⊗ sgn)
   tbl=bigcell_decomposition([q^(-res.dimBu[i]-res.dimBu[j])*
-                            sum(map(*,f,DecomposeTensor(R,i,j,k)))
+                            sum(map(*,f,decompose_tensor(R,i,j,k)))
      for i in 1:n,j in 1:n], res.blocks) # //1 needed in D7
+  if subst tbl=map(y->map(x->x(var),y),tbl); q=var end
   res.scalar=tbl[1]
   res.locsys=ss[:locsys]
-# res[:L]=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
+# res.L=tbl[2]*GenericOrder(W,q)/prod(ReflectionDegrees(R),d->q^d-1)/
 #   q^(W.semisimplerank-R.semisimplerank);
-  res.L=tbl[2]*q^(W.N+semisimplerank(R)-semisimplerank(W))
+  res.L=tbl[2]*q^(nref(W)+semisimplerank(R)-semisimplerank(W))
   res.uc=uc
   if haskey(ss,:parameter) res.parameter=ss[:parameter]
   else res.parameter=(1:length(ss[:locsys])).+100*(i-1)

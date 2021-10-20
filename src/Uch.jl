@@ -281,6 +281,14 @@ function SerNames(io::IO,sers)
   res
 end
 
+"""
+charnames(uc;options...) charnames(io::IO,uc)
+
+returns  the list of character names for the unipotent characters uc. The
+optional  options  are  IOContext  attributes  which can give alternative
+names  in certain cases,  or a different  formatting of names in general.
+They can be specified by giving an IO as argument.
+"""
 function Chars.charnames(io::IO,uc::UnipotentCharacters)
   if get(io,:cyclicparam,false) && haskey(uc,:cyclicparam)
     map(uc.cyclicparam)do x

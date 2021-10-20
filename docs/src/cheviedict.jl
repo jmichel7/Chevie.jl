@@ -40,6 +40,7 @@ const ChevieDict=Dict(
 "CheckHeckeDefiningRelations"=>"isrepresentation",
 "ChevieClassInfo"=>"classinfo",
 "ChevieCharInfo"=>"charinfo",
+"ClassName"=>"see ClassNames",
 "ClassTypes"=>"ClassTypes",
 "Coefficient(p,i)"=>"p[i]",
 "Collected"=>"tally",

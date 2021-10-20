@@ -395,7 +395,7 @@ using ..Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars, detPerm, discriminant
+  decompose, on_chars, detPerm, discriminant, classnames
 
 """
 `fakedegree(W, φ, q)`
@@ -1267,6 +1267,30 @@ function charnames(io::IO,W)
 end
 
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
+
+"""
+`classnames(W;options...)`
+`classnames(io::IO,W)`
+
+returns  the  list  of  class  names  for the reflection group `W`. The
+optional  options are IOContext attributes which can give alternative names
+in  certain cases, or a different formatting  of names in general. They can
+be specified by giving an IO as argument.
+"""
+function classnames(io::IO,W)
+  if hasmethod(refltype,(typeof(W),))
+    c=classinfo(W)
+    cn=c[:classnames]
+    for k in [:malle]
+      if get(io,k,false) && haskey(c,k) cn=c[k] end
+    end
+  else
+    cn=CharTable(W).classnames
+  end
+  fromTeX.(Ref(io),cn)
+end
+
+classnames(W;opt...)=classnames(IOContext(stdout,opt...),W)
 
 @GapObj struct InductionTable{T}
   scalar::Matrix{T}

@@ -67,7 +67,6 @@ coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
 galois
-ER
 Quadratic
 Root1
 Cycs.root

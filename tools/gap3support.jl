@@ -5,6 +5,7 @@ ApplyFunc(f,x)=f(x...)
 ComplexConjugate(v)=conj(v)
 Concatenation(a::String...)=prod(a)
 Concatenation(a::AbstractVector{<:AbstractVector})=vcat(collect.(a)...)
+Concatenation(a::AbstractVector{String})=prod(a)
 Concatenation(a::Vector,b::Tuple)=vcat(a,improve_type(collect(b)))
 Concatenation(b...)=reduce(vcat,b)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
