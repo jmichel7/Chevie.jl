@@ -499,7 +499,7 @@ characteristic for `𝐆`). This contains the following fields:
 `p`: the characteristic of the field for which the unipotent classes were
 computed. It is `0` for any good characteristic.
 
-`orderClasses`:  a list describing the Hasse diagram of the partial order
+`orderclasses`:  a list describing the Hasse diagram of the partial order
 induced   on   unipotent   classes   by   the  closure  relation.  That  is
 `.orderclasses[i]`  is the list of `j` such that `C̄ⱼ⊋ C̄ᵢ`  and  there  is
 no  class  `Cₖ`  such  that `C̄ⱼ⊋ C̄ₖ⊋ C̄ᵢ`.
@@ -507,7 +507,7 @@ no  class  `Cₖ`  such  that `C̄ⱼ⊋ C̄ₖ⊋ C̄ᵢ`.
 `classes`:  a  list  of  records  holding information for each unipotent
 class (see below).
 
-`springerSeries`:  a list of records, each  of which describes a Springer
+`springerseries`:  a list of records, each  of which describes a Springer
 series  of `𝐆`.
 
 The  records  describing  individual  unipotent  classes have the following
@@ -718,7 +718,7 @@ function UnipotentClasses(W,p=0)
       u
     end
   end
-  if iszero(p) && !haskey(classes[1],:balacarter)
+  if !(p in badprimes(W)) && !haskey(classes[1],:balacarter)
     bc=BalaCarterLabels(W)
 #   println("W=$W bc=$bc")
 #   println(map(u->u.dynkin,classes))
@@ -1051,8 +1051,6 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 # res[:scalar] is the matrix $P$
   R=ss[:relgroup]
   ct=CharTable(R)
-  var=q
-  q=Pol()
   f=fakedegrees(R,q)
   k=charinfo(R)[:positionDet]
   n=length(f)
@@ -1072,10 +1070,8 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   if haskey(ss,:parameter) res.parameter=ss[:parameter]
   else res.parameter=(1:length(ss[:locsys])).+100*(i-1)
   end
-  if !(var isa Pol)
-    res.scalar=improve_type(map(x->x(var),res.scalar))
-    res.L=improve_type(map(x->x(var),res.L))
-  end
+  res.scalar=improve_type(res.scalar)
+  res.L=improve_type(res.L)
   res
 end
 

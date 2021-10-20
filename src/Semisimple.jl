@@ -175,7 +175,8 @@ module Semisimple
 using ..Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
-StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group
+StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
+IsomorphismType
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}

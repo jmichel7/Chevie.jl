@@ -113,7 +113,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   for cl in ss
     cc = Dict{Symbol, Any}(:parameter => symbol2para(cl[1].symbol))
     cc[:Au]=CoxeterGroup(Concatenation(map(x->["A",1],cl[1].Au))...)
-    if char != 2
+    if char!=2
       cc[:dynkin] = part2dynkin(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
     else
