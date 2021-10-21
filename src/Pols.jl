@@ -248,7 +248,7 @@ end
 
   Unless  `check` is `false`  normalize the result  by making sure that `c`
   has  no leading or  trailing zeroes (do  not set `check=false` unless you
-  are sure this is the case).
+  are sure this is already the case).
 
   Unless  `copy=false` the  contents of  `c` are  copied (you  can gain one
   allocation by setting `copy=false` if you know the contents can be shared)
@@ -256,11 +256,11 @@ end
 function Pol(c::AbstractVector{T},v::Integer=0;check=true,copy=true)where T
   if check # normalize c so there are no leading or trailing zeroes
     b=findfirst(!iszero,c)
-    if b===nothing return Pol_(T[],0) end
+    b===nothing && return Pol_(T[],0)
     e=findlast(!iszero,c)
     if b!=1 || e!=length(c) || copy return Pol_(view(c,b:e),v+b-1) end
   end
-  Pol_(copy ? c[:] : c,v)
+  Pol_(copy ? Base.copy(c) : c,v)
 end
 
 Pol()=Pol_([1],1)
@@ -289,7 +289,7 @@ macro Pol(t)
 end
 
 Base.broadcastable(p::Pol)=Ref(p)
-Base.copy(p::Pol)=Pol(p.c,p.v;check=false)
+Base.copy(p::Pol)=Pol_(copy(p.c),p.v)
 
 degree(a::Number)=0 # convenient
 degree(p::Pol)=length(p.c)-1+p.v
@@ -343,18 +343,12 @@ Base.hash(a::Pol, h::UInt)=hash(a.v,hash(a.c,h))
 # efficient p↦ qˢ p
 shift(p::Pol{T},s) where T=Pol_(p.c,p.v+s)
 
-function positive_part(p::Pol)
-  if p.v>=0 return Pol(p.c,p.v;check=false) end
-  Pol(view(p.c,1-p.v:length(p.c)),0)
-end
+positive_part(p::Pol)=p.v>=0 ? copy(p) : Pol(view(p.c,1-p.v:length(p.c)),0)
 
-function negative_part(p::Pol)
-  if degree(p)<=0 return Pol(p.c,p.v;check=false) end
-  Pol(view(p.c,1:1-p.v),p.v)
-end
+negative_part(p::Pol)=degree(p)<=0 ? copy(p) : Pol(view(p.c,1:1-p.v),p.v)
 
 # q↦ q⁻¹ on p
-bar(p::Pol)=Pol(reverse(p.c),-degree(p);check=false)
+bar(p::Pol)=Pol_(reverse(p.c),-degree(p))
 
 Base.:(==)(a::Pol, b::Pol)= a.c==b.c && a.v==b.v
 Base.:(==)(a::Pol,b)= (iszero(a) && iszero(b))||(b!==nothing && scalar(a)==b)
@@ -451,14 +445,14 @@ function Base.:*(a::Pol{T1},b::Pol{T2})where {T1,T2}
   Pol_(res,a.v+b.v)
 end
 
-Base.:*(a::Pol, b::Number)=Pol(a.c.*b,a.v;copy=false)
+Base.:*(a::Pol, b::Number)=iszero(b) ? zero(a) : Pol_(a.c.*b,a.v)
 Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v;copy=false)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
 
 Base.:^(a::Pol, n::Real)=isinteger(n) ? a^Int(n) : root(a,1//n)
 
-Base.:^(a::Pol, n::Integer)=ismonomial(a) ? Pol([a.c[1]^n],n*a.v) :
+Base.:^(a::Pol, n::Integer)=ismonomial(a) ? Pol_([a.c[1]^n],n*a.v) :
          n>=0 ? Base.power_by_squaring(a,n) :
                 Base.power_by_squaring(inv(a),-n)
 
@@ -501,7 +495,7 @@ Base.:+(b::Number, a::Pol)=Pol(b)+a
 Base.:-(a::Pol)=Pol_(-a.c,a.v)
 Base.:-(b::Number, a::Pol)=Pol(b)-a
 Base.:-(a::Pol,b::Number)=a-Pol(b)
-Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;check=false,copy=false)
+Base.div(a::Pol,b::Number)=Pol(div.(a.c,b),a.v;copy=false)
 
 exactdiv(a,b)=a/b  # generic version for fields
 function exactdiv(a::Integer,b::Integer) # define for integral domains
@@ -509,13 +503,14 @@ function exactdiv(a::Integer,b::Integer) # define for integral domains
   !iszero(r) ? nothing : d
 end
 
-function exactdiv(a::Pol,b)
+function coeffexactdiv(a::Pol,b)
   if isone(b) return a end
   c=exactdiv.(a.c,b)
-  if !any(isnothing,c) Pol(c,a.v;check=false,copy=false) end
+  if !any(isnothing,c) Pol_(c,a.v) end
 end
-Base.:/(p::Pol,q::Number)=Pol(p.c./q,p.v;check=false,copy=false)
-Base.://(p::Pol,q::Number)=Pol(p.c.//q,p.v;check=false,copy=false)
+
+Base.:/(p::Pol,q::Number)=Pol_(p.c./q,p.v)
+Base.://(p::Pol,q::Number)=Pol_(p.c.//q,p.v)
 
 derivative(a::Pol)=Pol([(i+a.v-1)*v for (i,v) in enumerate(a.c)],a.v-1,copy=false)
 
@@ -580,7 +575,7 @@ function pseudodiv(a::Pol, b::Pol)
  if isone(b) || iszero(a) return a,zero(a) end
   if iszero(b) throw(DivideError) end
   d=b.c[end]
-  if degree(a)<degree(b) return (Pol(0),d^(degree(a)+1-degree(b))*a) end
+  if degree(a)<degree(b) return (zero(a),d^(degree(a)+1-degree(b))*a) end
   if a.v<0 || b.v<0 error("arguments should be true polynomials") end
   z=zero(a.c[1]+b.c[1])
   r=fill(z,1+degree(a))
@@ -608,8 +603,8 @@ See Knuth AOCP2 4.6.1 Algorithm C
 function srgcd(a::Pol,b::Pol)
   if degree(b)>degree(a) a,b=b,a end
   if iszero(b) return a end
-  ca=gcd(a.c);a=exactdiv(a,ca)
-  cb=gcd(b.c);b=exactdiv(b,cb)
+  ca=gcd(a.c);a=coeffexactdiv(a,ca)
+  cb=gcd(b.c);b=coeffexactdiv(b,cb)
   d=gcd(ca,cb)
   g=1
   h=1
@@ -617,16 +612,16 @@ function srgcd(a::Pol,b::Pol)
     δ=degree(a)-degree(b)
     q,r=pseudodiv(a,b)
     if iszero(r)
-      cb=gcd(b.c);b=exactdiv(b,cb)
-      return isone(d) ? b : Pol(b.c .*d,b.v;check=false)
+      cb=gcd(b.c);b=coeffexactdiv(b,cb)
+      return isone(d) ? b : Pol_(b.c .*d,b.v)
     elseif degree(r)==0
-      return Pol([d];check=false)
+      return Pol_([d],0)
     end
     a=b
     gh=g*h^δ
-    b=exactdiv(r,gh)
+    b=coeffexactdiv(r,gh)
     g=a[end]
-    if δ>0 h=exactdiv(g^δ,h^(δ-1)) end
+    if δ>0 h=coeffexactdiv(g^δ,h^(δ-1)) end
   end
 end
 
@@ -753,7 +748,7 @@ function Pol(pts::AbstractVector,vals::AbstractVector)
     end
     vals[1]
   end
-  p=Pol([a[end]])
+  p=Pol_([a[end]],0)
   for i in length(pts)-1:-1:1
     p=p*(Pol()-pts[i])+a[i]
   end
@@ -768,7 +763,7 @@ function root(x::Pol,n::Union{Integer,Rational{<:Integer}}=2)
   if iszero(x) return x end
   if !ismonomial(x) || !iszero(x.v%n) error("root($x,$n) not implemented") end
   c=x.c[1]
-  Pol([isone(c) ? c : root(c,n)],div(x.v,n);check=false)
+  Pol_([isone(c) ? c : root(c,n)],div(x.v,n))
 end
 
 root(x::AbstractFloat,n=2)=x^(1/n)
@@ -924,7 +919,7 @@ end
 bestinv(x)=isone(x) ? x : isone(-x) ? x : inv(x)
 
 function Base.inv(p::Pol)
-  if ismonomial(p) return Pol([bestinv(p.c[1])],-p.v) end
+  if ismonomial(p) return Pol_([bestinv(p.c[1])],-p.v) end
   Frac_(make_positive(one(p),p)...)
 end
 
@@ -943,5 +938,5 @@ Base.:*(b::Number,a::Frac{<:Pol})=a*b
 
 (p::Frac{<:Pol})(x;Rational=false)=Rational ? p.num(x)//p.den(x) : p.num(x)/p.den(x)
 # @btime inv(Frac.([q+1 q+2;q-2 q-3])) setup=(q=Pol())
-# 38.876 μs (1018 allocations: 76.39 KiB)
+# 32.556 μs (938 allocations: 57.22 KiB)
 end

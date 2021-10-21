@@ -870,7 +870,7 @@ end
       end
     end
   end
-  return nothing
+  # return nothing
 end
 
 function Base.cmp(a::Root1,b::Root1)
@@ -1023,7 +1023,7 @@ function proot(x,n,r)
   if n!=2 xprint(",",n) end
   xprint(")=",r,"\n")
 end
-const Irootdict=Dict{Tuple{Int,Int},Any}()
+const Irootdict=Dict{Tuple{Int,Int},Union{Cyc{Int},Int}}()
 
 """
 `root(x,n=2)`
@@ -1067,7 +1067,7 @@ end
 
 root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
-const Crootdict=Dict{Tuple{Int,Cyc},Any}()
+const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()
 function root(x::Cyc,n=2)
   if isone(n) || isone(x) return x end
   if !(n isa Int) n=Int(n) end
