@@ -880,7 +880,8 @@ function Base.cmp(a::Root1,b::Root1)
 end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
-#Base.:(==)(a::Root1,b::Root1)=iszero(cmp(a,b))
+Base.:(==)(a::Root1,b::Root1)=a.r==b.r
+Base.:(==)(a::Root1,b::Number)=E(a)==b
 Base.one(a::Root1)=Root1(1,0)
 Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)

@@ -167,6 +167,7 @@ const ChevieDict=Dict(
 "IsMeetLattice"=>"is_meet_lattice",
 "IsLeftDescending(W,w,i)"=>"isleftdescent(W,w,i)",
 "IsSubset(a,b)"=>"issubset(b,a)",
+"IsParabolic"=>"is_parabolic",
 #IsNormalizing
 #IsQuasiIsolated
 "IsomorphismType"=>"IsomorphismType",
