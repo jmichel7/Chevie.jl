@@ -748,7 +748,7 @@ function Base.show(io::IO, WF::Spets)
     end
   end
   show(io,refltype(WF))
-  t=CycPol(charpoly(central_action(W,WF.F)))
+  t=CycPol(Pol(charpoly(central_action(W,WF.F))))
   if !isone(t) show(io,t) end
 end
 

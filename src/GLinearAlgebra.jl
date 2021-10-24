@@ -8,7 +8,7 @@ Here we are interested in functions which work over any field (or sometimes
 any ring).
 """
 module GLinearAlgebra
-using ..Pols: Pol # for charpoly
+using ..Pols: exactdiv
 #using ..Cycs: Cyc # for isunit
 using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
@@ -16,12 +16,13 @@ using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
 using ..Util: toM, toL
-using ..Pols: exactdiv
 using ..PermRoot: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   diagblocks, ratio, schur_functor, charpoly, solutionmat, transporter, 
   permanent, blocks, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
   intersect_rowspace
+
+echelon!(m::Matrix{<:Integer})=echelon!(m*1//1)
 
 """
     `echelon!(m)`
@@ -34,8 +35,6 @@ export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition,
   works in any field.
 """
 function echelon!(m::Matrix)
-  T=typeof(one(eltype(m))//1)
-  if T!=eltype(m) m=convert.(T,m) end
   rk=0
   inds=collect(axes(m,1))
   for k in axes(m,2)
@@ -180,10 +179,10 @@ function charpolyandcomatrix(m)
 end
 
 " charpoly(M)  characteristic polynomial"
-charpoly(m)=Pol(charpolyandcomatrix(m)[1])
+charpoly(m)=first(charpolyandcomatrix(m))
 
 "the comatrix of the square matrix M is defined by comatrix(M)*M=det(M)*one(M)"
-comatrix(m)=charpolyandcomatrix(m)[2]
+comatrix(m)=last(charpolyandcomatrix(m))
 
 """
 `bigcell_decomposition(M [, b])`

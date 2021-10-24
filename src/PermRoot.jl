@@ -982,7 +982,7 @@ function refleigen(W)
     if isempty(t) ll=[Root1[]]
     elseif any(x->haskey(x,:orbit) && 
         (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
-      ll=map(x->roots(CycPol(charpoly(reflrep(W,x)))),classreps(W))
+      ll=map(x->eigmat(reflrep(W,x)),classreps(W))
       W.reflengths=map(x->count(!isone,x),ll)
       return ll
     else
@@ -1227,7 +1227,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
     if F in parent(W)
       ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
     else
-      ch=map(x->roots(CycPol(charpoly(reflrep(W,x)))),FF)
+      ch=map(x->eigmat(reflrep(W,x)),FF)
     end
     m=minimum(map(x->sum(conductor.(x)),ch))
     m=findall(x->sum(conductor.(x))==m,ch)

@@ -395,7 +395,7 @@ using ..Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars, detPerm, discriminant, classnames
+  decompose, on_chars, detPerm, conjPerm, discriminant, classnames
 
 """
 `fakedegree(W, φ, q)`
@@ -795,8 +795,31 @@ julia> detPerm(W)
 ```
 """
 function detPerm(W)
-  t=permutedims(CharTable(W).irr)
-  Perm(t,t.*t[:,charinfo(W)[:positionDet]];dims=2)
+  get!(W,:detPerm)do
+    t=CharTable(W).irr
+    Perm(t,t.*permutedims(t[charinfo(W)[:positionDet],:]);dims=1)
+  end
+end
+
+"""
+`conjPerm(W)`
+
+return  the permutation of the characters of the group `W` which
+is effected when taking the complex conjugate of the character table.
+
+```julia-repl
+julia> W=ComplexReflectionGroup(4)
+G₄
+
+julia> conjPerm(W)
+(2,3)(5,6)
+```
+"""
+function conjPerm(W)
+  get!(W,:conjPerm)do
+    t=CharTable(W).irr
+    Perm(t,conj.(t);dims=1)
+  end
 end
 
 function classinfo(t::TypeIrred)

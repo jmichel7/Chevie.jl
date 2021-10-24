@@ -267,9 +267,8 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 """
 module Mvps
 # benchmark: (x+y+z)^3     2.3μs 48 alloc
-using ModuleElts: ModuleElt, ModuleElts
-using ..Pols: Pols, Pol, srgcd, positive_part, negative_part, bar, derivative,
-              valuation, degree, scalar, exactdiv, Frac, root, coefficients
+using ModuleElts
+using ..Pols
 export coefficient, monomials, powers
 export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term
 #------------------ Monomials ---------------------------------------------
@@ -302,6 +301,7 @@ Base.:^(x::Monomial,p)=Monomial(x.d*p)
 Base.getindex(a::Monomial,k)=getindex(a.d,k)
 Base.length(a::Monomial)=length(a.d)
 variables(a::Monomial)=keys(a.d)
+"`powers(a::Monomial)` iterator on the powers of variables in `a`"
 powers(a::Monomial)=values(a.d)
 
 const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
@@ -533,8 +533,10 @@ Base.:*(b::Mvp, a::Number)=a*b
 # we have a monomial order so there is no ordering check in next line
 Base.:*(a::Monomial, b::Mvp)=Mvp(ModuleElt(m*a=>c for (m,c) in pairs(b);check=false))
 Base.:*(b::Mvp,a::Monomial)=a*b
+
 function Base.:*(a::Mvp, b::Mvp)
   if length(a)>length(b) a,b=(b,a) end
+  (a,b)=promote(a,b)
   if iszero(a) return a 
   elseif iszero(b) return b
   elseif isone(a) return b
@@ -640,7 +642,7 @@ Base.pairs(p::Mvp)=pairs(p.d)
 """
 `monomials(p::Mvp)` 
 
-is an efficient iterator over the monomials `p`
+is an efficient iterator over the monomials of `p`
 """
 monomials(p::Mvp)=keys(p.d)
 
@@ -748,7 +750,7 @@ julia> @Mvp x; @Pol q; Pol(x^2+x)
 Pol{Int64}: q²+q
 ```
 """
-function Pol(x::Mvp{T})where T
+function Pols.Pol(x::Mvp{T})where T
   l=variables(x)
   if isempty(l) return Pol(scalar(x)) end
   if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
@@ -1130,7 +1132,7 @@ function make_positive(a::Mvp,b::Mvp)
   isone(d) ? (a,b) : (a*d,b*d)
 end
   
-Frac(a::Mvp,b::Mvp;k...)=Frac(promote(a,b)...;k...)
+Pols.Frac(a::Mvp,b::Mvp;k...)=Frac(promote(a,b)...;k...)
   
 """
 `Frac(a::Mvp,b::Mvp;pol=false,prime=false)`
@@ -1140,7 +1142,7 @@ being  true polynomials  without common  monomial factor (unless `pol=true`
 asserts  that this  is already  the case)  and unless `prime=true` they are
 made prime to each other by dividing by their gcd.
 """
-function Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
+function Pols.Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
   if iszero(a) return Pols.Frac_(a,one(a))
   elseif iszero(b) error("division by 0")
   end
@@ -1157,7 +1159,7 @@ end
 
 Pols.Frac(a::Mvp)=Frac(a,one(a);prime=true)
 
-function Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
+function Pols.Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 

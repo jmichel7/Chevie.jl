@@ -976,7 +976,7 @@ CharTable(Fusion Algebra dim.5)
 function fusion_algebra(S::Matrix,special::Int=1;opt...)
 # zero=AlgebraElt(A,zero(ModuleElt{Int,T}))
 # one=AlgebraElt(A,ModuleElt(special=>1))
-  involution=SPerm(collect(eachrow(S)),collect(eachrow(conj.(S))))
+  involution=SPerm(S,conj.(S);dims=1)
   if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
   if order(involution)>2 error("complex conjugacy is of order 4") end
   irr=mapslices(x->x.//x[special],S;dims=1)

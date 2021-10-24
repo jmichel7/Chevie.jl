@@ -642,12 +642,12 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  Gapjm.roots, Groups.gens, Groups.position_class, PermGroups.classreps,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
- PermRoot.invariants, PermRoot.PermX, PermRoot.rank, PermRoot.reflchar,
- PermRoot.reflection, PermRoot.reflections, PermRoot.refleigen, 
- PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction, 
- PermRoot.semisimplerank, PermRoot.simplecoroots, PermRoot.simple_conjugating,
- PermRoot.simple_reps, PermRoot.simpleroots, PermRoot.torus_order, 
- PermRoot.baseX, PermRoot.central_action,
+ PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank, 
+ PermRoot.reflchar, PermRoot.reflection, PermRoot.reflections, 
+ PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,
+ PermRoot.semisimplerank, PermRoot.simplecoroots,
+ PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots, 
+ PermRoot.torus_order, PermRoot.baseX, PermRoot.central_action,
  Perms.reflength
 
 #--------------- FCG -----------------------------------------

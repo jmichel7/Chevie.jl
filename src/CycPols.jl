@@ -63,7 +63,7 @@ julia> CycPols.show_factors(24)
 """
 module CycPols
 
-export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
+export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial,eigmat
 # to use as a stand-alone module uncomment the next line
 # export roots
 import ..Gapjm: roots, gap
@@ -502,6 +502,9 @@ function gap(p::CycPol)
   res=string("[",gap(p.coeff),",",p.valuation,",")
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
 end
+
+" eigenvalues as Cycs of a matrix of finite order"
+eigmat(m)=roots(CycPol(Pol(charpoly(m))))
 
 # 281st generic degree of G34; p(Pol()) 2ms back to CycPol 14ms (gap3 10ms)
 const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,

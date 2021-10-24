@@ -37,7 +37,7 @@ end
 
 mat(M::CPMonoid,s)=reflrep(M.W,s)
 showmat(M::CPMonoid,s::Perm)=display(mat(M,s))
-showmat(M::CPMonoid,s::GarsideElm)=for t in s.elm showmat(M,t) end
+showmat(M::CPMonoid,s::GarsideElt)=for t in s.elm showmat(M,t) end
 
 """
 © July 2017 --- Jean Michel and Georges Neaime

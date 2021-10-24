@@ -507,6 +507,7 @@ abstract type HeckeElt{P,C} end # P=typeof(keys) [Perms] C typeof(coeffs)
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
 Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
+Base.copy(h::HeckeElt)=clone(h,h.d)
 
 # HeckeElts are scalars for broadcasting
 Base.broadcastable(h::HeckeElt)=Ref(h)

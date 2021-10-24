@@ -866,7 +866,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   if get(io,:order,true) println(io,uc.orderclasses) end
   sp = map(copy, uc.springerseries)
   if get(io,:fourier,false)
-    for p in sp p[:locsys] = p[:locsys][DetPerm(p[:relgroup])] end
+    for p in sp p[:locsys] = p[:locsys][detPerm(p[:relgroup])] end
   end
   WF=uc.spets
   if WF isa Spets W=Group(WF)

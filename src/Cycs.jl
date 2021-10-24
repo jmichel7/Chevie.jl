@@ -400,6 +400,11 @@ function Base.real(c::Cyc{T}) where T<:Real
   (c+conj(c))/2
 end
 
+function (::Type{T})(c::Cyc)where T<:AbstractFloat
+  if !isreal(c) error(c," is not real") end
+  real(Complex{T}(c))
+end
+
 function Base.imag(c::Cyc{T}) where T<:Real
   if c.n==1 return 0 end
   (c-conj(c))/2
@@ -1052,7 +1057,9 @@ function root(x::Integer,n=2)
     if x==1 || (x==-1 && n%2==1) return x end
     if x<0 && n==2 return E(4)*root(-x) end
     l=factor(x)
-    if any(y->(2y)%n!=0,values(l)) error("root($x,$n) not implemented") end
+    if any(y->(2y)%n!=0,values(l)) 
+      if x==-1 return root(E(2),n) end
+      error("root($x,$n) not implemented") end
     a=prod(p^div(pow,n) for (p,pow) in l)
     b=[p for (p,pow) in l if pow%n!=0]
     for p in b
@@ -1068,16 +1075,8 @@ end
 
 root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
-const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()
-function root(x::Cyc,n=2)
-  if isone(n) || isone(x) return x end
-  if !(n isa Int) n=Int(n) end
-  get!(Crootdict,(n,x)) do
-  r=Root1(x)
-  if isnothing(r) 
-    if conductor(x)>1 return nothing end
-    return root(num(x),n)
-  end
+# find the best of the n possible roots
+function root(r::Root1,n=2)
   d=conductor(r)
   j=1
   n1=n
@@ -1087,9 +1086,26 @@ function root(x::Cyc,n=2)
     j*=k
     if k==1 break end
   end
-  res=E(j*d,exponent(r)*gcdx(n1,d)[2])
-  if inforoot[] proot(x,n,res) end
-  res
+  Root1(j*d,exponent(r)*gcdx(n1,d)[2])
+end
+
+const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()
+function root(x::Cyc,n=2)
+  if isone(n) || isone(x) return x end
+  if !(n isa Int) n=Int(n) end
+  get!(Crootdict,(n,x)) do
+  d=denominator(x)
+  if d!=1 return root(numerator(x),n)/root(d,n) end
+  d=gcd(coefficients(x))
+  if d!=1 return root(div(x,d),n)*root(d,n) end
+    r=Root1(x)
+    if isnothing(r) 
+      if conductor(x)>1 return nothing end
+      return root(num(x),n)
+    end
+    res=E(root(r,n))
+    if inforoot[] proot(x,n,res) end
+    res
   end
 end
 

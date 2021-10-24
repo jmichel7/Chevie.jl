@@ -214,6 +214,22 @@ end
 
 Perm(l::AbstractVector,l1::AbstractVector)=Perm{Idef}(l,l1)
 
+"""
+  `Perm{T}(m::AbstractMatrix,m1::AbstractMatrix;dims=1)`
+
+returns  `p`, a `Perm{T}`, which  permutes the rows of  `m1` (the coluns of
+`m1`  if `dims=2`)  to bring  them to  those of  `m`, if such a `p` exists;
+returns  `nothing` otherwise. If not given  `{T}` is taken to be `{Int16}`.
+Needs the elements of `m` and `m1` to be sortable.
+
+```julia-repl
+julia> Perm([0 1 0;0 0 1;1 0 0],[1 0 0;0 1 0;0 0 1];dims=1)
+(1,3,2)
+
+julia> Perm([0 1 0;0 0 1;1 0 0],[1 0 0;0 1 0;0 0 1];dims=2)
+(1,2,3)
+```
+"""
 function Perm{T}(l::AbstractMatrix,l1::AbstractMatrix;dims=1)where T<:Integer
   if     dims==1 Perm{T}(collect(eachrow(l)),collect(eachrow(l1)))
   elseif dims==2 Perm{T}(collect(eachcol(l)),collect(eachcol(l1)))
@@ -297,8 +313,8 @@ smallest_moved_point(a::Perm)=findfirst(x->a.d[x]!=x,eachindex(a.d))
 support(a::Perm)=findall(x->a.d[x]!=x,eachindex(a.d))
 
 " for convenience: `sortPerm(a)=Perm(sortperm(a))`"
-sortPerm(::Type{T},a::AbstractVector) where T=Perm{T}(sortperm(a))
-sortPerm(a::AbstractVector)=sortPerm(Idef,a)
+sortPerm(::Type{T},a::AbstractVector;k...) where T=Perm{T}(sortperm(a;k...))
+sortPerm(a::AbstractVector;k...)=sortPerm(Idef,a;k...)
 
 Base.rand(::Type{Perm{T}},i::Integer) where T=sortPerm(T,rand(1:i,i))
 Base.rand(::Type{Perm},i::Integer)=rand(Perm{Idef},i)

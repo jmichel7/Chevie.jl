@@ -335,6 +335,7 @@ const ChevieDict=Dict(
 "SymmetricDifference"=>"symdiff",
 "SymmetricPower"=>"symmetric_power",
 "Tableaux"=>"tableaux",
+"M.ToOrdinary(i)"=>"B(M,i)",
 "Torus"=>"torus",
 "TorusOrder"=>"torus_order",
 "TransitiveClosure"=>"transitive_closure",

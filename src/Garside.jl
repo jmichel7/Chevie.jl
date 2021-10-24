@@ -254,7 +254,7 @@ julia> b^d
 14.143
 
 julia> centralizer_gens(b)
-3-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+3-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  321432.213243
  21.1
  4
@@ -263,7 +263,7 @@ julia> C=conjcat(b;ss=:ss)
 category with 10 objects and 32 generating maps
 
 julia> C.obj
-10-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+10-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  214.14
  124.24
@@ -302,7 +302,7 @@ julia> C=conjcat(b)
 category with 2 objects and 6 generating maps
 
 julia> C.obj
-2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1214.4
  1343.1
 ```
@@ -334,7 +334,7 @@ using ..Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, rightgcd, leftlcm, rightlcm, 
-conjugating_elt, GarsideElm, Brieskorn_normal_form, GarsideMonoid, 
+conjugating_elt, GarsideElt, Brieskorn_normal_form, GarsideMonoid, 
 LocallyGarsideMonoid, hurwitz
 
 """
@@ -449,8 +449,8 @@ function leftlcm(M::GarsideMonoid{T},elts::Vararg{T,N};complements=false)where {
 end
 
 function (M::LocallyGarsideMonoid{T})(l::Integer...)where T
-  if isempty(l) return GarsideElm(M,T[];check=false) end
-  if l[1]>0 res=GarsideElm(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
+  if isempty(l) return GarsideElt(M,T[];check=false) end
+  if l[1]>0 res=GarsideElt(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
   else res=inv(M(-l[1]))
   end
   for s in l[2:end]
@@ -460,15 +460,15 @@ function (M::LocallyGarsideMonoid{T})(l::Integer...)where T
 end
 
 function (M::GarsideMonoid{T})(r::T)where T
-  if r==M.δ GarsideElm(M,T[],1;check=false)
-  elseif r==one(M) GarsideElm(M,T[];check=false)
-  else GarsideElm(M,[r];check=false)
+  if r==M.δ GarsideElt(M,T[],1;check=false)
+  elseif r==one(M) GarsideElt(M,T[];check=false)
+  else GarsideElt(M,[r];check=false)
   end
 end
 
 function (M::LocallyGarsideMonoid{T})(r::T)where T
-  if r==one(M) GarsideElm(M,T[];check=false)
-  else GarsideElm(M,[r];check=false)
+  if r==one(M) GarsideElt(M,T[];check=false)
+  else GarsideElt(M,[r];check=false)
   end
 end
 
@@ -521,7 +521,7 @@ julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Vector{Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
+4-element Vector{Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]   
  [1, 3]
  [13]  
@@ -531,7 +531,7 @@ julia> B=DualBraidMonoid(W)
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
-4-element Vector{Vector{GarsideElm{Perm{Int16}, DualBraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
+4-element Vector{Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]                     
  [1, 2, 3, 4, 5, 6]      
  [12, 13, 15, 25, 34, 45]
@@ -584,7 +584,7 @@ julia> M=BraidMonoid(coxgroup(:A,2))
 BraidMonoid(A₂)
 
 julia> elements(M,4)
-12-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+12-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  12.21
  21.12
  1.1.1.1
@@ -712,13 +712,13 @@ function rightgcd(M::GenBraidMonoid{T,TW},elts::T...)where {T,TW}
 end
 
 #---------------------------------------------------------------------
-abstract type LocallyGarsideElm{T,TM<:LocallyGarsideMonoid} end
+abstract type LocallyGarsideElt{T,TM<:LocallyGarsideMonoid} end
 
-struct GarsideElm{T,TM}<:LocallyGarsideElm{T,TM}
+struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
   elm::Vector{T}
   pd::Int
-  function GarsideElm(M::TM,elm::Vector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
+  function GarsideElt(M::TM,elm::Vector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
     if check
       i=1
 @inbounds while i<=length(elm) && elm[i]==M.δ 
@@ -737,10 +737,10 @@ struct GarsideElm{T,TM}<:LocallyGarsideElm{T,TM}
   end
 end
 
-struct GenGarsideElm{T,TM}<:LocallyGarsideElm{T,TM}
+struct GenGarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
   elm::Vector{T}
-  function GenGarsideElm(M::TM,elm::Vector{T};check=true) where {T,TM}
+  function GenGarsideElt(M::TM,elm::Vector{T};check=true) where {T,TM}
     if check
       j=length(elm)
 @inbounds while j>0 && elm[j]==one(M)
@@ -752,23 +752,23 @@ struct GenGarsideElm{T,TM}<:LocallyGarsideElm{T,TM}
   end
 end
 
-GarsideElm(M::LocallyGarsideMonoid,elm;check=true)=GenGarsideElm(M,elm;check)
-clone(b::GenGarsideElm,elm;check=true)=GenGarsideElm(b.M,elm;check)
-clone(b::GarsideElm,elm,pd=b.pd;check=true)=GarsideElm(b.M,elm,pd;check)
-Base.one(b::LocallyGarsideElm)=clone(b,empty(b.elm),0;check=false)
-Base.copy(b::GarsideElm)=clone(b,copy(b.elm);check=false)
+GarsideElt(M::LocallyGarsideMonoid,elm;check=true)=GenGarsideElt(M,elm;check)
+clone(b::GenGarsideElt,elm;check=true)=GenGarsideElt(b.M,elm;check)
+clone(b::GarsideElt,elm,pd=b.pd;check=true)=GarsideElt(b.M,elm,pd;check)
+Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm),0;check=false)
+Base.copy(b::GarsideElt)=clone(b,copy(b.elm);check=false)
 
-function Base.cmp(a::GarsideElm,b::GarsideElm)
+function Base.cmp(a::GarsideElt,b::GarsideElt)
   c=cmp(a.pd,b.pd)
   if c!=0 return c end
   cmp(a.elm,b.elm)
 end
 
-Base.isless(a::GarsideElm,b::GarsideElm)=cmp(a,b)==-1
-Base.:(==)(a::GarsideElm,b::GarsideElm)=a.pd==b.pd && a.elm==b.elm
+Base.isless(a::GarsideElt,b::GarsideElt)=cmp(a,b)==-1
+Base.:(==)(a::GarsideElt,b::GarsideElt)=a.pd==b.pd && a.elm==b.elm
 
-# hash is needed for using GarsideElm in Sets/Dicts
-function Base.hash(a::GarsideElm, h::UInt)
+# hash is needed for using GarsideElt in Sets/Dicts
+function Base.hash(a::GarsideElt, h::UInt)
   h=hash(a.pd, h)
   for e in a.elm
     h=hash(e, h)
@@ -776,7 +776,7 @@ function Base.hash(a::GarsideElm, h::UInt)
   h
 end
 
-CoxGroups.leftdescents(b::LocallyGarsideElm)=filter(i->isleftdescent(b.M,b[1],
+CoxGroups.leftdescents(b::LocallyGarsideElt)=filter(i->isleftdescent(b.M,b[1],
                                    i),eachindex(b.M.atoms))
 
 """
@@ -809,7 +809,7 @@ julia> Brieskorn_normal_form(w^2)
  [2, 3, 4, 5, 6]
 ```
 """
-function Brieskorn_normal_form(b::LocallyGarsideElm)
+function Brieskorn_normal_form(b::LocallyGarsideElt)
   res=Vector{Int}[]
   while !isone(b)
     I=leftdescents(b)
@@ -820,13 +820,13 @@ function Brieskorn_normal_form(b::LocallyGarsideElm)
   res
 end
 
-function Base.inv(b::GarsideElm)
+function Base.inv(b::GarsideElt)
   k=length(b.elm)
   M=b.M
-  GarsideElm(M,map(i->δad(M,\(M,b.elm[i],M.δ),-i-b.pd),k:-1:1),-b.pd-k;check=false)
+  GarsideElt(M,map(i->δad(M,\(M,b.elm[i],M.δ),-i-b.pd),k:-1:1),-b.pd-k;check=false)
 end
 
-Base.:/(a::GarsideElm,b::GarsideElm)=a*inv(b)
+Base.:/(a::GarsideElt,b::GarsideElt)=a*inv(b)
 
 """
 fraction(b)
@@ -844,23 +844,23 @@ julia> fraction(b)
 (23, 321.1.1)
 ```
 """
-function fraction(b::GarsideElm)
+function fraction(b::GarsideElt)
   M=b.M
   if b.pd>=0 return [one(b),b] end
   ib=inv(b)
   if -b.pd>length(b.elm) return [ib,one(b)] end
-  GarsideElm(M,ib.elm[end+b.pd+1:end];check=false),
-  GarsideElm(M,b.elm[1-b.pd:end];check=false)
+  GarsideElt(M,ib.elm[end+b.pd+1:end];check=false),
+  GarsideElt(M,b.elm[1-b.pd:end];check=false)
 end;
 
-function Base.getindex(x::GarsideElm,i::Integer)
+function Base.getindex(x::GarsideElt,i::Integer)
   if i<=x.pd return x.M.δ
   elseif i>x.pd+length(x.elm) return one(x.M)
   else return x.elm[i-x.pd]
   end
 end
 
-function Base.getindex(x::LocallyGarsideElm,i::Integer)
+function Base.getindex(x::LocallyGarsideElt,i::Integer)
   if i>length(x.elm) return one(x.M)
   else return x.elm[i]
   end
@@ -885,7 +885,7 @@ julia> α(b)
 121
 ```
 """
-α(b::LocallyGarsideElm)=GarsideElm(b.M,[b[1]])
+α(b::LocallyGarsideElt)=GarsideElt(b.M,[b[1]])
 
 """
 `α(b,I)` find the longest prefix of Garside element b which uses
@@ -901,7 +901,7 @@ julia> α(w0,[1,2,3])
 121321
 ```
 """
-function α(b::GarsideElm,I::AbstractVector)
+function α(b::GarsideElt,I::AbstractVector)
   M=b.M
   res=M()
   i=1
@@ -918,7 +918,7 @@ function α(b::GarsideElm,I::AbstractVector)
 end
   
 """
-word(b::GarsideElm)
+word(b::GarsideElt)
 returns  a description  of `b`  as a  list of  the atoms  of which  it is a
 product.  If `b` is in the Garside group  but not the Garside monoid, it is
 represented  in  fraction  normal  form  where  as a special convention the
@@ -943,7 +943,7 @@ julia> word(b)
   1
 ```
 """
-function CoxGroups.word(b::GarsideElm)
+function CoxGroups.word(b::GarsideElt)
   M=b.M
   res=Int[]
   if b.pd<0 
@@ -955,9 +955,9 @@ function CoxGroups.word(b::GarsideElm)
   res
 end
 
-CoxGroups.word(b::LocallyGarsideElm)=vcat(word.(Ref(b.M),b.elm)...)
+CoxGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
 
-function Base.show(io::IO,b::GarsideElm)
+function Base.show(io::IO,b::GarsideElt)
   M=b.M
   greedy=get(io,:greedy,false)
   if !get(io,:limit,false) && !get(io,:TeX,false)
@@ -982,7 +982,7 @@ function Base.show(io::IO,b::GarsideElm)
   end
 end
 
-function Base.show(io::IO,b::LocallyGarsideElm)
+function Base.show(io::IO,b::LocallyGarsideElt)
   M=b.M
   if !get(io,:limit,false) && !get(io,:TeX,false)
     print(io,"B(",join(word(b),","),")")
@@ -995,7 +995,7 @@ function Base.show(io::IO,b::LocallyGarsideElm)
   printTeX(io,p(b))
 end
 
-function Base.:*(x,b::LocallyGarsideElm)
+function Base.:*(x,b::LocallyGarsideElt)
   M=b.M
   v=b.elm
   res=empty(v)
@@ -1003,15 +1003,15 @@ function Base.:*(x,b::LocallyGarsideElm)
   for i in 1:length(v)
     a,x=α2(M,x,v[i])
     push!(res,a)
-    if x==v[i] return GarsideElm(M,append!(res,v[i:end]);check=false)
-    elseif isone(x) return GarsideElm(M,append!(res,v[i+1:end]);check=false)
+    if x==v[i] return GarsideElt(M,append!(res,v[i:end]);check=false)
+    elseif isone(x) return GarsideElt(M,append!(res,v[i+1:end]);check=false)
     end
   end
-  GarsideElm(M,push!(res,x);check=false)
+  GarsideElt(M,push!(res,x);check=false)
 end
 
 # multiply a simple x by a Garside element b; Gap's PrefixToNormal
-function Base.:*(x,b::GarsideElm)
+function Base.:*(x,b::GarsideElt)
   M=b.M
   v=b.elm
   res=empty(v)
@@ -1020,15 +1020,15 @@ function Base.:*(x,b::GarsideElm)
   for i in 1:length(v)
     a,x=α2(M,x,v[i])
     if a==M.δ pd+=1 else push!(res,a) end
-    if x==v[i] return GarsideElm(M,append!(res,v[i:end]),pd+b.pd;check=false)
-    elseif isone(x) return GarsideElm(M,append!(res,v[i+1:end]),pd+b.pd;check=false)
+    if x==v[i] return GarsideElt(M,append!(res,v[i:end]),pd+b.pd;check=false)
+    elseif isone(x) return GarsideElt(M,append!(res,v[i+1:end]),pd+b.pd;check=false)
     end
   end
-  GarsideElm(M,push!(res,x),pd+b.pd;check=false)
+  GarsideElt(M,push!(res,x),pd+b.pd;check=false)
 end
 
 # like gap3 AddToNormal: multiply by simple
-function Base.:*(a::LocallyGarsideElm,x)
+function Base.:*(a::LocallyGarsideElt,x)
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
   v=copy(a.elm)
@@ -1042,10 +1042,10 @@ function Base.:*(a::LocallyGarsideElm,x)
     else  v[i-1]=x;v[i]=y
     end
   end
-  GarsideElm(M,v)
+  GarsideElt(M,v)
 end
 
-function Base.:*(a::GarsideElm,x)
+function Base.:*(a::GarsideElt,x)
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
   v=copy(a.elm)
@@ -1054,7 +1054,7 @@ function Base.:*(a::GarsideElm,x)
     x,y=α2(M,v[i-1],v[i])
     if y==one(M) # this implies i==length(v)
       if x==M.δ
-        return GarsideElm(M,δad.(Ref(M),v[1:end-2],1),1+a.pd;check=false)
+        return GarsideElt(M,δad.(Ref(M),v[1:end-2],1),1+a.pd;check=false)
       end
       resize!(v,i-1) 
       v[i-1]=x 
@@ -1062,14 +1062,14 @@ function Base.:*(a::GarsideElm,x)
     elseif x==M.δ
       v[i]=y
       v[2:i-1]=δad.(Ref(M),v[1:i-2],1)
-      return GarsideElm(M,v[2:end],1+a.pd;check=false)
+      return GarsideElt(M,v[2:end],1+a.pd;check=false)
     else v[i-1]=x;v[i]=y
     end
   end
   clone(a,v;check=length(v)==1)
 end
 
-function Base.:*(a::LocallyGarsideElm,b::LocallyGarsideElm)
+function Base.:*(a::LocallyGarsideElt,b::LocallyGarsideElt)
   res=a
   for x in b.elm 
     res*=x 
@@ -1077,8 +1077,8 @@ function Base.:*(a::LocallyGarsideElm,b::LocallyGarsideElm)
   res
 end
 
-function Base.:*(a::GarsideElm,b::GarsideElm)
-  res=GarsideElm(a.M,δad.(Ref(a.M),a.elm,b.pd),a.pd+b.pd;check=false)
+function Base.:*(a::GarsideElt,b::GarsideElt)
+  res=GarsideElt(a.M,δad.(Ref(a.M),a.elm,b.pd),a.pd+b.pd;check=false)
   for x in b.elm 
     res*=x 
   end
@@ -1087,30 +1087,30 @@ end
 
 # conjugation of b by simple r such that (b^r).pd>=b.pd
 # About 2 times faster than (b,r)->b^b.M(r) for long words
-#function Base.:^(b::GarsideElm{T},r::T) where T
+#function Base.:^(b::GarsideElt{T},r::T) where T
 #  M=b.M 
 #  if r==one(M) return b end
 #  l=*(M,b,r)
 #  \(M,δad(M,r,b.pd),l.elm[1])*clone(b,l.elm[2:end])
 #end
 
-Base.:^(y::GarsideElm{T},r::T,F=x->x) where T=inv(y.M(r))*(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F=x->x) where T=inv(y.M(r))*(y*F(r))
 
-Base.:^(a::LocallyGarsideElm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
 
-Base.:^(a::GarsideElm,b::GarsideElm,F=x->x)=inv(b)*a*F(b)
+Base.:^(a::GarsideElt,b::GarsideElt,F=x->x)=inv(b)*a*F(b)
 
-function Base.reverse(b::GarsideElm)
+function Base.reverse(b::GarsideElt)
   if haskey(b.M,:revMonoid)
-    res=GarsideElm(b.M.revMonoid,empty(b.elm),b.pd;check=false)
+    res=GarsideElt(b.M.revMonoid,empty(b.elm),b.pd;check=false)
     if isempty(b.elm) return res end
     for s in reverse(b.elm)
       res*=δad(b.M.revMonoid,s^-1,b.pd)
     end
   else
     if isempty(b.elm) return b end
-    res=GarsideElm(b.M,empty(b.elm),b.pd;check=false)
+    res=GarsideElt(b.M,empty(b.elm),b.pd;check=false)
     for s in reverse(b.elm)
       res*=δad(b.M,reverse(b.M,s),-b.pd)
     end
@@ -1118,9 +1118,9 @@ function Base.reverse(b::GarsideElm)
   res
 end
 
-function Base.reverse(b::LocallyGarsideElm)
+function Base.reverse(b::LocallyGarsideElt)
   if isempty(b.elm) return b end
-  res=GarsideElm(b.M,empty(b.elm);check=false)
+  res=GarsideElt(b.M,empty(b.elm);check=false)
   for s in reverse(b.elm)
     res*=reverse(b.M,s)
   end
@@ -1145,7 +1145,7 @@ julia> leftgcd(B(2,1,2)^2,B(3,2)^2;complements=true)
 (2, (121.21, 32.2))
 ```
 """
-function leftgcd(elts::LocallyGarsideElm...;complements=false)
+function leftgcd(elts::LocallyGarsideElt...;complements=false)
   if isempty(elts) error("leftgcd needs an argument") end
   if length(elts)==1  
     elt=only(elts)
@@ -1167,7 +1167,7 @@ function leftgcd(elts::LocallyGarsideElm...;complements=false)
     end
     if isone(g) return complements ? (gcd,elts) : gcd
     else gcd*=g
-      elts=map((r,e)->r*GarsideElm(M,e.elm[2:end];check=false),rest,elts)
+      elts=map((r,e)->r*GarsideElt(M,e.elm[2:end];check=false),rest,elts)
     end
   end
 end
@@ -1190,7 +1190,7 @@ julia> rightgcd(B(2,1,2)^2,B(3,2)^2;complements=true)
 (2.2, (12.21, 23))
 ```
 """
-function rightgcd(elts::LocallyGarsideElm...;complements=false)
+function rightgcd(elts::LocallyGarsideElt...;complements=false)
   if complements
     g,c=leftgcd(map(reverse,elts)...;complements)
     reverse(g),map(reverse,c)
@@ -1213,7 +1213,7 @@ julia> leftlcm(B(2,1,2)^2,B(3,2)^2;complements=true)
 (Δ.121, (123, 23.321))
 ```
 """
-function leftlcm(elts::GarsideElm...;complements=false)
+function leftlcm(elts::GarsideElt...;complements=false)
   if isempty(elts) error("leftlcm needs an argument") end
   if length(elts)==1  
     elt=only(elts)
@@ -1238,7 +1238,7 @@ julia> rightlcm(B(2,1,2)^2,B(3,2)^2;complements=true)
 (Δ², (321.123, 12321.321))
 ```
 """
-function rightlcm(elts::GarsideElm...;complements=false)
+function rightlcm(elts::GarsideElt...;complements=false)
   if complements
     g,c=leftlcm(map(reverse,elts)...;complements)
     reverse(g),map(reverse,c)
@@ -1246,14 +1246,14 @@ function rightlcm(elts::GarsideElm...;complements=false)
   end
 end
 
-function Cosets.Frobenius(x::GarsideElm,phi)
+function Cosets.Frobenius(x::GarsideElt,phi)
   y=deepcopy(x)
   y.elm.=Frobenius.(y.elm,phi)
   y
 end
 
 """
-`image(b::GarsideElm)`
+`image(b::GarsideElt)`
     
 This  function is defined only if `b`  is an element of an interval monoid,
 for instance a braid. It returns the image of `b` in the group of which the
@@ -1277,7 +1277,7 @@ julia> word(W,p)
  1
 ```
 """
-function image(a::GarsideElm)
+function image(a::GarsideElt)
   if IntervalStyle(a.M)==Interval() a.M.δ^a.pd*prod(a.elm)
   else error(a," should be an element of an interval monoid")
   end
@@ -1387,8 +1387,8 @@ give an expression as a braid of `B` of the dual simple `s`.
 
 give an expression as a braid of `B` of the dual braid `b`.
 """
-function (B::BraidMonoid)(b::GarsideElm{T,<:DualBraidMonoid})where T 
-  B(B.δ)^b.pd*prod(x->B(b.M,x),b.elm)
+function (B::BraidMonoid)(b::GarsideElt{T,<:DualBraidMonoid})where T 
+  B(b.M,b.M.δ)^b.pd*prod(x->B(b.M,x),b.elm;init=B())
 end
 
 #----------------------------------------------------------------------------
@@ -1588,7 +1588,7 @@ function representativeSC(b,F=(x,y=1)->x)
   (conj=l[t][2],circuit=first.(l[t:end-1]))
 end
 
-# minc(a::GarsideElm,x::simple,:sc) 
+# minc(a::GarsideElt,x::simple,:sc) 
 # minimal simple m such that x<m and a^m is in SC(a).
 function minc(a,x,::Val{:sc},F=(x,y=1)->x)
   M=a.M
@@ -1649,7 +1649,7 @@ julia> C=conjcat(w)
 category with 2 objects and 4 generating maps
 
 julia> C.obj
-2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  21324
 ```
@@ -1663,7 +1663,7 @@ category with 2 objects and 4 generating maps
 
 ```julia-repl
 julia> conjcat(w;ss=:ss).obj
-4-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  13243
  21432
@@ -1773,7 +1773,7 @@ julia> w=B(4,4,4)
 4.4.4
 
 julia> cc=centralizer_gens(w)
-8-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+8-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  1
  (31432)⁻¹231432
  (1)⁻¹34.431
@@ -1784,7 +1784,7 @@ julia> cc=centralizer_gens(w)
  2
 
 julia> shrink(cc)
-5-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+5-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  4            
  2            
  1            
@@ -1792,13 +1792,13 @@ julia> shrink(cc)
  (3243)⁻¹13243
 
 julia> centralizer_gens(w;ss=:cyc)
-Set{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
+Set{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
   4
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)));
 
 julia> centralizer_gens(w,F)
-2-element Vector{GarsideElm{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  124      
  312343123
 ```
@@ -1945,11 +1945,11 @@ end
 
 # Algorithm following Hao Zheng "A new approach to extracting roots in Garside
 # groups" Comm. Algebra 34 (2006) 1793--1802
-function Gapjm.root(b0::GarsideElm,n=2)
+function Gapjm.root(b0::GarsideElt,n=2)
   M=b0.M
   tM=TwistedPowerMonoid(M,n)
   l=vcat(fill(M.δ,b0.pd),b0.elm)
-  b=GarsideElm(tM,map(eachindex(l)) do j
+  b=GarsideElt(tM,map(eachindex(l)) do j
           TPMSimple([i==1 ? l[j] : one(M) for i in 1:n],j==1,M)
           end)
   function inner(b)
@@ -1973,10 +1973,10 @@ function Gapjm.root(b0::GarsideElm,n=2)
   conj=inner(b)
   if conj==nothing return nothing end
   a=b^conj
-  a=GarsideElm(M,map(x->x.v[1],a.elm),a.pd)
+  a=GarsideElt(M,map(x->x.v[1],a.elm),a.pd)
   l=length(conj.elm)
   k=count(x->x.t,conj.elm)
-  conj=GarsideElm(M,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
+  conj=GarsideElt(M,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
                          map(i->conj.elm[i].v[1+mod(k,n)],k+1:l)),conj.pd)
   conj*a*conj^-1
 end
@@ -1994,19 +1994,19 @@ julia> B=BraidMonoid(CoxSym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
-4-element Vector{GarsideElm{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+4-element Vector{GarsideElt{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  1.1.1              
  2.2.2              
  (1.12)⁻¹2.2.2.21.12
  1.1.12             
 
 julia> shrink(b)
-2-element Vector{GarsideElm{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+2-element Vector{GarsideElt{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  2  
  1  
 ```
 """
-function shrink(b1::Vector{T})where T<:GarsideElm
+function shrink(b1::Vector{T})where T<:GarsideElt
   function f(b)
     ld,ln=length.(word.(fraction(b)))
     ld>ln ? (l=ld+ln,ld=ln,b=inv(b),s=true) : (l=ld+ln,ld=ld,b=b,s=true)
@@ -2087,7 +2087,7 @@ end
 the  Hurwitz action of the braid  `b∈ Bₙ` on the list  `l` of length `n` of
 group elements.
 """
-hurwitz(l,b::GarsideElm)=hurwitz(l,word(b))
+hurwitz(l,b::GarsideElt)=hurwitz(l,word(b))
   
 # example
 B=BraidMonoid(CoxSym(21))

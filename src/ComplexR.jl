@@ -131,7 +131,7 @@ function Gapjm.degrees(W::Group)
   end
 end
  
-torusfactors(WF::Spets)=roots(CycPol(charpoly(central_action(Group(WF),WF.F))))
+torusfactors(WF::Spets)=eigmat(central_action(Group(WF),WF.F))
 
 """
 `degrees(WF::Spets)`

@@ -445,7 +445,7 @@ function Base.:*(a::Pol{T1},b::Pol{T2})where {T1,T2}
   Pol_(res,a.v+b.v)
 end
 
-Base.:*(a::Pol, b::Number)=iszero(b) ? zero(a) : Pol_(a.c.*b,a.v)
+Base.:*(a::Pol, b::Number)=Pol(a.c.*b,a.v)
 Base.:*(a::Pol{T}, b::T) where T=Pol(a.c.*b,a.v;copy=false)
 Base.:*(b::Number, a::Pol)=a*b
 Base.:*(b::T, a::Pol{T}) where T=a*b
@@ -508,6 +508,7 @@ function coeffexactdiv(a::Pol,b)
   c=exactdiv.(a.c,b)
   if !any(isnothing,c) Pol_(c,a.v) end
 end
+exactdiv(a::Pol,b::Number)=coeffexactdiv(a,b)
 
 Base.:/(p::Pol,q::Number)=Pol_(p.c./q,p.v)
 Base.://(p::Pol,q::Number)=Pol_(p.c.//q,p.v)
@@ -621,7 +622,7 @@ function srgcd(a::Pol,b::Pol)
     gh=g*h^δ
     b=coeffexactdiv(r,gh)
     g=a[end]
-    if δ>0 h=coeffexactdiv(g^δ,h^(δ-1)) end
+    if δ>0 h=exactdiv(g^δ,h^(δ-1)) end
   end
 end
 
