@@ -9,7 +9,7 @@ any ring).
 """
 module GLinearAlgebra
 using ..Pols: exactdiv
-#using ..Cycs: Cyc # for isunit
+using ..Cycs: Cyc # case in echelon
 using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
 using ..Groups: elements, word
@@ -23,6 +23,7 @@ export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition,
   intersect_rowspace
 
 echelon!(m::Matrix{<:Integer})=echelon!(m*1//1)
+echelon!(m::Matrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
 
 """
     `echelon!(m)`

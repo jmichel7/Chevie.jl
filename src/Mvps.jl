@@ -536,7 +536,7 @@ Base.:*(b::Mvp,a::Monomial)=a*b
 
 function Base.:*(a::Mvp, b::Mvp)
   if length(a)>length(b) a,b=(b,a) end
-  (a,b)=promote(a,b)
+  a,b=promote(a,b)
   if iszero(a) return a 
   elseif iszero(b) return b
   elseif isone(a) return b

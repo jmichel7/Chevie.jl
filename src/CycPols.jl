@@ -70,6 +70,7 @@ import ..Gapjm: roots, gap
 
 using ModuleElts: ModuleElt
 using ..Cycs: Root1, E, conductor, Cyc
+using ..GLinearAlgebra: charpoly
 using ..Pols: Pol, Pols, degree, valuation
 using ..Combinat: collectby
 using ..Mvps: Mvps, Mvp
