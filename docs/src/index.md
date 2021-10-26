@@ -332,15 +332,15 @@ leftgcd
 rightgcd
 leftlcm
 rightlcm
-α(::Garside.LocallyGarsideElm)
-α(::GarsideElm,::AbstractVector)
+α(::Garside.LocallyGarsideElt)
+α(::GarsideElt,::AbstractVector)
 Brieskorn_normal_form
 BraidMonoid
 DualBraidMonoid
 hurwitz
 fraction
 word(::Garside.GarsideMonoid,w)
-word(::Garside.GarsideElm)
+word(::Garside.GarsideElt)
 elements(::Garside.LocallyGarsideMonoid,l)
 image
 conjugating_elt
@@ -495,6 +495,7 @@ AsWord                                      word
 AssociatedPartition                         conjugate_partition
 AsymptoticAlgebra                           AsymptoticAlgebra
 BadPrimes                                   badprimes
+BaseIntMat                                  baseInt
 BetaSet                                     βset
 BigCellDecomposition                        bigcell_decomposition
 Binomial                                    binomial
@@ -510,6 +511,7 @@ BruhatSmaller                               bruhatless
 CartanMat("A",5)                            cartan(:A,5)
 CartanMatFromCoxeterMatrix                  cartan
 Cartesian                                   cartesian
+CartesianAt                                 lin2cart
 Catalan                                     catalan
 CentralizerGenerators                       centralizer_gens
 CharFFE(x)                                  field(x).p
@@ -520,11 +522,14 @@ CharTable                                   CharTable
 CheckHeckeDefiningRelations                 isrepresentation
 ChevieCharInfo                              charinfo
 ChevieClassInfo                             classinfo
+ClassName                                   see ClassNames
 ClassTypes                                  ClassTypes
 Coefficient(p,i)                            p[i]
 CollectBy(l,f)                              collectby(f,l)
 Collected                                   tally
 Combinations                                combinations
+Comm                                        comm
+ComplementIntMat                            ComplementInt
 ComplexConjugate                            conj
 ComplexReflectionGroup                      ComplexReflectionGroup
 Compositions                                compositions
@@ -545,7 +550,8 @@ CoxeterMatrixFromCartanMat                  coxmat
 CoxeterSubCoset                             subspets
 CoxeterWord(W,w)                            word(W,w)
 CoxeterWords(W[,l])                         word.(Ref(W),elements(W[,l]))
-CuspidalUnipotentCharacters(W)              cuspidal(UnipotentCharacters(W))
+CuspidalPairs                               cuspidal_data
+CuspidalUnipotentCharacters(W[,d])          cuspidal(UnipotentCharacters(W)[,d])
 CycPol                                      CycPol
 CycPolFakeDegreeSymbol                      fegsymbol
 CycPolGenericDegreeSymbol                   gendeg_symbol
@@ -567,6 +573,7 @@ DrinfeldDouble                              drinfeld_double
 Drop                                        deleteat!
 DualBraid                                   DualBraidMonoid
 DualBraidMonoid                             DualBraidMonoid
+ER                                          root
 EigenspaceProjector                         eigenspace_projector
 ElementWithInversions(W,l)                  with_inversions(W,l)
 Elements                                    elements
@@ -632,6 +639,7 @@ IsIsolated                                  is_isolated
 IsJoinLattice                               is_join_lattice
 IsLeftDescending(W,w,i)                     isleftdescent(W,w,i)
 IsMeetLattice                               is_meet_lattice
+IsParabolic                                 is_parabolic
 IsSubset(a,b)                               issubset(b,a)
 IsUnipotentElement(x)                       x isa UnipotentElement
 IsomorphismType                             IsomorphismType
@@ -664,6 +672,7 @@ LusztigInduction                            LusztigInduce
 LusztigInductionTable                       LusztigInductionTable
 LusztigRestriction                          LusztigRestrict
 Lusztigaw                                   Lusztigaw
+M.ToOrdinary(i)                             B(M,i)
 MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
 MatXPerm(W,p)                               reflrep(W,p)
@@ -677,6 +686,8 @@ NrDrinfeldDouble                            ndrinfeld_double
 NrPartitionTuples                           npartition_tuples
 NrPartitions                                npartitions
 NrPartitionsSet                             npartitions_set
+NrRestrictedPartitions                      nrestrictedpartitions
+NullspaceIntMat                             leftnullspaceInt
 OnFamily(f,p::Int)                          galois(f,p)
 OnFamily(f,p::Perm)                         f^p
 OnMatrices(m,p)                             ^(m,p;dims=(1,2))
@@ -702,6 +713,7 @@ Permuted(v,p)                               v^p
 PermutedByCols(m,p)                         ^(m,p;dims=2)
 Poset                                       Poset
 Position(l,x)                               findfirst(==(x),l)
+PositionCartesian                           cart2lin
 PositionCartesian(a,b)                      LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]
 PositionClass                               position_class
 PositionDet                                 charinfo(W)[:positionDet]
@@ -711,6 +723,7 @@ Presentation                                Presentation
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)
 QuasiIsolatedRepresentatives                QuasiIsolatedRepresentatives
+QuoInt                                      div
 Rank                                        rank
 RankSymbol                                  ranksymbol
 ReducedCoxeterWord(W,w)                     word(W,W(w...))
@@ -727,9 +740,9 @@ ReflectionLength(W,w)                       reflength(W,w)
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
 Reflections                                 reflections
-RelativeGroup                               relative_group
 RegularEigenvalues                          regular_eigenvalues
 RelativeDegrees                             relative_degrees
+RelativeGroup                               relative_group
 Replace                                     replace
 Representations                             representations
 RepresentativeConjugation(b,b'[,F][,type])  conjugating_elt(b,b'[,F],ss=type)
@@ -737,6 +750,7 @@ RepresentativeDiagonalConjugation           diagconj_elt
 RepresentativeOperation                     transporting_elt
 RepresentativeRowColPermutation             Perm_rowcolmat
 Restricted                                  restricted
+RestrictedPartitions                        restrictedpartitions
 RestrictedPerm(p,d)                         restricted(p,d)
 Reversed                                    reverse
 RightDescentSet(W,w)                        rightdescents(W,w)
@@ -763,6 +777,7 @@ SignedPermListList                          SPerm
 SignedPermMatMat                            SPerm_onmats
 Size(W)                                     length(W)
 SmallestMovedPoint                          smallest_moved_point
+SmithNormalFormIntegerMat                   smith_normal_form
 SolutionMat                                 solutionmat
 SpecialPieces                               special_pieces
 Spets                                       spets
@@ -803,6 +818,9 @@ W.orbitRepresentativeElements[i]            simple_conjugating(W,i)
 W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
 W.rootRestriction                           restriction(W)
+W.roots                                     W.rootdec
+W.simpleCoroots                             coroots(W,1:ngens(W))
+W.simpleRoots                               roots(W,1:ngens(W))
 WGraph                                      Wgraph
 WGraphToRepresentation                      WGraphToRepresentation
 WeightInfo                                  weightinfo
