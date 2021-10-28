@@ -136,9 +136,9 @@ julia> valuation(p),valuation(p,:x),valuation(p,:y)
 
 Terms  are totally ordered in an `Mvp`  by a monomial ordering (that is, an
 ordering  on  monomials  so  that  `x<y`  implies `xz<yz` for any monomials
-`x,y,z`).  By default, the ordering is  `lex`. The ordering `grlex` is also
-implemented.  The terms are in decreasing order,  so that the first term is
-the highest.
+`x,y,z`).  By default, the  ordering is `lex`.  The terms are in decreasing
+order,  so that the  first term is  the highest. The  orderings `grlex` and
+`grevlex` are also implemented.
 
 An  `Mvp` is a *scalar*  if the valuation and  degree are `0`. The function
 `scalar`  returns the  constant coefficient  if the  `Mvp` is a scalar, and
@@ -272,7 +272,7 @@ using ModuleElts
 using ..Pols
 export coefficient, monomials, powers
 export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term,
-       lex, grlex
+       lex, grlex, grevlex, grobner_basis
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T} # T is Int or Rational{Int}
   d::ModuleElt{Symbol,T}   
@@ -305,6 +305,7 @@ Base.length(a::Monomial)=length(a.d)
 variables(a::Monomial)=keys(a.d)
 "`powers(a::Monomial)` iterator on the powers of variables in `a`"
 powers(a::Monomial)=values(a.d)
+ispositive(a::Monomial)=all(>=(0),powers(a))
 
 const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
   (1,4)=>'¼',(3,4)=>'¾',(1,5)=>'⅕',(2,5)=>'⅖',(3,5)=>'⅗',
@@ -388,6 +389,18 @@ function grlex(a::Monomial, b::Monomial)
   da=degree(a);db=degree(b)
   if da!=db return isless(db,da) end
   lex(a,b)
+end
+
+"""
+`grevlex(a::Monomial, b::Monomial)`
+The "grevlex" ordering, where `a<b̀` if `degree(a)>degree(b)` or the degrees
+are equal but the las variable in ``a/b`` occurs to a negative power
+"""
+function grevlex(a::Monomial, b::Monomial)
+  da=degree(a);db=degree(b)
+  if da!=db return isless(db,da) end
+  lex(Monomial(ModuleElt(reverse(b.d.d))),
+      Monomial(ModuleElt(reverse(a.d.d))))
 end
 
 """
@@ -987,7 +1000,7 @@ Base.:^(p::Mvp,m::AbstractMatrix;vars=variables(p))=
   p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
 Pols.positive_part(p::Mvp)=
-  Mvp(ModuleElt(m=>c for (m,c) in pairs(p) if all(>(0),powers(m));check=false))
+  Mvp(ModuleElt(m=>c for (m,c) in pairs(p) if ispositive(m);check=false))
 
 Pols.negative_part(p::Mvp)=
   Mvp(ModuleElt(m=>c for (m,c) in pairs(p) if all(<(0),powers(m));check=false))
@@ -1238,6 +1251,114 @@ value(p::Frac{<:Mvp},k::Pair...;Rational=false)=Rational ?
 
 (p::Frac{<:Mvp})(;arg...)=value(p,arg...)
 
+#--------------------  Grobner bases -------------------------------------
+# the reference is Cox, Little, O'Shea chapter 2
+
+# minimum term and its index for monomial order lt
+# findmin does not have the keywords lt and by so I must spin my own
+function fmin(l;lt=lex,by=first) 
+  res=(first(l),1)
+  for i in 2:length(l)
+   if lt(by(l[i]),by(first(res))) res=(l[i],i) end
+  end
+  res
+end
+
+# Leading term for monomial order lt
+LT(p;lt=lex)=lt==lex ? first(pairs(p)) : fmin(pairs(p);lt)[1]
+
+# drop from p leading term for monomial order lt
+function dropLT(p;lt=lex)
+  if lt==lex return Mvp(ModuleElt(pairs(p)[2:end];check=false)) end
+  Mvp(ModuleElt(deleteat!(pairs(p),fmin(pairs(p);lt)[2]);check=false))
+end
+
+# quotient of leading terms
+function quotientLT(p,q;lt=lex)
+  pm,pc=LT(p;lt)
+  qm,qc=LT(q;lt)
+  t=pm/qm
+  if ispositive(t) Mvp(t=>pc//qc) end
+end
+
+# remainder on division of p by list F
+# Cox-Little-O'Shea Th. 3 §3 chap.2
+function remainder(p,F;lt=lex)
+  q=zero(F)//1
+  r=zero(p)
+  while !iszero(p)
+    gotquotient=false
+    for i in eachindex(F)
+      t=quotientLT(p,F[i];lt)
+      if t!==nothing 
+        q[i]+=t
+#       xprintln("p=",p," F[i]=",F[i]," t=",t)
+        p-=t*F[i]
+        gotquotient=true
+        break
+      end
+    end
+    if !gotquotient
+      r+=Mvp(LT(p;lt))
+      p=dropLT(p;lt)
+    end
+  end
+  (q,r)
+end
+
+# Cox-Little-O'Shea def. 4.(ii) §6 chap.2
+function S_polynomial(p,q;lt=lex)
+  pm,pc=LT(p;lt)
+  qm,qc=LT(q;lt)
+  c=lcm(pm,qm)
+  Mvp(c/pm=>1//pc)*p-Mvp(c/qm=>1//qc)*q
+end
+  
+using ..Util: xprintln
+function reduce_basis(F;lt=lex)
+# F=sort(F,by=length)
+  F=copy(F)
+  i=1
+  while i<=length(F)
+    ind=deleteat!(collect(1:length(F)),i)
+    if any(j->quotientLT(F[i],F[j];lt)!==nothing,ind) 
+      j=findfirst(j->quotientLT(F[i],F[j];lt)!==nothing,ind) 
+      xprintln(F[ind]," ",F[i],"/",F[ind[j]],"=>",quotientLT(F[i],F[ind[j]];lt))
+      F=F[ind]
+    else i+=1
+    end
+  end
+  F
+end
+
+# Cox-Little-O'Shea Th. 9 §10 chap.2
+function grobner_basis(F;lt=lex)
+  F=copy(F)
+  B=[(i,j) for i in 1:length(F) for j in 1:i-1]
+  t=length(F)
+  while !isempty(B)
+    i,j=popfirst!(B)
+    li,_=LT(F[i];lt)
+    lj,_=LT(F[j];lt)
+    lij=lcm(li,lj)
+    if lij==li*lj continue end
+    ll=filter(l->l!=i && l!=j && !((i,l) in B) && !((j,l) in B)
+               && !((l,i) in B) && !((l,j) in B),1:length(F))
+    if any(l->ispositive(lij/first(LT(F[l];lt))),ll) 
+      l=findfirst(l->ispositive(lij/first(LT(F[l];lt))),ll) 
+      continue 
+    end
+    s=S_polynomial(F[i],F[j];lt)
+    r=remainder(s,F;lt)[2]
+    if !iszero(r) 
+      t+=1
+      push!(F,r)
+      append!(B,map(i->(t,i),1:t-1))
+    end
+  end
+  F
+end
+#--------------------  benchmarks -------------------------------------
 #julia1.6.3> @btime Mvps.fateman(15)
 # 4.040 s (15219390 allocations: 5.10 GiB)
 function fateman(n)
