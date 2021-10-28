@@ -136,8 +136,9 @@ julia> valuation(p),valuation(p,:x),valuation(p,:y)
 
 Terms  are totally ordered in an `Mvp`  by a monomial ordering (that is, an
 ordering  on  monomials  so  that  `x<y`  implies `xz<yz` for any monomials
-`x,y,z`).  By default, the ordering is `lexless`. The ordering `deglexless`
-is also implemented.
+`x,y,z`).  By default, the ordering is  `lex`. The ordering `grlex` is also
+implemented.  The terms are in decreasing order,  so that the first term is
+the highest.
 
 An  `Mvp` is a *scalar*  if the valuation and  degree are `0`. The function
 `scalar`  returns the  constant coefficient  if the  `Mvp` is a scalar, and
@@ -270,7 +271,8 @@ module Mvps
 using ModuleElts
 using ..Pols
 export coefficient, monomials, powers
-export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term
+export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term,
+       lex, grlex
 #------------------ Monomials ---------------------------------------------
 struct Monomial{T} # T is Int or Rational{Int}
   d::ModuleElt{Symbol,T}   
@@ -363,11 +365,11 @@ function Base.show(io::IO, ::MIME"text/plain", m::Monomial)
 end
 
 """
-`lexless(a::Monomial, b::Monomial)`
+`lex(a::Monomial, b::Monomial)`
 The  "lex" ordering,  where `a<b`  if the  first variable  in `a/b`
 occurs to a positive power.
 """
-function lexless(a::Monomial, b::Monomial)
+function lex(a::Monomial, b::Monomial)
   for ((va,pa),(vb,pb)) in zip(a.d,b.d)
     if va!=vb return va<vb ? pa>0 : pb<0 end
     if pa!=pb return isless(pb,pa) end
@@ -378,14 +380,14 @@ function lexless(a::Monomial, b::Monomial)
 end
 
 """
-`deglexless(a::Monomial, b::Monomial)`
-The "deglex" ordering, where `a<b̀` if `degree(a)<degree(b)` or the degrees
-are equal but `lexless(a,b)`.
+`grlex(a::Monomial, b::Monomial)`
+The "grlex" ordering, where `a<b̀` if `degree(a)>degree(b)` or the degrees
+are equal but `lex(a,b)`.
 """
-function deglexless(a::Monomial, b::Monomial)
+function grlex(a::Monomial, b::Monomial)
   da=degree(a);db=degree(b)
-  if da!=db return isless(da,db) end
-  lexless(a,b)
+  if da!=db return isless(db,da) end
+  lex(a,b)
 end
 
 """
@@ -395,7 +397,7 @@ For  our implementation of `Mvp`s to  work, `isless` must define a monomial
 order (that is, for monomials `m,a,b` we have `a<b => a*m<b*m`). By default
 we  use the  "lex" ordering.
 """
-@inline Base.isless(a::Monomial, b::Monomial)=lexless(a,b)
+@inline Base.isless(a::Monomial, b::Monomial)=lex(a,b)
 
 Base.:(==)(a::Monomial, b::Monomial)=a.d==b.d
 
