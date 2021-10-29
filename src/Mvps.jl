@@ -1279,13 +1279,13 @@ function quotientLT(p,q;lt=lex)
   pm,pc=LT(p;lt)
   qm,qc=LT(q;lt)
   t=pm/qm
-  if ispositive(t) Mvp(t=>pc//qc) end
+  if ispositive(t) Mvp(t=>exactdiv(pc,qc)) end
 end
 
 # remainder on division of p by list F
 # Cox-Little-O'Shea Th. 3 §3 chap.2
 function remainder(p,F;lt=lex)
-  q=zero(F)//1
+  q=zero(F)
   r=zero(p)
   while !iszero(p)
     gotquotient=false
@@ -1293,7 +1293,6 @@ function remainder(p,F;lt=lex)
       t=quotientLT(p,F[i];lt)
       if t!==nothing 
         q[i]+=t
-#       xprintln("p=",p," F[i]=",F[i]," t=",t)
         p-=t*F[i]
         gotquotient=true
         break
@@ -1312,7 +1311,7 @@ function S_polynomial(p,q;lt=lex)
   pm,pc=LT(p;lt)
   qm,qc=LT(q;lt)
   c=lcm(pm,qm)
-  (c/pm)*p//pc-(c/qm)*q//qc
+  (c/pm)*exactdiv(p,pc)-(c/qm)*exactdiv(q,qc)
 end
   
 function reduce_basis(F;lt=lex)

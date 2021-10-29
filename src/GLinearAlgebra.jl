@@ -179,10 +179,10 @@ function charpolyandcomatrix(m)
   a,res
 end
 
-" charpoly(M)  characteristic polynomial"
+"`charpoly(M::Matrix)` characteristic polynomial (as `Vector` of coefficients)"
 charpoly(m)=first(charpolyandcomatrix(m))
 
-"the comatrix of the square matrix M is defined by comatrix(M)*M=det(M)*one(M)"
+"`comatrix(M::Matrix)` is defined by comatrix(M)*M=det(M)*one(M)"
 comatrix(m)=last(charpolyandcomatrix(m))
 
 """
