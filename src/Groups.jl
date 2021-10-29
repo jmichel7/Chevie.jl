@@ -61,7 +61,7 @@ Base.one(G::Group{T}) where T=one(T)
 
 "`gens(G::Group)` returns the `Vector` of generators of `G`."
 gens(G::Group)=G.gens
-"`gens(G::Group)` returns the number of generators of `G`."
+"`ngens(G::Group)` returns the number of generators of `G`."
 ngens(G::Group)=length(gens(G))
 
 """

@@ -8,7 +8,7 @@ Here we are interested in functions which work over any field (or sometimes
 any ring).
 """
 module GLinearAlgebra
-using ..Pols: exactdiv
+using LaurentPolynomials: exactdiv
 using ..Cycs: Cyc # case in echelon
 using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group

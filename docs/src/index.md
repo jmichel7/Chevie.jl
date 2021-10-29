@@ -32,6 +32,8 @@ mappingPerm
 ```@docs
 Groups
 Group
+gens
+ngens
 orbit(::Vector,::Any)
 orbits(::Group,::AbstractVector)
 elements(::Group)
@@ -71,19 +73,8 @@ Quadratic
 Root1
 Cycs.root
 ```
-# Univariate (Laurent) polynomials
+# Extensions to LaurentPolynomials
 ```@docs
-Pols
-Pol(t::Symbol)
-Pol(c::AbstractVector, v::Integer; check, copy)
-Pol(pts::AbstractVector, vals::AbstractVector)
-@Pol
-divrem
-gcd(::Pol,::Pol)
-gcdx(::Pol,::Pol)
-Pols.pseudodiv
-srgcd
-Frac
 FFfac.factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 cyclotomic_polynomial
@@ -98,6 +89,13 @@ Mvps.degree(::Mvp)
 variables
 Mvps.coefficients(::Mvp,::Symbol)
 Mvps.coefficient
+monomials
+powers
+Base.isless(::Monomial,::Monomial)
+lex
+grlex
+grevlex
+Base.pairs(::Mvp)
 Pol(x::Mvp{T, N} where N) where T
 Pol(p::Mvp{T, N}, var::Symbol) where {T, N}
 Mvps.value
@@ -108,6 +106,10 @@ laurent_denominator
 gcd(::Mvp,::Mvp)
 lcm(::Mvp,::Mvp)
 scalar
+Base.:^(::Mvp, ::AbstractMatrix)
+LaurentPolynomials.Frac(::T) where T<:Mvp
+grobner_basis
+rename_variables
 ```
 # Cyclotomic polynomials
 ```@docs
@@ -307,6 +309,7 @@ FactorizedSchurElement
 FactorizedSchurElements
 isrepresentation
 reflrep(::HeckeAlgebra)
+HeckeCoset
 ```
 # Kazhdan-Lusztig polynomials and bases
 ```@docs
@@ -357,6 +360,7 @@ CharTable
 on_chars
 charinfo
 charnames
+classnames
 classinfo
 fakedegree
 fakedegrees
@@ -366,6 +370,7 @@ InductionTable
 jInductionTable
 JInductionTable
 detPerm
+conjPerm
 WGraphToRepresentation
 pblocks
 ```

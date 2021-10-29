@@ -22,7 +22,7 @@ julia> p*inv(CycPol(q^2+q+1))
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
 ```
-The variable name in a `CycPol` is set by default to the same as for `Pols`.
+The variable name in a `CycPol` is set by default to the same as for `LaurentPolynomials`.
 
 `CycPol`s are internally a `struct` with fields:
 
@@ -69,9 +69,9 @@ export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial,eigmat
 import ..Gapjm: roots, gap
 
 using ModuleElts: ModuleElt
+using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation
 using ..Cycs: Root1, E, conductor, Cyc
 using ..GLinearAlgebra: charpoly
-using ..Pols: Pol, Pols, degree, valuation
 using ..Combinat: collectby
 using ..Mvps: Mvps, Mvp
 using ..Util: prime_residues, primitiveroot, phi, divisors, factor, 
@@ -99,7 +99,7 @@ function cyclotomic_polynomial(n::Integer)::Pol{Int}
     res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
       if d!=1 && d!=n
-        res,_=Pols.pseudodiv(res,cyclotomic_polynomial(d))
+        res,_=LaurentPolynomials.pseudodiv(res,cyclotomic_polynomial(d))
       end
     end
     res
@@ -160,11 +160,11 @@ Base.zero(a::CycPol)=CycPol(zero(a.coeff),0)
 Base.iszero(a::CycPol)=iszero(a.coeff)
 Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 
-Pols.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
-Pols.valuation(a::CycPol)=a.valuation
-Pols.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-Pols.valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
-Pols.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
+LaurentPolynomials.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
+LaurentPolynomials.valuation(a::CycPol)=a.valuation
+LaurentPolynomials.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
+LaurentPolynomials.valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
+LaurentPolynomials.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
   if iszero(a) || iszero(b) return zero(a) end
@@ -176,7 +176,7 @@ Base.conj(a::CycPol)=CycPol(conj(a.coeff),a.valuation,ModuleElt(
 Base.:*(a::CycPol,b::Number)=iszero(b) ? zero(a) : CycPol(a.coeff*b,a.valuation,a.v)
 Base.:*(b::Number,a::CycPol)=a*b
 Base.:-(a::CycPol)=CycPol(-a.coeff,a.valuation,a.v)
-Base.inv(a::CycPol)=CycPol(Pols.bestinv(a.coeff), -a.valuation, -a.v)
+Base.inv(a::CycPol)=CycPol(LaurentPolynomials.bestinv(a.coeff), -a.valuation, -a.v)
 Base.:^(a::CycPol, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
 Base.://(a::CycPol,b::CycPol)=a*inv(b)
@@ -376,7 +376,7 @@ function CycPol(p::Pol{T};trace=false)where T
     if trace print("C$c") end
     found=false
     while true
-      np,r=Pols.pseudodiv(p,cyclotomic_polynomial(c))
+      np,r=LaurentPolynomials.pseudodiv(p,cyclotomic_polynomial(c))
       if iszero(r) 
         append!(vcyc,[Root1(c,j)=>1 for j in (c==1 ? [1] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
@@ -397,7 +397,7 @@ function CycPol(p::Pol{T};trace=false)where T
       to_test=filter(r->iszero(p(Root1(i,r))),to_test)
       if isempty(to_test) return found end
       found=true
-      p=Pols.pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
+      p=LaurentPolynomials.pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
       append!(vcyc,Root1.(i,to_test).=>1)
       if trace print("[d°$(degree(p))c$(conductor(p.c))]") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end

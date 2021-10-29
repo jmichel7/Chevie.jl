@@ -70,17 +70,19 @@ its code is "strange". Otherwise the code in this package is often 10 times
 faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
 compilation time on first execution).
 
-I  tried  that  as  many submodules  as  possible in my package can be used
+I  tried that  as many  submodules as  possible in  my package  can be used
 independently  of the rest, thus could be independent packages. This is the
-case  for the modules `Combinat`,  `Groups`, `Perms`, `Util`, `Pols`, which
-can  be  used  stand-alone.  In  addition  modules `MatInt`, `Cycs`, `Mvp`,
-`Posets`, `FFields` can be used stand-alone except they each use one or two
-functions from `Util` and `Mvp` uses `Pols`.
+case  for the modules  `Combinat`, `Groups`, `Perms`,  `Util`, `Mvp`, which
+can  be used stand-alone.  In addition modules  `MatInt`, `Cycs`, `Posets`,
+`FFields` can be used stand-alone except they each use one or two functions
+from   `Util`.  I  already  made  the  independent  packages  `UsingMerge`,
+`ModuleElts`, `LaurentPolynomials`.
 """
 module Gapjm
 using Reexport
 using Requires
 using UsingMerge
+@reexport using LaurentPolynomials
 @reexport using ModuleElts
 
 #--------------------------------------------------------------------------
@@ -92,7 +94,6 @@ include("Util.jl");@reexport using .Util
 include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("Pols.jl");@usingmerge verbose=true reexport Pols
 include("Mvps.jl");@usingmerge verbose=true reexport Mvps
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
 #if false

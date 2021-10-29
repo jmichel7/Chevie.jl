@@ -1,6 +1,6 @@
 module Fact
 using Primes: nextprime
-using ..Pols: Pol, @Pol, shift, degree, derivative, exactdiv
+using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
 using ..Util: Util, factor
 using ..Combinat: combinations, nrestrictedpartitions

@@ -956,7 +956,7 @@ Base.:*(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
 Base.:*(a,u1::UniChar)=u1*a
 
-Pols.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
+LaurentPolynomials.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
                                      degrees(UnipotentCharacters(u.group),q)))
 
 """

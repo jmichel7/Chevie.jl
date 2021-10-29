@@ -1,5 +1,5 @@
 """
-This  package, which  depends only  on the  packes `Pols` and `ModuleElts`,
+This  package, which  depends only  on the  packageses `LaurentPolynomials` and `ModuleElts`,
 implements  "Puiseux polynomials", that is linear combinations of monomials
 of  the  type  `x₁^{a₁}…  xₙ^{aₙ}`  where  `xᵢ`  are variables and `aᵢ` are
 exponents   which  can  be  arbitrary  rational  numbers  (we  use  Puiseux
@@ -270,7 +270,7 @@ According to the Nemo paper, Sagemath takes 10sec and Nemo takes 1.6sec.
 module Mvps
 # benchmark: (x+y+z)^3     2.3μs 48 alloc
 using ModuleElts
-using ..Pols
+using LaurentPolynomials
 export coefficient, monomials, powers
 export Mvp, Monomial, @Mvp, variables, value, laurent_denominator, term,
        lex, grlex, grevlex, grobner_basis, rename_variables
@@ -297,7 +297,7 @@ Base.isone(a::Monomial)=iszero(a.d)
 Base.one(::Type{Monomial{T}}) where T=Monomial(zero(ModuleElt{Symbol,T}))
 Base.one(m::Monomial)=Monomial(zero(m.d))
 Base.inv(a::Monomial)=Monomial(-a.d)
-Pols.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
+LaurentPolynomials.exactdiv(a::Monomial, b::Monomial)=a*inv(b)
 Base.:/(a::Monomial, b::Monomial)=a*inv(b)
 Base.://(a::Monomial, b::Monomial)=a*inv(b)
 Base.:^(x::Monomial,p)=Monomial(x.d*p)
@@ -315,16 +315,16 @@ const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
 
 const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
 
-function Pols.stringexp(io::IO,r::Rational{<:Integer})
+function LaurentPolynomials.stringexp(io::IO,r::Rational{<:Integer})
   d=denominator(r); n=numerator(r)
-  if isone(d) return Pols.stringexp(io,n) end
+  if isone(d) return LaurentPolynomials.stringexp(io,n) end
   if get(io,:TeX,false) return "^{\\frac{$n}{$d}}" end
   res=Char[]
   if n<0 push!(res,'⁻'); n=-n end
   if haskey(unicodeFrac,(n,d)) push!(res,unicodeFrac[(n,d)])
   else
    if isone(n) push!(res,'\U215F')
-   else append!(res,map(x->Pols.supvec[x+1],reverse(digits(n))))
+   else append!(res,map(x->LaurentPolynomials.supvec[x+1],reverse(digits(n))))
      push!(res,'⁄')
    end
    append!(res,map(x->subvec[x+1],reverse(digits(d))))
@@ -352,7 +352,7 @@ function Base.show(io::IO,m::Monomial)
     print(io,string(v))
     if !isone(d) 
       if isone(denominator(d)) d=numerator(d) end
-      if replorTeX print(io,Pols.stringexp(io,d))
+      if replorTeX print(io,LaurentPolynomials.stringexp(io,d))
       elseif d isa Integer print(io,"^$d")
       else print(io,"^($d)")
       end
@@ -425,10 +425,10 @@ Base.lcm(v::AbstractArray{<:Monomial})=reduce(lcm,v)
 
 Base.hash(a::Monomial, h::UInt)=hash(a.d,h)
 
-Pols.degree(m::Monomial)=sum(powers(m);init=0)
-Pols.degree(m::Monomial,var::Symbol)=m.d[var]
+LaurentPolynomials.degree(m::Monomial)=sum(powers(m);init=0)
+LaurentPolynomials.degree(m::Monomial,var::Symbol)=m.d[var]
 
-function Pols.root(m::Monomial,n::Integer=2)
+function LaurentPolynomials.root(m::Monomial,n::Integer=2)
   if all(x->iszero(x%n),powers(m)) 
        Monomial(ModuleElt(k=>div(v,n) for (k,v) in m.d))
   else Monomial(ModuleElt(k=>v//n for (k,v) in m.d))
@@ -566,7 +566,7 @@ end
 Base.:/(p::Mvp,q::Number)=Mvp(p.d/q)
 Base.://(p::Mvp,q::Number)=Mvp(p.d//q)
 Base.div(a::Mvp,b::Number)=Mvp(merge(div,a.d,b))
-Pols.exactdiv(a::Mvp,b::Number)=Mvp(merge(exactdiv,a.d,b;check=false))
+LaurentPolynomials.exactdiv(a::Mvp,b::Number)=Mvp(merge(exactdiv,a.d,b;check=false))
 
 """
 `conj(p::Mvp)` acts on the coefficients of `p`
@@ -607,8 +607,8 @@ julia> degree(a), degree(a,:y), degree(a,:x)
 (2, 1, 2)
 ```
 """
-Pols.degree(p::Mvp)=iszero(p) ? 0 : maximum(degree,monomials(p))
-Pols.degree(p::Mvp,v::Symbol)=iszero(p) ? 0 : maximum(x->degree(x,v),monomials(p))
+LaurentPolynomials.degree(p::Mvp)=iszero(p) ? 0 : maximum(degree,monomials(p))
+LaurentPolynomials.degree(p::Mvp,v::Symbol)=iszero(p) ? 0 : maximum(x->degree(x,v),monomials(p))
 
 """
 `valuation(m::Mvp[,v::Symbol])`
@@ -627,8 +627,8 @@ julia> valuation(a), valuation(a,:y), valuation(a,:x)
 ```
 
 """
-Pols.valuation(p::Mvp)=iszero(p) ? 0 : minimum(degree,monomials(p))
-Pols.valuation(p::Mvp,v::Symbol)=iszero(p) ? 0 : minimum(x->degree(x,v),monomials(p))
+LaurentPolynomials.valuation(p::Mvp)=iszero(p) ? 0 : minimum(degree,monomials(p))
+LaurentPolynomials.valuation(p::Mvp,v::Symbol)=iszero(p) ? 0 : minimum(x->degree(x,v),monomials(p))
 
 """
 `coefficient(p::Mvp,m::Monomial)`
@@ -667,7 +667,7 @@ monomials(p::Mvp)=keys(p.d)
 
 is an efficient iterator over the coefficients of the monomials in `p`
 """
-Pols.coefficients(p::Mvp)=values(p.d)
+LaurentPolynomials.coefficients(p::Mvp)=values(p.d)
 
 """
   `coefficients(p::Mvp, var::Symbol)` 
@@ -705,7 +705,7 @@ values  are always `Mvp`s. To get a list of scalars for the coefficients of
 a  univariate polynomial represented as a `Mvp`, one should use `scalar` on
 the values of `coefficients`.
 """
-function Pols.coefficients(p::Mvp{T,N},v::Symbol)where {T,N}
+function LaurentPolynomials.coefficients(p::Mvp{T,N},v::Symbol)where {T,N}
   if iszero(p) return Dict{Int,typeof(p)}() end
   d=Dict{N,typeof(p.d.d)}()
   for (m,c) in pairs(p)
@@ -766,7 +766,7 @@ julia> @Mvp x; @Pol q; Pol(x^2+x)
 Pol{Int64}: q²+q
 ```
 """
-function Pols.Pol(x::Mvp{T})where T
+function LaurentPolynomials.Pol(x::Mvp{T})where T
   l=variables(x)
   if isempty(l) return Pol(scalar(x)) end
   if length(l)>1 error("cannot convert $(length(l))-variate Mvp to Pol") end
@@ -791,7 +791,7 @@ julia> Pol(:q); Pol(p,:x)
 Pol{Mvp{Int64, Rational{Int64}}}: q³+3y½q²+3yq+y³⁄₂
 ```
 """
-function Pols.Pol(p::Mvp{T,N},var::Symbol)where{T,N}
+function LaurentPolynomials.Pol(p::Mvp{T,N},var::Symbol)where{T,N}
   v=Int(valuation(p,var))
   res=[Pair{Monomial{N},T}[] for i in v:Int(degree(p,var))]
   for (m,c) in pairs(p)
@@ -824,8 +824,8 @@ Mvp{Int64}: q²+q
 Mvp(x::Pol)=convert(Mvp,x)
 
 Base.convert(::Type{Mvp{T,N}},p::Pol) where{T,N}=
-                     p(Mvp(convert(Monomial{N},Pols.varname[])=>one(T)))
-Base.convert(::Type{Mvp},p::Pol)=p(Mvp(Pols.varname[]))
+                     p(Mvp(convert(Monomial{N},LaurentPolynomials.varname[])=>one(T)))
+Base.convert(::Type{Mvp},p::Pol)=p(Mvp(LaurentPolynomials.varname[]))
 
 """
 `variables(p::Mvp)`
@@ -868,7 +868,7 @@ Int64
 if  `p` is an array, then apply `scalar` to its elements and return `nothing`
 if it contains any `Mvp` which is not a scalar.
 """
-function Pols.scalar(p::Mvp{T})where T
+function LaurentPolynomials.scalar(p::Mvp{T})where T
   if iszero(p) return zero(T) end
   if ismonomial(p)
     (m,c)=term(p,1)
@@ -876,7 +876,7 @@ function Pols.scalar(p::Mvp{T})where T
   end
 end
 
-function Pols.scalar(m::AbstractArray{<:Mvp})
+function LaurentPolynomials.scalar(m::AbstractArray{<:Mvp})
   p=scalar.(m)
   if !any(isnothing,p) return p end
 end
@@ -971,7 +971,7 @@ end
 
 (p::Mvp)(;arg...)=value(p,arg...)
 
-function Pols.root(p::Mvp,n::Real=2)
+function LaurentPolynomials.root(p::Mvp,n::Real=2)
   if iszero(p) return p end
   n=Int(n)
   if !ismonomial(p)
@@ -1000,13 +1000,13 @@ Mvp{Int64}: 3x+4y
 Base.:^(p::Mvp,m::AbstractMatrix;vars=variables(p))=
   p(;map(Pair,vars,permutedims(Mvp.(vars))*m)...)
 
-Pols.positive_part(p::Mvp)=
+LaurentPolynomials.positive_part(p::Mvp)=
   Mvp(ModuleElt(m=>c for (m,c) in pairs(p) if ispositive(m);check=false))
 
-Pols.negative_part(p::Mvp)=
+LaurentPolynomials.negative_part(p::Mvp)=
   Mvp(ModuleElt(m=>c for (m,c) in pairs(p) if all(<(0),powers(m));check=false))
 
-Pols.bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in pairs(p)))
+LaurentPolynomials.bar(p::Mvp)=Mvp(ModuleElt(inv(m)=>c for (m,c) in pairs(p)))
 
 """
 The  function 'derivative(p,v₁,…,vₙ)' returns the  derivative of 'p' with 
@@ -1038,7 +1038,7 @@ julia> derivative(p,:z)
 Mvp{Rational{Int64},Rational{Int64}}: 0
 ```
 """
-function Pols.derivative(p::Mvp,vv...)
+function LaurentPolynomials.derivative(p::Mvp,vv...)
   # check needed because 0 could appear in coeffs
   for v in vv
     p=Mvp(ModuleElt(m*Monomial(v=>-1)=>c*degree(m,v) for (m,c) in pairs(p)))
@@ -1048,7 +1048,7 @@ end
 
 # returns p/q when the division is exact, nothing otherwise
 # Arguments must be true polynomials
-function Pols.exactdiv(p::Mvp,q::Mvp)
+function LaurentPolynomials.exactdiv(p::Mvp,q::Mvp)
   if isone(q) return p end
   if iszero(q) error("cannot divide by 0")
   elseif iszero(p) || isone(q) return p
@@ -1148,7 +1148,7 @@ function make_positive(a::Mvp,b::Mvp)
   isone(d) ? (a,b) : (a*d,b*d)
 end
   
-Pols.Frac(a::Mvp,b::Mvp;k...)=Frac(promote(a,b)...;k...)
+LaurentPolynomials.Frac(a::Mvp,b::Mvp;k...)=Frac(promote(a,b)...;k...)
   
 """
 `Frac(a::Mvp,b::Mvp;pol=false,prime=false)`
@@ -1158,8 +1158,8 @@ being  true polynomials  without common  monomial factor (unless `pol=true`
 asserts  that this  is already  the case)  and unless `prime=true` they are
 made prime to each other by dividing by their gcd.
 """
-function Pols.Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
-  if iszero(a) return Pols.Frac_(a,one(a))
+function LaurentPolynomials.Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
+  if iszero(a) return LaurentPolynomials.Frac_(a,one(a))
   elseif iszero(b) error("division by 0")
   end
   if !pol
@@ -1170,12 +1170,12 @@ function Pols.Frac(a::T,b::T;pol=false,prime=false)::Frac{T} where T<:Mvp
     a,b=exactdiv(a,d),exactdiv(b,d)
   end
   if scalar(b)==-1 a,b=(-a,-b) end
-  return Pols.Frac_(a,b)
+  return LaurentPolynomials.Frac_(a,b)
 end
 
-Pols.Frac(a::Mvp)=Frac(a,one(a);prime=true)
+LaurentPolynomials.Frac(a::Mvp)=Frac(a,one(a);prime=true)
 
-function Pols.Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
+function LaurentPolynomials.Frac(a::Mvp{<:Rational,Int},b::Mvp{<:Rational,Int};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 

@@ -3,7 +3,7 @@ module FFfac
 
 export factor
 
-using ..Pols: Pol, degree, shift, derivative, exactdiv
+using LaurentPolynomials: Pol, degree, shift, derivative, exactdiv
 using ..FFields: FFE, GF
 
 """

@@ -538,7 +538,7 @@ end
 
 Series(W,r...;NC=false,k...)=map(x->Series(W,x...;NC),cuspidal_data(W,r...;k...))
 
-function Pols.degree(s::Series)
+function LaurentPolynomials.degree(s::Series)
   get!(s,:degree) do
     deg=exactdiv(conj(generic_sign(s.spets))*generic_order(s.spets,Pol()),
     conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))
