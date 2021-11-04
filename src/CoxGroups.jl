@@ -759,7 +759,45 @@ end
 
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
-#--------------------- CoxSymmetricGroup ---------------------------------
+#function PermRoot.reflection_subgroup(W::CoxeterGroup,J)
+#  P=copy(W)
+#  if !issubset(J,1:ngens(W)) || W isa CoxSym
+#    refs=reflections(W,J)
+#    refs=union(orbits(Group(refs),refs))
+#    P.reflections=refs
+#    P.gens=filter(t->count(s->length(W,refs[t]*s)<length(W,refs[t]),refs)==1,
+#     eachindex(refs))
+#    l:=Concatenation(P.gens,setdiff(eachindex(refs),P.gens));
+#    refs=refs[l]
+#    P.rootInclusion=indexin(refs,reflections(W))
+#    SortParallel(P.rootInclusion,P.reflections);
+#    P.nref=length(P.gens)
+#    P.reflectionsLabels:=InclusionGens(P);
+#    P.operations.IsLeftDescending:=function(P,w,i)
+#      return length(P.reflectionParent,P.reflections[i]*w)<
+#             length(P.reflectionParent,w);end;
+#  else
+#    inc:=List(J,x->W.operations.ReflectionFromName(W,x));
+#    refs:=W.reflections{inc};
+#    Inherit(P,Subgroup(W,refs));
+#    P.reflections:=refs;
+#    P.semisimpleRank:=Length(P.reflections);
+#    P.rootInclusion:=W.rootInclusion{inc};
+#    P.reflectionsLabels:=W.reflectionsLabels{inc};
+#    P.operations.IsLeftDescending:=function(P,w,i)
+#      return IsLeftDescending(P.reflectionParent,w,P.rootInclusion[i]);end;
+#    P.cartan:=CartanMat(W){inc}{inc};
+#  fi;
+#  P.rootRestriction:=[];
+#  P.rootRestriction{P.rootInclusion}:=[1..Length(P.rootInclusion)];
+#  if IsBound(W.rank) then P.rank:=W.rank;fi;
+#  if IsBound(W.reflectionParent) then P.reflectionParent:=W.reflectionParent;
+#  else P.reflectionParent:=W;
+#  fi;
+#  P
+#end
+
+#--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
   n::Int

@@ -902,9 +902,11 @@ end
 UniChar(W,v::AbstractVector)=UniChar(W,collect(v))
 
 """
+`Base.show(io::IO,w::UniChar)`
+
 The  formatting  of  unipotent  characters  is  affected  by  IO property
 :compact .  If `true` (the default) they are printed in a compact form.
-Otherwise, they are printed one character per line:
+Otherwise, they are printed one unipotent character per line:
 
 ```julia-rep1
 julia> xdisplay(w;compact=false)
@@ -920,7 +922,6 @@ julia> xdisplay(w;compact=false)
 <G₂[ζ₃]>  0
 <G₂[ζ₃²]> 1
 ```
-
 """
 function Base.show(io::IO,r::UniChar)
   print(io,"[",r.group,"]:")

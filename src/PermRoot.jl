@@ -1609,41 +1609,6 @@ function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}
   reflection_subgroup(WW,inclusiongens(W).^p)
 end
 
-#function reflection_subgroupNC(W::PRG,I::AbstractVector)
-#  I=Vector{Int}(I)
-#  if I==eachindex(gens(W)) G=W
-#    inclu=collect(eachindex(roots(W)))
-#  else 
-#    G=PRG(roots(W,I),coroots(W,I);NC=true)
-#    inclu=Int.(indexin(G.roots,W.roots))
-#  end
-#  restr=zeros(Int,length(W.roots));restr[inclu]=1:length(inclu)
-#  PRSG(reflections(W)[I],inclu,restr,W,Dict{Symbol,Any}())
-#end
-#
-## contrary to Chevie, W is guaranteed to be a parent here
-#function reflection_subgroup(W::PRG,I::AbstractVector)
-#  if !haskey(W,:reflsubgroups)
-#    W.reflsubgroups=Dict(
-#      Int[]=>PRSG(empty(gens(W)),Int[],zeros(Int,length(W.roots)),W,
-#                  Dict{Symbol,Any}(:rank=>rank(W),:refltype=>TypeIrred[])))
-#  end
-#  I=Vector{Int}(I)
-#  if haskey(W.reflsubgroups,I) return W.reflsubgroups[I] end
-#  H=reflection_subgroupNC(W,I)
-#  t=refltype(H)
-#  l=PermRoot.indices(t)
-#  if sort(l)!=eachindex(gens(H))
-#    InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
-#      ","),"> for ",t,"<",length(inclusion(H))," refs>\n")
-#    H=reflection_subgroupNC(W,inclusion(H,l))
-#    for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
-#  end
-#  H.refltype=t
-#  W.reflsubgroups[I]=H
-#  H
-#end
-
 function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if !haskey(W,:reflsubgroups)
     W.reflsubgroups=Dict(

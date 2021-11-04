@@ -121,12 +121,10 @@ end;
 testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 """
 module Cycs
-#import Gapjm: coefficients, root
-# to use as a stand-alone module comment above line and uncomment next
 export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: format_coefficient, bracket_if_needed, xprint, stringexp, 
-              stringind,  factor, prime_residues, phi
+using ..Util: format_coefficient, bracket_if_needed, stringexp, stringind, 
+              factor, prime_residues, phi
 using ..Combinat: constant
 
 const use_list=false # I tried two different implementations. 
@@ -410,17 +408,16 @@ function Base.imag(c::Cyc{T}) where T<:Real
   (c-conj(c))/2
 end
 
-if false
+if true
 # l is a list of pairs i=>c representing E(n,i)*c
 function sumroots(n::Int,l)
-  res=typeof(first(l))[]
-# res=eltype(l)[]
+  res=typeof(first(l))[] # how to make empty() for generators
   for (i,c) in l 
     (s,v)=Elist(n,i)
     if !s c=-c end
     for k in v push!(res,k=>c) end
   end
-  Cyc(n,MM(res;check=length(l)>1))
+  Cyc(n,MM(res))
 end
 else # 10% slower for small fields, faster for big ones
 function sumroots(n::Int,l)
@@ -1024,6 +1021,7 @@ function Base.show(io::IO,q::Quadratic)
 end
 
 const inforoot=Ref(false)
+using ..Util: xprint
 function proot(x,n,r)
   xprint("root(",x)
   if n!=2 xprint(",",n) end

@@ -888,8 +888,8 @@ function Base.show(io::IO,f::Family)
   end
 end
 
-"`show(f)`: displays the labels, eigenvalues and Fourier matrix for the family."
 function Base.show(io::IO,::MIME"text/plain",f::Family)
+# display the labels, eigenvalues and Fourier matrix for f
   TeX=get(io,:TeX,false)
   println(io,f)
   if TeX println(io,"\\par") end

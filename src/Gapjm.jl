@@ -34,7 +34,6 @@ This  package  requires julia  1.6  or  later.  It  currently  contains  as
 infrastructure:
   * permutations
   * cyclotomic numbers
-  * univariate Laurent and multivariate Puiseux polynomials
   * combinatorics
   * linear algebra on any field/ring
   * posets
@@ -72,11 +71,11 @@ compilation time on first execution).
 
 I  tried that  as many  submodules as  possible in  my package  can be used
 independently  of the rest, thus could be independent packages. This is the
-case  for the modules  `Combinat`, `Groups`, `Perms`,  `Util`, `Mvp`, which
-can  be used stand-alone.  In addition modules  `MatInt`, `Cycs`, `Posets`,
-`FFields` can be used stand-alone except they each use one or two functions
-from   `Util`.  I  already  made  the  independent  packages  `UsingMerge`,
-`ModuleElts`, `LaurentPolynomials`.
+case for the modules `Combinat`, `Groups`, `Perms` and `Util`, which can be
+used stand-alone. In addition modules `MatInt`, `Cycs`, `Posets`, `FFields`
+can  be used  stand-alone except  they each  use one  or two functions from
+`Util`. I already made the independent packages `UsingMerge`, `ModuleElts`,
+`LaurentPolynomials`, `PuiseuxPolynomials`.
 """
 module Gapjm
 using Reexport
@@ -96,7 +95,6 @@ include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
-LaurentPolynomials.root(x::Int,n::Int=2)=Cycs.root(x,n)
 #if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
