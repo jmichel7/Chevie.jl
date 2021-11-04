@@ -134,7 +134,7 @@ struct Mod{T}<:Number
 end
 
 function Mod(a::Integer,n)
-  if n isa BigInt Mod_(mod(a,n),n) end
+  if n isa BigInt return Mod_(mod(a,n),n) end
   Mod_(unsigned(mod(a,n)),unsigned(n))
 end
 
