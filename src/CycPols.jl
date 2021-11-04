@@ -70,10 +70,10 @@ import ..Gapjm: roots, gap
 
 using ModuleElts: ModuleElt
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation
+using PuiseuxPolynomials: Mvp
 using ..Cycs: Root1, E, conductor, Cyc
 using ..GLinearAlgebra: charpoly
 using ..Combinat: collectby
-using ..Mvps: Mvps, Mvp
 using ..Util: prime_residues, primitiveroot, phi, divisors, factor, 
               stringexp, stringprime, format_coefficient, xprintln, stringind
 using ..PermRoot: improve_type

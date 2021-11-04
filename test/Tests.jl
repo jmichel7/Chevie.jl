@@ -1772,7 +1772,7 @@ test[:parameterexponents]=(fn=Tparameterexponents,applicable=isspetsial,
 #------------------------- discriminant -----------------------------
 
 # for a reflection group of rank r: Discriminant(G)
-#          returns a list of linear factors as Mvps in x1,x2,...,xr
+#          returns a list of linear factors as `Mvp`s in x1,x2,...,xr
 function reflection_discriminant(W)
   res=[]
   for h in hyperplane_orbits(W)

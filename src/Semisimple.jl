@@ -79,7 +79,7 @@ to  the  characteristic  of  `K`.  These  are  represented  as  a vector of
 `Rational`s `r` such that `0≤r<1`, or, more to the point, a `Vector{Root1}`.
 The  function  `SS`  constructs  a  semisimple  element  from  a  vector of
 `Rational`,  while  the  more  general  function  can  construct semisimple
-elements from arbitrary ring elements (like elements of `K`, `Mvps`,…
+elements from arbitrary ring elements (like elements of `K`, `Mvp`s,…
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)

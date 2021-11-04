@@ -65,7 +65,7 @@ Base.in(::Perm,::PermGroup)
 ```@docs
 Cycs
 conductor
-coefficients(c::Cyc)
+Cycs.coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
 galois
@@ -73,43 +73,12 @@ Quadratic
 Root1
 Cycs.root
 ```
-# Extensions to LaurentPolynomials
+# Extensions to Laurent and Puiseux polynomials
 ```@docs
 FFfac.factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 cyclotomic_polynomial
-```
-# Multivariate (Puiseux) polynomials
-```@docs
-Mvps
-Mvp
-valuation
-degree
-Mvps.degree(::Mvp)
-variables
-Mvps.coefficients(::Mvp,::Symbol)
-Mvps.coefficient
-monomials
-powers
-Base.isless(::Monomial,::Monomial)
-lex
-grlex
-grevlex
-Base.pairs(::Mvp)
-Pol(x::Mvp{T, N} where N) where T
-Pol(p::Mvp{T, N}, var::Symbol) where {T, N}
-Mvps.value
-Mvps.conj
 factor(p::Mvp{T, N}) where {T, N}
-Mvps.derivative
-laurent_denominator
-gcd(::Mvp,::Mvp)
-lcm(::Mvp,::Mvp)
-scalar
-Base.:^(::Mvp, ::AbstractMatrix)
-LaurentPolynomials.Frac(::T) where T<:Mvp
-grobner_basis
-rename_variables
 ```
 # Cyclotomic polynomials
 ```@docs

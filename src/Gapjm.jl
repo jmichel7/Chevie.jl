@@ -83,6 +83,7 @@ using Reexport
 using Requires
 using UsingMerge
 @reexport using LaurentPolynomials
+@reexport using PuiseuxPolynomials
 @reexport using ModuleElts
 
 #--------------------------------------------------------------------------
@@ -94,8 +95,8 @@ include("Util.jl");@reexport using .Util
 include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("Mvps.jl");@usingmerge verbose=true reexport Mvps
 include("Cycs.jl");@usingmerge verbose=true reexport Cycs
+LaurentPolynomials.root(x::Int,n::Int=2)=Cycs.root(x,n)
 #if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
