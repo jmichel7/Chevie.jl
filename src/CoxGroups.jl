@@ -131,7 +131,7 @@ module CoxGroups
 
 export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
-  words
+  words, inversions
 
 export isleftdescent # 'virtual' methods (exist only for concrete types)
 
@@ -153,8 +153,8 @@ julia> firstleftdescent(W,Perm(2,3))
 2
 ```
 """
-function firstleftdescent(W::CoxeterGroup,w)
-  findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)))
+function firstleftdescent(W::CoxeterGroup{T},w)where T
+  findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)::Vector{T}))
 end
 
 """
@@ -173,8 +173,8 @@ julia> leftdescents(W,Perm(1,3))
  2
 ```
 """
-function leftdescents(W::CoxeterGroup,w)
-  filter(i->isleftdescent(W,w,i),eachindex(gens(W)))
+function leftdescents(W::CoxeterGroup{T},w)where T
+  filter(i->isleftdescent(W,w,i),eachindex(gens(W)::Vector{T}))
 end
 
 isrightdescent(W::CoxeterGroup,w,i)=isleftdescent(W,inv(w),i)
@@ -207,13 +207,13 @@ julia> word(W,w)
 The  result  of   `word`  is  the  lexicographically  smallest reduced word
 for~`w` (for the ordering of the Coxeter generators given by `gens(W)`).
 """
-function Groups.word(W::CoxeterGroup,w)
+function Groups.word(W::CoxeterGroup{T},w)where T
   ww=Int[]
   while true
     i=firstleftdescent(W,w)
     if i===nothing return ww end
     push!(ww,i)
-    w=W(i)*w
+    w=(gens(W)::Vector{T})[i]*w
   end
 end
 
@@ -267,7 +267,7 @@ julia> longest(CoxSym(4))
 Perm{UInt8}: (1,4)(2,3)
 ```
 """
-function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
+function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(W)::Vector{T}))where T
   w=one(W)
   i=1
   while i<=length(I)
@@ -617,6 +617,27 @@ function words(W::CoxeterGroup,w)
   reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
 end
 
+"""
+`inversions(W,w)`
+
+Returns  the inversions of the element `w` of the finite Coxeter group `W`,
+that  is, the list of the  indices of reflections `r` of `W` such that
+`l(rw)<l(w)` where `l` is the Coxeter length.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> inversions(W,W(1,2,1))
+3-element Vector{Int64}:
+ 1
+ 2
+ 4
+```
+"""
+inversions(W::CoxeterGroup,w)=filter(x->isleftdescent(W,w,x),1:nref(W))
+# assumes isleftdescent works for all reflections
+
 "diagram of finite Coxeter group"
 PermRoot.Diagram(W::CoxeterGroup)=Diagram.(refltype(W))
 
@@ -759,47 +780,19 @@ end
 
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
-#function PermRoot.reflection_subgroup(W::CoxeterGroup,J)
-#  P=copy(W)
-#  if !issubset(J,1:ngens(W)) || W isa CoxSym
-#    refs=reflections(W,J)
-#    refs=union(orbits(Group(refs),refs))
-#    P.reflections=refs
-#    P.gens=filter(t->count(s->length(W,refs[t]*s)<length(W,refs[t]),refs)==1,
-#     eachindex(refs))
-#    l:=Concatenation(P.gens,setdiff(eachindex(refs),P.gens));
-#    refs=refs[l]
-#    P.rootInclusion=indexin(refs,reflections(W))
-#    SortParallel(P.rootInclusion,P.reflections);
-#    P.nref=length(P.gens)
-#    P.reflectionsLabels:=InclusionGens(P);
-#    P.operations.IsLeftDescending:=function(P,w,i)
-#      return length(P.reflectionParent,P.reflections[i]*w)<
-#             length(P.reflectionParent,w);end;
-#  else
-#    inc:=List(J,x->W.operations.ReflectionFromName(W,x));
-#    refs:=W.reflections{inc};
-#    Inherit(P,Subgroup(W,refs));
-#    P.reflections:=refs;
-#    P.semisimpleRank:=Length(P.reflections);
-#    P.rootInclusion:=W.rootInclusion{inc};
-#    P.reflectionsLabels:=W.reflectionsLabels{inc};
-#    P.operations.IsLeftDescending:=function(P,w,i)
-#      return IsLeftDescending(P.reflectionParent,w,P.rootInclusion[i]);end;
-#    P.cartan:=CartanMat(W){inc}{inc};
-#  fi;
-#  P.rootRestriction:=[];
-#  P.rootRestriction{P.rootInclusion}:=[1..Length(P.rootInclusion)];
-#  if IsBound(W.rank) then P.rank:=W.rank;fi;
-#  if IsBound(W.reflectionParent) then P.reflectionParent:=W.reflectionParent;
-#  else P.reflectionParent:=W;
-#  fi;
-#  P
-#end
+function dyer(W,J) # Dyer's method for reflection subgroups
+  refs=reflections(W)[J]
+  refs=vcat(orbits(Group(refs),refs)...)
+  inc=Int.(indexin(refs,reflections(W)))
+  gens=filter(t->count(s->isrightdescent(W,reflection(W,t),s),inc)==1,inc)
+  gens=sort(gens)
+  (gens=gens,rootinclusion=vcat(gens,sort(setdiff(inc,gens))))
+end
 
 #--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
+  reflections::Vector{Perm{T}}
   n::Int
 end
 
@@ -831,7 +824,9 @@ julia> length.(Ref(W),e)
 ```
 """
 function CoxSym(n::Int)
-  CoxSym(Group(map(i->Perm{UInt8}(i,i+1;degree=n),1:n-1)),n,Dict{Symbol,Any}())
+  gens=map(i->Perm{UInt8}(i,i+1;degree=n),1:n-1)
+  refs=[Perm{UInt8}(i,i+k;degree=n) for k in 1:n-1 for i in 1:n-k]
+  CoxSym(Group(gens),refs,n,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -854,9 +849,11 @@ Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
                                       W,:classreps)
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
-
-PermRoot.nref(W::CoxSym)=div(W.n*(W.n-1),2)
-PermRoot.rank(W::CoxSym)=W.n-1
+PermRoot.nref(W::CoxSym)=length(reflections(W))
+PermRoot.simple_reps(W::CoxSym)=fill(1,nref(W))
+PermRoot.reflection(W::CoxSym,i)=W.reflections[i]
+PermRoot.reflections(W::CoxSym)=W.reflections
+PermRoot.rank(W::CoxSym)=ngens(W)
 
 """
 `isleftdescent(W,w,i)`
@@ -873,15 +870,19 @@ julia> isleftdescent(W,Perm(1,2),1)
 true
 ```
 """
-isleftdescent(W::CoxSym,w,i::Int)=i^w>(i+1)^w
+function isleftdescent(W::CoxSym,w,i::Int)
+ if i<W.n j=i+1
+ else j=largest_moved_point(reflection(W,i))
+      i=smallest_moved_point(reflection(W,i))
+ end
+ i^w>j^w
+end
 
 Gapjm.degrees(W::CoxSym)=2:ngens(W)+1
-
 Base.length(W::CoxSym)=prod(degrees(W))
+PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 
 Base.length(W::CoxSym,w)=count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
-
-PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 
 # for reflection_subgroups note the difference with Chevie:
 # leftdescents, rightdescents, classinfo.classtext, word
@@ -895,19 +896,8 @@ function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I)
     if I!=1:n error(I," should be 1:n for some n") end
   else n=0 end
-  CoxSym(Group(gens(W)[I]),n+1,Dict{Symbol,Any}())
+  CoxSym(n+1)
 end
-
-PermRoot.simple_reps(W::CoxSym)=fill(1,nref(W))
-
-function PermRoot.reflection(W::CoxSym{T},i::Int)where T
-  ref=get!(W,:reflections)do
-    [Perm{T}(i,i+k) for k in 1:W.n-1 for i in 1:W.n-k]
-  end::Vector{Perm{T}}
-  ref[i]
-end
-
-PermRoot.reflections(W::CoxSym)=reflection.(Ref(W),1:nref(W))
 #------------------------ GenCox ------------------------------
 
 @GapObj struct GenCox{T}<:CoxeterGroup{Matrix{T}}

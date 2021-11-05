@@ -185,7 +185,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, FiniteCoxeterGroup, inversions, two_tree, rootdatum, torus,
+export coxgroup, FiniteCoxeterGroup, two_tree, rootdatum, torus,
  dimension, with_inversions, standard_parabolic, describe_involution,
  relative_group, rootlengths, badprimes
 # to use as a stand-alone module uncomment the next line
@@ -451,13 +451,11 @@ abstract type FiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
 coxmat(W::FiniteCoxeterGroup)=coxmat(cartan(W))
 
 """
-`inversions(W,w)`
+`inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
 
-Returns  the inversions of the element `w` of the finite Coxeter group `W`,
-that  is, the list of the  indices of roots of `W`  sent by `w` to negative
-roots.  The element `w` can also be  a word `s₁…sₙ` (a vector of integers),
-in  which  case  the  function  returns  inversions  in  the  order  of the
-reflections `W(s₁), W(s₁,s₂,s₁), …, W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
+Given  a word `w=s₁…sₙ`  (a vector of  integers) representing an element of
+`W`, returns the inversions of `w` in the order of the reflections: `W(s₁),
+W(s₁,s₂,s₁), …, W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -469,19 +467,15 @@ julia> inversions(W,W(1,2,1))
  2
  4
 
-julia> inversions(W,[1,2,1])
+julia> inversions(W,[2,1,2])
 3-element Vector{Int16}:
- 1
- 4
  2
+ 4
+ 1
 ```
 """
-inversions(W::FiniteCoxeterGroup,w)=
-     [i for i in 1:nref(W) if isleftdescent(W,w,i)]
-
-inversions(W::FiniteCoxeterGroup,w::AbstractVector{<:Integer})=
+CoxGroups.inversions(W::FiniteCoxeterGroup,w::AbstractVector{<:Integer})=
    map(i->action(W,w[i],W(w[i-1:-1:1]...)),eachindex(w))
-
 
 """
 `with_inversions(W,N)`
@@ -510,7 +504,7 @@ function with_inversions(W,N)
   w=one(W)
   n=N
   while !isempty(n)
-    p=findfirst(x->x>0 && x<=semisimplerank(W),n)
+    p=findfirst(x->x>0 && x<=ngens(W),n)
     if p===nothing return nothing end
     r=reflection(W,n[p])
     n=action.(Ref(W),setdiff(n,[n[p]]),r)

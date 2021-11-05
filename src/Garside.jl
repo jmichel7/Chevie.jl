@@ -1398,7 +1398,7 @@ struct Category{TO,TM} # TO type of objs TM type of maps
   # atoms[i] is a list of (m=>j): map m from obj[i] to obj[j]
 end
 
-function Base.show(io::IO,C::Category;graph=false)
+function Base.show(io::IO,C::Category)
   print(io,"category with ",length(C.obj)," objects and ",
         sum(length,C.atoms)," generating maps")
   if get(io,:graph,false) println(io);showgraph(io,C) end

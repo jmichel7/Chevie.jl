@@ -81,8 +81,10 @@ julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]/gens(G)[2]
 ```
 """
 function (W::Group)(w::Vararg{Integer,N}where N)
-  isempty(w) ? one(W) : prod((i>0 ? gens(W)[i] : inv(gens(W)[-i])) for i in w)
+  isempty(w) ? one(W) : prod(W(i) for i in w)
 end
+
+(W::Group)(i::Integer)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
 
 "`comm(a,b)` the commutator of `a` and `b`"
 comm(a,b)=inv(a)*inv(b)*a*b
