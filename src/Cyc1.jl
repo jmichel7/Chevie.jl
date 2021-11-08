@@ -180,6 +180,79 @@ using ..Util: format_coefficient, bracket_if_needed, stringexp, stringind,
 #using ..Combinat: constant
 constant(a)=isempty(a) || all(==(first(a)),a)
 
+#------------------------ type Root1 ----------------------------------
+struct Root1 <: Number # E(c,n)
+  r::Rational{Int}
+end
+
+E(c,n=1)=Root1(mod(n,c)//c)
+
+conductor(a::Root1)=denominator(a.r)
+Base.exponent(a::Root1)=numerator(a.r)
+
+Root1(;r=0)=E(denominator(r),numerator(r)) # does a mod1
+
+function Root1(c::Real)
+  if c==1 Root1(1,0)
+  elseif c==-1 Root1(2,1)
+  else nothing
+  end
+end
+
+Base.broadcastable(r::Root1)=Ref(r)
+
+function Base.show(io::IO, ::MIME"text/plain", r::Root1)
+  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
+  show(io,r)
+end
+
+function Base.show(io::IO, r::Root1)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  d=exponent(r)
+  c=conductor(r)
+  if repl || TeX
+    if c==1 print(io,"1")
+    elseif c==2 print(io,"-1")
+    else r=(TeX ? "\\zeta" : "ζ")*stringind(io,c)
+      if d>=1 r*=stringexp(io,d) end
+      print(io,r)
+    end
+  else
+    print(io,"Root1($c,$d)")
+  end
+end
+
+function Base.cmp(a::Root1,b::Root1)
+  r=cmp(conductor(a),conductor(b))
+  if !iszero(r) return r end
+  cmp(exponent(a),exponent(b))
+end
+
+Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
+Base.:(==)(a::Root1,b::Root1)=a.r==b.r
+Base.one(a::Root1)=Root1(0//1)
+Base.isone(a::Root1)=iszero(a.r)
+Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
+
+Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
+function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
+  n=denominator(r)
+  d=conductor(a)
+  j=1
+  while true
+    k=gcd(n,d)
+    n=div(n,k)
+    j*=k
+    if k==1 break end
+  end
+  Root1(;r=numerator(r)*exponent(a)*gcdx(n,d)[2]//(j*d))
+end
+Base.inv(a::Root1)=Root1(;r=-a.r)
+Base.conj(a::Root1)=inv(a)
+Base.:/(a::Root1,b::Root1)=a*inv(b)
+
+#------------------------ type Cyc ----------------------------------
 const use_list=false # I tried two different implementations. 
                      # The ModuleElt is twice the speed of the list one
 if use_list
@@ -336,16 +409,13 @@ Cyc(i::Real)=Cyc(1,[i])
 else
 Cyc(i::Real)=Cyc(1,MM(0=>i)) # check is true for i==0
 end
-const E_dict=Dict((1,0)=>Cyc(1))
-"""
-  E(n::Integer,k::Integer=1) is exp(2i k π/n)
-"""
-function E(n,i=1)
-  n=Int(n);i=Int(i);i=mod(i,n)
-  get!(E_dict,(n,i)) do
-    r=i//n
-    n=denominator(r)
-    i=numerator(r)
+
+const E_dict=Dict(0//1=>Cyc(1))
+
+function Cyc(a::Root1)
+  get!(E_dict,a.r) do
+    n=denominator(a.r)
+    i=numerator(a.r)
     if n%4==2 return -E(div(n,2),div(i,2)+div(n+2,4)) end
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
 if use_list
@@ -357,7 +427,7 @@ end
   end
 end
 
-E(;r)=E(denominator(r),numerator(r))
+Cyc{T}(a::Root1) where T=Cyc{T}(Cyc(a))
 
 if use_list
 Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
@@ -829,50 +899,6 @@ Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 
 Base.abs(c::Cyc)=c*conj(c)
 
-#------------------------ type Root1 ----------------------------------
-struct Root1 <: Number # E(c,n)
-  r::Rational{Int}
-  Root1(c::Int,n::Int)=new(mod(n,c)//c)
-end
-
-Cycs.conductor(a::Root1)=denominator(a.r)
-Base.exponent(a::Root1)=numerator(a.r)
-
-Root1(;r=0)=Root1(denominator(r),numerator(r)) # does a mod1
-Cyc(a::Root1)=E(;r=a.r)::Cyc{Int}
-Cyc{T}(a::Root1) where T=Cyc{T}(E(;r=a.r))
-
-function Root1(c::Real)
-  if c==1 Root1(1,0)
-  elseif c==-1 Root1(2,1)
-  else nothing
-  end
-end
-
-Base.broadcastable(r::Root1)=Ref(r)
-
-function Base.show(io::IO, ::MIME"text/plain", r::Root1)
-  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
-  show(io,r)
-end
-
-function Base.show(io::IO, r::Root1)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  d=exponent(r)
-  c=conductor(r)
-  if repl || TeX
-    if c==1 print(io,"1")
-    elseif c==2 print(io,"-1")
-    else r=(TeX ? "\\zeta" : "ζ")*stringind(io,c)
-      if d>=1 r*=stringexp(io,d) end
-      print(io,r)
-    end
-  else
-    print(io,"Root1($c,$d)")
-  end
-end
-
 """
 `Root1(c)`
     
@@ -907,44 +933,17 @@ else
   end
 end
   for i in prime_residues(c.n)
-    if c==E(c.n,i) return Root1(c.n,i) end
-    if -c==E(c.n,i) 
-      if c.n%2==0 return Root1(c.n,div(c.n,2)+i)
-      else return Root1(2*c.n,c.n+2*i)
+    if c==E(c.n,i) return Root1(i//c.n) end
+    if -c==E(c.n,i)
+      if c.n%2==0 return Root1(;r=(div(c.n,2)+i)//c.n)
+      else return Root1(;r=(c.n+2*i)//(2*c.n))
       end
     end
   end
   # return nothing
 end
 
-function Base.cmp(a::Root1,b::Root1)
-  r=cmp(conductor(a),conductor(b))
-  if !iszero(r) return r end
-  cmp(exponent(a),exponent(b))
-end
-
-Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
-Base.:(==)(a::Root1,b::Root1)=a.r==b.r
-Base.one(a::Root1)=Root1(1,0)
-Base.isone(a::Root1)=iszero(a.r)
-Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
-Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
-function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
-  n=denominator(r)
-  d=conductor(a)
-  j=1
-  while true
-    k=gcd(n,d)
-    n=div(n,k)
-    j*=k
-    if k==1 break end
-  end
-  Root1(j*d,numerator(r)*exponent(a)*gcdx(n,d)[2])
-end
-Base.inv(a::Root1)=Root1(;r=-a.r)
-Base.conj(a::Root1)=inv(a)
-Base.:/(a::Root1,b::Root1)=a*inv(b)
-
+Base.:(==)(a::Root1,b::Number)=Cyc(a)==b
 if !use_list # optimize special case
 function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
@@ -957,6 +956,9 @@ end
 Base.:*(b::Root1,a::Cyc)=a*b
 end
 
+Base.:+(a::Root1,b::Root1)=Cyc(a)+Cyc(b)
+Base.:-(a::Root1,b::Root1)=Cyc(a)-Cyc(b)
+Base.:-(r::Root1)=-Cyc(r)
 Base.promote_rule(a::Type{Root1},b::Type{Cyc{T}}) where T =b
 Base.promote_rule(a::Type{Root1},b::Type{<:Integer})=Cyc{b}
 Base.promote_rule(a::Type{Root1},b::Type{<:Rational})=Cyc{b}

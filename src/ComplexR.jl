@@ -176,7 +176,7 @@ julia> degrees(HF)
 """
 function Gapjm.degrees(W::Spets)
   get!(W,:degrees)do
-    vcat(map(x->(1,x),E.(torusfactors(W))),degrees.(refltype(W))...)
+   vcat(map(x->(1,Cyc(x)::Cyc{Int}),torusfactors(W)),degrees.(refltype(W))...)
   end
 end
 
@@ -263,7 +263,7 @@ end
 
 function codegrees(W::Spets)
   get!(W,:codegrees)do
-    vcat(map(x->(-1,x),E.(inv.(torusfactors(W)))),
+    vcat(map(x->(-1,x),Cyc.(inv.(torusfactors(W)))),
          collect.(codegrees.(refltype(W)))...)
   end
 end

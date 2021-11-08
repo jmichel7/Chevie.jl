@@ -32,9 +32,9 @@ The variable name in a `CycPol` is set by default to the same as for `LaurentPol
 
 `.v`: a list of pairs `r=>m` of a root of unity `r` and a multiplicity `m`.
 Here `r` is a `Root1`, internally a fraction `n//e` with `n<e` representing
-`E(r)=E(e,n)`.
+`Cyc(r)=E(e,n)`.
 
-So `CycPol(c,val,v)` represents `c*q^val*prod((q-E(r))^m for (r,m) in v)`.
+So `CycPol(c,val,v)` represents `c*q^val*prod((q-Cyc(r))^m for (r,m) in v)`.
 
 When   showing,  some  factors  of   the  cyclotomic  polynomial  `Φₙ`  are
 represented.  If `n` has a primitive root  `ξ`, `ϕ′ₙ` is the product of the
@@ -148,6 +148,7 @@ function roots(c::CycPol)
     if m<0 error("should be a true polynomial") end
     fill(e,m)
   end
+  if isempty(c.v) return Root1[] end
   vcat([f(e,m) for (e,m) in c.v]...)
 end
 
@@ -301,7 +302,7 @@ function Base.show(io::IO,a::CycPol)
       if e.no>0  print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
         print(io,stringprime(io,e.no-1))
         print(io,stringind(io,e.conductor))
-      else print(io,"(",Pol([-E(e[1])^-e.no,1],0),")")
+      else print(io,"(",Pol([-E(e[1],-e.no),1],0),")")
       end
       if pow!=1 print(io,stringexp(io,pow)) end
     end
@@ -341,7 +342,7 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
   sort(p,by=x->x/length(divisors(x)))
 end
 
-# next function is twice the speed of p(E(x))
+# next function is twice the speed of p(Cyc(x))
 (p::Pol)(x::Root1)=sum(map(*,p.c,x.^(p.v:degree(p))))
   
 """
@@ -491,7 +492,7 @@ function descent_of_scalars(p::CycPol,n)
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:n-1).+r.r)/n) for (r,pow) in p.v)...)
   else
     valuation+=n*sum(values(p.v))
-    coeff=p.coeff*(-1)^sum(values(p.v))*E(prod(r^p for (r,p) in p.v))
+    coeff=p.coeff*(-1)^sum(values(p.v))*Cyc(prod(r^p for (r,p) in p.v))
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:-n-1).-r.r)/-n) for (r,pow) in p.v)...)
   end
   CycPol(coeff,valuation,ModuleElt(vcyc))

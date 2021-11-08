@@ -1093,7 +1093,7 @@ function PermRoot.refltype(WF::PRC)
           end
         end
         end
-        push!(scalar,E(scal))
+        push!(scalar,Cyc(scal))
       end
       to.scalar=scalar
       to

@@ -175,7 +175,7 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
     res
   end
   labels=map(joindigits, orbits(WF.phi, inclusion(W,1:nref(W))))
-  good=map(p->E(prod(i->t^roots(W,i),p[1]))*Cso(WF)[p[1][1]]==1,Rs)
+  good=map(p->Cyc(prod(i->t^roots(W,i),p[1]))*Cso(WF)[p[1][1]]==1,Rs)
   Rs=Rs[good]
   labels=labels[good]
   cRs=map(x->x[3], Rs)

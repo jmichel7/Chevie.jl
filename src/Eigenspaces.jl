@@ -98,7 +98,7 @@ relative_degrees(W,d::Integer)=relative_degrees(W,Root1(d,1))
 relative_degrees(W,d::Rational)=relative_degrees(W,Root1(;r=d))
 relative_degrees(W,d::Root1)=filter(x->isone(d^x),degrees(W))
 relative_degrees(W)=relative_degrees(W,Root1(1,0))
-relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if E(z)^d==f]
+relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if Cyc(z)^d==f]
 
 """
 `regular_eigenvalues(W)`
@@ -215,10 +215,10 @@ eigenspace_projector(W,w,d::Integer=1)=eigenspace_projector(W,w,Root1(d,1))
 eigenspace_projector(W,w,d::Rational)=eigenspace_projector(W,w,Root1(;r=d))
 function eigenspace_projector(W,w,d::Root1)
   c=refleigen(W)[position_class(W,w)]
-  c=E.(filter(x->x!=d,c))
+  c=Cyc.(filter(x->x!=d,c))
   f=reflrep(W,w)
   if length(c)==0 one(f)
-  else prod(x->f-one(f)*x,c)//prod(x->E(d)-x,c)
+  else prod(x->f-one(f)*x,c)//prod(x->Cyc(d)-x,c)
   end
 end
 
@@ -243,7 +243,7 @@ function relative_root(W,L,i)
     r=reflection(m)
     if r===nothing error("This should not happen") end
 #   println("rc=$rc")
-    if E(r.eig)==E(d)
+    if Cyc(r.eig)==E(d)
       rc=filter(c->central_action(L,reflrep(L,c))==m,classreps(N))
 #     println("rc=$rc")
       c=unique!(sort(map(x->position_class(W,x),rc)))
@@ -337,7 +337,7 @@ function split_levis(WF,d::Root1,ad)
     w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
     else m=reflrep(WF,w)
-      V=lnullspace(m-E(d)*one(m))
+      V=lnullspace(m-Cyc(d)*one(m))
     end
     I=refs[map(m->V==V*m, mats)]
 #   println("I=$I\nphi=",w/WF.phi)

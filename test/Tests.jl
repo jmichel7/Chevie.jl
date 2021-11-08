@@ -828,7 +828,7 @@ function EigenAndDegHecke(s)
   FractionToRoot(x)=E(denominator(x),numerator(x))
   H=hecke(s)
   d=s.d
-  zeta=E(d)
+  zeta=Cyc(d)
   W=H.W
   ct=CharTable(H).irr
   ct1=CharTable(W).irr
@@ -851,7 +851,7 @@ function EigenAndDegHecke(s)
   ss=CycPol.(schur_elements(H)^p)
   ss=map(x->s.degree/x,ss)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
-  zeta=E(Root1(;r=d1)^frac[PositionId(W)])
+  zeta=Cyc(Root1(;r=d1)^frac[PositionId(W)])
   if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
     omegachi=map(i->Root1(;r=s.d*s.e*s.delta*
               ((i-1)/s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
@@ -990,7 +990,7 @@ function reflectiondegrees(W::Spets)
   mul=searchdeg(e,length(W),sort(degrees(Group(W)),rev=true))
   e=unique(sort(sort.(mul)))
 #  @show mul
-  map(x->(x[1],E(x[2])),only(e))
+  map(x->(x[1],cyc(x[2])),only(e))
 end
 
 function Tdegrees(W)

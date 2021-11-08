@@ -815,7 +815,7 @@ end
 #  .projector   .element-equivariant projector on V_ζ
 function projector(s)
   get!(s,:projector)do
-    ad=count(x->x==(1,E(s.d)), degrees(s.levi))
+    ad=count(x->x==(1,Cyc(s.d)), degrees(s.levi))
     q=minimum(map(x->count(==(s.d),x),refleigen(s.levi)))
     if q!=ad error("bad start") end
     q=findall(x->count(==(s.d),x)==q,refleigen(s.levi))
@@ -858,16 +858,16 @@ function canfromdeg(s::Series)
   cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
   cand=filter(c->positive(c[:sch]),cand)
   q=Mvp(:q)
-  ad=CycPol(Pol()-E(s.d))^ad
+  ad=CycPol(Pol()-Cyc(s.d))^ad
   f=degree(s)//ad
   if !positive(f)
     ChevieErr(s, " cuspidal is not\n")
     return nothing
   end
-  v=f(E(s.d))
+  v=f(Cyc(s.d))
   filter(cand)do c
     c[:span]=degree(c[:sch])-valuation(c[:sch])
-    f=sum(x->x^2,WGLdims(s))*(ud[c[:charNumbers]]//ad)(E(s.d))//v
+    f=sum(x->x^2,WGLdims(s))*(ud[c[:charNumbers]]//ad)(Cyc(s.d))//v
     if !isinteger(f) return false end
     f=Int(f)
     if !(abs(f) in WGLdims(s)) return false end
@@ -995,9 +995,9 @@ function paramcyclic(s::Series)
   s.delta=lcm(map(x->conductor(Root1(x[2])),
                          filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
-  param(j,i)=Mvp(:q)^mC(s)[j]*E(Root1(;r=rr(j,i)))
+  param(j,i)=Mvp(:q)^mC(s)[j]*E(;r=rr(j,i))
   # parameters of Hecke algebra are map(i->param(i,i),1:e(s))
-  mmp=FitParameter(ennola_twist.(Schur,E(s.d)),
+  mmp=FitParameter(ennola_twist.(Schur,Cyc(s.d)),
                    COMPACTCOHOMOLOGY ? mC(s) : -mC(s))
 # possible perms encoded by mmp[i][1]->mmp[i][2]
   nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets)[:positionId]]
@@ -1011,7 +1011,7 @@ function paramcyclic(s::Series)
   end
   series=map(x->findfirst(y->x in y[:charNumbers],uc.harishChandra),char_numbers(s))
   unique=filter(p->length(p[1])==1,mmp)
-  ratio=map(p->s.eigen[p[1][1]]//E(predeigen(p[1][1], p[2][1])), unique)
+  ratio=map(p->s.eigen[p[1][1]]//Cyc(predeigen(p[1][1], p[2][1])), unique)
   if length(Set(ratio))>1
     ChevieErr(s, " eigenvalue ratios==", ratio, "\n")
     return nothing
@@ -1033,7 +1033,7 @@ function paramcyclic(s::Series)
   j=1
   for i in mmp
     a=arrangements(i[2], length(i[2]))
-    p=findall(A->s.eigen[i[1]]==map(j->E(predeigen(i[1][1],j)),A),a)
+    p=findall(A->s.eigen[i[1]]==map(j->Cyc(predeigen(i[1][1],j)),A),a)
     if isempty(p)
       ChevieErr(s, "predicted eigenvalues cannot match actual\n")
       return nothing
@@ -1054,7 +1054,7 @@ function paramcyclic(s::Series)
     setproperty!(s,i,getproperty(s,i)^p)
   end
   s.translation=filter(t->
-       s.eigen==map(i->E(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
+       s.eigen==map(i->Cyc(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
   if length(s.translation)==1 delete!(s.prop,:translation)
   else
     p=s.translation[2]
@@ -1116,7 +1116,7 @@ function getHecke(s)
     s1=Series(g, l, c, (s.d/scal).r;NC=true)
     p=getHecke(s1)
     if !isnothing(p)
-      p=map(x->x(q=inv(E(scal))*Mvp(:q)),p)
+      p=map(x->x(q=inv(Cyc(scal))*Mvp(:q)),p)
     end
     return p
   else
@@ -1202,7 +1202,7 @@ function RelativeSeries(s)
   end
   u1=map(x->degree(s)//CycPol(x), u1)
   degcusp=Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
-  ud=map(x->x*sign(Int((x//degcusp)(E(s.d)))), 
+  ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))), 
                 Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)])
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues
