@@ -990,12 +990,11 @@ function paramcyclic(s::Series)
   Schur=Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)]
   Schur=map(x->degree(s)//Schur[x]*eps(s)[x],1:e(s))
   s.eigen=Uch.eigen(uc)[char_numbers(s)]
-  LFrob=Root1(Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal])
+  LFrob=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   m=degrees(Group(s.spets))
-  s.delta=lcm(map(x->conductor(Root1(x[2])),
-                         filter(x->x[1]!=1,degrees(s.spets))))
+  s.delta=lcm(map(x->conductor(x[2]),filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
-  param(j,i)=Mvp(:q)^mC(s)[j]*E(;r=rr(j,i))
+  param(j,i)=Mvp(:q)^mC(s)[j]*Root1(;r=rr(j,i))
   # parameters of Hecke algebra are map(i->param(i,i),1:e(s))
   mmp=FitParameter(ennola_twist.(Schur,Cyc(s.d)),
                    COMPACTCOHOMOLOGY ? mC(s) : -mC(s))

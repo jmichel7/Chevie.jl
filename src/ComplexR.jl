@@ -12,7 +12,7 @@ function PermRoot.coroots(t::TypeIrred)
     if isnothing(cr)
       r=getchev(t,:GeneratingRoots)
       cr=map(coroot,r,
-               map(x->E(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
+            map(x->Root1(;r=x),getchev(t,:EigenvaluesGeneratingReflections)))
     end
     return map(x->convert.(Cyc{Rational{Int}},x),cr)
   end

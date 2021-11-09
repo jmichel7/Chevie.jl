@@ -8,7 +8,7 @@ chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
 chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
   function(t)
     r=chevieget(t,:GeneratingRoots)
-    eig=map(x->E(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
+    eig=map(x->Root1(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
     toL(toM(coroot.(r,eig))*permutedims(toM(r)))
   end)
 

@@ -1066,7 +1066,7 @@ function PermRoot.refltype(WF::PRC)
           i=inclusion(sub)[1]
           v=Root1(ratio(prr[i.^zg],prr[i]))
           zg^=invmod(exponent(v),conductor(v)) # distinguished
-          v=scal.*Root1.(z,0:z-1)
+          v=scal.*E.(z,0:z-1)
           m=argmin(conductor.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
           WF.F=reflrep(Group(WF),WF.phi)

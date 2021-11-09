@@ -676,7 +676,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
     m=hcat(m,map(x->stringsymbol(io,x[1]),uc.charSymbols))
   else m=hcat(m,fill("",length(uc)))
   end
-  m=hcat(m,repr.(Root1.(eigen(uc)); context=io))
+  m=hcat(m,repr.(eigen(uc); context=io))
   m=hcat(m,fromTeX.(Ref(io),labels(uc)))
   row_labels=charnames(io,uc)
   if get(io,:byfamily,false)
@@ -777,7 +777,7 @@ function CycPoldegrees(uc::UnipotentCharacters)
 end
 
 function Families.eigen(ff::Vector{Family})
-  eig=fill(E(1),sum(length,ff))
+  eig=fill(Cyc(1),sum(length,ff))
   for f in ff eig[f.charNumbers]=eigen(f) end
   eig
 end
@@ -1235,7 +1235,7 @@ function Cosets.Frobenius(x::UniChar, phi)
   UniChar(W,x.v^inv(on_unipotents(W,phi)))
 end
 
-cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,Root1(d,1))
+cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,E(d))
 cuspidal(uc::UnipotentCharacters,d::Rational)=cuspidal(uc,Root1(;r=d))
 """
 `cuspidal(uc::UnipotentCharacters[,e])`
@@ -1325,7 +1325,7 @@ julia> cuspidal_data(ComplexReflectionGroup(4),3)
  (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)
 ```
 """
-cuspidal_data(W,d::Integer,ad)=cuspidal_data(W,Root1(d,1),ad)
+cuspidal_data(W,d::Integer,ad)=cuspidal_data(W,E(d),ad)
 cuspidal_data(W,d::Rational,ad)=cuspidal_data(W,Root1(;r=d),ad)
 cuspidal_data(W,d::Root1,ad)=[(levi=L,cuspidal=char,d=d) 
                         for L in split_levis(W, d, ad) 

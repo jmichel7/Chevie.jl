@@ -164,7 +164,7 @@ Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 LaurentPolynomials.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
 LaurentPolynomials.valuation(a::CycPol)=a.valuation
 LaurentPolynomials.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-LaurentPolynomials.valuation(a::CycPol,d::Integer)=valuation(a,Root1(d,1))
+LaurentPolynomials.valuation(a::CycPol,d::Integer)=valuation(a,E(d))
 LaurentPolynomials.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
@@ -379,7 +379,7 @@ function CycPol(p::Pol{T};trace=false)where T
     while true
       np,r=LaurentPolynomials.pseudodiv(p,cyclotomic_polynomial(c))
       if iszero(r) 
-        append!(vcyc,[Root1(c,j)=>1 for j in (c==1 ? [1] : prime_residues(c))])
+        append!(vcyc,[E(c,j)=>1 for j in (c==1 ? [0] : prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
         if trace print("(d°$(degree(p))c$(conductor(p.c)))") end
         found=true
@@ -395,11 +395,11 @@ function CycPol(p::Pol{T};trace=false)where T
     found=false
     to_test=prime_residues(i)
     while true 
-      to_test=filter(r->iszero(p(Root1(i,r))),to_test)
+      to_test=filter(r->iszero(p(E(i,r))),to_test)
       if isempty(to_test) return found end
       found=true
       p=LaurentPolynomials.pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
-      append!(vcyc,Root1.(i,to_test).=>1)
+      append!(vcyc,E.(i,to_test).=>1)
       if trace print("[d°$(degree(p))c$(conductor(p.c))]") end
       if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
     end

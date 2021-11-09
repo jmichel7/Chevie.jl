@@ -414,8 +414,8 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   g.charSymbols=combinations(0:e-1,n)
   g.charLabels=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s), 
                            "\\!\\wedge\\!"), g.charSymbols)
-  if iszero(e%2) g.eigenvalues=E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1)
-  else           g.eigenvalues=E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1)
+  if iszero(e%2) g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1))
+  else           g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1))
   end
   diag(m)=map(i->m[i,i],axes(m,1))
   g.eigenvalues=diag(exterior_power(cat(g.eigenvalues...;dims=(1,2)),n))

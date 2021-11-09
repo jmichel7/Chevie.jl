@@ -145,6 +145,7 @@ best_type(x::Cyc{T}) where T<:Integer=x.n==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
 best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
+best_type(p::Root1)=(p==1 || p==-1) ? Int : Root1
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}

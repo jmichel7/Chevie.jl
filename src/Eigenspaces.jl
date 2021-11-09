@@ -94,10 +94,10 @@ julia> relative_degrees(W,4)
  24
 ```
 """
-relative_degrees(W,d::Integer)=relative_degrees(W,Root1(d,1))
+relative_degrees(W,d::Integer)=relative_degrees(W,E(d))
 relative_degrees(W,d::Rational)=relative_degrees(W,Root1(;r=d))
 relative_degrees(W,d::Root1)=filter(x->isone(d^x),degrees(W))
-relative_degrees(W)=relative_degrees(W,Root1(1,0))
+relative_degrees(W)=relative_degrees(W,E(1))
 relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if Cyc(z)^d==f]
 
 """
@@ -176,9 +176,9 @@ julia> position_regular_class(L,7//12)
 2
 ```
 """
-position_regular_class(W,d::Integer)=position_regular_class(W,Root1(d,1))
+position_regular_class(W,d::Integer)=position_regular_class(W,E(d,1))
 position_regular_class(W,d::Rational)=position_regular_class(W,Root1(;r=d))
-function position_regular_class(W,d::Root1=Root1(1,0))
+function position_regular_class(W,d::Root1=E(1))
   drank=length(relative_degrees(W,d))
   if drank==0 return nothing end
   return findfirst(x->count(==(d),x)==drank,refleigen(W))
@@ -211,7 +211,7 @@ julia> GLinearAlgebra.rank(p)
 
 ```
 """
-eigenspace_projector(W,w,d::Integer=1)=eigenspace_projector(W,w,Root1(d,1))
+eigenspace_projector(W,w,d::Integer=1)=eigenspace_projector(W,w,E(d))
 eigenspace_projector(W,w,d::Rational)=eigenspace_projector(W,w,Root1(;r=d))
 function eigenspace_projector(W,w,d::Root1)
   c=refleigen(W)[position_class(W,w)]
@@ -322,7 +322,7 @@ julia> split_levis(ComplexReflectionGroup(5))
 """
 split_levis(W,d=Root1(1))=[L for ad in 0:length(relative_degrees(W,d))
                              for L in split_levis(W,d,ad)]
-split_levis(W,d::Integer,ad)=split_levis(W,Root1(d,1),ad)
+split_levis(W,d::Integer,ad)=split_levis(W,E(d),ad)
 split_levis(W,d::Rational,ad)=split_levis(W,Root1(;r=d),ad)
 function split_levis(WF,d::Root1,ad)
   if WF isa Spets W=WF.W

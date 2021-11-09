@@ -52,8 +52,8 @@ ConcatenationString(s...)=prod(s)
 CoxeterGroup()=coxgroup()
 function DiagonalMat(v...)
   arg=map(v)do m
-    if m isa Array toM(m)
-    else hcat(m)
+    if m isa Array 0 .+toM(m)
+    else 0 .+hcat(m)
     end
   end
   R=cat(arg...;dims=(1,2))
@@ -177,6 +177,7 @@ GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Rational,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Mvp,n::Number=2,msg...)=root(x,n)
+GetRoot(x::Root1,n::Number=2,msg...)=root(x,n)
 function GetRoot(x,n::Number=2,msg...)
   error("GetRoot($x,$n) not implemented")
 end

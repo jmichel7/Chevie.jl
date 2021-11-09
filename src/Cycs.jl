@@ -29,11 +29,16 @@ BigInt  which is  small to  an Int,  etc… This  is a tremendously important
 optimization  but because of type stability in Julia it needs a new type of
 number to be added to Julia, which I am not competent enough to try.
 
-The main way to build a Cyclotomic number is to use the function `E(n,k=1)`
-which constructs ζₙᵏ.
+We define two types in this package: `Root1`represents a root of unity, and
+`Cyc` a cyclotomic numer (a sum of roots of unity). The main way to build a
+Cyclotomic  number is to  use the function  `E(n,k=1)` which constructs the
+root of unity ζₙᵏ, and to make linear combinations of such numbers.
 
 # Examples
 ```julia-repl
+julia> E(3,2) # a root of unity
+Root1: ζ₃²
+
 julia> E(3)+E(4) # nice display at the repl
 Cyc{Int64}: ζ₁₂⁴-ζ₁₂⁷-ζ₁₂¹¹
 ```
@@ -82,31 +87,24 @@ julia> Rational{Int}(real(E(3)))
 
 julia> imag(E(3))  # imaginary part
 Cyc{Rational{Int64}}: √-3/2
-```
 
-This package offers another type than `Cyc`, the type `Root1` designed to deal 
-very efficiently with roots of unity and their multiplication.
-
-```julia-repl
-julia> c=E(9)   # an effect of the Zumbroich basis
+julia> c=Cyc(E(9))   # an effect of the Zumbroich basis
 Cyc{Int64}: -ζ₉⁴-ζ₉⁷
 
-julia> Root1(c) # you can decide whether a Cyc is a root of unity
+julia> Root1(c) # you can convert back to Root1 if possible
 Root1: ζ₉
 
 julia> Root1(1+E(4)) # the constructor returns nothing for a non-root
+```
 
-julia> Root1(4,1) # `Root1(c,p)` returns the root `E(c,p)`
+Th group of roots of unity is isomorphic to ℚ /ℤ , thus `Root1` are represented internally by a rational number in `[0,1[`.
+
+```julia-repl
+julia> Root1(;r=1//4) # this contructor checks the fraction is in [0,1[
 Root1: ζ₄
 
-julia> Root1(;r=1//4) # another way using that roots of unity are isomorphic to ℚ /ℤ
-Root1: ζ₄
-
-julia> c=Root1(4,1)*Root1(3,1) # faster computation for roots of unity
+julia> c=E(4)*E(3) # faster computation for roots of unity
 Root1: ζ₁₂⁷
-
-julia> Cyc(c) # convert back to Cyc
-Cyc{Int64}: ζ₁₂⁷
 
 julia> c=Complex{Float64}(E(3))  # convert to Complex{float} is sometimes useful
 -0.4999999999999999 + 0.8660254037844387im
@@ -160,8 +158,8 @@ julia> function testmat(p)
        end
 testmat (generic function with 1 method)
 
-julia> @btime Cycs.testmat(12)^2;
-  346.079 ms (4367402 allocations: 366.17 MiB)
+julia> @btime Cycs.testmat(12)^2;  # on Julia 1.6
+  334.698 ms (4042392 allocations: 337.99 MiB)
 ```
 The equivalent in GAP:
 
@@ -180,6 +178,83 @@ using ..Util: format_coefficient, bracket_if_needed, stringexp, stringind,
 #using ..Combinat: constant
 constant(a)=isempty(a) || all(==(first(a)),a)
 
+#------------------------ type Root1 ----------------------------------
+struct Root1 <: Number # E(c,n)
+  r::Rational{Int}
+  global Root1_(x)=new(x)
+end
+
+E(c,n=1)=Root1_(mod(Int(n),Int(c))//Int(c))
+
+conductor(a::Root1)=denominator(a.r)
+Base.exponent(a::Root1)=numerator(a.r)
+
+Root1(;r=0)=E(denominator(r),numerator(r)) # does a mod1
+
+function Root1(c::Real)
+  if c==1 Root1_(0//1)
+  elseif c==-1 Root1_(1//2)
+  else nothing
+  end
+end
+
+Base.broadcastable(r::Root1)=Ref(r)
+
+function Base.show(io::IO, ::MIME"text/plain", r::Root1)
+  if !haskey(io,:typeinfo) print(io,"Root1: ") end
+  show(io,r)
+end
+
+function Base.show(io::IO, r::Root1)
+  repl=get(io,:limit,false)
+  TeX=get(io,:TeX,false)
+  d=exponent(r)
+  c=conductor(r)
+  if repl || TeX
+    if c==1 print(io,"1")
+    elseif c==2 print(io,"-1")
+    else r=(TeX ? "\\zeta" : "ζ")*stringind(io,c)
+      if d>=1 r*=stringexp(io,d) end
+      print(io,r)
+    end
+  else
+    print(io,d==1 ? "E($c)" : "E($c,$d)")
+  end
+end
+
+function Base.cmp(a::Root1,b::Root1)
+  r=cmp(conductor(a),conductor(b))
+  if !iszero(r) return r end
+  cmp(exponent(a),exponent(b))
+end
+
+Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
+Base.isless(c::Root1,d::Real)=Cyc(c)<Cyc(d)
+Base.isless(d::Real,c::Root1)=Cyc(d)<Cyc(c)
+Base.:(==)(a::Root1,b::Root1)=a.r==b.r
+Base.one(a::Root1)=Root1_(0//1)
+Base.zero(a::Root1)=zero(Cyc{Int})
+Base.isone(a::Root1)=iszero(a.r)
+Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
+
+Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
+function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
+  n=denominator(r)
+  d=conductor(a)
+  j=1
+  while true
+    k=gcd(n,d)
+    n=div(n,k)
+    j*=k
+    if k==1 break end
+  end
+  Root1(;r=numerator(r)*exponent(a)*gcdx(n,d)[2]//(j*d))
+end
+Base.inv(a::Root1)=Root1(;r=-a.r)
+Base.conj(a::Root1)=inv(a)
+Base.:/(a::Root1,b::Root1)=a*inv(b)
+
+#------------------------ type Cyc ----------------------------------
 const use_list=false # I tried two different implementations. 
                      # The ModuleElt is twice the speed of the list one
 if use_list
@@ -249,7 +324,7 @@ for  a cyclotomic `c` of conductor `n`,  returns a vector `v` of length `n`
 such that `c==∑ᵢ vᵢ₋₁ ζⁱ`.
 
 ```julia-repl
-julia> coefficients(E(9))
+julia> coefficients(Cyc(E(9)))
 9-element Vector{Int64}:
   0
   0
@@ -336,16 +411,13 @@ Cyc(i::Real)=Cyc(1,[i])
 else
 Cyc(i::Real)=Cyc(1,MM(0=>i)) # check is true for i==0
 end
-const E_dict=Dict((1,0)=>Cyc(1))
-"""
-  E(n::Integer,k::Integer=1) is exp(2i k π/n)
-"""
-function E(n,i=1)
-  n=Int(n);i=Int(i);i=mod(i,n)
-  get!(E_dict,(n,i)) do
-    r=i//n
-    n=denominator(r)
-    i=numerator(r)
+
+const E_dict=Dict(0//1=>Cyc(1))
+
+function Cyc(a::Root1)
+  get!(E_dict,a.r) do
+    n=denominator(a.r)
+    i=numerator(a.r)
     if n%4==2 return -E(div(n,2),div(i,2)+div(n+2,4)) end
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
 if use_list
@@ -357,7 +429,7 @@ end
   end
 end
 
-E(;r)=E(denominator(r),numerator(r))
+Cyc{T}(a::Root1) where T=Cyc{T}(Cyc(a))
 
 if use_list
 Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
@@ -415,6 +487,8 @@ function (::Type{T})(c::Cyc)where T<:AbstractFloat
   real(convert(Complex{T},c;check=true))
 end
 
+(::Type{T})(a::Root1) where T<:Number = T(Cyc(a))
+
 function Complex{T}(c::Cyc)where T<:AbstractFloat
 if use_list
   sum(x->x[2]*cispi(2*T(x[1])/c.n), zip(zumbroich_basis(c.n),c.d))
@@ -441,9 +515,12 @@ end
   throw(InexactError(:convert,Complex{T},c))
 end
 
+Complex{T}(a::Root1) where T=Complex{T}(Cyc(a))
 Base.complex(c::Cyc{T}) where T =(c.n==1||c.n==4) ? Complex{T}(c) : Complex{float(T)}(c)
+Base.complex(a::Root1)=complex(Cyc(a))
 
 Base.isinteger(c::Cyc)=c.n==1 && isinteger(num(c))
+Base.isinteger(a::Root1)=a.r==0//1 || a.r==1//2
 
 Base.isreal(c::Cyc)=c.n==1 || c==conj(c)
 
@@ -452,10 +529,14 @@ function Base.real(c::Cyc{T}) where T<:Real
   (c+conj(c))/2
 end
 
+Base.real(a::Root1)=real(Cyc(a))
+
 function Base.imag(c::Cyc{T}) where T<:Real
   if c.n==1 return 0 end
   (c-conj(c))/2
 end
+
+Base.imag(a::Root1)=imag(Cyc(a))
 
 if true
 # l is a list of pairs i=>c representing E(n,i)*c
@@ -669,6 +750,10 @@ Base.:*(c::Cyc,a::Real)=Cyc(iszero(a) ? 1 : c.n,c.d*a)
 end
 Base.://(a::Cyc,c::Cyc)=a*inv(c)
 Base.://(a::Real,c::Cyc)=a*inv(c)
+Base.://(c::Root1,a::Real)=Cyc(c)//a
+Base.://(a::Real,c::Root1)=a//Cyc(c)
+Base.://(c::Root1,a::Cyc)=Cyc(c)//a
+Base.://(a::Cyc,c::Root1)=a//Cyc(c)
 Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
@@ -780,6 +865,7 @@ end
 galois(c::Rational,n::Int)=c
 
 galois(c::Integer,n::Int)=c
+
 """
   galois(c::Cyc,n::Int) applies to c the galois automorphism
   of Q(ζ_conductor(c)) raising all roots of unity to the n-th power.
@@ -811,6 +897,12 @@ else
 end
 end
 
+function galois(c::Root1,n::Int)
+  d=denominator(c.r)
+  if gcd(n,d)!=1 error("$n should be prime to conductor($c)=$d") end
+  Root1(;r=n*c.r)
+end
+
 Base.conj(c::Cyc)=galois(c,-1)
 
 function Base.inv(c::Cyc)
@@ -828,50 +920,6 @@ Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                    Base.power_by_squaring(inv(a),-n)
 
 Base.abs(c::Cyc)=c*conj(c)
-
-#------------------------ type Root1 ----------------------------------
-struct Root1 <: Number # E(c,n)
-  r::Rational{Int}
-  Root1(c::Int,n::Int)=new(mod(n,c)//c)
-end
-
-Cycs.conductor(a::Root1)=denominator(a.r)
-Base.exponent(a::Root1)=numerator(a.r)
-
-Root1(;r=0)=Root1(denominator(r),numerator(r)) # does a mod1
-Cyc(a::Root1)=E(;r=a.r)::Cyc{Int}
-Cyc{T}(a::Root1) where T=Cyc{T}(E(;r=a.r))
-
-function Root1(c::Real)
-  if c==1 Root1(1,0)
-  elseif c==-1 Root1(2,1)
-  else nothing
-  end
-end
-
-Base.broadcastable(r::Root1)=Ref(r)
-
-function Base.show(io::IO, ::MIME"text/plain", r::Root1)
-  if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
-  show(io,r)
-end
-
-function Base.show(io::IO, r::Root1)
-  repl=get(io,:limit,false)
-  TeX=get(io,:TeX,false)
-  d=exponent(r)
-  c=conductor(r)
-  if repl || TeX
-    if c==1 print(io,"1")
-    elseif c==2 print(io,"-1")
-    else r=(TeX ? "\\zeta" : "ζ")*stringind(io,c)
-      if d>=1 r*=stringexp(io,d) end
-      print(io,r)
-    end
-  else
-    print(io,"Root1($c,$d)")
-  end
-end
 
 """
 `Root1(c)`
@@ -907,44 +955,17 @@ else
   end
 end
   for i in prime_residues(c.n)
-    if c==E(c.n,i) return Root1(c.n,i) end
-    if -c==E(c.n,i) 
-      if c.n%2==0 return Root1(c.n,div(c.n,2)+i)
-      else return Root1(2*c.n,c.n+2*i)
+    if c==E(c.n,i) return Root1_(i//c.n) end
+    if -c==E(c.n,i)
+      if c.n%2==0 return Root1(;r=(div(c.n,2)+i)//c.n)
+      else return Root1(;r=(c.n+2*i)//(2*c.n))
       end
     end
   end
   # return nothing
 end
 
-function Base.cmp(a::Root1,b::Root1)
-  r=cmp(conductor(a),conductor(b))
-  if !iszero(r) return r end
-  cmp(exponent(a),exponent(b))
-end
-
-Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
-Base.:(==)(a::Root1,b::Root1)=a.r==b.r
-Base.one(a::Root1)=Root1(1,0)
-Base.isone(a::Root1)=iszero(a.r)
-Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
-Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
-function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
-  n=denominator(r)
-  d=conductor(a)
-  j=1
-  while true
-    k=gcd(n,d)
-    n=div(n,k)
-    j*=k
-    if k==1 break end
-  end
-  Root1(j*d,numerator(r)*exponent(a)*gcdx(n,d)[2])
-end
-Base.inv(a::Root1)=Root1(;r=-a.r)
-Base.conj(a::Root1)=inv(a)
-Base.:/(a::Root1,b::Root1)=a*inv(b)
-
+Base.:(==)(a::Root1,b::Number)=Cyc(a)==b
 if !use_list # optimize special case
 function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
@@ -957,9 +978,14 @@ end
 Base.:*(b::Root1,a::Cyc)=a*b
 end
 
+Base.:+(a::Root1,b::Root1)=Cyc(a)+Cyc(b)
+Base.:-(a::Root1,b::Root1)=Cyc(a)-Cyc(b)
+Base.:-(r::Root1)=-Cyc(r)
 Base.promote_rule(a::Type{Root1},b::Type{Cyc{T}}) where T =b
 Base.promote_rule(a::Type{Root1},b::Type{<:Integer})=Cyc{b}
-Base.promote_rule(a::Type{Root1},b::Type{<:Rational})=Cyc{b}
+Base.promote_rule(a::Type{Root1},b::Type{<:Rational{<:Integer}})=Cyc{b}
+Base.promote_rule(a::Type{Root1},b::Type{<:AbstractFloat})=Complex{b}
+Base.promote_rule(a::Type{Root1},b::Type{Complex{T}}) where T =Cyc{promote_type(T,Int)}
 #------------------- end of Root1 ----------------------------------------
 
 struct Quadratic
@@ -1081,7 +1107,7 @@ julia> root(-1)
 Cyc{Int64}: ζ₄
 
 julia> root(E(4))
-Cyc{Int64}: ζ₈
+Root1: ζ₈
 
 julia> root(27,6)
 Cyc{Int64}: √3
@@ -1123,7 +1149,7 @@ function root(r::Root1,n=2)
     j*=k
     if k==1 break end
   end
-  Root1(j*d,exponent(r)*gcdx(n1,d)[2])
+  Root1(;r=exponent(r)*gcdx(n1,d)[2]//(j*d))
 end
 
 const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()
