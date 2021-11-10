@@ -532,7 +532,7 @@ function fegsymbol(s,p=0)
     if e==2 && ep==-1 res=-res end
   end
   if r==2 && (e>2 && ep==E(e))
-    res=CycPols.ennola_twist(res,Root1(;r=1//2e))//E(2e,degree(res))
+    res=CycPols.ennola_twist(res,E(2e))//E(2e,degree(res))
   end
   return res
 end

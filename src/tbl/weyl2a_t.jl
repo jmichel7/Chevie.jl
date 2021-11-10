@@ -53,7 +53,7 @@ chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
     end
     t=twistings(WF,inclusiongens(c[:red]))
     m=map(x->refleigen(x,position_class(x,x())),t)
-    m=map(x->count(y->y==Root1(-1),x),m)
+    m=map(x->count(y->y==E(2),x),m)
     p=findmax(m)[2]
     c[:red]=spets(c[:red],t[p].F)
   end

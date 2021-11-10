@@ -110,13 +110,14 @@ UnipotentClasses(A₃)
 211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211                               
 1111│000   6 ...            A₃      Id:1111
 
-   u│.(A₃)/-ζ₄
+   u│.(A₃)/ζ₄³
 ────┼──────────
-4   │   -ζ₄:Id
-31  │
-22  │
-211 │
-1111│
+4   │   ζ₄³:Id
+31  │         
+22  │         
+211 │         
+1111│         
+
 ```
 
 The  first column in the table gives the name of the unipotent class, which
@@ -1163,7 +1164,7 @@ X_Id^.    │   0  0  0           0          0      0      q  0
 
 julia> XTable(UnipotentClasses(rootdatum(:sl,4)))
 Values of character sheaves X̃ᵪ on local systems φ
-    X̃ᵪ|φ│1111 211 22⁽¹¹⁾ 22 31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(-ζ₄)
+    X̃ᵪ|φ│1111 211 22⁽¹¹⁾ 22 31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)
 ────────┼─────────────────────────────────────────────
 X₁₁₁₁^A₃│  q⁶   0      0  0  0 0      0     0       0
 X₂₁₁^A₃ │q³Φ₃  q³      0  0  0 0      0     0       0
@@ -1307,7 +1308,7 @@ Q_^.       │        0      0        0     q²        -q²        q²  0
 
 julia> GreenTable(UnipotentClasses(rootdatum(:sl,4)))
 Values of Green functions Q_wF on local systems φ
- Qᴵ_wF|φ│     1111          211 22⁽¹¹⁾       22   31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(-ζ₄)
+ Qᴵ_wF|φ│     1111          211 22⁽¹¹⁾       22   31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)
 ────────┼───────────────────────────────────────────────────────────────────
 Q₁₁₁₁^A₃│  Φ₂²Φ₃Φ₄ (3q²+2q+1)Φ₂      0 (2q+1)Φ₂ 3q+1 1      0     0       0
 Q₂₁₁^A₃ │-Φ₁Φ₂Φ₃Φ₄   -q³+q²+q+1      0       Φ₂   Φ₂ 1      0     0       0

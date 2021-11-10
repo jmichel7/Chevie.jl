@@ -205,18 +205,19 @@ Spetses, as defined in [BroueMalleMichel2014](biblio.htm#BMM14). An example:
 ```julia-repl
 julia> UnipotentCharacters(ComplexReflectionGroup(4))
 UnipotentCharacters(G₄)
-    γ│           Deg(γ)    Feg Fr(γ)   label
-─────┼───────────────────────────────────────
-φ₁‚₀ │                1      1     1        
-φ₁‚₄ │ -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1  1∧-ζ₃²
-φ₁‚₈ │  √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1  -1∧ζ₃²
-φ₂‚₅ │        q⁴Φ₂²Φ₆/2   q⁵Φ₄     1   1∧ζ₃²
-φ₂‚₃ │-ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1   1∧ζ₃²
-φ₂‚₁ │ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1    1∧ζ₃
-φ₃‚₂ │           q²Φ₃Φ₆ q²Φ₃Φ₆     1        
-Z₃:2 │    -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧ζ₃²
-Z₃:11│   -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃²  ζ₃∧-ζ₃
-G₄   │       -q⁴Φ₁²Φ₃/2      0    -1 -ζ₃²∧-1
+    γ│           Deg(γ)    Feg Fr(γ)  label
+─────┼──────────────────────────────────────
+φ₁‚₀ │                1      1     1       
+φ₁‚₄ │ -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1   1∧ζ₆
+φ₁‚₈ │  √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1 -1∧ζ₃²
+φ₂‚₅ │        q⁴Φ₂²Φ₆/2   q⁵Φ₄     1  1∧ζ₃²
+φ₂‚₃ │-ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1  1∧ζ₃²
+φ₂‚₁ │ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1   1∧ζ₃
+φ₃‚₂ │           q²Φ₃Φ₆ q²Φ₃Φ₆     1       
+Z₃:2 │    -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₃²
+Z₃:11│   -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₆⁵
+G₄   │       -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1
+
 ```
 """
 module Uch
@@ -431,7 +432,7 @@ Family(?4,3:4)
 label│eigen    1     2
 ─────┼─────────────────
 1    │  ζ₈³ √2/2 -√2/2
-2    │  -ζ₈ √2/2  √2/2
+2    │  ζ₈⁵ √2/2  √2/2
 ```
 
 `charnames(uc)`:  the list of names of the unipotent characters.  Using
@@ -777,7 +778,7 @@ function CycPoldegrees(uc::UnipotentCharacters)
 end
 
 function Families.eigen(ff::Vector{Family})
-  eig=fill(Cyc(1),sum(length,ff))
+  eig=fill(E(1),sum(length,ff))
   for f in ff eig[f.charNumbers]=eigen(f) end
   eig
 end
@@ -1278,7 +1279,7 @@ julia> cuspidal(UnipotentCharacters(ComplexReflectionGroup(4)),3)
  10
 ```
 """
-function cuspidal(uc::UnipotentCharacters,d=Root1(1))
+function cuspidal(uc::UnipotentCharacters,d=E(1))
   if length(uc)==1 return [1] end
   WF=spets(uc)
   ud=CycPolUnipotentDegrees(WF)

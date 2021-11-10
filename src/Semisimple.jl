@@ -262,7 +262,7 @@ Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 SS(W::FiniteCoxeterGroup,v::AbstractVector{<:Rational{<:Integer}})=
   SemisimpleElement(W,map(x->Root1(;r=x),v))
 
-SS(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(Root1(1),rank(W)))
+SS(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(E(1),rank(W)))
 
 Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 

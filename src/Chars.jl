@@ -1070,7 +1070,7 @@ function representation(W::Union{Group,Spets},i::Integer)
     mm=map(x->x[:gens],mm)
   end
   if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
-  mm=improve_type.(mm)
+  mm=improve_type.(mm*1)
   n=length(tt)
   if n==1 reps=mm[1] 
   else reps=vcat(map(1:n) do i

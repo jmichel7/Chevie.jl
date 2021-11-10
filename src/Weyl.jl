@@ -644,6 +644,8 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.torus_order, PermRoot.baseX, PermRoot.central_action,
  Perms.reflength
 
+PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)[1:nref(W)]
+
 #--------------- FCG -----------------------------------------
 @GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T},T1}
   G::PRG{T1,T}

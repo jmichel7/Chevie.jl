@@ -431,10 +431,13 @@ end
 PermRoot.reflection(W::CoxHyperoctaedral,i)=reflections(W)[i]
 
 function Perms.reflength(W::CoxHyperoctaedral,w)
-  c=cycles(w)
-  c1=filter(x->Set(x)==Set(-x),c)
-  div(reduce(+,map(length,c1);init=0),2)+
-      reduce(+,map(x->length(x)-1,setdiff(c,c1));init=0)
+  sym=nsym=0
+  for x in cycles(w)
+    if sort(x)==sort(-x) sym+=length(x)
+    else nsym+=length(x)-1
+    end
+  end
+  div(sym,2)+nsym
 end
 
 " Only parabolics defined are I=1:m for m≤n"

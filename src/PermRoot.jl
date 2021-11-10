@@ -145,7 +145,6 @@ best_type(x::Cyc{T}) where T<:Integer=x.n==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
 best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
-best_type(p::Root1)=(p==1 || p==-1) ? Int : Root1
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
@@ -990,7 +989,7 @@ function refleigen(W)
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
     central=W isa Spets ? torusfactors(W) : 
-                          fill(Root1(1),rank(W)-semisimplerank(W))
+                          fill(E(1),rank(W)-semisimplerank(W))
     ll=map(x->vcat(x,central),ll)
     W.reflengths=map(x->count(!isone,x),ll)
     ll
@@ -1327,7 +1326,7 @@ function recompute_parabolic_reps(W) # W irreducible
       S=normalizer(W,v)
       if ngens(v)==i-1
         c=union(map(i->combinations(map(stoi,unique(reflections(W))),i),1:by))
-      else c=combinations(map(stoi,Set(reflections(W))),1)
+      else c=combinations(map(stoi,unique(reflections(W))),1)
       end
       c=map(x->union(x,restriction(W,inclusiongens(v))),c)
       c=filter(x->GLinearAlgebra.rank(toM(roots(W,x)))==i,c)

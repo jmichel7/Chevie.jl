@@ -75,11 +75,11 @@ julia> Series(W,l[5]...)
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
-5│ φ₂‚₃     -ζ₃²  1      -ζ₃q        2
+5│ φ₂‚₃       ζ₆  1      -ζ₃q        2
 2│ φ₁‚₄       ζ₃ -1        ζ₃        4
 8│ Z₃:2       -1 -1     -ζ₃²q        2
 9│Z₃:11      ζ₃² -1       ζ₃²        4
-4│ φ₂‚₅      -ζ₃ -1       -ζ₃        4
+4│ φ₂‚₅      ζ₆⁵ -1       -ζ₃        4
 ```
 
 Above  we explore the `3`-series corresponding  to the trivial character of
@@ -99,7 +99,7 @@ a  root of unity. For instance, in the above case we get a different answer
 with:
 
 ```julia-repl
-julia> cuspidal_data(W,Root1(;r=2//3))
+julia> cuspidal_data(W,E(3,2))
 5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
  (levi = G₄, cuspidal = 2, d = ζ₃²)
  (levi = G₄, cuspidal = 5, d = ζ₃²)
@@ -302,7 +302,7 @@ function SubsetsSum(S, l, v, lv)
       if length(p[:sols])==0 return []
       elseif length(p[:sols]) == 1 push!(solved, p[:pos])
       end
-      if sum(length,p[:sols])>0 
+      if sum(length,p[:sols])>0
         good=union(good,intersect(p[:sols]...)) #lines part of any solution
         bad=union(bad, setdiff(p[:cand], union(p[:sols])))#part of no solution
       else
@@ -311,7 +311,7 @@ function SubsetsSum(S, l, v, lv)
     end
     nonsolved = setdiff(nonsolved, solved)
     if length(good) + length(bad) > 0 #progress
-      return map(r->vcat(good, r), inner(S - sum(l[good]), union(s, good), 
+      return map(r->vcat(good, r), inner(S - sum(l[good]), union(s, good),
          setdiff(t, union(good, bad)), nonsolved, sievev(good, v), factor))
     else
       res = []
@@ -319,15 +319,15 @@ function SubsetsSum(S, l, v, lv)
       p = ll[findfirst(x->length(x[:cand])==p,ll)]
       f = length(p[:sols])
       nonsolved = setdiff(nonsolved, [p[:pos]])
-      InfoChevie("# ", factor, ": xcols:", length(nonsolved), " xrows:", 
+      InfoChevie("# ", factor, ": xcols:", length(nonsolved), " xrows:",
          length(t)," in comb(",length(p[:cand]),")==>", length(p[:sols]), "\n")
       for sol = p[:sols]
         good = sol
         bad = setdiff(p[:cand], sol)
         if isempty(intersect(good, bad))
            append!(res, map(r->vcat(good,r),
-            inner(isempty(l[good]) ? S : S-sum(l[good]),union(s, good), 
-          setdiff(t, union(good, bad)), nonsolved, sievev(good, v), 
+            inner(isempty(l[good]) ? S : S-sum(l[good]),union(s, good),
+          setdiff(t, union(good, bad)), nonsolved, sievev(good, v),
           string(factor, ":", f))))
         end
         f-=1
@@ -341,7 +341,7 @@ end
 positive(p::CycPol)=all(>(0),values(p.v))
 
 # FitParameter(sch,m) given:
-# sch: schur elements for H(Z/e) given as CycPols 
+# sch: schur elements for H(Z/e) given as CycPols
 # m:   a list of length e of Rationals, exponents of params
 #
 # finds all permutations σ of 1:e such that the parameters pₖ=E(e,σₖ-1)q^mₖ
@@ -476,11 +476,11 @@ julia> s=Series(W,3,1)[1]
  │   γᵩ φ(mod 3)  ε parameter family #
 ─┼─────────────────────────────────────
 1│ φ₁‚₀        1  1      ζ₃q²        1
-5│ φ₂‚₃     -ζ₃²  1      -ζ₃q        2
+5│ φ₂‚₃       ζ₆  1      -ζ₃q        2
 2│ φ₁‚₄       ζ₃ -1        ζ₃        4
 8│ Z₃:2       -1 -1     -ζ₃²q        2
 9│Z₃:11      ζ₃² -1       ζ₃²        4
-4│ φ₂‚₅      -ζ₃ -1       -ζ₃        4
+4│ φ₂‚₅      ζ₆⁵ -1       -ζ₃        4
 
 julia> s.spets
 G₄
@@ -529,7 +529,7 @@ function Series(WF, levi, cuspidal, d;NC=false)
   if d isa Int && d>0 d=1//d end
   if !(d isa Root1) d=Root1(;r=d) end
   if !(WF isa Spets) WF=spets(WF) end
-  principal=UnipotentCharacters(levi).a[cuspidal]==0 && 
+  principal=UnipotentCharacters(levi).a[cuspidal]==0 &&
             UnipotentCharacters(levi).A[cuspidal]==0
   s=Series(WF,levi,cuspidal,d,principal,Dict{Symbol,Any}())
   if !NC hecke(s) end
@@ -545,7 +545,7 @@ function LaurentPolynomials.degree(s::Series)
     CycPol(shift(deg,-deg.v))*Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
   end
 end
-  
+
 function Base.show(io::IO,s::Series)
   tex=get(io,:TeX,false)
   repl=get(io,:limit,false)
@@ -620,7 +620,7 @@ end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
 
-#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains parentMap 
+#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains parentMap
 #  (lifting reflections to elts of W) and reflists (lifting a generator s to
 #   reflections of the parabolic 𝕄  of W such that W_𝕄 (𝕃,λ)=<s>)
 #  .WGLdims     irr dims of WGL
@@ -643,7 +643,7 @@ function Weyl.relative_group(s::Series)
   if !isone(s.levi.phi)
     if length(L) == 1
       sz=classinfo(WF)[:classes][position_class(WF,s.levi.phi)]
-      if sz>100000 println("*** class too big ($sz) calling GAP4.centralizer") 
+      if sz>100000 println("*** class too big ($sz) calling GAP4.centralizer")
          N=Gapjm.Gap4.centralizer(N,s.levi.phi)
       else
          N=centralizer(N, s.levi.phi)
@@ -833,9 +833,9 @@ function Groups.iscyclic(s::Series)
 end
 
 WGLdims(s::Series)=getp(relative_group,s,:WGLdims)
-    
+
 e(s::Series)=getp(relative_group,s,:e)
-    
+
 function RLG(s::Series)
   get!(s,:RLG) do
   RLG=LusztigInduce(s.spets, UniChar(s.levi, s.cuspidal))
@@ -880,10 +880,10 @@ end
 # takes a d-series s with s.spets split; fills in s.charNumbers, s.eps, s.dims
 function char_numbers(s::Series)
   get!(s,:charNumbers) do
-  if s.levi==s.spets 
+  if s.levi==s.spets
     s.eps=[1]
     s.dims=[1]
-    return [s.cuspidal] 
+    return [s.cuspidal]
   end
   if !haskey(s,:WGL) && isnothing(relative_group(s)) return nothing end
   rlg=RLG(s)
@@ -928,7 +928,7 @@ function char_numbers(s::Series)
    pp=p(Pol())
     vcat(fill(0,pp.v),pp.c,fill(0,max(0,t-degree(p))))
   end
-  v = SubsetsSum(improve_type(c(degree(s))), improve_type(map(c, ud)), 
+  v = SubsetsSum(improve_type(c(degree(s))), improve_type(map(c, ud)),
                  improve_type(WGLdims(s)), foo(:dims))
   InfoChevie("# ", length(v), " found\n")
   if length(v)>10000
@@ -1005,7 +1005,7 @@ function paramcyclic(s::Series)
       Root1(;r=s.d.r*e(s)*s.delta*
                    (rr(j,i)+s.d.r*mC(s)[findfirst(==(nid),char_numbers(s))]))
     else Root1(;r=s.delta*rr(j,i)*e(s)*s.d.r+LFrob.r)
-              # as fraction predeigen_i:=delta di -delta m_i d^2e 
+              # as fraction predeigen_i:=delta di -delta m_i d^2e
     end
   end
   series=map(x->findfirst(y->x in y[:charNumbers],uc.harishChandra),char_numbers(s))
@@ -1133,7 +1133,7 @@ end
 function RelativeSeries(s)
 # if !(haskey(s, :charNumbers)) char_numbers(s) end
 # find simplest regular eigenvalue q of s.levi
-  eig=union(map(x->x isa Int ? prime_residues(x).//x : [x], 
+  eig=union(map(x->x isa Int ? prime_residues(x).//x : [x],
                 map(x->x.r,regular_eigenvalues(s.levi)))...)
   c=minimum(denominator.(eig))
   c=minimum(filter(x->denominator(x)==c,eig))
@@ -1201,7 +1201,7 @@ function RelativeSeries(s)
   end
   u1=map(x->degree(s)//CycPol(x), u1)
   degcusp=Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
-  ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))), 
+  ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))),
                 Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)])
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues

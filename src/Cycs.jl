@@ -184,6 +184,7 @@ struct Root1 <: Number # E(c,n)
   global Root1_(x)=new(x)
 end
 
+" `E(n,p=1)` makes the `Root1` equal to `ζₙᵖ`"
 E(c,n=1)=Root1_(mod(Int(n),Int(c))//Int(c))
 
 conductor(a::Root1)=denominator(a.r)
@@ -238,18 +239,7 @@ Base.isone(a::Root1)=iszero(a.r)
 Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
 
 Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
-function Base.:^(a::Root1,r::Rational) # "canonical" way to extract roots
-  n=denominator(r)
-  d=conductor(a)
-  j=1
-  while true
-    k=gcd(n,d)
-    n=div(n,k)
-    j*=k
-    if k==1 break end
-  end
-  Root1(;r=numerator(r)*exponent(a)*gcdx(n,d)[2]//(j*d))
-end
+Base.:^(a::Root1,r::Rational{<:Integer})=root(a,denominator(r))^numerator(r)
 Base.inv(a::Root1)=Root1(;r=-a.r)
 Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
@@ -957,8 +947,8 @@ end
   for i in prime_residues(c.n)
     if c==E(c.n,i) return Root1_(i//c.n) end
     if -c==E(c.n,i)
-      if c.n%2==0 return Root1(;r=(div(c.n,2)+i)//c.n)
-      else return Root1(;r=(c.n+2*i)//(2*c.n))
+      if c.n%2==0 return E(c.n,div(c.n,2)+i)
+      else return E(2c.n,c.n+2*i)
       end
     end
   end
@@ -998,10 +988,10 @@ end
 """
   `Quadratic(c::Cyc)` 
   
-determines  if `c` lives in a  quadratic extension of `ℚ `. `q=Quadratic(c)`
-returns  a struct with fields  `q.a`, `q.b`, `q.root`, `q.den` representing
-`c`  as  `(q.a  +  q.b  root(q.root))//q.den`  if  such a representation is
-possible or returns `q===nothing` otherwise
+determines  if  `c`  lives  in  a  quadratic  extension  of  `ℚ `. The call
+`q=Quadratic(c)`  returns a  struct `Quadratic`  with fields  `q.a`, `q.b`,
+`q.root`,  `q.den` representing `c` as `(q.a + q.b root(q.root))//q.den` if
+such a representation is possible or returns `q===nothing` otherwise.
 
 # Examples
 ```julia-repl
@@ -1138,7 +1128,7 @@ end
 
 root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
-# find the best of the n possible roots
+# find the "canonical" best of the n possible roots
 function root(r::Root1,n=2)
   d=conductor(r)
   j=1
@@ -1149,7 +1139,7 @@ function root(r::Root1,n=2)
     j*=k
     if k==1 break end
   end
-  Root1(;r=exponent(r)*gcdx(n1,d)[2]//(j*d))
+  E(j*d,exponent(r)*gcdx(n1,d)[2])
 end
 
 const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()

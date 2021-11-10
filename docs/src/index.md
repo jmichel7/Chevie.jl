@@ -68,7 +68,7 @@ conductor
 Cycs.coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
-galois
+galois(c::Cyc,n::Int)
 Quadratic
 Root1
 Cycs.root
@@ -388,6 +388,7 @@ LusztigRestrict
 LusztigInductionTable
 Families
 Family
+galois(f::Family,p::Int)
 fourier
 drinfeld_double
 ndrinfeld_double

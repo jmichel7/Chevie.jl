@@ -156,7 +156,7 @@ function CycPols.CycPol(v::AbstractVector)
   for i in v1
     if denominator(i)==1
       k=convert(Int,i)
-      for j in prime_residues(k) push!(vv,Root1(;r=j//k)=>1) end
+      for j in prime_residues(k) push!(vv,E(k,j)=>1) end
     else
       push!(vv,Root1(;r=i)=>1)
     end

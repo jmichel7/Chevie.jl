@@ -405,11 +405,11 @@ function CycPol(p::Pol{T};trace=false)where T
     end
 #   for r in to_test
 #     while true 
-#       p1=lindivrem(p,Root1(i,r))
+#       p1=lindivrem(p,E(i,r))
 #       if !isnothing(p1)
 #         p=p1
 #         found=true
-#         push!(vcyc,Root1(i,r)=>1)
+#         push!(vcyc,E(i,r)=>1)
 #         if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$r)") end
 #         if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
 #       else break

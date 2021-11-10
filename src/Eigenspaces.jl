@@ -136,14 +136,14 @@ function regular_eigenvalues(W)
   if !(W isa Spets)
     l=filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
                   sort(union(divisors.(d)...)))
-    return sort(vcat(map(x->map(y->Root1(;r=y//x),prime_residues(x)),l)...))
+    return sort(vcat(map(x->E.(x,prime_residues(x)),l)...))
   end
   l=union(map(p->divisors(conductor(Root1(p[2]))*p[1]),d)...)
   res=Root1[]
   for n in l
     p=prime_residues(n)
     p1=filter(i->count(p->E(n,i*p[1])==p[2],d)==count(p->E(n,i*p[1])==p[2],c),p)
-    append!(res,map(x->Root1(;r=x//n),p1))
+    append!(res,E.(n,p1))
   end
   res
 end
@@ -320,7 +320,7 @@ julia> split_levis(ComplexReflectionGroup(5))
  G₅₍₎=Φ₁²
 ```
 """
-split_levis(W,d=Root1(1))=[L for ad in 0:length(relative_degrees(W,d))
+split_levis(W,d=E(1))=[L for ad in 0:length(relative_degrees(W,d))
                              for L in split_levis(W,d,ad)]
 split_levis(W,d::Integer,ad)=split_levis(W,E(d),ad)
 split_levis(W,d::Rational,ad)=split_levis(W,Root1(;r=d),ad)

@@ -335,7 +335,7 @@ export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, rightgcd, leftlcm, rightlcm, 
 conjugating_elt, GarsideElt, Brieskorn_normal_form, GarsideMonoid, 
-LocallyGarsideMonoid, hurwitz
+LocallyGarsideMonoid, hurwitz, rightascents
 
 """
 `LocallyGarsideMonoid{T}` where  `T` is the type of simples.
@@ -520,7 +520,7 @@ A₃
 julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
-julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
+julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
 4-element Vector{Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]   
  [1, 3]
@@ -530,7 +530,7 @@ julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
 julia> B=DualBraidMonoid(W)
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
-julia> map(x->B.(x),Garside.left_divisors(B,W(1,3,2)))
+julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
 4-element Vector{Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]                     
  [1, 2, 3, 4, 5, 6]      
@@ -555,6 +555,13 @@ function left_divisors(M::LocallyGarsideMonoid,s)
   end
   map(x->first.(x),res)
 end
+
+CoxGroups.leftdescents(M::LocallyGarsideMonoid,s)=filter(i->isleftdescent(M,s,i),
+                                                        eachindex(M.atoms))
+
+rightascents(M::LocallyGarsideMonoid,s)=filter(i->isrightascent(M,s,i),
+                                                        eachindex(M.atoms))
+
 
 rightcomplδ(M::GarsideMonoid,x)=\(M,x,M.δ)
 leftcomplδ(M::GarsideMonoid,x)=/(M,M.δ,x)
@@ -718,6 +725,7 @@ struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
   elm::Vector{T}
   pd::Int
+  # assume elm is a normal form perhaps not reduced if check=true
   function GarsideElt(M::TM,elm::Vector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
     if check
       i=1
@@ -729,9 +737,7 @@ struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
 @inbounds while j>0 && elm[j]==one(M)
         j-=1
       end
-#     @show i:j
-#     elm=view(elm,i:j)
-      if i:j !=eachindex(elm) elm=elm[i:j] end
+      if i!=1 || j!=length(elm) return new{T,TM}(M,view(elm,i:j),pd) end
     end
     new{T,TM}(M,elm,pd)
   end
@@ -740,22 +746,23 @@ end
 struct GenGarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   M::TM
   elm::Vector{T}
-  function GenGarsideElt(M::TM,elm::Vector{T};check=true) where {T,TM}
-    if check
-      j=length(elm)
-@inbounds while j>0 && elm[j]==one(M)
-        j-=1
-      end
-      resize!(elm,j)
-    end
-    new{T,TM}(M,elm)
-  end
 end
 
-GarsideElt(M::LocallyGarsideMonoid,elm;check=true)=GenGarsideElt(M,elm;check)
-clone(b::GenGarsideElt,elm;check=true)=GenGarsideElt(b.M,elm;check)
+function GarsideElt(M::LocallyGarsideMonoid,elm::Vector;check=true)
+  if check
+    j=length(elm)
+@inbounds while j>0 && elm[j]==one(M)
+      j-=1
+    end
+    resize!(elm,j)
+  end
+  GenGarsideElt(M,elm)
+end
+
+clone(b::GenGarsideElt,elm;check=true)=GarsideElt(b.M,elm;check)
 clone(b::GarsideElt,elm,pd=b.pd;check=true)=GarsideElt(b.M,elm,pd;check)
 Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm),0;check=false)
+Base.isone(b::GarsideElt)=isempty(b.elm) && iszero(b.pd)
 Base.copy(b::GarsideElt)=clone(b,copy(b.elm);check=false)
 
 function Base.cmp(a::GarsideElt,b::GarsideElt)
@@ -778,6 +785,40 @@ end
 
 CoxGroups.leftdescents(b::LocallyGarsideElt)=filter(i->isleftdescent(b.M,b[1],
                                    i),eachindex(b.M.atoms))
+
+# left divisors of b whose leftdescents don't intersect avoid
+function left_divisors(b::LocallyGarsideElt,avoid)
+  M=b.M
+  if isone(b) return [b] end
+  s=vcat(left_divisors(M,b[1])[2:end]...)
+  s=filter(x->isempty(intersect(leftdescents(M,x),avoid)),s)
+  res=[M()]
+  for x in s
+    append!(res,x.*left_divisors(\(M,x,b[1])*tail(b),rightascents(M,x)))
+#   append!(res,Ref(M(x)).*left_divisors(M(x)^-1*b,rightascents(M,x)))
+  end
+  res
+end
+
+"""
+`left_divisors(b::LocallyGarsideElt)`
+
+returns all left divisors of element `b`
+
+```julia-repl
+julia> B=BraidMonoid(coxgroup(:A,2))
+BraidMonoid(A₂)
+
+julia> left_divisors(B(1,2))
+3-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+ .
+ 1
+ 12
+```
+"""
+left_divisors(b::LocallyGarsideElt)=left_divisors(b,Int[])
+
+#RightDivisors:=b->List(LeftDivisors(b.monoid.Reverse(b)),b.monoid.Reverse);
 
 """
 `Brieskorn_normal_form(b)`
@@ -860,6 +901,10 @@ function Base.getindex(x::GarsideElt,i::Integer)
   end
 end
 
+Base.getindex(x::GarsideElt,i::AbstractArray)=getindex.(Ref(x),i)
+
+Base.lastindex(x::GarsideElt)=x.pd+length(x.elm)
+
 function Base.getindex(x::LocallyGarsideElt,i::Integer)
   if i>length(x.elm) return one(x.M)
   else return x.elm[i]
@@ -917,6 +962,12 @@ function α(b::GarsideElt,I::AbstractVector)
   res
 end
   
+function tail(b::GarsideElt)
+  if isone(b) return b end
+  if b.pd>0 return clone(b,b.elm,b.pd-1) end
+  clone(b,b[2:end])
+end
+
 """
 word(b::GarsideElt)
 returns  a description  of `b`  as a  list of  the atoms  of which  it is a
@@ -995,19 +1046,19 @@ function Base.show(io::IO,b::LocallyGarsideElt)
   printTeX(io,p(b))
 end
 
+# simple * braid
 function Base.:*(x,b::LocallyGarsideElt)
   M=b.M
   v=b.elm
   res=empty(v)
-  pd=0
   for i in 1:length(v)
     a,x=α2(M,x,v[i])
     push!(res,a)
-    if x==v[i] return GarsideElt(M,append!(res,v[i:end]);check=false)
-    elseif isone(x) return GarsideElt(M,append!(res,v[i+1:end]);check=false)
+    if x==v[i] return GarsideElt(M,append!(res,v[i:end]))
+    elseif isone(x) return GarsideElt(M,append!(res,v[i+1:end]))
     end
   end
-  GarsideElt(M,push!(res,x);check=false)
+  GarsideElt(M,push!(res,x))
 end
 
 # multiply a simple x by a Garside element b; Gap's PrefixToNormal
@@ -1288,6 +1339,7 @@ end
   orderδ::Int
   stringδ::String
   atoms::Vector{T}
+  one::T
   W::TW
 end
 
@@ -1319,7 +1371,7 @@ julia> B(-1,-2,-3,1,1)
 function DualBraidMonoid(W::CoxeterGroup;
   c=reduce(vcat,bipartite_decomposition(W)),revMonoid=nothing)
   δ=W(c...)
-  M=DualBraidMonoid(δ,order(δ),"δ",reflections(W)[1:nref(W)],W,
+  M=DualBraidMonoid(δ,order(δ),"δ",reflections(W),one(W),W,
                   Dict{Symbol,Any}())
   if revMonoid===nothing 
     M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
@@ -1337,7 +1389,7 @@ function DualBraidMonoid(W::PermRootGroup;
   δ=W(c...)
   n=reflength(W,δ)
   atoms=filter(r->reflength(W,δ/r)<n,unique(reflections(W)))
-  M=DualBraidMonoid(δ,order(δ),"δ",atoms,W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",atoms,one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing
     if all(w->isone(w^2),gens(w))
        M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
@@ -1350,6 +1402,8 @@ end
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,inv(M.atoms[i])*w)<reflength(M.W,w)
 end
+
+Base.one(M::DualBraidMonoid)=M.one
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             word(M.W,M.δ),")")
