@@ -208,9 +208,13 @@ hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])
 julia> H.para,rootpara(H)
 (Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
 
+julia> hecke(ComplexReflectionGroup(3,1,2),q).para
+2-element Vector{Vector{Pol{Cyc{Int64}}}}:
+ [q, ζ₃, ζ₃²]
+ [q, -1]
 ```
 """
-function hecke(W::Group,para::Vector{Vector{C}};rootpara::Vector{C}=C[]) where C
+function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector)where C
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
     if i<=length(para) 
@@ -228,16 +232,14 @@ end
 
 function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   oo=order.(gens(W))
-  z=all(==(2),oo) ? 0 : zero(Cyc)
   para=map(p,oo)do p, o
     if p isa Vector return p end
-    if o==2 return [p,-one(p)].+z end
-    map(i->iszero(i) ? p+z : zero(p)+E(o,i),0:o-1)
+    o==2 ? [p,-one(p)] : vcat([p],E.(o,1:o-1))
   end
   if isempty(para) 
    return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
   end
-  hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
+  hecke(W,improve_type(para);rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
   
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
