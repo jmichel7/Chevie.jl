@@ -554,6 +554,7 @@ end
 @test mytest("HeckeAlgebras.jl","H.para,rootpara(H)","(Vector{Mvp{Int64, Int64}}[[x, y], [x, y]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄x½y½])")
 @test mytest("HeckeAlgebras.jl","H=hecke(W,[[x,y],[z,t]])","hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])")
 @test mytest("HeckeAlgebras.jl","H.para,rootpara(H)","(Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])")
+@test mytest("HeckeAlgebras.jl","hecke(ComplexReflectionGroup(3,1,2),q).para","2-element Vector{Vector{Pol{Cyc{Int64}}}}:\n [q, ζ₃, ζ₃²]\n [q, -1]")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:F,4))","hecke(F₄,1)")
 @test mytest("HeckeAlgebras.jl","isrepresentation(H,reflrep(H))","true")
 @test mytest("HeckeAlgebras.jl","isrepresentation(H,Tbasis(H).(1:4))","true")

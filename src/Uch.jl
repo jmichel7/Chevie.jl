@@ -478,7 +478,6 @@ unipotent characters. Then the following column numbers display:
     4: for classical groups, the symbol attached to the unipotent character.
     5: The eigenvalue of Frobenius attached to the unipotent character.
     6: The parameter the character has in its Lusztig family.
-    7: The sign attached to the character in the Fourier transform.
 
 Which  columns  are  displayed  can  be  controlled by the property `:cols`
 (default [2,3,5,6]).

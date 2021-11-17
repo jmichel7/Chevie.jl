@@ -779,6 +779,30 @@ function charinfo(W)::Dict{Symbol,Any}
   end
 end
 
+function showcharinfo(io::IO,W)
+  ci=charinfo(W)
+  t=hcat(ci[:b],ci[:B]);cl=["b","B"]
+  for key in [:a,:A,:spaltenstein,:kondo,:frame,:malle]
+    if haskey(ci,key)
+      t=hcat(t,fromTeX.(Ref(io),string.(ci[key])))
+      push!(cl,string(key))
+    end
+  end
+  ext=map(x->"",ci[:b])
+  if haskey(ci,:extRefl)
+    ext[ci[:extRefl][1]]="Id";ext[ci[:extRefl][end]]="det"
+    for (i,j) in enumerate(ci[:extRefl][2:end-1]) 
+      ext[j]=fromTeX(io,"\\Lambda^$i")
+    end
+  else ext[ci[:positionId]]="Id";ext[ci[:positionDet]]="det"
+  end
+  t=hcat(t,ext); push!(cl,"ext")
+  if haskey(ci,:charSymbols)
+    t=hcat(t,stringsymbol.(ci[:charSymbols]));push!(cl,"symbol")
+  end
+  showtable(io,string.(t);row_labels=charnames(io,W),col_labels=cl)
+end
+
 """
 `detPerm(W)`
 

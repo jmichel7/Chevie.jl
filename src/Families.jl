@@ -718,32 +718,52 @@ label│eigen      1        2        3
 ```
 """
 function family_imprimitive(S)
+# we follow G. Malle, "Unipotente Grade...", J. Algebra 177 (1995), § 4 and 6 
+# for G(e,1,n) or G(e,e,n).
+# Initial writing  GM 26.10.2000 modified JM 10.08.2011
 # println("S=$S")
   e=length(S)
-  Scoll = tally(vcat(S...))
-  ct = reduce(vcat,map(x->fill(x...), Scoll))
-  d = length(ct) % e
+  ct = sort(vcat(S...))
+  Scoll = tally(ct)
+# Fourier matrix of the family of symbols with content ct:
+# Let F be the set of functions ct->0:e-1 which are injective restricted to
+# a  given value  in ct,  and the  sum of  their values mod. e should equal
+# m*binomial(e,2)  where  m=⌊length(ct)/e⌋.  Then  for  f∈  F  the  list of
+# preimages  of f is  a symbol S(f).  Conversely for a  symbol S there is a
+# 'canonical' map f(S) which is increasing on entries of ct of given value.
+# Then the formula is
+#
+# mat[S,T]=∑_{f∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
+#
+# where for f in F with ordered image im(f):=List(ct,f)
+# where ε(f)=(-1)^{number of non-inversions in the list im(f)}
+# and f*f(T) is the scalar product of vectors im(f) and im(f(T))
+# 
+# To  compute this reasonably  fast, it can  be decomposed as  a product of
+# sums, each relative to a set of consecutive equal entries in ct.
+  d=length(ct)%e
   if !(d in [0,1]) error("length(",joindigits(ct),") should be 0 or 1",e," !\n")
   end
-  m = div(length(ct) - d, e)
-  j = (m * binomial(e, 2)) % e
-  ll = cartesian(map(i->0:e-1, Scoll)...)
-  ll = filter(x->sum(x)%e==j,ll)
+  m = div(length(ct)-d,e)
+  j = (m*binomial(e,2))%e # for f in F we must have sum(f,ct)mod e=j
+  ll = Iterators.product(map(i->0:e-1, Scoll)...)
+  ll = filter(x->sum(x)%e==j,collect(ll))
   ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
                    collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
   nrSymbols=sum(x->prod(length,x),ll)
-  ll = reduce(vcat,map(x->cartesian(x...), ll))
+  ll = reduce(vcat,map(x->cartesian(x...), ll)) # equiv classes of F
   eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
   equiv = map(x->
-      Dict(:globaleps=>length(x)==1 ? 1 :
+      (globaleps=length(x)==1 ? 1 :
        (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
-     :aa=>map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
+     aa=map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
+  # a namedtuple in equiv describes f in F with a given f(S)
+  # .aa is the list of possible im(f)
   epsreps = map(x->eps(reduce(vcat,x)), ll)
   roots = map(i->E(e,i),0:e-1)
-  mat = map(i->i[:globaleps]*map(k->epsreps[k]*
+  mat = map(i->i.globaleps*map(k->epsreps[k]*
   prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
-              i[:aa][l]),
-          1:length(i[:aa])), 1:nrSymbols), equiv)
+              i.aa[l]), 1:length(i.aa)), 1:nrSymbols), equiv)
   mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
   frobs = E(12,-(e^2-1)*m)*map(i->E(2e,-(sum(j->j*j,i))-e*sum(sum,i)),ll)
   symbs = map(function (l)local sy, j
@@ -755,14 +775,14 @@ function family_imprimitive(S)
   newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
                (-1)^((0:e - 1)*map(x->binomial(length(x), 2), i)),symbs)
   mat = map((s,l)->s * map((x, y)->x*y, newsigns,l),newsigns,mat)
-  if d == 0
+  if d == 0 # compact entries...
   IsReducedSymbol(s)=all(x->s==x || LessSymbols(x, s),Rotations(s)[2:length(s)])
     schon = map(IsReducedSymbol, symbs)
     mult = []
     for i = 1:nrSymbols
         if schon[i]
             orb = gapSet(Rotations(symbs[i]))
-            push!(mult, e // length(orb))
+            push!(mult, e // length(orb)) # Symmetriegruppe
             for j = filter(j->symbs[j] in orb,i+1:nrSymbols)
                 schon[j] = false
             end
@@ -797,8 +817,8 @@ function family_imprimitive(S)
     :name=>joindigits(ct),
     :explanation=>"classical family",
     :special=>1,
-    :operations=>FamilyOps)
-  res[:charLabels] = map(string, 1:length(res[:symbols]))
+    :operations=>FamilyOps) 
+  res[:charLabels] = map(string, 1:length(res[:symbols]))# should be improved
   res[:size] = length(res[:symbols])
   res
 end

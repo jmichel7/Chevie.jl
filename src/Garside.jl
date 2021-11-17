@@ -504,7 +504,7 @@ function CoxGroups.word(M::LocallyGarsideMonoid,w)
   end
 end
 
-CoxGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w),"";sep=" ")
+CoxGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
 
 """
 left_divisors( M, s)
@@ -1041,7 +1041,7 @@ function Base.show(io::IO,b::LocallyGarsideElt)
   end
   function p(b)
     isempty(b.elm) ? "." : 
-       join(map(e->joindigits(word(M,e),"";sep=" "),b.elm),".")
+       join(map(e->joindigits(word(M,e);sep=" "),b.elm),".")
   end
   printTeX(io,p(b))
 end

@@ -214,7 +214,7 @@ julia> hecke(ComplexReflectionGroup(3,1,2),q).para
  [q, -1]
 ```
 """
-function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector)where C
+function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
     if i<=length(para) 
