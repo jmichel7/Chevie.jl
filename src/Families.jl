@@ -744,71 +744,65 @@ function family_imprimitive(S)
   d=length(ct)%e
   if !(d in [0,1]) error("length(",joindigits(ct),") should be 0 or 1",e," !\n")
   end
-  m = div(length(ct)-d,e)
-  j = (m*binomial(e,2))%e # for f in F we must have sum(f,ct)mod e=j
-  ll = Iterators.product(map(i->0:e-1, Scoll)...)
-  ll = filter(x->sum(x)%e==j,collect(ll))
-  ll = map(c->map((x,y)->filter(c->sum(c)%e==y,
-                   collect(combinations(0:e-1,x[2]))),Scoll,c), ll)
+  m=div(length(ct)-d,e)
+  j=(m*binomial(e,2))%e # for f in F we must have sum(f,ct)mod e=j
+  ll=Iterators.product(map(i->0:e-1, Scoll)...)
+  ll=filter(x->sum(x)%e==j,collect(ll))
+  ll=map(ll)do c
+    map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,c)
+  end
   nrSymbols=sum(x->prod(length,x),ll)
-  ll = reduce(vcat,map(x->cartesian(x...), ll)) # equiv classes of F
-  eps = l->(-1)^sum(i->count(j->l[i]<j,l[i+1:end]),1:length(l))
-  equiv = map(x->
+  ll=reduce(vcat,map(x->cartesian(x...), ll)) # equiv classes of F
+  eps=l->(-1)^sum(i->count(l[i].<l[i+1:end]),eachindex(l))
+  equiv=map(x->
       (globaleps=length(x)==1 ? 1 :
        (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
      aa=map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
   # a namedtuple in equiv describes f in F with a given f(S)
   # .aa is the list of possible im(f)
-  epsreps = map(x->eps(reduce(vcat,x)), ll)
-  roots = map(i->E(e,i),0:e-1)
-  mat = map(i->i.globaleps*map(k->epsreps[k]*
-  prod(l->sum(j->j.eps*roots[1+mod(-sum(map((a,b)->a*b,j.l,ll[k][l])),e)],
-              i.aa[l]), 1:length(i.aa)), 1:nrSymbols), equiv)
-  mat = ((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
-  frobs = E(12,-(e^2-1)*m)*map(i->E(2e,-(sum(j->j*j,i))-e*sum(sum,i)),ll)
-  symbs = map(function (l)local sy, j
-              sy = map(j->Int[], 1:e)
-              map((v,c)->begin push!(sy[v + 1], c)
-                      return 1 end, reduce(vcat,l), ct)
-              return sy
-          end, ll)
+  epsreps=map(x->eps(reduce(vcat,x)), ll)
+  roots=E.(e,0:e-1)
+  mat=map(i->i.globaleps*map(k->epsreps[k]*
+      prod(l->sum(j->j.eps*roots[1+mod(-sum(j.l.*ll[k][l]),e)],i.aa[l]), 
+            1:length(i.aa)), 1:nrSymbols), equiv)
+  mat=((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
+  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(i.^2)-e*sum(sum,i)),ll)
+  symbs=map(ll)do l
+    sy=map(j->Int[],1:e)
+    for (v,c) in zip(reduce(vcat,l), ct) push!(sy[v+1],c) end 
+    sy
+  end
   newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
-               (-1)^((0:e - 1)*map(x->binomial(length(x), 2), i)),symbs)
-  mat = map((s,l)->s * map((x, y)->x*y, newsigns,l),newsigns,mat)
-  if d == 0 # compact entries...
-  IsReducedSymbol(s)=all(x->s==x || LessSymbols(x, s),Rotations(s)[2:length(s)])
-    schon = map(IsReducedSymbol, symbs)
-    mult = []
-    for i = 1:nrSymbols
-        if schon[i]
-            orb = gapSet(Rotations(symbs[i]))
-            push!(mult, e // length(orb)) # Symmetriegruppe
-            for j = filter(j->symbs[j] in orb,i+1:nrSymbols)
-                schon[j] = false
-            end
-        end
-    end
-    frobs = reduce(vcat,map((m,f)->fill(f,m), mult, ListBlist(frobs, schon)))
-    symbs = reduce(vcat,map(function (m, s)
-                    if m==1 return [s]
-                    else return map(j->vcat(s[1:e//m], [m, j]), 0:m-1)
-                    end
-                end, mult, ListBlist(symbs, schon)))
-    mat = reduce(vcat,map(function (m, l)return map((i->begin
-      reduce(vcat,map((n,c)->fill(e*c//m//n,n),mult,ListBlist(l, schon)))
-                         end), 1:m)end, mult, ListBlist(mat, schon)))
-    mult=reduce(vcat,map(m->fill(m,m),mult))
-    nrSymbols=length(symbs)
-    for i=1:nrSymbols
-      for j=1:nrSymbols
-        if fullsymbol(symbs[i])==fullsymbol(symbs[j])
-            mat[i][j]-=1//mult[i]
-            if symbs[i]==symbs[j] mat[i][j]+=1 end
-        end
+               (-1)^((0:e-1)*map(x->binomial(length(x), 2), i)),symbs)
+  mat=map((s,l)->s*(newsigns.*l),newsigns,mat)
+  if d==0 # compact entries...
+    LessSymbols(x,y)=length.(x)<length.(y) || (length.(x)==length.(y) && x>y)
+    IsReducedSymbol(s)=all(x->s==x || LessSymbols(x,s),
+                               circshift.(Ref(s),1:length(s)-1))
+    schon=IsReducedSymbol.(symbs)
+    mult=Int[]
+    for (i,si) in enumerate(symbs)
+      if schon[i]
+        orb=sort(unique(circshift.(Ref(si),1:length(si))))
+        push!(mult, div(e,length(orb))) # Symmetry group
+        schon[filter(j->symbs[j] in orb,i+1:length(symbs))].=false
       end
     end
-    if (mat*cat(frobs...,dim=(1,2)))^3!=mat^0
-        print("** WARNING: (S*T)^3!=1\n")
+    frobs=reduce(vcat,fill.(frobs[schon],mult))
+    symbs=reduce(vcat,map((m,s)->m==1 ? [s] :
+         map(j->vcat(s[1:div(e,m)], [m,j]), 0:m-1), mult, symbs[schon]))
+    mat=reduce(vcat,map((m,l)->map(
+       i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[schon])),1:m),
+                         mult, mat[schon]))
+    mult=vcat(fill.(mult,mult)...)
+    for (i,si) in enumerate(symbs), (j,sj) in enumerate(symbs)
+      if fullsymbol(si)==fullsymbol(sj)
+        mat[i][j]-=1//mult[i]
+        if si==sj mat[i][j]+=1 end
+      end
+    end
+    if (toM(mat)*cat(Cyc.(frobs)...;dims=(1,2)))^3!=one(toM(mat))
+      print("** WARNING: (S*T)^3!=1\n")
     end
   end
   res=Dict{Symbol,Any}(:symbols=>symbs,
@@ -819,7 +813,7 @@ function family_imprimitive(S)
     :special=>1,
     :operations=>FamilyOps) 
   res[:charLabels] = map(string, 1:length(res[:symbols]))# should be improved
-  res[:size] = length(res[:symbols])
+  res[:size]=length(res[:symbols])
   res
 end
 
