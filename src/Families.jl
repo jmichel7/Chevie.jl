@@ -727,17 +727,17 @@ function family_imprimitive(S)
   Scoll = tally(ct)
 # Fourier matrix of the family of symbols with content ct:
 # Let F be the set of functions ct->0:e-1 which are injective restricted to
-# a  given value  in ct,  and the  sum of  their values mod. e should equal
-# m*binomial(e,2)  where  m=⌊length(ct)/e⌋.  Then  for  f∈  F  the  list of
-# preimages  of f is  a symbol S(f).  Conversely for a  symbol S there is a
-# 'canonical' map f(S) which is increasing on entries of ct of given value.
+# a  given  value  in  ct,  with  the  sum  of their values mod. e equal to
+# ⌊length(ct)/e⌋*binomial(e,2). Then for f∈ F the list of preimages of f is
+# a  symbol S(f). Conversely for a symbol S there is a 'canonical' map f(S)
+# which is increasing on entries of ct of given value.
 # Then the formula is
 #
 # mat[S,T]=∑_{f∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
 #
-# where for f in F with ordered image im(f):=List(ct,f)
-# where ε(f)=(-1)^{number of non-inversions in the list im(f)}
-# and f*f(T) is the scalar product of vectors im(f) and im(f(T))
+# where for f in F with image f.(ct)
+# ε(f)=(-1)^{number of non-inversions in the list f.(ct)}
+# and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct)
 # 
 # To  compute this reasonably  fast, it can  be decomposed as  a product of
 # sums, each relative to a set of consecutive equal entries in ct.
@@ -748,25 +748,27 @@ function family_imprimitive(S)
   j=(m*binomial(e,2))%e # for f in F we must have sum(f,ct)mod e=j
   ll=Iterators.product(map(i->0:e-1, Scoll)...)
   ll=filter(x->sum(x)%e==j,collect(ll))
-  ll=map(ll)do c
-    map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,c)
+  ll=map(ll)do coll
+    map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
   end
-  nrSymbols=sum(x->prod(length,x),ll)
   ll=reduce(vcat,map(x->cartesian(x...), ll)) # equiv classes of F
-  eps=l->(-1)^sum(i->count(l[i].<l[i+1:end]),eachindex(l))
+  eps=l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l))
   equiv=map(x->
       (globaleps=length(x)==1 ? 1 :
-       (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
-     aa=map(y->map(x->(l=x,eps=eps(x)),arrangements(y, length(y))),x)), ll)
+    (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
+   aa=map(y->map(x->(l=x,eps=Root1(eps(x))),arrangements(y, length(y))),x)), ll)
   # a namedtuple in equiv describes f in F with a given f(S)
   # .aa is the list of possible im(f)
   epsreps=map(x->eps(reduce(vcat,x)), ll)
-  roots=E.(e,0:e-1)
-  mat=map(i->i.globaleps*map(k->epsreps[k]*
-      prod(l->sum(j->j.eps*roots[1+mod(-sum(j.l.*ll[k][l]),e)],i.aa[l]), 
-            1:length(i.aa)), 1:nrSymbols), equiv)
+  mat=map(equiv)do i
+    i.globaleps*map(epsreps,ll)do k,v
+     k*prod(map(i.aa,v)do l,w
+            sum(j->j.eps*E(e,1-sum(j.l.*w)),l)
+           end)
+     end
+  end
   mat=((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
-  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(i.^2)-e*sum(sum,i)),ll)
+  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ll)
   symbs=map(ll)do l
     sy=map(j->Int[],1:e)
     for (v,c) in zip(reduce(vcat,l), ct) push!(sy[v+1],c) end 

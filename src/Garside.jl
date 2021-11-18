@@ -540,10 +540,10 @@ julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
 """
 function left_divisors(M::LocallyGarsideMonoid,s)
   rest=[(left=one(M),right=s)]
-  res=[]
+  res=typeof(rest)[]
   while !isempty(rest)
     push!(res,rest)
-    new=empty(res[1])
+    new=empty(rest)
     for x in rest
       for i in eachindex(M.atoms)
         if isleftdescent(M,x.right,i)
@@ -800,23 +800,51 @@ function left_divisors(b::LocallyGarsideElt,avoid)
   res
 end
 
-"""
-`left_divisors(b::LocallyGarsideElt)`
+function left_divisors(b::LocallyGarsideElt,avoid,i)
+  M=b.M
+  if iszero(i) return [M()] end
+  s=left_divisors(M,b[1])
+  res=typeof(b)[]
+  for j in 1:min(length(s)-1,i)
+    sj=filter(x->isempty(intersect(leftdescents(M,x),avoid)),s[j+1])
+    for x in sj
+      append!(res,x.*left_divisors(\(M,x,b[1])*tail(b),rightascents(M,x),i-j))
+    end
+  end
+  res
+end
 
-returns all left divisors of element `b`
+"""
+`left_divisors(b::LocallyGarsideElt[, i])`
+
+returns all left divisors of element `b` (of length `i` if specified)
 
 ```julia-repl
-julia> B=BraidMonoid(coxgroup(:A,2))
-BraidMonoid(A₂)
+julia> B=DualBraidMonoid(CoxSym(4))
+DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])
 
-julia> left_divisors(B(1,2))
-3-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+julia> left_divisors(B(1,2,4,3))
+10-element Vector{GarsideElt{Perm{UInt8}, DualBraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  .
  1
- 12
+ 1.4
+ 1.4.2
+ 1.4.3
+ 5
+ 6
+ 15
+ 15.4
+ 15.4.3
+
+julia> left_divisors(B(1,5,4,3),1)
+3-element Vector{GarsideElt{Perm{UInt8}, DualBraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+ 1
+ 5
+ 6
 ```
 """
 left_divisors(b::LocallyGarsideElt)=left_divisors(b,Int[])
+left_divisors(b::LocallyGarsideElt,i::Integer)=left_divisors(b,Int[],i)
 
 #RightDivisors:=b->List(LeftDivisors(b.monoid.Reverse(b)),b.monoid.Reverse);
 
