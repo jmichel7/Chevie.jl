@@ -231,7 +231,7 @@ Frobenius of the family.
 ```julia-repl
 julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
 Family(0011,[4, 3, 2])
-classical family
+imprimitive family
 label│eigen      1        2        3
 ─────┼───────────────────────────────
 1    │  ζ₃²  √-3/3    √-3/3   -√-3/3
@@ -240,7 +240,7 @@ label│eigen      1        2        3
 
 julia> galois(f,-1)
 Family(overline 0011,[4, 3, 2])
-ComplexConjugate(classical family)
+ComplexConjugate(imprimitive family)
 label│eigen      1        2        3
 ─────┼───────────────────────────────
 1    │   ζ₃ -√-3/3   -√-3/3    √-3/3
@@ -282,7 +282,7 @@ of  the  family  `f`  with  the  Fourier  matrix, eigenvalues of Frobenius,
 ```julia-repl
 julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
 Family(0011,[4, 3, 2])
-classical family
+imprimitive family
 label│eigen      1        2        3
 ─────┼───────────────────────────────
 1    │  ζ₃²  √-3/3    √-3/3   -√-3/3
@@ -291,7 +291,7 @@ label│eigen      1        2        3
 
 julia> f^Perm(1,2,3)
 Family(0011,[2, 4, 3])
-Permuted((1,2,3),classical family)
+Permuted((1,2,3),imprimitive family)
 label│eigen        3      1        2
 ─────┼───────────────────────────────
 3    │    1 ζ₃²√-3/3 -√-3/3 -ζ₃√-3/3
@@ -715,7 +715,7 @@ containing `S`.
 ```julia-repl
 julia> family_imprimitive([[0,1],[1],[0]])
 Family(0011,3)
-classical family
+imprimitive family
 label│eigen      1        2        3
 ─────┼───────────────────────────────
 1    │  ζ₃²  √-3/3   -√-3/3    √-3/3
@@ -763,7 +763,7 @@ function family_imprimitive(S)
     (-1)^sum(i->sum(j->sum(y->count(y.<j),x[i]),x[i+1:end]),1:length(x)-1)
   end
   epsreps=map(x->eps(reduce(vcat,x)), ff)
-  @show globaleps.*epsreps
+# @show globaleps.*epsreps
   equiv=map(ff)do x
     map(y->map(x->(l=x,eps=Root1(eps(x))),arrangements(y,length(y))),x)
   end
@@ -821,7 +821,7 @@ function family_imprimitive(S)
     :explanation=>"imprimitive family",
     :special=>1,
     :charLabels=>string.(1:length(symbs)), # should be improved
-    :size=>length(symbs)
+    :size=>length(symbs),
     :operations=>FamilyOps))
 end
 

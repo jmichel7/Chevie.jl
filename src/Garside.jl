@@ -823,7 +823,7 @@ returns all left divisors of element `b` (of length `i` if specified)
 julia> B=DualBraidMonoid(CoxSym(4))
 DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])
 
-julia> left_divisors(B(1,2,4,3))
+julia> left_divisors(B(1,5,4,3))
 10-element Vector{GarsideElt{Perm{UInt8}, DualBraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
  .
  1
