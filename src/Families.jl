@@ -700,14 +700,20 @@ julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
 """
 ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 
+function stof(S)
+  l=vcat(map(((i,v),)->fill(i-1,length(v)),enumerate(S))...)
+  l[sortperm(vcat(S...))]
+end
+
 """
 `family_imprimitive(S)`
 
 `S` should be a symbol for a unipotent characters of an imprimitive complex
 reflection  group 'G(e,1,n)' or 'G(e,e,n)'. The function returns the family
+containing `S`.
 
 ```julia-repl
-julia> Family(family_imprimitive([[0,1],[1],[0]]))
+julia> family_imprimitive([[0,1],[1],[0]])
 Family(0011,3)
 classical family
 label│eigen      1        2        3
@@ -718,76 +724,77 @@ label│eigen      1        2        3
 ```
 """
 function family_imprimitive(S)
-# we follow G. Malle, "Unipotente Grade...", J. Algebra 177 (1995), § 4 and 6 
-# for G(e,1,n) or G(e,e,n).
-# Initial writing  GM 26.10.2000 modified JM 10.08.2011
-# println("S=$S")
+# we follow G. Malle, "Unipotente Grade...", J. Algebra 177 (1995)
+# §4 for G(e,1,n) and §6 for G(e,e,n).
+# Initial writing  GM 26.10.2000 accelerated JM 10.08.2011
   e=length(S)
-  ct = sort(vcat(S...))
-  Scoll = tally(ct)
+  ct=sort(vcat(S...))
+  Scoll=tally(ct)
+  d=length(ct)%e
+  if !(d in [0,1]) 
+    error("length(",joindigits(ct),") should be 0 or 1 mod.",e," !\n")
+  end
+  m=div(length(ct),e)
 # Fourier matrix of the family of symbols with content ct:
 # Let F be the set of functions ct->0:e-1 which are injective restricted to
 # a  given  value  in  ct,  with  the  sum  of their values mod. e equal to
-# ⌊length(ct)/e⌋*binomial(e,2). Then for f∈ F the list of preimages of f is
-# a  symbol S(f). Conversely for a symbol S there is a 'canonical' map f(S)
-# which is increasing on entries of ct of given value.
-# Then the formula is
+# div(length(ct),e)*binomial(e,2). Then for f∈ F the list of preimages of f
+# is  a symbol S(f). Conversely  for a symbol S  there is a 'canonical' map
+# f(S) which is increasing on entries of ct of given value. Then
 #
-# mat[S,T]=∑_{f∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
+# Fourier(S,T)=∑_{f∈ F∣S(f)=S}ε(f)ε(f(T))ζₑ^{f*f(T)}
 #
 # where for f in F with image f.(ct)
 # ε(f)=(-1)^{number of non-inversions in the list f.(ct)}
-# and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct)
+# and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct).
 # 
-# To  compute this reasonably  fast, it can  be decomposed as  a product of
-# sums, each relative to a set of consecutive equal entries in ct.
-  d=length(ct)%e
-  if !(d in [0,1]) error("length(",joindigits(ct),") should be 0 or 1",e," !\n")
-  end
-  m=div(length(ct)-d,e)
-  j=(m*binomial(e,2))%e # for f in F we must have sum(f,ct)mod e=j
-  ll=Iterators.product(map(i->0:e-1, Scoll)...)
-  ll=filter(x->sum(x)%e==j,collect(ll))
-  ll=map(ll)do coll
+# To  compute this reasonably fast, it is  decomposed as a product of sums,
+# each relative to a set of consecutive equal entries in ct.
+  j=(m*binomial(e,2))%e # for f∈ F we must have sum(f,ct)mod e==j
+  ff=filter(x->sum(x)%e==j,cartesian(map(i->0:e-1, Scoll)...))
+  ff=map(ff)do coll
     map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
   end
-  ll=reduce(vcat,map(x->cartesian(x...), ll)) # equiv classes of F
+  ff=reduce(vcat,map(x->cartesian(x...), ff)) 
+  # now map(x->vcat(x...),ff) are the "canonical" functions
   eps=l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l))
-  equiv=map(x->
-      (globaleps=length(x)==1 ? 1 :
-    (-1)^sum(i->sum(j->sum(y->count(>(y),j),x[i]),x[i+1:end]),1:length(x)-1),
-   aa=map(y->map(x->(l=x,eps=Root1(eps(x))),arrangements(y, length(y))),x)), ll)
-  # a namedtuple in equiv describes f in F with a given f(S)
-  # .aa is the list of possible im(f)
-  epsreps=map(x->eps(reduce(vcat,x)), ll)
-  mat=map(equiv)do i
-    i.globaleps*map(epsreps,ll)do k,v
-     k*prod(map(i.aa,v)do l,w
-            sum(j->j.eps*E(e,1-sum(j.l.*w)),l)
-           end)
-     end
+  globaleps=map(ff)do x
+    if length(x)==1 return 1 end
+    (-1)^sum(i->sum(j->sum(y->count(y.<j),x[i]),x[i+1:end]),1:length(x)-1)
   end
-  mat=((-1)^(m*(e-1))*mat)//(E(4,binomial(e-1,2))*root(e)^e)^m
-  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ll)
-  symbs=map(ll)do l
-    sy=map(j->Int[],1:e)
-    for (v,c) in zip(reduce(vcat,l), ct) push!(sy[v+1],c) end 
-    sy
+  epsreps=map(x->eps(reduce(vcat,x)), ff)
+  @show globaleps.*epsreps
+  equiv=map(ff)do x
+    map(y->map(x->(l=x,eps=Root1(eps(x))),arrangements(y,length(y))),x)
   end
-  newsigns = (-1) ^ (binomial(e, 2) * binomial(m, 2)) * map(i->
-               (-1)^((0:e-1)*map(x->binomial(length(x), 2), i)),symbs)
+  # an element in equiv describes f in F with a given f(S). It is a list
+  # for each value in ct of possible im(f) restricted to that value
+  mat=globaleps.*map(equiv)do i
+    epsreps.*map(ff)do v
+      prod(map((l,w)->sum(j->j.eps*E(e,-sum(j.l.*w)),l),i,v))
+    end
+  end
+  mat*=(-1)^(m*(e-1))//(E(4,binomial(e-1,2))*root(e)^e)^m
+  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
+  symbs=map(ff)do f
+    f=vcat(f...)
+    map(x->ct[x],map(x->findall(==(x),f),0:e-1))
+  end
+  newsigns=(-1)^(binomial(e,2)*binomial(m,2))*
+      map(S->(-1)^sum((0:e-1).*binomial.(length.(S),2)),symbs)
   mat=map((s,l)->s*(newsigns.*l),newsigns,mat)
   if d==0 # compact entries...
-    LessSymbols(x,y)=length.(x)<length.(y) || (length.(x)==length.(y) && x>y)
-    IsReducedSymbol(s)=all(x->s==x || LessSymbols(x,s),
+    lesssymb(x,y)=length.(x)<length.(y) || (length.(x)==length.(y) && x>y)
+    isreducedsymb(s)=all(x->s==x || lesssymb(x,s),
                                circshift.(Ref(s),1:length(s)-1))
-    schon=IsReducedSymbol.(symbs)
+    schon=isreducedsymb.(symbs)
     mult=Int[]
     for (i,si) in enumerate(symbs)
       if schon[i]
-        orb=sort(unique(circshift.(Ref(si),1:length(si))))
-        push!(mult, div(e,length(orb))) # Symmetry group
-        schon[filter(j->symbs[j] in orb,i+1:length(symbs))].=false
+        orb=circshift.(Ref(si),1:length(si))
+        f=findfirst(==(si),orb)
+        push!(mult,div(e,f)) # Symmetry group
+        schon[filter(j->symbs[j] in view(orb,1:f),i+1:length(symbs))].=false
       end
     end
     frobs=reduce(vcat,fill.(frobs[schon],mult))
@@ -807,16 +814,15 @@ function family_imprimitive(S)
       print("** WARNING: (S*T)^3!=1\n")
     end
   end
-  res=Dict{Symbol,Any}(:symbols=>symbs,
-                       :fourierMat=>mat,
+  Family(Dict(:symbols=>symbs,
+    :fourierMat=>mat,
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
-    :explanation=>"classical family",
+    :explanation=>"imprimitive family",
     :special=>1,
-    :operations=>FamilyOps) 
-  res[:charLabels] = map(string, 1:length(res[:symbols]))# should be improved
-  res[:size]=length(res[:symbols])
-  res
+    :charLabels=>string.(1:length(symbs)), # should be improved
+    :size=>length(symbs)
+    :operations=>FamilyOps))
 end
 
 """
