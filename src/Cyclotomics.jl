@@ -1,18 +1,20 @@
 """
-Cyclotomic numbers are the complex numbers which are linear combinations of
-roots  of  unity  with  rational  coefficients.  They  form  a  field,  the
-cyclotomic  field,  the  maximal  extension  of  the rationals which has an
-abelian Galois group.
+This  package deals with cyclotomic numbers,  the complex numbers which are
+linear combinations of roots of unity with rational coefficients.
 
-They  are very important  for finite groups,  since the character values of
-such groups are cyclotomic numbers. 
+The  cyclotomic numbers form a field, the  cyclotomic field. It is also the
+maximal  extension of the rationals which  has an abelian Galois group. Its
+ring of integers are the sums of unity with integral coefficients.
 
-This  package is a  port of their  GAP implementation, which  uses a normal
-form given by writing them in the Zumbroich basis. This form allows to find
-the  smallest Cyclotomic field which contains a given number, and decide in
-particular  if a cyclotomic is zero. Let ζₙ=exp(2iπ/n). The Zumbroich basis
-is a particular subset of size φ(n) of 1,ζₙ,ζₙ²,…,ζₙⁿ⁻¹ which forms a basis
-of ℚ (ζₙ).
+Cyclotomics are very important for finite groups, since character values of
+finite groups are cyclotomic integers.
+
+This package is a port of the GAP implementation of cyclotomics, which uses
+a  normal form  given by  writing them  in the  Zumbroich basis.  This form
+allows to find the smallest Cyclotomic field which contains a given number,
+and  decide in particular  if a cyclotomic  is zero. Let ζₙ=exp(2iπ/n). The
+Zumbroich  basis is  a particular  subset of  size φ(n) of 1,ζₙ,ζₙ²,…,ζₙⁿ⁻¹
+which forms a basis of ℚ (ζₙ).
 
 I  started  this  file  by  porting  Christian  Stump's Sage code, which is
 simpler to understand than GAP's code. The reference for the algorithms is
@@ -20,8 +22,9 @@ simpler to understand than GAP's code. The reference for the algorithms is
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
 As  does  GAP,  I  lower  automatically  numbers  after  each  computation;
-currently the code is sometimes 50% slower than the C code in GAP but there
-are probably many opportunities to optimize that I missed.
+currently  the code is  somewhat slower (depending  on the operation it has
+the same speed or is slower up to 50%) than the C code in GAP but there are
+probably many opportunities to optimize that I missed.
 
 What GAP does which I do not do is convert automatically a Cyclotomic which
 is  rational to a Rational,  a Rational which is  integral to an Integer, a
@@ -29,10 +32,11 @@ BigInt  which is  small to  an Int,  etc… This  is a tremendously important
 optimization  but because of type stability in Julia it needs a new type of
 number to be added to Julia, which I am not competent enough to try.
 
-We define two types in this package: `Root1`represents a root of unity, and
-`Cyc` a cyclotomic numer (a sum of roots of unity). The main way to build a
-Cyclotomic  number is to  use the function  `E(n,k=1)` which constructs the
-root of unity ζₙᵏ, and to make linear combinations of such numbers.
+We  define two types in  this package: `Root1` represents  a root of unity,
+and `Cyc` a cyclotomic number. The main way to build a Cyclotomic number is
+to  use the function `E(n,k=1)` which  constructs the `Root1` `ζₙᵏ`, and to
+make   linear  combinations  of  such  numbers  with  integer  or  rational
+coefficients.
 
 # Examples
 ```julia-repl
@@ -49,9 +53,8 @@ E(12,4)-E(12,7)-E(12,11)
 ```julia-repl
 julia> E(12,11)-E(12,7) # square roots of integers are recognized
 Cyc{Int64}: √3
-```
-```julia-rep1
-# but you can prevent that
+
+# but you can prevent that (we assume julia 1.7)
 julia> repr(E(12,11)-E(12,7),context=(:limit=>true,:quadratic=>false))
 "-ζ₁₂⁷+ζ₁₂¹¹"
 
@@ -63,14 +66,16 @@ julia> conductor(a) # a has been lowered to ℚ (ζ₁)=ℚ
 
 julia> typeof(Int(a))
 Int64
-
+```
+```julia-rep1
 julia> Int(E(4))
 ERROR: InexactError: convert(Int64, E(4))
-
+```
+```julia-repl
 julia> inv(1+E(4)) # inverses often need Rational coefficients
 Cyc{Rational{Int64}}: (1-ζ₄)/2
 
-julia> inv(E(5)+E(5,4)) # but not always
+julia> inv(E(5)+E(5,4)) # but not always (we have here a unit)
 Cyc{Int64}: -ζ₅²-ζ₅³
 
 julia> Cyc(1//2+im) # we can convert to Cyclotomics Gaussian rationals
@@ -97,13 +102,14 @@ Root1: ζ₉
 julia> Root1(1+E(4)) # the constructor returns nothing for a non-root
 ```
 
-Th group of roots of unity is isomorphic to ℚ /ℤ , thus `Root1` are represented internally by a rational number in `[0,1[`.
+The  group of  roots of  unity is  isomorphic to  ℚ /ℤ  , thus  `Root1` are
+represented internally by a rational number in `[0,1[`.
 
 ```julia-repl
-julia> Root1(;r=1//4) # this contructor checks the fraction is in [0,1[
+julia> Root1(;r=1//4) # this contructor ensures the fraction is in [0,1[
 Root1: ζ₄
 
-julia> c=E(4)*E(3) # faster computation for roots of unity
+julia> c=E(4)*E(3) # faster computation if staying indside roots of unity
 Root1: ζ₁₂⁷
 
 julia> c=Complex{Float64}(E(3))  # convert to Complex{float} is sometimes useful
@@ -158,8 +164,8 @@ julia> function testmat(p)
        end
 testmat (generic function with 1 method)
 
-julia> @btime Cyclotomics.testmat(12)^2;  # on Julia 1.6
-  334.698 ms (4042392 allocations: 337.99 MiB)
+julia> @btime Cyclotomics.testmat(12)^2;  # on Julia 1.7
+  315.271 ms (4331137 allocations: 302.51 MiB)
 ```
 The equivalent in GAP:
 
@@ -168,7 +174,7 @@ testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
   return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 end; 
 ```
-testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
+testmat(12)^2 takes 0.35s in GAP3, 0.24s in GAP4
 """
 module Cyclotomics
 export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic
@@ -327,7 +333,7 @@ end
    `conductor(c::Cyc)`
    `conductor(v::AbstractVector)`
 
-returns the smallest positive integer  n  uch that `c∈ ℚ (ζₙ)` (resp. all
+returns the smallest positive integer  n such that `c∈ ℚ (ζₙ)` (resp. all
 elements of `v` are in `ℚ (ζₙ)`).
 
 ```julia-repl
@@ -409,7 +415,11 @@ Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
 
 Base.numerator(c::Cyc{<:Rational{T}}) where T =Cyc{T}(c*denominator(c))
 
+if use_list
+const Elist_dict=Dict((1,0)=>(true=>[1])) # to memoize Elist
+else
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
+end
 """
   Elist(n,i)  
   
@@ -473,25 +483,24 @@ function Cyc(a::Root1)
     if n%4==2 return -E(div(n,2),div(i,2)+div(n+2,4)) end
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
 if use_list
-  v=zeros(Int,length(zumbroich_basis(n)))
-  v[l].=ifelse(s,1,-1)
+    v=zeros(Int,length(zumbroich_basis(n)))
+    v[l].=ifelse(s,1,-1)
 else
-  Cyc(n,MM(l.=>ifelse(s,1,-1);check=false))
+    v=MM(l.=>ifelse(s,1,-1);check=false)
 end
+    Cyc(n,v)
   end
 end
 
 Cyc{T}(a::Root1) where T=Cyc{T}(Cyc(a))
 
-if use_list
-Base.zero(c::Cyc)=Cyc(1,eltype(c.d)[0])
-Base.one(c::Cyc)=Cyc(1,eltype(c.d)[1])
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
-Base.iszero(c::Cyc)=c.n==1 && iszero(c.d[1])
-else
 Base.zero(c::Cyc)=Cyc(1,zero(c.d))
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(MM{Int,T}))
 Base.iszero(c::Cyc)=iszero(c.d)
+if use_list
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
+Base.one(c::Cyc{T}) where T =Cyc(1,T[1])
+else
+Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(MM{Int,T}))
 Base.one(c::Cyc{T}) where T =Cyc(1,MM(0=>T(1);check=false))
 end
 
