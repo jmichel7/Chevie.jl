@@ -945,7 +945,7 @@ reflchar(W::PermRootGroup,w)=tr(reflrep(W,w))
 
 Returns  the reflection character of the  reflection group `W`. This is the
 same  as `map(c->reflchar(W,c),class-reps(W))`. When `W` is irreducible, it
-is also `CharTable(W).irr[charinfo(W)[:extRefl][2]]`.
+is also `CharTable(W).irr[charinfo(W).extRefl[2]]`.
 
 ```julia-repl
 julia> reflchar(coxgroup(:A,3))
@@ -997,7 +997,7 @@ function refleigen(W)
 end
 
 function refleigen(t::TypeIrred)
-  ct=CharTable(t).irr[charinfo(t)[:extRefl],:]
+  ct=CharTable(t).irr[charinfo(t).extRefl,:]
   v=map(i->Pol([(-1)^i],i),size(ct,1)-1:-1:0)
   l=CycPol.((permutedims(v)*ct)[1,:])
   ll=map(p->vcat(map(((r,c),)->fill(r,c),p.v.d)...),l)

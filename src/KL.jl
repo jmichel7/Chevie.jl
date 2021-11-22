@@ -376,7 +376,7 @@ julia> ref=reflrep(H)
 ```
 
 ```julia-rep1
-julia> c=CharTable(H).irr[charinfo(W)[:extRefl][[2]],:]
+julia> c=CharTable(H).irr[charinfo(W).extRefl[[2]],:]
 1×10 Matrix{Pol{Int64}}:
  3  2v²-1  v⁸-2v⁴  -3v¹²  2v²-1  v⁴  v⁴-2v²  -v⁶  v⁴-v²  0
 
@@ -550,7 +550,7 @@ function character(c::LeftCell)
     ct=CharTable(c.group)
     cc=decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
-    c.a=charinfo(c.group)[:a][char]
+    c.a=charinfo(c.group).a[char]
     if length(Set(c.a))>1 error() else c.a=c.a[1] end
     char
   end
@@ -722,7 +722,7 @@ function LeftCellRepresentatives(W)
     reps=map(v->W(vcat(v...)...),cartesian(map(x->x[:reps],l)...))
     reps=setdiff(reps,[duflo])
     character=map(p->cart2lin(n,p),cartesian(map(x->x[:character],l)...))
-    a=charinfo(W)[:a][character]
+    a=charinfo(W).a[character]
     if length(Set(a))>1 error() else a=a[1] end
     return LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,
                  :character=>character,:a=>a))
@@ -984,7 +984,7 @@ julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
 function Lusztigaw(W,w)
   v=Pol()
   l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*(-v)^-length(W,w)
-  map((c,a)->c[-a],l,charinfo(W)[:a])
+  map((c,a)->c[-a],l,charinfo(W).a)
 end
 
 """
@@ -1015,7 +1015,7 @@ julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
 function LusztigAw(W,w)
   v=Pol()
   l=char_values(Tbasis(hecke(W,v^2;rootpara=v),w))*v^-length(W,w)
-  map((c,a)->c[nref(W)-a],l,charinfo(W)[:A])
+  map((c,a)->c[nref(W)-a],l,charinfo(W).A)
 end
 
 #----------------- Asymptotic algebra ------------------------------------

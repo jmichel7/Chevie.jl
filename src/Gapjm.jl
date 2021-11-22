@@ -72,7 +72,7 @@ compilation time on first execution).
 I  tried that  as many  submodules as  possible in  my package  can be used
 independently  of the rest, thus could be independent packages. This is the
 case for the modules `Combinat`, `Groups`, `Perms` and `Util`, which can be
-used stand-alone. In addition modules `MatInt`, `Cycs`, `Posets`, `FFields`
+used stand-alone. In addition modules `MatInt`, `Cyclotomics`, `Posets`, `FFields`
 can  be used  stand-alone except  they each  use one  or two functions from
 `Util`. I already made the independent packages `UsingMerge`, `ModuleElts`,
 `LaurentPolynomials`, `PuiseuxPolynomials`.
@@ -94,7 +94,7 @@ include("Util.jl");@reexport using .Util
 include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("Cycs.jl");@usingmerge verbose=true reexport Cycs
+include("Cyclotomics.jl");@usingmerge verbose=true reexport Cyclotomics
 #if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
@@ -110,6 +110,8 @@ include("ComplexR.jl");@reexport using .ComplexR
 include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
+include("CycPols.jl");@reexport using .CycPols
+include("Symbols.jl");@reexport using .Symbols
 include("mvptools.jl")
 include("SPerms.jl");@reexport using .SPerms
 include("Algebras.jl");@reexport using .Algebras
@@ -119,10 +121,8 @@ include("Chevie.jl");@reexport using .Chevie
 include("Urad.jl");@reexport using .Urad
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
-include("CycPols.jl");@reexport using .CycPols
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
-include("Symbols.jl");@reexport using .Symbols
 include("Ucl.jl");@reexport using .Ucl
 include("Gt.jl");@reexport using .Gt
 include("Murphy.jl");@reexport using .Murphy

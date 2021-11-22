@@ -61,7 +61,11 @@ parametrized  by symbols of shape  `[1,0,…,0]` for `G(e,1,n)` and `[0,…,0]`
 for `G(e,e,n)`.
 """
 module Symbols
-using ..Gapjm
+using ..Util: joindigits
+using ..Combinat: arrangements, partition_tuples, constant, collectby
+using ..Cyclotomics: E
+using ..CycPols: CycPol
+using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
 valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
@@ -545,7 +549,7 @@ function  returns  as  a  `CycPol`  the  generic  degree  of  the unipotent
 character parameterized by `s`.
 
 ```julia-repl
-julia> Symbols.gendeg_symbol([[1,2],[1,5,6]])
+julia> gendeg_symbol([[1,2],[1,5,6]])
 q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2
 ```
 Works for symbols for:
@@ -790,6 +794,7 @@ end
 showxsp(r)=println("(symbol=",PartitionTupleToString(r.symbol),
     ", sp=",PartitionTupleToString(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
 
+# pair of tableaux given by permutation p of degree n
 function RobinsonSchensted(n,p)
   Perms.extend(p,n);pi=vec(p)
   P=Vector{Int}[]

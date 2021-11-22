@@ -158,7 +158,7 @@ julia> function testmat(p)
        end
 testmat (generic function with 1 method)
 
-julia> @btime Cycs.testmat(12)^2;  # on Julia 1.6
+julia> @btime Cyclotomics.testmat(12)^2;  # on Julia 1.6
   334.698 ms (4042392 allocations: 337.99 MiB)
 ```
 The equivalent in GAP:
@@ -170,12 +170,72 @@ end;
 ```
 testmat(12)^2 takes 0.35s in GAP3, 0.29s in GAP4
 """
-module Cycs
+module Cyclotomics
 export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic
 
-using ..Util: format_coefficient, bracket_if_needed, stringexp, stringind, 
-              factor, prime_residues, phi
-#using ..Combinat: constant
+#---- formatting utilities duplicated here to avoid dependency ----------
+const ok="([^-+*/]|√-|{-)*"
+const par="(\\([^()]*\\))"
+const nobf=Regex("^[-+]?$ok$par*$ok(/+)?[0-9]*\$")
+const nob=Regex("^[-+]?$ok$par*$ok\$")
+
+function bracket_if_needed(c::String;allow_frac=false)
+  e=allow_frac ? nobf : nob
+  if match(e,c)!==nothing c
+  else "("*c*")" 
+  end
+end
+
+function format_coefficient(c::String;allow_frac=false)
+  if c=="1" ""
+  elseif c=="-1" "-"
+  else bracket_if_needed(c;allow_frac)
+  end
+end
+
+const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
+function stringexp(io::IO,n::Integer)
+  if isone(n) ""
+  elseif get(io,:TeX,false) 
+    "^"*(n in 0:9 ? string(n) : "{"*string(n)*"}")
+  elseif get(io,:limit,false)
+    res=Char[]
+    if n<0 push!(res,'⁻'); n=-n end
+    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
+    String(res)
+  else "^"*string(n)
+  end
+end
+
+const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
+function stringind(io::IO,n::Integer)
+  if get(io,:TeX,false) 
+    n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
+  elseif get(io,:limit,false)
+    res=Char[]
+    if n<0 push!(res,'₋'); n=-n end
+    for i in reverse(digits(n)) push!(res,subvec[i+1]) end
+    String(res)
+  else "_"*string(n)
+  end
+end
+
+#---- number theory utilities duplicated here to avoid dependency ----------
+" the numbers less than n and prime to n "
+function prime_residues(n)
+  if n==1 return [0] end
+  filter(i->gcd(n,i)==1,1:n-1) # inefficient
+end
+
+import Primes
+const dict_factor=Dict(2=>Primes.factor(Dict,2))
+"""
+`factor(n::Integer)`
+make `Primes.factor` fast for small Ints by memoizing it
+"""
+factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
+
+#---- utility duplicated here to avoid dependency ----------
 constant(a)=isempty(a) || all(==(first(a)),a)
 
 #------------------------ type Root1 ----------------------------------
@@ -245,8 +305,10 @@ Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 
 #------------------------ type Cyc ----------------------------------
-const use_list=false # I tried two different implementations. 
-                     # The ModuleElt is twice the speed of the list one
+const use_list=false # I tried 3 different implementations. 
+    # The ModuleElt is twice the speed of the list one
+    # HModuleElt is intermediate
+
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int       # conductor

@@ -999,7 +999,7 @@ function paramcyclic(s::Series)
   mmp=FitParameter(ennola_twist.(Schur,Cyc(s.d)),
                    COMPACTCOHOMOLOGY ? mC(s) : -mC(s))
 # possible perms encoded by mmp[i][1]->mmp[i][2]
-  nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets)[:positionId]]
+  nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets).positionId]
   function predeigen(j, i)#eigenvalue for mC[j] and ζ_e^{i-1}
     if nid in char_numbers(s)# id should correspond to id(WGL)
       Root1(;r=s.d.r*e(s)*s.delta*

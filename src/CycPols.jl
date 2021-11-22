@@ -71,7 +71,7 @@ import ..Gapjm: roots, gap
 using ModuleElts: ModuleElt
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation
 using PuiseuxPolynomials: Mvp
-using ..Cycs: Root1, E, conductor, Cyc
+using ..Cyclotomics: Root1, E, conductor, Cyc
 using ..GLinearAlgebra: charpoly
 using ..Combinat: collectby
 using ..Util: prime_residues, primitiveroot, phi, divisors, factor, 
@@ -505,7 +505,7 @@ function gap(p::CycPol)
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
 end
 
-" eigenvalues as Cycs of a matrix of finite order"
+" eigenvalues as Cyclotomics of a matrix of finite order"
 eigmat(m)=roots(CycPol(Pol(charpoly(m))))
 
 # 281st generic degree of G34; p(Pol()) 2ms back to CycPol 14ms (gap3 10ms)

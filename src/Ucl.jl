@@ -265,7 +265,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   end
   TeX=haskey(opt,:TeX)
   n=fromTeX(n;opt...)
-  if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au])[:positionId]
+  if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au]).positionId
     cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
     n*="^{$cl}"
     n=fromTeX(n;opt...)
@@ -788,7 +788,7 @@ function UnipotentClasses(W,p=0)
   s=springerseries[1]
   if spetscase
     s[:relgroup]=relative_coset(WF,s[:levi])
-    s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+    s[:locsys]=s[:locsys][charinfo(s[:relgroup]).charRestrictions]
   end
   l=filter(i->any(y->i==y[1],s[:locsys]),1:length(classes))
   s[:locsys]=map(((c,s),)->[findfirst(==(c),l),s],s[:locsys])
@@ -796,7 +796,7 @@ function UnipotentClasses(W,p=0)
   for s in springerseries[2:end]
     if spetscase
       s[:relgroup]=relative_coset(WF,s[:levi])
-      s[:locsys]=s[:locsys][charinfo(s[:relgroup])[:charRestrictions]]
+      s[:locsys]=s[:locsys][charinfo(s[:relgroup]).charRestrictions]
     end
     s[:locsys]=map(((c,s),)->[findfirst(==(c),l),s],s[:locsys])
   end
@@ -1054,7 +1054,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 # res[:scalar] is the matrix $P$
   R=ss[:relgroup]
   ct=CharTable(R)
-  k=charinfo(R)[:positionDet]
+  k=charinfo(R).positionDet
 # Partition on characters of ss.relgroup induced by poset of unipotent classes
   res.dimBu=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
   res.blocks=HasType.CollectBy(eachindex(ss[:locsys]),-res.dimBu)
@@ -1220,7 +1220,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
       b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
  #    println("i=",i," b=",b," Au=",Au)
       res.scalar[:,b]*=CharTable(Au).irr
-      res.cardClass[b]=res.Y[[b[charinfo(Au)[:positionId]]],b]*CharTable(Au).irr
+      res.cardClass[b]=res.Y[[b[charinfo(Au).positionId]],b]*CharTable(Au).irr
       res.cardClass[b]=map((x,y)->x*y//length(Au),
                              res.cardClass[b],classinfo(Au)[:classes])
     end
@@ -1563,7 +1563,7 @@ characteristic 3.
 function special_pieces(uc)
   W=uc.spets
   ch=charinfo(W)
-  specialch=findall(iszero,ch[:a]-ch[:b]) # special characters of W
+  specialch=findall(iszero,ch.a-ch.b) # special characters of W
   specialc=first.(uc.springerseries[1][:locsys][specialch])
   sort!(specialc,by=c->-uc.classes[c].dimBu)
   m=permutedims(incidence(uc.orderclasses))

@@ -37,7 +37,7 @@ Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
-Cycs.:^(a::Cyc,b::Rational)=a^Int(b)
+Cyclotomics.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(f::Family,n::Int)=galois(f,n)
 Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
@@ -45,7 +45,7 @@ PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 # translations of GAP3 functions for the Chevie library
 ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
 CartanMat(s,a...)=cartan(Symbol(s),a...)
-CharParams(W)=charinfo(W)[:charparams]
+CharParams(W)=charinfo(W).charparams
 CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
 CollectBy(v,f)=collectby(f,v)
 ConcatenationString(s...)=prod(s)

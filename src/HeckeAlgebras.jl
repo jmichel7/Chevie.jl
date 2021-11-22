@@ -298,7 +298,7 @@ function Chars.CharTable(H::HeckeAlgebra)
     end
     cts=map(cts) do ct
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-      else                     names=charinfo(W)[:charnames]
+      else                     names=charinfo(W).charnames
       end
       CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
             map(Int,ct[:centralizers]),ct[:size],Dict{Symbol,Any}())
@@ -831,7 +831,7 @@ julia> CycPol.(s)
 ```
 """
 schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
-                                    charinfo(H.W)[:charparams])
+                                    charinfo(H.W).charparams)
 
 #----------------------- Factorized Schur elements
 struct FactSchur
@@ -984,9 +984,9 @@ end
 """
 `FactorizedSchurElement(H,phi)`
 
-returns  the factorized `schur_element` (see `FactorizedSchurElements`) of the
-Hecke  algebra  `H`  for  the  irreducible  character of `H` of
-parameter `phi` (see `charinfo(W)[:charparams]`)
+returns  the factorized `schur_element`  (see `FactorizedSchurElements`) of
+the  Hecke algebra  `H` for  the irreducible  character of `H` of parameter
+`phi` (see `charinfo(W).charparams`)
 
 ```julia-repl
 julia> W=ComplexReflectionGroup(4)
@@ -1041,7 +1041,7 @@ julia> FactorizedSchurElements(H)
 ```
 """
 FactorizedSchurElements(H::HeckeAlgebra)=
-    map(p->FactorizedSchurElement(H,p),charinfo(H.W)[:charparams])
+    map(p->FactorizedSchurElement(H,p),charinfo(H.W).charparams)
 #---------------------- Hecke Cosets
 @doc """
 `HeckeCoset`s  are `Hϕ` where `H` is a  Hecke algebra of some Coxeter group
@@ -1110,7 +1110,7 @@ function Chars.CharTable(H::HeckeCoset)
     end
     cts=map(cts) do ct
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-      else                     names=charinfo(W)[:charnames]
+      else                     names=charinfo(W).charnames
       end
       CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
                 map(Int,ct[:centralizers]),length(W),

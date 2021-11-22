@@ -247,7 +247,7 @@ end
 function params(sers)
   for ser in sers ser[:relativeType]=maketype(ser[:relativeType]) end
   chh=map(ser->charinfo(ser[:relativeType]),sers)
-  l=sum(x->length(x[:charnames]),chh)
+  l=sum(x->length(x.charnames),chh)
   res=fill([],l)
   for (i,ser) in enumerate(sers)
     t=ser[:relativeType]
@@ -271,7 +271,7 @@ function SerNames(io::IO,sers)
         for k in [:spaltenstein, :frame, :malle, :kondo, :lusztig] 
           if get(io,k,false) && haskey(ci,k) return ci[k] end
         end
-        ci[:charnames]
+        ci.charnames
       end
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)

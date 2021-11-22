@@ -59,7 +59,7 @@ function FindIntSol(l)
       c=coefficient(p,Monomial())
       if (c isa Cyc) 
         if c.n>1 return p 
-        else c=Cycs.num(c) end
+        else c=Cyclotomics.num(c) end
       end
       if c<0 p=-p ; c=-c end
       return p-floor(c)

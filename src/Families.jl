@@ -76,7 +76,6 @@ FamilyOps=Dict()
 
 @GapObj struct Family end
 
-Base.getindex(f::Family,s::Symbol)=getproperty(f,s) # used in cmplximp.jl
 Base.setindex!(f::Family,x,s::Symbol)=setproperty!(f,s,x) # used in cmplximp.jl
 
 Family(f::Family)=f
@@ -248,7 +247,7 @@ label│eigen      1        2        3
 3    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3
 ```
 """
-function Cycs.galois(f::Family,p::Int)
+function Cyclotomics.galois(f::Family,p::Int)
   f=Family(copy(f.prop))
   f.fourierMat=galois.(fourier(f),p)
   f.eigenvalues=galois.(f.eigenvalues,p)
@@ -700,11 +699,6 @@ julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
 """
 ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 
-function stof(S)
-  l=vcat(map(((i,v),)->fill(i-1,length(v)),enumerate(S))...)
-  l[sortperm(vcat(S...))]
-end
-
 """
 `family_imprimitive(S)`
 
@@ -749,7 +743,10 @@ function family_imprimitive(S)
 # and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct).
 # 
 # To  compute this reasonably fast, it is  decomposed as a product of sums,
-# each relative to a set of consecutive equal entries in ct.
+# each relative to a set of consecutive equal entries in ct. If fᵢ(S) and
+# fᵢ(T) are the restrictions to elements of ct of value i (two subsets of
+# 0:e-1 of length mᵢ, the multiplicity of i) then one
+# does ∏_i(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{σ(fᵢ(S))*fᵢ(T)})
   j=(m*binomial(e,2))%e # for f∈ F we must have sum(f,ct)mod e==j
   ff=filter(x->sum(x)%e==j,cartesian(map(i->0:e-1, Scoll)...))
   ff=map(ff)do coll
@@ -758,21 +755,19 @@ function family_imprimitive(S)
   ff=reduce(vcat,map(x->cartesian(x...), ff)) 
   # now map(x->vcat(x...),ff) are the "canonical" functions
   eps=l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l))
-  globaleps=map(ff)do x
-    if length(x)==1 return 1 end
-    (-1)^sum(i->sum(j->sum(y->count(y.<j),x[i]),x[i+1:end]),1:length(x)-1)
-  end
   epsreps=map(x->eps(reduce(vcat,x)), ff)
-# @show globaleps.*epsreps
-  equiv=map(ff)do x
-    map(y->map(x->(l=x,eps=Root1(eps(x))),arrangements(y,length(y))),x)
-  end
-  # an element in equiv describes f in F with a given f(S). It is a list
-  # for each value in ct of possible im(f) restricted to that value
-  mat=globaleps.*map(equiv)do i
-    epsreps.*map(ff)do v
-      prod(map((l,w)->sum(j->j.eps*E(e,-sum(j.l.*w)),l),i,v))
+  fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
+  perms=map(i->elements(symmetric_group(i)),1:e)
+  function fc(e,f1,f2) # local Fourier coefficient
+    k=f1<=f2 ? (f1,f2) : (f2,f1)
+    get!(fcdict,k)do
+      sum(x->sign(x)*E(e,-sum((f1^x).*f2)),perms[length(f1)])
     end
+  end
+  mat=epsreps.*map(ff)do f
+        epsreps.*map(ff)do f1
+          prod(map((fi,f1i)->fc(e,fi,f1i),f,f1))
+      end
   end
   mat*=(-1)^(m*(e-1))//(E(4,binomial(e-1,2))*root(e)^e)^m
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
@@ -780,12 +775,12 @@ function family_imprimitive(S)
     f=vcat(f...)
     map(x->ct[x],map(x->findall(==(x),f),0:e-1))
   end
+  # next signs are 1 on the principal series
   newsigns=(-1)^(binomial(e,2)*binomial(m,2))*
       map(S->(-1)^sum((0:e-1).*binomial.(length.(S),2)),symbs)
   mat=map((s,l)->s*(newsigns.*l),newsigns,mat)
   if d==0 # compact entries...
-    lesssymb(x,y)=length.(x)<length.(y) || (length.(x)==length.(y) && x>y)
-    isreducedsymb(s)=all(x->s==x || lesssymb(x,s),
+    isreducedsymb(s)=all(x->s==x || Symbols.lesssymbols(x,s),
                                circshift.(Ref(s),1:length(s)-1))
     schon=isreducedsymb.(symbs)
     mult=Int[]
@@ -815,6 +810,8 @@ function family_imprimitive(S)
     end
   end
   Family(Dict(:symbols=>symbs,
+    :fcdict=>fcdict,
+    :ff=>ff,
     :fourierMat=>mat,
     :eigenvalues=>frobs,
     :name=>joindigits(ct),

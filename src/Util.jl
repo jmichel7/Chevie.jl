@@ -67,6 +67,7 @@ macro GapObj(e)
          getfield(o,:prop)[s]),
    :(Base.setproperty!(o::$T,s::Symbol,v)=getfield(o,:prop)[s]=v),
    :(Base.haskey(o::$T,s::Symbol)=haskey(getfield(o,:prop),s)),
+   :(Base.getindex(o::$T,s::Symbol)=getindex(getfield(o,:prop),s)),
    :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,getfield(o,:prop),s))))
 end
 

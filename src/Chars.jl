@@ -76,10 +76,10 @@ julia> ct.classnames
 Recall  that our groups acts a reflection group on the vector space `V`, so
 have  fake degrees  (see "fakeDegree").  The valuation  and degree of these
 give  two  integers  `b,B`  for  each  irreducible  character  of  `W` (see
-`charinf(W)[:b]`  and  `charinfo(W)[:B]`).  For  finite Coxeter groups, the
+`charinfo(W).b`  and  `charinfo(W).B`).  For  finite  Coxeter  groups,  the
 valuation  and degree of  the generic degrees  of the one-parameter generic
-Hecke  algebra  give  two  more  integers  `a,A` (see `charinfo(W)[:a]` and
-`charinfo(W)[:A]`,   and  [Carter1985,  Ch.11](biblio.htm#Car85]  for  more
+Hecke  algebra  give  two  more  integers  `a,A`  (see  `charinfo(W).a` and
+`charinfo(W).A`,   and   [Carter1985,   Ch.11](biblio.htm#Car85]  for  more
 details). These will also be used in the operations of truncated inductions
 explained in the chapter "Reflection subgroups".
 
@@ -443,7 +443,7 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 """
 function fakedegrees(W,q=Pol();recompute=false)
   if !recompute
-    res=improve_type(map(p->fakedegree(W,p,q),charinfo(W)[:charparams]))
+    res=improve_type(map(p->fakedegree(W,p,q),charinfo(W).charparams))
     if !any(isnothing,res) return res end
   end
   # recompute from general principles
@@ -456,53 +456,54 @@ function fakedegrees(W,q=Pol();recompute=false)
     exactdiv(P,
         improve_type(prod(l->(qq*conj(l)-1),refleigen(W,i);init=one(qq))))//c
   end
-  charinfo(W)[:b]=valuation.(P) # horrible hack; fix it!
-  charinfo(W)[:B]=degree.(P)
   if q!=qq P=map(x->x(q),P) end
   P=improve_type(P)
   if W isa Spets P.*=(-1)^rank(W)*generic_sign(W) end
   P
 end
 
+@GapObj struct CharInfo
+end
+
 function charinfo(t::TypeIrred)
-  c=deepcopy(getchev(t,:CharInfo))
-  c[:positionId]=c[:extRefl][1]
-  c[:positionDet]=c[:extRefl][end]
-  c[:charnames]=map(c[:charparams]) do p
+  c=CharInfo(deepcopy(getchev(t,:CharInfo)))
+  c.positionId=c.extRefl[1]
+  c.positionDet=c.extRefl[end]
+  c.charnames=map(c.charparams) do p
      getchev(t,:CharName,p,Dict(:TeX=>true))
   end
-  if !haskey(c,:b) c[:b]=getchev(t,:LowestPowerFakeDegrees) end
-  if !haskey(c,:B) c[:B]=getchev(t,:HighestPowerFakeDegrees) end
-  if !haskey(c,:a) c[:a]=getchev(t,:LowestPowerGenericDegrees) end
-  if !haskey(c,:A) c[:A]=getchev(t,:HighestPowerGenericDegrees) end
-  if isnothing(c[:a])
+  if !haskey(c,:b) c.b=getchev(t,:LowestPowerFakeDegrees) end
+  if !haskey(c,:B) c.B=getchev(t,:HighestPowerFakeDegrees) end
+  if !haskey(c,:a) c.a=getchev(t,:LowestPowerGenericDegrees) end
+  if !haskey(c,:A) c.A=getchev(t,:HighestPowerGenericDegrees) end
+  if isnothing(c.a)
     uc=getchev(t,:UnipotentCharacters)
     if !isnothing(uc) && uc!=false
       if haskey(uc,:almostHarishChandra)
-        c[:a]=uc[:a][uc[:almostHarishChandra][1][:charNumbers]]
-        c[:A]=uc[:A][uc[:almostHarishChandra][1][:charNumbers]]
+        c.a=uc[:a][uc[:almostHarishChandra][1][:charNumbers]]
+        c.A=uc[:A][uc[:almostHarishChandra][1][:charNumbers]]
       else
-        c[:a]=uc[:a][uc[:harishChandra][1][:charNumbers]]
-        c[:A]=uc[:A][uc[:harishChandra][1][:charNumbers]]
+        c.a=uc[:a][uc[:harishChandra][1][:charNumbers]]
+        c.A=uc[:A][uc[:harishChandra][1][:charNumbers]]
       end
     else
       para=map(x->Int(1/x),getchev(t,:EigenvaluesGeneratingReflections))
       para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
-      s=map(p->getchev(t,:SchurElement,p,para,Any[]),c[:charparams])
-      c[:a]=valuation(s[c[:positionId]]).-valuation.(s)
-      c[:A]=degree(s[c[:positionId]]).-degree.(s)
+      s=map(p->getchev(t,:SchurElement,p,para,Any[]),c.charparams)
+      c.a=valuation(s[c.positionId]).-valuation.(s)
+      c.A=degree(s[c.positionId]).-degree.(s)
     end
   end
   for f in [:a,:A,:b,:B]
-    if isnothing(c[f]) delete!(c,f) else c[f]=improve_type(c[f]) end
+    if isnothing(c[f]) delete!(c.prop,f) else c.prop[f]=improve_type(c[f]) end
   end
   if haskey(t,:orbit)
     if !haskey(c,:charRestrictions)
-      c[:charRestrictions]=eachindex(c[:charparams])
-      c[:nrGroupClasses]=length(c[:charparams]) # assume ortit twist trivial
+      c.charRestrictions=eachindex(c.charparams)
+      c.nrGroupClasses=length(c.charparams) # assume orbit twist trivial
     end
     for f in [:a,:A,:b,:B]
-      if haskey(c,f) c[f]*=length(t.orbit) end
+      if haskey(c,f) c.prop[f]*=length(t.orbit) end
     end
   end
   c
@@ -514,19 +515,19 @@ cartfields(p,f)=cartesian(getindex.(p,f)...)
 `charinfo(W)`
 
 returns   information  about  the  irreducible  characters  of  the  finite
-reflection group `W`. The result is a Dict with the following entries:
+reflection group `W`. The result has the following entries:
 
-`:charparams`:  contains  parameters  for  the  irreducible  characters  as
-described in the introduction. The parameters are tuples with one component
-for  each irreducible  component of  `W` (as  given by  `refltype`). For an
-irreducible   component  which  is  an  imprimitive  reflection  group  the
-component  of the `charparam` is a tuple of partitions (partitions for type
-`:A`,  double partitions  for type  `:B`), and  for a primitive irreducible
-group it is a pair `(d,e)` where `d` is the degree of the character and `e`
-is  the  smallest  symmetric  power  of  the  character  of  the reflection
-representation  which  contains  the  given  character  as  a component. In
-addition,  there is an ordinal number if more than one character shares the
-first two invariants.
+`.charparams`:  contains  parameters  for  the  irreducible  characters  as
+described  in the  introduction to  this chapter.  The parameters are lists
+with  one  component  for  each  irreducible  component of `W` (as given by
+`refltype`).   For  an  irreducible  component   which  is  an  imprimitive
+reflection  group the component of the  `charparam` is a list of partitions
+(partitions  for type  `:A`, double  partitions for  type `:B`),  and for a
+primitive irreducible group it is a list `[d,e]` where `d` is the degree of
+the  character and `e` is the smallest  symmetric power of the character of
+the  reflection  representation  which  contains  the  given character as a
+component  (the same as `b` below). In addition, there is an ordinal number
+if more than one character shares the same `[d,e]`.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))[:charparams]
@@ -538,218 +539,114 @@ julia> charinfo(coxgroup(:G,2))[:charparams]
  [[2, 1]]
  [[2, 2]]
 ```
-
-`:charnames`:  strings describing the  irreducible characters, computed from
-the `charparams`. This is the same as `charnames(W)`.
-
-`:positionId`:  the position of the trivial character in the character table
-of `W`.
+when  you print a `charinfo` at the Repl  or in Pluto or Jupyter, you get a
+table synthesizing the information.
 
 ```julia-repl
-julia> charinfo(coxgroup(:D,4))[:positionId]
-13
+julia> charinfo(coxgroup(:G,2))
+n0│ name ext b B a A spaltenstein
+──┼───────────────────────────────
+1 │ φ₁‚₀  Id 0 0 0 0            1
+2 │ φ₁‚₆ det 6 6 6 6            ε
+3 │φ′₁‚₃     3 3 1 5           εₗ
+4 │φ″₁‚₃     3 3 1 5          ε_c
+5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′
+6 │ φ₂‚₂     2 4 1 5           θ″
 ```
 
-`:positionDet`:  Contains the position  of the determinant  character in the
-character   table  of  `W`. For Coxeter groups this is the sign character.
+the  column `name`  reflects the  field `.charnames`,  a name computed from
+`.charparams`. This is the same as `charnames(io,W)` where here `io` being
+the Repl has the property `:limit` on.
 
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:positionDet]
-4
-```
+The   column   `ext`   shows   the   exterior   powers  of  the  reflection
+representation.   If  `W`  is  not  irreducible,  only  two  of  these  are
+irreducible  thus shown:  `Id` corresponds  to the  field `.positionId` and
+shows  which  is  the  trivial  character.  `det`  corresponds to the field
+`.positionDet`  and shows the determinant character (for Coxeter groups the
+sign  character);  it  is  the  highest  non-trivial  exterior power if the
+reflection representation.
 
-`:extRefl`: Only present if `W` is irreducible, in which case the reflection
-representation  of `W` and all its exterior powers are irreducible. It then
-contains   the  position   of  the   exterior  powers   of  the  reflection
-representation in the character table.
+The  characters marked `Λⁱ` are the `i`-th exterior power of the reflection
+representation.  They are  only present  if `W`  is irreducible,  when they
+correspond  to the field `.extRefl` whose  `i+1`-th element is the index of
+the character `Λⁱ`.
 
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:extRefl]
-5-element Vector{Int64}:
- 13
- 11
-  5
-  3
-  4
-```
+The  column  `b`  shows  the  field  `.b`  listing  for  each character the
+valuation  of the fake degree, and the column `B` shows the field `.B`, the
+degree of the fake degree.
 
-`:b`:   contains  a  list  holding  the  `b`-function  for  all  irreducible
-characters  of `W`, that is,  for each character `χ`,  the valuation of the
-fake  degree of `χ`. The ordering of the result corresponds to the ordering
-of  the  characters  in  `CharTable(W)`.  The  advantage  of  this function
-compared  to calling `fakeDegrees` is that one  does not have to provide an
-indeterminate,  and that  it may  be much  faster to  compute than the fake
-degrees.
+The  columns `a` and  `A` only appear  for Spetsial groups. They correspond
+then  to the fields  `.a` and `.A`,  and contain respectively the valuation
+and the degree of the generic degree of the character (in the one-parameter
+Hecke algebra `hecke(W,Pol())` for `W`).
 
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:b]
-13-element Vector{Int64}:
-  6
-  6
-  7
- 12
-  4
-  3
-  6
-  2
-  2
-  4
-  1
-  2
-  0
-```
+For  irreducible  groups,  the  table  shows  sometimes additional columns,
+corresponding to a field of the same name.
 
-`:B`:   contains  a  list  holding  the  `B`-function  for  all  irreducible
-characters  of `W`, that is, for each character `χ`, the degree of the fake
-degree  of `χ`. The ordering  of the result corresponds  to the ordering of
-the  characters in `CharTable(W)`. The  advantage of this function compared
-to  calling  `fakeDegrees`  is  that  one  does  not  have  to  provide  an
-indeterminate,  and that  it may  be much  faster to  compute than the fake
-degrees.
-
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:B]
-13-element Vector{Int64}:
- 10
- 10
- 11
- 12
-  8
-  9
- 10
-  6
-  6
-  8
-  5
-  6
-  0
-```
-
-`:a`:  Only  filled  for  Spetsial  groups.  Contains  a  list  holding  the
-`a`-function  for  all  irreducible  characters  of  the  Coxeter  group or
-Spetsial  reflection  group  `W`,  that  is,  for  each  character `χ`, the
-valuation  of the generic degree of `χ` (in the one-parameter Hecke algebra
-`hecke(W,Pol())`  corresponding  to  `W`).  The  ordering  of  the result
-corresponds to the ordering of the characters in `CharTable(W)`.
-
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:a]
-13-element Vector{Int64}:
-  6
-  6
-  7
- 12
-  3
-  3
-  6
-  2
-  2
-  3
-  1
-  2
-  0
-```
-
-`:A`:  Only  filled  for  Spetsial  groups.  Contains  a  list  holding  the
-`A`-function  for  all  irreducible  characters  of  the  Coxeter  group or
-Spetsial  reflection group `W`, that is, for each character `χ`, the degree
-of   the  generic  degree  of  `χ`  (in  the  one-parameter  Hecke  algebra
-`hecke(W,Pol())`  corresponding  to  `W`).  The  ordering  of  the result
-corresponds to the ordering of the characters in `CharTable(W)`.
-
-```julia-repl
-julia> charinfo(coxgroup(:D,4))[:A]
-13-element Vector{Int64}:
- 10
- 10
- 11
- 12
-  9
-  9
- 10
-  6
-  6
-  9
-  5
-  6
-  0
-```
-
-`:hgal`: Contains the permutation of the characters resulting from a Galois
-action  on the characters of `H=hecke(W,Pol()^e)` where `e` is the order of
-the  center of `W`. `H` splits by taking `v` an `e`-th root of `Pol()`, and
-`.hgal`  records the permutation effected by the Galois action `v->E(e)*v`.
-`.hgal*conj`,  where  `conj`  is  the  complex  conjugaison,  is  the Opdam
-involution.
-
-```julia-repl
-julia> charinfo(ComplexReflectionGroup(22))[:hgal]
-(3,5)(4,6)(11,13)(12,14)(17,18)
-```
-
-```julia-repl
-julia> charinfo(coxgroup(:A,2))
-Dict{Symbol, Any} with 9 entries:
-  :a           => [3, 1, 0]
-  :b           => [3, 1, 0]
-  :positionId  => 3
-  :charnames   => ["111", "21", "3"]
-  :A           => [3, 2, 0]
-  :B           => [3, 2, 0]
-  :extRefl     => [3, 2, 1]
-  :charparams  => [[[1, 1, 1]], [[2, 1]], [[3]]]
-  :positionDet => 1
-```
-
-For  irreducible groups, the returned  record contains sometimes additional
-information:
-
-for  `F₄`: the entry `:kondo` gives the labeling of the characters given by
+for  `F₄`, the column `kondo` gives the labeling of the characters given by
 Kondo, also used in [Lusztig1985, (4.10)](biblio.htm#Lus85).
 
-for  `E₆, E₇, E₈`: the entry `:frame`  gives the labeling of the characters
+for  `E₆, E₇, E₈` the  column `frame` gives the  labeling of the characters
 given   by  Frame,   also  used   in  [Lusztig1985,   (4.11),  (4.12),  and
 (4.13)](biblio.htm#Lus85).
 
-for  `G₂`: the  entry `:spaltenstein`  gives the  labeling of the characters
+for  `G₂` the  column `spaltenstein`  gives the  labeling of the characters
 given by Spaltenstein.
 
-```julia-repl
-julia> charinfo(coxgroup(:G,2))[:spaltenstein]
-6-element Vector{String}:
- "1"
- "\\varepsilon"
- "\\varepsilon_l"
- "\\varepsilon_c"
- "\\theta'"
- "\\theta''"
-```
+for `G(de,e,2)` even `e` and `d>1`, the column `malle` gives the parameters
+for the characters used in [Malle1996](biblio.htm#Mal96).
 
-for  `G(de,e,2)`  even  `e`  and  `d>1`:  the  entry  `:malle`  gives  the
-parameters for the characters used by Malle in [Malle1996](biblio.htm#Mal96).
+Finally,  the  field  `.hgal`  contains  the  permutation of the characters
+resulting  from a Galois  action on the  characters of `H=hecke(W,Pol()^e)`
+where  `e` is the order of  the center of `W`. `H`  splits by taking `v` an
+`e`-th root of `Pol()`, and `.hgal` records the permutation effected by the
+Galois action `v->E(e)*v` (`charinfo` does not have the key `:hgal` if this
+permutation   is  trivial).  `.hgal*conj`,  where  `conj`  is  the  complex
+conjugaison, is the Opdam involution.
+
+```julia-repl
+julia> charinfo(ComplexReflectionGroup(24))
+n0│ name ext  b  B  a  A
+──┼──────────────────────
+1 │ φ₁‚₀  Id  0  0  0  0
+2 │φ₁‚₂₁ det 21 21 21 21
+3 │ φ₃‚₈      8 18  8 20
+4 │ φ₃‚₁  Λ¹  1 11  1 13
+5 │φ₃‚₁₀  Λ² 10 20  8 20
+6 │ φ₃‚₃      3 13  1 13
+7 │ φ₆‚₂      2 12  1 13
+8 │ φ₆‚₉      9 19  8 20
+9 │ φ₇‚₆      6 18  6 18
+10│ φ₇‚₃      3 15  3 15
+11│ φ₈‚₄      4 16  4 17
+12│ φ₈‚₅      5 17  4 17
+hgal=(11,12)
+```
 """
-function charinfo(W)::Dict{Symbol,Any}
+function charinfo(W)
   get!(W,:charinfo)do
     p=charinfo.(refltype(W))
     if isempty(p)
-      res=Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
-      :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]])
+      res=CharInfo(Dict(:a=>[0],:A=>[0],:b=>[0],:B=>[0],:positionId=>1,
+        :positionDet=>1,:charnames=>["Id"],:extRefl=>[1],:charparams=>[[]]))
       if W isa Spets
-        res[:charRestrictions]=[1]
-        res[:nrGroupClasses]=1
+        res.charRestrictions=[1]
+        res.nrGroupClasses=1
       end
       return res
     end
-    if length(p)==1 res=copy(p[1]) else res=Dict{Symbol, Any}() end
-    res[:charparams]=cartfields(p,:charparams)
+    if length(p)==1 res=p[1]
+    else res=CharInfo(Dict{Symbol, Any}())
+    end
+    res.charparams=cartfields(p,:charparams)
     if W isa Spets
       gt=map(x->sort(x.indices),refltype(Group(W)))
       t=refltype(W)
       n=fill(0,length(gt))
       for i in eachindex(t), f in t[i].orbit
-        n[findfirst(==(sort(f.indices)),gt)]=p[i][:nrGroupClasses]
+        n[findfirst(==(sort(f.indices)),gt)]=p[i].nrGroupClasses
       end
-      res[:charRestrictions]=
+      res.charRestrictions=
       map(cartesian(getindex.(p,:charRestrictions)...))do y
         m=fill(0,length(gt))
         for i in eachindex(t), f in t[i].orbit
@@ -757,50 +654,64 @@ function charinfo(W)::Dict{Symbol,Any}
         end
         return cart2lin(n,m)
       end
-      res[:nrGroupClasses]=prod(i->p[i][:nrGroupClasses]^length(t[i].orbit),
+      res.nrGroupClasses=prod(i->p[i].nrGroupClasses^length(t[i].orbit),
                                                           eachindex(t))
     end
     if length(p)==1 return res end
-    res[:charnames]=map(l->join(l,","),cartfields(p,:charnames))
+    res.charnames=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]
-     if all(d->haskey(d,f),p)
-       res[f]=cart2lin(map(x->length(x[:charparams]),p),getindex.(p,f))
+      if all(d->haskey(d,f),p)
+        res.prop[f]=cart2lin(map(x->length(x.charparams),p),getindex.(p,f))
       end
     end
     for f in [:b, :B, :a, :A]
-      if all(d->haskey(d,f),p) res[f]=Int.(map(sum,cartfields(p,f))) end
+      if all(d->haskey(d,f),p) res.prop[f]=Int.(map(sum,cartfields(p,f))) end
     end
-    if any(x->haskey(x, :hgal),p)
-      res[:hgal]=map(x->haskey(x,:hgal) ? x[:hgal] : Perm(), p)
-      gt=cartesian(map(x->1:length(x[:charparams]), p))
-      res[:hgal]=PermListList(gt, map(t->map((x,i)->x^i,t,res[:hgal]),gt))
+    if !haskey(res,:b)
+       P=fakedegrees(W)
+       res.b=valuation.(P)
+       res.B=degree.(P)
+    end
+    if any(x->haskey(x,:hgal),p)
+      res.hgal=map(x->haskey(x,:hgal) ? x.hgal : Perm(), p)
+      gt=cartesian(map(x->1:length(x.charparams), p))
+      res.hgal=PermListList(gt, map(t->map((x,i)->x^i,t,res.hgal),gt))
     end
     res
   end
 end
 
-function showcharinfo(io::IO,W)
-  ci=charinfo(W)
-  t=hcat(ci[:b],ci[:B]);cl=["b","B"]
-  for key in [:a,:A,:spaltenstein,:kondo,:frame,:malle]
-    if haskey(ci,key)
+function Base.show(io::IO,ci::CharInfo)
+  if !(get(io,:TeX,false) || get(io,:limit,false))
+    print(io,ci.prop)
+    return
+  end
+  n=length(ci.charnames)
+  t=fromTeX.(Ref(io),ci.charnames);cl=String["name"]
+  ext=fill("",n)
+  if haskey(ci,:extRefl)
+    ext[ci.extRefl[[1,end]]]=["Id","det"]
+    for (i,j) in enumerate(ci.extRefl[2:end-1]) 
+      ext[j]=fromTeX(io,"\\Lambda^$i")
+    end
+  else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
+  end
+  t=hcat(t,ext); push!(cl,"ext")
+  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle]
+    if haskey(ci,key) && ci[key]!=false
       t=hcat(t,fromTeX.(Ref(io),string.(ci[key])))
       push!(cl,string(key))
     end
   end
-  ext=map(x->"",ci[:b])
-  if haskey(ci,:extRefl)
-    ext[ci[:extRefl][1]]="Id";ext[ci[:extRefl][end]]="det"
-    for (i,j) in enumerate(ci[:extRefl][2:end-1]) 
-      ext[j]=fromTeX(io,"\\Lambda^$i")
-    end
-  else ext[ci[:positionId]]="Id";ext[ci[:positionDet]]="det"
+  if haskey(ci,:charRestrictions)
+    t=hcat(t,string.(ci.charRestrictions))
+    push!(cl,"restr.")
   end
-  t=hcat(t,ext); push!(cl,"ext")
   if haskey(ci,:charSymbols)
-    t=hcat(t,stringsymbol.(ci[:charSymbols]));push!(cl,"symbol")
+    t=hcat(t,stringsymbol.(Ref(io),ci.charSymbols));push!(cl,"symbol")
   end
-  showtable(io,string.(t);row_labels=charnames(io,W),col_labels=cl)
+  showtable(io,string.(t);row_labels=string.(1:n),col_labels=cl,rows_label="n0")
+  if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
 end
 
 """
@@ -821,7 +732,7 @@ julia> detPerm(W)
 function detPerm(W)
   get!(W,:detPerm)do
     t=CharTable(W).irr
-    Perm(t,t.*permutedims(t[charinfo(W)[:positionDet],:]);dims=1)
+    Perm(t,t.*permutedims(t[charinfo(W).positionDet,:]);dims=1)
   end
 end
 
@@ -957,7 +868,7 @@ end
 function CharTable(t::TypeIrred)
   ct=getchev(t,:CharTable)
   if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(t)[:charnames]
+  else                     names=charinfo(t).charnames
   end
   if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
   irr=improve_type(toM(ct[:irreducibles]))
@@ -1303,7 +1214,7 @@ Lusztig when describing the Springer correspondence.
 function charnames(io::IO,W)
   if hasmethod(refltype,(typeof(W),))
     c=charinfo(W)
-    cn=c[:charnames]
+    cn=c.charnames
     for k in [:spaltenstein, :frame, :malle, :kondo]
       if get(io,k,false) && haskey(c,k) cn=c[k] end
     end
@@ -1476,8 +1387,8 @@ j-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
 """
 function jInductionTable(u,g)
   tbl=InductionTable(u,g)
-  bu=charinfo(u)[:b]
-  bg=charinfo(g)[:b]
+  bu=charinfo(u).b
+  bg=charinfo(g).b
   t=copy(tbl.scalar)
   for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
     if bi!=bj t[j,i]=0 end
@@ -1526,8 +1437,8 @@ J-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
 """
 function JInductionTable(u,g)
   tbl=InductionTable(u,g)
-  bu=charinfo(u)[:a]
-  bg=charinfo(g)[:a]
+  bu=charinfo(u).a
+  bg=charinfo(g).a
   t=copy(tbl.scalar)
   for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
     if bi!=bj t[j,i]=0 end
