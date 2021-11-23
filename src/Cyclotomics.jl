@@ -1,6 +1,7 @@
 """
 This  package deals with cyclotomic numbers,  the complex numbers which are
-linear combinations of roots of unity with rational coefficients.
+linear  combinations  of  roots  of  unity  with  rational coefficients. It
+depends on the packages `ModuleElt` and `Primes`.
 
 The  cyclotomic numbers form a field, the  cyclotomic field. It is also the
 maximal  extension of the rationals which  has an abelian Galois group. Its
@@ -312,8 +313,8 @@ Base.:/(a::Root1,b::Root1)=a*inv(b)
 
 #------------------------ type Cyc ----------------------------------
 const use_list=false # I tried 3 different implementations. 
-    # The ModuleElt is twice the speed of the list one
-    # HModuleElt is intermediate
+    # The ModuleElt is 2.5 times the speed of the list one
+    # HModuleElt is 50% slower than ModuleElt
 
 if use_list
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
@@ -322,7 +323,7 @@ struct Cyc{T <: Real}<: Number   # a cyclotomic number
 end
 else
 using ModuleElts
-const MM=ModuleElt # HModuleElt is twice slower
+const MM=ModuleElt # you can try with HModuleElt
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int              # conductor
   d::MM{Int,T} # list of pairs: i=>coeff on zumbroich_basis[i]
@@ -351,7 +352,7 @@ conductor(i::Rational)=1
 
 const zumbroich_basis_dict=Dict(1=>[0]) # The Zumbroich basis is memoized
 """
-  zumbroich_basis(n::Int) 
+  Cyclotomics.zumbroich_basis(n::Int) 
 
   returns  the Zumbroich basis of  ℚ (ζₙ) as the  vector of i in 0:n-1 such
   that `ζₙⁱ` is in the basis
@@ -421,7 +422,7 @@ else
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
 end
 """
-  Elist(n,i)  
+  Cyclotomics.Elist(n,i)  
   
   expresses  ζₙⁱ  in  zumbroich_basis(n):  it  is  a  sum  of some ζₙʲ with
   coefficients all 1 or all -1. The result is a Pair sgn=>inds where sgn is
@@ -471,7 +472,7 @@ end
 if use_list
 Cyc(i::Real)=Cyc(1,[i])
 else
-Cyc(i::Real)=Cyc(1,MM(0=>i)) # check is true for i==0
+Cyc(i::Real)=Cyc(1,MM(0=>i)) # check is needed for i==0
 end
 
 const E_dict=Dict(0//1=>Cyc(1))
@@ -564,13 +565,7 @@ function Complex{T}(c::Cyc)where T<:Union{Integer,Rational}
 if use_list
   return Complex{T}(c.d[1]+im*c.d[2])
 else
-  r=i=zero(T)
-  for (e,c) in c.d
-    if e==0 r=c
-    else i=c
-    end
-  end
-  return Complex{T}(r,i)
+  return Complex{T}(c.d[0]+im*c.d[1])
 end
   end
   throw(InexactError(:convert,Complex{T},c))
@@ -714,9 +709,10 @@ if use_list
 else
   it=p.d
 end
-  res=join( map(it) do (deg,v)
+  res=""
+  for (deg,v) in it
 if use_list
-    if iszero(v) return "" end
+    if iszero(v) continue end
 end
     if deg==0 t=string(v)
     else 
@@ -730,8 +726,8 @@ end
       t*=r
     end
     if t[1]!='-' t="+"*t end
-    t
-  end)
+    res*=t
+  end
   if res[1]=='+' res=res[2:end] end
   if !isone(den) 
     res=bracket_if_needed(res)
@@ -1011,7 +1007,7 @@ if use_list
     return nothing
   end
 else
-  if !(all(x->last(x)==1,c.d) || all(x->last(x)==-1,c.d))
+  if !(all(isone,values(c.d)) || all(x->x==-1,values(c.d)))
     return nothing
   end
 end
@@ -1234,8 +1230,8 @@ function root(x::Cyc,n=2)
 end
 
 # 347.534 ms (4367402 allocations: 366.17 MiB) in 1.5.3
-# 565.431 ms (5861810 allocations: 775.28 MiB) in 1.5.3, ModuleElts Dict
-function testmat(p) # testmat(12)^2 takes 0.27s in 1.0
+# 565.431 ms (5861810 allocations: 775.28 MiB) in 1.5.3, HModuleElts
+function testmat(p)
   ss=[[i,j] for i in 0:p-1 for j in i+1:p-1]
   [(E(p,i'*reverse(j))-E(p,i'*j))//p for i in ss,j in ss]
 end

@@ -57,24 +57,24 @@ end
 """
 `Gcdex(n1,n2)`
 
-`Gcdex` returns a named tuple. The field `gcd` is the gcd of `n1` and n2`.
+`Gcdex`  returns  a  named  tuple  with  fields  `gcd`, `coeff1`, `coeff2`,
+`coeff3` and `coeff4`.
 
-The   fields  `coeff1`  and  `coeff2`   are  integer  cofactors  such  that
-`gcd=coeff1*n1+coeff2*n2`. If `n1` and `n2` both are nonzero, `abs(coeff1)`
-is  less than or equal to  `abs(n2)/(2*gcd)` and `abs(coeff2)` is less than
-or equal to `abs(n1)/(2*gcd)`.
+`gcd` is the gcd of `n1` and n2`.
 
-The  fields  `coeff3`  and  `coeff4`  are  integer cofactors such that `0 =
-coeff3*n1+coeff4*n2`.  If  `n1`  or  `n2`  or  both are nonzero `coeff3` is
-`-n2/gcd` and `coeff4` is `n1/gcd`.
+`m=[coeff1  coeff2;coeff3 coeff4] is a unimodular matrix (an integer matrix
+of determinant ±1) such that `m*[n1,n2]=[gcd,0]`.
 
-The matrix `[coeff1 coeff2;coeff3 coeff4] is always unimodular (that is has
-determinant ±1.
+If  both  `n1`  and  `n2`  are  nonzero,  abs(coeff1)≤abs(n2)/(2*gcd)`  and
+``abs(coeff2)≤abs(n1)/(2*gcd)`.
+
+If  `n1` or  `n2` are  not both  zero `coeff3`  is -n2/gcd` and `coeff4` is
+`n1/gcd`.
 
 ```julia-repl
 julia> MatInt.Gcdex(123,66)
 (gcd = 3, coeff1 = 7, coeff2 = -13, coeff3 = -22, coeff4 = 41)
-# 3 = 7*123  - 13*66,  0 = -22*123  + 41*66
+# [7 -13;-22 41]*[123,66]==[3,0]
 julia> MatInt.Gcdex(0,-3)
 (gcd = 3, coeff1 = 0, coeff2 = -1, coeff3 = 1, coeff4 = 0)
 julia> MatInt.Gcdex(0,0)
