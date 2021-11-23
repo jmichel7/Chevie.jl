@@ -746,33 +746,28 @@ function family_imprimitive(S)
 # each relative to a set of consecutive equal entries in ct. If fᵢ(S) and
 # fᵢ(T) are the restrictions to elements of ct of value i (two subsets of
 # 0:e-1 of length mᵢ, the multiplicity of i) then one
-# does ∏_i(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{σ(fᵢ(S))*fᵢ(T)})
+# does ∏ᵢ(∑_{σ∈ 𝔖 _{mᵢ}}ε(σ)ζₑ^{-σ(fᵢ(S))*fᵢ(T)})=∏ᵢ det(ζₑ.^(-fᵢ(S)*fᵢ(T)'))
   j=(m*binomial(e,2))%e # for f∈ F we must have sum(f,ct)mod e==j
   ff=filter(x->sum(x)%e==j,cartesian(map(i->0:e-1, Scoll)...))
   ff=map(ff)do coll
     map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
   end
   ff=reduce(vcat,map(x->cartesian(x...), ff)) 
-  # now map(x->vcat(x...),ff) are the "canonical" functions
-  eps=l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l))
-  epsreps=map(x->eps(reduce(vcat,x)), ff)
+  ffc=map(x->vcat(x...),ff) # now  ffc are the "canonical" functions
+  eps=map(l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
-  perms=map(i->elements(symmetric_group(i)),1:e)
   function fc(e,f1,f2) # local Fourier coefficient
     k=f1<=f2 ? (f1,f2) : (f2,f1)
     get!(fcdict,k)do
-      sum(x->sign(x)*E(e,-sum((f1^x).*f2)),perms[length(f1)])
+      GLinearAlgebra.det(Cyc.(E.(e,-f1*f2')))
     end
   end
-  mat=epsreps.*map(ff)do f
-        epsreps.*map(ff)do f1
-          prod(map((fi,f1i)->fc(e,fi,f1i),f,f1))
-      end
+  mat=eps.*map(ff)do fS
+      eps.*map(fT->prod(fc.(e,fS,fT)),ff)
   end
-  mat*=(-1)^(m*(e-1))//(E(4,binomial(e-1,2))*root(e)^e)^m
+  mat//=(E(4,binomial(e+1,2)-1)*root(e)^e)^m
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
-  symbs=map(ff)do f
-    f=vcat(f...)
+  symbs=map(ffc)do f
     map(x->ct[x],map(x->findall(==(x),f),0:e-1))
   end
   # next signs are 1 on the principal series
