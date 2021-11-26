@@ -524,7 +524,7 @@ julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
 4-element Vector{Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:
  [.]   
  [1, 3]
- [13]  
+ [13]
  [132] 
 
 julia> B=DualBraidMonoid(W)
@@ -1103,7 +1103,7 @@ function Base.:*(x,b::GarsideElt)
     elseif isone(x) return GarsideElt(M,append!(res,v[i+1:end]),pd+b.pd;check=false)
     end
   end
-  GarsideElt(M,push!(res,x),pd+b.pd;check=false)
+  GarsideElt(M,push!(res,x),pd+b.pd)
 end
 
 # like gap3 AddToNormal: multiply by simple
@@ -1419,7 +1419,7 @@ function DualBraidMonoid(W::PermRootGroup;
   atoms=filter(r->reflength(W,δ/r)<n,unique(reflections(W)))
   M=DualBraidMonoid(δ,order(δ),"δ",atoms,one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing
-    if all(w->isone(w^2),gens(w))
+    if all(w->isone(w^2),gens(W))
        M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
     end
   else M.revMonoid=revMonoid

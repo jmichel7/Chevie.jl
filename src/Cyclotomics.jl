@@ -231,7 +231,7 @@ end
 " the numbers less than n and prime to n "
 function prime_residues(n)
   if n==1 return [0] end
-  filter(i->gcd(n,i)==1,1:n-1) # inefficient
+  filter(i->gcd(n,i)==1,1:n-1) # inefficient; some sieving would be better
 end
 
 import Primes
@@ -312,30 +312,36 @@ Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 
 #------------------------ type Cyc ----------------------------------
-const use_list=false # I tried 3 different implementations. 
+const impl=:MM # I tried 3 different implementations. 
     # The ModuleElt is 2.5 times the speed of the list one
     # HModuleElt is 50% slower than ModuleElt
 
-if use_list
+if impl==:vec
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int       # conductor
   d::Vector{T} # the i-th element is the coefficient on zumbroich_basis[i]
 end
-else
+elseif impl==:svec
+using SparseArrays
+struct Cyc{T <: Real}<: Number   # a cyclotomic number
+  n::Int       # conductor
+  d::SparseVector{T,Int} # d[i]==coeff on ζⁱ⁻¹ (where i∈ zumbroich_basis(n))
+end
+elseif impl==:MM
 using ModuleElts
 const MM=ModuleElt # you can try with HModuleElt
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
-  n::Int              # conductor
-  d::MM{Int,T} # list of pairs: i=>coeff on zumbroich_basis[i]
+  n::Int       # conductor
+  d::MM{Int,T} # list of pairs: i=>coeff on ζⁱ (where i∈ zumbroich_basis(n))
 end
 end
 
 """
    `conductor(c::Cyc)`
-   `conductor(v::AbstractVector)`
+   `conductor(a::AbstractArray)`
 
 returns the smallest positive integer  n such that `c∈ ℚ (ζₙ)` (resp. all
-elements of `v` are in `ℚ (ζₙ)`).
+elements of `a` are in `ℚ (ζₙ)`).
 
 ```julia-repl
 julia> conductor(E(9))
@@ -346,9 +352,9 @@ julia> conductor([E(3),1//2,E(4)])
 ```
 """
 conductor(c::Cyc)=c.n
-conductor(a::Array)=lcm(conductor.(a))
-conductor(i::Integer)=1
-conductor(i::Rational)=1
+conductor(a::AbstractArray)=lcm(conductor.(a))
+conductor(i::Integer)=1 # for convenience
+conductor(i::Rational)=1 # for convenience
 
 const zumbroich_basis_dict=Dict(1=>[0]) # The Zumbroich basis is memoized
 """
@@ -397,10 +403,11 @@ julia> coefficients(Cyc(E(9)))
 ```
 """
 function coefficients(c::Cyc{T})where T
+if impl==:svec return Array(c.d) end
   res=zeros(T,conductor(c))
-if use_list
+if impl==:vec
   for (p,i) in enumerate(zumbroich_basis(length(res))) res[i+1]=c.d[p] end
-else
+elseif impl==:MM
   for (i,v) in c.d res[i+1]=v end
 end
   res
@@ -416,7 +423,7 @@ Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
 
 Base.numerator(c::Cyc{<:Rational{T}}) where T =Cyc{T}(c*denominator(c))
 
-if use_list
+if impl==:vec
 const Elist_dict=Dict((1,0)=>(true=>[1])) # to memoize Elist
 else
 const Elist_dict=Dict((1,0)=>(true=>[0])) # to memoize Elist
@@ -427,7 +434,8 @@ end
   expresses  ζₙⁱ  in  zumbroich_basis(n):  it  is  a  sum  of some ζₙʲ with
   coefficients all 1 or all -1. The result is a Pair sgn=>inds where sgn is
   true  if coefficients are all 1 and false otherwise, and inds is the list
-  of i in 0:n-1 such that ζₙⁱ occurs with a non-zero coefficient.
+  of i in 0:n-1 such that ζₙⁱ occurs with a non-zero coefficient (for the
+  :vec implementation such that ζₙ^z[i] occurs where z=zumbroich_basis(n))
 """
 function Elist(n::Int,i1::Int=1)
   i=mod(i1,n)
@@ -456,24 +464,29 @@ function Elist(n::Int,i1::Int=1)
         if tmp[1]==0 push!(mp,p) end
       end
     end
-if use_list
+if impl==:vec
     z=zumbroich_basis(n)
     if isempty(mp) return true=> Vector{Int}(indexin([i],z)) end
-    v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
-    iseven(length(mp))=>Vector{Int}(indexin((i .+ v).%n,z))
-else
+elseif impl==:svec || impl==:MM
     if isempty(mp) return true=> [i] end
+end
     v=vec(sum.(Iterators.product((div(n,p)*(1:p-1) for p in mp)...)))
+if impl==:vec
+    iseven(length(mp))=>Vector{Int}(indexin((i .+ v).%n,z))
+elseif impl==:svec || impl==:MM
     iseven(length(mp))=>sort((i .+ v).%n)
 end
   end
 end
 
-if use_list
+if impl==:vec
 Cyc(i::Real)=Cyc(1,[i])
+elseif impl==:svec
+Cyc(i::Real)=Cyc(1,sparsevec([1],[i])) # if i==0 dropzeros
 else
-Cyc(i::Real)=Cyc(1,MM(0=>i)) # check is needed for i==0
+Cyc(i::Real)=Cyc(1,MM(i==0 ? Pair{Int,typeof(i)}[] : [0=>i];check=false))
 end
+Cyc{T}(i::Real) where T=Cyc(T(i))
 
 const E_dict=Dict(0//1=>Cyc(1))
 
@@ -483,9 +496,12 @@ function Cyc(a::Root1)
     i=numerator(a.r)
     if n%4==2 return -E(div(n,2),div(i,2)+div(n+2,4)) end
     s,l=Elist(n,i) #::Pair{Bool,Vector{Int}}
-if use_list
+if impl==:vec
     v=zeros(Int,length(zumbroich_basis(n)))
     v[l].=ifelse(s,1,-1)
+elseif impl==:svec
+    v=spzeros(Int,n)
+    v[l.+1].=ifelse(s,1,-1)
 else
     v=MM(l.=>ifelse(s,1,-1);check=false)
 end
@@ -497,18 +513,17 @@ Cyc{T}(a::Root1) where T=Cyc{T}(Cyc(a))
 
 Base.zero(c::Cyc)=Cyc(1,zero(c.d))
 Base.iszero(c::Cyc)=iszero(c.d)
-if use_list
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,T[0])
-Base.one(c::Cyc{T}) where T =Cyc(1,T[1])
-else
-Base.zero(::Type{Cyc{T}}) where T=Cyc(1,zero(MM{Int,T}))
-Base.one(c::Cyc{T}) where T =Cyc(1,MM(0=>T(1);check=false))
-end
+Base.zero(::Type{Cyc{T}}) where T=Cyc{T}(0)
+Base.one(c::Cyc{T}) where T =Cyc{T}(1)
 
 function Cyc(c::Complex)
   if iszero(imag(c)) return Cyc(real(c)) end
-if use_list
+if impl==:vec
   return Cyc(4,[real(c),imag(c)])
+elseif impl==:svec
+  res=sparsevec([1,2],[real(c),imag(c)])
+  dropzeros!(res)
+  res
 else
   if iszero(real(c)) return Cyc(4,MM(1=>imag(c);check=false))
   else return Cyc(4,MM(0=>real(c),1=>imag(c);check=false))
@@ -518,18 +533,16 @@ end
 
 Cyc{T}(c::Complex) where T=T(real(c))+E(4)*T(imag(c))
 
-Cyc{T}(i::Real) where T=Cyc(T(i))
-
 function Cyc{T}(c::Cyc{T1}) where {T,T1}
   if T==T1 return c end
-if use_list
+if impl==:vec || impl==:svec
   Cyc(c.n,T.(c.d))
 else
   Cyc(c.n,convert(MM{Int,T},c.d))
 end
 end
 
-if use_list
+if impl==:vec || impl==:svec
   num(c::Cyc)=c.d[1]
 else
   num(c::Cyc{T}) where T =iszero(c) ? zero(T) : last(first(c.d))
@@ -552,7 +565,7 @@ end
 (::Type{T})(a::Root1) where T<:Number = T(Cyc(a))
 
 function Complex{T}(c::Cyc)where T<:AbstractFloat
-if use_list
+if impl==:vec || impl==:svec
   sum(x->x[2]*cispi(2*T(x[1])/c.n), zip(zumbroich_basis(c.n),c.d))
 else
   iszero(c) ? Complex{T}(0.0) : sum(v*cispi(2*T(k)/c.n) for (k,v) in c.d)
@@ -562,7 +575,7 @@ end
 function Complex{T}(c::Cyc)where T<:Union{Integer,Rational}
   if c.n==1 return Complex{T}(num(c)) end
   if c.n==4 
-if use_list
+if impl==:vec || impl==:svec
   return Complex{T}(c.d[1]+im*c.d[2])
 else
   return Complex{T}(c.d[0]+im*c.d[1])
@@ -628,7 +641,7 @@ end
 function raise(n::Int,c::Cyc) # write c in Q(ζ_n) if c.n divides n
   if n==c.n return c end
   m=div(n,c.n)
-if use_list
+if impl==:vec
   res=zeros(eltype(c.d),length(zumbroich_basis(n)))
   z=zumbroich_basis(c.n)
   for (i,v) in enumerate(c.d)
@@ -637,6 +650,12 @@ if use_list
     @inbounds res[k].+=b ? v : -v
   end
   Cyc(n,res)
+elseif impl==:svec
+  res=spzeros(Int,n)
+  for (i,v) in zip(findnz(c.d)...)
+    (b,k)=Elist(n,i*m)
+    res[k].+=b ? v : -v
+  end
 else
   sumroots(n,i*m=>u for (i,u) in c.d)
 end
@@ -704,14 +723,16 @@ function normal_show(io::IO,p::Cyc{T})where T
   else
     den=1
   end
-if use_list
+if impl==:vec
   it=zip(zumbroich_basis(p.n),p.d)
+elseif impl==:svec
+  it=zip(findnz(p.d)...)
 else
   it=p.d
 end
   res=""
   for (deg,v) in it
-if use_list
+if impl==:vec # should not have a zero in other impls
     if iszero(v) continue end
 end
     if deg==0 t=string(v)
@@ -777,9 +798,12 @@ function Base.:+(x::Cyc,y::Cyc)
   if iszero(a) return b
   elseif iszero(b) return a
   end
-if use_list
+if impl==:vec
   a,b=promote_conductor(a,b)
   lower(Cyc(a.n,a.d+b.d))
+elseif impl==:svec
+  a,b=promote_conductor(a,b)
+  lower(Cyc(a.n,dropzeros!(a.d+b.d)))
 else
   n=lcm(a.n,b.n)
   na=div(n,a.n)
@@ -794,7 +818,7 @@ end
 Base.:-(a::Cyc)=Cyc(a.n,-a.d)
 Base.:-(a::Cyc,b::Cyc)=a+(-b)
 
-if use_list
+if impl==:vec || impl==:svec
 Base.div(c::Cyc,a::Real)=Cyc(c.n,div.(c.d,a))
 Base.://(c::Cyc,a::Real)=Cyc(c.n,c.d.//a)
 else
@@ -820,7 +844,7 @@ function Base.:*(a::Cyc,b::Cyc)
   a,b=promote(a,b)
   if iszero(a) return a end
   if iszero(b) return b end
-if use_list
+if impl==:vec
   a,b=promote_conductor(a,b)
   zb=zumbroich_basis(a.n)
   res=zero(a.d)
@@ -829,6 +853,15 @@ if use_list
     if iszero(c) continue end
 @inbounds  (v,k)=Elist(a.n,zb[i]+zb[j])
 @inbounds  res[k].+=v ? c : -c
+  end
+  lower(Cyc(a.n,res))
+elseif impl==:svec
+  a,b=promote_conductor(a,b)
+  res=spzeros(Int,a.n)
+  for (i,ai) in zip(findnz(a.d)...), (j,bj) in zip(findnz(b.d)...)
+    c=ai*bj
+    (v,k)=Elist(a.n,i+j)
+    res[k].+=v ? c : -c
   end
   lower(Cyc(a.n,res))
 else
@@ -853,7 +886,7 @@ else
 end
 end
 
-if use_list
+if impl==:vec
 function Cyc(m::Int,z::Vector{Int},c::Vector{T})where T
   zb=zumbroich_basis(m)
   res=zeros(T,length(zb))
@@ -866,16 +899,17 @@ function lower(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
   n=c.n
 # println("lowering $(c.n):$(c.d)")
   if n==1 return c end
-if use_list
+if impl==:vec
   nz=findall(!iszero,c.d)
   if length(nz)==0 return Cyc(c.d[1]) end
   zb=zumbroich_basis(n)
+elseif impl==:svec return c
 else
   if iszero(c) return zero(Cyc{T}) end
 end
   for (p,np) in factor(n)
     m=div(n,p)
-if use_list
+if impl==:vec
     let m=m, zb=zb
     if np>1
       if all(z->z%p==0,zb[nz])
@@ -938,7 +972,7 @@ true
 """
 function galois(c::Cyc,n::Int)
   if gcd(n,c.n)!=1 error("$n should be prime to conductor($c)=$(c.n)") end
-if use_list
+if impl==:vec
   zb=zumbroich_basis(c.n)
   nz=findall(!iszero,c.d)
   if isempty(nz) c
@@ -1002,7 +1036,7 @@ julia> Root1(-E(9,4)-E(9,5)) # nothing
 ```
 """ 
 function Root1(c::Cyc)
-if use_list
+if impl==:vec
   if !(all(x->x==0 || x==1,c.d) ||all(x->x==0 || x==-1,c.d))
     return nothing
   end
@@ -1023,7 +1057,7 @@ end
 end
 
 Base.:(==)(a::Root1,b::Number)=Cyc(a)==b
-if !use_list # optimize special case
+if impl!=:vec # optimize special case
 function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
   na=div(n,conductor(a))
@@ -1143,7 +1177,7 @@ function Base.show(io::IO,q::Quadratic)
 end
 
 const inforoot=Ref(false)
-using ..Util: xprint
+xprint(x...;p...)=print(IOContext(io,:limit=>true,p...),x...)
 function proot(x,n,r)
   xprint("root(",x)
   if n!=2 xprint(",",n) end
