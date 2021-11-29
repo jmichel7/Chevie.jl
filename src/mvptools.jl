@@ -173,14 +173,14 @@ Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 Gapjm.gap(p::Integer)=string(p)
 
 function Gapjm.gap(p::Cyc)
-  res=join(map(p.d) do (deg,v)
+  res=join(map(pairs(p)) do (deg,v)
     den=denominator(v)
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
       v=format_coefficient(string(v))
       t=v in ["","-"] ? v : v*"*"
-      r=(deg==1 ? "E($(p.n))" : "E($(p.n))^$deg")
+      r=(deg==1 ? "E($(conductor(p)))" : "E($(conductor(p)))^$deg")
       t*=r
     end
     if t[1]!='-' t="+"*t end

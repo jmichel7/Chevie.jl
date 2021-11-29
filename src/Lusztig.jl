@@ -58,7 +58,7 @@ function FindIntSol(l)
       if iszero(p) || valuation(p)!=0 return p end
       c=coefficient(p,Monomial())
       if (c isa Cyc) 
-        if c.n>1 return p 
+        if conductor(c)>1 return p 
         else c=Cyclotomics.num(c) end
       end
       if c<0 p=-p ; c=-c end
