@@ -354,7 +354,7 @@ const impl=:MM # I tried 4 different implementations. For testmat(12)^2
     # :svec is 20% slower than ModuleElt
     # :vec is 40% slower than ModuleElt
 
-const lazy=true # whether to lower all the time or on demand
+const lazy=false # whether to lower all the time or on demand
 if impl==:vec
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   d::Vector{T} # the i-th element is the coefficient on ζⁱ⁻¹
@@ -1076,13 +1076,22 @@ end
 
 Base.conj(c::Cyc)=galois(c,-1)
 
+# list of galois conjugates of c not equal to c
+function propergalois(c::Cyc)
+  res=typeof(c)[]
+  for i in prime_residues(conductor(c))[2:end]
+    c1=galois(c,i)
+    if c1!=c && !(c1 in res) push!(res,c1) end
+  end
+  res
+end
+
 function Base.inv(c::Cyc)
   if conductor(c)==1
     r=num(c)
     if r==1 || r==-1 return Cyc(r) else return Cyc(1//r) end
   end
-  l=setdiff(unique(map(i->galois(c,i),prime_residues(conductor(c)))),[c])
-  r=prod(l)
+  r=prod(propergalois(c))
   n=num(lazy ? lower!(c*r) : c*r)
   n==1 ? r : (n==-1 ? -r : r//n)
 end
@@ -1142,7 +1151,8 @@ function Root1(c::Cyc)
   # return nothing
 end
 
-Base.:(==)(a::Root1,b::Number)=Cyc(a)==b
+Base.:(==)(a::Root1,b::Number)=Cyc(a)==b # too expensive in lazy case
+
 function Base.:*(a::Cyc,b::Root1)
   n=lcm(conductor(a),conductor(b))
   na=div(n,conductor(a))
@@ -1203,9 +1213,9 @@ function Quadratic(c::Cyc{T})where T
   if v2==0
     sqr=conductor(c)
     if sqr%4==3 sqr=-sqr end
-    gal=Set(galois.(c,prime_residues(conductor(c))))
-    if length(gal)!=2 return nothing end
-    a=numerator(convert(T,sum(gal)))      # trace of 'c' over the rationals
+    gal=propergalois(c)
+    if length(gal)!=1 return nothing end
+    a=numerator(convert(T,gal[1]+c))      # trace of 'c' over the rationals
     if length(f)%2==0 b=2*c[1]-a
     else b=2*c[1]+a
     end
