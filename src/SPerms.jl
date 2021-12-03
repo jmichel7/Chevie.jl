@@ -440,7 +440,10 @@ function Perms.reflength(W::CoxHyperoctaedral,w)
   div(sym,2)+nsym
 end
 
-" Only parabolics defined are I=1:m for m≤n"
+"""
+`reflection_subgroup(W::CoxHyperoctaedral,I)`
+the only parabolics defined are `I=1:m` for `m≤ngens(W)`.
+"""
 function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end
   CoxHyperoctaedral(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())

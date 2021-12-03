@@ -939,8 +939,9 @@ julia> SScentralizer_reps(W,2)
 function SScentralizer_reps(W,p=0)
 # W-orbits of subsets of Π∪ {-α₀}
   l=map(refltype(W))do t
-    cent=parabolic_reps(reflection_subgroup(W,t.indices))
-    cent=map(x->reflection_subgroup(W,t.indices[x]),cent)
+    H=reflection_subgroup(W,t.indices)
+    cent=map(I->inclusion(H,W,I),parabolic_reps(H))
+    cent=map(I->reflection_subgroup(W,I),cent)
     npara=length(cent)
     r=filter(i->sum(W.rootdec[i])==sum(W.rootdec[i][t.indices]),1:nref(W))
     (m,h)=findmax(sum.(W.rootdec[r]))
@@ -952,7 +953,7 @@ function SScentralizer_reps(W,p=0)
       u=findall(G->IsomorphismType(R)==IsomorphismType(G),cent[npara+1:end])
       if length(u)>0 println(u,R) end
       if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
-                 sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara+u])
+             sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara+u])
         push!(cent,R)
       end
     end

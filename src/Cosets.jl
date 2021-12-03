@@ -716,9 +716,10 @@ function PermRoot.parabolic_reps(WF::CoxeterCoset,s)
   W=Group(WF)
   res=Vector{Int}[]
   for I in parabolic_reps(W,s)
-    if sort(I.^WF.phi)==sort(I) push!(res,I)
+   if sort(action.(Ref(W),I,WF.phi))==sort(I) push!(res,I)
     else
-      c=filter(x->sort(x.^WF.phi)==sort(x),standard_parabolic_class(W,I))
+      c=filter(x->sort(action.(Ref(W),x,WF.phi))==sort(x),
+                 standard_parabolic_class(W,I))
       if !isempty(c) push!(res,c[1]) end
     end
   end

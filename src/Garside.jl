@@ -923,7 +923,7 @@ function fraction(b::GarsideElt)
 end;
 
 function Base.getindex(x::GarsideElt,i::Integer)
-  if i<=x.pd return x.M.δ
+  if i<=x.pd return x.pd==0 ? one(x.M) : x.M.δ
   elseif i>x.pd+length(x.elm) return one(x.M)
   else return x.elm[i-x.pd]
   end

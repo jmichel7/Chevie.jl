@@ -1320,7 +1320,7 @@ function recompute_parabolic_reps(W) # W irreducible
   stoi=s->findfirst(i->reflection(W,i)==s,eachindex(roots(W)))
   l=[map(x->reflection_subgroup(W,[x]),sort(unique(simple_reps(W))))]
   for i in 2:semisimplerank(W)-1
-   new=[];ref=Vector{Pair{Int,Int}}[]
+    new=[];ref=Vector{Pair{Int,Int}}[]
     for v in l[i-1]
       InfoChevie("# Extending ",v)
       S=normalizer(W,v)
@@ -1374,9 +1374,9 @@ function parabolic_reps(W::PermRootGroup,s)
       R=reflection_subgroup(W,t[i].indices)
       return recompute_parabolic_reps(R)[c[i]+1]
     elseif all(x->all(y->y in 1:t[i].rank,x),r)
-      return map(x->inclusion(W,t[i].indices[x]),r)
-    else R=reflection_subgroup(W,inclusion(W,t[i].indices))
-      return map(x->inclusion(R,x),r);
+      return map(x->t[i].indices[x],r)
+    else R=reflection_subgroup(W,t[i].indices)
+      return map(x->inclusion(R,W,x),r);
     end
     end...))end...)
 end
