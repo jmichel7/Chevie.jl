@@ -116,11 +116,7 @@ end
 lnullspace(m)=permutedims(nullspace(permutedims(m)))
 
 "sum of the rowspaces of matrices m and n"
-function sum_rowspace(m::Matrix,n::Matrix)
-  mat=[m m;n zero(n)]
-  sm=echelon(mat)[1][:,axes(m,2)]
-  sm[1:count(!iszero,eachrow(sm)),:]
-end
+sum_rowspace(m::Matrix,n::Matrix)=echelon(vcat(m,n))[1]
 
 "intersection of the rowspaces of matrices m and n"
 function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)

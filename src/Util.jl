@@ -132,30 +132,26 @@ function stringexp(io::IO,r::Rational{<:Integer})
   String(res)
 end
 
-const supvec=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹']
-
 function stringexp(io::IO,n::Integer)
   if isone(n) ""
   elseif get(io,:TeX,false) 
     n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
   elseif get(io,:limit,false)
-    res=Char[]
-    if n<0 push!(res,'⁻'); n=-n end
-    for i in reverse(digits(n)) push!(res,supvec[i+1]) end
+    if n<0 res=['⁻']; n=-n else res=Char[] end
+    for i in reverse(digits(n)) 
+      push!(res,['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'][i+1])
+    end
     String(res)
   else "^"*string(n)
   end
 end
 
-const subvec=['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉']
-
 function stringind(io::IO,n::Integer)
   if get(io,:TeX,false) 
     n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
   elseif get(io,:limit,false)
-    res=Char[]
-    if n<0 push!(res,'₋'); n=-n end
-    for i in reverse(digits(n)) push!(res,subvec[i+1]) end
+    if n<0 res=['₋']; n=-n else res=Char[] end
+    for i in reverse(digits(n)) push!(res,Char(0x2080+i)) end
     String(res)
   else "_"*string(n)
   end
