@@ -237,11 +237,38 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
         trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
         d = 2
       else
-        error("Au non-commutative of order ",Size(cl[:Au])*2,"  !  implemented")
+        error("Au non-commutative of order ",Size(cl[:Au])*2," not implemented")
       end
       addSpringer(ss->ss[:Z]==[-1] && rank(ss[:relgroup])==sum(sum,s),i,s,d)
     end
   end
   for ss in uc[:springerSeries] if !all(isone,ss[:Z]) ss[:hc]=0 end end
   return uc
+end)
+
+chevieset(:B, :ClassParameter, function (n, w)
+  x=Perm()
+  for i in w
+    x*=i==1 ? Perm(1, n+1) : x*=Perm(i-1,i)*Perm(i-1+n,i+n)
+  end
+  res = [Int[], Int[]]
+  mark=trues(n)
+  for i in 1:n
+    if mark[i]
+      cyc = CyclePermInt(x, i)
+      if i+n in cyc
+        push!(res[2], div(length(cyc),2))
+      else
+        push!(res[1], length(cyc))
+      end
+      for j in cyc
+        if j>n mark[j-n]=false
+        else mark[j]=false
+        end
+      end
+    end
+  end
+  sort!(res[1])
+  sort!(res[2])
+  [reverse(res[1]), reverse(res[2])]
 end)

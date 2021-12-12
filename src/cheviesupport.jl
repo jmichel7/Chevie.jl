@@ -50,6 +50,16 @@ CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
 CollectBy(v,f)=collectby(f,v)
 ConcatenationString(s...)=prod(s)
 CoxeterGroup()=coxgroup()
+CyclePermInt(p::Perm,i::Integer)=orbit(p,i)
+function CycleStructurePerm(p::Perm)
+  if isone(p) return Int[] end
+  t=cycletype(p)
+  res=[0,nothing]
+  resize!(res,maximum(first.(t))-1)
+  res.=nothing
+  for (k,v) in t res[k-1]=v end
+  res
+end
 function DiagonalMat(v...)
   arg=map(v)do m
     if m isa Array 0 .+toM(m)

@@ -235,6 +235,35 @@ function Base.intersect(G::PermGroup, H::PermGroup)
   Groups.weedgens(res)
 end
 
+cycletypes(W,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
+
+# eventually rewrite this dispatching on types
+function classinv(W::PermGroup)
+  get!(W,:classinv)do
+    cycletypes.(Ref(W),classreps(W))
+  end
+end
+
+function positions_class(W::PermGroup,w)
+  l=findall(==(cycletypes(W,w)),classinv(W))
+  if length(l)==1 return l end
+  if length(centre(W))>1
+    central=gens(centre(W))
+    l=filter(i->cycletypes.(Ref(W),classreps(W)[i].*central)==
+                cycletypes.(Ref(W),w.*central),l)
+    if length(l)==1 return l end
+  end
+  l
+end
+
+function Groups.position_class(W::PermGroup,w)
+  l=positions_class(W,w)
+  if length(l)==1 return only(l) end
+  for i in eachindex(l) 
+    if w in conjugacy_class(W,l[i]) return l[i] end
+  end
+end
+
 #-------------- iteration on product of lists of group elements ---------------
 # if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
 struct ProdIterator{T}

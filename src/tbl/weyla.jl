@@ -84,7 +84,7 @@ chevieset(:A, :ClassParameter, function (n, w)
             x = x * Perm(i, i + 1)
         end
         res = []
-        mark = 1:n + 1
+        mark =collect(1:n+1)
         for i = 1:n + 1
             if mark[i] != 0
                 cyc = CyclePermInt(x, i)

@@ -72,7 +72,7 @@ chevieset(Symbol("2A"), :ClassParameter, function (n, w)
             x = x * Perm(i, (n + 2) - i)
         end
         res = []
-        mark = 1:n + 1
+        mark = collect(1:n+1)
         for i = 1:n + 1
             if mark[i] != 0
                 cyc = CyclePermInt(x, i)

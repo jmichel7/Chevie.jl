@@ -668,6 +668,7 @@ end
 Base.isinteger(a::Root1)=a.r==0//1 || a.r==1//2
 
 Base.isreal(c::Cyc)=conductor(c)==1 || c==conj(c)
+Base.isreal(a::Root1)=isinteger(a)
 
 function Base.real(c::Cyc{T}) where T<:Real
   if lazy lower!(c) end

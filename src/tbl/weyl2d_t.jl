@@ -59,3 +59,29 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
   end
   uc
 end)
+
+chevieset(Symbol("2D"), :ClassParameter, function (n, w)
+  x=Perm()
+  for i in w
+    x*= i==1 ? Perm(1, n+2)*Perm(2, n+1) : Perm(i-1,i)*Perm(i-1+n,i+n)
+  end
+  x*=Perm(1,n+1)
+  res = [Int[],Int[]]
+  mark=fill(true,n)
+  for i in 1:n
+    if mark[i]
+      cyc=orbit(x, i)
+      if i+n in cyc push!(res[2], div(length(cyc),2))
+      else push!(res[1], length(cyc))
+      end
+      for j in cyc
+        if j>n mark[j-n]=false
+        else mark[j]=false
+        end
+      end
+    end
+  end
+  sort!(res[1])
+  sort!(res[2])
+  [reverse(res[1]), reverse(res[2])]
+end)

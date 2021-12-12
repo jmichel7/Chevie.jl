@@ -633,7 +633,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Base.one,
- Gapjm.roots, Groups.gens, Groups.position_class, PermGroups.classreps,
+ Gapjm.roots, Groups.gens, PermGroups.classreps,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank, 
@@ -1057,6 +1057,18 @@ function relative_group(W::FiniteCoxeterGroup,J)
       end
     end
   res
+end
+
+function Groups.position_class(W::FiniteCoxeterGroup,w)
+  l=PermGroups.positions_class(W.G,w)
+  if length(l)==1 return only(l) end
+  ww=word(W,w)
+  iw=map(refltype(W))do t
+    v=map(i->findfirst(==(i),t.indices),filter(i->i in t.indices,ww))
+    c=getchev(t,:ClassParameter,v)
+  end
+  if any(isnothing,iw) return position_class(W.G,w) end
+  findfirst(==(iw),classinfo(W)[:classparams])
 end
 
 end

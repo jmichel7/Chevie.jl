@@ -806,7 +806,7 @@ Dict{Symbol, Any} with 5 entries:
   :orders      => [1, 2, 3]
   :classtext   => [Int64[], [1], [1, 2]]
   :classnames  => ["111", "21", "3"]
-  :classparams => [[1, 1, 1], [2, 1], [3]]
+  :classparams => [[[1, 1, 1]], [[2, 1]], [[3]]]
 ```
 
 See also the introduction of this section.
@@ -821,7 +821,7 @@ function classinfo(W)::Dict{Symbol,Any}
     if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
     res[:classtext]=map(x->reduce(vcat,x),cartfields(tmp,:classtext))
     res[:classnames]=map(join,cartfields(tmp,:classnames))
-    if all(haskey.(tmp,:classparam))
+    if all(haskey.(tmp,:classparams))
       res[:classparams]=cartfields(tmp,:classparams)
     end
     if all(haskey.(tmp,:orders))

@@ -1068,24 +1068,9 @@ function Groups.centre(W::PermRootGroup)
   end
 end
      
-cycletypes(W,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
-
-# eventually rewrite this dispatching on types
-function classinv(W::PermRootGroup)
-  get!(W,:classinv)do
-    cycletypes.(Ref(W),classreps(W))
-  end
-end
-
 function Groups.position_class(W::PermRootGroup,w)
-  l=findall(==(cycletypes(W,w)),classinv(W))
-  if length(l)==1 return l[1] end
-  if length(centre(W))>1
-    central=gens(centre(W))
-    l=filter(i->cycletypes.(Ref(W),classreps(W)[i].*central)==
-                cycletypes.(Ref(W),w.*central),l)
-    if length(l)==1 return l[1] end
-  end
+  l=PermGroups.positions_class(W,w)
+  if length(l)>1 println("ambiguity: ",l) end
   # doit type by type
   if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
   ncl=classinfo(W)[:classes][l]
@@ -1481,7 +1466,7 @@ end
 end
 
 function PRG(r::AbstractVector{<:AbstractVector},
-             cr::AbstractVector{<:AbstractVector};NC=false)
+             cr::AbstractVector{<:AbstractVector};NC=false,T1=Int16)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
   matgens=map(reflection,r,cr)
@@ -1519,7 +1504,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   end
   ncr=Vector{eltype(cr)}(undef,length(rr))
   ncr[eachindex(cr)].=cr
-  W=PRG(Perm{Int16}.(refls),Perm{Int16}(),matgens,rr,ncr,Dict{Symbol,Any}())
+  W=PRG(Perm{T1}.(refls),Perm{T1}(),matgens,rr,ncr,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=PermRoot.indices(t)
@@ -1534,7 +1519,7 @@ end
 
 PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
 
-PRG(i::Integer)=PRG(Perm{Int16}[],Perm{Int16}(),Matrix{Int}[],Vector{Int}[],
+PRG(i::Integer;T1=Int16)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],Vector{Int}[],
                     Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 
 radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
