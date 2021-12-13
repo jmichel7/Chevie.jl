@@ -792,7 +792,7 @@ coxgroup()=torus(0)
 
 #reflection representation in the basis of rootdec
 #function reflrep(W::FCG,w)
-#  vcat(permutedims(hcat(roots.(Ref(W),(1:coxrank(W)).^w)...)))
+#  vcat(permutedims(hcat(roots.(Ref(W),(1:ngens(W)).^w)...)))
 #end
 
 # root lengths for parent group
@@ -976,7 +976,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
 # contrary to Chevie, I is indices in W and not parent(W)
   inclusion=sort!(vcat(orbits(reflection.(Ref(W),I),I)...))
   N=div(length(inclusion),2)
-  if !all(i->i in 1:coxrank(W),I) I=SimpleRootsSubsystem(W,inclusion[1:N]) end
+  if !all(i->i in 1:ngens(W),I) I=SimpleRootsSubsystem(W,inclusion[1:N]) end
   C=cartan(W,I)
   rootdec=isempty(C) ? Vector{T1}[] : roots(C)
   rootdec=vcat(rootdec,-rootdec)

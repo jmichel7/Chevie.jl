@@ -170,7 +170,7 @@ const ChevieDict=Dict(
 "IsParabolic"=>"is_parabolic",
 #IsNormalizing
 #IsQuasiIsolated
-"IsomorphismType"=>"IsomorphismType",
+"IsomorphismType"=>"isomorphism_type",
 "IsUnipotentElement(x)"=>"x isa UnipotentElement",
 "jInductionTable"=>"jInductionTable",
 "JInductionTable"=>"JInductionTable",
@@ -234,7 +234,7 @@ const ChevieDict=Dict(
 "PartitionsSet"=>"partitions_set",
 "PartitionTuples"=>"partition_tuples",
 #PartitionTupleToString
-"PermCosetsSubgroup(H,W)"=>"D=reduced(H,W);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",
+"PermCosetsSubgroup(H,W)"=>"D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",
 "PermListList(l1,l2)"=>"Perm(l1,l2)",
 "PermList(v)"=>"Perm(v)",
 "PermMatMat"=>"Perm_onmats",
@@ -309,7 +309,6 @@ const ChevieDict=Dict(
 "SchurFunctor"=>"schur_functor",
 "SemisimpleCentralizerRepresentatives"=>"SScentralizer_reps",
 "SemisimpleElement"=>"SS",
-"SemisimpleRank(W::CoxeterGroup)"=>"coxrank(W)",
 "SemisimpleRank"=>"semisimplerank",
 "SemisimpleSubgroup"=>"torsion_subgroup",
 "ShiftBeta"=>"shiftβ",
@@ -360,6 +359,7 @@ const ChevieDict=Dict(
 "WeightInfo"=>"weightinfo",
 "WGraph"=>"Wgraph",
 "WGraphToRepresentation"=>"WGraphToRepresentation",
+"W.matgens"=>"reflrep(W)",
 "W.matgens[i]"=>"reflrep(W,i)",
 "W.N"=>"nref(W)",
 "W.orbitRepresentative"=>"simple_reps(W)",

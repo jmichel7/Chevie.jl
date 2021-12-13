@@ -129,7 +129,7 @@ groups given its type.
 """
 module CoxGroups
 
-export bruhatless, CoxeterGroup, coxrank, firstleftdescent, leftdescents,
+export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
   words, inversions
 
@@ -243,8 +243,7 @@ julia> word(W,p)
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
 Base.eltype(W::CoxeterGroup{T}) where T=T
-coxrank(W::CoxeterGroup)=ngens(W)
-PermRoot.semisimplerank(W::CoxeterGroup)=coxrank(W)
+PermRoot.semisimplerank(W::CoxeterGroup)=ngens(W)
 
 """
 `longest(W)`
@@ -374,8 +373,8 @@ true
 function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=get!(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
-  if coxrank(W)==1 return l>1 ? T[] : gens(W) end
-  H=get!(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)#::CoxeterGroup{T}
+  if ngens(W)==1 return l>1 ? T[] : gens(W) end
+  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)#::CoxeterGroup{T}
   rc=get!(()->[[one(W)]],W,:rc)#::Vector{Vector{T}}
   while length(rc)<=l
     new=reducedfrom(H,W,rc[end])
@@ -402,12 +401,12 @@ const Wtype=Vector{Int8}
 function words(W::CoxeterGroup{T}, l::Int)where T
   ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
-  if coxrank(W)==1
+  if ngens(W)==1
     if l!=1 return Vector{Int}[]
     else return [[1]]
     end
   end
-  H=get!(()->reflection_subgroup(W,1:coxrank(W)-1),W,:maxpara)::CoxeterGroup{T}
+  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)::CoxeterGroup{T}
   rc=get!(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
     new=reducedfrom(H,W,(x->W(x...)).(rc[end]))
@@ -643,7 +642,7 @@ PermRoot.Diagram(W::CoxeterGroup)=Diagram.(refltype(W))
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
    Category(collect(sort(I));action=(J,e)->sort(action.(Ref(W),J,e)))do J
-    map(setdiff(1:coxrank(W),J)) do i
+    map(setdiff(1:ngens(W),J)) do i
       longest(W,J)*longest(W,push!(copy(J),i))
     end
   end
@@ -672,7 +671,7 @@ standard_parabolic_class(W,I::Vector{Int})=parabolic_category(W,I).obj
 
 # representatives of parabolic classes
 function PermRoot.parabolic_reps(W::CoxeterGroup,s)
-  l=collect(combinations(1:coxrank(W),s))
+  l=collect(combinations(1:ngens(W),s))
   orbits=[]
   while !isempty(l)
     o=standard_parabolic_class(W,l[1])

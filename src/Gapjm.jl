@@ -16,7 +16,7 @@ To install this package, at the Julia command line:
   *  enter package mode with ]
   *  do the command
 ```
-(v1.0) pkg> add "https://github.com/jmichel7/Gapjm.jl"
+(@v1.6) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
 - exit package mode with backspace and then do
 ```
@@ -27,7 +27,7 @@ and you are set up.
 To update later to the latest version, do
 
 ```
-(v1.0) pkg> update "https://github.com/jmichel7/Gapjm.jl"
+(@v1.6) pkg> update Gapjm
 ```
 
 This  package  requires julia  1.6  or  later.  It  currently  contains  as
@@ -72,10 +72,11 @@ compilation time on first execution).
 I  tried that  as many  submodules as  possible in  my package  can be used
 independently  of the rest, thus could be independent packages. This is the
 case for the modules `Combinat`, `Groups`, `Perms` and `Util`, which can be
-used stand-alone. In addition modules `MatInt`, `Cyclotomics`, `Posets`, `FFields`
-can  be used  stand-alone except  they each  use one  or two functions from
-`Util`. I already made the independent packages `UsingMerge`, `ModuleElts`,
-`LaurentPolynomials`, `PuiseuxPolynomials`.
+used  stand-alone. In  addition modules  `MatInt`, `Cyclotomics`, `Posets`,
+`FFields` can be used stand-alone except they each use one or two functions
+from  `Util`. I  already registered  as independent  packages `UsingMerge`,
+`ModuleElts`,  `LaurentPolynomials`,  `PuiseuxPolynomials`  which  are used
+here --- you should look at their documentation.
 """
 module Gapjm
 using Reexport

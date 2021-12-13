@@ -176,7 +176,7 @@ using ..Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
 SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
 StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
-IsomorphismType
+isomorphism_type
 export ExtendedCox, ExtendedReflectionGroup 
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
@@ -950,7 +950,7 @@ function SScentralizer_reps(W,p=0)
       if length(J)==length(ED) continue end
       R=reflection_subgroup(W,J)
       if !isnothing(standard_parabolic(W,R)) continue end
-      u=findall(G->IsomorphismType(R)==IsomorphismType(G),cent[npara+1:end])
+      u=findall(G->isomorphism_type(R)==isomorphism_type(G),cent[npara+1:end])
       if length(u)>0 println(u,R) end
       if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
              sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara+u])
@@ -965,10 +965,13 @@ function SScentralizer_reps(W,p=0)
   map(x->vcat(x...),cartesian(l...))
 end
 
-function IsomorphismType(W;torus=false,TeX=false)
-  if TeX context=:TeX=>true else context=:limit=>true end
+function isomorphism_type(W;torus=false,TeX=false,limit=false)
+  if !limit && !TeX context=(:TeX=>true,:limit=>false)
+  else context=(:TeX=>TeX,:limit=>limit)
+  end
   t=reverse(tally(map(x->repr(x;context=context),refltype(W))))
   t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
+  if !limit && !TeX t=Util.TeXstrip(t) end
   d=rank(W)-semisimplerank(W)
   if d>0 && torus
     if t!="" t*="+" end

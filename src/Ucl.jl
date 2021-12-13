@@ -880,10 +880,10 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
     push!(res, string(u.dimBu))
     if get(io,:balaCarter,true)
       if haskey(u, :balacarter)
-        b=fill('.',coxrank(W))
+        b=fill('.',ngens(W))
         for i in u.balacarter if i>0 b[i]='2' else b[-i]='0' end end
       else
-        b=fill('?',coxrank(W))
+        b=fill('?',ngens(W))
       end
       push!(res, String(b))
     end

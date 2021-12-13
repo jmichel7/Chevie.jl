@@ -376,7 +376,7 @@ extprod(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)=W1*W2
 
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) C=W
-  elseif all(J.<=coxrank(W))
+  elseif all(J.<=ngens(W))
     C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
   else C=centralizer(W,sort(J);action=(J,w)->sort(action.(Ref(W),J,w)))
   end
