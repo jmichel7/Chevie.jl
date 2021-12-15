@@ -296,6 +296,7 @@ Root1(;r=0)=E(denominator(r),numerator(r)) # does a mod1
 function Root1(c::Real)
   if c==1 Root1_(0//1)
   elseif c==-1 Root1_(1//2)
+  elseif c==0 Cyc(0)
   else nothing
   end
 end
@@ -636,7 +637,7 @@ end
 (::Type{T})(a::Root1) where T<:Number = T(Cyc(a))
 
 function Complex{T}(c::Cyc)where T<:AbstractFloat
-  sum(((k,v),)->v*cispi(2*T(k)/conductor(c)),pairs(c);init=Complex{T}(0.0))
+  sum(((k,v),)->T(v)*cispi(2*T(k)/conductor(c)),pairs(c);init=Complex{T}(0.0))
 end
 
 function Complex{T}(c::Cyc)where T<:Union{Integer,Rational}
@@ -686,7 +687,8 @@ end
 
 Base.imag(a::Root1)=imag(Cyc(a))
 Base.reim(c::Cyc)=(real(c),imag(c))
-Base.abs(a::Root1)=abs(Cyc(a))
+Base.abs2(a::Root1)=abs2(Cyc(a))
+Base.abs(a::Root1)=one(a)
 
 # addroot: add c*E(n,i) to res
 function addroot(res,n,i,c)
@@ -826,9 +828,16 @@ function Base.show(io::IO, p::Cyc{T})where T
   if lazy lower!(p) end
   if conductor(p)==1
     n=num(p)
-    if T<:Integer || (T<:Rational{<:Integer} && denominator(n)==1)
-      if repl||TeX||haskey(io,:typeinfo) print(io,numerator(n))
-      else print(io,"Cyc{",T,"}(",numerator(n),")")
+    if T<:Integer || T<:Rational{<:Integer}
+      if denominator(n)==1
+        if repl||TeX||haskey(io,:typeinfo) print(io,numerator(n))
+        else print(io,"Cyc{",T,"}(",numerator(n),")")
+        end
+        return
+      end
+    else
+      if repl||TeX||haskey(io,:typeinfo) print(io,n)
+      else print(io,"Cyc{",T,"}(",n,")")
       end
       return
     end
@@ -1057,7 +1066,7 @@ true
 """
 function galois(c::Cyc,n::Int)
   if gcd(n,conductor(c))!=1 
-    error("$n should be prime to conductor($c)=$(conductor(c))")
+    throw(DomainError(n,"should be prime to conductor $(conductor(c))"))
   end
   if obviouslyzero(c) return c end
   res=zerocyc(eltype(c.d),conductor(c))
@@ -1098,7 +1107,7 @@ end
 Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                    Base.power_by_squaring(inv(a),-n)
 
-Base.abs(c::Cyc)=c*conj(c)
+Base.abs2(c::Cyc)=c*conj(c)
 
 """
 `Root1(c)`

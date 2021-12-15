@@ -263,6 +263,7 @@ function SerNames(io::IO,sers)
   res=fill("",sum(x->length(x[:charNumbers]),sers))
   for ser in sers
     tt=ser[:relativeType]
+    if !(tt isa Vector) tt=[tt] end
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) res[ser[:charNumbers]]=[n]
     else 

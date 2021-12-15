@@ -95,7 +95,7 @@ const ChevieDict=Dict(
 "DualBraid"=>"DualBraidMonoid",
 "DualBraidMonoid"=>"DualBraidMonoid",
 "EigenspaceProjector"=>"eigenspace_projector",
-#EigenvaluesMat
+"EigenvaluesMat"=>"eigmat",
 "Elements"=>"elements",
 "ElementWithInversions(W,l)"=>"with_inversions(W,l)",
 "EltBraid"=>"image",

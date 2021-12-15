@@ -146,7 +146,7 @@ u1(x)u3(x+y)u4(-x-2y)u5(x+3y)u6(x²+3xy+3y²)
 """
 module Urad
 using ..Gapjm
-export UnipotentElement, UnipotentGroup, norm, abelianpart
+export UnipotentElement, UnipotentGroup, reorder, abelianpart
 
 """
 A  `struct UnipotentGroup`  `U` represents  the unipotent  radical `𝐔` of a
@@ -405,7 +405,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup)
 end
 
 """
-'norm(U,l[,order])'
+'reorder(U,l[,order])'
 
 This  function  takes  a  list  of  pairs  'r=>c'  representing a unipotent
 element,  where 'r'  is a  root and  'c' the corresponding coefficient, and
@@ -417,7 +417,7 @@ used instead of 'U.order'.
 julia> U=UnipotentGroup(coxgroup(:G,2))
 UnipotentGroup(G₂)
 
-julia> l=norm(U,[2=>4,1=>2])
+julia> l=reorder(U,[2=>4,1=>2])
 6-element Vector{Pair{Int64, Int64}}:
  1 => 2
  2 => 4
@@ -426,13 +426,13 @@ julia> l=norm(U,[2=>4,1=>2])
  5 => -128
  6 => 512
 
-julia> norm(U,l,6:-1:1)
+julia> reorder(U,l,6:-1:1)
 2-element Vector{Pair{Int64, Int64}}:
  2 => 4
  1 => 2
 ```
 """
-function norm(U::UnipotentGroup,l,order=U.order)
+function reorder(U::UnipotentGroup,l,order=U.order)
   W=U.W
   i=1
   while i<=length(l)
@@ -490,7 +490,7 @@ u1(2)u2(4)u3(-8)u4(32)u5(-128)u6(512)
 (U::UnipotentGroup)(i::Integer)=UnipotentElement(U, [i=>1])
 
 (U::UnipotentGroup)(l::Pair{Int,T}...) where T=UnipotentElement(U,
-                                                norm(U,collect(l)))
+                                                reorder(U,collect(l)))
 
 Base.show(io::IO,U::UnipotentGroup)=print(io,"UnipotentGroup(",U.W,")")
 
@@ -548,7 +548,7 @@ function Chars.decompose(w,u::UnipotentElement)
   W=U.W
   order=vcat(filter(i->isleftdescent(W,w,i),U.order),
              filter(i->!isleftdescent(W,w,i),U.order))
-  l=norm(U,u.list, order)
+  l=reorder(U,u.list, order)
   [U(filter(i->isleftdescent(W,w,i[1]),l)...),
    U(filter(i->!isleftdescent(W,w,i[1]),l)...)]
 end

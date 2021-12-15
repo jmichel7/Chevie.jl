@@ -1,6 +1,6 @@
 module Lusztig 
 using ..Gapjm
-export LusztigInductionTable
+export LusztigInductionTable, HCInductionTable
 """
 `FindSeriesInParent(h,HF,WF,ww)`
 

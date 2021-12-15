@@ -965,16 +965,24 @@ function SScentralizer_reps(W,p=0)
   map(x->vcat(x...),cartesian(l...))
 end
 
-function isomorphism_type(W;torus=false,TeX=false,limit=false)
+function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
   if !limit && !TeX context=(:TeX=>true,:limit=>false)
   else context=(:TeX=>TeX,:limit=>limit)
   end
-  t=reverse(tally(map(x->repr(x;context=context),refltype(W))))
-  t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
+  t=repr(t;context)
   if !limit && !TeX 
     t=Util.TeXstrip(t)
     t=replace(t,"^"=>"")
   end
+  t
+end
+
+function isomorphism_type(W;torus=false,TeX=false,limit=false)
+  if !limit && !TeX context=(:TeX=>true,:limit=>false)
+  else context=(:TeX=>TeX,:limit=>limit)
+  end
+  t=reverse(tally(map(x->isomorphism_type(x;TeX,limit),refltype(W))))
+  t=join(map(x-> x[2]==1 ? x[1] : string(x[2],x[1]),t),"+")
   d=rank(W)-semisimplerank(W)
   if d>0 && torus
     if t!="" t*="+" end
@@ -982,4 +990,5 @@ function isomorphism_type(W;torus=false,TeX=false,limit=false)
   end
   t
 end
+
 end

@@ -16,12 +16,12 @@ using Test
 
         @test zero(E₅) isa Cyc{Int}
         @test zero(E₅fl) isa Cyc{Float64}
-
-        @test one(E₅) isa Cyc{Int}
+        E₅c=E₅+0
+        @test one(E₅c) isa Cyc{Int}
         @test one(E₅fl) isa Cyc{Float64}
 
-        @test deepcopy(E₅).d !== E₅.d
-        @test deepcopy(E₅).d == E₅.d
+        @test deepcopy(E₅c).d !== E₅c.d
+        @test deepcopy(E₅c).d == E₅c.d
     end
 
     @testset "io strings" begin
@@ -57,13 +57,11 @@ using Test
         x=Cyc(E(5))
         @test x[0] == 0
         @test x[1] == 1
-        @test all(iszero, x[2:5])
         @test x[-1] == 0
         @test x[-4] == 1
         @test x[6] == 1
-        @test collect(Cyclotomics.exps_coeffs(E(6))) == [(1, 1)]
-        @test collect(Cyclotomics.exps_coeffs(Cyclotomics.normalform!(E(6)))) ==
-              [(4, -1)]
+        @test collect(pairs(x)) == [1=>1]
+        @test coefficients(x) == [0,1,0,0,0]
     end
 
     @testset "arithmetic: +, -, module: *, //" begin
@@ -90,7 +88,7 @@ using Test
         @test (xy-2y)[1] == 1
 
         @test 1 + x isa Cyc{Int}
-        @test (1+x)[0] == 1
+        @test (1+x)[0] == 0
         @test x + 1 isa Cyc{Int}
         @test 2.0 + x isa Cyc{Float64}
         @test 2.0 - x isa Cyc{Float64}
@@ -149,7 +147,7 @@ using Test
         w = e + e^2 + e^8 + e^11 + e^17 + e^26 + e^29 + e^38 + e^44
 
         @test w == y
-        @test x.d != y.d
+        @test y.d !== w.d
         @test y.d == w.d
 
         @test deepcopy(x) == deepcopy(y)
@@ -224,7 +222,7 @@ using Test
         function rand1(α::Cyc, u::AbstractRange, k = 5)
             x = zero(eltype(u)) * α
             for (idx, c) in zip(rand(0:conductor(α), k), rand(u, k))
-                x[idx] = c
+              x+=c*E(conductor(α),idx)
             end
             return x
         end
@@ -242,14 +240,14 @@ using Test
                   E(45)^34 + E(45)^37 - 2 * E(45)^42 - E(45)^43 + E(45)^44
 
             @test galois(x, 1) == x
-            @test_throws AssertionError galois(x, 5)
+            @test_throws DomainError galois(x, 5)
         end
 
         for x in [
             E(45)^5 + E(45)^10,
             E(45) - E(45)^5,
-            rand1(E(45), -5:5, 3),
-            rand1(E(45), -1:1, 5),
+            rand1(E(45)+0, -5:5, 3),
+            rand1(E(45)+0, -1:1, 5),
         ]
             iszero(x) || @test isone(x * inv(x // big(1)))
         end
@@ -289,22 +287,10 @@ using Test
         let x = E(45)^5 + E(45)^10
             @test isreal(x + conj(x))
             @test float(x + conj(x)) isa Float64
-            @test !first(Cyclotomics._isreal(x))
             @test_throws InexactError Float64(x)
             @test_throws InexactError Rational(x)
         end
 
-        let x =
-                0.9999999999999787 * E(5)^1 +
-                0.999999999999992 * E(5)^2 +
-                0.9999999999999889 * E(5)^3 +
-                0.9999999999999796 * E(5)^4
-            z = Cyclotomics.roundcoeffs!(deepcopy(x), digits = 12)
-            @test x != -1.0
-            @test z == -1.0
-            @test inv(z) == -1.0
-            @test Cyclotomics.droptol!(inv(x) - inv(z), 1e-12) == 0
-        end
     end
 
     @testset "Conversions" begin
@@ -313,7 +299,7 @@ using Test
         @test iszero(C(0))
         @test isone(C(1))
         @test isone(C(1.0))
-        @test zeros(typeof(E(3)+0), 2, 2) isa Matrix{<:Cyclotomic}
+        @test zeros(typeof(E(3)+0), 2, 2) isa Matrix{<:Cyc}
 
         v = [Cyc(E(3)^i) for i in 1:3]
 
