@@ -92,7 +92,7 @@ julia> Rational{Int}(real(E(3)))
 -1//2
 
 julia> imag(E(3))  # imaginary part
-Cyc{Rational{Int64}}: √-3/2
+Cyc{Rational{Int64}}: √3/2
 
 julia> c=Cyc(E(9))   # an effect of the Zumbroich basis
 Cyc{Int64}: -ζ₉⁴-ζ₉⁷
@@ -365,7 +365,7 @@ end
 conductor(c::Cyc)=length(c.d)
 Base.pairs(c::Cyc)=Iterators.map(x->x[1]-1=>x[2],
                               Iterators.filter(x->x[2]!=0,enumerate(c.d)))
-Base.getindex(c::Cyc,i::Integer)=c.d[i+1]
+Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(x))+1]
 elseif impl==:svec
 using SparseArrays
 mutable struct Cyc{T}<:Number    # a cyclotomic number
@@ -381,7 +381,7 @@ function Cyc(c::Integer,v::SparseVector)
   if c!=length(v) error("c=$c but length(v)=$(length(v))\n") end
   Cyc_(v)
 end
-Base.getindex(c::Cyc,i::Integer)=c.d[i+1]
+Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(x))+1]
 
 elseif impl==:MM
 using ModuleElts
@@ -392,7 +392,7 @@ mutable struct Cyc{T <: Real}<: Number   # a cyclotomic number
 end
 conductor(c::Cyc)=c.n
 Base.pairs(c::Cyc)=c.d
-Base.getindex(c::Cyc,i::Integer)=c.d[i]
+Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))]
 end
 
 """
@@ -629,8 +629,8 @@ function Base.convert(::Type{T},c::Cyc;check=true)where T<:AbstractFloat
   real(convert(Complex{T},c))
 end
 
-function (::Type{T})(c::Cyc)where T<:AbstractFloat
-  real(convert(Complex{T},c;check=true))
+function (::Type{T})(c::Cyc)where T<:AbstractFloat 
+  convert(T,c;check=true)
 end
 
 (::Type{T})(a::Root1) where T<:Number = T(Cyc(a))
@@ -681,10 +681,12 @@ Base.real(a::Root1)=real(Cyc(a))
 function Base.imag(c::Cyc{T}) where T<:Real
   if lazy lower!(c) end
   if conductor(c)==1 return 0 end
-  (c-conj(c))/2
+  E(4)*(conj(c)-c)/2
 end
 
 Base.imag(a::Root1)=imag(Cyc(a))
+Base.reim(c::Cyc)=(real(c),imag(c))
+Base.abs(a::Root1)=abs(Cyc(a))
 
 # addroot: add c*E(n,i) to res
 function addroot(res,n,i,c)
@@ -922,6 +924,7 @@ Base.://(a::Cyc,c::Root1)=a//Cyc(c)
 Base.:/(c::Cyc,a::Real)=c//a
 Base.:/(a::Cyc,c::Cyc)=a//c
 Base.:/(a::Real,c::Cyc)=a//c
+Base.div(c::Root1,a)=div(Cyc(c),a)
 
 function Base.:*(a::Cyc,b::Cyc)
   a,b=promote(a,b)
