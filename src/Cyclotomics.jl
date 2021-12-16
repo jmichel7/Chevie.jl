@@ -284,8 +284,10 @@ struct Root1 <: Number # E(c,n)
   global Root1_(x)=new(x)
 end
 
+Base.mod1(x::Rational{<:Integer})=mod(numerator(x),denominator(x))//denominator(x)
+
 " `E(n,p=1)` makes the `Root1` equal to `ζₙᵖ`"
-E(c,n=1)=Root1_(mod(Int(n),Int(c))//Int(c))
+E(c,n=1)=Root1_(mod1(n//c))
 
 Base.exponent(a::Root1)=numerator(a.r)
 order(a::Root1)=denominator(a.r)
@@ -337,11 +339,11 @@ Base.:(==)(a::Root1,b::Root1)=a.r==b.r
 Base.one(a::Root1)=Root1_(0//1)
 Base.zero(a::Root1)=zero(Cyc{Int})
 Base.isone(a::Root1)=iszero(a.r)
-Base.:*(a::Root1,b::Root1)=Root1(;r=a.r+b.r)
+Base.:*(a::Root1,b::Root1)=Root1_(mod1(a.r+b.r))
 
-Base.:^(a::Root1,n::Integer)=Root1(;r=n*a.r)
+Base.:^(a::Root1,n::Integer)=Root1_(mod1(n*a.r))
 Base.:^(a::Root1,r::Rational{<:Integer})=root(a,denominator(r))^numerator(r)
-Base.inv(a::Root1)=Root1(;r=-a.r)
+Base.inv(a::Root1)=Root1_(mod1(-a.r))
 Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
 

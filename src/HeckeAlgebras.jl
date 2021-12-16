@@ -290,20 +290,21 @@ end
 function Chars.CharTable(H::HeckeAlgebra)
   get!(H,:chartable)do
     W=H.W
-    cts=map(refltype(W))do t
-      ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
-               rootpara(H)[t.indices] : fill(nothing,length(H.para)))
-      if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-      ct
-    end
-    cts=map(cts) do ct
-      if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-      else                     names=charinfo(W).charnames
+    if isempty(refltype(W)) 
+      ct=CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}())
+    else
+      cts=map(refltype(W))do t
+        ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
+                 rootpara(H)[t.indices] : fill(nothing,length(H.para)))
+        if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
+        if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
+        else                     names=charinfo(t).charnames
+        end
+        CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
+          map(Int,ct[:centralizers]),ct[:centralizers][1],Dict{Symbol,Any}())
       end
-      CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-            map(Int,ct[:centralizers]),ct[:size],Dict{Symbol,Any}())
+      ct=prod(cts)
     end
-    ct=prod(cts)
     ct.name=repr(H;context=:TeX=>true)
     ct.group=H
     ct
@@ -494,9 +495,9 @@ function central_monomials(H::HeckeAlgebra)
   map(eachrow(CharTable(W).irr)) do irr
     prod(v)do C
       q=H.para[restriction(W)[C.s]]
-      m=map(0:C.order-1)do j
+      m=Int.(map(0:C.order-1)do j
        (irr[1]+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
-      end
+      end)
       E.(irr[1],-C.N_s*sum(m.*(0:C.order-1)))*
           prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
     end

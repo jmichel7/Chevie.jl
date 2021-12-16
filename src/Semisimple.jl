@@ -555,7 +555,6 @@ function WeightToAdjointFundamentalGroupElement(W,i)
   restricted(b,inclusion.(Ref(W),l))
 end
 
-Base.mod1(a)=mod(numerator(a),denominator(a))//denominator(a)
 # returns a record containing minuscule coweights, decompositions
 # (in terms of generators of the fundamental group)
 function weightinfo(W)

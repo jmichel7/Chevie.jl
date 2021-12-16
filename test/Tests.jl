@@ -413,7 +413,7 @@ function Tunipotentclasses(W,p=nothing)
   if all(x->x.series in [:E,:F,:G],refltype(W))
     for cl in uc.classes
       j=findfirst(x->x[1]==cl.dynkin,bc)
-      name=Semisimple.IsomorphismType(reflection_subgroup(W,abs.(bc[j][2]));TeX=true)
+      name=isomorphism_type(reflection_subgroup(W,abs.(bc[j][2]));TeX=true)
       if name=="" name="1" end
       l=count(x->x<0,bc[j][2])
       if l!=0 
@@ -432,7 +432,7 @@ function Tunipotentclasses(W,p=nothing)
   for u in uc.classes
     if haskey(u,:dimred) && haskey(u,:red) && u.dimred!=dimension(u.red)
        ChevieErr("for ",u.name," dimred=",u.dimred,"!= Dim(",
-          Semisimple.IsomorphismType(u.red,torus=true),")=",dimension(u.red))
+          isomorphism_type(u.red,torus=true),")=",dimension(u.red))
     end
   end
 end
@@ -908,7 +908,7 @@ function Textrefl(W)
   ct=CharTable(W)
   # compute first using ReflectionEigenvalues
   n=nconjugacy_classes(W)
-  v=reverse(permutedims(toM(map(r->prod(n->Pol()+E(n),r;init=Pol(1)).c,refleigen(W))));dims=1)
+  v=reverse(permutedims(toM(map(r->prod(n->Pol()+n,r;init=Pol(1)).c,refleigen(W))));dims=1)
   # check v[2,:] using reflrep
   if size(v,1)>1 && v[2,:]!=map(w->tr(reflrep(W,W(w...))),classinfo(W)[:classtext])
    ChevieErr("refleigen disagrees with reflrep")
@@ -943,12 +943,12 @@ function reflectiondegrees(W)
   eig=map(x->first(first(x)),e)
   mul=map(x->sum(last,x),e)
   res=Int[]
-  for d in sort(unique(conductor.(eig)),rev=true)
-    p=findfirst(==(Root1(d,1)),eig)
+  for d in sort(unique(order.(eig)),rev=true)
+    p=findfirst(==(E(d)),eig)
     if p!==nothing && mul[p]>0
       for i in 1:div(d*mul[p],length(W)) push!(res,d) end
       n=mul[p]
-      for j in 0:d-1 mul[findfirst(==(Root1(d,j)),eig)]-=n end
+      for j in 0:d-1 mul[findfirst(==(E(d,j)),eig)]-=n end
     end
   end
   reverse(res)
@@ -965,7 +965,7 @@ function reflectiondegrees(W::Spets)
   l=collectby(first,l)
   e=map(x->(x[1][1],sum(last,x)),l)
   # here we got LHS of formula as ∏ᵢ(t-eig[i])^mul[i]
-  # more exactly a list of pairs [eig in Q/Z, mul/|W|]
+  # more exactly a list of pairs (eig::Root1, mul/|W|::Rational)
   searchdeg=function(e,card,degs)local res,d,f,g,p,pos,ne
 #   @show degs,card
     if isempty(degs) return [Pair{Int,Root1}[]] end
@@ -975,7 +975,7 @@ function reflectiondegrees(W::Spets)
     f=findall(i->last(i)>=1//d,e)
     g=first.(filter(x->first(x).r<1/d,e[f]))
     for p in g
-      pos=map(i->findfirst(j->first(e[j])==p*i,f),Root1.(d,0:d-1))
+      pos=map(i->findfirst(j->first(e[j])==p*i,f),E.(d,0:d-1))
       if !(nothing in pos)
 #       @show d,p
         ne=copy(e)
@@ -990,7 +990,7 @@ function reflectiondegrees(W::Spets)
   mul=searchdeg(e,length(W),sort(degrees(Group(W)),rev=true))
   e=unique(sort(sort.(mul)))
 #  @show mul
-  map(x->(x[1],cyc(x[2])),only(e))
+  map(x->(x[1],Cyc(x[2])),only(e))
 end
 
 function Tdegrees(W)
@@ -1668,10 +1668,11 @@ function Thgal(W)
   ct=CharTable(W).irr
   complex=Perm(ct,conj(ct);dims=1)
   x=Mvp(:x)
-  z=gcd(degrees(W))
+  d=degrees(W)
+  z=isempty(d) ? 1 : gcd(d)
   H=hecke(W,x^z)
   ct=CharTable(H).irr
-  gal=Perm(ct,map(u->u(;x=x*E(z)),ct))
+  gal=z==1 ? Perm() : Perm(ct,map(u->u(;x=x*E(z)),ct))
   fd=fakedegrees(W,x)
   ci=charinfo(W)
   if haskey(ci,:hgal) hgal=ci[:hgal] else hgal=Perm() end
