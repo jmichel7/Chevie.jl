@@ -1026,11 +1026,11 @@ returns the representations of `W` (see `representation`).
 ```julia-repl
 julia> representations(coxgroup(:B,2))
 5-element Vector{Vector{Matrix{Int64}}}:
- [[1], [-1]]
+ [[1;;], [-1;;]]
  [[1 0; -1 -1], [1 2; 0 -1]]
- [[-1], [-1]]
- [[1], [1]]
- [[-1], [1]]
+ [[-1;;], [-1;;]]
+ [[1;;], [1;;]]
+ [[-1;;], [1;;]]
 ```
 """
 representations(W::Union{Group,Spets})=representation.(Ref(W),1:nconjugacy_classes(W))

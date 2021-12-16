@@ -545,7 +545,7 @@ Efficient version of
 `transporting_elt(CoxHyperoctaedral(size(M,1)),M,N;action=onmats)`
 
 ```julia-repl
-julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))/2);
+julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);
 
 julia> M=fourier(conj(f));
 

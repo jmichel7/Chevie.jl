@@ -234,7 +234,7 @@ function segment(v::Vector{Pair{Root1,Int}})
   n=empty(v)
   c=0
   for p in v
-    c1=conductor(p[1])
+    c1=denominator(p[1])
     if c!=c1 
       if !iszero(c) push!(res,n) end
       c=c1
@@ -250,8 +250,8 @@ end
 function decompose(v::Vector{Pair{Root1,Int}})
   rr=Pair{NamedTuple{(:conductor, :no),Tuple{Int,Int}},Int}[]
   for t in segment(v)
-    c=conductor(t[1][1])
-    t=[(exponent(e),p) for (e,p) in t]
+    c=denominator(t[1][1])
+    t=[(numerator(e),p) for (e,p) in t]
     if c==1 
       push!(rr,(conductor=c,no=1)=>t[1][2])
       continue

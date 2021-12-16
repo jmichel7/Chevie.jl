@@ -383,7 +383,7 @@ chevieset(:families,:X,function(p)
          :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
              "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
     :eigenvalues=>map(s->E(p,prod(s)),ss),
-    :fourierMat=>[(E(p,sum(i.*reverse(j)))-E(p,sum(i.*j)))/p for i in ss,j in ss],
+    :fourierMat=>[(E(p,sum(i.*reverse(j)))-E(p,sum(i.*j)))//p for i in ss,j in ss],
     :special=>1,:cospecial=>p-1))
    end)
 
@@ -418,13 +418,13 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   end
   diag(m)=map(i->m[i,i],axes(m,1))
   g.eigenvalues=diag(exterior_power(cat(g.eigenvalues...;dims=(1,2)),n))
-  g.fourierMat=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]/root(e),n)
+  g.fourierMat=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]//root(e),n)
   g.name="R(\\bbZ/$e)"
   g.explanation="character ring of Z/$e"
   if n>1 g.name*="^{\\wedge $n}"
     g.explanation=ordinal(n)*" exterior power "*g.explanation
   end
-  g.eigenvalues=g.eigenvalues./g.eigenvalues[1]
+  g.eigenvalues=g.eigenvalues.//g.eigenvalues[1]
   g
 end)
 
@@ -434,7 +434,7 @@ chevieset(:families,:X5,f)
 
 f=chevieget(:families,:ExtPowCyclic)(4,1)
 f.fourierMat.*=-E(4)
-f.eigenvalues./=f.eigenvalues[2]
+f.eigenvalues.//=f.eigenvalues[2]
 f.special=2
 f.qEigen=[1,0,1,0].//2
 chevieset(:families,:Z4,f)
@@ -497,7 +497,7 @@ chevieset(:families,:Dihedral,function(e)
     f.lusztig=true
   else
 # The associated symbol to S(0,l) is s_i=[0] for i≠0,l and s_0=s_l=[1].
-    f.fourierMat=[(c(i'*reverse(j))-c(i'*j))/e for i in nc, j in nc]
+    f.fourierMat=[(c(i'*reverse(j))-c(i'*j))//e for i in nc, j in nc]
 # *(-1)^count(iszero,[i[1],j[1]])*  This sign is in
 # [Malle, "Unipotente Grade", Beispiel 6.29]
     f.special=1
@@ -828,12 +828,12 @@ by these symbols.
 ```julia-repl
 julia> FamiliesClassical(symbols(2,3,1))
 6-element Vector{Family}:
- Family(0112233,[4])
- Family(3,[9])
- Family(013,[5, 7, 10, 12])
  Family(112,[2])
  Family(022,[6])
+ Family(3,[9])
  Family(01123,[1, 3, 8, 11])
+ Family(0112233,[4])
+ Family(013,[5, 7, 10, 12])
 ```
 The  above example shows the families of unipotent characters for the group
 `B_3`.
@@ -934,8 +934,8 @@ end
 end
 
 """
-    `FusionAlgebra(f::Family)`
-    `FusionAlgebra(S,special=1)`
+    `fusion_algebra(f::Family)`
+    `fusion_algebra(S,special=1)`
 
 All  the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=conj(S)`,
 and  have a  *special* line  `s` (the  line of  index `s=special(f)`  for a

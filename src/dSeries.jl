@@ -735,7 +735,7 @@ function Weyl.relative_group(s::Series)
     r=restrV(reflrep(W, length(L)==1 ? res[:hom] : res[:hom].phi))
     ref=reflection(improve_type(r))
     n=ref.eig
-    n=invmod(exponent(n), conductor(n))
+    n=invmod(numerator(n), denominator(n))
     r^=n # distinguished reflection
     res[:hom]^=n
     merge!(res,pairs(reflection(improve_type(r))))
@@ -785,8 +785,8 @@ function mC(s::Series)
     pG=lpi(Group(s.spets))
     pL=lpi(Group(s.levi))
     D0=pG-pL
-    xiL = Root1(PhiOnDiscriminant(s.levi))^conductor(s.d)
-    xiG = Root1(PhiOnDiscriminant(s.spets))^conductor(s.d)
+    xiL = Root1(PhiOnDiscriminant(s.levi))^denominator(s.d)
+    xiG = Root1(PhiOnDiscriminant(s.spets))^denominator(s.d)
     if xiL != xiG
       ChevieErr("fixing dimension of variety by xiL-xiG==", xiL - xiG, "\n")
       D0 = (D0 + xiL) - xiG
@@ -898,7 +898,7 @@ function char_numbers(s::Series)
   cand=canfromdeg(s)
   ud=Uch.CycPolUnipotentDegrees(s.spets)
   eig=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
-  eig*=map(i->E(conductor(s.d)^2,i),1:conductor(s.d)^2)
+  eig*=map(i->E(denominator(s.d)^2,i),1:denominator(s.d)^2)
   cand=filter(c->Uch.eigen(UnipotentCharacters(s.spets))[c[:charNumbers]] in eig,cand)
   if length(cand)<length(WGLdims(s))
     ChevieErr(s,": not enough left with predicted eigenvalues in ",Root1.(eig),"\n")
@@ -992,7 +992,7 @@ function paramcyclic(s::Series)
   s.eigen=Uch.eigen(uc)[char_numbers(s)]
   LFrob=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   m=degrees(Group(s.spets))
-  s.delta=lcm(map(x->conductor(x[2]),filter(x->x[1]!=1,degrees(s.spets))))
+  s.delta=lcm(map(x->denominator(x[2]),filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
   param(j,i)=Mvp(:q)^mC(s)[j]*Root1(;r=rr(j,i))
   # parameters of Hecke algebra are map(i->param(i,i),1:e(s))
@@ -1017,14 +1017,14 @@ function paramcyclic(s::Series)
   end
   ratio=Root1(ratio[1]).r
 # now find integer translation t such that mod 1. we have t delta d=ratio
-  ratio*=conductor(s.d^s.delta)
+  ratio*=denominator(s.d^s.delta)
   if !isinteger(ratio)
     ChevieErr(s, "non-integral ratio==", ratio, "\n")
     return nothing
   end
   if ratio==0 r=0
   else r=s.d^s.delta
-    r=ratio*invmod(exponent(r),conductor(r))
+    r=ratio*invmod(numerator(r),denominator(r))
   end
   mmp=map(x->(x[1],map(y->mod(y,e(s))+1,x[2]+r-1)), mmp)
   r=fill(0,e(s))
@@ -1214,7 +1214,7 @@ function RelativeSeries(s)
   end
   s.charNumbers^=p
   if haskey(s,:span) s.span^=p end
-  aA=map(x->E(conductor(s.d)^2,valuation(x)+degree(x)),u1)
+  aA=map(x->E(denominator(s.d)^2,valuation(x)+degree(x)),u1)
   p=position_regular_class(WGL,s.d)
   if p == false && length(WGL)==1 p=1 end
   o=map(x->x[p]//x[1], eachrow(CharTable(WGL).irr))

@@ -158,12 +158,12 @@ orbit functions can take any action of `G` as keyword argument
 ```julia-repl
 julia> transversal(G,[1,2],action=(x,y)->x.^y)
 Dict{Vector{Int64}, Perm{Int16}} with 6 entries:
-  [3, 2] => (1,3)
-  [1, 2] => ()
+  [2, 3] => (1,2,3)
   [2, 1] => (1,2)
   [1, 3] => (2,3)
-  [2, 3] => (1,2,3)
   [3, 1] => (1,3,2)
+  [1, 2] => ()
+  [3, 2] => (1,3)
 ```
 """
 function transversal(G::Group,pnt;action::F=^) where F<:Function
@@ -429,7 +429,7 @@ isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
 iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
 
-rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
+Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 
 """
 `transporting_elt(G,p,q;action=^,dist=nothing)`   

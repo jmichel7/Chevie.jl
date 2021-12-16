@@ -1173,7 +1173,7 @@ end
 #  \(M,δad(M,r,b.pd),l.elm[1])*clone(b,l.elm[2:end])
 #end
 
-Base.:^(y::GarsideElt{T},r::T,F=x->x) where T=inv(y.M(r))*(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=inv(y.M(r))*(y*F(r))
 
 Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
@@ -1974,6 +1974,8 @@ Base.:(==)(a::TPMSimple,b::TPMSimple)=(a.v==b.v)&&(a.t==b.t)&&(a.M==b.M)
 Base.hash(a::TPMSimple, h::UInt)=hash(a.v,hash(a.t,hash(a.M,h)))
 
 Base.copy(a::TPMSimple)=TPMSimple(copy(a.v),a.t,a.M)
+
+Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:TPMSimple=inv(y.M(r))*(y*F(r))
 
 function Base.show(io::IO,r::TPMSimple)
   if r.t print(io,"t") end

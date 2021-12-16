@@ -31,10 +31,10 @@ using Test
         @test sprint(show, -E(5);context=:limit=>true) == "-ζ₅"
         @test sprint(show, E(1);context=:limit=>true) == "1"
 
-        @test sprint(show, -1.0 * E(5);context=:limit=>true) == "-1.0*ζ₅"
+        @test sprint(show, -1.0 * E(5);context=:limit=>true) == "-1.0ζ₅"
         @test sprint(show, 0.0 * E(4);context=:limit=>true) == "0.0"
-        @test sprint(print, 0.0 * E(4)) == "0.0"
-        @test sprint(print, 1.0 * E(1)) == " 1.0*E(1)^0"
+        @test sprint(print, 0.0 * E(4)) == "Cyc{Float64}(0.0)"
+        @test sprint(print, 1.0 * E(1)) == "Cyc{Float64}(1.0)"
 
         using Base.Meta
         x = E(5) + 2E(5)^2
@@ -93,7 +93,7 @@ using Test
         @test 2.0 + x isa Cyc{Float64}
         @test 2.0 - x isa Cyc{Float64}
         @test x + 2.0 isa Cyc{Float64}
-        @test (x+2.0)[0] == 2.0
+        @test (x+2.0)[0] == 0.0
 
         # Bug: normalform! is needed in div
         x = E(4, 0) - E(4, 2)
@@ -276,7 +276,7 @@ using Test
             @test_throws InexactError Rational{Int}(x)
             @test Rational{Int}(x + conj(x)) isa Rational{Int}
             @test Rational{Int}(x + conj(x)) == x + conj(x)
-            if valtype(x) <: Rational
+            if eltype(x) <: Rational
                 @test Rational(x + conj(x)) isa Rational{Int}
                 @test Rational(x + conj(x)) == 1 // 1
             else
@@ -354,7 +354,7 @@ using Test
 
         @test_logs (
             :error,
-            "The cyclotomic is real but it can not be converted to Rational:  1*E(5)^2 + 1*E(5)^3 ≈ -1.618033988749895",
+            "cyclotomic is real but cannot be converted to Rational: ζ₅²+ζ₅³≈-1.618033988749895",
         ) try
             Rational(E(5)^2 + E(5)^3)
         catch ex

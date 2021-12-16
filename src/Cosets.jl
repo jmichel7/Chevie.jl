@@ -900,7 +900,7 @@ function spets(W::PermRootGroup,F::Matrix)
       return false
     end
     # choose simplest scal
-    l=minimum(map(x->[conductor(x),exponent(x)],l))
+    l=minimum(map(x->[denominator(x),numerator(x)],l))
     l=E(l[1],l[2])
     [l,map(x->x.ind[findfirst(==(l),x.scal)],scal)]
   end
@@ -947,8 +947,8 @@ julia> spets("4G333")
 """
 function spets(s::String)
   if s=="3G422" 
-    W=PRG([2 (root(3)-1)E(3);2 (-1+root(3))E(3,2);2 root(3)-1]./1,
-     [(3+root(3))/2 root(3)E(3,2);(3+root(3))/2 root(3)E(3);(3+root(3))/2 root(3)]./3)
+    W=PRG([2 (root(3)-1)E(3);2 (-1+root(3))E(3,2);2 root(3)-1].//1,
+     [(3+root(3))//2 root(3)E(3,2);(3+root(3))//2 root(3)E(3);(3+root(3))//2 root(3)].//3)
     return spets(W,reflrep(W,Perm(1,2,3)))
    elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
     W=PRG([[(-E(3)-2E(3,2))*(-3+root(6))//3,E(3)],
@@ -969,7 +969,7 @@ function spets(s::String)
     (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)")
   elseif s=="3G422" 
     W=PRG([[2,(-1+root(3))*E(3)],[2,(-1+root(3))*E(3,2)],[2,(-1+root(3))]],
-[[(3+root(3))/2,root(3)*E(3,2)],[(3+root(3))/2,root(3)*E(3)],[(3+root(3))/2,root(3)]]/3)
+[[(3+root(3))//2,root(3)*E(3,2)],[(3+root(3))//2,root(3)*E(3)],[(3+root(3))//2,root(3)]]//3)
     return spets(W,[1 0;0 E(3)])
   else error("argument should be 2G5, 3G422, 3G333, 3pG333 or 4G333")
   end
@@ -1066,7 +1066,7 @@ function PermRoot.refltype(WF::PRC)
           zg=ee[findfirst(x->order(x)==z,ee)]
           i=inclusion(sub)[1]
           v=Root1(ratio(prr[i.^zg],prr[i]))
-          zg^=invmod(exponent(v),conductor(v)) # distinguished
+          zg^=invmod(numerator(v),denominator(v)) # distinguished
           v=scal.*E.(z,0:z-1)
           m=argmin(conductor.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
@@ -1233,7 +1233,7 @@ rootdata[Symbol("3gpin8")]=()->spets(rootdatum(:gpin,8),[1 1 1 0 0 0;
  -2 0 -1 -1 -1 -1;-1 0 -1 0 0 -1;-1 0 -1 0 -1 0;
  -1 0 -1 -1 0 0;-1 -1 0 0 0 0])
 rootdata[Symbol("gpin-")]=function(r)
-  d=r/2
+  d=div(r,2)
   F=id(d+2)
   F[1,1:3]=[1,-1,1]
   F[1:d+2,2]=fill(-1,d+2)

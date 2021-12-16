@@ -288,8 +288,9 @@ end
 " `E(n,p=1)` makes the `Root1` equal to `ζₙᵖ`"
 E(c,n=1)=Root1_(mod(Int(n),Int(c))//Int(c))
 
-conductor(a::Root1)=denominator(a.r)
-Base.exponent(a::Root1)=numerator(a.r)
+Base.numerator(a::Root1)=numerator(a.r)
+Base.denominator(a::Root1)=denominator(a.r)
+conductor(a::Root1)=denominator(a)%4==2 ? div(denominator(a),2) : denominator(a)
 
 Root1(;r=0)=E(denominator(r),numerator(r)) # does a mod1
 
@@ -311,8 +312,8 @@ end
 function Base.show(io::IO, r::Root1)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  d=exponent(r)
-  c=conductor(r)
+  d=numerator(r)
+  c=denominator(r)
   if repl || TeX
     if c==1 print(io,"1")
     elseif c==2 print(io,"-1")
@@ -324,9 +325,9 @@ function Base.show(io::IO, r::Root1)
 end
 
 function Base.cmp(a::Root1,b::Root1)
-  r=cmp(conductor(a),conductor(b))
+  r=cmp(denominator(a),denominator(b))
   if !iszero(r) return r end
-  cmp(exponent(a),exponent(b))
+  cmp(numerator(a),numerator(b))
 end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
@@ -551,8 +552,8 @@ const E_dict=Dict{Rational{Int},Cyc{Int}}(0//1=>Cyc(1))
 
 function Cyc(a::Root1) # the result is lowered
   get!(E_dict,a.r) do
-    c=conductor(a)
-    e=exponent(a)
+    c=denominator(a)
+    e=numerator(a)
     if c%4==2 return -E(div(c,2),div(e,2)+div(c+2,4)) end
     s,l=Elist(c,e)
 if impl==:vec || impl==:svec
@@ -674,7 +675,7 @@ Base.isreal(a::Root1)=isinteger(a)
 function Base.real(c::Cyc{T}) where T<:Real
   if lazy lower!(c) end
   if conductor(c)==1 return num(c) end
-  (c+conj(c))/2
+  (c+conj(c))*1//2
 end
 
 Base.real(a::Root1)=real(Cyc(a))
@@ -682,7 +683,7 @@ Base.real(a::Root1)=real(Cyc(a))
 function Base.imag(c::Cyc{T}) where T<:Real
   if lazy lower!(c) end
   if conductor(c)==1 return 0 end
-  E(4)*(conj(c)-c)/2
+  E(4)*(conj(c)-c)*1//2
 end
 
 Base.imag(a::Root1)=imag(Cyc(a))
@@ -726,19 +727,11 @@ function promote_conductor(a::Cyc,b::Cyc)
   (raise(l,a),raise(l,b))
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:AbstractFloat}
-  Complex{promote_type(T1,T2)}
-end
-
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:AbstractFloat}
-  Complex{promote_type(T1,T2)}
-end
-
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:Union{Integer,Rational{<:Integer}}}
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
 
-function Base.promote_rule(a::Type{Cyc{T1}},b::Type{T2})where {T1,T2<:Union{Integer,Rational{<:Integer}}}
+function Base.promote_rule(a::Type{Cyc{T1}},b::Type{Complex{T2}})where {T1,T2<:Real}
   Cyc{promote_type(T1,T2)}
 end
 
@@ -930,9 +923,9 @@ Base.://(c::Root1,a::Real)=Cyc(c)//a
 Base.://(a::Real,c::Root1)=a//Cyc(c)
 Base.://(c::Root1,a::Cyc)=Cyc(c)//a
 Base.://(a::Cyc,c::Root1)=a//Cyc(c)
-Base.:/(c::Cyc,a::Real)=c//a
-Base.:/(a::Cyc,c::Cyc)=a//c
-Base.:/(a::Real,c::Cyc)=a//c
+Base.:/(c::Cyc,a::Real)=c*inv(a)
+Base.:/(a::Cyc,c::Cyc)=a*inv(c)
+Base.:/(a::Real,c::Cyc)=a*inv(c)
 Base.div(c::Root1,a)=div(Cyc(c),a)
 
 function Base.:*(a::Cyc,b::Cyc)
@@ -1077,8 +1070,8 @@ function galois(c::Cyc,n::Int)
 end
 
 function galois(c::Root1,n::Int)
-  d=denominator(c.r)
-  if gcd(n,d)!=1 error("$n should be prime to conductor($c)=$d") end
+  d=denominator(c)
+  if gcd(n,d)!=1 error("$n should be prime to denominator($c)=$d") end
   Root1(;r=n*c.r)
 end
 
@@ -1094,20 +1087,22 @@ function propergalois(c::Cyc)
   res
 end
 
-function Base.inv(c::Cyc)
+function Base.inv(c::Cyc{T})where T
   if conductor(c)==1
     r=num(c)
-    if r==1 || r==-1 return Cyc(r) else return Cyc(1//r) end
+    if r==1 || r==-1 return Cyc(r) else 
+    return T<:Integer ? Cyc(1//r) : Cyc(1/r) end
   end
   r=prod(propergalois(c))
   n=num(lazy ? lower!(c*r) : c*r)
-  n==1 ? r : (n==-1 ? -r : r//n)
+  n==1 ? r : n==-1 ? -r : T<:Integer ? r//n : r/n
 end
 
 Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                    Base.power_by_squaring(inv(a),-n)
 
 Base.abs2(c::Cyc)=c*conj(c)
+Base.abs(c::Cyc)=abs(complex(c))
 
 """
 `Root1(c)`
@@ -1123,7 +1118,7 @@ Root1: ζ₉⁸
 julia> conductor(r)
 9
 
-julia> exponent(r)
+julia> numerator(r)
 8
 
 julia> Cyc(r)
@@ -1162,11 +1157,11 @@ end
 Base.:(==)(a::Root1,b::Number)=Cyc(a)==b # too expensive in lazy case
 
 function Base.:*(a::Cyc,b::Root1)
-  n=lcm(conductor(a),conductor(b))
+  n=lcm(conductor(a),denominator(b))
   na=div(n,conductor(a))
-  nb=div(n,conductor(b))
+  nb=div(n,denominator(b))
   res=zerocyc(eltype(a.d),n)
-  for (i,va) in pairs(a) addroot(res,n,na*i+nb*exponent(b),va) end
+  for (i,va) in pairs(a) addroot(res,n,na*i+nb*numerator(b),va) end
   res=Cyc(n,impl==:MM ? MM(res) : impl==:svec ? dropzeros!(res) : res)
   lazy ? res : lower!(res)
 end
@@ -1176,9 +1171,7 @@ Base.:+(a::Root1,b::Root1)=Cyc(a)+Cyc(b)
 Base.:-(a::Root1,b::Root1)=Cyc(a)-Cyc(b)
 Base.:-(r::Root1)=-Cyc(r)
 Base.promote_rule(a::Type{Root1},b::Type{Cyc{T}}) where T =b
-Base.promote_rule(a::Type{Root1},b::Type{<:Integer})=Cyc{b}
-Base.promote_rule(a::Type{Root1},b::Type{<:Rational{<:Integer}})=Cyc{b}
-Base.promote_rule(a::Type{Root1},b::Type{<:AbstractFloat})=Complex{b}
+Base.promote_rule(a::Type{Root1},b::Type{<:Real})=Cyc{b}
 Base.promote_rule(a::Type{Root1},b::Type{Complex{T}}) where T =Cyc{promote_type(T,Int)}
 #------------------- end of Root1 ----------------------------------------
 
@@ -1331,7 +1324,7 @@ root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
 # find the "canonical" best of the n possible roots
 function root(r::Root1,n=2)
-  d=conductor(r)
+  d=denominator(r.r)
   j=1
   n1=n
   while true
@@ -1340,7 +1333,7 @@ function root(r::Root1,n=2)
     j*=k
     if k==1 break end
   end
-  E(j*d,exponent(r)*gcdx(n1,d)[2])
+  E(j*d,numerator(r)*gcdx(n1,d)[2])
 end
 
 const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()
