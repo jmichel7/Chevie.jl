@@ -138,7 +138,7 @@ function regular_eigenvalues(W)
                   sort(union(divisors.(d)...)))
     return sort(vcat(map(x->E.(x,prime_residues(x)),l)...))
   end
-  l=union(map(p->divisors(denominator(Root1(p[2]))*p[1]),d)...)
+  l=union(map(p->divisors(order(Root1(p[2]))*p[1]),d)...)
   res=Root1[]
   for n in l
     p=prime_residues(n)

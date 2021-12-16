@@ -1214,8 +1214,8 @@ function PermGroups.reduced(W::PermRootGroup,F)
     else
       ch=map(x->eigmat(reflrep(W,x)),FF)
     end
-    m=minimum(map(x->sum(denominator.(x)),ch))
-    m=findall(x->sum(denominator.(x))==m,ch)
+    m=minimum(map(x->sum(order.(x)),ch))
+    m=findall(x->sum(order.(x))==m,ch)
     minimum(FF[m])
   end
   if isone(F) return F end

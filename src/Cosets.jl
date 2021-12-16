@@ -900,7 +900,7 @@ function spets(W::PermRootGroup,F::Matrix)
       return false
     end
     # choose simplest scal
-    l=minimum(map(x->[denominator(x),numerator(x)],l))
+    l=minimum(map(x->[order(x),exponent(x)],l))
     l=E(l[1],l[2])
     [l,map(x->x.ind[findfirst(==(l),x.scal)],scal)]
   end
@@ -1066,7 +1066,7 @@ function PermRoot.refltype(WF::PRC)
           zg=ee[findfirst(x->order(x)==z,ee)]
           i=inclusion(sub)[1]
           v=Root1(ratio(prr[i.^zg],prr[i]))
-          zg^=invmod(numerator(v),denominator(v)) # distinguished
+          zg^=invmod(exponent(v),order(v)) # distinguished
           v=scal.*E.(z,0:z-1)
           m=argmin(conductor.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)

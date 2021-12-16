@@ -295,7 +295,7 @@ end
 Base.hash(a::SemisimpleElement, h::UInt)=hash(a.v, h)
 Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)=a.v==b.v
 
-Gapjm.order(a::SemisimpleElement{Root1})=lcm(denominator.(a.v))
+Gapjm.order(a::SemisimpleElement{Root1})=lcm(order.(a.v))
 
 # we need "one" since we cannot define one(SemisimpleElement{T})
 @GapObj struct SSGroup{T}<:Group{SemisimpleElement{T}}

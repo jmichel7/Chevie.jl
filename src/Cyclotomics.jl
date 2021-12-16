@@ -117,13 +117,12 @@ julia> c=Complex{Float64}(E(3))  # convert to Complex{float} is sometimes useful
 -0.4999999999999999 + 0.8660254037844387im
 ```
 
-In  presence of a float of type  `T`, a `Cyc` is converted to `Complex{T}`.
-In  presence of a `Cyc`,  an integer, a rational,  or a complex of these is
+In  presence  of  a  `Cyc`  a  number  `<:Real`  or  `<:Complex{<:Real}` is
 converted to a `Cyc`.
 
 ```julia-repl
 julia> 0.0+E(3)
--0.4999999999999999 + 0.8660254037844387im
+Cyc{Float64}: 1.0ζ₃
 
 julia> E(3)+1//2
 Cyc{Rational{Int64}}: √-3/2
@@ -214,7 +213,7 @@ end;
 testmat(12)^2 takes 0.35s in GAP3, 0.24s in GAP4
 """
 module Cyclotomics
-export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic
+export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic, order
 
 #---- formatting utilities duplicated here to avoid dependency ----------
 const ok="([^-+*/]|√-|{-)*"
@@ -288,11 +287,12 @@ end
 " `E(n,p=1)` makes the `Root1` equal to `ζₙᵖ`"
 E(c,n=1)=Root1_(mod(Int(n),Int(c))//Int(c))
 
-Base.numerator(a::Root1)=numerator(a.r)
-Base.denominator(a::Root1)=denominator(a.r)
-conductor(a::Root1)=denominator(a)%4==2 ? div(denominator(a),2) : denominator(a)
+Base.exponent(a::Root1)=numerator(a.r)
+order(a::Root1)=denominator(a.r)
+conductor(a::Root1)=order(a)%4==2 ? div(order(a),2) : order(a)
 
-Root1(;r=0)=E(denominator(r),numerator(r)) # does a mod1
+# does a mod1 via call to E
+Root1(;r::Union{Integer,Rational{<:Integer}}=0)=E(denominator(r),numerator(r))
 
 function Root1(c::Real)
   if c==1 Root1_(0//1)
@@ -312,8 +312,8 @@ end
 function Base.show(io::IO, r::Root1)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  d=numerator(r)
-  c=denominator(r)
+  d=exponent(r)
+  c=order(r)
   if repl || TeX
     if c==1 print(io,"1")
     elseif c==2 print(io,"-1")
@@ -325,9 +325,9 @@ function Base.show(io::IO, r::Root1)
 end
 
 function Base.cmp(a::Root1,b::Root1)
-  r=cmp(denominator(a),denominator(b))
+  r=cmp(order(a),order(b))
   if !iszero(r) return r end
-  cmp(numerator(a),numerator(b))
+  cmp(exponent(a),exponent(b))
 end
 
 Base.isless(a::Root1,b::Root1)=cmp(a,b)==-1
@@ -485,7 +485,7 @@ an algebraic integer).
 """
 Base.denominator(c::Cyc)=lcm(denominator.(values(c.d)))
 
-Base.numerator(c::Cyc{<:Rational{T}}) where T =Cyc{T}(c*denominator(c))
+Base.numerator(c::Cyc{<:Union{T,Rational{T}}}) where T<:Integer=Cyc{T}(c*denominator(c))
 
 const Elist_dict=Dict{Tuple{Int,Int},Pair{Bool,Vector{Int}}}((1,0)=>(true=>
                        [impl==:MM ? 0 : 1])) # to memoize Elist
@@ -552,8 +552,8 @@ const E_dict=Dict{Rational{Int},Cyc{Int}}(0//1=>Cyc(1))
 
 function Cyc(a::Root1) # the result is lowered
   get!(E_dict,a.r) do
-    c=denominator(a)
-    e=numerator(a)
+    c=order(a)
+    e=exponent(a)
     if c%4==2 return -E(div(c,2),div(e,2)+div(c+2,4)) end
     s,l=Elist(c,e)
 if impl==:vec || impl==:svec
@@ -1069,9 +1069,9 @@ function galois(c::Cyc,n::Int)
   Cyc(conductor(c),impl==:MM ? MM(res) : res)
 end
 
-function galois(c::Root1,n::Int)
-  d=denominator(c)
-  if gcd(n,d)!=1 error("$n should be prime to denominator($c)=$d") end
+function galois(c::Root1,n::Int) # treat n prime to conductor(c)
+  d=order(c)
+  if gcd(n,d)!=1 error("$n should be prime to order($c)=$d") end
   Root1(;r=n*c.r)
 end
 
@@ -1115,10 +1115,10 @@ Base.abs(c::Cyc)=abs(complex(c))
 julia> r=Root1(-E(9,2)-E(9,5))
 Root1: ζ₉⁸
 
-julia> conductor(r)
+julia> order(r)
 9
 
-julia> numerator(r)
+julia> exponent(r)
 8
 
 julia> Cyc(r)
@@ -1157,11 +1157,11 @@ end
 Base.:(==)(a::Root1,b::Number)=Cyc(a)==b # too expensive in lazy case
 
 function Base.:*(a::Cyc,b::Root1)
-  n=lcm(conductor(a),denominator(b))
+  n=lcm(conductor(a),order(b))
   na=div(n,conductor(a))
-  nb=div(n,denominator(b))
+  nb=div(n,order(b))
   res=zerocyc(eltype(a.d),n)
-  for (i,va) in pairs(a) addroot(res,n,na*i+nb*numerator(b),va) end
+  for (i,va) in pairs(a) addroot(res,n,na*i+nb*exponent(b),va) end
   res=Cyc(n,impl==:MM ? MM(res) : impl==:svec ? dropzeros!(res) : res)
   lazy ? res : lower!(res)
 end
@@ -1200,10 +1200,9 @@ julia> Quadratic(1+E(5))
 ```
 """
 function Quadratic(c::Cyc{T})where T
-  l1=coefficients(c)
-  den=lcm(denominator.(l1))
-  c=Cyc{typeof(den)}(c*den)
-  if conductor(c)==1 return Quadratic(numerator(num(c)),0,1,den) end
+  den=denominator(c)
+  c=numerator(c)
+  if conductor(c)==1 return Quadratic(num(c),0,1,den) end
   f=factor(conductor(c))
   v2=get(f,2,0)
   if v2>3 || (v2==2 && any(p->p[1]!=2 && p[2]!=1,f)) ||
@@ -1324,7 +1323,7 @@ root(x::Rational,n=2)=root(numerator(x),n)//root(denominator(x),n)
 
 # find the "canonical" best of the n possible roots
 function root(r::Root1,n=2)
-  d=denominator(r.r)
+  d=order(r)
   j=1
   n1=n
   while true
@@ -1333,7 +1332,7 @@ function root(r::Root1,n=2)
     j*=k
     if k==1 break end
   end
-  E(j*d,numerator(r)*gcdx(n1,d)[2])
+  E(j*d,exponent(r)*gcdx(n1,d)[2])
 end
 
 const Crootdict=Dict{Tuple{Int,Cyc},Cyc}()

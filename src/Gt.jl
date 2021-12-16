@@ -204,7 +204,7 @@ function Base.show(io::IO,r::ClassTypes)
   function nc(p)
     local d
     p=Mvp(p)
-    d=lcm(map(denominator,values(p.d)))
+    d=lcm(denominator.(values(p.d)))
     p=bracket_if_needed(repr(improve_type(p*d);context=io))
     d==1 ? p : string(p,"/",d)
   end

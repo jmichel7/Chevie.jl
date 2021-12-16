@@ -913,7 +913,7 @@ function DeterminantIntMat(mat)
 end
 
 function IntersectionLatticeSubspace(m)
-  m*=lcm(map(denominator, vcat(m...)))
+  m*=lcm(denominator.(vcat(m...)))
   r = SmithNormalFormIntegerMatTransforms(m)
   for i in 1:length(r[:normal])
     if !iszero(r[:normal][i])

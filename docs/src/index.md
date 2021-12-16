@@ -63,15 +63,15 @@ Base.in(::Perm,::PermGroup)
 ```
 # Cyclotomic numbers
 ```@docs
-Cycs
+Cyclotomics
 conductor
-Cycs.coefficients(c::Cyc)
+Cyclotomics.coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
 galois(c::Cyc,n::Int)
 Quadratic
 Root1
-Cycs.root
+Cyclotomics.root
 ```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
@@ -452,7 +452,7 @@ ClassTypes
 ```@docs
 Urad
 UnipotentGroup
-Urad.norm
+Urad.reorder
 Urad.abelianpart
 Urad.decompose
 ```
