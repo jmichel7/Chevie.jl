@@ -839,7 +839,7 @@ function EigenAndDegHecke(s)
   if !isone(p) println("***** perm=",p) 
     if iscyclic(W) ChevieErr("should not have perm")end 
   end
-  d1=exponent(d)//gcd(conductor(d),gcd(degrees((W))))
+  d1=exponent(d)//gcd(order(d),gcd(degrees((W))))
   i=position_regular_class(W,d1) # this class represents F
   omegachi=map(x->scal(value(x[i]//x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
   frac=degree.(central_monomials(H)).*d1

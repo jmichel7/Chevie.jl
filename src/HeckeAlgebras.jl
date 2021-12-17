@@ -493,12 +493,13 @@ function central_monomials(H::HeckeAlgebra)
   W=H.W
   v=hyperplane_orbits(W)
   map(eachrow(CharTable(W).irr)) do irr
+    dim=Int(irr[1])
     prod(v)do C
       q=H.para[restriction(W)[C.s]]
       m=Int.(map(0:C.order-1)do j
-       (irr[1]+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
+       (dim+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
       end)
-      E.(irr[1],-C.N_s*sum(m.*(0:C.order-1)))*
+      E.(dim,-C.N_s*sum(m.*(0:C.order-1)))*
           prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
     end
   end

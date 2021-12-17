@@ -827,7 +827,7 @@ O—O—O
 3 1 2
 ```
 """
-function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
+function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF));NC=false)
 # xprintln("WF=",WF," I=",I," w=",w)
   W=Group(WF)
   if !(w in W) error(w," should be in ",W) end
@@ -841,7 +841,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF)))
   if !(phi isa Perm) phi=phi.phi end
   RF=spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}(:parent=>WF))
   # perhaps no parent?
-  refltype(RF)
+  if !NC refltype(RF) end
   RF
 end
 
@@ -866,14 +866,14 @@ function spets(W::PermRootGroup)
   end
 end
 
-function spets(W::PermRootGroup,w::Perm)
+function spets(W::PermRootGroup,w::Perm;NC=false)
   if isone(w) return spets(W) end
   w=reduced(W,w)
   if !(w isa Perm) w=w.phi end
   F=reflrep(W,w)
 # println("w=$w\nF=$F")
   res=PRC(w,F,W,Dict{Symbol,Any}())
-  refltype(res) # changes phi and F
+  if !NC refltype(res) end # changes phi and F
   res
 end
 
@@ -1058,7 +1058,7 @@ function PermRoot.refltype(WF::PRC)
         scal=Root1(scal[1])
         if !isone(scal)
         sub=reflection_subgroup(W,ti.indices;NC=true)
-        zg=Groups.centre(sub)
+        zg=centre(sub)
         z=length(zg)
  #      println("zg=$zg")
         if z>1 # simplify scalars using centre
@@ -1068,13 +1068,13 @@ function PermRoot.refltype(WF::PRC)
           v=Root1(ratio(prr[i.^zg],prr[i]))
           zg^=invmod(exponent(v),order(v)) # distinguished
           v=scal.*E.(z,0:z-1)
-          m=argmin(conductor.(v))
+          m=argmin(order.(v))
           Perms.mul!(WF.phi,(zg^(m-1))^WF.phi)
           WF.F=reflrep(Group(WF),WF.phi)
           scal=v[m]
         end
         # simplify again by -1 in types 2A(>1), 2D(odd), 2E6
-        if mod(conductor(scal),4)==2 &&
+        if mod(order(scal),4)==2 &&
           (ti.series in [:A,:D] || (ti.series==:E && ti.rank==6))
           sb=coxgroup(ti.series,ti.rank)
           w0=sub(word(sb,longest(sb))...)
