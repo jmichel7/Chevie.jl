@@ -301,7 +301,7 @@ function Chars.CharTable(H::HeckeAlgebra)
         else                     names=charinfo(t).charnames
         end
         CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-          map(Int,ct[:centralizers]),ct[:centralizers][1],Dict{Symbol,Any}())
+       map(Int,ct[:centralizers]),Int(ct[:centralizers][1]),Dict{Symbol,Any}())
       end
       ct=prod(cts)
     end

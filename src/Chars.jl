@@ -495,7 +495,7 @@ function charinfo(t::TypeIrred)
     end
   end
   for f in [:a,:A,:b,:B]
-    if isnothing(c[f]) delete!(c.prop,f) else c.prop[f]=improve_type(c[f]) end
+    if isnothing(c[f])||c[f]==false  delete!(c.prop,f) else c.prop[f]=improve_type(c[f]) end
   end
   if haskey(t,:orbit)
     if !haskey(c,:charRestrictions)
@@ -652,12 +652,11 @@ function charinfo(W)
         for i in eachindex(t), f in t[i].orbit
           m[findfirst(==(sort(f.indices)),gt)]=y[i]
         end
-        return cart2lin(n,m)
+        cart2lin(n,m)
       end
       res.nrGroupClasses=prod(i->p[i].nrGroupClasses^length(t[i].orbit),
                                                           eachindex(t))
     end
-    if length(p)==1 return res end
     res.charnames=map(l->join(l,","),cartfields(p,:charnames))
     for f in [:positionId, :positionDet]
       if all(d->haskey(d,f),p)
@@ -665,17 +664,17 @@ function charinfo(W)
       end
     end
     for f in [:b, :B, :a, :A]
-      if all(d->haskey(d,f),p) res.prop[f]=Int.(map(sum,cartfields(p,f))) end
+      if all(d->haskey(d,f),p) res.prop[f]=improve_type(map(sum,cartfields(p,f))) end
     end
-    if !haskey(res,:b)
-       P=fakedegrees(W)
+    if !haskey(res,:b) || !haskey(res,:B)
+       P=fakedegrees(W;recompute=true)
        res.b=valuation.(P)
        res.B=degree.(P)
     end
     if any(x->haskey(x,:hgal),p)
       res.hgal=map(x->haskey(x,:hgal) ? x.hgal : Perm(), p)
-      gt=cartesian(map(x->1:length(x.charparams), p))
-      res.hgal=PermListList(gt, map(t->map((x,i)->x^i,t,res.hgal),gt))
+      gt=cartesian(map(x->1:length(x.charparams), p)...)
+      res.hgal=Perm(gt, map(t->map((x,i)->x^i,t,res.hgal),gt))
     end
     res
   end

@@ -346,6 +346,7 @@ Base.:^(a::Root1,r::Rational{<:Integer})=root(a,denominator(r))^numerator(r)
 Base.inv(a::Root1)=Root1_(mod1(-a.r))
 Base.conj(a::Root1)=inv(a)
 Base.:/(a::Root1,b::Root1)=a*inv(b)
+Base.://(a::Root1,b::Root1)=a/b
 
 #------------------------ type Cyc ----------------------------------
 const impl=:MM # I tried 4 different implementations. For testmat(12)^2

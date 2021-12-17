@@ -547,8 +547,8 @@ function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
   # complete basis of <roots(W,I)> with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
    for x in v
-     if (x isa Rational && x<0) || Real(x)<0 return true
-     elseif (x isa Rational && x>0) || Real(x)>0 return false
+     if (x isa Rational && x<0) || (isreal(x) && real(x)<0) return true
+     elseif (x isa Rational && x>0) || (isreal(x) && real(x)>0) return false
      end
    end end
   N=(1:W.N)[l]
@@ -560,7 +560,9 @@ function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
 end
 
 standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
-  standard_parabolic(W,inclusiongens(H,W))
+  if !all(isinteger,cartan(W)) standard_parabolic(W.G,H.G)
+  else standard_parabolic(W,inclusiongens(H,W))
+  end
 
 """
 `badprimes(W)`

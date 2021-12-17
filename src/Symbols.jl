@@ -64,7 +64,7 @@ module Symbols
 using ..Util: joindigits
 using ..Combinat: arrangements, partition_tuples, constant, collectby
 using ..Cyclotomics: E
-using ..CycPols: CycPol
+using ..CycPols: CycPol, ennola_twist
 using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
@@ -536,7 +536,7 @@ function fegsymbol(s,p=0)
     if e==2 && ep==-1 res=-res end
   end
   if r==2 && (e>2 && ep==E(e))
-    res=CycPols.ennola_twist(res,E(2e))//E(2e,degree(res))
+    res=ennola_twist(res,E(2e))//E(2e,degree(res))
   end
   return res
 end

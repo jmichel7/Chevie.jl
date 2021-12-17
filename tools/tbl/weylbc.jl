@@ -101,39 +101,6 @@ chevieset(:B, :ClassInfo, function (n,)
                     end), res[:centralizers])
         return res
     end)
-chevieset(:B, :ClassParameter, function (n, w)
-        local x, i, res, mark, cyc, j
-        x = Perm()
-        for i = w
-            if i == 1
-                x = x * Perm(1, n + 1)
-            else
-                x = x * (Perm(i - 1, i))((i - 1) + n, i + n)
-            end
-        end
-        res = [[], []]
-        mark = 1:n
-        for i = 1:n
-            if mark[i] != 0
-                cyc = CyclePermInt(x, i)
-                if i + n in cyc
-                    push!(res[2], length(cyc) // 2)
-                else
-                    push!(res[1], length(cyc))
-                end
-                for j = cyc
-                    if j > n
-                        mark[j - n] = 0
-                    else
-                        mark[j] = 0
-                    end
-                end
-            end
-        end
-        sort!(res[1])
-        sort!(res[2])
-        return [reverse(res[1]), reverse(res[2])]
-    end)
 chevieset(:B, :CharParams, (n->begin
             partition_tuples(n, 2)
         end))

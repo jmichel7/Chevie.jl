@@ -252,14 +252,14 @@ function Tlusztiginduction(WF,L)
   ud=degrees(uw,q)
   index=exactdiv(generic_order(WF,q),generic_order(L,q))
   index*=q^-index.v
-  index*=generic_sign(L)/generic_sign(WF)
+  index*=generic_sign(L)//generic_sign(WF)
   pred=hd.*index
   ind=map(x->UniChar(WF,x),eachcol(t.scalar))
   for j in 1:length(hd)
     if pred[j]!=degree(ind[j])
-     xprint("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j],"\n!!",
-        CycPol(degree(ind[j]))," instead of ",CycPol(pred[j]),
-        " quotient ", CycPol(degree(ind[j]))*inv(CycPol(pred[j])),"\n")
+     xprintln("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j])
+     xprintln("!!",CycPol(degree(ind[j]))," instead of ",CycPol(pred[j]),
+        " quotient ", CycPol(degree(ind[j]))*inv(CycPol(pred[j])))
     end
   end
   f=fusion_conjugacy_classes(L,WF)
@@ -841,20 +841,20 @@ function EigenAndDegHecke(s)
   end
   d1=exponent(d)//gcd(conductor(d),gcd(degrees((W))))
   i=position_regular_class(W,d1) # this class represents F
-  omegachi=map(x->scal(value(x[i]/x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
+  omegachi=map(x->scal(value(x[i]//x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
   frac=degree.(central_monomials(H)).*d1
-  om2=map((o,p)->o*d^-p,map(x->x[i]/x[1],eachrow(ct1)),frac)
+  om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
   if omegachi!=om2 
     omegachi=om2
     ChevieErr(classinfo(W)[:classtext][i],"^",1//d1," not equal to π(",W,")\n")
   end
   ss=CycPol.(schur_elements(H)^p)
-  ss=map(x->s.degree/x,ss)
+  ss=map(x->s.degree//x,ss)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
   zeta=Cyc(Root1(;r=d1)^frac[PositionId(W)])
   if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
     omegachi=map(i->Root1(;r=s.d*s.e*s.delta*
-              ((i-1)/s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
+              ((i-1)//s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
     zeta=Root1(;r=s.d*s.e*s.delta*s.d*dSeries.mC(s)[1])
   end
   map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=Mod1(frac)),ss,omegachi,frac)
@@ -871,7 +871,7 @@ function TSerie(s)
        generic_order(s.levi,Pol()))(Ed)
     if c!=1 ChevieErr(s," => |G|/(|L||WGL|) mod Φ=",c,"\n") end
     e=generic_sign(s.spets)*Ed^(sum(codegrees(Group(s.spets)))-
-       sum(codegrees(Group(s.levi))))/generic_sign(s.levi)
+       sum(codegrees(Group(s.levi))))//generic_sign(s.levi)
     if e!=1 ChevieErr(s," => εL/c mod Φ=",e,"\n")end
   end
   if isnothing(dSeries.char_numbers(s)) return end
@@ -882,7 +882,7 @@ function TSerie(s)
     if e!=pred && (!haskey(s,:delta) || s.delta==1 || is_cyclic(s.WGL))
      n=charnames(UnipotentCharacters(W))[s.charNumbers]
       ChevieErr(s," actual eigen differ from predicted eigen")
-      c=Set(map((x,y)->x/y,pred,e))
+      c=Set(map((x,y)->x//y,pred,e))
       if length(c)==1 ChevieErr("predicted=",c[1],"*actual")
       else cmptables(
                  (rowLabels=["actual   "],columnLabels=n,scalar=[e]),
@@ -973,7 +973,7 @@ function reflectiondegrees(W::Spets)
     res=Vector{Pair{Int,Root1}}[]
     d=degs[1]
     f=findall(i->last(i)>=1//d,e)
-    g=first.(filter(x->first(x).r<1/d,e[f]))
+    g=first.(filter(x->first(x).r<1//d,e[f]))
     for p in g
       pos=map(i->findfirst(j->first(e[j])==p*i,f),E.(d,0:d-1))
       if !(nothing in pos)
@@ -1013,8 +1013,8 @@ function Tfeg(W)
   fd=fakedegrees(W,q)
   ffd=fakedegrees(W,q;recompute=true)
   cmpvec(ffd,fd;na="recomputed",nb="fakedegrees")
-  cmpvec(valuation.(fd),charinfo(W)[:b];na="computed b",nb="charinfo b")
-  cmpvec(degree.(fd),charinfo(W)[:B];na="computed B",nb="charinfo B")
+  cmpvec(valuation.(fd),charinfo(W).b;na="computed b",nb="charinfo b")
+  cmpvec(degree.(fd),charinfo(W).B;na="computed B",nb="charinfo B")
 end
 
 test[:feg]=(fn=Tfeg,applicable=x->true, comment="check fakedegrees")
@@ -1030,7 +1030,7 @@ function Tfeginduce(W,J)
     t=InductionTable(L,W)
     hd=fakedegrees(L,q)
     ud=fakedegrees(W,q)
-    index=exactdiv(generic_sign(L)*generic_order(W,q),generic_order(L,q))/generic_sign(W)
+    index=exactdiv(generic_sign(L)*generic_order(W,q),generic_order(L,q))//generic_sign(W)
     index=shift(index,-valuation(index))
     pred=hd*index
     found=(permutedims(ud)*t.scalar)[1,:]
@@ -1217,7 +1217,7 @@ function Tfamilies(W,i;hard=false)
 # fi;
   if hard print("\n| ") end
   if length(S)<=40 || hard
-    s=map(x->x/x[special],eachcol(Sbar))
+    s=map(x->x//x[special],eachcol(Sbar))
     _max=0
     for i in inds
       if length(S)>10 || hard print(".") end

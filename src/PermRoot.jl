@@ -1070,7 +1070,7 @@ end
      
 function Groups.position_class(W::PermRootGroup,w)
   l=PermGroups.positions_class(W,w)
-  if length(l)>1 println("ambiguity: ",l) end
+# if length(l)>1 println("ambiguity: ",l) end
   # doit type by type
   if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
   ncl=classinfo(W)[:classes][l]
@@ -1258,7 +1258,7 @@ function Groups.classreps(W::PermRootGroup)
 end
 
 function Groups.nconjugacy_classes(W::PermRootGroup)
- prod(nconjugacy_classes.(refltype(W)))
+  prod(nconjugacy_classes.(refltype(W));init=1)
 end
 
 """

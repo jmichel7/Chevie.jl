@@ -10,6 +10,11 @@ function Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
+LaurentPolynomials.exactdiv(m::ModuleElt,b)=merge(exactdiv,m,b)
+
+LaurentPolynomials.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(
+                    conductor(c),exactdiv(c.d,b))
+
 """
 `factor(p::Mvp)`
 
@@ -38,13 +43,13 @@ julia> factor(x*y-1)
 function Util.factor(p::Mvp{T,N})where {T,N}
   v=variables(p)
   r=length(v)+1
-  m=zeros(T,r,r)//1
+  m=zeros(T,r,r)*1//1
   for (e,t) in p.d
     n=map(x->findfirst(==(x),v),keys(e.d))
     c=collect(values(e.d))
-    if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t//2
+    if c==[1,1] m[n[1],n[2]]=m[n[2],n[1]]=t*1//2
     elseif c==[2] m[n[1],n[1]]=t
-    elseif c==[1] m[n[1],r]=m[r,n[1]]=t//2
+    elseif c==[1] m[n[1],r]=m[r,n[1]]=t*1//2
     elseif isempty(c) m[r,r]=t
     else error("# only implemented for degree <=2")
     end
@@ -60,13 +65,13 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   if size(m,1)==1 return [v[1],v[1]*m[1,1]] end
   b=m[1,2]+m[2,1]
   if m[1,1]==0 return [v[2],b*v[1]+m[2,2]*v[2]] end
-  b//=m[1,1]
-  d=root(b^2-4*m[2,2]//m[1,1])
+  b/=m[1,1]
+  d=root(b^2-4*m[2,2]/m[1,1])
   if isnothing(d) 
     println("root failed")
     return p 
   end
-  improve_type([v[1]+v[2]//2*(b-d),m[1,1]*(v[1]+v[2]//2*(b+d))])
+  improve_type([v[1]+v[2]*1//2*(b-d),m[1,1]*(v[1]+v[2]*1//2*(b+d))])
 end
 
 """

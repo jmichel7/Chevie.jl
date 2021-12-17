@@ -73,9 +73,17 @@ chevieset(Symbol("2I"), :CharInfo, function (m,)
         res = Dict{Symbol, Any}(:extRefl => [1, 3, 2])
         if m == 4
             res[:charparams] = [[[2], []], [[], [1, 1]], [[1], [1]]]
+            res[:b] = [0, 4, 1]
+            res[:B] = [0, 4, 3]
         else
             res[:charparams] = Concatenation([[1, 0], [1, m]], map((i->begin
                                 [2, i]
+                            end), 1:div(m - 1, 2)))
+            res[:b] = map((x->begin
+                            x[2]
+                        end), res[:charparams])
+            res[:B] = Concatenation([0, m], map((i->begin
+                                m - i
                             end), 1:div(m - 1, 2)))
         end
         return res
