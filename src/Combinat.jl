@@ -163,7 +163,11 @@ function collectby(f,v)
 end
 
 " `constant(a)` whether all elements in collection `a` are equal"
-constant(a)=isempty(a) || all(==(first(a)),a)
+function constant(a) # written so that a can be a generator
+  if isempty(a) return true end
+  o=first(a)
+  all(==(o),a)
+end
 
 " faster than unique! for sorted vectors"
 function unique_sorted!(v::Vector)

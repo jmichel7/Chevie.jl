@@ -332,12 +332,22 @@ function UnipotentCharacters(t::TypeIrred)
     uc[:almostHarishChandra]=map(uc[:harishChandra])do s
       res=Dict{Symbol,Any}()
       for f in [:levi, :cuspidalName, :eigenvalue, :charNumbers] res[f]=s[f] end
-      res[:relativeType]=TypeIrred(Dict(:orbit=>[copy(s[:relativeType])],
-                                        :twist=>Perm()))
+      res[:relativeType]=TypeIrred(Dict(:orbit=>
+      map(eachindex(t.orbit))do i
+          r=copy(s[:relativeType])
+          r.indices=r.indices+(i-1)*rank(t.orbit[1])
+          r
+        end, :twist=>Perm()))
+      if haskey(s[:relativeType],:twist) && s[:relativeType][:twist]!=Perm() 
+        error() 
+      end
       if !isone(t.twist)
         a=t.orbit[1].indices[s.relativeType[:indices]]
         res[:relativeType][:twist]=prod(Perm.(a,a.^t.twist))
       end
+      res[:levi]=vcat(map(eachindex(t.orbit))do i
+       res[:levi]+(i-1)*rank(t.orbit[1])
+      end...)
       res
     end
   else

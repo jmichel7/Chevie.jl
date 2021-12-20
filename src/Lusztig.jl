@@ -96,17 +96,17 @@ function FindIntSol(l)
     return true
   end
   # if p has small norm must evaluate to 0
-  smallnorm(p)=sum(x->sqrt(real(Complex{Float64}(x*conj(x)))),values(p.d))<15//16
+  smallnorm(p)=sum(abs,coefficients(p))<15//16
   simple = function (p)
-    if length(keys(p.d))>2 || length(keys(p.d))==2 && valuation(p)>0 return false end
-    if length(keys(p.d)) == 1
+    if length(p)>2 || length(p)==2 && valuation(p)>0 return false end
+    if length(p) == 1
       if valuation(p) == 0
         InfoChevie("#I WARNING! FindIntSol cannot make:", p, " integral\n")
         return 0
       end
-      v=(0, values(p.d)[1], keys(keys(p.d)[1].d)[1])
+      v=(0, first(coefficients(p)), first(variables(first(monomials(p)))))
     else
-      var=variables(p)[1]
+      var=first(variables(p))
       v=(coefficient(p,Monomial()),coefficient(p,Monomial(var)),var)
     end
     N=conductor(collect(v[1:2]))

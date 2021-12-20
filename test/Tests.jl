@@ -234,6 +234,7 @@ function Tlusztiginduction(WF,L)
   InfoChevie("  #")
   if L.phi==WF.phi InfoChevie("Split ") end
   InfoChevie("Lusztig Induction from ",L," to ",WF)
+  if !isnothing(match(r"3G3,3,3",isomorphism_type(L))) return end
   t=LusztigInductionTable(L,WF)
   if isnothing(t) return end
   if haskey(t,:scalars) 
@@ -499,7 +500,7 @@ test[:nsemisimple]=(fn=Tnsemisimple,applicable=W->isweylgroup(W) &&
 Jean Michel and Ulrich Thiel (2017)
 
 this function checks that the parameters/names for characters of Complex
-eflection groups agree with the description whcih is since 2016 in the CHEVIE 
+eflection groups agree with the description which is since 2016 in the CHEVIE 
 manual. If not, it tells what permutation of the data is needed.
 """
 function Tcharparams(W)
@@ -774,7 +775,7 @@ function THCdegrees(W,i,rel=false)
   n=hw[:cuspidalName]
   if n=="" n="." end
   cusp=CycPolUnipotentDegrees(L)[Lusztig.FindCuspidalInLevi(n,L)]
-  InfoChevie("  #HC_",L,"(cusp=",n,":",cusp,")[G:L]=",index,"\n")
+  InfoChevie("  #HC_",L,"(cusp=",fromTeX(rio(),n),":",cusp,")[G:L]=",index,"\n")
   R=reflection_group(hw[:relativeType]...)
 # check parameters of relative algebra by the formula
 # u_{s,j}=ζ_s^j  q^(([a+A]_ρ_{det_s^j}-[a+A]_ρ_{\Id})/order#class(s)

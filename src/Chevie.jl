@@ -91,7 +91,7 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
       o(d[2:end]...,extra...,t.cartanType)
     else o(d[2:end]...,extra...)
     end
-  elseif o==false return nothing
+  elseif o===false return nothing
   else o
   end
 end

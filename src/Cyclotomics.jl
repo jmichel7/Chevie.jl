@@ -275,8 +275,12 @@ make `Primes.factor` fast for small Ints by memoizing it
 """
 factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
 
-#---- utility duplicated here to avoid dependency ----------
-constant(a)=isempty(a) || all(==(first(a)),a)
+#---- duplicated here to avoid Combinat dependency ----------
+function constant(a)
+  if isempty(a) return true end
+  o=first(a)
+  all(==(o),a)
+end
 
 #------------------------ type Root1 ----------------------------------
 struct Root1 <: Number # E(c,n)
@@ -350,8 +354,8 @@ Base.://(a::Root1,b::Root1)=a/b
 
 #------------------------ type Cyc ----------------------------------
 const impl=:MM # I tried 4 different implementations. For testmat(12)^2
-    # ModuleElt is fastest
-    # HModuleElt is 50% slower than ModuleElt
+    # MM=ModuleElt is fastest
+    # MM=HModuleElt is 50% slower than ModuleElt
     # :svec is 20% slower than ModuleElt
     # :vec is 40% slower than ModuleElt
 
@@ -370,7 +374,7 @@ end
 conductor(c::Cyc)=length(c.d)
 Base.pairs(c::Cyc)=Iterators.map(x->x[1]-1=>x[2],
                               Iterators.filter(x->x[2]!=0,enumerate(c.d)))
-Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(x))+1]
+Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))+1]
 elseif impl==:svec
 using SparseArrays
 mutable struct Cyc{T}<:Number    # a cyclotomic number
@@ -386,7 +390,7 @@ function Cyc(c::Integer,v::SparseVector)
   if c!=length(v) error("c=$c but length(v)=$(length(v))\n") end
   Cyc_(v)
 end
-Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(x))+1]
+Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))+1]
 
 elseif impl==:MM
 using ModuleElts
@@ -931,7 +935,7 @@ Base.:/(a::Cyc,c::Cyc)=a*inv(c)
 Base.:/(a::Real,c::Cyc)=a*inv(c)
 Base.div(c::Root1,a)=div(Cyc(c),a)
 
-function Base.:*(a::Cyc,b::Cyc)
+function Base.:*(a::Cyc,b::Cyc;reduce=!lazy)
   a,b=promote(a,b)
   if obviouslyzero(a) return a end
   if obviouslyzero(b) return b end
@@ -946,7 +950,7 @@ function Base.:*(a::Cyc,b::Cyc)
     addroot(res,n,na*i+nb*j,ai*bj)
   end
   res=Cyc(n,impl==:MM ? MM(res) : impl==:svec ? dropzeros!(res) : res)
-  lazy ? res : lower!(res)
+  reduce ? lower!(res) : res
 end
 
 # change c to have data n,v
@@ -968,7 +972,7 @@ function lower!(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
  # println("lowering $(conductor(c)):$(c.d)")
   if n==1 return c end
 if impl==:MM
-  if obviouslyzero(c) return Cyc!(c,1,MM(eltype(c.d)[])) end
+  if obviouslyzero(c) return Cyc!(c,1,zero(c.d)) end
 else
   if obviouslyzero(c) return Cyc!(c,1,zerocyc(eltype(c.d),1)) end
 end
@@ -1008,17 +1012,18 @@ elseif impl==:svec
         return lower!(Cyc!(c,m,SparseVector(m,map(x->1+div(x-1,p),kk),val)))
       end
     elseif iszero(length(kk)%(p-1))
-      kk=kk.-1
       cnt=zeros(Int,m)
-      for k in kk cnt[1+(k%m)]+=1 end
+      for k in kk cnt[1+(k-1)%m]+=1 end
       if !all(x->iszero(x) || x==p-1,cnt) continue end
       u=findall(!iszero,cnt).-1
       kk=@. div(u+m*mod(-u,p)*invmod(m,p),p)%m
       if !issorted(kk) sort!(kk) end
+      let c=c, kk=kk, p=p, m=m
       if p==2  
-        return lower!(Cyc!(c,m,SparseVector(m,1 .+kk,[c.d[1+(k*p)%n] for k in kk])))
-      elseif all(k->constant(map(i->c.d[1+(m*i+k*p)%n],1:p-1)),kk)
-        return lower!(Cyc!(c,m,SparseVector(m,1 .+kk,[-c.d[1+(m+k*p)%n] for k in kk])))
+        return lower!(Cyc!(c,m,SparseVector(m,kk.+1,[c.d[1+(k*p)%n] for k in kk])))
+      elseif all(k->constant(c.d[1+(m*i+k*p)%n] for i in 1:p-1),kk)
+        return lower!(Cyc!(c,m,SparseVector(m,kk.+1,[-c.d[1+(m+k*p)%n] for k in kk])))
+      end
       end
     end
 elseif impl==:MM
@@ -1034,7 +1039,7 @@ elseif impl==:MM
       kk=@. div(u+m*mod(-u,p)*invmod(m,p),p)%m
       if p==2  
         return lower!(Cyc!(c,m,MM(k=>c.d[(k*p)%n] for k in kk)))
-      elseif all(k->constant(map(i->c.d[(m*i+k*p)%n],1:p-1)),kk)
+      elseif all(k->constant(c.d[(m*i+k*p)%n] for i in 1:p-1),kk)
         return lower!(Cyc!(c,m,MM(k=>-c.d[(m+k*p)%n] for k in kk)))
       end
     end
@@ -1096,8 +1101,10 @@ function Base.inv(c::Cyc{T})where T
     if r==1 || r==-1 return Cyc(r) else 
     return T<:Integer ? Cyc(1//r) : Cyc(1/r) end
   end
-  r=prod(propergalois(c))
-  n=num(lazy ? lower!(c*r) : c*r)
+  l=propergalois(c)
+  r=l[1]
+  for t in l[2:end] r=*(r,t;reduce=false) end
+  n=num(*(c,r;reduce=true))
   n==1 ? r : n==-1 ? -r : T<:Integer ? r//n : r/n
 end
 
@@ -1106,6 +1113,7 @@ Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 
 Base.abs2(c::Cyc)=c*conj(c)
 Base.abs(c::Cyc)=abs(complex(c))
+Base.adjoint(c::Cyc)=conj(c)
 
 """
 `Root1(c)`
@@ -1131,26 +1139,16 @@ julia> Root1(-E(9,4)-E(9,5)) # nothing
 ```
 """ 
 function Root1(c::Cyc)
+  if lazy lower!(c) end
   if !(all(x->last(x)==1,pairs(c)) || all(x->last(x)==-1,pairs(c)))
     return nothing
   end
-  if lazy lower!(c) end
-# for i in 0:conductor(c)-1
-#   s,v=Elist(conductor(c),i)
-#   if impl==:svec
-#    if c.d.nzind!=v || c.d.nzval[1]!=(s ? 1 : -1) continue end
-#   elseif impl==:vec
-#     l=collect(pairs(c))
-#     if first.(l)!=v || last(l[1])!=(s ? 1 : -1) continue end
-#   else
-#     if first.(c.d.d)!=v || first(values(c.d))!=(s ? 1 : -1) continue end
-#   end
-#   return Root1_(i//conductor(c))
-  for i in prime_residues(conductor(c))
-    if c==E(conductor(c),i) return Root1_(i//conductor(c)) end
-    if -c==E(conductor(c),i)
-      if conductor(c)%2==0 return E(conductor(c),div(conductor(c),2)+i)
-      else return E(2conductor(c),conductor(c)+2*i)
+  n=conductor(c)
+  for i in prime_residues(n)
+    if c==E(n,i) return Root1_(i//n) end
+    if -c==E(n,i)
+      if n%2==0 return E(n,div(n,2)+i)
+      else return E(2n,n+2*i)
       end
     end
   end
@@ -1219,10 +1217,10 @@ function Quadratic(c::Cyc{T})where T
     gal=propergalois(c)
     if length(gal)!=1 return nothing end
     a=numerator(convert(T,gal[1]+c))      # trace of 'c' over the rationals
-    if length(f)%2==0 b=2*c[1]-a
+    if iseven(length(f)) b=2*c[1]-a
     else b=2*c[1]+a
     end
-    if a&1==0 && b&1==0 a>>=1; b>>=1; d=1
+    if iseven(a) && iseven(b) a>>=1; b>>=1; d=1
     else d=2
     end
   elseif v2==2
@@ -1230,7 +1228,7 @@ function Quadratic(c::Cyc{T})where T
     if sqr==1 a=c[0];b=-c[1]
     else
       a=c[4]
-      if length(f)%2==0 a=-a end
+      if iseven(length(f)) a=-a end
       b=-c[sqr+4]
     end
     if sqr%4==1 sqr=-sqr; b=-b end
@@ -1242,7 +1240,7 @@ function Quadratic(c::Cyc{T})where T
       if b==c[3] sqr=-2 end
     else
       a=c[8]
-      if length(f)%2==0 a=-a end
+      if iseven(length(f)) a=-a end
       b=c[(sqr>>1)+8]
       if b!=-c[3*(sqr>>1)-8] sqr=-sqr
       elseif (sqr>>1)%4==3 b=-b

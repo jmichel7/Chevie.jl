@@ -415,7 +415,7 @@ torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.gens))
 # here m is the matrix of s on Y(T)
 # use ss 1.2(1): Ker(1+m+m^2+...)/Im(m-Id)
 function FixedPoints(T::SubTorus,m)
-  @show T,m
+# @show T,m
   n=map(z->solutionmat(toM(T.gens),permutedims(m)*z),T.gens) #action on subtorus
   if nothing in n || !all(isinteger,toM(n))
     error(m," does not stabilize ",T)

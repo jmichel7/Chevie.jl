@@ -419,8 +419,7 @@ function fakedegree(t::TypeIrred,p,q)
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
-  r=getchev(t,:FakeDegree,p,q)
-  if r!=false && r!==nothing r end
+  getchev(t,:FakeDegree,p,q)
 end
 
 """
