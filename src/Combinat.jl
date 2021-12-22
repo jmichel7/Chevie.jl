@@ -25,7 +25,8 @@ module Combinat
 export combinations, ncombinations, arrangements, narrangements,
   partitions, npartitions, partition_tuples, npartition_tuples,
   restrictedpartitions,nrestrictedpartitions,
-  partitions_set, npartitions_set, compositions, submultisets, 
+  partitions_set, npartitions_set, compositions, 
+  submultisets, nsubmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
   bell, stirling2, catalan,
   groupby, constant, tally, collectby, unique_sorted!
@@ -773,13 +774,15 @@ end
 """
 `submultisets(set,k)`
 
+`nsubmultisets(set,k)`
+
 `submultisets`  returns  the  set  of  all  multisets of length `k` made of
-elements of the set `set` (a collection without repetitions).
+elements   of   the   set   `set`   (a   collection  without  repetitions).
+`nsubmultisets` returns the number of multisets.
 
 An  *multiset* of length `k` is  an unordered selection with repetitions of
 length  `k` from `set` and is represented  by a sorted vector of length `k`
-made  of  elements  from  `set`.  There  are  `binomial(|set|+k-1,k)`  such
-sub-multisets.
+made  of  elements  from  `set`.
 
 ```julia-repl
 julia> submultisets(1:4,3)
@@ -811,6 +814,9 @@ function submultisets(A,i)
   vcat(map(j->map(v->pushfirst!(v,A[j]),submultisets(A[j:end],i-1)),
            eachindex(A))...)
 end
+
+@doc (@doc submultisets) nsubmultisets
+nsubmultisets(set,k)=binomial(length(set)+k-1,k)
 
 """
 `partitions_set(set[,k])`

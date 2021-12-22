@@ -69,6 +69,7 @@ Cyclotomics.coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
 galois(c::Cyc,n::Int)
+conjugates
 Quadratic
 Root1
 Cyclotomics.root
@@ -84,6 +85,7 @@ factor(p::Mvp{T, N}) where {T, N}
 ```@docs
 CycPols
 CycPol
+eigmat
 ```
 # Utilities
 ```@docs
@@ -456,6 +458,12 @@ Urad.reorder
 Urad.abelianpart
 Urad.decompose
 ```
+# Decomposition Matrices
+```@docs
+decomposition_matrix
+generic_decomposition_matrix
+InducedDecompositionMatrix
+```
 # Dictionary from GAP3/Chevie
 The dictionary from GAP3/Chevie is as follows:
 ```
@@ -466,8 +474,8 @@ Arrangements                                arrangements
 AsFraction                                  fraction
 AsReflection                                reflection
 AsRootOfUnity                               Root1
-AsWord                                      word
 AssociatedPartition                         conjugate_partition
+AsWord                                      word
 AsymptoticAlgebra                           AsymptoticAlgebra
 BadPrimes                                   badprimes
 BaseIntMat                                  baseInt
@@ -527,13 +535,13 @@ CoxeterWord(W,w)                            word(W,w)
 CoxeterWords(W[,l])                         word.(Ref(W),elements(W[,l]))
 CuspidalPairs                               cuspidal_data
 CuspidalUnipotentCharacters(W[,d])          cuspidal(UnipotentCharacters(W)[,d])
+Cycle                                       orbit
+Cycles                                      orbits
+CyclotomicPolynomial(R,i)                   cyclotomic_polynomial(i)
 CycPol                                      CycPol
 CycPolFakeDegreeSymbol                      fegsymbol
 CycPolGenericDegreeSymbol                   gendeg_symbol
 CycPolUnipotentDegrees                      CycPolUnipotentDegrees
-Cycle                                       orbit
-Cycles                                      orbits
-CyclotomicPolynomial(R,i)                   cyclotomic_polynomial(i)
 DecomposedMat                               diagblocks
 DefectSymbol                                defectsymbol
 Degree(p)                                   degree(p)
@@ -548,12 +556,13 @@ DrinfeldDouble                              drinfeld_double
 Drop                                        deleteat!
 DualBraid                                   DualBraidMonoid
 DualBraidMonoid                             DualBraidMonoid
-ER                                          root
 EigenspaceProjector                         eigenspace_projector
-ElementWithInversions(W,l)                  with_inversions(W,l)
+EigenvaluesMat                              eigmat
 Elements                                    elements
+ElementWithInversions(W,l)                  with_inversions(W,l)
 EltBraid                                    image
 EltWord(W,w)                                W(w...)
+ER                                          root
 ExteriorPower                               exterior_power
 FactorizedSchurElement                      FactorizedSchurElement
 FactorizedSchurElements                     FactorizedSchurElements
@@ -587,10 +596,10 @@ HeckeCentralMonomials                       central_monomials
 HeckeCharValues                             char_values
 HeckeClassPolynomials                       class_polynomials
 HeckeReflectionRepresentation               reflrep
-HighestPowerFakeDegreeSymbol                degree_fegsymbol
 HighestPowerFakeDegrees(W)                  charinfo(W)[:B]
-HighestPowerGenericDegreeSymbol             degree_gendeg_symbol
+HighestPowerFakeDegreeSymbol                degree_fegsymbol
 HighestPowerGenericDegrees(W)               charinfo(W)[:A]
+HighestPowerGenericDegreeSymbol             degree_gendeg_symbol
 HyperplaneOrbits                            hyperplane_orbits
 ICCTable                                    ICCTable
 Incidence                                   incidence
@@ -599,30 +608,32 @@ IndependentRoots                            independent_roots
 InducedLinearForm                           induced_linear_form
 InductionTable                              InductionTable
 Inherit                                     look at merge for hashes
-IntFFE                                      Int
-IntListToString                             joindigits
 IntermediateGroup                           intermediate_group
 Intersection                                intersect
+IntFFE                                      Int
+IntListToString                             joindigits
 InvariantForm                               invariant_form
 Invariants                                  invariants
 Inversions                                  inversions
 IsAbelian                                   isabelian
 IsCycPol(p)                                 p isa CycPol
-IsFFE(x)                                    x isa FFE
 IsFamily(f)                                 f isa Family
+IsFFE(x)                                    x isa FFE
 IsIsolated                                  is_isolated
 IsJoinLattice                               is_join_lattice
 IsLeftDescending(W,w,i)                     isleftdescent(W,w,i)
 IsMeetLattice                               is_meet_lattice
+IsomorphismType                             isomorphism_type
 IsParabolic                                 is_parabolic
 IsSubset(a,b)                               issubset(b,a)
 IsUnipotentElement(x)                       x isa UnipotentElement
-IsomorphismType                             IsomorphismType
 JInductionTable                             JInductionTable
+jInductionTable                             jInductionTable
 Join                                        join
 KazhdanLusztigPolynomial                    KLPol
 KroneckerProduct                            kron
 LargestMovedPoint                           largest_moved_point
+last                                        ans
 LcmPartitions                               lcm_partitions
 LeadingCoefficient(p)                       p[end]
 LeftCell                                    LeftCell
@@ -638,15 +649,15 @@ ListPerm(p)                                 vec(p)
 LogFFE                                      log
 LongestCoxeterElement(W)                    longest(W)
 LongestCoxeterWord(W)                       word(W,longest(W))
-LowestPowerFakeDegreeSymbol                 valuation_fegsymbol
 LowestPowerFakeDegrees(W)                   charinfo(W)[:b]
-LowestPowerGenericDegreeSymbol              valuation_gendeg_symbol
+LowestPowerFakeDegreeSymbol                 valuation_fegsymbol
 LowestPowerGenericDegrees(W)                charinfo(W)[:a]
+LowestPowerGenericDegreeSymbol              valuation_gendeg_symbol
+Lusztigaw                                   Lusztigaw
 LusztigAw                                   LusztigAw
 LusztigInduction                            LusztigInduce
 LusztigInductionTable                       LusztigInductionTable
 LusztigRestriction                          LusztigRestrict
-Lusztigaw                                   Lusztigaw
 M.ToOrdinary(i)                             B(M,i)
 MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
@@ -658,9 +669,9 @@ NrArrangements                              narrangements
 NrCombinations                              ncombinations
 NrConjugacyClasses                          nconjugacy_classes
 NrDrinfeldDouble                            ndrinfeld_double
-NrPartitionTuples                           npartition_tuples
 NrPartitions                                npartitions
 NrPartitionsSet                             npartitions_set
+NrPartitionTuples                           npartition_tuples
 NrRestrictedPartitions                      nrestrictedpartitions
 NullspaceIntMat                             leftnullspaceInt
 OnFamily(f,p::Int)                          galois(f,p)
@@ -669,16 +680,16 @@ OnMatrices(m,p)                             ^(m,p;dims=(1,2))
 OnPolynomials(m,p)                          p^m
 OnSets(s,g)                                 unique!(sort(s.^g))
 OnTuples(l,p)                               l.^p
+OrderedPartitions                           compositions
 OrderFFE                                    order
 OrderMod(n,m)                               order(Mod{m}(n))
-OrderedPartitions                           compositions
 ParabolicRepresentatives                    parabolic_reps
 PartBeta                                    partβ
 Partition                                   partition
-PartitionTuples                             partition_tuples
 Partitions                                  partitions
 PartitionsSet                               partitions_set
-PermCosetsSubgroup(H,W)                     D=reduced(H,W);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))
+PartitionTuples                             partition_tuples
+PermCosetsSubgroup(H,W)                     D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))
 PermList(v)                                 Perm(v)
 PermListList(l1,l2)                         Perm(l1,l2)
 PermMatMat                                  Perm_onmats
@@ -712,9 +723,9 @@ ReflectionDegrees(W)                        degrees(W)
 ReflectionEigenvalues                       refleigen
 ReflectionGroup                             reflection_group
 ReflectionLength(W,w)                       reflength(W,w)
+Reflections                                 reflections
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
-Reflections                                 reflections
 RegularEigenvalues                          regular_eigenvalues
 RelativeDegrees                             relative_degrees
 RelativeGroup                               relative_group
@@ -735,14 +746,13 @@ RootDatum                                   rootdatum
 RootsCartan(m)                              roots(m)
 Rotation(v,i)                               circshift(v,-i)
 Rotations(v)                                circshift.(Ref(v),length(v):-1:1)
-ScalMvp                                     scalar
 ScalarProduct                               scalarproduct
+ScalMvp                                     scalar
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor
 SemisimpleCentralizerRepresentatives        SScentralizer_reps
 SemisimpleElement                           SS
 SemisimpleRank                              semisimplerank
-SemisimpleRank(W::CoxeterGroup)             coxrank(W)
 SemisimpleSubgroup                          torsion_subgroup
 ShiftBeta                                   shiftβ
 ShrinkGarsideGeneratingSet                  shrink
@@ -786,8 +796,9 @@ UnipotentGroup                              UnipotentGroup
 UnorderedTuples                             submultisets
 Valuation(p)                                valuation(p)
 Value(p,x)                                  p(x)
-W.N                                         nref(W)
+W.matgens                                   reflrep(W)
 W.matgens[i]                                reflrep(W,i)
+W.N                                         nref(W)
 W.orbitRepresentative                       simple_reps(W)
 W.orbitRepresentativeElements[i]            simple_conjugating(W,i)
 W.rootInclusion                             inclusion(W)
@@ -796,9 +807,7 @@ W.rootRestriction                           restriction(W)
 W.roots                                     W.rootdec
 W.simpleCoroots                             coroots(W,1:ngens(W))
 W.simpleRoots                               roots(W,1:ngens(W))
+WeightInfo                                  weightinfo
 WGraph                                      Wgraph
 WGraphToRepresentation                      WGraphToRepresentation
-WeightInfo                                  weightinfo
-jInductionTable                             jInductionTable
-last                                        ans
 ```

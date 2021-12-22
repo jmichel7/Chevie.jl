@@ -131,6 +131,7 @@ include("Families.jl");@reexport using .Families
 include("Uch.jl");@reexport using .Uch
 include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
+include("gendec.jl"); # for now no module
 include("HasType.jl");@reexport using .HasType
 #end
 function __init__()

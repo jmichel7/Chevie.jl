@@ -382,7 +382,7 @@ function fixdoc()
   s=read("index.md",String)
   pad=maximum(length(k) for k in keys(ChevieDict))+2
   u=[rpad(k,pad)*v*"\n" for (k,v) in ChevieDict]
-  u=join(sort(u),"")
+  u=join(sort(u,by=lowercase),"")
   s=replace(s,r"The dictionary from GAP3/Chevie is as follows:\n```(.*)```"s=>
            "The dictionary from GAP3/Chevie is as follows:\n```\n"*u*"```")
   open("index.md","w")do f

@@ -432,7 +432,7 @@ make `Primes.factor` fast for small Ints by memoizing it
 """
 factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
 
-function divisors(n::Int)::Vector{Int}
+function divisors(n::Integer)::Vector{Int}
   if n==1 return [1] end
   sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
 end

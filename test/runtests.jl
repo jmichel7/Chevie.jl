@@ -273,6 +273,7 @@ end
 @test mytest("Cyclotomics.jl","coefficients(Cyc(E(9)))","9-element Vector{Int64}:\n  0\n  0\n  0\n  0\n -1\n  0\n  0\n -1\n  0")
 @test mytest("Cyclotomics.jl","galois(1+E(4),-1)","Cyc{Int64}: 1-ζ₄")
 @test mytest("Cyclotomics.jl","galois(root(5),2)==-root(5)","true")
+@test mytest("Cyclotomics.jl","conjugates(1+root(5))","2-element Vector{Cyc{Int64}}:\n 1+√5\n 1-√5")
 @test mytest("Cyclotomics.jl","r=Root1(-E(9,2)-E(9,5))","Root1: ζ₉⁸")
 @test mytest("Cyclotomics.jl","order(r)","9")
 @test mytest("Cyclotomics.jl","exponent(r)","8")

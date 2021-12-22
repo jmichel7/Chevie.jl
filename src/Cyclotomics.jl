@@ -189,7 +189,8 @@ julia> coefficients(a)
  -1
 ```
 
-For more information see the methods denominator, Quadratic, galois, root. 
+For more information see the methods denominator, Quadratic, galois, root,
+conjugates.
 
 Finally, a benchmark:
 
@@ -213,7 +214,8 @@ end;
 testmat(12)^2 takes 0.35s in GAP3, 0.24s in GAP4
 """
 module Cyclotomics
-export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic, order
+export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic, 
+       order, conjugates
 
 #---- formatting utilities duplicated here to avoid dependency ----------
 const ok="([^-+*/]|√-|{-)*"
@@ -290,7 +292,7 @@ end
 
 Base.mod1(x::Rational{<:Integer})=mod(numerator(x),denominator(x))//denominator(x)
 
-" `E(n,p=1)` makes the `Root1` equal to `ζₙᵖ`"
+" `E(n,p=1)` returns the `Root1` equal to `ζₙᵖ`"
 E(c,n=1)=Root1_(mod1(n//c))
 
 Base.exponent(a::Root1)=numerator(a.r)
@@ -1085,12 +1087,24 @@ end
 
 Base.conj(c::Cyc)=galois(c,-1)
 
-# list of galois conjugates of c not equal to c
-function propergalois(c::Cyc)
-  res=typeof(c)[]
-  for i in prime_residues(conductor(c))[2:end]
+"""
+`conjugates(c)`
+
+returns the list of distinct galois conjugates of `c` (over the Rationals),
+starting with c
+
+```julia-repl
+julia> conjugates(1+root(5))
+2-element Vector{Cyc{Int64}}:
+ 1+√5
+ 1-√5
+```
+"""
+function conjugates(c) # Root1 or Cyc
+  res=[c]
+  for i in prime_residues(c isa Cyc ? conductor(c) : order(c))[2:end]
     c1=galois(c,i)
-    if c1!=c && !(c1 in res) push!(res,c1) end
+    if !(c1 in res) push!(res,c1) end
   end
   res
 end
@@ -1101,9 +1115,9 @@ function Base.inv(c::Cyc{T})where T
     if r==1 || r==-1 return Cyc(r) else 
     return T<:Integer ? Cyc(1//r) : Cyc(1/r) end
   end
-  l=propergalois(c)
-  r=l[1]
-  for t in l[2:end] r=*(r,t;reduce=false) end
+  l=conjugates(c)
+  r=l[2]
+  for t in l[3:end] r=*(r,t;reduce=false) end
   n=num(*(c,r;reduce=true))
   n==1 ? r : n==-1 ? -r : T<:Integer ? r//n : r/n
 end
@@ -1193,8 +1207,8 @@ such a representation is possible or returns `q===nothing` otherwise.
 
 # Examples
 ```julia-repl
-julia> Quadratic(1+E(3))
-(1+√-3)/2
+julia> Quadratic(E(3,2)-2E(3))
+(1-3√-3)/2
 
 julia> Quadratic(1+E(5))
 
@@ -1214,9 +1228,9 @@ function Quadratic(c::Cyc{T})where T
   if v2==0
     sqr=conductor(c)
     if sqr%4==3 sqr=-sqr end
-    gal=propergalois(c)
-    if length(gal)!=1 return nothing end
-    a=numerator(convert(T,gal[1]+c))      # trace of 'c' over the rationals
+    gal=conjugates(c)
+    if length(gal)!=2 return nothing end
+    a=numerator(convert(T,sum(gal)))      # trace of 'c' over the rationals
     if iseven(length(f)) b=2*c[1]-a
     else b=2*c[1]+a
     end

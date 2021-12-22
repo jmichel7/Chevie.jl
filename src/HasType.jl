@@ -9,9 +9,10 @@ end
 
 Base.:+(a,b::Unknown)=b
 Base.:+(b::Unknown,a)=b
-Base.:*(a,b::Unknown)=b
-Base.:*(b::Unknown,a)=b
+Base.:*(a,b::Unknown)=iszero(a) ? a : b
+Base.:*(b::Unknown,a)=iszero(a) ? a : b
 Base.zero(a::Unknown)=0
+Base.show(io::IO,a::Unknown)=print(io,get(io,:limit,false) ? "?" : "Unknown()")
 #-----------------------------------------------------------------------
 charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict())

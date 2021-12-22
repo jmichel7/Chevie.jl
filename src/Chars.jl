@@ -395,7 +395,8 @@ using ..Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars, detPerm, conjPerm, discriminant, classnames
+  decompose, on_chars, detPerm, conjPerm, discriminant, classnames,
+  decomposition_matrix
 
 """
 `fakedegree(W, φ, q)`
@@ -1476,4 +1477,26 @@ function discriminant(W)
   end
 end
   
+function decomposition_matrix(t::TypeIrred,p)
+  m=getchev(t,:DecompositionMatrix,p)
+  if m==false 
+    error("decomposition_matrix(",t,",",p,") not implemented")
+  end
+  n=getchev(t,:NrConjugacyClasses)
+  append!(m,map(i->[[i],[[1]]],setdiff(1:n,union(first.(m)))))
+  res=cat(map(x->toM(x[2]),m)...;dims=(1,2))
+  res[sortperm(vcat(first.(m)...)),:]
+end
+  
+"""
+`decomposition_matrix(W,p)`
+
+This provides an interface to some decomposition matrices for Weyl groups
+available in the Chevie library: those for `E₆, E₇, E₈` for `p=2,3,5,7`.
+"""
+function decomposition_matrix(W,p)
+  m=map(t->decomposition_matrix(t,p),refltype(W))
+  map(x->prod.(cartesian(x)),cartesian(toL.(m)...))
+end
+
 end
