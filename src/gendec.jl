@@ -19,10 +19,12 @@ specified by the Coxeter group or coset `W` form the package `GenDecMats`.
 ```julia-repl
 julia> W=rootdatum("psu",5)
 ²A₄
-
+```
+```julia-rep1
 julia> generic_decomposition_matrix(W,13)
 !!! Φ-decomposition matrices available for ²A₄: Φ₁₀ Φ₂ Φ₄ Φ₆
-
+```
+```julia-repl
 julia> generic_decomposition_matrix(W,10)
 Φ₁₀-decomposition matrix for ²A₄
       │ps 21 ps ps ps 2111 11111
@@ -74,6 +76,12 @@ function generic_decomposition_matrix(t::TypeIrred,d::Integer)
     elseif length(t.orbit)==2 
       d=div(d,gcd(d,2))
     end
+  end
+  if d==1
+    if !haskey(t,:orbit) error("d=1 allowed only for twisted groups") end
+    n=charnames(UnipotentCharacters(t);TeX=true)
+    return (ordinary=n,hc_series=n,
+          decmat=Int.(eachindex(n) .== eachindex(n)'),condition="",origin="")
   end
   mat=GenericDecMats.generic_decomposition_matrix(field*"d$d")
   if isnothing(mat)

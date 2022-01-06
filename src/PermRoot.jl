@@ -251,8 +251,16 @@ function Base.show(io::IO, t::TypeIrred)
           elseif t.cartanType==root(2) s=:Bsym
           else s=Symbol("B(",repr(t.cartanType;context=io),")")
           end
+        elseif s==:F
+          if t.cartanType==1 s=:F
+          elseif t.cartanType==root(2) s=:Fsym
+          else s=Symbol("F(",repr(t.cartanType;context=io),")")
+          end
         elseif s==:G
-          if t.cartanType==root(3) s=:Gsym end
+          if t.cartanType==1 s=:G
+          elseif t.cartanType==root(3) s=:Gsym
+          else s=Symbol("G(",repr(t.cartanType;context=io),")")
+          end
         elseif s==:I
           if t.cartanType==1 s=:I
           elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym 
@@ -776,9 +784,7 @@ function fixCartan(H,C,p)
   return [r,p]
 end
 
-# find a sublist of inclusion(H) with cartan equal to C^diagonal matrix
-# returns [sublist, coeffs of corresp. diagonal matrix]
-function findgensDiagCartan(H,C)
+function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
   # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
   function complete(l,d)local r,c,cc,n
@@ -798,6 +804,36 @@ function findgensDiagCartan(H,C)
   return complete(Int[],eltype(C)[])
 end
 
+# find other roots with same reflection in inclusion(H) with cartan equal to 
+# C^diagonal matrix
+# returns [sublist, coeffs of corresp. diagonal matrix]
+function findgensDiagCartan(H,C,p)
+  CH=cartan(H,p)
+  f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
+  d=zeros(eltype(CH),size(CH,1))
+  d[1]=1
+  for n in 2:size(C,1)
+  # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
+    l=filter(i->ratio(roots(H,p[n]),roots(H,i))!==nothing,eachindex(roots(H)))
+    cc=map(r->vcat(map(i->f(d[i]*C[i,n],cartan(H,p[i],r)),1:n-1),
+                   map(i->f(d[i]*cartan(H,r,p[i]),C[n,i]),1:n-1)),l)
+    if any(x->nothing in x,cc) error("grave") end
+    cc=filter.(!iszero,cc)
+    cc=unique.(cc)
+    if any(x->length(x)>1,cc) return nothing end
+    cc=only.(cc)
+    best=findfirst(==(1),cc)
+    if !isnothing(best)
+      p[n]=l[best]
+      d[n]=1
+    else
+      d[n]=cc[1]
+      p[n]=l[1]
+    end
+  end
+  p,d
+end
+
 function refltype(W::PermRootGroup)::Vector{TypeIrred}
   get!(W,:refltype)do
     map(diagblocks(cartan(W))) do I
@@ -812,8 +848,11 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
                        Int.(indexin(unique(reflections(R)),reflections(R))),d)
           better=fixCartan(R,C,good)
           if !isnothing(better) good=better[2] 
-          else better=findgensDiagCartan(R,C)
-            if !isnothing(better) good=better[1] end
+          else better=findgensDiagCartan(R,C,good)
+            if !isnothing(better) good=better[1]
+            else better=findgensDiagCartan2(R,C)
+              if !isnothing(better) good=better[1] end
+            end
           end
           if d.series!=:ST 
             d=TypeIrred(Weyl.type_fincox_cartan(cartan(R,good)))

@@ -1,6 +1,6 @@
 module HasType
 
-export charname, traces_words_mats
+export charname, traces_words_mats, Unknown
 
 using ..Gapjm
 #-----------------------------------------------------------------------
@@ -9,10 +9,21 @@ end
 
 Base.:+(a,b::Unknown)=b
 Base.:+(b::Unknown,a)=b
+Base.:+(b::Unknown,a::Unknown)=b
 Base.:*(a,b::Unknown)=iszero(a) ? a : b
 Base.:*(b::Unknown,a)=iszero(a) ? a : b
+Base.:*(b::Unknown,a::Unknown)=b
 Base.zero(a::Unknown)=0
 Base.show(io::IO,a::Unknown)=print(io,get(io,:limit,false) ? "?" : "Unknown()")
+Base.isless(a::Unknown,b::Number)=false
+Base.isless(b::Number,a::Unknown)=true
+Base.isless(b::Unknown,a::Unknown)=false
+Base.:(//)(a::Unknown,b)=a
+Base.isreal(a::Unknown)=false
+Base.isinteger(a::Unknown)=false
+Base.conj(a::Unknown)=a
+Base.broadcastable(a::Unknown)=Ref(a)
+Cyclotomics.galois(a::Unknown,i)=a
 #-----------------------------------------------------------------------
 charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict())

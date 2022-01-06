@@ -1026,7 +1026,7 @@ julia> gcd_partitions([[1,2],[3,4],[5,6]],[[1],[2,5],[3],[4],[6]])
 function gcd_partitions(arg...)
   sort(collect(reduce(arg)do a,b
     res = map(x->map(y->intersect(x, y), b), a)
-    Set(filter(!isempty,reduce(vcat,res)))
+    sort(unique(filter(!isempty,reduce(vcat,res))))
   end))
 end
 

@@ -279,7 +279,7 @@ end
 @test mytest("Cyclotomics.jl","exponent(r)","8")
 @test mytest("Cyclotomics.jl","Cyc(r)","Cyc{Int64}: -ζ₉²-ζ₉⁵")
 @test mytest("Cyclotomics.jl","Root1(-E(9,4)-E(9,5))","nothing")
-@test mytest("Cyclotomics.jl","Quadratic(1+E(3))","(1+√-3)/2")
+@test mytest("Cyclotomics.jl","Quadratic(E(3,2)-2E(3))","(1-3√-3)/2")
 @test mytest("Cyclotomics.jl","Quadratic(1+E(5))","nothing")
 @test mytest("Cyclotomics.jl","root(-1)","Cyc{Int64}: ζ₄")
 @test mytest("Cyclotomics.jl","root(E(4))","Root1: ζ₈")
@@ -1146,6 +1146,13 @@ end
 @test mytest("dSeries.jl","dSeries.char_numbers(s)","6-element Vector{Int64}:\n 1\n 5\n 2\n 8\n 9\n 4")
 @test mytest("dSeries.jl","dSeries.eps(s)","6-element Vector{Int64}:\n  1\n  1\n -1\n -1\n -1\n -1")
 @test mytest("dSeries.jl","relative_group(s)","G₆‚₁‚₁")
+end
+@testset "gendec.jl" begin
+@test mytest("gendec.jl","W=rootdatum(\"psu\",5)","²A₄")
+@test mytest("gendec.jl","generic_decomposition_matrix(W,10)","Φ₁₀-decomposition matrix for ²A₄\n      │ps 21 ps ps ps 2111 11111\n──────┼──────────────────────────\n2.    │ 1  .  .  .  .    .     .\n²A₂:2 │ .  1  .  .  .    .     .\n11.   │ .  .  1  .  .    .     .\n1.1   │ 1  .  .  1  .    .     .\n.2    │ .  .  .  .  1    .     .\n²A₂:11│ .  1  .  .  .    1     .\n.11   │ .  .  .  1  .    .     1")
+@test mytest("gendec.jl","W=rootdatum(\"psu\",6)","²A₅")
+@test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
+@test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from ²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to ²A₅\n\n    │ps ps A₂\n────┼─────────\n²A₅ │ .  .  .\n.3  │ 1  .  .\n3.  │ 1  .  .\n.21 │ 1  1  .\n1.2 │ 2  1  .\n21. │ 1  1  .\n2.1 │ 2  1  .\n.111│ .  1  1\n111.│ .  1  1\n1.11│ 1  2  1\n11.1│ 1  2  1")
 end
 @testset "mvptools.jl" begin
 @test mytest("mvptools.jl","@Mvp x,y","nothing")

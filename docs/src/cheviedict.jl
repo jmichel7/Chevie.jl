@@ -342,6 +342,7 @@ const ChevieDict=Dict(
 "TorusOrder"=>"torus_order",
 "TransitiveClosure"=>"transitive_closure",
 "Transporter"=>"transporter",
+"TransposedMat"=>"permutedims",
 "Transversals"=>"related to transversals",
 "TriangulizeMat"=>"echelon!",
 "Twistings"=>"twistings",
