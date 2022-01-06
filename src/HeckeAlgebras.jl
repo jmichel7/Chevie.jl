@@ -837,7 +837,7 @@ schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
 
 #----------------------- Factorized Schur elements
 struct FactSchur
-  factor::Mvp{Cyc{Rational{Int}},Int}
+  factor::Mvp{Cyc{Rational{Int}},Rational{Int}}
   vcyc::Vector{NamedTuple{(:pol,:monomial),
          Tuple{CycPol{Int},Mvp{Cyc{Rational{Int}},Rational{Int}}}}}
 end
@@ -1003,9 +1003,8 @@ julia> FactorizedSchurElement(H,[[2,5]])
 """
 function FactorizedSchurElement(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
-     getchev(t,:FactorizedSchurElement,psi, 
-             H.para[t.indices], 
-   haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
+     getchev(t,:FactorizedSchurElement,psi,H.para[t.indices], 
+    haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
   end
   if false in t return false
   else return prod(t)

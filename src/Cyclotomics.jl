@@ -1247,7 +1247,7 @@ function Quadratic(c::Cyc{T})where T
     end
     if sqr%4==1 sqr=-sqr; b=-b end
     d=1
-  else		# v2 = 3
+  else		# v2 = 1 or 3
     sqr=conductor(c)>>2
     if sqr==2
       a=c[0];b=c[1]

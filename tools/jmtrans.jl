@@ -86,6 +86,7 @@ function install(n)
   end
 end
 
+# just converts n.g to n.jl
 function install_local(n)
   println("installing $n")
   l=Gap2Julia.myparse(read(n*".g",String),false)
