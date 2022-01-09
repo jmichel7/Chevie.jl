@@ -73,6 +73,7 @@ const ChevieDict=Dict(
 "CyclotomicPolynomial(R,i)"=>"cyclotomic_polynomial(i)",
 "Cycle"=>"orbit",
 "Cycles"=>"orbits",
+"CyclotomicModP(c,p)"=>"FFE{p}(c)",
 "CycPol"=>"CycPol",
 "CycPolFakeDegreeSymbol"=>"fegsymbol",
 "CycPolGenericDegreeSymbol"=>"gendeg_symbol",

@@ -14,9 +14,13 @@ some more functions on partitions and set partitions, and counting functions:
 `lcm_partitions, gcd_partitions, conjugate_partition, dominates, bell, 
 stirling2,catalan`
 
-and finally some structural manipulations not yet in Julia:
+some structural manipulations not yet in Julia:
 
 `groupby, constant, tally, collectby, unique_sorted!`
+
+matrix blocks:
+
+`blocks, diagblocks`
 
 Have  a  look  at  the  individual  docstrings  and  enjoy (any feedback is
 welcome).
@@ -29,7 +33,8 @@ export combinations, ncombinations, arrangements, narrangements,
   submultisets, nsubmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
   bell, stirling2, catalan,
-  groupby, constant, tally, collectby, unique_sorted!
+  groupby, constant, tally, collectby, unique_sorted!,
+  blocks, diagblocks
 
 #--------------------- Structural manipulations -------------------
 """
@@ -1117,5 +1122,111 @@ julia> catalan(8)
 ```
 """
 catalan(n::Integer)=Integer(prod(i->(n+i)//i,2:n))
+
+"""
+`diagblocks(M::Matrix)`
+
+`M`  should  be  a  square  matrix.  Define  a  graph  `G`  with vertices
+`1:size(M,1)` and with an edge between `i`  and `j` if either `M[i,j]` or
+`M[j,i]` is not zero or `false`. `diagblocks` returns a vector of vectors
+`I`  such that  `I[1]`,`I[2]`, etc..  are the  vertices in each connected
+component  of `G`.  In other  words, `M[I[1],I[1]]`,`M[I[2],I[2]]`,etc...
+are diagonal blocks of `M`.
+
+```julia-repl
+julia> m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]
+4×4 Matrix{Int64}:
+ 0  0  0  1
+ 0  0  1  0
+ 0  1  0  0
+ 1  0  0  0
+
+julia> diagblocks(m)
+2-element Vector{Vector{Int64}}:
+ [1, 4]
+ [2, 3]
+
+julia> m[[1,4],[1,4]]
+2×2 Matrix{Int64}:
+ 0  1
+ 1  0
+```
+"""
+function diagblocks(M::AbstractMatrix)::Vector{Vector{Int}}
+  l=size(M,1)
+  if l==0 return Vector{Int}[] end
+  cc=collect(1:l) # cc[i]: in which block is i, initialized to different blocks
+  for i in 1:l, j in i+1:l
+    # if new relation i~j then merge components:
+    if !(iszero(M[i,j]) && iszero(M[j,i])) && cc[i]!=cc[j]
+      cj=cc[j]
+      for k in 1:l
+         if cc[k]==cj cc[k]=cc[i] end
+      end
+    end
+  end
+  sort(collectby(cc,collect(1:l)))
+end
+
+"""
+`blocks(M:AbstractMatrix)`
+
+Finds  if the  matrix  `M` admits a block decomposition.
+
+Define  a bipartite  graph `G`  with vertices  `axes(M,1)`, `axes(M,2)` and
+with an edge between `i` and `j` if `M[i,j]` is not zero. BlocksMat returns
+a  list of pairs of  lists `I` such that  `I[i]`, etc.. are the vertices in
+the `i`-th connected component of `G`. In other words, `M[I[1][1],I[1][2]],
+M[I[2][1],I[2][2]]`,etc... are blocks of `M`.
+
+This  function may  also be  applied to  boolean matrices.
+
+```julia-repl
+julia> m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]
+5×4 Matrix{Int64}:
+ 1  0  0  0
+ 0  1  0  0
+ 1  0  1  0
+ 0  0  0  1
+ 0  0  1  0
+
+julia> blocks(m)
+3-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:
+ ([1, 3, 5], [1, 3])
+ ([2], [2])
+ ([4], [4])
+
+julia> m[[1,3,5,2,4],[1,3,2,4]]
+5×4 Matrix{Int64}:
+ 1  0  0  0
+ 1  1  0  0
+ 0  1  0  0
+ 0  0  1  0
+ 0  0  0  1
+```
+"""
+function blocks(M::AbstractMatrix)
+  comps=Tuple{Vector{Int},Vector{Int}}[]
+  for l in axes(M,1), c in axes(M,2)
+    if !iszero(M[l,c])
+      p=findfirst(x->l in x[1],comps)
+      q=findfirst(x->c in x[2],comps)
+      if p===nothing
+        if q===nothing  push!(comps, ([l], [c]))
+        else union!(comps[q][1], l)
+        end
+      elseif q===nothing union!(comps[p][2], c)
+      elseif p==q 
+        union!(comps[p][1], l)
+        union!(comps[p][2], c)
+      else 
+        union!(comps[p][1],comps[q][1])
+        union!(comps[p][2],comps[q][2])
+        deleteat!(comps,q)
+      end
+    end
+  end
+  sort!(comps)
+end
 
 end

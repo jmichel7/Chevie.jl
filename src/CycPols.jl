@@ -68,7 +68,7 @@ export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial,eigmat
 # export roots
 import ..Gapjm: roots, gap
 
-using ModuleElts: ModuleElt
+using ModuleElts: ModuleElts, ModuleElt
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation
 using PuiseuxPolynomials: Mvp
 using ..Cyclotomics: Root1, E, conductor, Cyc, order
@@ -121,6 +121,9 @@ struct CycPol{T}
   v::ModuleElt{Root1,Int}
 end
 
+# CycPols are scalars for broadcasting
+Base.broadcastable(p::CycPol)=Ref(p)
+
 Base.convert(::Type{CycPol{T1}},p::CycPol{T}) where {T1,T}=T==T1 ? p :
                                CycPol(T1(p.coeff),p.valuation,p.v)
 
@@ -164,8 +167,6 @@ Base.copy(a::CycPol)=CycPol(a.coeff,a.valuation,a.v)
 LaurentPolynomials.degree(a::CycPol)=reduce(+,values(a.v);init=0)+a.valuation+degree(a.coeff)
 LaurentPolynomials.valuation(a::CycPol)=a.valuation
 LaurentPolynomials.valuation(a::CycPol,d::Root1)=reduce(+,c for (r,c) in a.v if r==d;init=0)
-LaurentPolynomials.valuation(a::CycPol,d::Integer)=valuation(a,E(d))
-LaurentPolynomials.valuation(a::CycPol,d::Rational)=valuation(a,Root1(;r=d))
 
 function Base.:*(a::CycPol,b::CycPol)
   if iszero(a) || iszero(b) return zero(a) end
@@ -484,7 +485,7 @@ end
 
 # Fast routine for  CycPol(Value(p,q^n))
 function descent_of_scalars(p::CycPol,n)
-  if n==0 return CycPol(value(p,1)) end
+  if n==0 return CycPol(p(1),0) end
   n=Int(n)
   valuation=n*p.valuation
   if n>0

@@ -47,6 +47,7 @@ classreps(::Group)
 minimal_words
 transporting_elt
 abelian_gens
+blocks(G,p)
 ```
 # Permutation groups
 ```@docs
@@ -121,6 +122,8 @@ tally
 collectby
 cartesian
 unique_sorted!
+diagblocks
+blocks(m::AbstractMatrix)
 ```
 # Posets
 ```@docs
@@ -157,8 +160,6 @@ GLinearAlgebra
 GLinearAlgebra.echelon!
 GLinearAlgebra.echelon
 bigcell_decomposition
-diagblocks
-blocks
 ratio
 exterior_power
 charpoly
@@ -343,7 +344,6 @@ JInductionTable
 detPerm
 conjPerm
 WGraphToRepresentation
-pblocks
 ```
 # Reductive groups, semisimple elements
 ```@docs

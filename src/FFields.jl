@@ -186,7 +186,7 @@ function order(x::Mod)
   o=1
   res=x
   while true
-   if isone(res) return o end
+   if res.val<=1 return o end
    o+=1
    res*=x
   end

@@ -1,6 +1,6 @@
 # this should just be "tools". It contains simple functions but which need
 # several of the self-contained structural packages of Gapjm
-export pblocks, abelian_gens
+export abelian_gens
 
 Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
 
@@ -74,6 +74,20 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   improve_type([v[1]+v[2]*1//2*(b-d),m[1,1]*(v[1]+v[2]*1//2*(b+d))])
 end
 
+"valuation(c::Integer,p::Integer) p-adic valuation of c"
+function LaurentPolynomials.valuation(c::Integer,p::Integer)
+  if iszero(c) error("first argument should not be zero") end
+  e=0
+  while true
+    (c,r)=divrem(c,p)
+    if !iszero(r) return e end
+    e+=1
+  end
+end
+
+LaurentPolynomials.valuation(c::Rational{<:Integer},p::Integer)=
+  valuation(numerator(c),p)-valuation(denominator(c),p)
+
 """
 `FFE{p}(z::Cyc)`  where `z` is  a `p`-integral cyclotomic  number (that is,
 `z`  times some number prime  to `p` is a  cyclotomic integer), returns the
@@ -88,17 +102,16 @@ Z₇₂₉¹⁰⁴
 function FFields.FFE{p}(c::Cyc)where p
   x=coefficients(c) 
   n=conductor(c)
-  np=MatInt.prime_part(n,p)
-  pp=div(n,np)
+  pp=p^valuation(n,p)
+  np=div(n,pp)
   r=order(Mod(p,np)) # order of p mod np
   zeta=Z(p^r)^(div(p^r-1,np)*gcdx(pp,p^r-1)[2]) #n-th root of unity
   if !isone(zeta^n) error() end
   sum(i->zeta^(i-1)*x[i],1:n)
 end
 
-export pblocks
 """
-`pblocks(G,p)`
+`blocks(G::Group,p::Integer)`
 
 Let  `p` be a prime. This function returns the partition of the irreducible
 characters  of `G`  in `p`-blocks,  represented by  the list  of indices of
@@ -108,18 +121,18 @@ irreducibles characters in each block.
 julia> W=CoxSym(5)
 𝔖 ₅
 
-julia> pblocks(W,2)
+julia> blocks(W,2)
 2-element Vector{Vector{Int64}}:
  [1, 3, 4, 5, 7]
  [2, 6]
 
-julia> pblocks(W,3)
+julia> blocks(W,3)
 3-element Vector{Vector{Int64}}:
  [1, 5, 6]
  [2, 3, 7]
  [4]
 
-julia> pblocks(W,7)
+julia> blocks(W,7)
 7-element Vector{Vector{Int64}}:
  [1]
  [2]
@@ -130,7 +143,7 @@ julia> pblocks(W,7)
  [7]
 ```
 """
-function pblocks(G,p)
+function Combinat.blocks(G,p)
   T=CharTable(G)
   l=length(T.charnames)
   classes=map(c->div(T.centralizers[1],c),T.centralizers)
