@@ -181,7 +181,7 @@ Base.:-(a::CycPol)=CycPol(-a.coeff,a.valuation,a.v)
 Base.inv(a::CycPol)=CycPol(LaurentPolynomials.bestinv(a.coeff), -a.valuation, -a.v)
 Base.:^(a::CycPol, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
-Base.://(a::CycPol,b::CycPol)=a*inv(b)
+Base.://(a::CycPol,b::CycPol)=CycPol(a.coeff//b.coeff, a.valuation-b.valuation, a.v-b.v)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 

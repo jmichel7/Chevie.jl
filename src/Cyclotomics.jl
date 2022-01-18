@@ -73,8 +73,8 @@ julia> Int(E(4))
 ERROR: InexactError: convert(Int64, E(4))
 ```
 ```julia-repl
-julia> inv(1+E(4)) # inverses often need Rational coefficients
-Cyc{Rational{Int64}}: (1-ζ₄)/2
+julia> inv(1+E(4)) # like for numbers inverse usually involve floats
+Cyc{Float64}: 0.5-0.5ζ₄
 
 julia> inv(E(5)+E(5,4)) # but not always (we have here a unit)
 Cyc{Int64}: -ζ₅²-ζ₅³
@@ -328,7 +328,7 @@ function Base.show(io::IO, r::Root1)
     else print(io,TeX ? "\\zeta" : "ζ",stringind(io,c),stringexp(io,d))
     end
   else
-    print(io,d==1 ? "E($c)" : "E($c,$d)")
+    print(io,(d==1 || d==0) ? "E($c)" : "E($c,$d)")
   end
 end
 
@@ -850,7 +850,7 @@ function Base.show(io::IO, p::Cyc{T})where T
     if !isnothing(q) push!(rqq,repr(q;context=io)) end
     for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2),root(-3)]
       if !iszero(conductor(p)%conductor(test)) continue end
-      q=Quadratic(p/test)
+      q=Quadratic(p*1//test)
       if isnothing(q) continue end
       rq=repr(q;context=io)
       rq=format_coefficient(rq;allow_frac=true)
@@ -926,8 +926,8 @@ end
 end
 Base.:*(a::Real,c::Cyc)=c*a
 
-Base.://(a::Cyc,c::Cyc)=a*inv(c)
-Base.://(a::Real,c::Cyc)=a*inv(c)
+Base.://(a::Cyc,c::Cyc)=a*inv(c*1//1)
+Base.://(a::Real,c::Cyc)=a*inv(c*1//1)
 Base.://(c::Root1,a::Real)=Cyc(c)//a
 Base.://(a::Real,c::Root1)=a//Cyc(c)
 Base.://(c::Root1,a::Cyc)=Cyc(c)//a
@@ -1112,14 +1112,13 @@ end
 function Base.inv(c::Cyc{T})where T
   if conductor(c)==1
     r=num(c)
-    if r==1 || r==-1 return Cyc(r) else 
-    return T<:Integer ? Cyc(1//r) : Cyc(1/r) end
+    if r==1 || r==-1 return Cyc(r) else return Cyc(1/r) end
   end
   l=conjugates(c)
   r=l[2]
   for t in l[3:end] r=*(r,t;reduce=false) end
   n=num(*(c,r;reduce=true))
-  n==1 ? r : n==-1 ? -r : T<:Integer ? r//n : r/n
+  n==1 ? r : n==-1 ? -r : r/n
 end
 
 Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :

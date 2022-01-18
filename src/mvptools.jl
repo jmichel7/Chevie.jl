@@ -15,6 +15,12 @@ LaurentPolynomials.exactdiv(m::ModuleElt,b)=merge(exactdiv,m,b)
 LaurentPolynomials.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(
                     conductor(c),exactdiv(c.d,b))
 
+function LaurentPolynomials.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
+  res=a//b
+  if denominator(res)>1 error(b," does not exactly divide ",a) end
+  numerator(res)
+end
+
 """
 `factor(p::Mvp)`
 

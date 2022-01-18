@@ -102,6 +102,12 @@ end
 @test mytest("Combinat.jl","[stirling2(i,j) for i in 0:6, j in 0:6]","7×7 Matrix{Int64}:\n 1  0   0   0   0   0  0\n 0  1   0   0   0   0  0\n 0  1   1   0   0   0  0\n 0  1   3   1   0   0  0\n 0  1   7   6   1   0  0\n 0  1  15  25  10   1  0\n 0  1  31  90  65  15  1")
 @test mytest("Combinat.jl","stirling2(50,big(10))","26154716515862881292012777396577993781727011")
 @test mytest("Combinat.jl","catalan(8)","1430")
+@test mytest("Combinat.jl","m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]","4×4 Matrix{Int64}:\n 0  0  0  1\n 0  0  1  0\n 0  1  0  0\n 1  0  0  0")
+@test mytest("Combinat.jl","diagblocks(m)","2-element Vector{Vector{Int64}}:\n [1, 4]\n [2, 3]")
+@test mytest("Combinat.jl","m[[1,4],[1,4]]","2×2 Matrix{Int64}:\n 0  1\n 1  0")
+@test mytest("Combinat.jl","m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]","5×4 Matrix{Int64}:\n 1  0  0  0\n 0  1  0  0\n 1  0  1  0\n 0  0  0  1\n 0  0  1  0")
+@test mytest("Combinat.jl","blocks(m)","3-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:\n ([1, 3, 5], [1, 3])\n ([2], [2])\n ([4], [4])")
+@test mytest("Combinat.jl","m[[1,3,5,2,4],[1,3,2,4]]","5×4 Matrix{Int64}:\n 1  0  0  0\n 1  1  0  0\n 0  1  0  0\n 0  0  1  0\n 0  0  0  1")
 end
 @testset "ComplexR.jl" begin
 @test mytest("ComplexR.jl","G=ComplexReflectionGroup(4)","G₄")
@@ -390,12 +396,6 @@ end
 @test mytest("GLinearAlgebra.jl","Int.(symmetric_power(m,2))","3×3 Matrix{Int64}:\n 1   2   4\n 6  10  16\n 9  12  16")
 @test mytest("GLinearAlgebra.jl","m=cartan(:A,3)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("GLinearAlgebra.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9//1   -6//1    4//1   3//2   -2//1    1//1\n -12//1   16//1  -16//1  -4//1    8//1   -4//1\n   4//1   -8//1   16//1   2//1   -8//1    4//1\n  12//1  -16//1   16//1  10//1  -16//1   12//1\n  -4//1    8//1  -16//1  -4//1   16//1  -12//1\n   1//1   -2//1    4//1   3//2   -6//1    9//1")
-@test mytest("GLinearAlgebra.jl","m=[0 0 0 1;0 0 1 0;0 1 0 0;1 0 0 0]","4×4 Matrix{Int64}:\n 0  0  0  1\n 0  0  1  0\n 0  1  0  0\n 1  0  0  0")
-@test mytest("GLinearAlgebra.jl","diagblocks(m)","2-element Vector{Vector{Int64}}:\n [1, 4]\n [2, 3]")
-@test mytest("GLinearAlgebra.jl","m[[1,4],[1,4]]","2×2 Matrix{Int64}:\n 0  1\n 1  0")
-@test mytest("GLinearAlgebra.jl","m=[1 0 0 0;0 1 0 0;1 0 1 0;0 0 0 1;0 0 1 0]","5×4 Matrix{Int64}:\n 1  0  0  0\n 0  1  0  0\n 1  0  1  0\n 0  0  0  1\n 0  0  1  0")
-@test mytest("GLinearAlgebra.jl","blocks(m)","3-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:\n ([1, 3, 5], [1, 3])\n ([2], [2])\n ([4], [4])")
-@test mytest("GLinearAlgebra.jl","m[[1,3,5,2,4],[1,3,2,4]]","5×4 Matrix{Int64}:\n 1  0  0  0\n 1  1  0  0\n 0  1  0  0\n 0  0  1  0\n 0  0  0  1")
 @test mytest("GLinearAlgebra.jl","solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])","3-element Vector{Rational{Int64}}:\n  5//1\n 15//4\n  0//1")
 @test mytest("GLinearAlgebra.jl","solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, 20, -10])","nothing")
 end
@@ -1160,9 +1160,9 @@ end
 @test mytest("mvptools.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("mvptools.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
 @test mytest("mvptools.jl","W=CoxSym(5)","𝔖 ₅")
-@test mytest("mvptools.jl","pblocks(W,2)","2-element Vector{Vector{Int64}}:\n [1, 3, 4, 5, 7]\n [2, 6]")
-@test mytest("mvptools.jl","pblocks(W,3)","3-element Vector{Vector{Int64}}:\n [1, 5, 6]\n [2, 3, 7]\n [4]")
-@test mytest("mvptools.jl","pblocks(W,7)","7-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7]")
+@test mytest("mvptools.jl","blocks(W,2)","2-element Vector{Vector{Int64}}:\n [1, 3, 4, 5, 7]\n [2, 6]")
+@test mytest("mvptools.jl","blocks(W,3)","3-element Vector{Vector{Int64}}:\n [1, 5, 6]\n [2, 3, 7]\n [4]")
+@test mytest("mvptools.jl","blocks(W,7)","7-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7]")
 @test mytest("mvptools.jl","abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])","2-element Vector{Perm{Int16}}:\n (6,7)\n (1,2)(3,5,4)(6,7)")
 end
 end
