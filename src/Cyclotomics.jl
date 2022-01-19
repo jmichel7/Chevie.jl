@@ -18,14 +18,16 @@ Zumbroich  basis is  a particular  subset of  size φ(n) of 1,ζₙ,ζₙ²,…,
 which forms a basis of ℚ (ζₙ).
 
 I  started  this  file  by  porting  Christian  Stump's Sage code, which is
-simpler to understand than GAP's code. The reference for the algorithms is
+simpler  to understand than GAP's C  code. The reference for the algorithms
+is
 
 T. Breuer, Integral bases for subfields of cyclotomic fields AAECC 8 (1997)
 
-As  does  GAP,  I  lower  automatically  numbers  after  each  computation;
-currently  the code is  somewhat slower (depending  on the operation it has
-the same speed or is slower up to 50%) than the C code in GAP but there are
-probably many opportunities to optimize that I missed.
+As does GAP, I lower automatically numbers after each computation (that is,
+reduce  them to the smallest cyclotomic field where they belong). currently
+the  code is somewhat  slower (depending on  the operation it  has the same
+speed or is slower up to 50%) than the C code in GAP but there are probably
+opportunities to optimize that I missed.
 
 What GAP does which I do not do is convert automatically a Cyclotomic which
 is  rational to a Rational,  a Rational which is  integral to an Integer, a
@@ -33,11 +35,57 @@ BigInt  which is  small to  an Int,  etc… This  is a tremendously important
 optimization  but because of type stability in Julia it needs a new type of
 number to be added to Julia, which I am not competent enough to try.
 
-We  define two types in  this package: `Root1` represents  a root of unity,
-and `Cyc` a cyclotomic number. The main way to build a Cyclotomic number is
-to  use the function `E(n,k=1)` which  constructs the `Root1` `ζₙᵏ`, and to
-make   linear  combinations  of  such  numbers  with  integer  or  rational
-coefficients.
+This package is closely related (and mostly compatible) with Marek Kaluba's
+package  `Cyclotomics`,  whose  existence  I  discovered after writing this
+package.  We discussed merging them but concluded it would be a lot of work
+for benefits which are not clear currently. Some differences are:
+
+  - I define two types in this  package: `Root1` represents a root of unity,
+and  `Cyc` a cyclotomic number. The advantage of having a separate type for
+roots of unity is that computations are very fast for them, of which I take
+advantage  in the package `CycPol` for polynomials whose zeros are roots of
+unity.
+
+  - In his package numbers are not systematically lowered but only on demand
+(like  for  printing).  this  speeds  up  some  computations  by  a  factor
+approaching  2, but it also makes some computations I had to do infeasible,
+like  the following one (which if  not lowering involves too large fields);
+the answer is `-36ζ₃²`:
+
+```julia-rep1
+julia> prod(x->1-x,[E(3),E(3,2),E(6),E(6,5),E(8),E(8),E(8,5),E(8,7),E(9,2),E(9,5),
+E(9,8),E(12,7),E(12,11),E(16),E(16,3),E(16,5),E(16,9),E(16,11),E(16,13),
+E(18,5),E(18,5),E(18,11),E(18,11),E(18,17),E(18,17),E(21,2),E(21,5),E(21,8),
+E(21,11),E(21,17),E(21,20),
+E(27,2),E(27,5),E(27,8),E(27,11),E(27,14),E(27,17),E(27,20),E(27,23),E(27,26),
+E(32,7),E(32,15),E(32,23),E(32,31),E(39),E(39,4),E(39,7),E(39,10),E(39,16),
+E(39,19),E(39,22),E(39,25),E(39,28),E(39,31),E(39,34),E(39,37),E(42),E(42,13),
+E(42,19),E(42,25),E(42,31),E(42,37),E(48,11),E(48,19),E(48,35),E(48,43),E(60,7),
+E(60,19),E(60,31),E(60,43),E(78,5),E(78,11),E(78,17),E(78,23),E(78,29),E(78,35),
+E(78,41),E(78,47),E(78,53),E(78,59),E(78,71),E(78,77),E(80,7),E(80,23),E(80,31),
+E(80,39),E(80,47),E(80,63),E(80,71),E(80,79),E(88,3),E(88,19),E(88,27),E(88,35),
+E(88,43),E(88,51),E(88,59),E(88,67),E(88,75),E(88,83),E(90),E(90,7),E(90,13),
+E(90,19),E(90,31),E(90,37),E(90,43),E(90,49),E(90,61),E(90,67),E(90,73),
+E(90,79),E(96,5),E(96,13),E(96,29),E(96,37),E(96,53),E(96,61),E(96,77),E(96,85),
+E(104),E(104,9),E(104,17),E(104,25),E(104,33),E(104,41),E(104,49),E(104,57),
+E(104,73),E(104,81),E(104,89),E(104,97),E(144),E(144,17),E(144,25),E(144,41),
+E(144,49),E(144,65),E(144,73),E(144,89),E(144,97),E(144,113),E(144,121),
+E(144,137),E(152,5),E(152,13),E(152,21),E(152,29),E(152,37),E(152,45),
+E(152,53),E(152,61),E(152,69),E(152,77),E(152,85),E(152,93),E(152,101),
+E(152,109),E(152,117),E(152,125),E(152,141),E(152,149),E(204,11),E(204,23),
+E(204,35),E(204,47),E(204,59),E(204,71),E(204,83),E(204,95),E(204,107),
+E(204,131),E(204,143),E(204,155),E(204,167),E(204,179),E(204,191),E(204,203)])
+```
+
+If  you `develop` my package it is easy to use the strategy of not lowering
+or  to use alternate  implementations like sparse  vectors or dense vector,
+like  `Cyclotomics` ---  I prepared  boolean flags  for that  in the code. I
+decided  on the implementation with `ModuleElts` and systematic lowering as
+giving the best results.
+
+The main way to build a Cyclotomic number is to use the function `E(n,k=1)`
+which constructs the `Root1` `ζₙᵏ`, and to make linear combinations of such
+numbers with integer or rational coefficients.
 
 # Examples
 ```julia-repl
@@ -55,7 +103,7 @@ E(12,4)-E(12,7)-E(12,11)
 julia> E(12,11)-E(12,7) # square roots of integers are recognized
 Cyc{Int64}: √3
 
-# but you can prevent that (we assume julia 1.7)
+# but you can prevent that
 julia> repr(E(12,11)-E(12,7),context=(:limit=>true,:quadratic=>false))
 "-ζ₁₂⁷+ζ₁₂¹¹"
 
@@ -79,7 +127,7 @@ Cyc{Float64}: 0.5-0.5ζ₄
 julia> inv(E(5)+E(5,4)) # but not always (we have here a unit)
 Cyc{Int64}: -ζ₅²-ζ₅³
 
-julia> Cyc(1//2+im) # we can convert to Cyclotomics Gaussian rationals
+julia> Cyc(1//2+im) # we can convert Gaussian rationals to Cyclotomics
 Cyc{Rational{Int64}}: (1+2ζ₄)/2
 
 julia> conj(1+E(4)) # complex conjugate
@@ -107,10 +155,10 @@ The  group of  roots of  unity is  isomorphic to  ℚ /ℤ  , thus  `Root1` are
 represented internally by a rational number in `[0,1[`.
 
 ```julia-repl
-julia> Root1(;r=1//4) # this contructor ensures the fraction is in [0,1[
+julia> Root1(;r=1//4) # this constructor ensures the fraction is in [0,1[
 Root1: ζ₄
 
-julia> c=E(4)*E(3) # faster computation if staying indside roots of unity
+julia> c=E(4)*E(3) # faster computation if staying inside roots of unity
 Root1: ζ₁₂⁷
 
 julia> c=Complex{Float64}(E(3))  # convert to Complex{float} is sometimes useful
@@ -187,6 +235,9 @@ julia> coefficients(a)
   0
   0
  -1
+
+julia> valtype(a) # the type of the coefficients of a
+Int64
 ```
 
 For more information see the methods denominator, Quadratic, galois, root,
@@ -202,7 +253,7 @@ julia> function testmat(p)
 testmat (generic function with 1 method)
 
 julia> @btime Cyclotomics.testmat(12)^2;  # on Julia 1.7
-  315.271 ms (4331137 allocations: 302.51 MiB)
+  313.911 ms (3877297 allocations: 280.96 MiB)
 ```
 The equivalent in GAP:
 
@@ -211,7 +262,7 @@ testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
   return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
 end; 
 ```
-testmat(12)^2 takes 0.35s in GAP3, 0.24s in GAP4
+testmat(12)^2 takes 0.31s in GAP3, 0.22s in GAP4
 """
 module Cyclotomics
 export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic, 
@@ -406,6 +457,8 @@ Base.pairs(c::Cyc)=c.d
 Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))]
 end
 
+Base.valtype(c::Cyc{T}) where T =T
+
 """
    `conductor(c::Cyc)`
    `conductor(a::AbstractArray)`
@@ -476,11 +529,11 @@ julia> coefficients(Cyc(E(9)))
   0
 ```
 """
-function coefficients(c::Cyc{T})where T
+function coefficients(c::Cyc)
 if impl==:svec return Array(c.d)
 elseif impl==:vec return c.d
 else
-  res=zeros(T,conductor(c))
+  res=zeros(valtype(c),conductor(c))
   for (i,v) in pairs(c) res[i+1]=v end
   res
 end
@@ -681,7 +734,7 @@ Base.isinteger(a::Root1)=a.r==0//1 || a.r==1//2
 Base.isreal(c::Cyc)=conductor(c)==1 || c==conj(c)
 Base.isreal(a::Root1)=isinteger(a)
 
-function Base.real(c::Cyc{T}) where T<:Real
+function Base.real(c::Cyc)
   if lazy lower!(c) end
   if conductor(c)==1 return num(c) end
   (c+conj(c))*1//2
@@ -689,7 +742,7 @@ end
 
 Base.real(a::Root1)=real(Cyc(a))
 
-function Base.imag(c::Cyc{T}) where T<:Real
+function Base.imag(c::Cyc)
   if lazy lower!(c) end
   if conductor(c)==1 return 0 end
   E(4)*(conj(c)-c)*1//2
@@ -791,10 +844,10 @@ function Base.show(io::IO, ::MIME"text/plain", r::Cyc)
   show(io,r)
 end
 
-function normal_show(io::IO,p::Cyc{T})where T
+function normal_show(io::IO,p::Cyc)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if T<:Rational{<:Integer}
+  if valtype(p)<:Rational{<:Integer}
     den=denominator(p)
     p=Cyc{typeof(den)}(p*den)
   else
@@ -823,29 +876,29 @@ function normal_show(io::IO,p::Cyc{T})where T
   res
 end
 
-function Base.show(io::IO, p::Cyc{T})where T
+function Base.show(io::IO, p::Cyc)
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if lazy lower!(p) end
   if conductor(p)==1
     n=num(p)
-    if T<:Integer || T<:Rational{<:Integer}
+    if n isa Integer || n isa Rational{<:Integer}
       if denominator(n)==1
         if repl||TeX||haskey(io,:typeinfo) print(io,numerator(n))
-        else print(io,"Cyc{",T,"}(",numerator(n),")")
+        else print(io,"Cyc{",typeof(n),"}(",numerator(n),")")
         end
         return
       end
     else
       if repl||TeX||haskey(io,:typeinfo) print(io,n)
-      else print(io,"Cyc{",T,"}(",n,")")
+      else print(io,"Cyc{",typeof(n),"}(",n,")")
       end
       return
     end
   end
   rqq=[normal_show(io,p)]
-  if quadratic && (T<:Integer || T<:Rational{<:Integer})
+  if quadratic && (valtype(p)<:Integer || valtype(p)<:Rational{<:Integer})
     q=Quadratic(p)
     if !isnothing(q) push!(rqq,repr(q;context=io)) end
     for test in [1-E(4),1+E(4),E(3),E(3,2),1-E(3),1-E(3,2),1+E(3),1+E(3,2),root(-3)]
@@ -969,7 +1022,7 @@ function Cyc!(c,n,v)
   c
 end
 
-function lower!(c::Cyc{T})where T # write c in smallest Q(ζ_n) where it sits
+function lower!(c::Cyc) # write c in smallest Q(ζ_n) where it sits
   n=conductor(c)
  # println("lowering $(conductor(c)):$(c.d)")
   if n==1 return c end
@@ -1109,16 +1162,12 @@ function conjugates(c) # Root1 or Cyc
   res
 end
 
-function Base.inv(c::Cyc{T})where T
-  if conductor(c)==1
-    r=num(c)
-    if r==1 || r==-1 return Cyc(r) else return Cyc(1/r) end
-  end
+function Base.inv(c::Cyc)
+  if conductor(c)==1 return Cyc(1/num(c)) end
   l=conjugates(c)
   r=l[2]
   for t in l[3:end] r=*(r,t;reduce=false) end
-  n=num(*(c,r;reduce=true))
-  n==1 ? r : n==-1 ? -r : r/n
+  r/num(*(c,r;reduce=true))
 end
 
 Base.:^(a::Cyc, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
@@ -1213,7 +1262,7 @@ julia> Quadratic(1+E(5))
 
 ```
 """
-function Quadratic(c::Cyc{T})where T
+function Quadratic(c::Cyc)
   den=denominator(c)
   c=numerator(c)
   if conductor(c)==1 return Quadratic(num(c),0,1,den) end
@@ -1229,7 +1278,7 @@ function Quadratic(c::Cyc{T})where T
     if sqr%4==3 sqr=-sqr end
     gal=conjugates(c)
     if length(gal)!=2 return nothing end
-    a=numerator(convert(T,sum(gal)))      # trace of 'c' over the rationals
+    a=numerator(convert(valtype(c),sum(gal)))  # trace of 'c' over the rationals
     if iseven(length(f)) b=2*c[1]-a
     else b=2*c[1]+a
     end

@@ -963,8 +963,8 @@ function VFactorSchurElement(para,r,data=nothing,u=nothing)
   else para=para[data[:order]]
   end
   function monomial(v)
-    res=prod(i->para[i]^v[i],1:n)
-    if length(v)==n+1 res*=rt^v[end] end
+    res=prod(i->(para[i]//1)^v[i],1:n)
+    if length(v)==n+1 res*=(rt//1)^v[end] end
     res
   end
   factor=haskey(r,:coeff) ? r[:coeff] : 1

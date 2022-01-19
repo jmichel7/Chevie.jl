@@ -458,7 +458,7 @@ function CycPol(x::Mvp)
 end
 
 function (p::CycPol)(x)
-  res=x^p.valuation
+  res=p.valuation<0 ? (x//1)^p.valuation : x^p.valuation
   if !isempty(p.v)
     v=decompose(p.v.d)
     for ((cond,no),mul) in filter(x->x[1].no==1,v)

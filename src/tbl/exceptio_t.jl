@@ -77,7 +77,7 @@ function VcycSchurElement(para,r,data=nothing)
 # println("para=",para,"\nr=",r,"\ndata=",data)
   n=length(para)
   if !isnothing(data) para=para[data[:order]] else para = copy(para) end
-  monomial(mon)=prod(map(^,para,Int.(mon[1:n])))
+  monomial(mon)=prod(map(^,para//1,Int.(mon[1:n])))
   if haskey(r, :rootUnity) && haskey(r,:root) error("cannot have both") end
   if haskey(r, :coeff) res = r[:coeff] else res = 1 end
   if haskey(r, :factor) res*=monomial(r[:factor]) 

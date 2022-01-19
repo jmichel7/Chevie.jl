@@ -11,7 +11,7 @@ isspetsial=W->UnipotentCharacters(W)!==nothing
 
 nspets=ComplexReflectionGroup.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
 
-ChevieErr(x...)=printstyled(rio(),x...;color=:red);
+ChevieErr(x...)=printstyled(rio(),x...;color=:red)
 
 cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
       coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
