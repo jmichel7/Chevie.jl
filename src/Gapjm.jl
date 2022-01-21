@@ -72,11 +72,11 @@ compilation time on first execution).
 I  tried that  as many  submodules as  possible in  my package  can be used
 independently  of the rest, thus could be independent packages. This is the
 case for the modules `Combinat`, `Groups`, `Perms` and `Util`, which can be
-used  stand-alone. In  addition modules  `MatInt`, `Cyclotomics`, `Posets`,
-`FFields` can be used stand-alone except they each use one or two functions
-from  `Util`. I  already registered  as independent  packages `UsingMerge`,
-`ModuleElts`,  `LaurentPolynomials`,  `PuiseuxPolynomials`  which  are used
-here --- you should look at their documentation.
+used   stand-alone.  In  addition  modules  `MatInt`,  `CyclotomicNumbers`,
+`Posets`, `FFields` can be used stand-alone except they each use one or two
+functions  from  `Util`.  I  already  registered  as  independent  packages
+`UsingMerge`,   `ModuleElts`,   `LaurentPolynomials`,  `PuiseuxPolynomials`
+which are used here --- you should look at their documentation.
 """
 module Gapjm
 using Reexport
@@ -95,7 +95,7 @@ include("Util.jl");@reexport using .Util
 include("Groups.jl");@reexport using .Groups
 include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("Cyclotomics.jl");@usingmerge verbose=true reexport Cyclotomics
+include("CyclotomicNumbers.jl");@usingmerge verbose=true reexport CyclotomicNumbers
 #if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields

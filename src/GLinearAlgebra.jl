@@ -9,7 +9,7 @@ any ring).
 """
 module GLinearAlgebra
 using LaurentPolynomials: exactdiv
-using ..Cyclotomics: Cyc # case in echelon
+using ..CyclotomicNumbers: Cyc # case in echelon
 using ..Combinat: combinations, submultisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
 using ..Groups: elements, word

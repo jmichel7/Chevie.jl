@@ -247,7 +247,7 @@ label│eigen      1        2        3
 3    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3
 ```
 """
-function Cyclotomics.galois(f::Family,p::Int)
+function CyclotomicNumbers.galois(f::Family,p::Int)
   f=Family(copy(f.prop))
   f.fourierMat=galois.(fourier(f),p)
   f.eigenvalues=galois.(f.eigenvalues,p)

@@ -121,13 +121,13 @@ julia> Int(E(4))
 ERROR: InexactError: convert(Int64, E(4))
 ```
 ```julia-repl
-julia> inv(1+E(4)) # like for numbers inverse usually involve floats
+julia> inv(1+E(4)) # like for Ints inverse involves floats
 Cyc{Float64}: 0.5-0.5ζ₄
 
-julia> inv(E(5)+E(5,4)) # but not always (we have here a unit)
-Cyc{Int64}: -ζ₅²-ζ₅³
+julia> 1//(1+E(4))  # but not written this way
+Cyc{Rational{Int64}}: (1-ζ₄)/2
 
-julia> Cyc(1//2+im) # we can convert Gaussian rationals to Cyclotomics
+julia> Cyc(1//2+im) # we can convert Gaussian rationals to cyclotomics
 Cyc{Rational{Int64}}: (1+2ζ₄)/2
 
 julia> conj(1+E(4)) # complex conjugate
@@ -252,7 +252,7 @@ julia> function testmat(p)
        end
 testmat (generic function with 1 method)
 
-julia> @btime Cyclotomics.testmat(12)^2;  # on Julia 1.7
+julia> @btime CyclotomicNumbers.testmat(12)^2;  # on Julia 1.7
   313.911 ms (3877297 allocations: 280.96 MiB)
 ```
 The equivalent in GAP:
@@ -264,7 +264,7 @@ end;
 ```
 testmat(12)^2 takes 0.31s in GAP3, 0.22s in GAP4
 """
-module Cyclotomics
+module CyclotomicNumbers
 export coefficients, root, E, Cyc, conductor, galois, Root1, Quadratic, 
        order, conjugates
 
@@ -485,7 +485,7 @@ end
 # The Zumbroich basis is memoized
 const zumbroich_basis_dict=Dict{Int,Vector{Int}}(1=>[0])
 """
-  Cyclotomics.zumbroich_basis(n::Int) 
+  CyclotomicNumbers.zumbroich_basis(n::Int) 
 
   returns  the Zumbroich basis of  ℚ (ζₙ) as the  vector of i in 0:n-1 such
   that `ζₙⁱ` is in the basis
@@ -552,7 +552,7 @@ Base.numerator(c::Cyc{<:Union{T,Rational{T}}}) where T<:Integer=Cyc{T}(c*denomin
 const Elist_dict=Dict{Tuple{Int,Int},Pair{Bool,Vector{Int}}}((1,0)=>(true=>
                        [impl==:MM ? 0 : 1])) # to memoize Elist
 """
-  Cyclotomics.Elist(n,i)  
+  CyclotomicNumbers.Elist(n,i)  
   
   expresses  ζₙⁱ  in  zumbroich_basis(n):  it  is  a  sum  of some ζₙʲ with
   coefficients all 1 or all -1. The result is a Pair sgn=>inds where sgn is

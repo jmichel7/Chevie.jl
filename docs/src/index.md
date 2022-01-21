@@ -64,16 +64,16 @@ Base.in(::Perm,::PermGroup)
 ```
 # Cyclotomic numbers
 ```@docs
-Cyclotomics
+CyclotomicNumbers
 conductor
-Cyclotomics.coefficients(c::Cyc)
+CyclotomicNumbers.coefficients(c::Cyc)
 denominator(c::Cyc{Rational})
 E
 galois(c::Cyc,n::Int)
 conjugates
 Quadratic
 Root1
-Cyclotomics.root
+CyclotomicNumbers.root
 ```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs

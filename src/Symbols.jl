@@ -63,7 +63,7 @@ for `G(e,e,n)`.
 module Symbols
 using ..Util: joindigits
 using ..Combinat: arrangements, partition_tuples, constant, collectby
-using ..Cyclotomics: E
+using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, ennola_twist
 using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,

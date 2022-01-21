@@ -23,7 +23,7 @@ Base.isreal(a::Unknown)=false
 Base.isinteger(a::Unknown)=false
 Base.conj(a::Unknown)=a
 Base.broadcastable(a::Unknown)=Ref(a)
-Cyclotomics.galois(a::Unknown,i)=a
+CyclotomicNumbers.galois(a::Unknown,i)=a
 #-----------------------------------------------------------------------
 charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
                            TeX ? Dict(:TeX=>true) : Dict())

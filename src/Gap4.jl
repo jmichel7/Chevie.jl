@@ -20,7 +20,7 @@ fromgap(g)=improve_type(GAP.gap_to_julia(g))
 
 Perms.Perm(p::GapObj)=Perm(mapgap(Int16,GAP.Globals.ListPerm(p)))
 
-function Cyclotomics.Cyc(p::GapObj)
+function CyclotomicNumbers.Cyc(p::GapObj)
   l=GAP.gap_to_julia(GAP.Globals.CoeffsCyc(p,GAP.Globals.Conductor(p)))
   sum(i->E(length(l),i-1)*l[i],eachindex(l))
 end

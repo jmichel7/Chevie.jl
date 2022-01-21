@@ -1,7 +1,7 @@
 using Test
-#using Cyclotomics
+#using CyclotomicNumbers
 
-@testset "Cyclotomics" begin
+@testset "CyclotomicNumbers" begin
 
     @testset "elementary ops" begin
         @test E(5) isa Number

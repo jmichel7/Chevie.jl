@@ -337,24 +337,62 @@ end
 
 arrangements(mset)=vcat(arrangements.(Ref(mset),0:length(mset))...)
 
-@doc (@doc arrangements) narrangements
-function narrangements(mset,k)
-  blist=trues(length(mset))
-  function arr(mset,k)
-    if iszero(k) return 1 end
-    combs=0
-@inbounds for i in eachindex(blist)
-      if blist[i] && (i==length(blist) || mset[i+1]!=mset[i] || !blist[i+1])
-        blist[i]=false
-        combs+=arr(mset,k-1)
-        blist[i]=true
-      end
+function NrArrangementsA( mset, m, n, i )
+  if i==n+1 return 1 end
+  combs=1
+  for l in 1:n
+    if m[l] && (l==1 || m[l-1]==false || mset[l]!=mset[l-1])
+      m[l]=false
+      combs+=NrArrangementsA(mset,m,n,i+1)
+      m[l]=true
     end
-    combs
   end
-  arr(sort(mset),k)
+  combs
 end
-narrangements(mset)=sum(narrangements.(Ref(mset),0:length(mset)))
+
+function NrArrangementsK( mset, m, n, k )
+  if k==0 return 1 end
+  combs=0
+  for l in 1:n
+    if m[l] && (l==1 || m[l-1]==false || mset[l]!=mset[l-1])
+      m[l]=false
+      combs+=NrArrangementsK(mset,m,n,k-1)
+      m[l]=true
+    end
+  end
+  combs
+end 
+
+@doc (@doc arrangements) narrangements
+function narrangements(mset)
+  mset=copy(mset)
+  sort!(mset)
+  if allunique(mset)
+    nr=0
+    for i in 0:length(mset)
+      nr+=prod(length(mset):-1:length(mset)-i+1)
+    end
+  else
+    m=trues(length(mset))
+    nr=NrArrangementsA(mset,m,length(mset),1)
+  end
+end
+
+function narrangements(mset,k)
+  mset=copy(mset)
+  sort!(mset)
+  if allunique(mset)
+    if k <= length(mset)
+      nr=prod(length(mset):-1:length(mset)-k+1)
+    else
+      nr=0
+    end
+  else
+    m=trues(length(mset))
+    nr=NrArrangementsK(mset,m,length(mset),k)
+  end
+  nr
+end
 
 @inbounds function partitions_less(v,n)
   l=v[end]
