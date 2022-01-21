@@ -211,50 +211,17 @@ function SNFofREF(R, destroy)
   return T
 end
 
-const BITLISTS_NFIM = [
-  [false, false, false, false, false],  # 1
-  [true, false, false, false, false], 
-  [false, true, false, false, false], 
-  [true, true, false, false, false], 
-  [false, false, true, false, false],  # 5
-  [true, false, true, false, false], 
-  [false, true, true, false, false], 
-  [true, true, true, false, false], 
-  [false, false, false, true, false],  # 9
-  [true, false, false, true, false], 
-  [false, true, false, true, false], 
-  [true, true, false, true, false], 
-  [false, false, true, true, false],  # 13
-  [true, false, true, true, false], 
-  [false, true, true, true, false], 
-  [true, true, true, true, false], 
-  [false, false, false, false, true], 
-  [true, false, false, false, true], 
-  [false, true, false, false, true], 
-  [true, true, false, false, true], 
-  [false, false, true, false, true], 
-  [true, false, true, false, true], 
-  [false, true, true, false, true], 
-  [true, true, true, false, true], 
-  [false, false, false, true, true], 
-  [true, false, false, true, true], 
-  [false, true, false, true, true], 
-  [true, true, false, true, true], 
-  [false, false, true, true, true], 
-  [true, false, true, true, true], 
-  [false, true, true, true, true], 
-  [true, true, true, true, true]]
 ###########################################################
 #
-# DoNFIM(<mat>,<options>)
+# DoNFIM(<mat>;<options>)
 #
-# Options bit values:
+# Options:
 #
-# 1  - Triangular / Smith
-# 2  - No / Yes  Reduce off diag entries
-# 4  - No / Yes  Row Transforms 
-# 8  - No / Yes  Col Transforms
-# 16 - change original matrix in place (The rows still change) -- save memory
+# TRIANG  - Triangular / Smith
+# REDDIAG  - No / Yes  Reduce off diag entries
+# ROWTRANS  - No / Yes  Row Transforms 
+# COLTRANS  - No / Yes  Col Transforms
+# INPLACE - change original matrix in place (The rows still change) -- save memory
 #
 # Compute a Triangular, Hermite or Smith form of the n x m 
 # integer input matrix A.  Optionally, compute n x n / m x m
@@ -279,15 +246,10 @@ const BITLISTS_NFIM = [
 # * - possible non-zero entry in upper right corner...
 #				
 #
-function DoNFIM(mat::AbstractVector, opt::Int)
+function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false, INPLACE=false)
   if isempty(mat) mat=[Int[]] end
-  opt = BITLISTS_NFIM[opt + 1]
 # println("mat=$mat opt=$opt")
-  TRIANG = opt[1]
-  REDDIAG = opt[2]
-  ROWTRANS = opt[3]
-  COLTRANS = opt[4]
-  INPLACE=false # INPLACE = opt[5] since the code for INPLACE can never work
+  INPLACE=false # since the code for INPLACE can never work
   sig = 1
   #Embed mat in 2 larger "id" matrix
   n=length(mat)+2
@@ -560,10 +522,10 @@ julia> toM(r[:rowtrans])*toM(m)*toM(r[:coltrans])
 ```
 """
 function NormalFormIntMat(mat, options)
-  r=DoNFIM(mat, options)
-  opt=BITLISTS_NFIM[options+1]
-  if opt[3] r[:rowtrans]=MatMul(r[:rowQ],r[:rowC]) end
-  if opt[1] && opt[4] r[:coltrans]=MatMul(r[:colC],r[:colQ]) end
+  TRIANG,REDDIAG,ROWTRANS,COLTRANS,INPLACE=Bool.(digits(options;base=2,pad=5))
+  r=DoNFIM(mat; TRIANG, REDDIAG, ROWTRANS, COLTRANS, INPLACE)
+  if ROWTRANS r[:rowtrans]=MatMul(r[:rowQ],r[:rowC]) end
+  if TRIANG && COLTRANS r[:coltrans]=MatMul(r[:colC],r[:colQ]) end
   r
 end
 
@@ -586,10 +548,10 @@ true
 gap> TriangulizeIntegerMat(m); m;
 [ [ 1, 15, 28 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ]
 """
-TriangulizedIntegerMat(mat)=DoNFIM(mat,0)[:normal]
+TriangulizedIntegerMat(mat)=NormalFormIntMat(mat,0)[:normal]
 TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat,4)
-TriangulizeIntegerMat(mat)=DoNFIM(mat,16)
-HermiteNormalFormIntegerMat(mat)=DoNFIM(mat,2)[:normal]
+TriangulizeIntegerMat(mat)=NormalFormIntMat(mat,16)
+HermiteNormalFormIntegerMat(mat)=NormalFormIntMat(mat,2)[:normal]
 
 """
 This operation computes the Hermite normal form of a matrix `mat`
@@ -629,7 +591,7 @@ julia> smith_normal_form(m)
  0  0  3
 ```
 """
-smith_normal_form(mat)=toM(DoNFIM(mat,1)[:normal])
+smith_normal_form(mat)=toM(NormalFormIntMat(mat,1)[:normal])
 """
 gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
 gap> n:=SmithNormalFormIntegerMatTransforms(m);  
@@ -651,7 +613,7 @@ gap> DiagonalizeIntMat(m);m;
 [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
 ]]></Example>
 """
-DiagonalizeIntMat(mat)=DoNFIM(mat,17)
+DiagonalizeIntMat(mat)=NormalFormIntMat(mat,17)
 
 """
 `baseInt(m::Matrix{<:Integer})`
