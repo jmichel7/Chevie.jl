@@ -411,8 +411,8 @@ const impl=:MM # I tried 4 different implementations. For testmat(12)^2
     # MM=HModuleElt is 50% slower than ModuleElt
     # :svec is 20% slower than ModuleElt
     # :vec is 40% slower than ModuleElt
-
 const lazy=false # whether to lower all the time or on demand
+
 if impl==:vec
 struct Cyc{T <: Real}<: Number   # a cyclotomic number
   d::Vector{T} # the i-th element is the coefficient on ζⁱ⁻¹
@@ -424,26 +424,22 @@ function Cyc(c::Integer,v::AbstractVector)
   if c!=length(v) error("c=$c but length(v)=$(length(v))\n") end
   Cyc_(v)
 end
-conductor(c::Cyc)=length(c.d)
 Base.pairs(c::Cyc)=Iterators.map(x->x[1]-1=>x[2],
                               Iterators.filter(x->x[2]!=0,enumerate(c.d)))
-Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))+1]
 elseif impl==:svec
 using SparseArrays
-mutable struct Cyc{T}<:Number    # a cyclotomic number
+mutable struct Cyc{T <: Real}<:Number    # a cyclotomic number
   d::SparseVector{T,Int} # d[i]==coeff on ζⁱ⁻¹ (where i∈ zumbroich_basis(n))
   global function Cyc_(d::SparseVector{T}) where T<:Real 
 #   if !issorted(d.nzind) || any(iszero,d.nzval) error(d) end
     new{T}(d)
   end
 end
-conductor(c::Cyc)=length(c.d)
 Base.pairs(c::Cyc)=Iterators.map(x->x[1]-1=>x[2],zip(c.d.nzind,c.d.nzval))
 function Cyc(c::Integer,v::SparseVector)
   if c!=length(v) error("c=$c but length(v)=$(length(v))\n") end
   Cyc_(v)
 end
-Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))+1]
 
 elseif impl==:MM
 using ModuleElts
@@ -452,12 +448,18 @@ mutable struct Cyc{T <: Real}<: Number   # a cyclotomic number
   n::Int
   d::MM{Int,T} # list of pairs: i=>coeff on ζⁱ (where i∈ zumbroich_basis(n))
 end
-conductor(c::Cyc)=c.n
 Base.pairs(c::Cyc)=c.d
-Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))]
 end
 
-Base.valtype(c::Cyc{T}) where T =T
+if impl==:MM
+  conductor(c::Cyc)=c.n
+  Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))]
+else
+  conductor(c::Cyc)=length(c.d)
+  Base.getindex(c::Cyc,i::Integer)=c.d[mod(i,conductor(c))+1]
+end
+
+Base.valtype(c::Cyc{T}) where T =T # how to recover T from c
 
 """
    `conductor(c::Cyc)`
@@ -477,10 +479,6 @@ julia> conductor([E(3),1//2,E(4)])
 conductor(a::AbstractArray)=lcm(conductor.(a))
 conductor(i::Integer)=1 # for convenience
 conductor(i::Rational)=1 # for convenience
-
-if lazy minimal_conductor(c::Cyc)=conductor(lower!(c))
-else minimal_conductor(c::Cyc)=conductor(c)
-end
 
 # The Zumbroich basis is memoized
 const zumbroich_basis_dict=Dict{Int,Vector{Int}}(1=>[0])
@@ -683,7 +681,7 @@ else
 end
 
 function (::Type{T})(c::Cyc)where T<:Union{Integer,Rational}
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   if conductor(c)==1 return T(num(c)) end
   throw(InexactError(:convert,T,c))
 end
@@ -704,7 +702,7 @@ function Complex{T}(c::Cyc)where T<:AbstractFloat
 end
 
 function Complex{T}(c::Cyc)where T<:Union{Integer,Rational}
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   if conductor(c)==1 return Complex{T}(num(c)) end
   if conductor(c)==4 
     res=Complex{T}(0)
@@ -718,14 +716,14 @@ end
 
 Complex{T}(a::Root1) where T=Complex{T}(Cyc(a))
 function Base.complex(c::Cyc{T}) where T 
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   (conductor(c)==1||conductor(c)==4) ? Complex{T}(c) : Complex{float(T)}(c)
 end
 
 Base.complex(a::Root1)=complex(Cyc(a))
 
 function Base.isinteger(c::Cyc)
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   conductor(c)==1 && isinteger(num(c))
 end
 
@@ -735,7 +733,7 @@ Base.isreal(c::Cyc)=conductor(c)==1 || c==conj(c)
 Base.isreal(a::Root1)=isinteger(a)
 
 function Base.real(c::Cyc)
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   if conductor(c)==1 return num(c) end
   (c+conj(c))*1//2
 end
@@ -743,7 +741,7 @@ end
 Base.real(a::Root1)=real(Cyc(a))
 
 function Base.imag(c::Cyc)
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   if conductor(c)==1 return 0 end
   E(4)*(conj(c)-c)*1//2
 end
@@ -804,10 +802,10 @@ end
 # total order is necessary to put Cycs in a sorted list
 # for conductor(c)==1  a<b is as expected
 function Base.cmp(a::Cyc,b::Cyc)
-  if lazy lower!(a);lower!(b) end
+  @static if lazy lower!(a);lower!(b) end
   t=cmp(conductor(a),conductor(b))
   if !iszero(t) return t end
-  conductor(a)==1 ? cmp(num(a),num(b)) : cmp(a.d,b.d)
+  cmp(a.d,b.d)
 end
 
 if lazy
@@ -824,13 +822,9 @@ Base.isless(c::Cyc,d::Real)=c<Cyc(d)
 Base.isless(d::Real,c::Cyc)=Cyc(d)<c
 
 # hash is necessary to put Cycs as keys of a Dict or make a Set
-if lazy
 function Base.hash(a::Cyc, h::UInt)
-  lower!(a)
+  @static if lazy lower!(a) end
   hash(a.d, hash(conductor(a), h))
-end
-else
-Base.hash(a::Cyc, h::UInt)=hash(a.d, hash(conductor(a), h))
 end
 
 function Base.show(io::IO, ::MIME"text/html", a::Cyc)
@@ -880,7 +874,7 @@ function Base.show(io::IO, p::Cyc)
   quadratic=get(io,:quadratic,true)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if lazy lower!(p) end
+  @static if lazy lower!(p) end
   if conductor(p)==1
     n=num(p)
     if n isa Integer || n isa Rational{<:Integer}
@@ -947,7 +941,8 @@ else
   for (i,vb) in pairs(b) addroot(res,n,nb*i,vb) end
   res=Cyc(n,MM(res))
 end
-  lazy ?  res : lower!(res)
+  @static if !lazy lower!(res) end
+  res
 end
 
 Base.:-(a::Cyc)=Cyc(conductor(a),-a.d)
@@ -1201,7 +1196,7 @@ julia> Root1(-E(9,4)-E(9,5)) # nothing
 ```
 """ 
 function Root1(c::Cyc)
-  if lazy lower!(c) end
+  @static if lazy lower!(c) end
   if !(all(x->last(x)==1,pairs(c)) || all(x->last(x)==-1,pairs(c)))
     return nothing
   end
@@ -1226,7 +1221,8 @@ function Base.:*(a::Cyc,b::Root1)
   res=zerocyc(eltype(a.d),n)
   for (i,va) in pairs(a) addroot(res,n,na*i+nb*exponent(b),va) end
   res=Cyc(n,impl==:MM ? MM(res) : impl==:svec ? dropzeros!(res) : res)
-  lazy ? res : lower!(res)
+  @static if !lazy lower!(res) end
+  res
 end
 Base.:*(b::Root1,a::Cyc)=a*b
 

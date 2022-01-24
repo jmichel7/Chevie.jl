@@ -62,28 +62,15 @@ Perm_onmats
 Perm_rowcolmat
 Base.in(::Perm,::PermGroup)
 ```
-# Cyclotomic numbers
-```@docs
-CyclotomicNumbers
-conductor
-CyclotomicNumbers.coefficients(c::Cyc)
-denominator(c::Cyc{Rational})
-E
-galois(c::Cyc,n::Int)
-conjugates
-Quadratic
-Root1
-CyclotomicNumbers.root
-```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
 FFfac.factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
-cyclotomic_polynomial
 factor(p::Mvp{T, N}) where {T, N}
 ```
 # Cyclotomic polynomials
 ```@docs
+cyclotomic_polynomial
 CycPols
 CycPol
 eigmat

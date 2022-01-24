@@ -142,8 +142,8 @@ orbit(G::Group,pnt;action::F=^) where F<:Function=orbit(gens(G),pnt;action)
 """
 `transversal(G::Group,p;action::Function=^)`
 
-returns  a `Dict` with entries `x=>g`  where `x` runs over `orbit(G,p)` and
-where `g` is such that `x=action(p,g)`
+returns a `Dict` with entries `x=>g` where `x` runs over
+`orbit(G,p;action)` and where `g∈ G` is such that `x=action(p,g)`
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
@@ -153,6 +153,7 @@ Dict{Int64, Perm{Int16}} with 3 entries:
   3 => (1,3,2)
   1 => ()
 ```
+
 orbit functions can take any action of `G` as keyword argument
 
 ```julia-repl
@@ -179,8 +180,7 @@ function transversal(G::Group,pnt;action::F=^) where F<:Function
   trans
 end
 
-function orbits(gens::Vector,v;action::F=^,
-                trivial=true) where F<:Function
+function orbits(gens::AbstractVector,v::AbstractVector;action=^,trivial=true)
   res=Vector{eltype(v)}[]
   while !isempty(v)
     o=orbit(gens,first(v);action)
@@ -191,13 +191,14 @@ function orbits(gens::Vector,v;action::F=^,
 end
 
 """
-`orbits(gens::Vector,v;action=^)`
+`orbits(gens::Vector,v;action=^,trivial=true)`
 
-`orbits(G,v;action=^)`
+`orbits(G,v;action=^,trivial=true)`
     
 the  orbits on `v`  of the repeated  action of `gens`;  the elements of `v`
 should  be hashable. If a  group is given instead  of generators, the orbit
-under `gens(G)` is returned.
+under  `gens(G)` is returned. If `trivial=false` the one-element orbits are
+not returned.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
@@ -207,8 +208,7 @@ julia> orbits(G,1:4)
  [4]
 ```
 """
-orbits(G::Group,v;action::F=^,trivial=true) where F<:Function=
-           orbits(gens(G),v;action,trivial)
+orbits(G::Group,v;action=^,trivial=true)=orbits(gens(G),v;action,trivial)
 
 """
 `centralizer(G::Group,p;action=^)`
@@ -223,7 +223,7 @@ Group([(2,3)])
 ```
 """
 function centralizer(G::Group,p;action::Function=^)
-  t=transversal(G,p;action=action)
+  t=transversal(G,p;action)
   if length(t)==1 return G end
   C=[wx*s/t[action(x,s)] for (x,wx) in t for s in gens(G)] #Schreier generators
   Group(unique!(sort(C)))
@@ -314,6 +314,7 @@ function words(G::Group) # faster than minimal_words but words not minimal
   end
 end
 
+# returns Dict: (word w, n0 generator such that l(w/G(n0))<l(w)
 function words2(G::Group) # faster than words but longer to retrieve word
   get!(G,:words2)do
     words=Dict(one(G)=>0)

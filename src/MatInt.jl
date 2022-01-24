@@ -11,7 +11,11 @@ using ..Util: toL, toM
 export complementInt, leftnullspaceInt, SolutionIntMat, DiagonalizeIntMat,
  smith_normal_form, DiaconisGraham, baseInt
 
-IdentityMat(n)=toL(one(fill(0,n,n)))
+function IdentityMat(n) # make a Vector{Vector} no subarrays
+  m=one(fill(0,n,n))
+  [m[i,:] for i in 1:n]
+end
+
 MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1])) 
              for k in eachindex(b[1])] for i in eachindex(a)]
 
@@ -160,7 +164,7 @@ function SNFofREF(R, destroy)
       T = R
       for i in 1:r T[i][1:m] = T[i][piv] end
   else
-      T=toL(zeros(Int,n,m))
+      T=[zeros(Int,m) for i in 1:n]
       for j in 1:m
           for i in 1:min(r, j) T[i][j] = R[i][piv[j]] end
       end
@@ -314,7 +318,7 @@ function NormalFormIntMat(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWT
   A[n][m]=1
   if ROWTRANS
     C=IdentityMat(n)
-    Q=toL(zeros(Int,n,n))
+    Q=[zeros(Int,n) for i in 1:n]
     Q[1][1]=1
   end
   if TRIANG && COLTRANS
