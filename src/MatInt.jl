@@ -11,8 +11,7 @@ using ..Util: toL, toM
 export complementInt, leftnullspaceInt, SolutionIntMat, DiagonalizeIntMat,
  smith_normal_form, DiaconisGraham, baseInt
 
-IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
-NullMat(i,j)=[zeros(Int,j) for k in 1:i]
+IdentityMat(n)=toL(one(fill(0,n,n)))
 MatMul(a,b)=[[sum(j->a[i][j]*b[j][k],eachindex(a[1])) 
              for k in eachindex(b[1])] for i in eachindex(a)]
 
@@ -161,7 +160,7 @@ function SNFofREF(R, destroy)
       T = R
       for i in 1:r T[i][1:m] = T[i][piv] end
   else
-      T = NullMat(n, m)
+      T=toL(zeros(Int,n,m))
       for j in 1:m
           for i in 1:min(r, j) T[i][j] = R[i][piv[j]] end
       end
@@ -211,47 +210,91 @@ function SNFofREF(R, destroy)
   return T
 end
 
-###########################################################
-#
-# DoNFIM(<mat>;<options>)
-#
-# Options:
-#
-# TRIANG  - Triangular / Smith
-# REDDIAG  - No / Yes  Reduce off diag entries
-# ROWTRANS  - No / Yes  Row Transforms 
-# COLTRANS  - No / Yes  Col Transforms
-# INPLACE - change original matrix in place (The rows still change) -- save memory
-#
-# Compute a Triangular, Hermite or Smith form of the n x m 
-# integer input matrix A.  Optionally, compute n x n / m x m
-# unimodular transforming matrices which satisfy Q C A = H 
-# or  Q C A B P = S.
-#
-# Triangular / Hermite :
-#
-# Let I be the min(r+1,n) x min(r+1,n) identity matrix with r = rank(A).
-# Then Q and C can be written using a block decomposition as
-#
-#             [ Q1 |   ]  [ C1 | C2 ]
-#             [----+---]  [----+----]  A  =  H.
-#             [ Q2 | I ]  [    | I  ]
-#
-# Smith :
-#
-#  [ Q1 |   ]  [ C1 | C2 ]     [ B1 |   ]  [ P1 | P2 ]
-#  [----+---]  [----+----]  A  [----+---]  [----+----] = S.
-#  [ Q2 | I ]  [    | I  ]     [ B2 | I ]  [ *  | I  ]
-#
-# * - possible non-zero entry in upper right corner...
-#				
-#
-function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false, INPLACE=false)
+"""
+general operation for computation of various Normal Forms.
+
+Options:
+  - TRIANG Triangular Form / Smith Normal Form.
+  - REDDIAG Reduce off diagonal entries.
+  - ROWTRANS Row Transformations.
+  - COLTRANS Col Transformations.
+  - INpLACE change original matrix in place -- save memory
+
+Compute  a Triangular, Hermite or  Smith form of the  `n × m` integer input
+matrix `A`. Optionally, compute `n × n` and `m × m` unimodular transforming
+matrices `Q, P` which satisfy `Q A = H` or `Q A P = S`.
+
+Compute a Triangular, Hermite or Smith form of the n x m 
+integer input matrix A.  Optionally, compute n x n / m x m
+unimodular transforming matrices which satisfy Q C A = H 
+or  Q C A B P = S.
+
+Triangular / Hermite :
+
+Let I be the min(r+1,n) x min(r+1,n) identity matrix with r = rank(A).
+Then Q and C can be written using a block decomposition as
+
+             [ Q1 |   ]  [ C1 | C2 ]
+             [----+---]  [----+----]  A  =  H.
+             [ Q2 | I ]  [    | I  ]
+
+Smith :
+
+  [ Q1 |   ]  [ C1 | C2 ]     [ B1 |   ]  [ P1 | P2 ]
+  [----+---]  [----+----]  A  [----+---]  [----+----] = S.
+  [ Q2 | I ]  [    | I  ]     [ B2 | I ]  [ *  | I  ]
+
+ * - possible non-zero entry in upper right corner...
+
+The routines used are based on work by Arne Storjohann and were implemented
+in GAP4 by him and R.Wainwright.
+
+Returns a Dict with entry `:normal` containing the computed normal form and
+optional  entries `:rowtrans` and/or `:coltrans`  which hold the respective
+transformation matrix. Also in the dict are entries holding the sign of the
+determinant, `:signdet`, and the rank of the matrix, `:rank`.
+
+```julia-repl
+julia> m=[[1,15,28],[4,5,6],[7,8,9]]
+3-element Vector{Vector{Int64}}:
+ [1, 15, 28]
+ [4, 5, 6]
+ [7, 8, 9]
+
+julia> MatInt.NormalFormIntMat(m,REDDIAG=true,ROWTRANS=true)
+Dict{Symbol, Any} with 6 entries:
+  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+  :normal   => [[1, 0, 1], [0, 1, 1], [0, 0, 3]]
+  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :rank     => 3
+  :signdet  => 1
+  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+
+julia> r=MatInt.NormalFormIntMat(m,TRIANG=true,ROWTRANS=true,COLTRANS=true) # Smith Normal Form with both transforms
+Dict{Symbol, Any} with 9 entries:
+  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+  :normal   => [[1, 0, 0], [0, 1, 0], [0, 0, 3]]
+  :colQ     => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
+  :coltrans => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
+  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :rank     => 3
+  :colC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  :signdet  => 1
+  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
+
+julia> toM(r[:rowtrans])*toM(m)*toM(r[:coltrans])
+3×3 Matrix{Int64}:
+ 1  0  0
+ 0  1  0
+ 0  0  3
+```
+"""
+function NormalFormIntMat(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false, INPLACE=false)
   if isempty(mat) mat=[Int[]] end
 # println("mat=$mat opt=$opt")
   INPLACE=false # since the code for INPLACE can never work
-  sig = 1
-  #Embed mat in 2 larger "id" matrix
+  sig=1
+  #Embed nxm mat in a (n+2)x(m+2) larger "id" matrix
   n=length(mat)+2
   m=length(mat[1])+2
   k=fill(zero(eltype(mat[1])), m)
@@ -271,59 +314,59 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
   A[n][m]=1
   if ROWTRANS
     C=IdentityMat(n)
-    Q=NullMat(n, n)
-    Q[1][1] = 1
+    Q=toL(zeros(Int,n,n))
+    Q[1][1]=1
   end
   if TRIANG && COLTRANS
-      B = IdentityMat(m)
-      P = IdentityMat(m)
+      B=IdentityMat(m)
+      P=IdentityMat(m)
   end
-  r = 0
-  c2 = 1
+  r=0
+  c2=1
   rp=Int[]
   while m > c2
     c1=c2
     push!(rp,c1)
-    r=r+1
+    r+=1
     if ROWTRANS Q[r+1][r+1]=1 end
     j=c1+1
     while j <= m
-        k=r+1
-        while k <= n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k=k+1 end
-        if k <= n
-            c2 = j
-            j = m
-        end
-        j=j+1
+      k=r+1
+      while k <= n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k+=1 end
+      if k <= n
+        c2=j
+        j=m
+      end
+      j+=1
     end
     #Smith with some transforms..
     if TRIANG && ((COLTRANS || ROWTRANS) && c2 < m)
-        N = gcd(map(x->x[c2],A[r:n]))
-        L = vcat(c1+1:c2-1, c2+1:m-1)
+        N=gcd(map(x->x[c2],A[r:n]))
+        L=vcat(c1+1:c2-1, c2+1:m-1)
         push!(L, c2)
-        for j = L
+        for j in L
             if j == c2
-                b = A[r][c2]
-                a = A[r][c1]
-                for i = r+1:n
+                b=A[r][c2]
+                a=A[r][c1]
+                for i in r+1:n
                     if b != 1
-                        g = gcdx(b, A[i][c2])
-                        b = g[1]
-                        a = g[2]*a + g[3]*A[i][c1]
+                        g=gcdx(b, A[i][c2])
+                        b=g[1]
+                        a=g[2]*a+g[3]*A[i][c1]
                     end
                 end
-                N = 0
+                N=0
                 for i in r:n
                   if N!=1 N=gcd(N, A[i][c1]-div(A[i][c2], b)*Int128(a)) end
                 end
                 N=Int(N)
             else
               c=mgcdex(N, A[r][j], map(x->x[j],A[r+1:n]))
-              b=A[r][j] + c*map(x->x[j],A[r+1:n])
-              a=A[r][c1] + c*map(x->x[c1],A[r+1:n])
+              b=A[r][j]+c*map(x->x[j],A[r+1:n])
+              a=A[r][c1]+c*map(x->x[c1],A[r+1:n])
             end
-            t = mgcdex(N, a, [b])[1]
-            tmp = A[r][c1] + t * A[r][j]
+            t=mgcdex(N, a, [b])[1]
+            tmp=A[r][c1]+t * A[r][j]
             if tmp==0 || tmp*A[k][c2]==(A[k][c1]+t*A[k][j])*A[r][c2]
                 t+=1+mgcdex(N, a+t*b+b,[b])[1]
             end
@@ -336,9 +379,9 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
             for i in 1:n A[i][c1+1]+=A[i][c2] end
             if COLTRANS B[c2][c1+1]=1 end
         end
-        c2 = c1 + 1
+        c2=c1+1
     end
-    c = mgcdex(abs(A[r][c1]), A[r+1][c1], map(i->A[i][c1],r+2:n))
+    c=mgcdex(abs(A[r][c1]), A[r+1][c1], map(i->A[i][c1],r+2:n))
     for i in r+2:n
       if c[i-r-1]!=0
         A[r+1]+=A[i]*c[i-r-1]
@@ -358,7 +401,7 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
         Q[r+1]+=Q[i]*c
       end
     end
-    g = bezout(A[r][c1], A[r][c2], A[r+1][c1], A[r+1][c2])
+    g=bezout(A[r][c1], A[r][c2], A[r+1][c1], A[r+1][c2])
     sig*= sign(A[r][c1]*A[r+1][c2]-A[r][c2]*A[r+1][c1])
     A[[r,r+1]]=MatMul([[g.coeff1,g.coeff2],[g.coeff3, g.coeff4]],A[[r,r+1]])
     if ROWTRANS
@@ -379,23 +422,23 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
   if TRIANG && !(ROWTRANS || COLTRANS)
     for i in 2:n-1 A[i-1]=A[i][2:m-1] end
     A=A[1:n-2]
-    R = Dict(:normal => SNFofREF(A, INPLACE), :rank => r - 1)
-    if n==m R[:signdet] = sig end
+    R=Dict(:normal => SNFofREF(A, INPLACE), :rank => r - 1)
+    if n==m R[:signdet]=sig end
     return R
   end
   # hermite or (smith w/ column transforms)
   if (!TRIANG && REDDIAG) || (TRIANG && COLTRANS)
     for i in r:-1:1
       for j in i+1:r+1
-        q = div(A[i][rp[j]]-mod(A[i][rp[j]], A[j][rp[j]]), A[j][rp[j]])
+        q=div(A[i][rp[j]]-mod(A[i][rp[j]], A[j][rp[j]]), A[j][rp[j]])
         A[i]-=A[j]*q
         if ROWTRANS Q[i]-=Q[j]*q end
       end
       if TRIANG && i<r
         for j in i+1:m
-          q = div(A[i][j], A[i][i])
+          q=div(A[i][j], A[i][i])
           for k in 1:i A[k][j]-=q*A[k][i] end
-          if COLTRANS P[i][j] = -q end
+          if COLTRANS P[i][j]=-q end
         end
       end
     end
@@ -405,11 +448,11 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
     for i in 1:r-1
       t=A[i][i]
       A[i]=fill(0,m)
-      A[i][i] = t
+      A[i][i]=t
     end
     for j in r+1:m-1
-      A[r][r] = gcd(A[r][r], A[r][j])
-      A[r][j] = 0
+      A[r][r]=gcd(A[r][r], A[r][j])
+      A[r][j]=0
     end
   end
   #smith w/ col transforms
@@ -422,111 +465,42 @@ function DoNFIM(mat::AbstractVector; TRIANG=false, REDDIAG=false, ROWTRANS=false
     end
     P[r+1]=zeros(Int,m)
     P[r+1][r+1]=1
-    g = Gcdex(A[r][r], A[r][r + 1])
-    A[r][r] = g.gcd
-    A[r][r+1] = 0
+    g=Gcdex(A[r][r], A[r][r+1])
+    A[r][r]=g.gcd
+    A[r][r+1]=0
     for i in 1:r+1
-      t = P[i][r]
-      P[i][r] = P[i][r] * g.coeff1 + P[i][r+1] * g.coeff2
-      P[i][r+1] = t * g.coeff3 + P[i][r+1] * g.coeff4
+      t=P[i][r]
+      P[i][r]=P[i][r] * g.coeff1+P[i][r+1] * g.coeff2
+      P[i][r+1]=t * g.coeff3+P[i][r+1] * g.coeff4
     end
     for j in r+2:m-1
-      q = div(A[r][j], A[r][r])
+      q=div(A[r][j], A[r][r])
       for i in 1:r+1 P[i][j]-=q*P[i][r] end
       A[r][j]=0
     end
     for i in r+2:m-1
-      P[i] = map(x->0, 1:m)
-      P[i][i] = 1
+      P[i]=map(x->0, 1:m)
+      P[i][i]=1
     end
   end
   #row transforms finisher
   if ROWTRANS for i in r+2:n Q[i][i]=1 end end
   for i in 2:n-1 A[i-1]=A[i][2:m-1] end
   A=A[1:n-2]
-  R = Dict{Symbol,Any}(:normal => A)
+  R=Dict{Symbol,Any}(:normal => A)
   if ROWTRANS
-    R[:rowC] = map(x->x[2:n-1],C[2:n-1])
-    R[:rowQ] = map(x->x[2:n-1],Q[2:n-1])
+    R[:rowC]=map(x->x[2:n-1],C[2:n-1])
+    R[:rowQ]=map(x->x[2:n-1],Q[2:n-1])
   end
   if TRIANG && COLTRANS
-    R[:colC] = map(x->x[2:m-1],B[2:m-1])
-    R[:colQ] = map(x->x[2:m-1],P[2:m-1])
+    R[:colC]=map(x->x[2:m-1],B[2:m-1])
+    R[:colQ]=map(x->x[2:m-1],P[2:m-1])
   end
   R[:rank]=r-1
   if n==m R[:signdet]=sig end
+  if ROWTRANS R[:rowtrans]=MatMul(R[:rowQ],R[:rowC]) end
+  if TRIANG && COLTRANS R[:coltrans]=MatMul(R[:colC],R[:colQ]) end
   return R
-end
-
-"""
-This general operation for computation of various Normal Forms
-is probably the most efficient.  
-
-Options bit values:
-  - 0/1 Triangular Form / Smith Normal Form.
-  - 2 Reduce off diagonal entries.
-  - 4 Row Transformations.
-  - 8 Col Transformations.
-  - 16 Destructive (the original matrix may be destroyed)
-
-Compute  a Triangular, Hermite or  Smith form of the  `n × m` integer input
-matrix `A`. Optionally, compute `n × n` and `m × m` unimodular transforming
-matrices `Q, P` which satisfy `Q A = H` or `Q A P = S`.
-
-The routines used are based on work by Arne Storjohann and were implemented
-in GAP4 by him and R.Wainwright.
-
-Note:  `option` is a  value ranging from  0 to 15  but not all options make
-sense  (e.g.,  reducing  off  diagonal  entries  with  SNF  option selected
-already). If an option makes no sense it is ignored.
-
-Returns a record with component `:normal` containing the
-computed normal form and optional components `:rowtrans` 
-and/or `:coltrans` which hold the respective transformation matrix.
-Also in the record are components holding the sign of the determinant, 
-`:signdet`, and the rank of the matrix, `:rank`.
-
-```julia-repl
-julia> m=[[1,15,28],[4,5,6],[7,8,9]]
-3-element Vector{Vector{Int64}}:
- [1, 15, 28]
- [4, 5, 6]
- [7, 8, 9]
-
-julia> MatInt.NormalFormIntMat(m,6)
-Dict{Symbol, Any} with 6 entries:
-  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
-  :normal   => [[1, 0, 1], [0, 1, 1], [0, 0, 3]]
-  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-  :rank     => 3
-  :signdet  => 1
-  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
-
-julia> r=MatInt.NormalFormIntMat(m,13) # Smith Normal Form with both transforms
-Dict{Symbol, Any} with 9 entries:
-  :rowQ     => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
-  :normal   => [[1, 0, 0], [0, 1, 0], [0, 0, 3]]
-  :colQ     => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
-  :coltrans => [[1, 0, -1], [0, 1, -1], [0, 0, 1]]
-  :rowC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-  :rank     => 3
-  :colC     => [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-  :signdet  => 1
-  :rowtrans => [[-2, 62, -35], [1, -30, 17], [-3, 97, -55]]
-
-julia> toM(r[:rowtrans])*toM(m)*toM(r[:coltrans])
-3×3 Matrix{Int64}:
- 1  0  0
- 0  1  0
- 0  0  3
-```
-"""
-function NormalFormIntMat(mat, options)
-  TRIANG,REDDIAG,ROWTRANS,COLTRANS,INPLACE=Bool.(digits(options;base=2,pad=5))
-  r=DoNFIM(mat; TRIANG, REDDIAG, ROWTRANS, COLTRANS, INPLACE)
-  if ROWTRANS r[:rowtrans]=MatMul(r[:rowQ],r[:rowC]) end
-  if TRIANG && COLTRANS r[:coltrans]=MatMul(r[:colC],r[:colQ]) end
-  r
 end
 
 """
@@ -548,10 +522,10 @@ true
 gap> TriangulizeIntegerMat(m); m;
 [ [ 1, 15, 28 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ]
 """
-TriangulizedIntegerMat(mat)=NormalFormIntMat(mat,0)[:normal]
-TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat,4)
-TriangulizeIntegerMat(mat)=NormalFormIntMat(mat,16)
-HermiteNormalFormIntegerMat(mat)=NormalFormIntMat(mat,2)[:normal]
+TriangulizedIntegerMat(mat)=NormalFormIntMat(mat;)[:normal]
+TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat;ROWTRANS=true)
+TriangulizeIntegerMat(mat)=NormalFormIntMat(mat;INPLACE=true)
+HermiteNormalFormIntegerMat(mat)=NormalFormIntMat(mat;REDDIAG=true)[:normal]
 
 """
 This operation computes the Hermite normal form of a matrix `mat`
@@ -571,7 +545,7 @@ rec( normal := [ [ 1, 0, 1 ], [ 0, 1, 1 ], [ 0, 0, 3 ] ], rank := 3,
 gap> n.rowtrans*m=n.normal;
 true
 """
-HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat, 6)
+HermiteNormalFormIntegerMatTransform(mat)=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
 """
 `smith_normal_form(m)`
 
@@ -591,7 +565,7 @@ julia> smith_normal_form(m)
  0  0  3
 ```
 """
-smith_normal_form(mat)=toM(NormalFormIntMat(mat,1)[:normal])
+smith_normal_form(mat)=toM(NormalFormIntMat(mat,TRIANG=true)[:normal])
 """
 gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
 gap> n:=SmithNormalFormIntegerMatTransforms(m);  
@@ -606,14 +580,14 @@ rec( colC := [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 1 ] ],
 gap> n.rowtrans*m*n.coltrans=n.normal;
 true
 """
-SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat,13)
+SmithNormalFormIntegerMatTransforms(mat)=NormalFormIntMat(mat;TRIANG=true,ROWTRANS=true,COLTRANS=true)
 """
 gap> m:=[[1,15,28],[4,5,6],[7,8,9]];;
 gap> DiagonalizeIntMat(m);m;
 [ [ 1, 0, 0 ], [ 0, 1, 0 ], [ 0, 0, 3 ] ]
 ]]></Example>
 """
-DiagonalizeIntMat(mat)=NormalFormIntMat(mat,17)
+DiagonalizeIntMat(mat)=NormalFormIntMat(mat;TRIANG=true,INPLACE=true)
 
 """
 `baseInt(m::Matrix{<:Integer})`
@@ -638,7 +612,7 @@ julia> baseInt(m)
 baseInt(m::Matrix{<:Integer})=toM(BaseIntMat(toL(m)))
 
 function BaseIntMat(mat)
-  norm=NormalFormIntMat(mat, 2)
+  norm=NormalFormIntMat(mat;REDDIAG=true)
   norm[:normal][1:norm[:rank]]
 end
 
@@ -663,7 +637,7 @@ julia> MatInt.BaseIntersectionIntMats(mat,nat)
 """
 function BaseIntersectionIntMats(M1, M2)
   M = vcat(M1, M2)
-  r = NormalFormIntMat(M,4)
+  r = NormalFormIntMat(M;ROWTRANS=true)
   T = map(x->x[1:length(M1)],r[:rowtrans][r[:rank]+1:length(M)])
   if !isempty(T) T=MatMul(T,M1) end
   BaseIntMat(T)
@@ -708,9 +682,9 @@ function complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})
   S=BaseIntersectionIntMats(F, sub)
   if S!=BaseIntMat(sub) error(sub," must be submodule of ",full) end
   M=vcat(F,S)
-  T=toL(Int.(inv(Rational.(toM(NormalFormIntMat(M,4)[:rowtrans])))))
+  T=toL(Int.(inv(Rational.(toM(NormalFormIntMat(M;ROWTRANS=true)[:rowtrans])))))
   T=map(x->x[1:length(F)],T[length(F)+1:length(T)])
-  r=NormalFormIntMat(T, 13)
+  r=NormalFormIntMat(T, TRIANG=true,ROWTRANS=true,COLTRANS=true)
   M=toL(Int.(inv(Rational.(toM(r[:coltrans])))*toM(F)))
   (complement=BaseIntMat(M[1+r[:rank]:length(M)]),
    sub=MatMul(MatMul(r[:rowtrans],T),F), 
@@ -740,7 +714,7 @@ julia> MatInt.leftnullspaceInt(m)
 ```
 """
 function leftnullspaceInt(mat)
-  norm=NormalFormIntMat(toL(mat), 4)
+  norm=NormalFormIntMat(toL(mat), ROWTRANS=true)
   BaseIntMat(norm[:rowtrans][norm[:rank]+1:size(mat,1)])
 end
 
@@ -782,11 +756,11 @@ function SolutionIntMat(mat, v)
     else return false
     end
   end
-  norm = NormalFormIntMat(mat, 4)
+  norm = NormalFormIntMat(mat, ROWTRANS=true)
   t = norm[:rowtrans]
   rs = norm[:normal][1:norm[:rank]]
   M = vcat(rs, [v])
-  r = NormalFormIntMat(M, 4)
+  r = NormalFormIntMat(M, ROWTRANS=true)
   if r[:rank]==length(r[:normal]) || r[:rowtrans][length(M)][length(M)]!=1
       return false
   end
@@ -805,18 +779,18 @@ gap> SolutionNullspaceIntMat(mat,[95,115,182]);
 """
 function SolutionNullspaceIntMat(mat, v)
   if iszero(mat)
-    len = length(mat)
-    if iszero(v) return [fill(0, max(0, (1 + len) - 1)), IdentityMat(len)]
+    len=length(mat)
+    if iszero(v) return [fill(0,max(0,len)), IdentityMat(len)]
     else return [false, IdentityMat(len)]
     end
   end
-  norm = NormalFormIntMat(mat, 4)
-  kern = (norm[:rowtrans])[norm[:rank] + 1:length(mat)]
+  norm = NormalFormIntMat(mat, ROWTRANS=true)
+  kern = (norm[:rowtrans])[norm[:rank]+1:length(mat)]
   kern = BaseIntMat(kern)
   t = norm[:rowtrans]
   rs = (norm[:normal])[1:norm[:rank]]
   M = Concatenation(rs, [v])
-  r = NormalFormIntMat(M, 4)
+  r = NormalFormIntMat(M, ROWTRANS=true)
   if r[:rank] == length(r[:normal]) || r[:rowtrans][length(M)][length(M)]!=1
       return [false, kern]
   end
@@ -841,13 +815,13 @@ function DeterminantIntMat(mat)
     c1=c2
     j=c1+1
     while j <= m
-        k = r + 1
-        while k<=n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k+=1 end
-        if k<=n
-          c2=j
-          j=m
-        end
-        j+=1
+      k=r+1
+      while k<=n && A[r][c1]*A[k][j]==A[k][c1]*A[r][j] k+=1 end
+      if k<=n
+        c2=j
+        j=m
+      end
+      j+=1
     end
     c=mgcdex(abs(A[r][c1]), A[r+1][c1], map(x->x[c1],A[r+2:n]))
     for i in r+2:n
