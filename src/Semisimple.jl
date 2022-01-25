@@ -352,7 +352,7 @@ function SubTorus(W,V=reflrep(W,one(W)))
     error("not a pure sublattice")
     return
   end
-  SubTorus(V.sub,V.complement,W)
+  SubTorus(Array.(toL(V.sub)),Array.(toL(V.complement)),W)
 end
 
 Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
@@ -421,15 +421,15 @@ function FixedPoints(T::SubTorus,m)
     error(m," does not stabilize ",T)
   end
   n=Int.(toM(n))
-  fix=toM(leftnullspaceInt(n-n^0)) # pure sublattice Y(Tso)
+  fix=leftnullspaceInt(n-n^0) # pure sublattice Y(Tso)
   o=order(n)
   Y1=leftnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where 
   # T=T1.Tso almost direct product, thus spaces Y.(1-s) and Y1.(1-s) coincide
   n=baseInt(n-n^0) # basis of Im(1-s)
-  m=map(v->solutionmat(n,v),Y1) # basis of Im[(1-s)^{-1} restricted to Y1]
+  m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
   # generates elements y of Y1⊗ ℚ such that (1-s)y\in Y1
   [SubTorus(T.group,fix*toM(T.gens)),
-   abelian_gens(map(v->SS(T.group,permutedims(toM(Y1)*toM(T.gens))*v),m))]
+   abelian_gens(map(v->SS(T.group,permutedims(Y1*toM(T.gens))*v),m))]
 end
 
 """
@@ -492,11 +492,11 @@ function algebraic_centre(W)
     W=W.group
   end
   if iszero(semisimplerank(W))
-    Z0=toL(reflrep(W,one(W)))
+    Z0=reflrep(W,one(W))
   else
     Z0=leftnullspaceInt(permutedims(toM(simpleroots(W))))
   end
-  Z0=SubTorus(W,toM(Z0))
+  Z0=SubTorus(W,Z0)
   if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]
   else
     AZ=toL(inv(Rational.(toM(Z0.complement)*hcat(simpleroots(W)...)))*
@@ -840,9 +840,9 @@ function StructureRationalPointsConnectedCentre(MF,q)
   Z0=algebraic_centre(M)[:Z0]
   Phi=matY(W.G,MF.phi)
   Z0F=toM(Z0.gens)*(Phi*q-one(Phi))
-  Z0F=map(x->SolutionIntMat(Z0.gens,x),eachrow(Z0F))
-  Z0F=DiagonalizeIntMat(Z0F)[:normal]
-  filter(!isone,map(i->Z0F[i][i],1:length(Z0F)))
+  Z0F=map(x->SolutionIntMat(toM(Z0.gens),x),eachrow(Z0F))
+  Z0F=smith_normal_form(toM(Z0F))
+  filter(!isone,map(i->Z0F[i,i],axes(Z0F,1)))
 end
 
 """
@@ -958,7 +958,7 @@ function SScentralizer_reps(W,p=0)
     end
     cent=inclusiongens.(cent)
     if p==0 return cent end
-    filter(I->all(x->x==0 || x%p!=0, smith_normal_form(W.rootdec[I])),cent)
+    filter(I->all(x->x==0 || x%p!=0, smith_normal_form(toM(W.rootdec[I]))),cent)
   end
   if isempty(l) return [Int[]] end
   map(x->vcat(x...),cartesian(l...))
