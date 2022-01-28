@@ -7,10 +7,10 @@ using LaurentPolynomials: Pol, degree, shift, derivative, exactdiv
 using ..FFields: FFE, GF
 
 """
-`factors_same_degree(f::Pol{FFE{p}}, d,F)where p`
+`factors_same_degree(f::Pol{FFE{p}},d,F::GF)where p`
 
 find  the irreducible factors of `f` assumed to be a square free product of
-monic   irreducible  factors  of   degree  `d`  over   a  finite  field  of
+monic  irreducible  factors  of  degree  `d`  over  a  finite field `F` of
 characteristic `p`.
 """
 function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
@@ -35,11 +35,11 @@ function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
 end
 
 """
-`factors_squarefree(f::Pol{FFE{p}},F)where p`
+`factors_squarefree(f::Pol{FFE{p}},F::GF)where p`
 
 find  the irreducible  factors of  `f` assumed  to be  a square  free monic
-polynomial with nonzero constant term over a finite field of characteristic
-`p`.
+polynomial   with  nonzero  constant  term  over  a  finite  field  `F`  of
+characteristic `p`.
 """
 function factors_squarefree(f::Pol{FFE{p}},F)where p
   facs=Pol{FFE{p}}[]
@@ -62,7 +62,7 @@ function factors_squarefree(f::Pol{FFE{p}},F)where p
   facs
 end
 
-# n-th root of a pol which is an n-th power
+# n-th root of a pol which is assumed to be an n-th power
 # not exported since does not check that f is a power
 function root(f::Pol{FFE{p}},n::Integer)where p
   d=maximum(degree.(f.c))

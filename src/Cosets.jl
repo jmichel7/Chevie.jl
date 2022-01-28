@@ -1151,11 +1151,10 @@ rootdata[:tgl]=function(n, k)
   # We intertwine the last weight with the torus
   lat=vcat(X,permutedims(vcat(fill(0,n-2), [k,1])))
   # Get a basis for the sublattice
-  lat=MatInt.HermiteNormalFormIntegerMat(lat)
+  lat=hermite(lat)
   # Find the roots in a basis of the sublattice
   Y=id(n)[1:n-1,:]
-  return rootdatum(toM(map(x->MatInt.SolutionIntMat(lat,x),toL(X))),
-                   Y*permutedims(lat))
+  rootdatum(toM(map(x->SolutionIntMat(lat,x),toL(X))),Y*permutedims(lat))
 end
 rootdata[:pgl]=r->coxgroup(:A,r-1)
 rootdata[:sp]=function(r)

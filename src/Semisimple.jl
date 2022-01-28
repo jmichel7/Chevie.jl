@@ -841,7 +841,7 @@ function StructureRationalPointsConnectedCentre(MF,q)
   Phi=matY(W.G,MF.phi)
   Z0F=toM(Z0.gens)*(Phi*q-one(Phi))
   Z0F=map(x->SolutionIntMat(toM(Z0.gens),x),eachrow(Z0F))
-  Z0F=smith_normal_form(toM(Z0F))
+  Z0F=smith(toM(Z0F))
   filter(!isone,map(i->Z0F[i,i],axes(Z0F,1)))
 end
 
@@ -958,7 +958,7 @@ function SScentralizer_reps(W,p=0)
     end
     cent=inclusiongens.(cent)
     if p==0 return cent end
-    filter(I->all(x->x==0 || x%p!=0, smith_normal_form(toM(W.rootdec[I]))),cent)
+    filter(I->all(x->x==0 || x%p!=0, smith(toM(W.rootdec[I]))),cent)
   end
   if isempty(l) return [Int[]] end
   map(x->vcat(x...),cartesian(l...))

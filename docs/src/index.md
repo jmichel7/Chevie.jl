@@ -161,7 +161,8 @@ solutionmat
 ```
 # Integral matrices and lattices
 ```@docs
-smith_normal_form
+smith
+hermite
 baseInt
 complementInt
 DiaconisGraham
@@ -499,7 +500,7 @@ CollectBy(l,f)                              collectby(f,l)
 Collected                                   tally
 Combinations                                combinations
 Comm                                        comm
-ComplementIntMat                            ComplementInt
+ComplementIntMat                            complementInt
 ComplexConjugate                            conj
 ComplexReflectionGroup                      ComplexReflectionGroup
 Compositions                                compositions
@@ -524,6 +525,7 @@ CuspidalPairs                               cuspidal_data
 CuspidalUnipotentCharacters(W[,d])          cuspidal(UnipotentCharacters(W)[,d])
 Cycle                                       orbit
 Cycles                                      orbits
+CyclotomicModP(c,p)                         FFE{p}(c)
 CyclotomicPolynomial(R,i)                   cyclotomic_polynomial(i)
 CycPol                                      CycPol
 CycPolFakeDegreeSymbol                      fegsymbol
@@ -583,6 +585,8 @@ HeckeCentralMonomials                       central_monomials
 HeckeCharValues                             char_values
 HeckeClassPolynomials                       class_polynomials
 HeckeReflectionRepresentation               reflrep
+HermiteNormalFormIntegerMat                 hermite
+HermiteNormalFormIntegerMatTransforms(m)    hermite(m;transforms=true)
 HighestPowerFakeDegrees(W)                  charinfo(W)[:B]
 HighestPowerFakeDegreeSymbol                degree_fegsymbol
 HighestPowerGenericDegrees(W)               charinfo(W)[:A]
@@ -749,7 +753,8 @@ SignedPermListList                          SPerm
 SignedPermMatMat                            SPerm_onmats
 Size(W)                                     length(W)
 SmallestMovedPoint                          smallest_moved_point
-SmithNormalFormIntegerMat                   smith_normal_form
+SmithNormalFormIntegerMat                   smith
+SmithNormalFormIntegerMatTransforms(m)      smith(m;transforms=true)
 SolutionMat                                 solutionmat
 SpecialPieces                               special_pieces
 Spets                                       spets
@@ -769,6 +774,7 @@ Torus                                       torus
 TorusOrder                                  torus_order
 TransitiveClosure                           transitive_closure
 Transporter                                 transporter
+TransposedMat                               permutedims
 Transversals                                related to transversals
 TriangulizeMat                              echelon!
 Twistings                                   twistings

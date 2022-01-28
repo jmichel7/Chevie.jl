@@ -185,7 +185,7 @@ function abelian_gens(G::Group) # thanks to Klaus Lux for the algorithm
     rel[i]=-d
     rels[i,:]=rel
   end
-  rels=Int.(inv(MatInt.SmithNormalFormIntegerMatTransforms(rels)[:coltrans]//1))
+  rels=Int.(inv(smith(rels;transforms=true).coltrans//1))
   filter(!isone,map(r->prod(l.^r),eachrow(rels)))
 end
 
