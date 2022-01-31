@@ -48,20 +48,15 @@ function rgcd(N, a)
 end
 
 """
-`Gcdex(n1,n2)`
+`Gcdex(m,n)`
 
-`Gcdex` returns a named tuple with fields `gcd` and `coeff`.
+`Gcdex`  returns a  named tuple  with fields  `gcd=gcd(m,n)` and `coeff`, a
+unimodular matrix (an invertible integer matrix) such that
+`coeff*[m,n]=[gcd,0]`.
 
-`gcd` is the gcd of `n1` and n2`.
-
-`coeff'  is a unimodular matrix (an  integer matrix of determinant ±1) such
-that `coeff*[n1,n2]=[gcd,0]`.
-
-If  both `n1`  and `n2`  are nonzero,  abs(coeff[1,1])≤abs(n2)/(2*gcd)` and
-``abs(coeff[1,2])≤abs(n1)/(2*gcd)`.
-
-If `n1` or `n2` are not both zero `coeff[2,1]` is -n2/gcd` and `coeff[2,2]`
-is `n1/gcd`.
+If `m*n!=0`, `abs(coeff[1,1])≤abs(n)/(2*gcd)` and
+`abs(coeff[1,2])≤abs(m)/(2*gcd)`.   If  `m`  and  `n`  are  not  both  zero
+`coeff[2,1]` is -n/gcd` and `coeff[2,2]` is `m/gcd`.
 
 ```julia-repl
 julia> MatInt.Gcdex(123,66)
@@ -90,6 +85,23 @@ function Gcdex( m, n )
   (gcd=f, coeff= n==0 ? [fm 0; gm 1] : [fm div(f-fm*m,n); gm div(-gm*m,n)])
 end
 
+#  bezout(A) - returns rowtrans to transform 2x2 matrix A to hermite
+#
+#  rowtrans*A=[e f;0 g]  the RHS is Hermite normal form
+#
+function bezout(A)
+  e=Gcdex(A[1,1],A[2,1])
+  f,g=e.coeff*A[:,2]
+  if iszero(g) return e end
+  if g<0
+    coeff=[1 0;0 -1]*e.coeff
+    g=-g
+  else coeff=e.coeff
+  end
+  (gcd=e.gcd,sign=sign(A[1,1]*A[2,2]-A[1,2]*A[2,1]),
+             rowtrans=[1 -div(f-mod(f,g),g);0 1]*coeff)
+end
+
 #  mgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
 #   gcd(N,a+c[1]*v[1]+...+c[n]*v[k])==gcd(N,a,v[1],v[2],...,v[k])
 function mgcdex(N, a, v)
@@ -106,29 +118,13 @@ function mgcdex(N, a, v)
     b=div(v[i], h)
     d=prime_part(M[i], b)
     if d==1 c=0
-    else c=rgcd(d, numerator(g//b)*invmod(denominator(g//b),d))
+    else 
+      u=g//b
+      c=rgcd(d, numerator(u)*invmod(denominator(u),d))
       g+=c*b
     end
     c
   end)
-end
-
-#  bezout(a,b,c,d) - returns P to transform A=[a b;c d] to hnf (PA=H);
-#
-#  (P=coeff)*A=[e f;0 g]
-#
-function bezout(a, b, c, d)
-  e=Gcdex(a, c)
-  f=e.coeff[1,1]*b+e.coeff[1,2]*d
-  g=e.coeff[2,1]*b+e.coeff[2,2]*d
-  if iszero(g) return e end
-  if g<0
-    e=(gcd=e.gcd,coeff=[e.coeff[1,1] e.coeff[1,2];-e.coeff[2,1] -e.coeff[2,2]])
-    g=-g
-  end
-  q=div(f-mod(f, g), g)
-  (gcd=e.gcd,coeff=[e.coeff[1,1]-q*e.coeff[2,1] e.coeff[1,2]-q*e.coeff[2,2];
-                    e.coeff[2,1] e.coeff[2,2]])
 end
 
 ## SNFofREF - fast SNF of REF matrix
@@ -139,15 +135,15 @@ function SNFofREF(R, INPLACE)
   r=findfirst(isnothing,piv)
   if isnothing(r) r=length(piv)
   else
-      r-=1
-      piv=piv[1:r]
+    r-=1
+    piv=piv[1:r]
   end
   append!(piv, setdiff(1:m, piv))
   if INPLACE
     T=R
-    for i in 1:r T[i,1:m]=T[i,piv] end
+    T[1:r,:]=T[1:r,piv]
   else
-    T=fill(zero(eltype(R)),n,m)
+    T=zeros(eltype(R),n,m)
     for j in 1:m
       for i in 1:min(r,j) T[i,j]=R[i,piv[j]] end
     end
@@ -156,22 +152,22 @@ function SNFofREF(R, INPLACE)
   A=Vector{Int}(undef,n)
   d=2
   for k in 1:m
-    if k <= r
+    if k<=r
       d*=abs(T[k,k])
       T[k,:].=mod.(T[k,:], 2d)
     end
     t=min(k, r)
     for i in t-1:-1:si
-        t=mgcdex(A[i], T[i,k], [T[i+1,k]])[1]
-        if t != 0
-            T[i,:]+=T[i+1,:].*t
-            T[i,:].=mod.(T[i,:], A[i])
-        end
+      t=mgcdex(A[i], T[i,k], [T[i+1,k]])[1]
+      if t!=0
+        T[i,:]+=T[i+1,:].*t
+        T[i,:].=mod.(T[i,:], A[i])
+      end
     end
     for i in si:min(k-1, r)
       g=gcdx(A[i], T[i,k])
       T[i,k]=0
-      if g[1] != A[i]
+      if g[1]!=A[i]
         b=div(A[i], g[1])
         A[i]=g[1]
         for ii in i+1:min(k-1,r)
@@ -188,9 +184,9 @@ function SNFofREF(R, INPLACE)
         if A[i]==1 si=i+1 end
       end
     end
-    if k <= r
-        A[k]=abs(T[k,k])
-        T[k,:].=mod.(T[k,:], A[k])
+    if k<=r
+      A[k]=abs(T[k,k])
+      T[k,:].=mod.(T[k,:], A[k])
     end
   end
   for i in 1:r T[i,i]=A[i] end
@@ -283,7 +279,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   sig=1
   #Embed nxm mat in a (n+2)x(m+2) larger "id" matrix
   n,m=size(mat).+(2,2)
-  A=fill(zero(eltype(mat)),n,m)
+  A=zeros(eltype(mat),n,m)
   A[2:end-1,2:end-1]=mat
   A[1,1]=1
   A[n,m]=1
@@ -293,7 +289,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     C=one(Q)
   end
   if TRIANG && COLTRANS
-    B=one(fill(zero(eltype(mat)),m,m))
+    B=one(zeros(eltype(mat),m,m))
     P=copy(B)
   end
   r=0
@@ -317,45 +313,44 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     end
     #Smith with some transforms..
     if TRIANG && ((COLTRANS || ROWTRANS) && c2<m)
-        N=gcd(@view A[r:n,c2])
-        L=vcat(c1+1:c2-1,c2+1:m-1)
-        push!(L,c2)
-        for j in L
-            if j == c2
-                b=A[r,c2]
-                a=A[r,c1]
-                for i in r+1:n
-                    if b != 1
-                        g=gcdx(b, A[i,c2])
-                        b=g[1]
-                        a=g[2]*a+g[3]*A[i,c1]
-                    end
-                end
-                N=0
-                for i in r:n
-                  if N!=1 N=gcd(N, A[i,c1]-div(A[i,c2],b)*Int128(a)) end
-                end
-                N=Int(N)
-            else
-              c=mgcdex(N, A[r,j], @view A[r+1:n,j])
-              b=A[r,j]+sum(c.*@view A[r+1:n,j])
-              a=A[r,c1]+sum(c.*@view A[r+1:n,j])
+      N=gcd(@view A[r:n,c2])
+      for j in vcat(c1+1:c2-1,c2+1:m-1,[c2])
+        if j==c2
+          b=A[r,c2]
+          a=A[r,c1]
+          for i in r+1:n
+            if b!=1
+              g=gcdx(b, A[i,c2])
+              b=g[1]
+              a=g[2]*a+g[3]*A[i,c1]
             end
-            t=mgcdex(N, a, [b])[1]
-            tmp=A[r,c1]+t*A[r,j]
-            if tmp==0 || tmp*A[k,c2]==(A[k,c1]+t*A[k,j])*A[r,c2]
-                t+=1+mgcdex(N, a+t*b+b,[b])[1]
-            end
-            if t > 0
-                for i in 1:n A[i,c1]+=t*A[i,j] end
-                if COLTRANS B[j,c1]+=t end
-            end
+          end
+          N=0
+          for i in r:n
+            if N!=1 N=gcd(N, A[i,c1]-div(A[i,c2],b)*Int128(a)) end
+          end
+          N=Int(N) # should be written differently to work with any integers
+        else
+          c=mgcdex(N, A[r,j], @view A[r+1:n,j])
+          c=sum(c.*@view A[r+1:n,j])
+          b=A[r,j]+c
+          a=A[r,c1]+c
         end
-        if A[r,c1]*A[k,c1+1]==A[k,c1]*A[r,c1+1]
-            for i in 1:n A[i,c1+1]+=A[i,c2] end
-            if COLTRANS B[c2,c1+1]=1 end
+        t=mgcdex(N, a, [b])[1]
+        tmp=A[r,c1]+t*A[r,j]
+        if tmp==0 || tmp*A[k,c2]==(A[k,c1]+t*A[k,j])*A[r,c2]
+          t+=1+mgcdex(N, a+t*b+b,[b])[1]
         end
-        c2=c1+1
+        if t>0
+          A[:,c1]+=t*A[:,j]
+          if COLTRANS B[j,c1]+=t end
+        end
+      end
+      if A[r,c1]*A[k,c1+1]==A[k,c1]*A[r,c1+1]
+        A[:,c1+1].+=@view A[:,c2]
+        if COLTRANS B[c2,c1+1]=1 end
+      end
+      c2=c1+1
     end
     c=mgcdex(abs(A[r,c1]), A[r+1,c1], @view A[r+2:n,c1])
     for i in r+2:n
@@ -377,12 +372,10 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
         Q[r+1,:]+=c.*@view Q[i,:]
       end
     end
-    g=bezout(A[r,c1], A[r,c2], A[r+1,c1], A[r+1,c2])
-    sig*= sign(A[r,c1]*A[r+1,c2]-A[r,c2]*A[r+1,c1])
-    A[r:r+1,:]=g.coeff*@view A[r:r+1,:]
-    if ROWTRANS
-      Q[r:r+1,:]=g.coeff*@view Q[r:r+1,:]
-    end
+    g=bezout(A[r:r+1,[c1,c2]])
+    sig*=g.sign
+    A[r:r+1,:]=g.rowtrans*@view A[r:r+1,:]
+    if ROWTRANS Q[r:r+1,:]=g.rowtrans*@view Q[r:r+1,:] end
     for i in r+2:n
       q=div(A[i,c1], A[r,c1])
       A[i,:]-=q.*@view A[r,:]
@@ -397,7 +390,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   #smith w/ NO transforms - farm the work out...
   if TRIANG && !(ROWTRANS || COLTRANS)
     A=A[2:end-1,2:end-1]
-    R=Dict(:normal => SNFofREF(A, INPLACE), :rank => r - 1)
+    R=Dict(:normal => SNFofREF(A, INPLACE), :rank=>r-1)
     if n==m R[:signdet]=sig end
     return R
   end
@@ -412,7 +405,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
       if TRIANG && i<r
         for j in i+1:m
           q=div(A[i,j], A[i,i])
-          for k in 1:i A[k,j]-=q*A[k,i] end
+          A[1:i,j]-=q.*A[1:i,i]
           if COLTRANS P[i,j]=-q end
         end
       end
@@ -422,7 +415,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   if TRIANG && ROWTRANS && !COLTRANS
     for i in 1:r-1
       t=A[i,i]
-      A[i,:]=zero(A[i,:])
+      A[i,:].=0
       A[i,i]=t
     end
     for j in r+1:m-1
@@ -434,30 +427,23 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   if TRIANG && COLTRANS && r<m-1
     c=mgcdex(A[r,r], A[r,r+1], @view A[r,r+2:m-1])
     for j in r+2:m-1
-        A[r,r+1]+=c[j-r-1]*A[r,j]
-        B[j,r+1]=c[j-r-1]
-        for i in 1:r P[i,r+1]+=c[j-r-1]*P[i,j] end
+      A[r,r+1]+=c[j-r-1]*A[r,j]
+      B[j,r+1]=c[j-r-1]
+      P[1:r,r+1].+=c[j-r-1].*P[1:r,j]
     end
-    P[r+1,:].=zeros(Int,m)
+    P[r+1,:].=0
     P[r+1,r+1]=1
     g=Gcdex(A[r,r], A[r,r+1])
     A[r,r]=g.gcd
     A[r,r+1]=0
-    for i in 1:r+1
- #    t=P[i,r]
- #    P[i,r]=P[i,r] * g.coeff[1,1]+P[i,r+1] * g.coeff[1,2]
- #    P[i,r+1]=t * g.coeff[2,1]+P[i,r+1] * g.coeff[2,2]
-      P[i,r:r+1]=g.coeff*P[i,r:r+1]
-    end
+    P[1:r+1,r:r+1]*=permutedims(g.coeff)
     for j in r+2:m-1
       q=div(A[r,j], A[r,r])
-      for i in 1:r+1 P[i,j]-=q*P[i,r] end
+      P[1:r+1,j]-=q.*P[1:r+1,r]
       A[r,j]=0
     end
-    for i in r+2:m-1
-      P[i,:].=0
-      P[i,i]=1
-    end
+    P[r+2:m-1,:].=0
+    for i in r+2:m-1 P[i,i]=1 end
   end
   #row transforms finisher
   if ROWTRANS for i in r+2:n Q[i,i]=1 end end
@@ -513,15 +499,19 @@ TriangulizedIntegerMat(mat)=NormalFormIntMat(mat;)[:normal]
 TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat;ROWTRANS=true)
 
 """
-`hermite(m::AbstractMatrix{<:Integer};transforms=false)`
+`hermite(m::AbstractMatrix{<:Integer};transforms=false,col=false)`
 
-returns the Hermite normal form `H` of the integer matrix `m`; `H` is a row
-equivalent  upper triangular  form such  that all  off-diagonal entries are
-reduced modulo the diagonal entry of the column they are in. There exists a
-unique unimodular matrix `Q` such that `QA==H`.
+returns  the row Hermite normal  form `H` of the  integer matrix `m`, a row
+equivalent upper triangular form. If a pivot is the first non-zero entry on
+a row of `H` (the quadrant below left a pivot is zero), pivots are positive
+and entries above a pivot are nonnegative and smaller than the pivot. There
+exists a unique invertible integer matrix `Q` such that `QA==H`.
 
 If   `transforms=true`  the  function  returns   a  tuple  with  components
 `.normal=H` and `.rowtrans=Q`.
+
+If  `col=true` the function  returns the column  Hermite normal form, where
+`.coltrans=Q` and `H` are transposed from the above description and `AQ=H`.
 
 ```julia-repl
 julia> m=[1 15 28;4 5 6;7 8 9]
@@ -543,11 +533,21 @@ julia> n.rowtrans*m==n.normal
 true
 ```
 """
-function hermite(mat::AbstractMatrix{<:Integer};transforms=false)
-  if !transforms NormalFormIntMat(mat;REDDIAG=true)[:normal]
-  else res=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
-    (normal=res[:normal], rowtrans=res[:rowtrans], rank=res[:rank],
-     signdet=get(res,:signdet,nothing))
+function hermite(mat::AbstractMatrix{<:Integer};transforms=false,col=false)
+  if col
+    if transforms 
+      res=NormalFormIntMat(permutedims(mat);REDDIAG=true,ROWTRANS=true)
+      (normal=permutedims(res[:normal]), coltrans=permutedims(res[:rowtrans]), 
+       rank=res[:rank], signdet=get(res,:signdet,nothing))
+     else permutedims(NormalFormIntMat(permutedims(mat);REDDIAG=true)[:normal])
+    end
+  else
+    if transforms 
+      res=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
+      (normal=res[:normal], rowtrans=res[:rowtrans], 
+       rank=res[:rank], signdet=get(res,:signdet,nothing))
+    else NormalFormIntMat(mat;REDDIAG=true)[:normal]
+    end
   end
 end
 
@@ -831,10 +831,10 @@ function DeterminantIntMat(mat)
       c=mgcdex(abs(A[r,c1]), A[r+1,c1]+A[i,c1], [A[i,c1]])[1]+1
       A[r+1,:]+=A[i,:].* c
     end
-    g=bezout(A[r,c1], A[r,c2], A[r+1,c1], A[r+1,c2])
-    sig*=sign(A[r,c1]*A[r+1,c2]-A[r,c2]*A[r+1,c1])
-    if sig == 0 return 0 end
-    A[r:r+1,:]=g.coeff*A[r:r+1,:]
+    g=bezout(A[r:r+1,[c1,c2]])
+    sig*=g.sign
+    if sig==0 return 0 end
+    A[r:r+1,:]=g.rowtrans*A[r:r+1,:]
     for i in r+2:n
       q=div(A[i,c1], A[r,c1])
       A[i,:]-=A[r,:].*q

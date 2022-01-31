@@ -1128,7 +1128,8 @@ end
 
 #--------------------- Root data ---------------------------------
 Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
-" root datum from type "
+
+" `rootdatum(string or symbol,...)` root datum from type "
 function Weyl.rootdatum(t::Symbol,r::Int...)
    if haskey(rootdata,t) return rootdata[t](r...) end
    error("Unknown root datum $(repr(t)). Known types are:\n",

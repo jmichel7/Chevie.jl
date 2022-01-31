@@ -555,8 +555,45 @@ function WeightToAdjointFundamentalGroupElement(W,i)
   restricted(b,inclusion.(Ref(W),l))
 end
 
-# returns a record containing minuscule coweights, decompositions
-# (in terms of generators of the fundamental group)
+""" 
+`weightinfo(W)`
+    
+  W    is a Coxeter group  record describing an algebraic  group  𝐆 ,  or an
+  irreducible  type. The function is independent of the isogeny type of  𝐆 
+  (so  just depends on  'ReflectionType(W)', that is  on the root system). It
+  returns a record with the following fields:
+  
+  '.minusculeWeights': the minuscule weights, described as their position in
+     the list of fundamental weights. For non-irreducible groups, a weight is
+     the  sum of  at most  one weight  in each  irreducible component.  It is
+     represented  as the list of its components. For consistency, in the case
+     of an irreducible system, a weight is represented as a one-element list.
+  
+  '.minusculeCoweights': the minuscule coweights, represented in the same
+     manner as the minuscule weights
+  
+  '.decompositions': for each coweight, its decomposition in terms of the
+     generators  of the adjoint  fundamental group (given  by the list of the
+     exponents of the generators). Together with the next field it enables to
+     work out the group structure of the adjoint fundamental group.
+  
+  '.moduli': the list of orders of the generators of the fundamental group.
+  
+  '.AdjointFundamentalGroup': the list of generators of the adjoint fundamental
+     group, given as permutations.
+  
+  '.CenterSimplyConnected': A list of semisimple elements generating the center
+     of the universal covering of  𝐆 
+  
+      gap> WeightInfo(CoxeterGroup("A",2,"B",2));
+      rec(
+        minusculeWeights := [ [ 1, 3 ], [ 1 ], [ 2, 3 ], [ 2 ], [ 3 ] ],
+        minusculeCoweights := [ [ 1, 4 ], [ 1 ], [ 2, 4 ], [ 2 ], [ 4 ] ],
+        decompositions := [ [ 1, 1 ], [ 1, 0 ], [ 2, 1 ], [ 2, 0 ], [ 0, 1 ] ],
+        moduli := [ 3, 2 ],
+        CenterSimplyConnected := [ [ 2/3, 1/3, 0, 0 ], [ 0, 0, 1/2, 0 ] ],
+        AdjointFundamentalGroup := [ ( 1, 2,12), ( 4,14) ] )
+""" 
 function weightinfo(W)
   if isempty(refltype(W)) return Dict(:minusculeWeights=>Vector{Int}[],
          :minusculeCoweights=>Vector{Int}[],
@@ -596,7 +633,7 @@ function weightinfo(W)
                                         x->vcat(x[:minusculeWeights],[0]),l)...),
     :minusculeCoweights=>cartesian(map(
                                      x->vcat(x[:minusculeCoweights],[0]),l)...),
-    :decompositions=>map(vcat,cartesian(map(x->vcat(x[:decompositions],
+    :decompositions=>map(x->vcat(x...),cartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l)...)),
     :moduli=>reduce(vcat,map(x->x[:moduli],l)))
 # centre of simply connected group: the generating minuscule coweights

@@ -747,11 +747,16 @@ julia> W.rootdec
 """
 coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(t,r,b))
 
-" Adjoint root datum from cartan mat"
-rootdatum(C::Matrix)=rootdatum(one(C),C)
+" `rootdatum(C::AbstractMatrix)` adjoint root datum from Cartan matrix `C`"
+rootdatum(C::AbstractMatrix)=rootdatum(one(C),C)
 
-" root datum from 2 matrices: roots on basis of X(T), coroots on basis of Y(T)"
-function rootdatum(rr::Matrix,cr::Matrix)
+"""
+`rootdatum(R::AbstractMatrix,CR::AbstractMatrix)`
+
+root datum from `R` whose rows are the roots on a basis of `X(T)` and
+`CR` whose rows are the coroots on a basis of `Y(T)`
+"""
+function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   C=cr*transpose(rr) # Cartan matrix
   rootdec=roots(C) # difference with PermRootGroup is order of roots here
   N=length(rootdec)
