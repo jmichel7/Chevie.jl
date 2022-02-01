@@ -225,117 +225,137 @@ function ennola(W)
 end
 
 # s is a Set of tuples. Return E_1,...,E_n such that
-# s=List(Cartesian(E_1,...,E_n),Concatenation)
-# Assumes all E_i but one are of size 2
-function FactorsSet(s)
-  if s == [[]] return [] end
-  for i = s[1]
-    s1 = filter(y->i in y,s)
-    if length(s1) == length(s) // 2
-      i = intersect(s1...)
-      r = setdiff(s[1], i)
-      s2 = filter(y->length(intersect(y, i))==0,s)
-      a = findfirst(y->issubset(r,y),s2)
-      if length(s2) == length(s) // 2 && a != false
-        j = setdiff(s2[a], r)
-        s1 = sort(unique(map(x->setdiff(x, i), s1)))
-        s2 = sort(unique(map(x->setdiff(x, j), s2)))
-        if length(i)==1 i=i[1] end
-        if length(j)==1 j=j[1] end
-        if s1 == s2 return vcat([[i, j]], FactorsSet(s1))
-        end
+# s=vcat.(cartesian(E_1,...,E_n))
+# Assumes all E_i but possibly one are of size 2
+function factorset(s)
+  if isempty(s[1]) return s[1] end
+  for i in s[1]
+    s1=filter(y->i in y,s)
+    if 2length(s1)!=length(s) continue end
+    i=intersect(s1...)
+    r=setdiff(s[1], i)
+    s2=filter(y->isempty(intersect(y,i)),s)
+    a=findfirst(y->issubset(r,y),s2)
+    if 2length(s2)!=length(s) || isnothing(a) continue end
+    j=setdiff(s2[a],r)
+    s1=sort(unique(map(x->setdiff(x, i), s1)))
+    s2=sort(unique(map(x->setdiff(x, j), s2)))
+    if length(i)==1 i=i[1] end
+    if length(j)==1 j=j[1] end
+    if s1==s2 return vcat([[i, j]], factorset(s1)) end
+  end
+  if all(x->length(x)==1,s) 
+       [vcat(s...)]
+  else [s]
+  end
+end
+
+function unionsorted(a,b)
+  if !issorted(a) || !issorted(b) error() end
+  la=length(a)
+  lb=length(b)
+  res=empty(a)
+  res=similar(a,la+lb)
+  ai=bi=1
+  ri=0
+@inbounds while ai<=la || bi<=lb
+  if     ai>la res[ri+=1]=b[bi]; bi+=1
+  elseif bi>lb res[ri+=1]=a[ai]; ai+=1
+    else c=cmp(a[ai],b[bi])
+      if     c>0 res[ri+=1]=b[bi]; bi+=1
+      elseif c<0 res[ri+=1]=a[ai]; ai+=1
+      else res[ri+=1]=a[ai]; ai+=1; bi+=1
       end
     end
   end
-  [s]
+  resize!(res,ri)
 end
 
-LIMSubsetsSum = 10
-# l is a matrix and S a list of same length as a row of l.
-# Find subsets P of [1..Length(l)] such that Sum(l{P})=S.
-# in  addition, lv is a vector of same  length as l, v is a sub-multiset of
-# lv and the chosen subsets should satisfy lv{P}=v as multisets.
-function SubsetsSum(S, l, v, lv)
+const LIMSubsetsSum=10
+# l is a matrix and S a list length size(l,1).
+# Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
+# In  addition, lv is a vector of  length size(l,1), v is a sub-multiset of
+# lv and P should satisfy tally(lv[P])=tally(v).
+function SubsetsSum(S, l::AbstractMatrix, v::Vector{T}, lv::Vector{T})where T
 # println("S=$S;l=$l;v=$v;lv=$lv")
-  function sievev(good, v)
-    local i, p
+  function sievev(good::Vector{Int}, v::Vector{T})::Vector{T}
+    v=copy(v)
     for i in good
       p=findfirst(==(lv[i]),v)
       if isnothing(p) return empty(v) end
-      v=v[filter(i->i!=p,1:length(v))]
+      deleteat!(v,p)
     end
     v
   end
-  c = 0
-  found = 0
-  # s assumed to be in P at this stage
-  # S= initial S minus Sum(l{s})
-  # t= remaining elements of eachindex(l) which could be in P
+  c=0
+  found=0
+  # s assumed to be a subset of sought P at this stage
+  # S= initial S minus sum(l[s,:];dims=1)
+  # t= remaining elements of axes(l,1) which could be in P
   # nonsolved= indices of nonsolved entries of S
   # v= remaining v to match
-  inner = function (S, s, t, nonsolved, v, factor)
+  function inner(S, s::AbstractVector{Int}, t::AbstractVector{Int}, 
+    nonsolved::AbstractVector{Int}, v::Vector{T}, factor)
     local bad, good, p, sols, res, i, sol, f, ll, solved
-  # Print("#solved=",Length(l[1])-Length(nonsolved)," ",Join(s),"=>",Join(t),
-  #       " v=",Join(List(Collected(v),x->Join(x,":"))," "),"\n");
+#   println("#solved=",size(l,1)-length(nonsolved)," ",join(s),"=>",join(t),
+#         " v=",join(map(x->join(x,":"),tally(v))," "))
     c+=1
-    if mod(c, 1000) == 0
+    if c%1000==0
       InfoChevie("# ",factor,": xcols:",length(nonsolved)-1," xrows:",length(t),
                  " found:", found, "\n")
     end
-    t = filter(i->lv[i] in v,t)
-    if length(t) == 0
+    t=filter(i->lv[i] in v,t)
+    if isempty(t)
       if iszero(S) found+=1
-          return [[]]
-      else return []
+         return [Int[]]
+      else return Vector{Int}[]
       end
     end
-    ll=map(i->Dict{Symbol,Any}(:pos=>i,:cand=>filter(j->l[j][i]!=0,t)),nonsolved)
-    sort!(ll,by=x->length(x[:cand]))
-    if length(ll[1][:cand])>LIMSubsetsSum ll = [ll[1]]
-    else ll=filter(x->length(x[:cand])<=LIMSubsetsSum,ll)
+    ll=map(i->(pos=i,cand=filter(j->l[j,i]!=0,t),sols=Vector{Int}[]),nonsolved)
+    sort!(ll,by=x->length(x.cand))
+    if length(ll[1].cand)>LIMSubsetsSum ll=[ll[1]]
+    else ll=filter(x->length(x.cand)<=LIMSubsetsSum,ll)
     end
-    solved = Int[]
-    good = Int[]
-    bad = Int[]
+    solved=Int[]
+    good=Int[]
+    bad=Int[]
     for p in ll
-     p[:sols]=filter(e->sum(getindex.(l[e],p[:pos]))==S[p[:pos]],combinations(p[:cand]))
-      if length(p[:sols])==0 return []
-      elseif length(p[:sols]) == 1 push!(solved, p[:pos])
+      append!(p.sols,filter(e->sum(l[e,p.pos])==S[p.pos],combinations(p.cand)))
+      if length(p.sols)==0 return Vector{Int}[]
+      elseif length(p.sols)==1 push!(solved,p.pos)
       end
-      if sum(length,p[:sols])>0
-        good=union(good,intersect(p[:sols]...)) #lines part of any solution
-        bad=union(bad, setdiff(p[:cand], union(p[:sols])))#part of no solution
+      if sum(length,p.sols)>0
+       good=unionsorted(good,intersect(p.sols...)) #lines part of any solution
+        bad=unionsorted(bad,setdiff(p.cand, union(p.sols)))#part of no solution
       else
-        bad=union(bad,p[:cand]) #part of no solution
+        bad=unionsorted(bad,p.cand) #part of no solution
       end
     end
-    nonsolved = setdiff(nonsolved, solved)
-    if length(good) + length(bad) > 0 #progress
-      return map(r->vcat(good, r), inner(S - sum(l[good]), union(s, good),
-         setdiff(t, union(good, bad)), nonsolved, sievev(good, v), factor))
-    else
-      res = []
-      p = maximum(map(x->length(x[:cand]),ll))
-      p = ll[findfirst(x->length(x[:cand])==p,ll)]
-      f = length(p[:sols])
-      nonsolved = setdiff(nonsolved, [p[:pos]])
-      InfoChevie("# ", factor, ": xcols:", length(nonsolved), " xrows:",
-         length(t)," in comb(",length(p[:cand]),")==>", length(p[:sols]), "\n")
-      for sol = p[:sols]
-        good = sol
-        bad = setdiff(p[:cand], sol)
-        if isempty(intersect(good, bad))
-           append!(res, map(r->vcat(good,r),
-            inner(isempty(l[good]) ? S : S-sum(l[good]),union(s, good),
-          setdiff(t, union(good, bad)), nonsolved, sievev(good, v),
-          string(factor, ":", f))))
-        end
-        f-=1
-      end
-      return res
+    nonsolved=setdiff(nonsolved, solved)
+    if length(good)+length(bad)>0 #progress
+      return map(r->vcat(good, r), inner(S-vec(sum(l[good,:];dims=1)), 
+      unionsorted(s,good),setdiff(t,unionsorted(good,bad)),nonsolved,sievev(good,v),factor))
     end
+    res=Vector{Int}[]
+    p=argmax(x->length(x.cand),ll)
+    f=length(p.sols)
+    nonsolved=setdiff(nonsolved, [p.pos])
+    InfoChevie("# ", factor, ": xcols:", length(nonsolved), " xrows:",
+       length(t)," in comb(",length(p.cand),")==>", length(p.sols), "\n")
+    for sol in p.sols
+      good=sol
+      bad=setdiff(p.cand, sol)
+      if isempty(intersect(good, bad))
+         append!(res, map(r->vcat(good,r),
+       inner(S-vec(sum(l[good,:];dims=1)),unionsorted(s, good),
+        setdiff(t, unionsorted(good, bad)), nonsolved, sievev(good, v),
+        string(factor, ":", f))))
+      end
+      f-=1
+    end
+    return res
   end
-  return inner(S, [], 1:length(l), 1:length(S), v, "")
+  inner(S, Int[], axes(l,1), eachindex(S), v, "")
 end
 
 positive(p::CycPol)=all(>(0),values(p.v))
@@ -553,7 +573,7 @@ function Base.show(io::IO,s::Series)
     print(io,"Series($(s.spets),$(s.levi),$(s.cuspidal),$(s.d))")
     return
   end
-  cname = charnames(io,UnipotentCharacters(s.levi))[s.cuspidal]
+  cname=charnames(io,UnipotentCharacters(s.levi))[s.cuspidal]
   n=repl || tex ? "\\lambda" : "c"
   quad=tex ? "\\quad" : " "
   if s.spets == s.levi
@@ -924,10 +944,10 @@ function char_numbers(s::Series)
   ud=foo(:dims).*Uch.CycPolUnipotentDegrees(s.spets)[foo(:charNumbers)].*foo(:eps)
   t=maximum(degree.(ud))
   function c(p)
-   pp=p(Pol())
+    pp=p(Pol())
     vcat(fill(0,pp.v),pp.c,fill(0,max(0,t-degree(p))))
   end
-  v = SubsetsSum(improve_type(c(degree(s))), improve_type(map(c, ud)),
+  v = SubsetsSum(improve_type(c(degree(s))), improve_type(toM(map(c, ud))),
                  improve_type(WGLdims(s)), foo(:dims))
   InfoChevie("# ", length(v), " found\n")
   if length(v)>10000
@@ -964,7 +984,7 @@ function char_numbers(s::Series)
     v=filter(a->c[:,foo(:charNumbers,a)]*(foo(:dims,a).*foo(:eps,a))==t,v)
   end
   if length(v)>1
-    ChevieErr(s," ",join(FactorsSet(map(x->foo(:charNumbers,x),v)),"x"),
+    ChevieErr(s," ",join(factorset(map(x->foo(:charNumbers,x),v)),"x"),
               " chars candidates: using RLG\n")
     if isnothing(RLG(s)) return nothing end
     v=filter(l->all(i->RLG(s).v[foo(:charNumbers,i)]!=0,l),v)

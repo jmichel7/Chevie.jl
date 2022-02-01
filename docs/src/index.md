@@ -342,6 +342,7 @@ QuasiIsolatedRepresentatives(::FiniteCoxeterGroup)
 is_isolated
 torsion_subgroup
 algebraic_centre
+weightinfo
 centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
 SScentralizer_reps
 StructureRationalPointsConnectedCentre
