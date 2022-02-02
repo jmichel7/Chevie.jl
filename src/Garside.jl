@@ -362,7 +362,7 @@ complements `d^-1*elts[1],…`
 """
 function leftgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N};
       complements=false) where {T,N}
-  x=copy(one(M))
+  x=copy(one(M)) # copy because of the mul! later
   found=true
   while found
     found=false
@@ -1173,7 +1173,8 @@ end
 #  \(M,δad(M,r,b.pd),l.elm[1])*clone(b,l.elm[2:end])
 #end
 
-Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=inv(y.M(r))*(y*F(r))
+#Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=inv(y.M(r))*(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F::Function) where T=inv(y.M(r))*(y*F(r))
 
 Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
@@ -1681,7 +1682,8 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
     while true # find the history under sliding of (a,x)
       push!(f,(y,x))
       r=preferred_prefix(y,F)
-      x=\(M,r,*(M,x,preferred_prefix(^(y,x,F),F)))
+  #   x=\(M,r,*(M,x,preferred_prefix(^(y,x,F),F))) # why simples?
+      x=(inv(M(r))*M(x)*M(preferred_prefix(^(y,x,F),F)))[1]
       if x==one(M) return [one(M)] end
       y=^(y,r,F)
       p=findfirst(==((y,x)),f)
