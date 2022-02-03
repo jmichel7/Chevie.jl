@@ -164,23 +164,21 @@ function coroot(root::Vector,eigen::Number=-1)
 end
 
 """
-`reflection(root, coroot)::Matrix` the reflection of given root and coroot
+`reflection(root, coroot)` the reflection of given root and coroot
 
-A  (complex) reflection in `GL(V)`, the linear group of a vector space over
-a subfield of the complex numbers, is a map `s` of finite order whose fixed
-points  are  a  hyperplane  `H`  (the  *reflecting  hyperplane* of `s`); an
+A (complex) reflection is a finite order element `s` of `GL(V)`, the linear
+group of a vector space over a subfield of the complex numbers, whose fixed
+points  form  a  hyperplane  `H`  (the  *reflecting hyperplane* of `s`); an
 eigenvector  `r` for  the non-trivial  eigenvalue `ζ`  (a root of unity) is
-called  a *root* of `s`. If we choose a linear form `rᵛ` (called a *coroot*
-of `s`) defining `H` such that `rᵛ(r)=1-ζ` then the linear map `s` is given
-by `x↦x-rᵛ(x)r`.
+called  a *root* of `s`. If we choose  a linear form `rᵛ` defining `H` such
+that `rᵛ(r)=1-ζ` (a *coroot* of `s`) then `s` is given by `x↦ x-rᵛ(x)r`.
 
-A  way of specifying a  reflection is by giving  a root and a coroot, which
-are  uniquely determined by the reflection up to multiplication of the root
-by  a  scalar  and  of  the  coroot  by  the  inverse  scalar. The function
-`reflection`  gives  the  matrix  of  the  corresponding  reflection in the
-standard  basis of `V`, where the `root` and the `coroot` are vectors given
-in  the standard  bases of  `V` and  `Vᵛ`, so  that `rᵛ(r)`  is obtained as
-`permutedims(root)*coroot`.
+A  way  of  specifying  `s`  is  by  giving  a root and a coroot, which are
+uniquely determined by `s` up to multiplication of the root by a scalar and
+of  the coroot by  the inverse scalar.  The function `reflection` gives the
+matrix  of the corresponding reflection in the standard basis of `V`, where
+the  `root` and the `coroot` are vectors given in the standard bases of `V`
+and `Vᵛ`, so the pairing `rᵛ(r)` is obtained as `permutedims(root)*coroot`.
 
 ```
 julia> r=reflection([1,0,0],[2,-1,0])
@@ -202,14 +200,31 @@ julia> [1 0 0]*r
 1×3 Matrix{Int64}:
  -1  0  0
 ```
-As  we see in the last lines, in our package the matrices operate an `V` as
-row vectors and on `Vᵛ` as column vectors
+As  we see in the last lines, in  Julia a matrix operates from the right on
+the  vector space `V`  of row vectors  and from the  left on the dual space
+`Vᵛ` of column vectors.
 """
 function reflection(root::AbstractVector,coroot::AbstractVector)
   root,coroot=promote(root,coroot)
   m=[i*j for i in coroot, j in root]
   one(m)-m
 end
+
+"""
+`reflection(r, ζ=-1)` 
+
+returns the matrix of the complex reflection determined by the root `r` and
+the  eigenvalue `ζ` when the  vector space and its  dual are identified via
+the  scalar product `<x,y>=permutedims(x)*y`; the coroot `rᵛ` is then equal
+to the linear form `x->(1-ζ)<x,r>/<r,r>`.
+"""
+function reflection(r::AbstractVector,l::Number=-1)
+  rbar=galois.(r,-1)
+  c=(1-l)*rbar//(rbar*r);
+  M=toM(map(i->i*r,c))
+  one(M)-M
+end
+
 #------------------------------------------------------------------------
 @GapObj struct TypeIrred end
 
