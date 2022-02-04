@@ -12,7 +12,7 @@ export
   getp, @GapObj, # helpers for GapObjs
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, # formatting
-  factor, prime_residues, divisors, phi, primitiveroot #number theory
+  factor, prime_residues, divisors, φ, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
@@ -418,12 +418,6 @@ function TeX(x;p...)
 end
 
 #----------------------- Number theory ---------------------------
-" the numbers less than n and prime to n "
-function prime_residues(n)
-  if n==1 return [0] end
-  filter(i->gcd(n,i)==1,1:n-1) # inefficient
-end
-
 import Primes
 const dict_factor=Dict(2=>Primes.factor(Dict,2))
 """
@@ -432,31 +426,39 @@ make `Primes.factor` fast for small Ints by memoizing it
 """
 factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
 
+" `prime_residues(n)` the numbers less than `n` and prime to `n` "
+function prime_residues(n)
+  if n==1 return [0] end
+  pp=trues(n)
+  for p in keys(factor(n))
+    pp[p:p:n].=false
+  end
+  (1:n)[pp]
+end
+
+" `divisors(n)` the list of divisors of `n`."
 function divisors(n::Integer)::Vector{Int}
   if n==1 return [1] end
   sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
 end
 
-" the Euler function ϕ "
-phi(m::Integer)=Primes.totient(m)
-
 """
-  primitiveroot(m::Integer) a primitive root mod. m,
-  that is it generates multiplicatively prime_residues(m).
-  It exists if m is of the form 4, 2p^a or p^a for p prime>2.
+  `primitiveroot(m::Integer)` a primitive root `mod. m`,
+  that is generating multiplicatively `prime_residues(m)`.
+  It exists if `m` is of the form `4`, `2p^a` or `p^a` for `p` prime>2.
 """
 function primitiveroot(m::Integer)
- if m==2 return 1
- elseif m==4 return 3
- end
- f=factor(m)
- nf=length(keys(f))
- if nf>2 return nothing end
- if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
- if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
- p=phi(m)
- 1+findfirst(x->powermod(x,p,m)==1 && 
-             all(d->powermod(x,d,m)!=1,divisors(p)[2:end-1]),2:m-1)
+  if m==2 return 1
+  elseif m==4 return 3
+  end
+  f=factor(m)
+  nf=length(keys(f))
+  if nf>2 return nothing end
+  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
+  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
+  p=Primes.totient(m) # the Euler φ
+  1+findfirst(x->powermod(x,p,m)==1 && 
+            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
 end
 
 #--------------------------------------------------------------------------

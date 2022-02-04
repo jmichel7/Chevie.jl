@@ -276,9 +276,9 @@ const LIMSubsetsSum=10
 # Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
 # In  addition, lv is a vector of  length size(l,1), v is a sub-multiset of
 # lv and P should satisfy tally(lv[P])=tally(v).
-function SubsetsSum(S, l::AbstractMatrix, v::Vector{T}, lv::Vector{T})where T
+function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector)
 # println("S=$S;l=$l;v=$v;lv=$lv")
-  function sievev(good::Vector{Int}, v::Vector{T})::Vector{T}
+  function sievev(good::Vector{Int}, v)
     v=copy(v)
     for i in good
       p=findfirst(==(lv[i]),v)
@@ -295,7 +295,7 @@ function SubsetsSum(S, l::AbstractMatrix, v::Vector{T}, lv::Vector{T})where T
   # nonsolved= indices of nonsolved entries of S
   # v= remaining v to match
   function inner(S, s::AbstractVector{Int}, t::AbstractVector{Int}, 
-    nonsolved::AbstractVector{Int}, v::Vector{T}, factor)
+    nonsolved::AbstractVector{Int}, v::Vector, factor)
     local bad, good, p, sols, res, i, sol, f, ll, solved
 #   println("#solved=",size(l,1)-length(nonsolved)," ",join(s),"=>",join(t),
 #         " v=",join(map(x->join(x,":"),tally(v))," "))
@@ -873,7 +873,7 @@ function canfromdeg(s::Series)
   ad=count(!isone,relative_degrees(s.levi, s.d))
   ud=Uch.CycPolUnipotentDegrees(s.spets)
   cand=filter(i->ad==valuation(ud[i],s.d),1:length(ud))
-# now use that   S_\phi(q)=\eps_\phi Deg(RLG(λ))/Deg(γ_\phi)
+# now use that S_φ(q)=ε_φ Deg(RLG(λ))/Deg(γ_φ)
   cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
   cand=filter(c->positive(c[:sch]),cand)
   q=Mvp(:q)
@@ -948,7 +948,7 @@ function char_numbers(s::Series)
     vcat(fill(0,pp.v),pp.c,fill(0,max(0,t-degree(p))))
   end
   v = SubsetsSum(improve_type(c(degree(s))), improve_type(toM(map(c, ud))),
-                 improve_type(WGLdims(s)), foo(:dims))
+                 improve_type(WGLdims(s)), improve_type(foo(:dims)))
   InfoChevie("# ", length(v), " found\n")
   if length(v)>10000
     InfoChevie("# ", length(v), " combinations sum to dimRLG\n")
@@ -1107,8 +1107,6 @@ function getHecke(s)
     if t.orbit[1].series==:B && t.orbit[1].rank==2 && t.twist==perm"(1,2)"
       t.orbit[1].cartanType=E(8)-E(8, 3)
     end
-    ds(t)
-    ds(t.orbit[1])
     g=reflection_group(t)
     if isnothing(g) return nothing end
     W=Group(s.spets)
@@ -1134,7 +1132,7 @@ function getHecke(s)
     s1=Series(g, l, c, (s.d/scal).r;NC=true)
     p=getHecke(s1)
     if !isnothing(p)
-      p=map(x->x(q=inv(Cyc(scal))*Mvp(:q)),p)
+      p=map(x->x(q=Cyc(inv(scal))*Mvp(:q)),p)
     end
     return p
   else

@@ -727,7 +727,7 @@ function PermRoot.parabolic_reps(WF::CoxeterCoset,s)
 end
 
 PermRoot.parabolic_reps(WF::Spets,s)=if !isone(WF.phi) error() else
-  parabolic_reps(Group(WF)) end
+  parabolic_reps(Group(WF),s) end
 
 PermRoot.Diagram(W::Spets)=Diagram.(refltype(W))
 

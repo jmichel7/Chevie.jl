@@ -1977,7 +1977,7 @@ Base.hash(a::TPMSimple, h::UInt)=hash(a.v,hash(a.t,hash(a.M,h)))
 
 Base.copy(a::TPMSimple)=TPMSimple(copy(a.v),a.t,a.M)
 
-Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:TPMSimple=inv(y.M(r))*(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F::Function) where T<:TPMSimple=inv(y.M(r))*(y*F(r))
 
 function Base.show(io::IO,r::TPMSimple)
   if r.t print(io,"t") end

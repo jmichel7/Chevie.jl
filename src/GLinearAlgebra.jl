@@ -16,7 +16,7 @@ using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
 using ..Util: toM, toL
-using ..PermRoot: improve_type
+using ..Tools: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   ratio, schur_functor, charpoly, solutionmat, transporter, 
   permanent, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,

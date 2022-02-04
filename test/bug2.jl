@@ -1,12 +1,12 @@
 using BenchmarkTools
 using UsingMerge
-if false # @btime sort(v,by=first) differs dramatically whether true/false
+if true # @btime sort(v,by=first) differs dramatically whether true/false
 degree(a::Number)=0; export degree
 println(names(UsingMerge))
 include("../src/Combinat.jl");using .Combinat
 include("../src/Perms.jl");@usingmerge verbose=true Perms
 include("../src/Util.jl");using .Util
-include("../src/Pols.jl");@usingmerge verbose=true Pols
+using LaurentPolynomials
 else
 using Gapjm
 end

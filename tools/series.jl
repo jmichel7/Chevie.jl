@@ -215,9 +215,9 @@ function nrconjecture(W)
     end
     p = First(reverse(e), (i->begin mod(i[1], d) == 0 end))
     if p != d
-        if length(RelativeDegrees(W, d)) * phi(d) != p[2] * phi(p[1])
-            print("**** failed: ", ReflectionName(W), p, d, "\n")
-        end
+      if length(RelativeDegrees(W,d))*Primes.totient(d)!=p[2]*Primes.totient(p[1])
+          print("**** failed: ", ReflectionName(W), p, d, "\n")
+      end
     end
   end
 end

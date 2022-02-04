@@ -827,6 +827,7 @@ end
 @test mytest("Semisimple.jl","C=algebraic_centre(L)","Dict{Symbol, Any} with 3 entries:\n  :descAZ => [[1, 2]]\n  :AZ     => SSGroup(SemisimpleElement{Root1}[<1,1,-1>])\n  :Z0     => SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[[1, 2, 1]])")
 @test mytest("Semisimple.jl","T=torsion_subgroup(C[:Z0],3)","SSGroup(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])")
 @test mytest("Semisimple.jl","sort(elements(T))","3-element Vector{SemisimpleElement{Root1}}:\n <1,1,1>\n <ζ₃,ζ₃²,ζ₃>\n <ζ₃²,ζ₃,ζ₃²>")
+@test mytest("Semisimple.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Vector} with 6 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[1, 1], [1, 0], [2, 1], [2, 0], [0, 1]]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[2//3, 1//3, 0//1, 0//1],…\n  :AdjointFundamentalGroup => [(1,2,12), (4,14)]")
 @test mytest("Semisimple.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Semisimple.jl","fundamental_group(W)","Group([(1,12,3,2)])")
 @test mytest("Semisimple.jl","W=rootdatum(:sl,4)","A₃")
@@ -888,6 +889,19 @@ end
 @test mytest("Symbols.jl","gendeg_symbol([[1,2],[1,5,6]])","q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2")
 @test mytest("Symbols.jl","tableaux([[2,1],[1]])","8-element Vector{Vector{Vector{Vector{Int64}}}}:\n [[[1, 2], [3]], [[4]]]\n [[[1, 2], [4]], [[3]]]\n [[[1, 3], [2]], [[4]]]\n [[[1, 3], [4]], [[2]]]\n [[[1, 4], [2]], [[3]]]\n [[[1, 4], [3]], [[2]]]\n [[[2, 3], [4]], [[1]]]\n [[[2, 4], [3]], [[1]]]")
 @test mytest("Symbols.jl","tableaux([2,2])","2-element Vector{Vector{Vector{Int64}}}:\n [[1, 2], [3, 4]]\n [[1, 3], [2, 4]]")
+end
+@testset "Tools.jl" begin
+@test mytest("Tools.jl","abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])","2-element Vector{Perm{Int16}}:\n (1,2)(6,7)\n (3,5,4)(6,7)")
+end
+@testset "Tools2.jl" begin
+@test mytest("Tools2.jl","W=CoxSym(5)","𝔖 ₅")
+@test mytest("Tools2.jl","blocks(W,2)","2-element Vector{Vector{Int64}}:\n [1, 3, 4, 5, 7]\n [2, 6]")
+@test mytest("Tools2.jl","blocks(W,3)","3-element Vector{Vector{Int64}}:\n [1, 5, 6]\n [2, 3, 7]\n [4]")
+@test mytest("Tools2.jl","blocks(W,7)","7-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7]")
+@test mytest("Tools2.jl","@Mvp x,y","nothing")
+@test mytest("Tools2.jl","factor(x^2-y^2+x+3y-2)","2-element Vector{Mvp{Int64, Int64}}:\n x-y+2\n x+y-1")
+@test mytest("Tools2.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
+@test mytest("Tools2.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
 end
 @testset "Uch.jl" begin
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")
@@ -1115,16 +1129,5 @@ end
 @test mytest("gendec.jl","W=rootdatum(\"psu\",6)","²A₅")
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from ²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to ²A₅\n\n    │ps ps A₂\n────┼─────────\n²A₅ │ .  .  .\n.3  │ 1  .  .\n3.  │ 1  .  .\n.21 │ 1  1  .\n1.2 │ 2  1  .\n21. │ 1  1  .\n2.1 │ 2  1  .\n.111│ .  1  1\n111.│ .  1  1\n1.11│ 1  2  1\n11.1│ 1  2  1")
-end
-@testset "mvptools.jl" begin
-@test mytest("mvptools.jl","@Mvp x,y","nothing")
-@test mytest("mvptools.jl","factor(x^2-y^2+x+3y-2)","2-element Vector{Mvp{Int64, Int64}}:\n x-y+2\n x+y-1")
-@test mytest("mvptools.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
-@test mytest("mvptools.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
-@test mytest("mvptools.jl","W=CoxSym(5)","𝔖 ₅")
-@test mytest("mvptools.jl","blocks(W,2)","2-element Vector{Vector{Int64}}:\n [1, 3, 4, 5, 7]\n [2, 6]")
-@test mytest("mvptools.jl","blocks(W,3)","3-element Vector{Vector{Int64}}:\n [1, 5, 6]\n [2, 3, 7]\n [4]")
-@test mytest("mvptools.jl","blocks(W,7)","7-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7]")
-@test mytest("mvptools.jl","abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])","2-element Vector{Perm{Int16}}:\n (1,2)(6,7)\n (3,5,4)(6,7)")
 end
 end

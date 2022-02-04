@@ -63,21 +63,18 @@ julia> CycPols.show_factors(24)
 """
 module CycPols
 
-export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial,eigmat
+export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
 # to use as a stand-alone module uncomment the next line
-# export roots
-import ..Gapjm: roots, gap
 
 using ModuleElts: ModuleElts, ModuleElt
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation
 using PuiseuxPolynomials: Mvp
-using ..CyclotomicNumbers: Root1, E, conductor, Cyc, order
-using ..GLinearAlgebra: charpoly
+using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using ..Combinat: collectby
-using ..Util: prime_residues, primitiveroot, phi, divisors, factor, 
+using ..Util: primitiveroot, divisors,
               stringexp, stringprime, format_coefficient, xprintln, stringind
-using ..PermRoot: improve_type
-import Primes: Primes, primes
+using ..Tools: improve_type
+import Primes: Primes, primes, totient # totient=Euler φ
 
 # The  computed  cyclotomic  polynomials  are  cached 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
@@ -145,16 +142,6 @@ Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
 CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
   ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check=false)) 
 
-# all the Root1 roots of c
-function roots(c::CycPol)
-  function f(e,m)
-    if m<0 error("should be a true polynomial") end
-    fill(e,m)
-  end
-  if isempty(c.v) return Root1[] end
-  vcat([f(e,m) for (e,m) in c.v]...)
-end
-
 Base.one(::Type{CycPol})=CycPol(1,0)
 Base.one(p::CycPol)=CycPol(one(p.coeff),0)
 Base.isone(p::CycPol)=isone(p.coeff) && iszero(p.valuation) && iszero(p.v)
@@ -209,10 +196,10 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
 # returns list of subsets of primitive_roots(d) wich have a `name` Φ_d^i
 function dec(d::Int)
   get!(dec_dict,d) do
-    dd=[prime_residues(d)]
+    dd=[CyclotomicNumbers.prime_residues(d)]
     if (r=primitiveroot(d))!==nothing
       for a in 0:1
-        push!(dd,sort(powermod.(r,(0:2:phi(d)-2).+a,d)))
+        push!(dd,sort(powermod.(r,(0:2:totient(d)-2).+a,d)))
       end
     end
     dd
@@ -311,14 +298,14 @@ function Base.show(io::IO,a::CycPol)
   if !isone(den) print(io,"/",den) end
 end
 
-# fields to test first: all n such that phi(n)<=12 except 11,13,22,26
+# fields to test first: all n such that totient(n)<=12 except 11,13,22,26
 const tested=[1,2,4,3,6,8,12,5,10,9,18,24,16,20,7,14,15,30,36,28,21,42]
 
 # list of i such that φᵢ/φ_(i∩ conductor))≤d, so a polynomial of
 # degree ≤d with coeffs in Q(ζ_conductor) could have roots power of ζᵢ
 function bounds(conductor::Int,d::Int)::Vector{Int}
   if d==0 return Int[] end
-  f=factor(conductor)
+  f=CyclotomicNumbers.factor(conductor)
   t=Vector{Int}[];t1=Vector{Int}[]
   local p
   for (p,m) in f
@@ -380,7 +367,7 @@ function CycPol(p::Pol{T};trace=false)where T
     while true
       np,r=LaurentPolynomials.pseudodiv(p,cyclotomic_polynomial(c))
       if iszero(r) 
-        append!(vcyc,[E(c,j)=>1 for j in (c==1 ? [0] : prime_residues(c))])
+        append!(vcyc,[E(c,j)=>1 for j in (c==1 ? [0] : CyclotomicNumbers.prime_residues(c))])
         p=(np.c[1] isa Cyc) ? np : Pol(np.c,0)
         if trace print("(d°$(degree(p))c$(conductor(p.c)))") end
         found=true
@@ -394,7 +381,7 @@ function CycPol(p::Pol{T};trace=false)where T
   testall=function(i)
     if eltype(p.c)<:Integer return false end # cannot have partial product
     found=false
-    to_test=prime_residues(i)
+    to_test=CyclotomicNumbers.prime_residues(i)
     while true 
       to_test=filter(r->iszero(p(E(i,r))),to_test)
       if isempty(to_test) return found end
@@ -402,7 +389,7 @@ function CycPol(p::Pol{T};trace=false)where T
       p=LaurentPolynomials.pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
       append!(vcyc,E.(i,to_test).=>1)
       if trace print("[d°$(degree(p))c$(conductor(p.c))]") end
-      if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
+      if degree(p)<div(totient(i),totient(gcd(i,conductor(p.c)))) return found end
     end
 #   for r in to_test
 #     while true 
@@ -412,7 +399,7 @@ function CycPol(p::Pol{T};trace=false)where T
 #         found=true
 #         push!(vcyc,E(i,r)=>1)
 #         if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$r)") end
-#         if degree(p)<div(phi(i),phi(gcd(i,conductor(p.c)))) return found end
+#         if degree(p)<div(totient(i),totient(gcd(i,conductor(p.c)))) return found end
 #       else break
 #       end
 #     end
@@ -421,7 +408,7 @@ function CycPol(p::Pol{T};trace=false)where T
 
   # first try commonly occuring fields
   for i in tested 
-    if degree(p)>=phi(i) testcyc(i) end
+    if degree(p)>=totient(i) testcyc(i) end
     if degree(p)>0 testall(i) end
     if degree(p)==0 return CycPol(coeff,val,ModuleElt(vcyc)) end
   end
@@ -499,16 +486,6 @@ function descent_of_scalars(p::CycPol,n)
   CycPol(coeff,valuation,ModuleElt(vcyc))
 end
     
-# export positive CycPols to GAP3
-function gap(p::CycPol)
-  if any(<(0),values(p.v)) error("non-positive") end
-  res=string("[",gap(p.coeff),",",p.valuation,",")
-  res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
-end
-
-" eigenvalues as Cycs of a matrix of finite order"
-eigmat(m)=roots(CycPol(Pol(charpoly(m))))
-
 # 281st generic degree of G34; p(Pol()) 2ms back to CycPol 14ms (gap3 10ms)
 const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 1//5=>1, 2//5=>1, 3//5=>1, 4//5=>1, 1//6=>4, 5//6=>4, 1//7=>1, 2//7=>1,

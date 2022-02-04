@@ -82,8 +82,8 @@ Util
 showtable
 cut
 prime_residues
-phi
 primitiveroot
+divisors
 ```
 # Combinatorics
 ```@docs

@@ -1,4 +1,4 @@
-# defines RG
+# defines RG()
 module Tests
 using Gapjm
 
@@ -1036,8 +1036,7 @@ function Tfeginduce(W,J)
     pred=hd*index
     found=(permutedims(ud)*t.scalar)[1,:]
     InfoChevie("  # R^{",W,"}_{",L,"}\n")
-    if pred!=found ChevieErr("quotient ",
-                map((a,b)->a*inv(b),CycPol.(pred),CycPol.(found)),"\n")
+    if pred!=found ChevieErr("quotients ",CycPol.(pred).//CycPol.(found),"\n")
     end
   end
 end
@@ -1049,12 +1048,12 @@ test[:feginduce]=(fn=Tfeginduce,applicable=x->true,
 
 function Tinvariants(W)
   ii=invariants(W)
-  vars=map(i->Mvp(Symbol("x",i)),1:rank(W))
-  ii=map(f->f(vars...),ii)*Int128(1)
+  vars=map(i->Symbol("x",i),1:rank(W))
+  ii=map(f->f(Mvp.(vars)...),ii)*Int128(1)
   InfoChevie("  #")
   for i in eachindex(ii), j in eachindex(gens(W))
     InfoChevie("W.",j,"*I",i,",")
-    if ii[i]^reflrep(W,i)!=ii[i]  ChevieErr("not invariant\n") end
+    if ^(ii[i],reflrep(W,i);vars)!=ii[i]  ChevieErr("not invariant\n") end
   end
   InfoChevie("\n")
 end

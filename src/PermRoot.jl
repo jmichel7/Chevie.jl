@@ -130,32 +130,10 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps,
  independent_roots, inclusion, inclusiongens, restriction, coroot, 
  hyperplane_orbits, TypeIrred, refleigen, reflchar, bipartite_decomposition,
  torus_order, rank, reflrep, PermX, coroots, baseX, invbaseX, semisimplerank,
- invariant_form, generic_order, parabolic_reps, invariants,improve_type, matY,
+ invariant_form, generic_order, parabolic_reps, invariants, matY,
  simpleroots, simplecoroots, action, radical, parabolic_closure, is_parabolic,
  central_action, nhyp, nref
 using ..Gapjm
-
-best_eltype(m)=reduce(promote_type,best_type.(m))
-best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
-best_eltype(p::Mvp)=iszero(p) ? Int : best_eltype(values(p.d))
-best_type(x)=typeof(x)
-best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : conductor(x)==1 ? 
-  best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
-best_type(x::Cyc{T}) where T<:Integer=conductor(x)==1 ? T : typeof(x)
-best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
-best_type(p::Pol)=Pol{best_eltype(p)}
-function best_type(q::Frac)
-  if isone(q.den) return best_type(q.num) end
-  Frac{promote_type(best_type(q.num), best_type(q.den))}
-end
-function best_type(p::Mvp{T,N}) where {T,N}
-  if iszero(p) return  Mvp{Int,Int} end
-  n=all(m->all(isinteger,values(m.d)),keys(p.d)) ? Int : N
-  Mvp{best_eltype(p),n}
-end
-  
-improve_type(m)=convert(best_type(m),m)
 
 # coroot for an orthogonal reflection
 function coroot(root::Vector,eigen::Number=-1)
@@ -1919,24 +1897,23 @@ Mvp{Cyc{Rational{Int64}}}: 0
 """
 function invariants(W)
   V=parent(W)
-  i=map(refltype(W)) do t
+  i=Function[] # eltype abstract otherwise I do not know how to do it
+  for t in refltype(W)
     H=reflection_group(t)
     if cartan(V,inclusion(W,t.indices))!=cartan(H)
       error("non standard Cartan matrix: invariants not implemented")
     end
     ir=independent_roots(H)
-    i=getchev(t,:Invariants)
-    if i==false return false end
-    map(f->function(arg...)
+    li=getchev(t,:Invariants)
+    if li==false return false end
+    append!(i,map(f->function(arg...)
          return f(improve_type(inv(E(1).*toM(coroots(H)[ir])//1)*
-    toM(coroots(V,inclusion(W,t.indices[ir]))))*collect(arg)...) end, i)
+    toM(coroots(V,inclusion(W,t.indices[ir]))))*collect(arg)...) end, li))
   end
-  if false in i return false end
-  i=vcat(i...)
-  N=toM(W.roots[independent_roots(W)])
+  N=toM(roots(W,independent_roots(W)))
   if !isempty(N)
     N=lnullspace(permutedims(N))
-    append!(i,map(v->function(arg...)return sum(v.*arg);end,N))
+    append!(i,map(v->function(arg...)return sum(v.*arg);end,toL(N)))
   end
   i
 end
