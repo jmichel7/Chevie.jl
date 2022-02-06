@@ -436,7 +436,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     g=Gcdex(A[r,r], A[r,r+1])
     A[r,r]=g.gcd
     A[r,r+1]=0
-    P[1:r+1,r:r+1]*=permutedims(g.coeff)
+    P[1:r+1,r:r+1]*=transpose(g.coeff)
     for j in r+2:m-1
       q=div(A[r,j], A[r,r])
       P[1:r+1,j]-=q.*P[1:r+1,r]
@@ -536,10 +536,10 @@ true
 function hermite(mat::AbstractMatrix{<:Integer};transforms=false,col=false)
   if col
     if transforms 
-      res=NormalFormIntMat(permutedims(mat);REDDIAG=true,ROWTRANS=true)
-      (normal=permutedims(res[:normal]), coltrans=permutedims(res[:rowtrans]), 
+      res=NormalFormIntMat(transpose(mat);REDDIAG=true,ROWTRANS=true)
+      (normal=transpose(res[:normal]), coltrans=transpose(res[:rowtrans]), 
        rank=res[:rank], signdet=get(res,:signdet,nothing))
-     else permutedims(NormalFormIntMat(permutedims(mat);REDDIAG=true)[:normal])
+     else transpose(NormalFormIntMat(transpose(mat);REDDIAG=true)[:normal])
     end
   else
     if transforms 
@@ -755,12 +755,12 @@ function SolutionIntMat(mat, v)
   norm=TriangulizedIntegerMatTransform(mat)
   t=norm[:rowtrans]
   rs=norm[:normal][1:norm[:rank],:]
-  M=vcat(rs, permutedims(v))
+  M=vcat(rs, transpose(v))
   r=TriangulizedIntegerMatTransform(M)
   if r[:rank]==size(r[:normal],1) || r[:rowtrans][end,end]!=1
       return false
   end
-  -permutedims(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]]
+  -transpose(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]]
 end
     
 """
@@ -788,12 +788,12 @@ function SolutionNullspaceIntMat(mat, v)
   kern=BaseIntMat(kern)
   t=norm[:rowtrans]
   rs=norm[:normal][1:norm[:rank],:]
-  M=vcat(rs, permutedims(v))
+  M=vcat(rs, transpose(v))
   r=TriangulizedIntegerMatTransform(M)
   if r[:rank]==size(r[:normal],1) || r[:rowtrans][end,end]!=1
       return [false, kern]
   end
-  [-permutedims(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]], kern]
+  [-transpose(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]], kern]
 end
 
 function DeterminantIntMat(mat)
@@ -901,7 +901,7 @@ function DiaconisGraham(m, moduli)
   if size(m,1)>0 && n!=size(m,2)
     error("DiaconisGraham(m,moduli): length(moduli) should equal size(m,2)")
   end
-  RowMod(m,moduli)=mod.(m,permutedims(moduli))
+  RowMod(m,moduli)=mod.(m,transpose(moduli))
   for i in 1:min(n,size(m,1)-1)
     l=m[i,i]
     if m[i,i] != 1

@@ -9,7 +9,7 @@ chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
   function(t)
     r=chevieget(t,:GeneratingRoots)
     eig=map(x->Root1(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
-    toL(toM(coroot.(r,eig))*permutedims(toM(r)))
+    toL(toM(coroot.(r,eig))*transpose(toM(r)))
   end)
 
 chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->

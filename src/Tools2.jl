@@ -96,7 +96,7 @@ function Util.factor(p::Mvp{T,N})where {T,N}
   else n=copy(m)
     m=m[echelon(m)[2],:] # independent lines
     if size(m,1)>2 return [p] end
-    t=permutedims(solutionmat(m,n))
+    t=transpose(solutionmat(m,n))
     m=solutionmat(t,m)
   end
   v=t*vcat(Mvp.(v),[Mvp(1)])

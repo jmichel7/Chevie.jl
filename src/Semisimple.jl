@@ -20,9 +20,9 @@ on  which `W` acts is a `ℤ`-basis of  `X`, and `Φ` is specified by a matrix
 of  `X`. Similarly `Φ^`  is described by  a matrix `simplecoroots(W)` whose
 lines  are the simple coroots in the basis  of `Y` dual to the chosen basis
 of  `X`. The duality pairing between `X` and `Y` is the canonical one, that
-is  the pairing between vectors `x∈ X`  and `y∈ Y` is given by `sum(x.*y)`.
-Thus, we must have the relation
-`simpleroots(W)*permutedims(simplecoroots(W))=cartan(W)`.
+is   the  pairing  between  vectors   `x∈  X`  and  `y∈   Y`  is  given  by
+`transpose(x)*y`. Thus, we must have the relation
+`simpleroots(W)*transpose(simplecoroots(W))=cartan(W)`.
 
 We  get that  by a  the function  `rootdatum`, whose  arguments are the two
 matrices `simpleroots(W)` and `simplecoroots(W)` described above. The roots
@@ -416,7 +416,7 @@ torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),T.gens))
 # use ss 1.2(1): Ker(1+m+m^2+...)/Im(m-Id)
 function FixedPoints(T::SubTorus,m)
 # @show T,m
-  n=map(z->solutionmat(toM(T.gens),permutedims(m)*z),T.gens) #action on subtorus
+  n=map(z->solutionmat(toM(T.gens),transpose(m)*z),T.gens) #action on subtorus
   if nothing in n || !all(isinteger,toM(n))
     error(m," does not stabilize ",T)
   end
@@ -429,7 +429,7 @@ function FixedPoints(T::SubTorus,m)
   m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
   # generates elements y of Y1⊗ ℚ such that (1-s)y\in Y1
   [SubTorus(T.group,fix*toM(T.gens)),
-   abelian_gens(map(v->SS(T.group,permutedims(Y1*toM(T.gens))*v),m))]
+   abelian_gens(map(v->SS(T.group,transpose(Y1*toM(T.gens))*v),m))]
 end
 
 """
@@ -494,7 +494,7 @@ function algebraic_centre(W)
   if iszero(semisimplerank(W))
     Z0=reflrep(W,one(W))
   else
-    Z0=leftnullspaceInt(permutedims(toM(simpleroots(W))))
+    Z0=leftnullspaceInt(transpose(toM(simpleroots(W))))
   end
   Z0=SubTorus(W,Z0)
   if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]
@@ -506,7 +506,7 @@ function algebraic_centre(W)
   if extended # compute fixed space of F0s in Y(T)
     for m in F0s
       AZ=filter(s->s/SS(W,m*map(x->x.r,s.v)) in Z0,AZ)
-      if rank(Z0)>0 Z0=FixedPoints(Z0,permutedims(m))
+      if rank(Z0)>0 Z0=FixedPoints(Z0,transpose(m))
         append!(AZ,Z0[2])
         Z0=Z0[1]
       end
@@ -520,10 +520,10 @@ function algebraic_centre(W)
   end
   AZ=Group(AZ)
   toAZ=function(s)
-    s=vec(permutedims(map(x->x.r,s.v))*toM(simplecoroots(W)))
-    s=permutedims(s)*
+    s=vec(transpose(map(x->x.r,s.v))*toM(simplecoroots(W)))
+    s=transpose(s)*
        inv(Rational.(toM(vcat(res[:Z0].complement,res[:Z0].gens))))
-    SS(W,vec(permutedims(vec(s)[1:semisimplerank(W)])*toM(res[:Z0].complement)))
+    SS(W,vec(transpose(vec(s)[1:semisimplerank(W)])*toM(res[:Z0].complement)))
   end
   ss=map(toAZ,gens(AZ))
   #println("AZ=$AZ")
@@ -920,16 +920,16 @@ Group([(1,3)(2,12)])
 """
 function intermediate_group(W,I)
   C=cartan(W)
-  w=permutedims(inv(C//1)); # w = weights in terms of roots
+  w=transpose(inv(C//1)); # w = weights in terms of roots
   R=one(w)
   for v in I
-    if isinteger(v) R=vcat(R,permutedims(w[v,:]))
-    else R=vcat(R,permutedims(sum(eachrow(w[v,:]))))
+    if isinteger(v) R=vcat(R,transpose(w[v,:]))
+    else R=vcat(R,transpose(sum(eachrow(w[v,:]))))
     end
   end
   d=lcm(denominator.(R))
   R=baseInt(Int.(d*R))//d
-  rootdatum(R^-1,C*permutedims(R))
+  rootdatum(R^-1,C*transpose(R))
 end
 
 """

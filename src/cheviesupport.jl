@@ -1,9 +1,9 @@
 # pirating extensions to get closer to GAP semantics
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=sum(a.*b)
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=transpose(a)*b
 Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(permutedims(a)*toM(b))[1]
+Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(transpose(a)*toM(b))[1]
 Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
-Base.:*(a::Tuple,b::AbstractVector)=toL(permutedims(collect(a))*toM(b))[1]
+Base.:*(a::Tuple,b::AbstractVector)=toL(transpose(collect(a))*toM(b))[1]
 Base.:+(a::AbstractArray,b::Number)=a .+ b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:-(a::AbstractVector,b::Number)=a .- b
@@ -91,8 +91,13 @@ KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=(a.^b)^b
+import Primes
+phi=Primes.totient
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
-RootInt(a,b=2)=floor(Int,a^(1/b)+0.0001)
+function RootInt(n,k=2)
+  res=floor(Int,n^(1/k))
+  if (res+1)^k<=n res+1 else res end
+end
 Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricDifference(x,y)=sort(symdiff(x,y))

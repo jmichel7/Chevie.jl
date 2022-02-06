@@ -307,7 +307,7 @@ function nconjugacy_classes(r::ClassType,WF,p)
     end
     mu=moebius(P)
     n=stabilizer(W,sort(inclusiongens(H)))
-    n = sum(mu.*l) // length(centralizer(n, HF.phi))
+    n=sum(mu.*l) // length(centralizer(n, HF.phi))
     InfoChevie("==>", n, "\n")
     n
   end

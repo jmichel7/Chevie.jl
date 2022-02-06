@@ -406,12 +406,12 @@ function QuotientAu(Au,chars)
   end
   Z=n->ComplexReflectionGroup(n,1,1)
 # println("Au=$Au chars=$chars")
-  ct=permutedims(CharTable(Au).irr[chars,:])
+  ct=transpose(CharTable(Au).irr[chars,:])
   cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))
 # println("ct=$ct cl=$cl")
   if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
                               :gens=>map(x->[x],eachindex(gens(Au)))) end
-  ct=permutedims(toM(unique!(sort(toL(ct)))))
+  ct=transpose(toM(unique!(sort(toL(ct)))))
 # println("ct=$ct")
 # k=Subgroup(Au,filter(x->position_class(Au,x) in cl,elements(Au)))
   k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
@@ -1099,7 +1099,7 @@ function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
   rowLabels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
-  showtable(io,permutedims(tbl),row_labels=rowLabels,col_labels=col_labels)
+  showtable(io,transpose(tbl),row_labels=rowLabels,col_labels=col_labels)
 end
 
 @GapObj struct XTable end
@@ -1204,7 +1204,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=XTable(Dict(
-    :scalar=>permutedims(cat(greenpieces...,dims=(1,2))^p),
+    :scalar=>transpose(cat(greenpieces...,dims=(1,2))^p),
     :uc=>uc,
     :Y=>^(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
     :relgroups=>getindex.(uc.springerseries,:relgroup),
@@ -1323,7 +1323,7 @@ Q_^.    │        0            0      0        0    0 0      0     0    q³⁄�
 """
 function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   t=GreenTable(XTable(uc;classes,q).prop)
-  m=cat(map(g->permutedims(CharTable(g).irr),t.relgroups)...;dims=(1,2))
+  m=cat(map(g->transpose(CharTable(g).irr),t.relgroups)...;dims=(1,2))
   t.scalar=m*t.scalar
   t.indices=Vector{Int}[]
   i=0
@@ -1433,7 +1433,7 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
     else append!(m,f[uw.harishChandra[ss[:hc]][:charNumbers]])
     end
   end
-  t.scalar=permutedims(toM(m))*t.scalar
+  t.scalar=transpose(toM(m))*t.scalar
   t
 end
 
@@ -1491,7 +1491,7 @@ function TwoVarGreen(W,L)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
       prod(x->q-x,r)/length(centralizer(RL,w))
     end
-    permutedims(tL.scalar[tL.indices[i],:])*
+    transpose(tL.scalar[tL.indices[i],:])*
     toM(HasType.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
   end
   oL=generic_order(L,q)
@@ -1566,7 +1566,7 @@ function special_pieces(uc)
   specialch=findall(iszero,ch.a-ch.b) # special characters of W
   specialc=first.(uc.springerseries[1][:locsys][specialch])
   sort!(specialc,by=c->-uc.classes[c].dimBu)
-  m=permutedims(incidence(uc.orderclasses))
+  m=transpose(incidence(uc.orderclasses))
   map(eachindex(specialc))do i
     p=m[specialc[i],:]
     for j in 1:i-1 p.&=.!m[specialc[j],:] end

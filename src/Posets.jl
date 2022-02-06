@@ -269,7 +269,7 @@ julia> reverse(p)
 """
 function Base.reverse(p::Poset)
   res=deepcopy(p)
-  if haskey(p,:incidence) res.incidence=permutedims(incidence(p)) end
+  if haskey(p,:incidence) res.incidence=transpose(incidence(p)) end
   if haskey(p,:hasse)
     res.hasse=map(empty,hasse(p))
     for i in 1:length(p), j in hasse(p)[i] push!(hasse(res)[j], i) end
@@ -347,7 +347,7 @@ function restricted(p::Poset,ind::AbstractVector{<:Integer})
   res
 end
 
-function checkl(ord::Matrix{Bool})
+function checkl(ord::AbstractMatrix{Bool})
   subl=Set(Vector{Bool}[])
   n=size(ord,1)
   for i in 1:n, j in 1:i-1
@@ -400,6 +400,6 @@ julia> is_meet_lattice(p)
 false
 ```
 """
-is_meet_lattice(P::Poset)=checkl(permutedims(incidence(P)))
+is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))
 
 end

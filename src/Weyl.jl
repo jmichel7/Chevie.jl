@@ -439,10 +439,9 @@ function Gapjm.roots(C::Matrix)
     end
     j+=1
   end
-  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x))
-  else R
-  end
-  # important roots are sorted as in CHEVIE for data (KLeftCells) to work
+  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) end
+  # important that roots are sorted as in CHEVIE for e.g. KLeftCells to work
+  R
 end
 
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
@@ -799,7 +798,7 @@ coxgroup()=torus(0)
 
 #reflection representation in the basis of rootdec
 #function reflrep(W::FCG,w)
-#  vcat(permutedims(hcat(roots.(Ref(W),(1:ngens(W)).^w)...)))
+#  vcat(transpose(hcat(roots.(Ref(W),(1:ngens(W)).^w)...)))
 #end
 
 # root lengths for parent group
@@ -988,8 +987,9 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   rootdec=isempty(C) ? Vector{T1}[] : roots(C)
   rootdec=vcat(rootdec,-rootdec)
   if isempty(rootdec) inclusion=Int[]
-  else inclusion=map(rootdec)do r
-    findfirst(==(sum(r.*W.rootdec[I])),W.rootdec)
+  else m=transpose(toM(W.rootdec[I]))
+    inclusion=map(rootdec)do r
+      findfirst(==(m*r),W.rootdec)
     end
   end
   restriction=zeros(Int,2*W.N)

@@ -22,8 +22,8 @@ export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition,
   permanent, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
   intersect_rowspace
 
-echelon!(m::Matrix{<:Integer})=echelon!(m*1//1)
-echelon!(m::Matrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
+echelon!(m::AbstractMatrix{<:Integer})=echelon!(m*1//1)
+echelon!(m::AbstractMatrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
 
 """
     `echelon!(m)`
@@ -35,7 +35,7 @@ echelon!(m::Matrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
   element is also the only non-zero in its column.
   works in any field.
 """
-function echelon!(m::Matrix)
+function echelon!(m::AbstractMatrix)
   rk=0
   inds=collect(axes(m,1))
   for k in axes(m,2)
@@ -72,7 +72,7 @@ end
   The second element of `echelon` is the indices of a subset of the rows
   which forms a basis of the row space.
 """
-function echelon(m::Matrix)
+function echelon(m::AbstractMatrix)
   m=copy(m)
   m,ind=echelon!(m)
   m=m[1:count(!iszero,eachrow(m)),:]
@@ -89,7 +89,7 @@ rank(m::Matrix)=length(echelon(m)[2])
  computes right nullspace of m in a type_preserving way
  not exported to avoid conflict with LinearAlgebra
 """
-function nullspace(m::Matrix)
+function nullspace(m::AbstractMatrix)
   m=echelon(m)[1]
   n=size(m)[2]
   z=Int[]
@@ -113,7 +113,7 @@ function nullspace(m::Matrix)
 end
 
 " `lnullspace(m)`: left nullspace of `m`"
-lnullspace(m)=permutedims(nullspace(permutedims(m)))
+lnullspace(m)=transpose(nullspace(transpose(m)))
 
 "sum of the rowspaces of matrices m and n"
 sum_rowspace(m::Matrix,n::Matrix)=echelon(vcat(m,n))[1]
@@ -235,7 +235,7 @@ julia> L
  0            0   0            0     q⁶-q⁴-1+q⁻²  0
  0            0   0            0     0            q⁶-1
 
-julia> M==permutedims(P)*L*P
+julia> M==transpose(P)*L*P
 true
 ```
 """
@@ -243,17 +243,17 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
   L=one(M)
   P=one(M)
   block(X,i,j)=X[b[i],b[j]]
-  if M==permutedims(M)
+  if M==transpose(M)
     for j in eachindex(b)
       L[b[j],b[j]]=block(M,j,j)
       if j>1 L[b[j],b[j]]-=sum(k->block(P,j,k)*block(L,k,k)*
-                              permutedims(block(P,j,k)),1:j-1) end
+                              transpose(block(P,j,k)),1:j-1) end
       cb=comatrix(block(L,j,j))
       db=det(block(L,j,j))
       for i in j+1:length(b)
         P[b[i],b[j]]=block(M,i,j)
         if j>1 P[b[i],b[j]]-=
-          sum(k->block(P,i,k)*block(L,k,k)*permutedims(block(P,j,k)),1:j-1)
+          sum(k->block(P,i,k)*block(L,k,k)*transpose(block(P,j,k)),1:j-1)
         end
         P[b[i],b[j]]=improve_type((block(P,i,j)*cb).//db)
       end
@@ -263,7 +263,7 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
   tP=one(M)
   for j in eachindex(b)
     L[b[j],b[j]]=block(M,j,j)-sum(k->block(P,j,k)*block(L,k,k)*
-                                  permutedims(block(P,j,k)),1:j-1)
+                                  transpose(block(P,j,k)),1:j-1)
     cb=comatrix(block(L,j,j))
     db=det(block(L,j,j))
     for i in j+1:length(b)
@@ -447,8 +447,8 @@ end
 """
 `solutionmat(mat,v)`
 
-returns one solution of the equation `permutedims(x)*mat=permutedims(v)` or
-`nothing` if no such solution exists. Similar to `permutedims(mat)\\v` when
+returns  one  solution  of  the equation `transpose(x)*mat=transpose(v)` or
+`nothing`  if no such solution  exists. Similar to `transpose(mat)\\v` when
 `mat` is invertible
 
 ```julia-repl
@@ -461,7 +461,7 @@ julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, 20, -10])
 ```
 """
 function solutionmat(m,v::AbstractVector)
-  m=permutedims(m).//1
+  m=transpose(m).//1
   if length(v)!=size(m,1) error("dimension mismatch") end
   v=v.//1
   r=0

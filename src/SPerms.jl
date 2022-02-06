@@ -282,7 +282,7 @@ end
 
 function Base.:^(m::AbstractMatrix,a::SPerm;dims=1)
   if dims==1 hcat(map(c->c^a,eachcol(m))...)
-  elseif dims==2 permutedims(hcat(map(c->c^a,eachrow(m))...))
+  elseif dims==2 transpose(hcat(map(c->c^a,eachrow(m))...))
   elseif dims==(1,2) hcat(map(c->c^a,eachcol(m))^a...)
   end
 end

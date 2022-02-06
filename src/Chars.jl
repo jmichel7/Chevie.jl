@@ -731,7 +731,7 @@ julia> detPerm(W)
 function detPerm(W)
   get!(W,:detPerm)do
     t=CharTable(W).irr
-    Perm(t,t.*permutedims(t[charinfo(W).positionDet,:]);dims=1)
+    Perm(t,t.*transpose(t[charinfo(W).positionDet,:]);dims=1)
   end
 end
 

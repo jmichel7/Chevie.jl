@@ -124,6 +124,12 @@ arguments of function calls. Instead, they are stored in the presentation.
 plural(n,w)=string(n)*" "*w*(n==1 ? "" : "s")
 
 #------------------ Abstract Words ----------------------------------
+"""
+An  `AbsWord` is an abstract word in  some generators, that is a product of
+some  of  these  generators  raised  to  positive  or  negative powers. The
+generators are indexed by `Symbols` in the julia implementation (as a
+`Vector{Pair{Symbol,Int}}`)
+"""
 struct AbsWord 
   d::Vector{Pair{Symbol,Int}}
   function AbsWord(v::Vector{Pair{Symbol,Int}};check=true)
@@ -145,7 +151,13 @@ struct AbsWord
   end
 end
 
-"A positive `AbsWord` is obtained by giving `Symbols` as arguments"
+"""
+A positive `AbsWord` is obtained by giving `Symbols` as arguments
+```julia-repl
+julia> AbsWord(:b,:a,:a,:b)
+ba²b
+```
+"""
 AbsWord(x::Symbol...)=AbsWord([s=>1 for s in x])
 
 "`@AbsWord x,y,z` defines the variables `x,y,z` to be `AbsWord`s"
@@ -297,7 +309,7 @@ end
 Base.getindex(T::TietzeStruct,i)=T.inverses[T.numgens+1-i]
 Base.setindex!(T::TietzeStruct,j,i)=T.inverses[T.numgens+1-i]=j
 
-# sorts by length relators after removing the empty ones
+# sorts by length relators and remove duplicates and empty ones
 function Base.sort!(T::TietzeStruct)
   p=sortperm(T.relators,by=length)
   T.relators=T.relators[p]

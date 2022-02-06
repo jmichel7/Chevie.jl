@@ -264,7 +264,7 @@ function valuation_gendeg_symbol(p)
   e=length(p)
   p=sort!(reduce(vcat,p))
   m=length(p)
-  sum(p.*(m-1:-1:0))-div(m*(m-e)*(2*m-3-e),12*e)
+  transpose(p)*(m-1:-1:0)-div(m*(m-e)*(2*m-3-e),12*e)
 end
 
 """
@@ -287,7 +287,7 @@ function degree_gendeg_symbol(p)
   if mod(m,e)==1 r=div(e*r*(r+1),2)
   else           r+= div(e*r*(r-1),2)
   end
-  r+sum(p.*(0:m-1))-sum(x->div(e*x*(x+1),2),p)-div(m*(m-e)*(2*m-3-e),12*e)
+  r+transpose(p)*(0:m-1)-sum(x->div(e*x*(x+1),2),p)-div(m*(m-e)*(2*m-3-e),12*e)
 end
 
 """
@@ -324,7 +324,7 @@ function degree_fegsymbol(s)
   if d==1 res=div(e*r*(r+1),2)
   else    res=div(e*r*(r-1),2)+r
   end
-  res+=e*sum(S->sum(S.*(0:length(S)-1))-sum(l->div(l*(l+1),2),S),
+  res+=e*sum(S->transpose(S)*(0:length(S)-1)-sum(l->div(l*(l+1),2),S),
                filter(!isempty,s))
   gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
@@ -349,7 +349,7 @@ function valuation_fegsymbol(s)
   d=defectsymbol(s)
   if !(d in [0,1]) return -1 end
   e=length(s)
-  res=e*sum(S->sum(S.*(length(S)-1:-1:0)),filter(!isempty,s))
+  res=e*sum(S->transpose(S)*(length(S)-1:-1:0),filter(!isempty,s))
   gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
   else res+=minimum(gamma.(0:e-1))
@@ -569,7 +569,7 @@ function gendeg_symbol(S)
   if e==0 return one(CycPol) end
   m=div(sum(sh),e)
   d=sum(sh)% e
-  defect=(binomial(e,2)*m-sum(sh.*(0:e-1)))%e
+  defect=(binomial(e,2)*m-transpose(sh)*(0:e-1))%e
   function theta(S)
     if iszero(sum(S)) return one(CycPol) end
     prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)

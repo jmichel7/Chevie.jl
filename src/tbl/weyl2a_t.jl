@@ -33,7 +33,7 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   tbl[:centralizers]=ct.centralizers
   T=Tbasis(H)
   cl=map(x->T(W(x...)*longest(W)), tbl[:classtext])
-  tbl[:irreducibles]=toL(permutedims(toM(char_values.(cl))))
+  tbl[:irreducibles]=toL(transpose(toM(char_values.(cl))))
   charparams=chevieget(:A,:CharInfo)(r)[:charparams]
   A=chevieget(:A,:LowestPowerFakeDegree).(charparams)
   qE=central_monomials(hecke(W,v))

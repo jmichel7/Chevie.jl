@@ -1,5 +1,5 @@
 module Fact
-using Primes: nextprime
+import Primes: nextprime
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
 using ..Util: Util, factor
@@ -22,7 +22,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
     fp=nothing
     while true
       while true
-        p=nextprime(p+1)
+        p=Primes.nextprime(p+1)
         if mod(lc, p)!=0 && mod(f[0], p)!=0 break end
       end
       fp=Pol(FFE{p}.(f.c),f.v)/lc

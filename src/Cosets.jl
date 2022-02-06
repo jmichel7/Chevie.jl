@@ -886,7 +886,7 @@ function spets(W::PermRootGroup,F::Matrix)
   t=collectby(j->simple_reps(W)[j],eachindex(gens(W)))
   s=map(t)do inds
     scal=map(inds)do y
-      r=permutedims(F)*roots(W,y)
+      r=transpose(F)*roots(W,y)
       scals=ratio.(Ref(r),roots(W))
       l=filter(i->!isnothing(scals[i]),eachindex(roots(W)))
       (ind=l,scal=scals[l])
@@ -1150,12 +1150,12 @@ rootdata[:tgl]=function(n, k)
   if gcd(n,k)!=1 error(k," should be prime to ",n) end
   X=hcat(cartan(:A,n-1),fill(0,n-1))
   # We intertwine the last weight with the torus
-  lat=vcat(X,permutedims(vcat(fill(0,n-2), [k,1])))
+  lat=vcat(X,transpose(vcat(fill(0,n-2), [k,1])))
   # Get a basis for the sublattice
   lat=hermite(lat)
   # Find the roots in a basis of the sublattice
   Y=id(n)[1:n-1,:]
-  rootdatum(toM(map(x->SolutionIntMat(lat,x),toL(X))),Y*permutedims(lat))
+  rootdatum(toM(map(x->SolutionIntMat(lat,x),toL(X))),Y*transpose(lat))
 end
 rootdata[:pgl]=r->coxgroup(:A,r-1)
 rootdata[:sp]=function(r)
@@ -1198,7 +1198,7 @@ rootdata[:halfspin]=function(r)
   r=div(r,2)
   R=id(r)
   R[r,:]=vcat([-div(r,2),1-div(r,2)],2-r:1:-2,[2])
-  rootdatum(R,Int.(cartan(:D,r)*permutedims(inv(Rational.(R)))))
+  rootdatum(R,Int.(cartan(:D,r)*transpose(inv(Rational.(R)))))
 end
 rootdata[:gpin]=function(r)
   d=div(r,2)

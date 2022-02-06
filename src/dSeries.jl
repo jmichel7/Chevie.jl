@@ -633,7 +633,7 @@ function format(io::IO,s::Series)
   if haskey(s, :permutable) && any(x->x!=false,s.permutable)
       f("\\hbox{permutable}", s.permutable)
   end
-  m = permutedims(toM(m))
+  m=permutedims(toM(m))
   println(io)
   showtable(io,m;row_labels=string.(char_numbers(s)),col_labels)
 end

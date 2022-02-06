@@ -1035,7 +1035,7 @@ julia> LusztigRestrict(T,u)
 [G₂₍₎=Φ₁Φ₂]:0
 ```
 """
-LusztigRestrict(HF,u)=UniChar(HF,improve_type(permutedims(
+LusztigRestrict(HF,u)=UniChar(HF,improve_type(transpose(
                              LusztigInductionTable(HF,u.group).scalar)*u.v))
 
 HCInduce(WF,u)=UniChar(WF,improve_type(HCInductionTable(u.group,WF).scalar*u.v))
@@ -1203,17 +1203,17 @@ julia> on_unipotents(Group(WF),WF.phi)
 function on_unipotents(W,aut)
   uc=UnipotentCharacters(W)
   t=DLCharTable(W)
-  t=vcat(t,permutedims(eigen(uc)))
+  t=vcat(t,transpose(eigen(uc)))
   l=fill(0,length(uc))
   n=uc.harishChandra[1][:charNumbers]
   l[n]=1:length(n)
-  t=vcat(t,permutedims(l))
+  t=vcat(t,transpose(l))
   if length(unique(eachcol(t)))<size(t,2)
     error("Rw + eigen + principal series cannot disambiguate\n")
   end
   t1=^(t[1:end-1,:],on_classes(W, aut),dims=1)
   l[n]=l[n].^inv(on_chars(W,aut))
-  t1=vcat(t1,permutedims(l))
+  t1=vcat(t1,transpose(l))
   Perm(t,t1,dims=2)
 end
 

@@ -383,7 +383,7 @@ chevieset(:families,:X,function(p)
          :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
              "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
     :eigenvalues=>map(s->E(p,prod(s)),ss),
-    :fourierMat=>[(E(p,sum(i.*reverse(j)))-E(p,sum(i.*j)))//p for i in ss,j in ss],
+    :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
     :special=>1,:cospecial=>p-1))
    end)
 
@@ -1014,7 +1014,7 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   if nothing in d  error() end
   A.cDim=d[special]^2
   A.qDim=d[special].//d
-  A.irr=permutedims(irr)
+  A.irr=transpose(irr)
   A.charnames=haskey(opt,:charnames) ? opt[:charnames] : string.(1:dim(A))
   A.classnames=haskey(opt,:classnames) ? opt[:classnames] : string.(1:dim(A))
   A
@@ -1034,7 +1034,7 @@ using LinearAlgebra: LinearAlgebra
 function Algebras.idempotents(A::FusionAlgebra)
   get!(A,:idempotents)do
     LinearAlgebra.Diagonal(A.fourier[A.special,:])*
-      conj.(permutedims(A.fourier))*basis(A)
+      conj.(transpose(A.fourier))*basis(A)
   end
 end
 

@@ -702,7 +702,7 @@ function LeftCellRepresentatives(W)
     return map(rr)do r
       r=copy(r)
       function f(l)
-        m=permutedims(toM(R.rootdec[l]))
+        m=transpose(toM(R.rootdec[l]))
         w=Perm(R.rootdec,Ref(m).*R.rootdec)
         inclusion(W)[t.indices[word(R,w)]]
       end

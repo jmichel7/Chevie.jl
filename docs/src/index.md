@@ -177,6 +177,7 @@ Z(::Any)
 # Presentations
 ```@docs
 Presentations
+AbsWord
 @AbsWord
 FpGroup
 Presentation(::FpGroup)
@@ -210,7 +211,6 @@ GenCox
 Weyl
 cartan
 two_tree
-roots
 reflection_subgroup
 coxgroup
 rootdatum
@@ -236,6 +236,11 @@ degrees(::Group)
 codegrees
 nref
 nhyp
+roots
+coroots
+coroot
+simpleroots
+simplecoroots
 bipartite_decomposition
 catalan(W,m)
 reflrep(::PermRootGroup,w)
@@ -290,13 +295,15 @@ AsymptoticAlgebra
 # Garside monoids and groups, braids.
 ```@docs
 Garside
+LocallyGarsideMonoid
+GarsideMonoid
 left_divisors
 leftgcd
 rightgcd
 leftlcm
 rightlcm
 α(::Garside.LocallyGarsideElt)
-α(::GarsideElt,::AbstractVector)
+α(::Garside.LocallyGarsideElt,::AbstractVector)
 Brieskorn_normal_form
 BraidMonoid
 DualBraidMonoid

@@ -51,7 +51,7 @@ end
       d=vcat(blks...)
       d=map(d)do (c,l)
         while true
-          println("<$l>")
+#         println("<$l>")
           if isempty(l) l=["nothing"] end
           if l[end]=="" 
             if length(l)>1 resize!(l,length(l)-1)

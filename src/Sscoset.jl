@@ -96,9 +96,9 @@ function RelativeDatum(WF)
     n=order(WF.F) # matrix of sigma on X
     π=sum(i->WF.F^i,0:n-1)//n
     Xₛ=baseInt(Int.(n*π))//n # basis of X_σ
-    Yₛ=baseInt(Int.(n*permutedims(π)))//n # basis of Y_σ
-    Xˢ=(Xₛ*permutedims(Yₛ))^-1*Xₛ # basis of X^σ
-    Yˢ=(Yₛ*permutedims(Xₛ))^-1*Yₛ # basis of Y^σ
+    Yₛ=baseInt(Int.(n*transpose(π)))//n # basis of Y_σ
+    Xˢ=(Xₛ*transpose(Yₛ))^-1*Xₛ # basis of X^σ
+    Yˢ=(Yₛ*transpose(Xₛ))^-1*Yₛ # basis of Y^σ
     cc=restriction.(Ref(W),orbits(WF.phi, inclusiongens(W)))
     Phis=map(cc)do c
       res=sum(roots(W,c))
@@ -237,7 +237,7 @@ julia> QuasiIsolatedRepresentatives(WF,3)
 ```
 """
 function Semisimple.QuasiIsolatedRepresentatives(WF::Spets,p=0)
-  map(x->SS(Group(WF),permutedims(WF.Y_s)*map(x->x.r,x.v)), 
+  map(x->SS(Group(WF),transpose(WF.Y_s)*map(x->x.r,x.v)), 
       QuasiIsolatedRepresentatives(RelativeDatum(WF), p))
 end
 
