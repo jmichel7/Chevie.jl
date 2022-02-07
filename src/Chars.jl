@@ -680,7 +680,15 @@ function charinfo(W)
   end
 end
 
-function Base.show(io::IO,ci::CharInfo)
+function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
+  show(IOContext(io,:TeX=>true), "text/plain",ci)
+end
+
+function Base.show(io::IO,t::CharInfo)
+  print(io,t.prop)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   if !(get(io,:TeX,false) || get(io,:limit,false))
     print(io,ci.prop)
     return

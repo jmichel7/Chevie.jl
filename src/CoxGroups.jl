@@ -131,7 +131,7 @@ module CoxGroups
 
 export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
-  words, inversions
+  inversions
 
 export isleftdescent # 'virtual' methods (exist only for concrete types)
 
@@ -398,7 +398,7 @@ end
 
 const Wtype=Vector{Int8}
 #CoxeterWords
-function words(W::CoxeterGroup{T}, l::Int)where T
+function Groups.words(W::CoxeterGroup{T}, l::Int)where T
   ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if ngens(W)==1
@@ -444,7 +444,7 @@ julia> e[1]==longest(W)
 true
 ```
 """
-function words(W::CoxeterGroup)
+function Groups.words(W::CoxeterGroup)
   reduce(vcat,map(i->words(W,i),0:nref(W)))
 end
 
@@ -610,7 +610,7 @@ julia> words(W,longest(W))
  [3, 2, 3, 1, 2, 3]
 ```
 """
-function words(W::CoxeterGroup,w)
+function Groups.words(W::CoxeterGroup,w)
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
   reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
@@ -637,7 +637,6 @@ julia> inversions(W,W(1,2,1))
 inversions(W::CoxeterGroup,w)=filter(x->isleftdescent(W,w,x),1:nref(W))
 # assumes isleftdescent works for all reflections
 
-"diagram of finite Coxeter group"
 PermRoot.Diagram(W::CoxeterGroup)=Diagram.(refltype(W))
 
 function parabolic_category(W,I::AbstractVector{<:Integer})

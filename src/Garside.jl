@@ -279,7 +279,7 @@ julia> C.obj
 ```
 
 There   is  a   faster  solution   to  the   conjugacy  problem   given  in
-[gebgon10](biblio.html#gebgon10): for each `b∈ M`, they define a particular
+[gebgon10](biblio.htm#gebgon10):  for each `b∈ M`, they define a particular
 simple  left divisor of `b`, its *preferred prefix* such that the operation
 *sliding*  which  cyclically  conjugates  `b`  by  its preferred prefix, is
 eventually periodic, and the period is contained in the super summit set of

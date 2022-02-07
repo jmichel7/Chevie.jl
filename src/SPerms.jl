@@ -83,7 +83,7 @@ SPerm(x::Integer...)=SPerm{Idef}(x...)
 """
    @sperm"..."
 
- make a `SPerm` from a string; allows style `sperm"(1,-2)(5,-6,7)(-4,9)"`
+ make a `SPerm` from a string; allows the style `sperm"(1,-2)(5,-6,7)(-4,9)"`
 """
 macro sperm_str(s::String)
   start=1

@@ -337,11 +337,11 @@ end
 """
 `CycPol(p::Pol)`
     
-Converts a polynomial to `CycPol`
+Converts a `Pol` to `CycPol`
     
 ```julia-repl
-julia> CycPol(3*q^3-3)
-3Φ₁Φ₃
+julia> @Pol q;CycPol(3*q^3-3q)
+3qΦ₁Φ₂
 ```
 """
 function CycPol(p::Pol{T};trace=false)where T
@@ -439,6 +439,7 @@ function CycPol(p::Pol{T};trace=false)where T
   CycPol(degree(p)==0 ? coeff : improve_type(p*coeff),val,ModuleElt(vcyc))
 end
 
+"`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"
 function CycPol(x::Mvp)
   if !isinteger(degree(x)) CycPol(x,0)
   else CycPol(Pol(x))
@@ -530,20 +531,15 @@ const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8
 
 const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 #=
-  benchmark: 
+  benchmark on Julia 1.7
 julia> @btime u=CycPols.p(Pol()) # gap 2ms
-  868.139 μs (14931 allocations: 1.03 MiB)
-    1.827 ms (90128 allocations: 4.62 MiB)
-  763.055 μs (18850 allocations: 1.15 MiB)
+  576.733 μs (13025 allocations: 775.70 KiB)
 julia> @btime CycPol(u) # gap 12ms
-  44.270 ms (500873 allocations: 56.74 MiB)
-  31.011 ms (666125 allocations: 41.54 MiB)
-  14.205 ms (371324 allocations: 23.16 MiB)
   14.055 ms (237536 allocations: 17.07 MiB)
+  26.302 ms (994844 allocations: 55.71 MiB)
 julia> @btime u(1)  # gap 57μs
-  107.098 μs (2559 allocations: 196.03 KiB)
-   69.927 μs (2819 allocations: 149.95 KiB)
-   77.146 μs (1875 allocations: 126.95 KiB)
+  69.890 μs (1430 allocations: 88.42 KiB)
+julia> @btime CycPols.p(1)
+  26.276 μs (475 allocations: 59.23 KiB)
 =#
-
 end

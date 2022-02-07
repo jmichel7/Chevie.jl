@@ -1,8 +1,8 @@
 """
 This module is a port of some GAP functionality on permutation groups.
 
-This code refers to Holt "Handbook of computational group theory" chapter 4
-for basic algorithms.
+The code refers to the [Handbook of computational group theory, chapter 4]
+(biblio.htm#H05) for basic algorithms.
 
 A  PermGroup is  a group  where gens  are Perms,  which allows  for all the
 algorithms like base, centralizer chain, etc...
@@ -54,18 +54,18 @@ julia> transversals(G)
  Dict(2 => (), 3 => (2,3))
 ```
 
-finally, benchmarks on julia 1.1
+finally, benchmarks on julia 1.7
 ```benchmark
-julia> @btime length(collect(symmetric_group(8)))
-  5.995 ms (391728 allocations: 13.89 MiB)
+julia> @btime collect(symmetric_group(8));
+  3.720 ms (271800 allocations: 7.94 MiB)
 
-julia> @btime minimal_words(symmetric_group(8));
-  10.477 ms (122062 allocations: 15.22 MiB)
+julia> @btime words(symmetric_group(8));
+  8.730 ms (202029 allocations: 12.86 MiB)
   
-julia> @btime length(elements(symmetric_group(8)))
-  1.713 ms (49599 allocations: 5.19 MiB)
+julia> @btime elements(symmetric_group(8));
+  1.616 ms (52681 allocations: 3.77 MiB)
 ```
-Compare to GAP3 Elements(SymmetricGroup(8)); takes 9.5 ms (GAP4 17ms)
+Compare to GAP3 Elements(SymmetricGroup(8)); takes 8 ms (GAP4 9 ms)
 """
 module PermGroups
 using ..Perms
@@ -75,7 +75,7 @@ using ..Util: getp, InfoChevie, @GapObj, printTeX
 import ..Gapjm: elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
-  stab_onmats, Perm_onmats, Perm_rowcolmat, on_classes
+  stab_onmats, Perm_onmats, onmats, Perm_rowcolmat, on_classes
 #-------------------- now permutation groups -------------------------
 abstract type PermGroup{T}<:Group{Perm{T}} end
 
@@ -93,6 +93,7 @@ end
 
 Base.one(G::PermGroup)=G.one # PermGroups should have fields gens and one
 
+"'largest_moved_point(G::PermGroup)' the largest moved point by any `g∈ G`"
 function Perms.largest_moved_point(G::PermGroup)::Int
   get!(G,:largest_moved)do 
     if isempty(gens(G)) return 0 end
@@ -203,15 +204,16 @@ function centralizers(G::PermGroup{T})::Vector{PermGroup{T}} where T
 end
 
 """
-  The  i-th element  is  a description of  the orbit of :centralizers[i] on
-  :base[i]  as a Dict where each point q is the key to a permutation p such
-  that :base[i]^p=q
+`transversals(G::PermGroup)`
+
+returns a list whose `i`-th element is the transversal of
+`G.centralizers[i]` on `G.base[i]`
 """
 function transversals(G::PermGroup{T})::Vector{Dict{T,Perm{T}}} where T
   getp(schreier_sims,G,:transversals)
 end
 
-" `base(G)` A list of points stabilized by no element of `G` "
+" `base(G::PermGroup)` A `Vector` of points stabilized by no element of `G` "
 function base(G::PermGroup{T})::Vector{T} where T
   getp(schreier_sims,G,:base)
 end
@@ -244,6 +246,7 @@ function classinv(W::PermGroup)
   end
 end
 
+# internal function accepting ambiguity
 function positions_class(W::PermGroup,w)
   l=findall(==(cycletypes(W,w)),classinv(W))
   if length(l)==1 return l end
@@ -386,6 +389,7 @@ end
 symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
+"`onmats(m::AbstractMatrix,g::Perm)' simultaneous action of `g` on cols and rows"
 onmats(m,g)=^(m,g;dims=(1,2))
 
 function invblocks(m,extra=nothing)
@@ -453,12 +457,10 @@ end
 """
 `Perm_onmats(M, N[, m ,n])` 
 
-If  `onmats(M,p)=^(M,p;dims=(1,2))`, return `p`  such that `onmats(M,p)=N`.
-If  in  addition  the  vectors  `m`  and  `n` are given, `p` should satisfy
-`m^p=n`.
-
-Efficient version of 
-`transporting_elt(symmetric_group(size(M,1)),M,N;action=onmats)`
+If  `onmats(M,p)=^(M,p;dims=(1,2))`, return `p`  such that `onmats(M,p)=N`;
+so is just an efficient version of
+`transporting_elt(symmetric_group(size(M,1)),M,N;action=onmats)`    If   in
+addition the vectors `m` and `n` are given, `p` should satisfy `m^p=n`.
 
 ```julia-repl
 julia> m=cartan(:D,12);
@@ -534,12 +536,12 @@ end
 
 """
 `Perm_rowcolmat(m1,m2)`
-  whether matrix `m1` is conjugate to matrix `m2` by row/col permutations
 
-  `m1`  and `m2` should be rectangular matrices of the same dimensions. The
-  function   returns   a   pair   of   permutations   `[p1,p2]`  such  that
-  `^(m1^p[1],p[2];dims=2)==m2`   if  such   permutations  exist,  `nothing`
-  otherwise.
+whether matrix `m1` is conjugate to matrix `m2` by row/col permutations
+
+`m1`  and `m2` should  be rectangular matrices  of the same dimensions. The
+function returns a pair of permutations `(p1,p2)` such that
+`^(m1^p1,p2;dims=2)==m2` if such permutations exist, `nothing` otherwise.
 """
 function Perm_rowcolmat(m1, m2)
   if size(m1)!=size(m2) error("not same dimensions") end
@@ -593,7 +595,7 @@ function Perm_rowcolmat(m1, m2)
   end
   InfoChevie("\n")
   if !iszero(dist(mm...)) error("RepresentativeRowColOperation failed") end
-  [rcperm[1][1]/rcperm[1][2],rcperm[2][1]/rcperm[2][2]]
+  (rcperm[1][1]/rcperm[1][2],rcperm[2][1]/rcperm[2][2])
 end
 
 end

@@ -43,7 +43,7 @@ Dict{Symbol, Any} with 1 entry:
 module Groups
 export Group, centralizer, centre, classreps, comm,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
-  gens, Hom, isabelian, iscyclic, minimal_words, nconjugacy_classes,
+  gens, Hom, isabelian, iscyclic, words, minimal_words, nconjugacy_classes,
   ngens, normalizer, orbit, orbits, position_class, stabilizer,
   transporting_elt, transversal
 
@@ -108,7 +108,7 @@ julia> orbit([Perm(1,2),Perm(2,3)],1)
  2
  3
 
-julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
+julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g) # Gap "OnTuples"
 6-element Vector{Vector{Int64}}:
  [1, 3]
  [2, 3]
@@ -117,7 +117,7 @@ julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->v.^g)
  [2, 1]
  [3, 1]
 
-julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g))
+julia> orbit([Perm(1,2),Perm(2,3)],[1,3];action=(v,g)->sort(v.^g)) # "OnSets"
 3-element Vector{Vector{Int64}}:
  [1, 3]
  [2, 3]
@@ -213,8 +213,7 @@ orbits(G::Group,v;action=^,trivial=true)=orbits(gens(G),v;action,trivial)
 """
 `centralizer(G::Group,p;action=^)`
 
-computes  the centralizer of  `p` in group  `G` (by default  for the action
-`action(g,p)=g^p`)
+computes  the centralizer of `p` in `G`.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
@@ -258,9 +257,10 @@ function centre(G::Group)
 end
 
 """
-    `minimal_words(G)`
-  returns a Dict giving for each element of `G` a minimal positive word in 
-  the generators representing it.
+`minimal_words(G)`
+
+returns  a `Dict` giving for each element of `G` a minimal positive word in
+the generators representing it.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
@@ -291,7 +291,26 @@ function minimal_words(G::Group)
   end
 end
 
-function words(G::Group) # faster than minimal_words but words not minimal
+"""
+`words(G)`
+
+returns  a `Dict`  giving for  each element  of `G`  a positive word in the
+generators representing it. It is faster than `minimal_words` but the words
+are not guaranteed minimal.
+
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)]);
+julia> words(G)
+Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
+  ()      => []
+  (1,2)   => [1]
+  (1,3)   => [1, 2]
+  (1,2,3) => [2]
+  (2,3)   => [2, 1]
+  (1,3,2) => [1, 2, 1]
+```
+"""
+function words(G::Group)
   get!(G,:words)do
     words=Dict(one(G)=>Int[])
     for i in eachindex(gens(G))
@@ -361,6 +380,7 @@ Base.in(w,G::Group)=haskey(words2(G),w)
 "length(G::Group): the number of elements of G"
 Base.length(G::Group)=length(words2(G))
 
+"`conjugacy_classes(G::Group)` conjugacy classes of `G` (as a `Vector{Vector}`)"
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   get!(G,:classes) do
     if haskey(G,:classreps) 
@@ -370,6 +390,7 @@ function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   end
 end
 
+"`conjugacy_classes(G::Group,i::Integer)` the `i`-th class of `G`"
 function conjugacy_class(G::Group{T},i::Int)::Vector{T} where T
   if !haskey(G,:classes) 
     G.classes=Vector{Vector{T}}(undef,nconjugacy_classes(G))
@@ -378,15 +399,27 @@ function conjugacy_class(G::Group{T},i::Int)::Vector{T} where T
   G.classes[i]
 end
 
+"`position_class(G::Group,g)` index of conjugacy class to which `g` belongs"
 function position_class(G::Group,g)
   findfirst(c->g in c,conjugacy_classes(G))
 end
 
+"""
+'fusion_conjugacy_classes(H::Group,G::Group)`
+
+A `Vector{Int}` telling for each conjugacy class of subgroup `H` of which class
+of `G` is is a subset
+"""
 function fusion_conjugacy_classes(H::Group,G::Group)
   map(x->position_class(G,x),classreps(H))
 end
 
-"classreps(G::Group): representatives of conjugacy classes of G"
+"""
+`classreps(G::Group)` 
+
+representatives of conjugacy classes of `G`. Fills `G.classreps`. If this
+field is filled it is used by  `conjugacy_classes`.
+"""
 function classreps(G::Group{T})::Vector{T} where T
   get!(G,:classreps) do
     if length(G)>10000 error("length(G)=",length(G),": should call Gap4")
@@ -395,6 +428,7 @@ function classreps(G::Group{T})::Vector{T} where T
   end
 end
 
+"`nconjugacy_classes(G::Group)` the number of conjugacy classes of `G`"
 nconjugacy_classes(G::Group)=length(classreps(G))
 
 # hom from source to target sending gens(source) to images
@@ -412,6 +446,7 @@ function Base.show(io::IO,h::Hom)
   end
 end
 
+"`kernel(h::Hom)` the kernel of the homomorphism `h`"
 function kernel(h::Hom)
   if all(isone,h.images) return h.source
   elseif length(h.source)==length(Group(h.images)) 
@@ -426,8 +461,10 @@ end
 (h::Hom)(w)=isone(w) ? one(h.target) : prod(
   (i>0 ? h.images[i] : inv(h.images[-i])) for i in word(h.source,w))
 
+"`isabelian(G::Group)` whether `G` is abelian"
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
+"`iscyclic(G::Group)` whether `G` is cyclic"
 iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
 
 Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
@@ -435,8 +472,8 @@ Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 """
 `transporting_elt(G,p,q;action=^,dist=nothing)`   
 
-returns  an  element  `g∈ G`  such  that  `p^g==q` (or `action(p,g)==q` if
-`action`  is given) if such a `g`  exists and nothing otherwise. The set of
+returns  an  element  `g∈  G`  such  that  `p^g==q` (or `action(p,g)==q` if
+`action` is given), if such a `g` exists, and nothing otherwise. The set of
 possible `g` forms a right coset of the centralizer of p in G.
 
 ```julia-repl
@@ -520,8 +557,8 @@ end
 `Group(l::AbstractVector{T}[,one]) where T`
 
 A  group may be constructed  from a list of  `l` elements of the same type.
-These  elements must respond  to the function  `*` and `inv`.  If it is not
-possible to compute `one` from the elements (because they do not respond to
+These  elements must respond to  the functions `*` and  `inv`. If it is not
+possible  to compute  `one` from  `l` (because  ``l[1]` does not respond to
 `one`,  or  `l`  is  empty  and  `T`  does  not respond to `one`), then the
 identity element of the group must be given as a second argument.
 

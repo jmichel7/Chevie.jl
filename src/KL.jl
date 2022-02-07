@@ -617,7 +617,7 @@ function Groups.elements(c::LeftCell)
   end
 end
 
-CoxGroups.words(c::LeftCell)=word.(Ref(c.group),elements(c))
+Groups.words(c::LeftCell)=word.(Ref(c.group),elements(c))
 
 Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 

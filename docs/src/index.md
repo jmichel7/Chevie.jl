@@ -11,7 +11,7 @@ Perm
 Perm(::Integer...)
 Perm(::AbstractVector,::AbstractVector)
 @perm_str
-largest_moved_point
+largest_moved_point(::Perm)
 smallest_moved_point
 Base.:^(::AbstractVector,::Perm) 
 sortPerm
@@ -44,23 +44,32 @@ word(::Group,w)
 comm
 length(::Group)
 classreps(::Group)
+conjugacy_classes
+nconjugacy_classes
+position_class
+fusion_conjugacy_classes
 minimal_words
+words(::Group)
 transporting_elt
+isabelian
+iscyclic
 abelian_gens
 blocks(G,p)
 ```
 # Permutation groups
 ```@docs
 PermGroups
+largest_moved_point(::PermGroup)
 base
 centralizers
 transversals
+in(::Perm,::PermGroup)
 on_classes
 symmetric_group
+onmats
 stab_onmats
 Perm_onmats
 Perm_rowcolmat
-Base.in(::Perm,::PermGroup)
 ```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
@@ -201,7 +210,6 @@ bruhatless
 CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
 longest
-braid_relations
 coxmat
 standard_parabolic_class
 GenCox
@@ -209,9 +217,11 @@ GenCox
 # Finite Coxeter groups and Weyl groups
 ```@docs
 Weyl
-cartan
+cartan(::Symbol,::Integer,::Integer)
+cartan(::AbstractMatrix)
+roots(::AbstractMatrix)
 two_tree
-reflection_subgroup
+reflection_subgroup(::Weyl.FCG,::AbstractVector{<:Integer})
 coxgroup
 rootdatum
 describe_involution
@@ -228,6 +238,7 @@ relative_group
 PermRoot
 reflection
 cartan(::PermRootGroup)
+cartan(::PermRootGroup,i,j)
 Diagram
 hyperplane_orbits
 rank
@@ -241,6 +252,7 @@ coroots
 coroot
 simpleroots
 simplecoroots
+braid_relations
 bipartite_decomposition
 catalan(W,m)
 reflrep(::PermRootGroup,w)

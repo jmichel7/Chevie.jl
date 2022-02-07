@@ -241,7 +241,7 @@ end
 @test mytest("CycPols.jl","p*inv(CycPol(q^2+q+1))","(q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃")
 @test mytest("CycPols.jl","cyclotomic_polynomial(5)","Pol{Int64}: q⁴+q³+q²+q+1")
 @test mytest("CycPols.jl","cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")
-@test mytest("CycPols.jl","CycPol(3*q^3-3)","3Φ₁Φ₃")
+@test mytest("CycPols.jl","@Pol q;CycPol(3*q^3-3q)","3qΦ₁Φ₃")
 end
 @testset "Eigenspaces.jl" begin
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
@@ -480,6 +480,8 @@ end
 @test mytest("Groups.jl","stabilizer(G,[1,2])","Group([(3,4),(1,2),(1,2)(3,4)])")
 @test mytest("Groups.jl","G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
 @test mytest("Groups.jl","minimal_words(G)","Dict{Perm{Int16}, Vector{Int64}} with 6 entries:\n  ()      => []\n  (1,2)   => [1]\n  (1,3)   => [1, 2]\n  (1,2,3) => [2]\n  (2,3)   => [2, 1]\n  (1,3,2) => [2, 2]")
+@test mytest("Groups.jl","G=Group([Perm(1,2),Perm(1,2,3)]);","nothing")
+@test mytest("Groups.jl","words(G)","Dict{Perm{Int16}, Vector{Int64}} with 6 entries:\n  ()      => []\n  (1,2)   => [1]\n  (1,3)   => [1, 2]\n  (1,2,3) => [2]\n  (2,3)   => [2, 1]\n  (1,3,2) => [1, 2, 1]")
 @test mytest("Groups.jl","g=Group(perm\"(1,2,3)(6,7)\",perm\"(3,4,5)(7,8)\")","Group([(1,2,3)(6,7),(3,4,5)(7,8)])")
 @test mytest("Groups.jl","transporting_elt(g,1,5)","(1,5,4,3,2)")
 @test mytest("Groups.jl","transporting_elt(g,1,6)","nothing")

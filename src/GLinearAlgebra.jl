@@ -26,14 +26,13 @@ echelon!(m::AbstractMatrix{<:Integer})=echelon!(m*1//1)
 echelon!(m::AbstractMatrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
 
 """
-    `echelon!(m)`
+`echelon!(m)`
 
-  puts `m` in echelon form and returns:
-  (`m`, indices of linearly independent rows of `m`)
-  The  echelon form transforms the rows of m into a particular basis of the
-  rowspace.  The first  non-zero element  of each  line is  1, and  such an
-  element is also the only non-zero in its column.
-  works in any field.
+puts `m` in echelon form and returns: (`m`, indices of linearly independent
+rows  of `m`) The echelon  form transforms the rows  of m into a particular
+basis  of the rowspace. The  first non-zero element of  each line is 1, and
+such  an element  is also  the only  non-zero in  its column.  works in any
+field.
 """
 function echelon!(m::AbstractMatrix)
   rk=0
@@ -178,7 +177,7 @@ end
 "`charpoly(M::Matrix)` characteristic polynomial (as `Vector` of coefficients)"
 charpoly(m)=first(charpolyandcomatrix(m))
 
-"`comatrix(M::Matrix)` is defined by comatrix(M)*M=det(M)*one(M)"
+"`comatrix(M::Matrix)` is defined by `comatrix(M)*M=det(M)*one(M)`"
 comatrix(m)=last(charpolyandcomatrix(m))
 
 """
@@ -312,7 +311,7 @@ end
 `permanent(m)`
 
 returns the *permanent* of the square matrix `m`, which is defined by 
-``\\sum_{p in \\frak S_n}\\prod_{i=1}^n m[i,i\\^p]``.
+``\\sum_{p\\in\\frak S_n}\\prod_{i=1}^n m[i,p(i)]``.
 
 Note the similarity of the definition of  the permanent to the definition
 of the determinant.  In  fact the only  difference is the missing sign of
@@ -436,7 +435,7 @@ end
 
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
-"ratio of two vectors"
+"`ratio(v,w)` ratio `v/w` --- `nothing` if `v` is not a multiple of `w`"
 function ratio(v::AbstractVector, w::AbstractVector)
   i=findfirst(x->!iszero(x),w)
   if i===nothing return nothing end
@@ -515,7 +514,7 @@ solutionmat(m,n::AbstractMatrix)=toM(solutionmat.(Ref(m),eachrow(n)))
 `representative_diagconj(M,N)`
 
 `M` and `N` must be square matrices of the same size. This function returns
-a  list  `d`  such  that  `N==inv(Diagonal(d)*M*Diagonal(d)` if such a list
+a  list `d`  such that  `N==inv(Diagonal(d))*M*Diagonal(d)` if  such a list
 exists, and `nothing` otherwise.
 
 ```julia_repl
