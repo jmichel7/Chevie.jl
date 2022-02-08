@@ -10,7 +10,7 @@ using ..GLinearAlgebra: solutionmat, echelon, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
 using ..CycPols: CycPol
-using ..Gapjm: Gapjm, root, gap, Cyc
+using ..Gapjm: Gapjm, root, gap, Cyc, conductor
 
 """
 `blocks(G::Group,p::Integer)`
@@ -115,6 +115,13 @@ end
 " eigenvalues as Cycs of a matrix of finite order"
 eigmat(m)=vcat([fill(e,m) for (e,m) in CycPol(Pol(charpoly(m))).v]...)
 
+"`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"
+function CycPol(x::Mvp)
+  if !isinteger(degree(x)) x
+  else CycPol(Pol(x))
+  end
+end
+
 #-------------------- define function to backport to gap3 some values
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
@@ -126,7 +133,7 @@ function Gapjm.gap(p::Cyc)
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
-      v=format_coefficient(string(v))
+      v=Util.format_coefficient(string(v))
       t=v in ["","-"] ? v : v*"*"
       r=(deg==1 ? "E($(conductor(p)))" : "E($(conductor(p)))^$deg")
       t*=r

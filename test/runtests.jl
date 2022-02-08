@@ -241,7 +241,7 @@ end
 @test mytest("CycPols.jl","p*inv(CycPol(q^2+q+1))","(q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃")
 @test mytest("CycPols.jl","cyclotomic_polynomial(5)","Pol{Int64}: q⁴+q³+q²+q+1")
 @test mytest("CycPols.jl","cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")
-@test mytest("CycPols.jl","@Pol q;CycPol(3*q^3-3q)","3qΦ₁Φ₃")
+@test mytest("CycPols.jl","@Pol q;CycPol(3*q^3-3q)","3qΦ₁Φ₂")
 end
 @testset "Eigenspaces.jl" begin
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
