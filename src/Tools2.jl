@@ -177,8 +177,8 @@ Gapjm.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"
 
 function Gapjm.gap(p::CycPol) # export positive CycPols to GAP3
   if any(<(0),values(p.v)) error("non-positive") end
-  res=string("[",gap(p.coeff),",",p.valuation,",")
-  res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"]"
+  res=string("CycPol([",gap(p.coeff),",",p.valuation,",")
+  res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"])"
 end
 
 end
