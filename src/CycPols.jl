@@ -84,9 +84,40 @@ prime_residues=CyclotomicNumbers.prime_residues
 stringexp=CyclotomicNumbers.stringexp
 stringind=CyclotomicNumbers.stringind
 format_coefficient=CyclotomicNumbers.format_coefficient
-using ..Combinat: collectby
-using ..Util: primitiveroot, divisors, stringprime
-using Primes: Primes, primes, totient # totient=Euler φ
+using Primes: Primes, primes, totient, factor # totient=Euler φ
+
+# routines copied here to avoid dependency
+
+function stringprime(io::IO,n)
+  if iszero(n) return "" end
+  if get(io,:TeX,false) return "'"^n end
+  n<5 ? ["′","″","‴","⁗"][n] : "⁽"*stringexp(n)*"⁾"
+end
+  
+"""
+  `primitiveroot(m::Integer)` a primitive root `mod. m`,
+  that is generating multiplicatively `prime_residues(m)`.
+  It exists if `m` is of the form `4`, `2p^a` or `p^a` for `p` prime>2.
+"""
+function primitiveroot(m::Integer)
+  if m==2 return 1
+  elseif m==4 return 3
+  end
+  f=factor(m)
+  nf=length(keys(f))
+  if nf>2 return nothing end
+  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
+  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
+  p=Primes.totient(m) # the Euler φ
+  1+findfirst(x->powermod(x,p,m)==1 && 
+            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
+end
+
+" `divisors(n)` the list of divisors of `n`."
+function divisors(n::Integer)::Vector{Int}
+  if n==1 return [1] end
+  sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
+end
 
 # The  computed  cyclotomic  polynomials  are  cached 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
@@ -454,20 +485,34 @@ function CycPol(p::Pol{T};trace=false)where T
   CycPol(degree(p)==0 ? coeff : p*coeff,val,ModuleElt(vcyc))
 end
 
+CyclotomicNumbers.conductor(x::Integer)=1
+CyclotomicNumbers.conductor(x::Pol)=lcm(conductor.(coefficients(x)))
+
 function (p::CycPol)(x)
   res=p.valuation<0 ? (x//1)^p.valuation : x^p.valuation
-  if !isempty(p.v)
-    v=decompose(p.v.d)
-    for ((cond,no),mul) in filter(x->x[1].no==1,v)
-      res*=(cyclotomic_polynomial(cond)(x))^mul
-    end
-    for ((cond,no),mul) in filter(x->x[1].no>1,v)
-      res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul
-    end
-    for v in collectby(x->x[1].conductor,filter(x->x[1].no<0,v))
-      res*=prod((x-E(cond,-no))^mul for ((cond,no),mul) in v)
+  l=decompose(p.v.d)
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no==1 res*=(cyclotomic_polynomial(cond)(x))^mul end
+  end
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no>1 res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul end
+  end
+  pp=one(x)
+  co=0
+  pp=one(x)
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no<0 
+      if co==cond pp*=(x-E(cond,-no))^mul 
+      else co=cond
+        res*=pp
+        pp=(x-E(cond,-no))^mul 
+      end
     end
   end
+  res*=pp
   if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
 end
 
@@ -518,8 +563,7 @@ julia> @btime CycPol(u) # gap 8.2ms
 julia> @btime u(1)  # gap 40μs
   50.525 μs (1155 allocations: 68.78 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
-  26.276 μs (475 allocations: 59.23 KiB) on 1.6
-  46.853 μs (758 allocations: 67.19 KiB)
+  28.768 μs (593 allocations: 42.89 KiB)
 =#
 
 # a worse polynomial; u=p2(Pol()) 20ms (gap3 9ms) CycPol(u) 1.37s (gap3 1.33s)
