@@ -225,7 +225,7 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
     else error("parameters should be given for first reflection in a class")
     end
   end
-  d=Dict{Symbol,Any}(:equal=>constant(para))
+  d=Dict{Symbol,Any}(:equal=>allequal(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
   HeckeAlgebra(W,para,d)
 end
@@ -268,7 +268,7 @@ coefftype(H::HeckeAlgebra{C}) where C=C
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
   if isempty(para) para
-  elseif constant(tr.(para)) 
+  elseif allequal(tr.(para)) 
     p=tr(para[1])
     p isa Vector ? [p] : p
   else map(tr,para)
@@ -280,7 +280,7 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"hecke(",H.W,",",simplify_para(H.para))
   if haskey(H,:rootpara)
     rp=rootpara(H)
-    if !isempty(rp) && constant(rp) print(io,",rootpara=",rp[1])
+    if !isempty(rp) && allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
     end
   end
@@ -1089,12 +1089,12 @@ hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF,Dict{Symbol,
 function Base.show(io::IO, H::HeckeCoset)
   print(io,"hecke(",H.W,",")
   tr(p)= p[2]==-one(p[2]) ? p[1] : p
-  if constant(H.H.para) print(io,tr(H.H.para[1]))
+  if allequal(H.H.para) print(io,tr(H.H.para[1]))
   else print(io,map(tr,H.H.para))
   end
   if haskey(H.H,:rootpara)
     rp=rootpara(H.H)
-    if constant(rp) print(io,",rootpara=",rp[1])
+    if allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
     end
   end

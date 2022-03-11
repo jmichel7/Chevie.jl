@@ -16,7 +16,7 @@ stirling2,catalan`
 
 some structural manipulations not yet in Julia:
 
-`groupby, constant, tally, collectby, unique_sorted!`
+`groupby, tally, collectby, unique_sorted!`
 
 matrix blocks:
 
@@ -33,7 +33,7 @@ export combinations, ncombinations, arrangements, narrangements,
   submultisets, nsubmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
   bell, stirling2, catalan,
-  groupby, constant, tally, collectby, unique_sorted!,
+  groupby, tally, collectby, unique_sorted!,
   blocks, diagblocks
 
 #--------------------- Structural manipulations -------------------
@@ -168,11 +168,15 @@ function collectby(f,v)
   res
 end
 
-" `constant(a)` whether all elements in collection `a` are equal"
-function constant(a) # written so that a can be a generator
+if VERSION<=v"1.7.5"
+export allequal
+
+" `allequal(a)` whether all elements in iterable `a` are equal"
+function allequal(a) # written so that a can be an iterator
   if isempty(a) return true end
   o=first(a)
   all(==(o),a)
+end
 end
 
 " faster than unique! for sorted vectors"

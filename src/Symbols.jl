@@ -62,7 +62,10 @@ for `G(e,e,n)`.
 """
 module Symbols
 using ..Util: joindigits
-using ..Combinat: arrangements, partition_tuples, constant, collectby
+using ..Combinat: arrangements, partition_tuples, allequal, collectby
+if VERSION<=v"1.7.5"
+using ..Combinat: allequal
+end
 using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, ennola_twist
 using LaurentPolynomials
@@ -519,7 +522,7 @@ function fegsymbol(s,p=0)
     if iszero(sum(S)) return one(CycPol) end
     prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
   end
-  if !constant(length.(s[2:end])) return zero(CycPol) end
+  if !allequal(length.(s[2:end])) return zero(CycPol) end
   d=defectsymbol(s)
   if d==1 res=theta([r])
   elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-Pol(ep))

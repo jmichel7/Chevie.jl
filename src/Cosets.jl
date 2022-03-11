@@ -1047,7 +1047,7 @@ function PermRoot.refltype(WF::PRC)
         else to.twist=u
           scal=scals(ti.indices,tn.indices^inv(u))
         end
-        if any(isnothing,scal) || !constant(scal)
+        if any(isnothing,scal) || !allequal(scal)
           if ti.series==:B && ti.rank==2
             scal=[root(prod(scal))]
           else println("W=$W\nphi=",WF.phi)
@@ -1089,7 +1089,7 @@ function PermRoot.refltype(WF::PRC)
             scal=scals(ti.indices,tn.indices^inv(u))
           end
           #println(" scal after:$scal")
-          if !constant(scal) error(" scal after:$scal")
+          if !allequal(scal) error(" scal after:$scal")
           else scal=Root1(scal[1])
           end
         end
