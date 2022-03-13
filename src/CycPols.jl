@@ -10,7 +10,7 @@ cyclotomic polynomials.
 The  type `CycPol`  represents the  product of  a `coeff`  (a constant or a
 polynomial)  with a  rational fraction  in one  variable with  all poles or
 zeroes  equal to  0 or  roots of  unity. The  advantages of representing as
-`CycPol`  such objects are: nice display (factorized), less storage, faster
+`CycPol`  such objects are:  nice display (factorized),  less storage, fast
 multiplication,  division and evaluation. The drawback is that addition and
 subtraction are not implemented!
 

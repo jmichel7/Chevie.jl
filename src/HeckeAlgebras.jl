@@ -892,11 +892,11 @@ function Base.://(a::FactSchur,b::FactSchur)
 end
 
 function (x::FactSchur)(y...;z...)
-  Simplify(FactSchur(x.factor(y...;z...),
+  simplify(FactSchur(x.factor(y...;z...),
         map(p->(pol=p.pol,monomial=p.monomial(y...;z...)) , x.vcyc)))
 end
 
-function Simplify(res::FactSchur)
+function simplify(res::FactSchur)
   R=Rational{Int}
   T=Cyc{R}
   evcyc=NamedTuple{(:pol,:monomial,:power),Tuple{CycPol{T},Mvp{T,R},R}}[]
@@ -980,7 +980,7 @@ function VFactorSchurElement(para,r,data=nothing,u=nothing)
   end
   vcyc=[(pol=CycPol([1,0,p]),monomial=Mvp(monomial(v))) for (v,p) in r[:vcyc]]
   if factor==0 || isempty(vcyc) return factor end
-  return Simplify(FactSchur(factor,vcyc))
+  return simplify(FactSchur(factor,vcyc))
 end
 
 """

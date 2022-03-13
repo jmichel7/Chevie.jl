@@ -18,7 +18,7 @@ function prime_part(N, a)
   end
 end
 
-# rgcd(N,a) smallest nonnegative c such that gcd(N,a+c)==1
+# rgcd(N,a) smallest c≥0 such that gcd(N,a+c)==1
 function rgcd(N, a)
   if N==1 return 0 end
   r=[mod(a-1, N)]
