@@ -27,6 +27,24 @@ Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 julia> p*inv(CycPol(q^2+q+1))
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
+julia> -p
+(-q+2)Φ₁Φ₂Φ₂₃
+
+julia> valuation(p)
+0
+
+julia> degree(p)
+25
+
+julia> lcm(p,CycPol(q^3-1))
+(q-2)Φ₁Φ₂Φ₃Φ₂₃
+
+julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^n
+(2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃
+
+julia> subs(p,Pol([E(2)],1)) # or at Pol([Root1],1)
+(q+2)Φ₁Φ₂Φ₄₆
+
 ```
 The  variable name used when  printing a `CycPol` is  the
 same as for `LaurentPolynomials`.
@@ -58,25 +76,35 @@ julia> CycPols.show_factors(24)
 Φ⁗₂₄=q⁴+√2q³+q²+√2q+1
 Φ⁽⁵⁾₂₄=q⁴-√6q³+3q²-√6q+1
 Φ⁽⁶⁾₂₄=q⁴+√6q³+3q²+√6q+1
-Φ⁽⁷⁾₂₄=q⁴+(√-2)q³-q²+(-√-2)q+1
-Φ⁽⁸⁾₂₄=q⁴+(-√-2)q³-q²+(√-2)q+1
-Φ⁽⁹⁾₂₄=q⁴-ζ₄q²-1
-Φ⁽¹⁰⁾₂₄=q⁴+ζ₄q²-1
-Φ⁽¹¹⁾₂₄=q²+(ζ₂₄+ζ₂₄¹⁹)q-ζ₃
-Φ⁽¹²⁾₂₄=q²+(-ζ₂₄-ζ₂₄¹⁹)q-ζ₃
-Φ⁽¹³⁾₂₄=q²+(ζ₂₄¹¹+ζ₂₄¹⁷)q-ζ₃²
-Φ⁽¹⁴⁾₂₄=q²+(-ζ₂₄¹¹-ζ₂₄¹⁷)q-ζ₃²
+Φ⁽⁷⁾₂₄=q⁴+√-2q³-q²-√-2q+1
+Φ⁽⁸⁾₂₄=q⁴-√-2q³-q²+√-2q+1
+Φ⁽⁹⁾₂₄=q²+ζ₃²√-2q-ζ₃
+Φ⁽¹⁰⁾₂₄=q²-ζ₃²√-2q-ζ₃
+Φ⁽¹¹⁾₂₄=q²+ζ₃√-2q-ζ₃²
+Φ⁽¹²⁾₂₄=q²-ζ₃√-2q-ζ₃²
+Φ⁽¹³⁾₂₄=q⁴-ζ₄q²-1
+Φ⁽¹⁴⁾₂₄=q⁴+ζ₄q²-1
+```
+A factor can be obtained directly as:
+
+```julia-repl
+julia> CycPol(;conductor=24,no=8)
+Φ⁽⁷⁾₂₄
+
+julia> CycPol(;conductor=24,no=8)(q)
+Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 ```
 """
 module CycPols
 
-export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
+export CycPol, cyclotomic_polynomial, subs
 
 using Primes: Primes, primes, totient, factor # totient=Euler φ
 using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
-using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation, 
+using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
+
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
   Pol{Cyc{T}}(p*denominator(p))
@@ -210,8 +238,11 @@ Base.://(a::CycPol,b::CycPol)=CycPol(a.coeff//b.coeff, a.valuation-b.valuation, 
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
-Base.lcm(a::CycPol,b::CycPol)=CycPol(1,max(a.valuation,b.valuation),
-                                       ModuleElts.merge2(max,a.v,b.v))
+function Base.lcm(a::CycPol,b::CycPol)
+  if !isone(b.coeff) error(b,".coeff sould be 1") end
+  CycPol(a.coeff,max(a.valuation,b.valuation),ModuleElts.merge2(max,a.v,b.v))
+end
+
 Base.lcm(v::AbstractArray{<:CycPol})=reduce(lcm,v;init=one(CycPol))
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
@@ -244,11 +275,11 @@ function dec(d::Int)
   end
 end
 
-CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
+CycPol(;conductor=1,no=1)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no])...)
   
 function show_factors(d)
   for i in eachindex(CycPols.dec(d))
-    p=CycPol(;cond=d,no=i)
+    p=CycPol(;conductor=d,no=i)
     println(IOContext(stdout,:limit=>true),p,"=",p(Pol()))
   end
 end
@@ -493,29 +524,32 @@ function (p::CycPol)(x)
   if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
 end
 
-# Fast routine for CycPol(p(Pol()*e)) for e::Root1
-function ennola_twist(p::CycPol,e)
+# Fast routine for CycPol(p(Pol([e],1))) for e::Root1
+function subs(p::CycPol,v::Pol{Root1})
+  if degree(v)!=1 || valuation(v)!=1 error(v," should be Pol([Root1],1)") end
+  e=v[1]
   coeff=p.coeff*e^degree(p)
-  if coeff isa Pol coeff=coeff(Pol()*e) end
-  re=Root1(e)
-  vcyc=[r*inv(re)=>m for (r,m) in p.v]
-  CycPol(coeff,p.valuation,ModuleElt(vcyc))
+  if coeff isa Pol coeff=coeff(v) end
+  re=inv(Root1(e))
+  CycPol(coeff,valuation(p),ModuleElt(r*re=>m for (r,m) in p.v))
 end
 
 # Fast routine for  CycPol(p(Pol()^n))
-function descent_of_scalars(p::CycPol,n)
+function subs(p::CycPol,v::Pol{Int})
+  if degree(v)!=valuation(v) || coefficients(v)!=[1] error(v," should be Pol()^n") end
+  n=valuation(v)
   if n==0 return CycPol(p(1),0) end
   n=Int(n)
-  valuation=n*p.valuation
+  val=n*valuation(p)
+  if p.coeff isa Pol coeff=p.coeff(v) else coeff=p.coeff end
   if n>0
-    coeff=p.coeff
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:n-1).+r.r)/n) for (r,pow) in p.v)...)
   else
-    valuation+=n*sum(values(p.v))
-    coeff=p.coeff*(-1)^sum(values(p.v))*Cyc(prod(r^p for (r,p) in p.v))
+    val+=n*sum(values(p.v))
+    coeff*=(-1)^sum(values(p.v))*Cyc(prod(r^p for (r,p) in p.v))
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:-n-1).-r.r)/-n) for (r,pow) in p.v)...)
   end
-  CycPol(coeff,valuation,ModuleElt(vcyc))
+  CycPol(coeff,val,ModuleElt(vcyc))
 end
     
 # 281st generic degree of G34

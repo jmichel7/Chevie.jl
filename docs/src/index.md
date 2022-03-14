@@ -112,8 +112,9 @@ dominates
 bell
 stirling2
 catalan(::Integer)
+bernoulli
 groupby
-constant
+allequal
 tally
 collectby
 cartesian

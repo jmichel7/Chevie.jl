@@ -797,7 +797,7 @@ function THCdegrees(W,i,rel=false)
   else den=lcm(denominator.(vcat(hw[:parameterExponents]...)))
   end
   ud=CycPolUnipotentDegrees(W)
-  reldeg=map(x->descent_of_scalars(cusp*index//x,den),ud[hw[:charNumbers]])
+  reldeg=map(x->subs(cusp*index//x,Pol()^den),ud[hw[:charNumbers]])
   H=Uch.relative_hecke(uw,i,Mvp(:x)^den)
   InfoChevie("   Relative ",R,"\n");
   sch=schur_elements(H)
@@ -808,7 +808,7 @@ function THCdegrees(W,i,rel=false)
   sch=CycPol.(sch)
   cmpvec(sch,reldeg;na=string("Schur(",repr(R;context=rio()),")"),nb="ud")
   if rel reldeg
-  else  Ref(descent_of_scalars(cusp*index,den)).//(sch*1//1)
+  else  Ref(subs(cusp*index,Pol()^den)).//(sch*1//1)
   end
 end
 

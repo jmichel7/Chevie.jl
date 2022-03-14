@@ -909,7 +909,7 @@ function simplify(res::FactSchur)
     end
     k=collect(values(first(monomial.d)[1].d))
     if k[1]<0
-      pol=descent_of_scalars(pol,-1)
+      pol=subs(pol,Pol()^-1)
       k=-k
       monomial=inv(monomial)
       factor*=pol.coeff*monomial^pol.valuation
@@ -921,7 +921,7 @@ function simplify(res::FactSchur)
       n=root(n)//c
       if n!=1
         monomial*=n
-        pol=ennola_twist(pol,1//n)
+        pol=subs(pol,Pol([Root1(n)],1))
         factor*=pol.coeff
         if isone(pol.coeff^2) pol*=pol.coeff
         else pol//=pol.coeff
@@ -937,7 +937,7 @@ function simplify(res::FactSchur)
   else
     vcyc=map(collectby(x->x.monomial,evcyc))do fil
       D=lcm(map(x->denominator(x.power), fil))
-      P=prod(x->descent_of_scalars(x.pol,D*x.power),fil)
+      P=prod(x->subs(x.pol,Pol()^(D*x.power)),fil)
       p=P(Pol())
       p=improve_type(p)
       f=filter(i->p.c[i]!=0,eachindex(p.c))-1
