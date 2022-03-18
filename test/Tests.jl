@@ -833,7 +833,7 @@ function EigenAndDegHecke(s)
   W=H.W
   ct=CharTable(H).irr
   ct1=CharTable(W).irr
-  ct2=improve_type(scal(value.(ct,Ref(:q=>zeta))))
+  ct2=improve_type(scalar(value.(ct,Ref(:q=>zeta))))
   n=axes(ct2,1)
   good=filter(i->!any(x->x isa HasType.Unknown,ct2[:,i]),n)
   p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
@@ -842,7 +842,7 @@ function EigenAndDegHecke(s)
   end
   d1=exponent(d)//gcd(order(d),gcd(degrees((W))))
   i=position_regular_class(W,d1) # this class represents F
-  omegachi=map(x->scal(value(x[i]//x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
+  omegachi=map(x->scalar(value(x[i]//x[1],:q=>1)),eachrow(^(ct,p,dims=1)))
   frac=degree.(central_monomials(H)).*d1
   om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
   if omegachi!=om2 
@@ -850,14 +850,15 @@ function EigenAndDegHecke(s)
     ChevieErr(classinfo(W)[:classtext][i],"^",1//d1," not equal to π(",W,")\n")
   end
   ss=CycPol.(schur_elements(H)^p)
-  ss=map(x->s.degree//x,ss)
+  ss=map(x->degree(s)//x,ss)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
-  zeta=Cyc(Root1(;r=d1)^frac[PositionId(W)])
+  zeta=Cyc(Root1(;r=d1)^frac[charinfo(W)[:positionId]])
   if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
     omegachi=map(i->Root1(;r=s.d*s.e*s.delta*
               ((i-1)//s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
     zeta=Root1(;r=s.d*s.e*s.delta*s.d*dSeries.mC(s)[1])
   end
+  Mod1(x)=(numerator(x)%denominator(x))//denominator(x)
   map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=Mod1(frac)),ss,omegachi,frac)
 end
 
