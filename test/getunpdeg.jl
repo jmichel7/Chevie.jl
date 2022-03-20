@@ -251,12 +251,12 @@ function FindRelativeHecke(W,Ed,known)
     p=vcat(map(x->fill(x[1],x[2]),p)...)
     p=difference_multiset(p,ser.degparam)
     if isempty(p) # all are known
-      p=List(sch[ser.ind],i->Position(sch[ser.ind],i))
-      poss=FitParameter(sch[ser.ind],ser.degparam,d)
-      poss=vcat(List(poss,TransposedMat)...)
-      sort!(poss,by=x->x[2])
-      poss=List(poss,y->ser.degparam[y[1]])
-      p=Position(poss,maximum(poss))
+      p=map(i->findfirst(==(i),sch[ser.ind]),sch[ser.ind])
+      poss=dSeries.FitParameter(map(x->subs(x,Pol([Ed],1)),sch[ser.ind]),ser.degparam)
+      poss=vcat(map(x->collect(zip(x...)),poss)...)
+      sort!(poss,by=last)
+      poss=map(y->ser.degparam[y[1]],poss)
+      p=argmax(poss)
       if p!=1 SortParallel(E(s.e)^(1-p)*E.(s.e,0:s.e-1),poss) end
       poss=[poss]
     else poss=solveit(0:s.e-1,ser.degparam,ser.specialization,p)
@@ -424,6 +424,7 @@ see "split spetses" chapter 5
 """
 function getunpdeg(W;ennola=true,principal=Int[])
   function ser(d,H)
+    @show d,H
     s=Series(spets(W),
     subspets(spets(W),Int[],classreps(W)[position_regular_class(W,d)]),1,d;
      NC=true)
@@ -446,9 +447,9 @@ function getunpdeg(W;ennola=true,principal=Int[])
     end
     p=findfirst(ss->ss.d==s.d && ss.cuspidal==s.cuspidal,sers)
     if isnothing(p) push!(sers,s)
-    elseif sers[p].Hecke.parameter!=s.Hecke.parameter error()
+    elseif sers[p].Hecke.para!=s.Hecke.para error()
     end
-    UniteSet(chars,n)
+    chars=union(chars,n)
     if length(chars)==nbu
       if !isempty(d) println("****** Found all!!!") end
       return true
@@ -479,23 +480,26 @@ function getunpdeg(W;ennola=true,principal=Int[])
       process(s)
     end
   end
-  cyclic=filter(x->length(relative_degrees(W,x))==1,RegularEigenvalues(W))
-  todo=vcat(List(Reversed(cyclic),d->List(PrimeResidues(d),k->k/d)))
+  cyclic=filter(x->length(relative_degrees(W,x))==1,regular_eigenvalues(W))
+# todo=vcat(map(d->map(k->E(order(d),k),prime_residues(order(d))),reverse(cyclic))...)
+  todo=reverse(cyclic)
   for d in todo
     H=FindRelativeHecke(W,d,chars)
     for k in 0:z-1
-      process(ser(Mod1(d+k/z),EnnolaTwistHecke(H,E(z,k),d)))
-      todo=Difference(todo,[Mod1(d+k/z)])
+      process(ser(d*E(z,k),EnnolaTwistHecke(H,E(z,k),d)))
+      todo=setdiff(todo,[d*E(z,k)])
     end
   end
-  todo=reverse(setdiff(RegularEigenvalues(W),Union(cyclic,DivisorsInt(z))))
-  todo=Union(List(todo,d->List(PrimeResidues(d),k->k/d)))
+  todo=reverse(setdiff(regular_eigenvalues(W),union(cyclic,E.(divisors(z)))))
+  if !isempty(todo)
+  todo=union(map(d->map(k->E(order(d),k),prime_residues(order(d))),todo)...)
+  end
   for d in todo
     H=FindRelativeHecke(W,d,chars)
     if H==false Print("**** Could not compute ",d,"-series!!!!\n")
     else process(ser(d,H));todo=setdiff(todo,[d]) end
   end
-  [sers,chars]
+  [sers,FormatAsRanges(sort(chars))]
 end
 
 ## find pairs of families with same a and A

@@ -832,7 +832,7 @@ function EigenAndDegHecke(s)
   zeta=Cyc(d)
   W=H.W
   ct=CharTable(H).irr
-  ct1=CharTable(W).irr
+  ct1=0 .+CharTable(W).irr
   ct2=improve_type(scalar(value.(ct,Ref(:q=>zeta))))
   n=axes(ct2,1)
   good=filter(i->!any(x->x isa HasType.Unknown,ct2[:,i]),n)

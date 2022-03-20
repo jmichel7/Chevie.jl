@@ -360,17 +360,19 @@ end
 
 positive(p::CycPol)=all(>(0),values(p.v))
 
-# FitParameter(sch,m) given:
-# sch: schur elements for H(Z/e) given as CycPols
-# m:   a list of length e of Rationals, exponents of params
-#
-# finds all permutations σ of 1:e such that the parameters pₖ=E(e,σₖ-1)q^mₖ
-# gives  sch by the formula schᵢ=∏_{j≠i}(1-pᵢ/pⱼ). Since multiplying the pₖ
-# by  a  scalar  leaves  invariant  the  sch,  σ  is  known  only  modulo a
-# translation.
-#
-# The  result is  a list  of pairs  [v1,v2] telling that globally σ(v1)=v2,
-# where the v1 are sort(collectby(sch,eachindex(sch)),by=minimum)
+"""
+`FitParameter(sch,m)` given:
+sch: schur elements for H(ℤ/e) given as CycPols
+m:   a list of length e of Rationals, exponents of params
+
+finds all permutations σ of 1:e such that the parameters pₖ=E(e,σₖ-1)q^mₖ
+gives  sch by the formula schᵢ=∏_{j≠i}(1-pᵢ/pⱼ). Since multiplying the pₖ
+by  a  scalar  leaves  invariant  the  sch,  σ  is  known  only  modulo a
+translation.
+
+The  result is  a list  of pairs  [v1,v2] telling that globally σ(v1)=v2,
+where the v1 are sort(collectby(sch,eachindex(sch)),by=minimum)
+"""
 function FitParameter(sch, m::AbstractVector{<:Rational{<:Integer}})
   den=lcm(denominator.(m))
   e=length(m)
