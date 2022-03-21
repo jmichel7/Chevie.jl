@@ -169,7 +169,7 @@ function degparam(W,Ed::Root1,l=CycPol[])
     end # else all linear chars known
     maxs=map(o->eW(reflection_subgroup(W,s.WGL.reflists[o.s]))*o.N_s,ho)
     maxs=decomposeassum(first.(lin),map(x->x.order,ho),maxs)
-    return map(i->max[i]/ho[i].order/ho[i].N_s,eachindex(ho))
+    return map(i->maxs[i]//ho[i].order//ho[i].N_s,eachindex(ho))
   end
 # Print("maxdeg=",eW(s.WGL)/ho[1].order,"\n");
   ff,faA=RouquierFamilies(W)
@@ -217,6 +217,7 @@ function FindRelativeHecke(W,Ed,known)
   uw=UnipotentCharacters(W)
   sch=map(x->sign(Int(x(Ed)))*degree(s)//x,ud)
   # known parameters <-> linear chars of WGL corresp to known => ser.ind
+  sort!(known)
   lin=filter(i->abs(Int(ud[i](Ed)))==1,known)
   aA=uw.a[lin]+uw.A[lin]
   ser=(ind=lin,aA=aA,eigen=eigen(uw)[lin],
@@ -257,11 +258,11 @@ function FindRelativeHecke(W,Ed,known)
       sort!(poss,by=last)
       poss=map(y->ser.degparam[y[1]],poss)
       p=argmax(poss)
-      if p!=1 SortParallel(E(s.e)^(1-p)*E.(s.e,0:s.e-1),poss) end
+      if p!=1 poss=poss[sortperm(map(x->x.r,E(s.e)^(1-p)*E.(s.e,0:s.e-1)))] end
       poss=[poss]
     else poss=solveit(0:s.e-1,ser.degparam,ser.specialization,p)
       poss=map(poss)do v
-        res=fill(0,maximum(last.(v))+1)
+        res=fill(0//1,maximum(last.(v))+1)
         for x in v res[x[2]+1]=x[1] end
         return res 
       end
@@ -307,14 +308,14 @@ function FindRelativeHecke(W,Ed,known)
     res=[]
     pp=charinfo(s.WGL)[:charparams][vcat([charinfo(s.WGL)[:positionId]],ho[1].det_s)]
     for c in p
-      pars=map(a->map(i->E(ho[1].order,i)//Ed^a[i+1]*Mvp("q")^a[i+1],
+      pars=map(a->map(i->E(ho[1].order,i)//Ed^a[i+1]*Mvp(:q)^a[i+1],
                       0:ho[1].order-1),arrangements(c,ho[1].order))
       print("\t",length(pars)," to try:")
       for par in pars
         print(".")
         H=hecke(s.WGL,[par])
-        ss=map(x->schur_element(H,x),pp)
-        if all(x->ForAll(x.elm,y->ForAll(y.coeff,IsInt)),ss)
+        ss=map(x->HeckeAlgebras.schur_element(H,x),pp)
+        if all(x->all(isinteger,degree.(monomials(x))),ss)
           ss=CycPol.(ss)
           if all(i->i in sch,ss) push!(res,par) end
         end
@@ -338,25 +339,26 @@ function FindRelativeHecke(W,Ed,known)
   else # for Length(ho)>1 we assume p contains correct list of degparam
     p=reverse.(p)
     pars=cartesian(map(i->map(a->vcat([p[i][1]],a),
-           arrangements(p[i][2:ho[i].order],ho[i].order-1)),eachindex(ho)))
+           arrangements(p[i][2:ho[i].order],ho[i].order-1)),eachindex(ho))...)
     print("\t",length(pars)," to try:")
-    pars=map(x->map(j->map(0:ho[j].order-1,i->
-     E(ho[j].order,i)/Ed^x[j][i+1]*Mvp(:q)^x[j][i+1]),pars),eachindex(ho))
+    pars=map(x->map(y->Int.(y),x),pars)
+    pars=map(x->map(j->map(i->E(ho[j].order,i)/Ed^x[j][i+1]*Mvp(:q)^x[j][i+1],
+                           0:ho[j].order-1),eachindex(ho)),pars)
     print("\t",length(pars)," to try:")
     res=[]
     pp=[charinfo(s.WGL)[:charparams][charinfo(s.WGL)[:positionId]]]
     for par in pars
       print(".")
-      i=[]
+      i=fill([],ngens(s.WGL))
       for j in eachindex(par) 
         i[ho[j].s]=par[j]
       end
-      par=i;
-      H=Hecke(s.WGL,i);
-      ss=map(x->schur_element(H,x),pp);
-      if ForAll(ss,x->ForAll(x.elm,y->ForAll(y.coeff,IsInt)))
-	ss=List(ss,CycPol);
-        if ForAll(ss,i->i in sch) Add(res,par) end
+      par=i
+      H=hecke(s.WGL,i)
+      ss=map(x->HeckeAlgebras.schur_element(H,x),pp);
+      if all(x->all(isinteger,degree.(monomials(x))),ss)
+	ss=CycPol.(ss)
+        if all(i->i in sch,ss) push!(res,par) end
       end
     end
     if length(res)>1 error("possibilities:",res) end
@@ -401,11 +403,11 @@ function finddeinW(W,s,il)
             " when ",length(m)," occur in given list")
       p=abs.(positionssgn(ud,r.deg))
       println("they are in positions ",p," with eig ",eigs[p])
-      prinln("this error is for ",Position(il,r),"-th in given list")
+      println("this error is for ",findfirst(==(r),il),"-th in given list")
       error()
     else
       if length(m)>1
-        if !haskey(s,ambig) s.ambig=[] end
+        if !haskey(s,:ambig) s.ambig=[] end
         push!(s.ambig,[m,p])
       end
       res[m]=p
@@ -424,7 +426,6 @@ see "split spetses" chapter 5
 """
 function getunpdeg(W;ennola=true,principal=Int[])
   function ser(d,H)
-    @show d,H
     s=Series(spets(W),
     subspets(spets(W),Int[],classreps(W)[position_regular_class(W,d)]),1,d;
      NC=true)
@@ -490,7 +491,7 @@ function getunpdeg(W;ennola=true,principal=Int[])
       todo=setdiff(todo,[d*E(z,k)])
     end
   end
-  todo=reverse(setdiff(regular_eigenvalues(W),union(cyclic,E.(divisors(z)))))
+  todo=reverse(setdiff(regular_eigenvalues(W),union(cyclic,E.(z,1:z))))
   if !isempty(todo)
   todo=union(map(d->map(k->E(order(d),k),prime_residues(order(d))),todo)...)
   end

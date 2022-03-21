@@ -124,8 +124,8 @@ module HeckeAlgebras
 using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
-  isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
-  VFactorSchurElement, alt, coefftype, HeckeCoset
+  schur_element, isrepresentation, FactorizedSchurElements, 
+  FactorizedSchurElement, VFactorSchurElement, alt, coefftype, HeckeCoset
 
 @GapObj struct HeckeAlgebra{C,TW}
   W::TW
@@ -227,7 +227,7 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
   end
   d=Dict{Symbol,Any}(:equal=>allequal(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
-  HeckeAlgebra(W,para,d)
+  HeckeAlgebra(W,improve_type(para),d)
 end
 
 function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
