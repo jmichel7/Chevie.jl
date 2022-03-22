@@ -228,11 +228,16 @@ function Groups.normalizer(W,L::PermRootGroup)
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 
-# return 'action' of reflection(W,i) on X(Z_L)
-# a namedtuple with root, coroot, eigenvalue, index=i and parentMap
+"""
+`relative_root(W,L,i)`
+
+return 'action' of reflection(W,i)∉ L on X(Z_L)
+a namedtuple with root, coroot, eigenvalue, index=i and parentMap
+"""
 function relative_root(W,L,i)
 # xprintln("W=",W," i=",i," L=",L)
   N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
+  if length(N)==length(L) error("N(L)==L") end
   F=N/L
 # xprintln(abelian_gens(elements(F)))
   if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
@@ -407,7 +412,7 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
   return nothing
 end
 
-function Weyl.relative_group(W,J,indices=false)
+function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
   if indices!=false res[:callarg]*=","*joindigits(indices) end
