@@ -100,7 +100,7 @@ We illustrate these computations on some examples:
 
 ```julia-repl
 julia> UnipotentClasses(rootdatum(:sl,4))
-UnipotentClasses(A₃)
+UnipotentClasses(sl₄)
 1111<211<22<31<4
    u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³) A₁(A₃₍₁₃₎=A₁×A₁Φ₁)/-1 .(A₃)/ζ₄
 ────┼──────────────────────────────────────────────────────────────────────
@@ -242,7 +242,8 @@ module Ucl
 using ..Gapjm
 
 export UnipotentClasses, UnipotentClassOps, ICCTable, XTable, GreenTable,
- UnipotentValues, induced_linear_form, special_pieces, name
+ UnipotentValues, induced_linear_form, special_pieces, name,
+ distinguished_parabolics
 
 @GapObj struct UnipotentClass
   name::String
@@ -346,7 +347,27 @@ function induced_linear_form(W,K,h)
         inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
 end
 
-function DistinguishedParabolicSubgroups(W)
+"""
+`distinguished_parabolics(W)` 
+
+the  list  of  distinguished  parabolic  subgroups  of  `W` in the sense of
+Richardson,  each  given  as  the  list  of  the corresponding indices. The
+distinguished  unipotent  conjugacy  classes  of  `W`  consist of the dense
+unipotent orbit in the unipotent radical of such a parabolic.
+
+```julia-repl
+julia> W=coxgroup(:F,4)
+F₄
+
+julia> distinguished_parabolics(W)
+4-element Vector{Vector{Int64}}:
+ []
+ [3]
+ [1, 3]
+ [1, 3, 4]
+```
+"""
+function distinguished_parabolics(W)
   filter(combinations(eachindex(gens(W)))) do J
     if isempty(J) return true end
     p=fill(1,semisimplerank(W))
@@ -359,7 +380,7 @@ end
 function BalaCarterLabels(W)
   vcat(map(parabolic_reps(W)) do J
     L=reflection_subgroup(W,J)
-    map(DistinguishedParabolicSubgroups(L))do D
+    map(distinguished_parabolics(L))do D
       w=fill(2,length(J));w[D].=0
       u=copy(J);u[D]=-u[D]
       [induced_linear_form(W,L,w),u]
@@ -556,7 +577,7 @@ by its value on the generators of the centre.
 
 ```julia-repl
 julia> W=rootdatum(:sl,4)
-A₃
+sl₄
 
 julia> uc=UnipotentClasses(W);
 
@@ -590,7 +611,7 @@ julia> uc=UnipotentClasses(rootdatum(:E6sc));
 
 julia> xdisplay(uc;cols=[5,6,7],spaltenstein=true,frame=true,mizuno=true,
       order=false)
-UnipotentClasses(E₆)
+UnipotentClasses(E₆sc)
      u│            E₆(E₆₍₎) G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃ G₂(E₆₍₁₃₅₆₎=A₂×A₂)/ζ₃²
 ──────┼──────────────────────────────────────────────────────────────────
 E₆    │                1:1ₚ                  ζ₃:1                  ζ₃²:1
@@ -647,7 +668,7 @@ function UnipotentClasses(t::TypeIrred,p=0)
   springerseries=uc[:springerSeries]
   for s in springerseries
     if isempty(s[:levi]) s[:levi]=Int[] end
-#   s[:levi]=PermRoot.indices(t)[s[:levi]]
+#   s[:levi]=indices(t)[s[:levi]]
     s[:locsys]=Vector{Int}.(s[:locsys])
   end
   orderclasses=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
@@ -682,7 +703,7 @@ function UnipotentClasses(W,p=0)
     l=Vector{Int}[]
   else
     classes=map(cartesian(map(x->x.classes,uc)...)) do v
-      l=PermRoot.indices.(t)
+      l=indices.(t)
       if length(v)==1 && issorted(l[1]) u=deepcopy(v[1])
       else
         u=UnipotentClass(join(map(x->x.name,v),","),map(x->x.parameter,v),
@@ -776,7 +797,7 @@ function UnipotentClasses(W,p=0)
 # fundamental group.
   if !all(x->Set(x[:Z])==Set([1]),springerseries)
     springerseries=filter(s->all(y->prod(s[:Z][y])==1,
-             algebraic_centre(W)[:descAZ]),springerseries)
+             algebraic_centre(W).descAZ),springerseries)
     AdjustAu!(classes,springerseries)
   end
   if spetscase

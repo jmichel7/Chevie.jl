@@ -2,8 +2,6 @@
 This  module contains  various utility  functions used  in the  rest of the
 code.  Maybe some  of them  exist in  some Julia  module I am not aware of;
 please tell me.
-
-The code is divided in sections  according to semantics.
 """
 module Util
 
@@ -11,7 +9,8 @@ export
   @forward,
   getp, @GapObj, # helpers for GapObjs
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
-  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, # formatting
+  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, 
+  hasdecor, # formatting
   factor, prime_residues, divisors, φ, primitiveroot #number theory
 
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -52,9 +51,40 @@ f returns o.p, because f sets several keys at once...
 """
 getp(f::Function,o,p::Symbol)=get!(()->(f(o);o.prop[p]),o.prop,p)
 
-# a GapObj is an object which has a field prop::Dict{Symbol,Any}
-# so has fixed fields but can dynamically have new ones
-# usage: @GapObj struct ...
+"""
+`@GapObj struct...`
+
+A `GapObj` is a kind of object where properties are computed on demand when
+asked for. So it has fixed fields but can dynamically have new ones.
+
+```julia_repl
+julia> @GapObj struct Foo
+       a::Int
+       end
+
+julia> s=Foo(1,Dict{Symbol,Any}())
+Foo(1, Dict{Symbol, Any}())
+
+julia> s.a
+1
+
+julia> haskey(s,:b)
+false
+
+julia> s.b="hello"
+"hello"
+
+julia> s.b
+"hello"
+
+julia> haskey(s,:b)
+true
+```
+The  properties when computed are stored in the field `.prop` of `G`, which
+is  of type `Dict{Symbol, Any}()`. This  explains the extra argument needed
+in the constructor. The name is because it mimics a GAP record, but perhaps
+there could be a better name.
+"""
 macro GapObj(e)
   push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
   if e.args[2] isa Symbol T=e.args[2]
@@ -73,6 +103,7 @@ end
 
 #----------------------- Formatting -----------------------------------------
 # print with attributes...
+hasdecor(io::IO)=get(io,:TeX,false)||get(io,:limit,false)
 rio(io::IO=stdout;p...)=IOContext(io,:limit=>true,p...)
 xprint(x...;p...)=print(rio(;p...),x...)
 xprintln(x...;p...)=println(rio(;p...),x...)
@@ -342,6 +373,8 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
   end
 end
 
+showtable(t::AbstractMatrix;opt...)=showtable(stdout,t;opt...)
+
 function ordinal(n)
   str=repr(n)
   if     n%10==1 && n%100!=11 str*="st"
@@ -359,16 +392,21 @@ function joindigits(l,delim="()";always=false,sep=",")
 end
 
 """
- `cut(string;options)`
+ `cut(io::IO=stdout,string;width=displaysize(io)[2]-2,after=",",before="")`
 
- This function prints the string argument cut across several lines
- for improved display. It can take the following keyword options:
-  - width=displaysize(stdout)[2]-2 the cutting width
-  - after=","                      cut after these chars
-  - before=""                      cut before these chars
-  - file=stdout                    to which file print the string
+This  function prints to `io` the  string argument cut across several lines
+for improved display. It can take the following keyword arguments:
+  - width   the cutting width
+  - after   cut after these chars
+  - before  cut before these chars
+```julia-rep1
+julia> cut(string(collect(1:50)))
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+ 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+ 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+```
 """
-function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
+function cut(io::IO,s;width=displaysize(stdout)[2]-2,after=",",before="")
   a=split(s,"\n")
   if a[end]=="" a=a[1:end-1] end
   for s in a
@@ -387,7 +425,7 @@ function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
           pos=pb
         else error("could not cut ",s[pos:i])
         end
-        println(file,pr)
+        println(io,pr)
         l-=textwidth(pr)
         pa=pb=0
       end  
@@ -395,10 +433,11 @@ function cut(s;width=displaysize(stdout)[2]-2,after=",",before="",file=stdout)
       if c in after pa=i end
       if c in before pb=i end
     end
-    println(file,s[pos:end])
+    println(io,s[pos:end])
   end
-  if file!=stdout close(file) end
 end
+
+cut(s;k...)=cut(stdout,s;k...)
 
 TeXs(x;p...)=repr("text/plain",x;context=IOContext(stdout,:TeX=>true,p...))
 
@@ -419,24 +458,26 @@ end
 
 #----------------------- Number theory ---------------------------
 import Primes
-const dict_factor=Dict(2=>Primes.factor(Dict,2))
+const dict_factor=Dict(2=>Primes.factor(2))
 """
 `factor(n::Integer)`
+
 make `Primes.factor` fast for small Ints by memoizing it
 """
-factor(n::Integer)=get!(()->Primes.factor(Dict,n),dict_factor,n)
+factor(n::Integer)=if n<300 get!(()->Primes.factor(n),dict_factor,n)
+                   else Primes.factor(n) end
 
 " `prime_residues(n)` the numbers less than `n` and prime to `n` "
 function prime_residues(n)
   if n==1 return [0] end
-  pp=trues(n)
+  pp=trues(n) # use a sieve to go fast
   for p in keys(factor(n))
     pp[p:p:n].=false
   end
   (1:n)[pp]
 end
 
-" `divisors(n)` the list of divisors of `n`."
+" `divisors(n)` the increasing list of divisors of `n`."
 function divisors(n::Integer)::Vector{Int}
   if n==1 return [1] end
   sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))

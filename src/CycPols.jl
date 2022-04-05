@@ -85,7 +85,7 @@ stringexp=CyclotomicNumbers.stringexp
 stringind=CyclotomicNumbers.stringind
 format_coefficient=CyclotomicNumbers.format_coefficient
 using ..Combinat: collectby
-using ..Util: primitiveroot, divisors, stringprime
+using ..Util: primitiveroot, divisors, stringprime, hasdecor
 using Primes: Primes, primes, totient # totient=Euler φ
 
 # The  computed  cyclotomic  polynomials  are  cached 
@@ -284,7 +284,7 @@ function Base.show(io::IO, ::MIME"text/html", a::CycPol)
 end
 
 function Base.show(io::IO,a::CycPol)
-  if !(get(io,:limit,false) || get(io,:TeX,false))
+  if !hasdecor(io)
     print(io,"CycPol(",a.coeff,",",a.valuation)
     for (r,m) in a.v print(io,",",r.r,"=>",m) end
     print(io,")")

@@ -7,10 +7,6 @@ concrete implementations:
   - The function `gens(G)` returns the list of generators of the group `G`. 
   - The function `one(G)` returns the identity element of `G`.
   
-Further,  a group  is a  `GapObj`, a  kind of  object where  properties are
-computed on demand when asked for; such properties when computed are stored
-in the field `.prop` of `G`, which is of type `Dict{Symbol, Any}()`.
-
 # Examples
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
@@ -39,6 +35,12 @@ Dict{Symbol, Any} with 1 entry:
   :minwords => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2,…
   
 ```
+
+for  further information,  look at  the docstrings  of centralizer, centre,
+classreps, comm, conjugacy_class, conjugacy_classes, Coset,
+fusion_conjugacy_classes,    gens,   Hom,   isabelian,   iscyclic,   words,
+minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
+position_class, stabilizer, transporting_elt, transversal
 """
 module Groups
 export Group, centralizer, centre, classreps, comm,
@@ -54,6 +56,7 @@ export word, elements, kernel, order
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
+"`normalizer(G::Group,H::Group)` the normalizer of `H` in `G`"
 function normalizer end
 
 "`one(G::Group)` returns the identity element of `G`."
@@ -86,7 +89,7 @@ end
 
 (W::Group)(i::Integer)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
 
-"`comm(a,b)` the commutator of `a` and `b`"
+"`comm(a,b)` the commutator `a^-1*b^-1*a*b` of `a` and `b`"
 comm(a,b)=inv(a)*inv(b)*a*b
 
 """
@@ -250,6 +253,17 @@ Group([(3,4),(1,2),(1,2)(3,4)])
 """
 stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
 
+"""
+`center(G::Group)` the centre of `G`
+
+```julia_repl
+julia> G=Group([Perm(1,2),Perm(3,4),Perm(1,3)*Perm(2,4)])
+Group([(1,2),(3,4),(1,3)(2,4)])
+
+julia> centre(G)
+Group([(1,2)(3,4)])
+```
+"""
 function centre(G::Group)
   get!(G,:centre) do
     centralizer(G,G)
@@ -257,7 +271,7 @@ function centre(G::Group)
 end
 
 """
-`minimal_words(G)`
+`minimal_words(G::Group)`
 
 returns  a `Dict` giving for each element of `G` a minimal positive word in
 the generators representing it.
@@ -292,7 +306,7 @@ function minimal_words(G::Group)
 end
 
 """
-`words(G)`
+`words(G::Group)`
 
 returns  a `Dict`  giving for  each element  of `G`  a positive word in the
 generators representing it. It is faster than `minimal_words` but the words
@@ -390,7 +404,7 @@ function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   end
 end
 
-"`conjugacy_classes(G::Group,i::Integer)` the `i`-th class of `G`"
+"`conjugacy_class(G::Group,i::Integer)` the `i`-th class of `G`"
 function conjugacy_class(G::Group{T},i::Int)::Vector{T} where T
   if !haskey(G,:classes) 
     G.classes=Vector{Vector{T}}(undef,nconjugacy_classes(G))
@@ -431,7 +445,26 @@ end
 "`nconjugacy_classes(G::Group)` the number of conjugacy classes of `G`"
 nconjugacy_classes(G::Group)=length(classreps(G))
 
-# hom from source to target sending gens(source) to images
+"""
+`Hom(S::Group,T::Group,images)`
+
+builds an object representing the homomorphism from `S` to `T` which maps
+`gens(S)` to `images`.
+
+```julia-repl
+julia> S=Group([Perm(1,2),Perm(2,3)])
+Group([(1,2),(2,3)])
+
+julia> T=Group([Perm(1,2)])
+Group([(1,2)])
+
+julia> h=Hom(S,T,[T(1),T(1)])
+Hom(Group([(1,2),(2,3)])→ Group([(1,2)]);[(1,2), (2,3)]↦ [(1,2), (1,2)]
+
+julia> h(S(1,2)) # the image by h
+()
+```
+"""
 struct Hom{T,T1}
   source::Group{T}
   target::Group{T1}

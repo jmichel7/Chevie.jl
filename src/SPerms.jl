@@ -201,13 +201,12 @@ order of the signed permutation a
 Gapjm.order(a::SPerm) = lcm(length.(cycles(a)))
 
 function Base.show(io::IO, a::SPerm)
-  replorTeX=get(io,:limit,false)||get(io,:TeX,false)
-  if !replorTeX print(io,"sperm\"") end
+  if !hasdecor(io) print(io,"sperm\"") end
   cyc=cycles(a)
   if isempty(cyc) print(io,"()")
   else for c in cyc print(io,"(",join(c,","),")") end
   end
-  if !replorTeX print(io,"\"") end
+  if !hasdecor(io) print(io,"\"") end
 end
 
 function Base.show(io::IO, ::MIME"text/plain", p::SPerm{T})where T

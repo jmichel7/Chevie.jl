@@ -253,11 +253,11 @@ length the additional cases `²B₂`, `²G₂`, `²F₄` and `²I₂(k)` arise.
 
 The  most general  construction of  a Coxeter  coset is  by starting from a
 Coxeter   datum   specified   by   the   matrices   of   'simpleRoots'  and
-'simpleCoroots',  and  giving  in  addition  the  matrix 'F0Mat' of the map
+'simplecoroots',  and  giving  in  addition  the  matrix 'F0Mat' of the map
 `F₀:V→ V` (see the commands  'CoxeterCoset' and 'CoxeterSubCoset'). As for
 Coxeter  groups,  the  elements  of  `Wϕ`  are  uniquely  determined by the
 permutation  they  induce  on  the  set  of  roots  `R`.  We consider these
-permutations as 'Elements' of the Coxeter coset.
+permutations as 'elements' of the Coxeter coset.
 
 Coxeter  cosets are implemented by a struct which points to a Coxeter datum
 record  and  has  additional  fields  holding 'F0Mat' and the corresponding
@@ -513,7 +513,7 @@ julia> twistings(coxgroup(:D,4))
  ³D₄₍₁₄₃₂₎
 
 julia> W=rootdatum(:so,8)
-D₄
+so₈
 
 julia> twistings(W)
 2-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
@@ -577,7 +577,7 @@ unitary group `GU_3(q)` over the finite field `FF(q)`.
 
 ```julia-repl
 julia> W=rootdatum(:gl,3)
-A₂Φ₁
+gl₃
 
 julia> gu3=spets(W,-reflrep(W,W()))
 ²A₂Φ₂
@@ -691,11 +691,11 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
   get!(WF,:refltype)do
     W=Group(WF)
     t=refltype(W)
-    c=map(x->PermRoot.indices(x),t)
+    c=map(x->indices(x),t)
     phires=Perm(action.(Ref(W),eachindex(roots(W)),WF.phi))
     map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
       o=deepcopy(t[c])
-      J=PermRoot.indices(o[1])
+      J=indices(o[1])
       twist=Perm(J,J.^(phires^length(c)))
       if o[1].series==:D && length(J)==4
         if order(twist)==2
@@ -706,7 +706,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
           twist=Perm(1,2,4)
         end
       end
-      for i in 2:length(c) o[i].indices=PermRoot.indices(o[i-1]).^phires end
+      for i in 2:length(c) o[i].indices=indices(o[i-1]).^phires end
       TypeIrred(Dict(:orbit=>o,:twist=>twist))
     end
   end
@@ -732,18 +732,24 @@ PermRoot.parabolic_reps(WF::Spets,s)=if !isone(WF.phi) error() else
 PermRoot.Diagram(W::Spets)=Diagram.(refltype(W))
 
 function Base.show(io::IO, WF::Spets)
+  if haskey(WF,:callname) 
+    if hasdecor(io) printTeX(io,WF.TeXcallname) 
+    else print(io,WF.callname)
+    end
+    return 
+  end
   W=Group(WF)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
+  if !hasdecor(io)
     print(io,"spets(",W,",",WF.phi,")")
     return
   end
   if haskey(WF,:parent)
-    n=inclusion(WF,PermRoot.indices(refltype(WF)))
+    n=inclusion(WF,indices(refltype(WF)))
     if n!=eachindex(gens(Group(WF.parent)))
       printTeX(io,"{",WF.parent,"}_{"*joindigits(n;always=true)*"}=")
     end
   elseif isdefined(W,:parent)
-    n=inclusion(W,PermRoot.indices(refltype(WF)))
+    n=inclusion(W,indices(refltype(WF)))
     if n!=eachindex(gens(W.parent))
       printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
     end
@@ -1131,9 +1137,28 @@ Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
 
 " `rootdatum(string or symbol,...)` root datum from type "
 function Weyl.rootdatum(t::Symbol,r::Int...)
-   if haskey(rootdata,t) return rootdata[t](r...) end
+   if haskey(rootdata,t) 
+     res=rootdata[t](r...) 
+     n=string(t)
+     res.callname="rootdatum("*repr(t)
+     if !isempty(r) res.callname*=","*join(r,",") end
+     res.callname*=")"
+     sc=endswith(n,"sc")
+     if sc n=n[1:end-2] end
+     pre=match(r"^[0-9]+",n)
+     if !isnothing(pre) res.TeXcallname="{}^{"*pre.match*"}"
+     else res.TeXcallname=""
+     end
+     mid=match(r"[a-zA-Z-]+",n)
+     if !isnothing(mid) res.TeXcallname*=mid.match end
+     las=match(r"[0-9]+$",n)
+     if !isnothing(las) res.TeXcallname*="_{"*las.match*"}" end
+     if !isempty(r) res.TeXcallname*="_{"*join(r,",")*"}" end
+     if sc res.TeXcallname*="sc" end
+     return res
+   end
    error("Unknown root datum $(repr(t)). Known types are:\n",
-              join(sort(collect(keys(rootdata))),", "))
+         sprint(cut,join(sort(collect(keys(rootdata))),", ")))
 end
 
 id(r)=one(fill(0,r,r))

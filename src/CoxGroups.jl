@@ -828,8 +828,7 @@ function CoxSym(n::Int)
 end
 
 function Base.show(io::IO, W::CoxSym)
-  if get(io,:TeX,false) || get(io,:limit,false)
-    printTeX(io,"\\mathfrak S_{$(W.n)}")
+  if hasdecor(io) printTeX(io,"\\mathfrak S_{$(W.n)}")
   else print(io,"CoxSym($(W.n))")
   end
 end

@@ -39,7 +39,9 @@ orbits(::Group,::AbstractVector)
 elements(::Group)
 transversal
 centralizer
+centre
 stabilizer
+normalizer
 word(::Group,w)
 comm
 length(::Group)
@@ -54,6 +56,8 @@ transporting_elt
 isabelian
 iscyclic
 abelian_gens
+Hom
+kernel
 blocks(G,p)
 ```
 # Permutation groups
@@ -88,6 +92,7 @@ eigmat
 ```@docs
 Util
 @forward
+@GapObj
 showtable
 cut
 prime_residues
@@ -171,7 +176,11 @@ solutionmat
 # Integral matrices and lattices
 ```@docs
 smith
+smith_transforms
 hermite
+hermite_transforms
+col_hermite
+col_hermite_transforms
 baseInt
 complementInt
 DiaconisGraham
@@ -230,6 +239,7 @@ Weyl.standard_parabolic
 inversions
 with_inversions
 torus
+istorus
 SubTorus
 relative_group
 ```
@@ -362,6 +372,8 @@ is_isolated
 torsion_subgroup
 algebraic_centre
 weightinfo
+weights
+coweights
 centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
 SScentralizer_reps
 StructureRationalPointsConnectedCentre
@@ -424,6 +436,7 @@ GreenTable
 UnipotentValues
 induced_linear_form
 special_pieces
+distinguished_parabolics
 ```
 # Symbols
 ```@docs

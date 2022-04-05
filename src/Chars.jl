@@ -689,7 +689,7 @@ function Base.show(io::IO,t::CharInfo)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
-  if !(get(io,:TeX,false) || get(io,:limit,false))
+  if !hasdecor(io)
     print(io,ci.prop)
     return
   end
@@ -860,7 +860,7 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,t::CharTable)
-  if get(io,:TeX,false) || get(io,:limit,false) || !haskey(t,:repr) 
+  if hasdecor(io) || !haskey(t,:repr) 
     printTeX(io,"CharTable(\$",t.name,"\$)")
   else  print(io,t.repr)
   end
@@ -1345,8 +1345,7 @@ function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
 end
 
 function Base.show(io::IO,t::InductionTable)
-  if !get(io,:TeX,false) && !get(io,:limit,false) && haskey(t,:repr) 
-    print(io,t.repr)
+  if !hasdecor(io) && haskey(t,:repr) print(io,t.repr)
   else printTeX(io,t.identifier)
   end
 end

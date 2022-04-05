@@ -12,7 +12,7 @@ using ..Combinat: Combinat, tally
 using ..FFields: FFields, FFE, Mod, Z
 using ..Groups: Group, gens, word
 using ..Gapjm: Gapjm, Cyc, conductor, order
-using ..MatInt: smith
+using ..MatInt: smith_transforms
 
 #------------------ improve_type
 best_eltype(m)=reduce(promote_type,best_type.(m))
@@ -121,7 +121,7 @@ function abelian_gens(G::Group) # thanks to Klaus Lux for the algorithm
     rel[i]=-d
     rels[i,:]=rel
   end
-  rels=Int.(inv(smith(rels;transforms=true).coltrans//1))
+  rels=Integer.(inv(Rational.(smith_transforms(rels).coltrans)))
   filter(!isone,map(r->prod(l.^r),eachrow(rels)))
 end
 

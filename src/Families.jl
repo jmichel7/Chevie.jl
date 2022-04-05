@@ -891,7 +891,7 @@ function Base.show(io::IO, ::MIME"text/html",f::Family)
 end
 
 function Base.show(io::IO,f::Family)
-  if get(io,:TeX,false) || get(io,:limit,false) || !haskey(f,:group) 
+  if hasdecor(io) || !haskey(f,:group) 
     name=haskey(f,:name) ? f.name : "???"
     printTeX(io,"Family(\$",name,"\$")
   else print(io,"Family(",repr(f.group))

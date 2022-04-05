@@ -197,16 +197,16 @@ struct UnipotentElement{T}
 end
 
 function Base.show(io::IO,u::UnipotentElement)
-  if get(io,:limit,false) || get(io,:TeX,false)
-  if isempty(u.list) print(io,"()")
-  else for (r,c) in u.list
-    if get(io,:root,false)
-      printTeX(io,"u_{"*joindigits(u.U.W.rootdec[r])*"}")
-    else print(io,"u",r)
+  if hasdecor(io)
+    if isempty(u.list) print(io,"()")
+    else for (r,c) in u.list
+      if get(io,:root,false)
+        printTeX(io,"u_{"*joindigits(u.U.W.rootdec[r])*"}")
+      else print(io,"u",r)
+      end
+      print(io,"(",c,")")
     end
-    print(io,"(",c,")")
-  end
-  end
+    end
   else print(io,"U(",join(repr.(u.list),", "),")")
   end
 end

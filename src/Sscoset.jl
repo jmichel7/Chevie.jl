@@ -21,7 +21,7 @@ Here are some examples:
 
 ```julia-repl
 julia> WF=rootdatum(:u,6)
-²A₅Φ₂
+u₆
 ```
 
 We  can  see  `WF`  as  the  coset  `GL₆⋅σ`  where  `σ`  is the composed of
@@ -153,7 +153,7 @@ being those induced by `C_𝐆 (tσ)/C_𝐆 (tσ)⁰` on `C_𝐆 (tσ)⁰`.
 
 ```julia-repl
 julia> WF=rootdatum(:u,6)
-²A₅Φ₂
+u₆
 
 julia> s=SS(Group(WF),[1//4,0,0,0,0,3//4])
 SemisimpleElement{Root1}: <ζ₄,1,1,1,1,ζ₄³>
@@ -212,8 +212,8 @@ parabolic  subgroup of `W^σ`). If a second  argument `p` is given, it lists
 only those representatives which exist in characteristic `p`.
 
 ```julia-repl
-julia> WF=rootdatum(Symbol("2E6sc"))
-²E₆
+julia> WF=rootdatum("2E6sc")
+²E₆sc
 
 julia> QuasiIsolatedRepresentatives(WF)
 5-element Vector{SemisimpleElement{Root1}}:
@@ -253,7 +253,7 @@ of `C_𝐆 (tσ)⁰` is not in any proper parabolic subgroup of `W^σ`.
 
 ```julia-repl
 julia> WF=rootdatum(:u,6)
-²A₅Φ₂
+u₆
 
 julia> l=QuasiIsolatedRepresentatives(WF)
 4-element Vector{SemisimpleElement{Root1}}:

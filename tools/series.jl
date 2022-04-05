@@ -23,7 +23,7 @@ function findfractionalpowers(W)
       if isnothing(p) print("reticent series", s, "\n")
       else
         frac = mC(s)[p]*e(s)*s.d
-        fix = Mod1(uc[:fractions][charNumbers(s)[p]]-frac)
+        fix = modZ(uc[:fractions][charNumbers(s)[p]]-frac)
         if fix != 0
             print(" **** Badly normalized series ", s, " adding ", fix, "\n")
         end
@@ -31,12 +31,12 @@ function findfractionalpowers(W)
         for i in 1:e(s)
           cn=charNumbers(s)[i]
           print(cn,".c")
-          frac = Mod1(mC(s)[i] * e(s) * s.d + fix)
+          frac = modZ(mC(s)[i] * e(s) * s.d + fix)
           if isnothing(uc[:fractions][cn]) push!(reasons[cn], s.d)
             uc[:fractions][cn] = frac
           elseif uc[:fractions][cn] != frac
             print("Failed! ",cn, "==", TeXStrip(uc[:TeXCharNames][cn]),
-                 " in ", s, "\n     where mC mod1==", frac, "\n
+                 " in ", s, "\n     where mC modZ==", frac, "\n
                  conflicts with ", reasons[cn], "\n")
           else push!(reasons[cn], s.d)
           end
@@ -99,16 +99,15 @@ function Checkzegen(W)
   l=Filtered(l, (s->begin haskey(s, :Hecke) end))
   uc = UnipotentCharacters(W)
   aA = uc[:a] + uc[:A]
-  for s = l
+  for s in l
       e = gete(s[:Hecke])
       z = OrderCenter(relative_group(s))
       ucL = UnipotentCharacters(s.levi)
       aAL = ucL[:A] + ucL[:a]
       aAL = aAL[s.cuspidal]
       print(s, "\n")
-      print(FormatTable([map(Mod1, (aA[charNumbers(s)] - aAL) // z),
-                         map(Mod1, aA[charNumbers(s)] // z), map((x->begin
-                              Mod1(1 // x) end), e)], 
+      print(FormatTable([modZ.((aA[charNumbers(s)]-aAL)//z),
+                         modZ.(aA[charNumbers(s)]//z), modZ.(1 .//e)], 
    Dict{Symbol, Any}(:rowLabels => ["(aA-aAL)/z", "aA/z", "local Hecke irr"])))
   end
 end

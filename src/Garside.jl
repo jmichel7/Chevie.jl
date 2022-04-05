@@ -1042,7 +1042,7 @@ CoxGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
 function Base.show(io::IO,b::GarsideElt)
   M=b.M
   greedy=get(io,:greedy,false)
-  if !get(io,:limit,false) && !get(io,:TeX,false)
+  if !hasdecor(io)
     print(io,"B(",join(word(b),","),")")
     return
   end
@@ -1066,7 +1066,7 @@ end
 
 function Base.show(io::IO,b::LocallyGarsideElt)
   M=b.M
-  if !get(io,:limit,false) && !get(io,:TeX,false)
+  if !hasdecor(io)
     print(io,"B(",join(word(b),","),")")
     return
   end

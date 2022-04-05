@@ -185,7 +185,7 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, FiniteCoxeterGroup, two_tree, rootdatum, torus,
+export coxgroup, FiniteCoxeterGroup, two_tree, rootdatum, torus, istorus,
  dimension, with_inversions, standard_parabolic, describe_involution,
  relative_group, rootlengths, badprimes
 # to use as a stand-alone module uncomment the next line
@@ -654,8 +654,14 @@ PermRoot.reflections(W::FiniteCoxeterGroup)=reflections(W.G)[1:nref(W)]
   N::Int
 end
 
-#forwarded
-Base.show(io::IO, W::FCG)=show(io,W.G)
+function Base.show(io::IO, W::FCG)
+  if haskey(W,:callname) 
+    if hasdecor(io) printTeX(io,W.TeXcallname) 
+    else print(io,W.callname)
+    end
+  else show(io,W.G)
+  end
+end
 
 function Base.show(io::IO,t::Type{FCG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
@@ -744,7 +750,8 @@ julia> W.rootdec
  [1 0 0; 0 1 1; 0 0 -1]
 ```
 """
-coxgroup(t::Symbol,r::Int=0,b::Int=0)=iszero(r) ? coxgroup() : rootdatum(cartan(t,r,b))
+coxgroup(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
+   sc ? rootdatum(cartan(t,r,b),one(fill(0,r,r))) : rootdatum(cartan(t,r,b))
 
 " `rootdatum(C::AbstractMatrix)` adjoint root datum from Cartan matrix `C`"
 rootdatum(C::AbstractMatrix)=rootdatum(one(C),C)
@@ -792,6 +799,9 @@ julia> torus(3)
 """
 torus(i)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
 
+"`istorus(W)` whether `W` is a torus"
+istorus(W)=isempty(roots(W))
+
 PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
 
 coxgroup()=torus(0)
@@ -822,10 +832,8 @@ function rootlengths(W::FCG)
 end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
-  mroots(W)=iszero(W.N) ? fill(0,0,rank(W)) : toM(simpleroots(W))
-  mcoroots(W)=iszero(W.N) ? fill(0,0,rank(W)) : toM(simplecoroots(W))
-  r=cat(mroots(parent(W1)),mroots(parent(W2)),dims=[1,2])
-  cr=cat(mcoroots(parent(W1)),mcoroots(parent(W2)),dims=[1,2])
+  r=cat(simpleroots(parent(W1)),simpleroots(parent(W2)),dims=[1,2])
+  cr=cat(simplecoroots(parent(W1)),simplecoroots(parent(W2)),dims=[1,2])
   res=rootdatum(r,cr)
   if W1==parent(W1) && W2==parent(W2) return res end
   if !issubset(inclusiongens(W1),1:ngens(parent(W1))) 

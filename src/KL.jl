@@ -1141,8 +1141,7 @@ Base.show(io::IO,A::AsymptoticAlgebra)=print(io,"Asymptotic Algebra dim.",dim(A)
 
 function Base.show(io::IO, h::AlgebraElt{AsymptoticAlgebra})
   function showbasis(io::IO,i)
-    replorTeX=get(io,:limit,false) || get(io,:TeX,false)
-    if replorTeX res="t_"*joindigits(word(h.A.W,h.A.e[i]),"{}";always=true)
+    if hasdecor(io) res="t_"*joindigits(word(h.A.W,h.A.e[i]),"{}";always=true)
     else         res="t[$i]"
     end
     fromTeX(io,res)

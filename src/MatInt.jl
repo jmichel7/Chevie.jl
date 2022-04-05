@@ -1,12 +1,17 @@
 """
-Operations on integral GAP matrices (vectors of vectors)
+Operations on integral matrices
 
 Quickly ported from GAP; the code is still horrible (unreadable) like the
 original one.
+
+Look at the docstrings for `complementInt, leftnullspaceInt, SolutionIntMat, 
+smith, smith_transforms, hermite, hermite_transforms, col_hermite, 
+col_hermite_transforms, DiaconisGraham, baseInt`
 """
 module MatInt
 
-export complementInt, leftnullspaceInt, SolutionIntMat, smith, hermite, 
+export complementInt, leftnullspaceInt, SolutionIntMat, smith, smith_transforms,
+       hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
   DiaconisGraham, baseInt
 
 # largest factor of N prime to a
@@ -499,19 +504,13 @@ TriangulizedIntegerMat(mat)=NormalFormIntMat(mat;)[:normal]
 TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat;ROWTRANS=true)
 
 """
-`hermite(m::AbstractMatrix{<:Integer};transforms=false,col=false)`
+`hermite(m::AbstractMatrix{<:Integer})`
 
 returns  the row Hermite normal  form `H` of the  integer matrix `m`, a row
 equivalent upper triangular form. If a pivot is the first non-zero entry on
 a row of `H` (the quadrant below left a pivot is zero), pivots are positive
 and entries above a pivot are nonnegative and smaller than the pivot. There
-exists a unique invertible integer matrix `Q` such that `QA==H`.
-
-If   `transforms=true`  the  function  returns   a  tuple  with  components
-`.normal=H` and `.rowtrans=Q`.
-
-If  `col=true` the function  returns the column  Hermite normal form, where
-`.coltrans=Q` and `H` are transposed from the above description and `AQ=H`.
+exists a unique invertible integer matrix `Q` such that `Qm==H`.
 
 ```julia-repl
 julia> m=[1 15 28;4 5 6;7 8 9]
@@ -525,41 +524,21 @@ julia> hermite(m)
  1  0  1
  0  1  1
  0  0  3
-
-julia> n=hermite(m;transforms=true)
-(normal = [1 0 1; 0 1 1; 0 0 3], rowtrans = [-2 62 -35; 1 -30 17; -3 97 -55], rank = 3, signdet = 1)
-
-julia> n.rowtrans*m==n.normal
-true
 ```
 """
-function hermite(mat::AbstractMatrix{<:Integer};transforms=false,col=false)
-  if col
-    if transforms 
-      res=NormalFormIntMat(transpose(mat);REDDIAG=true,ROWTRANS=true)
-      (normal=transpose(res[:normal]), coltrans=transpose(res[:rowtrans]), 
-       rank=res[:rank], signdet=get(res,:signdet,nothing))
-     else transpose(NormalFormIntMat(transpose(mat);REDDIAG=true)[:normal])
-    end
-  else
-    if transforms 
-      res=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
-      (normal=res[:normal], rowtrans=res[:rowtrans], 
-       rank=res[:rank], signdet=get(res,:signdet,nothing))
-    else NormalFormIntMat(mat;REDDIAG=true)[:normal]
-    end
-  end
+function hermite(mat::AbstractMatrix{<:Integer})
+  NormalFormIntMat(mat;REDDIAG=true)[:normal]
 end
 
 """
-`smith(m::AbstractMatrix{<:Integer})`
+`hermite_transforms(m::AbstractMatrix{<:Integer})`
 
-computes  the  Smith  normal  form  of  `m`, the unique equivalent diagonal
-matrix  `S`  such  that  `Sᵢ,ᵢ`  divides  `Sⱼ,ⱼ`  for  `i≤j`.  There  exist
-unimodular integer matrices `P, Q` such that `Q*m*P==S`.
-
-If  `transforms=true`  the  function  returns  a  tuple  with  `.normal=S`,
-`.rowtrans=Q` and `.coltrans=P`.
+The  row  Hermite  normal  form  `H`  of  the  integer  matrix `m` is a row
+equivalent upper triangular form. If a pivot is the first non-zero entry on
+a row of `H` (the quadrant below left a pivot is zero), pivots are positive
+and entries above a pivot are nonnegative and smaller than the pivot. There
+exists  a  unique  invertible  integer  matrix  `Q`  such that `Qm==H`. The
+function returns a tuple with components `.normal=H` and `.rowtrans=Q`.
 
 ```julia-repl
 julia> m=[1 15 28;4 5 6;7 8 9]
@@ -568,25 +547,121 @@ julia> m=[1 15 28;4 5 6;7 8 9]
  4   5   6
  7   8   9
 
-julia> smith(m)
+julia> n=hermite_transforms(m)
+(normal = [1 0 1; 0 1 1; 0 0 3], rowtrans = [-2 62 -35; 1 -30 17; -3 97 -55], rank = 3, signdet = 1)
+
+julia> n.rowtrans*m==n.normal
+true
+```
+"""
+function hermite_transforms(mat::AbstractMatrix{<:Integer})
+  res=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
+  (normal=res[:normal], rowtrans=res[:rowtrans], 
+   rank=res[:rank], signdet=get(res,:signdet,nothing))
+end
+
+"""
+`col_hermite(m::AbstractMatrix{<:Integer})`
+
+returns  the column Hermite  normal form `H`  of the integer  matrix `m`, a
+column  equivalent lower triangular form. If  a pivot is the first non-zero
+entry on a column of `H` (the quadrant above right a pivot is zero), pivots
+are  positive and entries left of a  pivot are nonnegative and smaller than
+the  pivot. There exists  a unique invertible  integer matrix `Q` such that
+`mQ==H`.
+
+```julia-repl
+julia> m=[1 15 28;4 5 6;7 8 9]
+3×3 Matrix{Int64}:
+ 1  15  28
+ 4   5   6
+ 7   8   9
+
+julia> col_hermite(m)
 3×3 Matrix{Int64}:
  1  0  0
  0  1  0
- 0  0  3
+ 0  1  3
+```
+"""
+function col_hermite(mat::AbstractMatrix{<:Integer})
+  permutedims(NormalFormIntMat(transpose(mat);REDDIAG=true)[:normal])
+end
 
-julia> n=smith(m;transforms=true)
-(normal = [1 0 0; 0 1 0; 0 0 3], coltrans = [1 0 -1; 0 1 -1; 0 0 1], rowtrans = [-2 62 -35; 1 -30 17; -3 97 -55], rank = 3, signdet = 1) 
+"""
+`col_hermite_transforms(m::AbstractMatrix{<:Integer})`
+
+The  column Hermite normal form  `H` of the integer  matrix `m` is a column
+equivalent lower triangular form. If a pivot is the first non-zero entry on
+a  column of  `H` (the  quadrant above  right a  pivot is zero), pivots are
+positive  and entries left of a pivot  are nonnegative and smaller than the
+pivot.  There  exists  a  unique  invertible  integer  matrix `Q` such that
+`mQ==H`. The function returns a named tuple with components `.normal=H` and
+`.rowtrans=Q`.
+
+```julia-repl
+julia> m=[1 15 28;4 5 6;7 8 9]
+3×3 Matrix{Int64}:
+ 1  15  28
+ 4   5   6
+ 7   8   9
+
+julia> n=col_hermite_transforms(m)
+(normal = [1 0 0; 0 1 0; 0 1 3], coltrans = [-1 13 -50; 2 -27 106; -1 14 -55], rank = 3, signdet = 1)
+
+julia> m*n.coltrans==n.normal
+true
+```
+"""
+function col_hermite_transforms(mat::AbstractMatrix{<:Integer})
+  res=NormalFormIntMat(transpose(mat);REDDIAG=true,ROWTRANS=true)
+  (normal=transpose(res[:normal]), coltrans=transpose(res[:rowtrans]), 
+   rank=res[:rank], signdet=get(res,:signdet,nothing))
+end
+
+"""
+`smith(m::AbstractMatrix{<:Integer})`
+
+computes  the Smith normal form  `S` of `m`, the  unique equivalent (in the
+sense  that  There  exist  unimodular  integer  matrices  `P,  Q` such that
+`Q*m*P==S`) diagonal matrix such that `Sᵢ,ᵢ` divides `Sⱼ,ⱼ` for `i≤j`.
+
+```julia-repl
+julia> m=[1 15 28 7;4 5 6 7;7 8 9 7]
+3×4 Matrix{Int64}:
+ 1  15  28  7
+ 4   5   6  7
+ 7   8   9  7
+
+julia> smith(m)
+3×4 Matrix{Int64}:
+ 1  0  0  0
+ 0  1  0  0
+ 0  0  3  0
+```
+"""
+smith(mat::AbstractMatrix{<:Integer})=NormalFormIntMat(mat,TRIANG=true)[:normal]
+
+"""
+`smith_transforms(m::AbstractMatrix{<:Integer})`
+
+The  Smith normal form of `m` is  the unique equivalent diagonal matrix `S`
+such  that `Sᵢ,ᵢ` divides `Sⱼ,ⱼ` for  `i≤j`. There exist unimodular integer
+matrices  `P, Q` such that `Q*m*P==S`.  This function returns a named tuple
+with `.normal=S`, `.rowtrans=Q` and `.coltrans=P`.
+
+```julia-repl
+julia> n=smith_transforms(m)
+(normal = [1 0 0 0; 0 1 0 0; 0 0 3 0], coltrans = [1 0 -1 -84; 0 1 -1 175; 0 0 1 -91; 0 0 0 1], rowtrans = [-2 62 -35; 1 -30 17; -3 97 -55], rank = 3, signdet = nothing)
 
 julia> n.rowtrans*m*n.coltrans==n.normal
 true
 ```
 """
-function smith(mat::AbstractMatrix{<:Integer};transforms=false)
-  if !transforms NormalFormIntMat(mat,TRIANG=true)[:normal]
-  else res=NormalFormIntMat(mat;TRIANG=true,ROWTRANS=true,COLTRANS=true)
-    (normal=res[:normal], coltrans=res[:coltrans], rowtrans=res[:rowtrans],
-    rank=res[:rank], signdet=get(res,:signdet,nothing))
-  end
+function smith_transforms(mat::AbstractMatrix{<:Integer})
+  res=NormalFormIntMat(mat;TRIANG=true,ROWTRANS=true,COLTRANS=true)
+  (normal=res[:normal], coltrans=res[:coltrans], rowtrans=res[:rowtrans],
+  rank=res[:rank], signdet=get(res,:signdet,nothing))
 end
 
 """
@@ -681,7 +756,7 @@ function complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})
   M=vcat(F,S)
   T=Int.(inv(Rational.(TriangulizedIntegerMatTransform(M)[:rowtrans])))
   T=T[size(F,1)+1:end,axes(F,1)]
-  r=smith(T;transforms=true)
+  r=smith_transforms(T)
   M=Int.(inv(Rational.(r.coltrans))*F)
   (complement=BaseIntMat(M[1+r.rank:end,:]), sub=r.rowtrans*T*F, 
    moduli=map(i->r.normal[i,i],1:r.rank))
@@ -848,7 +923,7 @@ end
 
 function IntersectionLatticeSubspace(m)
   m*=lcm(denominator.(vcat(m...)))
-  r=smith_normal_form(m;transforms=true)
+  r=smith_transforms(m)
   for i in 1:length(r[:normal])
     if !iszero(r[:normal][i,:])
       r[:normal][i,:]//=maximum(abs.(r[:normal][i,:]))
@@ -894,7 +969,7 @@ function DiaconisGraham(m, moduli)
   if any(i->moduli[i]%moduli[i+1]!=0,1:length(moduli)-1)
     error("DiaconisGraham(m,moduli): moduli[i+1] should divide moduli[i] for all i")
   end
-  r=hermite(m,transforms=true)
+  r=hermite_transforms(m)
   res=r.rowtrans
   m=r.normal
   n=length(moduli)
@@ -913,7 +988,7 @@ function DiaconisGraham(m, moduli)
       m=RowMod(e*m,moduli)
     end
   end
-  r=hermite(m;transforms=true)
+  r=hermite_transforms(m)
   m=RowMod(r.normal, moduli)
   res=r.rowtrans*res
   if size(m,1)==n

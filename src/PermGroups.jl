@@ -71,7 +71,7 @@ module PermGroups
 using ..Perms
 using ..Groups: orbits
 using ..Gapjm
-using ..Util: getp, InfoChevie, @GapObj, printTeX
+using ..Util: getp, InfoChevie, @GapObj, printTeX, hasdecor
 import ..Gapjm: elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
@@ -82,7 +82,7 @@ abstract type PermGroup{T}<:Group{Perm{T}} end
 PermGroup()=Group(Perm{Int16}[])
 
 function Base.show(io::IO,G::PermGroup)
-  if (get(io,:limit,false) || get(io,:TeX,false))
+  if hasdecor(io)
     if haskey(G,:name) printTeX(io,G.name)
     else print(io,"Group([");join(io,gens(G),",");print(io,"])")
     end

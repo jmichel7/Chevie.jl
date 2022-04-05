@@ -520,9 +520,8 @@ function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
     w=word(h.H.W,e)
     res=basename(h)
-    replorTeX=get(io,:limit,false) || get(io,:TeX,false)
-    if replorTeX res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
-    else         res*="("*join(w,",")*")"
+    if hasdecor(io) res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
+    else            res*="("*join(w,",")*")"
     end
     fromTeX(io,res)
   end
@@ -1052,14 +1051,14 @@ algebra  of the  induced of  the trivial  representation from  the rational
 points of some `F`-stable Borel subgroup to `𝐆 ^F`.
 
 ```julia-repl
-julia> WF=rootdatum("u",3)
-²A₂Φ₂
+julia> WF=rootdatum(:u,3)
+u₃
 
 julia> HF=hecke(WF,Pol(:v)^2;rootpara=Pol())
-hecke(²A₂Φ₂,v²,rootpara=v)
+hecke(u₃,v²,rootpara=v)
 
 julia> CharTable(HF)
-CharTable(hecke(²A₂Φ₂,v²,rootpara=v))
+CharTable(hecke(u₃,v²,rootpara=v))
    │ 111 21  3
 ───┼───────────
 111│  -1  1 -1

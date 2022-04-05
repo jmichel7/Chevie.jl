@@ -17,8 +17,8 @@ This function obtains the `Φ_d` decomposition matrix for the reductive group
 specified by the Coxeter group or coset `W` form the package `GenDecMats`.
 
 ```julia-repl
-julia> W=rootdatum("psu",5)
-²A₄
+julia> W=rootdatum(:psu,5)
+psu₅
 ```
 ```julia-rep1
 julia> generic_decomposition_matrix(W,13)
@@ -26,7 +26,7 @@ julia> generic_decomposition_matrix(W,13)
 ```
 ```julia-repl
 julia> generic_decomposition_matrix(W,10)
-Φ₁₀-decomposition matrix for ²A₄
+Φ₁₀-decomposition matrix for psu₅
       │ps 21 ps ps ps 2111 11111
 ──────┼──────────────────────────
 2.    │ 1  .  .  .  .    .     .
@@ -103,7 +103,7 @@ function Base.show(io::IO, ::MIME"text/html", m::ΦDecMat)
 end
 
 function Base.show(io::IO,m::ΦDecMat)
-  if !get(io,:TeX,false) && !get(io,:limit,false)
+  if !hasdecor(io)
     print(io,"generic_decomposition_matrix(",m.W,",",m.d,")")
   else
     printTeX(io,"\\Phi_{",m.d,"}-decomposition matrix for ",m.W)
@@ -132,14 +132,14 @@ returns the induced from the Levi `L` to the reductive group `W` of the
 generic `Φ_d` decomposition matrix of `L`.
 
 ```julia-repl
-julia> W=rootdatum("psu",6)
-²A₅
+julia> W=rootdatum(:psu,6)
+psu₆
 
 julia> L=reflection_subgroup(W,[1,2,4,5])
-²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁
+psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁
 
 julia> InducedDecompositionMatrix(L,W,6)
-Induced Φ₆-decomposition matrix from ²A₅₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to ²A₅
+Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆
 
     │ps ps A₂
 ────┼─────────
@@ -168,7 +168,7 @@ function Base.show(io::IO, ::MIME"text/html", m::InducedDecompositionMatrix)
 end
 
 function Base.show(io::IO,m::InducedDecompositionMatrix)
-  if !get(io,:TeX,false) && !get(io,:limit,false)
+  if !hasdecor(io)
     print(io,"InducedDecompositionMatrix(",m.R,",",m.W,",",m.d,")")
   else
     printTeX(io,"Induced \\Phi_{",m.d,"}-decomposition matrix from ",

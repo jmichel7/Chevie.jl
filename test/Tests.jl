@@ -858,7 +858,7 @@ function EigenAndDegHecke(s)
               ((i-1)//s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
     zeta=Root1(;r=s.d*s.e*s.delta*s.d*dSeries.mC(s)[1])
   end
-  map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=Mod1(frac)),ss,omegachi,frac)
+  map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=modZ(frac)),ss,omegachi,frac)
 end
 
 #---------------- test: series ------------------------
@@ -1701,14 +1701,14 @@ end
 
 function Tparameterexponents(W,i)
   h=UnipotentCharacters(W).harishChandra[i]
-  I=PermRoot.indices(h[:relativeType])
+  I=indices(h[:relativeType])
   if W isa Spets I=map(x->orbit(W.phi,x),I)
   else 
     G=relative_group(W,h[:levi])
-    if haskey(G,:relativeIndices) && G.relativeIndices[PermRoot.indices(refltype(G))]!=I 
+    if haskey(G,:relativeIndices) && G.relativeIndices[indices(refltype(G))]!=I 
       ChevieErr("indices computed=",
-      joindigits(G.relativeIndices[PermRoot.indices(refltype(G))]),
-      " stored=",joindigits(I),"\n");
+        joindigits(G.relativeIndices[indices(refltype(G))]),
+        " stored=",joindigits(I),"\n");
     end
     I=map(x->[x],I)
   end

@@ -589,7 +589,7 @@ function UnipotentCharacters(WF::Spets)
     uc=UnipotentCharacters(t)
     if isnothing(uc) return end
  #  H=map(x->reflection_subgroup(W,x.indices[1:x.rank]),t.orbit)
-    i=PermRoot.indices(t)
+    i=indices(t)
     H=reflection_subgroup(W,sort(i))
     p=mappingPerm(sort(i),i)^mappingPerm(sort(i),eachindex(i))
 #   @show t,i,H,p
@@ -723,6 +723,7 @@ function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
   d[q]=fd
 end
 
+"`fourier(uc::UnipotentCharacters)` the Lusztig Fourier matrix for `uc`."
 function Families.fourier(uc::UnipotentCharacters)
   get!(uc,:fourier)do
     l=length(uc)
@@ -885,7 +886,14 @@ julia> v=UniChar(W,"G2[E3]")
 
 julia> w=UniChar(W,[1,0,0,-1,0,0,2,0,0,1])
 [G₂]:<φ₁‚₀>-<φ″₁‚₃>+2<G₂[-1]>+<G₂[ζ₃²]>
+
+julia> UniChar(W,fourier(UnipotentCharacters(W))[3,:])
+[G₂]:2//3<φ′₁‚₃>-1//3<φ″₁‚₃>+1//3<φ₂‚₁>+1//3<G₂[1]>-1//3<G₂[ζ₃]>-1//3<G₂[ζ₃²]>
+
 ```
+The  last line shows  the almost character  associated to the 3rd unipotent
+character of `W`.
+
 some limited arithmetic is available on unipotent characters:
 
 ```julia-repl
