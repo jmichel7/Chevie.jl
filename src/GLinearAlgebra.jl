@@ -446,17 +446,30 @@ end
 """
 `solutionmat(mat,v)`
 
-returns  one  solution  of  the equation `transpose(x)*mat=transpose(v)` or
-`nothing`  if no such solution  exists. Similar to `transpose(mat)\\v` when
-`mat` is invertible
+returns  one solution of the  equation `transpose(mat)*x=v` or `nothing` if
+no  such  solution  exists.  Similar  to  `transpose(mat)\\v` when `mat` is
+invertible.
 
 ```julia-repl
-julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, -20, -10])
+julia> m=[2 -4 1;0 0 -4;1 -2 -1]
+3×3 Matrix{Int64}:
+ 2  -4   1
+ 0   0  -4
+ 1  -2  -1
+
+julia> x=solutionmat(m,[10,-20, -10])
 3-element Vector{Rational{Int64}}:
   5//1
  15//4
   0//1
-julia> solutionmat([2 -4 1;0 0 -4;1 -2 -1],[10, 20, -10])
+
+julia> m'*x
+3-element Vector{Rational{Int64}}:
+  10//1
+ -20//1
+ -10//1
+
+julia> solutionmat(m,[10, 20, -10])
 ```
 """
 function solutionmat(m,v::AbstractVector)

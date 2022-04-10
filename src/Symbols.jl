@@ -62,9 +62,12 @@ for `G(e,e,n)`.
 """
 module Symbols
 using ..Util: joindigits
-using ..Combinat: arrangements, partition_tuples, constant, collectby
+using ..Combinat: arrangements, partition_tuples, allequal, collectby
+if VERSION<=v"1.7.5"
+using ..Combinat: allequal
+end
 using ..CyclotomicNumbers: E
-using ..CycPols: CycPol, ennola_twist
+using ..CycPols: CycPol
 using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
@@ -519,7 +522,7 @@ function fegsymbol(s,p=0)
     if iszero(sum(S)) return one(CycPol) end
     prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
   end
-  if !constant(length.(s[2:end])) return zero(CycPol) end
+  if !allequal(length.(s[2:end])) return zero(CycPol) end
   d=defectsymbol(s)
   if d==1 res=theta([r])
   elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-Pol(ep))
@@ -536,7 +539,7 @@ function fegsymbol(s,p=0)
     if e==2 && ep==-1 res=-res end
   end
   if r==2 && (e>2 && ep==E(e))
-    res=ennola_twist(res,E(2e))//E(2e,degree(res))
+    res=subs(res,Pol([E(2e)],1))//E(2e,degree(res))
   end
   return res
 end
@@ -611,7 +614,7 @@ function gendeg_symbol(S)
 
   if d==0 res*=findfirst(i->circshift(S,-i)==S,1:e) end
   if defect==0 || r!=2 || e<=2 return res
-  else return E(e)^-1*ennola_twist(res,E(2*e)) # 2I(e)
+  else return E(e)^-1*subs(res,Pol([E(2*e)],1)) # 2I(e)
   end
 end
 

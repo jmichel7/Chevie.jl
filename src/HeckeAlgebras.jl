@@ -124,8 +124,8 @@ module HeckeAlgebras
 using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
-  isrepresentation, FactorizedSchurElements, FactorizedSchurElement,
-  VFactorSchurElement, alt, coefftype, HeckeCoset
+  schur_element, isrepresentation, FactorizedSchurElements, 
+  FactorizedSchurElement, VFactorSchurElement, alt, coefftype, HeckeCoset
 
 @GapObj struct HeckeAlgebra{C,TW}
   W::TW
@@ -225,9 +225,9 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
     else error("parameters should be given for first reflection in a class")
     end
   end
-  d=Dict{Symbol,Any}(:equal=>constant(para))
+  d=Dict{Symbol,Any}(:equal=>allequal(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
-  HeckeAlgebra(W,para,d)
+  HeckeAlgebra(W,improve_type(para),d)
 end
 
 function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
@@ -268,7 +268,7 @@ coefftype(H::HeckeAlgebra{C}) where C=C
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
   if isempty(para) para
-  elseif constant(tr.(para)) 
+  elseif allequal(tr.(para)) 
     p=tr(para[1])
     p isa Vector ? [p] : p
   else map(tr,para)
@@ -280,7 +280,7 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,"hecke(",H.W,",",simplify_para(H.para))
   if haskey(H,:rootpara)
     rp=rootpara(H)
-    if !isempty(rp) && constant(rp) print(io,",rootpara=",rp[1])
+    if !isempty(rp) && allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
     end
   end
@@ -891,11 +891,11 @@ function Base.://(a::FactSchur,b::FactSchur)
 end
 
 function (x::FactSchur)(y...;z...)
-  Simplify(FactSchur(x.factor(y...;z...),
+  simplify(FactSchur(x.factor(y...;z...),
         map(p->(pol=p.pol,monomial=p.monomial(y...;z...)) , x.vcyc)))
 end
 
-function Simplify(res::FactSchur)
+function simplify(res::FactSchur)
   R=Rational{Int}
   T=Cyc{R}
   evcyc=NamedTuple{(:pol,:monomial,:power),Tuple{CycPol{T},Mvp{T,R},R}}[]
@@ -908,7 +908,7 @@ function Simplify(res::FactSchur)
     end
     k=collect(values(first(monomial.d)[1].d))
     if k[1]<0
-      pol=descent_of_scalars(pol,-1)
+      pol=subs(pol,Pol()^-1)
       k=-k
       monomial=inv(monomial)
       factor*=pol.coeff*monomial^pol.valuation
@@ -920,7 +920,7 @@ function Simplify(res::FactSchur)
       n=root(n)//c
       if n!=1
         monomial*=n
-        pol=ennola_twist(pol,1//n)
+        pol=subs(pol,Pol([Root1(n)],1))
         factor*=pol.coeff
         if isone(pol.coeff^2) pol*=pol.coeff
         else pol//=pol.coeff
@@ -936,7 +936,7 @@ function Simplify(res::FactSchur)
   else
     vcyc=map(collectby(x->x.monomial,evcyc))do fil
       D=lcm(map(x->denominator(x.power), fil))
-      P=prod(x->descent_of_scalars(x.pol,D*x.power),fil)
+      P=prod(x->subs(x.pol,Pol()^(D*x.power)),fil)
       p=P(Pol())
       p=improve_type(p)
       f=filter(i->p.c[i]!=0,eachindex(p.c))-1
@@ -979,7 +979,7 @@ function VFactorSchurElement(para,r,data=nothing,u=nothing)
   end
   vcyc=[(pol=CycPol([1,0,p]),monomial=Mvp(monomial(v))) for (v,p) in r[:vcyc]]
   if factor==0 || isempty(vcyc) return factor end
-  return Simplify(FactSchur(factor,vcyc))
+  return simplify(FactSchur(factor,vcyc))
 end
 
 """
@@ -1088,12 +1088,12 @@ hecke(WF::Spets,a...;b...)=HeckeCoset(hecke(Group(WF),a...;b...),WF,Dict{Symbol,
 function Base.show(io::IO, H::HeckeCoset)
   print(io,"hecke(",H.W,",")
   tr(p)= p[2]==-one(p[2]) ? p[1] : p
-  if constant(H.H.para) print(io,tr(H.H.para[1]))
+  if allequal(H.H.para) print(io,tr(H.H.para[1]))
   else print(io,map(tr,H.H.para))
   end
   if haskey(H.H,:rootpara)
     rp=rootpara(H.H)
-    if constant(rp) print(io,",rootpara=",rp[1])
+    if allequal(rp) print(io,",rootpara=",rp[1])
     else print(io,",rootpara=",rp)
     end
   end

@@ -2044,7 +2044,7 @@ function Gapjm.root(b0::GarsideElt,n=2)
           TPMSimple([i==1 ? l[j] : one(M) for i in 1:n],j==1,M)
           end)
   function inner(b)
-    cst=b->all(x->constant(x.v),b.elm)
+    cst=b->all(x->allequal(x.v),b.elm)
     sc=representativeSC(b)
     conj=[sc.conj]
     class=[sc.circuit[1]]

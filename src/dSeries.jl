@@ -129,7 +129,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   EnnolaBete=map(ff)do f
     m=f.fourierMat;if !(m isa Matrix) m=toM(m) end
     ud=CycPol.(m'*fd[f.charNumbers])
-    map(p->positionssgn(ud, ennola_twist(p, ξ)), ud)
+    map(p->positionssgn(ud,subs(p,Pol([ξ],1))),ud)
   end
 
   for h in uc[:harishChandra] fd[h[:charNumbers]]=
@@ -360,22 +360,24 @@ end
 
 positive(p::CycPol)=all(>(0),values(p.v))
 
-# FitParameter(sch,m) given:
-# sch: schur elements for H(Z/e) given as CycPols
-# m:   a list of length e of Rationals, exponents of params
-#
-# finds all permutations σ of 1:e such that the parameters pₖ=E(e,σₖ-1)q^mₖ
-# gives  sch by the formula schᵢ=∏_{j≠i}(1-pᵢ/pⱼ). Since multiplying the pₖ
-# by  a  scalar  leaves  invariant  the  sch,  σ  is  known  only  modulo a
-# translation.
-#
-# The  result is  a list  of pairs  [v1,v2] telling that globally σ(v1)=v2,
-# where the v1 are sort(collectby(sch,eachindex(sch)),by=minimum)
+"""
+`FitParameter(sch,m)` given:
+sch: schur elements for H(ℤ/e) given as CycPols
+m:   a list of length e of Rationals, exponents of params
+
+finds all permutations σ of 1:e such that the parameters pₖ=E(e,σₖ-1)q^mₖ
+gives  sch by the formula schᵢ=∏_{j≠i}(1-pᵢ/pⱼ). Since multiplying the pₖ
+by  a  scalar  leaves  invariant  the  sch,  σ  is  known  only  modulo a
+translation.
+
+The  result is  a list  of pairs  [v1,v2] telling that globally σ(v1)=v2,
+where the v1 are sort(collectby(sch,eachindex(sch)),by=minimum)
+"""
 function FitParameter(sch, m::AbstractVector{<:Rational{<:Integer}})
   den=lcm(denominator.(m))
   e=length(m)
   a=tally(m)
-  sch=map(x->descent_of_scalars(x, den),sch) # m_k replaced by den*m_k
+  sch=map(x->subs(x,Pol()^den),sch) # m_k replaced by den*m_k
   function poss(i)
     # for each element (m_k,c_k) of tally(m) p will hold a minimal
     # corresponding possible set of j=σ(i)-σ(l) for l such that m_l=m_k
@@ -1015,8 +1017,7 @@ function paramcyclic(s::Series)
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
   param(j,i)=Mvp(:q)^mC(s)[j]*Root1(;r=rr(j,i))
   # parameters of Hecke algebra are map(i->param(i,i),1:e(s))
-  mmp=FitParameter(ennola_twist.(Schur,Cyc(s.d)),
-                   COMPACTCOHOMOLOGY ? mC(s) : -mC(s))
+  mmp=FitParameter(subs.(Schur,Pol([s.d],1)),COMPACTCOHOMOLOGY ? mC(s) : -mC(s))
 # possible perms encoded by mmp[i][1]->mmp[i][2]
   nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets).positionId]
   function predeigen(j, i)#eigenvalue for mC[j] and ζ_e^{i-1}

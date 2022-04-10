@@ -1053,7 +1053,7 @@ function PermRoot.refltype(WF::PRC)
         else to.twist=u
           scal=scals(ti.indices,tn.indices^inv(u))
         end
-        if any(isnothing,scal) || !constant(scal)
+        if any(isnothing,scal) || !allequal(scal)
           if ti.series==:B && ti.rank==2
             scal=[root(prod(scal))]
           else println("W=$W\nphi=",WF.phi)
@@ -1095,7 +1095,7 @@ function PermRoot.refltype(WF::PRC)
             scal=scals(ti.indices,tn.indices^inv(u))
           end
           #println(" scal after:$scal")
-          if !constant(scal) error(" scal after:$scal")
+          if !allequal(scal) error(" scal after:$scal")
           else scal=Root1(scal[1])
           end
         end
@@ -1180,7 +1180,7 @@ rootdata[:tgl]=function(n, k)
   lat=hermite(lat)
   # Find the roots in a basis of the sublattice
   Y=id(n)[1:n-1,:]
-  rootdatum(toM(map(x->SolutionIntMat(lat,x),toL(X))),Y*transpose(lat))
+  rootdatum(toM(map(x->solutionmatInt(lat,x),toL(X))),Y*transpose(lat))
 end
 rootdata[:pgl]=r->coxgroup(:A,r-1)
 rootdata[:sp]=function(r)

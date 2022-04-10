@@ -1,22 +1,28 @@
 """
-This  self-contained module (it has no dependencies) is a port of some GAP3
-functions used in my Chevie package. The list of functions it exports are:
+This self-contained module (it has no dependencies) is a Julia port of some
+GAP combinatorics. The list of functions it exports are:
 
 Classical enumerations:
 
-`combinations, ncombinations, arrangements, narrangements,
- partitions, npartitions, partition_tuples, npartition_tuples,
- restrictedpartitions, nrestrictedpartitions,
- partitions_set, npartitions_set, compositions, submultisets`
+`combinations, arrangements, partitions, partition_tuples,
+ restrictedpartitions, partitions_set, compositions, submultisets`
 
-some more functions on partitions and set partitions, and counting functions:
+functions to count them without computing them:
 
-`lcm_partitions, gcd_partitions, conjugate_partition, dominates, bell, 
-stirling2,catalan`
+`ncombinations, narrangements, npartitions, npartition_tuples,
+ nrestrictedpartitions, npartitions_set`
+
+some functions on partitions:
+
+`lcm_partitions, gcd_partitions, conjugate_partition, dominates`
+
+counting functions:
+
+`bell, stirling2, catalan, bernoulli`
 
 some structural manipulations not yet in Julia:
 
-`groupby, constant, tally, collectby, unique_sorted!`
+`groupby, tally, collectby, unique_sorted!`
 
 matrix blocks:
 
@@ -32,8 +38,8 @@ export combinations, ncombinations, arrangements, narrangements,
   partitions_set, npartitions_set, compositions, 
   submultisets, nsubmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
-  bell, stirling2, catalan,
-  groupby, constant, tally, collectby, unique_sorted!,
+  bell, stirling2, catalan, bernoulli,
+  groupby, tally, collectby, unique_sorted!,
   blocks, diagblocks
 
 #--------------------- Structural manipulations -------------------
@@ -168,11 +174,15 @@ function collectby(f,v)
   res
 end
 
-" `constant(a)` whether all elements in collection `a` are equal"
-function constant(a) # written so that a can be a generator
+if VERSION<=v"1.7.5"
+export allequal
+
+" `allequal(a)` whether all elements in iterable `a` are equal"
+function allequal(a) # written so that a can be an iterator
   if isempty(a) return true end
   o=first(a)
   all(==(o),a)
+end
 end
 
 " faster than unique! for sorted vectors"
@@ -774,7 +784,8 @@ This  function returns the compositions of  `n` (the compositions of length
 `n` is a decomposition `n=p₁+…+pₖ` in integers `≥start`, represented as the
 vector  `[p₁,…,pₖ]`. Unless `k`  is given, `start`  must be `>0`. There are
 ``2^{n-1}``  compositions of `n` in  integers `≥1`, and `binomial(n-1,k-1)`
-compositions of `n` in `k` parts `≥1`.
+compositions  of `n` in  `k` parts `≥1`.  Compositions are sometimes called
+ordered partitions.
 
 ```julia-repl
 julia> compositions(4)
@@ -1093,10 +1104,13 @@ julia> bell.(0:6)
 
 julia> bell(14)
 190899322
+
+julia> bell(big(30))
+846749014511809332450147
 ```julia-repl
 """
 function bell(n)
-  bell_=[1]
+  bell_=[one(n)]
   for i in 1:n-1
     push!(bell_,bell_[1])
     for k in 0:i-1 bell_[i-k]+=bell_[i-k+1] end
@@ -1151,12 +1165,57 @@ function stirling2( n, k )
   div(sti,fib)
 end
 
+const bern=Rational{BigInt}[-1//2]
+
+"""
+`bernoulli(n)` the `n`-th *Bernoulli number*  `Bₙ` as a `Rational{BigInt}`
+
+`Bₙ` is defined by ``B₀=1, B_n=-\\sum_{k=0}^{n-1}((n+1\\choose k)B_k)/(n+1)``.
+`Bₙ/n!` is the coefficient of  `xⁿ` in the power series of  `x/(eˣ-1)`.
+Except for `B₁=-1/2`  the Bernoulli numbers for odd indices are zero.
+    
+```julia_repl
+julia> Combinat.bernoulli(4)
+-1//30
+
+julia> Combinat.bernoulli(10)
+5//66
+
+julia> Combinat.bernoulli(12) # there is no simple pattern in Bernoulli numbers
+-691//2730
+
+julia> Combinat.bernoulli(50) # and they grow fairly fast
+495057205241079648212477525//66
+```
+"""
+function bernoulli(n::Integer)
+  if n<0 error("bernoulli: $n must be ≥0")
+  elseif n==0 return 1//1
+  end
+  for i in length(bern)+1:n
+    if isodd(i) push!(bern,0)
+    else
+      bin=1
+      brn=1
+      for j in 1:i-1
+        bin=(i+2-j)//j*bin
+        brn+=bin*bern[j]
+      end
+      push!(bern,-brn//(i+1))
+    end
+  end
+  return bern[n]
+end
+
 """
 `Catalan(n)` `n`-th Catalan Number
 
 ```julia-repl
 julia> catalan(8)
 1430
+
+julia> catalan(big(50))
+1978261657756160653623774456
 ```
 """
 catalan(n::Integer)=Integer(prod(i->(n+i)//i,2:n))

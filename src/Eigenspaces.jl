@@ -30,12 +30,12 @@ Lehrer-Springer1999](biblio.htm#LS99)).
 Finally,  a  still  more  general  example,  but which only occurs for Weyl
 groups  or  Spetsial  reflection  groups,  is  when `𝐋` is a `ζ`-split Levi
 subgroup  (which means that  the corresponding subcoset  `Lwϕ` is formed of
-all the elements which act by `ζ` on some subspace ``V_ζ`` of `V`), and `λ`
+all  the elements which act by `ζ` on  some subspace `V_ζ` of `V`), and `λ`
 is  a  `d`-cuspidal  unipotent  character  of  `𝐋`  (which  means  that the
 multiplicity  of `ζ`  as a  root of  the degree  of `λ`  is the same as the
 multiplicity  of `ζ` as a root of the generic order of the semi-simple part
 of  `𝐆`); then ``N_W(Lwϕ,λ)/L`` is a complex reflection group in its action
-on ``V_ζ``.
+on `V_ζ`.
 
 Further,  in the above cases the relative group describes the decomposition
 of a Lusztig induction.
@@ -228,11 +228,16 @@ function Groups.normalizer(W,L::PermRootGroup)
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 
-# return 'action' of reflection(W,i) on X(Z_L)
-# a namedtuple with root, coroot, eigenvalue, index=i and parentMap
+"""
+`relative_root(W,L,i)`
+
+return 'action' of reflection(W,i)∉ L on X(Z_L)
+a namedtuple with root, coroot, eigenvalue, index=i and parentMap
+"""
 function relative_root(W,L,i)
 # xprintln("W=",W," i=",i," L=",L)
   N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
+  if length(N)==length(L) error("N(L)==L") end
   F=N/L
 # xprintln(abelian_gens(elements(F)))
   if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
@@ -259,21 +264,22 @@ function relative_root(W,L,i)
 end
 
 """
-`split_levis(WF,d=0,ad=-1)`
+`split_levis(WF,d=E(1)[,ad])`
 
 Let  `WF`  be  a  reflection  group  or  a  reflection  coset.  If `W` is a
 reflection group it is treated as the trivial coset 'Spets(W)'.
 
 Here  `d`  specifies  a  root  of  unity  `ζ`: either `d` is an integer and
 specifies  `ζ=E(d)`  or  is  a  fraction  `a/b`  with `0<a<b` and specifies
-`ζ=E(b,a)`. If omitted, `d` is taken to be `0`, specifying `ζ=1`.
+`ζ=E(b,a)`. If omitted, `d` is taken to be `E(1)`, specifying `ζ=1`.
 
 A  *Levi*  is  a  subcoset  of  the  form `W₁F₁` where `W₁` is a *parabolic
-subgroup* of `W`, that is the centralizer of some subspace of `V`.
+subgroup* of `W`, that is the centralizer of some subspace of `V`, and `F₁∈
+WF`.
 
-The  function returns  a list  of representatives  of conjugacy  classes of
+`split_levis` returns  a list  of representatives  of conjugacy  classes of
 `d`-split  Levis of `W`. A  `d`-split Levi is a  subcoset of `WF` formed of
-all  the elements  which act  by `ζ`  on a  given subspace  ``V_ζ``. If the
+all  the  elements  which  act  by  `ζ`  on  a given subspace `V_ζ`. If the
 additional  argument `ad`  is given,  it returns  only those subcosets such
 that  the common  `ζ`-eigenspace of  their elements  is of  dimension `ad`.
 These  notions  make  sense  and  thus  are  implemented  for  any  complex
@@ -365,6 +371,13 @@ function split_levis(WF,d::Root1,ad)
   return res
 end
 
+"""
+`standard_parabolic(W::PermRootGroup, H)`
+
+Let  `H` be a  reflection subgroup of  `W`. Returns an  element `w∈ W` such
+that  `H^w` is a standard  parabolic subgroup of `W`  (or nothing if `H` is
+not parabolic or not conjugate to a standard parabolic).
+"""
 function Weyl.standard_parabolic(W::PermRootGroup, H)
   hr=inclusiongens(H,W)
 # println("hr=",hr)
@@ -399,7 +412,7 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
   return nothing
 end
 
-function Weyl.relative_group(W,J,indices=false)
+function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
   if indices!=false res[:callarg]*=","*joindigits(indices) end

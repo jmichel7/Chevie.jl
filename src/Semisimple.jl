@@ -863,7 +863,7 @@ function StructureRationalPointsConnectedCentre(MF,q)
   Z0=algebraic_centre(M).Z0
   Phi=matY(W.G,MF.phi)
   Z0F=Z0.gens*(Phi*q-one(Phi))
-  Z0F=map(x->SolutionIntMat(Z0.gens,x),eachrow(Z0F))
+  Z0F=map(x->solutionmatInt(Z0.gens,x),eachrow(Z0F))
   Z0F=smith(toM(Z0F))
   filter(!isone,map(i->Z0F[i,i],axes(Z0F,1)))
 end

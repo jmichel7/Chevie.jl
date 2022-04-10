@@ -4,15 +4,15 @@ Operations on integral matrices
 Quickly ported from GAP; the code is still horrible (unreadable) like the
 original one.
 
-Look at the docstrings for `complementInt, leftnullspaceInt, SolutionIntMat, 
+Look at the docstrings for `complementInt, leftnullspaceInt, solutionmatInt, 
 smith, smith_transforms, hermite, hermite_transforms, col_hermite, 
-col_hermite_transforms, DiaconisGraham, baseInt`
+col_hermite_transforms, diaconis_graham, baseInt`
 """
 module MatInt
 
-export complementInt, leftnullspaceInt, SolutionIntMat, smith, smith_transforms,
+export complementInt, leftnullspaceInt, solutionmatInt, smith, smith_transforms,
        hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
-  DiaconisGraham, baseInt
+  diaconis_graham, baseInt
 
 # largest factor of N prime to a
 function prime_part(N, a)
@@ -23,7 +23,7 @@ function prime_part(N, a)
   end
 end
 
-# rgcd(N,a) smallest nonnegative c such that gcd(N,a+c)==1
+# rgcd(N,a) smallest c≥0 such that gcd(N,a+c)==1
 function rgcd(N, a)
   if N==1 return 0 end
   r=[mod(a-1, N)]
@@ -790,10 +790,10 @@ function leftnullspaceInt(mat)
 end
 
 """
-If `mat` is a matrix with integral entries and `vec` a vector with integral
-entries,  this function returns a vector `x` with integer entries that is a
-solution  of the equation `x*mat=vec`. It returns `false` if no such vector
-exists.
+`solutionmatInt(mat::Matrix{<:Integer}, v::Vector{<:Integer})`
+
+returns  a  vector  `x`  with  integer  entries  that  is a solution of the
+equation `mat'*x=vec`. It returns `false` if no such vector exists.
 
 ```julia-repl
 julia> mat=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]
@@ -812,7 +812,7 @@ julia> solutionmat(mat,[95,115,182])
    0//1
    0//1
 
-julia> SolutionIntMat(mat,[95,115,182])
+julia> solutionmatInt(mat,[95,115,182])
 5-element Vector{Int64}:
   2285
  -5854
@@ -821,7 +821,7 @@ julia> SolutionIntMat(mat,[95,115,182])
      0
 ```
 """
-function SolutionIntMat(mat, v)
+function solutionmatInt(mat, v)
   if iszero(mat)
     if iszero(v) return fill(0,length(mat))
     else return false
@@ -840,7 +840,7 @@ end
     
 """
 This  function returns  a list  of length  two, its  first entry  being the
-result  of a call  to `SolutionIntMat` with  same arguments, the second the
+result  of a call  to `solutionmatInt` with  same arguments, the second the
 result of `NullspaceIntMat` applied to the matrix `mat`. The calculation is
 performed faster than if two separate calls would be used.
 ```julia_repl
@@ -933,63 +933,61 @@ function IntersectionLatticeSubspace(m)
 end
 
 """
-`DiaconisGraham(m, moduli)`
+`diaconis_graham(m::Matrix{<:Integer}, moduli::Vector{<:Integer})`
 
 [Diaconis-Graham1999](biblio.htm#dg99) defined a normal form for generating
-sets of abelian groups. Here `moduli` should be a list of positive integers
-such  that `moduli[i+1]` divides `moduli[i]`  for all `i`, representing the
-abelian group `A=Z/moduli[1]×…×Z/moduli[n]`. The integral matrix `m` should
-have  `n` columns where `n=Length(moduli)`, and  each line (with the `i`-th
-element  taken `mod moduli[i]`) represents an element of the group `A`, and
-such that the set of lines of `m` generates `A`.
+sets of abelian groups. Here `moduli` should be positive integers such that
+`moduli[i+1]`  divides `moduli[i]`  for all  `i`, representing  the abelian
+group `A=ℤ/moduli[1]×…×ℤ/moduli[n]`. The matrix `m` should have `n` columns
+where `n=Length(moduli)`, and each line (with the `i`-th element taken `mod
+moduli[i]`) represents an element of the group `A`; the set of lines of `m`
+should generate `A`.
 
-The  function returns 'false' if the set  of elements of `A` represented by
-the  lines of `m` does not generate  `A`. Otherwise it returns a `Dict` `r`
-with fields
+The  function returns 'nothing'  if the lines  of `m` do  not generate `A`.
+Otherwise it returns a named tuple `r` with fields
 
-`:normal`:  the Diaconis-Graham normal form, a  matrix of same shape as `m`
+`.normal`:  the Diaconis-Graham normal form, a  matrix of same shape as `m`
 where  either the first `n` lines are the identity matrix and the remaining
-lines  are `0`,  or `length(m)=n`  and `:normal`  differs from the identity
-matrix only in the entry `:normal[n,n]`, which is prime to `moduli[n]`.
+lines  are `0`,  or `length(m)=n`  and `.normal`  differs from the identity
+matrix only in the entry `.normal[n,n]`, which is prime to `moduli[n]`.
 
-`:rowtrans`: a unimodular matrix such that  
-`r[:normal]=map(v->mod.(v,moduli),r[:rowtrans]*m)`
+`.rowtrans`: unimodular matrix such that `r.normal==mod.(r.rowtrans*m,moduli')`
 
 Here is an example:
 
 ```julia-repl
-julia> DiaconisGraham([3 0;4 1],[10,5])
-Dict{Symbol, Any} with 2 entries:
-  :normal   => [1 0; 0 2]
-  :rowtrans => [-13 10; 4 -3]
+julia> r=diaconis_graham([3 0;4 1],[10,5])
+(rowtrans = [-13 10; 4 -3], normal = [1 0; 0 2])
+
+julia> r.normal==mod.(r.rowtrans*[3 0;4 1],[10,5]')
+true
 ```
 """
-function DiaconisGraham(m, moduli)
-  if moduli==[] return Dict{Symbol, Any}(:rowtrans=>[],:normal=>m) end
+function diaconis_graham(m::Matrix{<:Integer}, moduli::Vector{<:Integer})
+  if moduli==[] return (rowtrans=[],normal=m) end
   if any(i->moduli[i]%moduli[i+1]!=0,1:length(moduli)-1)
-    error("DiaconisGraham(m,moduli): moduli[i+1] should divide moduli[i] for all i")
+    error("moduli[i+1] should divide moduli[i] for all i")
   end
   r=hermite_transforms(m)
   res=r.rowtrans
   m=r.normal
   n=length(moduli)
   if size(m,1)>0 && n!=size(m,2)
-    error("DiaconisGraham(m,moduli): length(moduli) should equal size(m,2)")
+    error("length(moduli) should equal size(m,2)")
   end
-  RowMod(m,moduli)=mod.(m,transpose(moduli))
   for i in 1:min(n,size(m,1)-1)
     l=m[i,i]
     if m[i,i] != 1
-      if gcd(m[i,i], moduli[i]) != 1 return false end
+      if gcd(m[i,i], moduli[i])!=1 return end
       l1=invmod(l, moduli[i])
       e=one(fill(0,size(m,1),size(m,1)))
       e[i:i+1,i:i+1]=[l1 l1-1;1-l*l1 (l+1)-l*l1]
       res=e*res
-      m=RowMod(e*m,moduli)
+      m=mod.(e*m,moduli')
     end
   end
   r=hermite_transforms(m)
-  m=RowMod(r.normal, moduli)
+  m=mod.(r.normal, moduli')
   res=r.rowtrans*res
   if size(m,1)==n
     if m[n,n]>div(moduli[n], 2)
@@ -997,18 +995,18 @@ function DiaconisGraham(m, moduli)
       res[n,:]*=-1
     end
     l=m[n,n]
-    if gcd(l,moduli[n])!=1 return false end
+    if gcd(l,moduli[n])!=1 return end
     l1=invmod(l, moduli[n])
     for i in 1:n-1
       if m[i,n]!=0
         e=one(fill(0,size(m,1),size(m,1)))
         e[[i,n],[i,n]]=[1 -m[i,n]*l1;0 1]
         res=e*res
-        m=RowMod(e*m, moduli)
+        m=mod.(e*m, moduli')
       end
     end
   end
-  return Dict{Symbol, Any}(:rowtrans => res, :normal => m)
+  (rowtrans=res, normal=m)
 end
 
 end

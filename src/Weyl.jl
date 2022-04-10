@@ -1046,7 +1046,7 @@ the roots of `W` in ``X(ZL_J/ZG)`` form a root system).
 `:MappingFromNormalizer` maps `J`-reduced elements of ``N_W(W_J)`` to
   elements of `R`
 """
-function relative_group(W::FiniteCoxeterGroup,J)
+function relative_group(W::FiniteCoxeterGroup,J::Vector{<:Integer})
   S=eachindex(gens(W))
   if !issubset(J,S)
     error("implemented only for standard parabolic subgroups")

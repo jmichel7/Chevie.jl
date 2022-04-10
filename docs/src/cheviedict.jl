@@ -87,6 +87,7 @@ const ChevieDict=Dict(
 "DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",
 "DetPerm(W)"=>"vec(detPerm(W))",
+"DiaconisGraham"=>"diaconis_graham",
 #DifferenceMultiSet
 "Digits"=>"digits",
 #Discriminant
@@ -265,6 +266,9 @@ const ChevieDict=Dict(
 "PositionDet"=>"charinfo(W)[:positionDet]",
 "PositionId"=>"charinfo(W)[:positionId]",
 "PositionRegularClass"=>"position_regular_class",
+"Positions(l,x)"=>"findall(==(x),l)",
+"PositionProperty(l,f)"=>"findfirst(f,l)",
+"PositionsProperty(l,f)"=>"findall(f,l)",
 "PowerRoot(x,y)"=>"(Root1(;r=x)^y).r",
 "Presentation"=>"Presentation",
 "PrintDiagram(W)"=>"Diagram(W)",
@@ -339,7 +343,7 @@ const ChevieDict=Dict(
 "SmithNormalFormIntegerMat"=>"smith",
 "SmithNormalFormIntegerMatTransforms(m)"=>"smith_transforms(m)",
 "SolutionMat"=>"solutionmat",
-"SolutionIntMat"=>"SolutionIntMat",
+"SolutionIntMat"=>"solutionmatInt",
 "SpecialPieces"=>"special_pieces",
 "Spets"=>"spets",
 "SplitLevis"=>"split_levis",

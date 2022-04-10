@@ -1,18 +1,18 @@
 """
-The   package  `CycPol`   depends  only   on  the   packages  `ModuleElts`,
-`CyclotomicNumbers`, `LaurentPolynomials`, `Primes`.
+This package depends only on the packages `Primes`, `ModuleElts`,
+`CyclotomicNumbers` and `LaurentPolynomials`. 
 
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
 cyclotomic  field,  are  important  in  reductive  groups  or  Spetses.  In
 particular  Schur  elements  of  cyclotomic  Hecke algebras are products of
 cyclotomic polynomials.
 
-The  type `CycPol` represents  the product of  a polynomial with a rational
-fraction  in one variable with  all poles or zeroes  equal to 0 or roots of
-unity.  The advantages of  representing as `CycPol`  such objects are: nice
-display  (factorized),  less  storage,  faster multiplication, division and
-evaluation.   The  drawback  is  that  addition  and  subtraction  are  not
-implemented!
+The  type `CycPol`  represents the  product of  a `coeff`  (a constant or a
+polynomial)  with a  rational fraction  in one  variable with  all poles or
+zeroes  equal to  0 or  roots of  unity. The  advantages of representing as
+`CycPol`  such objects are:  nice display (factorized),  less storage, fast
+multiplication,  division and evaluation. The drawback is that addition and
+subtraction are not implemented!
 
 ```julia-repl
 julia> @Pol q
@@ -27,8 +27,26 @@ Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 julia> p*inv(CycPol(q^2+q+1))
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
+julia> -p
+(-q+2)Φ₁Φ₂Φ₂₃
+
+julia> valuation(p)
+0
+
+julia> degree(p)
+25
+
+julia> lcm(p,CycPol(q^3-1))
+(q-2)Φ₁Φ₂Φ₃Φ₂₃
+
+julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^n
+(2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃
+
+julia> subs(p,Pol([E(2)],1)) # or at Pol([Root1],1)
+(q+2)Φ₁Φ₂Φ₄₆
+
 ```
-The  variable name used when  printing a `CycPol` is  set by default to the
+The  variable name used when  printing a `CycPol` is  the
 same as for `LaurentPolynomials`.
 
 `CycPol`s are internally a `struct` with fields:
@@ -58,35 +76,79 @@ julia> CycPols.show_factors(24)
 Φ⁗₂₄=q⁴+√2q³+q²+√2q+1
 Φ⁽⁵⁾₂₄=q⁴-√6q³+3q²-√6q+1
 Φ⁽⁶⁾₂₄=q⁴+√6q³+3q²+√6q+1
-Φ⁽⁷⁾₂₄=q⁴+(√-2)q³-q²+(-√-2)q+1
-Φ⁽⁸⁾₂₄=q⁴+(-√-2)q³-q²+(√-2)q+1
-Φ⁽⁹⁾₂₄=q⁴-ζ₄q²-1
-Φ⁽¹⁰⁾₂₄=q⁴+ζ₄q²-1
-Φ⁽¹¹⁾₂₄=q²+(ζ₂₄+ζ₂₄¹⁹)q-ζ₃
-Φ⁽¹²⁾₂₄=q²+(-ζ₂₄-ζ₂₄¹⁹)q-ζ₃
-Φ⁽¹³⁾₂₄=q²+(ζ₂₄¹¹+ζ₂₄¹⁷)q-ζ₃²
-Φ⁽¹⁴⁾₂₄=q²+(-ζ₂₄¹¹-ζ₂₄¹⁷)q-ζ₃²
+Φ⁽⁷⁾₂₄=q⁴+√-2q³-q²-√-2q+1
+Φ⁽⁸⁾₂₄=q⁴-√-2q³-q²+√-2q+1
+Φ⁽⁹⁾₂₄=q²+ζ₃²√-2q-ζ₃
+Φ⁽¹⁰⁾₂₄=q²-ζ₃²√-2q-ζ₃
+Φ⁽¹¹⁾₂₄=q²+ζ₃√-2q-ζ₃²
+Φ⁽¹²⁾₂₄=q²-ζ₃√-2q-ζ₃²
+Φ⁽¹³⁾₂₄=q⁴-ζ₄q²-1
+Φ⁽¹⁴⁾₂₄=q⁴+ζ₄q²-1
+```
+A factor can be obtained directly as:
+
+```julia-repl
+julia> CycPol(;conductor=24,no=8)
+Φ⁽⁷⁾₂₄
+
+julia> CycPol(;conductor=24,no=8)(q)
+Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 ```
 """
 module CycPols
 
-export CycPol,descent_of_scalars,ennola_twist, cyclotomic_polynomial
+export CycPol, cyclotomic_polynomial, subs
 
+using Primes: Primes, primes, totient, factor # totient=Euler φ
 using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
-using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation, 
-                          coefficients, pseudodiv
+using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
+                          coefficients, pseudodiv, exactdiv
+
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
   Pol{Cyc{T}}(p*denominator(p))
 Base.numerator(p::Pol{Cyc{T}}) where T<:Integer =p
+CyclotomicNumbers.conductor(x::Integer)=1 # to put in CyclotomicNumbers
+CyclotomicNumbers.conductor(x::Pol)=lcm(conductor.(coefficients(x)))
+
 prime_residues=CyclotomicNumbers.prime_residues
-stringexp=CyclotomicNumbers.stringexp
+stringexp=LaurentPolynomials.stringexp
 stringind=CyclotomicNumbers.stringind
 format_coefficient=CyclotomicNumbers.format_coefficient
-using ..Combinat: collectby
-using ..Util: primitiveroot, divisors, stringprime, hasdecor
-using Primes: Primes, primes, totient # totient=Euler φ
+
+# routines copied here to avoid dependency
+
+function stringprime(io::IO,n)
+  if iszero(n) return "" end
+  if get(io,:TeX,false) return "'"^n end
+  n<5 ? ["′","″","‴","⁗"][n] : "⁽"*stringexp(io,n)*"⁾"
+end
+  
+"""
+  `primitiveroot(m::Integer)` a primitive root `mod. m`,
+  that is generating multiplicatively `prime_residues(m)`.
+  It exists if `m` is of the form `4`, `2p^a` or `p^a` for `p` prime>2.
+"""
+function primitiveroot(m::Integer)
+  if m==2 return 1
+  elseif m==4 return 3
+  end
+  f=factor(m)
+  nf=length(keys(f))
+  if nf>2 return nothing end
+  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
+  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
+  p=Primes.totient(m) # the Euler φ
+  1+findfirst(x->powermod(x,p,m)==1 && 
+            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
+end
+
+" `divisors(n)` the list of divisors of `n`."
+function divisors(n::Integer)::Vector{Int}
+  if n==1 return [1] end
+  sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
+end
 
 # The  computed  cyclotomic  polynomials  are  cached 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
@@ -108,21 +170,11 @@ function cyclotomic_polynomial(n::Integer)::Pol{Int}
     res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
       if d!=1 && d!=n
-        res,_=LaurentPolynomials.pseudodiv(res,cyclotomic_polynomial(d))
+        res,_=pseudodiv(res,cyclotomic_polynomial(d))
       end
     end
     res
   end
-end
-
-# divrem(a,Pol()-z) where z::Root1
-function lindivrem(a::Pol,z::Root1) 
-  res=Vector{promote_type(eltype(coefficients(a)),Cyc{Int})}(a.c[2:end])
-  for i in length(res):-1:2
-    res[i-1]+=res[i]*z
-  end
-  if iszero(res[1]*z+a[begin]) return Pol(res,valuation(a);check=false) end
-  # else return nothing since remainder is not zero
 end
 
 struct CycPol{T}
@@ -186,8 +238,11 @@ Base.://(a::CycPol,b::CycPol)=CycPol(a.coeff//b.coeff, a.valuation-b.valuation, 
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
-Base.lcm(a::CycPol,b::CycPol)=CycPol(1,max(a.valuation,b.valuation),
-                                       ModuleElts.merge2(max,a.v,b.v))
+function Base.lcm(a::CycPol,b::CycPol)
+  if !isone(b.coeff) error(b,".coeff sould be 1") end
+  CycPol(a.coeff,max(a.valuation,b.valuation),ModuleElts.merge2(max,a.v,b.v))
+end
+
 Base.lcm(v::AbstractArray{<:CycPol})=reduce(lcm,v;init=one(CycPol))
 
 const dec_dict=Dict(1=>[[1]],2=>[[1]],
@@ -220,11 +275,11 @@ function dec(d::Int)
   end
 end
 
-CycPol(;cond=1,no=1)=CycPol(1,0,map(i->i//cond=>1,dec(cond)[no])...)
+CycPol(;conductor=1,no=1)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no])...)
   
 function show_factors(d)
   for i in eachindex(CycPols.dec(d))
-    p=CycPol(;cond=d,no=i)
+    p=CycPol(;conductor=d,no=i)
     println(IOContext(stdout,:limit=>true),p,"=",p(Pol()))
   end
 end
@@ -284,7 +339,7 @@ function Base.show(io::IO, ::MIME"text/html", a::CycPol)
 end
 
 function Base.show(io::IO,a::CycPol)
-  if !hasdecor(io)
+ if !(get(io,:limit,false) || get(io,:TeX,false))
     print(io,"CycPol(",a.coeff,",",a.valuation)
     for (r,m) in a.v print(io,",",r.r,"=>",m) end
     print(io,")")
@@ -292,13 +347,13 @@ function Base.show(io::IO,a::CycPol)
   end
   den=denominator(a.coeff)
   c=numerator(a.coeff)
-  s=repr(c; context=IOContext(io,:varname=>:q))
+  s=repr(c; context=io)
   if iszero(a.valuation) && isempty(a.v) print(io,s)
   else
     s=format_coefficient(s)
     print(io,s) 
     if a.valuation==1 print(io,"q")
-    elseif a.valuation!=0 print(io,"q",stringexp(io,a.valuation)) end
+    elseif a.valuation!=0 print(io,Pol(),stringexp(io,a.valuation)) end
     for (e,pow) in decompose(a.v.d)
   #   println(e)
       if e.no>0  print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
@@ -402,24 +457,11 @@ function CycPol(p::Pol{T};trace=false)where T
       to_test=filter(r->iszero(p(E(i,r))),to_test)
       if isempty(to_test) return found end
       found=true
-      p=pseudodiv(p,prod(r->Pol([-E(i,r),1],0),to_test))[1]
+      p=exactdiv(p,prod(r->Pol([-E(i,r),1],0),to_test))
       append!(vcyc,E.(i,to_test).=>1)
       if trace print("[d°$(degree(p))c$(conductor(p.c)),$i:",join(to_test,","),"]") end
       if degree(p)<div(totient(i),totient(gcd(i,conductor(p.c)))) return found end
     end
-#   for r in to_test
-#     while true 
-#       p1=lindivrem(p,E(i,r))
-#       if !isnothing(p1)
-#         p=p1
-#         found=true
-#         push!(vcyc,E(i,r)=>1)
-#         if trace print("(d°$(degree(p)) c$(conductor(p.c)) e$i.$r)") end
-#         if degree(p)<div(totient(i),totient(gcd(i,conductor(p.c)))) return found end
-#       else break
-#       end
-#     end
-#   end
   end
 
   # first try commonly occuring fields
@@ -456,44 +498,58 @@ end
 
 function (p::CycPol)(x)
   res=p.valuation<0 ? (x//1)^p.valuation : x^p.valuation
-  if !isempty(p.v)
-    v=decompose(p.v.d)
-    for ((cond,no),mul) in filter(x->x[1].no==1,v)
-      res*=(cyclotomic_polynomial(cond)(x))^mul
-    end
-    for ((cond,no),mul) in filter(x->x[1].no>1,v)
-      res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul
-    end
-    for v in collectby(x->x[1].conductor,filter(x->x[1].no<0,v))
-      res*=prod((x-E(cond,-no))^mul for ((cond,no),mul) in v)
+  l=decompose(p.v.d)
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no==1 res*=(cyclotomic_polynomial(cond)(x))^mul end
+  end
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no>1 res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul end
+  end
+  pp=one(x)
+  co=0
+  pp=one(x)
+  for ((cond,no),mul) in l
+    if iszero(res) return res end
+    if no<0 
+      if co==cond pp*=(x-E(cond,-no))^mul 
+      else co=cond
+        res*=pp
+        pp=(x-E(cond,-no))^mul 
+      end
     end
   end
+  res*=pp
   if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
 end
 
-# Fast routine for CycPol(Value(p,q*e)) for a root of unity e
-function ennola_twist(p::CycPol,e)
-  if p.coeff isa Pol coeff=p.coeff(Pol()*e) else coeff=p.coeff end
+# Fast routine for CycPol(p(Pol([e],1))) for e::Root1
+function subs(p::CycPol,v::Pol{Root1})
+  if degree(v)!=1 || valuation(v)!=1 error(v," should be Pol([Root1],1)") end
+  e=v[1]
   coeff=p.coeff*e^degree(p)
-  re=Root1(e)
-  vcyc=[r*inv(re)=>m for (r,m) in p.v]
-  CycPol(coeff,p.valuation,ModuleElt(vcyc))
+  if coeff isa Pol coeff=coeff(v) end
+  re=inv(Root1(e))
+  CycPol(coeff,valuation(p),ModuleElt(r*re=>m for (r,m) in p.v))
 end
 
-# Fast routine for  CycPol(Value(p,q^n))
-function descent_of_scalars(p::CycPol,n)
+# Fast routine for  CycPol(p(Pol()^n))
+function subs(p::CycPol,v::Pol{Int})
+  if degree(v)!=valuation(v) || coefficients(v)!=[1] error(v," should be Pol()^n") end
+  n=valuation(v)
   if n==0 return CycPol(p(1),0) end
   n=Int(n)
-  valuation=n*p.valuation
+  val=n*valuation(p)
+  if p.coeff isa Pol coeff=p.coeff(v) else coeff=p.coeff end
   if n>0
-    coeff=p.coeff
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:n-1).+r.r)/n) for (r,pow) in p.v)...)
   else
-    valuation+=n*sum(values(p.v))
-    coeff=p.coeff*(-1)^sum(values(p.v))*Cyc(prod(r^p for (r,p) in p.v))
+    val+=n*sum(values(p.v))
+    coeff*=(-1)^sum(values(p.v))*Cyc(prod(r^p for (r,p) in p.v))
     vcyc=vcat((map(i->Root1(;r=i)=>pow,((0:-n-1).-r.r)/-n) for (r,pow) in p.v)...)
   end
-  CycPol(coeff,valuation,ModuleElt(vcyc))
+  CycPol(coeff,val,ModuleElt(vcyc))
 end
     
 # 281st generic degree of G34
@@ -518,8 +574,7 @@ julia> @btime CycPol(u) # gap 8.2ms
 julia> @btime u(1)  # gap 40μs
   50.525 μs (1155 allocations: 68.78 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
-  26.276 μs (475 allocations: 59.23 KiB) on 1.6
-  46.853 μs (758 allocations: 67.19 KiB)
+  28.768 μs (593 allocations: 42.89 KiB)
 =#
 
 # a worse polynomial; u=p2(Pol()) 20ms (gap3 9ms) CycPol(u) 1.37s (gap3 1.33s)
