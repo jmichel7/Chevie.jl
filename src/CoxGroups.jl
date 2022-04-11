@@ -549,16 +549,17 @@ julia> Poset(W,W(1,3))
 ```
 """
 function Posets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W) return Poset(Dict(:elts=>[w],:hasse=>[Int[]],
-    :labels=>["."],:action=>map(x->[0],gens(W)),:W=>W))
-  end
+  if w==one(W) p=Poset(Dict(:elements=>[w],:hasse=>[Int[]],
+    :action=>map(x->[0],gens(W)),
+    :W=>W))
+  else
   s=firstleftdescent(W,w)
   p=Poset(W,W(s)*w)
   l=length(p)
   # action: the Cayley graph: for generator i, action[i][w]=sw
-  # where w and sw are represented by their index in :elts
+  # where w and sw are represented by their index in :elements
   new=filter(k->iszero(p.action[s][k]),1:l)
-  append!(p.elts,W(s).*(p.elts[new]))
+  append!(p.elements,W(s).*(p.elements[new]))
   append!(hasse(p),map(x->Int[],new))
   p.action[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W)) 
@@ -570,13 +571,14 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
     if j>i
       for h in p.action[s][hasse(p)[i]]
         if h>l push!(hasse(p)[j],h)
-          k=findfirst(==(p.elts[h]/p.elts[j]),gens(W))
+          k=findfirst(==(p.elements[h]/p.elements[j]),gens(W))
           if k!==nothing p.action[k][j]=h;p.action[k][h]=j end
         end
       end
     end
   end
-  p.labels=map(x->isone(x) ? "." : joindigits(word(W,x)),p.elts)
+  end
+  p.show_element=(io,x)->isone(x) ? "." : joindigits(word(W,x))
   p
 end
 

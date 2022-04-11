@@ -278,7 +278,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
 end
 
 function name(io::IO,u::UnipotentClass)
-  nameclass(merge(u.prop,Dict(:name=>u.name)),io.dict)
+ nameclass(merge(u.prop,Dict(:name=>u.name)),IOContext(io).dict)
 end
 
 name(u;opt...)=name(IOContext(stdout,opt...),u)
@@ -823,8 +823,8 @@ function UnipotentClasses(W,p=0)
   end
   classes=classes[l]
   AdjustAu!(classes,springerseries)
-  orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)))
-  orderclasses.label=(io,n)->name(io,classes[n])
+  orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)),classes)
+  orderclasses.show_element=name
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
 end

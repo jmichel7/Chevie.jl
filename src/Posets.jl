@@ -9,9 +9,14 @@ Posets must be initialized by  at least one of the two following fields:
     (covers) of the i-th element, that is the list of j such that `i<j` and
     such that there is no k such that i<k<j.
 
-There   are  thus  two   constructors,  `Poset(I::Matrix{Bool})`  from  the
-incidence  matrix `I`, and `Poset(H::Vector{<:Vector{<:Integer}})` from the
-Hasse diagram.
+By  default `Poset`s are posets  of integers. To give  them another type of
+elements,  the elements should also be  given in the constructor. There are
+thus   two   constructors,   `Poset(I::Matrix{Bool}[,elements])`  from  the
+incidence matrix `I`, and
+`Poset(H::Vector{<:Vector{<:Integer}}[,elements])`  from the Hasse diagram.
+For convenience there is another constructor
+`Poset(isless::Function,elements)`  but using  this begins  by constructing
+the incidence matrix from the `isless` function which may be expensive.
 
 `Poset`s  are printed at  the REPL as  a list of  covering chains. Elements
 which  are equivalent  for the  `Poset` are  printed together  separated by
@@ -25,15 +30,10 @@ julia> length(p) # the number of elements of the `Poset`
 6
 ```
 
-note in the above example that the poset has been printed with labels which
-are  the words in `coxgroup(:A,2)`. If no labels have been set for `p`, the
-labels  shown are `1:length(p)`. The labels should have same length as  `p`
-but can be any objects.
+note  in  the  above  example  the  elements  of the poset are the words in
+`coxgroup(:A,2)`.
 
 ```julia-repl
-julia> p.labels="abcdef"; p
-a<b,c<d,e<f
-
 julia> hasse(p)
 6-element Vector{Vector{Int64}}:
  [2, 3]
@@ -109,6 +109,7 @@ julia> Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])
 ```
 """
 Poset(m::Matrix{Bool})=Poset(Dict{Symbol,Any}(:incidence=>m))
+Poset(m::Matrix{Bool},e)=Poset(Dict{Symbol,Any}(:incidence=>m,:elements=>e))
 
 """
 `Poset(h::Vector{<:Vector{<:Integer}})`
@@ -124,18 +125,27 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 ```
 """
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
+Poset(m::Vector{<:Vector{<:Integer}},e)=Poset(Dict{Symbol,Any}(:hasse=>m,:elements=>e))
+
+Poset(f::Function,e)=Poset([(f(x,y)|| x==y) for x in e, y in e],e)
+
 Base.length(p::Poset)=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
 
-function label(io::IO,p::Poset,n)
-  haskey(p,:labels) ? p.labels[n] : (haskey(p,:label) ? p.label(io,n) : string(n))
-end
-  
+elements(p::Poset)=haskey(p,:elements) ? p.elements : 1:length(p)
+
 function Base.show(io::IO,x::Poset)
   s=hasse(x)
+  if !(get(io,:TeX,false) || get(io,:limit,false))
+    print(io,"Poset(",s)
+    if x.elements!=1:length(x) print(io,",",x.elements) end
+    print(io,")")
+    return 
+  end
   pp=partition(x)
-  labels=map(y->join(map(n->label(io,x,n),y),","),pp)
-  p=Poset(map(x->unique!(sort(convert(Vector{Int},
-                        map(y->findfirst(z->y in z,pp),s[x[1]])))),pp))
+  sh=haskey(x,:show_element) ? x.show_element : (io,y)->repr(y;context=io)
+  e=elements(x)
+  labels=map(y->join(map(n->sh(io,e[n]),y),","),pp)
+  p=Poset(map(x->unique!(sort(map(y->Int(findfirst(z->y in z,pp)),s[x[1]]))),pp))
   sep=get(io,:Symbol,false)
   TeX=get(io,:TeX,false)
   if sep==false sep=TeX ? "{<}" : "<" end
@@ -154,7 +164,7 @@ in `P`, then `findfirst(==(i),l)<findfirst(==(j),l)`. This is also called a
 topological sort of `P`.
 
 ```julia-repl
-julia> p=Poset([j%i==0 for i in 1:6, j in 1:6])
+julia> p=Poset((i,j)->j%i==0,1:6)
 1<5
 1<2<4
 1<3<6
@@ -196,7 +206,7 @@ hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
 returns the Hasse diagram of the poset `P`.
 
 ```julia-repl
-julia> p=Poset([j%i==0 for i in 1:5, j in 1:5])
+julia> p=Poset((i,j)->j%i==0,1:5)
 1<3,5
 1<2<4
 
@@ -217,7 +227,7 @@ hasse(p::Poset)=get!(()->hasse(incidence(p)),p,:hasse)
 returns the incidence matrix of the poset `P`.
 
 ```julia-repl
-julia> p=Poset(push!([[i+1] for i in 1:5],Int[]))
+julia> p=Poset([i==6 ? Int[] : [i+1] for i in 1:6])
 1<2<3<4<5<6
 
 julia> incidence(p)
@@ -260,7 +270,7 @@ end
 the opposed poset to `P`.
 
 ```julia-repl
-julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
+julia> p=Poset((i,j)->i%4<j%4,1:8)
 4,8<1,5<2,6<3,7
 
 julia> reverse(p)
@@ -314,17 +324,13 @@ end
 
 returns  the sub-poset of `P` determined by `inds`, which must be a sublist
 of `1:length(P)`. The indices in this sub-poset will be renumbered to their
-position in `inds`. If `P` has labels, they will be transmitted to the
-sub-poset.
+position in `inds`, but the elements set to `P.elements[inds]`.
 
 ```julia-repl
-julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
+julia> p=Poset((i,j)->i%4<j%4,1:8)
 4,8<1,5<2,6<3,7
 
 julia> restricted(p,2:6)
-3<4<1,5<2
-
-julia> p.labels=1:8; restricted(p,2:6)
 4<5<2,6<3
 ```
 """
@@ -341,9 +347,7 @@ function restricted(p::Poset,ind::AbstractVector{<:Integer})
                             for i in eachindex(ind), j in eachindex(ind)]
     delete!(res.prop, :hasse)
   end
-  if haskey(p, :label) res.label=(io,x, n)->p.label(io, x, ind[n])
-  elseif haskey(p, :labels) res.labels=p.labels[ind]
-  end
+  res.elements=haskey(p,:elements) ? p.elements[ind] : ind
   res
 end
 
@@ -377,8 +381,11 @@ returns  `true` if `P` is  a join semilattice, that  is any two elements of
 `P` have a unique smallest upper bound; returns `false` otherwise.
 
 ```julia-repl
-julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
-4,8<1,5<2,6<3,7
+julia> p=Poset((i,j)->j%i==0,1:8)
+1<5,7
+1<2<4<8
+1<3<6
+2<6
 
 julia> is_join_lattice(p)
 false
@@ -393,11 +400,14 @@ returns  `true` if `P` is  a meet semilattice, that  is any two elements of
 `P` have a unique highest lower bound; returns `false` otherwise.
 
 ```julia-repl
-julia> p=Poset([i==j || i%4<j%4 for i in 1:8, j in 1:8])
-4,8<1,5<2,6<3,7
+julia> p=Poset((i,j)->j%i==0,1:8)
+1<5,7
+1<2<4<8
+1<3<6
+2<6
 
 julia> is_meet_lattice(p)
-false
+true
 ```
 """
 is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))

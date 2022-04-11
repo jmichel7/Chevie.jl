@@ -52,7 +52,7 @@ function ClosedSubsets(W)
   covered=unique.(covered)
   P=Poset(incidence(Poset(covered)))
   P.elements=l
-  P.labels=map(x->join(x," "),l)
+  P.show_element=(io,x)->(isempty(x) ? "∅" : join(x," "))
   P
   end
 end
@@ -165,19 +165,19 @@ specific value to `q₃`:
 
 ```julia-rep1
 julia> xdisplay(t(;q_3=1);nClasses=true)
-ClassTypes(G₂,char. 2) q_3=1
+ClassTypes(G₂,char. 2) q₃=1
     C_G(s)│     nClasses     |C_G(s)|
 ──────────┼───────────────────────────
-G₂₍₎=.Φ₁² │(q²-8q+12)/12          Φ₁²
-G₂₍₎=.Φ₁Φ₂│    (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=.Φ₁Φ₂│    (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=.Φ₆  │     (q²-q)/6           Φ₆
-G₂₍₎=.Φ₃  │     (q²+q)/6           Φ₃
-G₂₍₎=.Φ₂² │   (q²-4q)/12          Φ₂²
-G₂₍₁₎=A₁Φ₂│          q/2       qΦ₁Φ₂²
+G₂₍₎=Φ₁²  │(q²-8q+12)/12          Φ₁²
+G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂
+G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂
+G₂₍₎=Φ₆   │     (q²-q)/6           Φ₆
+G₂₍₎=Φ₃   │     (q²+q)/6           Φ₃
+G₂₍₎=Φ₂²  │   (q²-4q)/12          Φ₂²
 G₂₍₁₎=A₁Φ₁│      (q-2)/2       qΦ₁²Φ₂
-G₂₍₂₎=Ã₁Φ₂│          q/2       qΦ₁Φ₂²
+G₂₍₁₎=A₁Φ₂│          q/2       qΦ₁Φ₂²
 G₂₍₂₎=Ã₁Φ₁│      (q-2)/2       qΦ₁²Φ₂
+G₂₍₂₎=Ã₁Φ₂│          q/2       qΦ₁Φ₂²
 G₂        │            1 q⁶Φ₁²Φ₂²Φ₃Φ₆
 ```
 """

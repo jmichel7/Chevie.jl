@@ -140,7 +140,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     push!(uc[:classes], cc)
     for s in cl addSpringer1(s,cc) end
   end
-  uc[:orderClasses] = hasse(Poset(map(x->
+  uc[:orderClasses] = hasse(Poset(toM(map(x->
     map(function(y)
       if char!=2 return dominates(y[:parameter], x[:parameter]) end
       # cf. [S] 2.10 page 24
@@ -156,7 +156,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
         end
       end
       return true
-    end, uc[:classes]), uc[:classes])))
+    end, uc[:classes]), uc[:classes]))))
   if char!=2 && ctype==2
     function LuSpin(p) # cf [Lu] 14.2
       sort!(p)
