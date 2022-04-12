@@ -1,19 +1,37 @@
 module Gt
 using ..Gapjm
-export RationalUnipotentClasses, ClosedSubsets, ClassTypes
+export RationalUnipotentClasses, closed_subsystems, ClassTypes
 
-function RationalUnipotentClasses(WF, p)
+function RationalUnipotentClasses(WF, p=0)
   u=UnipotentClasses(WF, p)
   t=Ucl.XTable(u;classes=true)
-  map(i->Dict{Symbol, Any}(:card => CycPol(t.cardClass[i]), 
-                           :class => u.classes[t.classes[i][1]], 
-                           :classno => t.classes[i][1], 
-                           :AuNo => t.classes[i][2]), 
-           eachindex(t.classes))
+  map(i->(card=CycPol(t.cardClass[i]), class=u.classes[t.classes[i][1]], 
+          classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes))
 end
 
-# returns the Poset of closed subsystems of the root system of W
-function ClosedSubsets(W)
+"""
+`closed_subsystems(W)` 
+
+the Poset of closed subsystems of the root system of `W`. Each closed subsystem
+is represented by the list of indices of its positive roots.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> closed_subsystems(W)
+1 2 3 4 5 6<1 4<4<∅
+1 2 3 4 5 6<1 5 6<1<∅
+1 2 3 4 5 6<2 6<6<∅
+1 2 3 4 5 6<3 5<5<∅
+1 4<1
+1 5 6<6
+1 5 6<5
+2 6<2<∅
+3 5<3<∅
+```
+"""
+function closed_subsystems(W)
   get!(W, :closedsubsets)do
   function possum(i,j)
     p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
@@ -52,7 +70,8 @@ function ClosedSubsets(W)
   covered=unique.(covered)
   P=Poset(incidence(Poset(covered)))
   P.elements=l
-  P.show_element=(io,x)->(isempty(x) ? "∅" : join(x," "))
+  P.show_element=(io,x)->(isempty(x) ? "∅" : join(filter(<=(nref(W)),x)," "))
+# P.show_element=(io,x)->(isempty(x) ? "∅" : join(x," "))
   P
   end
 end
@@ -107,18 +126,18 @@ returned:   the type, and its generic order.
 ```julia-rep1
 julia> xdisplay(t;unip=true)
 ClassTypes(A₂,good characteristic)
-    C_G(s)│      u |C_G(su)|
-──────────┼──────────────────
-A₂₍₎=.Φ₁² │              Φ₁²
-A₂₍₎=.Φ₁Φ₂│             Φ₁Φ₂
-A₂₍₎=.Φ₃  │               Φ₃
-A₂₍₁₎=A₁Φ₁│     11    qΦ₁²Φ₂
-          │      2       qΦ₁
-A₂        │    111 q³Φ₁²Φ₂Φ₃
-          │     21      q³Φ₁
-          │      3       3q²
-          │ 3_{ζ₃}       3q²
-          │3_{ζ₃²}       3q²
+    C_G(s)│    u |C_G(su)|
+──────────┼────────────────
+A₂₍₎=Φ₁²  │    1       Φ₁²
+A₂₍₎=Φ₁Φ₂ │    1      Φ₁Φ₂
+A₂₍₎=Φ₃   │    1        Φ₃
+A₂₍₁₎=A₁Φ₁│   11    qΦ₁²Φ₂
+          │    2       qΦ₁
+A₂        │  111 q³Φ₁²Φ₂Φ₃
+          │   21      q³Φ₁
+          │    3       3q²
+          │ 3_ζ₃       3q²
+          │3_ζ₃²       3q²
 ```
 Here  we  have  displayed  information  on  unipotent  classes,  with their
 centralizer.
@@ -220,16 +239,16 @@ function Base.show(io::IO,r::ClassTypes)
       u=RationalUnipotentClasses(x.CGs, r.p)
       for c in u
         v=String[]
-        if isone(c[:card])
+        if isone(c.card)
           if classes push!(v, nc(nconjugacy_classes(x,r.WF,r.p))) end
           push!(row_labels,TeX(io,x.CGs))
         else
           push!(row_labels," ")
           if classes push!(v,"") end
         end
-        push!(v,Ucl.nameclass(merge(c[:class].prop,Dict(:name=>c[:class].name)),
-                              merge(io.dict,Dict(:class=>c[:AuNo]))))
-        push!(v,repr(x.cent//c[:card],context=io))
+        push!(v,Ucl.nameclass(merge(c.class.prop,Dict(:name=>c.class.name)),
+                              merge(io.dict,Dict(:class=>c.AuNo))))
+        push!(v,repr(x.cent//c.card,context=io))
         push!(t,v)
       end
     end
@@ -267,23 +286,13 @@ function nconjugacy_classes(C::ClassTypes)
   nconjugacy_classes.(C.ss,Ref(C.WF),C.p)
 end
 
-# the Moebius function on the intervals x:maximum(P)
-function moebius(P::Poset)
-  o=linear_extension(P)
-  mu=zeros(Int,length(P))
-  mu[o[length(P)]]=1
-  less=i->filter(j->j!=i && incidence(P)[i,j], 1:length(P))
-  for i in o[length(P)-1:-1:1] mu[i]=-sum(mu[less(i)]) end
-  mu
-end
-
 # See Fleischmann-Janiszczak AAECC 1996 definition 2.1
 function nconjugacy_classes(r::ClassType,WF,p)
   get!(r,:nClasses)do
     HF=r.CGs
     H=Group(HF)
     W=Group(WF)
-    P=deepcopy(ClosedSubsets(W))
+    P=deepcopy(closed_subsystems(W))
     elts=P.elements
     o=filter(i->sort(elts[i].^HF.phi)==elts[i],1:length(P))
     o=filter(i->issubset(inclusiongens(H),elts[i]),o)

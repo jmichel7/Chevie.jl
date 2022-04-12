@@ -411,9 +411,9 @@ function FixedPoints(T::SubTorus,m)
     error(m," does not stabilize ",T)
   end
   n=Int.(toM(n))
-  fix=leftnullspaceInt(n-n^0) # pure sublattice Y(Tso)
+  fix=lnullspaceInt(n-n^0) # pure sublattice Y(Tso)
   o=order(n)
-  Y1=leftnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where 
+  Y1=lnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where 
   # T=T1.Tso almost direct product, thus spaces Y.(1-s) and Y1.(1-s) coincide
   n=baseInt(n-n^0) # basis of Im(1-s)
   m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
@@ -476,7 +476,7 @@ function algebraic_centre(W)
     W=W.group
   end
   if istorus(W) Z0=reflrep(W,one(W))
-  else Z0=leftnullspaceInt(transpose(simpleroots(W)))
+  else Z0=lnullspaceInt(transpose(simpleroots(W)))
   end
   Z0=SubTorus(W,Z0)
   if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]

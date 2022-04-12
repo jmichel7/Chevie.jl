@@ -507,6 +507,8 @@ end
 @test mytest("Groups.jl","elements(G)","3-element Vector{Matrix{Int64}}:\n [0 1; -1 -1]\n [1 0; 0 1]\n [-1 -1; 1 0]")
 end
 @testset "Gt.jl" begin
+@test mytest("Gt.jl","W=coxgroup(:G,2)","G₂")
+@test mytest("Gt.jl","closed_subsystems(W)","1 2 3 4 5 6<1 4<4<∅\n1 2 3 4 5 6<1 5 6<1<∅\n1 2 3 4 5 6<2 6<6<∅\n1 2 3 4 5 6<3 5<5<∅\n1 4<1\n1 5 6<6\n1 5 6<5\n2 6<2<∅\n3 5<3<∅")
 @test mytest("Gt.jl","t=ClassTypes(rootdatum(:sl,3))","ClassTypes(A₂,good characteristic)\n    C_G(s)│ |C_G(s)|\n──────────┼──────────\nA₂₍₎=Φ₁²  │      Φ₁²\nA₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂\nA₂₍₎=Φ₃   │       Φ₃\nA₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂\nA₂        │q³Φ₁²Φ₂Φ₃")
 end
 @testset "HasType.jl" begin
@@ -658,7 +660,7 @@ end
 @test mytest("MatInt.jl","n=[1 2 3;4 5 6]","2×3 Matrix{Int64}:\n 1  2  3\n 4  5  6")
 @test mytest("MatInt.jl","complementInt(m,n)","(complement = [0 0 1], sub = [1 2 3; 0 3 6], moduli = [1, 3])")
 @test mytest("MatInt.jl","m=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]","5×3 Matrix{Int64}:\n  1   2   7\n  4   5   6\n  7   8   9\n 10  11  19\n  5   7  12")
-@test mytest("MatInt.jl","MatInt.leftnullspaceInt(m)","2×5 Matrix{Int64}:\n 1  18   -9  2  -6\n 0  24  -13  3  -7")
+@test mytest("MatInt.jl","MatInt.lnullspaceInt(m)","2×5 Matrix{Int64}:\n 1  18   -9  2  -6\n 0  24  -13  3  -7")
 @test mytest("MatInt.jl","mat=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]","5×3 Matrix{Int64}:\n  1   2   7\n  4   5   6\n  7   8   9\n 10  11  19\n  5   7  12")
 @test mytest("MatInt.jl","solutionmat(mat,[95,115,182])","5-element Vector{Rational{Int64}}:\n  47//4\n -17//2\n  67//4\n   0//1\n   0//1")
 @test mytest("MatInt.jl","solutionmatInt(mat,[95,115,182])","5-element Vector{Int64}:\n  2285\n -5854\n  4888\n -1299\n     0")
@@ -768,6 +770,10 @@ end
 @test mytest("Posets.jl","length(p)","6")
 @test mytest("Posets.jl","hasse(p)","6-element Vector{Vector{Int64}}:\n [2, 3]\n [4, 5]\n [4, 5]\n [6]\n [6]\n []")
 @test mytest("Posets.jl","incidence(p)","6×6 Matrix{Bool}:\n 1  1  1  1  1  1\n 0  1  0  1  1  1\n 0  0  1  1  1  1\n 0  0  0  1  0  1\n 0  0  0  0  1  1\n 0  0  0  0  0  1")
+@test mytest("Posets.jl","W=coxgroup(:A,2)","A₂")
+@test mytest("Posets.jl","p=Poset((x,y)->bruhatless(W,x,y),elements(W))","()<(1,3)(2,5)(4,6),(1,4)(2,3)(5,6)<(1,2,6)(3,4,5),(1,6,2)(3,5,4)<(1,5)(2,4)(3,6)")
+@test mytest("Posets.jl","p.show_element=(io,x)->isone(x) ? \".\" : joindigits(word(W,x));","nothing")
+@test mytest("Posets.jl","p",".<2,1<21,12<121")
 @test mytest("Posets.jl","m=[j-i in [0,1] for i in 1:5, j in 1:5]","5×5 Matrix{Bool}:\n 1  1  0  0  0\n 0  1  1  0  0\n 0  0  1  1  0\n 0  0  0  1  1\n 0  0  0  0  1")
 @test mytest("Posets.jl","transitive_closure(m)","5×5 Matrix{Bool}:\n 1  1  1  1  1\n 0  1  1  1  1\n 0  0  1  1  1\n 0  0  0  1  1\n 0  0  0  0  1")
 @test mytest("Posets.jl","Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])","1<2,3<4,5")

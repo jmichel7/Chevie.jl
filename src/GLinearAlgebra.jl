@@ -82,7 +82,7 @@ end
  computes rank of m
  not exported to avoid conflict with LinearAlgebra
 """
-rank(m::Matrix)=length(echelon(m)[2])
+rank(m::AbstractMatrix)=length(echelon(m)[2])
 
 """
  computes right nullspace of m in a type_preserving way
@@ -111,16 +111,15 @@ function nullspace(m::AbstractMatrix)
   zz[:,nn]
 end
 
-" `lnullspace(m)`: left nullspace of `m`"
-lnullspace(m)=transpose(nullspace(transpose(m)))
+" `lnullspace(m::AbstractMatrix)`: left nullspace of `m`"
+lnullspace(m::AbstractMatrix)=transpose(nullspace(transpose(m)))
 
-"sum of the rowspaces of matrices m and n"
-sum_rowspace(m::Matrix,n::Matrix)=echelon(vcat(m,n))[1]
+"`sum_rowspace(m::AbstractMatrix,n::AbstractMatrix)` sum of the rowspaces of m and n"
+sum_rowspace(m::AbstractMatrix,n::AbstractMatrix)=echelon(vcat(m,n))[1]
 
-"intersection of the rowspaces of matrices m and n"
+"`intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)` intersection of the rowspaces of m and n"
 function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
-  mat=[m m;n zero(n)]
-  mat=echelon(mat)[1]
+  mat=echelon([m m;n zero(n)])[1]
   in=mat[:,size(m,2)+axes(m,2)]
   in=in[count(!iszero,eachrow(mat[:,axes(m,2)]))+1:end,:]
   in[1:count(!iszero,eachrow(in)),:]
@@ -131,9 +130,9 @@ end
 
 determinant of a matrix over an integral domain.
 `div` is exact division; it works over a field where `exactdiv` is division.
-See Cohen, "Computational algebraic number theory", 2.2.6
+See Cohen, "Computational algebraic number theory", 2.2.6 (Gauss-Bareiss).
 """
-function det(m::Matrix)
+function det(m::AbstractMatrix)
   s=1
   c=one(eltype(m))
   n=size(m,1)

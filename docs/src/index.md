@@ -139,6 +139,7 @@ partition
 Posets.restricted(::Poset,::AbstractVector{<:Integer})
 is_join_lattice
 is_meet_lattice
+moebius
 Poset(::CoxeterGroup,w=longest(W))
 ```
 # Signed permutations
@@ -172,6 +173,9 @@ transporter
 diagconj_elt
 traces_words_mats
 solutionmat
+sum_rowspace
+intersect_rowspace
+lnullspace
 ```
 # Integral matrices and lattices
 ```@docs
@@ -182,8 +186,10 @@ hermite_transforms
 col_hermite
 col_hermite_transforms
 baseInt
+lnullspaceInt
 complementInt
-DiaconisGraham
+solutionmatInt
+diaconis_graham
 ```
 # Finite fields
 ```@docs
@@ -267,6 +273,7 @@ bipartite_decomposition
 catalan(W,m)
 reflrep(::PermRootGroup,w)
 reflrep(::PRG)
+reflrep(::PRG,::Integer)
 PermX
 reflections
 refleigen
@@ -469,6 +476,7 @@ cuspidal
 ```
 # Classtypes
 ```@docs
+closed_subsystems
 ClassTypes
 ```
 # Unipotent Elements
@@ -697,7 +705,7 @@ NrPartitions                                npartitions
 NrPartitionsSet                             npartitions_set
 NrPartitionTuples                           npartition_tuples
 NrRestrictedPartitions                      nrestrictedpartitions
-NullspaceIntMat                             leftnullspaceInt
+NullspaceIntMat                             lnullspaceInt
 OnFamily(f,p::Int)                          galois(f,p)
 OnFamily(f,p::Perm)                         f^p
 OnMatrices(m,p)                             ^(m,p;dims=(1,2))

@@ -228,7 +228,7 @@ const ChevieDict=Dict(
 "NrPartitionTuples"=>"npartition_tuples",
 "NrRestrictedPartitions"=>"nrestrictedpartitions",
 "NullMat(m[,n])"=>"zeros(Int,m,m) resp. zeros(Int,m,n)",
-"NullspaceIntMat"=>"leftnullspaceInt",
+"NullspaceIntMat"=>"lnullspaceInt",
 "OnFamily(f,p::Perm)"=>"f^p",
 "OnFamily(f,p::Int)"=>"galois(f,p)",
 "OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",

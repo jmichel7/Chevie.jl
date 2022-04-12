@@ -4,13 +4,13 @@ Operations on integral matrices
 Quickly ported from GAP; the code is still horrible (unreadable) like the
 original one.
 
-Look at the docstrings for `complementInt, leftnullspaceInt, solutionmatInt, 
+Look at the docstrings for `complementInt, lnullspaceInt, solutionmatInt, 
 smith, smith_transforms, hermite, hermite_transforms, col_hermite, 
 col_hermite_transforms, diaconis_graham, baseInt`
 """
 module MatInt
 
-export complementInt, leftnullspaceInt, solutionmatInt, smith, smith_transforms,
+export complementInt, lnullspaceInt, solutionmatInt, smith, smith_transforms,
        hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
   diaconis_graham, baseInt
 
@@ -763,9 +763,9 @@ function complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})
 end
 
 """
-`leftnullspaceInt(m::Matrix{<:Integer})
+`lnullspaceInt(m::Matrix{<:Integer})
 
-returns  a matrix whose rows form a  basis of the integral leftnullspace of
+returns  a matrix whose rows form a  basis of the integral lnullspace of
 `m`,  that is of elements  of the left nullspace  of `m` that have integral
 entries.
 
@@ -778,13 +778,13 @@ julia> m=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]
  10  11  19
   5   7  12
 
-julia> MatInt.leftnullspaceInt(m)
+julia> MatInt.lnullspaceInt(m)
 2×5 Matrix{Int64}:
  1  18   -9  2  -6
  0  24  -13  3  -7
 ```
 """
-function leftnullspaceInt(mat)
+function lnullspaceInt(mat)
   norm=TriangulizedIntegerMatTransform(mat)
   BaseIntMat(norm[:rowtrans][norm[:rank]+1:size(mat,1),:])
 end

@@ -9,14 +9,14 @@ Posets must be initialized by  at least one of the two following fields:
     (covers) of the i-th element, that is the list of j such that `i<j` and
     such that there is no k such that i<k<j.
 
-By  default `Poset`s are posets  of integers. To give  them another type of
-elements,  the elements should also be  given in the constructor. There are
-thus   two   constructors,   `Poset(I::Matrix{Bool}[,elements])`  from  the
-incidence matrix `I`, and
+By  default a `Poset` `P` is a  poset on `1:length(P)` where `length(P)` is
+the  cardinality of `P`. To make a  poset with other elements, the elements
+should  also be given in the  constructor. There are thus two constructors,
+`Poset(I::Matrix{Bool}[,elements])`  from  the  incidence  matrix  `I`, and
 `Poset(H::Vector{<:Vector{<:Integer}}[,elements])`  from the Hasse diagram.
 For convenience there is another constructor
-`Poset(isless::Function,elements)`  but using  this begins  by constructing
-the incidence matrix from the `isless` function which may be expensive.
+`Poset(isless::Function,elements)`;   this   begins   by  constructing  the
+incidence matrix from the `isless` function which may be expensive.
 
 `Poset`s  are printed at  the REPL as  a list of  covering chains. Elements
 which  are equivalent  for the  `Poset` are  printed together  separated by
@@ -52,16 +52,43 @@ julia> incidence(p)
  0  0  0  0  1  1
  0  0  0  0  0  1
 ```
+
+The above poset is constructed efficiently by constructing the Hasse diagram,
+but it could be constructed naively as follows:
+
+```julia-repl
+julia> W=coxgroup(:A,2)
+A₂
+
+julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
+()<(1,3)(2,5)(4,6),(1,4)(2,3)(5,6)<(1,2,6)(3,4,5),(1,6,2)(3,5,4)<(1,5)(2,4)(3,6)
+```
+
+The element printing is not so nice. This can be remedied by giving a function:
+
+```julia-repl
+julia> p.show_element=(io,x)->isone(x) ? "." : joindigits(word(W,x));
+
+julia> p
+.<2,1<21,12<121
+```
 """
 module Posets 
-# this module has only the 2 dependencies below which could be copied (27 lines)
-using ..Combinat: collectby
-using ..Util: @GapObj
+# this module has only the 2 dependencies below which could be copied.
+using ..Combinat: collectby  # 13 lines
 export Poset, linear_extension, hasse, incidence, partition,
-transitive_closure, is_join_lattice, is_meet_lattice
-export restricted #import ..Gapjm: restricted to not use using_merge
+transitive_closure, is_join_lattice, is_meet_lattice, moebius
+export restricted #needs using_merge to use with Gapjm
 
-@GapObj struct Poset end
+struct Poset 
+  prop::Dict{Symbol,Any}
+end
+
+Base.getproperty(o::Poset,s::Symbol)=hasfield(Poset,s) ? getfield(o,s) : 
+         getfield(o,:prop)[s]
+Base.setproperty!(o::Poset,s::Symbol,v)=getfield(o,:prop)[s]=v
+Base.haskey(o::Poset,s::Symbol)=haskey(getfield(o,:prop),s)
+Base.get!(f::Function,o::Poset,s::Symbol)=get!(f,getfield(o,:prop),s)
 
 """
 `transitive_closure(M)`
@@ -411,5 +438,32 @@ true
 ```
 """
 is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))
+
+"""
+`moebius(P,y=maximum(P))`
+
+the vector of value `μ(x,y)` of the Moebius function of `P` for `x` varying.
+"""
+function moebius(P::Poset,y=0)
+  o=linear_extension(P)
+  if y==0 y=o[end] end
+  mu=zeros(Int,length(P))
+  mu[y]=1
+  gt(i)=filter(j->j!=i && incidence(P)[i,j], 1:length(P))
+  for i in o[findfirst(==(y),o)-1:-1:1] mu[i]=-sum(mu[gt(i)]) end
+  mu
+end
+
+function Base.maximum(p::Poset)
+  m=incidence(p)
+  maxs=findall(i->all(m[:,i]),axes(m,2))
+  only(maxs)
+end
+
+function Base.minimum(p::Poset)
+  m=incidence(p)
+  maxs=findall(i->all(m[i,:]),axes(m,1))
+  only(maxs)
+end
 
 end
