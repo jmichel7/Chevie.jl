@@ -63,7 +63,9 @@ julia> incidence(P)
  0  0  0  1
 ```
 
-More flexibility on printing is obtained by setting a function `show_elements`:
+More flexibility on printing is obtained by setting a function `show_element`
+which takes as arguments an ÌO`, the poset, and the index of the element to
+print:
 ```julia-repl
 julia> P.show_element=(io,x,n)->print(io,join(x.elements[n],"."));
 
@@ -75,7 +77,7 @@ covering_chains, transitive_closure, is_join_lattice, is_meet_lattice, moebius,
 reverse, restricted, minimum, maximum` for more information
 """
 module Posets 
-# this module has only the 2 dependencies below which could be copied.
+# this module has only 1 dependency below which could be copied.
 using ..Combinat: collectby  # 13 lines
 export Poset, linear_extension, hasse, incidence, partition, covering_chains,
 transitive_closure, is_join_lattice, is_meet_lattice, moebius
@@ -220,7 +222,7 @@ julia> linear_extension(p)
 function linear_extension(P::Poset)
   ord=hasse(P)
   n=zeros(length(ord))
-  for v in ord for x in v n[x] += 1 end end
+  for v in ord for x in v n[x]+=1 end end
   Q=filter(x->iszero(n[x]),1:length(n))
   res=Int[]
   while length(Q) > 0
@@ -319,11 +321,13 @@ julia> reverse(p)
 ```
 """
 function Base.reverse(p::Poset)
-  res=deepcopy(p)
+  res=Poset(copy(p.prop))
   if haskey(p,:incidence) res.incidence=transpose(incidence(p)) end
   if haskey(p,:hasse)
-    res.hasse=map(empty,hasse(p))
-    for i in 1:length(p), j in hasse(p)[i] push!(hasse(res)[j], i) end
+    h=hasse(p)
+    resh=map(empty,h)
+    for i in 1:length(p), j in h[i] push!(resh[j], i) end
+    res.hasse=resh
   end
   return res
 end
@@ -350,13 +354,12 @@ julia> partition(p)
 """
 function partition(p::Poset)
   if haskey(p,:hasse)
-    l=reverse(p)
-    collectby(i->(hasse(l)[i], hasse(p)[i]),1:length(p))
+    l=hasse(reverse(p))
+    collectby(i->(l[i], hasse(p)[i]),1:length(p))
   else
     I=incidence(p)
-    ind=1:length(p)
-    l=map(i->[map(j->j!=i && I[i,j], ind), map(j->j!=i && I[j,i], ind)], ind)
-    map(x->filter(i->l[i] == x,ind), unique!(sort(l)))
+    n=.!(one(I))
+    collectby(map(i->(I[i,:].&n[i,:],I[:,i].&n[i,:]),1:length(p)),1:length(p))
   end
 end
 
@@ -381,7 +384,7 @@ julia> restricted(p,2:6;show=:elements)
 """
 function restricted(p::Poset,ind::AbstractVector{<:Integer};show=:indices)
   res=Poset(copy(p.prop))
-  if length(ind) == length(p) && sort(ind) == 1:length(p)
+  if length(ind)==length(p) && sort(ind)==1:length(p)
     if haskey(res,:hasse)
       res.hasse=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),res.hasse[ind]))
     end
