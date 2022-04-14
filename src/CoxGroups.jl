@@ -540,6 +540,23 @@ A₂
 
 julia> Poset(W)
 .<1,2<21,12<121
+```
+The above poset is constructed efficiently by constructing the Hasse diagram,
+but it could be constructed naively as follows:
+```julia-repl
+julia> Poset(W)
+.<1,2<21,12<121
+
+julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
+1<2,3<4,5<6
+```
+
+The element printing is not so nice. This can be remedied by giving a function:
+```julia-repl
+julia> p.show_element=(io,x,n)->(e=x.elements[n];isone(e) ? print(io,".") : print(io,joindigits(word(W,e))));
+
+julia> p
+.<2,1<21,12<121
 
 julia> W=coxgroup(:A,3)
 A₃
@@ -578,7 +595,8 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
     end
   end
   end
-  p.show_element=(io,x)->isone(x) ? "." : joindigits(word(W,x))
+  p.show_element=(io,x,n)->isone(x.elements[n]) ? print(io,".") : 
+                        print(io,joindigits(word(W,x.elements[n])))
   p
 end
 

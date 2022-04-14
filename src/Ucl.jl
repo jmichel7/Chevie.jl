@@ -824,7 +824,9 @@ function UnipotentClasses(W,p=0)
   classes=classes[l]
   AdjustAu!(classes,springerseries)
   orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)),classes)
-  orderclasses.show_element=name
+  orderclasses.show_element=function(io,x,n)
+     print(io,name(io,x.elements[n]))
+  end
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
 end

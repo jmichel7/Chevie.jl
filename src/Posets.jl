@@ -1,8 +1,8 @@
 """
-Posets must be initialized by  at least one of the two following fields:
+Posets are constructed from one of the two following fields:
 
   - `incidence`:  a  boolean  matrix  such that `incidence[i,j]==true` iff
-    `i<=j` in the poset.
+    `i<=j` in the poset. This is sometimes called the ζ matrix of `P`.
 
   - `hasse`:  a list representing  the Hasse diagram  of the poset: the i-th
     entry is the list of indices of elements which are immediate successors
@@ -12,71 +12,72 @@ Posets must be initialized by  at least one of the two following fields:
 By  default a `Poset` `P` is a  poset on `1:length(P)` where `length(P)` is
 the  cardinality of `P`. To make a  poset with other elements, the elements
 should  also be given in the  constructor. There are thus two constructors,
-`Poset(I::Matrix{Bool}[,elements])`  from  the  incidence  matrix  `I`, and
-`Poset(H::Vector{<:Vector{<:Integer}}[,elements])`  from the Hasse diagram.
+  - `Poset(I::Matrix{Bool}[,elements])` from  the  incidence  matrix  `I`.
+    If given one should have `length(elements)==size(I,1)==size(I,2)`.
+  - `Poset(H::Vector{<:Vector{<:Integer}}[,elements])` from the Hasse diagram.
+    If given one should have `length(elements)==length(H)`.
 For convenience there is another constructor
-`Poset(isless::Function,elements)`;   this   begins   by  constructing  the
-incidence matrix from the `isless` function which may be expensive.
+  - `Poset(isless::Function,elements)`;  this  begins  by  constructing  the
+    incidence matrix from the `isless` function which may be expensive. For
+    isless  one can give  either a function  implementing `<` or a function
+    implementing `≤` (it is ored with `=` in any case).
 
+
+```julia-repl
+julia> l=vec(collect(Iterators.product(1:2,1:2)))
+4-element Vector{Tuple{Int64, Int64}}:
+ (1, 1)
+ (2, 1)
+ (1, 2)
+ (2, 2)
+
+julia> P=Poset((x,y)->all(map(<=,x,y)),l)
+1<2,3<4
+```
 `Poset`s  are printed at  the REPL as  a list of  covering chains. Elements
 which  are equivalent  for the  `Poset` are  printed together  separated by
 commas.
 
-```julia-repl
-julia> p=Poset(coxgroup(:A,2))
-.<1,2<21,12<121
-
-julia> length(p) # the number of elements of the `Poset`
-6
-```
-
-note  in  the  above  example  the  elements  of the poset are the words in
-`coxgroup(:A,2)`.
+By default printing shows the index in `1:length(P)` for the elements.
+This can be changed by giving the keyword argument `show=:elements`.
 
 ```julia-repl
-julia> hasse(p)
-6-element Vector{Vector{Int64}}:
+julia> P=Poset((x,y)->all(map(<=,x,y)),l;show=:elements)
+(1, 1)<(2, 1),(1, 2)<(2, 2)
+
+julia> length(P) # the number of elements of the `Poset`
+4
+
+julia> hasse(P)
+4-element Vector{Vector{Int64}}:
  [2, 3]
- [4, 5]
- [4, 5]
- [6]   
- [6]   
- []    
+ [4]
+ [4]
+ []
 
-julia> incidence(p)
-6×6 Matrix{Bool}:
- 1  1  1  1  1  1
- 0  1  0  1  1  1
- 0  0  1  1  1  1
- 0  0  0  1  0  1
- 0  0  0  0  1  1
- 0  0  0  0  0  1
+julia> incidence(P)
+4×4 Matrix{Bool}:
+ 1  1  1  1
+ 0  1  0  1
+ 0  0  1  1
+ 0  0  0  1
 ```
 
-The above poset is constructed efficiently by constructing the Hasse diagram,
-but it could be constructed naively as follows:
-
+More flexibility on printing is obtained by setting a function `show_elements`:
 ```julia-repl
-julia> W=coxgroup(:A,2)
-A₂
+julia> P.show_element=(io,x,n)->print(io,join(x.elements[n],"."));
 
-julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
-()<(1,3)(2,5)(4,6),(1,4)(2,3)(5,6)<(1,2,6)(3,4,5),(1,6,2)(3,5,4)<(1,5)(2,4)(3,6)
+julia> P
+1.1<2.1,1.2<2.2
 ```
-
-The element printing is not so nice. This can be remedied by giving a function:
-
-```julia-repl
-julia> p.show_element=(io,x)->isone(x) ? "." : joindigits(word(W,x));
-
-julia> p
-.<2,1<21,12<121
-```
+see the on-line help on `linear_extension, hasse, incidence, partition, 
+covering_chains, transitive_closure, is_join_lattice, is_meet_lattice, moebius,
+reverse, restricted, minimum, maximum` for more information
 """
 module Posets 
 # this module has only the 2 dependencies below which could be copied.
 using ..Combinat: collectby  # 13 lines
-export Poset, linear_extension, hasse, incidence, partition,
+export Poset, linear_extension, hasse, incidence, partition, covering_chains,
 transitive_closure, is_join_lattice, is_meet_lattice, moebius
 export restricted #needs using_merge to use with Gapjm
 
@@ -136,7 +137,11 @@ julia> Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])
 ```
 """
 Poset(m::Matrix{Bool})=Poset(Dict{Symbol,Any}(:incidence=>m))
-Poset(m::Matrix{Bool},e)=Poset(Dict{Symbol,Any}(:incidence=>m,:elements=>e))
+function Poset(m::Matrix{Bool},e;show=:indices)
+  p=Poset(Dict{Symbol,Any}(:incidence=>m,:elements=>e))
+  if show==:elements p.show_element=(io,x,n)->print(io,x.elements[n]) end
+  p
+end
 
 """
 `Poset(h::Vector{<:Vector{<:Integer}})`
@@ -152,9 +157,14 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 ```
 """
 Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
-Poset(m::Vector{<:Vector{<:Integer}},e)=Poset(Dict{Symbol,Any}(:hasse=>m,:elements=>e))
+function Poset(m::Vector{<:Vector{<:Integer}},e;show=:indices)
+  p=Poset(Dict{Symbol,Any}(:hasse=>m,:elements=>e))
+  if show==:elements p.show_element=(io,x,n)->print(io,x.elements[n]) end
+  p
+end
 
-Poset(f::Function,e)=Poset([(f(x,y)|| x==y) for x in e, y in e],e)
+Poset(f::Function,e;show=:indices)=
+  Poset([(f(x,y)|| x==y) for x in e, y in e],e;show)
 
 Base.length(p::Poset)=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
 
@@ -169,14 +179,14 @@ function Base.show(io::IO,x::Poset)
     return 
   end
   pp=partition(x)
-  sh=haskey(x,:show_element) ? x.show_element : (io,y)->repr(y;context=io)
+  sh=haskey(x,:show_element) ? x.show_element : (io,x,n)->print(io,n)
   e=elements(x)
-  labels=map(y->join(map(n->sh(io,e[n]),y),","),pp)
+  labels=map(y->join(map(n->sprint(sh,x,n;context=io),y),","),pp)
   p=Poset(map(x->unique!(sort(map(y->Int(findfirst(z->y in z,pp)),s[x[1]]))),pp))
   sep=get(io,:Symbol,false)
   TeX=get(io,:TeX,false)
   if sep==false sep=TeX ? "{<}" : "<" end
-  ch=map(x->join(labels[x],sep), chains(p)) 
+  ch=map(x->join(labels[x],sep), covering_chains(p)) 
   if TeX print(io,join(map(x->"\$\$$x\$\$\n",ch)))
   else join(io,ch,"\n")
   end
@@ -228,9 +238,9 @@ end
 hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
 
 """
-`hasse(P)`
+`hasse(P::Poset)`
 
-returns the Hasse diagram of the poset `P`.
+the Hasse diagram of `P`.
 
 ```julia-repl
 julia> p=Poset((i,j)->j%i==0,1:5)
@@ -249,9 +259,9 @@ julia> hasse(p)
 hasse(p::Poset)=get!(()->hasse(incidence(p)),p,:hasse)
 
 """
-`incidence(P)`
+`incidence(P::Poset)`
 
-returns the incidence matrix of the poset `P`.
+returns the incidence matrix (also called the ζ matrix) of `P`.
 
 ```julia-repl
 julia> p=Poset([i==6 ? Int[] : [i+1] for i in 1:6])
@@ -278,8 +288,12 @@ function incidence(p::Poset)::Matrix{Bool}
   end
 end
 
-"A (greedy: the first is longest possible) list of covering chains of P."
-function chains(P::Poset)
+"""
+`covering_chains(P::Poset)`
+
+A (greedy: the first is longest possible) list of covering chains for P.
+"""
+function covering_chains(P::Poset)
   ch=Vector{Int}[]
   h=hasse(P)
   for i in linear_extension(P), j in h[i]
@@ -292,7 +306,7 @@ function chains(P::Poset)
 end
 
 """
-`reverse(P)`
+`reverse(P::Poset)`
 
 the opposed poset to `P`.
 
@@ -347,21 +361,25 @@ function partition(p::Poset)
 end
 
 """
-`restricted(P::Poset,inds::AbstractVector{<:Integer})`
+`restricted(P::Poset,inds::AbstractVector{<:Integer};show=:indices)`
 
 returns  the sub-poset of `P` determined by `inds`, which must be a sublist
 of `1:length(P)`. The indices in this sub-poset will be renumbered to their
-position in `inds`, but the elements set to `P.elements[inds]`.
+position in `inds`, but the elements set to `P.elements[inds]`. The keyword
+show is transmitted to the constructed poset.
 
 ```julia-repl
 julia> p=Poset((i,j)->i%4<j%4,1:8)
 4,8<1,5<2,6<3,7
 
 julia> restricted(p,2:6)
+3<4<1,5<2
+
+julia> restricted(p,2:6;show=:elements)
 4<5<2,6<3
 ```
 """
-function restricted(p::Poset,ind::AbstractVector{<:Integer})
+function restricted(p::Poset,ind::AbstractVector{<:Integer};show=:indices)
   res=Poset(copy(p.prop))
   if length(ind) == length(p) && sort(ind) == 1:length(p)
     if haskey(res,:hasse)
@@ -375,6 +393,7 @@ function restricted(p::Poset,ind::AbstractVector{<:Integer})
     delete!(res.prop, :hasse)
   end
   res.elements=haskey(p,:elements) ? p.elements[ind] : ind
+  if show==:elements res.show_element=(io,x,n)->print(io,x.elements[n]) end
   res
 end
 
@@ -443,6 +462,25 @@ is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))
 `moebius(P,y=maximum(P))`
 
 the vector of value `μ(x,y)` of the Moebius function of `P` for `x` varying.
+Here is an example giving the ususal Moebius function on integers.
+```julia_repl
+julia> p=Poset((i,j)->i%j==0,1:8)
+5,7<1
+6<2<1
+6<3<1
+8<4<2
+
+julia> moebius(p)
+8-element Vector{Int64}:
+  1
+ -1
+ -1
+  0
+ -1
+  1
+ -1
+  0
+```
 """
 function moebius(P::Poset,y=0)
   o=linear_extension(P)
@@ -454,12 +492,14 @@ function moebius(P::Poset,y=0)
   mu
 end
 
+"`maximum(p::Poset)` the maximum element of `P` if there is one."
 function Base.maximum(p::Poset)
   m=incidence(p)
   maxs=findall(i->all(m[:,i]),axes(m,2))
   only(maxs)
 end
 
+"`minimum(p::Poset)` the minimum element of `P` if there is one."
 function Base.minimum(p::Poset)
   m=incidence(p)
   maxs=findall(i->all(m[i,:]),axes(m,1))
