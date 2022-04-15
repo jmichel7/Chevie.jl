@@ -33,6 +33,9 @@ julia> l=vec(collect(Iterators.product(1:2,1:2)))
 
 julia> P=Poset((x,y)->all(map(<=,x,y)),l)
 1<2,3<4
+
+julia> length(P) # the number of elements of the Poset
+4
 ```
 `Poset`s  are printed at  the REPL as  a list of  covering chains. Elements
 which  are equivalent  for the  `Poset` are  printed together  separated by
@@ -44,9 +47,6 @@ This can be changed by giving the keyword argument `show=:elements`.
 ```julia-repl
 julia> P=Poset((x,y)->all(map(<=,x,y)),l;show=:elements)
 (1, 1)<(2, 1),(1, 2)<(2, 2)
-
-julia> length(P) # the number of elements of the `Poset`
-4
 
 julia> hasse(P)
 4-element Vector{Vector{Int64}}:
@@ -64,7 +64,7 @@ julia> incidence(P)
 ```
 
 More flexibility on printing is obtained by setting a function `show_element`
-which takes as arguments an ÌO`, the poset, and the index of the element to
+which takes as arguments an `IO`, the poset, and the index of the element to
 print:
 ```julia-repl
 julia> P.show_element=(io,x,n)->print(io,join(x.elements[n],"."));
@@ -72,6 +72,38 @@ julia> P.show_element=(io,x,n)->print(io,join(x.elements[n],"."));
 julia> P
 1.1<2.1,1.2<2.2
 ```
+
+The syntax `p[a:b]` gives the interval between `a` and `b` in the poset.
+
+```julia-repl
+julia> p=Poset((i,j)->j%i==0,1:6)
+1<5
+1<2<4
+1<3<6
+2<6
+
+julia> p[2:6]   # elements between 2 and 6
+2-element Vector{Int64}:
+ 2
+ 6
+
+julia> p[2:end]  # everything above 2
+3-element Vector{Int64}:
+ 2
+ 4
+ 6
+
+julia> p[begin:6] # everything below 6
+4-element Vector{Int64}:
+ 1
+ 2
+ 3
+ 6
+
+julia> p[2:3] # nothing between 2 and 3
+Int64[]
+```
+
 see the on-line help on `linear_extension, hasse, incidence, partition, 
 covering_chains, transitive_closure, is_join_lattice, is_meet_lattice, moebius,
 reverse, restricted, minimum, maximum` for more information
@@ -168,7 +200,7 @@ end
 Poset(f::Function,e;show=:indices)=
   Poset([(f(x,y)|| x==y) for x in e, y in e],e;show)
 
-Base.length(p::Poset)=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
+Base.length(p::Poset)::Int=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
 
 elements(p::Poset)=haskey(p,:elements) ? p.elements : 1:length(p)
 
@@ -222,18 +254,18 @@ julia> linear_extension(p)
 function linear_extension(P::Poset)
   ord=hasse(P)
   n=zeros(length(ord))
-  for v in ord for x in v n[x]+=1 end end
+  for v in ord, x in v n[x]+=1 end
   Q=filter(x->iszero(n[x]),1:length(n))
   res=Int[]
-  while length(Q) > 0
-    push!(res, Q[1])
-    for x in ord[Q[1]]
+  while !isempty(Q)
+    i=popfirst!(Q)
+    push!(res, i)
+    for x in ord[i]
       n[x]-=1
       if iszero(n[x]) push!(Q, x) end
     end
-    popfirst!(Q)
   end
-  if sum(n)>0 error("cycle") end
+  if !iszero(n) error("cycle") end
   res
 end
 
@@ -487,11 +519,20 @@ julia> moebius(p)
 """
 function moebius(P::Poset,y=0)
   o=linear_extension(P)
-  if y==0 y=o[end] end
+  if y==0 y=length(o)
+  else y=findfirst(==(y),o)
+  end
   mu=zeros(Int,length(P))
   mu[y]=1
-  gt(i)=filter(j->j!=i && incidence(P)[i,j], 1:length(P))
-  for i in o[findfirst(==(y),o)-1:-1:1] mu[i]=-sum(mu[gt(i)]) end
+  I=incidence(P)
+  for i in o[y-1:-1:1] 
+    mu[i]=0
+    for j in 1:length(P)
+       if j!=i && I[i,j]
+          mu[i]-=mu[j]
+       end
+    end
+  end
   mu
 end
 
@@ -507,6 +548,34 @@ function Base.minimum(p::Poset)
   m=incidence(p)
   maxs=findall(i->all(m[i,:]),axes(m,1))
   only(maxs)
+end
+
+function Base.getindex(p::Poset,r::UnitRange)
+  I=1:length(p)
+  if r.start==0 
+    if r.stop==1+length(p) I
+    else I[incidence(p)[:,r.stop]]
+    end
+  else 
+    if r.stop==1+length(p) I[incidence(p)[r.start,:]]
+    else I[incidence(p)[r.start,:].&incidence(p)[:,r.stop]]
+    end
+  end
+end
+
+Base.lastindex(p::Poset)=1+length(p)
+Base.firstindex(p::Poset)=0
+
+function moebiusmatrix(P::Poset)
+  n=incidence(P)
+  n-=one(n)
+  v=one(n)
+  res=v
+  while !iszero(v)
+    v*=-n
+    res.+=v
+  end
+  res
 end
 
 end
