@@ -116,6 +116,7 @@ transitive_closure, is_join_lattice, is_meet_lattice, moebius
 export restricted #needs using_merge to use with Gapjm
 
 struct Poset 
+  hasse::Vector{Vector{Int}}
   prop::Dict{Symbol,Any}
 end
 
@@ -170,9 +171,9 @@ julia> Poset(Bool[1 1 1 1 1;0 1 0 1 1;0 0 1 1 1;0 0 0 1 0;0 0 0 0 1])
 1<2,3<4,5
 ```
 """
-Poset(m::Matrix{Bool})=Poset(Dict{Symbol,Any}(:incidence=>m))
+Poset(m::Matrix{Bool})=Poset(hasse(m),Dict{Symbol,Any}(:incidence=>m))
 function Poset(m::Matrix{Bool},e;show=:indices)
-  p=Poset(Dict{Symbol,Any}(:incidence=>m,:elements=>e))
+  p=Poset(hasse(m),Dict{Symbol,Any}(:incidence=>m,:elements=>e))
   if show==:elements p.show_element=(io,x,n)->print(io,x.elements[n]) end
   p
 end
@@ -190,9 +191,9 @@ julia> Poset([[2,3],[4,5],[4,5],Int[],Int[]])
 1<2,3<4,5
 ```
 """
-Poset(m::Vector{<:Vector{<:Integer}})=Poset(Dict{Symbol,Any}(:hasse=>m))
+Poset(m::Vector{<:Vector{<:Integer}})=Poset(m,Dict{Symbol,Any}())
 function Poset(m::Vector{<:Vector{<:Integer}},e;show=:indices)
-  p=Poset(Dict{Symbol,Any}(:hasse=>m,:elements=>e))
+  p=Poset(m,Dict{Symbol,Any}(:elements=>e))
   if show==:elements p.show_element=(io,x,n)->print(io,x.elements[n]) end
   p
 end
@@ -200,7 +201,7 @@ end
 Poset(f::Function,e;show=:indices)=
   Poset([(f(x,y)|| x==y) for x in e, y in e],e;show)
 
-Base.length(p::Poset)::Int=haskey(p,:hasse) ? length(hasse(p)) : size(incidence(p),1)
+Base.length(p::Poset)::Int=length(hasse(p))
 
 elements(p::Poset)=haskey(p,:elements) ? p.elements : 1:length(p)
 
@@ -251,22 +252,23 @@ julia> linear_extension(p)
  6
 ```
 """
-function linear_extension(P::Poset)
-  ord=hasse(P)
-  n=zeros(length(ord))
-  for v in ord, x in v n[x]+=1 end
-  Q=filter(x->iszero(n[x]),1:length(n))
-  res=Int[]
-  while !isempty(Q)
-    i=popfirst!(Q)
-    push!(res, i)
-    for x in ord[i]
-      n[x]-=1
-      if iszero(n[x]) push!(Q, x) end
+function linear_extension(P::Poset)::Vector{Int}
+  get!(P,:linear_extension)do
+    n=zeros(length(P))
+    for v in hasse(P), x in v n[x]+=1 end
+    Q=filter(x->iszero(n[x]),1:length(n))
+    res=Int[]
+    while !isempty(Q)
+      i=popfirst!(Q)
+      push!(res, i)
+      for x in hasse(P)[i]
+        n[x]-=1
+        if iszero(n[x]) push!(Q, x) end
+      end
     end
+    if !iszero(n) error("cycle") end
+    res
   end
-  if !iszero(n) error("cycle") end
-  res
 end
 
 hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
@@ -290,7 +292,7 @@ julia> hasse(p)
  []       
 ```
 """
-hasse(p::Poset)=get!(()->hasse(incidence(p)),p,:hasse)
+hasse(p::Poset)=p.hasse
 
 """
 `incidence(P::Poset)`
@@ -314,11 +316,11 @@ julia> incidence(p)
 function incidence(p::Poset)::Matrix{Bool}
   get!(p,:incidence)do
     n=linear_extension(p)
-    incidence=one(Matrix{Bool}(undef,length(n),length(n)))
-    for i in length(n)-1:-1:1
-      for x in hasse(p)[n[i]] incidence[n[i],:].|= incidence[x,:] end
+    inc=one(Matrix{Bool}(undef,length(n),length(n)))
+    for i in length(n)-1:-1:1, x in hasse(p)[n[i]] 
+      (@view inc[n[i],:]).|=@view inc[x,:]
     end
-    incidence
+    inc
   end
 end
 
@@ -353,14 +355,11 @@ julia> reverse(p)
 ```
 """
 function Base.reverse(p::Poset)
-  res=Poset(copy(p.prop))
+  h=hasse(p)
+  resh=map(empty,h)
+  for i in 1:length(p), j in h[i] push!(resh[j], i) end
+  res=Poset(resh,copy(p.prop))
   if haskey(p,:incidence) res.incidence=transpose(incidence(p)) end
-  if haskey(p,:hasse)
-    h=hasse(p)
-    resh=map(empty,h)
-    for i in 1:length(p), j in h[i] push!(resh[j], i) end
-    res.hasse=resh
-  end
   return res
 end
 
@@ -385,10 +384,9 @@ julia> partition(p)
 ```
 """
 function partition(p::Poset)
-  if haskey(p,:hasse)
-    l=hasse(reverse(p))
-    collectby(i->(l[i], hasse(p)[i]),1:length(p))
-  else
+  l=hasse(reverse(p))
+  return collectby(i->(l[i], hasse(p)[i]),1:length(p))
+  if false
     I=incidence(p)
     n=.!(one(I))
     collectby(map(i->(I[i,:].&n[i,:],I[:,i].&n[i,:]),1:length(p)),1:length(p))
@@ -415,17 +413,16 @@ julia> restricted(p,2:6;show=:elements)
 ```
 """
 function restricted(p::Poset,ind::AbstractVector{<:Integer};show=:indices)
-  res=Poset(copy(p.prop))
   if length(ind)==length(p) && sort(ind)==1:length(p)
-    if haskey(res,:hasse)
-      res.hasse=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),res.hasse[ind]))
-    end
+    resh=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),hasse(p)[ind]))
+    res=Poset(resh,copy(p.prop))
     if haskey(res, :incidence) res.incidence=incidence(res)[ind,ind] end
   else
     inc=incidence(p)
-    res.incidence=[i!=j && ind[i]==ind[j] ? false : inc[ind[i],ind[j]]
-                            for i in eachindex(ind), j in eachindex(ind)]
-    delete!(res.prop, :hasse)
+    inc=[i!=j && ind[i]==ind[j] ? false : inc[ind[i],ind[j]]
+               for i in eachindex(ind), j in eachindex(ind)]
+    res=Poset(hasse(inc),copy(p.prop))
+    res.incidence=inc
   end
   res.elements=haskey(p,:elements) ? p.elements[ind] : ind
   if show==:elements res.show_element=(io,x,n)->print(io,x.elements[n]) end
@@ -539,14 +536,14 @@ end
 "`maximum(p::Poset)` the maximum element of `P` if there is one."
 function Base.maximum(p::Poset)
   m=incidence(p)
-  maxs=findall(i->all(m[:,i]),axes(m,2))
+  maxs=findall(i->all(@view m[:,i]),axes(m,2))
   only(maxs)
 end
 
 "`minimum(p::Poset)` the minimum element of `P` if there is one."
 function Base.minimum(p::Poset)
   m=incidence(p)
-  maxs=findall(i->all(m[i,:]),axes(m,1))
+  maxs=findall(i->all(@view m[i,:]),axes(m,1))
   only(maxs)
 end
 

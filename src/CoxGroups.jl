@@ -566,9 +566,8 @@ julia> Poset(W,W(1,3))
 ```
 """
 function Posets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W) p=Poset(Dict(:elements=>[w],:hasse=>[Int[]],
-    :action=>map(x->[0],gens(W)),
-    :W=>W))
+  if w==one(W) p=Poset([Int[]],Dict(:elements=>[w],
+    :action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
   p=Poset(W,W(s)*w)
