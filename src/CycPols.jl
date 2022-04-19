@@ -3,7 +3,7 @@ This package depends only on the packages `Primes`, `ModuleElts`,
 `CyclotomicNumbers` and `LaurentPolynomials`. 
 
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
-cyclotomic  field,  are  important  in  reductive  groups  or  Spetses.  In
+cyclotomic  field,  are  important  in  reductive  groups and  Spetses.  In
 particular  Schur  elements  of  cyclotomic  Hecke algebras are products of
 cyclotomic polynomials.
 
@@ -38,16 +38,21 @@ julia> degree(p)
 
 julia> lcm(p,CycPol(q^3-1))
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
+```
 
-julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^n
+Evaluating  a `CycPol` at  some value gives  in general a  `Pol`. There are
+exceptions  where the value is still a `CycPol`: evaluating at `Pol()^n` or
+at `Pol([E(n,k)],1)`. Then `subs` gives that evaluation:
+
+```julia-repl
+julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^-1
 (2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃
 
 julia> subs(p,Pol([E(2)],1)) # or at Pol([Root1],1)
 (q+2)Φ₁Φ₂Φ₄₆
 
 ```
-The  variable name used when  printing a `CycPol` is  the
-same as for `LaurentPolynomials`.
+The variable name used when printing a `CycPol` is the same as for `Pol`s.
 
 `CycPol`s are internally a `struct` with fields:
 
@@ -85,7 +90,7 @@ julia> CycPols.show_factors(24)
 Φ⁽¹³⁾₂₄=q⁴-ζ₄q²-1
 Φ⁽¹⁴⁾₂₄=q⁴+ζ₄q²-1
 ```
-A factor can be obtained directly as:
+Such a factor can be obtained directly as:
 
 ```julia-repl
 julia> CycPol(;conductor=24,no=8)

@@ -120,7 +120,7 @@ julia> tally("a tally test")
  'y' => 1
 ```
 """
-tally(v::AbstractArray)=tally_sorted(sort(v))
+tally(v::AbstractArray)=tally_sorted(issorted(v) ? v : sort(v))
 
 tally(v)=tally(collect(v)) # for iterables
 
@@ -407,10 +407,10 @@ end
 @inbounds function partitions_less(v,n)
   l=v[end]
   k=length(l)
-  for i in 1:(isempty(l) ? n : min(l[end],n))
+  for i in 1:(iszero(k) ? n : min(l[end],n))
     if i>1 push!(v,v[end][1:k]) end
     push!(v[end],i)
-    if n>i partitions_less(v,n-i) end
+    partitions_less(v,n-i)
   end
 end
 
@@ -468,7 +468,9 @@ function partitions(n)
   v
 end
 
-# we have l[end][offset-1]==m; m given since at start this does not make sense
+# l is a list of partitions such that l[end][offset-1]==m
+# m given since when offset=1 this does not make sense
+# extend from offset with partitions of n in k parts <=m
 function partitions2(l,n,k,offset,m)
   if k==1 l[end][offset]=n; return end
   start=true

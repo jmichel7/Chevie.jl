@@ -4,24 +4,24 @@ Posets are constructed from one of the two following fields:
   - `incidence`:  a  boolean  matrix  such that `incidence[i,j]==true` iff
     `i<=j` in the poset. This is sometimes called the ζ matrix of `P`.
 
-  - `hasse`:  a list representing  the Hasse diagram  of the poset: the i-th
-    entry is the list of indices of elements which are immediate successors
-    (covers) of the i-th element, that is the list of j such that `i<j` and
-    such that there is no k such that i<k<j.
+  - `hasse`:  a list representing  the Hasse diagram  of the poset: the
+    `i`-th  entry  is  the  list  of  indices  of elements which cover (are
+    immediate  successors of) the  `i`-th element, that  is the list of `j`
+    such that `i<j` and there is no `k` such that `i<k<j`.
 
 By  default a `Poset` `P` is a  poset on `1:length(P)` where `length(P)` is
 the  cardinality of `P`. To make a  poset with other elements, the elements
-should  also be given in the  constructor. There are thus two constructors,
+should be given in the  constructor. There are thus two constructors,
   - `Poset(I::Matrix{Bool}[,elements])` from  the  incidence  matrix  `I`.
     If given one should have `length(elements)==size(I,1)==size(I,2)`.
   - `Poset(H::Vector{<:Vector{<:Integer}}[,elements])` from the Hasse diagram.
     If given one should have `length(elements)==length(H)`.
 For convenience there is another constructor
   - `Poset(isless::Function,elements)`;  this  begins  by  constructing  the
-    incidence matrix from the `isless` function which may be expensive. For
-    isless  one can give  either a function  implementing `<` or a function
-    implementing `≤` (it is ored with `=` in any case).
-
+    incidence  matrix from  the `isless`  function applied  to each pair of
+    elements  which may  be expensive.  For `isless`  one can give either a
+    function  implementing `<` or  a function implementing  `≤` (it is ored
+    with `=` in any case).
 
 ```julia-repl
 julia> l=vec(collect(Iterators.product(1:2,1:2)))
@@ -67,7 +67,7 @@ More flexibility on printing is obtained by setting a function `show_element`
 which takes as arguments an `IO`, the poset, and the index of the element to
 print:
 ```julia-repl
-julia> P.show_element=(io,x,n)->print(io,join(x.elements[n],"."));
+julia> P.show_element=(io,x,n)->join(io,x.elements[n],".");
 
 julia> P
 1.1<2.1,1.2<2.2
@@ -106,13 +106,13 @@ Int64[]
 
 see the on-line help on `linear_extension, hasse, incidence, partition, 
 covering_chains, transitive_closure, is_join_lattice, is_meet_lattice, moebius,
-reverse, restricted, minimum, maximum` for more information
+moebiusmatrix,reverse, restricted, minimum, maximum` for more information
 """
 module Posets 
 # this module has only 1 dependency below which could be copied.
 using ..Combinat: collectby  # 13 lines
 export Poset, linear_extension, hasse, incidence, partition, covering_chains,
-transitive_closure, is_join_lattice, is_meet_lattice, moebius
+transitive_closure, is_join_lattice, is_meet_lattice, moebius, moebiusmatrix
 export restricted #needs using_merge to use with Gapjm
 
 struct Poset 
@@ -493,7 +493,7 @@ is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))
 """
 `moebius(P,y=maximum(P))`
 
-the vector of value `μ(x,y)` of the Moebius function of `P` for `x` varying.
+the vector of values `μ(x,y)` of the Moebius function of `P` for `x` varying.
 Here is an example giving the ususal Moebius function on integers.
 ```julia_repl
 julia> p=Poset((i,j)->i%j==0,1:8)
@@ -520,18 +520,29 @@ function moebius(P::Poset,y=0)
   else y=findfirst(==(y),o)
   end
   mu=zeros(Int,length(P))
-  mu[y]=1
+  mu[o[y]]=1
   I=incidence(P)
-  for i in o[y-1:-1:1] 
-    mu[i]=0
-    for j in 1:length(P)
-       if j!=i && I[i,j]
-          mu[i]-=mu[j]
-       end
+  for i in y-1:-1:1 
+    mu[o[i]]=0
+    for j in i+1:y
+      if I[o[i],o[j]]
+        mu[o[i]]-=mu[o[j]]
+      end
     end
   end
   mu
 end
+
+function unitriangularinv(b::Matrix)
+  a=Int.(b)
+  for k in axes(b,1), i in k+1:size(b,1) 
+    a[k,i]=-b[k,i]-sum(j->b[j,i]*a[k,j],k+1:i-1;init=0)
+  end
+  a
+end
+
+"`moebiusmatrix(P::Poset)` the matrix of Moebius function `μ(x,y)`"
+moebiusmatrix(P::Poset)=unitriangularinv(incidence(P))
 
 "`maximum(p::Poset)` the maximum element of `P` if there is one."
 function Base.maximum(p::Poset)
@@ -562,17 +573,5 @@ end
 
 Base.lastindex(p::Poset)=1+length(p)
 Base.firstindex(p::Poset)=0
-
-function moebiusmatrix(P::Poset)
-  n=incidence(P)
-  n-=one(n)
-  v=one(n)
-  res=v
-  while !iszero(v)
-    v*=-n
-    res.+=v
-  end
-  res
-end
 
 end
