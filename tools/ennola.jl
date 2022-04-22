@@ -281,8 +281,8 @@ end
 function CheckRLGByEnnola(HF, WF, xi)
   H =Group(HF)
   t =PredictRLGByEnnola(HF, WF, xi)
-  fW=UnipotentCharactersOps[:Fourier](UnipotentCharacters(WF))
-  fH=UnipotentCharactersOps[:FourierInverse](UnipotentCharacters(HF))
+  fW=fourier(UnipotentCharacters(WF))
+  fH=fourierinverse(UnipotentCharacters(HF))
   t =fW*t*fH
   pieces = LusztigInductionTable(HF, WF, true)
   print("Checking ", pieces, "\n")

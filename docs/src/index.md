@@ -114,6 +114,8 @@ lcm_partitions
 gcd_partitions
 conjugate_partition
 dominates
+tableaux
+robinson_schensted
 bell
 stirling2
 catalan(::Integer)
@@ -451,6 +453,7 @@ Symbols
 shiftβ
 βset
 partβ
+symbols
 ranksymbol
 defectsymbol
 symbol_partition_tuple
@@ -460,8 +463,6 @@ degree_fegsymbol
 degree_gendeg_symbol
 valuation_fegsymbol
 valuation_gendeg_symbol
-tableaux
-symbols
 XSP
 ```
 # Eigenspaces

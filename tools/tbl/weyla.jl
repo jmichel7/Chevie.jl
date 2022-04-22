@@ -249,22 +249,3 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                             end), uc[:classes])))
         return uc
     end)
-chevieset(:A, :KLeftCellRepresentatives, function (n,)
-        local W, l, f
-        f = function (i,)
-                if i != Perm()
-                    i = Product(word(W, i), (j->begin
-                                    Perm(j, j + 1)
-                                end))
-                end
-                i = map(length, (RobinsonSchenstedCorrespondent(n + 1, i))[:P])
-                return Position(CharParams(W), [i])
-            end
-        W = CoxeterGroup("A", n)
-        l = filter((x->begin
-                        x ^ 2 == Perm()
-                    end), elements(W))
-        return map((x->begin
-                        Dict{Symbol, Any}(:duflo => OnTuples(1:n, x), :reps => [], :character => [f(x)])
-                    end), l)
-    end)

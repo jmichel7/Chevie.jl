@@ -27,6 +27,7 @@ const exclu=[
  ["gensMODA","D"],
  ["HeckeCharTable",["imp","2A","2D","A","B","D"]],
  ["Hk",["A","B","D"]],
+ ["KLeftCellRepresentatives","A"],
  ["Invariants","imp"],
  ["Invariants",:(["E7", "E8", "H3", "H4"])],
  ["PowerMaps","imp"],

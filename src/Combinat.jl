@@ -406,13 +406,49 @@ function narrangements(mset,k)
   nr
 end
 
-@inbounds function partitions_less(v,n)
-  l=v[end]
-  k=length(l)
-  for i in 1:(iszero(k) ? n : min(l[end],n))
-    if i>1 push!(v,v[end][1:k]) end
-    push!(v[end],i)
-    partitions_less(v,n-i)
+"""
+`Partitions(n)` returns an iterator which enumerates the partitions of `n`
+in lexcographic order.
+```julia-repl
+julia> a=Combinat.Partitions(5)
+Partitions(5)
+
+julia> collect(a)
+7-element Vector{Vector{Int64}}:
+ [1, 1, 1, 1, 1]
+ [2, 1, 1, 1]
+ [2, 2, 1]
+ [3, 1, 1]
+ [3, 2]
+ [4, 1]
+ [5]
+
+```
+"""
+struct Partitions
+  v::Vector{Int}
+end
+
+Partitions(n::Integer)=Partitions(fill(1,n))
+
+Base.eltype(x::Partitions)=Vector{Int}
+Base.IteratorSize(::Type{Partitions})=Base.SizeUnknown()
+Base.show(io::IO,x::Partitions)=print(io,"Partitions(",length(x.v),")")
+
+function Base.iterate(s::Partitions)
+  copy(s.v),s
+end
+
+function Base.iterate(s::Partitions,state)
+  ss=0
+  for i in length(s.v):-1:1
+    if ss>0 && (i==1 || s.v[i]<s.v[i-1])
+       s.v[i]+=1
+       s.v[i+1:i+ss-1].=1
+       s.v[i+ss:end].=0
+       return s.v[1:i+ss-1],s
+    else ss+=s.v[i]
+    end
   end
 end
 
@@ -421,8 +457,8 @@ end
 
 `npartitions(n[,k])`
 
-`partitions` returns the set of all partitions of the positive integer `n`
-(the partitions with `k` parts if `k` is given).
+`partitions`  returns in lexicographic  order the set  of all partitions of
+the  positive integer `n` (the partitions with  `k` parts if `k` is given).
 `npartitions` returns (faster) the number of partitions.
 
 There are approximately `exp(π√(2n/3))/(4√3 n)` partitions of `n`.
@@ -463,12 +499,11 @@ julia> partitions(7,3)
  [4, 2, 1]
  [5, 1, 1]
 ```
+
+The partitions are implemented by an iterator `Combinat.Partitions` which
+can be used to enumerate the partitions of a large number.
 """
-function partitions(n)
-  v=[Int[]]
-  partitions_less(v,n)
-  v
-end
+partitions(n)=collect(Partitions(n))
 
 # l is a list of partitions such that l[end][offset-1]==m
 # m given since when offset=1 this does not make sense
@@ -1391,17 +1426,17 @@ function robinson_schensted(p::AbstractVector{<:Integer})
   Q=Vector{Int}[]
   for (i,j) in enumerate(p)
     z=1
-    while j!=0
+    while true
       if z>length(P)
         push!(P,[j])
         push!(Q,[i])
-        j=0
+        break
       else
         pos=findfirst(>=(j),P[z])
         if isnothing(pos)
           push!(P[z],j)
           push!(Q[z],i)
-          j=0
+          break
         else
           (P[z][pos],j)=(j,P[z][pos])
           z+=1

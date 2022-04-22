@@ -66,13 +66,11 @@ this construction.
 """
 module Families
 
-export family_imprimitive, Family, drinfeld_double, fourier, FamilyOps,
+export family_imprimitive, Family, drinfeld_double, fourier,
  FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, 
  involution, duality, eigen
 
 using ..Gapjm
-
-FamilyOps=Dict()
 
 @GapObj struct Family end
 
@@ -813,8 +811,7 @@ function family_imprimitive(S)
     :explanation=>"imprimitive family",
     :special=>1,
     :charLabels=>string.(1:length(symbs)), # should be improved
-    :size=>length(symbs),
-    :operations=>FamilyOps))
+    :size=>length(symbs)))
 end
 
 """

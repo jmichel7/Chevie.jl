@@ -166,7 +166,7 @@ function charpolyandcomatrix(m)
   a=ones(eltype(m),n+1)
   for i in 1:n
     if i==n res=(-1)^(n-1)*C end
-    C=m*C
+    C*=m
     a[n+1-i]=exactdiv(-sum(C[i,i] for i in axes(C,1)),i)
     if i!=n C+=a[n+1-i]*one(C) end
   end

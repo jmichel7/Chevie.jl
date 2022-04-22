@@ -121,9 +121,6 @@ function CoxeterGroup(S::String,s...)
  for i in 2:2:length(s) res*=coxgroup(Symbol(s[i]),Int(s[i+1])) end
  res
 end
-FactorizedSchurElementsOps=Dict{Symbol,Any}(
-:Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
-          map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
 
 function Replace(s,p...)
 # print("Replace s=$s p=$p")
@@ -200,3 +197,9 @@ end
 Unbind(x)=x
 #-------------------------------------------------------------------------
 Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))
+
+FamilyOps=Dict()
+
+FactorizedSchurElementsOps=Dict{Symbol,Any}(
+:Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
+          map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
