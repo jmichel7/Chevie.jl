@@ -32,3 +32,15 @@ function(n,para,root)
 end)
 
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
+
+chevieset(:A, :KLeftCellRepresentatives,function(n)
+  pp=chevieget(:A,:CharParams)(n)
+  function f(i)
+    i=prod(j->Perm(j,j+1),word(W,i);init=Perm())
+    p=length.(robinson_schensted((1:n+1).^i)[1])
+    [findfirst(==(p),pp)]
+  end
+  W=coxgroup(:A,n)
+  l=filter(x->isone(x^2),elements(W))
+  map(x->Dict{Symbol, Any}(:duflo=>(1:n).^x,:reps=>[],:character=>f(x)),l)
+end)

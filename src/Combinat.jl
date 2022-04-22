@@ -12,9 +12,10 @@ functions to count them without computing them:
 `ncombinations, narrangements, npartitions, npartition_tuples,
  nrestrictedpartitions, npartitions_set`
 
-some functions on partitions:
+some functions on partitions and permutations:
 
-`lcm_partitions, gcd_partitions, conjugate_partition, dominates`
+`lcm_partitions, gcd_partitions, conjugate_partition, dominates, tableaux,
+ robinson_schensted`
 
 counting functions:
 
@@ -34,10 +35,11 @@ welcome).
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
   partitions, npartitions, partition_tuples, npartition_tuples,
-  restrictedpartitions,nrestrictedpartitions,
-  partitions_set, npartitions_set, compositions, 
-  submultisets, nsubmultisets, 
-  lcm_partitions, gcd_partitions, conjugate_partition, dominates, 
+   restrictedpartitions, nrestrictedpartitions,
+   partitions_set, npartitions_set, compositions, 
+   submultisets, nsubmultisets, 
+  lcm_partitions, gcd_partitions, conjugate_partition, dominates, tableaux,
+    robinson_schensted,
   bell, stirling2, catalan, bernoulli,
   groupby, tally, collectby, unique_sorted!,
   blocks, diagblocks
@@ -631,57 +633,6 @@ function nrestrictedpartitions(n,set,m,k,part,i)
     end
   end
   parts
-end
-
-"""
-`conjugate_partition(λ)`
-
-returns  the  conjugate  partition  of  the  partition  `λ`,  that  is, the
-partition having the transposed of the Young diagram of `λ`.
-
-```julia-repl
-julia> conjugate_partition([4,2,1])
-4-element Vector{Int64}:
- 3
- 2
- 1
- 1
-
-julia> conjugate_partition([6])
-6-element Vector{Int64}:
- 1
- 1
- 1
- 1
- 1
- 1
-```
-"""
-function conjugate_partition(p)
-  if isempty(p) return p end
-  res=zeros(eltype(p),maximum(p))
-  for i in p, j in 1:i res[j]+=1 end
-  res
-end
-
-"""
-`dominates(λ,μ)`
-
-The  dominance  order  on  partitions  is  an  important  partial  order in
-representation theory. `λ` dominates `μ` if and only if for all `i` we have
-`sum(λ[1:i])≥sum(μ[1:i])`.
-
-```julia-repl
-julia> dominates([5,4],[4,4,1])
-true
-```
-"""
-function dominates(λ,μ)
-  sλ=sμ=0
-  for (l,m) in zip(λ,μ)
-    if (sλ+=l)<(sμ+=m) return false end
-  end
-  true
 end
 
 # add to list partitions_tuples(n,r) using l[i] list of partitions of i
@@ -1326,6 +1277,139 @@ function blocks(M::AbstractMatrix)
     end
   end
   sort!(comps)
+end
+
+"""
+`conjugate_partition(λ)`
+
+returns  the  conjugate  partition  of  the  partition  `λ`,  that  is, the
+partition having the transposed of the Young diagram of `λ`.
+
+```julia-repl
+julia> conjugate_partition([4,2,1])
+4-element Vector{Int64}:
+ 3
+ 2
+ 1
+ 1
+
+julia> conjugate_partition([6])
+6-element Vector{Int64}:
+ 1
+ 1
+ 1
+ 1
+ 1
+ 1
+```
+"""
+function conjugate_partition(p)
+  if isempty(p) return p end
+  res=zeros(eltype(p),maximum(p))
+  for i in p, j in 1:i res[j]+=1 end
+  res
+end
+
+"""
+`dominates(λ,μ)`
+
+The  dominance  order  on  partitions  is  an  important  partial  order in
+representation theory. `λ` dominates `μ` if and only if for all `i` we have
+`sum(λ[1:i])≥sum(μ[1:i])`.
+
+```julia-repl
+julia> dominates([5,4],[4,4,1])
+true
+```
+"""
+function dominates(λ,μ)
+  sλ=sμ=0
+  for (l,m) in zip(λ,μ)
+    if (sλ+=l)<(sμ+=m) return false end
+  end
+  true
+end
+
+"""
+`tableaux(S)`
+
+if  `S`  is  a  partition  tuple,  returns  the  list  of standard tableaux
+associated  to the partition tuple `S`, that is a filling of the associated
+young  diagrams  with  the  numbers  `1:sum(sum,S)`  such  that the numbers
+increase across the rows and down the columns.
+
+If  `S` is a single partition, the standard tableaux for that partition are
+returned.
+
+```julia-repl
+julia> tableaux([[2,1],[1]])
+8-element Vector{Vector{Vector{Vector{Int64}}}}:
+ [[[1, 2], [3]], [[4]]]
+ [[[1, 2], [4]], [[3]]]
+ [[[1, 3], [2]], [[4]]]
+ [[[1, 3], [4]], [[2]]]
+ [[[1, 4], [2]], [[3]]]
+ [[[1, 4], [3]], [[2]]]
+ [[[2, 3], [4]], [[1]]]
+ [[[2, 4], [3]], [[1]]]
+
+julia> tableaux([2,2])
+2-element Vector{Vector{Vector{Int64}}}:
+ [[1, 2], [3, 4]]
+ [[1, 3], [2, 4]]
+```
+"""
+function tableaux(S)
+  if isempty(S) return S end
+  w=sum(sum,S)
+  if iszero(w) return [map(x->map(y->Int[],x),S)] end
+  res=Vector{Vector{Vector{Int}}}[]
+  for i in eachindex(S), p in eachindex(S[i])
+    if iszero(S[i][p]) || (p<length(S[i]) && S[i][p+1]==S[i][p]) continue end
+    S[i][p]-=1; tt=tableaux(S); S[i][p]+=1
+    for t in tt push!(t[i][p], w) end
+    append!(res,tt)
+  end
+  sort(res)
+end
+
+tableaux(S::Vector{<:Integer})=first.(tableaux([S]))
+
+"""
+`robinson_schensted(p::AbstractVector{<:Integer})`
+
+returns  the pair of standard tableaux associated to the permutation `p` by
+the Robinson-Schensted correspondence.
+
+```julia-repl
+julia> robinson_schensted([2,3,4,1])
+([[1, 3, 4], [2]], [[1, 2, 3], [4]])
+```
+"""
+function robinson_schensted(p::AbstractVector{<:Integer})
+  P=Vector{Int}[]
+  Q=Vector{Int}[]
+  for (i,j) in enumerate(p)
+    z=1
+    while j!=0
+      if z>length(P)
+        push!(P,[j])
+        push!(Q,[i])
+        j=0
+      else
+        pos=findfirst(>=(j),P[z])
+        if isnothing(pos)
+          push!(P[z],j)
+          push!(Q[z],i)
+          j=0
+        else
+          (P[z][pos],j)=(j,P[z][pos])
+          z+=1
+        end
+      end
+    end
+  end
+  (P,Q)
 end
 
 end

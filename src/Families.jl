@@ -820,13 +820,12 @@ end
 """
 `FamiliesClassical(l)`
 
-The  list  `l`  should  be  a  list  of symbols as returned by the function
-`symbols`,  which classify the unipotent characters of groups of type `:B`,
-`:C`  or `:D`. `FamiliesClassical` returns  the list of families determined
-by these symbols.
-
+`l`  should be a list of symbols which classify the unipotent characters of
+a  classical reductive group, like `symbols(2,r)` for type `Bᵣ` or `Cᵣ`, or
+`symbols(2,r,0)`  for type `Dᵣ`. The function  returns the list of families
+determined  by these symbols.
 ```julia-repl
-julia> FamiliesClassical(symbols(2,3,1))
+julia> FamiliesClassical(symbols(2,3)) # for a reductive group of type B₃
 6-element Vector{Family}:
  Family(112,[2])
  Family(022,[6])
@@ -835,38 +834,36 @@ julia> FamiliesClassical(symbols(2,3,1))
  Family(0112233,[4])
  Family(013,[5, 7, 10, 12])
 ```
-The  above example shows the families of unipotent characters for the group
-`B_3`.
 """
-FamiliesClassical=function(sym)
+function FamiliesClassical(sym)
+  # for the notations see Lusztig "Characters of reductive groups over a
+  # finite field" Ann. Math. studies 107, sections 4.5 and 4.6
   t=map(sym) do ST
     ST=fullsymbol(ST)
     Z1=sort(symdiff(ST...))
     D=length(Z1)%2
-    Msharp=sort(symdiff(setdiff(Z1, ST[2]),Z1[1+D:2:length(Z1)-1]))
-    if D==1 && length(Msharp)%2!=0 Msharp=setdiff(Z1,Msharp) end
-    (Z1=Z1,Msharp=Msharp,content=sort(reduce(vcat,ST)))
+    M♯=sort(symdiff(setdiff(Z1, ST[2]),Z1[1+D:2:length(Z1)-1]))
+    if D==1 && length(M♯)%2!=0 M♯=setdiff(Z1,M♯) end
+    (Z1,M♯,content=sort(reduce(vcat,ST)))
   end
-  res=[]
-  for (k,v) in groupby(i->t[i].content,1:length(t))
-    f=(content=k,charNumbers=v,Msharp=getproperty.(t[v],:Msharp))
-    if length(v)==2
-      push!(res,(content=k,charNumbers=[v[2]],Msharp=[f.Msharp[2]]))
-      f=(content=k,charNumbers=[v[1]],Msharp=[f.Msharp[1]])
-    end
-    push!(res, f)
-  end
+  res=reduce(vcat,
+    map(collect(groupby(getproperty.(t,:content),eachindex(t))))do (k,v)
+      if length(v)==2 # periodic symbols in type D
+        [(content=k,charNumbers=[i],M♯=[t[i].M♯]) for i in v]
+      else [(content=k,charNumbers=v,M♯=[t[i].M♯ for i in v])]
+      end
+    end)
   map(res)do f
     f=Family(Dict(pairs(f)))
     Z1=filter(x->count(==(x),f.content)==1,f.content)
-    f.fourierMat=(1//2)^(div(length(Z1)-1,2)).*
-      [(-1)^length(intersect(x, y)) for x in f.Msharp, y in f.Msharp]
+    f.fourierMat=(1//2^(div(length(Z1)-1,2))).*
+      [(-1)^length(intersect(x, y)) for x in f.M♯, y in f.M♯]
     f.eigenvalues=map(x->(-1)^div(defectsymbol(sym[x])+1,4),f.charNumbers)
     if length(f.eigenvalues)==1
       f.charLabels=[""]
       f.special=1
     else
-      f.charLabels=map(f.Msharp)do M
+      f.charLabels=map(f.M♯)do M
         v=map(z->count(>=(z),M)%2,Z1)
         D=length(v)
         v1=v[2:2:D-D%2]

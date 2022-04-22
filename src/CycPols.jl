@@ -114,7 +114,6 @@ Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
   Pol{Cyc{T}}(p*denominator(p))
 Base.numerator(p::Pol{Cyc{T}}) where T<:Integer =p
-CyclotomicNumbers.conductor(x::Integer)=1 # to put in CyclotomicNumbers
 CyclotomicNumbers.conductor(x::Pol)=lcm(conductor.(coefficients(x)))
 
 prime_residues=CyclotomicNumbers.prime_residues

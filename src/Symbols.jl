@@ -21,12 +21,13 @@ by  [Malle1995](biblio.htm#Mal95). An `e`-symbol  is a vector `S=[S₁,…,Sₑ]
 of   β-sets,  taken  modulo  the  equivalence  relation  generated  by  the
 simultaneous  elementary shift of all β-sets, and the cyclic permutation of
 the vector (in the particular case where `e=2` it is thus an unordered pair
-of  β-sets). This  time there  is a  cyclic permutation class of normalized
-symbols  where `0` is not in the intersection of the `Sᵢ`. The *content* of
-`S`  is `mod(sum(length(S)),e)`; it is an  invariant of the symbol, as well
-as the *rank*, defined for an `e`-symbol as
-`sum(sum,S)-div((c-1)*(c-e+1),2*e)`   where   `c=sum(length(S))`   and  the
-*shape* `s-minimum(s)` where `s=map(length,S)`.
+of  β-sets).  This  time  a  symbol  is  normalized  if  `0`  is not in the
+intersection  of the `Sᵢ`; equivalent  normalized symbols are equivalent by
+cyclic   permutation.   The   *content*   of   `S`   is   `mod(c,e)`  where
+`c=sum(length(S))`;  it  is  an  invariant  of  the  symbol, as well as the
+*rank*,  defined for an  `e`-symbol as `sum(sum,S)-div((c-1)*(c-e+1),2*e)`.
+Invariant by shift but not cyclic permutation is the *shape* `s-minimum(s)`
+where `s=map(length,S)`.
 
 When  `e=2`  up  to  cyclic  permutation  we  choose representatives of the
 symbols `[S₁,S₂]` such that `length(S₁)≥length(S₂)` so the shape is `[d,0]`
@@ -72,7 +73,7 @@ using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
 valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
-fegsymbol, stringsymbol, tableaux, XSP, PartitionTupleToString, gendeg_symbol,
+fegsymbol, stringsymbol, XSP, PartitionTupleToString, gendeg_symbol, 
 EnnolaSymbol
 
 """
@@ -384,14 +385,20 @@ function lesssymbols(x,y)
   c==-1 || (c==0 && x>y)
 end
 
-# Malle-defect; invariant of shift but not cyclic perm
+"""
+`defshape(s::Vector{Int})`  
+
+Malle-defect of symbols of shape s. This is an invariant by shift but not 
+under cyclic permutations.
+"""
 function defshape(s)
   e=length(s)
   mod(binomial(e,2)*div(sum(s),e)-sum(i->(i-1)*s[i],1:e),e)
 end
 
-"All shapes for e-symbols of rank r, content c, malle-defect def"
+"All shapes for e-symbols of rank r, content c, Malle-defect def"
 shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
+  if e==1 return [[0]] end
   function f(lim2,len,nb,max)local res,a # possible decreasing shapes
     if nb==1
       if len==0   return [[len]]
@@ -647,51 +654,6 @@ function EnnolaSymbol(s)
   res
 end
 
-function tableaux(S::Vector{Int})
-  first.(tableaux([S]))
-end
-
-"""
-`tableaux(S)`
-
-`S`  is a  partition tuple  or a  partition. returns  the list  of standard
-tableaux  associated to the partition  tuple `S`, that is  a filling of the
-associated  young diagrams  with the  numbers `1:sum(sum,S)`  such that the
-numbers  increase across the rows  and down the columns.  If the imput is a
-single partition, the standard tableaux for that partition are returned.
-
-```julia-repl
-julia> tableaux([[2,1],[1]])
-8-element Vector{Vector{Vector{Vector{Int64}}}}:
- [[[1, 2], [3]], [[4]]]
- [[[1, 2], [4]], [[3]]]
- [[[1, 3], [2]], [[4]]]
- [[[1, 3], [4]], [[2]]]
- [[[1, 4], [2]], [[3]]]
- [[[1, 4], [3]], [[2]]]
- [[[2, 3], [4]], [[1]]]
- [[[2, 4], [3]], [[1]]]
-
-julia> tableaux([2,2])
-2-element Vector{Vector{Vector{Int64}}}:
- [[1, 2], [3, 4]]
- [[1, 3], [2, 4]]
-```
-"""
-function tableaux(S)
-  if isempty(S) return S end
-  w=sum(sum,S)
-  if iszero(w) return [map(x->map(y->Int[],x),S)] end
-  res=Vector{Vector{Vector{Int}}}[]
-  for i in eachindex(S), p in eachindex(S[i])
-    if iszero(S[i][p]) || (p<length(S[i]) && S[i][p+1]==S[i][p]) continue end
-    S[i][p]-=1; tt=tableaux(S); S[i][p]+=1
-    for t in tt push!(t[i][p], w) end
-    append!(res,tt)
-  end
-  sort(res)
-end
-
 function xsp(rho,s,n,d)
   nrsd=rho*div(d^2,4)-s*div(d-mod(d,2),2)
   if n<nrsd return Vector{Vector{Int}}[] end
@@ -705,12 +667,11 @@ end
 """
 `XSP(ρ,s,n,even=false)`
 
-returns the union of the Lusztig-Spaltenstein
-``X̃^{ρ-s,s}_{n,d}`` for all `d` even when `even=true`, all `d` odd otherwise.
-In "Character sheaves on disconnected groups II, 13.2" the notation is
-``{}^ρ X^s_{n,d}``.
-The result is a list of lists, each one corresponding to a similarity class.
-If `s==0`, only positive defects are considered.
+returns  the union of the Lusztig-Spaltenstein ``X̃^{ρ-s,s}_{n,d}`` for all
+`d`  even when `even=true`, all `d` odd otherwise. In "Character sheaves on
+disconnected  groups  II,  13.2"  the  notation  is ``{}^ρ X^s_{n,d}``. The
+result is a list of lists, each one corresponding to a similarity class. If
+`s==0`, only positive defects are considered.
 
   - `XSP(2,1,n)` gives L-S symbols for Sp₂ₙ
   - `XSP(4,2,n)` gives L-S symbols for Sp₂ₙ in char.2
@@ -789,41 +750,12 @@ function XSP(rho,s,n,even=false)
         if Au[end] Au=.!(Au) end
         Au=Au[1:end-1]
       end
-      (symbol=S,Au=Au,dimBu=n,sp=sp)
+      (symbol=S,Au,dimBu=n,sp)
   end
 end
 end
 
 showxsp(r)=println("(symbol=",PartitionTupleToString(r.symbol),
     ", sp=",PartitionTupleToString(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
-
-# pair of tableaux given by permutation p of degree n
-function RobinsonSchensted(n,p)
-  Perms.extend(p,n);pi=vec(p)
-  P=Vector{Int}[]
-  Q=Vector{Int}[]
-  for i in eachindex(pi)
-    j=pi[i]
-    z=1
-    while j!=0
-      if z>length(P)
-        push!(P,[j])
-        push!(Q,[i])
-        j=0
-      else
-        pos=findfirst(>=(j),P[z])
-        if isnothing(pos)
-          push!(P[z],j)
-          push!(Q[z],i)
-          j=0
-        else
-          (P[z][pos],j)=(j,P[z][pos])
-          z+=1
-        end
-      end
-    end
-  end
-  (P,Q)
-end
 
 end
