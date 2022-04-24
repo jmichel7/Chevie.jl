@@ -407,8 +407,8 @@ function narrangements(mset,k)
 end
 
 """
-`Partitions(n)` returns an iterator which enumerates the partitions of `n`
-in lexcographic order.
+`Combinat.Partitions(n[,k])` is an iterator which enumerates the partitions
+of `n` (with `k`part if `k`given) in lexicographic order.
 ```julia-repl
 julia> a=Combinat.Partitions(5)
 Partitions(5)
@@ -423,35 +423,80 @@ julia> collect(a)
  [4, 1]
  [5]
 
+julia> a=Combinat.Partitions(10,3)
+Partitions(10,3)
+
+julia> collect(a)
+8-element Vector{Vector{Int64}}:
+ [4, 3, 3]
+ [4, 4, 2]
+ [5, 3, 2]
+ [5, 4, 1]
+ [6, 2, 2]
+ [6, 3, 1]
+ [7, 2, 1]
+ [8, 1, 1]
 ```
 """
 struct Partitions
-  v::Vector{Int}
+  n::Int
 end
 
-Partitions(n::Integer)=Partitions(fill(1,n))
+Partitions(n::Integer)=Partitions(n)
 
 Base.eltype(x::Partitions)=Vector{Int}
 Base.IteratorSize(::Type{Partitions})=Base.SizeUnknown()
-Base.show(io::IO,x::Partitions)=print(io,"Partitions(",length(x.v),")")
+Base.show(io::IO,x::Partitions)=print(io,"Partitions(",s.n,")")
 
 function Base.iterate(s::Partitions)
-  copy(s.v),s
+  v=fill(1,s.n)
+  copy(v),v
 end
 
-function Base.iterate(s::Partitions,state)
+function Base.iterate(s::Partitions,v)
   ss=0
-  for i in length(s.v):-1:1
-    if ss>0 && (i==1 || s.v[i]<s.v[i-1])
-       s.v[i]+=1
-       s.v[i+1:i+ss-1].=1
-       s.v[i+ss:end].=0
-       return s.v[1:i+ss-1],s
-    else ss+=s.v[i]
+  for i in length(v):-1:1
+    if ss>0 && (i==1 || v[i]<v[i-1])
+       v[i]+=1
+       for j in i+1:i+ss-1 v[j]=1 end
+       for j in i+ss:length(v) v[j]=0 end
+       return v[1:i+ss-1],v
+    else ss+=v[i]
     end
   end
 end
 
+struct PartitionsK
+  n::Int
+  k::Int
+end
+
+Partitions(n,k)=PartitionsK(n,k)
+Base.eltype(x::PartitionsK)=Vector{Int}
+Base.IteratorSize(::Type{PartitionsK})=Base.SizeUnknown()
+Base.show(io::IO,x::PartitionsK)=print(io,"Partitions(",x.n,",",x.k,")")
+
+function Base.iterate(s::PartitionsK)
+  if s.k>s.n || s.k<=0 return nothing end
+  q,r=divrem(s.n,s.k)
+  v=fill(q,s.k)
+  for i in 1:r v[i]=q+1 end
+  copy(v),v
+end
+
+function Base.iterate(s::PartitionsK,v)
+  ss=0
+  for i in s.k:-1:1
+    if ss>s.k-i && (i==1 || v[i]<v[i-1])
+       v[i]+=1
+       q,r=divrem(ss-1,s.k-i)
+       for j in i+1:i+r v[j]=q+1 end
+       for j in i+r+1:s.k v[j]=q end
+       return copy(v),v
+    else ss+=v[i]
+    end
+  end
+end
 """
 `partitions(n[,k])`
 
@@ -504,28 +549,7 @@ The partitions are implemented by an iterator `Combinat.Partitions` which
 can be used to enumerate the partitions of a large number.
 """
 partitions(n)=collect(Partitions(n))
-
-# l is a list of partitions such that l[end][offset-1]==m
-# m given since when offset=1 this does not make sense
-# extend from offset with partitions of n in k parts <=m
-function partitions2(l,n,k,offset,m)
-  if k==1 l[end][offset]=n; return end
-  start=true
-  d,r=divrem(n,k)
-  for i in (iszero(r) ? d : d+1):min(n-k+1,m)
-    if !start push!(l,copy(l[end])) end
-    start=false
-    l[end][offset]=i
-    partitions2(l,n-i,k-1,offset+1,i)
-  end
-end
-
-function partitions(n,k)
-  if k>n || k==0 return Vector{Int}[] end
-  l=[fill(0,k)]
-  partitions2(l,n,k,1,n-k+1)
-  l
-end
+partitions(n,k)=collect(Partitions(n,k))
 
 @doc (@doc partitions) npartitions
 function npartitions(n)
