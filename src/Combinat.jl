@@ -202,6 +202,109 @@ end
 #--------------------- Classical enumerations -------------------
 
 """
+`Combinat.Combinations(s[,k])`   is  an   iterator  which   enumerates  the
+combinations  of  the  multiset  `s`  (with  `k`  elements  if `k`given) in
+lexicographic order.
+```julia-repl
+julia> a=Combinat.Combinations(1:4);
+
+julia> collect(a)
+16-element Vector{Any}:
+ Int64[]
+ [1]
+ [2]
+ [3]
+ [4]
+ [1, 2]
+ [1, 3]
+ [1, 4]
+ [2, 3]
+ [2, 4]
+ [3, 4]
+ [1, 2, 3]
+ [1, 2, 4]
+ [1, 3, 4]
+ [2, 3, 4]
+ [1, 2, 3, 4]
+
+julia> a=Combinat.Combinations([1,2,2,3,4,4],3)
+Combinations([1, 2, 2, 3, 4, 4],3)
+
+julia> collect(a)
+10-element Vector{Vector{Int64}}:
+ [1, 2, 2]
+ [1, 2, 3]
+ [1, 2, 4]
+ [1, 3, 4]
+ [1, 4, 4]
+ [2, 2, 3]
+ [2, 2, 4]
+ [2, 3, 4]
+ [2, 4, 4]
+ [3, 4, 4]
+```
+"""
+struct Combinations
+  t::Vector{Pair{Int,Int}}
+  k::Int
+  s
+end
+
+Combinations(s,k)=Combinations(tally(s),k,s)
+
+function Base.iterate(S::Combinations)
+  t=S.t
+  k=S.k
+  n=sum(last.(t))
+  if k>n return nothing end
+  v=fill(0,k)
+  u=1
+  j=0
+  for l in 1:k
+    if j<t[u][2] j+=1 
+    else u+=1;j=1
+    end
+    v[l]=u
+  end
+  first.(@view t[v]), v
+end
+
+Base.eltype(x::Combinations)=Vector{Int}
+Base.IteratorSize(::Type{Combinations})=Base.SizeUnknown()
+Base.show(io::IO,x::Combinations)=print(io,"Combinations(",x.s,",",x.k,")")
+
+function Base.iterate(S::Combinations,v)
+  i=length(v)
+  t=S.t
+  k=S.k
+  while i>0
+    if (i==k && v[i]<length(t)) || (i<k && v[i]+1<=v[i+1])
+      u=v[i]+1
+      j=0
+      for l in i+1:k if v[l]==u j+=1 else break end end
+      if j>=t[u][2] i-=1;continue end
+      j=0
+      for l in i:k
+        if j<t[u][2] j+=1 
+        else u+=1;j=1
+        end
+        v[l]=u
+      end
+      return first.(@view t[v]),v
+      i=k;continue
+    else i-=1;continue 
+    end
+  end
+end
+
+
+function Combinations(mset)
+  tly=tally(mset)
+  Iterators.flatten(map(k->Combinations(tly,k,mset),0:length(mset)))
+end
+
+
+"""
 `combinations(mset[,k])`
 
 `ncombinations(mset[,k])`
@@ -234,37 +337,11 @@ julia> combinations([1,2,2,3])
  [2, 2, 3]
  [1, 2, 2, 3]
 ```
+The  combinations  are  implemented  by an iterator `Combinat.Combinations`
+which can be used to enumerate the partitions of a large number.
 """
-function combinations(mset,k)
-  if k>length(mset) return Vector{eltype(mset)}[] end
-  list=[Vector{eltype(mset)}(undef,k)]
-  if k>0 combinations(list,tally(mset),0,k) end
-  list
-end
-
-function combinations(mset)
-  list=Vector{eltype(mset)}[]
-  tly=tally(mset)
-  for k in 0:length(mset)
-    push!(list,Vector{eltype(mset)}(undef,k))
-    if k>0 combinations(list,tly,0,k) end
-  end
-  list
-end
-
-# list[end] starts with n elements from the beginning of tally(mset). Extend it
-# in all ways possible adding k more elements from the end tly of tally(mset).
-function combinations(list,tly,n,k)
-  rest=@view tly[2:end]
-  start=true
-  for i in min(last(first(tly)),k):-1:max(0,k-sum(last,rest;init=0))
-    if !start push!(list,copy(list[end])) end
-    start=false
-    e=first(first(tly))
-    for j in n+1:n+i list[end][j]=e end
-    if k>i combinations(list,rest,n+i,k-i) end
-  end
-end
+combinations(mset)=collect(Combinations(mset))
+combinations(mset,k)=collect(Combinations(mset,k))
 
 @doc (@doc combinations) ncombinations
 ncombinations(mset)=prod(1 .+last.(tally(mset)))
@@ -446,7 +523,7 @@ Partitions(n::Integer)=Partitions(n)
 
 Base.eltype(x::Partitions)=Vector{Int}
 Base.IteratorSize(::Type{Partitions})=Base.SizeUnknown()
-Base.show(io::IO,x::Partitions)=print(io,"Partitions(",s.n,")")
+Base.show(io::IO,x::Partitions)=print(io,"Partitions(",x.n,")")
 
 function Base.iterate(s::Partitions)
   v=fill(1,s.n)
