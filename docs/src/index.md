@@ -27,6 +27,7 @@ Base.:^(::AbstractMatrix,::Perm)
 restricted(::Perm,::AbstractVector{<:Integer})
 reflength(::Perm)
 mappingPerm
+Perm_rowcol
 ```
 # Groups
 ```@docs
@@ -73,7 +74,6 @@ symmetric_group
 onmats
 stab_onmats
 Perm_onmats
-Perm_rowcolmat
 ```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
@@ -103,10 +103,11 @@ divisors
 ```@docs
 Combinat
 combinations
+Combinat.Combinations
 arrangements
 partitions
+Combinat.Partitions
 partition_tuples
-partitions_set
 restrictedpartitions
 compositions
 submultisets
@@ -548,6 +549,7 @@ ComplexReflectionGroup                      ComplexReflectionGroup
 Compositions                                compositions
 Concatenation(s::Vector...)                 vcat(s...)
 ConcatenationString(s...)                   prod(s)
+ConjugacyClasses                            conjugacy_classes
 ConjugacySet(b[,F][,type])                  conjcat(b[,F],ss=type).obj
 ConjugatePartition                          conjugate_partition
 CoxeterCoset                                spets
@@ -581,7 +583,9 @@ DeligneLusztigCharacter                     DLChar
 DeligneLusztigLefschetz                     DLLeftschetz
 DescribeInvolution                          describe_involution
 DetPerm(W)                                  vec(detPerm(W))
+DiaconisGraham                              diaconis_graham
 Digits                                      digits
+DistinguishedParabolicSubgroups             distinguished_parabolics
 Dominates                                   dominates
 DrinfeldDouble                              drinfeld_double
 Drop                                        deleteat!
@@ -628,7 +632,7 @@ HeckeCharValues                             char_values
 HeckeClassPolynomials                       class_polynomials
 HeckeReflectionRepresentation               reflrep
 HermiteNormalFormIntegerMat                 hermite
-HermiteNormalFormIntegerMatTransforms(m)    hermite(m;transforms=true)
+HermiteNormalFormIntegerMatTransforms(m)    hermite_transforms(m)
 HighestPowerFakeDegrees(W)                  charinfo(W)[:B]
 HighestPowerFakeDegreeSymbol                degree_fegsymbol
 HighestPowerGenericDegrees(W)               charinfo(W)[:A]
@@ -649,6 +653,7 @@ InvariantForm                               invariant_form
 Invariants                                  invariants
 Inversions                                  inversions
 IsAbelian                                   isabelian
+IsCyclic                                    iscyclic
 IsCycPol(p)                                 p isa CycPol
 IsFamily(f)                                 f isa Family
 IsFFE(x)                                    x isa FFE
@@ -696,6 +701,7 @@ MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
 MatXPerm(W,p)                               reflrep(W,p)
 MatYPerm                                    matY
+Mod1                                        modZ
 MovedPoints                                 support
 Mvp("x")                                    Mvp(:x)
 NrArrangements                              narrangements
@@ -703,9 +709,10 @@ NrCombinations                              ncombinations
 NrConjugacyClasses                          nconjugacy_classes
 NrDrinfeldDouble                            ndrinfeld_double
 NrPartitions                                npartitions
-NrPartitionsSet                             npartitions_set
+NrPartitionsSet                             npartitions
 NrPartitionTuples                           npartition_tuples
 NrRestrictedPartitions                      nrestrictedpartitions
+NullMat(m[,n])                              zeros(Int,m,m) resp. zeros(Int,m,n)
 NullspaceIntMat                             lnullspaceInt
 OnFamily(f,p::Int)                          galois(f,p)
 OnFamily(f,p::Perm)                         f^p
@@ -720,7 +727,7 @@ ParabolicRepresentatives                    parabolic_reps
 PartBeta                                    partβ
 Partition                                   partition
 Partitions                                  partitions
-PartitionsSet                               partitions_set
+PartitionsSet                               partitions
 PartitionTuples                             partition_tuples
 PermCosetsSubgroup(H,W)                     D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))
 PermList(v)                                 Perm(v)
@@ -737,7 +744,11 @@ PositionCartesian(a,b)                      LinearIndices(reverse(Tuple(a)))[Car
 PositionClass                               position_class
 PositionDet                                 charinfo(W)[:positionDet]
 PositionId                                  charinfo(W)[:positionId]
+PositionProperty(l,f)                       findfirst(f,l)
 PositionRegularClass                        position_regular_class
+Positions(l,x)                              findall(==(x),l)
+PositionsProperty(l,f)                      findall(f,l)
+PowerRoot(x,y)                              (Root1(;r=x)^y).r
 Presentation                                Presentation
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)
@@ -767,7 +778,7 @@ Representations                             representations
 RepresentativeConjugation(b,b'[,F][,type])  conjugating_elt(b,b'[,F],ss=type)
 RepresentativeDiagonalConjugation           diagconj_elt
 RepresentativeOperation                     transporting_elt
-RepresentativeRowColPermutation             Perm_rowcolmat
+RepresentativeRowColPermutation             Perm_rowcol
 Restricted                                  restricted
 RestrictedPartitions                        restrictedpartitions
 RestrictedPerm(p,d)                         restricted(p,d)
@@ -796,7 +807,8 @@ SignedPermMatMat                            SPerm_onmats
 Size(W)                                     length(W)
 SmallestMovedPoint                          smallest_moved_point
 SmithNormalFormIntegerMat                   smith
-SmithNormalFormIntegerMatTransforms(m)      smith(m;transforms=true)
+SmithNormalFormIntegerMatTransforms(m)      smith_transforms(m)
+SolutionIntMat                              solutionmatInt
 SolutionMat                                 solutionmat
 SpecialPieces                               special_pieces
 Spets                                       spets
@@ -816,7 +828,7 @@ Torus                                       torus
 TorusOrder                                  torus_order
 TransitiveClosure                           transitive_closure
 Transporter                                 transporter
-TransposedMat                               permutedims
+TransposedMat                               transpose or permutedims
 Transversals                                related to transversals
 TriangulizeMat                              echelon!
 Twistings                                   twistings
@@ -840,8 +852,8 @@ W.rootInclusion                             inclusion(W)
 W.rootLengths                               rootlengths(W)
 W.rootRestriction                           restriction(W)
 W.roots                                     W.rootdec
-W.simpleCoroots                             coroots(W,1:ngens(W))
-W.simpleRoots                               roots(W,1:ngens(W))
+W.simpleCoroots                             simplecoroots(W)
+W.simpleRoots                               simpleroots(W)
 WeightInfo                                  weightinfo
 WGraph                                      Wgraph
 WGraphToRepresentation                      WGraphToRepresentation

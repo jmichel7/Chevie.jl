@@ -117,10 +117,10 @@ module Perms
 # to use as a stand-alone module comment above 2 lines and uncomment next
 export restricted, orbit, orbits, order
 
-export Perm, largest_moved_point, cycles, cycletype, support,
-  @perm_str, smallest_moved_point, reflength, mappingPerm, sortPerm
+export Perm, largest_moved_point, cycles, cycletype, support, @perm_str, 
+ smallest_moved_point, reflength, mappingPerm, sortPerm, Perm_rowcol
 
-using ..Combinat: tally
+using ..Combinat: tally, collectby, arrangements
 """
 `struct Perm{T<:Integer}`
 
@@ -393,7 +393,7 @@ function Base.:^(l::AbstractVector,a::Perm)
 end
 
 """
-Base.:^(m::AbstractMatrix,p::Perm;dims=1)
+`Base.:^(m::AbstractMatrix,p::Perm;dims=1)`
 
 Applies the permutation `p` on the lines, columns or both of the matrix `m`
 depending on the value of `dims`
@@ -434,6 +434,27 @@ function Base.:^(m::AbstractMatrix,a::Perm;dims=1)
   end
 end
 
+"""
+`Base.:^(m::AbstractMatrix,p::Tuple{Perm,Perm}`
+
+given a tuple `(p1,p2)` of `Perm`s, applies `p1` to the lines of `m` and `p2` to the
+columns of `m`.
+
+```julia-repl
+julia> m=[1 2 3;4 5 6;7 8 9]
+3×3 Matrix{Int64}:
+ 1  2  3
+ 4  5  6
+ 7  8  9
+
+julia> m^(Perm(1,2),Perm(2,3))
+3×3 Matrix{Int64}:
+ 4  6  5
+ 1  3  2
+ 7  9  8
+```
+"""
+Base.:^(m::AbstractMatrix,p::Tuple{Perm,Perm})=m[axes(m,1)^p[1],axes(m,2)^p[2]]
 #---------------------- cycles -------------------------
 
 # 15% slower than GAP CyclePermInt for rand(Perm,1000)
@@ -589,6 +610,31 @@ function restricted(a::Perm{T},l::AbstractVector{<:Integer})where T
 end
 
 """
+`mappingPerm(a)`
+
+given  a list  of positive  integers without  repetition `a`, this function
+finds  a permutation  `p` such  that `sort(a).^p==a`.  This can  be used to
+translate between arrangements and `Perm`s.
+
+```julia-repl
+julia> p=mappingPerm([6,7,5])
+(5,6,7)
+
+julia> (5:7).^p
+3-element Vector{Int16}:
+ 6
+ 7
+ 5
+```
+"""
+function mappingPerm(::Type{T},a)where T
+  r=collect(1:maximum(a))
+  r[sort(a)]=a
+  Perm{T}(r)
+end
+mappingPerm(a)=mappingPerm(Idef,a)
+
+"""
 `mappingPerm(a,b)`
 
 given two lists of positive integers without repetition `a` and `b`, this
@@ -606,5 +652,95 @@ function mappingPerm(::Type{T},a,b)where T
   Perm{T}(a)\Perm{T}(b)
 end
 mappingPerm(a,b)=mappingPerm(Idef,a,b)
+
+"""
+`Perm_rowcol(m1::AbstractMatrix, m2::AbstractMatrix)`
+
+whether `m1` is conjugate to `m2` by row/col permutations.
+
+`m1` and `m2` should be rectangular matrices of the same size. The function
+returns a pair of permutations `(p1,p2)` such that `m1^(p1,p2)==m2` if such
+permutations exist, `nothing` otherwise.
+
+The entries of `m1` and `m2` must be sortable.
+
+```julia-repl
+julia> a=[1 1 1 -1 -1; 2 0 -2 0 0; 1 -1 1 -1 1; 1 1 1 1 1; 1 -1 1 1 -1]
+5×5 Matrix{Int64}:
+ 1   1   1  -1  -1
+ 2   0  -2   0   0
+ 1  -1   1  -1   1
+ 1   1   1   1   1
+ 1  -1   1   1  -1
+
+julia> b=[1 -1 -1 1 1; 1 1 -1 -1 1; 1 -1 1 -1 1; 2 0 0 0 -2; 1 1 1 1 1]
+5×5 Matrix{Int64}:
+ 1  -1  -1   1   1
+ 1   1  -1  -1   1
+ 1  -1   1  -1   1
+ 2   0   0   0  -2
+ 1   1   1   1   1
+
+julia> p1,p2=Perm_rowcol(a,b)
+((1,2,4,5,3), (3,5,4))
+
+julia> a^(p1,p2)==b
+true
+```
+"""
+function Perm_rowcol(m1::AbstractMatrix, m2::AbstractMatrix;debug=false)
+  if size(m1)!=size(m2) error("not same dimensions") end
+  if isempty(m1) return [Perm(), Perm()] end
+  dist(m,n)=count(i->m[i]!=n[i],eachindex(m))
+  dist(m,n,dim,l)=dim==1 ? dist(m[l,:],n[l,:]) : dist(m[:,l],n[:,l])
+  mm=[m1,m2]
+  if debug print("# ", dist(m1, m2), "") end
+  rcperm=[Perm(), Perm()],[Perm(), Perm()]
+  crg=Vector{Int}[],Vector{Int}[]
+  crg1=[axes(m1,1)],[axes(m1,2)]
+  while true
+    crg=crg1
+    crg1=Vector{Int}[],Vector{Int}[]
+    for dim in 1:2
+      for g in crg[dim]
+        invars=map(1:2) do i
+          invar=map(j->map(k->tally(dim==1 ? mm[i][j,k] : mm[i][k,j]),
+                           crg[3-dim]), g)
+          p=mappingPerm(vcat(collectby(invar,g)...), g)
+          rcperm[dim][i]*=p
+          mm[i]=^(mm[i],p,dims=dim)
+          sort!(invar)
+        end
+        if invars[1]!=invars[2] return nothing end
+        append!(crg1[dim], collectby(invars[1],g))
+      end
+    end
+    if debug print("==>",dist(mm[1],mm[2])) end
+    if crg==crg1 break end
+  end
+  function best(l,dim)
+    if length(l)==1 return false end
+    d=dist(mm[1], mm[2], dim, l)
+#   if debug print("l=",l,"\n") end
+    for e in mappingPerm.(arrangements(l,length(l)))
+      m=dist(^(mm[1], e;dims=dim), mm[2], dim, l)
+      if m<d
+        if debug print("\n",("rows","cols")[dim],l,":$d->",m) end
+        rcperm[dim][1]*=e
+        mm[1]=^(mm[1],e;dims=dim)
+        return true
+      end
+    end
+    return false
+  end
+  while true
+    s=false
+    for dim in 1:2 for g in crg[dim] s=s || best(g,dim) end end
+    if !s break end
+  end
+  if debug print("\n") end
+  if !iszero(dist(mm...)) error("Perm_rowcol failed") end
+  (rcperm[1][1]/rcperm[1][2],rcperm[2][1]/rcperm[2][2])
+end
 
 end

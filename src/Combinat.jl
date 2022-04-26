@@ -89,25 +89,45 @@ function groupby(f::Function,l)
   res
 end
 
+# works for any (sorted) iterable
 function tally_sorted(v)
   res=Pair{eltype(v),Int}[]
-  if isempty(v) return res end
+  fp=iterate(v)
+  if isnothing(fp) return res end
+  prev,state=fp
   c=1
-@inbounds  for j in 2:length(v)
-    if v[j]==v[j-1] c+=1
-    else push!(res,v[j-1]=>c)
+  while true
+    fp=iterate(v,state)
+    if isnothing(fp)
+      push!(res,prev=>c)
+      return res
+    end
+    n,state=fp
+    if n==prev c+=1
+    else push!(res,prev=>c)
+      prev=n
       c=1
     end
   end
-  push!(res,v[end]=>c)
+  res
+end
+
+function tally_dict(v)
+  res=Dict{eltype(v),Int}()
+  for n in v 
+    if haskey(res,n) res[n]+=1
+    else res[n]=1
+    end
+  end
+  collect(res)
 end
 
 """
 `tally(v)`
 
-count  how many times  each element of  collection `v` occurs  and return a
-sorted  `Vector` of  `elt=>count` (a  variation on  StatsBase.countmap; the
-elements of `v` must be sortable).
+counts how many times each element of collection or iterable `v` occurs and
+returns a sorted `Vector` of `elt=>count` (a variation on
+StatsBase.countmap; the elements of `v` must be sortable).
 
 ```julia-repl
 julia> tally("a tally test")
@@ -121,9 +141,13 @@ julia> tally("a tally test")
  'y' => 1
 ```
 """
-tally(v::AbstractArray)=tally_sorted(issorted(v) ? v : sort(v))
+function tally(v::AbstractArray;dict=false)
+  if dict tally_dict(v)
+  else tally_sorted(issorted(v) ? v : sort(v))
+  end
+end
 
-tally(v)=tally(collect(v)) # for iterables
+tally(v;k...)=tally(collect(v);k...) # for iterables
 
 """
 `collectby(f,v)`
@@ -244,13 +268,13 @@ julia> collect(a)
 ```
 """
 struct Combinations{T}
-  t::Vector{Int}
+  m::Vector{Int} # multiplicities of elements of s
   k::Int
-  s::Vector{T}
+  s::Vector{T}  # allunique collection
 end
 
 function Base.iterate(S::Combinations)
-  t=S.t
+  t=S.m
   k=S.k
   n=sum(t)
   if k>n return nothing end
@@ -268,11 +292,11 @@ end
 
 Base.eltype(x::Combinations)=Vector{Int}
 Base.IteratorSize(::Type{Combinations{T}}) where T=Base.SizeUnknown()
-Base.show(io::IO,x::Combinations)=print(io,"Combinations(",vcat(fill.(x.s,x.t)...),",",x.k,")")
+Base.show(io::IO,x::Combinations)=print(io,"Combinations(",vcat(fill.(x.s,x.m)...),",",x.k,")")
 
 function Base.iterate(S::Combinations,v)
   i=length(v)
-  t=S.t
+  t=S.m
   k=S.k
   while i>0
     if (i==k && v[i]<length(t)) || (i<k && v[i]<v[i+1])
@@ -294,32 +318,42 @@ function Base.iterate(S::Combinations,v)
   end
 end
 
-function Combinations(mset,k)
-  t=tally(mset)
+function Combinations(mset,k;kw...)
+  t=tally(mset;kw...)
   Combinations(last.(t),k,first.(t))
 end
 
-function Combinations(mset)
-  tly=tally(mset)
+function Combinations(mset,ll::AbstractVector=0:length(mset);kw...)
+  tly=tally(mset;kw...)
   s=first.(tly)
   t=last.(tly)
-  Iterators.flatten(Combinations(t,k,s) for k in 0:length(s))
+  Iterators.flatten(Combinations(t,k,s) for k in ll)
 end
 
 
 """
-`combinations(mset[,k])`
+`combinations(mset[,k];dict=false)`
 
-`ncombinations(mset[,k])`
+`ncombinations(mset[,k];dict=false)`
 
-`combinations`  returns  all  combinations  of  the  multiset `mset` (a not
-necessarily  sorted  collection  with  possible  repetitions).  If a second
-argument  `k`  is  given,  it  returns  the combinations with `k` elements.
+`combinations`   returns  all  combinations  of   the  multiset  `mset`  (a
+collection  or  iterable  with  possible  repetitions). If a second integer
+argument  `k` is given, it returns  the combinations with `k` elements. `k`
+may  also be a vector  of integers, then it  returns the combinations whose
+number of elements is one of these integers.
+
 `ncombinations` returns the number of combinations.
 
-A  *combination* is an unordered subsequence and is represented by a sorted
-`Vector`  (the  elements  of  `mset`  must  be  sortable). If `mset` has no
-repetitions, the list of all combinations is just the *powerset* of `mset`.
+A  *combination* is an unordered subsequence.
+
+By  default, the elements of `mset`  are assumed sortable and a combination
+is  represented by a sorted `Vector`.  The combinations with a fixed number
+`k`  of  elements  are  listed  in  lexicographic order. If the elements of
+`mset`  are not sortable but hashable, the keyword `dict=true` can be given
+and the (slightly slower) computation is done using a `Dict`.
+
+If  `mset` has  no repetitions,  the list  of all  combinations is just the
+*powerset* of `mset`.
 
 ```julia-repl
 julia> ncombinations([1,2,2,3])
@@ -341,21 +375,24 @@ julia> combinations([1,2,2,3])
  [1, 2, 2, 3]
 ```
 The  combinations  are  implemented  by an iterator `Combinat.Combinations`
-which can be used to enumerate the partitions of a large number.
+which can enumerate the combinations of a large multiset.
 """
-combinations(mset)=collect(Combinations(mset))
-combinations(mset,k)=collect(Combinations(mset,k))
+combinations(x...;kw...)=collect(Combinations(x...;kw...))
 
 @doc (@doc combinations) ncombinations
-ncombinations(mset)=prod(1 .+last.(tally(mset)))
+ncombinations(mset;kw...)=prod(1 .+last.(tally(mset;kw...)))
 
-ncombinations(mset,k)=ncombinations(sort(last.(tally(mset)),rev=true),1,k)
+ncombinations(mset,k::AbstractVector)=sum(i->ncombinations(mset,i),k)
 
-function ncombinations(mul,m,k)
+ncombinations(mset,k::Integer;kw...)=ncombinations2(sort(last.(tally(mset;kw...)),rev=true),k)
+
+Base.length(S::Combinations)=ncombinations2(sort(S.m,rev=true),S.k)
+
+function ncombinations2(mul,k)
   if k==0 return 1 end
-  if m>length(mul) return 0 end
+  if isempty(mul) return 0 end
   if mul[1]==1 return binomial(length(mul),k) end
-  sum(i->ncombinations(mul,m+1,k-i),0:min(mul[m],k))
+  sum(i->ncombinations2((@view mul[2:end]),k-i),0:min(mul[1],k))
 end
 
 """
@@ -369,7 +406,7 @@ argument   `k`  is  given,  it  returns  arrangements  with  `k`  elements.
 `narrangements` returns the number of arrangements.
 
 An  *arrangement*  of  `mset`  is  a  subsequence taken in arbitrary order,
-representated as a `Vector`.
+representated as a `Vector`. It is also called a permutation.
 
 As  an example of arrangements  of a multiset, think  of the game Scrabble.
 Suppose  you have the six  characters of the word  'settle' and you have to
@@ -410,21 +447,26 @@ julia> String.(arrangements(collect("settle"),2))
 ```
 """
 function arrangements(mset,k)
+  mset=sort(collect(mset))
   blist=trues(length(mset))
-  function arr(mset,k)
-    if iszero(k) return [empty(mset)] end
-    combs=Vector{eltype(mset)}[]
+  if k>length(mset) return Vector{eltype(mset)}[] end
+  combs=[mset[1:k]]
+  function arr(k,l)local i,start
+    if iszero(k) return end
+    start=true
     for i in eachindex(blist)
       if blist[i] && (i==length(blist) || mset[i+1]!=mset[i] || !blist[i+1])
         blist[i]=false
-        append!(combs,pushfirst!.(arr(mset,k-1)::Vector{Vector{eltype(mset)}},
-                                   Ref(mset[i])))
+        if !start push!(combs,copy(combs[end])) end
+        start=false
+        combs[end][l+1]=mset[i]
+        arr(k-1,l+1)
         blist[i]=true
       end
     end
-    combs
   end
-  arr(sort(mset),k)
+  arr(k,0)
+  combs
 end
 
 arrangements(mset)=vcat(arrangements.(Ref(mset),0:length(mset))...)
@@ -457,8 +499,7 @@ end
 
 @doc (@doc arrangements) narrangements
 function narrangements(mset)
-  mset=copy(mset)
-  sort!(mset)
+  mset=sort!(copy(mset))
   if allunique(mset)
     nr=0
     for i in 0:length(mset)
@@ -471,8 +512,7 @@ function narrangements(mset)
 end
 
 function narrangements(mset,k)
-  mset=copy(mset)
-  sort!(mset)
+  mset=sort!(copy(mset))
   if allunique(mset)
     if k <= length(mset)
       nr=prod(length(mset):-1:length(mset)-k+1)
@@ -1015,7 +1055,7 @@ the  unordered partitions in `k` sets.  `npartitions` returns the number of
 unordered partitions.
 
 An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
-sets with union `set`  and is represented by  a sorted Vector of Vectors.
+sets with union `set`  and is represented by  a Vector of Vectors.
 
 ```julia-repl
 julia> npartitions(1:3)
@@ -1045,7 +1085,6 @@ julia> partitions(1:4,2)
 Note  that there is currently no ordered counterpart.
 """
 function partitions(set::AbstractVector,k)
-  sort!(set)
   res=Vector{Vector{eltype(set)}}[]
   if length(set)<k return res end
   if k==1 return [[collect(set)]] end

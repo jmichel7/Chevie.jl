@@ -75,7 +75,7 @@ using ..Util: getp, InfoChevie, @GapObj, printTeX, hasdecor
 import ..Gapjm: elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
-  stab_onmats, Perm_onmats, onmats, Perm_rowcolmat, on_classes
+  stab_onmats, Perm_onmats, onmats, on_classes
 #-------------------- now permutation groups -------------------------
 abstract type PermGroup{T}<:Group{Perm{T}} end
 
@@ -390,7 +390,7 @@ symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
 "`onmats(m::AbstractMatrix,g::Perm)' simultaneous action of `g` on cols and rows"
-onmats(m,g)=^(m,g;dims=(1,2))
+onmats(m,g)=m^(g,g)
 
 function invblocks(m,extra=nothing)
   if isnothing(extra) extra=zeros(Int,size(m,1)) end
@@ -532,70 +532,6 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     g=Group(gens(h).^inv(p))
   end
   return mappingPerm(I,J)
-end
-
-"""
-`Perm_rowcolmat(m1,m2)`
-
-whether matrix `m1` is conjugate to matrix `m2` by row/col permutations
-
-`m1`  and `m2` should  be rectangular matrices  of the same dimensions. The
-function returns a pair of permutations `(p1,p2)` such that
-`^(m1^p1,p2;dims=2)==m2` if such permutations exist, `nothing` otherwise.
-"""
-function Perm_rowcolmat(m1, m2)
-  if size(m1)!=size(m2) error("not same dimensions") end
-  if isempty(m1) return [Perm(), Perm()] end
-  dist(m,n)=count(i->m[i]!=n[i],eachindex(m))
-  dist(m,n,dim,l)=dim==1 ? dist(m[l,:],n[l,:]) : dist(m[:,l],n[:,l])
-  mm=[m1,m2]
-  InfoChevie("# ", dist(m1, m2), "")
-  rcperm=[Perm(), Perm()],[Perm(), Perm()]
-  crg=Vector{Int}[],Vector{Int}[]
-  crg1=[axes(m1,1)],[axes(m1,2)]
-  while true
-    crg=crg1
-    crg1=Vector{Int}[],Vector{Int}[]
-    for dim in 1:2
-      for g in crg[dim]
-        invars=map(1:2) do i
-          invar=map(j->map(k->tally(dim==1 ? mm[i][j,k] : mm[i][k,j]),
-                           crg[3-dim]), g)
-          p=mappingPerm(vcat(collectby(invar,g)...), g)
-          rcperm[dim][i]*=p
-          mm[i]=^(mm[i],p,dims=dim)
-          sort!(invar)
-        end
-        if invars[1]!=invars[2] return nothing end
-        append!(crg1[dim], collectby(invars[1],g))
-      end
-    end
-    InfoChevie("==>",dist(mm[1],mm[2]))
-    if crg==crg1 break end
-  end
-  function best(l,dim)
-    if length(l)==1 return false end
-    d=dist(mm[1], mm[2], dim, l)
-    InfoChevie("l=",l,"\n")
-    for e in Group(map(i->Perm(l[i],l[i+1]),1:length(l)-1))
-      m=dist(^(mm[1], e;dims=dim), mm[2], dim, l)
-      if m<d
-        InfoChevie("\n",("rows","cols")[dim],l,":$d->",m)
-        rcperm[dim][1]*=e
-        mm[1]=^(mm[1],e;dims=dim)
-        return true
-      end
-    end
-    return false
-  end
-  while true
-    s=false
-    for dim in 1:2 for g in crg[dim] s=s || best(g,dim) end end
-    if !s break end
-  end
-  InfoChevie("\n")
-  if !iszero(dist(mm...)) error("RepresentativeRowColOperation failed") end
-  (rcperm[1][1]/rcperm[1][2],rcperm[2][1]/rcperm[2][2])
 end
 
 end

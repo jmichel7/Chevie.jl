@@ -591,7 +591,7 @@ function UnipotentCharacters(WF::Spets)
  #  H=map(x->reflection_subgroup(W,x.indices[1:x.rank]),t.orbit)
     i=indices(t)
     H=reflection_subgroup(W,sort(i))
-    p=mappingPerm(sort(i),i)^mappingPerm(sort(i),eachindex(i))
+    p=mappingPerm(i)^mappingPerm(sort(i),eachindex(i))
 #   @show t,i,H,p
     for s in uc.harishChandra
       s[:levi]=inclusion(H,W,s[:levi].^p)

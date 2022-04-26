@@ -304,7 +304,7 @@ const ChevieDict=Dict(
 "RepresentativeConjugation(b,b'[,F][,type])"=>"conjugating_elt(b,b'[,F],ss=type)",
 "RepresentativeDiagonalConjugation"=>"diagconj_elt",
 "RepresentativeOperation"=>"transporting_elt",
-"RepresentativeRowColPermutation"=>"Perm_rowcolmat",
+"RepresentativeRowColPermutation"=>"Perm_rowcol",
 "Restricted"=>"restricted",
 "RestrictedPartitions"=>"restrictedpartitions",
 "RestrictedPerm(p,d)"=>"restricted(p,d)",
