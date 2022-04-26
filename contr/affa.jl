@@ -176,7 +176,7 @@ CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
 # for this function see [Digne],2.8
 function Perms.reflength(w::PPerm)
   function v(pp,i)
-    pp=map(x->sum.(getindex.(Ref(pp),x)),partitions_set(eachindex(pp),i))
+    pp=map(x->sum.(getindex.(Ref(pp),x)),partitions(eachindex(pp),i))
     if pp[1][1]<0 pp=-pp end
     return tally.(pp)
   end

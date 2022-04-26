@@ -224,7 +224,7 @@ const ChevieDict=Dict(
 "NrConjugacyClasses"=>"nconjugacy_classes",
 "NrDrinfeldDouble"=>"ndrinfeld_double",
 "NrPartitions"=>"npartitions",
-"NrPartitionsSet"=>"npartitions_set",
+"NrPartitionsSet"=>"npartitions",
 "NrPartitionTuples"=>"npartition_tuples",
 "NrRestrictedPartitions"=>"nrestrictedpartitions",
 "NullMat(m[,n])"=>"zeros(Int,m,m) resp. zeros(Int,m,n)",
@@ -245,7 +245,7 @@ const ChevieDict=Dict(
 "PartBeta"=>"partβ",
 "Partition"=>"partition",
 "Partitions"=>"partitions",
-"PartitionsSet"=>"partitions_set",
+"PartitionsSet"=>"partitions",
 "PartitionTuples"=>"partition_tuples",
 #PartitionTupleToString
 "PermCosetsSubgroup(H,W)"=>"D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",

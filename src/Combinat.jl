@@ -5,12 +5,12 @@ GAP combinatorics. The list of functions it exports are:
 Classical enumerations:
 
 `combinations, arrangements, partitions, partition_tuples,
- restrictedpartitions, partitions_set, compositions, submultisets`
+ restrictedpartitions,  compositions, submultisets`
 
 functions to count them without computing them:
 
 `ncombinations, narrangements, npartitions, npartition_tuples,
- nrestrictedpartitions, npartitions_set`
+ nrestrictedpartitions`
 
 some functions on partitions and permutations:
 
@@ -35,8 +35,7 @@ welcome).
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
   partitions, npartitions, partition_tuples, npartition_tuples,
-   restrictedpartitions, nrestrictedpartitions,
-   partitions_set, npartitions_set, compositions, 
+   restrictedpartitions, nrestrictedpartitions, compositions, 
    submultisets, nsubmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, tableaux,
     robinson_schensted,
@@ -209,8 +208,8 @@ lexicographic order.
 julia> a=Combinat.Combinations(1:4);
 
 julia> collect(a)
-16-element Vector{Any}:
- Int64[]
+16-element Vector{Vector{Int64}}:
+ []
  [1]
  [2]
  [3]
@@ -244,63 +243,67 @@ julia> collect(a)
  [3, 4, 4]
 ```
 """
-struct Combinations
-  t::Vector{Pair{Int,Int}}
+struct Combinations{T}
+  t::Vector{Int}
   k::Int
-  s
+  s::Vector{T}
 end
-
-Combinations(s,k)=Combinations(tally(s),k,s)
 
 function Base.iterate(S::Combinations)
   t=S.t
   k=S.k
-  n=sum(last.(t))
+  n=sum(t)
   if k>n return nothing end
   v=fill(0,k)
   u=1
   j=0
   for l in 1:k
-    if j<t[u][2] j+=1 
+    if j<t[u] j+=1 
     else u+=1;j=1
     end
     v[l]=u
   end
-  first.(@view t[v]), v
+  S.s[v], v
 end
 
 Base.eltype(x::Combinations)=Vector{Int}
-Base.IteratorSize(::Type{Combinations})=Base.SizeUnknown()
-Base.show(io::IO,x::Combinations)=print(io,"Combinations(",x.s,",",x.k,")")
+Base.IteratorSize(::Type{Combinations{T}}) where T=Base.SizeUnknown()
+Base.show(io::IO,x::Combinations)=print(io,"Combinations(",vcat(fill.(x.s,x.t)...),",",x.k,")")
 
 function Base.iterate(S::Combinations,v)
   i=length(v)
   t=S.t
   k=S.k
   while i>0
-    if (i==k && v[i]<length(t)) || (i<k && v[i]+1<=v[i+1])
+    if (i==k && v[i]<length(t)) || (i<k && v[i]<v[i+1])
       u=v[i]+1
       j=0
       for l in i+1:k if v[l]==u j+=1 else break end end
-      if j>=t[u][2] i-=1;continue end
+      if j>=t[u] i-=1;continue end
       j=0
       for l in i:k
-        if j<t[u][2] j+=1 
+        if j<t[u] j+=1 
         else u+=1;j=1
         end
         v[l]=u
       end
-      return first.(@view t[v]),v
+      return S.s[v],v
       i=k;continue
     else i-=1;continue 
     end
   end
 end
 
+function Combinations(mset,k)
+  t=tally(mset)
+  Combinations(last.(t),k,first.(t))
+end
 
 function Combinations(mset)
   tly=tally(mset)
-  Iterators.flatten(map(k->Combinations(tly,k,mset),0:length(mset)))
+  s=first.(tly)
+  t=last.(tly)
+  Iterators.flatten(Combinations(t,k,s) for k in 0:length(s))
 end
 
 
@@ -575,9 +578,9 @@ function Base.iterate(s::PartitionsK,v)
   end
 end
 """
-`partitions(n[,k])`
+`partitions(n::Integer[,k])`
 
-`npartitions(n[,k])`
+`npartitions(n::Integer[,k])`
 
 `partitions`  returns in lexicographic  order the set  of all partitions of
 the  positive integer `n` (the partitions with  `k` parts if `k` is given).
@@ -625,8 +628,8 @@ julia> partitions(7,3)
 The partitions are implemented by an iterator `Combinat.Partitions` which
 can be used to enumerate the partitions of a large number.
 """
-partitions(n)=collect(Partitions(n))
-partitions(n,k)=collect(Partitions(n,k))
+partitions(n::Integer)=collect(Partitions(n))
+partitions(n::Integer,k::Integer)=collect(Partitions(n,k))
 
 @doc (@doc partitions) npartitions
 function npartitions(n)
@@ -866,12 +869,12 @@ function npartition_tuples(n,k)
 end
 
 """
-`compositions(n[,k];start=1)`
+`compositions(n[,k];min=1)`
 
 This  function returns the compositions of  `n` (the compositions of length
 `k`  if a second argument `k` is given), where a composition of the integer
-`n` is a decomposition `n=p₁+…+pₖ` in integers `≥start`, represented as the
-vector  `[p₁,…,pₖ]`. Unless `k`  is given, `start`  must be `>0`. There are
+`n` is a decomposition `n=p₁+…+pₖ` in integers `≥min`, represented as the
+vector  `[p₁,…,pₖ]`. Unless `k`  is given, `min`  must be `>0`. There are
 ``2^{n-1}``  compositions of `n` in  integers `≥1`, and `binomial(n-1,k-1)`
 compositions  of `n` in  `k` parts `≥1`.  Compositions are sometimes called
 ordered partitions.
@@ -894,7 +897,7 @@ julia> compositions(4,2)
  [2, 2]
  [1, 3]
 
-julia> compositions(4,2;start=0)
+julia> compositions(4,2;min=0)
 5-element Vector{Vector{Int64}}:
  [4, 0]
  [3, 1]
@@ -903,15 +906,15 @@ julia> compositions(4,2;start=0)
  [0, 4]
 ```
 """
-function compositions(n;start=1)
+function compositions(n;min=1)
   if iszero(n) return [Int[]] end
-  if start<=0 error("start must be ≥1") end
-  vcat(map(i->map(c->push!(c,i),compositions(n-i;start)),start:n)...)
+  if min<=0 error("min must be ≥1") end
+  vcat(map(i->map(c->push!(c,i),compositions(n-i;min)),min:n)...)
 end
 
-function compositions(n,k;start=1)
+function compositions(n,k;min=1)
   if isone(k) return [[n]] end
-  vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1;start)),start:n-start)...)
+  vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1;min)),min:n-min)...)
 end
 
 """
@@ -925,7 +928,8 @@ elements   of   the   set   `set`   (a   collection  without  repetitions).
 
 An  *multiset* of length `k` is  an unordered selection with repetitions of
 length  `k` from `set` and is represented  by a sorted vector of length `k`
-made  of  elements  from  `set`.
+made of elements from `set` (it is also sometimes called "combinations with
+replacement").
 
 ```julia-repl
 julia> submultisets(1:4,3)
@@ -961,155 +965,109 @@ end
 @doc (@doc submultisets) nsubmultisets
 nsubmultisets(set,k)=binomial(length(set)+k-1,k)
 
+function symdiffmset(a,b)
+  res=eltype(a)[]
+  la=length(a)
+  lb=length(b)
+  ai=bi=1
+  ri=0
+  while ai<=la || bi<=lb
+    if     ai>la res[ri+=1]=b[bi]; bi+=1
+    elseif bi>lb res[ri+=1]=a[ai]; ai+=1
+    else c=cmp(a[ai],b[bi])
+      if     c>0 res[ri+=1]=b[bi]; bi+=1
+      elseif c<0 res[ri+=1]=a[ai]; ai+=1
+      else
+        ai+=1; bi+=1
+      end
+    end
+  end
+  res
+end
+
+function diffmset(a,b)
+  res=eltype(a)[]
+  la=length(a)
+  lb=length(b)
+  ai=bi=1
+  ri=0
+  while ai<=la || bi<=lb
+    if     ai>la break
+    elseif bi>lb push!(res,a[ai]); ai+=1
+    else c=cmp(a[ai],b[bi])
+      if     c>0 bi+=1
+      elseif c<0 push!(res,a[ai]); ai+=1
+      else
+        ai+=1; bi+=1
+      end
+    end
+  end
+  res
+end
+
 """
-`partitions_set(set[,k])`
+`partitions(set::AbstractVector[,k])`
 
-`npartitions_set(set[,k])`
+`npartitions(set::AbstractVector[,k])`
 
-the  set of all unordered partitions of the set `set` (a collection without
-repetitions);  if  `k`  is  given  the  unordered  partitions  in `k` sets.
-`npartitions_set` returns the number of unordered partitions.
+the  set of all unordered partitions of the multiset `set`; if `k` is given
+the  unordered partitions in `k` sets.  `npartitions` returns the number of
+unordered partitions.
 
 An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
 sets with union `set`  and is represented by  a sorted Vector of Vectors.
 
 ```julia-repl
-julia> npartitions_set(1:3)
+julia> npartitions(1:3)
 5
 
-julia> partitions_set(1:3)
+julia> partitions(1:3)
 5-element Vector{Vector{Vector{Int64}}}:
- [[1], [2], [3]]
- [[1], [2, 3]]
- [[1, 2], [3]]
  [[1, 2, 3]]
+ [[1, 2], [3]]
  [[1, 3], [2]]
+ [[1], [2, 3]]
+ [[1], [2], [3]]
 
-julia> npartitions_set(1:4,2)
+julia> npartitions(1:4,2)
 7
 
-julia> partitions_set(1:4,2)
+julia> partitions(1:4,2)
 7-element Vector{Vector{Vector{Int64}}}:
- [[1], [2, 3, 4]]
- [[1, 2], [3, 4]]
  [[1, 2, 3], [4]]
  [[1, 2, 4], [3]]
- [[1, 3], [2, 4]]
+ [[1, 2], [3, 4]]
  [[1, 3, 4], [2]]
+ [[1, 3], [2, 4]]
  [[1, 4], [2, 3]]
+ [[1], [2, 3, 4]]
 ```
-
-Note  that `partitions_set` does not currently support multisets and that
-there is currently no ordered counterpart.
+Note  that there is currently no ordered counterpart.
 """
-function partitions_set(set)
-  if unique(set)!=set error("partitions_set: ",set," must be a set") end
-  if isempty(set) return [empty(set)] end
-  m=1 .!=eachindex(set)
-"""
-`pp(part)`
-all  partitions  of  `set`  that  begin  with `part[1:end-1]` and where the
-`length(part)`-th set begins with `part[end]`.
-
-To find that first we consider the set `part[end]` to be complete and add a
-new  set to `part`, which must start with the smallest element of `set` not
-yet  taken,  because  we  require  the  returned  partitions  to  be sorted
-lexicographically.  `m` is  a boolean  list that  contains `true` for every
-element of `set` not yet taken.
-
-Second  we find all elements of `set`  that can be added to `part[end]` and
-call  `pp`  recursively  for  each  candidate.  If  `o`  is the position of
-`part[end][end]`  in `mset`, these candidates are set[l]` for `l` for which
-`o<=l` and `m[l]` is `true`.
-"""
-  function pp(part)
-    local l,o
-    l=findfirst(m)
-    if l===nothing return [part] end
-    m[l]=false
-    npart=copy.(part)
-    push!(npart,[set[l]])
-    parts=pp(npart)
-    m[l]=true
-    part=copy(part)
-    part[end]=copy(part[end])
-    o=findfirst(==(part[end][end]),set)
-    push!(part[end],set[o])
-    for l in o:length(m)
-      if m[l]
-        m[l]=false
-        part[end][end]=set[l]
-        append!(parts,pp(part))
-        m[l]=true
-      end
+function partitions(set::AbstractVector,k)
+  sort!(set)
+  res=Vector{Vector{eltype(set)}}[]
+  if length(set)<k return res end
+  if k==1 return [[collect(set)]] end
+  for p in partitions(set[1:end-1],k-1) push!(res,vcat(p,[[set[end]]])) end
+  for p in partitions(set[1:end-1],k)
+    for i in eachindex(p)
+      u=copy(p)
+      u[i]=vcat(u[i],[set[end]])
+      push!(res,u)
     end
-    parts
   end
-  pp([[set[1]]])
+  res
 end
 
-function partitions_set(set,k)
-  if unique(set)!=set error("partitions_set: ",set," must be a set") end
-  if isempty(set)
-    if k==0  return [empty(set)]
-    else return typeof(set)[]
-    end
-  end
-  m=1 .!=eachindex(set)
-"""
-`pp(k,part)`
-set  of  all  partitions  of  the  set  `set`  of  length  `n`,  that  have
-`k+length(part)-1`  subsets, that begin with  `part[1:end-1]` and where the
-`length(part)`-th set begins with `part[end]`.
-
-To do so it does two things. It finds all elements of `mset` that can go at
-`part[end][end+1]` and calls itself recursively for each candidate. And, if
-`k`  is larger than 1, it considers  the set `part[end]` to be complete and
-starts  a new set `part[end+1]`, which must start with the smallest element
-of  `mset` not yet taken, because we  require the returned partitions to be
-sorted  lexicographically. `m` is  a boolean list  that contains `true` for
-every   element  of   `set`  not   yet  taken.   `o`  is  the  position  of
-`part[end][end]` in `set`, so the candidates for `part[end][end+1]` are the
-`set[l]` for which `o<l` and `m[l]` is `true`.
-"""
-  function pp(k,part)
-    local l,o
-    l=findfirst(m)
-    parts=typeof(part)[]
-    if k==1
-      part=copy.(part)
-      for l in k:length(set)
-        if m[l] push!(part[end],set[l]) end
-      end
-      return [part]
-    end
-    if l===nothing return parts end
-    m[l]=false
-    npart=copy(part)
-    push!(npart,[set[l]])
-    parts=pp(k-1,npart)
-    m[l]=true
-    part=copy(part)
-    part[end]=copy(part[end])
-    o=findfirst(==(part[end][end]),set)
-    push!(part[end],set[o])
-    for l in o:length(set)
-      if m[l]
-        m[l]=false
-        part[end][end]=set[l]
-        append!(parts,pp(k,part));
-        m[l]=true
-      end
-    end
-    parts
-  end
-  pp(k,[[set[1]]])
+function partitions(set::AbstractVector)
+  vcat((partitions(set,i) for i in eachindex(set))...)
 end
 
-@doc (@doc partitions_set) npartitions_set
-npartitions_set(set,k)=stirling2(length(set),k)
+@doc (@doc partitions) npartitions
+npartitions(set::AbstractVector,k)=stirling2(length(set),k)
 
-npartitions_set(set)=bell(length(set))
+npartitions(set::AbstractVector)=bell(length(set))
 
 """
 `lcm_partitions(p1,…,pn)`

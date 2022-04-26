@@ -69,7 +69,7 @@ end
 @test mytest("Combinat.jl","collectby(x->first(string(x)),l)","8-element Vector{Vector{Symbol}}:\n [:Apr, :Aug]\n [:Dec]\n [:Feb]\n [:Jan, :Jun, :Jul]\n [:Mar, :May]\n [:Nov]\n [:Oct]\n [:Sep]")
 @test mytest("Combinat.jl","collectby(\"JFMAMJJASOND\",l)","8-element Vector{Vector{Symbol}}:\n [:Apr, :Aug]\n [:Dec]\n [:Feb]\n [:Jan, :Jun, :Jul]\n [:Mar, :May]\n [:Nov]\n [:Oct]\n [:Sep]")
 @test mytest("Combinat.jl","a=Combinat.Combinations(1:4);","nothing")
-@test mytest("Combinat.jl","collect(a)","16-element Vector{Any}:\n Int64[]\n [1]\n [2]\n [3]\n [4]\n [1, 2]\n [1, 3]\n [1, 4]\n [2, 3]\n [2, 4]\n [3, 4]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 4]\n [2, 3, 4]\n [1, 2, 3, 4]")
+@test mytest("Combinat.jl","collect(a)","16-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [3]\n [4]\n [1, 2]\n [1, 3]\n [1, 4]\n [2, 3]\n [2, 4]\n [3, 4]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 4]\n [2, 3, 4]\n [1, 2, 3, 4]")
 @test mytest("Combinat.jl","a=Combinat.Combinations([1,2,2,3,4,4],3)","Combinations([1, 2, 2, 3, 4, 4],3)")
 @test mytest("Combinat.jl","collect(a)","10-element Vector{Vector{Int64}}:\n [1, 2, 2]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 4]\n [1, 4, 4]\n [2, 2, 3]\n [2, 2, 4]\n [2, 3, 4]\n [2, 4, 4]\n [3, 4, 4]")
 @test mytest("Combinat.jl","ncombinations([1,2,2,3])","12")
