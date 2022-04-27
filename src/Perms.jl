@@ -243,7 +243,7 @@ Base.one(p::Perm)=Perm(empty(p.d))
 Base.one(::Type{Perm{T}}) where T=Perm(T[])
 Base.copy(p::Perm)=Perm(copy(p.d))
 
-# hash is needed for using Perms in Sets/Dicts
+# hash is needed for using Perms in Sets or as keys in Dicts
 function Base.hash(a::Perm, h::UInt)
   for (i,v) in enumerate(a.d)
     if v!=i h=hash(v,h) end
@@ -260,7 +260,9 @@ function Base.promote_rule(a::Type{Perm{T1}},b::Type{Perm{T2}})where {T1,T2}
   Perm{promote_type(T1,T2)}
 end
 
-extend!(a::Perm,n::Integer)=if length(a.d)<n append!(a.d,length(a.d)+1:n) end
+function extend!(a::Perm{T},n::Integer)where T
+  if length(a.d)<n append!(a.d,T(length(a.d)+1):T(n)) end
+end
 
 """
  `promote_degree(a::Perm, b::Perm)` promotes `a` and `b` to the same type,
@@ -276,9 +278,7 @@ end
 # permutations need to be totally ordered to use them in sorted lists
 function Base.isless(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
-# for (ai,bi) in zip(a.d,b.d) ai!=bi && return ai<bi end # 20% slower
-@inbounds  for i in eachindex(a.d) a.d[i]!=b.d[i] && return a.d[i]<b.d[i] end
-  false
+  isless(a.d,b.d)
 end
 
 function Base.:(==)(a::Perm, b::Perm)

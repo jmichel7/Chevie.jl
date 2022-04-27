@@ -1103,7 +1103,6 @@ function partitions(set::AbstractVector)
   vcat((partitions(set,i) for i in eachindex(set))...)
 end
 
-@doc (@doc partitions) npartitions
 npartitions(set::AbstractVector,k)=stirling2(length(set),k)
 
 npartitions(set::AbstractVector)=bell(length(set))
