@@ -7,11 +7,10 @@ module Util
 
 export 
   @forward,
-  getp, @GapObj, # helpers for GapObjs
+  getp, @GapObj,
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, 
-  hasdecor, # formatting
-  factor, prime_residues, divisors, φ, primitiveroot #number theory
+  hasdecor # formatting
 
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
@@ -454,52 +453,6 @@ function TeX(x;p...)
   run(`latex $s.tex`)
   run(`xdvi -expert -s 5 $s.dvi`)
   run(`rm $s.tex $s.aux $s.log $s.dvi`)
-end
-
-#----------------------- Number theory ---------------------------
-import Primes
-const dict_factor=Dict(2=>Primes.factor(2))
-"""
-`factor(n::Integer)`
-
-make `Primes.factor` fast for small Ints by memoizing it
-"""
-factor(n::Integer)=if n<300 get!(()->Primes.factor(n),dict_factor,n)
-                   else Primes.factor(n) end
-
-" `prime_residues(n)` the numbers less than `n` and prime to `n` "
-function prime_residues(n)
-  if n==1 return [0] end
-  pp=trues(n) # use a sieve to go fast
-  for p in keys(factor(n))
-    pp[p:p:n].=false
-  end
-  (1:n)[pp]
-end
-
-" `divisors(n)` the increasing list of divisors of `n`."
-function divisors(n::Integer)::Vector{Int}
-  if n==1 return [1] end
-  sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
-end
-
-"""
-  `primitiveroot(m::Integer)` a primitive root `mod. m`,
-  that is generating multiplicatively `prime_residues(m)`.
-  It exists if `m` is of the form `4`, `2p^a` or `p^a` for `p` prime>2.
-"""
-function primitiveroot(m::Integer)
-  if m==2 return 1
-  elseif m==4 return 3
-  end
-  f=factor(m)
-  nf=length(keys(f))
-  if nf>2 return nothing end
-  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
-  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
-  p=Primes.totient(m) # the Euler φ
-  1+findfirst(x->powermod(x,p,m)==1 && 
-            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
 end
 
 #--------------------------------------------------------------------------

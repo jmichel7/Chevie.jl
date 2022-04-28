@@ -109,6 +109,7 @@ using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
+using ..Combinat: primitiveroot, divisors
 
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
@@ -121,39 +122,13 @@ stringexp=LaurentPolynomials.stringexp
 stringind=CyclotomicNumbers.stringind
 format_coefficient=CyclotomicNumbers.format_coefficient
 
-# routines copied here to avoid dependency
-
+# routine copied here to avoid dependency on Util
 function stringprime(io::IO,n)
   if iszero(n) return "" end
   if get(io,:TeX,false) return "'"^n end
   n<5 ? ["′","″","‴","⁗"][n] : "⁽"*stringexp(io,n)*"⁾"
 end
   
-"""
-  `primitiveroot(m::Integer)` a primitive root `mod. m`,
-  that is generating multiplicatively `prime_residues(m)`.
-  It exists if `m` is of the form `4`, `2p^a` or `p^a` for `p` prime>2.
-"""
-function primitiveroot(m::Integer)
-  if m==2 return 1
-  elseif m==4 return 3
-  end
-  f=factor(m)
-  nf=length(keys(f))
-  if nf>2 return nothing end
-  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
-  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
-  p=Primes.totient(m) # the Euler φ
-  1+findfirst(x->powermod(x,p,m)==1 && 
-            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
-end
-
-" `divisors(n)` the list of divisors of `n`."
-function divisors(n::Integer)::Vector{Int}
-  if n==1 return [1] end
-  sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
-end
-
 # The  computed  cyclotomic  polynomials  are  cached 
 const cyclotomic_polynomial_dict=Dict(1=>Pol([-1,1]))
 """
@@ -266,7 +241,7 @@ const dec_dict=Dict(1=>[[1]],2=>[[1]],
       [7,11,19,23,31,35],[1,5,13,17,25,29]],
 42=>[[1,5,11,13,17,19,23,25,29,31,37,41],[1,13,19,25,31,37],[5,11,17,23,29,41]])
 
-# returns list of subsets of primitive_roots(d) wich have a `name` Φ_d^i
+# returns list of subsets of primitive_roots(d) wich have a "name" Φ_d^(i)
 function dec(d::Int)
   get!(dec_dict,d) do
     dd=[prime_residues(d)]

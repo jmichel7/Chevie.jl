@@ -10,7 +10,7 @@ any ring).
 module GLinearAlgebra
 using LaurentPolynomials: exactdiv
 using ..CyclotomicNumbers: Cyc # case in echelon
-using ..Combinat: combinations, submultisets, tally, collectby, partitions
+using ..Combinat: combinations, multisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
@@ -79,8 +79,18 @@ function echelon(m::AbstractMatrix)
 end
 
 """
- computes rank of m
- not exported to avoid conflict with LinearAlgebra
+ `GLinearAlgebra.rank(m::AbstractMatrix)`
+ computes exactly the rank of `m`
+
+```julia-rep1
+julia> hilbert(r)=[1//(n+m) for n in 1:r, m in 1:r];
+
+julia> LinearAlgebra.rank(hilbert(11))
+10
+
+julia> GLinearAlgebra.rank(hilbert(11)) # correct value
+11
+```
 """
 rank(m::AbstractMatrix)=length(echelon(m)[2])
 
@@ -126,7 +136,7 @@ function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
 end
 
 """
-  `det(m)`
+  `GLinearAlgebra.det(m)`
 
 determinant of a matrix over an integral domain.
 `div` is exact division; it works over a field where `exactdiv` is division.
@@ -340,7 +350,7 @@ end
 `symmetric_power(m,n)`
 
 returns the `n`-th symmetric power of the square matrix `m`, in the basis 
-naturally indexed by the `submultisets` of `1:n`, where `n=size(m,1)`.
+naturally indexed by the `multisets` of `1:n`, where `n=size(m,1)`.
 
 ```julia-repl
 julia> m=[1 2;3 4]
@@ -357,7 +367,7 @@ julia> Int.(symmetric_power(m,2))
 """
 function symmetric_power(A,m)
   f(j)=prod(factorial,last.(tally(j)))
-  basis=submultisets(axes(A,1),m)
+  basis=multisets(axes(A,1),m)
   [permanent(A[i,j])//f(i) for i in basis, j in basis]
 end
 
@@ -395,7 +405,7 @@ function schur_functor(A,la)
   rep=function(x)x=word(S,x)
     isempty(x) ? r[1]^0 : prod(r[x]) end
   f=j->prod(factorial,last.(tally(j)))
-  basis=submultisets(axes(A,1),n) 
+  basis=multisets(axes(A,1),n) 
   M=sum(x->kron(rep(x),toM(map(function(i)i^=x
   return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
 # Print(Length(M),"=>");

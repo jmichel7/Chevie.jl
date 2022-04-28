@@ -4,10 +4,9 @@ package  of  GAP3  plus  the  GAP  functionality needed for Chevie to work:
 Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
 permutation group operations, etc….
 
-I am rather new to Julia, git and github so I am not even sure this package
-is  properly constituted; I did not try yet to register it. If you are more
-competent  that me and see anything to  be improved in this package, please
-write me or make a pull request.
+I  started this project at the  end of 2018 and it  is still in flux so the
+package  is not yet registered. If you  see anything to be improved in this
+package, please contact me or make a pull request.
 
 ### Installing
 
@@ -30,16 +29,26 @@ To update later to the latest version, do
 (@v1.6) pkg> update Gapjm
 ```
 
-This  package  requires julia  1.6  or  later.  It  currently  contains  as
-infrastructure:
-  * permutations
-  * cyclotomic numbers
-  * combinatorics
-  * linear algebra on any field/ring
-  * posets
-  * cyclotomic polynomials
-  * signed permutations
-  * finite fields
+This package requires julia 1.6 or later. I registered as separate packages
+already some of the infrastructure:
+
+  * (univariate) `LaurentPolynomials` (and rational fractions)
+  * (multivariate) `PuiseuxPolynomials` (and ratioal fractions)
+  * `CyclotomicNumbers`
+  * `ModuleElements` (elements of a free module over some ring)
+
+the   functionality  in  these  packages  is  reexported  so  automatically
+available when you use `Gapjm`.
+
+some other infrastructure which may become eventually separate packages:
+  * permutations (module `Perms`)
+  * combinatorics (module `Combinat`)
+  * linear algebra on any field/ring (module `GLinearAlgebra`)
+  * posets (module `Posets`)
+  * cyclotomic polynomials (module `CycPols`)
+  * signed permutations (module `SPerms`)
+  * finite fields (module `FFields`)
+  * Integer matrices and lattices (module `MatInt`)
   * groups
   * permutation groups
 
@@ -51,32 +60,23 @@ despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome.
 
-This  package contains about 90% of Chevie functionality, ported from Gap3.
+This  package contains about 95% of Chevie functionality, ported from Gap3.
 The  function `gap` can help you discover the equivalent functionality to a
 Gap3  function:  it  takes  a  string  and  gives you Julia translations of
 functions in Gap3 which match this string.
 
 ```julia-rep1
 julia> gap("words")
+CharRepresentationWords  =>  traces_words_mats
 CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
 GarsideWords             =>  elements
-CharRepresentationWords  =>  traces_words_mats
 ```
 Then you can call on-line help on the discovered functions.
 
 The data library of Chevie has been automatically ported by a transpiler so
 its code is "strange". Otherwise the code in this package is often 10 times
 faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
-compilation time on first execution).
-
-I  tried that  as many  submodules as  possible in  my package  can be used
-independently  of the rest, thus could be independent packages. This is the
-case for the modules `Combinat`, `Groups`, `Perms` and `Util`, which can be
-used  stand-alone. In addition modules `MatInt`, `Posets`, `FFields` can be
-used  stand-alone except they each use one  or two functions from `Util`. I
-already  registered  as  independent  packages  `UsingMerge`, `ModuleElts`,
-`LaurentPolynomials`,  `PuiseuxPolynomials`, `CyclotomicNumbers`  which are
-used here --- you should look at their documentation.
+compilation time on first execution --- the TTFP problem of Julia).
 """
 module Gapjm
 using Reexport

@@ -124,7 +124,7 @@ FFE{19}: 2
 ```
 """
 module FFields
-using ..Util: factor, divisors
+using ..Combinat: factor, divisors
 export Mod, GF, FFE, Z, field, order, degree, char, elements
 
 struct Mod{T}<:Number

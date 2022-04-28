@@ -2,8 +2,7 @@ module Fact
 import Primes: nextprime
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
-using ..Util: Util, factor
-using ..Combinat: combinations, nrestrictedpartitions
+using ..Combinat: Combinat, combinations, npartitions, factor
 
 #export factor
 
@@ -212,7 +211,7 @@ Factor over the integers a polynomial with integral coefficients, or do the
 same over the rationals.
 
 """
-function Util.factor(f::Pol{<:Union{Integer,Rational}})
+function Combinat.factor(f::Pol{<:Union{Integer,Rational}})
   InfoPoly2("#I  starting integer factorization: ", time(), "\n")
   if iszero(f)
     InfoPoly2("#I  f is zero\n")
@@ -529,7 +528,7 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
       da=degs.-deli[act]
   # check, whether any combination will be of suitable degree
       cnew=sort(unique(deli[filter(i->i>act, sel)]))
-      if any(i->nrestrictedpartitions(i, cnew, step)>0, da)
+      if any(i->npartitions(i, cnew, step)>0, da)
         InfoPoly2("#I  trying length ", step+1, " containing ", act, "\n")
         cnew=filter(i->i>act,sel)
       else

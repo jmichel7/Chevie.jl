@@ -3,9 +3,9 @@ export eigmat
 
 using PuiseuxPolynomials
 using LaurentPolynomials
-using ..Util: Util, factor
+using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
-using ..Combinat: Combinat, collectby, blocks
+using ..Combinat: Combinat, collectby, blocks, factor
 using ..GLinearAlgebra: solutionmat, echelon, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
@@ -78,7 +78,7 @@ julia> factor(x*y-1)
  xy-1
 ```
 """
-function Util.factor(p::Mvp{T,N})where {T,N}
+function Combinat.factor(p::Mvp{T,N})where {T,N}
   v=variables(p)
   r=length(v)+1
   m=zeros(T,r,r)*1//1
@@ -133,7 +133,7 @@ function Gapjm.gap(p::Cyc)
     v=numerator(v) 
     if deg==0 t=string(v)
     else 
-      v=Util.format_coefficient(string(v))
+      v=format_coefficient(string(v))
       t=v in ["","-"] ? v : v*"*"
       r=(deg==1 ? "E($(conductor(p)))" : "E($(conductor(p)))^$deg")
       t*=r
@@ -162,7 +162,7 @@ Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in 
 
 function Gapjm.gap(p::Mvp)
   res=join(map(p.d)do (k,c)
-    c=Util.bracket_if_needed(gap(c))
+    c=bracket_if_needed(gap(c))
     kk=gap(k)
     if isempty(c) kk
     elseif isempty(kk) c

@@ -1,16 +1,18 @@
 """
-This self-contained module (it has no dependencies) is a Julia port of some
-GAP combinatorics. The list of functions it exports are:
+This  module is  a Julia  port of  some GAP  combinatorics and basic number
+theory. The only dependency is the package `Primes`.
+
+The list of functions it exports are:
 
 Classical enumerations:
 
 `combinations, arrangements, partitions, partition_tuples,
- restrictedpartitions,  compositions, submultisets`
+ compositions, multisets`
 
 functions to count them without computing them:
 
-`ncombinations, narrangements, npartitions, npartition_tuples,
- nrestrictedpartitions`
+`ncombinations, narrangements, npartitions, npartition_tuples, 
+ ncompositions, nmultisets`
 
 some functions on partitions and permutations:
 
@@ -19,29 +21,54 @@ some functions on partitions and permutations:
 
 counting functions:
 
-`bell, stirling2, catalan, bernoulli`
+`bell, stirling1, stirling2, catalan`
+
+number theory
+
+`divisors, prime_residues, primitiveroot, bernoulli`
 
 some structural manipulations not yet in Julia:
 
-`groupby, tally, collectby, unique_sorted!`
+`groupby, tally, tally_sorted, collectby, unique_sorted!`
 
 matrix blocks:
 
 `blocks, diagblocks`
 
 Have  a  look  at  the  individual  docstrings  and  enjoy (any feedback is
-welcome).
+welcome).  
+
+After   writing  most  of  this  module  I  became  aware  of  the  package
+`Combinatorics`  which has a  considerable overlap. However  there are some
+fundamental   disagreements   between   these   two  packages  which  makes
+`Combinatorics` not easily usable for me:
+
+  -  often I  use sorting  in algorithms  when `Combinatorics`  use hashing.
+    Thus  the algorithms cannot be applied to the same objects (and sorting
+    is  often  faster).  I  provide  optionally  a  hashing variant of some
+    algorithms.
+
+  - `Combinatorics.combinations` does not include the empty set.
+
+  -  I use lower case for functions and Camel case for structs (Iterators).
+    `Combinatorics`  does not have functions for classical enumerations but
+    only (lowercase) iterators.
+
+Some  less fundamental  disagreements is  disagreement on  names. However I
+would  welcome discussions  with the  authors of  `Combinatorics` to see if
+both packages could be made more compatible.
 """
 module Combinat
 export combinations, ncombinations, arrangements, narrangements,
   partitions, npartitions, partition_tuples, npartition_tuples,
-   restrictedpartitions, nrestrictedpartitions, compositions, 
-   submultisets, nsubmultisets, 
+  compositions, ncompositions, multisets, nmultisets, 
   lcm_partitions, gcd_partitions, conjugate_partition, dominates, tableaux,
     robinson_schensted,
-  bell, stirling2, catalan, bernoulli,
-  groupby, tally, collectby, unique_sorted!,
-  blocks, diagblocks
+  bell, stirling1, stirling2, catalan,
+  groupby, tally, tally_sorted, collectby, unique_sorted!,
+  blocks, diagblocks,
+  divisors, prime_residues, primitiveroot, bernoulli
+export factor # users need to avoid conflict with Primes.factor
 
 #--------------------- Structural manipulations -------------------
 """
@@ -89,7 +116,12 @@ function groupby(f::Function,l)
   res
 end
 
-# works for any (sorted) iterable
+"""
+`tally_sorted(v)`
+
+`tally_sorted`  is like `tally`  but works only  for a sorted iterable. The
+point is that it is *very* fast.
+"""
 function tally_sorted(v)
   res=Pair{eltype(v),Int}[]
   fp=iterate(v)
@@ -123,11 +155,13 @@ function tally_dict(v)
 end
 
 """
-`tally(v)`
+`tally(v;dict=false)`
 
 counts how many times each element of collection or iterable `v` occurs and
 returns a sorted `Vector` of `elt=>count` (a variation on
-StatsBase.countmap; the elements of `v` must be sortable).
+StatsBase.countmap).  By default the  elements of `v`  must be sortable; if
+they  are not but hashable, giving the keyword `dict=true` uses a `Dict` to
+build (slightly slower) a non sorted result.
 
 ```julia-repl
 julia> tally("a tally test")
@@ -222,12 +256,14 @@ function unique_sorted!(v::Vector)
   resize!(v,i)
 end
 
-#--------------------- Classical enumerations -------------------
+#--------------------- combinations -------------------
 
 """
 `Combinat.Combinations(s[,k])`   is  an   iterator  which   enumerates  the
 combinations  of  the  multiset  `s`  (with  `k`  elements  if `k`given) in
-lexicographic order.
+lexicographic  order. The elements of `s` must be sortable. If they are not
+but  hashable giving  the keyword  `dict=true` will  give an iterator for a
+non-sorted result.
 ```julia-repl
 julia> a=Combinat.Combinations(1:4);
 
@@ -395,6 +431,7 @@ function ncombinations2(mul,k)
   sum(i->ncombinations2((@view mul[2:end]),k-i),0:min(mul[1],k))
 end
 
+#--------------------- arrangements -------------------
 """
 `arrangements(mset[,k])`
 
@@ -526,6 +563,7 @@ function narrangements(mset,k)
   nr
 end
 
+#--------------------- partitions -------------------
 """
 `Combinat.Partitions(n[,k])` is an iterator which enumerates the partitions
 of `n` (with `k`part if `k`given) in lexicographic order.
@@ -622,13 +660,13 @@ end
 
 `npartitions(n::Integer[,k])`
 
-`partitions`  returns in lexicographic  order the set  of all partitions of
-the  positive integer `n` (the partitions with  `k` parts if `k` is given).
-`npartitions` returns (faster) the number of partitions.
+`partitions`  returns in lexicographic order the partitions (with `k` parts
+if  `k`  is  given)  of  the  positive  integer `n` . `npartitions` returns
+(faster) the number of partitions.
 
 There are approximately `exp(π√(2n/3))/(4√3 n)` partitions of `n`.
 
-A  *partition*  is  a  decomposition  `n=p₁+p₂+…+pₖ`  in integers such that
+A   *partition*  is   a  decomposition   `n=p₁+p₂+…+pₖ`  in  integers  with
 `p₁≥p₂≥…≥pₖ>0`, and is represented by the vector `p=[p₁,p₂,…,pₖ]`. We write
 `p⊢n`.
 
@@ -702,36 +740,37 @@ function npartitions(n,k)
 end
 
 """
-`restrictedpartitions(n,set[,k])`   
+`partitions(n::Integer,set::AbstractVector[,k])`   
     
-`restrictedpartitions`  returns the list of partitions of `n` restricted to
-have  parts  in  `set`  (the  partitions  with  `k` parts if `k` is given).
-`nrestrictedpartitions`  with the same arguments  gives (faster) the number
-of restricted partitions.
+`npartitions(n::Integer,set::AbstractVector[,k])`   
 
-The next example shows how many ways there are to pay 17 cents using coins
-of 2,5 and 10 cents.
+returns  the list  of partitions  of `n`  (with `k`  parts if `k` is given)
+restricted  to have parts in `set`. `npartitions` gives (faster) the number
+of such partitions.
+
+Let  us show how many ways there are to pay 17 cents using coins of 2,5 and
+10 cents.
 ```julia-repl
-julia> nrestrictedpartitions(17,[10,5,2])
+julia> npartitions(17,[10,5,2])
 3
 
-julia> restrictedpartitions(17,[10,5,2])
+julia> partitions(17,[10,5,2])
 3-element Vector{Vector{Int64}}:
  [5, 2, 2, 2, 2, 2, 2]
  [5, 5, 5, 2]
  [10, 5, 2]
 
-julia> restrictedpartitions(17,[10,5,2],3)
+julia> npartitions(17,[10,5,2],3) # pay with 3 coins
+1
+
+julia> partitions(17,[10,5,2],3) 
 1-element Vector{Vector{Int64}}:
  [10, 5, 2]
-
-julia> nrestrictedpartitions(17,[10,5,2],3)
-1
 ```
 """
-restrictedpartitions(n,set)=restrictedpartitions(n,sort(set),length(set),Int[],1)
+partitions(n::Integer,set::AbstractVector)=partitions(n,sort(set),length(set),Int[],1)
 
-function restrictedpartitions(n,set,m,part,i)
+function partitions(n::Integer,set::AbstractVector,m,part,i)
   if n==0 return [part] end
   if mod(n,set[1])==0 parts=[part]
   else parts=Vector{Int}[]
@@ -739,7 +778,7 @@ function restrictedpartitions(n,set,m,part,i)
   for l in 2:m
     if set[l]<=n
       if length(part)<i push!(part,set[l]) else part[i]=set[l] end
-      append!(parts,restrictedpartitions(n-set[l],set,l,copy(part),i+1))
+      append!(parts,partitions(n-set[l],set,l,copy(part),i+1))
     end
   end
   if mod(n,set[1])==0
@@ -749,17 +788,17 @@ function restrictedpartitions(n,set,m,part,i)
   parts
 end
 
-function restrictedpartitions(n,set,k)
+function partitions(n::Integer,set::AbstractVector,k)
   if n==0
     k==0 ? [Int[]] : Vector{Int}[]
   else
     if k==0 Vector{Int}[]
-    else restrictedpartitions(n,sort(set),length(set),k,Int[],1)
+    else partitions(n,sort(set),length(set),k,Int[],1)
     end
   end
 end
 
-#  'restrictedpartitions(n,set,m,k,part,i)'   returns   the   set   of  all
+#  'partitions(n,set,m,k,part,i)'   returns   the   set   of  all
 #  partitions  of 'n+sum(part[1:i-1])' that contain only elements of `set`,
 #  that have length 'k+i-1', and that begin with 'part[1:i-1]'. To do so it
 #  finds  all elements of `set`  that can go at  'part[i]' and calls itself
@@ -767,7 +806,7 @@ end
 #  `set`,  so the candidates  for `part[i]` are  the elements of `set[1:m]`
 #  that   are  less  than  `n`,  since   we  require  that  partitions  are
 #  nonincreasing.
-function restrictedpartitions(n,set,m,k,part,i)
+function partitions(n::Integer,set::AbstractVector,m,k,part,i)
   if k==1
     if n in set part=copy(part)
       if length(part)<i push!(part,n) else part[i]=n end
@@ -781,39 +820,234 @@ function restrictedpartitions(n,set,m,k,part,i)
       if set[l]+(k-1)*set[1]<= n && n<=k*set[l]
         if length(part)<i push!(part,set[l]) else part[i]=set[l] end
         part[i]=set[l]
-        append!(parts,restrictedpartitions(n-set[l],set,l,k-1,part,i+1))
+        append!(parts,partitions(n-set[l],set,l,k-1,part,i+1))
       end
     end
   end
   parts
 end
 
-@doc (@doc restrictedpartitions) nrestrictedpartitions
-function nrestrictedpartitions(n,set)
+function npartitions(n::Integer,set::AbstractVector)
   p=map(m->Int(iszero(mod(m-1,set[1]))),1:n+1)
   for l in set[2:end], m in l+1:n+1 p[m]+=p[m-l] end
   p[n+1]
 end
 
-function nrestrictedpartitions(n,set,k)
+function npartitions(n::Integer,set::AbstractVector,k)
   if n==0 && k==0  1
   elseif n<k || k==0 0
-  else nrestrictedpartitions(n,sort(set),length(set),k,fill(0,n),1)
+  else npartitions(n,sort(set),length(set),k,fill(0,n),1)
   end
 end
 
-function nrestrictedpartitions(n,set,m,k,part,i)
+function npartitions(n::Integer,set::AbstractVector,m,k,part,i)
   if k==1 return n in set end
   parts=0
   for l in 1:m
     if set[l]+(k-1)*set[1]<=n && n<=k*set[l]
       part[i]=set[l]
-      parts+=nrestrictedpartitions(n-set[l],set,l,k-1,copy(part),i+1)
+      parts+=npartitions(n-set[l],set,l,k-1,copy(part),i+1)
     end
   end
   parts
 end
 
+"""
+`partitions(set::AbstractVector[,k])`
+
+`npartitions(set::AbstractVector[,k])`
+
+the  set of all unordered  partitions (in `k` sets  if `k` is given) of the
+set  `set` (a  collection without  repetitions). `npartitions`  returns the
+number of unordered partitions.
+
+An *unordered partition* of `set` is a set of pairwise disjoints sets whose
+union is equal to `set`, and is represented by a Vector of Vectors.
+
+```julia-repl
+julia> npartitions(1:3)
+5
+
+julia> partitions(1:3)
+5-element Vector{Vector{Vector{Int64}}}:
+ [[1, 2, 3]]
+ [[1, 2], [3]]
+ [[1, 3], [2]]
+ [[1], [2, 3]]
+ [[1], [2], [3]]
+
+julia> npartitions(1:4,2)
+7
+
+julia> partitions(1:4,2)
+7-element Vector{Vector{Vector{Int64}}}:
+ [[1, 2, 3], [4]]
+ [[1, 2, 4], [3]]
+ [[1, 2], [3, 4]]
+ [[1, 3, 4], [2]]
+ [[1, 3], [2, 4]]
+ [[1, 4], [2, 3]]
+ [[1], [2, 3, 4]]
+```
+Note  that there is currently no ordered or multiset counterpart.
+"""
+function partitions(set::AbstractVector,k)
+  res=Vector{Vector{eltype(set)}}[]
+  if length(set)<k return res end
+  if k==1 return [[collect(set)]] end
+  for p in partitions(set[1:end-1],k-1) push!(res,vcat(p,[[set[end]]])) end
+  for p in partitions(set[1:end-1],k)
+    for i in eachindex(p)
+      u=copy(p)
+      u[i]=vcat(u[i],[set[end]])
+      push!(res,u)
+    end
+  end
+  res
+end
+
+function partitions(set::AbstractVector)
+  vcat((partitions(set,i) for i in eachindex(set))...)
+end
+
+"""
+`stirling1(n,k)`
+
+the  *Stirling  numbers  of  the  first  kind*  `S₁(n,k)`  are  defined  by
+`S₁(0,0)=1,   S₁(n,0)=S₁(0,k)=0`   if   `n,   k!=0`   and   the  recurrence
+`S₁(n,k)=(n-1)S₁(n-1,k)+S₁(n-1,k-1)`.
+
+`S₁(n,k)`  is the  number of  permutations of  `n` points  with `k` cycles.
+They   are   also   given   by   the   generating  function  ``n!{x\\choose
+n}=\\sum_{k=0}^n(S₁(n,k) x^k)``. Note the similarity to ``x^n=\\sum_{k=0}^n
+S₂(n,k)k!{x\\choosek}``  (see  `stirling2`).  Also  the  definition of `S₁`
+implies  `S₁(n,k)=S₂(-k,-n)` if  `n,k<0`. There  are many formulae relating
+Stirling  numbers of the first kind to Stirling numbers of the second kind,
+Bell numbers, and Binomial numbers.
+
+```julia-repl
+julia> stirling1.(4,0:4) # Knuth calls this the trademark of S₁
+5-element Vector{Int64}:
+  0
+  6
+ 11
+  6
+  1
+
+julia> [stirling1(n,k) for n in 0:6, k in 0:6] # similar to Pascal's triangle
+7×7 Matrix{Int64}:
+ 1    0    0    0   0   0  0
+ 0    1    0    0   0   0  0
+ 0    1    1    0   0   0  0
+ 0    2    3    1   0   0  0
+ 0    6   11    6   1   0  0
+ 0   24   50   35  10   1  0
+ 0  120  274  225  85  15  1
+
+julia> stirling1(50,big(10)) # give `big` second argument to avoid overflow
+101623020926367490059043797119309944043405505380503665627365376
+```
+"""
+function stirling1(n,k)
+  if n<k return 0
+  elseif n==k return 1
+  elseif n<0 && k<0 return stirling2(-k,-n)
+  elseif k<=0 return 0
+  else
+    sti=fill(zero(k),n-k+1)
+    for i in 1:k
+      sti[1]=1
+      for j in 2:n-k+1 sti[j]=(i+j-2)*sti[j-1]+sti[j] end
+    end
+    sti[n-k+1]
+  end
+end
+
+"""
+`stirling2(n,k)`
+
+the  *Stirling  numbers  of  the  second  kind* are defined by `S₂(0,0)=1`,
+`S₂(n,0)=S₂(0,k)=0` if `n, k!=0` and `S₂(n,k)=k S₂(n-1,k)+S₂(n-1,k-1)`, and
+also as coefficients of the generating function
+``x^n=\\sum_{k=0}^{n}S₂(n,k) k!{x\\choose k}``.
+
+```julia-repl
+julia> stirling2.(4,0:4)  # Knuth calls this the trademark of S₂
+5-element Vector{Int64}:
+ 0
+ 1
+ 7
+ 6
+ 1
+
+julia> [stirling2(i,j) for i in 0:6, j in 0:6] # similar to Pascal's triangle
+7×7 Matrix{Int64}:
+ 1  0   0   0   0   0  0 
+ 0  1   0   0   0   0  0
+ 0  1   1   0   0   0  0
+ 0  1   3   1   0   0  0
+ 0  1   7   6   1   0  0
+ 0  1  15  25  10   1  0
+ 0  1  31  90  65  15  1
+
+julia> stirling2(50,big(10)) # give `big` second argument to avoid overflow
+26154716515862881292012777396577993781727011
+```
+"""
+function stirling2( n, k )
+  if n<k return 0
+  elseif n==k return 1
+  elseif n<0 && k<0 return stirling1(-k,-n)
+  elseif k<=0 return 0
+  end
+  bin,sti,fib=1,0,1
+  for i in 1:k
+    bin=div(bin*(k-i+1),i)
+    sti=bin*i^n-sti
+    fib*=i
+  end
+  div(sti,fib)
+end
+
+npartitions(set::AbstractVector,k)=stirling2(length(set),k)
+
+"""
+'bell(n)'
+
+The  Bell numbers are  defined by `bell(0)=1`  and ``bell(n+1)=∑_{k=0}^n {n
+\\choose  k}bell(k)``, or by the fact  that `bell(n)/n!` is the coefficient
+of `xⁿ` in the formal series `e^(eˣ-1)`.
+
+```julia-repl
+julia> bell.(0:6)
+7-element Vector{Int64}:
+   1
+   1
+   2
+   5
+  15
+  52
+ 203
+
+julia> bell(14)
+190899322
+
+julia> bell(big(30))
+846749014511809332450147
+```julia-repl
+"""
+function bell(n)
+  bell_=[one(n)]
+  for i in 1:n-1
+    push!(bell_,bell_[1])
+    for k in 0:i-1 bell_[i-k]+=bell_[i-k+1] end
+  end
+  bell_[1]
+end
+
+npartitions(set::AbstractVector)=bell(length(set))
+
+#------------------------ partition tuples ---------------------------
 # add to list partitions_tuples(n,r) using l[i] list of partitions of i
 function partition_tuples(list,n,r,l)
   k=length(list[end])
@@ -911,15 +1145,21 @@ end
 """
 `compositions(n[,k];min=1)`
 
+`ncompositions(n[,k])`
+
 This  function returns the compositions of  `n` (the compositions of length
 `k`  if a second argument `k` is given), where a composition of the integer
-`n` is a decomposition `n=p₁+…+pₖ` in integers `≥min`, represented as the
-vector  `[p₁,…,pₖ]`. Unless `k`  is given, `min`  must be `>0`. There are
+`n`  is a decomposition `n=p₁+…+pₖ` in  integers `≥min`, represented as the
+vector  `[p₁,…,pₖ]`. Unless  `k` is  given, `min`  must be  `>0`. There are
 ``2^{n-1}``  compositions of `n` in  integers `≥1`, and `binomial(n-1,k-1)`
 compositions  of `n` in  `k` parts `≥1`.  Compositions are sometimes called
-ordered partitions.
+ordered   partitions.  `ncompositions`  returns   (faster)  the  number  of
+compositions but is implemented only in the case `min=1`.
 
 ```julia-repl
+julia> ncompositions(4)
+8
+
 julia> compositions(4)
 8-element Vector{Vector{Int64}}:
  [1, 1, 1, 1]
@@ -930,6 +1170,9 @@ julia> compositions(4)
  [2, 2]
  [1, 3]
  [4]
+
+julia> ncompositions(4,2)
+3
 
 julia> compositions(4,2)
 3-element Vector{Vector{Int64}}:
@@ -957,22 +1200,26 @@ function compositions(n,k;min=1)
   vcat(map(i->map(c->push!(c,i),compositions(n-i,k-1;min)),min:n-min)...)
 end
 
+ncompositions(n)=n==0 ? 1 : 2^(n-1)
+
+ncompositions(n,k)=binomial(n-1,k-1)
+
 """
-`submultisets(set,k)`
+`multisets(set,k)`
 
-`nsubmultisets(set,k)`
+`nmultisets(set,k)`
 
-`submultisets`  returns  the  set  of  all  multisets of length `k` made of
+`multisets`  returns  the  set  of  all  multisets of length `k` made of
 elements   of   the   set   `set`   (a   collection  without  repetitions).
-`nsubmultisets` returns the number of multisets.
+`nmultisets` returns the number of multisets.
 
 An  *multiset* of length `k` is  an unordered selection with repetitions of
 length  `k` from `set` and is represented  by a sorted vector of length `k`
-made of elements from `set` (it is also sometimes called "combinations with
-replacement").
+made  of elements  from `set`  (it is  also sometimes called a "combination
+with replacement").
 
 ```julia-repl
-julia> submultisets(1:4,3)
+julia> multisets(1:4,3)
 20-element Vector{Vector{Int64}}:
  [1, 1, 1]
  [1, 1, 2]
@@ -996,15 +1243,16 @@ julia> submultisets(1:4,3)
  [4, 4, 4]
 ```
 """
-function submultisets(A,i)
+function multisets(A,i)
   if i==1 return map(x->[x],A) end
-  vcat(map(j->map(v->pushfirst!(v,A[j]),submultisets(A[j:end],i-1)),
+  vcat(map(j->map(v->pushfirst!(v,A[j]),multisets(A[j:end],i-1)),
            eachindex(A))...)
 end
 
-@doc (@doc submultisets) nsubmultisets
-nsubmultisets(set,k)=binomial(length(set)+k-1,k)
+@doc (@doc multisets) nmultisets
+nmultisets(set,k)=binomial(length(set)+k-1,k)
 
+# symmetric difference of sorted multisets
 function symdiffmset(a,b)
   res=eltype(a)[]
   la=length(a)
@@ -1025,7 +1273,8 @@ function symdiffmset(a,b)
   res
 end
 
-function diffmset(a,b)
+# difference of sorted multisets
+function msetdiff(a,b)
   res=eltype(a)[]
   la=length(a)
   lb=length(b)
@@ -1044,68 +1293,6 @@ function diffmset(a,b)
   end
   res
 end
-
-"""
-`partitions(set::AbstractVector[,k])`
-
-`npartitions(set::AbstractVector[,k])`
-
-the  set of all unordered partitions of the multiset `set`; if `k` is given
-the  unordered partitions in `k` sets.  `npartitions` returns the number of
-unordered partitions.
-
-An *unordered partition* of `set` is  a set of pairwise disjoint nonempty
-sets with union `set`  and is represented by  a Vector of Vectors.
-
-```julia-repl
-julia> npartitions(1:3)
-5
-
-julia> partitions(1:3)
-5-element Vector{Vector{Vector{Int64}}}:
- [[1, 2, 3]]
- [[1, 2], [3]]
- [[1, 3], [2]]
- [[1], [2, 3]]
- [[1], [2], [3]]
-
-julia> npartitions(1:4,2)
-7
-
-julia> partitions(1:4,2)
-7-element Vector{Vector{Vector{Int64}}}:
- [[1, 2, 3], [4]]
- [[1, 2, 4], [3]]
- [[1, 2], [3, 4]]
- [[1, 3, 4], [2]]
- [[1, 3], [2, 4]]
- [[1, 4], [2, 3]]
- [[1], [2, 3, 4]]
-```
-Note  that there is currently no ordered counterpart.
-"""
-function partitions(set::AbstractVector,k)
-  res=Vector{Vector{eltype(set)}}[]
-  if length(set)<k return res end
-  if k==1 return [[collect(set)]] end
-  for p in partitions(set[1:end-1],k-1) push!(res,vcat(p,[[set[end]]])) end
-  for p in partitions(set[1:end-1],k)
-    for i in eachindex(p)
-      u=copy(p)
-      u[i]=vcat(u[i],[set[end]])
-      push!(res,u)
-    end
-  end
-  res
-end
-
-function partitions(set::AbstractVector)
-  vcat((partitions(set,i) for i in eachindex(set))...)
-end
-
-npartitions(set::AbstractVector,k)=stirling2(length(set),k)
-
-npartitions(set::AbstractVector)=bell(length(set))
 
 """
 `lcm_partitions(p1,…,pn)`
@@ -1167,129 +1354,6 @@ function gcd_partitions(arg...)
     res = map(x->map(y->intersect(x, y), b), a)
     sort(unique(filter(!isempty,reduce(vcat,res))))
   end))
-end
-
-"""
-'bell(n)'
-
-The  Bell numbers are  defined by `bell(0)=1`  and ``bell(n+1)=∑_{k=0}^n {n
-\\choose  k}bell(k)``, or by the fact  that `bell(n)/n!` is the coefficient
-of `xⁿ` in the formal series `e^(eˣ-1)`.
-
-```julia-repl
-julia> bell.(0:6)
-7-element Vector{Int64}:
-   1
-   1
-   2
-   5
-  15
-  52
- 203
-
-julia> bell(14)
-190899322
-
-julia> bell(big(30))
-846749014511809332450147
-```julia-repl
-"""
-function bell(n)
-  bell_=[one(n)]
-  for i in 1:n-1
-    push!(bell_,bell_[1])
-    for k in 0:i-1 bell_[i-k]+=bell_[i-k+1] end
-  end
-  bell_[1]
-end
-
-"""
-`stirling2(n,k)`
-
-the   *Stirling  number   of  the   second  kind*.   They  are  defined  by
-`stirling2(0,0)=1`,  `stirling2(n,0)=stirling2(0,k)=0`  if  `n,  k!=0`  and
-`stirling2(n,k)=k   stirling2(n-1,k)+stirling2(n-1,k-1)`,   and   also   as
-coefficients of the generating function ``x^n=\\sum_{k=0}^{n}stirling2(n,k)
-k!{x\\choose k}``.
-
-```julia-repl
-julia> stirling2.(4,0:4)
-5-element Vector{Int64}:  # Knuth calls this the trademark of stirling2
- 0
- 1
- 7
- 6
- 1
-
-julia> [stirling2(i,j) for i in 0:6, j in 0:6]
-7×7 Matrix{Int64}:
- 1  0   0   0   0   0  0 # Note the similarity with Pascal's triangle
- 0  1   0   0   0   0  0
- 0  1   1   0   0   0  0
- 0  1   3   1   0   0  0
- 0  1   7   6   1   0  0
- 0  1  15  25  10   1  0
- 0  1  31  90  65  15  1
-
-julia> stirling2(50,big(10))
-26154716515862881292012777396577993781727011
-```
-"""
-function stirling2( n, k )
-  if n<k return 0
-  elseif n==k return 1
-  elseif n<0 && k<0 return stirling1(-k,-n)
-  elseif k<=0 return 0
-  end
-  bin,sti,fib=1,0,1
-  for i in 1:k
-    bin=div(bin*(k-i+1),i)
-    sti=bin*i^n-sti
-    fib*=i
-  end
-  div(sti,fib)
-end
-
-const bern=Rational{BigInt}[-1//2]
-
-"""
-`bernoulli(n)` the `n`-th *Bernoulli number*  `Bₙ` as a `Rational{BigInt}`
-
-`Bₙ` is defined by ``B₀=1, B_n=-\\sum_{k=0}^{n-1}((n+1\\choose k)B_k)/(n+1)``.
-`Bₙ/n!` is the coefficient of  `xⁿ` in the power series of  `x/(eˣ-1)`.
-Except for `B₁=-1/2`  the Bernoulli numbers for odd indices are zero.
-    
-```julia_repl
-julia> Combinat.bernoulli(4)
--1//30
-
-julia> Combinat.bernoulli(10)
-5//66
-
-julia> Combinat.bernoulli(12) # there is no simple pattern in Bernoulli numbers
--691//2730
-
-julia> Combinat.bernoulli(50) # and they grow fairly fast
-495057205241079648212477525//66
-```
-"""
-function bernoulli(n::Integer)
-  if n<0 error("bernoulli: $n must be ≥0")
-  elseif n==0 return 1//1
-  end
-  for i in length(bern)+1:n
-    if isodd(i) push!(bern,0)
-    else
-      bin=1
-      brn=1
-      for j in 1:i-1
-        bin=(i+2-j)//j*bin
-        brn+=bin*bern[j]
-      end
-      push!(bern,-brn//(i+1))
-    end
-  end
-  return bern[n]
 end
 
 """
@@ -1542,6 +1606,116 @@ function robinson_schensted(p::AbstractVector{<:Integer})
     end
   end
   (P,Q)
+end
+
+#----------------------- Number theory ---------------------------
+import Primes
+const dict_factor=Dict(2=>Primes.factor(2))
+"""
+`factor(n::Integer)`
+
+make `Primes.factor` fast for integers <300 by memoizing it
+"""
+factor(n::Integer)=if n<300 get!(()->Primes.factor(n),dict_factor,n)
+                   else Primes.factor(n) end
+
+"""
+`prime_residues(n)` the numbers less than `n` and prime to `n`
+```julia-repl
+julia> [prime_residues(24)]
+1-element Vector{Vector{Int64}}:
+ [1, 5, 7, 11, 13, 17, 19, 23]
+```
+"""
+function prime_residues(n)
+  if n==1 return [0] end
+  pp=trues(n) # use a sieve to go fast
+  for p in keys(factor(n))
+    pp[p:p:n].=false
+  end
+  (1:n)[pp]
+end
+
+"""
+`divisors(n)` the increasing list of divisors of `n`.
+```julia-repl
+julia> [divisors(24)]
+1-element Vector{Vector{Int64}}:
+ [1, 2, 3, 4, 6, 8, 12, 24]
+```
+"""
+function divisors(n::Integer)::Vector{Int}
+  if n==1 return [1] end
+  sort(vec(map(prod,Iterators.product((p.^(0:m) for (p,m) in factor(n))...))))
+end
+
+"""
+`primitiveroot(m::Integer)`  a primitive root `mod.  m`, that is generating
+multiplicatively  `prime_residues(m)`, or nothing if  there is no primitive
+root `mod. m`.
+
+A  primitive root exists if `m` is of the form `4`, `2p^a` or `p^a` for `p`
+prime>2.
+
+```julia-repl
+julia> primitiveroot(23)
+5
+```
+"""
+function primitiveroot(m::Integer)
+  if m==2 return 1
+  elseif m==4 return 3
+  end
+  f=factor(m)
+  nf=length(keys(f))
+  if nf>2 return nothing end
+  if nf>1 && (!(2 in keys(f)) || f[2]>1) return nothing end
+  if nf==1 && (2 in keys(f)) && f[2]>2 return nothing end
+  p=Primes.totient(m) # the Euler φ
+  1+findfirst(x->powermod(x,p,m)==1 && 
+            all(d->powermod(x,div(p,d),m)!=1,keys(factor(p))),2:m-1)
+end
+
+const bern=Rational{BigInt}[-1//2]
+
+"""
+`bernoulli(n)` the `n`-th *Bernoulli number*  `Bₙ` as a `Rational{BigInt}`
+
+`Bₙ` is defined by ``B₀=1, B_n=-\\sum_{k=0}^{n-1}((n+1\\choose k)B_k)/(n+1)``.
+`Bₙ/n!` is the coefficient of  `xⁿ` in the power series of  `x/(eˣ-1)`.
+Except for `B₁=-1/2`  the Bernoulli numbers for odd indices are zero.
+    
+```julia_repl
+julia> bernoulli(4)
+-1//30
+
+julia> bernoulli(10)
+5//66
+
+julia> bernoulli(12) # there is no simple pattern in Bernoulli numbers
+-691//2730
+
+julia> bernoulli(50) # and they grow fairly fast
+495057205241079648212477525//66
+```
+"""
+function bernoulli(n::Integer)
+  if n<0 error("bernoulli: $n must be ≥0")
+  elseif n==0 return 1//1
+  end
+  for i in length(bern)+1:n
+    if isodd(i) push!(bern,0)
+    else
+      bin=1
+      brn=1
+      for j in 1:i-1
+        bin=(i+2-j)//j*bin
+        brn+=bin*bern[j]
+      end
+      push!(bern,-brn//(i+1))
+    end
+  end
+  return bern[n]
 end
 
 end

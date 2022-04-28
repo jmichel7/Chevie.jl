@@ -48,6 +48,7 @@ comm
 length(::Group)
 classreps(::Group)
 conjugacy_classes
+conjugacy_class
 nconjugacy_classes
 position_class
 fusion_conjugacy_classes
@@ -95,9 +96,6 @@ Util
 @GapObj
 showtable
 cut
-prime_residues
-primitiveroot
-divisors
 ```
 # Combinatorics
 ```@docs
@@ -108,9 +106,8 @@ arrangements
 partitions
 Combinat.Partitions
 partition_tuples
-restrictedpartitions
 compositions
-submultisets
+multisets
 lcm_partitions
 gcd_partitions
 conjugate_partition
@@ -118,6 +115,7 @@ dominates
 tableaux
 robinson_schensted
 bell
+stirling1
 stirling2
 catalan(::Integer)
 bernoulli
@@ -128,6 +126,9 @@ cartesian
 unique_sorted!
 diagblocks
 blocks(m::AbstractMatrix)
+prime_residues
+primitiveroot
+divisors
 ```
 # Posets
 ```@docs
@@ -139,10 +140,14 @@ transitive_closure
 linear_extension
 reverse
 partition
+covering_chains
 Posets.restricted(::Poset,::AbstractVector{<:Integer})
 is_join_lattice
 is_meet_lattice
 moebius
+moebiusmatrix
+minimum(P::Poset)
+maximum(P::Poset)
 Poset(::CoxeterGroup,w=longest(W))
 ```
 # Signed permutations
@@ -179,6 +184,8 @@ solutionmat
 sum_rowspace
 intersect_rowspace
 lnullspace
+GLinearAlgebra.det
+GLinearAlgebra.rank
 ```
 # Integral matrices and lattices
 ```@docs
@@ -711,7 +718,7 @@ NrDrinfeldDouble                            ndrinfeld_double
 NrPartitions                                npartitions
 NrPartitionsSet                             npartitions
 NrPartitionTuples                           npartition_tuples
-NrRestrictedPartitions                      nrestrictedpartitions
+NrRestrictedPartitions                      npartitions
 NullMat(m[,n])                              zeros(Int,m,m) resp. zeros(Int,m,n)
 NullspaceIntMat                             lnullspaceInt
 OnFamily(f,p::Int)                          galois(f,p)
@@ -780,7 +787,7 @@ RepresentativeDiagonalConjugation           diagconj_elt
 RepresentativeOperation                     transporting_elt
 RepresentativeRowColPermutation             Perm_rowcol
 Restricted                                  restricted
-RestrictedPartitions                        restrictedpartitions
+RestrictedPartitions                        partitions
 RestrictedPerm(p,d)                         restricted(p,d)
 Reversed                                    reverse
 RightDescentSet(W,w)                        rightdescents(W,w)
@@ -840,7 +847,7 @@ UnipotentClasses                            UnipotentClasses
 UnipotentDecompose                          decompose
 UnipotentDegrees(W,q)                       degrees(UnipotentCharacters(W),q)
 UnipotentGroup                              UnipotentGroup
-UnorderedTuples                             submultisets
+UnorderedTuples                             multisets
 Valuation(p)                                valuation(p)
 Value(p,x)                                  p(x)
 W.matgens                                   reflrep(W)
