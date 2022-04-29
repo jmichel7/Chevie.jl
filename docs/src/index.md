@@ -18,8 +18,8 @@ sortPerm
 Perms.orbit
 Perms.orbits
 Perms.order
-cycles
-cycletype
+cycles(::Perm)
+cycletype(::Perm)
 support
 sign
 Base.Matrix(::Perm,n)
@@ -121,6 +121,7 @@ catalan(::Integer)
 bernoulli
 groupby
 tally
+tally_sorted
 collectby
 cartesian
 unique_sorted!
@@ -158,7 +159,9 @@ Perm(::SPerm)
 @sperm_str
 orbit(::SPerm,::Integer)
 order(::SPerm)
-Matrix
+cycles(::SPerm)
+cycletype(::SPerm)
+Matrix(::SPerm)
 CoxHyperoctaedral
 reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
 sstab_onmats

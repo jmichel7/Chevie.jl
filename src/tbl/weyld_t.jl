@@ -1,5 +1,5 @@
 # Hand-translated part of chevie/tbl/weyld.g
-# (C) Jean Michel & Goetz Pfeiffer 1994-2001
+# (C) Jean Michel, Frank Luebeck, Goetz Pfeiffer 1994-2001
 # Data for type D
 
 chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
@@ -335,32 +335,19 @@ chevieset(:D, :gensMODA,Dict(4=>[[perm"(1,2)(7,8)", perm"(3,4)(5,6)", perm"(2,3)
     [[56], [12, nothing, 24], [6, nothing, 28], [2, 4, nothing, nothing, 18], [1, nothing, 3, nothing, nothing, nothing, 14]]]))
 
 chevieset(:D, :ClassParameter, function (n, w)
-  x=Perm()
-  for i in w
-    x*= i==1 ? Perm(1,n+2)*Perm(2,n+1) : Perm(i-1,i)*Perm(i-1+n,i+n)
-  end
-  res = [Int[], Int[]]
-  mark=trues(n)
-  for i in 1:n
-    if mark[i]
-      cyc=orbit(x, i)
-      if i+n in cyc push!(res[2], div(length(cyc),2))
-      else push!(res[1], length(cyc))
-      end
-      for j in cyc
-        if j>n mark[j-n]=false
-        else mark[j]=false
-        end
-      end
-    end
-  end
+  x=prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm())
+  res=cycletype(x,n)
   if isempty(res[2]) && all(iseven, res[1])
+  # for classes with '+' or '-' we use the cycle type for the
+  # permutation representation on the cosets of the parabolic
+  # subgroup 2:n (the generators for this representation are 
+  # stored for n<=8 in the global variable 'CHEVIE[:D][:gensMODA]')
     u=get!(chevieget(:D,:gensMODA),n)do
       H=CoxeterGroup("D", n)
       R=reflection_subgroup(H, 2:n)
       D=vcat(reduced(R,H)...)
       Dgens=map(s->Perm(reduced.(Ref(R),D.*s),D),gens(H))
-      ci=chevieget(:D, :ClassInfo)(n)
+      ci=classinfo(H)
       H=ci[:classtext][filter(i->'+' in ci[:classnames][i] || 
                    '-' in ci[:classnames][i], 1:length(ci[:classnames]))]
       H=map(a->CycleStructurePerm(prod(Dgens[a])), H)
@@ -371,11 +358,7 @@ chevieset(:D, :ClassParameter, function (n, w)
     elseif !(tmp in u[2]) && tmp in u[3] res=[res[1],'-']
     end
   end
-  sort!(res[1])
-  if res[2] isa Vector
-    sort!(res[2])
-    return [reverse(res[1]), reverse(res[2])]
-  else
-    return [reverse(res[1]), res[2]]
-  end
+  sort!(res[1],rev=true)
+  if res[2] isa Vector sort!(res[2],rev=true) end
+  res
 end)

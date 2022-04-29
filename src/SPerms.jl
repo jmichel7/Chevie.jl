@@ -181,6 +181,7 @@ function Groups.orbit(a::SPerm{T},i::Integer)where T
   end
 end
 
+"`cycles(p::SPerm)` the non-trivial cycles of `p` (except the entirely negative ones)"
 function Perms.cycles(p::SPerm)
   cycles=Vector{eltype(p.d)}[]
   to_visit=trues(length(p.d))
@@ -191,6 +192,29 @@ function Perms.cycles(p::SPerm)
     if length(cyc)>1 push!(cycles,cyc) end
   end
   cycles
+end
+
+"""
+`cycletype(p::SPerm,n=length(p.d))`
+pair of partitions parameterizing the conjugacy class of `p` in B_n
+"""
+function Perms.cycletype(p::SPerm,n=length(p.d))
+  res=[Int[],Int[]]
+  mark=trues(n)
+  for i in 1:n
+    if mark[i]
+      cyc=orbit(p, i)
+      if -i in cyc push!(res[2], div(length(cyc),2))
+      else push!(res[1], length(cyc))
+      end
+      for j in cyc
+        if j<0 mark[-j]=false
+        else mark[j]=false
+        end
+      end
+    end
+  end
+  sort!.(res,rev=true)
 end
 
 """

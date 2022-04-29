@@ -246,29 +246,6 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   return uc
 end)
 
-chevieset(:B, :ClassParameter, function (n, w)
-  x=Perm()
-  for i in w
-    x*=i==1 ? Perm(1, n+1) : x*=Perm(i-1,i)*Perm(i-1+n,i+n)
-  end
-  res = [Int[], Int[]]
-  mark=trues(n)
-  for i in 1:n
-    if mark[i]
-      cyc = CyclePermInt(x, i)
-      if i+n in cyc
-        push!(res[2], div(length(cyc),2))
-      else
-        push!(res[1], length(cyc))
-      end
-      for j in cyc
-        if j>n mark[j-n]=false
-        else mark[j]=false
-        end
-      end
-    end
-  end
-  sort!(res[1])
-  sort!(res[2])
-  [reverse(res[1]), reverse(res[2])]
+chevieset(:B, :ClassParameter, function(n, w)
+  cycletype(prod(i->i==1 ? SPerm(-1) : SPerm(i-1,i),w;init=SPerm()),n)
 end)

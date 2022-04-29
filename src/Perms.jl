@@ -535,21 +535,35 @@ end
 order(a::Perm)=lcm(length.(cycles(a)))
 
 """
-`cycletype(a::Perm,domain=1:length(a.d))`
+`cycletype(a::Perm;domain=1:length(a.d),trivial=false)`
 
-describes the partition of `length(a.d)` associated to the conjugacy class of
-`a` in the symmetric group of `domain`, with ones removed (thus it does not
-depend on `length(a.d)` but just on the moved points). It is represented as a
-sorted list of pairs `cyclesize=>multiplicity`.
+returns  the  partition  of  `maximum(domain)`  associated to the conjugacy
+class of `a` in the symmetric group of `domain`, with ones removed (thus it
+does  not  depend  on  `domain`  but  just  on  the  moved  points)  unless
+`trivial=true`.
 
 # Example
 ```julia-repl
-julia> cycletype(Perm(1,2)*Perm(3,4))
-1-element Vector{Pair{Int64, Int64}}:
- 2 => 2
+julia> cycletype(Perm(1,2)*Perm(4,5))
+2-element Vector{Int64}:
+ 2
+ 2
+
+julia> cycletype(Perm(1,2)*Perm(4,5);trivial=true)
+3-element Vector{Int64}:
+ 2
+ 2
+ 1
+
+julia> cycletype(Perm(1,2)*Perm(4,5);trivial=true,domain=1:6)
+4-element Vector{Int64}:
+ 2
+ 2
+ 1
+ 1
 ```
 """
-function cycletype(a::Perm;domain=1:length(a.d))
+function cycletype(a::Perm;domain=1:length(a.d),trivial=false)
   lengths=Int[]
   if isempty(a.d) return lengths end
   to_visit=falses(max(length(a.d),maximum(domain)))
@@ -564,9 +578,9 @@ function cycletype(a::Perm;domain=1:length(a.d))
       j^=a
       if j==i break end
     end
-    if l>1 push!(lengths,l) end
+    if l>1 || trivial push!(lengths,l) end
   end
-  tally(lengths)
+  sort(lengths,rev=true)
 end
 
 """

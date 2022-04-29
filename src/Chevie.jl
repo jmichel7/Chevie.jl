@@ -18,6 +18,7 @@ CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)
   end
 end
 
+" chevieget(t,w) returns CHEVIE[Symbol(t)][w]"
 function chevieget(t::Symbol,w::Symbol)
   get!(CHEVIE[t],w)do
     if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
@@ -79,17 +80,17 @@ const needcartantype=Set([:Invariants,
                           :WeightInfo,
                           :CartanMat])
 
+"`getchev(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function getchev(t::TypeIrred,f::Symbol,extra...)
-  d=field(t)
+  n,args...=field(t)
 # println("d=$d f=$f extra=$extra")
-  o=chevieget(d[1],f)
+  o=chevieget(n,f)
   if o isa Function
-#   o(vcat(collect(d)[2:end],collect(extra))...)
     if haskey(t,:orbit) t=t.orbit[1] end
     if haskey(t,:cartanType) && f in needcartantype
-#     println("args=",(d[2:end]...,extra...,t.cartanType))
-      o(d[2:end]...,extra...,t.cartanType)
-    else o(d[2:end]...,extra...)
+#     println("args=",(args...,extra...,t.cartanType))
+      o(args...,extra...,t.cartanType)
+    else o(args...,extra...)
     end
   elseif o===false return nothing
   else o

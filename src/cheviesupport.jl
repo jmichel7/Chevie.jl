@@ -55,9 +55,9 @@ function CycleStructurePerm(p::Perm)
   if isone(p) return Int[] end
   t=cycletype(p)
   res=[0,nothing]
-  resize!(res,maximum(first.(t))-1)
+  resize!(res,t[1]-1)
   res.=nothing
-  for (k,v) in t res[k-1]=v end
+  for (k,v) in tally(t) res[k-1]=v end
   res
 end
 function DiagonalMat(v...)
