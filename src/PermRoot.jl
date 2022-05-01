@@ -185,8 +185,7 @@ the  vector space `V`  of row vectors  and from the  left on the dual space
 `Vᵛ` of column vectors.
 """
 function reflection(root::AbstractVector,coroot::AbstractVector)
-  root,coroot=promote(root,coroot)
-  m=[i*j for i in coroot, j in root]
+  m=coroot*transpose(root)
   one(m)-m
 end
 
@@ -197,14 +196,65 @@ returns the matrix of the complex reflection determined by the root `r` and
 the  eigenvalue `ζ` when the  vector space and its  dual are identified via
 the  scalar product `<x,y>=transpose(x)*y`; the coroot `rᵛ` is then equal
 to the linear form `x->(1-ζ)<x,r>/<r,r>`.
+```julia-repl
+julia> reflection([1,0,-E(3,2)])
+3×3 Matrix{Cyc{Rational{Int64}}}:
+  0  0  ζ₃²
+  0  1    0
+ ζ₃  0    0
+```
 """
 function reflection(r::AbstractVector,l::Number=-1)
-  rbar=galois.(r,-1)
-  c=(1-l)*rbar//(rbar*r);
-  M=toM(map(i->i*r,c))
-  one(M)-M
+  m=(1-l)*transpose(r*r')//(r'*r)
+  one(m)-m
 end
 
+"""
+`reflection(s::Matrix [,r::AbstractVector])`
+
+Here  `s` is  a square  matrix, and  if given  `r` is  a vector of the same
+length  as `size(s,1)`. The function  determines if `s` is  the matrix of a
+reflection  (resp. if `r` is  given if it is  the matrix of a reflection of
+root  `r`; the point of  giving `r` is to  specify exactly the desired root
+and  coroot, which  otherwise are  determined only  up to  a scalar and its
+inverse).  The function  returns `nothing`  if `s`  if is  not a reflection
+(resp. not a reflection with root `r`), and otherwise returns a named tuple
+with four fields:
+
+`.root`:   the root of the reflection `s` (equal to `r` if given)
+
+`.coroot`:  the coroot of `s`
+
+`.eigenvalue`:  the non-trivial eigenvalue of `s`
+
+`.isOrthogonal`:   a  boolean  which is  `true` if  and  only if  `s` is
+  orthogonal  with respect to  the usual scalar  product (then the root and
+  eigenvalue are sufficient to determine `s`)
+
+```julia-repl
+julia> reflection([-1 0 0;1 1 0;0 0 1])
+(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isOrthogonal = false)
+
+julia> reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
+(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isOrthogonal = false)
+```
+"""
+function reflection(m::Matrix,r::AbstractVector)
+  rr=one(m)-m
+  rc=map(j->ratio(rr[j,:],r),axes(m,1))
+  zeta=ratio(transpose(m)*r,r)
+  if isnothing(zeta) return end
+  rzeta=Root1(zeta)
+  if isnothing(rzeta) return end
+  orth=(rc*(r'*r)==(1-zeta)*conj(r))
+  (root=r,coroot=rc,eig=rzeta,isOrthogonal=orth)
+end
+
+function reflection(m::Matrix)
+  rr=one(m)-m
+  r=findfirst(!iszero,eachrow(rr))
+  if !isnothing(r) reflection(m,rr[r,:]) end
+end
 #------------------------------------------------------------------------
 @GapObj struct TypeIrred end
 
@@ -374,38 +424,38 @@ function Base.show(io::IO,d::Diagram)
   s="\n"
   f(arg...)=joindigits(indices[collect(arg)])
   dbar="\u2550"
-  c2="O" #c2="\u2461"
+  c2="\u25cb"
   c3="\u2462"
   c4="\u2463"
   c5="\u2464"
   if t.ST==4 print(c3," ",bar^2,c3,s,f(1)," "^3,f(2))
   elseif t.ST==5 print(c3," ",dbar^2,c3,s,f(1)," "^3,f(2))
-  elseif t.ST==6 print(c2,bar,"⁶",bar,c3,s,f(1)," "^3,f(2))
-  elseif t.ST==7 print("  ",c3," ",f(2),s)
-               print(" /3\\",s)
-               print(c2,bar^3,c3,s)
+  elseif t.ST==6 print(c2," ",bar,"⁶",bar,c3,s,f(1)," "^4,f(2))
+  elseif t.ST==7 print(" "^2,c3," ",f(2),s)
+               print(" ","/3\\",s)
+               print(c2," ",bar^2,c3,s)
                print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
   elseif t.ST==8 print(c4," ",bar^2,c4,s,f(1)," "^3,f(2))
-  elseif t.ST==9 print(c2,bar,"⁶",bar,c4,s,f(1)," "^3,f(2))
+  elseif t.ST==9 print(c2," ",bar,"⁶",bar,c4,s,f(1)," "^4,f(2))
   elseif t.ST==10 print(c3," ",dbar^2,c4,s,f(1)," "^3,f(2))
-  elseif t.ST==11 print(" ",c3," ",f(2),s," /3\\",s,c2,bar^3,c4,s)
+  elseif t.ST==11 print(" "^2,c3," ",f(2),s," /3\\",s,c2," ",bar^2,c4,s)
     print(f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
-  elseif t.ST==12 print("  ",c2," ",f(2),s," /4\\",s,c2,bar^3,c2,s)
+  elseif t.ST==12 print("  ",c2," ",f(2),s," /4\\",s,c2," ",bar^2,c2,s)
     print(f(1)," "^3,f(3)," ",f(1,2,3,1),"=",f(2,3,1,2),"=",f(3,1,2,3))
-  elseif t.ST==13 print("  ",c2," ",f(1),s," / \\",s,c2,bar^3,c2,s)
+  elseif t.ST==13 print("  ",c2," ",f(1),s," / \\",s,c2," ",bar^2,c2,s)
     print(f(3)," "^3,f(2)," ",f(2,3,1,2),"=",f(3,1,2,3)," ",f(1,2,3,1,2),"=")
                 print(f(3,1,2,3,1))
-  elseif t.ST==14 print(" ₈",s,c2,bar,c3,s,f(1)," ",f(2))
+  elseif t.ST==14 print("  ₈",s,c2," ",bar,c3,s,f(1)," "^2,f(2))
   elseif t.ST==15 print("  ",c2," ",f(1),s," /5",s,c2," ",f(3),s," \\",s,"  ",c3," ",f(2)," ")
                 print(f(1,2,3),"=",f(3,1,2)," ",f(2,3,1,2,1),"=",f(3,1,2,1,2))
   elseif t.ST==16 print(c5," ",bar^2,c5,s,f(1)," "^3,f(2))
-  elseif t.ST==17 print(c2,bar,"⁶",bar,c5,s,f(1)," "^3,f(2))
+  elseif t.ST==17 print(c2," ",bar,"⁶",bar,c5,s,f(1)," "^4,f(2))
   elseif t.ST==18 print(c3," ",dbar^2,c5,s,f(1)," "^3,f(2))
-  elseif t.ST==19 print(" ",c3," ",f(2),s," /3\\",s,c2,bar^3,c5,s)
+  elseif t.ST==19 print(" ",c3," ",f(2),s," /3\\",s,c2," ",bar^2,c5,s)
    print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2, 3, 1),"=",f(3, 1, 2))
   elseif t.ST==20 print("  ₅",s,c3," ",bar,c3,s,f(1)," "^2,f(2))
-  elseif t.ST==21 print(" ₁₀",s,c2,bar^2,c3,s,f(1)," "^3,f(2))
-  elseif t.ST==22 print("  ",c2," ",f(2),s," /5\\",s,c2,bar^3,c2,s)
+  elseif t.ST==21 print("  ₁₀",s,c2," ",bar^2,c3,s,f(1)," "^4,f(2))
+  elseif t.ST==22 print("  ",c2," ",f(2),s," /5\\",s,c2," ",bar^2,c2,s)
    print(f(1)," "^3,f(3)," ",f(1,2,3,1,2),"=",f(2,3,1,2,3),"=",f(3,1,2,3,1))
   end
   end
@@ -500,10 +550,6 @@ simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
 the cartan coefficient `cᵢ(rⱼ)` of the `i`-th coroot and the `j`-th root of `W`
 """
 cartan(W::PermRootGroup,i,j)=transpose(coroots(W,i))*roots(W,j)
-#faster than sum(coroots(W,i).*roots(W,j)), or old version:
-# r=roots(W,j)-roots(W,action(W,j,reflection(W,i)))
-# v=findfirst(!iszero,roots(W,i))
-# r[v]//roots(W,i)[v]
 
 """
 `cartan(W::PermRootGroup)`    Cartan matrix of `W`.
@@ -559,7 +605,7 @@ type_irred classifies W (returns a type record) using:
     r=semisimplerank(W)
     s=length(W)/factorial(r)
     D=all distinguished reflections of W=orbit of S,    which gives
-      o=the maximum order of a reflection=max_{s∈ D}o(s)
+      o=the maximum order of a reflection=max_{s∈ S}o(s)
       h=the Coxeter number=sum_{s∈ D}o(s)
 
 G(de,e,r) has s=(de)ʳ/e, o=max(2,d), h=ed(r-1)+d-δ_{d,1}
@@ -1437,7 +1483,6 @@ false
 julia> is_parabolic(reflection_subgroup(W,[1]))
 true
 ```
-
 """
 function is_parabolic(H)
   W=parent(H)
@@ -1723,52 +1768,6 @@ function Combinat.catalan(W,m=1;q=1)
   f(i)=sum(j->q^j,0:i-1)
   h=div(nhyp(W)+nref(W),length(d))
   exactdiv(prod(x->f(m*h+x),fd),prod(x->f(x),d))
-end
-
-"""
-`reflection(s::Matrix [,r::AbstractVector])`
-
-Here  `s` is  a square  matrix, and  if given  `r` is  a vector of the same
-length  as `size(s)[1]`. The function determines if  `s` is the matrix of a
-reflection  (resp. if `r` is  given if it is  the matrix of a reflection of
-root  `r`; the point of  giving `r` is to  specify exactly the desired root
-and  coroot, which  otherwise are  determined only  up to  a scalar and its
-inverse).  The function  returns `nothing`  if `s`  if is  not a reflection
-(resp. not a reflection with root `r`), and otherwise returns a named tuple
-with four fields:
-
-`.root`:   the root of the reflection `s` (equal to `r` if given)
-
-`.coroot`:  the coroot of `s`
-
-`.eigenvalue`:  the non-trivial eigenvalue of `s`
-
-`.isOrthogonal`:   a  boolean  which is  `true` if  and  only if  `s` is
-  orthogonal  with respect to  the usual scalar  product (then the root and
-  eigenvalue are sufficient to determine `s`)
-
-```julia-repl
-julia> reflection([-1 0 0;1 1 0;0 0 1])
-(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isOrthogonal = false)
-
-julia> reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
-(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isOrthogonal = false)
-```
-"""
-function reflection(m::Matrix,r::AbstractVector)
-  rr=one(m)-m
-  rc=map(j->ratio(rr[j,:],r),axes(m,1))
-  zeta=ratio(transpose(m)*r,r)
-  rzeta=Root1(zeta)
-  if isnothing(zeta) || isnothing(rzeta) return nothing end
-  orth=(rc*sum(conj(r).*r)==(1-zeta)*conj(r))
-  (root=r,coroot=rc,eig=rzeta,isOrthogonal=orth)
-end
-
-function reflection(m::Matrix)
-  rr=one(m)-m
-  r=findfirst(i->!all(iszero,rr[i,:]),axes(rr,1))
-  if !isnothing(r) reflection(m,rr[r,:]) end
 end
 
 """

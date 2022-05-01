@@ -754,7 +754,7 @@ coxgroup(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() :
    sc ? rootdatum(cartan(t,r,b),one(fill(0,r,r))) : rootdatum(cartan(t,r,b))
 
 " `rootdatum(C::AbstractMatrix)` adjoint root datum from Cartan matrix `C`"
-rootdatum(C::AbstractMatrix)=rootdatum(one(C),C)
+rootdatum(C::AbstractMatrix)=isempty(C) ? rootdatum(C,C) : rootdatum(one(C),C)
 
 """
 `rootdatum(R::AbstractMatrix,CR::AbstractMatrix)`

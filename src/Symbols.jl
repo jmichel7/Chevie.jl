@@ -68,7 +68,7 @@ if VERSION<=v"1.7.5"
 using ..Combinat: allequal
 end
 using ..CyclotomicNumbers: E
-using ..CycPols: CycPol
+using ..CycPols: CycPol, subs
 using LaurentPolynomials
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,

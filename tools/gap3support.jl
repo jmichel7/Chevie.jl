@@ -27,7 +27,7 @@ Minimum(v::AbstractVector)=minimum(v)
 Minimum(a::Number,x...)=min(a,x...)
 NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 OnTuples(a,b)=a.^b
-PermListList(l1,l2)=Perm(sortperm(l2))^-1*Perm(sortperm(l1))
+PermListList(l1,l2)=Perm(improve_type(l1),improve_type(l2))
 Permuted(x,p)=x^p
 function Position(a::String,b::String)
   x=findfirst(b,a)

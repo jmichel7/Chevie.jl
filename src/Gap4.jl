@@ -41,7 +41,7 @@ end
 function CharTable(ct::GapObj)
   u=GAP.Globals.Irr(ct)
   girr=mapgap(x->mapgap(Cyc,x),u) 
-  irr=transpose(hcat(girr...))
+  irr=permutedims(hcat(girr...))
   n=fromgap(GAP.Globals.ClassNames(ct))
   cn=fromgap(GAP.Globals.CharacterNames(ct))
   sz=fromgap(GAP.Globals.SizesCentralisers(ct))

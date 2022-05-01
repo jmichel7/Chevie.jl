@@ -46,13 +46,12 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
     cc[:red]=coxgroup()
     for j in tally(cc[:parameter])
       d=div(j[2],2)
-      if mod(j[1],2)==0 cc[:red]=cc[:red]*coxgroup(:C,d)
-      elseif mod(j[2],2)!=0
+      if iseven(j[1]) cc[:red]=cc[:red]*coxgroup(:C,d)
+      elseif isodd(j[2])
         if j[2]>1 cc[:red]=Cosets.extprod(cc[:red],coxgroup(:B,d)) end
       elseif j[2]>2
-        if d==3 cc[:red]=Cosets.extprod(cc[:red],spets(coxgroup(:A,d),perm"(1,3)"))
-        else    cc[:red]=Cosets.extprod(cc[:red],spets(coxgroup(:D,d),perm"(1,2)"))
-        end
+        cc[:red]=Cosets.extprod(cc[:red],d==3 ? rootdatum(:psu,4) :
+                                              rootdatum("pso-",2*d))
       else cc[:red]=Cosets.extprod(cc[:red],torus([[-1]]))
       end
     end
@@ -61,27 +60,6 @@ chevieset(Symbol("2D"), :UnipotentClasses, function (r, p)
 end)
 
 chevieset(Symbol("2D"), :ClassParameter, function (n, w)
-  x=Perm()
-  for i in w
-    x*= i==1 ? Perm(1, n+2)*Perm(2, n+1) : Perm(i-1,i)*Perm(i-1+n,i+n)
-  end
-  x*=Perm(1,n+1)
-  res = [Int[],Int[]]
-  mark=fill(true,n)
-  for i in 1:n
-    if mark[i]
-      cyc=orbit(x, i)
-      if i+n in cyc push!(res[2], div(length(cyc),2))
-      else push!(res[1], length(cyc))
-      end
-      for j in cyc
-        if j>n mark[j-n]=false
-        else mark[j]=false
-        end
-      end
-    end
-  end
-  sort!(res[1])
-  sort!(res[2])
-  [reverse(res[1]), reverse(res[2])]
+  x=prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm())
+  cycletype(x*SPerm(1,-1),n)
 end)

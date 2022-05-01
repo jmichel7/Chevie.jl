@@ -132,7 +132,8 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
     map(p->positionssgn(ud,subs(p,Pol([ξ],1))),ud)
   end
 
-  for h in uc[:harishChandra] fd[h[:charNumbers]]=
+  for h in uc[:harishChandra] 
+    fd[h[:charNumbers]]=
     fakedegrees(reflection_group(Uch.maketype(h[:relativeType])), Pol())
   end
   ΩΧ=map(f->f(ξ)//f(1),fd)# List of ω_χ(ξ) for character sheaves (ρ,χ)

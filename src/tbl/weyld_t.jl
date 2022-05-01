@@ -340,16 +340,16 @@ chevieset(:D, :ClassParameter, function (n, w)
   if isempty(res[2]) && all(iseven, res[1])
   # for classes with '+' or '-' we use the cycle type for the
   # permutation representation on the cosets of the parabolic
-  # subgroup 2:n (the generators for this representation are 
-  # stored for n<=8 in the global variable 'CHEVIE[:D][:gensMODA]')
+  # subgroup 2:n (gens(Dₙ) in this representation are 
+  # stored for n<=8 in the Dict 'chevieget(:D,:gensMODA)')
     u=get!(chevieget(:D,:gensMODA),n)do
       H=CoxeterGroup("D", n)
       R=reflection_subgroup(H, 2:n)
       D=vcat(reduced(R,H)...)
       Dgens=map(s->Perm(reduced.(Ref(R),D.*s),D),gens(H))
       ci=classinfo(H)
-      H=ci[:classtext][filter(i->'+' in ci[:classnames][i] || 
-                   '-' in ci[:classnames][i], 1:length(ci[:classnames]))]
+      H=ci[:classtext][filter(i->ci[:classnames][i][end] in "+-", 
+                                 1:length(ci[:classnames]))]
       H=map(a->CycleStructurePerm(prod(Dgens[a])), H)
       u=[Dgens,H[1:2:length(H)], H[2:2:length(H)]]
     end

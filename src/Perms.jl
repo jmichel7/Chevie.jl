@@ -135,6 +135,7 @@ const Idef=Int16 # you can change the default type T for Perm here
 
 Base.vec(a::Perm)=a.d
 
+Perm(v)=Perm(collect(v))
 #---------------- Constructors ---------------------------------------
 """
    `Perm{T}(x::Integer...)where T<:Integer`
