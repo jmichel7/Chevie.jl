@@ -183,10 +183,16 @@ function charpolyandcomatrix(m)
   a,res
 end
 
-"`charpoly(M::Matrix)` characteristic polynomial (as `Vector` of coefficients)"
+"""
+`charpoly(M::Matrix)` characteristic polynomial (as `Vector` of coefficients).
+This function works over any ring.
+"""
 charpoly(m)=first(charpolyandcomatrix(m))
 
-"`comatrix(M::Matrix)` is defined by `comatrix(M)*M=det(M)*one(M)`"
+"""
+`comatrix(M::Matrix)` is defined by `comatrix(M)*M=det(M)*one(M)`.
+This function works over any ring.
+"""
 comatrix(m)=last(charpolyandcomatrix(m))
 
 """
@@ -444,7 +450,10 @@ end
 
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
-"`ratio(v,w)` ratio `v/w` --- `nothing` if `v` is not a multiple of `w`"
+"""
+`ratio(v::abstractVector,w::abstractVector)` ratio `v/w`,
+`nothing` if `v` is not a multiple of `w`.
+"""
 function ratio(v::AbstractVector, w::AbstractVector)
   i=findfirst(x->!iszero(x),w)
   if i===nothing return nothing end

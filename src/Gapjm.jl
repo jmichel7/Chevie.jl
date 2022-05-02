@@ -32,11 +32,11 @@ To update later to the latest version, do
 This package requires julia 1.6 or later. I registered as separate packages
 already some of the infrastructure:
 
-  * (univariate) `LaurentPolynomials` (and rational fractions)
-  * (multivariate) `PuiseuxPolynomials` (and ratioal fractions)
-  * `CyclotomicNumbers`
-  * `ModuleElements` (elements of a free module over some ring)
-  * `Combinat` (combinatorics and some basic number theory)
+  * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
+  * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions)
+  * [CyclotomicNumbers](https://github.com/jmichel7/CyclotomicNumbers.jl)
+  * [ModuleElts](https://github.com/jmichel7/ModuleElts.jl) (elements of a free module over some ring)
+  * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
 
 the   functionality  in  these  packages  is  reexported  so  automatically
 available when you use `Gapjm`.
@@ -49,8 +49,8 @@ some other infrastructure which may become eventually separate packages:
   * signed permutations (module `SPerms`)
   * finite fields (module `FFields`)
   * Integer matrices and lattices (module `MatInt`)
-  * groups
-  * permutation groups
+  * groups (module `Groups`)
+  * permutation groups (module `PermGroups`)
 
 for  permutation groups I have  often replaced the sophisticated algorithms
 of  GAP by naive but  easy to write methods  only suitable for small groups
@@ -58,12 +58,14 @@ of  GAP by naive but  easy to write methods  only suitable for small groups
 Otherwise  the  code  for  infrastructure  is  often  competitive with GAP,
 despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
-code and the design are welcome.
+code and the design are welcome. For functions which are too inefficient or
+difficult to implement (like character tables of arbitrary groups) there is
+the possibility to call GAP4.
 
-This  package contains about 95% of Chevie functionality, ported from Gap3.
-The  function `gap` can help you discover the equivalent functionality to a
-Gap3  function:  it  takes  a  string  and  gives you Julia translations of
-functions in Gap3 which match this string.
+This  package contains currently about  95% of Chevie functionality, ported
+from  Gap3.  The  function  `gap`  can  help  you  discover  the equivalent
+functionality  to a Gap3  function: it takes  a string and  gives you Julia
+translations of functions in Gap3 which match this string.
 
 ```julia-rep1
 julia> gap("words")
@@ -73,7 +75,8 @@ GarsideWords             =>  elements
 ```
 Then you can call on-line help on the discovered functions.
 
-The data library of Chevie has been automatically ported by a transpiler so
+The  code is  not completely  ported to  Julia since  75% of it is the data
+library  of Chevie, which has been  automatically ported by a transpiler so
 its code is "strange". Otherwise the code in this package is often 10 times
 faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
 compilation time on first execution --- the TTFP problem of Julia).

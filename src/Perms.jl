@@ -109,6 +109,9 @@ elements  of sets; two permutations are equal  if they move the same points
 to  the same images. They have methods `cmp`, `isless` (lexicographic order
 on   moved  points)  so  they  can  be  sorted.  `Perm`s  are  scalars  for
 broadcasting.
+
+Other  methods on  permutations are  `cycles, cycletype, reflength, mapping
+Perm, sortPerm, Perm_rowcol`.
 """
 module Perms
 
@@ -436,10 +439,10 @@ function Base.:^(m::AbstractMatrix,a::Perm;dims=1)
 end
 
 """
-`Base.:^(m::AbstractMatrix,p::Tuple{Perm,Perm}`
+`Base.:^(m::AbstractMatrix,p::Tuple{Perm,Perm})`
 
-given a tuple `(p1,p2)` of `Perm`s, applies `p1` to the lines of `m` and `p2` to the
-columns of `m`.
+given  a tuple `(p1,p2)` of  `Perm`s, applies `p1` to  the lines of `m` and
+`p2` to the columns of `m`.
 
 ```julia-repl
 julia> m=[1 2 3;4 5 6;7 8 9]

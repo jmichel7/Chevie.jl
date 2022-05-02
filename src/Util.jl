@@ -395,9 +395,9 @@ end
 
 This  function prints to `io` the  string argument cut across several lines
 for improved display. It can take the following keyword arguments:
-  - width   the cutting width
-  - after   cut after these chars
-  - before  cut before these chars
+  - width:  the cutting width
+  - after:  cut after these chars
+  - before: cut before these chars
 ```julia-rep1
 julia> cut(string(collect(1:50)))
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,

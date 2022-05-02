@@ -13,8 +13,9 @@ end
 """
 `generic_decomposition_matrix(W,d)`
 
-This function obtains the `Φ_d` decomposition matrix for the reductive group
-specified by the Coxeter group or coset `W` form the package `GenDecMats`.
+This  function  obtains  the  `Φ_d`-decomposition  matrix for the reductive
+group  specified  by  the  Coxeter  group  or  coset  `W`  from the package
+[GenericDecMats](https://github.com/oscar-system/GenericDecMats.jl).
 
 ```julia-repl
 julia> W=rootdatum(:psu,5)
@@ -184,4 +185,3 @@ function Base.show(io::IO,::MIME"text/plain",m::InducedDecompositionMatrix)
               by=i->maximum(findall(!iszero,m.scalar[i,:]);init=0))
   showtable(io,scal;row_labels,col_labels=m.colnames,rows=order)
 end
-

@@ -592,7 +592,7 @@ end
 
 A  group may be constructed  from a list of  `l` elements of the same type.
 These  elements must respond to  the functions `*` and  `inv`. If it is not
-possible  to compute  `one` from  `l` (because  ``l[1]` does not respond to
+possible  to compute  `one` from  `l` (because  `l[1]` does  not respond to
 `one`,  or  `l`  is  empty  and  `T`  does  not respond to `one`), then the
 identity element of the group must be given as a second argument.
 

@@ -24,6 +24,7 @@ support
 sign
 Base.Matrix(::Perm,n)
 Base.:^(::AbstractMatrix,::Perm)
+Base.:^(::AbstractMatrix,::Tuple{Perm,Perm})
 restricted(::Perm,::AbstractVector{<:Integer})
 reflength(::Perm)
 mappingPerm

@@ -616,7 +616,7 @@ end
 `smith(m::AbstractMatrix{<:Integer})`
 
 computes  the Smith normal form  `S` of `m`, the  unique equivalent (in the
-sense  that  There  exist  unimodular  integer  matrices  `P,  Q` such that
+sense  that  there  exist  unimodular  integer  matrices  `P,  Q` such that
 `Q*m*P==S`) diagonal matrix such that `Sᵢ,ᵢ` divides `Sⱼ,ⱼ` for `i≤j`.
 
 ```julia-repl
