@@ -4,7 +4,6 @@ makedocs(sitename="Gapjm.jl documentation",
          modules=[
 Algebras,
 Chars,
-Combinat,
 ComplexR,
 Cosets,
 CoxGroups,
