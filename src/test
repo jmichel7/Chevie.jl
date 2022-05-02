@@ -1,4 +1,0 @@
-#!/usr/bin/bash
-~/julia-1.7.2/bin/julia ../tools/gentest.jl $*
-~/julia-1.7.2/bin/julia runtests.jl
-rm runtests.jl

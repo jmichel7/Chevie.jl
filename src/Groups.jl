@@ -50,9 +50,10 @@ export Group, centralizer, centre, classreps, comm,
   transporting_elt, transversal
 
 using ..Util: InfoChevie, @GapObj
-#import Gapjm: word, elements, kernel, order
+using ..Perms: Perms, order
+#import Gapjm: word, elements, kernel
 # to use as a stand-alone module comment above line and uncomment next line
-export word, elements, kernel, order
+export word, elements, kernel
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
@@ -659,7 +660,7 @@ Base.:^(a::Coset, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 
 Base.:^(a::Coset, b::Coset)= inv(b)*a*b
 
-order(a::Coset)=findfirst(i->a.phi^i in Group(a),1:order(a.phi))
+Perms.order(a::Coset)=findfirst(i->a.phi^i in Group(a),1:order(a.phi))
 
 Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
 

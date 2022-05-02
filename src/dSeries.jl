@@ -109,7 +109,7 @@ julia> cuspidal_data(W,E(3,2))
 ```
 """
 module dSeries
-using Gapjm
+using ..Gapjm
 export Series, ennola
 
 function SpetsEnnola(t::TypeIrred;sperm=true)

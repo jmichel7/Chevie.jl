@@ -131,7 +131,7 @@ module CoxGroups
 
 export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
-  inversions
+  inversions, degrees
 
 export isleftdescent # 'virtual' methods (exist only for concrete types)
 
@@ -894,7 +894,7 @@ function isleftdescent(W::CoxSym,w,i::Int)
  i^w>j^w
 end
 
-Gapjm.degrees(W::CoxSym)=2:ngens(W)+1
+degrees(W::CoxSym)=2:ngens(W)+1
 Base.length(W::CoxSym)=prod(degrees(W))
 PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 

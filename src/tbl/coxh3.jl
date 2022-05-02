@@ -6,6 +6,7 @@ chevieset(:H3, :GeneratingRoots, function ()
         a = (1 + root(5)) // 2
         return [[a, -1, a - 1], [-a, 1, a - 1], [1, a - 1, -a]] // 2
     end)
+chevieset(:H3, :InvariantModel, Dict{Symbol, Any}(:Aut => [[1, 2, 1, 2, 3, 2, 1, 2, 1], [3], [2]], :roots => [[(5 - root(5)) // 2, -(root(5)), -1 + root(5)], [-2 * root(5), 1, 0], [2 * root(5), 1, 0]], :coroots => [[(5 + root(5)) // 40, (-1 - root(5)) // 4, (-3 + root(5)) // 16], [(-3 * root(5)) // 20, 1 // 2, (2 - root(5)) // 8], [(3 * root(5)) // 20, 1 // 2, (2 + root(5)) // 8]], :conj => [[(5 - root(5)) // 2, -(root(5)), -1 + root(5)], [-2 * root(5), 1, 0], [2 * root(5), 1, 0]]))
 chevieset(:H3, :NrConjugacyClasses, 10)
 chevieset(:H3, :cyclestructure, [])
 chevieset(:H3, :generators, [])

@@ -169,7 +169,7 @@ end
 """
   orbit(a::SPerm,i::Integer) returns the orbit of a on i
 """
-function Groups.orbit(a::SPerm{T},i::Integer)where T
+function Perms.orbit(a::SPerm{T},i::Integer)where T
   if abs(i)>length(a.d) return T[i] end
   res=T[]
   sizehint!(res,length(a.d))
@@ -181,7 +181,18 @@ function Groups.orbit(a::SPerm{T},i::Integer)where T
   end
 end
 
-"`cycles(p::SPerm)` the non-trivial cycles of `p` (except the entirely negative ones)"
+"""
+`cycles(p::SPerm)` the non-trivial cycles of `p`.
+
+Two cycles which differ only by sign are returned once only.
+```julia-repl
+julia> cycles(SPerm(-1,2)*SPerm(3,-3)*SPerm(4,5,-4,-5))
+3-element Vector{Vector{Int16}}:
+ [1, -2]
+ [3, -3]
+ [4, 5, -4, -5]
+```
+"""
 function Perms.cycles(p::SPerm)
   cycles=Vector{eltype(p.d)}[]
   to_visit=trues(length(p.d))
@@ -196,7 +207,13 @@ end
 
 """
 `cycletype(p::SPerm,n=length(p.d))`
-pair of partitions parameterizing the conjugacy class of `p` in B_n
+pair of partitions parameterizing the conjugacy class of `p` in `Bₙ`
+```julia-repl
+julia> cycletype(SPerm(1,-1),2)
+2-element Vector{Vector{Int64}}:
+ [1]
+ [1]
+```
 """
 function Perms.cycletype(p::SPerm,n=length(p.d))
   res=[Int[],Int[]]

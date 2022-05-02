@@ -56,7 +56,7 @@ end
 `Gcdex(m,n)`
 
 `Gcdex`  returns a  named tuple  with fields  `gcd=gcd(m,n)` and `coeff`, a
-unimodular matrix (an invertible integer matrix) such that
+unimodular 2x2 matrix (an invertible integer matrix) such that
 `coeff*[m,n]=[gcd,0]`.
 
 If `m*n!=0`, `abs(coeff[1,1])≤abs(n)/(2*gcd)` and
@@ -90,10 +90,10 @@ function Gcdex( m, n )
   (gcd=f, coeff= n==0 ? [fm 0; gm 1] : [fm div(f-fm*m,n); gm div(-gm*m,n)])
 end
 
-#  bezout(A) - returns rowtrans to transform 2x2 matrix A to hermite
-#
-#  rowtrans*A=[e f;0 g]  the RHS is Hermite normal form
-#
+#  bezout(A)  A is a 2x2 matrix
+#  returns a namedtuple with 2 fields
+#  sign  the sign of det(A)
+#  rowtrans such that rowtrans*A=[e f;0 g]  Hermite normal form
 function bezout(A)
   e=Gcdex(A[1,1],A[2,1])
   f,g=e.coeff*A[:,2]
@@ -103,8 +103,8 @@ function bezout(A)
     g=-g
   else coeff=e.coeff
   end
-  (gcd=e.gcd,sign=sign(A[1,1]*A[2,2]-A[1,2]*A[2,1]),
-             rowtrans=[1 -div(f-mod(f,g),g);0 1]*coeff)
+  (sign=sign(A[1,1]*A[2,2]-A[1,2]*A[2,1]),
+   rowtrans=[1 -div(f-mod(f,g),g);0 1]*coeff)
 end
 
 #  mgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
@@ -133,8 +133,7 @@ function mgcdex(N, a, v)
 end
 
 ## SNFofREF - fast SNF of REF matrix
-function SNFofREF(R, INPLACE)
-# println("R=$R INPLACE=$INPLACE")
+function SNFofREF(R)
   n,m=size(R)
   piv=findfirst.(!iszero,eachrow(R))
   r=findfirst(isnothing,piv)
@@ -144,14 +143,9 @@ function SNFofREF(R, INPLACE)
     piv=piv[1:r]
   end
   append!(piv, setdiff(1:m, piv))
-  if INPLACE
-    T=R
-    T[1:r,:]=T[1:r,piv]
-  else
-    T=zeros(eltype(R),n,m)
-    for j in 1:m
-      for i in 1:min(r,j) T[i,j]=R[i,piv[j]] end
-    end
+  T=zeros(eltype(R),n,m)
+  for j in 1:m
+    for i in 1:min(r,j) T[i,j]=R[i,piv[j]] end
   end
   si=1
   A=Vector{Int}(undef,n)
@@ -206,7 +200,6 @@ Options:
   - REDDIAG Reduce off diagonal entries.
   - ROWTRANS Row Transformations.
   - COLTRANS Col Transformations.
-  - INPLACE change original matrix in place -- save memory
 
 Compute  a Triangular, Hermite or  Smith form of the  `n × m` integer input
 matrix `A`. Optionally, compute `n × n` and `m × m` unimodular transforming
@@ -277,10 +270,10 @@ julia> r[:rowtrans]*m*r[:coltrans]
  0  0  3
 ```
 """
-function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false, INPLACE=false)
+function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false)
+# The gap code for INPLACE cannot work -- different memeory model to julia
 # if isempty(mat) mat=[Int[]] end
 # println("mat=$mat opt=$opt")
-  INPLACE=false # since the code for INPLACE can never work
   sig=1
   #Embed nxm mat in a (n+2)x(m+2) larger "id" matrix
   n,m=size(mat).+(2,2)
@@ -395,7 +388,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   #smith w/ NO transforms - farm the work out...
   if TRIANG && !(ROWTRANS || COLTRANS)
     A=A[2:end-1,2:end-1]
-    R=Dict(:normal => SNFofREF(A, INPLACE), :rank=>r-1)
+    R=Dict(:normal => SNFofREF(A), :rank=>r-1)
     if n==m R[:signdet]=sig end
     return R
   end

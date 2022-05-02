@@ -35,8 +35,8 @@ Groups
 Group
 gens
 ngens
-orbit(::Vector,::Any)
-orbits(::Group,::AbstractVector)
+Groups.orbit(::AbstractVector, ::Any)
+Groups.orbits(::Group, ::Any)
 elements(::Group)
 transversal
 centralizer
@@ -431,6 +431,7 @@ LusztigInductionTable
 Families
 Family
 galois(f::Family,p::Int)
+conj(f::Family)
 fourier
 drinfeld_double
 ndrinfeld_double

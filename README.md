@@ -2,13 +2,12 @@
 
 This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
 package  of  GAP3  plus  the  GAP  functionality needed for Chevie to work:
-packages  for Laurent  and Puiseux  polynomials, Cyclotomics, Permutations,
-basic permutation group operations, etc….
+Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
+permutation group operations, etc….
 
-I am rather new to Julia, git and github so I am not even sure this package
-is  properly constituted; I did not try yet to register it. If you are more
-competent  that me and see any anomaly  in this package, please write me or
-make a pull request.
+I  started this project at the  end of 2018 and it  is still in flux so the
+package  is not yet registered. If you  see anything to be improved in this
+package, please contact me or make a pull request.
 
 ##
 
@@ -22,7 +21,7 @@ To install this package, at the Julia command line:
   *  enter package mode with ]
   *  do the command
 ```
-(v1.0) pkg> add "https://github.com/jmichel7/Gapjm.jl"
+(@v1.7) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
 - exit package mode with backspace and then do
 ```
@@ -33,5 +32,6 @@ and you are set up.
 To update later to the latest version, do
 
 ```
-(v1.0) pkg> update Gapjm
+(@v1.7) pkg> update Gapjm
 ```
+This package requires julia 1.6 or later.

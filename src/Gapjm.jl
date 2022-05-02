@@ -15,7 +15,7 @@ To install this package, at the Julia command line:
   *  enter package mode with ]
   *  do the command
 ```
-(@v1.6) pkg> add "https://github.com/jmichel7/Gapjm.jl"
+(@v1.7) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
 - exit package mode with backspace and then do
 ```
@@ -26,7 +26,7 @@ and you are set up.
 To update later to the latest version, do
 
 ```
-(@v1.6) pkg> update Gapjm
+(@v1.7) pkg> update Gapjm
 ```
 
 This package requires julia 1.6 or later. I registered as separate packages
@@ -36,13 +36,13 @@ already some of the infrastructure:
   * (multivariate) `PuiseuxPolynomials` (and ratioal fractions)
   * `CyclotomicNumbers`
   * `ModuleElements` (elements of a free module over some ring)
+  * `Combinat` (combinatorics and some basic number theory)
 
 the   functionality  in  these  packages  is  reexported  so  automatically
 available when you use `Gapjm`.
 
 some other infrastructure which may become eventually separate packages:
   * permutations (module `Perms`)
-  * combinatorics (module `Combinat`)
   * linear algebra on any field/ring (module `GLinearAlgebra`)
   * posets (module `Posets`)
   * cyclotomic polynomials (module `CycPols`)
@@ -79,23 +79,20 @@ faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
 compilation time on first execution --- the TTFP problem of Julia).
 """
 module Gapjm
+#--------------------- external packages ----------------------------------
 using Reexport
 using Requires
 using UsingMerge
 @reexport using LaurentPolynomials
 @reexport using PuiseuxPolynomials
 @reexport using ModuleElts
-
-#--------------------------------------------------------------------------
-function degrees end; export degrees
-function roots end; export roots
-
+@reexport using Combinat
+@usingmerge verbose=true reexport CyclotomicNumbers
+#--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Groups.jl");@usingmerge verbose=true reexport Groups
-include("Combinat.jl");@reexport using .Combinat
 include("Perms.jl");@usingmerge verbose=true reexport Perms
-@usingmerge verbose=true reexport CyclotomicNumbers
+include("Groups.jl");@usingmerge verbose=true reexport Groups
 #if false
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields

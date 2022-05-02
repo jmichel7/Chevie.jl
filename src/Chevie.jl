@@ -30,7 +30,7 @@ chevieget(t::String,w::Symbol)=chevieget(Symbol(t),w)
 chevieset(t::Symbol,w::Symbol,o)=get!(CHEVIE,t,Dict{Symbol,Any}())[w]=o
 
 function chevieset(t::Vector{String},w::Symbol,f::Function)
-  println("set ",join(t,",")," $w")
+  println(join(t,",")," $w")
   for s in t chevieset(Symbol(s),w,f(s)) end
 end
 
