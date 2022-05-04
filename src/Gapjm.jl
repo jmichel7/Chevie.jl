@@ -29,9 +29,9 @@ To update later to the latest version, do
 (@v1.7) pkg> update Gapjm
 ```
 
-This package requires julia 1.6 or later. I registered as separate packages
-already some of the infrastructure:
+This package requires julia 1.6 or later. 
 
+I registered as separate packages already some of the infrastructure:
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions)
   * [CyclotomicNumbers](https://github.com/jmichel7/CyclotomicNumbers.jl)

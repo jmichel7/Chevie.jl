@@ -499,11 +499,11 @@ TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat;ROWTRANS=true)
 """
 `hermite(m::AbstractMatrix{<:Integer})`
 
-returns  the row Hermite normal  form `H` of the  integer matrix `m`, a row
-equivalent upper triangular form. If a pivot is the first non-zero entry on
-a row of `H` (the quadrant below left a pivot is zero), pivots are positive
-and entries above a pivot are nonnegative and smaller than the pivot. There
-exists a unique invertible integer matrix `Q` such that `Qm==H`.
+returns  the row Hermite normal  form `H` of `m`,  a row equivalent integer
+upper  triangular form. If a pivot is the  first non-zero entry on a row of
+`H`,  the quadrant  below left  a pivot  is zero,  pivots are  positive and
+entries  above a  pivot are  nonnegative and  smaller than the pivot. There
+exists a unique invertible integer matrix `r` such that `rm==H`.
 
 ```julia-repl
 julia> m=[1 15 28;4 5 6;7 8 9]
@@ -526,12 +526,13 @@ end
 """
 `hermite_transforms(m::AbstractMatrix{<:Integer})`
 
-The  row  Hermite  normal  form  `H`  of  the  integer  matrix `m` is a row
-equivalent upper triangular form. If a pivot is the first non-zero entry on
-a row of `H` (the quadrant below left a pivot is zero), pivots are positive
-and entries above a pivot are nonnegative and smaller than the pivot. There
-exists  a  unique  invertible  integer  matrix  `Q`  such that `Qm==H`. The
-function returns a tuple with components `.normal=H` and `.rowtrans=Q`.
+The  row Hermite  normal form  `H` of  the `m`  is a row equivalent integer
+upper  triangular form. If a pivot is the  first non-zero entry on a row of
+`H`,  the quadrant  below left  a pivot  is zero,  pivots are  positive and
+entries  above a  pivot are  nonnegative and  smaller than the pivot. There
+exists   a  unique  invertible  integer   matrix  `r`  such  that  `rm==H`.
+`hermite_transforms`  returns  a  tuple  with  components  `.normal=H`  and
+`.rowtrans=r`.
 
 ```julia-repl
 julia> m=[1 15 28;4 5 6;7 8 9]

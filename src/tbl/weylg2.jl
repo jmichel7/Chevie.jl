@@ -87,10 +87,10 @@ chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
         z = (para[2])[1]
         t = (para[2])[2]
         one = (x * y * z * t) ^ 0
-        f1 = function (u, v)
+        f1(u, v) = begin
                 return [1, v, u, v * u, v ^ 2 * u ^ 2, v ^ 3 * u ^ 3] * one
             end
-        f2 = function (x, y, z, t, eps)
+        f2(x, y, z, t, eps) = begin
                 local squv
                 squv = eps * (chevieget(:G2, :squv))(para, sqrtpara)
                 return [2, z + t, x + y, -squv, -x * y * z * t, 2 * squv ^ 3] * one

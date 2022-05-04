@@ -35,12 +35,11 @@ Dict{Symbol, Any} with 1 entry:
   :minwords => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2,…
   
 ```
-
-for  further information,  look at  the docstrings  of centralizer, centre,
+for  further information,  look at  the docstrings  of `centralizer, centre,
 classreps, comm, conjugacy_class, conjugacy_classes, Coset,
 fusion_conjugacy_classes,    gens,   Hom,   isabelian,   iscyclic,   words,
 minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
-position_class, stabilizer, transporting_elt, transversal
+position_class, stabilizer, transporting_elt, transversal`
 """
 module Groups
 export Group, centralizer, centre, classreps, comm,

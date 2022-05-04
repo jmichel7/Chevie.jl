@@ -137,7 +137,7 @@ chevieset(:I, :ClassInfo, function (m,)
             i = i + 1
         end
         gen = [g1, g2]
-        perm = function (l,)
+        perm(l) = begin
                 if length(l) == 0
                     return Perm()
                 else

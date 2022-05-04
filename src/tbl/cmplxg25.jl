@@ -40,19 +40,19 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
                                 y ^ length(w)
                             end), res[:classtext])
                 end)
-        f23 = function (u, v, w)
+        f23(u, v, w) = begin
                 return [2, -2 * (u * v) ^ 3, u ^ 2 + v ^ 2, u ^ 4 + v ^ 4, (u * v) ^ 2 * (u ^ 4 + v ^ 4), -u * v * (u ^ 2 + v ^ 2), -(u ^ 2) * v ^ 2, -(u ^ 4) * v ^ 4, 2 * u ^ 6 * v ^ 6, 2 * u ^ 12 * v ^ 12, -(v ^ 3) * u ^ 3 * (u + v), -(v ^ 2) * u ^ 2 * (u + v), u + v, (u + v) * ((u ^ 2 - u * v) + v ^ 2), u ^ 4 * v ^ 4 * (u ^ 2 + v ^ 2), u ^ 2 + v ^ 2, -u * v * (u ^ 2 + v ^ 2), u * v, u ^ 7 * v ^ 7, -(u ^ 3) * v ^ 3 * (u ^ 2 + v ^ 2) * ((v ^ 4 - u ^ 2 * v ^ 2) + u ^ 4), -2 * u ^ 3 * v ^ 3, 0, 0, 0]
             end
-        f31 = function (u, v, w)
+        f31(u, v, w) = begin
                 return [3, -(u ^ 4) * v ^ 2, 2 * u * v + u ^ 2, 2 * u ^ 2 * v ^ 2 + u ^ 4, u ^ 4 * v ^ 4 + 2 * u ^ 6 * v ^ 2, -(u ^ 2) * v ^ 2, 0, 0, 3 * u ^ 8 * v ^ 4, 3 * u ^ 16 * v ^ 8, -(u ^ 4) * v ^ 3, -(u ^ 4) * v, 2u + v, u * v ^ 2 + u ^ 2 * v + u ^ 3, 2 * u ^ 6 * v ^ 4 + u ^ 8 * v ^ 2, 2 * u ^ 2 + v ^ 2, (-u * v ^ 3 - u ^ 3 * v) + u ^ 4, u * v + u ^ 2, u ^ 9 * v ^ 5 + u ^ 10 * v ^ 4, -(u ^ 6) * v ^ 6, u ^ 2 * v ^ 4 - 2 * u ^ 5 * v, u ^ 3, u ^ 2 * v, u ^ 10 * v ^ 5]
             end
-        f62 = function (u, v, w)
+        f62(u, v, w) = begin
                 return [6, 2 * u ^ 3 * v ^ 2 * w, 2 * u * v + 2 * u * w + u ^ 2 + v ^ 2, 2 * u ^ 2 * v ^ 2 + 2 * u ^ 2 * w ^ 2 + u ^ 4 + v ^ 4, u ^ 2 * (v ^ 4 * w ^ 2 + 2 * u ^ 2 * v ^ 2 * w ^ 2 + 2 * v ^ 4 * u ^ 2 + u ^ 4 * w ^ 2), u * w * (u ^ 2 + v ^ 2), 0, 0, 6 * u ^ 6 * v ^ 4 * w ^ 2, 6 * u ^ 12 * v ^ 8 * w ^ 4, u ^ 3 * v ^ 2 * w * (w + u), u ^ 2 * v ^ 2 * (w + u), 3u + 2v + w, v ^ 2 * u + u * w ^ 2 + v * u ^ 2 + u ^ 2 * w + u ^ 3 + v ^ 3, v ^ 2 * u ^ 4 * (3 * v ^ 2 * w ^ 2 + 2 * u ^ 2 * w ^ 2 + u ^ 2 * v ^ 2), 3 * u ^ 2 + 2 * v ^ 2 + w ^ 2, -((u ^ 2 + v ^ 2)) * ((u * v - w ^ 2) - u ^ 2), u * (u + v), v ^ 4 * u ^ 7 * w ^ 2 * (u + v), u ^ 3 * w ^ 3 * (u ^ 2 + v ^ 2) * ((v ^ 4 - u ^ 2 * v ^ 2) + u ^ 4), v * (-2 * u ^ 3 * w ^ 2 + 3 * u ^ 4 * v + v ^ 3 * w ^ 2), -u * (-(u ^ 2) + v * w), 0, 0]
             end
-        f83 = function (u, v, w)
+        f83(u, v, w) = begin
                 return [8, 0, 2 * (w + u) * (u + v), 2 * (w ^ 2 + u ^ 2) * (u ^ 2 + v ^ 2), 2 * u ^ 2 * v * w * (w ^ 2 + u ^ 2) * (u ^ 2 + v ^ 2), 0, -(u ^ 2) * v * w, -(u ^ 4) * v ^ 2 * w ^ 2, 8 * u ^ 6 * v ^ 3 * w ^ 3, 8 * u ^ 12 * v ^ 6 * w ^ 6, 0, 0, 4u + 2v + 2w, v ^ 2 * u + u * w ^ 2 + v * w ^ 2 + v * u ^ 2 + u ^ 2 * w + v ^ 2 * w + 2 * u ^ 3, 2 * u ^ 4 * v * w * (2 * v ^ 2 * w ^ 2 + u ^ 2 * w ^ 2 + u ^ 2 * v ^ 2), 4 * u ^ 2 + 2 * v ^ 2 + 2 * w ^ 2, ((((-u * v ^ 3 - u * w ^ 3) + u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2) - u ^ 3 * v) - u ^ 3 * w) + u ^ 4, u * (u + v + w), v ^ 3 * u ^ 7 * w ^ 3 * (u + v + w), 0, (-2 * u ^ 3 * v ^ 3 - 2 * u ^ 3 * w ^ 3) + v ^ 3 * w ^ 3 + 3 * u ^ 4 * v * w, -u * (-(u ^ 2) + v * w), 0, 0]
             end
-        f97 = function (u, v, w, J)
+        f97(u, v, w, J) = begin
                 return [9, -3 * J ^ 2 * u ^ 2 * v ^ 2 * w ^ 2, (u + v + w) ^ 2, (u ^ 2 + w ^ 2 + v ^ 2) ^ 2, J * (u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2) ^ 2, -(J ^ 2) * (u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2), 0, 0, 9 * J * u ^ 4 * v ^ 4 * w ^ 4, 9 * J ^ 2 * u ^ 8 * v ^ 8 * w ^ 8, -(v ^ 2) * J ^ 2 * u ^ 2 * w ^ 2 * (u + v + w), -v * u * w * J ^ 2 * (u * v + u * w + v * w), 3u + 3v + 3w, (u + v + w) * (u ^ 2 + w ^ 2 + v ^ 2), 3 * J * u ^ 2 * v ^ 2 * w ^ 2 * (u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2), 3 * u ^ 2 + 3 * v ^ 2 + 3 * w ^ 2, (((((-u * v ^ 3 - u * w ^ 3) - v * w ^ 3) + u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2) - u ^ 3 * v) - u ^ 3 * w) - v ^ 3 * w, u * v + u * w + v * w, v ^ 4 * J * u ^ 4 * w ^ 4 * (u * v + u * w + v * w), (-(u ^ 6) * v ^ 6 - u ^ 6 * w ^ 6) - v ^ 6 * w ^ 6, -J * u * v * w * (((2 * w ^ 3 + 2 * v ^ 3) - 3 * u * v * w) + 2 * u ^ 3), -u * v * w, -J * u * v * w, -(J ^ 2) * u ^ 5 * v ^ 5 * w ^ 5]
             end
         Inherit(res, chevieget(:G25, :ClassInfo))
@@ -77,22 +77,22 @@ chevieset(:G25, :HeckeRepresentation, function (para, root, i)
         f1 = (u->begin
                     [[[u]], [[u]], [[u]]]
                 end)
-        f2 = function (v, w)
+        f2(v, w) = begin
                 return WGraph2Representation([[[1, 3], [2]], [[1, 2, -1, v * w]]], [w, v])
             end
-        f31 = function (u, v)
+        f31(u, v) = begin
                 return WGraph2Representation([[[1], [2], [3]], [[1, 2, u, -v], [2, 3, -v, u]]], [u, v])
             end
-        f32 = function (u, v, w)
+        f32(u, v, w) = begin
                 return WGraph2Representation([[[[2], []], [[], [1, 2, 3]], [[1, 3], []]], [[1, 2, -1, u * w + v ^ 2], [1, 3, v, v], [2, 3, -u * w - v ^ 2, 1]]], [u, v, w])
             end
-        f6 = function (v, u, w)
+        f6(v, u, w) = begin
                 return WGraph2Representation([[[[2], []], [[], [1, 2]], [[1], []], [[], [2, 3]], [[3], []], [[], [1, 3]]], [[1, 2, -1, v * w + u ^ 2], [1, 3, u, u], [1, 4, -1, v * w + u ^ 2], [1, 5, -u, -u], [1, 6, w, 0], [2, 3, -v * w - u ^ 2, 1], [2, 6, -u * w, 1], [4, 5, v * w + u ^ 2, -1], [4, 6, -u * w, 1]]], [v, u, w])
             end
-        f8 = function (u, w, v)
+        f8(u, w, v) = begin
                 return WGraph2Representation([[[[2, 3], []], [[3], [1, 2]], [[1, 3], []], [[2], [3]], [[1, 3], []], [[2], [1]], [[1], [2, 3]], [[1, 2], []]], [[1, 2, -u * v - w ^ 2, 1], [1, 3, w, w], [1, 4, v * w - w ^ 2, 0], [1, 5, 0, -1], [2, 3, -1, u * v + w ^ 2], [2, 4, [1, 0, 3, w], -u], [2, 5, 0, -w], [2, 6, -1, 0], [3, 6, [1, 0, 3, v - w], -u], [3, 7, u * w + w ^ 2, -1], [3, 8, -w, -w], [4, 5, -u, [1, v, 3, 0]], [4, 7, 0, v], [5, 6, [1, 0, 3, 1], -u * w], [5, 7, -u, v - w], [5, 8, 0, v * w - w ^ 2], [6, 7, u * w, [1, -1, 3, 0]], [6, 8, 0, v - w], [7, 8, -1, u * v + w ^ 2]]], [u, w, v])
             end
-        f9 = function (u, v, w, a)
+        f9(u, v, w, a) = begin
                 return WGraph2Representation([[[[2], []], [[], [1, 2, 3]], [[1], [3]], [[1, 3], []], [[2], [1]], [[1], [2]], [[2], [3]], [[3], [2]], [[3], [1]]], [[1, 2, -1, u * w + v ^ 2], [1, 3, v, [1, v, 3, 0]], [1, 4, -a * v, 0], [1, 5, 0, a ^ 2 * u - v], [1, 6, 0, a ^ 2 * u], [1, 7, 0, a ^ 2 * u - v], [1, 8, 0, -(a ^ 2) * u], [1, 9, v, [1, 0, 3, v]], [2, 3, -u * w - v ^ 2, 1], [2, 4, -u * w + a * v ^ 2, 0], [2, 5, -(a ^ 2) * v * w, 0], [2, 7, -(a ^ 2) * v * w, 0], [2, 9, -u * w - v ^ 2, 1], [3, 4, 0, u + a ^ 2 * v], [3, 5, 0, u], [3, 6, -(a ^ 2) * w, a * v], [3, 7, w, 0], [4, 5, [1, 0, 3, -w], u], [4, 6, -a * w, 0], [4, 7, [1, -w, 3, 0], u], [4, 8, a * w, 0], [4, 9, u + a ^ 2 * v, 0], [5, 6, -u, v], [5, 9, 0, w], [7, 8, u, -v], [7, 9, u, 0], [8, 9, -a * v, a ^ 2 * w]]], [u, v, w])
             end
         rep = [[f1, u], [f1, w], [f1, v], [f2, v, w], [f2, u, v], [f2, u, w], [f32, u, v, w], [f31, u, v], [f31, w, u], [f31, v, w], [f31, u, w], [f31, v, u], [f31, w, v], [f6, v, u, w], [f6, u, w, v], [f6, w, v, u], [f6, w, u, v], [f6, u, v, w], [f6, v, w, u], [f8, u, v, w], [f8, w, u, v], [f8, v, w, u], [f9, u, v, w, E(3)], [f9, u, v, w, E(3, 2)]]

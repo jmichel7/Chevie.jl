@@ -43,6 +43,11 @@ chevieset(Symbol("2A"),:HeckeCharTable, function(r, param, rootparam)
   tbl
 end)
 
+chevieset(Symbol("2A"), :ClassParameter, function (n, w)
+  x=prod(i->Perm(i,i+1),w;init=Perm())*prod(i->Perm(i,n+2-i),1:div(n+1,2))
+  cycletype(x;domain=1:n+1,trivial=true)
+end)
+
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
   uc=deepcopy(chevieget(:A, :UnipotentClasses)(r, p))
   for c in uc[:classes]

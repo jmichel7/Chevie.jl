@@ -42,19 +42,19 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
         r = (param[1])[1]
         p = (param[1])[2]
         u = GetRoot(-p * r, 2)
-        f1 = function (r,)
+        f1(r) = begin
                 return [1, r, r ^ 2, r ^ 2, r ^ 9, r ^ 3, r ^ 4, r ^ 7, r ^ 18, r ^ 6, r ^ 11, r ^ 21]
             end
-        f3 = function (p, r, a)
+        f3(p, r, a) = begin
                 return [3, 2p + r, p ^ 2, p * r + p ^ 2, (-1 - a) // 2 * p ^ 6 * r ^ 3, (-1 + a) // 2 * p ^ 2 * r, -2 * p ^ 2 * r ^ 2 + p ^ 4, 0, (-1 - a) // 2 * p ^ 12 * r ^ 6, (-1 + a) // 2 * p ^ 4 * r ^ 2, -(p ^ 7) * r ^ 4, 3 * p ^ 14 * r ^ 7]
             end
-        f6 = function (r, p)
+        f6(r, p) = begin
                 return [6, 2p + 4r, 2 * p * r + 2 * r ^ 2, 2 * p * r + 2 * r ^ 2, p ^ 3 * r ^ 6, p * r ^ 2, 2 * r ^ 4, 0, -(p ^ 6) * r ^ 12, -(p ^ 2) * r ^ 4, 0, -6 * p ^ 7 * r ^ 14]
             end
-        f7 = function (p, r)
+        f7(p, r) = begin
                 return [7, 4p + 3r, 2 * p * r + p ^ 2, 2 * p * r + 2 * p ^ 2 + r ^ 2, 0, 0, -2 * p ^ 2 * r ^ 2 + p ^ 4, p ^ 4 * r ^ 3, 0, 0, -(p ^ 6) * r ^ 5, 7 * p ^ 12 * r ^ 9]
             end
-        f8 = function (p, r, u)
+        f8(p, r, u) = begin
                 return [8, 4p + 4r, 2 * p * r + p ^ 2 + r ^ 2, 3 * p * r + p ^ 2 + r ^ 2, u * p ^ 4 * r ^ 4, -p * r * u, -2 * p ^ 2 * r ^ 2 + p ^ 4 + r ^ 4, p ^ 3 * r ^ 3 * u, -(p ^ 9) * r ^ 9, -(p ^ 3) * r ^ 3, 0, 8 * p ^ 10 * r ^ 10 * u]
             end
         tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, root(-7)), f3(r, p, root(-7)), f3(p, r, -(root(-7))), f3(r, p, -(root(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(perm"( 5, 6)( 9,10)"), :irredinfo => chevieget(:G24, :IrredInfo))
@@ -76,16 +76,16 @@ chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
                                 [[r]]
                             end), 1:3)
                 end)
-        f3 = function (p, r, a)
+        f3(p, r, a) = begin
                 return WGraph2Representation([[[2, 3], [1, 2], [1, 3]], [[1, 2, p, -r], [1, 3, p, -r], [2, 3, (r * (1 - a)) // 2, (-p * (a + 1)) // 2]]], [p, r]) * p ^ 0 * r ^ 0
             end
-        f7 = function (p, r)
+        f7(p, r) = begin
                 return WGraph2Representation([[[2, 3], [2, 3], [1, 3], [1, 3], [1, 2], [1, 2]], [[1, 4, r, -p], [1, 5, r, -p], [2, 3, r, -p], [2, 6, p, -r], [3, 5, -p, 0], [3, 6, -2p, r], [4, 5, r, 0], [4, 6, 2r, 0]]], [r, p]) * p ^ 0 * r ^ 0
             end
-        f9 = function (r, p)
+        f9(r, p) = begin
                 return WGraph2Representation([[[1], [1, 2], [1, 3], [2], [2], [3], [3]], [[1, 2, 0, -r], [1, 3, 0, p], [1, 4, p, -r], [1, 5, 0, -r], [1, 6, -p, r], [2, 5, -p, 0], [2, 7, -p, r], [3, 4, -p, 0], [3, 5, p, -r], [3, 6, p, 0], [3, 7, p, 0], [4, 6, 0, -p], [4, 7, -r, p], [5, 6, -r, p], [5, 7, -r, 0]]], [p, r]) * p ^ 0 * r ^ 0
             end
-        f11 = function (x, y, e)
+        f11(x, y, e) = begin
                 local v
                 v = e * GetRoot(-x * y)
                 return [[[0, 0, 0, 0, 0, 0, 0, -x], [0, x + y, 0, 0, y, 0, 0, 0], [0, 0, x, -v * y + x * y, 0, 0, -(x ^ 2), 0], [0, 0, 0, y, 0, 0, 0, 0], [0, -x, 0, 0, 0, 0, 0, 0], [0, 0, 0, x, 0, x, -v - y, 0], [0, 0, 0, 0, 0, 0, y, 0], [y, 0, 0, 0, 0, 0, 0, x + y]], [[x, 0, 0, v, 0, 0, 0, -y], [0, x, 0, v, x, 0, 0, 0], [0, 0, x + y, 0, 0, 0, -x * y, 0], [0, 0, 0, y, 0, 0, 0, 0], [0, 0, 0, 0, y, 0, 0, 0], [0, 0, -1, x, -v, x, x, v], [0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, y]], [[y, 0, 0, 0, 0, 0, 0, 0], [0, x, 0, 0, x, 0, -v, 0], [-x * y, 0, x, 0, -v * y, v * y, (v * y - x * y) - x ^ 2, 0], [0, 0, 0, x, 0, -y, -v - y, 0], [0, 0, 0, 0, y, 0, 0, 0], [0, 0, 0, 0, 0, y, 0, 0], [0, 0, 0, 0, 0, 0, y, 0], [x, 0, 0, 0, 0, 0, x, x]]]

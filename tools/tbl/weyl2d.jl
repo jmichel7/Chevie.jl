@@ -127,7 +127,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                                 symbol_partition_tuple(x, 0)
                             end), (chevieget(Symbol("2D"), :CharParams))(rank))
             end
-            Defect0to2 = function (ST,)
+            Defect0to2(ST) = begin
                     local a
                     a = Minimum(SymmetricDifference(ST[1], ST[2]))
                     ST = [SymmetricDifference(ST[1], [a]), SymmetricDifference(ST[2], [a])]

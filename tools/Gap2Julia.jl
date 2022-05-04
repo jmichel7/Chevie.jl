@@ -209,7 +209,7 @@ function trans(e)
     head=e.head
  #  print("head=$head args=$args\n")
  #  args=filter(x->x isa Expr || x isa String,args)
-    if e.head==:call 
+    if head==:call 
       if haskey(ftrans,a) 
         args[1]=ftrans[a]
         a=args[1]
@@ -277,8 +277,14 @@ function trans(e)
       if b isa Expr return Expr(:ref,trans(a),:(Symbol($(trans(b.args[1])))))
       else return Expr(:ref,trans(a),b)
       end
+    elseif head== :(=)
+      if a isa Symbol && b isa Expr && b.head==:function && b.args[1].head==:tuple
+        if b.args[1]==:((arg,)) b.args[1]=:((arg...,)) end
+        return Expr(:(=),Expr(:call,a,map(trans,b.args[1].args)...),trans(b.args[2]))
+      else return Expr(:(=),trans.(args)...)
+      end
     end 
- #  print("head=$head map(trans,args)=$(map(trans,args))\n")
+#   print("head=$head map(trans,args)=$(map(trans,args))\n")
     return Expr(head,map(trans,args)...)
   elseif e isa Symbol
     if e in keys(ftrans) return ftrans[e]
@@ -289,4 +295,13 @@ function trans(e)
 end
 
 trad(s)=join(string.(Base.remove_linenums!.(trans.(myparse(s,false)))),"\n")
+
+function nd(e::Expr) # nice dump
+  e=Base.remove_linenums!(e)
+  string("(",e.head," ",join(nd.(e.args)," "),")")
+end
+
+nd(e::Symbol)=repr(e)
+nd(e::Integer)=repr(e)
+
 end

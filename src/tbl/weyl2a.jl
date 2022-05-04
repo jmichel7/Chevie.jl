@@ -7,7 +7,7 @@ chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
         else
             part = partitions(n + 1)
         end
-        redw = function (n, w)
+        redw(n, w) = begin
                 local l, i
                 l = []
                 while true
@@ -22,7 +22,7 @@ chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
                 end
                 return l
             end
-        guesslongest = function (p,)
+        guesslongest(p) = begin
                 local x, off, i
                 p = Concatenation(filter((i->begin
                                     mod(i, 2) == 0
@@ -62,29 +62,6 @@ chevieset(Symbol("2A"), :ClassInfo, function (n,)
 chevieset(Symbol("2A"), :NrConjugacyClasses, (n->begin
             npartitions(n + 1)
         end))
-chevieset(Symbol("2A"), :ClassParameter, function (n, w)
-        local i, j, x, res, mark, cyc
-        x = Perm()
-        for i = w
-            x = x * Perm(i, i + 1)
-        end
-        for i = 1:div(n + 1, 2)
-            x = x * Perm(i, (n + 2) - i)
-        end
-        res = []
-        mark = collect(1:n+1)
-        for i = 1:n + 1
-            if mark[i] != 0
-                cyc = CyclePermInt(x, i)
-                push!(res, length(cyc))
-                for j = cyc
-                    mark[j] = 0
-                end
-            end
-        end
-        sort!(res)
-        return reverse(res)
-    end)
 chevieset(Symbol("2A"), :CharParams, (n->begin
             partitions(n + 1)
         end))
@@ -113,7 +90,7 @@ chevieset(Symbol("2A"), :Representation, function (n, i)
                             [1, -1]
                         end), 1:n), 1:n * 0 + 1, i)
     end)
-PartitionTwoCoreQuotient = function (d, p)
+PartitionTwoCoreQuotient(d, p) = begin
         local x
         x = symbol_partition_tuple(reverse(p), -d)
         return partβ(gapSet(Concatenation(2 * x[1], 2 * x[2] + 1)))

@@ -115,10 +115,10 @@ chevieset(:G4_22, :ClassInfo, function (ST,)
         local res, p, g, z, f, digits
         p = (chevieget(:G4_22, :paramclasses))(ST)
         res = Dict{Symbol, Any}()
-        g = function (c, a, b)
+        g(c, a, b) = begin
                 return mod(c[2], a) == b[c[1]]
             end
-        f = function (class, z)
+        f(class, z) = begin
                 local r, i
                 r = [[], [1], [2], [3], [3, 3]]
                 r = r[class[1]]
@@ -487,7 +487,7 @@ chevieset(:G4_22, :SchurData, function (ST,)
         if ST in 4:7
             return map(function (char,)
                         local f
-                        f = function (l, i)
+                        f(l, i) = begin
                                 return Concatenation([l[i]], Drop(l, i))
                             end
                         if char[1] == 1
@@ -501,7 +501,7 @@ chevieset(:G4_22, :SchurData, function (ST,)
         elseif ST in 8:15
             return map(function (char,)
                         local f
-                        f = function (l, i)
+                        f(l, i) = begin
                                 return Concatenation([l[i]], Drop(l, i))
                             end
                         if char[1] == 1
@@ -517,7 +517,7 @@ chevieset(:G4_22, :SchurData, function (ST,)
         elseif ST in 8:22
             return map(function (char,)
                         local f
-                        f = function (l, i)
+                        f(l, i) = begin
                                 return Concatenation([l[i]], Drop(l, i))
                             end
                         if char[1] == 1
@@ -569,7 +569,7 @@ chevieset(:G4_22, :DecompositionMatrix, function (ST, p)
     end)
 chevieset(:G4_22, :GetParams, function (ST, para)
         local d, f
-        f = function (p,)
+        f(p) = begin
                 p = map(GetRoot, p)
                 return Concatenation(p, -p)
             end
@@ -618,7 +618,7 @@ chevieset(:G4_22, :Embed, function (ST,)
         d = Dict{Symbol, Any}(Symbol("4") => [[1, 3, -1], [3]], Symbol("5") => [[2], [3]], Symbol("6") => [[1], [3]], Symbol("7") => [[1], [2], [3]], Symbol("8") => [[3], [1, 3, -1]], Symbol("9") => [[1], [3]], Symbol("10") => [[2], [3]], Symbol("11") => [[1], [2], [3]], Symbol("12") => [[1], [2, 1, -2], [-2, 1, 2]], Symbol("13") => [[3, 3], [1], [-2, 1, 2]], Symbol("14") => [[1], [2]], Symbol("15") => [[1], [2], [3, 3]], Symbol("16") => [[3], [1, 3, -1]], Symbol("17") => [[1], [3]], Symbol("18") => [[2], [3]], Symbol("19") => [[1], [2], [3]], Symbol("20") => [[2], [1, 2, -1]], Symbol("21") => [[1], [2]], Symbol("22") => [[1], [2, 1, -2], [-2, 1, 2]])
         return d[Symbol(ST)]
     end)
-G4_22Helper = function (c, e, x, n, p)
+G4_22Helper(c, e, x, n, p) = begin
         local nz, r, res, root
         nz = filter((i->begin
                         c[i] != 0 * c[i]
@@ -643,9 +643,9 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
         c35 = combinations(1:5, 3)
         c23 = [[2, 3], [1, 3], [1, 2]]
         c = 0 * Product(para, Product)
-        if ST in 4:7
-            GenericRow = function (char,)
-                    local l
+        GenericRow(char) = begin
+                local l, r
+                if ST in 4:7
                     if char[1] == 1
                         l = [1, X[char[2]], Y[char[3]], Z[char[4]]]
                         return map((class->begin
@@ -662,10 +662,7 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
                                     end), classes), map((c->begin
                                         c[2]
                                     end), classes), Product(l[2:4], Product), char[1], char[2])
-                end
-        elseif ST in 8:15
-            GenericRow = function (char,)
-                    local l
+                elseif ST in 8:15
                     if char[1] == 1
                         l = [1, X[char[2]], Y[char[3]], Z[char[4]], Z[char[4]] ^ 2]
                         return map((class->begin
@@ -687,10 +684,7 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
                                         end), classes), map((c->begin
                                             c[2]
                                         end), classes), Product(l[2:4], Product), char[1], char[2]) + c
-                end
-        elseif ST in 16:22
-            GenericRow = function (char,)
-                    local l, r
+                elseif ST in 16:22
                     if char[1] == 1
                         l = [1, X[char[2]], Y[char[3]], Z[char[4]], Z[char[4]] ^ 2]
                         return map((class->begin
@@ -717,7 +711,7 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
                                         c[2]
                                     end), classes), Product(l[2:4], Product), char[1], char[2])
                 end
-        end
+            end
         res = Dict{Symbol, Any}(:name => SPrint("H(G", ST, ")"), :ST => ST, :parameter => para, :degrees => (chevieget(:G4_22, :ReflectionDegrees))(ST), :dim => 2, :reflclasses => [3], :powermap => (chevieget(:G4_22, :PowerMaps))(ST))
         Inherit(res, (chevieget(:G4_22, :ClassInfo))(ST))
         classes = ((chevieget(:G4_22, :paramclasses))(ST))[res[:indexclasses]]
@@ -821,7 +815,7 @@ chevieset(:G4_22, :HeckeRepresentation, function (ST, para, root, i)
         Z = X[3]
         Y = X[2]
         X = X[1]
-        rep = function (char,)
+        rep(char) = begin
                 local r, dim
                 dim = char[1]
                 r = (chevieget(:G4_22, :Rep))[Symbol(dim)]
@@ -893,7 +887,7 @@ chevieset(:G4_22, :UnipotentCharacters, function (ST,)
         elseif ST == 8
             return Dict{Symbol, Any}(:harishChandra => [Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST", :indices => 1:2, :rank => 2, :ST => 8), :levi => [], :parameterExponents => [1, 1], :charNumbers => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 14, 13, 12, 11, 16, 15], :eigenvalue => 1, :cuspidalName => ""), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST", :indices => [2], :rank => 1, :p => 4, :q => 1), :levi => [1], :parameterExponents => [[3, 0, 0, 2]], :charNumbers => [17, 27, 25, 22], :eigenvalue => -1, :cuspidalName => ImprimitiveCuspidalName([[0], [0, 1], [0, 1], []])), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST", :indices => [2], :rank => 1, :p => 4, :q => 1), :levi => [1], :parameterExponents => [[3, 0, 2, 0]], :charNumbers => [18, 29, 21, 30], :eigenvalue => -I, :cuspidalName => ImprimitiveCuspidalName([[], [0, 1], [0], [0, 1]])), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST", :indices => [2], :rank => 1, :p => 4, :q => 1), :levi => [1], :parameterExponents => [[3, 2, 0, 0]], :charNumbers => [19, 20, 26, 28], :eigenvalue => -1, :cuspidalName => ImprimitiveCuspidalName([[0], [], [0, 1], [0, 1]])), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [23], :eigenvalue => E(8, 3), :qEigen => 1 // 2, :cuspidalName => "G_8[\\zeta_8^3]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [24], :eigenvalue => E(8, 7), :qEigen => 1 // 2, :cuspidalName => "G_8[\\zeta_8^7]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [31], :eigenvalue => 1, :cuspidalName => "G_8[1]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [32], :eigenvalue => I, :cuspidalName => "G_8[i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [33], :eigenvalue => I, :cuspidalName => "G_8^2[i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [34], :eigenvalue => J, :cuspidalName => "G_8[\\zeta_3]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [35], :eigenvalue => J ^ 2, :cuspidalName => "G_8[\\zeta_3^2]")], :families => [Family("C1", [1]), Family(((CHEVIE[:families])[:X])(4), [5, 6, 7, 17, 18, 19], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, -1, -1], :ennola => 4)), Family(((CHEVIE[:families])[:X])(4), [11, 12, 13, 20, 21, 22], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, -1, -1], :ennola => -6)), Family("Z4", [23, 15, 24, 16], Dict{Symbol, Any}(:signs => [-1, 1, 1, -1], :ennola => 1)), Family(Dict{Symbol, Any}(:fourierMat => [[-1, -1, 3, -3I, 3I, 1, 3, -3I, -3I, -3, 3, 3I, 3I, 1, -3I, -3I, 4, 4], [-1, -1, 3, 3I, -3I, 1, 3, 3I, 3I, -3, 3, -3I, -3I, 1, 3I, 3I, 4, 4], [3, 3, 3, -3, -3, 3, 3, 3, -3, 3, -3, -3, 3, 3, -3, 3, 0, 0], [-3I, 3I, -3, 3, 3, 3, 3, 3, -3, -3I, -3I, 3I, 3I, -3, 3I, 3I, 0, 0], [3I, -3I, -3, 3, 3, 3, 3, 3, -3, 3I, 3I, -3I, -3I, -3, -3I, -3I, 0, 0], [1, 1, 3, 3, 3, -1, 3, -3, 3, -3, 3, -3, 3, -1, -3, 3, -4, -4], [3, 3, 3, 3, 3, 3, 3, -3, 3, 3, -3, 3, -3, 3, 3, -3, 0, 0], [-3I, 3I, 3, 3, 3, -3, -3, 3, -3, -3I, -3I, -3I, -3I, 3, -3I, -3I, 0, 0], [-3I, 3I, -3, -3, -3, 3, 3, -3, 3, -3I, -3I, -3I, -3I, -3, -3I, -3I, 0, 0], [-3, -3, 3, -3I, 3I, -3, 3, -3I, -3I, 3, -3, -3I, -3I, -3, 3I, 3I, 0, 0], [3, 3, -3, -3I, 3I, 3, -3, -3I, -3I, -3, 3, -3I, -3I, 3, 3I, 3I, 0, 0], [3I, -3I, -3, 3I, -3I, -3, 3, -3I, -3I, -3I, -3I, -3, 3, 3, 3, -3, 0, 0], [3I, -3I, 3, 3I, -3I, 3, -3, -3I, -3I, -3I, -3I, 3, -3, -3, -3, 3, 0, 0], [1, 1, 3, -3, -3, -1, 3, 3, -3, -3, 3, 3, -3, -1, 3, -3, -4, -4], [-3I, 3I, -3, 3I, -3I, -3, 3, -3I, -3I, 3I, 3I, 3, -3, 3, -3, 3, 0, 0], [-3I, 3I, 3, 3I, -3I, 3, -3, -3I, -3I, 3I, 3I, -3, 3, -3, 3, -3, 0, 0], [4, 4, 0, 0, 0, -4, 0, 0, 0, 0, 0, 0, 0, -4, 0, 0, -4, 8], [4, 4, 0, 0, 0, -4, 0, 0, 0, 0, 0, 0, 0, -4, 0, 0, 8, -4]] // 12, :eigenvalues => [1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -I, -I, 1, I, I, J, J ^ 2], :name => "?18", :explanation => "mystery G8", :special => 1, :cospecial => 2, :ennola => 6), [2, 4, 3, 8, 10, 9, 14, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, 1, -1, -1]))], :a => [0, 6, 6, 6, 1, 1, 1, 6, 6, 6, 2, 2, 2, 6, 3, 3, 1, 1, 1, 2, 2, 2, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6], :A => [0, 18, 18, 18, 11, 11, 11, 18, 18, 18, 14, 14, 14, 18, 15, 15, 11, 11, 11, 14, 14, 14, 15, 15, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18])
         elseif ST == 14
-            cuspidal = function (arg...,)
+            cuspidal(arg...) = begin
                     local res, n
                     n = "G_{14}"
                     if length(arg) > 2 && IsInt(arg[3])

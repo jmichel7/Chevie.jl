@@ -77,24 +77,6 @@ chevieset(:A, :WeightInfo, (n->begin
                                 [i]
                             end), 1:n), :moduli => [n + 1])
         end))
-chevieset(:A, :ClassParameter, function (n, w)
-        local i, x, res, mark, cyc
-        x = Perm()
-        for i = w
-            x = x * Perm(i, i + 1)
-        end
-        res = []
-        mark =collect(1:n+1)
-        for i = 1:n + 1
-            if mark[i] != 0
-                cyc = CyclePermInt(x, i)
-                push!(res, length(cyc))
-                mark[cyc] = cyc * 0
-            end
-        end
-        sort!(res)
-        return reverse(res)
-    end)
 chevieset(:A, :CharParams, (n->begin
             partitions(n + 1)
         end))
