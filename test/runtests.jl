@@ -831,7 +831,7 @@ end
 @test mytest("Semisimple.jl","C=algebraic_centre(L)","(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))")
 @test mytest("Semisimple.jl","T=torsion_subgroup(C.Z0,3)","SSGroup([<ζ₃,ζ₃²,ζ₃>])")
 @test mytest("Semisimple.jl","sort(elements(T))","3-element Vector{SemisimpleElement{Root1}}:\n <1,1,1>\n <ζ₃,ζ₃²,ζ₃>\n <ζ₃²,ζ₃,ζ₃²>")
-@test mytest("Semisimple.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Vector} with 6 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[1, 1], [1, 0], [2, 1], [2, 0], [0, 1]]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[2//3, 1//3, 0//1, 0//1],…\n  :AdjointFundamentalGroup => [(1,2,12), (4,14)]")
+@test mytest("Semisimple.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Array} with 7 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]\n  :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0//1, 0//1],…\n  :AdjointFundamentalGroup => [(1,12,2), (4,14)]")
 @test mytest("Semisimple.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Semisimple.jl","fundamental_group(W)","Group([(1,12,3,2)])")
 @test mytest("Semisimple.jl","W=rootdatum(:sl,4)","sl₄")

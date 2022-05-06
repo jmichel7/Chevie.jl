@@ -538,10 +538,10 @@ end
 """ 
 `weightinfo(W)`
     
-W  is  a  Coxeter  group  record  describing  an algebraic group 𝐆 , or a
-IypeIrred.  The function is independent of the isogeny type of 𝐆 (so just
-depends  on  `refltype(W)`,  that  is  on  the root system). It returns a
-dict with the following keys:
+`W`  is a  Coxeter group  record describing  an algebraic  group `𝐆 `, or a
+`IypeIrred`. The function is independent of the isogeny type of `𝐆`(so just
+depends  on `refltype(W)`, that is  on the root system).  It returns a dict
+with the following keys:
 
 `:minusculeWeights`: the minuscule weights, described as their position in
    the list of fundamental weights. For non-irreducible groups, a weight is
@@ -560,23 +560,48 @@ dict with the following keys:
 `:moduli`: the list of orders of the generators of the fundamental group.
 
 `:AdjointFundamentalGroup`: the list of generators of the adjoint fundamental
-   group, given as permutations.
+   group, given as permutations of the extended root basis.
 
 `:CenterSimplyConnected`: A list of semisimple elements generating the center
    of the universal covering of  𝐆 
   
+`:chosenAdaptedBasis`: A basis of the weight lattice adapted to the root
+  lattice.  In the  basis of  the fundamental  weights, the root lattice is
+  given  by the Cartan  matrix `C`. The  property is that  the Hermite normal
+  form  of  `C*.chosenAdaptedBasis`  is  almost  in  Smith normal form (it is
+  diagonal  but the diagonal entries may be permuted compared to the Smith
+  normal form).
 ```julia-repl
 julia> weightinfo(coxgroup(:A,2)*coxgroup(:B,2))
-Dict{Symbol, Vector} with 6 entries:
+Dict{Symbol, Array} with 7 entries:
   :moduli                  => [3, 2]
   :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]
-  :decompositions          => [[1, 1], [1, 0], [2, 1], [2, 0], [0, 1]]
+  :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]
+  :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
   :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]
-  :CenterSimplyConnected   => Vector{Rational{Int64}}[[2//3, 1//3, 0//1, 0//1],…
-  :AdjointFundamentalGroup => [(1,2,12), (4,14)]
+  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0//1, 0//1],…
+  :AdjointFundamentalGroup => [(1,12,2), (4,14)]
 ```
 """ 
+function weightinfo(t::TypeIrred)
+  r=getchev(t,:WeightInfo)
+  if isnothing(r)
+    r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
+         :minusculeWeights=>Vector{Int}[])
+  end
+  if !haskey(r,:minusculeCoweights)
+    r[:minusculeCoweights]=r[:minusculeWeights]
+  end
+  if !haskey(r,:chosenAdaptedBasis)
+    r[:chosenAdaptedBasis]=one(fill(0,rank(t),rank(t)))
+  else
+   r[:chosenAdaptedBasis]=toM(r[:chosenAdaptedBasis])
+  end
+  r
+end
+
 function weightinfo(W)
+  M=one(fill(0,semisimplerank(W),semisimplerank(W)))
   if isempty(refltype(W)) return Dict(:minusculeWeights=>Vector{Int}[],
          :minusculeCoweights=>Vector{Int}[],
          :decompositions=>Vector{Vector{Int}}[],
@@ -586,16 +611,9 @@ function weightinfo(W)
         )
   end
   l=map(refltype(W)) do t
-    r=getchev(t,:WeightInfo)
-    if isnothing(r)
-      r=Dict{Symbol,Any}(:moduli=>Int[],:decompositions=>Vector{Vector{Int}}[],
-           :minusculeWeights=>Vector{Int}[])
-    end
-    if !haskey(r,:minusculeCoweights)
-      r[:minusculeCoweights]=r[:minusculeWeights]
-    end
+    r=weightinfo(t)
     if isempty(r[:moduli]) g=Int[]
-      r[:ww]=Perm{Int}[]
+      r[:ww]=eltype(W)[]
     else g=filter(i->sum(r[:decompositions][i])==1,
           eachindex(r[:minusculeCoweights])) # generators of fundamental group
       r[:ww]=map(x->WeightToAdjointFundamentalGroupElement(W,x),
@@ -607,6 +625,7 @@ function weightinfo(W)
       r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
       r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
       r[:minusculeCoweights]=t.indices[r[:minusculeCoweights]]
+      M[t.indices,t.indices]=r[:chosenAdaptedBasis]
     end
     r[:csi]=Array.(toL(r[:csi]))
     r
@@ -621,7 +640,8 @@ function weightinfo(W)
 # centre of simply connected group: the generating minuscule coweights
 # mod the root lattice
     :CenterSimplyConnected=>reduce(vcat,getindex.(l,:csi)),
-    :AdjointFundamentalGroup=>reduce(vcat,getindex.(l,:ww)))
+    :AdjointFundamentalGroup=>reduce(vcat,getindex.(l,:ww)),
+    :chosenAdaptedBasis=>M)
   n=1:length(res[:decompositions])-1
   res[:minusculeWeights]=map(x->filter(!iszero,x),res[:minusculeWeights][n])
   res[:minusculeCoweights]=map(x->filter(!iszero,x),res[:minusculeCoweights][n])

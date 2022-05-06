@@ -2,7 +2,13 @@
 chevieset(:E7, :ReflectionDegrees, [2, 6, 8, 10, 12, 14, 18])
 chevieset(:E7, :Size, 2903040)
 chevieset(:E7, :GeneratingRoots, [[1, -1, -1, -1, -1, -1, -1, 1] // 2, [1, 1, 0, 0, 0, 0, 0, 0], [-1, 1, 0, 0, 0, 0, 0, 0], [0, -1, 1, 0, 0, 0, 0, 0], [0, 0, -1, 1, 0, 0, 0, 0], [0, 0, 0, -1, 1, 0, 0, 0], [0, 0, 0, 0, -1, 1, 0, 0]])
-chevieset(:E7, :WeightInfo, Dict{Symbol, Any}(:minusculeWeights => [7], :decompositions => [[1]], :moduli => [2]))
+chevieset(:E7, :WeightInfo, function ()
+        local M
+        M = IdentityMat(7)
+        (M[2])[7] = -1
+        (M[5])[7] = -1
+        return Dict{Symbol, Any}(:minusculeWeights => [7], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+    end)
 chevieset(:E7, :NrConjugacyClasses, 60)
 chevieset(:E7, :WordsClassRepresentatives, map((x->begin
                 Replace(x, [0], [7, 6, 5, 4, 3, 2, 1])

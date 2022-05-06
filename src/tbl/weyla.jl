@@ -72,11 +72,16 @@ chevieset(:A, :ClassInfo, function (n,)
 chevieset(:A, :NrConjugacyClasses, (n->begin
             npartitions(n + 1)
         end))
-chevieset(:A, :WeightInfo, (n->begin
-            Dict{Symbol, Any}(:minusculeWeights => 1:n, :decompositions => map((i->begin
-                                [i]
-                            end), 1:n), :moduli => [n + 1])
-        end))
+chevieset(:A, :WeightInfo, function (n,)
+        local M, i
+        M = IdentityMat(n)
+        for i = 1:n - 1
+            (M[i])[n] = -i
+        end
+        return Dict{Symbol, Any}(:minusculeWeights => 1:n, :decompositions => map((i->begin
+                                [(n + 1) - i]
+                            end), 1:n), :moduli => [n + 1], :chosenAdaptedBasis => M)
+    end)
 chevieset(:A, :CharParams, (n->begin
             partitions(n + 1)
         end))

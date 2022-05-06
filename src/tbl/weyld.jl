@@ -16,11 +16,24 @@ chevieset(:D, :GeneratingRoots, function (l,)
         return reverse(rts)
     end)
 chevieset(:D, :WeightInfo, function (n,)
-        local res
+        local res, M, i
+        M = IdentityMat(n)
         if mod(n, 2) == 1
-            return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[1], [3], [2]], :moduli => [4])
+            for i = 3:n - 1
+                (M[i])[n] = -(mod(i - 2, 2))
+            end
+            (M[1])[2] = -1
+            for i = 3:n
+                (M[i])[2] = -2 * mod(i - 2, 2)
+            end
+            return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[3], [1], [2]], :moduli => [4], :chosenAdaptedBasis => M)
         else
-            return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[1, 0], [0, 1], [1, 1]], :moduli => [2, 2])
+            for i = 4:n - 1
+                (M[i])[n] = -(mod(i - 3, 2))
+            end
+            (M[1])[2] = -1
+            (M[1])[n] = -1
+            return Dict{Symbol, Any}(:minusculeWeights => [1, 2, n], :decompositions => [[1, 1], [1, 0], [0, 1]], :moduli => [2, 2], :chosenAdaptedBasis => M)
         end
     end)
 chevieset(:D, :ParabolicRepresentatives, function (l, s)
