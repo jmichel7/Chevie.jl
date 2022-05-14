@@ -42,14 +42,13 @@ minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
 position_class, stabilizer, transporting_elt, transversal`
 """
 module Groups
-export Group, centralizer, centre, classreps, comm,
+export Group, centralizer, centre, classreps, comm, order,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
   gens, Hom, isabelian, iscyclic, words, minimal_words, nconjugacy_classes,
   ngens, normalizer, orbit, orbits, position_class, stabilizer,
   transporting_elt, transversal
 
 using ..Util: InfoChevie, @GapObj
-using ..Perms: Perms, order
 #import Gapjm: word, elements, kernel
 # to use as a stand-alone module comment above line and uncomment next line
 export word, elements, kernel
@@ -497,6 +496,16 @@ end
 "`isabelian(G::Group)` whether `G` is abelian"
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
+function order(a)# default method
+  i=1
+  u=a
+  while true
+   if isone(u) return i end
+    i+=1
+    u*=a
+  end
+end
+
 "`iscyclic(G::Group)` whether `G` is cyclic"
 iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
 
@@ -628,6 +637,9 @@ end
 
 Base.isone(a::Coset)=a.phi in Group(a)
 
+"""
+`Coset(phi,G)` coset `G.phi` (assumed equal to `phi.G`)
+"""
 Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
@@ -659,7 +671,15 @@ Base.:^(a::Coset, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 
 Base.:^(a::Coset, b::Coset)= inv(b)*a*b
 
-Perms.order(a::Coset)=findfirst(i->a.phi^i in Group(a),1:order(a.phi))
+function order(a::Coset)
+  i=1
+  u=a.phi
+  while true
+    if u in Group(a) return i end
+    i+=1
+    u*=a.phi
+  end
+end
 
 Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
 

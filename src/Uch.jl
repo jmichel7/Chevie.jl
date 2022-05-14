@@ -1,114 +1,122 @@
 """
-Let  `𝐆 ` be a connected reductive group defined over the algebraic closure
-of  a finite field ``𝔽_q``,  with corresponding Frobenius automorphism `F`,
-or  more generally let  `F` be an  isogeny of `𝐆  ` such that  a power is a
-Frobenius (this covers the Suzuki and Ree groups).
+Let  ``𝐆 `` be a connected reductive  group over the algebraic closure of a
+finite  field ``𝔽_q``,  defined over  ``𝔽_q`` with  corresponding Frobenius
+automorphism  ``F``. We  want to  study the  irreducible characters  of ``𝐆
+^F``.  More generally we consider ``𝐆 ^F`` where ``F`` is an isogeny of ``𝐆
+``  such  that  a  power  is  a  Frobenius  (this covers the Suzuki and Ree
+groups).
 
-If  `𝐓`  is  an  `F`-stable  maximal  torus  of  `𝐆  `,  and  `𝐁` is a (not
-necessarily  `F`-stable)  Borel  subgroup  containing  `𝐓`,  we  define the
+If  ``𝐓`` is an ``F``-stable  maximal torus of ``𝐆  ``, and ``𝐁`` is a (not
+necessarily  ``F``-stable) Borel  subgroup containing  ``𝐓``, we define the
 *Deligne-Lusztig*  variety ``X_𝐁=\\{g𝐁 ∈ 𝐆  /𝐁 ∣ g𝐁 ∩  F(g𝐁 )≠∅ \\}``. This
-variety  has a natural action of ``𝐆 ^F`` on the left, so the corresponding
-*Deligne-Lusztig  virtual module*  ``∑ᵢ (-1)ⁱ  Hⁱ_c(X_𝐁,ℚ̄ _ℓ)``  also. The
-character  of this virtual module  is the *Deligne-Lusztig* character ``R_𝐓
-^𝐆  (1)``; the  notation reflects  the fact  that one  can prove  that this
-character does not depend on the choice of `𝐁`. Actually, this character is
-parameterized by an `F`-conjugacy class of `W`: if `𝐓₀⊂𝐁₀` is an `F`-stable
-pair,  there  is  an  unique  ``w∈  W=N_𝐆  (𝐓₀)/𝐓₀``  such  that the triple
-`(𝐓,𝐁,F)` is `𝐆 `-conjugate to `(𝐓₀,𝐁₀,wF)`. In this case we denote ``R_w``
-for ``R_𝐓^𝐆 (1)``; it depends only on the `F`-class of `w`.
+variety  affords  a  natural  action  of  ``𝐆  ^F``  on  the  left,  so the
+corresponding   *Deligne-Lusztig  virtual  module*  ``H^*_c(X_𝐁):=∑ᵢ  (-1)ⁱ
+Hⁱ_c(X_𝐁,ℚ̄  _ℓ)``  also.  The  (virtual)  character  of this module is the
+*Deligne-Lusztig*  character  ``R_𝐓  ^𝐆  (1)``;  the  notation reflects the
+theorem  that this character does  not depend on the  choice of ``𝐁``. This
+character  can be  parameterized by  an ``F``-conjugacy  class of ``W``: if
+``𝐓₀⊂𝐁₀``  is an ``F``-stable pair, there is an unique ``w∈ W=N_𝐆 (𝐓₀)/𝐓₀``
+such  that the triple ``(𝐓,𝐁,F)`` is ``𝐆 ``-conjugate to ``(𝐓₀,𝐁₀,wF)``. We
+will  thus denote ``R_w`` for ``R_𝐓^𝐆 (1)``; this character depends only on
+the ``F``-class of ``w``.
 
 The  *unipotent characters* of ``𝐆 ^F`` are the irreducible constituents of
-the  ``R_w``. In a  similar way that  the unipotent classes  are a building
-block  for  describing  the  conjugacy  classes  of  a reductive group, the
-unipotent characters are a building block for the irreducible characters of
-a  reductive group.  They can  be parameterized  by combinatorial data that
-Lusztig  has attached just to the coset `Wφ`, where `φ` is the finite order
-automorphism  of  `X(𝐓₀)`  such  that  `F=qφ`.  Thus, from the viewpoint of
-Chevie, they are objects combinatorially attached to a Coxeter coset.
+the  ``R_w``. In a similar way that the Jordan decomposition shows that the
+unipotent classes are a building block for describing the conjugacy classes
+of  a  reductive  group,  Lusztig  has  defined  a  Jordan decomposition of
+characters  where  the  unipotent  characters  are  the building block. The
+unipotent  characters are parameterized by  combinatorial data that Lusztig
+has  defined just  from the  coset ``Wφ``,  where `φ`  is the  finite order
+automorphism  of ``X(𝐓₀)``  such that  ``F=qφ``. Thus,  from our viewpoint,
+unipotent  characters  are  objects  combinatorially  attached to a Coxeter
+coset.
 
 A  subset  of  the  unipotent  characters, the *principal series* unipotent
-characters,   can  be  described  in  an   elementary  way.  They  are  the
-constituents  of `R₁`, or equivalently the characters of the virtual module
-defined  by the  cohomology of  ``X_{𝐁 ₀}``,  which is the discrete variety
-``(𝐆  /𝐁₀)^F``; the virtual module reduces  to the actual module ``ℚ̄ _ℓ[(𝐆
-/𝐁₀)  ^F]``. Thus the  Deligne-Lusztig induction ``R_{𝐓₀}^𝐆 (1)`` reduces to
-Harish-Chandra  induction,  defined  as  follows:  let  `𝐏  =𝐔  ⋊ 𝐋 ` be an
-`F`-stable  Levi decomposition of an `F`-stable parabolic subgroup of `𝐆 `.
-Then  the *Harish-Chandra* induced ``R_𝐋^𝐆 `` of a character `χ` of ``𝐋^F``
-is  the character ``Ind_{𝐏^F}^{𝐆 ^F}χ̃``, where `χ̃` is the lift to ``𝐏^F``
-of  `χ` via  the quotient  ``𝐏^F/𝐔 ^F=𝐋^F``;  Harish-Chandra induction is a
-particular  case of *Lusztig  induction*, which is  defined when `𝐏` is not
-`F`-stable  using the variety ``X_𝐔 =\\{ g𝐔 ∈𝐆 /𝐔 ∣ g𝐔 ∩ F(g𝐔 )≠∅\\}``, and
-gives  for  an  ``𝐋^F``-module  a  virtual  ``𝐆  ^F``-module. Like ordinary
-induction,  these functors have adjoint functors going from representations
-of  ``𝐆 ^F`` to representations  (resp. virtual representations) of ``𝐋^F``
-called Harish-Chandra restriction (resp. Lusztig restriction).
+characters,  can  be  described  in  a  more  elementary  way. They are the
+constituents  of  ``R₁``,  or  equivalently  the  characters of the virtual
+module  ``H^*_c(X_{𝐁 ₀})``, where ``X_{𝐁 ₀}``  is the discrete variety ``(𝐆
+/𝐁₀)^F``;  this virtual module reduces to the actual module ``ℚ̄ _ℓ[(𝐆 /𝐁₀)
+^F]``.  Thus  the  Deligne-Lusztig  induction  ``R_{𝐓₀}^𝐆  (1)`` reduces to
+Harish-Chandra  induction, defined  as follows:  let ``𝐏  =𝐔 ⋊  𝐋 ``  be an
+``F``-stable  Levi decomposition  of an  ``F``-stable parabolic subgroup of
+``𝐆  ``. Then the *Harish-Chandra* induced  ``R_𝐋^𝐆 `` of a character ``χ``
+of  ``𝐋^F`` is  the character  ``Ind_{𝐏^F}^{𝐆 ^F}χ̃``,  where ``χ̃`` is the
+lift  to ``𝐏^F`` of ``χ`` via the quotient ``𝐏^F/𝐔 ^F=𝐋^F``; Harish-Chandra
+induction  is a  particular case  of *Lusztig  induction*, which is defined
+when ``𝐏`` is not ``F``-stable using the variety ``X_𝐔 =\\{ g𝐔 ∈𝐆 /𝐔 ∣ g𝐔 ∩
+F(g𝐔  )≠∅\\}``, and gives for an  ``𝐋^F``-module a virtual ``𝐆 ^F``-module.
+Like  ordinary induction, these  functors have adjoint  functors going from
+representations   of   ``𝐆   ^F``   to   representations   (resp.   virtual
+representations)   of  ``𝐋^F``  called  Harish-Chandra  restriction  (resp.
+Lusztig restriction).
 
-The  commuting algebra  of ``𝐆^F``-endomorphisms  of ``R_{𝐓₀}^𝐆(1)``  is an
-Iwahori-Hecke algebra for ``W^φ``, with parameters which are some powers of
-`q`;  they  are  all  equal  to  `q`  when ``W^φ=W``. Thus principal series
-unipotent characters correspond to characters of ``W^φ``.
+The  commuting algebra of ``𝐆^F``-endomorphisms of ``R₁=R_{𝐓₀}^𝐆(1)`` is an
+Iwahori-Hecke  algebra for ``W^φ``, with parameters some powers of `q`; the
+parameters  are  all  equal  to  `q`  when ``W^φ=W``. Thus principal series
+unipotent characters are parametrized by characters of ``W^φ``.
 
-To  understand the  decomposition of  Deligne-Lusztig characters,  and thus
-unipotent  characters,  is  is  useful  to  introduce  another set of class
-functions  which are parameterized  by irreducible characters  of the coset
-`Wφ`.  If  `χ`  is  such  a  character,  we  define  the associated *almost
-character*  by: ``Rᵪ=|W|⁻¹∑_{w∈  W}χ(wφ) R_w``.  The reason  to the name is
-that these class function are close to irreducible characters: they satisfy
+To   understand  the  decomposition  of  more  general  ``R_w``,  and  thus
+parameterize unipotent characters, is is useful to introduce another set of
+class  functions which are  parameterized by irreducible  characters of the
+coset  ``Wφ``.  If  ``χ``  is  such  a  character, we define the associated
+*almost  character* by:  ``Rᵪ=|W|⁻¹∑_{w∈ W}χ(wφ)  R_w``. The  name reflects
+that these class function are close to irreducible characters. They satisfy
 ``⟨Rᵪ,  R_ψ⟩_{𝐆^F}=δ_{χ,ψ}``;  for  the  linear  and unitary group they are
 actually  unipotent characters (up to sign in the latter case). They are in
-general  sum (with  rational coefficients)  of a  small number of unipotent
-characters  in  the  same  *Lusztig  family*  (see  "Families  of unipotent
-characters").  The degree of `Rᵪ` is a  polynomial in `q` equal to the fake
-degree  of  the  character  `χ`  of  `Wφ`  (see  "Functions  for Reflection
-cosets").
+general the sum (with rational coefficients) of a small number of unipotent
+characters in the same *Lusztig family*, see [`Families`](@ref). The degree
+of  ``Rᵪ``  is  a  polynomial  in  ``q``  equal  to  the fake degree of the
+character ``χ`` of ``Wφ`` (see [`fakedegree`](@ref)).
 
-We  now describe the parameterization of unipotent characters when `W^φ=W`,
-thus  when the coset `Wφ` identifies with `W` (the situation is similar but
-a  bit more difficult to describe  in general). The (rectangular) matrix of
-scalar  products ``⟨ρ, Rᵪ⟩_{𝐆  ^F}``, when characters  of `W` and unipotent
-characters  are arranged in the right  order, is block-diagonal with rather
-small blocks which are called *Lusztig families*.
+We   now  describe  the  parameterization   of  unipotent  characters  when
+``W^φ=W``,  thus when the coset ``Wφ`` identifies with ``W`` (the situation
+is  similar  but  a  bit  more  difficult  to  describe  in  general).  The
+(rectangular) matrix of scalar products ``⟨ρ, Rᵪ⟩_{𝐆 ^F}``, when characters
+of  ``W``  and  unipotent  characters  are  arranged in the right order, is
+block-diagonal   with  rather  small  blocks   which  are  called  *Lusztig
+families*.
 
-For  the characters of `W` a family `𝓕` corresponds to a block of the Hecke
-algebra  over a ring called the Rouquier  ring. To `𝓕` Lusztig associates a
-small group `Γ` (not bigger than `(ℤ/2)ⁿ`, or `𝔖ᵢ` for `i≤5`) such that the
-unipotent  characters in the family are  parameterized by the pairs `(x,θ)`
-taken  up to `Γ`-conjugacy, where `x∈Γ` and `θ` is an irreducible character
-of ``C_Γ(x)``. Further, the elements of `𝓕` themselves are parameterized by
-a  subset of such pairs,  and Lusztig defines a  pairing between such pairs
-which  computes the scalar product ``⟨ρ,  Rᵪ⟩_{𝐆^F}``. For more details see
-"DrinfeldDouble".
+For the characters of ``W``  a family `𝓕` corresponds  to a block of the
+Hecke  algebra  over  a  ring  called  the  Rouquier ring. To `𝓕` Lusztig
+associates  a small group ``Γ`` (not  bigger than ``(ℤ/2)ⁿ``, or ``𝔖ᵢ`` for
+``i≤5``) such that the unipotent characters in the family are parameterized
+by the pairs ``(x,θ)`` taken up to ``Γ``-conjugacy, where ``x∈Γ`` and ``θ``
+is  an irreducible character of ``C_Γ(x)``.  Further, the elements of `𝓕`
+themselves are parameterized by a subset of such pairs, and Lusztig defines
+a  pairing  between  such  pairs  which  computes  the scalar product ``⟨ρ,
+Rᵪ⟩_{𝐆^F}``,  called  the  *Lusztig  Fourier  matrix*. For more details see
+[`drinfeld_double`](@ref).
 
 A  second parameterization  of unipotent  character is  via *Harish-Chandra
 series*.  A character is called *cuspidal* if all its proper Harish-Chandra
 restrictions  vanish. There are few  cuspidal unipotent characters (none in
-linear   groups,  and  at   most  one  in   other  classical  groups).  The
+``GLₙ``  for  ``n>1``,  and  at  most  one  in other classical groups). The
 ``𝐆^F``-endomorphism algebra of an Harish-Chandra induced
-``R_{𝐋^F}^{𝐆^F}λ``,  where `λ` is a  cuspidal unipotent character turns out
+``R_{𝐋^F}^{𝐆^F}λ``, where ``λ`` is a cuspidal unipotent character turns out
 to be a Hecke algebra associated to the group
 ``W_{𝐆^F}(𝐋^F):=N_{𝐆^F}(𝐋)/𝐋``, which turns out to be a Coxeter group. Thus
-another  parameterization is by triples `(𝐋,λ,φ)`,  where `λ` is a cuspidal
-unipotent  character of ``𝐋^F`` and `φ`  is an irreducible character of the
-*relative  group* ``W_{𝐆^F}(𝐋^F)``. Such  characters are said  to belong to
-the Harish-Chandra series determined by `(𝐋,λ)`.
+another  parameterization  is  by  triples  ``(𝐋,λ,φ)``,  where  ``λ`` is a
+cuspidal  unipotent  character  of  ``𝐋^F``  and  ``φ``  is  an irreducible
+character  of the  *relative group*  ``W_{𝐆^F}(𝐋^F)``. Such  characters are
+said to belong to the Harish-Chandra series determined by ``(𝐋,λ)``.
 
 A  final  piece  of  information  attached  to  unipotent characters is the
-*eigenvalues  of Frobenius*. Let `Fᵟ` be  the smallest power of the isogeny
-`F`  which is a split Frobenius (that  is, `Fᵟ` is a Frobenius and `φᵟ=1`).
-Then  `Fᵟ`  acts  naturally  on  Deligne-Lusztig  varieties and thus on the
-corresponding  virtual modules, and commutes to the action of ``𝐆^F``; thus
-for  a given  unipotent character  `ρ`, a  submodule of  the virtual module
-which  affords  `ρ`  affords  a  single  eigenvalue `μ` of `Fᵟ`. Results of
-Lusztig  and Digne-Michel show that this  eigenvalue is of the form `qᵃᵟλᵨ`
-where  `2a∈ℤ` and `λᵨ` is a root of unity which depends only on `ρ` and not
-the  considered module.  This `λᵨ`  is called  the eigenvalue  of Frobenius
-attached  to `ρ`.  Unipotent characters  in the  Harish-Chandra series of a
-pair `(𝐋,λ)` have the same eigenvalue of Frobenius as `λ`.
+*eigenvalues of Frobenius*. Let ``Fᵟ`` be the smallest power of the isogeny
+``F``  which  is  a  split  Frobenius  (that  is, ``Fᵟ`` is a Frobenius and
+``φᵟ=1``). Then ``Fᵟ`` acts naturally on Deligne-Lusztig varieties and thus
+on  the  corresponding  virtual  modules,  and  commutes  to  the action of
+``𝐆^F``;  thus for  a given  unipotent character  ``ρ``, a submodule of the
+virtual  module which  affords ``ρ``  affords a  single eigenvalue ``μ`` of
+``Fᵟ``. Results of Lusztig and Digne-Michel show that this eigenvalue is of
+the  form ``qᵃᵟλᵨ``  where ``2a∈ℤ``  and ``λᵨ``  is a  root of  unity which
+depends  only on ``ρ`` and not the considered module. This ``λᵨ`` is called
+the  eigenvalue of Frobenius attached to ``ρ``. Unipotent characters in the
+Harish-Chandra  series  of  a  pair  ``(𝐋,λ)``  have the same eigenvalue of
+Frobenius as ``λ``.
 
-Chevie   contains  tables  of  all   this  information,   and  can  compute
+This  package  contains  tables  of  all  this information, and can compute
 Harish-Chandra  and Lusztig  induction of  unipotent characters  and almost
-characters. We illustrate the information on some examples:
+characters. We illustrate this on some examples:
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -130,20 +138,20 @@ G₂[ζ₃] │qΦ₁²Φ₂²/3    0    ζ₃  (g₃,ζ₃)
 G₂[ζ₃²]│qΦ₁²Φ₂²/3    0   ζ₃² (g₃,ζ₃²)
 ```
 
-The first column gives the name of the unipotent character; the first 6 are
-in  the  principal  series  so  are  named  according  to the corresponding
-characters  of `W`. The last 4 are cuspidal, and named by the corresponding
-eigenvalue  of  Frobenius,  which  is  displayed  in  the fourth column. In
-general   the   names   of   the   unipotent  characters  come  from  their
-parameterization  by  Harish-Chandra  series;  in  addition,  for classical
-groups, they are associated to *symbols*.
+The  first column gives  the name of  the unipotent character, derived from
+its  Harish-Chandra  classification;  the  first  6  characters  are in the
+principal  series  so  are  named  by  characters  of  `W`.  The last 4 are
+cuspidal,  and named by the corresponding eigenvalue of Frobenius, which is
+displayed  in the fourth  column. For classical  groups, the Harish-Chandra
+data can be synthesized combinatorially to give a *symbol*.
 
-The first two characters are each in a family by themselves. The last eight
-are  in a family associated to the  group `Γ=𝔖₃`: the last column shows the
-parameters  `(x,θ)`. The  second column  shows the  degree of the unipotent
-characters, which is transformed by the Lusztig Fourier matrix of the third
-column,  which gives the  degree of the  corresponding almost character, or
-equivalently the fake degree of the corresponding character of `W`.
+The  first two characters are  each in a Lusztig  family by themselves. The
+last  eight are in a family associated to the group `Γ=𝔖₃`: the last column
+shows  the parameters  `(x,θ)`. The  second column  shows the degree of the
+unipotent characters, which is transformed by the Lusztig Fourier matrix of
+the  third  column,  which  gives  the  degree  of the corresponding almost
+character,  or equivalently the fake  degree of the corresponding character
+of `W` (extended by `0` outside the principal series).
 
 One  can get  more information  on the  Lusztig Fourier  matrix of  the big
 family by asking
@@ -179,6 +187,11 @@ julia> u=UniChar(T,1)
 [G₂₍₎=Φ₆]:<Id>
 ```
 
+To construct `T` one could equivalently do
+```julia-repl
+julia> T=torus(W,position_class(W,W(1,2)))
+G₂₍₎=Φ₆
+```
 Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
 associated to the Coxeter torus:
 
@@ -234,7 +247,7 @@ cuspidal_data, CycPolUnipotentDegrees, on_unipotents, almostcharnames
   families::Vector{Family}
 end
 
-function maketype(s)
+function maketype(s) # convert a Dict read from Chevie data to a TypeIrred
   if s isa TypeIrred return s end
   if haskey(s,:orbit) 
     s[:orbit]=maketype.(s[:orbit])
@@ -1126,12 +1139,12 @@ Digne-Michel,  for ``g∈ 𝐆 ^F``,  the number of fixed  points of `Fᵐ` on t
 Deligne-Lusztig variety associated to the element `wϕ` of the Coxeter coset
 `Wϕ`, have for `m` sufficiently divisible, the form ``∑_φ
 φ_{(qᵐ)}(T_wϕ)R_φ(g)``  where `φ`  runs over  the irreducible characters of
-`Wϕ`,  where  ``R_φ``  is  the  corresponding  almost  character, and where
-``φ_{(qᵐ)}``  is a character value of the Hecke algebra `ℋ (Wϕ,qᵐ)` of `Wϕ`
-with parameter `qᵐ`. This expression is called the *Lefschetz character* of
-the  Deligne-Lusztig variety. If we consider  `qᵐ` as an indeterminate `x`,
-it can be seen as a sum of unipotent characters with coefficients character
-values of the generic Hecke algebra `ℋ (Wϕ,x)`.
+``Wϕ``,  where  ``R_φ``  is  the  corresponding almost character, and where
+``φ_{(qᵐ)}``  is a  character value  of the  Hecke algebra ``H (Wϕ,qᵐ)`` of
+``Wϕ``  with  parameter  `qᵐ`.  This  expression  is  called the *Lefschetz
+character*  of  the  Deligne-Lusztig  variety.  If  we  consider `qᵐ` as an
+indeterminate  `x`, it can  be seen as  a sum of  unipotent characters with
+coefficients character values of the generic Hecke algebra ``H (Wϕ,x)``.
 
 The  function 'DLLefschetz' takes  as argument a  Hecke element and returns
 the  corresponding Lefschetz character. This is defined on the whole of the

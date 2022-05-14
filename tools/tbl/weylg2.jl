@@ -179,12 +179,12 @@ chevieset(:G2, :UnipotentClasses, function (p, type_)
         Z = (n->begin
                     ComplexReflectionGroup(n, 1, 1)
                 end)
-        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0], :balacarter => [], :red => CoxeterGroup("G", 2)), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0], :balacarter => [1], :red => Z(2)), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["G2(a1)"], :dynkin => [0, 1], :balacarter => [2], :red => Z(2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2(a_1)", :succ => ["G2"], :dynkin => [2, 0], :balacarter => [1, -2], :Au => CoxeterGroup("A", 2 - (gcd(p, 3) - 1) // 2)), Dict{Symbol, Any}(:name => "G_2", :succ => [], :dynkin => [2, 2], :Au => Z(gcd(p, 6)), :balacarter => [1, 2])], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => "", :Z => [], :locsys => [[5, 1], [1, 1], [4, 2], [2, 1], [4, 3], [3, 1]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[4, 1]], :hc => 5)])
+        uc = Dict{Symbol, Any}(:classes => [Dict{Symbol, Any}(:name => "1", :succ => ["A1"], :dynkin => [0, 0], :balacarter => [], :red => CoxeterGroup("G", 2), :rep => []), Dict{Symbol, Any}(:name => "A_1", :succ => ["~A1"], :dynkin => [1, 0], :balacarter => [1], :red => Z(2), :rep => [6]), Dict{Symbol, Any}(:name => "\\tilde A_1", :succ => ["G2(a1)"], :dynkin => [0, 1], :balacarter => [2], :red => Z(2 - (gcd(p, 3) - 1) // 2), :rep => [4]), Dict{Symbol, Any}(:name => "G_2(a_1)", :succ => ["G2"], :dynkin => [2, 0], :balacarter => [1, -2], :Au => CoxeterGroup("A", 2 - (gcd(p, 3) - 1) // 2), :rep => [1, 5]), Dict{Symbol, Any}(:name => "G_2", :succ => [], :dynkin => [2, 2], :Au => Z(gcd(p, 6)), :balacarter => [1, 2], :rep => [2, 1])], :springerSeries => [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => "", :Z => [], :locsys => [[5, 1], [1, 1], [4, 2], [2, 1], [4, 3], [3, 1]]), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[4, 1]], :hc => 5)])
         if p == 2
             (((uc[:springerSeries])[1])[:locsys])[1] = [5, 2]
             push!(uc[:springerSeries], Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => [1, 2], :Z => [], :locsys => [[5, 1]], :hc => 3))
         elseif p == 3
-            push!(uc[:classes], Dict{Symbol, Any}(:name => "(\\tilde A_1)_3", :succ => ["~A1"], :dimBu => 3, :red => Z(2), :Au => CoxeterGroup()))
+            push!(uc[:classes], Dict{Symbol, Any}(:name => "(\\tilde A_1)_3", :succ => ["~A1"], :dimBu => 3, :red => Z(2), :Au => CoxeterGroup(), :rep => [4, 6]))
             push!(((uc[:classes])[1])[:succ], "(~A1)3")
             ((uc[:classes])[3])[:dimBu] = 2
             delete!((uc[:classes])[3], :dynkin)

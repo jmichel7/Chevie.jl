@@ -107,8 +107,8 @@ of  the centre `Z` of `L`, represented  by a basis of `Y(Z⁰)`, a complement
 subtorus `S` of `𝐓` to `Z⁰` represented similarly by a basis of `Y(S)`, and
 semi-simple  elements representing the classes of  `Z` modulo `Z⁰` , chosen
 in `S`. The classes `Z/Z⁰` also biject to the fundamental group as given by
-the  field `.descAZ`, see "AlgebraicCentre" for an explanation. Finally the
-semi-simple elements of order 3 in `Z⁰` are computed.
+the  field  `.descAZ`,  see  [`algebraic_centre`](@ref) for an explanation.
+Finally the semi-simple elements of order 3 in `Z⁰` are computed.
 
 ```julia-repl
 julia> e[3]^G(2)
@@ -933,7 +933,7 @@ function intermediate_group(W,I)
   end
   d=lcm(denominator.(R))
   R=baseInt(Int.(d*R))//d
-  rootdatum(R^-1,C*transpose(R))
+  rootdatum(Int.(R^-1),Int.(C*transpose(R)))
 end
 
 """

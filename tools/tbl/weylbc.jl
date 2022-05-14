@@ -73,11 +73,11 @@ chevieset(:B, :WeightInfo, function (n, type_)
         local M, i
         M = IdentityMat(n)
         if type_ == 2
+            return Dict{Symbol, Any}(:minusculeWeights => [1], :minusculeCoweights => [n], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+        else
             for i = 1:n - 1
                 (M[i])[n] = -(mod((n + i) - 1, 2))
             end
-            return Dict{Symbol, Any}(:minusculeWeights => [1], :minusculeCoweights => [n], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
-        else
             return Dict{Symbol, Any}(:minusculeWeights => [n], :minusculeCoweights => [1], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
         end
     end)

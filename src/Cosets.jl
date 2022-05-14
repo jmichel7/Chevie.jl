@@ -41,9 +41,9 @@ induction  in  terms  of  *almost  characters*, the Fourier matrix relating
 characters and almost characters, etc… (see, e.g.,
 [Broue-Malle-Michel1993](biblio.htm#BMM93)).  It is thus possible to extend
 their  construction to non-crystallographic groups (or even to more general
-complex  reflection groups, see "Spets"); this is  why we did not include a
-root  system in  the definition  of a  reflection coset. However, unipotent
-conjugacy classes for instance depend on the root system.
+complex  reflection groups,  see [`spets`](@ref));  this is  why we did not
+include  a root  system in  the definition  of a reflection coset. However,
+unipotent conjugacy classes for instance depend on the root system.
 
 We assume now that `𝐓` is contained in an `F`-stable Borel subgroup of `𝐆`.
 This  defines an order  on the roots,  and there is  a unique element `ϕ∈ W
@@ -1171,6 +1171,10 @@ rootdata[:gl]=function(r)
   rootdatum(R,R)
 end
 rootdata[:sl]=r->rootdatum(cartan(:A,r-1),id(r-1))
+rootdata[:slmod]=function(dim,q)
+  if dim%q!=0 error(q," should divide ",dim) end
+  intermediate_group(rootdata[:sl](dim),[q])
+end
 rootdata[:tgl]=function(n, k)
   if gcd(n,k)!=1 error(k," should be prime to ",n) end
   X=hcat(cartan(:A,n-1),fill(0,n-1))
@@ -1200,6 +1204,18 @@ rootdata[:csp]=function(r)
   rootdatum(cR,R)
 end
 rootdata[:psp]=r->coxgroup(:C,div(r,2))
+rootdata[:cso]=function(dim)
+  n=div(dim,2)
+  R=fill(0,n,n+1)
+  cR=fill(0,n,n+1)
+  R[1,1:3]=[1,-1,-1]
+  cR[1,2:3]=[-1,-1]
+  for i in 2:n
+    R[i,i:i+1]=[1,-1]
+    cR[i,i:i+1]=[1,-1]
+  end
+  rootdatum(R,cR)
+end
 rootdata[:so]=function(r)
   R=id(div(r,2))
   for i in 2:div(r,2) R[i,i-1]=-1 end
@@ -1244,6 +1260,15 @@ rootdata[:gpin]=function(r)
 end
 rootdata[:E6]=()->coxgroup(:E,6)
 rootdata[:E7]=()->coxgroup(:E,7)
+rootdata[:CE6]=()->rootdatum([1 2 -1 0 0 0 0;0 0 -2 -1 0 0 0;
+     0 -1 2 -1 0 0 0;-1 0 0 2 -1 0 0;1 0 0 -1 2 -1 0;0 0 0 0 -1 2 0],
+      [0 1 0 0 0 0 0;3 -2 -1 0 -2 -1 -1;3 -2 0 0 -2 -1 -1;
+       0 0 0 1 0 0 0;0 0 0 0 1 0 0;0 0 0 0 0 1 0])
+rootdata[:CE7]=()->rootdatum([0 2 -1 0 0 0 0 0;1 0 0 -1 0 0 0 0;
+   0 -1 2 -1 0 0 0 0;-1 0 -1 2 -1 0 0 0;1 0 0 -1 2 -1 0 0;
+   -1 0 0 0 -1 2 -1 0;1 0 0 0 0 -1 2 0],
+   [0 1 0 0 0 0 0 0;2 0 0 0 -1 0 -1 -1;0 0 1 0 0 0 0 0;0 0 0 1 0 0 0 0;
+    0 0 0 0 1 0 0 0;0 0 0 0 0 1 0 0;0 0 0 0 0 0 1 0])
 rootdata[:E8]=()->coxgroup(:E,8)
 rootdata[:E6sc]=()->rootdatum(cartan(:E,6),id(6))
 rootdata[:E7sc]=()->rootdatum(cartan(:E,7),id(7))

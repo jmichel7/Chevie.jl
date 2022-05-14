@@ -2,7 +2,7 @@
 Let  `V`  be  a  vector  space  over  a subfield `K` of the complex numbers
 (usually  in Julia elements  of `K` are  `Rational`s or `Cyc`s). A *complex
 reflection*  is an element `s∈ GL(V)` of finite order whose fixed point set
-is  an  hyperplane,  the  *reflecting  hyperplane*  `Hₛ` of  `s` (we will in the
+is  an hyperplane, the *reflecting hyperplane* `Hₛ`  of `s` (we will in the
 following   abbreviate  "complex  reflection"   to  *reflection*;  in  some
 literature   "reflection"  is  reserved  for  the  order  2  and  otherwise
 *pseudo-reflection* is used). Thus a reflection `s` has a unique eigenvalue
@@ -88,14 +88,15 @@ reflection representation over `K`) are not globally invariant (but one can
 get invariant ones by `chevieget(:H4,:InvariantModel)`).
 
 It  turns out that all representations of `W` are defined over the field of
-definition  `K` (cf. [Ben76] and D.~Bessis thesis). This has been known for
-a  long  time  in  the  case  `K=ℚ  `,  the case of Weyl groups, which have
-integral representations.
+definition `K` (see. [Benard1976](biblio.htm#Ben76) and D.~Bessis' thesis).
+This  has been known for a  long time in the case  `K=ℚ `, the case of Weyl
+groups, which have integral representations.
 
--  The Cartan matrix (see "cartan") for the generating roots (those which
-   correspond  to the generating reflections) has  entries in the ring `ℤₖ`
-   of integers of `K`, and the roots (resp. coroots) are linear combination
-   with coefficients in `ℤₖ` of a linearly independent subset of them.
+-  The Cartan matrix (see [`cartan`](@ref)) for the generating roots (those
+   which  correspond to the generating reflections) has entries in the ring
+   `ℤₖ`  of  integers  of  `K`,  and  the  roots (resp. coroots) are linear
+   combination  with coefficients in `ℤₖ`  of a linearly independent subset
+   of them.
 
 Some additional methods for finite reflection groups:
 

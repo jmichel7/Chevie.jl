@@ -184,7 +184,7 @@ The fields of `struct Unipotent Group` are:
 """
 struct UnipotentGroup
   W
-  specialPairs::Vector{Vector{Int}}
+  specialPairs::Vector{Tuple{Int,Int,Int}}
   ns::Int
   N::Vector{Int}
   order
@@ -211,7 +211,8 @@ function Base.show(io::IO,u::UnipotentElement)
   end
 end
 
-Base.:*(u::UnipotentElement,v::UnipotentElement)=u.U(vcat(u.list, v.list)...)
+Base.:*(u::UnipotentElement,v::UnipotentElement)=
+  UnipotentElement(u.U,reorder(u.U,vcat(u.list, v.list)))
 
 Base.:/(u::UnipotentElement,v::UnipotentElement)=u*inv(v)
 
@@ -221,6 +222,7 @@ Base.:^(u::UnipotentElement,v::UnipotentElement)=inv(v)*u*v
 
 Base.:(==)(u::UnipotentElement,v::UnipotentElement)=u.U==v.U && u.list==v.list
 
+Base.hash(u::UnipotentElement,h::UInt)=hash(u.list,h)
 function Base.:^(u::UnipotentElement,v::SemisimpleElement)
   UnipotentElement(u.U,map(((r,c),)->r=>v^roots(u.U.W,r)*c,u.list))
 end
@@ -251,7 +253,7 @@ function Base.:^(u::UnipotentElement,n::Perm)
   u.U(map(((r,c),)->Int(r^n)=>η(u.U,s,r)*c,u.list)...)^(W(s)*n)
 end
 
-Base.one(u::UnipotentElement)=UnipotentElement(u.U, Vector{Int}[])
+Base.one(u::UnipotentElement{T}) where T =UnipotentElement(u.U, Pair{Int,T}[])
 
 Base.:^(u::UnipotentElement, n::Integer)=n>=0 ? Base.power_by_squaring(u,n) :
                                             Base.power_by_squaring(inv(u),-n)
@@ -281,7 +283,7 @@ function N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)
   lc=l(c)
   if c>nref(W) c=-(c-nref(W)) end
   if a>0
-    if b>0 res=U.N[findfirst(==([a,b,c]),U.specialPairs)]
+    if b>0 res=U.N[findfirst(==((a,b,c)),U.specialPairs)]
     elseif c<0 res=N(U,-c,a)*lc//l(-b)
     else res=-N(U,-b, c)*lc//l(a)
     end
@@ -307,17 +309,17 @@ julia> U=UnipotentGroup(W)
 UnipotentGroup(G₂)
 
 julia> U.specialPairs
-10-element Vector{Vector{Int64}}:
- [1, 2, 3]
- [2, 3, 4]
- [2, 4, 5]
- [1, 5, 6]
- [3, 4, 6]
- [2, 1, 3]
- [3, 2, 4]
- [4, 2, 5]
- [5, 1, 6]
- [4, 3, 6]
+10-element Vector{Tuple{Int64, Int64, Int64}}:
+ (1, 2, 3)
+ (2, 3, 4)
+ (2, 4, 5)
+ (1, 5, 6)
+ (3, 4, 6)
+ (2, 1, 3)
+ (3, 2, 4)
+ (4, 2, 5)
+ (5, 1, 6)
+ (4, 3, 6)
 
 julia> U.N
 10-element Vector{Int64}:
@@ -350,10 +352,10 @@ function UnipotentGroup(W::FiniteCoxeterGroup)
   if roots(W,nref(W)+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
   no(r)=findfirst(==(r),roots(W))
   # compute special pairs. We take `1:nref(W)` as order on the roots.
-  special=Vector{Int}[]
+  special=Tuple{Int,Int,Int}[]
   for s in 1:nref(W), r in 1:s-1
     pos=no(roots(W,r)+roots(W,s))
-    if !isnothing(pos) push!(special,[r,s,pos]) end
+    if !isnothing(pos) push!(special,(r,s,pos)) end
   end
   sort!(special,by=x->x[[3,1]])
   ns=length(special)
@@ -380,7 +382,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup)
     for j in 1:i
       d=no(roots(W,r)+roots(W,s))
       if isnothing(d) || d>nref(W) return 0 end
-      m*=U.N[findfirst(==([r,s,d]),U.specialPairs)]//j
+      m*=U.N[findfirst(==((r,s,d)),U.specialPairs)]//j
       s=d
     end
     m
@@ -433,11 +435,11 @@ julia> reorder(U,l,6:-1:1)
 ```
 """
 function reorder(U::UnipotentGroup,l,order=U.order)
-  W=U.W
   i=1
+  l=copy(l)
   while i<=length(l)
     if iszero(l[i][2])
-      l=vcat(l[1:i-1],l[i+1:end])
+      splice!(l,i)
       if i>1 i-=1 end
     elseif i<length(l) && l[i][1]==l[i+1][1]
       splice!(l,i:i+1,[l[i][1]=>l[i][2]+l[i+1][2]])
@@ -448,16 +450,16 @@ function reorder(U::UnipotentGroup,l,order=U.order)
 # uₛ(u)uᵣ(t)=uᵣ(t)uₛ(u)∏_{i,j>0} u_{ir+js}(Cᵣₛᵢⱼ(-t)^iu^j)
 #
 # Here l[i]=[s,u] and l[i+1]=[r,t].
-      res=l[vcat(1:i-1,[i+1,i])]
+      W=U.W
+      res=l[[i+1,i]]
       s,u=l[i]; r,t=l[i+1]
       c=findfirst(==(roots(W,r)+roots(W,s)),roots(W))
-      if !isnothing(c) c=findfirst(==([r,s,c]),U.specialPairs) end
+      if !isnothing(c) c=findfirst(==((r,s,c)),U.specialPairs) end
       if !isnothing(c)
         c=map(k->k[3]=>k[4]*(-t)^k[1]*u^k[2],U.commutatorConstants[c])
         append!(res,filter(x->!iszero(x[2]),c))
       end
-      append!(res,l[i+2:end])
-      l=res
+      splice!(l,i:i+1,res)
       if i>1 i-=1 end
     else i+=1
     end

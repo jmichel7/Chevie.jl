@@ -857,14 +857,13 @@ left_divisors(b::LocallyGarsideElt,i::Integer)=left_divisors(b,Int[],i)
 `Brieskorn_normal_form(b::LocallyGarsideElt)`
 
 Brieskorn  citeBri71 has noticed that if `L(b)`  is the left descent set of
-`b`  (see "leftdescents"),  and if  `b_(L(b))` is  the right lcm of `L(b)`,
-then  `b_(L(b))` left-divides `b`. We can  now divide `b` by `b_(L(b))` and
-continue  this  process  with  the  quotient.  In  this  way,  we obtain an
-expression  `b=b_(L₁)⋯ b_(Lᵣ)`  where `Lᵢ=L(b_(Lᵢ)⋯  b_(Lᵣ))` for  all `i`,
-which   we  call  the   *Brieskorn  normal  form*   of  `b`.  The  function
+`b`  (see [`leftdescents`](@ref)),  and if  `b_(L(b))` is  the right lcm of
+`L(b)`,  then  `b_(L(b))`  left-divides  `b`.  We  can  now  divide  `b` by
+`b_(L(b))`  and continue  this process  with the  quotient. In this way, we
+obtain  an expression  `b=b_(L₁)⋯ b_(Lᵣ)`  where `Lᵢ=L(b_(Lᵢ)⋯ b_(Lᵣ))` for
+all  `i`, which we  call the *Brieskorn  normal form* of  `b`. The function
 `Brieskorn_normal_form`  returns a  description of  this form, by returning
-the list of sets `L(b)` which describe the above decomposition.
- 
+the   list  of  sets   `L(b)`  which  describe   the  above  decomposition.
 ```julia-repl
 julia> W=coxgroup(:E,8);B=BraidMonoid(W)
 BraidMonoid(E₈)
@@ -1770,10 +1769,10 @@ conjugating_elt(b,b1[,F];ss=:sc)
 `b`  and `b1` should  be elements of  the same Garside  group. The function
 returns  `a` such that `b^a=b1` if such exists, and `nothing` otherwise. If
 an  argument `ss`  is given,  the computation  is done in the corresponding
-category  --- see "conjcat".  If an argument  `F` is given  it should be an
-automorphism  of the braid monoid, like the Frobenius of a reflection coset
-attached  to `b.M.W`;  the computation  is then  done in  the corresponding
-`F`-conjugacy category.
+category  --- see [`conjcat`](@ref). If an  argument `F` is given it should
+be  an automorphism of the braid monoid, like the Frobenius of a reflection
+coset   attached  to  `b.M.W`;   the  computation  is   then  done  in  the
+corresponding `F`-conjugacy category.
 
 ```julia-repl
 julia> W=coxgroup(:D,4)

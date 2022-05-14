@@ -230,16 +230,16 @@ that  the best  approach still  is by  using the  recursion formula  in the
 original  article KL79. One can first run  a number of standard checks on a
 given  pair  of  elements  to  see  if the computation of the corresponding
 polynomial  can be reduced to a similar computation for elements of smaller
-length. One such check involves the notion of critical pairs (cf. Alv87): a
-pair  of elements `w₁,w₂∈  W` such that  `w₁≤w₂` is *critical*  if `ℒ(w₂) ⊆
-ℒ(w₁)`  and `ℛ (w₂)⊆ ℛ (w₁)`, where `ℒ`  and `ℛ ` denote the left and right
-descent  set, respectively.  Now if  `y≤w ∈  W` are arbitrary elements then
-there   always  exists  a  critical  pair   `z≤w`  with  `y≤z≤w`  and  then
-``P_{y,w}=P_{z,w}``.  Given two elements `y` and  `w`, such a critical pair
-is   found  by  the  function   'critical_pair'.  Whenever  the  polynomial
-corresponding  to  a  critical  pair  is  computed  then  this pair and the
-polynomial  are stored in  the property `:klpol`  of the underlying Coxeter
-group.
+length.  One  such  check  involves  the  notion  of  critical  pairs  (see
+[Alvis1987](biblio.htm#Alv87)):  a pair  of elements  `w₁,w₂∈ W`  such that
+`w₁≤w₂`  is *critical* if `ℒ(w₂)  ⊆ ℒ(w₁)` and `ℛ  (w₂)⊆ ℛ (w₁)`, where `ℒ`
+and `ℛ ` denote the left and right descent set, respectively. Now if `y≤w ∈
+W`  are arbitrary elements  then there always  exists a critical pair `z≤w`
+with  `y≤z≤w` and then ``P_{y,w}=P_{z,w}``. Given two elements `y` and `w`,
+such a critical pair is found by the function 'critical_pair'. Whenever the
+polynomial  corresponding to a critical pair is computed then this pair and
+the  polynomial  are  stored  in  the  property  `:klpol` of the underlying
+Coxeter group.
 
 ```julia-repl
 julia> W=coxgroup(:B,3)
@@ -820,7 +820,7 @@ of    `1:W.N`   such    that   `r=longest(reflection_subgroup(W,I))`,   see
 
 If  a second argument `i` is given, the program returns only the left cells
 which  are in the `i`-th two-sided cell,  that is whose character is in the
-`i`-th family of `W` (see "Families of unipotent characters").
+`i`-th family of `W` (see [`Families`](@ref)).
 
 ```julia-repl
 julia> W=coxgroup(:G,2);

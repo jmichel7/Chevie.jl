@@ -155,9 +155,9 @@ Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
 root  of unity `ζ`:  either `d` is  a `Root1`, or  an integer and specifies
 `ζ=E(d)`  or is a fraction `a//b` with `0<a<b` and specifies `ζ=E(b,a)`. If
 omitted, `d` is taken to be `0`, specifying `ζ=1`. The root `ζ` should be a
-regular  eigenvalue  for  `WF`  (see  "regular_eigenvalues").  The function
-returns  the index of the  conjugacy class of `WF`  which has a `ζ`-regular
-eigenvector.
+regular   eigenvalue  for  `WF`  (see  [`regular_eigenvalues`](@ref)).  The
+function  returns the  index of  the conjugacy  class of  `WF` which  has a
+`ζ`-regular eigenvector.
 
 ```julia-repl
 julia> W=coxgroup(:E,8)
