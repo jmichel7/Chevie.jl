@@ -20,6 +20,7 @@ end
 
 " chevieget(t,w) returns CHEVIE[Symbol(t)][w]"
 function chevieget(t::Symbol,w::Symbol)
+# println("chevieget(",t,",",w,")")
   get!(CHEVIE[t],w)do
     if CHEVIE[:info] println("CHEVIE[$t] has no $w") end
   end

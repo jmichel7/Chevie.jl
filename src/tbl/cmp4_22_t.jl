@@ -315,6 +315,7 @@ sparseFakeDegrees4_22=
   [16,20,24],[3,11,19,27],[6,14,18,22],[9,13,17,21],[8,12,16,24],[4,8,12,16,20],
   [10,14,18,22,26],[7,11,15,15,19,23],[5,9,13,17,21,25]]]
 
+chevieset(:G4_22, :sparseFakeDegrees,ST->sparseFakeDegrees4_22[ST-3])
 chevieset(:G4_22, :FakeDegree, function (ST, phi, q)
   f=sparseFakeDegrees4_22[ST-3][findfirst(==(phi),
                       chevieget(:G4_22,:CharInfo)(ST)[:charparams])]

@@ -43,12 +43,12 @@ julia> length(G)
 
 julia> fakedegrees(G,Pol(:q))
 7-element Vector{Pol{Int64}}:
- 1       
- q⁴      
- q⁸      
- q⁷+q⁵   
- q⁵+q³   
- q³+q    
+ 1
+ q⁴
+ q⁸
+ q⁷+q⁵
+ q⁵+q³
+ q³+q
  q⁶+q⁴+q²
 
 julia> ComplexReflectionGroup(2,1,6)
@@ -56,23 +56,23 @@ B₆
 ```
 """
 function ComplexReflectionGroup(i::Int)
-  if i==23     return coxgroup(:H,3)
-  elseif i==28 return coxgroup(:F,4)
-  elseif i==30 return coxgroup(:H,4)
-  elseif i==35 return coxgroup(:E,6)
-  elseif i==36 return coxgroup(:E,7)
-  elseif i==37 return coxgroup(:E,8)
+  if i==23     coxgroup(:H,3)
+  elseif i==28 coxgroup(:F,4)
+  elseif i==30 coxgroup(:H,4)
+  elseif i==35 coxgroup(:E,6)
+  elseif i==36 coxgroup(:E,7)
+  elseif i==37 coxgroup(:E,8)
+  else t=TypeIrred(Dict(:series=>:ST,:ST=>i))
+    PRG(roots(t),coroots(t))
   end
-  t=TypeIrred(Dict(:series=>:ST,:ST=>i))
-  PRG(roots(t),coroots(t))
 end
 
 function ComplexReflectionGroup(p,q,r)
-  if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1) 
+  if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1)
    error("ComplexReflectionGroup(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
   end
   if p==1 return coxgroup(:A,r-1)
-  elseif p==2 
+  elseif p==2
     if q==2 return coxgroup(:D,r)
     else return coxgroup(:B,r) end
   elseif p==q && r==2 return coxgroup(:I,2,p)
@@ -130,7 +130,7 @@ function Gapjm.degrees(W::Group)
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
 end
- 
+
 torusfactors(WF::Spets)=eigmat(central_action(Group(WF),WF.F))
 
 """
@@ -166,11 +166,11 @@ O—O—O
 
 julia> degrees(HF)
 6-element Vector{Tuple{Int64, Cyc{Int64}}}:
- (1, ζ₃) 
+ (1, ζ₃)
  (1, ζ₃²)
- (2, 1)  
- (4, ζ₃) 
- (6, 1)  
+ (2, 1)
+ (4, ζ₃)
+ (6, 1)
  (4, ζ₃²)
 ```
 """
@@ -191,13 +191,13 @@ function Gapjm.degrees(t::TypeIrred)
 # \zeta^{d_i}  times  that  of  G0;  and  by  spets  1.5  or [Digne-Michel,
 # parabolic A.1] those of an a-descent of scalars are
 # \zeta_a^j\zeta_i^{1/a} (all the a-th roots of \zeta_i).
-  if order(t.twist)>1 
+  if order(t.twist)>1
    f=getchev(t,:PhiFactors)
    if isnothing(f) return f end
   else f=fill(1,length(d))
   end
   if haskey(t,:scalar)
-    p=prod(t.scalar) 
+    p=prod(t.scalar)
     f=[f[i]*p^d[i] for i in eachindex(d)]
   end
   f=collect(zip(d,f))
@@ -232,7 +232,7 @@ function codegrees(t::TypeIrred)
     d=zip(d,fill(1,length(d)))
   end
   if haskey(t,:scalar)
-    f=prod(t.scalar) 
+    f=prod(t.scalar)
     d=[(deg,eps*f^deg) for (deg,eps) in d]
   end
   a=length(t.orbit)

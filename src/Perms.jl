@@ -534,11 +534,6 @@ function Base.show(io::IO, ::MIME"text/plain", p::Perm{T})where T
 end
 
 """
-`order(a::Perm)` is the order of the permutation a
-"""
-order(a::Perm)=lcm(length.(cycles(a)))
-
-"""
 `cycletype(a::Perm;domain=1:length(a.d),trivial=false)`
 
 returns  the  partition  of  `maximum(domain)`  associated to the conjugacy
@@ -586,6 +581,11 @@ function cycletype(a::Perm;domain=1:length(a.d),trivial=false)
   end
   sort(lengths,rev=true)
 end
+
+"""
+`order(a::Perm)` is the order of the permutation a
+"""
+order(a::Perm)=lcm(cycletype(a))
 
 """
 `reflength(a::Perm)`

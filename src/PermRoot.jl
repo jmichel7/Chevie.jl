@@ -100,7 +100,7 @@ groups, which have integral representations.
 
 Some additional methods for finite reflection groups:
 
-`roots(W)`:  a set  of complex  roots in  `V`, given  as a list of vectors, 
+`roots(W)`:  a set  of complex  roots in  `V`, given  as a list of vectors,
     on which `W` has a faithful permutation representation.
 
 `simpleroots(W)`:  the generating roots as a matrix.
@@ -126,8 +126,8 @@ module   `SV/I`  is  called   the  *fake  degree*   of  `φ`.  The  function
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
- simple_conjugating, reflections, reflection, Diagram, refltype, cartan, 
- independent_roots, inclusion, inclusiongens, restriction, coroot, 
+ simple_conjugating, reflections, reflection, Diagram, refltype, cartan,
+ independent_roots, inclusion, inclusiongens, restriction, coroot,
  hyperplane_orbits, TypeIrred, refleigen, reflchar, bipartite_decomposition,
  torus_order, rank, reflrep, PermX, coroots, baseX, invbaseX, semisimplerank,
  invariant_form, generic_order, parabolic_reps, invariants, matY,
@@ -136,7 +136,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
 using ..Gapjm
 
 """
-`coroot(r,λ=1)` 
+`coroot(r,λ=1)`
 
 the coroot for an orthogonal reflection of root `r` and eigenvalue `λ`"
 """
@@ -192,7 +192,7 @@ function reflection(root::AbstractVector,coroot::AbstractVector)
 end
 
 """
-`reflection(r, ζ=-1)` 
+`reflection(r, ζ=-1)`
 
 returns the matrix of the complex reflection determined by the root `r` and
 the  eigenvalue `ζ` when the  vector space and its  dual are identified via
@@ -281,14 +281,14 @@ function Base.show(io::IO, t::TypeIrred)
   end
   if haskey(t,:series)
     s=t.series
-    if s==:ST 
-      if haskey(t,:ST) 
+    if s==:ST
+      if haskey(t,:ST)
         n=hasdecor(io) ? sub("G",t.ST) : "ComplexReflectionGroup($(t.ST))"
-      else 
-        n=hasdecor(io) ? "G_{$(t.p),$(t.q),$(t.rank)}" : 
+      else
+        n=hasdecor(io) ? "G_{$(t.p),$(t.q),$(t.rank)}" :
           "ComplexReflectionGroup($(t.p),$(t.q),$(t.rank))"
       end
-    else 
+    else
       r=rank(t)
       if haskey(t,:cartanType)
         if s==:B
@@ -309,7 +309,7 @@ function Base.show(io::IO, t::TypeIrred)
           end
         elseif s==:I
           if t.cartanType==1 s=:I
-          elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym 
+          elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym
           else s=Symbol("I(",repr(t.cartanType;context=io),")")
           end
         end
@@ -328,10 +328,10 @@ function Base.show(io::IO, t::TypeIrred)
     o=order(t.twist)
     if hasdecor(io)
       if o!=1 printTeX(io,"{}^{$o}") end
-      if length(t.orbit)==1 print(io,t.orbit[1]) 
+      if length(t.orbit)==1 print(io,t.orbit[1])
       else print(io,"(")
         for t1 in t.orbit print(io,t1) end
-        print(io,")") 
+        print(io,")")
       end
     else
       print(io,"spets(",t.orbit)
@@ -352,9 +352,9 @@ end
 Base.show(io::IO,::MIME"text/plain",v::Vector{Diagram})=show(io,v)
 
 function Base.show(io::IO,v::Vector{Diagram})
-  for (i,d) in enumerate(v) 
+  for (i,d) in enumerate(v)
     print(io,d)
-    if i!=length(v) println(io) end 
+    if i!=length(v) println(io) end
   end
 end
 
@@ -419,8 +419,8 @@ function Base.show(io::IO,d::Diagram)
       println(io,node,bar^l[1],node)
       join(io,ind," ")
     elseif series==:ST
-      if haskey(t,:ST) 
-        if t.ST>22 getchev(t,:PrintDiagram,t.indices,"G$(t.ST)") 
+      if haskey(t,:ST)
+        if t.ST>22 getchev(t,:PrintDiagram,t.indices,"G$(t.ST)")
         else
 # print(title, " ");s=pad("\n", -length(title))
   s="\n"
@@ -461,14 +461,14 @@ function Base.show(io::IO,d::Diagram)
    print(f(1)," "^3,f(3)," ",f(1,2,3,1,2),"=",f(2,3,1,2,3),"=",f(3,1,2,3,1))
   end
   end
-      else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))") 
+      else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))")
       end
     end
   end
 end
 
 #---------------------------------------------------------------------------
-abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end 
+abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 
 "`Diagram(W)` diagram of finite reflection group `W`"
 Diagram(W::PermRootGroup)=Diagram.(refltype(W))
@@ -499,7 +499,7 @@ function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
     for i in eachindex(gens(W))
       if iszero(reps[i])
         d=transversal(W,inclusion(W,i))
-        for (n,e) in d 
+        for (n,e) in d
           reps[restriction(W,n)]=i
           repelts[restriction(W,n)]=e
         end
@@ -623,7 +623,7 @@ cases (which are resolved by h):
  G13/G(24,12,2)/G(48,48,2)
  G22/G(60,30,2)/G(120,120,2)
  G7/G14/G(24,8,2)
- G8/G(12,3,2) 
+ G8/G(12,3,2)
  G15/G(48,16,2)
  G17/G(120,24,2)
  G21/G(120,40,2)
@@ -631,41 +631,41 @@ cases (which are resolved by h):
 function type_irred(W::PermRootGroup)
 prim=[
   (r=0, s=0, o=0, h=0),  # 3 dummy items to get right Shephard-Todd number
-  (r=0, s=0, o=0, h=0), 
-  (r=0, s=0, o=0, h=0), 
-  (r=2, s=12, o=3, h=6), 
-  (r=2, s=36, o=3, h=12), 
-  (r=2, s=24, o=3, h=12), 
-  (r=2, s=72, o=3, h=18), 
-  (r=2, s=48, o=4, h=12), 
-  (r=2, s=96, o=4, h=24), 
-  (r=2, s=144, o=4, h=24), 
-  (r=2, s=288, o=4, h=36), 
-  (r=2, s=24, o=2, h=12), 
-  (r=2, s=48, o=2, h=18), 
-  (r=2, s=72, o=3, h=24), 
-  (r=2, s=144, o=3, h=30), 
-  (r=2, s=300, o=5, h=30), 
-  (r=2, s=600, o=5, h=60), 
-  (r=2, s=900, o=5, h=60), 
-  (r=2, s=1800, o=5, h=90), 
-  (r=2, s=180, o=3, h=30), 
-  (r=2, s=360, o=3, h=60), 
-  (r=2, s=120, o=2, h=30), 
-  (r=3, s=20, o=2, h=10), 
-  (r=3, s=56, o=2, h=14), 
-  (r=3, s=108, o=3, h=12), 
-  (r=3, s=216, o=3, h=18), 
-  (r=3, s=360, o=2, h=30), 
-  (r=4, s=48, o=2, h=12), 
-  (r=4, s=320, o=2, h=20), 
-  (r=4, s=600, o=2, h=30), 
-  (r=4, s=1920, o=2, h=30), 
-  (r=4, s=6480, o=3, h=30), 
-  (r=5, s=432, o=2, h=18), 
-  (r=6, s=54432, o=2, h=42), 
-  (r=6, s=72, o=2, h=12), 
-  (r=7, s=576, o=2, h=18), 
+  (r=0, s=0, o=0, h=0),
+  (r=0, s=0, o=0, h=0),
+  (r=2, s=12, o=3, h=6),
+  (r=2, s=36, o=3, h=12),
+  (r=2, s=24, o=3, h=12),
+  (r=2, s=72, o=3, h=18),
+  (r=2, s=48, o=4, h=12),
+  (r=2, s=96, o=4, h=24),
+  (r=2, s=144, o=4, h=24),
+  (r=2, s=288, o=4, h=36),
+  (r=2, s=24, o=2, h=12),
+  (r=2, s=48, o=2, h=18),
+  (r=2, s=72, o=3, h=24),
+  (r=2, s=144, o=3, h=30),
+  (r=2, s=300, o=5, h=30),
+  (r=2, s=600, o=5, h=60),
+  (r=2, s=900, o=5, h=60),
+  (r=2, s=1800, o=5, h=90),
+  (r=2, s=180, o=3, h=30),
+  (r=2, s=360, o=3, h=60),
+  (r=2, s=120, o=2, h=30),
+  (r=3, s=20, o=2, h=10),
+  (r=3, s=56, o=2, h=14),
+  (r=3, s=108, o=3, h=12),
+  (r=3, s=216, o=3, h=18),
+  (r=3, s=360, o=2, h=30),
+  (r=4, s=48, o=2, h=12),
+  (r=4, s=320, o=2, h=20),
+  (r=4, s=600, o=2, h=30),
+  (r=4, s=1920, o=2, h=30),
+  (r=4, s=6480, o=3, h=30),
+  (r=5, s=432, o=2, h=18),
+  (r=6, s=54432, o=2, h=42),
+  (r=6, s=72, o=2, h=12),
+  (r=7, s=576, o=2, h=18),
   (r=8, s=17280, o=2, h=30)]
 
   r=semisimplerank(W)
@@ -742,7 +742,7 @@ function check_minimal_relation(gens,rel;verbose=false)
   false
 end
 
-# g is a sublist of 1:length(H.roots). Returns sublist k of g such that 
+# g is a sublist of 1:length(H.roots). Returns sublist k of g such that
 # reflection.(Ref(H),k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
 # println("g=$g\n t=");ds(t)
@@ -773,7 +773,7 @@ function findgoodgens(H,g,t::TypeIrred)
   return findarr(eltype(H)[],g)
 end
 
-# findgoodcartan(H,g,C):  g is a sublist of eachindex(H.roots). 
+# findgoodcartan(H,g,C):  g is a sublist of eachindex(H.roots).
 # Returns sublist k of g such that cartan(H,k)=C or nothing if none exists.
 function findgoodcartan(H,g,C)
   function find(k,rest) # k has good cartan, see if can add some e∈ rest
@@ -837,7 +837,7 @@ function findgensDiagCartan2(H,C)
   return complete(Int[],eltype(C)[])
 end
 
-# find other roots with same reflection in inclusion(H) with cartan equal to 
+# find other roots with same reflection in inclusion(H) with cartan equal to
 # C^diagonal matrix
 # returns [sublist, coeffs of corresp. diagonal matrix]
 function findgensDiagCartan(H,C,p)
@@ -874,20 +874,20 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       d=TypeIrred(type_irred(R))
       C=cartan(d)
       if C==cartan(R) indices=I
-      else 
+      else
         good=findgoodcartan(R,eachindex(gens(R)),C)
         if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end
         if isnothing(good) good=findgoodgens(R,
                        Int.(indexin(unique(reflections(R)),reflections(R))),d)
           better=fixCartan(R,C,good)
-          if !isnothing(better) good=better[2] 
+          if !isnothing(better) good=better[2]
           else better=findgensDiagCartan(R,C,good)
             if !isnothing(better) good=better[1]
             else better=findgensDiagCartan2(R,C)
               if !isnothing(better) good=better[1] end
             end
           end
-          if d.series!=:ST 
+          if d.series!=:ST
             d=TypeIrred(Weyl.type_fincox_cartan(cartan(R,good)))
           end
         end
@@ -955,16 +955,16 @@ function hyperplane_orbits(W::PermRootGroup)
     (s=s,cl_s=c,order=ord,N_s=classinfo(W)[:classes][c[1]],det_s=dets)
   end
 end
-  
+
 """
 `bipartite_decomposition(W)`
-    
+
 Returns  a bipartite decomposition `[L,R]` of the indices of the generators
 of  the  reflection  group  `W`,  such  that `reflection_subgroup(W,L)` and
 `reflection_subgroup(W,R)` are abelian subgroups, and
 `W=reflection_subgroup(W,   vcat(L,R))`.   Gives   an   error  if  no  such
 decomposition is possible.
-    
+
 ```julia-repl
 julia> bipartite_decomposition(coxgroup(:E,8))
 ([1, 4, 6, 8], [3, 2, 5, 7])
@@ -978,8 +978,8 @@ function bipartite_decomposition(W)
   commute(x,y)=W(x)*W(y)==W(y)*W(x)
   while length(rest)>0
     r=findfirst(x->any(y->!commute(x,y),L),rest)
-    if r!=nothing 
-      if any(y->!commute(rest[r],y),R) 
+    if r!=nothing
+      if any(y->!commute(rest[r],y),R)
         error(W," has no bipartite decomposition")
       end
       push!(R,rest[r])
@@ -997,7 +997,7 @@ tr(m)=sum(i->m[i,i],axes(m,1))
 
 """
 `reflchar(W,w)` Reflection character
-    
+
 Returns  the trace  of the  element `w`  of the  reflection group `W` as an
 endomorphism of the vector space `V` on which `W` acts. This is the same as
 `trace(reflrep(W,w))`.
@@ -1030,7 +1030,7 @@ julia> reflchar(coxgroup(:A,3))
 ```
 """
 reflchar(W::PermRootGroup)=reflchar.(Ref(W),classreps(W))
-  
+
 """
 `refleigen(W)` Reflection eigenvalues
 
@@ -1052,7 +1052,7 @@ function refleigen(W)
   get!(W,:refleigen) do
     t=refltype(W)
     if isempty(t) ll=[Root1[]]
-    elseif any(x->haskey(x,:orbit) && 
+    elseif any(x->haskey(x,:orbit) &&
         (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
       ll=map(x->eigmat(reflrep(W,x)),classreps(W))
       W.reflengths=map(x->count(!isone,x),ll)
@@ -1060,7 +1060,7 @@ function refleigen(W)
     else
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
-    central=W isa Spets ? torusfactors(W) : 
+    central=W isa Spets ? torusfactors(W) :
                           fill(E(1),rank(W)-semisimplerank(W))
     ll=map(x->vcat(x,central),ll)
     W.reflengths=map(x->count(!isone,x),ll)
@@ -1140,7 +1140,7 @@ function Groups.centre(W::PermRootGroup)
     Group(abelian_gens(central))
   end
 end
-     
+
 function Groups.position_class(W::PermRootGroup,w)
   l=PermGroups.positions_class(W,w)
 # if length(l)>1 println("ambiguity: ",l) end
@@ -1148,7 +1148,7 @@ function Groups.position_class(W::PermRootGroup,w)
   if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
   ncl=classinfo(W)[:classes][l]
   s=sortperm(ncl)
-  for i in s 
+  for i in s
     if length(s)==1 return l[i] end
     if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i])
       println("!! computing class ",l[i]," of cardinal ",ncl[i])
@@ -1177,7 +1177,7 @@ end
 
 function showtorus(io::IO,W)
   t=rank(W)-semisimplerank(W)
-  if t>0 
+  if t>0
     if hasdecor(io) print(io,CycPol(1,0,0//1=>t))
     else print(io,(istorus(W) ? "" : "*"),"PRG($t)")
     end
@@ -1305,8 +1305,8 @@ function PermGroups.reduced(W::PermRootGroup,F)
       subgroup=reflection_subgroup(W,a.indices)
       base=gens(subgroup).^F
       if !all(x->x in W,base) error("F must normalize W") end
-      if !all(x->x in subgroup,base) 
-        error("not implemented: F permutes components") 
+      if !all(x->x in subgroup,base)
+        error("not implemented: F permutes components")
       end
       base=chevieget(:timp,:ReducedInRightCoset)(subgroup,F)
       if isnothing(base) error("should not happen subgroup=$subgroup F=$F")
@@ -1557,7 +1557,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
       lr=length(rr)
       if length(refl)<lr
       for y in eachrow(toM(rr[length(refl)+1:end])*matgens[j])
-        p=findfirst(==(y),rr) 
+        p=findfirst(==(y),rr)
 	if p===nothing || p>lr
           push!(rr,y)
 #         println("j=$j rr[$(length(refl)+1)...] ",length(rr),":",y)
@@ -1626,11 +1626,11 @@ function Base.:*(W::PRG,V::PRG)
   cr=cat(simplecoroots(W),simplecoroots(V),dims=(1,2))
   PRG(toL(r),toL(cr))
 end
-  
+
 "`reflrep(W)` returns the list of `reflrep(W,x)` for `x` in `gens(W)`"
 reflrep(W::PRG)=W.matgens
 "`reflrep(W,i)` same as but better than `reflrep(W,W(i))`"
-reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : 
+reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] :
                                          reflrep(W,reflection(W,i))
 
 #--------------- type of subgroups of PRG----------------------------------
@@ -1671,7 +1671,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if NC
     if I==eachindex(gens(W)) G=W
       inclu=collect(eachindex(roots(W)))
-    else 
+    else
       G=PRG(roots(W,I),coroots(W,I);NC=true)
       inclu=Int.(indexin(G.roots,W.roots))
     end
@@ -1699,7 +1699,7 @@ reflection_subgroup(W::PRSG,I::AbstractVector{Int};u...)=
 function Base.show(io::IO, W::PRSG)
   I=inclusiongens(W)
   if !hasdecor(io)
-    print(io,"reflection_subgroup(",W.parent,",",I,")") 
+    print(io,"reflection_subgroup(",W.parent,",",I,")")
     return
   end
   n=inclusion(W,indices(refltype(W)))
@@ -1759,7 +1759,7 @@ function Combinat.catalan(W,m=1;q=1)
   d=sort(degrees(W))
   d=filter(x->x!=1,d)
   fd=d
-  if length(d)!=ngens(W) 
+  if length(d)!=ngens(W)
     ci=charinfo(W)
     if haskey(ci,:hgal) hgal=ci[:hgal] else hgal=Perm() end
     ct=toL(CharTable(W).irr)
