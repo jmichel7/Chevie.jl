@@ -835,6 +835,10 @@ function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
   r=cat(simpleroots(parent(W1)),simpleroots(parent(W2)),dims=[1,2])
   cr=cat(simplecoroots(parent(W1)),simplecoroots(parent(W2)),dims=[1,2])
   res=rootdatum(r,cr)
+  if haskey(W1,:callname) && haskey(W2,:callname)
+    res.callname=W1.callname*"*"*W2.callname
+    res.TeXcallname=W1.TeXcallname*"\\times "*W2.TeXcallname
+  end
   if W1==parent(W1) && W2==parent(W2) return res end
   if !issubset(inclusiongens(W1),1:ngens(parent(W1))) 
     error("not implemented") end

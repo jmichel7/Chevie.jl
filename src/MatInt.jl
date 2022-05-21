@@ -929,23 +929,27 @@ end
 """
 `diaconis_graham(m::Matrix{<:Integer}, moduli::Vector{<:Integer})`
 
-[Diaconis-Graham1999](biblio.htm#dg99) defined a normal form for generating
-sets of abelian groups. Here `moduli` should be positive integers such that
-`moduli[i+1]`  divides `moduli[i]`  for all  `i`, representing  the abelian
-group `A=ℤ/moduli[1]×…×ℤ/moduli[n]`. The matrix `m` should have `n` columns
-where `n=Length(moduli)`, and each line (with the `i`-th element taken `mod
-moduli[i]`) represents an element of the group `A`; the set of lines of `m`
+returns the normal  form defined  in [Diaconis-Graham1999](biblio.htm#dg99)
+for  the set of generators  defined by `m` of  the abelian group defined by
+`moduli`.
+
+`moduli`  should  have  positive  entries  such  that `moduli[i+1]` divides
+`moduli[i]` for all `i`, representing the abelian group
+`A=ℤ/moduli[1]×…×ℤ/moduli[n]`, where `n=length(moduli)`.
+
+`m`  should have `n` columns, and each  line, with the `i`-th element taken
+`mod  moduli[i]`, represents  an element  of `A`;  the set  of lines of `m`
 should generate `A`.
 
 The  function returns 'nothing'  if the lines  of `m` do  not generate `A`.
 Otherwise it returns a named tuple `r` with fields
 
-`.normal`:  the Diaconis-Graham normal form, a  matrix of same shape as `m`
+`r.normal`:  the Diaconis-Graham normal form, a matrix of same shape as `m`
 where  either the first `n` lines are the identity matrix and the remaining
 lines  are `0`,  or `length(m)=n`  and `.normal`  differs from the identity
 matrix only in the entry `.normal[n,n]`, which is prime to `moduli[n]`.
 
-`.rowtrans`: unimodular matrix such that `r.normal==mod.(r.rowtrans*m,moduli')`
+`r.rowtrans`: unimodular matrix such that `r.normal==mod.(r.rowtrans*m,moduli')`
 
 Here is an example:
 

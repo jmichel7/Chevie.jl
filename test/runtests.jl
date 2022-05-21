@@ -994,7 +994,7 @@ end
 @test mytest("Ucl.jl","H=reflection_subgroup(W,[1,3])","F₄₍₁₃₎=A₁×Ã₁Φ₁²")
 @test mytest("Ucl.jl","Ucl.induced_linear_form(W,H,[2,2])","4-element Vector{Int64}:\n 0\n 1\n 0\n 0")
 @test mytest("Ucl.jl","uc=UnipotentClasses(W);","nothing")
-@test mytest("Ucl.jl","uc.classes[4].prop","Dict{Symbol, Any} with 7 entries:\n  :dynkin     => [0, 1, 0, 0]\n  :dimred     => 6\n  :red        => A₁×A₁\n  :Au         => .\n  :balacarter => [1, 3]\n  :dimunip    => 18\n  :AuAction   => A₁×A₁")
+@test mytest("Ucl.jl","uc.classes[4].prop","Dict{Symbol, Any} with 8 entries:\n  :dynkin     => [0, 1, 0, 0]\n  :dimred     => 6\n  :red        => A₁×A₁\n  :Au         => .\n  :balacarter => [1, 3]\n  :rep        => [1, 3]\n  :dimunip    => 18\n  :AuAction   => A₁×A₁")
 @test mytest("Ucl.jl","uc.classes[4]","UnipotentClass(A₁+Ã₁)")
 @test mytest("Ucl.jl","W=coxgroup(:F,4)","F₄")
 @test mytest("Ucl.jl","distinguished_parabolics(W)","4-element Vector{Vector{Int64}}:\n []\n [3]\n [1, 3]\n [1, 3, 4]")

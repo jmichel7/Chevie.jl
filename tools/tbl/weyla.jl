@@ -178,7 +178,7 @@ chevieset(:A, :Invariants, function (n,)
                     end), 2:n + 1)
     end)
 chevieset(:A, :UnipotentClasses, function (n, p)
-        local uc, i, j, cl, d, ss
+        local uc, i, j, cl, d, ss, partition2parab
         uc = Dict{Symbol, Any}(:classes => map((p->begin
                                 Dict{Symbol, Any}(:parameter => p)
                             end), partitions(n + 1)), :springerSeries => Concatenation(map((d->begin
@@ -193,6 +193,19 @@ chevieset(:A, :UnipotentClasses, function (n, p)
                                 x[:Z] == [z]
                             end))
                 end)
+        partition2parab(p) = begin
+                local res, c, pa, i
+                res = []
+                c = 1
+                for pa = p
+                    for i = 1:pa - 1
+                        push!(res, c)
+                        c = c + 1
+                    end
+                    c = c + 1
+                end
+                return res
+            end
         for i = 1:length(uc[:classes])
             cl = (uc[:classes])[i]
             p = cl[:parameter]
@@ -217,6 +230,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
             end
             cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
             cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat(rank(cl[:red]))])
+            cl[:rep] = partition2parab(cl[:parameter])
             if d == 2
                 push!((ss(1))[:locsys], [i, 2])
                 push!((ss(-1))[:locsys], [i, 1])

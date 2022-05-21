@@ -811,7 +811,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
         end
     end)
 chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
-        local X, Y, t, x, a, v, d, T, S, m334, m335, extra, l, m1, p1rRep, f, e
+        local X, Y, t, x, a, v, d, T, S, m334, m335, extra, l, m, m1, p1rRep, f, e
         if !(IsList(para))
             para = [para]
         end

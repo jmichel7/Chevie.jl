@@ -88,9 +88,11 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
   if o isa Function
     if haskey(t,:orbit) t=t.orbit[1] end
     if haskey(t,:cartanType) && f in needcartantype
-#     println("args=",(args...,extra...,t.cartanType))
+#     println("$f(",(args...,extra...,t.cartanType),")")
       o(args...,extra...,t.cartanType)
-    else o(args...,extra...)
+    else 
+#    println("$f(",(args...,extra...),")")
+      o(args...,extra...)
     end
   elseif o===false return nothing
   else o
