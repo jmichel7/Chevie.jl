@@ -319,5 +319,7 @@ chevieset(:G4_22, :sparseFakeDegrees,ST->sparseFakeDegrees4_22[ST-3])
 chevieset(:G4_22, :FakeDegree, function (ST, phi, q)
   f=sparseFakeDegrees4_22[ST-3][findfirst(==(phi),
                       chevieget(:G4_22,:CharInfo)(ST)[:charparams])]
-  sum(x->q^x,f)
+  sum(q.^f)
 end)
+chevieset(:G4_22, :LowestPowerFakeDegrees,ST->
+        first.(chevieget(:G4_22, :sparseFakeDegrees)(ST)))

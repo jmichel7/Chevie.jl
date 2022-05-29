@@ -380,39 +380,53 @@ function Base.show(io::IO,d::Diagram)
     l=length.(ind)
     bar="\u2014"
     rdarrow(n)="\u21D0"^(n-1)*" "
-    ldarrow(n)="\u21D2"^(n-1)
+    ldarrow(n)="\u21D2"^(n-1)*" "
     tarrow(n)="\u21DB"^(n-1)*" "
+    tbar(n)="\u2261"^(n-1)*" "
+    dbar(n)="="^n
     vbar="\UFFE8" # "\u2503"
     node="O"
     if series==:A
-      join(io,node.*bar.^l[1:end-1]);println(io,node);join(io,ind," ")
+      join(io,node.*bar.^l[1:end-1]);print(io,node);println(io," ",t)
+      join(io,ind," ")
     elseif series==:B
-      print(io,node,rdarrow(max(l[1],2)));join(io,node.*bar.^l[2:end-1])
-      println(io,node)
-      print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
-    elseif series==:C
-      print(io,node,ldarrow(max(l[1],2)));join(io,node.*bar.^l[2:end-1])
-      println(io,node)
-      print(io,rpad(ind[1],max(3,l[1]+1)));join(io,ind[2:end]," ")
+      print(io,node)
+      if t.cartanType==2 l1=max(l[1],2);print(rdarrow(l1))
+      elseif t.cartanType==1 l1=max(l[1],2);print(ldarrow(l1))
+      elseif t.cartanType==root(2) l1=max(l[1],2);print(dbar(l1))
+      else xprint("=",t.cartanType,"=");
+         l1=length(repr(t.cartanType;context=rio()))+2
+      end
+      join(io,node.*bar.^l[2:end-1]);println(io,node," ",t)
+      print(io,rpad(ind[1],l1+1));join(io,ind[2:end]," ")
     elseif series==:D
       println(io," "^(l[1]+1),node," $(ind[2])")
       println(io," "^(l[1]+1),vbar)
-      println(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      print(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      println(io," ",t)
       join(io,ind[[1;3:end]]," ")
     elseif series==:E
       println(io," "^(2+l[1]+l[3]),node," $(ind[2])")
       println(io," "^(2+l[1]+l[3]),vbar)
-      println(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      print(io,node,map(l->bar^l*node,l[[1;3:end-1]])...)
+      println(io," ",t)
       join(io,ind[[1;3:end]]," ")
     elseif series==:F
-      println(io,node,bar^l[1],node,ldarrow(max(l[2],2)),node,bar^l[3],node)
-      print(io,ind[1]," ",ind[2]," "^max(2-l[2],1),ind[3]," ",ind[4])
+      print(io,node,bar^l[1],node)
+      if t.cartanType==1 l1=max(l[2],2);print(io,ldarrow(l1))
+      else l1=max(l[2],1);print(io,dbar(l1))
+      end
+      println(io,node,bar^l[3],node," ",t)
+      print(io,ind[1]," ",rpad(ind[2],l1+1),ind[3]," ",ind[4])
     elseif series==:G
-      println(io,node,tarrow(max(l[1],2)),node)
+      if t.cartanType==1 print(io,node,tarrow(max(l[1],2)))
+      else print(io,node,tbar(max(l[1],2)))
+      end
+      println(io,node," ",t)
       print(io,ind[1]," "^max(3-l[1],1),ind[2])
     elseif series==:H
       println(io," "^l[1],"₅")
-      println(io,map(i->node*bar^l[i],1:t.rank-1)...,node)
+      println(io,map(i->node*bar^l[i],1:t.rank-1)...,node," ",t)
       join(io,ind," ")
     elseif series==:I
       println(io," "^l[1],t.bond)
@@ -420,7 +434,7 @@ function Base.show(io::IO,d::Diagram)
       join(io,ind," ")
     elseif series==:ST
       if haskey(t,:ST)
-        if t.ST>22 getchev(t,:PrintDiagram,t.indices,"G$(t.ST)")
+        if t.ST>22 getchev(t,:PrintDiagram,t.indices,repr(t;context=io))
         else
 # print(title, " ");s=pad("\n", -length(title))
   s="\n"
@@ -430,31 +444,40 @@ function Base.show(io::IO,d::Diagram)
   c3="\u2462"
   c4="\u2463"
   c5="\u2464"
-  if t.ST==4 print(c3," ",bar^2,c3,s,f(1)," "^3,f(2))
-  elseif t.ST==5 print(c3," ",dbar^2,c3,s,f(1)," "^3,f(2))
-  elseif t.ST==6 print(c2," ",bar,"⁶",bar,c3,s,f(1)," "^4,f(2))
-  elseif t.ST==7 print(" "^2,c3," ",f(2),s)
-               print(" ","/3\\",s)
-               print(c2," ",bar^2,c3,s)
-               print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
-  elseif t.ST==8 print(c4," ",bar^2,c4,s,f(1)," "^3,f(2))
-  elseif t.ST==9 print(c2," ",bar,"⁶",bar,c4,s,f(1)," "^4,f(2))
-  elseif t.ST==10 print(c3," ",dbar^2,c4,s,f(1)," "^3,f(2))
-  elseif t.ST==11 print(" "^2,c3," ",f(2),s," /3\\",s,c2," ",bar^2,c4,s)
-    print(f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
+  if t.ST==4 println(io,c3," ",bar^2,c3," ",t);print(io,f(1)," "^3,f(2))
+  elseif t.ST==5 println(io,c3," ",dbar^2,c3," ",t);print(io,f(1)," "^3,f(2))
+  elseif t.ST==6 println(io,c2," ",tbar(2),c3," ",t)
+                 println(io,f(1)," "^3,f(2))
+  elseif t.ST==7 println(io," "^2,c3," ",f(2)," ",t)
+                 println(io," ","/3\\")
+                 println(io,c2," ",bar^2,c3)
+     print(io,f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
+  elseif t.ST==8 println(io,c4," ",bar^2,c4," ",t);print(io,f(1)," "^3,f(2))
+  elseif t.ST==9 println(io,c2," ",tbar(2),c4," ",t)
+                 println(io,f(1)," "^3,f(2))
+  elseif t.ST==10 println(io,c3," ",dbar^2,c4," ",t)
+                  println(io,f(1)," "^3,f(2))
+  elseif t.ST==11 println(io," "^2,c3," ",f(2)," ",t)
+                  println(io," /3\\");
+                  println(io,c2," ",bar^2,c4)
+    print(io,f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
   elseif t.ST==12 print("  ",c2," ",f(2),s," /4\\",s,c2," ",bar^2,c2,s)
     print(f(1)," "^3,f(3)," ",f(1,2,3,1),"=",f(2,3,1,2),"=",f(3,1,2,3))
   elseif t.ST==13 print("  ",c2," ",f(1),s," / \\",s,c2," ",bar^2,c2,s)
     print(f(3)," "^3,f(2)," ",f(2,3,1,2),"=",f(3,1,2,3)," ",f(1,2,3,1,2),"=")
                 print(f(3,1,2,3,1))
-  elseif t.ST==14 print("  ₈",s,c2," ",bar,c3,s,f(1)," "^2,f(2))
+  elseif t.ST==14 println(io,"  ₈")
+                  println(io,c2," ",bar,c3," ",t)
+                  print(io,f(1)," "^2,f(2))
   elseif t.ST==15 print("  ",c2," ",f(1),s," /5",s,c2," ",f(3),s," \\",s,"  ",c3," ",f(2)," ")
                 print(f(1,2,3),"=",f(3,1,2)," ",f(2,3,1,2,1),"=",f(3,1,2,1,2))
   elseif t.ST==16 print(c5," ",bar^2,c5,s,f(1)," "^3,f(2))
   elseif t.ST==17 print(c2," ",bar,"⁶",bar,c5,s,f(1)," "^4,f(2))
   elseif t.ST==18 print(c3," ",dbar^2,c5,s,f(1)," "^3,f(2))
-  elseif t.ST==19 print(" ",c3," ",f(2),s," /3\\",s,c2," ",bar^2,c5,s)
-   print(f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2, 3, 1),"=",f(3, 1, 2))
+  elseif t.ST==19 println(io," "^2,c3," ",f(2)," ",t)
+                  println(io," /3\\");
+                  println(io,c2," ",bar^2,c5)
+    print(io,f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
   elseif t.ST==20 print("  ₅",s,c3," ",bar,c3,s,f(1)," "^2,f(2))
   elseif t.ST==21 print("  ₁₀",s,c2," ",bar^2,c3,s,f(1)," "^4,f(2))
   elseif t.ST==22 print("  ",c2," ",f(2),s," /5\\",s,c2," ",bar^2,c2,s)

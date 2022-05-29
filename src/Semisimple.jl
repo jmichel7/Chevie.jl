@@ -565,12 +565,14 @@ with the following keys:
 `:CenterSimplyConnected`: A list of semisimple elements generating the center
    of the universal covering of  𝐆 
   
-`:chosenAdaptedBasis`: A basis of the weight lattice adapted to the root
+`:chosenAdaptedBasis`: A basis  of the  weight lattice  adapted to the root
   lattice.  In the  basis of  the fundamental  weights, the root lattice is
-  given  by the Cartan  matrix `C`. The  property is that  the Hermite normal
-  form  of  `C*.chosenAdaptedBasis`  is  almost  in  Smith normal form (it is
-  diagonal  but the diagonal entries may be permuted compared to the Smith
-  normal form).
+  given  by the `C=transpose(cartan(W))`. The  property is that the Hermite
+  normal  form of `C*chosenAdaptedBasis` is almost in Smith normal form (it
+  is  diagonal but  the diagonal  entries may  be permuted  compared to the
+  Smith   normal  form;  the  non-trivial  entries  are  in  the  positions
+  corresponding  to the generators of the fundamental group as indicated by
+  `:decompositions`).
 ```julia-repl
 julia> weightinfo(coxgroup(:A,2)*coxgroup(:B,2))
 Dict{Symbol, Array} with 7 entries:

@@ -644,13 +644,14 @@ function UnipotentClasses(t::TypeIrred,p=0)
   if uc===nothing error("no UnipotentClasses for ",t) end
   rank=PermRoot.rank(t)
   classes=UnipotentClass[]
+  c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
+  rr=toM(roots(c))
   for u in uc[:classes] # fill omitted fields
     name=u[:name]
     parameter= haskey(u,:parameter) ? u[:parameter] : u[:name]
     dimBu= haskey(u,:dimBu)  ? u[:dimBu] : -1
     if haskey(u,:dynkin)
-      c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
-      weights=toM(roots(c))*u[:dynkin]
+      weights=rr*u[:dynkin]
       n0=count(iszero,weights)
       if dimBu==-1 dimBu=n0+div(count(isone,weights),2)
       elseif dimBu!=n0+div(count(isone,weights),2) error("theory")

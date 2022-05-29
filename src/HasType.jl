@@ -1,11 +1,10 @@
 module HasType
 
-export charname, traces_words_mats, Unknown
+export traces_words_mats, Unknown
 
 using ..Gapjm
 #-----------------------------------------------------------------------
-struct Unknown
-end
+struct Unknown end
 
 Base.:+(a,b::Unknown)=b
 Base.:+(b::Unknown,a)=b
@@ -24,12 +23,6 @@ Base.isinteger(a::Unknown)=false
 Base.conj(a::Unknown)=a
 Base.broadcastable(a::Unknown)=Ref(a)
 CyclotomicNumbers.galois(a::Unknown,i)=a
-#-----------------------------------------------------------------------
-charname(t::TypeIrred,p;TeX=false,opt...)=getchev(t,:CharName,p,
-                           TeX ? Dict(:TeX=>true) : Dict())
-
-charname(W,x;TeX=false,opt...)=join(map((t,p)->charname(t,p;TeX=TeX,opt...),
-                           refltype(W),x),",")
 #----------------------------------------------------------------------
 # correct translations of GAP3 functions
 

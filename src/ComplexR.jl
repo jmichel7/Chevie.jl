@@ -1,7 +1,7 @@
 module ComplexR
 using ..Gapjm
 export ComplexReflectionGroup, reflection_name, diagram, codegrees,
-  traces_words_mats, reflection_group, torusfactors
+  reflection_group, torusfactors
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -161,7 +161,7 @@ julia> Diagram(HF)
 ϕ acts as (1,2,4) on the component below
   O 2
   ￨
-O—O—O
+O—O—O D₄
 1 3 4
 
 julia> degrees(HF)

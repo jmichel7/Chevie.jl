@@ -429,11 +429,6 @@ chevieset(:G4_22, :HighestPowerFakeDegrees, function (ST,)
                         x[length(x)]
                     end), (chevieget(:G4_22, :sparseFakeDegrees))(ST))
     end)
-chevieset(:G4_22, :LowestPowerFakeDegrees, function (ST,)
-        return map((x->begin
-                        x[2]
-                    end), (chevieget(:G4_22, :sparseFakeDegrees))(ST))
-    end)
 chevieset(:G4_22, :Generic, function (ST,)
         if ST in 4:7
             return 7

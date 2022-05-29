@@ -1,4 +1,4 @@
-JULIA=~/julia-1.7.2/bin/julia
+JULIA=~/julia-1.7.3/bin/julia
 test: *.jl
 	$(JULIA) ../tools/gentest.jl *.jl
 	mv runtests.jl ../test

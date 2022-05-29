@@ -81,6 +81,7 @@ const needcartantype=Set([:Invariants,
                           :WeightInfo,
                           :CartanMat])
 
+const debug=Ref(false)
 "`getchev(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function getchev(t::TypeIrred,f::Symbol,extra...)
   n,args...=field(t)
@@ -88,6 +89,15 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
   o=chevieget(n,f)
   if o isa Function
     if haskey(t,:orbit) t=t.orbit[1] end
+if debug[]
+    if haskey(t,:cartanType) && f in needcartantype
+      println("$f(",(args...,extra...,t.cartanType),")")
+@time o(args...,extra...,t.cartanType)
+    else 
+     println("$f(",(args...,extra...),")")
+@time o(args...,extra...)
+    end
+else
     if haskey(t,:cartanType) && f in needcartantype
 #     println("$f(",(args...,extra...,t.cartanType),")")
       o(args...,extra...,t.cartanType)
@@ -95,6 +105,7 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
 #    println("$f(",(args...,extra...),")")
       o(args...,extra...)
     end
+end
   elseif o===false return nothing
   else o
   end

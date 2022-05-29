@@ -1,12 +1,15 @@
 module Fact
-import Primes: nextprime
+import Primes: Primes, nextprime
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
 using ..Combinat: Combinat, combinations, npartitions, factor
 
 #export factor
 
-InfoPoly2=print
+function InfoPoly2(x...)
+  println(x...)
+end
+
 ##  <f> must be squarefree.  We test 3 "small" and 2 "big" primes.
 function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   min=degree(f)+1 # set minimal number of factors to the degree of <f>
@@ -27,17 +30,17 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
       fp=Pol(FFE{p}.(f.c),f.v)/lc
       if 0==degree(gcd(fp,derivative(fp))) break end
     end
-    InfoPoly2("#I  starting factorization mod p:  ", time(), "\n")
+    InfoPoly2("#I  starting factorization mod p:  ", time())
     lp=factor(fp)
     sort!(lp,by=degree)
-    InfoPoly2("#I  finishing factorization mod p: ", time(), "\n")
+    InfoPoly2("#I  finishing factorization mod p: ", time())
         # if <fp> is irreducible so is <f>
     if 1==length(lp)
-      InfoPoly2("#I  <f> mod ", p, " is irreducible\n")
+      InfoPoly2("#I  <f> mod ", p, " is irreducible")
       t[:isIrreducible]=true
       return t
     else
-      InfoPoly2("#I  found ",length(lp)," factors mod ",p," of degree ",degree.(lp), "\n")
+      InfoPoly2("#I  found ",length(lp)," factors mod ",p," of degree ",degree.(lp))
     end
         # choose a maximal prime with minimal number of factors
     if length(lp) <= min
@@ -52,7 +55,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
     end
         # if there is only one possible degree!=0 then <f> is irreducible
     if 2==length(deg)
-        InfoPoly2("#I  <f> must be irreducible, only one degree left\n")
+        InfoPoly2("#I  <f> must be irreducible, only one degree left")
         t[:isIrreducible]=true
         return t
     end
@@ -834,10 +837,5 @@ function HenselBound(pol,arg...)
 end
 
 q=Pol(:q)
-testf=
-q^17 + (28475495154853885209666581640806568193580138878464//35)*q^13 + (
--230113592530021909980533244143226208753492718798402862328238781356987464425343796365306003458195456//1225)*q^9 + (
--1331663813192583136877354316616861253307245376897389186616397648441393194005806591992969924972327944810995692943683480696873183913411848253822992384//
-42875)*q^5 + (
--11476141319715558689839068201773325238493770231736218788232819936653287068633455026978626687107040865767792194345449338617565687175571484254603185906485112033995725244553550967874479529656320//343)*q
+testf=-1434517664964444836229883525221665654811721278967027348529102492081660883579181878372328335888380108220974024293181167327195710896946435531825398238310639004249465655569193870984309941207040000*q-1331663813192583136877354316616861253307245376897389186616397648441393194005806591992969924972327944810995692943683480696873183913411848253822992384*q^5-8053975738550766849318663545012917306372245157944100181488357347494561254887032872785710121036840960*q^9+34882481564696009381841562509988046037135670126118400*q^13+42875*q^17
 end

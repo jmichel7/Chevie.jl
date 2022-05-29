@@ -903,16 +903,16 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> Diagram(W)
-O⇛ O
+O⇛ O G₂
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
 G₂₍₂₆₎=Ã₁×A₁
 
 julia> Diagram(H)
-O
+O Ã₁
 1
-O
+O A₁
 2
 ```
 

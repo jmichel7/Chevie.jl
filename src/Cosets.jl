@@ -176,7 +176,8 @@ G₁₄₍₂₄₎=²G₅
 ```julia-rep1
 julia> Diagram(RF)
 ϕ acts as (1,2) on the component below
-G5 1(3)==2(3)
+③ ══③ G₅
+1   2
 ```
 
 ```julia-repl
@@ -829,7 +830,7 @@ julia> Diagram(LF)
 ϕ acts as (2,3,4) on the component below
   O 4
   ￨
-O—O—O
+O—O—O D₄
 3 1 2
 ```
 """

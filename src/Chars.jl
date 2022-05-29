@@ -1,4 +1,6 @@
 """
+Characters and conjugacy classes of complex reflection groups.
+
 The  `CharTable` of a finite complex reflection group `W` is computed using
 the  decomposition of `W` in irreducible  groups (see `refltype`). For each
 irreducible  group the character  table is either  computed using recursive
@@ -73,15 +75,14 @@ julia> ct.classnames
  "A_1+\\tilde A_1"
 ```
 
-Recall  that our groups acts a reflection group on the vector space `V`, so
-have  fake degrees (see [`fakedegrees`](@ref)).  The valuation and degree of
-these  give two integers  `b,B` for each  irreducible character of `W` (see
-`charinfo(W).b`  and  `charinfo(W).B`).  For  finite  Coxeter  groups,  the
-valuation  and degree of  the generic degrees  of the one-parameter generic
-Hecke  algebra  give  two  more  integers  `a,A`  (see  `charinfo(W).a` and
-`charinfo(W).A`,   and   [Carter1985,   Ch.11](biblio.htm#Car85]  for  more
-details).   These  will  also  be  used  in  the  operations  of  truncated
-inductions, see [`jInductionTable`](@ref).
+Our  groups act as reflection groups on  the vector space `V`, so have fake
+degrees  (see [`fakedegrees`](@ref)),  whose valuation  and degree give two
+integers  `b,B` for each irreducible character  of `W`. For spetsial groups
+(which  include finite  Coxeter groups),  the valuation  and degree  of the
+generic  degrees of  the Hecke  algebra give  two more  integers `a,A` (for
+Coxeter groups see [Carter1985, Ch.11](biblio.htm#Car85] for more details).
+These  integers are also used in the operations of truncated induction, see
+[`jInductionTable`](@ref) and [`JInductionTable`](@ref).
 
 Iwahori-Hecke  algebras and  cyclotomic Hecke  algebras also have character
 tables, see the corresponding chapters.
