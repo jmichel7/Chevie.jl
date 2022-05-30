@@ -871,15 +871,12 @@ function Base.show(io::IO, ::MIME"text/plain", ct::CharTable)
   showtable(io,irr,row_labels=ct.charnames,col_labels=ct.classnames)
 end
 
-function CharTable(t::TypeIrred)
+function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
-  if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-  else                     names=charinfo(t).charnames
-  end
-  if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
   irr=improve_type(toM(ct[:irreducibles]))
-  CharTable(irr,names,String.(ct[:classnames]),Int.(ct[:centralizers]),
-            ct[:size],Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
+  CharTable(irr,charnames(t;opt...),string.(classnames(t;opt...)),
+            Int.(ct[:centralizers]),ct[:size],
+            Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
@@ -923,12 +920,12 @@ CharTable(³D₄)
 1.21 │ .  2    -2     .  .     2     -2
 ```
 """
-function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets})::CharTable
+function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets};opt...)::CharTable
   get!(W,:chartable)do
     t=refltype(W)
     ct=isempty(t) ? 
       CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
-      prod(CharTable.(t))
+      prod(CharTable.(t;opt...))
     ct.name=repr(W;context=:TeX=>true)
     ct.repr="CharTable($W)"
     ct
@@ -1222,7 +1219,7 @@ function charnames(io::IO,W)
     c=charinfo(W)
     cn=c.charnames
     for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
-      if get(io,k,false) && haskey(c,k) cn=c[k] end
+      if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
     end
   else
     cn=CharTable(W).charnames
@@ -1230,13 +1227,13 @@ function charnames(io::IO,W)
   fromTeX.(Ref(io),cn)
 end
 
-function charnames(io::IO,t::TypeIrred)
+function charnames(t::TypeIrred;opt...)
   c=charinfo(t)
   cn=c.charnames
   for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
-    if get(io,k,false) && haskey(c,k) cn=c[k] end
+    if get(opt,k,false) && haskey(c,k) cn=string.(c[k]) end
   end
-  fromTeX.(Ref(io),cn)
+  cn
 end
 
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
@@ -1255,7 +1252,7 @@ function classnames(io::IO,W)
     c=classinfo(W)
     cn=c[:classnames]
     for k in [:malle]
-      if get(io,k,false) && haskey(c,k) cn=c[k] end
+      if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
     end
   else
     cn=CharTable(W).classnames
@@ -1264,6 +1261,15 @@ function classnames(io::IO,W)
 end
 
 classnames(W;opt...)=classnames(IOContext(stdout,opt...),W)
+
+function classnames(t::TypeIrred;opt...)
+  c=classinfo(t)
+  cn=c[:classnames]
+  for k in [:malle]
+    if get(opt,k,false) && haskey(c,k) cn=string.(c[k]) end
+  end
+  cn
+end
 
 @GapObj struct InductionTable{T}
   scalar::Matrix{T}

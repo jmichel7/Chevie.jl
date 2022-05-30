@@ -91,10 +91,10 @@ function getchev(t::TypeIrred,f::Symbol,extra...)
     if haskey(t,:orbit) t=t.orbit[1] end
 if debug[]
     if haskey(t,:cartanType) && f in needcartantype
-      println("$f(",(args...,extra...,t.cartanType),")")
+      println("$n.$f(",(args...,extra...,t.cartanType),")")
 @time o(args...,extra...,t.cartanType)
     else 
-     println("$f(",(args...,extra...),")")
+     println("$n.$f(",(args...,extra...),")")
 @time o(args...,extra...)
     end
 else

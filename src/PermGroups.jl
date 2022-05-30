@@ -93,7 +93,7 @@ end
 
 Base.one(G::PermGroup)=G.one # PermGroups should have fields gens and one
 
-"'largest_moved_point(G::PermGroup)' the largest moved point by any `g∈ G`"
+"`largest_moved_point(G::PermGroup)` the largest moved point by any `g∈ G`"
 function Perms.largest_moved_point(G::PermGroup)::Int
   get!(G,:largest_moved)do 
     if isempty(gens(G)) return 0 end
@@ -218,7 +218,7 @@ function base(G::PermGroup{T})::Vector{T} where T
   getp(schreier_sims,G,:base)
 end
 
-" `g in G` Tells whether permutation `g` is an element of `G` "
+" `g in G` tells whether the permutation `g` is an element of `G` "
 function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)
@@ -389,7 +389,10 @@ end
 symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
-"`onmats(m::AbstractMatrix,g::Perm)' simultaneous action of `g` on cols and rows"
+"""
+`onmats(m::AbstractMatrix,g::Perm)` simultaneous action of `g` on 
+ the columns and rows of `m`.
+"""
 onmats(m,g)=m^(g,g)
 
 function invblocks(m,extra=nothing)

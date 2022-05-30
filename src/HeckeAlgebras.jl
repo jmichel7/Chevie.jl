@@ -287,7 +287,7 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,")")
 end
 
-function Chars.CharTable(H::HeckeAlgebra)
+function Chars.CharTable(H::HeckeAlgebra;opt...)
   get!(H,:chartable)do
     W=H.W
     if isempty(refltype(W)) 
@@ -296,12 +296,9 @@ function Chars.CharTable(H::HeckeAlgebra)
       cts=map(refltype(W))do t
         ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
                  rootpara(H)[t.indices] : fill(nothing,length(H.para)))
-        if !haskey(ct,:classnames) merge!(ct,classinfo(t)) end
-        if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-        else                     names=charinfo(t).charnames
-        end
-        CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-       map(Int,ct[:centralizers]),Int(ct[:centralizers][1]),Dict{Symbol,Any}())
+        CharTable(improve_type(toM(ct[:irreducibles])),charnames(t;opt...),
+             string.(classnames(t;opt...)),Int.(ct[:centralizers]),
+             Int(ct[:centralizers][1]),Dict{Symbol,Any}())
       end
       ct=prod(cts)
     end

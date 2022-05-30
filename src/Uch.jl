@@ -280,7 +280,7 @@ function SerNames(io::IO,sers)
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) res[ser[:charNumbers]]=[n]
     else 
-      nn=map(t->charnames(io,t),tt)
+      nn=map(t->charnames(t),tt)
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)
       if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end

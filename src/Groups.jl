@@ -230,6 +230,7 @@ function centralizer(G::Group,p;action::Function=^)
   Group(unique!(sort(C)))
 end
 
+"`centralizer(G::Group,H::Group)`"
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
 
 """
@@ -418,7 +419,7 @@ function position_class(G::Group,g)
 end
 
 """
-'fusion_conjugacy_classes(H::Group,G::Group)`
+`fusion_conjugacy_classes(H::Group,G::Group)`
 
 A `Vector{Int}` telling for each conjugacy class of subgroup `H` of which class
 of `G` is is a subset

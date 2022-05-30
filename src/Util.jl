@@ -54,7 +54,9 @@ getp(f::Function,o,p::Symbol)=get!(()->(f(o);o.prop[p]),o.prop,p)
 `@GapObj struct...`
 
 A `GapObj` is a kind of object where properties are computed on demand when
-asked for. So it has fixed fields but can dynamically have new ones.
+asked  for.  So  it  has  fixed  fields  but can dynamically have new ones.
+Accessing  fixed  fields  is  as  efficient  as  a  field  of any `struct`.
+Accessing a dynamic field takes the time of a `Dict` lookup.
 
 ```julia_repl
 julia> @GapObj struct Foo
@@ -79,10 +81,10 @@ julia> s.b
 julia> haskey(s,:b)
 true
 ```
-The  properties when computed are stored in the field `.prop` of `G`, which
-is  of type `Dict{Symbol, Any}()`. This  explains the extra argument needed
-in the constructor. The name is because it mimics a GAP record, but perhaps
-there could be a better name.
+The dynamic fields are stored in the field `.prop` of `G`, which is of type
+`Dict{Symbol,  Any}()`.  This  explains  the  extra  argument needed in the
+constructor.  The name is because it mimics a GAP record, but perhaps there
+could be a better name.
 """
 macro GapObj(e)
   push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
@@ -127,9 +129,9 @@ const unicodesub="₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢ�
 const sub=Dict(zip(subchars,unicodesub))
 const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "Delta"=>"Δ","gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "Lambda"=>"Λ",
-  "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", "Phi"=>"Φ",
-  "psi"=>"ψ", "rho"=>"ρ",
-  "sigma"=>"σ", "theta"=>"θ", "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
+  "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", 
+  "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ", "sigma"=>"σ", "theta"=>"θ", 
+  "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
   "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
 
 const unicodeQuotes=["′","″","‴","⁗"]

@@ -40,7 +40,8 @@ Groups.orbit(::AbstractVector, ::Any)
 Groups.orbits(::Group, ::Any)
 elements(::Group)
 transversal
-centralizer
+centralizer(::Group,::Any)
+centralizer(::Group,::Group)
 centre
 stabilizer
 normalizer
