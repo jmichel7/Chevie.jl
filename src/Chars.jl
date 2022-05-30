@@ -470,9 +470,7 @@ function charinfo(t::TypeIrred)
   c=CharInfo(deepcopy(getchev(t,:CharInfo)))
   c.positionId=c.extRefl[1]
   c.positionDet=c.extRefl[end]
-  c.charnames=map(c.charparams) do p
-     getchev(t,:CharName,p,Dict(:TeX=>true))
-  end
+  if !haskey(c,:charnames) error("charnames(",t,") missing") end
   if !haskey(c,:b) c.b=getchev(t,:LowestPowerFakeDegrees) end
   if !haskey(c,:B) c.B=getchev(t,:HighestPowerFakeDegrees) end
   if !haskey(c,:a) c.a=getchev(t,:LowestPowerGenericDegrees) end
@@ -1223,11 +1221,20 @@ function charnames(io::IO,W)
   if hasmethod(refltype,(typeof(W),))
     c=charinfo(W)
     cn=c.charnames
-    for k in [:spaltenstein, :frame, :malle, :kondo]
+    for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
       if get(io,k,false) && haskey(c,k) cn=c[k] end
     end
   else
     cn=CharTable(W).charnames
+  end
+  fromTeX.(Ref(io),cn)
+end
+
+function charnames(io::IO,t::TypeIrred)
+  c=charinfo(t)
+  cn=c.charnames
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
+    if get(io,k,false) && haskey(c,k) cn=c[k] end
   end
   fromTeX.(Ref(io),cn)
 end

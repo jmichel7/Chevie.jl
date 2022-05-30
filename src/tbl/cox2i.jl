@@ -51,23 +51,6 @@ chevieset(Symbol("2I"), :ClassParameter, function (m, w)
             return joindigits(l)
         end
     end)
-chevieset(Symbol("2I"), :CharName, function (m, x, option)
-        local s
-        if IsList(x[1])
-            return PartitionTupleToString(x)
-        else
-            if haskey(option, :TeX)
-                s = "phi"
-            else
-                s = "\\phi_"
-            end
-            s = SPrint(s, "{", x[1], ",", x[2], "}")
-            if length(x) == 3
-                s = Append(s, x[3])
-            end
-            return string(s)
-        end
-    end)
 chevieset(Symbol("2I"), :CharInfo, function (m,)
         local res
         res = Dict{Symbol, Any}(:extRefl => [1, 3, 2])
@@ -75,6 +58,7 @@ chevieset(Symbol("2I"), :CharInfo, function (m,)
             res[:charparams] = [[[2], []], [[], [1, 1]], [[1], [1]]]
             res[:b] = [0, 4, 1]
             res[:B] = [0, 4, 3]
+            res[:charnames] = map(PartitionTupleToString, res[:charparams])
         else
             res[:charparams] = Concatenation([[1, 0], [1, m]], map((i->begin
                                 [2, i]
@@ -85,6 +69,7 @@ chevieset(Symbol("2I"), :CharInfo, function (m,)
             res[:B] = Concatenation([0, m], map((i->begin
                                 m - i
                             end), 1:div(m - 1, 2)))
+            res[:charnames] = map(exceptioCharName, res[:charparams])
         end
         return res
     end)
@@ -100,7 +85,7 @@ chevieset(Symbol("2I"), :FakeDegree, function (m, phi, q)
         end
     end)
 chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
-        local q, i, j, ct, cos, cl, l, ident, ord, v, tbl
+        local q, i, j, ct, cos, cl, l, ident, ord, v, tbl, ci
         q = -((param[1])[1]) // (param[1])[2]
         if m == 4
             ident = "2B"
@@ -138,9 +123,10 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
                 (ct[i + 2])[j + 1] = -(v ^ (2j - 1)) * cos(i * (2j - 1))
             end
         end
-        tbl = Dict{Symbol, Any}(:identifier => ident, :name => ident, :cartan => [[2, -(cos(1))], [-(cos(1)), 2]], :size => 2m, :parameter => [q, q], :sqrtparameter => [v, v], :irreducibles => ct * v ^ 0, :irredinfo => map((x->begin
-                                Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(Symbol("2I"), :CharName))(m, x, Dict{Symbol, Any}(:TeX => true)))
-                            end), ((chevieget(Symbol("2I"), :CharInfo))(m))[:charparams]))
+        ci = (chevieget(Symbol("2I"), :CharInfo))(m)
+        tbl = Dict{Symbol, Any}(:identifier => ident, :name => ident, :cartan => [[2, -(cos(1))], [-(cos(1)), 2]], :size => 2m, :parameter => [q, q], :sqrtparameter => [v, v], :irreducibles => ct * v ^ 0, :irredinfo => map(function (x, y)
+                            return Dict{Symbol, Any}(:charparam => x, :charname => y)
+                        end, ci[:charparams], ci[:charnames]))
         Inherit(tbl, cl)
         tbl[:centralizers] = map((i->begin
                         tbl[:size] // i

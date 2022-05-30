@@ -47,20 +47,23 @@ chevieset(:timp, :NrConjugacyClasses, function (p, q, r, phi)
         return length(((chevieget(:timp, :ClassInfo))(p, q, r, phi))[:classtext])
     end)
 chevieset(:timp, :CharInfo, function (p, q, r, phi)
+        local res
         if [p, q, r] == [3, 3, 3]
             if order(phi) == 3
-                return Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [], [2, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 5, 6, 2])
+                res = Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [], [2, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 5, 6, 2])
             elseif order(phi) == 4
-                return Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 4, 5, 2])
+                res = Dict{Symbol, Any}(:charparams => [[[], [], [3]], [[], [], [1, 1, 1]], [[], [1, 1], [1]], [[], [2], [1]], [[], [1], [1, 1]], [[], [1], [2]]], :extRefl => [1, 4, 5, 2])
             else
                 error("phi==", phi, " not implemented")
             end
         elseif [p, q, r] == [4, 2, 2]
-            return Dict{Symbol, Any}(:charparams => [[[], [], [2], []], [[], [], [], [1, 1]], [[], [1], [1], []], [[], [], [1], [1]]], :extRefl => [1, 4, 2])
+            res = Dict{Symbol, Any}(:charparams => [[[], [], [2], []], [[], [], [], [1, 1]], [[], [1], [1], []], [[], [], [1], [1]]], :extRefl => [1, 4, 2])
         else
             ChevieErr("CharInfo not implemented")
             return false
         end
+        res[:charnames] = map(PartitionTupleToString, res[:charparams])
+        return res
     end)
 chevieset(:timp, :CharTable, function (p, q, r, phi)
         local res

@@ -17,6 +17,7 @@ chevieset(Symbol("2F4"), :CharInfo, function ()
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(Symbol("2F4"), :cyclestructure, [[24], [4, nothing, nothing, nothing, nothing, nothing, 5], [2, nothing, 11], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 2], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 2], [4, nothing, nothing, nothing, nothing, nothing, 5], [nothing, nothing, nothing, nothing, nothing, nothing, 6], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 4], [nothing, nothing, 12], [nothing, nothing, nothing, nothing, nothing, nothing, 6], [nothing, nothing, nothing, nothing, nothing, nothing, 6]])

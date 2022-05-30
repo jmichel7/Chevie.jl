@@ -91,16 +91,16 @@ chevieset(:A, :LowestPowerFakeDegree, (p->begin
 chevieset(:A, :HighestPowerFakeDegree, (p->begin
             (Sum(p) * (Sum(p) - 1)) // 2 - (chevieget(:A, :LowestPowerFakeDegree))(conjugate_partition(p))
         end))
-chevieset(:A, :CharName, function (arg...,)
-        return joindigits(arg[2])
-    end)
 chevieset(:A, :CharInfo, function (n,)
         local res
-        res = Dict{Symbol, Any}(:charparams => (chevieget(:A, :CharParams))(n))
+        res = Dict{Symbol, Any}(:charparams => partitions(n + 1))
+        res[:charnames] = map(joindigits, res[:charparams])
         res[:extRefl] = map((i->begin
                         Position(res[:charparams], Concatenation([(n + 1) - i], fill(0, max(0, (1 + i) - 1)) + 1))
                     end), 0:n)
-        res[:b] = map(chevieget(:A, :LowestPowerFakeDegree), res[:charparams])
+        res[:b] = map((p->begin
+                        p * (0:length(p) - 1)
+                    end), res[:charparams])
         res[:B] = map(chevieget(:A, :HighestPowerFakeDegree), res[:charparams])
         res[:a] = res[:b]
         res[:A] = res[:B]

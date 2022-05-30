@@ -57,6 +57,8 @@ chevieset(:timp, :CharInfo, function (p, q, r, phi)
             ChevieErr("CharInfo not implemented")
             return false
         end
+        res[:charnames] = map(PartitionTupleToString, res[:charparams])
+        return res
     end)
 chevieset(:timp, :CharTable, function (p, q, r, phi)
         local res

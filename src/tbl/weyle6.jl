@@ -23,6 +23,7 @@ chevieset(:E6, :CharInfo, function ()
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(:E6, :cyclestructure, [[], [36], [30], [nothing, 24], [nothing, 20], [nothing, 22], [nothing, nothing, 18], [5, nothing, 15], [nothing, nothing, nothing, 14], [nothing, nothing, nothing, nothing, 12], [6, nothing, nothing, nothing, 10], [3, nothing, nothing, nothing, 11], [6, 4, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 6], [21], [35], [6, nothing, 15], [4, nothing, 15], [3, 8, nothing, nothing, 6], [3, 10, nothing, nothing, 6], [2, nothing, nothing, nothing, 11], [nothing, nothing, nothing, nothing, nothing, nothing, 9], [1, nothing, nothing, 6, nothing, nothing, nothing, nothing, 4], [nothing, nothing, 3, nothing, 2, nothing, nothing, nothing, nothing, nothing, 4]])

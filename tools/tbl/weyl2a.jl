@@ -65,9 +65,6 @@ chevieset(Symbol("2A"), :NrConjugacyClasses, (n->begin
 chevieset(Symbol("2A"), :CharParams, (n->begin
             partitions(n + 1)
         end))
-chevieset(Symbol("2A"), :CharName, function (arg...,)
-        return joindigits(arg[2])
-    end)
 chevieset(Symbol("2A"), :CharInfo, (n->begin
             (chevieget(:A, :CharInfo))(n)
         end))

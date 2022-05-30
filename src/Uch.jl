@@ -280,13 +280,7 @@ function SerNames(io::IO,sers)
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) res[ser[:charNumbers]]=[n]
     else 
-      nn=map(tt)do t
-        ci=charinfo(t)
-        for k in [:spaltenstein, :frame, :malle, :kondo, :lusztig] 
-          if get(io,k,false) && haskey(ci,k) return ci[k] end
-        end
-        ci.charnames
-      end
+      nn=map(t->charnames(io,t),tt)
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)
       if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end

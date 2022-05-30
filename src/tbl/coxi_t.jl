@@ -10,16 +10,17 @@
 
 chevieset(:I, :CharInfo, function(m)
   res=Dict{Symbol, Any}()
-  charparams=[Any[1,0]]
+  charparams=[[1,0]]
   if iseven(m)
     res[:extRefl]=[1,5,4]
     m1=div(m,2)
-    push!(charparams,[1,m1,"'"],[1,m1,"''"])
+    push!(charparams,[1,m1,1],[1,m1,2])
   else
     res[:extRefl]=[1,3,2]
   end
   push!(charparams,[1,m])
   append!(charparams,map(i->[2,i],1:div(m-1,2)))
+  res[:charnames]=exceptioCharName.(charparams)
   res[:charparams]=charparams
   res[:b]=map(x->x[2], charparams)
   res[:B]=map(phi->phi[1]==1 ? phi[2] : m-phi[2], charparams)

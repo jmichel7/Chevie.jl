@@ -27,7 +27,7 @@ function (l,param,rootparam)
   merge!(tbl,chevieget(Symbol("2D"),:ClassInfo)(l))
   para=chevieget(Symbol("2D"),:CharParams)(l)
   tbl[:irredinfo]=map(i->Dict{Symbol,Any}(:charparam=>para[i],
-      :charname=>chevieget(Symbol("2D"),:CharName)(l,para[i])),eachindex(para))
+      :charname=>PartitionTupleToString(para[i])),eachindex(para))
   para=chevieget(:B,:CharParams)(l)
   chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(

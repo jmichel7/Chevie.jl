@@ -109,9 +109,6 @@ chevieset(:B, :ClassInfo, function (n,)
 chevieset(:B, :CharParams, (n->begin
             partition_tuples(n, 2)
         end))
-chevieset(:B, :CharName, function (arg...,)
-        return PartitionTupleToString(arg[2])
-    end)
 chevieset(:B, :LowestPowerFakeDegree, function (p,)
         local pp, m, res
         pp = symbol_partition_tuple(p, 1)
@@ -124,7 +121,8 @@ chevieset(:B, :LowestPowerFakeDegree, function (p,)
     end)
 chevieset(:B, :CharInfo, function (n,)
         local res
-        res = Dict{Symbol, Any}(:charparams => (chevieget(:B, :CharParams))(n))
+        res = Dict{Symbol, Any}(:charparams => partition_tuples(n, 2))
+        res[:charnames] = map(PartitionTupleToString, res[:charparams])
         res[:extRefl] = Concatenation(map((i->begin
                             Position(res[:charparams], [[n - i], fill(0, max(0, (1 + i) - 1)) + 1])
                         end), 0:n - 1), [Position(res[:charparams], [[], fill(0, max(0, (1 + n) - 1)) + 1])])

@@ -89,23 +89,6 @@ chevieset(:I, :NrConjugacyClasses, (m->begin
 chevieset(:I, :ParabolicRepresentatives, function (m, s)
         return (chevieget(:imp, :ParabolicRepresentatives))(m, m, 2, s)
     end)
-chevieset(:I, :CharName, function (m, x, option)
-        local s
-        if IsList(x[1])
-            return PartitionTupleToString(x)
-        else
-            if haskey(option, :TeX)
-                s = "\\phi"
-            else
-                s = "phi"
-            end
-            s = SPrint(s, "{", x[1], ",", x[2], "}")
-            if length(x) == 3
-                s = Append(s, x[3])
-            end
-            return string(s)
-        end
-    end)
 chevieset(:I, :WordsClassRepresentatives, function (m,)
         local r, x, i
         if IsInt(m // 2)
@@ -158,7 +141,7 @@ chevieset(:I, :ClassInfo, function (m,)
                             end), r), :classes => cl)
     end)
 chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
-        local u, v, squv, cl, r, ct, tbl
+        local u, v, squv, cl, r, ct, tbl, ci
         u = -((param[1])[1]) // (param[1])[2]
         v = -((param[2])[1]) // (param[2])[2]
         if mod(m, 2) != 0
@@ -195,9 +178,10 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
                                     end
                                 end, 1:length(r))
                         end), 1:div(m - 1, 2)))
-        tbl = Dict{Symbol, Any}(:identifier => SPrint("H(I2(", m, "))"), :cartan => CartanMat("I", 2, m), :size => 2m, :irredinfo => map((x->begin
-                                Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(:I, :CharName))(m, x, Dict{Symbol, Any}(:TeX => true)))
-                            end), ((chevieget(:I, :CharInfo))(m))[:charparams]), :parameter => [u, v], :powermap => [], :irreducibles => ct * v ^ 0)
+        ci = (chevieget(:I, :CharInfo))(m)
+        tbl = Dict{Symbol, Any}(:identifier => SPrint("H(I2(", m, "))"), :cartan => CartanMat("I", 2, m), :size => 2m, :irredinfo => map(function (x, y)
+                            return Dict{Symbol, Any}(:charparam => x, :charname => y)
+                        end, ci[:charparams], ci[:charnames]), :parameter => [u, v], :powermap => [], :irreducibles => ct * v ^ 0)
         Inherit(tbl, cl)
         tbl[:centralizers] = map((i->begin
                         tbl[:size] // i

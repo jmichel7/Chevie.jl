@@ -4,21 +4,6 @@ chevieset(:G4_22, :BraidRelations, function (ST,)
         d = Dict{Symbol, Any}(Symbol("4") => [[[1, 2, 1], [2, 1, 2]]], Symbol("5") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("6") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("7") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("8") => [[[1, 2, 1], [2, 1, 2]]], Symbol("9") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("10") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("11") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("12") => [[[1, 2, 3, 1], [2, 3, 1, 2]], [[1, 2, 3, 1], [3, 1, 2, 3]]], Symbol("13") => [[[3, 1, 2, 3], [2, 3, 1, 2]], [[1, 2, 3, 1, 2], [3, 1, 2, 3, 1]]], Symbol("14") => [[[1, 2, 1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1, 2, 1]]], Symbol("15") => [[[3, 1, 2], [1, 2, 3]], [[2, 3, 1, 2, 1], [3, 1, 2, 1, 2]]], Symbol("16") => [[[1, 2, 1], [2, 1, 2]]], Symbol("17") => [[[1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1]]], Symbol("18") => [[[1, 2, 1, 2], [2, 1, 2, 1]]], Symbol("19") => [[[1, 2, 3], [2, 3, 1]], [[1, 2, 3], [3, 1, 2]]], Symbol("20") => [[[1, 2, 1, 2, 1], [2, 1, 2, 1, 2]]], Symbol("21") => [[[1, 2, 1, 2, 1, 2, 1, 2, 1, 2], [2, 1, 2, 1, 2, 1, 2, 1, 2, 1]]], Symbol("22") => [[[1, 2, 3, 1, 2], [2, 3, 1, 2, 3]], [[1, 2, 3, 1, 2], [3, 1, 2, 3, 1]]])
         return d[Symbol(ST)]
     end)
-chevieset(:G4_22, :CharName, function (ST, x, option)
-        local s, f
-        if haskey(option, :TeX)
-            s = "\\phi_"
-        else
-            s = "phi"
-        end
-        s *= SPrint("{", x[1], ",", x[2], "}")
-        if length(x) == 3
-            s = Append(s, map((y->begin
-                                '\''
-                            end), 1:x[3]))
-        end
-        return string(s)
-    end)
 chevieset(:G4_22, :ReflectionName, function (arg...,)
         local ST, n, option
         option = arg[2]
@@ -422,6 +407,7 @@ chevieset(:G4_22, :CharInfo, function (ST,)
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(:G4_22, :HighestPowerFakeDegrees, function (ST,)
@@ -695,9 +681,9 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
                         res[:size] // x
                     end), res[:classes])
         ci = (chevieget(:G4_22, :CharInfo))(ST)
-        res[:irredinfo] = map((x->begin
-                        Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(:G4_22, :CharName))(ST, x, Dict{Symbol, Any}(:TeX => true)))
-                    end), ci[:charparams])
+        res[:irredinfo] = map(function (x, y)
+                    return Dict{Symbol, Any}(:charparam => x, :charname => y)
+                end, ci[:charparams], ci[:charnames])
         rows = map(GenericRow, (chevieget(:G4_22, :paramchars))(ST))
         ci = G4_22Test(res, rows * Product(para, Product) ^ 0, ci[:indexchars])
         if ci != true

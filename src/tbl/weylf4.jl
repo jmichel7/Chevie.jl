@@ -63,6 +63,7 @@ chevieset(:F4, :CharInfo, function ()
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(:F4, :cyclestructure, [[[], []], [[12], [12]], [[10], [10]], [[nothing, 8], [nothing, 6]], [[nothing, nothing, nothing, nothing, 4], [3, nothing, nothing, nothing, 3]], [[nothing, nothing, 6], [nothing, nothing, 6]], [[nothing, 6], [nothing, 8]], [[3, nothing, nothing, nothing, 3], [nothing, nothing, nothing, nothing, 4]], [[nothing, 8], [nothing, 8]], [[nothing, nothing, nothing, nothing, 4], [nothing, nothing, nothing, nothing, 4]], [[nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 2], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 2]], [[9], [6]], [[11], [12]], [[3, 2, nothing, nothing, 2], [nothing, 4, nothing, nothing, 2]], [[2, nothing, nothing, nothing, 3], [nothing, nothing, nothing, nothing, 4]], [[2, nothing, 5], [1, nothing, 5]], [[6], [9]], [[12], [11]], [[nothing, 4, nothing, nothing, 2], [3, 2, nothing, nothing, 2]], [[nothing, nothing, nothing, nothing, 4], [2, nothing, nothing, nothing, 3]], [[1, nothing, 5], [2, nothing, 5]], [[11], [11]], [[nothing, nothing, 5], [nothing, nothing, 5]], [[2, nothing, 5], [2, nothing, 5]], [[nothing, nothing, nothing, nothing, nothing, nothing, 3], [nothing, nothing, nothing, nothing, nothing, nothing, 3]]])

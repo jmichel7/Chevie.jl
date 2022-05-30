@@ -567,6 +567,13 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                                             end), 1:e))
                         end, res[:charparams]))
         end
+        res[:charnames] = map(function (s,)
+                    if IsList(s[length(s)]) && Sum(s, Sum) == 1
+                        return FormatTeX(E(length(s), Position(s, [1]) - 1))
+                    else
+                        return PartitionTupleToString(s, Dict{Symbol, Any}(:TeX => true))
+                    end
+                end, res[:charparams])
         return res
     end)
 chevieset(:imp, :LowestPowerFakeDegrees, function (p, q, r)
@@ -602,13 +609,6 @@ chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
             return false
         end
         return Value(c, v)
-    end)
-chevieset(:imp, :CharName, function (p, q, r, s, option)
-        if ranksymbol(s) == 1
-            return Format(E(length(s), Position(s, [1]) - 1), option)
-        else
-            return PartitionTupleToString(s, option)
-        end
     end)
 chevieset(:imp, :SchurModel, function (p, q, r, phi)
         local l, i, j, res, s, t, ci, GenHooks, v, h, d, p2

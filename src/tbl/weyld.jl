@@ -112,9 +112,6 @@ chevieset(:D, :NrConjugacyClasses, function (n,)
 chevieset(:D, :CharInfo, (n->begin
             (chevieget(:imp, :CharInfo))(2, 2, n)
         end))
-chevieset(:D, :CharName, function (arg...,)
-        return PartitionTupleToString(arg[2])
-    end)
 chevieset(:D, :FactorizedSchurElement, function (arg...,)
         local p, i, n
         p = arg[2]

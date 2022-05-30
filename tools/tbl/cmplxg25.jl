@@ -26,6 +26,7 @@ chevieset(:G25, :CharInfo, function ()
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(:G25, :HeckeCharTable, function (para, root)

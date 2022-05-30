@@ -31,6 +31,7 @@ const exclu=[
  ["KLeftCellRepresentatives","A"],
  ["Invariants","imp"],
  ["Invariants",:(["E7", "E8", "H3", "H4"])],
+ ["LowestPowerFakeDegrees","G4_22"],
  ["PowerMaps","imp"],
  ["PrintDiagram",["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22"]],
  ["ReducedInRightCoset","timp"],

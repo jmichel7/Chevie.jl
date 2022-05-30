@@ -187,6 +187,14 @@ function stringind(io::IO,n::Integer)
   end
 end
 
+# defs below are necessary since constant folding is not good enough
+const r1=Regex("_[$subchars]")
+const r2=Regex("(_\\{[$subchars]*\\})('*)")
+const r3=Regex("_\\{[$subchars]*\\}")
+const r4=Regex("\\^[$supchars]")
+const r5=Regex("\\^\\{[$supchars]*\\}")
+const r6=Regex("\\\\overline{([0-9]*)}")
+
 "strip TeX formatting from  a string, using unicode characters to approximate"
 function unicodeTeX(s::String)
   if all(x->x in 'a':'z' || x in 'A':'Z' || x in '0':'9',s) return s end
@@ -199,14 +207,15 @@ function unicodeTeX(s::String)
     t->stringexp(rio(),Rational(parse.(Int,split(t[9:end-2],"}{"))...)))
   s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\mathfrak  *S"=>"\U1D516 ")
+  s=replace(s,r6=>t->prod(string(x,'\U0305') for x in t[11:end-1]))
   s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
   s=replace(s,r"\$"=>"")
   s=replace(s,r"{}"=>"")
-  s=replace(s,Regex("_[$subchars]")=>t->sub[t[2]])
-  s=replace(s,Regex("(_\\{[$subchars]*\\})('*)")=>s"\2\1")
-  s=replace(s,Regex("_\\{[$subchars]*\\}")=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,Regex("\\^[$supchars]")=>t->sup[t[2]])
-  s=replace(s,Regex("\\^\\{[$supchars]*\\}")=>t->map(x->sup[x],t[3:end-1]))
+  s=replace(s,r1=>t->sub[t[2]])
+  s=replace(s,r2=>s"\2\1")
+  s=replace(s,r3=>t->map(x->sub[x],t[3:end-1]))
+  s=replace(s,r4=>t->sup[t[2]])
+  s=replace(s,r5=>t->map(x->sup[x],t[3:end-1]))
   s=replace(s,r"''*"=>t->stringprime(rio(),length(t)))
 # s=replace(s,r"\{([^}]*)\}"=>s"\1")
   s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")

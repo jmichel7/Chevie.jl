@@ -1,39 +1,11 @@
 
-chevieset(["2E6", "E6", "E7", "E8", "2F4", "F4", "G2", "H3", "H4", "2G5", "G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34"], :CharName, (t->begin
-            function (x, option)
-                local s, f
-                for f = ["frame", "kondo", "spaltenstein", "gp", "lusztig"]
-                    if haskey(option, (f,))
-                        s = (chevieget(t, :CharInfo))()
-                        if haskey(s, (f,))
-                            s = (s[Symbol(f)])[Position(s[:charparams], x)]
-                            if haskey(option, :TeX)
-                                return s
-                            else
-                                return TeXStrip(s)
-                            end
-                        end
-                    end
-                end
-                if haskey(option, :TeX)
-                    s = "\\phi_"
-                else
-                    s = "phi"
-                end
-                s *= SPrint("{", x[1], ",", x[2], "}")
-                if length(x) == 3
-                    s = Append(s, map((y->begin
-                                        '\''
-                                    end), 1:x[3]))
-                end
-                return string(s)
-            end
-        end))
-chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "H3", "H4", "2E6", "2F4", "3D4", "E6", "E7", "E8", "F4", "G2"], :IrredInfo, (t->begin
-            map((x->begin
-                        Dict{Symbol, Any}(:charparam => x, :charname => (chevieget(t, :CharName))(x, Dict{Symbol, Any}(:TeX => true)))
-                    end), ((chevieget(t, :CharInfo))())[:charparams])
-        end))
+chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "H3", "H4", "2E6", "2F4", "3D4", "E6", "E7", "E8", "F4", "G2"], :IrredInfo, function (t,)
+        local ci
+        ci = (chevieget(t, :CharInfo))()
+        return map(function (x, y)
+                    return Dict{Symbol, Any}(:charparam => x, :charname => y)
+                end, ci[:charparams], ci[:charnames])
+    end)
 chevieset(["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, (t->begin
             function (option,)
                 local i, o
