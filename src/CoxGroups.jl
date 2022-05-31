@@ -3,7 +3,7 @@ A  suitable  reference  for  the  general  theory of Coxeter groups is, for
 example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
 
 A *Coxeter group* is a group which has the presentation
-``W=⟨S|(st)^{m(s,t)}=1 for s,t∈  S⟩``  for some symmetric integer
+``W=⟨S|(st)^{m(s,t)}=1\\text{  for  }s,t∈  S⟩``  for some symmetric integer
 matrix `m(s,t)` called the *Coxeter matrix*, where `m(s,t)>1` for `s≠t` and
 `m(s,s)=1`.  It is true (but a non-trivial theorem) that in a Coxeter group
 the  order of `st` is exactly `m(s,t)`, thus a Coxeter group is the same as
@@ -19,8 +19,8 @@ real  reflection  groups.  The  converse  need  not  be  true if the set of
 reflecting  hyperplanes has  bad topological  properties, but  it turns out
 that  finite Coxeter groups are the  same as finite real reflection groups.
 The   possible  Coxeter  matrices  for  finite  Coxeter  groups  have  been
-completely  classified,  see  the  `Weyl`  module; the corresponding finite
-groups play a deep role in several areas of mathematics.
+completely  classified, see [`Weyl`](@ref); the corresponding finite groups
+play a deep role in several areas of mathematics.
 
 Coxeter  groups  have  a  nice  solution  to the word problem. The *length*
 `l(w)`  of an element  `w∈ W` is  the minimum number  of elements of `S` of
@@ -35,8 +35,8 @@ that  `s` belongs to  the *left descent  set* of `w`.  The computation of a
 reduced  word for an element, and other  word problems, are easy if we know
 how  to multiply elements  and the left  descent sets. In  each case of the
 Coxeter  groups that we implement, the left  descent set is easy to compute
-(see  e.g.  'CoxSym'  below),  so  this  suggests  how to deal with Coxeter
-groups generically:
+(see for example [`CoxSym`](@ref) below), so this suggests how to deal with
+Coxeter groups generically:
 
 The  type  `CoxeterGroup`  is  an  abstract  type;  an  actual struct which
 implements it must define a function
@@ -124,8 +124,8 @@ reduced expressions.
 
 This module contains mostly a port of the basic functions on Coxeter groups
 in  Chevie. The only Coxeter group  constructor implemented here is CoxSym.
-The  module `Weyl` defines `coxgroup`, a function building a finite Coxeter
-groups given its type.
+The module [`Weyl`](@ref) defines [`coxgroup`](@ref), a function building a
+finite Coxeter group given its type.
 """
 module CoxGroups
 
@@ -515,7 +515,7 @@ julia> bruhatless(W,Perm(1,3))
  [(1,3)]
 ```
 
-see also the method `Poset` for Coxeter groups.
+see also [`Poset`](@ref) for Coxeter groups.
 """
 function bruhatless(W::CoxeterGroup,w)
   if w==one(W) return [[w]] end

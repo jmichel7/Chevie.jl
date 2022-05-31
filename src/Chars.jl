@@ -486,11 +486,14 @@ function charinfo(t::TypeIrred)
         c.A=uc[:A][uc[:harishChandra][1][:charNumbers]]
       end
     else
-      para=map(x->Int(1/x),getchev(t,:EigenvaluesGeneratingReflections))
-      para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
-      s=map(p->getchev(t,:SchurElement,p,para,Any[]),c.charparams)
-      c.a=valuation(s[c.positionId]).-valuation.(s)
-      c.A=degree(s[c.positionId]).-degree.(s)
+      para=getchev(t,:EigenvaluesGeneratingReflections)
+      if !isnothing(para)
+        para=map(x->Int(1//x),para)
+        para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
+        s=map(p->getchev(t,:SchurElement,p,para,Any[]),c.charparams)
+        c.a=valuation(s[c.positionId]).-valuation.(s)
+        c.A=degree(s[c.positionId]).-degree.(s)
+      end
     end
   end
   for f in [:a,:A,:b,:B]

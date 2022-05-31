@@ -1020,7 +1020,8 @@ chevieset(Symbol("2G5"), :ClassInfo, function ()
     end)
 chevieset(Symbol("2G5"), :CharInfo, function ()
         local res
-        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 8, 2], [1, 16], [2, 9], [2, 5, 2], [2, 1], [3, 2], [3, 4], [3, 6]], :extRefl => [1, 6, 2], :b => [0, 8, 16, 9, 5, 1, 2, 4, 12], :B => [0, 8, 16, 15, 11, 7, 14, 4, 12])
+        res = Dict{Symbol, Any}(:charparams => [[1, 0], [1, 8, 2], [1, 16], [2, 9], [2, 5, 2], [2, 1], [3, 2], [3, 4], [3, 6]], :extRefl => [1, 6, 2], :b => [0, 8, 16, 9, 5, 1, 2, 4, 12], :B => [0, 8, 16, 15, 11, 7, 14, 4, 12], :charRestrictions => [1, 5, 9, 10, 14, 18, 20, 19, 21], :nrGroupClasses=>21)
+        res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)
 chevieset(Symbol("2G5"), :CharTable, function ()

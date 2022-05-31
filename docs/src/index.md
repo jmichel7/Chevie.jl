@@ -45,7 +45,7 @@ centralizer(::Group,::Group)
 centre
 stabilizer
 normalizer
-word(::Group,w)
+word(::Group,::Any)
 comm
 length(::Group)
 classreps(::Group)
@@ -198,10 +198,10 @@ isleftdescent
 firstleftdescent
 leftdescents
 reduced
-word(::CoxeterGroup,w)
+word(::CoxeterGroup,::Any)
 length(::CoxeterGroup,w)
-elements(::CoxeterGroup)
-CoxGroups.words
+elements(::CoxeterGroup,::Int)
+CoxGroups.words(::CoxeterGroup,::Int)
 bruhatless
 CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})

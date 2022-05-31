@@ -370,7 +370,7 @@ function words2(G::Group) # faster than words but longer to retrieve word
   end
 end
 
-"word(G::Group,w): a minimal word in  gens(G) representing element w of G"
+"`word(G::Group,w)` a minimal word in `gens(G)` representing element `w` of `G`"
 word(G::Group,w)=minimal_words(G)[w]
 
 function word2(W::Group,w)
