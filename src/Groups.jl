@@ -398,20 +398,25 @@ Base.length(G::Group)=length(words2(G))
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
   get!(G,:classes) do
     if haskey(G,:classreps) 
-      [conjugacy_class(G,i) for i in 1:nconjugacy_classes(G)]
-    else orbits(G,elements(G))
+      [conjugacy_classes(G,i) for i in 1:nconjugacy_classes(G)]
+    else res=orbits(G,elements(G))
+      G.classreps=first.(res)
+      res
     end
   end
 end
 
-"`conjugacy_class(G::Group,i::Integer)` the `i`-th class of `G`"
-function conjugacy_class(G::Group{T},i::Int)::Vector{T} where T
+"`conjugacy_classes(G::Group,i::Integer)` the `i`-th class of `G`"
+function conjugacy_classes(G::Group{T},i::Int)::Vector{T} where T
   if !haskey(G,:classes) 
     G.classes=Vector{Vector{T}}(undef,nconjugacy_classes(G))
   end
   if !isassigned(G.classes,i) G.classes[i]=orbit(G,classreps(G)[i]) end
   G.classes[i]
 end
+
+"`conjugacy_class(G::Group,g)` the class of `g`"
+conjugacy_class(G::Group,g)=orbit(G,g)
 
 "`position_class(G::Group,g)` index of conjugacy class to which `g` belongs"
 function position_class(G::Group,g)
