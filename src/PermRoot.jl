@@ -1185,7 +1185,7 @@ function Groups.position_class(W::PermRootGroup,w)
     if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i])
       println("!! computing class ",l[i]," of cardinal ",ncl[i])
     end
-    if w in conjugacy_class(W,l[i]) return l[i] end
+    if w in conjugacy_classes(W,l[i]) return l[i] end
   end
 end
 

@@ -273,7 +273,7 @@ const ChevieDict=Dict(
 "Presentation"=>"Presentation",
 "PrintDiagram(W)"=>"Diagram(W)",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
-"QuasiIsolatedRepresentatives"=>"QuasiIsolatedRepresentatives",
+"QuasiIsolatedRepresentatives"=>"quasi_isolated_reps",
 "QuoInt"=>"div",
 "Rank"=>"rank",
 "RankSymbol"=>"ranksymbol",
@@ -291,7 +291,7 @@ const ChevieDict=Dict(
 "ReflectionGroup"=>"reflection_group",
 "ReflectionLength(W,w)"=>"reflength(W,w)",
 #ReflectionWord
-#ReflectionName
+"ReflectionName(W)"=>"repr(W;context=:limit=>true)",
 "Reflections"=>"reflections",
 #ReflectionSubCoset
 "ReflectionSubgroup"=>"reflection_subgroup",

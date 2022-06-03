@@ -170,7 +170,7 @@ generates ``C_𝐆 (s)``.
 module Semisimple
 using ..Gapjm
 export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
-SemisimpleElement, SS, torsion_subgroup, QuasiIsolatedRepresentatives,
+SemisimpleElement, SS, torsion_subgroup, quasi_isolated_reps,
 StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
 isomorphism_type, weights, coweights
 export ExtendedCox, ExtendedReflectionGroup 
@@ -739,7 +739,7 @@ function Groups.centralizer(W::Group,s::SemisimpleElement)
 end
 
 """
-`QuasiIsolatedRepresentatives(W,p=0)`
+`quasi_isolated_reps(W,p=0)`
 
 `W`  should be a Weyl  group corresponding to an  algebraic group 𝐆 over an
 algebraically  closed field  of characteristic  0. This  function returns a
@@ -750,7 +750,7 @@ given,  it  gives  representatives  of  those quasi-isolated elements which
 exist in characteristic `p`.
 
 ```julia-repl
-julia> W=coxgroup(:E,6);l=QuasiIsolatedRepresentatives(W)
+julia> W=coxgroup(:E,6);l=quasi_isolated_reps(W)
 5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,ζ₃,1,1>
@@ -766,7 +766,7 @@ julia> map(s->is_isolated(W,s),l)
  0
  0
 
-julia> W=rootdatum(:E6sc);l=QuasiIsolatedRepresentatives(W)
+julia> W=rootdatum(:E6sc);l=quasi_isolated_reps(W)
 7-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <-1,1,1,-1,1,-1>
@@ -786,13 +786,13 @@ julia> map(s->is_isolated(W,s),l)
  1
  1
 
-julia> Semisimple.QuasiIsolatedRepresentatives(W,3)
+julia> Semisimple.quasi_isolated_reps(W,3)
 2-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <-1,1,1,-1,1,-1>
 ```
 """
-function QuasiIsolatedRepresentatives(W::FiniteCoxeterGroup,p=0)
+function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
 ##  This function follows Theorem 4.6 in 
 ##  C.Bonnafe, ``Quasi-Isolated Elements in Reductive Groups''
 ##  Comm. in Algebra 33 (2005), 2315--2337

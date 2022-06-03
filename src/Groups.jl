@@ -56,7 +56,9 @@ export word, elements, kernel
 abstract type Group{T} end # T is the type of elements of G
 
 "`normalizer(G::Group,H::Group)` the normalizer of `H` in `G`"
-function normalizer end
+function normalizer#(G::Group,H::Group)
+#  error("no default implementation for normalizer")
+end
 
 "`one(G::Group)` returns the identity element of `G`."
 Base.one(G::Group{T}) where T=one(T)
@@ -96,12 +98,12 @@ comm(a,b)=inv(a)*inv(b)*a*b
 
 `orbit(G::Group,p;action::Function=^)`
 
-the  orbit of point  `p` under repeated  action of generators `gens`. Point
-`p`  should be hashable. The default action  of a group element is `^`. For
-example  if `g` is a permutation and `p`  an integer, `p^g` is the image of
-`p`  by `g`; if `h` and `g` are group elements, then `h^g` is the conjugate
-`inv(g)*h*g`.  If a group  is given instead  of generators, the orbit under
-`gens(G)` is returned.
+the orbit of point `p` under repeated action of generators `gens`. The type
+of  point `p` should be hashable. The  default action of a group element is
+`^`.  For example if `g` is a permutation  and `p` an integer, `p^g` is the
+image  of `p` by `g`; if `h` and  `g` are group elements, then `h^g` is the
+conjugate  `inv(g)*h*g`. If  a group  is given  instead of  generators, the
+orbit under `gens(G)` is returned.
 
 ```julia-repl
 julia> orbit([Perm(1,2),Perm(2,3)],1) 
@@ -145,7 +147,8 @@ orbit(G::Group,pnt;action::F=^) where F<:Function=orbit(gens(G),pnt;action)
 `transversal(G::Group,p;action::Function=^)`
 
 returns a `Dict` with entries `x=>g` where `x` runs over
-`orbit(G,p;action)` and where `g∈ G` is such that `x=action(p,g)`
+`orbit(G,p;action)`  and where `g∈ G` is such that `x=action(p,g)`. It thus
+requires group elements to be hashable.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);

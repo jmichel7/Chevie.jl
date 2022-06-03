@@ -28,7 +28,7 @@ We  can  see  `WF`  as  the  coset  `GL₆⋅σ`  where  `σ`  is the composed o
 transpose, inverse and the longest element of `W`.
 
 ```julia-repl
-julia> l=QuasiIsolatedRepresentatives(WF)
+julia> l=quasi_isolated_reps(WF)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <ζ₄,1,1,1,1,ζ₄³>
@@ -199,7 +199,7 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
 end
 
 """
-`QuasiIsolatedRepresentatives(WF::Spets,p=0)`
+`quasi_isolated_reps(WF::Spets,p=0)`
 
 `WF`  should be  a Coxeter  coset representing  an algebraic  coset `𝐆 ⋅σ`,
 where  `𝐆 ` is a connected  reductive group (represented by `W=Group(WF)`),
@@ -215,7 +215,7 @@ only those representatives which exist in characteristic `p`.
 julia> WF=rootdatum("2E6sc")
 ²E₆sc
 
-julia> QuasiIsolatedRepresentatives(WF)
+julia> quasi_isolated_reps(WF)
 5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,-1,1,1>
@@ -223,12 +223,12 @@ julia> QuasiIsolatedRepresentatives(WF)
  <1,ζ₃²,1,ζ₃,1,1>
  <1,ζ₄³,1,-1,1,1>
 
-julia> QuasiIsolatedRepresentatives(WF,2)
+julia> quasi_isolated_reps(WF,2)
 2-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,ζ₃²,1,ζ₃,1,1>
 
-julia> QuasiIsolatedRepresentatives(WF,3)
+julia> quasi_isolated_reps(WF,3)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <1,1,1,-1,1,1>
@@ -236,9 +236,9 @@ julia> QuasiIsolatedRepresentatives(WF,3)
  <1,ζ₄³,1,-1,1,1>
 ```
 """
-function Semisimple.QuasiIsolatedRepresentatives(WF::Spets,p=0)
+function Semisimple.quasi_isolated_reps(WF::Spets,p=0)
   map(x->SS(Group(WF),transpose(WF.Y_s)*map(x->x.r,x.v)), 
-      QuasiIsolatedRepresentatives(RelativeDatum(WF), p))
+      quasi_isolated_reps(RelativeDatum(WF), p))
 end
 
 """
@@ -255,7 +255,7 @@ of `C_𝐆 (tσ)⁰` is not in any proper parabolic subgroup of `W^σ`.
 julia> WF=rootdatum(:u,6)
 u₆
 
-julia> l=QuasiIsolatedRepresentatives(WF)
+julia> l=quasi_isolated_reps(WF)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
  <ζ₄,1,1,1,1,ζ₄³>

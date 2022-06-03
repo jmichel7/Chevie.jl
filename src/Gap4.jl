@@ -1,6 +1,6 @@
 module Gap4
 
-#println("loading Gap4")
+#println("loading Gap4 extension to Gapjm")
 
 using GAP, Gapjm, Reexport
 #@reexport using GAP

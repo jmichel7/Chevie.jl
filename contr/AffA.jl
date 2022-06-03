@@ -1,31 +1,31 @@
 """
-# affa.jl          translated from  (C) François Digne (Amiens university)
-#
-# This file contains:
-#   -functions for computing with periodic permutations of the integers
-#     The main functions are:
-#     PPerm to create a periodic permutation.
-#     Operations *, /, ^
-#     functions Cycles and CycleType
-#
-#   -the function CoxeterGroupAtildeGroup which creates the Coxeter group
-#    of type ~A_n as a group of periodic permutations.
-#
-#   -the function DualBraidMonoid for the above kind of groups.
-# It is based on the papers
-# [Digne] Presentations duales pour les groupes de tresses de type affine A
-#         Comment. Math. Helv. 81 (2006) 23--47
-# [Shi] The Kazhdan-Lusztig cells in certain affine Weyl groups 
-#       Springer LNM 1179 (1986) 
-#--------------------------------------------------------------------------
+`AffA.jl`  translated from `Gap3` `affa.g` © François Digne (Amiens university)
+
+ This file contains:
+  - the type `PPerm` implementing periodic permutations of the integers
+     with operations `*, /, ^, cycles, cycletype`.
+
+  - the type `Atilde` implementing the Coxeter group `Ãₙ` as a group of `PPerm`.
+
+  - the function `DualBraidMonoid` for such groups.
+
+ It is based on the papers
+ [Digne] Presentations duales pour les groupes de tresses de type affine A
+         Comment. Math. Helv. 81 (2006) 23--47
+
+ [Shi] The Kazhdan-Lusztig cells in certain affine Weyl groups 
+       Springer LNM 1179 (1986) 
 """
-#module AffA
+module AffA
+using ..Gapjm
+export PPerm, Atilde
 
 """
-Periodic permutation f of the integers
-- of period n, which means f(i+n)=f(i)+n
-- with no shift, which means sum(f.(1:n))=sum(1:n)
-Stored as [f(1),...,f(n)]
+a `PPerm` is a shiftless periodic permutation `f` of the integers
+  - periodic of period `n` means `f(i+n)=f(i)+n`
+  - permutation means all `f(i)` are distinct mod `n`.
+  - no shift means `sum(f.(1:n))=sum(1:n)`
+it is stored in field `d` as the `Vector` `[f(1),…,f(n)]`
 """
 struct PPerm{T<:Integer}
   d::Vector{T}
@@ -47,8 +47,9 @@ Base.copy(p::PPerm)=PPerm(copy(p.d))
 Base.broadcastable(p::PPerm)=Ref(p)
 
 """
-`PPerm(n,(i₁,…,iₖ)[=>d=0])`  where  `i₁,…,iₖ`  differ  mod  `n` represents the
-permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`
+`PPerm(n,c₁,…,cₗ)` where cycles `cᵢ` are tuples `(i₁,…,iₖ)=>d` representing
+the  permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`.  `=>d` can be omitted when `d==0`
+and `(i₁,)=>d` can be abbreviated to `i₁=>d`.
 """
 function PPerm(n::Int,cc...)
   if isempty(cc) return PPerm(1:n) end
@@ -276,12 +277,12 @@ end
 #
 ## Reflections (a,b[i]) are enumerated by lexicographical order of [i,a,b-a]
 ## with i positive --- recall that when a>b this reflection is printed (b,a[-i])
-#AtildeGroupOps.Reflection:=function(W,i) local n,p,r,ecart,pos;
-#  n:=W.semisimpleRank;
-#  p:=QuoInt(i-1,n*(n-1)); r:=(i-1) mod (n*(n-1));
-#  ecart:= QuoInt(r,n); pos:=r mod n;
-#  return PPerm([1+pos,2+pos+ecart+p*n],n);
-#end;
+function PermRoot.reflection(W::Atilde,i)
+  n=ngens(W)
+  p,r=divrem(i-1,n*(n-1))
+  ecart,pos=divrem(r,n)
+  PPerm(n,(1+pos,2+pos+ecart+p*n))
+end
 
 @GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
   gens::Vector{PPerm{T}}
@@ -296,8 +297,8 @@ function Atilde(n)
   Atilde(gens,Dict{Symbol,Any}())
 end
 
+Base.one(W::Atilde)=one(first(gens(W)))
 Base.length(W::Atilde,w)=length(w)
-Base.one(W::Atilde)=PPerm(length(W.gens))
 CoxGroups.isleftdescent(W::Atilde,w,i)=isleftdescent(w,i)
 Perms.reflength(W::Atilde,w)=reflength(w)
 
@@ -404,3 +405,4 @@ Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 #
 #AtildeBraid:=n->DualBraidMonoid(CoxeterGroupAtildeGroup(n)).B;
 #Atilde:=PPerm;
+end

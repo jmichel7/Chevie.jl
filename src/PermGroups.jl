@@ -263,7 +263,7 @@ function Groups.position_class(W::PermGroup,w)
   l=positions_class(W,w)
   if length(l)==1 return only(l) end
   for i in eachindex(l) 
-    if w in conjugacy_class(W,l[i]) return l[i] end
+    if w in conjugacy_classes(W,l[i]) return l[i] end
   end
 end
 

@@ -935,7 +935,7 @@ function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets};opt...)::Cha
   end
 end
 
-CharTable(W::PermGroup)=Gapjm.Gap4.CharTable(W)
+CharTable(W::Group)=Gapjm.Gap4.CharTable(W)
 
 function classes(ct::CharTable)
   get!(ct,:classes)do
@@ -1218,7 +1218,7 @@ The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
 function charnames(io::IO,W)
-  if hasmethod(refltype,(typeof(W),))
+  if applicable(refltype,W)
     c=charinfo(W)
     cn=c.charnames
     for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
@@ -1251,7 +1251,7 @@ in  certain cases, or a different formatting  of names in general. They can
 be specified by giving an IO as argument.
 """
 function classnames(io::IO,W)
-  if hasmethod(refltype,(typeof(W),))
+  if applicable(refltype,W)
     c=classinfo(W)
     cn=c[:classnames]
     for k in [:malle]
@@ -1300,7 +1300,7 @@ julia> u=Group( [ Perm(1,2), Perm(3,4) ])
 Group([(1,2),(3,4)])
 
 julia> InductionTable(u,g)
-Induction Table from Group([perm"(1,2)",perm"(3,4)"]) to Group([perm"(1,2)",perm"(2,3)",perm"(3,4)"])
+Induction Table from Group([(1,2),(3,4)]) to Group([(1,2),(2,3),(3,4)])
    │X.1 X.2 X.3 X.4
 ───┼────────────────
 X.1│  .   1   .   .
