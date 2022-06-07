@@ -49,7 +49,7 @@ semisimple rank is 2.
 The  default form  `W=coxgroup(:A,2)` defines  the adjoint  algebraic group
 (the  group with a trivial center). In that  case `Φ` is a basis of `X`, so
 `simpleroots(W)`  is  the  identity  matrix  and  `simplecoroots(W)` is the
-Cartan  matrix `cartan(W)` of the root system. 
+Cartan  matrix `cartan(W)` of the root system.
 
 The   form  `coxgroup(:A,2,sc=true)`   constructs  the   semisimple  simply
 connected  algebraic  group,  where  `simpleroots(W)`  is the transposed of
@@ -169,11 +169,11 @@ generates ``C_𝐆 (s)``.
 """
 module Semisimple
 using ..Gapjm
-export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated, 
+export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated,
 SemisimpleElement, SS, torsion_subgroup, quasi_isolated_reps,
 StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
 isomorphism_type, weights, coweights
-export ExtendedCox, ExtendedReflectionGroup 
+export ExtendedCox, ExtendedReflectionGroup
 #----------------- Extended Coxeter groups-------------------------------
 struct ExtendedCox{T<:FiniteCoxeterGroup}
   group::T
@@ -203,7 +203,7 @@ function Base.show(io::IO,W::ExtendedCox)
                   print(io,W.group,"⋊ S3")
   else
     ff=map(x->restricted(x,inclusiongens(W.group)),W.phis)
-    if all(!isone,ff) || rank(W.group)==0 
+    if all(!isone,ff) || rank(W.group)==0
          print(io,"Extended(",W.group,",");join(io,ff,",");print(io,")")
     else print(io,"<");join(io,spets.(Ref(W.group),W.phis),",");print(io,">")
     end
@@ -264,7 +264,7 @@ Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 
 Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
                                  map(v->prod(a.v .^v),eachcol(m)))
-  
+
 Base.:^(a::SemisimpleElement,p::Perm)=a^matY(parent(a.W.G),inv(p))
 
 # scalar product with a root
@@ -358,7 +358,7 @@ function Base.:in(s::SemisimpleElement{Root1},T::SubTorus)
   V=mod.(T.gens,n)
   i=1
   for v in filter(!iszero,collect(eachrow(V)))
-    while v[i]==0 
+    while v[i]==0
       if s[i]!=0 return false
       else i+=1
       end
@@ -400,7 +400,7 @@ julia> sort(elements(T))
 ```
 """
 torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),eachrow(T.gens)))
-  
+
 # returns (Tso,s-stable representatives of T/Tso) for automorphism s of T
 # here m is the matrix of s on Y(T)
 # use ss 1.2(1): Ker(1+m+m^2+...)/Im(m-Id)
@@ -413,7 +413,7 @@ function FixedPoints(T::SubTorus,m)
   n=Int.(toM(n))
   fix=lnullspaceInt(n-n^0) # pure sublattice Y(Tso)
   o=order(n)
-  Y1=lnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where 
+  Y1=lnullspaceInt(sum(i->n^i,0:o-1)) # pure sublattice Y(T1) where
   # T=T1.Tso almost direct product, thus spaces Y.(1-s) and Y1.(1-s) coincide
   n=baseInt(n-n^0) # basis of Im(1-s)
   m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
@@ -535,9 +535,9 @@ function WeightToAdjointFundamentalGroupElement(W,i)
   restricted(b,inclusion.(Ref(W),l))
 end
 
-""" 
+"""
 `weightinfo(W)`
-    
+
 `W`  is a  Coxeter group  record describing  an algebraic  group `𝐆 `, or a
 `IypeIrred`. The function is independent of the isogeny type of `𝐆`(so just
 depends  on `refltype(W)`, that is  on the root system).  It returns a dict
@@ -563,8 +563,8 @@ with the following keys:
    group, given as permutations of the extended root basis.
 
 `:CenterSimplyConnected`: A list of semisimple elements generating the center
-   of the universal covering of  𝐆 
-  
+   of the universal covering of  𝐆
+
 `:chosenAdaptedBasis`: A basis  of the  weight lattice  adapted to the root
   lattice.  In the  basis of  the fundamental  weights, the root lattice is
   given  by the `C=transpose(cartan(W))`. The  property is that the Hermite
@@ -584,7 +584,7 @@ Dict{Symbol, Array} with 7 entries:
   :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0//1, 0//1],…
   :AdjointFundamentalGroup => [(1,12,2), (4,14)]
 ```
-""" 
+"""
 function weightinfo(t::TypeIrred)
   r=getchev(t,:WeightInfo)
   if isnothing(r)
@@ -622,7 +622,7 @@ function weightinfo(W)
                t.indices[r[:minusculeCoweights][g]])
     end
     r[:csi]=zeros(Rational{Int},length(g),semisimplerank(W))
-    if !isempty(r[:moduli]) 
+    if !isempty(r[:moduli])
       C=modZ.(inv(Rational.(cartan(t))))
       r[:csi][:,t.indices]=C[r[:minusculeCoweights][g],:]
       r[:minusculeWeights]=t.indices[r[:minusculeWeights]]
@@ -753,10 +753,10 @@ exist in characteristic `p`.
 julia> W=coxgroup(:E,6);l=quasi_isolated_reps(W)
 5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
- <1,1,1,ζ₃,1,1>
  <1,-1,1,1,1,1>
- <1,ζ₆,ζ₆,1,ζ₆,1>
+ <1,1,1,ζ₃,1,1>
  <ζ₃,1,1,1,1,ζ₃>
+ <1,ζ₆,ζ₆,1,ζ₆,1>
 
 julia> map(s->is_isolated(W,s),l)
 5-element Vector{Bool}:
@@ -773,8 +773,8 @@ julia> W=rootdatum(:E6sc);l=quasi_isolated_reps(W)
  <ζ₃,1,ζ₃²,1,ζ₃,ζ₃²>
  <ζ₃²,1,ζ₃,1,ζ₃,ζ₃²>
  <ζ₃²,1,ζ₃,1,ζ₃²,ζ₃>
- <ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵>
  <ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²>
+ <ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵>
 
 julia> map(s->is_isolated(W,s),l)
 7-element Vector{Bool}:
@@ -793,7 +793,7 @@ julia> Semisimple.quasi_isolated_reps(W,3)
 ```
 """
 function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
-##  This function follows Theorem 4.6 in 
+##  This function follows Theorem 4.6 in
 ##  C.Bonnafe, ``Quasi-Isolated Elements in Reductive Groups''
 ##  Comm. in Algebra 33 (2005), 2315--2337
 ##  after one fixes the following bug: at the beginning of section 4.B
@@ -825,7 +825,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
   if p!=0
     res=filter(res)do P
       all(map(ind,w)do I,W
-        J=intersect(P,I) 
+        J=intersect(P,I)
         length(J)%p!=0 && all(v->lcm(denominator.(v))%p!=0,
                               W[map(x->findfirst(==(x),I),J)])
       end)
@@ -833,11 +833,11 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
   end
   res=map(res)do P
       sum(map(ind,w)do I,p
-      J=intersect(P,I) 
+      J=intersect(P,I)
       sum(p[map(x->findfirst(==(x),I),J)])//length(J)
      end)
   end
-  res=unique!(sort(map(s->SS(W,s),res)))
+  res=sort(unique!(map(s->SS(W,s),res)),by=x->(order(x),x))
   Z0=algebraic_centre(W).Z0
   if rank(Z0)>0
     res=res[filter(i->!any(j->res[i]/res[j] in Z0,1:i-1),eachindex(res))]
@@ -848,9 +848,9 @@ end
 is_isolated(W,s)=rank(algebraic_centre(centralizer(W,s).group).Z0)==
     rank(W)-semisimplerank(W)
 
-"""    
+"""
 `StructureRationalPointsConnectedCentre(W,q)`
-    
+
 `W`  should be  a Coxeter  group or  a Coxeter  coset representing a finite
 reductive  group ``𝐆 ^F``, and `q` should  be the prime power associated to
 the  isogeny `F`. The function returns the abelian invariants of the finite
@@ -876,7 +876,7 @@ julia> StructureRationalPointsConnectedCentre.(l,3)
  [26]
  [40]
 ```julia-repl
-"""    
+"""
 function StructureRationalPointsConnectedCentre(MF,q)
   if MF isa Spets M=Group(MF)
   else M=MF;MF=Spets(M)
@@ -1014,7 +1014,7 @@ function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
   else context=(:TeX=>TeX,:limit=>limit)
   end
   t=repr(t;context)
-  if !limit && !TeX 
+  if !limit && !TeX
     t=Util.TeXstrip(t)
     t=replace(t,"^"=>"")
   end

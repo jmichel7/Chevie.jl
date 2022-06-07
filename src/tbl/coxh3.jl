@@ -28,7 +28,7 @@ chevieset(:H3, :ClassInfo, function ()
     end)
 chevieset(:H3, :CharInfo, function ()
         local res
-        res = Dict{Symbol, Any}(:charparams => [[1, 15], [1, 0], [5, 5], [5, 2], [3, 6], [3, 8], [3, 1], [3, 3], [4, 3], [4, 4]], :gp => ["1_r'", "1_r", "5_r'", "5_r", "3_s", "overline{3}_s", "3_s'", "overline{3}_s'", "4_r'", "4_r"], :hgal => perm"(9,10)", :extRefl => [2, 7, 5, 1])
+        res = Dict{Symbol, Any}(:charparams => [[1, 15], [1, 0], [5, 5], [5, 2], [3, 6], [3, 8], [3, 1], [3, 3], [4, 3], [4, 4]], :gp => ["1_r'", "1_r", "5_r'", "5_r", "3_s", "\\overline{3}_s", "3_s'", "\\overline{3}_s'", "4_r'", "4_r"], :hgal => perm"(9,10)", :extRefl => [2, 7, 5, 1])
         res[:b] = map((x->begin
                         x[2]
                     end), res[:charparams])

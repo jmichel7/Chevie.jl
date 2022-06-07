@@ -3,7 +3,7 @@
 
  This file contains:
   - the type `PPerm` implementing periodic permutations of the integers
-     with operations `*, /, ^, cycles, cycletype`.
+     with operations *, /, ^, inv, cycles and cycletype
 
   - the type `Atilde` implementing the Coxeter group `Ãₙ` as a group of `PPerm`.
 
@@ -35,10 +35,11 @@ struct PPerm{T<:Integer}
   end
 end
 
+"check the validity of a `PPerm`"
 function isvalid(d)
   n=length(d)
-  if Set(mod.(d,n))!=Set(0:n-1) error(d,": images must be distinct mod ",n) end
-  if sum(d)!=sum(1:n) error(d,": sum of shifts must be 0") end
+  if sort(mod.(d,n))!=0:n-1 error(d,": images must be distinct mod ",n) end
+  if sum(d)!=sum(1:n) error(d,": sum of shifts is ",sum(d)-sum(1:n)," must be 0") end
 end
 
 Base.one(p::PPerm)=PPerm(1:length(p.d))
@@ -106,7 +107,7 @@ Base.:^(a::PPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.:/(a::PPerm,b::PPerm)=a*inv(b)
 Base.:\(a::PPerm,b::PPerm)=inv(a)*b
 
-#PPermOps.\=:=function(a,b)return a.perm=b.perm;end;
+#PPermOps.\=:=function(a,b)return a.d=b.d;end;
 
 # Non-trivial cycles of a PPerm; each cycle i_1,..,i_k,[d] is normalized
 # such that i_1 mod n is the smallest of i_j mod n and i_1 is in [1..n]
@@ -170,7 +171,7 @@ CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
 
 #PPermOps.FirstLeftDescending:=function(x)local i,IRD;
 #  x:=x^-1;IRD:=x.operations.IsRightDescending;
-#  for i in [1..Length(x.perm)] do if IRD(x,i) then return i;fi;od;
+#  for i in [1..Length(x.d)] do if IRD(x,i) then return i;fi;od;
 #  return false;
 #end;
 
@@ -251,8 +252,8 @@ function firstintersectiondualleftdescents(a,b)
   for t in a[2] if t in b[2] return t end end
 end
 
-#PPermOps.CycleType:=function(a)local res;
-#  res:=List(PPermOps.Cycles(a),cyc->[Length(cyc)-1,cyc[Length(cyc)]]);
+#PPermOps.cycletype:=function(a)local res;
+#  res:=List(PPermOps.cycles(a),cyc->[Length(cyc)-1,cyc[Length(cyc)]]);
 #  Sort(res);
 #  return res;
 #end;
@@ -336,7 +337,7 @@ end
 
 Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 
-#  W.operations.\in:=function(e,W)return Length(e.perm)=W.rank;end;
+#  W.operations.\in:=function(e,W)return Length(e.d)=W.rank;end;
 #
 ## DualMonoid(W[,M])
 ## constructs dual monoid for tilde A_{n-1}
@@ -376,7 +377,7 @@ Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 #  end;
 #  M.B:=function(arg)local x,p;
 #    if IsList(arg[1]) then x:=[arg[1]]; else x:=arg; fi;
-#    p:=PositionProperty(x,y->not Number(Cycles(y),c->c[Length(c)][1]<>0)in [0,2]);
+#    p:=PositionProperty(x,y->not Number(cycles(y),c->c[Length(c)][1]<>0)in [0,2]);
 #    if p<>false then Error(x[p]," is not a dual simple");fi;
 #    x:=Concatenation(List(x,M.AtomListSimple));
 #    if not ForAll(x,M.IsDualAtom) then
@@ -392,7 +393,7 @@ Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 #    return res;
 #  end;
 #  M.IsDualAtom:=function(a)local c;
-#   c:=Cycles(a);
+#   c:=cycles(a);
 #   return Length(c)=1 and Length(c[1])=3 and c[1][3]=[0] and
 #    (c[1][1]=1 or AbsInt(c[1][1]-c[1][2])<M.rank);
 #  end;

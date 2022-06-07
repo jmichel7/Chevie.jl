@@ -233,34 +233,36 @@ relative_group
 # Finite reflection groups
 ```@docs
 PermRoot
-reflection
-cartan(::PermRootGroup)
-cartan(::PermRootGroup,i,j)
-Diagram
-hyperplane_orbits
+ComplexReflectionGroup
+PRG
 rank
 semisimplerank
-degrees(::Group)
-codegrees
 nref
 nhyp
+degrees(::Group)
+codegrees
+cartan(::PermRootGroup)
+cartan(::PermRootGroup,i,j)
+simpleroots
+simplecoroots
 roots
 coroots
 coroot
-simpleroots
-simplecoroots
+reflection
+reflections
+simple_conjugating
+simple_reps
+Diagram
+hyperplane_orbits
 braid_relations
-bipartite_decomposition
-catalan(W,m)
 reflrep(::PermRootGroup,w)
 reflrep(::PRG)
 reflrep(::PRG,::Integer)
-PermX
-reflections
 refleigen
+bipartite_decomposition
+catalan(W,m)
+PermX
 reflchar
-simple_conjugating
-simple_reps
 invariant_form
 invariants
 generic_order
@@ -268,7 +270,6 @@ torus_order
 parabolic_reps
 parabolic_closure
 is_parabolic
-ComplexReflectionGroup
 ```
 # Hecke algebras
 ```@docs
@@ -355,7 +356,7 @@ WGraphToRepresentation
 Semisimple
 fundamental_group
 intermediate_group
-QuasiIsolatedRepresentatives(::FiniteCoxeterGroup)
+quasi_isolated_reps(::FiniteCoxeterGroup)
 is_isolated
 torsion_subgroup
 algebraic_centre
@@ -379,7 +380,7 @@ subspets
 ```@docs
 Sscoset
 centralizer(::Spets,::SemisimpleElement{Root1})
-QuasiIsolatedRepresentatives(::Spets)
+quasi_isolated_reps(::Spets)
 is_isolated(::Spets,::SemisimpleElement{Root1})
 ```
 # Unipotent characters

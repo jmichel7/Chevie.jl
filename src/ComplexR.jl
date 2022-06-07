@@ -41,18 +41,11 @@ julia> degrees(G)
 julia> length(G)
 24
 
-julia> fakedegrees(G,Pol(:q))
-7-element Vector{Pol{Int64}}:
- 1
- q⁴
- q⁸
- q⁷+q⁵
- q⁵+q³
- q³+q
- q⁶+q⁴+q²
+julia> W*coxgroup(:A,2) # how to make a non-irreducible group
+G₄×A₂
 
-julia> ComplexReflectionGroup(2,1,6)
-B₆
+julia> ComplexReflectionGroup(1,1,3) # another way to enter A₂
+A₂
 ```
 """
 function ComplexReflectionGroup(i::Int)
@@ -107,8 +100,8 @@ end
 returns  a list  holding the  degrees of  `W` as  a reflection group on the
 vector  space `V` on which  it acts. These are  the degrees `d₁,…,dₙ` where
 `n`  is the dimension of  `V` of the basic  invariants of `W` in `SV`. They
-reflect various properties of `W`; in particular, their product is the size
-of `W`.
+reflect  various properties  of `W`;  in particular,  their product  is the
+cardinality of `W`.
 
 ```julia-repl
 julia> W=ComplexReflectionGroup(30)

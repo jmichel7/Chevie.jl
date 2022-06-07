@@ -1913,27 +1913,10 @@ julia> M=DualBraidMonoid(coxgroup(:A,3))
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> p=Presentation(M)
-Presentation: 6 generators, 15 relators, total length 62
+Presentation: 12 generators, 66 relators, total length 260
 ```
 
 ```julia-rep1
-julia> display_balanced(p)
-1: ab=da
-2: ac=ca
-3: ec=cb
-4: bd=da
-5: bd=ab
-6: cd=fc
-7: ae=fa
-8: be=cb
-9: be=ec
-10: de=ed
-11: ef=fa
-12: df=fc
-13: df=cd
-14: ef=ae
-15: def=acb
-
 julia> simplify(p)
 << presentation with 3 generators, 4 relators of total length 26>>
 << presentation with 3 generators, 3 relators of total length 16>>

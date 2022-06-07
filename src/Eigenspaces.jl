@@ -133,11 +133,14 @@ julia> regular_eigenvalues(L)
 function regular_eigenvalues(W)
   d=degrees(W)
   c=codegrees(W)
-  if !(W isa Spets)
-    l=filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
+  l=filter(x->count(iszero.(d.%x))==count(iszero.(c.%x)),
                   sort(union(divisors.(d)...)))
-    return sort(vcat(map(x->E.(x,prime_residues(x)),l)...))
-  end
+  sort(vcat(map(x->E.(x,prime_residues(x)),l)...),by=x->(order(x),exponent(x)))
+end
+
+function regular_eigenvalues(W::Spets)
+  d=degrees(W)
+  c=codegrees(W)
   l=union(map(p->divisors(order(Root1(p[2]))*p[1]),d)...)
   res=Root1[]
   for n in l

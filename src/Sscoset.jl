@@ -31,9 +31,9 @@ transpose, inverse and the longest element of `W`.
 julia> l=quasi_isolated_reps(WF)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
- <ζ₄,1,1,1,1,ζ₄³>
- <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
  <ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³>
+ <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
+ <ζ₄,1,1,1,1,ζ₄³>
 ```
 
 we  define an element `tσ∈ 𝐓 ⋅σ` to  be quasi-isolated if the Weyl group of
@@ -47,9 +47,9 @@ chosen `σ`-stable.
 julia> centralizer.(Ref(WF),l)
 4-element Vector{ExtendedCox{FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:
  Extended(C₃₍₃₂₁₎)
- B₂Φ₁
- (A₁A₁)₍₁₃₎×A₁₍₂₎
  ²A₃₍₃₁₂₎
+ (A₁A₁)₍₁₃₎×A₁₍₂₎
+ B₂Φ₁
 ```
 
 in  the above example, the groups `C_𝐆  (tσ)` are computed and displayed as
@@ -64,9 +64,9 @@ the definition for connected groups.
 julia> is_isolated.(Ref(WF),l)
 4-element BitVector:
  1
+ 1
+ 1
  0
- 1
- 1
 ```
 """
 module Sscoset
@@ -218,8 +218,8 @@ julia> WF=rootdatum("2E6sc")
 julia> quasi_isolated_reps(WF)
 5-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
- <1,1,1,-1,1,1>
  <1,-1,ζ₄,1,ζ₄,1>
+ <1,1,1,-1,1,1>
  <1,ζ₃²,1,ζ₃,1,1>
  <1,ζ₄³,1,-1,1,1>
 
@@ -231,8 +231,8 @@ julia> quasi_isolated_reps(WF,2)
 julia> quasi_isolated_reps(WF,3)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
- <1,1,1,-1,1,1>
  <1,-1,ζ₄,1,ζ₄,1>
+ <1,1,1,-1,1,1>
  <1,ζ₄³,1,-1,1,1>
 ```
 """
@@ -258,16 +258,16 @@ u₆
 julia> l=quasi_isolated_reps(WF)
 4-element Vector{SemisimpleElement{Root1}}:
  <1,1,1,1,1,1>
- <ζ₄,1,1,1,1,ζ₄³>
- <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
  <ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³>
+ <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
+ <ζ₄,1,1,1,1,ζ₄³>
 
 julia> is_isolated.(Ref(WF),l)
 4-element BitVector:
  1
+ 1
+ 1
  0
- 1
- 1
 ```
 """
 function Semisimple.is_isolated(WF::Spets,t::SemisimpleElement{Root1})
