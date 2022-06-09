@@ -1405,8 +1405,7 @@ julia> B(-1,-2,-3,1,1)
 function DualBraidMonoid(W::CoxeterGroup;
   c=reduce(vcat,bipartite_decomposition(W)),revMonoid=nothing)
   δ=W(c...)
-  M=DualBraidMonoid(δ,order(δ),"δ",reflections(W),one(W),W,
-                  Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",refls(W,1:nref(W)),one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing 
     M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
   else M.revMonoid=revMonoid
@@ -1422,7 +1421,7 @@ function DualBraidMonoid(W::PermRootGroup;
   end
   δ=W(c...)
   n=reflength(W,δ)
-  atoms=filter(r->reflength(W,δ/r)<n,unique(reflections(W)))
+  atoms=filter(r->reflength(W,δ/r)<n,unique(refls(W)))
   M=DualBraidMonoid(δ,order(δ),"δ",atoms,one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing
     if all(w->isone(w^2),gens(W))
@@ -1442,7 +1441,7 @@ Base.one(M::DualBraidMonoid)=M.one
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             word(M.W,M.δ),")")
 
-function atomsinbraidmonoid(M::DualBraidMonoid)
+function atomsinbraidmonoid(M::DualBraidMonoid) # for coxeter groups
   get!(M,:atomsinbraidmonoid)do
     W=M.W
     h=order(M.δ)
@@ -1453,7 +1452,7 @@ function atomsinbraidmonoid(M::DualBraidMonoid)
     w=map(i->vcat(w[1:i],-w[i-1:-1:1]),eachindex(w))
     B=BraidMonoid(W)
     w=unique!(map(x->B(x...),w))
-    sort(w,by=x->findfirst(==(image(x)),reflections(W)))
+    sort(w,by=x->findfirst(==(image(x)),refls(W,1:nref(W))))
   end
 end
 
@@ -1913,7 +1912,7 @@ julia> M=DualBraidMonoid(coxgroup(:A,3))
 DualBraidMonoid(A₃,c=[1, 3, 2])
 
 julia> p=Presentation(M)
-Presentation: 12 generators, 66 relators, total length 260
+Presentation: 6 generators, 15 relators, total length 62
 ```
 
 ```julia-rep1

@@ -49,9 +49,9 @@ For these groups the following methods are defined:
 `gens(W)`: the (distinguished) reflections which generate `W`, given as
 permutations of the roots.
 
-`reflections(W)`:  the  list  of  distinguished  reflections  of `W`, which
-starts with gens(W). Actually this list is of same length as the roots, and
-its `i`-th element is the distinguished reflection for the `i`-th root.
+`refls(W)`: the list of distinguished reflections of `W`, which starts with
+gens(W).  Actually this list is of same length as the roots, and its `i`-th
+element is the distinguished reflection for the `i`-th root.
 
 The  finite  irreducible  complex  reflection  groups  have been completely
 classified  by  Shepard  and  Todd.  They  consist  of  one infinite family
@@ -88,10 +88,10 @@ julia> gens(W) # as a permutation of the 24 roots
  (1,3,9)(2,4,7)(5,10,18)(6,11,16)(8,12,19)(13,15,20)(14,17,21)(22,23,24)
  (1,5,13)(2,6,10)(3,7,14)(4,8,15)(9,16,22)(11,12,17)(18,19,23)(20,21,24)
 
-julia> length(unique(reflections(W)))
+julia> length(unique(refls(W)))
 4
 
-julia> length(reflections(W)) # 24=4*(number of roots of unity in ℚ (ζ₃))
+julia> length(refls(W)) # 24=4*(number of roots of unity in ℚ (ζ₃))
 24
 
 julia> reflrep(W) # the reflection representations
@@ -191,7 +191,7 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
- simple_conjugating, reflections, reflection, Diagram, refltype, cartan,
+ simple_conjugating, refls, unique_refls, reflection, Diagram, refltype, cartan,
  independent_roots, inclusion, inclusiongens, restriction, coroot,
  hyperplane_orbits, TypeIrred, refleigen, reflchar, bipartite_decomposition,
  torus_order, rank, reflrep, PermX, coroots, baseX, invbaseX, semisimplerank,
@@ -604,6 +604,7 @@ function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
     end
     W.repelms=repelts
     W.reflections=map((i,p)->gens(W)[i]^p,reps,repelts)
+    W.distrefls=Int.(sort(unique(indexin(W.reflections,W.reflections))))
     reps
   end
 end
@@ -616,20 +617,20 @@ the  smallest index  of a root in the same `W`-orbit as the `i`-th root.
 simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 
 """
-`reflections(W)`
+`refls(W)`
 
 list  of same  length as  `W.roots` giving  the corresponding distinguished
-reflections. In particular this list is much longer than
-`unique(reflections(W))`.
+reflections. In particular this list is much longer than `unique(refls(W))`.
 """
-reflections(W::PermRootGroup)=getp(simple_reps,W,:reflections)
+refls(W::PermRootGroup)=getp(simple_reps,W,:reflections)
 
 """
-`reflection(W,i)`
+`refls(W,i)`
 
-reflection for `i`-th root of `W`
+reflection for `i`-th root(s) of `W` (`i` can be an index or a vector of indices)
 """
-reflection(W::PermRootGroup,i)=i<=ngens(W) ? W(i) : reflections(W)[i]
+refls(W::PermRootGroup,i::Integer)=i<=ngens(W) ? gens(W)[i] : refls(W)[i]
+refls(W::PermRootGroup,i)=refls(W)[i]
 
 """
 `simple_conjugating(W)`
@@ -637,6 +638,8 @@ reflection(W::PermRootGroup,i)=i<=ngens(W) ? W(i) : reflections(W)[i]
 For each root `i`, an element conjugating it to `simple_reps(W,i)`.
 """
 simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:repelms)
+
+unique_refls(W::PermRootGroup)=getp(simple_reps,W,:distrefls)
 
 """
 `simple_conjugating(W,i)`
@@ -781,7 +784,7 @@ prim=[
 # if isempty(de) && length(ST)==1 # shortcut
 #   return Dict(:series=>:ST, :ST=>only(ST), :rank=> r)
 # end
-  h=div(sum(order,Set(reflections(W))),r) # Coxeter number
+  h=div(sum(order,refls(W,unique_refls(W))),r) # Coxeter number
   if length(de)>1
     de=sort(de)
     if h==de[1].e de=[de[1]]
@@ -841,7 +844,7 @@ function check_minimal_relation(gens,rel;verbose=false)
 end
 
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that
-# reflection.(Ref(H),k) satisfy braid and order relations of type t
+# refls(H,k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
 # println("g=$g\n t=");ds(t)
   orders=t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
@@ -858,7 +861,7 @@ function findgoodgens(H,g,t::TypeIrred)
     i=length(gens)+1
     for e in rest
 #     println("$e(",length(gens),")")
-      r=reflection(H,e)
+      r=refls(H,e)
       if order(r)!=orders[i] continue end
       newgens=vcat(gens,[r])
       if !haskey(rels,i) || all(r->check_minimal_relation(newgens,r),rels[i])
@@ -975,8 +978,7 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       else
         good=findgoodcartan(R,eachindex(gens(R)),C)
         if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end
-        if isnothing(good) good=findgoodgens(R,
-                       Int.(indexin(unique(reflections(R)),reflections(R))),d)
+        if isnothing(good) good=findgoodgens(R,unique_refls(R),d)
           better=fixCartan(R,C,good)
           if !isnothing(better) good=better[2]
           else better=findgensDiagCartan(R,C,good)
@@ -1027,12 +1029,12 @@ julia> hyperplane_orbits(W)
 """
 function hyperplane_orbits(W::PermRootGroup)
   sr=simple_reps(W)
-  rr=reflections(W)
+  rr=refls(W)
   cr=classreps(W)
   orb=unique(sort(sr))
   class=map(orb)do s
-    map(1:order(reflection(W,s))-1)do o
-#     return position_class(W,reflection(W,s)^o)
+    map(1:order(refls(W,s))-1)do o
+#     return position_class(W,refls(W,s)^o)
       for i in eachindex(sr)
         if sr[i]==s
           p=findfirst(==(rr[i]^o),cr)
@@ -1446,9 +1448,17 @@ julia> parabolic_reps(coxgroup(:A,4))
  [1, 2, 3]
  [1, 2, 4]
  [1, 2, 3, 4]
+
+julia> parabolic_reps(complex_reflection_group(3,3,3))
+7-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [1, 2]
+ [1, 3]
+ [1, 9]
+ [2, 3]
+ [1, 2, 3]
 ```
-gap> ParabolicRepresentatives(complex_reflection_group(3,3,3));
-[ [  ], [ 1 ], [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ], [ 1, 2, 3 ] ]
 
 `parabolic_reps(W,r)`
 
@@ -1459,9 +1469,14 @@ julia> parabolic_reps(coxgroup(:A,4),2)
 2-element Vector{Vector{Int64}}:
  [1, 2]
  [1, 3]
+
+julia> parabolic_reps(complex_reflection_group(3,3,3),2)
+4-element Vector{Vector{Int64}}:
+ [1, 2]
+ [1, 3]
+ [1, 9]
+ [2, 3]
 ```
-gap> ParabolicRepresentatives(complex_reflection_group(3,3,3),2);
-[ [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ] ]
 """
 parabolic_reps(W)=vcat(parabolic_reps.(Ref(W),0:semisimplerank(W))...)
 
@@ -1469,7 +1484,7 @@ parabolic_reps(t::TypeIrred,s)=getchev(t,:ParabolicRepresentatives,s)
 
 function recompute_parabolic_reps(W) # W irreducible
   by=1+ngens(W)-semisimplerank(W)
-  stoi=s->findfirst(i->reflection(W,i)==s,eachindex(roots(W)))
+  stoi=s->findfirst(i->refls(W,i)==s,eachindex(roots(W)))
   l=[map(x->reflection_subgroup(W,[x]),sort(unique(simple_reps(W))))]
   for i in 2:semisimplerank(W)-1
     new=[];ref=Vector{Pair{Int,Int}}[]
@@ -1477,15 +1492,15 @@ function recompute_parabolic_reps(W) # W irreducible
       InfoChevie("# Extending ",v)
       S=normalizer(W,v)
       if ngens(v)==i-1
-        c=union(map(i->combinations(map(stoi,unique(reflections(W))),i),1:by))
-      else c=combinations(map(stoi,unique(reflections(W))),1)
+        c=union(map(i->combinations(unique_refls(W),i),1:by))
+      else c=combinations(unique_refls(W),1)
       end
       c=map(x->union(x,restriction(W,inclusiongens(v))),c)
       c=filter(x->GLinearAlgebra.rank(toM(roots(W,x)))==i,c)
       InfoChevie(" ",length(c)," new subgroups")
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
       c=filter(is_parabolic,c)
-      c=sort(unique(map(x->sort(unique(reflections(x))),c)))
+      c=sort(unique(map(x->sort(unique(refls(x))),c)))
       O=orbits(S,c;action=(x,g)->sort(x.^g))
       O=map(o->o[argmin(map(x->sum(stoi,x),o))],O)
       O=map(x->reflection_subgroup(W,stoi.(x)),O)
@@ -1512,7 +1527,7 @@ function recompute_parabolic_reps(W) # W irreducible
   l=map(v->inclusiongens.(v),l)
   l=vcat([[Int[]]],l)
   push!(l,[inclusiongens(W)])
-  l=map(v->map(x->map(y->Int(stoi(reflection(W,restriction(W,y)))),x),v),l)
+  l=map(v->map(x->map(y->Int(stoi(refls(W,restriction(W,y)))),x),v),l)
   [sort(sort.(x)) for x in l]
 end
 
@@ -1586,7 +1601,7 @@ true
 """
 function is_parabolic(H)
   W=parent(H)
-  setr=s->Set(reflection.(Ref(W),s))
+  setr=s->Set(refls(W,s))
   if iszero(ngens(H)) return true end
   v=simpleroots(H)
   gens=filter(i->solutionmat(v,roots(W,i))!==nothing,eachindex(roots(W)))
@@ -1731,8 +1746,7 @@ end
 "`reflrep(W)` returns the list of `reflrep(W,x)` for `x` in `gens(W)`"
 reflrep(W::PRG)=W.matgens
 "`reflrep(W,i)` same as but better than `reflrep(W,W(i))`"
-reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] :
-                                         reflrep(W,reflection(W,i))
+reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
 
 #--------------- type of subgroups of PRG----------------------------------
 @GapObj struct PRSG{T,T1}<:PermRootGroup{T,T1}
@@ -1777,7 +1791,7 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
       inclu=Int.(indexin(G.roots,W.roots))
     end
     restr=zeros(Int,length(W.roots));restr[inclu]=1:length(inclu)
-    return PRSG(reflections(W)[I],one(W),inclu,restr,W,Dict{Symbol,Any}())
+    return PRSG(refls(W,I),one(W),inclu,restr,W,Dict{Symbol,Any}())
   end
   if haskey(W.reflsubgroups,I) return W.reflsubgroups[I] end
   H=reflection_subgroup(W,I;NC=true)

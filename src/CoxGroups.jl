@@ -94,7 +94,7 @@ julia> w0=longest(W)
 Perm{UInt8}: (1,4)(2,3)
 julia> length(W,w0)
 6
-julia> map(i->word(W,reflection(W,i)),1:nref(W))
+julia> map(w->word(W,w),refls(W,1:nref(W)))
 6-element Vector{Vector{Int64}}:
  [1]
  [2]
@@ -803,10 +803,10 @@ end
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
 function dyer(W,J) # Dyer's method for reflection subgroups
-  refs=reflections(W)[J]
+  refs=refls(W,J)
   refs=vcat(orbits(Group(refs),refs)...)
-  inc=Int.(indexin(refs,reflections(W)))
-  gens=filter(t->count(s->isrightdescent(W,reflection(W,t),s),inc)==1,inc)
+  inc=Int.(indexin(refs,refls(W)))
+  gens=filter(t->count(s->isrightdescent(W,refls(W,t),s),inc)==1,inc)
   gens=sort(gens)
   (gens=gens,rootinclusion=vcat(gens,sort(setdiff(inc,gens))))
 end
@@ -848,6 +848,7 @@ julia> length.(Ref(W),e)
 function CoxSym(n::Int)
   gens=map(i->Perm{UInt8}(i,i+1;degree=n),1:n-1)
   refs=[Perm{UInt8}(i,i+k;degree=n) for k in 1:n-1 for i in 1:n-k]
+  append!(refs,refs)
   CoxSym(Group(gens),refs,n,Dict{Symbol,Any}())
 end
 
@@ -870,10 +871,10 @@ Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
                                       W,:classreps)
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
-PermRoot.nref(W::CoxSym)=length(reflections(W))
-PermRoot.simple_reps(W::CoxSym)=fill(1,nref(W))
-PermRoot.reflection(W::CoxSym,i)=W.reflections[i]
-PermRoot.reflections(W::CoxSym)=W.reflections
+PermRoot.nref(W::CoxSym)=div(length(W.reflections),2)
+PermRoot.simple_reps(W::CoxSym)=fill(1,length(W.reflections))
+PermRoot.refls(W::CoxSym,i)=W.reflections[i]
+PermRoot.refls(W::CoxSym)=W.reflections
 PermRoot.rank(W::CoxSym)=ngens(W)
 
 """
@@ -893,8 +894,8 @@ true
 """
 function isleftdescent(W::CoxSym,w,i::Int)
  if i<W.n j=i+1
- else j=largest_moved_point(reflection(W,i))
-      i=smallest_moved_point(reflection(W,i))
+ else j=largest_moved_point(refls(W,i))
+      i=smallest_moved_point(refls(W,i))
  end
  i^w>j^w
 end

@@ -23,8 +23,8 @@ function FindSeriesInParent(h,HF,WF,ww)
                           action=(s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=w, op=p) end
        p=transporting_elt(W, 
-          sort(reflections(reflection_subgroup(W,incHW))), 
-          sort(reflections(reflection_subgroup(W,w[:levi]))),
+          sort(refls(reflection_subgroup(W,incHW))), 
+          sort(refls(reflection_subgroup(W,w[:levi]))),
                           action=(s,g)->sort(s.^g))
        if !isnothing(p) return (ser=w, op=p) end
       end
@@ -190,8 +190,8 @@ function LusztigInductionPieces(LF,WF)
       rh=map(rh)do x
         r=relative_root(W,cL,x)
         pr=PermX(WGL,reflection(r.root,r.coroot))
-        findfirst(i->reflection(WGL,i)==pr,eachindex(roots(WGL)))
-#       p=findfirst(i->reflection(WGL,restriction(WGL,i))==
+        findfirst(i->refls(WGL,i)==pr,eachindex(roots(WGL)))
+#       p=findfirst(i->refls(WGL,restriction(WGL,i))==
 #            PermX(WGL,reflection(r[:root],r[:coroot])),inclusion(WGL))
 #       inclusion(WGL)[p] 
       end
@@ -357,20 +357,20 @@ function HCInductionTable(HF, WF)
       Wi = relative_group(W, ser[:levi], Jb)
       if false
         if h[:levi]==[] rh=inclusiongens(H)
-        else rh = filter(i->reflection(parent(W),i) in H,Jb)
+        else rh = filter(i->refls(parent(W),i) in H,Jb)
         end
       else
         rh=reflection_subgroup(W,restriction(W,inclusiongens(H).^op))
 #       println("inclusion(rh)=",inclusion(rh)," inclusion(L)=",inclusion(L))
         if !issubset(inclusion(L),inclusion(rh)) error() end
-        rh=filter(i->!(reflection(parent(W),i) in L),inclusion(rh))
+        rh=filter(i->!(refls(parent(W),i) in L),inclusion(rh))
       end
       function getHi()
         sH=length(relative_group(H, h[:levi]))
         rr=Int[]
         for x in rh
           r=relative_root(W, L, x)
-          p=findfirst(i->reflection(Wi,restriction(Wi,i))==
+          p=findfirst(i->refls(Wi,restriction(Wi,i))==
                        PermX(Wi,reflection(r.root,r.coroot)),inclusion(Wi))
           if p!==isnothing && !(p in rr) push!(rr,p) end
           Hi = reflection_subgroup(Wi, rr)

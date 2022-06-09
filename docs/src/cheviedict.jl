@@ -281,7 +281,7 @@ const ChevieDict=Dict(
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
-"Reflection"=>"reflection",
+"Reflection"=>"refls or reflection",
 "ReflectionCharacter"=>"reflchar",
 #ReflectionCharValue
 #ReflectionCoset
@@ -292,7 +292,7 @@ const ChevieDict=Dict(
 "ReflectionLength(W,w)"=>"reflength(W,w)",
 #ReflectionWord
 "ReflectionName(W)"=>"repr(W;context=:limit=>true)",
-"Reflections"=>"reflections",
+"Reflections"=>"refls",
 #ReflectionSubCoset
 "ReflectionSubgroup"=>"reflection_subgroup",
 "ReflectionType"=>"refltype",

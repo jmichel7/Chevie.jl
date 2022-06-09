@@ -249,7 +249,7 @@ roots
 coroots
 coroot
 reflection
-reflections
+refls
 simple_conjugating
 simple_reps
 Diagram
@@ -732,7 +732,7 @@ PowerRoot(x,y)                              (Root1(;r=x)^y).r
 Presentation                                Presentation
 PrintDiagram(W)                             Diagram(W)
 ProportionalityCoefficient(v,w)             ratio(v,w)
-QuasiIsolatedRepresentatives                QuasiIsolatedRepresentatives
+QuasiIsolatedRepresentatives                quasi_isolated_reps
 QuoInt                                      div
 Rank                                        rank
 RankSymbol                                  ranksymbol
@@ -740,14 +740,15 @@ ReducedCoxeterWord(W,w)                     word(W,W(w...))
 ReducedExpressions(W,w)                     words(W,w)
 ReducedInRightCoset(W,w)                    reduced(W,w)
 ReducedRightCosetRepresentatives(W,H)       reduced(H,W)
-Reflection                                  reflection
+Reflection                                  refls or reflection
 ReflectionCharacter                         reflchar
 ReflectionCoDegrees(W)                      codegrees(W)
 ReflectionDegrees(W)                        degrees(W)
 ReflectionEigenvalues                       refleigen
 ReflectionGroup                             reflection_group
 ReflectionLength(W,w)                       reflength(W,w)
-Reflections                                 reflections
+ReflectionName(W)                           repr(W;context=:limit=>true)
+Reflections                                 refls
 ReflectionSubgroup                          reflection_subgroup
 ReflectionType                              refltype
 RegularEigenvalues                          regular_eigenvalues

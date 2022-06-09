@@ -586,7 +586,7 @@ function leftstar(W,br,w)
   # leftdescents(W,w) contains st[1] and not st[2]
   # returns corresponding * operation applied to w
   function leftstarNC(W,st,w)
-    rst=reflections(W)[st]
+    rst=refls(W,st)
     w0=prod(rst)
     i=1
     while true

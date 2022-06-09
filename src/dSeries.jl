@@ -706,7 +706,7 @@ function Weyl.relative_group(s::Series)
       end
     end
   end
-  refs=unique(sort(indexin(reflections(W), reflections(W))))
+  refs=unique_refls(W)
   if length(L) == 1
     WGL=N
   elseif length(N)==length(L)
@@ -1114,7 +1114,7 @@ function getHecke(s)
     W=Group(s.spets)
     p=Group(g)(word(W,s.levi.phi/s.spets.phi)...)
     inds=convert(Vector{Int},map(x->findfirst(==(Group(g)(word(W,x)...)),
-                   reflections(Group(g))),gens(Group(s.levi))))
+                   refls(Group(g))),gens(Group(s.levi))))
     l=subspets(g,inds,p)
     if length(scal)>1
       ChevieErr("scal==", scal, " unimplemented\n")
@@ -1189,11 +1189,11 @@ function RelativeSeries(s)
     #   println("R=",R," l=",l," s.element/R.phi=",s.element/R.phi)
     p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r;NC=true)
     p.orbit=simple_reps(WGL)[i]
-    r=Int.(indexin(sort(unique(reflections(WGL))),reflections(WGL)))
+    r=unique_refls(WGL)
     if gens(WGL)==WGL.parentMap
-      r=filter(x->reflections(WGL)[x] in Group(p.spets),r)
+      r=filter(x->refls(WGL,x) in Group(p.spets),r)
     else
-      w=map(x->word(WGL,reflections(WGL)[x]), r)
+      w=map(x->word(WGL,refls(WGL,x)), r)
       w=map(x->prod(WGL.parentMap[x]), w)
 #     xprint(w,"\n")
       r=r[map(w)do x

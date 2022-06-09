@@ -459,16 +459,17 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
   i^w<(i-1)^w
 end
 
-function PermRoot.reflections(W::CoxHyperoctaedral)
+function PermRoot.refls(W::CoxHyperoctaedral)
   get!(W,:reflections)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
     for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
     for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
+    append!(refs,refs)
     refs
   end
 end
 
-PermRoot.reflection(W::CoxHyperoctaedral,i)=reflections(W)[i]
+PermRoot.refls(W::CoxHyperoctaedral,i)=refls(W)[i]
 
 function Perms.reflength(W::CoxHyperoctaedral,w)
   sym=nsym=0
@@ -616,8 +617,8 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     iN=collectby(invN,J)
     if length(iM)==1
       if length(I)>6 InfoChevie("large block:",length(I),"\n")
-        p=transporting_elt(Group(reflections(
-          CoxHyperoctaedral(length(I)))), M[I,I],N[J,J];action=onmats,
+        p=transporting_elt(Group(refls(CoxHyperoctaedral(length(I)))), 
+                           M[I,I],N[J,J];action=onmats,
                     dist=(M,N)->count(i->M[i]!=N[i],eachindex(M)))
       else p=transporting_elt(CoxHyperoctaedral(length(I)),
          M[I,I],N[J,J],action=onmats)

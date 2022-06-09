@@ -797,7 +797,7 @@ end
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   if isempty(J) return classreps(W) end
   L=reflection_subgroup(W,J)
-  s=unique!(sort(reflections(L)))
+  s=sort(refls(L,unique_refls(L)))
   C=centralizer(W,s;action=(p,g)->sort(p.^g))
   W_L=C/L
   map(x->x.phi,classreps(W_L))
@@ -923,7 +923,7 @@ function spets(W::PermRootGroup,F::Matrix)
     i=filter(j->!iszero(perm[j]),eachindex(perm))
     if length(i)==length(perm) break end
     for j in eachindex(gens(W))
-      perm[i.^reflection(W,j)].=perm[i].^reflection(W,perm[j])
+      perm[i.^refls(W,j)].=perm[i].^refls(W,perm[j])
     end
   end
   if length(unique(perm))<length(perm) return false end
@@ -1008,7 +1008,7 @@ function PermRoot.refltype(WF::PRC)
     if isone(WF.phi)
       return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t)
     end
-    subgens=map(x->reflection.(Ref(W),x.indices),t)
+    subgens=map(x->refls.(Ref(W),x.indices),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     if isnothing(c) && any(isG333,t)
       for a in t
@@ -1025,13 +1025,13 @@ function PermRoot.refltype(WF::PRC)
           elseif order(WF.phi)==4  G333=[1,2,3,32,16,36,30,10]
           else G333=1:3
           end
-          a.subgens=reflection.(Ref(a.subgroup),G333)
+          a.subgens=refls.(Ref(a.subgroup),G333)
           a.indices=inclusion(a.subgroup,W,G333)
           WF.W.refltype=t
         end
       end
   #   subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
-      subgens=map(x->reflection.(Ref(W),x.indices),t)
+      subgens=map(x->refls.(Ref(W),x.indices),t)
       c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     end
     c=orbits(inv(c))
@@ -1088,7 +1088,7 @@ function PermRoot.refltype(WF::PRC)
           #print("l=$l i=$i scal before:$scal")
           if i!=length(orb)
             tn.indices^=u
-            subgens[orb[next]]=reflection.(Ref(W),tn.indices)
+            subgens[orb[next]]=refls.(Ref(W),tn.indices)
             scal=scals(ti.indices,tn.indices)
           else to.twist=u
             scal=scals(ti.indices,tn.indices^inv(u))
@@ -1113,11 +1113,11 @@ function PermRoot.refltype(WF::PRC)
       b=a.orbit[1]
       if b.series==:D && b.rank==4
         if order(a.twist)==2 # ^2D_4
-          rf=filter(x->reflection(W,i[x])!=reflection(W,i[x])^WF.phi,1:4)
+          rf=filter(x->refls(W,i[x])!=refls(W,i[x])^WF.phi,1:4)
           rf=vcat(rf,[3],setdiff([1,2,4],rf))
           for j in a.orbit j.indices=j.indices[rf] end
         elseif order(a.twist)==3 # ^3D_4
-          if reflection(W,i[1])^WF.phi!=reflection(W,i[2])
+          if refls(W,i[1])^WF.phi!=refls(W,i[2])
            for j in a.orbit j.indices=j.indices[[1,4,3,2]] end
           end
         end
