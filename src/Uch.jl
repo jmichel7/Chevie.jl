@@ -216,7 +216,7 @@ Finally  we mention  that Chevie  can also  provide unipotent characters of
 Spetses, as defined in [BroueMalleMichel2014](biblio.htm#BMM14). An example:
 
 ```julia-repl
-julia> UnipotentCharacters(ComplexReflectionGroup(4))
+julia> UnipotentCharacters(complex_reflection_group(4))
 UnipotentCharacters(G₄)
     γ│           Deg(γ)    Feg Fr(γ)  label
 ─────┼──────────────────────────────────────
@@ -1296,7 +1296,7 @@ julia> cuspidal(UnipotentCharacters(W),6)
  10
  12
 
-julia> cuspidal(UnipotentCharacters(ComplexReflectionGroup(4)),3)
+julia> cuspidal(UnipotentCharacters(complex_reflection_group(4)),3)
 4-element Vector{Int64}:
   3
   6
@@ -1342,7 +1342,7 @@ julia> cuspidal_data(coxgroup(:F,4),1)
  (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)
  (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)
 
-julia> cuspidal_data(ComplexReflectionGroup(4),3)
+julia> cuspidal_data(complex_reflection_group(4),3)
 5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
  (levi = G₄, cuspidal = 3, d = ζ₃)
  (levi = G₄, cuspidal = 6, d = ζ₃)

@@ -59,7 +59,7 @@ The theory of `d`-Harish-Chandra series can be generalized to spetsial complex
 reflection groups using some axioms. We show below an example.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> l=cuspidal_data(W,3)
@@ -202,7 +202,7 @@ axioms that we do not recall here.
 julia> dSeries.ennola(rootdatum("3D4"))
 SPerm{Int64}: (3,-4)(5,-5)(6,-6)(7,-8)
 
-julia> dSeries.ennola(ComplexReflectionGroup(14))
+julia> dSeries.ennola(complex_reflection_group(14))
 SPerm{Int64}: (2,43,-14,16,41,34)(3,35,40,18,-11,42)(4,-37,25,-17,-26,-36)(5,-6,-79)(7,-7)(8,-74)(9,-73)(10,-52,13,31,-50,29)(12,53,15,32,-51,-30)(19,71,70,21,67,68,20,69,72)(22,-39,27,-33,-28,-38)(23,24,-66,-23,-24,66)(44,46,49,-44,-46,-49)(45,48,47,-45,-48,-47)(54,-63,-55,-57,62,-56)(58,-65,-59,-61,64,-60)(75,-77)(76,-76)(78,-78)
 
 ```
@@ -487,7 +487,7 @@ described   by  the   arguments  and   the  keywords   (see  the  help  for
 `cuspidal_data`).
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> Series(W,3;proper=true)

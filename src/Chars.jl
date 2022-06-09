@@ -319,7 +319,7 @@ they are compatible with those of [MalleRouquier2003](biblio.htm#MR03) and
 [BroueMalleMichel2014](biblio.htm#BMM14).
 
 -  For `G₅`:
-We  let `W=ComplexReflectionGroup(5)`,  so the  generators are  `W(1)` and
+We  let `W=complex_reflection_group(5)`,  so the  generators are  `W(1)` and
 `W(2)`.
 
 The  character `φ₁,₄'` (resp. `φ₁,₁₂'`, `φ₂,₃'`) takes the value `1` (resp.
@@ -329,7 +329,7 @@ character  `φ₂,₅″` is complex  conjugate to `φ₂,₁`;  `φ₂,₅'` ta
 `-1` on `W(1)`. The character `φ₂,₇'` is complex conjugate to `φ₂,₅'`.
 
 -  For `G₇`:
-We  let `W=ComplexReflectionGroup(7)`,  so the  generators are
+We  let `W=complex_reflection_group(7)`,  so the  generators are
 `W(1)`, `W(2)` and `W(3)`.
 
 The  characters  `φ₁,₄'`  and  `φ₁,₁₀'`  take  the value `1` on `W(2)`. The
@@ -607,7 +607,7 @@ permutation   is  trivial).  `.hgal*conj`,  where  `conj`  is  the  complex
 conjugaison, is the Opdam involution.
 
 ```julia-repl
-julia> charinfo(ComplexReflectionGroup(24))
+julia> charinfo(complex_reflection_group(24))
 n0│ name ext  b  B  a  A
 ──┼──────────────────────
 1 │ φ₁‚₀  Id  0  0  0  0
@@ -752,7 +752,7 @@ return  the permutation of the characters of the group `W` which
 is effected when taking the complex conjugate of the character table.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> conjPerm(W)
@@ -991,7 +991,7 @@ representations  of dimension ≥140, except half of those of dimensions 315,
 420 and 840.
 
 ```julia-repl
-julia> representation(ComplexReflectionGroup(24),3)
+julia> representation(complex_reflection_group(24),3)
 3-element Vector{Matrix{Cyc{Int64}}}:
  [1 0 0; -1 -1 0; -1 0 -1]
  [-1 0 -1; 0 -1 (1-√-7)/2; 0 0 1]
@@ -1486,7 +1486,7 @@ calling `f(a₁,…,aₙ)`. For the moment, this function is implemented only fo
 the exceptional complex reflection groups `G₄` to `G₃₃`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4);@Mvp x,y
+julia> W=complex_reflection_group(4);@Mvp x,y
 
 julia> discriminant(W)(x,y)
 Mvp{Int64}: x³-y²

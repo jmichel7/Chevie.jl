@@ -427,7 +427,7 @@ function QuotientAu(Au,chars)
       :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
       :gens=>map(x->word(Au,HasType.First(elements(Au),y->h(y)==x)),gens(q)))
   end
-  Z=n->ComplexReflectionGroup(n,1,1)
+  Z=n->crg(n,1,1)
 # println("Au=$Au chars=$chars")
   ct=transpose(CharTable(Au).irr[chars,:])
   cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))

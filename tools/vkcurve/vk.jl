@@ -1574,15 +1574,15 @@ VKCURVE[:showNewton]=true
 data=Dict()
 
 @Mvp x,y,z,t
-d=discriminant(ComplexReflectionGroup(24))(x,y,z)
+d=discriminant(crg(24))(x,y,z)
 data[24]=d(;x=1,z=x)
-d=discriminant(ComplexReflectionGroup(27))(x,y,z)
+d=discriminant(crg(27))(x,y,z)
 data[27]=d(;x=1,z=x)
-d=discriminant(ComplexReflectionGroup(23))(x,y,z)
+d=discriminant(crg(23))(x,y,z)
 data[23]=d(;x=1,z=x)
-d=discriminant(ComplexReflectionGroup(29))(x,y,z,t)
+d=discriminant(crg(29))(x,y,z,t)
 data[29]=d(;t=y+1,z=x)
-d=discriminant(ComplexReflectionGroup(31))(x,y,z,t)
+d=discriminant(crg(31))(x,y,z,t)
 data[31]=d(;t=x+1,z=y)
 data[34]=
 95864732434895657396628326400//164799823*x*y^3-598949723065092000//

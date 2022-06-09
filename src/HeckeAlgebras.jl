@@ -208,7 +208,7 @@ hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])
 julia> H.para,rootpara(H)
 (Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
 
-julia> hecke(ComplexReflectionGroup(3,1,2),q).para
+julia> hecke(complex_reflection_group(3,1,2),q).para
 2-element Vector{Vector{Pol{Cyc{Int64}}}}:
  [q, ζ₃, ζ₃²]
  [q, -1]
@@ -804,7 +804,7 @@ end
 returns the list of Schur elements for the (cyclotomic) Hecke algebra `H`
 
 ```julia-repl
-julia> H=hecke(ComplexReflectionGroup(4),Pol(:q))
+julia> H=hecke(complex_reflection_group(4),Pol(:q))
 hecke(G₄,q)
 
 julia> s=schur_elements(H)
@@ -987,7 +987,7 @@ the  Hecke algebra  `H` for  the irreducible  character of `H` of parameter
 `phi` (see `charinfo(W).charparams`)
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
@@ -1020,7 +1020,7 @@ variables  `xᵢ`.  The  function  `FactorizedSchurElements`  returns  a data
 structure which shows this factorization.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])

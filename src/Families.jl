@@ -226,7 +226,7 @@ end
 Frobenius of the family.
 
 ```julia-repl
-julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
+julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
 Family(0011,[4, 3, 2])
 imprimitive family
 label│eigen      1        2        3
@@ -277,7 +277,7 @@ of  the  family  `f`  with  the  Fourier  matrix, eigenvalues of Frobenius,
 `:charLabels…` permuted by `p`.
 
 ```julia-repl
-julia> f=UnipotentCharacters(ComplexReflectionGroup(3,1,1)).families[2]
+julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
 Family(0011,[4, 3, 2])
 imprimitive family
 label│eigen      1        2        3
@@ -691,7 +691,7 @@ the  Drinfeld double of the group `g` would have, without computing it. The
 evident advantage is the speed.
 
 ```julia-repl
-julia> Families.ndrinfeld_double(ComplexReflectionGroup(5))
+julia> Families.ndrinfeld_double(complex_reflection_group(5))
 378
 ```
 """
@@ -946,7 +946,7 @@ fact that the coefficient of `bᵢbⱼ` on `bₖ` is equal to `Cᵢ,ⱼ,ₖ`.
 `dual to `bᵢ` for the linear form (bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> uc=UnipotentCharacters(W);f=uc.families[4];

@@ -63,10 +63,10 @@ exceptional   groups   contain   the   exceptional  Coxeter  groups,  e.g.,
 We provide functions to build any finite reflection group, either by giving
 a  list  of  roots  and  coroots  defining  the generating reflections (see
 [`PRG`](@ref)), or in terms of the classification (see
-[`ComplexReflectionGroup`](@ref)). The output is a permutation group on set
-of  roots . In the  context e.g. of Weyl  groups, one wants to describe the
-particular  root system chosen in term of the traditional classification of
-crystallographic  root  systems.  This  is  done  via calls to the function
+[`complex_reflection_group`](@ref)).  The output is  a permutation group on
+set  of roots . In  the context e.g. of  Weyl groups, one wants to describe
+the particular root system chosen in term of the traditional classification
+of  crystallographic root systems.  This is done  via calls to the function
 [`coxgroup`](@ref)  (see  the  module  [`Weyl`](@ref)).  There is not yet a
 general  theory on  how to  construct a  nice set  of roots  for a non-real
 reflection  group;  the  roots  chosen  here  where  obtained case-by-case;
@@ -80,7 +80,7 @@ however, they satisfy several important properties:
     may be realized as a reflection group over `K`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> gens(W) # as a permutation of the 24 roots
@@ -348,10 +348,10 @@ function Base.show(io::IO, t::TypeIrred)
     s=t.series
     if s==:ST
       if haskey(t,:ST)
-        n=hasdecor(io) ? sub("G",t.ST) : "ComplexReflectionGroup($(t.ST))"
+        n=hasdecor(io) ? sub("G",t.ST) : "crg($(t.ST))"
       else
         n=hasdecor(io) ? "G_{$(t.p),$(t.q),$(t.rank)}" :
-          "ComplexReflectionGroup($(t.p),$(t.q),$(t.rank))"
+                         "crg($(t.p),$(t.q),$(t.rank))"
       end
     else
       r=rank(t)
@@ -692,7 +692,7 @@ This  function  returns  the  *rank*  of  a  reflection group, which is the
 dimension of the space where it acts.
 
 ```julia-repl
-julia> rank(ComplexReflectionGroup(31))
+julia> rank(complex_reflection_group(31))
 4
 ```
 """
@@ -1213,7 +1213,7 @@ generic  order of the reflection subcoset  of `W` determined by the trivial
 subgroup and a representative of the `i`-th conjugacy class.
 
 ```julia-repr
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 
 julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),Pol(:q))
 7-element Vector{Pol{Cyc{Int64}}}:
@@ -1447,7 +1447,7 @@ julia> parabolic_reps(coxgroup(:A,4))
  [1, 2, 4]
  [1, 2, 3, 4]
 ```
-gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3));
+gap> ParabolicRepresentatives(complex_reflection_group(3,3,3));
 [ [  ], [ 1 ], [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ], [ 1, 2, 3 ] ]
 
 `parabolic_reps(W,r)`
@@ -1460,7 +1460,7 @@ julia> parabolic_reps(coxgroup(:A,4),2)
  [1, 2]
  [1, 3]
 ```
-gap> ParabolicRepresentatives(ComplexReflectionGroup(3,3,3),2);
+gap> ParabolicRepresentatives(complex_reflection_group(3,3,3),2);
 [ [ 1, 2 ], [ 1, 3 ], [ 1, 20 ], [ 2, 3 ] ]
 """
 parabolic_reps(W)=vcat(parabolic_reps.(Ref(W),0:semisimplerank(W))...)
@@ -1574,7 +1574,7 @@ matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 
 whether the reflection group `W` is a parabolic subgroup of `parent(W)`.
 ```julia-repl
-julia> W=ComplexReflectionGroup(7)
+julia> W=complex_reflection_group(7)
 G₇
 
 julia> is_parabolic(reflection_subgroup(W,[1,2]))
@@ -1601,7 +1601,7 @@ that  `reflection_subgroup(W,J)` is the smallest  parabolic subgroup of `W`
 containing `reflection_subgroup(W,I)`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(7)
+julia> W=complex_reflection_group(7)
 G₇
 
 julia> parabolic_closure(W,[1])
@@ -1840,7 +1840,7 @@ Coxeter  number of `W`. For non-well generated groups, the definition is in
 [Gordon and Griffeth2012](biblio.htm#gg12).
 
 ```julia-repl
-julia> catalan(ComplexReflectionGroup(7),2)
+julia> catalan(complex_reflection_group(7),2)
 16
 ```
 
@@ -1851,7 +1851,7 @@ number  (resp.  the  `i`-th  `q`-Fuss  Catalan  number)  of  `W`. Again the
 definitions in general are in [Gordon and Griffeth2012](biblio.htm#gg12).
 
 ```julia-repl
-julia> catalan(ComplexReflectionGroup(7),2;q=Pol())
+julia> catalan(complex_reflection_group(7),2;q=Pol())
 Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1
 ```
 """
@@ -1881,7 +1881,7 @@ the action of the reflection group `W`. That is, if `M` is the matrix of an
 element of `W`, then `M*F*M'=F`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> invariant_form(W)
@@ -1934,7 +1934,7 @@ elements.
 julia> @Pol q
 Pol{Int64}: q
 
-julia> PermRoot.generic_order(ComplexReflectionGroup(4),q)
+julia> PermRoot.generic_order(complex_reflection_group(4),q)
 Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
 ```
 """
@@ -1973,7 +1973,7 @@ Mvp{Int64}: -2x²+2xy-2y²
 julia> i[2](x,y)
 Mvp{Int64}: 6x²y-6xy²
 
-julia> W=ComplexReflectionGroup(24)
+julia> W=complex_reflection_group(24)
 G₂₄
 
 julia> i=invariants(W)[1];

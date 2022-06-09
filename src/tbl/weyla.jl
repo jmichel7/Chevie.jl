@@ -211,7 +211,7 @@ chevieset(:A, :UnipotentClasses, function (n, p)
             p = cl[:parameter]
             d = gcd(p)
             cl[:name] = joindigits(p)
-            cl[:Au] = ComplexReflectionGroup(d, 1, 1)
+            cl[:Au] = crg(d, 1, 1)
             cl[:balacarter] = Concatenation(map((i->begin
                                 Sum(p[1:i - 1]) + (1:p[i] - 1)
                             end), 1:length(p)))

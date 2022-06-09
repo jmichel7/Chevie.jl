@@ -115,6 +115,7 @@ ftrans=Dict{Symbol,Symbol}(
   :Cartesian=>:cartesian,
   :Collected=>:tally,
   :Combinations=>:combinations,
+  :ComplexReflectionGroup=>:crg,
   :Copy=>:deepcopy,
   :CoxeterCoset=>:spets,
   :CoxeterWord=>:word,

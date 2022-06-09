@@ -538,7 +538,7 @@ sophisticated  algorithms, and can  handle matrices up  to 80×80. If `l` is
 given the return group should also centralize `l` (for the action ^)
 
 ```julia-repl
-julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
+julia> uc=UnipotentCharacters(complex_reflection_group(6));
 
 julia> g=sstab_onmats(fourier(uc.families[2]))
 Group([(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15),(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18),(2,19)(4,-14)(5,20)(7,12),(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22),(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17),(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22),(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)])
@@ -589,7 +589,7 @@ julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);
 
 julia> M=fourier(conj(f));
 
-julia> uc=UnipotentCharacters(ComplexReflectionGroup(6));
+julia> uc=UnipotentCharacters(complex_reflection_group(6));
 
 julia> N=fourier(uc.families[2]);
 

@@ -458,7 +458,7 @@ chevieset(:G34, :UnipotentCharacters, function ()
 chevieset(:G34, :UnipotentCharacters, (chevieget(:G34, :UnipotentCharacters))())
 chevieset(:G34, :Invariants, function ()
         local r
-        r = (ComplexReflectionGroup(34))[:roots]
+        r = (crg(34))[:roots]
         return [function (x, y, z, t, u, v)
                     return Sum(r, (a->begin
                                         ([x, y, z, t, u, v] * a) ^ 6

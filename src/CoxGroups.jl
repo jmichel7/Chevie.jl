@@ -771,7 +771,7 @@ of  `W`. A presentation  of `W` is  obtained by adding relations specifying
 the order of the generators.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(29)
+julia> W=complex_reflection_group(29)
 G₂₉
 
 julia> braid_relations(W)

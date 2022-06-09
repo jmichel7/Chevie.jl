@@ -121,7 +121,7 @@ function CheckRatCyc(s)
 end
 
 function CheckRatSer(arg...)
-  W = ApplyFunc(ComplexReflectionGroup, arg)
+  W = ApplyFunc(crg, arg)
   s = Series(W;proper=true)
   s = Filtered(s, (x->begin x.spets != x.levi end))
   c = Join(map(CheckRatCyc, s), "\\hfill\\break\n")
@@ -129,7 +129,7 @@ function CheckRatSer(arg...)
 end
 
 function CheckPiGPiL(n)
-  W = ComplexReflectionGroup(n)
+  W = crg(n)
   s = Series(W;proper=true)
   map(Hecke, s)
   s = Filtered(s, (ser->iscyclic(ser) && ser.principal))
@@ -142,7 +142,7 @@ function CheckPiGPiL(n)
 end
 
 function Checkdovere(n)
-  W=ComplexReflectionGroup(n)
+  W=crg(n)
   s=Series(W;proper=true)
   map(Hecke,s)
   s=filter(ser->iscyclic(ser) && ser.principal,s)
@@ -150,7 +150,7 @@ function Checkdovere(n)
 end
 
 function CheckxiL(n)
-  W=ComplexReflectionGroup(n)
+  W=crg(n)
   l=Series(W;proper=true)
   map(Hecke,l)
   l=filter(s->iscyclic(s) && s.principal,l)
@@ -159,7 +159,7 @@ end
 
 # check formula for product parameters
 function CheckCoN(i)
-  W=ComplexReflectionGroup(i)
+  W=crg(i)
   l=Series(W;proper=true)
   l=filter(x->length(x.levi)==1,l)
   map(Hecke, l)

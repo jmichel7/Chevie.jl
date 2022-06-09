@@ -1,7 +1,9 @@
 module ComplexR
 using ..Gapjm
-export ComplexReflectionGroup, reflection_name, diagram, codegrees,
-  reflection_group, torusfactors
+export complex_reflection_group, crg, reflection_name, diagram, codegrees,
+  reflection_group, torusfactors, ComplexReflectionGroup
+
+const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -20,17 +22,17 @@ function PermRoot.coroots(t::TypeIrred)
 end
 
 """
-`ComplexReflectionGroup(STnumber)`
+`complex_reflection_group(STnumber)`
 
-`ComplexReflectionGroup(p,q,r)`
+`complex_reflection_group(p,q,r)`
 
-The  first form of `ComplexReflectionGroup`  returns the complex reflection
+The  first form of `complex_reflection_group`  returns the complex reflection
 group which has Shephard-Todd number `STnumber`, see
 [Shephard-Todd1954](biblio.htm#ST54).   The   second   form   returns   the
 imprimitive complex reflection group `G(p,q,r)`.
 
 ```julia-repl
-julia> G=ComplexReflectionGroup(4)
+julia> G=complex_reflection_group(4)
 G₄
 
 julia> degrees(G)
@@ -44,11 +46,14 @@ julia> length(G)
 julia> W*coxgroup(:A,2) # how to make a non-irreducible group
 G₄×A₂
 
-julia> ComplexReflectionGroup(1,1,3) # another way to enter A₂
+julia> complex_reflection_group(1,1,3) # another way to enter A₂
 A₂
+
+julia> crg(4) # there is also a short alias
+G₄
 ```
 """
-function ComplexReflectionGroup(i::Int)
+function complex_reflection_group(i::Int)
   if i==23     coxgroup(:H,3)
   elseif i==28 coxgroup(:F,4)
   elseif i==30 coxgroup(:H,4)
@@ -60,9 +65,9 @@ function ComplexReflectionGroup(i::Int)
   end
 end
 
-function ComplexReflectionGroup(p,q,r)
+function complex_reflection_group(p,q,r)
   if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1)
-   error("ComplexReflectionGroup(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
+   error("complex_reflection_group(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
   end
   if p==1 return coxgroup(:A,r-1)
   elseif p==2
@@ -73,6 +78,8 @@ function ComplexReflectionGroup(p,q,r)
   t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
   PRG(roots(t),coroots(t))
 end
+
+const crg=complex_reflection_group
 
 # converts a type back to a group
 function reflection_group(t::TypeIrred)
@@ -104,7 +111,7 @@ reflect  various properties  of `W`;  in particular,  their product  is the
 cardinality of `W`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(30)
+julia> W=complex_reflection_group(30)
 H₄
 
 julia> degrees(W)
@@ -241,7 +248,7 @@ returns  the vector of codegrees of `W`  as a reflection group on the space
 derivations of ` W` on `SV⊗ V^vee`.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(4)
+julia> W=complex_reflection_group(4)
 G₄
 
 julia> codegrees(W)

@@ -109,7 +109,7 @@ using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
-using ..Combinat: primitiveroot, divisors,collectby
+using ..Combinat: primitiveroot, divisors, collectby
 
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
@@ -264,23 +264,6 @@ function show_factors(d)
 end
 
 pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
-
-#function segment(v::Vector{Pair{Root1,Int}})
-#  res=typeof(v)[]
-#  n=empty(v)
-#  c=0
-#  for p in v
-#    c1=order(p[1])
-#    if c!=c1 
-#      if !iszero(c) push!(res,n) end
-#      c=c1
-#      n=empty(v)
-#    end
-#    push!(n,p)
-#  end
-#  if !iszero(c) push!(res,n) end
-#  sort(res,by=x->order(x[1][1]))
-#end
 
 # decompose the .v of a CycPol in subsets Φ^i (for printing)
 function decompose(v::Vector{Pair{Root1,Int}})

@@ -117,7 +117,7 @@ julia> regular_eigenvalues(coxgroup(:G,2))
   ζ₆
  ζ₆⁵
 
-julia> W=ComplexReflectionGroup(6)
+julia> W=complex_reflection_group(6)
 G₆
 
 julia> L=twistings(W,[2])[2]
@@ -169,7 +169,7 @@ E₈
 julia> position_regular_class(W,30)
 65
 
-julia> W=ComplexReflectionGroup(6)
+julia> W=complex_reflection_group(6)
 G₆
 
 julia> L=twistings(W,[2])[2]
@@ -321,7 +321,7 @@ julia> split_levis(W,4,2)
  E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
  E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
 
-julia> split_levis(ComplexReflectionGroup(5))
+julia> split_levis(complex_reflection_group(5))
 4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:
  G₅
  G₅₍₁₎=G₃‚₁‚₁Φ₁

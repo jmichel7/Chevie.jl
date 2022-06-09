@@ -202,7 +202,7 @@ chevieset(:F4, :UnipotentClasses, function (p, type_)
             p = 1
         end
         Z = (n->begin
-                    ComplexReflectionGroup(n, 1, 1)
+                    crg(n, 1, 1)
                 end)
         class = (n->begin
                     First(uc[:classes], (x->begin

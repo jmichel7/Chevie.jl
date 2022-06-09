@@ -233,7 +233,7 @@ relative_group
 # Finite reflection groups
 ```@docs
 PermRoot
-ComplexReflectionGroup
+complex_reflection_group
 PRG
 rank
 semisimplerank
@@ -525,7 +525,7 @@ Combinations                                combinations
 Comm                                        comm
 ComplementIntMat                            complementInt
 ComplexConjugate                            conj
-ComplexReflectionGroup                      ComplexReflectionGroup
+ComplexReflectionGroup                      complex_reflection_group or crg
 Compositions                                compositions
 Concatenation(s::Vector...)                 vcat(s...)
 ConcatenationString(s...)                   prod(s)

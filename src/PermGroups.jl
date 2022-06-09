@@ -432,7 +432,7 @@ should   be  a  `PermGroup`)   this  is  just   a  fast  implementation  of
 and can handle matrices up to 80×80.
 
 ```julia-repl
-julia> uc=UnipotentCharacters(ComplexReflectionGroup(34));
+julia> uc=UnipotentCharacters(complex_reflection_group(34));
 
 julia> stab_onmats(fourier(uc.families[20]))
 Group([(7,38),(39,44)(40,43)(41,42)])

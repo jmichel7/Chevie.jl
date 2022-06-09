@@ -163,7 +163,7 @@ sub-cosets  of reflection groups. Here is an "exotic" example, see the next
 chapter for more classical examples involving Coxeter groups.
 
 ```julia-repl
-julia> W=ComplexReflectionGroup(14)
+julia> W=complex_reflection_group(14)
 G₁₄
 
 julia> R=reflection_subgroup(W,[2,4])
@@ -198,7 +198,7 @@ which could be input back in Julia. With the same data as above we have:
 
 ```julia-rep1
 julia> print(RF)
-spets(reflection_subgroup(ComplexReflectionGroup(14),[2, 4]),perm"(1,3)(2,4)(5,9)(6,10)(7,11)(8,12)(13,21)(14,22)(15,23)(16,24)(17,25)(18,26)(19,27)(20,28)(29,41)(30,42)(31,43)(32,44)(33,45)(34,46)(35,47)(36,48)(37,49)(38,50)(39,51)(40,52)(53,71)(54,72)(55,73)(56,74)(57,75)(58,76)(59,77)(60,78)(62,79)(64,80)(65,81)(66,82)(67,69)(68,70)(83,100)(84,101)(85,102)(87,103)(89,99)(90,97)(91,98)(92,96)(93,104)(94,95)(105,113)(106,114)(109,111)(110,112)(115,118)(116,117)(119,120)")
+spets(reflection_subgroup(complex_reflection_group(14),[2, 4]),perm"(1,3)(2,4)(5,9)(6,10)(7,11)(8,12)(13,21)(14,22)(15,23)(16,24)(17,25)(18,26)(19,27)(20,28)(29,41)(30,42)(31,43)(32,44)(33,45)(34,46)(35,47)(36,48)(37,49)(38,50)(39,51)(40,52)(53,71)(54,72)(55,73)(56,74)(57,75)(58,76)(59,77)(60,78)(62,79)(64,80)(65,81)(66,82)(67,69)(68,70)(83,100)(84,101)(85,102)(87,103)(89,99)(90,97)(91,98)(92,96)(93,104)(94,95)(105,113)(106,114)(109,111)(110,112)(115,118)(116,117)(119,120)")
 ```
 
 Conjugacy  classes and irreducible characters of Coxeter cosets are defined
@@ -964,13 +964,11 @@ function spets(s::String)
            [-E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6]])
     return spets(W,[-1 0;0 1])
   elseif s=="3G333" 
-    W=ComplexReflectionGroup(3,3,3)
-    return spets(W,reflrep(W,Perm(1,2,44)))
+    W=crg(3,3,3);return spets(W,reflrep(W,Perm(1,2,44)))
   elseif s=="3pG333" 
-    W=ComplexReflectionGroup(3,3,3)
-    return spets(W,reflrep(W,Perm(1,44,2)))
+    W=crg(3,3,3);return spets(W,reflrep(W,Perm(1,44,2)))
   elseif s=="4G333" 
-    W=ComplexReflectionGroup(3,3,3)
+    W=crg(3,3,3)
     return spets(W,perm"(1,44,32,37)(2,12,16,53)(3,50,30,15)
     ( 4,49,39,19)( 5, 9, 6,48)( 7,41,54,25)( 8,33,18,51)(10,43,36,11)
     (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)")

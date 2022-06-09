@@ -9,7 +9,7 @@ isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
 isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
 isspetsial=W->UnipotentCharacters(W)!==nothing
 
-nspets=ComplexReflectionGroup.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
+nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
 
 ChevieErr(x...)=printstyled(rio(),x...;color=:red)
 
@@ -23,11 +23,11 @@ cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
   coxgroup(:D,7), coxgroup(:E,8), coxgroup()]
 
 spets_ex=vcat(
-  ComplexReflectionGroup.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
-  [ComplexReflectionGroup(3,1,2),
-  ComplexReflectionGroup(3,3,3),
-  ComplexReflectionGroup(3,3,4),
-  ComplexReflectionGroup(4,4,3)])
+  crg.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
+  [crg(3,1,2),
+  crg(3,3,3),
+  crg(3,3,4),
+  crg(4,4,3)])
 
 twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
   rootdatum(Symbol("2I"),5), rootdatum(Symbol("2I"),8), rootdatum(:psu,4),
@@ -1628,7 +1628,7 @@ test[:hecke3d4]=(fn=Thecke3d4,
 
 function TG4_22index(W)
   t=refltype(W)[1]
-  O=ComplexReflectionGroup(getchev(t,:Generic))
+  O=crg(getchev(t,:Generic))
   e=getchev(t,:Embed)
   c=map(c->vcat(map(x->e[x],c)...),classinfo(W)[:classtext])
   c=map(x->position_class(O,O(x...)),c)
