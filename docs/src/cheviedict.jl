@@ -281,7 +281,7 @@ const ChevieDict=Dict(
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
-"Reflection"=>"refls or reflection",
+"Reflection"=>"refls or reflectionmat",
 "ReflectionCharacter"=>"reflchar",
 #ReflectionCharValue
 #ReflectionCoset

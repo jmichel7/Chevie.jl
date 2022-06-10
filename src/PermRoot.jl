@@ -191,13 +191,14 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
- simple_conjugating, refls, unique_refls, reflection, Diagram, refltype, cartan,
- independent_roots, inclusion, inclusiongens, restriction, coroot,
- hyperplane_orbits, TypeIrred, refleigen, reflchar, bipartite_decomposition,
- torus_order, rank, reflrep, PermX, coroots, baseX, invbaseX, semisimplerank,
- invariant_form, generic_order, parabolic_reps, invariants, matY,
- simpleroots, simplecoroots, action, radical, parabolic_closure, is_parabolic,
- central_action, nhyp, nref, indices
+ simple_conjugating, refls, unique_refls, reflection, reflectionmat, Reflection,
+ reflections, Diagram, distinguished, hyperplane_orbit,
+ refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
+ coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
+ bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
+ invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
+ invariants, matY, simpleroots, simplecoroots, action, radical, 
+ parabolic_closure, is_parabolic, central_action, nhyp, nref, indices
 using ..Gapjm
 
 """
@@ -211,7 +212,8 @@ function coroot(root::AbstractVector,eigen::Number=-1)
 end
 
 """
-`reflection(root, coroot)` the reflection of given root and coroot
+`reflectionmat(root,  coroot)` the  matrix of  the reflection  with a given
+root and coroot.
 
 A (complex) reflection is a finite order element `s` of `GL(V)`, the linear
 group of a vector space over a subfield of the complex numbers, whose fixed
@@ -222,13 +224,13 @@ that `rᵛ(r)=1-ζ` (a *coroot* of `s`) then `s` is given by `x↦ x-rᵛ(x)r`.
 
 A  way  of  specifying  `s`  is  by  giving  a root and a coroot, which are
 uniquely determined by `s` up to multiplication of the root by a scalar and
-of  the coroot by  the inverse scalar.  The function `reflection` gives the
+of the coroot by the inverse scalar. The function `reflectionmat` gives the
 matrix  of the corresponding reflection in the standard basis of `V`, where
 the  `root` and the `coroot` are vectors given in the standard bases of `V`
 and `Vᵛ`, so the pairing `rᵛ(r)` is obtained as `transpose(root)*coroot`.
 
 ```
-julia> r=reflection([1,0,0],[2,-1,0])
+julia> r=reflectionmat([1,0,0],[2,-1,0])
 3×3 Matrix{Int64}:
  -1  0  0
   1  1  0
@@ -251,27 +253,27 @@ As  we see in the last lines, in  Julia a matrix operates from the right on
 the  vector space `V`  of row vectors  and from the  left on the dual space
 `Vᵛ` of column vectors.
 """
-function reflection(root::AbstractVector,coroot::AbstractVector)
+function reflectionmat(root::AbstractVector,coroot::AbstractVector)
   m=coroot*transpose(root)
   one(m)-m
 end
 
 """
-`reflection(r, ζ=-1)`
+`reflectionmat(r, ζ=-1)`
 
 returns the matrix of the complex reflection determined by the root `r` and
 the  eigenvalue `ζ` when the  vector space and its  dual are identified via
 the  scalar product `<x,y>=transpose(x)*y`; the coroot `rᵛ` is then equal
 to the linear form `x->(1-ζ)<x,r>/<r,r>`.
 ```julia-repl
-julia> reflection([1,0,-E(3,2)])
+julia> reflectionmat([1,0,-E(3,2)])
 3×3 Matrix{Cyc{Rational{Int64}}}:
   0  0  ζ₃²
   0  1    0
  ζ₃  0    0
 ```
 """
-function reflection(r::AbstractVector,l::Number=-1)
+function reflectionmat(r::AbstractVector,l::Number=-1)
   m=(1-l)*transpose(r*r')//(r'*r)
   one(m)-m
 end
@@ -294,9 +296,9 @@ with four fields:
 
 `.eigenvalue`:  the non-trivial eigenvalue of `s`
 
-`.isOrthogonal`:   a  boolean  which is  `true` if  and  only if  `s` is
-  orthogonal  with respect to  the usual scalar  product (then the root and
-  eigenvalue are sufficient to determine `s`)
+`.isOrthogonal`: a boolean which is `true` if and only if `s` is orthogonal
+  with  respect to the usual scalar product  (then `s` is determined by the
+  root and the eigenvalue as `reflectionmat(.root,.eigenvalue)`)
 
 ```julia-repl
 julia> reflection([-1 0 0;1 1 0;0 0 1])
@@ -843,12 +845,16 @@ function check_minimal_relation(gens,rel;verbose=false)
   false
 end
 
+function Groups.ordergens(t::TypeIrred)
+  t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
+    Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
+end
+
 # g is a sublist of 1:length(H.roots). Returns sublist k of g such that
 # refls(H,k) satisfy braid and order relations of type t
 function findgoodgens(H,g,t::TypeIrred)
 # println("g=$g\n t=");ds(t)
-  orders=t.series in [:E,:F,:G,:H] ? fill(2,rank(t)) :
-           Int.(inv.(getchev(t,:EigenvaluesGeneratingReflections)))
+  orders=ordergens(t)
   rels=groupby(r->maximum(r[1]),braid_relations(t))
   # check gens satisfy relations concerning them, find if can add
   # another gen from rest
@@ -1028,12 +1034,13 @@ julia> hyperplane_orbits(W)
 ```
 """
 function hyperplane_orbits(W::PermRootGroup)
+  get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
   rr=refls(W)
   cr=classreps(W)
   orb=unique(sort(sr))
   class=map(orb)do s
-    map(1:order(refls(W,s))-1)do o
+    map(1:ordergens(W)[s]-1)do o
 #     return position_class(W,refls(W,s)^o)
       for i in eachindex(sr)
         if sr[i]==s
@@ -1047,15 +1054,125 @@ function hyperplane_orbits(W::PermRootGroup)
   chars=CharTable(W).irr
   pairs=zip(orb,class)
   map(pairs) do (s,c)
-    ord=order(W(s))
+    ord=ordergens(W)[s]
     dets=map(1:ord-1) do j
       findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
          all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
     end
     (s=s,cl_s=c,order=ord,N_s=classinfo(W)[:classes][c[1]],det_s=dets)
   end
+  end
 end
 
+"""
+`Reflection`   is   a   `struct`   representing   a  reflection  `r`  in  a
+`PermRootGroup`  `W`. The fields are `W`, the  index of a root for `r`, and
+the non-trivial eigenvalue of `r`.
+```julia-repl
+julia> r=reflections(crg(8))[2]
+Reflection(G₈,1,-1)
+
+julia> r.eigen # the non-trival eigenvalue, as a Root1
+Root1: -1
+
+julia> root(r)
+2-element Vector{Cyc{Rational{Int64}}}:
+  0
+ ζ₄
+
+julia> coroot(r)
+2-element Vector{Cyc{Rational{Int64}}}:
+    0
+ -2ζ₄
+
+julia> Matrix(r)
+2×2 Matrix{Cyc{Rational{Int64}}}:
+ 1   0
+ 0  -1
+
+julia> distinguished(r) # r is not distinguished
+false
+
+julia> Perm(r)
+(1,8)(2,9)(3,16)(4,15)(5,17)(6,18)(7,19)(10,22)(11,21)(12,23)
+
+julia> hyperplane_orbit(r) # r is in the first hyperplane orbit
+1
+
+julia> position_class(r) # the index of the conjugacy class of r in W 
+15
+```
+"""
+struct Reflection{TW<:PermRootGroup}
+  W::TW
+  rootno::Int
+  eigen::Root1
+end
+
+function Base.show(io::IO,r::Reflection)
+  print(io,"Reflection(",r.W,",",r.rootno,",",r.eigen,")")
+end
+
+LaurentPolynomials.root(r::Reflection)=roots(r.W,r.rootno)
+
+function coroot(r::Reflection)
+  rr=root(r)
+  cr=coroots(r.W,r.rootno)
+  cr*(1-r.eigen)/(transpose(cr)*rr)
+end
+
+Base.Matrix(r::Reflection)=reflectionmat(root(r),coroot(r))
+
+distinguished(r::Reflection)=r.eigen==E(ordergens(r.W)[simple_reps(r.W)[r.rootno]])
+
+function Perms.Perm(r::Reflection)
+  if distinguished(r) return refls(r.W,r.rootno) end
+  PermX(r.W,Matrix(r))
+end
+
+function hyperplane_orbit(r::Reflection)
+  h=hyperplane_orbits(r.W)
+  s=simple_reps(r.W)[r.rootno]
+  findfirst(x->x.s==s,h)
+end
+
+function Groups.position_class(r::Reflection)
+  i=r.eigen.r*ordergens(r.W)[simple_reps(r.W)[r.rootno]]
+  hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[Int(i)]
+end
+
+"""
+`reflections(W)`  the  list  of  all  reflections  of  `W`  (including  the
+non-distinguished    ones)   given    as   a    `Vector{Reflection}`   (see
+[`Reflection`](@ref)).
+
+```julia-repl
+julia> W=crg(4)
+G₄
+
+julia> reflections(W)
+8-element Vector{Reflection{PRG{Cyc{Rational{Int64}}, Int16}}}:
+ Reflection(G₄,1,ζ₃)
+ Reflection(G₄,1,ζ₃²)
+ Reflection(G₄,2,ζ₃)
+ Reflection(G₄,2,ζ₃²)
+ Reflection(G₄,4,ζ₃)
+ Reflection(G₄,4,ζ₃²)
+ Reflection(G₄,5,ζ₃)
+ Reflection(G₄,5,ζ₃²)
+```
+"""
+function reflections(W::PermRootGroup)
+  res=Reflection{typeof(W)}[]
+  for i in unique_refls(W)
+    e=ordergens(W)[simple_reps(W)[i]]
+    for j in 1:e-1
+      push!(res,Reflection(W,i,E(e,j)))
+    end
+  end
+  res
+end
+  
 """
 `bipartite_decomposition(W)`
 
@@ -1653,7 +1770,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};NC=false,T1=Int16)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
-  matgens=map(reflection,r,cr)
+  matgens=map(reflectionmat,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
   rr=map(x->convert.(T,x),r)
   cr=map(x->convert.(T,x),cr)

@@ -42,7 +42,7 @@ minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
 position_class, stabilizer, transporting_elt, transversal`
 """
 module Groups
-export Group, centralizer, centre, classreps, comm, order,
+export Group, centralizer, centre, classreps, comm, order, ordergens,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
   gens, Hom, isabelian, iscyclic, words, minimal_words, nconjugacy_classes,
   ngens, normalizer, orbit, orbits, position_class, stabilizer,
@@ -515,8 +515,10 @@ function order(a)# default method
   end
 end
 
+ordergens(W)=get!(()->order.(gens(W)),W,:ordergens)
+
 "`iscyclic(G::Group)` whether `G` is cyclic"
-iscyclic(W::Group)=isabelian(W) && lcm(order.(gens(W)))==length(W)
+iscyclic(W::Group)=isabelian(W) && lcm(ordergens(W))==length(W)
 
 Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 

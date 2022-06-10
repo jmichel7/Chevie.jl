@@ -950,7 +950,7 @@ Above is a way to construct the affine Weyl group  ` ̃A₁`.
 """
 function GenCox(C::Matrix{T})where T
   I=one(C)
-  GenCox(reflection.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
+  GenCox(reflectionmat.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
 end
 
 function PermRoot.reflection_subgroup(W::GenCox,I::AbstractVector{Int})
