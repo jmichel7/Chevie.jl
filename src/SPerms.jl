@@ -131,7 +131,7 @@ Base.broadcastable(p::SPerm)=Ref(p)
 
 # hash is needed for using SPerms in Sets/Dicts
 function Base.hash(a::SPerm, h::UInt)
-  for (i,v) in enumerate(a.d)
+  for (i,v) in pairs(a.d)
     if v!=i h=hash(v,h) end
   end
   h
@@ -258,7 +258,7 @@ end
 function Base.:*(a::SPerm, b::SPerm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-  for (i,v) in enumerate(a.d)
+  for (i,v) in pairs(a.d)
 @inbounds if v<0 r[i]=-b.d[-v] else r[i]=b.d[v] end
   end
   SPerm(r)
@@ -266,8 +266,8 @@ end
 
 function Base.inv(a::SPerm)
   r=similar(a.d)
-  for (i,v) in enumerate(a.d)
- @inbounds if v<0 r[-v]=-i  else r[v]=i end
+  for (i,v) in pairs(a.d)
+@inbounds if v<0 r[-v]=-i  else r[v]=i end
   end
   SPerm(r)
 end
@@ -276,8 +276,8 @@ end
 function Base.:\(a::SPerm, b::SPerm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-  @inbounds for (i,v) in enumerate(a.d) 
-     if v<0 r[-v]=-b.d[i] else r[v]=b.d[i] end
+  for (i,v) in pairs(a.d) 
+@inbounds if v<0 r[-v]=-b.d[i] else r[v]=b.d[i] end
   end
   SPerm(r)
 end
@@ -379,7 +379,7 @@ julia> Matrix(SPerm([-2,-1,-3]))
 """
 function Base.Matrix(a::SPerm,n=length(a.d))
   res=zeros(Int,n,n)
-  for (i,v) in enumerate(a.d) res[i,abs(v)]=sign(v) end
+  for (i,v) in pairs(a.d) res[i,abs(v)]=sign(v) end
   res
 end
 

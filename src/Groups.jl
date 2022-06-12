@@ -297,7 +297,7 @@ function minimal_words(G::Group)
     l=words
     while !isempty(l)
       newl=Dict{eltype(G),Vector{Int}}()
-      for (i,g) in enumerate(gens(G)), (h,w) in l
+      for (i,g) in pairs(gens(G)), (h,w) in l
         e=h*g
         if !haskey(words,e) newl[e]=vcat(w,i) end
       end

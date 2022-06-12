@@ -1,10 +1,8 @@
 module Fact
-import Primes: Primes, nextprime
+import Primes: Primes, nextprime, factor
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
-using ..Combinat: Combinat, combinations, npartitions, factor
-
-#export factor
+using ..Combinat: Combinat, combinations, npartitions
 
 function InfoPoly2(x...)
   println(x...)
@@ -214,7 +212,7 @@ Factor over the integers a polynomial with integral coefficients, or do the
 same over the rationals.
 
 """
-function Combinat.factor(f::Pol{<:Union{Integer,Rational}})
+function Primes.factor(f::Pol{<:Union{Integer,Rational}})
   InfoPoly2("#I  starting integer factorization: ", time(), "\n")
   if iszero(f)
     InfoPoly2("#I  f is zero\n")
@@ -355,7 +353,7 @@ local   p,              # prime
     rep*=cor1
     push!(rep, cor2)
   end
-# for (i,u) in enumerate(rep) xprintln("rep[$i]=",rep[i]) end
+# for (i,u) in pairs(rep) xprintln("rep[$i]=",rep[i]) end
   InfoPoly2("#I  representation computed:      ",time(), "\n")
   res=Dict{Symbol,Any}(:irrFactors=>[],:redFactors=>[],
                        :remaining=>[],:bounds=>bounds)
@@ -366,7 +364,7 @@ local   p,              # prime
   q1=p
   while q1<k
     InfoPoly2("#I  computing mod ", q, "\n")
-#   for (i,u) in enumerate(l) xprintln("l[$i]=",l[i]) end
+#   for (i,u) in pairs(l) xprintln("l[$i]=",l[i]) end
     for i in 1:length(l)
       l[i]=Mod(Pol(Integer.(l[i].c),l[i].v),q)
       dis=rem(Mod(f//lc,q),l[i])

@@ -476,7 +476,7 @@ end
 # When some Springer series have been suppressed/weeded out, we  quotient
 # the Au's by the common  kernel of the remaining characters of the Au's.
 function AdjustAu!(classes,springerseries)
-  for (i, u) in enumerate(classes)
+  for (i, u) in pairs(classes)
     l=map(s->filter(k->s[:locsys][k][1]==i,eachindex(s[:locsys])),
           springerseries)
 #   println(springerseries)
@@ -728,8 +728,8 @@ function UnipotentClasses(W,p=0)
         end
       end
       if all(x->haskey(x,:balacarter),v)
-        u.balacarter=reduce(vcat,[map(j->j>0 ? x[j] : -x[-j],
-                    v[i].balacarter) for (i,x) in enumerate(l)])
+        u.balacarter=reduce(vcat,map(j->j>0 ? x[j] : -x[-j],v[i].balacarter)
+                                                   for (i,x) in pairs(l))
       end
       if haskey(u, :red)
         if !(u.red isa Spets) u.red=spets(u.red) end
@@ -1452,7 +1452,7 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   uw=UnipotentCharacters(uc.spets)
   f=toL(fourier(uw))
   m=Vector{eltype(f[1])}[]
-  for (i,ss) in enumerate(uc.springerseries)
+  for (i,ss) in pairs(uc.springerseries)
     if i==1 append!(m,f[uw.harishChandra[1][:charNumbers]])
     elseif !haskey(ss,:hc) error("not implemented") 
     elseif ss[:hc]==0 append!(m,map(i->zero(f[1]),eachindex(ss[:locsys])))

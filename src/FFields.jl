@@ -124,7 +124,8 @@ FFE{19}: 2
 ```
 """
 module FFields
-using ..Combinat: factor, divisors
+using ..Combinat: divisors
+using Primes: factor
 export Mod, GF, FFE, Z, field, order, degree, char, elements
 
 struct Mod{T}<:Number
@@ -337,9 +338,9 @@ const FFvec=GF[]
 
 function iFF(q)
   get!(FFi,q) do
-    l=collect(factor(q))
+    l=factor(q)
     if length(l)>1 error(q," should be a prime power") end
-    p,n=l[1]
+    p,n=first(l)
     pol=-Mod.(conway_polynomial(p,n),p)
     if n==1
       dic=Vector{Int16}(undef,q)
@@ -366,7 +367,7 @@ function iFF(q)
       for j in 2:n zz[i][j]=zz[i-1][j-1] end
       zz[i].+= zz[i-1][n].*pol
     end
-    z=collect(enumerate(reverse.(zz)))
+    z=collect(pairs(reverse.(zz)))
     sort!(z,by=x->x[2])
 #   for i in 1:q xprint(i,"->",(z[i][1]-1,z[i][2])) end
     zz=Vector{Int16}(undef,q)

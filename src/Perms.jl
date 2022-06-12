@@ -249,7 +249,7 @@ Base.copy(p::Perm)=Perm(copy(p.d))
 
 # hash is needed for using Perms in Sets or as keys in Dicts
 function Base.hash(a::Perm, h::UInt)
-  for (i,v) in enumerate(a.d)
+  for (i,v) in pairs(a.d)
     if v!=i h=hash(v,h) end
   end
   h
@@ -328,20 +328,20 @@ Base.rand(::Type{Perm},i::Integer)=rand(Perm{Idef},i)
 function Base.:*(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) r[i]=b.d[v] end
+@inbounds for (i,v) in pairs(a.d) r[i]=b.d[v] end
   Perm(r)
 end
 
 # this is a*=b without allocation
 function mul!(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
-@inbounds for (i,v) in enumerate(a.d) a.d[i]=b.d[v] end
+@inbounds for (i,v) in pairs(a.d) a.d[i]=b.d[v] end
   a
 end
 
 function Base.inv(a::Perm)
   r=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) r[v]=i end
+@inbounds for (i,v) in pairs(a.d) r[v]=i end
   Perm(r)
 end
 
@@ -349,7 +349,7 @@ end
 function Base.:\(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) r[v]=b.d[i] end
+@inbounds for (i,v) in pairs(a.d) r[v]=b.d[i] end
   Perm(r)
 end
 
@@ -357,7 +357,7 @@ end
 function Base.:^(a::Perm, b::Perm)
   a,b=promote_degree(a,b)
   r=similar(a.d)
-@inbounds for (i,v) in enumerate(a.d) r[b.d[i]]=b.d[v] end
+@inbounds for (i,v) in pairs(a.d) r[b.d[i]]=b.d[v] end
   Perm(r)
 end
 

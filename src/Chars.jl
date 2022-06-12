@@ -453,7 +453,7 @@ function fakedegrees(W,q=Pol();recompute=false)
   P=generic_order(W,qq)
   P=shift(P,-valuation(P))
   ct=CharTable(W)
-  P=ct.irr*map(enumerate(ct.centralizers))do (i,c)
+  P=ct.irr*map(pairs(ct.centralizers))do (i,c)
     exactdiv(P,
         improve_type(prod(l->(qq*conj(l)-1),refleigen(W,i);init=one(qq))))//c
   end
@@ -699,7 +699,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   ext=fill("",n)
   if haskey(ci,:extRefl)
     ext[ci.extRefl[[1,end]]]=["Id","det"]
-    for (i,j) in enumerate(ci.extRefl[2:end-1]) 
+    for (i,j) in pairs(ci.extRefl[2:end-1]) 
       ext[j]=fromTeX(io,"\\Lambda^$i")
     end
   else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
@@ -1412,7 +1412,7 @@ function jInductionTable(u,g)
   bu=charinfo(u).b
   bg=charinfo(g).b
   t=copy(tbl.scalar)
-  for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
+  for (i,bi) in pairs(bu), (j,bj) in pairs(bg)
     if bi!=bj t[j,i]=0 end
   end
   lu=repr(u;context=:TeX=>true)
@@ -1462,7 +1462,7 @@ function JInductionTable(u,g)
   bu=charinfo(u).a
   bg=charinfo(g).a
   t=copy(tbl.scalar)
-  for (i,bi) in enumerate(bu), (j,bj) in enumerate(bg)
+  for (i,bi) in pairs(bu), (j,bj) in pairs(bg)
     if bi!=bj t[j,i]=0 end
   end
   lu=repr(u;context=:TeX=>true)

@@ -1,7 +1,7 @@
 # code for factoring a polynomial over a finite field
 module FFfac
 
-export factor
+using Primes: Primes
 
 using LaurentPolynomials: Pol, degree, shift, derivative, exactdiv
 using ..FFields: FFE, GF
@@ -102,7 +102,7 @@ julia> factor(f,GF(9))
  q+Z₉⁶
 ```
 """
-function factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
+function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
   facs=Pol{FFE{p}}[]
   # make the polynomial unitary, remember the leading coefficient for later
   l=f[end]

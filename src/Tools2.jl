@@ -3,9 +3,10 @@ export eigmat
 
 using PuiseuxPolynomials
 using LaurentPolynomials
+using Primes: Primes
 using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
-using ..Combinat: Combinat, collectby, blocks, factor
+using ..Combinat: Combinat, collectby, blocks
 using ..GLinearAlgebra: solutionmat, echelon, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
@@ -78,7 +79,7 @@ julia> factor(x*y-1)
  xy-1
 ```
 """
-function Combinat.factor(p::Mvp{T,N})where {T,N}
+function Primes.factor(p::Mvp{T,N})where {T,N}
   v=variables(p)
   r=length(v)+1
   m=zeros(T,r,r)*1//1
@@ -154,7 +155,7 @@ Gapjm.gap(m::AbstractMatrix)=gap(toL(m))
 
 function Gapjm.gap(p::Pol)
   if iszero(p) return "0*q" end
-  l=filter(x->x[2]!=0,collect(enumerate(p.c)))
+  l=filter(x->x[2]!=0,collect(pairs(p.c)))
   join(map(((i,c),)->"($(gap(c)))*q^$(i+p.v-1)",l),"+")
 end
 

@@ -1087,7 +1087,7 @@ function relative_group(W::FiniteCoxeterGroup,J::Vector{<:Integer})
   qr=i->W.rootdec[i][I]
   res=isempty(I) ? coxgroup() :
     rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
-                                  for (ni,i) in enumerate(I), j in I])
+                                  for (ni,i) in pairs(I), j in I])
   res.relativeIndices=I
   res.parentMap=vI
   res.MappingFromNormalizer=

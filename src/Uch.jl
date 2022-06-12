@@ -262,7 +262,7 @@ function params(sers)
   chh=map(ser->charinfo(ser[:relativeType]),sers)
   l=sum(x->length(x.charnames),chh)
   res=fill([],l)
-  for (i,ser) in enumerate(sers)
+  for (i,ser) in pairs(sers)
     t=ser[:relativeType]
 #   t.rank=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
     n=ser[:cuspidalName]
@@ -954,7 +954,7 @@ function Base.show(io::IO,r::UniChar)
   res=""
   s=charnames(io,UnipotentCharacters(r.group))
   m=maximum(length.(s))+3
-  for (i,c) in enumerate(r.v)
+  for (i,c) in pairs(r.v)
     n = "<"*s[i]*">"
     if get(io,:compact,true)
       if !iszero(c)

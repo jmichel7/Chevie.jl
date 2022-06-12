@@ -418,12 +418,7 @@ end
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{Diagram})=show(io,v)
 
-function Base.show(io::IO,v::Vector{Diagram})
-  for (i,d) in enumerate(v)
-    print(io,d)
-    if i!=length(v) println(io) end
-  end
-end
+Base.show(io::IO,v::Vector{Diagram})=join(io,v,"\n")
 
 function Base.show(io::IO,d::Diagram)
   t=d.t
@@ -867,9 +862,8 @@ function findgoodgens(H,g,t::TypeIrred)
     i=length(gens)+1
     for e in rest
 #     println("$e(",length(gens),")")
-      r=refls(H,e)
-      if order(r)!=orders[i] continue end
-      newgens=vcat(gens,[r])
+      if ordergens(H)[simple_reps(H)[e]]!=orders[i] continue end
+      newgens=vcat(gens,[refls(H,e)])
       if !haskey(rels,i) || all(r->check_minimal_relation(newgens,r),rels[i])
         res=findarr(newgens,setdiff(rest,[e]))
         if !isnothing(res) return vcat([e],res) end
@@ -1269,8 +1263,8 @@ function refleigen(W)
   get!(W,:refleigen) do
     t=refltype(W)
     if isempty(t) ll=[Root1[]]
-    elseif any(x->haskey(x,:orbit) &&
-        (length(x.orbit)>1 || order(x.twist)>1),t) # slow; do it right
+    elseif any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t) # slow; do it right
       ll=map(x->eigmat(reflrep(W,x)),classreps(W))
       W.reflengths=map(x->count(!isone,x),ll)
       return ll
@@ -1286,6 +1280,7 @@ function refleigen(W)
 end
 
 function refleigen(t::TypeIrred)
+  if haskey(t,:orbit) t=t.orbit[1] end #orbits are trivial after above function
   ct=CharTable(t).irr[charinfo(t).extRefl,:]
   v=map(i->Pol([(-1)^i],i),size(ct,1)-1:-1:0)
   l=CycPol.(vec(transpose(v)*ct))
@@ -1295,7 +1290,7 @@ function refleigen(t::TypeIrred)
 end
 
 " `refleigen(W,i)` faster than `refleigen(W)[i]`"
-refleigen(W,i)=refleigen(W)[i]
+refleigen(W,i)=refleigen(W)[i] # not faster this way...
 
 """
 `reflength(W,w)`
@@ -1786,7 +1781,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   newroots=true
   while newroots
     newroots=false
-    for (j,refl) in enumerate(refls)
+    for (j,refl) in pairs(refls)
       lr=length(rr)
       if length(refl)<lr
       for y in eachrow(toM(rr[length(refl)+1:end])*matgens[j])

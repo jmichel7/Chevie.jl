@@ -279,7 +279,7 @@ function decompose(v::Vector{Pair{Root1,Int}})
     v=fill(0,c)
     v[first.(t)]=last.(t)
     dd=dec(c)
-    for (i,r) in enumerate(dd)
+    for (i,r) in pairs(dd)
       if (n=minimum(v[r]))>0 v[r].-=n
       elseif (n=maximum(v[r]))<0 v[r].-=n 
       else n=0 
@@ -336,10 +336,10 @@ const tested=[1,2,4,3,6,8,12,5,10,9,18,24,16,20,7,14,15,30,36,28,21,42]
 # degree ≤d with coeffs in Q(ζ_conductor) could have roots power of ζᵢ
 function bounds(conductor::Int,d::Int)::Vector{Int}
   if d==0 return Int[] end
-  f=CyclotomicNumbers.factor(conductor)
+  f=Primes.factor(conductor)
   t=Vector{Int}[];t1=Vector{Int}[]
   local p
-  for (p,m) in f
+  for (p,m) in f # use eachfactor
    tp=[1];pw=p;while pw<=d push!(tp,pw);pw*=p end # tp=={powers of p<=d}
     push!(t,tp)
     push!(t1,tp*p^m)

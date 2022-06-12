@@ -373,7 +373,7 @@ function leftgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N};
   found=true
   while found
     found=false
-    for (i,a) in enumerate(M.atoms)
+    for (i,a) in pairs(M.atoms)
       if all(b->isleftdescent(M,b,i),elts)
         found=true
         x=mul!(M,x,a)
@@ -396,7 +396,7 @@ function rightgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N};complements=false
   found=true
   while found
     found=false
-    for (i,a) in enumerate(M.atoms)
+    for (i,a) in pairs(M.atoms)
       if all(b->isrightdescent(M,b,i),elts)
         found=true
         x=*(M,a,x)
@@ -414,7 +414,7 @@ function α2(M::LocallyGarsideMonoid,x,v)
   found=true
   while found
     found=false
-    for (i,a) in enumerate(M.atoms)
+    for (i,a) in pairs(M.atoms)
       if isleftdescent(M,v,i) && isrightascent(M,x,i)
         x=*(M,x,a)
         v=\(M,a,v)
@@ -1570,7 +1570,7 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   function foo()
     reached=[o]
     for i in reached t=C.atoms[i]
-      for (j,m) in enumerate(t)
+      for (j,m) in pairs(t)
         (mp,o1)=m
         if !(o1 in reached)
           paths[o1]=vcat(paths[i],[(i,j)])

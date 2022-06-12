@@ -777,7 +777,7 @@ function family_imprimitive(S)
                                circshift.(Ref(s),1:length(s)-1))
     schon=isreducedsymb.(symbs)
     mult=Int[]
-    for (i,si) in enumerate(symbs)
+    for (i,si) in pairs(symbs)
       if schon[i]
         orb=circshift.(Ref(si),1:length(si))
         f=findfirst(==(si),orb)
@@ -792,7 +792,7 @@ function family_imprimitive(S)
        i->reduce(vcat,map((n,c)->fill((e*c)//(m*n),n),mult,l[schon])),1:m),
                          mult, mat[schon]))
     mult=vcat(fill.(mult,mult)...)
-    for (i,si) in enumerate(symbs), (j,sj) in enumerate(symbs)
+    for (i,si) in pairs(symbs), (j,sj) in pairs(symbs)
       if fullsymbol(si)==fullsymbol(sj)
         mat[i][j]-=1//mult[i]
         if si==sj mat[i][j]+=1 end

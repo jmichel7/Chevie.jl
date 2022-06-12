@@ -603,7 +603,7 @@ function innermul(W::PermRootGroup,a,b)
         if 1+lb<length(W) push!(new.d,W(1)*eb=>pb)
         else
           p=polynomial_relations(a.H)[1]
-          append!(new.d,[W(1)^(i+p.v+1)=>pb*c for (i,c) in enumerate(p.c)])
+          append!(new.d,W(1)^(i+p.v+1)=>pb*c for (i,c) in pairs(p.c))
         end
       end
       h=new

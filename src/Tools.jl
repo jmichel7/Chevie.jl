@@ -7,7 +7,7 @@ using ModuleElts
 using LaurentPolynomials
 using PuiseuxPolynomials
 
-using ..Combinat: Combinat, tally, factor
+using ..Combinat: Combinat, tally
 using ..FFields: FFields, FFE, Mod, Z
 using ..Groups: Group, gens, word
 using ..Gapjm: Gapjm, Cyc, conductor, order
