@@ -814,7 +814,7 @@ end
 #--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: CoxeterGroup{Perm{T}}
   G::PermGroup{T}
-  reflections::Vector{Perm{T}}
+  refls::Vector{Perm{T}}
   n::Int
 end
 
@@ -871,10 +871,10 @@ Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
                                       W,:classreps)
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
-PermRoot.nref(W::CoxSym)=div(length(W.reflections),2)
-PermRoot.simple_reps(W::CoxSym)=fill(1,length(W.reflections))
-PermRoot.refls(W::CoxSym,i)=W.reflections[i]
-PermRoot.refls(W::CoxSym)=W.reflections
+PermRoot.nref(W::CoxSym)=div(length(W.refls),2)
+PermRoot.simple_reps(W::CoxSym)=fill(1,length(W.refls))
+PermRoot.refls(W::CoxSym,i)=W.refls[i]
+PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.rank(W::CoxSym)=ngens(W)
 
 """

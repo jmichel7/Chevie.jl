@@ -185,6 +185,20 @@ function transversal(G::Group,pnt;action::F=^) where F<:Function
   trans
 end
 
+function words_transversal(gens,pnt;action::F=^) where F<:Function
+  trans=Dict(pnt=>Int[])
+  orb=[pnt]
+  for pnt in orb, i in eachindex(gens)
+    gen=gens[i]
+    img=action(pnt,gen)
+    if !haskey(trans,img)
+      push!(orb,img)
+      trans[img]=vcat(trans[pnt],[i])
+    end
+  end
+  trans
+end
+
 function orbits(gens::AbstractVector,v::AbstractVector;action=^,trivial=true)
   res=Vector{eltype(v)}[]
   while !isempty(v)

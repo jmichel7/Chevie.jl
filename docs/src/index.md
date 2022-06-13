@@ -80,7 +80,7 @@ Perm_onmats
 ```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
-FFfac.factor(::Pol{FFE{p}}where p, F)
+factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 factor(p::Mvp{T, N}) where {T, N}
 ```
@@ -111,8 +111,8 @@ reverse
 partition
 covering_chains
 Posets.restricted(::Poset,::AbstractVector{<:Integer})
-is_join_lattice
-is_meet_lattice
+isjoinlattice
+ismeetlattice
 moebius
 moebiusmatrix
 minimum(P::Poset)
@@ -269,7 +269,7 @@ generic_order
 torus_order
 parabolic_reps
 parabolic_closure
-is_parabolic
+isparabolic
 ```
 # Hecke algebras
 ```@docs
@@ -357,7 +357,7 @@ Semisimple
 fundamental_group
 intermediate_group
 quasi_isolated_reps(::FiniteCoxeterGroup)
-is_isolated
+isisolated
 torsion_subgroup
 algebraic_centre
 weightinfo
@@ -381,7 +381,7 @@ subspets
 Sscoset
 centralizer(::Spets,::SemisimpleElement{Root1})
 quasi_isolated_reps(::Spets)
-is_isolated(::Spets,::SemisimpleElement{Root1})
+isisolated(::Spets,::SemisimpleElement{Root1})
 ```
 # Unipotent characters
 ```@docs
@@ -637,12 +637,12 @@ IsCyclic                                    iscyclic
 IsCycPol(p)                                 p isa CycPol
 IsFamily(f)                                 f isa Family
 IsFFE(x)                                    x isa FFE
-IsIsolated                                  is_isolated
-IsJoinLattice                               is_join_lattice
+IsIsolated                                  isisolated
+IsJoinLattice                               isjoin_lattice
 IsLeftDescending(W,w,i)                     isleftdescent(W,w,i)
-IsMeetLattice                               is_meet_lattice
+IsMeetLattice                               ismeet_lattice
 IsomorphismType                             isomorphism_type
-IsParabolic                                 is_parabolic
+IsParabolic                                 isparabolic
 IsSubset(a,b)                               issubset(b,a)
 IsUnipotentElement(x)                       x isa UnipotentElement
 JInductionTable                             JInductionTable
@@ -740,7 +740,7 @@ ReducedCoxeterWord(W,w)                     word(W,W(w...))
 ReducedExpressions(W,w)                     words(W,w)
 ReducedInRightCoset(W,w)                    reduced(W,w)
 ReducedRightCosetRepresentatives(W,H)       reduced(H,W)
-Reflection                                  refls or reflection
+Reflection                                  refls or reflectionmat
 ReflectionCharacter                         reflchar
 ReflectionCoDegrees(W)                      codegrees(W)
 ReflectionDegrees(W)                        degrees(W)

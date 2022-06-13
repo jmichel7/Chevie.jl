@@ -169,12 +169,12 @@ const ChevieDict=Dict(
 "IsCycPol(p)"=>"p isa CycPol",
 "IsFamily(f)"=>"f isa Family",
 "IsFFE(x)"=>"x isa FFE",
-"IsIsolated"=>"is_isolated",
-"IsJoinLattice"=>"is_join_lattice",
-"IsMeetLattice"=>"is_meet_lattice",
+"IsIsolated"=>"isisolated",
+"IsJoinLattice"=>"isjoin_lattice",
+"IsMeetLattice"=>"ismeet_lattice",
 "IsLeftDescending(W,w,i)"=>"isleftdescent(W,w,i)",
 "IsSubset(a,b)"=>"issubset(b,a)",
-"IsParabolic"=>"is_parabolic",
+"IsParabolic"=>"isparabolic",
 #IsNormalizing
 #IsQuasiIsolated
 "IsomorphismType"=>"isomorphism_type",

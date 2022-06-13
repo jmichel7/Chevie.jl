@@ -169,7 +169,7 @@ generates ``C_𝐆 (s)``.
 """
 module Semisimple
 using ..Gapjm
-export algebraic_centre, SubTorus, weightinfo, fundamental_group, is_isolated,
+export algebraic_centre, SubTorus, weightinfo, fundamental_group, isisolated,
 SemisimpleElement, SS, torsion_subgroup, quasi_isolated_reps,
 StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
 isomorphism_type, weights, coweights
@@ -758,7 +758,7 @@ julia> W=coxgroup(:E,6);l=quasi_isolated_reps(W)
  <ζ₃,1,1,1,1,ζ₃>
  <1,ζ₆,ζ₆,1,ζ₆,1>
 
-julia> map(s->is_isolated(W,s),l)
+julia> map(s->isisolated(W,s),l)
 5-element Vector{Bool}:
  1
  1
@@ -776,7 +776,7 @@ julia> W=rootdatum(:E6sc);l=quasi_isolated_reps(W)
  <ζ₆⁵,1,ζ₃²,1,ζ₃,ζ₃²>
  <ζ₃²,1,ζ₃,1,ζ₃²,ζ₆⁵>
 
-julia> map(s->is_isolated(W,s),l)
+julia> map(s->isisolated(W,s),l)
 7-element Vector{Bool}:
  1
  1
@@ -845,7 +845,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
   res
 end
 
-is_isolated(W,s)=rank(algebraic_centre(centralizer(W,s).group).Z0)==
+isisolated(W,s)=rank(algebraic_centre(centralizer(W,s).group).Z0)==
     rank(W)-semisimplerank(W)
 
 """

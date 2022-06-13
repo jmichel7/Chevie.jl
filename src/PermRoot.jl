@@ -192,13 +192,13 @@ module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
  simple_conjugating, refls, unique_refls, reflection, reflectionmat, Reflection,
- reflections, Diagram, distinguished, hyperplane_orbit,
+ reflections, Diagram, isdistinguished, hyperplane_orbit,
  refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
  coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
  bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
  invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
  invariants, matY, simpleroots, simplecoroots, action, radical, 
- parabolic_closure, is_parabolic, central_action, nhyp, nref, indices
+ parabolic_closure, isparabolic, central_action, nhyp, nref, indices
 using ..Gapjm
 
 """
@@ -586,7 +586,7 @@ Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W)==roots(W1) &&
 
 for each root, the index of the first simple root conjugate to it
 """
-function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
+function simple_reps(W::PermRootGroup) # fills .repelms and .refls
   get!(W,:rootreps)do
     reps=fill(0,length(roots(W)))
     repelts=fill(one(W),length(roots(W)))
@@ -600,8 +600,8 @@ function simple_reps(W::PermRootGroup) # fills .repelms and .reflections
       end
     end
     W.repelms=repelts
-    W.reflections=map((i,p)->gens(W)[i]^p,reps,repelts)
-    W.distrefls=Int.(sort(unique(indexin(W.reflections,W.reflections))))
+    W.refls=map((i,p)->gens(W)[i]^p,reps,repelts)
+    W.distrefls=Int.(sort(unique(indexin(W.refls,W.refls))))
     reps
   end
 end
@@ -619,7 +619,7 @@ simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 list  of same  length as  `W.roots` giving  the corresponding distinguished
 reflections. In particular this list is much longer than `unique(refls(W))`.
 """
-refls(W::PermRootGroup)=getp(simple_reps,W,:reflections)
+refls(W::PermRootGroup)=getp(simple_reps,W,:refls)
 
 """
 `refls(W,i)`
@@ -1058,7 +1058,14 @@ function hyperplane_orbits(W::PermRootGroup)
   end
 end
 
-"""
+struct Reflection{TW<:PermRootGroup}
+  W::TW
+  rootno::Int
+  eigen::Root1
+  word::Vector{Int}
+end
+
+@doc """
 `Reflection`   is   a   `struct`   representing   a  reflection  `r`  in  a
 `PermRootGroup`  `W`. The fields are `W`, the  index of a root for `r`, and
 the non-trivial eigenvalue of `r`.
@@ -1084,7 +1091,7 @@ julia> Matrix(r)
  1   0
  0  -1
 
-julia> distinguished(r) # r is not distinguished
+julia> isdistinguished(r) # r is not distinguished
 false
 
 julia> Perm(r)
@@ -1096,12 +1103,7 @@ julia> hyperplane_orbit(r) # r is in the first hyperplane orbit
 julia> position_class(r) # the index of the conjugacy class of r in W 
 15
 ```
-"""
-struct Reflection{TW<:PermRootGroup}
-  W::TW
-  rootno::Int
-  eigen::Root1
-end
+""" Reflection
 
 function Base.show(io::IO,r::Reflection)
   print(io,"Reflection(",r.W,",",r.rootno,",",r.eigen,")")
@@ -1117,12 +1119,11 @@ end
 
 Base.Matrix(r::Reflection)=reflectionmat(root(r),coroot(r))
 
-distinguished(r::Reflection)=r.eigen==E(ordergens(r.W)[simple_reps(r.W)[r.rootno]])
+Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_reps(r.W)[r.rootno]])
 
-function Perms.Perm(r::Reflection)
-  if distinguished(r) return refls(r.W,r.rootno) end
-  PermX(r.W,Matrix(r))
-end
+isdistinguished(r::Reflection)=exponent(r)==1
+
+Perms.Perm(r::Reflection)=refls(r.W,r.rootno)^exponent(r)
 
 function hyperplane_orbit(r::Reflection)
   h=hyperplane_orbits(r.W)
@@ -1133,6 +1134,23 @@ end
 function Groups.position_class(r::Reflection)
   i=r.eigen.r*ordergens(r.W)[simple_reps(r.W)[r.rootno]]
   hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[Int(i)]
+end
+
+function invert_word(W,w)
+  if isempty(w) return w end
+  lastg=0
+  mul=0
+  seq=Pair{Int,Int}[]
+  for i in length(w):-1:1
+    if w[i]==lastg mul+=1
+    else
+      if lastg!=0 push!(seq,lastg=>mul) end
+      lastg=w[i]; mul=1
+    end
+  end
+  if lastg!=0 push!(seq,lastg=>mul) end
+  o=ordergens(W)
+  vcat(map(((i,mul),)->fill(i,o[i]-mul),seq)...)
 end
 
 """
@@ -1157,16 +1175,33 @@ julia> reflections(W)
 ```
 """
 function reflections(W::PermRootGroup)
-  res=Reflection{typeof(W)}[]
-  for i in unique_refls(W)
-    e=ordergens(W)[simple_reps(W)[i]]
-    for j in 1:e-1
-      push!(res,Reflection(W,i,E(e,j)))
+  get!(W,:reflections)do
+    sreps=sort(unique(simple_reps(W)))
+    pnts=refls(W,sreps)
+    dd=map(x->Groups.words_transversal(gens(W),x),pnts)
+    res=Reflection{typeof(W)}[]
+    for i in unique_refls(W)
+      e=ordergens(W)[simple_reps(W)[i]]
+      w=Int[]
+      dw=Int[]
+      for j in 1:e-1
+        if W isa CoxeterGroup w=word(W,refls(W,i))
+        elseif j==1
+          rep=simple_reps(W)[i]
+          w=dd[findfirst(==(rep),sreps)][refls(W,i)]
+          dw=w=vcat(invert_word(W,w),[rep],w)
+        else
+          w=vcat(fill(dw,j)...)
+        end
+        push!(res,Reflection(W,i,E(e,j),w))
+      end
     end
+    res
   end
-  res
 end
   
+Groups.word(r::Reflection)=r.word
+
 """
 `bipartite_decomposition(W)`
 
@@ -1611,7 +1646,7 @@ function recompute_parabolic_reps(W) # W irreducible
       c=filter(x->GLinearAlgebra.rank(toM(roots(W,x)))==i,c)
       InfoChevie(" ",length(c)," new subgroups")
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
-      c=filter(is_parabolic,c)
+      c=filter(isparabolic,c)
       c=sort(unique(map(x->sort(unique(refls(x))),c)))
       O=orbits(S,c;action=(x,g)->sort(x.^g))
       O=map(o->o[argmin(map(x->sum(stoi,x),o))],O)
@@ -1697,21 +1732,21 @@ end
 matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 
 """
-`is_parabolic(W)`
+`isparabolic(W)`
 
 whether the reflection group `W` is a parabolic subgroup of `parent(W)`.
 ```julia-repl
 julia> W=complex_reflection_group(7)
 G₇
 
-julia> is_parabolic(reflection_subgroup(W,[1,2]))
+julia> isparabolic(reflection_subgroup(W,[1,2]))
 false
 
-julia> is_parabolic(reflection_subgroup(W,[1]))
+julia> isparabolic(reflection_subgroup(W,[1]))
 true
 ```
 """
-function is_parabolic(H)
+function isparabolic(H)
   W=parent(H)
   setr=s->Set(refls(W,s))
   if iszero(ngens(H)) return true end

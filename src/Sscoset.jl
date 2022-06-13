@@ -61,7 +61,7 @@ We  define an element `tσ∈ 𝐓  ⋅σ` to be isolated if  the Weyl group of 
 the definition for connected groups.
 
 ```julia-repl
-julia> is_isolated.(Ref(WF),l)
+julia> isisolated.(Ref(WF),l)
 4-element BitVector:
  1
  1
@@ -242,7 +242,7 @@ function Semisimple.quasi_isolated_reps(WF::Spets,p=0)
 end
 
 """
-`is_isolated(WF::Spets,t::SemisimpleElement{Root1})`
+`isisolated(WF::Spets,t::SemisimpleElement{Root1})`
 
 `WF`  should be  a Coxeter  coset representing  an algebraic  coset `𝐆 ⋅σ`,
 where  `𝐆 ` is a connected  reductive group (represented by `W=Group(WF)`),
@@ -262,7 +262,7 @@ julia> l=quasi_isolated_reps(WF)
  <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>
  <ζ₄,1,1,1,1,ζ₄³>
 
-julia> is_isolated.(Ref(WF),l)
+julia> isisolated.(Ref(WF),l)
 4-element BitVector:
  1
  1
@@ -270,10 +270,10 @@ julia> is_isolated.(Ref(WF),l)
  0
 ```
 """
-function Semisimple.is_isolated(WF::Spets,t::SemisimpleElement{Root1})
+function Semisimple.isisolated(WF::Spets,t::SemisimpleElement{Root1})
   Rs=RelativeDatum(WF)
   t=SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
-  is_isolated(Rs, t)
+  isisolated(Rs, t)
 end
 
 end

@@ -105,14 +105,14 @@ Int64[]
 ```
 
 see the on-line help on `linear_extension, hasse, incidence, partition, 
-covering_chains, transitive_closure, is_join_lattice, is_meet_lattice, moebius,
+covering_chains, transitive_closure, isjoinlattice, ismeetlattice, moebius,
 moebiusmatrix,reverse, restricted, minimum, maximum` for more information
 """
 module Posets 
 # this module has only 1 dependency below which could be copied.
 using ..Combinat: collectby  # 13 lines
 export Poset, linear_extension, hasse, incidence, partition, covering_chains,
-transitive_closure, is_join_lattice, is_meet_lattice, moebius, moebiusmatrix
+transitive_closure, isjoinlattice, ismeetlattice, moebius, moebiusmatrix
 export restricted #needs using_merge to use with Gapjm
 
 struct Poset 
@@ -453,7 +453,7 @@ function checkl(ord::AbstractMatrix{Bool})
 end
 
 """
-`is_join_lattice(P::Poset)`
+`isjoinlattice(P::Poset)`
 
 returns  `true` if `P` is  a join semilattice, that  is any two elements of
 `P` have a unique smallest upper bound; returns `false` otherwise.
@@ -465,14 +465,14 @@ julia> p=Poset((i,j)->j%i==0,1:8)
 1<3<6
 2<6
 
-julia> is_join_lattice(p)
+julia> isjoinlattice(p)
 false
 ```
 """
-is_join_lattice(P::Poset)=checkl(incidence(P))
+isjoinlattice(P::Poset)=checkl(incidence(P))
 
 """
-`is_meet_lattice(P)`
+`ismeetlattice(P)`
 
 returns  `true` if `P` is  a meet semilattice, that  is any two elements of
 `P` have a unique highest lower bound; returns `false` otherwise.
@@ -484,11 +484,11 @@ julia> p=Poset((i,j)->j%i==0,1:8)
 1<3<6
 2<6
 
-julia> is_meet_lattice(p)
+julia> ismeetlattice(p)
 true
 ```
 """
-is_meet_lattice(P::Poset)=checkl(transpose(incidence(P)))
+ismeetlattice(P::Poset)=checkl(transpose(incidence(P)))
 
 """
 `moebius(P,y=maximum(P))`
