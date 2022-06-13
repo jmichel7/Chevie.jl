@@ -40,12 +40,14 @@ monomial  m  and  a  field  .pol  holding  a  cycpol such that the record
 represents pol(m)
 """
 function GenericSchurElements(W)
-  c=sort(unique(simple_reps(W)))
-  o=order.(gens(W)[c])
   vars="xyz"
-  v=fill([Mvp(Cyc(0))],ngens(W))
-  v[c]=map(i->map(j->Mvp(Symbol(vars[i],j))*E(o[i],j), 0:o[i]-1), 1:length(o))
+  v=map(eachindex(gens(W)))do i
+    var=vars[simple_reps(W)[i]]
+    o=ordergens(W)[i]
+    map(k->Mvp(Symbol(var,k))*E(o,k), 0:o-1)
+  end
   H=hecke(W,v)
+  o=ordergens(W)[sort(unique(simple_reps(W)[eachindex(gens(W))]))]
   vnames=vcat(map(i->Symbol.(vars[i],0:o[i]-1),1:length(o))...)
   map(FactorizedSchurElements(H))do s
     function montovec(mon)
@@ -89,13 +91,13 @@ function RouquierBlockData(W)
   InfoChevie("#I ",length(hplanes)," hplanes\n")
   return map(hplanes)do h # for each hplane h return [h,Rouquier blocks of A_h]
     hh=filter(k->!iszero(k) && k!=h, hplanes)
-    m=lnullspaceInt(h)
+    m=lnullspaceInt(hcat(h))
     para=Vector{Int}[]
     while length(para)<NRPARA
       if isempty(hh) && h==[1,-1] push!(para,[1,1])
       else
-        p=sum(rand(-2*size(m,1):2*size(m,1),size(m,1)).*m)
-        if !(0 in toM(hh)*p) push!(para, div.(p,gcd(p))) end
+        p=rand(-2*size(m,1):2*size(m,1),size(m,1))'*m
+        if !(0 in toM(hh)*p') push!(para, vec(div.(p,gcd(p)))) end
       end
     end
     sort!(para,by=x->sum(x.*x)) # increasing "complexity"
