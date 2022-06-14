@@ -36,7 +36,7 @@ const exclu=[
  ["PrintDiagram",["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22"]],
  ["ReducedInRightCoset","timp"],
  ["ReflectionCoDegrees","imp"],
- ["SchurElement","D"],
+ ["SchurElement",["D","G31"]],
  ["sparseFakeDegrees","G4_22"],
  ["UnipotentClasses",["2A","2D","B","D"]],
  ["WGraph","E8"],

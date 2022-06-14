@@ -46,7 +46,7 @@ export Group, centralizer, centre, classreps, comm, order, ordergens,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
   gens, Hom, isabelian, iscyclic, words, minimal_words, nconjugacy_classes,
   ngens, normalizer, orbit, orbits, position_class, stabilizer,
-  transporting_elt, transversal
+  transporting_elt, transversal, words_transversal
 
 using ..Util: InfoChevie, @GapObj
 #import Gapjm: word, elements, kernel
@@ -185,6 +185,21 @@ function transversal(G::Group,pnt;action::F=^) where F<:Function
   trans
 end
 
+"""
+`words_transversal(gens,p;action::Function=^)`
+
+A  transversal recording words. Returns a  `Dict` with entries `x=>w` where
+`x`  runs over `orbit(G,p;action)` and where  `w` is a sequence of integers
+such that `x==action(p,gens[w])`
+
+```julia-repl
+julia> words_transversal([Perm(1,2),Perm(2,3)],1)
+Dict{Int64, Vector{Int64}} with 3 entries:
+  2 => [1]
+  3 => [1, 2]
+  1 => []
+```
+"""
 function words_transversal(gens,pnt;action::F=^) where F<:Function
   trans=Dict(pnt=>Int[])
   orb=[pnt]

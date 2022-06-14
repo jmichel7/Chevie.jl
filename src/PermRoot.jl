@@ -1027,7 +1027,7 @@ julia> hyperplane_orbits(W)
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
 ```
 """
-function hyperplane_orbits(W::PermRootGroup)
+function hyperplane_orbits(W::PermRootGroup)::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
   get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
   rr=refls(W)
@@ -1067,8 +1067,8 @@ end
 
 @doc """
 `Reflection`   is   a   `struct`   representing   a  reflection  `r`  in  a
-`PermRootGroup`  `W`. The fields are `W`, the  index of a root for `r`, and
-the non-trivial eigenvalue of `r`.
+`PermRootGroup`  `W`. The fields are `W`, the  index of a root for `r`, the
+non-trivial eigenvalue of `r`, and a word for `r` in the generators.
 ```julia-repl
 julia> r=reflections(crg(8))[2]
 Reflection(G₈,1,-1)
@@ -1094,6 +1094,9 @@ julia> Matrix(r)
 julia> isdistinguished(r) # r is not distinguished
 false
 
+julia> exponent(r) # which power of a distinguished reflection it is
+2
+
 julia> Perm(r)
 (1,8)(2,9)(3,16)(4,15)(5,17)(6,18)(7,19)(10,22)(11,21)(12,23)
 
@@ -1102,6 +1105,12 @@ julia> hyperplane_orbit(r) # r is in the first hyperplane orbit
 
 julia> position_class(r) # the index of the conjugacy class of r in W 
 15
+
+julia> word(r) # a word in the generators for r
+2-element Vector{Int64}:
+ 1
+ 1
+
 ```
 """ Reflection
 
@@ -1119,21 +1128,20 @@ end
 
 Base.Matrix(r::Reflection)=reflectionmat(root(r),coroot(r))
 
-Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_reps(r.W)[r.rootno]])
+simple_rep(r::Reflection)=simple_reps(r.W)[r.rootno]
+
+Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_rep(r)])
 
 isdistinguished(r::Reflection)=exponent(r)==1
 
 Perms.Perm(r::Reflection)=refls(r.W,r.rootno)^exponent(r)
 
 function hyperplane_orbit(r::Reflection)
-  h=hyperplane_orbits(r.W)
-  s=simple_reps(r.W)[r.rootno]
-  findfirst(x->x.s==s,h)
+  findfirst(x->x.s==simple_rep(r),hyperplane_orbits(r.W))
 end
 
 function Groups.position_class(r::Reflection)
-  i=r.eigen.r*ordergens(r.W)[simple_reps(r.W)[r.rootno]]
-  hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[Int(i)]
+  hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[exponent(r)]
 end
 
 function invert_word(W,w)
@@ -1181,13 +1189,13 @@ function reflections(W::PermRootGroup)
     dd=map(x->Groups.words_transversal(gens(W),x),pnts)
     res=Reflection{typeof(W)}[]
     for i in unique_refls(W)
-      e=ordergens(W)[simple_reps(W)[i]]
+      e=ordergens(W)[simple_reps(W,i)]
       w=Int[]
       dw=Int[]
       for j in 1:e-1
         if W isa CoxeterGroup w=word(W,refls(W,i))
         elseif j==1
-          rep=simple_reps(W)[i]
+          rep=simple_reps(W,i)
           w=dd[findfirst(==(rep),sreps)][refls(W,i)]
           dw=w=vcat(invert_word(W,w),[rep],w)
         else

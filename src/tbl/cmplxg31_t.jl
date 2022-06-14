@@ -17,3 +17,12 @@ chevieset(:G31, :CharTable, function()
   end
   res
 end)
+chevieset(:G31, :SchurElement, function (p, para, rootpara)
+  ci=findfirst(==(p),chevieget(:G31, :CharInfo)()[:charparams])
+  data=chevieget(:G31,:SchurData)[ci]
+  r=chevieget(:G31,:SchurModels)[Symbol(data[:name])]
+  q=para[1][data[:order]]
+  q=q[1]//q[2]
+  if haskey(r,:root) q=root(q,2)*(-1)^data[:rootPower] end
+  r[:coeff]*q^r[:factor]*prod(x->cyclotomic_polynomial(x)(q),r[:vcyc])
+end)

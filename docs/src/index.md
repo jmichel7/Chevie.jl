@@ -254,6 +254,8 @@ simple_conjugating
 simple_reps
 Diagram
 hyperplane_orbits
+Reflection
+reflections
 braid_relations
 reflrep(::PermRootGroup,w)
 reflrep(::PRG)

@@ -48,7 +48,7 @@ end
 A  variation of get! where it is assumed f(o) sets o.p but not assumed that
 f returns o.p, because f sets several keys at once...
 """
-getp(f::Function,o,p::Symbol)=get!(()->(f(o);o.prop[p]),o.prop,p)
+getp(f::Function,o,p::Symbol)=get!(()->(f(o);getfield(o,:prop)[p]),getfield(o,:prop),p)
 
 """
 `@GapObj struct...`
