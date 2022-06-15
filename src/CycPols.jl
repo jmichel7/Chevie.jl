@@ -531,15 +531,19 @@ const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
   benchmark on Julia 1.7.2
 julia> @btime u=CycPols.p(Pol()) # gap 1.25 ms
   518.149 μs (12054 allocations: 701.19 KiB)
+  361.040 μs (9801 allocations: 678.39 KiB)
 julia> @btime CycPol(u) # gap 8.2ms
   7.700 ms (151293 allocations: 9.67 MiB)
+  5.558 ms (123729 allocations: 9.26 MiB)
 julia> @btime u(1)  # gap 40μs
   50.525 μs (1155 allocations: 68.78 KiB)
+  31.999 μs (897 allocations: 64.75 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
   28.768 μs (593 allocations: 42.89 KiB)
+  44.556 μs (806 allocations: 51.12 KiB)
 =#
 
-# a worse polynomial; u=p2(Pol()) 20ms (gap3 9ms) CycPol(u) 1.37s (gap3 1.33s)
+# a worse polynomial; u=p2(Pol()) 17ms (gap3 9ms) CycPol(u) 1.25 (gap3 1.33s)
 const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8=>1,
 2//9=>1,5//9=>1,8//9=>1,7//12=>1,11//12=>1,1//16=>1,3//16=>1,5//16=>1,
 9//16=>1,11//16=>1,13//16=>1,5//18=>2,11//18=>2,17//18=>2,2//21=>1,5//21=>1,

@@ -421,6 +421,10 @@ Base.show(io::IO,::MIME"text/plain",v::Vector{Diagram})=show(io,v)
 Base.show(io::IO,v::Vector{Diagram})=join(io,v,"\n")
 
 function Base.show(io::IO,d::Diagram)
+  if !(get(io,:limit,false)|| get(io,:TeX,false))
+    print(io,"Diagram(",d.t,")")
+    return
+  end
   t=d.t
   if haskey(t,:orbit)
     act=length(t.orbit)>1
@@ -507,16 +511,14 @@ function Base.show(io::IO,d::Diagram)
   if t.ST==4 println(io,c3," ",bar^2,c3," ",t);print(io,f(1)," "^3,f(2))
   elseif t.ST==5 println(io,c3," ",dbar^2,c3," ",t);print(io,f(1)," "^3,f(2))
   elseif t.ST==6 println(io,c2," ",tbar(2),c3," ",t)
-                 println(io,f(1)," "^3,f(2))
+                 print(io,f(1)," "^3,f(2))
   elseif t.ST==7 println(io," "^2,c3," ",f(2)," ",t);
      println(io," ","/3\\")
      println(io,c2," ",bar^2,c3)
      print(io,f(1)," "^3,f(3)," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
   elseif t.ST==8 println(io,c4," ",bar^2,c4," ",t);print(io,f(1)," "^3,f(2))
-  elseif t.ST==9 println(io,c2," ",tbar(2),c4," ",t)
-   println(io,f(1)," "^3,f(2))
-  elseif t.ST==10 println(io,c3," ",dbar^2,c4," ",t)
-    println(io,f(1)," "^3,f(2))
+  elseif t.ST==9 println(io,c2," ",tbar(2),c4," ",t);print(io,f(1)," "^3,f(2))
+  elseif t.ST==10 println(io,c3," ",dbar^2,c4," ",t);print(io,f(1)," "^3,f(2))
   elseif t.ST==11 println(io," "^2,c3," ",f(2)," ",t);println(io," /3\\");
     println(io,c2," ",bar^2,c4)
     print(io,f(1)," "^3,f(3)," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
@@ -578,16 +580,16 @@ number of reflecting hyperplanes of `W`
 nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
 # should use independent_roots
 
-Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W)==roots(W1) &&
-  coroots(W)[1:ngens(W)]==coroots(W1)[1:ngens(W1)]
+Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W,eachindex(gens(W)))==
+  roots(W1,eachindex(gens(W1))) && simplecoroots(W)==simplecoroots(W1)
 
 """
 `simple_reps(W)`
 
 for each root, the index of the first simple root conjugate to it
 """
-function simple_reps(W::PermRootGroup) # fills .repelms and .refls
-  get!(W,:rootreps)do
+function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
+  get!(W,:simple_reps)do
     reps=fill(0,length(roots(W)))
     repelts=fill(one(W),length(roots(W)))
     for i in eachindex(gens(W))
@@ -599,9 +601,9 @@ function simple_reps(W::PermRootGroup) # fills .repelms and .refls
         end
       end
     end
-    W.repelms=repelts
+    W.simple_conjugating=repelts
     W.refls=map((i,p)->gens(W)[i]^p,reps,repelts)
-    W.distrefls=Int.(sort(unique(indexin(W.refls,W.refls))))
+    W.unique_refls=Int.(sort(unique(indexin(W.refls,W.refls))))
     reps
   end
 end
@@ -634,9 +636,9 @@ refls(W::PermRootGroup,i)=refls(W)[i]
 
 For each root `i`, an element conjugating it to `simple_reps(W,i)`.
 """
-simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:repelms)
+simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:simple_conjugating)
 
-unique_refls(W::PermRootGroup)=getp(simple_reps,W,:distrefls)
+unique_refls(W::PermRootGroup)=getp(simple_reps,W,:unique_refls)
 
 """
 `simple_conjugating(W,i)`
@@ -774,7 +776,7 @@ prim=[
                        for (p,m) in factor(s))
     de=vec((x->(d=prod(first.(x)),e=prod(last.(x)))).(Iterators.product(l...)))
   end
-  o=maximum(order.(gens(W)))
+  o=maximum(ordergens(W))
 # println("de=$de, o=$o, h=$h")
   de=filter(x->o==max(2,x.d),de) #  here we have length(de)<=2
   ST=filter(i->r==prim[i].r && s==prim[i].s && o==prim[i].o,eachindex(prim))
@@ -1810,7 +1812,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   if isempty(r) error("should call torus instead") end
   matgens=map(reflectionmat,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
-  rr=map(x->convert.(T,x),r)
+  roots_=map(x->convert.(T,x),r)
   cr=map(x->convert.(T,x),cr)
 
   # the following section is quite subtle: it has the (essential -- this is
@@ -1820,30 +1822,30 @@ function PRG(r::AbstractVector{<:AbstractVector},
   # root values.
 
 # println("# roots: ")
-  refls=map(x->Int[],matgens)
+  gens_=map(x->Int[],matgens)
   newroots=true
   while newroots
     newroots=false
-    for (j,refl) in pairs(refls)
-      lr=length(rr)
+    for (j,refl) in pairs(gens_)
+      lr=length(roots_)
       if length(refl)<lr
-      for y in eachrow(toM(rr[length(refl)+1:end])*matgens[j])
-        p=findfirst(==(y),rr)
+      for y in eachrow(toM(roots_[length(refl)+1:end])*matgens[j])
+        p=findfirst(==(y),roots_)
 	if p===nothing || p>lr
-          push!(rr,y)
-#         println("j=$j rr[$(length(refl)+1)...] ",length(rr),":",y)
+          push!(roots_,y)
+#         println("j=$j roots_[$(length(refl)+1)...] ",length(roots_),":",y)
           newroots=true
-          push!(refl,length(rr))
+          push!(refl,length(roots_))
         else push!(refl,p)
 	end
       end
       end
     end
-#   println(" ",length(rr))
+#   println(" ",length(roots_))
   end
-  ncr=Vector{eltype(cr)}(undef,length(rr))
-  ncr[eachindex(cr)].=cr
-  W=PRG(Perm{T1}.(refls),Perm{T1}(),matgens,rr,ncr,Dict{Symbol,Any}())
+  coroots_=Vector{eltype(cr)}(undef,length(roots_))
+  coroots_[eachindex(cr)].=cr
+  W=PRG(Perm{T1}.(gens_),Perm{T1}(),matgens,roots_,coroots_,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=indices(t)
@@ -1856,7 +1858,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   W
 end
 
-PRG(a::Matrix,b::Matrix)=PRG(toL(a),toL(b))
+PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 
 PRG(i::Integer;T1=Int16)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],Vector{Int}[],
                     Vector{Int}[],Dict{Symbol,Any}(:rank=>i))

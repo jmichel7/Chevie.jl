@@ -75,7 +75,7 @@ DiagonalMat(v::Vector)=DiagonalMat(v...)
 Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
-Factors(n)=reduce(vcat,[fill(k,v) for (k,v) in factor(n)])
+Factors(n)=reduce(vcat,fill(k,v) for (k,v) in factor(n))
 HeckeCentralMonomials=central_monomials
 function Ignore() end
 Inherit(a,b)=merge!(a,b)
