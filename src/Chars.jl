@@ -485,7 +485,7 @@ function charinfo(t::TypeIrred)
         c.a=uc[:a][uc[:harishChandra][1][:charNumbers]]
         c.A=uc[:A][uc[:harishChandra][1][:charNumbers]]
       end
-    else
+    elseif !haskey(t,:orbit)
       para=ordergens(t)
       if !isnothing(para)
         para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
@@ -496,7 +496,10 @@ function charinfo(t::TypeIrred)
     end
   end
   for f in [:a,:A,:b,:B]
-    if isnothing(c[f])||c[f]==false  delete!(c.prop,f) else c.prop[f]=improve_type(c[f]) end
+    if haskey(c,f) 
+      if isnothing(c[f]) || c[f]==false delete!(c.prop,f) 
+      else c.prop[f]=improve_type(c[f]) end
+    end
   end
   if haskey(t,:orbit)
     if !haskey(c,:charRestrictions)
