@@ -1008,7 +1008,7 @@ function PermRoot.refltype(WF::PRC)
     if isone(WF.phi)
       return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t)
     end
-    subgens=map(x->refls.(Ref(W),x.indices),t)
+    subgens=map(x->refls(W,x.indices),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     if isnothing(c) && any(isG333,t)
       for a in t
@@ -1025,13 +1025,13 @@ function PermRoot.refltype(WF::PRC)
           elseif order(WF.phi)==4  G333=[1,2,3,32,16,36,30,10]
           else G333=1:3
           end
-          a.subgens=refls.(Ref(a.subgroup),G333)
+          a.subgens=refls(a.subgroup,G333)
           a.indices=inclusion(a.subgroup,W,G333)
           WF.W.refltype=t
         end
       end
   #   subgens=map(x->gens(reflection_subgroup(W,x.indices)),t)
-      subgens=map(x->refls.(Ref(W),x.indices),t)
+      subgens=map(x->refls(W,x.indices),t)
       c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     end
     c=orbits(inv(c))
@@ -1088,7 +1088,7 @@ function PermRoot.refltype(WF::PRC)
           #print("l=$l i=$i scal before:$scal")
           if i!=length(orb)
             tn.indices^=u
-            subgens[orb[next]]=refls.(Ref(W),tn.indices)
+            subgens[orb[next]]=refls(W,tn.indices)
             scal=scals(ti.indices,tn.indices)
           else to.twist=u
             scal=scals(ti.indices,tn.indices^inv(u))

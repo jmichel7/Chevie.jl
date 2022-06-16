@@ -1068,9 +1068,9 @@ struct Reflection{TW<:PermRootGroup}
 end
 
 @doc """
-`Reflection`   is   a   `struct`   representing   a  reflection  `r`  in  a
-`PermRootGroup`  `W`. The fields are `W`, the  index of a root for `r`, the
-non-trivial eigenvalue of `r`, and a word for `r` in the generators.
+`Reflection`  is a `struct`  representing a reflection  `r` in a reflection
+group `W`. The fields are `W`, the index of a root for `r`, the non-trivial
+eigenvalue of `r`, and a word for `r` in the generating reflections of `W`.
 ```julia-repl
 julia> r=reflections(crg(8))[2]
 Reflection(G₈,1,-1)
@@ -1112,7 +1112,6 @@ julia> word(r) # a word in the generators for r
 2-element Vector{Int64}:
  1
  1
-
 ```
 """ Reflection
 
@@ -1164,9 +1163,9 @@ function invert_word(W,w)
 end
 
 """
-`reflections(W)`  the  list  of  all  reflections  of  `W`  (including  the
-non-distinguished    ones)   given    as   a    `Vector{Reflection}`   (see
-[`Reflection`](@ref)).
+`reflections(W)`  the list of  all reflections of  the reflection group `W`
+(including  the  non-distinguished  ones),  given as a `Vector{Reflection}`
+(see [`Reflection`](@ref)).
 
 ```julia-repl
 julia> W=crg(4)

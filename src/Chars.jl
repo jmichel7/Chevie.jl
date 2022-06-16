@@ -453,7 +453,7 @@ function fakedegrees(W,q=Pol();recompute=false)
   P=generic_order(W,qq)
   P=shift(P,-valuation(P))
   ct=CharTable(W)
-  P=ct.irr*map(pairs(ct.centralizers))do (i,c)
+  P=ct.irr*map(enumerate(ct.centralizers))do (i,c)
     exactdiv(P,
         improve_type(prod(l->(qq*conj(l)-1),refleigen(W,i);init=one(qq))))//c
   end

@@ -39,6 +39,7 @@ twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
 all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
+"RG(s) regression test for test s (keys(test) shows available tests)"
 function RG(s::Symbol)
   t=test[s]
   println("testing ",s,"\n",t.comment)
@@ -48,6 +49,7 @@ function RG(s::Symbol)
   end end
 end
 
+"RG(W) regression test groupspets W"
 function RG(W)
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
@@ -509,7 +511,7 @@ function Tcharparams(W)
   db=map(x->[x(1),valuation(x)],fd)
   n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
-    nm=map(x->CHEVIE[:G2][:CharName](x,Dict()),l)
+    nm=map(Util.TeXstrip∘HasType.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
   elseif n[1] in "EFGH" && length(n)<4
     l=filter(x->x[2]>1,tally(charinfo(W)[:charparams]))
@@ -536,6 +538,7 @@ function Tcharparams(W)
   # chars of name n+qualifiers satisfy f
   function check(n,fn)local qq,a,i,j
     n=findall(x->length(x)>=length(n) && x[1:length(n)]==n,nm)
+    if isempty(n) error(n," not found in ",nm) end
     sort!(n,by=i->nbbis(nm[i]))
     aa=arrangements(1:length(n),length(n))
     a=aa[findfirst(x->fn(nm[n[x]]),aa)]
@@ -1632,7 +1635,7 @@ function TG4_22index(W)
   e=getchev(t,:Embed)
   c=map(c->vcat(map(x->e[x],c)...),classinfo(W)[:classtext])
   c=map(x->position_class(O,O(x...)),c)
-  l=map(x->findfirst(i->reflection(O,i)==O(x...),eachindex(roots(O))),e)
+  l=map(x->findfirst(i->refls(O,i)==O(x...),eachindex(roots(O))),e)
   a=classinfo(W)[:indexclasses]
   if nothing in l # for G13, G15 gen is square of gen of G11
     b=c
@@ -1716,7 +1719,7 @@ function Tparameterexponents(W,i)
     L=reflection_subgroup(W,vcat(h[:levi],I[i]))
     t=refltype(L)
     H=reflection_subgroup(L,restriction(L,inclusion(W,h[:levi])))
-    InfoChevie("  # ParameterExponents from ",H,":",I[i])
+    InfoChevie("  # ParameterExponents from ",H,":",I[i],"\n")
     if !haskey(t[1],:indices) && !haskey(t[1],:orbit)
       ChevieErr("Levi ",vcat(h[:levi],I[i])," could not be identified\n")
     else
@@ -1778,8 +1781,8 @@ function reflection_discriminant(W)
   res=[]
   for h in hyperplane_orbits(W)
     cr=coroots(W,h.s)
-    for w in map(x->transporting_elt(W,gens(W)[h.s],x),
-                 conjugacy_class(W,h.cl_s[1]))
+    for w in map(x->transporting_elt(W,W(h.s),x),
+                 conjugacy_classes(W,h.cl_s[1]))
       append!(res,map(i->reflrep(W,w^-1)*cr,1:h.order))
     end
   end

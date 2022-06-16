@@ -1108,7 +1108,7 @@ function Groups.position_class(W::FiniteCoxeterGroup,w)
   ww=word(W,w)
   iw=map(refltype(W))do t
     v=map(i->findfirst(==(i),t.indices),filter(i->i in t.indices,ww))
-    c=getchev(t,:ClassParameter,v)
+    getchev(t,:ClassParameter,v)
   end
   if any(isnothing,iw) return position_class(W.G,w) end
   findfirst(==(iw),classinfo(W)[:classparams])

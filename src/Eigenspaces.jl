@@ -227,7 +227,7 @@ end
 
 function Groups.normalizer(W,L::PermRootGroup)
   if length(L)==1 return W end
-  r=sort(unique!(refls(L)))
+  r=sort(refls(L,unique_refls(L)))
   centralizer(W,r;action=(x,g)->sort(x.^g))
 end
 

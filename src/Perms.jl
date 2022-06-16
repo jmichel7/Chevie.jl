@@ -564,7 +564,7 @@ julia> cycletype(Perm(1,2)*Perm(4,5);trivial=true,domain=1:6)
 """
 function cycletype(a::Perm;domain=1:length(a.d),trivial=false)
   lengths=Int[]
-  if isempty(a.d) return lengths end
+  if isempty(domain) return lengths end
   to_visit=falses(max(length(a.d),maximum(domain)))
 @inbounds  to_visit[domain].=true
   for i in eachindex(to_visit)

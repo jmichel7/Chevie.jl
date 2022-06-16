@@ -309,7 +309,7 @@ function ImprimitiveCuspidalName(S)
       elseif r==3 && d==3 
         return "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
       elseif r==3 && d==4 
-        return "G_{4,4,3}["* (s=="3010" ? "" : "-")*"\\zeta_4]"
+        return "G_{4,4,3}["*"\\zeta_4"*(s=="3010" ? "" : "^3")*"]"
     else return "G_{$d,$d,$r}^{$s}"
     end
   end
