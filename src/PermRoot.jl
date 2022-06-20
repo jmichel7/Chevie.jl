@@ -569,13 +569,24 @@ abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 "`Diagram(W)` diagram of finite reflection group `W`"
 Diagram(W::PermRootGroup)=Diagram.(refltype(W))
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
+"""
+`inclusion(W::PermRootGroup)`  
+
+the indices of the roots of `W` in the roots of `parent(W)`.
+
+`inclusion(W::PermRootGroup,i::Integer)`  
+`inclusion(W::PermRootGroup,v::AbstractVector{<:Integer})`  
+
+same as `inclusion(W)[i]` or `inclusion(W)[v]` (but more efficient).
+"""
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
+"`nref(W)` the number of reflections of the finite reflection group `W`"
 nref(W::PermRootGroup)=sum(degrees(W).-1)
 """
 `nhyp(W)`
 
-number of reflecting hyperplanes of `W`
+The number of reflecting hyperplanes of the finite reflection group `W`
 """
 nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
 # should use independent_roots
@@ -634,7 +645,9 @@ refls(W::PermRootGroup,i)=refls(W)[i]
 """
 `simple_conjugating(W)`
 
-For each root `i`, an element conjugating it to `simple_reps(W,i)`.
+For each index `i` of a root, an element `w∈ W` such that 
+`restriction(W,inclusion(W,simple_reps(W,i))^w)==i` 
+(or `action(W,simple_reps(W,i))==i`)
 """
 simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:simple_conjugating)
 
@@ -643,7 +656,8 @@ unique_refls(W::PermRootGroup)=getp(simple_reps,W,:unique_refls)
 """
 `simple_conjugating(W,i)`
 
-an element `w` such that `simple_reps(W,i)^w==i`
+an element `w∈ W` such that `restriction(W,inclusion(W,simple_reps(W,i))^w)==i` 
+(or `action(W,simple_reps(W,i))==i`)
 """
 simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
 
@@ -1513,11 +1527,11 @@ end
 """
 `PermX(W,M::AbstractMatrix)`
 
-Let  `M` be  a linear  transformation of  reflection representation  of `W`
+Let `M` be an invertible linear map of the reflection representation of `W`
 which  preserves the set  of roots of  `parent(W)`, and normalizes `W` (for
 the  action of  matrices on  the right).  `PermX` returns the corresponding
 permutation  of the roots of `parent(W)`;  it returns `nothing` if `M` does
-not normalize the set of roots.
+not normalize the set of roots of `parent(W)`.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
@@ -1709,10 +1723,11 @@ end
 
 Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
 permutation  of the roots of `W`. The function `reflrep` returns the matrix
-of  `w` acting on `V`. This is  the linear transformation of `V` which acts
-trivially  on the orthogonal of  the coroots and has  same effect as `w` on
-the simple roots. The function makes sense more generally for an element of
-the normalizer of `W` in the whole permutation group of the roots.
+of  `w` acting on `V`  (recall that matrices operate  *from the right* on a
+vector  space in `Gapjm`).  This is the  linear transformation of `V` which
+acts  trivially on the orthogonal of the coroots and has same effect as `w`
+on the simple roots. The function makes sense more generally for an element
+of the normalizer of `W` in the whole permutation group of the roots.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
@@ -1868,11 +1883,11 @@ radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 @inline roots(W::PRG)=W.roots
 "`roots(W,i)` same as but better than `roots(W)[i]`"
 @inline roots(W::PRG,i)=W.roots[i]
-"`simpleroots(W)` the simple roots as a matrix"
+"`simpleroots(W)` the simple roots of `W` as a matrix (each root is a row)"
 simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens(W))))
-"`coroots(W)` the coroots of `W`"
+"`coroots(W)` the list of coroots of `W` (listed in the same order as the roots)"
 @inline coroots(W::PRG)=W.coroots
-"`simplecoroots(W)` the simple coroots as a matrix"
+"`simplecoroots(W)` the simple coroots of `W` as a matrix (each coroot is a row)"
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(W.coroots[eachindex(gens(W))])
 @inline inclusion(W::PRG,i=eachindex(W.roots))=i
 @inline restriction(W::PRG,i=eachindex(W.roots))=i
@@ -1915,6 +1930,17 @@ end
 
 inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i)=W.inclusion[i]
+"""
+`restriction(W::PermRootGroup)`  
+
+A  list for each  root of `parent(W)`,  which hold `0`if  the root is not a
+root of `W` and `i` if the root is the `i`-th root of `W`.
+
+`restriction(W::PermRootGroup,i::Integer)`  
+`restriction(W::PermRootGroup,v::AbstractVector{<:Integer})`  
+
+same as `restriction(W)[i]` or `restriction(W)[v]` (but more efficient).
+"""
 restriction(W::PRSG)=W.restriction
 restriction(W::PRSG,i)=W.restriction[i]
 @inline roots(W::PRSG)=roots(parent(W),inclusion(W))
@@ -1924,6 +1950,14 @@ simpleroots(W::PRSG)=toM(roots(parent(W),inclusiongens(W)))
 @inline coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
 simplecoroots(W::PRSG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(coroots(parent(W),inclusiongens(W)))
 @inline Base.parent(W::PRSG)=W.parent
+"""
+`action(W::PermRootGroup,i::Integer,p::Perm)` 
+
+The elements of a `PermRootGroup` permute the roots of `parent(W)`, that is
+are  permutations on `1:nref(parent(W))`.  The function `action` translates
+this action of `p∈ W` to `1:nref(W)`. Thus
+`action(W,i,p)==restriction(W,inclusion(W,i)^p)`.
+"""
 action(W::PRSG,i,p)=restriction(W,inclusion(W,i)^p)
 
 function Base.:^(W::PRSG{T,T1},p::Perm{T1})where {T,T1}

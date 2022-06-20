@@ -255,6 +255,9 @@ const ChevieDict=Dict(
 "PermMatX"=>"PermX",
 #PermMatY
 "PermutationMat(p,dim)"=>"Matrix(p,dim)",
+"PermutationOnClasses"=>"on_classes",
+"PermutationOnCharacters"=>"on_chars",
+"PermutationOnUnipotents"=>"on_unipotents",
 "Permuted(v,p)"=>"v^p",
 "PermutedByCols(m,p)"=>"^(m,p;dims=2)",
 #PoincarePolynomial

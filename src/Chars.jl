@@ -571,9 +571,10 @@ sign  character);  it  is  the  highest  non-trivial  exterior power if the
 reflection representation.
 
 The  characters marked `Λⁱ` are the `i`-th exterior power of the reflection
-representation.  They are  only present  if `W`  is irreducible,  when they
-correspond  to the field `.extRefl` whose  `i+1`-th element is the index of
-the character `Λⁱ`.
+representation.  They are only present if `W` is irreducible, in which case
+thye  are irreducible characters by a  thoerem of Steinberg. They are given
+by  the  field  `.extRefl`  whose  `i+1`-th  element  is  the  index of the
+character `Λⁱ`.
 
 The  column  `b`  shows  the  field  `.b`  listing  for  each character the
 valuation  of the fake degree, and the column `B` shows the field `.B`, the
@@ -708,7 +709,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
   end
   t=hcat(t,ext); push!(cl,"ext")
-  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle]
+  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle,:lusztig]
     if haskey(ci,key) && ci[key]!=false
       t=hcat(t,fromTeX.(Ref(io),string.(ci[key])))
       push!(cl,string(key))

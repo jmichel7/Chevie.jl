@@ -20,7 +20,7 @@ const exclu=[
  ["CharInfo","I"],
  ["CharName","timp"],
  ["CharTable",["A","2A","B","D","2D","G31","G34","imp"]],
- ["ClassParameter",["A","2A","B","2D","D"]],
+ ["ClassParameter",["A","2A","B","2D","D","H4"]],
  ["Discriminant","H4"],
  ["FakeDegree",["2A","G4_22"]],
  ["GeneratingRoots",["imp","G4_22"]],

@@ -691,11 +691,6 @@ function Base.show(io::IO,t::Type{FCG{T,T1}})where {T,T1}
   print(io,"FiniteCoxeterGroup{Perm{",T,"},",T1,"}")
 end
 
-"""
-`nref(W)`
-
-number of reflections of `W`
-"""
 @inline CoxGroups.nref(W::FCG)=W.N
 CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 # the next is good also:
@@ -706,38 +701,20 @@ CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 
 This is equivalent to `rootdatum(cartan(type,rank[,bond]))`.
 
-The  resulting object, that we will  call a *Coxeter datum*, has an 
-additional entry
+The  resulting object  `W`, that  we will  call a  *Coxeter datum*,  has an
+additional entry compared to a `PermRootGroup`.
+
   - `W.rootdec`:  the root vectors, given  as linear combinations of simple
     roots.  The first `nref(W)` roots are  positive, the next `nref(W)` are
     the corresponding negative roots. Moreover, the first
     `semisimplerank(W)`  roots are the simple roots. The positive roots are
     ordered by increasing height.
 
-The  following functions  get various  information on  the root  system and
-Coxeter group
+see  the following functions for how to get various information on the root
+system and the Coxeter group
 
-  - `nref(W)`:   the number of positive roots
-
-  - `coroots(W)`: The list of coroots. The coroot corresponding  to a given
-    root has same index in the list of coroots as the root in the list of
-    roots.
-
-  - `rootlengths(W)`: the vector  of the (squared)  length of the roots.
-    The  shortest roots in an irreducible subsystem are given the length 1.
-    The  others then have  length 2 (or  3 in type `G₂`). The matrix of the
-    `W`-invariant bilinear form is given by
-    `map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))`.
-
-  - `simple_reps(W,i)`: this  gives the  smallest index  of a root in the
-    same `W`-orbit as the `i`-th root.
-
-  - `simple_conjugating(W,i)`: returns  an element  `w` of  `W` such that
-    `i==simple_reps(W,i)^w`.
-
-  - `reflrep(W)`:  the  reflection  representation  of  `W`, that is the
-    matrices  (in row convention --- the matrices operate *from the right*)
-    of the simple reflections generating `W`.
+`nref, coroots, rootlengths, simple_reps, simple_conjugating, reflrep, simpleroots,
+ simplecoroots, PermX, cartan, inclusion, restriction, action, rank, semisimplerank`
 
   - `gens(W)`: the generators, as permutations of the root vectors. They are
     in the same order as the simple roots.
@@ -835,7 +812,14 @@ coxgroup()=torus(0)
 #  vcat(transpose(hcat(roots.(Ref(W),(1:ngens(W)).^w)...)))
 #end
 
-# root lengths for parent group
+"""
+`rootlengths(W::FiniteCoxeterGroup)` 
+ the vector  of the (squared)  length of the roots of `W`.
+ The  shortest roots in an irreducible subsystem are given the length 1. In
+ a Weyl group the others then have length 2 (or 3 in type `G₂`). The matrix
+ of the `W`-invariant bilinear form is given by
+ `map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))`.
+"""
 function rootlengths(W::FCG)
   get!(W,:rootlengths)do
     C=cartan(W)
