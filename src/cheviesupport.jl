@@ -201,7 +201,7 @@ Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))
 FamilyOps=Dict()
 
 FactorizedSchurElementsOps=Dict{Symbol,Any}(
-:Simplify=>r->HeckeAlgebras.Simplify(HeckeAlgebras.FactSchur(r[:factor],
+:Simplify=>r->HeckeAlgebras.simplify(HeckeAlgebras.FactSchur(r[:factor],
           map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
 
 function exceptioCharName(para)

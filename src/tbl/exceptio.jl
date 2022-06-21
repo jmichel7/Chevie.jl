@@ -191,18 +191,6 @@ chevieset(["G24", "G27", "G29", "G33", "G34", "E6", "E7", "E8", "H3", "H4"], :Sc
                 return Value(CycPol((chevieget(t, :CycPolSchurElements))[Position(((chevieget(t, :CharInfo))())[:charparams], arg[1])]), -(((arg[2])[1])[1]) // ((arg[2])[1])[2])
             end
         end))
-chevieset(["G24", "G27", "G29", "G33", "G34", "E6", "E7", "E8", "H3", "H4"], :FactorizedSchurElement, (t->begin
-            function (arg...,)
-                local c, q, res, v, e
-                c = (chevieget(t, :CycPolSchurElements))[Position(((chevieget(t, :CharInfo))())[:charparams], arg[1])]
-                q = -(((arg[2])[1])[1]) // ((arg[2])[1])[2]
-                res = Dict{Symbol, Any}(:factor => Mvp(c[1] * q ^ c[2]), :operations => FactorizedSchurElementsOps)
-                res[:vcyc] = map((v->begin
-                                Dict{Symbol, Any}(:monomial => q, :pol => CycPol([1, 0, v]))
-                            end), c[3:length(c)])
-                return (FactorizedSchurElementsOps[:Simplify])(res)
-            end
-        end))
 chevieset(["G2", "F4", "G25", "G26", "G32"], :FactorizedSchurElement, (t->begin
             function (arg...,)
                 local Y, ci

@@ -21,6 +21,16 @@ chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->
   end
 )
 
+chevieset(["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"], 
+  :FactorizedSchurElement, t->function(ch,para,arg...)
+   c=chevieget(t,:CycPolSchurElements)[findfirst(==(ch),chevieget(t,:CharInfo)()[:charparams])]
+   q=-para[1][1]//para[1][2]
+   res=HeckeAlgebras.FactSchur(Mvp(c[1]*q^Int(c[2])), 
+                 map(v->(pol=CycPol([1,0,v]),monomial=q),c[3:length(c)]))
+   HeckeAlgebras.simplify(res)
+ end
+)
+
 function ExpandRep(r, d, l) # decompress representation of r gens of dim d
   T=reduce(promote_type,typeof.(first.(l)))
   m=map(i->map(j->fill(zero(T),d),1:d), 1:r)

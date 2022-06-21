@@ -839,6 +839,10 @@ struct FactSchur
 end
 
 function Base.show(io::IO,x::FactSchur)
+ if !(get(io,:TeX,false)||get(io,:limit,false))
+   print(io,"FactSchur(",x.factor,",",x.vcyc,")")
+   return
+ end
  v=map(x.vcyc) do l
     if get(io,:Maple,false)
       "("*repr(l.pol(l.monomial);context=io)*")"
@@ -903,21 +907,21 @@ function simplify(res::FactSchur)
       factor*=pol(k)
       continue
     end
-    k=collect(values(first(monomial.d)[1].d))
+    k=collect(powers(first(monomials(monomial))))
     if k[1]<0
       pol=subs(pol,Pol()^-1)
       k=-k
-      monomial=inv(monomial)
+      monomial=1//monomial
       factor*=pol.coeff*monomial^pol.valuation
       pol=CycPol(1,0,pol.v)
     end
-    c=first(monomial.d)[2]
+    c=first(coefficients(monomial))
     n=c*conj(c)
     if isinteger(n)
       n=root(n)//c
       if n!=1
         monomial*=n
-        pol=subs(pol,Pol([Root1(n)],1))
+        pol=subs(pol,Pol([inv(Root1(n))],1))
         factor*=pol.coeff
         if isone(pol.coeff^2) pol*=pol.coeff
         else pol//=pol.coeff
