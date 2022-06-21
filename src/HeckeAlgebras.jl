@@ -247,9 +247,23 @@ function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
   hecke(W,fill(p,ngens(W));rootpara)
 end
 
-function hecke(W::Group,p::Tuple;rootpara=zero(p[1]))
-  rootpara= iszero(rootpara) ? typeof(p[1])[] : fill(rootpara,ngens(W))
-  hecke(W,[collect(p) for j in 1:ngens(W)];rootpara=rootpara)
+function hecke(W::Group,p::Tuple;rootpara=nothing)
+  if length(p)==1
+    para=fill(p,ngens(W))
+  else 
+    s=simple_reps(W,1:ngens(W))
+    C=sort(unique(s))
+    para=fill(first(p),ngens(W))
+    if !isnothing(rootpara) rtpara=fill(first(rootpara),ngens(W)) end
+    for i in 1:ngens(W)
+      para[i]=p[findfirst(==(s[i]),C)]
+      if !isnothing(rootpara) 
+        rtpara[i]=rootpara[findfirst(==(s[i]),C)]
+      end
+    end
+    rootpara= isnothing(rootpara) ? typeof(p[1])[] : rtpara
+  end
+  hecke(W,para;rootpara=rootpara)
 end
 
 function rootpara(H::HeckeAlgebra)
