@@ -684,6 +684,12 @@ BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),gens(W),W
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 Base.one(M::BraidMonoid)=M.one
 
+"""
+`isleftdescent(M,w,i)`
+
+returns `true` if and only if the `i`-th atom of the locally Garside monoid
+`M` left-divides the simple `w`.
+"""
 CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
@@ -788,6 +794,10 @@ function Base.hash(a::GarsideElt, h::UInt)
   h
 end
 
+"""
+`leftdescents(b::LocallyGarsideElt)` the list of indices of the atoms
+which left-divide `b`
+"""
 CoxGroups.leftdescents(b::LocallyGarsideElt)=filter(i->isleftdescent(b.M,b[1],
                                    i),eachindex(b.M.atoms))
 
