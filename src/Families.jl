@@ -24,32 +24,32 @@ julia> uc=UnipotentCharacters(W);
 julia> uc.families
 3-element Vector{Family}:
  Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
- Family(C₁,[1])                         
- Family(C₁,[2])                         
+ Family(C₁,[1])
+ Family(C₁,[2])
 
 julia> uc.families[1]
 Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
 Drinfeld double of 𝔖 ₃, Lusztig′s version
-   label│eigen                                       
-────────┼─────────────────────────────────────────────
-(1,1)   │    1 1/6  1/2  1/3  1/3  1/6  1/2  1/3  1/3
-(g₂,1)  │    1 1/2  1/2    0    0 -1/2 -1/2    0    0
-(g₃,1)  │    1 1/3    0  2/3 -1/3  1/3    0 -1/3 -1/3
-(1,ρ)   │    1 1/3    0 -1/3  2/3  1/3    0 -1/3 -1/3
-(1,ε)   │    1 1/6 -1/2  1/3  1/3  1/6 -1/2  1/3  1/3
-(g₂,ε)  │   -1 1/2 -1/2    0    0 -1/2  1/2    0    0
-(g₃,ζ₃) │   ζ₃ 1/3    0 -1/3 -1/3  1/3    0  2/3 -1/3
-(g₃,ζ₃²)│  ζ₃² 1/3    0 -1/3 -1/3  1/3    0 -1/3  2/3
+   label│eigen
+────────┼─────────────────────────────────────────────────────
+(1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
+(g₂,1)  │    1 1//2  1//2     0     0 -1//2 -1//2     0     0
+(g₃,1)  │    1 1//3     0  2//3 -1//3  1//3     0 -1//3 -1//3
+(1,ρ)   │    1 1//3     0 -1//3  2//3  1//3     0 -1//3 -1//3
+(1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3
+(g₂,ε)  │   -1 1//2 -1//2     0     0 -1//2  1//2     0     0
+(g₃,ζ₃) │   ζ₃ 1//3     0 -1//3 -1//3  1//3     0  2//3 -1//3
+(g₃,ζ₃²)│  ζ₃² 1//3     0 -1//3 -1//3  1//3     0 -1//3  2//3
 
 julia> charnames(uc)[uc.families[1].charNumbers]
 8-element Vector{String}:
- "phi2,1"  
- "phi2,2"  
+ "phi2,1"
+ "phi2,2"
  "phi1,3''"
- "phi1,3'" 
- "G2[1]"   
- "G2[-1]"  
- "G2[E3]"  
+ "phi1,3'"
+ "G2[1]"
+ "G2[-1]"
+ "G2[E3]"
  "G2[E3^2]"
 ```
 
@@ -67,7 +67,7 @@ this construction.
 module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier,
- FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, 
+ FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra,
  involution, duality, eigen
 
 using ..Gapjm
@@ -109,22 +109,22 @@ unipotent degrees.
 julia> Family("C2")
 Family(C₂,4)
 DrinfeldDouble(Z/2)
- label│eigen                   
-──────┼─────────────────────────
-(1,1) │    1 1/2  1/2  1/2  1/2
-(g₂,1)│    1 1/2  1/2 -1/2 -1/2
-(1,ε) │    1 1/2 -1/2  1/2 -1/2
-(g₂,ε)│   -1 1/2 -1/2 -1/2  1/2
+ label│eigen
+──────┼─────────────────────────────
+(1,1) │    1 1//2  1//2  1//2  1//2
+(g₂,1)│    1 1//2  1//2 -1//2 -1//2
+(1,ε) │    1 1//2 -1//2  1//2 -1//2
+(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2
 
 julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
 Family(C₂,4:7)
 DrinfeldDouble(Z/2)
- label│eigen signs                   
-──────┼───────────────────────────────
-(1,1) │    1     1  1/2 -1/2 1/2 -1/2
-(g₂,1)│    1    -1 -1/2  1/2 1/2 -1/2
-(1,ε) │    1     1  1/2  1/2 1/2  1/2
-(g₂,ε)│   -1    -1 -1/2 -1/2 1/2  1/2
+ label│eigen signs
+──────┼───────────────────────────────────
+(1,1) │    1     1  1//2 -1//2 1//2 -1//2
+(g₂,1)│    1    -1 -1//2  1//2 1//2 -1//2
+(1,ε) │    1     1  1//2  1//2 1//2  1//2
+(g₂,ε)│   -1    -1 -1//2 -1//2 1//2  1//2
 ```
 """
 function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
@@ -299,10 +299,10 @@ label│eigen        3      1        2
 function Base.:^(f::Family,p::Perm)
   f=Family(copy(f.prop))
   for n in [:x,:chi,:charNumbers,:eigenvalues,:unpdeg,:fakdeg,
-    :mellinLabels,:charLabels,:perm,:special] 
+    :mellinLabels,:charLabels,:perm,:special]
     if haskey(f,n) setproperty!(f,n,getproperty(f,n)^p) end
   end
-  for n in [:fourierMat,:mellin] 
+  for n in [:fourierMat,:mellin]
     if haskey(f,n) setproperty!(f,n,^(getproperty(f,n),p;dims=(1,2))) end
   end
   f.explanation="Permuted("*repr(p;context=:TeX=>true)*","*f.explanation*")"
@@ -394,7 +394,7 @@ function SubFamily(f::Family,ind,scal,label)
   res.name="$(f.name)_{[$label]}"
   if haskey(f,:charSymbols) res.charSymbols=f.charSymbols[ind] end
   if haskey(f,:group) res.group=f.group end
-  special=findfirst(==(f.special),ind) 
+  special=findfirst(==(f.special),ind)
   if special!==nothing res.special=special end
   res
 end
@@ -409,7 +409,7 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   g=Family(Dict{Symbol,Any}())
   g.special=1
   g.charSymbols=combinations(0:e-1,n)
-  g.charLabels=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s), 
+  g.charLabels=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s),
                            "\\!\\wedge\\!"), g.charSymbols)
   if iszero(e%2) g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1))
   else           g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1))
@@ -451,7 +451,7 @@ chevieset(:families,:QZ,function(n)
   res.fourierMat=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
   res.eigenvalues=[E(n,x*c) for (x,c) in pairs]
   res.special=1
-  res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true)) 
+  res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
                     for (x,c) in pairs]
   res
 end)
@@ -477,17 +477,17 @@ chevieset(:families,:Dihedral,function(e)
   if iseven(e)
     f.fourierMat=map(nc)do i
       map(nc)do j
-        if length(i)==2 
+        if length(i)==2
           i1,i2=i
           if length(j)==2 return (c(j'*[i2,-i1])-c(j'*[-i1,i2]))//e
           else return  ((-1)^i1-(-1)^i2)//e
           end
-        elseif length(i)==3 
+        elseif length(i)==3
           if length(j)==2 return ((-1)^j[1]-(-1)^j[2])//e
           elseif i==j return (1-(-1)^e1+e)//2//e
           else return (1-(-1)^e1-e)//2//e
           end
-        end 
+        end
       end
     end
     f.fourierMat=improve_type(toM(f.fourierMat))
@@ -600,7 +600,7 @@ the call).
 ```julia-rep1
 julia> drinfeld_double(CoxSym(3))
 Family(D(CoxSym(3)):8)
-   label│eigen                                       
+   label│eigen
 ────────┼─────────────────────────────────────────────
 (1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3
 (1,X.2) │    1  1/3  2/3 1/3    0    0 -1/3 -1/3 -1/3
@@ -613,7 +613,7 @@ Family(D(CoxSym(3)):8)
 
 julia> drinfeld_double(CoxSym(3);lu=true)
 Family(LD(CoxSym(3)):8)
-   label│eigen                                       
+   label│eigen
 ────────┼─────────────────────────────────────────────
 (1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3
 (1,X.2) │    1  1/3  2/3 1/3    0    0 -1/3 -1/3 -1/3
@@ -651,7 +651,7 @@ function drinfeld_double(g;lu=false)
     end
   end
   res.eigenvalues=vcat(map(r->
-    r[:chars][:,position_class(r[:centralizer],r[:elt])].// 
+    r[:chars][:,position_class(r[:centralizer],r[:elt])].//
     r[:chars][:,position_class(r[:centralizer],one(g))],res.classinfo)...)
   if lu
     res.name="L"
@@ -663,7 +663,7 @@ function drinfeld_double(g;lu=false)
   res.name*="D($g)"
   res.explanation*="DrinfeldDouble($g)"
   res.mellin=cat(map(r->
-          conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1, 
+          conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1,
     res.classinfo)...,dims=(1,2))
   res.mellinLabels=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res.classinfo))
   res.xy=reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res.classinfo))
@@ -723,7 +723,7 @@ function family_imprimitive(S)
   ct=sort(vcat(S...))
   Scoll=tally(ct)
   d=length(ct)%e
-  if !(d in [0,1]) 
+  if !(d in [0,1])
     error("length(",joindigits(ct),") should be 0 or 1 mod.",e," !\n")
   end
   m=div(length(ct),e)
@@ -739,7 +739,7 @@ function family_imprimitive(S)
 # where for f in F with image f.(ct)
 # ε(f)=(-1)^{number of non-inversions in the list f.(ct)}
 # and f*f(T) is the scalar product of vectors f.(ct) and f(T).(ct).
-# 
+#
 # To  compute this reasonably fast, it is  decomposed as a product of sums,
 # each relative to a set of consecutive equal entries in ct. If fᵢ(S) and
 # fᵢ(T) are the restrictions to elements of ct of value i (two subsets of
@@ -750,7 +750,7 @@ function family_imprimitive(S)
   ff=map(ff)do coll
     map((x,y)->filter(c->sum(c)%e==y,combinations(0:e-1,x[2])),Scoll,coll)
   end
-  ff=reduce(vcat,map(x->cartesian(x...), ff)) 
+  ff=reduce(vcat,map(x->cartesian(x...), ff))
   ffc=map(x->vcat(x...),ff) # now  ffc are the "canonical" functions
   eps=map(l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
@@ -885,7 +885,7 @@ function Base.show(io::IO, ::MIME"text/html",f::Family)
 end
 
 function Base.show(io::IO,f::Family)
-  if hasdecor(io) || !haskey(f,:group) 
+  if hasdecor(io) || !haskey(f,:group)
     name=haskey(f,:name) ? f.name : "???"
     printTeX(io,"Family(\$",name,"\$")
   else print(io,"Family(",repr(f.group))
@@ -901,13 +901,13 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
   TeX=get(io,:TeX,false)
   println(io,f)
   if TeX println(io,"\\par") end
-  if haskey(f,:explanation) # && f.explanation!=name 
-    printTeX(io,f.explanation,"\n") 
+  if haskey(f,:explanation) # && f.explanation!=name
+    printTeX(io,f.explanation,"\n")
   end
   row_labels=haskey(f,:charLabels) ? f.charLabels : string.(1:length(f))
   t=[repr.(f.eigenvalues;context=io)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
-  if haskey(f,:signs) 
+  if haskey(f,:signs)
     push!(t,string.(f.signs))
     push!(col_labels,"\\mbox{signs}")
   end

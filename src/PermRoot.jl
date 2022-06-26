@@ -787,7 +787,7 @@ prim=[
   if s==r+1 return Dict(:series => :A, :rank => r)
   elseif r==1 return Dict(:series=>:ST,:p=>s,:q=>1,:rank=>1)
   else l=([p.^(a+m-a*r,a*r-m) for a in div(m+r-1,r):div(m,r-1)]
-                       for (p,m) in factor(s))
+                       for (p,m) in eachfactor(s))
     de=vec((x->(d=prod(first.(x)),e=prod(last.(x)))).(Iterators.product(l...)))
   end
   o=maximum(ordergens(W))

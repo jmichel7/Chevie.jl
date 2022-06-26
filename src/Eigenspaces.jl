@@ -206,7 +206,7 @@ julia> w=W(1:3...)
 julia> p=eigenspace_projector(W,w,1//4)
 3×3 Matrix{Cyc{Rational{Int64}}}:
   (1+ζ₄)/4   ζ₄/2  (-1+ζ₄)/4
-  (1-ζ₄)/4    1/2   (1+ζ₄)/4
+  (1-ζ₄)/4   1//2   (1+ζ₄)/4
  (-1-ζ₄)/4  -ζ₄/2   (1-ζ₄)/4
 
 julia> GLinearAlgebra.rank(p)

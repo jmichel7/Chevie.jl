@@ -104,7 +104,7 @@ module CycPols
 
 export CycPol, cyclotomic_polynomial, subs
 
-using Primes: Primes, primes, totient, factor # totient=Euler φ
+using Primes: primes, factor, eachfactor, totient #Euler φ
 using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
@@ -265,29 +265,26 @@ end
 
 pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
 
-# decompose the .v of a CycPol in subsets Φ^i (for printing)
+# decompose the .v of a CycPol in subsets Φ^i (used for printing and value)
 function decompose(v::Vector{Pair{Root1,Int}})
-  rr=Pair{NamedTuple{(:conductor, :no),Tuple{Int,Int}},Int}[]
+  rr=NamedTuple{(:conductor, :no,:mul),Tuple{Int,Int,Int}}[]
   for t in collectby(x->order(first(x)),v)
-    c=order(t[1][1])
-    t=[(exponent(e),p) for (e,p) in t]
+    c=order(first(t[1]))
     if c==1 
-      push!(rr,(conductor=c,no=1)=>t[1][2])
+      push!(rr,(conductor=c,no=1,mul=last(t[1])))
       continue
     end
     res=[]
     v=fill(0,c)
-    v[first.(t)]=last.(t)
-    dd=dec(c)
-    for (i,r) in pairs(dd)
-      if (n=minimum(v[r]))>0 v[r].-=n
-      elseif (n=maximum(v[r]))<0 v[r].-=n 
-      else n=0 
+    @views v[exponent.(first.(t))].=last.(t)
+    for (i,r) in enumerate(dec(c))
+      if (n=minimum(@view v[r]))>0 || (n=maximum(@view v[r]))<0 
+        @views v[r].-=n 
+        push!(res,(conductor=c,no=i,mul=n))
       end
-      if n!=0 push!(res,(conductor=c,no=i)=>n) end
     end
     for i in 1:c  
-      if v[i]!=0 push!(res,(conductor=c,no=-i)=>v[i]) end 
+      if v[i]!=0 push!(res,(conductor=c,no=-i,mul=v[i])) end 
     end
     append!(rr,res)
   end
@@ -314,37 +311,40 @@ function Base.show(io::IO,a::CycPol)
   else
     s=format_coefficient(s)
     print(io,s) 
-    if a.valuation==1 print(io,"q")
-    elseif a.valuation!=0 print(io,Pol(),stringexp(io,a.valuation)) end
-    for (e,pow) in decompose(a.v.d)
+    v=LaurentPolynomials.varname[]
+    if a.valuation==1 print(io,v)
+    elseif a.valuation!=0 print(io,v,stringexp(io,a.valuation)) end
+    for e in decompose(a.v.d)
   #   println(e)
-      if e.no>0  print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
-        print(io,stringprime(io,e.no-1))
-        print(io,stringind(io,e.conductor))
-      else print(io,"(",Pol([-E(e[1],-e.no),1],0),")")
+      if e.no>0  
+        if get(io,:expand,false)
+          print(io,"(",prod(i->Pol()-E(e.conductor,i),dec(e.conductor)[e.no]),")")
+        else print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
+          print(io,stringprime(io,e.no-1))
+          print(io,stringind(io,e.conductor))
+        end
+      else print(io,"(",v,"-",E(e[1],-e.no),")")
       end
-      if pow!=1 print(io,stringexp(io,pow)) end
+      if e.mul!=1 print(io,stringexp(io,e.mul)) end
     end
   end
   if !isone(den) print(io,"/",den) end
 end
 
 # fields to test first: all n such that totient(n)<=12 except 11,13,22,26
-const tested=[1,2,4,3,6,8,12,5,10,9,18,24,16,20,7,14,15,30,36,28,21,42]
+const tested=[1,2,4,3,6,8,12,5,10,9,18,7,14,24,16,20,15,30,36,28,21,42]
 
 # list of i such that φᵢ/φ_(i∩ conductor))≤d, so a polynomial of
 # degree ≤d with coeffs in Q(ζ_conductor) could have roots power of ζᵢ
 function bounds(conductor::Int,d::Int)::Vector{Int}
   if d==0 return Int[] end
-  f=Primes.factor(conductor)
   t=Vector{Int}[];t1=Vector{Int}[]
-  local p
-  for (p,m) in f # use eachfactor
-   tp=[1];pw=p;while pw<=d push!(tp,pw);pw*=p end # tp=={powers of p<=d}
+  for (p,m) in eachfactor(conductor)
+    tp=[1];pw=p;while pw<=d push!(tp,pw);pw*=p end # tp=={powers of p<=d}
     push!(t,tp)
     push!(t1,tp*p^m)
   end
-  for p in setdiff(Primes.primes(d+1),keys(f))
+  for p in setdiff(primes(d+1),keys(factor(conductor)))
     tp=[1,p-1];pw=p*(p-1)
     while pw<=d push!(tp,pw);pw*=p end
     push!(t,tp)
@@ -362,7 +362,7 @@ function bounds(conductor::Int,d::Int)::Vector{Int}
 end
 
 # next function is twice the speed of p(Cyc(x))
-(p::Pol)(x::Root1)=sum(map(*,p.c,x.^(p.v:degree(p))))
+(p::Pol)(x::Root1)=transpose(p.c)*x.^(p.v:degree(p))
   
 """
 `CycPol(p::Pol)`
@@ -461,24 +461,26 @@ end
 function (p::CycPol)(x)
   res=p.valuation<0 ? (x//1)^p.valuation : x^p.valuation
   l=decompose(p.v.d)
-  for ((cond,no),mul) in l
+  for e in l
     if iszero(res) return res end
-    if no==1 res*=(cyclotomic_polynomial(cond)(x))^mul end
+    if e.no==1 res*=(cyclotomic_polynomial(e.conductor)(x))^e.mul end
   end
-  for ((cond,no),mul) in l
+  for e in l
     if iszero(res) return res end
-    if no>1 res*=prod(x-E(cond,j) for j in dec(cond)[no])^mul end
+    if e.no>1 
+      res*=prod(x-E(e.conductor,j) for j in dec(e.conductor)[e.no])^e.mul 
+    end
   end
   pp=one(x)
   co=0
   pp=one(x)
-  for ((cond,no),mul) in l
+  for e in l
     if iszero(res) return res end
-    if no<0 
-      if co==cond pp*=(x-E(cond,-no))^mul 
-      else co=cond
+    if e.no<0 
+      if co==e.conductor pp*=(x-E(e.conductor,-e.no))^e.mul 
+      else co=e.conductor
         res*=pp
-        pp=(x-E(cond,-no))^mul 
+        pp=(x-E(e.conductor,-e.no))^e.mul 
       end
     end
   end
@@ -530,17 +532,13 @@ const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 #=
   benchmark on Julia 1.7.2
 julia> @btime u=CycPols.p(Pol()) # gap 1.25 ms
-  518.149 μs (12054 allocations: 701.19 KiB)
   361.040 μs (9801 allocations: 678.39 KiB)
 julia> @btime CycPol(u) # gap 8.2ms
-  7.700 ms (151293 allocations: 9.67 MiB)
   5.558 ms (123729 allocations: 9.26 MiB)
 julia> @btime u(1)  # gap 40μs
-  50.525 μs (1155 allocations: 68.78 KiB)
   31.999 μs (897 allocations: 64.75 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
-  28.768 μs (593 allocations: 42.89 KiB)
-  44.556 μs (806 allocations: 51.12 KiB)
+  31.533 μs (547 allocations: 35.55 KiB)
 =#
 
 # a worse polynomial; u=p2(Pol()) 17ms (gap3 9ms) CycPol(u) 1.25 (gap3 1.33s)

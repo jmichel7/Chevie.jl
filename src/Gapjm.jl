@@ -90,7 +90,7 @@ using UsingMerge
 @reexport using PuiseuxPolynomials
 @reexport using ModuleElts
 @reexport using Combinat
-@reexport using Primes: factor
+@reexport using Primes: factor, eachfactor
 @usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
