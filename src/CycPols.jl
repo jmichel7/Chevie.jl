@@ -106,7 +106,7 @@ Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 This package also defines
 ```julia-repl
 julia> p=cyclotomic_polynomial(24)
-Pol{Int64}: x⁸-x⁴+1
+Pol{Int64}: q⁸-q⁴+1
 
 julia> CycPol(p)
 Φ₂₄
