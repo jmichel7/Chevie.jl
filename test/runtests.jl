@@ -205,6 +205,8 @@ end
 @test mytest("CycPols.jl","subs(p,Pol([E(2)],1))","(q+2)Φ₁Φ₂Φ₄₆")
 @test mytest("CycPols.jl","CycPol(;conductor=24,no=8)","Φ⁽⁷⁾₂₄")
 @test mytest("CycPols.jl","CycPol(;conductor=24,no=8)(q)","Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1")
+@test mytest("CycPols.jl","p=cyclotomic_polynomial(24)","Pol{Int64}: x⁸-x⁴+1")
+@test mytest("CycPols.jl","CycPol(p)","Φ₂₄")
 @test mytest("CycPols.jl","cyclotomic_polynomial(5)","Pol{Int64}: q⁴+q³+q²+q+1")
 @test mytest("CycPols.jl","cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")
 @test mytest("CycPols.jl","@Pol q;CycPol(3*q^3-3q)","3qΦ₁Φ₂")

@@ -3,8 +3,12 @@
 Gapjm
 ```
 ```@contents
+Pages=["index.md"]
 ```
 # Permutations
+```@index
+Modules=[Perms]
+```
 ```@docs
 Perms
 Perm
@@ -31,6 +35,9 @@ mappingPerm
 Perm_rowcol
 ```
 # Groups
+```@index
+Modules=[Groups]
+```
 ```@docs
 Groups
 Group
@@ -65,6 +72,9 @@ kernel
 blocks(G,p)
 ```
 # Permutation groups
+```@index
+Modules=[PermGroups]
+```
 ```@docs
 PermGroups
 largest_moved_point(::PermGroup)
@@ -100,6 +110,9 @@ showtable
 cut
 ```
 # Posets
+```@index
+Modules=[Posets]
+```
 ```@docs
 Posets
 Poset
@@ -120,6 +133,9 @@ maximum(P::Poset)
 Poset(::CoxeterGroup,w=longest(W))
 ```
 # Signed permutations
+```@index
+Modules=[SPerms]
+```
 ```@docs
 SPerms
 SPerm
@@ -136,6 +152,9 @@ sstab_onmats
 SPerm_onmats
 ```
 # Linear algebra on any field/ring
+```@index
+Modules=[GLinearAlgebra]
+```
 ```@docs
 GLinearAlgebra
 GLinearAlgebra.echelon!
@@ -159,6 +178,9 @@ GLinearAlgebra.det
 GLinearAlgebra.rank
 ```
 # Integral matrices and lattices
+```@index
+Modules=[MatInt]
+```
 ```@docs
 smith
 smith_transforms
@@ -180,6 +202,9 @@ FFE(i::Integer)
 Z(::Any)
 ```
 # Presentations
+```@index
+Modules=[Presentations]
+```
 ```@docs
 Presentations
 AbsWord
@@ -192,6 +217,9 @@ conjugate
 tryconjugate
 ```
 # Coxeter groups
+```@index
+Modules=[CoxGroups]
+```
 ```@docs
 CoxGroups
 isleftdescent
@@ -211,6 +239,9 @@ standard_parabolic_class
 GenCox
 ```
 # Finite Coxeter groups and Weyl groups
+```@index
+Modules=[Weyl]
+```
 ```@docs
 Weyl
 cartan(::Symbol,::Integer,::Integer)
@@ -232,6 +263,9 @@ SubTorus
 relative_group
 ```
 # Finite reflection groups
+```@index
+Modules=[PermRoot]
+```
 ```@docs
 PermRoot
 complex_reflection_group
@@ -278,6 +312,9 @@ parabolic_closure
 isparabolic
 ```
 # Hecke algebras
+```@index
+Modules=[HeckeAlgebras]
+```
 ```@docs
 HeckeAlgebras
 hecke
@@ -294,6 +331,9 @@ reflrep(::HeckeAlgebra)
 HeckeCoset
 ```
 # Kazhdan-Lusztig polynomials and bases
+```@index
+Modules=[KL]
+```
 ```@docs
 KL
 KLPol
@@ -310,6 +350,9 @@ LusztigAw
 AsymptoticAlgebra
 ```
 # Garside monoids and groups, braids.
+```@index
+Modules=[Garside]
+```
 ```@docs
 Garside
 LocallyGarsideMonoid
@@ -338,6 +381,9 @@ Presentation(::GarsideMonoid)
 shrink
 ```
 # Classes/characters of reflection groups
+```@index
+Modules=[Chars]
+```
 ```@docs
 Chars
 CharTable
@@ -358,6 +404,9 @@ conjPerm
 WGraphToRepresentation
 ```
 # Reductive groups, semisimple elements
+```@index
+Modules=[Semisimple]
+```
 ```@docs
 Semisimple
 fundamental_group
@@ -390,6 +439,9 @@ quasi_isolated_reps(::Spets)
 isisolated(::Spets,::SemisimpleElement{Root1})
 ```
 # Unipotent characters
+```@index
+Modules=[Uch]
+```
 ```@docs
 Uch
 UnipotentCharacters
@@ -423,6 +475,9 @@ Series
 ennola
 ```
 # Unipotent classes of reductive groups
+```@index
+Modules=[Ucl]
+```
 ```@docs
 Ucl
 UnipotentClasses
@@ -435,6 +490,9 @@ special_pieces
 distinguished_parabolics
 ```
 # Symbols
+```@index
+Modules=[Symbols]
+```
 ```@docs
 Symbols
 shiftβ
@@ -453,6 +511,9 @@ valuation_gendeg_symbol
 XSP
 ```
 # Eigenspaces
+```@index
+Modules=[Eigenspaces]
+```
 ```@docs
 Eigenspaces
 relative_degrees

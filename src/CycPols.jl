@@ -1,6 +1,6 @@
 """
 This package depends only on the packages `Primes`, `ModuleElts`,
-`CyclotomicNumbers` and `LaurentPolynomials`. 
+`CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`. 
 
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
 cyclotomic  field,  are  important  in  reductive  groups and  Spetses.  In
@@ -14,6 +14,10 @@ zeroes  equal to  0 or  roots of  unity. The  advantages of representing as
 multiplication,  division and evaluation. The drawback is that addition and
 subtraction are not implemented!
 
+The  method `CycPol`  takes a  `Pol` with  integer, rational  or cyclotomic
+coefficients,  and  finds  the  largest  `CycPol` dividing, leaving a `Pol`
+`coefficient` if the polynomial had not all its roots being roots of unity.
+
 ```julia-repl
 julia> @Pol q
 Pol{Int64}: q
@@ -21,13 +25,13 @@ Pol{Int64}: q
 julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2) # a `Pol` coefficient remains
 (q-2)Φ₁Φ₂Φ₂₃
 
-julia> p(q) # a CycPol is a callable object, this call evaluates p at q
+julia> p(q) # evaluate CycPol p at q
 Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 
-julia> p*inv(CycPol(q^2+q+1))
+julia> p*inv(CycPol(q^2+q+1)) # inv is defined
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
-julia> -p
+julia> -p  # one can multiply by a scalar
 (-q+2)Φ₁Φ₂Φ₂₃
 
 julia> valuation(p)
@@ -36,10 +40,9 @@ julia> valuation(p)
 julia> degree(p)
 25
 
-julia> lcm(p,CycPol(q^3-1))
+julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPol
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
 ```
-
 Evaluating  a `CycPol` at  some value gives  in general a  `Pol`. There are
 exceptions  where the value is still a `CycPol`: evaluating at `Pol()^n` or
 at `Pol([E(n,k)],1)`. Then `subs` gives that evaluation:
@@ -98,6 +101,15 @@ julia> CycPol(;conductor=24,no=8)
 
 julia> CycPol(;conductor=24,no=8)(q)
 Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
+```
+
+This package also defines
+```julia-repl
+julia> p=cyclotomic_polynomial(24)
+Pol{Int64}: x⁸-x⁴+1
+
+julia> CycPol(p)
+Φ₂₄
 ```
 """
 module CycPols
@@ -532,16 +544,16 @@ const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 #=
   benchmark on Julia 1.7.2
 julia> @btime u=CycPols.p(Pol()) # gap 1.25 ms
-  361.040 μs (9801 allocations: 678.39 KiB)
+  341.214 μs (9542 allocations: 662.91 KiB)
 julia> @btime CycPol(u) # gap 8.2ms
-  5.558 ms (123729 allocations: 9.26 MiB)
+  5.591 ms (123484 allocations: 9.19 MiB)
 julia> @btime u(1)  # gap 40μs
   31.999 μs (897 allocations: 64.75 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
-  31.533 μs (547 allocations: 35.55 KiB)
+  25.402 μs (547 allocations: 35.55 KiB)
 =#
 
-# a worse polynomial; u=p2(Pol()) 17ms (gap3 9ms) CycPol(u) 1.25 (gap3 1.33s)
+# a worse polynomial; u=p2(Pol()) 17ms (gap3 9ms) CycPol(u) 1.17s (gap3 1.33s)
 const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8=>1,
 2//9=>1,5//9=>1,8//9=>1,7//12=>1,11//12=>1,1//16=>1,3//16=>1,5//16=>1,
 9//16=>1,11//16=>1,13//16=>1,5//18=>2,11//18=>2,17//18=>2,2//21=>1,5//21=>1,

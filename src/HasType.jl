@@ -118,13 +118,17 @@ const src=[
 "weyle7", 
 "weyle8", "weyle8_t",
 "weylf4", 
-"weylg2",
-"exceptio", "exceptio_t"
+"weylg2"
 ]
 
+print("reading tbl/")
 for f in src
-  println("reading tbl/$f.jl")
+  print("$f.jl, ")
   include("tbl/$f.jl")
 end
+println("\nreading tbl/exceptio")
+include("tbl/exceptio.jl")
+println("reading tbl/exceptio_t")
+include("tbl/exceptio_t.jl")
 
 end
