@@ -546,6 +546,7 @@ InducedDecompositionMatrix
 The dictionary from GAP3/Chevie is as follows:
 ```
 AbelianGenerators                           abelian_gens
+AbelianInvariants                           abelian_invariants
 AlgebraicCentre                             algebraic_centre
 AlmostCharacter                             AlmostChar
 Arrangements                                arrangements
@@ -594,8 +595,8 @@ ComplementIntMat                            complementInt
 ComplexConjugate                            conj
 ComplexReflectionGroup                      complex_reflection_group or crg
 Compositions                                compositions
-Concatenation(s::Vector...)                 vcat(s...)
-ConcatenationString(s...)                   prod(s)
+Concatenation(s::Vector)                    vcat(s...)
+ConcatenationString(s...)                   prod([s...])
 ConjugacyClasses                            conjugacy_classes
 ConjugacySet(b[,F][,type])                  conjcat(b[,F],ss=type).obj
 ConjugatePartition                          conjugate_partition
@@ -743,6 +744,8 @@ LusztigAw                                   LusztigAw
 LusztigInduction                            LusztigInduce
 LusztigInductionTable                       LusztigInductionTable
 LusztigRestriction                          LusztigRestrict
+M.LeftLcmSimples(x...)                      leftlcm(M,...)
+M.RightLcmSimples(x...)                     rightlcm(M,...)
 M.ToOrdinary(i)                             B(M,i)
 MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
@@ -770,6 +773,7 @@ OnTuples(l,p)                               l.^p
 OrderedPartitions                           compositions
 OrderFFE                                    order
 OrderMod(n,m)                               order(Mod{m}(n))
+ParabolicClosure                            parabolic_closure
 ParabolicRepresentatives                    parabolic_reps
 PartBeta                                    partβ
 Partition                                   partition
@@ -782,6 +786,9 @@ PermListList(l1,l2)                         Perm(l1,l2)
 PermMatMat                                  Perm_onmats
 PermMatX                                    PermX
 PermutationMat(p,dim)                       Matrix(p,dim)
+PermutationOnCharacters                     on_chars
+PermutationOnClasses                        on_classes
+PermutationOnUnipotents                     on_unipotents
 Permuted(v,p)                               v^p
 PermutedByCols(m,p)                         ^(m,p;dims=2)
 Poset                                       Poset
@@ -798,6 +805,7 @@ PositionsProperty(l,f)                      findall(f,l)
 PowerRoot(x,y)                              (Root1(;r=x)^y).r
 Presentation                                Presentation
 PrintDiagram(W)                             Diagram(W)
+Product                                     prod
 ProportionalityCoefficient(v,w)             ratio(v,w)
 QuasiIsolatedRepresentatives                quasi_isolated_reps
 QuoInt                                      div
@@ -866,6 +874,7 @@ StandardParabolicClass                      standard_parabolic_class
 StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
 SubSpets                                    subspets
 SubTorus                                    SubTorus
+Sum                                         sum
 SumIntersectionMat(m,n)                     (sum_rowspace(m,n),intersect_rowspace(m,n))
 Symbols                                     HasType.BDSymbols
 SymbolsDefect(e,r,def,ct)                   symbols(e,r,ct,def)

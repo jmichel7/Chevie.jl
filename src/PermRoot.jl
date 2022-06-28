@@ -1804,7 +1804,7 @@ julia> parabolic_closure(W,[1,2])
 function parabolic_closure(W,I)
   if isempty(I) return I end
   v=toM(roots(W,I))
-  gens=filter(i->solutionmat(v,roots(W,i))!==nothing,eachindex(roots(W)))
+  gens=filter(i->in_rowspace(roots(W,i),v),eachindex(roots(W)))
   inclusiongens(reflection_subgroup(W,gens),W)
 end
 

@@ -1,7 +1,7 @@
 # this contains simple functions but which need
 # several of the self-contained structural packages of Gapjm
 module Tools
-export abelian_gens, improve_type
+export abelian_gens, abelian_invariants, improve_type
 using UsingMerge
 using ModuleElts
 using LaurentPolynomials
@@ -96,9 +96,10 @@ end
 `abelian_gens(A)`
     
 `A`  should be an abelian group or the list of its generators. Such a group
-has  a unique decomposition  up to isomorphism  of the form `C₁×…×Cₙ` where
-the  order of `Cᵢ` divides the order of `Cᵢ₊₁`. The function returns a list
-of generators for each of the `Cᵢ`.
+has  a unique decomposition up to isomorphism as a product of cyclic groups
+`C(n₁)×…×C(nₖ)`  where `C(nᵢ)`  is a  cyclic group  of order  `nᵢ` and `nᵢ`
+divides  `nᵢ₊₁`. The function returns a list  of generators for each of the
+`C(nᵢ)`.
 
 ```julia-repl
 julia> abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])
@@ -123,5 +124,22 @@ function abelian_gens(G::Group) # thanks to Klaus Lux for the algorithm
   rels=Integer.(inv(Rational.(smith_transforms(rels).coltrans)))
   filter(!isone,map(r->prod(l.^r),eachrow(rels)))
 end
+
+"""
+`AbelianInvariants(G::Group )`
+    
+`G`  should be an abelian group. Such a group has a unique decomposition up
+to  isomorphism as a product of cyclic groups `C(n₁)×…×C(nₖ)` where `C(nᵢ)`
+is  a cyclic  group of  order `nᵢ`  and `nᵢ`  divides `nᵢ₊₁`.  The function
+returns the list `n₁,…,nₖ`.
+
+```julia-repl
+julia> abelian_invariants(Group([Perm(1,2),Perm(3,4,5),Perm(6,7)]))
+2-element Vector{Int64}:
+ 2
+ 6
+```
+"""
+abelian_invariants(G::Group)=order.(abelian_gens(G))
 
 end

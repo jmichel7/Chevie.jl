@@ -20,7 +20,7 @@ using ..Tools: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
   ratio, schur_functor, charpoly, solutionmat, transporter, 
   permanent, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
-  intersect_rowspace
+  intersect_rowspace, in_rowspace
 
 echelon!(m::AbstractMatrix{<:Integer})=echelon!(m*1//1)
 echelon!(m::AbstractMatrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
@@ -134,6 +134,12 @@ function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
   in=in[count(!iszero,eachrow(mat[:,axes(m,2)]))+1:end,:]
   in[1:count(!iszero,eachrow(in)),:]
 end
+
+"""
+`in_rowspace(v::AbstractVector,m::AbstractMatrix)` 
+  whether `v` is in the rowspace of `m`.
+"""
+in_rowspace(v::AbstractVector,m::AbstractMatrix)=solutionmat(m,v)!=nothing
 
 """
   `GLinearAlgebra.det(m)`
@@ -490,7 +496,7 @@ julia> m'*x
 julia> solutionmat(m,[10, 20, -10])
 ```
 """
-function solutionmat(m,v::AbstractVector)
+function solutionmat(m::AbstractMatrix,v::AbstractVector)
   m=transpose(m).//1
   if length(v)!=size(m,1) error("dimension mismatch") end
   v=v.//1
@@ -506,9 +512,8 @@ function solutionmat(m,v::AbstractVector)
       v[s],v[r]=v[r],v[s]*piv
       for s in 1:size(m,1)
         if s!=r && !iszero(m[s,c])
-          tmp=m[s,c]
-          m[s,:]-=tmp*m[r,:]
-          v[s]-=tmp*v[r]
+          v[s]-=m[s,c]*v[r]
+  @views  m[s,:].-=m[s,c]*m[r,:]
         end
       end
     end

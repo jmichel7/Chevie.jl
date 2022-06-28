@@ -1,5 +1,6 @@
 const ChevieDict=Dict(
 "AbelianGenerators"=>"abelian_gens",
+"AbelianInvariants"=>"abelian_invariants",
 #Affine
 #AffineRootAction
 "AlgebraicCentre"=>"algebraic_centre",
@@ -241,6 +242,7 @@ const ChevieDict=Dict(
 "OrderedPartitions"=>"compositions",
 "OrderFFE"=>"order",
 "OrderMod(n,m)"=>"order(Mod{m}(n))",
+"ParabolicClosure"=>"parabolic_closure",
 "ParabolicRepresentatives"=>"parabolic_reps",
 #ParabolicSubgroups
 "PartBeta"=>"partβ",
