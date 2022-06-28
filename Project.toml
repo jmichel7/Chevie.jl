@@ -27,4 +27,6 @@ PuiseuxPolynomials = "f53aee1f-40be-4d16-bc74-7d339eee78ec"
 CyclotomicNumbers = "c380f8b6-65b3-4789-a31b-7d6b5dc6d4c5"
 GenericDecMats = "a98d1166-8d3f-4eaf-b2a4-26e52ad22d9c"
 Combinat = "a6b051d1-fc4b-4ede-b53e-347fa9fb9a74"
+
+[extras]
 GAP = "c863536a-3901-11e9-33e7-d5cd0df7b904"
