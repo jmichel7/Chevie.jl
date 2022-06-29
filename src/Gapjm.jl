@@ -101,6 +101,7 @@ include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@usingmerge verbose=true reexport FFfac
 include("Fact.jl");@reexport using .Fact
+include("Nf.jl");@reexport using .Nf
 include("MatInt.jl");@reexport using .MatInt
 include("Tools.jl");@reexport using .Tools
 include("CycPols.jl");@reexport using .CycPols

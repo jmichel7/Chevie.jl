@@ -56,12 +56,11 @@ end
 `Gcdex(m,n)`
 
 `Gcdex`  returns a  named tuple  with fields  `gcd=gcd(m,n)` and `coeff`, a
-unimodular 2x2 matrix (an invertible integer matrix) such that
-`coeff*[m,n]=[gcd,0]`.
+unimodular (invertible integer) 2x2 matrix such that `coeff*[m,n]=[gcd,0]`.
 
 If `m*n!=0`, `abs(coeff[1,1])≤abs(n)/(2*gcd)` and
 `abs(coeff[1,2])≤abs(m)/(2*gcd)`.   If  `m`  and  `n`  are  not  both  zero
-`coeff[2,1]` is -n/gcd` and `coeff[2,2]` is `m/gcd`.
+`coeff[2,1]` is `-n/gcd` and `coeff[2,2]` is `m/gcd`.
 
 ```julia-repl
 julia> MatInt.Gcdex(123,66)
