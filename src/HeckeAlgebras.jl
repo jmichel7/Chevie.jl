@@ -249,7 +249,8 @@ end
 
 function hecke(W::Group,p::Tuple;rootpara=nothing)
   if length(p)==1
-    para=fill(p,ngens(W))
+    para=fill(p[1],ngens(W))
+    rootpara= isnothing(rootpara) ? eltype(p[1])[] : rtpara
   else 
     s=simple_reps(W,1:ngens(W))
     C=sort(unique(s))
@@ -261,7 +262,7 @@ function hecke(W::Group,p::Tuple;rootpara=nothing)
         rtpara[i]=rootpara[findfirst(==(s[i]),C)]
       end
     end
-    rootpara= isnothing(rootpara) ? typeof(p[1])[] : rtpara
+    rootpara= isnothing(rootpara) ? eltype(p[1])[] : rtpara
   end
   hecke(W,para;rootpara=rootpara)
 end
