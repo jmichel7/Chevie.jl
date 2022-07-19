@@ -2148,8 +2148,8 @@ end
 """
 `hurwitz(l,i::Integer)`
 the  Hurwitz action of the  generator σᵢ of the  braid group Bₙ on the list
-`l`  of  length  `n`  of  group  elements.  If  `i<0`  does  the  action of
-`înv(σ₋ᵢ)`.
+`l`   of  length  `n`  of  group  elements,  which  replaces  `lᵢ,lᵢ₊₁`  by
+`lᵢ₊₁,lᵢ^lᵢ₊₁`. If `i<0` does the action of `înv(σ₋ᵢ)`.
 """
 function hurwitz(l,i::Integer)
   l=copy(l)
@@ -2159,6 +2159,11 @@ function hurwitz(l,i::Integer)
   l
 end
 
+"""
+`hurwitz(l,v::AbstractVector{<:Integer})`
+
+does successively `hurwitz(l,i)` for each `i` in `v`.
+"""
 function hurwitz(l,v::AbstractVector)
   for i in v l=hurwitz(l,i) end
   l

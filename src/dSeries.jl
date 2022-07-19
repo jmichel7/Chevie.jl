@@ -1045,7 +1045,7 @@ function paramcyclic(s::Series)
   end
   if ratio==0 r=0
   else r=s.d^s.delta
-    r=ratio*invmod(exponent(r),order(r))
+   r=mod(ratio*invmod(exponent(r),order(r)),order(r))
   end
   mmp=map(x->(x[1],map(y->mod(y,e(s))+1,x[2]+r-1)), mmp)
   r=fill(0,e(s))
