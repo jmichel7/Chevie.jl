@@ -321,7 +321,11 @@ end
 
 function reflection(m::Matrix)
   rr=one(m)-m
-  r=findfirst(!iszero,eachrow(rr))
+  if VERSION<v"1.7"
+    r=findfirst(!iszero,collect(eachrow(rr)))
+  else
+    r=findfirst(!iszero,eachrow(rr))
+  end
   if !isnothing(r) reflection(m,rr[r,:]) end
 end
 #------------------------------------------------------------------------
