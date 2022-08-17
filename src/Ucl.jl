@@ -390,6 +390,7 @@ function BalaCarterLabels(W)
   end...)
 end
 
+ReflectionName(W)=repr(W,context=(:limit=>true))
 # QuotientAu(Au,chars): chars is a list of indices of characters of Au.
 # If  k is the common kernel of chars, QuotientAu returns a
 # Dict(Au=>Au/k,
@@ -463,8 +464,11 @@ function QuotientAu(Au,chars)
 	t[p].p/=length(k)
         return finish(ReflectionGroup(t...),map(x->[x],eachindex(gens(Au))))
       end
-    elseif ReflectionName(Au)=="A1xB2" && length(k)==2 && longest(Au) in k
+    elseif ReflectionName(Au)=="A₁×B₂" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
+    elseif ReflectionName(Au)=="A₂×A₁×A₁" && length(k)==2 && 
+      longest(reflection_subgroup(Au,[3,4])) in k
+      return finish(coxgroup(:A,2)*coxgroup(:A,1),[[1],[2],[3],[3]])
     end
   end
 # Print(" Au=",ReflectionName(Au)," sub=",map(e.Get,gens(k)),"\n");
