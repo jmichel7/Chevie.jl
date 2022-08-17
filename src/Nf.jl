@@ -10,7 +10,7 @@ using ..Gapjm
 ##  an orbit of a subgroup of <stabilizer> on <N>-th roots of unity.
 ##
 ##  *Note* that the elements are in general not sets, since the first element
-##  is always an element of 'ZumbroichBase(<N>,1)'; this is used by 'NF' and
+##  is always an element of 'zumbroich_basis(N)'; this is used by 'NF' and
 ##  'Coefficients'.
 ##
 ##  <super> is a list representing a supergroup of <stabilizer> which
@@ -36,38 +36,37 @@ function LenstraBase( N, stabilizer, supergroup )
     # *Note* that for even 'N' 'zumb' does not consist of at least 'NN'-th
     # roots!
   
-    orbits=[]
+    orbits=Vector{Int}[]
     while !isempty(zumb)
       pnt=zumb[1]
-      orb= map(x->mod(pnt*x,N),stabilizer)
+      orb=mod.(pnt*stabilizer,N)
       push!(orbits,orb)
       setdiff!(zumb,orb)
     end
   
   else
   
-    # Let $d(i)$ be the largest squarefree number whose square divides the
-    # order of $e_N^i$, that is 'N / gcd(N,i)'.
-    # Define an equivalence relation on the set $S$ of at least 'NN'-th
-    # roots of unity\:
-    # $i$ and $j$ are equivalent iff 'N' divides $( i - j ) d(i)$.  The
-    # equivalence class $(i)$ of $i$ is $\{ i+kN/d(i) ; 0\leq k\< d(i)\}$.
+    # Let `d(i)` be the largest squarefree number whose square divides the
+    # order of `e_N^i`, that is 'N/gcd(N,i)'.
+    # Define an equivalence relation on the set `S` of at least 'NN'-th
+    # roots of unity:
+    # `i` and `j` are equivalent iff 'N' divides `(i-j)d(i)`.  The
+    # equivalence class `(i)` of `i` is `\{ i+kN/d(i) ; 0≤k<d(i)\}`.
   
-    # For the case that 'NN' is even, replace those roots in $S$ with order
+    # For the case that 'NN' is even, replace those roots in `S` with order
     # not divisible by 4 by their negatives. (Equivalently\: Replace *all*
-    # elements in $S$ by their negatives.)
+    # elements in `S` by their negatives.)
   
-    # If 8 does not divide 'N' and $'N' \not= 4$, 'zumb' is a subset of $S$,
-    # the intersection of $(i)$ with 'zumb' is of order $\varphi( d(i) )$,
-    # it is a basis for the $Z$--submodule spanned by $(i)$.
+    # If 8 does not divide 'N' and `N≠4`, 'zumb' is a subset of `S`,
+    # the intersection of `(i)` with 'zumb' is of order `φ(d(i))`,
+    # it is a basis for the `Z`--submodule spanned by `(i)`.
     # Furthermore, the minimality of 'N' yields that 'stabilizer' acts fixed
     # point freely on the set of equivalence classes.
   
     # More exactly, fixed points occur exactly if there is an element 's' in
-    # 'stabilizer' which is congruent $-1$ modulo 'N2' and congruent $+1$
-    # modulo 'No'.
+    # 'stabilizer' which is `≡ -1 (mod N2)` and `≡ 1 (mod No)`.
   
-    # The base is constructed as follows\:
+    # The base is constructed as follows:
     #
     # Until all classes are touched:
     # 1. Take a point 'pnt' (in 'zumb').
@@ -75,7 +74,7 @@ function LenstraBase( N, stabilizer, supergroup )
     #    class of 'pnt' (the intersection of the class with 'zumb').
     # 3. Take the 'stabilizer'--orbits of 'pnts' as base elements;
     #    remove the touched equivalence classes.
-    # 4. For the representatives 'rep' in 'supergroup'\:
+    # 4. For the representatives 'rep' in 'supergroup':
     #    If 'rep' maps 'pnt' to an equivalence class that was not yet
     #    touched, take the 'stabilizer'--orbits of the images of 'pnts'
     #    under 'rep' as base elements;
@@ -83,11 +82,11 @@ function LenstraBase( N, stabilizer, supergroup )
   
     # Compute nontriv. representatives of 'supergroup' over 'stabilizer'
     super=setdiff(supergroup,stabilizer)
-    supergroup=[]
+    supergroup=Int[]
     while !isempty(super)
       pnt=super[1]
       push!(supergroup,pnt)
-      setdiff!(super,map(x->mod(x*pnt,N),stabilizer))
+      setdiff!(super,mod.(stabilizer*pnt,N))
     end
   
     N2= 1; No= N
@@ -107,6 +106,7 @@ function LenstraBase( N, stabilizer, supergroup )
     end
     if a==0 H1=stabilizer end
     orbits=[]
+    orb=Int[]
     while !isempty(zumb)
       neworbits=[]
       pnt=zumb[1]
@@ -117,21 +117,21 @@ function LenstraBase( N, stabilizer, supergroup )
         # the orbit of 'H1' cannot be a fixed point of 'a'
         for k in 0:d-1
           ppnt=pnt+k*div(N,d)
-          if ppnt in zumb
-            orb=map(x->mod(ppnt*x,N),stabilizer)
+          if ppnt in zumb 
+            orb=mod.(ppnt*stabilizer,N)
             push!(neworbits,orb)
           end
         end
       elseif mod(ord,4)==0
         # 'a' maps each point in the orbit of 'H1' to its inverse
         # (ignore all points)
-        orb=map(x->mod(pnt*x,N),stabilizer)
+        orb=mod.(pnt*stabilizer,N)
       else
         # the orbit of 'H1' is pointwise fixed by 'a'
         for k in 0:d-1
-         ppnt=pnt+k*div(N,d)
-          if ppnt in zumb
-            orb=map(x->mod(ppnt*x,N),H1)
+          ppnt=pnt+k*div(N,d)
+          if ppnt in zumb 
+            orb=mod.(ppnt*H1,N)
             push!(neworbits,orb)
           end
         end
@@ -149,7 +149,7 @@ function LenstraBase( N, stabilizer, supergroup )
       for rep in supergroup
         # is there an 'x' in 'zumb' that is equivalent to 'pnt * rep' ?
         if any(x->mod((x-pnt*rep)*d,N)==0,zumb)
-         append!(orbits,map(x->map(y->mod(y*rep,N),x),neworbits))
+          append!(orbits,map(x->mod.(x*rep,N),neworbits))
           for ppnt in orbits[end]
             setdiff!(zumb,map(k->mod(ppnt+k*div(N,d),N),0:d-1))
           end
@@ -160,35 +160,29 @@ function LenstraBase( N, stabilizer, supergroup )
   orbits
 end
 
-function GeneratorsPrimeResidues(n)
-  if n==1 return (primes=Int[],exponents=Int[],generators=Int[]) end
+"gens_primes_residues(n::Integer) generators of multiplicative group of ℤ /n"
+function gens_primes_residues(n::Integer)
   map(eachfactor(n))do (p,e)
     ppart=p^e
     rest=div(n,ppart)
-    gcd=MatInt.Gcdex(ppart,rest)
-    if p==2
-      gen=[mod(-2gcd.coeff[1,2]*rest+1,n)]
-      if ppart>=8 gen=[gen[1],mod(4*gcd.coeff[1,2]*rest+1,n)] end
-    else
-      root=primitiveroot(ppart)
-      gen=[mod((root-1)*gcd.coeff[1,2]*rest+1,n)]
+    g=gcdx(ppart,rest)[3]*rest
+    if p==2 gen=[-2g+1]
+      if ppart>=8 push!(gen,4g+1) end
+    else gen=[(primitiveroot(ppart)-1)*g+1]
     end
-    (prime=p,exponent=e,gen=gen)
+    (prime=p,exponent=e,gen=mod.(gen,n))
   end
 end
 
-
-##F  NumberField( <gens> ) . . . . . . . . . . .  create a number field record
-###  number field generated by the elements of the list <gens>,
+"""
+`NF(gens)`  create number field generated by the elements of `gens`.
+"""
 function NF(gens::AbstractVector{<:Cyc})
   N=conductor(gens)
   if N==1 return CF(1) #Rationals
   elseif N==4 return CF(4) #GaussianRationals
   end
-  stabilizer=prime_residues(N)
-  for gen in gens
-    stabilizer= filter(x->galois(gen,x)==gen,stabilizer)
-  end
+  stabilizer=filter(x->galois.(gens,x)==gens,prime_residues(N))
   NF(N,stabilizer,gens)
 end
 
@@ -216,6 +210,9 @@ function Base.show(io::IO,F::NumberField)
   end
 end
 
+"""
+`CF(N::Integer)` the cyclotomic field generated by the N`-th roots of unity.
+"""
 function CF(N)
   if N%4==2 N=div(N,2) end
   NumberField(totient(N),[Cyc(E(N))],
@@ -223,11 +220,14 @@ function CF(N)
               [1],Dict{Symbol,Any}())
 end
 
-#F  NumberField( <n>, <stab> )
-##  fixed field of the group generated by <stab> (prime residues modulo <n>)
-##  in the cyclotomic field 'CF( <n> )',
+"""
+NF(n, stab)
+fixed field of the group generated by `stab` (prime residues modulo `n`)
+in the cyclotomic field `CF(n)`,
+"""
 function NF(N::Integer,stabilizer::AbstractVector{<:Integer},gens=nothing)
-  if iseven(N) && isodd(div(N,2)) N=div(N,2) end
+  if N<=2 return CF(1) end
+  if mod(N,4)==2 N=div(N,2) end
   stabilizer=copy(stabilizer)
 
   # Compute the elements of the group generated by 'stabilizer'.
@@ -237,15 +237,13 @@ function NF(N::Integer,stabilizer::AbstractVector{<:Integer},gens=nothing)
     append!(stabilizer, image)
   end
 
-  if N<=2 return Rationals end
-
   d=exactdiv(totient(N),length(stabilizer))
 
   # reduce the pair '( N, stabilizer )' such that afterwards 'N'
   # describes the envelopping cyclotomic field of the required field;
 
   NN=1
-  for gen in GeneratorsPrimeResidues(N)
+  for gen in gens_primes_residues(N)
     if gen.prime==2
       if gen.exponent<3
         if !(gen.gen[1] in stabilizer) NN*=4 end
@@ -278,11 +276,11 @@ function NF(N::Integer,stabilizer::AbstractVector{<:Integer},gens=nothing)
     end
   end
   N=NN
-  if N<=2 return Rationals end
+  if N<=2 return CF(1) end
   stabilizer=sort(unique(mod.(stabilizer,N)))
   if stabilizer==[1] return CF(N) end
 
-  # compute the standard Lenstra base and 'F.coeffslist'\:
+  # compute the standard Lenstra base and 'F.coeffslist':
   # If 'stabilizer' acts fixed point freely on the equivalence classes
   # we must change from the Zumbroich base to a 'stabilizer'--normal
   # base and afterwards choose coefficients with respect to that base.
