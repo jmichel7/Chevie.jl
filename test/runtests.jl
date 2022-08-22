@@ -925,6 +925,7 @@ end
 end
 @testset "Tools.jl" begin
 @test mytest("Tools.jl","abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])","2-element Vector{Perm{Int16}}:\n (1,2)(6,7)\n (3,5,4)(6,7)")
+@test mytest("Tools.jl","abelian_invariants(Group([Perm(1,2),Perm(3,4,5),Perm(6,7)]))","2-element Vector{Int64}:\n 2\n 6")
 end
 @testset "Tools2.jl" begin
 @test mytest("Tools2.jl","W=CoxSym(5)","𝔖 ₅")

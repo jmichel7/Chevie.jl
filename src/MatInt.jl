@@ -11,7 +11,7 @@ col_hermite_transforms, diaconis_graham, baseInt`
 module MatInt
 
 export complementInt, lnullspaceInt, solutionmatInt, smith, smith_transforms,
-       hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
+  hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
   diaconis_graham, baseInt
 
 # largest factor of N prime to a
@@ -30,7 +30,7 @@ function rgcd(N, a)
   d=[N]
   c=0
   while true
-    for i in 1:length(r) r[i]=mod(r[i]+1,d[i]) end
+    for i in eachindex(r) r[i]=mod(r[i]+1,d[i]) end
     i=findfirst(<=(0),r)
     if isnothing(i)
       g=1
@@ -714,13 +714,13 @@ end
 """
 `complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})`
 
- Let  `M` be the integral row module of  `full` and let `S`, a submodule of
- `M`,  be the integral row  module of `sub`. This  function computes a free
- basis for `M` that extends `S`, that is, if the dimension of `S` is `n` it
- determines  a basis  `B={b₁,…,bₘ}` for  `M`, as  well as `n` integers `xᵢ`
- such that the `n` vectors `sᵢ:=xᵢ⋅bᵢ` form a basis for `S`.
+Let  `M` be the integral row module of  `full` and let `S`, a submodule of
+`M`,  be the integral row  module of `sub`. This  function computes a free
+basis for `M` that extends `S`, that is, if the dimension of `S` is `n` it
+determines  a basis  `B={b₁,…,bₘ}` for  `M`, as  well as `n` integers `xᵢ`
+such that the `n` vectors `sᵢ:=xᵢ⋅bᵢ` form a basis for `S`.
 
- It returns a named tuple with the following components:
+It returns a named tuple with the following components:
   - `complement` a matrix whose lines are `bₙ₊₁,…,bₘ`.
   - `sub` a matrix whose lines are the `sᵢ` (a basis for `S`).
   - `moduli` the factors `xᵢ`.

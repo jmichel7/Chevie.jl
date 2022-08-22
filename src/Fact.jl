@@ -160,26 +160,26 @@ function MinimizeBombieriNorm(f)
     bd=0
     bn=[]
   # evaluation of norm, including storing it (avoids expensive double evals)
-    bnf=function(dis) local p, g
+    bnf=function(dis)
       p=filter(i->i[1]==dis, bn)
-      if p==[]
-          g=Value(f, x+dis)
-          p=[dis, BombieriNorm(g)]
-          push!(bn, p)
-          if bb>p[2]
-              bf=g
-              bb=p[2]
-              bd=dis
-          end
-          return p[2]
-      else return p[1][2]
+      if isempty(p)
+        g=Value(f, x+dis)
+        p=[dis, BombieriNorm(g)]
+        push!(bn, p)
+        if bb>p[2]
+          bf=g
+          bb=p[2]
+          bd=dis
+        end
+        p[2]
+      else p[1][2]
       end
     end
     x=X(f[:baseRing])
     d=0
     while true
       InfoPoly2("#I Minimizing BombieriNorm, x->x+(", d, ")\n")
-  # lokale Parabelann"aherung
+  # lokale Parabelannäherung
       a=bnf(d-step)
       b=bnf(d)
       c=bnf(d+step)
@@ -300,7 +300,6 @@ function LogInt(n, base)
   if n <= 0 error("<n> must be positive") end
   if base <= 1 error("<base> must be greater than 1") end
   function log(b)
-    local i
     if b>n return 0 end
     i=2log(b^2)
     if b>n return i
@@ -315,23 +314,20 @@ FFields.Mod(x::Pol,p)=Pol(Mod.(x.c,p),x.v)
 FFields.Mod(x::Pol{FFE{p}}) where p=Pol(Mod.(x.c),x.v)
 
 function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
-local   p,              # prime
-      l,              # factorization mod <q>
-      k,              # Lift boundary
-      prd,            # product of <l>
-      rep,            # lifted representation of gcd(<lp>)
-      fcn,            # index of true factor in <l>
-      dis,            # distance of <f> and <l>
-      cor,            # correction
-      rcr,            # inverse corrections
-      quo,            # quotient
-      sum,            # temp
-      aa,  bb,        # left and right subproducts
-      lq1,            # factors mod <q1>
-      max,            # maximum absolute coefficient of <f>
-      res,            # result
-      gcd,            # used in gcd representation
-      i,  j,  x;      # loop
+#   p,              # prime
+#   l,              # factorization mod <q>
+#   k,              # Lift boundary
+#   prd,            # product of <l>
+#   rep,            # lifted representation of gcd(<lp>)
+#   fcn,            # index of true factor in <l>
+#   dis,            # distance of <f> and <l>
+#   cor,            # correction
+#   rcr,            # inverse corrections
+#   quo,            # quotient
+#   aa,  bb,        # left and right subproducts
+#   lq1,            # factors mod <q1>
+#   max,            # maximum absolute coefficient of <f>
+#   gcd,            # used in gcd representation
   p=big(t[:prime])
   l=map(x->Pol(Mod.(Integer.(Mod(x).c),p),x.v),t[:factors])
   lc=f[end]

@@ -31,15 +31,15 @@ To update later to the latest version, do
 
 This package requires julia 1.6 or later. 
 
-I registered as separate packages already some of the infrastructure:
+I  registered as separate packages already  some of the infrastructure (the
+following  packages  are  loaded  and  reexported so their functionality is
+automatically available when you use `Gapjm`):
+
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions)
   * [CyclotomicNumbers](https://github.com/jmichel7/CyclotomicNumbers.jl)
   * [ModuleElts](https://github.com/jmichel7/ModuleElts.jl) (elements of a free module over some ring)
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
-
-the   functionality  in  these  packages  is  reexported  so  automatically
-available when you use `Gapjm`.
 
 some other infrastructure which may become eventually separate packages:
   * permutations (module `Perms`)
@@ -70,16 +70,20 @@ translations of functions in Gap3 which match this string.
 ```julia-rep1
 julia> gap("words")
 CharRepresentationWords  =>  traces_words_mats
-CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l])
+CoxeterWords(W[,l])      =>  word.(Ref(W),elements(W[,l]))
 GarsideWords             =>  elements
 ```
 Then you can call on-line help on the discovered functions.
 
-The  code is  not completely  ported to  Julia since  75% of it is the data
-library  of Chevie, which has been  automatically ported by a transpiler so
-its code is "strange". Otherwise the code in this package is often 10 times
-faster  than the  equivalent GAP3  Chevie code  (after the maddeningly long
-compilation time on first execution --- the TTFP problem of Julia).
+The  port to Julia is not complete in the sense that 75% of the code is the
+data library of Chevie, which has been automatically ported by a transpiler
+so  its  code  is  "strange".  When  the  need  to  maintain  both versions
+simultaneously subsides, it will be worth to do a proper translation of the
+data library.
+
+Otherwise  the  code  in  this  package  is  often 10 times faster than the
+equivalent GAP3 Chevie code (after the maddeningly long compilation time on
+first execution --- the TTFP problem of Julia).
 """
 module Gapjm
 #--------------------- external packages ----------------------------------

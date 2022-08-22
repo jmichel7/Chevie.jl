@@ -126,9 +126,9 @@ for f in src
   print("$f.jl, ")
   include("tbl/$f.jl")
 end
-println("\nreading tbl/exceptio")
+println("\nreading tbl/exceptio.jl")
 include("tbl/exceptio.jl")
-println("reading tbl/exceptio_t")
+println("reading tbl/exceptio_t.jl")
 include("tbl/exceptio_t.jl")
 
 end

@@ -225,7 +225,6 @@ function Base.show(io::IO,r::ClassTypes)
   end
   printTeX(io,res*"\n")
   function nc(p)
-    local d
     p=Mvp(p)
     d=lcm(denominator.(values(p.d)))
     p=bracket_if_needed(repr(improve_type(p*d);context=io))

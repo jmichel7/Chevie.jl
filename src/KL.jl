@@ -769,7 +769,7 @@ function OldLeftCellRepresentatives(W)
         rd=leftdescents(W,duflo(e))
         i=findfirst(x->x.rd==rd,rw)
         if i==1 x=filter(c->!(c.elements[1] in elements(e)),x)
-        elseif i!=nothing
+        elseif i!==nothing
 	  setdiff!(rw[i].elements,elements(e))
         end
       end

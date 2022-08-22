@@ -197,7 +197,7 @@ end
 function refword(w::PPerm)
   n=length(w.d)
   cnt=0
-  function ff(w)local s
+  function ff(w) local s
     l=reflength(w)
     d=1
     while true
@@ -258,6 +258,10 @@ end
 #  return res;
 #end;
 ##--------------------------------------------------------------------------
+@GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
+  gens::Vector{PPerm{T}}
+end
+
 ## The next function constructs W(~A_{n-1}) as a group of periodic
 ## permutations of period n.
 # 
@@ -283,10 +287,6 @@ function PermRoot.reflection(W::Atilde,i)
   p,r=divrem(i-1,n*(n-1))
   ecart,pos=divrem(r,n)
   PPerm(n,(1+pos,2+pos+ecart+p*n))
-end
-
-@GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
-  gens::Vector{PPerm{T}}
 end
 
 Base.show(io::IO,G::Atilde)=print(io,"Atilde(",G.gens,")")

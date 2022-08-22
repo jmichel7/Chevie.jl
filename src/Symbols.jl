@@ -397,9 +397,9 @@ function defshape(s)
 end
 
 "All shapes for e-symbols of rank r, content c, Malle-defect def"
-shapesSymbols=function(e,r,c=1,def=0)local f,res,m,new
+function shapesSymbols(e,r,c=1,def=0)
   if e==1 return [[0]] end
-  function f(lim2,len,nb,max)local res,a # possible decreasing shapes
+  function f(lim2,len,nb,max) local res,a # possible decreasing shapes
     if nb==1
       if len==0   return [[len]]
       else return Vector{Int}[] end

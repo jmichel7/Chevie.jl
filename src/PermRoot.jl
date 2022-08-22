@@ -308,7 +308,7 @@ julia> reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
 (root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isOrthogonal = false)
 ```
 """
-function reflection(m::Matrix,r::AbstractVector)
+function reflection(m::AbstractMatrix,r::AbstractVector)
   rr=one(m)-m
   rc=map(j->ratio(rr[j,:],r),axes(m,1))
   zeta=ratio(transpose(m)*r,r)
@@ -319,7 +319,7 @@ function reflection(m::Matrix,r::AbstractVector)
   (root=r,coroot=rc,eig=rzeta,isOrthogonal=orth)
 end
 
-function reflection(m::Matrix)
+function reflection(m::AbstractMatrix)
   rr=one(m)-m
   if VERSION<v"1.7"
     r=findfirst(!iszero,collect(eachrow(rr)))
@@ -941,7 +941,8 @@ end
 function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
   # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
-  function complete(l,d)local r,c,cc,n
+  function complete(l,d)
+    local r,c,cc,n
     if length(l)==size(C,1) return (l,d) end
     n=length(l)+1
     for r in filter(i->cartan(H,i,i)==C[n,n],eachindex(roots(H)))
@@ -951,7 +952,7 @@ function findgensDiagCartan2(H,C)
       if length(cc)<=1 && !(nothing in cc)
         if length(cc)==0 cc=[1] end
         c=complete(vcat(l,[r]),vcat(d,[cc[1]]))
-        if c!=nothing return c end
+        if c!==nothing return c end
       end
     end
   end
@@ -2211,7 +2212,7 @@ function invariants(W)
   N=toM(roots(W,independent_roots(W)))
   if !isempty(N)
     N=lnullspace(transpose(N))
-    append!(i,map(v->function(arg...)return sum(v.*arg);end,eachrow(N)))
+    append!(i,map(v->function(arg...) sum(v.*arg) end,eachrow(N)))
   end
   i
 end

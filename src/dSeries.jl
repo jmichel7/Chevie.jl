@@ -739,7 +739,6 @@ function Weyl.relative_group(s::Series)
   # :root       of refl. of WGL
   # :coroot     of refl. of WGL
   function getreflection(rr)
-    local rH, H, r, res, n
     rH = hplane(rr[1]) # Hyperplane of WGL
     if length(rH)==0 # cyclic WGL
       H=W
@@ -935,10 +934,9 @@ function char_numbers(s::Series)
     end
   end
   check=function ()
-    local n
     for n in [:charNumbers, :eps, :dims, :span] setproperty!(s,n,foo(n)) end
     if !isnothing(RLG(s)) && (filter(i->RLG(s).v[i]!=0,eachindex(RLG(s).v))!=
-                   sort(s.charNumbers) || RLG(s).v[s.charNumbers]!=s.dims.*s.eps)
+              sort(s.charNumbers) || RLG(s).v[s.charNumbers]!=s.dims.*s.eps)
       ChevieErr(s, ":RLG does not match")
     end
     s.charNumbers

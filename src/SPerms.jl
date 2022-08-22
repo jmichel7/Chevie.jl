@@ -609,7 +609,8 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     extra1=fill(1,size(M,1))
     extra2=fill(1,size(M,1))
   end
-  function ind(I,J)local iM,iN,p,n;
+  function ind(I,J)
+    local iM,iN,p,n
     invM=map(i->(tally(pair.(M[i,I])),M[i,i],extra1[i]),I)
     invN=map(i->(tally(pair.(M[i,J])),M[i,i],extra2[i]),J)
     if tally(invM)!=tally(invN) InfoChevie("content differs");return false end

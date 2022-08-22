@@ -484,7 +484,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     return nothing
   end
   sg=n->n==1 ? PermGroup() : Group(vcat(map(i->map(j->Perm(i,j),i+1:n),1:n-1)...))
-  ind=function(I,J)local p
+  function ind(I,J)
     iM=map(i->[tally(M[i,I]), tally(M[I,i]), M[i,i]], I)
     iN=map(i->[tally(N[i,J]), tally(N[J,i]), N[i,i]], J)
     if !isnothing(m)
@@ -495,7 +495,6 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     iM=collectby(iM,J)
     iN=collectby(iN,I)
     p=map(function(I,J)
-      local g
       if length(I)>7
         InfoChevie("large block size $(length(I))\n")
         if length(iM)==1
@@ -509,9 +508,8 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
       end
       if isnothing(p) return false end
       I^=p
-      g=stab_onmats(M[I,I])
       p=mappingPerm(eachindex(I), I)
-      return [I,J,Group(gens(g).^p)] end, iM, iN)
+      return [I,J,Group(gens(stab_onmats(M[I,I])).^p)] end, iM, iN)
     if false in p return false else return p end
   end
   l=ind(axes(M,1),axes(N,1))

@@ -1347,10 +1347,10 @@ function setapprox(l)
   if isempty(l) return l end
   l=sort(l)
   prev=1
-  for next in 2:length(l)
-    if isapprox(l[prev],l[next];rtol=10^-8,atol=10^-10) continue end
+  for next in l[2:end]
+    if isapprox(l[prev],next;rtol=10^-8,atol=10^-10) continue end
     prev+=1
-    l[prev]=l[next]
+    l[prev]=next
   end
   l[1:prev]
 end

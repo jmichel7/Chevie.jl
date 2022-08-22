@@ -1103,7 +1103,8 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   dim=length(V)
   T=Int
   function prom(a)
-    if a isa Vector for u in a prom(u) end
+    if a isa Vector 
+      for u in a prom(u) end
     else T=promote_type(T,typeof(a))
     end
   end

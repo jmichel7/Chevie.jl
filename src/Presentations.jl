@@ -686,49 +686,42 @@ G,            # given group
 cosets,       # right cosets of G with respect to H
 """
 function RelsViaCosetTable(G,cosets,arg...)
-  local   F,            # given free group
-          words,        # given words for the generators of H
-          H,            # subgroup, if specified
-          F1,           # f.p. group isomorphic to H
-          F2,           # f.p. group isomorphic to G
-          ng1,          # position number of identity element in G
-          nh1,          # position number of identity element in H
-          perms,        # permutations induced by the gens on the cosets
-          stage,        # 1 or 2
-          table,        # columns in the table for gens
-          rels,         # representatives of the relators
-          relsGen,      # relators sorted by start generator
-          subgroup,     # rows for the subgroup gens
-          i, j,         # loop variables
-          gen,          # loop variables for generator
-          gen0, inv0,   # loop variables for generator cols
-          g, g1,        # loop variables for generator cols
-          c,            # loop variable for coset
-          rel,          # loop variables for relator
-          rels1,        # list of relators
-          app,          # arguments list for `MakeConsequences`
-          index,        # index of the table
-          col,          # generator col in auxiliary table
-          perm,         # permutations induced by a generator on the cosets
-          gens,         # abstract gens in which the relators are written
-          gens2,        # the above abstract gens and their inverses
-          ggens,        # concrete generators of G
-          ngens,        # number of generators of G
-          ngens2,       # twice the above number
-          order,        # order of a generator
-          actcos,       # part 1 of Schreier vector of G by H
-          actgen,       # part 2 of Schreier vector of G by H
-          tab0,         # auxiliary table in parallel to table <table>
-          cosRange,     # range from 1 to index (= number of cosets)
-          genRange,     # range of the odd integers from 1 to 2*ngens-1
-          geners,       # order in which the table cols are worked off
-          next,         # local coset number
-          w,            # loop variable
-          left1,        # part 1 of Schreier vector of H by trivial group
-          right1,       # part 2 of Schreier vector of H by trivial group
-          n,            # number of subgroup element
-          words2,       # words for the generators of H and their inverses
-          h             # subgroup element
+  #  F,        # given free group
+  #  words,    # given words for the generators of H
+  #  H,        # subgroup, if specified
+  #  F1,       # f.p. group isomorphic to H
+  #  F2,       # f.p. group isomorphic to G
+  #  ng1,      # position number of identity element in G
+  #  nh1,      # position number of identity element in H
+  #  perms,    # permutations induced by the gens on the cosets
+  #  stage,    # 1 or 2
+  #  table,    # columns in the table for gens
+  #  rels,     # representatives of the relators
+  #  relsGen,  # relators sorted by start generator
+  #  subgroup, # rows for the subgroup gens
+  #  rels1,    # list of relators
+  #  app,      # arguments list for `MakeConsequences`
+  #  index,    # index of the table
+  #  col,      # generator col in auxiliary table
+  #  perm,     # permutations induced by a generator on the cosets
+  #  gens,     # abstract gens in which the relators are written
+  #  gens2,    # the above abstract gens and their inverses
+  #  ggens,    # concrete generators of G
+  #  ngens,    # number of generators of G
+  #  ngens2,   # twice the above number
+  #  order,    # order of a generator
+  #  actcos,   # part 1 of Schreier vector of G by H
+  #  actgen,   # part 2 of Schreier vector of G by H
+  #  tab0,     # auxiliary table in parallel to table <table>
+  #  cosRange, # range from 1 to index (= number of cosets)
+  #  genRange, # range of the odd integers from 1 to 2*ngens-1
+  #  geners,   # order in which the table cols are worked off
+  #  next,     # local coset number
+  #  left1,    # part 1 of Schreier vector of H by trivial group
+  #  right1,   # part 2 of Schreier vector of H by trivial group
+  #  n,        # number of subgroup element
+  #  words2,   # words for the generators of H and their inverses
+  #  h         # subgroup element
   if length(arg)==1 ggens=arg[1]
   else ggens=G[:generators]
   end
@@ -1013,20 +1006,19 @@ generators as  `G`,  and  `words` is a list of words in the generators of
 words in the corresponding generators of `G`.
 """
 function PresentationViaCosetTable(G,arg...)
-  local   F,          # given free group
-          fgens,      # generators of F
-          fwords,     # given words in the generators of F
-          words,      # tidied up words for the subgroup generators
-          H,          # subgroup
-          elts,       # elements of G or H
-          cosets,     # right cosets of G with respect to H
-          F1,         # f.p. group isomorphic to H
-          F2,         # f.p. group isomorphic to G
-          P,          # resulting presentation
-          ggens,      # concrete generators of G
-          hgens,      # concrete generators of H
-          ngens,      # number of generators of G
-          h, w        # loop variables
+  #  F,          # given free group
+  #  fgens,      # generators of F
+  #  fwords,     # given words in the generators of F
+  #  words,      # tidied up words for the subgroup generators
+  #  H,          # subgroup
+  #  elts,       # elements of G or H
+  #  cosets,     # right cosets of G with respect to H
+  #  F1,         # f.p. group isomorphic to H
+  #  F2,         # f.p. group isomorphic to G
+  #  P,          # resulting presentation
+  #  ggens,      # concrete generators of G
+  #  hgens,      # concrete generators of H
+  #  ngens,      # number of generators of G
   if !(IsRec(G) && (haskey(G, :isGroup) && G[:isGroup]))
       error("first argument must be a group")
   end
@@ -3440,7 +3432,7 @@ julia> display_balanced(p)
 """
 function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
   perf(p)=[p.tietze.numrels, p.tietze.total]
-  function triples(p) local res, v, i, r
+  function triples(p)
     res=Vector{Int}[]
     for v in p.tietze.relators, i in 1:length(v)-2
       if v[i]==-v[i+2]
@@ -3451,7 +3443,7 @@ function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
     end
     first.(sort(tally(res),by=x->-x[2]))
   end
-  function expand(p)local res
+  function expand(p)
     res=map(x->[x, conjugate(p, x)], triples(p))
     sort!(res,by=x->perf(x[2]))
   end
