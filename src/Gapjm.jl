@@ -90,8 +90,7 @@ module Gapjm
 using Reexport
 using Requires
 using UsingMerge
-@reexport using LaurentPolynomials
-@reexport using PuiseuxPolynomials
+@reexport using PuiseuxPolynomials # reexports LaurentPolynomials
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor

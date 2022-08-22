@@ -100,7 +100,7 @@ julia> Matrix(b)  # permutation matrix of b
  1  0  0  0
 ```
 ```julia-rep1
-julia> rand(Perm,10)
+julia> randPerm(10)
 (1,8,4,2,9,7,5,10,3,6)
 ```
 
@@ -115,20 +115,29 @@ Perm, sortPerm, Perm_rowcol`.
 """
 module Perms
 
-#import Gapjm: restricted, order
-#import ..Groups: orbit, orbits
-# to use as a stand-alone module comment above 2 lines and uncomment next
-export restricted, orbit, orbits, order
-
-export Perm, largest_moved_point, cycles, cycletype, support, @perm_str, 
- smallest_moved_point, reflength, mappingPerm, sortPerm, Perm_rowcol
+export restricted, orbit, orbits, order, Perm, largest_moved_point, cycles,
+  cycletype, support, @perm_str, smallest_moved_point, reflength,
+  mappingPerm, sortPerm, Perm_rowcol, randPerm
 
 using ..Combinat: tally, collectby, arrangements
+
 """
 `struct Perm{T<:Integer}`
 
 A  Perm represents a permutation  of the set `1:n`  and is implemented by a
 `struct` with one field, a `Vector{T}` holding the images of `1:n`.
+
+```julia-repl
+julia> p=Perm(Int16[1,3,2,4])
+(2,3)
+
+julia> vec(p)
+4-element Vector{Int16}:
+ 1
+ 3
+ 2
+ 4
+```
 """
 struct Perm{T<:Integer}
   d::Vector{T}
@@ -144,7 +153,7 @@ Perm(v)=Perm(collect(v))
    `Perm{T}(x::Integer...)where T<:Integer`
 
    returns  a cycle.  For example  `Perm{Int8}(1,2,3)` constructs the cycle
-   `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken to be `Int16`.
+   `(1,2,3)` as a `Perm{Int8}`. If omitted `{T}` is taken to be `{$Idef}`.
 """
 function Perm{T}(x::Vararg{<:Integer,N};degree=0)where {T<:Integer,N}
   if isempty(x) return Perm(T[]) end
@@ -199,10 +208,55 @@ function Base.typed_hvcat(::Type{Perm},a::Tuple{Vararg{Int,N} where N},
 end
 
 """
+`Matrix(a::Perm,n=length(a.d))` 
+the  permutation matrix  for `a`  operating on  `n` points (by default, the
+degree of `a`). If given, `n` should be larger than `largest_moved_point(a)`.
+
+```julia-repl
+julia> Matrix(Perm(2,3,4),5)
+5×5 Matrix{Bool}:
+ 1  0  0  0  0
+ 0  0  1  0  0
+ 0  0  0  1  0
+ 0  1  0  0  0
+ 0  0  0  0  1
+```
+"""
+Base.Matrix(a::Perm,n=length(a.d))=[j==i^a for i in 1:n, j in 1:n]
+
+"""
+`Perm{T}(m::AbstractMatrix)`
+If  `m` is a  permutation matrix, returns  the corresponding permutation of
+type `T`. If omitted, `T` is taken to be `$Idef`.
+
+```julia-repl
+julia> m=[0 1 0;0 0 1;1 0 0]
+3×3 Matrix{Int64}:
+ 0  1  0
+ 0  0  1
+ 1  0  0
+
+julia> Perm(m)
+(1,2,3)
+```
+"""
+function Perm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
+  if size(m,1)!=size(m,2) error("matrix should be square") end
+  if any(x->count(!iszero,x)!=1,eachrow(m)) 
+    error("not a permutation matrix")
+  end
+  l=map(x->findfirst(!iszero,x),eachrow(m))
+  if !isperm(l) error("not a permutation matrix") end
+  Perm{T}(l)
+end
+
+Perm(m::Matrix{<:Integer})=Perm{Idef}(m)
+
+"""
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
 
 returns `p`, a `Perm{T}`, such that `l1^p==l` if such a `p` exists; returns
-`nothing` otherwise. If not given `{T}` is taken to be `{Int16}`. Needs the
+`nothing` otherwise. If not given `{T}` is taken to be `{$Idef}`. Needs the
 elements of `l` and `l1` to be sortable.
 
 ```julia-repl
@@ -223,7 +277,7 @@ Perm(l::AbstractVector,l1::AbstractVector)=Perm{Idef}(l,l1)
 
 returns  `p`, a `Perm{T}`, which  permutes the rows of  `m1` (the coluns of
 `m1`  if `dims=2`)  to bring  them to  those of  `m`, if such a `p` exists;
-returns  `nothing` otherwise. If not given  `{T}` is taken to be `{Int16}`.
+returns  `nothing` otherwise. If not given  `{T}` is taken to be `{$Idef}`.
 Needs the elements of `m` and `m1` to be sortable.
 
 ```julia-repl
@@ -290,23 +344,6 @@ function Base.:(==)(a::Perm, b::Perm)
   a.d==b.d
 end
 
-"""
-`Matrix(a::Perm,n=length(a.d))` 
-the  permutation matrix  for `a`  operating on  `n` points (by default, the
-degree of `a`). If given, `n` should be larger than `largest_moved_point(a)`.
-
-```julia-repl
-julia> Matrix(Perm(2,3,4),5)
-5×5 Matrix{Bool}:
- 1  0  0  0  0
- 0  0  1  0  0
- 0  0  0  1  0
- 0  1  0  0  0
- 0  0  0  0  1
-```
-"""
-Base.Matrix(a::Perm,n=length(a.d))=[j==i^a for i in 1:n, j in 1:n]
-
 " `largest_moved_point(a::Perm)` is the largest integer moved by a"
 largest_moved_point(a::Perm)=findlast(x->a.d[x]!=x,eachindex(a.d))
 
@@ -321,8 +358,13 @@ support(a::Perm)=eachindex(a.d)[a.d.!=eachindex(a.d)]
 sortPerm(::Type{T},a::AbstractVector;k...) where T=Perm{T}(sortperm(a;k...))
 sortPerm(a::AbstractVector;k...)=sortPerm(Idef,a;k...)
 
-Base.rand(::Type{Perm{T}},i::Integer) where T=sortPerm(T,rand(1:i,i))
-Base.rand(::Type{Perm},i::Integer)=rand(Perm{Idef},i)
+"""
+`randPerm([T,]n::Integer)` a random permutation of `1:n` of type `T`.
+If omitted `T` is taken to be `$Idef`
+"""
+randPerm(::Type{T},n::Integer) where T =sortPerm(T,rand(1:n,n))
+randPerm(n::Integer)=sortPerm(Idef,rand(1:n,n))
+
 #------------------ operations on permutations --------------------------
 
 function Base.:*(a::Perm, b::Perm)
@@ -461,7 +503,7 @@ julia> m^(Perm(1,2),Perm(2,3))
 Base.:^(m::AbstractMatrix,p::Tuple{Perm,Perm})=m[axes(m,1)^p[1],axes(m,2)^p[2]]
 #---------------------- cycles -------------------------
 
-# 15% slower than GAP CyclePermInt for rand(Perm,1000)
+# 20% slower than GAP CyclePermInt for randPerm(1000)
 """
   orbit(a::Perm,i::Integer) returns the orbit of a on i
 """
@@ -484,7 +526,7 @@ returns the orbits of `a` on domain `d`
 # Example
 ```julia-repl
 julia> orbits(Perm(1,2)*Perm(4,5),1:5)
-3-element Vector{Vector{Int16}}:
+3-element Vector{Vector{$Idef}}:
  [1, 2]
  [3]
  [4, 5]
@@ -504,13 +546,13 @@ function orbits(a::Perm,domain=1:length(a.d);trivial=true)
   cycles
 end
 
-# 15 times faster than GAP Cycles for rand(Perm,1000)
+# 15 times faster than GAP Cycles for randPerm(1000)
 """
   `cycles(a::Perm)` returns the non-trivial cycles of `a`
 # Example
 ```julia-repl
 julia> cycles(Perm(1,2)*Perm(4,5))
-2-element Vector{Vector{Int16}}:
+2-element Vector{Vector{$Idef}}:
  [1, 2]
  [4, 5]
 ```
@@ -639,7 +681,7 @@ julia> p=mappingPerm([6,7,5])
 (5,6,7)
 
 julia> (5:7).^p
-3-element Vector{Int16}:
+3-element Vector{$Idef}:
  6
  7
  5

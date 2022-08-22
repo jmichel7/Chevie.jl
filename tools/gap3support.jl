@@ -17,7 +17,7 @@ end
 First(a,b)=a[findfirst(b,a)]::eltype(a)
 Flat(v)=collect(Iterators.flatten(v))
 gapSet(v)=unique!(sort(v))
-IdentityMat(n)=map(i->one(rand(Int,n,n))[i,:],1:n)
+IdentityMat(n)=map(i->one(zeros(Int,n,n))[i,:],1:n)
 IsInt(l)=l isa Int ||(l isa Rational && denominator(l)==1)
 IsList(l)=l isa Vector
 IsString(l)=l isa String

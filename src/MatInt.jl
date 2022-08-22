@@ -726,7 +726,7 @@ It returns a named tuple with the following components:
   - `moduli` the factors `xᵢ`.
 
 ```julia-repl
-julia> m=one(rand(Int,3,3))
+julia> m=one(zeros(Int,3,3))
 3×3 Matrix{Int64}:
  1  0  0
  0  1  0
