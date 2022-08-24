@@ -455,8 +455,8 @@ Graph automorphisms of `t`.
 julia> W=coxgroup(:D,4)
 D₄
 
-julia> Cosets.graph_automorphisms(refltype(W*W))
-Group([(1,5)(2,6)(3,7)(4,8),(1,2),(1,4)])
+julia> graph_automorphisms(refltype(W*W))
+Group([(1,5)(2,6)(3,7)(4,8), (1,2), (1,4)])
 ```
 """
 function graph_automorphisms(t::Vector{TypeIrred})

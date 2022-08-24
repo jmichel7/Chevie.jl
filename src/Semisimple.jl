@@ -682,7 +682,7 @@ julia> W=rootdatum(:sl,4)
 sl₄
 
 julia> fundamental_group(W)
-Group([])
+Group(Perm{Int16}[])
 ```
 """
 function fundamental_group(W)

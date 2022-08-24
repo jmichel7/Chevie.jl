@@ -32,6 +32,7 @@ end
       s=replace(s,r"```julia-repl(.*?)```"s=>t->push!(blks,t))
       out=String[]
       blks=map(blks)do s
+        s=replace(s,"\$Idef"=>"Int16") # hack: instead evaluate docstrings
         c=""
         l=split(s,"\n")
         res=Pair{String,Vector{String}}[]

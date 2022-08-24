@@ -13,14 +13,17 @@ Modules=[Perms]
 Perms
 Perm
 Perm(::Integer...)
-Perm(::AbstractVector,::AbstractVector)
+Perm(::AbstractMatrix{<:Integer})
+Perm(::AbstractVector, ::AbstractVector)
+Perm(::AbstractMatrix, ::AbstractMatrix)
 @perm_str
 largest_moved_point(::Perm)
 smallest_moved_point
 Base.:^(::AbstractVector,::Perm) 
 sortPerm
-Perms.orbit
-Perms.orbits
+randPerm
+orbit(::Perm,::Integer)
+orbits(::Perm)
 Perms.order
 cycles(::Perm)
 cycletype(::Perm)

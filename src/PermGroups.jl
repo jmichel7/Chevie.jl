@@ -10,7 +10,7 @@ algorithms like base, centralizer chain, etc...
 # Examples
 ```julia-repl
 julia> G=Group([Perm(i,i+1) for i in 1:2])
-Group([(1,2),(2,3)])
+Group([(1,2), (2,3)])
 
 # PermGroups are iterators over their elements
 julia> collect(G)  
@@ -44,7 +44,7 @@ julia> base(G)
 # the i-th element is the centralizer of base[1:i-1]
 julia> centralizers(G) 
 2-element Vector{PermGroup{Int16}}:
- Group([(1,2),(2,3)])
+ Group([(1,2), (2,3)])
  Group([(2,3)])
 
 # i-th element is transversal of centralizer[i] on base[i]
@@ -68,11 +68,11 @@ julia> @btime elements(symmetric_group(8));
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 8 ms (GAP4 9 ms)
 """
 module PermGroups
-using ..Perms
-using ..Groups: orbits
+#using ..Groups
+#using UsingMerge
+#@usingmerge Perms # will do that when Perms is a package
 using ..Gapjm
 using ..Util: getp, InfoChevie, @GapObj, printTeX, hasdecor
-import ..Gapjm: elements
 using ..Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
   stab_onmats, Perm_onmats, onmats, on_classes
@@ -81,15 +81,7 @@ abstract type PermGroup{T}<:Group{Perm{T}} end
 
 PermGroup()=Group(Perm{Int16}[])
 
-function Base.show(io::IO,G::PermGroup)
-  if hasdecor(io)
-    if haskey(G,:name) printTeX(io,G.name)
-    else print(io,"Group([");join(io,gens(G),",");print(io,"])")
-    end
-  else
-    print(io,"Group(",gens(G),")")
-  end
-end
+Base.show(io::IO,G::PermGroup)=print(io,"Group(",gens(G),")")
 
 Base.one(G::PermGroup)=G.one # PermGroups should have fields gens and one
 
@@ -101,7 +93,7 @@ function Perms.largest_moved_point(G::PermGroup)::Int
   end
 end
 
-function Groups.orbits(G::PermGroup)
+function Perms.orbits(G::PermGroup)
   get!(G,:orbits)do
     orbits(G,1:largest_moved_point(G);trivial=false)
   end
@@ -237,7 +229,7 @@ function Base.intersect(G::PermGroup, H::PermGroup)
   Groups.weedgens(res)
 end
 
-cycletypes(W,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
+cycletypes(W::PermGroup,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
 
 # eventually rewrite this dispatching on types
 function classinv(W::PermGroup)
@@ -332,7 +324,7 @@ function Base.iterate(G::PermGroup,(I,state))
 end
 
 # elements is twice faster than collect(G), should not be
-function elements(G::PermGroup)
+function Groups.elements(G::PermGroup)
   t=reverse(sort.(collect.(values.(transversals(G)))))
   if isempty(t) return [one(G)] end
   res=t[1]
@@ -386,7 +378,11 @@ function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T
 end
 
 " The symmetric group of degree n "
-symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
+function symmetric_group(n::Int)
+  G=Group([Perm(i,i+1) for i in 1:n-1])
+  G.name=string("symmetric_group(",n,")")
+  G
+end
 
 #---------------- application to matrices ------------------------------
 """
@@ -406,7 +402,8 @@ function invblocks(m,extra=nothing)
   end
 end
 
-function stab_onmats(g::Group,M::AbstractMatrix,extra=nothing)
+# fast method for centralizer(g,M;action=onmats) additionally centralizing extra
+function stab_onmats(g::PermGroup,M::AbstractMatrix,extra=nothing)
 # if length(g)>1
 #   print("g=",
 #        length.(filter(x->length(x)>1,orbits(g,1:maximum(degree.(gens(g)))))),
@@ -423,19 +420,20 @@ function stab_onmats(g::Group,M::AbstractMatrix,extra=nothing)
 end
 
 """
-`stab_onmats([G,]M[,l])`
+`stab_onmats([G,]M;extra=nothing)`
 
 If  `onmats(m,p)=^(M,p;dims=(1,2))`, and  the argument  `G` is given (which
 should   be  a  `PermGroup`)   this  is  just   a  fast  implementation  of
 `centralizer(G,M;action=onmats)`.  If  `G`  is  omitted  it  is taken to be
 `symmetric_group(size(M,1))`.  The  program  uses sophisticated algorithms,
-and can handle matrices up to 80×80.
+and can handle matrices up to 80×80. If a list `extra` is given the result
+centralizes also `extra`.
 
 ```julia-repl
 julia> uc=UnipotentCharacters(complex_reflection_group(34));
 
 julia> stab_onmats(fourier(uc.families[20]))
-Group([(7,38),(39,44)(40,43)(41,42)])
+Group([(7,38), (39,44)(40,43)(41,42)])
 ```
 """
 function stab_onmats(M,extra=nothing)

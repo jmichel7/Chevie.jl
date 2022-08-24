@@ -10,7 +10,7 @@ concrete implementations:
 # Examples
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
-Group([(1,2),(1,2,3)])
+Group([(1,2), (1,2,3)])
 
 julia> gens(G)
 2-element Vector{Perm{Int16}}:
@@ -78,7 +78,7 @@ the corresponding generator is used.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)])
-Group([(1,2),(1,2,3)])
+Group([(1,2), (1,2,3)])
 
 julia> G(2,1,-2) # returns gens(G)[2]*gens(G)[1]/gens(G)[2]
 (1,3)
@@ -274,13 +274,13 @@ The  action  of  `g∈  G`  on  sets  is  given  by  `(g,p)->sort(p.^g)`. The
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3,4)])
-Group([(1,2),(1,2,3,4)])
+Group([(1,2), (1,2,3,4)])
 
 julia> centralizer(G,[1,2];action=(s,g)->sort(s.^g))
-Group([(3,4),(1,2),(1,2)(3,4)])
+Group([(3,4), (1,2), (1,2)(3,4)])
 
 julia> stabilizer(G,[1,2])
-Group([(3,4),(1,2),(1,2)(3,4)])
+Group([(3,4), (1,2), (1,2)(3,4)])
 ```
 """
 stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
@@ -288,9 +288,9 @@ stabilizer(G::Group,p)=centralizer(G,p;action=(s,g)->sort(s.^g))
 """
 `center(G::Group)` the centre of `G`
 
-```julia_repl
+```julia-repl
 julia> G=Group([Perm(1,2),Perm(3,4),Perm(1,3)*Perm(2,4)])
-Group([(1,2),(3,4),(1,3)(2,4)])
+Group([(1,2), (3,4), (1,3)(2,4)])
 
 julia> centre(G)
 Group([(1,2)(3,4)])
@@ -490,13 +490,13 @@ builds an object representing the homomorphism from `S` to `T` which maps
 
 ```julia-repl
 julia> S=Group([Perm(1,2),Perm(2,3)])
-Group([(1,2),(2,3)])
+Group([(1,2), (2,3)])
 
 julia> T=Group([Perm(1,2)])
 Group([(1,2)])
 
 julia> h=Hom(S,T,[T(1),T(1)])
-Hom(Group([(1,2),(2,3)])→ Group([(1,2)]);[(1,2), (2,3)]↦ [(1,2), (1,2)]
+Hom(Group([(1,2), (2,3)])→ Group([(1,2)]);[(1,2), (2,3)]↦ [(1,2), (1,2)]
 
 julia> h(S(1,2)) # the image by h
 ()
@@ -560,7 +560,7 @@ possible `g` forms a right coset of the centralizer of p in G.
 
 ```julia-repl
 julia> g=Group(perm"(1,2,3)(6,7)",perm"(3,4,5)(7,8)")
-Group([(1,2,3)(6,7),(3,4,5)(7,8)])
+Group([(1,2,3)(6,7), (3,4,5)(7,8)])
 
 julia> transporting_elt(g,1,5)
 (1,5,4,3,2)
@@ -667,9 +667,9 @@ end
 Base.one(G::Groupof)=G.one
 
 #------------------- cosets ----------------------------------------
-# for now only normal cosets (phi normalizes G)
 abstract type Coset{TW<:Group} end
 
+# for now only normal cosets (phi normalizes G), the minimum for quotient groups
 @GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
   phi::T
   G::TW

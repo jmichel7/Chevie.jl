@@ -1,31 +1,30 @@
 """
-This  module implements permutations with the  same semantics as in the GAP
-language.
+This package implements permutations and some functions of them. It depends
+only  on  the  package  `Combinat` (which itself depends on `Primes`). 
 
+This  package  follows  the  design  of  permutations  in the GAP language.
 `Perm`s  are permutations  of the  set `1:n`,  represented internally  as a
 vector  of `n`  integers holding  the images  of `1:n`.  The integer `n` is
-called  the degree  of the  permutation; two  permutations are equal if and
-only  if they move the same points in  the same way, so two permutations of
-different  degree can be equal; the degree is thus an implementation detail
-so  usually  it  should  not  be  used.  One should rather use the function
-`largest_moved_point`.
+called  the degree  of the  permutation. In  this package,  as in  GAP (and
+contrary  to the philosophy of Magma or the package `Permutations.jl`), two
+permutations of different  degrees  can  be  multiplied (the result has the
+larger  degree). Two permutations  are equal if  and only if  they move the
+same points in the same way, so two permutations of different degree can be
+equal; the degree is thus an implementation detail so usually it should not
+be used. One should rather use the function `largest_moved_point`.
 
-This follows the GAP design: it is possible to multiply, or to store in the
-same  group,  permutations  of  different  degrees;  this is implemented by
-promoting both to the higher degree. Slightly different is the MAGMA design
-where any permutation has to belong to a group and the degree is determined
-by  that group; then multiplication of permutations within a given group is
-(very  slightly) faster, but it is  more difficult to multiply permutations
-coming  from different groups, like  a group and one  of its subgroups.
+This  design makes it  easy to multiply  permutations coming from different
+groups, like a group and one of its subgroups. It has a negligible overhead
+compared to the design where the degree is fixed.
 
 The default constructor for a permutation uses the list of images of `1:n`,
 like  `Perm([2,3,1,5,4])`.  Often  it  is  more  convenient  to  use  cycle
 decompositions:    the   above   permutation    has   cycle   decomposition
 `(1,2,3)(4,5)`    thus   can   be    written   `Perm(1,2,3)*Perm(4,5)`   or
-`perm"(1,2,3)(4,5)"` (this last form can parse a GAP permutation). The list
-of  images of `1:n` can  be recovered from the  permutation by the function
-`vec`;  note  that  equal  permutations  with  different  degrees will have
-different `vec`.
+`perm"(1,2,3)(4,5)"`  (this last form  can parse a  permutation coming from
+GAP  or the default printing at the REPL).  The list of images of `1:n` can
+be  recovered from the  permutation by the  function `vec`; note that equal
+permutations with different degrees will have different `vec`.
 
 The  complete type of a permutation  is `Perm{T}` where `T<:Integer`, where
 `Vector{T}`  is the type of the vector which holds the image of `1:n`. This
@@ -100,7 +99,7 @@ julia> Matrix(b)  # permutation matrix of b
  1  0  0  0
 ```
 ```julia-rep1
-julia> randPerm(10)
+julia> randPerm(10) # random permutation of 1:10
 (1,8,4,2,9,7,5,10,3,6)
 ```
 
@@ -110,8 +109,12 @@ to  the same images. They have methods `cmp`, `isless` (lexicographic order
 on   moved  points)  so  they  can  be  sorted.  `Perm`s  are  scalars  for
 broadcasting.
 
-Other  methods on  permutations are  `cycles, cycletype, reflength, mapping
-Perm, sortPerm, Perm_rowcol`.
+Other   methods   on   permutations   are  `cycles,  cycletype,  reflength,
+mappingPerm, sortPerm, Perm_rowcol`.
+
+No  method is given in  this package to enumerate  `Perm`s; you can use the
+method   `arrangements`  from   `Combinat`  or   iterate  the  elements  of
+`symmetric_group` with `PermGroups`.
 """
 module Perms
 
@@ -119,7 +122,7 @@ export restricted, orbit, orbits, order, Perm, largest_moved_point, cycles,
   cycletype, support, @perm_str, smallest_moved_point, reflength,
   mappingPerm, sortPerm, Perm_rowcol, randPerm
 
-using ..Combinat: tally, collectby, arrangements
+using Combinat: tally, collectby, arrangements
 
 """
 `struct Perm{T<:Integer}`
@@ -142,12 +145,12 @@ julia> vec(p)
 struct Perm{T<:Integer}
   d::Vector{T}
 end
+Perm(v)=Perm(collect(v))
 
 const Idef=Int16 # you can change the default type T for Perm here
 
 Base.vec(a::Perm)=a.d
 
-Perm(v)=Perm(collect(v))
 #---------------- Constructors ---------------------------------------
 """
    `Perm{T}(x::Integer...)where T<:Integer`
@@ -240,6 +243,8 @@ julia> Perm(m)
 (1,2,3)
 ```
 """
+Perm(m::AbstractMatrix{<:Integer})=Perm{Idef}(m)
+
 function Perm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
   if size(m,1)!=size(m,2) error("matrix should be square") end
   if any(x->count(!iszero,x)!=1,eachrow(m)) 
@@ -249,8 +254,6 @@ function Perm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
   if !isperm(l) error("not a permutation matrix") end
   Perm{T}(l)
 end
-
-Perm(m::Matrix{<:Integer})=Perm{Idef}(m)
 
 """
   `Perm{T}(l::AbstractVector,l1::AbstractVector)`
