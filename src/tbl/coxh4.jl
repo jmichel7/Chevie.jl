@@ -1,4 +1,3 @@
-
 chevieset(:H4, :ReflectionDegrees, [2, 12, 20, 30])
 chevieset(:H4, :Size, 14400)
 chevieset(:H4, :GeneratingRoots, function ()

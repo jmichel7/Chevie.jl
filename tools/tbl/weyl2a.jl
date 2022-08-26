@@ -1,4 +1,3 @@
-
 chevieset(Symbol("2A"), :WordsClassRepresentatives, function (arg...,)
         local n, part, guesslongest, redw, l, w0, p
         n = arg[1]

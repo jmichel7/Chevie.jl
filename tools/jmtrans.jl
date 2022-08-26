@@ -71,6 +71,9 @@ const ok2=[
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)
 
+#using PrettyPrinting
+const pp=false
+
 # install("x/f") translates ~/gap3-dev/pkg/chevie/x/f.g" to "x/f.jl"
 function install(n)
   println("installing $n")
@@ -82,10 +85,14 @@ function install(n)
         else print(join(e.args[3].args,","))
         end
         println(".",e.args[2])
-        write(f,"\n",string(Gap2Julia.trans(e)))
-       elseif e.head==:(=) && (e.args[1] in ok2)
+        if pp pprintln(f,Gap2Julia.trans(e))
+        else write(f,string(Gap2Julia.trans(e)),"\n")
+        end
+      elseif e.head==:(=) && (e.args[1] in ok2)
         println("=",e.args[1])
-        write(f,"\n",string(Gap2Julia.trans(e)))
+        if pp pprintln(f,Gap2Julia.trans(e))
+        else write(f,string(Gap2Julia.trans(e)),"\n")
+        end
       end
     end
   end

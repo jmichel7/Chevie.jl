@@ -1,4 +1,3 @@
-
 chevieset(:G33, :PrintDiagram, function (indices, title)
         local s
         print(title, " ")

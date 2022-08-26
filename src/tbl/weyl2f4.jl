@@ -1,4 +1,3 @@
-
 chevieset(Symbol("2F4"), :NrConjugacyClasses, 11)
 chevieset(Symbol("2F4"), :ClassInfo, function ()
         local res

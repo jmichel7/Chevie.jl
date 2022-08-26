@@ -1,4 +1,3 @@
-
 chevieset(:D, :Size, function (arg...,)
         return 2 ^ (arg[1] - 1) * factorial(arg[1])
     end)

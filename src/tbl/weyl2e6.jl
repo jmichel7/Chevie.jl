@@ -1,4 +1,3 @@
-
 chevieset(Symbol("2E6"), :NrConjugacyClasses, 25)
 chevieset(Symbol("2E6"), :ClassInfo, function ()
         local res

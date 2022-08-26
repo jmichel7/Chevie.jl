@@ -1,4 +1,3 @@
-
 chevieset(:G24, :PrintDiagram, function (indices, title)
         local s
         print(title, " ", indices[1], "\n")

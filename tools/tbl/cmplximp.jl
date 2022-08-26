@@ -1,4 +1,3 @@
-
 chevieset(:imp, :PrintDiagram, function (arg...,)
         local p, q, r, indices, j, indent, title, g
         p = arg[1]

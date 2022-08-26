@@ -1,4 +1,3 @@
-
 chevieset(Symbol("2D"), :ClassParams, function (n,)
         local B
         B = (chevieget(:B, :ClassParams))(n)

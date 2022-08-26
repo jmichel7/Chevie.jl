@@ -1,4 +1,3 @@
-
 chevieset(:I, :CartanMat, function (arg...,)
         local bond, type_, m
         m = [[2 * E(1), 0], [0, 2]]

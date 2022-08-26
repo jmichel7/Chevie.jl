@@ -1,4 +1,3 @@
-
 chevieset(:timp, :PhiFactors, function (p, q, r, phi)
         local res, o
         o = order(phi)

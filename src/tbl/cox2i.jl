@@ -1,4 +1,3 @@
-
 chevieset(Symbol("2I"), :ReflectionName, function (m, option)
         if haskey(option, :TeX)
             return SPrint("{}^2I_2(", m, ")")

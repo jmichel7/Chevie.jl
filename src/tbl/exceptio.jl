@@ -1,4 +1,3 @@
-
 chevieset(["G24", "G25", "G26", "G27", "G29", "G31", "G32", "G33", "G34", "H3", "H4", "2E6", "2F4", "3D4", "E6", "E7", "E8", "F4", "G2"], :IrredInfo, function (t,)
         local ci
         ci = (chevieget(t, :CharInfo))()

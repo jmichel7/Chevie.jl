@@ -1,4 +1,3 @@
-
 chevieset(Symbol("3D4"), :cyclestructure, [[2, nothing, nothing, nothing, 3], [nothing, 6], [3, nothing, nothing, nothing, 3], [3, 2, nothing, nothing, 2], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 2], [nothing, 8], [nothing, nothing, nothing, nothing, 4]])
 chevieset(Symbol("3D4"), :generators, [perm"(1,13)(3,5)(6,8)(7,9)(10,11)(15,17)(18,20)(19,21)(22,23)", perm"( 2,14)( 3, 6)( 5, 8)( 7,10)( 9,11)(15,18)(17,20)(19,22)(21,23)", perm"( 1, 5)( 2, 6)( 3,15)( 4, 7)(11,12)(13,17)(14,18)(16,19)(23,24)", perm"( 3, 7)( 4,16)( 5, 9)( 6,10)( 8,11)(15,19)(17,21)(18,22)(20,23)"])
 chevieset(Symbol("3D4"), :phi, perm"(1,2,4)(5,6,7)(8,10,9)(13,14,16)(17,18,19)(20,22,21)")

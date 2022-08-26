@@ -1,4 +1,3 @@
-
 chevieset(:A, :CartanMat, function (n,)
         local a, i
         a = IdentityMat(n)

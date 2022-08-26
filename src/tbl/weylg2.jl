@@ -1,4 +1,3 @@
-
 chevieset(:G2, :CartanMat, function (arg...,)
         local a, type_
         if length(arg) > 0
