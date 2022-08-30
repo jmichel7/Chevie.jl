@@ -187,12 +187,13 @@ make a `Perm` from a string; allows GAP-style `perm"(1,2)(5,6,7)(4,9)"`
 """
 macro perm_str(s::String)
   start=1
+  s=replace(s,"\\n"=>"\n")
   res=Perm()
-  while true
-    m=match(r"\((\s*\d+\s*,)+\s*\d+\)\s*"s,s[start:end])
-    if m===nothing break end
+  while match(r"^\s*$"s,s[start:end])===nothing
+    m=match(r"^\s*\((\s*\d+\s*,)+\s*\d+\)"s,s[start:end])
+    if m===nothing error("malformed permutation: ",s) end
     start+=m.match.ncodeunits
-    res*=Perm(Meta.parse(m.match).args...)
+    res*=Perm(Meta.parse(replace(m.match,r"\s*"=>"")).args...)
   end
   res::Perm
 end

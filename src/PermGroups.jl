@@ -403,7 +403,7 @@ function invblocks(m,extra=nothing)
 end
 
 # fast method for centralizer(g,M;action=onmats) additionally centralizing extra
-function stab_onmats(g::PermGroup,M::AbstractMatrix,extra=nothing)
+function stab_onmats(g::PermGroup{T},M::AbstractMatrix,extra=nothing)where T
 # if length(g)>1
 #   print("g=",
 #        length.(filter(x->length(x)>1,orbits(g,1:maximum(degree.(gens(g)))))),
@@ -416,7 +416,7 @@ function stab_onmats(g::PermGroup,M::AbstractMatrix,extra=nothing)
   e=Group(map(y->Perm(n,map(x->CartesianIndex(x.I.^y),n)),gens(g)))
   for s in collectby(vec(M),1:length(M)) e=stabilizer(e,s) end
   if isempty(gens(e)) return e end
-  Group(map(p->Perm(map(i->n[i^p][1], axes(M,1))), gens(e)))
+  Group(map(p->Perm{T}(map(i->n[i^p][1], axes(M,1))), gens(e)))
 end
 
 """
