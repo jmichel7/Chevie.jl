@@ -299,9 +299,9 @@ function Base.iterate(I::ProdIterator,state)
 end
 
 #------------------------- iteration for PermGroups -----------------------
-function Base.length(G::PermGroup)
+function Base.length(G::PermGroup;type=Int)
   get!(G,:length)do
-    prod(length.(transversals(G)))
+    prod(type.(length.(transversals(G))))
   end
 end
 

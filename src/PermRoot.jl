@@ -191,8 +191,8 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
- simple_conjugating, refls, unique_refls, reflection, reflectionmat, Reflection,
- reflections, Diagram, isdistinguished, hyperplane_orbit,
+ simple_conjugating, refls, unique_refls, reflection, reflectionmat, 
+ Diagram, 
  refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
  coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
  bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
@@ -200,7 +200,6 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
  invariants, matY, simpleroots, simplecoroots, action, radical, 
  parabolic_closure, isparabolic, central_action, nhyp, nref, indices
 using ..Gapjm
-
 """
 `coroot(r,λ=1)`
 
@@ -1078,157 +1077,6 @@ function hyperplane_orbits(W::PermRootGroup)::Vector{NamedTuple{(:s, :cl_s, :ord
   end
   end
 end
-
-struct Reflection{TW<:PermRootGroup}
-  W::TW
-  rootno::Int
-  eigen::Root1
-  word::Vector{Int}
-end
-
-@doc """
-`Reflection`  is a `struct`  representing a reflection  `r` in a reflection
-group `W`. The fields are `W`, the index of a root for `r`, the non-trivial
-eigenvalue of `r`, and a word for `r` in the generating reflections of `W`.
-```julia-repl
-julia> r=reflections(crg(8))[2]
-Reflection(G₈,1,-1)
-
-julia> r.eigen # the non-trival eigenvalue, as a Root1
-Root1: -1
-
-julia> root(r)
-2-element Vector{Cyc{Rational{Int64}}}:
-  0
- ζ₄
-
-julia> coroot(r)
-2-element Vector{Cyc{Rational{Int64}}}:
-    0
- -2ζ₄
-
-julia> Matrix(r)
-2×2 Matrix{Cyc{Rational{Int64}}}:
- 1   0
- 0  -1
-
-julia> isdistinguished(r) # r is not distinguished
-false
-
-julia> exponent(r) # which power of a distinguished reflection it is
-2
-
-julia> Perm(r)
-(1,8)(2,9)(3,16)(4,15)(5,17)(6,18)(7,19)(10,22)(11,21)(12,23)
-
-julia> hyperplane_orbit(r) # r is in the first hyperplane orbit
-1
-
-julia> position_class(r) # the index of the conjugacy class of r in W 
-15
-
-julia> word(r) # a word in the generators for r
-2-element Vector{Int64}:
- 1
- 1
-```
-""" Reflection
-
-function Base.show(io::IO,r::Reflection)
-  print(io,"Reflection(",r.W,",",r.rootno,",",r.eigen,")")
-end
-
-LaurentPolynomials.root(r::Reflection)=roots(r.W,r.rootno)
-
-function coroot(r::Reflection)
-  rr=root(r)
-  cr=coroots(r.W,r.rootno)
-  cr*(1-r.eigen)/(transpose(cr)*rr)
-end
-
-Base.Matrix(r::Reflection)=reflectionmat(root(r),coroot(r))
-
-simple_rep(r::Reflection)=simple_reps(r.W)[r.rootno]
-
-Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_rep(r)])
-
-isdistinguished(r::Reflection)=exponent(r)==1
-
-Perms.Perm(r::Reflection)=refls(r.W,r.rootno)^exponent(r)
-
-function hyperplane_orbit(r::Reflection)
-  findfirst(x->x.s==simple_rep(r),hyperplane_orbits(r.W))
-end
-
-function Groups.position_class(r::Reflection)
-  hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[exponent(r)]
-end
-
-function invert_word(W,w)
-  if isempty(w) return w end
-  lastg=0
-  mul=0
-  seq=Pair{Int,Int}[]
-  for i in length(w):-1:1
-    if w[i]==lastg mul+=1
-    else
-      if lastg!=0 push!(seq,lastg=>mul) end
-      lastg=w[i]; mul=1
-    end
-  end
-  if lastg!=0 push!(seq,lastg=>mul) end
-  o=ordergens(W)
-  vcat(map(((i,mul),)->fill(i,o[i]-mul),seq)...)
-end
-
-"""
-`reflections(W)`  the list of  all reflections of  the reflection group `W`
-(including  the  non-distinguished  ones),  given as a `Vector{Reflection}`
-(see [`Reflection`](@ref)).
-
-```julia-repl
-julia> W=crg(4)
-G₄
-
-julia> reflections(W)
-8-element Vector{Reflection{PRG{Cyc{Rational{Int64}}, Int16}}}:
- Reflection(G₄,1,ζ₃)
- Reflection(G₄,1,ζ₃²)
- Reflection(G₄,2,ζ₃)
- Reflection(G₄,2,ζ₃²)
- Reflection(G₄,4,ζ₃)
- Reflection(G₄,4,ζ₃²)
- Reflection(G₄,5,ζ₃)
- Reflection(G₄,5,ζ₃²)
-```
-"""
-function reflections(W::PermRootGroup)
-  get!(W,:reflections)do
-    sreps=sort(unique(simple_reps(W)))
-    pnts=refls(W,sreps)
-    dd=map(x->Groups.words_transversal(gens(W),x),pnts)
-    res=Reflection{typeof(W)}[]
-    for i in unique_refls(W)
-      e=ordergens(W)[simple_reps(W,i)]
-      w=Int[]
-      dw=Int[]
-      for j in 1:e-1
-        if W isa CoxeterGroup w=word(W,refls(W,i))
-        elseif j==1
-          rep=simple_reps(W,i)
-          w=dd[findfirst(==(rep),sreps)][refls(W,i)]
-          dw=w=vcat(invert_word(W,w),[rep],w)
-        else
-          w=vcat(fill(dw,j)...)
-        end
-        push!(res,Reflection(W,i,E(e,j),w))
-      end
-    end
-    res
-  end
-end
-  
-Groups.word(r::Reflection)=r.word
 
 """
 `bipartite_decomposition(W)`

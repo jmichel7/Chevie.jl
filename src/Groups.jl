@@ -37,21 +37,20 @@ Dict{Symbol, Any} with 1 entry:
 ```
 for  further information,  look at  the docstrings  of `centralizer, centre,
 classreps, comm, conjugacy_class, conjugacy_classes, Coset,
-fusion_conjugacy_classes,    gens,   Hom,   isabelian,   iscyclic,   words,
+fusion_conjugacy_classes, gens, Hom, isabelian, iscyclic, words,
 minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
 position_class, stabilizer, transporting_elt, transversal`
 """
 module Groups
-export Group, centralizer, centre, classreps, comm, order, ordergens,
+export Group, centralizer, centre, classreps, comm, commutator, order, 
+  gens, ngens, ordergens,
   conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
-  gens, Hom, isabelian, iscyclic, words, minimal_words, nconjugacy_classes,
-  ngens, normalizer, orbit, orbits, position_class, stabilizer,
-  transporting_elt, transversal, words_transversal
+  Hom, isabelian, iscyclic, istrivial, words, minimal_words, 
+  nconjugacy_classes, normalizer, orbit, orbits, position_class, 
+  stabilizer, transporting_elt, transversal, words_transversal,
+  word, elements, kernel
 
 using ..Util: InfoChevie, @GapObj
-#import Gapjm: word, elements, kernel
-# to use as a stand-alone module comment above line and uncomment next line
-export word, elements, kernel
 #--------------general groups and functions for "black box groups" -------
 abstract type Group{T} end # T is the type of elements of G
 
@@ -65,6 +64,7 @@ Base.one(G::Group{T}) where T=one(T)
 
 "`gens(G::Group)` returns the `Vector` of generators of `G`."
 gens(G::Group)=G.gens
+
 "`ngens(G::Group)` returns the number of generators of `G`."
 ngens(G::Group)=length(gens(G))
 
@@ -92,6 +92,7 @@ end
 
 "`comm(a,b)` the commutator `a^-1*b^-1*a*b` of `a` and `b`"
 comm(a,b)=inv(a)*inv(b)*a*b
+commutator(a,b)=comm(a,b)
 
 """
 `orbit(gens::AbstractVector,p;action::Function=^)`
@@ -425,6 +426,7 @@ Base.in(w,G::Group)=haskey(words2(G),w)
 
 "length(G::Group): the number of elements of G"
 Base.length(G::Group)=length(words2(G))
+order(G::Group)=length(G)
 
 "`conjugacy_classes(G::Group)` conjugacy classes of `G` (as a `Vector{Vector}`)"
 function conjugacy_classes(G::Group{T})::Vector{Vector{T}} where T
@@ -482,55 +484,6 @@ end
 "`nconjugacy_classes(G::Group)` the number of conjugacy classes of `G`"
 nconjugacy_classes(G::Group)=length(classreps(G))
 
-"""
-`Hom(S::Group,T::Group,images)`
-
-builds an object representing the homomorphism from `S` to `T` which maps
-`gens(S)` to `images`.
-
-```julia-repl
-julia> S=Group([Perm(1,2),Perm(2,3)])
-Group([(1,2), (2,3)])
-
-julia> T=Group([Perm(1,2)])
-Group([(1,2)])
-
-julia> h=Hom(S,T,[T(1),T(1)])
-Hom(Group([(1,2), (2,3)])→ Group([(1,2)]);[(1,2), (2,3)]↦ [(1,2), (1,2)]
-
-julia> h(S(1,2)) # the image by h
-()
-```
-"""
-struct Hom{T,T1}
-  source::Group{T}
-  target::Group{T1}
-  images::Vector{T1}
-end
-
-function Base.show(io::IO,h::Hom)
-  if h.source==h.target
-    print(io,"Aut(",h.source,";",gens(h.source),"↦ ",h.images)
-  else
-    print(io,"Hom(",h.source,"→ ",h.target,";",gens(h.source),"↦ ",h.images)
-  end
-end
-
-"`kernel(h::Hom)` the kernel of the homomorphism `h`"
-function kernel(h::Hom)
-  if all(isone,h.images) return h.source
-  elseif length(h.source)==length(Group(h.images)) 
-    return Group(empty(gens(h.source)),one(h.source))
-  elseif length(h.source)<1000
-    return Group(filter(x->isone(h(x)),elements(h.source)))
-  else error("not implemented: kernel(",h,")")
-  end
-end
-
-# h(w) is the image of w by h
-(h::Hom)(w)=isone(w) ? one(h.target) : prod(
-  (i>0 ? h.images[i] : inv(h.images[-i])) for i in word(h.source,w))
-
 "`isabelian(G::Group)` whether `G` is abelian"
 isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
 
@@ -548,6 +501,8 @@ ordergens(W)=get!(()->order.(gens(W)),W,:ordergens)
 
 "`iscyclic(G::Group)` whether `G` is cyclic"
 iscyclic(W::Group)=isabelian(W) && lcm(ordergens(W))==length(W)
+
+istrivial(W::Group)=order(G)==1
 
 Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 
@@ -628,6 +583,56 @@ function Base.intersect(G::Group, H::Group)
   end
   weedgens(res)
 end
+
+#------------------- homomorphisms ----------------------------------------
+"""
+`Hom(S::Group,T::Group,images)`
+
+builds an object representing the homomorphism from `S` to `T` which maps
+`gens(S)` to `images`.
+
+```julia-repl
+julia> S=Group([Perm(1,2),Perm(2,3)])
+Group([(1,2), (2,3)])
+
+julia> T=Group([Perm(1,2)])
+Group([(1,2)])
+
+julia> h=Hom(S,T,[T(1),T(1)])
+Hom(Group([(1,2), (2,3)])→ Group([(1,2)]);[(1,2), (2,3)]↦ [(1,2), (1,2)]
+
+julia> h(S(1,2)) # the image by h
+()
+```
+"""
+struct Hom{T,T1}
+  source::Group{T}
+  target::Group{T1}
+  images::Vector{T1}
+end
+
+function Base.show(io::IO,h::Hom)
+  if h.source==h.target
+    print(io,"Aut(",h.source,";",gens(h.source),"↦ ",h.images)
+  else
+    print(io,"Hom(",h.source,"→ ",h.target,";",gens(h.source),"↦ ",h.images)
+  end
+end
+
+"`kernel(h::Hom)` the kernel of the homomorphism `h`"
+function kernel(h::Hom)
+  if all(isone,h.images) return h.source
+  elseif length(h.source)==length(Group(h.images)) 
+    return Group(empty(gens(h.source)),one(h.source))
+  elseif length(h.source)<1000
+    return Group(filter(x->isone(h(x)),elements(h.source)))
+  else error("not implemented: kernel(",h,")")
+  end
+end
+
+# h(w) is the image of w by h
+(h::Hom)(w)=isone(w) ? one(h.target) : prod(
+  (i>0 ? h.images[i] : inv(h.images[-i])) for i in word(h.source,w))
 
 #------------------- "abstract" concrete groups -------------------------------
 @GapObj struct Groupof{T}<:Group{T}

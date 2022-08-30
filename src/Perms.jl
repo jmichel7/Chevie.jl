@@ -189,7 +189,7 @@ macro perm_str(s::String)
   start=1
   res=Perm()
   while true
-    m=match(r"\((\s*\d+\s*,)+\s*\d+\)",s[start:end])
+    m=match(r"\((\s*\d+\s*,)+\s*\d+\)\s*"s,s[start:end])
     if m===nothing break end
     start+=m.match.ncodeunits
     res*=Perm(Meta.parse(m.match).args...)
