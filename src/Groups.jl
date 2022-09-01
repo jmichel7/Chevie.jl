@@ -35,16 +35,17 @@ Dict{Symbol, Any} with 1 entry:
   :minwords => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2,…
   
 ```
-for  further information,  look at  the docstrings  of `centralizer, centre,
-classreps, comm, conjugacy_class, conjugacy_classes, Coset,
-fusion_conjugacy_classes, gens, Hom, isabelian, iscyclic, words,
-minimal_words,   nconjugacy_classes,  ngens,   normalizer,  orbit,  orbits,
-position_class, stabilizer, transporting_elt, transversal`
+for  further information,  look at  the docstrings  of `Group, gens, ngens,
+comm, orbit, orbits, transversal, words_transversal, centralizer, stabilizer,
+centre, normalizer, words, minimal_words, word, in, elements, length, order,
+conjugacy_class, conjugacy_classes, classreps, nconjugacy_classes,
+fusion_conjugacy_classes, position_class, isabelian, iscyclic, istrivial,
+rand, transporting_elt, intersect, Hom, kernel, Coset`
 """
 module Groups
 export Group, centralizer, centre, classreps, comm, commutator, order, 
-  gens, ngens, ordergens,
-  conjugacy_class, conjugacy_classes, Coset, fusion_conjugacy_classes,
+  gens, ngens, ordergens, fusion_conjugacy_classes,
+  conjugacy_class, conjugacy_classes, Coset, NormalCoset,
   Hom, isabelian, iscyclic, istrivial, words, minimal_words, 
   nconjugacy_classes, normalizer, orbit, orbits, position_class, 
   stabilizer, transporting_elt, transversal, words_transversal,
@@ -90,7 +91,7 @@ end
 
 (W::Group)(i::Integer)=i>0 ? gens(W)[i] : inv(gens(W)[-i])
 
-"`comm(a,b)` the commutator `a^-1*b^-1*a*b` of `a` and `b`"
+"`comm(a,b)` or `commutator(a,b)` is `a^-1*b^-1*a*b`"
 comm(a,b)=inv(a)*inv(b)*a*b
 commutator(a,b)=comm(a,b)
 
@@ -147,9 +148,9 @@ orbit(G::Group,pnt;action::F=^) where F<:Function=orbit(gens(G),pnt;action)
 """
 `transversal(G::Group,p;action::Function=^)`
 
-returns a `Dict` with entries `x=>g` where `x` runs over
-`orbit(G,p;action)`  and where `g∈ G` is such that `x=action(p,g)`. It thus
-requires group elements to be hashable.
+returns  a `Dict` `t` with keys  `orbit(G,p;action)` and where `t[x]` is an
+element  of  `G`  such  that  `x==action(p,t[x])`.  Like  `orbit`,  it thus
+requires the type of `p` to be hashable.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(2,3)]);
@@ -159,18 +160,17 @@ Dict{Int64, Perm{Int16}} with 3 entries:
   3 => (1,3,2)
   1 => ()
 ```
-
 orbit functions can take any action of `G` as keyword argument
 
 ```julia-repl
-julia> transversal(G,[1,2],action=(x,y)->x.^y)
-Dict{Vector{Int64}, Perm{Int16}} with 6 entries:
-  [2, 3] => (1,2,3)
-  [2, 1] => (1,2)
-  [1, 3] => (2,3)
-  [3, 1] => (1,3,2)
-  [1, 2] => ()
-  [3, 2] => (1,3)
+julia> transversal(G,(1,2),action=(x,y)->x.^y)
+Dict{Tuple{Int64, Int64}, Perm{Int16}} with 6 entries:
+  (3, 2) => (1,3)
+  (1, 2) => ()
+  (3, 1) => (1,3,2)
+  (1, 3) => (2,3)
+  (2, 1) => (1,2)
+  (2, 3) => (1,2,3)
 ```
 """
 function transversal(G::Group,pnt;action::F=^) where F<:Function
@@ -189,9 +189,9 @@ end
 """
 `words_transversal(gens,p;action::Function=^)`
 
-A  transversal recording words. Returns a  `Dict` with entries `x=>w` where
-`x`  runs over `orbit(G,p;action)` and where  `w` is a sequence of integers
-such that `x==action(p,gens[w])`
+A   transversal   recording   words.   returns   a  `Dict`  `t`  with  keys
+`orbit(G,p;action)`  and where  `t[x]` is  a `w`  is a sequence of integers
+such that `x==action(p,G(w...))`
 
 ```julia-repl
 julia> words_transversal([Perm(1,2),Perm(2,3)],1)
@@ -248,7 +248,7 @@ orbits(G::Group,v;action=^,trivial=true)=orbits(gens(G),v;action,trivial)
 """
 `centralizer(G::Group,p;action=^)`
 
-computes  the centralizer of `p` in `G`.
+computes  the subgroup of elements `g` of `G` such that `action(p,g)==p`.
 
 ```julia-repl
 julia> G=Group([Perm(1,2),Perm(1,2,3)]);
@@ -263,7 +263,16 @@ function centralizer(G::Group,p;action::Function=^)
   Group(unique!(sort(C)))
 end
 
-"`centralizer(G::Group,H::Group)`"
+"""
+`centralizer(G::Group,H::Group)` the centralizer in `G` of the group `H`
+```julia-repl
+julia> G=Group([Perm(1,2),Perm(1,2,3)])
+Group([(1,2), (1,2,3)])
+
+julia> centralizer(G,Group([Perm(1,2)]))
+Group([(1,2)])
+```
+"""
 centralizer(G::Group,H::Group)=centralizer(G,gens(H);action=(x,s)->x.^s)
 
 """
@@ -323,18 +332,7 @@ Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
 """
 function minimal_words(G::Group)
   get!(G,:minwords)do
-    words=Dict(one(G)=>Int[])
-    l=words
-    while !isempty(l)
-      newl=Dict{eltype(G),Vector{Int}}()
-      for (i,g) in pairs(gens(G)), (h,w) in l
-        e=h*g
-        if !haskey(words,e) newl[e]=vcat(w,i) end
-      end
-      l=newl
-      merge!(words,l)
-    end
-    words
+    words_transversal(gens(G),one(G);action=(x,y)->x*y)
   end
 end
 
@@ -417,15 +415,17 @@ function word2(W::Group,w)
   res
 end
 
-"elements(G::Group): the list of elements of G"
+"`elements(G::Group)` the list of elements of G"
 function elements(G::Group)
   collect(keys(words2(G)))
 end
 
+"`x in G` for `G` a group: whether `x` is an element of `G`"
 Base.in(w,G::Group)=haskey(words2(G),w)
 
-"length(G::Group): the number of elements of G"
+"`length(G::Group)` the number of elements of G"
 Base.length(G::Group)=length(words2(G))
+"`order(G::Group)` the number of elements of G"
 order(G::Group)=length(G)
 
 "`conjugacy_classes(G::Group)` conjugacy classes of `G` (as a `Vector{Vector}`)"
@@ -484,9 +484,7 @@ end
 "`nconjugacy_classes(G::Group)` the number of conjugacy classes of `G`"
 nconjugacy_classes(G::Group)=length(classreps(G))
 
-"`isabelian(G::Group)` whether `G` is abelian"
-isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
-
+"`order(a)` the smallest integer `i≥1` such that `isone(a^i)`"
 function order(a)# default method
   i=1
   u=a
@@ -499,11 +497,16 @@ end
 
 ordergens(W)=get!(()->order.(gens(W)),W,:ordergens)
 
+"`isabelian(G::Group)` whether `G` is abelian"
+isabelian(W::Group)=all(x*y==y*x for x in gens(W), y in gens(W))
+
 "`iscyclic(G::Group)` whether `G` is cyclic"
 iscyclic(W::Group)=isabelian(W) && lcm(ordergens(W))==length(W)
 
+"`istrivial(G::Group)` whether `G` is trivial"
 istrivial(W::Group)=order(G)==1
 
+"`rand(W::Group)` a random element of `W`"
 Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
 
 """
@@ -575,8 +578,8 @@ function weedgens(G::Group)
   end
 end
 
-# horrible implementation
-function Base.intersect(G::Group, H::Group)
+"`intersect(G::Group, H::Group)` the intersection as a group"
+function Base.intersect(G::Group, H::Group) # horrible implementation
   if min(length(G),length(H))>104000 error("too large intersect($G,$H)") end
   if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
   else res=Group(filter(x->x in G,elements(H)))
@@ -630,7 +633,7 @@ function kernel(h::Hom)
   end
 end
 
-# h(w) is the image of w by h
+"If `h isa Hom` then `h(w)` is the image of `w` by `h`"
 (h::Hom)(w)=isone(w) ? one(h.target) : prod(
   (i>0 ? h.images[i] : inv(h.images[-i])) for i in word(h.source,w))
 
@@ -674,21 +677,11 @@ Base.one(G::Groupof)=G.one
 #------------------- cosets ----------------------------------------
 abstract type Coset{TW<:Group} end
 
-# for now only normal cosets (phi normalizes G), the minimum for quotient groups
-@GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
-  phi::T
-  G::TW
-end
-
 Base.isone(a::Coset)=a.phi in Group(a)
-
-"""
-`Coset(phi,G)` coset `G.phi` (assumed equal to `phi.G`)
-"""
-Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
 
 Group(W::Coset)=W.G
 
+# my cosets are right cosets
 (W::Coset)(x...)=Group(W)(x...)*W.phi
 
 Base.cmp(a::Coset, b::Coset)=cmp(a.phi,b.phi)
@@ -703,20 +696,29 @@ Base.copy(C::Coset)=Coset(Group(C),C.phi)
 
 Base.one(C::Coset)=Coset(Group(C))
 
-Base.inv(C::Coset)=Coset(Group(C),inv(C.phi))
-
-Base.:*(a::Coset,b::Coset)=Coset(Group(a),a.phi*b.phi)
-
-Base.:/(a::Coset,b::Coset)=a*inv(b)
-
 Base.length(C::Coset)=length(Group(C))
 
-Base.:^(a::Coset, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
+
+elements(C::Coset)=elements(Group(C)).*C.phi
+
+Base.in(w,C::Coset)=C.phi/w in Group(C)
+
+abstract type NormalCoset{TW<:Group}<:Coset{TW} end
+
+# for now only normal cosets (phi normalizes G), the minimum for quotient groups
+Base.inv(C::NormalCoset)=NormalCoset(Group(C),inv(C.phi))
+
+Base.:*(a::NormalCoset,b::NormalCoset)=NormalCoset(Group(a),a.phi*b.phi)
+
+Base.:/(a::NormalCoset,b::NormalCoset)=a*inv(b)
+
+Base.:^(a::NormalCoset, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                      Base.power_by_squaring(inv(a),-n)
 
-Base.:^(a::Coset, b::Coset)= inv(b)*a*b
+Base.:^(a::NormalCoset, b::NormalCoset)= inv(b)*a*b
 
-function order(a::Coset)
+function order(a::NormalCoset)
   i=1
   u=a.phi
   while true
@@ -726,32 +728,18 @@ function order(a::Coset)
   end
 end
 
-Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
+# assume H is normal and there is a function NormalCoset
+Base.:/(W::Group,H::Group)=Group(unique(map(x->NormalCoset(H,x),gens(W))),NormalCoset(H))
 
-@GapObj struct CosetGroup{TW}<:Group{Coset{TW}}
-  gens::Vector{Coset{TW}}
-  one::Coset{TW}
-end
-
-Groups.Group(g::Vector{Coset},o=one(g[1]))=CosetGroup(filter(!isone,g),o,Dict{Symbol,Any}())
-
-Base.one(G::CosetGroup)=G.one
-
-Base.:/(W::Group,H::Group)=Group(unique(map(x->Coset(H,x),gens(W))),Coset(H))
-
-elements(C::Coset)=C.phi .* elements(Group(C))
-
-Base.in(w,C::Coset)=C.phi\w in Group(C)
-
-function classreps(G::Coset{Group{T}})::Vector{T} where T
+function classreps(G::NormalCoset{Group{T}})::Vector{T} where T
   get!(G,:classreps) do
     first.(conjugacy_classes(G))
   end
 end
 
-nconjugacy_classes(G::Coset)=length(classreps(G))
+nconjugacy_classes(G::NormalCoset)=length(classreps(G))
 
-function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
+function conjugacy_classes(G::NormalCoset{<:Group{T}})::Vector{Vector{T}} where T
   get!(G,:classes) do
     if length(G)>10000
       error("length(G)=",length(G),": should call Gap4")
@@ -761,11 +749,23 @@ function conjugacy_classes(G::Coset{<:Group{T}})::Vector{Vector{T}} where T
   end
 end
 
-function position_class(G::Coset,g)
+function position_class(G::NormalCoset,g)
   findfirst(c->g in c,conjugacy_classes(G))
 end
 
-function fusion_conjugacy_classes(H::Coset,G::Coset)
+# assume H is a subcoset of G
+function fusion_conjugacy_classes(H::NormalCoset,G::NormalCoset)
   map(x->position_class(G,x),classreps(H))
 end
+
+@GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
+  phi::T
+  G::TW
+end
+
+"""
+`Coset(phi,G)` coset `G.phi` (assumed equal to `phi.G`)
+"""
+Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
+
 end

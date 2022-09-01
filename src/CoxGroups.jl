@@ -354,9 +354,9 @@ end
 """
 `elements(W::CoxeterGroup[,l])`
 
-With  one argument this works only if  `W` is finite; the returned elements
-are  sorted  by  increasing  Coxeter  length.  If the second argument is an
-integer  `l`, the elements  of Coxeter length  `l` are returned.
+When  `l` is  not given  this works  only if  `W` is finite; it returns the
+elements of `W` sorted by increasing Coxeter length. If the second argument
+is an integer `l`, the elements of `W` of Coxeter length `l` are returned.
 
 ```julia_repl
 julia> W=coxgroup(:G,2)

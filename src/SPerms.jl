@@ -235,9 +235,7 @@ function Perms.cycletype(p::SPerm,n=length(p.d))
 end
 
 """
-order(a)
-
-order of the signed permutation a
+`order(a::SPerm)` is the order of the signed permutation `a`.
 """
 Gapjm.order(a::SPerm) = lcm(length.(cycles(a)))
 

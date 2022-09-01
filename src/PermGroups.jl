@@ -1,11 +1,9 @@
 """
-This module is a port of some GAP functionality on permutation groups.
+This  module is a port  of some GAP functionality  on permutation groups. A
+`PermGroup` is a `Group` where `gens` are `Perm`s.
 
 The code refers to the [Handbook of computational group theory, chapter 4]
-(biblio.htm#H05) for basic algorithms.
-
-A  PermGroup is  a group  where gens  are Perms,  which allows  for all the
-algorithms like base, centralizer chain, etc...
+(biblio.htm#H05) for basic algorithms like base, centralizer chain, etc...
 
 # Examples
 ```julia-repl
@@ -22,7 +20,7 @@ julia> collect(G)
  (1,3)
  (2,3)
 
-# maximum moved point of an element of G
+# maximum moved point of any element of `G`
 julia> largest_moved_point(G)  
 3
 
@@ -32,40 +30,54 @@ true
 julia> Perm(1,2,4) in G
 false
 
-# Elements,  appartenance test and  other function are  computed on G using
+# `elements`,  `in` test and  other functions are  computed on `G` using
 # Schreier-Sims theory, that is computing the following
 
-# a list of points that no element of G fixes
-julia> base(G) 
+julia> base(G) # a list of points that no element of G fixes
 2-element Vector{Int16}:
  1
  2
 
-# the i-th element is the centralizer of base[1:i-1]
-julia> centralizers(G) 
+julia> centralizers(G) # the i-th element is C_G(base[1:i-1])
 2-element Vector{PermGroup{Int16}}:
  Group([(1,2), (2,3)])
  Group([(2,3)])
 
-# i-th element is transversal of centralizer[i] on base[i]
+# i-th element is the transversal of centralizer[i] on base[i]
 julia> transversals(G)
 2-element Vector{Dict{Int16, Perm{Int16}}}:
  Dict(2 => (1,2), 3 => (1,3,2), 1 => ())
  Dict(2 => (), 3 => (2,3))
 ```
 
-finally, benchmarks on julia 1.7
+finally, benchmarks on julia 1.8
 ```benchmark
 julia> @btime collect(symmetric_group(8));
-  3.720 ms (271800 allocations: 7.94 MiB)
+  2.673 ms (129965 allocations: 5.76 MiB)
 
 julia> @btime words(symmetric_group(8));
-  8.730 ms (202029 allocations: 12.86 MiB)
+  7.155 ms (86019 allocations: 11.00 MiB)
   
 julia> @btime elements(symmetric_group(8));
-  1.616 ms (52681 allocations: 3.77 MiB)
+  1.565 ms (49539 allocations: 3.71 MiB)
 ```
 Compare to GAP3 Elements(SymmetricGroup(8)); takes 8 ms (GAP4 9 ms)
+
+```benchmark
+julia> rubik_gens=[
+  perm"(1,3,8,6)(2,5,7,4)(9,33,25,17)(10,34,26,18)(11,35,27,19)",
+  perm"(9,11,16,14)(10,13,15,12)(1,17,41,40)(4,20,44,37)(6,22,46,35)",
+  perm"(17,19,24,22)(18,21,23,20)(6,25,43,16)(7,28,42,13)(8,30,41,11)",
+  perm"(25,27,32,30)(26,29,31,28)(3,38,43,19)(5,36,45,21)(8,33,48,24)",
+  perm"(33,35,40,38)(34,37,39,36)(3,9,46,32)(2,12,47,29)(1,14,48,27)",
+  perm"(41,43,48,46)(42,45,47,44)(14,22,30,38)(15,23,31,39)(16,24,32,40)];
+
+julia> @btime length(Group(rubik_gens);type=Int128)
+  4.906 ms (104874 allocations: 13.64 MiB)
+43252003274489856000
+```
+Note  the use of  `type=` in `length`:  the computation does  not fit in an
+`Int64`. GAP takes about the same time to compute the size of the group.
 """
 module PermGroups
 #using ..Groups
@@ -210,13 +222,12 @@ function base(G::PermGroup{T})::Vector{T} where T
   getp(schreier_sims,G,:base)
 end
 
-" `g in G` tells whether the permutation `g` is an element of `G` "
 function Base.in(g::Perm,G::PermGroup)
   g,i=strip(g,base(G),transversals(G))
   isone(g)
 end
 
-function Base.intersect(G::PermGroup, H::PermGroup)
+function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
   if all(x->x in H,gens(G)) return G end
   if all(x->x in G,gens(H)) return H end
   if min(length(G),length(H))>104000 
@@ -231,7 +242,6 @@ end
 
 cycletypes(W::PermGroup,x)=map(o->cycletype(x,domain=o),orbits(W)) # first invariant
 
-# eventually rewrite this dispatching on types
 function classinv(W::PermGroup)
   get!(W,:classinv)do
     cycletypes.(Ref(W),classreps(W))
@@ -258,6 +268,23 @@ function Groups.position_class(W::PermGroup,w)
     if w in conjugacy_classes(W,l[i]) return l[i] end
   end
 end
+
+"""
+`on_classes(G, aut)`
+
+`aut`  is an automorphism of  the group `G` (for  a permutation group, this
+could  be  given  as  a  permutation  normalizing  `G`).  The result is the
+permutation of `1:nconjugacy_classes(G)` induced ny `aut`.
+
+```julia-repl
+julia> WF=rootdatum("3D4")
+³D₄
+
+julia> on_classes(Group(WF),WF.phi)
+Perm{Int64}: (2,8,7)(5,13,12)
+```
+"""
+on_classes(G, aut)=Perm(map(c->position_class(G,c^aut),classreps(G)))
 
 #-------------- iteration on product of lists of group elements ---------------
 # if iterators=[i1,...,in] iterate on all products i1[j1]*...*in[jn]
@@ -299,6 +326,11 @@ function Base.iterate(I::ProdIterator,state)
 end
 
 #------------------------- iteration for PermGroups -----------------------
+"""
+`length(G::PermGroup;type=Int)`  the  number  of  elements of `G`, computed
+with  integers of type `type` (use `Int128` or `BigInt` for big permutation
+groups).
+"""
 function Base.length(G::PermGroup;type=Int)
   get!(G,:length)do
     prod(type.(length.(transversals(G))))
@@ -334,23 +366,6 @@ function Groups.elements(G::PermGroup)
   res
 end
 
-"""
-`on_classes(G, aut)`
-
-`aut`  is an automorphism of  the group `G` (for  a permutation group, this
-could  be  given  as  a  permutation  normalizing  `G`).  The result is the
-permutation of `1:nconjugacy_classes(G)` induced ny `aut`.
-
-```julia-repl
-julia> WF=rootdatum("3D4")
-³D₄
-
-julia> on_classes(Group(WF),WF.phi)
-Perm{Int64}: (2,8,7)(5,13,12)
-```
-"""
-on_classes(W, aut)=Perm(map(c->position_class(W,c^aut),classreps(W)))
-
 #------------------------- cosets for PermGroups -----------------------
 
 # computes "canonical" element of W.phi
@@ -377,12 +392,8 @@ function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T
   PG(filter(!isone,a),one,Dict{Symbol,Any}())
 end
 
-" The symmetric group of degree n "
-function symmetric_group(n::Int)
-  G=Group([Perm(i,i+1) for i in 1:n-1])
-  G.name=string("symmetric_group(",n,")")
-  G
-end
+" `symmetric_group(n::Int)`  The symmetric group of degree n"
+symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
 
 #---------------- application to matrices ------------------------------
 """

@@ -366,7 +366,7 @@ export twistings, spets, Frobenius, Spets, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
   CoxeterCoset, twisted_power
 
-abstract type Spets{TW}<:Coset{TW} end
+abstract type Spets{TW}<:NormalCoset{TW} end
 
 abstract type CoxeterCoset{TW}<:Spets{TW} end
 
@@ -550,7 +550,7 @@ function Base.show(io::IO,t::Type{FCC{T,TW}})where {T,TW}
   print(io,"Spets{",TW,"}")
 end
 
-Groups.Coset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
+Groups.NormalCoset(W::FiniteCoxeterGroup,w::Perm=one(W))=spets(W,w)
 spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 
 Base.parent(W::Spets)=get!(()->W,W,:parent)
@@ -571,7 +571,7 @@ The returned struct has in particular the following fields:
 `WF` which preserves the positive roots.
 
 '.phi': the permutation of the roots of `W` induced by `.F`
-(also the element of smallest length in the Coset  `W .phi`).
+(also the element of smallest length in the NormalCoset  `W .phi`).
 
 In the first example we create a Coxeter coset corresponding to the general
 unitary group `GU_3(q)` over the finite field `FF(q)`.
@@ -993,7 +993,7 @@ function relative_coset(WF::Spets,J=Int[],a...)
   res
 end
 
-Groups.Coset(W::PermRootGroup,w::Perm=one(W))=spets(W,w)
+Groups.NormalCoset(W::PermRootGroup,w::Perm=one(W))=spets(W,w)
 
 spets(phi,F::Matrix,W::PermRootGroup,P::Dict{Symbol,Any})=PRC(phi,F,W,P)
 
