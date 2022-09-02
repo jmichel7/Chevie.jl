@@ -1,10 +1,10 @@
 """
 This module gives some basic functionality on groups.
 
-`Group`  is  an  abstract  type,  but  the  following is assumed of all its
-concrete implementations:
+`Group`  is  an  abstract  type,  but  the  following is assumed of a group
+`G` of one of its concrete implementations:
 
-  - The function `gens(G)` returns the list of generators of the group `G`. 
+  - The function `gens(G)` returns the list of generators of `G`. 
   - The function `one(G)` returns the identity element of `G`.
   
 # Examples
@@ -28,19 +28,21 @@ Dict{Perm{Int16}, Vector{Int64}} with 6 entries:
   (1,2,3) => [2]
   (2,3)   => [2, 1]
   (1,3,2) => [2, 2]
-  
-
-julia> G.prop
-Dict{Symbol, Any} with 1 entry:
-  :minwords => Dict(()=>[], (1,2)=>[1], (1,3)=>[1, 2], (1,2,3)=>[2], (2,3)=>[2,…
-  
 ```
-for  further information,  look at  the docstrings  of `Group, gens, ngens,
-comm, orbit, orbits, transversal, words_transversal, centralizer, stabilizer,
-centre, normalizer, words, minimal_words, word, in, elements, length, order,
-conjugacy_class, conjugacy_classes, classreps, nconjugacy_classes,
-fusion_conjugacy_classes, position_class, isabelian, iscyclic, istrivial,
-rand, transporting_elt, intersect, Hom, kernel, Coset`
+
+There  is a constructor of a group with arbitrary type elements, `Group(l)`
+where  `l isa AbstractVector{T}` constructs a `Groupof{T}` which knows only
+the general methods in this module. The examples above use
+`Group(AbstractVector{<:Perm})`  which constructs  a `PermGroup`  which has
+more and more efficient methods.
+
+for  further information on  the functions defined  in this module, look at
+the  docstrings of `Group,  gens, ngens, comm,  orbit, orbits, transversal,
+words_transversal,  centralizer,  stabilizer,  centre,  normalizer,  words,
+minimal_words,   word,  in,   elements,  length,   order,  conjugacy_class,
+conjugacy_classes, classreps, nconjugacy_classes, fusion_conjugacy_classes,
+position_class,  isabelian,  iscyclic,  istrivial,  rand, transporting_elt,
+intersect, Hom, kernel, Coset`
 """
 module Groups
 export Group, centralizer, centre, classreps, comm, commutator, order, 
@@ -49,10 +51,70 @@ export Group, centralizer, centre, classreps, comm, commutator, order,
   Hom, isabelian, iscyclic, istrivial, words, minimal_words, 
   nconjugacy_classes, normalizer, orbit, orbits, position_class, 
   stabilizer, transporting_elt, transversal, words_transversal,
-  word, elements, kernel
+  word, elements, kernel, getp, @GapObj
 
-using ..Util: InfoChevie, @GapObj
-#--------------general groups and functions for "black box groups" -------
+import ..Perms: orbit, orbits, order # suppress if used as indep. package
+#--------------------------------------------------------------------------
+
+"""
+A  variation of get! where it is assumed f(o) sets o.p but not assumed that
+f returns o.p, because f sets several keys at once...
+"""
+getp(f::Function,o,p::Symbol)=get!(()->(f(o);getfield(o,:prop)[p]),getfield(o,:prop),p)
+
+"""
+`@GapObj struct...`
+
+A `GapObj` is a kind of object where properties are computed on demand when
+asked  for.  So  it  has  fixed  fields  but can dynamically have new ones.
+Accessing  fixed  fields  is  as  efficient  as  a  field  of any `struct`.
+Accessing a dynamic field takes the time of a `Dict` lookup.
+
+```julia_repl
+julia> @GapObj struct Foo
+       a::Int
+       end
+
+julia> s=Foo(1,Dict{Symbol,Any}())
+Foo(1, Dict{Symbol, Any}())
+
+julia> s.a
+1
+
+julia> haskey(s,:b)
+false
+
+julia> s.b="hello"
+"hello"
+
+julia> s.b
+"hello"
+
+julia> haskey(s,:b)
+true
+```
+The dynamic fields are stored in the field `.prop` of `G`, which is of type
+`Dict{Symbol,  Any}()`.  This  explains  the  extra  argument needed in the
+constructor.  The name is because it mimics a GAP record, but perhaps there
+could be a better name.
+"""
+macro GapObj(e)
+  push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
+  if e.args[2] isa Symbol T=e.args[2]
+  elseif e.args[2].args[1] isa Symbol T=e.args[2].args[1]
+  else T=e.args[2].args[1].args[1]
+  end
+  esc(Expr(:block,
+   e,
+   :(Base.getproperty(o::$T,s::Symbol)=hasfield($T,s) ? getfield(o,s) : 
+         getfield(o,:prop)[s]),
+   :(Base.setproperty!(o::$T,s::Symbol,v)=getfield(o,:prop)[s]=v),
+   :(Base.haskey(o::$T,s::Symbol)=haskey(getfield(o,:prop),s)),
+   :(Base.getindex(o::$T,s::Symbol)=getindex(getfield(o,:prop),s)),
+   :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,getfield(o,:prop),s))))
+end
+
+#-------------- "black box groups" ------------------------------
 abstract type Group{T} end # T is the type of elements of G
 
 "`normalizer(G::Group,H::Group)` the normalizer of `H` in `G`"
@@ -515,7 +577,7 @@ function Base.rand(W::Group)
 end
 
 """
-`transporting_elt(G,p,q;action=^,dist=nothing)`   
+`transporting_elt(G,p,q;action=^)`   
 
 returns  an  element  `g∈  G`  such  that  `p^g==q` (or `action(p,g)==q` if
 `action` is given), if such a `g` exists, and nothing otherwise. The set of
@@ -536,30 +598,29 @@ julia> transporting_elt(g,[1,2,3,4],[2,3,4,5];action=(s,g)->sort(s.^g))
 julia> transporting_elt(g,[1,2,3,4],[3,4,5,2];action=(s,g)->s.^g)
 ```
 """
-function transporting_elt(W::Group,x,y;action=^,dist=nothing)
+function transporting_elt(W::Group,x,y;action=^,dist=nothing,verbose=false)
   if isnothing(dist)
     if x==y return one(W) end
     t=transversal(W,x;action=action)
     if haskey(t,y) return t[y] else return nothing end
   end
-# InfoChevie("#I  group:", length(W), " too big - trying random walk\n")
   p=one(W)
-  InfoChevie(dist(x, y), " ")
+  if verbose print(dist(x, y), " ") end
   x1=x
   while true
     prev=dist(x1, y)
     if prev==0
-      InfoChevie("\n")
+      if verbose print("\n") end
       return p
     end
     dmin=minimum(map(g->(dist(action(x1, g), y),g),gens(W)))
     if dmin[1]<prev 
-      InfoChevie("->",dmin)
+      if verbose print("->",dmin) end
       p*=dmin[2]
       x1=action(x1,dmin[2])
     else
-      InfoChevie("\n[ Info: stalled -- restarting at a random element of",
-                 "W(size $(length(W)))\n")
+      if verbose print("\n[ stalled -- restarting at a random element of",
+                      "W(size $(length(W)))\n") end
       p*=rand(W)
       x1=action(x,p)
     end
@@ -659,7 +720,7 @@ identity element of the group must be given as a second argument.
 
 ```julia-repl
 julia> G=Group([[-1 -1;1 0]])
-Gapjm.Groups.Groupof{Matrix{Int64}}([[-1 -1; 1 0]], [1 0; 0 1], Dict{Symbol, Any}())
+Group([[-1 -1; 1 0]])
 
 julia> elements(G)
 3-element Vector{Matrix{Int64}}:
@@ -679,8 +740,13 @@ end
 
 Base.one(G::Groupof)=G.one
 
+function Base.show(io::IO,G::Groupof)
+  print(io,"Group(",gens(G),")")
+end
+
 #------------------- cosets ----------------------------------------
-abstract type Coset{TW<:Group} end
+abstract type Coset{T,TW<:Group{<:T}} end
+# assumed to have a method Group and a field phi: represents Group.phi
 
 Base.isone(a::Coset)=a.phi in Group(a)
 
@@ -693,9 +759,9 @@ Base.cmp(a::Coset, b::Coset)=cmp(a.phi,b.phi)
 
 Base.isless(a::Coset, b::Coset)=cmp(a,b)==-1
 
-Base.:(==)(a::Coset, b::Coset)= (Group(a)==Group(b)) && cmp(a,b)==0
+Base.:(==)(a::Coset, b::Coset)=(Group(a)==Group(b)) && (a.phi/b.phi in Group(a))
 
-Base.hash(a::Coset, h::UInt)=hash(a.phi,h)
+Base.hash(a::Coset, h::UInt)=hash(a.phi,h) # quotient groups will not work
 
 Base.copy(C::Coset)=Coset(Group(C),C.phi)
 
@@ -705,11 +771,11 @@ Base.length(C::Coset)=length(Group(C))
 
 Base.show(io::IO,C::Coset)=print(io,Group(C),".",C.phi)
 
-elements(C::Coset)=elements(Group(C)).*C.phi
+elements(C::Coset)=elements(Group(C)).*Ref(C.phi)
 
 Base.in(w,C::Coset)=C.phi/w in Group(C)
 
-abstract type NormalCoset{TW<:Group}<:Coset{TW} end
+abstract type NormalCoset{T,TW<:Group{<:T}}<:Coset{T,TW} end
 
 # for now only normal cosets (phi normalizes G), the minimum for quotient groups
 Base.inv(C::NormalCoset)=NormalCoset(Group(C),inv(C.phi))
@@ -763,14 +829,53 @@ function fusion_conjugacy_classes(H::NormalCoset,G::NormalCoset)
   map(x->position_class(G,x),classreps(H))
 end
 
-@GapObj struct Cosetof{T,TW<:Group{T}}<:Coset{TW}
+@GapObj struct Cosetof{T,TW<:Group{<:T}}<:Coset{T,TW}
   phi::T
   G::TW
 end
 
 """
-`Coset(phi,G)` coset `G.phi` (assumed equal to `phi.G`)
+`Coset(phi,G)`  constructs the coset  `G.phi` where `G  isa Group{<:T}` and
+`phi  isa T`, as an  object of type `Cosetof{T}`.  This general coset knows
+only  the general  methods for  a coset  `C=G.phi` defined  in this module,
+which are
+
+  - `Group(C)` if `C==G.phi` returns `G`.
+  - `isone(C)` returns `true` iff `phi in G`
+  - `one(C)` returns the trivial coset `G.1`
+  - `length(C)` returns `length(G)`
+  - `elements(C)` returns `elements(G).*Ref(phi)`
+  - `x in C` returns `x/phi in G`
 """
 Coset(G::Group,phi=one(G))=Cosetof(phi,G,Dict{Symbol,Any}())
+
+@GapObj struct NormalCosetof{T,TW<:Group{<:T}}<:NormalCoset{T,TW}
+  phi::T
+  G::TW
+end
+
+"""
+`NormalCoset(phi,G)`  constructs the coset  `C=G.phi` where `G  isa Group{<:T}` and
+`phi  isa T`, as an  object of type `NormalCosetof{T}`.  It is assumed that
+`phi` normalizes `G`. This general coset knows oly the general methods defined for normal cosets in this module, which in addition to those defined for
+cosets (see `Coset`) are
+
+  - `inv(C)` return `G.inv(phi)` (assumed euqal to `inv(phi).G`)
+  - `C*D` given another coset `G.psi` returns `G.phi*psi`
+  - `C/D` given another coset `G.psi` returns `G.phi*inv(psi)`
+  - `C^D` given another coset `G.psi` returns `G.inv(psi)*phi*psi`
+  - `C^n` returns `G.phi^n`
+  - `order(C)` the smallest `n` such that `isone(C^n)`
+
+The  conjugacy  classes  of  a  normal  coset  `G.phi`  are relative to the
+conjugation action of `G` on `G.phi`. We have the functions
+`conjugacy_classes, nconjugacy_classes, classreps, position_class`.
+
+Finally  the function  `G/H` for  two groups  constructs the  quotient as a
+group of `NormalCoset`s, and
+`fusion_conjugacy_classes(H::NormalCoset,G::NormalCoset)`   expresses   the
+fusion of conjugacy classes.
+"""
+NormalCoset(G::Group,phi=one(G))=NormalCosetof(phi,G,Dict{Symbol,Any}())
 
 end

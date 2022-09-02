@@ -366,9 +366,9 @@ export twistings, spets, Frobenius, Spets, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
   CoxeterCoset, twisted_power
 
-abstract type Spets{TW}<:NormalCoset{TW} end
+abstract type Spets{T,TW}<:NormalCoset{T,TW} end
 
-abstract type CoxeterCoset{TW}<:Spets{TW} end
+abstract type CoxeterCoset{T,TW}<:Spets{T,TW} end
 
 extprod(W1::Spets,W2::Spets)=spets(W1.W*W2.W,cat(W1.F,W2.F,dims=(1,2)))
 extprod(W1::Spets,W2::FiniteCoxeterGroup)=extprod(W1,spets(W2))
@@ -539,7 +539,7 @@ end
 
 twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------
-@GapObj struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{TW}
+@GapObj struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{T,TW}
   phi::T
   F::Matrix
   W::TW
@@ -857,8 +857,8 @@ PermRoot.reflection_subgroup(WF::Spets,I::AbstractVector{<:Integer})=subspets(WF
 subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 
 #-------------- spets ---------------------------------
-@GapObj mutable struct PRC{T,TW<:PermRootGroup}<:Spets{TW}
-  phi::Perm{T}
+@GapObj mutable struct PRC{T,TW<:PermRootGroup}<:Spets{T,TW}
+  phi::T
   F::Matrix
   W::TW
 end

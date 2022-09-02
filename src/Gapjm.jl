@@ -94,12 +94,13 @@ using UsingMerge
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor
-@usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Perms.jl");@usingmerge verbose=true reexport Perms
-include("Groups.jl");@usingmerge verbose=true reexport Groups
+include("Perms.jl");@reexport using .Perms
+@usingmerge verbose=true reexport CyclotomicNumbers
+include("Groups.jl");@reexport using .Groups
+include("PermGroups.jl");@reexport using .PermGroups
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@usingmerge verbose=true reexport FFfac
@@ -108,7 +109,6 @@ include("Nf.jl");@reexport using .Nf
 include("MatInt.jl");@reexport using .MatInt
 include("Tools.jl");@reexport using .Tools
 include("CycPols.jl");@reexport using .CycPols
-include("PermGroups.jl");@reexport using .PermGroups
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl

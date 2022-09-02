@@ -183,7 +183,6 @@ FormatGAP(x)=replace(repr(x)," "=>"")
 Format(x,opt)=repr(x;context=IOContext(stdout,opt...))
 
 function ReadChv(s) end
-Groups.Group(a::Perm...)=Group(collect(a))
 GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)

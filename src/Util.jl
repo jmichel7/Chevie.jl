@@ -42,66 +42,6 @@ macro forward(ex, fs)
   Expr(:block, fdefs...)
 end
 
-#--------------------------------------------------------------------------
-
-"""
-A  variation of get! where it is assumed f(o) sets o.p but not assumed that
-f returns o.p, because f sets several keys at once...
-"""
-getp(f::Function,o,p::Symbol)=get!(()->(f(o);getfield(o,:prop)[p]),getfield(o,:prop),p)
-
-"""
-`@GapObj struct...`
-
-A `GapObj` is a kind of object where properties are computed on demand when
-asked  for.  So  it  has  fixed  fields  but can dynamically have new ones.
-Accessing  fixed  fields  is  as  efficient  as  a  field  of any `struct`.
-Accessing a dynamic field takes the time of a `Dict` lookup.
-
-```julia_repl
-julia> @GapObj struct Foo
-       a::Int
-       end
-
-julia> s=Foo(1,Dict{Symbol,Any}())
-Foo(1, Dict{Symbol, Any}())
-
-julia> s.a
-1
-
-julia> haskey(s,:b)
-false
-
-julia> s.b="hello"
-"hello"
-
-julia> s.b
-"hello"
-
-julia> haskey(s,:b)
-true
-```
-The dynamic fields are stored in the field `.prop` of `G`, which is of type
-`Dict{Symbol,  Any}()`.  This  explains  the  extra  argument needed in the
-constructor.  The name is because it mimics a GAP record, but perhaps there
-could be a better name.
-"""
-macro GapObj(e)
-  push!(e.args[3].args,:(prop::Dict{Symbol,Any}))
-  if e.args[2] isa Symbol T=e.args[2]
-  elseif e.args[2].args[1] isa Symbol T=e.args[2].args[1]
-  else T=e.args[2].args[1].args[1]
-  end
-  esc(Expr(:block,
-   e,
-   :(Base.getproperty(o::$T,s::Symbol)=hasfield($T,s) ? getfield(o,s) : 
-         getfield(o,:prop)[s]),
-   :(Base.setproperty!(o::$T,s::Symbol,v)=getfield(o,:prop)[s]=v),
-   :(Base.haskey(o::$T,s::Symbol)=haskey(getfield(o,:prop),s)),
-   :(Base.getindex(o::$T,s::Symbol)=getindex(getfield(o,:prop),s)),
-   :(Base.get!(f::Function,o::$T,s::Symbol)=get!(f,getfield(o,:prop),s))))
-end
-
 #----------------------- Formatting -----------------------------------------
 # print with attributes...
 hasdecor(io::IO)=get(io,:TeX,false)||get(io,:limit,false)

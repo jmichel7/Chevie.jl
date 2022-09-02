@@ -1,9 +1,7 @@
 """
 This  module is a port  of some GAP functionality  on permutation groups. A
-`PermGroup` is a `Group` where `gens` are `Perm`s.
-
-The code refers to the [Handbook of computational group theory, chapter 4]
-(biblio.htm#H05) for basic algorithms like base, centralizer chain, etc...
+`PermGroup` is a `Group` where `gens` are `Perm`s. It depends on the modules
+`Groups` and `Perms` which could be independent packages on their own.
 
 # Examples
 ```julia-repl
@@ -20,9 +18,12 @@ julia> collect(G)
  (1,3)
  (2,3)
 
-# maximum moved point of any element of `G`
-julia> largest_moved_point(G)  
+julia> largest_moved_point(G)  # maximum moved point of any element of `G`
 3
+
+julia> orbits(G) # the orbits are orbits on points it moves
+1-element Vector{Vector{Int64}}:
+ [1, 2, 3]
 
 julia> Perm(1,2) in G
 true
@@ -39,7 +40,7 @@ julia> base(G) # a list of points that no element of G fixes
  2
 
 julia> centralizers(G) # the i-th element is C_G(base[1:i-1])
-2-element Vector{PermGroup{Int16}}:
+2-element Vector{PermGroups.PG{Int16}}:
  Group([(1,2), (2,3)])
  Group([(2,3)])
 
@@ -49,6 +50,16 @@ julia> transversals(G)
  Dict(2 => (1,2), 3 => (1,3,2), 1 => ())
  Dict(2 => (), 3 => (2,3))
 ```
+
+The  code refers  to the  Handbook of  computational group theory, by Holt,
+Eick,  O'Brien, chapter 4  for basic algorithms  on permutation groups. See
+the docstrings for `base, transversals, centralizers` for more details.
+
+There are efficient methods for `PermGroups` for the functions `in, length,
+elements,   position_class`.  The  function   `on_classes`  determines  the
+permutation  of the conjugacy classes effected by an automorphism. Finally,
+we   give  application  to  the  group   of  simultaneous  row  and  column
+permutations of a matrix: see `onmats, stab_onmats, Perm_onmats`.
 
 finally, benchmarks on julia 1.8
 ```benchmark
@@ -80,12 +91,9 @@ Note  the use of  `type=` in `length`:  the computation does  not fit in an
 `Int64`. GAP takes about the same time to compute the size of the group.
 """
 module PermGroups
-#using ..Groups
-#using UsingMerge
-#@usingmerge Perms # will do that when Perms is a package
-using ..Gapjm
-using ..Util: getp, InfoChevie, @GapObj, printTeX, hasdecor
-using ..Combinat: tally, collectby
+using ..Perms
+using ..Groups
+using Combinat: tally, collectby
 export PermGroup, base, transversals, centralizers, symmetric_group, reduced,
   stab_onmats, Perm_onmats, onmats, on_classes
 #-------------------- now permutation groups -------------------------
@@ -105,6 +113,7 @@ function Perms.largest_moved_point(G::PermGroup)::Int
   end
 end
 
+" `orbits(G::PermGroup)` the orbits of `G` on its moved points."
 function Perms.orbits(G::PermGroup)
   get!(G,:orbits)do
     orbits(G,1:largest_moved_point(G);trivial=false)
@@ -202,8 +211,13 @@ function schreier_sims(G::PermGroup{T})where T
   G.transversals=Δ
 end
 
-" centralizers: the i-th element is the centralizer of base[1:i-1]"
-function centralizers(G::PermGroup{T})::Vector{PermGroup{T}} where T
+"""
+`centralizers(G::PermGroup)`  
+
+for  `i in  eachindex(base(G))` the  `i`-th element  is the  centralizer of
+`base(G)[1:i-1]`
+"""
+function centralizers(G::PermGroup)
   getp(schreier_sims,G,:centralizers)
 end
 
@@ -378,8 +392,9 @@ function reduced(W::PermGroup,phi)
   phi
 end
 
-function Groups.Coset(W::PermGroup,phi::Perm=one(W))
-  Groups.Cosetof(reduced(W,phi),W,Dict{Symbol,Any}())
+# the next def will make quotient groups work
+function Groups.NormalCoset(W::PermGroup,phi::Perm=one(W))
+  Groups.NormalCosetof(reduced(W,phi),W,Dict{Symbol,Any}())
 end
 
 #-------------------------- now a concrete type-------------------------
@@ -391,6 +406,7 @@ end
 function Groups.Group(a::AbstractVector{Perm{T}},one=one(Perm{T})) where T
   PG(filter(!isone,a),one,Dict{Symbol,Any}())
 end
+Groups.Group(a::Perm...)=Group(collect(a))
 
 " `symmetric_group(n::Int)`  The symmetric group of degree n"
 symmetric_group(n::Int)=Group([Perm(i,i+1) for i in 1:n-1])
@@ -414,7 +430,7 @@ function invblocks(m,extra=nothing)
 end
 
 # fast method for centralizer(g,M;action=onmats) additionally centralizing extra
-function stab_onmats(g::PermGroup{T},M::AbstractMatrix,extra=nothing)where T
+function stab_onmats(g::PermGroup{T},M::AbstractMatrix;extra=nothing)where T
 # if length(g)>1
 #   print("g=",
 #        length.(filter(x->length(x)>1,orbits(g,1:maximum(degree.(gens(g)))))),
@@ -447,13 +463,13 @@ julia> stab_onmats(fourier(uc.families[20]))
 Group([(7,38), (39,44)(40,43)(41,42)])
 ```
 """
-function stab_onmats(M,extra=nothing)
+function stab_onmats(M::AbstractMatrix;extra=nothing,verbose=false)
   k=length(M)
   blocks=sort(invblocks(M,extra),by=x->-length(x))
   g=PermGroup()
   I=Int[]
   for r in blocks
-    if length(r)>7 InfoChevie("Large Block:$r\n")  end
+    if length(r)>7 && verbose println("Large Block:$r")  end
     if length(r)>1
       gr=stab_onmats(symmetric_group(length(r)), M[r,r])
       g=Group(vcat(gens(g),gens(gr).^mappingPerm(eachindex(r),r)))
@@ -483,7 +499,7 @@ julia> Perm_onmats(m,n)
 (1,5,2,8,12,4,7)(3,9,11,6)
 ```
 """
-function Perm_onmats(M,N,m=nothing,n=nothing)
+function Perm_onmats(M,N,m=nothing,n=nothing;verbose=false)
   if isnothing(m) && M==N return Perm() end
   if size(M,1)!=size(M,2) || size(N,1)!=size(N,2)
     error("matrices are  not  square")
@@ -505,7 +521,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     iN=collectby(iN,I)
     p=map(function(I,J)
       if length(I)>7
-        InfoChevie("large block size $(length(I))\n")
+        if verbose println("large block size $(length(I))") end
         if length(iM)==1
           p=transporting_elt(sg(length(I)),M[I,I],N[J,J];
                 action=onmats,dist=(M,N)->sum(x->count(!iszero,x),M-N))
@@ -518,7 +534,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
       if isnothing(p) return false end
       I^=p
       p=mappingPerm(eachindex(I), I)
-      return [I,J,Group(gens(stab_onmats(M[I,I])).^p)] end, iM, iN)
+      return [I,J,Group(gens(stab_onmats(M[I,I];verbose)).^p)] end, iM, iN)
     if false in p return false else return p end
   end
   l=ind(axes(M,1),axes(N,1))
@@ -534,7 +550,7 @@ function Perm_onmats(M,N,m=nothing,n=nothing)
     p=mappingPerm(I, eachindex(I))
     h=Group(gens(g).^p)
     if M[I,I]!=N[J,J]
-      InfoChevie("I==$(length(I)) stab==$(length(g)) ")
+      if verbose print("I==$(length(I)) stab==$(length(g)) ") end
       e = transporting_elt(h, M[I,I], N[J,J], action=onmats)
       if isnothing(e) return nothing else I^=e end
     end
