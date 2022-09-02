@@ -425,6 +425,7 @@ Base.in(w,G::Group)=haskey(words2(G),w)
 
 "`length(G::Group)` the number of elements of G"
 Base.length(G::Group)=length(words2(G))
+
 "`order(G::Group)` the number of elements of G"
 order(G::Group)=length(G)
 
@@ -507,7 +508,11 @@ iscyclic(W::Group)=isabelian(W) && lcm(ordergens(W))==length(W)
 istrivial(W::Group)=order(G)==1
 
 "`rand(W::Group)` a random element of `W`"
-Base.rand(W::Group)=W(rand(eachindex(gens(W)),20)...)
+function Base.rand(W::Group)
+  if !haskey(W,:seed) W.seed=one(W) end
+  W.seed *=W(rand(eachindex(gens(W)),rand(3:5))...)
+  W.seed
+end
 
 """
 `transporting_elt(G,p,q;action=^,dist=nothing)`   
@@ -531,7 +536,7 @@ julia> transporting_elt(g,[1,2,3,4],[2,3,4,5];action=(s,g)->sort(s.^g))
 julia> transporting_elt(g,[1,2,3,4],[3,4,5,2];action=(s,g)->s.^g)
 ```
 """
-function transporting_elt(W::Group,x,y;action::Function=^,dist=nothing)
+function transporting_elt(W::Group,x,y;action=^,dist=nothing)
   if isnothing(dist)
     if x==y return one(W) end
     t=transversal(W,x;action=action)

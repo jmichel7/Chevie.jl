@@ -61,7 +61,7 @@ julia> @btime words(symmetric_group(8));
 julia> @btime elements(symmetric_group(8));
   1.565 ms (49539 allocations: 3.71 MiB)
 ```
-Compare to GAP3 Elements(SymmetricGroup(8)); takes 8 ms (GAP4 9 ms)
+Gap `Elements(SymmetricGroup(8))` takes 8 ms
 
 ```benchmark
 julia> rubik_gens=[
