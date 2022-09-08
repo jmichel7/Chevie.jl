@@ -4,12 +4,11 @@ module Tools
 export abelian_gens, abelian_invariants, improve_type
 using UsingMerge
 using ModuleElts
-using LaurentPolynomials
 using PuiseuxPolynomials
+using Combinat: Combinat, tally
+using PermGroups: Group, Groups, gens, word, PermGroup, elements
 
-using ..Combinat: Combinat, tally
 using ..FFields: FFields, FFE, Mod, Z
-using ..Groups: Group, gens, word
 using ..Gapjm: Gapjm, Cyc, conductor, order
 using ..MatInt: smith_transforms
 
@@ -141,5 +140,18 @@ julia> abelian_invariants(Group([Perm(1,2),Perm(3,4,5),Perm(6,7)]))
 ```
 """
 abelian_invariants(G::Group)=order.(abelian_gens(G))
+
+function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
+  if all(x->x in H,gens(G)) return G end
+  if all(x->x in G,gens(H)) return H end
+  if min(length(G),length(H))>104000 
+    println("*** too large intersect($G,$H) -- calling Gap4.intersect") 
+    return Gapjm.Gap4.intersect(G,H)
+  end
+  if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
+  else res=Group(filter(x->x in G,elements(H)))
+  end
+  Groups.weedgens(res)
+end
 
 end

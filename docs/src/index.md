@@ -5,97 +5,17 @@ Gapjm
 ```@contents
 Pages=["index.md"]
 ```
-# Permutations
-```@index
-Modules=[Perms]
-```
-```@docs
-Perms
-Perm
-Perm(::Integer...)
-Perm(::AbstractMatrix{<:Integer})
-Perm(::AbstractVector, ::AbstractVector)
-Perm(::AbstractMatrix, ::AbstractMatrix)
-@perm_str
-largest_moved_point(::Perm)
-smallest_moved_point
-Base.:^(::AbstractVector,::Perm) 
-sortPerm
-randPerm
-orbit(::Perm,::Integer)
-orbits(::Perm)
-Perms.order
-cycles(::Perm)
-cycletype(::Perm)
-support
-sign
-Base.Matrix(::Perm,n)
-Base.:^(::AbstractMatrix,::Perm)
-Base.:^(::AbstractMatrix,::Tuple{Perm,Perm})
-restricted(::Perm,::AbstractVector{<:Integer})
-reflength(::Perm)
-mappingPerm
-Perm_rowcol
-```
-# Groups
-```@index
-Modules=[Groups]
-```
-```@docs
-Groups
-Group
-gens
-ngens
-Groups.orbit(::AbstractVector, ::Any)
-Groups.orbits(::Group, ::Any)
-elements(::Group)
-transversal
-centralizer(::Group,::Any)
-centralizer(::Group,::Group)
-centre
-stabilizer
-normalizer
-word(::Group,::Any)
-comm
-length(::Group)
-classreps(::Group)
-conjugacy_classes
-conjugacy_class
-nconjugacy_classes
-position_class
-fusion_conjugacy_classes
-minimal_words
-words(::Group)
-transporting_elt
-isabelian
-iscyclic
-abelian_gens
-Hom
-kernel
-blocks(G,p)
-```
-# Permutation groups
-```@index
-Modules=[PermGroups]
-```
-```@docs
-PermGroups
-largest_moved_point(::PermGroup)
-base
-centralizers
-transversals
-in(::Perm,::PermGroup)
-on_classes
-symmetric_group
-onmats
-stab_onmats
-Perm_onmats
-```
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
 factor(::Pol{FFE{p}}where p, F)
 Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
 factor(p::Mvp{T, N}) where {T, N}
+```
+# Extensions to groups
+```@docs
+abelian_gens
+abelian_invariants
+Combinat.blocks(::Group,::Integer)
 ```
 # Cyclotomic polynomials
 ```@docs
@@ -108,7 +28,6 @@ eigmat
 ```@docs
 Util
 @forward
-@GapObj
 showtable
 cut
 ```
@@ -232,7 +151,6 @@ reduced
 word(::CoxeterGroup,::Any)
 length(::CoxeterGroup,w)
 elements(::CoxeterGroup,::Int)
-CoxGroups.words(::CoxeterGroup,::Int)
 bruhatless
 CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
@@ -240,6 +158,8 @@ longest
 coxmat
 standard_parabolic_class
 GenCox
+PermGroups.Groups.words(::CoxeterGroup{T},::T) where T
+PermGroups.Groups.words(::CoxeterGroup)
 ```
 # Finite Coxeter groups and Weyl groups
 ```@index
@@ -291,6 +211,7 @@ simplecoroots
 reflection
 reflectionmat
 refls
+reflength(::PermRootGroup,::Perm)
 simple_conjugating
 simple_reps
 Diagram

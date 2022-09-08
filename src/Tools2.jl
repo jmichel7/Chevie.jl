@@ -4,9 +4,10 @@ export eigmat
 using PuiseuxPolynomials
 using LaurentPolynomials
 using Primes: Primes
+using PermGroups: Group
 using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
-using ..Combinat: Combinat, collectby, blocks
+using ..Combinat: Combinat, collectby
 using ..GLinearAlgebra: solutionmat, echelon, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
@@ -46,7 +47,7 @@ julia> blocks(W,7)
  [7]
 ```
 """
-function Combinat.blocks(G,p)
+function Combinat.blocks(G::Group,p::Integer)
   T=CharTable(G)
   l=length(T.charnames)
   classes=map(c->div(T.centralizers[1],c),T.centralizers)

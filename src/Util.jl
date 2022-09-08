@@ -7,7 +7,6 @@ module Util
 
 export 
   @forward,
-  getp, @GapObj,
   showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, 
   hasdecor # formatting

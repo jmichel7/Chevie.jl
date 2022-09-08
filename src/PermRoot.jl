@@ -1204,7 +1204,7 @@ end
 refleigen(W,i)=refleigen(W)[i] # not faster this way...
 
 """
-`reflength(W,w)`
+`reflength(W::PermRootGroup,w::Perm)`
 
 This  function returns the  number of eigenvalues  of `w` in the reflection
 representation  which are not equal to 1.  For a finite Coxeter group, this

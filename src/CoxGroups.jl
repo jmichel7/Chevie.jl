@@ -64,7 +64,7 @@ julia> W=CoxSym(4)
 𝔖 ₄
 
 julia> p=W(1,3,2,1,3)
-Perm{UInt8}: (1,4)
+(1,4)
 
 julia> word(W,p)
 5-element Vector{Int64}:
@@ -91,7 +91,8 @@ julia> word(W,longest(W))  # the (unique) longest element in W
  1
 
 julia> w0=longest(W)
-Perm{UInt8}: (1,4)(2,3)
+(1,4)(2,3)
+
 julia> length(W,w0)
 6
 julia> map(w->word(W,w),refls(W,1:nref(W)))
@@ -153,7 +154,7 @@ julia> firstleftdescent(W,Perm(2,3))
 2
 ```
 """
-function firstleftdescent(W::CoxeterGroup{T},w)where T
+function firstleftdescent(W::CoxeterGroup{T},w::T)where T
   findfirst(i->isleftdescent(W,w,i),eachindex(gens(W)::Vector{T}))
 end
 
@@ -228,7 +229,7 @@ julia> W=CoxSym(4)
 𝔖 ₄
 
 julia> p=W(1,2,3,1,2,3)
-Perm{UInt8}: (1,3)(2,4)
+(1,3)(2,4)
 
 julia> length(W,p)
 4
@@ -253,7 +254,7 @@ Coxeter group `W`. May loop infinitely otherwise.
 
 ```julia-repl
 julia> longest(CoxSym(4))
-Perm{UInt8}: (1,4)(2,3)
+(1,4)(2,3)
 ```
 
 `longest(W,I)`
@@ -263,7 +264,7 @@ the generating reflections of indices in `I`.
 
 ```julia-repl
 julia> longest(CoxSym(4))
-Perm{UInt8}: (1,4)(2,3)
+(1,4)(2,3)
 ```
 """
 function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(W)::Vector{T}))where T
@@ -402,8 +403,7 @@ function Groups.elements(W::CoxeterGroup)
 end
 
 const Wtype=Vector{Int8}
-#CoxeterWords
-function Groups.words(W::CoxeterGroup{T}, l::Int)where T
+function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
   ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if ngens(W)==1
@@ -430,7 +430,7 @@ function Groups.words(W::CoxeterGroup{T}, l::Int)where T
 end
 
 """
-`words(W::CoxeterGroup[,l])`
+`words(W::CoxeterGroup[,l::Integer])`
 
 With  one argument this works only if `W` is finite; it returns the reduced
 Coxeter  words  of  elements  of  `W`  by  increasing length. If the second
@@ -605,7 +605,7 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
 end
 
 """
-`words(W,w)`
+`words(W::CoxeterGroup,w)`
 
 returns  the list  of all  reduced expressions  of the  element `w`  of the
 Coxeter group `W`.
@@ -634,7 +634,7 @@ julia> words(W,longest(W))
  [3, 2, 3, 1, 2, 3]
 ```
 """
-function Groups.words(W::CoxeterGroup,w)
+function Groups.words(W::CoxeterGroup{T},w::T)where T
   l=leftdescents(W,w)
   if isempty(l) return [Int[]] end
   reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
@@ -827,7 +827,7 @@ julia> W=CoxSym(3)
 𝔖 ₃
 
 julia> e=elements(W)
-6-element Vector{Perm{UInt8}}:
+6-element Vector{Perm{Int16}}:
  ()     
  (2,3)  
  (1,2)  
@@ -846,8 +846,8 @@ julia> length.(Ref(W),e)
 ```
 """
 function CoxSym(n::Int)
-  gens=map(i->Perm{UInt8}(i,i+1;degree=n),1:n-1)
-  refs=[Perm{UInt8}(i,i+k;degree=n) for k in 1:n-1 for i in 1:n-k]
+  gens=map(i->Perm(i,i+1;degree=n),1:n-1)
+  refs=[Perm(i,i+k;degree=n) for k in 1:n-1 for i in 1:n-k]
   append!(refs,refs)
   CoxSym(Group(gens),refs,n,Dict{Symbol,Any}())
 end

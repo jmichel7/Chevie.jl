@@ -501,7 +501,7 @@ julia> word(B,B.δ)
  1
 ```
 """
-function CoxGroups.word(M::LocallyGarsideMonoid,w)
+function PermGroups.word(M::LocallyGarsideMonoid,w)
   res=Int[]
   while true
     i=firstleftdescent(M,w)
@@ -511,7 +511,7 @@ function CoxGroups.word(M::LocallyGarsideMonoid,w)
   end
 end
 
-CoxGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
+PermGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
 
 """
 left_divisors(M::LocallyGarsideMonoid, s)
@@ -693,7 +693,7 @@ returns `true` if and only if the `i`-th atom of the locally Garside monoid
 CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
-CoxGroups.word(M::BraidMonoid,w)=word(M.W,w)
+PermGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
 function rightgcd(M::BraidMonoid{T,TW},elts::T...;complements=false)where {T,TW}
   g,c=leftgcd(M,inv.(elts)...;complements=true)
@@ -722,7 +722,7 @@ CoxGroups.firstleftdescent(M::GenBraidMonoid,w)=firstleftdescent(M.W,w)
 isrightdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
 isrightascent(M::GenBraidMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
 
-CoxGroups.word(M::GenBraidMonoid,w)=word(M.W,w)
+PermGroups.word(M::GenBraidMonoid,w)=word(M.W,w)
 
 function rightgcd(M::GenBraidMonoid{T,TW},elts::T...)where {T,TW}
   g,c=leftgcd(M,inv.(elts)...;complements=true)
@@ -839,7 +839,7 @@ julia> B=DualBraidMonoid(CoxSym(4))
 DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])
 
 julia> left_divisors(B(1,5,4,3))
-10-element Vector{GarsideElt{Perm{UInt8}, DualBraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+10-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
  .
  1
  1.4
@@ -852,7 +852,7 @@ julia> left_divisors(B(1,5,4,3))
  15.4.3
 
 julia> left_divisors(B(1,5,4,3),1)
-3-element Vector{GarsideElt{Perm{UInt8}, DualBraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+3-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
  1
  5
  6
@@ -1009,7 +1009,8 @@ function tail(b::GarsideElt)
 end
 
 """
-word(b::GarsideElt)
+`word(b::GarsideElt)`
+
 returns  a description  of `b`  as a  list of  the atoms  of which  it is a
 product.  If `b` is in the Garside group  but not the Garside monoid, it is
 represented  in  fraction  normal  form  where  as a special convention the
@@ -1034,7 +1035,7 @@ julia> word(b)
   1
 ```
 """
-function CoxGroups.word(b::GarsideElt)
+function PermGroups.word(b::GarsideElt)
   M=b.M
   res=Int[]
   if b.pd<0 
@@ -1046,7 +1047,7 @@ function CoxGroups.word(b::GarsideElt)
   res
 end
 
-CoxGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
+PermGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
 
 function Base.show(io::IO,b::GarsideElt)
   M=b.M
@@ -1360,7 +1361,7 @@ julia> b=BraidMonoid(W)(2,1,2,1,1)
 121.1.1
 
 julia> p=image(b)
-Perm{UInt8}: (1,3)
+(1,3)
 
 julia> word(W,p)
 3-element Vector{Int64}:
@@ -2076,14 +2077,14 @@ julia> B=BraidMonoid(CoxSym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
-4-element Vector{GarsideElt{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
  1.1.1              
  2.2.2              
  (1.12)⁻¹2.2.2.21.12
  1.1.12             
 
 julia> shrink(b)
-2-element Vector{GarsideElt{Perm{UInt8}, BraidMonoid{Perm{UInt8}, CoxSym{UInt8}}}}:
+2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
  2  
  1  
 ```

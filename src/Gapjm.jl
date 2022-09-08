@@ -1,12 +1,9 @@
 """
 This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
-package  of  GAP3  plus  the  GAP  functionality needed for Chevie to work:
-Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
-permutation group operations, etc….
-
-I  started this project at the  end of 2018 and it  is still in flux so the
-package  is not yet registered. If you  see anything to be improved in this
-package, please contact me or make a pull request.
+package  of GAP3. I started this project at the end of 2018 and it is still
+in  flux so the  package is not  yet registered. If  you see anything to be
+improved  in this  package, please  contact me  or make  an issue or a pull
+request in the GitHub repository.
 
 ### Installing
 
@@ -31,26 +28,27 @@ To update later to the latest version, do
 
 This package requires julia 1.6 or later. 
 
-I  registered as separate packages already  some of the infrastructure (the
-following  packages  are  loaded  and  reexported so their functionality is
-automatically available when you use `Gapjm`):
+I  also  implemented  the  GAP  functionality  needed  for  Chevie to work:
+Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
+permutation  group  operations,  etc….  I  registered  as separate packages
+already  most of the infrastructure (the  following packages are loaded and
+reexported  so their functionality is  automatically available when you use
+`Gapjm`):
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions)
   * [CyclotomicNumbers](https://github.com/jmichel7/CyclotomicNumbers.jl)
   * [ModuleElts](https://github.com/jmichel7/ModuleElts.jl) (elements of a free module over some ring)
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
+  * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the moduls `Perms` and `Groups` which could be separate packages)
 
 some other infrastructure which may become eventually separate packages:
-  * permutations (module `Perms`)
   * linear algebra on any field/ring (module `GLinearAlgebra`)
   * posets (module `Posets`)
   * cyclotomic polynomials (module `CycPols`)
   * signed permutations (module `SPerms`)
   * finite fields (module `FFields`)
   * Integer matrices and lattices (module `MatInt`)
-  * groups (module `Groups`)
-  * permutation groups (module `PermGroups`)
 
 for  permutation groups I have  often replaced the sophisticated algorithms
 of  GAP by naive but  easy to write methods  only suitable for small groups
@@ -59,11 +57,11 @@ Otherwise  the  code  for  infrastructure  is  often  competitive with GAP,
 despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome. For functions which are too inefficient or
-difficult to implement (like character tables of arbitrary groups) there is
-the possibility to call GAP4.
+difficult  to implement (like character tables of arbitrary groups) `Gapjm`
+automatically calls GAP4 if the package `GAP` is being used.
 
-This  package contains currently about  95% of Chevie functionality, ported
-from  Gap3.  The  function  `gap`  can  help  you  discover  the equivalent
+This  package `Gapjm` contains currently about 98% of Chevie functionality,
+ported  from Gap3. The function `gap`  can help you discover the equivalent
 functionality  to a Gap3  function: it takes  a string and  gives you Julia
 translations of functions in Gap3 which match this string.
 
@@ -94,16 +92,14 @@ using UsingMerge
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor
+@reexport using PermGroups
+@usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Perms.jl");@reexport using .Perms
-@usingmerge verbose=true reexport CyclotomicNumbers
-include("Groups.jl");@reexport using .Groups
-include("PermGroups.jl");@reexport using .PermGroups
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
-include("FFfac.jl");@usingmerge verbose=true reexport FFfac
+include("FFfac.jl");@reexport using .FFfac
 include("Fact.jl");@reexport using .Fact
 include("Nf.jl");@reexport using .Nf
 include("MatInt.jl");@reexport using .MatInt
