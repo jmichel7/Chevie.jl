@@ -1264,16 +1264,20 @@ function Groups.centre(W::PermRootGroup)
   end
 end
 
-function Groups.position_class(W::PermRootGroup,w)
+function Groups.position_class(W::PermRootGroup,w;verbose=false)
   l=PermGroups.positions_class(W,w)
-# if length(l)>1 println("ambiguity: ",l) end
+  if length(l)==1 return only(l)
+  elseif verbose println("ambiguity: ",l) end
+  p=charpoly(reflrep(W,w))
+  l=filter(x->charpoly(reflrep(W,classreps(W)[x]))==p,l)
+  if length(l)==1 return only(l) end
   # doit type by type
   if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
   ncl=classinfo(W)[:classes][l]
   s=sortperm(ncl)
   for i in s
     if length(s)==1 return l[i] end
-    if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i])
+    if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i]) && verbose
       println("!! computing class ",l[i]," of cardinal ",ncl[i])
     end
     if w in conjugacy_classes(W,l[i]) return l[i] end
