@@ -251,7 +251,7 @@ function relative_root(W,L,i)
     r=reflection(m)
     if r===nothing error("not a reflection --- This should not happen") end
 #   println("rc=$rc")
-    if Cyc(r.eig)==E(d)
+    if r.eig==E(d)
       rc=filter(c->central_action(L,reflrep(L,c))==m,classreps(N))
 #     println("rc=$rc")
       c=unique!(sort(map(x->position_class(W,x),rc)))
@@ -454,9 +454,9 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
   res[:simpleCoroots]=improve_type(res[:simpleCoroots])
 # println(res[:roots],res[:simpleCoroots])
   R=PRG(res[:roots], res[:simpleCoroots])
-  R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
   if N==length(R)
     merge!(R.prop,res)
+    R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
 #   InfoChevie("W_",W,"(L_",res[:callarg],")==",R,"<",join(R.prop[:relativeIndices]),">")
     printTeX(rio(),"W_",W,"(L_{",res[:callarg],"})==",R,
                   "<",joindigits(R.relativeIndices),">\n")
@@ -479,6 +479,7 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
       push!(res[:relativeIndices], l.index)
       push!(res[:parentMap], l.parentMap)
       R.prop=res
+      R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
       return R
     end
   end

@@ -60,7 +60,7 @@ code and the design are welcome. For functions which are too inefficient or
 difficult  to implement (like character tables of arbitrary groups) `Gapjm`
 automatically calls GAP4 if the package `GAP` is being used.
 
-This  package `Gapjm` contains currently about 98% of Chevie functionality,
+This  package `Gapjm` contains currently about 90% of Chevie functionality,
 ported  from Gap3. The function `gap`  can help you discover the equivalent
 functionality  to a Gap3  function: it takes  a string and  gives you Julia
 translations of functions in Gap3 which match this string.
@@ -73,7 +73,7 @@ GarsideWords             =>  elements
 ```
 Then you can call on-line help on the discovered functions.
 
-The  port to Julia is not complete in the sense that 75% of the code is the
+The  port to Julia is not complete in the sense that 80% of the code is the
 data library of Chevie, which has been automatically ported by a transpiler
 so  its  code  is  "strange".  When  the  need  to  maintain  both versions
 simultaneously subsides, it will be worth to do a proper translation of the

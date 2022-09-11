@@ -55,9 +55,12 @@ end
   end)
 chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
 
-chevieset(:D, :SchurElement, function (n, phi, q, sqrtparam)
-  exactdiv(chevieget(:D, :PoincarePolynomial)(n, q),
-    Value(chevieget(:D, :CycPolGenericDegree)(phi), -q[1][1]//q[1][2]))
+chevieset(:D,:CycPolPoincarePolynomial,n->CycPol(Pol()^n-1)*
+          prod(i->CycPol(Pol()^2i-1),1:n-1)//CycPol(Pol()-1)^n)
+
+chevieset(:D, :SchurElement, function (n, phi, para, sqrtparam)
+  Value(chevieget(:D, :CycPolPoincarePolynomial)(n)//
+        chevieget(:D, :CycPolGenericDegree)(phi), -para[1][1]//para[1][2])
 end)
 
 # References for unipotent classes:

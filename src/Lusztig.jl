@@ -179,8 +179,12 @@ function LusztigInductionPieces(LF,WF)
       Jb=vcat(map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) :
                   x.indices,ser[:relativeType])...)
       WFGL=relative_coset(WF,ser[:levi],Jb)
-      if isnothing(WFGL) return nothing end
       WGL=Group(WFGL)
+      if !haskey(WGL,:MappingFromNormalizer) 
+        @show WF, Jb
+        @show ser[:levi]
+        error("hahah!") 
+      end
       rh=map(x->action(W,x,op),inclusion(L,W,vcat(map(
        x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
        h[:relativeType])...)))

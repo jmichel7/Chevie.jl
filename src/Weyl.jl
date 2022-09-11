@@ -238,7 +238,7 @@ cartanmats[:Bsym]=function(r)
 end
 cartanmats[:C]=function(r)
   m=cartanmats[:A](r)
-  if r>1 m[1,2]=-2 end
+  if r>1 m[2,1]=-2 end
   m 
 end
 cartanmats[:D]=function(r)
@@ -660,7 +660,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Base.one,
- Gapjm.roots, Groups.gens, PermGroups.classreps,
+ Gapjm.roots, Groups.gens, Groups.conjugacy_classes, PermGroups.classreps,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank, 

@@ -532,6 +532,10 @@ function twistings(W::FiniteCoxeterGroup)
   spets.(Ref(W),l)
 end
 
+function Groups.conjugacy_classes(G::Spets)
+  [ConjugacyClass(G,x,Dict{Symbol,Any}()) for x in classreps(G)]
+end
+
 function Groups.position_class(G::Spets,g)
   if isone(G.phi) return position_class(G.W,g) end
   findfirst(c->g in c,conjugacy_classes(G))
@@ -667,9 +671,9 @@ julia> torus(WF,2)
 Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
 Weyl.torus(W,i)=subspets(W,Int[],classreps(W)[i])
 
-function Groups.conjugacy_classes(WF::Spets)
-  get!(WF,:classes)do
-    map(x->orbit(Group(WF),x),classreps(WF))
+function Groups.elements(C::ConjugacyClass{T,TW})where {T,TW<:Spets}
+  get!(C,:elements)do
+    orbit(Group(C.G),C.representative)
   end
 end
 
@@ -927,7 +931,7 @@ function spets(W::PermRootGroup,F::Matrix)
     end
   end
   if length(unique(perm))<length(perm) return false end
-  w=Perm(perm)
+  w=eltype(W)(perm)
   if isnothing(w) error("matrix F must preserve the roots") end
   res=PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
 end

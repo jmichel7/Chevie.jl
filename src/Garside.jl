@@ -551,12 +551,8 @@ function left_divisors(M::LocallyGarsideMonoid,s)
   while !isempty(rest)
     push!(res,rest)
     new=empty(rest)
-    for x in rest
-      for i in eachindex(M.atoms)
-        if isleftdescent(M,x.right,i)
-          push!(new,(left=*(M,x.left,M.atoms[i]),right=\(M,M.atoms[i],x.right)))
-        end
-      end
+    for x in rest, i in leftdescents(M,x.right)
+      push!(new,(left=*(M,x.left,M.atoms[i]),right=\(M,M.atoms[i],x.right)))
     end
     rest=unique(new)
   end
@@ -806,7 +802,9 @@ function left_divisors(b::LocallyGarsideElt,avoid)
   M=b.M
   if isone(b) return [b] end
   s=vcat(left_divisors(M,b[1])[2:end]...)
-  s=filter(x->isempty(intersect(leftdescents(M,x),avoid)),s)
+  if !isempty(avoid) 
+    s=filter(x->isempty(intersect(leftdescents(M,x),avoid)),s)
+  end
   res=[M()]
   for x in s
     append!(res,x.*left_divisors(\(M,x,b[1])*tail(b),rightascents(M,x)))
@@ -1380,6 +1378,7 @@ end
   δ::T
   orderδ::Int
   stringδ::String
+  δword::Vector{Int}
   atoms::Vector{T}
   one::T
   W::TW
@@ -1416,7 +1415,7 @@ julia> B(-1,-2,-3,1,1)
 function DualBraidMonoid(W::CoxeterGroup;
   c=reduce(vcat,bipartite_decomposition(W)),revMonoid=nothing)
   δ=W(c...)
-  M=DualBraidMonoid(δ,order(δ),"δ",refls(W,1:nref(W)),one(W),W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,refls(W,1:nref(W)),one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing 
     M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
   else M.revMonoid=revMonoid
@@ -1433,7 +1432,7 @@ function DualBraidMonoid(W::PermRootGroup;
   δ=W(c...)
   n=reflength(W,δ)
   atoms=filter(r->reflength(W,δ/r)<n,unique(refls(W)))
-  M=DualBraidMonoid(δ,order(δ),"δ",atoms,one(W),W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,atoms,one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing
     if all(w->isone(w^2),gens(W))
        M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
@@ -1450,7 +1449,7 @@ end
 Base.one(M::DualBraidMonoid)=M.one
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
-                                            word(M.W,M.δ),")")
+                                            M.δword,")")
 
 function atomsinbraidmonoid(M::DualBraidMonoid) # for coxeter groups
   get!(M,:atomsinbraidmonoid)do

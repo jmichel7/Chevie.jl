@@ -863,10 +863,6 @@ PermRoot.action(W::CoxSym,i,p)=i^p
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-# the following two methods shoud be derived from a trait "HasType" of CoxSym 
-Groups.conjugacy_classes(W::CoxSym)=get!(()->map(x->orbit(W,x),classreps(W)),
-                                      W,:classes)
-
 Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
                                       W,:classreps)
 

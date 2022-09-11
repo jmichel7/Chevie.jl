@@ -446,7 +446,7 @@ function QuotientAu(Au,chars)
   elseif isabelian(Au/k)
     q=Au/k
     q=Group(AbGens(q))
-    h=Hom(Au,q,map(x->Coset(k,x),gens(Au)))
+    h=Hom(Au,q,map(x->NormalCoset(k,x),gens(Au)))
     f=map(x->word(q,h(x)),gens(Au))
 #  Print(prod(map(x->Z(order(x)),gens(q)))," ",f,"\n");
     return finish(prod(map(x->Z(order(x)),gens(q))),f)

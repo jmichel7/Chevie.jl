@@ -1264,24 +1264,24 @@ function Groups.centre(W::PermRootGroup)
   end
 end
 
-function Groups.position_class(W::PermRootGroup,w;verbose=false)
+function Groups.conjugacy_classes(G::PermRootGroup)
+  [ConjugacyClass(G,x,Dict{Symbol,Any}()) for x in classreps(G)]
+end
+
+const verbose=false
+function Groups.position_class(W::PermRootGroup,w)
   l=PermGroups.positions_class(W,w)
   if length(l)==1 return only(l)
   elseif verbose println("ambiguity: ",l) end
-  p=charpoly(reflrep(W,w))
-  l=filter(x->charpoly(reflrep(W,classreps(W)[x]))==p,l)
+  p=sort(eigmat(reflrep(W,w)))
+  l=filter(x->sort(refleigen(W)[x])==p,l)
   if length(l)==1 return only(l) end
   # doit type by type
-  if length(W)<20 return findfirst(c->w in c,conjugacy_classes(W)) end
   ncl=classinfo(W)[:classes][l]
-  s=sortperm(ncl)
-  for i in s
-    if length(s)==1 return l[i] end
-    if ncl[i]>10000 && haskey(W,:classes) && !isassigned(W.classes,l[i]) && verbose
-      println("!! computing class ",l[i]," of cardinal ",ncl[i])
-    end
-    if w in conjugacy_classes(W,l[i]) return l[i] end
+  if any(>(10000),ncl)
+    println("!! computing classes of cardinal ",ncl)
   end
+  l[findfirst(c->w in c,conjugacy_classes(W)[l])]
 end
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
@@ -1723,7 +1723,10 @@ function PRG(r::AbstractVector{<:AbstractVector},
     if sort(l)!=eachindex(l)
       InfoChevie("# changing gens to <",join(l,","),"> for ",
                                              t,"<",ngens(W)," refs>\n")
+      save=haskey(W,:MappingFromNormalizer)
+      if save n=W.MappingFromNormalizer end
       W=PRG(roots(W,l),coroots(W,l))
+      if save W.MappingFromNormalizer=n end
     end
   end
   W
@@ -1847,7 +1850,10 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if sort(l)!=eachindex(gens(H))
     InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
       ","),"> for ",t,"<",length(inclusion(H))," refs>\n")
+    save=haskey(H,:MappingFromNormalizer)
+    if save n=H.MappingFromNormalizer end
     H=reflection_subgroup(W,inclusion(H,l);NC=true)
+    if save H.MappingFromNormalizer=n end
     for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
   end
   H.refltype=t

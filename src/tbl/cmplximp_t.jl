@@ -264,7 +264,8 @@ information   about  it  necessary  to  compute  the  function  Delta  in
   end
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
   res[:parameter]=para
-  res[:irreducibles]*=prod(prod,para)^0
+  c=one(prod(prod,para))
+  res[:irreducibles]=map(x->map(y->y*c,x),res[:irreducibles])
   res
 end)
 

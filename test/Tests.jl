@@ -9,7 +9,7 @@ isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
 isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
 isspetsial=W->UnipotentCharacters(W)!==nothing
 
-nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,22,21,22,31])
+nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,21,22,31])
 
 ChevieErr(x...)=printstyled(rio(),x...;color=:red)
 
@@ -1782,7 +1782,7 @@ function reflection_discriminant(W)
   for h in hyperplane_orbits(W)
     cr=coroots(W,h.s)
     for w in map(x->transporting_elt(W,W(h.s),x),
-                 conjugacy_classes(W,h.cl_s[1]))
+                 elements(conjugacy_classes(W)[h.cl_s[1]]))
       append!(res,map(i->reflrep(W,w^-1)*cr,1:h.order))
     end
   end

@@ -37,6 +37,22 @@ function G4_22FetchIndexChars(ST, para)
   end
 end
 
+#  This function is a helper for char. tables of Hecke algebras G4--G22
+#  c is a vector, e an integer vector same length
+#  return vector c[i]*(E(n)^p*x^(1/n))^e[i]
+#
+#  The point of this routine is to avoid unnecessary root extractions
+#  during evaluation (i.e., only get n/gcd(n,e[i])th roots where c[i]!=0)
+function G4_22Helper(c, e, x, n, p)
+  c=improve_type(c)
+  nz=findall(c.!=0)
+  r=gcd(vcat(e[nz],[n]))
+  rt=root(x,div(n,r))*E(n,p*r)
+  res=convert.(promote_type(typeof(rt),eltype(c)),c)
+  res[nz]=map(i->c[i]*rt^div(e[i],r), nz)
+  res
+end
+
 # tests if res=Chartable(Hecke(G_ST,res[:parameter])) is correct
 # where rows=irrs for generic group (G7, G11 or G19)
 # and i is the selector from rows to test.

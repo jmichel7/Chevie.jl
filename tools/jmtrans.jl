@@ -65,7 +65,6 @@ const ok2=[
     :((CHEVIE.families).F42),
     :((CHEVIE.families).G4),
     :((CHEVIE.families).X2),
-    :G4_22Helper,
     :PartitionTwoCoreQuotient
    ]
 

@@ -606,19 +606,6 @@ chevieset(:G4_22, :Embed, function (ST,)
         d = Dict{Symbol, Any}(Symbol("4") => [[1, 3, -1], [3]], Symbol("5") => [[2], [3]], Symbol("6") => [[1], [3]], Symbol("7") => [[1], [2], [3]], Symbol("8") => [[3], [1, 3, -1]], Symbol("9") => [[1], [3]], Symbol("10") => [[2], [3]], Symbol("11") => [[1], [2], [3]], Symbol("12") => [[1], [2, 1, -2], [-2, 1, 2]], Symbol("13") => [[3, 3], [1], [-2, 1, 2]], Symbol("14") => [[1], [2]], Symbol("15") => [[1], [2], [3, 3]], Symbol("16") => [[3], [1, 3, -1]], Symbol("17") => [[1], [3]], Symbol("18") => [[2], [3]], Symbol("19") => [[1], [2], [3]], Symbol("20") => [[2], [1, 2, -1]], Symbol("21") => [[1], [2]], Symbol("22") => [[1], [2, 1, -2], [-2, 1, 2]])
         return d[Symbol(ST)]
     end)
-G4_22Helper(c, e, x, n, p) = begin
-        local nz, r, res, root
-        nz = filter((i->begin
-                        c[i] != 0 * c[i]
-                    end), 1:length(c))
-        r = gcd(Concatenation(e[nz], [n]))
-        root = GetRoot(x, n // r) * E(n, p * r)
-        res = c * root ^ 0
-        res[nz] = map((i->begin
-                        c[i] * root ^ div(e[i], r)
-                    end), nz)
-        return res
-    end
 chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
         local X, Y, Z, classes, GenericRow, res, ci, ic, c, p, c24, c23, rows, c25, c35, c23
         X = (chevieget(:G4_22, :GetParams))(ST, para)

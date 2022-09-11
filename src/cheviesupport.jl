@@ -4,6 +4,7 @@ Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b)
 Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(transpose(a)*toM(b))[1]
 Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
 Base.:*(a::Tuple,b::AbstractVector)=toL(transpose(collect(a))*toM(b))[1]
+Base.:*(a::AbstractVector{<:AbstractVector{<:Number}},b::Number)=map(x->map(y->y*b,x),a)
 Base.:+(a::AbstractArray,b::Number)=a .+ b
 Base.:+(a::Integer,b::AbstractVector)=a .+ b
 Base.:-(a::AbstractVector,b::Number)=a .- b
