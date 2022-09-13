@@ -320,7 +320,7 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
     ct.name=repr(H;context=:TeX=>true)
     ct.group=H
     ct
-  end
+  end::CharTable
 end
 
 function Chars.representation(H::HeckeAlgebra,i::Int)

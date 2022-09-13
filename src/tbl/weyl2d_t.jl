@@ -31,7 +31,7 @@ function (l,param,rootparam)
   para=chevieget(:B,:CharParams)(l)
   chr=filter(i->chevieget(Symbol("2D"),:IsPreferred)(para[i]),chr)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
-   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],Replace(x,[1],[1,2,1]))...),
+   Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],GAPENV.Replace(x,[1],[1,2,1]))...),
    toM(hi[:irreducibles][chr])),tbl[:classtext]))))
    CHEVIE[:compat][:AdjustHeckeCharTable](tbl,param)
   tbl

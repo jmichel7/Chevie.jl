@@ -269,7 +269,7 @@ function Tlusztiginduction(WF,L)
 #  Check Mackey with Tori
   c=map((a,b)->a//b,CharTable(WF).centralizers[f],CharTable(L).centralizers)
   u=Uch.DLCharTable(L)
-  rhs=toM(map(1:HasType.NrConjugacyClasses(WF))do i
+  rhs=toM(map(1:nconjugacy_classes(WF))do i
     l=findall(==(i),f)
     return isempty(l) ? u[1,:].*0 : sum(j->u[j,:].*c[j],l)
   end)
@@ -511,7 +511,7 @@ function Tcharparams(W)
   db=map(x->[x(1),valuation(x)],fd)
   n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
-    nm=map(Util.TeXstrip∘HasType.exceptioCharName,l)
+    nm=map(Util.TeXstrip∘GAPENV.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
   elseif n[1] in "EFGH" && length(n)<4
     l=filter(x->x[2]>1,tally(charinfo(W)[:charparams]))
@@ -1120,8 +1120,8 @@ function Tfamilies(W,i;hard=false)
   v=" "*repr(W;context=rio())*".$i"
 # else f:=arg[1]; arg:=arg{[2..Length(arg)]};v:=""; fi;
   if length(f.eigenvalues)==1 return end # nothing interesting to test
-  O=toM(HasType.DiagonalMat(f.eigenvalues))
-  if haskey(f,:sh) Sh=toM(HasType.DiagonalMat(f.sh)) end
+  O=toM(GAPENV.DiagonalMat(f.eigenvalues))
+  if haskey(f,:sh) Sh=toM(GAPENV.DiagonalMat(f.sh)) end
   S=f.fourierMat
   if f isa Vector t=toM(f) end
   Sbar=conj(S)

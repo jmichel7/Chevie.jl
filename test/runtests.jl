@@ -445,12 +445,6 @@ end
 @test mytest("Gt.jl","closed_subsystems(W)","1 2 3 4 5 6<1 4<4<∅\n1 2 3 4 5 6<1 5 6<1<∅\n1 2 3 4 5 6<2 6<6<∅\n1 2 3 4 5 6<3 5<5<∅\n1 4<1\n1 5 6<6\n1 5 6<5\n2 6<2<∅\n3 5<3<∅")
 @test mytest("Gt.jl","t=ClassTypes(rootdatum(:sl,3))","ClassTypes(A₂,good characteristic)\n    C_G(s)│ |C_G(s)|\n──────────┼──────────\nA₂₍₎=Φ₁²  │      Φ₁²\nA₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂\nA₂₍₎=Φ₃   │       Φ₃\nA₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂\nA₂        │q³Φ₁²Φ₂Φ₃")
 end
-@testset "HasType.jl" begin
-@test mytest("HasType.jl","W=coxgroup(:F,4)","F₄")
-@test mytest("HasType.jl","r=classinfo(W)[:classtext];","nothing")
-@test mytest("HasType.jl","R=representation(W,17)","4-element Vector{Matrix{Int64}}:\n [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]")
-@test mytest("HasType.jl","traces_words_mats(R,r)==CharTable(W).irr[17,:]","true")
-end
 @testset "HeckeAlgebras.jl" begin
 @test mytest("HeckeAlgebras.jl","W=coxgroup(:A,2)","A₂")
 @test mytest("HeckeAlgebras.jl","H=hecke(W,0)","hecke(A₂,0)")
@@ -609,7 +603,7 @@ end
 @test mytest("PermRoot.jl","reflrep(W)","2-element Vector{Matrix{Cyc{Rational{Int64}}}}:\n [1 0; 0 ζ₃]\n [√-3/3 -ζ₃²√-3/3; (-3+√-3)/3 -ζ₃√-3/3]")
 @test mytest("PermRoot.jl","braid_relations(W)","1-element Vector{Vector{Vector{Int64}}}:\n [[1, 2, 1], [2, 1, 2]]")
 @test mytest("PermRoot.jl","Diagram(W)","③ ——③ G₄\n1   2")
-@test mytest("PermRoot.jl","cartan(W)","2×2 Matrix{Cyc{Int64}}:\n ζ₃²√-3     ζ₃²\n   -ζ₃²  ζ₃²√-3")
+@test mytest("PermRoot.jl","cartan(W)","2×2 Matrix{Cyc{Rational{Int64}}}:\n ζ₃²√-3     ζ₃²\n   -ζ₃²  ζ₃²√-3")
 @test mytest("PermRoot.jl","simpleroots(W)","2×2 Matrix{Cyc{Rational{Int64}}}:\n    0  ζ₃²√-3\n 2ζ₃²     ζ₃²")
 @test mytest("PermRoot.jl","simplecoroots(W)","2×2 Matrix{Cyc{Rational{Int64}}}:\n     0      1\n √-3/3  √-3/3")
 @test mytest("PermRoot.jl","degrees(W)","2-element Vector{Int64}:\n 4\n 6")
@@ -836,6 +830,10 @@ end
 @test mytest("Tools2.jl","factor(x^2-y^2+x+3y-2)","2-element Vector{Mvp{Int64, Int64}}:\n x-y+2\n x+y-1")
 @test mytest("Tools2.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("Tools2.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
+@test mytest("Tools2.jl","W=coxgroup(:F,4)","F₄")
+@test mytest("Tools2.jl","r=classinfo(W)[:classtext];","nothing")
+@test mytest("Tools2.jl","R=representation(W,17)","4-element Vector{Matrix{Int64}}:\n [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]")
+@test mytest("Tools2.jl","traces_words_mats(R,r)==CharTable(W).irr[17,:]","true")
 end
 @testset "Uch.jl" begin
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")

@@ -133,7 +133,7 @@ include("Uch.jl");@reexport using .Uch
 include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
 include("gendec.jl"); # for now no module
-include("HasType.jl");@reexport using .HasType
+include("GAPENV.jl");@reexport using .GAPENV
 function __init__()
   @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" include("Gap4.jl")
 end

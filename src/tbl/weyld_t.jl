@@ -346,7 +346,7 @@ chevieset(:D, :ClassParameter, function (n, w)
   # subgroup 2:n (gens(Dₙ) in this representation are 
   # stored for n<=8 in the Dict 'chevieget(:D,:gensMODA)')
     u=get!(chevieget(:D,:gensMODA),n)do
-      H=CoxeterGroup("D", n)
+      H=coxgroup("D", n)
       R=reflection_subgroup(H, 2:n)
       D=vcat(reduced(R,H)...)
       Dgens=map(s->Perm(reduced.(Ref(R),D.*s),D),gens(H))
@@ -356,7 +356,7 @@ chevieset(:D, :ClassParameter, function (n, w)
       H=map(a->CycleStructurePerm(prod(Dgens[a])), H)
       u=[Dgens,H[1:2:length(H)], H[2:2:length(H)]]
     end
-    tmp=CycleStructurePerm(Product(u[1][w]))
+    tmp=CycleStructurePerm(prod(u[1][w]))
     if tmp in u[2] && !(tmp in u[3]) res=[res[1],'+']
     elseif !(tmp in u[2]) && tmp in u[3] res=[res[1],'-']
     end

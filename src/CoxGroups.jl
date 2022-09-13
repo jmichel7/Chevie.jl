@@ -372,12 +372,12 @@ true
 ```
 """
 function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
-  elts=get!(()->Dict(0=>[one(W)]),W,:elements)#::Dict{Int,Vector{T}}
+  elts=get!(()->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
   if ngens(W)==1 return l>1 ? T[] : gens(W) end
 # if l==1 return elts[1]=gens(W) end
-  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)#::CoxeterGroup{T}
-  rc=get!(()->[[one(W)]],W,:rc)#::Vector{Vector{T}}
+  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)::CoxeterGroup{T}
+  rc=get!(()->[[one(W)]],W,:rc)::Vector{Vector{T}}
   while length(rc)<=l
     new=reducedfrom(H,W,rc[end])
     if isempty(new) break
@@ -818,7 +818,8 @@ end
   n::Int
 end
 
-@forward CoxSym.G Base.iterate, Groups.gens, Base.one
+@forward CoxSym.G Base.iterate, Groups.gens, Base.one, PermGroups.orbits,
+  PermGroups.orbit
 
 """
   `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group
@@ -863,8 +864,8 @@ PermRoot.action(W::CoxSym,i,p)=i^p
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-Groups.classreps(W::CoxSym)=get!(()->map(x->W(x...),classinfo(W)[:classtext]),
-                                      W,:classreps)
+Groups.classreps(W::CoxSym{T}) where T=
+get!(()->map(x->W(x...),classinfo(W)[:classtext]),W,:classreps)::Vector{Perm{T}}
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=div(length(W.refls),2)

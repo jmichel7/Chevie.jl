@@ -268,7 +268,7 @@ function linear_extension(P::Poset)::Vector{Int}
     end
     if !iszero(n) error("cycle") end
     res
-  end
+   end::Vector{Int}
 end
 
 hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
@@ -313,7 +313,7 @@ julia> incidence(p)
  0  0  0  0  0  1
 ```
 """
-function incidence(p::Poset)::Matrix{Bool}
+function incidence(p::Poset)
   get!(p,:incidence)do
     n=linear_extension(p)
     inc=one(Matrix{Bool}(undef,length(n),length(n)))
@@ -321,7 +321,7 @@ function incidence(p::Poset)::Matrix{Bool}
       (@view inc[n[i],:]).|=@view inc[x,:]
     end
     inc
-  end
+   end::AbstractMatrix{Bool}
 end
 
 """

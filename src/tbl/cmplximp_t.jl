@@ -112,7 +112,7 @@ function homogeneous_symmetric_function(t,v)
 end
 
 chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
-  res=Dict{Symbol, Any}(:name=>SPrint("H(G(", p, ",", q, ",", r, "))"),
+  res=Dict{Symbol, Any}(:name=>string("H(G(", p, ",", q, ",", r, "))"),
   :degrees=> chevieget(:imp, :ReflectionDegrees)(p, q, r), :dim=>r)
   res[:identifier] = res[:name]
   res[:size] = prod(res[:degrees])

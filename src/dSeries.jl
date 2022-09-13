@@ -980,7 +980,7 @@ function char_numbers(s::Series)
     c=CharTable(s.spets).centralizers[i].//CharTable(s.levi).centralizers
     t=Uch.DLCharTable(s.levi)[:,s.cuspidal].*c
     t=map(k->sum(t[filter(j->i[j]==k,eachindex(i))]),
-                       1:HasType.NrConjugacyClasses(s.spets))
+                       1:nconjugacy_classes(s.spets))
     c=Uch.DLCharTable(s.spets)
     v=filter(a->c[:,foo(:charNumbers,a)]*(foo(:dims,a).*foo(:eps,a))==t,v)
   end
@@ -1083,7 +1083,7 @@ function paramcyclic(s::Series)
     quality=map(x->conductor(collect(values(prod(y->Mvp(:x)-y,x).d))),quality)
     quality=1+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
     if isempty(quality) quality=[1] end
-    m=HasType.Rotations(mC(s))
+    m=GAPENV.Rotations(mC(s))
     m=findfirst(==(maximum(m[quality])),m)
     m=circshift(1:e(s),m-1)
     for i in [:mC,:charNumbers,:eigen,:span,:eps,:dims,:permutable]

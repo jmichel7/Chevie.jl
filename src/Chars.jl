@@ -1142,13 +1142,13 @@ function WGraph2Representation(a,vars)
   rk=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
   R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:rk)
-  R=map(x->toM(HasType.DiagonalMat(x...)),R)
+  R=map(x->toM(GAPENV.DiagonalMat(x...)),R)
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
   for r in a[2]
 #   println("r=$r")
     for k in [3,4]
-    if HasType.IsList(r[k])
+    if r[k] isa Vector
       for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
     else
       r2=Int.(r[1:2])

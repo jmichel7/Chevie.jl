@@ -457,14 +457,14 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
   i^w<(i-1)^w
 end
 
-function PermRoot.refls(W::CoxHyperoctaedral)
+function PermRoot.refls(W::CoxHyperoctaedral{T})where T
   get!(W,:refls)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
     for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
     for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
     append!(refs,refs)
     refs
-  end
+  end::Vector{SPerm{T}}
 end
 
 PermRoot.refls(W::CoxHyperoctaedral,i)=refls(W)[i]

@@ -50,10 +50,10 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     if s.sp==[Int[], Int[]] p=1
     elseif s.sp==[[1], Int[]] p=2
     elseif s.sp==[Int[], [1]] p=1
-    else p=findfirst(==([s.sp]),CharParams(ss[:relgroup]))
+    else p=findfirst(==([s.sp]),charinfo(ss[:relgroup]).charparams)
     end
     ss[:locsys][p]=[length(uc[:classes]), 
-          findfirst(==(map(x->x ? [1,1] : [2], s.Au)),CharParams(cc[:Au]))]
+    findfirst(==(map(x->x ? [1,1] : [2], s.Au)),charinfo(cc[:Au]).charparams)]
   end
   if ctype==root(2)  #treat 2B2 as B2; make sure char=2
     ctype=2
@@ -65,7 +65,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   uc=Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
     res=Dict(:relgroup=>coxgroup(:C,d[2]),:defect=>d[1],:levi=>1:r-d[2])
-    res[:locsys]=fill([0, 0],NrConjugacyClasses(res[:relgroup]))
+    res[:locsys]=fill([0, 0],nconjugacy_classes(res[:relgroup]))
     if char==2 res[:Z]=[1]
     elseif ctype==1 res[:Z]=[(-1)^(r-d[2])]
     elseif conductor(root(2*(r-d[2])+1))==1 res[:Z]=[1]
@@ -112,7 +112,8 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
   if char==2 ctype=1 end
   for cl in ss
     cc = Dict{Symbol, Any}(:parameter => symbol2para(cl[1].symbol))
-    cc[:Au]=CoxeterGroup(Concatenation(map(x->["A",1],cl[1].Au))...)
+    v=cl[1].Au
+    cc[:Au]=isempty(v) ? coxgroup() : prod(map(x->coxgroup(:A,1),v))
     if char!=2
       cc[:dynkin] = part2dynkin(cc[:parameter])
       cc[:name] = joindigits(cc[:parameter])
@@ -166,7 +167,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       i=1
       while i<=length(p)
         l=p[i]
-        t=Sum(d[1:i-1])
+        t=sum(d[1:i-1])
         if 1==mod(l, 4)
           push!(a, div(l-1, 4)-t)
           i+=1
@@ -189,7 +190,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       ss=first(x for x in uc[:springerSeries] if f(x))
       if s in [[Int[],[1]],[Int[],Int[]]] p=1
       elseif s==[[1],Int[]] p=2
-      else p = findfirst(==([s]),CharParams(ss[:relgroup]))
+      else p = findfirst(==([s]),charinfo(ss[:relgroup]).charparams)
       end
       ss[:locsys][p] = [i, k]
     end
@@ -210,14 +211,14 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
           l=vcat(1:i,i+2:2:r)
           ss=Dict{Symbol, Any}(:relgroup=>coxgroup(:B,div(r-i,2)),
                                :levi => l, :Z => [-1])
-          ss[:locsys]=fill([0,0],NrConjugacyClasses(ss[:relgroup]))
+          ss[:locsys]=fill([0,0],nconjugacy_classes(ss[:relgroup]))
           push!(uc[:springerSeries],ss)
           i=4d^2+3d
           if i<=r && d!=0
             l=vcat(1:i,i+2:2:r)
             ss= Dict{Symbol, Any}(:relgroup=>coxgroup(:B,div(r-i,2)),
                                   :levi => l, :Z => [-1])
-            ss[:locsys]=fill([0,0],NrConjugacyClasses(ss[:relgroup]))
+            ss[:locsys]=fill([0,0],nconjugacy_classes(ss[:relgroup]))
             push!(uc[:springerSeries], ss)
           end
       end
@@ -229,11 +230,11 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       cl=uc[:classes][i]
       s=LuSpin(cl[:parameter])
       if length(cl[:Au]) == 1
-        cl[:Au] = CoxeterGroup("A", 1)
+        cl[:Au] = coxgroup(:A, 1)
         trspringer(i, [1], [2])
         d = 1
       elseif length(cl[:Au]) == 4
-        cl[:Au] = CoxeterGroup("B", 2)
+        cl[:Au] = coxgroup(:B, 2)
         trspringer(i, [1, 2, 3, 4], [1, 3, 5, 4])
         d = 2
       else

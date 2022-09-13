@@ -140,7 +140,7 @@ Some additional methods for finite reflection groups:
 
 ```julia-repl
 julia> cartan(W)
-2×2 Matrix{Cyc{Int64}}:
+2×2 Matrix{Cyc{Rational{Int64}}}:
  ζ₃²√-3     ζ₃²
    -ζ₃²  ζ₃²√-3
 
@@ -503,7 +503,7 @@ function Base.show(io::IO,d::Diagram)
       join(io,ind," ")
     elseif series==:ST
       if haskey(t,:ST)
-# print(title, " ");s=pad("\n", -length(title))
+# print(title, " ");s=rpad("\n",length(title))
   s="\n"
   f(arg...)=joindigits(indices[collect(arg)])
   dbar="\u2550"
@@ -619,7 +619,7 @@ function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
     W.refls=map((i,p)->gens(W)[i]^p,reps,repelts)
     W.unique_refls=Int.(sort(unique(indexin(W.refls,W.refls))))
     reps
-  end
+  end::Vector{Int}
 end
 
 """
@@ -635,7 +635,7 @@ simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 list  of same  length as  `W.roots` giving  the corresponding distinguished
 reflections. In particular this list is much longer than `unique(refls(W))`.
 """
-refls(W::PermRootGroup)=getp(simple_reps,W,:refls)
+refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Perm{T1}}
 
 """
 `refls(W,i)`
@@ -652,9 +652,9 @@ For each index `i` of a root, an element `w∈ W` such that
 `restriction(W,inclusion(W,simple_reps(W,i))^w)==i` 
 (or `action(W,simple_reps(W,i))==i`)
 """
-simple_conjugating(W::PermRootGroup)=getp(simple_reps,W,:simple_conjugating)
+simple_conjugating(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:simple_conjugating)::Vector{Perm{T1}}
 
-unique_refls(W::PermRootGroup)=getp(simple_reps,W,:unique_refls)
+unique_refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:unique_refls)::Vector{Int}
 
 """
 `simple_conjugating(W,i)`
@@ -695,9 +695,9 @@ julia> cartan(W)
   0  -1   2
 ```
 """
-function cartan(W::PermRootGroup)
+function cartan(W::PermRootGroup{T,T1})where {T,T1}
   get!(W,:cartan)do
-    istorus(W) ? fill(0,0,0) : improve_type(cartan(W,1:ngens(W)))
+    istorus(W) ? fill(0,0,0) : cartan(W,1:ngens(W))
   end
 end
 
@@ -988,7 +988,7 @@ function findgensDiagCartan(H,C,p)
   p,d
 end
 
-function refltype(W::PermRootGroup)::Vector{TypeIrred}
+function refltype(W::PermRootGroup)
   get!(W,:refltype)do
     map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;NC=true)
@@ -1016,7 +1016,7 @@ function refltype(W::PermRootGroup)::Vector{TypeIrred}
       d.indices=indices
       d
     end
-  end
+  end::Vector{TypeIrred}
 end
 
 """
@@ -1047,7 +1047,7 @@ julia> hyperplane_orbits(W)
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
 ```
 """
-function hyperplane_orbits(W::PermRootGroup)::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
+function hyperplane_orbits(W::PermRootGroup)
   get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
   rr=refls(W)
@@ -1067,6 +1067,9 @@ function hyperplane_orbits(W::PermRootGroup)::Vector{NamedTuple{(:s, :cl_s, :ord
   end
   chars=CharTable(W).irr
   pairs=zip(orb,class)
+  if isempty(pairs) 
+     return NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}[]
+  end
   map(pairs) do (s,c)
     ord=ordergens(W)[s]
     dets=map(1:ord-1) do j
@@ -1075,7 +1078,7 @@ function hyperplane_orbits(W::PermRootGroup)::Vector{NamedTuple{(:s, :cl_s, :ord
     end
     (s=s,cl_s=c,order=ord,N_s=classinfo(W)[:classes][c[1]],det_s=dets)
   end
-  end
+  end::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
 end
 
 """
@@ -1182,12 +1185,12 @@ function refleigen(W)
     else
       ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
-    central=W isa Spets ? torusfactors(W) :
-                          fill(E(1),rank(W)-semisimplerank(W))
+    central=(W isa Spets ? torusfactors(W) :
+                          fill(E(1),rank(W)-semisimplerank(W)))
     ll=map(x->vcat(x,central),ll)
     W.reflengths=map(x->count(!isone,x),ll)
     ll
-  end
+  end::Vector{Vector{Root1}}
 end
 
 function refleigen(t::TypeIrred)
@@ -1225,7 +1228,7 @@ julia> reflength(W,W(1,2,3,4))
 ```
 """
 function Perms.reflength(W::PermRootGroup,w::Perm)
-  getp(refleigen,W,:reflengths)[position_class(W,w)]
+  (getp(refleigen,W,:reflengths)::Vector{Int})[position_class(W,w)]
 end
 
 """
@@ -1240,7 +1243,7 @@ subgroup and a representative of the `i`-th conjugacy class.
 ```julia-repr
 julia> W=complex_reflection_group(4)
 
-julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),Pol(:q))
+julia> torus_order.(Ref(W),1:nconjugacy_classes(W),Pol(:q))
 7-element Vector{Pol{Cyc{Int64}}}:
  q²-2q+1
  q²+2q+1
@@ -1253,7 +1256,7 @@ julia> torus_order.(Ref(W),1:HasType.NrConjugacyClasses(W),Pol(:q))
 """
 torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
 
-function Groups.centre(W::PermRootGroup)
+function Groups.centre(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:centre)do
     ci=classinfo(W)
     ct=ci[:classtext]
@@ -1261,7 +1264,7 @@ function Groups.centre(W::PermRootGroup)
     if isempty(pos) return Group([one(W)]) end
     central=map(x->W(ct[x]...),pos)
     Group(abelian_gens(central))
-  end
+  end::PermGroup{T1}
 end
 
 function Groups.conjugacy_classes(G::PermRootGroup)
@@ -1317,12 +1320,12 @@ function Base.show(io::IO, W::PermRootGroup)
   showtorus(io,W)
 end
 
-function independent_roots(W::PermRootGroup)
+function independent_roots(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:indeproots) do
     if istorus(W) Int[]
-    else sort(echelon(toM(roots(W)))[2])::Vector{Int}
+    else sort(echelon(toM(roots(W)))[2])
     end
-  end
+   end::Vector{Int}
 end
 
 """
@@ -1348,10 +1351,10 @@ julia> rank(W)
 function semisimplerank(W::PermRootGroup)
   get!(W,:semisimplerank)do
     length(independent_roots(W))
-  end
+  end::Int
 end
 
-function baseX(W::PermRootGroup{T})where T
+function baseX(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:baseX) do
     if istorus(W) return one(zeros(T,rank(W),rank(W))) end
     ir=independent_roots(W)
@@ -1447,10 +1450,10 @@ function PermGroups.reduced(W::PermRootGroup,F)
   return nothing
 end
 
-function Groups.classreps(W::PermRootGroup)
+function Groups.classreps(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:classreps)do
     map(x->W(x...),classinfo(W)[:classtext])
-  end
+  end::Vector{Perm{T1}}
 end
 
 function Groups.nconjugacy_classes(W::PermRootGroup)

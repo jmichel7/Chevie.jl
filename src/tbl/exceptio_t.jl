@@ -125,7 +125,7 @@ the  first entry, followed by the repetition factor 2 and an ordinal number
 of the Weyl group of type `Dₙ`.
 
 ```julia-repl
-julia> HasType.BDSymbols(2,1)
+julia> GAPENV.BDSymbols(2,1)
 5-element Vector{Vector{Vector{Int64}}}:
  [[1, 2], [0]]
  [[0, 2], [1]]
@@ -133,7 +133,7 @@ julia> HasType.BDSymbols(2,1)
  [[2], []]
  [[0, 1], [2]]
 
-julia> HasType.BDSymbols(4,0)
+julia> GAPENV.BDSymbols(4,0)
 13-element Vector{Vector{T} where T}:
  Any[[1, 2], 2, 0]
  Any[[1, 2], 2, 1]

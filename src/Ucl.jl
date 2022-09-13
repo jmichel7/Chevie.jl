@@ -423,10 +423,10 @@ function QuotientAu(Au,chars)
     fusion=map(c->position_class(q,h(c)),classreps(Au))
     ctu=CharTable(Au).irr
     cth=CharTable(q).irr
-    ch(c)=map(j->ctu[c,findfirst(==(j),fusion)],1:HasType.NrConjugacyClasses(q))
+    ch(c)=map(j->ctu[c,findfirst(==(j),fusion)],1:nconjugacy_classes(q))
     return Dict(:Au=>q,
       :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
-      :gens=>map(x->word(Au,HasType.First(elements(Au),y->h(y)==x)),gens(q)))
+      :gens=>map(x->word(Au,elements(Au)[findfirst(y->h(y)==x,elements(Au))]),gens(q)))
   end
   Z=n->crg(n,1,1)
 # println("Au=$Au chars=$chars")
@@ -572,7 +572,7 @@ series is induced.
 `relgroup`: The relative Weyl group ``N_𝐆(𝐋,ι)/𝐋``. The first series is the
 principal series for which `.levi=[]` and `.relgroup=W`.
 
-`locsys`:  a  list  of  length  `NrConjugacyClasses(.relgroup)`, holding in
+`locsys`:  a  list  of  length  `nconjugacy_classes(.relgroup)`, holding in
 `i`-th  position a  pair describing  which local  system corresponds to the
 `i`-th  character of  ``N_𝐆(𝐋,ι)``. The  first element  of the  pair is the
 index  of the concerned unipotent class `u`, and the second is the index of
@@ -777,7 +777,7 @@ function UnipotentClasses(W,p=0)
     s[:Z]=reduce(vcat,getindex.(v,:Z))
     s[:locsys]=map(cartesian(getindex.(v,:locsys)...)) do v
       v=collect.(zip(v...))
-      u=map(i->HasType.NrConjugacyClasses(uc[i].classes[v[1][i]].Au),
+      u=map(i->nconjugacy_classes(uc[i].classes[v[1][i]].Au),
               eachindex(v[1]))
       [cart2lin(ll,v[1]),cart2lin(u,v[2])]
     end
@@ -847,7 +847,7 @@ function showcentralizer(io::IO,u)
         res*=reflection_name(IOContext(io,:Au=>true),u.Au)
   end
   if haskey(u,:dimunip)
-    if u.dimunip>0 c*=HasType.Format(Mvp(:q)^u.dimunip,io.dict) end
+    if u.dimunip>0 c*=GAPENV.Format(Mvp(:q)^u.dimunip,io.dict) end
   else c*="q^?" end
   if haskey(u,:AuAction)
     if rank(u.red)>0
@@ -1087,7 +1087,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   k=charinfo(R).positionDet
 # Partition on characters of ss.relgroup induced by poset of unipotent classes
   res.dimBu=map(x->uc.classes[x[1]].dimBu,ss[:locsys])
-  res.blocks=HasType.CollectBy(eachindex(ss[:locsys]),-res.dimBu)
+  res.blocks=collectby(-res.dimBu,eachindex(ss[:locsys]))
   subst=!(q isa Pol)
   if subst var=q; q=Pol() end
   f=fakedegrees(R,q)
@@ -1229,7 +1229,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   pieces=map(i->ICCTable(uc,i),eachindex(uc.springerseries))
 # Note that c_ι=βᵤ+(rkss L_\CI)/2
   greenpieces=map((x,y)->map(x->x(q),x.scalar)*
-                  toM(HasType.DiagonalMat(q.^x.dimBu...))*
+                  toM(GAPENV.DiagonalMat(q.^x.dimBu...))*
                   q^(length(y[:levi])//2),pieces,uc.springerseries)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
@@ -1522,7 +1522,7 @@ function TwoVarGreen(W,L)
       prod(x->q-x,r)/length(centralizer(RL,w))
     end
     transpose(tL.scalar[tL.indices[i],:])*
-    toM(HasType.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
+    toM(GAPENV.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
   end
   oL=generic_order(L,q)
   mm=improve_type(mm)

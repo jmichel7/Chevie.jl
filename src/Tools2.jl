@@ -1,8 +1,9 @@
 module Tools2
-export eigmat
+export eigmat, traces_words_mats, Unknown
 
 using PuiseuxPolynomials
 using LaurentPolynomials
+using CyclotomicNumbers
 using Primes: Primes
 using PermGroups: Group
 using ..Util: bracket_if_needed, format_coefficient
@@ -14,6 +15,7 @@ using ..FFields: FFE
 using ..CycPols: CycPol
 using ..Gapjm: Gapjm, root, gap, Cyc, conductor
 
+#----------------------------------------------------------------------
 """
 `blocks(G::Group,p::Integer)`
 
@@ -115,7 +117,10 @@ function Primes.factor(p::Mvp{T,N})where {T,N}
 end
 
 " eigenvalues as Cycs of a matrix of finite order"
-eigmat(m)=vcat([fill(e,m) for (e,m) in CycPol(Pol(charpoly(m))).v]...)
+function eigmat(m)
+  l=[fill(e,m) for (e,m) in CycPol(Pol(charpoly(m))).v]
+  if isempty(l) Root1[] else vcat(l...) end
+end
 
 "`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"
 function CycPol(x::Mvp)
@@ -124,6 +129,76 @@ function CycPol(x::Mvp)
   end
 end
 
+
+"""
+`traces_words_mats(mats,words)`
+
+given  a list `mats`  of matrices and  a list `words`  of words returns the
+list of traces of the corresponding products of the matrices
+
+```julia-repl
+julia> W=coxgroup(:F,4)
+F₄
+
+julia> r=classinfo(W)[:classtext];
+
+julia> R=representation(W,17)
+4-element Vector{Matrix{Int64}}:
+ [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
+ [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]
+ [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]
+ [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]
+
+julia> traces_words_mats(R,r)==CharTable(W).irr[17,:]
+true
+```
+"""
+function traces_words_mats(mats,words)
+  mats=improve_type(mats)
+  dens=map(x->1,mats)
+  if all(m->all(x->x isa Rational,m),mats)
+    dens=map(m->lcm(denominator.(m)),mats)
+    mats=map((m,d)->Int.(m.*d),mats,dens)
+  end
+  words=convert.(Vector{Int},words)
+  tr(m)=sum(i->m[i,i],axes(m,1))
+  trace(w)=tr(prods[w])//prod(dens[w])
+  prods=Dict{Vector{Int},eltype(mats)}(Int[]=>mats[1]^0)
+  for i in eachindex(mats) prods[[i]]=mats[i] end
+  res=map(words)do w
+    i=0
+    while haskey(prods,w[1:i])
+      if i==length(w) return trace(w) end
+      i+=1
+    end
+    while i<=length(w)
+      prods[w[1:i]]=prods[w[1:i-1]]*mats[w[i]]
+      i+=1
+    end
+#   println(prod(dens[w])
+    trace(w)
+  end
+end
+#-----------------------------------------------------------------------
+struct Unknown end
+
+Base.:+(a,b::Unknown)=b
+Base.:+(b::Unknown,a)=b
+Base.:+(b::Unknown,a::Unknown)=b
+Base.:*(a,b::Unknown)=iszero(a) ? a : b
+Base.:*(b::Unknown,a)=iszero(a) ? a : b
+Base.:*(b::Unknown,a::Unknown)=b
+Base.zero(a::Unknown)=0
+Base.show(io::IO,a::Unknown)=print(io,get(io,:limit,false) ? "?" : "Unknown()")
+Base.isless(a::Unknown,b::Number)=false
+Base.isless(b::Number,a::Unknown)=true
+Base.isless(b::Unknown,a::Unknown)=false
+Base.:(//)(a::Unknown,b)=a
+Base.isreal(a::Unknown)=false
+Base.isinteger(a::Unknown)=false
+Base.conj(a::Unknown)=a
+Base.broadcastable(a::Unknown)=Ref(a)
+CyclotomicNumbers.galois(a::Unknown,i)=a
 #-------------------- define function to backport to gap3 some values
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
