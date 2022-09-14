@@ -490,8 +490,10 @@ function charinfo(t::TypeIrred)
       if !isnothing(para)
         para=map(x->vcat([Mvp(:x)],map(j->E(x,j),1:x-1)),para)
         s=map(p->getchev(t,:SchurElement,p,para,Any[]),c.charparams)
-        c.a=valuation(s[c.positionId]).-valuation.(s)
-        c.A=degree(s[c.positionId]).-degree.(s)
+        c.a=-valuation.(s)
+        c.a.+=valuation(s[c.positionId])
+        c.A=-degree.(s)
+        c.A.+=degree(s[c.positionId])
       end
     end
   end

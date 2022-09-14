@@ -342,7 +342,7 @@ function UnipotentCharacters(t::TypeIrred)
       res[:relativeType]=TypeIrred(Dict(:orbit=>
       map(eachindex(t.orbit))do i
           r=copy(s[:relativeType])
-          r.indices=r.indices+(i-1)*rank(t.orbit[1])
+          r.indices=r.indices.+(i-1)*rank(t.orbit[1])
           r
         end, :twist=>Perm()))
       if haskey(s[:relativeType],:twist) && s[:relativeType][:twist]!=Perm() 
@@ -353,7 +353,7 @@ function UnipotentCharacters(t::TypeIrred)
         res[:relativeType][:twist]=prod(Perm.(a,a.^t.twist))
       end
       res[:levi]=vcat(map(eachindex(t.orbit))do i
-       res[:levi]+(i-1)*rank(t.orbit[1])
+       res[:levi].+(i-1)*rank(t.orbit[1])
       end...)
       res
     end
@@ -443,10 +443,10 @@ julia> uc.families
 3-element Vector{Family}:
  Family(C₁,[1]) 
  Family(C₁,[2]) 
- Family(?4,3:4)
+ Family(?4,[3, 4])
 
 julia> uc.families[3]
-Family(?4,3:4)
+Family(?4,[3, 4])
 label│eigen    1     2
 ─────┼─────────────────
 1    │  ζ₈³ √2/2 -√2/2

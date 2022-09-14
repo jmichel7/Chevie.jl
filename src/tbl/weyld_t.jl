@@ -262,8 +262,8 @@ chevieset(:D,:UnipotentClasses,function(n,char)
         j=i
         while i<=length(p) && p[i]==l i+=1 end
         j=fill(0, max(0,div(i-j,2)))
-        append!(a,j+div(l+mod(l,4),4)-t)
-        append!(b,j+div(l-mod(l,4),4)+t)
+        append!(a,j.+div(l+mod(l,4),4).-t)
+        append!(b,j.+div(l-mod(l,4),4).+t)
       end
     end
     a=reverse(filter(!iszero,a))

@@ -345,7 +345,7 @@ function induced_linear_form(W,K,h)
   r=parent(W).G.roots[inclusion(W)]
   v=toM(r[1:W.N])*h
   w=with_inversions(W,filter(i->v[i]<0,1:W.N))
-  map(i->r[i]*h,restriction.(Ref(W),
+  map(i->sum(r[i].*h),restriction.(Ref(W),
         inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
 end
 
@@ -1359,7 +1359,7 @@ function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   i=0
   for g in t.relgroups
     n=nconjugacy_classes(g)
-    push!(t.indices,(1:n)+i)
+    push!(t.indices,(1:n).+i)
     i+=n
   end
   t

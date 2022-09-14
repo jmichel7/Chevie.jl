@@ -868,7 +868,7 @@ function FamiliesClassical(sym)
         if D%2==1 push!(v1,0) end
         v1=map(i->(v1[i]+v1[i+1])%2, 1:length(v2))
         s="+-"
-        s[v2+1]*","*s[v1+1]
+        s[v2.+1]*","*s[v1.+1]
       end
       f.special=findfirst(x->all(y->y in "+,",x),f.charLabels)
     end

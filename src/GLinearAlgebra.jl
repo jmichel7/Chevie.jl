@@ -130,7 +130,7 @@ sum_rowspace(m::AbstractMatrix,n::AbstractMatrix)=echelon(vcat(m,n))[1]
 "`intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)` intersection of the rowspaces of m and n"
 function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
   mat=echelon([m m;n zero(n)])[1]
-  in=mat[:,size(m,2)+axes(m,2)]
+  in=mat[:,size(m,2).+axes(m,2)]
   in=in[count(!iszero,eachrow(mat[:,axes(m,2)]))+1:end,:]
   in[1:count(!iszero,eachrow(in)),:]
 end

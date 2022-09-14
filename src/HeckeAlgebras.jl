@@ -955,7 +955,7 @@ function simplify(res::FactSchur)
       P=prod(x->subs(x.pol,Pol()^(D*x.power)),fil)
       p=P(Pol())
       p=improve_type(p)
-      f=filter(i->p.c[i]!=0,eachindex(p.c))-1
+      f=filter(i->p.c[i]!=0,eachindex(p.c)).-1
       f=gcd(gcd(f),D)
       if f>1
         p=Pol(p.c[1:f:length(p.c)],0)

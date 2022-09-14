@@ -330,7 +330,7 @@ function degree_fegsymbol(s)
   end
   res+=e*sum(S->transpose(S)*(0:length(S)-1)-sum(l->div(l*(l+1),2),S),
                filter(!isempty,s))
-  gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
+  gamma=i->sum(mod.(i.+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
   else res+=maximum(gamma.(0:e-1))
   end
@@ -354,7 +354,7 @@ function valuation_fegsymbol(s)
   if !(d in [0,1]) return -1 end
   e=length(s)
   res=e*sum(S->transpose(S)*(length(S)-1:-1:0),filter(!isempty,s))
-  gamma=i->sum(mod.(i+(0:e-1),e).*map(sum,s))
+  gamma=i->sum(mod.(i.+(0:e-1),e).*map(sum,s))
   if d==1 res+=gamma(0)
   else res+=minimum(gamma.(0:e-1))
   end
@@ -536,7 +536,7 @@ function fegsymbol(s,p=0)
   else return zero(CycPol)
   end
   res*=prod(S->delta(S)//theta(S),s)
-  res//=CycPol(1,sum([div(x*(x-1),2) for x in e*(1:div(sum(length,s),e)-1)+d%2]))
+  res//=CycPol(1,sum([div(x*(x-1),2) for x in e.*(1:div(sum(length,s),e)-1).+d%2]))
   if d==1 res*=CycPol(1,sum((0:e-1).*map(sum,s)))
   else
     rot=circshift.(Ref(s),e:-1:1)
@@ -660,7 +660,7 @@ function xsp(rho,s,n,d)
   return map(partition_tuples(n-nrsd,2)) do S
     S = symbol_partition_tuple(S, d)
     S = map(x->isempty(x) ? x : x+(0:length(x)-1)*(rho-1),S)
-    [S[1],S[2]+s]
+    [S[1],S[2].+s]
   end
 end
 
@@ -734,10 +734,10 @@ function XSP(rho,s,n,even=false)
     d=defectsymbol(dist)
     m=div(n,2)
     i=sort(reduce(vcat,dist),rev=true)
-    n=i*(0:n-1)-div(rho*m*(m-1)*((4m-5)+6d),6)-s*m*(m+d-1)
+    n=sum(i.*(0:n-1))-div(rho*m*(m-1)*((4m-5)+6d),6)-s*m*(m+d-1)
     return map(f) do S
       function rr(x,s)
-        isempty(x) ? x : reverse(filter(!iszero,x-(0:length(x)-1)*rho-s))
+        isempty(x) ? x : reverse(filter(!iszero,x.-(0:length(x)-1).*rho.-s))
       end
       sp=[rr(S[1],0), rr(S[2],s)]
       if defectsymbol(S) == 0

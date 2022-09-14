@@ -349,7 +349,7 @@ julia> U.commutatorConstants
 ```
 """
 function UnipotentGroup(W::FiniteCoxeterGroup)
-  if roots(W,nref(W)+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
+  if roots(W,nref(W).+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
   no(r)=findfirst(==(r),roots(W))
   # compute special pairs. We take `1:nref(W)` as order on the roots.
   special=Tuple{Int,Int,Int}[]

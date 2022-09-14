@@ -37,22 +37,20 @@ function GAP.Obj(p::Perm{Int32}) # or UInt32
     return perm
 end
 
-# copy a GAP permutation into a Vector{UInt16} or Vector{UInt32};
-# the result is zero based, so the permutation (1,2,3)(4,5) is represented
-# by the vector [1,2,0,4,3]
+# convert a GAP permutation into a Perm{Perms.Idef}
 function Perms.Perm(perm::GapObj)
     if GAP.TNUM_OBJ(perm) == GAP.T_PERM2
         deg = ccall((:DEG_PERM2, GAP.libgap), Cuint, (Any,), perm)
         addr = ccall((:ADDR_PERM2, GAP.libgap), Ptr{UInt16}, (Any,), perm)
         vec = Vector{UInt16}(undef, deg)
         copyto!(vec, unsafe_wrap(Array, addr, deg))
-        Perm(vec.+1)
+        Perm(Perms.Idef.(vec.+1))
     elseif GAP.TNUM_OBJ(perm) == GAP.T_PERM4
         deg = ccall((:DEG_PERM4, GAP.libgap), Cuint, (Any,), perm)
         addr = ccall((:ADDR_PERM4, GAP.libgap), Ptr{UInt16}, (Any,), perm)
         vec = Vector{UInt32}(undef, deg)
         copyto!(vec, unsafe_wrap(Array, addr, deg))
-        Perm(vec.+1)
+        Perm(Perms.Idef.(vec.+1))
     else
         error("<perm> is not a GAP permutation")
     end

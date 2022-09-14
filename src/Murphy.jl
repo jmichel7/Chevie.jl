@@ -51,7 +51,7 @@ function firsttableau(mu) # smallest tableau of shape mu
   d=0
   tab=Vector{Int}[]
   for row  in mu
-    push!(tab,(1:row)+d)
+    push!(tab,(1:row).+d)
     d+=row
   end
   tab

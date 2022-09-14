@@ -60,7 +60,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
     char=2
   end
   ss=char==2 ? XSP(4,2,r) : ctype==1 ? XSP(2,1,r) : XSP(2,0,r)
-  l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss))
+  l=union(map(c->map(x->[defectsymbol(x.symbol), sum(sum,x.sp)], c), ss)...)
   sort!(l,by=x->[abs(x[1]),-sign(x[1])])
   uc=Dict{Symbol, Any}(:classes=>[])
   uc[:springerSeries]=map(l)do d
@@ -121,7 +121,7 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
       ctype = 1
       cc[:dimBu] = cl[1].dimBu
       cc[:name] = join(map(function(x)
-        res=joindigits(fill(0,max(0,x[2]))+x[1],"[]")
+        res=joindigits(fill(0,max(0,x[2])).+x[1],"[]")
         if x[1] in cc[:parameter][2] return string("(", res, ")") end
         res
       end, reverse(tally(cc[:parameter][1]))), "")
@@ -178,8 +178,8 @@ chevieset(:B,:UnipotentClasses,function(r,char,ctype)
           j=i
           while i<=length(p) && p[i]==l i+=1 end
           j=fill(0, max(0,div(i-j,2)))
-          append!(a,j+div(l+mod(l,4),4)-t)
-          append!(b,j+div(l-mod(l,4),4)+t)
+          append!(a,j.+div(l+mod(l,4),4).-t)
+          append!(b,j.+div(l-mod(l,4),4).+t)
         end
       end
       a=reverse(filter(!iszero,a))

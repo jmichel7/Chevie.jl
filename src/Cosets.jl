@@ -392,11 +392,12 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
                              action=(x,p)->sort(action.(Ref(W),x,p)))
   if isnothing(h)
     println( "\n# no subspets for ", J )
-    return Perm[]
+    return eltype(W)[]
   end
   W_L=centralizer(W,sort(collect(J)),action=(x,p)->sort(action.(Ref(W),x,p)))
   e=classreps(Group(vcat(gens(W_L),[WF.phi*h])))
-  return filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
+  res=filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
+  res
 end
 
 Groups.Group(WF::Spets)=WF.W
@@ -903,7 +904,7 @@ function spets(W::PermRootGroup,F::Matrix)
       (ind=l,scal=scals[l])
     end
     if length(unique(map(x->unique(sort(x.scal)),scal)))>1 error("theory") end
-    l=intersect(map(x->x.scal,scal))
+    l=intersect(map(x->x.scal,scal)...)
     if isempty(l) return false end
     l=Root1.(l)
     if nothing in l

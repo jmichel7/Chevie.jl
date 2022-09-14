@@ -636,7 +636,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     n=length(r[1])
 #   q=mappingPerm(eachindex(I),eachindex(I))
     q=SPerm()
-    p=SPerm(mappingPerm(1:n,(1:n)+length(I)).d)
+    p=SPerm(mappingPerm(1:n,(1:n).+length(I)).d)
     append!(I,r[1]);append!(J,r[2])
 #   Print("#I=",Length(I),"\c");
     if comm(r[3]^p,tr^q)!=SPerm() error("noncomm") end

@@ -609,7 +609,7 @@ julia> badprimes(W)
 """
 function badprimes(W::FiniteCoxeterGroup)
   if isempty(W.rootdec) return Int[] end
-  collect(setdiff(union(keys.(factor.(Set(vcat(W.rootdec...))))),[0,-1]))
+  collect(setdiff(vcat(collect.(keys.(factor.(Set(vcat(W.rootdec...)))))...),[0,-1]))
 end
 
 """

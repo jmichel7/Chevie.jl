@@ -1,19 +1,14 @@
 """
-The module GAPENV creates a GAP3-like environment by extending some base 
-functions like +,*,... and giving definitions of quite a few GAP functions,
-then loads the CHEVIE library in that environment.
+The  module GAPENV  creates a  GAP3-like environment  by extending the base
+functions  *, +,  -, ^,  isless, copy,  //, inv,  length, union  and giving
+definitions  of quite a few GAP functions, then loads the CHEVIE library in
+that environment.
+
+The  idea for restricting base function pirating  to a module was given by
+Max Horn.
 """
 module GAPENV
 using ..Gapjm
-function pad(s, i::Int)
-  if i>0 return lpad(string(s),i)
-  else return rpad(string(s),-i)
-  end
-end
-
-# correct translations of GAP3 functions
-pad(s::String)=s
-
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
@@ -24,7 +19,6 @@ const src=[
 "weyld", "weyld_t", "weyl2a", "weyl2d",
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4", "weyle6", "weyle7", "weyle8",
 "weylf4", "weylg2"]
-
 
 print("reading tbl/")
 for f in src

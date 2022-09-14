@@ -1,29 +1,55 @@
-# pirating extensions to get closer to GAP semantics
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=transpose(a)*b
-Base.:*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
-Base.:*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(transpose(a)*toM(b))[1]
-Base.:*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
-Base.:*(a::Tuple,b::AbstractVector)=toL(transpose(collect(a))*toM(b))[1]
-Base.:*(a::AbstractVector{<:AbstractVector{<:Number}},b::Number)=map(x->map(y->y*b,x),a)
-Base.:+(a::AbstractArray,b::Number)=a .+ b
-Base.:+(a::Integer,b::AbstractVector)=a .+ b
-Base.:-(a::AbstractVector,b::Number)=a .- b
-Base.:-(a::Integer,b::AbstractVector)=a .- b
-Base.:^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*1//1)*m*n
-Base.:^(m::AbstractVector{<:AbstractVector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
-Base.:^(m::AbstractVector{<:AbstractVector},n::Integer)=toL(toM(m)^n)
-Base.:^(m::AbstractVector,n::AbstractVector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
+# --------- pirating extensions to get closer to GAP semantics -------------
+*(a...)=Base.:*(a...)
+*(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=transpose(a)*b
+*(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
+*(a::AbstractVector{<:Number},b::AbstractVector{<:AbstractVector})=toL(transpose(a)*toM(b))[1]
+*(a::AbstractVector,b::AbstractVector)=sum(a.*b)
+*(a::Tuple,b::AbstractVector)=toL(transpose(collect(a))*toM(b))[1]
+*(a::AbstractVector{<:AbstractVector{<:Number}},b::Number)=map(x->map(y->y*b,x),a)
+
++(a...)=Base.:+(a...)
++(a::AbstractArray,b::Number)=a .+ b
++(a::Integer,b::AbstractVector)=a .+ b
++(a::Integer,b::Integer,c::AbstractVector)=(a+b).+c
+
+-(a...)=Base.:-(a...)
+-(a::AbstractVector,b::Number)=a .- b
+-(a::Integer,b::AbstractVector)=a .- b
+
+^(a...)=Base.:^(a...)
+^(m::AbstractMatrix,n::AbstractMatrix)=inv(n*1//1)*m*n
+^(m::AbstractVector{<:AbstractVector{<:Number}},n::Matrix{<:Number})=inv(n*1//1)*toM(m)*n
+^(m::AbstractVector{<:AbstractVector},n::Integer)=toL(toM(m)^n)
+^(m::AbstractVector,n::AbstractVector)=toL(inv(toM(n)*1//1)*toM(m)*toM(n))
+
+isless(a...)=Base.isless(a...)
+isless(a::Array,b::Number)=true # to sort [[1,2], 2, 0]
+isless(b::Number,a::Array)=false
+function isless(A::AbstractVector, B::AbstractVector)
+  for (a, b) in zip(A, B) if !isequal(a, b) return isless(a, b) end end
+  isless(length(A), length(B))
+end
+
+copy(a...)=Base.copy(a...)
+copy(x::Char)=x
+
+(//)(a...)=Base.:(//)(a...)
+(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
+
+inv(a...)=Base.inv(a...)
+inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
+
+length(a...)=Base.length(a...)
+length(a::Symbol)=length(string(a))
+
+union(a...)=Base.union(a...)
+union(v::Vector)=union(v...)
+
+# for some reason getindex is special
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
-Base.isless(a::Array,b::Number)=true # to sort [[1,2], 2, 0]
-Base.isless(b::Number,a::Array)=false
-Base.copy(x::Char)=x
-Base.:(//)(m::Vector,n::Vector)=toL(toM(m)*inv(toM(n)*E(1)))
-Base.inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
-Base.length(a::Symbol)=length(string(a))
-Base.union(v::Vector)=union(v...)
 
-# other extensions
+# ---------------- other extensions --------------------------------------
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::Pol,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Frac)=a .* b
@@ -38,13 +64,19 @@ Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.:+(a::AbstractArray,b::Mvp)=a .+ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
-CyclotomicNumbers.:^(a::Cyc,b::Rational)=a^Int(b)
+Base.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(f::Family,n::Int)=galois(f,n)
 Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
 PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 
+Product(a::AbstractVector{<:AbstractVector{<:AbstractVector}})=
+toL(prod(toM.(a)))
 # translations of GAP3 functions for the Chevie library
-ApplyWord(w,gens)=isempty(w) ? one(gens[1]) : prod(i->i>0 ? gens[i] : inv(gens[-i]),w)
+function ApplyWord(w,gens)
+   if isempty(w) return one(gens[1]) end
+   l=map(i->i>0 ? toM(gens[i]) : toM(inv(gens[-i])),w)
+   toL(prod(l))
+end
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W).charparams
 CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
@@ -94,6 +126,13 @@ NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=(a.^b)^b
 import Primes
 phi=Primes.totient
+function PermListList(l1,l2)
+  l1=improve_type(l1)
+  l2=improve_type(l2)
+  p1=sortperm(l1;lt=isless)
+  p2=sortperm(l2;lt=isless)
+  if view(l1,p1)==view(l2,p2) Perm(p2)\Perm(p1) end
+end
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 function RootInt(n,k=2)
   res=floor(Int,n^(1/k))
@@ -143,6 +182,14 @@ function Replace(s,p...)
 # println("=>",s)
   s
 end
+
+function pad(s, i::Int)
+  if i>0 return lpad(string(s),i)
+  else return rpad(string(s),-i)
+  end
+end
+
+pad(s::String)=s
 
 ChevieIndeterminate(a::Vector{<:Number})=one(Pol)
 ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)

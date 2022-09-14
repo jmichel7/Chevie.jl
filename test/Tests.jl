@@ -593,7 +593,7 @@ function Tcharparams(W)
   # lexicographically minimum tensor of (d,b)-distinguishable chars
   # in which char no. i occurs
   function mintensor(W,i)local bydb,b,a,ch,gb,m
-    bydb=1+findall(i->!('\'' in i),nm[2:end])
+    bydb=1 .+findall(i->!('\'' in i),nm[2:end])
     sort!(bydb,by=i->[ct[i,1],charinfo(W)[:b][i]])
     for a in bydb
       ch=conj(ct[a,:]).*ct[i,:]
@@ -1003,7 +1003,7 @@ function Tdegrees(W)
   cmpvec(d,d1;na="degrees",nb="reflectiondegrees")
   if isweylgroup(W) && length(refltype(W))==1 && rank(W)==semisimplerank(W)
     d1=last.(tally(sum.(W.rootdec[1:nref(W)])))
-    d1=sort(1+conjugate_partition(d1))
+    d1=sort(conjugate_partition(d1).+1)
     cmpvec(d,d1;na="degrees",nb="dual partition of root heights")
   end
 end
@@ -1225,7 +1225,7 @@ function Tfamilies(W,i;hard=false)
     for i in inds
       if length(S)>10 || hard print(".") end
       for j in inds
-        v=map(k->S[i,k]*S[i,k],inds)*s
+        v=permutedims(map(k->S[i,k]*S[i,k],inds))*toM(s)
         _max=max(_max,count(!=(0),v))
      #  Print("e[",i,"]*e[",j,"]=",v,"\n");
         if !all(isinteger,v)
@@ -1285,7 +1285,7 @@ function Tcurtisduality(W)
   ud=UnipotentCharacters(W)
   ud=degrees(ud,q)[ud.harishChandra[1][:charNumbers]]
   p=detPerm(W)
-  N=sum(degrees(W)-1)
+  N=sum(degrees(W).-1)
   cmpvec(ud^p,map(x->q^N*x(q^-1),ud);
          na="ud sign permuted",nb="computed Curtis dual ud")
 end
@@ -1663,7 +1663,7 @@ function coxeter_number(W,i)
   cl=classinfo(W)[:classes]
   if cl==[1] return 0 end
   ct=CharTable(W).irr
-  Int(sum(degrees(W)-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),
+  Int(sum(degrees(W).-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),
                                    h.cl_s),hyperplane_orbits(W)))
 end
 

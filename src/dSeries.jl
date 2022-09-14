@@ -402,7 +402,11 @@ function FitParameter(sch, m::AbstractVector{<:Rational{<:Integer}})
   pp=poss.(1:e)
   p=findfirst(i->last.(a)==length.(pp[i]),1:e)
   if isnothing(p) error("no solution\n") end
-  v=map(i->map(x->sort(unique(mod.(x,e))),i+pp[p]),0:e-1)
+# v=map(i->map(x->sort(unique(mod.(x,e))),i.+pp[p]),0:e-1)
+  v=map(0:e-1)do i
+    u=map(j->j.+i,pp[p])
+    map(x->sort(unique(mod.(x,e))),u)
+  end
   v=map(k->filter(i->all(j->issubset(v[i][j],pp[k][j]),1:length(a)),1:e),1:e)
   G=map(x->findfirst(==(x),sch), sch)
   v=map(x->v[x], sort(unique(G)))
@@ -822,7 +826,7 @@ function mC(s::Series)
       ChevieErr("fixing dimension of variety to be divisible by e==", e, "\n")
       D0-=mod(D0, e)
     end
-    (D0-aA)//e
+    (D0.-aA)//e
   else
     # (JM+Gunter 18-3-2004) in any case we normalize so that
     # the smallest mC is 0 since the above choice gives unpleasant
@@ -913,7 +917,7 @@ function char_numbers(s::Series)
     charNumbers=findall(!iszero,rlg.v)
     s.eps=map(sign,rlg.v[charNumbers])
     s.dims=map(abs,rlg.v[charNumbers])
-    s.span=degree(degree(s))-valuation(degree(s))+uc.a-uc.A
+    s.span=degree(degree(s))-valuation(degree(s)).+uc.a.-uc.A
     return charNumbers
   end
   cand=canfromdeg(s)
@@ -1045,7 +1049,7 @@ function paramcyclic(s::Series)
   else r=s.d^s.delta
    r=mod(ratio*invmod(exponent(r),order(r)),order(r))
   end
-  mmp=map(x->(x[1],map(y->mod(y,e(s))+1,x[2]+r-1)), mmp)
+  mmp=map(x->(x[1],map(y->mod(y,e(s))+1,map(j->j.+(r-1),x[2]))), mmp)
   r=fill(0,e(s))
   s.permutable=map(x->0,char_numbers(s))
   j=1
@@ -1081,7 +1085,7 @@ function paramcyclic(s::Series)
     end
     quality=map(t->map(i->param(mod(t+i-1,e(s))+1,i),1:e(s)), s.translation)
     quality=map(x->conductor(collect(values(prod(y->Mvp(:x)-y,x).d))),quality)
-    quality=1+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
+    quality=1 .+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
     if isempty(quality) quality=[1] end
     m=GAPENV.Rotations(mC(s))
     m=findfirst(==(maximum(m[quality])),m)

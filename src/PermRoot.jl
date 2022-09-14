@@ -1522,7 +1522,7 @@ function recompute_parabolic_reps(W) # W irreducible
       InfoChevie("# Extending ",v)
       S=normalizer(W,v)
       if ngens(v)==i-1
-        c=union(map(i->combinations(unique_refls(W),i),1:by))
+        c=union(map(i->combinations(unique_refls(W),i),1:by)...)
       else c=combinations(unique_refls(W),1)
       end
       c=map(x->union(x,restriction(W,inclusiongens(v))),c)

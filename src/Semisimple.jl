@@ -997,7 +997,7 @@ function SScentralizer_reps(W,p=0)
       u=findall(G->isomorphism_type(R)==isomorphism_type(G),cent[npara+1:end])
       if length(u)>0 println(u,R) end
       if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
-             sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara+u])
+             sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara.+u])
         push!(cent,R)
       end
     end
