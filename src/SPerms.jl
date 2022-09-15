@@ -293,7 +293,7 @@ Base.:^(a::SPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                      Base.power_by_squaring(inv(a),-n)
 
 """
-`Base.:^(l::AbstractVector,p::SPerm)`
+`permute(l::AbstractVector,p::SPerm)`
 
 returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`.
 
@@ -302,14 +302,14 @@ returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`
 julia> p=SPerm([-2,-1,-3])
 SPerm{Int64}: (1,-2)(3,-3)
 
-julia> [20,30,40]^p
+julia> permute([20,30,40],p)
 3-element Vector{Int64}:
  -30
  -20
  -40
 ```
 """
-function Base.:^(l::AbstractVector,a::SPerm)
+function Perms.permute(l::AbstractVector,a::SPerm)
   res=copy(l)
   for i in eachindex(l)
     v=i^a
@@ -318,10 +318,10 @@ function Base.:^(l::AbstractVector,a::SPerm)
   res
 end
 
-function Base.:^(m::AbstractMatrix,a::SPerm;dims=1)
-  if dims==1 hcat(map(c->c^a,eachcol(m))...)
-  elseif dims==2 transpose(hcat(map(c->c^a,eachrow(m))...))
-  elseif dims==(1,2) hcat(map(c->c^a,eachcol(m))^a...)
+function permute(m::AbstractMatrix,a::SPerm;dims=1)
+  if dims==1 hcat(map(c->permute(c,a),eachcol(m))...)
+  elseif dims==2 transpose(hcat(map(c->permute(c,a),eachrow(m))...))
+  elseif dims==(1,2) hcat(permute(map(c->permute(c,a),eachcol(m)),a)...)
   end
 end
 
@@ -347,7 +347,7 @@ function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
   pair(x)=x<-x ? (x,-x) : (-x,x)
   p=Perm(pair.(a),pair.(b))
   if isnothing(p) return p end
-  res=eachindex(a)^p
+  res=permute(eachindex(a),p)
   for i in eachindex(a)
     if b[i^(p^-1)]!=a[i] res[i]=-res[i] end
   end
@@ -531,7 +531,7 @@ end
 If `onmats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
 and  columns, or conjugating by the  matrix of the signed permutation `p`),
 and  the argument `G`  is given (which  should be an  `SPermGroup`) this is
-just  a fast implementation of  `centralizer(G,M;action=onmats)`. If `G` is
+just  a fast implementation of  `centralizer(G,M,onmats)`. If `G` is
 omitted  it is taken to be `CoxHyperoctaedral(size(M,1))`. The program uses
 sophisticated  algorithms, and can  handle matrices up  to 80×80. If `l` is
 given the return group should also centralize `l` (for the action ^)
@@ -581,7 +581,7 @@ uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
 80×80.
 
 Efficient version of
-`transporting_elt(CoxHyperoctaedral(size(M,1)),M,N;action=onmats)`
+`transporting_elt(CoxHyperoctaedral(size(M,1)),M,N,onmats)`
 
 ```julia-repl
 julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);
@@ -617,10 +617,10 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     if length(iM)==1
       if length(I)>6 InfoChevie("large block:",length(I),"\n")
         p=transporting_elt(Group(refls(CoxHyperoctaedral(length(I)))), 
-                           M[I,I],N[J,J];action=onmats,
+                           M[I,I],N[J,J],onmats,
                     dist=(M,N)->count(i->M[i]!=N[i],eachindex(M)))
       else p=transporting_elt(CoxHyperoctaedral(length(I)),
-         M[I,I],N[J,J],action=onmats)
+         M[I,I],N[J,J],onmats)
       end
       if isnothing(p) InfoChevie("could not match block");return nothing end
       return [[I,J,p]]
@@ -644,7 +644,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
     h=gens(sstab_onmats(M[r[1],r[1]])).^p
     g=Group(vcat(gens(g).^q,h))
 #   Print(" #g=",Size(g),"\c");
-    e=transporting_elt(g,M[I,I],onmats(N[J,J],tr^-1),action=onmats)
+    e=transporting_elt(g,M[I,I],onmats(N[J,J],tr^-1),onmats)
     if e==false return false
     elseif e^-1*e^tr!=SPerm() print("*** tr does not commute to e\n")
          tr=e*tr

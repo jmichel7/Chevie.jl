@@ -338,7 +338,7 @@ intermediate_group
 quasi_isolated_reps(::FiniteCoxeterGroup)
 isisolated
 torsion_subgroup
-algebraic_centre
+algebraic_center
 weightinfo
 weights
 coweights
@@ -471,7 +471,7 @@ The dictionary from GAP3/Chevie is as follows:
 ```
 AbelianGenerators                           abelian_gens
 AbelianInvariants                           abelian_invariants
-AlgebraicCentre                             algebraic_centre
+AlgebraicCentre                             algebraic_center
 AlmostCharacter                             AlmostChar
 Arrangements                                arrangements
 AsFraction                                  fraction
@@ -499,6 +499,7 @@ CartanMatFromCoxeterMatrix                  cartan
 Cartesian                                   cartesian
 CartesianAt                                 lin2cart
 Catalan                                     catalan
+Centralizer                                 centralizer
 CentralizerGenerators                       centralizer_gens
 CharFFE(x)                                  field(x).p
 CharNames                                   charnames
@@ -713,8 +714,8 @@ PermutationMat(p,dim)                       Matrix(p,dim)
 PermutationOnCharacters                     on_chars
 PermutationOnClasses                        on_classes
 PermutationOnUnipotents                     on_unipotents
-Permuted(v,p)                               v^p
-PermutedByCols(m,p)                         ^(m,p;dims=2)
+Permuted(v,p)                               permute(v,p)
+PermutedByCols(m,p)                         permute(m,p;dims=2)
 Poset                                       Poset
 Position(l,x)                               findfirst(==(x),l)
 PositionCartesian                           cart2lin
@@ -793,6 +794,7 @@ SolutionMat                                 solutionmat
 SpecialPieces                               special_pieces
 Spets                                       spets
 SplitLevis                                  split_levis
+Stabilizer                                  stabilizer
 StandardParabolic                           standard_parabolic
 StandardParabolicClass                      standard_parabolic_class
 StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
@@ -824,6 +826,7 @@ UnipotentGroup                              UnipotentGroup
 UnorderedTuples                             multisets
 Valuation(p)                                valuation(p)
 Value(p,x)                                  p(x)
+W.generators                                gens(W)
 W.matgens                                   reflrep(W)
 W.matgens[i]                                reflrep(W,i)
 W.N                                         nref(W)

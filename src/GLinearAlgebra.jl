@@ -12,6 +12,7 @@ using LaurentPolynomials: exactdiv
 using ..CyclotomicNumbers: Cyc # case in echelon
 using ..Combinat: combinations, multisets, tally, collectby, partitions
 using ..PermGroups: symmetric_group
+using ..Perms: permute
 using ..Groups: elements, word
 using ..CoxGroups: CoxSym
 using ..Chars: representation
@@ -418,7 +419,7 @@ function schur_functor(A,la)
     isempty(x) ? r[1]^0 : prod(r[x]) end
   f=j->prod(factorial,last.(tally(j)))
   basis=multisets(axes(A,1),n) 
-  M=sum(x->kron(rep(x),toM(map(function(i)i^=x
+  M=sum(x->kron(rep(x),toM(map(function(i)i=permute(i,x)
   return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
 # Print(Length(M),"=>");
   M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]

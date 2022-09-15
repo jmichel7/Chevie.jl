@@ -1176,7 +1176,7 @@ function Tfamilies(W,i;hard=false)
     end
     check(conj(ud)==ud^ps,"ud*=ud^p")
     if real!==nothing && real!=false
-      check(f.eigenvalues^(real/f.perm)==f.eigenvalues,"eig*=eig^perm")
+      check(permute(f.eigenvalues,real/f.perm)==f.eigenvalues,"eig*=eig^perm")
     end
     if hard
       if S==Sbar print("\n|  S real")
@@ -1199,7 +1199,7 @@ function Tfamilies(W,i;hard=false)
   end
   check(!(0 in S[special]),"not 0 in S[special]")
   check(S*permutedims(Sbar)==Id,"S unitary")
-  if wreal P=Id^f.perm;check(S*P==P*S,"[S,P]=1") end
+  if wreal P=permute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
   if haskey(f,:sh)
     check((O*tS*Sh^-1*S)^2==Id,"(O*tS*Sh-1*S)^2=1")
   else 
@@ -1286,7 +1286,7 @@ function Tcurtisduality(W)
   ud=degrees(ud,q)[ud.harishChandra[1][:charNumbers]]
   p=detPerm(W)
   N=sum(degrees(W).-1)
-  cmpvec(ud^p,map(x->q^N*x(q^-1),ud);
+  cmpvec(permute(ud,p),map(x->q^N*x(q^-1),ud);
          na="ud sign permuted",nb="computed Curtis dual ud")
 end
 

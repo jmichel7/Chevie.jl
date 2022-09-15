@@ -579,7 +579,7 @@ index  of the concerned unipotent class `u`, and the second is the index of
 the corresponding character of `A(u)`.
 
 `Z`:  the central character associated  to the Springer series, specified
-by its value on the generators of the centre.
+by its value on the generators of the center.
 
 ```julia-repl
 julia> W=rootdatum(:sl,4)
@@ -799,12 +799,12 @@ function UnipotentClasses(W,p=0)
 # To deal with a general group intermediate between Gad and Gsc, we discard
 # the  Springer series  corresponding to  a central  character which is not
 # trivial on the fundamental group (seen as a subgroup of ZGsc)
-# algebraic_centre(W).descAZ returns the generators of the fundamental group
+# algebraic_center(W).descAZ returns the generators of the fundamental group
 # of  the  algebraic  group  W  as  words  in  generators  of  the absolute
 # fundamental group.
   if !all(x->Set(x[:Z])==Set([1]),springerseries)
     springerseries=filter(s->all(y->prod(s[:Z][y])==1,
-             algebraic_centre(W).descAZ),springerseries)
+             algebraic_center(W).descAZ),springerseries)
     AdjustAu!(classes,springerseries)
   end
   if spetscase
@@ -1234,9 +1234,9 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=XTable(Dict(
-    :scalar=>transpose(cat(greenpieces...,dims=(1,2))^p),
+    :scalar=>transpose(permute(cat(greenpieces...,dims=(1,2)),p)),
     :uc=>uc,
-    :Y=>^(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
+    :Y=>permute(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
     :relgroups=>getindex.(uc.springerseries,:relgroup),
     :q=>q,
     :class=>classes))
@@ -1244,7 +1244,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
-    res.classes=l^p
+    res.classes=permute(l,p)
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au
       b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
@@ -1256,7 +1256,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
     end
     res.scalar=improve_type(res.scalar)
   else
-    res.locsys=l^p
+    res.locsys=permute(l,p)
   end
   res
 end

@@ -609,9 +609,9 @@ leftstars(W)=map(st->(w->leftstar(W,st,w)),
 
 function Groups.elements(c::LeftCell)
   get!(c,:elements)do
-    elements=orbit(leftstars(c.group),duflo(c);action=(x,f)->f(x))
+    elements=orbit(leftstars(c.group),duflo(c),(x,f)->f(x))
     for w in c.reps
-      append!(elements,orbit(leftstars(c.group),w;action=(x,f)->f(x)))
+      append!(elements,orbit(leftstars(c.group),w,(x,f)->f(x)))
     end
     sort(collect(Set(elements)))
   end
@@ -757,11 +757,11 @@ function OldLeftCellRepresentatives(W)
         c.duflo=i[p] # Duflo involutions minimize Delta
       end
       i=filter(x->!(c.duflo in x),
-               orbits(leftstars(W),c.elements;action=(x,f)->f(x)))
+               orbits(leftstars(W),c.elements,(x,f)->f(x)))
       c.reps=first.(i)
       push!(cells0,c)
 #     xprintln("c=",c," length=",length(c))
-      n=orbit(st,c;action=(x,f)->f(x))
+      n=orbit(st,c,(x,f)->f(x))
 #     println(length(n),"x",length(n[1]))
       InfoChevie(", ",length(n)," new cell")
       if length(n)>1 InfoChevie("s") end
@@ -838,7 +838,7 @@ function LeftCells(W,i=0)
                                 in uc.families[i][:charNumbers],cc)
   end
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
-  d=map(c->orbit(st,c;action=(x,f)->f(x)),cc)
+  d=map(c->orbit(st,c,(x,f)->f(x)),cc)
   length(d)==1 ? d[1] : union(d...)
 end
 

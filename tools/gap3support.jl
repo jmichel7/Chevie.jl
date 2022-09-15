@@ -27,7 +27,6 @@ Minimum(v::AbstractVector)=minimum(v)
 Minimum(a::Number,x...)=min(a,x...)
 NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 OnTuples(a,b)=a.^b
-Permuted(x,p)=x^p
 function Position(a::String,b::String)
   x=findfirst(b,a)
   isnothing(x) ? false : x.start

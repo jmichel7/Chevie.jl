@@ -682,7 +682,7 @@ function Weyl.relative_group(s::Series)
     else #   N:=Stabilizer(N,s.levi); # is shorter but slower...
       NF=centralizer(N, s.levi.phi)
       if length(NF)==length(L)*prod(relative_degrees(s.spets, s.d)) N=NF
-      else N=centralizer(N,s.levi.phi;action=function(p,g)
+      else N=centralizer(N,s.levi.phi,function(p,g)
                   w=reduced(s.levi.W,p^g)
                   w isa Perm ? w : w.phi
                  end)
@@ -704,7 +704,7 @@ function Weyl.relative_group(s::Series)
     inds=filter(i->ud[i]==ud[s.cuspidal],inds)
     if length(inds)>1
       c=length(N)
-      N=centralizer(N,s.cuspidal;action=(c,g)->c^on_unipotents(s.levi, g))
+      N=centralizer(N,s.cuspidal,(c,g)->c^on_unipotents(s.levi, g))
       if c!=length(N)
         ChevieErr("# WGL:",length(N)//length(L),"/",c//length(L)," fix c\n")
       end
@@ -1073,7 +1073,7 @@ function paramcyclic(s::Series)
   end
   p=inv(Perm(sortperm(r)))
   for i in [:mC, :charNumbers, :eigen, :span, :eps, :dims, :permutable]
-    setproperty!(s,i,getproperty(s,i)^p)
+    setproperty!(s,i,permute(getproperty(s,i),p))
   end
   s.translation=filter(t->
        s.eigen==map(i->Cyc(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
@@ -1233,8 +1233,8 @@ function RelativeSeries(s)
     ChevieErr(s.Hecke, " wrong set of SchurElements")
     return res
   end
-  s.charNumbers^=p
-  if haskey(s,:span) s.span^=p end
+  s.charNumbers=permute(s.charNumbers,p)
+  if haskey(s,:span) s.span=permute(s.span,p) end
   aA=map(x->E(order(s.d)^2,valuation(x)+degree(x)),u1)
   p=position_regular_class(WGL,s.d)
   if p == false && length(WGL)==1 p=1 end

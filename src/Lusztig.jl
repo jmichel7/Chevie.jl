@@ -20,12 +20,12 @@ function FindSeriesInParent(h,HF,WF,ww)
      if p==n
        incHW=inclusion(HF,WF,h[:levi])
        p=transporting_elt(W,sort(incHW),sort(w[:levi]), 
-                          action=(s,g)->sort(action.(Ref(W),s,g)))
+                          (s,g)->sort(action.(Ref(W),s,g)))
        if !isnothing(p) return (ser=w, op=p) end
        p=transporting_elt(W, 
           sort(refls(reflection_subgroup(W,incHW))), 
           sort(refls(reflection_subgroup(W,w[:levi]))),
-                          action=(s,g)->sort(s.^g))
+                          (s,g)->sort(s.^g))
        if !isnothing(p) return (ser=w, op=p) end
       end
     end

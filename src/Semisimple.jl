@@ -88,7 +88,7 @@ sl₄
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
-julia> C=algebraic_centre(L)
+julia> C=algebraic_center(L)
 (Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
 
 julia> T=torsion_subgroup(C.Z0,3)
@@ -102,12 +102,12 @@ julia> e=sort(elements(T))
 ```
 First,  the  group  `𝐆  =SL₄`  is  constructed,  then the Levi subgroup `L`
 consisting   of  block-diagonal  matrices  of  shape  `2×2`.  The  function
-`algebraic_centre`  returns a named tuple with : the neutral component `Z⁰`
-of  the centre `Z` of `L`, represented  by a basis of `Y(Z⁰)`, a complement
+`algebraic_center`  returns a named tuple with : the neutral component `Z⁰`
+of  the center `Z` of `L`, represented  by a basis of `Y(Z⁰)`, a complement
 subtorus `S` of `𝐓` to `Z⁰` represented similarly by a basis of `Y(S)`, and
 semi-simple  elements representing the classes of  `Z` modulo `Z⁰` , chosen
 in `S`. The classes `Z/Z⁰` also biject to the fundamental group as given by
-the  field  `.descAZ`,  see  [`algebraic_centre`](@ref) for an explanation.
+the  field  `.descAZ`,  see  [`algebraic_center`](@ref) for an explanation.
 Finally the semi-simple elements of order 3 in `Z⁰` are computed.
 
 ```julia-repl
@@ -169,7 +169,7 @@ generates ``C_𝐆 (s)``.
 """
 module Semisimple
 using ..Gapjm
-export algebraic_centre, SubTorus, weightinfo, fundamental_group, isisolated,
+export algebraic_center, SubTorus, weightinfo, fundamental_group, isisolated,
 SemisimpleElement, SS, torsion_subgroup, quasi_isolated_reps,
 StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
 isomorphism_type, weights, coweights
@@ -386,7 +386,7 @@ sl₄
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
-julia> C=algebraic_centre(L)
+julia> C=algebraic_center(L)
 (Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
 
 julia> T=torsion_subgroup(C.Z0,3)
@@ -423,10 +423,10 @@ function FixedPoints(T::SubTorus,m)
 end
 
 """
-`algebraic_centre(W)`
+`algebraic_center(W)`
 
 `W`  should  be  a  Weyl  group,  or  an extended Weyl group. This function
-returns  a description  of the  centre `Z` of  the algebraic  group `𝐆 `
+returns  a description  of the  center `Z` of  the algebraic  group `𝐆 `
 defined by `W` as a named tuple with the following fields:
 
 `Z0`: the neutral component `Z⁰` of `Z` as a subtorus of `𝐓`.
@@ -450,7 +450,7 @@ sl₄
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁
 
-julia> algebraic_centre(L)
+julia> algebraic_center(L)
 (Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
 
 julia> G=coxgroup(:A,3)
@@ -462,11 +462,11 @@ SemisimpleElement{Root1}: <1,-1,1>
 julia> C=centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
 
-julia> algebraic_centre(C)
+julia> algebraic_center(C)
 (Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,Matrix{Int64}(undef, 0, 3)), AZ = SSGroup([<1,-1,1>]))
 ```
 """
-function algebraic_centre(W)
+function algebraic_center(W)
 #   [implemented only for connected groups 18/1/2010]
 #   [I added something hopefully correct in general. JM 22/3/2010]
 #   [introduced subtori JM 2017 and corrected AZ computation]
@@ -639,7 +639,7 @@ function weightinfo(W)
     :decompositions=>map(x->vcat(x...),cartesian(map(x->vcat(x[:decompositions],
                                  [0 .*x[:moduli]]),l)...)),
     :moduli=>reduce(vcat,map(x->x[:moduli],l)),
-# centre of simply connected group: the generating minuscule coweights
+# center of simply connected group: the generating minuscule coweights
 # mod the root lattice
     :CenterSimplyConnected=>reduce(vcat,getindex.(l,:csi)),
     :AdjointFundamentalGroup=>reduce(vcat,getindex.(l,:ww)),
@@ -813,15 +813,15 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
     push!(ind,d)
     push!(w,toL(vcat(iso[n,:].//(-W.rootdec[r][n]),0*iso[1:1,:])))
     pp=vcat(map(i->combinations(d,i),1:length(H))...)
-    filter(P->length(orbits(stabilizer(H,P),P))==1,pp) #possible sets Ωₜ
+    filter(P->length(orbits(stabilizer(H,P,(p,g)->sort(p.^g)),P))==1,pp) #possible sets Ωₜ
   end
   res=map(x->vcat(x...),cartesian(l...))
   res=filter(res)do P
-    S=stabilizer(H,P)
+    S=stabilizer(H,P,(p,g)->sort(p.^g))
     all(I->length(orbits(S,intersect(P,I)))==1,ind)
   end
   res=map(x->x[1],orbits(H,map(x->unique!(sort(x)),res),
-          action=(s,g)->unique!(sort(s.^g)))) # possible sets Ω
+          (s,g)->unique!(sort(s.^g)))) # possible sets Ω
   if p!=0
     res=filter(res)do P
       all(map(ind,w)do I,W
@@ -838,14 +838,14 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
      end)
   end
   res=sort(unique!(map(s->SS(W,s),res)),by=x->(order(x),x))
-  Z0=algebraic_centre(W).Z0
+  Z0=algebraic_center(W).Z0
   if rank(Z0)>0
     res=res[filter(i->!any(j->res[i]/res[j] in Z0,1:i-1),eachindex(res))]
   end
   res
 end
 
-isisolated(W,s)=rank(algebraic_centre(centralizer(W,s).group).Z0)==
+isisolated(W,s)=rank(algebraic_center(centralizer(W,s).group).Z0)==
     rank(W)-semisimplerank(W)
 
 """
@@ -882,7 +882,7 @@ function StructureRationalPointsConnectedCentre(MF,q)
   else M=MF;MF=Spets(M)
   end
   W=parent(M)
-  Z0=algebraic_centre(M).Z0
+  Z0=algebraic_center(M).Z0
   Phi=matY(W.G,MF.phi)
   Z0F=Z0.gens*(Phi*q-one(Phi))
   Z0F=map(x->solutionmatInt(Z0.gens,x),eachrow(Z0F))
@@ -997,7 +997,7 @@ function SScentralizer_reps(W,p=0)
       u=findall(G->isomorphism_type(R)==isomorphism_type(G),cent[npara+1:end])
       if length(u)>0 println(u,R) end
       if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
-             sort(inclusiongens(G)),action=(s,g)->sort!(s.^g))),cent[npara.+u])
+             sort(inclusiongens(G)),(s,g)->sort!(s.^g))),cent[npara.+u])
         push!(cent,R)
       end
     end

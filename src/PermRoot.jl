@@ -1176,19 +1176,22 @@ julia> refleigen(coxgroup(:B,2))
 function refleigen(W)
   get!(W,:refleigen) do
     t=refltype(W)
-    if isempty(t) ll=[Root1[]]
-    elseif any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
-       (haskey(x,:scalar) && !all(isone,x.scalar))),t) # slow; do it right
+    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+      if isempty(t) ll=[Root1[]]
+      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
+      end
+      central=(W isa Spets ? torusfactors(W) :
+                            fill(E(1),rank(W)-semisimplerank(W)))
+      ll=map(x->vcat(x,central),ll)
+    else # slow; do it right
       ll=map(x->eigmat(reflrep(W,x)),classreps(W))
-      W.reflengths=map(x->count(!isone,x),ll)
-      return ll
-    else
-      ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
     end
-    central=(W isa Spets ? torusfactors(W) :
-                          fill(E(1),rank(W)-semisimplerank(W)))
-    ll=map(x->vcat(x,central),ll)
     W.reflengths=map(x->count(!isone,x),ll)
+    for i in 1:nconjugacy_classes(W) 
+      conjugacy_classes(W)[i].eigen=ll[i] 
+      conjugacy_classes(W)[i].reflength=count(!isone,ll[i])
+    end
     ll
   end::Vector{Vector{Root1}}
 end
@@ -1256,8 +1259,8 @@ julia> torus_order.(Ref(W),1:nconjugacy_classes(W),Pol(:q))
 """
 torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
 
-function Groups.centre(W::PermRootGroup{T,T1})where{T,T1}
-  get!(W,:centre)do
+function Groups.center(W::PermRootGroup{T,T1})where{T,T1}
+  get!(W,:center)do
     ci=classinfo(W)
     ct=ci[:classtext]
     pos=findall(i->ci[:classes][i]==1 && length(ct[i])>0,eachindex(ct))
@@ -1267,8 +1270,22 @@ function Groups.centre(W::PermRootGroup{T,T1})where{T,T1}
   end::PermGroup{T1}
 end
 
-function Groups.conjugacy_classes(G::PermRootGroup)
-  [ConjugacyClass(G,x,Dict{Symbol,Any}()) for x in classreps(G)]
+function Groups.conjugacy_classes(W::PermRootGroup)
+  get!(W,:classes) do
+    c=classinfo(W)
+    map(1:length(c[:classtext]))do i
+      ConjugacyClass(W,W(c[:classtext][i]...),
+        Dict{Symbol,Any}(:length=>c[:classes][i],
+                         :order=>c[:orders][i],
+                         :word=>c[:classtext][i],
+                         :name=>c[:classnames][i],
+                         :param=>c[:classparams][i]))
+    end
+  end
+end
+
+function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:PermRootGroup}
+  print(io,"conjugacy_class(",C.G,",",fromTeX(io,C.name),")")
 end
 
 const verbose=false
@@ -1406,8 +1423,8 @@ function PermX(W::PermRootGroup,M::AbstractMatrix)
 end
 
 function PermGroups.reduced(W::PermRootGroup,F)
-  function redcentre(W,F)
-    FF=F.*elements(centre(W))
+  function redcenter(W,F)
+    FF=F.*elements(center(W))
     if F in parent(W)
       ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
     else
@@ -1420,15 +1437,15 @@ function PermGroups.reduced(W::PermRootGroup,F)
   if isone(F) return F end
   if issubset(inclusiongens(W).^F,inclusion(W))
     w=PermX(W,reflrep(W,F))
-    if !isnothing(w) && w in W return redcentre(W,w\F)
+    if !isnothing(w) && w in W return redcenter(W,w\F)
     elseif length(W)==1 return F
     end
   end
   base=gens(W)
-  w=transporting_elt(W,base,base.^F;action=(x,y)->x.^y)
-  if !isnothing(w) return redcentre(W,F/w) end
+  w=transporting_elt(W,base,base.^F,(x,y)->x.^y)
+  if !isnothing(w) return redcenter(W,F/w) end
   ir=sort(base.^F)
-  w=transporting_elt(W,sort(base),ir;action=(x,y)->sort(x.^y))
+  w=transporting_elt(W,sort(base),ir,(x,y)->sort(x.^y))
   t=refltype(W)
   for a in t
     if Cosets.isG333(a)
@@ -1446,7 +1463,7 @@ function PermGroups.reduced(W::PermRootGroup,F)
       return (phi=F,reflectiongroup=reflection_subgroup(W,indices;NC=true))
     end
   end
-  if !isnothing(w) return redcentre(W,F/w) end
+  if !isnothing(w) return redcenter(W,F/w) end
   return nothing
 end
 
@@ -1531,7 +1548,7 @@ function recompute_parabolic_reps(W) # W irreducible
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
       c=filter(isparabolic,c)
       c=sort(unique(map(x->sort(unique(refls(x))),c)))
-      O=orbits(S,c;action=(x,g)->sort(x.^g))
+      O=orbits(S,c,(x,g)->sort(x.^g))
       O=map(o->o[argmin(map(x->sum(stoi,x),o))],O)
       O=map(x->reflection_subgroup(W,stoi.(x)),O)
       InfoChevie("# ",length(O)," to go\n")

@@ -3,7 +3,7 @@ const ChevieDict=Dict(
 "AbelianInvariants"=>"abelian_invariants",
 #Affine
 #AffineRootAction
-"AlgebraicCentre"=>"algebraic_centre",
+"AlgebraicCentre"=>"algebraic_center",
 "AlmostCharacter"=>"AlmostChar",
 "Arrangements"=>"arrangements",
 "AsReflection"=>"reflection",
@@ -31,6 +31,7 @@ const ChevieDict=Dict(
 "Cartesian"=>"cartesian",
 "CartesianAt"=>"lin2cart",
 "CartanMatFromCoxeterMatrix"=>"cartan",
+"Centralizer"=>"centralizer",
 "CentralizerGenerators"=>"centralizer_gens",
 "CharFFE(x)"=>"field(x).p",
 #CharName
@@ -129,6 +130,7 @@ const ChevieDict=Dict(
 "GarsideWords"=>"elements",
 "GcdPartitions"=>"gcd_partitions",
 "GcdRepresentation(x,y)"=>"gcdx(x,y)[2:3]",
+"W.generators"=>"gens(W)",
 "GenericOrder"=>"generic_order",
 "GenericSign"=>"generic_sign",
 "GetRoot"=>"root",
@@ -261,8 +263,8 @@ const ChevieDict=Dict(
 "PermutationOnClasses"=>"on_classes",
 "PermutationOnCharacters"=>"on_chars",
 "PermutationOnUnipotents"=>"on_unipotents",
-"Permuted(v,p)"=>"v^p",
-"PermutedByCols(m,p)"=>"^(m,p;dims=2)",
+"Permuted(v,p)"=>"permute(v,p)",
+"PermutedByCols(m,p)"=>"permute(m,p;dims=2)",
 #PoincarePolynomial
 "Poset"=>"Poset",
 "Position(l,x)"=>"findfirst(==(x),l)",
@@ -355,6 +357,7 @@ const ChevieDict=Dict(
 "SpecialPieces"=>"special_pieces",
 "Spets"=>"spets",
 "SplitLevis"=>"split_levis",
+"Stabilizer"=>"stabilizer",
 "StandardParabolic"=>"standard_parabolic",
 "StandardParabolicClass"=>"standard_parabolic_class",
 "StructureRationalPointsConnectedCentre"=>"StructureRationalPointsConnectedCentre",

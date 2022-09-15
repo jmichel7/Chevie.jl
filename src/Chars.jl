@@ -980,7 +980,7 @@ julia> on_chars(Group(WF),WF.phi)
 """
 function on_chars(W,aut)
   ct=CharTable(W).irr
-  inv(Perm(ct,^(ct,on_classes(W, aut),dims=2),dims=1))
+  inv(Perm(ct,permute(ct,on_classes(W, aut),dims=2),dims=1))
 end
 
 CharTable(W::CoxSym)=CharTable(refltype(W)[1])

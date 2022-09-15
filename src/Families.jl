@@ -207,7 +207,7 @@ function Base.:*(f::Family,g::Family)
   end
   if all(x->haskey(x,:perm) || length(x)==1,arg)
     res.perm=Perm(cartesian(map(x->1:length(x),arg)...),
-        cartesian(map(x->haskey(x,:perm) ? (1:length(x))^x.perm : [1],arg)...))
+      cartesian(map(x->haskey(x,:perm) ? permute(1:length(x),x.perm) : [1],arg)...))
   end
   if all(x->haskey(x,:lusztig) || length(x)==1,arg)
     res.lusztig=true
@@ -266,7 +266,7 @@ Base.conj(f::Family)=galois(f,-1)
 """
 `Eigenvalues(f)`:  eigenvalues of Frobenius associated to <f>.
 
-`String(<f>)', 'Print(<f>)`: give a short description of the family.
+`String(f)', 'Print(f)`: give a short description of the family.
 """
 
 """
@@ -286,7 +286,7 @@ label│eigen      1        2        3
 2    │    1  √-3/3 ζ₃²√-3/3 -ζ₃√-3/3
 3    │    1 -√-3/3 -ζ₃√-3/3 ζ₃²√-3/3
 
-julia> f^Perm(1,2,3)
+julia> permute(f,Perm(1,2,3))
 Family(0011,[2, 4, 3])
 Permuted((1,2,3),imprimitive family)
 label│eigen        3      1        2
@@ -296,14 +296,16 @@ label│eigen        3      1        2
 2    │    1 -ζ₃√-3/3  √-3/3 ζ₃²√-3/3
 ```
 """
-function Base.:^(f::Family,p::Perm)
+function Perms.permute(f::Family,p::Perm)
   f=Family(copy(f.prop))
-  for n in [:x,:chi,:charNumbers,:eigenvalues,:unpdeg,:fakdeg,
-    :mellinLabels,:charLabels,:perm,:special]
+  for n in [:x,:chi,:perm,:special]
     if haskey(f,n) setproperty!(f,n,getproperty(f,n)^p) end
   end
+  for n in [:charNumbers,:eigenvalues,:mellinLabels,:charLabels,:unpdeg,:fakdeg]
+    if haskey(f,n) setproperty!(f,n,permute(getproperty(f,n),p)) end
+  end
   for n in [:fourierMat,:mellin]
-    if haskey(f,n) setproperty!(f,n,^(getproperty(f,n),p;dims=(1,2))) end
+    if haskey(f,n) setproperty!(f,n,permute(getproperty(f,n),p;dims=(1,2))) end
   end
   f.explanation="Permuted("*repr(p;context=:TeX=>true)*","*f.explanation*")"
   f
@@ -988,7 +990,7 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
   if order(involution)>2 error("complex conjugacy is of order 4") end
   irr=mapslices(x->x.//x[special],S;dims=1)
-  duality=SPerm(collect(eachrow(^(irr,Perm(involution)))),
+  duality=SPerm(collect(eachrow(permute(irr,Perm(involution)))),
                  collect(eachrow(irr)))
   if isnothing(duality) error("the matrix does not have the * involution") end
   if order(duality)>2 error("duality is not an involution") end
