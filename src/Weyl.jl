@@ -671,7 +671,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.semisimplerank, PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots, 
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX, 
- PermRoot.central_action, Perms.reflength
+ PermRoot.central_action, Perms.reflength, Perms.largest_moved_point
 
 #--------------- FCG -----------------------------------------
 @GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T},T1}

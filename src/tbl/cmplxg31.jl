@@ -305,13 +305,13 @@ chevieset(:G31, :Representation, function (i,)
         elseif i == 51
             return -(f(50))
         elseif i == 52
-            return ComplexConjugate(f(50))
+            return conj(f(50))
         elseif i == 53
             return -(f(52))
         elseif i == 58
             return map(KroneckerProduct, f(3), f(25))
         elseif i == 59
-            return ComplexConjugate(f(58))
+            return conj(f(58))
         end
     end)
 chevieset(:G31, :Invariants, [function (x, y, z, t)

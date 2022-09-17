@@ -397,7 +397,7 @@ export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
   decompose, on_chars, detPerm, conjPerm, discriminant, classnames,
-  decomposition_matrix
+  decomposition_matrix, eigen
 
 """
 `fakedegree(W, φ, q)`
@@ -846,6 +846,72 @@ function classinfo(W)::Dict{Symbol,Any}
     end
     res
   end
+end
+
+function Groups.conjugacy_classes(W::TW)where TW<:Union{PermRootGroup,Spets}
+  get!(W,:classes) do
+    c=classinfo(W)
+    cl=map(1:length(c[:classtext]))do i
+      C=ConjugacyClass(W,W(c[:classtext][i]...),
+        Dict{Symbol,Any}(:length=>c[:classes][i],
+                         :word=>c[:classtext][i],
+                         :name=>c[:classnames][i],
+                         :param=>c[:classparams][i]))
+      if haskey(c,:orders) C.order=c[:orders][i] end
+      C
+    end
+    t=refltype(W)
+    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+      if isempty(t) ll=[Root1[]]
+      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
+      end
+      central=(W isa Spets ? torusfactors(W) :
+                            fill(E(1),rank(W)-semisimplerank(W)))
+      ll=map(x->vcat(x,central),ll)
+      for (i,l) in enumerate(ll)
+        cl[i].eigen=sort(l)
+        cl[i].reflength=count(!isone,l)
+      end
+    end
+    cl
+  end
+end
+
+function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+  if get(io,:limit,false) || get(io,:TeX,false)
+    print(io,"conjugacy_class(",C.G,",",fromTeX(io,C.name),")")
+  else
+    print(io,"conjugacy_class(",C.G,",",C.representative,")")
+  end
+end
+
+const verbose=false
+function Groups.position_class(W::Union{PermRootGroup,Spets},w)
+  l=PermGroups.positions_class(W,w)
+  if length(l)==1 return only(l)
+  elseif verbose println("ambiguity: ",l) end
+  p=eigmat(reflrep(W,w))
+  l=filter(x->eigen(conjugacy_classes(W)[x])==p,l)
+  if length(l)==1 return only(l) end
+  # doit type by type
+  ncl=classinfo(W)[:classes][l]
+  if any(>(10000),ncl)
+    println("!! computing classes of cardinal ",ncl)
+  end
+  l[findfirst(c->w in c,conjugacy_classes(W)[l])]
+end
+
+function Perms.reflength(C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+  getp(eigen,C,:reflength)
+end
+
+function eigen(C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+  get!(C,:eigen)do
+    l=eigmat(reflrep(C.G,C.representative)) # eigmat is sorted
+    C.reflength=count(!isone,l)
+    l
+  end::Vector{Root1}
 end
 
 #--------------- CharTables -----------------------------------------

@@ -1174,7 +1174,7 @@ function Tfamilies(W,i;hard=false)
     elseif haskey(f,:cospecial) && f.special!=f.cospecial
       ChevieErr("\n.cospecial=$(f.cospecial) should be $special\n")
     end
-    check(conj(ud)==ud^ps,"ud*=ud^p")
+    check(conj(ud)==permute(ud,ps),"ud*=ud^p")
     if real!==nothing && real!=false
       check(permute(f.eigenvalues,real/f.perm)==f.eigenvalues,"eig*=eig^perm")
     end

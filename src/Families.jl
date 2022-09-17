@@ -68,7 +68,7 @@ module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier,
  FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra,
- involution, duality, eigen
+ involution, duality
 
 using ..Gapjm
 
@@ -151,7 +151,7 @@ end
 
 special(f::Family)::Int=get!(()->1,f,:special)
 
-eigen(f::Family)=f.eigenvalues
+PermRoot.eigen(f::Family)=f.eigenvalues
 
 "`fourier(f::Family`: returns the Fourier matrix for the family `f`."
 function fourier(f::Family)

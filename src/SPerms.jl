@@ -318,7 +318,7 @@ function Perms.permute(l::AbstractVector,a::SPerm)
   res
 end
 
-function permute(m::AbstractMatrix,a::SPerm;dims=1)
+function Perms.permute(m::AbstractMatrix,a::SPerm;dims=1)
   if dims==1 hcat(map(c->permute(c,a),eachcol(m))...)
   elseif dims==2 transpose(hcat(map(c->permute(c,a),eachrow(m))...))
   elseif dims==(1,2) hcat(permute(map(c->permute(c,a),eachcol(m)),a)...)
@@ -336,7 +336,7 @@ objects in `l` and `l1` to be sortable.
 julia> p=SPerm([20,30,40],[-40,-20,-30])
 (1,-2,3,-1,2,-3)
 
-julia> [20,30,40]^p
+julia> permute([20,30,40],p)
 3-element Vector{Int64}:
  -40
  -20
@@ -595,12 +595,12 @@ julia> N=fourier(uc.families[2]);
 julia> p=SPerm_onmats(M,N)
 (1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
 
-julia> ^(M,p;dims=(1,2))==N
+julia> permute(M,p;dims=(1,2))==N
 true
 ```
 """
 function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
-  onmats(M,p)=^(M,p;dims=(1,2))
+  onmats(M,p)=permute(M,p;dims=(1,2))
   if M!=permutedims(M) error("M should be symmetric") end
   if N!=permutedims(N) error("N should be symmetric") end
   if isnothing(extra1)

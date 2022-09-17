@@ -1,7 +1,12 @@
 """
 This module introduces modular arithmetic and finite fields.
 
-The ring of integers mod. `n` is given by the type `Mod{n}`.
+The  integer `x` mod. `n` is constructed  by the function `Mod(x,n)`. If `n
+isa  Int`  its  type  is  `Mod{UInt64}`.  If  `n  isa  BigInt`  its type is
+`Mod{BigInt}`.  Since `n` is not encoded in  the type, the elements `0` and
+`1`  mod.  `n`  cannot  be  constructed  from  the  type, which causes some
+problems  for some  Julia functions.  For some  prime moduli  `p`, the type
+`FFE{p}` below does not have such limitations.
 
 Example:
 ```julia-repl

@@ -175,7 +175,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   l=cartesian(l...)[1]
   res=fill(0,length(uc[:a]))
   for (i,p) in pairs(l)
-    res[ff[i].charNumbers]=ff[i].charNumbers^p
+    res[ff[i].charNumbers]=permute(ff[i].charNumbers,p)
   end
   SPerm(res)
 end

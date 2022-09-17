@@ -191,14 +191,14 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
- simple_conjugating, refls, unique_refls, reflection, reflectionmat, 
- Diagram, 
- refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
- coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
- bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
- invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
- invariants, matY, simpleroots, simplecoroots, action, radical, 
- parabolic_closure, isparabolic, central_action, nhyp, nref, indices
+  simple_conjugating, refls, unique_refls, reflection, reflectionmat, 
+  Diagram, 
+  refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
+  coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
+  bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
+  invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
+  invariants, matY, simpleroots, simplecoroots, action, radical,
+  parabolic_closure, isparabolic, central_action, nhyp, nref, indices
 using ..Gapjm
 """
 `coroot(r,λ=1)`
@@ -1175,24 +1175,7 @@ julia> refleigen(coxgroup(:B,2))
 """
 function refleigen(W)
   get!(W,:refleigen) do
-    t=refltype(W)
-    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
-       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
-      if isempty(t) ll=[Root1[]]
-      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
-      end
-      central=(W isa Spets ? torusfactors(W) :
-                            fill(E(1),rank(W)-semisimplerank(W)))
-      ll=map(x->vcat(x,central),ll)
-    else # slow; do it right
-      ll=map(x->eigmat(reflrep(W,x)),classreps(W))
-    end
-    W.reflengths=map(x->count(!isone,x),ll)
-    for i in 1:nconjugacy_classes(W) 
-      conjugacy_classes(W)[i].eigen=ll[i] 
-      conjugacy_classes(W)[i].reflength=count(!isone,ll[i])
-    end
-    ll
+    eigen.(conjugacy_classes(W))
   end::Vector{Vector{Root1}}
 end
 
@@ -1231,7 +1214,7 @@ julia> reflength(W,W(1,2,3,4))
 ```
 """
 function Perms.reflength(W::PermRootGroup,w::Perm)
-  (getp(refleigen,W,:reflengths)::Vector{Int})[position_class(W,w)]
+  reflength(conjugacy_classes(W)[position_class(W,w)])
 end
 
 """
@@ -1258,51 +1241,6 @@ julia> torus_order.(Ref(W),1:nconjugacy_classes(W),Pol(:q))
 ```
 """
 torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
-
-function Groups.center(W::PermRootGroup{T,T1})where{T,T1}
-  get!(W,:center)do
-    ci=classinfo(W)
-    ct=ci[:classtext]
-    pos=findall(i->ci[:classes][i]==1 && length(ct[i])>0,eachindex(ct))
-    if isempty(pos) return Group([one(W)]) end
-    central=map(x->W(ct[x]...),pos)
-    Group(abelian_gens(central))
-  end::PermGroup{T1}
-end
-
-function Groups.conjugacy_classes(W::PermRootGroup)
-  get!(W,:classes) do
-    c=classinfo(W)
-    map(1:length(c[:classtext]))do i
-      ConjugacyClass(W,W(c[:classtext][i]...),
-        Dict{Symbol,Any}(:length=>c[:classes][i],
-                         :order=>c[:orders][i],
-                         :word=>c[:classtext][i],
-                         :name=>c[:classnames][i],
-                         :param=>c[:classparams][i]))
-    end
-  end
-end
-
-function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:PermRootGroup}
-  print(io,"conjugacy_class(",C.G,",",fromTeX(io,C.name),")")
-end
-
-const verbose=false
-function Groups.position_class(W::PermRootGroup,w)
-  l=PermGroups.positions_class(W,w)
-  if length(l)==1 return only(l)
-  elseif verbose println("ambiguity: ",l) end
-  p=sort(eigmat(reflrep(W,w)))
-  l=filter(x->sort(refleigen(W)[x])==p,l)
-  if length(l)==1 return only(l) end
-  # doit type by type
-  ncl=classinfo(W)[:classes][l]
-  if any(>(10000),ncl)
-    println("!! computing classes of cardinal ",ncl)
-  end
-  l[findfirst(c->w in c,conjugacy_classes(W)[l])]
-end
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
 

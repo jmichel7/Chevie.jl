@@ -65,7 +65,7 @@ chevieset(:I, :SemisimpleRank, 2)
 chevieset(:I, :GeneratingRoots, function (m,)
         local a, b, r
         a = E(2m, m - 1)
-        b = ComplexConjugate(a)
+        b = conj(a)
         if mod(m, 2) == 0
             r = root(m // 2)
         else

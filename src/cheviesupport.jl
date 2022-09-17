@@ -80,8 +80,7 @@ end
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W).charparams
 CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
-CollectBy(v,f)=collectby(f,v)
-ConcatenationString(s...)=prod(s)
+Concatenation(a::Vector,b::Tuple)=vcat(a,improve_type(collect(b)))
 CoxeterGroup()=coxgroup()
 CyclePermInt(p::Perm,i::Integer)=orbit(p,i)
 function CycleStructurePerm(p::Perm)
@@ -116,10 +115,6 @@ function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end
   a
 end
-Intersection(x,y)=sort(intersect(x,y))
-Intersection(x::Vector)=sort(intersect(x...))
-Join(x,y)=join(x,y)
-Join(x)=join(x,",")
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
 NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
@@ -139,15 +134,9 @@ function RootInt(n,k=2)
   res=floor(Int,n^(1/k))
   if (res+1)^k<=n res+1 else res end
 end
-Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
-function SortParallel(a,b)
-  v=sortperm(a)
-  b.=b[v]
-  a.=a[v]
-end
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
 SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 function TeXBracket(s)
@@ -156,7 +145,6 @@ function TeXBracket(s)
 end
 Weyl.torus(m::Vector{<:Vector})=torus(toM(m))
 Value(p,v)=p(v)
-ValuePol(v,c)=isempty(v) ? 0 : evalpoly(c,v)
 function CoxeterGroup(S::String,s...)
  res=coxgroup(Symbol(S),Int(s[1])) 
  for i in 2:2:length(s) res*=coxgroup(Symbol(s[i]),Int(s[i+1])) end

@@ -533,14 +533,10 @@ function twistings(W::FiniteCoxeterGroup)
   spets.(Ref(W),l)
 end
 
-function Groups.conjugacy_classes(G::Spets)
-  [ConjugacyClass(G,x,Dict{Symbol,Any}()) for x in classreps(G)]
-end
-
-function Groups.position_class(G::Spets,g)
-  if isone(G.phi) return position_class(G.W,g) end
-  findfirst(c->g in c,conjugacy_classes(G))
-end
+#function Groups.position_class(G::Spets,g)
+#  if isone(G.phi) return position_class(G.W,g) end
+#  findfirst(c->g in c,conjugacy_classes(G))
+#end
 
 twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------

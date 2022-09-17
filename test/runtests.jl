@@ -716,7 +716,7 @@ end
 @test mytest("SPerms.jl","cycles(SPerm(-1,2)*SPerm(3,-3)*SPerm(4,5,-4,-5))","3-element Vector{Vector{Int16}}:\n [1, -2]\n [3, -3]\n [4, 5, -4, -5]")
 @test mytest("SPerms.jl","cycletype(SPerm(1,-1),2)","2-element Vector{Vector{Int64}}:\n [1]\n [1]")
 @test mytest("SPerms.jl","p=SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
-@test mytest("SPerms.jl","[20,30,40]^p","3-element Vector{Int64}:\n -30\n -20\n -40")
+@test mytest("SPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -30\n -20\n -40")
 @test mytest("SPerms.jl","p=SPerm([20,30,40],[-40,-20,-30])","(1,-2,3,-1,2,-3)")
 @test mytest("SPerms.jl","[20,30,40]^p","3-element Vector{Int64}:\n -40\n -20\n -30")
 @test mytest("SPerms.jl","Matrix(SPerm([-2,-1,-3]))","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
