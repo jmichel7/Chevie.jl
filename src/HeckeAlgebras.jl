@@ -686,11 +686,11 @@ Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
 returns the class polynomials of the Hecke element `h` of the Hecke algebra
 `H=h.H`  with respect  to representatives  `reps` of  minimal length in the
 conjugacy  classes  of  the  Coxeter  group  `W=H.W`.  Such  minimal length
-representatives  are given by  the function `classinfo(W)[:classtext]`. The
-vector  `p` of these polynomials has the property that if `X` is the matrix
-of  the values of  the irreducible characters  of `H` on  `T_w` (for `w` in
-`reps`),  then the product `X*p`  is the list of  values of the irreducible
-characters on `h`.
+representatives  are given by `word.(conjugacy_classes(W))`. The vector `p`
+of  these polynomials  has the  property that  if `X`  is the matrix of the
+values  of the irreducible characters of `H`  on `T_w` (for `w` in `reps`),
+then  the product `X*p` is the list of values of the irreducible characters
+on `h`.
 
 ```julia-repl
 julia> W=CoxSym(4)
@@ -722,7 +722,7 @@ function class_polynomials(h)
   else W=WF
     para=H.para
   end
-  minl=length.(classinfo(WF)[:classtext])
+  minl=length.(word.(conjugacy_classes(WF)))
   h=Tbasis(H,h)
 # Since  vF is not of minimal length in its class there exists wF conjugate
 # by   cyclic  shift  to  vF  and  a  generating  reflection  s  such  that
@@ -797,7 +797,7 @@ char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
   W=H.W
   if W isa CoxeterGroup return char_values(Tbasis(H)(w)) end
-  p=findfirst(==(w),classinfo(W)[:classtext])
+  p=findfirst(==(w),word.(conjugacy_classes(W)))
   if !isnothing(p) return CharTable(H).irr[:,p] end
   improve_type(map(representations(H))do r
     first(traces_words_mats(r,[w]))

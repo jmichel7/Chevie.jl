@@ -270,10 +270,9 @@ Base.conj(f::Family)=galois(f,-1)
 """
 
 """
-`f^p::Perm`
+`permute(f::Family, p::Perm)`
 
-`f`  should be a family, `p` a permutation, and the function returns a copy
-of  the  family  `f`  with  the  Fourier  matrix, eigenvalues of Frobenius,
+returns  a copy of  `f` with the  Fourier matrix, eigenvalues of Frobenius,
 `:charLabels…` permuted by `p`.
 
 ```julia-repl

@@ -43,7 +43,7 @@ SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using ..Gapjm
-export SPerm, CoxHyperoctaedral, sstab_onmats, SPerm_onmats, @sperm_str, signs
+export SPerm, CoxHyperoctaedral, sstab_onmats, @sperm_str, signs
 
 """
 `struct SPerm`
@@ -167,7 +167,7 @@ function Base.:(==)(a::SPerm, b::SPerm)
 end
 
 """
-  orbit(a::SPerm,i::Integer) returns the orbit of a on i
+`orbit(a::SPerm,i::Integer)` returns the orbit of `a` on `i`.
 """
 function Perms.orbit(a::SPerm{T},i::Integer)where T
   if abs(i)>length(a.d) return T[i] end
@@ -355,14 +355,6 @@ function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
 end
 
 SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Idef}(l,l1)
-
-function SPerm{T}(l::AbstractMatrix,l1::AbstractMatrix;dims=1)where T<:Integer
-  if     dims==1 SPerm{T}(collect(eachrow(l)),collect(eachrow(l1)))
-  elseif dims==2 SPerm{T}(collect(eachcol(l)),collect(eachcol(l1)))
-  end
-end
-
-SPerm(l::AbstractMatrix,l1::AbstractMatrix;dims=1)=SPerm{Idef}(l,l1,dims=dims)
 
 """
 `Matrix(a::SPerm)` is the permutation matrix for a
@@ -574,29 +566,8 @@ permutation `p` such that `onmats(M,p)=N` if such a permutation exists, and
 `nothing`  otherwise. If  in addition  vectors `m`  and `n`  are given, the
 signed permutation `p` should also satisfy `m^p==n`.
 
-This  routine is  useful to  identify two  objects which are isomorphic but
-with  different  labelings.  It  is  used  in   Chevie  to identify Lusztig
-Fourier  transform matrices  with standard  (classified) data.  The program
-uses  sophisticated  algorithms,  and  can  often  handle  matrices  up  to
-80×80.
-
 Efficient version of
 `transporting_elt(CoxHyperoctaedral(size(M,1)),M,N,onmats)`
-
-```julia-repl
-julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);
-
-julia> M=fourier(conj(f));
-
-julia> uc=UnipotentCharacters(complex_reflection_group(6));
-
-julia> N=fourier(uc.families[2]);
-
-julia> p=SPerm_onmats(M,N)
-(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
-
-julia> permute(M,p;dims=(1,2))==N
-true
 ```
 """
 function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
@@ -657,4 +628,43 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
   trans=I->SPerm(mappingPerm(eachindex(I),I).d)
   trans(I)^-1*tr*trans(J)
 end
+
+"""
+`SPerm(M::AbstractMatrix,N::AbstractMatrix;dims)`
+
+returns a signed permutation `p` such that `permute(M,p;dims)==N` is such a
+`p`  exists,  and  `nothing`  otherwise.  If  `dims=(1,2)` then `M` and `N`
+should be symmetric matrices.
+
+The  case `dims=(1,2)` routine is useful  to identify two objects which are
+isomorphic  but with different labelings. It  is used in Chevie to identify
+Lusztig  Fourier transform  matrices with  standard (classified)  data. The
+program  uses sophisticated algorithms, and can often handle matrices up to
+80×80.
+
+```julia-repl
+julia> f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);
+
+julia> M=fourier(conj(f));
+
+julia> uc=UnipotentCharacters(complex_reflection_group(6));
+
+julia> N=fourier(uc.families[2]);
+
+julia> p=SPerm(M,N;dims=(1,2))
+(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
+
+julia> permute(M,p;dims=(1,2))==N
+true
+```
+"""
+function SPerm{T}(m::AbstractMatrix,m1::AbstractMatrix;dims=1)where T<:Integer
+  if     dims==1 SPerm{T}(collect(eachrow(m)),collect(eachrow(m1)))
+  elseif dims==2 SPerm{T}(collect(eachcol(m)),collect(eachcol(m1)))
+  elseif dims==(1,2) SPerm_onmats(m,m1)
+  end
+end
+
+SPerm(m::AbstractMatrix,m1::AbstractMatrix;dims=1)=SPerm{Idef}(m,m1,dims=dims)
+
 end

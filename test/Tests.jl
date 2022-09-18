@@ -147,7 +147,7 @@ end
 function findrepresentation(W,gr,check=false)
   O=W
   if O isa HeckeAlgebra W=O.W end
-  t=classinfo(W)[:classtext]
+  t=word.(conjugacy_classes(W))
   l=1:length(t)
   l=sort(l,by=i->length(t[i]))
   t=t[l]
@@ -177,7 +177,7 @@ function Trepresentations(W,l=Int[])
     W=H.W
   else H=hecke(W)
   end
-  cl=classinfo(W)[:classtext]
+  cl=length.(conjugacy_classes(W))
   ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
@@ -275,7 +275,7 @@ function Tlusztiginduction(WF,L)
   end)
   rhs=Dict{Symbol,Any}(:scalar=>rhs, :u=>L,:g=>WF,
                        :uNames=>charnames(UnipotentCharacters(L);TeX=true),
-    :gNames=>classinfo(WF)[:classnames])
+                       :gNames=>map(x->x.name,conjugacy_classes(WF)))
   m=copy(rhs)
   m[:scalar]=Uch.DLCharTable(WF)*t.scalar
   if m[:scalar]!=rhs[:scalar] error("tables differ",m[:scalar],rhs[:scalar]) end
@@ -455,13 +455,13 @@ function Tunipotentcentralizers(W,p=0)
     cc=q^cl.dimunip
     if nconjugacy_classes(cl.Au)>1
       if rank(cl.red)>0 && haskey(cl,:AuAction)
-        ww=classinfo(cl.Au)[:classtext][c[:AuNo]]
+        ww=word(conjugacy_classes(cl.Au)[c[:AuNo]])
         w=cl.red.F
         if !isempty(ww) w*=prod(cl.AuAction.F0s[ww]) end
         cc*=generic_order(spets(Group(cl.red),w),q)
       else cc*=generic_order(cl.red,q)
       end
-      cc*=div(length(cl.Au),classinfo(cl.Au)[:classes][c[:AuNo]])
+      cc*=div(length(cl.Au),length(conjugacy_classes(cl.Au)[c[:AuNo]]))
     else cc*=generic_order(cl.red,q);
     end
     sum+=c[:card](q)
@@ -850,7 +850,7 @@ function EigenAndDegHecke(s)
   om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
   if omegachi!=om2 
     omegachi=om2
-    ChevieErr(classinfo(W)[:classtext][i],"^",1//d1," not equal to π(",W,")\n")
+    ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
   end
   ss=CycPol.(schur_elements(H)^p)
   ss=map(x->degree(s)//x,ss)
@@ -914,7 +914,7 @@ function Textrefl(W)
   n=nconjugacy_classes(W)
   v=reverse(permutedims(toM(map(r->prod(n->Pol()+n,r;init=Pol(1)).c,refleigen(W))));dims=1)
   # check v[2,:] using reflrep
-  if size(v,1)>1 && v[2,:]!=map(w->tr(reflrep(W,W(w...))),classinfo(W)[:classtext])
+  if size(v,1)>1 && v[2,:]!=map(w->tr(reflrep(W,W(w...))),word.(conjugacy_classes(W)))
    ChevieErr("refleigen disagrees with reflrep")
   end
   extRefl=map(x->findfirst(==(x),collect(eachrow(ct.irr))),eachrow(v))
@@ -940,8 +940,7 @@ The function below uses the formula
 Superseded by degrees using refltype but can recompute data
 """
 function reflectiondegrees(W)
-  c=classinfo(W)[:classes]
-  if isempty(c) return Int[] end
+  c=length.(conjugacy_classes(W))
   l=vcat(map((r,c)->map(x->(x,c),r),refleigen(W),c)...)
   e=collectby(first,l)
   eig=map(x->first(first(x)),e)
@@ -964,7 +963,7 @@ the function below uses the formula cite[page 164]{BLM06}
 Superseded by degrees using refltype but can recompute data
 """
 function reflectiondegrees(W::Spets)
-  c=classinfo(W)[:classes].//length(W)
+  c=length.(conjugacy_classes(W)).//length(W)
   l=vcat(map((v,t)->map(x->(x,t),v),refleigen(W),c)...)
   l=collectby(first,l)
   e=map(x->(x[1][1],sum(last,x)),l)
@@ -1534,12 +1533,11 @@ test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
 #------------------------- very good classreps -----------------------------
 
 function Tclassreps(W)
-  cl=classinfo(W)
-  for i in 1:nconjugacy_classes(W)
-    ww=cl[:classtext][i]
+  for c in conjugacy_classes(W)
+    ww=word(c)
     if W isa CoxeterGroup
       w=BraidMonoid(W)(ww...)
-      o=cl[:orders][i]
+      o=c.order
       l=Brieskorn_normal_form(w^o)
     elseif W isa CoxeterCoset
       w=BraidMonoid(Group(W))(ww...)
@@ -1549,7 +1547,7 @@ function Tclassreps(W)
     end
     if isodd(length(l)) || any(j->l[2*j-1]!=l[2*j],1:div(length(l),2)) || 
       any(j->!issubset(l[j+1],l[j]),1:length(l)-1)
-      ChevieErr("class ",i," is not good\n")
+      ChevieErr(c," is not good\n")
     end
     if iseven(o)
       if W isa CoxeterGroup l=Brieskorn_normal_form(w^div(o,2))
@@ -1557,7 +1555,7 @@ function Tclassreps(W)
 	l=Brieskorn_normal_form(twisted_power(w,o,Frobenius(W)))
       end
       if any(j->!issubset(l[j+1],l[j]),1:length(l)-1)
-	ChevieErr("class ",i," is not very good\n")
+	ChevieErr(c," is not very good\n")
       end
     end
   end
@@ -1604,7 +1602,7 @@ function Thecke3d4(triality)
   T=Tbasis(hecke(F4,[q,q,1,1]))
   v=[T(2),T(3,2,3),T(1),T(4,3,2,3,4)] # embedding of Hecke(triality,q)
   m=permutedims(toM(map(x->char_values(prod(v[x];init=T())*T(4,3)),
-                        classinfo(triality)[:classtext])))
+                        word.(conjugacy_classes(triality)))))
   WF=spets(F4)
   tbis=subspets(WF,[2,9,1,16],F4(4,3)) # inside F4
   ct=CharTable(hecke(triality,q)).irr
@@ -1633,7 +1631,7 @@ function TG4_22index(W)
   t=refltype(W)[1]
   O=crg(getchev(t,:Generic))
   e=getchev(t,:Embed)
-  c=map(c->vcat(map(x->e[x],c)...),classinfo(W)[:classtext])
+  c=map(c->vcat(map(x->e[x],c)...),word.(conjugacy_classes(W)))
   c=map(x->position_class(O,O(x...)),c)
   l=map(x->findfirst(i->refls(O,i)==O(x...),eachindex(roots(O))),e)
   a=classinfo(W)[:indexclasses]
@@ -1660,7 +1658,7 @@ function(W)t=refltype(W)
 
 # c_\chi in Gordon-Griffeth
 function coxeter_number(W,i)
-  cl=classinfo(W)[:classes]
+  cl=length.(conjugacy_classes(W))
   if cl==[1] return 0 end
   ct=CharTable(W).irr
   Int(sum(degrees(W).-1)-sum(h->sum(c->exactdiv(cl[c]*ct[i,c],ct[i,1]),

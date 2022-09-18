@@ -669,7 +669,7 @@ function Weyl.relative_group(s::Series)
   end
   if !isone(s.levi.phi)
     if length(L) == 1
-      sz=classinfo(WF)[:classes][position_class(WF,s.levi.phi)]
+      sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
       if sz>100000 println("*** class too big ($sz) calling GAP4.centralizer")
          N=Gapjm.Gap4.centralizer(N,s.levi.phi)
       else
@@ -1163,7 +1163,7 @@ function RelativeSeries(s)
   q=maximum(map(x->count(==(c),x), eig))
   s.classno=findall(x->count(==(c),x)==q,eig)
   if length(s.classno)>1 error("classno==",s.classno) end
-  s.element=s.levi(classinfo(s.levi)[:classtext][s.classno[1]]...)
+  s.element=conjugacy_classes(s.levi)[s.classno[1]].representative
   WGL=relative_group(s)
   res=map(enumerate(WGL.reflists)) do (i,r)
  # println("r=",r,"\nphi=",s.element/s.spets.phi)

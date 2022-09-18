@@ -1393,7 +1393,7 @@ Let  `W` be a well generated complex  reflection group and `c` be a Coxeter
 element  of `W` (if no `c` is given  a particular one is chosen for Coxeter
 groups  by making  the product  of elements  in a  partition of the Coxeter
 diagram  in two  sets where  in each  set elements  commute pairwise; for a
-complex  reflection  group  the  Coxeter  element  stored in `classinfo` is
+complex  reflection group the representative stored in the Coxeter class is
 used). The function returns the dual braid monoid determined by `W` and `c`
 (which  should  be  a  `Vector{Int}`  specifying  a  sequence of indices of
 reflections of `W`).
@@ -1424,7 +1424,7 @@ function DualBraidMonoid(W::CoxeterGroup;
 end
 
 function DualBraidMonoid(W::PermRootGroup;
-  c=classinfo(W)[:classtext][position_regular_class(W,maximum(degrees(W)))],
+  c=word(conjugacy_classes(W)[position_regular_class(W,maximum(degrees(W)))]),
   revMonoid=nothing)
   if ngens(W)>semisimplerank(W) || length(refltype(W))>1
     error(W,"must me well-generated and irreducible")

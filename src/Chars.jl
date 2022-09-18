@@ -772,7 +772,7 @@ function conjPerm(W)
 end
 
 function classinfo(t::TypeIrred)
-  cl=deepcopy(getchev(t,:ClassInfo))
+  cl=deepcopy(convert(Dict{Symbol,Any},getchev(t,:ClassInfo)))
   if haskey(t,:orbit)
      l=length(t.orbit)
      t=t.orbit[1]
@@ -825,7 +825,7 @@ Dict{Symbol, Any} with 5 entries:
 
 See also the introduction of this section.
 """
-function classinfo(W)::Dict{Symbol,Any}
+function classinfo(W)
   get!(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
     if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
@@ -845,10 +845,12 @@ function classinfo(W)::Dict{Symbol,Any}
       res[:classes]=map(prod, cartfields(tmp,:classes))
     end
     res
-  end
+  end #::Dict{Symbol,Any}
 end
 
-function Groups.conjugacy_classes(W::TW)where TW<:Union{PermRootGroup,Spets}
+Hastype=Union{PermRootGroup,Spets,CoxSym}
+
+function Groups.conjugacy_classes(W::TW)where TW<:Hastype
   get!(W,:classes) do
     c=classinfo(W)
     cl=map(1:length(c[:classtext]))do i
@@ -878,7 +880,7 @@ function Groups.conjugacy_classes(W::TW)where TW<:Union{PermRootGroup,Spets}
   end
 end
 
-function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   if get(io,:limit,false) || get(io,:TeX,false)
     print(io,"conjugacy_class(",C.G,",",fromTeX(io,C.name),")")
   else
@@ -887,7 +889,7 @@ function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGrou
 end
 
 const verbose=false
-function Groups.position_class(W::Union{PermRootGroup,Spets},w)
+function Groups.position_class(W::Hastype,w)
   l=PermGroups.positions_class(W,w)
   if length(l)==1 return only(l)
   elseif verbose println("ambiguity: ",l) end
@@ -895,18 +897,22 @@ function Groups.position_class(W::Union{PermRootGroup,Spets},w)
   l=filter(x->eigen(conjugacy_classes(W)[x])==p,l)
   if length(l)==1 return only(l) end
   # doit type by type
-  ncl=classinfo(W)[:classes][l]
+  ncl=length.(conjugacy_classes(W)[l])
   if any(>(10000),ncl)
     println("!! computing classes of cardinal ",ncl)
   end
   l[findfirst(c->w in c,conjugacy_classes(W)[l])]
 end
 
-function Perms.reflength(C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+function Perms.reflength(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   getp(eigen,C,:reflength)
 end
 
-function eigen(C::ConjugacyClass{T,TW})where{T,TW<:Union{PermRootGroup,Spets}}
+Base.length(C::ConjugacyClass{T,TW}) where{T,TW<:Hastype}=C.length
+
+Groups.word(C::ConjugacyClass{T,TW}) where{T,TW<:Hastype}=C.word
+
+function eigen(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   get!(C,:eigen)do
     l=eigmat(reflrep(C.G,C.representative)) # eigmat is sorted
     C.reflength=count(!isone,l)
@@ -994,7 +1000,7 @@ CharTable(³D₄)
 1.21 │ .  2    -2     .  .     2     -2
 ```
 """
-function CharTable(W::Union{PermRootGroup,FiniteCoxeterGroup,Spets};opt...)::CharTable
+function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
   get!(W,:chartable)do
     t=refltype(W)
     ct=isempty(t) ? 
@@ -1069,7 +1075,7 @@ julia> representation(complex_reflection_group(24),3)
  [-1 -1 0; 0 1 0; 0 (1+√-7)/2 -1]
 ```
 """
-function representation(W::Union{Group,Spets},i::Integer)
+function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   dims=getchev(W,:NrConjugacyClasses)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(W)
@@ -1110,7 +1116,7 @@ julia> representations(coxgroup(:B,2))
  [[-1;;], [1;;]]
 ```
 """
-representations(W::Union{Group,Spets})=representation.(Ref(W),1:nconjugacy_classes(W))
+representations(W::Union{Hastype,FiniteCoxeterGroup})=representation.(Ref(W),1:nconjugacy_classes(W))
 
 """
 `WGraphToRepresentation(coxrank::Integer,graph,v)`

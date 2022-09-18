@@ -28,12 +28,10 @@ To update later to the latest version, do
 
 This package requires julia 1.6 or later. 
 
-I  also  implemented  the  GAP  functionality  needed  for  Chevie to work:
-Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
-permutation  group  operations,  etc….  I  registered  as separate packages
-already  most of the infrastructure (the  following packages are loaded and
-reexported  so their functionality is  automatically available when you use
-`Gapjm`):
+I  also  implemented  the  GAP  functionality  needed for Chevie to work. I
+already  registered as  separate packages  most of  the infrastructure; the
+following  packages  are  loaded  and  reexported so their functionality is
+automatically available when you use `Gapjm`. 
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions)
@@ -42,7 +40,9 @@ reexported  so their functionality is  automatically available when you use
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
   * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the moduls `Perms` and `Groups` which could be separate packages)
 
-some other infrastructure which may become eventually separate packages:
+Look  at the  documentation of  the above  packages to  see how  to use the
+corresponding  features. I have implemented some other infrastructure which
+may become eventually separate packages:
   * linear algebra on any field/ring (module `GLinearAlgebra`)
   * posets (module `Posets`)
   * cyclotomic polynomials (module `CycPols`)
@@ -58,9 +58,9 @@ despite  being much shorter (often 100 lines of Julia replace 1000 lines of
 C); I am sure there are more optimisations possible. Any comments about the
 code and the design are welcome. For functions which are too inefficient or
 difficult  to implement (like character tables of arbitrary groups) `Gapjm`
-automatically calls GAP4 if the package `GAP` is being used.
+automatically calls GAP4 if you did `using GAP`.
 
-This  package `Gapjm` contains currently about 90% of Chevie functionality,
+The  package `Gapjm` contains currently  about 90% of Chevie functionality,
 ported  from Gap3. The function `gap`  can help you discover the equivalent
 functionality  to a Gap3  function: it takes  a string and  gives you Julia
 translations of functions in Gap3 which match this string.
@@ -76,8 +76,7 @@ Then you can call on-line help on the discovered functions.
 The  port to Julia is not complete in the sense that 80% of the code is the
 data library of Chevie, which has been automatically ported by a transpiler
 so  its  code  is  "strange".  When  the  need  to  maintain  both versions
-simultaneously subsides, it will be worth to do a proper translation of the
-data library.
+simultaneously subsides, I will do a proper translation of the data library.
 
 Otherwise  the  code  in  this  package  is  often 10 times faster than the
 equivalent GAP3 Chevie code (after the maddeningly long compilation time on

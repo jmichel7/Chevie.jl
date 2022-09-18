@@ -718,7 +718,7 @@ end
 @test mytest("SPerms.jl","p=SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
 @test mytest("SPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -30\n -20\n -40")
 @test mytest("SPerms.jl","p=SPerm([20,30,40],[-40,-20,-30])","(1,-2,3,-1,2,-3)")
-@test mytest("SPerms.jl","[20,30,40]^p","3-element Vector{Int64}:\n -40\n -20\n -30")
+@test mytest("SPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -40\n -20\n -30")
 @test mytest("SPerms.jl","Matrix(SPerm([-2,-1,-3]))","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
 @test mytest("SPerms.jl","elements(CoxHyperoctaedral(2))","8-element Vector{SPerm{Int8}}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 @test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
@@ -728,8 +728,8 @@ end
 @test mytest("SPerms.jl","M=fourier(conj(f));","nothing")
 @test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
 @test mytest("SPerms.jl","N=fourier(uc.families[2]);","nothing")
-@test mytest("SPerms.jl","p=SPerm_onmats(M,N)","(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)")
-@test mytest("SPerms.jl","^(M,p;dims=(1,2))==N","true")
+@test mytest("SPerms.jl","p=SPerm(M,N;dims=(1,2))","(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)")
+@test mytest("SPerms.jl","permute(M,p;dims=(1,2))==N","true")
 end
 @testset "Semisimple.jl" begin
 @test mytest("Semisimple.jl","W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])","A₂Φ₁")
@@ -831,9 +831,8 @@ end
 @test mytest("Tools2.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("Tools2.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
 @test mytest("Tools2.jl","W=coxgroup(:F,4)","F₄")
-@test mytest("Tools2.jl","r=classinfo(W)[:classtext];","nothing")
 @test mytest("Tools2.jl","R=representation(W,17)","4-element Vector{Matrix{Int64}}:\n [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]\n [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]")
-@test mytest("Tools2.jl","traces_words_mats(R,r)==CharTable(W).irr[17,:]","true")
+@test mytest("Tools2.jl","traces_words_mats(R,word.(conjugacy_classes(W)))==CharTable(W).irr[17,:]","true")
 end
 @testset "Uch.jl" begin
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")

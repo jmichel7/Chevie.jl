@@ -1076,7 +1076,7 @@ function hyperplane_orbits(W::PermRootGroup)
       findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
          all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
     end
-    (s=s,cl_s=c,order=ord,N_s=classinfo(W)[:classes][c[1]],det_s=dets)
+    (s=s,cl_s=c,order=ord,N_s=length(conjugacy_classes(W)[c[1]]),det_s=dets)
   end
   end::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
 end
@@ -1407,7 +1407,7 @@ end
 
 function Groups.classreps(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:classreps)do
-    map(x->W(x...),classinfo(W)[:classtext])
+    map(x->x.representative,conjugacy_classes(W))
   end::Vector{Perm{T1}}
 end
 

@@ -148,6 +148,7 @@ ftrans=Dict{Symbol,Symbol}(
   :LowestPowerGenericDegreeSymbol=>:valuation_gendeg_symbol,
   :MatXPerm=>:reflrep,
   :Maximum=>:maximum,
+  :NrConjugacyClasses=:nconjugacy_classes,
   :NrPartitions=>:npartitions,
   :NrPartitionTuples=>:npartition_tuples,
   :Numerator=>:numerator,

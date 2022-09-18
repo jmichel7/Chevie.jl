@@ -272,7 +272,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
     n*="^{$cl}"
     n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=position_class(u[:Au],one(u[:Au]))
-    cl=classinfo(u[:Au])[:classnames][opt[:class]]
+    cl=conjugacy_classes(u[:Au])[opt[:class]].name
     n=TeX ? "\\mbox{\$$n\$}_{($cl)}" : fromTeX("$(n)_{$cl}";opt...)
   end
   n
@@ -1252,7 +1252,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
       res.scalar[:,b]*=CharTable(Au).irr
       res.cardClass[b]=res.Y[[b[charinfo(Au).positionId]],b]*CharTable(Au).irr
       res.cardClass[b]=map((x,y)->x*y//length(Au),
-                             res.cardClass[b],classinfo(Au)[:classes])
+                           res.cardClass[b],length.(conjugacy_classes(Au)))
     end
     res.scalar=improve_type(res.scalar)
   else
@@ -1374,7 +1374,7 @@ Base.show(io::IO,x::GreenTable)=print(io,"GreenTable(",x.uc,",q=",x.q,")")
 function Base.show(io::IO,::MIME"text/plain",x::GreenTable)
   printTeX(io,"Values of Green functions \$Q_{wF}\$ on")
   row_labels=vcat(map(x.relgroups) do g
-     map(n->string("Q_{",n,"}^{",TeX(io,g),"}"),classinfo(g)[:classnames])
+     map(n->string("Q_{",n,"}^{",TeX(io,g),"}"),classnames(io,g))
     end...)
   rows_label="Q^I_{wF}|"
   if x.class

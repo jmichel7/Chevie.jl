@@ -546,7 +546,7 @@ julia> character(c)
 function character(c::LeftCell)
   get!(c,:character)do
     r=representation(c,hecke(c.group))
-    cc=traces_words_mats(r,classinfo(c.group)[:classtext])
+    cc=traces_words_mats(r,word.(conjugacy_classes(c.group)))
     ct=CharTable(c.group)
     cc=decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)

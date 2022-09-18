@@ -141,7 +141,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
       else                           res[:Z]=mod(n,2)==0  ? [-1, -1] : [-1]
       end
       res[:relgroup]=coxgroup(d[1]==0 ? :D : :B, d[2])
-      res[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(res[:relgroup])]
+      res[:locsys]=[[0,0] for i in 1:nconjugacy_classes(res[:relgroup])]
       res
   end, l))
   for cl in ss
@@ -219,25 +219,25 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        l=vcat(1:i,i+2:2:n)
        s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n, 2) == 0 s[:Z]=[1, -1] else s[:Z] = [E(4)] end
-       s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
+       s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        if d==0 l=vcat([1], 4:2:n) end
        s=Dict(:relgroup => coxgroup(:B, div(n-i,2)),:levi=>l)
        if mod(n,2)==0 s[:Z] = [-1, 1]
        else s[:Z] = [-(E(4))]
        end
-       s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
+       s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        i=4d^2+d
        if d != 0 && i <= n
          l = vcat(1:i, i+2:2:n)
          s = Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
          if mod(n,2)==0 s[:Z]=[1, -1] else s[:Z]=[E(4)] end
-         s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
+         s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
          s=Dict(:relgroup=>coxgroup(:B,div(n-i,2)),:levi=>l)
          if mod(n, 2) == 0 s[:Z] = [1, 1] else s[:Z] = [-(E(4))] end
-         s[:locsys]=[[0,0] for i in 1:NrConjugacyClasses(s[:relgroup])]
+         s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
        end
      end
@@ -350,9 +350,8 @@ chevieset(:D, :ClassParameter, function (n, w)
       R=reflection_subgroup(H, 2:n)
       D=vcat(reduced(R,H)...)
       Dgens=map(s->Perm(reduced.(Ref(R),D.*s),D),gens(H))
-      ci=classinfo(H)
-      H=ci[:classtext][filter(i->ci[:classnames][i][end] in "+-", 
-                                 1:length(ci[:classnames]))]
+      ci=conjugacy_classes(H)
+      H=word.(ci)[filter(i->ci[i].name[end] in "+-",eachindex(ci))]
       H=map(a->CycleStructurePerm(prod(Dgens[a])), H)
       u=[Dgens,H[1:2:length(H)], H[2:2:length(H)]]
     end

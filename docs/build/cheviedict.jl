@@ -256,7 +256,7 @@ const ChevieDict=Dict(
 "PermCosetsSubgroup(H,W)"=>"D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",
 "PermListList(l1,l2)"=>"Perm(l1,l2)",
 "PermList(v)"=>"Perm(v)",
-"PermMatMat"=>"Perm_onmats",
+"PermMatMat(m,p)"=>"Perm(m,p;dims=(1,2)) or Perm(m,p,p)",
 "PermMatX"=>"PermX",
 #PermMatY
 "PermutationMat(p,dim)"=>"Matrix(p,dim)",

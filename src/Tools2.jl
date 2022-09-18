@@ -140,8 +140,6 @@ list of traces of the corresponding products of the matrices
 julia> W=coxgroup(:F,4)
 F₄
 
-julia> r=classinfo(W)[:classtext];
-
 julia> R=representation(W,17)
 4-element Vector{Matrix{Int64}}:
  [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
@@ -149,7 +147,7 @@ julia> R=representation(W,17)
  [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]
  [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]
 
-julia> traces_words_mats(R,r)==CharTable(W).irr[17,:]
+julia> traces_words_mats(R,word.(conjugacy_classes(W)))==CharTable(W).irr[17,:]
 true
 ```
 """

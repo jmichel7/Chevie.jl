@@ -767,7 +767,7 @@ PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),WF.phi\w)
 
 function PermGroups.classreps(W::Spets)
   get!(W,:classreps)do
-    map(x->W(x...),classinfo(W)[:classtext])
+    map(x->x.representative,conjugacy_classes(W))
   end
 end
 

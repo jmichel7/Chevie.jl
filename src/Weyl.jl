@@ -1097,7 +1097,7 @@ function Groups.position_class(W::FiniteCoxeterGroup,w)
     getchev(t,:ClassParameter,v)
   end
   if any(isnothing,iw) return position_class(W.G,w) end
-  findfirst(==(iw),classinfo(W)[:classparams])
+  findfirst(==(iw),map(x->x.param,conjugacy_classes(W)))
 end
 
 end

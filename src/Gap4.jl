@@ -92,7 +92,8 @@ end
 function CharTable(g::Group)
   gg=GAP.Obj(g)
   # in case :classreps not computed using gapclassreps
-  l=map(x->position_class(g,x),gapclassreps(g))
+  gc=gapclassreps(g)
+  l=map(x->position_class(g,x),gc)
   ct=CharTable(GAP.Globals.CharacterTable(gg))
   ct.irr[:,l]=ct.irr
   ct.classnames[l]=ct.classnames

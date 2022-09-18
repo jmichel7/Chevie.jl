@@ -117,7 +117,6 @@ function Inherit(a,b,c)
 end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
-NrConjugacyClasses(W)=length(classinfo(W)[:classtext])
 OnMatrices(a::Vector{<:Vector},b::Perm)=permute(permute.(a,b),b)
 Permuted(x,p)=permute(x,p)
 import Primes
