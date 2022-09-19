@@ -1,5 +1,7 @@
 # Gapjm.jl
 
+* [The documentation](https://jmichel7.github.io/Gapjm.jl)
+
 This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
 package  of GAP3. I started this project at the end of 2018 and it is still
 in  flux so the  package is not  yet registered. If  you see anything to be
