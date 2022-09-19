@@ -43,12 +43,12 @@ automatically available when you use `Gapjm`.
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented some other infrastructure which
 may become eventually separate packages:
-  * linear algebra on any field/ring (module `GLinearAlgebra`)
-  * posets (module `Posets`)
-  * cyclotomic polynomials (module `CycPols`)
-  * signed permutations (module `SPerms`)
-  * finite fields (module `FFields`)
-  * Integer matrices and lattices (module `MatInt`)
+  * linear algebra on any field/ring (module [`GLinearAlgebra`](@ref))
+  * posets (module [`Posets`](@ref))
+  * cyclotomic polynomials (module [`CycPols`](@ref))
+  * signed permutations (module [`SPerms`](@ref))
+  * finite fields (module [`FFields`](@ref))
+  * Integer matrices and lattices (module [`MatInt`](@ref))
 
 for  permutation groups I have  often replaced the sophisticated algorithms
 of  GAP by naive but  easy to write methods  only suitable for small groups

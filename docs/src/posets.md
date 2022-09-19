@@ -1,0 +1,23 @@
+# Posets
+```@index
+Modules=[Posets]
+```
+```@docs
+Posets
+Poset
+hasse
+incidence
+transitive_closure
+linear_extension
+reverse
+partition
+covering_chains
+Posets.restricted(::Poset,::AbstractVector{<:Integer})
+isjoinlattice
+ismeetlattice
+moebius
+moebiusmatrix
+minimum(P::Poset)
+maximum(P::Poset)
+Poset(::CoxeterGroup,w=longest(W))
+```

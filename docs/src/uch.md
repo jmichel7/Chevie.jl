@@ -1,0 +1,29 @@
+# Unipotent characters
+```@index
+Modules=[Uch]
+```
+```@docs
+Uch
+UnipotentCharacters
+degrees(::UnipotentCharacters,q)
+Uch.CycPolUnipotentDegrees
+UniChar
+DLChar
+almostChar
+on_unipotents
+DLLefschetz
+LusztigInduce
+LusztigRestrict
+LusztigInductionTable
+Families
+Family
+galois(f::Family,p::Int)
+conj(f::Family)
+fourier
+drinfeld_double
+ndrinfeld_double
+family_imprimitive
+FamiliesClassical
+*(f::Family, g::Family)
+fusion_algebra
+```

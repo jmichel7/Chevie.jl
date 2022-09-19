@@ -1,5 +1,37 @@
-using Documenter, DocumenterMarkdown, Gapjm
+using Documenter, Gapjm, Primes
 
-makedocs(format=Markdown(),
-         modules=[Cycs,Gapjm,PermGroups,Perms,Pols,CoxGroups,
-                  Weyl,Hecke,KL,Garside,Util,CycPols])
+makedocs(sitename="Gapjm.jl documentation",
+         modules=[
+Algebras,
+Chars,
+ComplexR,
+Cosets,
+CoxGroups,
+CycPols,
+dSeries,
+Eigenspaces,
+Fact,
+Families,
+FFfac,
+FFields,
+Gapjm,
+Garside,
+GLinearAlgebra,
+Gt,
+HeckeAlgebras,
+KL,
+Lusztig,
+MatInt,
+Murphy,
+PermRoot,
+Posets,
+Presentations,
+Semisimple,
+SPerms,
+Symbols,
+Uch,
+Ucl,
+Urad,
+Util,
+Weyl
+])

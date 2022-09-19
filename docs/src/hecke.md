@@ -1,0 +1,19 @@
+# Hecke algebras
+```@index
+Modules=[HeckeAlgebras]
+```
+```@docs
+HeckeAlgebras
+hecke
+central_monomials
+class_polynomials
+char_values
+alt
+α(::HeckeTElt)
+schur_elements
+FactorizedSchurElement
+FactorizedSchurElements
+isrepresentation
+reflrep(::HeckeAlgebra)
+HeckeCoset
+```

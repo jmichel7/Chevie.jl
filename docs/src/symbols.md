@@ -1,0 +1,21 @@
+# Symbols
+```@index
+Modules=[Symbols]
+```
+```@docs
+Symbols
+shiftβ
+βset
+partβ
+symbols
+ranksymbol
+defectsymbol
+symbol_partition_tuple
+fegsymbol
+gendeg_symbol
+degree_fegsymbol
+degree_gendeg_symbol
+valuation_fegsymbol
+valuation_gendeg_symbol
+XSP
+```

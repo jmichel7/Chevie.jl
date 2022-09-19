@@ -1,0 +1,24 @@
+# Finite Coxeter groups and Weyl groups
+```@index
+Modules=[Weyl]
+```
+```@docs
+Weyl
+cartan(::Symbol,::Integer,::Integer)
+cartan(::AbstractMatrix)
+roots(::AbstractMatrix)
+two_tree
+reflection_subgroup(::Weyl.FCG,::AbstractVector{<:Integer})
+coxgroup
+rootlengths
+rootdatum
+describe_involution
+badprimes
+Weyl.standard_parabolic
+inversions
+with_inversions
+torus
+istorus
+SubTorus
+relative_group
+```

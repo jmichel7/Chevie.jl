@@ -1,0 +1,19 @@
+# Reductive groups, semisimple elements
+```@index
+Modules=[Semisimple]
+```
+```@docs
+Semisimple
+fundamental_group
+intermediate_group
+quasi_isolated_reps(::FiniteCoxeterGroup)
+isisolated
+torsion_subgroup
+algebraic_center
+weightinfo
+weights
+coweights
+centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
+SScentralizer_reps
+StructureRationalPointsConnectedCentre
+```

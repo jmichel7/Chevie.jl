@@ -1,0 +1,26 @@
+# Linear algebra on any field/ring
+```@index
+Modules=[GLinearAlgebra]
+```
+```@docs
+GLinearAlgebra
+GLinearAlgebra.echelon!
+GLinearAlgebra.echelon
+bigcell_decomposition
+ratio
+exterior_power
+charpoly
+comatrix
+permanent
+symmetric_power
+schur_functor
+transporter
+diagconj_elt
+traces_words_mats
+solutionmat
+sum_rowspace
+intersect_rowspace
+lnullspace
+GLinearAlgebra.det
+GLinearAlgebra.rank
+```

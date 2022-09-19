@@ -1,17 +1,10 @@
 # Gapjm.jl
 
 This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
-package  of  GAP3  plus  the  GAP  functionality needed for Chevie to work:
-Cyclotomics,   Permutations,   Laurent   and   Puiseux  polynomials,  basic
-permutation group operations, etc….
-
-I  started this project at the  end of 2018 and it  is still in flux so the
-package  is not yet registered. If you  see anything to be improved in this
-package, please contact me or make a pull request.
-
-##
-
-* [The documentation](https://jmichel7.github.io/Gapjm.jl)
+package  of GAP3. I started this project at the end of 2018 and it is still
+in  flux so the  package is not  yet registered. If  you see anything to be
+improved  in this  package, please  contact me  or make  an issue or a pull
+request in the GitHub repository.
 
 ### Installing
 

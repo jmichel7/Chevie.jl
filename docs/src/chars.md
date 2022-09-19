@@ -1,0 +1,23 @@
+# Classes/characters of reflection groups
+```@index
+Modules=[Chars]
+```
+```@docs
+Chars
+CharTable
+on_chars
+charinfo
+charnames
+classnames
+classinfo
+fakedegree
+fakedegrees
+representation
+representations
+InductionTable
+jInductionTable
+JInductionTable
+detPerm
+conjPerm
+WGraphToRepresentation
+```
