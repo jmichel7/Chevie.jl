@@ -864,8 +864,11 @@ PermRoot.action(W::CoxSym,i,p)=i^p
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-Groups.classreps(W::CoxSym{T}) where T=
-get!(()->map(x->W(x...),classinfo(W)[:classtext]),W,:classreps)::Vector{Perm{T}}
+function Groups.classreps(W::CoxSym{T}) where T
+  get!(W,:classreps)do
+    map(x->x.representative,conjugacy_classes(W))
+  end::Vector{Perm{T}}
+end
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=div(length(W.refls),2)
@@ -904,8 +907,7 @@ PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 Base.length(W::CoxSym,w)=count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 
 # for reflection_subgroups note the difference with Chevie:
-# leftdescents, rightdescents, classinfo.classtext, word
-# use indices in W and not in parent(W)
+# leftdescents, rightdescents, word  use indices in W and not in parent(W)
 """
 `reflection_subgroup(W::CoxSym,I)`
 

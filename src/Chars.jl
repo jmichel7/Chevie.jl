@@ -860,6 +860,9 @@ function Groups.conjugacy_classes(W::TW)where TW<:Hastype
                          :name=>c[:classnames][i],
                          :param=>c[:classparams][i]))
       if haskey(c,:orders) C.order=c[:orders][i] end
+      if haskey(c,:malle) C.malle=c[:malle][i] end
+      if haskey(c,:centralizers) C.centralizers=c[:centralizers][i] end
+      if haskey(c,:indexclasses) C.index=c[:indexclasses][i] end
       C
     end
     t=refltype(W)

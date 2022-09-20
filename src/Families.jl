@@ -628,21 +628,21 @@ Family(LD(CoxSym(3)):8)
 """
 function drinfeld_double(g;lu=false)
   res=Family(Dict{Symbol,Any}(:group=> g))
-  res.classinfo=map(function (c, n)
+  res.classinfo=map(classreps(g), classnames(g))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)
-    if r[:elt]==one(g) r[:name]="1" end
-    r[:centralizer]=centralizer(g, r[:elt])
+    if isone(c) r[:name]="1" end
+    r[:centralizer]=centralizer(g, c)
     r[:centelms]=classreps(r[:centralizer])
     t=CharTable(r[:centralizer])
 #   println("t=$t")
     r[:charNames]=charnames(r[:centralizer]; TeX=true)
     r[:names]=t.classnames
-    r[:names][findfirst(==(one(g)),r[:centelms])]="1"
+    r[:names][findfirst(isone,r[:centelms])]="1"
     r[:chars]=t.irr
     r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
     r[:centralizers]=t.centralizers
     r
-  end, classreps(g), CharTable(g).classnames)
+  end
   res.charLabels=vcat(
       map(r->map(c->"($(r[:name]),$c)",r[:charNames]),res.classinfo)...)
   if isabelian(g)
@@ -678,7 +678,7 @@ function drinfeld_double(g;lu=false)
   res.fourierMat=inv(res.mellin)*one(res.mellin)[p,:]*res.mellin
   if lu
     res.perm=Perm(conj(res.mellin),res.mellin;dims=2)
-    res.fourierMat=^(res.fourierMat, res.perm,dims=1)
+    res.fourierMat=permute(res.fourierMat, res.perm,dims=1)
   end
   res.special=findfirst(==("(1,1)"),res.charLabels)
   Family(res)
