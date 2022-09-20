@@ -192,9 +192,8 @@ module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   simple_conjugating, refls, unique_refls, reflection, reflectionmat, 
-  Diagram, 
-  refltype, cartan, independent_roots, inclusion, inclusiongens, restriction,
-  coroot, hyperplane_orbits, TypeIrred, refleigen, reflchar, 
+  Diagram, refltype, cartan, independent_roots, inclusion, inclusiongens,
+  restriction, coroot, TypeIrred, refleigen, reflchar, 
   bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
   invariants, matY, simpleroots, simplecoroots, action, radical,
@@ -643,7 +642,7 @@ refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Per
 reflection for `i`-th root(s) of `W` (`i` can be an index or a vector of indices)
 """
 refls(W::PermRootGroup,i::Integer)=i<=ngens(W) ? gens(W)[i] : refls(W)[i]
-refls(W::PermRootGroup,i)=refls(W)[i]
+refls(W::PermRootGroup,i::AbstractVector)=map(j->refls(W,j),i)
 
 """
 `simple_conjugating(W)`
@@ -654,7 +653,7 @@ For each index `i` of a root, an element `w∈ W` such that
 """
 simple_conjugating(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:simple_conjugating)::Vector{Perm{T1}}
 
-unique_refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:unique_refls)::Vector{Int}
+unique_refls(W)=getp(simple_reps,W,:unique_refls)::Vector{Int}
 
 """
 `simple_conjugating(W,i)`
@@ -1017,68 +1016,6 @@ function refltype(W::PermRootGroup)
       d
     end
   end::Vector{TypeIrred}
-end
-
-"""
-`hyperplane_orbits(W)`
-
-returns  a  list  of  named  tuples,  one  for each hyperplane orbit of the
-reflection  group `W`. If `o` is the named tuple for such an orbit, and `s`
-is  the first  element of  `gens(W)` whose  hyperplane is  in the orbit, it
-contains the following fields
-
- `o.s`:     index of `s` in `gens(W)`
-
- `o.cl_s`:  `map(i->position_class(W,s^i),1:o.order-1)`
-
- `o.order`: order of s
-
- `.N_s`:    Size of orbit
-
- `.det_s`:  for i in `1:o.order-1`, position in CharTable of `(det_s)^i`
-
-```julia-repl
-julia> W=coxgroup(:B,2)
-B₂
-
-julia> hyperplane_orbits(W)
-2-element Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}:
- (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])
- (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
-```
-"""
-function hyperplane_orbits(W::PermRootGroup)
-  get!(W,:hyperplane_orbits)do
-  sr=simple_reps(W)
-  rr=refls(W)
-  cr=classreps(W)
-  orb=unique(sort(sr))
-  class=map(orb)do s
-    map(1:ordergens(W)[s]-1)do o
-#     return position_class(W,refls(W,s)^o)
-      for i in eachindex(sr)
-        if sr[i]==s
-          p=findfirst(==(rr[i]^o),cr)
-          if p!==nothing return p end
-        end
-      end
-      error("not found")
-    end
-  end
-  chars=CharTable(W).irr
-  pairs=zip(orb,class)
-  if isempty(pairs) 
-     return NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}[]
-  end
-  map(pairs) do (s,c)
-    ord=ordergens(W)[s]
-    dets=map(1:ord-1) do j
-      findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
-         all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
-    end
-    (s=s,cl_s=c,order=ord,N_s=length(conjugacy_classes(W)[c[1]]),det_s=dets)
-  end
-  end::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
 end
 
 """

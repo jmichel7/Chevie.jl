@@ -108,13 +108,13 @@ include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
+include("SPerms.jl");@reexport using .SPerms
 include("ComplexR.jl");@reexport using .ComplexR
 include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
-include("SPerms.jl");@reexport using .SPerms
 include("Algebras.jl");@reexport using .Algebras
 include("Presentations.jl");@reexport using .Presentations
 include("Garside.jl");@reexport using .Garside

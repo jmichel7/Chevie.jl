@@ -864,17 +864,16 @@ PermRoot.action(W::CoxSym,i,p)=i^p
 PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
                                         :indices=>collect(1:W.n-1)))]
 
-function Groups.classreps(W::CoxSym{T}) where T
-  get!(W,:classreps)do
-    map(x->x.representative,conjugacy_classes(W))
-  end::Vector{Perm{T}}
-end
-
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=div(length(W.refls),2)
-PermRoot.simple_reps(W::CoxSym)=fill(1,length(W.refls))
-PermRoot.refls(W::CoxSym,i)=W.refls[i]
+function PermRoot.simple_reps(W::CoxSym)
+  get!(W,:simple_reps)do
+    W.unique_refls=collect(1:nref(W))
+    fill(1,length(W.refls))
+  end::Vector{Int}
+end
 PermRoot.refls(W::CoxSym)=W.refls
+PermRoot.refls(W::CoxSym,i)=W.refls[i]
 PermRoot.rank(W::CoxSym)=ngens(W)
 
 """
@@ -914,10 +913,8 @@ Base.length(W::CoxSym,w)=count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 The only parabolics defined for `CoxSym(n)` are for `I=1:m` for `m≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
-  if length(I)>0 n=maximum(I)
-    if I!=1:n error(I," should be 1:n for some n") end
-  else n=0 end
-  CoxSym(n+1)
+  if I!=1:length(I) error(I," should be 1:n for some n") end
+  CoxSym(length(I)+1)
 end
 #------------------------ GenCox ------------------------------
 

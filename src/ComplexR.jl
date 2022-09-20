@@ -1,7 +1,8 @@
 module ComplexR
 using ..Gapjm
 export complex_reflection_group, crg, reflection_name, diagram, codegrees,
-  Reflection, reflections, isdistinguished, hyperplane_orbit, simple_rep,
+  Reflection, reflections, isdistinguished, 
+  hyperplane_orbits, hyperplane_orbit, simple_rep,
   reflection_group, torusfactors, ComplexReflectionGroup
 
 const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
@@ -125,7 +126,7 @@ julia> length(W)
 14400
 ```
 """
-function Gapjm.degrees(W::Group)
+function Gapjm.degrees(W::PermRootGroup)
   get!(W,:degrees)do
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end
@@ -257,7 +258,7 @@ julia> codegrees(W)
  2
 ```
 """
-function codegrees(W::Group)
+function codegrees(W::PermRootGroup)
   vcat(fill(-1,rank(W)-semisimplerank(W)),collect.(codegrees.(refltype(W)))...)
 end
 
@@ -284,8 +285,72 @@ end
 
 reflection_name(t::TypeIrred)=getchev(t,:ReflectionName,Dict())
 
+"""
+`hyperplane_orbits(W)`
+
+returns  a  list  of  named  tuples,  one  for each hyperplane orbit of the
+reflection  group `W`. If `o` is the named tuple for such an orbit, and `s`
+is  the first  element of  `gens(W)` whose  hyperplane is  in the orbit, it
+contains the following fields
+
+ `o.s`:     index of `s` in `gens(W)`
+
+ `o.cl_s`:  `map(i->position_class(W,s^i),1:o.order-1)`
+
+ `o.order`: order of s
+
+ `.N_s`:    Size of orbit
+
+ `.det_s`:  for i in `1:o.order-1`, position in CharTable of `(det_s)^i`
+
+```julia-repl
+julia> W=coxgroup(:B,2)
+B₂
+
+julia> hyperplane_orbits(W)
+2-element Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}:
+ (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])
+ (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
+```
+"""
+function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyperoctaedral})
+  get!(W,:hyperplane_orbits)do
+  sr=simple_reps(W)
+  rr=refls(W)
+  cr=classreps(W)
+  orb=unique(sort(sr))
+  class=map(orb)do s
+    map(1:ordergens(W)[s]-1)do o
+#     return position_class(W,refls(W,s)^o)
+      for i in eachindex(sr)
+        if sr[i]==s
+          p=findfirst(==(rr[i]^o),cr)
+          if p!==nothing return p end
+        end
+      end
+      error("not found")
+    end
+  end
+  chars=CharTable(W).irr
+  pairs=zip(orb,class)
+  if isempty(pairs) 
+     return NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}[]
+  end
+  map(pairs) do (s,c)
+    ord=ordergens(W)[s]
+    dets=map(1:ord-1) do j
+      findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
+         all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
+    end
+    (s=s,cl_s=c,order=ord,N_s=length(conjugacy_classes(W)[c[1]]),det_s=dets)
+  end
+  end::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
+end
+
+@forward FiniteCoxeterGroup.G hyperplane_orbits, codegrees, Gapjm.degrees
+
 #------------------------- Reflection(s) --------------------------------
-struct Reflection{TW<:ComplexReflectionGroup}
+struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral}}
   W::TW
   rootno::Int
   eigen::Root1
@@ -408,7 +473,7 @@ julia> reflections(W)
  Reflection(G₄,5,ζ₃²)
 ```
 """
-function reflections(W::ComplexReflectionGroup)
+function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral})
   get!(W,:reflections)do
     sreps=sort(unique(simple_reps(W)))
     pnts=refls(W,sreps)
@@ -417,10 +482,10 @@ function reflections(W::ComplexReflectionGroup)
     end
     res=Reflection{typeof(W)}[]
     for i in unique_refls(W)
-      e=ordergens(W)[simple_reps(W,i)]
+      e=ordergens(W)[simple_reps(W)[i]]
       if W isa CoxeterGroup w=word(W,refls(W,i))
       else
-        rep=simple_reps(W,i)
+        rep=simple_reps(W)[i]
         w=dd[findfirst(==(rep),sreps)][refls(W,i)]
         w=vcat(invert_word(W,w),[rep],w)
       end

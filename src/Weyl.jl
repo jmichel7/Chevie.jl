@@ -661,7 +661,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.eltype, Base.iterate, Base.one,
  Gapjm.roots, Groups.gens, Groups.conjugacy_classes, PermGroups.classreps,
- PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.hyperplane_orbits,
+ PermRoot.action, PermRoot.cartan, PermRoot.coroots,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank, 
  PermRoot.reflchar, 

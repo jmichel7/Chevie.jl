@@ -848,7 +848,7 @@ function classinfo(W)
   end #::Dict{Symbol,Any}
 end
 
-Hastype=Union{PermRootGroup,Spets,CoxSym}
+const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyperoctaedral}
 
 function Groups.conjugacy_classes(W::TW)where TW<:Hastype
   get!(W,:classes) do

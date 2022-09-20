@@ -432,11 +432,11 @@ function CoxHyperoctaedral(n::Int)
 end
 
 function Base.show(io::IO, W::CoxHyperoctaedral)
-  print(io,"CoxHyperoctaedral($(W.n))")
+ print(io,"CoxHyperoctaedral($(rank(W)))")
 end
 
 PermRoot.refltype(W::CoxHyperoctaedral)=[TypeIrred(Dict(:series=>:B,
-                                        :indices=>collect(1:W.n)))]
+                                         :indices=>collect(1:rank(W))))]
 
 CoxGroups.nref(W::CoxHyperoctaedral)=ngens(W)^2
 
@@ -449,17 +449,26 @@ function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
   i^w<(i-1)^w
 end
 
+PermRoot.rank(W::CoxHyperoctaedral)=W.n
+
 function PermRoot.refls(W::CoxHyperoctaedral{T})where T
   get!(W,:refls)do
-    refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:W.n))
-    for i in 2:W.n-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:W.n-i)) end
-    for i in 1:W.n-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:W.n-i)) end
+    refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:rank(W)))
+    for i in 2:rank(W)-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i)) end
+    for i in 1:rank(W)-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:rank(W)-i)) end
     append!(refs,refs)
     refs
   end::Vector{SPerm{T}}
 end
 
 PermRoot.refls(W::CoxHyperoctaedral,i)=refls(W)[i]
+
+function PermRoot.simple_reps(W::CoxHyperoctaedral)
+  get!(W,:simple_reps)do
+    W.unique_refls=collect(1:nref(W))
+    fill(1,length(refls(W)))
+  end::Vector{Int}
+end
 
 function Perms.reflength(W::CoxHyperoctaedral,w)
   sym=nsym=0
