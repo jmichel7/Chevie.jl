@@ -699,7 +699,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   row_labels=charnames(io,uc)
   if get(io,:byfamily,false)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
-    rowseps=vcat([0],reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)))
+    rowseps=pushfirst!(reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)),0)
     for f in uc.families
       if !haskey(f,:special) continue end
       row_labels[f.charNumbers[f.special]]*="^{s}"

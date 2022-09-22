@@ -37,16 +37,15 @@ chevieset(:imp,:GeneratingRoots,function(p,q,r)
   append!(roots,map(i->vcat(fill(0,i-2),[-1;1],fill(0,r-i)),2:r))
 end)
 
-# see Halverson and Ram,
+# see page 172 of Halverson and Ram,
 # Murnaghan-Nakayama rules for characters of Iwahori-Hecke algebras of the 
 # complex reflection groups G(r,p,n) Canad. J. Math. 50 (1998) 167--192
-# page 172
 struct Hook
   area::Int       # area of the hook
   startpos::Int   # the position of the decreased βnumber in the βlist
   endpos::Int     # the position it will occupy after being decreased
-  DC::Vector{Int} # the list of dull corners, given by their axial position
-  SC::Vector{Int} # the list of sharp corners, given by their axial position
+  DC::Vector{Int} # axial positions of dull corners
+  SC::Vector{Int} # axial positions of sharp corners
 end
 
 function Base.show(io::IO,h::Hook)
@@ -67,9 +66,10 @@ function hooksβ(S,s)
     if j>0 && S[j]==i continue end
     for k in j+1:e
       if S[k]>i+s break end
-      z=vcat([i],S[j+1:k-1])
+      z=pushfirst!(S[j+1:k-1],i)
       zi=filter(i->z[i]-z[i-1]>1,2:length(z))
-      push!(res,Hook(S[k]-i,k,j+1,z[zi].-e,z[push!(zi.-1,length(z))].+(1-e)))
+      push!(res,Hook(S[k]-i,k,j+1,view(z,zi).-e,
+                 view(z,push!(zi.-1,length(z))).+(1-e)))
     end
   end
   res

@@ -692,12 +692,12 @@ function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
 end
 
 function Base.show(io::IO,t::CharInfo)
-  print(io,t.prop)
+  print(io,"CharInfo(",t.prop,")")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   if !hasdecor(io)
-    print(io,ci.prop)
+    print(io,"CharInfo(",ci.prop,")")
     return
   end
   n=length(ci.charnames)
@@ -771,6 +771,9 @@ function conjPerm(W)
   end
 end
 
+@GapObj struct ClassInfo
+end
+
 function classinfo(t::TypeIrred)
   cl=deepcopy(convert(Dict{Symbol,Any},getchev(t,:ClassInfo)))
   if haskey(t,:orbit)
@@ -783,7 +786,7 @@ function classinfo(t::TypeIrred)
   inds=t.indices
   cl[:classtext]=map(x->inds[x],cl[:classtext])
   if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
-  cl
+  ClassInfo(cl)
 end
 
 Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
@@ -815,12 +818,11 @@ of the information in `:classparams`.
 
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
-Dict{Symbol, Any} with 5 entries:
-  :classes     => [1, 3, 2]
-  :orders      => [1, 2, 3]
-  :classtext   => [Int64[], [1], [1, 2]]
-  :classnames  => ["111", "21", "3"]
-  :classparams => [[[1, 1, 1]], [[2, 1]], [[3]]]
+n0│name length order word
+──┼──────────────────────
+1 │ 111      1     1     
+2 │  21      3     2    1
+3 │   3      2     3   12
 ```
 
 See also the introduction of this section.
@@ -828,11 +830,12 @@ See also the introduction of this section.
 function classinfo(W)
   get!(W,:classinfo)do
     tmp=map(classinfo,refltype(W))
-    if isempty(tmp) return Dict(:classtext=>[Int[]],:classnames=>[""],
-                      :classparams=>[Int[]],:orders=>[1],:classes=>[1])
+    if isempty(tmp) return ClassInfo(Dict(:classtext=>[Int[]],:classnames=>[""],
+                            :classparams=>[Int[]],:orders=>[1],:classes=>[1]))
     end
     if any(isnothing, tmp) return nothing end
-    if length(tmp)==1 res=copy(tmp[1]) else res=Dict{Symbol, Any}() end
+    if length(tmp)==1 res=copy(tmp[1].prop)
+    else res=Dict{Symbol, Any}() end
     res[:classtext]=map(x->reduce(vcat,x),cartfields(tmp,:classtext))
     res[:classnames]=map(join,cartfields(tmp,:classnames))
     if all(haskey.(tmp,:classparams))
@@ -844,8 +847,40 @@ function classinfo(W)
     if all(haskey.(tmp,:classes))
       res[:classes]=map(prod, cartfields(tmp,:classes))
     end
-    res
+    ClassInfo(res)
   end #::Dict{Symbol,Any}
+end
+
+@forward FiniteCoxeterGroup.G classinfo, charinfo
+
+function Base.show(io::IO, ::MIME"text/html", ci::ClassInfo)
+  show(IOContext(io,:TeX=>true), "text/plain",ci)
+end
+
+function Base.show(io::IO,t::ClassInfo)
+  print(io,"ClassInfo(",t.prop,")")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
+  if !hasdecor(io)
+    print(io,"ClassInfo(",ci.prop,")")
+    return
+  end
+  n=length(ci.classnames)
+  t=Any[fromTeX.(Ref(io),ci.classnames)];cl=String["name"]
+  ext=fill("",n)
+  for (key,tkey) in [(:classes,:length),(:orders,:order)]
+    if haskey(ci,key) && ci[key]!=false
+      push!(t,fromTeX.(Ref(io),string.(ci[key])))
+      push!(cl,string(tkey))
+    end
+  end
+  push!(t,joindigits.(ci.classtext));push!(cl,"word")
+  if haskey(ci,:refleigen)
+    push!(t,repr.(ci.refleigen;context=io));push!(cl,"eigen")
+  end
+  showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
+  if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
 end
 
 const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyperoctaedral}
@@ -853,33 +888,18 @@ const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyperoctaedral}
 function Groups.conjugacy_classes(W::TW)where TW<:Hastype
   get!(W,:classes) do
     c=classinfo(W)
-    cl=map(1:length(c[:classtext]))do i
-      C=ConjugacyClass(W,W(c[:classtext][i]...),
-        Dict{Symbol,Any}(:length=>c[:classes][i],
-                         :word=>c[:classtext][i],
-                         :name=>c[:classnames][i],
-                         :param=>c[:classparams][i]))
-      if haskey(c,:orders) C.order=c[:orders][i] end
-      if haskey(c,:malle) C.malle=c[:malle][i] end
-      if haskey(c,:centralizers) C.centralizers=c[:centralizers][i] end
-      if haskey(c,:indexclasses) C.index=c[:indexclasses][i] end
+    map(1:length(c.classtext))do i
+      C=ConjugacyClass(W,W(c.classtext[i]...),
+        Dict{Symbol,Any}(:length=>c.classes[i],
+                         :word=>c.classtext[i],
+                         :name=>c.classnames[i],
+                         :param=>c.classparams[i]))
+      if haskey(c,:orders) C.order=c.orders[i] end
+      if haskey(c,:malle) C.malle=c.malle[i] end
+      if haskey(c,:centralizers) C.centralizers=c.centralizers[i] end
+      if haskey(c,:indexclasses) C.index=c.indexclasses[i] end
       C
     end
-    t=refltype(W)
-    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
-       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
-      if isempty(t) ll=[Root1[]]
-      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
-      end
-      central=(W isa Spets ? torusfactors(W) :
-                            fill(E(1),rank(W)-semisimplerank(W)))
-      ll=map(x->vcat(x,central),ll)
-      for (i,l) in enumerate(ll)
-        cl[i].eigen=sort(l)
-        cl[i].reflength=count(!isone,l)
-      end
-    end
-    cl
   end
 end
 
@@ -917,9 +937,19 @@ Groups.word(C::ConjugacyClass{T,TW}) where{T,TW<:Hastype}=C.word
 
 function eigen(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   get!(C,:eigen)do
-    l=eigmat(reflrep(C.G,C.representative)) # eigmat is sorted
-    C.reflength=count(!isone,l)
-    l
+    t=refltype(C.G)
+    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+      l=refleigen(C.G)
+      for (i,C1) in enumerate(conjugacy_classes(C.G))
+        C1.eigen=l[i]
+        C1.reflength=count(!isone,C1.eigen)
+      end
+    else
+      C.eigen=eigmat(reflrep(C.G,C.representative)) # eigmat is sorted
+      C.reflength=count(!isone,C.eigen)
+    end
+    C.eigen
   end::Vector{Root1}
 end
 
@@ -1334,7 +1364,7 @@ be specified by giving an IO as argument.
 function classnames(io::IO,W)
   if applicable(refltype,W)
     c=classinfo(W)
-    cn=c[:classnames]
+    cn=c.classnames
     for k in [:malle]
       if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
     end
@@ -1348,7 +1378,7 @@ classnames(W;opt...)=classnames(IOContext(stdout,opt...),W)
 
 function classnames(t::TypeIrred;opt...)
   c=classinfo(t)
-  cn=c[:classnames]
+  cn=c.classnames
   for k in [:malle]
     if get(opt,k,false) && haskey(c,k) cn=string.(c[k]) end
   end

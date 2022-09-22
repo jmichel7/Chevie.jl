@@ -1111,8 +1111,19 @@ julia> refleigen(coxgroup(:B,2))
 ```
 """
 function refleigen(W)
-  get!(W,:refleigen) do
-    eigen.(conjugacy_classes(W))
+  get!(classinfo(W),:refleigen) do
+    t=refltype(W)
+    if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+      if isempty(t) ll=[Root1[]]
+      else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
+      end
+      central=(W isa Spets ? torusfactors(W) :
+                            fill(E(1),rank(W)-semisimplerank(W)))
+      ll=map(x->vcat(x,central),ll)
+      sort.(ll)
+    else eigen.(conjugacy_classes(W))
+    end
   end::Vector{Vector{Root1}}
 end
 

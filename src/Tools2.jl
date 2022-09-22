@@ -103,7 +103,7 @@ function Primes.factor(p::Mvp{T,N})where {T,N}
     t=transpose(solutionmat(m,n))
     m=solutionmat(t,m)
   end
-  v=t*vcat(Mvp.(v),[Mvp(1)])
+  v=t*push!(Mvp.(v),Mvp(1))
   if size(m,1)==1 return [v[1],v[1]*m[1,1]] end
   b=m[1,2]+m[2,1]
   if m[1,1]==0 return [v[2],b*v[1]+m[2,2]*v[2]] end
