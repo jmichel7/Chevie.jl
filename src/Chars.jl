@@ -786,6 +786,7 @@ function classinfo(t::TypeIrred)
   inds=t.indices
   cl[:classtext]=map(x->inds[x],cl[:classtext])
   if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
+  if haskey(cl,:centralizers) cl[:centralizers]=Int.(cl[:centralizers]) end
   ClassInfo(cl)
 end
 
@@ -861,24 +862,37 @@ function Base.show(io::IO,t::ClassInfo)
   print(io,"ClassInfo(",t.prop,")")
 end
 
+function limitto(s,sz)
+  if length(s)<sz return s end
+  s[1:sz-1]*"…"
+end
+
 function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   if !hasdecor(io)
     print(io,"ClassInfo(",ci.prop,")")
     return
   end
   n=length(ci.classnames)
+  sz=length(string(n))+1
   t=Any[fromTeX.(Ref(io),ci.classnames)];cl=String["name"]
-  ext=fill("",n)
+  sz+=max(maximum(length.(t[end])),4)+1
   for (key,tkey) in [(:classes,:length),(:orders,:order)]
     if haskey(ci,key) && ci[key]!=false
       push!(t,fromTeX.(Ref(io),string.(ci[key])))
       push!(cl,string(tkey))
+      sz+=max(maximum(length.(t[end])),length(cl[end]))+1
     end
   end
-  push!(t,joindigits.(ci.classtext));push!(cl,"word")
   if haskey(ci,:refleigen)
-    push!(t,repr.(ci.refleigen;context=io));push!(cl,"eigen")
+    m=toM(ci.refleigen)
+    for i in axes(m,2)
+      push!(t,repr.(m[:,i];context=io))
+      push!(cl,i==size(m,2) ? "eig" : "")
+      sz+=max(maximum(length.(t[end])),length(cl[end]))+1
+    end
   end
+  push!(t,limitto.(joindigits.(ci.classtext),displaysize(io)[2]-sz-2))
+  push!(cl,"word")
   showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
   if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
 end
