@@ -13,6 +13,8 @@ leftlcm
 rightlcm
 α(::Garside.LocallyGarsideElt)
 α(::Garside.LocallyGarsideElt,::AbstractVector)
+isleftdescent(::BraidMonoid,::Any,::Int)
+leftdescents(::Garside.LocallyGarsideElt)
 Brieskorn_normal_form
 BraidMonoid
 DualBraidMonoid

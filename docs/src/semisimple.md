@@ -4,6 +4,7 @@ Modules=[Semisimple]
 ```
 ```@docs
 Semisimple
+SubTorus
 fundamental_group
 intermediate_group
 quasi_isolated_reps(::FiniteCoxeterGroup)

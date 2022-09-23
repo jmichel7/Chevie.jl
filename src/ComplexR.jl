@@ -3,9 +3,7 @@ using ..Gapjm
 export complex_reflection_group, crg, reflection_name, diagram, codegrees,
   Reflection, reflections, isdistinguished, 
   hyperplane_orbits, hyperplane_orbit, simple_rep,
-  reflection_group, torusfactors, ComplexReflectionGroup
-
-const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
+  reflection_group, torusfactors
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -23,9 +21,9 @@ function PermRoot.coroots(t::TypeIrred)
 end
 
 """
-`complex_reflection_group(STnumber)`
+`complex_reflection_group(STnumber)` or `crg(STnumber)`
 
-`complex_reflection_group(p,q,r)`
+`complex_reflection_group(p,q,r)` or `crg(p,q,r)`
 
 The  first form of `complex_reflection_group`  returns the complex reflection
 group which has Shephard-Todd number `STnumber`, see
@@ -103,7 +101,7 @@ function reflection_group(l::Vector{TypeIrred})
 end
 
 """
-`degrees(W)`
+`degrees(W::ComplexReflectionGroup)`
 
 returns  a list  holding the  degrees of  `W` as  a reflection group on the
 vector  space `V` on which  it acts. These are  the degrees `d₁,…,dₙ` where
@@ -242,7 +240,7 @@ function codegrees(t::TypeIrred)
 end
 
 """
-`codegrees(W)`
+`codegrees(W::ComplexReflectionGroup)`
 
 returns  the vector of codegrees of `W`  as a reflection group on the space
 `V`  of `reflrep(W)`.  These are  one less  than the  degrees of  the basic

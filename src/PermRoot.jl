@@ -199,10 +199,11 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   invariants, matY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, nhyp, nref, indices
 using ..Gapjm
+
 """
 `coroot(r,λ=1)`
 
-the coroot for an orthogonal reflection of root `r` and eigenvalue `λ`"
+the coroot for an orthogonal reflection of root `r` and eigenvalue `λ`.
 """
 function coroot(root::AbstractVector,eigen::Number=-1)
   cr=conj.(root)
@@ -279,8 +280,8 @@ end
 """
 `reflection(s::Matrix [,r::AbstractVector])`
 
-Here  `s` is  a square  matrix, and  if given  `r` is  a vector of the same
-length  as `size(s,1)`. The function  determines if `s` is  the matrix of a
+`s`  should be is a square  matrix, and if given `r`  should be a vector of
+length  `size(s,1)`.  The  function  determines  if  `s` is the matrix of a
 reflection  (resp. if `r` is  given if it is  the matrix of a reflection of
 root  `r`; the point of  giving `r` is to  specify exactly the desired root
 and  coroot, which  otherwise are  determined only  up to  a scalar and its
@@ -459,10 +460,10 @@ function Base.show(io::IO,d::Diagram)
       join(io,ind," ")
     elseif series==:B
       print(io,node)
-      if t.cartanType==2 l1=max(l[1],2);print(rdarrow(l1))
-      elseif t.cartanType==1 l1=max(l[1],2);print(ldarrow(l1))
-      elseif t.cartanType==root(2) l1=max(l[1],2);print(dbar(l1))
-      else xprint("=",t.cartanType,"=");
+      if t.cartanType==2 l1=max(l[1],2);print(io,rdarrow(l1))
+      elseif t.cartanType==1 l1=max(l[1],2);print(io,ldarrow(l1))
+      elseif t.cartanType==root(2) l1=max(l[1],2);print(io,dbar(l1))
+      else xprint(io,"=",t.cartanType,"=");
          l1=length(repr(t.cartanType;context=rio()))+2
       end
       join(io,node.*bar.^l[2:end-1]);println(io,node," ",t)
@@ -566,9 +567,21 @@ function Base.show(io::IO,d::Diagram)
 end
 
 #---------------------------------------------------------------------------
+"""
+`PermRootGroup`   is  the  type  of   reflection  group  represented  as  a
+permutation group on a set of roots.
+"""
 abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 
-"`Diagram(W)` diagram of finite reflection group `W`"
+"""
+`Diagram(W)` diagram of finite reflection group `W`
+```julia-repl
+julia> Diagram(crg(33))
+G₃₃     3
+       /^\
+  1---2---4---5 423423==342342
+```
+"""
 Diagram(W::PermRootGroup)=Diagram.(refltype(W))
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 """
@@ -583,16 +596,16 @@ same as `inclusion(W)[i]` or `inclusion(W)[v]` (but more efficient).
 """
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
-"`nref(W)` the number of reflections of the finite reflection group `W`"
+"`nref(W::ComplexReflectionGroup)` the number of reflections of `W`"
 nref(W::PermRootGroup)=sum(degrees(W).-1)
 """
-`nhyp(W)`
+`nhyp(W::ComplexReflectionGroup)`
 
-The number of reflecting hyperplanes of the finite reflection group `W`
+The number of reflecting hyperplanes of `W`
 """
 nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
-# should use independent_roots
 
+# should use independent_roots
 Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W,eachindex(gens(W)))==
   roots(W1,eachindex(gens(W1))) && simplecoroots(W)==simplecoroots(W1)
 
@@ -629,10 +642,11 @@ the  smallest index  of a root in the same `W`-orbit as the `i`-th root.
 simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 
 """
-`refls(W)`
+`refls(W::ComplexReflectionGroup)`
 
-list  of same  length as  `W.roots` giving  the corresponding distinguished
-reflections. In particular this list is much longer than `unique(refls(W))`.
+a  list of same length as  `W.roots` giving the corresponding distinguished
+reflections. In particular this list is much longer than `unique(refls(W))`
+since in general there are several roots corresponding to a reflection.
 """
 refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Perm{T1}}
 
@@ -665,7 +679,8 @@ simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
 
 """
 `cartan(W::PermRootGroup,i,j)`
-the cartan coefficient `cᵢ(rⱼ)` of the `i`-th coroot and the `j`-th root of `W`
+the  cartan coefficient `cᵢ(rⱼ)`, the value of the linear form given by the
+`i`-th coroot `cᵢ` on the `j`-th root `rᵢ` of `W`
 """
 cartan(W::PermRootGroup,i,j)=transpose(coroots(W,i))*roots(W,j)
 
@@ -679,9 +694,10 @@ diagonal matrix.
 
 If `s₁,…,sₙ` generate a reflection group `W`, then `C` up to conjugation by
 a  diagonal matrix is an invariant of the reflection representation of `W`.
-If invertible `C` determines this representation since then the `rᵢ` form a
-basis  in which the matrix  for `sᵢ` differs from  the identity only on the
-`i`-th line, where the corresponding line of `C` has been subtracted.
+If invertible, the matrix `C` determines this representation since then the
+`rᵢ`  form a basis in  which the matrix for  `sᵢ` differs from the identity
+only  on the  `i`-th line,  where the  corresponding line  of `C`  has been
+subtracted.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -704,7 +720,7 @@ cartan(t::TypeIrred)=improve_type(toM(getchev(t,:CartanMat)))
 cartan(W::PermRootGroup,I)=[cartan(W,i,j) for i in I, j in I]
 
 """
-rank(W::Group)
+`rank(W::ComplexReflectionGroup)`
 
 This  function  returns  the  *rank*  of  a  reflection group, which is the
 dimension of the space where it acts.
@@ -720,11 +736,11 @@ rank(W::PermRootGroup)=istorus(W) ? W.rank : length(roots(W,1))
 Let  W be an irreducible CRG,  generated by distinguished reflections S.
 type_irred classifies W (returns a type record) using:
 
-    r=semisimplerank(W)
-    s=length(W)/factorial(r)
-    D=all distinguished reflections of W=orbit of S,    which gives
-      o=the maximum order of a reflection=max_{s∈ S}o(s)
-      h=the Coxeter number=sum_{s∈ D}o(s)
+  -  r=semisimplerank(W)
+  -  s=length(W)/factorial(r)
+  -  D=all distinguished reflections of W=orbit of S,    which gives
+  -  o=the maximum order of a reflection=max_{s∈ S}o(s)
+  -  h=the Coxeter number=sum_{s∈ D}o(s)
 
 G(de,e,r) has s=(de)ʳ/e, o=max(2,d), h=ed(r-1)+d-δ_{d,1}
 
@@ -1058,10 +1074,10 @@ end
 tr(m)=sum(i->m[i,i],axes(m,1))
 
 """
-`reflchar(W,w)` Reflection character
+`reflchar(W::ComplexReflectionGroup,w)` Reflection character
 
-Returns  the trace  of the  element `w`  of the  reflection group `W` as an
-endomorphism of the vector space `V` on which `W` acts. This is the same as
+Returns  the trace  of the  element `w`  of `W`  as an  endomorphism of the
+vector space `V` on which `W` acts. This is the same as
 `trace(reflrep(W,w))`.
 
 julia-repl```
@@ -1075,11 +1091,11 @@ julia-repl```
 reflchar(W::PermRootGroup,w)=tr(reflrep(W,w))
 
 """
-`reflchar(W)`
+`reflchar(W::ComplexReflectionGroup)`
 
-Returns  the reflection character of the  reflection group `W`. This is the
-same  as `map(c->reflchar(W,c),class-reps(W))`. When `W` is irreducible, it
-is also `CharTable(W).irr[charinfo(W).extRefl[2]]`.
+Returns   the  reflection   character  of   `W`.  This   is  the   same  as
+`map(c->reflchar(W,c),class-reps(W))`.  When `W` is irreducible, it is also
+`CharTable(W).irr[charinfo(W).extRefl[2]]`.
 
 ```julia-repl
 julia> reflchar(coxgroup(:A,3))
@@ -1166,13 +1182,13 @@ function Perms.reflength(W::PermRootGroup,w::Perm)
 end
 
 """
-`torus_order(W,i,q)`
+`torus_order(W::ComplexReflectionGroup,i,q)`
 
 returns  as a  polynomial in  `q` the  toric order  of the `i`-th conjugacy
 class  of `W`. This is the characteristic  polynomial of an element of that
 class  on  the  reflection  representation  of  `W`.  It is the same as the
-generic  order of the reflection subcoset  of `W` determined by the trivial
-subgroup and a representative of the `i`-th conjugacy class.
+generic  order of the reflection subcoset `torus(W,i)` of `W` determined by
+the trivial subgroup and a representative of the `i`-th conjugacy class.
 
 ```julia-repr
 julia> W=complex_reflection_group(4)
@@ -1188,7 +1204,7 @@ julia> torus_order.(Ref(W),1:nconjugacy_classes(W),Pol(:q))
  q²-ζ₃²q+ζ₃
 ```
 """
-torus_order(W::PermRootGroup,i,q)=prod(l->q-E(l),refleigen(W)[i])
+torus_order(W::PermRootGroup,i,q)=prod(l->q-l,refleigen(W)[i])
 
 Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
 
@@ -1232,7 +1248,7 @@ function independent_roots(W::PermRootGroup{T,T1})where{T,T1}
 end
 
 """
-`semisimpleRank(W)`
+`semisimpleRank(W::ComplexReflectionGroup)`
 
 This  function returns the  *semisimple rank* of  the reflection group `W`,
 which  is the dimension of the space  where it effectively acts. If `W`is a
@@ -1288,7 +1304,7 @@ function central_action(L,m)
 end
 
 """
-`PermX(W,M::AbstractMatrix)`
+`PermX(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
 Let `M` be an invertible linear map of the reflection representation of `W`
 which  preserves the set  of roots of  `parent(W)`, and normalizes `W` (for
@@ -1521,7 +1537,7 @@ matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 """
 `isparabolic(W)`
 
-whether the reflection group `W` is a parabolic subgroup of `parent(W)`.
+whether the reflection subgroup `W` is a parabolic subgroup of `parent(W)`.
 ```julia-repl
 julia> W=complex_reflection_group(7)
 G₇
@@ -1645,21 +1661,28 @@ PRG(i::Integer;T1=Int16)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],Vector{Int}[],
 
 radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 
-"`roots(W)` the roots of `W`"
+"`roots(W::PermRootGroup)` the roots of `W`"
 @inline roots(W::PRG)=W.roots
-"`roots(W,i)` same as but better than `roots(W)[i]`"
+"`roots(W::PermRootGroup,i)` same as but better than `roots(W)[i]`"
 @inline roots(W::PRG,i)=W.roots[i]
-"`simpleroots(W)` the simple roots of `W` as a matrix (each root is a row)"
+"""
+`simpleroots(W::ComplexReflectionGroup)`  the  simple  roots  of `W` (those
+corresponding to `gens(W)`) as a matrix (each root is a row)
+"""
 simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens(W))))
 "`coroots(W)` the list of coroots of `W` (listed in the same order as the roots)"
 @inline coroots(W::PRG)=W.coroots
-"`simplecoroots(W)` the simple coroots of `W` as a matrix (each coroot is a row)"
+"""
+`simplecoroots(W::ComplexReflectionGroup)` the simple coroots of `W` (those
+`corresponding to gens(W)`) as a matrix (each coroot is a row)
+"""
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(W.coroots[eachindex(gens(W))])
 @inline inclusion(W::PRG,i=eachindex(W.roots))=i
 @inline restriction(W::PRG,i=eachindex(W.roots))=i
 @inline Base.parent(W::PRG)=W
 @inline action(W::PRG,i,p)=i^p
 
+"`coroots(W,i)` same as but better than `coroots(W)[i]`"
 function coroots(W::PRG,i::Integer)
   if isassigned(W.coroots,i) return W.coroots[i] end
   j=findfirst(!iszero,roots(W,i))
@@ -1668,7 +1691,6 @@ function coroots(W::PRG,i::Integer)
   W.coroots[i]=improve_type(m[:,j].//roots(W,i)[j])
 end
 
-"`coroots(W,i)` same as but better than `coroots(W)[i]`"
 coroots(W::PRG,i::AbstractVector{<:Integer})=isempty(i) ? empty(W.coroots) : coroots.(Ref(W),i)
 
 function Base.:*(W::PRG,V::PRG)
@@ -1680,7 +1702,10 @@ function Base.:*(W::PRG,V::PRG)
   PRG(toL(r),toL(cr))
 end
 
-"`reflrep(W)` returns the list of `reflrep(W,x)` for `x` in `gens(W)`"
+"""
+`reflrep(W::ComplexReflectionGroup)` returns the list of `reflrep(W,x)` for
+`x` in `gens(W)`, that is the generators of `W` as matrices.
+"""
 reflrep(W::PRG)=W.matgens
 "`reflrep(W,i)` same as but better than `reflrep(W,W(i))`"
 reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
@@ -1789,7 +1814,7 @@ reflrep(W::PRSG)=map(i->reflrep(W,i),eachindex(gens(W)))
 
 #-------------------------------------------------
 """
-`Catalan(W)`
+`Catalan(W::ComplexReflectionGroup)`
 
 returns the Catalan Number of the irreducible complex reflection group `W`.
 For well-generated groups, this number is equal to the number of simples in
@@ -1847,7 +1872,7 @@ function Combinat.catalan(W,m=1;q=1)
 end
 
 """
-`invariant_form(W)`
+`invariant_form(W::ComplexReflectionGroup)`
 
 This  function returns the matrix `F`  of an Hermitian form invariant under
 the action of the reflection group `W`. That is, if `M` is the matrix of an
@@ -1914,7 +1939,7 @@ Pol{Int64}: q¹⁴-q¹⁰-q⁸+q⁴
 generic_order(W,q)=rank(W)==0 ? one(q) : q^sum(codegrees(W).+1)*prod(d->q^d-1,degrees(W))
 
 """
-`invariants(W)`
+`invariants(W::ComplexReflectionGroup)`
 
 returns  the fundamental invariants of `W` in its reflection representation
 `V`.  That is, returns  a set of  algebraically independent elements of the
@@ -1958,7 +1983,7 @@ julia> p^reflrep(W,1)-p
 Mvp{Cyc{Rational{Int64}}}: 0
 ```
 """
-function invariants(W)
+function invariants(W::PermRootGroup)
   V=parent(W)
   i=Function[] # eltype abstract otherwise I do not know how to do it
   for t in refltype(W)

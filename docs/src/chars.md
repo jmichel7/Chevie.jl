@@ -7,17 +7,16 @@ Chars
 CharTable
 on_chars
 charinfo
-charnames
+charnames(io::IO, W::Union{Coset{T, TW}, Group}) where {T, TW}
 classnames
 classinfo
 fakedegree
 fakedegrees
-representation
+representation(::Union{Chars.Hastype,FiniteCoxeterGroup},::Integer)
 representations
 InductionTable
 jInductionTable
 JInductionTable
 detPerm
 conjPerm
-WGraphToRepresentation
 ```

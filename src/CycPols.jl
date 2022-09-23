@@ -1,7 +1,4 @@
 """
-This package depends only on the packages `Primes`, `ModuleElts`,
-`CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`. 
-
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
 cyclotomic  field,  are  important  in  reductive  groups and  Spetses.  In
 particular  Schur  elements  of  cyclotomic  Hecke algebras are products of
@@ -14,9 +11,12 @@ zeroes  equal to  0 or  roots of  unity. The  advantages of representing as
 multiplication,  division and evaluation. The drawback is that addition and
 subtraction are not implemented!
 
+This   package  depends  only  on   the  packages  `Primes`,  `ModuleElts`,
+`CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`.
+
 The  method `CycPol`  takes a  `Pol` with  integer, rational  or cyclotomic
 coefficients,  and  finds  the  largest  `CycPol` dividing, leaving a `Pol`
-`coefficient` if the polynomial had not all its roots being roots of unity.
+`coefficient` if some roots of the polynomial are not roots of unity.
 
 ```julia-repl
 julia> @Pol q
@@ -28,7 +28,7 @@ julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2) # a `Pol` coefficient remains
 julia> p(q) # evaluate CycPol p at q
 Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 
-julia> p*inv(CycPol(q^2+q+1)) # inv is defined
+julia> p*inv(CycPol(q^2+q+1)) # `*` and `inv` are defined
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
 julia> -p  # one can multiply by a scalar
@@ -43,9 +43,9 @@ julia> degree(p)
 julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPol
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
 ```
-Evaluating  a `CycPol` at  some value gives  in general a  `Pol`. There are
-exceptions  where the value is still a `CycPol`: evaluating at `Pol()^n` or
-at `Pol([E(n,k)],1)`. Then `subs` gives that evaluation:
+Evaluating  a `CycPol` at some `Pol` value  gives in general a `Pol`. There
+are  exceptions  where  we  can  keep  the  value a `CycPol`: evaluating at
+`Pol()^n` or at `Pol([E(n,k)],1)`. Then `subs` gives that evaluation:
 
 ```julia-repl
 julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^-1
@@ -57,23 +57,13 @@ julia> subs(p,Pol([E(2)],1)) # or at Pol([Root1],1)
 ```
 The variable name used when printing a `CycPol` is the same as for `Pol`s.
 
-`CycPol`s are internally a `struct` with fields:
 
-`.coeff`:  a coefficient, usually a `Cyc` or a `Pol`. The `Pol` case allows
-   to represent as `CycPol`s arbitrary `Pol`s which is useful sometimes.
-
-`.valuation`: an `Int`.
-
-`.v`: a list of pairs `ζ=>m` of a `Root1` `ζ` and a multiplicity `m`.
-
-So `CycPol(c,val,v)` represents `c*q^val*prod((q-ζ)^m for (r,m) in v)`.
-
-When showing a `CycPol`, some factors of the cyclotomic polynomial `Φₙ` are
-given a special name. If `n` has a primitive root `ξ`, `ϕ′ₙ` is the product
-of  the `(q-ζ)` where `ζ` runs over the odd powers of `ξ`, and `ϕ″ₙ` is the
-product  for the even powers. Some further factors are recognized for small
-`n`.  The  function  `show_factors`  gives  the complete list of recognized
-factors:
+When  showing  a  `CycPol`,  some  factors  over  extension  fields  of the
+cyclotomic polynomial `Φₙ` are given a special name. If `n` has a primitive
+root  `ξ`, `ϕ′ₙ` is the product of the  `(q-ζ)` where `ζ` runs over the odd
+powers  of `ξ`, and `ϕ″ₙ` is the  product for the even powers. Some further
+factors are recognized for small `n`. The function `show_factors` gives the
+complete list of recognized factors:
 
 ```julia-rep1
 julia> CycPols.show_factors(24)
@@ -103,7 +93,7 @@ julia> CycPol(;conductor=24,no=8)(q)
 Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 ```
 
-This package also defines
+This package also defines the function `cylotomic_polynomial`:
 ```julia-repl
 julia> p=cyclotomic_polynomial(24)
 Pol{Int64}: q⁸-q⁴+1
@@ -121,7 +111,7 @@ using ModuleElts: ModuleElts, ModuleElt
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
-using ..Combinat: primitiveroot, divisors, collectby
+using Combinat: primitiveroot, divisors, collectby
 
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
 Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
@@ -168,6 +158,18 @@ function cyclotomic_polynomial(n::Integer)::Pol{Int}
   end
 end
 
+"""
+`CycPol`s are internally a `struct` with fields:
+
+`.coeff`:  a coefficient, usually a `Cyc` or a `Pol`. The `Pol` case allows
+   to represent as `CycPol`s arbitrary `Pol`s which is useful sometimes.
+
+`.valuation`: an `Int`.
+
+`.v`: a list of pairs `ζ=>m` of a `Root1` `ζ` and a multiplicity `m`.
+
+So `CycPol(coeff,val,v)` represents `coeff*q^val*prod((q-ζ)^m for (r,m) in v)`.
+"""
 struct CycPol{T}
   coeff::T
   valuation::Int
@@ -377,9 +379,7 @@ end
 (p::Pol)(x::Root1)=transpose(p.c)*x.^(p.v:degree(p))
   
 """
-`CycPol(p::Pol)`
-    
-Converts a `Pol` to `CycPol`
+`CycPol(p::Pol)` Converts `Pol` `p` to `CycPol`
     
 ```julia-repl
 julia> @Pol q;CycPol(3*q^3-3q)

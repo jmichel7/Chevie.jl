@@ -15,5 +15,6 @@ FactorizedSchurElement
 FactorizedSchurElements
 isrepresentation
 reflrep(::HeckeAlgebra)
+WGraphToRepresentation
 HeckeCoset
 ```

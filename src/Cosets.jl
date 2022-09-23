@@ -617,7 +617,7 @@ spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,reflrep(W,w))
 PermRoot.radical(WF::CoxeterCoset)=torus(central_action(Group(WF),WF.F))
 
 """
-`torus(m::Matrix)`
+`torus(m::AbstractMatrix)`
 
 `m`  should be an integral matrix of finite order. The function returns the
 coset `T` of the trivial Coxeter group such that `T.F==m`. This corresponds
@@ -629,13 +629,14 @@ julia> torus([0 -1;1 -1])
 Φ₃
 ```
 """
-Weyl.torus(m::Matrix)=spets(torus(size(m,1)),m)
+Weyl.torus(m::AbstractMatrix)=spets(torus(size(m,1)),m)
 
 """
 `torus(W,i)`
 
-This  returns the torus twisted by a representative of the `i`-th conjugacy
-class of `W`. This is the same as `twistings(W,Int[])[i]`.
+where  `W` is  a `Spets`  or a  `ComplexReflectionGroup`. This  returns the
+torus  twisted by  a representative  of the  `i`-th conjugacy class of `W`.
+This is the same as `twistings(W,Int[])[i]`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -667,8 +668,8 @@ julia> torus(WF,2)
 ²A₃₍₎=Φ₁Φ₂²
 ```
 """
-Weyl.torus(W::Spets,i)=subspets(W,Int[],W.phi\classreps(W)[i])
-Weyl.torus(W,i)=subspets(W,Int[],classreps(W)[i])
+Weyl.torus(W::Spets,i::Integer)=subspets(W,Int[],W.phi\classreps(W)[i])
+Weyl.torus(W::ComplexReflectionGroup,i::Integer)=subspets(W,Int[],classreps(W)[i])
 
 function Groups.elements(C::ConjugacyClass{T,TW})where {T,TW<:Spets}
   get!(C,:elements)do
@@ -857,7 +858,7 @@ end
 
 PermRoot.reflection_subgroup(WF::Spets,I::AbstractVector{<:Integer})=subspets(WF,I)
 
-subspets(W::Group,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
+subspets(W::ComplexReflectionGroup,I::AbstractVector{<:Integer},w=one(W))=subspets(spets(W),I,w)
 
 #-------------- spets ---------------------------------
 @GapObj mutable struct PRC{T,TW<:PermRootGroup}<:Spets{T,TW}
@@ -1137,7 +1138,15 @@ end
 #--------------------- Root data ---------------------------------
 Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
 
-" `rootdatum(string or symbol,...)` root datum from type "
+"""
+`rootdatum(type::String or Symbol[,dimension or bond::Integer])` root datum
+from type. The known types are
+
+`2B2, 2E6, 2E6sc, 2F4, 2G2, 2I, 3D4, 3D4sc, 3gpin8, CE6, CE7, E6, E6sc, E7,
+E7sc, E8, F4, G2, cso, csp, gl, gpin, gpin-, halfspin, pgl, pso, pso-, psp,
+psu,  ree, sl, slmod, so, so-, sp,  spin, spin-, su, suzuki, tgl, triality,
+u`
+"""
 function Weyl.rootdatum(t::Symbol,r::Int...)
    if haskey(rootdata,t) 
      res=rootdata[t](r...) 

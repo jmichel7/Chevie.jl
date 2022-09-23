@@ -7,6 +7,7 @@ SPerms
 SPerm
 Perm(::SPerm)
 @sperm_str
+permute(::AbstractVector,::SPerm)
 orbit(::SPerm,::Integer)
 order(::SPerm)
 cycles(::SPerm)

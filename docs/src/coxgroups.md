@@ -4,9 +4,9 @@ Modules=[CoxGroups]
 ```
 ```@docs
 CoxGroups
-isleftdescent
+isleftdescent(::CoxSym,::Any,::Int)
 firstleftdescent
-leftdescents
+leftdescents(::CoxeterGroup,w)
 reduced
 word(::CoxeterGroup,::Any)
 length(::CoxeterGroup,w)
@@ -16,8 +16,10 @@ CoxSym
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
 longest
 coxmat
+cartan(::AbstractMatrix)
+cartan(::CoxSym)
 standard_parabolic_class
-GenCox
+coxgroup(::AbstractMatrix)
 PermGroups.Groups.words(::CoxeterGroup{T},::T) where T
 PermGroups.Groups.words(::CoxeterGroup)
 ```

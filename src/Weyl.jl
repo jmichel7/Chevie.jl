@@ -185,9 +185,9 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export coxgroup, FiniteCoxeterGroup, two_tree, rootdatum, torus, istorus,
+export FiniteCoxeterGroup, two_tree, rootdatum, torus, istorus,
  dimension, with_inversions, standard_parabolic, describe_involution,
- relative_group, rootlengths, badprimes
+ relative_group, rootlengths, badprimes, ComplexReflectionGroup
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -446,8 +446,11 @@ end
 """
 `roots(C::AbstractMatrix)`
 
-returns the set of positive roots defined by the Cartan matrix `C`.
-Works for the Cartan matrix of any finite Coxeter group
+returns the set of positive roots defined by the Cartan matrix `C`, which
+should be the Cartan matrix of a finite Coxeter group.
+
+For  an integer Cartan matrix, the returned  roots are sorted by height and
+reverse lexicographically for a given height.
 """
 function Gapjm.roots(C::AbstractMatrix)
   o=one(C)
@@ -473,14 +476,17 @@ end
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
 abstract type FiniteCoxeterGroup{T,T1} <: CoxeterGroup{T} end
 
+const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
+
 coxmat(W::FiniteCoxeterGroup)=coxmat(cartan(W))
 
 """
 `inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
 
-Given  a word `w=s₁…sₙ`  (a vector of  integers) representing an element of
-`W`, returns the inversions of `w` in the order of the reflections: `W(s₁),
-W(s₁,s₂,s₁), …, W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
+Given  a word `w=[s₁,…,sₙ]` (a vector of integers) representing the element
+`W(w...)`,  returns the inversions of `w`, that is the list of indices of
+the roots corresponding to the reflections:
+`W(s₁), W(s₁,s₂,s₁), …, W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -618,8 +624,8 @@ end
 Given  an  involution  `w`  of  a  Coxeter  group  `W`,  by  a  theorem  of
 [Richardson1982](biblio.htm#rich82)  there is  a unique  parabolic subgroup
 `P` of `W` such that that `w` is the longest element of `P`, and is central
-in `P`. The function returns `I` such that `P=reflection_subgroup(W,I)`, so
-that `w=longest(reflection_subgroup(W,I))`.
+in  `P`. The function returns  `I` such that `P==reflection_subgroup(W,I)`,
+so that `w==longest(reflection_subgroup(W,I))`.
 
 ```julia-repl
 julia> W=coxgroup(:A,2)
@@ -635,7 +641,7 @@ julia> describe_involution(W,w)
 julia> w==longest(reflection_subgroup(W,[3]))
 true
 ```
-For now does not work for abscox groups.
+For now only works for finite Coxeter groups.
 """
 describe_involution(W,w)=SimpleRootsSubsystem(W,
                                         filter(i->action(W,i,w)==i+W.N,1:W.N))
@@ -699,7 +705,7 @@ CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 #CoxGroups.isleftdescent(W::FCG,w,i::Int)=action(W,i,w)>nref(W)
 
 """
-`coxgroup(type,rank[,bond])`
+`coxetergroup(type,rank[,bond])` (or `coxgroup`)
 
 This is equivalent to `rootdatum(cartan(type,rank[,bond]))`.
 
@@ -753,17 +759,37 @@ julia> W.rootdec
  [1 0 0; 0 1 1; 0 0 -1]
 ```
 """
-coxgroup(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
+CoxGroups.coxgroup(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
    sc ? rootdatum(cartan(t,r,b),one(fill(0,r,r))) : rootdatum(cartan(t,r,b))
 
-" `rootdatum(C::AbstractMatrix)` adjoint root datum from Cartan matrix `C`"
+"""
+`rootdatum(C::AbstractMatrix)`  adjoint root datum  from Cartan matrix `C`.
+The adjoint group is also the default returned for
+`coxetergroup(type,rank)`. The following methods all define `pgl₃`.
+```julia-repl
+julia> rootdatum(cartan(:A,3))==coxgroup(:A,3)
+true
+
+julia> rootdatum(:pgl,3)
+pgl₃
+```
+"""
 rootdatum(C::AbstractMatrix)=isempty(C) ? rootdatum(C,C) : rootdatum(one(C),C)
 
 """
 `rootdatum(R::AbstractMatrix,CR::AbstractMatrix)`
 
 root  datum from `R` whose  rows are the simple  roots on a basis of `X(T)`
-and `CR` whose rows are the simple coroots on a basis of `Y(T)`
+and `CR` whose rows are the simple coroots on a basis of `Y(T)`. The following
+methods all define `gl₃`.
+
+```julia-repl
+julia> rootdatum(:gl,3)==rootdatum("gl",3)
+true
+
+julia> rootdatum([1 -1 0;0 1 -1],[1 -1 0;0 1 -1])
+A₂Φ₁
+```
 """
 function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   C=cr*transpose(rr) # Cartan matrix
@@ -788,7 +814,7 @@ end
 
 
 """
-`torus(rank)`
+`torus(rank::Integer)`
 
 This  function returns the object corresponding to the notion of a torus of
 dimension  `rank`, a Coxeter  group of semisimple  rank 0 and given `rank`.
@@ -800,14 +826,15 @@ julia> torus(3)
 Φ₁³
 ```
 """
-torus(i)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
+torus(i::Integer)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
 
 "`istorus(W)` whether `W` is a torus"
 istorus(W)=isempty(roots(W))
 
 PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
 
-coxgroup()=torus(0)
+"`coxgroup()` the trivial Coxeter group"
+CoxGroups.coxgroup()=torus(0)
 
 #reflection representation in the basis of rootdec
 #function reflrep(W::FCG,w)
@@ -1048,17 +1075,18 @@ end
 `relative_group(W::FiniteCoxeterGroup,J)`
 
 `J`  should be a if *distinguished* subset of `S==eachindex(gens(W))`, that
-is  if for `s∈ S-J` we set `v(s,J)=w₀^{J∪  s}w₀ᴶ` then `J` is stable by all
-`v(s,J)`.  Then ``R=N_W(W_J)/W_J`` is  a Coxeter group  with Coxeter system
-the  `v(s,J)`. The program returns `R`  in its reflection representation on
-``X(ZL_J/ZG)``.  (according to  [Lusztig1976](biblio.htm#Lus76), the images
-of the roots of `W` in ``X(ZL_J/ZG)`` form a root system).
+is  if for `s∈ S-J` we set ``v(s,J)=w₀^{J∪ s}w₀ᴶ`` then `J` is stable by all
+`v(s,J)`.   Then  ``R=N_W(W_J)/W_J``  is  a   Coxeter  group  with  Coxeter
+generators  the  `v(s,J)`.  The  program  returns  `R`  in  its  reflection
+representation on ``X(ZL_J/ZG)``. (according to
+[Lusztig1976](biblio.htm#Lus76),   the  images  of  the  roots  of  `W`  in
+``X(ZL_J/ZG)`` form a root system).
 
-`R.prop` has the fields:
-`:relativeIndices=setdiff(S,J)`
-`:parentMap=` the list of `v(s,J)`
-`:MappingFromNormalizer` maps `J`-reduced elements of ``N_W(W_J)`` to
-  elements of `R`
+`R` has some extra properties reflecting its origin
+  - `R.relativeIndices=setdiff(S,J)`
+  - `R.parentMap=` the list of `v(s,J)` corresponding to `.relativeIndices`.
+  - `R.MappingFromNormalizer`  is  a  function  mapping `J`-reduced elements of
+``N_W(W_J)`` to elements of `R`.
 """
 function relative_group(W::FiniteCoxeterGroup,J::Vector{<:Integer})
   S=eachindex(gens(W))

@@ -521,7 +521,7 @@ cartfields(p,f)=cartesian(getindex.(p,f)...)
 `charinfo(W)`
 
 returns   information  about  the  irreducible  characters  of  the  finite
-reflection group `W`. The result has the following entries:
+reflection group or Spets `W`. The result has the following entry:
 
 `.charparams`:  contains  parameters  for  the  irreducible  characters  as
 described  in the  introduction to  this chapter.  The parameters are lists
@@ -536,7 +536,7 @@ component  (the same as `b` below). In addition, there is an ordinal number
 if more than one character shares the same `[d,e]`.
 
 ```julia-repl
-julia> charinfo(coxgroup(:G,2))[:charparams]
+julia> charinfo(coxgroup(:G,2)).charparams
 6-element Vector{Vector{Vector{Int64}}}:
  [[1, 0]]
  [[1, 6]]
@@ -796,9 +796,9 @@ Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 `classinfo(W)`
 
 returns  information about the  conjugacy classes of  the finite reflection
-group `W`. The result is a Dict with three entries:
+group or Spets `W`. The result has attributes:
 
-`:classtext`:  contains words in  the generators describing representatives
+  - `.classtext`:  contains words in  the generators describing representatives
 of  each  conjugacy  class.  Each  word  is  a  list  of integers where the
 generator  `sᵢ`  is  represented  by  the  integer  `i`. For finite Coxeter
 groups, it is the same as
@@ -806,7 +806,7 @@ groups, it is the same as
 representative  is of minimal length in its  conjugacy class and is a "very
 good" element in the sense of [GeckMichel1997](biblio.htm#GM97).
 
-`:classparams`:  The  elements  of  this  list  are  tuples  which have one
+  - `.classparams`:  The  elements  of  this  list  are  tuples  which have one
 component  for each irreducible component of  `W`. These components for the
 infinite  series,  contain  partitions  or  partition tuples describing the
 class  (see  the  introduction).  For  the  exceptional Coxeter groups they
@@ -814,13 +814,13 @@ contain  Carter's admissible  diagrams, see [Carter1972](biblio.htm#Car72).
 For  exceptional complex reflection groups they contain in general the same
 information as in classtext.
 
-`:classnames`:  Contains strings describing the conjugacy classes, made out
+  - `.classnames`:  Contains strings describing the conjugacy classes, made out
 of the information in `:classparams`.
 
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
 n0│name length order word
-──┼──────────────────────
+──┼───────────────────────
 1 │ 111      1     1     
 2 │  21      3     2    1
 3 │   3      2     3   12
@@ -1290,13 +1290,13 @@ function DualWGraph(rk,gr)
 end
 
 """
-`charnames(W;options...)`
-`charnames(io::IO,W)`
+`charnames(ComplexReflectionGroup or Spets;options...)`
+`charnames(io::IO,ComplexReflectionGroup or Spets)`
 
-returns  the  list  of  character  names  for the reflection group `W`. The
-optional  options are IOContext attributes which can give alternative names
-in  certain cases, or a different formatting  of names in general. They can
-be specified by giving an IO as argument.
+returns  the list of character names for the reflection group or Spets `W`.
+The  options may imply  alternative names in  certain cases, or a different
+formatting of names in general. They can be specified by `IO` attributes if
+giving an `IO` as argument.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -1342,7 +1342,7 @@ julia> charnames(W;spaltenstein=true,TeX=true)
 The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
-function charnames(io::IO,W)
+function charnames(io::IO,W::Union{Group,Coset{T,TW}})where{T,TW}
   if applicable(refltype,W)
     c=charinfo(W)
     cn=c.charnames
