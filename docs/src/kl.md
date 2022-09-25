@@ -1,7 +1,8 @@
 # Kazhdan-Lusztig polynomials and bases
 ```@index
-Modules=[KL]
+Pages=["kl.md"]
 ```
+
 ```@docs
 KL
 KLPol

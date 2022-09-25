@@ -1,4 +1,8 @@
 # Reflection cosets
+```@index
+Pages=["cosets.md"]
+```
+
 ```@docs
 Cosets
 rootdatum(::Symbol,::Int)

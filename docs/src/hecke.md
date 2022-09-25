@@ -1,6 +1,6 @@
 # Hecke algebras
 ```@index
-Modules=[HeckeAlgebras]
+Pages=["hecke.md"]
 ```
 ```@docs
 HeckeAlgebras

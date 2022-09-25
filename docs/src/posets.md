@@ -1,6 +1,6 @@
 # Posets
 ```@index
-Modules=[Posets]
+Pages=["posets.md"]
 ```
 ```@docs
 Posets

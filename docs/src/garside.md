@@ -1,6 +1,6 @@
 # Garside monoids and groups, braids.
 ```@index
-Modules=[Garside]
+Pages=["garside.md"]
 ```
 ```@docs
 Garside

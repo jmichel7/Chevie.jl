@@ -1,6 +1,6 @@
 # Coxeter groups
 ```@index
-Modules=[CoxGroups]
+Pages=["coxgroups.md"]
 ```
 ```@docs
 CoxGroups

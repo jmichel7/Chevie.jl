@@ -1,6 +1,6 @@
 # Reductive groups, semisimple elements
 ```@index
-Modules=[Semisimple]
+Pages=["semisimple.md"]
 ```
 ```@docs
 Semisimple

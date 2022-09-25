@@ -91,9 +91,12 @@ using UsingMerge
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor
+# careful: use very little of LinearAlgebra
+@reexport using LinearAlgebra: diag, tr, I
 @reexport using PermGroups
 @usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------
+println(methods(tr))
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
 include("Posets.jl");@usingmerge verbose=true reexport Posets
@@ -104,26 +107,26 @@ include("Nf.jl");@reexport using .Nf
 include("MatInt.jl");@reexport using .MatInt
 include("Tools.jl");@reexport using .Tools
 include("CycPols.jl");@reexport using .CycPols
+include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
 include("SPerms.jl");@reexport using .SPerms
 include("ComplexR.jl");@reexport using .ComplexR
-include("Semisimple.jl");@reexport using .Semisimple
 include("Chars.jl");@reexport using .Chars
-include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
 include("Presentations.jl");@reexport using .Presentations
 include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
-include("Urad.jl");@reexport using .Urad
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
+include("Semisimple.jl");@reexport using .Semisimple
+include("Urad.jl");@reexport using .Urad
 include("Ucl.jl");@reexport using .Ucl
 include("Gt.jl");@reexport using .Gt
 include("Murphy.jl");@reexport using .Murphy

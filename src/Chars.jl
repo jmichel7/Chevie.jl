@@ -397,7 +397,53 @@ export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
   decompose, on_chars, detPerm, conjPerm, discriminant, classnames,
-  decomposition_matrix, eigen
+  decomposition_matrix, eigen, schur_functor
+
+"""
+`schur_functor(mat,l)`
+
+`mat`  should be  a square  matrix and  `l` a  partition. The result is the
+Schur  functor  of  the  matrix  `mat`  corresponding to partition `l`; for
+example,   if  `l==[n]`  it  returns  the   n-th  symmetric  power  and  if
+`l==[1,1,1]` it returns the 3rd exterior power. The current algorithm (from
+Littlewood)  is rather inefficient so it is  quite slow for partitions of n
+where `n>6`.
+
+```julia-repl
+julia> m=cartan(:A,3)
+3×3 Matrix{Int64}:
+  2  -1   0
+ -1   2  -1
+  0  -1   2
+
+julia> schur_functor(m,[2,2])
+6×6 Matrix{Rational{Int64}}:
+   9//1   -6//1    4//1   3//2   -2//1    1//1
+ -12//1   16//1  -16//1  -4//1    8//1   -4//1
+   4//1   -8//1   16//1   2//1   -8//1    4//1
+  12//1  -16//1   16//1  10//1  -16//1   12//1
+  -4//1    8//1  -16//1  -4//1   16//1  -12//1
+   1//1   -2//1    4//1   3//2   -6//1    9//1
+```julia-repl
+"""
+function schur_functor(A,la)
+  n=sum(la)
+  S=CoxSym(n)
+  r=representation(S,findfirst(==(la),partitions(n)))
+  rep=function(x)x=word(S,x)
+    isempty(x) ? r[1]^0 : prod(r[x]) end
+  f=j->prod(factorial,last.(tally(j)))
+  basis=multisets(axes(A,1),n) 
+  M=sum(x->kron(rep(x),toM(map(function(i)i=permute(i,x)
+  return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
+# Print(Length(M),"=>");
+  M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
+  M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
+  m=sort.(collectby(i->M[:,i],axes(M,2)))
+  m=sort(m)
+  M=M[:,first.(m)]
+  improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
+end
 
 """
 `fakedegree(W, φ, q)`
@@ -1168,24 +1214,25 @@ representations(W::Union{Hastype,FiniteCoxeterGroup})=representation.(Ref(W),1:n
 """
 `WGraphToRepresentation(coxrank::Integer,graph,v)`
 
-We  store some representations one-parameter  Hecke algebras as `W`-graphs.
-For  a  Coxeter  system  `(W,S)`  where `coxrank=length(S)`, a `W`-graph is
-defined  by a set of vertices `C` with a function `I` which attaches to `x∈
-C`  a subset  `I(x)⊂ S`,  and *edge  labels* which  to `(x,y)∈  C^2` attach
-`μ(x,y)∈  K` where `K`  is the field  of definition of  `W`; this defines a
-representation  of the  Hecke algebra  with parameters  `v` and `-v⁻¹` on a
-space with basis ``{e_y}_{y∈ C}`` by:
+We  store some  representations of  one-parameter Iwahori-Hecke algebras as
+`W`-graphs.  For  a  Coxeter  system  `(W,S)`  where `coxrank=length(S)`, a
+`W`-graph  is defined by  a set of  vertices `C` with  a function `I` which
+attaches  to `x∈ C` a subset `I(x)⊂  S`, and *edge labels* which to `(x,y)∈
+C^2`  attach `μ(x,y)∈ K` where `K` is  the field of definition of `W`; this
+defines  a  representation  of  the  Hecke  algebra with parameters `v` and
+`-v⁻¹` on a space with basis ``{e_y}_{y∈ C}`` by:
 
-``T_s(e_y)=\\begin{cases}-e_y& if s∈ I(y)\\\\
-       v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)e_x&otherwise\\end{cases}``
+``T_s(e_y)=-e_y`` if `s∈ I(y)`,
+``T_s(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ`` otherwise.
 
 The  `W`-graphs are  stored in  a compact  format to  save space.  They are
 represented as a pair.
   - The  first element is a list describing `C`.
-Its  elements are  either a  set `I(x)`,  or an  integer `n`  specifying to
-repeat the previous element `n` more times.
+    Its  elements are either a set `I(x)`,  or an integer `n` specifying to
+    repeat the previous element `n` more times.
 
   - The  second element is a list which  specifies `μ`. 
+
 We   first   describe   the   `μ`-list   for   symmetric  `W`-graphs  (when
 `μ(x,y)=μ(y,x)`).  There is one  element of the  `μ`-list for each non-zero
 value `m` taken by `μ`, which consists of a pair whose first element is `m`
@@ -1230,7 +1277,7 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
     end
   end
   prom(gr[2])
-  S=map(i->one(fill(T(0),dim,dim))*v^2,1:rk)
+  S=map(i->Matrix{T}(I,dim,dim)*v^2,1:rk)
   for j in 1:dim for i in V[j] S[i][j,j]=-one(v) end end
   for i in gr[2]
     if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end

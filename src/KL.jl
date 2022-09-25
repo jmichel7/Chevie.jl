@@ -20,8 +20,8 @@
 #still take many hours. For such applications, it is probably more efficient
 #to use a special purpose program like the one provided by F. DuCloux DuC91.
 """
-This  module ports Chevie functionality for Kazhdan-Lusztig polynomials and
-bases.
+This  module defines Kazhdan-Lusztig polynomials and bases, and computes
+W-graphs and asymptotic algebras.
 
 Let  `ℋ ` be  the Iwahori-Hecke algebra  of a Coxeter  system `(W,S)`, with
 quadratic  relations `(Tₛ-uₛ₀)(Tₛ-uₛ₁)=0`  for `s∈  S`. If  `-uₛ₀uₛ₁` has a
@@ -60,10 +60,9 @@ The  Chevie code  for the  Kazhdan-Lusztig bases  `C`, `D` and their primed
 versions, has been initially written by Andrew Mathas around 1994, who also
 contributed  to  the  design  of  the programs dealing with Kazhdan-Lusztig
 bases. He also implemented some other bases, such as the Murphy basis which
-can  be  found  in  the  Chevie  contributions  directory. The code for the
-unequal  parameters  case  has  been  written  around  1999  by F.Digne and
-J.Michel. The other Kazhdan-Lusztig bases are computed in terms of the `C′`
-basis.
+we  also  implement.  The  code  for  the  unequal parameters case has been
+written  around  1999  by  F.Digne  and J.Michel. The other Kazhdan-Lusztig
+bases are computed in terms of the `C′` basis.
 
 When  the `ℤ[Γ]` is a  Laurent polynomial ring the  bar operation is taking
 the  inverse of  the variables,  and truncation  is keeping terms of degree
@@ -74,7 +73,7 @@ as   long   as   methods   `bar`:``∑_{γ∈   Γ}   a_γγ↦  ∑_{γ∈  Γ}
 operations   will   be   used   internally   by  the  programs  to  compute
 Kazhdan-Lusztig bases.
 
-finally, benchmarks on julia 1.6.2
+finally, benchmarks on julia 1.8
 ```benchmark
 julia> function test_kl(W)
          q=Pol(); H=hecke(W,q^2,rootpara=q)
@@ -84,9 +83,9 @@ julia> function test_kl(W)
 test_kl (generic function with 1 method)
 
 julia> @btime test_kl(coxgroup(:F,4));
-2.019 s (17905502 allocations: 2.64 GiB)
+1.332 s (13934392 allocations: 2.27 GiB)
 ```
-Compare to GAP3 where the following function takes 11s for F4
+in GAP3 the following function takes 11s for W=F4
 ```
 test_kl:=function(W)local q,H,T,C;
   q:=X(Rationals);H:=Hecke(W,q^2,q);
@@ -104,9 +103,9 @@ end
 test_kl2 (generic function with 1 method)
 
 julia>@btime test_kl2(coxgroup(:F,4));
-5.915 s (49702830 allocations: 6.98 GiB)
+4.072 s (52735476 allocations: 5.92 GiB)
 ```
-Compare to GAP3 where the following function takes 42s for F4
+in GAP3 the following function takes 42s for F4
 ```
 test_kl2:=function(W)local el;
   el:=Elements(W);
@@ -287,7 +286,7 @@ end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
-HeckeAlgebras.rootpara(H::HeckeAlgebra,x::Perm)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
+HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict

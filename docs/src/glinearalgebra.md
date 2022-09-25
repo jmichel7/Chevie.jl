@@ -1,6 +1,6 @@
 # Linear algebra on any field/ring
 ```@index
-Modules=[GLinearAlgebra]
+Pages=["glinearalgebra.md"]
 ```
 ```@docs
 GLinearAlgebra

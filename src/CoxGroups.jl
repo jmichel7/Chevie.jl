@@ -528,9 +528,9 @@ function bruhatless(W::CoxeterGroup,w)
   s=W(i)
   res=bruhatless(W,s*w)
   for j in 1:length(res)-1
-    res[j+1]=union(res[j+1],s.*filter(x->!isleftdescent(W,x,i),res[j]))
+    res[j+1]=union(res[j+1],Ref(s).*filter(x->!isleftdescent(W,x,i),res[j]))
   end
-  push!(res,s.*filter(x->!isleftdescent(W,x,i),res[end]))
+  push!(res,Ref(s).*filter(x->!isleftdescent(W,x,i),res[end]))
 end
 
 """
@@ -580,7 +580,7 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
   # action: the Cayley graph: for generator i, action[i][w]=sw
   # where w and sw are represented by their index in :elements
   new=filter(k->iszero(p.action[s][k]),1:l)
-  append!(p.elements,W(s).*(p.elements[new]))
+  append!(p.elements,Ref(W(s)).*(p.elements[new]))
   append!(hasse(p),map(x->Int[],new))
   p.action[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W)) 
@@ -660,8 +660,6 @@ julia> inversions(W,W(1,2,1))
 """
 inversions(W::CoxeterGroup,w)=filter(x->isleftdescent(W,w,x),1:nref(W))
 # assumes isleftdescent works for all reflections
-
-PermRoot.Diagram(W::CoxeterGroup)=Diagram.(refltype(W))
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
    Category(collect(sort(I));action=(J,e)->sort(action.(Ref(W),J,e)))do J
@@ -788,7 +786,7 @@ julia> braid_relations(W)
 each  relation  is  represented  as  a  pair  of lists, specifying that the
 product  of the  generators according  to the  indices on  the left side is
 equal  to the product according to the  indices on the right side. See also
-`Diagram`.
+`diagram`.
 """
 function braid_relations(t::TypeIrred)
   r=if t.series==:ST getchev(t,:BraidRelations)

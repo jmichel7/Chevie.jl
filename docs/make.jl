@@ -31,14 +31,14 @@ pages=[
 "semisimple.md",
 "cosets.md",
 "sscoset.md",
-"uch.md"],
+"uch.md",
+"ct.md"],
 "eigen.md",
 "dseries.md",
 "symbols.md",
 "Unipotent elements"=>[
 "ucl.md",
 "urad.md"],
-"ct.md",
 "gendec.md",
 "dict.md" ]
 )

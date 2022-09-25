@@ -1,6 +1,6 @@
 # Symbols
 ```@index
-Modules=[Symbols]
+Pages=["symbols.md"]
 ```
 ```@docs
 Symbols

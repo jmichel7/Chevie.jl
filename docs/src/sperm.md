@@ -1,7 +1,8 @@
 # Signed permutations
 ```@index
-Modules=[SPerms]
+Pages=["sperm.md"]
 ```
+
 ```@docs
 SPerms
 SPerm

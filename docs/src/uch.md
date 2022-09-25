@@ -1,6 +1,6 @@
 # Unipotent characters
 ```@index
-Modules=[Uch]
+Pages=["uch.md"]
 ```
 ```@docs
 Uch

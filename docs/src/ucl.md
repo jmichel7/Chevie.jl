@@ -1,6 +1,6 @@
 # Unipotent classes of reductive groups
 ```@index
-Modules=[Ucl]
+Pages=["ucl.md"]
 ```
 ```@docs
 Ucl

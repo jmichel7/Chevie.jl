@@ -1,6 +1,6 @@
 # Presentations
 ```@index
-Modules=[Presentations]
+Pages=["presentations.md"]
 ```
 ```@docs
 Presentations

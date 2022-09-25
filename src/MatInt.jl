@@ -14,6 +14,8 @@ export complementInt, lnullspaceInt, solutionmatInt, smith, smith_transforms,
   hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
   diaconis_graham, baseInt
 
+using LinearAlgebra: I
+
 # largest factor of N prime to a
 function prime_part(N, a)
   while true
@@ -847,8 +849,8 @@ julia> MatInt.SolutionNullspaceIntMat(mat,[95,115,182])
 function SolutionNullspaceIntMat(mat, v)
   if iszero(mat)
     len=size(mat,1)
-    if iszero(v) return [fill(0,max(0,len)), one(fill(0,len,len))]
-    else return [false, one(fill(0,len,len))]
+    if iszero(v) return [fill(0,max(0,len)), Matrix{Int}(I,len,len)]
+    else return [false, Matrix{Int}(I,len,len)]
     end
   end
   norm=TriangulizedIntegerMatTransform(mat)
@@ -977,7 +979,7 @@ function diaconis_graham(m::Matrix{<:Integer}, moduli::Vector{<:Integer})
     if m[i,i] != 1
       if gcd(m[i,i], moduli[i])!=1 return end
       l1=invmod(l, moduli[i])
-      e=one(fill(0,size(m,1),size(m,1)))
+      e=Matrix{Int}(I,size(m,1),size(m,1))
       e[i:i+1,i:i+1]=[l1 l1-1;1-l*l1 (l+1)-l*l1]
       res=e*res
       m=mod.(e*m,moduli')
@@ -996,7 +998,7 @@ function diaconis_graham(m::Matrix{<:Integer}, moduli::Vector{<:Integer})
     l1=invmod(l, moduli[n])
     for i in 1:n-1
       if m[i,n]!=0
-        e=one(fill(0,size(m,1),size(m,1)))
+        e=Matrix{Int}(I,size(m,1),size(m,1))
         e[[i,n],[i,n]]=[1 -m[i,n]*l1;0 1]
         res=e*res
         m=mod.(e*m, moduli')

@@ -156,7 +156,7 @@ julia> phi=W(6,5,4,2,3,1,4,3,5,4,2,6,5,4,3,1);
 julia> HF=subspets(WF,2:5,phi)
 E₆₍₂₃₄₅₎=³D₄Φ₃
 
-julia> Diagram(HF)
+julia> diagram(HF)
 ϕ acts as (1,2,4) on the component below
   O 2
   ￨
@@ -264,12 +264,6 @@ function codegrees(W::Spets)
   get!(W,:codegrees)do
     vcat(map(x->(-1,x),Cyc.(inv.(torusfactors(W)))),
          collect.(codegrees.(refltype(W)))...)
-  end
-end
-
-function diagram(W)
-  for t in refltype(W)
-    getchev(t,:PrintDiagram,t.indices,getchev(t,:ReflectionName,Dict()))
   end
 end
 

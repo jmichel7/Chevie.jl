@@ -63,7 +63,7 @@ triple  if `mₛₜ=6`.  The arrows  indicate the  relative root lengths (going
 from  the longer to the  shorter root) which may  be different when `W` has
 more  than one orbit on `R`.  The irreducible crystallographic root systems
 are  classified by  the following  list. The  labeling of  the nodes is the
-order of the generators and is shown by the function `Diagram`.
+order of the generators and is shown by the function `diagram`.
 
 ```
 Aₙ O—O—O—…—O   Bₙ O⇐ O—O—…—O  Cₙ O⇒ O—O—…—O  Dₙ O 2
@@ -77,7 +77,7 @@ G₂ O⇛ O  F₄ O—O⇒O—O    E₆  O 2    E₇  O 2      E₈  O 2
                        1 3 4 5 6  1 3 4 5 6 7  1 3 4 5 6 7 8
 ```
 
-We get the *Coxeter Diagram*, which describes the underlying Weyl group, if
+We get the *Coxeter diagram*, which describes the underlying Weyl group, if
 we  ignore  the  arrows:  we  see  that  the  root  systems `B_n` and `C_n`
 correspond  to the same Coxeter group (the  Coxeter group is defined by the
 *Coxeter  matrix* `{mₛₜ}ₛₜ`). Weyl groups can  also be characterized as the
@@ -705,7 +705,7 @@ CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 #CoxGroups.isleftdescent(W::FCG,w,i::Int)=action(W,i,w)>nref(W)
 
 """
-`coxetergroup(type,rank[,bond])` (or `coxgroup`)
+`coxetergroup(type,rank[,bond];sc=false)` (or `coxgroup`)
 
 This is equivalent to `rootdatum(cartan(type,rank[,bond]))`.
 
@@ -721,12 +721,15 @@ additional entry compared to a `PermRootGroup`.
 see  the following functions for how to get various information on the root
 system and the Coxeter group
 
-`nref, coroots, rootlengths, simple_reps, simple_conjugating, reflrep, simpleroots,
- simplecoroots, PermX, cartan, inclusion, restriction, action, rank, semisimplerank`
+`nref,  coroots,  rootlengths,  simple_reps,  simple_conjugating,  reflrep,
+simpleroots,  simplecoroots, PermX, cartan, inclusion, restriction, action,
+rank, semisimplerank`
 
   - `gens(W)`: the generators, as permutations of the root vectors. They are
     in the same order as the simple roots.
 
+In terms of root data, this function returns the adjoint root datum of Weyl
+group `W`. If `sc=true` it returns the simply connected root datum.
 ```julia_repl
 julia> W=coxgroup(:A,3)
 A₃
@@ -760,7 +763,7 @@ julia> W.rootdec
 ```
 """
 CoxGroups.coxgroup(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
-   sc ? rootdatum(cartan(t,r,b),one(fill(0,r,r))) : rootdatum(cartan(t,r,b))
+sc ? rootdatum(cartan(t,r,b),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b))
 
 """
 `rootdatum(C::AbstractMatrix)`  adjoint root datum  from Cartan matrix `C`.
@@ -939,14 +942,14 @@ Coxeter system of `H`.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> Diagram(W)
+julia> diagram(W)
 O⇛ O G₂
 1  2
 
 julia> H=reflection_subgroup(W,[2,6])
 G₂₍₂₆₎=Ã₁×A₁
 
-julia> Diagram(H)
+julia> diagram(H)
 O Ã₁
 1
 O A₁

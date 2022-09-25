@@ -1,6 +1,6 @@
 # Integral matrices and lattices
 ```@index
-Modules=[MatInt]
+Pages=["matint.md"]
 ```
 ```@docs
 MatInt

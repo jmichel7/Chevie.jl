@@ -6,9 +6,10 @@ using LaurentPolynomials
 using CyclotomicNumbers
 using Primes: Primes
 using PermGroups: Group
+using Combinat: Combinat, collectby
+using LinearAlgebra: tr
 using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
-using ..Combinat: Combinat, collectby
 using ..GLinearAlgebra: solutionmat, echelon, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
@@ -159,7 +160,6 @@ function traces_words_mats(mats,words)
     mats=map((m,d)->Int.(m.*d),mats,dens)
   end
   words=convert.(Vector{Int},words)
-  tr(m)=sum(i->m[i,i],axes(m,1))
   trace(w)=tr(prods[w])//prod(dens[w])
   prods=Dict{Vector{Int},eltype(mats)}(Int[]=>mats[1]^0)
   for i in eachindex(mats) prods[[i]]=mats[i] end

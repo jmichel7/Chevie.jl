@@ -1,6 +1,6 @@
 # Finite reflection groups
 ```@index
-Modules=[PermRoot]
+Pages=["permroot.md"]
 ```
 ```@docs
 PermRoot
@@ -29,7 +29,7 @@ refls
 reflength(::PermRootGroup,::Perm)
 simple_conjugating
 simple_reps
-Diagram
+diagram
 hyperplane_orbits
 Reflection
 reflections

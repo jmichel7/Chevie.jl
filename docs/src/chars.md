@@ -1,6 +1,6 @@
 # Classes/characters of reflection groups
 ```@index
-Modules=[Chars]
+Pages=["chars.md"]
 ```
 ```@docs
 Chars

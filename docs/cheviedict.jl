@@ -1,7 +1,7 @@
 const ChevieDict=Dict(
 "AbelianGenerators"=>"abelian_gens",
 "AbelianInvariants"=>"abelian_invariants",
-#Affine
+"Affine"=>"affine",
 #AffineRootAction
 "AlgebraicCentre"=>"algebraic_center",
 "AlmostCharacter"=>"AlmostChar",
@@ -279,7 +279,7 @@ const ChevieDict=Dict(
 "PositionsProperty(l,f)"=>"findall(f,l)",
 "PowerRoot(x,y)"=>"(Root1(;r=x)^y).r",
 "Presentation"=>"Presentation",
-"PrintDiagram(W)"=>"Diagram(W)",
+"PrintDiagram(W)"=>"diagram(W)",
 "Product"=>"prod",
 "ProportionalityCoefficient(v,w)"=>"ratio(v,w)",
 "QuasiIsolatedRepresentatives"=>"quasi_isolated_reps",

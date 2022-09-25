@@ -174,7 +174,7 @@ G₁₄₍₂₄₎=²G₅
 ```
 
 ```julia-rep1
-julia> Diagram(RF)
+julia> diagram(RF)
 ϕ acts as (1,2) on the component below
 ③ ══③ G₅
 1   2
@@ -275,7 +275,7 @@ We associate to a Coxeter coset `Wϕ` a *twisted Dynkin diagram*, consisting
 of  the Dynkin diagram of `W` and  the graph automorphism induced by `ϕ` on
 this  diagram (this specifies the  group `W⋊ ⟨F⟩`, mentioned above, up
 to  isomorphism). See the  functions 'ReflectionType', 'ReflectionName' and
-'Diagram' for Coxeter cosets.
+'diagram' for Coxeter cosets.
 
 Below  is an example showing first how to *not* define, then how to define,
 the Weyl coset for a Suzuki group:
@@ -734,8 +734,6 @@ end
 PermRoot.parabolic_reps(WF::Spets,s)=if !isone(WF.phi) error() else
   parabolic_reps(Group(WF),s) end
 
-PermRoot.Diagram(W::Spets)=Diagram.(refltype(W))
-
 function Base.show(io::IO, WF::Spets)
   if haskey(WF,:callname) 
     if hasdecor(io) printTeX(io,WF.TeXcallname) 
@@ -830,7 +828,7 @@ julia> w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],(s,g)->s.^g);
 julia> LF=subspets(WF,[1,2,9,16],w)
 F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
 
-julia> Diagram(LF)
+julia> diagram(LF)
 ϕ acts as (2,3,4) on the component below
   O 4
   ￨
@@ -1172,7 +1170,7 @@ function Weyl.rootdatum(t::Symbol,r::Int...)
          sprint(cut,join(sort(collect(keys(rootdata))),", ")))
 end
 
-id(r)=one(fill(0,r,r))
+id(r)=Matrix{Int}(I,r,r)
 
 const  rootdata=Dict{Symbol,Function}()
 rootdata[:gl]=function(r)
@@ -1199,8 +1197,9 @@ rootdata[:tgl]=function(n, k)
 end
 rootdata[:pgl]=r->coxgroup(:A,r-1)
 rootdata[:sp]=function(r)
-  R=id(div(r,2))
-  for i in 2:div(r,2) R[i,i-1]=-1 end
+  r=div(r,2)
+  R=id(r)
+  for i in 2:r R[i,i-1]=-1 end
   R1=copy(R)
   R1[1,:].*=2
   rootdatum(R1,R)
@@ -1228,8 +1227,9 @@ rootdata[:cso]=function(dim)
   rootdatum(R,cR)
 end
 rootdata[:so]=function(r)
-  R=id(div(r,2))
-  for i in 2:div(r,2) R[i,i-1]=-1 end
+  r1=div(r,2)
+  R=id(r1)
+  for i in 2:r1 R[i,i-1]=-1 end
   if isodd(r) R1=copy(R)
     R1[1,1]=2
     rootdatum(R,R1)

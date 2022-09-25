@@ -1,6 +1,6 @@
 # Finite Coxeter groups and Weyl groups
 ```@index
-Modules=[Weyl]
+Pages=["weyl.md"]
 ```
 ```@docs
 Weyl
@@ -20,4 +20,5 @@ with_inversions
 torus(::Integer)
 istorus
 relative_group
+affine
 ```

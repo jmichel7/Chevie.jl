@@ -1,6 +1,6 @@
 # Eigenspaces
 ```@index
-Modules=[Eigenspaces]
+Pages=["eigen.md"]
 ```
 ```@docs
 Eigenspaces

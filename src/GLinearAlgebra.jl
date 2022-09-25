@@ -9,17 +9,13 @@ any ring).
 """
 module GLinearAlgebra
 using LaurentPolynomials: exactdiv
-using ..CyclotomicNumbers: Cyc # case in echelon
-using ..Combinat: combinations, multisets, tally, collectby, partitions
-using ..PermGroups: symmetric_group
-using ..Perms: permute
-using ..Groups: elements, word
-using ..CoxGroups: CoxSym
-using ..Chars: representation
+using CyclotomicNumbers: Cyc # case in echelon
+using Combinat: combinations, multisets, tally
+using LinearAlgebra: tr
 using ..Util: toM, toL
 using ..Tools: improve_type
 export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
-  ratio, schur_functor, charpoly, solutionmat, transporter, 
+  ratio, charpoly, solutionmat, transporter, 
   permanent, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
   intersect_rowspace, in_rowspace
 
@@ -184,7 +180,7 @@ function charpolyandcomatrix(m)
   for i in 1:n
     if i==n res=(-1)^(n-1)*C end
     C*=m
-    a[n+1-i]=exactdiv(-sum(C[i,i] for i in axes(C,1)),i)
+    a[n+1-i]=exactdiv(-tr(C),i)
     if i!=n C+=a[n+1-i]*one(C) end
   end
   a,res
@@ -382,52 +378,6 @@ function symmetric_power(A,m)
   f(j)=prod(factorial,last.(tally(j)))
   basis=multisets(axes(A,1),m)
   [permanent(A[i,j])//f(i) for i in basis, j in basis]
-end
-
-"""
-`schur_functor(mat,l)`
-
-`mat`  should be  a square  matrix and  `l` a  partition. The result is the
-Schur  functor  of  the  matrix  `mat`  corresponding to partition `l`; for
-example,   if  `l==[n]`  it  returns  the   n-th  symmetric  power  and  if
-`l==[1,1,1]` it returns the 3rd exterior power. The current algorithm (from
-Littlewood)  is rather inefficient so it is  quite slow for partitions of n
-where `n>6`.
-
-```julia-repl
-julia> m=cartan(:A,3)
-3×3 Matrix{Int64}:
-  2  -1   0
- -1   2  -1
-  0  -1   2
-
-julia> schur_functor(m,[2,2])
-6×6 Matrix{Rational{Int64}}:
-   9//1   -6//1    4//1   3//2   -2//1    1//1
- -12//1   16//1  -16//1  -4//1    8//1   -4//1
-   4//1   -8//1   16//1   2//1   -8//1    4//1
-  12//1  -16//1   16//1  10//1  -16//1   12//1
-  -4//1    8//1  -16//1  -4//1   16//1  -12//1
-   1//1   -2//1    4//1   3//2   -6//1    9//1
-```julia-repl
-"""
-function schur_functor(A,la)
-  n=sum(la)
-  S=CoxSym(n)
-  r=representation(S,findfirst(==(la),partitions(n)))
-  rep=function(x)x=word(S,x)
-    isempty(x) ? r[1]^0 : prod(r[x]) end
-  f=j->prod(factorial,last.(tally(j)))
-  basis=multisets(axes(A,1),n) 
-  M=sum(x->kron(rep(x),toM(map(function(i)i=permute(i,x)
-  return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
-# Print(Length(M),"=>");
-  M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
-  M=M[:,filter(i->!all(iszero,M[:,i]),axes(M,2))]
-  m=sort.(collectby(i->M[:,i],axes(M,2)))
-  m=sort(m)
-  M=M[:,first.(m)]
-  improve_type(toM(map(x->sum(M[x,:],dims=1)[1,:],m)))
 end
 
 """
