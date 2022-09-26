@@ -178,6 +178,23 @@ function traces_words_mats(mats,words)
   end
 end
 #-----------------------------------------------------------------------
+"""
+An  `Unknown" represents an element of a  ring which is not known. The main
+difference  with `missing` is that `0*Unknown==0` (that at least we know!).
+An unknown is printed at the repl as `?`.
+
+```julia-repl
+julia> a=[Unknown(),Unknown()]
+2-element Vector{Unknown}:
+ ?
+ ?
+
+julia> a.*[0,1]
+2-element Vector{Any}:
+ 0
+  ?
+```
+"""
 struct Unknown end
 
 Base.:+(a,b::Unknown)=b

@@ -96,7 +96,6 @@ using UsingMerge
 @reexport using PermGroups
 @usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------
-println(methods(tr))
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
 include("Posets.jl");@usingmerge verbose=true reexport Posets

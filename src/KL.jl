@@ -650,7 +650,8 @@ end
 """
 `representation(c::LeftCell,H)`
 
-returns matrices giving the representation of `H` on the left cell `c`.
+returns matrices giving the representation of the Iwahori-Hecke algebra `H`
+on the left cell `c`.
 
 ```julia-repl
 julia> W=coxgroup(:H,3)
@@ -797,7 +798,7 @@ The  program uses precomputed  data(see [Geck-Halls 2014](biblio.htm#GH14))
 for  exceptional types and for type `:A`,  so is quite fast for these types
 (it  takes 13 seconds to compute the  101796 left cells for type `E₈`). For
 other  types, left cells are computed from first principles, thus computing
-many  Kazhdan-Lusztig polynomials. It takes 60  seconds to compute the left
+many  Kazhdan-Lusztig polynomials. It takes 30  seconds to compute the left
 cells of `D₆`, for example.
 
 ```julia-repl

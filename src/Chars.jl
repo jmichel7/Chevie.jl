@@ -570,16 +570,16 @@ returns   information  about  the  irreducible  characters  of  the  finite
 reflection group or Spets `W`. The result has the following entry:
 
 `.charparams`:  contains  parameters  for  the  irreducible  characters  as
-described  in the  introduction to  this chapter.  The parameters are lists
-with  one  component  for  each  irreducible  component of `W` (as given by
-`refltype`).   For  an  irreducible  component   which  is  an  imprimitive
-reflection  group the component of the  `charparam` is a list of partitions
-(partitions  for type  `:A`, double  partitions for  type `:B`),  and for a
-primitive irreducible group it is a list `[d,e]` where `d` is the degree of
-the  character and `e` is the smallest  symmetric power of the character of
-the  reflection  representation  which  contains  the  given character as a
-component  (the same as `b` below). In addition, there is an ordinal number
-if more than one character shares the same `[d,e]`.
+described  in the helpstring for `Chars`. The parameters are lists with one
+component  for each irreducible component of  `W` (as given by `refltype`).
+For  an irreducible component which is  an imprimitive reflection group the
+component  of the `charparam` is a  list of partitions (partitions for type
+`:A`,  double partitions  for type  `:B`), and  for a primitive irreducible
+group it is a list `[d,e]` where `d` is the degree of the character and `e`
+is  the  smallest  symmetric  power  of  the  character  of  the reflection
+representation  which contains the given character as a component (the same
+as  `b` below). In  addition, there is  an ordinal number  if more than one
+character shares the same `[d,e]`.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2)).charparams
@@ -1153,8 +1153,10 @@ CharTable(W::CoxSym)=CharTable(refltype(W)[1])
 `representation(W,i)`
 
 returns a list holding, for the `i`-th irreducible character of the complex
-reflection  group  `W`,  a  list  of  matrices  images  of  the  generating
-reflections  of `W`  in a  model of  the corresponding representation. This
+reflection  group or Spets `W`, a list of matrices images of the generating
+reflections  of `W`  in a  model of  the corresponding  representation (for
+Spets, the result is a `NamedTuple` with fields `gens`, a representation of
+`Group(W)`,  and `F`, the  matrix for `W.phi`  in the representation). This
 function  is based on the classification,  and is not yet fully implemented
 for   `G₃₄`;  78  representations   are  missing  out   of  169,  that  is,
 representations  of dimension ≥140, except half of those of dimensions 315,
@@ -1197,7 +1199,8 @@ end
 """
 `representations(W)`
 
-returns the representations of `W` (see `representation`).
+returns  the list  of representations  of the  complex reflection  group or
+Spets `W` (see `representation`).
 
 ```julia-repl
 julia> representations(coxgroup(:B,2))
@@ -1222,8 +1225,8 @@ C^2`  attach `μ(x,y)∈ K` where `K` is  the field of definition of `W`; this
 defines  a  representation  of  the  Hecke  algebra with parameters `v` and
 `-v⁻¹` on a space with basis ``{e_y}_{y∈ C}`` by:
 
-``T_s(e_y)=-e_y`` if `s∈ I(y)`,
-``T_s(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ`` otherwise.
+``T_s(e_y)=-e_y`` if `s∈ I(y)` and otherwise
+``T_s(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ``.
 
 The  `W`-graphs are  stored in  a compact  format to  save space.  They are
 represented as a pair.

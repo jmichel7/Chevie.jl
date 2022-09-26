@@ -373,27 +373,31 @@ function Base.Matrix(a::SPerm,n=length(a.d))
   res
 end
 
+SPerm(m::AbstractMatrix{<:Integer})=SPerm{Idef}(m)
+
+function SPerm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
+  n=size(m,1)
+  if n!=size(m,2) error("matrix should be square") end
+  res=fill(T(0),n)
+  for i in 1:n
+    nz=findall(!iszero,m[i,:])
+    if length(nz)!=1 error("not a signed permutation matrix") end
+    nz=only(nz)
+    if m[i,nz]==1 res[i]=nz
+    elseif m[i,nz]==-1 res[i]=-nz
+    else error("not a signed permutation matrix")
+    end
+  end
+  SPerm{T}(res)
+end
+
 ##underlying Signs of a SignedPerm
-#Signs:=p->sign.(p.d)^Perm(p)
+#Signs:=p->permute(sign.(p.d),Perm(p))
 #
 ## We have the properties p=SPerm(Perm(p),Signs(p)) and
 ## if N=onmats(M,p) then
 ##    M=onmats(N,Perm(p))^Diagonal(Signs(p)))
 #
-## Transforms matrix to SPerm
-#SignedPerm:=function(m::AbstractMatrix)
-#  n=size(m,1)
-#  res=[]
-#  for i in 1:n
-#    nz=filter(x->m[i,x]!=0,1:n)
-#    if length(nz)!=1 return false end
-#    nz=nz[1]
-#    if m[i,nz]==1 res[i]=nz
-#    elif m[i,nz]==-1 res[i]=-nz
-#    else return false
-#    end
-#  end
-#end
 ## Transforms perm+signs to a signed perm,
 #SPerm(p,n)=SPerm(map(*,eachindex(n),n)^inv(p))
 #

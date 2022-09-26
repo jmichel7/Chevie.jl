@@ -11,6 +11,7 @@ Cbasis
 Cpbasis
 character
 representation(::LeftCell,H)
+WGraphToRepresentation
 Wgraph
 LeftCells
 LeftCell

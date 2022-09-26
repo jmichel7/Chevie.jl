@@ -1,9 +1,11 @@
 """
 This   module  implements  Hecke  algebras  associated  to  finite  complex
 reflection  groups and arbitrary Coxeter  groups (these algebras are called
-Iwahori-Hecke  algebras in this last case). For Iwahori-Hecke algebras this
-module  also  implements  the  standard  basis  (look at the module `KL`for
-Kazhdan-Lusatig bases).
+Iwahori-Hecke  algebras in this last case),  and for the algebras of finite
+groups    implements   their   character   tables,   Schur   elements   and
+representations. For Iwahori-Hecke algebras and `G(d,1,1)` this module also
+implements  the standard basis (look  at the module `KL`for Kazhdan-Lusztig
+bases).
 
 Let  `(W,S)` be a Coxeter system where `mₛₜ` is the order of `st` for `s,t∈
 S`. Let `R` be a commutative ring with 1 and for `s∈ S` let `uₛ₀,uₛ₁∈ R` be
@@ -148,7 +150,7 @@ as above.
 Ariki,  Koike and  Malle have  computed character  tables for some of these
 algebras,  including  those  for  all  2-dimensional reflection groups, see
 [Broué-Malle 1993](biblio.htm#BM93) and [Malle 1996](biblio.htm#Mal96); the
-CHEVIE  data contains models of all representation and character tables for
+Chevie  data contains models of all representation and character tables for
 real reflection groups; it contains the same for imprimitive groups and for
 primitive groups of dimension 2 and 3 (these last representations have been
 computed  in [Malle-Michel 2010](biblio.htm#MM10)) and contains also models
@@ -156,7 +158,7 @@ and  character  tables  computed  by  Michel  for  `G₂₉`  and `G₃₃`; he 
 computed also partial lists of representations and partial character tables
 for the remaining groups `G₃₁,G₃₂` and `G₃₄`.
 
-The  quotient of the Hecke algebra  obtained by specializing `u_{𝐬,i}↦ ζₑⁱ`
+The quotient of the Hecke algebra obtained by specializing ``u_{𝐬,i}↦ ζₑⁱ``
 is  isomorphic to the group algebra of `W`. It was conjectured for 20 years
 that  over a suitable ring  (such as the algebraic  closure of the field of
 fractions  ``ℚ(u_{𝐬,i})_{𝐬,i }``) the Hecke algebra is itself isomorphic to
@@ -176,12 +178,12 @@ algebra `H`. This is well known for all real reflection groups and has been
 proved  in [Malle-Mathas 1998](biblio.htm#MM98)  for imprimitive reflection
 groups  and  in  [Malle-Michel  2010](biblio.htm#MM10)  for  some primitive
 groups of dimension 2 and 3. Chlouveraki and Chavli have handled some other
-2-dimensionl cases. For each irreducible character `φ` of `H` we define the
-*Schur  element*  `S_φ`  associated  to  `φ`  by the condition that for any
-element  `T` of `H` we  have `t(T)=∑_φ φ(T)/S_φ`. It  can be shown that the
+2-dimensional  cases. For each  irreducible character `φ`  of `H` we define
+the  *Schur element* `Sᵩ` associated  to `φ` by the  condition that for any
+element  `T` of  `H` we  have `t(T)=∑ᵩ  φ(T)/Sᵩ`. It  can be shown that the
 Schur  elements  are  Laurent  polynomials,  and  they do not depend on the
 choice  of a basis having the above  property. Malle has the computed these
-Schur  elements, assuming  the above  conjectures; they  are in  the CHEVIE
+Schur  elements, assuming  the above  conjectures; they  are in  the Chevie
 data.
 
 finally, benchmarks on julia 1.8
@@ -207,8 +209,8 @@ module HeckeAlgebras
 using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
-  schur_element, isrepresentation, FactorizedSchurElements, 
-  FactorizedSchurElement, VFactorSchurElement, alt, coefftype, HeckeCoset,
+  schur_element, isrepresentation, alt, coefftype, HeckeCoset,
+  FactorizedSchurElements, factorized_schur_element, VFactorSchurElement,
   factorized_schur_elements
 
 @GapObj struct HeckeAlgebra{C,TW}
@@ -390,6 +392,30 @@ function Base.show(io::IO, H::HeckeAlgebra)
   print(io,")")
 end
 
+"""
+`CharTable(H::HeckeAlgebra or HeckeCoset)`
+
+returns the `CharTable` of `H`. In 3 exceptional cases (see
+`representation`)  there are  `Unknown()` entries  corresponding to missing
+representations .
+
+```julia-repl
+julia> H=hecke(crg(4),Pol())
+hecke(G₄,q)
+
+julia> CharTable(H)
+CharTable(hecke(G₄,q))
+    │.    z 212   12    z12     1        1z
+────┼───────────────────────────────────────
+φ₁‚₀│1   q⁶  q³   q²     q⁸     q        q⁷
+φ₁‚₄│1    1   1  ζ₃²    ζ₃²    ζ₃        ζ₃
+φ₁‚₈│1    1   1   ζ₃     ζ₃   ζ₃²       ζ₃²
+φ₂‚₅│2   -2   .    1     -1    -1         1
+φ₂‚₃│2 -2q³   . ζ₃²q -ζ₃²q⁴ q+ζ₃² -q⁴-ζ₃²q³
+φ₂‚₁│2 -2q³   .  ζ₃q  -ζ₃q⁴  q+ζ₃  -q⁴-ζ₃q³
+φ₃‚₂│3  3q²  -q    .      .   q-1     q³-q²
+```
+"""
 function Chars.CharTable(H::HeckeAlgebra;opt...)
   get!(H,:chartable)do
     W=H.W
@@ -411,7 +437,54 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
   end::CharTable
 end
 
-function Chars.representation(H::HeckeAlgebra,i::Int)
+"""
+`representation(H::HeckeAlgebra or HeckeCoset,i)`
+
+returns  a list holding, for the  `i`-th irreducible character of the Hecke
+algebra  or Hecke coset `H`, a list of matrices images of the generators of
+`H`  in a model of the  corresponding representation (for Hecke cosets, the
+result   is  a  `NamedTuple`  with   fields  `gens`,  a  representation  of
+`hecke(H)`,  and  `F`,  the  matrix  for  the  automorphism  of  `H` in the
+representation). 
+
+This  function  is  based  on  the  classification,  and  is  not yet fully
+implemented for the Hecke algebras of the groups `G₃₁`, `G₃₂` and `G₃₄`: we
+have 50 representations out of 59 for type `G₃₁`, 30 representations out of
+102  for  type  `G₃₂`  and  38  representations  out of 169 for type `G₃₄`;
+`nothing` is returned for a missing representation.
+
+```julia-repl
+julia> W=crg(24)
+G₂₄
+
+julia> H=hecke(W,Pol(:q))
+hecke(G₂₄,q)
+
+julia> representation(H,3)
+3-element Vector{Matrix{Pol{Cyc{Int64}}}}:
+ [q 0 0; -q -1 0; -q 0 -1]
+ [-1 0 -1; 0 -1 ((1-√-7)/2)q; 0 0 q]
+ [-1 -1 0; 0 q 0; 0 (1+√-7)/2 -1]
+```
+
+The  models  implemented  for  imprimitive  types `G(de,e,n)` for `n>2` and
+`de>1` (this includes Coxeter type `Dₙ`), excepted for `G(2,2,4), G(3,3,3),
+G(3,3,4), G(3,3,5)` and `G(4,4,3)`, involve rational fractions.
+
+```julia-repl
+julia> H=hecke(coxgroup(:D,5),Pol())
+hecke(D₅,q)
+
+julia> representation(H,7)
+5-element Vector{Matrix{Frac{Pol{Int64}}}}:
+ [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]
+ [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]
+ [1/(-q-1) -q/(-q-1) 0 0; (q²+q+1)/(q+1) q²/(q+1) 0 0; 0 0 -1 0; 0 0 0 -1]
+ [-1 0 0 0; 0 1/(-q²-q-1) (-q²-q)/(-q²-q-1) 0; 0 (q³+q²+q+1)/(q²+q+1) q³/(q²+q+1) 0; 0 0 0 -1]
+ [-1 0 0 0; 0 -1 0 0; 0 0 1/(-q³-q²-q-1) (-q³-q²-q)/(-q³-q²-q-1); 0 0 (q⁴+q³+q²+q+1)/(q³+q²+q+1) q⁴/(q³+q²+q+1)]
+```
+"""
+function Chars.representation(H::HeckeAlgebra,i::Integer)
   dims=getchev(H.W,:NrConjugacyClasses)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(H.W)
@@ -429,8 +502,6 @@ function Chars.representation(H::HeckeAlgebra,i::Int)
     end
   end...)
 end
-
-Chars.representations(H::HeckeAlgebra)=representation.(Ref(H),1:nconjugacy_classes(H.W))
 
 """
 `isrepresentation(H::HeckeAlgebra,r)`
@@ -525,7 +596,7 @@ function PermRoot.reflrep(H::HeckeAlgebra)
 end 
 
 """
-`WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)'
+`WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)`
     
 `H`  should be  a one-parameter  Hecke algebra  for a  finite Coxeter group
 where  `rootpara`  is  defined.  The  function  returns the matrices of the
@@ -698,7 +769,9 @@ function innermul(W::CoxeterGroup,a,b)
 end
 
 function innermul(W::PermRootGroup,a,b)
-  if length(refltype(W))>1 || !iscyclic(W) error("not implemented") end
+  if length(refltype(W))>1 || !iscyclic(W) 
+   error("T basis implemented only for Coxeter groups and G(d,1,1)")
+  end
   sum(a.d) do (ea,pa)
     h=b.d*pa
     for i in reverse(word(W,ea))
@@ -883,23 +956,29 @@ julia> char_values(Cpbasis(H)(1,2,1))
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
 
 """
-`char_values(H::HeckeAlgebra,w::Vector{<:Integer})`
+`char_values(H::HeckeAlgebra,v::Vector{<:Integer})`
 
-For (most) complex reflection groups `W` the character table of the generic
-Hecke  algebra  has  been  computed  in  the  sense  that,  if `s₁,…,sₙ`are
-generators of the braid group lifting the
-Broué-Malle-Rouquier-Bessis-Michel generators of `W`, there is at least one
-element in each conjugacy class of `W` and one expression in the generators
-for  it such that the character values of the image in the Hecke algebra of
-the  lift to the braid group is known. Such an expression in the generators
-will be called a `good` word.
+For an Iwahori-Hecke algebra this computes the character values of `H` on
+the `Tbasis(H)(v)`.
 
-This  routines computes  character values  of a  lift of  an element of `W`
-defined  by the word `w`. If the word `w` is good, the computation is quick
-using  the character table. If not, the  function computes the trace of the
-image of the element in each irreducible representation.
+For  `H` the Hecke algebra  of a complex reflection  group `W` this routine
+computes  character values on a  lift of the element  of `W` defined by the
+word `v` in `gens(W)`.
 
-```julia-repl
+For  complex reflection  groups the  character table  of the  generic Hecke
+algebra  of  `W`  has  been  computed  (not  entirely for 3 exceptions, see
+`representation`)  in the  sense that,  if `s₁,…,sₙ`  are generators of the
+braid  group lifting  the Broué-Malle-Rouquier-Bessis-Michel  generators of
+`W`,  there is at least one element `v`  in each conjugacy class of `W` and
+one  expression in the generators for it  such that the character values of
+the  image `Tᵥ`  in the  Hecke algebra  of the  lift to the braid group are
+known.  Such an expression in the generators  will be called a *known* word
+(the  list of known words  is obtained by `word.(conjugacy_classes(W))`. If
+the  word `v` is known, the computation is quick using the character table.
+If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
+representation.   The   values   returned   are   `Unknown()`  for  missing
+representations (see `representation`).
+```julia-repl 
 julia> W=crg(4)
 G₄
 
@@ -922,9 +1001,10 @@ function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
   if W isa CoxeterGroup return char_values(Tbasis(H)(w)) end 
   p=findfirst(==(w),word.(conjugacy_classes(W))) 
   if !isnothing(p) return CharTable(H).irr[:,p] end
-  improve_type(map(representations(H))do r
+  map(representations(H))do r
+    if isnothing(r) return Unknown() end
     first(traces_words_mats(r,[w]))
-  end)
+  end
 end
 
 function schur_element(H::HeckeAlgebra,p)
@@ -970,6 +1050,40 @@ schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
                                     charinfo(H.W).charparams)
 
 #----------------------- Factorized Schur elements
+"""
+A  `FactSchur` representing  a Schur  element of  the form  `M∏ᵩφ(Mᵩ)` is a
+`struct`  with a field `factor`  which holds the monomial  `M`, and a field
+`vcyc`  which holds a  list of `NamedTuples`  describing each factor in the
+product.  An  element  of  `vcyc`  representing  a term `φ(Mᵩ)` is itself a
+`struct`  with fields  `monomial` holding  `Mᵩ` (as  an `Mvp` with a single
+term),  and a  field `pol`  holding a  `CycPol` (see `CycPol`) representing
+`φ`.
+
+A few operations are implemented for `FactSchur`, like `*, lcm`. They can be
+evaluated partially or completely keeping as much as possible the factored
+form.
+
+```julia-repl
+julia> @Mvp x,y; W=crg(4); H=hecke(W,[[1,x,y]])
+hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
+
+julia> p=factorized_schur_element(H,[[2,5]])
+-x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
+
+julia> q=p(;x=E(3))
+ζ₃²√-3y⁻¹Φ₁Φ₂Φ′₆²(y)
+
+julia> q(;y=2//1)
+-9√-3/2
+```
+
+In contrast, the next operation expands `p` to an `Mvp`:
+
+```julia-repl
+julia> HeckeAlgebras.expand(p)
+Mvp{Cyc{Rational{Int64}},Rational{Int64}}: -x³y+x³+x²y²-2x²+x²y⁻¹-xy³+2xy-xy⁻¹+y³-2y²+1+x⁻¹y²-x⁻¹y
+```julia-repl
+"""
 struct FactSchur
   factor::Mvp{Cyc{Rational{Int}},Rational{Int}}
   vcyc::Vector{NamedTuple{(:pol,:monomial),
@@ -1122,9 +1236,9 @@ function VFactorSchurElement(para,r,data=nothing,u=nothing)
 end
 
 """
-`FactorizedSchurElement(H,phi)`
+`factorized_schur_element(H,phi)`
 
-returns  the factorized `schur_element`  (see `FactorizedSchurElements`) of
+returns  the factorized `schur_element`  (see `factorized_schur_elements`) of
 the  Hecke algebra  `H` for  the irreducible  character of `H` of parameter
 `phi` (see `charinfo(W).charparams`)
 
@@ -1135,11 +1249,11 @@ G₄
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
 hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
-julia> FactorizedSchurElement(H,[[2,5]])
+julia> factorized_schur_element(H,[[2,5]])
 -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
 ```
 """
-function FactorizedSchurElement(H::HeckeAlgebra,phi)
+function factorized_schur_element(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
      getchev(t,:FactorizedSchurElement,psi,H.para[t.indices], 
     haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
@@ -1150,16 +1264,16 @@ function FactorizedSchurElement(H::HeckeAlgebra,phi)
 end
 
 """
-`FactorizedSchurElements(H)`
+`factorized_schur_elements(H)`
 
 Let  `H` be  a Hecke  algebra for  the complex  reflection group `W`, whose
 parameters are all (Laurent) monomials in some variables `x₁,…,xₙ`, and let
 K  be the field of definition of `W`. Then Maria Chlouveraki has shown that
-the Schur elements of `H` take the particular form `M ∏_Φ Φ(M_Φ)` where `Φ`
-runs  over  a  list  of  K-cyclotomic  polynomials,  and  `M` and `M_Φ` are
+the  Schur elements of `H` take the  particular form `M ∏ᵩ φ(Mᵩ)` where `φ`
+runs  over  a  list  of  K-cyclotomic  polynomials,  and  `M`  and `Mᵩ` are
 (Laurent)  monomials (in possibly some  fractional powers) of the variables
-`xᵢ`. The function `FactorizedSchurElements` returns a data structure which
-shows this factorization.
+`xᵢ`.  The  function  `factorized_schur_elements`  returns a data structure
+(see `HeckeAlgebras.FactSchur`) which shows this factorization.
 
 ```julia-repl
 julia> W=complex_reflection_group(4)
@@ -1168,7 +1282,7 @@ G₄
 julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
 hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
-julia> FactorizedSchurElements(H)
+julia> factorized_schur_elements(H)
 7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:
  x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)
  Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
@@ -1179,10 +1293,10 @@ julia> FactorizedSchurElements(H)
  x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)
 ```
 """
-FactorizedSchurElements(H::HeckeAlgebra)=
-    map(p->FactorizedSchurElement(H,p),charinfo(H.W).charparams)
+factorized_schur_elements(H::HeckeAlgebra)=
+    map(p->factorized_schur_element(H,p),charinfo(H.W).charparams)
 
-const factorized_schur_elements=FactorizedSchurElements
+const FactorizedSchurElements=factorized_schur_elements
 #---------------------- Hecke Cosets
 @doc """
 `HeckeCoset`s  are  `Hϕ`  where  `H`  is  an  Iwahori-Hecke algebra of some
@@ -1214,6 +1328,9 @@ sense for these cosets. This is used to compute such character tables.
   H::TH
   W::TW
 end
+
+"`hecke(HF::HeckeCoset)` returns the underlying Hecke algebra"
+hecke(HF::HeckeCoset)=HF.H
 
 """
 `hecke(WF::Spets, H)`
@@ -1272,25 +1389,44 @@ function Chars.representation(H::HeckeCoset,i::Int)
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
     r=getchev(t,:HeckeRepresentation,H.H.para,rp,j)
-    if r isa Vector 
-       r=toM.(r)
-       (gens=r,F=one(r[1]))
-    else (gens=toM.(r[:gens]),F=toM(r[:F]))
+    if r==false return nothing
+    elseif r isa Vector 
+      r=improve_type(toM.(r))
+      (gens=r,F=one(r[1]))
+    else (gens=improve_type(toM.(r[:gens])),F=improve_type(toM(r[:F])))
     end
   end
-  if any(==(false),mm) return false end
-  ff=improve_type(getindex.(mm,:F))
-  mm=improve_type(getindex.(mm,:gens))
+  if any(isnothing,mm) return nothing end
   n=length(tt)
-  if n==1 return (gens=mm[1],F=ff[1]) end
+  if n==1 return (gens=mm[1].gens,F=mm[1].F) end
   (gens=vcat(map(1:n) do i
-         map(mm[i]) do m
-           kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
-         end
-        end...), F=kron(ff...))
+     map(mm[i].gens) do m
+       kron(map(j->j==i ? m : one(mm[j].gens[1]),1:n)...)
+     end
+   end...), F=kron(getindex.(mm,:F)...))
 end
 
-Chars.representations(H::HeckeCoset)=representation.(Ref(H),1:nconjugacy_classes(H.W))
+"""
+`representations(H)`
+
+returns  the list  of representations  of the  Hecke algebra or Hecke coset
+`H` (see `representation`).
+
+```julia-repl
+julia> WF=rootdatum("2B2")
+²B₂
+
+julia> H=hecke(WF,Pol(:x)^2;rootpara=Pol())
+hecke(²B₂,x²,rootpara=x)
+
+julia> representations(H)
+3-element Vector{NamedTuple{(:gens, :F)}}:
+ (gens = Matrix{Pol{Int64}}[[x²;;], [x²;;]], F = [1;;])
+ (gens = Matrix{Pol{Int64}}[[-1;;], [-1;;]], F = [1;;])
+ (gens = Matrix{Pol{Cyc{Int64}}}[[-1 0; √2x x²], [x² √2x; 0 -1]], F = [0 -1; -1 0])
+```
+"""
+Chars.representations(H::Union{HeckeAlgebra,HeckeCoset})=representation.(Ref(H),1:nconjugacy_classes(H.W))
 
 function isrepresentation(H::HeckeCoset,r)
   all(i->iszero(r.gens[i]*r.F-r.F*r.gens[action(Group(H.W),i,H.W.phi)]),
