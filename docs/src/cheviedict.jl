@@ -90,6 +90,8 @@ const ChevieDict=Dict(
 "DescribeInvolution"=>"describe_involution",
 "DetPerm(W)"=>"vec(detPerm(W))",
 "DiaconisGraham"=>"diaconis_graham",
+"DiagonalMat"=>"Diagonal or cat",
+"DiagonalOfMat"=>"diag",
 #DifferenceMultiSet
 "Digits"=>"digits",
 #Discriminant
@@ -373,6 +375,7 @@ const ChevieDict=Dict(
 "M.ToOrdinary(i)"=>"B(M,i)",
 "Torus"=>"torus",
 "TorusOrder"=>"torus_order",
+"TraceMat"=>"tr",
 "TransitiveClosure"=>"transitive_closure",
 "Transporter"=>"transporter",
 "TransposedMat"=>"transpose or permutedims",

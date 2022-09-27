@@ -233,7 +233,7 @@ function ennola(W)
     end
     res[:ls]=prod(i->res[:fls][i]^mappingPerm(1:length(fam[i]),
                                       fam[i][:charNumbers]),1:length(fam))
-    res[:allscal]=HasType.DiagonalOfMat(Matrix(res[:ls])^fourier(uc))
+    res[:allscal]=diag(Matrix(res[:ls])^fourier(uc))
     res
   end
   W.prop[:ennola]
@@ -632,7 +632,7 @@ function detfam(arg...,)
   return M
 end
 
-# the Ennola theory says that if E:=DiagonalMat(Ennola-scalars)
+# the Ennola theory says that if E:=Diagonal(Ennola-scalars)
 # and P:=matrix of permutation-with signs that Ennola does and M=fourier,
 # then one has M*P=E*M
 # here p is a Ls

@@ -847,7 +847,7 @@ function showcentralizer(io::IO,u)
         res*=reflection_name(IOContext(io,:Au=>true),u.Au)
   end
   if haskey(u,:dimunip)
-    if u.dimunip>0 c*=GAPENV.Format(Mvp(:q)^u.dimunip,io.dict) end
+    if u.dimunip>0 c*=sprint(show,Mvp(:q)^u.dimunip;context=io) end
   else c*="q^?" end
   if haskey(u,:AuAction)
     if rank(u.red)>0
@@ -1228,8 +1228,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
 # println("here uc=",uc)
   pieces=map(i->ICCTable(uc,i),eachindex(uc.springerseries))
 # Note that c_ι=βᵤ+(rkss L_\CI)/2
-  greenpieces=map((x,y)->map(x->x(q),x.scalar)*
-                  toM(GAPENV.DiagonalMat(q.^x.dimBu...))*
+  greenpieces=map((x,y)->map(x->x(q),x.scalar)*Diagonal(q.^x.dimBu)*
                   q^(length(y[:levi])//2),pieces,uc.springerseries)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
@@ -1493,8 +1492,8 @@ function TwoVarGreen(W,L)
   if !(L isa Spets) L=spets(L) end
   uG=UnipotentClasses(W)
   uL=UnipotentClasses(L)
-  tG=GreenTable(uG)
-  tL=GreenTable(uL)
+  tG=GreenTable(uG;classes=true)
+  tL=GreenTable(uL;classes=true)
   q=Mvp(:q)
   mm=map(eachindex(uL.springerseries))do i
     s=uL.springerseries[i]
@@ -1519,10 +1518,10 @@ function TwoVarGreen(W,L)
       end
       Lo=subspets(L,Int.(s[:levi]),pw/L.phi)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
-      prod(x->q-x,r)/length(centralizer(RL,w))
+      prod(x->q-x,r)//length(centralizer(RL,w))
     end
     transpose(tL.scalar[tL.indices[i],:])*
-    toM(GAPENV.DiagonalMat(d...))*conj(tG.scalar[tG.indices[p][f],:])
+    Diagonal(d)*conj(tG.scalar[tG.indices[p][f],:])
   end
   oL=generic_order(L,q)
   mm=improve_type(mm)

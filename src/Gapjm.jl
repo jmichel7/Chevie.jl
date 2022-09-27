@@ -92,7 +92,7 @@ using UsingMerge
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor
 # careful: use very little of LinearAlgebra
-@reexport using LinearAlgebra: diag, tr, I
+@reexport using LinearAlgebra: diag, tr, I, Diagonal
 @reexport using PermGroups
 @usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------

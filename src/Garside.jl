@@ -1,17 +1,18 @@
-"""  Garside  monoids  are  a  general  class  of monoids whose most famous
-examples  are the braid and dual braid monoids. The implementation of these
-last  monoids is  in the  framework of  a general implementation of Garside
-monoids.
+"""
+Garside  monoids are a general class  of monoids whose most famous examples
+are  the braid and dual braid monoids.  They have groups of fractions which
+in  both cases are the  braid group. Here we  implement braid groups in the
+framework of a general implementation of Garside monoids and groups.
 
-To  define Garside monoids we first need to introduce some vocabulary about
-divisibility  in monoids. A *left divisor* of  `x` is a `d` such that there
-exists  `y` with `x=dy` (and then we say  that `x` is a *right multiple* of
-`d`,  and write `d≼ x`). We say that a monoid `M` is left cancellable if an
-equality  `dx=dy` implies  `x=y`. We  define symmetrically  right divisors,
-left  multiples and right cancellability.  We say that `x`  is an *atom* if
-`1`  and `x` are its only divisors. A *left gcd* of `x` and `y` is a common
-left  divisor `d` of `x` and `y` such that any other common left divisor is
-a  left divisor of `d`. Similarly a *right  lcm* of `x` and `y` is a common
+To  define Garside monoids we  introduce some vocabulary about divisibility
+in  monoids. A *left  divisor* of `x`  is a `d`  such that there exists `y`
+with  `x=dy` (and then  we say that  `x` is a  *right multiple* of `d`, and
+write  `d≼ x`). We say that a monoid `M` is left cancellable if an equality
+`dx=dy`  implies  `x=y`.  We  define  symmetrically  right  divisors,  left
+multiples and right cancellability. We say that `x` is an *atom* if `1` and
+`x`  are its only  divisors. A *left  gcd* of `x`  and `y` is a common left
+divisor  `d` of `x`  and `y` such  that any other  common left divisor is a
+left  divisor of `d`.  Similarly a *right  lcm* of `x`  and `y` is a common
 multiple which is a left divisor of any other common multiple.
 
 We  call *Garside* a monoid `M` which:
@@ -49,25 +50,23 @@ where   exhibited  for   braid  monoids   of  Coxeter   groups  by  Deligne
 [Del72](biblio.htm#Del72),  who extended previous  work of Brieskorn, Saito
 [BS72](biblio.htm#BS72) and Garside [Gar69](biblio.htm#Gar69):
 
-(i)
-Let  `M` be a locally Garside monoid and let `b∈ M`. Then there is a unique
-maximal left simple divisor `α(b)` of `b` --- any other simple dividing `b`
-on the left divides `α(b)` on the left.
+  - (1) Let `M` be a locally Garside monoid and let `b∈ M`. Then there is a
+    unique  maximal left simple divisor `α(b)`  of `b` --- any other simple
+    dividing `b` on the left divides `α(b)` on the left.
 
-(ii)
-Assume  `M` is a Garside monoid, `Δ` is  its Garside element and `G` is its
-group  of fractions. Then,  given any element  `x∈ G`, there  is some power
-`i` such that `Δⁱ x∈ M`.
+  -  (2) Assume `M` is a Garside monoid, `Δ` is its Garside element and `G`
+    is  its group of  fractions. Then, given  any element `x∈  G`, there is
+    some power `i` such that `Δⁱ x∈ M`.
 
-A consequence of (i) is that any element has a canonical decomposition as a
+A consequence of (1) is that any element has a canonical decomposition as a
 product of simples, called its left-greedy normal form. If we define `ω(x)`
 by  `x=α(x)ω(x)`, then the normal form of `x` is `α(x)α(ω(x))α(ω^2(x))…` We
 use  the normal form to represent elements  of `M`, and when `M` is Garside
-(ii)  to represent elements  of `G`: given  `x∈ G` we  compute the smallest
+(2)  to represent  elements of  `G`: given  `x∈ G`  we compute the smallest
 power  `i`  such  that  `Δⁱ  x∈  M`,  and  we  represent  `x` by the couple
 `(i,Δ⁻ⁱx)`.  We are thus reduced to the case where `x∈ M`, not divisible by
 `Δ`,  where we represent  `x` by the  sequence of simples which constitutes
-its normal form. 
+its normal form.
 
 We  now describe Artin-Tits braid monoids. Let `(W,S)` be a Coxeter system,
 that is `W` has presentation
@@ -107,15 +106,15 @@ A₄
 julia> B=BraidMonoid(W)
 BraidMonoid(A₄)
 ```
-constructs  the  associated  braid  monoid,  and  then  as  a  function 'B'
+constructs  the  associated  braid  monoid,  and  then  as  a  function `B`
 constructs  elements of the braid monoid (or group when `W` is finite) from
-a list of generators.
+a list of generators (below `B(1,2,3,4)` represents `𝐬₁𝐬₂𝐬₃𝐬₄`):
 
 ```julia-repl
 julia> w=B(1,2,3,4)
 1234
 
-julia> w^3
+julia> w^3  # the terms of the normal form are separated by a `.`
 121321432.343
 
 julia> word(α(w^3))
@@ -137,20 +136,20 @@ julia> inv(w)
 (1234)⁻¹
 ```
 
-How  an element of  a Garside group  is printed is  controlled by IOcontext
-':greedy'.  By default, elements are printed  as fractions `a⁻¹b` where `a`
-and  `b` have no left common divisor. Each  of `a` and `b` is printed using
-its left-greedy normal form, that is a maximal power of the Garside element
-followed  by the rest. One can print  the entire element in the left-greedy
-normal  from by setting the ':greedy' IOContext; with the same `w` as above
-we have:
+How  an  element  of  a  Garside  group  is  printed  is  controlled by the
+`IOcontext`  attribute  ':greedy'.  By  default,  elements  are  printed as
+fractions `a⁻¹b` where `a` and `b` have no left common divisor. Each of `a`
+and  `b` is printed  using its left-greedy  normal form, that  is a maximal
+power of the Garside element followed by the rest. One can print the entire
+element   in  the  left-greedy  normal  from  by  setting  the  `IOContext`
+`:greedy=>true`; with the same `w` as above we have:
 
 ```julia-repl
 julia> repr(w^-1,context=IOContext(stdout,:greedy=>true,:limit=>true))
 "Δ⁻¹.232432"
 ```
 Finally,  `repr` gives   `w`  back   in  a   form  which   after  assigning
-'B=BraidMonoid(W)' can be input back into Julia:
+`B=BraidMonoid(W)` can be input back into Julia:
 
 ```julia-repl
 julia> repr(w)
@@ -167,35 +166,35 @@ of their constituting atoms.
 
 We  now describe the dual braid monoid.  For that, we first give a possible
 approach  to construct Garside monoids. Given a  group `W` and a set `S` of
-generators  of `W` as a monoid, we  define the length `l(w)` as the minimum
-number of elements of `S` needed to write `w`. We then define left divisors
-of   `x`  as  the  `d`   such  that  there  exists   `y`  with  `x=dy`  and
-`l(d)+l(y)=l(x)`.  We say that  `w∈ W` is  balanced if its  set of left and
-right  divisors coincide, and we  say that `w` is  Garside if that set is a
-lattice (where upper and lower bounds are lcms and gcds) and generates `W`.
-Then we have:
+generators  of `W` as  a monoid, we  define the `S`-length  `l_S(w)` as the
+minimum  number of elements of `S` needed to write `w`. We then define left
+divisors  of `x`  as the  `d` such  that there  exists `y`  with `x=dy` and
+`l_S(d)+l_S(y)=l_S(x)`.  We say that `w∈ W` is  balanced if its set of left
+and  right divisors coincide, and we say that `w` is Garside if that set is
+a  lattice (where upper and  lower bounds are lcms  and gcds) and generates
+`W`. Then we have:
 
-suppose `w` is Garside and let `[1,w]` be its set of divisors (an interval
+suppose  `w` is Garside and let `[1,w]` be its set of divisors (an interval
 for  the partial order  defined by divisibility).  Then the monoid `M` with
 generators  `[1,w]` and relations  `xy=z` whenever `xy=z`  holds in `W` and
-`l(x)+l(y)=l(z)`  is Garside,  with simples  `[1,w]` and  atoms `S`.  It is
-called the interval monoid defined by the interval `[1,w]`.
+`l_S(x)+l_S(y)=l_S(z)`  is Garside, with simples  `[1,w]` and atoms `S`. It
+is called the interval monoid defined by the interval `[1,w]`.
 
 The  Artin-Tits braid monoid  is an interval  monoid by taking  for `S` the
-Coxeter generators, in which case `l` is the Coxeter length, and taking for
-`w`  the longest element of `W`. The dual monoid, constructed by Birman, Ko
-and  Lee  for  type  `A`  and  by  Bessis  for  all  well-generated complex
+Coxeter  generators, in which case `l_S`  is the Coxeter length, and taking
+for `w` the longest element of `W`. The dual monoid, constructed by Birman,
+Ko  and  Lee  for  type  `A`  and  by Bessis for all well-generated complex
 reflection  groups, is obtained in  a similar way, by  taking this time for
-`w`  a Coxeter element,  for `l` the  reflection length 'reflength' and for
-`S` the reflections which divide `w` for the reflection length (for Coxeter
-groups all reflections divide `w` but for well-generated complex reflection
-groups  not all reflections divide); for the dual monoid the simples are of
-cardinality  the generalized Catalan numbers  `catalan`. An interval monoid
-has  naturally an inverse morphism from `M` to `W`, called 'image' which is
-the  quotient map from the  interval monoid to `W`  which sends back simple
-braids to `[1,w]`.
+`w`  a Coxeter element, for `l_S` the reflection length 'reflength' and for
+`S_S`  the  reflections  which  divide  `w`  for the reflection length (for
+Coxeter  groups all reflections  divide `w` but  for well-generated complex
+reflection  groups not  all reflections  divide); for  the dual  monoid the
+simples  are of cardinality  the generalized Catalan  numbers `catalan`. An
+interval  monoid has naturally an inverse  morphism from `M` to `W`, called
+'image'  which is the  quotient map from  the interval monoid  to `W` which
+sends back simple braids to `[1,w]`.
 
-A  last notable notion is *reversible*  monoids. Since we store left normal
+A last pertinent notion is *reversible* monoids. Since we store left normal
 forms,  it is easy to compute left lcms and gcds, but hard to compute right
 lcms  and gcds. But this becomes easy to  do if the monoid has an operation
 'reverse',  which has the property that 'a' is a left divisor of 'b' if and

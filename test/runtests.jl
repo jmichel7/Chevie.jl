@@ -471,7 +471,7 @@ end
 @test mytest("HeckeAlgebras.jl","hecke(complex_reflection_group(3,1,2),q).para","2-element Vector{Vector{Pol{Cyc{Int64}}}}:\n [q, ζ₃, ζ₃²]\n [q, -1]")
 @test mytest("HeckeAlgebras.jl","H=hecke(crg(4),Pol())","hecke(G₄,q)")
 @test mytest("HeckeAlgebras.jl","CharTable(H)","CharTable(hecke(G₄,q))\n    │.    z 212   12    z12     1        1z\n────┼───────────────────────────────────────\nφ₁‚₀│1   q⁶  q³   q²     q⁸     q        q⁷\nφ₁‚₄│1    1   1  ζ₃²    ζ₃²    ζ₃        ζ₃\nφ₁‚₈│1    1   1   ζ₃     ζ₃   ζ₃²       ζ₃²\nφ₂‚₅│2   -2   .    1     -1    -1         1\nφ₂‚₃│2 -2q³   . ζ₃²q -ζ₃²q⁴ q+ζ₃² -q⁴-ζ₃²q³\nφ₂‚₁│2 -2q³   .  ζ₃q  -ζ₃q⁴  q+ζ₃  -q⁴-ζ₃q³\nφ₃‚₂│3  3q²  -q    .      .   q-1     q³-q²")
-@test mytest("HeckeAlgebras.jl","W=crg(24)","H=G₂₄")
+@test mytest("HeckeAlgebras.jl","W=crg(24)","G₂₄")
 @test mytest("HeckeAlgebras.jl","H=hecke(W,Pol(:q))","hecke(G₂₄,q)")
 @test mytest("HeckeAlgebras.jl","representation(H,3)","3-element Vector{Matrix{Pol{Cyc{Int64}}}}:\n [q 0 0; -q -1 0; -q 0 -1]\n [-1 0 -1; 0 -1 ((1-√-7)/2)q; 0 0 q]\n [-1 -1 0; 0 q 0; 0 (1+√-7)/2 -1]")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:D,5),Pol())","hecke(D₅,q)")
@@ -520,7 +520,7 @@ end
 @test mytest("HeckeAlgebras.jl","HF=hecke(WF,Pol(:v)^2;rootpara=Pol())","hecke(u₃,v²,rootpara=v)")
 @test mytest("HeckeAlgebras.jl","CharTable(HF)","CharTable(hecke(u₃,v²,rootpara=v))\n   │ 111 21  3\n───┼───────────\n111│  -1  1 -1\n21 │-2v³  .  v\n3  │  v⁶  1 v²")
 @test mytest("HeckeAlgebras.jl","WF=rootdatum(\"2B2\")","²B₂")
-@test mytest("HeckeAlgebras.jl","H=hecke(WF,Pol()^2;rootpara=Pol())","hecke(²B₂,x²,rootpara=x)")
+@test mytest("HeckeAlgebras.jl","H=hecke(WF,Pol(:x)^2;rootpara=Pol())","hecke(²B₂,x²,rootpara=x)")
 @test mytest("HeckeAlgebras.jl","representations(H)","3-element Vector{NamedTuple{(:gens, :F)}}:\n (gens = Matrix{Pol{Int64}}[[x²;;], [x²;;]], F = [1;;])\n (gens = Matrix{Pol{Int64}}[[-1;;], [-1;;]], F = [1;;])\n (gens = Matrix{Pol{Cyc{Int64}}}[[-1 0; √2x x²], [x² √2x; 0 -1]], F = [0 -1; -1 0])")
 end
 @testset "KL.jl" begin

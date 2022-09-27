@@ -928,8 +928,7 @@ end
 end
 
 """
-    `fusion_algebra(f::Family)`
-    `fusion_algebra(S,special=1)`
+`fusion_algebra(f::Family)` or `fusion_algebra(S,special=1)`
 
 All  the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=conj(S)`,
 and  have a  *special* line  `s` (the  line of  index `s=special(f)`  for a
@@ -938,9 +937,11 @@ the  property that  the sums  `Cᵢ,ⱼ,ₖ=sumₗ Sᵢ,ₗ  Sⱼ,ₗ conj(Sₖ,
 integral  values. Finally,  `S` has  the property  that complex conjugation
 does a permutation with signs `σ` of the lines of `S`.
 
-It  follows that we can define a `Z`-algebra `A` as follows: it has a basis
+It  follows that we can define a `ℤ`-algebra `A` as follows: it has a basis
 `bᵢ`  indexed by the lines of `S`,  and has a multiplication defined by the
-fact that the coefficient of `bᵢbⱼ` on `bₖ` is equal to `Cᵢ,ⱼ,ₖ`.
+fact  that the  coefficient of  `bᵢbⱼ` on  `bₖ` is  equal to `Cᵢ,ⱼ,ₖ`. This
+algebra  can be specified by giving a family `f` or just its Fourier matrix
+and the number of its special line.
 
 `A`  is commutative, and has as unit  the element `bₛ`; the basis σ(bᵢ)` is
 `dual to `bᵢ` for the linear form (bᵢ,bⱼ)=Cᵢ,ⱼ,σ₍ₛ₎`.
@@ -1024,19 +1025,17 @@ Algebras.dim(A::FusionAlgebra)=size(A.fourier,1)
 
 Base.show(io::IO,A::FusionAlgebra)=print(io,"Fusion Algebra dim.",dim(A))
 
-using LinearAlgebra: LinearAlgebra
 function Algebras.idempotents(A::FusionAlgebra)
   get!(A,:idempotents)do
-    LinearAlgebra.Diagonal(A.fourier[A.special,:])*
-      conj.(transpose(A.fourier))*basis(A)
+    Diagonal(A.fourier[A.special,:])*A.fourier'*basis(A)
   end
 end
 
 Algebras.iscommutative(A::FusionAlgebra)=true
 
 function Chars.CharTable(A::FusionAlgebra)
-  irr=improve_type(toM(map(e->map(b->ratio(coefficients(b*e),coefficients(e)),
-                                  basis(A)), idempotents(A))))
+  irr=improve_type([ratio(coefficients(b*e),coefficients(e))
+       for e in idempotents(A), b in basis(A)])
   if irr!=A.irr error() end
   labels=string.(1:dim(A))
   centralizers=fill(dim(A),dim(A))

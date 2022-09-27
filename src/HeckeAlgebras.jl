@@ -331,7 +331,9 @@ function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
 end
   
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
-  para=map(o->o==2 ? [p,-one(p)] : vcat([p],E.(o,1:o-1)),ordergens(W))
+  if ngens(W)==0 para=Vector{C}[]
+  else para=map(o->o==2 ? [p,-one(p)] : vcat([p],E.(o,1:o-1)),ordergens(W))
+  end
   H=HeckeAlgebra(W,improve_type(para),Dict{Symbol,Any}(:equal=>true))
   if !iszero(rootpara) H.rootpara=fill(rootpara,ngens(W)) end
   H

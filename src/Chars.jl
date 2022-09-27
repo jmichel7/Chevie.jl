@@ -1313,7 +1313,7 @@ function WGraph2Representation(a,vars)
   rk=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
   R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:rk)
-  R=map(x->toM(GAPENV.DiagonalMat(x...)),R)
+  R=Array.(Diagonal.(R))
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
   for r in a[2]
