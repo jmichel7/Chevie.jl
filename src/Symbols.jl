@@ -1,65 +1,62 @@
 """
-The  combinatorial  objects  in  the  module  `Symbols`  are  *partitions*,
-*β-sets* and *symbols*.
+The  combinatorial objects  in this  module are  *partitions*, *β-sets* and
+*symbols*.
 
 A  partition is a  non-increasing list of  positive integers `p₁≥p₂≥…pₙ>0`,
 represented as a `Vector{Int}`.
 
-A  *β-set*  is  a  strictly  increasing  `Vector{Int}`,  up  to the *shift*
-equivalence   relation,  the  transitive  closure  of  the  equivalence  of
-`[b₁,…,bₙ]`  and  its  elementary  shift  `[0,1+b₁,…,1+bₙ]`. An equivalence
-class  has exactly one member which does  not contain `0`: it is called the
-normalized β-set.
+A  *β-set* is a strictly increasing `Vector` of nonnegative integers, up to
+*shift*,  the  equivalence  relation  generated  by the *elementary shifts*
+`[b₁,…,bₙ]∼[0,1+b₁,…,1+bₙ]`.  An equivalence  class has  exactly one member
+which does not contain `0`: it is called a normalized β-set.
 
 To  a  partition  `p₁≥p₂≥…pₙ>0`  is  associated  a  β-set, whose normalized
 representative   is   `pₙ,pₙ₋₁+1,…,p₁+n-1`.   Conversely,   to  each  β-set
-`b₁<b₂<…<bₙ` is associated the partition `bₙ-n+1≥…≥b₂-1≥b₁` (which may have
-some trailing zeros if starting from a non-normalized representative).
+`b₁<b₂<…<bₙ` is associated the partition `bₙ-n+1≥…≥b₂-1≥b₁`, which may have
+some trailing zeros if starting from a non-normalized representative.
 
 `2`-symbols  where introduced by [Lusztig1977] and more general `e`-symbols
 by  [Malle1995](biblio.htm#Mal95). An `e`-symbol  is a vector `S=[S₁,…,Sₑ]`
 of   β-sets,  taken  modulo  the  equivalence  relation  generated  by  the
-simultaneous  elementary shift of all β-sets, and the cyclic permutation of
-the vector (in the particular case where `e=2` it is thus an unordered pair
-of  β-sets).  This  time  a  symbol  is  normalized  if  `0`  is not in the
-intersection  of the `Sᵢ`; equivalent  normalized symbols are equivalent by
-cyclic   permutation.   The   *content*   of   `S`   is   `mod(c,e)`  where
-`c=sum(length(S))`;  it  is  an  invariant  of  the  symbol, as well as the
-*rank*,  defined for an  `e`-symbol as `sum(sum,S)-div((c-1)*(c-e+1),2*e)`.
-Invariant by shift but not cyclic permutation is the *shape* `s-minimum(s)`
-where `s=map(length,S)`.
+simultaneous  elementary shift of all β-sets, and by cyclic permutations of
+`S`;  in the particular case where `e=2`,  `S` is thus an unordered pair of
+β-sets.  `S` is a *normalized symbol* if  `0` is not in the intersection of
+the   `Sᵢ`;  equivalent   normalized  symbols   are  equivalent  by  cyclic
+permutation.  The *content* of `S`  is `mod(c,e)` where `c=sum(length(S))`;
+it  is an invariant  of the symbol,  as well as  the *rank*, defined for an
+`e`-symbol  as `sum(sum,S)-div((c-1)*(c-e+1),2*e)`. Invariant  by shift but
+not cyclic permutation is the *shape* `s-minimum(s)` where `s=map(length,S)`.
 
-When  `e=2`  up  to  cyclic  permutation  we  choose representatives of the
-symbols `[S₁,S₂]` such that `length(S₁)≥length(S₂)` so the shape is `[d,0]`
-where  `d` is called  the *defect* of  the symbol (the  content is equal to
-`mod(d,2)`).  For symbols `[S₁,S₂]` with `length(S₁)==length(S₂)` we choose
-representatives  such that `P₁≤P₂` lexicographically  where `P₁,P₂` are the
-partitions associated to `S₁,S₂`.
+When  `e=2` we  choose representatives  of the  symbols `[S₁,S₂]` such that
+`length(S₁)≥length(S₂)`,  so the shape is `[d,0]` for some `d≥0` called the
+*defect*  of the  symbol; the  content is  equal to `mod(d,2)`. For symbols
+`[S₁,S₂]` with `length(S₁)==length(S₂)` we choose representatives such that
+`P₁≤P₂`  lexicographically where  `P₁,P₂` are  the partitions associated to
+`S₁,S₂`.
 
-Partitions  and pairs  of partitions  are parameters  for characters of the
-Weyl groups of classical types, and tuples of partitions are parameters for
-characters   of  imprimitive  complex   reflection  groups.  2-Symbols  are
-parameters  for the unipotent characters of classical Chevalley groups, and
-more  general `e`-symbols  are parameters  for the  unipotent characters of
-Spetses  associated to spetsial imprimitive  complex reflection groups. The
-rank  of a  symbol is  the semi-simple  rank of the corresponding Chevalley
-group or Spets.
+Partitions  and  pairs  of  partitions  parametrize  characters of the Weyl
+groups  of classical types, and tuples of partitions parametrize characters
+of  imprimitive complex reflection  groups. 2-Symbols parametrize unipotent
+characters  of  classical  Chevalley  groups,  and more general `e`-symbols
+parametrize   unipotent  characters  of   Spetses  associated  to  spetsial
+imprimitive  complex reflection groups. The rank of a symbol is equal tothe
+semi-simple rank of the corresponding Chevalley group or Spets.
 
-Symbols  of rank  `n` and  defect `0`  parameterize characters  of the Weyl
-group  of type `Dₙ`,  and symbols of  rank `n` and  defect divisible by `4`
+Symbols of rank `n` and defect `0` parametrize characters of the Weyl group
+of  type  `Dₙ`,  and  symbols  of  rank  `n`  and  defect  divisible by `4`
 parameterize  unipotent characters of split  orthogonal groups of dimension
 `2n`.  Symbols of  rank `n`  and defect`≡2  (mod 4)` parameterize unipotent
 characters  of non-split  orthogonal groups  of dimension  `2n`. Symbols of
-rank  `n` and defect `1` parameterize characters  of the Weyl group of type
-`Bₙ`,  and  symbols  of  rank  `n`  and  odd  defect parameterize unipotent
+rank  `n` and defect `1`  parametrize characters of the  Weyl group of type
+`Bₙ`,  and  symbols  of  rank  `n`  and  odd  defect  parametrize unipotent
 characters  of symplectic groups of dimension  `2n` or orthogonal groups of
 dimension `2n+1`.
 
 `e`-symbols  of rank `n` and  content `1` parameterize unipotent characters
 of  `G(e,1,n)`. Those of  content `0` parameterize  unipotent characters of
-`G(e,e,n)`.  The principal series  (characters of the  reflection group) is
-parametrized  by symbols of shape  `[1,0,…,0]` for `G(e,1,n)` and `[0,…,0]`
-for `G(e,e,n)`.
+`G(e,e,n)`.  The  principal  series  (in  bijection  with characters of the
+reflection  group)  is  parametrized  by  symbols  of shape `[1,0,…,0]` for
+`G(e,1,n)` and `[0,…,0]` for `G(e,e,n)`.
 """
 module Symbols
 using ..Util: joindigits
@@ -119,7 +116,7 @@ function PartitionTupleToString(n,a=Dict())
 end
 
 """
-`shiftβ( β, n)` shift β-set β by n
+`shiftβ( β, n)` shift the β-set `β` by `n`
 
 ```julia-repl
 julia> shiftβ([2,3],2)
@@ -144,7 +141,7 @@ function shiftβ(β,n=1)
 end
 
 """
-`βset(p)` normalized β-set of a partition
+`βset(p)` normalized β-set of partition `p`
 
 ```julia-repl
 julia> βset([3,3,1])
@@ -170,7 +167,7 @@ function βset(p,s=0)
 end
 
 """
-'partβ(β)' partition defined by β-set β
+`partβ(β)` partition defined by β-set `β`
 
 ```julia-repl
 julia> partβ([0,4,5])
@@ -668,10 +665,12 @@ end
 `XSP(ρ,s,n,even=false)`
 
 returns  the union of the Lusztig-Spaltenstein ``X̃^{ρ-s,s}_{n,d}`` for all
-`d`  even when `even=true`, all `d` odd otherwise. In "Character sheaves on
-disconnected  groups  II,  13.2"  the  notation  is ``{}^ρ X^s_{n,d}``. The
-result is a list of lists, each one corresponding to a similarity class. If
-`s==0`, only positive defects are considered.
+`d` even when `even=true`, all `d` odd otherwise; these symbols parametrize
+local  systems  on  unipotent  conjugacy  classes  for classical groups. In
+[Lusztig2004](biblio.htm#Lus04),  13.2 the notation  is ``{}^ρ X^s_{n,d}``.
+The result is a list of lists, each one corresponding to a similarity class
+(which  correspond to a given conjugacy  class for the support). If `s==0`,
+only positive defects are considered.
 
   - `XSP(2,1,n)` gives L-S symbols for Sp₂ₙ
   - `XSP(4,2,n)` gives L-S symbols for Sp₂ₙ in char.2
@@ -679,14 +678,15 @@ result is a list of lists, each one corresponding to a similarity class. If
   - `XSP(2,0,n,true)` gives L-S symbols for SO₂ₙ [defect even]
   - `XSP(4,0,n,true)` gives L-S symbols for SO₂ₙ in char 2
 
-returns named tuples with fields:
+each item is a `NamedTuple` giving some information on the local system.
+It has fields
 
-  - `symbol`
-  - `dimBu`
-  - `Au`  describes a character of `A(u)` as a list: `true`->sgn, `false`->Id
-     representing the local system of the Springer correspondent
+  - `symbol` the Lusztig-Spaltenstein symbol
+  - `dimBu` for the support `u` of the local system
+  - `Au` describes the character  of `A(u)` for the  local system as a list:
+    `true`->sgn, `false`->Id
   - `sp`  parameter (double partition) of the generalized Springer
-     correspondent (character of the relative Weyl group)
+     correspondent (a character of the relative Weyl group)
 """
 function XSP(rho,s,n,even=false)
   d=Int(!Bool(even))

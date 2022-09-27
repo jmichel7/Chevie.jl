@@ -101,10 +101,10 @@ include("Util.jl");@reexport using .Util
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@reexport using .FFfac
-include("Fact.jl");@reexport using .Fact
 include("Nf.jl");@reexport using .Nf
 include("MatInt.jl");@reexport using .MatInt
 include("Tools.jl");@reexport using .Tools
+include("Fact.jl");@reexport using .Fact
 include("CycPols.jl");@reexport using .CycPols
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("PermRoot.jl");@reexport using .PermRoot

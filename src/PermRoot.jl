@@ -191,13 +191,18 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
-  simple_conjugating, refls, unique_refls, reflection, reflectionmat, 
+  simple_conjugating, refls, unique_refls, reflection, reflectionmat,
   Diagram, diagram, refltype, cartan, independent_roots, inclusion, inclusiongens,
-  restriction, coroot, TypeIrred, refleigen, reflchar, 
-  bipartite_decomposition, torus_order, rank, reflrep, PermX, coroots, baseX,
+  restriction, coroot, TypeIrred, refleigen, reflchar,
+  bipartite_decomposition, torus_order, rank, 
+  reflrep, reflection_representation,
+  PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
   invariants, matY, simpleroots, simplecoroots, action, radical,
-  parabolic_closure, isparabolic, central_action, nhyp, nref, indices
+  parabolic_closure, isparabolic, central_action, 
+  nhyp, number_of_hyperplanes,
+  nref, number_of_reflections,
+  indices
 using ..Gapjm
 
 """
@@ -443,8 +448,8 @@ function Base.show(io::IO,d::Diagram)
     return
   end
   series=t.series::Symbol
-  if series!=:ST show(io,d,Val(series)) 
-  elseif haskey(t,:ST) show(io,d,Val(Symbol("G",t.ST))) 
+  if series!=:ST show(io,d,Val(series))
+  elseif haskey(t,:ST) show(io,d,Val(Symbol("G",t.ST)))
   else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))")
   end
 end
@@ -459,9 +464,9 @@ O—O—O—O—O—O—O E₈
 1 3 4 5 6 7 8
 
 julia> diagram(crg(33))
-G₃₃     3
-       /^\
-  1---2---4---5 423423==342342
+      3       G₃₃
+     /^\
+1———2———4———5 423423==342342
 ```
 """
 diagram(W)=Diagram.(refltype(W))
@@ -474,25 +479,31 @@ abstract type PermRootGroup{T,T1<:Integer}<:PermGroup{T1} end
 
 inclusiongens(W::PermRootGroup)=inclusion(W,eachindex(gens(W)))
 """
-`inclusion(W::PermRootGroup)`  
+`inclusion(W::PermRootGroup)`
 
 the indices of the roots of `W` in the roots of `parent(W)`.
 
-`inclusion(W::PermRootGroup,i::Integer)`  
-`inclusion(W::PermRootGroup,v::AbstractVector{<:Integer})`  
+`inclusion(W::PermRootGroup,i::Integer)`
+`inclusion(W::PermRootGroup,v::AbstractVector{<:Integer})`
 
 same as `inclusion(W)[i]` or `inclusion(W)[v]` (but more efficient).
 """
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
-"`nref(W::ComplexReflectionGroup)` the number of reflections of `W`"
-nref(W::PermRootGroup)=sum(degrees(W).-1)
 """
-`nhyp(W::ComplexReflectionGroup)`
+`nref(W::ComplexReflectionGroup)` or `number_of_reflections`
+
+the number of reflections of `W`
+"""
+nref(W::PermRootGroup)=sum(degrees(W).-1)
+const number_of_reflections=nref
+"""
+`nhyp(W::ComplexReflectionGroup)` or `number_of_hyperplanes`
 
 The number of reflecting hyperplanes of `W`
 """
 nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
+const number_of_hyperplanes=nhyp
 
 # should use independent_roots
 Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W,eachindex(gens(W)))==
@@ -550,8 +561,8 @@ refls(W::PermRootGroup,i::AbstractVector)=map(j->refls(W,j),i)
 """
 `simple_conjugating(W)`
 
-For each index `i` of a root, an element `w∈ W` such that 
-`restriction(W,inclusion(W,simple_reps(W,i))^w)==i` 
+For each index `i` of a root, an element `w∈ W` such that
+`restriction(W,inclusion(W,simple_reps(W,i))^w)==i`
 (or `action(W,simple_reps(W,i))==i`)
 """
 simple_conjugating(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:simple_conjugating)::Vector{Perm{T1}}
@@ -561,7 +572,7 @@ unique_refls(W)=getp(simple_reps,W,:unique_refls)::Vector{Int}
 """
 `simple_conjugating(W,i)`
 
-an element `w∈ W` such that `restriction(W,inclusion(W,simple_reps(W,i))^w)==i` 
+an element `w∈ W` such that `restriction(W,inclusion(W,simple_reps(W,i))^w)==i`
 (or `action(W,simple_reps(W,i))==i`)
 """
 simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
@@ -1017,7 +1028,7 @@ function refleigen(W)
   get!(classinfo(W),:refleigen) do
     t=refltype(W)
     if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
-       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t)
       if isempty(t) ll=[Root1[]]
       else ll=map(x->vcat(x...),cartesian(map(refleigen,t)...))
       end
@@ -1385,7 +1396,7 @@ function parabolic_reps(W::PermRootGroup,s)
 end
 
 """
-`reflrep(W,w)`  Reflection representation
+`reflrep(W,w)`  or `reflection_representation` Reflection representation
 
 Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
 permutation  of the roots of `W`. The function `reflrep` returns the matrix
@@ -1418,6 +1429,8 @@ function reflrep(W::PermRootGroup,w)
   X=vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:])
   improve_type(invbaseX(W)*X)
 end
+
+const reflection_representation=reflrep
 
 matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 
@@ -1609,13 +1622,13 @@ end
 inclusion(W::PRSG)=W.inclusion
 inclusion(W::PRSG,i)=W.inclusion[i]
 """
-`restriction(W::PermRootGroup)`  
+`restriction(W::PermRootGroup)`
 
 A  list for each  root of `parent(W)`,  which hold `0`if  the root is not a
 root of `W` and `i` if the root is the `i`-th root of `W`.
 
-`restriction(W::PermRootGroup,i::Integer)`  
-`restriction(W::PermRootGroup,v::AbstractVector{<:Integer})`  
+`restriction(W::PermRootGroup,i::Integer)`
+`restriction(W::PermRootGroup,v::AbstractVector{<:Integer})`
 
 same as `restriction(W)[i]` or `restriction(W)[v]` (but more efficient).
 """
@@ -1629,7 +1642,7 @@ simpleroots(W::PRSG)=toM(roots(parent(W),inclusiongens(W)))
 simplecoroots(W::PRSG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(coroots(parent(W),inclusiongens(W)))
 @inline Base.parent(W::PRSG)=W.parent
 """
-`action(W::PermRootGroup,i::Integer,p::Perm)` 
+`action(W::PermRootGroup,i::Integer,p::Perm)`
 
 The elements of a `PermRootGroup` permute the roots of `parent(W)`, that is
 are  permutations on `1:nref(parent(W))`.  The function `action` translates

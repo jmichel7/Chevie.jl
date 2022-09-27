@@ -1,6 +1,3 @@
-chevieset(:G25, :PrintDiagram, function (indices, title)
-        print(title, " ", indices[1], "(3)--(3)", indices[2], "--(3)", indices[3], "\n")
-    end)
 chevieset(:G25, :GeneratingRoots, [[0, 0, -1], -((2 * E(3, 2) + 1)) // 3 * [1, 1, 1], [0, 1, 0]])
 chevieset(:G25, :EigenvaluesGeneratingReflections, [1 // 3, 1 // 3, 1 // 3])
 chevieset(:G25, :HyperplaneRepresentatives, [1])

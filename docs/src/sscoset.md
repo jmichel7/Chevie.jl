@@ -1,4 +1,8 @@
 # Non-connected reductive groups
+```@index
+Pages=["sscoset.md"]
+```
+
 ```@docs
 Sscoset
 centralizer(::Spets,::SemisimpleElement{Root1})

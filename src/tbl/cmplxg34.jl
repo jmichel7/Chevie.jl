@@ -1,9 +1,3 @@
-chevieset(:G34, :PrintDiagram, function (indices, title)
-        local s
-        print(title, " ")
-        s = pad("", length(title) - 5)
-        print(s, "  ", indices[3], "\n       /^\\\n", s, indices[1], "---", indices[2], "---", indices[4], "---", indices[5], "---", indices[6], " ", joindigits(indices[[4, 2, 3, 4, 2, 3]]), "==", joindigits(indices[[3, 4, 2, 3, 4, 2]]), "\n")
-    end)
 chevieset(:G34, :BraidRelations, [[[1, 2, 1], [2, 1, 2]], [[3, 2, 3], [2, 3, 2]], [[4, 2, 4], [2, 4, 2]], [[4, 3, 4], [3, 4, 3]], [[4, 5, 4], [5, 4, 5]], [[1, 3], [3, 1]], [[1, 4], [4, 1]], [[1, 5], [5, 1]], [[2, 5], [5, 2]], [[3, 5], [5, 3]], [[5, 6, 5], [6, 5, 6]], [[1, 6], [6, 1]], [[2, 6], [6, 2]], [[3, 6], [6, 3]], [[4, 6], [6, 4]], [[4, 2, 3, 4, 2, 3], [3, 4, 2, 3, 4, 2]]])
 chevieset(:G34, :GeneratingRoots, [[root(-3), -(root(-3)), 0, 0, 0, 0], [0, root(-3), 0, 0, 0, -(root(-3))], [0, 0, 0, 0, -(root(-3)), root(-3)], [0, 0, 0, 0, (3 + root(-3)) // 2, (3 - root(-3)) // 2], [-1, -1, -(E(3)), -(E(3, 2)), -1, -1], [0, 0, (-3 + root(-3)) // 2, (-3 - root(-3)) // 2, 0, 0]])
 chevieset(:G34, :EigenvaluesGeneratingReflections, [1 // 2, 1 // 2, 1 // 2, 1 // 2, 1 // 2, 1 // 2])

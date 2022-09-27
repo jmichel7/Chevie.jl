@@ -1,4 +1,8 @@
 # Unipotent Elements
+```@index
+Pages=["urad.md"]
+```
+
 ```@docs
 Urad
 UnipotentGroup

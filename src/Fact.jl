@@ -3,9 +3,20 @@ import Primes: Primes, nextprime, factor
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
 using ..FFields: FFields, FFE, Mod
 using ..Combinat: Combinat, combinations, npartitions
+using ..Tools: improve_type
 
+const verbose=Ref(false)
 function InfoPoly2(x...)
-  println(x...)
+ if verbose[] println(x...) end
+end
+
+const ltime=Ref(0.0)
+
+function etime()
+  newt=time()
+  d=newt-ltime[]
+  ltime[]=newt
+  round(d;digits=5)
 end
 
 ##  <f> must be squarefree.  We test 3 "small" and 2 "big" primes.
@@ -28,10 +39,10 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
       fp=Pol(FFE{p}.(f.c),f.v)/lc
       if 0==degree(gcd(fp,derivative(fp))) break end
     end
-    InfoPoly2("#I  starting factorization mod p:  ", time())
+    InfoPoly2("#I  starting factorization mod p:  ", etime())
     lp=factor(fp)
     sort!(lp,by=degree)
-    InfoPoly2("#I  finishing factorization mod p: ", time())
+    InfoPoly2("#I  finishing factorization mod p: ", etime())
         # if <fp> is irreducible so is <f>
     if 1==length(lp)
       InfoPoly2("#I  <f> mod ", p, " is irreducible")
@@ -63,8 +74,8 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
     LP[i]=Pol(map(x->Int(x),LP[i].c),LP[i].v)
   end
     # return the chosen prime
-  InfoPoly2("#I  choosing prime ", P, " with ", length(LP), " factors\n")
-  InfoPoly2("#I  possible degrees: ", deg, "\n")
+  InfoPoly2("#I  choosing prime ", P, " with ", length(LP), " factors")
+  InfoPoly2("#I  possible degrees: ", deg)
   t[:isIrreducible]=false
   t[:prime]=P
   t[:factors]=LP
@@ -77,7 +88,7 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
 # find a suitable prime, if <f> is irreducible return
   t=FactorsModPrime(f)
   if t[:isIrreducible] return [f] end
-  InfoPoly2("#I  using prime ", t[:prime], " for factorization\n")
+  InfoPoly2("#I  using prime ", t[:prime], " for factorization")
 # for easy combining, we want large degree factors first
   sort!(t[:factors], by=x->-degree(x))
 # start Hensel
@@ -86,7 +97,7 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
   fac=[]
 # first the factors found by hensel
   if 0<length(h[:remaining])
-    InfoPoly2("#I  found ", length(h[:remaining]), " remaining terms\n")
+    InfoPoly2("#I  found ", length(h[:remaining]), " remaining terms")
     tmp=TryCombinations(h[:remPolynomial], h[:lc], h[:remaining], h[:primePower], t[:degrees], h[:bounds], true)
     append!(fac, tmp[:irrFactors])
     append!(fac, tmp[:redFactors])
@@ -95,12 +106,12 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
   end
 # append the irreducible ones
   if 0<length(h[:irrFactors])
-    InfoPoly2("#I  found ", length(h[:irrFactors]), " irreducibles\n")
+    InfoPoly2("#I  found ", length(h[:irrFactors]), " irreducibles")
     append!(fac, h[:irrFactors])
   end
 # and try to factorize the (possible) reducible ones
   if 0<length(h[:redFactors])
-    InfoPoly2("#I  found ", length(h[:redFactors]), " reducibles\n")
+    InfoPoly2("#I  found ", length(h[:redFactors]), " reducibles")
     if !(haskey(tmp, :stop) || haskey(h, :stop))
   # the stopping criterion has not yet been reached
       for g in h[:redFactors] fac=Append(fac, factorSQF(g)) end
@@ -151,58 +162,56 @@ end
 #F  MinimizeBombieriNorm(<pol>) . . . . . . . minimize weighted Norm [pol]_2
 ##                                            by shifting roots
 function MinimizeBombieriNorm(f)
-  if !(haskey(f, :minimization))
+  if hasproperty(f,:prop) && haskey(f, :minimization) return f.minimization end
   # this stepwidth should be corrected
-    step=1//lcm(denominator.(f.c))
-    step=1
-    bb="infinity"
-    bf=f
-    bd=0
-    bn=[]
-  # evaluation of norm, including storing it (avoids expensive double evals)
-    bnf=function(dis)
-      p=filter(i->i[1]==dis, bn)
-      if isempty(p)
-        g=Value(f, x+dis)
-        p=[dis, BombieriNorm(g)]
-        push!(bn, p)
-        if bb>p[2]
-          bf=g
-          bb=p[2]
-          bd=dis
-        end
-        p[2]
-      else p[1][2]
+  step=1//lcm(denominator.(f.c))
+  step=1
+  bb=nothing
+  bf=f
+  bd=0
+  bn=[]
+# evaluation of norm, including storing it (avoids expensive double evals)
+  bnf=function(dis)
+    p=filter(i->i[1]==dis, bn)
+    if isempty(p)
+      g=f(Pol()+dis) # assumes f isa Pol
+      p=[dis, BombieriNorm(g)]
+      push!(bn, p)
+      if isnothing(bb) || bb>p[2]
+        bf=g
+        bb=p[2]
+        bd=dis
       end
+      p[2]
+    else p[1][2]
     end
-    x=X(f[:baseRing])
-    d=0
-    while true
-      InfoPoly2("#I Minimizing BombieriNorm, x->x+(", d, ")\n")
-  # lokale Parabelannäherung
-      a=bnf(d-step)
-      b=bnf(d)
-      c=bnf(d+step)
-      if a<b && c<b
-        if a<c d-=step
-        else d+=step
-        end
-      elseif !(a>b && c>b) && a+c!=2b
-        a=-(c-a)//2//(a+c-2b)*step
-  # stets aufrunden (wir wollen weg)
-        a=step*Int(abs(a)//step+1)*sign(a)
-        if a==0 error("sollte nicht")
-        else d+=a
-        end
-      end
-# no better can be reached
-      if a>b && c>b || all(i->!isempty(filter(j->j[1]==i,bn)), [d-1, d, d+1])
-          break
-      end
-    end
-    f[:minimization]=[bf, bd]
   end
-  f[:minimization]
+  d=0
+  while true
+    InfoPoly2("#I Minimizing BombieriNorm, x->x+(", d, ")")
+# lokale Parabelannäherung
+    a=bnf(d-step)
+    b=bnf(d)
+    c=bnf(d+step)
+    if a<b && c<b
+      if a<c d-=step
+      else d+=step
+      end
+    elseif !(a>b && c>b) && a+c!=2b
+      a=-(c-a)//2//(a+c-2b)*step
+# stets aufrunden (wir wollen weg)
+      a=step*Int(abs(a)//step+1)*sign(a)
+      if a==0 error("sollte nicht")
+      else d+=a
+      end
+    end
+# no better can be reached
+    if a>b && c>b || all(i->!isempty(filter(j->j[1]==i,bn)), [d-1, d, d+1])
+        break
+    end
+  end
+  if hasproperty(f,:prop) f.minimization=[bf, bd] end
+  [bf,bd]
 end
 
 """
@@ -211,11 +220,23 @@ end
 Factor over the integers a polynomial with integral coefficients, or do the
 same over the rationals.
 
+```julia-repl
+julia> factor(Pol(:q)^24-1)
+8-element Vector{Pol{BigInt}}:
+ q-1
+ q²-q+1
+ q⁴-q²+1
+ q⁸-q⁴+1
+ q⁴+1
+ q²+1
+ q+1
+ q²+q+1
+```
 """
 function Primes.factor(f::Pol{<:Union{Integer,Rational}})
-  InfoPoly2("#I  starting integer factorization: ", time(), "\n")
+  InfoPoly2("#I  starting integer factorization: ", etime())
   if iszero(f)
-    InfoPoly2("#I  f is zero\n")
+    InfoPoly2("#I  f is zero")
     return [f]
   end
   d=lcm(denominator.(f.c))
@@ -224,13 +245,13 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
   v=f.v
   f=shift(f,-f.v)
   if 0==degree(f)
-    InfoPoly2("#I  f is a power of x\n")
+    InfoPoly2("#I  f is a power of x")
     s=map(f->Pol(),1:v)
     s[1]*=f.c[1]*lc
     return s
   end
   if 1==degree(f)
-    InfoPoly2("#I  f is a linear\n")
+    InfoPoly2("#I  f is a linear")
     s=map(f->Pol(),1:v)
     push!(s,f)
     return s
@@ -247,10 +268,10 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
   q=exactdiv(f,g)
 # @show q
   q=q*sign(q[end])
-  InfoPoly2("#I  factorizing polynomial of degree ", degree(q), "\n")
+  InfoPoly2("#I  factorizing polynomial of degree ", degree(q))
     # and factorize <q>
   if degree(q)<2
-    InfoPoly2("#I  <f> is a linear power\n")
+    InfoPoly2("#I  <f> is a linear power")
     s=[q]
   else
     if q.v>0
@@ -274,13 +295,13 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
   end
     # reshift
   if shft!=0
-    InfoPoly2("#I shifting zeros back\n")
+    InfoPoly2("#I shifting zeros back")
     s=map(i->Value(i,Pol()+shft),s)
   end
   append!(s,map(f->Pol(),1:v))
   sort!(s)
   s[1]//=d
-  s
+  improve_type(s)
 end
 
 """
@@ -334,10 +355,10 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
   max=maximum(abs.(f.c))
 # compute the factor coefficient bounds
   ofb=2*abs(lc)*OneFactorBound(f)
-  InfoPoly2("#I  One factor bound==", ofb, "\n")
+  InfoPoly2("#I  One factor bound==", ofb)
   bounds=2*abs(lc)*HenselBound(f)
 # compute a representation of the 1 mod <p>
-  InfoPoly2("#I  computing gcd representation:",time(),"\n")
+  InfoPoly2("#I  computing gcd representation:",etime())
   prd=Mod(f,p)/lc
   g=exactdiv(prd,l[1])
   rep=[Pol(Mod(1,p))]
@@ -350,16 +371,16 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
     push!(rep, cor2)
   end
 # for (i,u) in pairs(rep) xprintln("rep[$i]=",rep[i]) end
-  InfoPoly2("#I  representation computed:      ",time(), "\n")
+  InfoPoly2("#I  representation computed:      ",etime())
   res=Dict{Symbol,Any}(:irrFactors=>[],:redFactors=>[],
                        :remaining=>[],:bounds=>bounds)
   q=p^2
 # start Hensel until <q> is greater than k
   k=bounds[maximum(filter(i->2i<=degree(f), t[:degrees]))]
-  InfoPoly2("#I  Hensel bound==", k, "\n")
+  InfoPoly2("#I  Hensel bound==", k)
   q1=p
   while q1<k
-    InfoPoly2("#I  computing mod ", q, "\n")
+    InfoPoly2("#I  computing mod ", q)
 #   for (i,u) in pairs(l) xprintln("l[$i]=",l[i]) end
     for i in 1:length(l)
       l[i]=Mod(Pol(Integer.(l[i].c),l[i].v),q)
@@ -379,9 +400,9 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
       end
   # try to find true factors
       if max<=q || ofb<q
-        InfoPoly2("#I  searching for factors: ", time(), "\n")
+        InfoPoly2("#I  searching for factors: ", etime())
         fcn=TryCombinations(f, lc, l, q, t[:degrees], bounds, false)
-        InfoPoly2("#I  finishing search:      ", time(), "\n")
+        InfoPoly2("#I  finishing search:      ", etime())
       else
         fcn=Dict{Symbol, Any}(:irreducibles => [], :reducibles => [])
       end
@@ -397,7 +418,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
         end
         lc=f[end]
         ofb=2*abs(lc)*OneFactorBound(f)
-        InfoPoly2("#I  new one factor bound==", ofb, "\n")
+        InfoPoly2("#I  new one factor bound==", ofb)
     # degree arguments or OFB arguments prove f irreducible
         if all(i->i==0 || 2i>=degree(f), t[:degrees]) || ofb<q
           push!(fcn[:irrFactors], f)
@@ -405,14 +426,14 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
           f=f^0
         end
         if degree(f)<1
-          InfoPoly2("#I  found non-trivial factorization\n")
+          InfoPoly2("#I  found non-trivial factorization")
           return res
         end
     # compute the factor coefficient bounds
         k=HenselBound(f)
         bounds=map(i->min(bounds[i], k[i]), 1:length(k))
         k=2*abs(lc)*bounds[maximum(filter(i->2i<=degree(f), t[:degrees]))]
-        InfoPoly2("#I  new Hensel bound==", k, "\n")
+        InfoPoly2("#I  new Hensel bound==", k)
     # remove true factors from <l> and corresponding <rep>
         prd=Mod(prd//prd[end],q)
         l=l[fcn[:remaining]]
@@ -422,7 +443,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
   # if there was a factor, we ought to have found it
       elseif ofb<q
         push!(res[:irrFactors], f)
-        InfoPoly2("#I  f irreducible, since one factor would have been found now\n")
+        InfoPoly2("#I  f irreducible, since one factor would have been found now")
         return res
       end
     end
@@ -461,7 +482,7 @@ function TrialQuotient(f::Pol{T},g,b)where T
    q=reverse(map(0:m)do i
       c=f[m-i+n-1]/g.c[n]
       if CoeffAbs(c)>a
-        InfoPoly2("#I early1 break\n")
+        InfoPoly2("#I early1 break")
         return nothing
       end
       for k in 1:n
@@ -475,14 +496,14 @@ function TrialQuotient(f::Pol{T},g,b)where T
       c=exactdiv(f[m-i+n-1],g.c[n])
       if isnothing(c) return c end
       if CoeffAbs(c)>a
-        InfoPoly2("#I early2 break\n");
+        InfoPoly2("#I early2 break");
         return nothing
       end
       for k in 1:n
         f.c[m-i+k-f.v]-=c*g.c[k]
 #       @show f,m,i,k,b
         if CoeffAbs(f[m-i+k-1])>b
-          InfoPoly2("#I early3 break\n")
+          InfoPoly2("#I early3 break")
           return nothing
         end
       end
@@ -491,7 +512,7 @@ function TrialQuotient(f::Pol{T},g,b)where T
   end
   for i in 1:m+n
     if !iszero(f[i-1])
-       InfoPoly2("#I early4 break\n")
+       InfoPoly2("#I early4 break")
       return nothing
     end
   end
@@ -526,17 +547,17 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
   # check, whether any combination will be of suitable degree
       cnew=sort(unique(deli[filter(i->i>act, sel)]))
       if any(i->npartitions(i, cnew, step)>0, da)
-        InfoPoly2("#I  trying length ", step+1, " containing ", act, "\n")
+        InfoPoly2("#I  trying length ", step+1, " containing ", act)
         cnew=filter(i->i>act,sel)
       else
-        InfoPoly2("#I  length ", step+1," containing ",act, " not feasible\n")
+        InfoPoly2("#I  length ", step+1," containing ",act, " not feasible")
         cnew=[]
       end
       mind=sum(deli) # the maximum of the possible degrees. We surely will find something smaller
       lco=binomial(length(cnew), step)
       if 0==lco mind=0
       else
-        InfoPoly2("#I  ",lco," combinations\n")
+        InfoPoly2("#I  ",lco," combinations")
         i=1
         while good && i<=lco
           q=i
@@ -577,10 +598,10 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
             end
             prd=zero(l[1])
             if !isinteger(q)
-              InfoPoly2("#I  ignoring combination ", combi, "\n")
+              InfoPoly2("#I  ignoring combination ", combi)
               q=nothing
             else
-              InfoPoly2("#I  testing combination ", combi, "\n")
+              InfoPoly2("#I  testing combination ", combi)
               prd=prod(l[combi])
               cof=Integer.(prd.c*lc)
   # make the product primitive
@@ -590,19 +611,19 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
             end
             if !isnothing(q)
               f=q
-              InfoPoly2("#I  found true factor of degree ", degree(prd), "\n")
+              InfoPoly2("#I  found true factor of degree ", degree(prd))
               if length(combi)==1 || split q=0
               else
                 q=2*lc*OneFactorBound(prd)
                 if q <= p
-                  InfoPoly2("#I  proven irreducible by ", "'OneFactorBound'\n")
+                  InfoPoly2("#I  proven irreducible by ", "'OneFactorBound'")
                 end
               end
               if q <= p
                 append!(res[:irreducibles], combi)
                 push!(res[:irrFactors], prd)
                 if !isnothing(stopdegs) && degree(prd) in stopdegs
-                  InfoPoly2("#I  hit stopdegree\n")
+                  InfoPoly2("#I  hit stopdegree")
                   push!(res[:redFactors], f)
                   res[:stop]=true
                   return res
@@ -622,7 +643,7 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
   # we can forget about the actual factor, as any longer combination
   # is too big
       if length(degs)>1 && deli[act]+mind>=maximum(degs)
-        InfoPoly2("#I  factor ", act, " can be further neglected\n")
+        InfoPoly2("#I  factor ", act, " can be further neglected")
         setdiff!(sel, [act])
       end
     end

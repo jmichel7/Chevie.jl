@@ -128,34 +128,6 @@ chevieset(["G2", "F4", "H3", "H4", "G24", "G25", "G26", "G27", "G29", "E6", "E7"
                             end), chevieget(t, :sparseFakeDegrees))
             end
         end))
-chevieset(["E6", "E7", "E8"], :PrintDiagram, (t->begin
-            function (indices, title)
-                local i, r, digits, l
-                digits = "678"
-                print(title, " ")
-                r = Position(digits, t[2]) + 5
-                l = length(string(indices[1])) + length(string(indices[3])) + 4
-                print(pad("", l - 1), indices[2], "\n")
-                print(pad("", length(title) + l), "|\n")
-                print(SPrint(pad("", length(title) - 2), indices[1]))
-                for i = 3:r
-                    print(" - ", indices[i])
-                end
-                print("\n")
-            end
-        end))
-chevieset(["H3", "H4"], :PrintDiagram, (t->begin
-            function (indices, title)
-                local i
-                print(title, " ")
-                print(SPrint(pad("", length(string(indices[1])) - 1), "5 \n"))
-                print(pad("", length(title) - 1), indices[1], " - ", indices[2], " - ", indices[3])
-                if t == "H4"
-                    print(" - ", indices[4])
-                end
-                print("\n")
-            end
-        end))
 chevieset(["G24", "G27", "G29", "G33", "G34", "H3", "H4", "E6", "E7", "E8"], :HighestPowerGenericDegrees, (t->begin
             function ()
                 local N

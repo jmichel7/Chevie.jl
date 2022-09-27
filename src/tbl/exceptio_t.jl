@@ -386,27 +386,51 @@ function Base.show(io::IO,d::Diagram,::Val{:G32})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G24})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",ind[1]," "^4,d.t)
+  println(io," / \\")
+  print(io,ind[2],dbar^3,ind[3])
+  println(io,"  ",f(2,3,1,2,3,1,2,3,1),"==",f(3,2,3,1,2,3,1,2,3))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G27})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",ind[1]," "^4,d.t)
+  println(io, " / \\")
+  print(io,ind[2],dbar^3,ind[3])
+  println(io,"  ",f(3,2,3,1,2,3,1,2,3,1,2,3),"==",f(2,3,1,2,3,1,2,3,1,2,3,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G29})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io," "^6,ind[4]," "^3,d.t)
+  println(io,"     /\"\\")
+  print(io,ind[1],bar^3,ind[2],dbar^3,ind[3])
+  println(io," ",f(4, 3, 2, 4, 3, 2),"==",f(3, 2, 4, 3, 2, 4))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G31})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io,ind[4], bar^3, ind[2], bar^3, ind[5]," "^3,d.t)
+  println(io," \\ /3\\ /")
+  print(io,"  ",ind[1],bar^3,ind[3],"     i.e. A₅ on ")
+  println(io,f(1,4,2,5,3)," plus ",f(1,2,3),"==",f(2,3,1),"==",f(3,1,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G33})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io," "^6, ind[3]," "^7,d.t)
+  println(io," "^5,"/^\\")
+  print(io,ind[1],bar^3,ind[2],bar^3,ind[4],bar^3,ind[5])
+  println(io," ",f(4,2,3,4,2,3),"==",f(3,4,2,3,4,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G34})
-  getchev(d.t,:PrintDiagram,d.t.indices,repr(d.t;context=io))
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io," "^6,ind[3]," "^11,d.t)
+  println(io," "^5,"/^\\")
+  print(io,ind[1],bar^3,ind[2],bar^3,ind[4],bar^3,ind[5],bar^3,ind[6])
+  println(io," ",f(4,2,3,4,2,3),"==",f(3,4,2,3,4,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{Symbol("A",Char(0x00303))})

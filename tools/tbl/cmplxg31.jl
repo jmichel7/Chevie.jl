@@ -1,9 +1,3 @@
-chevieset(:G31, :PrintDiagram, function (indices, title)
-        local s
-        print(title, " ")
-        s = pad("", length(title))
-        print(indices[4], " - ", indices[2], " - ", indices[5], "\n", s, "  \\ /3\\ /\n", s, "   ", indices[1], " - ", indices[3], "     i.e. A_5 on ", joindigits(indices[[1, 4, 2, 5, 3]]), " plus ", joindigits(indices[[1, 2, 3]]), "==", joindigits(indices[[2, 3, 1]]), "==", joindigits(indices[[3, 1, 2]]), "\n")
-    end)
 chevieset(:G31, :BraidRelations, [[[1, 4, 1], [4, 1, 4]], [[2, 4, 2], [4, 2, 4]], [[5, 3, 5], [3, 5, 3]], [[2, 5, 2], [5, 2, 5]], [[1, 2, 3], [2, 3, 1]], [[2, 3, 1], [3, 1, 2]], [[1, 5], [5, 1]], [[3, 4], [4, 3]], [[5, 4], [4, 5]]])
 chevieset(:G31, :GeneratingRoots, [[E(4), 0, 0, 0], [-1 + E(4), -(E(4)) - 1, 0, 0] // 2, [1 + E(4), -(E(4)) - 1, 0, 0] // 2, [1, 1, 1, 1] // 2, [0, 1 + E(4), -(E(4)) - 1, 0] // 2])
 chevieset(:G31, :EigenvaluesGeneratingReflections, [1 // 2, 1 // 2, 1 // 2, 1 // 2, 1 // 2])

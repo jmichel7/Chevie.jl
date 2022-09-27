@@ -14,59 +14,61 @@ const src=[
 
 # functions whose translation does not work so they are hand-translated
 # to files xxx_t.jl in tbl. The useful code from compat3 is in Chevie.jl
-const exclu=[
- ["CartanMat",["B","D"]],
- ["CartanMat",:(["G25","G26","G29","G31","G32","G34"])],
- ["CharInfo","I"],
- ["CharName","timp"],
- ["CharTable",["A","2A","B","D","2D","G31","G34","imp"]],
- ["ClassParameter",["A","2A","B","2D","D","H4"]],
- ["Discriminant","H4"],
- ["FakeDegree",["2A","G4_22"]],
- ["FactorizedSchurElement",:(["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"])],
- ["GeneratingRoots",["imp","G4_22"]],
- ["GeneratingCoRoots","G4_22"],
- ["gensMODA","D"],
- ["HeckeCharTable",["imp","2A","2D","A","B","D"]],
- ["Hk",["A","B","D"]],
- ["KLeftCellRepresentatives","A"],
- ["Invariants","imp"],
- ["Invariants",:(["E7", "E8", "H3", "H4"])],
- ["LowestPowerFakeDegrees","G4_22"],
- ["PowerMaps","imp"],
- ["PrintDiagram",["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22"]],
- ["ReducedInRightCoset","timp"],
- ["ReflectionCoDegrees","imp"],
- ["SchurElement",["D","G31"]],
- ["sparseFakeDegrees","G4_22"],
- ["UnipotentClasses",["2A","2D","B","D"]],
- ["WGraph","E8"],
-]
+const exclu=Dict(
+ "CartanMat"=>["B","D","G25","G26","G29","G31","G32","G34"],
+ "CharInfo"=>["I"],
+ "CharName"=>["timp"],
+ "CharTable"=>["A","2A","B","D","2D","G31","G34","imp"],
+ "ClassParameter"=>["A","2A","B","2D","D","H4"],
+ "Discriminant"=>["H4"],
+ "FakeDegree"=>["2A","G4_22"],
+ "FactorizedSchurElement"=>["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"],
+ "GeneratingRoots"=>["imp","G4_22"],
+ "GeneratingCoRoots"=>["G4_22"],
+ "gensMODA"=>["D"],
+ "HeckeCharTable"=>["imp","2A","2D","A","B","D"],
+ "Hk"=>["A","B","D"],
+ "KLeftCellRepresentatives"=>["A"],
+ "Invariants"=>["imp","E7", "E8", "H3", "H4"],
+ "LowestPowerFakeDegrees"=>["G4_22"],
+ "PowerMaps"=>["imp"],
+ "PrintDiagram"=>["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22",
+                 "G24","G25","G26","G27","G29","G31","G32","G33","G34"],
+ "ReducedInRightCoset"=>["timp"],
+ "ReflectionCoDegrees"=>["imp"],
+ "SchurElement"=>["D","G31"],
+ "sparseFakeDegrees"=>["G4_22"],
+ "UnipotentClasses"=>["2A","2D","B","D"],
+ "WGraph"=>["E8"])
 
 function exclude(e)
- any(p->e.args[2]==p[1] &&
-     (p[2] isa Vector ? e.args[3] in p[2] : e.args[3]==p[2]),exclu)
+  if !haskey(exclu,e.args[2]) return false end
+  l=exclu[e.args[2]]
+  if e.args[3] isa Expr && e.args[3].head==:vect
+       all(x->x in l,e.args[3].args)
+  else e.args[3] in l
+  end
 end
 
 const ok=[:(CHEVIE.AddData), 
     :(CHEVIE.IndirectAddData)
    ]
 
-# other translated functions. Not translated (but put in tbl/):
+# other translated functions. Not translated (put in tbl/exceptio_t.jl):
 # EvalPolRoot, VcycSchurElement, ImprimitiveCuspidalName, BDSymbols
 const ok2=[
-    :((CHEVIE.families).HS4),
-    :((CHEVIE.families).S5), 
-    :((CHEVIE.families).G14), 
-    :((CHEVIE.families).S4),
-    :((CHEVIE.families).F20),
-    :((CHEVIE.families).Y6),
-    :((CHEVIE.families).X7),
-    :((CHEVIE.families).F42),
-    :((CHEVIE.families).G4),
-    :((CHEVIE.families).X2),
-    :PartitionTwoCoreQuotient
-   ]
+ :((CHEVIE.families).HS4),
+ :((CHEVIE.families).S5), 
+ :((CHEVIE.families).G14), 
+ :((CHEVIE.families).S4),
+ :((CHEVIE.families).F20),
+ :((CHEVIE.families).Y6),
+ :((CHEVIE.families).X7),
+ :((CHEVIE.families).F42),
+ :((CHEVIE.families).G4),
+ :((CHEVIE.families).X2),
+ :PartitionTwoCoreQuotient
+]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)
 

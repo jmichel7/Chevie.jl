@@ -1,24 +1,24 @@
-#A  good example to see how long  the programs will take for computations in
-#big Coxeter groups is the following:
+# A good example to see how long the programs will take for computations in
+# big Coxeter groups is the following:
 #
 #   julia> W=coxgroup(:B,5);
 #   julia> LeftCells(W);
 #
-#which  takes `1` second cpu time on  3Ghz computer. The computation of all
-#Kazhdan-Lusztig  polynomials  for  type  `F₄`  takes  a  bit more than~`5`
-#seconds.   Computing  the   Bruhat  order   is  a   bottleneck  for  these
-#computations; they can be speeded up by a factor of two if one does:
+# which  takes `1` second cpu time on 3Ghz computer. The computation of all
+# Kazhdan-Lusztig  polynomials  for  type  `F₄`  takes  a bit more than~`5`
+# seconds.   Computing  the  Bruhat   order  is  a   bottleneck  for  these
+# computations; they can be speeded up by a factor of two if one does:
 #
 #|    gap> ReadChv("contr/brbase");
 #    gap> BaseBruhat(W);;|
 #
-#after  which the computation  of the Bruhat  order will be  speeded up by a
-#large factor.
+# after  which the computation of the Bruhat  order will be speeded up by a
+# large factor.
 #
-#However,  Alvis'  computation  of  the  Kazhdan--Lusztig polynomials of the
-#Coxeter  group of type  `H_4` in a  computer algebra system  like GAP would
-#still take many hours. For such applications, it is probably more efficient
-#to use a special purpose program like the one provided by F. DuCloux DuC91.
+# However,  Alvis' computation  of the  Kazhdan--Lusztig polynomials of the
+# Coxeter group of type `H_4` with this package will still take many hours.
+# For  such applications,  it is  probably more  efficient to use a special
+# purpose program like the one provided by F. DuCloux DuC91.
 """
 This  module defines Kazhdan-Lusztig polynomials and bases, and computes
 W-graphs and asymptotic algebras.
@@ -201,10 +201,10 @@ function critical_pair(W::CoxeterGroup,y,w)::typeof(y)
 end
 
 """
-  KLμ(W, y, w) highest coefficient of KLPol(W,y,w)
+`KLμ(W, y, w)` highest coefficient of `KLPol(W,y,w)`
 
-KLμ returns the coefficient of highest possible degree (l(w)-l(y)-1)/2
-of  KLPol(W,y,w). This is 0 unless y≤w for the Bruhat order.
+`KLμ` returns the coefficient of highest possible degree `(l(w)-l(y)-1)/2`
+of  `KLPol(W,y,w)`. It is `0` unless `y≤w` for the Bruhat order.
 """
 function KLμ(W::CoxeterGroup,y,w)
   ly=length(W,y)
@@ -222,7 +222,7 @@ function KLμ(W::CoxeterGroup,y,w)
 end
 
 """
-  KLPol(W,y,w) returns the Kazhdan-Lusztig polynomial P_{y,w} of W
+`KLPol(W,y,w)` returns the Kazhdan-Lusztig polynomial `P_{y,w}` of `W`.
 
 To  compute Kazhdan-Lusztig polynomials in  the one-parameter case it seems
 that  the best  approach still  is by  using the  recursion formula  in the
@@ -691,7 +691,7 @@ function RightStar(st,c)
   res
 end
 
-# Fo an irreducible type, reps contain:
+# For an irreducible type, reps contain:
 # .duflo,  .reps: elements of W represented as images of simple roots
 # .character: decomposition of left cell in irreducibles
 function LeftCellRepresentatives(W)
@@ -791,8 +791,8 @@ function cellreps(W)
 end
 
 """
-  `LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
-  for the 1-parameter Hecke algebra `hecke(W,q)`
+`LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
+for the 1-parameter Hecke algebra `hecke(W,q)`
 
 The  program uses precomputed  data(see [Geck-Halls 2014](biblio.htm#GH14))
 for  exceptional types and for type `:A`,  so is quite fast for these types

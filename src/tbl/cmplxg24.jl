@@ -1,9 +1,3 @@
-chevieset(:G24, :PrintDiagram, function (indices, title)
-        local s
-        print(title, " ", indices[1], "\n")
-        s = pad("", length(title) - 1)
-        print(s, " / \\\n", s, indices[2], "===", indices[3], "  ", joindigits(indices[[2, 3, 1, 2, 3, 1, 2, 3, 1]]), "==", joindigits(indices[[3, 2, 3, 1, 2, 3, 1, 2, 3]]), "\n")
-    end)
 chevieset(:G24, :GeneratingRoots, [[1, root(-7), 0], [1, -(root(-7)), 0], [(-1 - root(-7)) // 2, (-7 - 3 * root(-7)) // 6, -4 // 3]])
 chevieset(:G24, :GeneratingCoRoots, [[1, (-3 * root(-7)) // 7, 0], [1, (3 * root(-7)) // 7, 0], [(-1 + root(-7)) // 2, (-7 + 3 * root(-7)) // 14, -1 // 2]] // 2)
 chevieset(:G24, :CartanMat, function ()

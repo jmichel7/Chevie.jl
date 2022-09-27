@@ -1,10 +1,4 @@
 chevieset(:G29, :AltPres, [Dict{Symbol, Any}(:gens => [[1], [-4, 2, 4], [3], [4]], :rels => [[[1, 2, 1], [2, 1, 2]], [[2, 4, 2], [4, 2, 4]], [[3, 4, 3], [4, 3, 4]], [[2, 3, 2], [3, 2, 3]], [[1, 3], [3, 1]], [[1, 4], [4, 1]], [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
-chevieset(:G29, :PrintDiagram, function (indices, title)
-        local s
-        print(title, " ")
-        s = pad("", length(title) - 3)
-        print(s, "  ", indices[4], "\n", "     /\"\\\n", s, indices[1], "---", indices[2], "===", indices[3], " ", joindigits(indices[[4, 3, 2, 4, 3, 2]]), "==", joindigits(indices[[3, 2, 4, 3, 2, 4]]), "\n")
-    end)
 chevieset(:G29, :GeneratingRoots, [[0, 0, 0, -2], [-(E(4)), E(4), 1, 1], [1 - E(4), -1 + E(4), 0, 0], [0, 1 - E(4), -1 + E(4), 0]] // 2)
 chevieset(:G29, :EigenvaluesGeneratingReflections, [1 // 2, 1 // 2, 1 // 2, 1 // 2])
 chevieset(:G29, :BraidRelations, [[[1, 2, 1], [2, 1, 2]], [[2, 4, 2], [4, 2, 4]], [[3, 4, 3], [4, 3, 4]], [[2, 3, 2, 3], [3, 2, 3, 2]], [[1, 3], [3, 1]], [[1, 4], [4, 1]], [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]])

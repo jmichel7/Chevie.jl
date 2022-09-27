@@ -292,6 +292,7 @@ end
 @test mytest("FFields.jl","z^5","FFE{2}: Z₄")
 end
 @testset "Fact.jl" begin
+@test mytest("Fact.jl","factor(Pol(:q)^24-1)","8-element Vector{Pol{BigInt}}:\n q-1\n q²-q+1\n q⁴-q²+1\n q⁸-q⁴+1\n q⁴+1\n q²+1\n q+1\n q²+q+1")
 @test mytest("Fact.jl","Fact.LogInt(1030,2)","10")
 @test mytest("Fact.jl","Fact.LogInt(1,10)","0")
 end
@@ -632,7 +633,7 @@ end
 @test mytest("PermRoot.jl","reflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isOrthogonal = false)")
 @test mytest("PermRoot.jl","reflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isOrthogonal = false)")
 @test mytest("PermRoot.jl","diagram(coxgroup(:E,8))","    O 2\n    ￨\nO—O—O—O—O—O—O E₈\n1 3 4 5 6 7 8")
-@test mytest("PermRoot.jl","diagram(crg(33))","G₃₃     3\n       /^\\\n  1---2---4---5 423423==342342")
+@test mytest("PermRoot.jl","diagram(crg(33))","      3       G₃₃\n     /^\\\n1———2———4———5 423423==342342")
 @test mytest("PermRoot.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("PermRoot.jl","cartan(W)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("PermRoot.jl","rank(complex_reflection_group(31))","4")
