@@ -737,8 +737,13 @@ function Base.zero(H::HeckeAlgebra)
 end
 
 Tbasis(H::HeckeAlgebra)=(x...)->x==() ? one(H) : Tbasis(H,x...)
-Tbasis(H::HeckeAlgebra,w::Vararg{Integer})=Tbasis(H,H.W(w...))
-Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
+function Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})
+  ww=H.W(w...)
+  if all(>(0),w) && length(H.W,ww)==length(w) Tbasis(H,ww)
+  else prod(i->i>0 ? Tbasis(H,H.W(i)) : inv(Tbasis(H,H.W(-i))),w)
+  end
+end
+Tbasis(H::HeckeAlgebra,w::Vararg{Integer})=Tbasis(H,collect(w))
 Tbasis(H::HeckeAlgebra,h::HeckeTElt)=h
 Tbasis(H::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
 Tbasis(H::HeckeAlgebra,w)=HeckeTElt(MM(w=>one(coefftype(H));check=false),H)

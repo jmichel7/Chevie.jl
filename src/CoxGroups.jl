@@ -243,7 +243,6 @@ julia> word(W,p)
 ```
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
-Base.eltype(W::CoxeterGroup{T}) where T=T
 PermRoot.semisimplerank(W::CoxeterGroup)=ngens(W)
 
 """

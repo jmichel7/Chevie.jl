@@ -777,7 +777,7 @@ Base.show(io::IO,W::Affine)=print(io,refltype(W))
 
 PermRoot.refltype(W::Affine)=W.refltype
 
-@forward Affine.G Base.eltype, Base.length, Base.one, Groups.elements,
+@forward Affine.G Base.length, Base.one, Groups.elements,
  Groups.gens, Groups.ngens, PermGroups.reduced,
  Groups.word, Groups.words, Garside.BraidMonoid,
  KL.KLPol, Posets.Poset, CoxGroups.isleftdescent,
