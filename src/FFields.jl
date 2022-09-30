@@ -180,7 +180,7 @@ end
 const sub=Dict(zip("-0123456789,+()=aehijklmnoprstuvxβγρφχ.",
                    "₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."))
 
-function Base.show(io::IO, m::Mod) where p 
+function Base.show(io::IO, m::Mod)
   if get(io,:limit,false) print(io,Integer(m),map(x->sub[x],string(m.n)))
   else print(io,"Mod(",Integer(m),",",m.n,")")
   end

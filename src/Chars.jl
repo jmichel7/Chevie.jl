@@ -730,7 +730,7 @@ function charinfo(W)
       res.hgal=Perm(gt, map(t->map((x,i)->x^i,t,res.hgal),gt))
     end
     res
-  end
+  end::CharInfo
 end
 
 function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
@@ -793,7 +793,7 @@ function detPerm(W)
   get!(W,:detPerm)do
     t=CharTable(W).irr
     Perm(t,t.*transpose(t[charinfo(W).positionDet,:]);dims=1)
-  end
+  end::Perm{Perms.Idef}
 end
 
 """
@@ -814,7 +814,7 @@ function conjPerm(W)
   get!(W,:conjPerm)do
     t=CharTable(W).irr
     Perm(t,conj.(t);dims=1)
-  end
+  end::Perm{Perms.Idef}
 end
 
 @GapObj struct ClassInfo
@@ -895,7 +895,7 @@ function classinfo(W)
       res[:classes]=map(prod, cartfields(tmp,:classes))
     end
     ClassInfo(res)
-  end #::Dict{Symbol,Any}
+  end::ClassInfo
 end
 
 @forward FiniteCoxeterGroup.G classinfo, charinfo
@@ -1110,7 +1110,7 @@ CharTable(W::Group)=Gapjm.Gap4.CharTable(W)
 function classes(ct::CharTable)
   get!(ct,:classes)do
     div.(ct.order,ct.centralizers)
-  end
+  end::Vector{Int}
 end
 
 function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector)

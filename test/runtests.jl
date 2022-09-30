@@ -102,7 +102,7 @@ end
 @test mytest("Cosets.jl","W=complex_reflection_group(14)","G₁₄")
 @test mytest("Cosets.jl","R=reflection_subgroup(W,[2,4])","G₁₄₍₂₄₎=G₅")
 @test mytest("Cosets.jl","RF=spets(R,W(1))","G₁₄₍₂₄₎=²G₅")
-@test mytest("Cosets.jl","degrees(RF)","2-element Vector{Tuple{Int64, Cyc}}:\n (6, 1)\n (12, -1)")
+@test mytest("Cosets.jl","degrees(RF)","2-element Vector{Tuple{Int64, Cyc{Int64}}}:\n (6, 1)\n (12, -1)")
 @test mytest("Cosets.jl","W=coxgroup(:B,2)","B₂")
 @test mytest("Cosets.jl","W=coxgroup(:Bsym,2)","Bsym₂")
 @test mytest("Cosets.jl","WF=spets(W,Perm(1,2))","²Bsym₂")

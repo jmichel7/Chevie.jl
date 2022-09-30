@@ -724,10 +724,10 @@ end
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
 basename(h::HeckeTElt)="T"
  
-function Base.one(H::HeckeAlgebra)
+function Base.one(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
   get!(H,:one)do
     HeckeTElt(MM(one(H.W)=>one(coefftype(H));check=false),H)
-  end
+  end::HeckeTElt{T,C,HeckeAlgebra{C,TW}}
 end
 
 Base.one(h::HeckeTElt)=one(h.H)
@@ -748,10 +748,11 @@ Tbasis(H::HeckeAlgebra,h::HeckeTElt)=h
 Tbasis(H::HeckeAlgebra,h::HeckeElt)=Tbasis(h)
 Tbasis(H::HeckeAlgebra,w)=HeckeTElt(MM(w=>one(coefftype(H));check=false),H)
 
-function polynomial_relations(H::HeckeAlgebra)
+# for each parameter p relation T^length(p)=lower terms
+function polynomial_relations(H::HeckeAlgebra{C})where C
   get!(H,:polrel)do
     map(p->Pol([1],length(p))-prod(x->Pol([-x,1]),p),H.para)
-  end
+  end::Vector{Pol{C}}
 end
     
 function innermul(W::CoxeterGroup,a,b)

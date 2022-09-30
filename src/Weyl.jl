@@ -868,7 +868,7 @@ function rootlengths(W::FCG)
     end
     for i in eachindex(lengths) lengths[i]=lengths[simple_reps(W.G,i)] end
     lengths
-  end
+  end::Vector{eltype(cartan(W))}
 end
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
@@ -1103,8 +1103,8 @@ function relative_group(W::FiniteCoxeterGroup,J::Vector{<:Integer})
   end
   qr=i->W.rootdec[i][I]
   res=isempty(I) ? coxgroup() :
-    rootdatum([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
-                                  for (ni,i) in pairs(I), j in I])
+    rootdatum(improve_type([ratio(qr(j)-qr(action(W,j,vI[ni])),qr(i))
+                            for (ni,i) in pairs(I), j in I]))
   res.relativeIndices=I
   res.parentMap=vI
   res.MappingFromNormalizer=

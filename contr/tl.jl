@@ -51,6 +51,9 @@ tlbasis(H::TL,w)=TLTElt(ModuleElt(w=>one(coefftype(H));check=false),H)
 
 Base.one(H::TL)=tlbasis(H,one(H.W))
 
+Base.:^(a::TLElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
+                                     Base.power_by_squaring(inv(a),-n)
+
 function Base.:*(x::TLTElt{P,C},y::TLTElt{P,C})where {P,C}
   H=TL(x)
   W=Group(H)

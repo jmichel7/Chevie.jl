@@ -182,7 +182,7 @@ julia> diagram(RF)
 
 ```julia-repl
 julia> degrees(RF)
-2-element Vector{Tuple{Int64, Cyc}}:
+2-element Vector{Tuple{Int64, Cyc{Int64}}}:
  (6, 1)
  (12, -1)
 ```

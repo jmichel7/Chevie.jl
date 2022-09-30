@@ -804,7 +804,7 @@ end
 function Chars.eigen(uc::UnipotentCharacters)
   get!(uc,:eigen)do
     eigen(uc.families)
-  end
+  end::Vector{Root1}
 end
 
 function labels(uc::UnipotentCharacters)::Vector{String}

@@ -146,7 +146,7 @@ julia> cyclotomic_polynomial(24)
 Pol{Int64}: q⁸-q⁴+1
 ```
 """
-function cyclotomic_polynomial(n::Integer)::Pol{Int}
+function cyclotomic_polynomial(n::Integer)
   get!(cyclotomic_polynomial_dict,n) do
     res=Pol(fill(1,n),0;check=false)
     for d in divisors(n)
@@ -155,7 +155,7 @@ function cyclotomic_polynomial(n::Integer)::Pol{Int}
       end
     end
     res
-  end
+  end::Pol{Int}
 end
 
 """
@@ -265,7 +265,7 @@ function dec(d::Int)
       end
     end
     dd
-  end
+  end::Vector{Vector{Int}}
 end
 
 CycPol(;conductor=1,no=1)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no])...)

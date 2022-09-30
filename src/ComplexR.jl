@@ -127,7 +127,7 @@ julia> length(W)
 function Gapjm.degrees(W::PermRootGroup)
   get!(W,:degrees)do
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
-  end
+  end::Vector{Int}
 end
 
 torusfactors(WF::Spets)=eigmat(central_action(Group(WF),WF.F))
@@ -175,8 +175,13 @@ julia> degrees(HF)
 """
 function Gapjm.degrees(W::Spets)
   get!(W,:degrees)do
-   vcat(map(x->(1,Cyc(x)::Cyc{Int}),torusfactors(W)),degrees.(refltype(W))...)
-  end
+    a=torusfactors(W) 
+    if isempty(refltype(W)) b=Tuple{Int,Cyc{Int}}[]
+    # separate/recombine for promotions to work
+    else b=vcat(degrees.(refltype(W))...) 
+    end
+    collect(zip(vcat(fill(1,length(a)),first.(b)),vcat(a,last.(b))))
+  end::Vector{Tuple{Int,Cyc{Int}}}
 end
 
 function Gapjm.degrees(t::TypeIrred)
@@ -192,14 +197,14 @@ function Gapjm.degrees(t::TypeIrred)
 # \zeta_a^j\zeta_i^{1/a} (all the a-th roots of \zeta_i).
   if order(t.twist)>1
    f=getchev(t,:PhiFactors)
-   if isnothing(f) return f end
+   if isnothing(f) return nothing end
   else f=fill(1,length(d))
   end
   if haskey(t,:scalar)
-    p=prod(t.scalar)
+    p=improve_type(prod(t.scalar))
     f=[f[i]*p^d[i] for i in eachindex(d)]
   end
-  f=collect(zip(d,f))
+  f=collect(zip(d,Cyc.(f)))
   a=length(t.orbit)
   if a==1 return f end
   vcat(map(f)do (d,e) map(x->(d,x),root(e,a).*E.(a,0:a-1)) end...)
@@ -224,14 +229,14 @@ function codegrees(t::TypeIrred)
     else
       f=getchev(t,:PhiFactors)
       if isnothing(f) return f end
-      f=reverse(map(x->f[a]//x,f))
+      f=improve_type(reverse(map(x->f[a]//x,f)))
     end
-    d=zip(d,f)
+    d=collect(zip(d,Cyc.(f)))
   elseif order(t.twist)==1
-    d=zip(d,fill(1,length(d)))
+    d=collect(zip(d,fill(1,length(d))))
   end
   if haskey(t,:scalar)
-    f=prod(t.scalar)
+    f=improve_type(prod(t.scalar))
     d=[(deg,eps*f^deg) for (deg,eps) in d]
   end
   a=length(t.orbit)
@@ -262,9 +267,13 @@ end
 
 function codegrees(W::Spets)
   get!(W,:codegrees)do
-    vcat(map(x->(-1,x),Cyc.(inv.(torusfactors(W)))),
-         collect.(codegrees.(refltype(W)))...)
-  end
+    a=inv.(torusfactors(W))
+    if isempty(refltype(W)) b=Tuple{Int,Cyc{Int}}[]
+    # separate/recombine for promotions to work
+    else b=vcat(codegrees.(refltype(W))...) 
+    end
+    collect(zip(vcat(fill(-1,length(a)),first.(b)),vcat(a,last.(b))))
+  end::Vector{Tuple{Int,Cyc{Int}}}
 end
 
 nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))

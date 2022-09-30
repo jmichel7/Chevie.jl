@@ -1,4 +1,4 @@
-JULIA=1.8.1
+JULIA=1.8.2
 test: *.jl
 	~/julia-$(JULIA)/bin/julia ../tools/gentest.jl *.jl
 	mv runtests.jl ../test

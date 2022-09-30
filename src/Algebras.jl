@@ -16,7 +16,7 @@ function iscommutative(A::FiniteDimAlgebra)
   get!(A,:iscommutative)do
     l=haskey(A,:generators) ? A.generators : basis(A)
     all(x*y==y*x for x in l, y in l)
-  end
+  end::Bool
 end
 
 function basis(A::FiniteDimAlgebra)

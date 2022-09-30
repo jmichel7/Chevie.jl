@@ -262,7 +262,7 @@ function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
   y=critical_pair(W,y,w)
   lw=length(W,w)
   if lw-length(W,y)<=2 return Pol(1) end
-  d=get!(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)
+  d=get!(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)::Dict{Tuple{Perm,Perm},Pol{Int}}
   if haskey(d,(w,y)) return  d[(w,y)] end
   s=firstleftdescent(W,w)
   v=W(s)*w
@@ -412,9 +412,10 @@ Cpbasis(h::HeckeTElt)=toKL(h,HeckeCpElt,maximum)
 
 Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
-function getCp(H::HeckeAlgebra{C,G},w::P)where {P,C,G}
+function getCp(H::HeckeAlgebra{C,TW},w::P)where {P,C,TW}
   W=H.W
-  cdict=get!(()->Dict{P,Any}(one(W)=>one(H)),H,Symbol("C'->T"))
+  cdict=get!(()->Dict{P,HeckeTElt{P,C,HeckeAlgebra{C,TW}}}(one(W)=>one(H)),H,
+             Symbol("C'->T"))::Dict{P,HeckeTElt{P,C,HeckeAlgebra{C,TW}}}
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)
@@ -552,7 +553,7 @@ function character(c::LeftCell)
     c.a=charinfo(c.group).a[char]
     if length(Set(c.a))>1 error() else c.a=c.a[1] end
     char
-  end
+  end::Vector{Int}
 end
 
 function Base.show(io::IO,c::LeftCell)
@@ -613,7 +614,7 @@ function Groups.elements(c::LeftCell)
       append!(elements,orbit(leftstars(c.group),w,(x,f)->f(x)))
     end
     sort(collect(Set(elements)))
-  end
+  end::Vector{eltype(c.group)}
 end
 
 Groups.words(c::LeftCell)=word.(Ref(c.group),elements(c))
