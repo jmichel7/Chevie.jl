@@ -45,13 +45,14 @@ julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPol
 ```
 Evaluating  a `CycPol` at some `Pol` value  gives in general a `Pol`. There
 are  exceptions  where  we  can  keep  the  value a `CycPol`: evaluating at
-`Pol()^n` or at `Pol([E(n,k)],1)`. Then `subs` gives that evaluation:
+`Pol()^n`  (that is `q^n`) or at  `Pol([E(n,k)],1)` (that is `qζₙᵏ`). Then
+`subs` gives that evaluation:
 
 ```julia-repl
-julia> subs(p,Pol()^-1) # evaluate as a CycPol at Pol()^-1
+julia> subs(p,Pol()^-1) # evaluate as a CycPol at q⁻¹
 (2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃
 
-julia> subs(p,Pol([E(2)],1)) # or at Pol([Root1],1)
+julia> subs(p,Pol([E(2)],1)) # or at -q
 (q+2)Φ₁Φ₂Φ₄₆
 
 ```
@@ -500,17 +501,24 @@ function (p::CycPol)(x)
   if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
 end
 
-# Fast routine for CycPol(p(Pol([e],1))) for e::Root1
+"""
+`subs(p::CycPol,v::Pol)`
+
+a fast routine to compute `CycPol(p(v))` but works for exactly two types
+of polynomials:
+
+  - `v=Pol([e],1)` for `e` a `Root1`, that is the value at `qe` for `e=ζₙᵏ`
+  - `v=Pol([1],n)` that is the value at `qⁿ`
+"""
 function subs(p::CycPol,v::Pol{Root1})
   if degree(v)!=1 || valuation(v)!=1 error(v," should be Pol([Root1],1)") end
   e=v[1]
   coeff=p.coeff*e^degree(p)
-  if coeff isa Pol coeff=coeff(v) end
+  if coeff isa Pol coeff=(coeff*e^-degree(coeff))(v) end
   re=inv(Root1(e))
   CycPol(coeff,valuation(p),ModuleElt(r*re=>m for (r,m) in p.v))
 end
 
-# Fast routine for  CycPol(p(Pol()^n))
 function subs(p::CycPol,v::Pol{Int})
   if degree(v)!=valuation(v) || coefficients(v)!=[1] error(v," should be Pol()^n") end
   n=valuation(v)

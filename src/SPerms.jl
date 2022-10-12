@@ -375,6 +375,22 @@ end
 
 SPerm(m::AbstractMatrix{<:Integer})=SPerm{Idef}(m)
 
+"""
+`SPerm{T}(m::AbstractMatrix)`  If  `m`  is  a  signed  permutation  matrix,
+returns  the corresponding signed permutation of  type `T`. If omitted, `T`
+is taken to be `$Idef`.
+
+```julia-repl
+julia> m=[0 -1 0;-1 0 0;0 0 -1]
+3×3 Matrix{Int64}:
+  0  -1   0
+ -1   0   0
+  0   0  -1
+
+julia> SPerm(m)
+(1,-2)(3,-3)
+```
+"""
 function SPerm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
   n=size(m,1)
   if n!=size(m,2) error("matrix should be square") end
@@ -413,9 +429,10 @@ Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
 Groups.gens(W::CoxHyperoctaedral)=gens(W.G)
 
 """
-`CoxHyperoctaedral(n)`  The Hyperoctaedral  group on  ±1,…,±n as  a Coxeter
-group  of type  B, with  generators (1,-1)  and (i,i+1)(-i,-i-1); it is the
-group of all signed permutations of `1:n`.
+`CoxHyperoctaedral(n)`  The Hyperoctaedral  group (the  group of all signed
+permutations  of ±1,…,±n) as a Coxeter  group of type `Bₙ`, with generators
+`(1,-1)` and `(i,i+1)(-i,-i-1)`.
+
 ```julia-repl
 julia> elements(CoxHyperoctaedral(2))
 8-element Vector{SPerm{Int8}}:
@@ -486,7 +503,7 @@ end
 
 """
 `reflection_subgroup(W::CoxHyperoctaedral,I)`
-the only parabolics defined are `I=1:m` for `m≤ngens(W)`.
+is defined only for `I=1:m` for `m≤ngens(W)`.
 """
 function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end

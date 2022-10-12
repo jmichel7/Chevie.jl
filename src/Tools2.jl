@@ -117,8 +117,10 @@ function Primes.factor(p::Mvp{T,N})where {T,N}
   improve_type([v[1]+v[2]*1//2*(b-d),m[1,1]*(v[1]+v[2]*1//2*(b+d))])
 end
 
-" eigenvalues as Cycs of a matrix of finite order"
-function eigmat(m)
+"""
+`eigmat(m::Matrix)` eigenvalues of finite order of `m`, as a `Vector{Root1}`
+"""
+function eigmat(m::Matrix)
   l=[fill(e,m) for (e,m) in CycPol(Pol(charpoly(m))).v]
   if isempty(l) Root1[] else vcat(l...) end
 end
@@ -179,9 +181,9 @@ function traces_words_mats(mats,words)
 end
 #-----------------------------------------------------------------------
 """
-An  `Unknown" represents an element of a  ring which is not known. The main
-difference  with `missing` is that `0*Unknown==0` (that at least we know!).
-An unknown is printed at the repl as `?`.
+An `Unknown()` represents an element of a ring which is not known. The main
+difference  with  `missing`  is  that  `0*Unknown()==0`  (that  at least we
+know!). An unknown is printed at the repl as `?`.
 
 ```julia-repl
 julia> a=[Unknown(),Unknown()]

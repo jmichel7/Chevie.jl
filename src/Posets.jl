@@ -41,8 +41,9 @@ julia> length(P) # the number of elements of the Poset
 which  are equivalent  for the  `Poset` are  printed together  separated by
 commas.
 
-By default printing shows the index in `1:length(P)` for the elements.
-This can be changed by giving the keyword argument `show=:elements`.
+By default printing shows the index in `1:length(P)` for the elements. This
+can  be  changed  by  giving  the  keyword  argument  `show=:elements` when
+constructing the poset.
 
 ```julia-repl
 julia> P=Poset((x,y)->all(map(<=,x,y)),l;show=:elements)
