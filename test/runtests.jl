@@ -741,6 +741,8 @@ end
 @test mytest("SPerms.jl","p=SPerm([20,30,40],[-40,-20,-30])","(1,-2,3,-1,2,-3)")
 @test mytest("SPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -40\n -20\n -30")
 @test mytest("SPerms.jl","Matrix(SPerm([-2,-1,-3]))","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
+@test mytest("SPerms.jl","m=[0 -1 0;-1 0 0;0 0 -1]","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
+@test mytest("SPerms.jl","SPerm(m)","(1,-2)(3,-3)")
 @test mytest("SPerms.jl","elements(CoxHyperoctaedral(2))","8-element Vector{SPerm{Int8}}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 @test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
 @test mytest("SPerms.jl","g=sstab_onmats(fourier(uc.families[2]))","Group([(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15),(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18),(2,19)(4,-14)(5,20)(7,12),(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22),(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17),(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22),(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)])")
@@ -842,7 +844,7 @@ end
 end
 @testset "Tools.jl" begin
 @test mytest("Tools.jl","abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])","2-element Vector{Perm{Int16}}:\n (1,2)(6,7)\n (3,5,4)(6,7)")
-@test mytest("Tools.jl","abelian_invariants(Group([Perm(1,2),Perm(3,4,5),Perm(6,7)]))","2-element Vector{Int64}:\n 2\n 6")
+@test mytest("Tools.jl","abelian_invariants(Group(Perm(1,2),Perm(3,4,5),Perm(6,7)))","2-element Vector{Int64}:\n 2\n 6")
 end
 @testset "Tools2.jl" begin
 @test mytest("Tools2.jl","W=CoxSym(5)","𝔖 ₅")

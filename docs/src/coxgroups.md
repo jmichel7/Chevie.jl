@@ -22,4 +22,5 @@ standard_parabolic_class
 coxgroup(::AbstractMatrix)
 PermGroups.Groups.words(::CoxeterGroup{T},::T) where T
 PermGroups.Groups.words(::CoxeterGroup)
+coxetergroup
 ```

@@ -53,7 +53,7 @@ julia> subs(p,Pol()^-1) # evaluate as a CycPol at q⁻¹
 (2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃
 
 julia> subs(p,Pol([E(2)],1)) # or at -q
-(q+2)Φ₁Φ₂Φ₄₆
+(-q-2)Φ₁Φ₂Φ₄₆
 
 ```
 The variable name used when printing a `CycPol` is the same as for `Pol`s.

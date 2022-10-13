@@ -942,7 +942,7 @@ julia> W=coxgroup([2 -2;-2 2])
 coxetergroup([2 -2; -2 2])
 ```
 
-Above is a way to construct the affine Weyl group  ` ̃A₁`.
+Above is a way to construct the affine Weyl group  `Ã₁`.
 """
 function coxetergroup(C::Matrix{T})where T
   I=one(C)
