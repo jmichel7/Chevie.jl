@@ -29,7 +29,7 @@ function best_type(q::Frac)
 end
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{Int,Int} end
-  n=all(m->all(isinteger,values(m.d)),keys(p.d)) ? Int : N
+  n=all(m->all(isinteger,exponents(m)),monomials(p)) ? Int : N
   Mvp{best_eltype(p),n}
 end
   
@@ -43,8 +43,6 @@ Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},
 function Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
-
-LaurentPolynomials.exactdiv(m::ModuleElt,b)=merge(exactdiv,m,b)
 
 LaurentPolynomials.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(
                     conductor(c),exactdiv(c.d,b))

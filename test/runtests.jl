@@ -219,7 +219,7 @@ end
 @test mytest("CycPols.jl","degree(p)","25")
 @test mytest("CycPols.jl","lcm(p,CycPol(q^3-1))","(q-2)Φ₁Φ₂Φ₃Φ₂₃")
 @test mytest("CycPols.jl","subs(p,Pol()^-1)","(2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃")
-@test mytest("CycPols.jl","subs(p,Pol([E(2)],1))","(q+2)Φ₁Φ₂Φ₄₆")
+@test mytest("CycPols.jl","subs(p,Pol([E(2)],1))","(-q-2)Φ₁Φ₂Φ₄₆")
 @test mytest("CycPols.jl","CycPol(;conductor=24,no=8)","Φ⁽⁷⁾₂₄")
 @test mytest("CycPols.jl","CycPol(;conductor=24,no=8)(q)","Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1")
 @test mytest("CycPols.jl","p=cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")

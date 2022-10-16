@@ -177,9 +177,9 @@ function Gapjm.degrees(W::Spets)
   get!(W,:degrees)do
     a=torusfactors(W) 
     if isempty(refltype(W)) b=Tuple{Int,Cyc{Int}}[]
-    # separate/recombine for promotions to work
     else b=vcat(degrees.(refltype(W))...) 
     end
+    # separate/recombine for promotions to work
     collect(zip(vcat(fill(1,length(a)),first.(b)),vcat(a,last.(b))))
   end::Vector{Tuple{Int,Cyc{Int}}}
 end
