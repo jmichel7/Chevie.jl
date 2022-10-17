@@ -420,7 +420,7 @@ end
 #
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 
-@GapObj struct CoxHyperoctaedral{T} <: CoxeterGroup{SPerm{T}}
+@GapObj struct CoxHyperoctaedral{T} <: FiniteCoxeterGroup{SPerm{T}}
   G::SPermGroup{T}
   n::Int
 end

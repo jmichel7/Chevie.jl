@@ -29,7 +29,7 @@ function best_type(q::Frac)
 end
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{Int,Int} end
-  n=all(m->all(isinteger,exponents(m)),monomials(p)) ? Int : N
+  n=all(m->all(isinteger,powers(m)),monomials(p)) ? Int : N
   Mvp{best_eltype(p),n}
 end
   

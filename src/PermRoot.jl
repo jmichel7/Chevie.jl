@@ -192,14 +192,13 @@ module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   simple_conjugating, refls, unique_refls, reflection, reflectionmat,
-  Diagram, diagram, refltype, cartan, independent_roots, inclusion, inclusiongens,
-  restriction, coroot, TypeIrred, refleigen, reflchar,
-  bipartite_decomposition, torus_order, rank, 
-  reflrep, reflection_representation,
-  PermX, coroots, baseX,
+  Diagram, diagram, refltype, cartan, independent_roots, inclusion, 
+  inclusiongens, restriction, coroot, TypeIrred, refleigen, reflchar,
+  bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
   invariants, matY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, 
+  reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
   nref, number_of_reflections,
   indices
@@ -491,14 +490,14 @@ same as `inclusion(W)[i]` or `inclusion(W)[v]` (but more efficient).
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 """
-`nref(W::ComplexReflectionGroup)` or `number_of_reflections`
+`number_of_reflections(W::ComplexReflectionGroup)` or `nref(W)`
 
 the number of reflections of `W`
 """
 nref(W::PermRootGroup)=sum(degrees(W).-1)
 const number_of_reflections=nref
 """
-`nhyp(W::ComplexReflectionGroup)` or `number_of_hyperplanes`
+`number_of_hyperplanes(W::ComplexReflectionGroup)` or `nhyp(W)`
 
 The number of reflecting hyperplanes of `W`
 """
@@ -1396,7 +1395,7 @@ function parabolic_reps(W::PermRootGroup,s)
 end
 
 """
-`reflrep(W,w)`  or `reflection_representation` Reflection representation
+`reflection_representation(W,w)`  or `reflrep(W,w)`
 
 Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
 permutation  of the roots of `W`. The function `reflrep` returns the matrix
@@ -1603,11 +1602,20 @@ function Base.:*(W::PRG,V::PRG)
 end
 
 """
-`reflrep(W::ComplexReflectionGroup)` returns the list of `reflrep(W,x)` for
-`x` in `gens(W)`, that is the generators of `W` as matrices.
+`reflection_representation(W::ComplexReflectionGroup)` or `reflrep(W)`
+
+returns  the  list  of  `reflrep(W,x)`  for  `x`  in `gens(W)`, that is the
+generators of `W` as matrices.
 """
 reflrep(W::PRG)=W.matgens
-"`reflrep(W,i)` same as but better than `reflrep(W,W(i))`"
+
+"""
+`reflection_representation(W,i::Integer)`  or `reflrep(W,i)`
+
+for `i∈ 1:ngens(W)` same as but faster than `reflrep(W,W(i))`.
+For  `ngens(W)<i≤nref(W)`  returns  the  matrix  for  the  i-th  reflection
+`refls(W,i)` of `W`.
+"""
 reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
 
 #--------------- type of subgroups of PRG----------------------------------

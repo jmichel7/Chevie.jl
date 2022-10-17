@@ -673,8 +673,8 @@ IntervalStyle(M::BraidMonoid)=Interval()
 
 The ordinary monoid of the Artin group associated to `W`
 """
-BraidMonoid(W::CoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),gens(W),W,
-                                         Dict{Symbol,Any}())
+BraidMonoid(W::FiniteCoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),
+                                               gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 Base.one(M::BraidMonoid)=M.one
@@ -706,7 +706,7 @@ end
 
 # The repetitions below reflect the poor type system of Julia
 IntervalStyle(M::GenBraidMonoid)=Interval()
-BraidMonoid(W::GenCox)=GenBraidMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
+BraidMonoid(W::CoxeterGroup)=GenBraidMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::GenBraidMonoid)=print(io,"BraidMonoid(",M.W,")")
 Base.one(M::GenBraidMonoid)=M.one

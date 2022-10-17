@@ -5,58 +5,65 @@ example, Bourbaki "Lie Groups and Lie Algebras" chapter 4.
 A *Coxeter group* is a group which has the presentation
 ``W=⟨S|(st)^{m(s,t)}=1\\text{  for  }s,t∈  S⟩``  for some symmetric integer
 matrix `m(s,t)` called the *Coxeter matrix*, where `m(s,t)>1` for `s≠t` and
-`m(s,s)=1`.  It is true (but a non-trivial theorem) that in a Coxeter group
-the  order of `st` is exactly `m(s,t)`, thus a Coxeter group is the same as
-a  *Coxeter system*, that is a pair `(W,S)`  of a group `W` and a set `S⊂W`
-of  involutions, such  that the  group is  presented by  generators `S` and
-relations  describing the order  of the product  of two elements  of `S`. A
-Coxeter group has a natural representation, its *reflection
+`m(s,s)=1`;  `m(s,t)=∞` is allowed meaning there is no relation between `s`
+and `t`. It is true (but a non-trivial theorem) that in a Coxeter group the
+order  of `st` is exactly  `m(s,t)`, thus a Coxeter  group is the same as a
+*Coxeter  system*, that is a pair `(W,S)` of a group `W` and a set `S⊂W` of
+involutions,  such  that  the  group  is  presented  by  generators `S` and
+relations describing the order of the product of two elements of `S`.
+
+A   Coxeter   group   has   a   natural   representation,  its  *reflection
 representation*, on a real vector space `V` of dimension `length(S)` (which
 is  the  *Coxeter  rank*  of  W),  where  each  element  of  `S`  acts as a
 reflection; the faithfulness of this representation in the main argument to
-prove  that the order of `st` is  exactly `m(s,t)`. Thus Coxeter groups are
-real  reflection  groups.  The  converse  need  not  be  true if the set of
-reflecting  hyperplanes has  bad topological  properties, but  it turns out
-that  finite Coxeter groups are the  same as finite real reflection groups.
-The   possible  Coxeter  matrices  for  finite  Coxeter  groups  have  been
-completely  classified, see [`Weyl`](@ref); the corresponding finite groups
-play a deep role in several areas of mathematics.
+prove  that the order  of `st` is  exactly `m(s,t)`. This representation is
+defined as follows on a space `V` with basis `{eₛ}` for `s∈ S`. The *cartan
+matrix*  associated to the  Coxeter matrix `m(s,t)`  is the matrix `C` with
+entries  `C(s,t)=-2cos(π/m(s,t))`; we  set `C(s,t)=-2`  if `m(s,t)=∞`. Then
+the action of `s∈ S` on `V` is given by `s(eₜ)=eₜ-C(s,t)eₛ`.
+
+Thus, Coxeter groups are  real reflection groups.  The converse need not be
+true  if the set of reflecting  hyperplanes has bad topological properties,
+but  it turns out  that finite Coxeter  groups are the  same as finite real
+reflection  groups. The possible Coxeter matrices for finite Coxeter groups
+have  been  completely  classified,  see  [`Weyl`](@ref); the corresponding
+finite groups play a deep role in several areas of mathematics.
 
 Coxeter  groups  have  a  nice  solution  to the word problem. The *length*
 `l(w)`  of an element  `w∈ W` is  the minimum number  of elements of `S` of
 which it is a product (since the elements of `S` are involutions, we do not
 need inverses). An expression of `w` of minimal length is called a *reduced
 word*  for `w`. The main property of  reduced words is the *exchange lemma*
-which  states that if `s₁…sₖ` is a  reduced word for `w` (thus`k=l(w)`) and
+which  states that if `s₁…sₖ` is a reduced word for `w` (thus `k=l(w)`) and
 `s∈  S` is such that `l(sw)≤l(w)` then one  of the `sᵢ` in the word for `w`
 can be deleted to obtain a reduced word for `sw`. Thus given `s∈ S` and `w∈
 W`,  either `l(sw)=l(w)+1` or  `l(sw)=l(w)-1` and we  say in this last case
 that  `s` belongs to  the *left descent  set* of `w`.  The computation of a
 reduced  word for an element, and other  word problems, are easy if we know
-how  to multiply elements  and the left  descent sets. In  each case of the
-Coxeter  groups that we implement, the left  descent set is easy to compute
-(see for example [`CoxSym`](@ref) below), so this suggests how to deal with
-Coxeter groups generically:
+how to multiply elements and know left descent sets. In each of the Coxeter
+groups  that we implement, the left descent set is easy to compute (see for
+example  [`CoxSym`](@ref) below), so this suggests how to deal with Coxeter
+groups generically:
 
 The  type  `CoxeterGroup`  is  an  abstract  type;  an  actual struct which
 implements it must define a function
 
-`isleftdescent(W,w,i)` which tells whether the
-      `i`-th element of `S` is in the left descending set of `w`.
+`isleftdescent(W,w,i)` which tells whether the `i`-th element of `S` is in
+   the left descent set of `w`.
 
 the other functions needed in an instance of a Coxeter group are
 - `gens(W)` which returns the set `S` (the list of *Coxeter generators*)
 - `nref(W)` which  returns the  number of  reflections of  `W`, if  `W` is
-   finite or `nothing` if `W` is infinite
+   finite or `nothing` if `W` is infinite.
 
 It  should  be  noted  that  a  Coxeter  group  can  be *any* kind of group
 implementing the above functions.
 
 Because  of the  easy solution  of the  word problem  in Coxeter  groups, a
 convenient  way  to  represent  their  elements  is as words in the Coxeter
-generators. They are represented as lists of integers in `1:length(S)`. The
-functions  'word' and 'W(...)' will do the conversion between Coxeter words
-and elements of the group.
+generators,  that  is  lists  of  integers  in `1:length(S)`. The functions
+'word'  and 'W(...)' does the conversion between Coxeter words and elements
+of the group.
 
 # Examples
 ```julia-repl
@@ -114,7 +121,7 @@ julia> [length(elements(W,i)) for i in 0:nref(W)]
  1
 ```
 
-The above line tells us that there is 1 element of length 0, there are 6 of
+The  last list tells us that there is 1 element of length 0, there are 6 of
 length 3, …
 
 For  most basic functions the convention is that the input is an element of
@@ -123,16 +130,18 @@ group  which  is  a  permutation  group,  using the low level functions for
 permutations  is usually  much faster  than manipulating lists representing
 reduced expressions.
 
-This module contains mostly a port of the basic functions on Coxeter groups
-in  Chevie. The only Coxeter group  constructor implemented here is CoxSym.
-The module [`Weyl`](@ref) defines [`coxgroup`](@ref), a function building a
-finite Coxeter group given its type.
+The only Coxeter group constructors implemented in this module are `CoxSym`
+and  `coxgroup`; the last constructor takes  a Cartan matrix and builds the
+corersponding  Coxeter group as  a matrix group.  The module [`Weyl`](@ref)
+defines  other methods for `coxgroup` building  a finite Coxeter group as a
+permutation group, given its type.
 """
 module CoxGroups
 
 export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   longest, braid_relations, coxmat, CoxSym, standard_parabolic_class, GenCox,
-  inversions, degrees, coxgroup, coxetergroup
+  inversions, degrees, FiniteCoxeterGroup,
+  coxgroup, coxeter_group
 
 export isleftdescent # 'virtual' methods (exist only for concrete types)
 
@@ -144,7 +153,8 @@ abstract type CoxeterGroup{T}<:Group{T} end
 `firstleftdescent(W,w)`
 
 returns the index in `gens(W)` of the first element of the left descent set
-of `w` --- that is, the first `i` such that if `s=W(i)` then `l(sw)<l(w).
+of  `w` --- that is, the first  `i` such that if `s=W(i)` then `l(sw)<l(w).
+It returns `nothing` for `one(W)`.
 
 ```julia-repl
 julia> W=CoxSym(3)
@@ -244,39 +254,6 @@ julia> word(W,p)
 """
 Base.length(W::CoxeterGroup,w)=length(word(W,w))
 PermRoot.semisimplerank(W::CoxeterGroup)=ngens(W)
-
-"""
-`longest(W)`
-
-If  `W` is  finite, returns  the unique  element of  maximal length  of the
-Coxeter group `W`. May loop infinitely otherwise.
-
-```julia-repl
-julia> longest(CoxSym(4))
-(1,4)(2,3)
-```
-
-`longest(W,I)`
-
-returns  the longest element of the  parabolic subgroup of `W` generated by
-the generating reflections of indices in `I`.
-
-```julia-repl
-julia> longest(CoxSym(4))
-(1,4)(2,3)
-```
-"""
-function longest(W::CoxeterGroup{T},I::AbstractVector{<:Integer}=eachindex(gens(W)::Vector{T}))where T
-  w=one(W)
-  i=1
-  while i<=length(I)
-    if isleftdescent(W,w,I[i]) i+=1
-    else w=W(I[i])*w
-      i=1
-    end
-  end
-  w
-end
 
 """
 `reduced(W,w)`
@@ -799,7 +776,9 @@ end
 
 braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
-function dyer(W,J) # Dyer's method for reflection subgroups
+# construct Coxeter generators and rootinclusion of reflection subgroup
+# defined by J by Dyer's method.
+function dyer(W,J) 
   refs=refls(W,J)
   refs=vcat(orbits(Group(refs),refs)...)
   inc=Int.(indexin(refs,refls(W)))
@@ -808,21 +787,63 @@ function dyer(W,J) # Dyer's method for reflection subgroups
   (gens=gens,rootinclusion=vcat(gens,sort(setdiff(inc,gens))))
 end
 
+"""
+`longest(W)`
+
+If  `W` is  finite, returns  the unique  element of  maximal length  of the
+Coxeter group `W`. May loop infinitely otherwise.
+
+```julia-repl
+julia> longest(CoxSym(4))
+(1,4)(2,3)
+```
+
+`longest(W,I)`
+
+returns  the longest element of the  parabolic subgroup of `W` generated by
+the generating reflections of indices in `I`.
+
+```julia-repl
+julia> longest(CoxSym(4))
+(1,4)(2,3)
+```
+"""
+function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
+  w=one(W)
+  i=1
+  while i<=length(I)
+    if isleftdescent(W,w,I[i]) i+=1
+    else w=W(I[i])*w
+      i=1
+    end
+  end
+  w
+end
+
+abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
+
 #--------------------- CoxSym ---------------------------------
-@GapObj struct CoxSym{T} <: CoxeterGroup{Perm{T}}
+@GapObj struct CoxSym{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermGroup{T}
+  inversions::Vector{Tuple{Int,Int}}
   refls::Vector{Perm{T}}
   n::Int
 end
 
-@forward CoxSym.G Base.iterate, Groups.gens, Base.one, PermGroups.orbits,
-  PermGroups.orbit
+#@forward CoxSym.G Base.iterate, Groups.gens, Base.one, PermGroups.orbits,
+#  PermGroups.orbit
 
 """
-  `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group
+  `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group.
+  The coxeter generators are the `Perm(i,i+1)`.
 ```julia-repl
 julia> W=CoxSym(3)
 𝔖 ₃
+
+julia> gens(W)
+2-element Vector{Perm{Int16}}:
+ (1,2)
+ (2,3)
 
 julia> e=elements(W)
 6-element Vector{Perm{Int16}}:
@@ -833,7 +854,7 @@ julia> e=elements(W)
  (1,3,2)
  (1,3)  
 
-julia> length.(Ref(W),e)
+julia> length.(Ref(W),e) # length in the genrators of the elements
 6-element Vector{Int64}:
  0
  1
@@ -845,9 +866,10 @@ julia> length.(Ref(W),e)
 """
 function CoxSym(n::Int)
   gens=map(i->Perm(i,i+1;degree=n),1:n-1)
-  refs=[Perm(i,i+k;degree=n) for k in 1:n-1 for i in 1:n-k]
+  inversions=[(i,i+k) for k in 1:n-1 for i in 1:n-k]
+  refs=[Perm(r...;degree=n) for r in inversions]
   append!(refs,refs)
-  CoxSym(Group(gens),refs,n,Dict{Symbol,Any}())
+  CoxSym(Group(gens),inversions,refs,n,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -858,17 +880,19 @@ end
 
 PermRoot.action(W::CoxSym,i,p)=i^p
 
-PermRoot.refltype(W::CoxSym)=[TypeIrred(Dict(:series=>:A,
-                                        :indices=>collect(1:W.n-1)))]
+PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
+  [TypeIrred(Dict(:series=>:A,:indices=>collect(1:W.n-1)))]
+end
 
 Perms.reflength(W::CoxSym,a)=reflength(a)
-PermRoot.nref(W::CoxSym)=div(length(W.refls),2)
+PermRoot.nref(W::CoxSym)=length(W.inversions)
 function PermRoot.simple_reps(W::CoxSym)
   get!(W,:simple_reps)do
     W.unique_refls=collect(1:nref(W))
     fill(1,length(W.refls))
   end::Vector{Int}
 end
+PermRoot.simple_reps(W::CoxSym,i)=simple_reps(W)[i]
 PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.refls(W::CoxSym,i)=W.refls[i]
 PermRoot.rank(W::CoxSym)=ngens(W)
@@ -888,29 +912,23 @@ julia> isleftdescent(W,Perm(1,2),1)
 true
 ```
 """
-function isleftdescent(W::CoxSym,w,i::Int)
- if i<W.n j=i+1
- else j=largest_moved_point(refls(W,i))
-      i=smallest_moved_point(refls(W,i))
- end
+function isleftdescent(W::CoxSym,w,i::Integer)
+ i,j=W.inversions[i]
  i^w>j^w
 end
 
 degrees(W::CoxSym)=2:ngens(W)+1
-Base.length(W::CoxSym)=prod(degrees(W))
 """
 `cartan(W::CoxeterGroup)`  The Cartan matrix of `W`.
 """
 PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
-
-Base.length(W::CoxSym,w)=count(i^w>(i+k)^w for k in 1:W.n-1 for i in 1:W.n-k)
 
 # for reflection_subgroups note the difference with Chevie:
 # leftdescents, rightdescents, word  use indices in W and not in parent(W)
 """
 `reflection_subgroup(W::CoxSym,I)`
 
-The only parabolics defined for `CoxSym(n)` are for `I=1:m` for `m≤n`
+The only reflection subgroups defined for `CoxSym(n)` are for `I=1:m` for `m≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end
@@ -928,7 +946,7 @@ PermRoot.cartan(W::GenCox)=W.cartan
 isleftdescent(W::GenCox,w,i::Int)=real(sum(w[i,:]))<0
   
 """
-`coxgroup(m)`
+`coxeter_group(m)` or `coxgroup(m)`
 
 `m`  should be a square  matrix of real cyclotomic  numbers. It returns the
 Coxeter  group  whose  Cartan  matrix  is  `m`.  This  is  a  matrix  group
@@ -939,17 +957,17 @@ matrix group generated by the reflections `sᵢ(x)=x-2⟨x,eᵢ⟩eᵢ`.
 
 ```julia-repl
 julia> W=coxgroup([2 -2;-2 2])
-coxetergroup([2 -2; -2 2])
+coxeter_group([2 -2; -2 2])
 ```
 
 Above is a way to construct the affine Weyl group  `Ã₁`.
 """
-function coxetergroup(C::Matrix{T})where T
+function coxeter_group(C::Matrix{T})where T
   I=one(C)
   GenCox(reflectionmat.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
 end
 
-const coxgroup=coxetergroup
+const coxgroup=coxeter_group
 
 function PermRoot.reflection_subgroup(W::GenCox,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I)
@@ -959,7 +977,7 @@ function PermRoot.reflection_subgroup(W::GenCox,I::AbstractVector{Int})
 end
 
 function Base.show(io::IO,W::GenCox)
-  print(io,"coxetergroup(",cartan(W),")")
+  print(io,"coxeter_group(",cartan(W),")")
 end
 
 end

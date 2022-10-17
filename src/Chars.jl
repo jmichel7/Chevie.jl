@@ -836,6 +836,9 @@ function classinfo(t::TypeIrred)
   ClassInfo(cl)
 end
 
+# put here because ordering of modules
+Chars.classinfo(W::CoxSym)=classinfo(refltype(W)[1])
+
 Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 
 """
