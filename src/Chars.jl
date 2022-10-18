@@ -21,12 +21,13 @@ partitions  or partition tuples for the infinite series, and for the others
 they  are pairs  of two  integers `(d,e)`  where `d`  is the  degree of the
 character  and  `e`  is  the  smallest  symmetric  power  of the reflection
 representation  containing  the  given  character  as  a  constituent  (the
-`b`-invariant  of the character). This information is obtained by using the
-functions `classinfo` and `charinfo`. When you display the character table,
-the canonical labelings for classes and characters are those displayed.
+`b`-invariant of the character). This information is given by the functions
+`classinfo`  and  `charinfo`.  When  you  display  the character table, the
+canonical labelings for classes and characters are displayed.
 
 A  typical example  is `coxgroup(:A,n)`,  the symmetric  group `𝔖ₙ₊₁` where
-classes and characters are parameterized by partitions of `n+1`.
+classes  and characters are  parameterized by partitions  of `n+1` (this is
+also the case for `CoxSym(n+1)`).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -75,14 +76,14 @@ julia> ct.classnames
  "A_1+\\tilde A_1"
 ```
 
-Our  groups act as reflection groups on  the vector space `V`, so have fake
-degrees  (see [`fakedegrees`](@ref)),  whose valuation  and degree give two
-integers  `b,B` for each irreducible character  of `W`. For spetsial groups
-(which  include finite  Coxeter groups),  the valuation  and degree  of the
-generic  degrees of  the Hecke  algebra give  two more  integers `a,A` (for
-Coxeter groups see [Carter1985, Ch.11](biblio.htm#Car85] for more details).
-These  integers are also used in the operations of truncated induction, see
-[`jInductionTable`](@ref) and [`JInductionTable`](@ref).
+Reflection  groups  have  fake  degrees  (see [`fakedegrees`](@ref)), whose
+valuation and degree give two integers `b,B` for each irreducible character
+of  `W`. For  spetsial groups  (which include  finite Coxeter  groups), the
+valuation  and degree of the generic degrees  of the Hecke algebra give two
+more integers `a,A` (for Coxeter groups see [Carter1985,
+Ch.11](biblio.htm#Car85) for more details). These integers are also used in
+the  operations of  truncated induction,  see [`jInductionTable`](@ref) and
+[`JInductionTable`](@ref).
 
 Iwahori-Hecke  algebras and  cyclotomic Hecke  algebras also have character
 tables, see the corresponding chapters.

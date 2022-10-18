@@ -8,7 +8,8 @@ cartan(::Symbol,::Integer,::Integer)
 roots(::AbstractMatrix)
 two_tree
 reflection_subgroup(::Weyl.FCG,::AbstractVector{<:Integer})
-coxeter_group
+coxeter_group(t::Symbol,r::Int=0,b::Int=0)
+coxeter_group()
 rootlengths
 rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)

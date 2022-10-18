@@ -300,7 +300,7 @@ contains the following fields
 
  `o.order`: order of s
 
- `.N_s`:    Size of orbit
+ `.N_s`:    size of hyperplane orbit
 
  `.det_s`:  for i in `1:o.order-1`, position in CharTable of `(det_s)^i`
 
@@ -363,7 +363,7 @@ end
 group `W`. The fields are `W`, the index of a root for `r`, the non-trivial
 eigenvalue of `r`, and a word for `r` in the generating reflections of `W`.
 ```julia-repl
-julia> r=reflections(crg(8))[2]
+julia> r=reflections(crg(8))[7]
 Reflection(G₈,1,-1)
 
 julia> r.eigen # the non-trival eigenvalue, as a Root1
@@ -456,7 +456,8 @@ end
 """
 `reflections(W)`  the list of  all reflections of  the reflection group `W`
 (including  the  non-distinguished  ones),  given as a `Vector{Reflection}`
-(see [`Reflection`](@ref)).
+(see   [`Reflection`](@ref)).   `reflections(W)[1:nhyp(W)]`   contains  the
+distinguished reflections.
 
 ```julia-repl
 julia> W=crg(4)
@@ -465,12 +466,12 @@ G₄
 julia> reflections(W)
 8-element Vector{Reflection{PRG{Cyc{Rational{Int64}}, Int16}}}:
  Reflection(G₄,1,ζ₃)
- Reflection(G₄,1,ζ₃²)
  Reflection(G₄,2,ζ₃)
- Reflection(G₄,2,ζ₃²)
  Reflection(G₄,4,ζ₃)
- Reflection(G₄,4,ζ₃²)
  Reflection(G₄,5,ζ₃)
+ Reflection(G₄,1,ζ₃²)
+ Reflection(G₄,2,ζ₃²)
+ Reflection(G₄,4,ζ₃²)
  Reflection(G₄,5,ζ₃²)
 ```
 """
@@ -481,7 +482,7 @@ function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral})
     if W isa PermRootGroup
       dd=map(x->Groups.words_transversal(gens(W),x),pnts)
     end
-    res=Reflection{typeof(W)}[]
+    res=map(i->Reflection{typeof(W)}[],1:maximum(ordergens(W))-1)
     for i in unique_refls(W)
       e=ordergens(W)[simple_reps(W)[i]]
       if W isa CoxeterGroup w=word(W,refls(W,i))
@@ -491,10 +492,10 @@ function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral})
         w=vcat(invert_word(W,w),[rep],w)
       end
       for j in 1:e-1
-        push!(res,Reflection(W,i,E(e,j),vcat(fill(w,j)...)))
+        push!(res[j],Reflection(W,i,E(e,j),vcat(fill(w,j)...)))
       end
     end
-    res
+    vcat(res...)
   end
 end
   

@@ -6,8 +6,8 @@ defined on a real vector space `V`.
 rational vector space `V` (thus over the integers).
 
 Like   finite  complex   reflection  groups,   finite  Coxeter  groups  are
-implemented as groups of permutations of a root system. The particular root
-systems  for  Weyl  groups  play  an  important role in mathematics as they
+implemented  as groups  of permutations  of a  set of roots. The particular
+root  systems for Weyl groups play an important role in mathematics as they
 classify semi-simple Lie algebras and algebraic groups.
 
 Let  us give precise definitions.  Let `V` be a  real vector space and `Vⱽ`
@@ -69,7 +69,11 @@ the relative root lengths (going from the longer to the shorter root) which
 may  differ between different orbits of  `W` on `R`. Alternately the Dynkin
 diagram  can be obtained  from the Cartan  matrix as follows:  if `Cᵣₛ` and
 `Cₛᵣ`  are integers  such that  `|Cₛᵣ|≥|Cᵣₛ|=1` there  is an edge of weight
-`|Cₛᵣ|` from `r` to `s` with an arrow pointing to `s` if `|Cₛᵣ|>1`.
+`|Cₛᵣ|`  from `r` to `s`  with an arrow pointing  to `s` if `|Cₛᵣ|>1`. Note
+that  the Cartan matrices  we consider here  are not necessarily symmetric,
+contrary  to the  Cartan matrices  we considered  describing the reflection
+representation  of a general Coxeter  group; being symmetric corresponds to
+all roots being taken of the same length.
 
 The  irreducible  crystallographic  root  systems  are  classified  by  the
 following  list of Dynkin diagrams. The labeling  of the nodes is the order
@@ -99,15 +103,25 @@ crystallographic:
 I₂(e) O—O   H₃ O—O—O  H₄ O—O—O—O
       1 2      1 2 3     1 2 3 4
 ```
-The  Cartan  matrix  corresponding  to  one  of  the above irreducible root
-systems  (with the specified labeling) is  returned by the command `cartan`
-which  takes as input  a `Symbol` giving  the type (that  is `:A`, `:B`, …,
-`:I`)  and a positive `Int` giving the  rank (plus an `Int` giving the bond
-for  type `:I`). This function returns a matrix with `Int` entries for Weyl
-groups,  and  a  matrix  of  `Cyc`  for  the  other types. Given two Cartan
-matrices  `c1`  and  `c2`,  their  matrix  direct sum (corresponding to the
-orthogonal   direct  sum   of  the   root  systems)   can  be  obtained  by
-`cat(c1,c2,dims=[1,2])`.
+The function `cartan` gives the cartan matrix for one of these types
+
+```julia-repl
+julia> cartan(:D,4)
+4×4 Matrix{Int64}:
+  2   0  -1   0
+  0   2  -1   0
+ -1  -1   2  -1
+  0   0  -1   2
+
+julia> cartan(:I,2,5) # for type I₂(e) give e as 3rd argument
+2×2 Matrix{Cyc{Int64}}:
+       2  ζ₅²+ζ₅³
+ ζ₅²+ζ₅³        2
+```
+
+Given   two  Cartan  matrices  `c1`  and  `c2`,  their  matrix  direct  sum
+(corresponding  to the  orthogonal direct  sum of  the root systems) can be
+obtained by `cat(c1,c2,dims=[1,2])`.
 
 The  whole  root  system  can  be  recovered  from the simple roots and the
 corresponding  coroots, since each root  is in the orbit  of a simple root.
@@ -115,18 +129,19 @@ The  restriction of the simple reflections to the span of `R` is determined
 by the Cartan matrix, so `R` is determined by the Cartan matrix and the set
 of simple roots.
 
-The  function `rootdatum` takes as input a  list of simple roots and a list
-of  the  corresponding  coroots  and  produces  a `CoxeterGroup` containing
-information  about the root  system `R` and  about `W(R)`. If  we label the
-positive  roots by  `1:N`, and  the negative  roots by  `N+1:2N`, then each
-simple  reflection is  represented by  the permutation  of `1:2N`  which it
-induces  on the roots. If only one  argument is given, the Cartan matrix of
-the  root system, it is taken as the  list of coroots and the list of roots
-is assumed to be the canonical basis of `V`.
+The function `rootdatum` takes as input a matrix `r` whose lines represents
+the  list  of  simple  roots  and  another  matrix `cr` whose lines are the
+corresponding  coroots  and  produces  a  `FiniteCoxeterGroup`  which  is a
+permutation  group containing in addition information about the root system
+`R`  and about `W(R)`;  `cr*transpose(r)` should be  a Cartan matrix. If we
+label the positive roots by `1:N`, and the negative roots by `N+1:2N`, then
+each simple reflection is represented by the permutation of `1:2N` which it
+induces on the roots.
 
-If one only wants to work with Cartan matrices with a labeling as specified
-by  the  above  list,  the  function  call  can  be  simplified. Instead of
-`rootdatum(cartan(:D,4))` the following is also possible.
+If a single matrix argument is given to `rootdatum` it is taken as `cr` and
+`r`  is taken  to be  the identity  matrix. If  one only wants to work with
+Cartan  matrices for irreducible  root systems, then `rootdatum(cartan(t))`
+can be simplified to `coxgroup(t)`.
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
@@ -154,7 +169,7 @@ julia> cartan(W)
   0   0   2  -2
   0   0  -1   2
 ```
-The  same object is constructed  by applying  `coxgroup` to  the matrix
+The  same object is constructed  by applying  `rootdatum` to  the matrix
 `cat(cartan(:A,2), cartan(:B,2),dims=[1,2])`.
 
 The elements of a Weyl group are permutations of the roots:
@@ -172,7 +187,6 @@ julia> word(W,p)
  1
  2
  3
-
 ```
 
 finally, a benchmark on julia 1.0.2
@@ -281,8 +295,8 @@ the  Cartan matrix for a  finite Coxeter group described  by type and rank.
 The  recognized types are `:A, :B, :Bsym, :C, :D, :E, :F, :Fsym, :G, :Gsym,
 :I,  :H`. For type `:I` a third  argument must be given describing the bond
 between the two generators. The `sym` types correspond to
-(non-crystallographic)  root systems where all  roots have the same length.
-They  afford automorphisms that  the crystallographic root  system does not
+(non-crystallographic)  root systems where all  roots have the same length;
+they  afford automorphisms that  the crystallographic root  system does not
 afford, which allow to define the "very twisted" Chevalley groups.
 
 ```julia-repl
@@ -307,7 +321,7 @@ julia> cartan(:Bsym,2)
 function PermRoot.cartan(t::Symbol,r::Integer,b::Integer=0)
   if haskey(cartanmats,t) b==0 ? cartanmats[t](r) : cartanmats[t](b) 
   else error("Unknown Cartan type $(repr(t)). Known types are:\n",
-             join(sort(repr.(collect(keys(cartanDict)))),", "))
+             join(sort(repr.(collect(keys(cartanmats)))),", "))
   end
 end
 
@@ -328,24 +342,25 @@ end
 """
 `two_tree(m)`
 
-Given  a square matrix  `m` with zeroes  (or falses, for  a boolean matrix)
-symmetric  with respect to the diagonal, let `G` be the graph with vertices
-`axes(m)[1]`  and an edge between `i` and `j` iff `!iszero(m[i,j])`. 
+Given  a  square  matrix  `m`  with  zeroes  symmetric  with respect to the
+diagonal,  let  `G`  be  the  graph  with vertices `axes(m)[1]` and an edge
+between `i` and `j` iff `!iszero(m[i,j])`.
 
 If  `G` is a line this function returns  it as a `Vector{Int}`. If `G` is a
 tree with one vertex `c` of valence `3` the function returns `(c,b1,b2,b3)`
 where  `b1,b2,b3` are  the branches  from this  vertex sorted by increasing
-length. Otherwise the function returns `nothing`
+length. Otherwise the function returns `nothing`.
 
+This function is used when recognizing the type of a Cartan matrix.
 ```julia-repl
-julia> Weyl.two_tree(cartan(:A,4))
+julia> two_tree(cartan(:A,4))
 4-element Vector{Int64}:
  1
  2
  3
  4
 
-julia> Weyl.two_tree(cartan(:E,8))
+julia> two_tree(cartan(:E,8))
 (4, [2], [3, 1], [5, 6, 7, 8])
 ```
 """
@@ -481,9 +496,9 @@ coxmat(W::FiniteCoxeterGroup)=coxmat(cartan(W))
 `inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
 
 Given  a word `w=[s₁,…,sₙ]` (a vector of integers) representing the element
-`W(w...)`,  returns the inversions of `w`, that is the list of indices of
-the roots corresponding to the reflections:
-`W(s₁), W(s₁,s₂,s₁), …, W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
+`W(w...)`,  returns the inversions of  `w`, that is the  list of indices of
+the reflections of `W` given by `W(s₁), W(s₁,s₂,s₁), …,
+W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -620,9 +635,9 @@ end
 
 Given  an  involution  `w`  of  a  Coxeter  group  `W`,  by  a  theorem  of
 [Richardson1982](biblio.htm#rich82)  there is  a unique  parabolic subgroup
-`P` of `W` such that that `w` is the longest element of `P`, and is central
-in  `P`. The function returns  `I` such that `P==reflection_subgroup(W,I)`,
-so that `w==longest(reflection_subgroup(W,I))`.
+`P`  of `W` such that `P` is finite  and `w` is the longest element of `P`,
+and is central in `P`. The function returns `I` such that
+`P==reflection_subgroup(W,I)` and `w==longest(reflection_subgroup(W,I))`.
 
 ```julia-repl
 julia> W=coxgroup(:A,2)
@@ -707,8 +722,8 @@ CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 
 This is equivalent to `rootdatum(cartan(type,rank[,bond]))`.
 
-The  resulting object  `W`, that  we will  call a  *Coxeter datum*,  has an
-additional entry compared to a `PermRootGroup`.
+The  resulting object `W`, a  `FiniteCoxeterGroup`, has an additional entry
+compared to a `PermRootGroup`.
 
   - `W.rootdec`:  the root vectors, given  as linear combinations of simple
     roots.  The first `nref(W)` roots are  positive, the next `nref(W)` are
@@ -716,48 +731,43 @@ additional entry compared to a `PermRootGroup`.
     `semisimplerank(W)`  roots are the simple roots. The positive roots are
     ordered by increasing height.
 
-see  the following functions for how to get various information on the root
-system and the Coxeter group
+and `roots(W)` is ordered is the same way as `W.rootdec`.
 
-`nref,  coroots,  rootlengths,  simple_reps,  simple_conjugating,  reflrep,
-simpleroots,  simplecoroots, PermX, cartan, inclusion, restriction, action,
-rank, semisimplerank`
-
-  - `gens(W)`: the generators, as permutations of the root vectors. They are
-    in the same order as the simple roots.
+For  how to  get various  information on  the root  system and  the Coxeter
+group,   see  the  functions   `nref,  coroots,  rootlengths,  simple_reps,
+simple_conjugating,  reflrep,  simpleroots,  simplecoroots,  PermX, cartan,
+inclusion, restriction, action, rank, semisimplerank`
 
 In terms of root data, this function returns the adjoint root datum of Weyl
 group `W`. If `sc=true` it returns the simply connected root datum.
 ```julia_repl
-julia> W=coxgroup(:A,3)
-A₃
+julia> W=coxgroup(:G,2)
+G₂
 
 julia> cartan(W)
-3×3 Matrix{Int64}:
-  2  -1   0
- -1   2  -1
-  0  -1   2
+2×2 Matrix{Int64}:
+  2  -1
+ -3   2
 
 julia> W.rootdec
 12-element Vector{Vector{Int64}}:
- [1, 0, 0]
- [0, 1, 0]
- [0, 0, 1]
- [1, 1, 0]
- [0, 1, 1]
- [1, 1, 1]
- [-1, 0, 0]
- [0, -1, 0]
- [0, 0, -1]
- [-1, -1, 0]
- [0, -1, -1]
- [-1, -1, -1]
+ [1, 0]
+ [0, 1]
+ [1, 1]
+ [1, 2]
+ [1, 3]
+ [2, 3]
+ [-1, 0]
+ [0, -1]
+ [-1, -1]
+ [-1, -2]
+ [-1, -3]
+ [-2, -3]
 
- julia> reflrep(W)
-3-element Vector{Matrix{Int64}}:
- [-1 0 0; 1 1 0; 0 0 1]
- [1 1 0; 0 -1 0; 0 1 1]
- [1 0 0; 0 1 1; 0 0 -1]
+julia> reflrep(W)
+2-element Vector{Matrix{Int64}}:
+ [-1 0; 1 1]
+ [1 3; 0 -1]
 ```
 """
 CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
@@ -848,7 +858,7 @@ CoxGroups.coxeter_group()=torus(0)
  The  shortest roots in an irreducible subsystem are given the length 1. In
  a Weyl group the others then have length 2 (or 3 in type `G₂`). The matrix
  of the `W`-invariant bilinear form is given by
- `map(i->rootlengths(W)[i]*W.cartan[i,:],1:semisimplerank(W))`.
+ `Diagonal(rootlengths(W)[1:ngens(W)])*cartan(W)`.
 """
 function rootlengths(W::FiniteCoxeterGroup)
   get!(W,:rootlengths)do
@@ -868,6 +878,9 @@ function rootlengths(W::FiniteCoxeterGroup)
     lengths
   end::Vector{eltype(cartan(W))}
 end
+
+PermRoot.invariant_form(W::FiniteCoxeterGroup)=
+  Diagonal(rootlengths(W)[1:ngens(W)])*cartan(W)
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
   r=cat(simpleroots(parent(W1)),simpleroots(parent(W2)),dims=[1,2])
@@ -927,7 +940,7 @@ end
 """
 `reflection_subgroup(W::FiniteCoxeterGroup,I)`
 
-The subgroup of `W` generated by `refls(W,I)`
+The subgroup `H` of `W` generated by `refls(W,I)`
 
 A  theorem discovered independently  by [Deodhar1989](biblio.htm#Deo89) and
 [Dyer1990](biblio.htm#Dye90)  is that  a subgroup  `H` of  a Coxeter system
@@ -957,53 +970,14 @@ O A₁
 The  notation `G₂₍₂₆₎` means  that `W.G.roots[2:6]` form  a system of simple
 roots for `H`.
 
-A  reflection subgroup has specific properties  the most important of which
-is  `inclusion` which gives the positions of  the roots of `H` in the roots
-of `W`. The inverse (partial) map is `restriction`.
-
-```julia-repl
-julia> inclusion(H)
-4-element Vector{Int64}:
-  2
-  6
-  8
- 12
-
-julia> restriction(H)
-12-element Vector{Int64}:
- 0
- 1
- 0
- 0
- 0
- 2
- 0
- 3
- 0
- 0
- 0
- 4
-```
-
 If  `H` is a  standard parabolic subgroup  of a Coxeter  group `W` then the
 length  function on  `H` (with  respect to  its set  of generators)  is the
 restriction  of the length function on `W`. This need not no longer be true
-for arbitrary reflection subgroups of `W`:
-
-```julia-repl
-julia> word(W,H(2))
-5-element Vector{Int64}:
- 1
- 2
- 1
- 2
- 1
-```
-
-In  this package, finite  reflection groups are  represented as permutation
-groups  on a set of roots. Consequently,  a reflection subgroup `H⊆ W` is a
-permutation  subgroup, thus its elements are represented as permutations of
-the roots of the parent group.
+for  arbitrary  reflection  subgroups  of  `W`.  In  this  package,  finite
+reflection  groups are represented as permutation groups on a set of roots.
+Consequently,  a reflection subgroup `H⊆ W` is a permutation subgroup, thus
+its  elements are  represented as  permutations of  the roots of the parent
+group.
 
 ```julia-repl
 julia> elH=word.(Ref(H),elements(H))
@@ -1022,11 +996,7 @@ julia> elW=word.(Ref(W),elements(H))
 
 julia> map(w->H(w...),elH)==map(w->W(w...),elW)
 true
-
 ```
-Another  basic result about reflection subgroups  of Coxeter groups is that
-each  coset of `H` in `W` contains  a unique element of minimal length, see
-`reduced`.
 """
 function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})where {T,T1}
 # contrary to Chevie, I is indices in W and not parent(W)

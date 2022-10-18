@@ -61,7 +61,7 @@ reflection  group)  is  parametrized  by  symbols  of shape `[1,0,…,0]` for
 module Symbols
 using ..Util: joindigits
 using ..Combinat: arrangements, partition_tuples, allequal, collectby
-if VERSION<=v"1.7.5"
+if VERSION<=v"1.7.6"
 using ..Combinat: allequal
 end
 using ..CyclotomicNumbers: E

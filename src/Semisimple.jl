@@ -697,7 +697,7 @@ end
 #------------------------- Affine Weyl groups ----------------------------
 @GapObj struct Affine{T,TW}<:CoxeterGroup{Matrix{T}}
   W::TW
-  G::CoxGroups.GenCox{T}
+  G::CoxGroups.MatCox{T}
 end
 
 """
@@ -750,7 +750,7 @@ Ã₄
 
 julia> diagram(W)
        ————5————
-      /         \
+      /         \\
 Ã₄   1———2———3———4
 ```
 """

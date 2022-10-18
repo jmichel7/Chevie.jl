@@ -14,14 +14,15 @@ pages=[
 "cycpol.md",
 "posets.md",
 "sperm.md",
+"symbols.md",
 "glinearalgebra.md",
 "matint.md",
 "ffe.md",
 "presentations.md"],
 "Reflection groups"=>[
+"permroot.md",
 "coxgroups.md",
 "weyl.md",
-"permroot.md",
 "chars.md"],
 "Hecke algebras"=>[
 "hecke.md",
@@ -33,9 +34,9 @@ pages=[
 "sscoset.md",
 "uch.md",
 "ct.md"],
+"Eigenspaces"=>[
 "eigen.md",
-"dseries.md",
-"symbols.md",
+"dseries.md"],
 "Unipotent elements"=>[
 "ucl.md",
 "urad.md"],

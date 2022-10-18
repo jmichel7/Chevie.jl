@@ -696,30 +696,30 @@ function rightgcd(M::BraidMonoid{T,TW},elts::T...;complements=false)where {T,TW}
 end
 
 mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
-#-----------------------GenBraidMonoid-----------------------------------
-# braid monoid for e.g. infinite Coxeter groups GenCox
-@GapObj struct GenBraidMonoid{T,TW}<:LocallyGarsideMonoid{T}
+#-----------------------GenArtinMonoid-----------------------------------
+# braid monoid for e.g. infinite Coxeter groups
+@GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
   one::T
   atoms::Vector{T}
   W::TW
 end
 
 # The repetitions below reflect the poor type system of Julia
-IntervalStyle(M::GenBraidMonoid)=Interval()
-BraidMonoid(W::CoxeterGroup)=GenBraidMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
+IntervalStyle(M::GenArtinMonoid)=Interval()
+BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
 
-Base.show(io::IO, M::GenBraidMonoid)=print(io,"BraidMonoid(",M.W,")")
-Base.one(M::GenBraidMonoid)=M.one
+Base.show(io::IO, M::GenArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
+Base.one(M::GenArtinMonoid)=M.one
 
-CoxGroups.isleftdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
-CoxGroups.firstleftdescent(M::GenBraidMonoid,w)=firstleftdescent(M.W,w)
+CoxGroups.isleftdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
+CoxGroups.firstleftdescent(M::GenArtinMonoid,w)=firstleftdescent(M.W,w)
 
-isrightdescent(M::GenBraidMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
-isrightascent(M::GenBraidMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
+isrightdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
+isrightascent(M::GenArtinMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
 
-PermGroups.word(M::GenBraidMonoid,w)=word(M.W,w)
+PermGroups.word(M::GenArtinMonoid,w)=word(M.W,w)
 
-function rightgcd(M::GenBraidMonoid{T,TW},elts::T...)where {T,TW}
+function rightgcd(M::GenArtinMonoid{T,TW},elts::T...)where {T,TW}
   g,c=leftgcd(M,inv.(elts)...;complements=true)
   inv(g),inv.(c)
 end

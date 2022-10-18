@@ -465,10 +465,7 @@ Gapjm.degrees(W::CoxHyperoctaedral)=2*(1:ngens(W))
 
 Base.length(W::CoxHyperoctaedral)=prod(degrees(W))
 
-function CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i::Int)
-  if i==1 return i^w<0 end
-  i^w<(i-1)^w
-end
+CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
 
 PermRoot.rank(W::CoxHyperoctaedral)=W.n
 
