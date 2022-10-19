@@ -447,7 +447,7 @@ function schur_functor(A,la)
 end
 
 """
-`fakedegree(W, φ, q)`
+`fakedegree(W, φ, q=Pol())`
 
 returns the fake degree (see [`fakedegrees`](@ref) for a definition) of the
 character  of parameter φ (see  `charinfo(W).charparams`) of the reflection
@@ -464,7 +464,7 @@ function fakedegree(W,p,q=Pol())
   prod(map((t,p)->fakedegree(t,p,q),typ,p))
 end
 
-function fakedegree(t::TypeIrred,p,q)
+function fakedegree(t::TypeIrred,p,q=Pol())
   if haskey(t,:scalar) q=prod(s->q*conj(s),t.scalar)
   elseif haskey(t,:orbit) q=q^length(t.orbit)
   end
@@ -848,25 +848,24 @@ Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 returns  information about the  conjugacy classes of  the finite reflection
 group or Spets `W`. The result has attributes:
 
-  - `.classtext`:  contains words in  the generators describing representatives
-of  each  conjugacy  class.  Each  word  is  a  list  of integers where the
-generator  `sᵢ`  is  represented  by  the  integer  `i`. For finite Coxeter
-groups, it is the same as
-`map(x->word(W,representative(x)),conjugacyclasses(W))`,   and   each  such
-representative  is of minimal length in its  conjugacy class and is a "very
-good" element in the sense of [GeckMichel1997](biblio.htm#GM97).
+  - `.classtext`:  contains words in  the generators describing 
+    representatives  of  each  conjugacy  class.  Each  word  is  a list of
+    integers  where the generator `W(i)` is represented by the integer `i`.
+    For finite Coxeter groups, it is the same as
+    `map(x->word(W,representative(x)),conjugacyclasses(W))`,  and each such
+    representative  is of  minimal length  in its  conjugacy class and is a
+    "very good" element in the sense of [GeckMichel1997](biblio.htm#GM97).
 
-  - `.classparams`:  The  elements  of  this  list  are  tuples  which have one
-component  for each irreducible component of  `W`. These components for the
-infinite  series,  contain  partitions  or  partition tuples describing the
-class  (see  the  introduction).  For  the  exceptional Coxeter groups they
-contain  Carter's admissible  diagrams, see [Carter1972](biblio.htm#Car72).
-For  exceptional complex reflection groups they contain in general the same
-information as in classtext.
+  - `.classparams`:  The  elements  of  this  list  are  tuples  which have
+    one  component for each irreducible  component of `W`. These components
+    for  the  infinite  series,  contain  partitions  or  partition  tuples
+    describing  the  class  (see  the  introduction).  For  the exceptional
+    Coxeter   groups  they   contain  Carter's   admissible  diagrams,  see
+    [Carter1972](biblio.htm#Car72).   For  exceptional  complex  reflection
+    groups they contain in general the same information as in classtext.
 
-  - `.classnames`:  Contains strings describing the conjugacy classes, made out
-of the information in `:classparams`.
-
+  - `.classnames`:  Contains strings describing the conjugacy classes, made
+    out of the information in `:classparams`.
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
 n0│name length order word
@@ -1156,15 +1155,14 @@ CharTable(W::CoxSym)=CharTable(refltype(W)[1])
 """
 `representation(W,i)`
 
-returns a list holding, for the `i`-th irreducible character of the complex
+returns,   for  the  `i`-th  irreducible   representation  of  the  complex
 reflection  group or Spets `W`, a list of matrices images of the generating
-reflections  of `W`  in a  model of  the corresponding  representation (for
-Spets, the result is a `NamedTuple` with fields `gens`, a representation of
-`Group(W)`,  and `F`, the  matrix for `W.phi`  in the representation). This
-function  is based on the classification,  and is not yet fully implemented
-for   `G₃₄`;  78  representations   are  missing  out   of  169,  that  is,
-representations  of dimension ≥140, except half of those of dimensions 315,
-420 and 840.
+reflections  of `W` in a model of the representation (for Spets, the result
+is  a `NamedTuple` with fields `gens`,  a representation of `Group(W)`, and
+`F`,  the matrix for `W.phi` in the representation). This function is based
+on  the  classification,  and  is  not  yet fully implemented for `G₃₄`; 78
+representations  are  missing  out  of  169,  that  is,  representations of
+dimension ≥140, except half of those of dimensions 315, 420 and 840.
 
 ```julia-repl
 julia> representation(complex_reflection_group(24),3)
@@ -1464,12 +1462,12 @@ end
    `InductionTable(u,g)`
 
 returns   an  object  describing  the   decomposition  of  the  irreducible
-characters  of the subgroup  `u` induced to  the group `g`.  In the default
-show method, the rows correspond to the characters of the parent group, and
-the  columns  to  those  of  the  subgroup.  The  return object has a field
-`scalar`  which is a `Matrix{Int}` containing  the induction table, and the
-other  fields contain labeling information  taken from the character tables
-of `u` and `g` when it exists.
+characters  of the subgroup  `u` induced to  the group `g`.  At the repl or
+IJulia  or Pluto,  a table  is displayed  where the  rows correspond to the
+characters  of the parent group, and the  columns to those of the subgroup.
+The  returned  object  has  a  field  `scalar`  which  is  a  `Matrix{Int}`
+containing  the  induction  table,  and  the  other fields contain labeling
+information taken from the character tables of `u` and `g` when it exists.
 
 ```julia-rep1        needs Gap4
 julia> g=Group([Perm(1,2),Perm(2,3),Perm(3,4)])
@@ -1518,7 +1516,7 @@ Induction Table
 φ₂‚₁│.  1
 ```
 
-It is also possible to TeX induction tables
+It is also possible to TeX induction tables with an `IOContext` of `TeX=true`.
 
 ##  This function also works for Spets (Reflection Cosets)
 """

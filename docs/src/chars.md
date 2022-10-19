@@ -13,7 +13,7 @@ classinfo
 fakedegree
 fakedegrees
 representation(::Union{Chars.Hastype,FiniteCoxeterGroup},::Integer)
-representations
+representations(::Union{Spets, FiniteCoxeterGroup, PermRootGroup})
 InductionTable
 jInductionTable
 JInductionTable

@@ -1723,7 +1723,7 @@ end
 minc(a,x,F=(x,y=1)->x)=minc(a,x,Val(:sc),F)
 
 """
-'conjcat(b[,F];ss=:sc)'
+`conjcat(b[,F];ss=:sc)`
 
 returns  the conjugacy category  of the summit  set of `b`  of the required
 type.  By default,  computes the  category of  sliding circuits  of `b`. If

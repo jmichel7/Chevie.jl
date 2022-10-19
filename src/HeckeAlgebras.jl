@@ -1,9 +1,9 @@
 """
 This   module  implements  Hecke  algebras  associated  to  finite  complex
 reflection  groups and arbitrary Coxeter  groups (these algebras are called
-Iwahori-Hecke  algebras in this last case),  and for the algebras of finite
-groups    implements   their   character   tables,   Schur   elements   and
-representations. For Iwahori-Hecke algebras and `G(d,1,1)` this module also
+Iwahori-Hecke  algebras  in  this  last  case),  and  also  implements  the
+character  tables, Schur elements and representations of Hecke algebras for
+finite  groups. For Iwahori-Hecke algebras  and `G(d,1,1)` this module also
 implements  the standard basis (look  at the module `KL`for Kazhdan-Lusztig
 bases).
 
@@ -24,9 +24,11 @@ If  `uₛ₀=1` and  `uₛ₁=-1` for  all `s`  then the quadratic relations bec
 
 Since  the generators `Tₛ` satisfy the  braid relations, the algebra `H` is
 in  fact a quotient of the group algebra of the braid group associated with
-`W`.  It follows that, if `w=s_1⋯ s_m`  is a reduced expression of `w ∈ W`
-then  the  product  `Tₛ_1⋯ Tₛ_m`  depends  only  on `w`. We will therefore
-denote by `T_w`. We have `T_1=1`.
+`W`.  It follows that, if  `w=s_1⋯ s_m` is a  reduced expression of `w ∈ W`
+then  the product `Tₛ_1⋯ Tₛ_m`  depends only on `w`,  thus e will therefore
+denote  it by `T_w`. We have `T_1=1`;  if the `uₛᵢ` are indeterminates, the
+`{T_w}_{w∈  W}` form a basis of the  Hecke algebra which specializes to the
+canonical basis of the group algebra for `uₛ₀↦1` and `uₛ₁↦-1`.
 
 If  one of `uₛ₀` or `uₛ₁` is invertible  in `R`, for example `uₛ₁`, then by
 changing  the generators  to `T′ₛ=-Tₛ/uₛ₁`,  and setting `qₛ=-uₛ₀/uₛ₁`, the
@@ -34,16 +36,16 @@ braid  relations do no change  (since when `mₛₜ` is  odd we have `uₛᵢ=u�
 but  the quadratic relations become  `(T′ₛ-qₛ)(T′ₛ+1)=0`. This last form is
 the  most common  form considered  in the  literature. Another common form,
 considered  in  the  context  of  Kazhdan-Lusztig  theory, is `uₛ₀=√qₛ` and
-`uₛ₁=-√qₛ⁻¹`.  The general form of parameters provided is a special case of
-general cyclotomic Hecke algebras, and can be useful in many contexts.
+`uₛ₁=-√qₛ⁻¹`.  The  form  provided,  with  two parameters per generator, be
+useful in many contexts like constructing the Jones polynomial.
 
 For  some  algebras  the  character  table,  and in general Kazhdan-Lusztig
 bases,  require a square root of `-uₛ₀uₛ₁`.  We provide a way to specify it
-with  the  field  `.rootpara`  which  can  be  given  when constructing the
-algebra. If not given a root is automatically extracted when needed (and we
-know  how to compute it) by the function `RootParameter`. Note however that
-sometimes  an  explicit  choice  of  root  is  necessary  which  cannot  be
-automatically determined.
+with  the  field  `.rootpara`  which  can  be  provided  as  a keyword when
+constructing  the algebra. If not given,  a root is automatically extracted
+when needed by the function `RootParameter`. Note however that sometimes an
+explicit  choice of one of the two possible roots is necessary which cannot
+be automatically determined.
 
 There  is a universal choice  for `R` and `uₛᵢ`:  Let `uₛᵢ:s∈ S,i∈[0,1]` be
 indeterminates   such  that  `uₛᵢ=uₜᵢ`  whenever  `mₛₜ`  is  odd,  and  let
@@ -54,23 +56,23 @@ obtained  by specialization from  `H`: There is  a unique ring homomorphism
 `f:A  → R` such that `f(uₛᵢ)=vₛᵢ`  for all `i`. Then we  can view `R` as an
 `A`-module via `f` and we can identify the other algebra to ``R⊗ _A H``.
 
-The  elements `{T_w∣w∈ W}` actually form an  `R`-basis of `H` if one of the
-`uₛᵢ`  is invertible for all `s`. The  structure constants in that basis is
-obtained  as  follows.  To  multiply  `T_v`  by  `T_w`,  choose  a  reduced
-expression for `v`, say `v=s_1 ⋯ s_k` and apply inductively the formula:
+The  elements `{T_w∣w∈ W}` actually form an `R`-basis of `H` if for all `s`
+one  of the `uₛᵢ` is invertible. The  structure constants in that basis are
+obtained  as follows. To compute `T_vT_w`,  choose a reduced expression for
+`v`, say `v=s_1 ⋯ s_k` and apply inductively the formula:
 
 ``T_sT_w=T_{sw}``               if `l(sw)=l(w)+1`
 
 ``T_sT_w=-uₛ₀uₛ₁T_{sw}+(uₛ₀+uₛ₁)T_w`` if `l(sw)=l(w)-1`.
 
-If all `s` we have `uₛ₀=q`, `uₛ₁=-1` then we call the corresponding algebra
-the one-parameter or Spetsial Iwahori-Hecke algebra associated with `W`; it
-can  be obtained with the  simplified call 'hecke(W,q)'. Certain invariants
-of  the irreducible characters of  this algebra play a  special role in the
-representation  theory of the underlying  finite Coxeter groups, namely the
-`a`- and `A`-invariants. For basic properties of Iwahori-Hecke algebras and
-their  relevance to the representation theory of finite groups of Lie type,
-see for example Curtis and Reiner 1987, Sections~67 and 68.
+If  for all `s`  we have `uₛ₀=q`,  `uₛ₁=-1` then we  call the corresponding
+algebra the one-parameter or Spetsial Iwahori-Hecke algebra associated with
+`W`. Certain
+invariants  of the  irreducible characters  of this  algebra play a special
+role  in the representation theory of the underlying finite Coxeter groups,
+namely  the `a`- and `A`-invariants.  For basic properties of Iwahori-Hecke
+algebras  and their relevance to the representation theory of finite groups
+of Lie type, see for example Curtis and Reiner 1987, Sections~67 and 68.
 
 In  the  following  example,  we  compute  the multiplication table for the
 `0`-Iwahori--Hecke algebra associated with the Coxeter group of type `A_2`.
@@ -84,24 +86,23 @@ hecke(A₂,0)
 
 julia> T=Tbasis(H);            # Create the `T` basis
 
-julia> el=words(W)
-6-element Vector{Vector{Int8}}:
- []       
- [2]      
- [1]      
- [2, 1]   
- [1, 2]   
- [1, 2, 1]
+julia> b=T.(elements(W))       # the basis
+6-element Vector{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+ T.
+ T₂
+ T₁
+ T₂₁
+ T₁₂
+ T₁₂₁
 
-julia> T.(el)*permutedims(T.(el))        # multiplication table
+julia> b*permutedims(b)       # multiplication table
 6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁ 
+ T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁
  T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
  T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
- T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁ 
- T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁ 
+ T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁
+ T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁
  T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁
-
 ```
 Thus,  we work  with algebras  with arbitrary  parameters. We will see that
 this also works on the level of characters and representations.
@@ -112,7 +113,7 @@ real reflection groups.
 
 The  definition is  as a  quotient of  the algebra  of the  braid group. We
 assume  now that `W` is  a *finite* reflection group  in the complex vector
-space  `V`. The *braid group* associated  is the fundamental group `Π^1` of
+space  `V`. The *braid group* associated  is the fundamental group `Π₁` of
 the  space  ``(V-\\bigcup_{H\\in\\mathcal H}  H)/W``, where ``\\mathcal H``
 is  the set of  reflecting hyperplanes of  `W`. This group  is generated by
 *braid reflections*, elements which by the natural map from the braid group
@@ -126,65 +127,68 @@ the  relations  ``(𝐬-u_{𝐬,0})…(𝐬-u_{𝐬,e-1})=0``,  and  in  general
 algebra  is any algebra obtained from  this generic algebra by specializing
 some of the parameters.
 
-The  Hecke algebras  can also  been defined  in terms of presentations. The
-braid   group  is   presented  by   homogeneous  relations,  called  *braid
-relations*,  described in [Broué-Malle-Rouquier 1998](biblio.htm#BMR98) and
-[Bessis-Michel 2003](biblio.htm#BM03) (some were obtained using the VKCURVE
-package  of  GAP3,  ported  also  to  this  Julia  package). Further, these
-relations  are  such  that  the  reflection  group is presented by the same
-relations,   plus  relations   describing  the   order  of  the  generating
-reflections,  called the *order relations*. This allows to define the Hecke
-algebra  by a  presentation similar  to that  of `W`,  with the  same braid
-relations   but  the  order  relations  replaced  by  a  deformed  version.
-Specifically,  for  each  orbit  of  reflection  hyperplanes of `W`, let us
-choose a *distinguished* reflection `s` of `W`, that is a reflection with a
-non-trivial  eigenvalue of minimal argument (i.e., of the form 'E(e)' where
-`e`  is the order of  `s`; then any reflection  around an hyperplane of the
-same orbit is a conjugate of a power of `s`). Let then
-`u_{s,0},…,u_{s,e-1}`  be indeterminates. The generic  Hecke algebra is the
-``ℤ[u_{𝐬,i}^{±1}]_{𝐬,i}``-algebra  `H` with  generators `T_s`  in bijection
-with  the  generators  of  `W`,  presented  by  the braid relations and the
-deformed  order relations ``(T_s-u_{𝐬,0})…(T_s-u_{𝐬,e-1})=0``  for each `s`
-as above.
+The  Hecke algebras  can be  explictely described  by a presentation of the
+braid  group. The braid group can  be presented by homogeneous relations in
+the   braid   reflections,   called   *braid   relations*,   described   in
+[Broué-Malle-Rouquier     1998](biblio.htm#BMR98)     and    [Bessis-Michel
+2003](biblio.htm#BM03)  (some were  obtained using  the VKCURVE  package of
+GAP3,  ported also  to Julia).  Further, these  presentations are such that the
+reflection  group  is  presented  by  the  same  relations,  plus relations
+describing  the  order  of  the  generating  reflections, called the *order
+relations*.  This  allows  to  define  the  Hecke algebra by a presentation
+similar  to  that  of  `W`,  with  the  same  braid relations but the order
+relations  replaced by a deformed version. 
 
-Ariki,  Koike and  Malle have  computed character  tables for some of these
+If  `S⊂ W`  is the  set of  distinguished reflections  of `W` which lift to
+generating  braid reflections `𝐬` in the braid group, we define the generic
+Hecke  algebra as follows: for each conjugacy  class of an `s` of order `e`
+we take indeterminates `uₛ₀,…,uₛₑ₋₁`, and consider the
+``ℤ[uₛᵢ^{±1}]ₛᵢ``-algebra  `H`  with  generators  `T_s`  for  each  `s∈  S`
+presented   by  the  braid  relations  and  the  deformed  order  relations
+``(T_s-u_{𝐬,0})…(T_s-u_{𝐬,e-1})=0``.
+
+Ariki,  Koike and Malle have computed the  character table of some of these
 algebras,  including  those  for  all  2-dimensional reflection groups, see
-[Broué-Malle 1993](biblio.htm#BM93) and [Malle 1996](biblio.htm#Mal96); the
-Chevie  data contains models of all representation and character tables for
-real reflection groups; it contains the same for imprimitive groups and for
+[Broué-Malle 1993](biblio.htm#BM93) and [Malle 1996](biblio.htm#Mal96); our
+data  has models of  all representation and  character tables for real
+reflection  groups; it  contains the  same for  imprimitive groups  and for
 primitive groups of dimension 2 and 3 (these last representations have been
 computed  in [Malle-Michel 2010](biblio.htm#MM10)) and contains also models
-and  character  tables  computed  by  Michel  for  `G₂₉`  and `G₃₃`; he has
-computed also partial lists of representations and partial character tables
-for the remaining groups `G₃₁,G₃₂` and `G₃₄`.
+and  character tables computed by Michel  for `G₂₉` and `G₃₃`; it constains
+also  partial lists of representations and partial character tables for the
+remaining groups `G₃₁,G₃₂` and `G₃₄`, computed by Michel.
 
 The quotient of the Hecke algebra obtained by specializing ``u_{𝐬,i}↦ ζₑⁱ``
 is  isomorphic to the group algebra of `W`. It was conjectured for 20 years
-that  over a suitable ring  (such as the algebraic  closure of the field of
-fractions  ``ℚ(u_{𝐬,i})_{𝐬,i }``) the Hecke algebra is itself isomorphic to
-the  group algebra of `W` over the  same ring. This was called the freeness
-conjecture  since the main problem is to  show that the Hecke algebra has a
-basis  of cardinality `|W|`. This has finally been proved in 2019 thanks to
-the   work  of  many  people  including  Marin,  Pfeiffer  and  Chavli  for
-exceptional  groups. Along the way  it has been proven  that there exists a
-set  `{b_w}_{w∈ W}` of  elements of the  Braid group such  that `b_1=1` and
-`b_w` maps to `w` by the natural quotient map, such that their images `T_w`
-form a basis of the Hecke algebra.
+that  over a splitting ring  the Hecke algebra is  itself isomorphic to the
+group  algebra of  `W` over  the same  ring. This  was called  the freeness
+conjecture since the main problem is to show that the Hecke algebra is free
+of dimension `|W|`. This has finally been proved in 2019 thanks to the work
+of many people including Marin, Pfeiffer and Chavli for exceptional groups.
+Along  the way it has been proven that there exists a set `{b_w}_{w∈ W}` of
+elements  of the Braid group such that `b_1=1` and `b_w` maps to `w` by the
+natural  quotient map,  such that  their images  `T_w` form  a basis of the
+Hecke algebra.
 
-It  is  conjectured  that  the  basis  `T_w`  constructed  for the freeness
-conjecture  can  be  chosen  such  that  the  linear  form  `t`  defined by
-`t(T_w)=0`  if `w≠ 1` and `t(1)=1` is a symmetrizing form for the symmetric
-algebra `H`. This is well known for all real reflection groups and has been
-proved  in [Malle-Mathas 1998](biblio.htm#MM98)  for imprimitive reflection
-groups  and  in  [Malle-Michel  2010](biblio.htm#MM10)  for  some primitive
-groups of dimension 2 and 3. Chlouveraki and Chavli have handled some other
-2-dimensional  cases. For each  irreducible character `φ`  of `H` we define
-the  *Schur element* `Sᵩ` associated  to `φ` by the  condition that for any
-element  `T` of  `H` we  have `t(T)=∑ᵩ  φ(T)/Sᵩ`. It  can be shown that the
-Schur  elements  are  Laurent  polynomials,  and  they do not depend on the
-choice  of a basis having the above  property. Malle has the computed these
-Schur  elements, assuming  the above  conjectures; they  are in  the Chevie
-data.
+It  is  conjectured  that  such  a  basis  `T_w`  can  be  chosen such that
+additionnaly  the  linear  form  `t`  defined  by  `t(T_w)=0` if `w≠ 1` and
+`t(1)=1` is a symmetrizing form for the symmetric algebra `H`. This is well
+known  for all real reflection groups  and has been proved in [Malle-Mathas
+1998](biblio.htm#MM98)   for   imprimitive   reflection   groups   and   in
+[Malle-Michel 2010](biblio.htm#MM10) for some primitive groups of dimension
+2  and  3.  Chlouveraki  and  Chavli  have handled some other 2-dimensional
+cases.  For  each  irreducible  character  `φ`  of `H` we define the *Schur
+element*  `Sᵩ` associated to `φ` by the  condition that for any element `T`
+of  `H` we have `t(T)=∑ᵩ φ(T)/Sᵩ`. It  can be shown that the Schur elements
+are  Laurent polynomials, and they  do not depend on  the choice of a basis
+having  the above  property. Malle  has the  computed these Schur elements,
+assuming the above conjecture; they are in the Chevie data.
+
+See the function `hecke` for various ways of specifying the parameters of a
+Hecke   algebra.  Look  also  at   the  docstrings  of  `central_monomials,
+char_values,    class_polynomials,    schur_elements,    isrepresentations,
+factorized_schur_elements`,  and  at  the  methods  for  Hecke  algebras of
+`CharTable, representations, reflrep`.
 
 finally, benchmarks on julia 1.8
 ```benchmark
@@ -197,7 +201,7 @@ test_w0 (generic function with 1 method)
 julia> @btime test_w0(7);
    97.210 ms (1776476 allocations: 127.52 MiB)
 ```
-in GAP3 the following function takes 0.92s
+in GAP3 the following function takes 920ms
 ```
 test_w0:=function(n)local W,T,H;
   W:=CoxeterGroup("A",n);H:=Hecke(W,X(Rationals));T:=Basis(H,"T");
@@ -219,32 +223,37 @@ export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
 end
 
 """
-`hecke( W [, parameter][,rootpara=r])`
+`hecke( W [, parameter];rootpara=r)`
 
 Hecke  algebra for the complex reflection group or Coxeter group `W`. If no
 `parameter` is given, `1` is assumed which gives the group algebra of `W`.
 
-The  following forms are accepted for  `parameter`: if `parameter` is not a
-vector,  it is  replaced by  `fill(parameter,ngens(W))`. If  it is a vector
+The  following  forms  are  accepted  for  `parameter`: if `parameter` is a
+scalar,  it is  replaced by  `fill(parameter,ngens(W))`. If  it is a vector
 with   one  entry,  it   is  replaced  with  `fill(parameter[1],ngens(W))`.
 Otherwise,  `parameter` should be  a list of  length `ngens(W)`. Entries of
 `parameter`  corresponding to  the same  `W`-orbit of  generators should be
-identical.  `parameter` can be shorter than `ngens(W)` provided there is at
-least one entry bound for each orbit of reflections.
+identical.
+
+Finally,  if `parameter` is a `Tuple`, the  tuple should have as many entry
+as  there are hyperplane  orbits in `W`  and each entry  will represent the
+parameter for the corresponding conjugacy class of braid reflections.
 
 An  entry in  `parameter` for  a reflection  of order  `e` can  be either a
-single  value or  a `Vector`  of length  'e'. If  it is  a `Vector`,  it is
+single scalar value or a `Vector` of length 'e'. If it is a `Vector`, it is
 interpreted as the list `[u₀,…,u_(e-1)]` of parameters for that reflection.
 If  it is a single  value `q`, it is  interpreted as the partly specialized
-list of parameters `[q,ζ_e,…,ζ_{e-1}]` (thus `[q,-1]` for Coxeter groups).
+list  of  parameters  `[q,ζ_e,…,ζ_{e-1}]`  (thus  as  `[q,-1]`  for Coxeter
+groups).
+
+The printing of a Hecke algebra is abbreviated using the same conventions.
 
 Computing characters or representations of Hecke algebra needs sometimes to
 extract  roots of the  parameters. These roots  are extracted automatically
 (when  possible). For Coxeter groups it  is possible to give explicit roots
 by  giving a keyword argument `rootpara`:  it should be a vector containing
-at  the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`
-(if `rootpara` is not a `Vector` it is replaced by
-`fill(rootpara,ngens(W))`).
+at the `i`-th position a square root of `-parameter[i][1]*parameter[i][2]`;
+if `rootpara` is a scalar it is replaced by `fill(rootpara,ngens(W))`.
 
 # Example
 ```julia-repl
@@ -293,6 +302,13 @@ hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])
 
 julia> H.para,rootpara(H)
 (Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
+
+julia> hecke(coxgroup(:F,4),(q,q^2)).para
+4-element Vector{Vector{Pol{Int64}}}:
+ [q, -1]
+ [q, -1]
+ [q², -1]
+ [q², -1]
 
 julia> hecke(complex_reflection_group(3,1,2),q).para
 2-element Vector{Vector{Pol{Cyc{Int64}}}}:
@@ -397,9 +413,9 @@ end
 """
 `CharTable(H::HeckeAlgebra or HeckeCoset)`
 
-returns the `CharTable` of `H`. In 3 exceptional cases (see
-`representation`)  there are  `Unknown()` entries  corresponding to missing
-representations .
+returns  the `CharTable` of  `H`. For the  primitive groups `G₃₁, G₃₂, G₃₄`
+there are `Unknown()` entries corresponding to missing representations (see
+[`representation`](@ref)).
 
 ```julia-repl
 julia> H=hecke(crg(4),Pol())
@@ -442,12 +458,11 @@ end
 """
 `representation(H::HeckeAlgebra or HeckeCoset,i)`
 
-returns  a list holding, for the  `i`-th irreducible character of the Hecke
-algebra  or Hecke coset `H`, a list of matrices images of the generators of
-`H`  in a model of the  corresponding representation (for Hecke cosets, the
-result   is  a  `NamedTuple`  with   fields  `gens`,  a  representation  of
-`hecke(H)`,  and  `F`,  the  matrix  for  the  automorphism  of  `H` in the
-representation). 
+returns,  for the `i`-th irreducible representation of the Hecke algebra or
+Hecke  coset `H`, a list  of matrices images of  the generators of `H` in a
+model of the representation (for Hecke cosets, the result is a `NamedTuple`
+with fields `gens`, a representation of `hecke(H)`, and `F`, the matrix for
+the automorphism of `H` in the representation).
 
 This  function  is  based  on  the  classification,  and  is  not yet fully
 implemented for the Hecke algebras of the groups `G₃₁`, `G₃₂` and `G₃₄`: we
@@ -638,12 +653,12 @@ end
 
 Let  `H`  be  an  Hecke  algebra  for  the finite reflection group `W`. The
 function  returns the scalars by which the image  in `H` of `π` acts on the
-irreducible representations of the Iwahori-Hecke algebra.
+irreducible representations of `H`.
 
 When  `W` is irreducible,  `π` is the  generator of the  center of the pure
 braid  group.  In  general,  it  is  the  product of such elements for each
-irreducible  component. When `W` is an irreducible Coxeter group, the image
-of π is `T_{w_0}^2`.
+irreducible  component. When  `W` is  a Coxeter  group, the  image of  π in
+`H` is ``T_{w_0}^2``.
 
 ```julia-repl
 julia> H=hecke(coxgroup(:H,3),Pol(:q))
@@ -736,6 +751,28 @@ function Base.zero(H::HeckeAlgebra)
   HeckeTElt(zero(MM{typeof(one(H.W)),coefftype(H)}),H)
 end
 
+"""
+`Tbasis(H::HeckeAlgebra)`
+The  `T` basis of  `H`. It is  defined currently for Iwahori-Hecke algebras
+and for Hecke algebras of cyclic complex reflection groups.
+
+```julia-repl
+julia> H=hecke(coxgroup(:A,2),Pol(:q))
+hecke(A₂,q)
+
+julia> T=Tbasis(H);T(longest(H.W))^2
+q³T.+(q³-2q²+q)T₂₁+(q³-q²)T₂+(q³-q²)T₁+(q³-2q²+2q-1)T₁₂₁+(q³-2q²+q)T₁₂
+
+julia> W=crg(3,1,1)
+G₃‚₁‚₁
+
+julia> H=hecke(crg(3,1,1),Pol(:q))
+hecke(G₃‚₁‚₁,q)
+
+julia> T=Tbasis(H);T(W(1))^3
+(q-1)T.+(q-1)T₁+qT₁₁
+```
+"""
 Tbasis(H::HeckeAlgebra)=(x...)->x==() ? one(H) : Tbasis(H,x...)
 function Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})
   ww=H.W(w...)
@@ -855,13 +892,13 @@ Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
 `class_polynomials(h::HeckeElt)`
 
 returns  the  class  polynomials  of  the  element `h` of the Iwahori-Hecke
-algebra  or Hecke coset  `H=h.H` with respect  to representatives `reps` of
-minimal  length in the conjugacy classes of the Coxeter group `W=H.W`. Such
-minimal  length representatives are given by `word.(conjugacy_classes(W))`.
-The  vector `p` of  these polynomials has  the property that  if `X` is the
-matrix of the values of the irreducible characters of `H` on `T_w` (for `w`
-in `reps`), then the product `X*p` is the list of values of the irreducible
-characters on `h`.
+algebra  or Hecke coset `H=h.H` with respect to the `T` basis for a set `R`
+of  representatives  of  minimal  length  in  the  conjugacy classes of the
+Coxeter  group `W=H.W`.  Such minimal  length representatives  are given by
+`representative.(conjugacy_classes(W))`.    The   vector   `p`   of   these
+polynomials has the property that if `X` is the matrix of the values of the
+irreducible characters of `H` on `T_w` (for `w∈ R`), then the product `X*p`
+is the list of values of the irreducible characters on `h`.
 
 ```julia-repl
 julia> W=CoxSym(4)
@@ -881,8 +918,7 @@ julia> p=class_polynomials(h)
  q³-2q²+q 
  q³-q²+q-1
 ```
-The class polynomials were introduced in
-[Geck-Pfeiffer1993](biblio.htm#GP93).
+The class polynomials were introduced in [Geck-Pfeiffer1993](biblio.htm#GP93).
 """
 function class_polynomials(h::HeckeElt)
   H=h.H
@@ -1078,7 +1114,7 @@ hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 julia> p=factorized_schur_element(H,[[2,5]])
 -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
 
-julia> q=p(;x=E(3))
+julia> q=p(;x=E(3)) # partial evaluation
 ζ₃²√-3y⁻¹Φ₁Φ₂Φ′₆²(y)
 
 julia> q(;y=2//1)

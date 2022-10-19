@@ -6,7 +6,7 @@ Pages=["kl.md"]
 ```@docs
 KL
 KLPol
-Tbasis
+Tbasis(::KL.HeckeCpElt)
 Cbasis
 Cpbasis
 character
