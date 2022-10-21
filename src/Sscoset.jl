@@ -1,5 +1,5 @@
 """
-Section{Quasi-Semisimple elements of non-connected reductive groups}
+#Quasi-Semisimple elements of non-connected reductive groups
 
 We also use Coxeter cosets to represented non-connected reductive groups of
 the  form `𝐆 ⋊ σ` where  `𝐆 ` is a connected  reductive group and `σ` is an

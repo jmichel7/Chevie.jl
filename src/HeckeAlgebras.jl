@@ -1253,14 +1253,17 @@ function Base.lcm(l::FactSchur...)
   FactSchur(1,map(x->(pol=lcm(map(y->y.pol,x)...),monomial=x[1].monomial),v))
 end
 
+# para=vcat along Hplanes(parameters of Hecke algebra)
+# r=rec(coeff,vcyc=vector([vector{Int}(length(para))],n0 cyclotomic pol),
+#       possibly: root, rootCoeff, rootUnity
+# data=rec(order: perm same length as para,:name,
+#          possibly: rootPower, :rootUnityPower)
+# u is always nothing
 function VFactorSchurElement(para,r,data=nothing,u=nothing)
-  n=length(para)
-  if data===nothing para=copy(para)
-  else para=para[data[:order]]
-  end
+  if data!==nothing para=para[data[:order]] end
   function monomial(v)
-    res=prod(i->(para[i]//1)^v[i],1:n)
-    if length(v)==n+1 res*=(rt//1)^v[end] end
+    res=prod(map((x,p)->(x//1)^p,para,v))
+    if length(v)>length(para) res*=rt^v[end] end
     res
   end
   factor=haskey(r,:coeff) ? r[:coeff] : 1

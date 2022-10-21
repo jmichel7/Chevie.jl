@@ -57,9 +57,9 @@ connected  algebraic  group,  where  `simpleroots(W)`  is the transposed of
 
 There  is an extreme form  of root data which  requires another function to
 specify:  when `W` is the trivial `coxgroup()`  and there are thus no roots
-(in  this case `𝐆 ` is a torus), the root datum cannot be determined by the
-roots,  but is entirely determined by the rank `r`. The function `torus(r)`
-constructs such a root datum.
+(in  this case  `𝐆 `  is a  torus), the  root datum  has no  roots, thus is
+entirely  determined by  the rank  `r`. The  function `torus(r)` constructs
+such a root datum.
 
 Finally,  the function `rootdatum` also understands some familiar names for
 the algebraic groups and gives the results that could be obtained by giving
@@ -69,21 +69,32 @@ the appropriate matrices `simpleroots(W)` and `simplecoroots(W)`:
 julia> rootdatum(:gl,3)   # same as the previous example
 gl₃
 ```
+The known types of root data are
+ `:gl, :pgl, :sl, :slmod, :tgl :sp, :csp, :psp, :so, :pso, :cso, :halfspin, 
+  :gpin, :spin, :E6, :E6sc, :CE6, :E7, :E7sc, :CE7, :E8, :F4, :G2`.
 
 ## Semisimple elements
 
-It  is also possible  to compute with  semi-simple elements. The first type
-are  finite order elements of `𝐓`, which over an algebraically closed field
-`K`  are in bijection with elements of `Y⊗ ℚ /ℤ` whose denominator is prime
-to  the  characteristic  of  `K`.  These  are  represented  as  a vector of
-`Rational`s `r` such that `0≤r<1`, or, more to the point, a `Vector{Root1}`.
-The  function  `SS`  constructs  a  semisimple  element  from  a  vector of
-`Rational`,  while  the  more  general  function  can  construct semisimple
-elements from arbitrary ring elements (like elements of `K`, `Mvp`s,…
+It  is possible to compute  with semi-simple elements; there  are 2 type of
+them.  The  first  type  are  finite  order  elements of `𝐓`, which over an
+algebraically  closed field `K` are in bijection with elements of `Y⊗ ℚ /ℤ`
+whose  denominator  is  prime  to  the  characteristic  of  `K`.  These are
+represented  as a vector of `Rational`s `r` such that `0≤r<1`. The function
+`SS`  constructs such  a semisimple  element from  a vector of `Rational`s.
+More  generally `𝐓` is isomorphic to `(Kˣ)^n` where `n` is the dimension of
+`𝐓`, so a vector of elements of `Kˣ` is a more general representation which
+is   given  by  the  function   `SemisimplElement`;  in  this  setting  the
+representation given by `SS` is naturally interpreted as a `Vector{Root1}`.
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)
 sl₄
+
+julia> SS(G,[1//3,1//4,3//4,2//3])
+SemisimpleElement{Root1}: <ζ₃,ζ₄,ζ₄³,ζ₃²>
+
+julia> SemisimpleElement(G,[E(3),E(4),E(4,3),E(3,2)])
+SemisimpleElement{Root1}: <ζ₃,ζ₄,ζ₄³,ζ₃²>
 
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
@@ -100,15 +111,15 @@ julia> e=sort(elements(T))
  <ζ₃,ζ₃²,ζ₃>
  <ζ₃²,ζ₃,ζ₃²>
 ```
-First,  the  group  `𝐆  =SL₄`  is  constructed,  then the Levi subgroup `L`
-consisting   of  block-diagonal  matrices  of  shape  `2×2`.  The  function
-`algebraic_center`  returns a named tuple with : the neutral component `Z⁰`
-of  the center `Z` of `L`, represented  by a basis of `Y(Z⁰)`, a complement
-subtorus `S` of `𝐓` to `Z⁰` represented similarly by a basis of `Y(S)`, and
-semi-simple  elements representing the classes of  `Z` modulo `Z⁰` , chosen
-in `S`. The classes `Z/Z⁰` also biject to the fundamental group as given by
-the  field  `.descAZ`,  see  [`algebraic_center`](@ref) for an explanation.
-Finally the semi-simple elements of order 3 in `Z⁰` are computed.
+In  the above, the Levi subgroup  `L` of `SL₄` consisting of block-diagonal
+matrices  of shape  `2×2` is  constructed. The  function `algebraic_center`
+returns  a named tuple with : the  neutral component `Z⁰` of the center `Z`
+of `L`, represented by a basis of `Y(Z⁰)`, a complement subtorus `S` of `𝐓`
+to  `Z⁰`  represented  similarly  by  a  basis  of  `Y(S)`, and semi-simple
+elements  representing the classes of `Z` modulo  `Z⁰` , chosen in `S`. The
+classes  `Z/Z⁰` also biject to the fundamental  group as given by the field
+`.descAZ`,  see [`algebraic_center`](@ref) for  an explanation. Finally the
+semi-simple elements of order 3 in `Z⁰` are computed.
 
 ```julia-repl
 julia> e[3]^G(2)
@@ -125,8 +136,8 @@ julia> orbit(G,e[3])
 ```
 
 Here  is the same  computation as above  performed with semisimple elements
-whose coefficients are in the finite field `FF(4)`:
-
+whose  coefficients are in the  finite field `FF(4)`, representing elements
+of `sl₄(𝔽₄)`.
 ```julia-repl
 julia> G=rootdatum(:sl,4)
 sl₄

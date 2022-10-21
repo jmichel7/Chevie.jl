@@ -1,4 +1,4 @@
-# Reflection cosets
+# Reflection cosets and Spets
 ```@index
 Pages=["cosets.md"]
 ```

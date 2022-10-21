@@ -50,14 +50,14 @@ This  defines an order  on the roots,  and there is  a unique element `ϕ∈ W
 F₀`,  the  *reduced  element*  of  the  coset,  which  preserves the set of
 positive  roots.  It  thus  defines  a  *diagram  automorphism*, that is an
 automorphism  of the Coxeter system `(W,S)`.  This element is stored in the
-component  '.phi' of the coset record. It may be defined without mentioning
+component  `.phi` of the coset record. It may be defined without mentioning
 the  roots,  as  follows:  `(W,F₀(S))`  is  another  Coxeter  system,  thus
 conjugate to `S` by a unique element of `W`, thus there is a unique element
 `ϕ∈  WF₀` which stabilizes `S` (a proof  follows from [Theoreme 1, chap. V,
 §3  Bourbaki1968](biblio.htm#Bou68)). We  consider thus  cosets of the form
 `Wϕ` where `ϕ` stabilizes `S`. The coset `W ϕ` is completely defined by the
-permutation  '.phi'  when  `𝐆`  is  semi-simple  ---  equivalently when `Φ`
-generates  `V`; in this  case we just  need to specify  'phi' to define the
+permutation  `.phi`  when  `𝐆`  is  semi-simple  ---  equivalently when `Φ`
+generates  `V`; in this  case we just  need to specify  `phi` to define the
 coset.
 
 There is a slight generalisation of the above setup, covering in particular
@@ -84,7 +84,7 @@ We  now extend the above notions  to general complex reflection groups. Let
 be  an element  of `GL(V)`  which normalizes  `W`. Then  the coset  `Wϕ` is
 called a reflection coset.
 
-A reference for these cosets is [Broue-Malle-Michel 1999](biblio.htm#BMM99)
+A reference for these cosets is [Broue-Malle-Michel 1999](biblio.htm#BMM99).
 When `W` is a so-called *Spetsial* group, they are the basic object for the
 construction  of  a  *Spetses*,  which  is  an object attached to a complex
 reflection  group from which one can derive combinatorially some attributes
@@ -138,8 +138,8 @@ direction.  These  maps  are  adjoint  with  respect  to the scalar product
 defined above (see [Broue-Malle-Michel 1999](biblio.htm#BMM99)).
 
 In  this package the most general construction  of a reflection coset is by
-starting  from a reflection datum, and giving in addition the matrix 'F' of
-the  map `ϕ:V→ V`  (see the command  'spets'). However, at present, general
+starting  from a reflection datum, and giving in addition the matrix `F` of
+the  map `ϕ:V→ V`  (see the command  `spets`). However, at present, general
 cosets are only implemented for groups represented as permutation groups on
 a  set of roots, and  it is required that  the automorphism given preserves
 this  set up to  a scalar (it  is allowed that  these scalars depend on the
@@ -151,14 +151,14 @@ any  case we have  a permutation representation  of `⟨W,ϕ⟩` and we consider
 the coset to be a set of permutations.
 
 Reflection  cosets  are  implemented  in  by  a  `struct` which points to a
-reflection  group  record  and  has  additional  fields holding 'F' and the
-corresponding  permutation 'phi'. In the general case, on each component of
-`W`  which is  a descent  of scalars,  'F' will  permute the components and
+reflection  group  record  and  has  additional  fields holding `F` and the
+corresponding  permutation `phi`. In the general case, on each component of
+`W`  which is  a descent  of scalars,  `F` will  permute the components and
 differ  by a scalar on each  component from an automorphism which preserves
-the  roots. In this case, we have  a permutation 'phi' and a 'scalar' which
+the  roots. In this case, we have  a permutation `phi` and a `scalar` which
 is stored for that component.
 
-The  most common situation where cosets  with non-trivial 'phi' arise is as
+The  most common situation where cosets  with non-trivial `phi` arise is as
 sub-cosets  of reflection groups. Here is an "exotic" example, see the next
 chapter for more classical examples involving Coxeter groups.
 
@@ -192,7 +192,7 @@ of  the coset, which is  the scalar by which  `ϕ` acts on the corresponding
 fundamental reflection invariant. The factors characterize the coset.
 
 A  spets by default is  printed in an abbreviated  form which describes its
-type,  as above ('G₅' twisted by 2, with a Cartan matrix which differs from
+type,  as above (`G₅` twisted by 2, with a Cartan matrix which differs from
 the  standard one by  a factor of  `√6`). The function  `repr` gives a form
 which could be input back in Julia. With the same data as above we have:
 
@@ -253,29 +253,29 @@ length the additional cases `²B₂`, `²G₂`, `²F₄` and `²I₂(k)` arise.
     character values on `-w₀`.
 
 The  most general  construction of  a Coxeter  coset is  by starting from a
-Coxeter   datum   specified   by   the   matrices   of   'simpleRoots'  and
-'simplecoroots',  and  giving  in  addition  the  matrix 'F0Mat' of the map
-`F₀:V→ V` (see the commands  'CoxeterCoset' and 'CoxeterSubCoset'). As for
+Coxeter   datum   specified   by   the   matrices   of   `simpleRoots`  and
+`simplecoroots`,  and  giving  in  addition  the  matrix `F0Mat` of the map
+`F₀:V→ V` (see the commands  `CoxeterCoset` and `CoxeterSubCoset`). As for
 Coxeter  groups,  the  elements  of  `Wϕ`  are  uniquely  determined by the
 permutation  they  induce  on  the  set  of  roots  `R`.  We consider these
-permutations as 'elements' of the Coxeter coset.
+permutations as `elements` of the Coxeter coset.
 
 Coxeter  cosets are implemented by a struct which points to a Coxeter datum
-record  and  has  additional  fields  holding 'F0Mat' and the corresponding
-element  'phi'. Functions on the coset (for example, 'classinfo') are about
+record  and  has  additional  fields  holding `F0Mat` and the corresponding
+element  `phi`. Functions on the coset (for example, `classinfo`) are about
 properties  of  the  group  coset  `W  ϕ`  ;  however, most definitions for
 elements of untwisted Coxeter groups apply without change to elements in `W
 ϕ`:  e.g., if we define the length of  an element `wϕ∈ Wϕ` as the number of
 positive  roots it sends to negative ones, it  is the same as the length of
 `w`,  i.e., `ϕ` is of length `0`, since `ϕ` has been chosen to preserve the
-set of positive roots. Similarly, the 'Coxeter word' describing `wϕ` is the
+set of positive roots. Similarly, the Coxeter `word` describing `wϕ` is the
 same as the one for `w`, etc…
 
 We associate to a Coxeter coset `Wϕ` a *twisted Dynkin diagram*, consisting
 of  the Dynkin diagram of `W` and  the graph automorphism induced by `ϕ` on
 this  diagram (this specifies the  group `W⋊ ⟨F⟩`, mentioned above, up
-to  isomorphism). See the  functions 'ReflectionType', 'ReflectionName' and
-'diagram' for Coxeter cosets.
+to  isomorphism). See the  functions `ReflectionType`, `ReflectionName` and
+`diagram` for Coxeter cosets.
 
 Below  is an example showing first how to *not* define, then how to define,
 the Weyl coset for a Suzuki group:
@@ -325,7 +325,7 @@ julia> subspets(WF,Int[],W(1))
 ```
 
 A subgroup `H` which is a parabolic subgroup corresponds to a rational form
-of  a Levi  subgroup of  `𝐆`. The  command 'twistings'  gives all rational
+of  a Levi  subgroup of  `𝐆`. The  command `twistings`  gives all rational
 forms of such a Levi.
 
 ```julia-repl
@@ -411,12 +411,13 @@ CoxGroups.word(WF::CoxeterCoset,w)=word(WF.W,w/WF.phi)
 """
 `twistings(W,I)`
 
-`W`  should be a  Coxeter group.
+`W`  should be a  complex reflection group.
 
-The  function returns the list, up  to `W`-conjugacy, of Coxeter sub-cosets
-of  `W` whose  Coxeter group  is `reflection_subgroup(W,I)`  --- In term of
-algebraic groups, it corresponds to representatives of the possible twisted
-forms of the corresponding reductive subgroup of maximal rank `L`.
+The  function returns  the list,  up to  `W`-conjugacy, of  subspets of `W`
+whose  group is `reflection_subgroup(W,I)` --- In  the case of Weyl groups,
+it  corresponds to  representatives of  the possible  twisted forms  of the
+reductive subgroup of maximal rank `L` defined by
+`reflection_subgroup(W,I)`.
 
 `W`  could also be a coset `Wϕ`; then the subgroup `L` must be conjugate to
 `ϕ(L)`  for  a  rational  form  to  exist.  If `ϕ` normalizes `L`, then the
@@ -490,7 +491,7 @@ end
 
 `W`  should be a Coxeter group which is not a proper reflection subgroup of
 another reflection group (so that `inclusion(W)==eachindex(roots(W))`). The
-function returns all 'spets' representing twisted forms of algebraic groups
+function returns all `spets` representing twisted forms of algebraic groups
 of type `W`.
 
 ```julia-repl
@@ -559,22 +560,27 @@ spets(phi,F::Matrix,W::FiniteCoxeterGroup,P::Dict{Symbol,Any})=FCC(phi,F,W,P)
 Base.parent(W::Spets)=get!(()->W,W,:parent)
 
 """
-`spets(W::FiniteCoxeterGroup,F::Matrix=I(rank(W)))`
+`spets(W::ComplexReflectionGroup, F::Matrix=I(rank(W)))`
 
-This  function returns a  Coxeter coset. `F`  must be an invertible matrix,
-representing  an  automorphism  of  the  vector  space  `V` of dimension of
-dimension  `rank(W)` which  induces an  automorphism of  the root system of
-`parent(W)`.
+This  function returns a or  a `CoxeterCoset` or a  `Spets`. `F` must be an
+invertible  matrix, representing an automorphism of the vector space `V` of
+dimension  of dimension `rank(W)` which for  a finite Coxeter group induces
+an  automorphism of the root  system of `parent(W)`, or  for a more general
+complex reflection group just stabilizes `W`.
 
 The returned struct has in particular the following fields:
 
-`.W`: the Coxeter group `W`
+`.W`: the group `W`
 
 `.F`: the matrix acting on `V` which represents the unique element `phi` in
-`WF` which preserves the positive roots.
+`WF` which preserves the positive roots (for finite Coxeter groups) or some
+"canonical" representative of the coset for more general complex reflection
+groups.
 
-'.phi': the permutation of the roots of `W` induced by `.F`
-(also the element of smallest length in the NormalCoset  `W .phi`).
+`.phi`:  a `Perm`, the permutation of the roots of `W` induced by `.F` (for
+general  complex reflection groups this may be a permutation up to scalars)
+(also  for Coxeter groups the element of smallest length in the NormalCoset
+`W .phi`).
 
 In the first example we create a Coxeter coset corresponding to the general
 unitary group `GU_3(q)` over the finite field `FF(q)`.
@@ -592,7 +598,7 @@ F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎
 julia> spets(D4,[1 0 0 0;0 1 2 0;0 0 0 1;0 0 -1 -1])
 F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
 ```
-`spets(W::FiniteCoxeterGroup,p::Perm)`
+`spets(W::ComplexReflectionGroup,p::Perm)`
 
 In  this version `F` is  defined by the permutation  of the simple roots it
 does.
@@ -619,10 +625,10 @@ PermRoot.radical(WF::CoxeterCoset)=torus(central_action(Group(WF),WF.F))
 """
 `torus(m::AbstractMatrix)`
 
-`m`  should be an integral matrix of finite order. The function returns the
-coset `T` of the trivial Coxeter group such that `T.F==m`. This corresponds
-to  an algebraic torus `𝐓 ` of rank `size(m,1)`, with an isogeny which acts
-by `m` on `X(𝐓)`.
+`m`  should be a matrix of finite order. The function returns the coset `T`
+of  the  trivial  group  such  that  `T.F==m`.  When  `m`  is  integral his
+corresponds to an algebraic torus `𝐓 ` of rank `size(m,1)`, with an isogeny
+which acts by `m` on `X(𝐓)`.
 
 ```julia-repl
 julia> torus([0 -1;1 -1])
@@ -816,7 +822,7 @@ end
 
 Returns   the   reflection   subcoset   of   the   coset  `WF`  with  group
 `reflection_subgroup(Group(WF),I)`  and torsion `w*WF.phi`.  `w` must be an
-element  of `Group(WF)` such that  'w*WF.phi' normalizes the subroot system
+element  of `Group(WF)` such that  `w*WF.phi` normalizes the subroot system
 generated by `I`.
 
 ```julia-repl

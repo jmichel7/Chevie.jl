@@ -1,45 +1,30 @@
-#########################################################################
-##
-#A  brbase.jl                                Meinolf Geck and Sungsoon Kim
-##
-#Y  Copyright (C) 1996     Equipe des groupes finis, Universite Paris VII
-##
-##  This  file contains  functions for  computing bi-grassmannians  and the
-##  base  of finite Coxeter groups.  
-##
-##  The  base is defined to be the set  of all elements w in W which cannot
-##  be  obtained as the supremum  of a subset not  containing w. Denote the
-##  base by B. Then every element w in W can be coded by the boolean vector
-##  (e_b)_{b  in B} where e_b=1  if b <= w  and e_b=0 otherwise. The Bruhat
-##  order  on W is given by the  operation of `boolean OR' on such vectors.
-##  The  bases for all finite Coxeter  groups are determined in the article
-##  'Bases for the Bruhat--Chevalley order on all finite Coxeter groups'.
-## 
-##  Example:  If W=coxgroup(:type,rank) is a Coxeter group then the command
-##  `BaseBruhat(W)'  adds a component `incidence' to `W' which contains for
-##  each element in `W.elts' the associated boolean vector defined above.
-##  If one is only interested in the set of bi-grassmannians and the set of
-##  base  elements  (especially  for  large  groups),  one  should  use the
-##  commands:
-##              gap> W := CoxeterGroup( \"F\", 4 );       # for example
-##              gap> bg := BiGrassmannians( W );
-##              gap> base := FindBaseBruhat( W, bg );
-##
-#H  written MG, SK, Oct 1996
-##
-#F BiGrassmannians( <W> ) . . . . . . . . . . . .  Bi-Grassmannians of W 
-#F BaseBruhat( <W> ) . . . . . . . .  the base and the coding of elements
-##
-###########################################################################
+##########################################################################
+# brbase.jl                                Meinolf Geck and Sungsoon Kim
+#
+# Copyright (C) 1996     Equipe des groupes finis, Universite Paris VII
+#
+#
+# Example:  If W=coxgroup(:type,rank) is a Coxeter group then the command
+# `BaseBruhat(W)'  adds a component `incidence' to `W' which contains for
+# each element in `W.elts' the associated boolean vector defined above.
+# If one is only interested in the set of bi-grassmannians and the set of
+# base  elements  (especially  for  large  groups),  one  should  use the
+# commands:
+#             gap> W := CoxeterGroup( \"F\", 4 );       # for example
+#             gap> bg := bi_grassmannians( W );
+#             gap> base := FindBaseBruhat( W, bg );
+#
+# written MG, SK, Oct 1996
+############################################################################
 """
-`BiGrassmannians(W)`
+`bi_grassmannians(W)`
 
-'BiGrassmannians' computes the set of bi-grassmannians in the Coxeter group
-`W`,  that is those elements whose right  and left descent sets are both of
-length  1. The result is  a matrix `bi` such  that `bi[i,j]` contains those
-elements with leftdescents [i] and rightdescents [j].
+returns the set of bi-grassmannians in the Coxeter group `W`, that is those
+elements whose right and left descent sets are both of length 1. The result
+is  a  matrix  `bi`  such  that  `bi[i,j]`  contains  those  elements  with
+leftdescents [i] and rightdescents [j].
 """
-function BiGrassmannians(W)
+function bi_grassmannians(W)
   toM(map(1:ngens(W)) do k
     bi=[empty(gens(W)) for i in 1:ngens(W)]
     ea=[one(W)]
@@ -70,13 +55,20 @@ end
 """
 `BaseBruhat(W)`
 
-`FindBaseBruhat` computes the base of the Bruhat order on the Coxeter group
-`W`, and then adds a component `incidence` to `W` which contains the coding
-of the elements of `W` by boolean vectors defined by the base.
+The base of a poset relation is defined to be the set of all elements w ∈ W
+which  cannot be  obtained as  the supremum  of a  subset not containing w.
+Denote the base by B. Then every element w in W can be coded by the boolean
+vector (e_b)_{b in B} recording the relation b<=w. The Bruhat order on W is
+given   by  the   subset  relation   on  such   vectors.  A   `Dict`  named
+`W.bruhatincidence`  records such vectors. The key  for `w∈ W` is the image
+of `inclusiongens(W)` by `w` and the value is the vector `e_b`.
+
+The  bases for all finite Coxeter  groups are determined in the article
+'Bases for the Bruhat--Chevalley order on all finite Coxeter groups'.
 """
 function BaseBruhat(W)
-  get!(W,:incidence)do
-    bg=BiGrassmannians(W)
+  get!(W,:bruhatincidence)do
+    bg=bi_grassmannians(W)
     mins=[] 
     InfoChevie("#I ")
     for r in axes(bg,1)
@@ -109,16 +101,32 @@ function BaseBruhat(W)
     InfoChevie("#I Calculating incidence matrix...")
     incidence=Dict{Vector{Int},BitVector}()
     for w in elements(W)
-      incidence[(1:ngens(W)).^w]=BitVector(map(v->bruhatless(W,v,w),base))
+      incidence[inclusiongens(W).^w]=BitVector(bruhatless.(Ref(W),base,w))
     end
     InfoChevie("\n")
     incidence
   end
 end
 
-function bruhat2(W,y,w)
-  if length(W,y)>=length(W,w) return false end
-  iw=W.incidence[(1:ngens(W)).^w]
-  iy=W.incidence[(1:ngens(W)).^y]
-  iw==iw.|iy
+function CoxGroups.bruhatless(W,x,y)
+  if x==one(W) return true end
+  d=length(W,y)-length(W,x)
+  if haskey(W,:bruhatincidence)
+    println("hello")
+    if d<0 return false end
+    iy=W.bruhatincidence[inclusiongens(W).^y]
+    ix=W.bruhatincidence[inclusiongens(W).^x]
+    return iy==iy.|ix
+  end
+  while d>0
+    i=firstleftdescent(W,y)
+    s=W(i)
+    if isleftdescent(W,x,i)
+      if x==s return true end
+      x=s*x
+    else d-=1
+    end
+    y=s*y
+  end
+  return x==y
 end

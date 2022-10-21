@@ -6,6 +6,8 @@ Pages=["garside.md"]
 Garside
 LocallyGarsideMonoid
 GarsideMonoid
+isleftdescent(::BraidMonoid,::Any,::Int)
+leftdescents(::Garside.LocallyGarsideElt)
 left_divisors
 leftgcd
 rightgcd
@@ -13,8 +15,6 @@ leftlcm
 rightlcm
 α(::Garside.LocallyGarsideElt)
 α(::Garside.LocallyGarsideElt,::AbstractVector)
-isleftdescent(::BraidMonoid,::Any,::Int)
-leftdescents(::Garside.LocallyGarsideElt)
 Brieskorn_normal_form
 BraidMonoid
 DualBraidMonoid

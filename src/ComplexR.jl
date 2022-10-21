@@ -136,7 +136,7 @@ torusfactors(WF::Spets)=eigmat(central_action(Group(WF),WF.F))
 `degrees(WF::Spets)`
 
 Let  `W` be  the group  of the  reflection coset  `WF`, and  let `V` be the
-vector  space  of  dimension  'rank(W)'  on  which `W` acts as a reflection
+vector  space  of  dimension  `rank(W)`  on  which `W` acts as a reflection
 group.  Let  `f₁,…,fₙ`  be  the  basic  invariants  of `W` on the symmetric
 algebra  `SV` of `V`;  they can be  chosen so they  are eigenvectors of the
 matrix  `WF.F`. The corresponding  eigenvalues are called  the *factors* of
