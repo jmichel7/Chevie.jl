@@ -233,9 +233,13 @@ Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
 function Base.lcm(a::CycPol,b::CycPol) # forgets .coeff
-  if (b.coeff isa Pol && !iszero(degree(b))) error(b,".coeff should be scalar") end
+  if (b.coeff isa Pol && !iszero(degree(b))) 
+    error(b,".coeff should be scalar")
+  end
   CycPol(a.coeff,max(a.valuation,b.valuation),ModuleElts.merge2(max,a.v,b.v))
 end
+
+Base.lcm(v::CycPol...)=reduce(lcm,collect(v);init=one(CycPol))
 
 Base.lcm(v::AbstractArray{<:CycPol})=reduce(lcm,v;init=one(CycPol))
 

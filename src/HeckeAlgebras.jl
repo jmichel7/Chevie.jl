@@ -804,9 +804,9 @@ function innermul(W::CoxeterGroup,a,b)
       end
       h=MM(up)
       if isempty(down) continue end
-      pp=a.H.para[i]
-      ss,p=(sum(pp),-prod(pp))
+      ss=sum(a.H.para[i])
       if !iszero(ss) h+=MM(down;check=false)*ss end
+      p=-prod(a.H.para[i])
       if !iszero(p) h+=MM(s*e=>c*p for (e,c) in down) end
     end
     HeckeTElt(h,a.H)
@@ -1154,7 +1154,7 @@ function Base.show(io::IO,x::FactSchur)
   print(io,c,v)
 end
 
-expand(x::FactSchur)=x.factor*prod(v->v.pol(v.monomial),x.vcyc)
+expand(x::FactSchur)=x.factor*prod(v->v.pol(v.monomial),x.vcyc;init=1)
 
 Base.:*(a::FactSchur, b::Number)=FactSchur(a.factor*b,copy(a.vcyc))
 Base.:*(b::Number,a::FactSchur)=FactSchur(a.factor*b,copy(a.vcyc))

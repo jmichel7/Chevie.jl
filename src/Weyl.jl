@@ -1035,6 +1035,8 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
 CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>nref(parent(W))
+# next is 25% slower
+#CoxGroups.isleftdescent(W::FCSG,w,i::Int)=action(W,i,w)>nref(W)
 
 function rootlengths(W::FCSG)
   get!(W,:rootlengths)do

@@ -916,8 +916,8 @@ true
 ```
 """
 function isleftdescent(W::CoxSym,w,i::Integer)
- i,j=W.inversions[i]
- i^w>j^w
+ j,k=W.inversions[i]
+ j^w>k^w
 end
 
 degrees(W::CoxSym)=2:ngens(W)+1
