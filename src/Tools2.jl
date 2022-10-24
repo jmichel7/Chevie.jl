@@ -155,7 +155,7 @@ true
 ```
 """
 function traces_words_mats(mats,words)
-  mats=improve_type(mats)
+# mats=improve_type(mats)
   dens=map(x->1,mats)
   if all(m->all(x->x isa Rational,m),mats)
     dens=map(m->lcm(denominator.(m)),mats)
