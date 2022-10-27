@@ -2,7 +2,7 @@
 # big Coxeter groups is the following:
 #
 #   julia> W=coxgroup(:B,5);
-#   julia> LeftCells(W);
+#   julia> left_cells(W);
 #
 # which  takes `1` second cpu time on 3Ghz computer. The computation of all
 # Kazhdan-Lusztig  polynomials  for  type  `F₄`  takes  a bit more than~`5`
@@ -80,7 +80,7 @@ We provide also functionality to study the Kazhdan-Lusztig left cells
 julia> W=coxgroup(:H,3)
 H₃
 
-julia> c=LeftCells(W)
+julia> c=left_cells(W)
 22-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Cyc{Int64}}}}:
  LeftCell<H₃: duflo= character=φ₁‚₀>
  LeftCell<H₃: duflo=123 character=φ₁‚₁₅>
@@ -151,7 +151,7 @@ end;
 ```
 """
 module KL
-export KLPol, Cpbasis, Cbasis, LeftCell, LeftCells, character, Lusztigaw, 
+export KLPol, Cpbasis, Cbasis, LeftCell, left_cells, character, Lusztigaw, 
  LusztigAw, AsymptoticAlgebra, Wgraph
 using ..Gapjm
 
@@ -533,7 +533,7 @@ Returns  a list `l`  such that the  character of `c.group`  afforded by the
 left cell `c` is `sum(CharTable(c.group).irr[l])`.
 
 ```julia-repl
-julia> c=LeftCells(coxgroup(:G,2))[3]
+julia> c=left_cells(coxgroup(:G,2))[3]
 LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
 
 julia> character(c)
@@ -658,7 +658,7 @@ on the left cell `c`.
 julia> W=coxgroup(:H,3)
 H₃
 
-julia> c=LeftCells(W)[3]
+julia> c=left_cells(W)[3]
 LeftCell<H₃: duflo=(15) character=φ₅‚₅>
 
 julia> @Mvp q;H=hecke(W,q)
@@ -792,7 +792,7 @@ function cellreps(W)
 end
 
 """
-`LeftCells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
+`left_cells(W[,i])` left cells of `W` [in `i`-th 2-sided cell]
 for the 1-parameter Hecke algebra `hecke(W,q)`
 
 The  program uses precomputed  data(see [Geck-Halls 2014](biblio.htm#GH14))
@@ -806,7 +806,7 @@ cells of `D₆`, for example.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> LeftCells(W)
+julia> left_cells(W)
 4-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  LeftCell<G₂: duflo= character=φ₁‚₀>
  LeftCell<G₂: duflo=12 character=φ₁‚₆>
@@ -825,13 +825,13 @@ which  are in the `i`-th two-sided cell,  that is whose character is in the
 
 ```julia-repl
 julia> W=coxgroup(:G,2);
-julia> LeftCells(W,1)
+julia> left_cells(W,1)
 2-element Vector{LeftCell{FiniteCoxeterGroup{Perm{Int16},Int64}}}:
  LeftCell<G₂: duflo=2 character=φ₂‚₁+φ′₁‚₃+φ₂‚₂>
  LeftCell<G₂: duflo=1 character=φ₂‚₁+φ″₁‚₃+φ₂‚₂>
 ```
 """
-function LeftCells(W,i=0)
+function left_cells(W,i=0)
   cc=cellreps(W)
   if !iszero(i)
     uc=UnipotentCharacters(W)
@@ -843,30 +843,32 @@ function LeftCells(W,i=0)
   length(d)==1 ? d[1] : union(d...)
 end
 
-# gens is a list each element of which can operate on element e
-# returns minimal word w such that Composition(gens[w]) applied to e
-# satifies cond
-function MinimalWordProperty(e,gens::Vector,cond::Function;action::Function=^)
+"""
+`minimal_word(cond::Function,gens::Vector,e;action::Function=^)`
+returns minimal word `w` such that composition(gens[w]) applied to `e`
+satifies `cond`
+"""
+function minimal_word(cond::Function,gens::Vector,e;action::Function=^)
   if cond(e) return Int[] end
   elements=[e]
   nbLength=[1]
-  cayleyGraph=[Int[]]
+  cayleyGraph=[(0,0)]
   bag=Set(elements)
   InfoChevie("#I ")
   while true
     new=map(1+sum(nbLength[1:end-1]):length(elements))do h
-      map(g->[action(elements[h],gens[g]),[h,g]],eachindex(gens))
+      map(g->(action(elements[h],gens[g]),(h,g)),eachindex(gens))
     end
     new=unique(first,vcat(new...))
-    new=filter(x->!(x[1] in bag),new)
-    append!(cayleyGraph,map(x->x[2],new))
+    new=filter(x->!(first(x) in bag),new)
+    append!(cayleyGraph,last.(new))
     new=first.(new)
     p=findfirst(cond,new)
     if !isnothing(p) InfoChevie("\n")
       res=Int[]
       p=length(elements)+p
-      while p!=1 push!(res,cayleyGraph[p][2])
-        p=cayleyGraph[p][1]
+      while p!=1 push!(res,last(cayleyGraph[p]))
+        p=first(cayleyGraph[p])
       end
       return res
     end
@@ -897,8 +899,8 @@ LeftCell<E₈: duflo=(42,43) character=φ₃₅‚₂>
 function LeftCell(W,w)
   l=cellreps(W)
   sst=filter(r->length(r[1])>2,braid_relations(W))
-  word=MinimalWordProperty(w,map(st->(w->leftstar(W,st,w^-1)^-1),sst),
-     w->any(c->w in c,l);action=(x,f)->f(x))
+  word=minimal_word(w->any(c->w in c,l),
+     map(st->(w->leftstar(W,st,w^-1)^-1),sst),w;action=(x,f)->f(x))
   v=w
   for g in reverse(word) v=leftstar(W,sst[g],v^-1)^-1 end
   cell=l[findfirst(c->v in c,l)]
@@ -1090,7 +1092,7 @@ CharTable(Asymptotic Algebra dim.10)
 ```
 """
 function AsymptoticAlgebra(W,i)
-  l=LeftCells(W,i)
+  l=left_cells(W,i)
   f=union(character.(l)...)
   a=l[1].a
   e=elements.(l)

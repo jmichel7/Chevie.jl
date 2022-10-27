@@ -13,7 +13,7 @@ character
 representation(::LeftCell,H)
 WGraphToRepresentation
 Wgraph
-LeftCells
+left_cells
 LeftCell
 Lusztigaw
 LusztigAw

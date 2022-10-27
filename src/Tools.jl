@@ -152,18 +152,4 @@ function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
   Groups.weedgens(res)
 end
 
-function Groups.minimal_words(G::Group,w)
-  d=minimal_words(G)
-  m=d[w]
-  if length(m)<=1 return [m] end
-  res=Vector{Int}[]
-  for i in eachindex(gens(G))
-    v=w*G(-i)
-    if length(d[v])<length(m) 
-      append!(res,push!.(copy.(minimal_words(G,v)),i)) 
-    end
-  end
-  res
-end
-
 end
