@@ -476,7 +476,7 @@ function CycPol(p::Pol{T};trace=false)where T
 end
 
 function (p::CycPol)(x)
-  res=p.valuation<0 ? (x//1)^p.valuation : x^p.valuation
+  res=p.valuation<0 ? (x*1//1)^p.valuation : x^p.valuation
   l=decompose(p.v.d)
   for e in l
     if iszero(res) return res end

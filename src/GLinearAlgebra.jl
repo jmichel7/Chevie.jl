@@ -448,9 +448,9 @@ julia> solutionmat(m,[10, 20, -10])
 ```
 """
 function solutionmat(m::AbstractMatrix,v::AbstractVector)
-  m=transpose(m).//1
+  m=transpose(m).*1//1
   if length(v)!=size(m,1) error("dimension mismatch") end
-  v=v.//1
+  v=v.*1//1
   r=0
   c=1
   while c<=size(m,2) && r<size(m,1)
@@ -517,11 +517,11 @@ julia> diagconj_elt(M,N)
 ```
 """
 function diagconj_elt(M, N)
- d=fill(zero(eltype(M))//1,size(M,1));d[1]=1
- n=size(M,1)
- for i in 1:n, j in i+1:n
-   if M[i,j]!=0
-     if N[i,j]==0 return nothing end
+  d=fill(zero(eltype(M))*1//1,size(M,1));d[1]=1
+  n=size(M,1)
+  for i in 1:n, j in i+1:n
+    if M[i,j]!=0
+      if N[i,j]==0 return nothing end
       if d[i]!=0
         c=d[i]*N[i,j]//M[i,j]
         if d[j]!=0 if c!=d[j] return nothing end 

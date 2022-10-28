@@ -1041,7 +1041,7 @@ Group([(1,3)(2,12)])
 """
 function intermediate_group(W,I)
   C=cartan(W)
-  w=transpose(inv(C//1)); # w = weights in terms of roots
+  w=transpose(inv(C*1//1)); # w = weights in terms of roots
   R=one(w)
   for v in I
     if isinteger(v) R=vcat(R,transpose(w[v,:]))

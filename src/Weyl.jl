@@ -588,7 +588,7 @@ function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
   heads=map(x->findfirst(y->!iszero(y),x),toL(echelon(toM(b))[1]))
   b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
   # complete basis of <roots(W,I)> with part of S to make basis
-  l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).//1)))do v
+  l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).*1//1)))do v
    for x in v
      if (x isa Rational && x<0) || (isreal(x) && real(x)<0) return true
      elseif (x isa Rational && x>0) || (isreal(x) && real(x)>0) return false

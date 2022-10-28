@@ -259,7 +259,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
     res[:centralizers]=cl[:centralizers]
     res[:classes] = map(x->div(res[:size],x),res[:centralizers])
     res[:irreducibles] = map(i->traces_words_mats(
-             toM.(chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i)),
+     improve_type(toM.(chevieget(:imp,:HeckeRepresentation)(p,q,r,para,[],i))),
              cl[:classtext]),1:length(res[:classes]))
   end
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])

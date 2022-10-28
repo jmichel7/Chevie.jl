@@ -1194,7 +1194,7 @@ end
 function invbaseX(W::PermRootGroup)
   get!(W,:invbaseX)do
     X=baseX(W)
-    improve_type(inv(X//1))
+    improve_type(inv(X*1//1))
   end
 end
 
@@ -1850,7 +1850,7 @@ function invariant_form(W::PermRootGroup)
   I=independent_roots(W)
   C=cartan(W)[I,I]
 # we use that C[i,j]/C[i,i]=F[j,i]/F[i,i]
-  T=typeof(C[1,1]//1)
+  T=typeof(C[1,1]*1//1)
   F=zeros(T,size(C))
   for b in diagblocks(C)
     # first fill in the diagonal terms
@@ -1950,7 +1950,7 @@ function invariants(W::PermRootGroup)
     li=getchev(t,:Invariants)
     if li==false return false end
     append!(i,map(f->function(arg...)
-         return f(improve_type(inv(E(1).*toM(coroots(H)[ir])//1)*
+         return f(improve_type(inv(E(1).*toM(coroots(H)[ir])*1//1)*
     toM(coroots(V,inclusion(W,t.indices[ir]))))*collect(arg)...) end, li))
   end
   N=toM(roots(W,independent_roots(W)))

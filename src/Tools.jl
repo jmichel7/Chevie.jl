@@ -25,6 +25,7 @@ best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(
 best_type(p::Pol)=Pol{best_eltype(p)}
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
+  if q.den isa Mvp && length(q.den)==1 return best_type(Mvp(q;Rational=true)) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
 function best_type(p::Mvp{T,N}) where {T,N}
