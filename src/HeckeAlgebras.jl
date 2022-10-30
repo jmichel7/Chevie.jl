@@ -331,26 +331,27 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
   end
   d=Dict{Symbol,Any}(:equal=>allequal(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
-  HeckeAlgebra(W,improve_type(para),d)
+  HeckeAlgebra(W,para,d)
 end
 
 function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   oo=ordergens(W)
   para=map(p,oo)do p, o
     if p isa Vector return p end
-    o==2 ? [p,-one(p)] : vcat([p],E.(o,1:o-1))
+    all(==(2),oo) ? [p,-one(p)] : vcat([p],E.(o,1:o-1))
   end
   if isempty(para) 
    return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
   end
-  hecke(W,improve_type(para);rootpara=convert(Vector{eltype(para[1])},rootpara))
+  hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
   
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
   if ngens(W)==0 para=Vector{C}[]
-  else para=map(o->o==2 ? [p,-one(p)] : vcat([p],E.(o,1:o-1)),ordergens(W))
+  elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
+  else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))
   end
-  H=HeckeAlgebra(W,improve_type(para),Dict{Symbol,Any}(:equal=>true))
+  H=HeckeAlgebra(W,para,Dict{Symbol,Any}(:equal=>true))
   if !iszero(rootpara) H.rootpara=fill(rootpara,ngens(W)) end
   H
 end
