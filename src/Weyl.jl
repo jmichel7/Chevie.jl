@@ -771,7 +771,7 @@ julia> reflrep(W)
 ```
 """
 CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() : 
-sc ? rootdatum(cartan(t,r,b),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b))
+sc ? rootdatum(permutedims(cartan(t,r,b)),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b))
 
 """
 `rootdatum(C::AbstractMatrix)`  adjoint root datum  from Cartan matrix `C`.
