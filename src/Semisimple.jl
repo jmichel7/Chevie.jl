@@ -186,14 +186,16 @@ StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
 isomorphism_type, weights, coweights, affine
 export ExtendedCox, ExtendedReflectionGroup
 #----------------- Extended Coxeter groups-------------------------------
-struct ExtendedCox{T<:FiniteCoxeterGroup}
-  group::T
+struct ExtendedCox{T,TW<:FiniteCoxeterGroup{T}}<:Group{T}
+  group::TW
   F0s::Vector{Matrix{Int}}
-  phis::Vector{<:Perm}
+  phis::Vector{T}
 end
 
-function ExtendedCox(W::FiniteCoxeterGroup,F0s::Vector{Matrix{Int}})
-  ExtendedCox(W,F0s,isempty(F0s) ? Perm{Int}[] : map(F->PermX(W.G,F),F0s))
+Groups.gens(W::ExtendedCox)=vcat(gens(W.group),W.phis)
+
+function ExtendedCox(W::FiniteCoxeterGroup{T},F0s::Vector{Matrix{Int}})where T
+  ExtendedCox(W,F0s,isempty(F0s) ? T[] : map(F->PermX(W.G,F),F0s))
 end
 
 function Base.:*(a::ExtendedCox,b::ExtendedCox)
@@ -531,19 +533,19 @@ function algebraic_center(W)
   (;Z0,AZ,descAZ,ZD)
 end
 
-function WeightToAdjointFundamentalGroupElement(W,l::Vector)
+function WeightToAdjointFundamentalGroupElement(W,l::Vector;full=false)
   if isempty(l) return Perm();end
-  prod(x->WeightToAdjointFundamentalGroupElement(W,x),l)
+  prod(x->WeightToAdjointFundamentalGroupElement(W,x;full),l)
 end
 
-function WeightToAdjointFundamentalGroupElement(W,i)
+function WeightToAdjointFundamentalGroupElement(W,i;full=false)
   t=refltype(W)[findfirst(t->i in t.indices,refltype(W))]
   l=copy(t.indices)
   b=longest(W,l)*longest(W,setdiff(l,[i]))
   push!(l,maximum(findall(
     i->all(j->j in t.indices || W.rootdec[i][j]==0,1:semisimplerank(W)),
   eachindex(W.rootdec))))
-  restricted(b,inclusion.(Ref(W),l))
+  full ? b : restricted(b,inclusion.(Ref(W),l))
 end
 
 """
@@ -696,12 +698,12 @@ julia> fundamental_group(W)
 Group(Perm{Int16}[])
 ```
 """
-function fundamental_group(W)
+function fundamental_group(W;full=false)
   if istorus(W) return Group(Perm()) end
   e=weightinfo(W)[:minusculeCoweights]
   e=filter(x->all(isinteger,sum(coweights(W)[x,:];dims=1)),e) # minusc. coweights in Y
   if isempty(e) return Group(Perm()) end
-  e=map(x->WeightToAdjointFundamentalGroupElement(W,x),e)
+  e=map(x->WeightToAdjointFundamentalGroupElement(W,x;full),e)
   Group(abelian_gens(e))
 end
 
@@ -836,14 +838,13 @@ A₃₍₁₃₎=(A₁A₁)Φ₂
 """
 function Groups.centralizer(W::Group,s::SemisimpleElement)
   if W isa ExtendedCox
-    totalW=Group(vcat(gens(W.group),W.phis))
+    totalW=Group(vcat(gens(fundamental_group(W.group;full=true)),W.phis))
     W=W.group
-  else totalW=W.G
+  else totalW=fundamental_group(W;full=true)
   end
   p=filter(i->isone(s^roots(W,i)),1:nref(W))
   W0s=reflection_subgroup(W,p)
-  N=normalizer(totalW,W0s.G)
-  l=filter(w->s==s^w,map(x->x.phi,elements(N/W0s)))
+  l=map(x->reduced(W0s,x),filter(w->s==s^w,elements(totalW)))
   N=Group(abelian_gens(l))
   if rank(W)!=semisimplerank(W)
     if ngens(N)==0 N=Group([reflrep(W,1)^0])
