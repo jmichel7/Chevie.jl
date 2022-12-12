@@ -28,6 +28,7 @@ function best_type(q::Frac)
   if q.den isa Mvp && length(q.den)==1 return best_type(Mvp(q;Rational=true)) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
+best_type(q::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{Int,Int} end
   n=all(m->all(isinteger,powers(m)),monomials(p)) ? Int : N
@@ -41,7 +42,11 @@ Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
 
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
 
-function Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
+function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
+  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
+end
+
+function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Rational}};k...)
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
