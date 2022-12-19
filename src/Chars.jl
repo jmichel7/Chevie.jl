@@ -1416,6 +1416,15 @@ function charnames(t::TypeIrred;opt...)
   cn
 end
 
+function charnames(io::IO,t::TypeIrred)
+  c=charinfo(t)
+  cn=c.charnames
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
+    if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
+  end
+  cn
+end
+
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 
 """

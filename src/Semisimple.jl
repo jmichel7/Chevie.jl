@@ -837,6 +837,8 @@ A₃₍₁₃₎=(A₁A₁)Φ₂
 ```
 """
 function Groups.centralizer(W::Group,s::SemisimpleElement)
+  # for the computation of A_G(s) see Bonnafé, "Quasi-isolated elements in
+  # reductive groups", comm. in algebra 33 (2005) proposition 3.14
   if W isa ExtendedCox
     totalW=Group(vcat(gens(fundamental_group(W.group;full=true)),W.phis))
     W=W.group

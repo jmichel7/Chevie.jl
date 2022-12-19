@@ -124,18 +124,18 @@ G₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(G₂)
-      γ│   Deg(γ)  Feg Fr(γ)    label
-───────┼──────────────────────────────
-φ₁‚₀   │        1    1     1         
-φ₁‚₆   │       q⁶   q⁶     1         
-φ′₁‚₃  │  qΦ₃Φ₆/3   q³     1    (1,ρ)
-φ″₁‚₃  │  qΦ₃Φ₆/3   q³     1   (g₃,1)
-φ₂‚₁   │ qΦ₂²Φ₃/6  qΦ₈     1    (1,1)
-φ₂‚₂   │ qΦ₂²Φ₆/2 q²Φ₄     1   (g₂,1)
-G₂[-1] │ qΦ₁²Φ₃/2    0    -1   (g₂,ε)
-G₂[1]  │ qΦ₁²Φ₆/6    0     1    (1,ε)
-G₂[ζ₃] │qΦ₁²Φ₂²/3    0    ζ₃  (g₃,ζ₃)
-G₂[ζ₃²]│qΦ₁²Φ₂²/3    0   ζ₃² (g₃,ζ₃²)
+      γ│n₀    Deg(γ)  Feg              Symbol Fr(γ)    label
+───────┼─────────────────────────────────────────────────────
+φ₁‚₀   │ 1         1    1       (0,0,0,0,0,2)     1         
+φ₁‚₆   │ 2        q⁶   q⁶ (01,01,01,01,01,12)     1         
+φ′₁‚₃  │ 3   qΦ₃Φ₆/3   q³            (0,0,1+)     1    (1,ρ)
+φ″₁‚₃  │ 4   qΦ₃Φ₆/3   q³            (0,0,1-)     1   (g₃,1)
+φ₂‚₁   │ 5  qΦ₂²Φ₃/6  qΦ₈       (0,0,0,0,1,1)     1    (1,1)
+φ₂‚₂   │ 6  qΦ₂²Φ₆/2 q²Φ₄       (0,0,0,1,0,1)     1   (g₂,1)
+G₂[-1] │ 7  qΦ₁²Φ₃/2    0       (01,0,01,,0,)    -1   (g₂,ε)
+G₂[1]  │ 8  qΦ₁²Φ₆/6    0       (01,01,0,,,0)     1    (1,ε)
+G₂[ζ₃] │ 9 qΦ₁²Φ₂²/3    0       (01,0,0,01,,)    ζ₃  (g₃,ζ₃)
+G₂[ζ₃²]│10 qΦ₁²Φ₂²/3    0       (01,01,,0,0,)   ζ₃² (g₃,ζ₃²)
 ```
 
 The  first column gives  the name of  the unipotent character, derived from
@@ -147,7 +147,7 @@ data can be synthesized combinatorially to give a *symbol*.
 
 The  first two characters are  each in a Lusztig  family by themselves. The
 last  eight are in a family associated to the group `Γ=𝔖₃`: the last column
-shows  the parameters  `(x,θ)`. The  second column  shows the degree of the
+shows  the parameters  `(x,θ)`. The  third column  shows the  degree of the
 unipotent characters, which is transformed by the Lusztig Fourier matrix of
 the  third  column,  which  gives  the  degree  of the corresponding almost
 character,  or equivalently the fake  degree of the corresponding character
@@ -218,19 +218,18 @@ Spetses, as defined in [BroueMalleMichel2014](biblio.htm#BMM14). An example:
 ```julia-repl
 julia> UnipotentCharacters(complex_reflection_group(4))
 UnipotentCharacters(G₄)
-    γ│           Deg(γ)    Feg Fr(γ)  label
-─────┼──────────────────────────────────────
-φ₁‚₀ │                1      1     1       
-φ₁‚₄ │ -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1   1∧ζ₆
-φ₁‚₈ │  √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1 -1∧ζ₃²
-φ₂‚₅ │        q⁴Φ₂²Φ₆/2   q⁵Φ₄     1  1∧ζ₃²
-φ₂‚₃ │-ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1  1∧ζ₃²
-φ₂‚₁ │ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1   1∧ζ₃
-φ₃‚₂ │           q²Φ₃Φ₆ q²Φ₃Φ₆     1       
-Z₃:2 │    -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₃²
-Z₃:11│   -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₆⁵
-G₄   │       -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1
-
+    γ│n₀            Deg(γ)    Feg Fr(γ)  label
+─────┼─────────────────────────────────────────
+φ₁‚₀ │ 1                 1      1     1       
+φ₁‚₄ │ 2  -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1   1∧ζ₆
+φ₁‚₈ │ 3   √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1 -1∧ζ₃²
+φ₂‚₅ │ 4         q⁴Φ₂²Φ₆/2   q⁵Φ₄     1  1∧ζ₃²
+φ₂‚₃ │ 5 -ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1  1∧ζ₃²
+φ₂‚₁ │ 6 ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1   1∧ζ₃
+φ₃‚₂ │ 7            q²Φ₃Φ₆ q²Φ₃Φ₆     1       
+Z₃:2 │ 8     -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₃²
+Z₃:11│ 9    -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₆⁵
+G₄   │10        -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1
 ```
 """
 module Uch
@@ -280,7 +279,7 @@ function SerNames(io::IO,sers)
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) res[ser[:charNumbers]]=[n]
     else 
-      nn=map(t->charnames(t),tt)
+      nn=map(t->charnames(io,t),tt)
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)
       if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end
@@ -432,12 +431,12 @@ julia> WF=spets(W,Perm(1,2))
 
 julia> uc=UnipotentCharacters(WF)
 UnipotentCharacters(²Bsym₂)
-       γ│   Deg(γ)   Feg Fr(γ) label
-────────┼────────────────────────────
-2       │        1     1     1      
-11      │       q⁴    q⁴     1      
-²B₂[1,3]│√2qΦ₁Φ₂/2 qΦ₁Φ₂   ζ₈³     1
-²B₂[1,5]│√2qΦ₁Φ₂/2     0   ζ₈⁵     2
+       γ│n₀ almostch    Deg(γ)   Feg        Symbol Fr(γ) label
+────────┼──────────────────────────────────────────────────────
+2       │ 1       2.         1     1     (02,,0,0)     1      
+11      │ 2      .11        q⁴    q⁴ (012,1,01,01)     1      
+²B₂[1,3]│ 3      1.1 √2qΦ₁Φ₂/2 qΦ₁Φ₂     (01,,1,0)   ζ₈³     1
+²B₂[1,5]│ 4       B₂ √2qΦ₁Φ₂/2     0     (01,,0,1)   ζ₈⁵     2
 
 julia> uc.families
 3-element Vector{Family}:
@@ -511,30 +510,30 @@ B₂
 
 julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(B₂)
-  γ│Deg(γ) Feg Fr(γ) label
-───┼───────────────────────
-11.│ qΦ₄/2  q²     1   +,-
-1.1│qΦ₂²/2 qΦ₄     1   +,+
-.11│    q⁴  q⁴     1      
-2. │     1   1     1      
-.2 │ qΦ₄/2  q²     1   -,+
-B₂ │qΦ₁²/2   0    -1   -,-
+  γ│n₀ Deg(γ) Feg   Symbol Fr(γ) label
+───┼───────────────────────────────────
+11.│ 1  qΦ₄/2  q²   (12,0)     1   +,-
+1.1│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+
+.11│ 3     q⁴  q⁴ (012,12)     1      
+2. │ 4      1   1     (2,)     1      
+.2 │ 5  qΦ₄/2  q²   (01,2)     1   -,+
+B₂ │ 6 qΦ₁²/2   0   (012,)    -1   -,-
 ```
 
 ```julia-rep1
 julia> xdisplay(uc;byfamily=true)
 UnipotentCharacters(B₂)
-   γ│Deg(γ) Feg Fr(γ) label
-────┼───────────────────────
-2.ˢ │     1   1     1      
-────┼───────────────────────
-11. │ qΦ₄/2  q²     1   +,-
-1.1ˢ│qΦ₂²/2 qΦ₄     1   +,+
-.2  │ qΦ₄/2  q²     1   -,+
-B₂  │qΦ₁²/2   0    -1   -,-
-────┼───────────────────────
-.11ˢ│    q⁴  q⁴     1      
-────┼───────────────────────
+   γ│n₀ Deg(γ) Feg   Symbol Fr(γ) label
+────┼───────────────────────────────────
+11. │ 1  qΦ₄/2  q²   (12,0)     1   +,-
+1.1ˢ│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+
+.2  │ 5  qΦ₄/2  q²   (01,2)     1   -,+
+B₂  │ 6 qΦ₁²/2   0   (012,)    -1   -,-
+────┼───────────────────────────────────
+2.ˢ │ 4      1   1     (2,)     1      
+────┼───────────────────────────────────
+.11ˢ│ 3     q⁴  q⁴ (012,12)     1      
+────┴───────────────────────────────────
 
 julia> xdisplay(uc;cols=[1,4])
 UnipotentCharacters(B₂)
@@ -683,20 +682,30 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
   if !TeX print(io,"UnipotentCharacters(",spets(uc),")") end
-  cycpol=get(io,:cycpol,true)
-  cols=get(io,:cols,[2,3,5,6])
   println(io,"")
+  col_labels=["n_0"]
   m=hcat(repr.(1:length(uc)))
-  m=hcat(m,repr.(cycpol ? CycPoldegrees(uc) : degrees(uc); context=io))
+  row_labels=charnames(io,uc)
+  almost=almostcharnames(io,uc)
+  if almost!=row_labels 
+    m=hcat(m,almost) 
+    push!(col_labels,"almostch")
+  end
+  LaurentPolynomials.varname[]=:q
+  cycpol=get(io,:cycpol,true)
+  m=hcat(m,repr.(cycpol ? CycPoldegrees(uc) : degrees(uc);context=io))
+  push!(col_labels,"\\mbox{Deg}(\\gamma)")
   feg=fakedegrees(uc)
   m=hcat(m,repr.(cycpol ? CycPol.(feg) : feg; context=io))
+  push!(col_labels,"\\mbox{Feg}")
   if haskey(uc,:charSymbols) && (uc.charSymbols!=uc.charParams)
     m=hcat(m,map(x->stringsymbol(io,x[1]),uc.charSymbols))
-  else m=hcat(m,fill("",length(uc)))
+    push!(col_labels,"\\mbox{Symbol}")
   end
   m=hcat(m,repr.(eigen(uc); context=io))
+  push!(col_labels,"\\mbox{Fr}(\\gamma)")
   m=hcat(m,fromTeX.(Ref(io),labels(uc)))
-  row_labels=charnames(io,uc)
+  push!(col_labels,"\\mbox{label}")
   if get(io,:byfamily,false)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
     rowseps=pushfirst!(reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)),0)
@@ -710,9 +719,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
     rows=get(io,:rows,1:length(uc))
     rowseps=get(io,:rowseps,[0])
   end
-  showtable(io,m;row_labels,cols,rows,rows_label="\\gamma",rowseps,
-          col_labels=["n_0","\\mbox{Deg}(\\gamma)","\\mbox{Feg}",
-                  "\\mbox{Symbol}","\\mbox{Fr}(\\gamma)","\\mbox{label}"])
+  showtable(io,m;row_labels,rows,rows_label="\\gamma",rowseps,col_labels)
 end
 
 Cosets.spets(uc::UnipotentCharacters)=uc.spets
