@@ -534,7 +534,7 @@ function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
     end
     W.simple_conjugating=repelts
     W.refls=map((i,p)->gens(W)[i]^p,reps,repelts)
-    W.unique_refls=Int.(sort(unique(indexin(W.refls,W.refls))))
+    W.unique_refls=unique(i->W.refls[i],eachindex(W.refls))
     reps
   end::Vector{Int}
 end
