@@ -190,7 +190,7 @@ chevieset(:E8, :UnipotentClasses, function (p,)
             c[:red] = Z(1)
             c[:dimBu] = 11
             delete!(c, :dynkin)
-            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 2], [16, 2], [2, 2], [14, 2], [4, 5], [5, 2]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]", :hc => 5), Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 3], [16, 3], [2, 3], [14, 3], [4, 6], [5, 3]], :warning => "As conjectured by Lusztig, Arxiv 1608[:02223] conjecture 6[:2]", :hc => 6), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 2]], :hc => 9), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 3]], :hc => 8)])
+            uc[:springerSeries] = Append(uc[:springerSeries], [Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 2], [16, 2], [2, 2], [14, 2], [4, 5], [5, 2]], :hc => 5), Dict{Symbol, Any}(:relgroup => CoxeterGroup("G", 2), :levi => 1:6, :Z => [], :locsys => [[1, 3], [16, 3], [2, 3], [14, 3], [4, 6], [5, 3]], :hc => 6), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 2]], :hc => 9), Dict{Symbol, Any}(:relgroup => CoxeterGroup(), :levi => 1:8, :Z => [], :locsys => [[4, 3]], :hc => 8)])
             ((((uc[:springerSeries])[1])[:locsys])[72])[2] = 4
             (((uc[:springerSeries])[1])[:locsys])[[13, 51]] = [[71, 1], [18, 2]]
         elseif p == 5

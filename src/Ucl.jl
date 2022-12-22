@@ -1072,9 +1072,6 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
   ss=uc.springerseries[i]
   res=ICCTable(Dict(:spets=>uc.spets,:relgroup=>ss[:relgroup],
                     :series=>i,:q=>q,:p=>uc.p))
-  if haskey(ss,:warning) println("# ",ss[:warning])
-    res.warning=ss[:warning]
-  end
 # We are going to solve the equation in "unipotent support", page 151
 # ᵗPΛP=Ω  where $Λ_{i,j}$ is  $∑_{g∈ G^F} Yᵢ(g)Ȳⱼ(g)$ and $Ω_{i,j}$ is equal
 # to # $|Z^0(G^F)|q^{-semisimple rank L}|G^F|/P(W_G(L))
