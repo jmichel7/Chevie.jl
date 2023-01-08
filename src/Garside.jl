@@ -50,20 +50,16 @@ where   exhibited  for   braid  monoids   of  Coxeter   groups  by  Deligne
 [Del72](biblio.htm#Del72),  who extended previous  work of Brieskorn, Saito
 [BS72](biblio.htm#BS72) and Garside [Gar69](biblio.htm#Gar69):
 
-  - (1) Let `M` be a locally Garside monoid and let `b∈ M`. Then there is a
-    unique  maximal left simple divisor `α(b)`  of `b` --- any other simple
-    dividing `b` on the left divides `α(b)` on the left.
+  1. Let `M` be a locally Garside monoid. Then for `b∈ M` there is a unique  maximal simple left divisor `α(b)` of `b`; any other simple dividing `b` divides `α(b)`.
 
-  - (2) Assume `M` is a Garside monoid, `Δ` is its Garside element and `G`
-    is  its group of  fractions. Then, given  any element `x∈  G`, there is
-    some power `i` such that `Δⁱ x∈ M`.
+  2. Let `M` be a Garside monoid with Garside element `Δ` and group of fractions `G`. Then for any `x∈  G`, for large enough `i` we have `Δⁱx∈ M`.
 
-A consequence of (1) is that any element has a canonical decomposition as a
+A  consequence of 1. is that any element has a canonical decomposition as a
 product of simples, called its left-greedy normal form. If we define `ω(x)`
 by  `x=α(x)ω(x)`, then the normal form of `x` is `α(x)α(ω(x))α(ω^2(x))…` We
 use  the normal form to represent elements  of `M`, and when `M` is Garside
-(2)  to represent  elements of  `G`: given  `x∈ G`  we compute the smallest
-power  `i`  such  that  `Δⁱ  x∈  M`,  and  we  represent  `x` by the couple
+we  use  2.  to  represent  elements  of  `G`:  given `x∈ G` we compute the
+smallest  power `i` such that `Δⁱ x∈ M`, and we represent `x` by the couple
 `(i,Δ⁻ⁱx)`.  We are thus reduced to the case where `x∈ M`, not divisible by
 `Δ`,  where we represent  `x` by the  sequence of simples which constitutes
 its normal form.
@@ -73,8 +69,8 @@ that is `W` has presentation
 
 `⟨s∈ S∣s²=1, sts⋯ =tst⋯   (mₛₜ factors on each side) for s,t∈ S⟩`
 
-for  some Coxeter matrix `mₛₜ` for `s,t∈ S`. The braid group `B` associated
-to `(W,S)` is the group defined by the presentation
+for some Coxeter matrix `mₛₜ`. The braid group `B` associated to `(W,S)` is
+the group defined by the presentation
 
 `⟨𝐬∈ 𝐒∣ 𝐬𝐭𝐬⋯ =𝐭𝐬𝐭⋯  (mₛₜ factors on each side) for 𝐬,𝐭∈ 𝐒⟩`
 
@@ -98,8 +94,8 @@ fixed  by no  non-identity element  of `S`;  however, we  will not use this
 here.
 
 We  implement in general only  monoids which have a  finite number of atoms
-(there  is a special implementation for the Dual monoid of the affine group
-`ÃₙA`). 
+(there  is  a  special  implementation  for  the  Dual monoid of the affine
+Coxeter group `W(Ãₙ)`).
 
 Given a Coxeter group `W`,
 ```julia-repl
@@ -111,13 +107,13 @@ BraidMonoid(A₄)
 ```
 constructs  the  associated  braid  monoid,  and  then  as  a  function `B`
 constructs  elements of the braid monoid (or group when `W` is finite) from
-a list of generators (below `B(1,2,3,4)` represents `𝐬₁𝐬₂𝐬₃𝐬₄`):
+a list of generators:
 
 ```julia-repl
-julia> w=B(1,2,3,4)
+julia> w=B(1,2,3,4) # represents 𝐬₁𝐬₂𝐬₃𝐬₄
 1234
 
-julia> w^3  # the terms of the normal form are separated by a `.`
+julia> w^3  # the terms of the normal form are separated by a .
 121321432.343
 
 julia> word(α(w^3))
@@ -138,7 +134,6 @@ julia> w^4
 julia> inv(w)
 (1234)⁻¹
 ```
-
 How  an  element  of  a  Garside  group  is  printed  is  controlled by the
 `IOcontext`  attribute  ':greedy'.  By  default,  elements  are  printed as
 fractions `a⁻¹b` where `a` and `b` have no left common divisor. Each of `a`
@@ -893,8 +888,7 @@ function Brieskorn_normal_form(b::LocallyGarsideElt)
   while !isone(b)
     I=leftdescents(b)
     push!(res,I)
-    a=b.M(rightlcm(b.M,b.M.atoms[I]...))
-    b=inv(a)*b
+    b=b.M(rightlcm(b.M,b.M.atoms[I]...))\b
   end
   res
 end
@@ -906,12 +900,13 @@ function Base.inv(b::GarsideElt)
 end
 
 Base.:/(a::GarsideElt,b::GarsideElt)=a*inv(b)
+Base.:\(a::GarsideElt,b::GarsideElt)=inv(a)*b
 
 """
-fraction(b::GarsideElt)
-returns  a tuple `(x,y)` of two Garside elements with no non-trivial common
-left divisor and such that `b=inv(x)*y`.
+`fraction(b::GarsideElt)`
 
+returns a tuple `(x,y)` of positive Garside elements with trivial `leftgcd`
+and such that `b=x\\y`.
 ```julia-repl
 julia> B=BraidMonoid(coxgroup(:A,3))
 BraidMonoid(A₃)
@@ -953,7 +948,7 @@ end
 `α(b::LocallyGarsideElt)`
 
 returns as a Garside element  the first term in  the normal form of  `b`
-(this term is `b[1]` as a simple).
+(`b[1]` returns this term as a simple).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -969,8 +964,9 @@ julia> α(b)
 α(b::LocallyGarsideElt)=GarsideElt(b.M,[b[1]])
 
 """
-`α(b::LocallyGarsideElt,I)` returns the longest prefix of b which uses
-only  `b.M.atoms[I]`
+`α(b::LocallyGarsideElt,I)` 
+
+returns the longest prefix of b using only `b.M.atoms[I]`
 ```julia-repl
 julia> W=coxgroup(:A,4);B=BraidMonoid(W)
 BraidMonoid(A₄)
@@ -990,7 +986,7 @@ function α(b::LocallyGarsideElt,I::AbstractVector)
     if isleftdescent(M,b[1],I[i])
       s=M(I[i])
       res*=s
-      b=inv(s)*b
+      b=s\b
       i=1
     else i+=1
     end
@@ -1046,41 +1042,29 @@ end
 PermGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
 
 function Base.show(io::IO,b::GarsideElt)
-  M=b.M
-  greedy=get(io,:greedy,false)
   if !hasdecor(io)
     print(io,"B(",join(word(b),","),")")
     return
   end
   function p(b)
-    l=join(map(e->word(io,M,e),b.elm),".")
-    if b.pd==0 return l end
-    if !isempty(l) l="."*l end
-    return fromTeX(io,M.stringδ)*stringexp(io,b.pd)*l
+    l=map(e->word(io,b.M,e),b.elm)
+    if b.pd!=0 pushfirst!(l,fromTeX(io,b.M.stringδ)*stringexp(io,b.pd)) end
+    join(l,".")
   end
-  if greedy
-    printTeX(io,p(b))
-  else
-    den,num=map(x->p(x),fraction(b))
-    if den!="" print(io,"(",den,")",stringexp(io,-1))
-      if num!="" print(io,"$num") end
-    elseif num!="" print(io, num)
-    else print(io,".")
-    end
+  if isone(b) print(io,".") 
+  elseif get(io,:greedy,false) print(io,p(b))
+  else den,num=fraction(b)
+    if !isone(den) print(io,"(",p(den),")",stringexp(io,-1)) end
+    print(io,p(num))
   end
 end
 
 function Base.show(io::IO,b::LocallyGarsideElt)
-  M=b.M
   if !hasdecor(io)
     print(io,"B(",join(word(b),","),")")
     return
   end
-  function p(b)
-    isempty(b.elm) ? "." : 
-       join(map(e->joindigits(word(M,e);sep=" "),b.elm),".")
-  end
-  printTeX(io,p(b))
+  printTeX(io,isempty(b.elm) ? "." : join(map(e->word(io,b.M,e),b.elm),"."))
 end
 
 # simple * braid
@@ -1098,7 +1082,7 @@ function Base.:*(x,b::LocallyGarsideElt)
   GarsideElt(M,push!(res,x))
 end
 
-# multiply a simple x by a Garside element b; Gap's PrefixToNormal
+# multiply a simple x by a Garside element b; Gap3 PrefixToNormal
 function Base.:*(x,b::GarsideElt)
   M=b.M
   v=b.elm
@@ -1115,7 +1099,7 @@ function Base.:*(x,b::GarsideElt)
   GarsideElt(M,push!(res,x),pd+b.pd)
 end
 
-# like gap3 AddToNormal: multiply by simple
+# multiply by simple; Gap3 AddToNormal
 function Base.:*(a::LocallyGarsideElt,x)
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
@@ -1182,13 +1166,13 @@ end
 #  \(M,δad(M,r,b.pd),l.elm[1])*clone(b,l.elm[2:end])
 #end
 
-#Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=inv(y.M(r))*(y*F(r))
-Base.:^(y::GarsideElt{T},r::T,F::Function) where T=inv(y.M(r))*(y*F(r))
+#Base.:^(y::GarsideElt{T},r::T,F=x->x) where T<:Perm=y.M(r)\(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F::Function) where T=y.M(r)\(y*F(r))
 
 Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
 
-Base.:^(a::GarsideElt,b::GarsideElt,F=x->x)=inv(b)*a*F(b)
+Base.:^(a::GarsideElt,b::GarsideElt,F=x->x)=b\a*F(b)
 
 function Base.reverse(b::GarsideElt)
   if haskey(b.M,:revMonoid)
@@ -1441,7 +1425,7 @@ function DualBraidMonoid(W::PermRootGroup;
 end
 
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
-  reflength(M.W,inv(M.atoms[i])*w)<reflength(M.W,w)
+  reflength(M.W,M.atoms[i]\w)<reflength(M.W,w)
 end
 
 Base.one(M::DualBraidMonoid)=M.one
@@ -1620,7 +1604,7 @@ function AtomicMaps(a,s::Symbol=:sc,F=(x,y=1)->x)
       push!(res,M(m))
     end
   end
-  filter(x->count(y->(inv(y)*x).pd>=0,res)==1,res)
+  filter(x->count(y->(y\x).pd>=0,res)==1,res)
 end
 
 # a braid x atom
@@ -1694,7 +1678,7 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
       push!(f,(y,x))
       r=preferred_prefix(y,F)
   #   x=\(M,r,*(M,x,preferred_prefix(^(y,x,F),F))) # why simples?
-      x=(inv(M(r))*M(x)*M(preferred_prefix(^(y,x,F),F)))[1]
+      x=(M(r)\M(x)*M(preferred_prefix(^(y,x,F),F)))[1]
       if x==one(M) return [one(M)] end
       y=^(y,r,F)
       p=findfirst(==((y,x)),f)
@@ -1975,11 +1959,11 @@ Base.hash(a::TPMSimple, h::UInt)=hash(a.v,hash(a.t,hash(a.M,h)))
 
 Base.copy(a::TPMSimple)=TPMSimple(copy(a.v),a.t,a.M)
 
-Base.:^(y::GarsideElt{T},r::T,F::Function) where T<:TPMSimple=inv(y.M(r))*(y*F(r))
+Base.:^(y::GarsideElt{T},r::T,F::Function) where T<:TPMSimple=y.M(r)\(y*F(r))
 
 function Base.show(io::IO,r::TPMSimple)
   if r.t print(io,"t") end
-  print(io,"(",join(map(a->joindigits(word(r.M,a)),r.v),","),")")
+  print(io,"(",join(map(a->word(io,r.M,a),r.v),","),")")
 end
 
 function TwistedPowerMonoid(M,n)

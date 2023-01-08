@@ -1100,6 +1100,7 @@ function ICCTable(uc::UnipotentClasses,i=1;q=Pol())
 #   q^(W.semisimplerank-R.semisimplerank);
   res.L=tbl[2]*q^(nref(W)+semisimplerank(R)-semisimplerank(W))
   res.uc=uc
+  res.levi=reflection_subgroup(W,ss[:levi])
   if haskey(ss,:parameter) res.parameter=ss[:parameter]
   else res.parameter=(1:length(ss[:locsys])).+100*(i-1)
   end
@@ -1115,7 +1116,7 @@ end
 Base.show(io::IO,x::ICCTable)=print(io,"ICCTable(",x.uc,",",x.series,")")
 
 function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
-  printTeX(io,"Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for \$",x.relgroup,"\$\n")
+ printTeX(io,"Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for series \$L=",x.levi,"\$ \$W_G(L)=",x.relgroup,"\$\n")
   TeX=get(io,:TeX,false)
   if get(io,:cols,false)==false && get(io,:rows,false)==false
     rows=collect(eachindex(x.dimBu))
