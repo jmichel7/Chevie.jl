@@ -200,7 +200,8 @@ module Weyl
 
 export two_tree, rootdatum, torus, istorus,
  dimension, with_inversions, standard_parabolic, describe_involution,
- relative_group, rootlengths, badprimes, ComplexReflectionGroup
+ relative_group, rootlengths, highest_short_root, badprimes, 
+ ComplexReflectionGroup
 # to use as a stand-alone module uncomment the next line
 # export roots
 
@@ -877,6 +878,27 @@ function rootlengths(W::FiniteCoxeterGroup)
     for i in eachindex(lengths) lengths[i]=lengths[simple_reps(W,i)] end
     lengths
   end::Vector{eltype(cartan(W))}
+end
+
+"""
+`highest_short_root(W)`
+    
+It  is  an  error  if  `W`  is  not an irreducible Coxeter group. Otherwise
+`HighestShortRoot`  returns the index  of the unique  short root of maximal
+height  of `W`. If all roots have the same length then this is the index of
+the unique root of maximal height, equal to `nref(W)`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> highest_short_root(W)
+4
+```
+"""
+function highest_short_root(W)
+  if length(refltype(W))!=1 error("W should be irreducible and non-trivial") end
+  findlast(==(1),rootlengths(W)[1:nref(W)])
 end
 
 PermRoot.invariant_form(W::FiniteCoxeterGroup)=

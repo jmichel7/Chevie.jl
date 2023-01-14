@@ -220,7 +220,7 @@ The  function `ICCTable` gives the  transition matrix between the functions
 ```julia-repl
 julia> uc=UnipotentClasses(coxgroup(:G,2));
 julia> t=ICCTable(uc)
-Coefficients of Xᵪ on Yᵩ for G₂
+Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂
       │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1
 ──────┼──────────────────────────────
 Xφ₁‚₀ │ 1          0      1  1  1  1
@@ -989,8 +989,8 @@ multiplicities  are graded,  and are  given as  polynomials in one variable
 (specified by the argument `q`; if not given `Pol()` is assumed).
 
 ```julia-repl
-julia> t=ICCTable(uc)
-Coefficients of Xᵪ on Yᵩ for A₃
+julia> uc=UnipotentClasses(coxgroup(:A,3));t=ICCTable(uc)
+Coefficients of Xᵪ on Yᵩ for series L=A₃₍₎=Φ₁³ W_G(L)=A₃
      │4 31 22 211 1111
 ─────┼─────────────────
 X4   │1  1  1   1    1

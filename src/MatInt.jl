@@ -6,17 +6,17 @@ original one.
 
 Look at the docstrings for `complementInt, lnullspaceInt, solutionmatInt, 
 smith, smith_transforms, hermite, hermite_transforms, col_hermite, 
-col_hermite_transforms, diaconis_graham, baseInt`
+col_hermite_transforms, diaconis_graham, baseInt, intersect_rowspaceInt`
 """
 module MatInt
 
 export complementInt, lnullspaceInt, solutionmatInt, smith, smith_transforms,
   hermite, hermite_transforms, col_hermite, col_hermite_transforms, 
-  diaconis_graham, baseInt
+  diaconis_graham, baseInt, intersect_rowspaceInt
 
-using LinearAlgebra: I
+using LinearAlgebra: I, dot
 
-# largest factor of N prime to a
+"`prime_part(N,a)`  largest factor of `N` prime to `a`"
 function prime_part(N, a)
   while true
     a=gcd(a, N)
@@ -25,7 +25,7 @@ function prime_part(N, a)
   end
 end
 
-# rgcd(N,a) smallest c≥0 such that gcd(N,a+c)==1
+"`rgcd(N,a)` smallest `c≥0` such that `gcd(N,a+c)==1`"
 function rgcd(N, a)
   if N==1 return 0 end
   r=[mod(a-1, N)]
@@ -91,13 +91,16 @@ function Gcdex( m, n )
   (gcd=f, coeff= n==0 ? [fm 0; gm 1] : [fm div(f-fm*m,n); gm div(-gm*m,n)])
 end
 
-#  bezout(A)  A is a 2x2 matrix
-#  returns a namedtuple with 2 fields
-#  sign  the sign of det(A)
-#  rowtrans such that rowtrans*A=[e f;0 g]  Hermite normal form
+"""
+`bezout(A)` 
+
+`A` should be  a 2x2 matrix. Returns a `NamedTuple` with 2 fields
+  - `.sign`  the sign of `det(A)`
+  - `.rowtrans` such that `rowtrans*A=[e f;0 g]`  (Hermite normal form)
+"""
 function bezout(A)
   e=Gcdex(A[1,1],A[2,1])
-  f,g=e.coeff*A[:,2]
+  f,g=e.coeff*@view A[:,2]
   if iszero(g) return e end
   if g<0
     coeff=[1 0;0 -1]*e.coeff
@@ -108,8 +111,10 @@ function bezout(A)
    rowtrans=[1 -div(f-mod(f,g),g);0 1]*coeff)
 end
 
-#  mgcdex(<N>,<a>,<v>) - Returns c[1],c[2],...c[k] such that
-#   gcd(N,a+c[1]*v[1]+...+c[n]*v[k])==gcd(N,a,v[1],v[2],...,v[k])
+"""
+`mgcdex(N,a,v)` returns `c[1],c[2],…c[k]` such that
+`gcd(N,a+c[1]*v[1]+…+c[n]*v[k])==gcd(N,a,v[1],v[2],…,v[k])`
+"""
 function mgcdex(N, a, v)
   l=length(v)
   h=N
@@ -141,7 +146,7 @@ function SNFofREF(R)
   if isnothing(r) r=length(piv)
   else
     r-=1
-    piv=piv[1:r]
+    piv.=@view piv[1:r]
   end
   append!(piv, setdiff(1:m, piv))
   T=zeros(eltype(R),n,m)
@@ -149,19 +154,19 @@ function SNFofREF(R)
     for i in 1:min(r,j) T[i,j]=R[i,piv[j]] end
   end
   si=1
-  A=Vector{Int}(undef,n)
+  A=Vector{eltype(R)}(undef,n)
   d=2
   for k in 1:m
     if k<=r
       d*=abs(T[k,k])
-      T[k,:].=mod.(T[k,:], 2d)
+      T[k,:].=mod.((@view T[k,:]), 2d)
     end
     t=min(k, r)
     for i in t-1:-1:si
       t=mgcdex(A[i], T[i,k], [T[i+1,k]])[1]
       if t!=0
-        T[i,:]+=T[i+1,:].*t
-        T[i,:].=mod.(T[i,:], A[i])
+        T[i,:].+=(@view T[i+1,:]).*t
+        T[i,:].=mod.((@view T[i,:]), A[i])
       end
     end
     for i in si:min(k-1, r)
@@ -171,13 +176,13 @@ function SNFofREF(R)
         b=div(A[i], g[1])
         A[i]=g[1]
         for ii in i+1:min(k-1,r)
-          T[ii,:]+=mod.(T[i,:]*(-g[3]*div(T[ii,k],A[i])),A[ii])
+          T[ii,:].+=mod.((@view T[i,:])*(-g[3]*div(T[ii,k],A[i])),A[ii])
           T[ii,k]*=b
-          T[ii,:].=mod.(T[ii,:],A[ii])
+          T[ii,:].=mod.((@view T[ii,:]),A[ii])
         end
         if k<=r
           t=g[3]*div(T[k,k], g[1])
-          T[k,:]+=-t*T[i,:]
+          T[k,:].+=-t*@view T[i,:]
           T[k,k]*=b
         end
         T[i,:].=mod.(T[i,:], A[i])
@@ -186,7 +191,7 @@ function SNFofREF(R)
     end
     if k<=r
       A[k]=abs(T[k,k])
-      T[k,:].=mod.(T[k,:], A[k])
+      T[k,:].=mod.((@view T[k,:]), A[k])
     end
   end
   for i in 1:r T[i,i]=A[i] end
@@ -260,9 +265,9 @@ Dict{Symbol, Any} with 9 entries:
   :coltrans => [1 0 -1; 0 1 -1; 0 0 1]
   :rowC     => [1 0 0; 0 1 0; 0 0 1]
   :rank     => 3
-  :colC     => [1 0 0; 0 1 0; 0 0 1]
   :signdet  => 1
   :rowtrans => [-2 62 -35; 1 -30 17; -3 97 -55]
+  :colC     => [1 0 0; 0 1 0; 0 0 1]
 
 julia> r[:rowtrans]*m*r[:coltrans]
 3×3 Matrix{Int64}:
@@ -272,9 +277,8 @@ julia> r[:rowtrans]*m*r[:coltrans]
 ```
 """
 function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false)
-# The gap code for INPLACE cannot work -- different memeory model to julia
+# The gap code for INPLACE cannot work -- different memory model to julia
 # if isempty(mat) mat=[Int[]] end
-# println("mat=$mat opt=$opt")
   sig=1
   #Embed nxm mat in a (n+2)x(m+2) larger "id" matrix
   n,m=size(mat).+(2,2)
@@ -313,7 +317,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     #Smith with some transforms..
     if TRIANG && ((COLTRANS || ROWTRANS) && c2<m)
       N=gcd(@view A[r:n,c2])
-      for j in vcat(c1+1:c2-1,c2+1:m-1,[c2])
+      for j in Iterators.flatten((c1+1:c2-1,c2+1:m-1,c2))
         if j==c2
           b=A[r,c2]
           a=A[r,c1]
@@ -325,13 +329,14 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
             end
           end
           N=0
+          T=typeof(N)
           for i in r:n
-            if N!=1 N=gcd(N, A[i,c1]-div(A[i,c2],b)*Int128(a)) end
+            if N!=1 N=gcd(N, A[i,c1]-div(A[i,c2],b)*widen(a)) end
           end
-          N=Int(N) # should be written differently to work with any integers
+          N=T(N)
         else
           c=mgcdex(N, A[r,j], @view A[r+1:n,j])
-          c=sum(c.*@view A[r+1:n,j])
+          c=dot(c,@view A[r+1:n,j])
           b=A[r,j]+c
           a=A[r,c1]+c
         end
@@ -341,7 +346,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
           t+=1+mgcdex(N, a+t*b+b,[b])[1]
         end
         if t>0
-          A[:,c1]+=t*A[:,j]
+          A[:,c1].+=t*@view A[:,j]
           if COLTRANS B[j,c1]+=t end
         end
       end
@@ -354,10 +359,10 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     c=mgcdex(abs(A[r,c1]), A[r+1,c1], @view A[r+2:n,c1])
     for i in r+2:n
       if c[i-r-1]!=0
-        A[r+1,:]+=c[i-r-1].*@view A[i,:]
+        A[r+1,:].+=c[i-r-1].*@view A[i,:]
         if ROWTRANS
           C[r+1,i]=c[i-r-1]
-          Q[r+1,:]+=c[i-r-1].*@view Q[i,:]
+          Q[r+1,:].+=c[i-r-1].*@view Q[i,:]
         end
       end
     end
@@ -365,30 +370,30 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     while A[r,c1]*A[i,c2]==A[i,c1]*A[r,c2] i+=1 end
     if i>r+1
       c=mgcdex(abs(A[r,c1]), A[r+1,c1]+A[i,c1], [A[i,c1]])[1]+1
-      A[r+1,:]+=c.*@view A[i,:]
+      A[r+1,:].+=c.*@view A[i,:]
       if ROWTRANS
         C[r+1,i]+=c
-        Q[r+1,:]+=c.*@view Q[i,:]
+        Q[r+1,:].+=c.*@view Q[i,:]
       end
     end
-    g=bezout(A[r:r+1,[c1,c2]])
+    g=bezout(@view A[r:r+1,[c1,c2]])
     sig*=g.sign
     A[r:r+1,:]=g.rowtrans*@view A[r:r+1,:]
     if ROWTRANS Q[r:r+1,:]=g.rowtrans*@view Q[r:r+1,:] end
     for i in r+2:n
       q=div(A[i,c1], A[r,c1])
-      A[i,:]-=q.*@view A[r,:]
-      if ROWTRANS Q[i,:]-=q.*@view Q[r,:] end
+      A[i,:].-=q.*@view A[r,:]
+      if ROWTRANS Q[i,:].-=q.*@view Q[r,:] end
       q=div(A[i,c2], A[r+1,c2])
-      A[i,:]-=q.*@view A[r+1,:]
-      if ROWTRANS Q[i,:]-=q.* @view Q[r+1,:] end
+      A[i,:].-=q.*@view A[r+1,:]
+      if ROWTRANS Q[i,:].-=q.*@view Q[r+1,:] end
     end
   end
   push!(rp,m) # length(rp)==r+1
   if n==m && r+1<n sig=0 end
   #smith w/ NO transforms - farm the work out...
   if TRIANG && !(ROWTRANS || COLTRANS)
-    A=A[2:end-1,2:end-1]
+    A=@view A[2:end-1,2:end-1]
     R=Dict(:normal => SNFofREF(A), :rank=>r-1)
     if n==m R[:signdet]=sig end
     return R
@@ -398,13 +403,13 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     for i in r:-1:1
       for j in i+1:r+1
         q=div(A[i,rp[j]]-mod(A[i,rp[j]], A[j,rp[j]]), A[j,rp[j]])
-        A[i,:]-=q.*@view A[j,:]
-        if ROWTRANS Q[i,:]-=q.*@view Q[j,:] end
+        A[i,:].-=q.*@view A[j,:]
+        if ROWTRANS Q[i,:].-=q.*@view Q[j,:] end
       end
       if TRIANG && i<r
         for j in i+1:m
           q=div(A[i,j], A[i,i])
-          A[1:i,j]-=q.*A[1:i,i]
+          A[1:i,j].-=q.*A[1:i,i]
           if COLTRANS P[i,j]=-q end
         end
       end
@@ -428,7 +433,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     for j in r+2:m-1
       A[r,r+1]+=c[j-r-1]*A[r,j]
       B[j,r+1]=c[j-r-1]
-      P[1:r,r+1].+=c[j-r-1].*P[1:r,j]
+      P[1:r,r+1].+=c[j-r-1].*@view P[1:r,j]
     end
     P[r+1,:].=0
     P[r+1,r+1]=1
@@ -438,7 +443,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     P[1:r+1,r:r+1]*=transpose(g.coeff)
     for j in r+2:m-1
       q=div(A[r,j], A[r,r])
-      P[1:r+1,j]-=q.*P[1:r+1,r]
+      P[1:r+1,j].-=q.*@view P[1:r+1,r]
       A[r,j]=0
     end
     P[r+2:m-1,:].=0
@@ -446,20 +451,18 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
   end
   #row transforms finisher
   if ROWTRANS for i in r+2:n Q[i,i]=1 end end
-  A=A[2:end-1,2:end-1]
-  R=Dict{Symbol,Any}(:normal => A)
+  R=Dict{Symbol,Any}(:normal => A[2:end-1,2:end-1],
+                     :rank => r-1,:signdet=>n==m ? sig : nothing)
   if ROWTRANS
     R[:rowC]=C[2:end-1,2:end-1]
     R[:rowQ]=Q[2:end-1,2:end-1]
+    R[:rowtrans]=R[:rowQ]*R[:rowC]
   end
   if TRIANG && COLTRANS
     R[:colC]=B[2:end-1,2:end-1]
     R[:colQ]=P[2:end-1,2:end-1]
+    R[:coltrans]=R[:colC]*R[:colQ]
   end
-  R[:rank]=r-1
-  if n==m R[:signdet]=sig end
-  if ROWTRANS R[:rowtrans]=R[:rowQ]*R[:rowC] end
-  if TRIANG && COLTRANS R[:coltrans]=R[:colC]*R[:colQ] end
   R
 end
 
@@ -479,6 +482,17 @@ julia> MatInt.TriangulizedIntegerMat(m)
  1  15  28
  0   1   1
  0   0   3
+```
+"""
+TriangulizedIntegerMat(mat)=NormalFormIntMat(mat;)[:normal]
+
+"""
+```julia-repl
+julia> m=[1 15 28;4 5 6;7 8 9]
+3×3 Matrix{Int64}:
+ 1  15  28
+ 4   5   6
+ 7   8   9
 
 julia> n=MatInt.TriangulizedIntegerMatTransform(m)
 Dict{Symbol, Any} with 6 entries:
@@ -494,7 +508,6 @@ julia> n[:rowtrans]*m==n[:normal]
 true
 ```
 """
-TriangulizedIntegerMat(mat)=NormalFormIntMat(mat;)[:normal]
 TriangulizedIntegerMatTransform(mat)=NormalFormIntMat(mat;ROWTRANS=true)
 
 """
@@ -552,7 +565,7 @@ true
 function hermite_transforms(mat::AbstractMatrix{<:Integer})
   res=NormalFormIntMat(mat;REDDIAG=true,ROWTRANS=true)
   (normal=res[:normal], rowtrans=res[:rowtrans], 
-   rank=res[:rank], signdet=get(res,:signdet,nothing))
+   rank=res[:rank], signdet=res[:signdet])
 end
 
 """
@@ -610,8 +623,8 @@ true
 """
 function col_hermite_transforms(mat::AbstractMatrix{<:Integer})
   res=NormalFormIntMat(transpose(mat);REDDIAG=true,ROWTRANS=true)
-  (normal=transpose(res[:normal]), coltrans=transpose(res[:rowtrans]), 
-   rank=res[:rank], signdet=get(res,:signdet,nothing))
+  (normal=permutedims(res[:normal]), coltrans=permutedims(res[:rowtrans]), 
+   rank=res[:rank], signdet=res[:signdet])
 end
 
 """
@@ -646,6 +659,12 @@ matrices  `P, Q` such that `Q*m*P==S`.  This function returns a named tuple
 with `.normal=S`, `.rowtrans=Q` and `.coltrans=P`.
 
 ```julia-repl
+julia> m=[1 15 28 7;4 5 6 7;7 8 9 7]
+3×4 Matrix{Int64}:
+ 1  15  28  7
+ 4   5   6  7
+ 7   8   9  7
+
 julia> n=smith_transforms(m)
 (normal = [1 0 0 0; 0 1 0 0; 0 0 3 0], coltrans = [1 0 -1 -84; 0 1 -1 175; 0 0 1 -91; 0 0 0 1], rowtrans = [-2 62 -35; 1 -30 17; -3 97 -55], rank = 3, signdet = nothing)
 
@@ -656,7 +675,7 @@ true
 function smith_transforms(mat::AbstractMatrix{<:Integer})
   res=NormalFormIntMat(mat;TRIANG=true,ROWTRANS=true,COLTRANS=true)
   (normal=res[:normal], coltrans=res[:coltrans], rowtrans=res[:rowtrans],
-  rank=res[:rank], signdet=get(res,:signdet,nothing))
+   rank=res[:rank], signdet=res[:signdet])
 end
 
 """
@@ -679,17 +698,16 @@ julia> baseInt(m)
  0  0  15
 ```
 """
-baseInt(m::Matrix{<:Integer})=BaseIntMat(m)
-
-function BaseIntMat(mat)
+function baseInt(mat::Matrix{<:Integer})
   norm=NormalFormIntMat(mat;REDDIAG=true)
   norm[:normal][1:norm[:rank],:]
 end
 
 """
-If  `m` and `n` are matrices with integral entries, this function returns a
-list  of vectors that forms a basis of the intersection of the integral row
-spaces of `m` and `n`.
+`intersect_rowspaceInt(m::Matrix{<:Integer}, n::Matrix{<:Integer})`
+
+returns  a  matrix  whose  rows  forms  a  basis of the intersection of the
+integral row spaces of `m` and `n`.
 
 ```julia-repl
 julia> mat=[1 2 7;4 5 6;10 11 19]; nat=[5 7 2;4 2 5;7 1 4]
@@ -698,19 +716,19 @@ julia> mat=[1 2 7;4 5 6;10 11 19]; nat=[5 7 2;4 2 5;7 1 4]
  4  2  5
  7  1  4
 
-julia> MatInt.BaseIntersectionIntMats(mat,nat)
+julia> intersect_rowspaceInt(mat,nat)
 3×3 Matrix{Int64}:
  1  5  509
  0  6  869
  0  0  960
 ```
 """
-function BaseIntersectionIntMats(M1, M2)
+function intersect_rowspaceInt(M1::Matrix{<:Integer}, M2::Matrix{<:Integer})
   M=vcat(M1, M2)
   r=TriangulizedIntegerMatTransform(M)
   T=r[:rowtrans][r[:rank]+1:size(M,1),axes(M1,1)]
   if !isempty(T) T*=M1 end
-  BaseIntMat(T)
+  baseInt(T)
 end
 
 """
@@ -744,16 +762,16 @@ julia> complementInt(m,n)
 ```
 """
 function complementInt(full::Matrix{<:Integer}, sub::Matrix{<:Integer})
-  F=BaseIntMat(full)
+  F=baseInt(full)
   if isempty(sub) || iszero(sub) return (complement=F,sub=sub,moduli=Int[]) end
-  S=BaseIntersectionIntMats(F, sub)
-  if S!=BaseIntMat(sub) error(sub," must be submodule of ",full) end
+  S=intersect_rowspaceInt(F, sub)
+  if S!=baseInt(sub) error(sub," must be submodule of ",full) end
   M=vcat(F,S)
-  T=Int.(inv(Rational.(TriangulizedIntegerMatTransform(M)[:rowtrans])))
+  T=Integer.(inv(Rational.(TriangulizedIntegerMatTransform(M)[:rowtrans])))
   T=T[size(F,1)+1:end,axes(F,1)]
   r=smith_transforms(T)
-  M=Int.(inv(Rational.(r.coltrans))*F)
-  (complement=BaseIntMat(M[1+r.rank:end,:]), sub=r.rowtrans*T*F, 
+  M=Integer.(inv(Rational.(r.coltrans))*F)
+  (complement=baseInt(M[1+r.rank:end,:]), sub=r.rowtrans*T*F, 
    moduli=map(i->r.normal[i,i],1:r.rank))
 end
 
@@ -781,7 +799,7 @@ julia> MatInt.lnullspaceInt(m)
 """
 function lnullspaceInt(mat)
   norm=TriangulizedIntegerMatTransform(mat)
-  BaseIntMat(norm[:rowtrans][norm[:rank]+1:size(mat,1),:])
+  baseInt(norm[:rowtrans][norm[:rank]+1:size(mat,1),:])
 end
 
 """
@@ -834,16 +852,14 @@ function solutionmatInt(mat, v)
 end
     
 """
-This  function returns  a list  of length  two, its  first entry  being the
+This  function returns  a Tuple of length  two, its  first entry  being the
 result  of a call  to `solutionmatInt` with  same arguments, the second the
-result of `NullspaceIntMat` applied to the matrix `mat`. The calculation is
+result of `lnullspaceInt` applied to the matrix `mat`. The calculation is
 performed faster than if two separate calls would be used.
 ```julia_repl
 julia> mat=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]
 julia> MatInt.SolutionNullspaceIntMat(mat,[95,115,182])
-2-element Vector{Array{Int64}}:
- [2285, -5854, 4888, -1299, 0]
- [1 18 … 2 -6; 0 24 … 3 -7]
+([2285, -5854, 4888, -1299, 0], [1 18 … 2 -6; 0 24 … 3 -7])
 ```
 """
 function SolutionNullspaceIntMat(mat, v)
@@ -855,7 +871,7 @@ function SolutionNullspaceIntMat(mat, v)
   end
   norm=TriangulizedIntegerMatTransform(mat)
   kern=norm[:rowtrans][norm[:rank]+1:size(mat,1),:]
-  kern=BaseIntMat(kern)
+  kern=baseInt(kern)
   t=norm[:rowtrans]
   rs=norm[:normal][1:norm[:rank],:]
   M=vcat(rs, transpose(v))
@@ -863,7 +879,7 @@ function SolutionNullspaceIntMat(mat, v)
   if r[:rank]==size(r[:normal],1) || r[:rowtrans][end,end]!=1
       return [false, kern]
   end
-  [-transpose(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]], kern]
+  (-transpose(t[1:r[:rank],:])*r[:rowtrans][end,1:r[:rank]], kern)
 end
 
 function DeterminantIntMat(mat)
@@ -901,7 +917,7 @@ function DeterminantIntMat(mat)
       c=mgcdex(abs(A[r,c1]), A[r+1,c1]+A[i,c1], [A[i,c1]])[1]+1
       A[r+1,:]+=A[i,:].* c
     end
-    g=bezout(A[r:r+1,[c1,c2]])
+    g=bezout(@view A[r:r+1,[c1,c2]])
     sig*=g.sign
     if sig==0 return 0 end
     A[r:r+1,:]=g.rowtrans*A[r:r+1,:]

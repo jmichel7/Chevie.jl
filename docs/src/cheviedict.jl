@@ -152,7 +152,7 @@ const ChevieDict=Dict(
 "HighestPowerFakeDegreeSymbol"=>"degree_fegsymbol",
 "HighestPowerGenericDegrees(W)"=>"charinfo(W)[:A]",
 "HighestPowerGenericDegreeSymbol"=>"degree_gendeg_symbol",
-#HighestShortRoot
+"HighestShortRoot"=>"highest_short_root",
 "KazhdanLusztigPolynomial"=>"KLPol",
 "HyperplaneOrbits"=>"hyperplane_orbits",
 "ICCTable"=>"ICCTable",
