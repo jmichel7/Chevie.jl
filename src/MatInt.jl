@@ -1,12 +1,17 @@
 """
-Operations on integral matrices
+Smith and Hermite normal forms for integral matrices, ported from GAP4, and
+Diaconis-Graham  normal form  for sets  of generators  of an abelian group,
+ported from GAP3/Chevie.
 
-Quickly ported from GAP; the code is still horrible (unreadable) like the
-original one.
+The  code ported  from GAP4  for NormalFormIntMat  is horrible (unreadable)
+like the original one.
 
-Look at the docstrings for `complementInt, lnullspaceInt, solutionmatInt, 
-smith, smith_transforms, hermite, hermite_transforms, col_hermite, 
-col_hermite_transforms, diaconis_graham, baseInt, intersect_rowspaceInt`
+The  best way to  make sure of  the validity of  the result is to work with
+matrices of SaferIntegers.
+
+For  the API, look at the docstrings for `smith, smith_transforms, hermite,
+hermite_transforms,  col_hermite,  col_hermite_transforms, diaconis_graham,
+baseInt, complementInt, lnullspaceInt, solutionmatInt, intersect_rowspaceInt`
 """
 module MatInt
 
@@ -100,15 +105,15 @@ end
 """
 function bezout(A)
   e=Gcdex(A[1,1],A[2,1])
-  f,g=e.coeff*@view A[:,2]
+  @views f,g=e.coeff*A[:,2]
   if iszero(g) return e end
+  coeff=e.coeff
   if g<0
-    coeff=[1 0;0 -1]*e.coeff
+    @views coeff[2,:]=-coeff[2,:]
     g=-g
-  else coeff=e.coeff
   end
-  (sign=sign(A[1,1]*A[2,2]-A[1,2]*A[2,1]),
-   rowtrans=[1 -div(f-mod(f,g),g);0 1]*coeff)
+  @views coeff[1,:].+=-div(f-mod(f,g),g).*coeff[2,:]
+  (sign=sign(A[1,1]*A[2,2]-A[1,2]*A[2,1]),rowtrans=coeff)
 end
 
 """
@@ -118,14 +123,15 @@ end
 function mgcdex(N, a, v)
   l=length(v)
   h=N
-  M=map(1:l)do i
+  M=zeros(eltype(v),l)
+  for i in 1:l
     g=h
     h=gcd(g, v[i])
-    div(g, h)
+    M[i]=div(g, h)
   end
   h=gcd(a,h)
   g=div(a,h)
-  reverse(map(l:-1:1)do i
+  for i in l:-1:1
     b=div(v[i], h)
     d=prime_part(M[i], b)
     if d==1 c=0
@@ -134,8 +140,9 @@ function mgcdex(N, a, v)
       c=rgcd(d, numerator(u)*invmod(denominator(u),d))
       g+=c*b
     end
-    c
-  end)
+    M[i]=c
+  end
+  M
 end
 
 ## SNFofREF - fast SNF of REF matrix
@@ -163,7 +170,7 @@ function SNFofREF(R)
     end
     t=min(k, r)
     for i in t-1:-1:si
-      t=mgcdex(A[i], T[i,k], [T[i+1,k]])[1]
+      t=mgcdex(A[i], T[i,k], (T[i+1],T[k]))[1]
       if t!=0
         T[i,:].+=(@view T[i+1,:]).*t
         T[i,:].=mod.((@view T[i,:]), A[i])
@@ -278,7 +285,6 @@ julia> r[:rowtrans]*m*r[:coltrans]
 """
 function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWTRANS=false, COLTRANS=false)
 # The gap code for INPLACE cannot work -- different memory model to julia
-# if isempty(mat) mat=[Int[]] end
   sig=1
   #Embed nxm mat in a (n+2)x(m+2) larger "id" matrix
   n,m=size(mat).+(2,2)
@@ -340,18 +346,18 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
           b=A[r,j]+c
           a=A[r,c1]+c
         end
-        t=mgcdex(N, a, [b])[1]
+        t=mgcdex(N, a, (b,))[1]
         tmp=A[r,c1]+t*A[r,j]
         if tmp==0 || tmp*A[k,c2]==(A[k,c1]+t*A[k,j])*A[r,c2]
-          t+=1+mgcdex(N, a+t*b+b,[b])[1]
+          t+=1+mgcdex(N, a+t*b+b,(b,))[1]
         end
         if t>0
-          A[:,c1].+=t*@view A[:,j]
+        @views  A[:,c1].+=t*A[:,j]
           if COLTRANS B[j,c1]+=t end
         end
       end
       if A[r,c1]*A[k,c1+1]==A[k,c1]*A[r,c1+1]
-        A[:,c1+1].+=@view A[:,c2]
+        @views A[:,c1+1].+=A[:,c2]
         if COLTRANS B[c2,c1+1]=1 end
       end
       c2=c1+1
@@ -359,34 +365,34 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     c=mgcdex(abs(A[r,c1]), A[r+1,c1], @view A[r+2:n,c1])
     for i in r+2:n
       if c[i-r-1]!=0
-        A[r+1,:].+=c[i-r-1].*@view A[i,:]
+        @views A[r+1,:].+=c[i-r-1].*A[i,:]
         if ROWTRANS
           C[r+1,i]=c[i-r-1]
-          Q[r+1,:].+=c[i-r-1].*@view Q[i,:]
+          @views Q[r+1,:].+=c[i-r-1].*Q[i,:]
         end
       end
     end
     i=r+1
     while A[r,c1]*A[i,c2]==A[i,c1]*A[r,c2] i+=1 end
     if i>r+1
-      c=mgcdex(abs(A[r,c1]), A[r+1,c1]+A[i,c1], [A[i,c1]])[1]+1
-      A[r+1,:].+=c.*@view A[i,:]
+      c=mgcdex(abs(A[r,c1]), A[r+1,c1]+A[i,c1], (A[i],A[c1]))[1]+1
+      @views A[r+1,:].+=c.*A[i,:]
       if ROWTRANS
         C[r+1,i]+=c
-        Q[r+1,:].+=c.*@view Q[i,:]
+        @views Q[r+1,:].+=c.*Q[i,:]
       end
     end
     g=bezout(@view A[r:r+1,[c1,c2]])
     sig*=g.sign
-    A[r:r+1,:]=g.rowtrans*@view A[r:r+1,:]
-    if ROWTRANS Q[r:r+1,:]=g.rowtrans*@view Q[r:r+1,:] end
+    @views A[r:r+1,:].=g.rowtrans*A[r:r+1,:]
+    if ROWTRANS @views Q[r:r+1,:].=g.rowtrans*Q[r:r+1,:] end
     for i in r+2:n
       q=div(A[i,c1], A[r,c1])
-      A[i,:].-=q.*@view A[r,:]
-      if ROWTRANS Q[i,:].-=q.*@view Q[r,:] end
+      @views A[i,:].-=q.*A[r,:]
+      if ROWTRANS @views Q[i,:].-=q.*Q[r,:] end
       q=div(A[i,c2], A[r+1,c2])
-      A[i,:].-=q.*@view A[r+1,:]
-      if ROWTRANS Q[i,:].-=q.*@view Q[r+1,:] end
+      @views A[i,:].-=q.*A[r+1,:]
+      if ROWTRANS @views Q[i,:].-=q.*Q[r+1,:] end
     end
   end
   push!(rp,m) # length(rp)==r+1
@@ -403,13 +409,13 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     for i in r:-1:1
       for j in i+1:r+1
         q=div(A[i,rp[j]]-mod(A[i,rp[j]], A[j,rp[j]]), A[j,rp[j]])
-        A[i,:].-=q.*@view A[j,:]
-        if ROWTRANS Q[i,:].-=q.*@view Q[j,:] end
+        @views A[i,:].-=q.*A[j,:]
+        if ROWTRANS @views Q[i,:].-=q.*Q[j,:] end
       end
       if TRIANG && i<r
         for j in i+1:m
           q=div(A[i,j], A[i,i])
-          A[1:i,j].-=q.*A[1:i,i]
+          @views A[1:i,j].-=q.*A[1:i,i]
           if COLTRANS P[i,j]=-q end
         end
       end
@@ -433,7 +439,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     for j in r+2:m-1
       A[r,r+1]+=c[j-r-1]*A[r,j]
       B[j,r+1]=c[j-r-1]
-      P[1:r,r+1].+=c[j-r-1].*@view P[1:r,j]
+      @views P[1:r,r+1].+=c[j-r-1].*P[1:r,j]
     end
     P[r+1,:].=0
     P[r+1,r+1]=1
@@ -443,7 +449,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     P[1:r+1,r:r+1]*=transpose(g.coeff)
     for j in r+2:m-1
       q=div(A[r,j], A[r,r])
-      P[1:r+1,j].-=q.*@view P[1:r+1,r]
+      @views P[1:r+1,j].-=q.*P[1:r+1,r]
       A[r,j]=0
     end
     P[r+2:m-1,:].=0
