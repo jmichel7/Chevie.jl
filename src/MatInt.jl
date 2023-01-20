@@ -38,15 +38,14 @@ function rgcd(N, a)
   c=0
   while true
     for i in eachindex(r) r[i]=mod(r[i]+1,d[i]) end
-    i=findfirst(<=(0),r)
-    if isnothing(i)
+    if all(>(0),r)
       g=1
       i=0
       while g==1 && i<length(r)
         i+=1
         g=gcd(r[i], d[i])
       end
-      if g == 1 return c end
+      if g==1 return c end
       q=prime_part(div(d[i], g), g)
       if q>1
        push!(r,mod(r[i], q))
@@ -446,7 +445,7 @@ function NormalFormIntMat(mat::AbstractMatrix; TRIANG=false, REDDIAG=false, ROWT
     g=Gcdex(A[r,r], A[r,r+1])
     A[r,r]=g.gcd
     A[r,r+1]=0
-    P[1:r+1,r:r+1]*=transpose(g.coeff)
+    @views P[1:r+1,r:r+1]*=transpose(g.coeff)
     for j in r+2:m-1
       q=div(A[r,j], A[r,r])
       @views P[1:r+1,j].-=q.*P[1:r+1,r]
