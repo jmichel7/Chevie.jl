@@ -38,7 +38,7 @@ automatically available when you use `Gapjm`.
   * [CyclotomicNumbers](https://github.com/jmichel7/CyclotomicNumbers.jl)
   * [ModuleElts](https://github.com/jmichel7/ModuleElts.jl) (elements of a free module over some ring)
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
-  * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the moduls `Perms` and `Groups` which could be separate packages)
+  * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the modules `Perms` and `Groups` which could be separate packages)
 
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented some other infrastructure which
@@ -92,7 +92,7 @@ using UsingMerge
 @reexport using Combinat
 @reexport using Primes: factor, eachfactor
 # careful: use very little of LinearAlgebra
-@reexport using LinearAlgebra: diag, tr, I, Diagonal
+@reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
 @reexport using PermGroups
 @usingmerge verbose=true reexport CyclotomicNumbers
 #--------------------- internal modules -----------------------------------

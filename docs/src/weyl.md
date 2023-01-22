@@ -11,6 +11,7 @@ reflection_subgroup(::Weyl.FCG,::AbstractVector{<:Integer})
 coxeter_group(t::Symbol,r::Int=0,b::Int=0)
 coxeter_group()
 rootlengths
+highest_short_root
 rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)
 describe_involution

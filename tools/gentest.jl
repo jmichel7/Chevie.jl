@@ -6,22 +6,24 @@ function gentests(ff::Vector{String})
 # auto-generated tests from julia-repl docstrings
 using Test, Gapjm
 #include("../tools/Gap4.jl")
-function mytest(f::String,a::String,b::String)
-  println(f," ",a)
-  omit=a[end]==';'
-  a=replace(a,"\\\\\\\\"=>"\\\\")
-  a=repr(MIME("text/plain"),eval(Meta.parse(a)),context=:limit=>true)
-  if omit a="nothing" end
-  a=replace(a,r" *(\\n|\$)"s=>s"\\1")
-  a=replace(a,r"\\n\$"s=>"")
-  b=replace(b,r" *(\\n|\$)"s=>s"\\1")
-  b=replace(b,r"\\n\$"s=>"")
+function mytest(file::String,src::String,man::String)
+  println(file," ",src)
+  omit=src[end]==';'
+  src=replace(src,"\\\\\\\\"=>"\\\\")
+  exec=repr(MIME("text/plain"),eval(Meta.parse(src)),context=:limit=>true)
+  if omit exec="nothing" end
+  exec=replace(exec,r" *(\\n|\$)"s=>s"\\1")
+  exec=replace(exec,r"\\n\$"s=>"")
+  man=replace(man,r" *(\\n|\$)"s=>s"\\1")
+  man=replace(man,r"\\n\$"s=>"")
   i=1
-  while i<=lastindex(a) && i<=lastindex(b) && a[i]==b[i]
-    i=nextind(a,i)
+  while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
+    i=nextind(exec,i)
   end
-  if a!=b print("exec=\$(repr(a[i:end]))\\nmanl=\$(repr(b[i:end]))\\n") end
-  a==b
+  if exec!=man 
+    print("exec=\$(repr(exec[i:end]))\\nmanl=\$(repr(man[i:end]))\\n")
+  end
+  exec==man
 end
 @testset verbose = true "Gapjm" begin
 """

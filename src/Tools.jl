@@ -2,6 +2,7 @@
 # several of the self-contained structural packages of Gapjm
 module Tools
 export abelian_gens, abelian_invariants, improve_type
+using LinearAlgebra:LinearAlgebra, exactdiv
 using UsingMerge
 using ModuleElts
 using PuiseuxPolynomials
@@ -50,10 +51,10 @@ function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Ration
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
-LaurentPolynomials.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(
-                    conductor(c),exactdiv(c.d,b))
+LinearAlgebra.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(conductor(c),
+                                                         exactdiv(c.d,b))
 
-function LaurentPolynomials.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
+function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
   res=a//b
   if denominator(res)>1 error(b," does not exactly divide ",a) end
   numerator(res)

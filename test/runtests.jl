@@ -1,22 +1,24 @@
 # auto-generated tests from julia-repl docstrings
 using Test, Gapjm
 #include("../tools/Gap4.jl")
-function mytest(f::String,a::String,b::String)
-  println(f," ",a)
-  omit=a[end]==';'
-  a=replace(a,"\\\\"=>"\\")
-  a=repr(MIME("text/plain"),eval(Meta.parse(a)),context=:limit=>true)
-  if omit a="nothing" end
-  a=replace(a,r" *(\n|$)"s=>s"\1")
-  a=replace(a,r"\n$"s=>"")
-  b=replace(b,r" *(\n|$)"s=>s"\1")
-  b=replace(b,r"\n$"s=>"")
+function mytest(file::String,src::String,man::String)
+  println(file," ",src)
+  omit=src[end]==';'
+  src=replace(src,"\\\\"=>"\\")
+  exec=repr(MIME("text/plain"),eval(Meta.parse(src)),context=:limit=>true)
+  if omit exec="nothing" end
+  exec=replace(exec,r" *(\n|$)"s=>s"\1")
+  exec=replace(exec,r"\n$"s=>"")
+  man=replace(man,r" *(\n|$)"s=>s"\1")
+  man=replace(man,r"\n$"s=>"")
   i=1
-  while i<=lastindex(a) && i<=lastindex(b) && a[i]==b[i]
-    i=nextind(a,i)
+  while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
+    i=nextind(exec,i)
   end
-  if a!=b print("exec=$(repr(a[i:end]))\nmanl=$(repr(b[i:end]))\n") end
-  a==b
+  if exec!=man 
+    print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
+  end
+  exec==man
 end
 @testset verbose = true "Gapjm" begin
 @testset "Chars.jl" begin
@@ -320,6 +322,10 @@ end
 @test mytest("Families.jl","CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
 end
 @testset "GLinearAlgebra.jl" begin
+@test mytest("GLinearAlgebra.jl","m=[1 2;2 4;5 6]","3×2 Matrix{Int64}:\n 1  2\n 2  4\n 5  6")
+@test mytest("GLinearAlgebra.jl","GLinearAlgebra.rowspace(m)","2×2 Matrix{Rational{Int64}}:\n 1//1  0//1\n 0//1  1//1")
+@test mytest("GLinearAlgebra.jl","m=[1 2;2 4;5 6]","3×2 Matrix{Int64}:\n 1  2\n 2  4\n 5  6")
+@test mytest("GLinearAlgebra.jl","GLinearAlgebra.independent_rows(m)","2-element Vector{Int64}:\n 1\n 3")
 @test mytest("GLinearAlgebra.jl","@Pol q","Pol{Int64}: q")
 @test mytest("GLinearAlgebra.jl","M=[q^6 q^0 q^3 q^3 q^5+q q^4+q^2; q^0 q^6 q^3 q^3 q^5+q q^4+q^2; q^3 q^3 q^6 q^0 q^4+q^2 q^5+q; q^3 q^3 q^0 q^6 q^4+q^2 q^5+q; q^5+q q^5+q q^4+q^2 q^4+q^2 q^6+q^4+q^2+1 q^5+2*q^3+q; q^4+q^2 q^4+q^2 q^5+q q^5+q q^5+2*q^3+q q^6+q^4+q^2+1]","6×6 Matrix{Pol{Int64}}:\n q⁶     1      q³     q³     q⁵+q        q⁴+q²\n 1      q⁶     q³     q³     q⁵+q        q⁴+q²\n q³     q³     q⁶     1      q⁴+q²       q⁵+q\n q³     q³     1      q⁶     q⁴+q²       q⁵+q\n q⁵+q   q⁵+q   q⁴+q²  q⁴+q²  q⁶+q⁴+q²+1  q⁵+2q³+q\n q⁴+q²  q⁴+q²  q⁵+q   q⁵+q   q⁵+2q³+q    q⁶+q⁴+q²+1")
 @test mytest("GLinearAlgebra.jl","bb=[[2],[4],[6],[3,5],[1]];","nothing")
@@ -615,13 +621,11 @@ end
 @test mytest("MatInt.jl","baseInt(m)","3×3 Matrix{Int64}:\n 1  2   7\n 0  3   7\n 0  0  15")
 @test mytest("MatInt.jl","mat=[1 2 7;4 5 6;10 11 19]; nat=[5 7 2;4 2 5;7 1 4]","3×3 Matrix{Int64}:\n 5  7  2\n 4  2  5\n 7  1  4")
 @test mytest("MatInt.jl","intersect_rowspaceInt(mat,nat)","3×3 Matrix{Int64}:\n 1  5  509\n 0  6  869\n 0  0  960")
-@test mytest("MatInt.jl","m=one(zeros(Int,3,3))","3×3 Matrix{Int64}:\n 1  0  0\n 0  1  0\n 0  0  1")
 @test mytest("MatInt.jl","n=[1 2 3;4 5 6]","2×3 Matrix{Int64}:\n 1  2  3\n 4  5  6")
-@test mytest("MatInt.jl","complementInt(m,n)","(complement = [0 0 1], sub = [1 2 3; 0 3 6], moduli = [1, 3])")
+@test mytest("MatInt.jl","complementInt(n)","(complement = [0 0 1], sub = [1 2 3; 0 3 6], moduli = [1, 3])")
 @test mytest("MatInt.jl","m=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]","5×3 Matrix{Int64}:\n  1   2   7\n  4   5   6\n  7   8   9\n 10  11  19\n  5   7  12")
 @test mytest("MatInt.jl","MatInt.lnullspaceInt(m)","2×5 Matrix{Int64}:\n 1  18   -9  2  -6\n 0  24  -13  3  -7")
 @test mytest("MatInt.jl","mat=[1 2 7;4 5 6;7 8 9;10 11 19;5 7 12]","5×3 Matrix{Int64}:\n  1   2   7\n  4   5   6\n  7   8   9\n 10  11  19\n  5   7  12")
-@test mytest("MatInt.jl","solutionmat(mat,[95,115,182])","5-element Vector{Rational{Int64}}:\n  47//4\n -17//2\n  67//4\n   0//1\n   0//1")
 @test mytest("MatInt.jl","solutionmatInt(mat,[95,115,182])","5-element Vector{Int64}:\n  2285\n -5854\n  4888\n -1299\n     0")
 @test mytest("MatInt.jl","r=diaconis_graham([3 0;4 1],[10,5])","(rowtrans = [-13 10; 4 -3], normal = [1 0; 0 2])")
 @test mytest("MatInt.jl","r.normal==mod.(r.rowtrans*[3 0;4 1],[10,5]')","true")
@@ -820,7 +824,7 @@ end
 @testset "Sscoset.jl" begin
 @test mytest("Sscoset.jl","WF=rootdatum(:u,6)","u₆")
 @test mytest("Sscoset.jl","l=quasi_isolated_reps(WF)","4-element Vector{SemisimpleElement{Root1}}:\n <1,1,1,1,1,1>\n <ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³>\n <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>\n <ζ₄,1,1,1,1,ζ₄³>")
-@test mytest("Sscoset.jl","centralizer.(Ref(WF),l)","4-element Vector{ExtendedCox{FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:\n Extended(C₃₍₃₂₁₎)\n ²A₃₍₃₁₂₎\n (A₁A₁)₍₁₃₎×A₁₍₂₎\n B₂Φ₁")
+@test mytest("Sscoset.jl","centralizer.(Ref(WF),l)","4-element Vector{ExtendedCox{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:\n Extended(C₃₍₃₂₁₎)\n ²A₃₍₃₁₂₎\n (A₁A₁)₍₁₃₎×A₁₍₂₎\n B₂Φ₁")
 @test mytest("Sscoset.jl","isisolated.(Ref(WF),l)","4-element BitVector:\n 1\n 1\n 1\n 0")
 @test mytest("Sscoset.jl","WF=rootdatum(:u,6)","u₆")
 @test mytest("Sscoset.jl","s=SS(Group(WF),[1//4,0,0,0,0,3//4])","SemisimpleElement{Root1}: <ζ₄,1,1,1,1,ζ₄³>")
@@ -958,7 +962,7 @@ end
 @test mytest("Ucl.jl","UnipotentClasses(coxgroup(:G,2))","UnipotentClasses(G₂)\n1<A₁<Ã₁<G₂(a₁)<G₂\n     u│D-R dBu B-C  C(u)    G₂(G₂₍₎=Φ₁²)  .(G₂)\n──────┼─────────────────────────────────────────\nG₂    │ 22   0  22    q²         Id:φ₁‚₀\nG₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id\nÃ₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂\nA₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃\n1     │ 00   6  ..    G₂         Id:φ₁‚₆")
 @test mytest("Ucl.jl","UnipotentClasses(coxgroup(:G,2),3)","UnipotentClasses(G₂)\n1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂\n     u│dBu B-C  C(u) G₂(G₂₍₎=Φ₁²) .(G₂) .(G₂)  .(G₂)\n──────┼──────────────────────────────────────────────\nG₂    │  0  22 q².Z₃       1:φ₁‚₀       ζ₃:Id ζ₃²:Id\nG₂(a₁)│  1  20 q⁴.Z₂       2:φ₂‚₁ 11:Id\nÃ₁    │  2  .2    q⁶      Id:φ₂‚₂\nA₁    │  3  2. q⁵.A₁     Id:φ″₁‚₃\n(Ã₁)₃ │  3  ?? q⁵.A₁     Id:φ′₁‚₃\n1     │  6  ..    G₂      Id:φ₁‚₆")
 @test mytest("Ucl.jl","uc=UnipotentClasses(coxgroup(:G,2));","nothing")
-@test mytest("Ucl.jl","t=ICCTable(uc)","Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂\n      │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1\n──────┼──────────────────────────────\nXφ₁‚₀ │ 1          0      1  1  1  1\nXφ′₁‚₃│ 0          1      0  1  0 x²\nXφ₂‚₁ │ 0          0      1  1  1 Φ₈\nXφ₂‚₂ │ 0          0      0  1  1 Φ₄\nXφ″₁‚₃│ 0          0      0  0  1  1\nXφ₁‚₆ │ 0          0      0  0  0  1")
+@test mytest("Ucl.jl","t=ICCTable(uc)","Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂\n      │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1\n──────┼──────────────────────────────\nXφ₁‚₀ │ 1          0      1  1  1  1\nXφ′₁‚₃│ 0          1      0  1  0 q²\nXφ₂‚₁ │ 0          0      1  1  1 Φ₈\nXφ₂‚₂ │ 0          0      0  1  1 Φ₄\nXφ″₁‚₃│ 0          0      0  0  1  1\nXφ₁‚₆ │ 0          0      0  0  0  1")
 @test mytest("Ucl.jl","W=coxgroup(:F,4)","F₄")
 @test mytest("Ucl.jl","H=reflection_subgroup(W,[1,3])","F₄₍₁₃₎=A₁×Ã₁Φ₁²")
 @test mytest("Ucl.jl","Ucl.induced_linear_form(W,H,[2,2])","4-element Vector{Int64}:\n 0\n 1\n 0\n 0")

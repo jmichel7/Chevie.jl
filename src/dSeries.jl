@@ -768,11 +768,8 @@ function Weyl.relative_group(s::Series)
     res[:WH] = H
     res
   end
-  function v(h) # normalize a space (what "VectorSpace" could do)
-    if size(h,1)==0 return  h end
-    echelon(h)[1]
-  end
-  rrefs=collect(values(groupby(x->v(hplane(x)),refs)))#hplanes hashable!sortable
+  #hplanes hashable!sortable
+  rrefs=collect(values(groupby(x->rowspace(hplane(x)),refs)))
   rrefs=filter(x->!(any(y->inclusion(W,y) in inclusion(L),x)),rrefs)
   sort!(rrefs)
   reflist = []
@@ -783,7 +780,7 @@ function Weyl.relative_group(s::Series)
       crr=improve_type(map(x->x[:coroot],reflist))
       WGL=PRG(rr,crr)
       reflist=map(x->smalltobig(lnullspace(x-x^0)),reflrep(WGL))
-      reflist=map(h->rrefs[findfirst(rr->v(hplane(rr[1]))==v(h),rrefs)], reflist)
+      reflist=map(h->rrefs[findfirst(rr->rowspace(hplane(rr[1]))==rowspace(h),rrefs)], reflist)
       WGL.reflists = map(getreflection, reflist)
       WGL.parentMap = map(x->x[:hom], WGL.reflists)
       WGL.reflists = map(x->x[:refs], WGL.reflists)

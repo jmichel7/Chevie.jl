@@ -1146,7 +1146,7 @@ end
 function independent_roots(W::PermRootGroup{T,T1})where{T,T1}
   get!(W,:indeproots) do
     if istorus(W) Int[]
-    else sort(echelon(toM(roots(W)))[2])
+    else sort(independent_rows(toM(roots(W))))
     end
    end::Vector{Int}
 end
@@ -1966,7 +1966,7 @@ BadNumber(W)=prod(BadNumber.(refltype(W));init=1)
 function BadNumber(t::TypeIrred)
   r=rank(t)
   if iszero(r) return 1 end
-  d=GLinearAlgebra.det(cartan(t))
+  d=LinearAlgebra.det_bareiss(cartan(t))
   if d==0 error(t," should be well generated") end
   improve_type(prod(degrees(t))//(factorial(r)*d))
 end

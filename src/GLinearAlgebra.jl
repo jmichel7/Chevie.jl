@@ -8,28 +8,24 @@ Here we are interested in functions which work over any field (or sometimes
 any ring).
 """
 module GLinearAlgebra
-using LaurentPolynomials: exactdiv
 using CyclotomicNumbers: Cyc # case in echelon
 using Combinat: combinations, multisets, tally
-using LinearAlgebra: tr
+using LinearAlgebra: tr, exactdiv, det_bareiss
 using ..Util: toM, toL
 using ..Tools: improve_type
-export echelon, echelon!, exterior_power, comatrix, bigcell_decomposition, 
+export echelon!, exterior_power, comatrix, bigcell_decomposition, 
   ratio, charpoly, solutionmat, transporter, 
-  permanent, symmetric_power, diagconj_elt, lnullspace, sum_rowspace,
-  intersect_rowspace, in_rowspace
-
-echelon!(m::AbstractMatrix{<:Integer})=echelon!(m*1//1)
-echelon!(m::AbstractMatrix{<:Cyc{<:Integer}})=echelon!(m*1//1)
+  permanent, symmetric_power, diagconj_elt, lnullspace,
+  intersect_rowspace, in_rowspace, rowspace, independent_rows
 
 """
-`echelon!(m)`
+`echelon!(m::AbstractMatrix)`
 
-puts `m` in echelon form and returns: (`m`, indices of linearly independent
-rows  of `m`) The echelon  form transforms the rows  of m into a particular
-basis  of the rowspace. The  first non-zero element of  each line is 1, and
-such  an element  is also  the only  non-zero in  its column.  works in any
-field.
+puts  `m` in echelon  form in-place and  returns: (`m`, indices of linearly
+independent  rows of original `m`). The echelon form transforms the rows of
+m  into a particular basis  of the rowspace. The  first non-zero element of
+each  line is  1, and  such an  element is  also the  only non-zero  in its
+column. works in any field.
 """
 function echelon!(m::AbstractMatrix)
   rk=0
@@ -56,24 +52,62 @@ function echelon!(m::AbstractMatrix)
 end
 
 """
-  `echelon(m)`
+`rowspace(m::AbstractMatrix)`
 
-  returns: (echelon form of `m`, indices of linearly independent rows of `m`).
-  Works over any field.
+returns a canonical form of the rowspace of `m` (the vector space generated
+by  the rows of `m`),  the echelon form. This  is a particular basis of the
+rowspace  of `m`: the first non-zero element of each line is 1, and such an
+element  is also the only non-zero  element in its column. Integer matrices
+are converted to `Rational` before applying this function.
 
-  The  echelon form returns a particular basis of the row space of `m`: the
-  first non-zero element of each line is 1, and such an element is also the
-  only non-zero in its column.
+```julia-repl
+julia> m=[1 2;2 4;5 6]
+3×2 Matrix{Int64}:
+ 1  2
+ 2  4
+ 5  6
 
-  The second element of `echelon` is the indices of a subset of the rows
-  which forms a basis of the row space.
+julia> GLinearAlgebra.rowspace(m)
+2×2 Matrix{Rational{Int64}}:
+ 1//1  0//1
+ 0//1  1//1
+```
 """
-function echelon(m::AbstractMatrix)
-  m=copy(m)
-  m,ind=echelon!(m)
-  m=m[1:count(!iszero,eachrow(m)),:]
-  m,ind
+function rowspace(m::AbstractMatrix;dup=true)
+  if dup m=copy(m) end
+  m=first(echelon!(m))
+  m[1:count(!iszero,eachrow(m)),:]
 end
+rowspace(m::AbstractMatrix{<:Integer})=rowspace(m*1//1;dup=false)
+rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
+
+"""
+`independent_rows(m::AbstractMatrix)`
+
+returns  a vector of the  indices of a set  of independent rows of `m` (the
+lexicographically first such set).
+
+```julia-repl
+julia> m=[1 2;2 4;5 6]
+3×2 Matrix{Int64}:
+ 1  2
+ 2  4
+ 5  6
+
+julia> GLinearAlgebra.independent_rows(m)
+2-element Vector{Int64}:
+ 1
+ 3
+```
+"""
+function independent_rows(m::AbstractMatrix;dup=true)
+  if dup m=copy(m) end
+  last(echelon!(m))
+end
+independent_rows(m::AbstractMatrix{<:Integer})=
+    independent_rows(m*1//1;dup=false)
+independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
+    independent_rows(m*1//1;dup=false)
 
 """
  `GLinearAlgebra.rank(m::AbstractMatrix)`
@@ -89,15 +123,15 @@ julia> GLinearAlgebra.rank(hilbert(11)) # correct value
 11
 ```
 """
-rank(m::AbstractMatrix)=length(echelon(m)[2])
+rank(m::AbstractMatrix)=length(independent_rows(m))
 
 """
  computes right nullspace of m in a type_preserving way
  not exported to avoid conflict with LinearAlgebra
 """
 function nullspace(m::AbstractMatrix)
-  m=echelon(m)[1]
-  n=size(m)[2]
+  m=rowspace(m)
+  n=size(m,2)
   z=Int[]
   j=0
   lim=size(m,1)
@@ -121,12 +155,13 @@ end
 " `lnullspace(m::AbstractMatrix)`: left nullspace of `m`"
 lnullspace(m::AbstractMatrix)=transpose(nullspace(transpose(m)))
 
-"`sum_rowspace(m::AbstractMatrix,n::AbstractMatrix)` sum of the rowspaces of m and n"
-sum_rowspace(m::AbstractMatrix,n::AbstractMatrix)=echelon(vcat(m,n))[1]
+"""
+`intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)` 
 
-"`intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)` intersection of the rowspaces of m and n"
+intersection of the rowspaces of m and n"
+"""
 function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
-  mat=echelon([m m;n zero(n)])[1]
+  mat=rowspace([m m;n zero(n)])
   in=mat[:,size(m,2).+axes(m,2)]
   in=in[count(!iszero,eachrow(mat[:,axes(m,2)]))+1:end,:]
   in[1:count(!iszero,eachrow(in)),:]
@@ -134,42 +169,10 @@ end
 
 """
 `in_rowspace(v::AbstractVector,m::AbstractMatrix)` 
-  whether `v` is in the rowspace of `m`.
+
+whether `v` is in the rowspace of `m`.
 """
 in_rowspace(v::AbstractVector,m::AbstractMatrix)=solutionmat(m,v)!=nothing
-
-"""
-  `GLinearAlgebra.det(m)`
-
-determinant of a matrix over an integral domain.
-`div` is exact division; it works over a field where `exactdiv` is division.
-See Cohen, "Computational algebraic number theory", 2.2.6 (Gauss-Bareiss).
-"""
-function det(m::AbstractMatrix)
-  s=1
-  c=one(eltype(m))
-  n=size(m,1)
-  if n==0 return one(eltype(m))
-  elseif n==1 return m[1,1]
-  elseif n==2 return m[1,1]*m[2,2]-m[1,2]*m[2,1]
-  end
-  m=copy(m)
-  for k in 1:n
-    if k==n return s*m[n,n] end
-    if iszero(m[k,k])
-      i=findfirst(!iszero,m[k+1:end,k])
-      if i===nothing return m[k+1,k] end
-      i+=k
-      m[[i,k],k:n].=@view m[[k,i],k:n]
-      s=-s
-    end
-    p=m[k,k]
-    for i in k+1:n, j in k+1:n
-      m[i,j]=exactdiv(p*m[i,j]-m[i,k]m[k,j],c)
-    end
-    c=p
-  end
-end
 
 # see Cohen computational algebraic number theory 2.2.7
 function charpolyandcomatrix(m)
@@ -266,7 +269,7 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
       if j>1 L[b[j],b[j]]-=sum(k->block(P,j,k)*block(L,k,k)*
                               transpose(block(P,j,k)),1:j-1) end
       cb=comatrix(block(L,j,j))
-      db=det(block(L,j,j))
+      db=det_bareiss(block(L,j,j))
       for i in j+1:length(b)
         P[b[i],b[j]]=block(M,i,j)
         if j>1 P[b[i],b[j]]-=
@@ -282,7 +285,7 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
     L[b[j],b[j]]=block(M,j,j)-sum(k->block(P,j,k)*block(L,k,k)*
                                   transpose(block(P,j,k)),1:j-1)
     cb=comatrix(block(L,j,j))
-    db=det(block(L,j,j))
+    db=det_bareiss(block(L,j,j))
     for i in j+1:length(b)
       P[b[i],b[j]]=block(M,i,j)-sum(k->block(P,i,k)*block(L,k,k)*
                                      block(tP,k,j),1:j-1)
@@ -322,7 +325,7 @@ julia> exterior_power(M,2)
 """
 function exterior_power(A,m)
   basis=combinations(1:size(A,1),m)
-  [det(A[i,j]) for i in basis, j in basis]
+  [det_bareiss(A[i,j]) for i in basis, j in basis]
 end
 
 """
@@ -398,7 +401,7 @@ function transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
     v[:,j]-=l2[m][i,:]
     push!(M, vec(v))
   end
-  M=echelon(toM(M))[1]
+  M=rowspace(toM(M))
   M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
   v=nullspace(M)
   if isempty(v) return v end

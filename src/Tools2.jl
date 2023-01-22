@@ -10,7 +10,7 @@ using Combinat: Combinat, collectby
 using LinearAlgebra: tr
 using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
-using ..GLinearAlgebra: solutionmat, echelon, charpoly
+using ..GLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
 using ..CycPols: CycPol
@@ -99,7 +99,7 @@ function Primes.factor(p::Mvp{T,N})where {T,N}
   end
   if size(m,1)==2 t=one(m)
   else n=copy(m)
-    m=m[echelon(m)[2],:] # independent lines
+    m=m[independent_rows(m),:]
     if size(m,1)>2 return [p] end
     t=transpose(solutionmat(m,n))
     m=solutionmat(t,m)

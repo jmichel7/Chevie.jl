@@ -45,7 +45,7 @@ chosen `σ`-stable.
 
 ```julia-repl
 julia> centralizer.(Ref(WF),l)
-4-element Vector{ExtendedCox{FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:
+4-element Vector{ExtendedCox{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:
  Extended(C₃₍₃₂₁₎)
  ²A₃₍₃₁₂₎
  (A₁A₁)₍₁₃₎×A₁₍₂₎

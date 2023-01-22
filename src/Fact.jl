@@ -1,6 +1,7 @@
 module Fact
 import Primes: Primes, nextprime, factor
-using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, exactdiv
+using LinearAlgebra:exactdiv
+using LaurentPolynomials: Pol, @Pol, shift, degree, derivative
 using ..FFields: FFields, FFE, Mod
 using ..Combinat: Combinat, combinations, npartitions
 using ..Tools: improve_type

@@ -586,7 +586,7 @@ julia> standard_parabolic(W,R)
 function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
   if isempty(I) return Perm() end
   b=W.rootdec[I]
-  heads=map(x->findfirst(y->!iszero(y),x),toL(echelon(toM(b))[1]))
+  heads=map(x->findfirst(!iszero,x),toL(rowspace(toM(b))))
   b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
   # complete basis of <roots(W,I)> with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).*1//1)))do v

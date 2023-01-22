@@ -5,7 +5,6 @@ Pages=["glinearalgebra.md"]
 ```@docs
 GLinearAlgebra
 GLinearAlgebra.echelon!
-GLinearAlgebra.echelon
 bigcell_decomposition
 ratio
 exterior_power
@@ -18,9 +17,11 @@ transporter
 diagconj_elt
 traces_words_mats
 solutionmat
-sum_rowspace
+rowspace
+in_rowspace
 intersect_rowspace
 lnullspace
-GLinearAlgebra.det
+GLinearAlgebra.nullspace
 GLinearAlgebra.rank
+independent_rows
 ```

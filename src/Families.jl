@@ -757,7 +757,7 @@ function family_imprimitive(S)
   function fc(e,f1,f2) # local Fourier coefficient
     k=f1<=f2 ? (f1,f2) : (f2,f1)
     get!(fcdict,k)do
-      GLinearAlgebra.det(Cyc.(E.(e,-f1*f2')))
+      det_bareiss(Cyc.(E.(e,-f1*f2')))
     end
   end
   mat=eps.*map(ff)do fS

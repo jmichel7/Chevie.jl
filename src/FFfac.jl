@@ -2,8 +2,9 @@
 module FFfac
 
 using Primes: Primes
+using LinearAlgebra: exactdiv
 
-using LaurentPolynomials: Pol, degree, shift, derivative, exactdiv
+using LaurentPolynomials: Pol, degree, shift, derivative
 using ..FFields: FFE, GF
 
 """
