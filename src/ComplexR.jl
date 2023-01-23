@@ -229,14 +229,14 @@ function codegrees(t::TypeIrred)
     else
       f=getchev(t,:PhiFactors)
       if isnothing(f) return f end
-      f=improve_type(reverse(map(x->f[a]//x,f)))
+      f=Cyc.(improve_type(reverse(map(x->f[a]//x,f))))
     end
     d=collect(zip(d,Cyc.(f)))
   elseif order(t.twist)==1
-    d=collect(zip(d,fill(1,length(d))))
+    d=collect(zip(d,fill(Cyc(1),length(d))))
   end
   if haskey(t,:scalar)
-    f=improve_type(prod(t.scalar))
+    f=Cyc.(improve_type(prod(t.scalar)))
     d=[(deg,eps*f^deg) for (deg,eps) in d]
   end
   a=length(t.orbit)

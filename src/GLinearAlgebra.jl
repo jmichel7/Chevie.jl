@@ -5,7 +5,13 @@ The  linear  algebra  package  in  Julia  is  not  suitable  for  a general
 mathematics  package: it assumes  the field is  the Real or Complex numbers
 and uses floating point to do approximate computations.
 Here we are interested in functions which work over any field (or sometimes
-any ring).
+any ring) and assume exact computations.
+
+For more information, look at the helpstrings of
+`echelon!, exterior_power, comatrix, bigcell_decomposition, 
+  ratio, charpoly, solutionmat, transporter, 
+  permanent, symmetric_power, diagconj_elt, lnullspace,
+  intersect_rowspace, in_rowspace, rowspace, independent_rows`.
 """
 module GLinearAlgebra
 using CyclotomicNumbers: Cyc # case in echelon
@@ -21,11 +27,13 @@ export echelon!, exterior_power, comatrix, bigcell_decomposition,
 """
 `echelon!(m::AbstractMatrix)`
 
-puts  `m` in echelon  form in-place and  returns: (`m`, indices of linearly
-independent  rows of original `m`). The echelon form transforms the rows of
-m  into a particular basis  of the rowspace. The  first non-zero element of
-each  line is  1, and  such an  element is  also the  only non-zero  in its
-column. works in any field.
+puts  `m` in echelon  form in-place and  returns: 
+
+(`m`, indices of linearly independent  rows of original `m`)
+
+The  echelon form transforms the  rows of m into  a particular basis of the
+rowspace. The first non-zero element of each line is 1, and such an element
+is also the only non-zero in its column. works in any field.
 """
 function echelon!(m::AbstractMatrix)
   rk=0
@@ -35,16 +43,16 @@ function echelon!(m::AbstractMatrix)
     if j===nothing continue end
     j+=rk # m[j,k]!=0
     rk+=1
-    if rk!=j
-      row=m[j,:]
-      m[j,:].=@view m[rk,:]
-      m[rk,:].=inv(row[k]).*row
-    elseif !isone(m[rk,k])
-      m[rk,:].=inv(m[rk,k]).*@view m[rk,:]
+    if rk!=j Base.swaprows!(m,j,rk)
+      inds[j],inds[rk]=inds[rk],inds[j]
     end
-    inds[j],inds[rk]=inds[rk],inds[j]
+    if !isone(m[rk,k])
+      @views m[rk,:].*=inv(m[rk,k])
+    end
     for j in axes(m,1)
-      if rk!=j && !iszero(m[j,k]) view(m,j,:).-=m[j,k].*view(m,rk,:) end
+      if rk!=j && !iszero(m[j,k]) 
+        @views m[j,:].-=m[j,k].*m[rk,:]
+      end
     end
 #   println(m)
   end
@@ -75,8 +83,8 @@ julia> GLinearAlgebra.rowspace(m)
 """
 function rowspace(m::AbstractMatrix;dup=true)
   if dup m=copy(m) end
-  m=first(echelon!(m))
-  m[1:count(!iszero,eachrow(m)),:]
+  m,inds=echelon!(m)
+  @view m[1:length(inds),:]
 end
 rowspace(m::AbstractMatrix{<:Integer})=rowspace(m*1//1;dup=false)
 rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
@@ -126,12 +134,17 @@ julia> GLinearAlgebra.rank(hilbert(11)) # correct value
 rank(m::AbstractMatrix)=length(independent_rows(m))
 
 """
- computes right nullspace of m in a type_preserving way
- not exported to avoid conflict with LinearAlgebra
+`GLinearAlgebra.nullspace(m::AbstractMatrix)`
+
+ computes the right nullspace of `m` in a type-preserving way.
+ Is not exported to avoid conflict with LinearAlgebra
 """
 function nullspace(m::AbstractMatrix)
-  m=rowspace(m)
-  n=size(m,2)
+  if eltype(m)<:Integer || eltype(m)<:Cyc{<:Integer} m=m//1 
+  else m=copy(m)
+  end
+  m=echelon!(m)[1]
+  n=size(m)[2]
   z=Int[]
   j=0
   lim=size(m,1)
@@ -152,13 +165,17 @@ function nullspace(m::AbstractMatrix)
   zz[:,nn]
 end
 
-" `lnullspace(m::AbstractMatrix)`: left nullspace of `m`"
+"""
+`lnullspace(m::AbstractMatrix)`
+
+The left nullspace of `m`
+"""
 lnullspace(m::AbstractMatrix)=transpose(nullspace(transpose(m)))
 
 """
 `intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)` 
 
-intersection of the rowspaces of m and n"
+The intersection of the rowspaces of `m` and `n`.
 """
 function intersect_rowspace(m::AbstractMatrix,n::AbstractMatrix)
   mat=rowspace([m m;n zero(n)])
@@ -190,13 +207,17 @@ function charpolyandcomatrix(m)
 end
 
 """
-`charpoly(M::Matrix)` characteristic polynomial (as `Vector` of coefficients).
+`charpoly(M::Matrix)` 
+
+The characteristic polynomial of `M` (as a `Vector` of coefficients).
 This function works over any ring.
 """
 charpoly(m)=first(charpolyandcomatrix(m))
 
 """
-`comatrix(M::Matrix)` is defined by `comatrix(M)*M=det(M)*one(M)`.
+`comatrix(M::Matrix)` 
+
+is defined by `comatrix(M)*M=det(M)*one(M)`.
 This function works over any ring.
 """
 comatrix(m)=last(charpolyandcomatrix(m))
@@ -411,8 +432,9 @@ end
 transporter(l1::Matrix, l2::Matrix)=transporter([l1],[l2])
 
 """
-`ratio(v::abstractVector,w::abstractVector)` ratio `v/w`,
-`nothing` if `v` is not a multiple of `w`.
+`ratio(v::abstractVector,w::abstractVector)` 
+
+ratio `v/w`, `nothing` if `v` is not a multiple of `w`.
 """
 function ratio(v::AbstractVector, w::AbstractVector)
   i=findfirst(x->!iszero(x),w)
@@ -497,11 +519,16 @@ function solutionmat(m::AbstractMatrix,v::AbstractVector)
   return h
 end
 
-" return matrix x such that x*m==n"
+"""
+`solutionmat(m,n::AbstractMatrix)`
+
+return a matrix `x` such that `x*m==n`. This is interesting when `m` 
+is not invertible.
+"""
 solutionmat(m,n::AbstractMatrix)=toM(solutionmat.(Ref(m),eachrow(n)))
 
 """
-`representative_diagconj(M,N)`
+`diagconj_elt(M,N)`
 
 `M` and `N` must be square matrices of the same size. This function returns
 a  list `d`  such that  `N==inv(Diagonal(d))*M*Diagonal(d)` if  such a list

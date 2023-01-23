@@ -1599,7 +1599,8 @@ function coroots(W::PRG,i::Integer)
   W.coroots[i]=improve_type(m[:,j].//roots(W,i)[j])
 end
 
-coroots(W::PRG,i::AbstractVector{<:Integer})=isempty(i) ? empty(W.coroots) : coroots.(Ref(W),i)
+coroots(W::PRG,I::AbstractVector{<:Integer})=isempty(I) ? empty(W.coroots) : 
+  map(i->coroots(W,i),I)
 
 function Base.:*(W::PRG,V::PRG)
   if rank(W)==0 return V
@@ -1966,7 +1967,7 @@ BadNumber(W)=prod(BadNumber.(refltype(W));init=1)
 function BadNumber(t::TypeIrred)
   r=rank(t)
   if iszero(r) return 1 end
-  d=LinearAlgebra.det_bareiss(cartan(t))
+  d=det_bareiss(cartan(t))
   if d==0 error(t," should be well generated") end
   improve_type(prod(degrees(t))//(factorial(r)*d))
 end

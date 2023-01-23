@@ -1,4 +1,6 @@
 # --------- pirating extensions to get closer to GAP semantics -------------
+# The  idea how to implement base function pirating restricted to the current
+# module is due to Max Horn.
 *(a...)=Base.:*(a...)
 *(a::AbstractVector{<:Number},b::AbstractVector{<:Number})=transpose(a)*b
 *(a::AbstractVector,b::AbstractVector{<:AbstractVector})=toL(toM(a)*toM(b))
@@ -45,24 +47,24 @@ length(a::Symbol)=length(string(a))
 union(a...)=Base.union(a...)
 union(v::Vector)=union(v...)
 
-# for some reason getindex is special
+# for some reason getindex is special, reverting to plain pirating
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 
 # ---------------- other extensions --------------------------------------
 Base.:*(a::AbstractArray,b::Pol)=a .* b
-Base.:*(a::Pol,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Frac)=a .* b
-Base.:*(a::Frac,b::AbstractArray)=a .* b
 Base.:*(a::AbstractArray,b::Mvp)=a .* b
+Base.:*(a::Pol,b::AbstractArray)=a .* b
+Base.:*(a::Frac,b::AbstractArray)=a .* b
 Base.:*(a::Mvp,b::AbstractArray)=a .* b
 Base.:*(W1::Spets,W2::FiniteCoxeterGroup)=Cosets.extprod(W1,spets(W2))
 Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
 Base.:+(a::AbstractArray,b::Pol)=a .+ b
-Base.:/(a::AbstractArray,b::Pol)=a ./ b
-Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.:+(a::AbstractArray,b::Mvp)=a .+ b
+Base.:/(a::AbstractArray,b::Pol)=a ./ b
 Base.:/(a::AbstractArray,b::Mvp)=a ./ b
+Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
 Base.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(f::Family,n::Int)=galois(f,n)
