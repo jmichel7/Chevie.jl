@@ -76,7 +76,7 @@ julia> m=[1 2;2 4;5 6]
  5  6
 
 julia> GLinearAlgebra.rowspace(m)
-2×2 Matrix{Rational{Int64}}:
+2×2 view(::Matrix{Rational{Int64}}, 1:2, :) with eltype Rational{Int64}:
  1//1  0//1
  0//1  1//1
 ```

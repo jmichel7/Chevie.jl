@@ -139,7 +139,8 @@ permutation group, given its type.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
-  longest, braid_relations, coxmat, CoxSym, standard_parabolic_class,
+  longest, braid_relations, coxmat, coxeter_matrix,
+  CoxSym, standard_parabolic_class,
   inversions, degrees, FiniteCoxeterGroup,
   coxgroup, coxeter_group
 
@@ -682,7 +683,7 @@ function PermRoot.parabolic_reps(W::CoxeterGroup,s)
 end
 
 """
-coxmat(m::AbstractMatrix)
+`coxeter_matrix(m::AbstractMatrix)` or `coxmat`
 
 returns  the  Coxeter  matrix  of  the  Coxeter group defined by the cartan
 matrix `m`
@@ -718,7 +719,7 @@ function coxmat(m::AbstractMatrix)
 end
 
 """
-`coxmat(W)`
+`coxeter_matrix(W)` or `coxmat`
 
 returns the Coxeter matrix of the Coxeter group `W`, that is the matrix `m`
 whose  entry `m[i,j]` contains the order of `W(i)*W(j)` where `W(i)` is the
@@ -737,6 +738,8 @@ julia> coxmat(W)
 ```
 """
 coxmat(W::CoxeterGroup)=coxmat(cartan(W))
+
+const coxeter_matrix=coxmat
 
 """
 `braid_relations(W)`

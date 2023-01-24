@@ -501,7 +501,7 @@ inclusiongens(L,W)=restriction(W,inclusiongens(L))
 
 the number of reflections of `W`
 """
-nref(W::PermRootGroup)=sum(nref,refltype(W))
+nref(W::PermRootGroup)=sum(nref,refltype(W);init=0)
 nref(t::TypeIrred)=sum(degrees(t).-1)
 const number_of_reflections=nref
 
@@ -510,7 +510,7 @@ const number_of_reflections=nref
 
 The number of reflecting hyperplanes of `W`
 """
-nhyp(W::PermRootGroup)=sum(nhyp,refltype(W))
+nhyp(W::PermRootGroup)=sum(nhyp,refltype(W);init=0)
 nhyp(t::TypeIrred)=sum(codegrees(t).+1)
 const number_of_hyperplanes=nhyp
 
@@ -536,7 +536,7 @@ its reflection character. It is also given by the formula
 highest  reflection degree. For a non-irreducible group, the Coxeter number
 is the sum of those of its irreducible components.
 """
-coxnum(W::PermRootGroup)=sum(t->coxnum(t),refltype(W))
+coxnum(W::PermRootGroup)=sum(t->coxnum(t),refltype(W);init=0)
 
 coxnum(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
 

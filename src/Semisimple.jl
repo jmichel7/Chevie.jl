@@ -356,9 +356,9 @@ Stacktrace:
 ```
 """
 function SubTorus(W,V::Matrix{<:Integer}=reflrep(W,one(W)))
-  V=complementInt(reflrep(W,one(W)),V)
-  if any(!=(1),V.moduli) error("not a pure sublattice") end
-  SubTorus(V.sub,V.complement,W)
+  C=complementInt(V)
+  if any(!=(1),C.moduli) error("not a pure sublattice") end
+  SubTorus(C.sub,C.complement,W)
 end
 
 Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
