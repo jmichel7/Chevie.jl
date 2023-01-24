@@ -341,6 +341,14 @@ function PermRoot.cartan(t::Dict{Symbol,Any})
 end
 
 """
+`coxmat(type, rank [,bond])`
+
+Like `cartan`, the function `coxmat` can be defined from the type and rank
+of a finite Coxeter group.
+"""
+CoxGroups.coxmat(t::Symbol,r::Integer,b::Integer=0)=coxmat(cartan(t,r,b))
+
+"""
 `two_tree(m)`
 
 Given  a  square  matrix  `m`  with  zeroes  symmetric  with respect to the
@@ -490,8 +498,6 @@ end
 
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
 const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
-
-coxmat(W::FiniteCoxeterGroup)=coxmat(cartan(W))
 
 """
 `inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
@@ -679,9 +685,9 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one,
- Gapjm.roots, Groups.gens, Groups.conjugacy_classes, 
+ Gapjm.roots, Groups.gens, Groups.conjugacy_classes,
  PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
- PermRoot.action, PermRoot.cartan, PermRoot.coroots,
+ PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.coxnum,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank, 
  PermRoot.reflchar, 

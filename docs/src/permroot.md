@@ -13,6 +13,7 @@ rank
 semisimplerank
 nref
 nhyp
+coxnum
 roots(::PermRoot.PRG)
 roots(::PermRoot.PRG,::Any)
 coroots

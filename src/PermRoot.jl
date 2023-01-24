@@ -207,6 +207,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
   nref, number_of_reflections,
+  coxnum, coxeter_number,
   indices
 using ..Gapjm
 
@@ -500,16 +501,46 @@ inclusiongens(L,W)=restriction(W,inclusiongens(L))
 
 the number of reflections of `W`
 """
-nref(W::PermRootGroup)=sum(degrees(W).-1)
+nref(W::PermRootGroup)=sum(nref,refltype(W))
+nref(t::TypeIrred)=sum(degrees(t).-1)
 const number_of_reflections=nref
+
 """
 `number_of_hyperplanes(W::ComplexReflectionGroup)` or `nhyp(W)`
 
 The number of reflecting hyperplanes of `W`
 """
-nhyp(W::PermRootGroup)=sum(codegrees(W).+1)
+nhyp(W::PermRootGroup)=sum(nhyp,refltype(W))
+nhyp(t::TypeIrred)=sum(codegrees(t).+1)
 const number_of_hyperplanes=nhyp
 
+"""
+`coxeter_number(W::PermRootGroup,i)` or `coxnum`
+
+Gordon  and  Griffeth  [GG2012](biblio.htm#gg12)  have defined the *Coxeter
+number*  of an irreducible  character `φ` of  a complex reflection group as
+the scalar by which the central element `∑_{s in reflections(W)}(1-s)` acts
+on  the representation of character `φ`.  The function `coxnum` returns the
+Coxeter number of the `i`-th irreducible character of `W`.
+"""
+coxnum(W::PermRootGroup,i)=Int(charinfo(W).a[i]+charinfo(W).A[i])
+# The computation uses Proposition 0.1 of Michel's "tower equivalence"
+
+"""
+`coxeter_number(W::PermRootGroup)` or `coxnum`
+
+Gordon  and  Griffeth  [GG2012](biblio.htm#gg12)  have defined the *Coxeter
+number* of an irreducible complex reflection group as the Coxeter number of
+its reflection character. It is also given by the formula
+`(nref(W)+nhyp(W))/rank(W)`;  for a well-generated group it is equal to the
+highest  reflection degree. For a non-irreducible group, the Coxeter number
+is the sum of those of its irreducible components.
+"""
+coxnum(W::PermRootGroup)=sum(t->coxnum(t),refltype(W))
+
+coxnum(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
+
+const coxeter_number=coxnum
 # should use independent_roots
 Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W,eachindex(gens(W)))==
   roots(W1,eachindex(gens(W1))) && simplecoroots(W)==simplecoroots(W1)

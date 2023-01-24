@@ -112,7 +112,7 @@ end
 function bezout(A)
   e=Gcdex(A[1,1],A[2,1])
   @views f,g=e.coeff*A[:,2]
-  if iszero(g) return e end
+  if iszero(g) return  (sign=1,rowtrans=e.coeff) end
   coeff=e.coeff
   if g<0
     @views coeff[2,:]=-coeff[2,:]
