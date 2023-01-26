@@ -1,7 +1,7 @@
 module Fact
 import Primes: Primes, nextprime, factor
 using LinearAlgebra:exactdiv
-using LaurentPolynomials: Pol, @Pol, shift, degree, derivative
+using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, valuation, coefficients
 using ..FFields: FFields, FFE, Mod
 using ..Combinat: Combinat, combinations, npartitions
 using ..Tools: improve_type
@@ -17,10 +17,10 @@ function etime()
   newt=time()
   d=newt-ltime[]
   ltime[]=newt
-  round(d;digits=5)
+  string(round(d;digits=5),"s")
 end
 
-##  <f> must be squarefree.  We test 3 "small" and 2 "big" primes.
+##  f must be squarefree and f[0]!=0.  We test 3 "small" and 2 "big" primes.
 function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   min=degree(f)+1 # set minimal number of factors to the degree of <f>
   lc=f[end]
@@ -28,8 +28,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   t=Dict{Symbol, Any}()
   p=1;deg=0;LP=Any[];P=1
   for i in 1:5
-        # reset <p> to big prime after first 3 test
-    if i==4 p=max(p, 1000) end
+    if i==4 p=max(p, 1000) end # reset <p> to big prime after first 3 test
     # find a prime not dividing lc(f) and f_p squarefree
     fp=nothing
     while true
@@ -37,7 +36,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
         p=Primes.nextprime(p+1)
         if mod(lc, p)!=0 && mod(f[0], p)!=0 break end
       end
-      fp=Pol(FFE{p}.(f.c),f.v)/lc
+      fp=Pol{FFE{p}}(f)/lc
       if 0==degree(gcd(fp,derivative(fp))) break end
     end
     InfoPoly2("#I  starting factorization mod p:  ", etime())
@@ -70,10 +69,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
         return t
     end
   end
-    # convert factors <LP> back to the integers
-  for i in 1:length(LP)
-    LP[i]=Pol(map(x->Int(x),LP[i].c),LP[i].v)
-  end
+  LP=map(Pol{Int},LP) # convert factors <LP> back to the integers
     # return the chosen prime
   InfoPoly2("#I  choosing prime ", P, " with ", length(LP), " factors")
   InfoPoly2("#I  possible degrees: ", deg)
@@ -240,19 +236,19 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
     InfoPoly2("#I  f is zero")
     return [f]
   end
-  d=lcm(denominator.(f.c))
+  d=denominator(f)
   f*=d
-  f=Pol(Integer.(f.c),f.v)
-  v=f.v
-  f=shift(f,-f.v)
+  f=Pol{typeof(d)}(f)
+  v=valuation(f)
+  f=shift(f,-v)
   if 0==degree(f)
     InfoPoly2("#I  f is a power of x")
     s=map(f->Pol(),1:v)
-    s[1]*=f.c[1]*lc
+    s[1]*=f[0]
     return s
   end
   if 1==degree(f)
-    InfoPoly2("#I  f is a linear")
+    InfoPoly2("#I  f is linear")
     s=map(f->Pol(),1:v)
     push!(s,f)
     return s
@@ -288,7 +284,10 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
       while 0<degree(g) && !isnothing(q)
         push!(s, r)
         g=q
-        if degree(g)>=degree(r) q=exactdiv(g,r)
+        if degree(g)>=degree(r) 
+          if iszero(rem(g//1,r)) q=exactdiv(g,r)
+          else q=nothing
+          end
         else q=nothing
         end
       end
@@ -351,9 +350,9 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
 #   max,            # maximum absolute coefficient of <f>
 #   gcd,            # used in gcd representation
   p=big(t[:prime])
-  l=map(x->Pol(Mod.(Integer.(Mod(x).c),p),x.v),t[:factors])
+  l=map(x->Pol(Mod.(Integer.(coefficients(x)),p),x.v),t[:factors])
   lc=f[end]
-  max=maximum(abs.(f.c))
+  max=maximum(abs.(coefficients(f)))
 # compute the factor coefficient bounds
   ofb=2*abs(lc)*OneFactorBound(f)
   InfoPoly2("#I  One factor bound==", ofb)
