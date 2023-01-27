@@ -435,7 +435,7 @@ function checkl(ord::AbstractMatrix{Bool})
   n=size(ord,1)
   for i in 1:n, j in 1:i-1
     if !ord[j,i] || ord[i,j]
-      l=ord[i,:].&ord[j,:]
+      @views l=ord[i,:].&ord[j,:]
       if !(l in subl)
         if !any(y->l==l.&y,eachrow(ord[l,:]))
           for k in (1:n)[l]
