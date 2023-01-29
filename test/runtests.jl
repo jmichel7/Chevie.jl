@@ -323,6 +323,8 @@ end
 @test mytest("Families.jl","CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
 end
 @testset "GLinearAlgebra.jl" begin
+@test mytest("GLinearAlgebra.jl","m=[0 0 0 1; 1 1 0 1; 0 1 0 1; 1 0 0 0]//1","4×4 Matrix{Rational{Int64}}:\n 0//1  0//1  0//1  1//1\n 1//1  1//1  0//1  1//1\n 0//1  1//1  0//1  1//1\n 1//1  0//1  0//1  0//1")
+@test mytest("GLinearAlgebra.jl","echelon!(m)","(Rational{Int64}[1//1 0//1 0//1 0//1; 0//1 1//1 0//1 0//1; 0//1 0//1 0//1 1//1; 0//1 0//1 0//1 0//1], [2, 3, 1])")
 @test mytest("GLinearAlgebra.jl","m=[1 2;2 4;5 6]","3×2 Matrix{Int64}:\n 1  2\n 2  4\n 5  6")
 @test mytest("GLinearAlgebra.jl","GLinearAlgebra.rowspace(m)","2×2 view(::Matrix{Rational{Int64}}, 1:2, :) with eltype Rational{Int64}:\n 1//1  0//1\n 0//1  1//1")
 @test mytest("GLinearAlgebra.jl","m=[1 2;2 4;5 6]","3×2 Matrix{Int64}:\n 1  2\n 2  4\n 5  6")

@@ -67,8 +67,8 @@ const ChevieDict=Dict(
 "CoxeterGroupHyperoctaedralGroup(n)"=>"CoxHyperoctaedral(n)",
 "CoxeterGroupSymmetricGroup(n)"=>"CoxSym(n)",
 "CoxeterLength(W,w)"=>"length(W,w)",
-"CoxeterMatrix"=>"coxmat",
-"CoxeterMatrixFromCartanMat"=>"coxmat",
+"CoxeterMatrix"=>"coxmat or coxeter_matrix",
+"CoxeterMatrixFromCartanMat"=>"coxmat or coxeter_matrix",
 "CoxeterWord(W,w)"=>"word(W,w)",
 "CoxeterWords(W[,l])"=>"word.(Ref(W),elements(W[,l]))",
 "CuspidalPairs"=>"cuspidal_data",
@@ -293,9 +293,9 @@ const ChevieDict=Dict(
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
-"Reflection"=>"refls or reflectionmat",
+"Reflection"=>"refls(W,i) or reflectionmat(root,coroot)",
 "ReflectionCharacter"=>"reflchar",
-#ReflectionCharValue
+"ReflectionCharValue"=>"tr(reflrep(W,w))",
 #ReflectionCoset
 "ReflectionDegrees(W)"=>"degrees(W)",
 "ReflectionCoDegrees(W)"=>"codegrees(W)",
@@ -304,7 +304,7 @@ const ChevieDict=Dict(
 "ReflectionLength(W,w)"=>"reflength(W,w)",
 #ReflectionWord
 "ReflectionName(W)"=>"repr(W;context=:limit=>true)",
-"Reflections"=>"refls",
+"Reflections"=>"Perm.(reflections(W)[1:nhyp(W)])",
 #ReflectionSubCoset
 "ReflectionSubgroup"=>"reflection_subgroup",
 "ReflectionType"=>"refltype",
