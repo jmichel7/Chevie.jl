@@ -4,13 +4,11 @@ code.  Maybe some  of them  exist in  some Julia  module I am not aware of;
 please tell me.
 """
 module Util
+using Gapjm: stringexp, stringprime
 
-export 
-  @forward,
-  showtable, format_coefficient, ordinal, fromTeX, printTeX, joindigits, cut, 
-  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, stringexp, stringind, 
-  hasdecor # formatting
-
+export @forward
+export showtable, ordinal, fromTeX, printTeX, joindigits, cut, 
+  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, hasdecor # formatting
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
 export cartesian, cart2lin, lin2cart
@@ -73,61 +71,6 @@ const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
   "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
 
-const unicodeQuotes=["′","″","‴","⁗"]
-
-function stringprime(io::IO,n)
-  if iszero(n) return "" end
-  if get(io,:TeX,false) return "'"^n end
-  n<5 ? unicodeQuotes[n] : map(x->sup[x],"($n)")
-end
-  
-const unicodeFrac=Dict((1,2)=>'½',(1,3)=>'⅓',(2,3)=>'⅔',
-  (1,4)=>'¼',(3,4)=>'¾',(1,5)=>'⅕',(2,5)=>'⅖',(3,5)=>'⅗',
-  (4,5)=>'⅘',(1,6)=>'⅙',(5,6)=>'⅚',(1,8)=>'⅛',(3,8)=>'⅜',
-  (5,8)=>'⅝',(7,8)=>'⅞',(1,9)=>'⅑',(1,10)=>'⅒',(1,7)=>'⅐')
-
-function stringexp(io::IO,r::Rational{<:Integer})
-  d=denominator(r); n=numerator(r)
-  if isone(d) return stringexp(io,n) end
-  if get(io,:TeX,false) return "^{\\frac{$n}{$d}}" end
-  res=Char[]
-  if n<0 push!(res,'⁻'); n=-n end
-  if haskey(unicodeFrac,(n,d)) push!(res,unicodeFrac[(n,d)])
-  else
-   if isone(n) push!(res,'\U215F')
-   else append!(res,map(x->sup[x],collect(string(n))))
-     push!(res,'⁄')
-   end
-   append!(res,map(x->sub[x],collect(string(d))))
-  end
-  String(res)
-end
-
-function stringexp(io::IO,n::Integer)
-  if isone(n) ""
-  elseif get(io,:TeX,false) 
-    n in 0:9 ? "^"*string(n) : "^{"*string(n)*"}"
-  elseif get(io,:limit,false)
-    if n<0 res=['⁻']; n=-n else res=Char[] end
-    for i in reverse(digits(n)) 
-      push!(res,['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'][i+1])
-    end
-    String(res)
-  else "^"*string(n)
-  end
-end
-
-function stringind(io::IO,n::Integer)
-  if get(io,:TeX,false) 
-    n in 0:9 ? "_"*string(n) : "_{"*string(n)*"}"
-  elseif get(io,:limit,false)
-    if n<0 res=['₋']; n=-n else res=Char[] end
-    for i in reverse(digits(n)) push!(res,Char(0x2080+i)) end
-    String(res)
-  else "_"*string(n)
-  end
-end
-
 # defs below are necessary since constant folding is not good enough
 const r1=Regex("_[$subchars]")
 const r2=Regex("(_\\{[$subchars]*\\})('*)")
@@ -162,25 +105,6 @@ function unicodeTeX(s::String)
   s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")
   s=replace(s,r"([^a-zA-Z0-9])\{([^}{,]*)\}"=>s"\1\2")
   s
-end
-
-const ok="([^-+*/]|√-|{-)*"
-const par="(\\([^()]*\\))"
-const nobf=Regex("^[-+]?$ok$par*$ok(/+)?[0-9]*\$")
-const nob=Regex("^[-+]?$ok$par*$ok\$")
-
-function bracket_if_needed(c::String;allow_frac=false)
-  e= allow_frac ? nobf : nob
-  if match(e,c)!==nothing c
-  else "("*c*")" 
-  end
-end
-
-function format_coefficient(c::String;allow_frac=false)
-  if c=="1" ""
-  elseif c=="-1" "-"
-  else bracket_if_needed(c;allow_frac)
-  end
 end
 
 function TeXstrip(n::String) # plain ASCII rendering of TeX code

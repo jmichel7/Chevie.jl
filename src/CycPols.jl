@@ -14,9 +14,10 @@ subtraction are not implemented!
 This   package  depends  only  on   the  packages  `Primes`,  `ModuleElts`,
 `CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`.
 
-The  method `CycPol`  takes a  `Pol` with  integer, rational  or cyclotomic
-coefficients,  and  finds  the  largest  `CycPol` dividing, leaving a `Pol`
-`coefficient` if some roots of the polynomial are not roots of unity.
+The  method `CycPol`  takes as  arhument a  `Pol` with integer, rational or
+cyclotomic coefficients, and converts it to `CycPol` by finding the largest
+cyclotomic polynomial dividing, leaving a `Pol` `coefficient` if some roots
+of the polynomial are not roots of unity.
 
 ```julia-repl
 julia> @Pol q
@@ -42,6 +43,9 @@ julia> degree(p)
 
 julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPol
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
+
+julia> CycPol(q^6-E(4)) # for a non-rational polynomial, see below
+Φ″₈Φ⁽¹³⁾₂₄
 ```
 Evaluating  a `CycPol` at some `Pol` value  gives in general a `Pol`. There
 are  exceptions  where  we  can  keep  the  value a `CycPol`: evaluating at
@@ -54,10 +58,8 @@ julia> subs(p,Pol()^-1) # evaluate as a CycPol at q⁻¹
 
 julia> subs(p,Pol([E(2)],1)) # or at -q
 (-q-2)Φ₁Φ₂Φ₄₆
-
 ```
 The variable name used when printing a `CycPol` is the same as for `Pol`s.
-
 
 When  showing  a  `CycPol`,  some  factors  over  extension  fields  of the
 cyclotomic polynomial `Φₙ` are given a special name. If `n` has a primitive
@@ -65,7 +67,6 @@ root  `ξ`, `ϕ′ₙ` is the product of the  `(q-ζ)` where `ζ` runs over the 
 powers  of `ξ`, and `ϕ″ₙ` is the  product for the even powers. Some further
 factors are recognized for small `n`. The function `show_factors` gives the
 complete list of recognized factors:
-
 ```julia-rep1
 julia> CycPols.show_factors(24)
 Φ₂₄=q⁸-q⁴+1
@@ -93,13 +94,12 @@ julia> CycPol(;conductor=24,no=8)
 julia> CycPol(;conductor=24,no=8)(q)
 Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 ```
-
 This package also defines the function `cylotomic_polynomial`:
 ```julia-repl
 julia> p=cyclotomic_polynomial(24)
 Pol{Int64}: q⁸-q⁴+1
 
-julia> CycPol(p)
+julia> CycPol(p) # same as CycPol(;conductor=24,no=1)
 Φ₂₄
 ```
 """
@@ -109,6 +109,7 @@ export CycPol, cyclotomic_polynomial, subs
 
 using Primes: primes, factor, eachfactor, totient #Euler φ
 using ModuleElts: ModuleElts, ModuleElt
+using Gapjm: stringexp
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
@@ -120,12 +121,8 @@ Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
 Base.numerator(p::Pol{Cyc{T}}) where T<:Integer =p
 CyclotomicNumbers.conductor(x::Pol)=lcm(conductor.(coefficients(x)))
 
-prime_residues=CyclotomicNumbers.prime_residues
-stringexp=LaurentPolynomials.stringexp
-stringind=CyclotomicNumbers.stringind
-format_coefficient=CyclotomicNumbers.format_coefficient
+using CyclotomicNumbers: prime_residues, stringind, stringexp, format_coefficient
 
-# routine copied here to avoid dependency on Util
 function stringprime(io::IO,n)
   if iszero(n) return "" end
   if get(io,:TeX,false) return "'"^n end
@@ -286,14 +283,14 @@ pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
 
 # decompose the .v of a CycPol in subsets Φ^i (used for printing and value)
 function decompose(v::Vector{Pair{Root1,Int}})
-  rr=NamedTuple{(:conductor, :no,:mul),Tuple{Int,Int,Int}}[]
+  rr=@NamedTuple{conductor::Int, no::Int, mul::Int}[]
   for t in collectby(x->order(first(x)),v)
     c=order(first(t[1]))
     if c==1 
       push!(rr,(conductor=c,no=1,mul=last(t[1])))
       continue
     end
-    res=[]
+    res=@NamedTuple{conductor::Int, no::Int, mul::Int}[]
     v=fill(0,c)
     @views v[exponent.(first.(t))].=last.(t)
     for (i,r) in enumerate(dec(c))

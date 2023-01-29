@@ -89,6 +89,7 @@ using Reexport
 using Requires
 using UsingMerge
 @reexport using PuiseuxPolynomials # reexports LaurentPolynomials
+@reexport using LaurentPolynomials: stringexp
 @reexport using ModuleElts
 @reexport using Combinat
 @reexport using MatInt
@@ -97,8 +98,12 @@ using UsingMerge
 @reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
 @reexport using PermGroups
 @usingmerge verbose=true reexport CyclotomicNumbers
+@reexport using CyclotomicNumbers: bracket_if_needed, 
+  format_coefficient, stringind
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
+include("CycPols.jl");@reexport using .CycPols
+@reexport using .CycPols: stringprime
 include("Util.jl");@reexport using .Util
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
@@ -106,7 +111,6 @@ include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
-include("CycPols.jl");@reexport using .CycPols
 include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups

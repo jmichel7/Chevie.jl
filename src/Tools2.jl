@@ -4,11 +4,11 @@ export eigmat, traces_words_mats, Unknown
 using PuiseuxPolynomials
 using LaurentPolynomials
 using CyclotomicNumbers
+using CyclotomicNumbers: bracket_if_needed, format_coefficient
 using Primes: Primes
 using PermGroups: Group
 using Combinat: Combinat, collectby
 using LinearAlgebra: tr
-using ..Util: bracket_if_needed, format_coefficient
 using ..Chars: CharTable
 using ..GLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Tools: improve_type
