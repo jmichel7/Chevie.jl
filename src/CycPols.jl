@@ -109,7 +109,7 @@ export CycPol, cyclotomic_polynomial, subs
 
 using Primes: primes, factor, eachfactor, totient #Euler φ
 using ModuleElts: ModuleElts, ModuleElt
-using Gapjm: stringexp
+using LaurentPolynomials: stringexp
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
                           coefficients, pseudodiv, exactdiv
@@ -121,7 +121,7 @@ Base.numerator(p::Pol{Cyc{Rational{T}}}) where T<:Integer =
 Base.numerator(p::Pol{Cyc{T}}) where T<:Integer =p
 CyclotomicNumbers.conductor(x::Pol)=lcm(conductor.(coefficients(x)))
 
-using CyclotomicNumbers: prime_residues, stringind, stringexp, format_coefficient
+using CyclotomicNumbers: prime_residues, stringind, format_coefficient
 
 function stringprime(io::IO,n)
   if iszero(n) return "" end
@@ -164,9 +164,9 @@ end
 
 `.valuation`: an `Int`.
 
-`.v`: a list of pairs `ζ=>m` of a `Root1` `ζ` and a multiplicity `m`.
+`.v`: a ModuleElt{Root1,Int} where pairs `ζ=>m` give multiplicity `m` of `ζ`.
 
-So `CycPol(coeff,val,v)` represents `coeff*q^val*prod((q-ζ)^m for (r,m) in v)`.
+So `CycPol(coeff,val,v)` represents `coeff*q^val*prod((q-ζ)^m for (ζ,m) in v)`.
 """
 struct CycPol{T}
   coeff::T
@@ -195,8 +195,8 @@ Base.isless(a::CycPol,b::CycPol)=cmp(a,b)==-1
 Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
 
 # see if check should be false
-CycPol(c,val::Int,v::Pair{Rational{Int},Int}...)=CycPol(c,val,
-  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check=false)) 
+CycPol(c,val::Int,v::Pair{Rational{Int},Int}...;check=false)=CycPol(c,val,
+  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check)) 
 
 Base.one(::Type{CycPol})=CycPol(1,0)
 Base.one(p::CycPol)=CycPol(one(p.coeff),0)
@@ -505,7 +505,7 @@ end
 """
 `subs(p::CycPol,v::Pol)`
 
-a fast routine to compute `CycPol(p(v))` but works for exactly two types
+a fast routine to compute `CycPol(p(v))` but works for only two types
 of polynomials:
 
   - `v=Pol([e],1)` for `e` a `Root1`, that is the value at `qe` for `e=ζₙᵏ`
@@ -549,20 +549,20 @@ const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
 7//24=>1, 13//24=>1, 19//24=>1, 1//30=>1, 7//30=>1, 11//30=>1, 13//30=>1,
 17//30=>1, 19//30=>1, 23//30=>1, 29//30=>1, 1//42=>1, 5//42=>1, 11//42=>1,
 13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
-37//42=>1, 41//42=>1)
+37//42=>1, 41//42=>1;check=true)
 #=
-  benchmark on Julia 1.7.2
 julia> @btime u=CycPols.p(Pol()) # gap 1.25 ms
-  341.214 μs (9542 allocations: 662.91 KiB)
+#1.8.5 254.158 μs (5626 allocations: 416.19 KiB)
 julia> @btime CycPol(u) # gap 8.2ms
-  5.591 ms (123484 allocations: 9.19 MiB)
+#1.7.2 4.749 ms (95637 allocations: 7.35 MiB)
 julia> @btime u(1)  # gap 40μs
-  31.999 μs (897 allocations: 64.75 KiB)
+#1.7.2 24.669 μs (553 allocations: 41.91 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
-  25.402 μs (547 allocations: 35.55 KiB)
+#1.8.5 5.140 μs (101 allocations: 19.88 KiB)
 =#
 
-# a worse polynomial; u=p2(Pol()) 17ms (gap3 9ms) CycPol(u) 1.17s (gap3 1.33s)
+const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
+
 const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8=>1,
 2//9=>1,5//9=>1,8//9=>1,7//12=>1,11//12=>1,1//16=>1,3//16=>1,5//16=>1,
 9//16=>1,11//16=>1,13//16=>1,5//18=>2,11//18=>2,17//18=>2,2//21=>1,5//21=>1,
@@ -587,7 +587,15 @@ const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8
 101//152=>1,109//152=>1,117//152=>1,125//152=>1,141//152=>1,149//152=>1,
 11//204=>1,23//204=>1,35//204=>1,47//204=>1,59//204=>1,71//204=>1,83//204=>1,
 95//204=>1,107//204=>1,131//204=>1,143//204=>1,155//204=>1,167//204=>1,
-179//204=>1,191//204=>1,203//204=>1)
-
-const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
+179//204=>1,191//204=>1,203//204=>1;check=true)
+#=
+julia> @btime u=CycPols.p2(Pol()) # gap 9.6ms
+#1.8.5 14.701 ms (127154 allocations: 16.82 MiB)
+julia> @btime CycPol(u) # gap 1.33s
+#1.8.5 1.295 s (9748219 allocations: 1.83 GiB)
+julia> @btime u(1)  # gap  43μs
+#1.8.5 88.881 μs (905 allocations: 118.00 KiB)
+julia> @btime CycPols.p2(1) # gap 1.1ms
+#1.8.5 6.840 ms (3514 allocations: 7.13 MiB)
+=#
 end

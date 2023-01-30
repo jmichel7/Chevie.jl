@@ -296,7 +296,7 @@ end
 @test mytest("FFields.jl","z^5","FFE{2}: Z₄")
 end
 @testset "Fact.jl" begin
-@test mytest("Fact.jl","factor(Pol(:q)^24-1)","8-element Vector{Pol{BigInt}}:\n q-1\n q²-q+1\n q⁴-q²+1\n q⁸-q⁴+1\n q⁴+1\n q²+1\n q+1\n q²+q+1")
+@test mytest("Fact.jl","factor(Pol(:q)^24-1)","8-element Vector{Pol{Int64}}:\n q-1\n q²-q+1\n q⁴-q²+1\n q⁸-q⁴+1\n q⁴+1\n q²+1\n q+1\n q²+q+1")
 @test mytest("Fact.jl","Fact.LogInt(1030,2)","10")
 @test mytest("Fact.jl","Fact.LogInt(1,10)","0")
 end
