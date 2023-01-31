@@ -1,23 +1,24 @@
 """
+This package deals with products of Cyclotomic polynomials.
+
 Cyclotomic  numbers, and cyclotomic polynomials  over the rationals or some
-cyclotomic  field,  are  important  in  reductive  groups and  Spetses.  In
-particular  Schur  elements  of  cyclotomic  Hecke algebras are products of
-cyclotomic polynomials.
+cyclotomic  field, are important in the theories of finite reductive groups
+and  Spetses. In particular Schur elements of cyclotomic Hecke algebras are
+products of cyclotomic polynomials.
 
-The  type `CycPol`  represents the  product of  a `coeff`  (a constant or a
-polynomial)  with a  rational fraction  in one  variable with  all poles or
-zeroes  equal to  0 or  roots of  unity. The  advantages of representing as
-`CycPol`  such objects are:  nice display (factorized),  less storage, fast
-multiplication,  division and evaluation. The drawback is that addition and
-subtraction are not implemented!
+The  type  `CycPol`  represents  the  product  of  a `coeff` (a constant, a
+polynomial or a rational fraction in one variable) with a rational fraction
+in  one variable with all poles or zeroes equal to 0 or roots of unity. The
+advantages  of  representing  as  `CycPol`  such  objects are: nice display
+(factorized),  less storage, fast  multiplication, division and evaluation.
+The drawback is that addition and subtraction are not implemented!
 
-This   package  depends  only  on   the  packages  `Primes`,  `ModuleElts`,
+This    package   depends   on   the   packages   `Primes`,   `ModuleElts`,
 `CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`.
 
-The  method `CycPol`  takes as  arhument a  `Pol` with integer, rational or
-cyclotomic coefficients, and converts it to `CycPol` by finding the largest
-cyclotomic polynomial dividing, leaving a `Pol` `coefficient` if some roots
-of the polynomial are not roots of unity.
+The  method  `CycPol(a::Pol)`  converts  `a`  to  a `CycPol` by finding the
+largest  cyclotomic polynomial  dividing, leaving  a `Pol` `coefficient` if
+some roots of the polynomial are not roots of unity.
 
 ```julia-repl
 julia> @Pol q
@@ -29,7 +30,7 @@ julia> p=CycPol(q^25-q^24-2q^23-q^2+q+2) # a `Pol` coefficient remains
 julia> p(q) # evaluate CycPol p at q
 Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2
 
-julia> p*inv(CycPol(q^2+q+1)) # `*` and `inv` are defined
+julia> p*inv(CycPol(q^2+q+1)) # `*`, `inv`, `/` and `//` are defined
 (q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃
 
 julia> -p  # one can multiply by a scalar
@@ -41,10 +42,10 @@ julia> valuation(p)
 julia> degree(p)
 25
 
-julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPol
+julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPols
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
 
-julia> CycPol(q^6-E(4)) # for a non-rational polynomial, see below
+julia> CycPol(q^6-E(4)) # see below for the names in the output
 Φ″₈Φ⁽¹³⁾₂₄
 ```
 Evaluating  a `CycPol` at some `Pol` value  gives in general a `Pol`. There
@@ -67,31 +68,32 @@ root  `ξ`, `ϕ′ₙ` is the product of the  `(q-ζ)` where `ζ` runs over the 
 powers  of `ξ`, and `ϕ″ₙ` is the  product for the even powers. Some further
 factors are recognized for small `n`. The function `show_factors` gives the
 complete list of recognized factors:
-```julia-rep1
+```julia-repl
 julia> CycPols.show_factors(24)
-Φ₂₄=q⁸-q⁴+1
-Φ′₂₄=q⁴+ζ₃²
-Φ″₂₄=q⁴+ζ₃
-Φ‴₂₄=q⁴-√2q³+q²-√2q+1
-Φ⁗₂₄=q⁴+√2q³+q²+√2q+1
-Φ⁽⁵⁾₂₄=q⁴-√6q³+3q²-√6q+1
-Φ⁽⁶⁾₂₄=q⁴+√6q³+3q²+√6q+1
-Φ⁽⁷⁾₂₄=q⁴+√-2q³-q²-√-2q+1
-Φ⁽⁸⁾₂₄=q⁴-√-2q³-q²+√-2q+1
-Φ⁽⁹⁾₂₄=q²+ζ₃²√-2q-ζ₃
-Φ⁽¹⁰⁾₂₄=q²-ζ₃²√-2q-ζ₃
-Φ⁽¹¹⁾₂₄=q²+ζ₃√-2q-ζ₃²
-Φ⁽¹²⁾₂₄=q²-ζ₃√-2q-ζ₃²
-Φ⁽¹³⁾₂₄=q⁴-ζ₄q²-1
-Φ⁽¹⁴⁾₂₄=q⁴+ζ₄q²-1
+15-element Vector{Tuple{CycPol{Int64}, Pol}}:
+ (Φ₂₄, q⁸-q⁴+1)
+ (Φ′₂₄, q⁴+ζ₃²)
+ (Φ″₂₄, q⁴+ζ₃)
+ (Φ‴₂₄, q⁴-√2q³+q²-√2q+1)
+ (Φ⁗₂₄, q⁴+√2q³+q²+√2q+1)
+ (Φ⁽⁵⁾₂₄, q⁴-√6q³+3q²-√6q+1)
+ (Φ⁽⁶⁾₂₄, q⁴+√6q³+3q²+√6q+1)
+ (Φ⁽⁷⁾₂₄, q⁴+√-2q³-q²-√-2q+1)
+ (Φ⁽⁸⁾₂₄, q⁴-√-2q³-q²+√-2q+1)
+ (Φ⁽⁹⁾₂₄, q²+ζ₃²√-2q-ζ₃)
+ (Φ⁽¹⁰⁾₂₄, q²-ζ₃²√-2q-ζ₃)
+ (Φ⁽¹¹⁾₂₄, q²+ζ₃√-2q-ζ₃²)
+ (Φ⁽¹²⁾₂₄, q²-ζ₃√-2q-ζ₃²)
+ (Φ⁽¹³⁾₂₄, q⁴-ζ₄q²-1)
+ (Φ⁽¹⁴⁾₂₄, q⁴+ζ₄q²-1)
 ```
 Such a factor can be obtained directly as:
 
 ```julia-repl
-julia> CycPol(;conductor=24,no=8)
+julia> CycPol(;conductor=24,no=7)
 Φ⁽⁷⁾₂₄
 
-julia> CycPol(;conductor=24,no=8)(q)
+julia> CycPol(;conductor=24,no=7)(q)
 Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1
 ```
 This package also defines the function `cylotomic_polynomial`:
@@ -99,7 +101,7 @@ This package also defines the function `cylotomic_polynomial`:
 julia> p=cyclotomic_polynomial(24)
 Pol{Int64}: q⁸-q⁴+1
 
-julia> CycPol(p) # same as CycPol(;conductor=24,no=1)
+julia> CycPol(p) # same as CycPol(;conductor=24,no=0)
 Φ₂₄
 ```
 """
@@ -109,10 +111,10 @@ export CycPol, cyclotomic_polynomial, subs
 
 using Primes: primes, factor, eachfactor, totient #Euler φ
 using ModuleElts: ModuleElts, ModuleElt
-using LaurentPolynomials: stringexp
+using LaurentPolynomials: stringexp, bracket_if_needed
 using CyclotomicNumbers: CyclotomicNumbers, Root1, E, conductor, Cyc, order
 using LaurentPolynomials: Pol, LaurentPolynomials, degree, valuation,
-                          coefficients, pseudodiv, exactdiv
+                          coefficients, pseudodiv, exactdiv, Frac
 using Combinat: primitiveroot, divisors, collectby
 
 Base.numerator(p::Pol{<:Integer})=p  # to put in LaurentPolynomials
@@ -227,6 +229,8 @@ Base.:^(a::CycPol, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                       Base.power_by_squaring(inv(a),-n)
 Base.://(a::CycPol,b::CycPol)=CycPol(a.coeff//b.coeff, a.valuation-b.valuation, a.v-b.v)
 Base.://(a::CycPol,b::Number)=CycPol(a.coeff//b,a.valuation,a.v)
+Base.:/(a::CycPol,b::CycPol)=CycPol(a.coeff/b.coeff, a.valuation-b.valuation, a.v-b.v)
+Base.:/(a::CycPol,b::Number)=CycPol(a.coeff/b,a.valuation,a.v)
 Base.:div(a::CycPol,b::Number)=CycPol(div(a.coeff,b),a.valuation,a.v)
 
 function Base.lcm(a::CycPol,b::CycPol) # forgets .coeff
@@ -270,13 +274,13 @@ function dec(d::Int)
   end::Vector{Vector{Int}}
 end
 
-CycPol(;conductor=1,no=1)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no])...)
+CycPol(;conductor=1,no=0)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no+1])...)
   
 function show_factors(d)
-  for i in eachindex(CycPols.dec(d))
-    p=CycPol(;conductor=d,no=i)
-    println(IOContext(stdout,:limit=>true),p,"=",p(Pol()))
-  end
+ map(eachindex(CycPols.dec(d))) do i
+   p=CycPol(;conductor=d,no=i-1)
+   (p,p(Pol()))
+ end
 end
 
 pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
@@ -287,7 +291,7 @@ function decompose(v::Vector{Pair{Root1,Int}})
   for t in collectby(x->order(first(x)),v)
     c=order(first(t[1]))
     if c==1 
-      push!(rr,(conductor=c,no=1,mul=last(t[1])))
+      push!(rr,(conductor=c,no=0,mul=last(t[1])))
       continue
     end
     res=@NamedTuple{conductor::Int, no::Int, mul::Int}[]
@@ -296,7 +300,7 @@ function decompose(v::Vector{Pair{Root1,Int}})
     for (i,r) in enumerate(dec(c))
       if (n=minimum(@view v[r]))>0 || (n=maximum(@view v[r]))<0 
         @views v[r].-=n 
-        push!(res,(conductor=c,no=i,mul=n))
+        push!(res,(conductor=c,no=i-1,mul=n))
       end
     end
     for i in 1:c  
@@ -313,6 +317,11 @@ function Base.show(io::IO, ::MIME"text/html", a::CycPol)
   print(io, "\$")
 end
 
+function Base.show(io::IO, ::MIME"text/plain", a::CycPol)
+  if isempty(a.v) && !haskey(io,:typeinfo) print(io,typeof(a),": ") end
+  show(io,a)
+end
+
 function Base.show(io::IO,a::CycPol)
  if !(get(io,:limit,false) || get(io,:TeX,false))
     print(io,"CycPol(",a.coeff,",",a.valuation)
@@ -320,31 +329,31 @@ function Base.show(io::IO,a::CycPol)
     print(io,")")
     return
   end
-  den=denominator(a.coeff)
-  c=numerator(a.coeff)
-  s=repr(c; context=io)
-  if iszero(a.valuation) && isempty(a.v) print(io,s)
-  else
-    s=format_coefficient(s)
-    print(io,s) 
-    v=LaurentPolynomials.varname[]
-    if a.valuation==1 print(io,v)
-    elseif a.valuation!=0 print(io,v,stringexp(io,a.valuation)) end
-    for e in decompose(a.v.d)
-  #   println(e)
-      if e.no>0  
-        if get(io,:expand,false)
-          print(io,"(",prod(i->Pol()-E(e.conductor,i),dec(e.conductor)[e.no]),")")
-        else print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
-          print(io,stringprime(io,e.no-1))
-          print(io,stringind(io,e.conductor))
-        end
-      else print(io,"(",v,"-",E(e[1],-e.no),")")
-      end
-      if e.mul!=1 print(io,stringexp(io,e.mul)) end
+  if iszero(a.valuation) && isempty(a.v) 
+    if isone(denominator(a.coeff)) print(io,numerator(a.coeff))
+    else print(io,a.coeff)
     end
+    return
   end
-  if !isone(den) print(io,"/",den) end
+  print(io,format_coefficient(repr(numerator(a.coeff); context=io))) 
+  v=LaurentPolynomials.varname[]
+  if a.valuation==1 print(io,v)
+  elseif a.valuation!=0 print(io,v,stringexp(io,a.valuation)) end
+  for e in decompose(a.v.d)
+#   println(e)
+    if e.no>=0  
+      if get(io,:expand,false)
+        print(io,"(",prod(i->Pol()-E(e.conductor,i),dec(e.conductor)[e.no+1]),")")
+      else print(io,get(io,:TeX,false) ? "\\Phi" : "Φ")
+        print(io,stringprime(io,e.no))
+        print(io,stringind(io,e.conductor))
+      end
+    else print(io,"(",v,"-",E(e[1],-e.no),")")
+    end
+    if e.mul!=1 print(io,stringexp(io,e.mul)) end
+  end
+  den=denominator(a.coeff)
+  if !isone(den) print(io,"/",bracket_if_needed(repr(den;context=io))) end
 end
 
 # fields to test first: all n such that totient(n)<=12 except 11,13,22,26
@@ -472,17 +481,19 @@ function CycPol(p::Pol{T};trace=false)where T
   CycPol(degree(p)==0 ? coeff : p*coeff,val,ModuleElt(vcyc))
 end
 
+CycPol(p::Frac)=CycPol(numerator(p))//CycPol(denominator(p))
+
 function (p::CycPol)(x)
   res=p.valuation<0 ? (x*1//1)^p.valuation : x^p.valuation
   l=decompose(p.v.d)
   for e in l
     if iszero(res) return res end
-    if e.no==1 res*=(cyclotomic_polynomial(e.conductor)(x))^e.mul end
+    if e.no==0 res*=(cyclotomic_polynomial(e.conductor)(x))^e.mul end
   end
   for e in l
     if iszero(res) return res end
-    if e.no>1 
-      res*=prod(x-E(e.conductor,j) for j in dec(e.conductor)[e.no])^e.mul 
+    if e.no>0 
+      res*=prod(x-E(e.conductor,j) for j in dec(e.conductor)[e.no+1])^e.mul 
     end
   end
   pp=one(x)
@@ -499,7 +510,9 @@ function (p::CycPol)(x)
     end
   end
   res*=pp
-  if p.coeff isa Pol res*p.coeff(x) else res*p.coeff end
+  if p.coeff isa Pol res*p.coeff(x) 
+  elseif p.coeff isa Frac res*p.coeff(x;Rational=true)
+  else res*p.coeff end
 end
 
 """
