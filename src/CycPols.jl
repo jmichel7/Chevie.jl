@@ -44,9 +44,11 @@ julia> degree(p)
 
 julia> lcm(p,CycPol(q^3-1)) # lcm is fast between CycPols
 (q-2)Φ₁Φ₂Φ₃Φ₂₃
+```
 
-julia> CycPol(q^6-E(4)) # see below for the names in the output
-Φ″₈Φ⁽¹³⁾₂₄
+```julia-rep1
+julia> print(p)
+CycPol(Pol([-2, 1]),0,(1,0),(2,0),(23,0)) # a format which can be read in Julia
 ```
 Evaluating  a `CycPol` at some `Pol` value  gives in general a `Pol`. There
 are  exceptions  where  we  can  keep  the  value a `CycPol`: evaluating at
@@ -66,8 +68,13 @@ When  showing  a  `CycPol`,  some  factors  over  extension  fields  of the
 cyclotomic polynomial `Φₙ` are given a special name. If `n` has a primitive
 root  `ξ`, `ϕ′ₙ` is the product of the  `(q-ζ)` where `ζ` runs over the odd
 powers  of `ξ`, and `ϕ″ₙ` is the  product for the even powers. Some further
-factors are recognized for small `n`. The function `show_factors` gives the
-complete list of recognized factors:
+factors are recognized for small `n`. 
+```julia-repl
+julia> CycPol(q^6-E(4))
+Φ″₈Φ⁽¹³⁾₂₄
+```
+The  function `show_factors` gives the  complete list of recognized factors
+for a given `n`:
 ```julia-repl
 julia> CycPols.show_factors(24)
 15-element Vector{Tuple{CycPol{Int64}, Pol}}:
@@ -197,8 +204,11 @@ Base.isless(a::CycPol,b::CycPol)=cmp(a,b)==-1
 Base.:(==)(a::CycPol,b::CycPol)=cmp(a,b)==0
 
 # see if check should be false
-CycPol(c,val::Int,v::Pair{Rational{Int},Int}...;check=false)=CycPol(c,val,
-  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check)) 
+#CycPol(c,val::Int,v::Pair{Rational{Int},Int}...;check=false)=CycPol(c,val,
+#  ModuleElt(Pair{Root1,Int}[Root1(;r=r)=>m for (r,m) in v];check)) 
+
+CycPol(c,val::Int,tt::Tuple...;check=false)=CycPol(c,val,sum(x->v(x...),tt;
+                                   init=zero(ModuleElt{Root1,Int})))
 
 Base.one(::Type{CycPol})=CycPol(1,0)
 Base.one(p::CycPol)=CycPol(one(p.coeff),0)
@@ -274,7 +284,10 @@ function dec(d::Int)
   end::Vector{Vector{Int}}
 end
 
-CycPol(;conductor=1,no=0)=CycPol(1,0,map(i->i//conductor=>1,dec(conductor)[no+1])...)
+v(conductor=1,no=0,mul=1)=no<0 ? ModuleElt(E(conductor,-no)=>mul) : 
+ ModuleElt(map(i->E(conductor,i)=>mul,dec(conductor)[no+1]);check=false)
+
+CycPol(;conductor=1,no=0)=CycPol(1,0,v(conductor,no))
   
 function show_factors(d)
  map(eachindex(CycPols.dec(d))) do i
@@ -283,7 +296,7 @@ function show_factors(d)
  end
 end
 
-pr()=for d in sort(collect(keys(dec_dict))) show_factors(d) end
+pr()=vcat(map(show_factors,sort(collect(keys(dec_dict))))...)
 
 # decompose the .v of a CycPol in subsets Φ^i (used for printing and value)
 function decompose(v::Vector{Pair{Root1,Int}})
@@ -323,9 +336,14 @@ function Base.show(io::IO, ::MIME"text/plain", a::CycPol)
 end
 
 function Base.show(io::IO,a::CycPol)
- if !(get(io,:limit,false) || get(io,:TeX,false))
+  if !(get(io,:limit,false) || get(io,:TeX,false))
     print(io,"CycPol(",a.coeff,",",a.valuation)
-    for (r,m) in a.v print(io,",",r.r,"=>",m) end
+#   for (r,m) in a.v print(io,",",r.r,"=>",m) end
+    for e in decompose(a.v.d) 
+      print(io,",(",e.conductor,",",e.no)
+      if e.mul!=1 print(io,",",e.mul) end
+      print(io,")")
+    end
     print(io,")")
     return
   end
@@ -551,61 +569,44 @@ function subs(p::CycPol,v::Pol{Int})
 end
     
 # 281st generic degree of G34
-const p=CycPol(E(3)//6,19,0//1=>3, 1//2=>6, 1//4=>2, 3//4=>2,
-1//5=>1, 2//5=>1, 3//5=>1, 4//5=>1, 1//6=>4, 5//6=>4, 1//7=>1, 2//7=>1,
-3//7=>1, 4//7=>1, 5//7=>1, 6//7=>1, 1//8=>1, 3//8=>1, 5//8=>1, 7//8=>1,
-1//9=>1, 4//9=>1, 7//9=>1, 1//10=>1, 3//10=>1, 7//10=>1, 9//10=>1, 1//14=>1,
-3//14=>1, 5//14=>1, 9//14=>1, 11//14=>1, 13//14=>1, 2//15=>1, 8//15=>1,
-11//15=>1, 14//15=>1, 1//18=>1, 5//18=>1, 7//18=>1, 11//18=>1, 13//18=>1,
-17//18=>1, 1//21=>1, 2//21=>1, 4//21=>1, 5//21=>1, 8//21=>1, 10//21=>1,
-11//21=>1, 13//21=>1, 16//21=>1, 17//21=>1, 19//21=>1, 20//21=>1, 1//24=>1,
-7//24=>1, 13//24=>1, 19//24=>1, 1//30=>1, 7//30=>1, 11//30=>1, 13//30=>1,
-17//30=>1, 19//30=>1, 23//30=>1, 29//30=>1, 1//42=>1, 5//42=>1, 11//42=>1,
-13//42=>1, 17//42=>1, 19//42=>1, 23//42=>1, 25//42=>1, 29//42=>1, 31//42=>1,
-37//42=>1, 41//42=>1;check=true)
+const p=CycPol(E(3)//6,19,(1,0,3),(2,0,6),(4,0,2),(5,0),(6,0,4),(7,0),(8,0),
+               (9,1),(10,0),(14,0),(15,4),(18,0),(21,0),(24,1),(30,0),(42,0))
 #=
 julia> @btime u=CycPols.p(Pol()) # gap 1.25 ms
 #1.8.5 254.158 μs (5626 allocations: 416.19 KiB)
 julia> @btime CycPol(u) # gap 8.2ms
-#1.7.2 4.749 ms (95637 allocations: 7.35 MiB)
+#1.8.5 4.749 ms (92895 allocations: 7.35 MiB)
 julia> @btime u(1)  # gap 40μs
-#1.7.2 24.669 μs (553 allocations: 41.91 KiB)
+#1.8.5 24.669 μs (553 allocations: 41.91 KiB)
 julia> @btime CycPols.p(1) # gap 142μs
 #1.8.5 5.140 μs (101 allocations: 19.88 KiB)
 =#
 
 const p1=Pol([1,0,-1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,-1,0,1],0)
 
-const p2=CycPol(-4E(3),-129,1//3=>1,2//3=>1,1//6=>1,5//6=>1,1//8=>2,5//8=>1,7//8=>1,
-2//9=>1,5//9=>1,8//9=>1,7//12=>1,11//12=>1,1//16=>1,3//16=>1,5//16=>1,
-9//16=>1,11//16=>1,13//16=>1,5//18=>2,11//18=>2,17//18=>2,2//21=>1,5//21=>1,
-8//21=>1,11//21=>1,17//21=>1,20//21=>1,2//27=>1,5//27=>1,8//27=>1,11//27=>1,
-14//27=>1,17//27=>1,20//27=>1,23//27=>1,26//27=>1,7//32=>1,15//32=>1,
-23//32=>1,31//32=>1,1//39=>1,4//39=>1,7//39=>1,10//39=>1,16//39=>1,19//39=>1,
-22//39=>1,25//39=>1,28//39=>1,31//39=>1,34//39=>1,37//39=>1,1//42=>1,
-13//42=>1,19//42=>1,25//42=>1,31//42=>1,37//42=>1,11//48=>1,19//48=>1,
-35//48=>1,43//48=>1,7//60=>1,19//60=>1,31//60=>1,43//60=>1,5//78=>1,11//78=>1,
-17//78=>1,23//78=>1,29//78=>1,35//78=>1,41//78=>1,47//78=>1,53//78=>1,
-59//78=>1,71//78=>1,77//78=>1,7//80=>1,23//80=>1,31//80=>1,39//80=>1,
-47//80=>1,63//80=>1,71//80=>1,79//80=>1,3//88=>1,19//88=>1,27//88=>1,
-35//88=>1,43//88=>1,51//88=>1,59//88=>1,67//88=>1,75//88=>1,83//88=>1,
-1//90=>1,7//90=>1,13//90=>1,19//90=>1,31//90=>1,37//90=>1,43//90=>1,49//90=>1,
-61//90=>1,67//90=>1,73//90=>1,79//90=>1,5//96=>1,13//96=>1,29//96=>1,
-37//96=>1,53//96=>1,61//96=>1,77//96=>1,85//96=>1,1//104=>1,9//104=>1,
-17//104=>1,25//104=>1,33//104=>1,41//104=>1,49//104=>1,57//104=>1,73//104=>1,
-81//104=>1,89//104=>1,97//104=>1,1//144=>1,17//144=>1,25//144=>1,41//144=>1,
-49//144=>1,65//144=>1,73//144=>1,89//144=>1,97//144=>1,113//144=>1,
-121//144=>1,137//144=>1,5//152=>1,13//152=>1,21//152=>1,29//152=>1,37//152=>1,
-45//152=>1,53//152=>1,61//152=>1,69//152=>1,77//152=>1,85//152=>1,93//152=>1,
-101//152=>1,109//152=>1,117//152=>1,125//152=>1,141//152=>1,149//152=>1,
-11//204=>1,23//204=>1,35//204=>1,47//204=>1,59//204=>1,71//204=>1,83//204=>1,
-95//204=>1,107//204=>1,131//204=>1,143//204=>1,155//204=>1,167//204=>1,
-179//204=>1,191//204=>1,203//204=>1;check=true)
+const p2=CycPol(-4E(3),-129,(3,0),(6,0),(8,1),(8,3),(9,2),(12,2),(16,2),
+(16,-1),(16,-9),(18,2,2),(21,2),(27,2),(32,-7),(32,-15),(32,-23),(32,-31),(39,
+-1),(39,-4),(39,-7),(39,-10),(39,-16),(39,-19),(39,-22),(39,-25),(39,-28),(39,
+-31),(39,-34),(39,-37),(42,1),(48,-11),(48,-19),(48,-35),(48,-43),(60,-7),(60,
+-19),(60,-31),(60,-43),(78,-5),(78,-11),(78,-17),(78,-23),(78,-29),(78,-35),
+(78,-41),(78,-47),(78,-53),(78,-59),(78,-71),(78,-77),(80,-7),(80,-23),(80,
+-31),(80,-39),(80,-47),(80,-63),(80,-71),(80,-79),(88,-3),(88,-19),(88,-27),
+(88,-35),(88,-43),(88,-51),(88,-59),(88,-67),(88,-75),(88,-83),(90,-1),(90,
+-7),(90,-13),(90,-19),(90,-31),(90,-37),(90,-43),(90,-49),(90,-61),(90,-67),
+(90,-73),(90,-79),(96,-5),(96,-13),(96,-29),(96,-37),(96,-53),(96,-61),(96,
+-77),(96,-85),(104,-1),(104,-9),(104,-17),(104,-25),(104,-33),(104,-41),(104,
+-49),(104,-57),(104,-73),(104,-81),(104,-89),(104,-97),(144,-1),(144,-17),
+(144,-25),(144,-41),(144,-49),(144,-65),(144,-73),(144,-89),(144,-97),(144,
+-113),(144,-121),(144,-137),(152,-5),(152,-13),(152,-21),(152,-29),(152,-37),
+(152,-45),(152,-53),(152,-61),(152,-69),(152,-77),(152,-85),(152,-93),(152,
+-101),(152,-109),(152,-117),(152,-125),(152,-141),(152,-149),(204,-11),(204,
+-23),(204,-35),(204,-47),(204,-59),(204,-71),(204,-83),(204,-95),(204,-107),
+(204,-131),(204,-143),(204,-155),(204,-167),(204,-179),(204,-191),(204,-203))
 #=
 julia> @btime u=CycPols.p2(Pol()) # gap 9.6ms
 #1.8.5 14.701 ms (127154 allocations: 16.82 MiB)
 julia> @btime CycPol(u) # gap 1.33s
-#1.8.5 1.295 s (9748219 allocations: 1.83 GiB)
+#1.8.5 1.295 s (9661765 allocations: 1.83 GiB)
 julia> @btime u(1)  # gap  43μs
 #1.8.5 88.881 μs (905 allocations: 118.00 KiB)
 julia> @btime CycPols.p2(1) # gap 1.1ms

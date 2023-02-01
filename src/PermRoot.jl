@@ -1162,7 +1162,7 @@ end
 function showtorus(io::IO,W)
   t=rank(W)-semisimplerank(W)
   if t>0
-    if hasdecor(io) print(io,CycPol(1,0,0//1=>t))
+    if hasdecor(io) print(io,CycPol(1,0,(1,0,t)))
     else print(io,(istorus(W) ? "" : "*"),"PRG($t)")
     end
   elseif istorus(W) print(io,hasdecor(io) ? "." : "W()")
