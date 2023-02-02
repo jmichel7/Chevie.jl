@@ -1135,9 +1135,7 @@ end
 
 `aut`  is an automorphism of  the group `G` (for  a permutation group, this
 could  be  given  as  a  permutation  normalizing  `G`).  The result is the
-permutation  `1:nconjugacy_classes(G)` (representing indices of irreducible
-characters) induced by `aut`.
-
+permutation of the indices of the irreducible characters induced by `aut`.
 ```julia-repl
 julia> WF=rootdatum("3D4")
 ³D₄
@@ -1678,7 +1676,6 @@ julia> discriminant(W)(x,y)
 Mvp{Int64}: x³-y²
 ```
 """
-
 function discriminant(W)
   t=refltype(W)
   if isempty(t) return ()->Mvp(1)

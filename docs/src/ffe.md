@@ -1,4 +1,7 @@
 # Finite fields
+```@index
+Pages=["ffe.md"]
+```
 ```@docs
 FFields
 FFE

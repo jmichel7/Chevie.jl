@@ -4,6 +4,9 @@ export FiniteDimAlgebra, AlgebraElt, basis, dim, idempotents, iscommutative
 abstract type FiniteDimAlgebra end
 
 # properties of Algebras: have .multable, dim
+
+# Algebra element of algebra A
+# d coefficients on basis indexed by number
 struct AlgebraElt{TA,T}
   A::TA
   d::ModuleElt{Int,T}

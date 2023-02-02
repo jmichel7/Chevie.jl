@@ -221,7 +221,6 @@ end
 @test mytest("CycPols.jl","valuation(p)","0")
 @test mytest("CycPols.jl","degree(p)","25")
 @test mytest("CycPols.jl","lcm(p,CycPol(q^3-1))","(q-2)Φ₁Φ₂Φ₃Φ₂₃")
-@test mytest("CycPols.jl","print(p)","CycPol(Pol([-2, 1]),0,(1,0),(2,0),(23,0))")
 @test mytest("CycPols.jl","subs(p,Pol()^-1)","(2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃")
 @test mytest("CycPols.jl","subs(p,Pol([E(2)],1))","(-q-2)Φ₁Φ₂Φ₄₆")
 @test mytest("CycPols.jl","CycPol(q^6-E(4))","Φ″₈Φ⁽¹³⁾₂₄")

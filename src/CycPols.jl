@@ -13,14 +13,17 @@ advantages  of  representing  as  `CycPol`  such  objects are: nice display
 (factorized),  less storage, fast  multiplication, division and evaluation.
 The drawback is that addition and subtraction are not implemented!
 
-This    package   depends   on   the   packages   `Primes`,   `ModuleElts`,
-`CyclotomicNumbers`, `LaurentPolynomials` and `Combinat`.
+This   package  uses   the  polynomials   `Pol`  defined   by  the  package
+`LaurentPolynomials`  and  the  cyclotomic  numbers  `Cyc`  defined  by the
+package `CyclotomicNumbers`.
 
 The  method  `CycPol(a::Pol)`  converts  `a`  to  a `CycPol` by finding the
 largest  cyclotomic polynomial  dividing, leaving  a `Pol` `coefficient` if
 some roots of the polynomial are not roots of unity.
 
 ```julia-repl
+julia> using LaurentPolynomials
+
 julia> @Pol q
 Pol{Int64}: q
 
@@ -70,6 +73,8 @@ root  `ξ`, `ϕ′ₙ` is the product of the  `(q-ζ)` where `ζ` runs over the 
 powers  of `ξ`, and `ϕ″ₙ` is the  product for the even powers. Some further
 factors are recognized for small `n`. 
 ```julia-repl
+julia> using CyclotomicNumbers
+
 julia> CycPol(q^6-E(4))
 Φ″₈Φ⁽¹³⁾₂₄
 ```

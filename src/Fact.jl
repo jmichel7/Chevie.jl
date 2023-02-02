@@ -149,66 +149,58 @@ function ApproximateRoot(r,e=2,f=10)
   x
 end
 
-#F  BombieriNorm(<pol>) . . . . . . . . . . . . compute weighted Norm [pol]_2
+#F  BombieriNorm(pol) . . . . . . . . . . . . compute weighted Norm [pol]_2
 function BombieriNorm(f)
   n=degree(f)
   f*=big(1)
-  ApproximateRoot(sum(i->abs(f[i])^2//binomial(n,i),0:n))
+  ApproximateRoot(sum(i->abs(f[i])^2//binomial(n,i),0:degree(f)))
 end
 
-#F  MinimizeBombieriNorm(<pol>) . . . . . . . minimize weighted Norm [pol]_2
+#F  MinimizeBombieriNorm(pol) . . . . . . . minimize weighted Norm [pol]_2
 ##                                            by shifting roots
-function MinimizeBombieriNorm(f)
-  if hasproperty(f,:prop) && haskey(f, :minimization) return f.minimization end
+function MinimizeBombieriNorm(f::Pol)
   # this stepwidth should be corrected
-  step=1//denominator(f)
+# step=1//denominator(f)
   step=1
-  bb=nothing
-  bf=f
-  bd=0
-  bn=[]
+  mn=(bb=big(-1),pol=f,dis=0)
+  bn=Tuple{Int,Rational{BigInt}}[]
 # evaluation of norm, including storing it (avoids expensive double evals)
   bnf=function(dis)
-    p=filter(i->i[1]==dis, bn)
-    if isempty(p)
-      g=f(Pol()+dis) # assumes f isa Pol
-      p=[dis, BombieriNorm(g)]
-      push!(bn, p)
-      if isnothing(bb) || bb>p[2]
-        bf=g
-        bb=p[2]
-        bd=dis
-      end
-      p[2]
-    else p[1][2]
+    p=filter(i->first(i)==dis, bn)
+    if !isempty(p) return last(p[1]) end
+    g=f(Pol()+dis) # assumes f isa Pol
+    q=(dis, BombieriNorm(g))
+    push!(bn, q)
+    if mn.bb==-1 || mn.bb>last(q)
+      mn=(bb=last(q),pol=g,dis=dis)
     end
+    q[2]
   end
-  d=0
+  d=0//1
   while true
     info("#I Minimizing BombieriNorm, x->x+(", d, ")")
-# lokale Parabelannäherung
-    a=bnf(d-step)
-    b=bnf(d)
-    c=bnf(d+step)
+# approximation of local parabola
+    a=Rational{BigInt}(bnf(d-step))
+    b=Rational{BigInt}(bnf(d))
+    c=Rational{BigInt}(bnf(d+step))
     if a<b && c<b
       if a<c d-=step
       else d+=step
       end
     elseif !(a>b && c>b) && a+c!=2b
       a=-(c-a)//2//(a+c-2b)*step
-# stets aufrunden (wir wollen weg)
-      a=step*Int(abs(a)//step+1)*sign(a)
+# always round (we want that)
+      a=step*(div(abs(a),step)+1)*sign(a)
       if a==0 error("theory")
       else d+=a
       end
     end
 # no better can be reached
-    if a>b && c>b || all(i->!isempty(filter(j->j[1]==i,bn)), [d-1, d, d+1])
+    if a>b && c>b || all(i->!iszero(count(j->first(j)==i,bn)),[d-1,d,d+1])
         break
     end
   end
-  if hasproperty(f,:prop) f.minimization=[bf, bd] end
-  [bf,bd]
+  (mn.pol,-mn.dis)
 end
 
 """
@@ -254,10 +246,7 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
     return s
   end
   # shift the zeros of f if appropriate
-  if degree(f)>20
-    g=MinimizeBombieriNorm(f)
-    f=g[1]
-    shft=-g[2]
+  if degree(f)>20 f,shft=MinimizeBombieriNorm(f)
   else shft=0
   end
     # make <f> integral, primitive and square free
@@ -851,5 +840,5 @@ function HenselBound(pol,arg...)
 end
 
 q=Pol(:q)
-testf=-1434517664964444836229883525221665654811721278967027348529102492081660883579181878372328335888380108220974024293181167327195710896946435531825398238310639004249465655569193870984309941207040000*q-1331663813192583136877354316616861253307245376897389186616397648441393194005806591992969924972327944810995692943683480696873183913411848253822992384*q^5-8053975738550766849318663545012917306372245157944100181488357347494561254887032872785710121036840960*q^9+34882481564696009381841562509988046037135670126118400*q^13+42875*q^17
+p=-1434517664964444836229883525221665654811721278967027348529102492081660883579181878372328335888380108220974024293181167327195710896946435531825398238310639004249465655569193870984309941207040000*q-1331663813192583136877354316616861253307245376897389186616397648441393194005806591992969924972327944810995692943683480696873183913411848253822992384*q^5-8053975738550766849318663545012917306372245157944100181488357347494561254887032872785710121036840960*q^9+34882481564696009381841562509988046037135670126118400*q^13+42875*q^17
 end
