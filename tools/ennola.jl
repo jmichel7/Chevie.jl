@@ -253,21 +253,20 @@ end
 function EnnolaTwist(HF, xi)
   H=Group(HF)
   W=parent(H)
-  w=Representative(ConjugacyClasses(W)[PositionRegularClass(W, AsRootOfUnity(xi))])
-  SubSpets(HF[:parent],H[:rootInclusion][H[:generatingReflections]],w*HF[:phi])
+  w=classreps(W)[position_regular_class(W, Root1(xi))]
+  subspets(parent(HF),inclusiongens(H),w*HF.phi)
 end
 
 # Predict what should be LusztigInductionTable(HF,WF) by Ennola-twisting that
 # of EnnolaTwist(HF,xi^-1);
 function PredictRLGByEnnola(HF, WF, xi)
   function GlobalEnnolaLs(W, xi)
-    local o
     o = AsRootOfUnity(xi) * ordercenter(W)
     return famEn2En(W, map(x->x^o,ennola(W)[1][:ps]))
   end
-  HF = EnnolaTwist(HF, xi ^ -1)
-  H = Group(HF)
-  t = LusztigInductionTable(HF, WF)[:scalar]
+  tHF=EnnolaTwist(HF,inv(xi))
+  H=Group(tHF)
+  t=LusztigInductionTable(tHF,WF).scalar
   if xi ^ ordercenter(H) == 1
       ps = GlobalEnnolaLs(H, xi)
       t = Permuted(TransposedMat(t), PermList(map(abs, ps)) ^ -1)
