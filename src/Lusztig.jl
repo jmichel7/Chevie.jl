@@ -169,10 +169,9 @@ function LusztigInductionPieces(LF,WF)
       classreps(WFGL)
       WGL=Group(WFGL)
       LFGL=relative_coset(LF,h[:levi])
-      LFGL=subspets(WFGL,convert(Vector{Int},
-                    map(x->findfirst(==(x),
-                        inclusion(W,WGL.relativeIndices)),
-                        inclusion(L,Group(LFGL).relativeIndices))),
+      w=Group(LFGL).relativeIndices
+      LFGL=subspets(WFGL,Int.(indexin(inclusion(L,w),
+                                      inclusion(W,WGL.relativeIndices))),
                     WGL.MappingFromNormalizer(LF.phi*WF.phi^-1))
     else
       cL=reflection_subgroup(W,ser[:levi]) # cL^op is in LF

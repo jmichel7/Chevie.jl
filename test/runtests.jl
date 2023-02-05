@@ -212,27 +212,6 @@ end
 @test mytest("CoxGroups.jl","isleftdescent(W,Perm(1,2),1)","true")
 @test mytest("CoxGroups.jl","W=coxgroup([2 -2;-2 2])","coxeter_group([2 -2; -2 2])")
 end
-@testset "CycPols.jl" begin
-@test mytest("CycPols.jl","@Pol q","Pol{Int64}: q")
-@test mytest("CycPols.jl","p=CycPol(q^25-q^24-2q^23-q^2+q+2)","(q-2)Φ₁Φ₂Φ₂₃")
-@test mytest("CycPols.jl","p(q)","Pol{Int64}: q²⁵-q²⁴-2q²³-q²+q+2")
-@test mytest("CycPols.jl","p*inv(CycPol(q^2+q+1))","(q-2)Φ₁Φ₂Φ₃⁻¹Φ₂₃")
-@test mytest("CycPols.jl","-p","(-q+2)Φ₁Φ₂Φ₂₃")
-@test mytest("CycPols.jl","valuation(p)","0")
-@test mytest("CycPols.jl","degree(p)","25")
-@test mytest("CycPols.jl","lcm(p,CycPol(q^3-1))","(q-2)Φ₁Φ₂Φ₃Φ₂₃")
-@test mytest("CycPols.jl","subs(p,Pol()^-1)","(2-q⁻¹)q⁻²⁴Φ₁Φ₂Φ₂₃")
-@test mytest("CycPols.jl","subs(p,Pol([E(2)],1))","(-q-2)Φ₁Φ₂Φ₄₆")
-@test mytest("CycPols.jl","CycPol(q^6-E(4))","Φ″₈Φ⁽¹³⁾₂₄")
-@test mytest("CycPols.jl","CycPols.show_factors(24)","15-element Vector{Tuple{CycPol{Int64}, Pol}}:\n (Φ₂₄, q⁸-q⁴+1)\n (Φ′₂₄, q⁴+ζ₃²)\n (Φ″₂₄, q⁴+ζ₃)\n (Φ‴₂₄, q⁴-√2q³+q²-√2q+1)\n (Φ⁗₂₄, q⁴+√2q³+q²+√2q+1)\n (Φ⁽⁵⁾₂₄, q⁴-√6q³+3q²-√6q+1)\n (Φ⁽⁶⁾₂₄, q⁴+√6q³+3q²+√6q+1)\n (Φ⁽⁷⁾₂₄, q⁴+√-2q³-q²-√-2q+1)\n (Φ⁽⁸⁾₂₄, q⁴-√-2q³-q²+√-2q+1)\n (Φ⁽⁹⁾₂₄, q²+ζ₃²√-2q-ζ₃)\n (Φ⁽¹⁰⁾₂₄, q²-ζ₃²√-2q-ζ₃)\n (Φ⁽¹¹⁾₂₄, q²+ζ₃√-2q-ζ₃²)\n (Φ⁽¹²⁾₂₄, q²-ζ₃√-2q-ζ₃²)\n (Φ⁽¹³⁾₂₄, q⁴-ζ₄q²-1)\n (Φ⁽¹⁴⁾₂₄, q⁴+ζ₄q²-1)")
-@test mytest("CycPols.jl","CycPol(;conductor=24,no=7)","Φ⁽⁷⁾₂₄")
-@test mytest("CycPols.jl","CycPol(;conductor=24,no=7)(q)","Pol{Cyc{Int64}}: q⁴+√-2q³-q²-√-2q+1")
-@test mytest("CycPols.jl","p=cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")
-@test mytest("CycPols.jl","CycPol(p)","Φ₂₄")
-@test mytest("CycPols.jl","cyclotomic_polynomial(5)","Pol{Int64}: q⁴+q³+q²+q+1")
-@test mytest("CycPols.jl","cyclotomic_polynomial(24)","Pol{Int64}: q⁸-q⁴+1")
-@test mytest("CycPols.jl","@Pol q;CycPol(3*q^3-3q)","3qΦ₁Φ₂")
-end
 @testset "Eigenspaces.jl" begin
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
 @test mytest("Eigenspaces.jl","relative_degrees(W,4)","4-element Vector{Int64}:\n  8\n 12\n 20\n 24")

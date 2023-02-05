@@ -40,13 +40,12 @@ functionality is automatically available when you use `Gapjm`.
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
   * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the modules `Perms` and `Groups` which could be separate packages)
   * [MatInt](https://github.com/jmichel7/MatInt.jl) (Integer matrices and lattices)
-
+  * [CycPols](https://github.com/jmichel7/CycPols.jl) (cyclotomic polynomials)
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
   * linear algebra on any field/ring (module [`GLinearAlgebra`](@ref))
   * posets (module [`Posets`](@ref))
-  * cyclotomic polynomials (module [`CycPols`](@ref))
   * signed permutations (module [`SPerms`](@ref))
   * finite fields (module [`FFields`](@ref))
   * presentations of groups, and groups defined by generators and relations (module ['Presentations'](@ref))
@@ -101,10 +100,10 @@ using UsingMerge
 @usingmerge verbose=true reexport CyclotomicNumbers
 @reexport using CyclotomicNumbers: bracket_if_needed, 
   format_coefficient, stringind
+@reexport using CycPols
+@reexport using CycPols: stringprime
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
-include("CycPols.jl");@reexport using .CycPols
-@reexport using .CycPols: stringprime
 include("Util.jl");@reexport using .Util
 include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
