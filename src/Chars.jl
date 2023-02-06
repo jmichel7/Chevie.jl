@@ -1542,8 +1542,8 @@ function InductionTable(u,g)
     numerator(q)
   end
   cl=exactdiv.(length(u),tu.centralizers)
-  sc=exactdiv.(tg.irr[:,f]*Diagonal(cl)*permutedims(tu.irr),length(u))
-  InductionTable(sc,tg.charnames,tu.charnames,
+  sc=exactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
+  InductionTable(permutedims(sc),tg.charnames,tu.charnames,
   "Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
   Dict{Symbol,Any}(:repr=>string("InductionTable(",u,",",g,")")))
 end
