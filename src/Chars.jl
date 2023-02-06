@@ -1531,14 +1531,21 @@ function InductionTable(u,g)
   tu=CharTable(u)
   tg=CharTable(g)
   f=fusion_conjugacy_classes(u,g)
-  cl=div.(length(u),tu.centralizers)
-  scal(c,c1)=sum(map(*,conj.(c),c1,cl))//length(u)
-  lu=repr(u;context=:TeX=>true)
-  lg=repr(g;context=:TeX=>true)
-  sc=[scal(tg.irr[j,f],tu.irr[i,:]) for j in axes(tg.irr,1),i in axes(tu.irr,1)]
-  InductionTable(improve_type(sc),tg.charnames,tu.charnames,
-  "Induction Table from \$$lu\$ to \$$lg\$",
-  Dict{Symbol,Any}(:repr=>"InductionTable($(repr(u)),$(repr(g)))"))
+  function exactdiv(a,b)
+    q,r=divrem(a,b)
+    if !iszero(r) error("inexactdiv($a,$b)") end
+    q
+  end
+  function exactdiv(a::Cyc,b)
+    q=a//b
+    if !isone(denominator(q)) error("inexactdiv($a,$b)") end
+    numerator(q)
+  end
+  cl=exactdiv.(length(u),tu.centralizers)
+  sc=exactdiv.(tg.irr[:,f]*Diagonal(cl)*permutedims(tu.irr),length(u))
+  InductionTable(sc,tg.charnames,tu.charnames,
+  "Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("InductionTable(",u,",",g,")")))
 end
 
 function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
@@ -1600,11 +1607,9 @@ function jInductionTable(u,g)
   for (i,bi) in pairs(bu), (j,bj) in pairs(bg)
     if bi!=bj t[j,i]=0 end
   end
-  lu=repr(u;context=:TeX=>true)
-  lg=repr(g;context=:TeX=>true)
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "j-Induction Table from \$$lu\$ to \$$lg\$",
-  Dict{Symbol,Any}(:repr=>"jInductionTable($(repr(u)),$(repr(g)))"))
+  "j-Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("jInductionTable(",u,",",g,")")))
 end
 
 """
@@ -1650,11 +1655,9 @@ function JInductionTable(u,g)
   for (i,bi) in pairs(bu), (j,bj) in pairs(bg)
     if bi!=bj t[j,i]=0 end
   end
-  lu=repr(u;context=:TeX=>true)
-  lg=repr(g;context=:TeX=>true)
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "J-Induction Table from \$$lu\$ to \$$lg\$",
-  Dict{Symbol,Any}(:repr=>"JInductionTable($(repr(u)),$(repr(g)))"))
+  "J-Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("JInductionTable(",u,",",g,")")))
 end
 
 """

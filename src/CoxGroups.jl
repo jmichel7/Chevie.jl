@@ -890,6 +890,7 @@ PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
   [TypeIrred(Dict(:series=>:A,:indices=>collect(1:W.n-1)))]
 end
 
+Groups.classreps(W::CoxSym)=map(x->W(x...),classinfo(W).classtext)
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
 function PermRoot.simple_reps(W::CoxSym)

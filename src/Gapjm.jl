@@ -48,7 +48,7 @@ sits currently in `Gapjm` but may become eventually separate packages:
   * posets (module [`Posets`](@ref))
   * signed permutations (module [`SPerms`](@ref))
   * finite fields (module [`FFields`](@ref))
-  * presentations of groups, and groups defined by generators and relations (module ['Presentations'](@ref))
+  * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
 
 for  permutation groups I have  often replaced the sophisticated algorithms
 of  GAP by naive but  easy to write methods  only suitable for small groups

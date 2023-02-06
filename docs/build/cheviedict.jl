@@ -357,6 +357,8 @@ const ChevieDict=Dict(
 "SmithNormalFormIntegerMatTransforms(m)"=>"smith_transforms(m)",
 "SolutionMat"=>"solutionmat",
 "SolutionIntMat"=>"solutionmatInt",
+"SortingPerm(a)"=>"inv(sortPerm(a))",
+"SortParallel(a,b)"=>"b=b[sortperm(a)];sort!(a)",
 "SpecialPieces"=>"special_pieces",
 "Spets"=>"spets",
 "SplitLevis"=>"split_levis",

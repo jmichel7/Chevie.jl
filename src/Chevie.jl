@@ -36,6 +36,7 @@ function chevieset(t::Vector{String},w::Symbol,f::Function)
 end
 
 function field(t::TypeIrred)
+  get!(t,:field)do
   if haskey(t,:orbit)
     phi=t.twist
     orderphi=order(t.twist)
@@ -53,7 +54,7 @@ function field(t::TypeIrred)
      elseif orderphi==3 return (Symbol("3D4"),)
      end
   elseif s in [:E,:F,:G]
-    if orderphi==1 return (Symbol(s,PermRoot.rank(t)),) 
+    if orderphi==1 return (Symbol(s,PermRoot.rank(t)),)
     elseif s==:G return (Symbol(2,:I),6)
     else return (Symbol(orderphi,s,PermRoot.rank(t)),) 
     end
@@ -70,6 +71,7 @@ function field(t::TypeIrred)
     end
   elseif s==:I return (orderphi==1 ? s : Symbol(2,s),t.bond)
   else return (Symbol(s,PermRoot.rank(t)),) 
+  end
   end
 end
 
