@@ -109,9 +109,10 @@ end
 
 function TeXstrip(n::String) # plain ASCII rendering of TeX code
   n=replace(n,r"\\tilde *"=>"~")
-  n=replace(n,r"[_{}$]"=>"")
-  n=replace(n,"\\phi"=>"phi")
-  n=replace(n,"\\zeta"=>"E")
+# n=replace(n,r"[_{}$]"=>"") next line faster
+  n=String(filter(x->!(x in "_{}\$"),collect(n)))
+  n=replace(n,r"\\phi"=>"phi")
+  n=replace(n,r"\\zeta"=>"E")
   n=replace(n,r"\bi\b"=>"I")
   n=replace(n,r"\\mathfrak *"=>"")
 end

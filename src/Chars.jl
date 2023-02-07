@@ -870,7 +870,7 @@ group or Spets `W`. The result has attributes:
 julia> classinfo(coxgroup(:A,2))
 n0│name length order word
 ──┼───────────────────────
-1 │ 111      1     1     
+1 │ 111      1     1    .
 2 │  21      3     2    1
 3 │   3      2     3   12
 ```
@@ -912,8 +912,29 @@ function Base.show(io::IO,t::ClassInfo)
 end
 
 function limitto(s,sz)
-  if length(s)<sz return s end
-  s[1:sz-1]*"…"
+  if length(s)<sz || sz==1 return s end
+  s[1:prevind(s,sz-1)]*"…"
+end
+
+function showperiodic(io::IO,v::Vector{Int})
+  if isempty(v) return "." end
+  i=prev=1
+  res=""
+  while i<=length(v)
+    for p in 2:div(length(v)-i+1,2)
+#     @show i,p
+      if v[i:i+p-1]!=v[i+p:i+2p-1] continue end
+      c=2
+      while i+(c+1)*p-1<=length(v) && v[i:i+p-1]==v[i+c*p:i+(c+1)*p-1] c+=1 end
+      if c==2 && p==2 continue end
+      res*=string(joindigits(v[prev:i-1]),"(",joindigits(v[i:i+p-1]),")",stringexp(io,c))
+      i+=c*p-1;prev=i+1
+#     @show i,c,p,res,prev
+      break
+    end
+    i+=1
+  end
+  res*=joindigits(v[prev:end])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
@@ -940,7 +961,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
       sz+=max(maximum(length.(t[end])),length(cl[end]))+1
     end
   end
-  push!(t,limitto.(joindigits.(ci.classtext),displaysize(io)[2]-sz-2))
+  push!(t,limitto.(showperiodic.(io,ci.classtext),displaysize(io)[2]-sz-2))
   push!(cl,"word")
   showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
   if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
@@ -1050,7 +1071,7 @@ end
 function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
   irr=improve_type(toM(ct[:irreducibles]))
-  CharTable(irr,charnames(t;opt...),string.(classnames(t;opt...)),
+  CharTable(irr,charnames(t;opt...),classnames(t;opt...),
             Int.(ct[:centralizers]),ct[:size],
             Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
 end
