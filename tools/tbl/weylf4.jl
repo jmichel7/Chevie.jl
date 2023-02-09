@@ -85,7 +85,7 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
         tbl = Dict{Symbol, Any}(:identifier => "H(F4)", :text => "origin: Meinolf Geck, April 1992", :parameter => [u, u, v, v], :size => 1152, :powermap => chevieget(:F4, :PowerMaps))
         Inherit(tbl, (chevieget(:F4, :ClassInfo))())
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         dual = (f->begin
                     map(function (a, w)

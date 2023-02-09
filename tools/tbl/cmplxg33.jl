@@ -86,7 +86,7 @@ chevieset(:G33, :HeckeCharTable, function (para, root)
             end
         tbl[:irreducibles] = [f1(x), f1(y), f3(x, y, E(3)), f3(y, x, E(3)), f3(x, y, E(3, 2)), f3(y, x, E(3, 2)), f7(x, y), f7(y, x), f9(x, y, E(3)), f9(y, x, E(3)), f9(x, y, E(3, 2)), f9(y, x, E(3, 2)), f13(x, y), f13(y, x), f15(x, y), f15(y, x), f17(x, y), f17(y, x), f19(x, y), f19(y, x), f21(x, y), f21(y, x), f23(x, y, E(3)), f23(y, x, E(3)), f23(x, y, E(3, 2)), f23(y, x, E(3, 2)), f27(x, y, E(3)), f27(y, x, E(3)), f27(x, y, E(3, 2)), f27(y, x, E(3, 2)), f31(x, y, E(3)), f31(y, x, E(3)), f31(x, y, E(3, 2)), f31(y, x, E(3, 2)), f35(x, y), f35(y, x), f37(x, y, -1), f37(x, y, 1), f39(x, y), f39(y, x)]
         tbl[:centralizers] = map((x->begin
-                        tbl[:order] // x
+                        div(tbl[:order], x)
                     end), tbl[:classes])
         tbl[:irredinfo] = chevieget(:G33, :IrredInfo)
         return ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)

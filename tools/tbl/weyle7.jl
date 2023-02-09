@@ -87,7 +87,7 @@ chevieset(:E7, :HeckeCharTable, function (param, sqrtparam)
                     end
                 end, 1:length(tbl[:irredinfo]))
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         ((CHEVIE[:compat])[:AdjustHeckeCharTable])(tbl, param)

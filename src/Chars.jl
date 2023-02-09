@@ -1072,7 +1072,7 @@ function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
   irr=improve_type(toM(ct[:irreducibles]))
   CharTable(irr,charnames(t;opt...),classnames(t;opt...),
-            Int.(ct[:centralizers]),ct[:size],
+            improve_type(ct[:centralizers]),ct[:size],
             Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
 end
 

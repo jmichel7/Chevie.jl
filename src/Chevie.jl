@@ -83,7 +83,7 @@ const needcartantype=Set([:Invariants,
                           :WeightInfo,
                           :CartanMat])
 
-const debug=Ref(false)
+const debug=Ref(false) # time each call
 "`getchev(t::TypeIrred,f::Symbol,extra...)` get `CHEVIE[field(t)][f](extra...)`"
 function getchev(t::TypeIrred,f::Symbol,extra...)
   n,args...=field(t)

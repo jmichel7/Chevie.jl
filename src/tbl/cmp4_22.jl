@@ -694,7 +694,7 @@ chevieset(:G4_22, :HeckeCharTable, function (ST, para, root)
         res[:order] = res[:size]
         res[:identifier] = res[:name]
         res[:centralizers] = map((x->begin
-                        res[:size] // x
+                        div(res[:size], x)
                     end), res[:classes])
         ci = (chevieget(:G4_22, :CharInfo))(ST)
         res[:irredinfo] = map(function (x, y)

@@ -421,11 +421,11 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                         push!(res[:classparams], S)
                     end
                     push!(res[:orders], (I[:orders])[i])
-                    push!(res[:centralizers], ((I[:centralizers])[i] * a) // q)
+                    push!(res[:centralizers], div((I[:centralizers])[i] * a, q))
                 end
             end
             res[:classes] = map((x->begin
-                            (res[:centralizers])[1] // x
+                            div((res[:centralizers])[1], x)
                         end), res[:centralizers])
             res[:classnames] = map(chevieget(:imp, :ClassName), res[:classparams])
             return res

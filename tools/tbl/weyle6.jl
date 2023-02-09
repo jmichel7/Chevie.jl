@@ -48,7 +48,7 @@ chevieset(:E6, :HeckeCharTable, function (param, sqrtparam)
                             end), chevieget(:E6, :vpolheckeirreducibles)), :irredinfo => chevieget(:E6, :IrredInfo))
         Inherit(tbl, chevieget(:E6, :ClassInfo))
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         ((CHEVIE[:compat])[:AdjustHeckeCharTable])(tbl, param)

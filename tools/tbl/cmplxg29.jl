@@ -128,7 +128,7 @@ chevieset(:G29, :HeckeCharTable, function (para, root)
             end
         tbl[:irreducibles] = [f1(r), f1(p), f3(r, p), f3(p, r), f5(r, p, E(4)), f5(p, r, E(4)), f5(r, p, -(E(4))), f5(p, r, -(E(4))), f9(r, p), f9(p, r), f11(r, p), f12(r, p), f12(p, r), f14(r, p, E(4)), f14(r, p, -(E(4))), f17(r, p), f17(p, r), f18(r, p), f18(p, r), f22(r, p), f23(r, p), f22(p, r), f23(p, r), f24(r, p, 1), f24(p, r, 1), f24(r, p, -1), f24(p, r, -1), f28(r, p), f28(p, r), f30(r, p, E(4)), f30(p, r, E(4)), f30(r, p, -(E(4))), f30(p, r, -(E(4))), f34(r, p), f35(r, p, E(4)), f35(r, p, -(E(4))), f37(r, p)] * q ^ 0
         tbl[:centralizers] = map((x->begin
-                        tbl[:order] // x
+                        div(tbl[:order], x)
                     end), tbl[:classes])
         tbl[:irredinfo] = chevieget(:G29, :IrredInfo)
         return ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)

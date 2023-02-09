@@ -51,7 +51,7 @@ chevieset(:G26, :HeckeCharTable, function (para, root)
         res = Dict{Symbol, Any}(:size => 1296, :order => 1296, :identifier => "G26", :name => "G26", :powermap => chevieget(:G26, :PowerMaps), :parameter => para[[1, 2]], :dim => 3, :irredinfo => chevieget(:G26, :IrredInfo))
         Inherit(res, chevieget(:G26, :ClassInfo))
         res[:centralizers] = map((x->begin
-                        res[:order] // x
+                        div(res[:order], x)
                     end), res[:classes])
         f10(r, u) = begin
                 return [1, r, r * u ^ 2, r ^ 2 * u ^ 6, r ^ 3 * u ^ 9, r * u, r ^ 2 * u ^ 2, r ^ 4 * u ^ 4, r * u ^ 4, r ^ 5 * u ^ 8, r ^ 2 * u ^ 8, r ^ 11 * u ^ 20, r ^ 4 * u ^ 7, r * u ^ 2, r ^ 2 * u ^ 4, r ^ 3 * u ^ 6, r ^ 4 * u ^ 8, r ^ 5 * u ^ 10, r ^ 6 * u ^ 12, r ^ 9 * u ^ 18, r ^ 12 * u ^ 24, r ^ 15 * u ^ 30, r * u, r ^ 4 * u ^ 7, r ^ 7 * u ^ 13, r * u ^ 2, r ^ 2 * u ^ 5, u, r ^ 2 * u ^ 3, r * u ^ 6, r ^ 3 * u ^ 7, r ^ 6 * u ^ 13, r ^ 9 * u ^ 19, u ^ 2, r ^ 3 * u ^ 5, u ^ 4, u ^ 2, r ^ 3 * u ^ 8, r ^ 6 * u ^ 14, u ^ 6, r ^ 3 * u ^ 12, r ^ 6 * u ^ 18, u ^ 3, r ^ 3 * u ^ 3, r ^ 2 * u ^ 3, r ^ 3 * u ^ 9, r ^ 12 * u ^ 27, r * u ^ 3] * c

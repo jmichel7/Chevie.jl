@@ -183,7 +183,7 @@ chevieset(:I, :HeckeCharTable, function (m, param, rootparam)
                         end, ci[:charparams], ci[:charnames]), :parameter => [u, v], :powermap => [], :irreducibles => ct * v ^ 0)
         Inherit(tbl, cl)
         tbl[:centralizers] = map((i->begin
-                        tbl[:size] // i
+                        div(tbl[:size], i)
                     end), tbl[:classes])
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         ((CHEVIE[:compat])[:AdjustHeckeCharTable])(tbl, param)

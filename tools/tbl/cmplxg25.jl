@@ -54,7 +54,7 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
             end
         Inherit(res, chevieget(:G25, :ClassInfo))
         res[:centralizers] = map((x->begin
-                        res[:order] // x
+                        div(res[:order], x)
                     end), res[:classes])
         res[:irreducibles] = [f10(u), f10(w), f10(v), f23(v, w, u), f23(u, v, w), f23(u, w, v), [3, 3 * u ^ 2 * v ^ 2 * w ^ 2, u ^ 2 + v ^ 2 + w ^ 2, u ^ 4 + v ^ 4 + w ^ 4, u ^ 4 * v ^ 4 + u ^ 4 * w ^ 4 + v ^ 4 * w ^ 4, u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2, 0, 0, 3 * u ^ 4 * v ^ 4 * w ^ 4, 3 * u ^ 8 * v ^ 8 * w ^ 8, u ^ 2 * v ^ 2 * w ^ 3 + u ^ 2 * v ^ 3 * w ^ 2 + u ^ 3 * v ^ 2 * w ^ 2, u * v ^ 2 * w ^ 2 + u ^ 2 * v * w ^ 2 + u ^ 2 * v ^ 2 * w, u + v + w, u ^ 3 + v ^ 3 + w ^ 3, u ^ 2 * v ^ 4 * w ^ 4 + u ^ 4 * v ^ 2 * w ^ 4 + u ^ 4 * v ^ 4 * w ^ 2, u ^ 2 + v ^ 2 + w ^ 2, u ^ 2 * v ^ 2 + u ^ 2 * w ^ 2 + v ^ 2 * w ^ 2, 0, 0, u ^ 6 * v ^ 6 + u ^ 6 * w ^ 6 + v ^ 6 * w ^ 6, 3 * u ^ 2 * v ^ 2 * w ^ 2, -u * v * w, -u * v * w, -(u ^ 5) * v ^ 5 * w ^ 5], f31(v, u, w), f31(u, w, v), f31(w, v, u), f31(w, u, v), f31(u, v, w), f31(v, w, u), f62(w, u, v), f62(v, w, u), f62(u, v, w), f62(v, u, w), f62(w, v, u), f62(u, w, v), f83(u, v, w), f83(w, v, u), f83(v, u, w), f97(u, v, w, E(3, 2)), f97(u, v, w, E(3))] * c
         res = ((CHEVIE[:compat])[:MakeCharacterTable])(res)

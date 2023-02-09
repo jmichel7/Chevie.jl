@@ -54,7 +54,7 @@ chevieset(:G24, :HeckeCharTable, function (param, roots)
         tbl = Dict{Symbol, Any}(:identifier => "H(G24)", :name => "H(G24)", :size => 336, :order => 336, :powermap => chevieget(:G24, :PowerMaps), :irreducibles => [f1(r), f1(p), f3(p, r, root(-7)), f3(r, p, root(-7)), f3(p, r, -(root(-7))), f3(r, p, -(root(-7))), f6(r, p), f6(p, r), f7(p, r), f7(r, p), f8(p, r, u), f8(p, r, -u)] * p ^ 0 * r ^ 0, :galomorphisms => Group(perm"( 5, 6)( 9,10)"), :irredinfo => chevieget(:G24, :IrredInfo))
         Inherit(tbl, chevieget(:G24, :ClassInfo))
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         return ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
     end)

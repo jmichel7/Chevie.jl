@@ -98,7 +98,7 @@ chevieset(:G2, :HeckeCharTable, function (para, sqrtpara)
         tbl = Dict{Symbol, Any}(:identifier => "H(G2)", :parameter => [[x, y], [z, t]], :size => 12, :powermap => chevieget(:G2, :PowerMaps), :irreducibles => [f1(x, z), f1(y, t), f1(y, z), f1(x, t), f2(x, y, z, t, 1), f2(x, y, z, t, -1)], :irredinfo => chevieget(:G2, :IrredInfo))
         Inherit(tbl, chevieget(:G2, :ClassInfo))
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         return tbl

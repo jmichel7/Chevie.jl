@@ -30,7 +30,7 @@ chevieset(Symbol("3D4"), :HeckeCharTable, function (param, sqrtparam)
         tbl = Dict{Symbol, Any}(:identifier => "H(3D4)", :parameter => [q, q, q, q], :sqrtparameter => [], :cartan => chevieget(Symbol("3D4"), :CartanMat), :size => 192, :irreducibles => [[q, 1, q ^ 6, q, q ^ 2, q ^ 8, q ^ 4], [-1, 1, 1, -1, 1, 1, 1], [q - 1, 2, 2 * q ^ 3, q - 1, -q, -(q ^ 4), -(q ^ 2)], [0, 0, (q ^ 4 - 2 * q ^ 3) + q ^ 2, 0, -q, 3 * q ^ 4, 3 * q ^ 2], [q, 1, q ^ 5 - 2 * q ^ 4, -1, 0, -2 * q ^ 6, 2 * q ^ 3], [-1, 1, -2 * q ^ 2 + q, q, 0, -2 * q ^ 2, 2q], [q - 1, 2, -(q ^ 4) - q ^ 2, q - 1, 0, 2 * q ^ 4, -2 * q ^ 2]] * q ^ 0, :irredinfo => chevieget(Symbol("3D4"), :IrredInfo))
         Inherit(tbl, (chevieget(Symbol("3D4"), :ClassInfo))())
         tbl[:centralizers] = map((x->begin
-                        tbl[:size] // x
+                        div(tbl[:size], x)
                     end), tbl[:classes])
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         ((CHEVIE[:compat])[:AdjustHeckeCharTable])(tbl, param)

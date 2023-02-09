@@ -83,7 +83,7 @@ chevieset(:G27, :HeckeCharTable, function (para, rootpara)
             end
         tbl[:irreducibles] = [f1(r), f1(p), f3(r, p, E(3), root(5)), f3(p, r, E(3), root(5)), f3(r, p, E(3), -(root(5))), f3(p, r, E(3), -(root(5))), f3(r, p, E(3, 2), root(5)), f3(p, r, E(3, 2), root(5)), f3(r, p, E(3, 2), -(root(5))), f3(p, r, E(3, 2), -(root(5))), f11(r, p), f12(r, p), f12(p, r), f11(p, r), f15(r, p, E(3)), f15(p, r, E(3)), f15(r, p, E(3, 2)), f15(p, r, E(3, 2)), f19(r, p, root(5), 1), f19(r, p, root(5), -1), f19(r, p, -(root(5)), 1), f19(r, p, -(root(5)), -1), f23(r, p, 1), f23(p, r, 1), f23(p, r, E(3, 2)), f23(r, p, E(3, 2)), f23(p, r, E(3)), f23(r, p, E(3)), f29(r, p), f29(p, r), f31(p, r, E(3)), f31(r, p, E(3)), f31(p, r, E(3, 2)), f31(r, p, E(3, 2))] * q ^ 0
         tbl[:centralizers] = map((x->begin
-                        tbl[:order] // x
+                        div(tbl[:order], x)
                     end), tbl[:classes])
         tbl[:irredinfo] = chevieget(:G27, :IrredInfo)
         tbl[:galomorphisms] = Group(perm"(4,8)(6,19)(7,20)(12,28)(14,27)(15,26)", perm"(6,7)(11,13)(14,15)(17,18)(19,20)(22,23)(24,25)(26,27)(30,31)(32,33)")
