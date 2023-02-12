@@ -376,11 +376,17 @@ extprod(W1::FiniteCoxeterGroup,W2::Spets)=extprod(spets(W1),W2)
 extprod(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)=W1*W2
 
 function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
-  if isempty(J) C=W
-  elseif all(J.<=ngens(W))
+  if isempty(J) return classreps(W) end
+  H=reflection_subgroup(W,J)
+  if isparabolic(W,H)
+    if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
+    else p=standard_parabolic(W,H); H=H^p
+    end
+    J=inclusiongens(H)
     C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
-  else C=centralizer(W,sort(J),(J,w)->sort(action.(Ref(W),J,w)))
+    return classreps(C).^inv(p)
   end
+  C=centralizer(W,sort(J),(J,w)->sort(action.(Ref(W),J,w)))
   classreps(C)
 end
 
@@ -391,7 +397,7 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
   h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
                              (x,p)->sort(action.(Ref(W),x,p)))
   if isnothing(h)
-    println( "\n# no subspets for ", J )
+    println("\n# no subspets for ",J)
     return eltype(W)[]
   end
   W_L=centralizer(W,sort(collect(J)),(x,p)->sort(action.(Ref(W),x,p)))

@@ -1488,14 +1488,15 @@ julia> isparabolic(reflection_subgroup(W,[1]))
 true
 ```
 """
-function isparabolic(H)
-  W=parent(H)
+function isparabolic(W,H)
   setr=s->Set(refls(W,s))
   if iszero(ngens(H)) return true end
-  v=simpleroots(H)
-  gens=filter(i->solutionmat(v,roots(W,i))!==nothing,eachindex(roots(W)))
+  v=rowspace(simpleroots(H))
+  gens=filter(i->in_rowspace(roots(W,i),v),eachindex(roots(W)))
   setr(gens)==setr(inclusion(H))
 end
+
+isparabolic(H)=isparabolic(parent(H),H)
 
 """
 `parabolic_closure(W,I)`
@@ -1519,9 +1520,9 @@ julia> parabolic_closure(W,[1,2])
  3
 ```
 """
-function parabolic_closure(W,I)
+function parabolic_closure(W,I::AbstractVector{<:Integer})
   if isempty(I) return I end
-  v=toM(roots(W,I))
+  v=rowspace(toM(roots(W,I)))
   gens=filter(i->in_rowspace(roots(W,i),v),eachindex(roots(W)))
   inclusiongens(reflection_subgroup(W,gens),W)
 end

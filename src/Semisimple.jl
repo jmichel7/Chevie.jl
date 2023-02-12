@@ -194,7 +194,8 @@ end
 
 Groups.gens(W::ExtendedCox)=vcat(gens(W.group),W.phis)
 
-function ExtendedCox(W::FiniteCoxeterGroup{T},F0s::Vector{Matrix{Int}})where T
+function ExtendedCox(W::FiniteCoxeterGroup{T},F0s::Vector{<:Matrix})where T
+  if isempty(F0s) return ExtendedCox(W,[reflrep(W,W())],[one(W.G)]) end
   ExtendedCox(W,F0s,isempty(F0s) ? T[] : map(F->PermX(W.G,F),F0s))
 end
 
@@ -1056,6 +1057,28 @@ function intermediate_group(W,I)
   rootdatum(Int.(R^-1),Int.(C*transpose(R)))
 end
 
+function Groups.transporting_elt(W::FiniteCoxeterGroup,H1::FiniteCoxeterGroup,
+    H2::FiniteCoxeterGroup)
+  if parent(W)!=parent(H1) || parent(W)!=parent(H1) error("not same parent") end
+  if isomorphism_type(H1)!=isomorphism_type(H2) return end
+  PH1=parabolic_closure(W,inclusiongens(H1,W))
+  p1=standard_parabolic(W,PH1);PH1=sort(PH1.^p1);H1=H1^p1;
+  PH2=parabolic_closure(W,inclusiongens(H2,W))
+  p2=standard_parabolic(W,PH2);PH2=sort(PH2.^p2);H2=H2^p2;
+  C=CoxGroups.parabolic_category(W,PH1)
+  i=findfirst(==(PH2),C.obj)
+  if isnothing(i) return end
+  p=Garside.from(C,1,i)
+  if isnothing(p) return end
+  H1=H1^p
+  if H1==H2 return p1*p*inv(p2) end
+  q=transporting_elt(reflection_subgroup(W,PH2),
+                     sort(inclusiongens(H1)),sort(inclusiongens(H2)),
+            (s,g)->sort!(s.^g))
+  if isnothing(q) return end
+  p1*p*q*inv(p2)
+end
+
 """
 `SScentralizer_reps(W [,p])`
 
@@ -1102,20 +1125,16 @@ function SScentralizer_reps(W,p=0)
 # W-orbits of subsets of Π∪ {-α₀}
   l=map(refltype(W))do t
     H=reflection_subgroup(W,t.indices)
-    cent=map(I->inclusion(H,W,I),parabolic_reps(H))
-    cent=map(I->reflection_subgroup(W,I),cent)
+    cent=reflection_subgroup.(Ref(H),parabolic_reps(H))
     npara=length(cent)
-    r=filter(i->sum(W.rootdec[i])==sum(W.rootdec[i][t.indices]),1:nref(W))
-    (m,h)=findmax(sum.(W.rootdec[r]))
-    ED=vcat(t.indices,[r[h]])
+    ED=vcat(1:rank(t),[nref(H)])
     for J in combinations(ED)
       if length(J)==length(ED) continue end
-      R=reflection_subgroup(W,J)
-      if !isnothing(standard_parabolic(W,R)) continue end
+      R=reflection_subgroup(H,J)
+      if !isnothing(standard_parabolic(H,R)) continue end
       u=findall(G->isomorphism_type(R)==isomorphism_type(G),cent[npara+1:end])
-      if length(u)>0 println(u,R) end
-      if all(G->isnothing(transporting_elt(W,sort(inclusiongens(R)),
-             sort(inclusiongens(G)),(s,g)->sort!(s.^g))),cent[npara.+u])
+#     if length(u)>0 xprintln("comparing ",R," to ",cent[npara+1:end][u]) end
+      if all(G->isnothing(transporting_elt(H,R,G)),cent[npara.+u])
         push!(cent,R)
       end
     end

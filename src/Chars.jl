@@ -834,6 +834,7 @@ function classinfo(t::TypeIrred)
   cl[:classtext]=map(x->inds[x],cl[:classtext])
   if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
   if haskey(cl,:centralizers) cl[:centralizers]=Int.(cl[:centralizers]) end
+  cl[:classnames]=String.(cl[:classnames])
   ClassInfo(cl)
 end
 

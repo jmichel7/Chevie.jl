@@ -627,14 +627,14 @@ E₈
 
 julia> badprimes(W)
 3-element Vector{Int64}:
- 5
  2
  3
+ 5
 ```
 """
 function badprimes(W::FiniteCoxeterGroup)
   if isempty(W.rootdec) return Int[] end
-  collect(setdiff(vcat(collect.(keys.(factor.(Set(vcat(W.rootdec...)))))...),[0,-1]))
+  collect(setdiff(vcat(collect.(keys.(factor.(Int.(unique(vcat(W.rootdec...))))))...),[0,-1]))
 end
 
 """
@@ -1062,9 +1062,9 @@ end
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
   reflection_subgroup(W.parent,inclusion(W)[I])
 
-CoxGroups.isleftdescent(W::FCSG,w,i::Int)=inclusion(W,i)^w>nref(parent(W))
+CoxGroups.isleftdescent(W::FCSG,w,i::Integer)=inclusion(W,i)^w>nref(parent(W))
 # next is 25% slower
-#CoxGroups.isleftdescent(W::FCSG,w,i::Int)=action(W,i,w)>nref(W)
+#CoxGroups.isleftdescent(W::FCSG,w,i::Integer)=action(W,i,w)>nref(W)
 
 function rootlengths(W::FCSG)
   get!(W,:rootlengths)do

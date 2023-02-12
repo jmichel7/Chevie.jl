@@ -198,9 +198,18 @@ end
 """
 `in_rowspace(v::AbstractVector,m::AbstractMatrix)` 
 
-whether `v` is in the rowspace of `m`.
+whether `v` is in the rowspace `m`. The matrix `m` should be an echelonized
+matrix like what is returned by function `rowspace`.
 """
-in_rowspace(v::AbstractVector,m::AbstractMatrix)=solutionmat(m,v)!=nothing
+function in_rowspace(v::AbstractVector,m::AbstractMatrix)
+  res=zero(@view m[1,:])
+  j=1
+  for i in axes(m,1)
+    while iszero(m[i,j]) j+=1 end
+    @. @views res+=v[j].*m[i,:]
+  end
+  res==v
+end
 
 # see Cohen computational algebraic number theory 2.2.7
 function charpolyandcomatrix(m)

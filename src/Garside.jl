@@ -1562,12 +1562,11 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   function foo()
     reached=[o]
     for i in reached t=C.atoms[i]
-      for (j,m) in pairs(t)
-        (mp,o1)=m
+      for (j,(m,o1)) in pairs(t)
         if !(o1 in reached)
           paths[o1]=vcat(paths[i],[(i,j)])
-          if i!=o maps[o1]=maps[i]*mp
-          else maps[o1]=mp
+          if i!=o maps[o1]=maps[i]*m
+          else maps[o1]=m
           end
           push!(reached,o1)
           if length(reached)==length(C.obj) return end
@@ -1581,9 +1580,9 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   for i in eachindex(C.obj)
     t=C.atoms[i]
     for j in eachindex(t)
-     if vcat(paths[i],[(i,j)])!=paths[t[j][2]]
-       if i==o nmap=t[j][1]
-       else nmap=maps[i]*t[j][1]
+      if vcat(paths[i],[(i,j)])!=paths[t[j][2]]
+        if i==o nmap=t[j][1]
+        else nmap=maps[i]*t[j][1]
         end
         if t[j][2]==o push!(gens,nmap)
         elseif nmap!=maps[t[j][2]] push!(gens,nmap*inv(maps[t[j][2]]))
@@ -1592,6 +1591,27 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
     end
   end
   gens
+end
+
+# return one map in C from o to o1 or nothing if none exists
+function from(C::Category{TO,TM},o,o1)where {TO,TM}
+  if isempty(C.atoms[o]) m=one(TM)
+  else m=one(first(C.atoms[o][1]))
+  end
+  reached=[m=>o]
+  if o==o1 return first(reached[1]) end
+  j=1
+  while true
+    mi,i=reached[j]
+    for (m,t) in C.atoms[i]
+      if !any(x->t==last(x),reached)
+        push!(reached,mi*m=>t)
+        if t==o1 return first(reached[end]) end
+      end
+    end
+    j+=1
+    if j>length(reached) break end
+  end
 end
 
 # returns atoms from a in F-twisted s-conjugacy category

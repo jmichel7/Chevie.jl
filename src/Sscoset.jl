@@ -46,12 +46,11 @@ chosen `σ`-stable.
 ```julia-repl
 julia> centralizer.(Ref(WF),l)
 4-element Vector{ExtendedCox{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Rational{Int64}}}}:
- Extended(C₃₍₃₂₁₎)
+ C₃₍₃₂₁₎
  ²A₃₍₃₁₂₎
  (A₁A₁)₍₁₃₎×A₁₍₂₎
  B₂Φ₁
 ```
-
 in  the above example, the groups `C_𝐆  (tσ)` are computed and displayed as
 extended  Coxeter groups (following the same convention as for centralisers
 in connected reductive groups).
@@ -162,7 +161,7 @@ julia> centralizer(WF,s)
 B₂Φ₁
 
 julia> centralizer(WF,one(s))
-Extended(C₃₍₃₂₁₎)
+C₃₍₃₂₁₎
 ```
 """
 function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})

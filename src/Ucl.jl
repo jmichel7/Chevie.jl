@@ -202,7 +202,7 @@ second argument to the function `UnipotentClasses`:
 
 ```julia-repl
 julia> UnipotentClasses(coxgroup(:G,2),3)
-UnipotentClasses(G₂)
+UnipotentClasses(G₂,3)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
      u│dBu B-C  C(u) G₂(G₂₍₎=Φ₁²) .(G₂) .(G₂)  .(G₂)
 ──────┼──────────────────────────────────────────────
@@ -686,8 +686,10 @@ end
 
 Base.length(uc::UnipotentClasses)=length(uc.classes)
 
-function UnipotentClasses(W,p=0)
+function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
 # println("UnipotentClasses(",W,")")
+  if !(p in (W isa Spets ? badprimes(Group(W)) : badprimes(W))) p=0 end
+  get!(W,Symbol("unipotentclasses",p))do
   spetscase=W isa Spets
   if spetscase
     WF=W
@@ -836,6 +838,7 @@ function UnipotentClasses(W,p=0)
   end
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
+  end
 end
 
 function showcentralizer(io::IO,u)
@@ -888,7 +891,9 @@ function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
 end
 
 function Base.show(io::IO,uc::UnipotentClasses)
-  print(io,"UnipotentClasses(",uc.spets,")")
+  print(io,"UnipotentClasses(",uc.spets)
+  if uc.p!=0 print(io,",",uc.p) end
+  print(io,")")
 end
 
 function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
