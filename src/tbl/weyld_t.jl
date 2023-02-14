@@ -10,6 +10,12 @@ chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
 #  S_(l/2). This is described in [Pfeiffer, G., Character Tables of  Weyl
 #  Groups in GAP]. 
 chevieset(:D,:HeckeCharTable,function(n,para,root)
+   ci=chevieget(:D,:ClassInfo)(n)
+   chp=chevieget(:D,:CharInfo)(n)[:charparams]
+   q=-para[1][1]//para[1][2]
+   tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
+   tbl[:identifier]=tbl[:name]
+   tbl[:parameter]=fill(q,n)
 function chard(n,q)
   if n%2==0
     n1=div(n,2)-1
@@ -17,7 +23,8 @@ function chard(n,q)
     pA=partitions(n1+1)
     Airr(x,y)=AHk[findfirst(==(x),pA)][findfirst(==(y),pA)]
   end
-  BHk=chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
+  BHk=isone(q) ? chevieget(:B,:CharTable)(n) :
+      chevieget(:imp,:HeckeCharTable)(2,1,n,vcat([[1,-1]],fill([q,-1],n)),[])
   pB=chevieget(:B,:CharInfo)(n)[:charparams]
   Birr(x,y)=BHk[:irreducibles][findfirst(==(x),pB)][findfirst(==(y),pB)]
   function value(lambda,mu)
@@ -38,18 +45,13 @@ function chard(n,q)
     end
     return val
   end
-  [[value(lambda,mu) for mu in chevieget(:D,:ClassInfo)(n)[:classparams]]
-   for lambda in chevieget(:D,:CharInfo)(n)[:charparams]] 
+  [[value(lambda,mu) for mu in ci[:classparams]] for lambda in chp]
 end
-   u=-para[1][1]//para[1][2]
-   tbl=Dict{Symbol,Any}(:name=>"H(D_$n)")
-   tbl[:identifier]=tbl[:name]
-   tbl[:parameter]=fill(u,n)
-   tbl[:irreducibles]=chard(n,u)
+   tbl[:irreducibles]=chard(n,q)
    tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
 #  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
 #     rec(charparam:=p,charname:=PartitionTupleToString(p)));
-   merge!(tbl,chevieget(:D,:ClassInfo)(n))
+   merge!(tbl,ci)
    CHEVIE[:compat][:AdjustHeckeCharTable](tbl,para);
    tbl
   end)

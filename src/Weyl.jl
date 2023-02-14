@@ -230,63 +230,68 @@ PermRoot.cartan(m::AbstractMatrix)=map(c->iszero(c) ? -2 : -E(2*c,-1)-E(2*c),m)
 
 const cartanmats=Dict{Symbol,Function}()
 
-cartanmats[:A]=function(r)
+cartanmats[:a]=cartanmats[:A]=function(r)
   m=fill(0,r,r)
   for i in 1:r
     m[i,i]=2;if i<r m[i,i+1]=-1 end;if i>1 m[i,i-1]=-1 end
   end
   m
 end
-cartanmats[:B]=function(r)
+cartanmats[:b]=cartanmats[:B]=function(r)
   m=cartanmats[:A](r)
   if r>1 m[1,2]=-2 end
   m
 end
-cartanmats[:Isym]=function(b)
+cartanmats[:isym]=cartanmats[:Isym]=function(b)
   [2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
 end
-cartanmats[:Bsym]=function(r)
+cartanmats[:bsym]=cartanmats[:Bsym]=function(r)
   m=Cyc.(cartanmats[:A](r))
   m[1:2,1:2]=cartanmats[:Isym](4)
   m
 end
-cartanmats[:C]=function(r)
+cartanmats[:c]=cartanmats[:C]=function(r)
   m=cartanmats[:A](r)
   if r>1 m[2,1]=-2 end
   m
 end
-cartanmats[:D]=function(r)
+cartanmats[:d]=cartanmats[:D]=function(r)
   m=cartanmats[:A](r)
   u=min(r,3); m[1:u,1:u]=[2 0 -1; 0 2 -1;-1 -1 2][1:u,1:u]
   m
 end
-cartanmats[:E]=function(r)
+cartanmats[:e]=cartanmats[:E]=function(r)
+  if r>8 error("type :E is defined only for rank ≤8") end
   m=cartanmats[:A](r)
-  u=min(r,4); m[1:u,1:u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][1:u,1:u]
+  u=1:min(r,4); m[u,u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][u,u]
   m
 end
-cartanmats[:F]=function(r)
+cartanmats[:f]=cartanmats[:F]=function(r)
+  if r!=4 error("type :F is defined only for rank 4") end
   m=cartanmats[:A](r)
   m[3,2]=-2
   m
 end
-cartanmats[:Fsym]=function(r)
+cartanmats[:fsym]=cartanmats[:Fsym]=function(r)
+  if r!=4 error("type :Fsym is defined only for rank 4") end
   m=Cyc.(cartanmats[:A](r))
   m[3,2]=m[2,3]=-root(2)
   m
 end
-cartanmats[:G]=function(r)
+cartanmats[:g]=cartanmats[:G]=function(r)
+  if r!=2 error("type :G is defined only for rank 2") end
   m=cartanmats[:A](r)
   m[2,1]=-3
   m
 end
-cartanmats[:Gsym]=r->cartanmats[:Isym](6)
-cartanmats[:H]=function(r)
+cartanmats[:gsym]=cartanmats[:Gsym]=r->cartanmats[:Isym](6)
+cartanmats[:h]=cartanmats[:H]=function(r)
+  if r>4 error("type :H is defined only for rank ≤4") end
   m=Cyc.(cartanmats[:A](r))
   m[1:2,1:2]=cartanmats[:Isym](5)
   m
 end
-cartanmats[:I]=function(b)
+cartanmats[:i]=cartanmats[:I]=function(b)
   b%2==0 ? [2 (b==2 ? 0 : -1);-2-E(b)-E(b,-1) 2] : cartanmats[:Isym](b)
 end
 """

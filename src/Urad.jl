@@ -1,12 +1,12 @@
 """
 This  module contains  functions for  computing with  unipotent elements of
-reductive  groups;  specifically  to  compute  with  elements  of unipotent
-radical  of a Borel subgroup of  a connected algebraic reductive group; the
-implementation of these functions was initially written by Olivier Dudas in
-GAP3.
+reductive  groups; specifically to  compute with elements  of the unipotent
+radical of a Borel subgroup of a connected algebraic reductive group; these
+functions  were initially written by Olivier Dudas in GAP3, partly inspired
+by older C code of Jean Michel.
 
 The  unipotent radical of a  Borel subgroup is the  product in any order of
-root  subgroups associated  to the  positive roots.  We fix an order, which
+the root subgroups associated to the positive roots. We fix an order, which
 gives a canonical form to display elements and to compare them.
 
 The  computations use the Steinberg relations between root subgroups, which
@@ -14,9 +14,9 @@ come from the choice of a Chevalley basis of the Lie algebra. The reference
 we  follow is [Carter1972, chapters 4 to 6](biblio.htm#Car72b).
 
 We  start with  a root  datum specified  by a  Weyl group  `W` and  build a
-`struct` which contains information about the maximal unipotent subgroup of
-the  corresponding reductive  group, that  is the  unipotent radical of the
-Borel subgroup determined by the positive roots.
+`struct  UnipotentGroup`  which  contains  information  about  the  maximal
+unipotent  subgroup  of  the  corresponding  reductive  group,  that is the
+unipotent radical of the Borel subgroup determined by the positive roots.
 
 ```julia-repl
 julia> W=coxgroup(:E,6)
@@ -148,19 +148,23 @@ module Urad
 using ..Gapjm
 export UnipotentElement, UnipotentGroup, reorder, abelianpart
 
-"""
-A  `struct UnipotentGroup`  `U` represents  the unipotent  radical `𝐔` of a
-Borel subgroup of the reductive group with Weyl group `U.W`.
+@GapObj struct UnipotentGroup
+  W
+  order::Vector{Int} # total order on roots used to normalize unipotents
+  special::Vector{NamedTuple{(:r,:s,:rs,:N,:comm),
+                             Tuple{Int,Int,Int,Int,Vector{NTuple{4,Int}}}}}
+end
+
+@doc """
+A  `struct UnipotentGroup` represents  the unipotent  radical `𝐔` of a
+Borel subgroup of a reductive group `G`.
 
 See   [Carter1972,  section  4.2](biblio.htm#Car72b)  for  details  on  the
 following.  A Chevalley basis  of the Lie  algebra of `𝐔`  is a basis `eᵣ`,
 where   each  `eᵣ`  is  in  the  corresponding  root  subspace,  such  that
-`[eᵣ,eₛ]=Nᵣₛ e_{r+s}` for some integer constants `Nᵣₛ`.
-
-To  build such  a basis,  let `<`  be a  total order  on the positive roots
-induced  by a total order on the ambient vector space (the default order of
-roots  of `W` in this package  is an example; we use  it in this module). A
-pair `(r,s)` of roots is *special* if `0<r<s` and `r+s` is a root.
+`[eᵣ,eₛ]=Nᵣₛ e_{r+s}` for some integer constants `Nᵣₛ`. The constants `Nᵣₛ`
+for general roots are computed from the case where `r` and `s` are positive
+roots whose sum is a root; such a pair `(r,s)` is called *special*.
 
 Constants  `Cᵣₛᵢⱼ` are defined, see [Carter1972, 5.2.3](biblio.htm#Car72b),
 by
@@ -168,28 +172,38 @@ by
 ``u_s(u)u_r(t)=u_r(t)u_s(u)\\prod_{i,j>0}u_{ir+js}(C_{rsij}(-t)^iu^j)``
 
 Where  `ir+js` runs over the positive  integral combinations of `r` and `s`
-which are roots, taken in lexicographic order.
+which  are roots,  taken in  lexicographic order  on `(i,j)`. The constants
+`Cᵣₛᵢⱼ`  are computed from  the constants `Nᵣₛ`,  see Carter1972, bottom of
+page 61 and top of page 76.
 
 The fields of `struct Unipotent Group` are:
 
-  * `W`:         the underlying Weyl group
-  * `specialPairs`:   triples of indices of the roots `(r,s,r+s)`
-                  where `(r,s)` is special, ordered by `(r+s,r)`, followed
-                  by the triples `(s,r,r+s)` for the same list.
-  * `ns`:         The number of   `specialPairs` where `r<s`.
-  * `N`:          the constants `Nᵣₛ` for `specialPairs`
-  * `order`:      the order on positive roots used to normalize products
-  * `commutatorConstants`: stores the `Cᵣₛᵢⱼ` by storing for each special pair
-                     `(r,s)` the list of quadruples `[i,j,ir+js,Cᵣₛᵢⱼ]`.
-"""
-struct UnipotentGroup
-  W
-  specialPairs::Vector{Tuple{Int,Int,Int}}
-  ns::Int
-  N::Vector{Int}
-  order
-  commutatorConstants
-end
+  * `W`:         the Weyl group of `G`
+  * `order`:     the total order on the roots used to normalize products of root subgroups (by default `1:nref(W)`)
+  * `special:    a `NamedTuple` for each special pair of roots `(r,s)`
+  - `r`  index of `r`
+  - `s`  index of `s`
+  - `rs` index of `r+s`
+  - `N`: the constant `Nᵣₛ`
+  - `comm`: stores the `Cᵣₛᵢⱼ` as the list of quadruples `(i,j,ir+js,Cᵣₛᵢⱼ)`.
+```julia-repl
+julia> U=UnipotentGroup(coxgroup(:G,2))
+UnipotentGroup(G₂)
+
+julia> U.special
+10-element Vector{NamedTuple{(:r, :s, :rs, :N, :comm), Tuple{Int64, Int64, Int64, Int64, Vector{NTuple{4, Int64}}}}}:
+ (r = 1, s = 2, rs = 3, N = 1, comm = [(1, 1, 3, 1), (1, 2, 4, -1), (1, 3, 5, 1), (2, 3, 6, 2)])
+ (r = 2, s = 3, rs = 4, N = 2, comm = [(1, 1, 4, 2), (2, 1, 5, 3), (1, 2, 6, -3)])
+ (r = 2, s = 4, rs = 5, N = 3, comm = [(1, 1, 5, 3)])
+ (r = 1, s = 5, rs = 6, N = 1, comm = [(1, 1, 6, 1)])
+ (r = 3, s = 4, rs = 6, N = 3, comm = [(1, 1, 6, 3)])
+ (r = 2, s = 1, rs = 3, N = -1, comm = [(1, 1, 3, -1), (2, 1, 4, -1), (3, 1, 5, -1), (3, 2, 6, -1)])
+ (r = 3, s = 2, rs = 4, N = -2, comm = [(1, 1, 4, -2), (2, 1, 6, -3), (1, 2, 5, 3)])
+ (r = 4, s = 2, rs = 5, N = -3, comm = [(1, 1, 5, -3)])
+ (r = 5, s = 1, rs = 6, N = -1, comm = [(1, 1, 6, -1)])
+ (r = 4, s = 3, rs = 6, N = -3, comm = [(1, 1, 6, -3)])
+```
+""" UnipotentGroup
 
 struct UnipotentElement{T}
   U::UnipotentGroup
@@ -227,18 +241,19 @@ function Base.:^(u::UnipotentElement,v::SemisimpleElement)
   UnipotentElement(u.U,map(((r,c),)->r=>v^roots(u.U.W,r)*c,u.list))
 end
 
+n⁰(W,r)=findfirst(==(r),roots(W))
+
 # Computes the constants ηᵣₛ defined in [Carter1972, 6.4.2 and 6.4.3]
 # used for conjugating a unipotent element by a reflection.
 η=function(U::UnipotentGroup,a,b)
   W=U.W
-  no(r)=findfirst(==(r),roots(W))
-  L=map(j->no(roots(W,a)*j+roots(W,b)),-4:4)
+  L=map(j->n⁰(W,roots(W,a)*j+roots(W,b)),-4:4)
   L=filter(j->!isnothing(L[5+j]) && L[5+j]<=nref(W),-4:4)
   p=-L[1]
   q=L[end]
   eta=(-1)^p
   for i in 0:max(p-1, q-1)
-    n=N(U,a,no(roots(W,a)*(i-p)+roots(W,b)))
+    n=N(U,a,n⁰(W,roots(W,a)*(i-p)+roots(W,b)))
     if i<p || i<q eta*=sign(n) end
   end
   eta
@@ -247,9 +262,11 @@ end
 function Base.:^(u::UnipotentElement,n::Perm)
   if isone(n) return u end
   W=u.U.W
+  p=findfirst(x->isleftdescent(W,n,x[1]),u.list)
+  if !isnothing(p) 
+    error(u," should have no coefficient on root ", u.list[p][1][1], "\n")
+  end
   s=firstleftdescent(W, n)
-  p=filter(x->isleftdescent(W,n,x[1]),u.list)
-  if !isempty(p) error(u," should have no coefficient on root ", p[1][1], "\n") end
   u.U(map(((r,c),)->Int(r^n)=>η(u.U,s,r)*c,u.list)...)^(W(s)*n)
 end
 
@@ -272,9 +289,12 @@ function check_root_order(W)
 end
 
 # Compute N_{a,b} for non-necessarily positive roots [Carter1972b, 4.2.1
-# (ii)](biblio.htm#Car72b]
-function N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)
-  W=U.W
+# (ii)](biblio.htm#Car72b] 
+# Here a negative root α is represented by -(index of -α)
+N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)=
+   N(U.W,map(p->(p.r,p.s,p.rs),U.special),map(p->p.N,U.special),a,b;scaled)
+
+function N(W,special,Nc,a::Integer,b::Integer;scaled=false)
   ra= a<0 ? -roots(W,-a) : roots(W,a)
   rb= b<0 ? -roots(W,-b) : roots(W,b)
   c=findfirst(==(ra+rb),roots(W))
@@ -283,23 +303,55 @@ function N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)
   lc=l(c)
   if c>nref(W) c=-(c-nref(W)) end
   if a>0
-    if b>0 res=U.N[findfirst(==((a,b,c)),U.specialPairs)]
-    elseif c<0 res=N(U,-c,a)*lc//l(-b)
-    else res=-N(U,-b, c)*lc//l(a)
+    if b>0 res=Nc[findfirst(==((a,b,c)),special)]
+    elseif c<0 res=N(W,special,Nc,-c,a)*lc//l(-b)
+    else res=-N(W,special,Nc,-b, c)*lc//l(a)
     end
-  elseif b<0 res=-N(U,-a,-b)
-  elseif c<0 res=N(U,b,-c)*lc//l(-a)
-  else res=-N(U,c,-a)*lc//l(b)
+  elseif b<0 res=-N(W,special,Nc,-a,-b)
+  elseif c<0 res=N(W,special,Nc,b,-c)*lc//l(-a)
+  else res=-N(W,special,Nc,c,-a)*lc//l(b)
   end
   scaled ? res//lc : res
 end
 
-"""
-`UnipotentGroup(W)`
+function Ncarter(W,special)
+# the order on the positive roots must be compatible with an order
+# on the ambient vector space. 1:nref(W) is such an order (see
+# check_root_order)
+# Compute Nᵣₛ for each special pair, using arbitraryness for extraspecial
+# pairs. See formula in proof of [Carter1972b, 4.2.2](biblio.htm#Car72b)
+  r=s=rs=0
+  ns=div(length(special),2)
+  Nc=fill(0,2*ns)
+  for i in 1:ns
+    if i==1 || special[i-1][3]!=special[i][3] #extraspecial
+      (r,s,rs)=special[i]
+      Nc[i]=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3)
+    else # special of sum rs
+      (r1,s1,rs1)=special[i]
+      l=isnothing(rs1) ? 1 : rootlengths(W)[rs1] # length of root r
+      Nc[i]=l//N(W,special,Nc,r,s)*(N(W,special,Nc,s,-r1;scaled=true)*
+     N(W,special,Nc,r,-s1)+N(W,special,Nc,-r1,r;scaled=true)*N(W,special,Nc,s,-s1))
+    end
+    Nc[ns+i]=-Nc[i] #fill in now; used for later i
+  end
+  Nc
+end
 
-`W`  should be a Weyl group.  This function returns a `struct` representing
-the  unipotent radical `𝐔`  of a Borel  subgroup of the  reductive group of
-Weyl group `W`.
+"""
+`UnipotentGroup(W;chevalley=nothing,order=1:nref(W))`
+
+`W` should be a Weyl group. This function returns a `struct UnipotentGroup`
+associated  to the reductive group of Weyl group `W`. 
+
+If  the keyword `order` is given it is  a total order on the positive roots
+used to normalize unipotent elements.
+
+By  default the structure constants `Nᵣₛ`  are computed using the method of
+Carter72 from extraspecial pairs. Another set of structure constants can be
+given  by given for the keyword `chevalley`  a `Dict` associating to a pair
+`(r,s)`  of  root  indices  some  object  `p`  such  that `first(p)` is the
+corresponding `N_{r,s}`.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -307,103 +359,60 @@ G₂
 
 julia> U=UnipotentGroup(W)
 UnipotentGroup(G₂)
-
-julia> U.specialPairs
-10-element Vector{Tuple{Int64, Int64, Int64}}:
- (1, 2, 3)
- (2, 3, 4)
- (2, 4, 5)
- (1, 5, 6)
- (3, 4, 6)
- (2, 1, 3)
- (3, 2, 4)
- (4, 2, 5)
- (5, 1, 6)
- (4, 3, 6)
-
-julia> U.N
-10-element Vector{Int64}:
-  1
-  2
-  3
-  1
-  3
- -1
- -2
- -3
- -1
- -3
-
-julia> U.commutatorConstants
-10-element Vector{Vector{Vector{Int64}}}:
- [[1, 1, 3, 1], [1, 2, 4, -1], [1, 3, 5, 1], [2, 3, 6, 2]]
- [[1, 1, 4, 2], [2, 1, 5, 3], [1, 2, 6, -3]]
- [[1, 1, 5, 3]]
- [[1, 1, 6, 1]]
- [[1, 1, 6, 3]]
- [[1, 1, 3, -1], [2, 1, 4, -1], [3, 1, 5, -1], [3, 2, 6, -1]]
- [[1, 1, 4, -2], [2, 1, 6, -3], [1, 2, 5, 3]]
- [[1, 1, 5, -3]]
- [[1, 1, 6, -1]]
- [[1, 1, 6, -3]]
 ```
 """
-function UnipotentGroup(W::FiniteCoxeterGroup)
+function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
+  # basic sanity check
   if roots(W,nref(W).+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
-  no(r)=findfirst(==(r),roots(W))
-  # compute special pairs. We take `1:nref(W)` as order on the roots.
+  # compute special pairs for the order 1:nref(W). That is pairs
+  # where r<s and r+s is a root
   special=Tuple{Int,Int,Int}[]
   for s in 1:nref(W), r in 1:s-1
-    pos=no(roots(W,r)+roots(W,s))
+    pos=n⁰(W,roots(W,r)+roots(W,s))
     if !isnothing(pos) push!(special,(r,s,pos)) end
   end
   sort!(special,by=x->x[[3,1]])
-  ns=length(special)
+  ns=length(special) # half of final length
   append!(special,map(x->x[[2,1,3]],special))
-  # we initialize U with the order on U_α given by 1:nref(W)
-  U=UnipotentGroup(W,special,ns,fill(0,2*ns),1:nref(W),fill(Vector{Int}[],2*ns))
-  l(r)=isnothing(r) ? 1 : rootlengths(W)[r] # length of root r
-# Compute Nᵣₛ for each special pair. See formula in proof of [Carter1972b,
-# 4.2.2](biblio.htm#Car72b)
-  r=s=rs=0
-  for i in 1:U.ns
-   if i==1 || U.specialPairs[i-1][3]!=U.specialPairs[i][3] #extraspecial
-      (r,s,rs)=U.specialPairs[i]
-      U.N[i]=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3)
-    else # special of sum rs
-      (r1,s1,rs1)=U.specialPairs[i]
-      U.N[i]=l(rs1)//N(U,r,s)*(N(U,s,-r1;scaled=true)*N(U,r,-s1)+
-                  N(U,-r1,r;scaled=true)*N(U,s,-s1))
+  if isnothing(chevalley) N=Ncarter(W,special) 
+  else  N=fill(0,2*ns)
+    for i in eachindex(special)
+      r,s,rs=special[i]
+      N[i]=first(chevalley[(r,s)])
     end
-    U.N[U.ns+i]=-U.N[i] #fill in now; used for next i
   end
+  # `specialPairs`:   triples of indices of roots `(r,s,r+s)`
+  # where `(r,s)` is special and r<s, ordered by `(r+s,r)`, followed
+  # by the triples `(s,r,r+s)` for the same list.
   function M(r,s,i) # M_{r,s,i} of [Carter1972, bottom of page 61]
     m=1
     for j in 1:i
-      d=no(roots(W,r)+roots(W,s))
+      d=n⁰(W,roots(W,r)+roots(W,s))
       if isnothing(d) || d>nref(W) return 0 end
-      m*=U.N[findfirst(==((r,s,d)),U.specialPairs)]//j
+      m*=N[findfirst(==((r,s,d)),special)]//j
       s=d
     end
     m
   end
-  for i in eachindex(U.specialPairs)
-    (r,s,rs)=U.specialPairs[i]
-    L=Vector{Int}[]
+  comm=[NTuple{4,Int}[] for i in 1:2*ns]
+  for (i,(r,s,rs)) in enumerate(special)
     for c in [[1, 1], [2, 1], [1, 2], [3, 1], [1, 3], [3, 2], [2, 3]]
 # possible (i,j) such that there may exist a root is+jr.
 # see [Carter1972, top of page 76] for the formulas
       if c[2]==1 C=M(r,s,c[1])
       elseif c[1]==1 C=(-1)^c[2]*M(s,r,c[2])
       elseif c[[1,2]]==[3, 2] C=M(rs,r,2)//3
-      elseif c[[1, 2]]==[2, 3] C=(-2*M(rs,s,2))//3
+      elseif c[[1,2]]==[2, 3] C=(-2*M(rs,s,2))//3
       else C=0
       end
-      if C!=0 push!(L,[c[1],c[2],no(c[1]*roots(W,r)+c[2]*roots(W,s)),C]) end
+      if C!=0 
+       push!(comm[i],(c[1],c[2],n⁰(W,c[1]*roots(W,r)+c[2]*roots(W,s)),Int(C)))
+      end
     end
-    U.commutatorConstants[i]=L
   end
-  U
+  UnipotentGroup(W,1:nref(W),
+    map((s,n,c)->(r=s[1],s=s[2],rs=s[3],N=n,comm=c),special,N,comm),
+        Dict{Symbol,Any}())
 end
 
 """
@@ -447,16 +456,15 @@ function reorder(U::UnipotentGroup,l,order=U.order)
       findfirst(==(l[i][1]),order)>findfirst(==(l[i+1][1]),order)
 # The Chevalley relation is
 #
-# uₛ(u)uᵣ(t)=uᵣ(t)uₛ(u)∏_{i,j>0} u_{ir+js}(Cᵣₛᵢⱼ(-t)^iu^j)
+# uₛ(u)uᵣ(t)=uᵣ(t)uₛ(u)∏_{i,j>0} uᵢᵣ₊ⱼₛ(Cᵣₛᵢⱼ(-t)ⁱuʲ)
 #
 # Here l[i]=[s,u] and l[i+1]=[r,t].
       W=U.W
       res=l[[i+1,i]]
       s,u=l[i]; r,t=l[i+1]
-      c=findfirst(==(roots(W,r)+roots(W,s)),roots(W))
-      if !isnothing(c) c=findfirst(==((r,s,c)),U.specialPairs) end
+      c=findfirst(p->p.r==r && p.s==s,U.special)
       if !isnothing(c)
-        c=map(k->k[3]=>k[4]*(-t)^k[1]*u^k[2],U.commutatorConstants[c])
+        c=map(k->k[3]=>k[4]*(-t)^k[1]*u^k[2],U.special[c].comm)
         append!(res,filter(x->!iszero(x[2]),c))
       end
       splice!(l,i:i+1,res)
@@ -472,8 +480,9 @@ end
 
 'U(r_1=>c_1`,..,r_n=>c_n`)'
 
-In the first form the function creates the element `uᵣ(1)`, and in the second
-form the element `u_{r_1}(c_1)… u_{r_n}(c_n)`
+Where `U` is a `UnipotentGroup`. In the first form the function creates the
+element  `uᵣ(1)`,  and  in  the  second  form  the  element  `u_{r_1}(c_1)…
+u_{r_n}(c_n)`
 
 ```julia-repl
 julia> U=UnipotentGroup(coxgroup(:G,2))
@@ -517,14 +526,12 @@ abelianpart(u::UnipotentElement)=UnipotentElement(u.U,filter(x->x[1] in
                             1:ngens(u.U.W),u.list))
 
 """
-`decompose(w,u)`
+`decompose(w,u::UnipotentElement)`
 
-`u`  should be a unipotent element and  `w` an element of the corresponding
-Weyl  group.  If  `𝐔`  is  the  unipotent  radical  of  the  Borel subgroup
-determined  by the  positive roots,  and `𝐔⁻`  the unipotent radical of the
-opposite  Borel, this  function decomposes  `u` into  its component in `𝐔 ∩
-ʷ𝐔⁻` and its component in `𝐔 ∩ ʷ𝐔 `.
-
+`w`  should be an element of the Weyl group corresponding to `u`. If `𝐔` is
+the  unipotent radical  of the  Borel subgroup  determined by  the positive
+roots,  and `𝐔⁻` the  opposite unipotent radical,  this function decomposes
+`u` into its component in `𝐔 ∩ ʷ𝐔⁻` and its component in `𝐔 ∩ ʷ𝐔`.
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
