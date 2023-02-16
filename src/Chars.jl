@@ -597,14 +597,14 @@ table synthesizing the information.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))
-n0│ name ext b B a A spaltenstein
-──┼───────────────────────────────
-1 │ φ₁‚₀  Id 0 0 0 0            1
-2 │ φ₁‚₆ det 6 6 6 6            ε
-3 │φ′₁‚₃     3 3 1 5           εₗ
-4 │φ″₁‚₃     3 3 1 5          ε_c
-5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′
-6 │ φ₂‚₂     2 4 1 5           θ″
+n0│ name ext b B a A spaltenstein lusztig
+──┼───────────────────────────────────────
+1 │ φ₁‚₀  Id 0 0 0 0            1       1
+2 │ φ₁‚₆ det 6 6 6 6            ε       ε
+3 │φ′₁‚₃     3 3 1 5           εₗ      ε′
+4 │φ″₁‚₃     3 3 1 5          ε_c      ε″
+5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′
+6 │ φ₂‚₂     2 4 1 5           θ″      θ″
 ```
 
 the  column `name`  reflects the  field `.charnames`,  a name computed from
@@ -758,7 +758,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
   end
   t=hcat(t,ext); push!(cl,"ext")
-  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle,:lusztig]
+  for key in [:b,:B,:a,:A,:kondo,:spaltenstein,:frame,:malle,:lusztig, :carter]
     if haskey(ci,key) && ci[key]!=false
       t=hcat(t,fromTeX.(Ref(io),string.(ci[key])))
       push!(cl,string(key))
@@ -1361,6 +1361,14 @@ function DualWGraph(rk,gr)
    map(((x,y),)->x isa Vector ? [-reverse(x),y] : [-x,y],gr[2])]
 end
 
+function charnames(io::IO,c::CharInfo)
+  cn=c.charnames
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
+    if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
+  end
+  cn
+end
+
 """
 `charnames(ComplexReflectionGroup or Spets;options...)`
 `charnames(io::IO,ComplexReflectionGroup or Spets)`
@@ -1415,36 +1423,14 @@ The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
 function charnames(io::IO,W::Union{Group,Coset{T,TW}})where{T,TW}
-  if applicable(refltype,W)
-    c=charinfo(W)
-    cn=c.charnames
-    for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
-      if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
-    end
-  else
-    cn=CharTable(W).charnames
+  if applicable(refltype,W) cn=charnames(io,charinfo(W))
+  else cn=CharTable(W).charnames
   end
   fromTeX.(Ref(io),cn)
 end
 
-function charnames(t::TypeIrred;opt...)
-  c=charinfo(t)
-  cn=c.charnames
-  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
-    if get(opt,k,false) && haskey(c,k) cn=string.(c[k]) end
-  end
-  cn
-end
-
-function charnames(io::IO,t::TypeIrred)
-  c=charinfo(t)
-  cn=c.charnames
-  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig]
-    if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
-  end
-  cn
-end
-
+charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
+charnames(io::IO,t::TypeIrred)=charnames(io,charinfo(t))
 charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
 
 """

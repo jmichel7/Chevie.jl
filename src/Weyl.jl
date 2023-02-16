@@ -891,6 +891,7 @@ function rootlengths(W::FiniteCoxeterGroup)
   end::Vector{eltype(cartan(W))}
 end
 
+rootlengths(W,i)=rootlengths(W)[i]
 """
 `highest_short_root(W)`
 
@@ -909,11 +910,11 @@ julia> highest_short_root(W)
 """
 function highest_short_root(W)
   if length(refltype(W))!=1 error("W should be irreducible and non-trivial") end
-  findlast(==(1),rootlengths(W)[1:nref(W)])
+  findlast(==(1),rootlengths(W,1:nref(W)))
 end
 
 PermRoot.invariant_form(W::FiniteCoxeterGroup)=
-  Diagonal(rootlengths(W)[1:ngens(W)])*cartan(W)
+  Diagonal(rootlengths(W,1:ngens(W)))*cartan(W)
 
 function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
   r=cat(simpleroots(parent(W1)),simpleroots(parent(W2)),dims=[1,2])
@@ -1048,7 +1049,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   restriction=zeros(Int,2*W.N)
   restriction[inclusion]=1:length(inclusion)
   refltypes=map(type_cartan(C)) do t
-    if (t.series in [:A,:D]) && rootlengths(W)[inclusion[t.indices[1]]]==1
+    if (t.series in [:A,:D]) && rootlengths(W,inclusion[t.indices[1]])==1
       for s in refltype(W)
         if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
           t.short=true

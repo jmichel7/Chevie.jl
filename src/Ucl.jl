@@ -242,8 +242,8 @@ module Ucl
 
 using ..Gapjm
 
-export UnipotentClasses, UnipotentClassOps, ICCTable, XTable, GreenTable,
- UnipotentValues, induced_linear_form, special_pieces, name,
+export UnipotentClasses, UnipotentClass, UnipotentClassOps, ICCTable, XTable,
+ GreenTable, UnipotentValues, induced_linear_form, special_pieces, name,
  distinguished_parabolics
 
 @GapObj struct UnipotentClass
@@ -251,6 +251,29 @@ export UnipotentClasses, UnipotentClassOps, ICCTable, XTable, GreenTable,
   parameter::Any
   dimBu::Int
 end
+
+@doc """
+A `struct UnipotentClass` representing the class `C` of a unipotent element
+`u`  of the reductive  group `𝐆` with  Weyl group `W`,  contains always the
+following information
+  * `.name`  The name of `C`
+  * `.parameter` A parameter describing `C`. Sometimes the same as `.name`; a partition describing the Jordan form, for classical groups.
+  * `.dimBu` The dimension of the variety of Borel subgroups containing `u`.
+
+For some types there is a field `.mizuno` or `.shoji` giving alternate names
+used in the literature.
+
+A  `UnipotentClass` contains also some of  the following information (all of
+it for some types and some characteristics but sometimes much less)
+  * `.dynkin` the Dynkin-Richardson diagram of `C` (a vector giving a weight 0, 1 or 2 to the simple roots).
+  *  `.dimred` the dimension of the reductive part of `C_G(u)`.
+  *  `.red` a `CoxeterCoset` recording the type of the reductive part of `C_G(u)`, with the twisting induced by the Frobenius if any.
+  *  `.Au` the group `A_G(u)=C_G(u)/C^0_G(u)`.
+  *  `.balacarter` encodes the Bala-Carter classification of `C`, which says that `u` is distinguished in a Levi `L` (the Richardson class in a parabolic `P_L`) as a vector listing the indices of the simple roots in `L`, with those not in `P_L` negated.
+  *  `.rep` a list of indices for roots such that if `U=UnipotentGroup(W)` then `prod(U,u.rep)` is a representative of `C`.
+  *  `.dimunip` the dimension of the unipotent part of `C_G(u)`.
+  *  `.AuAction` an `ExtendedCoxeterGroup` recording the action of `A_G(u)` on `red`.
+""" UnipotentClass
 
 @GapObj struct UnipotentClasses
   classes::Vector{UnipotentClass}
@@ -279,7 +302,7 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
 end
 
 function name(io::IO,u::UnipotentClass)
- nameclass(merge(u.prop,Dict(:name=>u.name)),IOContext(io).dict)
+  nameclass(merge(u.prop,Dict(:name=>u.name)),IOContext(io).dict)
 end
 
 name(u;opt...)=name(IOContext(stdout,opt...),u)
@@ -310,7 +333,7 @@ F₄
 julia> H=reflection_subgroup(W,[1,3])
 F₄₍₁₃₎=A₁×Ã₁Φ₁²
 
-julia> Ucl.induced_linear_form(W,H,[2,2])
+julia> induced_linear_form(W,H,[2,2])
 4-element Vector{Int64}:
  0
  1
@@ -560,7 +583,7 @@ corresponding simple root.
 
 The  records for classes contain additional  fields for certain groups: for
 instance,  the names given to classes by Mizuno in `E₆, E₇, E₈` or by Shoji
-in `F₄`.
+in `F₄`. See the help for `UnipotentClass` for more details.
 
 The  records  describing  individual  Springer  series  have  the following
 fields:
@@ -588,23 +611,22 @@ sl₄
 julia> uc=UnipotentClasses(W);
 
 julia> uc.classes
-5-element Vector{Gapjm.Ucl.UnipotentClass}:
+5-element Vector{UnipotentClass}:
  UnipotentClass(1111)
  UnipotentClass(211)
  UnipotentClass(22)
  UnipotentClass(31)
  UnipotentClass(4)
 ```
-
 The  `show`  function  for  unipotent  classes  accepts  all the options of
 `formatTable`  and  of  `charnames`.  Giving  the  option  `mizuno`  (resp.
 `shoji`)  uses  the  names  given  by  Mizuno  (resp.  Shoji) for unipotent
 classes.  Moreover,  there  is  also  an  option  `fourier` which gives the
-correspondence  tensored  with  the  sign  character  of each relative Weyl
-group, which is the correspondence obtained via a Fourier-Deligne transform
-(here  we assume that  `p` is very  good, so that  there is a nondegenerate
-invariant  bilinear  form  on  the  Lie  algebra, and also one can identify
-nilpotent orbits with unipotent classes).
+Springer  correspondence tensored with the  sign character of each relative
+Weyl  group,  which  is  the  correspondence obtained via a Fourier-Deligne
+transform  (here  we  assume  that  `p`  is  very  good, so that there is a
+nondegenerate  invariant bilinear form on the Lie algebra, and also one can
+identify nilpotent orbits with unipotent classes).
 
 Here is how to display the non-cuspidal part of the Springer correspondence
 of  the unipotent  classes of  `E₆` using  the notations  of Mizuno for the
@@ -1141,9 +1163,9 @@ end
 `XTable(uc;classes=false)`
 
 This  function presents  in a  different way  the information obtained from
-`ICCTable`.  Let  ``X̃_{u,ϕ}=q^{1/2(codim  C-dim  Z(𝐋 ))}`` where `C` is the
-class  of `u` and `Z(𝐋 )` is the center of Levi subgroup on which lives the
-cuspidal local system attached to the local system `(u,ϕ)`.
+`ICCTable`. Let ``X̃_{u,ϕ}=q^{1/2(codim C-dim Z(𝐋 ))}X_{u,ϕ}`` where `C` is
+the  class of `u` and `Z(𝐋 )` is the center of Levi subgroup on which lives
+the cuspidal local system attached to the local system `(u,ϕ)`.
 
 Then  `XTable` gives the decomposition of the functions ``X̃_{u,ϕ}`` on local
 systems,  by  default.  If  `classes==true`,  it  gives  the  values of the
@@ -1214,7 +1236,7 @@ A  side effect  of calling  `XTable` with  `classes=true` is to compute the
 cardinal of the unipotent conjugacy classes:
 
 ```julia-repl
-julia> t=Ucl.XTable(UnipotentClasses(coxgroup(:G,2));classes=true);
+julia> t=XTable(UnipotentClasses(coxgroup(:G,2));classes=true);
 
 julia> CycPol.(t.cardClass)
 7-element Vector{CycPol{Cyc{Rational{Int64}}}}:

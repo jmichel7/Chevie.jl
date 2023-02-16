@@ -109,9 +109,9 @@ include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
+include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
-include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl

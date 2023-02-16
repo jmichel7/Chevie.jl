@@ -14,15 +14,12 @@ For more information, look at the helpstrings of
   intersect_rowspace, in_rowspace, rowspace, independent_rows`.
 """
 module GLinearAlgebra
-using CyclotomicNumbers: Cyc # case in echelon
 using Combinat: combinations, multisets, tally
 using LinearAlgebra: tr, exactdiv, det_bareiss
-using ..Util: toM, toL
-using ..Tools: improve_type
 export echelon!, exterior_power, comatrix, bigcell_decomposition, 
   ratio, charpoly, solutionmat, transporter, 
   permanent, symmetric_power, diagconj_elt, lnullspace,
-  intersect_rowspace, in_rowspace, rowspace, independent_rows
+  intersect_rowspace, in_rowspace, rowspace, independent_rows, traces_words_mats
 
 """
 `echelon!(m::AbstractMatrix)`
@@ -33,7 +30,7 @@ puts  `m` in echelon  form in-place and  returns:
 
 The  echelon form transforms the  rows of m into  a particular basis of the
 rowspace. The first non-zero element of each line is 1, and such an element
-is also the only non-zero in its column. works in any field.
+is also the only non-zero in its column. This function works in any field.
 ```julia-repl
 julia> m=[0 0 0 1; 1 1 0 1; 0 1 0 1; 1 0 0 0]//1
 4×4 Matrix{Rational{Int64}}:
@@ -98,7 +95,6 @@ function rowspace(m::AbstractMatrix;dup=true)
   @view m[1:length(inds),:]
 end
 rowspace(m::AbstractMatrix{<:Integer})=rowspace(m*1//1;dup=false)
-rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
 
 """
 `independent_rows(m::AbstractMatrix)`
@@ -125,8 +121,6 @@ function independent_rows(m::AbstractMatrix;dup=true)
 end
 independent_rows(m::AbstractMatrix{<:Integer})=
     independent_rows(m*1//1;dup=false)
-independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
-    independent_rows(m*1//1;dup=false)
 
 """
  `GLinearAlgebra.rank(m::AbstractMatrix)`
@@ -151,10 +145,7 @@ rank(m::AbstractMatrix)=length(independent_rows(m))
  Is not exported to avoid conflict with LinearAlgebra
 """
 function nullspace(m::AbstractMatrix)
-  if eltype(m)<:Integer || eltype(m)<:Cyc{<:Integer} m=m//1 
-  else m=copy(m)
-  end
-  m=echelon!(m)[1]
+  m,_=echelon!(copy(m))
   n=size(m)[2]
   z=Int[]
   j=0
@@ -175,6 +166,8 @@ function nullspace(m::AbstractMatrix)
   for i in nn zz[i,i]=-one(eltype(m)) end
   zz[:,nn]
 end
+
+nullspace(m::AbstractMatrix{<:Integer})=nullspace(m//1)
 
 """
 `lnullspace(m::AbstractMatrix)`
@@ -316,7 +309,7 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
         if j>1 P[b[i],b[j]]-=
           sum(k->block(P,i,k)*block(L,k,k)*transpose(block(P,j,k)),1:j-1)
         end
-        P[b[i],b[j]]=improve_type((block(P,i,j)*cb).//db)
+        P[b[i],b[j]]=(block(P,i,j)*cb).//db
       end
     end
     return permutedims(P),L
@@ -330,10 +323,10 @@ function bigcell_decomposition(M,b=map(i->[i],axes(M,1)))
     for i in j+1:length(b)
       P[b[i],b[j]]=block(M,i,j)-sum(k->block(P,i,k)*block(L,k,k)*
                                      block(tP,k,j),1:j-1)
-      P[b[i],b[j]]=improve_type((block(P,i,j)*cb).//db)
+      P[b[i],b[j]]=(block(P,i,j)*cb).//db
       tP[b[j],b[i]]=cb*(block(M,j,i)-sum(k->block(P,j,k)*
                                          block(L,k,k)*block(tP,k,i),1:j-1))
-      tP[b[i],b[j]]=improve_type(block(tP,i,j).//db)
+      tP[b[i],b[j]]=block(tP,i,j).//db
     end
   end
   (P,L,tP)
@@ -442,7 +435,7 @@ function transporter(l1::Vector{<:Matrix}, l2::Vector{<:Matrix})
     v[:,j]-=l2[m][i,:]
     push!(M, vec(v))
   end
-  M=rowspace(toM(M))
+  M=rowspace(permutedims(reduce(hcat,M)))
   M=M[filter(i->!iszero(M[i,:]),axes(M,1)),:]
   v=nullspace(M)
   if isempty(v) return v end
@@ -545,7 +538,7 @@ end
 return a matrix `x` such that `x*m==n`. This is interesting when `m` 
 is not invertible.
 """
-solutionmat(m,n::AbstractMatrix)=toM(solutionmat.(Ref(m),eachrow(n)))
+solutionmat(m,n::AbstractMatrix)=permutedims(reduce(hcat,solutionmat.(Ref(m),eachrow(n))))
 
 """
 `diagconj_elt(M,N)`
@@ -585,4 +578,71 @@ function diagconj_elt(M, N)
   d
 end
 
+
+"""
+`traces_words_mats(mats,words)`
+
+given  a list `mats`  of matrices and  a list `words`  of words returns the
+list  of traces of the corresponding products of the matrices. Each subword
+is evaluated only once.
+
+```julia-repl
+julia> R=[[-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1], [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1], [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1], [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]]; # 17th representation of F4
+
+julia>words=[[], [1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4], [2,3,2,3], [2,1], [1,2,3,4,2,3,2,3,4,3], [1,2,3,4,1,2,3,4,1,2,3,4], [4,3], [1,2,1,3,2,3,1,2,3,4], [1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4], [1,2,3,4,1,2,3,4], [1,2,3,4], [1], [2,3,2,3,4,3,2,3,4], [1,4,3], [4,3,2], [2,3,2,1,3], [3], [1,2,1,3,2,1,3,2,3], [2,1,4], [3,2,1], [2,4,3,2,3], [1,3], [3,2], [1,2,3,4,1,2,3,4,1,2,3,4,2,3], [1,2,3,4,2,3]]
+
+julia> traces_words_mats(R,words) # 17th character of F4
+25-element Vector{Int64}:
+  4
+  0
+  0
+  1
+ -1
+  0
+  1
+ -1
+ -2
+  2
+  0
+  2
+ -2
+ -1
+  1
+  0
+  2
+ -2
+ -1
+  1
+  0
+  0
+  2
+ -2
+  0
+```
+"""
+function traces_words_mats(mats,words)
+# mats=improve_type(mats)
+  dens=map(x->1,mats)
+  if all(m->all(x->x isa Rational,m),mats)
+    dens=map(m->lcm(denominator.(m)),mats)
+    mats=map((m,d)->Int.(m.*d),mats,dens)
+  end
+  words=convert.(Vector{Int},words)
+  trace(w)=all(isone,@view dens[w]) ? tr(prods[w]) : tr(prods[w])//prod(@view dens[w])
+  prods=Dict{Vector{Int},eltype(mats)}(Int[]=>mats[1]^0)
+  for i in eachindex(mats) prods[[i]]=mats[i] end
+  res=map(words)do w
+    i=0
+    while haskey(prods,@view w[1:i])
+      if i==length(w) return trace(w) end
+      i+=1
+    end
+    while i<=length(w)
+      prods[w[1:i]]=prods[w[1:i-1]]*mats[w[i]]
+      i+=1
+    end
+#   println(prod(dens[w])
+    trace(w)
+  end
+end
 end

@@ -6,13 +6,14 @@ using LinearAlgebra:LinearAlgebra, exactdiv
 using UsingMerge
 using ModuleElts
 using PuiseuxPolynomials
-using Combinat: Combinat, tally
+using Combinat: tally
 using PermGroups: Group, Groups, gens, word, PermGroup, elements, minimal_words
 
 using ..FFields: FFields, FFE, Mod, Z
 using ..Gapjm: Gapjm, Cyc, conductor, order
-using ..MatInt: smith_transforms
+using MatInt: smith_transforms
 
+using ..GLinearAlgebra: GLinearAlgebra, rowspace, independent_rows, nullspace
 #------------------ improve_type
 best_eltype(m)=reduce(promote_type,best_type.(m))
 best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
@@ -38,7 +39,7 @@ end
   
 improve_type(m)=convert(best_type(m),m)
 
-#------------------
+#------------- extend to Cyc methods of LaurentPolynomials
 Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
 
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
@@ -51,6 +52,7 @@ function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Ration
   Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 end
 
+#------------- extend to Cyc exactdiv
 LinearAlgebra.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(conductor(c),
                                                          exactdiv(c.d,b))
 
@@ -60,6 +62,13 @@ function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
   numerator(res)
 end
 
+#------------- extend to Cyc methods of GLinearAlgebra
+GLinearAlgebra.rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
+GLinearAlgebra.independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
+    independent_rows(m*1//1;dup=false)
+GLinearAlgebra.nullspace(m::AbstractMatrix{<:Cyc{<:Integer}})=nullspace(m//1)
+
+#------------- p-adic valuation
 "valuation(c::Integer,p::Integer) p-adic valuation of c"
 function LaurentPolynomials.valuation(c::Integer,p::Integer)
   if iszero(c) error("first argument should not be zero") end

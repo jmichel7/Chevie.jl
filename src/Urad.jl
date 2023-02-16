@@ -292,18 +292,20 @@ end
 # (ii)](biblio.htm#Car72b] 
 # Here a negative root α is represented by -(index of -α)
 N(U::UnipotentGroup,a::Integer,b::Integer;scaled=false)=
-   N(U.W,map(p->(p.r,p.s,p.rs),U.special),map(p->p.N,U.special),a,b;scaled)
+   N(U.W,U.special,U.special,a,b;scaled)
 
 function N(W,special,Nc,a::Integer,b::Integer;scaled=false)
   ra= a<0 ? -roots(W,-a) : roots(W,a)
   rb= b<0 ? -roots(W,-b) : roots(W,b)
   c=findfirst(==(ra+rb),roots(W))
   if isnothing(c) return 0 end
-  l(r)=isnothing(r) ? 1 : rootlengths(W)[r] # length of root r
+  l(r)=rootlengths(W,r)
   lc=l(c)
   if c>nref(W) c=-(c-nref(W)) end
   if a>0
-    if b>0 res=Nc[findfirst(==((a,b,c)),special)]
+    if b>0 
+      p=findfirst(x->x.r==a && x.s==b,special)
+      res=Nc[p].N
     elseif c<0 res=N(W,special,Nc,-c,a)*lc//l(-b)
     else res=-N(W,special,Nc,-b, c)*lc//l(a)
     end
@@ -322,18 +324,18 @@ function Ncarter(W,special)
 # pairs. See formula in proof of [Carter1972b, 4.2.2](biblio.htm#Car72b)
   r=s=rs=0
   ns=div(length(special),2)
-  Nc=fill(0,2*ns)
+  Nc=fill((N=0,),2*ns)
   for i in 1:ns
-    if i==1 || special[i-1][3]!=special[i][3] #extraspecial
+    if i==1 || special[i-1].rs!=special[i].rs #extraspecial
       (r,s,rs)=special[i]
-      Nc[i]=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3)
+      Nc[i]=(N=count(j->roots(W,s)-roots(W,r)*j in roots(W),0:3),)
     else # special of sum rs
       (r1,s1,rs1)=special[i]
-      l=isnothing(rs1) ? 1 : rootlengths(W)[rs1] # length of root r
-      Nc[i]=l//N(W,special,Nc,r,s)*(N(W,special,Nc,s,-r1;scaled=true)*
-     N(W,special,Nc,r,-s1)+N(W,special,Nc,-r1,r;scaled=true)*N(W,special,Nc,s,-s1))
+      l=rootlengths(W)[rs1] # length of root r
+      Nc[i]=(N=l//N(W,special,Nc,r,s)*(N(W,special,Nc,s,-r1;scaled=true)*
+N(W,special,Nc,r,-s1)+N(W,special,Nc,-r1,r;scaled=true)*N(W,special,Nc,s,-s1)),)
     end
-    Nc[ns+i]=-Nc[i] #fill in now; used for later i
+    Nc[ns+i]=(N=-Nc[i].N,) #fill in now; used for later i
   end
   Nc
 end
@@ -351,13 +353,21 @@ By  default the structure constants `Nᵣₛ`  are computed using the method of
 Carter72 from extraspecial pairs. Another set of structure constants can be
 given  by given for the keyword `chevalley`  a `Dict` associating to a pair
 `(r,s)`  of  root  indices  some  object  `p`  such  that `first(p)` is the
-corresponding `N_{r,s}`.
-
-```julia-repl
+corresponding  `N_{r,s}`. Here is  an example of  using different constants
+from `ChevLie`.
+```julia-rep1
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> U=UnipotentGroup(W)
+julia> using ChevLie: LieAlg, structconsts
+
+julia> l=LieAlg(:g,2)
+#I dim = 14
+LieAlg('G2')
+
+julia> U=UnipotentGroup(W;chevalley=structconsts(l))
+#I calculating structconsts
+#I calculating eps-canonical base (100/.) 
 UnipotentGroup(G₂)
 ```
 """
@@ -366,30 +376,30 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
   if roots(W,nref(W).+(1:nref(W)))!=-roots(W,1:nref(W)) error() end
   # compute special pairs for the order 1:nref(W). That is pairs
   # where r<s and r+s is a root
-  special=Tuple{Int,Int,Int}[]
+  special=NamedTuple{(:r,:s,:rs),NTuple{3,Int}}[]
   for s in 1:nref(W), r in 1:s-1
     pos=n⁰(W,roots(W,r)+roots(W,s))
-    if !isnothing(pos) push!(special,(r,s,pos)) end
+    if !isnothing(pos) push!(special,(r=r,s=s,rs=pos)) end
   end
-  sort!(special,by=x->x[[3,1]])
+  sort!(special,by=x->(x.rs,x.r))
   ns=length(special) # half of final length
-  append!(special,map(x->x[[2,1,3]],special))
-  if isnothing(chevalley) N=Ncarter(W,special) 
-  else  N=fill(0,2*ns)
-    for i in eachindex(special)
-      r,s,rs=special[i]
-      N[i]=first(chevalley[(r,s)])
-    end
-  end
-  # `specialPairs`:   triples of indices of roots `(r,s,r+s)`
+  append!(special,map(x->(r=x.s,s=x.r,rs=x.rs),special))
+  # `special`:   triples of indices of roots `(r,s,r+s)`
   # where `(r,s)` is special and r<s, ordered by `(r+s,r)`, followed
   # by the triples `(s,r,r+s)` for the same list.
+  if isnothing(chevalley) N=Ncarter(W,special) 
+  else  N=fill((N=0,),2*ns)
+    for i in eachindex(special)
+      r,s,rs=special[i]
+      N[i]=(N=first(chevalley[(r,s)]),)
+    end
+  end
   function M(r,s,i) # M_{r,s,i} of [Carter1972, bottom of page 61]
     m=1
     for j in 1:i
       d=n⁰(W,roots(W,r)+roots(W,s))
       if isnothing(d) || d>nref(W) return 0 end
-      m*=N[findfirst(==((r,s,d)),special)]//j
+      m*=N[findfirst(x->x.r==r && x.s==s,special)].N//j
       s=d
     end
     m
@@ -411,7 +421,7 @@ function UnipotentGroup(W::FiniteCoxeterGroup;chevalley=nothing,order=1:nref(W))
     end
   end
   UnipotentGroup(W,1:nref(W),
-    map((s,n,c)->(r=s[1],s=s[2],rs=s[3],N=n,comm=c),special,N,comm),
+    map((s,n,c)->(r=s.r,s=s.s,rs=s.rs,N=n.N,comm=c),special,N,comm),
         Dict{Symbol,Any}())
 end
 

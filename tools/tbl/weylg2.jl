@@ -54,6 +54,7 @@ chevieset(:G2, :CharInfo, function ()
                     end), res[:charparams])
         res[:B] = [0, 6, 3, 3, 5, 4]
         res[:spaltenstein] = ["1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c", "\\theta'", "\\theta''"]
+        res[:lusztig] = ["1", "\\varepsilon", "\\varepsilon'", "\\varepsilon''", "\\theta'", "\\theta''"]
         res[:charnames] = map(exceptioCharName, res[:charparams])
         return res
     end)

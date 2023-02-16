@@ -5,6 +5,7 @@ Pages=["ucl.md"]
 ```@docs
 Ucl
 UnipotentClasses
+UnipotentClass
 ICCTable
 XTable
 GreenTable

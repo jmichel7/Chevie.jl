@@ -1,5 +1,5 @@
 module Tools2
-export eigmat, traces_words_mats, Unknown
+export eigmat, Unknown
 
 using PuiseuxPolynomials
 using LaurentPolynomials
@@ -132,53 +132,6 @@ function CycPol(x::Mvp)
   end
 end
 
-
-"""
-`traces_words_mats(mats,words)`
-
-given  a list `mats`  of matrices and  a list `words`  of words returns the
-list of traces of the corresponding products of the matrices
-
-```julia-repl
-julia> W=coxgroup(:F,4)
-F₄
-
-julia> R=representation(W,17)
-4-element Vector{Matrix{Int64}}:
- [-1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
- [1 0 0 0; -1 -1 -1 0; 0 0 1 0; 0 0 0 1]
- [1 0 0 0; 0 1 0 0; 0 -2 -1 -1; 0 0 0 1]
- [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 -1 -1]
-
-julia> traces_words_mats(R,word.(conjugacy_classes(W)))==CharTable(W).irr[17,:]
-true
-```
-"""
-function traces_words_mats(mats,words)
-# mats=improve_type(mats)
-  dens=map(x->1,mats)
-  if all(m->all(x->x isa Rational,m),mats)
-    dens=map(m->lcm(denominator.(m)),mats)
-    mats=map((m,d)->Int.(m.*d),mats,dens)
-  end
-  words=convert.(Vector{Int},words)
-  trace(w)=tr(prods[w])//prod(dens[w])
-  prods=Dict{Vector{Int},eltype(mats)}(Int[]=>mats[1]^0)
-  for i in eachindex(mats) prods[[i]]=mats[i] end
-  res=map(words)do w
-    i=0
-    while haskey(prods,w[1:i])
-      if i==length(w) return trace(w) end
-      i+=1
-    end
-    while i<=length(w)
-      prods[w[1:i]]=prods[w[1:i-1]]*mats[w[i]]
-      i+=1
-    end
-#   println(prod(dens[w])
-    trace(w)
-  end
-end
 #-----------------------------------------------------------------------
 """
 An `Unknown()` represents an element of a ring which is not known. The main
