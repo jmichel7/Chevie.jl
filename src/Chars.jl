@@ -1334,7 +1334,7 @@ function WGraph2Representation(a,vars)
   flat(l)=l[1] isa Vector ? flat(reduce(vcat,l)) : l
   rk=maximum(Int.(flat(nodes))) # number of generators
   dim=length(nodes)
-  R=map(j->map(k->vars[pos(nodes[k],j)],1:dim),1:rk)
+  R=map(j->map(k->vars[pos(nodes[k],j)]+0,1:dim),1:rk)
   R=Array.(Diagonal.(R))
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")

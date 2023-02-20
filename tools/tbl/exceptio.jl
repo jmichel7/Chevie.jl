@@ -39,7 +39,7 @@ chevieset(["3D4", "E6", "2E6", "E7", "E8", "F4", "2F4", "G2", "H3", "H4"], :Char
                                     [1, -1]
                                 end), 1:rank), map((x->begin
                                     1
-                                end), [1, rank]))
+                                end), 1:rank))
                 ((CHEVIE[:compat])[:ChangeIdentifier])(res, SPrint("W(", t, ")"))
                 return res
             end

@@ -140,7 +140,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
   uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
       res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
       if mod(n-d[2],4)==0 || char==2 res[:Z]=mod(n,2)==0  ? [1, 1] : [1]
-      else                           res[:Z]=mod(n,2)==0  ? [-1, -1] : [-1]
+      else   res[:Z]=mod(n,2)==0  ? [-1,1] : [-1]
       end
       res[:relgroup]=coxgroup(d[1]==0 ? :D : :B, d[2])
       res[:locsys]=[[0,0] for i in 1:nconjugacy_classes(res[:relgroup])]
@@ -220,12 +220,12 @@ chevieset(:D,:UnipotentClasses,function(n,char)
      if mod(n-d,2)==0
        l=vcat(1:i,i+2:2:n)
        s=Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
-       if mod(n, 2) == 0 s[:Z]=[1, -1] else s[:Z] = [E(4)] end
+       if mod(n, 2) == 0 s[:Z]=[-1,-1] else s[:Z] = [E(4)] end
        s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
        push!(uc[:springerSeries], s)
        if d==0 l=vcat([1], 4:2:n) end
        s=Dict(:relgroup => coxgroup(:B, div(n-i,2)),:levi=>l)
-       if mod(n,2)==0 s[:Z] = [-1, 1]
+       if mod(n,2)==0 s[:Z] = [1,-1]
        else s[:Z] = [-(E(4))]
        end
        s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
@@ -234,7 +234,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        if d != 0 && i <= n
          l = vcat(1:i, i+2:2:n)
          s = Dict(:relgroup=>coxgroup(:B, div(n-i,2)),:levi=>l)
-         if mod(n,2)==0 s[:Z]=[1, -1] else s[:Z]=[E(4)] end
+         if mod(n,2)==0 s[:Z]=[-1,-1] else s[:Z]=[E(4)] end
          s[:locsys]=[[0,0] for i in 1:nconjugacy_classes(s[:relgroup])]
          push!(uc[:springerSeries], s)
          s=Dict(:relgroup=>coxgroup(:B,div(n-i,2)),:levi=>l)
@@ -306,11 +306,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        error("Au non-commutative of order ",length(cl[:Au])*2,"  ! implemented")
      end
      if !('-' in cl[:name])
-         addSpringer1(ss->ss[:Z] in [[1, -1], [E(4)]] && 
+      addSpringer1(ss->ss[:Z] in [[-1,-1], [E(4)]] && 
                      rank(ss[:relgroup]) == sum(sum,s) , i, s, k[1])
      end
      if !('+' in cl[:name])
-         addSpringer1(ss->ss[:Z] in [[-1, 1], [-(E(4))]] && 
+      addSpringer1(ss->ss[:Z] in [[1,-1], [-(E(4))]] && 
                      rank(ss[:relgroup]) == sum(sum,s), i, s, k[2])
      end
   end
