@@ -1,4 +1,3 @@
-include("Combinat.jl")
-include("Util.jl")
+using Combinat
 includet("Posets.jl")
 using .Posets

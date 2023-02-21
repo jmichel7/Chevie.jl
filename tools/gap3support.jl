@@ -1,3 +1,4 @@
+using Primes: totient # translation of Phi
 Append(a::Vector,b::AbstractVector)=vcat(a,b)
 Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
@@ -31,6 +32,12 @@ Minimum(a::Number,x...)=min(a,x...)
 Minimum(v::AbstractVector)=minimum(v)
 NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
 OnTuples(a,b)=a.^b
+function pad(s, i::Int)
+  if i>0 return lpad(string(s),i)
+  else return rpad(string(s),-i)
+  end
+end
+pad(s::String)=s
 function Position(a::String,b::String)
   x=findfirst(b,a)
   isnothing(x) ? false : x.start
@@ -46,6 +53,10 @@ function PositionProperty(a::AbstractVector,b::Function)
 end
 Product(v)=isempty(v) ? 1 : prod(v)
 Product(v::AbstractVector,f)=isempty(v) ? 1 : prod(f,v)
+function RootInt(n,k=2)
+  res=floor(Int,n^(1/k))
+  if (res+1)^k<=n res+1 else res end
+end
 Rotations(a)=circshift.(Ref(a),length(a):-1:1)
 SortBy(x,f)=sort!(x,by=f)
 function SortParallel(a,b)

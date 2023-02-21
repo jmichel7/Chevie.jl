@@ -110,7 +110,7 @@ chevieset(["H4", "E7", "E8", "G31"], :HighestPowerFakeDegrees, (t->begin
                             else
                                 res = f[2]
                             end
-                            return res + Sum(f[3:length(f)], phi)
+                            return res + Sum(f[3:length(f)], totient)
                         end, chevieget(t, :cycpolfakedegrees))
             end
         end))

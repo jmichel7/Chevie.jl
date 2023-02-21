@@ -121,8 +121,6 @@ KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
 OnMatrices(a::Vector{<:Vector},b::Perm)=permute(permute.(a,b),b)
 Permuted(x,p)=permute(x,p)
-import Primes
-phi=Primes.totient
 function PermListList(l1,l2)
   l1=improve_type(l1)
   l2=improve_type(l2)
@@ -131,10 +129,6 @@ function PermListList(l1,l2)
   if view(l1,p1)==view(l2,p2) Perm(p2)\Perm(p1) end
 end
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
-function RootInt(n,k=2)
-  res=floor(Int,n^(1/k))
-  if (res+1)^k<=n res+1 else res end
-end
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
@@ -172,14 +166,6 @@ function Replace(s,p...)
 # println("=>",s)
   s
 end
-
-function pad(s, i::Int)
-  if i>0 return lpad(string(s),i)
-  else return rpad(string(s),-i)
-  end
-end
-
-pad(s::String)=s
 
 ChevieIndeterminate(a::Vector{<:Number})=one(Pol)
 ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)
