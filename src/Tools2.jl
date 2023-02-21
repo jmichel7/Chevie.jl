@@ -10,7 +10,7 @@ using PermGroups: Group
 using Combinat: Combinat, collectby
 using LinearAlgebra: tr
 using ..Chars: CharTable
-using ..GLinearAlgebra: solutionmat, independent_rows, charpoly
+using ..GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Tools: improve_type
 using ..FFields: FFE
 using ..CycPols: CycPol

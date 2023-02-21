@@ -689,7 +689,7 @@ PermRoot.nhyp(W::FiniteCoxeterGroup)=nref(W)
 Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
-@forward FiniteCoxeterGroup.G Base.iterate, Base.one,
+@forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
  Gapjm.roots, Groups.gens, Groups.conjugacy_classes,
  PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.coxnum,

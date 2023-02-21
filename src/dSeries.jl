@@ -801,7 +801,6 @@ function mC(s::Series)
   uc = UnipotentCharacters(s.spets)
   cn = char_numbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
   aA = uc.:a[cn] + uc.A[cn]
-  @show s
   lpi(W)=nref(W)+nhyp(W)
   if s.principal
     if minimum(aA)!=0 error("id not in RLG(1)") end

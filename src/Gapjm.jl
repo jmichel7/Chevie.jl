@@ -41,10 +41,10 @@ functionality is automatically available when you use `Gapjm`.
   * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the modules `Perms` and `Groups` which could be separate packages)
   * [MatInt](https://github.com/jmichel7/MatInt.jl) (Integer matrices and lattices)
   * [CycPols](https://github.com/jmichel7/CycPols.jl) (cyclotomic polynomials)
+  * [GenLinearAlgebra](https://github.com/jmichel7/GenLinearAlgebra.jl) (linear algebra on any field/ring)
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * linear algebra on any field/ring (module [`GLinearAlgebra`](@ref))
   * posets (module [`Posets`](@ref))
   * signed permutations (module [`SPerms`](@ref))
   * finite fields (module [`FFields`](@ref))
@@ -102,6 +102,7 @@ using UsingMerge
   format_coefficient, stringind
 @reexport using CycPols
 @reexport using CycPols: stringprime
+@reexport using GenLinearAlgebra
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
@@ -109,7 +110,6 @@ include("Posets.jl");@usingmerge verbose=true reexport Posets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
-include("GLinearAlgebra.jl");@reexport using .GLinearAlgebra
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
 include("PermRoot.jl");@reexport using .PermRoot

@@ -14,7 +14,6 @@ pages=[
 "posets.md",
 "sperm.md",
 "symbols.md",
-"glinearalgebra.md",
 "ffe.md",
 "presentations.md"],
 "Reflection groups"=>[

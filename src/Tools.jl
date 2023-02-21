@@ -7,13 +7,14 @@ using UsingMerge
 using ModuleElts
 using PuiseuxPolynomials
 using Combinat: tally
-using PermGroups: Group, Groups, gens, word, PermGroup, elements, minimal_words
-
-using ..FFields: FFields, FFE, Mod, Z
-using ..Gapjm: Gapjm, Cyc, conductor, order
+using PermGroups: Group, Groups, gens, word, PermGroup, elements,
+         minimal_words, isabelian
 using MatInt: smith_transforms
+using CyclotomicNumbers: Cyc, conductor
+using ..FFields: FFields, FFE, Mod, Z
+using ..Gapjm: Gapjm, order
 
-using ..GLinearAlgebra: GLinearAlgebra, rowspace, independent_rows, nullspace
+using ..GenLinearAlgebra: GenLinearAlgebra, rowspace, independent_rows, nullspace
 #------------------ improve_type
 best_eltype(m)=reduce(promote_type,best_type.(m))
 best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
@@ -62,11 +63,11 @@ function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
   numerator(res)
 end
 
-#------------- extend to Cyc methods of GLinearAlgebra
-GLinearAlgebra.rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
-GLinearAlgebra.independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
+#------------- extend to Cyc methods of GenLinearAlgebra
+GenLinearAlgebra.rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
+GenLinearAlgebra.independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
     independent_rows(m*1//1;dup=false)
-GLinearAlgebra.nullspace(m::AbstractMatrix{<:Cyc{<:Integer}})=nullspace(m//1)
+GenLinearAlgebra.nullspace(m::AbstractMatrix{<:Cyc{<:Integer}})=nullspace(m//1)
 
 #------------- p-adic valuation
 "valuation(c::Integer,p::Integer) p-adic valuation of c"
@@ -153,7 +154,12 @@ julia> abelian_invariants(Group(Perm(1,2),Perm(3,4,5),Perm(6,7)))
  6
 ```
 """
-abelian_invariants(G::Group)=order.(abelian_gens(G))
+function abelian_invariants(G::Group)
+  if !isabelian(G) 
+    error("abelian_invariants is only implemented for abelian groups")
+  end
+  order.(abelian_gens(G))
+end
 
 function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
   if all(x->x in H,gens(G)) return G end

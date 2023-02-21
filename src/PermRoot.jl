@@ -541,9 +541,18 @@ coxnum(W::PermRootGroup)=sum(t->coxnum(t),refltype(W);init=0)
 coxnum(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
 
 const coxeter_number=coxnum
+
 # should use independent_roots
-Base.:(==)(W::PermRootGroup,W1::PermRootGroup)=roots(W,eachindex(gens(W)))==
-  roots(W1,eachindex(gens(W1))) && simplecoroots(W)==simplecoroots(W1)
+function Base.:(==)(W::PermRootGroup,W1::PermRootGroup)
+  if ngens(W)!=ngens(W1) return false end
+  all(i->roots(W,i)==roots(W1,i) && coroots(W,i)==coroots(W1,i), 1:ngens(W))
+end
+
+function Base.hash(W::PermRootGroup,h::UInt)
+  for i in 1:ngens(W) h=hash(roots(W,i),h) end
+  for i in 1:ngens(W) h=hash(coroots(W,i),h) end
+  h
+end
 
 """
 `simple_reps(W)`
@@ -1382,7 +1391,7 @@ function recompute_parabolic_reps(W) # W irreducible
       else c=combinations(unique_refls(W),1)
       end
       c=map(x->union(x,restriction(W,inclusiongens(v))),c)
-      c=filter(x->GLinearAlgebra.rank(toM(roots(W,x)))==i,c)
+      c=filter(x->GenLinearAlgebra.rank(toM(roots(W,x)))==i,c)
       InfoChevie(" ",length(c)," new subgroups")
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
       c=filter(isparabolic,c)

@@ -850,9 +850,7 @@ function Groups.centralizer(W::Group,s::SemisimpleElement)
   l=map(x->reduced(W0s,x),filter(w->s==s^w,elements(totalW)))
   N=Group(abelian_gens(l))
   if rank(W)!=semisimplerank(W)
-    if ngens(N)==0 N=Group([reflrep(W,1)^0])
-    else N=Group(reflrep.(Ref(W),gens(N)))
-    end
+    N=Group(reflrep.(Ref(W),isempty(gens(N)) ? [one(W)] : gens(N)))
   end
   ExtendedReflectionGroup(W0s,gens(N))
 end

@@ -209,7 +209,7 @@ julia> p=eigenspace_projector(W,w,1//4)
   (1-ζ₄)/4   1//2   (1+ζ₄)/4
  (-1-ζ₄)/4  -ζ₄/2   (1-ζ₄)/4
 
-julia> GLinearAlgebra.rank(p)
+julia> GenLinearAlgebra.rank(p)
 1
 
 ```
