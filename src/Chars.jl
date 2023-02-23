@@ -1138,18 +1138,20 @@ function classes(ct::CharTable)
   end::Vector{Int}
 end
 
-function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector)
-  exactdiv(c2'*(c1.*classes(ct)),ct.order)
+function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector;exact=true)
+  v=c2'*(c1.*classes(ct))
+  exact ? exactdiv.(v,ct.order) : improve_type(v//ct.order)
 end
 
 """
 `decompose(ct::CharTable,c::Vector)` 
 
-decompose character `c` (given by its values on conjugacy classes) 
+decompose virtual character `c` (given by its values on conjugacy classes) 
 on irreducible characters as given by `CharTable` `ct`
 """
-function decompose(ct::CharTable,c::Vector)
-  map(i->scalarproduct(ct,view(ct.irr,i,:),c),axes(ct.irr,1))
+function decompose(ct::CharTable,c::AbstractVector;exact=true)
+  v=conj(ct.irr)*Diagonal(classes(ct))*c
+  exact ? exactdiv.(v,ct.order) : improve_type(v//ct.order)
 end
 
 """
