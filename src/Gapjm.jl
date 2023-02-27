@@ -97,6 +97,8 @@ using UsingMerge
 # careful: use very little of LinearAlgebra
 @reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
 @reexport using PermGroups
+ontuples(t,g;action=^)=action.(t,Ref(g))
+onsets(t,g;action=^)=sort!(action.(t,Ref(g)))
 @usingmerge verbose=true reexport CyclotomicNumbers
 @reexport using CyclotomicNumbers: bracket_if_needed, 
   format_coefficient, stringind

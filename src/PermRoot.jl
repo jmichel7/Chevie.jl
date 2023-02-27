@@ -1288,10 +1288,9 @@ function PermGroups.reduced(W::PermRootGroup,F)
     end
   end
   base=gens(W)
-  w=transporting_elt(W,base,base.^F,(x,y)->x.^y)
+  w=transporting_elt(W,base,base.^F,ontuples)
   if !isnothing(w) return redcenter(W,F/w) end
-  ir=sort(base.^F)
-  w=transporting_elt(W,sort(base),ir,(x,y)->sort(x.^y))
+  w=transporting_elt(W,sort(base),sort(base.^F),onsets)
   t=refltype(W)
   for a in t
     if Cosets.isG333(a)
@@ -1396,7 +1395,7 @@ function recompute_parabolic_reps(W) # W irreducible
       c=map(function(x)InfoChevie("*");reflection_subgroup(W,x) end,c)
       c=filter(isparabolic,c)
       c=sort(unique(map(x->sort(unique(refls(x))),c)))
-      O=orbits(S,c,(x,g)->sort(x.^g))
+      O=orbits(S,c,onsets)
       O=map(o->o[argmin(map(x->sum(stoi,x),o))],O)
       O=map(x->reflection_subgroup(W,stoi.(x)),O)
       InfoChevie("# ",length(O)," to go\n")

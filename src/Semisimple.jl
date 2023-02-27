@@ -930,11 +930,11 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
     push!(ind,d)
     push!(w,toL(vcat(iso[n,:].//(-W.rootdec[r][n]),0*iso[1:1,:])))
     pp=vcat(map(i->combinations(d,i),1:length(H))...)
-    filter(P->length(orbits(stabilizer(H,P,(p,g)->sort(p.^g)),P))==1,pp) #possible sets Ωₜ
+    filter(P->length(orbits(stabilizer(H,P,onsets),P))==1,pp) #possible sets Ωₜ
   end
   res=map(x->vcat(x...),cartesian(l...))
   res=filter(res)do P
-    S=stabilizer(H,P,(p,g)->sort(p.^g))
+    S=stabilizer(H,P,onsets)
     all(I->length(orbits(S,intersect(P,I)))==1,ind)
   end
   res=map(x->x[1],orbits(H,map(x->unique!(sort(x)),res),

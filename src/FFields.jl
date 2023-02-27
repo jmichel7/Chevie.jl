@@ -139,10 +139,9 @@ struct Mod{T}<:Number
   global Mod_(a::T,n::T) where T=new{T}(a,n)
 end
 
-function Mod(a::Integer,n)
-  if n isa BigInt return Mod_(mod(a,n),n) end
-  Mod_(unsigned(mod(a,n)),unsigned(n))
-end
+Mod(a::Integer,n)=Mod_(unsigned(mod(a,n)),unsigned(n))
+
+Mod(a::Integer,n::BigInt)=Mod_(mod(a,n),n)
 
 Mod(i::Rational{<:Integer},p)=Mod(numerator(i),p)/Mod(denominator(i),p)
 Base.promote(a::Integer,b::Mod)=(Mod(a,b.n),b)

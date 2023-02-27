@@ -141,7 +141,7 @@ end
 @test mytest("Cosets.jl","twistings(WF,Int[])","5-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n ²A₃₍₎=Φ₂³\n ²A₃₍₎=Φ₁Φ₂²\n ²A₃₍₎=Φ₁²Φ₂\n ²A₃₍₎=Φ₂Φ₆\n ²A₃₍₎=Φ₁Φ₄")
 @test mytest("Cosets.jl","torus(WF,2)","²A₃₍₎=Φ₁Φ₂²")
 @test mytest("Cosets.jl","WF=spets(coxgroup(:F,4))","F₄")
-@test mytest("Cosets.jl","w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],(s,g)->s.^g);","nothing")
+@test mytest("Cosets.jl","w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],ontuples);","nothing")
 @test mytest("Cosets.jl","LF=subspets(WF,[1,2,9,16],w)","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
 @test mytest("Cosets.jl","diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O D₄\n3 1 2")
 @test mytest("Cosets.jl","spets(\"3G422\")","³G₄‚₂‚₂")
