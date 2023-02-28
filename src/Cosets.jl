@@ -387,6 +387,7 @@ function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
     return classreps(C).^inv(p)
   end
   C=centralizer(W,sort(J),(J,w)->sort(action.(Ref(W),J,w)))
+# iJ=inclusion(W,J);C=centralizer(W,sort(iJ),onsets)
   classreps(C)
 end
 
@@ -401,6 +402,7 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
     return eltype(W)[]
   end
   W_L=centralizer(W,sort(collect(J)),(x,p)->sort(action.(Ref(W),x,p)))
+# iJ=inclusion(W,J);W_L=centralizer(W,sort(iJ),onsets)
   e=classreps(Group(vcat(gens(W_L),[WF.phi*h])))
   res=filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
   res
@@ -464,7 +466,7 @@ julia> W=coxgroup(:D,4)
 D₄
 
 julia> graph_automorphisms(refltype(W*W))
-Group([(1,5)(2,6)(3,7)(4,8), (1,2), (1,4)])
+Group((1,5)(2,6)(3,7)(4,8),(1,2),(1,4))
 ```
 """
 function graph_automorphisms(t::Vector{TypeIrred})

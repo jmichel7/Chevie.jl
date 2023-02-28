@@ -690,7 +690,7 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> fundamental_group(W)
-Group([(1,12,3,2)])
+Group((1,12,3,2))
 
 julia> W=rootdatum(:sl,4)
 sl₄
@@ -1035,10 +1035,10 @@ julia> W=coxgroup(:A,3)
 A₃
 
 julia> fundamental_group(intermediate_group(W,Int[])) # adjoint
-Group([(1,12,3,2)])
+Group((1,12,3,2))
 
 julia> fundamental_group(intermediate_group(W,Int[2])) # intermediate
-Group([(1,3)(2,12)])
+Group((1,3)(2,12))
 ```
 """
 function intermediate_group(W,I)

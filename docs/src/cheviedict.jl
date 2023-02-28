@@ -238,7 +238,7 @@ const ChevieDict=Dict(
 "W.Nhyp"=>"number_of_hyperplanes(W) or nyp(W)",
 "OnFamily(f,p::Perm)"=>"f^p",
 "OnFamily(f,p::Int)"=>"galois(f,p)",
-"OnMatrices(m,p)"=>"^(m,p;dims=(1,2))",
+"OnMatrices"=>"onmats",
 "OnSets"=>"onsets",
 "OnTuples"=>"ontuples",
 "OnPolynomials(m,p)"=>"p^m",
@@ -382,7 +382,7 @@ const ChevieDict=Dict(
 "TransitiveClosure"=>"transitive_closure",
 "Transporter"=>"transporter",
 "TransposedMat"=>"transpose or permutedims",
-"Transversals"=>"related to transversals",
+"Transversals"=>"related to transversal and orbits",
 "TriangulizeMat"=>"echelon!",
 "Twistings"=>"twistings",
 "TwoTree(m)"=>"twotree(m)",
@@ -402,7 +402,7 @@ const ChevieDict=Dict(
 )
 
 function gap(s)
-  s=Regex(s,"i")
+  if !(s isa Regex) s=Regex(s,"i") end
   kk=filter(x->occursin(s,x),keys(ChevieDict))
   if isempty(kk) 
     println("no match")
