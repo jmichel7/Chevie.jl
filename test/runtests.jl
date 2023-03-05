@@ -1014,7 +1014,7 @@ end
 @test mytest("dSeries.jl","hecke(s)","hecke(G₆‚₁‚₁,Vector{Mvp{Cyc{Int64}, Int64}}[[ζ₃q², -ζ₃q, ζ₃, -ζ₃²q, ζ₃², -ζ₃]])")
 @test mytest("dSeries.jl","degree(s)","ζ₃Φ₁Φ₂²Φ″₃Φ₄Φ₆")
 @test mytest("dSeries.jl","dSeries.RLG(s)","[G₄]:<φ₁‚₀>-<φ₁‚₄>-<φ₂‚₅>+<φ₂‚₃>-<Z₃:2>-<Z₃:11>")
-@test mytest("dSeries.jl","dSeries.char_numbers(s)","6-element Vector{Int64}:\n 1\n 5\n 2\n 8\n 9\n 4")
+@test mytest("dSeries.jl","charnumbers(s)","6-element Vector{Int64}:\n 1\n 5\n 2\n 8\n 9\n 4")
 @test mytest("dSeries.jl","dSeries.eps(s)","6-element Vector{Int64}:\n  1\n  1\n -1\n -1\n -1\n -1")
 @test mytest("dSeries.jl","relative_group(s)","G₆‚₁‚₁")
 end

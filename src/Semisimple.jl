@@ -1055,30 +1055,8 @@ function intermediate_group(W,I)
   rootdatum(Int.(R^-1),Int.(C*transpose(R)))
 end
 
-function Groups.transporting_elt(W::FiniteCoxeterGroup,H1::FiniteCoxeterGroup,
-    H2::FiniteCoxeterGroup)
-  if parent(W)!=parent(H1) || parent(W)!=parent(H1) error("not same parent") end
-  if isomorphism_type(H1)!=isomorphism_type(H2) return end
-  PH1=parabolic_closure(W,inclusiongens(H1,W))
-  p1=standard_parabolic(W,PH1);PH1=sort(PH1.^p1);H1=H1^p1;
-  PH2=parabolic_closure(W,inclusiongens(H2,W))
-  p2=standard_parabolic(W,PH2);PH2=sort(PH2.^p2);H2=H2^p2;
-  C=CoxGroups.parabolic_category(W,PH1)
-  i=findfirst(==(PH2),C.obj)
-  if isnothing(i) return end
-  p=Garside.from(C,1,i)
-  if isnothing(p) return end
-  H1=H1^p
-  if H1==H2 return p1*p*inv(p2) end
-  q=transporting_elt(reflection_subgroup(W,PH2),
-                     sort(inclusiongens(H1)),sort(inclusiongens(H2)),
-            (s,g)->sort!(s.^g))
-  if isnothing(q) return end
-  p1*p*q*inv(p2)
-end
-
 """
-`SScentralizer_reps(W [,p])`
+`SScentralizer_reps(W [,p])`@btime length(stabilizer(W,1))
 
 `W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
 function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of

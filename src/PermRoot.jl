@@ -1271,13 +1271,20 @@ end
 function PermGroups.reduced(W::PermRootGroup,F)
   function redcenter(W,F)
     FF=F.*elements(center(W))
-    if F in parent(W)
-      ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
+    if true
+      if F in parent(W)
+        ch=map(x->refleigen(parent(W))[position_class(parent(W),x)],FF)
+      else
+        ch=map(x->eigmat(reflrep(W,x)),FF)
+      end
+      m=minimum(map(x->sum(order.(x)),ch))
+      if length(m)>1 println("warning",length(m)) end
+      m=findall(x->sum(order.(x))==m,ch)
     else
-      ch=map(x->eigmat(reflrep(W,x)),FF)
+      ch=map(x->conductor(charpoly(reflrep(W,x))),FF)
+      m=minimum(ch)
+      m=findall(==(m),ch)
     end
-    m=minimum(map(x->sum(order.(x)),ch))
-    m=findall(x->sum(order.(x))==m,ch)
     minimum(FF[m])
   end
   if isone(F) return F end
@@ -1535,6 +1542,15 @@ function parabolic_closure(W,I::AbstractVector{<:Integer})
   inclusiongens(reflection_subgroup(W,gens),W)
 end
 
+function Groups.normalizer(W::PermGroup,L::PermRootGroup)
+  if length(L)==1 return W end
+  s=sort(refls(L,unique_refls(L)))
+  J=filter(x->refls(W,x) in s,eachindex(roots(W)))
+# C=stabilizer(W,J,onsets)
+  R=stabilizer(W,s,onsets)
+#  if length(R)<length(C) error("not expected") end
+  R
+end
 #--------------- PRG: an implementation of PermRootGroups--------------------
 @GapObj struct PRG{T,T1}<:PermRootGroup{T,T1}
   gens::Vector{Perm{T1}}

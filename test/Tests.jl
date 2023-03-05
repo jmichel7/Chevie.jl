@@ -878,8 +878,8 @@ function TSerie(s)
        sum(codegrees(Group(s.levi))))//generic_sign(s.levi)
     if e!=1 ChevieErr(s," => εL/c mod Φ=",e,"\n")end
   end
-  if isnothing(dSeries.char_numbers(s)) return end
-  e=eigen(UnipotentCharacters(W))[dSeries.char_numbers(s)]
+  if isnothing(charnumbers(s)) return end
+  e=eigen(UnipotentCharacters(W))[charnumbers(s)]
   if haskey(s,:hecke)
     pred=map(x->x.eig,EigenAndDegHecke(s))*
       eigen(UnipotentCharacters(s.levi))[s.cuspidal]
@@ -1733,7 +1733,7 @@ function Tparameterexponents(W,i)
         cusp=cusp=="" ? "." : cusp
         s=Series(L,H,findfirst(==(cusp),
                      charnames(UnipotentCharacters(H);TeX=true)),1;NC=true)
-        if isnothing(dSeries.char_numbers(s)) || isnothing(dSeries.fill(s))
+        if isnothing(charnumbers(s)) || isnothing(dSeries.fill(s))
           error("could not fill ",s)
         else 
           if hh[:parameterExponents][1] isa Vector

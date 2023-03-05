@@ -1481,10 +1481,10 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   f=toL(fourier(uw))
   m=Vector{eltype(f[1])}[]
   for (i,ss) in pairs(uc.springerseries)
-    if i==1 append!(m,f[uw.harishChandra[1][:charNumbers]])
+   if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
     elseif !haskey(ss,:hc) error("not implemented") 
     elseif ss[:hc]==0 append!(m,map(i->zero(f[1]),eachindex(ss[:locsys])))
-    else append!(m,f[uw.harishChandra[ss[:hc]][:charNumbers]])
+    else append!(m,f[charnumbers(uw.harishChandra[ss[:hc]])])
     end
   end
   t.scalar=transpose(toM(m))*t.scalar

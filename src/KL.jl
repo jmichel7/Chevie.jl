@@ -564,11 +564,11 @@ function Base.show(io::IO,c::LeftCell)
    if haskey(c,:character)
      uc=UnipotentCharacters(c.group)
      ch=c.character
-     i=findfirst(f->uc.harishChandra[1][:charNumbers][ch[1]] in f[:charNumbers],
+     i=findfirst(f->charnumbers(uc.harishChandra[1])[ch[1]] in f.charNumbers,
                  uc.families)
      f=uc.families[i]
      i=f.charNumbers[Families.special(f)]
-     i=findfirst(==(i),uc.harishChandra[1][:charNumbers])
+     i=findfirst(==(i),charnumbers(uc.harishChandra[1]))
      p=findfirst(==(i),ch)
      p=vcat([[i,1]],tally(vcat(ch[1:p-1],ch[p+1:end])))
      print(io," character=",join(
@@ -835,8 +835,8 @@ function left_cells(W,i=0)
   cc=cellreps(W)
   if !iszero(i)
     uc=UnipotentCharacters(W)
-    cc=filter(c->uc.harishChandra[1][:charNumbers][character(c)[1]]
-                                in uc.families[i][:charNumbers],cc)
+    cc=filter(c->charnumbers(uc.harishChandra[1])[character(c)[1]]
+                                in uc.families[i].charNumbers,cc)
   end
   st=map(st->(c->RightStar(st,c)),filter(r->length(r[1])>2,braid_relations(W)))
   d=map(c->orbit(st,c,(x,f)->f(x)),cc)

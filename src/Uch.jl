@@ -266,24 +266,24 @@ function params(sers)
 #   t.rank=haskey(t,:orbit) ? t.orbit[1].rank : t.rank
     n=ser[:cuspidalName]
     ch=chh[i]
-    res[ser[:charNumbers]]=map(x->[n,x],ch[:charparams])
+    res[charnumbers(ser)]=map(x->[n,x],ch[:charparams])
   end
   res
 end
 
 function SerNames(io::IO,sers)
-  res=fill("",sum(x->length(x[:charNumbers]),sers))
+  res=fill("",sum(x->length(charnumbers(x)),sers))
   for ser in sers
     tt=ser[:relativeType]
     if !(tt isa Vector) tt=[tt] end
     n=fromTeX(io,ser[:cuspidalName])
-    if isempty(tt) res[ser[:charNumbers]]=[n]
+    if isempty(tt) res[charnumbers(ser)]=[n]
     else 
       nn=map(t->charnames(io,t),tt)
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)
       if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end
-      res[ser[:charNumbers]]=nn
+      res[charnumbers(ser)]=nn
     end
   end
   res
@@ -568,7 +568,7 @@ function UnipotentCharacters(WF::Spets)
     if all(haskey.(sers,:parameterExponents))
       ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
     end
-    ser[:charNumbers]=cartesian(getindex.(sers,:charNumbers)...)
+    ser[:charNumbers]=cartesian(charnumbers.(sers)...)
     ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" : 
                                      x[:cuspidalName], sers),"\\otimes ")
     ser
@@ -1067,7 +1067,7 @@ HCRestrict(HF,u)=UniChar(HF,improve_type(u.v*HCInductionTable(HF,u.group).scalar
 function DLCharTable(W)
   get!(W,:rwTable)do
     uc=UnipotentCharacters(W)
-    improve_type(CharTable(W).irr'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:])
+    improve_type(CharTable(W).irr'*fourier(uc)[charnumbers(uc.almostHarishChandra[1]),:])
   end
 end
 
@@ -1186,14 +1186,14 @@ julia> T=Tbasis(H);DLLefschetz(T(1))
 function DLLefschetz(h,i=0)
   W=h.H.W
   uc=UnipotentCharacters(W)
-  uniform=uc.almostHarishChandra[1][:charNumbers]
+  uniform=charnumbers(uc.almostHarishChandra[1])
   UniChar(W,improve_type((char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
 function DLLefschetz(H::HeckeAlgebra,w,i=0)
   W=H.W
   uc=UnipotentCharacters(W)
-  uniform=uc.almostHarishChandra[1][:charNumbers]
+  uniform=charnumbers(uc.almostHarishChandra[1])
   UniChar(W,improve_type((char_values(H,w)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
@@ -1201,7 +1201,7 @@ function DLLefschetzTable(H)
   WF=H.W
   t=CharTable(H).irr
   uc=UnipotentCharacters(WF)
-  improve_type(t'*fourier(uc)[uc.almostHarishChandra[1][:charNumbers],:])
+  improve_type(t'*fourier(uc)[charnumbers(uc.almostHarishChandra[1]),:])
 end
 
 """
@@ -1227,7 +1227,7 @@ function on_unipotents(W,aut)
   t=DLCharTable(W)
   t=vcat(t,transpose(eigen(uc)))
   l=fill(0,length(uc))
-  n=uc.harishChandra[1][:charNumbers]
+  n=charnumbers(uc.harishChandra[1])
   l[n]=1:length(n)
   t=vcat(t,transpose(l))
   if length(unique(eachcol(t)))<size(t,2)

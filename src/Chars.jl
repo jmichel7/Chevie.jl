@@ -398,7 +398,7 @@ export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, classes, jInductionTable, JInductionTable,
   decompose, on_chars, detPerm, conjPerm, discriminant, classnames,
-  decomposition_matrix, eigen, schur_functor
+  decomposition_matrix, eigen, schur_functor, charnumbers
 
 """
 `schur_functor(mat,l)`
@@ -513,6 +513,8 @@ end
 @GapObj struct CharInfo
 end
 
+charnumbers(d::Dict)=d[:charNumbers]
+
 function charinfo(t::TypeIrred)
   c=CharInfo(deepcopy(getchev(t,:CharInfo)))
   c.positionId=c.extRefl[1]
@@ -526,11 +528,11 @@ function charinfo(t::TypeIrred)
     uc=getchev(t,:UnipotentCharacters)
     if !isnothing(uc) && uc!=false
       if haskey(uc,:almostHarishChandra)
-        c.a=uc[:a][uc[:almostHarishChandra][1][:charNumbers]]
-        c.A=uc[:A][uc[:almostHarishChandra][1][:charNumbers]]
+        c.a=uc[:a][charnumbers(uc[:almostHarishChandra][1])]
+        c.A=uc[:A][charnumbers(uc[:almostHarishChandra][1])]
       else
-        c.a=uc[:a][uc[:harishChandra][1][:charNumbers]]
-        c.A=uc[:A][uc[:harishChandra][1][:charNumbers]]
+        c.a=uc[:a][charnumbers(uc[:harishChandra][1])]
+        c.A=uc[:A][charnumbers(uc[:harishChandra][1])]
       end
     elseif !haskey(t,:orbit)
       para=ordergens(t)
@@ -1071,7 +1073,7 @@ end
 
 function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
-  irr=improve_type(toM(ct[:irreducibles]))
+  irr=toM(improve_type(ct[:irreducibles]))
   CharTable(irr,charnames(t;opt...),classnames(t;opt...),
             improve_type(ct[:centralizers]),ct[:size],
             Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))

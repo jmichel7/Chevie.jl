@@ -225,12 +225,6 @@ function eigenspace_projector(W,w,d::Root1)
   end
 end
 
-function Groups.normalizer(W,L::PermRootGroup)
-  if length(L)==1 return W end
-  r=sort(refls(L,unique_refls(L)))
-  centralizer(W,r,onsets)
-end
-
 """
 `relative_root(W,L,i)`
 

@@ -375,34 +375,35 @@ extprod(W1::Spets,W2::FiniteCoxeterGroup)=extprod(W1,spets(W2))
 extprod(W1::FiniteCoxeterGroup,W2::Spets)=extprod(spets(W1),W2)
 extprod(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)=W1*W2
 
-function twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
-  if isempty(J) return classreps(W) end
+function graph_automorphisms(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
+  if isempty(J) return W end
   H=reflection_subgroup(W,J)
-  if isparabolic(W,H)
-    if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
-    else p=standard_parabolic(W,H); H=H^p
-    end
-    J=inclusiongens(H)
-    C=Group(collect(endomorphisms(CoxGroups.parabolic_category(W,J),1)))
-    return classreps(C).^inv(p)
+  if !isparabolic(W,H)
+    iJ=inclusion(W,J)
+    return stabilizer(W.G,sort(iJ),onsets)
   end
-  C=centralizer(W,sort(J),(J,w)->sort(action.(Ref(W),J,w)))
-# iJ=inclusion(W,J);C=centralizer(W,sort(iJ),onsets)
-  classreps(C)
+  if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
+  else p=standard_parabolic(W,H); H=H^p
+  end
+  J=inclusiongens(H)
+  C=collect(endomorphisms(CoxGroups.parabolic_category(W,J),1))
+  Group(C.^inv(p))
 end
+
+twisting_elements(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})=
+  classreps(graph_automorphisms(W,J))
 
 function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
   if isempty(J) return classreps(WF)./WF.phi end
   if isone(WF.phi) return twisting_elements(Group(WF),J) end
   W=Group(WF)
-  h=transporting_elt(W,sort(action.(Ref(W),J,WF.phi)),sort(J),
-                             (x,p)->sort(action.(Ref(W),x,p)))
+  iJ=inclusion(W,J)
+  h=transporting_elt(W,sort(iJ.^WF.phi),sort(iJ),onsets)
   if isnothing(h)
     println("\n# no subspets for ",J)
     return eltype(W)[]
   end
-  W_L=centralizer(W,sort(collect(J)),(x,p)->sort(action.(Ref(W),x,p)))
-# iJ=inclusion(W,J);W_L=centralizer(W,sort(iJ),onsets)
+  W_L=stabilizer(W,sort(iJ),onsets)
   e=classreps(Group(vcat(gens(W_L),[WF.phi*h])))
   res=filter(x->WF.phi*h*inv(x) in W_L,e).*inv(WF.phi)
   res
@@ -452,14 +453,17 @@ julia> twistings(WF,2:5)
  ²E₆₍₂₃₄₅₎=D₄Φ₂²
 ```
 """
-twistings(W,J::AbstractVector{<:Integer})=
+function twistings(W,J::AbstractVector{<:Integer})
   subspets.(Ref(W),Ref(J),twisting_elements(W,J))
+end
+
+twistings(W,R::FiniteCoxeterGroup)=twistings(W,inclusiongens(R,W))
 
 """
 `graph_automorphisms(t::Vector{TypeIrred})`
 
 Given  the `refltype` of a  finite Coxeter group, returns  the group of all
-Graph automorphisms of `t`.
+Graph automorphisms of `t` as a group of permutations of `indices(t)`.
 
 ```julia-repl
 julia> W=coxgroup(:D,4)
@@ -493,6 +497,9 @@ function graph_automorphisms(t::Vector{TypeIrred})
   end
   Group(gen)
 end
+
+graph_automorphisms(W::FiniteCoxeterGroup)=
+  Group(map(g->PermX(W,reflrep(W,g)),gens(graph_automorphisms(refltype(W)))))
 
 """
 `twistings(W)`
@@ -813,9 +820,9 @@ end
 function twisting_elements(W::PermRootGroup,J::AbstractVector{<:Integer})
   if isempty(J) return classreps(W) end
   L=reflection_subgroup(W,J)
-  s=sort(refls(L,unique_refls(L)))
-  C=centralizer(W,s,onsets)
-  W_L=C/L
+  N=normalizer(W,L)
+#  W_L=C/N
+  W_L=Group(gens(N))/Group(gens(L))
   map(x->x.phi,classreps(W_L))
 end
 

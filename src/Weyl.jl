@@ -692,6 +692,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
  Gapjm.roots, Groups.gens, Groups.conjugacy_classes,
  PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
+ PermGroups.stabilizer,PermGroups.transporting_element,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.coxnum,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank,
@@ -703,6 +704,35 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
  PermRoot.central_action, Perms.reflength, Perms.largest_moved_point
+
+PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=
+   stabilizer(W.G,p,ontuples)
+
+if false # slower now with changes in PermGroups
+function Groups.transporting_elt(W::FiniteCoxeterGroup,H1::FiniteCoxeterGroup,
+    H2::FiniteCoxeterGroup)
+  if parent(W)!=parent(H1) || parent(W)!=parent(H1) error("not same parent") end
+  if isomorphism_type(H1)!=isomorphism_type(H2) return end
+  PH1=parabolic_closure(W,inclusiongens(H1,W))
+  p1=standard_parabolic(W,PH1);PH1=sort(PH1.^p1);H1=H1^p1;
+  PH2=parabolic_closure(W,inclusiongens(H2,W))
+  p2=standard_parabolic(W,PH2);PH2=sort(PH2.^p2);H2=H2^p2;
+  C=CoxGroups.parabolic_category(W,PH1)
+  i=findfirst(==(PH2),C.obj)
+  if isnothing(i) return end
+  p=Garside.from(C,1,i)
+  if isnothing(p) return end
+  H1=H1^p
+  if H1==H2 return p1*p*inv(p2) end
+  q=transporting_elt(reflection_subgroup(W,PH2),
+     sort(inclusiongens(H1)),sort(inclusiongens(H2)),onsets)
+  if isnothing(q) return end
+  p1*p*q*inv(p2)
+end
+else
+Groups.transporting_elt(H::FiniteCoxeterGroup,R::FiniteCoxeterGroup,G::FiniteCoxeterGroup)=
+transporting_elt(H.G,sort(inclusiongens(R)),sort(inclusiongens(G)),onsets)
+end
 
 #--------------- FCG -----------------------------------------
 @GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T}}

@@ -119,7 +119,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   ff=improve_type(uc[:families])
   fd=fill(Pol(0),length(uc[:a]))
   l=haskey(uc,:almostHarishChandra) ? uc[:almostHarishChandra] : uc[:harishChandra]
-  fd[l[1][:charNumbers]]=fakedegrees(reflection_group(t),Pol())
+  fd[charnumbers(l[1])]=fakedegrees(reflection_group(t),Pol())
 
   # positions-with-sign in l where o or -o appears
   positionssgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
@@ -133,7 +133,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   end
 
   for h in uc[:harishChandra] 
-    fd[h[:charNumbers]]=
+   fd[charnumbers(h)]=
     fakedegrees(reflection_group(Uch.maketype(h[:relativeType])), Pol())
   end
   ΩΧ=map(f->f(ξ)//f(1),fd)# List of ω_χ(ξ) for character sheaves (ρ,χ)
@@ -147,7 +147,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   # EnnolaBE(i,f): More sophisticated than EnnolaBete: take in account predeigen
   function EnnolaBE(f,e)
     for j in 1:length(f)
-      if f.charNumbers[j] in uc[:harishChandra][1][:charNumbers]
+      if f.charNumbers[j] in charnumbers(uc[:harishChandra][1])
         e[j]=filter(k->eigen(f)[abs(k)]==predeigen(f.charNumbers[j]),e[j])
       end
     end
@@ -477,7 +477,7 @@ corresponding constituent `γᵩ` of `RLG(s)`.
 
 `degree(s)`: the generic degree of `RLG(s)`, as a `CycPol`.
 
-`dSeries.char_numbers(s)`:  the indices in  `UnipotentCharacters(W)` of the
+`charnumbers(s)`:  the indices in  `UnipotentCharacters(W)` of the
 constituents of `RLG(s)`.
 
 `hecke(s)`: the hecke algebra ``H_𝐆(𝐋,λ)``.
@@ -530,7 +530,7 @@ julia> degree(s)
 julia> dSeries.RLG(s)
 [G₄]:<φ₁‚₀>-<φ₁‚₄>-<φ₂‚₅>+<φ₂‚₃>-<Z₃:2>-<Z₃:11>
 
-julia> dSeries.char_numbers(s)
+julia> charnumbers(s)
 6-element Vector{Int64}:
  1
  5
@@ -612,19 +612,19 @@ end
 function Base.show(io::IO, ::MIME"text/plain", s::Series)
   show(io,s)
   if haskey(io,:typeinfo) return end
-  if haskey(s,:charNumbers) && !isnothing(char_numbers(s)) format(io,s) end
+  if haskey(s,:charNumbers) && !isnothing(charnumbers(s)) format(io,s) end
 end
 
 function format(io::IO,s::Series)
   uw = UnipotentCharacters(s.spets)
-  e = length(char_numbers(s))
+  e = length(charnumbers(s))
   function f(texn,val)
     push!(col_labels,texn)
     push!(m,val)
   end
   m = []
   col_labels = String[]
-  f("\\gamma_\\phi", charnames(io,uw)[char_numbers(s)])
+  f("\\gamma_\\phi", charnames(io,uw)[charnumbers(s)])
   n="\\varphi"
   if haskey(s,:translation) n*="(mod $(s.translation))" end
   f(n, charnames(io,relative_group(s)))
@@ -636,13 +636,13 @@ function format(io::IO,s::Series)
     end
   end
   f("\\hbox{family \\#}", map(j->findfirst(k->j in k.charNumbers,
-                                    uw.families), char_numbers(s)))
+                                    uw.families), charnumbers(s)))
   if haskey(s, :permutable) && any(x->x!=false,s.permutable)
       f("\\hbox{permutable}", s.permutable)
   end
   m=permutedims(toM(m))
   println(io)
-  showtable(io,m;row_labels=string.(char_numbers(s)),col_labels)
+  showtable(io,m;row_labels=string.(charnumbers(s)),col_labels)
 end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
@@ -799,7 +799,7 @@ function mC(s::Series)
   e = hyperplane_orbits(relative_group(s))
   if length(e)!=1 return else e = e[1].order end
   uc = UnipotentCharacters(s.spets)
-  cn = char_numbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
+  cn = charnumbers(s)[filter(i->s.dims[i]==1,1:length(s.dims))]
   aA = uc.:a[cn] + uc.A[cn]
   lpi(W)=nref(W)+nhyp(W)
   if s.principal
@@ -900,7 +900,7 @@ function canfromdeg(s::Series)
 end
 
 # takes a d-series s with s.spets split; fills in s.charNumbers, s.eps, s.dims
-function char_numbers(s::Series)
+function Chars.charnumbers(s::Series)
   get!(s,:charNumbers) do
   if s.levi==s.spets
     s.eps=[1]
@@ -1000,17 +1000,17 @@ function char_numbers(s::Series)
   end
 end
 
-eps(s::Series)=getp(char_numbers,s,:eps)
+eps(s::Series)=getp(charnumbers,s,:eps)
 
 COMPACTCOHOMOLOGY=true
 function paramcyclic(s::Series)
   if !iscyclic(s) error("fill assumes relative_group(s) cyclic\n") end
-  if isnothing(char_numbers(s)) return nothing end
+  if isnothing(charnumbers(s)) return nothing end
   if e(s)==1 return (s.Hecke=hecke(relative_group(s))) end
   uc=UnipotentCharacters(s.spets)
-  Schur=Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)]
+  Schur=Uch.CycPolUnipotentDegrees(s.spets)[charnumbers(s)]
   Schur=map(x->degree(s)//Schur[x]*eps(s)[x],1:e(s))
-  s.eigen=Uch.eigen(uc)[char_numbers(s)]
+  s.eigen=Uch.eigen(uc)[charnumbers(s)]
   LFrob=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   m=degrees(Group(s.spets))
   s.delta=lcm(map(x->order(Root1(x[2])),filter(x->x[1]!=1,degrees(s.spets))))
@@ -1019,16 +1019,16 @@ function paramcyclic(s::Series)
   # parameters of Hecke algebra are map(i->param(i,i),1:e(s))
   mmp=FitParameter(subs.(Schur,Pol([s.d],1)),COMPACTCOHOMOLOGY ? mC(s) : -mC(s))
 # possible perms encoded by mmp[i][1]->mmp[i][2]
-  nid=uc.almostHarishChandra[1][:charNumbers][charinfo(s.spets).positionId]
+  nid=charnumbers(uc.almostHarishChandra[1])[charinfo(s.spets).positionId]
   function predeigen(j, i)#eigenvalue for mC[j] and ζ_e^{i-1}
-    if nid in char_numbers(s)# id should correspond to id(WGL)
+    if nid in charnumbers(s)# id should correspond to id(WGL)
       Root1(;r=s.d.r*e(s)*s.delta*
-                   (rr(j,i)+s.d.r*mC(s)[findfirst(==(nid),char_numbers(s))]))
+                   (rr(j,i)+s.d.r*mC(s)[findfirst(==(nid),charnumbers(s))]))
     else Root1(;r=s.delta*rr(j,i)*e(s)*s.d.r+LFrob.r)
               # as fraction predeigen_i:=delta di -delta m_i d^2e
     end
   end
-  series=map(x->findfirst(y->x in y[:charNumbers],uc.harishChandra),char_numbers(s))
+  series=map(x->findfirst(y->x in charnumbers(y),uc.harishChandra),charnumbers(s))
   unique=filter(p->length(p[1])==1,mmp)
   ratio=map(p->s.eigen[p[1][1]]//Cyc(predeigen(p[1][1], p[2][1])), unique)
   if length(Set(ratio))>1
@@ -1048,7 +1048,7 @@ function paramcyclic(s::Series)
   end
   mmp=map(x->(x[1],map(y->mod(y,e(s))+1,map(j->j.+(r-1),x[2]))), mmp)
   r=fill(0,e(s))
-  s.permutable=map(x->0,char_numbers(s))
+  s.permutable=map(x->0,charnumbers(s))
   j=1
   for i in mmp
     a=arrangements(i[2], length(i[2]))
@@ -1149,7 +1149,7 @@ end
 #  .classno     class of s.levi with ζ-eigenspace V_ζ
 #  .element     representative of classno
 function RelativeSeries(s)
-# if !(haskey(s, :charNumbers)) char_numbers(s) end
+# if !(haskey(s, :charNumbers)) charnumbers(s) end
 # find simplest regular eigenvalue q of s.levi
   eig=union(map(x->x isa Int ? prime_residues(x).//x : [x],
                 map(x->x.r,regular_eigenvalues(s.levi)))...)
@@ -1220,7 +1220,7 @@ function RelativeSeries(s)
   u1=map(x->degree(s)//CycPol(x), u1)
   degcusp=Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
   ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))),
-                Uch.CycPolUnipotentDegrees(s.spets)[char_numbers(s)])
+                Uch.CycPolUnipotentDegrees(s.spets)[charnumbers(s)])
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues
   if isnothing(p)

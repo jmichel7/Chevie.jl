@@ -211,13 +211,13 @@ function LusztigInductionPieces(LF,WF)
     wfgl=repr(WFGL;context=:TeX=>true)
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
-                   almostcharnames(rio(TeX=true),uW)[ser[:charNumbers]],
-                   almostcharnames(rio(TeX=true),uL)[h[:charNumbers]],
+                   almostcharnames(rio(TeX=true),uW)[charnumbers(ser)],
+                   almostcharnames(rio(TeX=true),uL)[charnumbers(h)],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
      "piece from \$W_{$lu}($(join(h[:levi])),$(h[:cuspidalName]))\$=$lfgl"*
      "to \$W_{$lg}($(join(h[:levi])),$(h[:cuspidalName]))\$=$wfgl",
     Dict{Symbol,Any}(:repr=>"piece($(repr(LF)),$(repr(WF)))",
-                     :wnum=>ser[:charNumbers], :hnum=>h[:charNumbers]))
+                     :wnum=>charnumbers(ser), :hnum=>charnumbers(h)))
   end
 end
 
@@ -386,11 +386,11 @@ function HCInductionTable(HF, WF)
     lu=repr(Hi;context=:TeX=>true)
     lg=repr(Wi;context=:TeX=>true)
     piece = InductionTable(InductionTable(Hi, Wi).scalar, 
-     charnames(uw;TeX=true)[ser[:charNumbers]], 
-     charnames(uh;TeX=true)[h[:charNumbers]],
+                           charnames(uw;TeX=true)[charnumbers(ser)], 
+                           charnames(uh;TeX=true)[charnumbers(h)],
     "Harish-Chandra Induction piece from \$$lu\$ to \$$lg\$",
     Dict{Symbol,Any}())
-    res.scalar[ser[:charNumbers],h[:charNumbers]] = piece.scalar
+    res.scalar[charnumbers(ser),charnumbers(h)]=piece.scalar
     piece
   end
   return res
