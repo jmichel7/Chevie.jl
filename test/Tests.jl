@@ -1459,45 +1459,47 @@ test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
 
 # Check that all elements of the list of vectors l have coefficients
 #  in the ring R when expressed as linear combinations of l{indices}
-#function rootsystem(W)
-#  integrality:=function(l,indices,R)local rb;
-#    rb:=List(l,r->SolutionMat(l{indices},r));
-#    return ForAll(Flat(rb),y->y in R);
-#  end
-#  Coroots:=W->List([1..Length(W.roots)],i->PermRootOps.Coroot(W,i));
-## Find representatives up to scalar multiple of elements of the list of
-## vectors vec. Check that other elements differ from such a representative
-## by a unit of the ring R
-#  replines:=function(vec,R)local found,res,v,p;res:=[];
-#    for v in vec do found:=false;
-#      for x in res do p:=ProportionalityCoefficient(x,v);
-#        if p<>false then 
-#	  if not (p in R and 1/p in R) then return false;fi;
-#	  found:=true;
-#        fi;
-#      od;
-#      if not found then Add(res,v);fi;
-#    od;
-#    return res;
-#  end;
-#  R:=DefaultRing(Flat(CartanMat(W)));
-#  try:=Combinations(W.generatingReflections,W.rank);
-#  p:=PositionProperty(try,v->integrality(W.roots,v,R));
-#  if p=false then ChevieErr("found no root basis");else;fi;
-#  cr:=Coroots(W);
-#  p:=PositionProperty(try,v->integrality(cr,v,R));
-#  if p=false then ChevieErr("found no coroot basis");else;fi;
-#  p:=replines(W.roots,R);
-#  if p=false then ChevieErr("not reduced");fi;
-#  m:=replines(cr,R);
-#  if m=false then ChevieErr("coroots not reduced??");fi;
-#  if Length(m)>0 and not ForAll(Set(Flat(p*TransposedMat(m))),x->x in R) then 
-#    ChevieErr("not a root system");fi;
-#end,
-#W->not IsSpets(W),
-#"Check that W.roots define a distinguished root system",
-#" in the sense of Broue-Corran-Michel");
-#
+function rootsystem(W)
+  function integrality(l,indices,R)
+    rb=map(r->solutionmat(toM(l[indices]),r),l);
+    all(y->y in R,vcat(rb...))
+  end
+# Find representatives up to scalar multiple of elements of the list of
+# vectors vec. Check that other elements differ from such a representative
+# by a unit of the ring R
+  function replines(vec,R)
+    res=empty(vec)
+    for v in vec found=false
+      for x in res p=ratio(x,v)
+        if !isnothing(p)
+          if !(p in R && 1/p in R) return end
+          found=true
+        end
+      end
+      if !found push!(res,v) end
+    end
+    res
+  end
+  R=NF(vec(cartan(W)))
+  totry=combinations(1:ngens(W),semisimplerank(W))
+  p=findfirst(v->integrality(roots(W),v,R),totry)
+  if isnothing(p) ChevieErr("found no root basis") end
+  cr=coroots(W,1:length(roots(W)))
+  p=findfirst(v->integrality(cr,v,R),totry)
+  if isnothing(p) ChevieErr("found no coroot basis") end
+  p=replines(roots(W),R)
+  if isnothing(p) ChevieErr("not reduced") end
+  p=toM(p)
+  m=replines(cr,R)
+  if isnothing(m) ChevieErr("coroots not reduced??") end
+  m=toM(m)
+  if length(m)>0 && !all(x->x in R,unique(vec(p*permutedims(m))))
+    ChevieErr("not a root system") end
+end
+
+test[:rootsystem]=(fn=rootsystem,applicable=W->!(W isa Spets),comment=
+ "Check that W.roots define a distinguished root system in the sense of Broue-Corran-Michel")
+ 
 #CHEVIE.AddTest("GaloisAutomorphisms",
 #function(W)local k,Wk,m,g,gm,p;
 #  k:=Field(Flat(W.matgens));

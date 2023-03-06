@@ -199,7 +199,7 @@ end
 
 CyclotomicNumbers.conductor(F::NumberField)=conductor(F.generators)
 
-function Base.in(c::Union{Cyc,Root1},F::NumberField)
+function Base.in(c::Union{Cyc,Root1,Integer,Rational{<:Integer}},F::NumberField)
   (conductor(F.generators)%conductor(c)==0) &&
   all(i->galois(c,i)==c,F.stabilizer[2:end])
 end
