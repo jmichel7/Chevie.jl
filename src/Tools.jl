@@ -14,7 +14,6 @@ using CyclotomicNumbers: Cyc, conductor
 using ..FFields: FFields, FFE, Mod, Z
 using ..Gapjm: Gapjm, order
 
-using ..GenLinearAlgebra: GenLinearAlgebra, rowspace, independent_rows, nullspace
 #------------------ improve_type
 best_eltype(m)=reduce(promote_type,best_type.(m))
 best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
@@ -62,12 +61,6 @@ function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
   if denominator(res)>1 error(b," does not exactly divide ",a) end
   numerator(res)
 end
-
-#------------- extend to Cyc methods of GenLinearAlgebra
-GenLinearAlgebra.rowspace(m::AbstractMatrix{<:Cyc{<:Integer}})=rowspace(m*1//1;dup=false)
-GenLinearAlgebra.independent_rows(m::AbstractMatrix{<:Cyc{<:Integer}})=
-    independent_rows(m*1//1;dup=false)
-GenLinearAlgebra.nullspace(m::AbstractMatrix{<:Cyc{<:Integer}})=nullspace(m//1)
 
 #------------- p-adic valuation
 "valuation(c::Integer,p::Integer) p-adic valuation of c"

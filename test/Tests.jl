@@ -188,7 +188,7 @@ function Trepresentations(W,l=Int[])
       r=gr
       if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1]) :
                           size(r.gens[1]),"...") end
-      if isrepresentation(H,r) print("is ") end
+      if isrepresentation(H,r) print(" is ") end
       if r isa NamedTuple println();continue end # for now... Should be fixed
       pos=findrepresentation(O,gr,true)
       if pos==i println("found")
@@ -215,7 +215,7 @@ test[:representations]=(fn=Trepresentations,
      t=t.orbit[1]
      return !(t.series in [:D,:E])
    end,
-   comment="Check reprs exist and match characters")
+   comment="check they exist and match characters")
 
 #---------------- test: lusztiginduction ------------------------
 function Tlusztiginduction(WF)
@@ -226,7 +226,7 @@ function Tlusztiginduction(WF)
   end
 end
 test[:lusztiginduction]=(fn=Tlusztiginduction, applicable=isspetsial,
-   comment="Check induction computable and mackey with tori")
+   comment="check it is computable and verifies mackey with tori")
 
 function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
   for L in twistings(WF,J) Tlusztiginduction(WF,L) end
@@ -299,7 +299,7 @@ function Tchartable(W)
 end
 
 test[:chartable]=(fn=Tchartable, applicable=W->!(W isa Spets),
-   comment="CharTable")
+   comment="check it agrees with GAP chartable-for-PermGroup")
 
 #----------------test: powermaps ------------------------
 
@@ -317,7 +317,7 @@ end
 
 test[:powermaps]=(fn=Tpowermaps, applicable=W->false,
 #test[:powermaps]=(fn=Tpowermaps, applicable=W->!(W isa Spets),
-                  comment="powermaps")
+                  comment="check powermaps")
 
 #---------------- test: positionclasses ------------------------
 function Tpositionclasses(W)
@@ -326,7 +326,7 @@ function Tpositionclasses(W)
 end
 
 test[:positionclasses]=(fn=Tpositionclasses, applicable=W->true,
-   comment="classreps")
+   comment="check classreps")
 
 #---------------- test: unipotentclasses ------------------------
 function Tunipotentclasses(W,p=nothing)
@@ -478,7 +478,7 @@ function Tunipotentcentralizers(W,p=0)
 end
 
 test[:unipotentcentralizers]=(fn=Tunipotentcentralizers,applicable=isrootdatum,
-                         comment="info on centralizers agrees with ICCTable")
+                         comment="info on them agrees with ICCTable")
 
 #---------------- test: nrssclasses ------------------------
 # Check classtypes gives nrclasses (for simply connected groups)
@@ -756,7 +756,7 @@ function Tcharparams(W)
 end
 
 test[:charparams]=(fn=Tcharparams, applicable=W->W isa Group,
-   comment="Check charparams for consistency with Michel/Thiel rules")
+   comment="check them for consistency with Michel/Thiel rules")
 
 #---------------- test: HCdegrees ------------------------
 function THCdegrees(W)
@@ -931,7 +931,7 @@ function Textrefl(W)
   checkfield(:positionId,extRefl[1])
 end
 
-test[:extrefl]=(fn=Textrefl,applicable=x->x isa Group,comment="check extrefl")
+test[:extrefl]=(fn=Textrefl,applicable=x->x isa Group,comment="check")
 
 #---------------- test: degrees ------------------------
 """
@@ -1007,7 +1007,8 @@ function Tdegrees(W)
   end
 end
 
-test[:degrees]=(fn=Tdegrees,applicable=x->true, comment="check degrees")
+test[:degrees]=(fn=Tdegrees,applicable=x->true, 
+                comment="check reflection degrees")
 
 #---------------- test: fakedegrees ------------------------
 
@@ -1052,17 +1053,17 @@ function Tinvariants(W)
   ii=invariants(W)
   vars=map(i->Symbol("x",i),1:rank(W))
   ii=map(f->f(Mvp.(vars)...),ii)*Int128(1)
-  InfoChevie("  #")
+  if !isempty(ii) InfoChevie("  #") end
   for i in eachindex(ii), j in eachindex(gens(W))
     InfoChevie("W.",j,"*I",i,",")
     if ^(ii[i],reflrep(W,i);vars)!=ii[i]  ChevieErr("not invariant\n") end
   end
-  InfoChevie("\n")
+  if !isempty(ii) InfoChevie("\n") end
 end
 
 test[:invariants]=(fn=Tinvariants,
   applicable=W->!(W isa Spets) && length(W)<14400, # H4 first painful client
-                   comment="check invariants")
+                   comment="check")
 
 #---------------- test: classical ud fd  ------------------------
 
@@ -1099,7 +1100,7 @@ test[:udfdimprimitive]=(fn=Tudfdimprimitive,
     else n.series in [:A,:B,:C,:D,:G,:I] || (n.series==:ST && haskey(n,:p))
     end
   end,
-comment="Test unideg and feg of classical Spets against formulas")
+comment="unideg and feg of imprimitive Spets agree with formulae")
 
 #---------------- test: families ------------------------
 # test that a family satisfies Lusztig's "exotic fourier transform" properties.
@@ -1246,7 +1247,7 @@ function Tfamilies(W,i;hard=false)
   InfoChevie("\n")
 end
 
-test[:families]=(fn=Tfamilies,applicable=isspetsial,comment="testing families")
+test[:families]=(fn=Tfamilies,applicable=isspetsial,comment="testing")
 #------------------------- HCinduce gendegs -----------------------------
 
 function TdegsHCInduce(W)
@@ -1362,7 +1363,8 @@ function Tsumsquares(W)
   end
 end
 
-test[:sumsquares]=(fn=Tsumsquares,applicable=isspetsial,comment="Sum squares")
+test[:sumsquares]=(fn=Tsumsquares,applicable=isspetsial,
+   comment="of fakedegrees and unipotent degrees coincide")
 
 #------------------------- aA -----------------------------
 # check that stored a and A are correct
@@ -1378,7 +1380,7 @@ function TaA(W)
   end
 end
 
-test[:aA]=(fn=TaA,applicable=isspetsial,comment="aA")
+test[:aA]=(fn=TaA,applicable=isspetsial,comment="check them from unipotent degrees")
 
 #------------------------- eigen -----------------------------
 # check eigenvalues in families agree with those in HC series
@@ -1398,7 +1400,8 @@ function Teigen(W)
   end
 end
 
-test[:eigen]=(fn=Teigen,applicable=isspetsial,comment="eigen")
+test[:eigen]=(fn=Teigen,applicable=isspetsial,
+              comment="check they agree between HC series and families")
 
 #------------------------- qeigen -----------------------------
 ## check fractional eigenvalues of Frobenius wrt. values stored in HC series
@@ -1461,16 +1464,17 @@ test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
 #  in the ring R when expressed as linear combinations of l{indices}
 function rootsystem(W)
   function integrality(l,indices,R)
-    rb=map(r->solutionmat(toM(l[indices]),r),l);
-    all(y->y in R,vcat(rb...))
+    rb=map(r->solutionmat(toM(l[indices]),r),l)
+    all(y->!isnothing(y) &&(y in R),vcat(rb...))
   end
 # Find representatives up to scalar multiple of elements of the list of
 # vectors vec. Check that other elements differ from such a representative
 # by a unit of the ring R
-  function replines(vec,R)
+  function replines(vec,R)local p
     res=empty(vec)
     for v in vec found=false
-      for x in res p=ratio(x,v)
+      for x in res
+        p=ratio(x,v)
         if !isnothing(p)
           if !(p in R && 1/p in R) return end
           found=true
@@ -1498,27 +1502,27 @@ function rootsystem(W)
 end
 
 test[:rootsystem]=(fn=rootsystem,applicable=W->!(W isa Spets),comment=
- "Check that W.roots define a distinguished root system in the sense of Broue-Corran-Michel")
+ "W.roots is a distinguished root system in the sense of BCM")
  
-#CHEVIE.AddTest("GaloisAutomorphisms",
-#function(W)local k,Wk,m,g,gm,p;
-#  k:=Field(Flat(W.matgens));
-#  Wk:=Field(Flat(CartanMat(W)));
-#  if k<>Wk then 
-#    ChevieErr("k_W=",Wk," but matrices over ",k,"\n");
-#  fi;
-#  if k=Rationals then return;fi;
-#  for g in GaloisGroup(k).generators do
-#    for m in W.matgens do
-#      gm:=List(m,x->OnTuples(x,g)); p:=PermMatX(W,gm);
-#      if not p in W or gm<>MatXPerm(W,p) then 
-#        ChevieErr("not Galois stable\n");fi;
-#    od;
-#  od;
-#end,
-#W->not IsSpets(W),
-#"check that W's reflection representation is globally",
-#"invariant by Gal(k_W/Q)");
+function galoisauts(W)
+  k=NF(vcat(map(vec,reflrep(W))...))
+  Wk=NF(vec(cartan(W)))
+  if k!=Wk ChevieErr("k_W=",Wk," but matrices over ",k,"\n") end
+  if k==CF(1) return end
+  for g in gens(galois(k))
+    for m in reflrep(W)
+      gm=m.^Ref(g)
+      p=PermX(W,gm)
+      if !(p in W) || gm!=reflrep(W,p) 
+        ChevieErr("refrep(",W,") is not galois(",k,")-stable\n")
+        return
+      end
+    end
+  end
+end
+
+test[:galoisauts]=(fn=galoisauts,applicable=W->!(W isa Spets),comment=
+             "check that reflrep(W) is globally invariant by Gal(k_W/Q)")
 
 #function frombraidrel(W)
 #  n=nbgens(W)
@@ -1564,8 +1568,8 @@ function Tclassreps(W)
 end
 
 test[:classreps]=(fn=Tclassreps,applicable=W->(W isa CoxeterGroup) ||
-                  W isa CoxeterCoset, comment=
-"check that classreps are very good in the sense of Geck-Michel")
+                  W isa CoxeterCoset, 
+   comment= "check they are very good in the sense of Geck-Michel")
 
 #------------------------- minuscule weights -----------------------------
 
@@ -1593,7 +1597,7 @@ function Tminusculeweights(W)
 end
 
 test[:minusculeweights]=(fn=Tminusculeweights,applicable=isweylgroup,
-  comment="correspond to coeff 1 of highest coroot on simple")
+  comment="are coeffs 1 of highest coroot on simple coroots")
 
 #------------------------- CharTable(3D4) -----------------------------
 
@@ -1802,5 +1806,5 @@ end
 
 test[:discriminant]=(fn=Tdiscriminant,
   applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful clientend
-  comment="discriminant")
+  comment="agrees with hyperplane product")
 end
