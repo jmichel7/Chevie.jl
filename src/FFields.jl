@@ -152,9 +152,9 @@ Base.promote(a,b::Mod)=(a*one(b),one(a)*b)
 Base.zero(n::Mod)=Mod(0,n.n)
 Base.one(n::Mod)=Mod(1,n.n)
 Base.one(::Type{<:Mod})=Mod_(unsigned(1),unsigned(0))
-Base.isone(n::Mod)=isone(n.val)
+Base.isone(n::Mod)=isone(n.val) || isone(n.n)
 Base.:(==)(x::Mod,y::Mod)=x.n==y.n && x.val==y.val
-Base.:(==)(x::Mod,y::Integer)=false
+Base.:(==)(x::Mod,y::Integer)=x==Mod(y,x.n)
 Base.:+(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val+y.val,x.n)
 Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val*y.val,x.n)
 Base.:-(x::Mod)=Mod(-signed(Integer(x.val)),x.n)
