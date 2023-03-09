@@ -1,4 +1,6 @@
-# code for factoring a polynomial over a finite field
+"""
+Factoring polynomials over finite fields
+"""
 module FFfac
 
 using Primes: Primes

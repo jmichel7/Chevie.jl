@@ -547,6 +547,25 @@ end
 @test mytest("Lusztig.jl","t=twistings(W,[1,3])","2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n B₃₍₁₃₎=Ã₁×A₁Φ₁\n B₃₍₁₃₎=Ã₁×A₁Φ₂")
 @test mytest("Lusztig.jl","LusztigInductionTable(t[2],W)","Lusztig Induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃\n     │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2\n─────┼────────────────────────\n111. │     1    -1    -1    .\n11.1 │    -1     .     1   -1\n1.11 │     .     .    -1    .\n.111 │    -1     .     .    .\n21.  │     .     .     .    .\n1.2  │     1    -1     .    1\n2.1  │     .     1     .    .\n.21  │     .     .     .    .\n3.   │     .     .     .    1\n.3   │     .     1     1   -1\nB₂:2 │     .     .     1   -1\nB₂:11│     1    -1     .    .")
 end
+@testset "Nf.jl" begin
+@test mytest("Nf.jl","F=NF(E(5))","CF(5)")
+@test mytest("Nf.jl","K=NF(root(5))","NF(5,-1₅)")
+@test mytest("Nf.jl","conductor(K)","5")
+@test mytest("Nf.jl","E(5)+E(5,-1) in NF(root(5))","true")
+@test mytest("Nf.jl","elements(galois(F))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-2₅)\n Aut(CF(5),-1₅)")
+@test mytest("Nf.jl","NF(root(3),root(5))","NF(60,-11₆₀,-1₆₀)")
+@test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [8₂₄]\n [11₂₄, -7₂₄]\n [-8₂₄]")
+@test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24),Mod(5,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [5₂₄, -1₂₄]\n [8₂₄]\n [-8₂₄]")
+@test mytest("Nf.jl","Nf.LenstraBase(15,Group([Mod(4,15)]),Group(Mod.(prime_residues(15),15)))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₁₅, 4₁₅]\n [2₁₅, -7₁₅]\n [7₁₅, -2₁₅]\n [-4₁₅, -1₁₅]")
+@test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
+@test mytest("Nf.jl","s=Aut(F,3)","Aut(NF(5,-1₅),2₅)")
+@test mytest("Nf.jl","root(5)^s","Cyc{Int64}: -√5")
+@test mytest("Nf.jl","K=CF(5)","CF(5)")
+@test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
+@test mytest("Nf.jl","galois(K)","Group(Gapjm.Nf.NFAut[Aut(CF(5),2₅)])")
+@test mytest("Nf.jl","elements(galois(K))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),2₅)\n Aut(CF(5),1₅)\n Aut(CF(5),-2₅)\n Aut(CF(5),-1₅)")
+@test mytest("Nf.jl","elements(galois(F))","2-element Vector{Gapjm.Nf.NFAut}:\n Aut(NF(5,-1₅),1₅)\n Aut(NF(5,-1₅),2₅)")
+end
 @testset "PermRoot.jl" begin
 @test mytest("PermRoot.jl","W=complex_reflection_group(4)","G₄")
 @test mytest("PermRoot.jl","gens(W)","2-element Vector{Perm{Int16}}:\n (1,3,9)(2,4,7)(5,10,18)(6,11,16)(8,12,19)(13,15,20)(14,17,21)(22,23,24)\n (1,5,13)(2,6,10)(3,7,14)(4,8,15)(9,16,22)(11,12,17)(18,19,23)(20,21,24)")

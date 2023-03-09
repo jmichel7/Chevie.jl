@@ -143,6 +143,13 @@ Mod(a::Integer,n)=Mod_(unsigned(mod(a,n)),unsigned(n))
 
 Mod(a::Integer,n::BigInt)=Mod_(mod(a,n),n)
 
+# can reduce further to modulus dividing a.n
+function Mod(a::Mod,n::Integer)
+# in Fact.jl we use this to go from mod. n to mod. n^2
+# if !iszero(a.n%n) error(n," does not divide ",a.n) end
+  Mod(a.val,n)
+end
+
 Mod(i::Rational{<:Integer},p)=Mod(numerator(i),p)/Mod(denominator(i),p)
 Base.promote(a::Integer,b::Mod)=(Mod(a,b.n),b)
 Base.promote(b::Mod,a::Integer)=(b,Mod(a,b.n))

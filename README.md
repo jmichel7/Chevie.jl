@@ -16,9 +16,9 @@ To install this package, at the Julia command line:
   *  enter package mode with ]
   *  do the command
 ```
-(@v1.7) pkg> add "https://github.com/jmichel7/Gapjm.jl"
+(@v1.8) pkg> add "https://github.com/jmichel7/Gapjm.jl"
 ```
-- exit package mode with backspace and then do
+  * exit package mode with backspace and then do
 ```
 julia> using Gapjm
 ```
@@ -27,6 +27,6 @@ and you are set up.
 To update later to the latest version, do
 
 ```
-(@v1.7) pkg> update Gapjm
+(@v1.8) pkg> update Gapjm
 ```
 This package requires julia 1.6 or later.

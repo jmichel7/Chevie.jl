@@ -15,6 +15,7 @@ pages=[
 "sperm.md",
 "symbols.md",
 "ffe.md",
+"nf.md",
 "presentations.md"],
 "Reflection groups"=>[
 "permroot.md",

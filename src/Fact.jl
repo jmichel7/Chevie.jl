@@ -1,3 +1,6 @@
+"""
+Factoring polynomials over the rationals
+"""
 module Fact
 import Primes: Primes, nextprime, factor
 using LinearAlgebra:exactdiv
