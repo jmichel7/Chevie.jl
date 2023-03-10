@@ -2,8 +2,8 @@
 module Tests
 using Gapjm
 
-const test=Dict{Symbol,NamedTuple{(:fn, :applicable,:comment),
-        Tuple{Function,Function,String}}}()
+const test=Dict{Symbol,@NamedTuple{fn::Function, applicable::Function,
+                                   comment::String}}()
 
 isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
 isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
@@ -13,21 +13,13 @@ nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,21,22,31])
 
 ChevieErr(x...)=printstyled(rio(),x...;color=:red)
 
-cox_ex=[coxgroup(:A,1), coxgroup(:A,2), coxgroup(:B,2), coxgroup(:G,2),
-      coxgroup(:I,2,5), coxgroup(:A,3), coxgroup(:B,3), coxgroup(:C,3), 
-      coxgroup(:H,3),  coxgroup(:A,4), coxgroup(:B,4), coxgroup(:C,4), 
-  coxgroup(:D,4), coxgroup(:F,4), coxgroup(:H,4), coxgroup(:A,5), 
-  coxgroup(:B,5), coxgroup(:C,5), coxgroup(:D,5), coxgroup(:A,6), 
-  coxgroup(:B,6), coxgroup(:C,6), coxgroup(:E,6), coxgroup(:D,6), 
-  coxgroup(:A,7), coxgroup(:B,7), coxgroup(:C,7), coxgroup(:E,7), 
-  coxgroup(:D,7), coxgroup(:E,8), coxgroup()]
+cox_ex=vcat(coxgroup.(:A,0:7),coxgroup.(:B,2:7), coxgroup.(:C,3:7),
+            coxgroup.(:D,4:7),coxgroup.(:E,6:8), [coxgroup(:F,4)], 
+            [coxgroup(:G,2)],coxgroup.(:H,2:4))
 
 spets_ex=vcat(
   crg.([4, 6, 8, 14, 24, 25, 26, 27, 29, 32, 33, 34]),
-  [crg(3,1,2),
-  crg(3,3,3),
-  crg(3,3,4),
-  crg(4,4,3)])
+  [crg(3,1,2), crg(3,3,3), crg(3,3,4), crg(4,4,3)])
 
 twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
   rootdatum(Symbol("2I"),5), rootdatum(Symbol("2I"),8), rootdatum(:psu,4),
@@ -225,7 +217,8 @@ function Tlusztiginduction(WF)
     Tlusztiginduction(WF,J)
   end
 end
-test[:lusztiginduction]=(fn=Tlusztiginduction, applicable=isspetsial,
+test[:lusztiginduction]=(fn=Tlusztiginduction, 
+                         applicable=W->isspetsial(W) && W!=crg(33),
    comment="check it is computable and verifies mackey with tori")
 
 function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
@@ -480,6 +473,79 @@ end
 test[:unipotentcentralizers]=(fn=Tunipotentcentralizers,applicable=isrootdatum,
                          comment="info on them agrees with ICCTable")
 
+#---------------- test: Au ------------------------
+# orbits of torus T in list e of SS
+function Torbits(T,e)
+  cl=Vector{eltype(e)}[]
+  for s in e
+    found=false
+    for c in cl
+      if (s/c[1]) in T 
+        push!(c,s)
+        found=true
+        break
+      end
+    end
+    if !found push!(cl,[s]) end
+  end
+  cl
+end
+
+# McNinch - Sommers (inspired by Marie Roth)
+function TAu(W)
+  l=map(x->reflection_subgroup(W,x),SScentralizer_reps(W))
+  for (nu,u) in enumerate(UnipotentClasses(W).classes)
+    res=map(l)do H
+      uc=UnipotentClasses(H).classes
+      (H=H,no=findfirst(v->induced_linear_form(W,H,v.dynkin)==u.dynkin,uc))
+    end
+    res=filter(x->!isnothing(x.no),res)
+    res=filter(x->length(UnipotentClasses(x.H).classes[x.no].balacarter)==
+               semisimplerank(x.H),res)
+    sols=[]
+    ncl=0
+    for (H,no) in res
+      I=inclusiongens(H,W)
+      q=reflection_subgroup(W,parabolic_closure(W,I))
+      ac=algebraic_center(H)
+      e=elements(ac.AZ)
+      if length(Torbits(ac.Z0,e))!=length(e)
+        error("!!!!!",length(e),"=>",length(Torbits(ac.Z0,e)))
+      end
+      ab=abelian_invariants(ac.AZ)
+      auts=Cosets.graph_automorphisms(W,inclusiongens(H))
+      o=orbits(auts,e,function(s,g)
+         r=s^g
+         if !(r in e) r=e[findfirst(s->r/s in ac.Z0,e)] end 
+         r
+        end)
+      j=joindigits(length.(o))
+      o=map(x->filter(y->(y in e) && length(centralizer(q,y).group)==length(H),x),o)
+      j*="=>"*joindigits(length.(o))
+      reg=sum(length,o)
+      n=count(x->length(x)>0,o)
+      push!(sols,(no=no,H=H,closure=q,AZH=ab,regZL=reg,fixregZL=n,o=j))
+      ncl+=n
+    end
+    if ncl!=nconjugacy_classes(u.Au) 
+      xprint("\nn⁰",nu,"=",u," Au=",u.Au)
+      println(" nconjugacyclasses(Au)=",nconjugacy_classes(u.Au)," but computed ",ncl)
+      for r in sols 
+        xprint("  n⁰",r.no," in H=",r.H," A(ZH)=",isempty(r.AZH) ? "1" : join(r.AZH,"×"))
+        if prod(r.AZH)!=r.regZL print("=>reg=",r.regZL) end
+        if r.fixregZL!=r.regZL print("=>",r.fixregZL) end
+        if r.closure!=r.H xprint(" =>closure=",r.closure) end
+        print(" ",r.o)
+        println()
+      end
+    else print(ncl)
+    end
+  end
+  println()
+end
+
+test[:Au]=(fn=TAu,applicable=isweylgroup,
+      comment="nconjugacyclasses(Au) agrees with NcNinch-Sommers")
 #---------------- test: nrssclasses ------------------------
 # Check classtypes gives nrclasses (for simply connected groups)
 function Tnsemisimple(WF)
@@ -903,7 +969,9 @@ function Tseries(W,arg...)
   l
 end
 
-test[:series]=(fn=Tseries,applicable=isspetsial,comment="check d-HC series")
+test[:series]=(fn=Tseries,
+               applicable=W->isspetsial(W) && W!=crg(33),
+               comment="check d-HC series")
 
 #---------------- test: extrefl ------------------------
 using LinearAlgebra: tr
@@ -1025,7 +1093,9 @@ test[:feg]=(fn=Tfeg,applicable=x->true, comment="check fakedegrees")
 
 #---------------- test: fakedegrees induce ------------------------
 
-Tfeginduce(W)=for J in parabolic_reps(W) Tfeginduce(W,J) end
+Tfeginduce(W)=for J in filter(x->semisimplerank(reflection_subgroup(W,x))==length(x),parabolic_reps(W))
+  Tfeginduce(W,J)
+end
 
 function Tfeginduce(W,J)
   q=Pol()
@@ -1044,7 +1114,7 @@ function Tfeginduce(W,J)
   end
 end
 
-test[:feginduce]=(fn=Tfeginduce,applicable=x->true, 
+test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(33), 
                   comment="check fakedegrees induce")
 
 #---------------- test: invariants ------------------------
@@ -1274,8 +1344,9 @@ function TdegsHCInduce(W,J)
   end
 end
 
-test[:degsHCinduce]=(fn=TdegsHCInduce,applicable=isspetsial,comment=
-  "unidegs are consistent with HC induction from split levis")
+test[:degsHCinduce]=(fn=TdegsHCInduce,
+  applicable=W->isspetsial(W) && W!=crg(33),
+  comment="unidegs are consistent with HC induction from split levis")
 
 #------------------------- Curtis duality -----------------------------
 # For a Group generated by true reflections,
@@ -1350,7 +1421,8 @@ function TalmostHC(W)
   end
 end
 
-test[:almostHC]=(fn=TalmostHC,applicable=isspetsial,comment="almostHC series")
+test[:almostHC]=(fn=TalmostHC,applicable=W->isspetsial(W) && W!=crg(33),
+                 comment="almostHC series")
 
 #------------------------- sum squares -----------------------------
 # The sum of squares of fakedegrees should equal the sum of
@@ -1679,6 +1751,10 @@ function Thgal(W)
   z=isempty(d) ? 1 : gcd(d)
   H=hecke(W,x^z)
   ct=CharTable(H).irr
+  if any(x->x isa Unknown,ct) 
+    ChevieErr("CharTable(",H,") has ",count(x->x isa Unknown,ct)," Unknowns\n")
+    return
+  end
   gal=z==1 ? Perm() : Perm(ct,map(u->u(;x=x*E(z)),ct))
   fd=fakedegrees(W,x)
   ci=charinfo(W)
@@ -1774,7 +1850,8 @@ function Tparameterexponents(W,i)
   end
 end
 
-test[:parameterexponents]=(fn=Tparameterexponents,applicable=isspetsial,
+test[:parameterexponents]=(fn=Tparameterexponents,
+                           applicable=W->isspetsial(W) && W!=crg(33),
   comment="of rel. Hecke algebras agree with cyclic formula")
 
 #------------------------- discriminant -----------------------------

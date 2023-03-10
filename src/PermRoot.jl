@@ -495,6 +495,7 @@ the indices of the roots of `W` in the roots of `parent(W)`.
 same as `inclusion(W)[i]` or `inclusion(W)[v]` (but more efficient).
 """
 inclusion(L,W,i)=restriction(W,inclusion(L,i))
+inclusion(L,W)=restriction(W,inclusion(L))
 inclusiongens(L,W)=restriction(W,inclusiongens(L))
 """
 `number_of_reflections(W::ComplexReflectionGroup)` or `nref(W)`
@@ -1504,11 +1505,11 @@ true
 ```
 """
 function isparabolic(W,H)
-  setr=s->Set(refls(W,s))
   if iszero(ngens(H)) return true end
   v=rowspace(simpleroots(H))
   gens=filter(i->in_rowspace(roots(W,i),v),eachindex(roots(W)))
-  setr(gens)==setr(inclusion(H))
+  setr=s->Set(refls(W,s))
+  setr(gens)==setr(inclusion(H,W))
 end
 
 isparabolic(H)=isparabolic(parent(H),H)
@@ -1641,10 +1642,12 @@ simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens
 `corresponding to gens(W)`) as a matrix (each coroot is a row)
 """
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(W.coroots[eachindex(gens(W))])
-@inline inclusion(W::PRG,i=eachindex(W.roots))=i
-@inline restriction(W::PRG,i=eachindex(W.roots))=i
-@inline Base.parent(W::PRG)=W
-@inline action(W::PRG,i,p)=i^p
+inclusion(W::PRG,i::Integer)=i
+inclusion(W::PRG,i::AbstractVector)=i
+inclusion(W::PRG)=inclusion(W,eachindex(W.roots))
+restriction(W::PRG,i=eachindex(W.roots))=i
+Base.parent(W::PRG)=W
+action(W::PRG,i,p)=i^p
 
 "`coroots(W,i)` same as but better than `coroots(W)[i]`"
 function coroots(W::PRG,i::Integer)
@@ -1694,7 +1697,8 @@ reflrep(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
 end
 
 inclusion(W::PRSG)=W.inclusion
-inclusion(W::PRSG,i)=W.inclusion[i]
+inclusion(W::PRSG,i::Integer)=W.inclusion[i]
+inclusion(W::PRSG,i::AbstractVector)=W.inclusion[i]
 """
 `restriction(W::PermRootGroup)`
 

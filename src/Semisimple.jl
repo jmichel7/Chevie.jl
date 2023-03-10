@@ -334,9 +334,10 @@ end
 The  function  returns  the  subtorus  𝐒  of  the  maximal torus `𝐓` of the
 reductive  group represented by the Weyl group  `W` such that `Y(𝐒)` is the
 (pure)  sublattice of  `Y(𝐓)` generated  by the  (integral) vectors  `Y`. A
-basis  of `Y(𝐒)`  adapted to  `Y(𝐓)` is  computed and  stored in  the field
-`S.gens` of the returned SubTorus struct. Here, adapted means that there is
-a   set  of   integral  vectors,   stored  in   `S.complement`,  such  that
+basis  of `Y(𝐒)` in  Hermite normal form  (for easy memebership testing) is
+computed  and stored in the field `S.gens` of the returned SubTorus struct.
+A  basis of `Y(𝐓)` adapted to `Y(𝐒)` is  also computed. This means a set of
+integral   vectors,  stored  in  `S.complement`,   is  computed  such  that
 `M=vcat(S.gens,S.complement)`   is   a   basis   of   `Y(𝐓)`  (equivalently
 `M∈GL(Z^{rank(W)})`.  An  error  is  raised  if  `Y` does not define a pure
 sublattice.
@@ -359,26 +360,25 @@ Stacktrace:
 function SubTorus(W,V::Matrix{<:Integer}=reflrep(W,one(W)))
   C=complementInt(V)
   if any(!=(1),C.moduli) error("not a pure sublattice") end
-  SubTorus(C.sub,C.complement,W)
+  SubTorus(baseInt(C.sub),C.complement,W)
 end
 
 Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
 
 Gapjm.rank(T::SubTorus)=size(T.gens,1)
 
-function Base.:in(s::SemisimpleElement{Root1},T::SubTorus)
+function Base.in(s::SemisimpleElement{Root1},T::SubTorus)
   n=order(s)
-  s=map(x->Int(n*x.r),s.v)
-  V=mod.(T.gens,n)
+  s=map(x->numerator(n*x.r),s.v)
   i=1
-  for v in filter(!iszero,collect(eachrow(V)))
+  for v in eachrow(mod.(T.gens,n))
     while v[i]==0
       if s[i]!=0 return false
       else i+=1
       end
     end
     r=gcdx(n,v[i])
-    v=mod.(r[3].*v,n)
+    v=mod.(last(r).*v,n)
     if mod(s[i],v[i])!=0 return false
     else s-=div(s[i],v[i]).*v
       s=mod.(s,n)
