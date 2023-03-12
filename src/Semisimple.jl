@@ -368,23 +368,8 @@ Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
 Gapjm.rank(T::SubTorus)=size(T.gens,1)
 
 function Base.in(s::SemisimpleElement{Root1},T::SubTorus)
-  n=order(s)
-  s=map(x->numerator(n*x.r),s.v)
-  i=1
-  for v in eachrow(mod.(T.gens,n))
-    while v[i]==0
-      if s[i]!=0 return false
-      else i+=1
-      end
-    end
-    r=gcdx(n,v[i])
-    v=mod.(last(r).*v,n)
-    if mod(s[i],v[i])!=0 return false
-    else s-=div(s[i],v[i]).*v
-      s=mod.(s,n)
-    end
-  end
-  iszero(s)
+  x=solutionmat(vcat(T.gens,T.complement),map(x->x.r,s.v))
+  all(isinteger,x[size(T.gens,1)+1:end])
 end
 
 """

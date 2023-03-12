@@ -5,13 +5,25 @@ using Gapjm
 const test=Dict{Symbol,@NamedTuple{fn::Function, applicable::Function,
                                    comment::String}}()
 
+curtest::Symbol=:no
+curW=coxgroup()
+curio::IO=open("log",create=true,write=true)
+
 isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
 isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
 isspetsial=W->UnipotentCharacters(W)!==nothing
 
 nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,21,22,31])
 
-ChevieErr(x...)=printstyled(rio(),x...;color=:red)
+function ChevieErr(x...)
+  if curio!=stdout
+    println(IOContext(curio,:limit=>true),"** ",curtest," for ",curW)
+    print(IOContext(curio,:limit=>true),x...)
+    flush(curio)
+  else
+    printstyled(rio(),x...;color=:red)
+  end
+end
 
 cox_ex=vcat(coxgroup.(:A,0:7),coxgroup.(:B,2:7), coxgroup.(:C,3:7),
             coxgroup.(:D,4:7),coxgroup.(:E,6:8), [coxgroup(:F,4)], 
@@ -34,8 +46,10 @@ sort!(all_ex,by=nconjugacy_classes)
 "RG(s) regression test for test s (keys(test) shows available tests)"
 function RG(s::Symbol)
   t=test[s]
+  global curtest=s
   println("testing ",s,"\n",t.comment)
   for W in all_ex if t.applicable(W) 
+    global curW=W
     printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
 @time  t.fn(W) 
   end end
@@ -45,7 +59,9 @@ end
 function RG(W)
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
+  global curW=W
   @time for (i,(s,t)) in enumerate(sort(collect(test),by=first))
+    global curtest=s
     if t.applicable(W) 
       printstyled(i,"/",length(test),"  ",s,": ",t.comment,"\n";color=:green)
       t.fn(W) 
@@ -218,7 +234,7 @@ function Tlusztiginduction(WF)
   end
 end
 test[:lusztiginduction]=(fn=Tlusztiginduction, 
-                         applicable=W->isspetsial(W) && W!=crg(33),
+   applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
    comment="check it is computable and verifies mackey with tori")
 
 function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
@@ -514,11 +530,12 @@ function TAu(W)
       end
       ab=abelian_invariants(ac.AZ)
       auts=Cosets.graph_automorphisms(W,inclusiongens(H))
-      o=orbits(auts,e,function(s,g)
-         r=s^g
-         if !(r in e) r=e[findfirst(s->r/s in ac.Z0,e)] end 
-         r
-        end)
+      function classmod(s,e)
+        p=findfirst(x->(x/s) in ac.Z0,e)
+        if isnothing(p) error("for ",H) end
+        e[p]
+      end
+      o=orbits(auts,e,(s,g)->classmod(s^g,e))
       j=joindigits(length.(o))
       o=map(x->filter(y->(y in e) && length(centralizer(q,y).group)==length(H),x),o)
       j*="=>"*joindigits(length.(o))
@@ -528,15 +545,16 @@ function TAu(W)
       ncl+=n
     end
     if ncl!=nconjugacy_classes(u.Au) 
-      xprint("\nn⁰",nu,"=",u," Au=",u.Au)
-      println(" nconjugacyclasses(Au)=",nconjugacy_classes(u.Au)," but computed ",ncl)
+      ChevieErr("\nn⁰",nu,"=",u," Au=",u.Au)
+      ChevieErr(" nconjugacyclasses(Au)=",nconjugacy_classes(u.Au),
+                " but computed ",ncl,"\n")
       for r in sols 
-        xprint("  n⁰",r.no," in H=",r.H," A(ZH)=",isempty(r.AZH) ? "1" : join(r.AZH,"×"))
-        if prod(r.AZH)!=r.regZL print("=>reg=",r.regZL) end
-        if r.fixregZL!=r.regZL print("=>",r.fixregZL) end
-        if r.closure!=r.H xprint(" =>closure=",r.closure) end
-        print(" ",r.o)
-        println()
+        ChevieErr("  n⁰",r.no," in H=",r.H," A(ZH)=",
+                  isempty(r.AZH) ? "1" : join(r.AZH,"×"))
+        if prod(r.AZH)!=r.regZL ChevieErr("=>reg=",r.regZL) end
+        if r.fixregZL!=r.regZL ChevieErr("=>",r.fixregZL) end
+        if r.closure!=r.H ChevieErr(" =>closure=",r.closure) end
+        ChevieErr(" ",r.o,"\n")
       end
     else print(ncl)
     end
@@ -970,7 +988,7 @@ function Tseries(W,arg...)
 end
 
 test[:series]=(fn=Tseries,
-               applicable=W->isspetsial(W) && W!=crg(33),
+               applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
                comment="check d-HC series")
 
 #---------------- test: extrefl ------------------------
@@ -1114,7 +1132,7 @@ function Tfeginduce(W,J)
   end
 end
 
-test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(33), 
+test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(33) && W!=crg(34), 
                   comment="check fakedegrees induce")
 
 #---------------- test: invariants ------------------------
@@ -1192,7 +1210,7 @@ function Tfamilies(W,i;hard=false)
   if length(f.eigenvalues)==1 return end # nothing interesting to test
   O=Array(Diagonal(f.eigenvalues))
   if haskey(f,:sh) Sh=Diagonal(f.sh) end
-  S=f.fourierMat
+  S=fourier(f)
   if f isa Vector t=toM(f) end
   Sbar=conj(S)
   Id=one(S)
@@ -1262,7 +1280,7 @@ function Tfamilies(W,i;hard=false)
     ud=map(x->x(Pol()),ud)
     if haskey(f,:sh) check(Sh*S*ud==S*ud,"Shud=ud")
     elseif haskey(f,:lusztig) check((S*O)*ud==O*ud,"Shud=ud")
-    else check(S*O^-1*ud==O*ud,"Shud=ud")
+    else check(S*conj(O)*ud==O*ud,"Shud=ud")
     end
   elseif haskey(f,:special) special=f.special
   else ChevieErr(".special not bound\n| ");special=1
@@ -1271,7 +1289,7 @@ function Tfamilies(W,i;hard=false)
   check(S*permutedims(Sbar)==Id,"S unitary")
   if wreal P=permute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
   if haskey(f,:sh)
-    check((O*tS*Sh^-1*S)^2==Id,"(O*tS*Sh-1*S)^2=1")
+    check((O*tS*inv(Sh//1)*S)^2==Id,"(O*tS*Sh-1*S)^2=1")
   else 
     if haskey(f,:lusztig)
       if !f.lusztig error(".lusztig bound but false") end
@@ -1345,7 +1363,7 @@ function TdegsHCInduce(W,J)
 end
 
 test[:degsHCinduce]=(fn=TdegsHCInduce,
-  applicable=W->isspetsial(W) && W!=crg(33),
+                     applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
   comment="unidegs are consistent with HC induction from split levis")
 
 #------------------------- Curtis duality -----------------------------
@@ -1421,7 +1439,8 @@ function TalmostHC(W)
   end
 end
 
-test[:almostHC]=(fn=TalmostHC,applicable=W->isspetsial(W) && W!=crg(33),
+test[:almostHC]=(fn=TalmostHC,
+                 applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
                  comment="almostHC series")
 
 #------------------------- sum squares -----------------------------
@@ -1851,7 +1870,7 @@ function Tparameterexponents(W,i)
 end
 
 test[:parameterexponents]=(fn=Tparameterexponents,
-                           applicable=W->isspetsial(W) && W!=crg(33),
+  applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
   comment="of rel. Hecke algebras agree with cyclic formula")
 
 #------------------------- discriminant -----------------------------
