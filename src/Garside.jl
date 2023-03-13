@@ -362,45 +362,45 @@ CoxGroups.firstleftdescent(M::LocallyGarsideMonoid,elts...)=
   findfirst(i->all(b->isleftdescent(M,b,i),elts),eachindex(M.atoms))
 
 """
-`leftgcd(M::LocallyGarsideMonoid,elts...;complements=false)`
+`leftgcd(M::LocallyGarsideMonoid,simp...;complements=false)`
 
-`elts`  should be simples of `M`. The  function returns the left gcd `d` of
-the  `elts`; if `complements=true`, followed by  a tuple of the complements
-`d^-1*elts[1],…`
+`simp`  should be simples of `M`. The  function returns the left gcd `d` of
+the  `simp`; if `complements=true`, followed by  a tuple of the complements
+`inv(d).*simp`
 """
-function leftgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N};
+function leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};
       complements=false) where {T,N}
   x=copy(one(M)) # copy because of the mul! later
   while true
-    i=firstleftdescent(M,elts...)
-    if isnothing(i) return complements ? (x,elts) : x end
+    i=firstleftdescent(M,simp...)
+    if isnothing(i) return complements ? (x,simp) : x end
     a=M.atoms[i]
     x=mul!(M,x,a)
-    elts=map(y->\(M,a,y),elts)
+    simp=map(y->\(M,a,y),simp)
   end
 end
 
 """
-`rightgcd(M::LocallyGarsideMonoid,elts...)`
+`rightgcd(M::LocallyGarsideMonoid,simp...;complements=false)`
 
-`elts`  should be simples of `M`. The function returns the right gcd `d` of
-the  `elts`; if `complements=true`, followed by  a tuple of the complements
-`elts[1]*d^-1,…`
+`simp`  should be simples of `M`. The function returns the right gcd `d` of
+the  `simp`; if `complements=true`, followed by  a tuple of the complements
+`simp.*inv(d)`
 """
-function rightgcd(M::LocallyGarsideMonoid{T},elts::Vararg{T,N};complements=false)where {T,N}
-  x=one(M)
+function rightgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
+  d=one(M)
   found=true
   while found
     found=false
     for (i,a) in pairs(M.atoms)
-      if all(b->isrightdescent(M,b,i),elts)
+      if all(b->isrightdescent(M,b,i),simp)
         found=true
-        x=*(M,a,x)
-        elts=map(x->/(M,x,a),elts)
+        d=*(M,a,d)
+        simp=map(x->/(M,x,a),simp)
       end
     end
   end
-  complements ? (x,elts) : x
+  complements ? (d,simp) : d
 end
 
 """
@@ -428,27 +428,27 @@ function α2(M::GarsideMonoid,x,v)
 end
 
 """
-`rightlcm(M::GarsideMonoid,elts...;complements=false)`
+`rightlcm(M::GarsideMonoid,simp...;complements=false)`
 
-`elts`  should be simples of `M`. The function returns the right lcm `m` of
-the  `elts`; if `complements=true`, followed by  a tuple of the complements
-`elts[1]^-1*m,…`
+`simp`  should be simples of `M`. The function returns the right lcm `m` of
+the  `simp`; if `complements=true`, followed by  a tuple of the complements
+`inv(simp).*m`
 """
-function rightlcm(M::GarsideMonoid{T},elts::Vararg{T,N};complements=false)where {T,N}
-  x,c=rightgcd(M,rightcomplδ.(Ref(M),elts)...;complements=true)
-  complements ? (*(M,elts[1],c[1]),c) : *(M,elts[1],c[1])
+function rightlcm(M::GarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
+  x,c=rightgcd(M,rightcomplδ.(Ref(M),simp)...;complements=true)
+  complements ? (*(M,simp[1],c[1]),c) : *(M,simp[1],c[1])
 end
 
 """
-`leftlcm(M::GarsideMonoid,elts...;complements=false)`
+`leftlcm(M::GarsideMonoid,simp...;complements=false)`
 
-`elts`  should be simples of `M`. The  function returns the left lcm `m` of
-the  `elts`; if `complements=true`, followed by  a tuple of the complements
-`m/elts[1],…`
+`simp`  should be simples of `M`. The  function returns the left lcm `m` of
+the  `simp`; if `complements=true`, followed by  a tuple of the complements
+`m./simp`
 """
-function leftlcm(M::GarsideMonoid{T},elts::Vararg{T,N};complements=false)where {T,N}
-  x,c=leftgcd(M,leftcomplδ.(Ref(M),elts)...;complements=true)
-  complements ? (*(M,c[1],elts[1]),c) : *(M,c[1],elts[1])
+function leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
+  x,c=leftgcd(M,leftcomplδ.(Ref(M),simp)...;complements=true)
+  complements ? (*(M,c[1],simp[1]),c) : *(M,c[1],simp[1])
 end
 
 function (M::LocallyGarsideMonoid{T})(l::Integer...)where T
@@ -684,9 +684,12 @@ CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
 PermGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
-function rightgcd(M::BraidMonoid{T,TW},elts::T...;complements=false)where {T,TW}
-  g,c=leftgcd(M,inv.(elts)...;complements=true)
-  complements ? (inv(g),inv.(c)) : inv(g)
+function rightgcd(M::BraidMonoid{T},simp::T...;complements=false)where T
+  if complements
+    g,c=leftgcd(M,inv.(simp)...;complements=true)
+    inv(g),inv.(c)
+  else inv(leftgcd(M,inv.(simp)...))
+  end
 end
 
 mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
@@ -713,9 +716,12 @@ isrightascent(M::GenArtinMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
 
 PermGroups.word(M::GenArtinMonoid,w)=word(M.W,w)
 
-function rightgcd(M::GenArtinMonoid{T,TW},elts::T...)where {T,TW}
-  g,c=leftgcd(M,inv.(elts)...;complements=true)
-  inv(g),inv.(c)
+function rightgcd(M::GenArtinMonoid{T},simp::T...;complements=false)where T
+  if complements
+    g,c=leftgcd(M,inv.(simp)...;complements=true)
+    inv(g),inv.(c)
+  else inv(leftgcd(M,inv.(simp)...))
+  end
 end
 
 #---------------------------------------------------------------------
