@@ -331,9 +331,10 @@ module Garside
 using ..Gapjm
 export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
-endomorphisms, image, leftgcd, rightgcd, leftlcm, rightlcm, 
-conjugating_elt, GarsideElt, Brieskorn_normal_form, GarsideMonoid, 
-LocallyGarsideMonoid, hurwitz, rightascents
+endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc, 
+leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt, 
+Brieskorn_normal_form, GarsideMonoid, LocallyGarsideMonoid, hurwitz,
+rightascents
 
 """
 `LocallyGarsideMonoid{T}`  is the abstract type of locally Garside monoids,
@@ -343,9 +344,9 @@ simples, to implement the functions
   - `isleftdescent(M,a,i::Int)`  whether `M.atoms[i]≼ a`
   - `isrightdescent(M,a,i::Int)` whether `a≽ M.atoms[i]`
   - `isrightascent(M,a,i::Int)`  whether `a*M.atoms[i]` is simple
-  - `*(M,a,b)`    when `a*b` is simple
-  - `\\(M,a,b)`   when `a≼ b`
-  - `/(M,a,b)`    when `a≽ b`
+  - `*(M,a,b)`  when `a*b` is simple returns the simple `a*b`
+  - `\\(M,a,b)` when `a≼ b` returns `inv(a)*b`
+  - `/(M,a,b)`  when `a≽ b` returns `a/b`
 """
 abstract type LocallyGarsideMonoid{T} end # T=type of simples
 """
@@ -361,19 +362,12 @@ abstract type GarsideMonoid{T}<:LocallyGarsideMonoid{T} end
 CoxGroups.firstleftdescent(M::LocallyGarsideMonoid,elts...)=
   findfirst(i->all(b->isleftdescent(M,b,i),elts),eachindex(M.atoms))
 
-"""
-`leftgcd(M::LocallyGarsideMonoid,simp...;complements=false)`
-
-`simp`  should be simples of `M`. The  function returns the left gcd `d` of
-the  `simp`; if `complements=true`, followed by  a tuple of the complements
-`inv(d).*simp`
-"""
-function leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};
-      complements=false) where {T,N}
+function leftgcdc(M::LocallyGarsideMonoid{T},simp::Vararg{T,N})where {T,N}
+  if N==0 error("leftgcd needs at least one simple as argument") end
   x=copy(one(M)) # copy because of the mul! later
   while true
     i=firstleftdescent(M,simp...)
-    if isnothing(i) return complements ? (x,simp) : x end
+    if isnothing(i) return (x,simp) end
     a=M.atoms[i]
     x=mul!(M,x,a)
     simp=map(y->\(M,a,y),simp)
@@ -381,13 +375,18 @@ function leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};
 end
 
 """
-`rightgcd(M::LocallyGarsideMonoid,simp...;complements=false)`
+`leftgcd(M::LocallyGarsideMonoid,simp...)`
+`leftgcdc(M::LocallyGarsideMonoid,simp...)`
 
-`simp`  should be simples of `M`. The function returns the right gcd `d` of
-the  `simp`; if `complements=true`, followed by  a tuple of the complements
-`simp.*inv(d)`
+`simp`  should be simples of `M`. The  function returns the left gcd `d` of
+the `simp`.
+
+`leftgcdc` returns `d` followed by the tuple of complements `inv(d).*simp`
 """
-function rightgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
+leftgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=first(leftgcdc(simp...))
+
+function rightgcdc(M::LocallyGarsideMonoid{T},simp::Vararg{T,N})where {T,N}
+  if N==0 error("rightgcd needs at least one simple as argument") end
   d=one(M)
   found=true
   while found
@@ -400,8 +399,20 @@ function rightgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N};complements=false
       end
     end
   end
-  complements ? (d,simp) : d
+  (d,simp)
 end
+
+"""
+`rightgcd(M::LocallyGarsideMonoid,simp...)`
+`rightgcdc(M::LocallyGarsideMonoid,simp...)`
+
+`simp`  should be simples of `M`. The function returns the right gcd `d` of
+the `simp`.
+
+`rightgcdc` returns the `d` followed by the tuple of complements `simp./d`
+"""
+rightgcd(M::LocallyGarsideMonoid{T},simp::Vararg{T,N}) where{T,N}=
+  first(rightgcdc(M,simp...))
 
 """
 `α2(M::LocallyGarsideMonoid,x,v)` returns α(xv),ω(xv) for the simples x and v
@@ -421,37 +432,47 @@ function α2(M::LocallyGarsideMonoid,x,v)
   (x,v)
 end
 
-# only 20% faster in julia
+# julia is only 20% faster than Gap3
 function α2(M::GarsideMonoid,x,v)
-  g,rest=leftgcd(M,rightcomplδ(M,x),v;complements=true)
-  (*(M,x,g),rest[2])
+  g,(_,cv)=leftgcdc(M,rightcomplδ(M,x),v)
+  (*(M,x,g),cv)
+end
+
+function rightlcmc(M::GarsideMonoid{T},simp::Vararg{T,N})where {T,N}
+  _,c=rightgcdc(M,rightcomplδ.(Ref(M),simp)...)
+  (*(M,simp[1],c[1]),c)
 end
 
 """
-`rightlcm(M::GarsideMonoid,simp...;complements=false)`
+`rightlcm(M::GarsideMonoid,simp...)`
+`rightlcmc(M::GarsideMonoid,simp...)`
 
 `simp`  should be simples of `M`. The function returns the right lcm `m` of
-the  `simp`; if `complements=true`, followed by  a tuple of the complements
-`inv(simp).*m`
+the `simp`.
+
+`rightlcmc` returns `m` followed by the tuple of complements `simp.\\m`
 """
-function rightlcm(M::GarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
-  x,c=rightgcd(M,rightcomplδ.(Ref(M),simp)...;complements=true)
-  complements ? (*(M,simp[1],c[1]),c) : *(M,simp[1],c[1])
+rightlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
+  first(rightlcmc(M,simp...))
+
+function leftlcmc(M::GarsideMonoid{T},simp::Vararg{T,N})where {T,N}
+  _,c=leftgcdc(M,leftcomplδ.(Ref(M),simp)...)
+  (*(M,c[1],simp[1]),c)
 end
 
 """
-`leftlcm(M::GarsideMonoid,simp...;complements=false)`
+`leftlcm(M::GarsideMonoid,simp...)`
+`leftlcmc(M::GarsideMonoid,simp...)`
 
 `simp`  should be simples of `M`. The  function returns the left lcm `m` of
-the  `simp`; if `complements=true`, followed by  a tuple of the complements
-`m./simp`
-"""
-function leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N};complements=false)where {T,N}
-  x,c=leftgcd(M,leftcomplδ.(Ref(M),simp)...;complements=true)
-  complements ? (*(M,c[1],simp[1]),c) : *(M,c[1],simp[1])
-end
+the  `simp`.
 
-function (M::LocallyGarsideMonoid{T})(l::Integer...)where T
+`leftlcmc` returns `m` followed by  the tuple of complements `m./simp`
+"""
+leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
+   first(leftlcmc(M,simp...))
+
+function (M::LocallyGarsideMonoid{T})(l::Vararg{I,N})where {T,N,I<:Integer}
   if isempty(l) return GarsideElt(M,T[];check=false) end
   if l[1]>0 res=GarsideElt(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
   else res=inv(M(-l[1]))
@@ -555,6 +576,10 @@ end
 CoxGroups.leftdescents(M::LocallyGarsideMonoid,s)=
      filter(i->isleftdescent(M,s,i),eachindex(M.atoms))
 
+"""
+`rightascents(M,s)` where `s` is a simple return the right ascents of `s`,
+that is the list of `i` such that `s*M.atoms[i]` is still simple.
+"""
 rightascents(M::LocallyGarsideMonoid,s)=
      filter(i->isrightascent(M,s,i),eachindex(M.atoms))
 
@@ -574,11 +599,14 @@ function δad(M::GarsideMonoid,x,i::Integer)
 end
 
 """
-`elements(M::LocallyGarsideMonoid,l)`
+`elements(M::LocallyGarsideMonoid,l::Integer)`
+`elements(M::LocallyGarsideMonoid,v::AbstractVector{<:Integer})`
     
 `M`  should have  an additive  length function  (that is,  a product of `l`
 atoms  is not equal to any product of less than `l` atoms). `elements(M,l)`
 returns the list of elements of length `l` in `M`.
+
+In the second form `elements` returns all elements of length `i` for `i∈ v`.
 
 ```julia-repl
 julia> M=BraidMonoid(coxgroup(:A,2))
@@ -600,17 +628,18 @@ julia> elements(M,4)
  Δ.2
 ```
 """
-function PermGroups.elements(M::LocallyGarsideMonoid,l)
-  if !haskey(M,:elements) M.elements=Dict(0=>[M()],1=>M.(eachindex(M.atoms))) end
-  RA(w)=filter(i->isrightascent(M,w,i),eachindex(M.atoms))
-  if !haskey(M.elements,l)
-    res=empty(M.elements[1])
+function PermGroups.elements(M::LocallyGarsideMonoid,l::Integer)
+  d=get!(M.prop,:elements)do
+    Dict(0=>[M()],1=>M.(eachindex(M.atoms)))
+  end
+  get!(d,l)do
+    res=empty(d[1])
     for b in elements(M,l-1)
       lb=length(b.elm)
       if iszero(lb) r=Int[]
       else
-        r=RA(b.elm[lb])
-        if lb==1 rr=Int[] else rr=RA(b.elm[lb-1]) end
+        r=rightascents(M,b.elm[lb])
+        if lb==1 rr=Int[] else rr=rightascents(M,b.elm[lb-1]) end
         for s in r
           w=*(M,b.elm[lb],M.atoms[s])
           if !any(i->isleftdescent(M,w,i),rr)
@@ -624,10 +653,12 @@ function PermGroups.elements(M::LocallyGarsideMonoid,l)
         push!(res,clone(b,vcat(b.elm,[M.atoms[i]])))
       end
     end
-    M.elements[l]=collect(Set(res))
+    collect(Set(res))
   end
-  M.elements[l]
 end
+
+PermGroups.elements(M::LocallyGarsideMonoid,l::AbstractVector{<:Integer})=
+  vcat(elements.(Ref(M),l)...)
 
 #--------------------Interval: a trait-----------------------------------
 abstract type IntervalStyle end
@@ -656,7 +687,6 @@ Base.reverse(::Interval,M,x)=inv(x)
   δ::T
   orderδ::Int
   stringδ::String
-  one::T
   atoms::Vector{T}
   W::TW
 end
@@ -667,11 +697,10 @@ IntervalStyle(M::BraidMonoid)=Interval()
 
 The ordinary monoid of the Artin group associated to `W`
 """
-BraidMonoid(W::FiniteCoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),
+BraidMonoid(W::FiniteCoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",
                                                gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
-Base.one(M::BraidMonoid)=M.one
 
 """
 `isleftdescent(M,w,i)`
@@ -684,29 +713,27 @@ CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
 PermGroups.word(M::BraidMonoid,w)=word(M.W,w)
 
-function rightgcd(M::BraidMonoid{T},simp::T...;complements=false)where T
-  if complements
-    g,c=leftgcd(M,inv.(simp)...;complements=true)
-    inv(g),inv.(c)
-  else inv(leftgcd(M,inv.(simp)...))
-  end
+function rightgcdc(M::BraidMonoid{T},simp::Vararg{T,N})where{T,N}
+  g,c=leftgcdc(M,inv.(simp)...)
+  inv(g),inv.(c)
 end
+
+rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
+  inv(leftgcd(M,inv.(simp)...))
 
 mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
 #-----------------------GenArtinMonoid-----------------------------------
 # braid monoid for e.g. infinite Coxeter groups
 @GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
-  one::T
   atoms::Vector{T}
   W::TW
 end
 
 # The repetitions below reflect the poor type system of Julia
 IntervalStyle(M::GenArtinMonoid)=Interval()
-BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
+BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::GenArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
-Base.one(M::GenArtinMonoid)=M.one
 
 CoxGroups.isleftdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::GenArtinMonoid,w)=firstleftdescent(M.W,w)
@@ -716,13 +743,13 @@ isrightascent(M::GenArtinMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
 
 PermGroups.word(M::GenArtinMonoid,w)=word(M.W,w)
 
-function rightgcd(M::GenArtinMonoid{T},simp::T...;complements=false)where T
-  if complements
-    g,c=leftgcd(M,inv.(simp)...;complements=true)
-    inv(g),inv.(c)
-  else inv(leftgcd(M,inv.(simp)...))
-  end
+function rightgcdc(M::GenArtinMonoid{T},simp::Vararg{T,N})where {T,N}
+  g,c=leftgcdc(M,inv.(simp)...)
+  inv(g),inv.(c)
 end
+
+rightgcd(M::GenArtinMonoid{T},simp::Vararg{T,N}) where {T,N}=
+  inv(leftgcd(M,inv.(simp)...))
 
 #---------------------------------------------------------------------
 abstract type LocallyGarsideElt{T,TM<:LocallyGarsideMonoid} end
@@ -732,20 +759,13 @@ struct GarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   elm::Vector{T}
   pd::Int
   # assume elm is a normal form perhaps not reduced if check=true
-  function GarsideElt(M::TM,elm::Vector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
-    if check
-      i=1
-@inbounds while i<=length(elm) && elm[i]==M.δ 
-        i+=1
-        pd+=1
-      end
-      j=length(elm)
-@inbounds while j>0 && elm[j]==one(M)
-        j-=1
-      end
-      if i!=1 || j!=length(elm) return new{T,TM}(M,view(elm,i:j),pd) end
+  function GarsideElt(M::TM,elm::AbstractVector{T},pd=0;check=true) where {T,TM<:GarsideMonoid}
+    if !check return new{T,TM}(M,elm,pd) end
+    i=1; while i<=length(elm) && elm[i]==M.δ i+=1;pd+=1 end
+    j=length(elm); while j>0 && elm[j]==one(M) j-=1 end
+    if i>1 || j<length(elm) new{T,TM}(M,view(elm,i:j),pd)
+    else new{T,TM}(M,elm,pd)
     end
-    new{T,TM}(M,elm,pd)
   end
 end
 
@@ -754,7 +774,7 @@ struct GenGarsideElt{T,TM}<:LocallyGarsideElt{T,TM}
   elm::Vector{T}
 end
 
-function GarsideElt(M::LocallyGarsideMonoid,elm::Vector;check=true)
+function GarsideElt(M::LocallyGarsideMonoid,elm::AbstractVector;check=true)
   if check
     j=length(elm)
 @inbounds while j>0 && elm[j]==one(M)
@@ -766,7 +786,8 @@ function GarsideElt(M::LocallyGarsideMonoid,elm::Vector;check=true)
 end
 
 clone(b::GenGarsideElt,elm;check=true)=GarsideElt(b.M,elm;check)
-clone(b::GarsideElt,elm,pd=b.pd;check=true)=GarsideElt(b.M,elm,pd;check)
+clone(b::GarsideElt{T,TM},elm::AbstractVector{T},pd=b.pd;check=true) where{T,TM}=
+   GarsideElt(b.M,elm,pd;check)
 Base.one(b::LocallyGarsideElt)=clone(b,empty(b.elm),0;check=false)
 Base.isone(b::GarsideElt)=isempty(b.elm) && iszero(b.pd)
 Base.copy(b::GarsideElt)=clone(b,copy(b.elm);check=false)
@@ -929,18 +950,19 @@ function fraction(b::GarsideElt)
   if b.pd>=0 return [one(b),b] end
   ib=inv(b)
   if -b.pd>length(b.elm) return [ib,one(b)] end
-  GarsideElt(M,ib.elm[end+b.pd+1:end];check=false),
+  GarsideElt(M,@view ib.elm[end+b.pd+1:end];check=false),
   GarsideElt(M,b.elm[1-b.pd:end];check=false)
 end;
 
-function Base.getindex(x::GarsideElt,i::Integer)
+function Base.getindex(x::GarsideElt{T},i::Integer)::T where T
   if i<=x.pd return x.pd==0 ? one(x.M) : x.M.δ
   elseif i>x.pd+length(x.elm) return one(x.M)
   else return x.elm[i-x.pd]
   end
 end
 
-Base.getindex(x::GarsideElt,i::AbstractArray)=getindex.(Ref(x),i)
+Base.getindex(x::GarsideElt{T},i::AbstractVector{<:Integer}) where T=
+  map(j->x[j]::T,i)
 
 Base.lastindex(x::GarsideElt)=x.pd+length(x.elm)
 
@@ -1206,29 +1228,11 @@ function Base.reverse(b::LocallyGarsideElt)
   res
 end
 
-"""
-`leftgcd(a₁,…,aₙ;complements=false)` 
-
-`a₁,…,aₙ`  should be  elements of  the same  (locally) Garside  monoid. The
-function returns the left gcd `d` of `a₁,…,aₙ`. If `complements` is true it
-returns `(d,(d⁻¹a₁,…,d⁻¹aₙ))`.
-
-```julia-repl
-julia> W=coxgroup(:A,3)
-A₃
-
-julia> B=BraidMonoid(W)
-BraidMonoid(A₃)
-
-julia> leftgcd(B(2,1,2)^2,B(3,2)^2;complements=true)
-(2, (121.21, 32.2))
-```
-"""
-function leftgcd(elts::LocallyGarsideElt...;complements=false)
+function leftgcdc(elts::Vararg{LocallyGarsideElt,N})where {N}
   if isempty(elts) error("leftgcd needs an argument") end
   if length(elts)==1  
     elt=only(elts)
-    return complements ? (elt,(one(elt),)) : elt 
+    return (elt,(one(elt),))
   end
   M=elts[1].M
   if hasfield(typeof(M),:δ)
@@ -1242,9 +1246,9 @@ function leftgcd(elts::LocallyGarsideElt...;complements=false)
   while true
     ff=map(x->x[1],elts)
     if any(isone,ff) g=one(M)
-    else g,rest=leftgcd(M,ff...;complements=true)
+    else g,rest=leftgcdc(M,ff...)
     end
-    if isone(g) return complements ? (gcd,elts) : gcd
+    if isone(g) return (gcd,elts)
     else gcd*=g
       elts=map((r,e)->r*GarsideElt(M,e.elm[2:end];check=false),rest,elts)
     end
@@ -1252,11 +1256,13 @@ function leftgcd(elts::LocallyGarsideElt...;complements=false)
 end
 
 """
-`rightgcd(a₁,…,aₙ;complements=false)` 
+`leftgcd(a₁,…,aₙ)` 
+`leftgcdc(a₁,…,aₙ)` 
 
 `a₁,…,aₙ`  should be  elements of  the same  (locally) Garside  monoid. The
-function returns the right gcd `d` of `a₁,…,aₙ`. If `complements` is true it
-returns `(d,(a₁/d,…,aₙ/d))`.
+function returns the left gcd `d` of `a₁,…,aₙ`. 
+
+`leftgcdc` returns `(d,(d⁻¹a₁,…,d⁻¹aₙ))`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -1265,65 +1271,92 @@ A₃
 julia> B=BraidMonoid(W)
 BraidMonoid(A₃)
 
-julia> rightgcd(B(2,1,2)^2,B(3,2)^2;complements=true)
+julia> leftgcdc(B(2,1,2)^2,B(3,2)^2)
+(2, (121.21, 32.2))
+```
+"""
+leftgcd(elts::Vararg{LocallyGarsideElt,N}) where N=first(leftgcd(elts...))
+
+function rightgcdc(elts::Vararg{LocallyGarsideElt,N})where N
+  g,c=leftgcdc(map(reverse,elts)...)
+  reverse(g),map(reverse,c)
+end
+
+"""
+`rightgcd(a₁,…,aₙ)` 
+`rightgcdc(a₁,…,aₙ)` 
+
+`a₁,…,aₙ`  should be  elements of  the same  (locally) Garside  monoid. The
+function returns the right gcd `d` of `a₁,…,aₙ`
+
+`rightgcdc` returns `(d,(a₁/d,…,aₙ/d))`.
+
+```julia-repl
+julia> W=coxgroup(:A,3)
+A₃
+
+julia> B=BraidMonoid(W)
+BraidMonoid(A₃)
+
+julia> rightgcdc(B(2,1,2)^2,B(3,2)^2)
 (2.2, (12.21, 23))
 ```
 """
-function rightgcd(elts::LocallyGarsideElt...;complements=false)
-  if complements
-    g,c=leftgcd(map(reverse,elts)...;complements)
-    reverse(g),map(reverse,c)
-  else reverse(leftgcd(map(reverse,elts)...))
-  end
-end
+rightgcd(elts::Vararg{LocallyGarsideElt,N}) where N=
+  reverse(leftgcd(map(reverse,elts)...))
 
-"""
-`leftlcm(a₁,…,aₙ;complements=false)`
-    
-`a₁,…,aₙ`  should  be  elements  of  the  same Garside monoid. The function
-returns  the least common left multiple  `m` of `a₁,…,aₙ`; if `complements`
-is true it returns '(m,(m/a₁,…,m/aₙ))`.
-
-```julia-repl
-julia> B=BraidMonoid(coxgroup(:A,3))
-BraidMonoid(A₃)
-
-julia> leftlcm(B(2,1,2)^2,B(3,2)^2;complements=true)
-(Δ.121, (123, 23.321))
-```
-"""
-function leftlcm(elts::GarsideElt...;complements=false)
+function leftlcmc(elts::Vararg{GarsideElt,N})where N
   if isempty(elts) error("leftlcm needs an argument") end
   if length(elts)==1  
     elt=only(elts)
-    return complements ? (elt,(one(elt),)) : elt 
+    return (elt,(one(elt),))
   end
-  x=leftgcd(inv.(elts)...;complements)
-  complements ? (inv(x[1]),x[2]) : inv(x)
+  x,c=leftgcdc(inv.(elts)...)
+  (inv(x),c)
 end
 
 """
-`rightlcm(a₁,…,aₙ;complements=false)`
+`leftlcm(a₁,…,aₙ)`
+`leftlcmc(a₁,…,aₙ)`
     
 `a₁,…,aₙ`  should  be  elements  of  the  same Garside monoid. The function
-returns  the least common right multiple  `m` of `a₁,…,aₙ`; if `complements`
-is true it returns '(m,(a₁⁻¹*m,…,aₙ⁻¹*m))`.
+returns  the least common left multiple  `m` of `a₁,…,aₙ`.
+
+`leftlcmc` returns '(m,(m/a₁,…,m/aₙ))`.
 
 ```julia-repl
 julia> B=BraidMonoid(coxgroup(:A,3))
 BraidMonoid(A₃)
 
-julia> rightlcm(B(2,1,2)^2,B(3,2)^2;complements=true)
+julia> leftlcmc(B(2,1,2)^2,B(3,2)^2)
+(Δ.121, (123, 23.321))
+```
+"""
+leftlcm(elts::Vararg{GarsideElt,N}) where N=first(leftlcmc(elts...))
+
+function rightlcmc(elts::Vararg{GarsideElt,N}) where N
+  g,c=leftlcmc(map(reverse,elts)...)
+  reverse(g),map(reverse,c)
+end
+
+"""
+`rightlcm(a₁,…,aₙ)`
+`rightlcmc(a₁,…,aₙ)`
+    
+`a₁,…,aₙ`  should  be  elements  of  the  same Garside monoid. The function
+returns  the least common right multiple  `m` of `a₁,…,aₙ`.
+
+`rightlcmc` returns '(m,(a₁⁻¹*m,…,aₙ⁻¹*m))`.
+
+```julia-repl
+julia> B=BraidMonoid(coxgroup(:A,3))
+BraidMonoid(A₃)
+
+julia> rightlcmc(B(2,1,2)^2,B(3,2)^2)
 (Δ², (321.123, 12321.321))
 ```
 """
-function rightlcm(elts::GarsideElt...;complements=false)
-  if complements
-    g,c=leftlcm(map(reverse,elts)...;complements)
-    reverse(g),map(reverse,c)
-  else reverse(leftlcm(map(reverse,elts)...))
-  end
-end
+rightlcm(elts::Vararg{GarsideElt,N}) where N=reverse(leftlcm(map(reverse,elts)...))
 
 function Cosets.Frobenius(x::GarsideElt,phi)
   y=deepcopy(x)
@@ -1368,7 +1401,6 @@ end
   stringδ::String
   δword::Vector{Int}
   atoms::Vector{T}
-  one::T
   W::TW
 end
 
@@ -1403,7 +1435,7 @@ julia> B(-1,-2,-3,1,1)
 function DualBraidMonoid(W::CoxeterGroup;
   c=reduce(vcat,bipartite_decomposition(W)),revMonoid=nothing)
   δ=W(c...)
-  M=DualBraidMonoid(δ,order(δ),"δ",c,refls(W,1:nref(W)),one(W),W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,refls(W,1:nref(W)),W,Dict{Symbol,Any}())
   if revMonoid===nothing 
     M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
   else M.revMonoid=revMonoid
@@ -1420,7 +1452,7 @@ function DualBraidMonoid(W::PermRootGroup;
   δ=W(c...)
   n=reflength(W,δ)
   atoms=filter(r->reflength(W,δ/r)<n,unique(refls(W)))
-  M=DualBraidMonoid(δ,order(δ),"δ",c,atoms,one(W),W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,atoms,W,Dict{Symbol,Any}())
   if revMonoid===nothing
     if all(w->isone(w^2),gens(W))
        M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
@@ -1433,8 +1465,6 @@ end
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,M.atoms[i]\w)<reflength(M.W,w)
 end
-
-Base.one(M::DualBraidMonoid)=M.one
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             M.δword,")")
@@ -1656,8 +1686,8 @@ function minc(a,x,::Val{:inf},F=(x,y=1)->x)
   m=x
   while true
     x=δad(M,m,a.pd)
-    for s in a.elm x=rightlcm(M,x,s;complements=true)[2][2] end
-    m,c=rightlcm(M,x,F(m);complements=true)
+    for s in a.elm x=rightlcmc(M,x,s)[2][2] end
+    m,c=rightlcmc(M,x,F(m))
     m=F(m,-1)
     if c[2]==one(M) break end
   end
@@ -1715,10 +1745,10 @@ function minc(a,x,::Val{:sc},F=(x,y=1)->x)
   x=minc(a,x,Val(:ss),F)
   f=ggF(a,x,F)
   if f!=[one(M)]
-    p=findfirst(s->leftgcd(M,x,s;complements=true)[2][1]==one(M),f)
+    p=findfirst(s->leftgcdc(M,x,s)[2][1]==one(M),f)
     p===nothing ? nothing : f[p]
   else p=preferred_prefix(a,F)
-    if leftgcd(M,x,p;complements=true)[2][1]!=one(M) return nothing end
+    if leftgcdc(M,x,p)[2][1]!=one(M) return nothing end
 #   l:=filter(s->s!=x && M.LeftGcdSimples(x,s)[2]==M.identity,
 #              vcat(LeftDivisorsSimple(M,p)...));
     l=left_divisors(M,\(M,x,p))
@@ -1954,7 +1984,7 @@ function Presentations.Presentation(M::GarsideMonoid)
   rels=AbsWord[]
   for i in eachindex(M.atoms)
     for j in 1:i-1
-      v=leftlcm(M,M.atoms[i],M.atoms[j];complements=true)
+      v=leftlcmc(M,M.atoms[i],M.atoms[j])
       v=map(x->word(M,x),v[2]);
       push!(v[1],i);push!(v[2],j);
       push!(rels,F(vcat(v[1],-reverse(v[2]))...))
