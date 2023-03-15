@@ -7,7 +7,7 @@ const test=Dict{Symbol,@NamedTuple{fn::Function, applicable::Function,
 
 curtest::Symbol=:no
 curW=coxgroup()
-curio::IO=open("log",create=true,write=true)
+curio::IO=stdout
 
 isweylgroup(W)=(W isa FiniteCoxeterGroup) && all(isinteger,cartan(W))
 isrootdatum(W)=isweylgroup(W) || (W isa Spets && isrootdatum(Group(W)))
@@ -17,12 +17,11 @@ nspets=crg.([5,7,9,10,11,12,13,15,16,17,18,19,20,21,22,31])
 
 function ChevieErr(x...)
   if curio!=stdout
-    println(IOContext(curio,:limit=>true),"** ",curtest," for ",curW)
+    print(IOContext(curio,:limit=>true),curW,"[",curtest,"]")
     print(IOContext(curio,:limit=>true),x...)
     flush(curio)
-  else
-    printstyled(rio(),x...;color=:red)
   end
+  printstyled(rio(),x...;color=:red)
 end
 
 cox_ex=vcat(coxgroup.(:A,0:7),coxgroup.(:B,2:7), coxgroup.(:C,3:7),
@@ -44,7 +43,10 @@ all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
 "RG(s) regression test for test s (keys(test) shows available tests)"
-function RG(s::Symbol)
+function RG(s::Symbol;log=false)
+  if log 
+    global curio=open("log",create=true,write=true,append=true)
+  end
   t=test[s]
   global curtest=s
   println("testing ",s,"\n",t.comment)
@@ -53,10 +55,14 @@ function RG(s::Symbol)
     printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
 @time  t.fn(W) 
   end end
+  if log close(curio) end
 end
 
 "RG(W) regression test groupspets W"
-function RG(W)
+function RG(W;log=false)
+  if log 
+    global curio=open("log",create=true,write=true,append=true)
+  end
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
   global curW=W
@@ -67,10 +73,11 @@ function RG(W)
       t.fn(W) 
     end 
   end
+  if log close(curio) end
 end
 
-RG(v::Vector)=for W in v RG(W) end
-RG()=RG(all_ex)
+RG(v::Vector;log=false)=for W in v RG(W;log=log) end
+RG(;log=false)=RG(all_ex;log=log)
 
 # compares lists a and b (whose descriptions are strings na and nb)
 function cmpvec(a,b;na="a",nb="b")
@@ -189,25 +196,25 @@ function Trepresentations(W,l=Int[])
   ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
-    InfoChevie("  #Representation #$i")
+    InfoChevie("# Representation n⁰$i")
     gr=representation(O,i)
     if gr==false println("=false")
     else
       r=gr
-      if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1]) :
-                          size(r.gens[1]),"...") end
-      if isrepresentation(H,r) print(" is ") end
+      if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1],1) :
+                          size(r.gens[1],1),"...") end
+      if !isrepresentation(H,r) ChevieErr(i," is not a representation") end
       if r isa NamedTuple println();continue end # for now... Should be fixed
       pos=findrepresentation(O,gr,true)
       if pos==i println("found")
-      elseif !isnothing(pos) println("character found at ",pos)
-      else println("character does not match")
-	pos=TransposedMat([ct[i],traces_words_mats(gr,cl)])
-	f=List(pos,x->x[1]!=x[2])
-	pos=List(pos,x->List(x,FormatGAP))
-	Print(FormatTable(ListBlist(pos,f),
-	  rec(rowLabels=ListBlist(1:length(pos),f),
-	      columnLabels=["is","should be"])))
+      elseif !isnothing(pos) 
+         ChevieErr("repr. ",i," character found at ",pos,"\n")
+      else ChevieErr("character does not match\n")
+	pos=zip(ct[i],traces_words_mats(gr,cl))
+	f=findall(x->x[1]!=x[2],pos)
+#pos=List(pos,x->List(x,FormatGAP))
+        ChevieErr(sprint(x->showtable(x,row_labels=f,
+           column_labels=["is","should be"]),pos[f];context=:limit=>true))
       end
     end
   end
@@ -221,7 +228,7 @@ test[:representations]=(fn=Trepresentations,
      t=t[1]
      if !haskey(t,:orbit) || order(t.twist)!=2 return true end
      t=t.orbit[1]
-     return !(t.series in [:D,:E])
+     return true
    end,
    comment="check they exist and match characters")
 
@@ -425,7 +432,7 @@ function Tunipotentclasses(W,p=nothing)
   if all(x->x.series in [:E,:F,:G],refltype(W))
     for cl in uc.classes
       j=findfirst(x->x[1]==cl.dynkin,bc)
-      name=isomorphism_type(reflection_subgroup(W,abs.(bc[j][2]));TeX=true)
+      name=isomorphism_type(reflection_subgroup(W,Int.(abs.(bc[j][2])));TeX=true)
       if name=="" name="1" end
       l=count(x->x<0,bc[j][2])
       if l!=0 

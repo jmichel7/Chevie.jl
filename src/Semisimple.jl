@@ -269,8 +269,8 @@ Base.isone(a::SemisimpleElement)=all(isone,a.v)
 Base.cmp(a::SemisimpleElement,b::SemisimpleElement)=cmp(a.v,b.v)
 Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 
-SS(W::FiniteCoxeterGroup,v::AbstractVector{<:Rational{<:Integer}})=
-  SemisimpleElement(W,map(x->Root1(;r=x),v))
+SS(W::FiniteCoxeterGroup,v::AbstractVector{<:Number})=
+SemisimpleElement(W,map(x->Root1(;r=Rational{Int}(x)),v))
 
 SS(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(E(1),rank(W)))
 
@@ -282,7 +282,7 @@ Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
 Base.:^(a::SemisimpleElement,p::Perm)=a^matY(parent(a.W.G),inv(p))
 
 # scalar product with a root
-Base.:^(a::SemisimpleElement,alpha::Vector{<:Integer})=prod(a.v .^ alpha)
+Base.:^(a::SemisimpleElement,alpha::Vector{<:Number})=prod(a.v.^Int.(alpha))
 
 function Base.show(io::IO, ::MIME"text/plain", r::SemisimpleElement)
   if !haskey(io,:typeinfo) print(io,typeof(r),": ") end
@@ -475,7 +475,8 @@ function algebraic_center(W)
     W=W.group
   end
   if istorus(W) Z0=reflrep(W,one(W))
-  else Z0=lnullspaceInt(transpose(simpleroots(W)))
+  else 
+    Z0=lnullspaceInt(transpose(simpleroots(W)))
   end
   Z0=SubTorus(W,Z0)
   if isempty(Z0.complement) AZ=Vector{Rational{Int}}[]

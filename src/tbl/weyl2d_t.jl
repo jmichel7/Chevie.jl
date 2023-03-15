@@ -63,3 +63,16 @@ chevieset(Symbol("2D"), :ClassParameter, function (n, w)
   x=prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm())
   cycletype(x*SPerm(1,-1),n)
 end)
+
+chevieset(Symbol("2D"), :HeckeRepresentation, function(n,para,sqpara,i)
+   param=chevieget(Symbol("2D"),:CharInfo)(n)[:charparams][i]
+   bno=findfirst(==(param),chevieget(:B,:CharInfo)(n)[:charparams])
+   parab=copy(para);parab[1]=[1,-1]
+   r=toM.(chevieget(:B,:HeckeRepresentation)(n,parab,[],bno))
+   if all(x->x==[1,-1],para) u=r[1] else u=inv(r[1]*1//1) end
+   (gens=pushfirst!(r[2:end],r[1]*r[2]*u),F=r[1])
+end)
+
+chevieset(Symbol("2D"), :Representation, function(n,i)
+  return chevieget(Symbol("2D"),:HeckeRepresentation)(n,fill([1,-1],4),[],i)
+end)

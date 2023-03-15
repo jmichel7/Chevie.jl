@@ -23,7 +23,7 @@ best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : conductor(x)==1 ?
   best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
 best_type(x::Cyc{T}) where T<:Integer=conductor(x)==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::Array{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
+best_type(m::AbstractArray{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end

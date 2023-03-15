@@ -1434,14 +1434,18 @@ function Chars.representation(H::HeckeCoset,i::Int)
   dims=getchev(H.W,:NrConjugacyClasses)
   if isempty(dims) return (gens=Matrix{Int}[],F=fill(0,0,0)) end
   tt=refltype(H.W)
-  rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.H.para))
+  rp=haskey(H.H,:rootpara) ? rootpara(H.H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
     r=getchev(t,:HeckeRepresentation,H.H.para,rp,j)
     if r==false return nothing
     elseif r isa Vector 
-      r=improve_type(toM.(r))
+      if !(r[1] isa Matrix) r=toM.(r) end
+      r=improve_type(r)
       (gens=r,F=one(r[1]))
-    else (gens=improve_type(toM.(r[:gens])),F=improve_type(toM(r[:F])))
+    else 
+      if !(r[:gens][1] isa Matrix) r1=toM.(r[:gens]) else r1=r[:gens] end
+      if !(r[:F] isa Matrix) F=toM(r[:F]) else F=r[:F] end
+      (gens=improve_type(r1),F=improve_type(F))
     end
   end
   if any(isnothing,mm) return nothing end

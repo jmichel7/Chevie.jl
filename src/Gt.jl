@@ -302,7 +302,7 @@ function nconjugacy_classes(r::ClassType,WF,p)
     P=restricted(P,o)
     P.elements=elts[o]
 # here P poset of HF.phi-stable closed subsets containing roots(H)
-    InfoChevie("# ", HF, "==>", P, "")
+#   InfoChevie("# ", HF, "==>", P, "")
     l=map(x->spets(reflection_subgroup(W, x), HF.phi), P.elements)
     b=collect(keys(factor(PermRoot.BadNumber(W))))
     l=map(l)do RF
@@ -320,7 +320,7 @@ function nconjugacy_classes(r::ClassType,WF,p)
     mu=moebius(P)
     n=stabilizer(W,sort(inclusiongens(H)),onsets)
     n=sum(mu.*l) // length(centralizer(n, HF.phi))
-    InfoChevie("==>", n, "\n")
+#   InfoChevie("==>", n, "\n")
     n
   end
 end
