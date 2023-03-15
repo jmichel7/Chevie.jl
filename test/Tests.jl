@@ -187,7 +187,7 @@ end
 
 function Trepresentations(W,l=Int[])
   O=W
-  if W isa HeckeAlgebra
+  if (W isa HeckeAlgebra) || (W isa HeckeCoset)
     H=W
     W=H.W
   else H=hecke(W)

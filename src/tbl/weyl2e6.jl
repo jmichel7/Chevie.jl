@@ -6,7 +6,10 @@ chevieset(Symbol("2E6"), :ClassInfo, function ()
         return res
     end)
 chevieset(Symbol("2E6"), :CharInfo, function ()
-        return (chevieget(:E6, :CharInfo))()
+        local res
+        res = (chevieget(:E6, :CharInfo))()
+        res[:a] = [0, 36, 7, 1, 25, 7, 3, 15, 3, 15, 2, 20, 6, 12, 3, 15, 7, 7, 7, 5, 11, 4, 13, 6, 10]
+        return res
     end)
 chevieset(Symbol("2E6"), :cyclestructure, [[], [36], [30], [nothing, 24], [nothing, 20], [nothing, 22], [nothing, nothing, 18], [5, nothing, 15], [nothing, nothing, nothing, 14], [nothing, nothing, nothing, nothing, 12], [6, nothing, nothing, nothing, 10], [3, nothing, nothing, nothing, 11], [6, 4, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 6], [21], [35], [6, nothing, 15], [4, nothing, 15], [3, 8, nothing, nothing, 6], [3, 10, nothing, nothing, 6], [2, nothing, nothing, nothing, 11], [nothing, nothing, nothing, nothing, nothing, nothing, 9], [1, nothing, nothing, 6, nothing, nothing, nothing, nothing, 4], [nothing, nothing, 3, nothing, 2, nothing, nothing, nothing, nothing, nothing, 4]])
 chevieset(Symbol("2E6"), :generators, [perm"(1,37)(3,7)(9,12)(13,17)(15,18)(19,22)(21,23)(24,26)(25,27)(28,30)(31,33)(39,43)(45,48)(49,53)(51,54)(55,58)(57,59)(60,62)(61,63)(64,66)(67,69)", perm"( 2,38)( 4, 8)( 9,13)(10,14)(12,17)(15,19)(16,20)(18,22)(21,25)(23,27)(35,36)(40,44)(45,49)(46,50)(48,53)(51,55)(52,56)(54,58)(57,61)(59,63)(71,72)", perm"( 1, 7)( 3,39)( 4, 9)( 8,13)(10,15)(14,19)(16,21)(20,25)(26,29)(30,32)(33,34)(37,43)(40,45)(44,49)(46,51)(50,55)(52,57)(56,61)(62,65)(66,68)(69,70)", perm"( 2, 8)( 3, 9)( 4,40)( 5,10)( 7,12)(11,16)(19,24)(22,26)(25,28)(27,30)(34,35)(38,44)(39,45)(41,46)(43,48)(47,52)(55,60)(58,62)(61,64)(63,66)(70,71)", perm"( 4,10)( 5,41)( 6,11)( 8,14)( 9,15)(12,18)(13,19)(17,22)(28,31)(30,33)(32,34)(40,46)(42,47)(44,50)(45,51)(48,54)(49,55)(53,58)(64,67)(66,69)(68,70)", perm"( 5,11)( 6,42)(10,16)(14,20)(15,21)(18,23)(19,25)(22,27)(24,28)(26,30)(29,32)(41,47)(46,52)(50,56)(51,57)(54,59)(55,61)(58,63)(60,64)(62,66)(65,68)"])
@@ -48,6 +51,19 @@ chevieset(Symbol("2E6"), :HeckeCharTable, function (param, rootparam)
         tbl = ((CHEVIE[:compat])[:MakeCharacterTable])(tbl)
         ((CHEVIE[:compat])[:AdjustHeckeCharTable])(tbl, param)
         return tbl
+    end)
+chevieset(Symbol("2E6"), :HeckeRepresentation, function (param, sqrtparam, i)
+        local H, res, W, p
+        W = CoxeterGroup("E", 6)
+        H = hecke(W, -((param[1])[1]) // (param[1])[2])
+        res = Dict{Symbol, Any}(:gens => (chevieget(:E6, :HeckeRepresentation))(param, sqrtparam, i))
+        res[:F] = Product((res[:gens])[[1, 4, 6, 3, 2, 5]]) ^ 6 // GetRoot((HeckeCentralMonomials(H))[i]) * (-1) ^ (((chevieget(Symbol("2E6"), :CharInfo))())[:a])[i]
+        return res
+    end)
+chevieset(Symbol("2E6"), :Representation, function (i,)
+        return (chevieget(Symbol("2E6"), :HeckeRepresentation))(map((x->begin
+                            [1, -1]
+                           end), 1:6), fill(1,6), i)
     end)
 chevieset(Symbol("2E6"), :PhiFactors, [1, -1, 1, 1, -1, 1])
 chevieset(Symbol("2E6"), :UnipotentCharacters, function ()
