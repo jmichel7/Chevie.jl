@@ -29,7 +29,7 @@ commas.
 
 ```julia-repl
 julia> summary(p) # useful for big posets
-"Poset{Int64} with 6 elements"
+"Poset{Int64} with 4 elements"
 
 julia> length(p) # the number of elements of the Poset
 4
@@ -89,7 +89,9 @@ julia> P.show_element=(io,x,n)->join(io,x.elements[n],".");
 
 julia> P
 1.1<2.1,1.2<2.2
+```
 
+```julia-rep1
 julia> print(P) # a form which can be input back in Julia
 Poset([[2, 3], [4], [4], Int64[]],[(1, 1), (2, 1), (1, 2), (2, 2)])
 ```
@@ -420,38 +422,33 @@ function partition(p::Poset)
 end
 
 """
-`restricted(P::Poset,inds::AbstractVector{<:Integer};show=:indices)`
+`restricted(P::Poset,S)`
 
-returns  the sub-poset of `P` determined by `inds`, which must be a sublist
-of `1:length(P)`. The indices in this sub-poset will be renumbered to their
-position in `inds`, but the elements set to `P.elements[inds]`. The keyword
-show is transmitted to the constructed poset.
+returns  the sub-poset of `P` on `S`, a sublist of `elements(P)`. Note that
+the  sublist `S` does not have to be in the same order as `elements(P)`, so
+this can be just used to renumber the elements of `P`.
 
 ```julia-repl
 julia> p=Poset((i,j)->i%4<j%4,1:8)
 4,8<1,5<2,6<3,7
 
 julia> restricted(p,2:6)
-3<4<1,5<2
-
-julia> restricted(p,2:6;show=:elements)
 4<5<2,6<3
 ```
 """
-function restricted(p::Poset,ind::AbstractVector{<:Integer};show=:indices)
+function restricted(p::Poset,S::AbstractVector)
+  ind=indexin(S,elements(p))
   if length(ind)==length(p) && sort(ind)==1:length(p)
     resh=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),hasse(p)[ind]))
-    res=Poset(resh,copy(p.prop))
+    res=Poset(resh,p.elements[ind],copy(p.prop))
     if haskey(res, :incidence) res.incidence=incidence(res)[ind,ind] end
   else
     inc=incidence(p)
     inc=[i!=j && ind[i]==ind[j] ? false : inc[ind[i],ind[j]]
                for i in eachindex(ind), j in eachindex(ind)]
-    res=Poset(hasse(inc),copy(p.prop))
+    res=Poset(hasse(inc),collect(S),copy(p.prop))
     res.incidence=inc
   end
-  res.elements=haskey(p,:elements) ? p.elements[ind] : ind
-  if show==:elements res.show_element=(io,x,n)->print(io,x.elements[n]) end
   res
 end
 
