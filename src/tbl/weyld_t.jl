@@ -306,11 +306,11 @@ chevieset(:D,:UnipotentClasses,function(n,char)
        error("Au non-commutative of order ",length(cl[:Au])*2,"  ! implemented")
      end
      if !('-' in cl[:name])
-      addSpringer1(ss->ss[:Z] in [[-1,-1], [E(4)]] && 
+      addSpringer1(ss->ss[:Z] in [[(-1)^(div(n,2)+1),-1], [E(4)]] && 
                      rank(ss[:relgroup]) == sum(sum,s) , i, s, k[1])
      end
      if !('+' in cl[:name])
-      addSpringer1(ss->ss[:Z] in [[1,-1], [-(E(4))]] && 
+      addSpringer1(ss->ss[:Z] in [[(-1)^div(n,2),-1], [-(E(4))]] && 
                      rank(ss[:relgroup]) == sum(sum,s), i, s, k[2])
      end
   end
