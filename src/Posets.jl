@@ -45,10 +45,10 @@ julia> incidence(p) # asking for the incidence matrix
 A convenient constructor is:
   - `Poset(isless::Function,elements)`
 
-this  constructs the incidence matrix from the `isless` function applied to
-each  pair  of  elements.  For  `isless`  one  can  give  either a function
-implementing `<` or a function implementing `≤` (it is ored with `=` in any
-case).
+this  constructs a poset from the incidence matrix computed by applying the
+`isless`  function  to  each  pair  of  elements. For `isless` one can give
+either  a function implementing  `<` or a  function implementing `≤` (it is
+`or`-ed with `=` in any case).
 
 ```julia-repl
 julia> l=vec(collect(Iterators.product(1:2,1:2)))
@@ -60,9 +60,12 @@ julia> l=vec(collect(Iterators.product(1:2,1:2)))
 
 julia> P=Poset((x,y)->all(map(<=,x,y)),l)
 (1, 1)<(2, 1),(1, 2)<(2, 2)
+
+julia> eltype(P)
+Tuple{Int64, Int64}
 ```
 
-Finally a poset can be constructed from the incidence matrix
+A poset can be constructed from an incidence matrix
   - `Poset(m::Matrix{Bool},elements=1:size(m,1))`
 
 The last example could also be entered as
@@ -71,6 +74,17 @@ julia> P=Poset([all(map(<=,x,y)) for x in l, y in l],l)
 (1, 1)<(2, 1),(1, 2)<(2, 2)
 ```
 
+Finally  a  poset  can  be  specified  by  a list of tuples specifing cover
+relations. The transitive closure of these relations is computed, giving an
+incidence  matrix from which the poset is built. The elements of the poset,
+if  not specified by a separate list, will be all the elements which appear
+in the tuples.
+
+```julia-repl
+julia> Poset([(:a,:b),(:c,:d)])
+a<b
+c<d
+```
 By  default printing shows the elements.  The printing can be controlled by
 `IO`  properties. The package gives a  convenient constructor to build rich
 `IO`:
@@ -85,7 +99,7 @@ ultimate  flexibility  on  printing  is  obtained  by  setting the function
 `show_element`  which takes as arguments an  `IO`, the poset, and the index
 of the element to print:
 ```julia-repl
-julia> P.show_element=(io,x,n)->join(io,x.elements[n],".");
+julia> P.show_element=(io,p,n)->join(io,p.elements[n],".");
 
 julia> P
 1.1<2.1,1.2<2.2
@@ -96,47 +110,38 @@ julia> print(P) # a form which can be input back in Julia
 Poset([[2, 3], [4], [4], Int64[]],[(1, 1), (2, 1), (1, 2), (2, 2)])
 ```
 
-The syntax `p[a:b]` gives the interval between `a` and `b` in the poset.
+The  function `≤(p,a,b)` gives  the interval between  `a` and `b` in
+the poset `p`.
 
 ```julia-repl
-julia> p=Poset((i,j)->j%i==0,1:6)
-1<5
-1<2<4
-1<3<6
-2<6
+julia> <=(P,(2,1),(2,2)) # elements between (2,1) and (2,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (2, 1)
+ (2, 2)
 
-julia> p[2:6]   # elements between 2 and 6
-2-element Vector{Int64}:
- 2
- 6
+julia> <=(P,(1,2)) # elements below (1,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (1, 1)
+ (1, 2)
 
-julia> p[2:end]  # everything above 2
-3-element Vector{Int64}:
- 2
- 4
- 6
+julia> >=(P,(1,2)) # elements above (1,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (1, 2)
+ (2, 2)
 
-julia> p[begin:6] # everything below 6
-4-element Vector{Int64}:
- 1
- 2
- 3
- 6
-
-julia> p[2:3] # nothing between 2 and 3
-Int64[]
+julia> <=(P,(1,2),(2,1)) # nothing in between
+Tuple{Int64, Int64}[]
 ```
-
 see the on-line help on `linear_extension, hasse, incidence, partition, 
 covering_chains, transitive_closure, isjoinlattice, ismeetlattice, moebius,
-moebiusmatrix,reverse, restricted, minimum, maximum` for more information
+moebiusmatrix,reverse, induced, minimum, maximum` for more information
 """
 module Posets 
 # this module has only 1 dependency below which could be copied.
 using ..Combinat: collectby  # 13 lines
 export Poset, linear_extension, hasse, incidence, partition, covering_chains,
 transitive_closure, isjoinlattice, ismeetlattice, moebius, moebiusmatrix
-export restricted #needs using_merge to use with Gapjm
+export induced #needs using_merge to use with Gapjm
 
 struct Poset{T}
   hasse::Vector{Vector{Int}}
@@ -227,7 +232,18 @@ end
 
 Poset(f::Function,e)=Poset([(f(x,y)|| x==y) for x in e, y in e],collect(e))
 
+function Poset(h::Vector{Tuple{T,T}},e::AbstractVector{T})where T
+  inc=zeros(Bool,length(e),length(e))
+  for i in eachindex(e) inc[i,i]=true end
+  for (i,j) in h inc[findfirst(==(i),e),findfirst(==(j),e)]=true end
+  transitive_closure!(inc)
+  Poset(inc,collect(e))
+end
+  
+Poset(h::Vector{Tuple{T,T}}) where T=Poset(h,unique(vcat(collect.(h)...)))
+
 Base.length(p::Poset)::Int=length(elements(p))
+Base.eltype(p::Poset{T}) where T=T
 
 elements(p::Poset)=p.elements
 
@@ -343,14 +359,16 @@ julia> incidence(p)
 """
 function incidence(p::Poset)
   get!(p,:incidence)do
-    n=linear_extension(p)
-    inc=one(Matrix{Bool}(undef,length(n),length(n)))
-    for i in length(n)-1:-1:1, x in hasse(p)[n[i]] 
-      (@view inc[n[i],:]).|=@view inc[x,:]
+    inc=zeros(Bool,length(p),length(p))
+    for (i,s) in enumerate(hasse(p))
+      inc[i,i]=true
+      for j in s inc[i,j]=true end
     end
-    inc
-   end::AbstractMatrix{Bool}
+    transitive_closure!(inc)
+  end::Matrix{Bool}
 end
+
+coxetermatrix(p::Poset)=-moebiusmatrix(p)*transpose(incidence(p))
 
 """
 `covering_chains(P::Poset)`
@@ -387,7 +405,7 @@ function Base.reverse(p::Poset)
   resh=map(empty,h)
   for i in 1:length(p), j in h[i] push!(resh[j], i) end
   res=Poset(resh,p.elements,copy(p.prop))
-  if haskey(p,:incidence) res.incidence=transpose(incidence(p)) end
+  if haskey(p,:incidence) res.incidence=permutedims(incidence(p)) end
   return res
 end
 
@@ -422,21 +440,21 @@ function partition(p::Poset)
 end
 
 """
-`restricted(P::Poset,S)`
+`induced(P::Poset,S)`
 
-returns  the sub-poset of `P` on `S`, a sublist of `elements(P)`. Note that
-the  sublist `S` does not have to be in the same order as `elements(P)`, so
-this can be just used to renumber the elements of `P`.
+returns  the subposet  induced by  `P` on  `S`, a sublist of `elements(P)`.
+Note  that  the  sublist  `S`  does  not  have  to  be in the same order as
+`elements(P)`, so this can be just used to renumber the elements of `P`.
 
 ```julia-repl
 julia> p=Poset((i,j)->i%4<j%4,1:8)
 4,8<1,5<2,6<3,7
 
-julia> restricted(p,2:6)
+julia> induced(p,2:6)
 4<5<2,6<3
 ```
 """
-function restricted(p::Poset,S::AbstractVector)
+function induced(p::Poset,S::AbstractVector)
   ind=indexin(S,elements(p))
   if length(ind)==length(p) && sort(ind)==1:length(p)
     resh=Vector{Int}.(map(x->map(y->findfirst(==(y),ind),x),hasse(p)[ind]))
@@ -564,22 +582,42 @@ function unitriangularinv(b::Matrix)
   a
 end
 
-"`moebiusmatrix(P::Poset)` the matrix of Moebius function `μ(x,y)`"
-moebiusmatrix(P::Poset)=unitriangularinv(incidence(P))
+"`moebiusmatrix(P::Poset)` the matrix of the Moebius function `μ(x,y)`"
+function moebiusmatrix(P::Poset)
+  o=linear_extension(P)
+  r=unitriangularinv(incidence(P)[o,o])
+  o=invperm(o)
+  r[o,o]
+end
 
-"`maximum(p::Poset)` the maximum element of `P` if there is one."
-function Base.maximum(p::Poset)
+function Base.argmax(p::Poset)
   m=incidence(p)
   maxs=findall(i->all(@view m[:,i]),axes(m,2))
-  only(maxs)
+  if length(maxs)==1 return only(maxs) end
 end
 
-"`minimum(p::Poset)` the minimum element of `P` if there is one."
-function Base.minimum(p::Poset)
-  m=incidence(p)
-  maxs=findall(i->all(@view m[i,:]),axes(m,1))
-  only(maxs)
+"`maximum(P::Poset)` the maximum element of `P` if it has one, otherwise `nothing`"
+function Base.maximum(p::Poset)
+  m=argmax(p)
+  if !isnothing(m) return elements(p)[m] end
 end
+
+function Base.argmin(p::Poset)
+  m=incidence(p)
+  mins=findall(i->all(@view m[i,:]),axes(m,1))
+  if length(mins)==1 return only(mins) end
+end
+
+"`minimum(P::Poset)` the minimum element of `P` if it has one, otherwise `nothing`"
+function Base.minimum(p::Poset)
+  m=argmin(p)
+  if !isnothing(m) return elements(p)[m] end
+end
+
+index(P,a)=findfirst(==(a),elements(P))
+Base.:≤(p::Poset,a)=p.elements[incidence(p)[:,index(p,a)]]
+Base.:≤(p::Poset,a,b)=p.elements[incidence(p)[index(p,a),:].&incidence(p)[:,index(p,b)]]
+Base.:≥(p::Poset,a)=p.elements[incidence(p)[index(p,a),:]]
 
 function Base.getindex(p::Poset,r::UnitRange)
   I=1:length(p)

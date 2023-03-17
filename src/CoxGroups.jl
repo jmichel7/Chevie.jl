@@ -521,8 +521,8 @@ returns  as a poset the Bruhat interval `[1,w]`of `W`. If `w` is not given,
 the whole Bruhat Poset of `W` is returned (`W` must then be finite).
 
 ```julia-repl
-julia> W=coxgroup(:A,2)
-A₂
+julia> W=CoxSym(3)
+𝔖 ₃
 
 julia> Poset(W)
 .<1,2<21,12<121
@@ -530,30 +530,26 @@ julia> Poset(W)
 The above poset is constructed efficiently by constructing the Hasse diagram,
 but it could be constructed naively as follows:
 ```julia-repl
-julia> Poset(W)
-.<1,2<21,12<121
-
 julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
-1<2,3<4,5<6
+()<(2,3),(1,2)<(1,2,3),(1,3,2)<(1,3)
 ```
-
-The element printing is not so nice. This can be remedied by giving a function:
+The element printing is not so nice, showing permutations instead of words.
+This can be remedied by giving a function:
 ```julia-repl
 julia> p.show_element=(io,x,n)->(e=x.elements[n];isone(e) ? print(io,".") : print(io,joindigits(word(W,e))));
 
 julia> p
 .<2,1<21,12<121
 
-julia> W=coxgroup(:A,3)
-A₃
+julia> W=CoxSym(4)
+𝔖 ₄
 
 julia> Poset(W,W(1,3))
 .<3,1<13
 ```
 """
 function Posets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W) p=Poset([Int[]],Dict(:elements=>[w],
-    :action=>map(x->[0],gens(W)), :W=>W))
+  if w==one(W) p=Poset([Int[]],[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
   p=Poset(W,W(s)*w)

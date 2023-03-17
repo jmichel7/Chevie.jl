@@ -68,8 +68,7 @@ function closed_subsystems(W)
     end
   end
   covered=unique.(covered)
-  P=Poset(incidence(Poset(covered)))
-  P.elements=l
+  P=Poset(incidence(Poset(covered)),l)
   P.show_element=function(io,x,n)
     e=x.elements[n]
     if isempty(e) print(io,"∅")
