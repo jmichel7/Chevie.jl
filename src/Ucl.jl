@@ -854,7 +854,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   end
   classes=classes[l]
   AdjustAu!(classes,springerseries)
-  orderclasses=Poset(hasse(restricted(Poset(orderclasses),l)),classes)
+  orderclasses=Poset(hasse(induced(Poset(orderclasses),l)),classes)
   orderclasses.show_element=function(io,x,n)
      print(io,name(io,x.elements[n]))
   end
