@@ -536,7 +536,7 @@ julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
 The element printing is not so nice, showing permutations instead of words.
 This can be remedied by giving a function:
 ```julia-repl
-julia> p.show_element=(io,x,n)->(e=x.elements[n];isone(e) ? print(io,".") : print(io,joindigits(word(W,e))));
+julia> p.show_element=(io,x,n)->(e=elements(x,n);print(io,isone(e) ? "." : joindigits(word(W,e))));
 
 julia> p
 .<2,1<21,12<121
@@ -549,7 +549,8 @@ julia> Poset(W,W(1,3))
 ```
 """
 function Posets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W) p=Poset([Int[]],[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
+  if w==one(W) 
+    p=Poset([Int[]],Dict(:action=>map(x->[0],gens(W)), :W=>W, :elements=>[w]))
   else
   s=firstleftdescent(W,w)
   p=Poset(W,W(s)*w)
@@ -557,11 +558,11 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
   # action: the Cayley graph: for generator i, action[i][w]=sw
   # where w and sw are represented by their index in :elements
   new=filter(k->iszero(p.action[s][k]),1:l)
-  append!(p.elements,Ref(W(s)).*(p.elements[new]))
+  append!(p.elements,Ref(W(s)).*elements(p,new))
   append!(hasse(p),map(x->Int[],new))
   p.action[s][new]=l.+(1:length(new))
   for i in eachindex(gens(W)) 
-    append!(p.action[i],i==s ? new : zeros(Int,length(new)))
+    append!(p.action[i],i==s ? new : fill(0,length(new)))
   end
   for i in 1:length(new) push!(hasse(p)[new[i]],l+i) end
   for i in 1:l 
@@ -569,15 +570,15 @@ function Posets.Poset(W::CoxeterGroup,w=longest(W))
     if j>i
       for h in p.action[s][hasse(p)[i]]
         if h>l push!(hasse(p)[j],h)
-          k=findfirst(==(p.elements[h]/p.elements[j]),gens(W))
+          k=findfirst(==(elements(p,h)/elements(p,j)),gens(W))
           if k!==nothing p.action[k][j]=h;p.action[k][h]=j end
         end
       end
     end
   end
   end
-  p.show_element=(io,x,n)->isone(x.elements[n]) ? print(io,".") : 
-                        print(io,joindigits(word(W,x.elements[n])))
+  p.show_element=(io,x,n)->(e=elements(x,n);print(io,isone(e) ? "." : 
+                                                  joindigits(word(W,e))))
   p
 end
 

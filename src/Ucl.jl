@@ -700,10 +700,11 @@ function UnipotentClasses(t::TypeIrred,p=0)
 #   s[:levi]=indices(t)[s[:levi]]
     s[:locsys]=Vector{Int}.(s[:locsys])
   end
-  orderclasses=map(x->isempty(x) ? Int[] : x,uc[:orderClasses])
+  orderclasses=Poset(map(x->isempty(x) ? Int[] : x,uc[:orderClasses]))
+  orderclasses.elements=classes
   delete!.(Ref(uc),[:classes,:orderClasses,:springerSeries])
 # uc[:spets]=t
-  UnipotentClasses(classes,p,Poset(orderclasses),springerseries,uc)
+  UnipotentClasses(classes,p,orderclasses,springerseries,uc)
 end
 
 Base.length(uc::UnipotentClasses)=length(uc.classes)
@@ -854,10 +855,9 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   end
   classes=classes[l]
   AdjustAu!(classes,springerseries)
-  orderclasses=Poset(hasse(induced(Poset(orderclasses),l)),classes)
-  orderclasses.show_element=function(io,x,n)
-     print(io,name(io,x.elements[n]))
-  end
+  orderclasses=induced(Poset(orderclasses),l)
+  orderclasses.elements=classes
+  orderclasses.show_element=(io,x,n)->print(io,name(io,elements(x,n)))
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
   end
