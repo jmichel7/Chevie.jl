@@ -929,11 +929,29 @@ end
 Base.:/(a::GarsideElt,b::GarsideElt)=a*inv(b)
 Base.:\(a::GarsideElt,b::GarsideElt)=inv(a)*b
 
-"""
-`fraction(b::GarsideElt)`
+function Base.denominator(b::GarsideElt)
+  if b.pd>=0 return one(b) end
+  ib=inv(b)
+  if b.pd<-length(b.elm) ib
+  else GarsideElt(b.M,@view ib.elm[end+b.pd+1:end];check=false)
+  end
+end
 
-returns a tuple `(x,y)` of positive Garside elements with trivial `leftgcd`
-and such that `b=x\\y`.
+function Base.numerator(b::GarsideElt)
+  if b.pd>=0 return b 
+  elseif b.pd<-length(b.elm) return one(b)
+  else GarsideElt(b.M,b.elm[1-b.pd:end];check=false)
+  end
+end
+
+"""
+  - `fraction(b::GarsideElt)`
+  - `denominator(b::GarsideElt)`
+  - `numerator(b::GarsideElt)`
+
+`fraction(b)`  returns a  tuple `(x,y)`  of positive  Garside elements with
+trivial  `leftgcd`  and  such  that  `b=x\\y`.  For  such  a decomposition,
+`denominator(b)` returns `x` and `numerator(b)` returns `y`.
 ```julia-repl
 julia> B=BraidMonoid(coxgroup(:A,3))
 BraidMonoid(A₃)
@@ -945,14 +963,7 @@ julia> fraction(b)
 (23, 321.1.1)
 ```
 """
-function fraction(b::GarsideElt)
-  M=b.M
-  if b.pd>=0 return [one(b),b] end
-  ib=inv(b)
-  if -b.pd>length(b.elm) return [ib,one(b)] end
-  GarsideElt(M,@view ib.elm[end+b.pd+1:end];check=false),
-  GarsideElt(M,b.elm[1-b.pd:end];check=false)
-end;
+fraction(b::GarsideElt)=(denominator(b),numerator(b))
 
 function Base.getindex(x::GarsideElt{T},i::Integer)::T where T
   if i<=x.pd return x.pd==0 ? one(x.M) : x.M.δ
