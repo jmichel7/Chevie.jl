@@ -22,7 +22,7 @@ hurwitz
 fraction
 word(::Garside.GarsideMonoid,w)
 word(::Garside.GarsideElt)
-elements(::Garside.LocallyGarsideMonoid,l)
+PermGroups.elements(::Garside.LocallyGarsideMonoid,::Integer)
 image
 conjugating_elt
 centralizer_gens

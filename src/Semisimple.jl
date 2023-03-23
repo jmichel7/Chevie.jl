@@ -207,14 +207,14 @@ function Base.:*(a::ExtendedCox,b::ExtendedCox)
 end
 
 function Base.show(io::IO,W::ExtendedCox)
-  if !get(io,:limit,false)
+  if !get(io,:limit,false) && !get(io,:TeX,false)
      print(io,"ExtendedCox(",W.group,",",W.F0s,",",W.phis,")")
      return
   end
   if isempty(W.phis) print(io,"Extended(",W.group,")")
   elseif length(W.phis)==1 print(io,spets(W.group,W.phis[1]))
   elseif all(x->isone(x^2),W.phis) && length(Group(W.phis))==6
-                  print(io,W.group,"⋊ S3")
+    print(io,W.group,fromTeX(io,"\\rtimes\\mathfrak S_3"))
   else
     ff=map(x->restricted(x,inclusiongens(W.group)),W.phis)
     if all(!isone,ff) || rank(W.group)==0
@@ -222,10 +222,6 @@ function Base.show(io::IO,W::ExtendedCox)
     else print(io,"<");join(io,spets.(Ref(W.group),W.phis),",");print(io,">")
     end
   end
-end
-
-function ComplexR.reflection_name(io::IO,W::ExtendedCox)
-  repr(W;context=io)
 end
 
 ExtendedReflectionGroup(W,mats::AbstractVector{Matrix{Int}})=ExtendedCox(W,mats)
@@ -249,8 +245,6 @@ function ExtendedReflectionGroup(W,mats::Vector{Any})
   else error("not empty")
   end
 end
-
-reflection_name(io::IO,W::ExtendedCox)=reflection_name(io,W.group)
 
 #----------------------------------------------------------------------------
 

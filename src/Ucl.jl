@@ -700,8 +700,7 @@ function UnipotentClasses(t::TypeIrred,p=0)
 #   s[:levi]=indices(t)[s[:levi]]
     s[:locsys]=Vector{Int}.(s[:locsys])
   end
-  orderclasses=Poset(map(x->isempty(x) ? Int[] : x,uc[:orderClasses]))
-  orderclasses.elements=classes
+  orderclasses=Poset(CPoset(Vector{Vector{Int}}(uc[:orderClasses])),classes)
   delete!.(Ref(uc),[:classes,:orderClasses,:springerSeries])
 # uc[:spets]=t
   UnipotentClasses(classes,p,orderclasses,springerseries,uc)
@@ -729,7 +728,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
     classes=[UnipotentClass("1",[],0,
         Dict(:Au=>coxgroup(),:dynkin=>[],:balacarter=>[],
              :dimunip=>0,:red=>torus(rank(W))))]
-    uc=[UnipotentClasses(classes,p,Poset([Int[]]),
+    uc=[UnipotentClasses(classes,p,Poset(CPoset([Int[]])),
       [Dict(:Z=>Int[],:levi=>Int[],:locsys=>[[1,1]],:relgroup=>coxgroup())],
       Dict{Symbol,Any}(:spets=>W))]
     l=Vector{Int}[]
@@ -855,12 +854,18 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   end
   classes=classes[l]
   AdjustAu!(classes,springerseries)
-  orderclasses=induced(Poset(orderclasses),l)
-  orderclasses.elements=classes
-  orderclasses.show_element=(io,x,n)->print(io,name(io,elements(x,n)))
+  orderclasses=Poset(induced(CPoset(orderclasses),l),classes)
+  orderclasses.show_element=(io,x,n)->print(io,name(io,x.elements[n]))
   ucl=UnipotentClasses(classes,p,orderclasses,springerseries,prop)
   ucl
   end
+end
+
+Posets.Poset(uc::UnipotentClasses)=uc.orderclasses
+
+function reflection_name(io::IO,W)
+  r=join(getchev(W,:ReflectionName,IOContext(io,:TeX=>true).dict),"×")
+  fromTeX(io,r)
 end
 
 function showcentralizer(io::IO,u)
@@ -887,7 +892,7 @@ function showcentralizer(io::IO,u)
           c*="["*repr(u.red;context=io)*"]"*repr(u.AuAction;context=io)
         end
       else
-        c*=reflection_name(io,u.AuAction)*AuName(u)
+        c*=repr(u.AuAction;context=io)*AuName(u)
       end
     else
       c*=AuName(u)
@@ -913,9 +918,12 @@ function Base.show(io::IO, ::MIME"text/html", uc::UnipotentClasses)
 end
 
 function Base.show(io::IO,uc::UnipotentClasses)
+  TeX=get(io,:TeX,false)
+  if TeX print(io,"\$") end
   print(io,"UnipotentClasses(",uc.spets)
   if uc.p!=0 print(io,",",uc.p) end
   print(io,")")
+  if TeX print(io,"\$") end
 end
 
 function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
@@ -960,11 +968,11 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   end
   col_labels= String[]
   if iszero(uc.p)
-    push!(col_labels, TeX ? "\\mbox{Dynkin-Richardson}" : "D-R")
+   push!(col_labels,TeX ? "\\mbox{D-R}" : "D-R")
   end
     push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dBu")
   if get(io,:balaCarter,true)
-     push!(col_labels, TeX ? "\\mbox{Bala-Carter}" : "B-C")
+     push!(col_labels, TeX ? "\\mbox{B-C}" : "B-C")
   end
   if get(io,:centralizer,true)
      push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")

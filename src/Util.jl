@@ -69,7 +69,7 @@ const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", 
   "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ", "sigma"=>"σ", "theta"=>"θ", 
   "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
-  "zeta"=>"ζ", "backslash"=>"\\","sqrt"=>"√")
+  "zeta"=>"ζ", "rtimes"=>"⋊ ","backslash"=>"\\","sqrt"=>"√")
 
 # defs below are necessary since constant folding is not good enough
 const r1=Regex("_[$subchars]")

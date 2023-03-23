@@ -1,6 +1,6 @@
 module ComplexR
 using ..Gapjm
-export complex_reflection_group, crg, reflection_name, diagram, codegrees,
+export complex_reflection_group, crg, diagram, codegrees,
   Reflection, reflections, isdistinguished, 
   hyperplane_orbits, hyperplane_orbit, simple_rep,
   reflection_group, torusfactors
@@ -277,14 +277,6 @@ function codegrees(W::Spets)
 end
 
 nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
-
-function reflection_name(io::IO,W)
-  opt=IOContext(io,:TeX=>true).dict
-  r=join(getchev(W,:ReflectionName,opt),"×")
-  fromTeX(io,r)
-end
-
-reflection_name(t::TypeIrred)=getchev(t,:ReflectionName,Dict())
 
 """
 `hyperplane_orbits(W)`

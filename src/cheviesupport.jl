@@ -68,7 +68,7 @@ Base.://(a::AbstractArray,b::Pol)=a .// b
 Base.://(a::AbstractArray,b::Mvp)=a .// b
 Base.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(f::Family,n::Int)=galois(f,n)
-Posets.Poset(m::Vector{Vector{Bool}})=Poset(toM(m))
+Posets.Poset(m::Vector{Vector{Bool}})=Poset(CPoset(toM(m)))
 PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 
 Product(a::AbstractVector{<:AbstractVector{<:AbstractVector}})=
