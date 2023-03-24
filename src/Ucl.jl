@@ -919,8 +919,8 @@ end
 
 function Base.show(io::IO,uc::UnipotentClasses)
   TeX=get(io,:TeX,false)
-  if TeX print(io,"\$") end
-  print(io,"UnipotentClasses(",uc.spets)
+  print(io,TeX ? "\$\\mbox{UnipotentClasses}" : "UnipotentClasses")
+  print(io,"(",uc.spets)
   if uc.p!=0 print(io,",",uc.p) end
   print(io,")")
   if TeX print(io,"\$") end

@@ -681,8 +681,9 @@ end
 function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   repl=get(io,:limit,false)
   TeX=get(io,:TeX,false)
-  if !TeX print(io,"UnipotentCharacters(",spets(uc),")") end
-  println(io,"")
+  print(io,TeX ? "\$\\mbox{UnipotentCharacters}" : "UnipotentCharacters")
+  print(io,"(",spets(uc),")")
+  println(io,TeX ? "\$" : "")
   col_labels=["n_0"]
   m=hcat(repr.(1:length(uc)))
   row_labels=charnames(io,uc)
