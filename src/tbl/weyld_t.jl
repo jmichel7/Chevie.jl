@@ -188,7 +188,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
   end
   if char == 2 # see [Spaltenstein] 2.10 page 24
-    uc[:orderClasses] = hasse(Poset(toM(map(uc[:classes])do x
+    uc[:orderClasses] = hasse(CPoset(toM(map(uc[:classes])do x
                                     map(uc[:classes])do y
       m = max(x[:parameter][1][1], y[:parameter][1][1])
       f = x-> map(i-> sum(filter(<(i),x))+i*count(>=(i),x) , 1:m)
@@ -206,12 +206,12 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
     end)))
   else
-    uc[:orderClasses]=hasse(Poset(toM(map(eachindex(uc[:classes]))do i
+    uc[:orderClasses]=hasse(toM(map(eachindex(uc[:classes]))do i
                                   map(eachindex(uc[:classes]))do j
       dominates(uc[:classes][j][:parameter], uc[:classes][i][:parameter]) && 
       (uc[:classes][j][:parameter]!=uc[:classes][i][:parameter] || i==j)
                      end
-                    end)))
+                    end))
   end
   if char != 2
     d = 0

@@ -1,9 +1,9 @@
 """
-This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
-package  of GAP3. I started this project at the end of 2018 and it is still
-in  flux so the  package is not  yet registered. If  you see anything to be
-improved  in this  package, please  contact me  or make  an issue or a pull
-request in the GitHub repository.
+This  is  my  effort  to  port  GAP  code to Julia, specifically the Chevie
+package  from GAP3.  I started  this project  at the  end of 2018 and it is
+still  in flux so  the package is  not yet registered.  If you see anything
+that needs improving in this package, please contact me or make an issue or
+pull request in the GitHub repository.
 
 ### Installing
 
@@ -28,10 +28,10 @@ To update later to the latest version, do
 
 This package requires julia 1.6 or later. 
 
-I  implemented the GAP functionality  (infrastructure) needed for Chevie to
-work.   I   already   registered   as   separate   packages  most  of  this
-infrastructure;  the following packages are  loaded and reexported so their
-functionality is automatically available when you use `Gapjm`.
+I  have implemented the  GAP functionality (infrastructure)  needed to make
+Chevie  work.  I  have  already  registered  most of this infrastructure as
+separate packages; the following packages are loaded and reexported so that
+their functionality is automatically available when you use `Gapjm`.
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions when there are no fractional exponents)
@@ -45,31 +45,31 @@ functionality is automatically available when you use `Gapjm`.
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * posets (module [`Posets`](@ref))
+  * posets (module [`FinitePosets`](@ref))
   * signed permutations (module [`SPerms`](@ref))
   * finite fields (module [`FFields`](@ref))
   * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
-  * Number fields subfields of the Cyclotomics (module [`Nf`](@ref))
+  * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
 
-for  permutation groups I have  often replaced the sophisticated algorithms
-of  GAP by naive but  easy to write methods  only suitable for small groups
+for permutation groups I have often replaced GAP's sophisticated algorithms
+with  naive  but  easy-to-write  methods  suitable  only  for  small groups
 (sufficient  for the  rest of  the package  but maybe  not for your needs).
-Otherwise  the  code  for  infrastructure  is  often  competitive with GAP,
-despite  being much shorter (often 100 lines of Julia replace 1000 lines of
-C); I am sure there are more optimisations possible. Any comments about the
-code and the design are welcome. For functions which are too inefficient or
-difficult  to implement (like character tables of arbitrary groups) `Gapjm`
+Otherwise  the infrastructure code  is often competitive  with GAP, despite
+being much shorter (often 100 lines of Julia replace 1000 lines of C); I am
+sure  there are more  optimisations possible. Any  comments on the code and
+the design are welcome. For functions that are too inefficient or difficult
+to  implement  (such  as  character  tables  of  arbitrary  groups) `Gapjm`
 automatically calls GAP4 if you did `using GAP`. Otherwise the code in this
 package  is  often  10  times  faster  than the equivalent GAP3 Chevie code
 (after  the maddeningly  long compilation  time on  first execution --- the
 TTFP problem of Julia).
 
-The  package `Gapjm` contains currently  about 90% of Chevie functionality,
-ported  from Gap3. The function `gap`  can help you discover the equivalent
-functionality  to a Gap3  function: it takes  a string and  gives you Julia
-translations of functions in Gap3 which match this string.
+The   `Gapjm`  package   currently  contains   about  90%   of  the  Chevie
+functionality,  ported from Gap3.  The `gap` function  can help you to find
+the  equivalent functionality  to a  Gap3 function:  it takes  a string and
+gives you Julia translations of functions in Gap3 that match that string.
 
 ```julia-rep1
 julia> gap("words")
@@ -80,11 +80,10 @@ GarsideWords             =>  elements
 Then you can call on-line help on the discovered functions.
 
 The  port to Julia is not complete in the sense that 80% of the code is the
-data library of Chevie, which has been automatically ported by a transpiler
-so  its code  is "strange".  When the  need to  maintain simultaneously the
-`GAP3`  version  and  the  `Julia`  version  subsides,  I  will do a proper
-translation  of the  data library,  which should  give  an additional speed
-boost.
+data library from Chevie, which was automatically ported by a transpiler so
+its code is "strange". When the need to maintain the `GAP3` version and the
+`Julia`  version simultaneously subsides, I will do a proper translation of
+the data library, which should give an additional speed boost.
 """
 module Gapjm
 #--------------------- external packages ----------------------------------
@@ -109,7 +108,7 @@ using UsingMerge
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Posets.jl");@usingmerge verbose=true reexport Posets
+include("FinitePosets.jl");@reexport using .FinitePosets
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf

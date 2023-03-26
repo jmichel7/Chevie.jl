@@ -1215,8 +1215,8 @@ function Tfamilies(W,i;hard=false)
   v=" "*repr(W;context=rio())*".$i"
 # else f:=arg[1]; arg:=arg{[2..Length(arg)]};v:=""; fi;
   if length(f.eigenvalues)==1 return end # nothing interesting to test
-  O=Array(Diagonal(f.eigenvalues))
-  if haskey(f,:sh) Sh=Diagonal(f.sh) end
+  O=Diagonal(Cyc.(f.eigenvalues))
+  if haskey(f,:sh) Sh=Diagonal(Cyc.(f.sh)) end
   S=fourier(f)
   if f isa Vector t=toM(f) end
   Sbar=conj(S)

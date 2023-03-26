@@ -32,18 +32,18 @@ finite groups play a deep role in several areas of mathematics.
 Coxeter  groups  have  a  nice  solution  to the word problem. The *length*
 `l(w)`  of an element  `w∈ W` is  the minimum number  of elements of `S` of
 which it is a product (since the elements of `S` are involutions, we do not
-need inverses). An expression of `w` of minimal length is called a *reduced
+need inverses). An expression of `w` of minimum length is called a *reduced
 word*  for `w`. The main property of  reduced words is the *exchange lemma*
 which  states that if `s₁…sₖ` is a reduced word for `w` (thus `k=l(w)`) and
 `s∈  S` is such that `l(sw)≤l(w)` then one  of the `sᵢ` in the word for `w`
 can be deleted to obtain a reduced word for `sw`. Thus given `s∈ S` and `w∈
-W`,  either `l(sw)=l(w)+1` or  `l(sw)=l(w)-1` and we  say in this last case
-that  `s` belongs to  the *left descent  set* of `w`.  The computation of a
-reduced  word for an element, and other  word problems, are easy if we know
-how to multiply elements and know left descent sets. In each of the Coxeter
-groups  that we implement, the left descent set is easy to compute (see for
-example  [`CoxSym`](@ref) below), so this suggests how to deal with Coxeter
-groups generically:
+W`,  either `l(sw)=l(w)+1` or `l(sw)=l(w)-1` and  in the latter case we say
+that `s` belongs to the *left descent set* of `w`. Computing a reduced word
+for  an  element,  and  other  word  problems,  are  easy if we know how to
+multiply elements and know left descent sets. In each of the Coxeter groups
+that we implement, the left descent set is easy to compute (see for example
+[`CoxSym`](@ref)  below), so this suggests how  to deal with Coxeter groups
+generically:
 
 The  type  `CoxeterGroup`  is  an  abstract  type;  an  actual struct which
 implements it must define a function
@@ -62,7 +62,7 @@ implementing the above functions.
 Because  of the  easy solution  of the  word problem  in Coxeter  groups, a
 convenient  way  to  represent  their  elements  is as words in the Coxeter
 generators,  that  is  lists  of  integers  in `1:length(S)`. The functions
-'word'  and 'W(...)' does the conversion between Coxeter words and elements
+'word'  and 'W(...)' do the conversion between Coxeter words and elements
 of the group.
 
 # Examples
@@ -82,10 +82,10 @@ julia> word(W,p)
  1
 ```
 We  notice that the word we started with and the one that we ended up with,
-are not the same, though they represent the same element of `W`. The reason
-is  there are  several reduced  words for  an element  of `W`. The function
-'word'  computes a lexicographically smallest word  for `w`. Below are some
-other possible computations with the same Coxeter group:
+are  not the same, even though they  represent the same element of `W`. The
+reason  is that there are several reduced  words for an element of `W`. The
+function 'word' calculates a lexicographically smallest word for `w`. Below
+are some other possible computations using the same Coxeter group:
 
 ```julia-repl
 julia> word(W,longest(W))  # the (unique) longest element in W
@@ -125,10 +125,10 @@ The  last list tells us that there is 1 element of length 0, there are 6 of
 length 3, …
 
 For  most basic functions the convention is that the input is an element of
-the  group, rather than  a Coxeter word.  The reason is  that for a Coxeter
-group  which  is  a  permutation  group,  using the low level functions for
-permutations  is usually  much faster  than manipulating lists representing
-reduced expressions.
+the  group, rather than a  Coxeter word. The reason  for this is that for a
+Coxeter  group which is a permutation  group, using the low level functions
+for   permutations  is   usually  much   faster  than   manipulating  lists
+representing reduced expressions.
 
 The only Coxeter group constructors implemented in this module are `CoxSym`
 and  `coxgroup`; the last constructor takes  a Cartan matrix and builds the
@@ -527,19 +527,19 @@ julia> W=CoxSym(3)
 julia> Poset(W)
 .<1,2<21,12<121
 ```
-The above poset is constructed efficiently by constructing the Hasse diagram,
-but it could be constructed naively as follows:
+The  above  poset  is  constructed  efficiently  by  constructing the Hasse
+diagram, but it could be constructed naively as follows:
 ```julia-repl
 julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
 ()<(2,3),(1,2)<(1,2,3),(1,3,2)<(1,3)
 ```
-The element printing is not so nice, showing permutations instead of words.
-This can be remedied by giving a function:
+The  output is not so nice, showing permutations instead of words. This can
+be fixed by defining:
 ```julia-repl
-julia> p.show_element=(io,x,n)->(e=x.elements[n];print(io,isone(e) ? "." : joindigits(word(W,e))));
+julia> p.show_element=(io,x,n)->join(io,word(W,x.elements[n]));
 
 julia> p
-.<2,1<21,12<121
+<2,1<21,12<121
 
 julia> W=CoxSym(4)
 𝔖 ₄
@@ -548,7 +548,7 @@ julia> Poset(W,W(1,3))
 .<3,1<13
 ```
 """
-function Posets.Poset(W::CoxeterGroup,w=longest(W))
+function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
   if w==one(W) 
     p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else

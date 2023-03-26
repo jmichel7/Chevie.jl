@@ -22,4 +22,5 @@ cartan(::CoxSym)
 reduced
 standard_parabolic_class
 coxeter_group(::AbstractMatrix)
+Poset(::CoxeterGroup,w=longest(W))
 ```

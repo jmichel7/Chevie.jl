@@ -6,7 +6,7 @@ elements  `1:n`  where  `n=length(P)`.  A  `Poset`  is  on  a given list of
 elements  which may be of any type. A `Poset` contains internally a`CPoset`
 working  on  the  indices  of  the  elements,  which is more efficient than
 working  with  the  elements  themselves.  Similarly  for  efficiency  many
-functions  work with the  `CPoset` by transformeing  their input to indices
+functions  work with the  `CPoset` by transforming  their input to indices
 and their output to elements.
 
 A  `CPoset` has the field:
@@ -59,7 +59,7 @@ A  convenient  constructor  for  `Poset`s  takes  a  function  representing
 `isless`  for the poset and  the list of elements  and constructs the poset
 from  the incidence matrix, computed by  applying the function to each pair
 of  elements. For `isless` one can  give either a function implementing `<`
-or a function implementing `≤` (it is `or`-ed with `=` in any case).
+or a function implementing `≤` (it is `or`-ed with `==` in any case).
 ```julia-repl
 julia> l=vec(collect(Iterators.product(1:2,1:2)))
 4-element Vector{Tuple{Int64, Int64}}:
@@ -208,6 +208,8 @@ Windows but I did not test it.
 see the on-line help on
 `⊕,
 ⊗, 
++,
+*,
 chains,
 chainpoly,
 covering_chains,
@@ -231,7 +233,7 @@ showpic,
 transitive_closure`
 for more information
 """
-module Posets 
+module FinitePosets 
 # this module has only one dependency.
 using Combinat: collectby, combinations, tally, partitions, dominates 
 export CPoset, Poset,
@@ -265,7 +267,7 @@ transitive_closure
 
 `M`   should  be   a  square   boolean  matrix   representing  a  relation;
 `transitive_closure`  returns a boolean  matrix representing the transitive
-closure  of this  relation; `transistive_closure!`  modifies `M`  in place,
+closure  of  this  relation;  `transitive_closure!`  modifies `M` in place,
 doing   no  allocations.  The   transitive  closure  is   computed  by  the
 Floyd-Warshall algorithm, which is quite fast even for large matrices.
 
@@ -298,6 +300,28 @@ function transitive_closure!(m)
   m
 end
 
+"""
+`hasse(m::Matrix{Bool})`
+Given  an  incidence  matrix  for  a  poset returns the corresponding Hasse
+diagram.
+```julia-repl
+julia> m=incidence(CPoset(:diamond,5))
+5×5 Matrix{Bool}:
+ 1  1  1  1  1
+ 0  1  0  0  1
+ 0  0  1  0  1
+ 0  0  0  1  1
+ 0  0  0  0  1
+
+julia> hasse(m)
+5-element Vector{Vector{Int64}}:
+ [2, 3, 4]
+ [5]
+ [5]
+ [5]
+ []
+```
+"""
 hasse(m::Matrix{Bool})=map(x->filter(y->x[y]==2,1:length(x)),eachrow(m*m))
 
 abstract type AbstractPoset{T} end
@@ -332,9 +356,14 @@ Base.get!(f::Function,o::Poset,s::Symbol)=get!(f,getfield(o,:prop),s)
 Base.delete!(p::Poset,s::Symbol)=delete!(p.prop,s)
 
 """
-`Poset(p::CPoset,e::AbstractVector)`
+`Poset(p::CPoset,e::AbstractVector=1:length(p))`
 
 creates a `Poset` with order specified by `p` and elements `e`.
+```julia-repl
+julia> Poset(CPoset([[2,3],[4],[4],Int[]]),[:a,:b,:c,:d])
+a<b,c<d
+```
+with no second argument transforms a `CPoset` into a `Poset`.
 """
 Poset(p::CPoset,e::AbstractVector{T}) where T=Poset(p,e isa Vector ? e : collect(e),Dict{Symbol,Any}())
 Poset(P::CPoset)=Poset(P,1:length(P))
@@ -344,7 +373,6 @@ hasse(P::Poset)=hasse(P.C)
 linear_extension(P::Poset)=linear_extension(P.C)
 incidence(P::Poset)=incidence(P.C)
 partition(P::Poset)=partition(P.C)
-moebius(P::Poset)=moebius(P.C)
 moebiusmatrix(P::Poset)=moebiusmatrix(P.C)
 coxetermatrix(P::Poset)=coxetermatrix(P.C)
 chainpoly(P::Poset)=chainpoly(P.C)
@@ -368,10 +396,9 @@ CPoset(m::Matrix{Bool})=CPoset(hasse(m),Dict{Symbol,Any}(:incidence=>m))
 `CPoset(h::Vector{<:Vector{<:Integer}})`
 
 Creates a poset from a Hasse diagram given as a `Vector` whose `i`-th entry
-is  the list of indices which are immediate successors (covers)
-of the `i`-th element, that is `h[i]` is the list of `j` such that `i<j` in
-the poset and such that there is no `k` such that `i<k<j`.
-
+is  the  list  of  indices  which  are immediate successors (covers) of the
+`i`-th  element, that is `h[i]`  is the list of  `j` such that `i<j` in the
+poset and such that there is no `k` such that `i<k<j`.
 ```julia-repl
 julia> CPoset([[2,3],[4,5],[4,5],Int[],Int[]])
 1<2,3<4,5
@@ -379,11 +406,48 @@ julia> CPoset([[2,3],[4,5],[4,5],Int[],Int[]])
 """
 CPoset(h::Vector{<:Vector{<:Integer}})=CPoset(h,Dict{Symbol,Any}())
 
+"""
+`Poset(f::Function,e::AbstractVector)`
+
+creates a `Poset` with elements `e` and order between two elements given by
+function `f`.
+```julia-repl
+julia> Poset((x,y)->all(x.≤y),vec(collect(Iterators.product(1:2,1:3))))
+(1, 1)<(2, 1)<(2, 2)<(2, 3)
+(1, 1)<(1, 2)<(2, 2)
+(1, 2)<(1, 3)<(2, 3)
+```
+"""
 function Poset(f::Function,e::AbstractVector)
   Poset(CPoset([(f(x,y)|| x==y) for x in e, y in e]),collect(e))
 end
+"""
+`CPoset(f::Function,n::integer)`
+
+creates the `Poset` on `1:n` with order given by function `f`.
+```julia-repl
+julia> CPoset((x,y)->y%x==0,8)  # the divisibility poset
+1<5,7
+1<2<4<8
+1<3<6
+2<6
+```
+"""
 CPoset(f::Function,n::Integer)=CPoset([(f(x,y)|| x==y) for x in 1:n, y in 1:n])
 
+"""
+`CPoset(covers::Vector{Tuple{Int,Int}})`
+
+creates a poset representing the transitive closure of the given relations.
+The  poset is on `1:n` where `n` is the maximum number which appears in the
+relations.
+```julia-repl
+julia> CPoset([(6,2),(5,1)])
+3,4
+5<1
+6<2
+```
+"""
 function CPoset(covers::Vector{Tuple{Int,Int}})
   n=maximum(maximum.(covers))
   inc=zeros(Bool,n,n)
@@ -393,15 +457,52 @@ function CPoset(covers::Vector{Tuple{Int,Int}})
   CPoset(inc);
 end
 
+"""
+`Poset(covers::Vector{Tuple{T,T}}) where T`
+
+creates a poset representing the transitive closure of the given relations.
+The  poset is on the elements which appear in the relations.
+```julia-repl
+julia> Poset([(:a,:b),(:d,:c)])
+a<b
+d<c
+```
+"""
 function Poset(covers::Vector{Tuple{T,T}})where T
   e=sort(unique(collect(Iterators.flatten(covers))))
   P=CPoset(map(x->map(i->findfirst(==(i),e),x),covers))
   Poset(P,e)
 end
   
+"""
+  - `CPoset(:chain,n)`  a chain on `1:n`
+  - `CPoset(:antichain,n)`  an antichain on `1:n`
+"""
 CPoset(s::Symbol,arg...)=CPoset(Val(s),arg...)
 Poset(s::Symbol,arg...)=Poset(Val(s),arg...)
 CPoset(::Val{:chain},n::Int)=CPoset(push!(map(i->[i],2:n),Int[]))
+"""
+  - `Poset(:chain,e)`  a chain with elements `e`
+  - `Poset(:antichain,e)`  an antichain with elements `e`
+  - `Poset(:powerset,n::Integer)`  the powerset of the set `1:n` with inclusion
+```julia-repl
+julia> p=Poset(:powerset,3);p.show_element=(io,p,n)->join(io,p.elements[n]);
+
+julia> p
+<1<12<123
+<2<12
+<3<13<123
+1<13
+2<23<123
+3<23
+```
+  - `Poset(:powerset,e)`  the powerset of the set `e` with inclusion
+  - `Poset(:partitionsdominance,n)`  the poset of partitions of `n` with dominance order
+```julia-repl
+julia> Poset(:partitionsdominance,5)
+[1, 1, 1, 1, 1]<[2, 1, 1, 1]<[2, 2, 1]<[3, 1, 1]<[3, 2]<[4, 1]<[5]
+```
+"""
 Poset(::Val{:chain},v::AbstractVector)=Poset(CPoset(:chain,length(v)),v)
 CPoset(::Val{:antichain},n::Int)=CPoset([Int[] for i in 1:n])
 Poset(::Val{:antichain},v::AbstractVector)=Poset(CPoset(:antichain,length(v)),v)
@@ -442,12 +543,12 @@ end
 Base.summary(io::IO,p::AbstractPoset)=print(io,typeof(p)," of length ",length(p))
 
 """
-`linear_extension(P)`
+`linear_extension(P::CPoset)`
 
-returns  a  linear  extension  of  the  poset  `P`,  that  is  a vector `l`
-containing  a permutation of the integers  `1:length(P)` such that if `i<j`
-in  `P` (that is `incidence(P)[i,j]` is `true`),  then `i` is before `j` in
-`l`. This is also called a topological sort of `P`.
+returns a linear extension of the `CPoset`, that is a vector `l` containing
+a permutation of the integers `1:length(P)` such that if `i<j` in `P` (that
+is  `incidence(P)[i,j]` is `true`), then `i` is  before `j` in `l`. This is
+also called a topological sort of `P`.
 
 ```julia-repl
 julia> p=CPoset((i,j)->j%i==0,6) # divisibility poset on 1:6
@@ -465,6 +566,7 @@ julia> linear_extension(p)
  4
  6
 ```
+`linear_extension(P::Poset)` returns a linear extension of `P.C`.
 """
 function linear_extension(P::CPoset)::Vector{Int}
   get!(P,:linear_extension)do
@@ -503,6 +605,7 @@ julia> hasse(p)
  []       
  []       
 ```
+`hasse(P::Poset)` returns `hasse(P.C)`.
 """
 hasse(p::CPoset)=p.hasse
 
@@ -524,6 +627,7 @@ julia> incidence(p)
  0  0  0  0  1  1
  0  0  0  0  0  1
 ```
+`incidence(P::Poset)` returns `incidence(P.C)`.
 """
 function incidence(p::CPoset)
   get!(p,:incidence)do
@@ -536,9 +640,31 @@ function incidence(p::CPoset)
   end::Matrix{Bool}
 end
 
+"""
+`P+Q` returns the sum of two `CPoset`s or of two `Poset`s.
+```julia-repl
+julia> CPoset(:chain,2)+CPoset(:chain,3)
+1<2
+3<4<5
+
+julia> Poset(:chain,[1,2])+Poset(:chain,[:a,:b,:c])
+1<2
+a<b<c
+```
+"""
 Base.:+(P::CPoset,Q::CPoset)=CPoset(vcat(hasse(P),map(x->x.+length(P),hasse(Q))))
 Base.:+(P::Poset,Q::Poset)=Poset(P.C+Q.C,vcat(P.elements,Q.elements))
 
+"""
+`P⊕ Q` returns the ordinal sum of two `CPoset`s or of two `Poset`s.
+```julia-repl
+julia> CPoset(:chain,2)⊕ CPoset(:chain,3)
+1<2<3<4<5
+
+julia> Poset(:chain,[1,2])⊕ Poset(:chain,[:a,:b,:c])
+1<2<a<b<c
+```
+"""
 function ⊕(P::CPoset,Q::CPoset)
   m=cat(incidence(P),incidence(Q),dims=(1,2))
   m[1:length(P),length(P).+(1:length(Q))].=true
@@ -546,12 +672,30 @@ function ⊕(P::CPoset,Q::CPoset)
 end
 ⊕(P::Poset,Q::Poset)=Poset(P.C⊕Q.C,vcat(P.elements,Q.elements))
 
+"""
+`P*Q` returns the product of two `CPoset`s or of two `Poset`s.
+```julia-repl
+julia> CPoset(:chain,2)*CPoset(:chain,3)
+1<2<3<6
+1<4<5<6
+2<5
+
+julia> Poset(:chain,[1,2])*Poset(:chain,[:a,:b,:c])
+(1, :a)<(2, :a)<(1, :b)<(2, :c)
+(1, :a)<(2, :b)<(1, :c)<(2, :c)
+(2, :a)<(1, :c)
+```
+"""
 Base.:*(P::CPoset,Q::CPoset)=CPoset(kron(incidence(P),incidence(Q)))
 Base.:*(P::Poset,Q::Poset)=Poset(P.C*Q.C,
                 vec(collect(Iterators.product(P.elements,Q.elements))))
 
 covers(P::CPoset)=vcat([map(j->(i,j),s) for (i,s) in enumerate(hasse(P))]...)
 
+"""
+`dot(p)` gives a rendering of the Hasse diagram of the
+`Poset` or `CPoset` in the graphical language `dot`.
+"""
 function dot(P::AbstractPoset)
   if P isa CPoset q=string
   else  io=IOContext(stdout,:limit=>true)
@@ -567,12 +711,26 @@ function dot(P::AbstractPoset)
   res*"\n}"
 end
 
+"""
+`showpic(p)` display a graphical representation of the Hasse diagram of the
+`Poset` or `CPoset` using the commands `dot` and `display`.
+"""
 function showpic(P::AbstractPoset)
   open(pipeline(`dot -Tpng`,`display`),"w")do f
     print(f,dot(P))
   end
 end
 
+"""
+`P⊗ Q` returns the ordinal product of two `CPoset`s or of two `Poset`s.
+```julia-repl
+julia> CPoset(:chain,2)⊗ CPoset(:chain,3)
+1<3<5<2<4<6
+
+julia> Poset(:chain,[1,2])⊗ Poset(:chain,[:a,:b,:c])
+(1, :a)<(1, :b)<(1, :c)<(2, :a)<(2, :b)<(2, :c)
+```
+"""
 function ⊗(P::CPoset,Q::CPoset)
   a=covers(P)
   b=covers(Q)
@@ -589,6 +747,19 @@ end
 ⊗(P::Poset,Q::Poset)=Poset(P.C⊗ Q.C,
               vec(collect(Iterators.product(P.elements,Q.elements))))
 
+"""
+`coxetermatrix(p)` the Coxeter matrix of the `Poset` or `CPoset`, defined
+as `-m*transpose(inv(m))` where `m` is the ζ or incidence matrix.
+```julia-repl
+julia> coxetermatrix(CPoset(:diamond,5))
+5×5 Matrix{Int64}:
+  0  -1  -1  -1  -2
+  0   0   1   1   1
+  0   1   0   1   1
+  0   1   1   0   1
+ -1  -1  -1  -1  -1
+```
+"""
 coxetermatrix(p::CPoset)=-moebiusmatrix(p)*transpose(incidence(p))
 
 """
@@ -614,9 +785,9 @@ function covering_chains(P::CPoset)
 end
 
 """
-`dual(P::CPoset)`
+`dual(P)`
 
-the dual poset to `P` (the order relation is reversed).
+the dual poset to the `Poset` or `CPoset` (the order relation is reversed).
 
 ```julia-repl
 julia> p=CPoset((i,j)->i%4<j%4,8)
@@ -656,6 +827,7 @@ julia> partition(p)
  [3, 7]
  [1, 5]
 ```
+`partition(P::Poset)` returns `partition(P.C)`
 """
 function partition(p::CPoset)
   l=hasse(dual(p))
@@ -668,11 +840,12 @@ function partition(p::CPoset)
 end
 
 """
-`induced(P::CPoset,S)`
+`induced(P,S)`
 
-returns  the subposet  induced by  `P` on  `S`, a sublist of `P.elements`.
-Note  that  the  sublist  `S`  does  not  have  to  be in the same order as
-`P.elements`, so this can be just used to renumber the elements of `P`.
+returns the subposet induced by `P` on `S`, a sublist of `P.elements` if `P
+isa  Poset` or a subset  of `1:length(P)` if `P  isa CPoset`. Note that the
+sublist  `S` does not have to be in the same order as `P.elements`, so this
+can be just used to renumber the elements of `P`.
 
 ```julia-repl
 julia> p=CPoset((i,j)->i%4<j%4,8)
@@ -744,6 +917,7 @@ julia> p=CPoset((i,j)->j%i==0,8)
 julia> isjoinlattice(p)
 false
 ```
+`isjoinlattice(P::Poset)` returns `isjoinlattice(P.C)`
 """
 isjoinlattice(P::CPoset)=checkl(incidence(P))
 
@@ -763,11 +937,12 @@ julia> p=CPoset((i,j)->j%i==0,8)
 julia> ismeetlattice(p)
 true
 ```
+`ismeetlattice(P::Poset)` returns `ismeetlattice(P.C)`
 """
 ismeetlattice(P::CPoset)=checkl(transpose(incidence(P)))
 
 """
-`moebius(P,y=maximum(P))`
+`moebius(P::CPoset,y=first(maxima(P)))`
 
 the vector of values `μ(x,y)` of the Moebius function of `P` for `x` varying.
 Here is an example giving the ususal Moebius function on integers.
@@ -808,6 +983,7 @@ function moebius(P::CPoset,y=0)
   end
   mu
 end
+moebius(P::Poset,y=0)=moebius(P.C,y)
 
 function unitriangularinv(b::Matrix)
   a=Int.(b)
@@ -817,7 +993,20 @@ function unitriangularinv(b::Matrix)
   a
 end
 
-"`moebiusmatrix(P::CPoset)` the matrix of the Moebius function `μ(x,y)`"
+"`moebiusmatrix(P::CPoset)` 
+the  matrix  of  the  Moebius  function  `μ(x,y)`  (the inverse of the ζ or
+incidence matrix)
+```julia-repl
+julia> moebiusmatrix(CPoset(:diamond,5))
+5×5 Matrix{Int64}:
+ 1  -1  -1  -1   2
+ 0   1   0   0  -1
+ 0   0   1   0  -1
+ 0   0   0   1  -1
+ 0   0   0   0   1
+```
+`moebiusmatrix(P::Poset)` returns `moebiusmatrix(P.C)`
+"
 function moebiusmatrix(P::CPoset)
   o=linear_extension(P)
   r=unitriangularinv(incidence(P)[o,o])
@@ -826,6 +1015,8 @@ function moebiusmatrix(P::CPoset)
 end
 
 """
+`minima(P)`
+the minimal elements of the `Poset` or `CPoset`
 ```julia-repl
 julia> p=CPoset([[3],[3],[4,5],Int[],Int[]])
 1,2<3<4,5
@@ -843,6 +1034,8 @@ end
 minima(p::Poset)=p.elements[minima(p.C)]
 
 """
+`maxima(P)`
+the maximal elements of the `Poset` or `CPoset`
 ```julia-repl
 julia> p=CPoset([[3],[3],[4,5],Int[],Int[]])
 1,2<3<4,5
@@ -863,6 +1056,55 @@ index(p::Poset{T},x::T) where T=findfirst(==(x),p.elements)
 Base.:≤(p::CPoset,a,b)=incidence(p)[a,b]
 Base.:≤(p::Poset,a,b)=≤(p.C,index(p,a),index(p,b))
 
+"""
+`interval(P,f::Function,a)`
+`interval(P,f::Function,a,g::Function,b)`
+
+returns  an interval in the `Poset` or  `CPoset` given by `P`. The function
+`f` must be one of the comparison functions `≤, <, ≥, >`. In the first form
+it returns the interval between `a` and one end (or the other, depending on
+the  comparison function). In  the second form  it returns the
+intersection of the intervals `interval(P,f,a)` and `interval(P,g,b)`.
+```julia-repl
+julia> l=vec(collect(Iterators.product(1:2,1:2)))
+4-element Vector{Tuple{Int64, Int64}}:
+ (1, 1)
+ (2, 1)
+ (1, 2)
+ (2, 2)
+
+julia> P=Poset((x,y)->all(map(<=,x,y)),l)
+(1, 1)<(2, 1),(1, 2)<(2, 2)
+
+julia> interval(P,≤,(1,2)) # elements below (1,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (1, 1)
+ (1, 2)
+
+julia> interval(P,≥,(1,2)) # elements above (1,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (1, 2)
+ (2, 2)
+
+julia> interval(P,<,(1,2)) # elements strictly below (1,2)
+1-element Vector{Tuple{Int64, Int64}}:
+ (1, 1)
+
+julia> interval(P,≥,(2,1),≤,(2,2)) # elements between (2,1) and (2,2)
+2-element Vector{Tuple{Int64, Int64}}:
+ (2, 1)
+ (2, 2)
+
+julia> interval(P,>,(1,1),<,(2,2)) # elements strictly between
+2-element Vector{Tuple{Int64, Int64}}:
+ (2, 1)
+ (1, 2)
+julia> interval(P.C,>,1,<,4) # in terms of indices
+2-element Vector{Int64}:
+ 2
+ 3
+```
+"""
 function interval(p::CPoset,f::Function,i)
   s=Symbol(f)
   if s==:<=  
@@ -883,6 +1125,23 @@ interval(p::CPoset,f::Function,a,g::Function,b)=
 interval(p::Poset,f::Function,a,g::Function,b)=
   p.elements[intersect(interval(p.C,f,index(p,a)),interval(p.C,g,index(p,b)))]
 
+"""
+`maximal_chains(P)` the maximal chains of the `Poset` or `CPoset`.
+```julia-repl
+julia> p=Poset([(:a,:b),(:a,:c),(:b,:d),(:c,:d)])
+a<b,c<d
+
+julia> maximal_chains(p)
+2-element Vector{Vector{Symbol}}:
+ [:a, :b, :d]
+ [:a, :c, :d]
+
+julia> maximal_chains(p.C)
+2-element Vector{Vector{Int64}}:
+ [1, 2, 4]
+ [1, 3, 4]
+```
+"""
 function maximal_chains(P::CPoset)
   get!(P,:maxchains)do
     p=hasse(P)
@@ -905,12 +1164,40 @@ end
 
 maximal_chains(P::Poset)=map(x->P.elements[x],maximal_chains(P.C))
 
+"""
+`chains(P)` the chains of the `Poset` or `CPoset`.
+```julia-repl
+julia> chains(CPoset(:chain,3))
+8-element Vector{Vector{Int64}}:
+ []
+ [1]
+ [2]
+ [3]
+ [1, 2]
+ [1, 3]
+ [2, 3]
+ [1, 2, 3]
+```
+"""
 function chains(P::CPoset)
   l=maximal_chains(P)
   unique(vcat(combinations.(l)...))
 end
 chains(P::Poset)=map(x->P.elements[x],chains(P.C))
 
+"""
+`chainspoly(P)` the chain polynomial of the `Poset` or `CPoset`, returned
+as the list of its coefficients.
+```julia-repl
+julia> chainpoly(Poset(:powerset,3))
+5-element Vector{Int64}:
+  1
+  8
+ 19
+ 18
+  6
+```
+"""
 function chainpoly(P::CPoset)
   l=tally(length.(chains(P)))
   v=fill(0,l[end][1]+1)
@@ -918,5 +1205,8 @@ function chainpoly(P::CPoset)
   v
 end
 
+"""
+`height(P)` the height the `Poset` or `CPoset` (the longest length of a chain).
+"""
 height(P::CPoset)=maximum(length.(maximal_chains(P)))
 end

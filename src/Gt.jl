@@ -294,10 +294,8 @@ function nconjugacy_classes(r::ClassType,WF,p)
     W=Group(WF)
     P=deepcopy(closed_subsystems(W))
     elts=P.elements
-    o=filter(i->sort(elts[i].^HF.phi)==elts[i],1:length(P))
-    o=filter(i->issubset(inclusiongens(H),elts[i]),o)
-    P=induced(P,o)
-    P.elements=elts[o]
+    elts=filter(x->onsets(x,HF.phi)==x && issubset(inclusiongens(H),x),elts)
+    P=induced(P,elts)
 # here P poset of HF.phi-stable closed subsets containing roots(H)
 #   InfoChevie("# ", HF, "==>", P, "")
     l=map(x->spets(reflection_subgroup(W, x), HF.phi), P.elements)

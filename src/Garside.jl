@@ -31,15 +31,15 @@ group  may have  several distinct  Garside structures,  as we  will see for
 Braid groups of finite Coxeter groups).
 
 We  also implement *locally Garside* monoids,  which are monoids where lcms
-do  not always exist, but exist when any common multiple exists; the set of
-simples  is then not defined using a  Garside element, but by the condition
-that  they contain the atoms and are  closed under lcms and taking divisors
-(see  [BDM01](biblio.htm#BDM01)); since it is  not ensured by the existence
-of  `Δ`, one  has to  add the  condition that  any element  is divisible by
+do  not always exist, but  exist if any common  multiple exists; the set of
+simples is then not defined by a Garside element, but by the condition that
+they  contain the atoms and are closed  under lcms and taking divisors (see
+[BDM01](biblio.htm#BDM01));  since this is not  ensured by the existence of
+`Δ`,  one  has  to  add  the  condition  that  each element is divisible by
 finitely many simples (but the number of simples can be infinite). The main
 example  is the Artin monoid of an  infinite Coxeter group. It is not known
-if  these monoids embed in  their group of fractions  (though that has been
-proved for braid monoids of Coxeter groups by Paris
+whether  these monoids embed  in their group  of fractions (though this has
+been proved for braid monoids of Coxeter groups by Paris
 [Paris01](biblio.htm#Paris01))  and thus  computing in  the monoid does not
 help  for computing in the group (only  the monoid is implemented for these
 cases).
@@ -1261,7 +1261,7 @@ function leftgcdc(elts::Vararg{LocallyGarsideElt,N})where {N}
     end
     if isone(g) return (gcd,elts)
     else gcd*=g
-      elts=map((r,e)->r*GarsideElt(M,e.elm[2:end];check=false),rest,elts)
+      elts=map((r,e)->r*tail(e),rest,elts)
     end
   end
 end
@@ -1286,7 +1286,7 @@ julia> leftgcdc(B(2,1,2)^2,B(3,2)^2)
 (2, (121.21, 32.2))
 ```
 """
-leftgcd(elts::Vararg{LocallyGarsideElt,N}) where N=first(leftgcd(elts...))
+leftgcd(elts::Vararg{LocallyGarsideElt,N}) where N=first(leftgcdc(elts...))
 
 function rightgcdc(elts::Vararg{LocallyGarsideElt,N})where N
   g,c=leftgcdc(map(reverse,elts)...)

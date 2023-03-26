@@ -668,6 +668,10 @@ A₁    │              Id:6ₚ′
 function UnipotentClasses(t::TypeIrred,p=0)
   uc=getchev(t,:UnipotentClasses,p)
   if uc===nothing error("no UnipotentClasses for ",t) end
+  uc[:orderClasses]=map(uc[:orderClasses])do v
+    if v isa String && isempty(v) return Int[] end
+    Vector{Int}(v)
+  end
   rank=PermRoot.rank(t)
   classes=UnipotentClass[]
   c=haskey(t,:orbit) ? cartan(t.orbit[1]) : cartan(t)
@@ -861,7 +865,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   end
 end
 
-Posets.Poset(uc::UnipotentClasses)=uc.orderclasses
+FinitePosets.Poset(uc::UnipotentClasses)=uc.orderclasses
 
 function reflection_name(io::IO,W)
   r=join(getchev(W,:ReflectionName,IOContext(io,:TeX=>true).dict),"×")

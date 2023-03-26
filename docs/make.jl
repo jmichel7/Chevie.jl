@@ -11,7 +11,7 @@ makedocs(sitename="Gapjm.jl documentation",
 pages=[
 "index.md",
 "Infrastructure"=>[
-"posets.md",
+"finiteposets.md",
 "sperm.md",
 "symbols.md",
 "ffe.md",
