@@ -510,8 +510,7 @@ u1(2)u2(4)u3(-8)u4(32)u5(-128)u6(512)
 """
 (U::UnipotentGroup)(i::Integer)=UnipotentElement(U, [i=>1])
 
-(U::UnipotentGroup)(l::Pair{Int,T}...) where T=UnipotentElement(U,
-                                                reorder(U,collect(l)))
+(U::UnipotentGroup)(l::Pair{Int}...)=UnipotentElement(U,reorder(U,collect(l)))
 
 Base.show(io::IO,U::UnipotentGroup)=print(io,"UnipotentGroup(",U.W,")")
 

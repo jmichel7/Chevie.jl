@@ -329,7 +329,7 @@ julia> root(Pi,4)
 """
 module Garside
 using ..Gapjm
-export BraidMonoid, braid, shrink, α, DualBraidMonoid, conjcat, fraction,
+export BraidMonoid, shrink, α, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc, 
 leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt, 
@@ -472,7 +472,7 @@ the  `simp`.
 leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
    first(leftlcmc(M,simp...))
 
-function (M::LocallyGarsideMonoid{T})(l::Vararg{I,N})where {T,N,I<:Integer}
+function (M::LocallyGarsideMonoid{T})(l::Vararg{<:Integer})where {T}
   if isempty(l) return GarsideElt(M,T[];check=false) end
   if l[1]>0 res=GarsideElt(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
   else res=inv(M(-l[1]))
@@ -1107,7 +1107,7 @@ function Base.show(io::IO,b::LocallyGarsideElt)
 end
 
 # simple * braid
-function Base.:*(x,b::LocallyGarsideElt)
+function Base.:*(x::T,b::LocallyGarsideElt{T})where T
   M=b.M
   v=b.elm
   res=empty(v)
@@ -1122,7 +1122,7 @@ function Base.:*(x,b::LocallyGarsideElt)
 end
 
 # multiply a simple x by a Garside element b; Gap3 PrefixToNormal
-function Base.:*(x,b::GarsideElt)
+function Base.:*(x::T,b::GarsideElt{T})where T
   M=b.M
   v=b.elm
   res=empty(v)
@@ -1139,7 +1139,7 @@ function Base.:*(x,b::GarsideElt)
 end
 
 # multiply by simple; Gap3 AddToNormal
-function Base.:*(a::LocallyGarsideElt,x)
+function Base.:*(a::LocallyGarsideElt{T},x::T)where T
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
   v=copy(a.elm)
@@ -1156,7 +1156,7 @@ function Base.:*(a::LocallyGarsideElt,x)
   GarsideElt(M,v)
 end
 
-function Base.:*(a::GarsideElt,x)
+function Base.:*(a::GarsideElt{T},x::T)where T
   M=a.M
   if x==one(M) return a end # see if can suppress this special case
   v=copy(a.elm)
@@ -1180,7 +1180,7 @@ function Base.:*(a::GarsideElt,x)
   clone(a,v;check=length(v)==1)
 end
 
-function Base.:*(a::LocallyGarsideElt,b::LocallyGarsideElt)
+function Base.:*(a::LocallyGarsideElt{T},b::LocallyGarsideElt{T})where T
   res=a
   for x in b.elm 
     res*=x 
@@ -1188,7 +1188,7 @@ function Base.:*(a::LocallyGarsideElt,b::LocallyGarsideElt)
   res
 end
 
-function Base.:*(a::GarsideElt,b::GarsideElt)
+function Base.:*(a::GarsideElt{T},b::GarsideElt{T})where T
   res=GarsideElt(a.M,δad.(Ref(a.M),a.elm,b.pd),a.pd+b.pd;check=false)
   for x in b.elm 
     res*=x 
@@ -1211,7 +1211,7 @@ Base.:^(y::GarsideElt{T},r::T,F::Function) where T=y.M(r)\(y*F(r))
 Base.:^(a::LocallyGarsideElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
                                              Base.power_by_squaring(inv(a),-n)
 
-Base.:^(a::GarsideElt,b::GarsideElt,F=x->x)=b\a*F(b)
+Base.:^(a::GarsideElt,b::GarsideElt,F::Function=x->x)=b\a*F(b)
 
 function Base.reverse(b::GarsideElt)
   if haskey(b.M,:revMonoid)
@@ -2112,8 +2112,9 @@ function Gapjm.root(b0::GarsideElt,n=2)
   a=GarsideElt(M,map(x->x.v[1],a.elm),a.pd)
   l=length(conj.elm)
   k=count(x->x.t,conj.elm)
-  conj=GarsideElt(M,vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
-                         map(i->conj.elm[i].v[1+mod(k,n)],k+1:l)),conj.pd)
+  conj=GarsideElt(M,
+  Vector{typeof(one(M))}(vcat(map(i->conj.elm[i].v[1+mod(i,n)],1:k),
+                              map(i->conj.elm[i].v[1+mod(k,n)],k+1:l))),conj.pd)
   conj*a*conj^-1
 end
 #----------------------------------------------------------------------------

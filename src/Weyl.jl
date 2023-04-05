@@ -483,18 +483,19 @@ reverse lexicographically for a given height.
 function Gapjm.roots(C::AbstractMatrix)
   o=one(C)
   R=[o[i,:] for i in axes(C,1)] # fast way to get rows of one(C)
-  j=1
-  while j<=length(R)
-    a=R[j]
+  set=Set(R)
+  for a in R
     c=C*a
     for i in axes(C,1)
-      if j!=i
+      if a[i]!=1 || c[i]!=2
         v=copy(a)
         v[i]-=c[i]
-        if !(v in R) push!(R,v) end
+        if !(v in set) 
+          push!(R,v) 
+          push!(set,v)
+        end
       end
     end
-    j+=1
   end
   if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) end
   # important that roots are sorted as in CHEVIE for e.g. KLeftCells to work
@@ -667,7 +668,7 @@ true
 ```
 For now only works for finite Coxeter groups.
 """
-describe_involution(W,w)=SimpleRootsSubsystem(W,
+describe_involution(W,w)=simpleroots_subsystem(W,
                                         filter(i->action(W,i,w)==i+W.N,1:W.N))
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
@@ -990,14 +991,13 @@ CoxGroups.nref(W::FCSG)=W.N
 
 Base.parent(W::FCSG)=W.parent
 
-# if I are all the positive roots of a subsystem find the simple ones
-function SimpleRootsSubsystem(W,I)
+# if I are the positive roots or all roots of a subsystem find the simple ones
+function simpleroots_subsystem(W,I)
+  N=nref(W)
   filter(I) do i
+    if i>N return false end
     r=refls(W,i)
-    for j in I
-      if j!=i && isleftdescent(W,r,j) return false end
-    end
-    return true
+    all(j->j>N || j==i || !isleftdescent(W,r,j),I)
   end
 end
 
@@ -1047,28 +1047,28 @@ group.
 julia> elH=word.(Ref(H),elements(H))
 4-element Vector{Vector{Int64}}:
  []
- [2]
  [1]
+ [2]
  [1, 2]
 
 julia> elW=word.(Ref(W),elements(H))
 4-element Vector{Vector{Int64}}:
  []
- [1, 2, 1, 2, 1]
  [2]
+ [1, 2, 1, 2, 1]
  [1, 2, 1, 2, 1, 2]
 
 julia> map(w->H(w...),elH)==map(w->W(w...),elW)
 true
 ```
 """
-function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})where {T,T1}
-# contrary to Chevie, I is indices in W and not parent(W)
+function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
+# contrary to GAP3, I is indices in W and not parent(W)
   inclusion=sort!(vcat(orbits(refls(W,I),I)...))
   N=div(length(inclusion),2)
-  if !all(i->i in 1:ngens(W),I) I=SimpleRootsSubsystem(W,inclusion[1:N]) end
+  if !all(<=(ngens(W)),I) I=simpleroots_subsystem(W,inclusion[1:N]) end
   C=cartan(W,I)
-  rootdec=isempty(C) ? Vector{T1}[] : roots(C)
+  rootdec=isempty(C) ? empty(W.rootdec) : roots(C)
   rootdec=vcat(rootdec,-rootdec)
   if isempty(rootdec) inclusion=Int[]
   else m=transpose(toM(W.rootdec[I]))
@@ -1080,8 +1080,9 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   restriction[inclusion]=1:length(inclusion)
   refltypes=map(type_cartan(C)) do t
     if (t.series in [:A,:D]) && rootlengths(W,inclusion[t.indices[1]])==1
+      p=simple_reps(W)[inclusion[t.indices[1]]]
       for s in refltype(W)
-        if inclusion[t.indices[1]] in s.indices && s.series in [:B,:C,:F,:G]
+        if p in s.indices && s.series in [:B,:C,:F,:G]
           t.short=true
         end
       end
@@ -1090,7 +1091,7 @@ function PermRoot.reflection_subgroup(W::FCG{T,T1},I::AbstractVector{<:Integer})
   end
   prop=Dict{Symbol,Any}(:cartan=>C,:refltype=>refltypes)
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
-  gens=isempty(I) ? Perm{T}[] : refls(W,I)
+  gens=isempty(I) ? eltype(W)[] : refls(W,I)
   G=PRSG(gens,one(W.G),inclusion,restriction,W.G,prop)
   FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
 end

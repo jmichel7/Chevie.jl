@@ -28,10 +28,10 @@ galois group of `F`.
 ```julia-repl
 julia> elements(galois(F))
 4-element Vector{Gapjm.Nf.NFAut}:
- Aut(CF(5),-1₅)
  Aut(CF(5),1₅)
- Aut(CF(5),-2₅)
  Aut(CF(5),2₅)
+ Aut(CF(5),-1₅)
+ Aut(CF(5),-2₅)
 ```
 
 An element of the galois group marked `-2₅` acts by raising the fifth roots
@@ -362,8 +362,8 @@ Group(Gapjm.Nf.NFAut[Aut(CF(5),2₅)])
 julia> elements(galois(K))
 4-element Vector{Gapjm.Nf.NFAut}:
  Aut(CF(5),1₅)
- Aut(CF(5),-1₅)
  Aut(CF(5),2₅)
+ Aut(CF(5),-1₅)
  Aut(CF(5),-2₅)
 
 julia> elements(galois(F))

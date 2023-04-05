@@ -929,7 +929,7 @@ function EigenAndDegHecke(s)
   ct1=0 .+CharTable(W).irr
   ct2=improve_type(scalar(value.(ct,Ref(:q=>zeta))))
   n=axes(ct2,1)
-  good=filter(i->!any(x->x isa HasType.Unknown,ct2[:,i]),n)
+  good=filter(i->!any(ismissing,ct2[:,i]),n)
   p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
   if !isone(p) println("***** perm=",p) 
     if iscyclic(W) ChevieErr("should not have perm")end 
@@ -1777,8 +1777,8 @@ function Thgal(W)
   z=isempty(d) ? 1 : gcd(d)
   H=hecke(W,x^z)
   ct=CharTable(H).irr
-  if any(x->x isa Unknown,ct) 
-    ChevieErr("CharTable(",H,") has ",count(x->x isa Unknown,ct)," Unknowns\n")
+  if any(ismissing,ct) 
+    ChevieErr("CharTable(",H,") has ",count(ismissing,ct)," unknowns\n")
     return
   end
   gal=z==1 ? Perm() : Perm(ct,map(u->u(;x=x*E(z)),ct))

@@ -1872,7 +1872,7 @@ julia> catalan(complex_reflection_group(7),2;q=Pol())
 Pol{Int64}: q⁷²+2q⁶⁰+3q⁴⁸+4q³⁶+3q²⁴+2q¹²+1
 ```
 """
-function Combinat.catalan(W,m=1;q=1)
+function Combinat.catalan(W::Group,m=1;q=1)
   if length(refltype(W))>1 error(W," should be irreducible") end
   d=sort(degrees(W))
   d=filter(x->x!=1,d)

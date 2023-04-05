@@ -67,8 +67,7 @@ this construction.
 module Families
 
 export family_imprimitive, Family, drinfeld_double, fourier,
- FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra,
- involution, duality
+ FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality
 
 using ..Gapjm
 
@@ -1031,7 +1030,7 @@ function Algebras.idempotents(A::FusionAlgebra)
   end
 end
 
-Algebras.iscommutative(A::FusionAlgebra)=true
+Groups.isabelian(A::FusionAlgebra)=true
 
 function Chars.CharTable(A::FusionAlgebra)
   irr=improve_type([ratio(coefficients(b*e),coefficients(e))
@@ -1043,7 +1042,7 @@ function Chars.CharTable(A::FusionAlgebra)
          dim(A),Dict{Symbol,Any}(:name=>repr(A;context=:TeX=>true)))
 end
 
-function involution(e::AlgebraElt{FusionAlgebra})
+function Algebras.involution(e::AlgebraElt{FusionAlgebra})
   p=e.A.involution
   AlgebraElt(e.A,ModuleElt([Int(abs(b^p))=>c*sign(b^p) for (b,c) in e.d]))
 end

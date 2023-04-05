@@ -9,60 +9,78 @@ function RationalUnipotentClasses(WF, p=0)
           classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes))
 end
 
+# build the 2N×2N array sumr: sumr[i,j]=k if root(W,i)+root(W,j)=root(W,k)
+#                                       0 if root(W,i)+root(W,j) is not a root
+function sumr(W)
+  get!(W,:sumr)do
+    function possum(i,j)
+      p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
+      isnothing(p) ? 0 : p
+    end
+    [possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
+  end
+end
+
+# closure of the subset roots(W,l)
+function closure(W,l)
+  if length(l)<=1 return l end
+  closure(W,closure(W,l[2:end]),[l[1]])
+end
+
+function closure(W,l,new)
+  psum=sumr(W)
+  while !isempty(new)
+    nnew=Int[]
+    for i in new, j in l
+      u=psum[i,j]
+      if u!=0 push!(nnew, u) end
+    end
+    l=union(l, new)
+    new=setdiff(nnew, l)
+  end
+  sort(l)
+end
+
 """
 `closed_subsystems(W)` 
 
-the Poset of closed subsystems of the root system of `W`. Each closed subsystem
-is represented by the list of indices of its positive roots.
+`W`  should  be  a  Weyl  group.  The  function returns the Poset of closed
+subsystems  of the root system of `W`. Each closed subsystem is represented
+by  the list of indices of its simple roots.  If `W` is the Weyl group of a
+reductive  group  `𝐆  `,  then  closed  subsystem  correspond  to reductive
+subgroups of maximal rank. And all such groups are obtained this way, apart
+from  some  exceptions  in  characteristics  2  and 3 (see [Malle-Testerman
+2011](biblio.htm#MT11) Proposition 13.4).
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
 
 julia> closed_subsystems(W)
-1 2 3 4 5 6<1 4<4<∅
-1 2 3 4 5 6<1 5 6<1<∅
-1 2 3 4 5 6<2 6<6<∅
-1 2 3 4 5 6<3 5<5<∅
+1 2<1 4<4<∅
+1 2<1 5<1<∅
+1 2<2 6<6<∅
+1 2<3 5<5<∅
 1 4<1
-1 5 6<6
-1 5 6<5
+1 5<6
+1 5<5
 2 6<2<∅
 3 5<3<∅
 ```
 """
 function closed_subsystems(W)
   get!(W, :closedsubsets)do
-  function possum(i,j)
-    p=findfirst(==(roots(W,i)+roots(W,j)),roots(W))
-    isnothing(p) ? 0 : p
-  end
-  psum=[possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
-  closure=function(l,new)
-    nnew = new
-    while true
-      new = nnew
-      nnew = Int[]
-      for i in new, j in l
-        if psum[i,j]!=0 push!(nnew, psum[i,j]) end
-      end
-      l = union(l, new)
-      nnew = setdiff(nnew, l)
-      if isempty(nnew) break end
-    end
-    return sort(l)
-  end
   l = [Int[]]
   new = [1]
   covered = [Int[]]
   for w in new
     for f in setdiff(1:nref(W), l[w])
-      n = closure(l[w], [f, f + nref(W)])
-      p = findfirst(==(n),l)
+      n=closure(W,l[w],[f,f+nref(W)])
+      p=findfirst(==(n),l)
       if isnothing(p)
-          push!(l, n)
-          push!(covered, [w])
-          push!(new, length(l))
+        push!(l, n)
+        push!(covered, [w])
+        push!(new, length(l))
       else push!(covered[p], w)
       end
     end
@@ -70,7 +88,7 @@ function closed_subsystems(W)
   covered=unique.(covered)
   P=Poset(CPoset(incidence(CPoset(covered))),l)
   P.show_element=function(io,x,n)
-    e=x.elements[n]
+    e=Weyl.simpleroots_subsystem(W,x.elements[n])
     print(io,isempty(e) ? "∅" : join(filter(<=(nref(W)),e)," "))
   end
   P

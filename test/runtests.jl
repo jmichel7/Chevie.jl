@@ -180,14 +180,14 @@ end
 @test mytest("CoxGroups.jl","W=coxgroup(:H,3)","H₃")
 @test mytest("CoxGroups.jl","w=W(1,2,1,3);","nothing")
 @test mytest("CoxGroups.jl","b=filter(x->bruhatless(W,x,w),elements(W));","nothing")
-@test mytest("CoxGroups.jl","word.(Ref(W),b)","12-element Vector{Vector{Int64}}:\n []\n [3]\n [2]\n [1]\n [2, 3]\n [1, 3]\n [2, 1]\n [1, 2]\n [2, 1, 3]\n [1, 2, 3]\n [1, 2, 1]\n [1, 2, 1, 3]")
+@test mytest("CoxGroups.jl","word.(Ref(W),b)","12-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [3]\n [1, 2]\n [2, 1]\n [1, 3]\n [2, 3]\n [1, 2, 1]\n [1, 2, 3]\n [2, 1, 3]\n [1, 2, 1, 3]")
 @test mytest("CoxGroups.jl","W=CoxSym(3)","𝔖 ₃")
 @test mytest("CoxGroups.jl","bruhatless(W,Perm(1,3))","4-element Vector{Vector{Perm{Int16}}}:\n [()]\n [(1,2), (2,3)]\n [(1,2,3), (1,3,2)]\n [(1,3)]")
 @test mytest("CoxGroups.jl","W=CoxSym(3)","𝔖 ₃")
 @test mytest("CoxGroups.jl","Poset(W)",".<1,2<21,12<121")
-@test mytest("CoxGroups.jl","p=Poset((x,y)->bruhatless(W,x,y),elements(W))","()<(2,3),(1,2)<(1,2,3),(1,3,2)<(1,3)")
+@test mytest("CoxGroups.jl","p=Poset((x,y)->bruhatless(W,x,y),elements(W))","()<(1,2),(2,3)<(1,3,2),(1,2,3)<(1,3)")
 @test mytest("CoxGroups.jl","p.show_element=(io,x,n)->join(io,word(W,x.elements[n]));","nothing")
-@test mytest("CoxGroups.jl","p","<2,1<21,12<121")
+@test mytest("CoxGroups.jl","p","<1,2<12,21<121")
 @test mytest("CoxGroups.jl","W=CoxSym(4)","𝔖 ₄")
 @test mytest("CoxGroups.jl","Poset(W,W(1,3))",".<3,1<13")
 @test mytest("CoxGroups.jl","W=coxgroup(:A,3)","A₃")
@@ -205,7 +205,7 @@ end
 @test mytest("CoxGroups.jl","longest(CoxSym(4))","(1,4)(2,3)")
 @test mytest("CoxGroups.jl","W=CoxSym(3)","𝔖 ₃")
 @test mytest("CoxGroups.jl","gens(W)","2-element Vector{Perm{Int16}}:\n (1,2)\n (2,3)")
-@test mytest("CoxGroups.jl","e=elements(W)","6-element Vector{Perm{Int16}}:\n ()\n (2,3)\n (1,2)\n (1,2,3)\n (1,3,2)\n (1,3)")
+@test mytest("CoxGroups.jl","e=elements(W)","6-element Vector{Perm{Int16}}:\n ()\n (1,2)\n (2,3)\n (1,3,2)\n (1,2,3)\n (1,3)")
 @test mytest("CoxGroups.jl","length.(Ref(W),e)","6-element Vector{Int64}:\n 0\n 1\n 1\n 2\n 2\n 3")
 @test mytest("CoxGroups.jl","W=CoxSym(3)","𝔖 ₃")
 @test mytest("CoxGroups.jl","isleftdescent(W,Perm(1,2),1)","true")
@@ -504,15 +504,15 @@ end
 end
 @testset "Gt.jl" begin
 @test mytest("Gt.jl","W=coxgroup(:G,2)","G₂")
-@test mytest("Gt.jl","closed_subsystems(W)","1 2 3 4 5 6<1 4<4<∅\n1 2 3 4 5 6<1 5 6<1<∅\n1 2 3 4 5 6<2 6<6<∅\n1 2 3 4 5 6<3 5<5<∅\n1 4<1\n1 5 6<6\n1 5 6<5\n2 6<2<∅\n3 5<3<∅")
+@test mytest("Gt.jl","closed_subsystems(W)","1 2<1 4<4<∅\n1 2<1 5<1<∅\n1 2<2 6<6<∅\n1 2<3 5<5<∅\n1 4<1\n1 5<6\n1 5<5\n2 6<2<∅\n3 5<3<∅")
 @test mytest("Gt.jl","t=ClassTypes(rootdatum(:sl,3))","ClassTypes(A₂,good characteristic)\n    C_G(s)│ |C_G(s)|\n──────────┼──────────\nA₂₍₎=Φ₁²  │      Φ₁²\nA₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂\nA₂₍₎=Φ₃   │       Φ₃\nA₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂\nA₂        │q³Φ₁²Φ₂Φ₃")
 end
 @testset "HeckeAlgebras.jl" begin
 @test mytest("HeckeAlgebras.jl","W=coxgroup(:A,2)","A₂")
 @test mytest("HeckeAlgebras.jl","H=hecke(W,0)","hecke(A₂,0)")
 @test mytest("HeckeAlgebras.jl","T=Tbasis(H);","nothing")
-@test mytest("HeckeAlgebras.jl","b=T.(elements(W))","6-element Vector{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n T.\n T₂\n T₁\n T₂₁\n T₁₂\n T₁₂₁")
-@test mytest("HeckeAlgebras.jl","b*permutedims(b)","6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁\n T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁\n T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁\n T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
+@test mytest("HeckeAlgebras.jl","b=T.(elements(W))","6-element Vector{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n T.\n T₁\n T₂\n T₁₂\n T₂₁\n T₁₂₁")
+@test mytest("HeckeAlgebras.jl","b*permutedims(b)","6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n T.    T₁     T₂     T₁₂    T₂₁    T₁₂₁\n T₁    -T₁    T₁₂    -T₁₂   T₁₂₁   -T₁₂₁\n T₂    T₂₁    -T₂    T₁₂₁   -T₂₁   -T₁₂₁\n T₁₂   T₁₂₁   -T₁₂   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₂₁   -T₂₁   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁\n T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁")
 @test mytest("HeckeAlgebras.jl","W=coxgroup(:B,2)","B₂")
 @test mytest("HeckeAlgebras.jl","@Pol q","Pol{Int64}: q")
 @test mytest("HeckeAlgebras.jl","H=hecke(W,q)","hecke(B₂,q)")
@@ -599,7 +599,7 @@ end
 @test mytest("KL.jl","Pol(:x);KLPol(W,y,w)","Pol{Int64}: x³+1")
 @test mytest("KL.jl","KLPol(W,cr,w)","Pol{Int64}: x³+1")
 @test mytest("KL.jl","W=coxgroup(:B,3)","B₃")
-@test mytest("KL.jl","map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Vector{Vector{Pol{Int64}}}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, x+1, 1, 1, 1, 1]\n [x+1, 1, 1, x+1, x+1, 1, x+1, 1]\n [1, x+1, 1, x+1, x+1, x²+1, 1]\n [x+1, x+1, x²+x+1, 1, 1]\n [x²+1, x+1, 1]\n [1]")
+@test mytest("KL.jl","map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)","9-element Vector{Vector{Pol{Int64}}}:\n [1, 1, 1]\n [1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, 1, 1]\n [1, 1, 1, 1, 1, x+1, 1, 1]\n [x+1, 1, x+1, x+1, 1, 1, x+1, 1]\n [x²+1, 1, x+1, x+1, x+1, 1, 1]\n [1, 1, x²+x+1, x+1, x+1]\n [1, x+1, x²+1]\n [1]")
 @test mytest("KL.jl","W=coxgroup(:B,2);@Pol v;H=hecke(W,[v^4,v^2])","hecke(B₂,Pol{Int64}[v⁴, v²])")
 @test mytest("KL.jl","Cp=Cpbasis(H);h=Cp(1)^2","(v²+v⁻²)C′₁")
 @test mytest("KL.jl","k=Tbasis(h)","(1+v⁻⁴)T.+(1+v⁻⁴)T₁")
@@ -645,7 +645,7 @@ end
 @test mytest("Nf.jl","K=NF(root(5))","NF(5,-1₅)")
 @test mytest("Nf.jl","conductor(K)","5")
 @test mytest("Nf.jl","E(5)+E(5,-1) in NF(root(5))","true")
-@test mytest("Nf.jl","elements(galois(F))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),-1₅)\n Aut(CF(5),1₅)\n Aut(CF(5),-2₅)\n Aut(CF(5),2₅)")
+@test mytest("Nf.jl","elements(galois(F))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
 @test mytest("Nf.jl","NF(root(3),root(5))","NF(60,-11₆₀,-1₆₀)")
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [8₂₄]\n [11₂₄, -7₂₄]\n [-8₂₄]")
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24),Mod(5,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [5₂₄, -1₂₄]\n [8₂₄]\n [-8₂₄]")
@@ -658,7 +658,7 @@ end
 @test mytest("Nf.jl","K=CF(5)","CF(5)")
 @test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
 @test mytest("Nf.jl","galois(K)","Group(Gapjm.Nf.NFAut[Aut(CF(5),2₅)])")
-@test mytest("Nf.jl","elements(galois(K))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-2₅)")
+@test mytest("Nf.jl","elements(galois(K))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
 @test mytest("Nf.jl","elements(galois(F))","2-element Vector{Gapjm.Nf.NFAut}:\n Aut(NF(5,-1₅),1₅)\n Aut(NF(5,-1₅),2₅)")
 end
 @testset "PermRoot.jl" begin
@@ -867,8 +867,6 @@ end
 @test mytest("Tools2.jl","factor(x^2-y^2+x+3y-2)","2-element Vector{Mvp{Int64, Int64}}:\n x-y+2\n x+y-1")
 @test mytest("Tools2.jl","factor(x^2+x+1)","2-element Vector{Mvp{Cyc{Int64}, Int64}}:\n x-ζ₃\n x-ζ₃²")
 @test mytest("Tools2.jl","factor(x*y-1)","1-element Vector{Mvp{Int64, Int64}}:\n xy-1")
-@test mytest("Tools2.jl","a=[Unknown(),Unknown()]","2-element Vector{Unknown}:\n ?\n ?")
-@test mytest("Tools2.jl","a.*[0,1]","2-element Vector{Any}:\n 0\n  ?")
 end
 @testset "Uch.jl" begin
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")
@@ -1065,8 +1063,8 @@ end
 @test mytest("Weyl.jl","diagram(W)","O⇛ O G₂\n1  2")
 @test mytest("Weyl.jl","H=reflection_subgroup(W,[2,6])","G₂₍₂₆₎=Ã₁×A₁")
 @test mytest("Weyl.jl","diagram(H)","O Ã₁\n1\nO A₁\n2")
-@test mytest("Weyl.jl","elH=word.(Ref(H),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [2]\n [1]\n [1, 2]")
-@test mytest("Weyl.jl","elW=word.(Ref(W),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [1, 2, 1, 2, 1]\n [2]\n [1, 2, 1, 2, 1, 2]")
+@test mytest("Weyl.jl","elH=word.(Ref(H),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [1, 2]")
+@test mytest("Weyl.jl","elW=word.(Ref(W),elements(H))","4-element Vector{Vector{Int64}}:\n []\n [2]\n [1, 2, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]")
 @test mytest("Weyl.jl","map(w->H(w...),elH)==map(w->W(w...),elW)","true")
 end
 @testset "cheviesupport.jl" begin

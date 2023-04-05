@@ -1,5 +1,5 @@
 module Tools2
-export eigmat, Unknown
+export eigmat
 
 using PuiseuxPolynomials
 using LaurentPolynomials
@@ -132,43 +132,6 @@ function CycPol(x::Mvp)
   end
 end
 
-#-----------------------------------------------------------------------
-"""
-An `Unknown()` represents an element of a ring which is not known. The main
-difference  with  `missing`  is  that  `0*Unknown()==0`  (that  at least we
-know!). An unknown is printed at the repl as `?`.
-
-```julia-repl
-julia> a=[Unknown(),Unknown()]
-2-element Vector{Unknown}:
- ?
- ?
-
-julia> a.*[0,1]
-2-element Vector{Any}:
- 0
-  ?
-```
-"""
-struct Unknown end
-
-Base.:+(a,b::Unknown)=b
-Base.:+(b::Unknown,a)=b
-Base.:+(b::Unknown,a::Unknown)=b
-Base.:*(a,b::Unknown)=iszero(a) ? a : b
-Base.:*(b::Unknown,a)=iszero(a) ? a : b
-Base.:*(b::Unknown,a::Unknown)=b
-Base.zero(a::Unknown)=0
-Base.show(io::IO,a::Unknown)=print(io,get(io,:limit,false) ? "?" : "Unknown()")
-Base.isless(a::Unknown,b::Number)=false
-Base.isless(b::Number,a::Unknown)=true
-Base.isless(b::Unknown,a::Unknown)=false
-Base.:(//)(a::Unknown,b)=a
-Base.isreal(a::Unknown)=false
-Base.isinteger(a::Unknown)=false
-Base.conj(a::Unknown)=a
-Base.broadcastable(a::Unknown)=Ref(a)
-CyclotomicNumbers.galois(a::Unknown,i)=a
 #-------------------- define function to backport to gap3 some values
 Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 

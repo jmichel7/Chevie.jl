@@ -1426,7 +1426,7 @@ julia> charnames(W;spaltenstein=true,TeX=true)
 The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
-function charnames(io::IO,W::Union{Group,Coset{T,TW}})where{T,TW}
+function charnames(io::IO,W::Union{Group,Coset})
   if applicable(refltype,W) cn=charnames(io,charinfo(W))
   else cn=CharTable(W).charnames
   end

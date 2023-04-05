@@ -468,6 +468,8 @@ Base.length(W::CoxHyperoctaedral)=prod(degrees(W))
 CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
 
 PermRoot.rank(W::CoxHyperoctaedral)=W.n
+CoxGroups.maxpara(W::CoxHyperoctaedral)=1:W.n-1
+PermRoot.inclusiongens(W::CoxHyperoctaedral)=1:W.n
 
 function PermRoot.refls(W::CoxHyperoctaedral{T})where T
   get!(W,:refls)do

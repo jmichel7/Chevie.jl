@@ -232,3 +232,45 @@ function exceptioCharName(para)
   if length(para)==3 res*="'"^para[3] end
   res
 end
+#-----------------------------------------------------------------------
+#if false
+#"""
+#An `Unknown()` represents an element of a ring which is not known. The main
+#difference  with  `missing`  is  that  `0*Unknown()==0`  (that  at least we
+#know!). An unknown is printed at the repl as `?`.
+#
+#```julia-rep1
+#julia> a=[GAPENV.Unknown(),GAPENV.Unknown()]
+#2-element Vector{Gapjm.GAPENV.Unknown}:
+# ?
+# ?
+#
+#julia> a.*[0,1]
+#2-element Vector{Any}:
+# 0
+#  ?
+#```
+#"""
+#struct Unknown end
+#
+#Base.:+(a,b::Unknown)=b
+#Base.:+(b::Unknown,a)=b
+#Base.:+(b::Unknown,a::Unknown)=b
+#Base.:*(a,b::Unknown)=iszero(a) ? a : b
+#Base.:*(b::Unknown,a)=iszero(a) ? a : b
+#Base.:*(b::Unknown,a::Unknown)=b
+#Base.zero(a::Unknown)=0
+#Base.show(io::IO,a::Unknown)=print(io,get(io,:limit,false) ? "?" : "Unknown()")
+#Base.isless(a::Unknown,b::Number)=false
+#Base.isless(b::Number,a::Unknown)=true
+#Base.isless(b::Unknown,a::Unknown)=false
+#Base.:(//)(a::Unknown,b)=a
+#Base.isreal(a::Unknown)=false
+#Base.isinteger(a::Unknown)=false
+#Base.conj(a::Unknown)=a
+#Base.broadcastable(a::Unknown)=Ref(a)
+#CyclotomicNumbers.galois(a::Unknown,i)=a
+#else
+Unknown()=missing
+Base.:*(a::Missing,b)=a
+#end

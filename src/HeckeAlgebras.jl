@@ -89,19 +89,19 @@ julia> T=Tbasis(H);            # Create the `T` basis
 julia> b=T.(elements(W))       # the basis
 6-element Vector{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  T.
- T₂
  T₁
- T₂₁
+ T₂
  T₁₂
+ T₂₁
  T₁₂₁
 
 julia> b*permutedims(b)       # multiplication table
 6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- T.    T₂     T₁     T₂₁    T₁₂    T₁₂₁
- T₂    -T₂    T₂₁    -T₂₁   T₁₂₁   -T₁₂₁
- T₁    T₁₂    -T₁    T₁₂₁   -T₁₂   -T₁₂₁
- T₂₁   T₁₂₁   -T₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁
- T₁₂   -T₁₂   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁
+ T.    T₁     T₂     T₁₂    T₂₁    T₁₂₁
+ T₁    -T₁    T₁₂    -T₁₂   T₁₂₁   -T₁₂₁
+ T₂    T₂₁    -T₂    T₁₂₁   -T₂₁   -T₁₂₁
+ T₁₂   T₁₂₁   -T₁₂   -T₁₂₁  -T₁₂₁  T₁₂₁
+ T₂₁   -T₂₁   T₁₂₁   -T₁₂₁  -T₁₂₁  T₁₂₁
  T₁₂₁  -T₁₂₁  -T₁₂₁  T₁₂₁   T₁₂₁   -T₁₂₁
 ```
 Thus,  we work  with algebras  with arbitrary  parameters. We will see that
@@ -1047,7 +1047,7 @@ function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
   p=findfirst(==(w),word.(conjugacy_classes(W))) 
   if !isnothing(p) return CharTable(H).irr[:,p] end
   map(representations(H))do r
-    if isnothing(r) return Unknown() end
+    if isnothing(r) return nothing end
     first(traces_words_mats(r,[w]))
   end
 end

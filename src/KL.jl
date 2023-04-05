@@ -249,11 +249,11 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
  [1, 1, 1]
  [1, 1, 1, 1, 1]
  [1, 1, 1, 1, 1, 1, 1]
- [1, 1, 1, x+1, 1, 1, 1, 1]
- [x+1, 1, 1, x+1, x+1, 1, x+1, 1]
- [1, x+1, 1, x+1, x+1, x²+1, 1]
- [x+1, x+1, x²+x+1, 1, 1]
- [x²+1, x+1, 1]
+ [1, 1, 1, 1, 1, x+1, 1, 1]
+ [x+1, 1, x+1, x+1, 1, 1, x+1, 1]
+ [x²+1, 1, x+1, x+1, x+1, 1, 1]
+ [1, 1, x²+x+1, x+1, x+1]
+ [1, x+1, x²+1]
  [1]
 ```
 """
@@ -1152,7 +1152,7 @@ function Base.show(io::IO, h::AlgebraElt{AsymptoticAlgebra})
   show(IOContext(io,:showbasis=>showbasis),h.d)
 end
 
-Algebras.iscommutative(A::AsymptoticAlgebra)=false
+Groups.isabelian(A::AsymptoticAlgebra)=false
 
 function Chars.CharTable(A::AsymptoticAlgebra)
   centralizers=fill(dim(A),dim(A))

@@ -103,7 +103,8 @@ function unicodeTeX(s::String)
   s=replace(s,r"''*"=>t->stringprime(rio(),length(t)))
 # s=replace(s,r"\{([^}]*)\}"=>s"\1")
   s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")
-  s=replace(s,r"([^a-zA-Z0-9])\{([^}{,]*)\}"=>s"\1\2")
+  s=replace(s,r"([^a-zA-Z0-9])\{([^}{,=]*)\}"=>s"\1\2")
+  s=replace(s,r"([^a-zA-Z0-9])\{([^}{,=]*)\}"=>s"\1\2")
   s
 end
 

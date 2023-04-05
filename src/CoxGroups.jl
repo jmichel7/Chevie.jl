@@ -333,6 +333,8 @@ function reducedfrom(H::CoxeterGroup,W::CoxeterGroup,S)
   unique(res)
 end
 
+maxpara(W::CoxeterGroup)=2:ngens(W)
+
 """
 `elements(W::CoxeterGroup[,l])`
 
@@ -353,11 +355,11 @@ true
 ```
 """
 function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
-  elts=get!(()->Dict(0=>[one(W)]),W,:elements)::Dict{Int,Vector{T}}
+  elts=get!(()->OrderedDict(0=>[one(W)]),W,:elements)::OrderedDict{Int,Vector{T}}
   if haskey(elts,l) return elts[l] end
   if ngens(W)==1 return l>1 ? T[] : gens(W) end
 # if l==1 return elts[1]=gens(W) end
-  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)::CoxeterGroup{T}
+  H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
   rc=get!(()->[[one(W)]],W,:rc)::Vector{Vector{T}}
   while length(rc)<=l
     new=reducedfrom(H,W,rc[end])
@@ -379,20 +381,22 @@ function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts[l]
 end
 
-function Groups.elements(W::CoxeterGroup)
-  reduce(vcat,map(i->elements(W,i),0:nref(W)))
+function Groups.elements(W::CoxeterGroup,I::AbstractVector{<:Integer})
+  reduce(vcat,map(i->elements(W,i),I))
 end
+
+Groups.elements(W::CoxeterGroup)=elements(W,0:nref(W))
 
 const Wtype=Vector{Int8}
 function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
-  ww=get!(()->Dict(0=>[Wtype([])]),W,:words)::Dict{Int,Vector{Wtype}}
+  ww=get!(()->OrderedDict(0=>[Wtype([])]),W,:words)::OrderedDict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if ngens(W)==1
     if l!=1 return Vector{Int}[]
     else return [[1]]
     end
   end
-  H=get!(()->reflection_subgroup(W,1:ngens(W)-1),W,:maxpara)::CoxeterGroup{T}
+  H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
   rc=get!(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
   while length(rc)<=l
     new=reducedfrom(H,W,(x->W(x...)).(rc[end]))
@@ -401,9 +405,10 @@ function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
     end
   end
   ww[l]=Wtype([])
+  d=inclusiongens(H)
   for i in max(0,l+1-length(rc)):l
     e=words(H,i)
-    for x in rc[1+l-i], w in e push!(ww[l],vcat(w,x)) end
+    for x in rc[1+l-i], w in e push!(ww[l],vcat(d[w],x)) end
 #   somewhat slower variant
 #   for x in rc[1+l-i] append!(ww[l],vcat.(e,Ref(x))) end
   end
@@ -452,16 +457,16 @@ julia> b=filter(x->bruhatless(W,x,w),elements(W));
 julia> word.(Ref(W),b)
 12-element Vector{Vector{Int64}}:
  []
- [3]
- [2]
  [1]
- [2, 3]
- [1, 3]
- [2, 1]
+ [2]
+ [3]
  [1, 2]
- [2, 1, 3]
- [1, 2, 3]
+ [2, 1]
+ [1, 3]
+ [2, 3]
  [1, 2, 1]
+ [1, 2, 3]
+ [2, 1, 3]
  [1, 2, 1, 3]
 ```
 """
@@ -531,7 +536,7 @@ The  above  poset  is  constructed  efficiently  by  constructing the Hasse
 diagram, but it could be constructed naively as follows:
 ```julia-repl
 julia> p=Poset((x,y)->bruhatless(W,x,y),elements(W))
-()<(2,3),(1,2)<(1,2,3),(1,3,2)<(1,3)
+()<(1,2),(2,3)<(1,3,2),(1,2,3)<(1,3)
 ```
 The  output is not so nice, showing permutations instead of words. This can
 be fixed by defining:
@@ -539,7 +544,7 @@ be fixed by defining:
 julia> p.show_element=(io,x,n)->join(io,word(W,x.elements[n]));
 
 julia> p
-<2,1<21,12<121
+<1,2<12,21<121
 
 julia> W=CoxSym(4)
 𝔖 ₄
@@ -830,15 +835,18 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
   G::PermGroup{T}
   inversions::Vector{Tuple{Int,Int}}
   refls::Vector{Perm{T}}
-  n::Int
+  d::UnitRange{Int}
 end
 
 #@forward CoxSym.G Base.iterate, Groups.gens, Base.one, PermGroups.orbits,
 #  PermGroups.orbit
 
 """
-  `Coxsym(n)` The symmetric group on `n` letters as a Coxeter group.
-  The coxeter generators are the `Perm(i,i+1)`.
+  `Coxsym(n::Integer)` or `CoxSym(m:n)`
+
+The  symmetric group on the  letters `1:n` (or if  a `m≤n` is given, on the
+letters  `m:n`)  as  a  Coxeter  group.  The  coxeter  generators  are  the
+`Perm(i,i+1)` for `i` in `m:n-1`.
 ```julia-repl
 julia> W=CoxSym(3)
 𝔖 ₃
@@ -851,10 +859,10 @@ julia> gens(W)
 julia> e=elements(W)
 6-element Vector{Perm{Int16}}:
  ()     
- (2,3)  
  (1,2)  
- (1,2,3)
+ (2,3)  
  (1,3,2)
+ (1,2,3)
  (1,3)  
 
 julia> length.(Ref(W),e) # length in the genrators of the elements
@@ -867,26 +875,30 @@ julia> length.(Ref(W),e) # length in the genrators of the elements
  3
 ```
 """
-function CoxSym(n::Int)
-  gens=map(i->Perm(i,i+1;degree=n),1:n-1)
-  inversions=[(i,i+k) for k in 1:n-1 for i in 1:n-k]
-  refs=[Perm(r...;degree=n) for r in inversions]
+CoxSym(n::Int)=CoxSym(1:n)
+
+function CoxSym(d::UnitRange)
+  gens=map(i->Perm(i,i+1;degree=d.stop),d.start:d.stop-1)
+  inversions=[(i,i+k) for k in 1:length(d)-1 for i in d.start:d.stop-k]
+  refs=[Perm(r...;degree=d.stop) for r in inversions]
   append!(refs,refs)
-  CoxSym(Group(gens),inversions,refs,n,Dict{Symbol,Any}())
+  CoxSym(Group(gens),inversions,refs,d,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
-  if hasdecor(io) printTeX(io,"\\mathfrak S_{$(W.n)}")
-  else print(io,"CoxSym($(W.n))")
+  if W.d.start==1 n=string(W.d.stop) else n=string(W.d) end
+  if hasdecor(io) printTeX(io,"\\mathfrak S_{$n}")
+  else print(io,"CoxSym(n)")
   end
 end
 
 PermRoot.action(W::CoxSym,i,p)=i^p
 
 PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
-  [TypeIrred(Dict(:series=>:A,:indices=>collect(1:W.n-1)))]
+  [TypeIrred(Dict(:series=>:A,:indices=>collect(1:length(W.d)-1)))]
 end
 
+PermRoot.inclusiongens(W::CoxSym)=W.d
 Groups.classreps(W::CoxSym)=map(x->W(x...),classinfo(W).classtext)
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
@@ -925,7 +937,7 @@ degrees(W::CoxSym)=2:ngens(W)+1
 """
 `cartan(W::CoxeterGroup)`  The Cartan matrix of `W`.
 """
-PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
+PermRoot.cartan(W::CoxSym)=cartan(:A,ngens(W))
 
 # for reflection_subgroups note the difference with Chevie:
 # leftdescents, rightdescents, word  use indices in W and not in parent(W)
@@ -935,8 +947,9 @@ PermRoot.cartan(W::CoxSym)=cartan(:A,W.n-1)
 The only reflection subgroups defined for `CoxSym(n)` are for `I=1:m` for `m≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
-  if I!=1:length(I) error(I," should be 1:n for some n") end
-  CoxSym(length(I)+1)
+  if sort(I)!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
+  if W.d.start+maximum(I)>W.d.stop error("range too large") end
+  CoxSym(W.d.start.+(minimum(I)-1:maximum(I)))
 end
 #------------------------ MatCox ------------------------------
 
@@ -971,6 +984,8 @@ function coxeter_group(C::Matrix{T})where T
 end
 
 const coxgroup=coxeter_group
+
+maxpara(W::MatCox)=1:ngens(W)-1
 
 function PermRoot.reflection_subgroup(W::MatCox,I::AbstractVector{Int})
   if length(I)>0 n=maximum(I)
