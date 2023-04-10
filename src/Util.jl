@@ -6,7 +6,7 @@ please tell me.
 module Util
 using Gapjm: stringexp, stringprime
 
-export @forward
+export @forward 
 export showtable, ordinal, fromTeX, printTeX, joindigits, cut, 
   rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, hasdecor # formatting
 export toL, toM # convert Gap matrices <-> Julia matrices
@@ -38,7 +38,6 @@ macro forward(ex, fs)
   end
   Expr(:block, fdefs...)
 end
-
 #----------------------- Formatting -----------------------------------------
 # print with attributes...
 hasdecor(io::IO)=get(io,:TeX,false)||get(io,:limit,false)

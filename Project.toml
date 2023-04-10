@@ -23,7 +23,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 UsingMerge = "b01ca8d2-7fff-4612-bd8c-d9d20281f780"
 
 [compat]
-Combinat = "0.0.3, 0.0.4"
+Combinat = "0.0.3, 0.0.4, 0.0.5"
 CycPols = "0.1"
 CyclotomicNumbers = "0.1"
 FinitePosets = "0.1"

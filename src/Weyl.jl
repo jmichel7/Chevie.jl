@@ -199,7 +199,7 @@ GAP3 for the same computation takes 2.2s
 module Weyl
 
 export two_tree, rootdatum, torus, istorus,
- dimension, with_inversions, standard_parabolic, describe_involution,
+ dim, dimension, with_inversions, standard_parabolic, describe_involution,
  relative_group, rootlengths, highest_short_root, badprimes,
  ComplexReflectionGroup
 # to use as a stand-alone module uncomment the next line
@@ -480,7 +480,7 @@ should be the Cartan matrix of a finite Coxeter group.
 For  an integer Cartan matrix, the returned  roots are sorted by height and
 reverse lexicographically for a given height.
 """
-function Gapjm.roots(C::AbstractMatrix)
+function PermRoot.roots(C::AbstractMatrix)
   o=one(C)
   R=[o[i,:] for i in axes(C,1)] # fast way to get rows of one(C)
   set=Set(R)
@@ -673,15 +673,8 @@ describe_involution(W,w)=simpleroots_subsystem(W,
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-#"""
-#  The reflection degrees of W
-#"""
-#function Gapjm.degrees(W::FiniteCoxeterGroup)
-#  l=sort(tally(sum.(W.rootdec[1:W.N])),by=last,rev=true)
-#  reverse(1 .+conjugate_partition(last.(l)))
-#end
-
-dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
+dim(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
+const dimension=dim
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 @inline Base.parent(W::FiniteCoxeterGroup)=W
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
@@ -691,13 +684,13 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
 #forwarded methods to PermRoot/W.G
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
- Gapjm.roots, Groups.gens, Groups.conjugacy_classes,
+ Groups.gens, Groups.conjugacy_classes,
  PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
  PermGroups.stabilizer,PermGroups.transporting_element,
  PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.coxnum,
  PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
  PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank,
- PermRoot.reflchar,
+ PermRoot.roots, PermRoot.reflchar,
 #PermRoot.reflections,
  PermRoot.refls,
  PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,
@@ -856,7 +849,8 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   rootdec=vcat(rootdec,-rootdec)
   mats=map(reflectionmat,eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
-  gens=map(M->Perm(r,Ref(transpose(M)).*r),mats)
+  pr=sortPerm(r)
+  gens=map(M->sortPerm(Ref(transpose(M)).*r)\pr,mats)
   rank=size(C,1)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)

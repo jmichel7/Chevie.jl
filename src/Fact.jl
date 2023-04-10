@@ -5,7 +5,8 @@ module Fact
 import Primes: Primes, nextprime, factor
 using LinearAlgebra:exactdiv
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, valuation, coefficients
-using ..FFields: FFields, FFE, Mod
+using ..FFields: FFields, FFE
+using ..Modulo: Modulo, Mod
 using ..Combinat: Combinat, combinations, npartitions
 using ..Tools: improve_type
 
@@ -323,9 +324,9 @@ function LogInt(n, base)
   log(base)
 end
 
-FFields.Mod(x::Pol,p)=Pol(Mod.(x.c,p),x.v)
-FFields.Mod(x::Pol{FFE{p}}) where p=Pol(Mod.(x.c),x.v)
-FFields.Mod(x::Mod,p)=Mod(x.val,p)
+Modulo.Mod(x::Pol,p)=Pol(Mod.(x.c,p),x.v)
+Modulo.Mod(x::Pol{FFE{p}}) where p=Pol(Mod.(x.c),x.v)
+Modulo.Mod(x::Mod,p)=Mod(x.val,p)
 
 function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
 #   p,              # prime

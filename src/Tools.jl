@@ -11,7 +11,8 @@ using PermGroups: Group, Groups, gens, word, PermGroup, elements,
          minimal_words, isabelian
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor
-using ..FFields: FFields, FFE, Mod, Z
+using ..FFields: FFields, FFE, Z
+using ..Modulo: Mod
 using ..Gapjm: Gapjm, order
 
 #------------------ improve_type

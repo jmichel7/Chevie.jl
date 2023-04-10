@@ -356,7 +356,7 @@ true
 """
 function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=get!(()->OrderedDict(0=>[one(W)]),W,:elements)::OrderedDict{Int,Vector{T}}
-  if haskey(elts,l) return elts[l] end
+  get!(elts,l)do
   if ngens(W)==1 return l>1 ? T[] : gens(W) end
 # if l==1 return elts[1]=gens(W) end
   H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
@@ -368,17 +368,16 @@ function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
     end
   end
 # println("l=$l W=$W H=$H rc=$rc")
-  elts[l]=T[]
-  for i in max(0,l+1-length(rc)):l
-    for x in rc[1+l-i] 
-      append!(elts[l],elements(H,i).*Ref(x))
-    end
+  v=T[]
+  for i in max(0,l+1-length(rc)):l, x in rc[1+l-i] 
+    append!(v,elements(H,i).*Ref(x))
   end
 # if applicable(nref,W) # this does not reduce much time
 #   N=nref(W)
 #   if N-l>l && !haskey(elts,N-l) elts[N-l]=elts[l].*longest(W) end
 # end
-  elts[l]
+  v
+  end
 end
 
 function Groups.elements(W::CoxeterGroup,I::AbstractVector{<:Integer})

@@ -614,18 +614,18 @@ BraidMonoid(A₂)
 
 julia> elements(M,4)
 12-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
- 12.21
- 21.12
- 1.1.1.1
- 2.2.2.2
- 1.1.12
- 1.12.2
- 12.2.2
- 2.2.21
- 21.1.1
- 2.21.1
  Δ.1
  Δ.2
+ 12.21
+ 12.2.2
+ 1.12.2
+ 1.1.12
+ 1.1.1.1
+ 21.12
+ 21.1.1
+ 2.21.1
+ 2.2.21
+ 2.2.2.2
 ```
 """
 function PermGroups.elements(M::LocallyGarsideMonoid,l::Integer)
@@ -653,7 +653,7 @@ function PermGroups.elements(M::LocallyGarsideMonoid,l::Integer)
         push!(res,clone(b,vcat(b.elm,[M.atoms[i]])))
       end
     end
-    collect(Set(res))
+    unique!(res)
   end
 end
 

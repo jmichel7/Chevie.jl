@@ -21,6 +21,17 @@ function mytest(file::String,src::String,man::String)
   exec==man
 end
 @testset verbose = true "Gapjm" begin
+@testset "Algebras.jl" begin
+@test mytest("Algebras.jl","G=symmetric_group(5)","Group((1,2),(2,3),(3,4),(4,5))")
+@test mytest("Algebras.jl","Algebras.pprimesections(G,2)","3-element Vector{Vector{Int64}}:\n [1, 2, 4, 5]\n [3, 6]\n [7]")
+@test mytest("Algebras.jl","Algebras.pprimesections(G,3)","5-element Vector{Vector{Int64}}:\n [1, 3]\n [2, 6]\n [4]\n [5]\n [7]")
+@test mytest("Algebras.jl","W=coxgroup(:B,4)","B₄")
+@test mytest("Algebras.jl","A=SolomonAlgebra(W)","SolomonAlgebra(B₄,Int64)")
+@test mytest("Algebras.jl","X=A.xbasis","#143 (generic function with 1 method)")
+@test mytest("Algebras.jl","X(1,2,3)*X(2,4)","2X₂+2X₄")
+@test mytest("Algebras.jl","W.solomon_subsets","16-element Vector{Vector{Int64}}:\n [1, 2, 3, 4]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 4]\n [2, 3, 4]\n [1, 2]\n [1, 3]\n [1, 4]\n [2, 3]\n [2, 4]\n [3, 4]\n [1]\n [2]\n [3]\n [4]\n []")
+@test mytest("Algebras.jl","W.solomon_conjugacy","12-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7, 8]\n [9, 11]\n [10]\n [12]\n [13, 14, 15]\n [16]")
+end
 @testset "Chars.jl" begin
 @test mytest("Chars.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Chars.jl","CharTable(W)","CharTable(A₃)\n    │1111 211 22 31  4\n────┼──────────────────\n1111│   1  -1  1  1 -1\n211 │   3  -1 -1  .  1\n22  │   2   .  2 -1  .\n31  │   3   1 -1  . -1\n4   │   1   1  1  1  1")
@@ -242,16 +253,6 @@ end
 @test mytest("FFfac.jl","factor(f,GF(9))","4-element Vector{Pol{FFE{3}}}:\n q+1\n q-1\n q+Z₉²\n q+Z₉⁶")
 end
 @testset "FFields.jl" begin
-@test mytest("FFields.jl","Mod(5,19)","Mod{UInt64}: 5₁₉")
-@test mytest("FFields.jl","a=Mod(5,19)","Mod{UInt64}: 5₁₉")
-@test mytest("FFields.jl","a^2","Mod{UInt64}: 6₁₉")
-@test mytest("FFields.jl","inv(a)","Mod{UInt64}: 4₁₉")
-@test mytest("FFields.jl","a*inv(a)","Mod{UInt64}: 1₁₉")
-@test mytest("FFields.jl","a+2","Mod{UInt64}: 7₁₉")
-@test mytest("FFields.jl","a*2","Mod{UInt64}: -9₁₉")
-@test mytest("FFields.jl","a+1//2","Mod{UInt64}: -4₁₉")
-@test mytest("FFields.jl","Integer(a)","5")
-@test mytest("FFields.jl","order(a)","9")
 @test mytest("FFields.jl","a=Z(64)","FFE{2}: Z₆₄")
 @test mytest("FFields.jl","a^9","FFE{2}: Z₈")
 @test mytest("FFields.jl","a^21","FFE{2}: Z₄")
@@ -433,7 +434,7 @@ end
 @test mytest("Garside.jl","B=DualBraidMonoid(W)","DualBraidMonoid(A₃,c=[1, 3, 2])")
 @test mytest("Garside.jl","map(x->B.(x),left_divisors(B,W(1,3,2)))","4-element Vector{Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}}:\n [.]\n [1, 2, 3, 4, 5, 6]\n [12, 13, 15, 25, 34, 45]\n [δ]")
 @test mytest("Garside.jl","M=BraidMonoid(coxgroup(:A,2))","BraidMonoid(A₂)")
-@test mytest("Garside.jl","elements(M,4)","12-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n 12.21\n 21.12\n 1.1.1.1\n 2.2.2.2\n 1.1.12\n 1.12.2\n 12.2.2\n 2.2.21\n 21.1.1\n 2.21.1\n Δ.1\n Δ.2")
+@test mytest("Garside.jl","elements(M,4)","12-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:\n Δ.1\n Δ.2\n 12.21\n 12.2.2\n 1.12.2\n 1.1.12\n 1.1.1.1\n 21.12\n 21.1.1\n 2.21.1\n 2.2.21\n 2.2.2.2")
 @test mytest("Garside.jl","B=DualBraidMonoid(CoxSym(4))","DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])")
 @test mytest("Garside.jl","left_divisors(B(1,5,4,3))","10-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:\n .\n 1\n 1.4\n 1.4.2\n 1.4.3\n 5\n 6\n 15\n 15.4\n 15.4.3")
 @test mytest("Garside.jl","left_divisors(B(1,5,4,3),1)","3-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:\n 1\n 5\n 6")
@@ -630,15 +631,27 @@ end
 @test mytest("KL.jl","l=LusztigAw(W,W(1))","6-element Vector{Int64}:\n 0\n 0\n 0\n 1\n 1\n 1")
 @test mytest("KL.jl","sum(l.*map(i->almostChar(W,i),eachindex(l)))","[G₂]:<φ″₁‚₃>+<φ₂‚₁>+<φ₂‚₂>")
 @test mytest("KL.jl","W=coxgroup(:G,2)","G₂")
-@test mytest("KL.jl","A=AsymptoticAlgebra(W,1)","Asymptotic Algebra dim.10")
+@test mytest("KL.jl","A=AsymptoticAlgebra(W,1)","AsymptoticAlgebra(G₂,1) dim.10")
 @test mytest("KL.jl","b=basis(A)","10-element Vector{AlgebraElt{AsymptoticAlgebra, Int64}}:\n t₂\n t₁₂\n t₂₁₂\n t₁₂₁₂\n t₂₁₂₁₂\n t₁\n t₂₁\n t₁₂₁\n t₂₁₂₁\n t₁₂₁₂₁")
 @test mytest("KL.jl","b*permutedims(b)","10×10 Matrix{AlgebraElt{AsymptoticAlgebra, Int64}}:\n t₂      0            t₂₁₂            …  0               t₂₁₂₁        0\n t₁₂     0            t₁₂+t₁₂₁₂          0               t₁₂₁+t₁₂₁₂₁  0\n t₂₁₂    0            t₂+t₂₁₂+t₂₁₂₁₂     0               t₂₁+t₂₁₂₁    0\n t₁₂₁₂   0            t₁₂+t₁₂₁₂          0               t₁+t₁₂₁      0\n t₂₁₂₁₂  0            t₂₁₂               0               t₂₁          0\n 0       t₁₂          0               …  t₁₂₁            0            t₁₂₁₂₁\n 0       t₂+t₂₁₂      0                  t₂₁+t₂₁₂₁       0            t₂₁₂₁\n 0       t₁₂+t₁₂₁₂    0                  t₁+t₁₂₁+t₁₂₁₂₁  0            t₁₂₁\n 0       t₂₁₂+t₂₁₂₁₂  0                  t₂₁+t₂₁₂₁       0            t₂₁\n 0       t₁₂₁₂        0                  t₁₂₁            0            t₁")
-@test mytest("KL.jl","CharTable(A)","CharTable(Asymptotic Algebra dim.10)\n     │2 12 212 1212 21212 1 21 121 2121 12121\n─────┼────────────────────────────────────────\nφ′₁‚₃│.  .   .    .     . 1  .  -1    .     1\nφ₂‚₁ │1  .   2    .     1 1  .   2    .     1\nφ₂‚₂ │1  .   .    .    -1 1  .   .    .    -1\nφ″₁‚₃│1  .  -1    .     1 .  .   .    .     .")
+@test mytest("KL.jl","CharTable(A)","CharTable(AsymptoticAlgebra(G₂,1) dim.10)\n     │2 12 212 1212 21212 1 21 121 2121 12121\n─────┼────────────────────────────────────────\nφ′₁‚₃│.  .   .    .     . 1  .  -1    .     1\nφ₂‚₁ │1  .   2    .     1 1  .   2    .     1\nφ₂‚₂ │1  .   .    .    -1 1  .   .    .    -1\nφ″₁‚₃│1  .  -1    .     1 .  .   .    .     .")
 end
 @testset "Lusztig.jl" begin
 @test mytest("Lusztig.jl","W=coxgroup(:B,3)","B₃")
 @test mytest("Lusztig.jl","t=twistings(W,[1,3])","2-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n B₃₍₁₃₎=Ã₁×A₁Φ₁\n B₃₍₁₃₎=Ã₁×A₁Φ₂")
 @test mytest("Lusztig.jl","LusztigInductionTable(t[2],W)","Lusztig Induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃\n     │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2\n─────┼────────────────────────\n111. │     1    -1    -1    .\n11.1 │    -1     .     1   -1\n1.11 │     .     .    -1    .\n.111 │    -1     .     .    .\n21.  │     .     .     .    .\n1.2  │     1    -1     .    1\n2.1  │     .     1     .    .\n.21  │     .     .     .    .\n3.   │     .     .     .    1\n.3   │     .     1     1   -1\nB₂:2 │     .     .     1   -1\nB₂:11│     1    -1     .    .")
+end
+@testset "Modulo.jl" begin
+@test mytest("Modulo.jl","Mod(5,19)","Mod{UInt64}: 5₁₉")
+@test mytest("Modulo.jl","a=Mod(5,19)","Mod{UInt64}: 5₁₉")
+@test mytest("Modulo.jl","a^2","Mod{UInt64}: 6₁₉")
+@test mytest("Modulo.jl","inv(a)","Mod{UInt64}: 4₁₉")
+@test mytest("Modulo.jl","a*inv(a)","Mod{UInt64}: 1₁₉")
+@test mytest("Modulo.jl","a+2","Mod{UInt64}: 7₁₉")
+@test mytest("Modulo.jl","a*2","Mod{UInt64}: -9₁₉")
+@test mytest("Modulo.jl","a+1//2","Mod{UInt64}: -4₁₉")
+@test mytest("Modulo.jl","Integer(a)","5")
+@test mytest("Modulo.jl","order(a)","9")
 end
 @testset "Nf.jl" begin
 @test mytest("Nf.jl","F=NF(E(5))","CF(5)")

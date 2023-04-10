@@ -830,7 +830,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
 # algebraic_center(W).descAZ returns the generators of the fundamental group
 # of  the  algebraic  group  W  as  words  in  generators  of  the absolute
 # fundamental group.
-  if !all(x->Set(x[:Z])==Set([1]),springerseries)
+  if !all(x->unique(x[:Z])==[1],springerseries)
     springerseries=filter(s->all(y->prod(s[:Z][y])==1,
              algebraic_center(W).descAZ),springerseries)
     AdjustAu!(classes,springerseries)

@@ -1146,10 +1146,13 @@ function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector;exact
 end
 
 """
-`decompose(ct::CharTable,c::Vector)` 
+`decompose(ct::CharTable,c::Vector;exact=true)` 
 
-decompose virtual character `c` (given by its values on conjugacy classes) 
-on irreducible characters as given by `CharTable` `ct`
+decompose  class function `c` (given by its values on conjugacy classes) on
+irreducible  characters as  given by  `CharTable` `ct`.  By default  `c` is
+expected to be a virtual character so the result will be an integer vector.
+If  `c` is not a virtual character  give the keyword `exact=false` to get a
+correct result.
 """
 function decompose(ct::CharTable,c::AbstractVector;exact=true)
   v=conj(ct.irr)*Diagonal(classes(ct))*c

@@ -918,12 +918,12 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
 end
 
 #------------------------ Fusion algebras -------------------------------
-@GapObj struct FusionAlgebra<:FiniteDimAlgebra
+@GapObj struct FusionAlgebra<:FiniteDimAlgebra{Int}
   fourier::Matrix
   special::Int
   involution::SPerm{Int16}
   duality::SPerm{Int16}
-  multable::Vector{Vector{Vector{Pair}}}
+  multable::Matrix{Vector{Pair{Int,Int}}}
 end
 
 """
@@ -982,8 +982,6 @@ CharTable(Fusion Algebra dim.5)
 ```
 """
 function fusion_algebra(S::Matrix,special::Int=1;opt...)
-# zero=AlgebraElt(A,zero(ModuleElt{Int,T}))
-# one=AlgebraElt(A,ModuleElt(special=>1))
   involution=SPerm(S,conj.(S);dims=1)
   if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
   if order(involution)>2 error("complex conjugacy is of order 4") end
@@ -994,14 +992,17 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   if order(duality)>2 error("duality is not an involution") end
   s=mapslices(x->x.//conj(x[special]),conj.(S);dims=1)
   d=size(S,1)
-  multable=map(i->map(j->filter(x->x[2]!=0,
-            map((x,y)->x=>y,1:d,s*(S[i,:].*S[j,:]))),1:i),1:d)
-  if d>1 && all(r->all(c->all(p->p[2]>=0,c),r),multable)
+  multable=Matrix{Vector{Pair{Int,eltype(S)}}}(undef,d,d)
+  for i in 1:d, j in 1:i
+    multable[i,j]=filter(x->x[2]!=0,map(Pair,1:d,s*(S[i,:].*S[j,:]))) 
+  end
+  for i in 1:d, j in i+1:d multable[i,j]=multable[j,i] end
+  if d>1 && all(r->all(p->p[2]>0,r),multable)
     InfoChevie("# Algebra dim. ",d,": positive structure constants\n");
   end
-  if !all(r->all(c->all(p->isinteger(p[2]),c),r),multable)
+  if !all(r->all(p->isinteger(p[2]),r),multable)
       error("structure constants are not integral")
-  else multable=map(r->map(c->[k=>Int(i) for (k,i) in c],r),multable)
+  else multable=map(r->[k=>Int(i) for (k,i) in r],multable)
   end
   A=FusionAlgebra(S,special,involution,duality,multable,Dict{Symbol,Any}())
   d=map(ratio,eachcol(irr),eachcol(S)) # d=inv.(S[special,:]) ?
@@ -1014,13 +1015,15 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   A
 end
 
+Base.one(A::FusionAlgebra)=basis(A,A.special)
+
 function fusion_algebra(f::Family)
   get!(f,:fusion_algebra)do
   fusion_algebra(fourier(f),special(f);charnames=f.charLabels,classnames=f.charLabels)
   end
 end
 
-Algebras.dim(A::FusionAlgebra)=size(A.fourier,1)
+Weyl.dim(A::FusionAlgebra)=size(A.fourier,1)
 
 Base.show(io::IO,A::FusionAlgebra)=print(io,"Fusion Algebra dim.",dim(A))
 

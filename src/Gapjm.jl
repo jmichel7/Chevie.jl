@@ -109,6 +109,7 @@ using UsingMerge
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
+include("Modulo.jl");@usingmerge verbose=true reexport Modulo
 include("FFields.jl");@usingmerge verbose=true reexport FFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
@@ -145,4 +146,6 @@ include("GAPENV.jl");@reexport using .GAPENV
 function __init__()
   @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" include("Gap4.jl")
 end
+
+roundtrip(x)=x==eval(Meta.parse(repr(x))) # to debug
 end

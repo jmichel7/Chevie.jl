@@ -550,8 +550,8 @@ function character(c::LeftCell)
     ct=CharTable(c.group)
     cc=decompose(ct,cc)
     char=vcat(map(i->fill(i,cc[i]),1:length(cc))...)
-    c.a=charinfo(c.group).a[char]
-    if length(Set(c.a))>1 error() else c.a=c.a[1] end
+    a=charinfo(c.group).a[char]
+    if !allequal(c.a) error() else c.a=a[1] end
     char
   end::Vector{Int}
 end
@@ -613,7 +613,7 @@ function Groups.elements(c::LeftCell)
     for w in c.reps
       append!(elements,orbit(leftstars(c.group),w,(x,f)->f(x)))
     end
-    sort(collect(Set(elements)))
+    sort!(elements);unique!(elements)
   end::Vector{eltype(c.group)}
 end
 
@@ -724,8 +724,8 @@ function LeftCellRepresentatives(W)
     reps=setdiff(reps,[duflo])
     character=map(p->cart2lin(n,p),cartesian(map(x->x[:character],l)...))
     a=charinfo(W).a[character]
-    if length(Set(a))>1 error() else a=a[1] end
-    return LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,
+    if !allequal(a) error() else a=a[1] end
+    LeftCell(W,Dict{Symbol,Any}(:duflo=>duflo,:reps=>reps,
                  :character=>character,:a=>a))
   end
 end
@@ -1022,10 +1022,10 @@ function LusztigAw(W,w)
 end
 
 #----------------- Asymptotic algebra ------------------------------------
-@GapObj struct AsymptoticAlgebra<:FiniteDimAlgebra
+@GapObj struct AsymptoticAlgebra<:FiniteDimAlgebra{Int}
   e::Vector{Perm{Int16}}
   a::Int
-  multable::Vector{Vector{Vector{Pair{Int,Int}}}}
+  multable::Matrix{Vector{Pair{Int,Int}}}
   W
 end
 
@@ -1053,7 +1053,7 @@ julia> W=coxgroup(:G,2)
 G₂
 
 julia> A=AsymptoticAlgebra(W,1)
-Asymptotic Algebra dim.10
+AsymptoticAlgebra(G₂,1) dim.10
 
 julia> b=basis(A)
 10-element Vector{AlgebraElt{AsymptoticAlgebra, Int64}}:
@@ -1082,7 +1082,7 @@ julia> b*permutedims(b)
  0       t₁₂₁₂        0                  t₁₂₁            0            t₁
 
 julia> CharTable(A)
-CharTable(Asymptotic Algebra dim.10)
+CharTable(AsymptoticAlgebra(G₂,1) dim.10)
      │2 12 212 1212 21212 1 21 121 2121 12121
 ─────┼────────────────────────────────────────
 φ′₁‚₃│.  .   .    .     . 1  .  -1    .     1
@@ -1105,51 +1105,39 @@ function AsymptoticAlgebra(W,i)
   Cp=Cpbasis(H)
   C=Cbasis(H)
   irr=hcat(map(x->map(p->(-1)^a*p[-a],char_values(C(x))[f]),e)...)
-#   parameters:=List(e,x->IntListToString(CoxeterWord(W,x))),
-#   basisname:="t");
-#  A.identification:=[A.type,i,W];
-#  A.zero:=AlgebraElement(A,[]);
-#  A.dimension:=Length(e);
-#  A.operations.underlyingspace(A);
   w0=longest(W)
   # The algorithm below follows D. Alvis, "Subrings of the asymptotic Hecke
   # algebra of type H4" Experimental Math. 17 (2008) 375--383
-  multable=
-  map(e)do x
-    map(e)do y
+  function entry(x,y)
 #   InfoChevie(".")
-      F=T(x)*T(y)
-      lx=length(W,x)
-      ly=length(W,y)
-      sc=map(e)do z
-        c=T(Cp(w0*z^-1))
-        s=(-1)^length(W,z)*sum(p->c.d[w0*p[1]]*p[2]*(-1)^length(W,p[1]),F.d)
-        # println("deg=",[valuation(s),degree(s)]," pdeg=",a+lx+ly-nref(W))
-        findfirst(==(z^-1),e)=>s[a+lx+ly-nref(W)]
-      end
-      filter(x->!iszero(x[2]),sc)
+    F=T(x)*T(y)
+    lx=length(W,x)
+    ly=length(W,y)
+    sc=map(e)do z
+      c=T(Cp(w0*z^-1))
+      s=(-1)^length(W,z)*sum(p->c.d[w0*p[1]]*p[2]*(-1)^length(W,p[1]),F.d)
+      # println("deg=",[valuation(s),degree(s)]," pdeg=",a+lx+ly-nref(W))
+      findfirst(==(z^-1),e)=>s[a+lx+ly-nref(W)]
     end
+    filter(x->!iszero(x[2]),sc)
   end
-#  A.operations.underlyingspace(A);
-#  A.one:=Sum(A.basis{t});
+  multable=[entry(x,y) for x in e, y in e]
   A=AsymptoticAlgebra(e,a,multable,W,Dict{Symbol,Any}(:irr=>irr))
+  A.one=sum(i->basis(A,i),t)
   A.classnames=joindigits.(word.(Ref(W),e))
   A.charnames=charnames(W;TeX=true)[f]
+  A.showbasis=(io::IO,i)->fromTeX(io,"t_"*joindigits(word(A.W,A.e[i]),"{}";always=true))
+  A.famno=i
   A
 end
 
-Algebras.dim(A::AsymptoticAlgebra)=length(A.e)
+Base.one(A::AsymptoticAlgebra)=A.one
+Weyl.dim(A::AsymptoticAlgebra)=length(A.e)
 
-Base.show(io::IO,A::AsymptoticAlgebra)=print(io,"Asymptotic Algebra dim.",dim(A))
-
-function Base.show(io::IO, h::AlgebraElt{AsymptoticAlgebra})
-  function showbasis(io::IO,i)
-    if hasdecor(io) res="t_"*joindigits(word(h.A.W,h.A.e[i]),"{}";always=true)
-    else         res="t[$i]"
-    end
-    fromTeX(io,res)
-  end
-  show(IOContext(io,:showbasis=>showbasis),h.d)
+function Base.show(io::IO,A::AsymptoticAlgebra)
+  print(io,"AsymptoticAlgebra(",A.W,",",A.famno,")")
+  if !hasdecor(io) return end
+  print(io," dim.",dim(A))
 end
 
 Groups.isabelian(A::AsymptoticAlgebra)=false

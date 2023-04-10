@@ -1089,14 +1089,17 @@ function reflectiondegrees(W::Spets)
   map(x->(x[1],Cyc(x[2])),only(e))
 end
 
+function mcdonalddegrees(W::FiniteCoxeterGroup)
+  l=last.(tally(sum.(W.rootdec[1:nref(W)])))
+  reverse(conjugate_partition(l).+1)
+end
+
 function Tdegrees(W)
   d=sort(degrees(W))
   d1=sort(reflectiondegrees(W))
   cmpvec(d,d1;na="degrees",nb="reflectiondegrees")
-  if isweylgroup(W) && length(refltype(W))==1 && rank(W)==semisimplerank(W)
-    d1=last.(tally(sum.(W.rootdec[1:nref(W)])))
-    d1=sort(conjugate_partition(d1).+1)
-    cmpvec(d,d1;na="degrees",nb="dual partition of root heights")
+  if isweylgroup(W)
+   cmpvec(d,mcdonalddegrees(W);na="degrees",nb="mcdonald formula")
   end
 end
 

@@ -737,12 +737,18 @@ struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
   H::TH
 end
 
+function Groups.gens(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
+  get!(H,:gens)do
+    map(i->Tbasis(H,H.W(i)),1:ngens(H.W))
+  end::Vector{HeckeTElt{T,C,HeckeAlgebra{C,TW}}}
+end
+
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
 basename(h::HeckeTElt)="T"
  
 function Base.one(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
   get!(H,:one)do
-    HeckeTElt(MM(one(H.W)=>one(coefftype(H));check=false),H)
+    Tbasis(H,one(H.W))
   end::HeckeTElt{T,C,HeckeAlgebra{C,TW}}
 end
 
