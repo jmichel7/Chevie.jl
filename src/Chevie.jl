@@ -12,6 +12,7 @@ const CHEVIE=Dict{Symbol,Any}(
 
 CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)
   r=eachindex(tbl[:classtext])
+  param=improve_type(param)
   for i in r 
     f=prod(-last.(param[tbl[:classtext][i]]))
     for j in r tbl[:irreducibles][j][i]*=f end

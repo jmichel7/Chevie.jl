@@ -307,14 +307,15 @@ julia> hyperplane_orbits(W)
 ```
 """
 function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyperoctaedral})
+  T=@NamedTuple{s::Int,cl_s::Vector{Int},order::Int,N_s::Int,det_s::Vector{Int}}
   get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
+  if isempty(sr) return T[] end
   rr=refls(W)
   cr=classreps(W)
   orb=unique(sort(sr))
   class=map(orb)do s
-    map(1:ordergens(W)[s]-1)do o
-#     return position_class(W,refls(W,s)^o)
+    map(1:ordergens(W)[s]-1)do o # return position_class(W,refls(W,s)^o)
       for i in eachindex(sr)
         if sr[i]==s
           p=findfirst(==(rr[i]^o),cr)
@@ -324,20 +325,20 @@ function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyperoctaedral})
       error("not found")
     end
   end
+  if !allunique(class)  # when there are too many roots in rootsystem
+    l=unique(indexin(class,class));class=class[l];orb=orb[l]
+  end
   chars=CharTable(W).irr
   pairs=zip(orb,class)
-  if isempty(pairs) 
-     return NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}[]
-  end
-  map(pairs) do (s,c)
+  res=map(pairs) do (s,c)
     ord=ordergens(W)[s]
     dets=map(1:ord-1) do j
       findfirst(i->chars[i,1]==1 && chars[i,c[1]]==E(ord,j) &&
          all(p->chars[i,p[2][1]]==1 || p[1]==s,pairs),axes(chars,1))
     end
-    (s=s,cl_s=c,order=ord,N_s=length(conjugacy_classes(W)[c[1]]),det_s=dets)
+    (s=s,cl_s=c,order=ord,N_s=div(length(W),CharTable(W).centralizers[c[1]]),det_s=dets)
   end
-  end::Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}
+  end::Vector{T}
 end
 
 @forward FiniteCoxeterGroup.G hyperplane_orbits, codegrees, Gapjm.degrees
