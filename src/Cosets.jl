@@ -633,7 +633,13 @@ function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
   FCC(phi,F*reflrep(W,perm\phi),W,Dict{Symbol,Any}())
 end
 
-spets(W::FiniteCoxeterGroup,w::Perm=Perm())=spets(W,reflrep(W,w))
+function spets(W::FiniteCoxeterGroup{Perm{T}}) where{T}
+  get!(W,:trivialspets)do
+    FCC(Perm{T}(),reflrep(W,one(W)),W,Dict{Symbol,Any}())
+  end
+end
+
+spets(W::FiniteCoxeterGroup,w::Perm)=spets(W,reflrep(W,w))
 
 PermRoot.radical(WF::CoxeterCoset)=torus(central_action(Group(WF),WF.F))
 
@@ -780,7 +786,9 @@ function Base.show(io::IO, WF::Spets)
   end
   show(io,refltype(WF))
   t=CycPol(Pol(charpoly(central_action(W,WF.F))))
-  if !isone(t) show(io,t) end
+  if !isone(t) show(io,t) 
+  elseif isempty(refltype(WF)) print(io,".")
+  end
 end
 
 PermRoot.reflrep(WF::Spets,w)=WF.F*reflrep(Group(WF),WF.phi\w)

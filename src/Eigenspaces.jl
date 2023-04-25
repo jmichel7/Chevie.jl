@@ -332,7 +332,6 @@ function split_levis(WF,d::Root1,ad)
   else W=WF; WF=spets(W)
   end
   refs=unique_refls(W)
-  mats=reflrep.(Ref(W),refs)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))
   res=typeof(subspets(WF,Int[]))[]
@@ -342,7 +341,7 @@ function split_levis(WF,d::Root1,ad)
     else m=reflrep(WF,w)
       V=lnullspace(m-Cyc(d)*one(m))
     end
-    I=refs[map(m->V==V*m, mats)]
+    I=filter(r->iszero(V*coroots(W,r)),refs)
 #   println("I=$I\nphi=",w/WF.phi)
     HF=subspets(WF, I, w/WF.phi)
     if isnothing(HF)

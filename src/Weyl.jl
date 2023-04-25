@@ -740,6 +740,8 @@ function Base.show(io::IO, W::FCG)
     if hasdecor(io) printTeX(io,W.TeXcallname)
     else print(io,W.callname)
     end
+  elseif !hasdecor(io) && semisimplerank(W)==0
+    print(io,"torus(",rank(W),")")  
   else show(io,W.G)
   end
 end

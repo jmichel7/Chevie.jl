@@ -1175,7 +1175,7 @@ function showtorus(io::IO,W)
     if hasdecor(io) print(io,CycPol(1,0,(1,0,t)))
     else print(io,(istorus(W) ? "" : "*"),"PRG($t)")
     end
-  elseif istorus(W) print(io,hasdecor(io) ? "." : "W()")
+  elseif istorus(W) print(io,hasdecor(io) ? "." : "PRG(0)")
   end
 end
 
@@ -1479,6 +1479,7 @@ julia> reflrep(W,longest(W))
 function reflrep(W::PermRootGroup,w)
   W=parent(W)
   X=baseX(W)
+  if isone(w) return one(X) end
   if istorus(W) return X end
   ir=independent_roots(W)
   X=vcat(toM(roots(W,ir.^w)),X[length(ir)+1:end,:])

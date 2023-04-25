@@ -344,7 +344,7 @@ end
 @forward FiniteCoxeterGroup.G hyperplane_orbits, codegrees, Gapjm.degrees
 
 #------------------------- Reflection(s) --------------------------------
-struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral}}
+@GapObj struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral}}
   W::TW
   rootno::Int
   eigen::Root1
@@ -368,7 +368,7 @@ julia> root(r)
  ζ₄
 
 julia> coroot(r)
-2-element Vector{Cyc{Rational{Int64}}}:
+2-element Vector{Cyc{Int64}}:
     0
  -2ζ₄
 
@@ -406,12 +406,18 @@ end
 LaurentPolynomials.root(r::Reflection)=roots(r.W,r.rootno)
 
 function PermRoot.coroot(r::Reflection)
-  rr=root(r)
-  cr=coroots(r.W,r.rootno)
-  cr*(1-r.eigen)/(transpose(cr)*rr)
+  get!(r,:coroot)do
+    rr=root(r)//1
+    cr=coroots(r.W,r.rootno)
+    improve_type(cr*(1-r.eigen)/(transpose(cr)*rr))
+  end
 end
 
-Base.Matrix(r::Reflection)=reflectionmat(root(r),coroot(r))
+function Base.Matrix(r::Reflection)
+  get!(r,:matrix)do
+    reflectionmat(root(r),coroot(r))
+  end
+end
 
 simple_rep(r::Reflection)=simple_reps(r.W)[r.rootno]
 
@@ -426,7 +432,9 @@ function hyperplane_orbit(r::Reflection)
 end
 
 function Groups.position_class(r::Reflection)
-  hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[exponent(r)]
+  get!(r,:position_class)do
+    hyperplane_orbits(r.W)[hyperplane_orbit(r)].cl_s[exponent(r)]
+  end::Int
 end
 
 function invert_word(W,w) # take pains to have no negative numbers
@@ -485,7 +493,8 @@ function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral})
         w=vcat(invert_word(W,w),[rep],w)
       end
       for j in 1:e-1
-        push!(res[j],Reflection(W,i,E(e,j),vcat(fill(w,j)...)))
+        push!(res[j],Reflection(W,i,E(e,j),vcat(fill(w,j)...),
+                                Dict{Symbol,Any}()))
       end
     end
     vcat(res...)
