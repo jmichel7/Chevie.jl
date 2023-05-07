@@ -42,7 +42,7 @@ codegrees
 invariants
 invariant_form
 bipartite_decomposition
-catalan(W,m)
+catalan(::Group,::Any)
 generic_order
 torus_order
 reflection_subgroup(::PRG,::AbstractVector)

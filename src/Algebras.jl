@@ -1,9 +1,12 @@
 module Algebras
 using ..Gapjm
 export FiniteDimAlgebra, AlgebraElt, basis, idempotents,
-       Quaternions, involution, ZeroHecke, isassociative, SubAlgebra,
-       TwoSidedIdeal, PolynomialQuotientAlgebra, loewylength, radicalpower,
-       SolomonAlgebra, centralidempotents
+       involution, isassociative, SubAlgebra, TwoSidedIdeal, 
+       loewylength, radicalpower, centralidempotents,
+       PolynomialQuotientAlgebra, 
+       Quaternions, 
+       SolomonAlgebra, 
+       ZeroHecke
 abstract type FiniteDimAlgebra{T} end
 
 InfoAlgebra=print
@@ -295,7 +298,7 @@ function LeftIndecomposableProjectives(A::FiniteDimAlgebra)
 end
 
 function centralidempotents(A::FiniteDimAlgebra)
-  get!(A,:cenralidempotents) do
+  get!(A,:centralidempotents) do
     idem=idempotents(A)
     mat=[length(rowspace(i*basis(j))) for i in idem, 
                            j in LeftIndecomposableProjectives(A)]
@@ -519,11 +522,7 @@ end
 ## GrothendieckRing(G,Q) renvoie l'anneau de Grothendieck A=Q Irr(G) 
 ##(si Q est omis, on prend pour Q le corps des rationnels)
 ##
-## En plus des champs existants, A contiendra : 
-##   A.group = G
-## De plus :
-##   A.parameters = [1..Length(CharacterDegrees(G))] 
-##   A.basisname  = "CHI" (par defaut)
+##   A.basisname  = "χ" (par defaut)
 ## 
 ## La fonction Degre envoie un element de l'anneau de 
 ## Grothendieck sur son degre (virtuel a  priori bien sur)
@@ -625,6 +624,78 @@ function AdamsOperation(A::GrothendieckRing,n)
    AlgebraHom(A,A,map(x->AlgebraElt(A,x),v))
 end
 
+#----------------- Group Algebras -----------------------------------------
+@GapObj struct GroupAlgebra{T,E,TG<:Group{E}}<:FiniteDimAlgebra{T}
+  group::TG
+  elts::Vector{E}
+  one::Pair{Int,T}
+end
+
+#GroupAlgebraOps.CharacterDegrees:=function(A) 
+#  if A.field.char=0 then 
+#    A.characterDegrees:=CharacterDegrees(A.group);
+#  else Error("Cannot compute CharacterDegrees in positive characteristic");
+#  fi;
+#  return A.characterdegrees;
+#end;
+#
+#GroupAlgebraOps.CharTable:=function(A)local conj;
+#  if A.field.char>0 then 
+#    Error("Cannot compute CharTable in positive characteristic");
+#  fi;
+#  A.charTable:=CharTable(A.group);
+#  conj:=List(Elements(A.group),i->PositionClass(A.group,i));
+#  A.charTable.basistraces:=List(A.charTable.irreducibles,chi->chi{conj});
+#  A.charTable.Print:=function(table)Display(table);end;
+#  return A.charTable; 
+#end;
+
+function PermRoot.radical(A::GroupAlgebra{T})where T
+  if char(T)!=0 error("not implemented in positive characteristic") end
+  TwoSidedIdeal(A,empty(basis(A)),Dict{Symbol,Any}())
+end
+
+Base.show(io::IO,A::GroupAlgebra{T}) where T =print(io,"Algebra(",A.group,",",T,")")
+
+embedding(A::GroupAlgebra{T,E},g::E) where{T,E}=findfirst(==(g),A.elts)
+
+"""
+`GroupAlgebra(G,T=Int)` group algebra of `G` with coefficients `T`
+"""
+function GroupAlgebra(G,T=Int)
+  A=GroupAlgebra(G,elements(G),1=>T(1),Dict{Symbol,Any}())
+  A.gens=map(g->basis(A,embedding(A,g)),gens(G))
+  if A.elts[1]!=one(G) error(one(G)," should be first in ",elements(G)) end
+  A.showbasis=function(io::IO,e)
+    fromTeX(io,"e"*"_{"*joindigits(word(A.group,A.elts[e]))*"}")
+  end
+#  if Q.char=0 then 
+#    A.radical:=TwoSidedIdeal(A,[]);
+#    A.radicalpowers:=[A.radical];
+#  fi;
+  A
+end
+
+Weyl.dim(A::GroupAlgebra)=length(A.elts)
+
+Groups.gens(A::GroupAlgebra)=A.gens
+
+basismult(A::GroupAlgebra{T},i::Integer,j::Integer) where T=
+  [embedding(A,A.elts[i]*A.elts[j])=>T(1)]
+
+function centralidempotents(A::GroupAlgebra{T}) where T
+  p=map(i->position_class(A.group,i),A.elts)
+  res=map(eachrow(CharTable(A.group).irr))do chi
+    ModuleElt(map(Pair,1:dim(A),chi[1].*conj.(chi[p]).//dim(A)))
+  end
+  if char(T)==0 return map(x->AlgebraElt(A,x),res) end
+  pid=map(b->sum(res[b]),blocks(A.group,char(T)))
+  map(i->AlgebraElt(A,ModuleElt(convert(ModuleElt{Int,T},i).d)),pid)
+end
+
+# augmentation morphism
+augmentation(r)=sum(values(r.d))
+
 ################################################################################
 ## La fonction SolomonAlgebra(W,Q) construit l'algebre de Solomon 
 ## d'un groupe de Coxeter fini W sur le corps Q (s'il est omis, 
@@ -654,14 +725,6 @@ end
 ##   W.solomon.domain = A
 ##   W.solomon.subsets = parties de [1..r]
 
-#SolomonAlgebraOps.Print:=function(A) 
-#  if A.type="Solomon algebra" then 
-#    Print("SolomonAlgebra(",A.group,",",A.field,")");
-#  else 
-#    Print("GeneralizedSolomonAlgebra(",A.group,",",A.field,")");
-#  fi;
-#end;
-
 #SolomonAlgebraOps.CharacterDegrees:=function(A) 
 #  if A.field.char=0 then 
 #    if A.type="Solomon algebra" then 
@@ -685,15 +748,19 @@ function Base.show(io::IO,A::SolomonAlgebra{T})where T
   print(io,"SolomonAlgebra(",A.W,",",T,")")
 end
 
-@GapObj struct SolomonCharTable
+@GapObj struct SolomonCharTable{TA}
+  A::TA
   irr::Matrix{Int}
   rows::Vector{Vector{Int}}
 end
 
 function Base.show(io::IO,ct::SolomonCharTable)
+  print(io,"CharTable(",ct.A,")")
+  if !hasdecor(io) return end
+  println(io)
   rows=map(w->joindigits(w),ct.rows)
   irr=map(e->iszero(e) ? "." : repr(e),ct.irr)
-  showtable(rio(),irr,row_labels=rows)
+  showtable(io,irr,row_labels=rows)
 end
 
 function Chars.CharTable(A::SolomonAlgebra)
@@ -701,10 +768,8 @@ function Chars.CharTable(A::SolomonAlgebra)
   conj=first.(W.solomon_conjugacy)
   orb=map(i->reflection_subgroup(W,W.solomon_subsets[i]),conj)
   cox=map(g->prod(gens(g);init=one(g)),orb)
-#  res:=rec(field:=A.field,
-#    domain:=A,
   irr=[W.solomon_mackey[j,i][i] for i in conj, j in conj]
-  SolomonCharTable(irr,map(w->word(W,w),cox),Dict{Symbol,Any}())
+  SolomonCharTable(A,irr,map(w->word(W,w),cox),Dict{Symbol,Any}())
 #  res.columns[Length(res.columns)]:=["0"];
 #  res.basistraces:=List([1..Length(res.irreducibles)],function(ii)local r;
 #    r:=Concatenation(List([1..Length(W.solomon.conjugacy)],
@@ -722,20 +787,19 @@ function Chars.CharTable(A::SolomonAlgebra)
 #  return res;
 end
 
-#SolomonAlgebraOps.injection:=function(A) local B,W,X;
-#  W:=A.group;
-#  B:=GroupAlgebra(A.group,A.field);
-#  if A.type="Solomon algebra" then 
-#    X:=List(W.solomon.subsets, i-> 
-#      Sum(ReducedRightCosetRepresentatives(W, ReflectionSubgroup(W,i)), 
-#        i-> B.embedding(i^-1)));
-#  else
-#    X:=List(W.generalizedsolomon.subgroups, i-> 
-#      Sum(ReducedRightCosetRepresentatives(W, i),i-> B.embedding(i^-1)));
-#  fi;
-#  A.injection:=AlgebraHomomorphismByLinearity(A,B,X,"no check");
-#  return A.injection;
-#end;
+function injection(A::SolomonAlgebra{T})where T
+  W=A.W
+  B=GroupAlgebra(W,T)
+# if A.type="Solomon algebra" then 
+  X=map(W.solomon_subsets)do i
+   sum(j->basis(B,embedding(B,inv(j))),vcat(reduced(reflection_subgroup(W,i),W)...))
+  end
+# else
+#   X:=List(W.generalizedsolomon.subgroups, i-> 
+#     Sum(ReducedRightCosetRepresentatives(W, i),i-> B.embedding(i^-1)));
+# fi;
+  AlgebraHom(A,B,X)
+end
 
 Weyl.dim(A::SolomonAlgebra)=2^ngens(A.W)
 
@@ -794,10 +858,7 @@ B₄
 julia> A=SolomonAlgebra(W)
 SolomonAlgebra(B₄,Int64)
 
-julia> X=A.xbasis
-#143 (generic function with 1 method)
-
-julia> X(1,2,3)*X(2,4)
+julia> X=A.xbasis; X(1,2,3)*X(2,4)
 2X₂+2X₄
 
 julia> W.solomon_subsets
@@ -835,7 +896,7 @@ julia> W.solomon_conjugacy
  [16]
 ```
 
-gap> SolomonAlgebraOps.injection(A)(X(123));
+gap> injection(A)(X(123));
 e(1) + e(2) + e(3) + e(8) + e(19) + e(45) + e(161) + e(361)
 """
 function SolomonAlgebra(W::FiniteCoxeterGroup,T=Int)
@@ -934,12 +995,12 @@ function PermRoot.radical(A::SolomonAlgebra{T})where T
   end
 end
 
-#PermutationCharacterByInductiontable=function(W,S)local t,i;
-#  t=InductionTable(S,W).scalar;
-#  i=PositionId(CharTable(S));
-#  return TransposedMat(t)[i]*CharTable(W).irreducibles;
-#end;
-#
+function permutation_character(W,S)
+  t=InductionTable(S,W).scalar
+  i=findfirst(x->all(==(1),x),eachrow(CharTable(S).irr))
+  permutedims(CharTable(W).irr)*t[:,i]
+end
+
 #SolomonHomomorphism:=function(x) local A,i,W,T,irr,mat,WI,p;
 #  A:=x.domain; W:=A.group; T:=CharTable(W); irr:=T.irreducibles;
 #  mat:=List(irr, i-> 0);
@@ -1067,4 +1128,8 @@ end
 #`θ'(x_C) = Ind_{W_C}^{W_n} 1` is a *surjective homomorphism* of
 #algebras (see cite{BH05}). We still call it the *Solomon homomorphism*.
  
+#SolomonAlgebraOps.Print:=function(A) 
+#    Print("GeneralizedSolomonAlgebra(",A.group,",",A.field,")");
+#end;
+
 end

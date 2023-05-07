@@ -45,13 +45,13 @@ Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
 
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
 
-function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
-  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
-end
+#function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
+#  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
+#end
 
-function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Rational}};k...)
-  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
-end
+#function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Rational}};k...)
+#  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
+#end
 
 #------------- extend to Cyc exactdiv
 LinearAlgebra.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(conductor(c),

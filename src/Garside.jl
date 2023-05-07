@@ -721,7 +721,7 @@ end
 rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
   inv(leftgcd(M,inv.(simp)...))
 
-mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
+@inline mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
 #-----------------------GenArtinMonoid-----------------------------------
 # braid monoid for e.g. infinite Coxeter groups
 @GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}

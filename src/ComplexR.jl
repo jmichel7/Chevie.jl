@@ -2,7 +2,7 @@ module ComplexR
 using ..Gapjm
 export complex_reflection_group, crg, diagram, codegrees,
   Reflection, reflections, isdistinguished, 
-  hyperplane_orbits, hyperplane_orbit, simple_rep,
+  hyperplane, hyperplane_orbits, hyperplane_orbit, simple_rep,
   reflection_group, torusfactors
 
 Gapjm.roots(t::TypeIrred)=
@@ -377,6 +377,10 @@ julia> Matrix(r)
  1   0
  0  -1
 
+julia> hyperplane(r) # the fixed hyperplane, as a rowspace
+1×2 Matrix{Cyc{Rational{Int64}}}:
+ 1  0
+
 julia> isdistinguished(r) # r is not distinguished
 false
 
@@ -429,6 +433,12 @@ Perms.Perm(r::Reflection)=refls(r.W,r.rootno)^exponent(r)
 
 function hyperplane_orbit(r::Reflection)
   findfirst(x->x.s==simple_rep(r),hyperplane_orbits(r.W))
+end
+
+function hyperplane(r::Reflection)
+  get!(r,:hyperplane)do
+    Matrix(rowspace(lnullspace(hcat(coroot(r)))))
+  end
 end
 
 function Groups.position_class(r::Reflection)

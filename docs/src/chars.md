@@ -7,7 +7,7 @@ Chars
 CharTable
 on_chars
 charinfo
-charnames(io::IO, W::Union{Coset{T, TW}, Group}) where {T, TW}
+charnames(io::IO, W::Union{Coset, Group})
 classnames
 classinfo
 fakedegree

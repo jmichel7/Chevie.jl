@@ -96,6 +96,7 @@ using UsingMerge
 @reexport using Combinat
 @reexport using MatInt
 @reexport using Primes: factor, eachfactor
+@reexport using OrderedCollections: OrderedDict
 # careful: use very little of LinearAlgebra
 @reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
 @reexport using PermGroups

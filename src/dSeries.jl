@@ -1,4 +1,4 @@
-      """
+"""
 `d`-Harish-Chandra   series  describe  unipotent  `l`-blocks  of  a  finite
 reductive  group ``𝐆(𝔽_q)`` for ``l|Φ_d(q)`` (at least, when `l` is not too
 small which means mostly not a bad prime for `𝐆`). Some of the facts stated
@@ -710,7 +710,7 @@ function Weyl.relative_group(s::Series)
       end
     end
   end
-  refs=unique_refls(W)
+  refs=filter(isdistinguished,reflections(W))
   if length(L) == 1
     WGL=N
   elseif length(N)==length(L)
@@ -730,9 +730,13 @@ function Weyl.relative_group(s::Series)
   end
   V=lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
   m=vcat(V,lnullspace(projector(s)))^-1
-  # V∩ fix(r)
-  hplane(r)=intersect_rowspace(lnullspace(reflrep(W,r)-one(projector(s))),V)
-  smalltobig(h)=hcat(h, fill(0,size(h,1),max(0,rank(W)-size(V,1))))*m^-1
+  # V∩ fix(r) for r a reflection in W. The result is a rowspace
+  hplane(r)=intersect_rowspace(hyperplane(r),V)
+  # hplane of refl. matrix on V to itself in global space
+  function Vtoglobal(x)
+    h=lnullspace(x-x^0)
+    rowspace(hcat(h, fill(0,size(h,1),rank(W)-size(V,1)))*m^-1)
+  end
   # restriction of matrix x to V
   restrV(x)=(inv(m)*x*m)[axes(V,1),axes(V,1)]
   # for   reflections of W with same Hplane in V return Dict
@@ -747,9 +751,10 @@ function Weyl.relative_group(s::Series)
     if length(rH)==0 # cyclic WGL
       H=W
     else
-     H=reflection_subgroup(W,restriction(W,vcat(inclusion(W,rr),inclusiongens(L))))
+      H=reflection_subgroup(W,restriction(W,vcat(inclusion(W,
+                               map(x->x.rootno,rr)),inclusiongens(L))))
     end
-    res=Dict{Symbol, Any}(:refs => inclusiongens(H))
+    res=Dict{Symbol, Any}(:refs=>inclusiongens(H))
     if H isa CoxeterGroup H=H.G end
     H=intersect(H, N)
     if length(L)!=1 H=H/L end
@@ -769,18 +774,18 @@ function Weyl.relative_group(s::Series)
     res
   end
   #hplanes hashable!sortable
-  rrefs=collect(values(groupby(x->rowspace(hplane(x)),refs)))
-  rrefs=filter(x->!(any(y->inclusion(W,y) in inclusion(L),x)),rrefs)
-  sort!(rrefs)
-  reflist = []
+  rrefs=collect(values(groupby(hplane,refs)))
+  rrefs=filter(x->!(any(y->inclusion(W,y.rootno) in inclusion(L),x)),rrefs)
+  sort!(rrefs,by=x->first(x).rootno)
+  reflist=[]
   for r in rrefs
     push!(reflist, getreflection(r))
     if length(Group(map(x->x[:hom],reflist)))==length(WGL)
       rr=improve_type(map(x->x[:root],reflist))
       crr=improve_type(map(x->x[:coroot],reflist))
       WGL=PRG(rr,crr)
-      reflist=map(x->smalltobig(lnullspace(x-x^0)),reflrep(WGL))
-      reflist=map(h->rrefs[findfirst(rr->rowspace(hplane(rr[1]))==rowspace(h),rrefs)], reflist)
+      reflist=Vtoglobal.(reflrep(WGL))
+      reflist=map(h->rrefs[findfirst(rr->hplane(rr[1])==h,rrefs)], reflist)
       WGL.reflists = map(getreflection, reflist)
       WGL.parentMap = map(x->x[:hom], WGL.reflists)
       WGL.reflists = map(x->x[:refs], WGL.reflists)
@@ -848,11 +853,7 @@ function projector(s)
   end
 end
 
-function Groups.iscyclic(s::Series)
-  get!(s,:cyclic)do
-    iscyclic(relative_group(s))
-  end
-end
+Groups.iscyclic(s::Series)=get!(()->iscyclic(relative_group(s)),s,:cyclic)
 
 WGLdims(s::Series)=getp(relative_group,s,:WGLdims)
 
