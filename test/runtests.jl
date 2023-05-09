@@ -27,8 +27,7 @@ end
 @test mytest("Algebras.jl","Algebras.pprimesections(G,3)","5-element Vector{Vector{Int64}}:\n [1, 3]\n [2, 6]\n [4]\n [5]\n [7]")
 @test mytest("Algebras.jl","W=coxgroup(:B,4)","B₄")
 @test mytest("Algebras.jl","A=SolomonAlgebra(W)","SolomonAlgebra(B₄,Int64)")
-@test mytest("Algebras.jl","X=A.xbasis","#143 (generic function with 1 method)")
-@test mytest("Algebras.jl","X(1,2,3)*X(2,4)","2X₂+2X₄")
+@test mytest("Algebras.jl","X=A.xbasis; X(1,2,3)*X(2,4)","2X₂+2X₄")
 @test mytest("Algebras.jl","W.solomon_subsets","16-element Vector{Vector{Int64}}:\n [1, 2, 3, 4]\n [1, 2, 3]\n [1, 2, 4]\n [1, 3, 4]\n [2, 3, 4]\n [1, 2]\n [1, 3]\n [1, 4]\n [2, 3]\n [2, 4]\n [3, 4]\n [1]\n [2]\n [3]\n [4]\n []")
 @test mytest("Algebras.jl","W.solomon_conjugacy","12-element Vector{Vector{Int64}}:\n [1]\n [2]\n [3]\n [4]\n [5]\n [6]\n [7, 8]\n [9, 11]\n [10]\n [12]\n [13, 14, 15]\n [16]")
 end

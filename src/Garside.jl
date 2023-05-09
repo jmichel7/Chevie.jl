@@ -687,6 +687,7 @@ Base.reverse(::Interval,M,x)=inv(x)
   δ::T
   orderδ::Int
   stringδ::String
+  one::T  # tentative to remove and use one(x.W) for x.one has more allocations
   atoms::Vector{T}
   W::TW
 end
@@ -697,10 +698,11 @@ IntervalStyle(M::BraidMonoid)=Interval()
 
 The ordinary monoid of the Artin group associated to `W`
 """
-BraidMonoid(W::FiniteCoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",
+BraidMonoid(W::FiniteCoxeterGroup)=BraidMonoid(longest(W),2,"\\Delta",one(W),
                                                gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::BraidMonoid)=print(io,"BraidMonoid(",M.W,")")
+Base.one(M::BraidMonoid)=M.one
 
 """
 `isleftdescent(M,w,i)`
@@ -725,15 +727,17 @@ rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
 #-----------------------GenArtinMonoid-----------------------------------
 # braid monoid for e.g. infinite Coxeter groups
 @GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
+  one::T
   atoms::Vector{T}
   W::TW
 end
 
 # The repetitions below reflect the poor type system of Julia
 IntervalStyle(M::GenArtinMonoid)=Interval()
-BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(gens(W),W,Dict{Symbol,Any}())
+BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
 
 Base.show(io::IO, M::GenArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
+Base.one(M::GenArtinMonoid)=M.one
 
 CoxGroups.isleftdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::GenArtinMonoid,w)=firstleftdescent(M.W,w)
@@ -1412,6 +1416,7 @@ end
   stringδ::String
   δword::Vector{Int}
   atoms::Vector{T}
+  one::T
   W::TW
 end
 
@@ -1446,7 +1451,7 @@ julia> B(-1,-2,-3,1,1)
 function DualBraidMonoid(W::CoxeterGroup;
   c=reduce(vcat,bipartite_decomposition(W)),revMonoid=nothing)
   δ=W(c...)
-  M=DualBraidMonoid(δ,order(δ),"δ",c,refls(W,1:nref(W)),W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,refls(W,1:nref(W)),one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing 
     M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
   else M.revMonoid=revMonoid
@@ -1463,7 +1468,7 @@ function DualBraidMonoid(W::PermRootGroup;
   δ=W(c...)
   n=reflength(W,δ)
   atoms=filter(r->reflength(W,δ/r)<n,unique(refls(W)))
-  M=DualBraidMonoid(δ,order(δ),"δ",c,atoms,W,Dict{Symbol,Any}())
+  M=DualBraidMonoid(δ,order(δ),"δ",c,atoms,one(W),W,Dict{Symbol,Any}())
   if revMonoid===nothing
     if all(w->isone(w^2),gens(W))
        M.revMonoid=DualBraidMonoid(W;c=reverse(c),revMonoid=M)
@@ -1476,6 +1481,8 @@ end
 function CoxGroups.isleftdescent(M::DualBraidMonoid,w,i::Int)
   reflength(M.W,M.atoms[i]\w)<reflength(M.W,w)
 end
+
+Base.one(M::DualBraidMonoid)=M.one
 
 Base.show(io::IO, M::DualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
                                             M.δword,")")
