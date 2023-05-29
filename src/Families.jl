@@ -153,9 +153,13 @@ special(f::Family)::Int=get!(()->1,f,:special)
 PermRoot.eigen(f::Family)=f.eigenvalues
 
 "`fourier(f::Family`: returns the Fourier matrix for the family `f`."
-function fourier(f::Family)
+function fourier(f::Family;lusztig=true)
   m=f.fourierMat
-  m isa Vector ? improve_type(toM(m)) : m
+  if m isa Vector m=improve_type(toM(m)) end
+  if lusztig==false && haskey(f,:lusztig)
+    m=permute(m,f.perm;dims=2)
+  end
+  m
 end
 
 "`length(f::Family)`: how many characters are in the family."

@@ -1218,10 +1218,15 @@ function Tfamilies(W,i;hard=false)
   v=" "*repr(W;context=rio())*".$i"
 # else f:=arg[1]; arg:=arg{[2..Length(arg)]};v:=""; fi;
   if length(f.eigenvalues)==1 return end # nothing interesting to test
+  function check(a,msg)
+    if !a InfoChevie("\n");ChevieErr("failed:",msg,"\n| ");
+    elseif hard InfoChevie(" ",msg,",") 
+    end
+  end
   O=Diagonal(Cyc.(f.eigenvalues))
   if haskey(f,:sh) Sh=Diagonal(Cyc.(f.sh)) end
-  S=fourier(f)
-  if f isa Vector t=toM(f) end
+  S=fourier(f,lusztig=false)
+  if !haskey(f,:sh) check(S==permutedims(S),"S=ᵗS") end
   Sbar=conj(S)
   Id=one(S)
   tS=permutedims(S)
@@ -1240,11 +1245,6 @@ function Tfamilies(W,i;hard=false)
   else real=false
   end
   if hard print("[",v,"] ...\n| ") end
-  function check(a,msg)
-    if !a InfoChevie("\n");ChevieErr("failed:",msg,"\n| ");
-    elseif hard InfoChevie(" ",msg,",") 
-    end
-  end
   inds=1:length(f.eigenvalues)
   if @isdefined W
     ud=CycPolUnipotentDegrees(W)[f.charNumbers]
@@ -1289,8 +1289,9 @@ function Tfamilies(W,i;hard=false)
     # check Shintani preserves ud. We have Sh=O^-1 SO^-1
     ud=map(x->x(Pol()),ud)
     if haskey(f,:sh) check(Sh*S*ud==S*ud,"Shud=ud")
-    elseif haskey(f,:lusztig) check((S*O)*ud==O*ud,"Shud=ud")
-    else check(S*conj(O)*ud==O*ud,"Shud=ud")
+    else
+      if haskey(f,:lusztig) check(fourier(f)*O*ud==O*ud,"Shud=ud") end
+      check(S*conj(O)*ud==O*ud,"Shud=ud")
     end
   elseif haskey(f,:special) special=f.special
   else ChevieErr(".special not bound\n| ");special=1
@@ -1299,18 +1300,18 @@ function Tfamilies(W,i;hard=false)
   check(S*permutedims(Sbar)==Id,"S unitary")
   if wreal P=permute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
   if haskey(f,:sh)
-    check((O*tS*inv(Sh//1)*S)^2==Id,"(O*tS*Sh-1*S)^2=1")
+    check((O*permutedims(fourier(f))*inv(Sh//1)*fourier(f))^2==Id,"(O⋅ᵗS⋅Sh⁻¹⋅S)²=1")
   else 
     if haskey(f,:lusztig)
       if !f.lusztig error(".lusztig bound but false") end
       if !wreal error(".lusztig bound but not .perm") end
-      check((O*S*P)^3==Id,"(OSP)^3=1")
-    else check((O*S)^3==Id,"(OS)^3=1")
+      check((O*fourier(f)*P)^3==Id,"(OSP)³=1")
     end
+    check((O*S)^3==Id,"(OS)³=1")
     check(S==tS,"\n|  S symmetric")
-    check(O*S^2==S^2*O,"[S^2,O]=1")
+    check(O*S^2==S^2*O,"[S²,O]=1")
   end
-  check((S*tS)^2==Id,"(S*tS)^2=1")
+  check((S*tS)^2==Id,"(S⋅ᵗS)²=1")
 # Print("\n| ");
 # check(O=S*O*S,"O=SOS");
 # if real then Print(" evalf(S[special]): ",

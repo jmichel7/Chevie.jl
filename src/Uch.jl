@@ -742,10 +742,10 @@ end
 function Families.fourier(uc::UnipotentCharacters)
   get!(uc,:fourier)do
     l=length(uc)
-    T=reduce(promote_type,map(eltype,improve_type(getproperty.(uc.families,:fourierMat))))
+    T=reduce(promote_type,map(eltype,improve_type(fourier.(uc.families))))
     i=fill(T(0),l,l)
     for f in uc.families
-      i[f.charNumbers,f.charNumbers]=f.fourierMat
+     i[f.charNumbers,f.charNumbers]=fourier(f)
     end
     i
   end
