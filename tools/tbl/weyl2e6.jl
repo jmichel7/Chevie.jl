@@ -63,7 +63,7 @@ chevieset(Symbol("2E6"), :HeckeRepresentation, function (param, sqrtparam, i)
 chevieset(Symbol("2E6"), :Representation, function (i,)
         return (chevieget(Symbol("2E6"), :HeckeRepresentation))(map((x->begin
                             [1, -1]
-                        end), 1:6), [], i)
+                        end), 1:6), fill(0, max(0, (1 + 6) - 1)) + 1, i)
     end)
 chevieset(Symbol("2E6"), :PhiFactors, [1, -1, 1, 1, -1, 1])
 chevieset(Symbol("2E6"), :UnipotentCharacters, function ()

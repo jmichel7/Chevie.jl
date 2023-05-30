@@ -711,10 +711,10 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
     rowseps=pushfirst!(reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)),0)
     for f in uc.families
-      if !haskey(f,:special) continue end
-      row_labels[f.charNumbers[f.special]]*="^{s}"
-      if !haskey(f,:cospecial) || f.special==f.cospecial continue end
-      row_labels[f.charNumbers[f.cospecial]]*="^{c}"
+      if special(f)==1 && cospecial(f)==special(f) continue end
+      row_labels[f.charNumbers[special(f)]]*="^{s}"
+      if cospecial(f)==special(f) continue end
+      row_labels[f.charNumbers[cospecial(f)]]*="^{c}"
     end
   else
     rows=get(io,:rows,1:length(uc))

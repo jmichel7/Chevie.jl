@@ -66,8 +66,9 @@ this construction.
 """
 module Families
 
-export family_imprimitive, Family, drinfeld_double, fourier,
- FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality
+export family_imprimitive, Family, drinfeld_double, 
+ FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality,
+ special, cospecial, signs, fourier
 
 using ..Gapjm
 
@@ -92,7 +93,7 @@ Examples are "S3",   "S4",   "S5"   which denote the family obtained as the
 Drinfeld  double of the symmetric group  on 3,4,5 elements, or "C2"   which
 denotes the Drinfeld double of the cyclic group of order 2.
 
-In the second case `f` is already a struct Family.
+In the second case `f` is already a `struct Family`.
 
 The other (optional) arguments add information to the family defined by the
 first argument. If given, the second argument becomes `f.charNumbers`. If
@@ -107,7 +108,7 @@ unipotent degrees.
 ```julia-repl
 julia> Family("C2")
 Family(C₂,4)
-DrinfeldDouble(Z/2)
+Drinfeld double D(ℤ/2)
  label│eigen
 ──────┼─────────────────────────────
 (1,1) │    1 1//2  1//2  1//2  1//2
@@ -117,7 +118,7 @@ DrinfeldDouble(Z/2)
 
 julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
 Family(C₂,4:7)
-DrinfeldDouble(Z/2)
+Drinfeld double D(ℤ/2)
  label│eigen signs
 ──────┼───────────────────────────────────
 (1,1) │    1     1  1//2 -1//2 1//2 -1//2
@@ -148,7 +149,16 @@ function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}()
   merge!(f,d)
 end
 
-special(f::Family)::Int=get!(()->1,f,:special)
+"`special(f::Family)` the index of the special character in `f`"
+special(f::Family)=get!(()->1,f,:special)::Int
+
+"`cospecial(f::Family)` the index of the cospecial character in `f`"
+cospecial(f::Family)=get!(()->special(f),f,:cospecial)::Int
+
+"`length(f::Family)`: how many characters are in the family."
+Base.length(f::Family)=length(eigen(f))
+
+signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
 
 PermRoot.eigen(f::Family)=f.eigenvalues
 
@@ -162,15 +172,12 @@ function fourier(f::Family;lusztig=true)
   m
 end
 
-"`length(f::Family)`: how many characters are in the family."
-Base.length(f::Family)=length(eigen(f))
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 
 function Base.merge!(f::Family,d::Dict)
   merge!(f.prop,d)
   if f.fourierMat isa Vector f.fourierMat=improve_type(toM(f.fourierMat)) end
   if !haskey(f,:charLabels) f.charLabels=map(string,1:length(f)) end
-  if !haskey(f,:special) f.special=1 end
   if haskey(d,:signs)
     signs=d[:signs]
     m=f.fourierMat
@@ -203,9 +210,9 @@ function Base.:*(f::Family,g::Family)
     res.charNumbers=map(x->collect(Iterators.flatten(x)),
                           cartesian(getproperty.(arg,:charNumbers)...))
   end
-  if all(haskey.(arg,:special))
-    res.special=cart2lin(length.(arg),getproperty.(arg,:special))
-    res.cospecial=cart2lin(length.(arg),map(f->get(f.prop,:cospecial,f.special),arg))
+  if any(haskey.(arg,:special))
+    res.special=cart2lin(length.(arg),special.(arg))
+    res.cospecial=cart2lin(length.(arg),cospecial.(arg))
     if res.cospecial==res.special delete!(res.prop,:cospecial) end
   end
   if all(x->haskey(x,:perm) || length(x)==1,arg)
@@ -300,7 +307,7 @@ label│eigen        3      1        2
 """
 function Perms.permute(f::Family,p::Perm)
   f=Family(copy(f.prop))
-  for n in [:x,:chi,:perm,:special]
+  for n in [:x,:chi,:perm,:special,:cospecial]
     if haskey(f,n) setproperty!(f,n,getproperty(f,n)^p) end
   end
   for n in [:charNumbers,:eigenvalues,:mellinLabels,:charLabels,:unpdeg,:fakdeg]
@@ -329,7 +336,7 @@ chevieset(:families,Symbol("C'1"),
 
 chevieset(:families,:C2,
   Family(Dict(:group=>"C2", :name=>"C_2",
-  :explanation=>"DrinfeldDouble(Z/2)",
+  :explanation=>"Drinfeld double D(\\bbZ/2)",
   :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
   :eigenvalues=>[1,1,1,-1],
@@ -356,7 +363,6 @@ chevieset(:families,Symbol("C'\"2"),
   :eigenvalues=>[1,1,E(4),-E(4)],
   :qEigen=>[0,0,1,1]//2,
   :perm=>Perm(3,4),
-  :special=>1,
   :cospecial=>2)))
 
 chevieset(:families,:S3,
@@ -386,7 +392,7 @@ chevieset(:families,:X,function(p)
              "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
     :eigenvalues=>map(s->E(p,prod(s)),ss),
     :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
-    :special=>1,:cospecial=>p-1))
+    :cospecial=>p-1))
    end)
 
 function SubFamily(f::Family,ind,scal,label)
@@ -398,8 +404,8 @@ function SubFamily(f::Family,ind,scal,label)
   res.name="$(f.name)_{[$label]}"
   if haskey(f,:charSymbols) res.charSymbols=f.charSymbols[ind] end
   if haskey(f,:group) res.group=f.group end
-  special=findfirst(==(f.special),ind)
-  if special!==nothing res.special=special end
+  ss=findfirst(==(special(f)),ind)
+  if ss!==nothing res.special=ss end
   res
 end
 
@@ -411,7 +417,6 @@ end
 
 chevieset(:families,:ExtPowCyclic,function(e,n)
   g=Family(Dict{Symbol,Any}())
-  g.special=1
   g.charSymbols=combinations(0:e-1,n)
   g.charLabels=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s),
                            "\\!\\wedge\\!"), g.charSymbols)
@@ -453,7 +458,6 @@ chevieset(:families,:QZ,function(n)
   res.explanation="Drinfeld double "*res.name
   res.fourierMat=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
   res.eigenvalues=[E(n,x*c) for (x,c) in pairs]
-  res.special=1
   res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
                     for (x,c) in pairs]
   res
@@ -501,7 +505,6 @@ chevieset(:families,:Dihedral,function(e)
     f.fourierMat=[(c(i'*reverse(j))-c(i'*j))//e for i in nc, j in nc]
 # *(-1)^count(iszero,[i[1],j[1]])*  This sign is in
 # [Malle, "Unipotente Grade", Beispiel 6.29]
-    f.special=1
   end
   c=filter(function(i)
             p=findfirst(==([nc[i][1],e-nc[i][2]]),nc)
@@ -664,7 +667,7 @@ function drinfeld_double(g;lu=false)
     res.explanation=""
   end
   res.name*="D($g)"
-  res.explanation*="DrinfeldDouble($g)"
+  res.explanation*="Drinfeld double D($g)"
   res.mellin=cat(map(r->
           conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1,
     res.classinfo)...,dims=(1,2))
@@ -812,7 +815,6 @@ function family_imprimitive(S)
     :eigenvalues=>frobs,
     :name=>joindigits(ct),
     :explanation=>"imprimitive family",
-    :special=>1,
     :charLabels=>string.(1:length(symbs)), # should be improved
     :size=>length(symbs)))
 end
@@ -861,7 +863,6 @@ function FamiliesClassical(sym)
     f.eigenvalues=map(x->(-1)^div(defectsymbol(sym[x])+1,4),f.charNumbers)
     if length(f.eigenvalues)==1
       f.charLabels=[""]
-      f.special=1
     else
       f.charLabels=map(f.M♯)do M
         v=map(z->count(>=(z),M)%2,Z1)
