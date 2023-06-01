@@ -1413,27 +1413,25 @@ function Base.show(io::IO, H::HeckeCoset)
   print(io,")")
 end
 
-function Chars.CharTable(H::HeckeCoset)
+function Chars.CharTable(H::HeckeCoset;opt...)
   get!(H,:chartable)do
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ? 
+      ct=getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ? 
                rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
-    end
-    cts=map(cts) do ct
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-      else                     names=charinfo(W).charnames
+      else                     names=charnames(t;opt...)
       end
-      CharTable(improve_type(toM(ct[:irreducibles])),names,ct[:classnames],
-                map(Int,ct[:centralizers]),length(W),
-               Dict{Symbol,Any}(:name=>ct[:identifier]))
+      CharTable(improve_type(toM(ct[:irreducibles])),names,
+         ct[:classnames],Int.(ct[:centralizers]),length(W),
+         Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
     ct=prod(cts)
     ct.name=repr(H;context=:TeX=>true)
     ct.group=H
     ct
-  end
+  end::CharTable
 end
 
 function Chars.representation(H::HeckeCoset,i::Int)

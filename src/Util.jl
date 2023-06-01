@@ -7,8 +7,8 @@ module Util
 using Gapjm: stringexp, stringprime
 
 export @forward 
-export showtable, ordinal, fromTeX, printTeX, joindigits, cut, 
-  rio, xprint, xprintln, ds, xdisplay, TeX, TeXs, hasdecor # formatting
+export showtable, ordinal, fromTeX, printTeX, joindigits, cut, rio, xprint, 
+  xprintln, ds, xdisplay, hdisplay, TeX, TeXs, hasdecor # formatting
 export toL, toM # convert Gap matrices <-> Julia matrices
 export InfoChevie
 export cartesian, cart2lin, lin2cart
@@ -45,6 +45,11 @@ rio(io::IO=stdout;p...)=IOContext(io,:limit=>true,p...)
 xprint(x...;p...)=print(rio(;p...),x...)
 xprintln(x...;p...)=println(rio(;p...),x...)
 xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
+function hdisplay(x;p...)
+  Docs.HTML()do io
+    show(IOContext(io,p...),"text/html",x)
+  end
+end
 
 function ds(s) # "dump struct"; not recursive like dump
   println(typeof(s),":")
