@@ -348,8 +348,6 @@ function PermRoot.inclusion(A::SubAlgebra,h::AlgebraElt)
   sum(c*A.inclusion[i] for (i,c) in h.d)
 end
 
-Groups.gens(A::SubAlgebra)=A.gens
-
 #  SUB.belongs:=v->A.EltToVector(v) in subspace;
 # restriction of basis element b to A
 function PermRoot.restriction(A::SubAlgebra,b)

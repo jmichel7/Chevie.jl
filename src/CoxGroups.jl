@@ -956,7 +956,6 @@ end
   gens::Vector{Matrix{T}}
 end
 
-Groups.gens(W::MatCox)=W.gens
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
 isleftdescent(W::MatCox,w,i::Int)=real(sum(w[i,:]))<0

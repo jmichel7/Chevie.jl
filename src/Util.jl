@@ -72,7 +72,7 @@ const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "Delta"=>"Δ","gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "Lambda"=>"Λ",
   "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", 
   "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ", "sigma"=>"σ", "theta"=>"θ", 
-  "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧",
+  "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧", "hfill"=>" ",
   "zeta"=>"ζ", "rtimes"=>"⋊ ","backslash"=>"\\","sqrt"=>"√")
 
 # defs below are necessary since constant folding is not good enough
@@ -155,6 +155,7 @@ properties of the `io` or as keywords.
   - `TeX`                give LaTeX output (useful in Jupyter or Pluto)
   - `column_repartition` display in vertical pieces of sizes indicated
     (default if not `TeX`: take in account `displaysize(io,2)`)
+  - align                alignment of column (default 'c':centered)
 
 ```julia-rep1
 julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];
@@ -190,8 +191,7 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
   rows_label=strip(get(io,:rows_label,""))
   rowseps=get(io,:rowseps,col_labels!=nothing ? [0] : Int[])
   column_repartition=get(io,:column_repartition,nothing)
-  lpad(s,n)=" "^(n-textwidth(s))*s # because Base.lpad does not use textwidth
-  rpad(s,n)=s*" "^(n-textwidth(s)) # because Base.rpad does not use textwidth
+  align=get(io,:align,'c')
   t=map(x->x isa String ? x : repr(x; context=io),t)
   TeX=get(io,:TeX,false)
   cols_widths=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
@@ -231,7 +231,7 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
   ci=[0]
   for k in column_repartition
     ci=ci[end].+(1:k)
-    if TeX println(io,"\$\$\n\\begin{array}{c|","c"^length(ci),"}") end
+    if TeX println(io,"\$\$\n\\begin{array}{l|","$align"^length(ci),"}") end
     if !isnothing(col_labels)
       if TeX
         println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
@@ -243,7 +243,8 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
       if TeX
         println(io,row_labels[l],"&",join(t[l,ci],"&"),"\\\\")
       else
-        println(io,row_labels[l],"\u2502",join(map(lpad,t[l,ci],cols_widths[ci])," "))
+        println(io,row_labels[l],"\u2502",join(map(align in "cr" ? lpad : rpad,
+                                     t[l,ci],cols_widths[ci])," "))
       end
       if l in rowseps hline(ci,last=l==size(t,1)) end
     end
