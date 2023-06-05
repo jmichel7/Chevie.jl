@@ -456,6 +456,7 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
   end::CharTable
 end
 
+using SparseArrays
 """
 `representation(H::HeckeAlgebra or HeckeCoset,i)`
 
@@ -510,10 +511,15 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   mm=map((t,j)->getchev(t,:HeckeRepresentation,H.para,rp,j),tt,
                                                     lin2cart(dims,i))
   if any(==(false),mm) return nothing end
-  if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
+  if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm)
   n=length(tt)
-  if n==1 return mm[1] end
+  if n==1 
+    m=mm[1]
+    density=sum(count.(!iszero,m))/length(m)/prod(size(m[1]))
+    if density<0.1 m=sparse.(m) end
+    return m
+  end
   vcat(map(1:n) do i
      map(mm[i]) do m
        kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
@@ -542,8 +548,10 @@ true
 function isrepresentation(H::HeckeAlgebra,t;verbose=false)
   W=H.W
   res=true
+#   bug in sparsearrays: q*one(m) is of type Any for SparseMatrix m
+  myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m)
   for i in eachindex(gens(W))
-    if !iszero(prod(q->(t[i]-q.*one(t[i])),H.para[i]))
+    if !iszero(prod(q->t[i]-myone(t[i],q),H.para[i]))
       if !verbose return false end
       println("Error in ",ordinal(i)," parameter relation");
       res=false

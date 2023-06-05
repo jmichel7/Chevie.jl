@@ -1211,7 +1211,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
     F=length(FF)==1 ? FF[1] : kron(FF...)
     mm=map(x->x[:gens],mm)
   end
-  if !(mm[1][1] isa Matrix) mm=map(x->toM.(x),mm) end
+  if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm*1)
   n=length(tt)
   if n==1 reps=mm[1] 
@@ -1321,7 +1321,7 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
       end
     end
   end
-  map(toL,S)
+  toL.(S)
 end
 
 ############################################################################

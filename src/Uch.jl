@@ -669,9 +669,7 @@ function UnipotentCharacters(WF::Spets)
 end
 
 function Base.show(io::IO,::MIME"text/html", uc::UnipotentCharacters)
-  print(io, "\$")
   show(IOContext(io,:TeX=>true),"text/plain",uc)
-  print(io, "\$")
 end
 
 function Base.show(io::IO,uc::UnipotentCharacters)
