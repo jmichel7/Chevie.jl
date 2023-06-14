@@ -1,5 +1,6 @@
 # Glue code for using GenericDecMats.jl
 using GenericDecMats 
+import GenericDecMats: generic_decomposition_matrix
 export GenericDecMats, generic_decomposition_matrix, InducedDecompositionMatrix
 
 @GapObj struct ΦDecMat{T}
