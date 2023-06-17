@@ -11,7 +11,7 @@ using PermGroups: Group, Groups, gens, word, PermGroup, elements,
          minimal_words, isabelian
 using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor
-using ..FFields: FFields, FFE, Z
+using ..FiniteFields: FiniteFields, FFE, Z
 using ..Modulo: Mod
 using ..Gapjm: Gapjm, order
 
@@ -89,7 +89,7 @@ julia> FFE{3}(E(7))
 Z₇₂₉¹⁰⁴
 ```
 """
-function FFields.FFE{p}(c::Cyc)where p
+function FiniteFields.FFE{p}(c::Cyc)where p
   x=coefficients(c) 
   n=conductor(c)
   pp=p^valuation(n,p)

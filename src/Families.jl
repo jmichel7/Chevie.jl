@@ -68,7 +68,7 @@ module Families
 
 export family_imprimitive, Family, drinfeld_double, 
  FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality,
- special, cospecial, signs, fourier
+ special, cospecial, fourier
 
 using ..Gapjm
 
@@ -158,7 +158,7 @@ cospecial(f::Family)=get!(()->special(f),f,:cospecial)::Int
 "`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(eigen(f))
 
-signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
+SPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
 
 PermRoot.eigen(f::Family)=f.eigenvalues
 

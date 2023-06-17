@@ -1,19 +1,16 @@
-
 """
 This module introduces modular arithmetic.
 
 The  integer `x` mod. `n` is constructed  by the function `Mod(x,n)`. If `n
-isa  Int`  its  type  is  `Mod{UInt64}`.  If  `n  isa  BigInt`  its type is
-`Mod{BigInt}`.  Since `n` is not encoded in  the type, the elements `0` and
-`1`  mod.  `n`  cannot  be  constructed  from  the  type, which causes some
-problems  for some  Julia functions.  For some  prime moduli  `p`, the type
-`FFE{p}` in `FFields.jl` does not have such limitations.
+isa  Int` the result is of type `Mod{UInt64}`. If `n isa BigInt` the result
+is  of  type  `Mod{BigInt}`.  Since  `n`  is  not  encoded in the type, the
+elements  `0` and `1` mod.  `n` cannot be constructed  from the type, which
+causes  some problems for some Julia functionality (for instance `inv` on a
+matrix does not work). For prime moduli `p`, the type `FFE{p}` in `FiniteFields`
+does not have such limitations.
 
 Example:
 ```julia-repl
-julia> Mod(5,19)
-Mod{UInt64}: 5₁₉
-
 julia> a=Mod(5,19)
 Mod{UInt64}: 5₁₉
 
@@ -51,7 +48,7 @@ struct Mod{T}<:Number
   global Mod_(a::T,n::T) where T=new{T}(a,n)
 end
 
-Mod(a::Integer,n)=Mod_(unsigned(mod(a,n)),unsigned(n))
+Mod(a::Integer,n)=Mod_(typeof(unsigned(n))(mod(a,n)),unsigned(n))
 
 Mod(a::Integer,n::BigInt)=Mod_(mod(a,n),n)
 
@@ -74,9 +71,15 @@ Base.one(::Type{<:Mod})=Mod_(unsigned(1),unsigned(0))
 Base.isone(n::Mod)=isone(n.val) || isone(n.n)
 Base.:(==)(x::Mod,y::Mod)=x.n==y.n && x.val==y.val
 Base.:(==)(x::Mod,y::Integer)=x==Mod(y,x.n)
-Base.:+(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val+y.val,x.n)
-Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(x.val*y.val,x.n)
-Base.:-(x::Mod)=Mod(-signed(Integer(x.val)),x.n)
+function Base.:+(x::Mod, y::Mod)
+  if x.n!=y.n  error("moduli") end
+  res=x.val+y.val
+  if res>x.n res-=x.n end
+  Mod(res,x.n)
+end
+
+Base.:*(x::Mod, y::Mod)=x.n!=y.n ? error("moduli") : Mod(widemul(x.val,y.val),x.n)
+Base.:-(x::Mod)=iszero(x) ? x : Mod(x.n-x.val,x.n)
 Base.:-(x::Mod, y::Mod)=x+(-y)
 Base.:/(x::Mod,y::Mod)=x*inv(y)
 Base.:/(x::Mod,y::Number)=x*inv(Mod(y,x.n))
@@ -86,9 +89,13 @@ Base.:^(x::Mod,m::Integer)=m>=0 ? Base.power_by_squaring(x,m) :
 Base.cmp(x::Mod,y::Mod)=cmp(x.val,y.val)
 Base.gcd(x::Mod,y::Mod)=Mod(gcd(x.val,y.val),x.n)
 Base.isless(x::Mod,y::Mod)=cmp(x,y)==-1
-Base.abs(x::Mod)=x      # needed for inv(Matrix) to work
-Base.conj(x::Mod)=x     # needed for inv(Matrix) to work
-(::Type{T})(x::Mod) where T<:Integer=2x.val<=x.n ? signed(T(x.val)) : signed(T(x.val))-signed(T(x.n))
+Base.abs(x::Mod)=x   # needed for inv(Matrix) to work
+Base.conj(x::Mod)=x  # needed for inv(Matrix) to work
+(::Type{T})(x::Mod) where T<:Signed=x.val<=x.n-x.val ? T(x.val) : -T(x.n-x.val)
+
+(::Type{T})(x::Mod) where T<:Unsigned=T(x.val)
+
+Integer(x::Mod)=Signed(x)
 
 function Base.show(io::IO, ::MIME"text/plain", x::Mod)
   if !haskey(io,:typeinfo) print(io,typeof(x),": ") end

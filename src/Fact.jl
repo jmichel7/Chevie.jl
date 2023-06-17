@@ -5,7 +5,7 @@ module Fact
 import Primes: Primes, nextprime, factor
 using LinearAlgebra:exactdiv
 using LaurentPolynomials: Pol, @Pol, shift, degree, derivative, valuation, coefficients
-using ..FFields: FFields, FFE
+using ..FiniteFields: FiniteFields, FFE
 using ..Modulo: Modulo, Mod
 using ..Combinat: Combinat, combinations, npartitions
 using ..Tools: improve_type

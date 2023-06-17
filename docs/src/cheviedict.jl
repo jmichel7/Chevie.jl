@@ -36,7 +36,7 @@ const ChevieDict=Dict(
 "CentralIdempotents"=>"centralidempotents",
 "Centralizer"=>"centralizer",
 "CentralizerGenerators"=>"centralizer_gens",
-"CharFFE(x)"=>"field(x).p",
+"CharFFE"=>"char",
 #CharName
 "CharNames"=>"charnames",
 "CharParams(W)"=>"charinfo(W).charparams",
@@ -88,7 +88,7 @@ const ChevieDict=Dict(
 "DecomposedMat"=>"diagblocks",
 "DefectSymbol"=>"defectsymbol",
 "Degree(p)"=>"degree(p)",
-"DegreeFFE(x)"=>"field(x).n",
+"DegreeFFE"=>"degree",
 "DeligneLusztigCharacter"=>"DLChar",
 "DeligneLusztigLefschetz"=>"DLLeftschetz",
 "DescribeInvolution"=>"describe_involution",

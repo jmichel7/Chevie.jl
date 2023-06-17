@@ -47,7 +47,7 @@ Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
   * signed permutations (module [`SPerms`](@ref))
-  * finite fields (module [`FFields`](@ref))
+  * finite fields (module [`FiniteFields`](@ref))
   * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
@@ -110,8 +110,7 @@ using UsingMerge
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("Modulo.jl");@usingmerge verbose=true reexport Modulo
-include("FFields.jl");@usingmerge verbose=true reexport FFields
+include("FiniteFields.jl");@usingmerge verbose=true reexport FiniteFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools

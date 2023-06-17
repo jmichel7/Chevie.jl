@@ -3,7 +3,7 @@
 Pages=["ffe.md"]
 ```
 ```@docs
-FFields
+FiniteFields
 FFE
 FFE(i::Integer)
 Z(::Any)

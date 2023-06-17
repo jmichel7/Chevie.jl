@@ -118,7 +118,7 @@ diaconis_graham
 ```
 # Finite fields
 ```@docs
-FFields
+FiniteFields
 FFE
 FFE(i::Integer)
 Z(::Any)

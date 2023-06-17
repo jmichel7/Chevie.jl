@@ -252,29 +252,6 @@ end
 @test mytest("FFfac.jl","factor(f)","3-element Vector{Pol{FFE{3}}}:\n q²+1\n q+1\n q-1")
 @test mytest("FFfac.jl","factor(f,GF(9))","4-element Vector{Pol{FFE{3}}}:\n q+1\n q-1\n q+Z₉²\n q+Z₉⁶")
 end
-@testset "FFields.jl" begin
-@test mytest("FFields.jl","a=Z(64)","FFE{2}: Z₆₄")
-@test mytest("FFields.jl","a^9","FFE{2}: Z₈")
-@test mytest("FFields.jl","a^21","FFE{2}: Z₄")
-@test mytest("FFields.jl","a+1","FFE{2}: Z₆₄⁵⁶")
-@test mytest("FFields.jl","a=Z(19)+3","FFE{19}: 5")
-@test mytest("FFields.jl","Mod(a)","Mod{UInt64}: 5₁₉")
-@test mytest("FFields.jl","Int(a)","5")
-@test mytest("FFields.jl","order(a)","9")
-@test mytest("FFields.jl","a=Z(8)^5","FFE{2}: Z₈⁵")
-@test mytest("FFields.jl","F=field(a)","GF(2^3)")
-@test mytest("FFields.jl","char(F)","2")
-@test mytest("FFields.jl","char(a)","2")
-@test mytest("FFields.jl","degree(F)","3")
-@test mytest("FFields.jl","degree(a)","3")
-@test mytest("FFields.jl","length(F)","8")
-@test mytest("FFields.jl","log(a)","5")
-@test mytest("FFields.jl","elements(F)","8-element Vector{FFE{2}}:\n   0\n   1\n  Z₈\n Z₈²\n Z₈³\n Z₈⁴\n Z₈⁵\n Z₈⁶")
-@test mytest("FFields.jl","FFE{19}(2)","FFE{19}: 2")
-@test mytest("FFields.jl","FFE{19}(Mod(2,19))","FFE{19}: 2")
-@test mytest("FFields.jl","z=Z(16)","FFE{2}: Z₁₆")
-@test mytest("FFields.jl","z^5","FFE{2}: Z₄")
-end
 @testset "Fact.jl" begin
 @test mytest("Fact.jl","factor(Pol(:q)^24-1)","8-element Vector{Pol{Int64}}:\n q-1\n q²-q+1\n q⁴-q²+1\n q⁸-q⁴+1\n q⁴+1\n q²+1\n q+1\n q²+q+1")
 @test mytest("Fact.jl","Fact.LogInt(1030,2)","10")
@@ -301,6 +278,30 @@ end
 @test mytest("Families.jl","b=basis(A)","5-element Vector{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:\n B₁\n B₂\n B₃\n B₄\n B₅")
 @test mytest("Families.jl","b*permutedims(b)","5×5 Matrix{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
 @test mytest("Families.jl","CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
+end
+@testset "FiniteFields.jl" begin
+@test mytest("FiniteFields.jl","a=Z(64)","FFE{2}: Z₆₄")
+@test mytest("FiniteFields.jl","a^9","FFE{2}: Z₈")
+@test mytest("FiniteFields.jl","a^21","FFE{2}: Z₄")
+@test mytest("FiniteFields.jl","a+1","FFE{2}: Z₆₄⁵⁶")
+@test mytest("FiniteFields.jl","a=Z(19)+3","FFE{19}: 5")
+@test mytest("FiniteFields.jl","Mod(a)","Mod{UInt64}: 5₁₉")
+@test mytest("FiniteFields.jl","Int(a)","5")
+@test mytest("FiniteFields.jl","order(a)","9")
+@test mytest("FiniteFields.jl","a=Z(8)^5","FFE{2}: Z₈⁵")
+@test mytest("FiniteFields.jl","F=field(a)","GF(2^3)")
+@test mytest("FiniteFields.jl","char(F)","2")
+@test mytest("FiniteFields.jl","char(a)","2")
+@test mytest("FiniteFields.jl","degree(F)","3")
+@test mytest("FiniteFields.jl","degree(a)","3")
+@test mytest("FiniteFields.jl","length(F)","8")
+@test mytest("FiniteFields.jl","log(a)","5")
+@test mytest("FiniteFields.jl","elements(F)","8-element Vector{FFE{2}}:\n   0\n   1\n  Z₈\n Z₈²\n Z₈³\n Z₈⁴\n Z₈⁵\n Z₈⁶")
+@test mytest("FiniteFields.jl","FFE{19}(2)","FFE{19}: 2")
+@test mytest("FiniteFields.jl","FFE{19}(5//3)","FFE{19}: 8")
+@test mytest("FiniteFields.jl","FFE{19}(Mod(2,19))","FFE{19}: 2")
+@test mytest("FiniteFields.jl","z=Z(16)","FFE{2}: Z₁₆")
+@test mytest("FiniteFields.jl","z^5","FFE{2}: Z₄")
 end
 @testset "Garside.jl" begin
 @test mytest("Garside.jl","W=coxgroup(:A,4)","A₄")
@@ -548,7 +549,6 @@ end
 @test mytest("Lusztig.jl","LusztigInductionTable(t[2],W)","Lusztig Induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃\n     │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2\n─────┼────────────────────────\n111. │     1    -1    -1    .\n11.1 │    -1     .     1   -1\n1.11 │     .     .    -1    .\n.111 │    -1     .     .    .\n21.  │     .     .     .    .\n1.2  │     1    -1     .    1\n2.1  │     .     1     .    .\n.21  │     .     .     .    .\n3.   │     .     .     .    1\n.3   │     .     1     1   -1\nB₂:2 │     .     .     1   -1\nB₂:11│     1    -1     .    .")
 end
 @testset "Modulo.jl" begin
-@test mytest("Modulo.jl","Mod(5,19)","Mod{UInt64}: 5₁₉")
 @test mytest("Modulo.jl","a=Mod(5,19)","Mod{UInt64}: 5₁₉")
 @test mytest("Modulo.jl","a^2","Mod{UInt64}: 6₁₉")
 @test mytest("Modulo.jl","inv(a)","Mod{UInt64}: 4₁₉")

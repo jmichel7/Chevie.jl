@@ -7,7 +7,7 @@ using Primes: Primes
 using LinearAlgebra: exactdiv
 
 using LaurentPolynomials: Pol, degree, shift, derivative
-using ..FFields: FFE, GF
+using ..FiniteFields: FFE, GF
 
 """
 `factors_same_degree(f::Pol{FFE{p}},d,F::GF)where p`

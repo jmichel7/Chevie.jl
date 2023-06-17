@@ -12,7 +12,7 @@ using LinearAlgebra: tr
 using ..Chars: CharTable
 using ..GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Tools: improve_type
-using ..FFields: FFE
+using ..FiniteFields: FFE
 using ..CycPols: CycPol
 using ..Gapjm: Gapjm, root, gap, Cyc, conductor
 
