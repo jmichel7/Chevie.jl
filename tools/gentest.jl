@@ -8,7 +8,7 @@ using Test, Gapjm
 #include("../tools/Gap4.jl")
 function mytest(file::String,src::String,man::String)
   println(file," ",src)
-  omit=src[end]==';'
+  omit=match(r";\\s*(#.*)?\$",src)!==nothing
   src=replace(src,"\\\\\\\\"=>"\\\\")
   exec=repr(MIME("text/plain"),eval(Meta.parse(src)),context=:limit=>true)
   if omit exec="nothing" end
@@ -32,38 +32,23 @@ end
       blks=String[]
       s=read(f,String)
       s=replace(s,r"```julia-repl(.*?)```"s=>t->push!(blks,t))
+      blks=map(s->replace(s,r"```julia-repl\s(.*?)\s```"s=>s"\1"),blks)
       out=String[]
       blks=map(blks)do s
         s=replace(s,"\$Idef"=>"Int16") # hack: instead evaluate docstrings
         c=""
-        l=split(s,"\n")
-        res=Pair{String,Vector{String}}[]
-        for v in l[2:end-1]
-          v=replace(v,r"# .*"=>"")
-          v=replace(v,r" *$"=>"")
-          if occursin(r"^julia>",v)
-            if c!="" push!(res,c=>out) end
-            out=String[]
-            c=replace(v,r"^julia>\s*"=>"")
-          else
-            push!(out,v)
-          end
+        l=split(s,r"^julia> "m)[2:end]
+        map(l)do t
+          cmd,i=Meta.parse(t,1)
+          t[1:i-1]=>t[i:end]
         end
-        push!(res,c=>out)
       end
       d=vcat(blks...)
       d=map(d)do (c,l)
-        while true
-#         println("<$l>")
-          if isempty(l) l=["nothing"] end
-          if l[end]=="" 
-            if length(l)>1 resize!(l,length(l)-1)
-            else l[end]="nothing"
-            end
-          else break
-          end
-        end
-        c=>join(l,"\n")
+        c=chomp(c)
+        l=chomp(l)
+        if match(r"^\s*$",l)!==nothing l="nothing" end
+        c=>l
       end
       if !isempty(d)
       write(io,"@testset ",repr(f)," begin\n")

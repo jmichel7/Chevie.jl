@@ -180,6 +180,8 @@ first  element is taken as the `.coeff`  of the `CycPol`, the second as the
 `(q-E(d)^i)` or are integers `d` representing `Φ_d(q)`.
 
 ```julia-repl
+julia>Pol(:q);
+
 julia> CycPol([3,-5,6,3//7])
 3q⁻⁵Φ₆(q-ζ₇³)
 ```

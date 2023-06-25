@@ -51,11 +51,13 @@ function hdisplay(x;p...)
   end
 end
 
-function ds(s) # "dump struct"; not recursive like dump
+function ds(s;types=false) # "dump struct"; not recursive like dump
   println(typeof(s),":")
   for f in fieldnames(typeof(s))
     if !isdefined(s,f) println(f,"=#undef")
-    else xprintln(f,"=",getfield(s,f))
+    else print(f);
+      if types print("::",typeof(getfield(s,f))) end
+      xprintln("=",getfield(s,f))
     end
   end
 end

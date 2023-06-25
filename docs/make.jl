@@ -13,7 +13,6 @@ pages=[
 "Infrastructure"=>[
 "sperm.md",
 "symbols.md",
-"ffe.md",
 "nf.md",
 "presentations.md"],
 "Reflection groups"=>[
@@ -23,7 +22,8 @@ pages=[
 "chars.md"],
 "Hecke algebras"=>[
 "hecke.md",
-"kl.md"],
+"kl.md",
+"algebras.md"],
 "garside.md",
 "Reductive groups"=>[
 "semisimple.md",

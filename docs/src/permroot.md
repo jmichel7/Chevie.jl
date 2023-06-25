@@ -40,6 +40,7 @@ refleigen
 degrees(::PermRootGroup)
 codegrees
 invariants
+discriminant
 invariant_form
 bipartite_decomposition
 catalan(::Group,::Any)

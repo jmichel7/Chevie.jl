@@ -43,11 +43,11 @@ their functionality is automatically available when you use `Gapjm`.
   * [CycPols](https://github.com/jmichel7/CycPols.jl) (cyclotomic polynomials)
   * [GenLinearAlgebra](https://github.com/jmichel7/GenLinearAlgebra.jl) (linear algebra on any field/ring)
   * [FinitePosets](https://github.com/jmichel7/FinitePosets.jl) (finite posets)
+  * [FiniteFields](https://github.com/jmichel7/FiniteFields.jl) (finite fields)
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
   * signed permutations (module [`SPerms`](@ref))
-  * finite fields (module [`FiniteFields`](@ref))
   * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
@@ -103,6 +103,7 @@ using UsingMerge
 @usingmerge verbose=true reexport CyclotomicNumbers
 @reexport using CyclotomicNumbers: bracket_if_needed, 
   format_coefficient, stringind
+@usingmerge verbose=true reexport FiniteFields
 @reexport using CycPols
 @reexport using CycPols: stringprime
 @reexport using GenLinearAlgebra
@@ -110,11 +111,11 @@ using UsingMerge
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
-include("FiniteFields.jl");@usingmerge verbose=true reexport FiniteFields
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
+include("Presentations.jl");@reexport using .Presentations
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
@@ -125,7 +126,6 @@ include("Chars.jl");@reexport using .Chars
 include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
-include("Presentations.jl");@reexport using .Presentations
 include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
 include("Lusztig.jl");@reexport using .Lusztig

@@ -25,5 +25,7 @@ ndrinfeld_double
 family_imprimitive
 FamiliesClassical
 *(f::Family, g::Family)
+special
+cospecial
 fusion_algebra
 ```
