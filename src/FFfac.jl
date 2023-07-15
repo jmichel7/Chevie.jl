@@ -6,8 +6,8 @@ module FFfac
 using Primes: Primes
 using LinearAlgebra: exactdiv
 
-using LaurentPolynomials: Pol, degree, shift, derivative
-using ..FiniteFields: FFE, GF
+using LaurentPolynomials: Pol, degree, shift, derivative, stringexp, coefficients
+using FiniteFields: FFE, GF
 
 """
 `factors_same_degree(f::Pol{FFE{p}},d,F::GF)where p`
@@ -82,59 +82,66 @@ end
 
 Given  `f` a polynomial  over a finite  field of characteristic `p`, factor
 `f`,  by default over the  field of its coefficients,  or if specified over
-the field `F`.
+the field `F`. The result is a `Primes.Factorization{Pol{FFE{p}}}`.
 
 ```julia-repl
 julia> @Pol q
 Pol{Int64}: q
 
-julia> f=(q^4-1)*Z(3)^0
-Pol{FFE{3}}: q⁴-1
+julia> f=q^3*(q^4-1)^2*Z(3)^0
+Pol{FFE{3}}: q¹¹+q⁷+q³
 
 julia> factor(f)
-3-element Vector{Pol{FFE{3}}}:
- q²+1
- q+1
- q-1
+q³ * (q²+1)² * (q+1)² * (q-1)²
 
 julia> factor(f,GF(9))
-4-element Vector{Pol{FFE{3}}}:
- q+1
- q-1
- q+Z₉²
- q+Z₉⁶
+q³ * (q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)²
 ```
 """
 function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
-  facs=Pol{FFE{p}}[]
+  facs=Primes.Factorization{Pol{FFE{p}}}()
   # make the polynomial unitary, remember the leading coefficient for later
   l=f[end]
   f=f/l
-  append!(facs,map(x->Pol(), 1:f.v))
+  if f.v>0 facs[Pol([FFE{p}(1)],1)]+=f.v end
   f=shift(f,-f.v)
-  if degree(f)==1 facs=[f]
+  if degree(f)==1 facs[f]+=1
   elseif degree(f)>=2
     d=derivative(f)
     if iszero(d) # f is the p-th power of another polynomial
       h=factor(root(f,p),F)
-      facs=vcat(fill(h,p)...)
+      ff=vcat(fill(h,p)...)
     else
       g=gcd(f,d)
-      facs=factors_squarefree(exactdiv(f,g),F)
-      for h in facs
+      ff=factors_squarefree(exactdiv(f,g),F)
+      for h in ff
+        facs[h]+=1
         while true
           g1,r=divrem(g,h)
           if !iszero(r) break end
           g=g1
-          push!(facs, copy(h))
+          facs[h]+=1
         end
       end
-      if degree(g)>1 append!(facs, factor(g,F)) end
+      if degree(g)>1 # never happens?
+        append!(facs, factor(g,F))
+      end
     end
   end
-  sort!(facs)
-  facs[1]*=l
-  facs
+  if isone(l) facs
+  else facs,l
+  end
 end
 
+function Base.show(io::IO, ::MIME{Symbol("text/plain")}, 
+  f::Primes.Factorization{<:Pol})
+  function s(p)
+    o=sprint(show,p;context=io)
+    length(coefficients(p))>1 ? "("*o*")" : o
+  end
+  join(io, isempty(f) ? "1" : 
+       [(e == 1 ? s(p) : s(p)*stringexp(io,e)) for (p,e) in f.pe], " * ")
+end
+
+Primes.Factorization{T}(l::Pair{T,Int}...) where T=Primes.Factorization(Dict(l))
 end

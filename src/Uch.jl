@@ -126,8 +126,8 @@ julia> uc=UnipotentCharacters(W)
 UnipotentCharacters(G₂)
       γ│n₀    Deg(γ)  Feg              Symbol Fr(γ)    label
 ───────┼─────────────────────────────────────────────────────
-φ₁‚₀   │ 1         1    1       (0,0,0,0,0,2)     1         
-φ₁‚₆   │ 2        q⁶   q⁶ (01,01,01,01,01,12)     1         
+φ₁‚₀   │ 1         1    1       (0,0,0,0,0,2)     1
+φ₁‚₆   │ 2        q⁶   q⁶ (01,01,01,01,01,12)     1
 φ′₁‚₃  │ 3   qΦ₃Φ₆/3   q³            (0,0,1+)     1    (1,ρ)
 φ″₁‚₃  │ 4   qΦ₃Φ₆/3   q³            (0,0,1-)     1   (g₃,1)
 φ₂‚₁   │ 5  qΦ₂²Φ₃/6  qΦ₈       (0,0,0,0,1,1)     1    (1,1)
@@ -160,7 +160,7 @@ family by asking
 julia> uc.families[1]
 Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
 Drinfeld double of 𝔖 ₃, Lusztig′s version
-   label│eigen                                       
+   label│eigen
 ────────┼─────────────────────────────────────────────────────
 (1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
 (g₂,1)  │    1 1//2  1//2     0     0 -1//2 -1//2     0     0
@@ -220,13 +220,13 @@ julia> UnipotentCharacters(complex_reflection_group(4))
 UnipotentCharacters(G₄)
     γ│n₀            Deg(γ)    Feg Fr(γ)  label
 ─────┼─────────────────────────────────────────
-φ₁‚₀ │ 1                 1      1     1       
+φ₁‚₀ │ 1                 1      1     1
 φ₁‚₄ │ 2  -√-3q⁴Φ″₃Φ₄Φ″₆/6     q⁴     1   1∧ζ₆
 φ₁‚₈ │ 3   √-3q⁴Φ′₃Φ₄Φ′₆/6     q⁸     1 -1∧ζ₃²
 φ₂‚₅ │ 4         q⁴Φ₂²Φ₆/2   q⁵Φ₄     1  1∧ζ₃²
 φ₂‚₃ │ 5 -ζ₃√-3qΦ″₃Φ₄Φ′₆/3   q³Φ₄     1  1∧ζ₃²
 φ₂‚₁ │ 6 ζ₃²√-3qΦ′₃Φ₄Φ″₆/3    qΦ₄     1   1∧ζ₃
-φ₃‚₂ │ 7            q²Φ₃Φ₆ q²Φ₃Φ₆     1       
+φ₃‚₂ │ 7            q²Φ₃Φ₆ q²Φ₃Φ₆     1
 Z₃:2 │ 8     -√-3qΦ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₃²
 Z₃:11│ 9    -√-3q⁴Φ₁Φ₂Φ₄/3      0   ζ₃² ζ₃∧ζ₆⁵
 G₄   │10        -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1
@@ -248,7 +248,7 @@ end
 
 function maketype(s) # convert a Dict read from Chevie data to a TypeIrred
   if s isa TypeIrred return s end
-  if haskey(s,:orbit) 
+  if haskey(s,:orbit)
     s[:orbit]=maketype.(s[:orbit])
   else s[:series]=Symbol(s[:series])
 #     if s[:rank]==0 return Dict(:charnames=>[""],:charparams=>[[]]) end
@@ -278,7 +278,7 @@ function SerNames(io::IO,sers)
     if !(tt isa Vector) tt=[tt] end
     n=fromTeX(io,ser[:cuspidalName])
     if isempty(tt) res[charnumbers(ser)]=[n]
-    else 
+    else
       nn=map(t->charnames(io,t),tt)
       nn=map(x->join(x,"\\otimes "),cartesian(nn...))
       nn=map(x->fromTeX(io,x),nn)
@@ -310,7 +310,7 @@ end
 
 almostcharnames(io::IO,uc::UnipotentCharacters)=SerNames(io,uc.almostHarishChandra)
 
-function UnipotentCharacters(t::TypeIrred) 
+function UnipotentCharacters(t::TypeIrred)
   uc=getchev(t,:UnipotentCharacters)
   if uc===nothing || uc==false
     println("Warning: $t is not a Spets!!")
@@ -344,8 +344,8 @@ function UnipotentCharacters(t::TypeIrred)
           r.indices=r.indices.+(i-1)*rank(t.orbit[1])
           r
         end, :twist=>Perm()))
-      if haskey(s[:relativeType],:twist) && s[:relativeType][:twist]!=Perm() 
-        error() 
+      if haskey(s[:relativeType],:twist) && s[:relativeType][:twist]!=Perm()
+        error()
       end
       if !isone(t.twist)
         a=t.orbit[1].indices[s.relativeType[:indices]]
@@ -433,15 +433,15 @@ julia> uc=UnipotentCharacters(WF)
 UnipotentCharacters(²Bsym₂)
        γ│n₀ almostch    Deg(γ)   Feg        Symbol Fr(γ) label
 ────────┼──────────────────────────────────────────────────────
-2       │ 1       2.         1     1     (02,,0,0)     1      
-11      │ 2      .11        q⁴    q⁴ (012,1,01,01)     1      
+2       │ 1       2.         1     1     (02,,0,0)     1
+11      │ 2      .11        q⁴    q⁴ (012,1,01,01)     1
 ²B₂[1,3]│ 3      1.1 √2qΦ₁Φ₂/2 qΦ₁Φ₂     (01,,1,0)   ζ₈³     1
 ²B₂[1,5]│ 4       B₂ √2qΦ₁Φ₂/2     0     (01,,0,1)   ζ₈⁵     2
 
 julia> uc.families
 3-element Vector{Family}:
- Family(C₁,[1]) 
- Family(C₁,[2]) 
+ Family(C₁,[1])
+ Family(C₁,[2])
  Family(?4,[3, 4])
 
 julia> uc.families[3]
@@ -460,28 +460,28 @@ julia> uc=UnipotentCharacters(coxgroup(:G,2));
 
 julia> charnames(uc;limit=true)
 10-element Vector{String}:
- "φ₁‚₀"   
- "φ₁‚₆"   
- "φ′₁‚₃"  
- "φ″₁‚₃"  
- "φ₂‚₁"   
- "φ₂‚₂"   
- "G₂[-1]" 
- "G₂[1]"  
- "G₂[ζ₃]" 
+ "φ₁‚₀"
+ "φ₁‚₆"
+ "φ′₁‚₃"
+ "φ″₁‚₃"
+ "φ₂‚₁"
+ "φ₂‚₂"
+ "G₂[-1]"
+ "G₂[1]"
+ "G₂[ζ₃]"
  "G₂[ζ₃²]"
 
 julia> charnames(uc;TeX=true)
 10-element Vector{String}:
- "\\phi_{1,0}"    
- "\\phi_{1,6}"    
- "\\phi_{1,3}'"   
- "\\phi_{1,3}''"  
- "\\phi_{2,1}"    
- "\\phi_{2,2}"    
- "G_2[-1]"        
- "G_2[1]"         
- "G_2[\\zeta_3]"  
+ "\\phi_{1,0}"
+ "\\phi_{1,6}"
+ "\\phi_{1,3}'"
+ "\\phi_{1,3}''"
+ "\\phi_{2,1}"
+ "\\phi_{2,2}"
+ "G_2[-1]"
+ "G_2[1]"
+ "G_2[\\zeta_3]"
  "G_2[\\zeta_3^2]"
 ```
 
@@ -514,8 +514,8 @@ UnipotentCharacters(B₂)
 ───┼───────────────────────────────────
 11.│ 1  qΦ₄/2  q²   (12,0)     1   +,-
 1.1│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+
-.11│ 3     q⁴  q⁴ (012,12)     1      
-2. │ 4      1   1     (2,)     1      
+.11│ 3     q⁴  q⁴ (012,12)     1
+2. │ 4      1   1     (2,)     1
 .2 │ 5  qΦ₄/2  q²   (01,2)     1   -,+
 B₂ │ 6 qΦ₁²/2   0   (012,)    -1   -,-
 ```
@@ -530,9 +530,9 @@ UnipotentCharacters(B₂)
 .2  │ 5  qΦ₄/2  q²   (01,2)     1   -,+
 B₂  │ 6 qΦ₁²/2   0   (012,)    -1   -,-
 ────┼───────────────────────────────────
-2.ˢ │ 4      1   1     (2,)     1      
+2.ˢ │ 4      1   1     (2,)     1
 ────┼───────────────────────────────────
-.11ˢ│ 3     q⁴  q⁴ (012,12)     1      
+.11ˢ│ 3     q⁴  q⁴ (012,12)     1
 ────┴───────────────────────────────────
 
 julia> xdisplay(uc;cols=[1,4])
@@ -547,7 +547,7 @@ UnipotentCharacters(B₂)
 B₂ │ 6   (012,)
 ```
 """
-function UnipotentCharacters(WF::Spets) 
+function UnipotentCharacters(WF::Spets)
   get!(WF,:UnipotentCharacters) do
   function CartesianSeries(sers)
     ser=Dict{Symbol,Any}()
@@ -562,14 +562,14 @@ function UnipotentCharacters(WF::Spets)
        elseif x[:qEigen]==false return false
        else return x[:qEigen]
        end end
-    else 
+    else
       ser[:qEigen]=0
     end
     if all(haskey.(sers,:parameterExponents))
       ser[:parameterExponents]=vcat(getindex.(sers,:parameterExponents)...)
     end
     ser[:charNumbers]=cartesian(charnumbers.(sers)...)
-    ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" : 
+    ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" :
                                      x[:cuspidalName], sers),"\\otimes ")
     ser
   end
@@ -577,10 +577,10 @@ function UnipotentCharacters(WF::Spets)
   tt=refltype(WF)
   if isempty(tt) # UnipotentCharacters(coxgroup())
     return UnipotentCharacters(
-      [Dict(:relativeType=>TypeIrred[], 
+      [Dict(:relativeType=>TypeIrred[],
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
-      [Dict(:relativeType=>TypeIrred[], 
+      [Dict(:relativeType=>TypeIrred[],
 	    :levi=>Int[], :parameterExponents=>Int[],
 	    :cuspidalName=>"Id", :eigenvalue=>1, :charNumbers =>[ 1 ])],
      [Family("C1",[1])],
@@ -628,15 +628,15 @@ function UnipotentCharacters(WF::Spets)
   res=Dict{Symbol,Any}()
   for a in f
     if a==:type continue end
-    if length(simp)==1 
+    if length(simp)==1
       res[a]=map(x->[x],getproperty(r,a))
     elseif all(x->haskey(x,a),simp)
       res[a]=cartesian(map(x->getproperty(x,a),simp)...)
     end
   end
-  
+
   res[:size]=length(res[:charParams])
-  
+
   # finally the new 'charNumbers' lists
   tmp=cartesian(map(a->1:length(a.charParams),simp)...)
 
@@ -651,13 +651,13 @@ function UnipotentCharacters(WF::Spets)
 
   if length(tt)==1
     ff=r.families
-  else 
+  else
     ff=Family.(prod.(cartesian(map(x->x.families,simp)...)))
     for f in ff
       f.charNumbers=map(y->findfirst(==(y),tmp),f.charNumbers)
     end
   end
-  
+
   for a in [:a, :A]
     if haskey(res,a) res[a]=sum.(res[a]) end
   end
@@ -686,8 +686,8 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   m=hcat(repr.(1:length(uc)))
   row_labels=charnames(io,uc)
   almost=almostcharnames(io,uc)
-  if almost!=row_labels 
-    m=hcat(m,almost) 
+  if almost!=row_labels
+    m=hcat(m,almost)
     push!(col_labels,"almostch")
   end
   LaurentPolynomials.varname[]=:q
@@ -753,7 +753,7 @@ function qeigen(uc::UnipotentCharacters)
   get!(uc,:qeigen)do
     res=zeros(Rational{Int},length(uc))
     for f in uc.harishChandra
-      if haskey(f,:qEigen) 
+      if haskey(f,:qEigen)
         res[f[:charNumbers]]=fill(f[:qEigen],length(f[:charNumbers]))
       end
     end
@@ -776,16 +776,16 @@ julia> uc=UnipotentCharacters(W);
 
 julia> degrees(uc)
 10-element Vector{Pol{Rational{Int64}}}:
- 1//1                                         
- (1//1)q⁶                                     
- (1//3)q⁵+(1//3)q³+(1//3)q                    
- (1//3)q⁵+(1//3)q³+(1//3)q                    
- (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q  
- (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q           
- (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q         
+ 1//1
+ (1//1)q⁶
+ (1//3)q⁵+(1//3)q³+(1//3)q
+ (1//3)q⁵+(1//3)q³+(1//3)q
+ (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q
+ (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q
+ (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q
  (1//6)q⁵+(-1//2)q⁴+(2//3)q³+(-1//2)q²+(1//6)q
- (1//3)q⁵+(-2//3)q³+(1//3)q                   
- (1//3)q⁵+(-2//3)q³+(1//3)q                   
+ (1//3)q⁵+(-2//3)q³+(1//3)q
+ (1//3)q⁵+(-2//3)q³+(1//3)q
 ```
 """
 function Gapjm.degrees(uc::UnipotentCharacters,q=Pol())
@@ -828,7 +828,7 @@ series of classical groups
 """
 function FixRelativeType(t)
   d=t[:relativeType]
-  if d[:series]=="B" 
+  if d[:series]=="B"
     if d[:rank]==1
       d[:series]="A"
       t[:charNumbers]=collect(t[:charNumbers]) # map B1->A1
@@ -856,14 +856,14 @@ G₂
 
 julia> CycPolUnipotentDegrees(W)
 10-element Vector{CycPol{Rational{Int64}}}:
- 1     
- q⁶       
- qΦ₃Φ₆/3  
- qΦ₃Φ₆/3  
- qΦ₂²Φ₃/6 
- qΦ₂²Φ₆/2 
- qΦ₁²Φ₃/2 
- qΦ₁²Φ₆/6 
+ 1
+ q⁶
+ qΦ₃Φ₆/3
+ qΦ₃Φ₆/3
+ qΦ₂²Φ₃/6
+ qΦ₂²Φ₆/2
+ qΦ₁²Φ₃/2
+ qΦ₁²Φ₆/6
  qΦ₁²Φ₂²/3
  qΦ₁²Φ₂²/3
 ```
@@ -1359,15 +1359,15 @@ julia> cuspidal_data(complex_reflection_group(4),3)
 """
 cuspidal_data(W,d::Integer,ad)=cuspidal_data(W,E(d),ad)
 cuspidal_data(W,d::Rational,ad)=cuspidal_data(W,Root1(;r=d),ad)
-cuspidal_data(W,d::Root1,ad)=[(levi=L,cuspidal=char,d=d) 
-                        for L in split_levis(W, d, ad) 
+cuspidal_data(W,d::Root1,ad)=[(levi=L,cuspidal=char,d=d)
+                        for L in split_levis(W, d, ad)
                         for char in cuspidal(UnipotentCharacters(L),d)]
 
-cuspidal_data(W,d;proper=false)=[p for ad in 
+cuspidal_data(W,d;proper=false)=[p for ad in
          (proper ? 1 : 0):length(relative_degrees(W,d))
          for p in cuspidal_data(W,d,ad)]
 
-cuspidal_data(W;proper=false,all=false)=[p for d in 
+cuspidal_data(W;proper=false,all=false)=[p for d in
   sort(unique(all ? vcat(refleigen(W)...) : conductor.(refleigen(W))))
   for p in cuspidal_data(W,d;proper)]
 

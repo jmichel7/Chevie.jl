@@ -289,7 +289,7 @@ end
 """
 `reduced(H::CoxeterGroup,W::CoxeterGroup,i=nref(W))`
 
-The  elements `w∈ W` which are `H`-reduced, and of length `≤i` 
+The  elements `w∈ W` which are `H`-reduced, and of length `≤i`
 (by default all of them), grouped by length.
 
 ```julia-repl
@@ -369,7 +369,7 @@ function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   end
 # println("l=$l W=$W H=$H rc=$rc")
   v=T[]
-  for i in max(0,l+1-length(rc)):l, x in rc[1+l-i] 
+  for i in max(0,l+1-length(rc)):l, x in rc[1+l-i]
     append!(v,elements(H,i).*Ref(x))
   end
 # if applicable(nref,W) # this does not reduce much time
@@ -553,7 +553,7 @@ julia> Poset(W,W(1,3))
 ```
 """
 function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W) 
+  if w==one(W)
     p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
@@ -565,11 +565,11 @@ function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
   append!(p.elements,Ref(W(s)).*p.elements[new])
   append!(hasse(p),map(x->Int[],new))
   p.action[s][new]=l.+(1:length(new))
-  for i in eachindex(gens(W)) 
+  for i in eachindex(gens(W))
     append!(p.action[i],i==s ? new : fill(0,length(new)))
   end
   for i in 1:length(new) push!(hasse(p)[new[i]],l+i) end
-  for i in 1:l 
+  for i in 1:l
     j=p.action[s][i]
     if j>i
       for h in p.action[s][hasse(p)[i]]
@@ -581,7 +581,7 @@ function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
     end
   end
   end
-  p.show_element=(io,x,n)->(e=x.elements[n];print(io,isone(e) ? "." : 
+  p.show_element=(io,x,n)->(e=x.elements[n];print(io,isone(e) ? "." :
                                                  joindigits(word(W,e))))
   p
 end
@@ -653,7 +653,7 @@ end
 
 """
 `standard_parabolic_class(W,I)`
-    
+
 `I`  should be a  subset of `eachindex(gens(W))`.  The function returns the
 list of such subsets `W`-conjugate to `I`.
 
@@ -785,7 +785,7 @@ braid_relations(W::Group)=vcat(braid_relations.(refltype(W))...)
 
 # construct Coxeter generators and rootinclusion of reflection subgroup
 # defined by J by Dyer's method.
-function dyer(W,J) 
+function dyer(W,J)
   refs=refls(W,J)
   refs=vcat(orbits(Group(refs),refs)...)
   inc=Int.(indexin(refs,refls(W)))
@@ -857,12 +857,12 @@ julia> gens(W)
 
 julia> e=elements(W)
 6-element Vector{Perm{Int16}}:
- ()     
- (1,2)  
- (2,3)  
+ ()
+ (1,2)
+ (2,3)
  (1,3,2)
  (1,2,3)
- (1,3)  
+ (1,3)
 
 julia> length.(Ref(W),e) # length in the genrators of the elements
 6-element Vector{Int64}:
@@ -959,7 +959,7 @@ end
 Base.one(W::MatCox)=one(W(1))
 PermRoot.cartan(W::MatCox)=W.cartan
 isleftdescent(W::MatCox,w,i::Int)=real(sum(w[i,:]))<0
-  
+
 """
 `coxeter_group(m)` or `coxgroup(m)`
 

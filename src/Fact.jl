@@ -44,14 +44,14 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
       if 0==degree(gcd(fp,derivative(fp))) break end
     end
     info("#I  starting factorization mod p:  ", etime())
-    lp=factor(fp)
+    lp=vcat(map(x->fill(x[1],x[2]),collect(factor(fp)))...)
     sort!(lp,by=degree)
     info("#I  finishing factorization mod p: ", etime())
         # if <fp> is irreducible so is <f>
     if 1==length(lp)
       info("#I  <f> mod ", p, " is irreducible")
       t[:isIrreducible]=true
-      return t
+      return NamedTuple(t)
     else
       info("#I  found ",length(lp)," factors mod ",p," of degree ",degree.(lp))
     end
@@ -70,28 +70,24 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
     if 2==length(deg)
         info("#I  <f> must be irreducible, only one degree left")
         t[:isIrreducible]=true
-        return t
+        return NamedTuple(t)
     end
   end
   LP=map(Pol{Int},LP) # convert factors <LP> back to the integers
     # return the chosen prime
   info("#I  choosing prime ", P, " with ", length(LP), " factors")
   info("#I  possible degrees: ", deg)
-  t[:isIrreducible]=false
-  t[:prime]=P
-  t[:factors]=LP
-  t[:degrees]=deg
-  t
+  (isIrreducible=false, prime=P, factors=LP,  degrees=deg)
 end
 
 #  `f` must be square free and must have a non-zero constant term.
 function factorSQF(f::Pol{<:Union{Integer,Rational}})
 # find a suitable prime, if <f> is irreducible return
   t=FactorsModPrime(f)
-  if t[:isIrreducible] return [f] end
-  info("#I  using prime ", t[:prime], " for factorization")
+  if t.isIrreducible return [f] end
+  info("#I  using prime ", t.prime, " for factorization")
 # for easy combining, we want large degree factors first
-  sort!(t[:factors], by=x->-degree(x))
+  sort!(t.factors, by=x->-degree(x))
 # start Hensel
   h=SquareHensel(f, t)
 # combine remaining factors
@@ -99,7 +95,7 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
 # first the factors found by hensel
   if 0<length(h[:remaining])
     info("#I  found ", length(h[:remaining]), " remaining terms")
-    tmp=TryCombinations(h[:remPolynomial], h[:lc], h[:remaining], h[:primePower], t[:degrees], h[:bounds], true)
+    tmp=TryCombinations(h[:remPolynomial], h[:lc], h[:remaining], h[:primePower], t.degrees, h[:bounds], true)
     append!(fac, tmp[:irrFactors])
     append!(fac, tmp[:redFactors])
   else
@@ -210,44 +206,35 @@ end
 """
 `factor(f::Pol{<:Union{Integer,Rational}})`
 
-Factor over the integers a polynomial with integral coefficients, or do the
-same over the rationals.
+Factor over the integers the numerator of `f`. The result is a
+`Primes.Factorization{typeof(numerator(f))}`
 
 ```julia-repl
 julia> factor(Pol(:q)^24-1)
-8-element Vector{Pol{Int64}}:
- q-1
- q²-q+1
- q⁴-q²+1
- q⁸-q⁴+1
- q⁴+1
- q²+1
- q+1
- q²+q+1
+(q-1) * (q²-q+1) * (q⁴-q²+1) * (q⁸-q⁴+1) * (q⁴+1) * (q²+1) * (q+1) * (q²+q+1)
 ```
 """
-function Primes.factor(f::Pol{<:Union{Integer,Rational}})
+function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
   info("#I  starting integer factorization: ", etime())
   if iszero(f)
     info("#I  f is zero")
-    return [f]
+    return []
   end
   d=denominator(f)
-  f*=d
-  f=Pol{typeof(d)}(f)
+  f=numerator(f)
   v=valuation(f)
   f=shift(f,-v)
+  fact=Primes.Factorization{typeof(f)}()
+  if v>0 fact[Pol()]+=v end
   if 0==degree(f)
     info("#I  f is a power of x")
-    s=map(f->Pol(),1:v)
-    s[1]*=f[0]
-    return s
+    if f[0]!=1 || d!=1 return fact,f[0]//d end
+    return fact
   end
   if 1==degree(f)
     info("#I  f is linear")
-    s=map(f->Pol(),1:v)
-    push!(s,f)
-    return s
+    push!(fact,f=>1)
+    return fact
   end
   # shift the zeros of f if appropriate
   if degree(f)>20 f,shft=MinimizeBombieriNorm(f)
@@ -257,44 +244,37 @@ function Primes.factor(f::Pol{<:Union{Integer,Rational}})
   g=gcd(f, derivative(f))
   q=exactdiv(f,g)
 # @show q
-  q=q*sign(q[end])
+  q*=sign(q[end])
   info("#I  factorizing polynomial of degree ", degree(q))
     # and factorize <q>
   if degree(q)<2
     info("#I  <f> is a linear power")
-    s=[q]
+    fact[q]=1
   else
     if valuation(q)>0
-      s=[Pol()]
+      error("this should not happen")
+      fact[Pol()]+=1
       shift(q,-1)
-    else s=empty([q])
     end
-    append!(s, factorSQF(q))
+    for p in factorSQF(q) fact[p]+=1 end
   end
-  for r in s # find multiple factors
+  for r in keys(fact) # find multiple factors
     if 0<degree(g) && degree(g)>=degree(r)
-      q=exactdiv(g, r)
-      while 0<degree(g) && !isnothing(q)
-        push!(s, r)
-        g=q
-        if degree(g)>=degree(r) 
-          if iszero(rem(g//1,r)) q=exactdiv(g,r)
-          else q=nothing
-          end
-        else q=nothing
-        end
+      while 0<degree(g) && iszero(rem(g//1,r))
+#       @show g,r
+        fact[r]+=1
+        g=exactdiv(g,r)
       end
     end
   end
     # reshift
   if shft!=0
     info("#I shifting zeros back")
-    s=map(i->Value(i,Pol()+shft),s)
+    fact=Primes.Factorization{Pol{Int}}(map((p,m)->Value(p,Pol()+shft)=>m,fact)...)
   end
-  append!(s,map(f->Pol(),1:v))
-  sort!(s)
-  s[1]//=d
-  improve_type(s)
+  if d!=1 return fact,1//d
+  else return fact
+  end
 end
 
 """
@@ -343,8 +323,8 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
 #   lq1,            # factors mod <q1>
 #   max,            # maximum absolute coefficient of <f>
 #   gcd,            # used in gcd representation
-  p=big(t[:prime])
-  l=Mod.(t[:factors],p)
+  p=big(t.prime)
+  l=Mod.(t.factors,p)
   lc=f[end]
   max=maximum(abs.(coefficients(f)))
 # compute the factor coefficient bounds
@@ -370,7 +350,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
                        :remaining=>[],:bounds=>bounds)
   q=p^2
 # start Hensel until <q> is greater than k
-  k=bounds[maximum(filter(i->2i<=degree(f), t[:degrees]))]
+  k=bounds[maximum(filter(i->2i<=degree(f), t.degrees))]
   info("#I  Hensel bound==", k)
   q1=p
   while q1<k
@@ -395,7 +375,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
   # try to find true factors
       if max<=q || ofb<q
         info("#I  searching for factors: ", etime())
-        fcn=TryCombinations(f, lc, l, q, t[:degrees], bounds, false)
+        fcn=TryCombinations(f, lc, l, q, t.degrees, bounds, false)
         info("#I  finishing search:      ", etime())
       else
         fcn=Dict{Symbol, Any}(:irreducibles => [], :reducibles => [])
@@ -414,7 +394,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
         ofb=2*abs(lc)*OneFactorBound(f)
         info("#I  new one factor bound==", ofb)
     # degree arguments or OFB arguments prove f irreducible
-        if all(i->i==0 || 2i>=degree(f), t[:degrees]) || ofb<q
+        if all(i->i==0 || 2i>=degree(f), t.degrees) || ofb<q
           push!(fcn[:irrFactors], f)
           push!(res[:irrFactors], f)
           f=f^0
@@ -426,7 +406,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
     # compute the factor coefficient bounds
         k=HenselBound(f)
         bounds=map(i->min(bounds[i], k[i]), 1:length(k))
-        k=2*abs(lc)*bounds[maximum(filter(i->2i<=degree(f), t[:degrees]))]
+        k=2*abs(lc)*bounds[maximum(filter(i->2i<=degree(f), t.degrees))]
         info("#I  new Hensel bound==", k)
     # remove true factors from <l> and corresponding <rep>
         prd=Mod(prd//prd[end],q)

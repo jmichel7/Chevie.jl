@@ -106,7 +106,7 @@ julia> b*permutedims(b)       # multiplication table
 ```
 Thus,  we work  with algebras  with arbitrary  parameters. We will see that
 this also works on the level of characters and representations.
- 
+
 For  general complex reflection  groups, the picture  is similar. The Hecke
 algebras  are deformations  of the  group algebras,  generalizing those for
 real reflection groups.
@@ -137,7 +137,7 @@ reflection  group  is  presented  by  the  same  relations,  plus relations
 describing  the  order  of  the  generating  reflections, called the *order
 relations*.  This  allows  to  define  the  Hecke algebra by a presentation
 similar  to  that  of  `W`,  with  the  same  braid relations but the order
-relations  replaced by a deformed version. 
+relations  replaced by a deformed version.
 
 If  `S⊂ W`  is the  set of  distinguished reflections  of `W` which lift to
 generating  braid reflections `𝐬` in the braid group, we define the generic
@@ -211,7 +211,7 @@ end;
 """
 module HeckeAlgebras
 using ..Gapjm
-export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt, 
+export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   schur_element, isrepresentation, alt, coefftype, HeckeCoset,
   FactorizedSchurElements, factorized_schur_element, VFactorSchurElement,
@@ -320,7 +320,7 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
   if applicable(simple_reps,W)
   para=map(eachindex(gens(W)))do i
     j=simple_reps(W)[i]
-    if i<=length(para) 
+    if i<=length(para)
      if j<i && para[i]!=para[j] error("one should have  para[$i]==para[$j]") end
       return para[i]
     elseif length(para)==1 return para[1]
@@ -340,12 +340,12 @@ function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
     if p isa Vector return p end
     all(==(2),oo) ? [p,-one(p)] : vcat([p],E.(o,1:o-1))
   end
-  if isempty(para) 
+  if isempty(para)
    return HeckeAlgebra(W,Vector{Int}[],Dict{Symbol,Any}(:rootpara=>rootpara))
   end
   hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
-  
+
 function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
   if ngens(W)==0 para=Vector{C}[]
   elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
@@ -360,14 +360,14 @@ function hecke(W::Group,p::Tuple;rootpara=nothing)
   if length(p)==1
     para=fill(p[1],ngens(W))
     rootpara= isnothing(rootpara) ? eltype(p[1])[] : rtpara
-  else 
+  else
     s=simple_reps(W,1:ngens(W))
     C=sort(unique(s))
     para=fill(first(p),ngens(W))
     if !isnothing(rootpara) rtpara=fill(first(rootpara),ngens(W)) end
     for i in 1:ngens(W)
       para[i]=p[findfirst(==(s[i]),C)]
-      if !isnothing(rootpara) 
+      if !isnothing(rootpara)
         rtpara[i]=rootpara[findfirst(==(s[i]),C)]
       end
     end
@@ -392,7 +392,7 @@ coefftype(H::HeckeAlgebra{C}) where C=C
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
   if isempty(para) para
-  elseif allequal(tr.(para)) 
+  elseif allequal(tr.(para))
     p=tr(para[1])
     p isa Vector ? [p] : p
   else map(tr,para)
@@ -438,7 +438,7 @@ CharTable(hecke(G₄,q))
 function Chars.CharTable(H::HeckeAlgebra;opt...)
   get!(H,:chartable)do
     W=H.W
-    if isempty(refltype(W)) 
+    if isempty(refltype(W))
       ct=CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}())
     else
       cts=map(refltype(W))do t
@@ -514,7 +514,7 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
   mm=improve_type.(mm)
   n=length(tt)
-  if n==1 
+  if n==1
     m=mm[1]
     density=sum(count.(!iszero,m))/length(m)/prod(size(m[1]))
     if density<0.1 m=sparse.(m) end
@@ -619,11 +619,11 @@ function PermRoot.reflrep(H::HeckeAlgebra)
     end
     -H.para[1][2]*a
   end)
-end 
+end
 
 """
 `WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)`
-    
+
 `H`  should be  a one-parameter  Hecke algebra  for a  finite Coxeter group
 where  `rootpara`  is  defined.  The  function  returns the matrices of the
 representation  of `H` defined by the W-graph `gr`.
@@ -675,7 +675,7 @@ hecke(H₃,q)
 
 julia> central_monomials(H)
 10-element Vector{Pol{Cyc{Int64}}}:
- 1  
+ 1
  q³⁰
  q¹²
  q¹⁸
@@ -753,7 +753,7 @@ end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
 basename(h::HeckeTElt)="T"
- 
+
 function Base.one(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
   get!(H,:one)do
     Tbasis(H,one(H.W))
@@ -806,7 +806,7 @@ function polynomial_relations(H::HeckeAlgebra{C})where C
     map(p->Pol([1],length(p))-prod(x->Pol([-x,1]),p),H.para)
   end::Vector{Pol{C}}
 end
-    
+
 function innermul(W::CoxeterGroup,a,b)
   sum(a.d) do (ea,pa)
     h=b.d*pa
@@ -829,7 +829,7 @@ function innermul(W::CoxeterGroup,a,b)
 end
 
 function innermul(W::PermRootGroup,a,b)
-  if length(refltype(W))>1 || !iscyclic(W) 
+  if length(refltype(W))>1 || !iscyclic(W)
    error("T basis implemented only for Coxeter groups and G(d,1,1)")
   end
   sum(a.d) do (ea,pa)
@@ -927,10 +927,10 @@ T₁₂₁₃₂₁
 
 julia> p=class_polynomials(h)
 5-element Vector{Pol{Int64}}:
- 0        
- 0        
- q²       
- q³-2q²+q 
+ 0
+ 0
+ q²
+ q³-2q²+q
  q³-q²+q-1
 ```
 The class polynomials were introduced in [Geck-Pfeiffer1993](biblio.htm#GP93).
@@ -938,7 +938,7 @@ The class polynomials were introduced in [Geck-Pfeiffer1993](biblio.htm#GP93).
 function class_polynomials(h::HeckeElt)
   H=h.H
   WF=H.W
-  if H isa HeckeCoset  
+  if H isa HeckeCoset
     W=Group(WF)
     para=H.H.para
   else W=WF
@@ -955,7 +955,7 @@ function class_polynomials(h::HeckeElt)
       for s in leftdescents(W,w)
         sw=W(s)*w
         sws=sw*W(s)
-        if isleftdescent(W,inv(sw),s) 
+        if isleftdescent(W,inv(sw),s)
           q1,q2=para[s]
           return (elm=[sws,sw],coeff=[-q1*q2,q1+q2])
         elseif !(sws in orbit) push!(orbit,sws)
@@ -973,7 +973,7 @@ function class_polynomials(h::HeckeElt)
     l=[length(W,elm) for (elm,coeff) in h.d]
     maxl=maximum(l)
     for (elm,coeff) in h.d
-      if length(W,elm)<maxl 
+      if length(W,elm)<maxl
         push!(elms,elm)
         push!(coeffs,coeff)
       else
@@ -1005,11 +1005,11 @@ hecke(B₂,q²,rootpara=q)
 
 julia> char_values(Cpbasis(H)(1,2,1))
 5-element Vector{Pol{Int64}}:
- -q-q⁻¹        
- q+q⁻¹         
- 0             
+ -q-q⁻¹
+ q+q⁻¹
+ 0
  q³+2q+2q⁻¹+q⁻³
- 0             
+ 0
 ```
 """
 char_values(h::HeckeElt,ch=CharTable(h.H).irr)=ch*class_polynomials(h)
@@ -1037,7 +1037,7 @@ the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
 representation.   The   values   returned   are   `Unknown()`  for  missing
 representations (see `representation`).
-```julia-repl 
+```julia-repl
 julia> W=crg(4)
 G₄
 
@@ -1057,8 +1057,8 @@ julia> char_values(H,[2,1,2])
 """
 function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
   W=H.W
-  if W isa CoxeterGroup return char_values(Tbasis(H)(w)) end 
-  p=findfirst(==(w),word.(conjugacy_classes(W))) 
+  if W isa CoxeterGroup return char_values(Tbasis(H)(w)) end
+  p=findfirst(==(w),word.(conjugacy_classes(W)))
   if !isnothing(p) return CharTable(H).irr[:,p] end
   map(representations(H))do r
     if isnothing(r) return nothing end
@@ -1067,8 +1067,8 @@ function char_values(H::HeckeAlgebra,w::Vector{<:Integer})
 end
 
 function schur_element(H::HeckeAlgebra,p)
-  t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices], 
-      haskey(H,:rootpara) ?  H.rootpara[t.indices] : 
+  t=map((t,phi)->getchev(t,:SchurElement,phi,H.para[t.indices],
+      haskey(H,:rootpara) ?  H.rootpara[t.indices] :
       fill(nothing,length(H.para))),
       refltype(H.W),p)
   if any(==(false),t) return nothing end
@@ -1086,7 +1086,7 @@ hecke(G₄,q)
 
 julia> s=schur_elements(H)
 7-element Vector{Pol{Cyc{Rational{Int64}}}}:
- q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1              
+ q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1
  2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴
  -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴
  2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴
@@ -1243,7 +1243,7 @@ function simplify(res::FactSchur)
     monomial=monomial^(1//power)
     push!(evcyc,(pol=pol,monomial=monomial,power=power))
   end
-  if isempty(evcyc) 
+  if isempty(evcyc)
     FactSchur(factor,NamedTuple{(:pol,:monomial),Tuple{CycPol{T},Mvp{T,R}}}[])
   else
     vcyc=map(collectby(x->x.monomial,evcyc))do fil
@@ -1317,7 +1317,7 @@ julia> factorized_schur_element(H,[[2,5]])
 """
 function factorized_schur_element(H::HeckeAlgebra,phi)
   t=map(refltype(H.W),phi)do t,psi
-     getchev(t,:FactorizedSchurElement,psi,H.para[t.indices], 
+     getchev(t,:FactorizedSchurElement,psi,H.para[t.indices],
     haskey(H,:rootpara) ?  H.rootpara[t.indices] : nothing)
   end
   if false in t return false
@@ -1426,7 +1426,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
     W=H.W
     cts=map(refltype(W))do t
       inds=t.orbit[1].indices
-      ct=getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ? 
+      ct=getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ?
                rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...)
@@ -1450,11 +1450,11 @@ function Chars.representation(H::HeckeCoset,i::Int)
   mm=map(tt,lin2cart(dims,i)) do t,j
     r=getchev(t,:HeckeRepresentation,H.H.para,rp,j)
     if r==false return nothing
-    elseif r isa Vector 
+    elseif r isa Vector
       if !(r[1] isa Matrix) r=toM.(r) end
       r=improve_type(r)
       (gens=r,F=one(r[1]))
-    else 
+    else
       if !(r[:gens][1] isa Matrix) r1=toM.(r[:gens]) else r1=r[:gens] end
       if !(r[:F] isa Matrix) F=toM(r[:F]) else F=r[:F] end
       (gens=improve_type(r1),F=improve_type(F))
