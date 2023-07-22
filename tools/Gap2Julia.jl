@@ -128,6 +128,7 @@ ftrans=Dict{Symbol,Symbol}(
   :Denominator=>:denominator,
   :DivisorsInt=>:divisors,
   :Dominates=>:dominates,
+  :DrinfeldDouble=>:drinfeld_double,
   :Elements=>:elements,
   :ER=>:root,
   :Error=>:error,

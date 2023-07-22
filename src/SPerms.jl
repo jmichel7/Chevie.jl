@@ -610,7 +610,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
   function ind(I,J)
     local iM,iN,p,n
     invM=map(i->(tally(pair.(M[i,I])),M[i,i],extra1[i]),I)
-    invN=map(i->(tally(pair.(M[i,J])),M[i,i],extra2[i]),J)
+    invN=map(i->(tally(pair.(N[i,J])),N[i,i],extra2[i]),J)
     if tally(invM)!=tally(invN) InfoChevie("content differs");return false end
     iM=collectby(invM,I)
     iN=collectby(invN,J)
@@ -622,7 +622,7 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
       else p=transporting_elt(CoxHyperoctaedral(length(I)),
          M[I,I],N[J,J],onmats)
       end
-      if isnothing(p) InfoChevie("could not match block");return nothing end
+      if isnothing(p) InfoChevie("could not match block\n");return nothing end
       return [[I,J,p]]
     else p=map(ind,iM,iN)
       if false in p return false else return vcat(p...) end

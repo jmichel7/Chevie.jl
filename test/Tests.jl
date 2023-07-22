@@ -1237,7 +1237,7 @@ function Tfamilies(W,i;hard=false)
   if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
   wreal=haskey(f,:perm)
   if !haskey(f,:sh) && wreal!=all(>(0),vec(ps))
-    error("weakly real=",wreal," but ps=",ps,"\n")
+    ChevieErr("weakly real=",wreal," but ps=",ps,"\n")
   end
   if wreal # S^2 is perm
     real=Perm(conj(f.eigenvalues),f.eigenvalues)
@@ -1260,8 +1260,11 @@ function Tfamilies(W,i;hard=false)
       ChevieErr("special or cospecial not unique")
     else special=special[1];cospecial=cospecial[1]
     end
+    print(" s=$special cs=$cospecial ")
     if haskey(f,:special)
       check(f.special==special,".special=$(f.special) min b=$special")
+    elseif special!=1
+      ChevieErr(" .special is not bound; should be ",special,"\n| ")
     end
     if special!=cospecial
       if !haskey(f,:cospecial)

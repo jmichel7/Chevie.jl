@@ -153,7 +153,7 @@ end
 special(f::Family)=get!(()->1,f,:special)::Int
 
 "`cospecial(f::Family)` the index of the cospecial character in `f`"
-cospecial(f::Family)=get!(()->special(f),f,:cospecial)::Int
+cospecial(f::Family)=Int(get!(()->special(f),f,:cospecial))
 
 "`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(eigen(f))
@@ -567,7 +567,7 @@ the matrix `S` is symmetric, while `S₀` is Hermitian.
 
 Thus there are two variants of 'drinfeld_double`:
 
-`drinfeld_double(g,lu=true)`
+`drinfeld_double(g;lu=false)`
 
 returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
@@ -631,7 +631,7 @@ Family(LD(CoxSym(3)):8)
 (3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
 ```
 """
-function drinfeld_double(g;lu=false)
+function drinfeld_double(g;lu=false,pivotal=nothing)
   res=Family(Dict{Symbol,Any}(:group=> g))
   res.classinfo=map(classreps(g), classnames(g))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)
@@ -679,15 +679,29 @@ function drinfeld_double(g;lu=false)
     findfirst(==([r1[:elt],r1[:centelms][position_class(r1[:centralizer],
                                              r[:elt]^el)]]),res[:xy])
   end, res.classinfo)...)
-  delete!(res.prop, :classinfo)
   res.fourierMat=inv(res.mellin)*one(res.mellin)[p,:]*res.mellin
+  res.special=findfirst(==("(1,1)"),res.charLabels)
+  if !isnothing(pivotal)
+    pivelm,pivchar=pivotal
+    ct=res.classinfo[1][:chars]
+    p=Diagonal(Cyc.(vcat(map(cp->map(ch->prod(pivchar[word(g,cp[:elt])])*
+      ch[position_class(cp[:centralizer],pivelm)]//ch[1],eachrow(cp[:chars])),
+                             res.classinfo)...)))
+    res.fourierMat=p*res.fourierMat*p
+    res.fourierMat*=ct[findfirst(x->all(i->x[position_class(g,g(i))]
+      ==pivchar[i],eachindex(gens(g))),eachrow(ct)),position_class(g,pivelm)]^2
+    res.eigenvalues=p*res.eigenvalues
+    res.cospecial=res.special^SPerm(Int.(res.fourierMat^2))
+  end
+  delete!(res.prop, :classinfo)
   if lu
     res.perm=Perm(conj(res.mellin),res.mellin;dims=2)
     res.fourierMat=permute(res.fourierMat, res.perm,dims=1)
   end
-  res.special=findfirst(==("(1,1)"),res.charLabels)
   Family(res)
 end
+
+drinfeld_double(g,d::Dict)=drinfeld_double(g;d...)
 
 """
 `ndrinfeld_double(g)`
