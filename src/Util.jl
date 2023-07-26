@@ -186,8 +186,8 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
   strip(x)=fromTeX(io,x)
   rows=get(io,:rows,axes(t,1))
   cols=get(io,:cols,axes(t,2))
-  t=t[rows,cols]
   row_labels=(strip.(get(io,:row_labels,string.(axes(t,1)))))[rows]
+  t=t[rows,cols]
   col_labels=get(io,:col_labels,nothing)
   if col_labels!=nothing col_labels=(strip.(col_labels))[cols] end
   rows_label=strip(get(io,:rows_label,""))

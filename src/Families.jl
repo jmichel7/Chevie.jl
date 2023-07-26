@@ -452,15 +452,16 @@ f.qEigen=[0,2,1,0,2,1,0,2,1].//3
 chevieset(:families,:Z9,f)
 end
 
-chevieset(:families,:QZ,function(n)
-  pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
-  res=Family(Dict{Symbol,Any}(:name=>"D(\\bbZ/$n)"))
-  res.explanation="Drinfeld double "*res.name
-  res.fourierMat=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
-  res.eigenvalues=[E(n,x*c) for (x,c) in pairs]
-  res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
-                    for (x,c) in pairs]
-  res
+chevieset(:families,:QZ,function(n,pivotal=nothing)
+# pairs=[(i,j) for i in 0:n-1 for j in 0:n-1]
+# res=Family(Dict{Symbol,Any}(:name=>"D(\\bbZ/$n)"))
+# res.explanation="Drinfeld double "*res.name
+# res.fourierMat=[E(n,x*c1+x1*c) for (x,c) in pairs, (x1,c1) in pairs]//n
+# res.eigenvalues=[E(n,x*c) for (x,c) in pairs]
+# res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
+#                   for (x,c) in pairs]
+# res
+  drinfeld_double(crg(n,1,1);pivotal)
 end)
 
 # The big family f of dihedral groups. For e=5 occurs in H3, H4
@@ -517,7 +518,7 @@ chevieset(:families,:Dihedral,function(e)
 end)
 
 """
-`drinfeld_double(g[,opt])`
+`drinfeld_double(g;lu=false,pivotal=nothing)`
 
 Given  a (usually small) finite group  `Γ`, Lusztig has associated a family
 (a  Fourier matrix, a list of eigenvalues of Frobenius) which describes the
@@ -528,13 +529,13 @@ how its final result building Lusztig's Fourier matrix, and a variant of it
 that we use in Spetses, from `Γ`.
 
 The  elements of the family are in bijection  with the set `𝓜 (Γ)` of pairs
-`(x,χ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `χ` is an irreducible
-complex-valued   character  of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,χ)`  is
-associated  an  eigenvalue  of  Frobenius  defined  by  ``ω_ρ:=χ(x)/χ(1)``.
+`(x,φ)`  taken up to  `Γ`-conjugacy, where `x∈Γ`  and `φ` is an irreducible
+complex-valued   character  of  `C_Γ(x)`.  To  such  a  pair  `ρ=(x,φ)`  is
+associated  an  eigenvalue  of  Frobenius  defined  by  ``ω_ρ:=φ(x)/φ(1)``.
 Lusztig  then defines a Fourier matrix `S₀` whose coefficient is given, for
-`ρ=(x,χ)` and `ρ'=(x', χ')`, by:
+`ρ=(x,φ)` and `ρ'=(x', φ')`, by:
 
-``S₀_{ρ,ρ'}:=|C_Γ(x)⁻¹|∑_{ρ₁=(x₁,χ₁)}χ̄₁(x)χ(y₁)``
+``S₀_{ρ,ρ'}:=|C_Γ(x)⁻¹|∑_{ρ₁=(x₁,φ₁)}φ₁(x)φ(y₁)``
 
 where  the sum is over all pairs `ρ₁∈𝓜 (Γ)` which are `Γ`-conjugate to `ρ'`
 and  such that ``y₁∈ C_Γ(x)``. This  coefficient also represents the scalar
@@ -546,7 +547,7 @@ the  pairs  `(x,y)`  taken  up  to  `Γ`-conjugacy,  where  `x`  and `y` are
 commuting  elements  of  `Γ`.  This  basis  is  called  the basis of Mellin
 transforms, and given by:
 
-``(x,y)=∑_{χ∈ Irr(C_Γ(x))}χ(y)(x,χ)``
+``(x,y)=∑_{φ∈ Irr(C_Γ(x))}φ(y)(x,φ)``
 
 In  the  basis  of  Mellin  transforms,  the  linear  map  `S₀` is given by
 `(x,y)↦(x⁻¹,y⁻¹)`  and  the  linear  transformation  `T` which sends `ρ` to
@@ -561,7 +562,7 @@ the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
 the formula ``S_{ρ,ρ'}`` differs from the formula for ``S₀_{ρ,ρ'}`` in that
 there  is no complex conjugation  of `χ₁`; thus the  matrix `S` is equal to
 `S₀` multiplied on the right by the permutation matrix which corresponds to
-`(x,χ)↦(x,χ̄)`.  The advantage of the matrix `S` over `S₀` is that the pair
+`(x,φ)↦(x,φ)`.  The advantage of the matrix `S` over `S₀` is that the pair
 `S,T`  satisfies directly the axioms for a fusion algebra (see below); also
 the matrix `S` is symmetric, while `S₀` is Hermitian.
 
@@ -571,7 +572,7 @@ Thus there are two variants of 'drinfeld_double`:
 
 returns  a family  containing Lusztig's  Fourier matrix  `S₀`, and an extra
 field  '.perm'  containing  the  permutation  of  the  indices  induced  by
-`(x,χ)↦(x,χ̄)`,  which allows  to recover  `S`, as  well as  an extra field
+`(x,φ)↦(x,φ)`,  which allows  to recover  `S`, as  well as  an extra field
 `:lusztig', set to 'true'.
 
 `drinfeld_double(g)`
@@ -583,7 +584,7 @@ The family record 'f' returned also has the fields:
 
 `:group`: the group `Γ`.
 
-`:charLabels`: a list of labels describing the pairs `(x,χ)`, and thus also
+`:charLabels`: a list of labels describing the pairs `(x,φ)`, and thus also
 specifying in which order they are taken.
 
 `:fourierMat`: the Fourier matrix (the matrix `S` or `S₀` depending on the
@@ -596,12 +597,12 @@ call).
 
 `:mellinLabels`: a list of labels describing the pairs '[x,y]'.
 
-`:mellin`:  the base change matrix between  the basis `(x,χ)` and the basis
+`:mellin`:  the base change matrix between  the basis `(x,φ)` and the basis
 of   Mellin  transforms,   so  that   |f.fourierMat^(f.mellin^-1)|  is  the
 permutation  matrix (for `(x,y)↦(y⁻¹,x)`  or `(x,y)↦(y⁻¹,x⁻¹)` depending on
 the call).
 
-`:special`: the index of the special element, which is `(x,χ)=(1,1)`.
+`:special`: the index of the special element, which is `(x,φ)=(1,1)`.
 
 ```julia-rep1
 julia> drinfeld_double(CoxSym(3))
@@ -633,15 +634,15 @@ Family(LD(CoxSym(3)):8)
 """
 function drinfeld_double(g;lu=false,pivotal=nothing)
   res=Family(Dict{Symbol,Any}(:group=> g))
-  res.classinfo=map(classreps(g), classnames(g))do c,n
+  res.classinfo=map(classreps(g), classnames(g;TeX=true))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)
     if isone(c) r[:name]="1" end
     r[:centralizer]=centralizer(g, c)
     r[:centelms]=classreps(r[:centralizer])
     t=CharTable(r[:centralizer])
 #   println("t=$t")
-    r[:charNames]=charnames(r[:centralizer]; TeX=true)
-    r[:names]=t.classnames
+    r[:charNames]=charnames(r[:centralizer];TeX=true)
+    r[:names]=classnames(r[:centralizer];TeX=true)
     r[:names][findfirst(isone,r[:centelms])]="1"
     r[:chars]=t.irr
     r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
@@ -653,7 +654,7 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
   if isabelian(g)
     for r in res.classinfo
       r[:names]=map(x->res.classinfo[findfirst(s->s[:elt]==x,
-                                           res.classinfo)][:name],r[:centelms])
+                                      res.classinfo)][:name],r[:centelms])
     end
   end
   res.eigenvalues=vcat(map(r->
@@ -666,7 +667,9 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     res.name=""
     res.explanation=""
   end
-  res.name*="D($g)"
+  res.name*="drinfeld_double($g"
+  if pivotal!==nothing res.name*=";pivotal=$pivotal" end
+  res.name*=")"
   res.explanation*="Drinfeld double D($g)"
   res.mellin=cat(map(r->
           conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1,
@@ -772,6 +775,9 @@ function family_imprimitive(S)
   end
   ff=reduce(vcat,map(x->cartesian(x...), ff))
   ffc=map(x->vcat(x...),ff) # now  ffc are the "canonical" functions
+  symbs=map(ffc)do f
+    map(x->ct[x],map(x->findall(==(x),f),0:e-1))
+  end
   eps=map(l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
   function fc(e,f1,f2) # local Fourier coefficient
@@ -785,9 +791,6 @@ function family_imprimitive(S)
   end
   mat//=(E(4,binomial(e+1,2)-1)*root(e)^e)^m
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
-  symbs=map(ffc)do f
-    map(x->ct[x],map(x->findall(==(x),f),0:e-1))
-  end
   # next signs are 1 on the principal series
   newsigns=(-1)^(binomial(e,2)*binomial(m,2))*
       map(S->(-1)^sum((0:e-1).*binomial.(length.(S),2)),symbs)

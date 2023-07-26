@@ -1368,7 +1368,7 @@ cuspidal_data(W,d;proper=false)=[p for ad in
          for p in cuspidal_data(W,d,ad)]
 
 cuspidal_data(W;proper=false,all=false)=[p for d in
-  sort(unique(all ? vcat(refleigen(W)...) : conductor.(refleigen(W))))
+  sort(unique(all ? vcat(refleigen(W)...) : order.(vcat(refleigen(W)...))))
   for p in cuspidal_data(W,d;proper)]
 
 function relative_hecke(uc::UnipotentCharacters,i,q)

@@ -121,10 +121,12 @@ Base.copy(p::SPerm)=SPerm(copy(p.d))
 
 Base.vec(a::SPerm)=a.d
 
-"`Perm(p::SPerm)` returns the underlying Perm of an SPerm"
+"`Perm(p::SPerm)` returns the underlying `Perm` of an `SPerm`"
 Perms.Perm(p::SPerm)=Perm(abs.(p.d))
 SPerm(p::Perm)=SPerm(vec(p))
+"`signs(p::SPerm)` returns the underlying signs of an `SPerm`"
 signs(p::SPerm)=sign.(p.d)
+# if N=onmats(M,p) then M==onmats(N^Diagonal(signs(p)),Perm(p))
 
 # SPerms are scalars for broadcasting"
 Base.broadcastable(p::SPerm)=Ref(p)
@@ -297,7 +299,6 @@ Base.:^(a::SPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 
 returns `l` permuted by `p`, a vector `r` such that `r[abs(i^p)]=l[i]*sign(i^p)`.
 
-# Examples
 ```julia-repl
 julia> p=SPerm([-2,-1,-3])
 SPerm{Int64}: (1,-2)(3,-3)
@@ -308,6 +309,13 @@ julia> permute([20,30,40],p)
  -20
  -40
 ```
+
+`permute`  can also act on  matrices with a keyword  `dims`. If `dims=1` it
+permutes  the lines, if `dims=2` the  columns and for `dims=(1,2)` both. If
+`P=Matrix(p)`  and  `iP=Matrix(inv(p))`  then  `permute(m,p;dims=1)==iP*m`,
+`permute(m,p;dims=2)==m*P`  and `permute(m,p;dims=(1,2))==iP*m*P`. Finally,
+the  form  `permute(m,p1,p2)`  permutes  the  lines  of `m` by `p1` and the
+columns by `p2`.
 """
 function Perms.permute(l::AbstractVector,a::SPerm)
   res=copy(l)
@@ -318,12 +326,25 @@ function Perms.permute(l::AbstractVector,a::SPerm)
   res
 end
 
+function Perms.permute(m::AbstractMatrix,a::SPerm,b::SPerm)
+  res=copy(m)
+  for i in CartesianIndices(m)
+    v1=getindex(i,1)^a
+    v2=getindex(i,2)^b
+    res[abs(v1),abs(v2)]=m[i]*sign(v1)*sign(v2)
+  end
+  res
+end
+
 function Perms.permute(m::AbstractMatrix,a::SPerm;dims=1)
-  if dims==1 hcat(map(c->permute(c,a),eachcol(m))...)
-  elseif dims==2 transpose(hcat(map(c->permute(c,a),eachrow(m))...))
-  elseif dims==(1,2) hcat(permute(map(c->permute(c,a),eachcol(m)),a)...)
+  if dims==1 permute(m,a,SPerm())
+  elseif dims==2 permute(m,SPerm(),a)
+  elseif dims==(1,2) permute(m,a,a)
   end
 end
+
+# to find orbits under SPerms transform objects to pairs
+pair(x)=x<-x ? (x,-x) : (-x,x)
 
 """
 `SPerm{T}(l::AbstractVector,l1::AbstractVector)`
@@ -344,7 +365,6 @@ julia> permute([20,30,40],p)
 ```
 """
 function SPerm{T}(a::AbstractVector,b::AbstractVector)where T<:Integer
-  pair(x)=x<-x ? (x,-x) : (-x,x)
   p=Perm(pair.(a),pair.(b))
   if isnothing(p) return p end
   res=permute(eachindex(a),p)
@@ -357,8 +377,11 @@ end
 SPerm(l::AbstractVector,l1::AbstractVector)=SPerm{Idef}(l,l1)
 
 """
-`Matrix(a::SPerm)` is the permutation matrix for a
-# Examples
+`Matrix(a::SPerm,n=length(a.d))`  permutation matrix for  `a` (operating on
+`n` points)
+
+if `m=Matrix(a)` then `permutedims(v)*m==permute(v,a)`.
+Also `Diagonal(signs(a))*Matrix(Perm(a))==Matrix(a)`.
 ```julia-repl
 julia> Matrix(SPerm([-2,-1,-3]))
 3×3 Matrix{Int64}:
@@ -370,6 +393,7 @@ julia> Matrix(SPerm([-2,-1,-3]))
 function Base.Matrix(a::SPerm,n=length(a.d))
   res=zeros(Int,n,n)
   for (i,v) in pairs(a.d) res[i,abs(v)]=sign(v) end
+  for i in length(a.d)+1:n res[i,i]=1 end
   res
 end
 
@@ -407,17 +431,10 @@ function SPerm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
   SPerm{T}(res)
 end
 
-##underlying Signs of a SignedPerm
-#Signs:=p->permute(sign.(p.d),Perm(p))
-#
-## We have the properties p=SPerm(Perm(p),Signs(p)) and
-## if N=onmats(M,p) then
-##    M=onmats(N,Perm(p))^Diagonal(Signs(p)))
-#
-## Transforms perm+signs to a signed perm,
-#SPerm(p,n)=SPerm(map(*,eachindex(n),n)^inv(p))
-#
-#
+# Transforms perm+signs to a signed perm,
+#SPerm(p,n)=SPerm(p.d.*n)
+# We have the property p=SPerm(Perm(p),signs(p))
+
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 
 @GapObj struct CoxHyperoctaedral{T} <: FiniteCoxeterGroup{SPerm{T}}
@@ -510,8 +527,6 @@ function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int
 end
 
 #--------------------- action on matrices -----------------------------------
-# to find orbits under SPerms transform objects to pairs
-pair(x)=x<-x ? (x,-x) : (-x,x)
 
 # duplicate lines and cols of M so group(dup(...)) operates
 function dup(M::AbstractMatrix)
@@ -524,10 +539,11 @@ end
 
 dedup(M::AbstractMatrix)=M[1:2:size(M,1),1:2:size(M,2)]
 
-# transform SPerm on -n:n to Perm acting on  1:2n
+# transform SPerm on -n:n to hyperoctaedral Perm acting on  1:2n
 dup(p::SPerm)=isone(p) ? Perm() :
     Perm{Idef}(vcat(map(i->i>0 ? [2i-1,2i] : [-2i,-2i-1],p.d)...))
 
+# transform hyperoctaedral Perm acting on  1:2n to SPerm on -n:n 
 dedup(p::Perm)=SPerm{Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
                          p.d[1:2:length(p.d)-1]))
 
@@ -588,30 +604,26 @@ function sstab_onmats(M,extra=nothing)
 end
 
 """
-`SPerm_onmats(M,N[,m,n])`
+`SPerm_onmats(M,N;extra=nothing)`
 
 `M`  and `N` should be symmetric  matrices. `SPerm_onmats` returns a signed
 permutation `p` such that `onmats(M,p)=N` if such a permutation exists, and
-`nothing`  otherwise. If  in addition  vectors `m`  and `n`  are given, the
-signed permutation `p` should also satisfy `m^p==n`.
+`nothing`  otherwise. If  in addition  vectors `extra=[m,n]` are given, the
+signed permutation `p` should also satisfy `permute(m,p)==n`.
 
 Efficient version of
 `transporting_elt(CoxHyperoctaedral(size(M,1)),M,N,onmats)`
 ```
 """
-function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
-  onmats(M,p)=permute(M,p;dims=(1,2))
+function SPerm_onmats(M,N;extra=nothing)
   if M!=permutedims(M) error("M should be symmetric") end
   if N!=permutedims(N) error("N should be symmetric") end
-  if isnothing(extra1)
-    extra1=fill(1,size(M,1))
-    extra2=fill(1,size(M,1))
-  end
+  if isnothing(extra) extra=[fill(1,size(M,1)),fill(1,size(M,1))] end
   function ind(I,J)
     local iM,iN,p,n
-    invM=map(i->(tally(pair.(M[i,I])),M[i,i],extra1[i]),I)
-    invN=map(i->(tally(pair.(N[i,J])),N[i,i],extra2[i]),J)
-    if tally(invM)!=tally(invN) InfoChevie("content differs");return false end
+    invM=map(i->(tally(pair.(M[i,I])),M[i,i],extra[1][i]),I)
+    invN=map(i->(tally(pair.(N[i,J])),N[i,i],extra[2][i]),J)
+    if tally(invM)!=tally(invN) InfoChevie("content differs");return end
     iM=collectby(invM,I)
     iN=collectby(invN,J)
     if length(iM)==1
@@ -622,36 +634,42 @@ function SPerm_onmats(M,N,extra1=nothing,extra2=nothing)
       else p=transporting_elt(CoxHyperoctaedral(length(I)),
          M[I,I],N[J,J],onmats)
       end
-      if isnothing(p) InfoChevie("could not match block\n");return nothing end
-      return [[I,J,p]]
+      if isnothing(p) InfoChevie("could not match block\n");return end
+      return [(I,J,p)]
     else p=map(ind,iM,iN)
-      if false in p return false else return vcat(p...) end
+      if nothing in p return  else return vcat(p...) end
     end
   end
   l=ind(axes(M,1),axes(N,1))
-  if l==false return false end
+  if isnothing(l) return end
   I=Int[];J=Int[];g=SPermGroup();tr=SPerm()
+  sort!(l)
   for r in l
-#   Print("r=",r,"\n");
+#   @show r
     n=length(r[1])
 #   q=mappingPerm(eachindex(I),eachindex(I))
     q=SPerm()
-    p=SPerm(mappingPerm(1:n,(1:n).+length(I)).d)
-    append!(I,r[1]);append!(J,r[2])
-#   Print("#I=",Length(I),"\c");
-    if comm(r[3]^p,tr^q)!=SPerm() error("noncomm") end
+    p=SPerm(mappingPerm(1:n,(1:n).+length(I)))
+    append!(I,r[1]);append!(J,r[2]);
+#   @show I,J
+    if !isone(comm(r[3]^p,tr^q)) error("noncomm") end
     tr=tr^q*r[3]^p
     h=gens(sstab_onmats(M[r[1],r[1]])).^p
+#   @show h
     g=Group(vcat(gens(g).^q,h))
-#   Print(" #g=",Size(g),"\c");
-    e=transporting_elt(g,M[I,I],onmats(N[J,J],tr^-1),onmats)
-    if e==false return false
-    elseif e^-1*e^tr!=SPerm() print("*** tr does not commute to e\n")
-         tr=e*tr
+#   @show g
+    e=transporting_elt(g,M[I,I],onmats(N[J,J],inv(tr)),onmats)
+    if isnothing(e) 
+#     @show g,I,J,inv(tr)
+      return
+    else
+      if !isone(e^-1*e^tr) print("*** tr does not commute to e\n") end
+      tr=e*tr
     end
+#   @show I,J,e,tr
     g=stab_onmats(Group(dup.(gens(g))),dup(M[I,I]))
-#   Print(" #stab=",Size(g),"\n");
     g=Group(dedup.(gens(g)))
+#   println(" #stab=",g)
   end
   # transporter of a ps from [1..Length(I)] to I
   trans=I->SPerm(mappingPerm(eachindex(I),I).d)

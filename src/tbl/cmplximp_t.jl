@@ -102,13 +102,13 @@ end
 "the elementary symmetric function of degree t in the variables v"
 function elementary_symmetric_function(t,v)
   if t==0 return 1 end
-  sum(x->isempty(x) ? 1 : prod(v[x]),combinations(1:length(v),t))
+  sum(x->isempty(x) ? 1 : prod(v[x]),combinations(1:length(v),t);init=0)
 end
 
 "the homogeneous symmetric function of degree t in the variables v"
 function homogeneous_symmetric_function(t,v)
   if t==0 return 1 end
-  sum(x->prod(v[x]),combinations(repeat(1:length(v),t), t))
+  sum(x->prod(v[x]),combinations(repeat(1:length(v),t), t);init=0)
 end
 
 chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
@@ -195,7 +195,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
         else delta*=(Q1+Q2)^(hs.cc-1)
         end
       end
-      q=-Q1//Q2
+      q=-Q1//Q2//1
       delta*=Q1^(hs.area-hs.cc)*(-q)^-hs.hooklength
       if k==0 return delta end
       ctSC=[v[x]*q^y for (x,y) in hs.SC]
@@ -205,7 +205,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
       delta*(-1)^(hs.cc-1)*sum(map(
           t->(-1)^t*elementary_symmetric_function(t,ctDC)* 
                     homogeneous_symmetric_function(k-t-hs.cc,ctSC), 
-               0:min(length(ctDC),k-hs.cc)))
+               0:min(length(ctDC),k-hs.cc));init=0)
     end
     chiCache=Dict{Pair{Vector{Vector{Int}},Vector{Vector{Int}}}, Any}()
     function entry(lambda,mu)

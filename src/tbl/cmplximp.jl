@@ -970,7 +970,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
                             end
                         end
                     ct = (p->begin
-                                (para[1])[p[1]] * Q ^ (p[3] - p[2])
+                           (para[1])[p[1]] * (Q*1//1) ^ (p[3] - p[2])
                             end)
                     T = tableaux(S)
                     return Concatenation([DiagonalMat(map((S->begin

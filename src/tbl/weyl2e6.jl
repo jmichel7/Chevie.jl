@@ -9,6 +9,8 @@ chevieset(Symbol("2E6"), :CharInfo, function ()
         local res
         res = (chevieget(:E6, :CharInfo))()
         res[:a] = [0, 36, 7, 1, 25, 7, 3, 15, 3, 15, 2, 20, 6, 12, 3, 15, 7, 7, 7, 5, 11, 4, 13, 6, 10]
+        res[:A] = [0, 36, 29, 11, 35, 29, 21, 33, 21, 33, 16, 34, 24, 30, 21, 33, 29, 29, 29, 25, 31, 23, 32, 26, 30]
+        res[:B] = [0, 36, 27, 11, 35, 26, 19, 31, 20, 32, 16, 34, 24, 30, 21, 33, 28, 29, 28, 25, 31, 23, 32, 26, 30]
         return res
     end)
 chevieset(Symbol("2E6"), :cyclestructure, [[], [36], [30], [nothing, 24], [nothing, 20], [nothing, 22], [nothing, nothing, 18], [5, nothing, 15], [nothing, nothing, nothing, 14], [nothing, nothing, nothing, nothing, 12], [6, nothing, nothing, nothing, 10], [3, nothing, nothing, nothing, 11], [6, 4, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, 8], [nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, 6], [21], [35], [6, nothing, 15], [4, nothing, 15], [3, 8, nothing, nothing, 6], [3, 10, nothing, nothing, 6], [2, nothing, nothing, nothing, 11], [nothing, nothing, nothing, nothing, nothing, nothing, 9], [1, nothing, nothing, 6, nothing, nothing, nothing, nothing, 4], [nothing, nothing, 3, nothing, 2, nothing, nothing, nothing, nothing, nothing, 4]])

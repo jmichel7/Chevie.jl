@@ -32,24 +32,35 @@ function best_type(q::Frac)
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
 best_type(q::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}
+best_type(q::Frac{Mvp{Rational{T}}}) where T=Frac{Mvp{T}}
 function best_type(p::Mvp{T,N}) where {T,N}
   if iszero(p) return  Mvp{Int,Int} end
   n=all(m->all(isinteger,powers(m)),monomials(p)) ? Int : N
   Mvp{best_eltype(p),n}
 end
-  
-improve_type(m)=convert(best_type(m),m)
+
+function improve_type(m)
+  convert(best_type(m),m)
+end
 
 #------------- extend to Cyc methods of LaurentPolynomials
 Base.gcd(p::Pol{<:Cyc{<:Integer}},q::Pol{<:Cyc{<:Integer}})=srgcd(p,q)
 
 Base.numerator(p::Mvp{<:Cyc{<:Rational{<:T}},N}) where{T,N} =convert(Mvp{Cyc{T},N},p*denominator(p))
 
-#function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
-#  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
-#end
+function Base.convert(::Type{Frac{Pol{Cyc{T}}}},a::Frac{<:Pol{<:Cyc{Rational{T}}}}) where T<:Integer
+  n=numerator(a)
+  d=denominator(a)
+  Frac(numerator(n)*denominator(d),numerator(d)*denominator(n))
+end
 
-#function LaurentPolynomials.Frac(a::Pol{<:Cyc{<:Rational}},b::Pol{<:Cyc{<:Rational}};k...)
+function Base.convert(::Type{Frac{Pol{T}}},a::Frac{<:Pol{<:Cyc{Rational{T}}}}) where T<:Integer
+  n=convert(Pol{Rational{T}},numerator(a))
+  d=convert(Pol{Rational{T}},denominator(a))
+  Frac(numerator(n)*denominator(d),numerator(d)*denominator(n))
+end
+
+#function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
 #  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 #end
 

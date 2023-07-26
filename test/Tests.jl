@@ -103,46 +103,58 @@ end
 
 # cmptable(t1,t2[,nz]) nz: show all non-zero columns anyway
 # compare two chevie tables or inductiontables
-function cmptables(t1,t2,nz=false)
+function cmptables(t1,t2;nz=false,both=false,opt...)
   t=[copy(t1),copy(t2)]
-  opt=[]
-  m=[]
-  for i in [1,2]
-    if t[i] isa InductionTable
-      opt[i]=(rowLabels=t[i].gcharnames,columnLabels=t[i].ucharnames)
-      m[i]=t[i].identifier
-      t[i]=t[i].scalar
-    elseif t[i] isa NamedTuple
-      opt[i]=(rowLabels=t[i].rowLabels,columnLabels=t[i].columnLabels)
-      m[i]=""
-      t[i]=t[i].scalar
-    else opt[i]=(rowLabels=axes(t[i],1),columnLabels=axes(t[i],2))
-      m[i]=""
-    end
+  opt=Dict{Symbol,Any}(opt)
+  m=String["",""]
+  if typeof(t[1])<:InductionTable
+    row_labels=[t[1].gcharnames,t[2].gcharnames]
+    opt[:col_labels]=t[1].ucharnames
+    m=map(x->string(x.identifier,"\n"),t)
+    t=map(x->x.scalar,t)
+  elseif typeof(t[1])<:NamedTuple
+    row_labels=[t[1].row_labels,t[2].row_labels]
+    opt[:col_labels]=t[1].col_labels
+    t=map(x->x.scalar,t)
+  elseif !both
+    row_labels=map(i->string.(axes(t[i],1)),1:2)
+    opt[:col_labels]=string.(axes(t[1],2))
   end
-  if nz r=filter(i->t[1][i,:]!=t[2][i,:],axes(t[1],1))
+  if nz!=false r=filter(i->t[1][i,:]!=t[2][i,:],axes(t[1],1))
   else r=filter(i->any(!iszero,t[1][i,:])|| any(!iszero,t[2][i,:]),axes(t[1],1))
   end
-  msg=string("[",length(r),"/",length(t[1]),",")
+  msg=string("[",length(r),"/",size(t[1],1),",")
   if isempty(r) InfoChevie("Tables agree!\n");return end
   p=Perm(t[1][r,:],t[2][r,:],dims=1)
-  if p!==nothing
-    ChevieErr("Permuted lines:\n",join(map(x->join(x,"->"),permutedims(
-       [opt[1].rowLabels[r],Permuted(opt[1].rowLabels[r],p)])),"\n"),"\n")
+  if p!==nothing 
+    ChevieErr("Permuted lines:\n",join(map(x->join(x,"->"),
+      permutedims([row_labels[1][r],Permuted(row_labels[1][r],p)])),"\n"),"\n")
     return
   end
   p=Perm(t[1],t[2],dims=2)
   if p!==nothing
     ChevieErr("Permuted columns:\n",
-     join(map(c->join(opt[1].columnLabels[c],"->"),cycles(p))," "),"\n")
+           join(map(c->join(opt[:col_labels][c],"->"),cycles(p))," "),"\n")
     return
   end
   if nz==2 c=filter(i->t[1][r,i]!=t[2][r,i],axes(t[1],2))
   else c=axes(t[1],2)
   end
   msg*=string(length(c),"/",size(t[1],2),"] of ")
-  ChevieErr(msg,"\n",join(List([1,2],i->string(m[i],"\n",
-     showtable(t[i];opt[i]...,rows=r,columns=c,screenColumns=70)))))
+  ChevieErr(msg,"\n",prod(m))
+  if both==true
+    nt=map(x->sprint(show,x;context=rio(;opt...)),t[1])
+    for i in eachindex(t[1])
+      if t[1][i]!=t[2][i] 
+        nt[i]=sprint(show,t[1][i]=>t[2][i];context=rio(;opt...))
+      end
+    end
+    showtable(rio(),nt;opt...,rows=r,cols=c)
+  else
+    for i in 1:2
+      showtable(rio(),t[i];opt...,row_labels=row_labels[i],rows=r,cols=c)
+    end
+  end
 end
 
 function cmpcycpol(a,b;na="a",nb="b")
@@ -925,6 +937,7 @@ function EigenAndDegHecke(s)
   d=s.d
   zeta=Cyc(d)
   W=H.W
+  xprintln("H=",H)
   ct=CharTable(H).irr
   ct1=0 .+CharTable(W).irr
   ct2=improve_type(scalar.(value.(ct,Ref(:q=>zeta))))
@@ -948,9 +961,9 @@ function EigenAndDegHecke(s)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
   zeta=Cyc(Root1(;r=d1)^frac[charinfo(W)[:positionId]])
   if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
-    omegachi=map(i->Root1(;r=s.d*s.e*s.delta*
-              ((i-1)//s.e-dSeries.mC(s)[i]*s.d)),1:s.e)
-    zeta=Root1(;r=s.d*s.e*s.delta*s.d*dSeries.mC(s)[1])
+    omegachi=map(i->Root1(;r=s.d.r*s.e*s.delta*
+              ((i-1)//s.e-dSeries.mC(s)[i]*s.d.r)),1:s.e)
+    zeta=Root1(;r=s.d.r*s.e*s.delta*s.d.r*dSeries.mC(s)[1])
   end
   map((deg,eig,frac)->(deg=deg,eig=eig*zeta,frac=modZ(frac)),ss,omegachi,frac)
 end
@@ -971,17 +984,17 @@ function TSerie(s)
   end
   if isnothing(charnumbers(s)) return end
   e=eigen(UnipotentCharacters(W))[charnumbers(s)]
-  if haskey(s,:hecke)
+  if haskey(s,:Hecke)
     pred=map(x->x.eig,EigenAndDegHecke(s))*
       eigen(UnipotentCharacters(s.levi))[s.cuspidal]
     if e!=pred && (!haskey(s,:delta) || s.delta==1 || is_cyclic(s.WGL))
-     n=charnames(UnipotentCharacters(W))[s.charNumbers]
-      ChevieErr(s," actual eigen differ from predicted eigen")
+      n=charnames(UnipotentCharacters(W))[s.charNumbers]
+      ChevieErr(s," actual eigen differ from predicted eigen\n")
       c=Set(map((x,y)->x//y,pred,e))
-      if length(c)==1 ChevieErr("predicted=",c[1],"*actual")
-      else cmptables(
-                 (rowLabels=["actual   "],columnLabels=n,scalar=[e]),
-                 (rowLabels=["predicted"],columnLabels=n,scalar=[pred]))
+      if length(c)==1 ChevieErr("predicted=",only(c),"*actual")
+      else println("predicted=>actual")
+       cmptables(reshape(improve_type(pred),(1,size(pred,1))),
+                 reshape(Cyc.(e),(1,size(e,1)));col_labels=n,nz=2,both=true)
       end
     end
   end

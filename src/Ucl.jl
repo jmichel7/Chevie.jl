@@ -1165,8 +1165,8 @@ function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
   tbl=get(io,:cycpol,true) ? map(CycPol,x.scalar) : x.scalar
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
-  rowLabels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
-  showtable(io,transpose(tbl),row_labels=rowLabels,col_labels=col_labels)
+  row_labels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
+  showtable(io,transpose(tbl);row_labels=row_labels,col_labels=col_labels)
 end
 
 @GapObj struct XTable end
