@@ -637,13 +637,22 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
   res.classinfo=map(classreps(g), classnames(g;TeX=true))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)
     if isone(c) r[:name]="1" end
-    r[:centralizer]=centralizer(g, c)
-    r[:centelms]=classreps(r[:centralizer])
-    t=CharTable(r[:centralizer])
+    zg=centralizer(g, c)
+    if iscyclic(zg) zg=Group(only(abelian_gens(zg)))
+      o=length(zg)
+      zg.classreps=map(i->zg(1)^i,0:o-1)
+    end
+    r[:centelms]=classreps(zg)
+    t=CharTable(zg)
 #   println("t=$t")
-    r[:charNames]=charnames(r[:centralizer];TeX=true)
-    r[:names]=classnames(r[:centralizer];TeX=true)
+    if iscyclic(zg)
+      r[:charNames]=map(v->sprint(show,v[2];context=:TeX=>true),eachrow(t.irr))
+    else
+      r[:charNames]=charnames(zg;TeX=true)
+    end
+    r[:names]=classnames(zg;TeX=true)
     r[:names][findfirst(isone,r[:centelms])]="1"
+    r[:centralizer]=zg
     r[:chars]=t.irr
     r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
     r[:centralizers]=t.centralizers
@@ -696,7 +705,7 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     res.eigenvalues=p*res.eigenvalues
     res.cospecial=res.special^SPerm(Int.(res.fourierMat^2))
   end
-  delete!(res.prop, :classinfo)
+ # delete!(res.prop, :classinfo)
   if lu
     res.perm=Perm(conj(res.mellin),res.mellin;dims=2)
     res.fourierMat=permute(res.fourierMat, res.perm,dims=1)
