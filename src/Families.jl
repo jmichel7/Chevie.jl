@@ -638,24 +638,26 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     r=Dict{Symbol, Any}(:elt => c,:name => n)
     if isone(c) r[:name]="1" end
     zg=centralizer(g, c)
-    if iscyclic(zg) zg=Group(only(abelian_gens(zg)))
+    if iscyclic(zg) 
       o=length(zg)
+      zg=Group(elements(zg)[findfirst(x->order(x)==o && x^div(o,order(c))==c,elements(zg))])
       zg.classreps=map(i->zg(1)^i,0:o-1)
+      r[:charNames]=map(i->sprint(show,E(o)^i;context=:TeX=>true),0:o-1)
+      r[:chars]=[E(o)^(i*j) for i in 0:o-1, j in 0:o-1]
+      r[:names]=r[:charNames]
+      r[:centralizers]=fill(o,o)
+    else
+      t=CharTable(zg)
+      r[:charNames]=charnames(zg;TeX=true)
+      r[:chars]=t.irr
+      r[:names]=classnames(zg;TeX=true)
+      r[:centralizers]=t.centralizers
     end
     r[:centelms]=classreps(zg)
-    t=CharTable(zg)
-#   println("t=$t")
-    if iscyclic(zg)
-      r[:charNames]=map(v->sprint(show,v[2];context=:TeX=>true),eachrow(t.irr))
-    else
-      r[:charNames]=charnames(zg;TeX=true)
-    end
-    r[:names]=classnames(zg;TeX=true)
     r[:names][findfirst(isone,r[:centelms])]="1"
+#   println("t=$t")
     r[:centralizer]=zg
-    r[:chars]=t.irr
     r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
-    r[:centralizers]=t.centralizers
     r
   end
   res.charLabels=vcat(

@@ -26,7 +26,7 @@ SparseArrays ="2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 UsingMerge = "b01ca8d2-7fff-4612-bd8c-d9d20281f780"
 
 [compat]
-Combinat = "0.0.5, O.1"
+Combinat = "0.0.5, 0.1"
 CycPols = "0.1"
 CyclotomicNumbers = "0.1"
 FinitePosets = "0.1"

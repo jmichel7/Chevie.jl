@@ -5,16 +5,17 @@ using PuiseuxPolynomials
 using LaurentPolynomials
 using CyclotomicNumbers
 using CyclotomicNumbers: bracket_if_needed, format_coefficient
+using FiniteFields: FFE
+using CycPols: CycPol
 using Primes: Primes
 using PermGroups: Group
 using Combinat: Combinat, collectby
 using LinearAlgebra: tr
+using GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Chars: CharTable
-using ..GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Tools: improve_type
-using ..FiniteFields: FFE
-using ..CycPols: CycPol
 using ..Gapjm: Gapjm, root, gap, Cyc, conductor
+using ..Util: toL
 
 #----------------------------------------------------------------------
 """
@@ -138,7 +139,7 @@ Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 Gapjm.gap(p::Integer)=string(p)
 
 function Gapjm.gap(p::Cyc)
-  res=join(map(pairs(p)) do (deg,v)
+  res=join(map(pairs(p.d)) do (deg,v)
     den=denominator(v)
     v=numerator(v) 
     if deg==0 t=string(v)

@@ -497,7 +497,7 @@ function PermRoot.roots(C::AbstractMatrix)
       end
     end
   end
-  if eltype(C)<:Integer sort!(R,by=x->(sum(x),-x)) end
+  if all(isinteger,C) sort!(R,by=x->(sum(x),-x)) end
   # important that roots are sorted as in CHEVIE for e.g. KLeftCells to work
   R
 end

@@ -18,27 +18,26 @@ function sumr(W)
       isnothing(p) ? 0 : p
     end
     [possum(i,j) for i in 1:2nref(W),  j in 1:2nref(W)]
-  end
+  end::Matrix{Int}
 end
 
 # closure of the subset roots(W,l)
 function closure(W,l)
-  if length(l)<=1 return l end
-  closure(W,closure(W,l[2:end]),[l[1]])
-end
-
-function closure(W,l,new)
   psum=sumr(W)
-  while !isempty(new)
-    nnew=Int[]
-    for i in new, j in l
-      u=psum[i,j]
-      if u!=0 push!(nnew, u) end
+  lset=Set(l)
+  res=Int[]
+  l=copy(l)
+  for r in l
+    for s in res
+      u=psum[r,s]
+      if !iszero(u) && !(u in lset) 
+        push!(l,u) 
+        push!(lset,u)
+      end
     end
-    l=union(l, new)
-    new=setdiff(nnew, l)
+    push!(res,r)
   end
-  sort(l)
+  sort!(l)
 end
 
 """
@@ -71,22 +70,23 @@ julia> closed_subsystems(W)
 function closed_subsystems(W)
   get!(W, :closedsubsets)do
   l = [Int[]]
+  ldict=Dict{Vector{Int},Int}()
   new = [1]
-  covered = [Int[]]
+  covers = Tuple{Int,Int}[]
   for w in new
     for f in setdiff(1:nref(W), l[w])
-      n=closure(W,l[w],[f,f+nref(W)])
-      p=findfirst(==(n),l)
-      if isnothing(p)
+      n=closure(W,vcat(l[w],[f,f+nref(W)]))
+      if haskey(ldict,n)
+        push!(covers,(ldict[n], w))
+      else
         push!(l, n)
-        push!(covered, [w])
+        ldict[n]=length(l)
+        push!(covers,(length(l),w))
         push!(new, length(l))
-      else push!(covered[p], w)
       end
     end
   end
-  covered=unique.(covered)
-  P=Poset(CPoset(incidence(CPoset(covered))),l)
+  P=Poset(CPoset(covers),l)
   P.show_element=function(io,x,n)
     e=Weyl.simpleroots_subsystem(W,x.elements[n])
     print(io,isempty(e) ? "∅" : join(filter(<=(nref(W)),e)," "))
