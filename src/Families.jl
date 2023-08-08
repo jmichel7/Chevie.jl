@@ -461,7 +461,7 @@ chevieset(:families,:QZ,function(n,pivotal=nothing)
 # res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
 #                   for (x,c) in pairs]
 # res
-  drinfeld_double(crg(n,1,1);pivotal)
+  drinfeld_double(crg(n,1,1);pivotal=isnothing(pivotal) ? nothing : Tuple(pivotal))
 end)
 
 # The big family f of dihedral groups. For e=5 occurs in H3, H4

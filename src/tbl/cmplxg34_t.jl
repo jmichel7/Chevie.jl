@@ -141,3 +141,21 @@ chevieset(:G34, :CharTable, function()
 end
 res
 end)
+
+function famf42()
+  g7=Perm(1,2,3,4,5,6,7);g6=Perm(2,6,5,7,3,4)
+  f42=Group(g7,g6)
+  f42.classreps=[Perm(),g6^4,g6^5,g6^2,g6,g6^3,g7]
+  f42.chartable=CharTable(
+  [1      1       1      1       1  1  1;
+   1      1      -1      1      -1 -1  1;
+   1 E(3)^2   -E(3)   E(3) -E(3)^2 -1  1;
+   1   E(3) -E(3)^2 E(3)^2   -E(3) -1  1;
+   1 E(3)^2    E(3)   E(3)  E(3)^2  1  1;
+   1   E(3)  E(3)^2 E(3)^2    E(3)  1  1;
+   6      0       0      0       0  0 -1],
+  ["1","-1","-\\zeta_3^2","-\\zeta_3","\\zeta_3^2","\\zeta_3","\\rho"],
+  ["1","g_6^4","g_6^5","g_6^2","g_6","g_6^3","g_7"],
+  [ 42, 6, 6, 6, 6, 6, 7],42,Dict{Symbol,Any}(:name=>"F42"))
+  drinfeld_double(f42)
+end

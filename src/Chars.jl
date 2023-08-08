@@ -1060,7 +1060,7 @@ end
 
 function Base.show(io::IO,t::CharTable)
   if hasdecor(io) || !haskey(t,:repr) 
-    printTeX(io,"CharTable(\$",t.name,"\$)")
+    printTeX(io,"CharTable(\$",haskey(t,:name) ? t.name : "?","\$)")
   else  print(io,t.repr)
   end
 end
@@ -1132,7 +1132,7 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
   end
 end
 
-CharTable(W::Group)=Gapjm.Gap4.CharTable(W)
+CharTable(W::Group)=get!(()->Gapjm.Gap4.CharTable(W),W,:chartable)
 
 function classes(ct::CharTable)
   get!(ct,:classes)do

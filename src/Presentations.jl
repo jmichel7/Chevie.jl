@@ -3140,8 +3140,7 @@ julia> P=Presentation("
 Presentation: 6 generators, 21 relators, total length 84
 julia> tracing(P)
 julia> Presentations.Go(P)
-#Presentation: 3 generators, 10 relators, total length 82
-#Presentation: 3 generators, 10 relators, total length 81
+Presentation: 3 generators, 10 relators, total length 81
 
 julia> P.imagesOldGens
 6-element Vector{Vector{Int64}}:

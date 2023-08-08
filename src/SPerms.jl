@@ -699,7 +699,7 @@ julia> uc=UnipotentCharacters(complex_reflection_group(6));
 julia> N=fourier(uc.families[2]);
 
 julia> p=SPerm(M,N;dims=(1,2))
-(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)
+(1,3)(5,-20,-5,20)(6,-18)(7,-12)(8,10)(11,15,-11,-15)(13,22)(14,-14)(16,21,-16,-21)(19,-19)
 
 julia> permute(M,p;dims=(1,2))==N
 true

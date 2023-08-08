@@ -416,7 +416,7 @@ end
 @test mytest("HeckeAlgebras.jl","H=hecke(W,Pol(:q))","hecke(G₂₄,q)")
 @test mytest("HeckeAlgebras.jl","representation(H,3)","3-element Vector{Matrix{Pol{Cyc{Int64}}}}:\n [q 0 0; -q -1 0; -q 0 -1]\n [-1 0 -1; 0 -1 ((1-√-7)/2)q; 0 0 q]\n [-1 -1 0; 0 q 0; 0 (1+√-7)/2 -1]")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:D,5),Pol())","hecke(D₅,q)")
-@test mytest("HeckeAlgebras.jl","representation(H,7)","5-element Vector{Matrix{Frac{Pol{Int64}}}}:\n [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]\n [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]\n [1/(-q-1) -q/(-q-1) 0 0; (q²+q+1)/(q+1) q²/(q+1) 0 0; 0 0 -1 0; 0 0 0 -1]\n [-1 0 0 0; 0 1/(-q²-q-1) (-q²-q)/(-q²-q-1) 0; 0 (q³+q²+q+1)/(q²+q+1) q³/(q²+q+1) 0; 0 0 0 -1]\n [-1 0 0 0; 0 -1 0 0; 0 0 1/(-q³-q²-q-1) (-q³-q²-q)/(-q³-q²-q-1); 0 0 (q⁴+q³+q²+q+1)/(q³+q²+q+1) q⁴/(q³+q²+q+1)]")
+@test mytest("HeckeAlgebras.jl","representation(H,7)","5-element Vector{Matrix{Frac{Pol{Int64}}}}:\n [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]\n [q 0 0 0; 0 -1 0 0; 0 0 -1 0; 0 0 0 -1]\n [1/(-q-1) q/(q+1) 0 0; (q²+q+1)/(q+1) q²/(q+1) 0 0; 0 0 -1 0; 0 0 0 -1]\n [-1 0 0 0; 0 1/(-q²-q-1) (-q²-q)/(-q²-q-1) 0; 0 (q³+q²+q+1)/(q²+q+1) q³/(q²+q+1) 0; 0 0 0 -1]\n [-1 0 0 0; 0 -1 0 0; 0 0 1/(-q³-q²-q-1) (-q³-q²-q)/(-q³-q²-q-1); 0 0 (q⁴+q³+q²+q+1)/(q³+q²+q+1) q⁴/(q³+q²+q+1)]")
 @test mytest("HeckeAlgebras.jl","H=hecke(coxgroup(:F,4))","hecke(F₄,1)")
 @test mytest("HeckeAlgebras.jl","isrepresentation(H,reflrep(H))","true")
 @test mytest("HeckeAlgebras.jl","isrepresentation(H,Tbasis(H).(1:4))","true")
@@ -619,7 +619,7 @@ end
 @test mytest("Presentations.jl","simplify(G)","FreeGroup(a,c)/[a²,ac⁻¹ac⁻¹,c⁴]")
 @test mytest("Presentations.jl","P=Presentation(\"\n1: a=A\n2: e=E\n3: f=F\n4: c=C\n5: d=D\n6: bbb=1\n7: fc=CF\n8: dc=CD\n9: fe=EF\n10: ec=CE\n11: da=AF\n12: ed=DE\n13: fd=DF\n14: ca=AE\n15: ea=AC\n16: fa=AD\n17: fb=bE\n18: Bcbfd=1\n19: Bebfe=1\n20: Bdbfedc=1\n21: babab=ABABA\n\")","Presentation: 6 generators, 21 relators, total length 84")
 @test mytest("Presentations.jl","tracing(P)","nothing")
-@test mytest("Presentations.jl","Presentations.Go(P)","#Presentation: 3 generators, 10 relators, total length 82\n#Presentation: 3 generators, 10 relators, total length 81")
+@test mytest("Presentations.jl","Presentations.Go(P)","Presentation: 3 generators, 10 relators, total length 81")
 @test mytest("Presentations.jl","P.imagesOldGens","6-element Vector{Vector{Int64}}:\n [1]\n [2]\n [1, -2, 1, 3, 1, 2, 1]\n [3]\n [-2, 1, 3, 1, 2]\n [1, 3, 1]")
 @test mytest("Presentations.jl","P.preImagesNewGens","3-element Vector{Vector{Int64}}:\n [1]\n [2]\n [4]")
 end
@@ -646,7 +646,7 @@ end
 @test mytest("SPerms.jl","M=fourier(conj(f));","nothing")
 @test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
 @test mytest("SPerms.jl","N=fourier(uc.families[2]);","nothing")
-@test mytest("SPerms.jl","p=SPerm(M,N;dims=(1,2))","(1,3)(2,19,-2,-19)(4,-14,-4,14)(5,-5)(6,-18)(7,-7)(8,10)(11,15,-11,-15)(12,-12)(13,22)(16,21,-16,-21)")
+@test mytest("SPerms.jl","p=SPerm(M,N;dims=(1,2))","(1,3)(5,-20,-5,20)(6,-18)(7,-12)(8,10)(11,15,-11,-15)(13,22)(14,-14)(16,21,-16,-21)(19,-19)")
 @test mytest("SPerms.jl","permute(M,p;dims=(1,2))==N","true")
 end
 @testset "Semisimple.jl" begin
