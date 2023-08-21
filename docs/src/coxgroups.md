@@ -14,9 +14,9 @@ elements(::CoxeterGroup,::Int)
 PermGroups.Groups.words(::CoxeterGroup{T},::T) where T
 PermGroups.Groups.words(::CoxeterGroup)
 bruhatless
-coxmat
+coxeter_matrix
 cartan(::AbstractMatrix)
-CoxSym
+coxeter_symmetric_group
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
 cartan(::CoxSym)
 reduced

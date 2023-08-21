@@ -67,8 +67,8 @@ const ChevieDict=Dict(
 "CoxeterGroup(\"A\",5)"=>"coxeter_group(:A,5) or coxgroup",
 "CoxeterGroupByCoxeterMatrix(C)"=>"coxeter_group(cartan(C)) or coxgroup",
 "CoxeterGroupByCartanMatrix(C)"=>"coxeter_group(C) or coxgroup",
-"CoxeterGroupHyperoctaedralGroup(n)"=>"CoxHyperoctaedral(n)",
-"CoxeterGroupSymmetricGroup(n)"=>"CoxSym(n)",
+"CoxeterGroupHyperoctaedralGroup(n)"=>"coxeter_hyperoctaedral_group(n) or coxhyp",
+"CoxeterGroupSymmetricGroup(n)"=>"coxeter_symmetric_group(n) or coxsym",
 "CoxeterLength(W,w)"=>"length(W,w)",
 "CoxeterMatrix"=>"coxmat or coxeter_matrix",
 "CoxeterMatrixFromCartanMat"=>"coxmat or coxeter_matrix",
@@ -167,7 +167,7 @@ const ChevieDict=Dict(
 "IndependentLines"=>"independent_lines",
 "IndependentRoots"=>"independent_roots",
 "InducedLinearForm"=>"induced_linear_form",
-"InductionTable"=>"InductionTable",
+"InductionTable"=>"induction_table",
 "Inherit"=>"look at merge for hashes",
 "Intersection"=>"intersect",
 "IntermediateGroup"=>"intermediate_group",
@@ -192,8 +192,8 @@ const ChevieDict=Dict(
 #IsQuasiIsolated
 "IsomorphismType"=>"isomorphism_type",
 "IsUnipotentElement(x)"=>"x isa UnipotentElement",
-"jInductionTable"=>"jInductionTable",
-"JInductionTable"=>"JInductionTable",
+"jInductionTable"=>"j_induction_table",
+"JInductionTable"=>"J_induction_table",
 "Join"=>"join",
 "KroneckerProduct"=>"kron",
 "LargestMovedPoint"=>"largest_moved_point",
@@ -221,8 +221,8 @@ const ChevieDict=Dict(
 "LowestPowerGenericDegreeSymbol"=>"valuation_gendeg_symbol",
 "Lusztigaw"=>"Lusztigaw",
 "LusztigAw"=>"LusztigAw",
-"LusztigInduction"=>"LusztigInduce",
-"LusztigInductionTable"=>"LusztigInductionTable",
+"LusztigInduction"=>"lusztig_induce",
+"LusztigInductionTable"=>"lusztig_induction_table",
 "LusztigRestriction"=>"LusztigRestrict",
 "MappingPermListList"=>"mappingPerm",
 "W.matgens"=>"reflection_representation(W) or reflrep",
@@ -427,13 +427,17 @@ function gap(s)
 end
 
 function fixdoc()
-  s=read("index.md",String)
   pad=maximum(length(k) for k in keys(ChevieDict))+2
   u=[rpad(k,pad)*v*"\n" for (k,v) in ChevieDict]
-  u=join(sort(u,by=lowercase),"")
-  s=replace(s,r"The dictionary from GAP3/Chevie is as follows:\n```(.*)```"s=>
-           "The dictionary from GAP3/Chevie is as follows:\n```\n"*u*"```")
-  open("index.md","w")do f
-    write(f,s)
+  sort!(u,by=lowercase)
+  open("dict.md","w")do f
+    write(f,"""
+# Dictionary from GAP3/Chevie
+The dictionary from GAP3/Chevie is as follows:
+```
+""")
+    write(f,join(u))
+    write(f,"```")
   end
+  length(u)
 end

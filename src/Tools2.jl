@@ -26,7 +26,7 @@ characters  of `G`  in `p`-blocks,  represented by  the list  of indices of
 irreducibles characters in each block.
 
 ```julia-repl
-julia> W=CoxSym(5)
+julia> W=coxsym(5)
 𝔖 ₅
 
 julia> blocks(W,2)

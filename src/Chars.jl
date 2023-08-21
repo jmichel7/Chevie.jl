@@ -27,7 +27,7 @@ canonical labelings for classes and characters are displayed.
 
 A  typical example  is `coxgroup(:A,n)`,  the symmetric  group `𝔖ₙ₊₁` where
 classes  and characters are  parameterized by partitions  of `n+1` (this is
-also the case for `CoxSym(n+1)`).
+also the case for `coxsym(n+1)`).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -82,8 +82,8 @@ of  `W`. For  spetsial groups  (which include  finite Coxeter  groups), the
 valuation  and degree of the generic degrees  of the Hecke algebra give two
 more integers `a,A` (for Coxeter groups see [Carter1985,
 Ch.11](biblio.htm#Car85) for more details). These integers are also used in
-the  operations of  truncated induction,  see [`jInductionTable`](@ref) and
-[`JInductionTable`](@ref).
+the  operations of  truncated induction,  see [`j_induction_table`](@ref) and
+[`J_induction_table`](@ref).
 
 Iwahori-Hecke  algebras and  cyclotomic Hecke  algebras also have character
 tables, see the corresponding chapters.
@@ -396,9 +396,9 @@ using ..Gapjm
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
-  representations, InductionTable, classes, jInductionTable, JInductionTable,
-  decompose, on_chars, detPerm, conjPerm, discriminant, classnames,
-  decomposition_matrix, eigen, schur_functor, charnumbers
+  representations, InductionTable, induction_table, classes, j_induction_table,
+  J_induction_table, decompose, on_chars, detPerm, conjPerm, discriminant,
+  classnames, decomposition_matrix, eigen, schur_functor, charnumbers
 
 """
 `schur_functor(mat,l)`
@@ -429,7 +429,7 @@ julia> schur_functor(m,[2,2])
 """
 function schur_functor(A,la)
   n=sum(la)
-  S=CoxSym(n)
+  S=coxsym(n)
   r=representation(S,findfirst(==(la),partitions(n)))
   rep=function(x)x=word(S,x)
     isempty(x) ? r[1]^0 : prod(r[x]) end
@@ -970,7 +970,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
 end
 
-const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyperoctaedral}
+const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyp}
 
 function Groups.conjugacy_classes(W::TW)where TW<:Hastype
   get!(W,:classes) do
@@ -1481,7 +1481,7 @@ end
 end
 
 """
-   `InductionTable(u,g)`
+   `induction_table(u,g)`
 
 returns   an  object  describing  the   decomposition  of  the  irreducible
 characters  of the subgroup  `u` induced to  the group `g`.  At the repl or
@@ -1498,8 +1498,8 @@ Group([(1,2),(2,3),(3,4)])
 julia> u=Group( [ Perm(1,2), Perm(3,4) ])
 Group([(1,2),(3,4)])
 
-julia> InductionTable(u,g)
-Induction Table from Group([(1,2),(3,4)]) to Group([(1,2),(2,3),(3,4)])
+julia> induction_table(u,g)
+Induction table from Group([(1,2),(3,4)]) to Group([(1,2),(2,3),(3,4)])
    │X.1 X.2 X.3 X.4
 ───┼────────────────
 X.1│  .   1   .   .
@@ -1516,8 +1516,8 @@ G₂
 julia> u=reflection_subgroup(g,[1,6])
 G₂₍₁₅₎=A₂
 
-julia> t=InductionTable(u,g)
-Induction Table from G₂₍₁₅₎=A₂ to G₂
+julia> t=induction_table(u,g)
+Induction table from G₂₍₁₅₎=A₂ to G₂
      │111 21 3
 ─────┼─────────
 φ₁‚₀ │  .  . 1
@@ -1532,7 +1532,7 @@ using an `IOContext` allows to transmit attributes to the table format method
 
 ```julia-rep1
 julia> xprint(t;rows=[5],cols=[3,2])
-Induction Table
+Induction table
     │3 21
 ────┼─────
 φ₂‚₁│.  1
@@ -1542,7 +1542,7 @@ It is also possible to TeX induction tables with an `IOContext` of `TeX=true`.
 
 ##  This function also works for Spets (Reflection Cosets)
 """
-function InductionTable(u,g)
+function induction_table(u,g)
   tu=CharTable(u)
   tg=CharTable(g)
   f=fusion_conjugacy_classes(u,g)
@@ -1559,8 +1559,8 @@ function InductionTable(u,g)
   cl=exactdiv.(length(u),tu.centralizers)
   sc=exactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
   InductionTable(permutedims(sc),tg.charnames,tu.charnames,
-  "Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
-  Dict{Symbol,Any}(:repr=>string("InductionTable(",u,",",g,")")))
+  "Induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("induction_table(",u,",",g,")")))
 end
 
 function Base.show(io::IO, ::MIME"text/html", t::InductionTable)
@@ -1580,7 +1580,7 @@ function Base.show(io::IO,::MIME"text/plain",t::InductionTable)
 end
 
 """
-`jInductionTable(H, W)`
+`j_induction_table(H, W)`
 
 computes  the decomposition  into irreducible  characters of the reflection
 group  `W`  of  the  `j`-induced  of  the  irreducible  characters  of  the
@@ -1595,8 +1595,8 @@ D₄
 julia> H=reflection_subgroup(W,[1,3])
 D₄₍₁₃₎=A₂Φ₁²
 
-julia> jInductionTable(H,W)
-j-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
+julia> j_induction_table(H,W)
+j-induction table from D₄₍₁₃₎=A₂Φ₁² to D₄
      │111 21 3
 ─────┼─────────
 11+  │  .  . .
@@ -1614,8 +1614,8 @@ j-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
 .4   │  .  . 1
 ```
 """
-function jInductionTable(u,g)
-  tbl=InductionTable(u,g)
+function j_induction_table(u,g)
+  tbl=induction_table(u,g)
   bu=charinfo(u).b
   bg=charinfo(g).b
   t=copy(tbl.scalar)
@@ -1623,12 +1623,12 @@ function jInductionTable(u,g)
     if bi!=bj t[j,i]=0 end
   end
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "j-Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
-  Dict{Symbol,Any}(:repr=>string("jInductionTable(",u,",",g,")")))
+  "j-induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("j_induction_table(",u,",",g,")")))
 end
 
 """
-`JInductionTable(H, W)`
+`J_induction_table(H, W)`
 
 computes  the decomposition  into irreducible  characters of the reflection
 group  `W`  of  the  `J`-induced  of  the  irreducible  characters  of  the
@@ -1643,8 +1643,8 @@ D₄
 julia> H=reflection_subgroup(W,[1,3])
 D₄₍₁₃₎=A₂Φ₁²
 
-julia> JInductionTable(H,W)
-J-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
+julia> J_induction_table(H,W)
+J-induction table from D₄₍₁₃₎=A₂Φ₁² to D₄
      │111 21 3
 ─────┼─────────
 11+  │  .  . .
@@ -1662,8 +1662,8 @@ J-Induction Table from D₄₍₁₃₎=A₂Φ₁² to D₄
 .4   │  .  . 1
 ```
 """
-function JInductionTable(u,g)
-  tbl=InductionTable(u,g)
+function J_induction_table(u,g)
+  tbl=induction_table(u,g)
   bu=charinfo(u).a
   bg=charinfo(g).a
   t=copy(tbl.scalar)
@@ -1671,8 +1671,8 @@ function JInductionTable(u,g)
     if bi!=bj t[j,i]=0 end
   end
   InductionTable(t,tbl.gcharnames,tbl.ucharnames,
-  "J-Induction Table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
-  Dict{Symbol,Any}(:repr=>string("JInductionTable(",u,",",g,")")))
+  "J-induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
+  Dict{Symbol,Any}(:repr=>string("J_induction_table(",u,",",g,")")))
 end
 
 """

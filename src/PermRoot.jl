@@ -202,7 +202,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   inclusiongens, restriction, coroot, TypeIrred, refleigen, reflchar,
   bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
-  invariants, matY, simpleroots, simplecoroots, action, radical,
+  invariants, matY, PermY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, 
   reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
@@ -1102,7 +1102,7 @@ end
 refleigen(W,i)=refleigen(W)[i] # not faster this way...
 
 """
-`reflength(W::PermRootGroup,w::Perm)`
+`reflection_length(W::PermRootGroup,w::Perm)` or `reflength`
 
 This  function returns the  number of eigenvalues  of `w` in the reflection
 representation  which are not equal to 1.  For a finite Coxeter group, this
@@ -1122,7 +1122,7 @@ julia> reflength(W,W(1,2,3,4))
 4
 ```
 """
-function Perms.reflength(W::PermRootGroup,w::Perm)
+function Perms.reflection_length(W::PermRootGroup,w::Perm)
   reflength(conjugacy_classes(W)[position_class(W,w)])
 end
 
@@ -1488,7 +1488,51 @@ end
 
 const reflection_representation=reflrep
 
+"""
+`matY(W,w)`
+
+Let  `W` be a  finite reflection group  on the space  `V` and let `w` be an
+element of `W`. The function `matY` returns the matrix of `w` acting on the
+dual  of `V`. This  is the linear  transformation of this  space which acts
+trivially  on the orthogonal of the roots and has same effect as `w` on the
+simple  coroots. The function makes sense  more generally for an element of
+the normalizer of `W` in the whole permutation group of the coroots.
+
+```julia-repl
+julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
+E₇₍₁₂₃₄₅₆₎=E₆Φ₁
+
+julia> matY(W,longest(W))
+7×7 transpose(::Matrix{Int64}) with eltype Int64:
+  0   0   0   0   0  -1  0
+  0  -1   0   0   0   0  0
+  0   0   0   0  -1   0  0
+  0   0   0  -1   0   0  0
+  0   0  -1   0   0   0  0
+ -1   0   0   0   0   0  0
+  2   2   3   4   3   2  1
+```
+"""
 matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
+"""
+`PermY(W::ComplexReflectionGroup,M::AbstractMatrix)`
+
+Let  `M`  be  an  invertible  linear  map  on  the  dual  of the reflection
+representation  of `W` which  preserves the set  of coroots of `parent(W)`,
+and  normalizes  `W`  (for  the  action  of matrices on the right). `PermY`
+returns  the corresponding  permutation of  the coroots  of `parent(W)`; it
+returns  `nothing`  if  `M`  does  not  normalize  the  set  of  coroots of
+`parent(W)`.
+
+```julia-repl
+julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
+E₇₍₁₂₃₄₅₆₎=E₆Φ₁
+
+julia> PermY(W,matY(W,longest(W)))==longest(W)
+true
+```
+"""
+PermY(W::PermRootGroup,m)=inv(PermX(W,transpose(m)))
 
 """
 `isparabolic(W)`

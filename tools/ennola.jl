@@ -257,7 +257,7 @@ function EnnolaTwist(HF, xi)
   subspets(parent(HF),inclusiongens(H),w*HF.phi)
 end
 
-# Predict what should be LusztigInductionTable(HF,WF) by Ennola-twisting that
+# Predict what should be lusztig_induction_table(HF,WF) by Ennola-twisting that
 # of EnnolaTwist(HF,xi^-1);
 function PredictRLGByEnnola(HF, WF, xi)
   function GlobalEnnolaLs(W, xi)
@@ -266,7 +266,7 @@ function PredictRLGByEnnola(HF, WF, xi)
   end
   tHF=EnnolaTwist(HF,inv(xi))
   H=Group(tHF)
-  t=LusztigInductionTable(tHF,WF).scalar
+  t=lusztig_induction_table(tHF,WF).scalar
   if xi ^ ordercenter(H) == 1
       ps = GlobalEnnolaLs(H, xi)
       t = Permuted(TransposedMat(t), PermList(map(abs, ps)) ^ -1)
@@ -283,7 +283,7 @@ function CheckRLGByEnnola(HF, WF, xi)
   fW=fourier(UnipotentCharacters(WF))
   fH=fourierinverse(UnipotentCharacters(HF))
   t =fW*t*fH
-  pieces = LusztigInductionTable(HF, WF, true)
+  pieces = lusztig_induction_table(HF, WF, true)
   print("Checking ", pieces, "\n")
   pieces = pieces[:pieces]
   for i in 1:length(pieces)
@@ -337,12 +337,12 @@ function CheckEnnolaRLG(W)
       for i in 1:length(uc)
         psH[uc[i]] = map(x->sign(x)*uc[i][abs(x)], e[i])
       end
-      t = TransposedMat(LusztigInductionTable(HF, WF)[:scalar])
+      t = TransposedMat(lusztig_induction_table(HF, WF)[:scalar])
       t = Permuted(t, PermList(map(abs, psH)) ^ -1)
       t = TransposedMat(map(x->sign(psH[x])*t[x], 1:length(t)))
       t = Permuted(t, PermList(map(abs, ps))^-1)
       t = map(x->sign(ps[x])*t[x],1:length(t))
-      txi = LusztigInductionTable(HFxi, WF)
+      txi = lusztig_induction_table(HFxi, WF)
       if txi[:scalar] != t
         p = deepcopy(txi)
         p[:scalar] = t

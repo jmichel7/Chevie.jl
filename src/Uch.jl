@@ -196,7 +196,7 @@ Then  here  are  two  ways  to  construct  the  Deligne-Lusztig  character
 associated to the Coxeter torus:
 
 ```julia-repl
-julia> LusztigInduce(W,u)
+julia> lusztig_induce(W,u)
 [G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
 
 julia> v=DLChar(W,[1,2])
@@ -237,7 +237,7 @@ module Uch
 using ..Gapjm
 
 export UnipotentCharacters, FixRelativeType, UniChar,
-almostChar, DLChar, DLLefschetz, LusztigInduce, LusztigRestrict, cuspidal,
+almostChar, DLChar, DLLefschetz, lusztig_induce, lusztig_restrict, cuspidal,
 cuspidal_data, CycPolUnipotentDegrees, on_unipotents, almostcharnames
 
 @GapObj struct UnipotentCharacters
@@ -993,7 +993,7 @@ LaurentPolynomials.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
                                      degrees(UnipotentCharacters(u.group),q)))
 
 """
-`LusztigInduce(W,u)`
+`lusztig_induce(W,u)`
 
 `u`  should be a unipotent character of a parabolic subcoset of the Coxeter
 coset  `W`. It represents  a unipotent character  `λ` of a  Levi `𝐋` of the
@@ -1013,20 +1013,20 @@ G₂₍₎=Φ₁Φ₂
 julia> u=UniChar(T,1)
 [G₂₍₎=Φ₁Φ₂]:<Id>
 
-julia> LusztigInduce(WF,u)
+julia> lusztig_induce(WF,u)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
 julia> DLChar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 ```
 """
-function LusztigInduce(WF, u)
-  t=LusztigInductionTable(u.group, WF)
+function lusztig_induce(WF, u)
+  t=lusztig_induction_table(u.group, WF)
   if !isnothing(t) UniChar(WF, improve_type(t.scalar*u.v)) end
 end
 
 """
-`LusztigRestrict(R,u)`
+`lusztig_restrict(R,u)`
 
 `u`  should be a unipotent character of a parent Coxeter coset `W` of which
 `R` is a parabolic subcoset. It represents a unipotent character `γ` of the
@@ -1046,22 +1046,25 @@ G₂₍₎=Φ₁Φ₂
 julia> u=DLChar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
-julia> LusztigRestrict(T,u)
+julia> lusztig_restrict(T,u)
 [G₂₍₎=Φ₁Φ₂]:4<Id>
 
 julia> T=subspets(WF,Int[],W(2))
 G₂₍₎=Φ₁Φ₂
 
-julia> LusztigRestrict(T,u)
+julia> lusztig_restrict(T,u)
 [G₂₍₎=Φ₁Φ₂]:0
 ```
 """
-LusztigRestrict(HF,u)=UniChar(HF,improve_type(transpose(
-                             LusztigInductionTable(HF,u.group).scalar)*u.v))
+lusztig_restrict(HF,u)=UniChar(HF,improve_type(transpose(
+                            lusztig_induction_table(HF,u.group).scalar)*u.v))
 
-HCInduce(WF,u)=UniChar(WF,improve_type(HCInductionTable(u.group,WF).scalar*u.v))
+harish_chandra_induce(WF,u)=
+   UniChar(WF,improve_type(hc_induction_table(u.group,WF).scalar*u.v))
+const hc_induce=harish_chandra_induce
 
-HCRestrict(HF,u)=UniChar(HF,improve_type(u.v*HCInductionTable(HF,u.group).scalar))
+harish_chandra_restrict(HF,u)=UniChar(HF,improve_type(u.v*hc_induction_table(HF,u.group).scalar))
+const hc_restrict=harish_chandra_restrict
 
 function DLCharTable(W)
   get!(W,:rwTable)do

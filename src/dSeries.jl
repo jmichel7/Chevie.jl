@@ -861,9 +861,9 @@ e(s::Series)=getp(relative_group,s,:e)
 
 function RLG(s::Series)
   get!(s,:RLG) do
-  RLG=LusztigInduce(s.spets, UniChar(s.levi, s.cuspidal))
+  RLG=lusztig_induce(s.spets, UniChar(s.levi, s.cuspidal))
   if isnothing(RLG) && isone(s.levi.phi)
-    RLG=HarishChandraInduction(s.spets, UnipotentCharacter(s.levi,s.cuspidal))
+    RLG=Uch.hc_induce(s.spets, UniChar(s.levi,s.cuspidal))
   end
   if isnothing(RLG) ChevieErr(s, ":RLG failed\n")
   elseif degree(s)!=CycPol(degree(RLG))

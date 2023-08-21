@@ -1,4 +1,4 @@
-using Documenter, Gapjm, Primes
+using Documenter, Gapjm
 
 makedocs(sitename="Gapjm.jl documentation",
          modules=[Gapjm],

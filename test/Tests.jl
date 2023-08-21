@@ -263,16 +263,16 @@ end
 function Tlusztiginduction(WF,L)
   InfoChevie("  #")
   if L.phi==WF.phi InfoChevie("Split ") end
-  InfoChevie("Lusztig Induction from ",L," to ",WF)
+  InfoChevie("Lusztig induction from ",L," to ",WF)
   if !isnothing(match(r"3G3,3,3",isomorphism_type(L))) return end
-  t=LusztigInductionTable(L,WF)
+  t=lusztig_induction_table(L,WF)
   if isnothing(t) return end
   if haskey(t,:scalars) 
     print("\t****** scalars=",t.scalars) 
   end
   println()
   if L.phi==WF.phi
-    h=Lusztig.HCInductionTable(L,WF)
+    h=hc_induction_table(L,WF)
     if h.scalar!=t.scalar ChevieErr("HC!=Lusztig\n") end
   end
   uh=UnipotentCharacters(L)
@@ -592,7 +592,7 @@ function Tnsemisimple(WF)
   v=map(l.ss) do x
     x.nClasses*exactdiv(g,x.cent(q))*q^(2*Group(x.CGs).N)
   end
-  if sum(v)!=g
+  if !isempty(v) && sum(v)!=g
     ChevieErr("found nr elem=",sum(v)," instead of ",g,"\n");
    end
 end
@@ -683,7 +683,7 @@ function Tcharparams(W)
   end
   function inducedfromid(a,J;mult=0)local L,t
     L=reflection_subgroup(W,J)
-    t=InductionTable(L,W)
+    t=induction_table(L,W)
     mul(x)=mult!=0 ? x==mult : x>0
     ok(mul(t.scalar[n0(a),charinfo(L)[:positionId]]),
      a," should occur",mult!=0 ? " $mult times" : "",
@@ -1142,7 +1142,7 @@ function Tfeginduce(W,J)
   q=Pol()
   if !(W isa Spets) W=spets(W) end
   for L in twistings(W,J)
-    t=InductionTable(L,W)
+    t=induction_table(L,W)
     hd=fakedegrees(L,q)
     ud=fakedegrees(W,q)
     index=exactdiv(generic_sign(L)*generic_order(W,q),generic_order(L,q))//generic_sign(W)
@@ -1379,13 +1379,13 @@ function TdegsHCInduce(W,J)
   if W isa Spets index*=generic_sign(L)//generic_sign(W) end
   uL=UnipotentCharacters(L)
   pred=degrees(uL,q)*index
-  tbl=Lusztig.HCInductionTable(L,W)
+  tbl=hc_induction_table(L,W)
   ind=map(x->UniChar(W,x),eachcol(tbl.scalar))
   inddeg=improve_type(degree.(ind))
   if pred!=inddeg
     nh=charnames(uL)
     ChevieErr("Relgroups:",tbl.pieces)
-    cmpvec(pred,inddeg;na="udLevi*index",nb="viaHCInductionTable")
+    cmpvec(pred,inddeg;na="udLevi*index",nb="viahc_induction_table")
   end
 end
 
@@ -1512,7 +1512,7 @@ function Teigen(W)
       n=f[:charNumbers][j]
       if e[n]!=f[:eigenvalue]
         ChevieErr("HCfamily ",i,"#",j,":",charnames(uc;TeX=true)[n],"=",n,
-          " eigen from fam.=",e[n]," but from HC=",f.eigenvalue,"\n")
+         " eigen from fam.=",e[n]," but from HC=",f[:eigenvalue],"\n")
       end
     end
   end
@@ -1731,10 +1731,10 @@ function Thecke3d4(triality)
   tbis=subspets(WF,[2,9,1,16],F4(4,3)) # inside F4
   ct=CharTable(hecke(triality,q)).irr
   cmpvec(toL(ct), toL(m[findfirst.(==(1),
-        toL(permutedims(InductionTable(tbis,WF).scalar))),:]);
+        toL(permutedims(induction_table(tbis,WF).scalar))),:]);
    na="charTable(Hecke(3D4))",nb="computed by coset induction")
   D4=reflection_subgroup(F4,[2,9,1,16])
-  v=permutedims(InductionTable(D4,F4).scalar)
+  v=permutedims(induction_table(D4,F4).scalar)
   v=v[charinfo(triality)[:charRestrictions],:]
   cmpvec(toL(ct),toL(-m[findfirst.(==(2),toL(v)),:]);
    na="charTable(Hecke(3D4))",nb="computed by subgroup induction");

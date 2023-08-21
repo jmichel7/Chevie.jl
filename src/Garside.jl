@@ -857,7 +857,7 @@ end
 returns all left-divisors of `b` (left-divisors of length `i` if specified)
 
 ```julia-repl
-julia> B=DualBraidMonoid(CoxSym(4))
+julia> B=DualBraidMonoid(coxsym(4))
 DualBraidMonoid(𝔖 ₄,c=[1, 3, 2])
 
 julia> left_divisors(B(1,5,4,3))
@@ -1388,7 +1388,7 @@ monoid  is an interval  monoid. For instance  it gives the  projection of a
 braid in an Artin monoid back to the Coxeter group.
 
 ```julia-repl
-julia> W=CoxSym(4)
+julia> W=coxsym(4)
 𝔖 ₄
 
 julia> b=BraidMonoid(W)(2,1,2,1,1)
@@ -2135,7 +2135,7 @@ counted  as returned by the  function `word`). This can  be use to simplify
 the result of `centralizer_gens`, or other braid subgroups.
 
 ```julia-repl
-julia> B=BraidMonoid(CoxSym(3))
+julia> B=BraidMonoid(coxsym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=[B(1)^3,B(2)^3,B(-2,-1,-1,2,2,2,2,1,1,2),B(1,1,1,2)]
@@ -2241,7 +2241,7 @@ group elements.
 hurwitz(l,b::GarsideElt)=hurwitz(l,word(b))
 
 # example
-B=BraidMonoid(CoxSym(21))
+B=BraidMonoid(coxsym(21))
 b=[
 B(19,19,19),B(11,11),B(10,10,10,10),B(8,8,8),B(3,3,3),B(-1,-1,2,2,1,1),B(2,2,
 2,2),B(-3,-1,-2,-2,-1,-13,-14,-15,-16,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,

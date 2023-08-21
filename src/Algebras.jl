@@ -615,7 +615,7 @@ end
 #end;
 
 #RestrictionHomomorphism:=function(A,B)local k;
-#  k:=InductionTable(B.group,A.group).scalar;
+#  k:=induction_table(B.group,A.group).scalar;
 #  return AlgebraHomomorphismByLinearity(A,B,k*B.basis);
 #end;
 
@@ -997,7 +997,7 @@ function PermRoot.radical(A::SolomonAlgebra{T})where T
 end
 
 function permutation_character(W,S)
-  t=InductionTable(S,W).scalar
+  t=induction_table(S,W).scalar
   i=findfirst(x->all(==(1),x),eachrow(CharTable(S).irr))
   permutedims(CharTable(W).irr)*t[:,i]
 end

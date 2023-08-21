@@ -292,7 +292,8 @@ cartanmats[:h]=cartanmats[:H]=function(r)
   m
 end
 cartanmats[:i]=cartanmats[:I]=function(b)
-  b%2==0 ? [2 (b==2 ? 0 : -1);-2-E(b)-E(b,-1) 2] : cartanmats[:Isym](b)
+  res=b%2==0 ? [2 (b==2 ? 0 : -1);-2-E(b)-E(b,-1) 2] : cartanmats[:Isym](b)
+  (b<5 || b==6) ? Int.(res) : res
 end
 """
 `cartan(type, rank [,bond])`
@@ -682,15 +683,16 @@ PermRoot.nhyp(W::FiniteCoxeterGroup)=nref(W)
 
 Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 
-#forwarded methods to PermRoot/W.G
-@forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
- Groups.gens, Groups.conjugacy_classes,
- PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
- PermGroups.stabilizer,PermGroups.transporting_element,
- PermRoot.action, PermRoot.cartan, PermRoot.coroots, PermRoot.coxnum,
- PermRoot.inclusion, PermRoot.inclusiongens, PermRoot.independent_roots,
- PermRoot.invariants, PermRoot.invariant_form, PermRoot.PermX, PermRoot.rank,
- PermRoot.roots, PermRoot.reflchar,
+# Weyl groups should  be  derived  from PermRoot and CoxeterGroup.
+# Since  such inheritance  is impossible  in Julia,  we have  to choose. We
+# derive  it  from  CoxeterGroup  and  represent  the  other inheritance by
+# composition.  Thus, implementations  of FiniteCoxeterGroups  have a field
+# .G, a PermRootGroup, to which we forward the following methods.
+@forward FiniteCoxeterGroup.G PermRoot.action, PermRoot.cartan, 
+ PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
+ PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
+ PermRoot.invariant_form, PermRoot.matY, PermRoot.PermX, PermRoot.PermY, 
+ PermRoot.rank, PermRoot.roots, PermRoot.reflchar,
 #PermRoot.reflections,
  PermRoot.refls,
  PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,

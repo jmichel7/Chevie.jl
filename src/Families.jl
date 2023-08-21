@@ -605,8 +605,8 @@ the call).
 `:special`: the index of the special element, which is `(x,φ)=(1,1)`.
 
 ```julia-rep1
-julia> drinfeld_double(CoxSym(3))
-Family(D(CoxSym(3)):8)
+julia> drinfeld_double(coxsym(3))
+Family(D(coxsym(3)):8)
    label│eigen
 ────────┼─────────────────────────────────────────────
 (1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3
@@ -618,8 +618,8 @@ Family(D(CoxSym(3)):8)
 (3a,X.2)│  ζ₃²  1/3 -1/3 1/3    0    0 -1/3 -1/3  2/3
 (3a,X.3)│   ζ₃  1/3 -1/3 1/3    0    0 -1/3  2/3 -1/3
 
-julia> drinfeld_double(CoxSym(3);lu=true)
-Family(LD(CoxSym(3)):8)
+julia> drinfeld_double(coxsym(3);lu=true)
+Family(LD(coxsym(3)):8)
    label│eigen
 ────────┼─────────────────────────────────────────────
 (1,X.1) │    1  1/6  1/3 1/6 -3/2 -3/2  1/3  1/3  1/3

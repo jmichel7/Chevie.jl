@@ -12,9 +12,9 @@ DLChar
 almostChar
 on_unipotents
 DLLefschetz
-LusztigInduce
-LusztigRestrict
-LusztigInductionTable
+lusztig_induce
+lusztig_restrict
+lusztig_induction_table
 Families
 Family
 galois(f::Family,p::Int)

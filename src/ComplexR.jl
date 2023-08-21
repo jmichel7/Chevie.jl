@@ -306,7 +306,7 @@ julia> hyperplane_orbits(W)
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
 ```
 """
-function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyperoctaedral})
+function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyp})
   T=@NamedTuple{s::Int,cl_s::Vector{Int},order::Int,N_s::Int,det_s::Vector{Int}}
   get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
@@ -344,7 +344,7 @@ end
 @forward FiniteCoxeterGroup.G hyperplane_orbits, codegrees, Gapjm.degrees
 
 #------------------------- Reflection(s) --------------------------------
-@GapObj struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral}}
+@GapObj struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyp}}
   W::TW
   rootno::Int
   eigen::Root1
@@ -486,7 +486,7 @@ julia> reflections(W)
  Reflection(G₄,5,ζ₃²)
 ```
 """
-function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyperoctaedral})
+function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp})
   get!(W,:reflections)do
     sreps=sort(unique(simple_reps(W)))
     pnts=refls(W,sreps)

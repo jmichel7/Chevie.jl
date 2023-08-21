@@ -14,7 +14,7 @@ order(::SPerm)
 cycles(::SPerm)
 cycletype(::SPerm)
 Matrix(::SPerm)
-CoxHyperoctaedral
-reflection_subgroup(::CoxHyperoctaedral,::AbstractVector{Int})
+coxeter_hyperoctaedral_group
+reflection_subgroup(::CoxHyp,::AbstractVector{Int})
 sstab_onmats
 ```

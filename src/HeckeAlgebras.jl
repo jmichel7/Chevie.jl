@@ -916,7 +916,7 @@ irreducible characters of `H` on `T_w` (for `w∈ R`), then the product `X*p`
 is the list of values of the irreducible characters on `h`.
 
 ```julia-repl
-julia> W=CoxSym(4)
+julia> W=coxsym(4)
 𝔖 ₄
 
 julia> H=hecke(W,Pol(:q))

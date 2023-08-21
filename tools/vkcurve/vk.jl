@@ -352,7 +352,7 @@ end
 # if r does not have the right fields then one tries to read (r.name).tmp
 function Segments(r,range=1:length(r.segments))
   read(r.name*".tmp")
-  r.B=BraidMonoid(CoxSym(length(r.zeros[1])))
+  r.B=BraidMonoid(coxsym(length(r.zeros[1])))
   if !haskey(r,:monodromy) r.monodromy=fill(r.B(),length(r.segments)) end
   for segno in range Segment(r, segno) end
 end
@@ -407,7 +407,7 @@ function FundamentalGroup(c::Mvp;printlevel=0)
   Loops(r)
   Zeros(r)
   if isempty(r.zeros[1]) return TrivialCase(r) end
-  r.B=BraidMonoid(CoxSym(length(r.zeros[1])))
+  r.B=BraidMonoid(coxsym(length(r.zeros[1])))
   r.monodromy=fill(r.B(),length(r.segments))
 # return r
   for i in eachindex(r.segments) Segment(r, i) end
@@ -454,7 +454,7 @@ end
 function FinishFundamentalGroup(r)
   read(r.name*".tmp")
   if !haskey(r, :monodromy) r.monodromy=[] end
-  r[:B]=BraidMonoid(CoxSym(length(r.zeros[1])))
+  r[:B]=BraidMonoid(coxsym(length(r.zeros[1])))
   for i in 1:length(r.segments)
     read(string(r.name,".",i))
     if isnothing(r.monodromy[i]) println("***** ", i, " missing ****") end
@@ -1362,7 +1362,7 @@ This function converts  the linear braid joining the points in `v1` to the
 corresponding ones in `v2` into an element of the braid group.
 
 ```julia-repl
-julia> B=BraidMonoid(CoxSym(3))
+julia> B=BraidMonoid(coxsym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> LBraidToWord([1+im,2+im,3+im],[2+im,1+2im,4-6im],B)
@@ -1370,7 +1370,7 @@ julia> LBraidToWord([1+im,2+im,3+im],[2+im,1+2im,4-6im],B)
 ```
 
 The lists `v1` and `v2` must have the same length, say `n`. Then `B` should
-be  `BraidMonoid(CoxSym(n))`, the braid group  on `n` strings. The elements
+be  `BraidMonoid(coxsym(n))`, the braid group  on `n` strings. The elements
 of  `v1` (resp. `v2`)  should be `n`  distinct complex rational numbers. We
 use the Brieskorn basepoint, namely the contractible set `C+iV_ℝ` where `C`
 is  a real chamber; therefore the endpoints  need not be equal. The strings
@@ -1462,7 +1462,7 @@ except `f_i` which is mapped to  `f_{i+1}` and `f_{i+1}` which is mapped
 to `f_{i+1}^{-1}f_if_{i+1}`.
 
 ```julia-repl
-julia> B=BraidMonoid(CoxSym(3))
+julia> B=BraidMonoid(coxsym(3))
 BraidMonoid(𝔖 ₃)
 
 julia> b=B(1)

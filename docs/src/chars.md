@@ -14,9 +14,9 @@ fakedegree
 fakedegrees
 representation(::Union{Chars.Hastype,FiniteCoxeterGroup},::Integer)
 representations(::Union{Spets, FiniteCoxeterGroup, PermRootGroup})
-InductionTable
-jInductionTable
-JInductionTable
+induction_table
+j_induction_table
+J_induction_table
 detPerm
 conjPerm
 ```

@@ -43,7 +43,8 @@ SPerms are considered as scalars for broadcasting.
 """
 module SPerms
 using ..Gapjm
-export SPerm, CoxHyperoctaedral, sstab_onmats, @sperm_str, signs
+export SPerm, sstab_onmats, @sperm_str, signs,
+  coxeter_hyperoctaedral_group, coxhyp, CoxHyp 
 
 """
 `struct SPerm`
@@ -432,26 +433,28 @@ function SPerm{T}(m::AbstractMatrix{<:Integer}) where T<:Integer
 end
 
 # Transforms perm+signs to a signed perm,
-#SPerm(p,n)=SPerm(p.d.*n)
+# SPerm(p,s)=SPerm(p.d.*s)
 # We have the property p=SPerm(Perm(p),signs(p))
 
 #------------ Example II: HyperOctaedral groups as Coxeter groups
 
-@GapObj struct CoxHyperoctaedral{T} <: FiniteCoxeterGroup{SPerm{T}}
+@GapObj struct CoxHyp{T} <: FiniteCoxeterGroup{SPerm{T}}
   G::SPermGroup{T}
   n::Int
 end
 
-Base.iterate(W::CoxHyperoctaedral,r...)=iterate(W.G,r...)
-Groups.gens(W::CoxHyperoctaedral)=gens(W.G)
+Base.iterate(W::CoxHyp,r...)=iterate(W.G,r...)
+Groups.gens(W::CoxHyp)=gens(W.G)
 
 """
-`CoxHyperoctaedral(n)`  The Hyperoctaedral  group (the  group of all signed
-permutations  of ±1,…,±n) as a Coxeter  group of type `Bₙ`, with generators
-`(1,-1)` and `(i,i+1)(-i,-i-1)`.
+`coxeter_hyperoctaedral_group(n)`  or `coxhyp(n)`
+
+The  Hyperoctaedral group (the group of all signed permutations of ±1,…,±n)
+as   a  Coxeter   group  of   type  `Bₙ`,   with  generators  `(1,-1)`  and
+`(i,i+1)(-i,-i-1)`.
 
 ```julia-repl
-julia> elements(CoxHyperoctaedral(2))
+julia> elements(coxhyp(2))
 8-element Vector{SPerm{Int8}}:
  ()
  (1,2)
@@ -463,32 +466,32 @@ julia> elements(CoxHyperoctaedral(2))
  (1,-1)(2,-2)
 ```
 """
-function CoxHyperoctaedral(n::Int)
+function coxeter_hyperoctaedral_group(n::Int)
   gens=[SPerm{Int8}(1,-1)]
   for i in 2:n push!(gens,SPerm{Int8}(i-1,i)) end
-  CoxHyperoctaedral{Int8}(Group(gens),n,Dict{Symbol,Any}())
+  CoxHyp{Int8}(Group(gens),n,Dict{Symbol,Any}())
 end
 
-function Base.show(io::IO, W::CoxHyperoctaedral)
- print(io,"CoxHyperoctaedral($(rank(W)))")
-end
+const coxhyp=coxeter_hyperoctaedral_group
 
-PermRoot.refltype(W::CoxHyperoctaedral)=[TypeIrred(Dict(:series=>:B,
+Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(rank(W)))")
+
+PermRoot.refltype(W::CoxHyp)=[TypeIrred(Dict(:series=>:B,
                                          :indices=>collect(1:rank(W))))]
 
-CoxGroups.nref(W::CoxHyperoctaedral)=ngens(W)^2
+CoxGroups.nref(W::CoxHyp)=ngens(W)^2
 
-Gapjm.degrees(W::CoxHyperoctaedral)=2*(1:ngens(W))
+Gapjm.degrees(W::CoxHyp)=2*(1:ngens(W))
 
-Base.length(W::CoxHyperoctaedral)=prod(degrees(W))
+Base.length(W::CoxHyp)=prod(degrees(W))
 
-CoxGroups.isleftdescent(W::CoxHyperoctaedral,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
+CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
 
-PermRoot.rank(W::CoxHyperoctaedral)=W.n
-CoxGroups.maxpara(W::CoxHyperoctaedral)=1:W.n-1
-PermRoot.inclusiongens(W::CoxHyperoctaedral)=1:W.n
+PermRoot.rank(W::CoxHyp)=W.n
+CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
+PermRoot.inclusiongens(W::CoxHyp)=1:W.n
 
-function PermRoot.refls(W::CoxHyperoctaedral{T})where T
+function PermRoot.refls(W::CoxHyp{T})where T
   get!(W,:refls)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:rank(W)))
     for i in 2:rank(W)-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i)) end
@@ -498,16 +501,16 @@ function PermRoot.refls(W::CoxHyperoctaedral{T})where T
   end::Vector{SPerm{T}}
 end
 
-PermRoot.refls(W::CoxHyperoctaedral,i)=refls(W)[i]
+PermRoot.refls(W::CoxHyp,i)=refls(W)[i]
 
-function PermRoot.simple_reps(W::CoxHyperoctaedral)
+function PermRoot.simple_reps(W::CoxHyp)
   get!(W,:simple_reps)do
     W.unique_refls=collect(1:nref(W))
     fill(1,length(refls(W)))
   end::Vector{Int}
 end
 
-function Perms.reflength(W::CoxHyperoctaedral,w)
+function Perms.reflength(W::CoxHyp,w)
   sym=nsym=0
   for x in cycles(w)
     if sort(x)==sort(-x) sym+=length(x)
@@ -518,12 +521,12 @@ function Perms.reflength(W::CoxHyperoctaedral,w)
 end
 
 """
-`reflection_subgroup(W::CoxHyperoctaedral,I)`
+`reflection_subgroup(W::CoxHyp,I)`
 is defined only for `I=1:m` for `m≤ngens(W)`.
 """
-function PermRoot.reflection_subgroup(W::CoxHyperoctaedral,I::AbstractVector{Int})
+function PermRoot.reflection_subgroup(W::CoxHyp,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end
-  CoxHyperoctaedral(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
+  CoxHyp(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
 end
 
 #--------------------- action on matrices -----------------------------------
@@ -547,7 +550,7 @@ dup(p::SPerm)=isone(p) ? Perm() :
 dedup(p::Perm)=SPerm{Idef}(map(i->iseven(i) ? -div(i,2) : div(i+1,2),
                          p.d[1:2:length(p.d)-1]))
 
-dup(g::CoxHyperoctaedral)=Group(dup.(gens(g)))
+dup(g::CoxHyp)=Group(dup.(gens(g)))
 
 Base.length(g::SPermGroup)=length(Group(dup.(gens(g))))
 
@@ -568,10 +571,10 @@ end
 If `onmats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
 and  columns, or conjugating by the  matrix of the signed permutation `p`),
 and  the argument `G`  is given (which  should be an  `SPermGroup`) this is
-just  a fast implementation of  `centralizer(G,M,onmats)`. If `G` is
-omitted  it is taken to be `CoxHyperoctaedral(size(M,1))`. The program uses
-sophisticated  algorithms, and can  handle matrices up  to 80×80. If `l` is
-given the return group should also centralize `l` (for the action ^)
+just  a fast implementation of `centralizer(G,M,onmats)`. If `G` is omitted
+it  is  taken  to  be  `coxhyp(size(M,1))`.  The program uses sophisticated
+algorithms, and can handle matrices up to 80×80. If `l` is given the return
+group should also centralize `l` (for the action ^)
 
 ```julia-repl
 julia> uc=UnipotentCharacters(complex_reflection_group(6));
@@ -591,7 +594,7 @@ function sstab_onmats(M,extra=nothing)
   I=Int[]
   for r in blocks
     if length(r)>5 InfoChevie("#IS Large Block:",r,"\n") end
-    gr=stab_onmats(dup(CoxHyperoctaedral(length(r))),dup(M[r,r]))
+    gr=stab_onmats(dup(coxhyp(length(r))),dup(M[r,r]))
     p=SPerm(mappingPerm(1:length(r),r).d)
     append!(gen,map(x->dedup(x)^p,gens(gr)))
     append!(I,r)
@@ -612,7 +615,7 @@ permutation `p` such that `onmats(M,p)=N` if such a permutation exists, and
 signed permutation `p` should also satisfy `permute(m,p)==n`.
 
 Efficient version of
-`transporting_elt(CoxHyperoctaedral(size(M,1)),M,N,onmats)`
+`transporting_elt(coxhyp(size(M,1)),M,N,onmats)`
 ```
 """
 function SPerm_onmats(M,N;extra=nothing)
@@ -628,11 +631,10 @@ function SPerm_onmats(M,N;extra=nothing)
     iN=collectby(invN,J)
     if length(iM)==1
       if length(I)>6 InfoChevie("large block:",length(I),"\n")
-        p=transporting_elt(Group(refls(CoxHyperoctaedral(length(I)))), 
+        p=transporting_elt(Group(refls(coxhyp(length(I)))), 
                            M[I,I],N[J,J],onmats,
                     dist=(M,N)->count(i->M[i]!=N[i],eachindex(M)))
-      else p=transporting_elt(CoxHyperoctaedral(length(I)),
-         M[I,I],N[J,J],onmats)
+      else p=transporting_elt(coxhyp(length(I)),M[I,I],N[J,J],onmats)
       end
       if isnothing(p) InfoChevie("could not match block\n");return end
       return [(I,J,p)]

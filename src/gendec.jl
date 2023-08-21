@@ -160,7 +160,7 @@ The matrix itself is stored in the field `.scalar` of the returned `struct`.
 """
 function InducedDecompositionMatrix(R,W,d::Integer)
   m=generic_decomposition_matrix(R,d)
-  t=HCInductionTable(R,W)
+  t=hc_induction_table(R,W)
   InducedDecompositionMatrix(t.scalar*m.scalar,m.colnames,W,R,d)
 end
 

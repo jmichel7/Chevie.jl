@@ -1,6 +1,7 @@
 module Lusztig 
 using ..Gapjm
-export LusztigInductionTable, HCInductionTable
+export lusztig_induction_table, hc_induction_table, 
+       harish_chandra_induction_table
 """
 `FindSeriesInParent(h,HF,WF,ww)`
 
@@ -210,7 +211,7 @@ function LusztigInductionPieces(LF,WF)
     lfgl=repr(LFGL;context=:TeX=>true)
     wfgl=repr(WFGL;context=:TeX=>true)
 #   println(ser[:relativeType],h[:relativeType])
-    InductionTable(conj.(InductionTable(LFGL,WFGL).scalar),
+    InductionTable(conj.(induction_table(LFGL,WFGL).scalar),
                    almostcharnames(rio(TeX=true),uW)[charnumbers(ser)],
                    almostcharnames(rio(TeX=true),uL)[charnumbers(h)],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
@@ -224,7 +225,7 @@ end
 #CHEVIE.Cache.LusztigInductionMaps=false
 
 """
-`LusztigInductionTable(R,W)`
+`lusztig_induction_table(R,W)`
 
 `R`  should be a parabolic subgroup of the Coxeter group `W` or a parabolic
 subcoset  of  the  Coxeter  coset  `W`,  in  each  case representing a Levi
@@ -241,8 +242,8 @@ julia> t=twistings(W,[1,3])
  B₃₍₁₃₎=Ã₁×A₁Φ₁
  B₃₍₁₃₎=Ã₁×A₁Φ₂
 
-julia> LusztigInductionTable(t[2],W)
-Lusztig Induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃
+julia> lusztig_induction_table(t[2],W)
+Lusztig induction from B₃₍₁₃₎=Ã₁×A₁Φ₂ to B₃
      │11⊗ 11 11⊗ 2 2⊗ 11 2⊗ 2
 ─────┼────────────────────────
 111. │     1    -1    -1    .
@@ -259,7 +260,7 @@ B₂:2 │     .     .     1   -1
 B₂:11│     1    -1     .    .
 ```
 """
-function LusztigInductionTable(LF,WF;check=true)
+function lusztig_induction_table(LF,WF;check=true)
   if !(WF isa Spets) WF=spets(WF) end
   if !(LF isa Spets) LF=spets(LF) end
   uW=UnipotentCharacters(WF)
@@ -269,8 +270,8 @@ function LusztigInductionTable(LF,WF;check=true)
   lg=repr(WF;context=:TeX=>true)
   res=InductionTable(fill(0,length(uW),length(uL)),
                      charnames(uW;TeX=true), charnames(uL;TeX=true),
-    "Lusztig Induction from \$$lu\$ to \$$lg\$",
-  Dict{Symbol,Any}(:repr=>"LusztigInductionTable($(repr(LF)),$(repr(WF)))"))
+    "Lusztig induction from \$$lu\$ to \$$lg\$",
+  Dict{Symbol,Any}(:repr=>"lusztig_induction_table($(repr(LF)),$(repr(WF)))"))
 # res=CHEVIE[:GetCached](uW, "LusztigInductionMaps", res,
 #       x->[inclusion(Group(x[:u]))[1:ngens(Group(x[:u]))],
 #       x[:u][:phi]*x[:g][:phi]^-1])
@@ -320,7 +321,7 @@ function LusztigInductionTable(LF,WF;check=true)
   return ret(scalars)
 end
 
-function HCInductionTable(HF, WF)
+function harish_chandra_induction_table(HF, WF)
   if !(WF isa Spets) WF=spets(WF) end
   uw=UnipotentCharacters(WF)
   W=Group(WF)
@@ -331,8 +332,8 @@ function HCInductionTable(HF, WF)
   lg=repr(WF;context=:TeX=>true)
   res = InductionTable(fill(0, length(uw),length(uh)),
     charnames(uw;TeX=true), charnames(uh;TeX=true),
-    "Harish-Chandra Induction from \$$lu\$ to \$$lg\$",
-  Dict{Symbol,Any}(:repr=>"HCInductionTable($(repr(HF)),$(repr(WF)))"))
+    "Harish-Chandra induction from \$$lu\$ to \$$lg\$",
+  Dict{Symbol,Any}(:repr=>"hc_induction_table($(repr(HF)),$(repr(WF)))"))
 # res = CHEVIE[:GetCached](uw, "HCInductionMaps", res, (x->begin
 #  Group(x[:u])[:rootInclusion][Group(x[:u])[:generatingReflections]] end))
 # if haskey(res, :scalar) return res end
@@ -385,7 +386,7 @@ function HCInductionTable(HF, WF)
     end
     lu=repr(Hi;context=:TeX=>true)
     lg=repr(Wi;context=:TeX=>true)
-    piece = InductionTable(InductionTable(Hi, Wi).scalar, 
+    piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],
     "Harish-Chandra Induction piece from \$$lu\$ to \$$lg\$",
@@ -395,4 +396,6 @@ function HCInductionTable(HF, WF)
   end
   return res
 end
+
+const hc_induction_table=harish_chandra_induction_table
 end
