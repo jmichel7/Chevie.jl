@@ -89,9 +89,21 @@ function closed_subsystems(W)
   P=Poset(CPoset(covers),l)
   P.show_element=function(io,x,n)
     e=Weyl.simpleroots_subsystem(W,x.elements[n])
-    print(io,isempty(e) ? "∅" : join(filter(<=(nref(W)),e)," "))
+    print(io,isempty(e) ? "∅" : join(e," "))
   end
   P
+  end
+end
+
+function closed_subsystems(W::CoxeterCoset)
+  get!(W, :closedsubsets)do
+    P=closed_subsystems(Group(W))
+    P=induced(P,filter(x->onsets(x,W.phi)==x,P.elements))
+    P.show_element=function(io,x,n)
+      e=Weyl.simpleroots_subsystem(Group(W),x.elements[n])
+      print(io,isempty(e) ? "∅" : join(e," "))
+    end
+    P
   end
 end
 

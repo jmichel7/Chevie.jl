@@ -272,9 +272,9 @@ function radicalpower(A::FiniteDimAlgebra,n)
 #   ideal.operations.RightTrace=x->0*A.field.one;
 # else 
 #   ideal.operations.LeftTrace=x->TraceMat(List(base.vectors,v->
-#     Coefficients(base,A.EltToVector(x*A.VectorToElt(v)))));
+#     Coefficients(base,Matrix(x*AlgebraElt(A,v)))));
 #   ideal.operations.RightTrace=x->TraceMat(List(base.vectors,v->
-#     Coefficients(base,A.EltToVector(A.VectorToElt(v)*x))));
+#     Coefficients(base,Matrix(A.AlgebraElt(A,v)*x))));
 # end
   push!(A.radicalpowers,ideal)
   ideal
@@ -895,10 +895,10 @@ julia> W.solomon_conjugacy
  [12]
  [13, 14, 15]
  [16]
-```
 
-gap> injection(A)(X(123));
-e(1) + e(2) + e(3) + e(8) + e(19) + e(45) + e(161) + e(361)
+julia> Algebras.injection(A)(X(1,2,3))
+e_+e₄+e₃₄+e₂₃₄+e₁₂₃₄+e₂₁₂₃₄+e₃₂₁₂₃₄+e₄₃₂₁₂₃₄
+```
 """
 function SolomonAlgebra(W::FiniteCoxeterGroup,T=Int)
   r=ngens(W)
@@ -982,12 +982,12 @@ function PermRoot.radical(A::SolomonAlgebra{T})where T
 #     A.radical.operations.LeftTrace=x->0*A.field.one
 #     A.radical.operations.RightTrace=x->0*A.field.one
 #   else 
-#     subspace=Subspace(A.vectorspace,A.EltToVector(k))
+#     subspace=Subspace(A.vectorspace,Matrix(k))
 #     base=CanonicalBasis(subspace)
 #     A.radical.operations.LeftTrace=x->TraceMat(List(base.vectors,v->
-#       Coefficients(base,A.EltToVector(x*A.VectorToElt(v)))));
+#       Coefficients(base,Matrix(x*AlgebraElt(A,v)))));
 #     A.radical.operations.RightTrace=x->TraceMat(List(base.vectors,v->
-#       Coefficients(base,A.EltToVector(A.VectorToElt(v)*x))));
+#       Coefficients(base,Matrix(AlgebraElt(A,v)*x))));
 #   end
     A.radicalpowers=[radical]
     if length(A.W)>LIM InfoAlgebra("done!\n") end
@@ -1017,13 +1017,13 @@ end
 #  od;
 #  return GrothendieckRing(W,A.field).VectorToElt(mat);
 #end;
-#
+
 #SolomonAlgebraOps.xprimePrint:=function(r) local res,i,A,f,xprime;
 #  A:=r.domain;
 #  A.xprimebasisname:="X'";
-#  res:=A.EltToVector(r);
-#  xprime:=A.EltToVector(List(A.group.solomon.subsets,A.xprimebasis));
-#  res:=A.VectorToElt(res*xprime^-1);
+#  res:=Matrix(r);
+#  xprime:=Matrix(List(A.group.solomon.subsets,A.xprimebasis));
+#  res:=AlgebraElt(A,res*xprime^-1);
 #  res:=res.coefficients;
 #  if IsBound(A.xprimeprint) then A.xprimeprint(r);
 #  else 
@@ -1063,10 +1063,10 @@ end
 #  if A.field.char=0 then return A.radical;fi;
 #  B:=GrothendieckRing(A.group,GF(A.field.char));
 #  space:=B.vectorspace;
-#  quotient:=space/Subspace(space,B.EltToVector(Radical(B).basis));
-#  mat:=List(A.basis,i->B.EltToVector(SolomonHomomorphism(i)));
+#  quotient:=space/Subspace(space,Matrix(Radical(B).basis));
+#  mat:=List(A.basis,i->Matrix(SolomonHomomorphism(i)));
 #  mat:=mat*ProjectionMatrix(quotient);
-#  A.radical:=TwoSidedIdeal(A,A.VectorToElt(NullspaceMat(mat)));
+#  A.radical:=TwoSidedIdeal(A,AlgebraElt(A,NullspaceMat(mat)));
 #  A.radicalpowers:=[A.radical];
 #  return A.radical;
 #end;

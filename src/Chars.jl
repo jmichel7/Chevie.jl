@@ -1548,13 +1548,13 @@ function induction_table(u,g)
   f=fusion_conjugacy_classes(u,g)
   function exactdiv(a,b)
     q,r=divrem(a,b)
-    if !iszero(r) error("inexactdiv($a,$b)") end
+    if !iszero(r) error("$b does not exactly divide $a") end
     q
   end
   function exactdiv(a::Cyc,b)
-    q=a//b
-    if !isone(denominator(q)) error("inexactdiv($a,$b)") end
-    numerator(q)
+    q=Cyc(conductor(a),exactdiv(a.d,b))
+    if q*b!=a error("$b does not exactly divide $a") end
+    q
   end
   cl=exactdiv.(length(u),tu.centralizers)
   sc=exactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
