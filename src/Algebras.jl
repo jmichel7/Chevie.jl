@@ -3,14 +3,17 @@ This is a port of the GAP3 package Algebras by Cédric Bonnafé.
 """
 module Algebras
 using ..Gapjm
-export FiniteDimAlgebra, AlgebraElt, basis, idempotents,
+export FiniteDimAlgebra, coefftype, AlgebraElt, basis, idempotents,
        involution, isassociative, SubAlgebra, TwoSidedIdeal, 
        loewylength, radicalpower, centralidempotents,
        PolynomialQuotientAlgebra, 
        Quaternions, 
        SolomonAlgebra, 
        ZeroHecke
-abstract type FiniteDimAlgebra{T} end
+# finite dimensional algebra over ring whose elements have type C
+abstract type FiniteDimAlgebra{C} end
+
+coefftype(A::FiniteDimAlgebra{C}) where C=C
 
 InfoAlgebra=print
 
@@ -59,7 +62,7 @@ end
 
 # properties of Algebras: have .multable, dim
 
-# Algebra element of algebra A
+# Algebra element of algebra A over ring elements of type T
 # d coefficients on basis indexed by number
 # basis[1] should be identity element
 struct AlgebraElt{TA<:FiniteDimAlgebra,T}
@@ -84,11 +87,13 @@ end
 
 (H::AlgebraHom)(h::AlgebraElt)=sum(H.images[k]*c for (k,c) in h.d)
 
+# fallback method
+Groups.gens(A::FiniteDimAlgebra)=basis(A)
+
 "`isabelian(A::FiniteDimAlgebra)` whether `A` is commutative"
 function Groups.isabelian(A::FiniteDimAlgebra)
   get!(A,:isabelian)do
-    l=applicable(gens,A) ? gens(A) : basis(A)
-    all(x*y==y*x for x in l, y in l)
+    all(x*y==y*x for x in gens(A), y in gens(A))
   end::Bool
 end
 
@@ -99,12 +104,18 @@ function isassociative(A::FiniteDimAlgebra)
   end::Bool
 end
 
-function basis(A::FiniteDimAlgebra{T})where T
+function basis(A::FiniteDimAlgebra{T};force=false)where T
   get!(A,:basis)do
-    map(i->AlgebraElt(A,ModuleElt(i=>T(1))),1:dim(A))
+    if !force && dim(A)>10000
+      error(A," is of dimension ",dim(A),"\nif you really want to do that ",
+            "call basis(A;force=true)")
+    end
+    map(i->basis(A,i),1:dim(A))
   end
 end
-basis(A::FiniteDimAlgebra,i::Integer)=basis(A)[i]
+
+basis(A::FiniteDimAlgebra{T},i::Integer) where T =
+  AlgebraElt(A,ModuleElt(Int(i)=>T(1)))
 
 Base.one(A::FiniteDimAlgebra)=basis(A,1)
 
@@ -218,9 +229,7 @@ end
 end
 
 function left_ideal(A,v::AbstractVector)
-  v=rowspace(v)
-  v=saturate_left(applicable(gens,A) ? gens(A) : basis(A),v)
-  LeftIdeal(A,v,Dict{Symbol,Any}())
+  LeftIdeal(A,saturate_left(gens(A),rowspace(v)),Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO,I::LeftIdeal)
@@ -230,7 +239,6 @@ function Base.show(io::IO,I::LeftIdeal)
 end
 
 basis(I::LeftIdeal)=I.basis
-Groups.gens(I::LeftIdeal)=basis(I)
 Weyl.dim(I::LeftIdeal)=length(basis(I))
 #----------------------------- TwoSidedIdeal ----------------------------
 @GapObj struct TwoSidedIdeal{T<:FiniteDimAlgebra}
@@ -240,10 +248,8 @@ end
 
 function twosided_ideal(A,v::AbstractVector)
   v=rowspace(v)
-  v=saturate_left(applicable(gens,A) ? gens(A) : basis(A),v)
-  if !haskey(A,:isabelian) && A.isabelian
-    v=saturate_right(applicable(gens,A) ? gens(A) : basis(A),v)
-  end
+  v=saturate_left(gens(A),v)
+  if !isabelian(A) v=saturate_right(gens(A),v) end
   TwoSidedIdeal(A,v,Dict{Symbol,Any}())
 end
 
@@ -254,7 +260,6 @@ function Base.show(io::IO,I::TwoSidedIdeal)
 end
 
 basis(I::TwoSidedIdeal)=I.basis
-Groups.gens(I::TwoSidedIdeal)=basis(I)
 Weyl.dim(I::TwoSidedIdeal)=length(basis(I))
 #------------------------------------------------------------------------
 
@@ -342,6 +347,8 @@ function SubAlgebra(A::FiniteDimAlgebra,l)
   res
 end
 
+Groups.gens(A::SubAlgebra)=A.gens
+
 function Base.show(io::IO,A::SubAlgebra)
   print(io,"SubAlgebra(",A.parent,",",inclusion.(Ref(A),gens(A)),")")
 end
@@ -382,7 +389,7 @@ Weyl.dim(A::Quaternions)=4
 
 Base.show(io::IO,A::Quaternions{T}) where T=print(io,"Quaternions(",A.a,",",A.b,")")
 
-Groups.gens(A::Quaternions)=[basis(A,2),basis(A,3)]
+Groups.gens(A::Quaternions)=basis.(Ref(A),[2,3])
 
 involution(h::AlgebraElt{<:Quaternions})=
   AlgebraElt(h.A,coefficients(h).*[1,-1,-1,-1])
@@ -413,7 +420,7 @@ function Tbasis(A::ZeroHecke)
   end
 end
 
-Groups.gens(A::ZeroHecke)=basis(A)[2:ngens(A.W)+1]
+Groups.gens(A::ZeroHecke)=basis.(Ref(A),2:ngens(A.W)+1)
 
 # 0-Hecke algebra of W with parameters 0,1
 function ZeroHecke(W::CoxeterGroup)
@@ -716,7 +723,7 @@ augmentation(r)=sum(values(r.d))
 ## De plus
 ##   A.base       = base x_I
 ##   A.parameters = parties de [1..r] (comme nombres : ex. 123 pour [1,2,3])
-##   A.basename   = "X" (par defaut)
+##   A.basisname   = "X" (par defaut)
 ##   
 ## La fonction SolomonAlgebra munit W du record W.solomon contenant 
 ## les champs suivants :

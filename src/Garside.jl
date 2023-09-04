@@ -676,8 +676,8 @@ Base.:/(M::LocallyGarsideMonoid,x,y)=/(IntervalStyle(M),M,x,y)
 Base.:/(::Interval,M,x,y)=x/y
 Base.inv(M::LocallyGarsideMonoid,x)=inv(IntervalStyle(M),M,x)
 Base.inv(::Interval,M,x)=inv(x)
-isrightdescent(M::LocallyGarsideMonoid,w,i::Integer)=isrightdescent(IntervalStyle(M),M,w,i)
-isrightdescent(::Interval,M,w,i)=isleftdescent(M,inv(w),i)
+CoxGroups.isrightdescent(M::LocallyGarsideMonoid,w,i::Integer)=isrightdescent(IntervalStyle(M),M,w,i)
+CoxGroups.isrightdescent(::Interval,M,w,i)=isleftdescent(M,inv(w),i)
 mul!(M::LocallyGarsideMonoid,x,y)=*(M,x,y)
 Base.reverse(M::LocallyGarsideMonoid,x)=reverse(IntervalStyle(M),M,x)
 Base.reverse(::Interval,M,x)=inv(x)
@@ -711,6 +711,7 @@ returns `true` if and only if the `i`-th atom of the locally Garside monoid
 `M` left-divides the simple `w`.
 """
 CoxGroups.isleftdescent(M::BraidMonoid,w,i::Int)=isleftdescent(M.W,w,i)
+CoxGroups.isrightdescent(M::BraidMonoid,w,i::Int)=isrightdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::BraidMonoid,w)=firstleftdescent(M.W,w)
 
 PermGroups.word(M::BraidMonoid,w)=word(M.W,w)
@@ -742,8 +743,8 @@ Base.one(M::GenArtinMonoid)=M.one
 CoxGroups.isleftdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
 CoxGroups.firstleftdescent(M::GenArtinMonoid,w)=firstleftdescent(M.W,w)
 
-isrightdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,inv(w),i)
-isrightascent(M::GenArtinMonoid,w,i::Int)=!isleftdescent(M.W,inv(w),i)
+CoxGroups.isrightdescent(M::GenArtinMonoid,w,i::Int)=isrightdescent(M.W,w,i)
+isrightascent(M::GenArtinMonoid,w,i::Int)=!isrightdescent(M.W,w,i)
 
 PermGroups.word(M::GenArtinMonoid,w)=word(M.W,w)
 
@@ -2051,7 +2052,7 @@ function TwistedPowerMonoid(M,n)
   TwistedPowerMonoid(δ,n*M.orderδ,M.stringδ*"_n",atoms,n,M,Dict{Symbol,Any}())
 end
 
-function isrightdescent(M::TwistedPowerMonoid,s,i::Integer)
+function CoxGroups.isrightdescent(M::TwistedPowerMonoid,s,i::Integer)
   if i==1 return s.t end
   i1,i2=divrem(i-2,length(M.M.atoms)).+1
   isrightdescent(M.M,s.v[i1],i2)

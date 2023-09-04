@@ -13,4 +13,5 @@ torus(::AbstractMatrix)
 torus(::Spets,::Integer)
 graph_automorphisms
 subspets
+Frobenius
 ```

@@ -1,10 +1,9 @@
 # A good example to see how long the programs will take for computations in
 # big Coxeter groups is the following:
 #
-#   julia> W=coxgroup(:B,5);
-#   julia> left_cells(W);
+#   julia> left_cells(coxgroup(:B,5));
 #
-# which  takes `1` second cpu time on 3Ghz computer. The computation of all
+# takes `1` second cpu time on a 3Ghz computer. The computation of all
 # Kazhdan-Lusztig  polynomials  for  type  `F₄`  takes  a bit more than~`5`
 # seconds.   Computing  the  Bruhat   order  is  a   bottleneck  for  these
 # computations; they can be speeded up by a factor of two if one does:
@@ -57,12 +56,12 @@ thus on decreasing `x` for the Bruhat order and starts at ``P_{w,w}=1``. We
 have then ``C^′_w=∑_y q_w^{-1/2} P_{y,w}T_y``.
 
 The  Chevie code  for the  Kazhdan-Lusztig bases  `C`, `D` and their primed
-versions, has been initially written by Andrew Mathas around 1994, who also
+versions,  was originally  written by  Andrew Mathas  around 1994, who also
 contributed  to  the  design  of  the programs dealing with Kazhdan-Lusztig
 bases. He also implemented some other bases, such as the Murphy basis which
-we  also  implement.  The  code  for  the  unequal parameters case has been
-written  around  1999  by  F.Digne  and J.Michel. The other Kazhdan-Lusztig
-bases are computed in terms of the `C′` basis.
+we  also implement. The code for the case of unequal parameters was written
+around  1999 by F.Digne  and J.Michel. The  other Kazhdan-Lusztig bases are
+computed in terms of the `C′` basis.
 
 When  the `ℤ[Γ]` is a  Laurent polynomial ring the  bar operation is taking
 the  inverse of  the variables,  and truncation  is keeping terms of degree
@@ -157,7 +156,8 @@ using ..Gapjm
 
 #--------- Meinolf Geck's code for KL polynomials ---------------------------
 """
- `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w.
+ `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w
+(see [Alvis1987](biblio.htm#Alv87)).
 
 Let  `ℒ` (resp.  `ℛ `)  be the  left (resp.  right) descent  set. A pair of
 elements y≤w of W is called critical if `ℒ(y)⊃ ℒ(w)` and `ℛ (y)⊃ ℛ (w)`. If
@@ -189,62 +189,61 @@ Pol{Int64}: x³+1
 ```julia-repl
 
 """
-function critical_pair(W::CoxeterGroup,y,w)::typeof(y)
-  Lw=filter(i->isleftdescent(W,w,i),eachindex(gens(W)))
-  Rw=filter(i->isleftdescent(W,inv(w),i),eachindex(gens(W)))
-  function cr(y)::typeof(y)
-    for s in Lw if !isleftdescent(W,y,s) return cr(gens(W)[s]*y) end end
-    for s in Rw if !isleftdescent(W,inv(y),s) return cr(y*gens(W)[s]) end end
-    y
+function critical_pair(W::CoxeterGroup,y,w)
+  Lw=leftdescents(W,w)
+  Rw=leftdescents(W,inv(w))
+  while true
+    found=false
+    for s in Lw if !isleftdescent(W,y,s) 
+      found=true
+      y=W(s)*y
+    end end
+    for s in Rw if !isrightdescent(W,y,s) 
+      found=true
+      y*=W(s)
+    end end
+    if !found return y end
   end
-  cr(y)
 end
 
 """
-`KLμ(W, y, w)` highest coefficient of `KLPol(W,y,w)`
+`μ(W, y, w)` highest coefficient of `KLPol(W,y,w)`
 
-`KLμ` returns the coefficient of highest possible degree `(l(w)-l(y)-1)/2`
+`Lμ` returns the coefficient of highest possible degree `(l(w)-l(y)-1)/2`
 of  `KLPol(W,y,w)`. It is `0` unless `y≤w` for the Bruhat order.
 """
-function KLμ(W::CoxeterGroup,y,w)
+function μ(W::CoxeterGroup,y,w)
   ly=length(W,y)
   lw=length(W,w)
+  if iseven(lw-ly) return 0 end
   if ly>=lw || !bruhatless(W,y,w) return 0 end
   if lw==ly+1 return 1 end
   if any(s->(isleftdescent(W,w,s) && !isleftdescent(W,y,s))
-    || (isleftdescent(W,inv(w),s) && !isleftdescent(W,inv(y),s)),
+    || (isrightdescent(W,w,s) && !isrightdescent(W,y,s)),
     eachindex(gens(W)))
     return 0
   end
-  pol=KLPol(W,y,w)
-  if degree(pol)==(lw-ly-1)//2 return pol[end]
-  else return 0 end
+  KLPol(W,y,w)[div(lw-ly-1,2)]
 end
 
 """
 `KLPol(W,y,w)` returns the Kazhdan-Lusztig polynomial `P_{y,w}` of `W`.
 
-To  compute Kazhdan-Lusztig polynomials in  the one-parameter case it seems
-that  the best  approach still  is by  using the  recursion formula  in the
-original  article KL79. One can first run  a number of standard checks on a
-given  pair  of  elements  to  see  if the computation of the corresponding
-polynomial  can be reduced to a similar computation for elements of smaller
-length.  One  such  check  involves  the  notion  of  critical  pairs  (see
-[Alvis1987](biblio.htm#Alv87)):  a pair  of elements  `w₁,w₂∈ W`  such that
-`w₁≤w₂`  is *critical* if `ℒ(w₂)  ⊆ ℒ(w₁)` and `ℛ  (w₂)⊆ ℛ (w₁)`, where `ℒ`
-and `ℛ ` denote the left and right descent set, respectively. Now if `y≤w ∈
-W`  are arbitrary elements  then there always  exists a critical pair `z≤w`
-with  `y≤z≤w` and then ``P_{y,w}=P_{z,w}``. Given two elements `y` and `w`,
-such a critical pair is found by the function 'critical_pair'. Whenever the
-polynomial  corresponding to a critical pair is computed then this pair and
-the  polynomial  are  stored  in  the  property  `:klpol` of the underlying
-Coxeter group.
+To  compute Kazhdan-Lusztig polynomials in  the one-parameter case it still
+seems   best  to   use  the   recursion  formula   in  the  original  paper
+[KL79](biblio.htm#KL79).  We first perform  a series of  checks on the pair
+`(y,w)`  to see if  the computation of  the corresponding polynomial can be
+reduced  to  a  similar  calculation  for  elements  of  smaller length. In
+particular, we reduce to the case of critical pairs (see
+`KL.critical_pair`),  and whenever  the polynomial  corresponding to such a
+pair  is  computed,  the  value  is  stored  in  a  `Dict` `W.klpol` in the
+underlying Coxeter group.
 
 ```julia-repl
 julia> W=coxgroup(:B,3)
 B₃
 
-julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
+julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:nref(W))
 9-element Vector{Vector{Pol{Int64}}}:
  [1, 1, 1]
  [1, 1, 1, 1, 1]
@@ -257,51 +256,50 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:W.N)
  [1]
 ```
 """
-function KLPol(W::CoxeterGroup,y,w)::Pol{Int}
+function KLPol(W::CoxeterGroup{T},y,w)::Pol{Int}where T
   if !bruhatless(W,y,w) return Pol(Int[],0) end
   y=critical_pair(W,y,w)
   lw=length(W,w)
   if lw-length(W,y)<=2 return Pol(1) end
-  d=get!(()->Dict{Tuple{Perm,Perm},Pol{Int}}(),W,:klpol)::Dict{Tuple{Perm,Perm},Pol{Int}}
-  if haskey(d,(w,y)) return  d[(w,y)] end
-  s=firstleftdescent(W,w)
-  v=W(s)*w
-  pol=KLPol(W,W(s)*y,v)+shift(KLPol(W,y,v),1)
-  lz=lw-2
-  while div(lw-lz,2)<=degree(pol)
-   for z in CoxGroups.elements(W,lz)::Vector{typeof(w)}
-      if div(lw-lz,2)<=degree(pol) && pol.c[div(lw-lz,2)+1]>0 &&
-        isleftdescent(W,z,s) && bruhatless(W,y,z)
-        let z=z, m=m=KLμ(W,z,v)
-        if m!=0
-          pol-=m*shift(KLPol(W,y,z),div(lw-lz,2))
-        end
+  d=get!(W,:klpol)do
+    Dict{Tuple{T,T},Pol{Int}}()
+  end::Dict{Tuple{T,T},Pol{Int}}
+  get!(d,(w,y))do
+    s=firstleftdescent(W,w)
+    v=W(s)*w
+    pol=KLPol(W,W(s)*y,v)+shift(KLPol(W,y,v),1)
+    lz=lw-2
+    while div(lw-lz,2)<=degree(pol)
+      for z in elements(W,lz)
+        if pol[div(lw-lz,2)]>0 && isleftdescent(W,z,s) && bruhatless(W,y,z)
+          m=μ(W,z,v)
+          if m!=0 pol-=m*shift(KLPol(W,y,z),div(lw-lz,2)) end
         end
       end
+      lz-=2
     end
-    lz-=2
+    pol
   end
-  d[(w,y)]=pol
 end
 
 #---------- JM & FD code for the C' basis -------------------------------------
 
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
-struct HeckeCpElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
+struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}
   d::ModuleElt{P,C} # has better merge performance than Dict
   H::TH
 end
 HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
 
-struct HeckeCElt{P,C,TH<:HeckeAlgebra}<:HeckeElt{P,C}
+struct HeckeCElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,C,P}
   d::ModuleElt{P,C} # has better merge performance than Dict
   H::TH
 end
 HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)
 
-HeckeAlgebras.basename(h::HeckeCpElt)="C'"
-HeckeAlgebras.basename(h::HeckeCElt)="C"
+HeckeAlgebras.basisname(h::HeckeCpElt)="C'"
+HeckeAlgebras.basisname(h::HeckeCElt)="C"
 
 """
 `Cpbasis(H)`
@@ -346,12 +344,11 @@ matrix between the `T`-basis and the `C`-basis is lower unitriangular, with
 monomials  in `qₛ` along the diagonal.  In the one-parameter case (all `qₛ`
 are equal to `v²`) the multiplication rules for the `C` basis are given by:
 
-`Cₛ⋅Cₓ =-(v+v^-1)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
+`Cₛ⋅Cₓ =-(v+v⁻¹)Cₓ`, if `sx<x`, and `Cₛₓ+∑ₜ μ(t,x)Cₜ` if `sx>x`.
 
-where  the sum is over  all `t` such that  `t<x, l(t)≢l(x)~mod~2 and st<t`.
-The  coefficient `μ(t,x)` is the coefficient of degree `(l(x)-l(t)-1)/2` in
-the Kazhdan--Lusztig polynomial ``P_{x,t}``.
-
+where  the sum  is over  all `t`  such that  `t<x`, `l(t)`  and `l(x)` have
+different parity and `st<t`. The coefficient `μ(t,x)` is the coefficient of
+degree `(l(x)-l(t)-1)/2` in the Kazhdan--Lusztig polynomial ``P_{x,t}``.
 ```julia-repl
 julia> W=coxgroup(:B,3);H=hecke(W,Pol(:v)^2)
 hecke(B₃,v²)
@@ -412,10 +409,10 @@ Cpbasis(h::HeckeTElt)=toKL(h,HeckeCpElt,maximum)
 
 Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
-function getCp(H::HeckeAlgebra{C,TW},w::P)where {P,C,TW}
+function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
-  cdict=get!(()->Dict{P,HeckeTElt{P,C,HeckeAlgebra{C,TW}}}(one(W)=>one(H)),H,
-             Symbol("C'->T"))::Dict{P,HeckeTElt{P,C,HeckeAlgebra{C,TW}}}
+  cdict=get!(()->Dict{P,HeckeTElt{HeckeAlgebra{C,P,TW},C,P}}(one(W)=>one(H)),H,
+           Symbol("C'->T"))::Dict{P,HeckeTElt{HeckeAlgebra{C,P,TW},C,P}}
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)
@@ -485,10 +482,10 @@ v⁻²T.+v⁻²T₂+v⁻²T₁+v⁻²T₁₂
 For general Hecke algebras, we follow formula 2.2 in 
 [Lusztig1983](biblio.htm#Lus83)
 
-`` \\overline{P̄̄_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
+`` \\overline{P_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
 
-where ``R_{x,y}=\\overline{(t_{y⁻¹}⁻¹|t_x)}`` where `t`  is the basis with
-parameters  `qₛ,-qₛ⁻¹`. It follows that ``P_{x,w}`` is the negative part of
+where ``R_{x,y}=\\overline{(t_{y^{-1}}^{-1}|t_x)}`` where `t`  is the basis with
+parameters  ``q_s,-q_s^{-1}``. It follows that ``P_{x,w}`` is the negative part of
 ``∑_{x<y≤w}  R_{x,y} P_{y,w}`` which  allows to compute  it by induction on
 `l(w)-l(x)`.
 """
@@ -623,28 +620,26 @@ Base.:(==)(a::LeftCell,b::LeftCell)=duflo(a)==duflo(b)
 
 Base.in(w,c::LeftCell)=w in elements(c)
 
-# KLμMat(W, list)  . . . . (symmetrized) matrix of highest coefficients 
+# μMat(W, list)  . . . . (symmetrized) matrix of highest coefficients 
 # μ(x,y) of Kazhdan-Lusztig polynomials P_{x,y} for x,y∈ list
-function KLμMat(W,c)
+function μMat(W,c)
   w0c=longest(W).*c
   lc=length.(Ref(W),c)
   m=zeros(Int,length(c),length(c))
-  for k in 0:maximum(lc)-minimum(lc)
-    for i in eachindex(c)
-      for j in filter(j->lc[i]-lc[j]==k,eachindex(c))
-        if lc[i]+lc[j]>W.N m[i,j]=KLμ(W,w0c[i],w0c[j])
-        else m[i,j]=KLμ(W,c[j],c[i])
-        end
+  for i in eachindex(c)
+    for j in eachindex(c)
+      if lc[i]>=lc[j] 
+        m[i,j]=lc[i]+lc[j]>nref(W) ? μ(W,w0c[i],w0c[j]) : μ(W,c[j],c[i])
         m[j,i]=m[i,j]
       end
     end
   end
-  return m
+  m
 end
 
 function μ(c::LeftCell)
   get!(c,:mu)do
-    KLμMat(c.group,elements(c))
+    μMat(c.group,elements(c))
   end
 end
 
@@ -740,7 +735,7 @@ function OldLeftCellRepresentatives(W)
   while length(rw)>0
     c=rw[1].elements
     InfoChevie("#I R(w)=",rw[1].rd," : #Elts=",length(c))
-    mu=KLμMat(W,c)
+    mu=μMat(W,c)
     n=1:length(c)
     Lleq=[x==y || (mu[x,y]!=0 && any(i->isleftdescent(W,c[x],i) &&
        !isleftdescent(W,c[y],i),eachindex(gens(W)))) for x in n, y in n]
@@ -816,7 +811,7 @@ julia> left_cells(W)
 
 Printing such a record displays the character afforded by the left cell and
 its  Duflo involution; the Duflo involution `r`  is printed as a subset `I`
-of    `1:W.N`   such    that   `r=longest(reflection_subgroup(W,I))`,   see
+of   `1:nref(W)`   such   that  `r=longest(reflection_subgroup(W,I))`,  see
 `describe_involution`.
 
 If  a second argument `i` is given, the program returns only the left cells

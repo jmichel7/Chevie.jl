@@ -1241,30 +1241,6 @@ function on_unipotents(W,aut)
   Perm(t,t1,dims=2)
 end
 
-"""
-    Frobenius(WF)(x::UniChar,i=1)
-
-If   `WF`  is  a  Coxeter  coset  associated  to  the  Coxeter  group  `W`,
-`Frobenius(WF)`  returns a  function `F`  such that  `x↦ F(x,i=1)` does the
-automorphism induced by `WF.phi^i` on the unipotent character `x`
-
-```julia-repl
-julia> W=coxgroup(:D,4)
-D₄
-
-julia> WF=spets(W,Perm(1,2,4))
-³D₄
-
-julia> u=UniChar(W,2)
-[D₄]:<11->
-
-julia> Frobenius(WF)(u)
-[D₄]:<.211>
-
-julia> Frobenius(WF)(u,-1)
-[D₄]:<11+>
-```
-"""
 function Cosets.Frobenius(x::UniChar, phi)
   W=x.group
   UniChar(W,permute(x.v,inv(on_unipotents(W,phi))))

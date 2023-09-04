@@ -799,6 +799,33 @@ function PermGroups.classreps(W::Spets)
   end
 end
 
+"""
+    Frobenius(WF)(x,i=1)
+
+If   `WF`  is  a  Coxeter  coset  associated  to  the  Coxeter  group  `W`,
+`Frobenius(WF)`  returns a  function `F`  such that  `x↦ F(x,i=1)` does the
+automorphism induced by `WF.phi^i` on the object `x`.
+
+```julia-repl
+julia> W=coxgroup(:D,4)
+D₄
+
+julia> WF=spets(W,Perm(1,2,4))
+³D₄
+
+julia> u=UniChar(W,2)
+[D₄]:<11->
+
+julia> F=Frobenius(WF);F(u)
+[D₄]:<.211>
+
+julia> F(u,-1)
+[D₄]:<11+>
+
+julia> F(1)
+4
+```
+"""
 function Frobenius(WF::CoxeterCoset)
   f(w,i=1)=Frobenius(w,WF.phi^i)
 end

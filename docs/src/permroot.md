@@ -25,7 +25,7 @@ cartan(::PermRootGroup,i,j)
 refls
 Reflection
 reflections
-reflength(::PermRootGroup,::Perm)
+reflection_length(::PermRootGroup,::Perm)
 simple_conjugating
 simple_reps
 diagram

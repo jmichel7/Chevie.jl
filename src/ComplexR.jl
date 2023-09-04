@@ -187,14 +187,14 @@ end
 function Gapjm.degrees(t::TypeIrred)
   if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
   d=getchev(t.orbit[1],:ReflectionDegrees)
-# Let  t.scalar=[s_1,..,s_r],  where  r=length(t.orbit)  and  let  p be the
-# PhiFactor   of  t.twist  associated  to  the  reflection  degree  d_i  of
+# Let   t.scalar=[s₁,…,sᵣ],  where  r=length(t.orbit)  and  let  p  be  the
+# PhiFactor   of  t.twist  associated  to   the  reflection  degree  dᵢ  of
 # t.orbit[1].   If   G0   is   the   Spets  described  by  t.orbit[1],  and
 # G1:=Ennola(Product(t.scalar),G0)  then G is isomorphic  to the descent of
 # scalars  of G1. According to spets 1.5, a Phifactor of Ennola(zeta,G0) is
-# \zeta^{d_i}  times  that  of  G0;  and  by  spets  1.5  or [Digne-Michel,
-# parabolic A.1] those of an a-descent of scalars are
-# \zeta_a^j\zeta_i^{1/a} (all the a-th roots of \zeta_i).
+# ζ^dᵢ  times that of G0; and by spets 1.5 or [Digne-Michel, parabolic A.1]
+# those  of an a-descent of scalars are  ζₐʲζᵢ^{1/a} (all the a-th roots of
+# ζᵢ).
   if order(t.twist)>1
    f=getchev(t,:PhiFactors)
    if isnothing(f) return nothing end
@@ -447,7 +447,8 @@ function Groups.position_class(r::Reflection)
   end::Int
 end
 
-function invert_word(W,w) # take pains to have no negative numbers
+# invert word w in gens(w) to a positive word in gens(w)
+function invert_word(W,w)
   if isempty(w) return w end
   lastg=0
   mul=0
@@ -461,7 +462,7 @@ function invert_word(W,w) # take pains to have no negative numbers
   end
   if lastg!=0 push!(seq,lastg=>mul) end
   o=ordergens(W)
-  vcat(map(((i,mul),)->fill(i,o[i]-mul),seq)...)
+  [i for (i,mul) in seq for y in 1+mul:o[i]]
 end
 
 """
@@ -503,12 +504,11 @@ function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp})
         w=vcat(invert_word(W,w),[rep],w)
       end
       for j in 1:e-1
-        push!(res[j],Reflection(W,i,E(e,j),vcat(fill(w,j)...),
-                                Dict{Symbol,Any}()))
+        push!(res[j],Reflection(W,i,E(e,j),repeat(w,j),Dict{Symbol,Any}()))
       end
     end
     vcat(res...)
-  end
+   end::Vector{Reflection{typeof(W)}}
 end
   
 Groups.word(r::Reflection)=r.word

@@ -352,7 +352,7 @@ end
 Like `cartan`, the function `coxmat` can be defined from the type and rank
 of a finite Coxeter group.
 """
-CoxGroups.coxmat(t::Symbol,r::Integer,b::Integer=0)=coxmat(cartan(t,r,b))
+CoxGroups.coxeter_matrix(t::Symbol,r::Integer,b::Integer=0)=coxeter_matrix(cartan(t,r,b))
 
 """
 `two_tree(m)`
@@ -674,8 +674,8 @@ describe_involution(W,w)=simpleroots_subsystem(W,
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-dim(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
-const dimension=dim
+dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
+const dim=dimension
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 @inline Base.parent(W::FiniteCoxeterGroup)=W
 Base.in(w,W::FiniteCoxeterGroup)=w in W.G
@@ -754,6 +754,7 @@ end
 
 @inline CoxGroups.nref(W::FCG)=W.N
 CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
+CoxGroups.isrightdescent(W::FCG,w,i::Integer)=preimage(i,w)>W.N
 # the next is good also:
 #CoxGroups.isleftdescent(W::FCG,w,i::Int)=action(W,i,w)>nref(W)
 
@@ -1100,6 +1101,7 @@ PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
 CoxGroups.isleftdescent(W::FCSG,w,i::Integer)=inclusion(W,i)^w>nref(parent(W))
 # next is 25% slower
 #CoxGroups.isleftdescent(W::FCSG,w,i::Integer)=action(W,i,w)>nref(W)
+CoxGroups.isrightdescent(W::FCSG,w,i::Integer)=preimage(inclusion(W,i),w)>nref(parent(W))
 
 function rootlengths(W::FCSG)
   get!(W,:rootlengths)do

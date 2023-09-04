@@ -17,6 +17,7 @@ representations(::Union{Spets, FiniteCoxeterGroup, PermRootGroup})
 induction_table
 j_induction_table
 J_induction_table
+schur_functor
 detPerm
 conjPerm
 ```

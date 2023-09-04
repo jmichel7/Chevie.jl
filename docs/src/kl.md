@@ -6,6 +6,7 @@ Pages=["kl.md"]
 ```@docs
 KL
 KLPol
+KL.critical_pair
 Tbasis(::KL.HeckeCpElt)
 Cbasis
 Cpbasis

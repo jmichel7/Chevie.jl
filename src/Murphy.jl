@@ -84,7 +84,7 @@ do not work, even if `Murphy.SpechtModules[]=false` is set later.
 """
 const SpechtModules=Ref(false)
 
-struct HeckeMElt{C,TH}<:HeckeElt{Tuple{Int,Int,Int},C}
+struct HeckeMElt{C,TH}<:HeckeElt{TH,C,Tuple{Int,Int,Int}}
   d::ModuleElt{Tuple{Int,Int,Int},C} # has better merge performance than Dict
   H::TH
 end
@@ -92,7 +92,7 @@ end
 HeckeAlgebras.clone(h::HeckeMElt,d)=HeckeMElt(d,h.H)
 Base.zero(::Type{HeckeMElt},H::HeckeAlgebra)=HeckeMElt(zero(ModuleElt{Tuple{Int,Int,Int},coefftype(H)}),H)
 Base.zero(h::HeckeMElt)=zero(HeckeMElt,h.H)
-basename(h::HeckeMElt)="M"
+HeckeAlgebras.basisname(h::HeckeMElt)="M"
 
 # Create H.Murphy with various components.
 # initMurphy(H) is called the first time that the Murphy basis is used.
@@ -246,8 +246,8 @@ function Base.show(io::IO, h::HeckeMElt)
       TeX ? TeXTableau(u)*"\n" : string("S(",StringTableau(u),")")
     else 
      t=H.Murphy.Tableaux[mu][s]
-      if TeX string(basename(h),"(",join(TeXTableau.((t,u)),", "),")\n")
-      else string(basename(h),"(",StringTableau(t),", ",StringTableau(u),")")
+      if TeX string(HeckeAlgebras.basisname(h),"(",join(TeXTableau.((t,u)),", "),")\n")
+      else string(HeckeAlgebras.basisname(h),"(",StringTableau(t),", ",StringTableau(u),")")
       end
     end
   end

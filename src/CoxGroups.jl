@@ -139,13 +139,12 @@ permutation group, given its type.
 module CoxGroups
 
 export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
+  isleftdescent, isrightdescent,
   longest, braid_relations, 
   coxeter_matrix, coxmat, 
   coxeter_symmetric_group, coxsym, CoxSym,
   coxeter_group, coxgroup,
   standard_parabolic_class, inversions, degrees, FiniteCoxeterGroup
-
-export isleftdescent # 'virtual' methods (exist only for concrete types)
 
 using ..Gapjm
 #-------------------------- Coxeter groups
@@ -186,8 +185,8 @@ julia> leftdescents(W,Perm(1,3))
  2
 ```
 """
-function leftdescents(W::CoxeterGroup{T},w)where T
-  filter(i->isleftdescent(W,w,i),eachindex(gens(W)::Vector{T}))
+function leftdescents(W::CoxeterGroup,w)
+  filter(i->isleftdescent(W,w,i),eachindex(gens(W)))
 end
 
 isrightdescent(W::CoxeterGroup,w,i)=isleftdescent(W,inv(w),i)
@@ -924,12 +923,11 @@ PermRoot.refls(W::CoxSym,i)=W.refls[i]
 PermRoot.rank(W::CoxSym)=ngens(W)
 
 """
-`isleftdescent(W::CoxeterGroup,w,i)`
+`isleftdescent(W::CoxeterGroup,w,i::Integer)`
 
-returns  `true`  if  and  only  if  the `i`-th generating reflection of the
-Coxeter  group `W` is  in the left  descent set of  the element `w` of `W`,
-that is iff `length(W,W(i)*w)<length(W,w)`.
-
+returns  `true` iff the  `i`-th generating reflection  of the Coxeter group
+`W`  is in  the left  descent set  of the  element `w`  of `W`, that is iff
+`length(W,W(i)*w)<length(W,w)`.
 ```julia-repl
 julia> W=coxsym(3)
 𝔖 ₃
@@ -941,6 +939,25 @@ true
 function isleftdescent(W::CoxSym,w,i::Integer)
  j,k=W.inversions[i]
  j^w>k^w
+end
+
+"""
+`isrightdescent(W::CoxeterGroup,w,i::Integer)`
+
+returns  `true` iff the  `i`-th generating reflection  of the Coxeter group
+`W`  is in the  right descent set  of the element  `w` of `W`,  that is iff
+`length(W,w*W(i))<length(W,w)`.
+```julia-repl
+julia> W=coxsym(3)
+𝔖 ₃
+
+julia> isrightdescent(W,Perm(1,2),1)
+true
+```
+"""
+function isrightdescent(W::CoxSym,w,i::Integer)
+ j,k=W.inversions[i]
+ preimage(j,w)>preimage(k,w)
 end
 
 degrees(W::CoxSym)=2:ngens(W)+1

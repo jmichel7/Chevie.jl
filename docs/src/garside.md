@@ -8,6 +8,7 @@ LocallyGarsideMonoid
 GarsideMonoid
 isleftdescent(::BraidMonoid,::Any,::Int)
 leftdescents(::Garside.LocallyGarsideElt)
+rightascents
 left_divisors
 leftgcd
 rightgcd

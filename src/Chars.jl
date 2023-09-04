@@ -1546,18 +1546,18 @@ function induction_table(u,g)
   tu=CharTable(u)
   tg=CharTable(g)
   f=fusion_conjugacy_classes(u,g)
-  function exactdiv(a,b)
+  function myexactdiv(a,b)
     q,r=divrem(a,b)
     if !iszero(r) error("$b does not exactly divide $a") end
     q
   end
-  function exactdiv(a::Cyc,b)
+  function myexactdiv(a::Cyc,b)
     q=Cyc(conductor(a),exactdiv(a.d,b))
     if q*b!=a error("$b does not exactly divide $a") end
     q
   end
-  cl=exactdiv.(length(u),tu.centralizers)
-  sc=exactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
+  cl=myexactdiv.(length(u),tu.centralizers)
+  sc=myexactdiv.(tu.irr*Diagonal(cl)*tg.irr[:,f]',length(u))
   InductionTable(permutedims(sc),tg.charnames,tu.charnames,
   "Induction table from \$"*TeXs(u)*"\$ to \$"*TeXs(g)*"\$",
   Dict{Symbol,Any}(:repr=>string("induction_table(",u,",",g,")")))

@@ -17,6 +17,10 @@ abelian_gens
 abelian_invariants
 Combinat.blocks(::Group,::Integer)
 ```
+# Extensions to linear algebra
+```@docs
+eigmat
+```
 # Utilities
 ```@docs
 Util

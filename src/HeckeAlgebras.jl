@@ -87,7 +87,7 @@ hecke(A₂,0)
 julia> T=Tbasis(H);            # Create the `T` basis
 
 julia> b=T.(elements(W))       # the basis
-6-element Vector{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+6-element Vector{HeckeTElt{HeckeAlgebra{Int64, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Int64, Perm{Int16}}}:
  T.
  T₁
  T₂
@@ -96,7 +96,7 @@ julia> b=T.(elements(W))       # the basis
  T₁₂₁
 
 julia> b*permutedims(b)       # multiplication table
-6×6 Matrix{HeckeTElt{Perm{Int16}, Int64, HeckeAlgebra{Int64, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+6×6 Matrix{HeckeTElt{HeckeAlgebra{Int64, Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}, Int64, Perm{Int16}}}:
  T.    T₁     T₂     T₁₂    T₂₁    T₁₂₁
  T₁    -T₁    T₁₂    -T₁₂   T₁₂₁   -T₁₂₁
  T₂    T₂₁    -T₂    T₁₂₁   -T₂₁   -T₁₂₁
@@ -205,7 +205,7 @@ in GAP3 the following function takes 920ms
 ```
 test_w0:=function(n)local W,T,H;
   W:=CoxeterGroup("A",n);H:=Hecke(W,X(Rationals));T:=Basis(H,"T");
-  T(LongestCoxeterWord(W))^2;
+  return T(LongestCoxeterWord(W))^2;
 end;
 ```
 """
@@ -213,14 +213,17 @@ module HeckeAlgebras
 using ..Gapjm
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
-  schur_element, isrepresentation, alt, coefftype, HeckeCoset,
+  schur_element, isrepresentation, alt, HeckeCoset,
   FactorizedSchurElements, factorized_schur_element, VFactorSchurElement,
   factorized_schur_elements
 
-@GapObj struct HeckeAlgebra{C,TW}
+@GapObj struct HeckeAlgebra{C,T,TW<:Group{T}}<:FiniteDimAlgebra{C}
   W::TW
   para::Vector{Vector{C}}
 end
+
+Algebras.dim(H::HeckeAlgebra)=length(H.W)
+Algebras.basis(H::HeckeAlgebra,i::Integer)=Tbasis(H)(elements(H.W)[i])
 
 """
 `hecke( W [, parameter];rootpara=r)`
@@ -386,8 +389,6 @@ function rootpara(H::HeckeAlgebra)
 end
 
 equalpara(H::HeckeAlgebra)::Bool=H.equal
-
-coefftype(H::HeckeAlgebra{C}) where C=C
 
 function simplify_para(para)
   tr(p)=all(i->p[i]==E(length(p),i-1),2:length(p)) ? p[1] : p
@@ -705,7 +706,8 @@ function central_monomials(H::HeckeAlgebra)
 end
 
 #--------------------------------------------------------------------------
-abstract type HeckeElt{P,C} end # P=typeof(keys) [Perms] C typeof(coeffs)
+# TH= typeof Algebra P=typeof(keys) [Perms] C typeof(coeffs)
+abstract type HeckeElt{TH, C, P} end 
 
 Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
@@ -718,7 +720,7 @@ Base.broadcastable(h::HeckeElt)=Ref(h)
 function Base.show(io::IO, h::HeckeElt)
   function showbasis(io::IO,e)
     w=word(h.H.W,e)
-    res=basename(h)
+    res=basisname(h)
     if hasdecor(io) res*=isempty(w) ? "." : "_"*joindigits(w,"{}";always=true)
     else            res*="("*join(w,",")*")"
     end
@@ -740,31 +742,28 @@ Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 #--------------------------------------------------------------------------
 const MM=ModuleElt # HModuleElt is 3 times slower
 
-struct HeckeTElt{P,C1,TH}<:HeckeElt{P,C1}
-  d::MM{P,C1} # has better merge performance than Dict
+struct HeckeTElt{TH,C,P}<:HeckeElt{TH,C,P}
+  d::MM{P,C} # has better merge performance than Dict
   H::TH
 end
 
-function Groups.gens(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
+function Groups.gens(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
   get!(H,:gens)do
     map(i->Tbasis(H,H.W(i)),1:ngens(H.W))
-  end::Vector{HeckeTElt{T,C,HeckeAlgebra{C,TW}}}
+  end::Vector{HeckeTElt{HeckeAlgebra{C,T,TW},C,T}}
 end
 
 clone(h::HeckeTElt,d)=HeckeTElt(d,h.H) # d could be different type from h.d
-basename(h::HeckeTElt)="T"
+basisname(h::HeckeTElt)="T"
 
-function Base.one(H::HeckeAlgebra{C,TW})where {C,TW<:Group{T}} where T
+function Base.one(H::HeckeAlgebra{C,T,TW})where {C,T,TW}
   get!(H,:one)do
     Tbasis(H,one(H.W))
-  end::HeckeTElt{T,C,HeckeAlgebra{C,TW}}
+  end::HeckeTElt{HeckeAlgebra{C,T,TW},C,T}
 end
 
 Base.one(h::HeckeTElt)=one(h.H)
-
-function Base.zero(H::HeckeAlgebra)
-  HeckeTElt(zero(MM{typeof(one(H.W)),coefftype(H)}),H)
-end
+Base.zero(H::HeckeAlgebra{C,T}) where {C,T} =HeckeTElt(zero(MM{T,C}),H)
 
 """
 `Tbasis(H::HeckeAlgebra)`
@@ -867,11 +866,8 @@ function Base.inv(a::HeckeTElt)
   inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
 end
 
-function Cosets.Frobenius(x::HeckeElt,phi)
-  y=deepcopy(x)
-  y.d.d .= [Frobenius(k,phi)=>v for (k,v) in y.d.d]
-  y
-end
+Cosets.Frobenius(x::HeckeElt,phi)=
+     clone(x,MM(Frobenius(k,phi)=>v for (k,v) in x.d))
 
 """
 `alt(a::HeckeTElt)`
@@ -899,7 +895,7 @@ end
 """
 `α(a::HeckeTElt)`
 
-the anti-involution on the Hecke algebra defined by `T_w↦T_inv(w)`.
+the anti-involution on the Hecke algebra defined by ``T_w↦ T_{inv(w)}``.
 """
 Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
 
@@ -907,13 +903,13 @@ Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
 `class_polynomials(h::HeckeElt)`
 
 returns  the  class  polynomials  of  the  element `h` of the Iwahori-Hecke
-algebra  or Hecke coset `H=h.H` with respect to the `T` basis for a set `R`
+algebra or coset given by `h.H` with respect to the `T` basis for a set `R`
 of  representatives  of  minimal  length  in  the  conjugacy classes of the
-Coxeter  group `W=H.W`.  Such minimal  length representatives  are given by
-`representative.(conjugacy_classes(W))`.    The   vector   `p`   of   these
-polynomials has the property that if `X` is the matrix of the values of the
-irreducible characters of `H` on `T_w` (for `w∈ R`), then the product `X*p`
-is the list of values of the irreducible characters on `h`.
+Coxeter group or coset `H.W`. Such minimal length representatives are given
+by  `classreps(H.W)`. The vector `p` of  these polynomials has the property
+that  if `X` is the  matrix of the values  of the irreducible characters of
+`H`  on `T_w` (for `w∈ R`), then the product `X*p` is the list of values of
+the irreducible characters on `h`.
 
 ```julia-repl
 julia> W=coxsym(4)
@@ -955,7 +951,7 @@ function class_polynomials(h::HeckeElt)
       for s in leftdescents(W,w)
         sw=W(s)*w
         sws=sw*W(s)
-        if isleftdescent(W,inv(sw),s)
+        if isrightdescent(W,sw,s)
           q1,q2=para[s]
           return (elm=[sws,sw],coeff=[-q1*q2,q1+q2])
         elseif !(sws in orbit) push!(orbit,sws)
@@ -1497,12 +1493,12 @@ function isrepresentation(H::HeckeCoset,r)
       eachindex(r.gens)) && isrepresentation(H.H,r.gens)
 end
 
-struct HeckeTCElt{P,C1}<:HeckeElt{P,C1}
-  d::MM{P,C1} # has better merge performance than Dict
-  H::HeckeCoset
+struct HeckeTCElt{TH<:HeckeCoset,C,P}<:HeckeElt{TH,C,P}
+  d::MM{P,C} # has better merge performance than Dict
+  H::TH
 end
 
-basename(h::HeckeTCElt)="T"
+basisname(h::HeckeTCElt)="T"
 clone(h::HeckeTCElt,d)=HeckeTCElt(d,h.H)
 
 Tbasis(H::HeckeCoset)=(x...)->isempty(x) ? one(H) : Tbasis(H,x...)
@@ -1511,4 +1507,5 @@ Tbasis(H::HeckeCoset,w::Vector{<:Integer})=Tbasis(H,H.W(w...))
 Tbasis(H::HeckeCoset,h::HeckeTCElt)=h
 Tbasis(H::HeckeCoset,h::HeckeElt)=Tbasis(h)
 Tbasis(H::HeckeCoset,w)=HeckeTCElt(MM(w=>one(coefftype(H.H))),H)
+
 end
