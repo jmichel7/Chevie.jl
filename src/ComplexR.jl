@@ -356,8 +356,16 @@ end
 group `W`. The fields are `W`, the index of a root for `r`, the non-trivial
 eigenvalue of `r`, and a word for `r` in the generating reflections of `W`.
 ```julia-repl
-julia> r=reflections(crg(8))[7]
+julia> W=crg(8);
+
+julia> r=reflections(W)[7]
 Reflection(G₈,1,-1)
+
+julia> r==Reflection(W,1,-1) # construct with group, root number, eigenvalue
+true
+
+julia> Reflection(W,1) # omitting the eigenvalue gets the distinguished refl.
+Reflection(G₈,1,ζ₄)
 
 julia> r.eigen # the non-trival eigenvalue, as a Root1
 Root1: -1
@@ -381,6 +389,9 @@ julia> hyperplane(r) # the fixed hyperplane, as a rowspace
 1×2 Matrix{Cyc{Rational{Int64}}}:
  1  0
 
+julia> hyperplane(r)*Matrix(r)==hyperplane(r)
+true
+
 julia> isdistinguished(r) # r is not distinguished
 false
 
@@ -395,6 +406,9 @@ julia> hyperplane_orbit(r) # r is in the first hyperplane orbit
 
 julia> position_class(r) # the index of the conjugacy class of r in W 
 15
+
+julia> simple_rep(r) # smallest root index affording a conjugate reflection
+1
 
 julia> word(r) # a word in the generators for r
 2-element Vector{Int64}:
@@ -419,7 +433,7 @@ end
 
 function Base.Matrix(r::Reflection)
   get!(r,:matrix)do
-    reflectionmat(root(r),coroot(r))
+    reflectionMatrix(root(r),coroot(r))
   end
 end
 
@@ -463,6 +477,16 @@ function invert_word(W,w)
   if lastg!=0 push!(seq,lastg=>mul) end
   o=ordergens(W)
   [i for (i,mul) in seq for y in 1+mul:o[i]]
+end
+
+function Reflection(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp},i::Integer,eig)
+  if !(eig isa Root1) eig=Root1(eig) end
+  p=findfirst(r->refls(W,r.rootno)==refls(W,i) && r.eigen==eig,reflections(W))
+  reflections(W)[p]
+end
+
+function Reflection(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp},i::Integer)
+  Reflection(W,i,E(order(refls(W,i))))
 end
 
 """

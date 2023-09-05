@@ -5,6 +5,7 @@ Pages=["coxgroups.md"]
 ```@docs
 CoxGroups
 isleftdescent(::CoxSym,::Any,::Int)
+isrightdescent
 firstleftdescent
 leftdescents(::CoxeterGroup,w)
 word(::CoxeterGroup,::Any)

@@ -545,7 +545,7 @@ function twistings(W::FiniteCoxeterGroup)
     error(W," must not be a proper subgroup of another reflection group")
   end
   l=elements(graph_automorphisms(refltype(W)))
-  l=filter(y->all(isinteger,matY(W.G,y)),l)
+  l=filter(y->all(isinteger,MatrixY(W.G,y)),l)
   spets.(Ref(W),l)
 end
 

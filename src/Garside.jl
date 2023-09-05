@@ -971,7 +971,8 @@ julia> fraction(b)
 fraction(b::GarsideElt)=(denominator(b),numerator(b))
 
 function Base.getindex(x::GarsideElt{T},i::Integer)::T where T
-  if i<=x.pd return x.pd==0 ? one(x.M) : x.M.δ
+  if x.pd<0 error("only defined for monoid") end
+  if 1<=i<=x.pd return x.M.δ
   elseif i>x.pd+length(x.elm) return one(x.M)
   else return x.elm[i-x.pd]
   end

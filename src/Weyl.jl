@@ -691,7 +691,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 @forward FiniteCoxeterGroup.G PermRoot.action, PermRoot.cartan, 
  PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
  PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
- PermRoot.invariant_form, PermRoot.matY, PermRoot.PermX, PermRoot.PermY, 
+ PermRoot.invariant_form, PermRoot.MatrixY, PermRoot.PermX, PermRoot.PermY, 
  PermRoot.rank, PermRoot.roots, PermRoot.reflchar,
 #PermRoot.reflections,
  PermRoot.refls,
@@ -852,7 +852,7 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
-  mats=map(reflectionmat,eachrow(rr),eachrow(cr)) # reflrep
+  mats=map(reflectionMatrix,eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
   pr=sortPerm(r)
   gens=map(M->sortPerm(Ref(transpose(M)).*r)\pr,mats)

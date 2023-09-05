@@ -197,12 +197,13 @@ julia> fakedegrees(W,Pol(:x))
 module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
-  simple_conjugating, refls, unique_refls, reflection, reflectionmat,
+  simple_conjugating, refls, unique_refls, reflection, reflectionMatrix,
   Diagram, diagram, refltype, cartan, independent_roots, inclusion, 
-  inclusiongens, restriction, coroot, TypeIrred, refleigen, reflchar,
-  bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
+  inclusiongens, restriction, coroot, TypeIrred, 
+  refleigen, reflection_eigenvalues,
+  reflchar, bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
-  invariants, matY, PermY, simpleroots, simplecoroots, action, radical,
+  invariants, MatrixY, PermY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, 
   reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
@@ -222,7 +223,7 @@ function coroot(root::AbstractVector,eigen::Number=-1)
 end
 
 """
-`reflectionmat(root,  coroot)` the  matrix of  the reflection  with a given
+`reflectionMatrix(root,  coroot)` the  matrix of  the reflection  with a given
 root and coroot.
 
 A (complex) reflection is a finite order element `s` of `GL(V)`, the linear
@@ -234,13 +235,13 @@ that `rᵛ(r)=1-ζ` (a *coroot* of `s`) then `s` is given by `x↦ x-rᵛ(x)r`.
 
 A  way  of  specifying  `s`  is  by  giving  a root and a coroot, which are
 uniquely determined by `s` up to multiplication of the root by a scalar and
-of the coroot by the inverse scalar. The function `reflectionmat` gives the
+of the coroot by the inverse scalar. The function `reflectionMatrix` gives the
 matrix  of the corresponding reflection in the standard basis of `V`, where
 the  `root` and the `coroot` are vectors given in the standard bases of `V`
 and `Vᵛ`, so the pairing `rᵛ(r)` is obtained as `transpose(root)*coroot`.
 
 ```
-julia> r=reflectionmat([1,0,0],[2,-1,0])
+julia> r=reflectionMatrix([1,0,0],[2,-1,0])
 3×3 Matrix{Int64}:
  -1  0  0
   1  1  0
@@ -263,27 +264,27 @@ As  we see in the last lines, in  Julia a matrix operates from the right on
 the  vector space `V`  of row vectors  and from the  left on the dual space
 `Vᵛ` of column vectors.
 """
-function reflectionmat(root::AbstractVector,coroot::AbstractVector)
+function reflectionMatrix(root::AbstractVector,coroot::AbstractVector)
   m=coroot*transpose(root)
   one(m)-m
 end
 
 """
-`reflectionmat(r, ζ=-1)`
+`reflectionMatrix(r, ζ=-1)`
 
 returns the matrix of the complex reflection determined by the root `r` and
 the  eigenvalue `ζ` when the  vector space and its  dual are identified via
 the  scalar product `<x,y>=transpose(x)*y`; the coroot `rᵛ` is then equal
 to the linear form `x->(1-ζ)<x,r>/<r,r>`.
 ```julia-repl
-julia> reflectionmat([1,0,-E(3,2)])
+julia> reflectionMatrix([1,0,-E(3,2)])
 3×3 Matrix{Cyc{Rational{Int64}}}:
   0  0  ζ₃²
   0  1    0
  ζ₃  0    0
 ```
 """
-function reflectionmat(r::AbstractVector,l::Number=-1)
+function reflectionMatrix(r::AbstractVector,l::Number=-1)
   m=(1-l)*transpose(r*r')//(r'*r)
   one(m)-m
 end
@@ -308,7 +309,7 @@ named tuple with four fields:
 
 `.isOrthogonal`: a boolean which is `true` if and only if `s` is orthogonal
   with  respect to the usual scalar product  (then `s` is determined by the
-  root and the eigenvalue as `reflectionmat(.root,.eigenvalue)`)
+  root and the eigenvalue as `reflectionMatrix(.root,.eigenvalue)`)
 
 ```julia-repl
 julia> reflection([-1 0 0;1 1 0;0 0 1])
@@ -590,22 +591,24 @@ simple_reps(W::PermRootGroup,i)=simple_reps(W)[i]
 """
 `refls(W::ComplexReflectionGroup)`
 
-a  list of same length as  `W.roots` giving the corresponding distinguished
-reflections. In particular this list is much longer than `unique(refls(W))`
-since in general there are several roots corresponding to a reflection.
+a  list of same length as `W.roots` giving the corresponding element of `W`
+representing  a distinguished reflection.  In particular this  list is much
+longer  than `unique(refls(W))`  since in  general there  are several roots
+corresponding to a reflection.
 """
 refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Perm{T1}}
 
 """
-`refls(W,i)`
+`refls(W::ComplexReflectionGroup,i)`
 
-reflection for `i`-th root(s) of `W` (`i` can be an index or a vector of indices)
+the  element(s) of `W` representing  the distinguished reflection(s) around
+the `i`-th root(s) of `W` (`i` can be an index or a vector of indices)
 """
 refls(W::PermRootGroup,i::Integer)=i<=ngens(W) ? gens(W)[i] : refls(W)[i]
 refls(W::PermRootGroup,i::AbstractVector)=map(j->refls(W,j),i)
 
 """
-`simple_conjugating(W)`
+`simple_conjugating(W::ComplexReflectionGroup)`
 
 For each index `i` of a root, an element `w∈ W` such that
 `restriction(W,inclusion(W,simple_reps(W,i))^w)==i`
@@ -613,6 +616,12 @@ For each index `i` of a root, an element `w∈ W` such that
 """
 simple_conjugating(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:simple_conjugating)::Vector{Perm{T1}}
 
+"""
+`unique_refls(W::ComplexReflectionGroup)`
+A  sublist of `1:length(roots(W))` such  that the distinguished reflections
+around  the  corresponding  roots  reach  one  time only each distinguished
+reflection of `W`.
+"""
 unique_refls(W)=getp(simple_reps,W,:unique_refls)::Vector{Int}
 
 """
@@ -1055,11 +1064,12 @@ julia> reflchar(coxgroup(:A,3))
 reflchar(W::PermRootGroup)=reflchar.(Ref(W),classreps(W))
 
 """
-`refleigen(W)` Reflection eigenvalues
+`reflection_eigenvalues(W)` or `refleigen(W)`
 
-Let  `W`  be  a  reflection  group  on the vector space `V`. `refleigen(W)`
-returns   for  each  conjugacy   class  representative  `x`   of  `W`  (see
-`classreps`) the eigenvalues of `x` on `V`, as a list of `Root1`.
+Let `W` be a reflection group on the vector space `V`.
+`reflection_eigenvalues(W)` returns for each conjugacy class representative
+`x`  of `W` (see `classreps`)  the eigenvalues of `x`  on `V`, as a list of
+`Root1`.
 
 ```julia-repl
 julia> refleigen(coxgroup(:B,2))
@@ -1071,7 +1081,7 @@ julia> refleigen(coxgroup(:B,2))
  [ζ₄³, ζ₄]
 ```
 """
-function refleigen(W)
+function reflection_eigenvalues(W)
   get!(classinfo(W),:refleigen) do
     t=refltype(W)
     if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
@@ -1088,6 +1098,8 @@ function refleigen(W)
   end::Vector{Vector{Root1}}
 end
 
+const refleigen=reflection_eigenvalues
+
 function refleigen(t::TypeIrred)
   if haskey(t,:orbit) t=t.orbit[1] end #orbits are trivial after above function
   ct=CharTable(t).irr[charinfo(t).extRefl,:]
@@ -1099,7 +1111,7 @@ function refleigen(t::TypeIrred)
 end
 
 " `refleigen(W,i)` faster than `refleigen(W)[i]`"
-refleigen(W,i)=refleigen(W)[i] # not faster this way...
+reflection_eigenvalues(W,i)=refleigen(W)[i] # not faster this way...
 
 """
 `reflection_length(W::PermRootGroup,w::Perm)` or `reflength`
@@ -1489,10 +1501,10 @@ end
 const reflection_representation=reflrep
 
 """
-`matY(W,w)`
+`MatrixY(W,w)`
 
 Let  `W` be a  finite reflection group  on the space  `V` and let `w` be an
-element of `W`. The function `matY` returns the matrix of `w` acting on the
+element of `W`. The function `MatrixY` returns the matrix of `w` acting on the
 dual  of `V`. This  is the linear  transformation of this  space which acts
 trivially  on the orthogonal of the roots and has same effect as `w` on the
 simple  coroots. The function makes sense  more generally for an element of
@@ -1502,7 +1514,7 @@ the normalizer of `W` in the whole permutation group of the coroots.
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
-julia> matY(W,longest(W))
+julia> MatrixY(W,longest(W))
 7×7 transpose(::Matrix{Int64}) with eltype Int64:
   0   0   0   0   0  -1  0
   0  -1   0   0   0   0  0
@@ -1513,7 +1525,7 @@ julia> matY(W,longest(W))
   2   2   3   4   3   2  1
 ```
 """
-matY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
+MatrixY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 """
 `PermY(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
@@ -1528,7 +1540,7 @@ returns  `nothing`  if  `M`  does  not  normalize  the  set  of  coroots of
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
-julia> PermY(W,matY(W,longest(W)))==longest(W)
+julia> PermY(W,MatrixY(W,longest(W)))==longest(W)
 true
 ```
 """
@@ -1613,7 +1625,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
              cr::AbstractVector{<:AbstractVector};NC=false,T1=Int16)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
-  matgens=map(reflectionmat,r,cr)
+  matgens=map(reflectionMatrix,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
   roots_=map(x->convert.(T,x),r)
   cr=map(x->convert.(T,x),cr)

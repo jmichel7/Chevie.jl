@@ -229,7 +229,7 @@ const ChevieDict=Dict(
 "W.matgens[i]"=>"reflection_representation(W,i) or reflrep",
 "MatStab"=>"stab_onmats",
 "MatXPerm(W,p)"=>"reflection_representation(W,p) or reflrep",
-"MatYPerm"=>"matY",
+"MatYPerm"=>"MatrixY",
 "Mod1"=>"modZ",
 "MovedPoints"=>"support",
 "Mvp(\"x\")"=>"Mvp(:x)",
@@ -306,7 +306,7 @@ const ChevieDict=Dict(
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
-"Reflection"=>"refls(W,i) or reflectionmat(root,coroot)",
+"Reflection"=>"refls(W,i) or reflectionMatrix(root,coroot)",
 "ReflectionCharacter"=>"reflchar",
 "ReflectionCharValue"=>"tr(reflrep(W,w))",
 #ReflectionCoset

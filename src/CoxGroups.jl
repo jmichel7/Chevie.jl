@@ -1006,7 +1006,7 @@ Above is a way to construct the affine Weyl group  `Ã₁`.
 """
 function coxeter_group(C::Matrix{T})where T
   I=one(C)
-  MatCox(reflectionmat.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
+  MatCox(reflectionMatrix.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
 end
 
 const coxgroup=coxeter_group

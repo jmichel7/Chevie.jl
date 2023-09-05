@@ -569,10 +569,10 @@ function isrepresentation(H::HeckeAlgebra,t;verbose=false)
 end
 
 """
-`reflrep(H)`
+`reflection_representation(H::HeckeAlgebra)` or `reflrep(H)`
 
-returns  a list of matrices which give the reflection representation of the
-Iwahori-Hecke algebra `H`.
+returns  a  list  of  matrices  for  the  generators  of `H` which give the
+reflection representation of the Iwahori-Hecke algebra `H`.
 
 ```julia-repl
 julia> W=coxgroup(:B,2);H=hecke(W,Pol(:q))
@@ -593,7 +593,7 @@ julia> reflrep(H)
  [1 0 0; 0 1 -1; 0 0 -1]
 ```
 """
-function PermRoot.reflrep(H::HeckeAlgebra)
+function PermRoot.reflection_representation(H::HeckeAlgebra)
   W=H.W
   if !equalpara(H) || !(W isa CoxeterGroup)
         error("Reflexion representation of Cyclotomic Hecke algebras or\n",

@@ -5,7 +5,7 @@ Pages=["permroot.md"]
 ```@docs
 PermRoot
 reflection
-reflectionmat
+reflectionMatrix
 PermRootGroup
 complex_reflection_group
 PRG
@@ -23,6 +23,7 @@ simplecoroots
 cartan(::PermRootGroup)
 cartan(::PermRootGroup,i,j)
 refls
+unique_refls
 Reflection
 reflections
 reflection_length(::PermRootGroup,::Perm)
@@ -31,12 +32,12 @@ simple_reps
 diagram
 hyperplane_orbits
 braid_relations
-reflrep(::PermRootGroup,w)
-reflrep(::PRG)
-reflrep(::PRG,::Integer)
+reflection_representation(::PermRootGroup,w)
+reflection_representation(::PRG)
+reflection_representation(::PRG,::Integer)
 reflchar
 PermX
-refleigen
+reflection_eigenvalues
 degrees(::PermRootGroup)
 codegrees
 invariants

@@ -20,7 +20,7 @@ HeckeAlgebras.FactSchur
 representation(::HeckeAlgebra,::Integer)
 representations(::Union{HeckeAlgebra,HeckeCoset})
 isrepresentation
-reflrep(::HeckeAlgebra)
+reflection_representation(::HeckeAlgebra)
 HeckeCoset
 hecke(::HeckeCoset)
 hecke(::Spets,::HeckeAlgebra)
