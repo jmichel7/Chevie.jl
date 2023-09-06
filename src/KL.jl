@@ -102,14 +102,14 @@ julia> c=left_cells(W)
  LeftCell<H₃: duflo=(11) character=φ₄‚₃+φ₄‚₄>
  LeftCell<H₃: duflo=9 character=φ₄‚₃+φ₄‚₄>
 ```
-see  also  the  functions  `elements`,  `character`,  `representation`  and
-`Wgraph`  for left  cells. The  operations `length`,  `in` (which  refer to
-`elements`)  and `==` (which  compares Duflo involutions)  are also defined
-for  left cells. When `Character(c)` has been computed, then `c.a` also has
-been  bound which holds the common  value of Lusztig's `a`-function for the
-elements of `c` and The irreducible constituents of `character(c)`.
+see  also the  functions `elements`,  [`character`](@ref), `representation`
+and  [`Wgraph`](@ref) for left cells.  The operations `length`, `in` (which
+refer  to `elements`) and `==` (which  compares Duflo involutions) are also
+defined  for left cells. When `character(c)`  has been computed, then `c.a`
+also  has been bound which holds the common value of Lusztig's `a`-function
+for the elements of `c` and the irreducible constituents of `character(c)`.
 
-finally, benchmarks on julia 1.8
+finally, benchmarks
 ```benchmark
 julia> function test_kl(W)
          q=Pol(); H=hecke(W,q^2,rootpara=q)
@@ -118,7 +118,7 @@ julia> function test_kl(W)
        end
 test_kl (generic function with 1 method)
 
-julia> @btime test_kl(coxgroup(:F,4));
+julia> @btime test_kl(coxgroup(:F,4));  #julia 1.8
 1.332 s (13934392 allocations: 2.27 GiB)
 ```
 in GAP3 the following function takes 11s for W=F4
@@ -138,8 +138,8 @@ end
 
 test_kl2 (generic function with 1 method)
 
-julia>@btime test_kl2(coxgroup(:F,4));
-4.072 s (52735476 allocations: 5.92 GiB)
+julia>@btime test_kl2(coxgroup(:F,4)); # julia 1.9
+4.307 s (42294917 allocations: 5.24 GiB)
 ```
 in GAP3 the following function takes 42s for F4
 ```
@@ -154,7 +154,6 @@ export KLPol, Cpbasis, Cbasis, LeftCell, left_cells, character, Lusztigaw,
  LusztigAw, AsymptoticAlgebra, Wgraph
 using ..Gapjm
 
-#--------- Meinolf Geck's code for KL polynomials ---------------------------
 """
  `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w
 (see [Alvis1987](biblio.htm#Alv87)).
@@ -235,8 +234,8 @@ seems   best  to   use  the   recursion  formula   in  the  original  paper
 `(y,w)`  to see if  the computation of  the corresponding polynomial can be
 reduced  to  a  similar  calculation  for  elements  of  smaller length. In
 particular, we reduce to the case of critical pairs (see
-`KL.critical_pair`),  and whenever  the polynomial  corresponding to such a
-pair  is  computed,  the  value  is  stored  in  a  `Dict` `W.klpol` in the
+[`KL.critical_pair`](@ref)),  and whenever the  polynomial corresponding to
+such  a pair is computed, the value is  stored in a `Dict` `W.klpol` in the
 underlying Coxeter group.
 
 ```julia-repl
@@ -255,6 +254,7 @@ julia> map(i->map(x->KLPol(W,one(W),x),elements(W,i)),1:nref(W))
  [1, x+1, x²+1]
  [1]
 ```
+Our code is based on Meinolf Geck's code for GAP3/Chevie.
 """
 function KLPol(W::CoxeterGroup{T},y,w)::Pol{Int}where T
   if !bruhatless(W,y,w) return Pol(Int[],0) end
@@ -282,8 +282,6 @@ function KLPol(W::CoxeterGroup{T},y,w)::Pol{Int}where T
   end
 end
 
-#---------- JM & FD code for the C' basis -------------------------------------
-
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}
@@ -307,7 +305,10 @@ HeckeAlgebras.basisname(h::HeckeCElt)="C"
 returns  a function which gives the `C'`-basis of the Iwahori-Hecke algebra
 `H`  (see [(5.1)Lusztig1985](biblio.htm#Lus85)).  This basis  is defined by
 ``C'_x= ∑_{y≤x}P_{y,x}q_x^{-1/2} T_y`` for `x ∈ W`. We have
-``C'_x=(-1)^{l(x)}alt(C_x)`` for all `x ∈ W` (see `alt`).
+``C'_x=(-1)^{l(x)}alt(C_x)`` for all `x ∈ W` (see `alt`). 
+The  returned function can take as argument a list of integers (as a vector
+or  as a list of arguments), representing a Coxeter word, an element of the
+Coxeter group, or a Hecke element (converted then to the `C'` basis).
 
 ```julia-repl
 julia> W=coxgroup(:B,2);@Pol v;H=hecke(W,[v^4,v^2])
@@ -349,6 +350,10 @@ are equal to `v²`) the multiplication rules for the `C` basis are given by:
 where  the sum  is over  all `t`  such that  `t<x`, `l(t)`  and `l(x)` have
 different parity and `st<t`. The coefficient `μ(t,x)` is the coefficient of
 degree `(l(x)-l(t)-1)/2` in the Kazhdan--Lusztig polynomial ``P_{x,t}``.
+
+The  returned function can take as argument a list of integers (as a vector
+or  as a list of arguments), representing a Coxeter word, an element of the
+Coxeter group, or a Hecke element (converted then to the `C'` basis).
 ```julia-repl
 julia> W=coxgroup(:B,3);H=hecke(W,Pol(:v)^2)
 hecke(B₃,v²)
@@ -428,7 +433,7 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
       end
       res-=tmp
     end
-  else
+  else #code from JM & FD (1999)
     elm=reduce(vcat,reverse(bruhatless(W,w)))
     coeff=fill(inv(rootpara(H,w)),length(elm))# start with Lusztig  ̃T basis
     f(w)= w==one(W) ? 1 : prod(y->-H.para[y][2],word(W,w))
@@ -451,8 +456,6 @@ end
 `Tbasis(h::HeckeCpElt)` 
 
 converts the element `h` of the `C'` basis to the `T` basis.
-
-Implementation Jean Michel and François Digne 1999. 
 
 For one-parameter Hecke algebras, we use the formulae:
 ``C'_w=Σ_{y≤w}P_{y,w}(q)q^{-l(w)/2}T_y``
@@ -484,10 +487,11 @@ For general Hecke algebras, we follow formula 2.2 in
 
 `` \\overline{P_{x,w}}-P_{x,w}=∑_{x<y≤w} R_{x,y} P_{y,w}``
 
-where ``R_{x,y}=\\overline{(t_{y^{-1}}^{-1}|t_x)}`` where `t`  is the basis with
-parameters  ``q_s,-q_s^{-1}``. It follows that ``P_{x,w}`` is the negative part of
-``∑_{x<y≤w}  R_{x,y} P_{y,w}`` which  allows to compute  it by induction on
-`l(w)-l(x)`.
+where  ``R_{x,y}=\\overline{(t_{y^{-1}}^{-1}|t_x)}`` where `t` is the basis
+with  parameters  ``q_s,-q_s^{-1}``.  It  follows  that  ``P_{x,w}`` is the
+negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
+by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
+Michel and François Digne (1999).
 """
 HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
 

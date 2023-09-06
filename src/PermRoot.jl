@@ -203,7 +203,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   refleigen, reflection_eigenvalues,
   reflchar, bipartite_decomposition, torus_order, rank, PermX, coroots, baseX,
   invbaseX, semisimplerank, invariant_form, generic_order, parabolic_reps,
-  invariants, MatrixY, PermY, simpleroots, simplecoroots, action, radical,
+  invariants, YMatrix, PermY, simpleroots, simplecoroots, action, radical,
   parabolic_closure, isparabolic, central_action, 
   reflrep, reflection_representation,
   nhyp, number_of_hyperplanes,
@@ -1501,10 +1501,10 @@ end
 const reflection_representation=reflrep
 
 """
-`MatrixY(W,w)`
+`YMatrix(W,w)`
 
 Let  `W` be a  finite reflection group  on the space  `V` and let `w` be an
-element of `W`. The function `MatrixY` returns the matrix of `w` acting on the
+element of `W`. The function `YMatrix` returns the matrix of `w` acting on the
 dual  of `V`. This  is the linear  transformation of this  space which acts
 trivially  on the orthogonal of the roots and has same effect as `w` on the
 simple  coroots. The function makes sense  more generally for an element of
@@ -1514,7 +1514,7 @@ the normalizer of `W` in the whole permutation group of the coroots.
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
-julia> MatrixY(W,longest(W))
+julia> YMatrix(W,longest(W))
 7×7 transpose(::Matrix{Int64}) with eltype Int64:
   0   0   0   0   0  -1  0
   0  -1   0   0   0   0  0
@@ -1525,7 +1525,7 @@ julia> MatrixY(W,longest(W))
   2   2   3   4   3   2  1
 ```
 """
-MatrixY(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
+YMatrix(W::PermRootGroup,w)=transpose(reflrep(W,inv(w)))
 """
 `PermY(W::ComplexReflectionGroup,M::AbstractMatrix)`
 
@@ -1540,7 +1540,7 @@ returns  `nothing`  if  `M`  does  not  normalize  the  set  of  coroots of
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
 E₇₍₁₂₃₄₅₆₎=E₆Φ₁
 
-julia> PermY(W,MatrixY(W,longest(W)))==longest(W)
+julia> PermY(W,YMatrix(W,longest(W)))==longest(W)
 true
 ```
 """

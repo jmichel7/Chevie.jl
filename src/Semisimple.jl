@@ -273,7 +273,7 @@ Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 Base.:^(a::SemisimpleElement,m::AbstractMatrix)=SemisimpleElement(a.W,
                                  map(v->prod(a.v .^v),eachcol(m)))
 
-Base.:^(a::SemisimpleElement,p::Perm)=a^MatrixY(parent(a.W.G),inv(p))
+Base.:^(a::SemisimpleElement,p::Perm)=a^YMatrix(parent(a.W.G),inv(p))
 
 # scalar product with a root
 Base.:^(a::SemisimpleElement,alpha::Vector{<:Number})=prod(a.v.^Int.(alpha))
@@ -980,7 +980,7 @@ function StructureRationalPointsConnectedCentre(MF,q)
   end
   W=parent(M)
   Z0=algebraic_center(M).Z0
-  Phi=MatrixY(W.G,MF.phi)
+  Phi=YMatrix(W.G,MF.phi)
   Z0F=Z0.gens*(Phi*q-one(Phi))
   Z0F=map(x->solutionmatInt(Z0.gens,x),eachrow(Z0F))
   Z0F=smith(toM(Z0F))

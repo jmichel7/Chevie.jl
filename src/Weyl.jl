@@ -691,7 +691,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 @forward FiniteCoxeterGroup.G PermRoot.action, PermRoot.cartan, 
  PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
  PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
- PermRoot.invariant_form, PermRoot.MatrixY, PermRoot.PermX, PermRoot.PermY, 
+ PermRoot.invariant_form, PermRoot.YMatrix, PermRoot.PermX, PermRoot.PermY, 
  PermRoot.rank, PermRoot.roots, PermRoot.reflchar,
 #PermRoot.reflections,
  PermRoot.refls,

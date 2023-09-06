@@ -36,6 +36,7 @@ reflection_representation(::PermRootGroup,w)
 reflection_representation(::PRG)
 reflection_representation(::PRG,::Integer)
 reflchar
+YMatrix
 PermX
 reflection_eigenvalues
 degrees(::PermRootGroup)

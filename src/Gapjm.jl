@@ -31,7 +31,8 @@ This package requires julia 1.6 or later.
 I  have implemented the  GAP functionality (infrastructure)  needed to make
 Chevie  work.  I  have  already  registered  most of this infrastructure as
 separate packages; the following packages are loaded and reexported so that
-their functionality is automatically available when you use `Gapjm`.
+their  functionality is  automatically available  when you  use `Gapjm`. In
+other terms, `Gapjm` is a meta-package for the following packages:
 
   * (univariate) [LaurentPolynomials](https://github.com/jmichel7/LaurentPolynomials.jl) (and rational fractions)
   * (multivariate) [PuiseuxPolynomials](https://github.com/jmichel7/PuiseuxPolynomials.jl) (and rational fractions when there are no fractional exponents)
