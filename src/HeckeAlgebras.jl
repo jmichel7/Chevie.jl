@@ -1106,13 +1106,13 @@ schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
 
 #----------------------- Factorized Schur elements
 """
-A  `FactSchur` representing  a Schur  element of  the form  `M∏ᵩφ(Mᵩ)` is a
-`struct`  with a field `factor`  which holds the monomial  `M`, and a field
-`vcyc`  which holds a  list of `NamedTuples`  describing each factor in the
-product.  An  element  of  `vcyc`  representing  a term `φ(Mᵩ)` is itself a
-`struct`  with fields  `monomial` holding  `Mᵩ` (as  an `Mvp` with a single
-term),  and a  field `pol`  holding a  `CycPol` (see `CycPol`) representing
-`φ`.
+A  `FactSchur` representing  a Schur  element of  the form  `M∏ᵩφ(Mᵩ)` (see
+[`factorized_schur_element`](@ref))  is  a  `struct`  with a field `factor`
+which  holds the  monomial `M`,  and a  field `vcyc`  which holds a list of
+`NamedTuples`  describing each  factor `Mᵩ`  in the  product. An element of
+`vcyc`  representing  a  term  `φ(Mᵩ)`  is  itself  a  `struct` with fields
+`monomial` holding `Mᵩ` (as an `Mvp` with a single term), and a field `pol`
+holding a `CycPol` (see `CycPol`) representing `φ`.
 
 A few operations are implemented for `FactSchur`, like `*, lcm`. They can be
 evaluated partially or completely keeping as much as possible the factored

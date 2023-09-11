@@ -476,14 +476,12 @@ const coxhyp=coxeter_hyperoctaedral_group
 
 Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(rank(W)))")
 
+PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
+
 PermRoot.refltype(W::CoxHyp)=[TypeIrred(Dict(:series=>:B,
                                          :indices=>collect(1:rank(W))))]
 
 CoxGroups.nref(W::CoxHyp)=ngens(W)^2
-
-Gapjm.degrees(W::CoxHyp)=2*(1:ngens(W))
-
-Base.length(W::CoxHyp)=prod(degrees(W))
 
 CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
 
@@ -494,21 +492,24 @@ PermRoot.inclusiongens(W::CoxHyp)=1:W.n
 function PermRoot.refls(W::CoxHyp{T})where T
   get!(W,:refls)do
     refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:rank(W)))
-    for i in 2:rank(W)-1 append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i)) end
-    for i in 1:rank(W)-1 append!(refs,map(j->SPerm{Int8}(j,-j-i),1:rank(W)-i)) end
+    sreps=vcat([1],fill(2,ngens(W)-1),fill(1,rank(W)-1))
+    for i in 2:rank(W)-1 
+       append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i))
+       append!(sreps,fill(2,rank(W)-i))
+    end
+    for i in 1:rank(W)-1 
+      append!(refs,map(j->SPerm{Int8}(j,-j-i),1:rank(W)-i))
+      append!(sreps,fill(2,rank(W)-i))
+    end
     append!(refs,refs)
+    append!(sreps,sreps)
+    W.simple_reps=sreps
+    W.unique_refls=collect(1:nref(W))
     refs
   end::Vector{SPerm{T}}
 end
 
-PermRoot.refls(W::CoxHyp,i)=refls(W)[i]
-
-function PermRoot.simple_reps(W::CoxHyp)
-  get!(W,:simple_reps)do
-    W.unique_refls=collect(1:nref(W))
-    fill(1,length(refls(W)))
-  end::Vector{Int}
-end
+PermRoot.simple_reps(W::CoxHyp)=getp(refls,W,:simple_reps)
 
 function Perms.reflength(W::CoxHyp,w)
   sym=nsym=0
@@ -519,6 +520,10 @@ function Perms.reflength(W::CoxHyp,w)
   end
   div(sym,2)+nsym
 end
+
+PermRoot.reflrep(W::CoxHyp,w::SPerm)=Matrix(w,rank(W))
+PermRoot.reflrep(W::CoxHyp,i::Integer)=Matrix(W(i),rank(W))
+PermRoot.reflrep(W::CoxHyp)=reflrep.(Ref(W),1:ngens(W))
 
 """
 `reflection_subgroup(W::CoxHyp,I)`

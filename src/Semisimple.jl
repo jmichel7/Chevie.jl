@@ -80,17 +80,17 @@ them.  The  first  type  are  finite  order  elements of `𝐓`, which over an
 algebraically  closed field `K` are in bijection with elements of `Y⊗ ℚ /ℤ`
 whose  denominator  is  prime  to  the  characteristic  of  `K`.  These are
 represented  as a vector of `Rational`s `r` such that `0≤r<1`. The function
-`SS`  constructs such  a semisimple  element from  a vector of `Rational`s.
+`ss`  constructs such  a semisimple  element from  a vector of `Rational`s.
 More  generally `𝐓` is isomorphic to `(Kˣ)^n` where `n` is the dimension of
 `𝐓`, so a vector of elements of `Kˣ` is a more general representation which
 is   given  by  the  function   `SemisimplElement`;  in  this  setting  the
-representation given by `SS` is naturally interpreted as a `Vector{Root1}`.
+representation given by `ss` is naturally interpreted as a `Vector{Root1}`.
 
 ```julia-repl
 julia> G=rootdatum(:sl,4)
 sl₄
 
-julia> SS(G,[1//3,1//4,3//4,2//3])
+julia> ss(G,[1//3,1//4,3//4,2//3])
 SemisimpleElement{Root1}: <ζ₃,ζ₄,ζ₄³,ζ₃²>
 
 julia> SemisimpleElement(G,[E(3),E(4),E(4,3),E(3,2)])
@@ -100,10 +100,10 @@ julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_center(L)
-(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))
 
 julia> T=torsion_subgroup(C.Z0,3)
-SSGroup([<ζ₃,ζ₃²,ζ₃>])
+Group(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
 julia> e=sort(elements(T))
 3-element Vector{SemisimpleElement{Root1}}:
@@ -165,7 +165,7 @@ We  can  compute  the  centralizer  ``C_𝐆 (s)``  of  a semisimple element in
 julia> G=coxgroup(:A,3)
 A₃
 
-julia> s=SS(G,[0,1//2,0])
+julia> s=ss(G,[0,1//2,0])
 SemisimpleElement{Root1}: <1,-1,1>
 
 julia> centralizer(G,s)
@@ -181,8 +181,10 @@ generates ``C_𝐆 (s)``.
 module Semisimple
 using ..Gapjm
 export algebraic_center, SubTorus, weightinfo, fundamental_group, isisolated,
-SemisimpleElement, SS, torsion_subgroup, quasi_isolated_reps,
-StructureRationalPointsConnectedCentre, SScentralizer_reps, intermediate_group,
+SemisimpleElement, ss, torsion_subgroup, quasi_isolated_reps,
+structure_rational_points_connected_centre, 
+semisimple_centralizer_representatives,sscentralizer_reps, 
+intermediate_group,
 isomorphism_type, weights, coweights, affine
 export ExtendedCox, ExtendedReflectionGroup
 #----------------- Extended Coxeter groups-------------------------------
@@ -263,10 +265,10 @@ Base.isone(a::SemisimpleElement)=all(isone,a.v)
 Base.cmp(a::SemisimpleElement,b::SemisimpleElement)=cmp(a.v,b.v)
 Base.isless(a::SemisimpleElement,b::SemisimpleElement)=cmp(a,b)==-1
 
-SS(W::FiniteCoxeterGroup,v::AbstractVector{<:Number})=
+ss(W::FiniteCoxeterGroup,v::AbstractVector{<:Number})=
 SemisimpleElement(W,map(x->Root1(;r=Rational{Int}(x)),v))
 
-SS(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(E(1),rank(W)))
+ss(W::FiniteCoxeterGroup)=SemisimpleElement(W,fill(E(1),rank(W)))
 
 Base.:^(a::SemisimpleElement,n::Integer)=SemisimpleElement(a.W,a.v .^n)
 
@@ -300,21 +302,6 @@ Base.hash(a::SemisimpleElement, h::UInt)=hash(a.v, h)
 Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)=a.v==b.v
 
 Gapjm.order(a::SemisimpleElement{Root1})=lcm(order.(a.v))
-
-# we need "one" since we cannot define one(SemisimpleElement{T})
-@GapObj struct SSGroup{T}<:Group{SemisimpleElement{T}}
-  gens::Vector{SemisimpleElement{T}}
-  one::SemisimpleElement{T}
-end
-
-Base.show(io::IO,G::SSGroup)=print(io,"SSGroup([",join(sprint.(show,gens(G);context=io),","),"])")
-
-# the optional argument is necessary when a is empty
-function Groups.Group(a::AbstractVector{<:SemisimpleElement},o=one(a[1]))
-  SSGroup(filter(!isone,a),o,Dict{Symbol,Any}())
-end
-
-Base.one(G::SSGroup)=G.one
 
 struct SubTorus{T<:Integer}
   gens::Matrix{T}
@@ -380,10 +367,10 @@ julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁Φ₁
 
 julia> C=algebraic_center(L)
-(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))
 
 julia> T=torsion_subgroup(C.Z0,3)
-SSGroup([<ζ₃,ζ₃²,ζ₃>])
+Group(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])
 
 julia> sort(elements(T))
 3-element Vector{SemisimpleElement{Root1}}:
@@ -392,7 +379,7 @@ julia> sort(elements(T))
  <ζ₃²,ζ₃,ζ₃²>
 ```
 """
-torsion_subgroup(T::SubTorus,n)=Group(map(x->SS(T.group,x//n),eachrow(T.gens)))
+torsion_subgroup(T::SubTorus,n)=Group(map(x->ss(T.group,x//n),eachrow(T.gens)))
 
 # returns (Tso,s-stable representatives of T/Tso) for automorphism s of T
 # here m is the matrix of s on Y(T)
@@ -412,7 +399,7 @@ function FixedPoints(T::SubTorus,m)
   m=map(v->solutionmat(n,v),eachrow(Y1)) # basis of Im[(1-s)^{-1} restricted to Y1]
   # generates elements y of Y1⊗ ℚ such that (1-s)y\in Y1
   (SubTorus(T.group,fix*T.gens),
-   abelian_gens(map(v->SS(T.group,transpose(Y1*T.gens)*v),m)))
+   abelian_gens(map(v->ss(T.group,transpose(Y1*T.gens)*v),m)))
 end
 
 """
@@ -435,7 +422,6 @@ quotient  of the center  `pi` of the  simply connected covering  of `𝐆` (an
 incarnation of the fundamental group). It contains a list of elements given
 as  words  in  the  generators  of  `pi`  which  generate the kernel of the
 quotient map.
-
 ```julia_repl
 julia> G=rootdatum(:sl,4)
 sl₄
@@ -443,20 +429,20 @@ sl₄
 julia> L=reflection_subgroup(G,[1,3])
 A₃₍₁₃₎=A₁×A₁
 
-julia> algebraic_center(L)
-(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = SSGroup([<1,1,-1>]), descAZ = [[1, 2]], ZD = SSGroup([<-1,1,1>,<1,1,-1>]))
+ulia> C=algebraic_center(L)
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))
 
 julia> G=coxgroup(:A,3)
 A₃
 
-julia> s=SS(G,[0,1//2,0])
+julia> s=ss(G,[0,1//2,0])
 SemisimpleElement{Root1}: <1,-1,1>
 
 julia> C=centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
 
 julia> algebraic_center(C)
-(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,Matrix{Int64}(undef, 0, 3)), AZ = SSGroup([<1,-1,1>]))
+(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,Matrix{Int64}(undef, 0, 3)), AZ = Group(SemisimpleElement{Root1}[<1,-1,1>]))
 ```
 """
 function algebraic_center(W)
@@ -478,26 +464,26 @@ function algebraic_center(W)
     m=Z0.complement
     AZ=toL(inv(Rational.(m*permutedims(simpleroots(W))))*m)
   end
-  AZ=SS.(Ref(W),AZ)
+  AZ=ss.(Ref(W),AZ)
   if extended # compute fixed space of F0s in Y(T)
     for m in F0s
-      AZ=filter(s->s/SS(W,m*map(x->x.r,s.v)) in Z0,AZ)
+      AZ=filter(s->s/ss(W,m*map(x->x.r,s.v)) in Z0,AZ)
       if rank(Z0)>0 Z0=FixedPoints(Z0,transpose(m))
         append!(AZ,Z0[2])
         Z0=Z0[1]
       end
     end
   end
-  AZ=Group(abelian_gens(AZ),SS(W))
+  AZ=Group(abelian_gens(AZ),ss(W))
   if extended && length(F0s)>0 return (;Z0,AZ) end
-  descAZ=SS.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
+  descAZ=ss.(Ref(W),weightinfo(W)[:CenterSimplyConnected])
   if isempty(descAZ) return (;Z0,AZ,descAZ) end
   descAZ=Group(descAZ)
-  ZD=Group(map(s->SS(W,permutedims(simplecoroots(W))*map(x->x.r,s.v)),gens(descAZ)),SS(W))
+  ZD=Group(map(s->ss(W,permutedims(simplecoroots(W))*map(x->x.r,s.v)),gens(descAZ)),ss(W))
   toAZ=function(s)
     s=vec(transpose(map(x->x.r,s.v))*simplecoroots(W))
     s=transpose(s)*inv(Rational.(vcat(Z0.complement,Z0.gens)))
-    SS(W,vec(transpose(vec(s)[1:semisimplerank(W)])*Z0.complement))
+    ss(W,vec(transpose(vec(s)[1:semisimplerank(W)])*Z0.complement))
   end
   ss=map(toAZ,gens(descAZ))
   #println("AZ=$descAZ")
@@ -811,7 +797,7 @@ being those induced by ``C_G(s)``.
 ```julia-repl
 julia> G=coxgroup(:A,3)
 A₃
-julia> s=SS(G,[0,1//2,0])
+julia> s=ss(G,[0,1//2,0])
 SemisimpleElement{Root1}: <1,-1,1>
 julia> centralizer(G,s)
 A₃₍₁₃₎=(A₁A₁)Φ₂
@@ -897,7 +883,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
 ##  ``the stabilizer of `Ω ∩ Δ̃ᵢ` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
 ##  should be
 ##  ``the stabilizer of `Ω` in `𝓐 _G` acts transitively on `Ω ∩ Δ̃ᵢ`''
-  if istorus(W) return [SS(W,fill(0//1,rank(W)))] end
+  if istorus(W) return [ss(W,fill(0//1,rank(W)))] end
   H=fundamental_group(W)
   w=Vector{Vector{Rational{Int}}}[]
   ind=Vector{Int}[]
@@ -934,7 +920,7 @@ function quasi_isolated_reps(W::FiniteCoxeterGroup,p=0)
       sum(p[map(x->findfirst(==(x),I),J)])//length(J)
      end)
   end
-  res=sort(unique!(map(s->SS(W,s),res)),by=x->(order(x),x))
+  res=sort(unique!(map(s->ss(W,s),res)),by=x->(order(x),x))
   Z0=algebraic_center(W).Z0
   if rank(Z0)>0
     res=res[filter(i->!any(j->res[i]/res[j] in Z0,1:i-1),eachindex(res))]
@@ -946,7 +932,7 @@ isisolated(W,s)=rank(algebraic_center(centralizer(W,s).group).Z0)==
     rank(W)-semisimplerank(W)
 
 """
-`StructureRationalPointsConnectedCentre(W,q)`
+`structure_rational_points_connected_centre(W,q)`
 
 `W`  should be  a Coxeter  group or  a Coxeter  coset representing a finite
 reductive  group ``𝐆 ^F``, and `q` should  be the prime power associated to
@@ -965,7 +951,7 @@ julia> l=twistings(rootdatum(:sl,4),Int[])
  A₃₍₎=Φ₁Φ₃
  A₃₍₎=Φ₂Φ₄
 
-julia> StructureRationalPointsConnectedCentre.(l,3)
+julia> structure_rational_points_connected_centre.(l,3)
 5-element Vector{Vector{Int64}}:
  [2, 2, 2]
  [2, 8]
@@ -974,7 +960,7 @@ julia> StructureRationalPointsConnectedCentre.(l,3)
  [40]
 ```julia-repl
 """
-function StructureRationalPointsConnectedCentre(MF,q)
+function structure_rational_points_connected_centre(MF,q)
   if MF isa Spets M=Group(MF)
   else M=MF;MF=Spets(M)
   end
@@ -1036,7 +1022,7 @@ function intermediate_group(W,I)
 end
 
 """
-`SScentralizer_reps(W [,p])`@btime length(stabilizer(W,1))
+`semisimple_centralizer_representatives(W [,p])` or `sscentralizer_reps`
 
 `W`  should be a Weyl group corresponding  to an algebraic group `𝐆 `. This
 function  returns a list describing representatives  `𝐇 ` of `𝐆 `-orbits of
@@ -1050,7 +1036,7 @@ list of the centralizers which occur in characteristic `p` is returned.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> SScentralizer_reps(W)
+julia> sscentralizer_reps(W)
 6-element Vector{Vector{Int64}}:
  []
  [1]
@@ -1059,7 +1045,7 @@ julia> SScentralizer_reps(W)
  [1, 5]
  [2, 6]
 
-julia> reflection_subgroup.(Ref(W),SScentralizer_reps(W))
+julia> reflection_subgroup.(Ref(W),sscentralizer_reps(W))
 6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:
  G₂₍₎=Φ₁²
  G₂₍₁₎=A₁Φ₁
@@ -1068,7 +1054,7 @@ julia> reflection_subgroup.(Ref(W),SScentralizer_reps(W))
  G₂₍₁₅₎=A₂
  G₂₍₂₆₎=Ã₁×A₁
 
-julia> SScentralizer_reps(W,2)
+julia> sscentralizer_reps(W,2)
 5-element Vector{Vector{Int64}}:
  []
  [1]
@@ -1077,7 +1063,7 @@ julia> SScentralizer_reps(W,2)
  [1, 5]
 ```
 """
-function SScentralizer_reps(W,p=0)
+function semisimple_centralizer_representatives(W,p=0)
 # W-orbits of subsets of Π∪ {-α₀}
   l=map(refltype(W))do t
     H=reflection_subgroup(W,t.indices)
@@ -1102,6 +1088,7 @@ function SScentralizer_reps(W,p=0)
   map(x->vcat(x...),cartesian(l...))
 end
 
+const sscentralizer_reps=semisimple_centralizer_representatives
 function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
   if VERSION<v"1.7"
     if !limit && !TeX context=IOContext(stdout,:TeX=>true,:limit=>false)

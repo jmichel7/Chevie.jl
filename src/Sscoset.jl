@@ -154,7 +154,7 @@ being those induced by `C_𝐆 (tσ)/C_𝐆 (tσ)⁰` on `C_𝐆 (tσ)⁰`.
 julia> WF=rootdatum(:u,6)
 u₆
 
-julia> s=SS(Group(WF),[1//4,0,0,0,0,3//4])
+julia> s=ss(Group(WF),[1//4,0,0,0,0,3//4])
 SemisimpleElement{Root1}: <ζ₄,1,1,1,1,ζ₄³>
 
 julia> centralizer(WF,s)
@@ -167,7 +167,7 @@ C₃₍₃₂₁₎
 function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   W=Group(WF)
   Rs=RelativeDatum(WF)
-  refC=centralizer(Rs,SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v))))
+  refC=centralizer(Rs,ss(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v))))
   Rs=map(restriction.(Ref(W),orbits(WF.phi,inclusion(W,1:nref(W)))))do c
     res=(c,sum(roots(W,c))//length(c),sum(coroots(W,c)))
     if IsSpecial(WF,c) res[3]=2res[3] end
@@ -236,7 +236,7 @@ julia> quasi_isolated_reps(WF,3)
 ```
 """
 function Semisimple.quasi_isolated_reps(WF::Spets,p=0)
-  map(x->SS(Group(WF),transpose(WF.Y_s)*map(x->x.r,x.v)), 
+  map(x->ss(Group(WF),transpose(WF.Y_s)*map(x->x.r,x.v)), 
       quasi_isolated_reps(RelativeDatum(WF), p))
 end
 
@@ -271,7 +271,7 @@ julia> isisolated.(Ref(WF),l)
 """
 function Semisimple.isisolated(WF::Spets,t::SemisimpleElement{Root1})
   Rs=RelativeDatum(WF)
-  t=SS(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
+  t=ss(Rs,solutionmat(WF.Y_s,WF.pi*map(x->x.r,t.v)))
   isisolated(Rs, t)
 end
 

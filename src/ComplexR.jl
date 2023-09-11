@@ -1,9 +1,11 @@
 module ComplexR
 using ..Gapjm
-export complex_reflection_group, crg, diagram, codegrees,
+export complex_reflection_group, crg, diagram, degrees, codegrees,
   Reflection, reflections, isdistinguished, 
   hyperplane, hyperplane_orbits, hyperplane_orbit, simple_rep,
   reflection_group, torusfactors
+
+@forward Weyl.FC.G hyperplane_orbits,  codegrees,  degrees
 
 Gapjm.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
@@ -124,7 +126,7 @@ julia> length(W)
 14400
 ```
 """
-function Gapjm.degrees(W::PermRootGroup)
+function degrees(W::ComplexReflectionGroup)
   get!(W,:degrees)do
     vcat(fill(1,rank(W)-semisimplerank(W)),degrees.(refltype(W))...)
   end::Vector{Int}
@@ -173,7 +175,7 @@ julia> degrees(HF)
  (4, ζ₃²)
 ```
 """
-function Gapjm.degrees(W::Spets)
+function degrees(W::Spets)
   get!(W,:degrees)do
     a=torusfactors(W) 
     if isempty(refltype(W)) b=Tuple{Int,Cyc{Int}}[]
@@ -184,7 +186,7 @@ function Gapjm.degrees(W::Spets)
   end::Vector{Tuple{Int,Cyc{Int}}}
 end
 
-function Gapjm.degrees(t::TypeIrred)
+function degrees(t::TypeIrred)
   if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
   d=getchev(t.orbit[1],:ReflectionDegrees)
 # Let   t.scalar=[s₁,…,sᵣ],  where  r=length(t.orbit)  and  let  p  be  the
@@ -261,7 +263,7 @@ julia> codegrees(W)
  2
 ```
 """
-function codegrees(W::PermRootGroup)
+function codegrees(W::ComplexReflectionGroup)
   vcat(fill(-1,rank(W)-semisimplerank(W)),collect.(codegrees.(refltype(W)))...)
 end
 
@@ -279,22 +281,24 @@ end
 nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 """
-`hyperplane_orbits(W)`
+`hyperplane_orbits(W::ComplexReflectionGroup)`
 
 returns  a  list  of  named  tuples,  one  for each hyperplane orbit of the
 reflection  group `W`. If `o` is the named tuple for such an orbit, and `s`
 is  the first  element of  `gens(W)` whose  hyperplane is  in the orbit, it
 contains the following fields
 
- `o.s`:     index of `s` in `gens(W)`
+ `.s`:     index of `s` in `gens(W)`
 
- `o.cl_s`:  `map(i->position_class(W,s^i),1:o.order-1)`
+ `.order`: order of s
 
- `o.order`: order of s
+ `.cl_s`:  for i in `1:order-1`, `position_class(W,W(s)^i)`
 
  `.N_s`:    size of hyperplane orbit
 
- `.det_s`:  for i in `1:o.order-1`, position in CharTable of `(det_s)^i`
+ `.det_s`:  for i in `1:order-1`, position in `CharTable(W)` of `detₛⁱ`, where
+   `detₛ` is the linear character taking the value `det(reflrep(W,s))` on `s`
+   and `1` on non-conjugate reflections.
 
 ```julia-repl
 julia> W=coxgroup(:B,2)
@@ -306,7 +310,7 @@ julia> hyperplane_orbits(W)
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
 ```
 """
-function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyp})
+function hyperplane_orbits(W::ComplexReflectionGroup)
   T=@NamedTuple{s::Int,cl_s::Vector{Int},order::Int,N_s::Int,det_s::Vector{Int}}
   get!(W,:hyperplane_orbits)do
   sr=simple_reps(W)
@@ -341,10 +345,8 @@ function hyperplane_orbits(W::Union{PermRootGroup,CoxSym,CoxHyp})
   end::Vector{T}
 end
 
-@forward FiniteCoxeterGroup.G hyperplane_orbits, codegrees, Gapjm.degrees
-
 #------------------------- Reflection(s) --------------------------------
-@GapObj struct Reflection{TW<:Union{ComplexReflectionGroup,CoxSym,CoxHyp}}
+@GapObj struct Reflection{TW<:ComplexReflectionGroup}
   W::TW
   rootno::Int
   eigen::Root1
@@ -479,13 +481,13 @@ function invert_word(W,w)
   [i for (i,mul) in seq for y in 1+mul:o[i]]
 end
 
-function Reflection(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp},i::Integer,eig)
+function Reflection(W::ComplexReflectionGroup,i::Integer,eig)
   if !(eig isa Root1) eig=Root1(eig) end
   p=findfirst(r->refls(W,r.rootno)==refls(W,i) && r.eigen==eig,reflections(W))
   reflections(W)[p]
 end
 
-function Reflection(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp},i::Integer)
+function Reflection(W::ComplexReflectionGroup,i::Integer)
   Reflection(W,i,E(order(refls(W,i))))
 end
 
@@ -511,7 +513,7 @@ julia> reflections(W)
  Reflection(G₄,5,ζ₃²)
 ```
 """
-function reflections(W::Union{ComplexReflectionGroup,CoxSym,CoxHyp})
+function reflections(W::ComplexReflectionGroup)
   get!(W,:reflections)do
     sreps=sort(unique(simple_reps(W)))
     pnts=refls(W,sreps)

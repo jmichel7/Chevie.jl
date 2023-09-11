@@ -272,7 +272,7 @@ const ChevieDict=Dict(
 "PermList(v)"=>"Perm(v)",
 "PermMatMat(m,n)"=>"Perm(m,n;dims=(1,2))",
 "PermMatX"=>"PermX",
-#PermMatY
+"PermMatY"=>"PermY",
 "PermutationMat(p,dim)"=>"Matrix(p,dim)",
 "PermutationOnClasses"=>"on_classes",
 "PermutationOnCharacters"=>"on_chars",
@@ -307,7 +307,7 @@ const ChevieDict=Dict(
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",
 "ReducedRightCosetRepresentatives(W,H)"=>"reduced(H,W)",
 "Reflection"=>"refls(W,i) or reflectionMatrix(root,coroot)",
-"ReflectionCharacter"=>"reflchar",
+"ReflectionCharacter"=>"reflection_character or reflchar",
 "ReflectionCharValue"=>"tr(reflrep(W,w))",
 #ReflectionCoset
 "ReflectionDegrees(W)"=>"degrees(W)",
@@ -334,7 +334,7 @@ const ChevieDict=Dict(
 "RestrictedPartitions"=>"partitions",
 "RestrictedPerm(p,d)"=>"restricted(p,d)",
 "Reversed"=>"reverse",
-#ReversedWord
+"ReversedWord"=>"reverse",
 "RightDescentSet(W,w)"=>"rightdescents(W,w)",
 "RightGcd"=>"rightgcd",
 "RightLcm"=>"rightlcm",
@@ -352,8 +352,8 @@ const ChevieDict=Dict(
 #SchurElement
 "SchurElements"=>"schur_elements",
 "SchurFunctor"=>"schur_functor",
-"SemisimpleCentralizerRepresentatives"=>"SScentralizer_reps",
-"SemisimpleElement"=>"SS",
+"SemisimpleCentralizerRepresentatives"=>"semisimple_centralizer_representatives or sscentralizer_reps",
+"SemisimpleElement"=>"ss",
 "SemisimpleRank"=>"semisimplerank",
 "SemisimpleSubgroup"=>"torsion_subgroup",
 "ShiftBeta"=>"shiftβ",
@@ -378,7 +378,7 @@ const ChevieDict=Dict(
 "Stabilizer"=>"stabilizer",
 "StandardParabolic"=>"standard_parabolic",
 "StandardParabolicClass"=>"standard_parabolic_class",
-"StructureRationalPointsConnectedCentre"=>"StructureRationalPointsConnectedCentre",
+"StructureRationalPointsConnectedCentre"=>"structure_rational_points_connected_centre",
 "SubSpets"=>"subspets",
 "SubTorus"=>"SubTorus",
 "Sum"=>"sum",

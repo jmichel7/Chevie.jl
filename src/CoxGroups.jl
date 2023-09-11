@@ -756,14 +756,14 @@ julia> W=complex_reflection_group(29)
 G₂₉
 
 julia> braid_relations(W)
-7-element Vector{Vector{Vector{Int64}}}:
- [[1, 2, 1], [2, 1, 2]]
- [[2, 4, 2], [4, 2, 4]]
- [[3, 4, 3], [4, 3, 4]]
- [[2, 3, 2, 3], [3, 2, 3, 2]]
- [[1, 3], [3, 1]]
- [[1, 4], [4, 1]]
- [[4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4]]
+7-element Vector{Tuple{Vector{Int64}, Vector{Int64}}}:
+ ([1, 2, 1], [2, 1, 2])
+ ([2, 4, 2], [4, 2, 4])
+ ([3, 4, 3], [4, 3, 4])
+ ([2, 3, 2, 3], [3, 2, 3, 2])
+ ([1, 3], [3, 1])
+ ([1, 4], [4, 1])
+ ([4, 3, 2, 4, 3, 2], [3, 2, 4, 3, 2, 4])
 ```
 
 each  relation  is  represented  as  a  pair  of lists, specifying that the
@@ -772,11 +772,11 @@ equal  to the product according to the  indices on the right side. See also
 `diagram`.
 """
 function braid_relations(t::TypeIrred)
-  r=if t.series==:ST getchev(t,:BraidRelations)
+  r=if t.series==:ST Tuple.(getchev(t,:BraidRelations))
   else
     m=coxmat(cartan(t))
     p(i,j)=map(k->iszero(k%2) ? j : i,1:m[i,j])
-    vcat(map(i->map(j->[p(i,j),p(j,i)],1:i-1),axes(m,1))...)
+    vcat(map(i->map(j->(p(i,j),p(j,i)),1:i-1),axes(m,1))...)
   end
   haskey(t,:indices) ? map(x->map(y->t.indices[y],x),r) : r
 end
@@ -897,7 +897,7 @@ end
 function Base.show(io::IO, W::CoxSym)
   if W.d.start==1 n=string(W.d.stop) else n=string(W.d) end
   if hasdecor(io) printTeX(io,"\\mathfrak S_{$n}")
-  else print(io,"coxsym(n)")
+  else print(io,"coxsym($n)")
   end
 end
 
@@ -917,10 +917,11 @@ function PermRoot.simple_reps(W::CoxSym)
     fill(1,length(W.refls))
   end::Vector{Int}
 end
-PermRoot.simple_reps(W::CoxSym,i)=simple_reps(W)[i]
 PermRoot.refls(W::CoxSym)=W.refls
-PermRoot.refls(W::CoxSym,i)=W.refls[i]
-PermRoot.rank(W::CoxSym)=ngens(W)
+PermRoot.rank(W::CoxSym)=ngens(W)+1
+PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,rank(W))
+PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),rank(W))
+PermRoot.reflrep(W::CoxSym)=reflrep.(Ref(W),1:ngens(W))
 
 """
 `isleftdescent(W::CoxeterGroup,w,i::Integer)`
@@ -960,7 +961,6 @@ function isrightdescent(W::CoxSym,w,i::Integer)
  preimage(j,w)>preimage(k,w)
 end
 
-degrees(W::CoxSym)=2:ngens(W)+1
 """
 `cartan(W::CoxeterGroup)`  The Cartan matrix of `W`.
 """

@@ -505,6 +505,20 @@ end
 
 #-------Finite Coxeter groups --- T=type of elements----T1=type of roots------
 const ComplexReflectionGroup=Union{PermRootGroup,FiniteCoxeterGroup}
+@GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T}}
+  G::PRG{T1,T}
+  rootdec::Vector{Vector{T1}}
+  N::Int
+end
+
+@GapObj struct FCSG{T,T1} <: FiniteCoxeterGroup{Perm{T}}
+  G::PRSG{T1,T}
+  rootdec::Vector{Vector{T1}}
+  N::Int
+  parent::FCG{T,T1}
+end
+
+const FC=Union{FCG,FCSG}
 
 """
 `inversions(W::FiniteCoxeterGroup, w::AbstractVector{<:Integer})`
@@ -531,7 +545,7 @@ julia> inversions(W,[2,1,2])
  1
 ```
 """
-CoxGroups.inversions(W::FiniteCoxeterGroup,w::AbstractVector{<:Integer})=
+CoxGroups.inversions(W::FC,w::AbstractVector{<:Integer})=
    map(i->action(W,w[i],W(w[i-1:-1:1]...)),eachindex(w))
 
 """
@@ -557,7 +571,7 @@ julia> map(N->with_inversions(W,N),combinations(1:nref(W)))
  (1,5)(2,4)(3,6)
 ```
 """
-function with_inversions(W,N)
+function with_inversions(W::FC,N)
   w=one(W)
   n=N
   while !isempty(n)
@@ -596,7 +610,7 @@ E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆�
 julia> standard_parabolic(W,R)
 ```
 """
-function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
+function standard_parabolic(W::FC,I::AbstractVector{<:Integer})
   if isempty(I) return Perm() end
   b=W.rootdec[I]
   heads=map(x->findfirst(!iszero,x),toL(rowspace(toM(b))))
@@ -616,7 +630,7 @@ function standard_parabolic(W::FiniteCoxeterGroup,I::AbstractVector{<:Integer})
   end
 end
 
-standard_parabolic(W::FiniteCoxeterGroup,H::FiniteCoxeterGroup)=
+standard_parabolic(W::FC,H::FC)=
   if !all(isinteger,cartan(W)) standard_parabolic(W.G,H.G)
   else standard_parabolic(W,inclusiongens(H,W))
   end
@@ -639,9 +653,9 @@ julia> badprimes(W)
  5
 ```
 """
-function badprimes(W::FiniteCoxeterGroup)
+function badprimes(W::FC)
   if isempty(W.rootdec) return Int[] end
-  collect(setdiff(vcat(collect.(keys.(factor.(Int.(unique(vcat(W.rootdec...))))))...),[0,-1]))
+  collect(setdiff(vcat(collect.(keys.(factor.(Int.(W.rootdec[nref(W)]))))...),[0,-1]))
 end
 
 """
@@ -669,12 +683,12 @@ true
 ```
 For now only works for finite Coxeter groups.
 """
-describe_involution(W,w)=simpleroots_subsystem(W,
+describe_involution(W,w)=simpleroots_subsystem(W::FC,
                                         filter(i->action(W,i,w)==i+W.N,1:W.N))
 
 Base.length(W::FiniteCoxeterGroup,w)=count(i->isleftdescent(W,w,i),1:nref(W))
 
-dimension(W::FiniteCoxeterGroup)=2*nref(W)+Gapjm.rank(W)
+dimension(W::FiniteCoxeterGroup)=2*nref(W)+rank(W)
 const dim=dimension
 Base.length(W::FiniteCoxeterGroup)=prod(degrees(W))
 @inline Base.parent(W::FiniteCoxeterGroup)=W
@@ -688,25 +702,22 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
 # derive  it  from  CoxeterGroup  and  represent  the  other inheritance by
 # composition.  Thus, implementations  of FiniteCoxeterGroups  have a field
 # .G, a PermRootGroup, to which we forward the following methods.
-@forward FiniteCoxeterGroup.G PermRoot.action, PermRoot.cartan, 
+@forward FC.G PermRoot.action, PermRoot.cartan, 
  PermRoot.coroots, PermRoot.coxnum, PermRoot.inclusion, 
  PermRoot.inclusiongens, PermRoot.independent_roots, PermRoot.invariants, 
  PermRoot.invariant_form, PermRoot.YMatrix, PermRoot.PermX, PermRoot.PermY, 
- PermRoot.rank, PermRoot.roots, PermRoot.reflchar,
-#PermRoot.reflections,
- PermRoot.refls,
+ PermRoot.rank, PermRoot.roots, PermRoot.reflection_character,
  PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,
- PermRoot.semisimplerank, PermRoot.simplecoroots,
+ PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
- PermRoot.central_action, Perms.reflength, Perms.largest_moved_point
+ PermRoot.central_action, 
+ Perms.reflection_length, Perms.largest_moved_point
 
-PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=
-   stabilizer(W.G,p,ontuples)
+ PermRoot.refls(W::FC)=refls(W.G)
 
 if false # slower now with changes in PermGroups
-function Groups.transporting_elt(W::FiniteCoxeterGroup,H1::FiniteCoxeterGroup,
-    H2::FiniteCoxeterGroup)
+function Groups.transporting_elt(W::FC,H1::FC,H2::FC)
   if parent(W)!=parent(H1) || parent(W)!=parent(H1) error("not same parent") end
   if isomorphism_type(H1)!=isomorphism_type(H2) return end
   PH1=parabolic_closure(W,inclusiongens(H1,W))
@@ -726,17 +737,11 @@ function Groups.transporting_elt(W::FiniteCoxeterGroup,H1::FiniteCoxeterGroup,
   p1*p*q*inv(p2)
 end
 else
-Groups.transporting_elt(H::FiniteCoxeterGroup,R::FiniteCoxeterGroup,G::FiniteCoxeterGroup)=
-transporting_elt(H.G,sort(inclusiongens(R)),sort(inclusiongens(G)),onsets)
+Groups.transporting_elt(H::FC,R::FC,G::FC)=
+  transporting_elt(H.G,sort(inclusiongens(R)),sort(inclusiongens(G)),onsets)
 end
 
 #--------------- FCG -----------------------------------------
-@GapObj struct FCG{T,T1}<:FiniteCoxeterGroup{Perm{T}}
-  G::PRG{T1,T}
-  rootdec::Vector{Vector{T1}}
-  N::Int
-end
-
 function Base.show(io::IO, W::FCG)
   if haskey(W,:callname)
     if hasdecor(io) printTeX(io,W.TeXcallname)
@@ -884,7 +889,7 @@ torus(i::Integer)=FCG(PRG(i),Vector{Int}[],0,Dict{Symbol,Any}())
 "`istorus(W)` whether `W` is a torus"
 istorus(W)=isempty(roots(W))
 
-PermRoot.radical(W::FiniteCoxeterGroup)=torus(rank(W)-semisimplerank(W))
+PermRoot.radical(W::FC)=torus(rank(W)-semisimplerank(W))
 
 "`coxeter_group()` or `coxgroup()` the trivial Coxeter group"
 CoxGroups.coxeter_group()=torus(0)
@@ -946,7 +951,7 @@ end
 PermRoot.invariant_form(W::FiniteCoxeterGroup)=
   Diagonal(rootlengths(W,1:ngens(W)))*cartan(W)
 
-function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
+function Base.:*(W1::FC,W2::FC)
   r=cat(simpleroots(parent(W1)),simpleroots(parent(W2)),dims=[1,2])
   cr=cat(simplecoroots(parent(W1)),simplecoroots(parent(W2)),dims=[1,2])
   res=rootdatum(r,cr)
@@ -963,23 +968,16 @@ function Base.:*(W1::FiniteCoxeterGroup,W2::FiniteCoxeterGroup)
                                inclusiongens(W2).+ngens(parent(W1))))
 end
 
-Base.:*(W1::FiniteCoxeterGroup,W2::PermRootGroup)=W1.G*W2
-Base.:*(W1::PermRootGroup,W2::FiniteCoxeterGroup)=W1*W2.G
+Base.:*(W1::FC,W2::PermRootGroup)=W1.G*W2
+Base.:*(W1::PermRootGroup,W2::FC)=W1*W2.G
 
-function Base.:^(W::FiniteCoxeterGroup,p::Perm)
+function Base.:^(W::FC,p::Perm)
   WW=parent(W)
   if !(p in WW) error("can only conjugate in parent") end
   reflection_subgroup(WW,inclusiongens(W).^p)
 end
 
 #--------------- FCSG -----------------------------------------
-@GapObj struct FCSG{T,T1} <: FiniteCoxeterGroup{Perm{T}}
-  G::PRSG{T1,T}
-  rootdec::Vector{Vector{T1}}
-  N::Int
-  parent::FCG{T,T1}
-end
-
 Base.show(io::IO, W::FCSG)=show(io,W.G)
 
 function Base.show(io::IO,t::Type{FCSG{T,T1}})where {T,T1}
@@ -1125,7 +1123,7 @@ representation on ``X(ZL_J/ZG)``. (according to
   - `R.parentMap=` the list of `v(s,J)` corresponding to `.relativeIndices`.
   - `R.MappingFromNormalizer`  is  a  function  mapping `J`-reduced elements of ``N_W(W_J)`` to elements of `R`.
 """
-function relative_group(W::FiniteCoxeterGroup,J::Vector{<:Integer})
+function relative_group(W::FC,J::Vector{<:Integer})
   S=eachindex(gens(W))
   if !issubset(J,S)
     error("implemented only for standard parabolic subgroups")

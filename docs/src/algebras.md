@@ -5,6 +5,6 @@ Pages=["algebras.md"]
 
 ```@docs
 Algebras
-Groups.isabelian(::FiniteDimAlgebra)
+isabelian(::FiniteDimAlgebra)
 Algebras.GroupAlgebra
 SolomonAlgebra

@@ -158,7 +158,6 @@ function BDSymbols(n,d)
               chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
 end
 
-node="O"
 bar="\u2014"
 rdarrow(n)="\u21D0"^(n-1)*" "
 ldarrow(n)="\u21D2"^(n-1)*" "
@@ -167,10 +166,11 @@ dbar="\u2550"
 #dbar="="
 tbar(n)="\u2261"^(n-1)*" "
 vbar="\UFFE8" # "\u2503"
-c2="\u25cb"
+c2="\u2461" # "\u2B55"
 c3="\u2462"
 c4="\u2463"
 c5="\u2464"
+node="O"
 
 function getlind(d)
   t=d.t
@@ -367,6 +367,15 @@ function Base.show(io::IO,d::Diagram,::Val{:G22})
   print(io,ind[1]," "^3,ind[3]," ",f(1,2,3,1,2),"=",f(2,3,1,2,3),"=",f(3,1,2,3,1))
 end
 
+function Base.show(io::IO,d::Diagram,::Val{:G24})
+  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",c2," ",ind[1]," ",d.t)
+  println(io," / \\")
+  print(io,c2," ",dbar^2,c2)
+  println(io,"  ",f(2,3,1,2,3,1,2,3,1),"==",f(3,2,3,1,2,3,1,2,3))
+  print(io,ind[2]," "^3,ind[3])
+end
+
 function Base.show(io::IO,d::Diagram,::Val{:G25})
   l,ind=getlind(d)
   println(io,c3," ",bar^2,c3," ",bar^2,c3," ",d.t)
@@ -379,34 +388,22 @@ function Base.show(io::IO,d::Diagram,::Val{:G26})
   print(io,ind[1]," "^3,ind[2]," "^3,ind[3])
 end
 
-function Base.show(io::IO,d::Diagram,::Val{:G32})
-  l,ind=getlind(d)
-  println(io,c3," ",bar^2,c3," ",bar^2,c3," ",bar^2,c3," ",d.t)
-  print(io,ind[1]," "^3,ind[2]," "^3,ind[3]," "^3,ind[4])
-end
-
-function Base.show(io::IO,d::Diagram,::Val{:G24})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io,"  ",ind[1]," "^4,d.t)
-  println(io," / \\")
-  print(io,ind[2],dbar^3,ind[3])
-  println(io,"  ",f(2,3,1,2,3,1,2,3,1),"==",f(3,2,3,1,2,3,1,2,3))
-end
-
 function Base.show(io::IO,d::Diagram,::Val{:G27})
   l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io,"  ",ind[1]," "^4,d.t)
+  println(io,"  ",c2," ",ind[1]," ",d.t)
   println(io, " / \\")
-  print(io,ind[2],dbar^3,ind[3])
+  print(io,c2," ",dbar^2,c2)
   println(io,"  ",f(3,2,3,1,2,3,1,2,3,1,2,3),"==",f(2,3,1,2,3,1,2,3,1,2,3,2))
+  print(io,ind[2]," "^3,ind[3])
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G29})
   l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^6,ind[4]," "^3,d.t)
-  println(io,"     /\"\\")
-  print(io,ind[1],bar^3,ind[2],dbar^3,ind[3])
-  println(io," ",f(4, 3, 2, 4, 3, 2),"==",f(3, 2, 4, 3, 2, 4))
+  println(io," "^6,c2," ",f(4)," "^2,d.t)
+  println(io,"     /\u2016\\")
+  print(io,c2," ",bar^2,c2," ",dbar^2,c2)
+  println(io,"  ",f(4, 3, 2, 4, 3, 2),"==",f(3, 2, 4, 3, 2, 4))
+  print(io,f(1)," "^3,f(2)," "^3,f(3))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G31})
@@ -415,6 +412,12 @@ function Base.show(io::IO,d::Diagram,::Val{:G31})
   println(io," \\ /3\\ /")
   print(io,"  ",ind[1],bar^3,ind[3],"     i.e. A₅ on ")
   println(io,f(1,4,2,5,3)," plus ",f(1,2,3),"==",f(2,3,1),"==",f(3,1,2))
+end
+
+function Base.show(io::IO,d::Diagram,::Val{:G32})
+  l,ind=getlind(d)
+  println(io,c3," ",bar^2,c3," ",bar^2,c3," ",bar^2,c3," ",d.t)
+  print(io,ind[1]," "^3,ind[2]," "^3,ind[3]," "^3,ind[4])
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G33})

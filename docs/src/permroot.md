@@ -4,7 +4,7 @@ Pages=["permroot.md"]
 ```
 ```@docs
 PermRoot
-reflection
+asreflection
 reflectionMatrix
 PermRootGroup
 complex_reflection_group
@@ -27,15 +27,15 @@ unique_refls
 Reflection
 reflections
 reflection_length(::PermRootGroup,::Perm)
-simple_conjugating
 simple_reps
+simple_conjugating
 diagram
 hyperplane_orbits
 braid_relations
 reflection_representation(::PermRootGroup,w)
 reflection_representation(::PRG)
 reflection_representation(::PRG,::Integer)
-reflchar
+reflection_character
 YMatrix
 PermX
 reflection_eigenvalues

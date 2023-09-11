@@ -15,6 +15,6 @@ weightinfo
 weights
 coweights
 centralizer(::FiniteCoxeterGroup,::SemisimpleElement)
-SScentralizer_reps
-StructureRationalPointsConnectedCentre
+semisimple_centralizer_representatives
+structure_rational_points_connected_centre
 ```

@@ -1,11 +1,13 @@
 """
 Eigenspaces and `d`-Harish-Chandra series
 
-Let `Wϕ` be a reflection coset on a vector space `V` and `Lwϕ` a reflection
-subcoset  where `L` is a  parabolic subgroup (the fixator  of a subspace of
-`V`).  There  are  several  interesting  cases  where  the *relative group*
-``N_W(Lwϕ)/L``,  or a subgroup of it normalizing some further data attached
-to `L`, is itself a reflection group.
+Let  `Wϕ` be a  reflection coset on  a vector space  `V`; that is `Φ∈GL(V)`
+normalizes  the reflection group  `W`. Let `Lwϕ`  be a reflection subcoset;
+that  is `L` is a  parabolic subgroup of `W`  (the fixator of a subspace of
+`V`)  and  `w∈  W`  is  such  that  `wΦ`  normalizes `L`. There are several
+interesting  cases where the *relative group* ``N_W(Lwϕ)/L``, or a subgroup
+of it normalizing some further data attached to `L`, is itself a reflection
+group.
 
 A first example is the case where `ϕ=1` and `w=1`, `W` is the Weyl group of
 a   finite  reductive   group  ``𝐆^F``   and  the   Levi  subgroup  ``𝐋^F``
@@ -22,8 +24,8 @@ is a reflection group in its action on ``V_ζ``.
 
 A similar but more general example is when ``V_ζ`` is the `ζ`-eigenspace of
 some  element of  the reflection  coset `Wϕ`,  and is  of maximal dimension
-among such possible `ζ`-eigenspaces. Then the set of elements of `Wϕ` which
-act  by `ζ` on ``V_ζ`` is a certain subcoset `Lwϕ`, and ``N_W(Lwϕ)/L`` is a
+among  such `ζ`-eigenspaces. Then the set of  elements of `Wϕ` which act by
+`ζ`  on  ``V_ζ``  is  a  certain  subcoset  `Lwϕ`,  and ``N_W(Lwϕ)/L`` is a
 reflection group in its action on ``V_ζ`` (see [2.5
 Lehrer-Springer1999](biblio.htm#LS99)).
 
@@ -66,27 +68,26 @@ export relative_degrees, regular_eigenvalues,
 
 using ..Gapjm
 """
-`relative_degrees(WF,d)`
+`relative_degrees(WF,ζ::Root1=1)`
 
-Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
-root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)` or is a
-fraction  smaller `a/b` with `0<a<b`  and specifies `ζ=E(b,a)`. If omitted,
-`d`  is  taken  to  be  `1`,  specifying  `ζ=1`.  Then  if  ``V_ζ``  is the
-`ζ`-eigenspace  of some element of `WF`,  and is of maximal dimension among
-such   possible  `ζ`-eigenspaces,  and  `W`  is  the  group  of  `WF`  then
-``N_W(V_ζ)/C_W(V_ζ)``  is a reflection group in  its action on ``V_ζ``. The
-function  `relative_degrees` returns the reflection degrees of this complex
-reflection group, which are a subset of those of `W`.
+Let  `WF` be a reflection group or a  reflection coset and `ζ` be a root of
+unity.  Then if ``V_ζ`` is the `ζ`-eigenspace  of some element of `WF`, and
+is of maximal dimension among such `ζ`-eigenspaces (and if `WF ` is a coset
+`W`  is the group of `WF`) then ``N_W(V_ζ)/C_W(V_ζ)`` is a reflection group
+in  its  action  on  ``V_ζ``.  The  function `relative_degrees` returns the
+reflection  degrees of this complex reflection group, which are a subset of
+those of `W`. These degrees are computed by an invariant-theoretic formula:
+if   `(d₁,ε₁),…,(dₙ,εₙ)`  are   the  generalized   degrees  of   `WF`  (see
+[`degrees`](@ref)) they are the `dᵢ` such that `ζ^{dᵢ}=εᵢ`.
 
-These   degrees  are   computed  by   an  invariant-theoretic  formula:  if
-`(d₁,ε₁),…,(dₙ,εₙ)`  are the generalized degrees of  `WF` they are the `dᵢ`
-such that `ζ^{dᵢ}=εᵢ`.
-
+The  eigenvalue `ζ` can also  be specified by giving  an integer `d` (which
+then  specifies  `ζ=E(d)`)  or  a  fraction  `a//b`  which  then  specifies
+`ζ=E(b,a)`. If omitted, `ζ` is taken to be `1`.
 ```julia-repl
 julia> W=coxgroup(:E,8)
 E₈
 
-julia> relative_degrees(W,4)
+julia> relative_degrees(W,4) # the degrees of G₃₂
 4-element Vector{Int64}:
   8
  12
@@ -106,7 +107,7 @@ relative_degrees(W::Spets,z::Root1)=[d for (d,f) in degrees(W) if Cyc(z)^d==f]
 Let `W` be a reflection group or a reflection coset. A root of unity `ζ` is
 a *regular eigenvalue* for `W` if some element of `W` has a `ζ`-eigenvector
 which   lies   outside   of   the   reflecting  hyperplanes.  The  function
-`regular_eigenvalues` returns the list of regular eigenvalues for `W`.
+returns the list of regular eigenvalues for `W`.
 ```julia-repl
 julia> regular_eigenvalues(coxgroup(:G,2))
 6-element Vector{Root1}:
@@ -152,16 +153,18 @@ function regular_eigenvalues(W::Spets)
 end
 
 """
-`position_regular_class(WF,d=0)`
+`position_regular_class(WF,ζ::Root1=1)`
 
-Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
-root  of unity `ζ`:  either `d` is  a `Root1`, or  an integer and specifies
-`ζ=E(d)`  or is a fraction `a//b` with `0<a<b` and specifies `ζ=E(b,a)`. If
-omitted, `d` is taken to be `0`, specifying `ζ=1`. The root `ζ` should be a
-regular   eigenvalue  for  `WF`  (see  [`regular_eigenvalues`](@ref)).  The
-function  returns the  index of  the conjugacy  class of  `WF` which  has a
-`ζ`-regular eigenvector.
+Let  `WF` be a reflection group or a  reflection coset and `ζ` be a root of
+unity  such that some element of `WF` has a non-trivial `ζ`-eigenspace. The
+function   returns  the   index  of   a  conjugacy   class  of  `WF`  whose
+`ζ`-eigenspace  is  maximal  (amongst  all  `ζ `-eigenspaces of elements of
+`W`).  If not element of `WF` has a non-trivial `ζ`-eigenspace the function
+returns `nothing`.
 
+The  eigenvalue `ζ` can also  be specified by giving  an integer `d` (which
+then  specifies  `ζ=E(d)`)  or  a  fraction  `a//b`  which  then  specifies
+`ζ=E(b,a)`. If omitted, `ζ` is taken to be `1`.
 ```julia-repl
 julia> W=coxgroup(:E,8)
 E₈
@@ -188,14 +191,15 @@ function position_regular_class(W,d::Root1=E(1))
 end
 
 """
-`eigenspace_projector(WF,w[,d=1])`
+`eigenspace_projector(WF,w,ζ::Root1=1)`
 
-Let  `WF` be a reflection group or a reflection coset. Here `d` specifies a
-root  of unity `ζ`: either `d` is an integer and specifies `ζ=E(d)' or is a
-fraction  smaller  `a/b`  with  `0<a<b`  and  specifies `ζ=E(b,a)', or is a
-`Root1`.  The function  returns the  unique `w`-invariant  projector on the
-`ζ`-eigenspace of `w`.
+Let `WF` be a reflection group or a reflection coset, let `w` be an element
+of  `WF` and let  `ζ` be a  root of unity.  The function returns the unique
+`w`-invariant projector on the `ζ`-eigenspace of `w`.
 
+The  eigenvalue `ζ` can also  be specified by giving  an integer `d` (which
+then  specifies  `ζ=E(d)`)  or  a  fraction  `a//b`  which  then  specifies
+`ζ=E(b,a)`. If omitted, `ζ` is taken to be `1`.
 ```julia-repl
 julia> W=coxgroup(:A,3)
 A₃
@@ -211,7 +215,6 @@ julia> p=eigenspace_projector(W,w,1//4)
 
 julia> GenLinearAlgebra.rank(p)
 1
-
 ```
 """
 eigenspace_projector(W,w,d::Integer=1)=eigenspace_projector(W,w,E(d))
@@ -261,33 +264,31 @@ function relative_root(W,L,i)
 end
 
 """
-`split_levis(WF,d=E(1)[,ad])`
+`split_levis(WF,ζ::Root1=1[,ad])`
 
 Let  `WF`  be  a  reflection  group  or  a  reflection  coset.  If `W` is a
 reflection group it is treated as the trivial coset 'Spets(W)'.
-
-Here  `d`  specifies  a  root  of  unity  `ζ`: either `d` is an integer and
-specifies  `ζ=E(d)`  or  is  a  fraction  `a/b`  with `0<a<b` and specifies
-`ζ=E(b,a)`. If omitted, `d` is taken to be `E(1)`, specifying `ζ=1`.
-
 A  *Levi*  is  a  subcoset  of  the  form `W₁F₁` where `W₁` is a *parabolic
 subgroup* of `W`, that is the centralizer of some subspace of `V`, and `F₁∈
 WF`.
 
-`split_levis` returns  a list  of representatives  of conjugacy  classes of
-`d`-split  Levis of `W`. A  `d`-split Levi is a  subcoset of `WF` formed of
-all  the  elements  which  act  by  `ζ`  on  a given subspace `V_ζ`. If the
-additional  argument `ad`  is given,  it returns  only those subcosets such
-that  the common  `ζ`-eigenspace of  their elements  is of  dimension `ad`.
-These  notions  make  sense  and  thus  are  implemented  for  any  complex
-reflection group.
+Let `ζ` be a root of unity. `split_levis` returns a list of representatives
+of  conjugacy classes  of `ζ`-split  Levis of  `W`. A  `ζ`-split Levi  is a
+subcoset  of `WF` formed  of all the  elements which act  by `ζ` on a given
+subspace  `V_ζ`. If the additional argument  `ad` is given, it returns only
+those subcosets such that the common `ζ`-eigenspace of their elements is of
+dimension  `ad`. These notions make sense  and thus are implemented for any
+complex reflection group.
 
 In  terms of algebraic groups, an `F`-stable Levi subgroup of the reductive
-group  `𝐆  `  is  `d`-split  if  and  only  if it is the centralizer of the
-`Φ_d`-part  of its center. When `d=1`, we get the notion of a *split* Levi,
-which  is the same as a Levi sugroup of an `F`-stable parabolic subgroup of
-`𝐆 `.
+group  `𝐆  `  is  `ζ`-split  if  and  only  if it is the centralizer of the
+`Φ`-part  of its center, where `Φ` is a cyclotomic polynomial with `ζ` as a
+root. When `ζ=1`, we get the notion of a *split* Levi, which is the same as
+a Levi sugroup of an `F`-stable parabolic subgroup of `𝐆 `.
 
+The  eigenvalue `ζ` can also  be specified by giving  an integer `d` (which
+then  specifies  `ζ=E(d)`)  or  a  fraction  `a//b`  which  then  specifies
+`ζ=E(b,a)`. If omitted, `ζ` is taken to be `1`.
 ```julia-repl
 julia> W=coxgroup(:A,3)
 A₃

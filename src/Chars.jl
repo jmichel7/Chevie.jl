@@ -840,9 +840,6 @@ function classinfo(t::TypeIrred)
   ClassInfo(cl)
 end
 
-# put here because ordering of modules
-Chars.classinfo(W::CoxSym)=classinfo(refltype(W)[1])
-
 Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 
 """
@@ -904,7 +901,7 @@ function classinfo(W)
   end::ClassInfo
 end
 
-@forward FiniteCoxeterGroup.G classinfo, charinfo
+@forward Weyl.FC.G classinfo, charinfo
 
 function Base.show(io::IO, ::MIME"text/html", ci::ClassInfo)
   show(IOContext(io,:TeX=>true), "text/plain",ci)
@@ -1178,7 +1175,6 @@ function on_chars(W,aut)
   inv(Perm(ct,permute(ct,on_classes(W, aut),dims=2),dims=1))
 end
 
-CharTable(W::CoxSym)=CharTable(refltype(W)[1])
 """
 `representation(W,i)`
 

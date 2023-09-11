@@ -16,7 +16,7 @@ rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)
 describe_involution
 badprimes
-standard_parabolic(::FiniteCoxeterGroup,::AbstractVector{<:Integer})
+standard_parabolic(::Weyl.FC,::AbstractVector{<:Integer})
 inversions
 with_inversions
 torus(::Integer)

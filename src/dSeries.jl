@@ -764,12 +764,12 @@ function Weyl.relative_group(s::Series)
     if length(gen)>1 error("H not cyclic |H|=",length(H),order.(gen)) end
     res[:hom]=only(gen)
     r=restrV(reflrep(W, length(L)==1 ? res[:hom] : res[:hom].phi))
-    ref=reflection(improve_type(r))
+    ref=asreflection(improve_type(r))
     n=ref.eig
     n=invmod(exponent(n), order(n))
     r^=n # distinguished reflection
     res[:hom]^=n
-    merge!(res,pairs(reflection(improve_type(r))))
+    merge!(res,pairs(asreflection(improve_type(r))))
     res[:WH] = H
     res
   end
