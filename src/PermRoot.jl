@@ -515,18 +515,18 @@ inclusiongens(L,W)=restriction(W,inclusiongens(L))
 
 the number of reflections of `W`
 """
-nref(W::PermRootGroup)=sum(nref,refltype(W);init=0)
-nref(t::TypeIrred)=sum(degrees(t).-1)
-const number_of_reflections=nref
+number_of_reflections(W::PermRootGroup)=sum(nref,refltype(W);init=0)
+number_of_reflections(t::TypeIrred)=sum(degrees(t).-1)
+const nref=number_of_reflections
 
 """
 `number_of_hyperplanes(W::ComplexReflectionGroup)` or `nhyp(W)`
 
 The number of reflecting hyperplanes of `W`
 """
-nhyp(W::PermRootGroup)=sum(nhyp,refltype(W);init=0)
-nhyp(t::TypeIrred)=sum(codegrees(t).+1)
-const number_of_hyperplanes=nhyp
+number_of_hyperplanes(W::PermRootGroup)=sum(nhyp,refltype(W);init=0)
+number_of_hyperplanes(t::TypeIrred)=sum(codegrees(t).+1)
+const nhyp=number_of_hyperplanes
 
 """
 `coxeter_number(W::PermRootGroup,i)` or `coxnum`
@@ -537,7 +537,7 @@ the scalar by which the central element `∑_{s in reflections(W)}(1-s)` acts
 on  the representation of character `φ`.  The function `coxnum` returns the
 Coxeter number of the `i`-th irreducible character of `W`.
 """
-coxnum(W::PermRootGroup,i)=Int(charinfo(W).a[i]+charinfo(W).A[i])
+coxeter_number(W::PermRootGroup,i)=Int(charinfo(W).a[i]+charinfo(W).A[i])
 # The computation uses Proposition 0.1 of Michel's "tower equivalence"
 
 """
@@ -550,11 +550,11 @@ its reflection character. It is also given by the formula
 highest  reflection degree. For a non-irreducible group, the Coxeter number
 is the sum of those of its irreducible components.
 """
-coxnum(W::PermRootGroup)=sum(t->coxnum(t),refltype(W);init=0)
+coxeter_number(W::PermRootGroup)=sum(t->coxnum(t),refltype(W);init=0)
 
-coxnum(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
+coxeter_number(t::TypeIrred)=div(nhyp(t)+nref(t),rank(t))
 
-const coxeter_number=coxnum
+const coxnum=coxeter_number
 
 # should use independent_roots
 function Base.:(==)(W::PermRootGroup,W1::PermRootGroup)

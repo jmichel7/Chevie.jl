@@ -11,9 +11,9 @@ complex_reflection_group
 PRG
 rank
 semisimplerank
-nref
-nhyp
-coxnum
+number_of_reflections
+number_of_hyperplanes
+coxeter_number
 roots(::PermRoot.PRG)
 roots(::PermRoot.PRG,::Any)
 coroots
@@ -38,6 +38,7 @@ reflection_representation(::PRG,::Integer)
 reflection_character
 YMatrix
 PermX
+PermY
 reflection_eigenvalues
 degrees(::PermRootGroup)
 codegrees

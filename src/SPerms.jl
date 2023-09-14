@@ -573,7 +573,7 @@ end
 """
 `sstab_onmats([G,]M[,l])`
 
-If `onmats(m,p)=^(M,p;dims=(1,2))` (simultaneous signed conjugation of rows
+If  `onmats(M,p)=permute(M,p,p)` (simultaneous  signed conjugation  of rows
 and  columns, or conjugating by the  matrix of the signed permutation `p`),
 and  the argument `G`  is given (which  should be an  `SPermGroup`) this is
 just  a fast implementation of `centralizer(G,M,onmats)`. If `G` is omitted

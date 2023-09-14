@@ -1,4 +1,4 @@
-# Finite Coxeter groups and Weyl groups
+# Finite Coxeter groups, Weyl groups, crystallographic root systems
 ```@index
 Pages=["weyl.md"]
 ```

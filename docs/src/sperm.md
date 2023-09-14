@@ -17,4 +17,5 @@ Matrix(::SPerm)
 coxeter_hyperoctaedral_group
 reflection_subgroup(::CoxHyp,::AbstractVector{Int})
 sstab_onmats
+SPerms.SPerm_onmats
 ```
