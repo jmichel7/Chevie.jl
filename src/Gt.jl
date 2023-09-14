@@ -235,7 +235,7 @@ function ClassTypes(W,p=0)
   if W isa Spets WF=W;W=Group(W)
   else WF=spets(W)
   end
-  l=vcat(twistings.(Ref(WF),SScentralizer_reps(Group(WF), p))...)
+  l=vcat(twistings.(Ref(WF),sscentralizer_reps(Group(WF), p))...)
   ClassTypes(p,WF,map(x->ClassType(x,CycPol(generic_order(x,Pol(:q))),
     RationalUnipotentClasses(x,p),Dict{Symbol,Any}()),l),Dict{Symbol,Any}())
 end

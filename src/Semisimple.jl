@@ -485,15 +485,15 @@ function algebraic_center(W)
     s=transpose(s)*inv(Rational.(vcat(Z0.complement,Z0.gens)))
     ss(W,vec(transpose(vec(s)[1:semisimplerank(W)])*Z0.complement))
   end
-  ss=map(toAZ,gens(descAZ))
+  ssl=map(toAZ,gens(descAZ))
   #println("AZ=$descAZ")
   #println("res=",res)
   #println("gens(AZ)=",gens(descAZ))
   #println("ss=$ss")
   descAZ=if isempty(gens(AZ)) map(x->[x],eachindex(gens(descAZ)))
-         elseif gens(descAZ)==ss Vector{Int}[]
+         elseif gens(descAZ)==ssl Vector{Int}[]
          else # map of root data Y(Wsc)->Y(W)
-           h=Hom(descAZ,AZ,ss)
+           h=Hom(descAZ,AZ,ssl)
 #          println("h=$h")
            map(x->word(descAZ,x),gens(kernel(h)))
          end
