@@ -1,17 +1,17 @@
 #------------------- utilities -------------------------------
 """
-`Dispersal(v)`
+`nearest_pair(v)`
 `v`  is a list of complex numbers. The result is a pair whose first element
 is the minimum distance (in the complex plane) between two elements of `v`,
 and  the  second  is  a  pair  of  indices `[i,j]` such that `v[i]`, `v[j]`
 achieves this minimum distance.
 
-julia> Dispersal([1+im,0,1])
+julia> nearest_pair([1+im,0,1])
 (1, [1,3])
 """
-function Dispersal(v)
+function nearest_pair(v)
   l=combinations(eachindex(v),2)
-  m,c=findmin(map(x->abs(v[x[1]]-v[x[2]]),l))
+  m,c=findmin(((x,y),)->abs(v[x]-v[y]),l)
   (m,l[c])
 end
 
@@ -21,14 +21,15 @@ function DistSeg(z,a,b)
   z-=a
   r=abs(b)
   z*=r/b
-  real(z)<0 ? abs(z) : real(z)>r ? abs(z-b) : imag(z)>0 ? imag(z) : -imag(z)
+  @show z,b
+  real(z)<0 ? abs(z) : real(z)>r ? abs(z-r) : imag(z)>0 ? imag(z) : -imag(z)
 end
 
 """
 `discy2(p::Mvp)`
 
-The input should be an 'Mvp' in 'x' and 'y', with rational coefficients.
-The  function  returns the  discriminant  of  `p`  with respect  to  'x'
+The input should be an `Mvp` in `x` and `y`, with rational coefficients.
+The  function  returns the  discriminant  of  `p`  with respect  to  `x`
 (an  `Mvp` in  `y`);  it uses  interpolation to  reduce  the problem  to
 discriminants of univariate polynomials,  and works reasonably fast (not
 hundreds of times slower than MAPLE...).
@@ -39,17 +40,14 @@ hundreds of times slower than MAPLE...).
 function discy2(p)
   n=2*(1+degree(p,:x))*(1+degree(p,:y))
   v=map(1:n)do i
-    q=scal.(Pol(p(y=i),:x).c)
-    if isempty(q) return 0
-    elseif length(q)==1 return q[1]
-    else return GLinearAlgebra.det(resultant(q,map(*,q[2:end],1:length(q)-1)))
-    end
+    q=scalar.(Pol(p(y=i),:x).c)
+    isempty(q) ? 0 : length(q)==1 ? q[1] :
+       det_bareiss(resultant(q,map(*,q[2:end],1:length(q)-1)))
   end
-  Pol(1:n,v)
+  Pol(1:n,v)(Mvp(:y))
 end
 
-Chars.discriminant(p::Pol)=GLinearAlgebra.det(resultant(p[0:end],
-                                                 derivative(p)[0:end]))
+Chars.discriminant(p::Pol)=det_bareiss(resultant(p[0:end],derivative(p)[0:end]))
 
 discy(p)=Pol(discriminant(Pol(p,:x)))
 
@@ -59,7 +57,7 @@ discy(p)=Pol(discriminant(Pol(p,:x)))
 `v` and  `w` are vectors  representing coefficients of  two polynomials.
 The function returns  Sylvester matrix for these  two polynomials (whose
 determinant  is  the resultant  of  the  two  polynomials). It  is  used
-internally by Discy.
+internally by `discriminant`.
 
 ```julia-repl
 julia> @Mvp x,y
@@ -80,7 +78,7 @@ julia> d=Pol(derivative(p,:x),:x).c
  0
  3
 
-julia> resultant(c,d)
+julia> m=resultant(c,d)
 5×5 Matrix{Mvp{Int64, Int64}}:
  1  0  1  y³+y²  0
  0  1  0  1      y³+y²
@@ -88,7 +86,7 @@ julia> resultant(c,d)
  0  3  0  1      0
  0  0  3  0      1
 
-julia> GLinearAlgebra.det(m)
+julia> det_bareiss(m)
 Mvp{Int64}: 27y⁶+54y⁵+27y⁴+4
 ```
 """
@@ -165,17 +163,19 @@ function Loops(r)
 # roots setdiff(r.roots,r.trueroots). We get rid of the extra loops
 # and the associated segments and points, first saving the basepoint.
 # (its location is known now, and maybe not later? J.M.)
-  r.basepoint=r.loops[1][1]<0 ? r.segments[-r.loops[1][1]][2] :
-                                r.segments[r.loops[1][1]][1]
-  r.loops=r.loops[indexin(r.ismonic ? r.roots : r.trueroots,r.roots)]
-  segmentNumbers=sort(union(map(x->abs.(x),r.loops)))
-  r.segments=r.segments[segmentNumbers]
-  r.loops=map(x->map(y->y<0 ? -findfirst(==(-y),segmentNumbers) :
-                     findfirst(==(y),segmentNumbers), x),r.loops)
-  uniquePoints=sort(union(r.segments))
-  r.points=r.points[uniquePoints]
-  r.segments=map(x->indexin(x,uniquePoints), r.segments)
-  r.basepoint=findfirst(==(r.basepoint),uniquePoints)
+  p=r.loops[1][1]
+  r.basepoint=p<0 ? last(r.segments[-p]) : first(r.segments[p])
+  if !r.ismonic
+    r.loops=r.loops[sort(indexin(r.trueroots,r.roots))]
+    segmentNumbers=sort(union(map(x->abs.(x),r.loops)...))
+    r.segments=r.segments[segmentNumbers]
+    r.loops=map(x->map(y->y<0 ? -findfirst(==(-y),segmentNumbers) :
+                    findfirst(==(y),segmentNumbers), x),r.loops)
+    uniquePoints=sort(union(r.segments...))
+    r.points=r.points[uniquePoints]
+    r.segments=map(x->indexin(x,uniquePoints), r.segments)
+    r.basepoint=findfirst(==(r.basepoint),uniquePoints)
+  end
   if VKCURVE[:showSegments]
     println("# There are ",length(r.segments)," segments in ",
             length(r.loops)," loops")
@@ -194,7 +194,7 @@ function Loops(r)
   end
 # find the minimum distance m between two roots
   if length(r.roots)>1
-    m=Dispersal(r.roots)
+    m=nearest_pair(r.roots)
     if VKCURVE[:showRoots]
       print("\nMinimum distance==",m[1]," between roots ",m[2][1]," and ",m[2][2]," of discriminant\n")
     end
@@ -218,7 +218,7 @@ function Zeros(r)
     if VKCURVE[:showZeros] print("<",i,"/",length(r.points),">") end
     zz=SeparateRoots(Pol(r.curve(y=r.points[i])), 10^4)
     if length(zz)>1
-      m=Dispersal(zz)
+      m=nearest_pair(zz)
       if VKCURVE[:showZeros] println(" d==", m) end
       push!(mins,(m[1],i))
     end
@@ -253,20 +253,20 @@ end
 
 complexpol(p::Pol)=Pol(Complex{Float64}.(p.c),p.v)
 
-# VKCURVE.Discy(r)
-#  r should be a record with field r.curve, a quadratfrei Mvp in x,y.
-#  The discriminant of this curve with respect to x (a polynomial in y)
-#  is computed.
-#  First, the curve is split in
-#    r.curveVerticalPart  -- the Gcd of the coeffs in x (an Mvp in y).
-#    r.nonVerticalPart    -- curve/curveVerticalPart
-#  Then disc=discriminant of r.nonVerticalPart is computed. Its quadratfrei
-#  part  is computed, stripped  of factors common  with d and then factored
-#  (if possible which in GAP3 means it is a polynomial over the rationals),
-#  disc  is  stored  in  r.discy  as  a  GAP polynomial, and its factors in
-#  r.discyFactored as a list of Mvp in x.
-#  Some of  these computations may be  too costly for GAP,  in which case
-#  one has a better hope to complete them in MAPLE.
+"""
+`VKCURVE.Discy(r)`
+
+`r`  should be a record with field `r.curve`, a quadratfrei `Mvp` in `x,y`.
+The discriminant of this curve with respect to `x` (a polynomial in `y`) is
+computed. First, the curve is split in
+  - `r.curveVerticalPart`: gcd(coefficients(r.curve,:x)) (an Mvp in y).
+  - `r.nonVerticalPart`:   curve/curveVerticalPart
+Then `r.discy=discriminant(r.nonVerticalPart)` (a `Pol`) is computed. 
+Its   quadratfrei  part  is  computed,  stripped  of  factors  common  with
+`r.curveVerticalPart` and then factored (if possible which for now means it
+is  a  polynomial  over  the  rationals),  and  its  factors  are stored in
+`r.discyFactored` as a list of `Mvp` in `x`.
+"""
 function Discy(r)
   r.curveVerticalPart=gcd(Pol.(values(coefficients(r.curve,:x))))
   if VKCURVE[:showRoots] && degree(r.curveVerticalPart)>0
@@ -287,8 +287,13 @@ function Discy(r)
   d=exactdiv(d,common)
   d//=d[end]
   r.discy=d
-# r.discyFactored=[d]
-  r.discyFactored=factor(r.discy)
+  if eltype(coefficients(d))<:Union{Complex{<:Rational},Rational}
+    r.discyFactored=factor(r.discy)
+    if r.discyFactored isa Tuple r.discyFactored=r.discyFactored[1] end
+    r.discyFactored=collect(keys(r.discyFactored))
+  else
+    r.discyFactored=[d]
+  end
 end
 
 complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
@@ -296,7 +301,7 @@ complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
 function GetDiscyRoots(r)
   if VKCURVE[:showRoots] println("Computing roots of discriminant...") end
   if degree(r.curveVerticalPart)==0 r.roots=Complex{Float64}[]
-  else r.roots=SeparateRoots(r.curveVerticalPart, 1000)
+  else r.roots=Complex{Float64}.(SeparateRoots(r.curveVerticalPart, 1000))
   end
   append!(r.roots,vcat(map(p->SeparateRoots(p,1000),r.discyFactored)...))
 end
@@ -398,8 +403,7 @@ end
 function FundamentalGroup(c::Mvp;printlevel=0)
   SetPrintLevel(printlevel)
   r=PrepareCurve(c)
-  Discy(r)
-  GetDiscyRoots(r)
+  Discy(r);GetDiscyRoots(r)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
   loops=convert_loops(LoopsAroundPunctures(r.roots))
@@ -426,9 +430,8 @@ end
 # curve --  an Mvp in x and y "monic in x" describing a curve P(x,y)
 function PrepareFundamentalGroup(curve, name)
   r=PrepareCurve(curve)
-  Discy(r)
+  Discy(r);GetDiscyRoots(r)
   r.name=name
-  GetDiscyRoots(r)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
   merge!(r.prop,pairs(convert_loops(LoopsAroundPunctures(r.roots))))
@@ -545,13 +548,13 @@ julia> SeparateRootsInitialGuess(p,[1+im,2+im],1000)
 """
 function SeparateRootsInitialGuess(p, v, safety)
   if degree(p)==1 return [-p[0]/p[1]] end
-  radv=Dispersal(v)[1]/safety/2
+  radv=nearest_pair(v)[1]/safety/2
   res=map(e->NewtonRoot(p,e,radv),v)
-  if !any(isnothing,res) && Dispersal(v)[1]/2>=maximum(last.(res))
+  if !any(isnothing,res) && nearest_pair(v)[1]/2>=maximum(last.(res))
     return first.(res)
   end
   @show p,v,safety
-  println("dispersal required=",Dispersal(first.(res))[1]/safety/2)
+  println("dispersal required=",nearest_pair(first.(res))[1]/safety/2)
   println("obtained=",maximum(last.(res)))
   error()
 end
@@ -673,20 +676,18 @@ function cycorder(list, center)
   vcat(right, top, left, bottom)
 end
 
-# Input: (list of complex numbers,complex number)
-# Output: sublist of "neighbours" of the second input,
-#   x and y are neighbours iff no z is in the disk of diameter [x,y]
+# Input: (l::Vector{Complex},center::Complex)
+# Output: sublist of l of "neighbours" of center,
+#   y is neighbour of center iff no z∈l is in the disk of diameter [y,center]
 function neighbours(l, center)
-  function isneighbour(y)
-    d=abs2(y-center)
+  cycorder(filter(l)do y
+    if y==center return false end
     for z in l
-      if z!=y && abs2(y-z)+abs2(z-center)<=d return false end
+      if z==y || z==center continue end
+      if abs2(y-z)+abs2(z-center)<=abs2(y-center) return false end
     end
     return true
-  end
-  l=filter(y->y!=center,l)
-  l=filter(isneighbour, l)
-  cycorder(l, center)
+  end,center)
 end
 
 # value at z of an equation of the line (x,y)
@@ -700,6 +701,7 @@ function lineq(x, y, z)
   end
 end
 
+# mediatrix of segment (x,y) of length abs2(x-y) on each side of segment
 function mediatrix(x, y)
   if x≈y error("Undefined mediatrix") end
   (x+y)/2 .+[im,-im]*(x-y)
@@ -707,8 +709,8 @@ end
 
 crossing(v1,v2)=crossing(v1...,v2...)
 
-# Computes the intersecting point of two lines
-# returns false if the lines are parallel or a pair is a single
+# Computes the intersecton of lines (x1,x2) and (y1,y2)
+# returns nothing if the lines are parallel or a pair is a single
 function crossing(x1,x2,y1,y2)
   if x1≈x2 || y1≈y2 return nothing end
   if !(real(x1)≈real(x2))
@@ -764,12 +766,10 @@ function shrink(l)
   l
 end
 
-# converts old format (list of loops) to the new format :
-#  .points   : set of all endpoints of all segments
-#  .segments : set of all segments used, where endpoints are indexed
-#              as in points
-#     .loops : list of sequence of numbers of used segments
 """
+The  input is a list  of loops, each a  list of complex numbers representing
+the vertices of the loop.
+
 The output is a named tuple with fields
   - `points`: a list of complex  numbers.
   - `segments`:  a list of oriented segments, each of them  encoded by the
@@ -806,11 +806,15 @@ julia> LoopsAroundPunctures([0])
 ```
 """
 function LoopsAroundPunctures(originalroots)
+# tol=first(nearest_pair(originalroots))
+# close(x,y)=abs(x-y)<tol
+  close(x,y)=x≈y
   roots=originalroots
   n=length(roots)
   if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
+  @show roots
   ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
   sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
@@ -836,10 +840,10 @@ function LoopsAroundPunctures(originalroots)
 # To avoid trouble with points on the border of the convex hull,
 # we make a box around all the points;
   box=[Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
-       Complex(maxr+2, mini-2), Complex(maxr+2, maxi+2),
+       Complex(maxr+2, maxi+2), Complex(maxr+2, mini-2), 
        Complex((maxr+minr)/2, mini-(maxr-minr)/2-2),
-       Complex((maxr+minr)/2, maxi+(maxr-minr)/2+2),
        Complex(minr-(maxi-mini)/2-2, (maxi+mini)/2),
+       Complex((maxr+minr)/2, maxi+(maxr-minr)/2+2),
        Complex(maxr+(maxi-mini)/2+2, (maxi+mini)/2)]
   for y in ys
     y[:cycorder]=cycorder(vcat(filter(z->z!=y[:y],roots),box),y[:y])
@@ -873,7 +877,7 @@ function LoopsAroundPunctures(originalroots)
     k=length(y[:path])
     if k>1
       circleorigin=(y[:y]+y[:path][k-1])/2
-      k=findfirst(≈(circleorigin),y[:circle])
+      k=findfirst(x->close(x,circleorigin),y[:circle])
       y[:circle]=circshift(y[:circle],1-k)
     end
   end
@@ -881,7 +885,7 @@ function LoopsAroundPunctures(originalroots)
     k=length(y[:path])
     y[:handle]=Vector{Complex{Float64}}(vcat(map(1:k-1)do i
       l=sy(y[:path][i])[:circle]
-      l[1:findfirst(≈((y[:path][i]+y[:path][i+1])/2),l)]
+      l[1:findfirst(x->close(x,(y[:path][i]+y[:path][i+1])/2),l)]
      end...))
     y[:loop]=vcat(y[:handle], y[:circle], reverse(y[:handle]))
   end
@@ -893,7 +897,7 @@ function LoopsAroundPunctures(originalroots)
   map(y->y[:loop], ys)
 end
 
-function segs(r,v)
+function _segs(r,v)
   rp=Float64[]
   ip=Float64[]
   for seg in v
@@ -904,11 +908,11 @@ function segs(r,v)
   rp,ip
 end
 
-function loops(r,v)
+function _loops(r,v)
   rp=Float64[]
   ip=Float64[]
   for l in r[:loops][v]
-    nrp,nip=segs(r,l)
+    nrp,nip=_segs(r,l)
     append!(rp,nrp)
     append!(ip,nip)
   end
@@ -917,16 +921,16 @@ end
 #-------------------- ApproxMonodromy ----------------------------
 # for each point of a find closest point in b
 # Complain if the result is not a bijection between a and b of if
-# the distance between an a and the correponding b is bigger than 1/10
+# the distance between an a and the corresponding b is bigger than 1/10
 # of minimum distance between two b's
 function fit(a, b)
   dm=map(p->findmin(abs.(b.-p)),a)
   monodromyError=maximum(first.(dm))
 # println("# Monodromy error==",monodromyError)
-  if monodromyError>Dispersal(b)[1]/10 error("monodromy error too big") end
+  if monodromyError>nearest_pair(b)[1]/10 error("monodromy error too big") end
   pos=last.(dm)
   if sort(pos)!=1:length(pos) error("monodromy cannot find perm") end
-  return b[pos]
+  b[pos]
 end
 
 # Decimal Log of Norm of polynomial d evaluated at point p
@@ -1024,7 +1028,7 @@ function ApproxFollowMonodromy(r,segno,pr)
   prevzeros=r.zeros[p]
   n=length(prevzeros)
   if n==1 return r.B() end
-  mindm=Dispersal(prevzeros)[1]
+  mindm=nearest_pair(prevzeros)[1]
   p=r.points[p]
   v=r.points[q]-p
   prev=p
@@ -1113,27 +1117,28 @@ end
 # for each point of a find closest point in b
 function myfit(a, b)
   d=length(a)
-  dist=fill(0.0,d,d)
+  dist=fill(zero(real(eltype(a))),d,d)
   for k in 1:d, l in k+1:d
     dist[k,k]=dist[l,k]=dist[k,l]=abs2(a[k]-a[l])
   end
   dist[d,d]=dist[d,d-1]
-  R=map(k->minimum(dist[k,:])/4,1:d)
+  R=map(k->minimum(dist[k,:])*1//4,1:d)
   map(k->only(filter(i->abs2(i-a[k])<R[k], b)),1:d)
 end
 
+# sets coeff of degree i of p to x
 Base.setindex!(p::Pol{T},x::T,i::Integer) where T=p.c[i+1-p.v]=x
 
 # Sturm(pp,time)
-# if polynomial pp is positive  at time
+# if polynomial pp is positive  at time<1
 # returns some rational number t such that
 #    time<t<=1  and  pp  is positive on [time,t]
 # otherwise returns 0
 # [third input and second output is an adaptive factor to
 #  accelerate the computation]
-function Sturm(pp::Pol, time, adapt::Integer;pr=print)
+function Sturm(pp::Pol, time_, adapt::Integer;pr=print)
   q=Pol()
-  pol=pp((1-q)*time+q)
+  pol=pp((1-q)*time_+q)
   if pol[0]<=0
     print("*****",Float32(pol[0]))
     return [0, 0]
@@ -1151,12 +1156,12 @@ function Sturm(pp::Pol, time, adapt::Integer;pr=print)
   pr(m)
   if m==adapt && adapt>0
     if pol(3t//2)>0
-      if pol(2t)>0 res=[(1-2t)*time+2t, adapt-1]
-      else res=[(1-3t//2)*time+3t//2, adapt-1]
+      if pol(2t)>0 res=[(1-2t)*time_+2t, adapt-1]
+      else res=[(1-3t//2)*time_+3t//2, adapt-1]
       end
-    else res=[(1-t)*time+t, adapt]
+    else res=[(1-t)*time_+t, adapt]
     end
-  else res=[(1-t)*time+t, m]
+  else res=[(1-t)*time_+t, m]
   end
   res
 end
@@ -1237,9 +1242,7 @@ the order in which they occur.
 # seg: segment number
 # sprint: Print function (to screen, to file, or none)
 function FollowMonodromy(r,seg,sPrint)
-  if VKCURVE[:showInsideSegments] iPrint=print
-  else iPrint=function(arg...) end
-  end
+  iPrint=VKCURVE[:showInsideSegments] ? print : function(arg...) end
   p=r.curve
   dpdx=derivative(r.curve,:x)
   a,b=r.segments[seg]
@@ -1266,7 +1269,7 @@ function FollowMonodromy(r,seg,sPrint)
     iPrint("<$seg/",length(r.segments),">",lpad(steps,5))
     iPrint(" time=",lpad(time,11),"   ")
     for k in 1:d, l in k+1:d
-      dist[k,k]=dist[l,k]=dist[k,l]=abs2(big(v[k]-v[l]))
+      dist[k,k]=dist[l,k]=dist[k,l]=abs2((v[k]-v[l])*big(1))
     end
     dist[d,d]=dist[d,d-1]
     for k in 1:d
@@ -1287,9 +1290,7 @@ function FollowMonodromy(r,seg,sPrint)
       else
         iPrint("?")
         cptz=Pol(pt(;x=z))
-#       @show pt
-#       @show z
-#       @show cptz
+#       @show pt, z,cptz
         protp[k]=d^2*(real(cptz)^2+imag(cptz)^2)
         cdpdxtz=Pol(dpdxt(;x=z))
         protdpdx[k]=real(cdpdxtz)^2+imag(cdpdxtz)^2
@@ -1325,8 +1326,8 @@ function starbraid(y, offset, B)
   n=length(y)
   if n==1 return B() end
   k=argmin(y)
-  B((k:n-1)+offset...)*starbraid(y[setdiff(1:n,[k])],offset,B)/
-  B((n+1-k:n-1)+offset...)
+  B((k:n-1).+offset...)*starbraid(y[setdiff(1:n,[k])],offset,B)/
+  B((n+1-k:n-1).+offset...)
 end
 
 # In case two points have the same real projection, we use
@@ -1411,8 +1412,8 @@ function LBraidToWord(v1, v2, B)
     ut=(u+t)/2
     xut=map(k->x1[k]+ut*(x2[k]-x1[k]),1:n)
     put=inv(sortPerm(xut))
-    xt=xt^put
-    yt=yt^put
+    xt=permute(xt,put)
+    yt=permute(yt,put)
     xcrit=setapprox(xt)
     for x in xcrit
       posx=findfirst(≈(x;atol=10^-10),xt)
@@ -1436,17 +1437,6 @@ function LBraidToWord(v1, v2, B)
   return res
 end
 #----------------------- Presentation -------------------------------
-# Hurwitz action of the braid b on the list l of group elements
-function hurwitz(b,l)
-  l=copy(l)
-  for s in word(b)
-    if s>0 l[s:s+1]=[l[s+1],l[s]^l[s+1]]
-    else l[-s:-s+1]=[l[-s]*l[-s+1]*inv(l[-s]),l[-s]]
-    end
-  end
-  return l
-end
-
 # Implements the action of B_n on F_n
 #   Input:  element of B_n, ambient free group F_m
 #           (with m >= n; when m>n, Hurwitz
@@ -1478,43 +1468,47 @@ The second input is the free group on `n` generators. The first input is
 an  element  of  the  braid  group  on  `n`  strings,  in  its  CHEVIE
 implementation.
 """
-BnActsOnFn(b,F)=Hom(F,F,hurwitz(b,gens(F)))
+BnActsOnFn(b,F)=Hom(F,F,hurwitz(gens(F),b))
 
 """
 'VKQuotient(braids)'
 
-The input `braid` is a list of braids `b₁,…,b_d`, living in the braid group
+The  input `braid` is a list of braids `b₁,…,bᵣ`, living in the braid group
 on `n` strings. Each `bᵢ` defines by Hurwitz action an automorphism `φᵢ` of
-the  free group `Fₙ`. The function return the group defined by the abstract
-presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ > ``
+the free group `Fₙ`. The function returns the group defined by the abstract
+presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ >``
 
-|    gap> B:=Braid(CoxeterGroupSymmetricGroup(3));
-    function ( arg ) ... end
-    gap> b1:=B(1)^3; b2:=B(2);
-    1.1.1
-    2
-    gap> g:=VKQuotient([b1,b2]);
-    Group( f.1, f.2, f.3 )
-    gap>  last.relators;
-    [ f.2^-1*f.1^-1*f.2*f.1*f.2*f.1^-1, IdWord,
-      f.2^-1*f.1^-1*f.2^-1*f.1*f.2*f.1, f.3*f.2^-1, IdWord, f.3^-1*f.2 ]
-    gap> p:=PresentationFpGroup(g);display_balanced(p);
-    << presentation with 3 gens and 4 rels of total length 16 >>
-    1: c=b
-    2: b=c
-    3: bab=aba
-    4: aba=bab
-    gap> SimplifyPresentation(p);display_balanced(p);
-    #I  there are 2 generators and 1 relator of total length 6
-    1: bab=aba|
+```julia-repl
+julia> B=BraidMonoid(coxsym(3))
+BraidMonoid(𝔖 ₃)
+
+julia> g=VKQuotient([B(1,1,1),B(2)])
+FreeGroup(a,b,c)/[b⁻¹a⁻¹baba⁻¹,b⁻¹a⁻¹b⁻¹aba,.,.,cb⁻¹,c⁻¹b]
+
+julia> p=Presentation(g)
+Presentation: 3 generators, 4 relators, total length 16
+
+julia> display_balanced(p)
+1: c=b
+2: b=c
+3: bab=aba
+4: aba=bab
+
+julia> simplify(p)
+Presentation: 2 generators, 1 relator, total length 6
+Presentation: 2 generators, 1 relator, total length 6
+
+julia> display_balanced(p)
+1: bab=aba
+```
 """
 function VKQuotient(braids)
   # get the true monodromy braids and the Hurwitz action basic data
-  n=braids[1].M.W.n
+  n=ngens(braids[1].M.W)+1
   F=FpGroup(Symbol.('a'.+(0:n-1))...)
   rels=AbsWord[]
   f=gens(F)
-  for b in braids append!(rels,map((a,b)->a*inv(b),hurwitz(b,f),f)) end
+  for b in braids append!(rels,map((a,b)->a*inv(b),hurwitz(f,b),f)) end
   F/rels
 end
 
@@ -1526,12 +1520,12 @@ end
 # Printing controlled by VKCURVE.showAction
 function DBVKQuotient(r)
   # get the true monodromy braids and the Hurwitz action basic data
-  n=r.braids[1].M.W.n
+  n=ngens(r.braids[1].M.W)+1
   F=FpGroup(Symbol.('a'.+(0:n+length(r.verticallines)-1))...)
 # above the basepoint for the loops, locate the position of the string
 # corresponding to the trivializing horizontal line
   bzero=r.zeros[r.basepoint]
-  dist=abs2.(bzero-r.height)
+  dist=abs2.(bzero.-r.height)
   height=bzero[argmin(dist)]
   basestring=count(z->reim(z)<=reim(height),bzero)
   fbase=F(basestring)
@@ -1574,16 +1568,11 @@ VKCURVE[:showNewton]=true
 data=Dict()
 
 @Mvp x,y,z,t
-d=discriminant(crg(24))(x,y,z)
-data[24]=d(;x=1,z=x)
-d=discriminant(crg(27))(x,y,z)
-data[27]=d(;x=1,z=x)
-d=discriminant(crg(23))(x,y,z)
-data[23]=d(;x=1,z=x)
-d=discriminant(crg(29))(x,y,z,t)
-data[29]=d(;t=y+1,z=x)
-d=discriminant(crg(31))(x,y,z,t)
-data[31]=d(;t=x+1,z=y)
+data[23]=discriminant(crg(23))(x,y,z)(;x=1,z=x)
+data[24]=discriminant(crg(24))(x,y,z)(;x=1,z=x)
+data[27]=discriminant(crg(27))(x,y,z)(;x=1,z=x)
+data[29]=discriminant(crg(29))(x,y,z,t)(;t=y+1,z=x)
+data[31]=discriminant(crg(31))(x,y,z,t)(;t=x+1,z=y)
 data[34]=
 95864732434895657396628326400//164799823*x*y^3-598949723065092000//
 1478996726054382501274179923886253687929138281*x*y^7-

@@ -172,7 +172,7 @@ end
 Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
 
 function Gapjm.gap(p::Mvp)
-  res=join(map(p.d)do (k,c)
+  res=join(map(collect(p.d))do (k,c)
     c=bracket_if_needed(gap(c))
     kk=gap(k)
     if isempty(c) kk

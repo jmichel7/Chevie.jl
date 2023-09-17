@@ -29,7 +29,7 @@ function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
         h+=g
       end
     else # take g^((p^(k*d)-1)/2)-1
-      h=powermod(g, div(p^(k*d)-1,2),f)-1
+      h=powermod(g, div(Int128(p)^(k*d)-1,2),f)-1
     end
     g=gcd(f,h)
     if degree(f)>degree(g)>0 break end
