@@ -8,3 +8,4 @@ Algebras
 isabelian(::FiniteDimAlgebra)
 Algebras.GroupAlgebra
 SolomonAlgebra
+```
