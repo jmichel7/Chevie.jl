@@ -310,14 +310,14 @@ julia> @Mvp x,y,z,t
 julia> H=hecke(W,[[x,y]])
 hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y]])
 
-julia> H.para,rootpara(H)
-(Vector{Mvp{Int64, Int64}}[[x, y], [x, y]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄x½y½])
+julia> rootpara(H);H
+hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y]],rootpara=ζ₄x½y½)
 
 julia> H=hecke(W,[[x,y],[z,t]])
 hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]])
 
-julia> H.para,rootpara(H)
-(Vector{Mvp{Int64, Int64}}[[x, y], [z, t]], Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
+julia> rootpara(H);H
+hecke(B₂,Vector{Mvp{Int64, Int64}}[[x, y], [z, t]],rootpara=Mvp{Cyc{Int64}, Rational{Int64}}[ζ₄x½y½, ζ₄t½z½])
 
 julia> hecke(coxgroup(:F,4),(q,q^2)).para
 4-element Vector{Vector{Pol{Int64}}}:
@@ -326,7 +326,7 @@ julia> hecke(coxgroup(:F,4),(q,q^2)).para
  [q², -1]
  [q², -1]
 
-julia> hecke(complex_reflection_group(3,1,2),q).para
+julia> hecke(complex_reflection_group(3,1,2),q).para # spetsial parameters
 2-element Vector{Vector{Pol{Cyc{Int64}}}}:
  [q, ζ₃, ζ₃²]
  [q, -1]
@@ -810,10 +810,11 @@ julia> T=Tbasis(H);T(1)^3
 ```
 """
 Tbasis(H::HeckeAlgebra)=(x...)->x==() ? one(H) : Tbasis(H,x...)
-function Tbasis(H::HeckeAlgebra,w::Vector{<:Integer})
-  ww=H.W(w...)
+function Tbasis(H::HeckeAlgebra{C,T,TW},w::Vector{<:Integer}) where {C,T,TW<:Group{T}}
+  ww=H.W(w...)::T
   if length(w)==1 && w[1]>0 Tbasis(H,ww)
-  elseif all(>(0),w) && H.W isa CoxeterGroup && length(H.W,ww)==length(w) Tbasis(H,ww)
+  elseif all(>(0),w) && H.W isa CoxeterGroup && length(H.W,ww)==length(w) 
+    Tbasis(H,ww)
   else prod(i->i>0 ? Tbasis(H,H.W(i)) : inv(Tbasis(H,H.W(-i))),w)
   end
 end

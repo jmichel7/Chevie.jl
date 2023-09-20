@@ -41,9 +41,10 @@ with reduced expression `w=s₁…sₙ` we define ``q_w∈ Γ⁺`` by
 
 We  define the bar involution on `ℋ `  by linearity: on `ℤ[Γ]` we define it
 by  ``\\overline{∑_{γ∈ Γ}a_γγ}= ∑_{γ∈ Γ} a_γ γ⁻¹`` and we extend it to `ℋ `
-by  ``\\overline  Tₛ=Tₛ⁻¹  ``.  Then  the Kazhdan-Lusztig basis ``C^′_w`` is
-defined  as  the  only  basis  of  `ℋ  `  stable  by the bar involution and
-congruent to ``t_w`` modulo ``∑_{w∈ W}Γ⁻.t_w``.
+by  ``\\overline T_s=T_s^{-1}``  (equivalently `\\overline t_s=t_s^{-1}``).
+Then the Kazhdan-Lusztig basis ``C^′_w`` is defined as the only basis of `ℋ
+`  stable by  the bar  involution and  congruent to  ``t_w`` modulo ``∑_{w∈
+W}Γ⁻.t_w``.
 
 The  basis  ``C^′_w``  can  be  computed  as  follows.  We  define  elements
 ``R_{x,y}``  of `ℤ[Γ]` by  ``T_y⁻¹=∑_x \\overline{R_{x,y⁻¹}} q_x⁻¹T_x``. We

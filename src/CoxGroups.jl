@@ -886,12 +886,12 @@ coxeter_symmetric_group(n::Int)=coxeter_symmetric_group(1:n)
 
 const coxsym=coxeter_symmetric_group
 
-function coxsym(d::UnitRange)
-  gens=map(i->Perm(i,i+1;degree=d.stop),d.start:d.stop-1)
+function coxsym(d::UnitRange,n=d.stop)
+  gens=map(i->Perm(i,i+1;degree=n),d.start:d.stop-1)
   inversions=[(i,i+k) for k in 1:length(d)-1 for i in d.start:d.stop-k]
-  refs=[Perm(r...;degree=d.stop) for r in inversions]
+  refs=[Perm(r...;degree=n) for r in inversions]
   append!(refs,refs)
-  CoxSym(Group(gens),inversions,refs,d,Dict{Symbol,Any}())
+  CoxSym(Group(gens,one(prod(gens))),inversions,refs,d,Dict{Symbol,Any}())
 end
 
 function Base.show(io::IO, W::CoxSym)
@@ -976,7 +976,7 @@ The only reflection subgroups defined for `coxsym(n)` are for `I=1:m` for `m≤n
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if sort(I)!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
   if W.d.start+maximum(I)>W.d.stop error("range too large") end
-  coxsym(W.d.start.+(minimum(I)-1:maximum(I)))
+  coxsym(W.d.start.+(minimum(I)-1:maximum(I)),W.d.stop)
 end
 #------------------------ MatCox ------------------------------
 

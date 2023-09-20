@@ -102,7 +102,10 @@ Base.convert(::Type{SPerm{T}},p::SPerm{T1}) where {T,T1}=T==T1 ? p : SPerm(T.(p.
 
 @GapObj struct SPermGroup{T}<:Group{SPerm{T}}
   gens::Vector{SPerm{T}}
+  one::SPerm{T}
 end
+
+Base.one(G::SPermGroup)=G.one
 
 function Base.show(io::IO,G::SPermGroup)
   print(io,"Group([")
@@ -111,12 +114,12 @@ function Base.show(io::IO,G::SPermGroup)
 end
 
 function Groups.Group(a::AbstractVector{SPerm{T}}) where T
-  SPermGroup(filter(!isone,a),Dict{Symbol,Any}())
+  SPermGroup(filter(!isone,a),one(prod(a)),Dict{Symbol,Any}())
 end
 
-SPermGroup()=Group(SPerm{Idef}[])
+SPermGroup()=SPermGroup(SPerm{Idef}[],SPerm{Idef}(),Dict{Symbol,Any}())
 
-Base.one(p::SPerm)=SPerm(empty(p.d))
+Base.one(p::SPerm{T}) where T=SPerm(collect(T(1):T(length(p.d))))
 Base.one(::Type{SPerm{T}}) where T=SPerm(T[])
 Base.copy(p::SPerm)=SPerm(copy(p.d))
 

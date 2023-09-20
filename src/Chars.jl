@@ -92,18 +92,18 @@ We  now describe for each type our conventions for labeling the classes and
 characters.
 
 Type  `Aₙ`  (`n≥0`).  In  this  case  we  have  `W ≅ 𝔖ₙ₊₁`. The classes and
-characters  are labeled by partitions of `n+1`. The partition corresponding
-to  a class describes  the cycle type  for the elements  in that class; the
-representative   in  '.classtext'   is  the   concatenation  of  the  words
-corresponding  to each part, and to a part `i` is associated the product of
-`i-1`  consecutive generators (starting one  higher that the last generator
-used  for the previous  parts). The partition  corresponding to a character
-describes  the type of  the Young subgroup  such that the trivial character
-induced  from this subgroup  contains that character  with multiplicity `1`
-and such that every other character occurring in this induced character has
-a  higher `a`-value. Thus, the sign  character corresponds to the partition
-`(1ⁿ⁺¹)`  and the trivial character to the partition `(n+1)`. The character
-of the reflection representation of `W` is labeled by `(n,1)`.
+characters  are labelled by partitions of  `n+1`. The partition labelling a
+class  is the cycle type of the  elements in that class; the representative
+in  '.classtext' is  the concatenation  of the  words corresponding to each
+part,  where the word for a part  `i` is  the  product of `i-1` consecutive
+generators  (starting  one  higher  than  the  last  generator used for the
+previous  parts). The partition labelling a character describes the type of
+the  Young  subgroup  such  that  the  trivial  character induced from this
+subgroup  contains that character with multiplicity `1` and such that every
+other character occurring in this induced character has a higher `a`-value.
+Thus,  the sign  character is  labelled by  the partition  `(1ⁿ⁺¹)` and the
+trivial character by the partition `(n+1)`. The character of the reflection
+representation of `W` is labelled by `(n,1)`.
 
 Type  `Bₙ`  (`n≥2`).  In  this  case  `W=W(Bₙ)` is isomorphic to the wreath
 product  of the cyclic  group of order  `2` with the  symmetric group `𝔖ₙ`.
@@ -112,23 +112,24 @@ such  that the total sum of their  parts equals `n`. The pair corresponding
 to  a class describes the signed cycle type for the elements in that class,
 as in [Carter1972](biblio.htm#Car72). We use the convention that if `(λ,μ)`
 is such a pair then `λ` corresponds to the positive and `μ` to the negative
-cycles.  Thus, `(1ⁿ,-)` and `(-,1ⁿ)` label  the trivial class and the class
-containing  the longest element, respectively. The pair corresponding to an
-irreducible character is determined via Clifford theory, as follows.
+cycles.  Thus, `(1ⁿ,-)` and  `(-,1ⁿ)` label respectively  the trivial class
+and  the  class  of  the  longest  element.
 
-We  have a semidirect product decomposition `W(Bₙ)=N ⋊ 𝔖ₙ` where `N` is the
-standard  `n`-dimensional  `𝔽₂ⁿ`-vector  space.  For  `a,b  ≥  0` such that
-`n=a+b` let `η_{a,b}` be the irreducible character of `N` which takes value
-`1`  on the first `a` standard basis vectors and value `-1` on the next `b`
-standard  basis vectors of `N`. Then  the inertia subgroup of `η_{a,b}` has
-the  form `T_{a,b}=N.(𝔖_a × 𝔖_b)` and  we can extend `η_{a,b}` trivially to
-an  irreducible  character  `η̃_{a,b}`  of  `T_{a,b}`.  Let  `α` and `β` be
-partitions  of `a` and `b`, respectively. We take the tensor product of the
-corresponding  irreducible characters of `𝔖_a` and `𝔖_b` and regard this as
-an  irreducible  character  of  `T_{a,b}`.  Multiplying this character with
-`η̃_{a,b}`  and  inducing  to  `W(Bₙ)`  yields an irreducible character `χ=
-χ_{(α,β)}`  of `W(Bₙ)`. This defines the correspondence between irreducible
-characters and pairs of partitions as above.
+The  pair  corresponding  to  an  irreducible  character  is determined via
+Clifford  theory, as  follows. We  have a  semidirect product decomposition
+`W(Bₙ)=N  ⋊  𝔖ₙ`  where  `N`  is  the standard `n`-dimensional `𝔽₂ⁿ`-vector
+space.  For `a,b ≥ 0` such that  `n=a+b` let ``η_{a,b}`` be the irreducible
+character  of `N`  which takes  value `1`  on the  first `a` standard basis
+vectors  and value `-1` on the last `b` standard basis vectors of `N`. Then
+the  inertia subgroup of ``η_{a,b}`` has the form ``T_{a,b}=N.(𝔖_a × 𝔖_b)``
+and  we  can  extend  ``η_{a,b}``  trivially  to  an  irreducible character
+``η̃_{a,b}``  of ``T_{a,b}``. Let `α` and `β` be partitions of `a` and `b`,
+respectively.  We take the tensor  product of the corresponding irreducible
+characters  of `𝔖_a` and `𝔖_b` and  regard this as an irreducible character
+of  ``T_{a,b}``. Multiplying this character  with ``η̃_{a,b}`` and inducing
+to  `W(Bₙ)` yields  an irreducible  character ``χ=  χ_{(α,β)}`` of `W(Bₙ)`.
+This defines the correspondence between irreducible characters and pairs of
+partitions as above.
 
 For example, the pair `((n),-)` labels the trivial character and `(-,(1ⁿ))`
 labels  the  sign  character.  The  character  of  the  natural  reflection

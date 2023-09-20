@@ -123,8 +123,8 @@ divides  `nᵢ₊₁`. The function returns a list  of generators for each of th
 ```julia-repl
 julia> abelian_gens([Perm(1,2),Perm(3,4,5),Perm(6,7)])
 2-element Vector{Perm{Int16}}:
- (1,2)(6,7)
- (3,5,4)(6,7)
+ (6,7)
+ (1,2)(3,5,4)(6,7)
 ```
 """
 abelian_gens(l::Vector)=isempty(l) ? l : abelian_gens(Group(l))
