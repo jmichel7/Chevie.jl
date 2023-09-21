@@ -28,11 +28,12 @@ end
       blks=first.(eachmatch(r"```julia-repl(.*?)```"s,read(f,String)))
       stmts=vcat(map(blks)do s
         map(split(s,r"^julia> "m)[2:end])do t
+          if !('"' in t)  t=replace(t,"\\\\"=>"\\") end # hack
           e,i=Meta.parse(t,1)
           cmd=t[1:i-1]
           cmd=replace(cmd,r"\s*(#.*)?$"=>"") # replace final comment
           man=t[i:end]
-          if !('"' in man)  man=replace(man,"\\\\"=>"\\") end # hack
+#         if !('"' in man)  man=replace(man,"\\\\"=>"\\") end # hack
           man=replace(man,r"\s*$"m=>"")
           man=replace(man,r"\s*$"s=>"")
           if isempty(man) man="nothing" end

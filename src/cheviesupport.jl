@@ -87,7 +87,7 @@ CoxeterGroup()=coxgroup()
 CyclePermInt(p::Perm,i::Integer)=orbit(p,i)
 function CycleStructurePerm(p::Perm)
   if isone(p) return Int[] end
-  t=cycletype(p)
+  t=cycletype(p;trivial=false)
   res=[0,nothing]
   resize!(res,t[1]-1)
   res.=nothing
