@@ -726,7 +726,7 @@ rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
 
 @inline mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
 #-----------------------GenArtinMonoid-----------------------------------
-# braid monoid for e.g. infinite Coxeter groups
+# Artin monoid for arbitrary (e.g. infinite) finitely generated Coxeter groups
 @GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
   one::T
   atoms::Vector{T}
@@ -970,6 +970,9 @@ julia> fraction(b)
 """
 fraction(b::GarsideElt)=(denominator(b),numerator(b))
 
+Base.length(x::GarsideElt)=x.pd+length(x.elm) # Garside length
+Base.length(x::LocallyGarsideElt)=length(x.elm)
+
 function Base.getindex(x::GarsideElt{T},i::Integer)::T where T
   if x.pd<0 error("only defined for monoid") end
   if 1<=i<=x.pd return x.M.δ
@@ -978,16 +981,16 @@ function Base.getindex(x::GarsideElt{T},i::Integer)::T where T
   end
 end
 
-Base.getindex(x::GarsideElt{T},i::AbstractVector{<:Integer}) where T=
-  map(j->x[j]::T,i)
-
-Base.lastindex(x::GarsideElt)=x.pd+length(x.elm)
-
 function Base.getindex(x::LocallyGarsideElt,i::Integer)
   if i>length(x.elm) return one(x.M)
   else return x.elm[i]
   end
 end
+
+Base.getindex(x::LocallyGarsideElt{T},i::AbstractVector{<:Integer}) where T=
+  map(j->x[j]::T,i)
+
+Base.lastindex(x::LocallyGarsideElt)=length(x)
 
 """
 `α(b::LocallyGarsideElt)`
@@ -1224,7 +1227,7 @@ function Base.reverse(b::GarsideElt)
     res=GarsideElt(b.M.revMonoid,empty(b.elm),b.pd;check=false)
     if isempty(b.elm) return res end
     for s in reverse(b.elm)
-      res*=δad(b.M.revMonoid,s^-1,b.pd)
+      res*=δad(b.M.revMonoid,reverse(b.M,s),b.pd)
     end
   else
     if isempty(b.elm) return b end
@@ -2242,7 +2245,9 @@ group elements.
 """
 hurwitz(l,b::GarsideElt)=hurwitz(l,word(b))
 
-# example
+include("../contr/cp.jl") # Corran-Picantin monoid
+
+# example for shrink
 B=BraidMonoid(coxsym(21))
 b=[
 B(19,19,19),B(11,11),B(10,10,10,10),B(8,8,8),B(3,3,3),B(-1,-1,2,2,1,1),B(2,2,

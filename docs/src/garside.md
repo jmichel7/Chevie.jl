@@ -31,4 +31,5 @@ conjcat
 endomorphisms
 Presentation(::GarsideMonoid)
 shrink
+CorranPicantinMonoid
 ```

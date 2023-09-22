@@ -23,9 +23,9 @@ export PPerm, Atilde
 """
 a `PPerm` is a shiftless periodic permutation `f` of the integers
   - periodic of period `n` means `f(i+n)=f(i)+n`
-  - permutation means all `f(i)` are distinct mod `n`.
-  - no shift means `sum(f.(1:n))=sum(1:n)`
-it is stored in field `d` as the `Vector` `[f(1),…,f(n)]`
+  - then permutation means all `f(i)` are distinct mod `n`.
+  - no shift means `sum(f.(1:n))-sum(1:n)==0`
+it is represented in field `d` as the `Vector` `[f(1),…,f(n)]`
 """
 struct PPerm{T<:Integer}
   d::Vector{T}
@@ -48,7 +48,7 @@ Base.copy(p::PPerm)=PPerm(copy(p.d))
 Base.broadcastable(p::PPerm)=Ref(p)
 
 """
-`PPerm(n,c₁,…,cₗ)` where cycles `cᵢ` are tuples `(i₁,…,iₖ)=>d` representing
+`PPerm(n,c₁,…,cₗ)` where cycles `cᵢ` are pairs `(i₁,…,iₖ)=>d` representing
 the  permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`.  `=>d` can be omitted when `d==0`
 and `(i₁,)=>d` can be abbreviated to `i₁=>d`.
 """
@@ -91,7 +91,7 @@ end
 
 function Base.inv(x::PPerm)
   n=length(x.d)
-  l=map(i->i-mod(i,n),x.d-1)
+  l=map(i->i-mod(i,n),x.d.-1)
   ll=(1:n).^inv(Perm(x.d.-l))
   PPerm(ll.-l[ll])
 end
@@ -107,11 +107,11 @@ Base.:^(a::PPerm, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 Base.:/(a::PPerm,b::PPerm)=a*inv(b)
 Base.:\(a::PPerm,b::PPerm)=inv(a)*b
 
-#PPermOps.\=:=function(a,b)return a.d=b.d;end;
+Base.:(==)(a::PPerm,b::PPerm)=a.d==b.d
 
 # Non-trivial cycles of a PPerm; each cycle i_1,..,i_k,[d] is normalized
 # such that i_1 mod n is the smallest of i_j mod n and i_1 is in [1..n]
-function cycles(a::PPerm)
+function Perms.cycles(a::PPerm)
   res=Pair{Vector{Int},Int}[]
   n=length(a.d)
   l=trues(n)
@@ -282,7 +282,7 @@ end
 #
 ## Reflections (a,b[i]) are enumerated by lexicographical order of [i,a,b-a]
 ## with i positive --- recall that when a>b this reflection is printed (b,a[-i])
-function PermRoot.reflection(W::Atilde,i)
+function PermRoot.refls(W::Atilde,i::Integer)
   n=ngens(W)
   p,r=divrem(i-1,n*(n-1))
   ecart,pos=divrem(r,n)
@@ -293,7 +293,7 @@ Base.show(io::IO,G::Atilde)=print(io,"Atilde(",G.gens,")")
   
 function Atilde(n)
   if n<2 error(n," should be >=2") end
-  gens=map(i->PPerm((1:n)^Perm(i,i+1)),1:n-1)
+  gens=map(i->PPerm(permute(1:n,Perm(i,i+1))),1:n-1)
   push!(gens,PPerm(vcat([0],2:n-1,[n+1])))
   Atilde(gens,Dict{Symbol,Any}())
 end
