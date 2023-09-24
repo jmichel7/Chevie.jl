@@ -111,8 +111,8 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
     info("#I  found ", length(h[:redFactors]), " reducibles")
     if !(haskey(tmp, :stop) || haskey(h, :stop))
   # the stopping criterion has not yet been reached
-      for g in h[:redFactors] fac=Append(fac, factorSQF(g)) end
-    else fac=Append(fac, h[:redFactors])
+      for g in h[:redFactors] append!(fac, factorSQF(g)) end
+    else append!(fac, h[:redFactors])
     end
   end
   return fac
@@ -151,7 +151,7 @@ end
 
 #F  BombieriNorm(pol) . . . . . . . . . . . . compute weighted Norm [pol]_2
 function BombieriNorm(f)
-  n=degree(f)
+  n=big(degree(f))
   f*=big(1)
   ApproximateRoot(sum(i->abs(f[i])^2//binomial(n,i),0:degree(f)))
 end
