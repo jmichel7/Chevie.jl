@@ -128,11 +128,12 @@ function ApproxRational(r, s)
   div(n,u)//div(d,u)
 end
 
-#F  ApproximateRoot(r,e,f=10) . . approximate th e-th root of r
-##   with a denominator of 'f' digits.
+#F  ApproximateRoot(r,e,f=10) . . approximate e-th root of r
+##  with a denominator of 'f' digits.
 function ApproximateRoot(r,e=2,f=10)
   RootInt(x,e)=Integer(floor(x^(1/e)))
   x=big(RootInt(numerator(r), e)//RootInt(denominator(r), e))
+  if iszero(x) return x end
   nf=r
   c=0
   while true
@@ -279,12 +280,12 @@ function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
 end
 
 """
-`LogInt(n,base)`
+`LogInt(n::Integer,base::Integer)`
 
-returns  Int(floor(log(base,n))) but very accurately. Assumes n>0 and base>1.
+returns floor(Int,log(base,n)) but very accurately. Assumes n>0 and base>1.
 
 ```julia-repl
-julia> Fact.LogInt(1030,2)
+julia> Fact.LogInt(1024,2)
 10
 
 julia> Fact.LogInt(1,10)
@@ -292,14 +293,13 @@ julia> Fact.LogInt(1,10)
 ```
 """
 function LogInt(n, base)
-  if n <= 0 error("<n> must be positive") end
-  if base <= 1 error("<base> must be greater than 1") end
+  if n<1 error("n must be positive") end
+  if base<2 error("base must be greater than 1") end
   function log(b)
     if b>n return 0 end
-    i=2log(b^2)
+    i=2log(b^2) # changes n
     if b>n return i
-    else n=div(n, b)
-        return i+1
+    else n=div(n, b); return i+1
     end
   end
   log(base)

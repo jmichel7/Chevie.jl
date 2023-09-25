@@ -143,6 +143,7 @@ export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   longest, braid_relations, 
   coxeter_matrix, coxmat, 
   coxeter_symmetric_group, coxsym, CoxSym,
+  coxeter_hyperoctaedral_group, coxhyp, CoxHyp,
   coxeter_group, coxgroup,
   standard_parabolic_class, inversions, degrees, FiniteCoxeterGroup
 
@@ -977,6 +978,101 @@ function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
   if sort(I)!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
   if W.d.start+maximum(I)>W.d.stop error("range too large") end
   coxsym(W.d.start.+(minimum(I)-1:maximum(I)),W.d.stop)
+end
+#------------ Example II: HyperOctaedral groups as Coxeter groups
+
+@GapObj struct CoxHyp{T} <: FiniteCoxeterGroup{SPerm{T}}
+  G::SPermGroup{T}
+  n::Int
+end
+
+Base.iterate(W::CoxHyp,r...)=iterate(W.G,r...)
+Groups.gens(W::CoxHyp)=gens(W.G)
+
+"""
+`coxeter_hyperoctaedral_group(n)`  or `coxhyp(n)`
+
+The  Hyperoctaedral group (the group of all signed permutations of ±1,…,±n)
+as   a  Coxeter   group  of   type  `Bₙ`,   with  generators  `(1,-1)`  and
+`(i,i+1)(-i,-i-1)`.
+
+```julia-repl
+julia> elements(coxhyp(2))
+8-element Vector{SPerm{Int8}}:
+ ()
+ (1,2)
+ (1,-1)
+ (1,2,-1,-2)
+ (1,-2,-1,2)
+ (2,-2)
+ (1,-2)
+ (1,-1)(2,-2)
+```
+"""
+function coxeter_hyperoctaedral_group(n::Int)
+  CoxHyp{Int8}(hyperoctaedral_group(n),n,Dict{Symbol,Any}())
+end
+
+const coxhyp=coxeter_hyperoctaedral_group
+
+Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(rank(W)))")
+
+PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
+
+PermRoot.refltype(W::CoxHyp)=[TypeIrred(Dict(:series=>:B,
+                                         :indices=>collect(1:rank(W))))]
+
+CoxGroups.nref(W::CoxHyp)=ngens(W)^2
+
+CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
+
+PermRoot.rank(W::CoxHyp)=W.n
+CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
+PermRoot.inclusiongens(W::CoxHyp)=1:W.n
+
+function PermRoot.refls(W::CoxHyp{T})where T
+  get!(W,:refls)do
+    refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:rank(W)))
+    sreps=vcat([1],fill(2,ngens(W)-1),fill(1,rank(W)-1))
+    for i in 2:rank(W)-1 
+       append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i))
+       append!(sreps,fill(2,rank(W)-i))
+    end
+    for i in 1:rank(W)-1 
+      append!(refs,map(j->SPerm{Int8}(j,-j-i),1:rank(W)-i))
+      append!(sreps,fill(2,rank(W)-i))
+    end
+    append!(refs,refs)
+    append!(sreps,sreps)
+    W.simple_reps=sreps
+    W.unique_refls=collect(1:nref(W))
+    refs
+  end::Vector{SPerm{T}}
+end
+
+PermRoot.simple_reps(W::CoxHyp)=getp(refls,W,:simple_reps)
+
+function Perms.reflength(W::CoxHyp,w)
+  sym=nsym=0
+  for x in cycles(w)
+    if sort(x)==sort(-x) sym+=length(x)
+    else nsym+=length(x)-1
+    end
+  end
+  div(sym,2)+nsym
+end
+
+PermRoot.reflrep(W::CoxHyp,w::SPerm)=Matrix(w,rank(W))
+PermRoot.reflrep(W::CoxHyp,i::Integer)=Matrix(W(i),rank(W))
+PermRoot.reflrep(W::CoxHyp)=reflrep.(Ref(W),1:ngens(W))
+
+"""
+`reflection_subgroup(W::CoxHyp,I)`
+is defined only for `I=1:m` for `m≤ngens(W)`.
+"""
+function PermRoot.reflection_subgroup(W::CoxHyp,I::AbstractVector{Int})
+  if I!=1:length(I) error(I," should be 1:n for some n") end
+  CoxHyp(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
 end
 #------------------------ MatCox ------------------------------
 

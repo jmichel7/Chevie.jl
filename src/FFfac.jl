@@ -17,7 +17,6 @@ monic  irreducible  factors  of  degree  `d`  over  a  finite field `F` of
 characteristic `p`.
 """
 function factors_same_degree(f::Pol{FFE{p}}, d,F)where p
-  @show  degree(f),d
   if degree(f)==d return [f] end
   g=copy(f)
   while true

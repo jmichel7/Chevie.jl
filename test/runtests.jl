@@ -230,6 +230,7 @@ end
 @test mytest("CoxGroups.jl","isleftdescent(W,Perm(1,2),1)","true")
 @test mytest("CoxGroups.jl","W=coxsym(3)","𝔖 ₃")
 @test mytest("CoxGroups.jl","isrightdescent(W,Perm(1,2),1)","true")
+@test mytest("CoxGroups.jl","elements(coxhyp(2))","8-element Vector{SPerm{Int8}}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 @test mytest("CoxGroups.jl","W=coxgroup([2 -2;-2 2])","coxeter_group([2 -2; -2 2])")
 end
 @testset "Eigenspaces.jl" begin
@@ -264,7 +265,7 @@ end
 end
 @testset "Fact.jl" begin
 @test mytest("Fact.jl","factor(Pol(:q)^24-1)","(q-1) * (q²-q+1) * (q⁴-q²+1) * (q⁸-q⁴+1) * (q⁴+1) * (q²+1) * (q+1) * (q²+q+1)")
-@test mytest("Fact.jl","Fact.LogInt(1030,2)","10")
+@test mytest("Fact.jl","Fact.LogInt(1024,2)","10")
 @test mytest("Fact.jl","Fact.LogInt(1,10)","0")
 end
 @testset "Families.jl" begin
@@ -658,16 +659,13 @@ end
 @test mytest("SPerms.jl","Matrix(SPerm([-2,-1,-3]))","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
 @test mytest("SPerms.jl","m=[0 -1 0;-1 0 0;0 0 -1]","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
 @test mytest("SPerms.jl","SPerm(m)","(1,-2)(3,-3)")
-@test mytest("SPerms.jl","elements(coxhyp(2))","8-element Vector{SPerm{Int8}}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
-@test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
-@test mytest("SPerms.jl","g=sstab_onmats(fourier(uc.families[2]))","Group([(1,18)(3,-6)(8,-21)(10,-16)(11,22)(13,15),(1,-15)(2,-19)(3,-11)(6,22)(7,-12)(13,-18),(2,19)(4,-14)(5,20)(7,12),(1,-11)(2,-19)(3,-15)(5,-20)(6,13)(8,10)(16,21)(17,-17)(18,-22),(1,-22)(2,-19)(3,-13)(5,-20)(6,15)(8,-16)(10,-21)(11,-18)(17,-17),(1,6)(2,-19)(3,-18)(4,14)(8,16)(9,-9)(10,21)(11,-13)(15,-22),(1,13)(3,22)(4,14)(5,-20)(6,-11)(8,21)(9,-9)(10,16)(15,18)(17,-17)])")
-@test mytest("SPerms.jl","length(g)","32")
-@test mytest("SPerms.jl","f=SubFamilyij(chevieget(:families,:X)(12),1,3,(3+root(-3))//2);","nothing")
-@test mytest("SPerms.jl","M=fourier(conj(f));","nothing")
-@test mytest("SPerms.jl","uc=UnipotentCharacters(complex_reflection_group(6));","nothing")
-@test mytest("SPerms.jl","N=fourier(uc.families[2]);","nothing")
-@test mytest("SPerms.jl","p=SPerm(M,N;dims=(1,2))","(1,3)(5,-20,-5,20)(6,-18)(7,-12)(8,10)(11,15,-11,-15)(13,22)(14,-14)(16,21,-16,-21)(19,-19)")
-@test mytest("SPerms.jl","permute(M,p;dims=(1,2))==N","true")
+@test mytest("SPerms.jl","n=[-1 -1 -1 -2 2 -2 -3 -3 -3; -1 -1 -1 -3 3 -3 -2 -2 -2; -1 -1 -1 -1 1 -1 -1 -1 -1; -2 -3 -1 -3 1 -2 -1 -3 -2; 2 3 1 1 -2 3 3 2 1; -2 -3 -1 -2 3 -1 -2 -1 -3; -3 -2 -1 -1 3 -2 -2 -3 -1; -3 -2 -1 -3 2 -1 -3 -1 -2; -3 -2 -1 -2 1 -3 -1 -2 -3];","nothing")
+@test mytest("SPerms.jl","g=sstab_onmats(n)","Group([(1,6)(2,8)(5,-7),(1,8)(2,6)(4,9),(1,2)(4,9)(5,-7)(6,8),(1,-6)(2,-8)(3,-3)(4,-4)(5,7)(9,-9),(1,-8)(2,-6)(3,-3)(4,-9)(5,-5)(7,-7),(1,-2)(3,-3)(4,-9)(5,7)(6,-8)])")
+@test mytest("SPerms.jl","length(g)","8")
+@test mytest("SPerms.jl","p=sperm\"(1,-1)(2,5,3,-4,-2,-5,-3,4)(7,-9)\";","nothing")
+@test mytest("SPerms.jl","m=permute(n,p,p);","nothing")
+@test mytest("SPerms.jl","p=SPerm(m,n;dims=(1,2))","(1,8,-1,-8)(2,-9,-7,-4,-3,5,-6)")
+@test mytest("SPerms.jl","permute(m,p;dims=(1,2))==n","true")
 end
 @testset "Semisimple.jl" begin
 @test mytest("Semisimple.jl","W=rootdatum([-1 1 0;0 -1 1],[-1 1 0;0 -1 1])","A₂Φ₁")

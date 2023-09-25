@@ -111,6 +111,7 @@ using UsingMerge
 @reexport using FinitePosets
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
+include("SPerms.jl");@reexport using .SPerms
 include("Util.jl");@reexport using .Util
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
@@ -121,7 +122,6 @@ include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
-include("SPerms.jl");@reexport using .SPerms
 include("ComplexR.jl");@reexport using .ComplexR
 include("Chars.jl");@reexport using .Chars
 include("Symbols.jl");@reexport using .Symbols
