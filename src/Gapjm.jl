@@ -48,7 +48,7 @@ other terms, `Gapjm` is a meta-package for the following packages:
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * signed permutations (module [`SPerms`](@ref))
+  * signed permutations (module [`SignedPerms`](@ref))
   * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
@@ -111,7 +111,7 @@ using UsingMerge
 @reexport using FinitePosets
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
-include("SPerms.jl");@reexport using .SPerms
+include("SignedPerms.jl");@reexport using .SignedPerms
 include("Util.jl");@reexport using .Util
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf

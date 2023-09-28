@@ -13,18 +13,27 @@ julia> p=SPerm(-1)
 
 julia> q=SPerm(1,2)
 (1,2)
-
-julia> sort(elements(Group([p,q])))
-8-element Vector{SPerm{Int16}}:
- (1,-2)
- (1,-2,-1,2)
- (1,-1)(2,-2)
- (1,-1)
- (2,-2)
- ()
- (1,2,-1,-2)
- (1,2)
 ```
+The group of signed permutations of `1:n` is called the hyperoctaedral group.
+```
+julia> W=hyperoctaedral_group(2)
+Group([(1,-1),(1,2)])
+
+julia> elements(W)
+8-element Vector{SPerm{Int8}}:
+ ()
+ (1,-1)
+ (1,2)
+ (1,-2,-1,2)
+ (1,2,-1,-2)
+ (1,-2)
+ (2,-2)
+ (1,-1)(2,-2)
+```
+
+A  motivation for  me for  signed permutations  is to  find if two matrices
+differ  only by a simultaneous signed permutation of lines and columns. See
+the exmpale below with `SPerm(m,n;dims=(1,2))`.
 
 The  complete type of signed permutations is `SPerm{T}` where `T<:Integer`,
 where `Vector{T}` is the type of the vector which holds the image of `1:n`.
@@ -41,7 +50,7 @@ true
 ```
 SPerms are considered as scalars for broadcasting.
 """
-module SPerms
+module SignedPerms
 using PermGroups
 using Combinat: tally, collectby
 export SPerm, sstab_onmats, @sperm_str, signs, SPermGroup, hyperoctaedral_group
@@ -219,7 +228,8 @@ end
 
 """
 `cycletype(p::SPerm,n=length(p.d))`
-pair of partitions parameterizing the conjugacy class of `p` in `Bₙ`
+pair  of  partitions  parameterizing  the  conjugacy  class  of  `p` in the
+hyperoctaedral group `Bₙ`
 ```julia-repl
 julia> cycletype(SPerm(1,-1),2)
 2-element Vector{Vector{Int64}}:
@@ -445,6 +455,7 @@ end
 # SPerm(p,s)=SPerm(p.d.*s)
 # We have the property p=SPerm(Perm(p),signs(p))
 
+" `hyperoctaedral_group(n)` the hyperoctaedral group on `1:n`"
 hyperoctaedral_group(n::Int)=
   Group(pushfirst!(map(i->SPerm{Int8}(i-1,i),2:n),SPerm{Int8}(1,-1)))
 

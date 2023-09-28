@@ -20,6 +20,8 @@ cartan(::AbstractMatrix)
 coxeter_symmetric_group
 reflection_subgroup(::CoxSym,::AbstractVector{Int})
 cartan(::CoxSym)
+coxeter_hyperoctaedral_group
+reflection_subgroup(::CoxHyp,::AbstractVector{Int})
 reduced
 standard_parabolic_class
 coxeter_group(::AbstractMatrix)

@@ -158,7 +158,7 @@ cospecial(f::Family)=Int(get!(()->special(f),f,:cospecial))
 "`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(eigen(f))
 
-SPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
+SignedPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
 
 PermRoot.eigen(f::Family)=f.eigenvalues
 
