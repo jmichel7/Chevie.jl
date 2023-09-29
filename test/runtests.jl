@@ -260,8 +260,8 @@ end
 @testset "FFfac.jl" begin
 @test mytest("FFfac.jl","@Pol q","Pol{Int64}: q")
 @test mytest("FFfac.jl","f=q^3*(q^4-1)^2*Z(3)^0","Pol{FFE{3}}: q¹¹+q⁷+q³")
-@test mytest("FFfac.jl","factor(f)","q³ * (q²+1)² * (q+1)² * (q-1)²")
-@test mytest("FFfac.jl","factor(f,GF(9))","q³ * (q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)²")
+@test mytest("FFfac.jl","factor(f)","(q²+1)² * (q+1)² * (q-1)² * q³")
+@test mytest("FFfac.jl","factor(f,GF(9))","(q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)² * q³")
 end
 @testset "Fact.jl" begin
 @test mytest("Fact.jl","factor(Pol(:q)^24-1)","(q-1) * (q²-q+1) * (q⁴-q²+1) * (q⁸-q⁴+1) * (q⁴+1) * (q²+1) * (q+1) * (q²+q+1)")

@@ -362,7 +362,7 @@ function hecke(W::Group,p::Vector;rootpara::Vector=Any[])
   hecke(W,para;rootpara=convert(Vector{eltype(para[1])},rootpara))
 end
 
-function hecke(W::Group,p::C=1;rootpara::C=zero(C))where C
+function hecke(W::Group,p::C=1;rootpara::C=zero(p))where C
   if ngens(W)==0 para=Vector{C}[]
   elseif all(==(2),ordergens(W)) para=[[p,-one(p)] for o in ordergens(W)]
   else para=map(o->vcat([p],E.(o,1:o-1)),ordergens(W))

@@ -92,10 +92,10 @@ julia> f=q^3*(q^4-1)^2*Z(3)^0
 Pol{FFE{3}}: q¹¹+q⁷+q³
 
 julia> factor(f)
-q³ * (q²+1)² * (q+1)² * (q-1)²
+(q²+1)² * (q+1)² * (q-1)² * q³
 
 julia> factor(f,GF(9))
-q³ * (q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)²
+(q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)² * q³
 ```
 """
 function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
