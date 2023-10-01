@@ -205,10 +205,10 @@ function MinimizeBombieriNorm(f::Pol)
 end
 
 """
-`factor(f::Pol{<:Union{Integer,Rational}})`
+`factor(f::Pol{<:Union{Integer,Rational{<:Integer}}})`
 
-Factor over the integers the numerator of `f`. The result is a
-`Primes.Factorization{typeof(numerator(f))}`
+Factor `f` over the rationals. The result is a
+`Primes.Factorization{typeof(f)}`.
 
 ```julia-repl
 julia> factor(Pol(:q)^24-1)
@@ -274,9 +274,11 @@ function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
     t=promote_type(keytype(fact),typeof(shft))
     fact=Primes.Factorization{t}((t(p(Pol()+(p==Pol() ? 0 : shft)))=>m for (p,m) in fact)...)
   end
-  if d!=1 return fact,1//d
-  else return fact
+  if d!=1 
+    fact=convert(Primes.Factorization{Pol{Rational{Int}}},fact)
+    push!(fact,Pol(1//d)=>1)
   end
+  fact
 end
 
 """

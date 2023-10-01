@@ -70,7 +70,7 @@ julia> isisolated.(Ref(WF),l)
 """
 module Sscoset
 
-using Gapjm
+using ..Gapjm
 
 # IsSpecial(WF,c) c is an orbit of WF.phi on roots(Group(WF))
 # return true iff c is special in the sense of Digne-Michel

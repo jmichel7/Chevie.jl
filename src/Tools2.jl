@@ -62,9 +62,9 @@ end
 """
 `factor(p::Mvp)`
 
-`p`  should be of degree <=2 thus represents a quadratic form. The function
+`p`  should be of degree <=2 thus  represent a quadratic form. The function
 returns  a list  of two  linear forms  of which  `p` is the product if such
-exist, otherwise it returns [p].
+forms exist, otherwise it returns [p].
 
 ```julia-repl
 julia> @Mvp x,y

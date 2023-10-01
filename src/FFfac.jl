@@ -3,11 +3,11 @@ Factoring polynomials over finite fields
 """
 module FFfac
 
-using Primes: Primes
+using Primes: Primes, factor
 using LinearAlgebra: exactdiv
 
 using LaurentPolynomials: Pol, degree, shift, derivative, stringexp, coefficients
-using FiniteFields: FFE, GF
+using FiniteFields: FFE, GF, Z
 
 """
 `factors_same_degree(f::Pol{FFE{p}},d,F::GF)where p`
@@ -72,7 +72,7 @@ function root(f::Pol{FFE{p}},n::Integer)where p
   z=Z(p^d)
   r=map(0:div(degree(f),n)) do i
     e=f[i*n]
-    iszero(e) ? zero(z) : z^(div(log(e),n))
+    iszero(e) ? zero(z) : z^div(log(e),n)
   end
   Pol(r,div(f.v,n))
 end
@@ -98,7 +98,8 @@ julia> factor(f,GF(9))
 (q+1)² * (q-1)² * (q+Z₉²)² * (q+Z₉⁶)² * q³
 ```
 """
-function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
+function Primes.factor(f::Pol{FFE{p}},
+                       F=GF(p^maximum(degree.(coefficients(f)))))where p
   facs=Primes.Factorization{Pol{FFE{p}}}()
   # make the polynomial unitary, remember the leading coefficient for later
   l=f[end]
@@ -110,7 +111,7 @@ function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
     d=derivative(f)
     if iszero(d) # f is the p-th power of another polynomial
       h=factor(root(f,p),F)
-      ff=vcat(fill(h,p)...)
+      for k in keys(h) facs[k]=p*h[k] end
     else
       g=gcd(f,d)
       ff=factors_squarefree(exactdiv(f,g),F)
@@ -123,14 +124,11 @@ function Primes.factor(f::Pol{FFE{p}},F=GF(p^maximum(degree.(f.c))))where p
           facs[h]+=1
         end
       end
-      if degree(g)>1 # never happens?
-        append!(facs, factor(g,F))
-      end
+      if degree(g)>1 merge!(facs, factor(g,F)) end
     end
   end
-  if isone(l) facs
-  else facs,l
-  end
+  if !isone(l) push!(facs,Pol(l)=>1) end
+  facs
 end
 
 function Base.show(io::IO, ::MIME{Symbol("text/plain")}, 

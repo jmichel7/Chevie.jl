@@ -696,28 +696,6 @@ end
 @test mytest("Semisimple.jl","reflection_subgroup.(Ref(W),sscentralizer_reps(W))","6-element Vector{FiniteCoxeterSubGroup{Perm{Int16},Int64}}:\n G₂₍₎=Φ₁²\n G₂₍₁₎=A₁Φ₁\n G₂₍₂₎=Ã₁Φ₁\n G₂\n G₂₍₁₅₎=A₂\n G₂₍₂₆₎=Ã₁×A₁")
 @test mytest("Semisimple.jl","sscentralizer_reps(W,2)","5-element Vector{Vector{Int64}}:\n []\n [1]\n [2]\n [1, 2]\n [1, 5]")
 end
-@testset "SignedPerms.jl" begin
-@test mytest("SignedPerms.jl","SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
-@test mytest("SignedPerms.jl","p=SPerm(-1)","(1,-1)")
-@test mytest("SignedPerms.jl","q=SPerm(1,2)","(1,2)")
-@test mytest("SignedPerms.jl","SPerm([-2,-1,-3])==SPerm([-2,-1,-3,4])","true")
-@test mytest("SignedPerms.jl","cycles(SPerm(-1,2)*SPerm(3,-3)*SPerm(4,5,-4,-5))","3-element Vector{Vector{Int16}}:\n [1, -2]\n [3, -3]\n [4, 5, -4, -5]")
-@test mytest("SignedPerms.jl","cycletype(SPerm(1,-1),2)","2-element Vector{Vector{Int64}}:\n [1]\n [1]")
-@test mytest("SignedPerms.jl","p=SPerm([-2,-1,-3])","SPerm{Int64}: (1,-2)(3,-3)")
-@test mytest("SignedPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -30\n -20\n -40")
-@test mytest("SignedPerms.jl","p=SPerm([20,30,40],[-40,-20,-30])","(1,-2,3,-1,2,-3)")
-@test mytest("SignedPerms.jl","permute([20,30,40],p)","3-element Vector{Int64}:\n -40\n -20\n -30")
-@test mytest("SignedPerms.jl","Matrix(SPerm([-2,-1,-3]))","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
-@test mytest("SignedPerms.jl","m=[0 -1 0;-1 0 0;0 0 -1]","3×3 Matrix{Int64}:\n  0  -1   0\n -1   0   0\n  0   0  -1")
-@test mytest("SignedPerms.jl","SPerm(m)","(1,-2)(3,-3)")
-@test mytest("SignedPerms.jl","n=[-1 -1 -1 -2 2 -2 -3 -3 -3; -1 -1 -1 -3 3 -3 -2 -2 -2; -1 -1 -1 -1 1 -1 -1 -1 -1; -2 -3 -1 -3 1 -2 -1 -3 -2; 2 3 1 1 -2 3 3 2 1; -2 -3 -1 -2 3 -1 -2 -1 -3; -3 -2 -1 -1 3 -2 -2 -3 -1; -3 -2 -1 -3 2 -1 -3 -1 -2; -3 -2 -1 -2 1 -3 -1 -2 -3];","nothing")
-@test mytest("SignedPerms.jl","g=sstab_onmats(n)","Group([(1,6)(2,8)(5,-7),(1,8)(2,6)(4,9),(1,2)(4,9)(5,-7)(6,8),(1,-6)(2,-8)(3,-3)(4,-4)(5,7)(9,-9),(1,-8)(2,-6)(3,-3)(4,-9)(5,-5)(7,-7),(1,-2)(3,-3)(4,-9)(5,7)(6,-8)])")
-@test mytest("SignedPerms.jl","length(g)","8")
-@test mytest("SignedPerms.jl","p=sperm\"(1,-1)(2,5,3,-4,-2,-5,-3,4)(7,-9)\";","nothing")
-@test mytest("SignedPerms.jl","m=permute(n,p,p);","nothing")
-@test mytest("SignedPerms.jl","p=SPerm(m,n;dims=(1,2))","(1,8,-1,-8)(2,-9,-7,-4,-3,5,-6)")
-@test mytest("SignedPerms.jl","permute(m,p;dims=(1,2))==n","true")
-end
 @testset "Sscoset.jl" begin
 @test mytest("Sscoset.jl","WF=rootdatum(:u,6)","u₆")
 @test mytest("Sscoset.jl","l=quasi_isolated_reps(WF)","4-element Vector{SemisimpleElement{Root1}}:\n <1,1,1,1,1,1>\n <ζ₄,ζ₄,ζ₄,ζ₄³,ζ₄³,ζ₄³>\n <ζ₄,ζ₄,1,1,ζ₄³,ζ₄³>\n <ζ₄,1,1,1,1,ζ₄³>")

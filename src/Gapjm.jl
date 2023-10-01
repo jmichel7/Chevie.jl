@@ -40,6 +40,7 @@ other terms, `Gapjm` is a meta-package for the following packages:
   * [ModuleElts](https://github.com/jmichel7/ModuleElts.jl) (elements of a free module over some ring)
   * [Combinat](https://github.com/jmichel7/Combinat.jl) (combinatorics and some basic number theory)
   * [PermGroups](https://github.com/jmichel7/PermGroups.jl) (permutations, groups, permutations groups. It contains the modules `Perms` and `Groups` which could be separate packages)
+  * [SignedPerms](https://github.com/jmichel7/SignedPerms.jl) (signed permutations)
   * [MatInt](https://github.com/jmichel7/MatInt.jl) (Integer matrices and lattices)
   * [CycPols](https://github.com/jmichel7/CycPols.jl) (cyclotomic polynomials)
   * [GenLinearAlgebra](https://github.com/jmichel7/GenLinearAlgebra.jl) (linear algebra on any field/ring)
@@ -48,7 +49,6 @@ other terms, `Gapjm` is a meta-package for the following packages:
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * signed permutations (module [`SignedPerms`](@ref))
   * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
@@ -101,6 +101,7 @@ using UsingMerge
 # careful: use very little of LinearAlgebra
 @reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
 @reexport using PermGroups
+@reexport using SignedPerms
 @usingmerge verbose=true reexport CyclotomicNumbers
 @reexport using CyclotomicNumbers: bracket_if_needed, 
   format_coefficient, stringind
@@ -111,7 +112,6 @@ using UsingMerge
 @reexport using FinitePosets
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
-include("SignedPerms.jl");@reexport using .SignedPerms
 include("Util.jl");@reexport using .Util
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf

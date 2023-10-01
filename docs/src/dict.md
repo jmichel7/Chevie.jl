@@ -220,7 +220,7 @@ M.ToOrdinary(i)                             B(M,i)
 MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
 MatXPerm(W,p)                               reflection_representation(W,p) or reflrep
-MatYPerm                                    matY
+MatYPerm                                    YMatrix
 Mod1                                        modZ
 MovedPoints                                 support
 Mvp("x")                                    Mvp(:x)
@@ -255,6 +255,7 @@ PermList(v)                                 Perm(v)
 PermListList(l1,l2)                         Perm(l1,l2)
 PermMatMat(m,n)                             Perm(m,n;dims=(1,2))
 PermMatX                                    PermX
+PermMatY                                    PermY
 PermutationMat(p,dim)                       Matrix(p,dim)
 PermutationOnCharacters                     on_chars
 PermutationOnClasses                        on_classes
@@ -287,8 +288,8 @@ ReducedCoxeterWord(W,w)                     word(W,W(w...))
 ReducedExpressions(W,w)                     words(W,w)
 ReducedInRightCoset(W,w)                    reduced(W,w)
 ReducedRightCosetRepresentatives(W,H)       reduced(H,W)
-Reflection                                  refls(W,i) or reflectionmat(root,coroot)
-ReflectionCharacter                         reflchar
+Reflection                                  refls(W,i) or reflectionMatrix(root,coroot)
+ReflectionCharacter                         reflection_character or reflchar
 ReflectionCharValue                         tr(reflrep(W,w))
 ReflectionCoDegrees(W)                      codegrees(W)
 ReflectionDegrees(W)                        degrees(W)
@@ -312,6 +313,7 @@ Restricted                                  restricted
 RestrictedPartitions                        partitions
 RestrictedPerm(p,d)                         restricted(p,d)
 Reversed                                    reverse
+ReversedWord                                reverse
 RightDescentSet(W,w)                        rightdescents(W,w)
 RightGcd                                    rightgcd
 RightLcm                                    rightlcm
@@ -323,8 +325,8 @@ ScalarProduct                               Chars.scalarproduct
 ScalMvp                                     scalar
 SchurElements                               schur_elements
 SchurFunctor                                schur_functor
-SemisimpleCentralizerRepresentatives        SScentralizer_reps
-SemisimpleElement                           SS
+SemisimpleCentralizerRepresentatives        semisimple_centralizer_representatives or sscentralizer_reps
+SemisimpleElement                           ss
 SemisimpleRank                              semisimplerank
 SemisimpleSubgroup                          torsion_subgroup
 ShiftBeta                                   shiftβ
@@ -347,7 +349,7 @@ SplitLevis                                  split_levis
 Stabilizer                                  stabilizer
 StandardParabolic                           standard_parabolic
 StandardParabolicClass                      standard_parabolic_class
-StructureRationalPointsConnectedCentre      StructureRationalPointsConnectedCentre
+StructureRationalPointsConnectedCentre      structure_rational_points_connected_centre
 SubSpets                                    subspets
 SubTorus                                    SubTorus
 Sum                                         sum
