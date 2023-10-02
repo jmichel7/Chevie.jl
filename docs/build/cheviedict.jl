@@ -266,7 +266,7 @@ const ChevieDict=Dict(
 "Partitions"=>"partitions",
 "PartitionsSet"=>"partitions",
 "PartitionTuples"=>"partition_tuples",
-#PartitionTupleToString
+"PartitionTupleToString"=>"string_partition_tuple",
 "PermCosetsSubgroup(H,W)"=>"D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))",
 "PermListList(l1,l2)"=>"Perm(l1,l2)",
 "PermList(v)"=>"Perm(v)",

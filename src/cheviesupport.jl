@@ -110,7 +110,7 @@ Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,fill(k,v) for (k,v) in factor(n))
-HeckeCentralMonomials=central_monomials
+const HeckeCentralMonomials=central_monomials
 function Ignore() end
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
@@ -120,6 +120,7 @@ end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
 OnMatrices(a::Vector{<:Vector},b::Perm)=permute(permute.(a,b),b)
+const PartitionTupleToString=string_partition_tuple
 Permuted(x,p)=permute(x,p)
 function PermListList(l1,l2)
   l1=improve_type(l1)

@@ -50,7 +50,7 @@ end
    tbl[:irreducibles]=chard(n,q)
    tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
 #  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
-#     rec(charparam:=p,charname:=PartitionTupleToString(p)));
+#     rec(charparam:=p,charname:=string_partition_tuple(p)));
    merge!(tbl,ci)
    CHEVIE[:compat][:AdjustHeckeCharTable](tbl,para);
    tbl

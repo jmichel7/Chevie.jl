@@ -11,11 +11,14 @@ symbols
 ranksymbol
 defectsymbol
 symbol_partition_tuple
+string_partition_tuple
 fegsymbol
-gendeg_symbol
 degree_fegsymbol
-degree_gendeg_symbol
 valuation_fegsymbol
+gendeg_symbol
+degree_gendeg_symbol
 valuation_gendeg_symbol
+EnnolaSymbol
+stringsymbol
 XSP
 ```

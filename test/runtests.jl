@@ -715,7 +715,7 @@ end
 end
 @testset "Symbols.jl" begin
 @test mytest("Symbols.jl","d=partition_tuples(3,2)","10-element Vector{Vector{Vector{Int64}}}:\n [[1, 1, 1], []]\n [[1, 1], [1]]\n [[1], [1, 1]]\n [[], [1, 1, 1]]\n [[2, 1], []]\n [[1], [2]]\n [[2], [1]]\n [[], [2, 1]]\n [[3], []]\n [[], [3]]")
-@test mytest("Symbols.jl","PartitionTupleToString.(d)","10-element Vector{String}:\n \"111.\"\n \"11.1\"\n \"1.11\"\n \".111\"\n \"21.\"\n \"1.2\"\n \"2.1\"\n \".21\"\n \"3.\"\n \".3\"")
+@test mytest("Symbols.jl","string_partition_tuple.(d)","10-element Vector{String}:\n \"111.\"\n \"11.1\"\n \"1.11\"\n \".111\"\n \"21.\"\n \"1.2\"\n \"2.1\"\n \".21\"\n \"3.\"\n \".3\"")
 @test mytest("Symbols.jl","shiftβ([2,3],2)","4-element Vector{Int64}:\n 0\n 1\n 4\n 5")
 @test mytest("Symbols.jl","shiftβ([0,1,4,5],-2)","2-element Vector{Int64}:\n 2\n 3")
 @test mytest("Symbols.jl","βset([3,3,1])","3-element Vector{Int64}:\n 1\n 4\n 5")
@@ -729,7 +729,7 @@ end
 @test mytest("Symbols.jl","defectsymbol([[1,5,6],[1,2]])","1")
 @test mytest("Symbols.jl","degree_fegsymbol([[1,5,6],[1,2]])","88")
 @test mytest("Symbols.jl","valuation_fegsymbol([[1,5,6],[1,2]])","16")
-@test mytest("Symbols.jl","stringsymbol.(symbols(3,2,1))","14-element Vector{String}:\n \"(12,0,0)\"\n \"(02,1,0)\"\n \"(02,0,1)\"\n \"(012,12,01)\"\n \"(01,1,1)\"\n \"(012,01,12)\"\n \"(2,,)\"\n \"(01,2,0)\"\n \"(01,0,2)\"\n \"(1,012,012)\"\n \"(,02,01)\"\n \"(,01,02)\"\n \"(0,,012)\"\n \"(0,012,)\"")
+@test mytest("Symbols.jl","stringsymbol.(symbols(3,2))","14-element Vector{String}:\n \"(12,0,0)\"\n \"(02,1,0)\"\n \"(02,0,1)\"\n \"(012,12,01)\"\n \"(01,1,1)\"\n \"(012,01,12)\"\n \"(2,,)\"\n \"(01,2,0)\"\n \"(01,0,2)\"\n \"(1,012,012)\"\n \"(,02,01)\"\n \"(,01,02)\"\n \"(0,,012)\"\n \"(0,012,)\"")
 @test mytest("Symbols.jl","stringsymbol.(symbols(3,3,0))","12-element Vector{String}:\n \"(1+)\"\n \"(1E(3))\"\n \"(1E(3,2))\"\n \"(01,12,02)\"\n \"(01,02,12)\"\n \"(012,012,123)\"\n \"(0,1,2)\"\n \"(0,2,1)\"\n \"(01,01,13)\"\n \"(0,0,3)\"\n \"(012,,)\"\n \"(012,012,)\"")
 @test mytest("Symbols.jl","fegsymbol([[1,5,6],[1,2]])","q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂")
 @test mytest("Symbols.jl","gendeg_symbol([[1,2],[1,5,6]])","q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2")
