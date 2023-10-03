@@ -613,8 +613,8 @@ refls(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:refls)::Vector{Per
 """
 `refls(W::ComplexReflectionGroup,i)`
 
-the  element(s) of `W` representing  the distinguished reflection(s) around
-the `i`-th root(s) of `W` (`i` can be an index or a vector of indices)
+the  element of `W` representing  the distinguished reflection around
+the `i`-th root of `W` (`i` can be an index or a vector of indices)
 """
 refls(W,i::Integer)=i<=ngens(W) ? gens(W)[i] : refls(W)[i]
 refls(W,i::AbstractVector)=map(j->refls(W,j),i)

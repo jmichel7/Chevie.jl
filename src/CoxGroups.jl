@@ -838,7 +838,8 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
  Groups.gens, Groups.conjugacy_classes,
  PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
- PermGroups.stabilizer,PermGroups.transporting_element
+ PermGroups.transporting_element
+ PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
 #--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: FiniteCoxeterGroup{Perm{T}}

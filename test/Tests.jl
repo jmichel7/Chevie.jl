@@ -528,7 +528,7 @@ end
 
 # McNinch - Sommers (inspired by Marie Roth)
 function TAu(W)
-  l=map(x->reflection_subgroup(W,x),SScentralizer_reps(W))
+  l=map(x->reflection_subgroup(W,x),sscentralizer_reps(W))
   for (nu,u) in enumerate(UnipotentClasses(W).classes)
     res=map(l)do H
       uc=UnipotentClasses(H).classes

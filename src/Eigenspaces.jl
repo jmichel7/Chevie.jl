@@ -245,7 +245,7 @@ function relative_root(W,L,i)
 # println("d=$d ",order.(elements(F)))
   for rc in filter(x->order(x)==d,elements(F))
     m=central_action(L,reflrep(L,rc.phi))
-    r=reflection(m)
+    r=asreflection(m)
     if r===nothing error("not a reflection --- This should not happen") end
 #   println("rc=$rc")
     if r.eig==E(d)
