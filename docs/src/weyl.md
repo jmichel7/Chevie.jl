@@ -14,13 +14,15 @@ rootlengths
 highest_short_root
 rootdatum(::AbstractMatrix)
 rootdatum(::AbstractMatrix,::AbstractMatrix)
+torus(::Integer)
+istorus
+radical
+derived_datum
 describe_involution
 badprimes
 standard_parabolic(::Weyl.FC,::AbstractVector{<:Integer})
 inversions
 with_inversions
-torus(::Integer)
-istorus
 relative_group
 affine
 ```

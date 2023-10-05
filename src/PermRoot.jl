@@ -1694,7 +1694,13 @@ PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 
 PRG(i::Integer;T1=Int16)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],Vector{Int}[],
                     Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
+"""
+`radical(G)`
 
+The  radical datum of a root datum `(X,Φ,Y,Φ^∨)` is `(X/(X∩ ℚ Φ),∅ ,Φ^⟂,∅)`,
+a toral  datum. This  function returns  the torus corresponding to the
+radical of the root datum `G`.
+"""
 radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 
 "`roots(W::PermRootGroup)` the roots of `W`"

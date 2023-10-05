@@ -195,12 +195,10 @@ GAP3 for the same computation takes 2.2s
 """
 module Weyl
 
-export two_tree, rootdatum, torus, istorus,
+export two_tree, rootdatum, torus, istorus, derived_datum,
  dim, dimension, with_inversions, standard_parabolic, describe_involution,
  relative_group, rootlengths, highest_short_root, badprimes,
  ComplexReflectionGroup
-# to use as a stand-alone module uncomment the next line
-# export roots
 
 using ..Gapjm
 #------------------------ Cartan matrices ----------------------------------
@@ -892,6 +890,29 @@ PermRoot.radical(W::FC)=torus(rank(W)-semisimplerank(W))
 
 "`coxeter_group()` or `coxgroup()` the trivial Coxeter group"
 CoxGroups.coxeter_group()=torus(0)
+
+function uniinv(m) # inverse of unimodular matrix
+  ch,c=GenLinearAlgebra.charpolyandcomatrix(m)
+  (-1)^size(m,1)*ch[1]*c
+end
+
+"""
+`derived_datum(G)`
+
+The  derived datum of `(X,Φ,Y,Φ^∨)` is `(X/Φ^{∨⟂}, Φ, Y∩ ℚ Φ^∨, Φ^∨)` where
+`⟂`  denotes the orthogonal. This function  starts with a root datum object
+`G` and returns the root datum object corresponding to the derived datum.
+"""
+function derived_datum(G::FC)
+  s=semisimplerank(G)
+# Find a basis of Y where the last rank(G)-s columns of simplecoroots are 0
+# Then  in  this  basis  Y∩  ℚ  Φ^∨  is  the ℤ-space spanned by the first s
+# columns.  (gv^-t,gv) is a  (co)-isomorphism of root  data G->G1 and in G1
+# projecting on the first s columns gives the derived datum.
+  gv=col_hermite_transforms(simplecoroots(G)).coltrans
+  g=uniinv(permutedims(gv))  # so gv = g^-t.
+  rootdatum(simpleroots(G)*g[:,1:s],simplecoroots(G)*gv[:,1:s])
+end
 
 #reflection representation in the basis of rootdec
 #function reflrep(W::FCG,w)
