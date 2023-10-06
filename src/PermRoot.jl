@@ -1720,7 +1720,7 @@ simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens
 """
 simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(W.coroots[eachindex(gens(W))])
 inclusion(W::PRG,i::Integer)=i
-inclusion(W::PRG,i::AbstractVector)=i
+inclusion(W::PRG,i::AbstractVector)=collect(i) # we do not want ranges
 inclusion(W::PRG)=inclusion(W,eachindex(W.roots))
 restriction(W::PRG,i=eachindex(W.roots))=i
 Base.parent(W::PRG)=W
