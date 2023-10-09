@@ -5,8 +5,8 @@ elements  are `Cyc`s; they are also  characterized as the number fields `K`
 such  that `Gal(K/ℚ)` is abelian.  For example, `ℚ (√5)`  is a number field
 that is not cyclotomic but contained in the cyclotomic field `ℚ (ζ₅)`.
 
-The default constructor for a number field constructs the smallest number
-field containing its arguments.
+The default constructor for a number field takes some numbers as arguments and
+constructs the smallest number field containing its arguments.
 
 ```julia-repl
 julia> F=NF(E(5)) # the full cyclotomic field prints as CF
@@ -22,8 +22,10 @@ julia> E(5)+E(5,-1) in NF(root(5)) # test if an element is in the subfield
 true
 ```
 
-Above  in `NF(5,-1₅)`  the `-1₅`  represents the  stabilizer of  `K` in the
-galois group of `F`.
+A  number  field  `K`  is  printed  by  given the conductor of the smallest
+cyclotomic field `F` containing it, and generators of the stabilizer of `K`
+in  the galois group  of `F`. Above  `NF(5,-1₅)` represents the subfield of
+`CF(5)` stable by complex conjugacy.
 
 ```julia-repl
 julia> elements(galois(F))
@@ -35,8 +37,8 @@ julia> elements(galois(F))
 ```
 
 The  element of the galois  group of `CF(5)` printed  `-2₅` acts by raising
-the  fifth roots of unity to the  power -2. Thus `NF(5,-1₅)` represents the
-subfield of `CF(5)` fixed by complex conjugacy.
+the  fifth roots of  unity to the  power -2. Thus  `-1₅` represents complex
+conjugacy.
 
 ```julia-repl
 julia> NF(root(3),root(5)) # here the stabilizer needs 2 generators
@@ -239,8 +241,8 @@ end
 """
 `NF(gens...)` or `NF(gens::AbstractVector)`
 
-return the smallest number field containing the elements `gens` (which can be
-`Cyc`, `Root1`, `Integer`, `Rational{<:Integer}`).
+returns the smallest number field containing the elements `gens`, which may
+be `Cyc`, `Root1`, `Integer` or `Rational{<:Integer}`.
 
 ```julia-repl
 julia> NF(E(3),root(5))
@@ -346,8 +348,8 @@ end
 `galois(F::NumberField)` Galois group of `F` over `ℚ`
 
 the  Galois group of `F`, a number  field of conductor `n`, is the quotient
-of  the Galois  group of  `CF(n)` (isomorphic  to the  multiplicative group
-`(ℤ/n)ˣ`)  by  the  stabilizer  of  `F`.  It  is given as a group of Galois
+of  the Galois  group of  `CF(n)`, isomorphic  to the  multiplicative group
+`(ℤ/n)ˣ`,  by  the  stabilizer  of  `F`.  It  is given as a group of Galois
 automorphisms (see `Aut`).
 
 ```julia-repl
