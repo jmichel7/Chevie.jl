@@ -10,7 +10,7 @@
   - the function `DualBraidMonoid` for such groups.
 
  It is based on the papers
- [Digne] Presentations duales pour les groupes de tresses de type affine A
+ [Digne, F.] Presentations duales pour les groupes de tresses de type affine A
          Comment. Math. Helv. 81 (2006) 23--47
 
  [Shi] The Kazhdan-Lusztig cells in certain affine Weyl groups 
@@ -50,12 +50,13 @@ Base.broadcastable(p::PPerm)=Ref(p)
 """
 `PPerm(n,c₁,…,cₗ)` where cycles `cᵢ` are pairs `(i₁,…,iₖ)=>d` representing
 the  permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`.  `=>d` can be omitted when `d==0`
-and `(i₁,)=>d` can be abbreviated to `i₁=>d`.
+and `(i₁,)=>d` can be abbreviated to `i₁=>d`. An `iⱼ` itself may be a
+pair `v=>d` representing `v+n*d`.
 """
 function PPerm(n::Int,cc...)
   if isempty(cc) return PPerm(1:n) end
   cc=map(cc) do cyc
-    if cyc isa Int 
+    c=if cyc isa Int 
       ((cyc,),0)
     elseif cyc isa Tuple 
       (cyc,0)
@@ -65,6 +66,12 @@ function PPerm(n::Int,cc...)
       else cyc
       end
     end
+    map(c[1])do v
+      if v isa Pair  
+        v[1]+n*v[2]
+      else v
+      end
+    end=>c[2]
   end
   u=collect(Iterators.flatten(map(x->mod.(x[1],n),cc)))
   if length(unique(u))!=length(u)
@@ -91,9 +98,9 @@ end
 
 function Base.inv(x::PPerm)
   n=length(x.d)
-  l=map(i->i-mod(i,n),x.d.-1)
-  ll=(1:n).^inv(Perm(x.d.-l))
-  PPerm(ll.-l[ll])
+  l=mod1.(x.d,n)
+  ll=invperm(l)
+  PPerm(ll.-@view (x.d.-l)[ll])
 end
 
 function Base.:^(i::Int,p::PPerm)
@@ -108,6 +115,12 @@ Base.:/(a::PPerm,b::PPerm)=a*inv(b)
 Base.:\(a::PPerm,b::PPerm)=inv(a)*b
 
 Base.:(==)(a::PPerm,b::PPerm)=a.d==b.d
+function Base.hash(a::PPerm, h::UInt)
+  for (i,v) in pairs(a.d)
+    h=hash(v,h)
+  end
+  h
+end
 
 # Non-trivial cycles of a PPerm; each cycle i_1,..,i_k,[d] is normalized
 # such that i_1 mod n is the smallest of i_j mod n and i_1 is in [1..n]
@@ -168,12 +181,6 @@ isrightdescent(w::PPerm,i)= i==length(w.d) ? w.d[i]>w.d[1]+length(w.d) :
                      w.d[i]>w.d[1+i]
 
 CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
-
-#PPermOps.FirstLeftDescending:=function(x)local i,IRD;
-#  x:=x^-1;IRD:=x.operations.IsRightDescending;
-#  for i in [1..Length(x.d)] do if IRD(x,i) then return i;fi;od;
-#  return false;
-#end;
 
 # for this function see [Digne],2.8
 function Perms.reflength(w::PPerm)
@@ -252,36 +259,20 @@ function firstintersectiondualleftdescents(a,b)
   for t in a[2] if t in b[2] return t end end
 end
 
-#PPermOps.cycletype:=function(a)local res;
-#  res:=List(PPermOps.cycles(a),cyc->[Length(cyc)-1,cyc[Length(cyc)]]);
-#  Sort(res);
-#  return res;
-#end;
+Perms.cycletype(a::PPerm)=sort(map(cyc->length(cyc[1])=>cyc[2],cycles(a)))
+
 ##--------------------------------------------------------------------------
 @GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
   gens::Vector{PPerm{T}}
 end
 
-## The next function constructs W(~A_{n-1}) as a group of periodic
-## permutations of period n.
-# 
-#AtildeGroupOps:=OperationsRecord("AtildeGroupOps",GroupOps);
-#
-#AtildeGroupOps.Print:=function(W)Print(W.name);end;
-#
-#AtildeGroupOps.PrintDiagram:=function(W)
-#    CHEVIE.R("PrintDiagram","AffineA")(W.reflectionsLabels);end;
-# 
-#AtildeGroupOps.IsRightDescending:=function(W,w,i)
-#  return PPermOps.IsRightDescending(w,i);
-#end;
-#
-#AtildeGroupOps.FirstLeftDescending:=function(W,x)
-#  return PPermOps.FirstLeftDescending(x);
-#end;
-#
-## Reflections (a,b[i]) are enumerated by lexicographical order of [i,a,b-a]
-## with i positive --- recall that when a>b this reflection is printed (b,a[-i])
+"""
+`refls(W::Atilde,i::Integer)`
+
+returns the `i`-th reflection of `W`.
+Reflections `(a,bⱼ)` are enumerated by lexicographical order of `[j,a,b-a]`
+with `j` positive --- however when `a>b` this reflection is printed `(b,a₋ⱼ)`.
+"""
 function PermRoot.refls(W::Atilde,i::Integer)
   n=ngens(W)
   p,r=divrem(i-1,n*(n-1))
@@ -289,8 +280,24 @@ function PermRoot.refls(W::Atilde,i::Integer)
   PPerm(n,(1+pos,2+pos+ecart+p*n))
 end
 
-Base.show(io::IO,G::Atilde)=print(io,"Atilde(",G.gens,")")
+function whichrefl(W::Atilde,p::PPerm)
+  c=cycles(p)
+  if length(p.d)!=length(W(1).d) || length(c)!=1 || length(c[1][1])!=2 
+    error(p," is not a reflection of ",W)
+  end
+  i=1
+  while true
+   if p==refls(W,i) return i end
+   i+=1
+  end
+end
+
+Base.show(io::IO,G::Atilde)=print(io,"Atilde(",length(G(1).d),")")
   
+"""
+`Atilde(n::Integer)` constructs `W(Ãₙ₋₁)` as a group of periodic
+permutations (`PPerm`) of period `n`.
+"""
 function Atilde(n)
   if n<2 error(n," should be >=2") end
   gens=map(i->PPerm(permute(1:n,Perm(i,i+1))),1:n-1)
@@ -298,12 +305,16 @@ function Atilde(n)
   Atilde(gens,Dict{Symbol,Any}())
 end
 
+PermRoot.refltype(W::Atilde)=get!(W,:refltype)do
+  n=length(W(1).d)
+  [TypeIrred(Dict(:series=>Symbol("Ã"),:indices=>1:n,:rank=>n-1))]
+end
+
 Base.one(W::Atilde)=one(first(gens(W)))
 Base.length(W::Atilde,w)=length(w)
 CoxGroups.isleftdescent(W::Atilde,w,i)=isleftdescent(w,i)
 Perms.reflength(W::Atilde,w)=reflength(w)
-
-PermRoot.reflection_subgroup(W::Atilde,I)=Atilde(gens(W)[I],Dict{Symbol,Any}())
+Base.isfinite(W::Atilde)=false
 
 @GapObj struct AffaDualBraidMonoid{T,TW}<:Garside.GarsideMonoid{T}
   δ::T
@@ -319,7 +330,7 @@ function Garside.DualBraidMonoid(W::Atilde)
   AffaDualBraidMonoid(delta,"c",W,Dict{Symbol,Any}())
 end
 
-function Garside.leftgcd(M::AffaDualBraidMonoid,a,b)
+function Garside.leftgcdc(M::AffaDualBraidMonoid,a::PPerm,b::PPerm)
   x=one(M)
   while true
     t=firstintersectiondualleftdescents(dualleftdescents(a),dualleftdescents(b))
@@ -330,12 +341,25 @@ function Garside.leftgcd(M::AffaDualBraidMonoid,a,b)
   end
 end
 
-CoxGroups.word(M::AffaDualBraidMonoid,w)=refword(w)
+CoxGroups.word(M::AffaDualBraidMonoid,w)=map(x->whichrefl(M.W,x),refword(w))
+
 function CoxGroups.word(io::IO,M::AffaDualBraidMonoid,w)
-  join(map(x->repr(x;context=io),refword(w)))
+  join(map(x->repr(x;context=io),word(M,w)))
 end
 
 Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
+
+function Garside.atom(M::AffaDualBraidMonoid,i::Integer)
+  s=refls(M.W,i)
+  if !isdualatom(s) error("$s=atom($i) is not a dual atom") end
+  s
+end
+
+function isdualatom(a::PPerm)
+  c=cycles(a)
+  length(c)==1 && length(c[1][1])==2 && c[1][2]==0 &&
+  (c[1][1][1]==1 || abs(c[1][1][1]-c[1][1][2])<length(a.d))
+end
 
 #  W.operations.\in:=function(e,W)return Length(e.d)=W.rank;end;
 #
@@ -370,11 +394,6 @@ Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 #    RightAscentSet:=a->M.LeftDescentSet(M.RightComplementToDelta(a)),
 #    operations:=rec(Print:=function(M) Print("DualBraidMonoid(",W,")");end)
 #  );
-#  M.Elt:=function(arg)local res;
-#    res:=rec(elm:=arg[1],operations:=GarsideEltOps,monoid:=M);
-#    if Length(arg)>1 then res.pd:=arg[2]; else res.pd:=0; fi;
-#    return GarsideEltOps.Normalize(res);
-#  end;
 #  M.B:=function(arg)local x,p;
 #    if IsList(arg[1]) then x:=[arg[1]]; else x:=arg; fi;
 #    p:=PositionProperty(x,y->not Number(cycles(y),c->c[Length(c)][1]<>0)in [0,2]);
@@ -391,11 +410,6 @@ Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 #     Add(res,s);
 #    od;
 #    return res;
-#  end;
-#  M.IsDualAtom:=function(a)local c;
-#   c:=cycles(a);
-#   return Length(c)=1 and Length(c[1])=3 and c[1][3]=[0] and
-#    (c[1][1]=1 or AbsInt(c[1][1]-c[1][2])<M.rank);
 #  end;
 #  CompleteGarsideRecord(M,rec(interval:=true));
 #  if Length(arg)=1 then M.revMonoid:=DualBraidMonoid(W,M);

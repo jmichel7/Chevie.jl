@@ -757,9 +757,9 @@ Base.show(io::IO,W::Affine)=print(io,refltype(W))
 
 PermRoot.refltype(W::Affine)=W.refltype
 
-@forward Affine.G Base.length, Base.one, Groups.elements,
+@forward Affine.G Base.length, Base.one,
  Groups.gens, Groups.ngens, PermGroups.reduced,
- Groups.word, Groups.words, Garside.BraidMonoid,
+ Groups.word, Garside.BraidMonoid,
  KL.KLPol, FinitePosets.Poset, CoxGroups.isleftdescent,
  CoxGroups.bruhatless, CoxGroups.coxmat,
  CoxGroups.leftdescents, PermRoot.semisimplerank
@@ -770,6 +770,8 @@ function AffineRootAction(W,w,x)
   y=permutedims(vcat(x,[0,1]))*w
   y[eachindex(x)]-y[length(x)+1].*roots(W.W)[nref(W.W)]
 end
+
+Base.isfinite(W::Affine)=false
 
 function Perms.reflength(W::Affine,w)
   W0=W.W

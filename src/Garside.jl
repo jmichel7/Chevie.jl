@@ -472,13 +472,15 @@ the  `simp`.
 leftlcm(M::GarsideMonoid{T},simp::Vararg{T,N}) where {T,N}=
    first(leftlcmc(M,simp...))
 
+atom(M::LocallyGarsideMonoid,i)=M.atoms[i]
+
 function (M::LocallyGarsideMonoid{T})(l::Vararg{<:Integer})where {T}
   if isempty(l) return GarsideElt(M,T[];check=false) end
-  if l[1]>0 res=GarsideElt(M,[M.atoms[l[1]]];check=length(M.atoms)==1)
+  if l[1]>0 res=GarsideElt(M,[atom(M,l[1])];check=false)
   else res=inv(M(-l[1]))
   end
   for s in l[2:end]
-    res*= s>0 ? M.atoms[s] : M(s)
+    res*= s>0 ? atom(M,s) : M(s)
   end
   res
 end
@@ -725,35 +727,35 @@ rightgcd(M::BraidMonoid{T},simp::Vararg{T,N}) where{T,N}=
   inv(leftgcd(M,inv.(simp)...))
 
 @inline mul!(M::BraidMonoid{<:Perm},x,y)=Perms.mul!(x,y)
-#-----------------------GenArtinMonoid-----------------------------------
+#-----------------------ArtinMonoid-----------------------------------
 # Artin monoid for arbitrary (e.g. infinite) finitely generated Coxeter groups
-@GapObj struct GenArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
+@GapObj struct ArtinMonoid{T,TW}<:LocallyGarsideMonoid{T}
   one::T
   atoms::Vector{T}
   W::TW
 end
 
 # The repetitions below reflect the poor type system of Julia
-IntervalStyle(M::GenArtinMonoid)=Interval()
-BraidMonoid(W::CoxeterGroup)=GenArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
+IntervalStyle(M::ArtinMonoid)=Interval()
+BraidMonoid(W::CoxeterGroup)=ArtinMonoid(one(W),gens(W),W,Dict{Symbol,Any}())
 
-Base.show(io::IO, M::GenArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
-Base.one(M::GenArtinMonoid)=M.one
+Base.show(io::IO, M::ArtinMonoid)=print(io,"BraidMonoid(",M.W,")")
+Base.one(M::ArtinMonoid)=M.one
 
-CoxGroups.isleftdescent(M::GenArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
-CoxGroups.firstleftdescent(M::GenArtinMonoid,w)=firstleftdescent(M.W,w)
+CoxGroups.isleftdescent(M::ArtinMonoid,w,i::Int)=isleftdescent(M.W,w,i)
+CoxGroups.firstleftdescent(M::ArtinMonoid,w)=firstleftdescent(M.W,w)
 
-CoxGroups.isrightdescent(M::GenArtinMonoid,w,i::Int)=isrightdescent(M.W,w,i)
-isrightascent(M::GenArtinMonoid,w,i::Int)=!isrightdescent(M.W,w,i)
+CoxGroups.isrightdescent(M::ArtinMonoid,w,i::Int)=isrightdescent(M.W,w,i)
+isrightascent(M::ArtinMonoid,w,i::Int)=!isrightdescent(M.W,w,i)
 
-PermGroups.word(M::GenArtinMonoid,w)=word(M.W,w)
+PermGroups.word(M::ArtinMonoid,w)=word(M.W,w)
 
-function rightgcdc(M::GenArtinMonoid{T},simp::Vararg{T,N})where {T,N}
+function rightgcdc(M::ArtinMonoid{T},simp::Vararg{T,N})where {T,N}
   g,c=leftgcdc(M,inv.(simp)...)
   inv(g),inv.(c)
 end
 
-rightgcd(M::GenArtinMonoid{T},simp::Vararg{T,N}) where {T,N}=
+rightgcd(M::ArtinMonoid{T},simp::Vararg{T,N}) where {T,N}=
   inv(leftgcd(M,inv.(simp)...))
 
 #---------------------------------------------------------------------
@@ -1077,14 +1079,11 @@ julia> word(b)
 """
 function PermGroups.word(b::GarsideElt)
   M=b.M
-  res=Int[]
   if b.pd<0
     d,n=fraction(b)
     return vcat(-reverse(word(d)),word(n))
   end
-  for i in 1:b.pd append!(res,word(M,M.δ)) end
-  for e in b.elm append!(res,word(M,e)) end
-  res
+  vcat(vcat(map(x->word(M,M.δ),1:b.pd)...),vcat(map(e->word(M,e),b.elm)...))
 end
 
 PermGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)

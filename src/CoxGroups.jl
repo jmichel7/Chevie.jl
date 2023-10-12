@@ -359,25 +359,34 @@ function Groups.elements(W::CoxeterGroup{T}, l::Int)::Vector{T} where T
   elts=get!(()->OrderedDict(0=>[one(W)]),W,:elements)::OrderedDict{Int,Vector{T}}
   get!(elts,l)do
   if ngens(W)==1 return l>1 ? T[] : gens(W) end
-# if l==1 return elts[1]=gens(W) end
-  H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
-  rc=get!(()->[[one(W)]],W,:rc)::Vector{Vector{T}}
-  while length(rc)<=l
-    new=reducedfrom(H,W,rc[end])
-    if isempty(new) break
-    else push!(rc,new)
+  if isfinite(W)
+    H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
+    rc=get!(()->[[one(W)]],W,:rc)::Vector{Vector{T}}
+    while length(rc)<=l
+      new=reducedfrom(H,W,rc[end])
+      if isempty(new) break
+      else push!(rc,new)
+      end
     end
+  # @show l,W,H,rc
+    v=T[]
+    for i in max(0,l+1-length(rc)):l, x in rc[1+l-i]
+      append!(v,elements(H,i).*Ref(x))
+    end
+  # if applicable(nref,W) # this does not reduce much time
+  #   N=nref(W)
+  #   if N-l>l && !haskey(elts,N-l) elts[N-l]=elts[l].*longest(W) end
+  # end
+    v
+  else
+    if l==1 return gens(W) end
+    v=elements(W,l-1)
+    res=Set(empty(v))
+    for e in v, i in 1:ngens(W)
+      if !isleftdescent(W,e,i) push!(res,W(i)*e) end
+    end
+    collect(res)
   end
-# println("l=$l W=$W H=$H rc=$rc")
-  v=T[]
-  for i in max(0,l+1-length(rc)):l, x in rc[1+l-i]
-    append!(v,elements(H,i).*Ref(x))
-  end
-# if applicable(nref,W) # this does not reduce much time
-#   N=nref(W)
-#   if N-l>l && !haskey(elts,N-l) elts[N-l]=elts[l].*longest(W) end
-# end
-  v
   end
 end
 
@@ -389,6 +398,7 @@ Groups.elements(W::CoxeterGroup)=elements(W,0:nref(W))
 
 const Wtype=Vector{Int8}
 function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
+  if !isfinite(W) return word.(Ref(W),elements(W,l)) end
   ww=get!(()->OrderedDict(0=>[Wtype([])]),W,:words)::OrderedDict{Int,Vector{Wtype}}
   if haskey(ww,l) return ww[l] end
   if ngens(W)==1
