@@ -851,6 +851,7 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
  PermGroups.transporting_element
  PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
+Base.isfinite(W::FiniteCoxeterGroup)=true
 #--------------------- CoxSym ---------------------------------
 @GapObj struct CoxSym{T} <: FiniteCoxeterGroup{Perm{T}}
   G::PermGroup{T}

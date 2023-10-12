@@ -1079,11 +1079,14 @@ julia> word(b)
 """
 function PermGroups.word(b::GarsideElt)
   M=b.M
+  res=Int[]
   if b.pd<0
     d,n=fraction(b)
     return vcat(-reverse(word(d)),word(n))
   end
-  vcat(vcat(map(x->word(M,M.δ),1:b.pd)...),vcat(map(e->word(M,e),b.elm)...))
+  for i in 1:b.pd append!(res,word(M,M.δ)) end
+  for e in b.elm append!(res,word(M,e)) end
+  res
 end
 
 PermGroups.word(b::LocallyGarsideElt)=vcat(word.(Ref(b.M),b.elm)...)
