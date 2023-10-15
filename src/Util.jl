@@ -338,17 +338,6 @@ function TeX(x;p...)
   run(`rm $s.tex $s.aux $s.log $s.dvi`)
 end
 
-#--------------------------------------------------------------------------
-
-if false
-# better display of Rationals at the REPL
-function Base.show(io::IO, x::Rational)
-   show(io, numerator(x))
-   if haskey(io,:typeinfo) && isone(denominator(x)) return end
-   print(io, "//")
-   show(io, denominator(x))
-end
-end
 #--------------------------- Chevie compatibility--------------------------
 toL(m)=collect(eachrow(m)) # to Gap
 toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia
@@ -378,5 +367,4 @@ cart2lin(l,ind)=LinearIndices(Tuple(reverse(l)))[reverse(ind)...]
 returns cartesian(map(j->1:j,l))[i]
 """
 lin2cart(dims,i)=reverse(Tuple(CartesianIndices(reverse(Tuple(dims)))[i]))
-
 end

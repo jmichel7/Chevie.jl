@@ -362,10 +362,16 @@ end
 @test mytest("Garside.jl","b=BraidMonoid(W)(2,1,2,1,1)","121.1.1")
 @test mytest("Garside.jl","p=image(b)","(1,3)")
 @test mytest("Garside.jl","word(W,p)","3-element Vector{Int64}:\n 1\n 2\n 1")
+@test mytest("Garside.jl","W=coxgroup(:A,2)","A₂")
+@test mytest("Garside.jl","pi=BraidMonoid(W)(longest(W))^2","Δ²")
+@test mytest("Garside.jl","words(pi)","8-element Vector{Vector{Int64}}:\n [1, 1, 2, 1, 1, 2]\n [1, 2, 1, 1, 2, 1]\n [1, 2, 1, 2, 1, 2]\n [1, 2, 2, 1, 2, 2]\n [2, 1, 1, 2, 1, 1]\n [2, 1, 2, 1, 2, 1]\n [2, 1, 2, 2, 1, 2]\n [2, 2, 1, 2, 2, 1]")
 @test mytest("Garside.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Garside.jl","B=DualBraidMonoid(W)","DualBraidMonoid(A₃,c=[1, 3, 2])")
 @test mytest("Garside.jl","B(2,1,2,1,1)","12.1.1.1")
 @test mytest("Garside.jl","B(-1,-2,-3,1,1)","(25.1)⁻¹1.1")
+@test mytest("Garside.jl","W=crg(4)","G₄")
+@test mytest("Garside.jl","B=DualBraidMonoid(W)","DualBraidMonoid(G₄,c=[1, 2])")
+@test mytest("Garside.jl","left_divisors(B(B.δ))","5-element Vector{GarsideElt{Perm{Int16}, DualBraidMonoid{Perm{Int16}, PRG{Cyc{Rational{Int64}}, Int16}}}}:\n .\n 1\n 2\n 3\n δ")
 @test mytest("Garside.jl","W=coxgroup(:A,4)","A₄")
 @test mytest("Garside.jl","w=BraidMonoid(W)(4,3,3,2,1)","43.321")
 @test mytest("Garside.jl","C=conjcat(w)","category with 2 objects and 4 generating maps")
@@ -975,5 +981,12 @@ end
 @test mytest("gendec.jl","W=rootdatum(:psu,6)","psu₆")
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n    │ps ps A₂\n────┼─────────\n²A₅ │ .  .  .\n.3  │ 1  .  .\n3.  │ 1  .  .\n.21 │ 1  1  .\n1.2 │ 2  1  .\n21. │ 1  1  .\n2.1 │ 2  1  .\n.111│ .  1  1\n111.│ .  1  1\n1.11│ 1  2  1\n11.1│ 1  2  1")
+end
+@testset "../contr/cp.jl" begin
+@test mytest("../contr/cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")
+@test mytest("../contr/cp.jl","word(C(C.δ))","6-element Vector{Int64}:\n 1\n 3\n 4\n 1\n 3\n 4")
+@test mytest("../contr/cp.jl","Matrix(C,C.δ)","3×3 Matrix{Cyc{Int64}}:\n ζ₃   0   0\n  0  ζ₃   0\n  0   0  ζ₃")
+@test mytest("../contr/cp.jl","b=C(1,2,3,4)^3","1.2.341.2.341.2.34")
+@test mytest("../contr/cp.jl","Matrix(C,b[3])","3×3 Matrix{Cyc{Int64}}:\n 0    0  ζ₃\n 0  ζ₃²   0\n 1    0   0")
 end
 end

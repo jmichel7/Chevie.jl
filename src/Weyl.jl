@@ -461,7 +461,7 @@ end
 function type_cartan(m::AbstractMatrix)
   map(diagblocks(m)) do I
     t=type_fincox_cartan(m[I,I])
-    if isnothing(t) error("unknown Cartan matrix ",m[I,I]) end
+    if isnothing(t) return nothing end
     t[:indices]=I[t[:indices]]
     TypeIrred(t)
   end

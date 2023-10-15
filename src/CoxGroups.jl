@@ -394,7 +394,13 @@ function Groups.elements(W::CoxeterGroup,I::AbstractVector{<:Integer})
   reduce(vcat,map(i->elements(W,i),I))
 end
 
-Groups.elements(W::CoxeterGroup)=elements(W,0:nref(W))
+function Groups.elements(W::CoxeterGroup)
+  if isfinite(W) return elements(W,0:nref(W))
+  else error(W," is infinite")
+  end
+end
+
+PermRoot.nref(W::CoxeterGroup)=length(W,longest(W))
 
 const Wtype=Vector{Int8}
 function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
@@ -628,9 +634,8 @@ julia> words(W,longest(W))
 ```
 """
 function Groups.words(W::CoxeterGroup{T},w::T)where T
-  l=leftdescents(W,w)
-  if isempty(l) return [Int[]] end
-  reduce(vcat,map(x->vcat.(Ref([x]),words(W,W(x)*w)),l))
+  if isone(w) return [Int[]] end
+  reduce(vcat,map(x->pushfirst!.(words(W,W(x)*w),x),leftdescents(W,w)))
 end
 
 """
@@ -827,6 +832,7 @@ julia> longest(coxsym(4))
 ```
 """
 function longest(W::CoxeterGroup,I::AbstractVector{<:Integer}=eachindex(gens(W)))
+  if length(I)==ngens(W) && !isfinite(W) error(W," must be finite") end
   w=one(W)
   i=1
   while i<=length(I)
@@ -1115,6 +1121,12 @@ Above is a way to construct the affine Weyl group  `Ã₁`.
 function coxeter_group(C::Matrix{T})where T
   I=one(C)
   MatCox(reflectionMatrix.(eachrow(I),eachrow(C)),Dict{Symbol,Any}(:cartan=>C))
+end
+
+function Base.isfinite(W::MatCox)
+  get!(W,:isfinite)do
+    !any(isnothing,Weyl.type_cartan(cartan(W)))
+  end::Bool
 end
 
 const coxgroup=coxeter_group

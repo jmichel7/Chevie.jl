@@ -549,12 +549,12 @@ function twistings(W::FiniteCoxeterGroup)
   spets.(Ref(W),l)
 end
 
-#function Groups.position_class(G::Spets,g)
+#function Groups.position_class(G::Coset,g)
 #  if isone(G.phi) return position_class(G.W,g) end
 #  findfirst(c->g in c,conjugacy_classes(G))
 #end
 
-twisted_power(x,n,F)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
+twisted_power(x,n,F::Function)=iszero(n) ? one(x) : x*F(twisted_power(x,n-1,F))
 #-------------- finite coxeter cosets ---------------------------------
 @GapObj struct FCC{T,TW<:FiniteCoxeterGroup{T}}<:CoxeterCoset{T,TW}
   phi::T
@@ -827,7 +827,7 @@ julia> F(1)
 ```
 """
 function Frobenius(WF::CoxeterCoset)
-  f(w,i=1)=Frobenius(w,WF.phi^i)
+  (w,i=1)->Frobenius(w,WF.phi^i)
 end
 
 Frobenius(w::Perm,phi)=w^(inv(phi))

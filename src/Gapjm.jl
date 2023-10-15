@@ -127,10 +127,10 @@ include("Chars.jl");@reexport using .Chars
 include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
-include("Garside.jl");@reexport using .Garside
 include("Chevie.jl");@reexport using .Chevie
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
+include("Garside.jl");@reexport using .Garside
 include("HeckeAlgebras.jl");@reexport using .HeckeAlgebras
 include("KL.jl");@reexport using .KL
 include("Semisimple.jl");@reexport using .Semisimple
@@ -147,6 +147,9 @@ include("GAPENV.jl");@reexport using .GAPENV
 function __init__()
   @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" include("Gap4.jl")
 end
-
-roundtrip(x)=x==eval(Meta.parse(repr(x))) # to debug
+function contr(s) 
+  include(replace(@__DIR__,"/src"=>"/contr/"*s*".jl"))
+end
+export contr
+roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purpose
 end

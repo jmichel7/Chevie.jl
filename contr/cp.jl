@@ -19,7 +19,7 @@ end
 
 # for the next function, see Proposition 3.11 in [1]
 function Garside.isleftdescent(M::CPMonoid,simp,i)
-  m=mat(M,simp)
+  m=Matrix(M,simp)
   if i<=M.e
     c1=findfirst(!iszero,@view m[1,:])
     c2=findfirst(!iszero,@view m[2,:])

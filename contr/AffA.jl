@@ -1,9 +1,11 @@
 """
-`AffA.jl`  translated from `Gap3` `affa.g` © François Digne (Amiens university)
+`AffA.jl`  
+François Digne for the mathematics, François Digne and Jean Michel for the code.
 
- This file contains:
+This package implements:
+
   - the type `PPerm` implementing periodic permutations of the integers
-     with operations *, /, ^, inv, cycles and cycletype
+    with operations *, /, ^, inv, cycles and cycletype
 
   - the type `Atilde` implementing the Coxeter group `Ãₙ` as a group of `PPerm`.
 
@@ -21,22 +23,22 @@ using ..Gapjm
 export PPerm, Atilde
 
 """
-a `PPerm` is a shiftless periodic permutation `f` of the integers
+a `PPerm` represents a shiftless periodic permutation `f` of the integers
   - periodic of period `n` means `f(i+n)=f(i)+n`
   - then permutation means all `f(i)` are distinct mod `n`.
-  - no shift means `sum(f.(1:n))-sum(1:n)==0`
+  - no shift means `sum(f.(1:n))==sum(1:n)`
 it is represented in field `d` as the `Vector` `[f(1),…,f(n)]`
 """
-struct PPerm{T<:Integer}
-  d::Vector{T}
-  function PPerm(d::AbstractVector{T};check=false)where T
-    if check isvalid(d) end
-    new{T}(d)
+struct PPerm
+  d::Vector{Int16}
+  function PPerm(d::AbstractVector{<:Integer};check=false)
+    if check validate(d) end
+    new(convert(Vector{Int16},d))
   end
 end
 
 "check the validity of a `PPerm`"
-function isvalid(d)
+function validate(d)
   n=length(d)
   if sort(mod.(d,n))!=0:n-1 error(d,": images must be distinct mod ",n) end
   if sum(d)!=sum(1:n) error(d,": sum of shifts is ",sum(d)-sum(1:n)," must be 0") end
@@ -47,13 +49,15 @@ Base.isone(p::PPerm)=p.d==eachindex(p.d)
 Base.copy(p::PPerm)=PPerm(copy(p.d))
 Base.broadcastable(p::PPerm)=Ref(p)
 
+perm(a::PPerm)=mod1.(a.d,length(a.d))
+
 """
 `PPerm(n,c₁,…,cₗ)` where cycles `cᵢ` are pairs `(i₁,…,iₖ)=>d` representing
 the  permutation `i₁↦ i₂↦ …↦ iₖ↦ i₁+d*n`.  `=>d` can be omitted when `d==0`
 and `(i₁,)=>d` can be abbreviated to `i₁=>d`. An `iⱼ` itself may be a
-pair `v=>d` representing `v+n*d`.
+pair `v=>d` representing `v+n*d`. The cycles must be disjoint `mod. n`.
 """
-function PPerm(n::Int,cc...)
+function PPerm(n,cc...)
   if isempty(cc) return PPerm(1:n) end
   cc=map(cc) do cyc
     c=if cyc isa Int 
@@ -79,26 +83,30 @@ function PPerm(n::Int,cc...)
   end
   p=prod(cc)do (cyc,d)
     perm=collect(1:n)
-    cyc=cyc.-1
     for i in eachindex(cyc)
-      k=1+mod(cyc[i],n)
-      perm[k]=cyc[1+mod(i,length(cyc))]+k-cyc[i]
+      k=mod1(cyc[i],n)
+      perm[k]=cyc[mod1(i+1,length(cyc))]+k-cyc[i]
     end
-    perm[1+mod(cyc[end],n)]+=d*n
+    perm[mod1(cyc[end],n)]+=d*n
     PPerm(perm)
   end
-  isvalid(p.d)
+  validate(p.d)
   p
 end
 
 function Base.:*(x::PPerm,y::PPerm)
-  ymodn=mod1.(y.d,length(y.d))
-  PPerm(x.d[ymodn].+y.d.-ymodn)
+  n=length(x.d)
+  res=similar(y.d)
+  for i in 1:n 
+    u=mod1(y.d[i],n)
+    res[i]=x.d[u]+y.d[i]-u
+  end
+  PPerm(res)
 end
 
 function Base.inv(x::PPerm)
   n=length(x.d)
-  l=mod1.(x.d,n)
+  l=perm(x)
   ll=invperm(l)
   PPerm(ll.-@view (x.d.-l)[ll])
 end
@@ -122,11 +130,11 @@ function Base.hash(a::PPerm, h::UInt)
   h
 end
 
-# Non-trivial cycles of a PPerm; each cycle i_1,..,i_k,[d] is normalized
-# such that i_1 mod n is the smallest of i_j mod n and i_1 is in [1..n]
+# Non-trivial cycles of a PPerm; each cycle (i₁,…,iₖ)=>d is normalized
+# such that mod(i₁,n) is the smallest of the mod(iⱼ,n) and 1≤i₁≤n
 function Perms.cycles(a::PPerm)
-  res=Pair{Vector{Int},Int}[]
   n=length(a.d)
+  res=Pair{Vector{Int},Int}[]
   l=trues(n)
   while true
     x=findfirst(l)
@@ -163,9 +171,8 @@ function Base.show(io::IO,a::PPerm)
     for cc in c
       cyc,d=cc
       print(io,"(",join(map(cyc)do y
-        y-=1
-        x=mod(y,n)
-        string(1+x,stringdec(div(y-x,n)))
+        x=mod1(y,n)
+        string(x,stringdec(div(y-x,n)))
       end,","),")")
       print(io,stringdec(d))
     end
@@ -174,23 +181,21 @@ end
 
 ##------------------------AtildeGroup----------------------------
 ##The following formula is from [Shi] Lemma 4.2.2
-Base.length(w::PPerm)=sum(j->sum(i->abs(fld(j^w-i^w,length(w.d))),1:j-1),
-                      eachindex(w.d))
+Base.length(w::PPerm)=sum(j->sum(i->abs(fld(j^w-i^w,length(w.d))),1:j-1),eachindex(w.d))
 
-isrightdescent(w::PPerm,i)= i==length(w.d) ? w.d[i]>w.d[1]+length(w.d) : 
-                     w.d[i]>w.d[1+i]
+isrightdescent(w::PPerm,i)= i==length(w.d) ? w.d[i]>w.d[1]+length(w.d) : w.d[i]>w.d[1+i]
 
 CoxGroups.isleftdescent(w::PPerm,i)=isrightdescent(w^-1,i)
 
 # for this function see [Digne],2.8
 function Perms.reflength(w::PPerm)
+  n=length(w.d)
   function v(pp,i)
     pp=map(x->sum.(getindex.(Ref(pp),x)),partitions(eachindex(pp),i))
     if pp[1][1]<0 pp=-pp end
     return tally.(pp)
   end
   d=last.(cycles(w))
-  n=length(w.d)
   p0=count(iszero,d)
   res=n+length(d)-2*p0-count(i->i==i^w,1:n)
   if p0==length(d) return res end
@@ -225,13 +230,16 @@ function refword(w::PPerm)
   res
 end
 
-# descent sets are encoded as a pair: a list of atoms, and a list
-# of atoms of the form [1,u] representing all atoms [1,u+i*n]
-# This uses lemma 2.20 of [Digne] and is valid only if there are
-# 0 or 2 cycles with a non-zero shift
+# this is unsufficient!!!
+isdualsimple(y::PPerm)=count(c->c[2]!=0,cycles(y)) in [0,2]
+
+# descent  sets are encoded as a pair: a list of atoms, and a list of atoms
+# (1,u)  representing all atoms (1,uᵢ). This uses lemma 2.20 of [Digne] and
+# is valid only if a is a dual simple.
 function dualleftdescents(a::PPerm)
-  res=[PPerm[],PPerm[]]
   n=length(a.d)
+  if !isdualsimple(a) error(a," is not a dual simple") end
+  res=[PPerm[],PPerm[]]
   for (x,d) in cycles(a)
     if x[1]!=1 || length(x)!=1
       for j in 1:length(x)
@@ -239,31 +247,18 @@ function dualleftdescents(a::PPerm)
           push!(res[1],PPerm(n,(x[j],x[k])))
           if d!=0 push!(res[1],PPerm(n,(x[j]+n,x[k]))) end
         end
-        if d!=0 push!(res[2],PPerm(n,(1,1+mod(x[j]-1,n)))) end
+        if d!=0 push!(res[2],PPerm(n,(1,mod1(x[j],n)))) end
       end
     end
   end
   res
 end
 
-# a,b are results of dualleftdescents
-function firstintersectiondualleftdescents(a,b)
-  for t in a[1]
-    if t in b[1] || mod1.(t.d,length(t.d)) in map(x->x.d,b[2]) 
-      return t
-    end
-  end
-  for t in b[1]
-    if mod1.(t.d,length(t.d)) in map(x->x.d,a[2]) return t end
-  end
-  for t in a[2] if t in b[2] return t end end
-end
-
 Perms.cycletype(a::PPerm)=sort(map(cyc->length(cyc[1])=>cyc[2],cycles(a)))
 
 ##--------------------------------------------------------------------------
-@GapObj struct Atilde{T} <: CoxeterGroup{PPerm{T}}
-  gens::Vector{PPerm{T}}
+@GapObj struct Atilde <: CoxeterGroup{PPerm}
+  gens::Vector{PPerm}
 end
 
 """
@@ -277,36 +272,41 @@ function PermRoot.refls(W::Atilde,i::Integer)
   n=ngens(W)
   p,r=divrem(i-1,n*(n-1))
   ecart,pos=divrem(r,n)
-  PPerm(n,(1+pos,2+pos+ecart+p*n))
+  res=collect(1:n)
+  res[1+pos]=2+pos+ecart+p*n
+  u=mod1(res[1+pos],n)
+  res[u]=u-1-ecart-p*n
+  PPerm(res)
 end
 
-function whichrefl(W::Atilde,p::PPerm)
-  c=cycles(p)
-  if length(p.d)!=length(W(1).d) || length(c)!=1 || length(c[1][1])!=2 
-    error(p," is not a reflection of ",W)
+# finds i such that pp=refls(W,i)
+function whichatom(pp::PPerm)
+  n=length(pp.d)
+  pos=findfirst(i->pp.d[i]!=i,1:n)-1
+  v=pp.d[pos+1]
+  if v<pos+1
+    pos=mod1(v,n)-1
+    v=pp.d[pos+1]
   end
-  i=1
-  while true
-   if p==refls(W,i) return i end
-   i+=1
-  end
+  p,ecart=divrem(v-pos-2,n)
+  p*n*(n-1)+ecart*n+pos+1
 end
 
-Base.show(io::IO,G::Atilde)=print(io,"Atilde(",length(G(1).d),")")
+Base.show(io::IO,G::Atilde)=print(io,"Atilde(",ngens(G),")")
   
 """
-`Atilde(n::Integer)` constructs `W(Ãₙ₋₁)` as a group of periodic
+`Atilde(n::Integer)` returns `W(Ãₙ₋₁)` as a group of periodic
 permutations (`PPerm`) of period `n`.
 """
-function Atilde(n)
+function Atilde(n::Integer)
   if n<2 error(n," should be >=2") end
-  gens=map(i->PPerm(permute(1:n,Perm(i,i+1))),1:n-1)
-  push!(gens,PPerm(vcat([0],2:n-1,[n+1])))
+  gens=map(i->PPerm(n,(i,i+1)),1:n-1)
+  push!(gens,PPerm([0;2:n-1;n+1]))
   Atilde(gens,Dict{Symbol,Any}())
 end
 
 PermRoot.refltype(W::Atilde)=get!(W,:refltype)do
-  n=length(W(1).d)
+  n=ngens(W)
   [TypeIrred(Dict(:series=>Symbol("Ã"),:indices=>1:n,:rank=>n-1))]
 end
 
@@ -324,30 +324,60 @@ end
 
 Garside.IntervalStyle(M::AffaDualBraidMonoid)=Garside.Interval()
 
-function Garside.DualBraidMonoid(W::Atilde)
-  n=length(gens(W))
-  delta=PPerm(vcat([1-n],3:n,[2+n]))
-  AffaDualBraidMonoid(delta,"c",W,Dict{Symbol,Any}())
+"""
+`DualBraidMonoid(W::Atilde)`
+
+If  `W=Atilde(n)`, constructs  the dual  braid monoid  for `Ãₙ₋₁`  and the
+Coxeter element `PPerm([1-n;3:n;2+n])`
+"""
+function Garside.DualBraidMonoid(W::Atilde;c=(n=ngens(W);PPerm([1-n;3:n;2+n])),
+  revMonoid=nothing)
+# If revMonoid is given, constructs the reversed monoid
+# which allows to fill the field M.revMonoid after building the dual monoid
+  M=AffaDualBraidMonoid(c,"c",W,Dict{Symbol,Any}())
+  if revMonoid===nothing
+    M.revMonoid=DualBraidMonoid(W;c=inv(c),revMonoid=M)
+  else M.revMonoid=revMonoid
+  end
+  M
+end
+
+Base.show(io::IO, M::AffaDualBraidMonoid)=print(io,"DualBraidMonoid(",M.W,",c=",
+                                                word(M.W,M.δ),")")
+
+function (M::AffaDualBraidMonoid)(r::PPerm)
+  if !isdualsimple(r) error("r is not a dual simple") end
+  if r==one(M) GarsideElt(M,PPerm[];check=false)
+  elseif r==M.δ GarsideElt(M,PPerm[],1;check=false)
+  else GarsideElt(M,[r];check=false)
+  end
+end
+
+# a,b are results of dualleftdescents
+function firstintersectionleftdescents(a,b)
+  for t in a[1] if t in b[1] || perm(t) in map(x->x.d,b[2]) return t end end
+  for t in b[1] if perm(t) in map(x->x.d,a[2]) return t end end
+  for t in a[2] if t in b[2] return t end end
 end
 
 function Garside.leftgcdc(M::AffaDualBraidMonoid,a::PPerm,b::PPerm)
   x=one(M)
   while true
-    t=firstintersectiondualleftdescents(dualleftdescents(a),dualleftdescents(b))
+    t=firstintersectionleftdescents(dualleftdescents(a),dualleftdescents(b))
     if isnothing(t) return x,(a,b) end
     x*=t
-    a=t^-1*a
-    b=t^-1*b
+    a=t\a
+    b=t\b
   end
 end
 
-CoxGroups.word(M::AffaDualBraidMonoid,w)=map(x->whichrefl(M.W,x),refword(w))
-
-function CoxGroups.word(io::IO,M::AffaDualBraidMonoid,w)
-  join(map(x->repr(x;context=io),word(M,w)))
+function CoxGroups.firstleftdescent(M::AffaDualBraidMonoid,w::PPerm)
+  l1,l2=dualleftdescents(w)
+  if !isempty(l1) return whichatom(first(l1)) end
+  if !isempty(l2) return whichatom(first(l2)) end
 end
-
-Garside.δad(M::AffaDualBraidMonoid,x,i::Integer)=iszero(i) ? x : x^(M.δ^i)
+  
+Garside.δad(M::AffaDualBraidMonoid,x::PPerm,i::Integer)=iszero(i) ? x : x^(M.δ^i)
 
 function Garside.atom(M::AffaDualBraidMonoid,i::Integer)
   s=refls(M.W,i)
@@ -356,68 +386,10 @@ function Garside.atom(M::AffaDualBraidMonoid,i::Integer)
 end
 
 function isdualatom(a::PPerm)
-  c=cycles(a)
-  length(c)==1 && length(c[1][1])==2 && c[1][2]==0 &&
-  (c[1][1][1]==1 || abs(c[1][1][1]-c[1][1][2])<length(a.d))
+  n=length(a.d)
+  if count(x->x[1]!=x[2],pairs(a.d))!=2 return false end
+  i=findfirst(i->i!=a.d[i],1:n)
+  i==1 || abs(i-a.d[i])<n
 end
 
-#  W.operations.\in:=function(e,W)return Length(e.d)=W.rank;end;
-#
-## DualMonoid(W[,M])
-## constructs dual monoid for tilde A_{n-1}
-##
-## If a second argument is given, constructs the reversed monoid
-## [which allows to fill the field M.revMonoid after building the dual monoid]
-#
-#AtildeGroupOps.DualBraidMonoid:=function(arg)local M,n,W,delta;
-#  W:=arg[1];n:=W.rank;
-#  if Length(arg)=1 then
-#  else delta:=arg[2].delta^-1;
-#  fi;
-#  M:=rec(rank:=n,
-#    delta:=delta,
-#    stringDelta:="c",
-#    group:=W,
-#    identity:=W.identity,
-#    FormatSimple:=function(a,opt)local option;
-#      option:=ShallowCopy(PPermOps.PrintOptions);Inherit(option,opt);
-#      if IsBound(option.word) then return IntListToString(CoxeterWord(W,a));
-#      else return Format(a,option);fi;end,
-#    Reverse:=function(b)local res,s;
-#      if Length(b.elm)=0 then return M.revMonoid.Elt([],b.pd);fi;
-#      res:=[];
-#      for s in List(Reversed(b.elm),y->M.revMonoid.DeltaAction(y^-1,b.pd))
-#      do res:=M.revMonoid.AddToNormal(res,s);od;
-#      return GarsideEltOps.Normalize(M.revMonoid.Elt(res,b.pd));
-#    end,
-#    RightComplementToDelta:=a->a^-1*M.delta,
-#    RightAscentSet:=a->M.LeftDescentSet(M.RightComplementToDelta(a)),
-#    operations:=rec(Print:=function(M) Print("DualBraidMonoid(",W,")");end)
-#  );
-#  M.B:=function(arg)local x,p;
-#    if IsList(arg[1]) then x:=[arg[1]]; else x:=arg; fi;
-#    p:=PositionProperty(x,y->not Number(cycles(y),c->c[Length(c)][1]<>0)in [0,2]);
-#    if p<>false then Error(x[p]," is not a dual simple");fi;
-#    x:=Concatenation(List(x,M.AtomListSimple));
-#    if not ForAll(x,M.IsDualAtom) then
-#      Error("not atom of dual monoid: ",First(x,y->not M.IsDualAtom(y)));fi;
-#    return GarsideEltOps.Normalize(Product(List(x,y->M.Elt([y]))));
-#  end;
-#  M.AtomListSimple:=function(w) local s,res,v;res:=[];v:=w;
-#    while v<>M.group.identity do
-#     s:=Flat(M.LeftDescentSet(v))[1];
-#     v:=s^-1*v;
-#     Add(res,s);
-#    od;
-#    return res;
-#  end;
-#  CompleteGarsideRecord(M,rec(interval:=true));
-#  if Length(arg)=1 then M.revMonoid:=DualBraidMonoid(W,M);
-#  else M.revMonoid:=arg[2];
-#  fi;
-#  return M;
-#end;
-#
-#AtildeBraid:=n->DualBraidMonoid(CoxeterGroupAtildeGroup(n)).B;
-#Atilde:=PPerm;
 end
