@@ -1,6 +1,6 @@
 JULIA=1.9.3
 test: *.jl
-	~/julia-$(JULIA)/bin/julia ../tools/gentest.jl *.jl ../contr/cp.jl
+	~/julia-$(JULIA)/bin/julia ../tools/gentest.jl *.jl
 	mv runtests.jl ../test
 	~/julia-$(JULIA)/bin/julia ../test/runtests.jl
 some: $(FILES)

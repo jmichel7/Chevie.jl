@@ -2335,7 +2335,7 @@ hurwitz(l,b::GarsideElt)=hurwitz(l,word(b))
 hurwitzorbititems(l::AbstractVector)=
   union(orbit(1:length(l)-1,l,(l,i)->hurwitz(l,i))...)
 
-include("../contr/cp.jl") # Corran-Picantin monoid
+include("cp.jl") # Corran-Picantin monoid
 
 # example for shrink
 B=BraidMonoid(coxsym(21))
