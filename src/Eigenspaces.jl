@@ -60,7 +60,14 @@ cosets,  corresponding to finite  reductive groups, the  conjugacy class of
 is  a prime divisor of `Φ_d(q)` which  does not divide any other cyclotomic
 factor of the order of ``𝐆^F``.
 
-The functions described in this module allow to explore these situations.
+The functions 
+`relative_degrees,
+regular_eigenvalues,
+eigenspace_projector,
+position_regular_class,
+split_levis,
+cuspidal`
+in this module allow to explore these situations.
 """
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,

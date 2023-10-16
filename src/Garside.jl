@@ -535,9 +535,12 @@ PermGroups.word(io::IO,M::LocallyGarsideMonoid,w)=joindigits(word(M,w);sep=" ")
 """
 left_divisors(M::LocallyGarsideMonoid, s)
 
+left_divisors(M::LocallyGarsideMonoid, s,i)
+
 all  the left-divisors  of the  simple element  `s` of  `M`, as a vector of
 vectors   of  simples,  where  the  i+1-th  vector  of  simples  holds  the
-left-divisors of length i in the atoms.
+left-divisors  of length i in the atoms.  If a third argument `i` is given,
+returns the list of divisors of length `i`.
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -564,10 +567,11 @@ julia> map(x->B.(x),left_divisors(B,W(1,3,2)))
  [δ]
 ```
 """
-function left_divisors(M::LocallyGarsideMonoid,s)
+function left_divisors(M::LocallyGarsideMonoid,s,i=-1)
   rest=[(left=one(M),right=s)]
   res=typeof(rest)[]
   while !isempty(rest)
+    if length(res)==i return first.(rest) end
     push!(res,rest)
     new=empty(rest)
     for x in rest, i in leftdescents(M,x.right)
