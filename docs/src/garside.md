@@ -16,6 +16,7 @@ leftlcm
 rightlcm
 α(::Garside.LocallyGarsideElt)
 α(::Garside.LocallyGarsideElt,::AbstractVector)
+δad
 Brieskorn_normal_form
 BraidMonoid
 DualBraidMonoid

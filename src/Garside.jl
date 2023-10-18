@@ -329,7 +329,7 @@ julia> root(Pi,4)
 """
 module Garside
 using ..Gapjm
-export BraidMonoid, shrink, α, DualBraidMonoid, conjcat, fraction,
+export BraidMonoid, shrink, α, δad, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, right_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc,
 leftlcm, leftlcmc, rightlcm, rightlcmc, conjugating_elt, GarsideElt,
@@ -597,7 +597,13 @@ leftcomplδ(M::GarsideMonoid,x)=/(M,M.δ,x)
 isrightascent(M::GarsideMonoid,x,i)=isleftdescent(M,rightcomplδ(M,x),i)
 
 # w^(M.δ^i)
-function δad(M::GarsideMonoid,x,i::Integer)
+"""
+`δad(M::GarsideMonoid,x,i=1)`
+
+returns the image of the simple `x` by the `i`-th power of the automorphism
+induced by conjugation by `M.δ`.
+"""
+function δad(M::GarsideMonoid,x,i::Integer=1)
   if IntervalStyle(M)==Interval() #horrible: has to know interval exists
     return iszero(i) ? x : x^(M.δ^mod(i,M.orderδ))
   end
@@ -822,6 +828,14 @@ function Base.hash(a::GarsideElt, h::UInt)
   end
   h
 end
+
+"""
+`δad(b::GarsideElt,i=1)`
+
+returns the image of `b` by the `i`-th power of the automorphism
+induced by conjugation by `b.M.δ`.
+"""
+δad(b::GarsideElt,i::Integer=1)=clone(b,map(x->δad(b.M,x,i),b.elm))
 
 CoxGroups.isleftdescent(b::LocallyGarsideElt,i)=isleftdescent(b.M,head(b),i)
 """
