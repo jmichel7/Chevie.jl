@@ -344,11 +344,7 @@ end
 
 function asreflection(m::AbstractMatrix)
   rr=one(m)-m
-  if VERSION<v"1.7"
-    r=findfirst(!iszero,collect(eachrow(rr)))
-  else
-    r=findfirst(!iszero,eachrow(rr))
-  end
+  r=findfirst(!iszero,eachrow(rr))
   if !isnothing(r) asreflection(m,rr[r,:]) end
 end
 #------------------------------------------------------------------------

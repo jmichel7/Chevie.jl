@@ -1130,7 +1130,7 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
   end
 end
 
-CharTable(W::Group)=get!(()->Gapjm.Gap4.CharTable(W),W,:chartable)
+CharTable(W::Group)=error("to have CharTable for PermGroup do 'using GAP'")
 
 function classes(ct::CharTable)
   get!(ct,:classes)do
@@ -1488,14 +1488,14 @@ The  returned  object  has  a  field  `scalar`  which  is  a  `Matrix{Int}`
 containing  the  induction  table,  and  the  other fields contain labeling
 information taken from the character tables of `u` and `g` when it exists.
 
-```julia-rep1        needs Gap4
+```julia-rep1
 julia> g=Group([Perm(1,2),Perm(2,3),Perm(3,4)])
 Group([(1,2),(2,3),(3,4)])
 
 julia> u=Group( [ Perm(1,2), Perm(3,4) ])
 Group([(1,2),(3,4)])
 
-julia> induction_table(u,g)
+julia> induction_table(u,g)  #     needs Gap4
 Induction table from Group([(1,2),(3,4)]) to Group([(1,2),(2,3),(3,4)])
    │X.1 X.2 X.3 X.4
 ───┼────────────────

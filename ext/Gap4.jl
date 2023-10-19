@@ -15,7 +15,7 @@ end
 
 # Create a GAP permutation given a vector of 16-bit integers.
 # No input verification is done! Callers must ensure that the
-# entries of `vec` form a permutations of the numbers in the range
+# entries of `vec` form a permutation of the numbers in the range
 # 0:length(vec)-1
 function GAP.Obj(p::Perm{Int16}) # or UInt16
     vec=p.d.-1
@@ -77,7 +77,7 @@ function Groups.classreps(g::Group)
   end
 end
 
-function CharTable(ct::GapObj)
+function Chars.CharTable(ct::GapObj)
   u=GAP.Globals.Irr(ct)
   girr=mapgap(x->mapgap(Cyc,x),u) 
   irr=permutedims(hcat(girr...))
@@ -89,7 +89,7 @@ function CharTable(ct::GapObj)
   Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id))
 end
 
-function CharTable(g::Group)
+function Chars.CharTable(g::Group)
   gg=GAP.Obj(g)
   # in case :classreps not computed using gapclassreps
   gc=gapclassreps(g)
@@ -115,4 +115,3 @@ function intersect(g1::PermGroup,g2::PermGroup)
 end
 
 end
-using .Gap4

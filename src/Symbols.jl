@@ -70,9 +70,6 @@ groups.
 module Symbols
 using ..Util: joindigits
 using ..Combinat: arrangements, partition_tuples, collectby
-if VERSION<=v"1.7.6"
-using ..Combinat: allequal
-end
 using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, subs
 using LaurentPolynomials

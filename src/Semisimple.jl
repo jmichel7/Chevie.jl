@@ -1092,14 +1092,8 @@ end
 
 const sscentralizer_reps=semisimple_centralizer_representatives
 function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
-  if VERSION<v"1.7"
-    if !limit && !TeX context=IOContext(stdout,:TeX=>true,:limit=>false)
-    else context=IOContext(stdout,:TeX=>TeX,:limit=>limit)
-    end
-  else
-    if !limit && !TeX context=(:TeX=>true,:limit=>false)
-    else context=(:TeX=>TeX,:limit=>limit)
-    end
+  if !limit && !TeX context=(:TeX=>true,:limit=>false)
+  else context=(:TeX=>TeX,:limit=>limit)
   end
   t=repr(t;context)
   if !limit && !TeX

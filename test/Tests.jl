@@ -673,7 +673,7 @@ function Tcharparams(W)
   end
   function issign(a,b)local det
     det=map(x->position_class(W,x),gens(W))
-    det=findfirst(l->all(y->y==-1,l),collect(eachrow(ct[:,det])))
+    det=findfirst(l->all(y->y==-1,l),eachrow(ct[:,det]))
     ok(1==DecomposeTensor(det,n0(b))[n0(a)],a," should be ⊗ sign of ",b)
   end
   isconj(a,b)=ok(ct[n0(a)]==conj(ct[n0(b)]),a," should be conj(",b,")")
@@ -1027,7 +1027,7 @@ function Textrefl(W)
   if size(v,1)>1 && v[2,:]!=map(w->tr(reflrep(W,W(w...))),word.(conjugacy_classes(W)))
    ChevieErr("refleigen disagrees with reflrep")
   end
-  extRefl=map(x->findfirst(==(x),collect(eachrow(ct.irr))),eachrow(v))
+  extRefl=map(x->findfirst(==(x),eachrow(ct.irr)),eachrow(v))
   ci=charinfo(W)
   function checkfield(f,v)
     if !haskey(ci,f)

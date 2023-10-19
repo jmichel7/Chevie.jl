@@ -89,7 +89,6 @@ the data library, which should give an additional speed boost.
 module Gapjm
 #--------------------- external packages ----------------------------------
 using Reexport
-using Requires
 using UsingMerge
 @reexport using PuiseuxPolynomials # reexports LaurentPolynomials
 @reexport using LaurentPolynomials: stringexp
@@ -144,12 +143,13 @@ include("dSeries.jl");@reexport using .dSeries
 include("Sscoset.jl");@reexport using .Sscoset
 include("gendec.jl"); # for now no module
 include("GAPENV.jl");@reexport using .GAPENV
-function __init__()
-  @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" include("Gap4.jl")
-end
 function contr(s) 
   include(replace(@__DIR__,"/src"=>"/contr/"*s*".jl"))
 end
 export contr
-roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purpose
+roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purposes
+using Requires
+function __init__()
+  @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" (include("../ext/Gap4.jl");using .Gap4)
+end
 end
