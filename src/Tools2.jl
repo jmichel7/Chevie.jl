@@ -166,7 +166,17 @@ Gapjm.gap(m::AbstractMatrix)=gap(toL(m))
 function Gapjm.gap(p::Pol)
   if iszero(p) return "0*q" end
   l=filter(x->x[2]!=0,collect(pairs(p.c)))
-  join(map(((i,c),)->"($(gap(c)))*q^$(i+p.v-1)",l),"+")
+  prod(map(degree(p):-1:valuation(p))do d
+    c=p[d]
+    if iszero(c) return "" end
+    s=gap(c)
+    if s=="1" s="+"
+    elseif s=="-1" s="-"
+    else s=bracket_if_needed(s)*"*"
+      if s[1]!='+' && s[1]!='-' s="+"*s end
+    end
+    s*(d==1 ? "q" : "q^$d")
+  end)
 end
 
 Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")

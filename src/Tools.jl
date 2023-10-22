@@ -26,9 +26,11 @@ best_type(x::Cyc{T}) where T<:Integer=conductor(x)==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
 best_type(m::AbstractArray{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
+best_type(x::BigInt)= typemin(Int)<=x<=typemax(Int) ? Int : BigInt
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
   if q.den isa Mvp && length(q.den)==1 return best_type(Mvp(q;Rational=true)) end
+  if q.den isa Pol && length(q.den.c)==1 return best_type(Pol(q)) end
   Frac{promote_type(best_type(q.num), best_type(q.den))}
 end
 best_type(q::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}

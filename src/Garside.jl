@@ -1681,7 +1681,9 @@ function showgraph(io,C::Category)
         println(io,l1,"\n",l2)
         l1=l2=""
       end
-      l2*=a*'\u2500'^(l-1)*"→ "
+      aa=Char[0x2192,0x2794,0x1F816,0x27F6]
+      bb=Char[0x2500,0x23AF,0x2015,0x23BA,0x23BB,0x23BC,0x23BD]
+      l2*=a*bb[3]^(l-1)*aa[2]*" "
       l1*=' '^textwidth(a)*lpad(ff,l)*' '
     end
     println(io,l1,"\n",l2,C.obj[f[end]])
