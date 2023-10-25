@@ -951,6 +951,13 @@ end
 @testset "cheviesupport.jl" begin
 @test mytest("cheviesupport.jl","CycPol([3,-5,6,3//7])","3q⁻⁵Φ₆(q-ζ₇³)")
 end
+@testset "cp.jl" begin
+@test mytest("cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")
+@test mytest("cp.jl","word(C(C.δ))","6-element Vector{Int64}:\n 1\n 3\n 4\n 1\n 3\n 4")
+@test mytest("cp.jl","Matrix(C,C.δ)","3×3 Matrix{Cyc{Int64}}:\n ζ₃   0   0\n  0  ζ₃   0\n  0   0  ζ₃")
+@test mytest("cp.jl","b=C(1,2,3,4)^3","1.2.341.2.341.2.34")
+@test mytest("cp.jl","Matrix(C,b[3])","3×3 Matrix{Cyc{Int64}}:\n 0    0  ζ₃\n 0  ζ₃²   0\n 1    0   0")
+end
 @testset "dSeries.jl" begin
 @test mytest("dSeries.jl","W=rootdatum(\"3D4\")","³D₄")
 @test mytest("dSeries.jl","l=cuspidal_data(W,3)","2-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:\n (levi = ³D₄, cuspidal = 8, d = ζ₃)\n (levi = ³D₄₍₎=Φ₃², cuspidal = 1, d = ζ₃)")
@@ -981,12 +988,5 @@ end
 @test mytest("gendec.jl","W=rootdatum(:psu,6)","psu₆")
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n    │ps ps A₂\n────┼─────────\n²A₅ │ .  .  .\n.3  │ 1  .  .\n3.  │ 1  .  .\n.21 │ 1  1  .\n1.2 │ 2  1  .\n21. │ 1  1  .\n2.1 │ 2  1  .\n.111│ .  1  1\n111.│ .  1  1\n1.11│ 1  2  1\n11.1│ 1  2  1")
-end
-@testset "../contr/cp.jl" begin
-@test mytest("../contr/cp.jl","C=CorranPicantinMonoid(3,3)","CorranPicantinMonoid(3,3,3)")
-@test mytest("../contr/cp.jl","word(C(C.δ))","6-element Vector{Int64}:\n 1\n 3\n 4\n 1\n 3\n 4")
-@test mytest("../contr/cp.jl","Matrix(C,C.δ)","3×3 Matrix{Cyc{Int64}}:\n ζ₃   0   0\n  0  ζ₃   0\n  0   0  ζ₃")
-@test mytest("../contr/cp.jl","b=C(1,2,3,4)^3","1.2.341.2.341.2.34")
-@test mytest("../contr/cp.jl","Matrix(C,b[3])","3×3 Matrix{Cyc{Int64}}:\n 0    0  ζ₃\n 0  ζ₃²   0\n 1    0   0")
 end
 end

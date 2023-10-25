@@ -792,24 +792,21 @@ function family_imprimitive(S)
   eps=map(l->(-1)^sum(i->count(l[i].<@view l[i+1:end]),eachindex(l)),ffc)
   fcdict=Dict{Tuple{Vector{Int},Vector{Int}},e<=2 ? Int : Cyc{Int}}()
   function fc(e,f1,f2) # local Fourier coefficient
-    k=f1<=f2 ? (f1,f2) : (f2,f1)
-    get!(fcdict,k)do
+    get!(fcdict,f1<=f2 ? (f1,f2) : (f2,f1))do
       det_bareiss(Cyc.(E.(e,-f1*f2')))
     end
   end
-  mat=eps.*map(ff)do fS
-      eps.*map(fT->prod(fc.(e,fS,fT)),ff)
-  end
-  mat//=(E(4,binomial(e+1,2)-1)*root(e)^e)^m
-  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
+  mat=[prod(fc.(e,fS,fT)) for fS in ff, fT in ff]
   # next signs are 1 on the principal series
-  newsigns=(-1)^(binomial(e,2)*binomial(m,2))*
-      map(S->(-1)^sum((0:e-1).*binomial.(length.(S),2)),symbs)
-  mat=map((s,l)->s*(newsigns.*l),newsigns,mat)
+  eps.*=(-1)^(binomial(e,2)*binomial(m,2))*
+     [(-1)^((0:e-1)'*binomial.(length.(S),2)) for S in symbs]
+  mat=Diagonal(eps)*mat*Diagonal(eps)
+  mat*=improve_type(E(4,-m*(binomial(e+1,2)-1)))
+  mat//=improve_type(root(e^(e*m)))
+  frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
+  mat=toL(mat)
   if d==0 # compact entries...
-    isreducedsymb(s)=all(x->s==x || Symbols.lesssymbols(x,s),
-                               circshift.(Ref(s),1:length(s)-1))
-    schon=isreducedsymb.(symbs)
+    schon=Symbols.isreducedsymb.(symbs)
     mult=Int[]
     for (i,si) in pairs(symbs)
       if schon[i]
@@ -832,7 +829,7 @@ function family_imprimitive(S)
         if si==sj mat[i][j]+=1 end
       end
     end
-    if (toM(mat)*cat(Cyc.(frobs)...;dims=(1,2)))^3!=one(toM(mat))
+    if !isone((toM(mat)*Diagonal(Cyc.(frobs)))^3)
       print("** WARNING: (S*T)^3!=1\n")
     end
   end

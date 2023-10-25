@@ -128,7 +128,7 @@ julia> regular_eigenvalues(coxgroup(:G,2))
 julia> W=complex_reflection_group(6)
 G₆
 
-julia> L=twistings(W,[2])[2]
+julia> L=twistings(W,[2])[4]
 G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> regular_eigenvalues(L)
@@ -182,7 +182,7 @@ julia> position_regular_class(W,30)
 julia> W=complex_reflection_group(6)
 G₆
 
-julia> L=twistings(W,[2])[2]
+julia> L=twistings(W,[2])[4]
 G₆₍₂₎=G₃‚₁‚₁[ζ₄]Φ′₄
 
 julia> position_regular_class(L,7//12)

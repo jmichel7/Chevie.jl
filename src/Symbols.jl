@@ -434,23 +434,23 @@ function shapesSymbols(e,r,c=1,def=0)
     all(x->defshape(x)!=def  ||  x<=s,map(i->circshift(s,i),1:length(s)-1)),res)
 end
 
+isreducedsymb(s)=all(1:length(s)-1)do i
+      x=circshift(s,i)
+      x==s || lesssymbols(x,s)
+    end
+
 "`symbolsshape(r,s)` symbols of rank `r` and shape `s`"
 function symbolsshape(r,s)
   S=map(x->symbol_partition_tuple(x,s),
        partition_tuples(r-ranksymbol(map(x->0:x-1,s)),length(s)))
   if !iszero(sum(s)%length(s)) return S end
-  S=filter(S)do s
-    all(1:length(s)-1)do i
-      x=circshift(s,i)
-      x==s || lesssymbols(x,s)
-    end
-  end
+  S=filter(isreducedsymb,S)
   if !iszero(defshape(s)) return S end
   res=[]
   for s in S
     p=findfirst(i->s==circshift(s,1-i),2:length(s))
     if p===nothing push!(res,s)
-    else append!(res,map(i->vcat(map(copy,s[1:p]),[div(length(s),p),i]),
+    else append!(res,map(i->vcat(copy.(s[1:p]),[div(length(s),p),i]),
                       0:div(length(s),p)-1))
     end
   end

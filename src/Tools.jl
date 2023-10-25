@@ -10,7 +10,7 @@ using Combinat: tally
 using PermGroups: Group, Groups, gens, word, PermGroup, elements,
          minimal_words, isabelian
 using MatInt: smith_transforms
-using CyclotomicNumbers: Cyc, conductor
+using CyclotomicNumbers: Cyc, conductor, Root1
 using ..FiniteFields: FiniteFields, FFE, Z
 using ..Modulo: Mod
 using ..Gapjm: Gapjm, order
@@ -27,6 +27,7 @@ best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
 best_type(m::AbstractArray{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
 best_type(x::BigInt)= typemin(Int)<=x<=typemax(Int) ? Int : BigInt
+best_type(x::Root1)= order(x)<=2 ? Int : Root1
 function best_type(q::Frac)
   if isone(q.den) return best_type(q.num) end
   if q.den isa Mvp && length(q.den)==1 return best_type(Mvp(q;Rational=true)) end
