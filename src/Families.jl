@@ -802,7 +802,7 @@ function family_imprimitive(S)
      [(-1)^((0:e-1)'*binomial.(length.(S),2)) for S in symbs]
   mat=Diagonal(eps)*mat*Diagonal(eps)
   mat*=improve_type(E(4,-m*(binomial(e+1,2)-1)))
-  mat//=improve_type(root(e^(e*m)))
+  mat//=iseven(e*m) ? e^div(e*m,2) : improve_type(e^div(e*m,2)*root(e))
   frobs=E(12,-(e^2-1)*m).*map(i->E(2e,-sum(j->sum(j.^2),i)-e*sum(sum,i)),ff)
   mat=toL(mat)
   if d==0 # compact entries...

@@ -328,17 +328,6 @@ chevieset(:I, :Invariants, function (arg...,)
                         end
                     end), (chevieget(:imp, :Invariants))(e, e, 2))
     end)
-chevieset(:I, :SymbolToParameter, function (S,)
-        if S[1] != [0, 1] || !([]) in S
-            return false
-        end
-        if mod(length(S), 2) == 1
-            S = reverse(S)
-            return [Position(S, []), Position(S, [0, 1]) - Position(S, [])]
-        else
-            return (Position(S, []) + [-(Position(S[2:length(S)], [0, 1])), 0]) - 1
-        end
-    end)
 chevieset(:I, :ParameterToSymbol, function (e, p)
         local S
         if p == [0]

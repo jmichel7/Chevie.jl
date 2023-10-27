@@ -1,5 +1,6 @@
 # install_tbl() translates ~/gap3-dev/pkg/chevie/tbl to ./tbl
-using Gap2Julia
+include("Gap2Julia.jl")
+using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 is not
 const src=[ 
@@ -39,6 +40,7 @@ const exclu=Dict(
  "ReflectionCoDegrees"=>["imp"],
  "Representation"=>["2D"],
  "SchurElement"=>["D","G31"],
+ "SymbolToParameter"=>["I"],
  "sparseFakeDegrees"=>["G4_22"],
  "UnipotentClasses"=>["2A","2D","B","D"],
  "WGraph"=>["E8"])

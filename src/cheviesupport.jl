@@ -51,6 +51,7 @@ union(v::Vector)=union(v...)
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]
 
+Base.push!(a::String,b::Char)=a*b
 # ---------------- other extensions --------------------------------------
 Base.:*(a::AbstractArray,b::Pol)=a .* b
 Base.:*(a::AbstractArray,b::Frac)=a .* b

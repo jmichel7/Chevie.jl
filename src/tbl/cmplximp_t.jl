@@ -287,31 +287,29 @@ end)
 
 # JM 30/11/2000 we have to decide how to represent cuspidals of imprimitive
 # groups -- the function below is an ad-hoc solution for now
-#  ImprimitiveCuspidalName(<symbol>) returns the TeX name
+# ImprimitiveCuspidalName(symbol) returns the TeX name
 function ImprimitiveCuspidalName(S)
-  r=ranksymbol(convert(Vector{Vector{Int}},S))
+  S=convert(Vector{Vector{Int}},S)
+  r=ranksymbol(S)
   d=length(S)
   s=joindigits(length.(S))
   if r==0 return "" end
   if sum(length,S)%d==1 # G(d,1,r)
-    if r==1 return d==3 ? "Z_3" : "Z_{$d}^{$s}"
-    else return "G_{$d,1,$r}^{$s}"
+    if r==1 d==3 ? "Z_3" : "Z_{$d}^{$s}"
+    else "G_{$d,1,$r}^{$s}"
     end
   else # G(d,d,r)
     if r==2
-      if d==4 return "B_2"
+      if d==4 "B_2"
       elseif d==6 
         p=Dict("212010"=>"-1","221001"=>"1",
                "211200"=>"\\zeta^2","220110"=>"\\zeta_3")
-        return "G_2[$(p[s])]"
-      else p=chevieget(:I,:SymbolToParameter)(S);
-	return "I_2($d)",FormatGAP(p)
+        "G_2[$(p[s])]"
+      else "I_2($d)"*FormatGAP(chevieget(:I,:SymbolToParameter)(S))
       end
-      elseif r==3 && d==3 
-        return "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
-      elseif r==3 && d==4 
-        return "G_{4,4,3}["*"\\zeta_4"*(s=="3010" ? "" : "^3")*"]"
-    else return "G_{$d,$d,$r}^{$s}"
+    elseif r==3 && d==3 "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
+    elseif r==3 && d==4 "G_{4,4,3}["*"\\zeta_4"*(s=="3010" ? "" : "^3")*"]"
+    else "G_{$d,$d,$r}^{$s}"
     end
   end
 end

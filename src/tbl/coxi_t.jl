@@ -45,3 +45,13 @@ chevieset(:I, :CharInfo, function(m)
   end
   return res
 end)
+
+chevieset(:I, :SymbolToParameter, function (S)
+  if S[1]!=[0,1] || !any(isempty,S) return false end
+  if isodd(length(S)) S=reverse(S) end
+  a=findfirst(isempty,S)
+  if isodd(length(S)) 
+    [a,findfirst(==([0,1]),S)-a]
+  else (a-1).+[-findfirst(==([0,1]),S[2:end]),0]
+  end
+end)
