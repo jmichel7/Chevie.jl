@@ -340,9 +340,14 @@ end
 
 #--------------------------- Chevie compatibility--------------------------
 toL(m)=collect(eachrow(m)) # to Gap
-toM(m)=isempty(m) ? Array{eltype(eltype(m))}(undef,0,1) : permutedims(reduce(hcat,m)) # to julia
 
-# The following functions should be eventually evicted by adpoting Julia
+if VERSION.minor>=9
+toM(l)=stack(l;dims=1)
+else
+toM(l)=isempty(l) ? Array{eltype(eltype(l))}(undef,0,1) : permutedims(reduce(hcat,l))
+end
+
+# The following functions should be eventually evicted by adopting Julia
 # order for products.
 
 """
