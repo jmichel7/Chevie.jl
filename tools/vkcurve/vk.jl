@@ -21,84 +21,10 @@ function DistSeg(z,a,b)
   z-=a
   r=abs(b)
   z*=r/b
-  @show z,b
+# @show z,b
   real(z)<0 ? abs(z) : real(z)>r ? abs(z-r) : imag(z)>0 ? imag(z) : -imag(z)
 end
 
-"""
-`discy2(p::Mvp)`
-
-The input should be an `Mvp` in `x` and `y`, with rational coefficients.
-The  function  returns the  discriminant  of  `p`  with respect  to  `x`
-(an  `Mvp` in  `y`);  it uses  interpolation to  reduce  the problem  to
-discriminants of univariate polynomials,  and works reasonably fast (not
-hundreds of times slower than MAPLE...).
-
-|    gap> discy2(x+y^2+x^3+y^3);
-    4+27y^4+54y^5+27y^6|
-"""
-function discy2(p)
-  n=2*(1+degree(p,:x))*(1+degree(p,:y))
-  v=map(1:n)do i
-    q=scalar.(Pol(p(y=i),:x).c)
-    isempty(q) ? 0 : length(q)==1 ? q[1] :
-       det_bareiss(resultant(q,map(*,q[2:end],1:length(q)-1)))
-  end
-  Pol(1:n,v)(Mvp(:y))
-end
-
-Chars.discriminant(p::Pol)=det_bareiss(resultant(p[0:end],derivative(p)[0:end]))
-
-discy(p)=Pol(discriminant(Pol(p,:x)))
-
-"""
-`resultant(v,w)`
-
-`v` and  `w` are vectors  representing coefficients of  two polynomials.
-The function returns  Sylvester matrix for these  two polynomials (whose
-determinant  is  the resultant  of  the  two  polynomials). It  is  used
-internally by `discriminant`.
-
-```julia-repl
-julia> @Mvp x,y
-
-julia> p=x+y^2+x^3+y^3
-Mvp{Int64}: x³+x+y³+y²
-
-julia> c=Pol(p,:x).c
-4-element Vector{Mvp{Int64, Int64}}:
- y³+y²
- 1
- 0
- 1
-
-julia> d=Pol(derivative(p,:x),:x).c
-3-element Vector{Mvp{Int64, Int64}}:
- 1
- 0
- 3
-
-julia> m=resultant(c,d)
-5×5 Matrix{Mvp{Int64, Int64}}:
- 1  0  1  y³+y²  0
- 0  1  0  1      y³+y²
- 3  0  1  0      0
- 0  3  0  1      0
- 0  0  3  0      1
-
-julia> det_bareiss(m)
-Mvp{Int64}: 27y⁶+54y⁵+27y⁴+4
-```
-"""
-function resultant(v,w)
-  v=reverse(v)
-  w=reverse(w)
-  l=max(0,length(v)+length(w)-2)
-  m=fill(zero(v[1]),l,l)
-  for i in 1:length(w)-1 m[i,i:i+length(v)-1]=v end
-  for i in 1:length(v)-1 m[i+length(w)-1,i:i+length(w)-1]=w end
-  m
-end
 #---------------------- global functions --------------------------
 VKCURVE=Dict(
 :name=>"vkcurve",
@@ -107,18 +33,7 @@ VKCURVE=Dict(
 :homepage=>"http://webusers.imj-prg.fr/~jean.michel/vkcurve.html",
 :copyright=>
 "(C) David Bessis, Jean Michel -- compute Pi_1 of hypersurface complements",
-:monodromyApprox=>false, ##########################
-:showSingularProj=>false,
-:showBraiding=>false,
-:showLoops=>false,
-:showAction=>false,
-:showSegments=>false,
-:showInsideSegments=>false,
-:showWorst=>false,
-:showZeros=>false,
-:showNewton=>false,
-:showgetbraid=>false,
-:showRoots=>false,
+:monodromyApprox=>false,
 :showallnewton=>false,
 :NewtonLim=>800,
 :AdaptivityFactor=>10,
@@ -132,7 +47,7 @@ function SetPrintLevel(printlevel)
   VKCURVE[:showSegments]=VKCURVE[:showgetbraid]=printlevel>=1
 end
 
-SetPrintLevel(2) # while developping
+SetPrintLevel(2) # while developping; production is 0
 
 @GapObj struct VK{T}
   curve::Mvp{T,Int}
@@ -248,7 +163,9 @@ function PrepareCurve(curve::Mvp)
     xprintln("**** Warning: curve is not quadratfrei: dividing by ", d)
     curve=exactdiv(curve,d)
   end
-  VK(curve,degree(Pol(curve,:x)[end])==0,Dict{Symbol,Any}())
+  r=VK(curve,degree(Pol(curve,:x)[end])==0,Dict{Symbol,Any}())
+  Discy(r);GetDiscyRoots(r)
+  r
 end
 
 complexpol(p::Pol)=Pol(Complex{Float64}.(p.c),p.v)
@@ -273,7 +190,8 @@ function Discy(r)
     println("Curve has ",degree(r.curveVerticalPart)," linear factors in y")
   end
   r.nonVerticalPart=exactdiv(r.curve,r.curveVerticalPart(Mvp(:y)))
-  d=discy(r.nonVerticalPart)
+  # discriminant wrto x of r.nonVerticalPart
+  d=Pol(discriminant(Pol(r.nonVerticalPart,:x)))
   if iszero(d)
     error("Discriminant is 0 but ", r.curve," should be quadratfrei")
   end
@@ -288,6 +206,7 @@ function Discy(r)
   d//=d[end]
   r.discy=d
   if eltype(coefficients(d))<:Union{Complex{<:Rational},Rational}
+    @show r.discy
     r.discyFactored=factor(r.discy)
     if r.discyFactored isa Tuple r.discyFactored=r.discyFactored[1] end
     r.discyFactored=collect(keys(r.discyFactored))
@@ -403,7 +322,6 @@ end
 function FundamentalGroup(c::Mvp;printlevel=0)
   SetPrintLevel(printlevel)
   r=PrepareCurve(c)
-  Discy(r);GetDiscyRoots(r)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
   loops=convert_loops(LoopsAroundPunctures(r.roots))
@@ -430,7 +348,6 @@ end
 # curve --  an Mvp in x and y "monic in x" describing a curve P(x,y)
 function PrepareFundamentalGroup(curve, name)
   r=PrepareCurve(curve)
-  Discy(r);GetDiscyRoots(r)
   r.name=name
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
@@ -793,6 +710,9 @@ function convert_loops(ll)
   (;points, segments, loops)
 end
 
+# closeto(x,y)=abs(x-y)<tol
+closeto(x,y)=x≈y
+
 """
 'LoopsAroundPunctures(points)'
 
@@ -807,14 +727,11 @@ julia> LoopsAroundPunctures([0])
 """
 function LoopsAroundPunctures(originalroots)
 # tol=first(nearest_pair(originalroots))
-# close(x,y)=abs(x-y)<tol
-  close(x,y)=x≈y
   roots=originalroots
   n=length(roots)
   if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
-  @show roots
   ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
   sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
@@ -877,7 +794,7 @@ function LoopsAroundPunctures(originalroots)
     k=length(y[:path])
     if k>1
       circleorigin=(y[:y]+y[:path][k-1])/2
-      k=findfirst(x->close(x,circleorigin),y[:circle])
+      k=findfirst(x->closeto(x,circleorigin),y[:circle])
       y[:circle]=circshift(y[:circle],1-k)
     end
   end
@@ -885,7 +802,7 @@ function LoopsAroundPunctures(originalroots)
     k=length(y[:path])
     y[:handle]=Vector{Complex{Float64}}(vcat(map(1:k-1)do i
       l=sy(y[:path][i])[:circle]
-      l[1:findfirst(x->close(x,(y[:path][i]+y[:path][i+1])/2),l)]
+      l[1:findfirst(x->closeto(x,(y[:path][i]+y[:path][i+1])/2),l)]
      end...))
     y[:loop]=vcat(y[:handle], y[:circle], reverse(y[:handle]))
   end
@@ -1437,19 +1354,14 @@ function LBraidToWord(v1, v2, B)
   return res
 end
 #----------------------- Presentation -------------------------------
-# Implements the action of B_n on F_n
-#   Input:  element of B_n, ambient free group F_m
-#           (with m >= n; when m>n, Hurwitz
-#            action is extended trivially to the extra generators)
-#   Output: automorphism of F_n
 """
-'BnActsOnFn(<braid b>,<Free group F>)'
+'BnActsOnFn(braid b with n strands,Free group F_m)'
 
-This function  implements the Hurwitz action  of the braid group  on `n`
-strings  on  the  free  group  on `n`  generators,  where  the  standard
-generator  `σ_i` of  `B_n`  fixes  the generators  `f_1,…,f_n`,
-except `f_i` which is mapped to  `f_{i+1}` and `f_{i+1}` which is mapped
-to `f_{i+1}^{-1}f_if_{i+1}`.
+This  function  implements  the  Hurwitz  action  of the braid group on `n`
+strings  on the free group  on `m` generators with  m≥n, where the standard
+generator  `σ_i` of  `B_n` fixes  the generators  `f_1,…,f_m`, except `f_i`
+which   is  mapped   to  `f_{i+1}`   and  `f_{i+1}`   which  is  mapped  to
+`f_{i+1}^{-1}f_if_{i+1}`.
 
 ```julia-repl
 julia> B=BraidMonoid(coxsym(3))

@@ -398,7 +398,7 @@ using ..Gapjm
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
   representations, InductionTable, induction_table, classes, j_induction_table,
-  J_induction_table, decompose, on_chars, detPerm, conjPerm, discriminant,
+  J_induction_table, decompose, on_chars, detPerm, conjPerm,
   classnames, decomposition_matrix, eigen, schur_functor, charnumbers
 
 """
@@ -1691,7 +1691,7 @@ julia> discriminant(W)(x,y)
 Mvp{Int64}: x³-y²
 ```
 """
-function discriminant(W)
+function LaurentPolynomials.discriminant(W::Group)
   t=refltype(W)
   if isempty(t) return ()->Mvp(1)
   elseif length(t)==1 return getchev(t[1],:Discriminant)

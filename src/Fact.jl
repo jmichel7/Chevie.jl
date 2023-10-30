@@ -221,11 +221,11 @@ function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
     info("#I  f is zero")
     return []
   end
+  fact=Primes.Factorization{typeof(f)}()
   d=denominator(f)
   f=numerator(f)
   v=valuation(f)
   f=shift(f,-v)
-  fact=Primes.Factorization{typeof(f)}()
   if v>0 fact[Pol()]+=v end
   if 0==degree(f)
     info("#I  f is a power of x")
@@ -275,9 +275,6 @@ function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
     fact=Primes.Factorization{t}((t(p(Pol()+(p==Pol() ? 0 : shft)))=>m for (p,m) in fact)...)
   end
   if d!=1 
-    if T<:Integer
-      fact=convert(Primes.Factorization{Pol{Rational{T}}},fact)
-    end
     push!(fact,Pol(1//d)=>1)
   end
   fact
