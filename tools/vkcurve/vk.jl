@@ -288,8 +288,8 @@ function Finish(r)
   end
   r.presentation=Presentation(F)
   r.rawPresentation=Presentation(F)
-  return r
   simplify(r.presentation)
+  return r
 end
 
 function SearchHorizontal(r)
@@ -575,7 +575,8 @@ function FindRoots(p,prec)
 end
 
 #------------------ Loops --------------------------------------------
-# Ordonne une liste de points trigonometriquement autour d'un centre
+# sorts a list of points trigonometrically around a center
+# starting from -im+ε and going anticlockwise
 function cycorder(list, center)
   right=empty(list)
   left=empty(list)
@@ -592,10 +593,15 @@ function cycorder(list, center)
   sort!(left,by=x->imag(x-center)/real(x-center))
   vcat(right, top, left, bottom)
 end
+function cycorder2(list,center) # slightly slower
+  angles=map(x->iszero(x-center) ? pi/2 : angle(-im*(x-center)),list)
+  list[sortperm(angles)]
+end
 
 # Input: (l::Vector{Complex},center::Complex)
-# Output: sublist of l of "neighbours" of center,
-#   y is neighbour of center iff no z∈l is in the disk of diameter [y,center]
+# Output: sublist of l in cycorder of "neighbours" of center,
+# y is neighbour of center iff y≠center and no z∈l, z∉(y,center) is in the
+# disk of diameter [y,center]
 function neighbours(l, center)
   cycorder(filter(l)do y
     if y==center return false end
@@ -609,8 +615,8 @@ end
 
 # value at z of an equation of the line (x,y)
 function lineq(x, y, z)
-  if real(x)≈real(y)
-    if imag(x)≈imag(y) error("Undefined line\n")
+  if closeto(real(x),real(y))
+    if closeto(imag(x),imag(y)) error("Undefined line\n")
     else return real(z)-real(x)
     end
   else
@@ -620,14 +626,14 @@ end
 
 # mediatrix of segment (x,y) of length abs2(x-y) on each side of segment
 function mediatrix(x, y)
-  if x≈y error("Undefined mediatrix") end
-  (x+y)/2 .+[im,-im]*(x-y)
+  if closeto(x,y) error("Undefined mediatrix") end
+  (x+y)/2 .+[im,-im].*(x-y)
 end
 
 crossing(v1,v2)=crossing(v1...,v2...)
 
-# Computes the intersecton of lines (x1,x2) and (y1,y2)
-# returns nothing if the lines are parallel or a pair is a single
+# Computes the intersection of lines (x1,x2) and (y1,y2)
+# returns nothing if the lines are parallel or elements of a pair are too close
 function crossing(x1,x2,y1,y2)
   if x1≈x2 || y1≈y2 return nothing end
   if !(real(x1)≈real(x2))
@@ -636,22 +642,22 @@ function crossing(x1,x2,y1,y2)
     if !(real(y1)≈real(y2))
       lambday=(imag(y1)-imag(y2))/(real(y1)-real(y2))
       muy=-lambday*real(y1)+imag(y1)
-      if 1+lambdax≈1+lambday return nothing end
+#     if 1+lambdax≈1+lambday return nothing end
+      if lambdax≈lambday return nothing end
       resr=(muy-mux)/(lambdax-lambday)
       resi=lambdax*resr+mux
-      res=Complex(resr, resi)
+      return Complex(resr, resi)
     else
       E3=Complex{Float64}(E(3))
       res=crossing(E3*x1, E3*x2, E3*y1, E3*y2)
       if isnothing(res) return nothing end
-      res/=E3
+      return res/E3
     end
   else
     res=crossing(im*x1, im*x2, im*y1, im*y2)
     if isnothing(res) return nothing end
-    res/=im
+    return res/im
   end
-  res
 end
 
 function detectsleftcrossing(c, w, y, z)
@@ -668,9 +674,9 @@ end
 
 # y must be an element of ys
 function boundpaths(ys, sy, path, y)
-  if !haskey(y, :path)
-    y[:path]=vcat(path, [y[:y]])
-    for z in y[:lovers] boundpaths(ys, sy, y[:path], sy(z)) end
+  if isempty(y.path)
+    empty!(y.path);append!(y.path,path);push!(y.path,y.y)
+    for z in y.lovers boundpaths(ys, sy, y.path, sy(z)) end
   end
 end
 
@@ -712,6 +718,7 @@ end
 
 # closeto(x,y)=abs(x-y)<tol
 closeto(x,y)=x≈y
+#closeto(x,y)=x==y
 
 """
 'LoopsAroundPunctures(points)'
@@ -732,86 +739,91 @@ function LoopsAroundPunctures(originalroots)
   if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
-  ys=map(x->Dict{Symbol, Any}(:y=>x), roots)
+  ys=map(x->(y=x,neighbours=empty(roots),friends=empty(roots),
+             lovers=empty(roots),cycorder=empty(roots),circle=empty(roots),
+             witness=empty(roots),path=empty(roots),handle=empty(roots),
+             loop=empty(roots)),roots)
   sy(y)=ys[findfirst(==(y),roots)]
   for y in ys
-    y[:neighbours]=neighbours(roots, y[:y])
-    y[:friends]=[y[:y]]
-    y[:lovers]=empty(y[:friends])
+    append!(y.neighbours,neighbours(roots, y.y))
+    push!(y.friends,y.y)
   end
   if VKCURVE[:showLoops] println("neighbours computed") end
   for y in ys
-    for z in y[:neighbours]
-      if !(z in y[:friends])
-        push!(y[:lovers], z)
-        push!(sy(z)[:lovers], y[:y])
-        newfriends=vcat(y[:friends], sy(z)[:friends])
-        for t in y[:friends] sy(t)[:friends]=newfriends end
-        for t in sy(z)[:friends] sy(t)[:friends]=newfriends end
+    for z in y.neighbours
+      if !(z in y.friends)
+        push!(y.lovers, z)
+        push!(sy(z).lovers, y.y)
+        newfriends=vcat(y.friends, sy(z).friends)
+        for t in y.friends 
+          empty!(sy(t).friends);append!(sy(t).friends,newfriends)
+        end
+        for t in sy(z).friends 
+          empty!(sy(t).friends);append!(sy(t).friends,newfriends)
+        end
       end
     end
   end
-  for y in ys sort!(y[:neighbours],by=z->abs2(y[:y]-z)) end
-  minr,maxr=extrema(map(y->real(y[:y]), ys))
-  mini,maxi=extrema(map(y->imag(y[:y]), ys))
+  for y in ys sort!(y.neighbours,by=z->abs2(y.y-z)) end
+  minr,maxr=extrema(map(y->real(y.y), ys))
+  mini,maxi=extrema(map(y->imag(y.y), ys))
 # To avoid trouble with points on the border of the convex hull,
 # we make a box around all the points;
   box=[Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
        Complex(maxr+2, maxi+2), Complex(maxr+2, mini-2), 
-       Complex((maxr+minr)/2, mini-(maxr-minr)/2-2),
-       Complex(minr-(maxi-mini)/2-2, (maxi+mini)/2),
-       Complex((maxr+minr)/2, maxi+(maxr-minr)/2+2),
-       Complex(maxr+(maxi-mini)/2+2, (maxi+mini)/2)]
+       Complex((maxr+minr)/2, mini-2-(maxr-minr)/2),
+       Complex(minr-2-(maxi-mini)/2, (maxi+mini)/2),
+       Complex((maxr+minr)/2, maxi+2+(maxr-minr)/2),
+       Complex(maxr+2+(maxi-mini)/2, (maxi+mini)/2)]
   for y in ys
-    y[:cycorder]=cycorder(vcat(filter(z->z!=y[:y],roots),box),y[:y])
-    k=findfirst(==(y[:neighbours][1]),y[:cycorder])
-    y[:cycorder]=circshift(y[:cycorder],1-k)
-    push!(y[:cycorder], y[:cycorder][1])
-    y[:circle]=Complex{Float64}[(y[:y]+y[:neighbours][1])/2]
-    y[:witness]=Complex{Float64}[y[:neighbours][1]]
-    for z in y[:cycorder][2:end]
-      cut=detectsleftcrossing(y[:circle], y[:witness], y[:y], z)
+    append!(y.cycorder,cycorder(vcat(filter(z->z!=y.y,roots),box),y.y))
+    k=findfirst(==(y.neighbours[1]),y.cycorder)
+    y.cycorder.=circshift(y.cycorder,1-k)
+    push!(y.cycorder, y.cycorder[1])
+    push!(y.circle,(y.y+y.neighbours[1])/2)
+    push!(y.witness,y.neighbours[1])
+    for z in y.cycorder[2:end]
+      cut=detectsleftcrossing(y.circle, y.witness, y.y, z)
       if true in cut
         k=findfirst(cut)
-        y[:circle]=y[:circle][1:k]
-        y[:witness]=y[:witness][1:k]
+        resize!(y.circle,k)
+        resize!(y.witness,k)
       end
-      k=length(y[:circle])
-      newcirc=crossing(mediatrix(y[:y],y[:witness][k]),mediatrix(y[:y], z))
+      k=length(y.circle)
+      newcirc=crossing(mediatrix(y.y,y.witness[k]),mediatrix(y.y, z))
       if !isnothing(newcirc)
-        push!(y[:circle], newcirc)
-        push!(y[:witness], z)
+        push!(y.circle, newcirc)
+        push!(y.witness, z)
       end
-      if z in y[:lovers]
-        push!(y[:circle], (y[:y]+z)/2)
-        push!(y[:witness], z)
+      if z in y.lovers
+        push!(y.circle, (y.y+z)/2)
+        push!(y.witness, z)
       end
     end
   end
   if VKCURVE[:showLoops] println("circles computed") end
-  boundpaths(ys, sy, [], ys[1])
+  boundpaths(ys, sy, empty(roots), ys[1])
   for y in ys
-    k=length(y[:path])
+    k=length(y.path)
     if k>1
-      circleorigin=(y[:y]+y[:path][k-1])/2
-      k=findfirst(x->closeto(x,circleorigin),y[:circle])
-      y[:circle]=circshift(y[:circle],1-k)
+      circleorigin=(y.y+y.path[k-1])/2
+      k=findfirst(x->closeto(x,circleorigin),y.circle)
+      y.circle.=circshift(y.circle,1-k)
     end
   end
   for y in ys
-    k=length(y[:path])
-    y[:handle]=Vector{Complex{Float64}}(vcat(map(1:k-1)do i
-      l=sy(y[:path][i])[:circle]
-      l[1:findfirst(x->closeto(x,(y[:path][i]+y[:path][i+1])/2),l)]
+    k=length(y.path)
+    append!(y.handle,vcat(map(1:k-1)do i
+      l=sy(y.path[i]).circle
+      l[1:findfirst(x->closeto(x,(y.path[i]+y.path[i+1])/2),l)]
      end...))
-    y[:loop]=vcat(y[:handle], y[:circle], reverse(y[:handle]))
+    append!(y.loop,vcat(y.handle, y.circle, reverse(y.handle)))
   end
-  sort!(ys,by=y->findfirst(==(y[:y]),originalroots))
-  for y in ys
-    y[:loop]=map(x->round(x;sigdigits=8),y[:loop])
-    y[:loop]=shrink(y[:loop])
+  sort!(ys,by=y->findfirst(==(y.y),originalroots))
+  map(ys)do y
+    loop=map(x->round(x;sigdigits=8),y.loop)
+    shrink(y.loop)
   end
-  map(y->y[:loop], ys)
 end
 
 function _segs(r,v)
@@ -958,7 +970,7 @@ function ApproxFollowMonodromy(r,segno,pr)
     P=Pol(r.curve(y=next))
     nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
     if isnothing(nextzeros) ||
-       (1+maximum(abs.(nextzeros-prevzeros))≈1 && step>1//16)
+      (closeto(1+maximum(abs.(nextzeros-prevzeros)),1) && step>1//16)
       rejected=true
     else
       dm=map(i->minimum(abs.(prevzeros[i]-prevzeros[j] for j in 1:n if j!=i)),
