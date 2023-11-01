@@ -206,13 +206,13 @@ function Discy(r)
   d//=d[end]
   r.discy=d
   if eltype(coefficients(d))<:Union{Complex{<:Rational},Rational}
-    @show r.discy
     r.discyFactored=factor(r.discy)
     if r.discyFactored isa Tuple r.discyFactored=r.discyFactored[1] end
     r.discyFactored=collect(keys(r.discyFactored))
   else
     r.discyFactored=[d]
   end
+# @show r.discyFactored
 end
 
 complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
@@ -292,8 +292,7 @@ function Finish(r)
   return r
 end
 
-function SearchHorizontal(r)
-  # Searching for a good horizontal
+function SearchHorizontal(r) # Searching for a good horizontal
   height=9
   while true
     height+=1
@@ -319,13 +318,14 @@ function SearchHorizontal(r)
 end
 
 # curve --  an Mvp in x and y describing a curve in complex^2
-function FundamentalGroup(c::Mvp;printlevel=0)
+function FundamentalGroup(c::Mvp;printlevel=0,abort=false)
   SetPrintLevel(printlevel)
   r=PrepareCurve(c)
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
   loops=convert_loops(LoopsAroundPunctures(r.roots))
   merge!(r.prop,pairs(loops))
+  if abort return r end
   Loops(r)
   Zeros(r)
   if isempty(r.zeros[1]) return TrivialCase(r) end
@@ -615,8 +615,8 @@ end
 
 # value at z of an equation of the line (x,y)
 function lineq(x, y, z)
-  if closeto(real(x),real(y))
-    if closeto(imag(x),imag(y)) error("Undefined line\n")
+  if someclose(real(x),real(y))
+    if someclose(imag(x),imag(y)) error("Undefined line\n")
     else return real(z)-real(x)
     end
   else
@@ -626,7 +626,7 @@ end
 
 # mediatrix of segment (x,y) of length abs2(x-y) on each side of segment
 function mediatrix(x, y)
-  if closeto(x,y) error("Undefined mediatrix") end
+  if someclose(x,y) error("Undefined mediatrix") end
   (x+y)/2 .+[im,-im].*(x-y)
 end
 
@@ -635,17 +635,16 @@ crossing(v1,v2)=crossing(v1...,v2...)
 # Computes the intersection of lines (x1,x2) and (y1,y2)
 # returns nothing if the lines are parallel or elements of a pair are too close
 function crossing(x1,x2,y1,y2)
-  if x1≈x2 || y1≈y2 return nothing end
-  if !(real(x1)≈real(x2))
-    lambdax=(imag(x1)-imag(x2))/(real(x1)-real(x2))
-    mux=-lambdax*real(x1)+imag(x1)
-    if !(real(y1)≈real(y2))
-      lambday=(imag(y1)-imag(y2))/(real(y1)-real(y2))
-      muy=-lambday*real(y1)+imag(y1)
-#     if 1+lambdax≈1+lambday return nothing end
-      if lambdax≈lambday return nothing end
-      resr=(muy-mux)/(lambdax-lambday)
-      resi=lambdax*resr+mux
+  if someclose(x1,x2) || someclose(y1,y2) return nothing end
+  if !someclose(real(x1),real(x2))
+    λx=(imag(x1)-imag(x2))/(real(x1)-real(x2))
+    μx=-λx*real(x1)+imag(x1)
+    if !someclose(real(y1),real(y2))
+      λy=(imag(y1)-imag(y2))/(real(y1)-real(y2))
+      μy=-λy*real(y1)+imag(y1)
+      if someclose(λx,λy) return nothing end
+      resr=(μy-μx)/(λx-λy)
+      resi=λx*resr+μx
       return Complex(resr, resi)
     else
       E3=Complex{Float64}(E(3))
@@ -672,22 +671,20 @@ function detectsleftcrossing(c, w, y, z)
   res
 end
 
-# y must be an element of ys
-function boundpaths(ys, sy, path, y)
-  if isempty(y.path)
-    empty!(y.path);append!(y.path,path);push!(y.path,y.y)
-    for z in y.lovers boundpaths(ys, sy, y.path, sy(z)) end
-  end
-end
-
 # eliminates trivial segments and contracts pairs [a,b],[b,a]
-function shrink(l)
+function shrink(l)local k
   k=findfirst(i->l[i]==l[i+1],1:length(l)-1)
   if !isnothing(k) return shrink(vcat(l[1:k],l[k+2:end])) end
   k=findfirst(i->l[i]==l[i+2],1:length(l)-2)
   if !isnothing(k) return shrink(vcat(l[1:k],l[k+3:end])) end
   l
 end
+
+# closeto(x,y)=abs(x-y)<tol
+closeto(x,y)=x≈y
+someclose(x,y)=isapprox(x,y,rtol=10^-6)
+#closeto(x,y)=x==y
+closeto(x)=y->closeto(x,y)
 
 """
 The  input is a list  of loops, each a  list of complex numbers representing
@@ -703,9 +700,14 @@ The output is a named tuple with fields
     opposed orientation of the segment is taken.
 """
 function convert_loops(ll)
-  points=sort(unique(vcat(ll...)),by=x->(imag(x),real(x)))
-  np(p)=findfirst(==(p),points)
-  loops=map(l->map(i->np.(l[i-1:i]),2:length(l)),ll)
+  println("rawloops:",length.(ll))
+  points=unique(vcat(ll...))
+  points=points[filter(i->!any(closeto(points[i]),points[1:i-1]),eachindex(points))]
+  points=sort(points,by=x->(imag(x),real(x)))
+  np(p)=findfirst(closeto(p),points)
+  loops=map(l->np.(l),ll)
+  loops=shrink.(loops)
+  loops=map(l->map(i->l[i-1:i],2:length(l)),loops)
   segments=sort(unique(sort.(vcat(loops...))))
   loops=map(loops)do l
     map(l)do seg
@@ -713,12 +715,21 @@ function convert_loops(ll)
                     -findfirst(==(reverse(seg)),segments)
     end
   end
+  println("loops:",length.(loops))
+  println("#seg=",length(segments)," #pnts=",length(points))
   (;points, segments, loops)
 end
 
-# closeto(x,y)=abs(x-y)<tol
-closeto(x,y)=x≈y
-#closeto(x,y)=x==y
+function Box(l)
+  minr,maxr=extrema(real.(l))
+  mini,maxi=extrema(imag.(l))
+  [Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
+   Complex(maxr+2, maxi+2), Complex(maxr+2, mini-2), 
+   Complex((maxr+minr)/2, mini-2-(maxr-minr)/2),
+   Complex(minr-2-(maxi-mini)/2, (maxi+mini)/2),
+   Complex((maxr+minr)/2, maxi+2+(maxr-minr)/2),
+   Complex(maxr+2+(maxi-mini)/2, (maxi+mini)/2)]
+end
 
 """
 'LoopsAroundPunctures(points)'
@@ -739,75 +750,82 @@ function LoopsAroundPunctures(originalroots)
   if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
   sort!(roots, by=x->abs2(x-average))
-  ys=map(x->(y=x,neighbours=empty(roots),friends=empty(roots),
-             lovers=empty(roots),cycorder=empty(roots),circle=empty(roots),
+  ys=map(x->(neighbours=Int[],friends=Int[], lovers=Int[],
+             cycorder=empty(roots),circle=empty(roots),
              witness=empty(roots),path=empty(roots),handle=empty(roots),
              loop=empty(roots)),roots)
-  sy(y)=ys[findfirst(==(y),roots)]
-  for y in ys
-    append!(y.neighbours,neighbours(roots, y.y))
-    push!(y.friends,y.y)
+  err=filter(x->closeto(roots[x]...),combinations(eachindex(roots),2))
+  if length(err)>0 error("roots too close ",err) end
+  iy(y)=findfirst(==(y),roots)
+  sy(y)=ys[iy(y)]
+  for (yi,y) in enumerate(ys)
+    append!(y.neighbours,iy.(neighbours(roots, roots[yi])))
+    push!(y.friends,yi)
   end
   if VKCURVE[:showLoops] println("neighbours computed") end
-  for y in ys
+  for (yi,y) in enumerate(ys)
     for z in y.neighbours
       if !(z in y.friends)
         push!(y.lovers, z)
-        push!(sy(z).lovers, y.y)
-        newfriends=vcat(y.friends, sy(z).friends)
+        push!(ys[z].lovers, yi)
+        newfriends=vcat(y.friends, ys[z].friends)
         for t in y.friends 
-          empty!(sy(t).friends);append!(sy(t).friends,newfriends)
+          empty!(ys[t].friends);append!(ys[t].friends,newfriends)
         end
-        for t in sy(z).friends 
-          empty!(sy(t).friends);append!(sy(t).friends,newfriends)
+        for t in ys[z].friends 
+          empty!(ys[t].friends);append!(ys[t].friends,newfriends)
         end
       end
     end
   end
-  for y in ys sort!(y.neighbours,by=z->abs2(y.y-z)) end
-  minr,maxr=extrema(map(y->real(y.y), ys))
-  mini,maxi=extrema(map(y->imag(y.y), ys))
+  for (yi,y) in enumerate(ys) 
+    sort!(y.neighbours,by=z->abs2(roots[yi]-roots[z]))
+  end
 # To avoid trouble with points on the border of the convex hull,
 # we make a box around all the points;
-  box=[Complex(minr-2, mini-2), Complex(minr-2, maxi+2),
-       Complex(maxr+2, maxi+2), Complex(maxr+2, mini-2), 
-       Complex((maxr+minr)/2, mini-2-(maxr-minr)/2),
-       Complex(minr-2-(maxi-mini)/2, (maxi+mini)/2),
-       Complex((maxr+minr)/2, maxi+2+(maxr-minr)/2),
-       Complex(maxr+2+(maxi-mini)/2, (maxi+mini)/2)]
-  for y in ys
-    append!(y.cycorder,cycorder(vcat(filter(z->z!=y.y,roots),box),y.y))
-    k=findfirst(==(y.neighbours[1]),y.cycorder)
+  box=Box(roots)
+  for (yi,y) in enumerate(ys) 
+    append!(y.cycorder,cycorder(vcat(deleteat!(copy(roots),yi),box),roots[yi]))
+    n1=roots[y.neighbours[1]]
+    k=findfirst(==(n1),y.cycorder)
     y.cycorder.=circshift(y.cycorder,1-k)
     push!(y.cycorder, y.cycorder[1])
-    push!(y.circle,(y.y+y.neighbours[1])/2)
-    push!(y.witness,y.neighbours[1])
+    push!(y.circle,(roots[yi]+n1)/2)
+    push!(y.witness,n1)
     for z in y.cycorder[2:end]
-      cut=detectsleftcrossing(y.circle, y.witness, y.y, z)
-      if true in cut
+      cut=detectsleftcrossing(y.circle, y.witness, roots[yi], z)
+      if any(cut)
         k=findfirst(cut)
         resize!(y.circle,k)
         resize!(y.witness,k)
       end
       k=length(y.circle)
-      newcirc=crossing(mediatrix(y.y,y.witness[k]),mediatrix(y.y, z))
+      newcirc=crossing(mediatrix(roots[yi],y.witness[k]),mediatrix(roots[yi], z))
       if !isnothing(newcirc)
         push!(y.circle, newcirc)
         push!(y.witness, z)
       end
-      if z in y.lovers
-        push!(y.circle, (y.y+z)/2)
+      if iy(z) in y.lovers
+        push!(y.circle, (roots[yi]+z)/2)
         push!(y.witness, z)
       end
     end
   end
   if VKCURVE[:showLoops] println("circles computed") end
-  boundpaths(ys, sy, empty(roots), ys[1])
-  for y in ys
+
+  function boundpaths(path, i) # y must be an element of ys
+    if !isempty(ys[i].path) return end
+    append!(ys[i].path,path);push!(ys[i].path,roots[i])
+    for z in ys[i].lovers boundpaths(ys[i].path, z) end
+  end
+
+  boundpaths(empty(roots), 1)
+  for (yi,y) in enumerate(ys) 
     k=length(y.path)
     if k>1
-      circleorigin=(y.y+y.path[k-1])/2
-      k=findfirst(x->closeto(x,circleorigin),y.circle)
+      circleorigin=(roots[yi]+y.path[k-1])/2
+#     k=findfirst(x->closeto(x,circleorigin),y.circle)
+      k=findfirst(==(circleorigin),y.circle)
       y.circle.=circshift(y.circle,1-k)
     end
   end
@@ -815,38 +833,18 @@ function LoopsAroundPunctures(originalroots)
     k=length(y.path)
     append!(y.handle,vcat(map(1:k-1)do i
       l=sy(y.path[i]).circle
-      l[1:findfirst(x->closeto(x,(y.path[i]+y.path[i+1])/2),l)]
+#     l[1:findfirst(x->closeto(x,(y.path[i]+y.path[i+1])/2),l)]
+      l[1:findfirst(==((y.path[i]+y.path[i+1])/2),l)]
      end...))
     append!(y.loop,vcat(y.handle, y.circle, reverse(y.handle)))
   end
-  sort!(ys,by=y->findfirst(==(y.y),originalroots))
+  ys=ys[sort(eachindex(ys),by=i->findfirst(==(roots[i]),originalroots))]
   map(ys)do y
-    loop=map(x->round(x;sigdigits=8),y.loop)
-    shrink(y.loop)
+#   loop=map(x->round(x;sigdigits=8),y.loop)
+    y.loop
   end
 end
 
-function _segs(r,v)
-  rp=Float64[]
-  ip=Float64[]
-  for seg in v
-    s=r[:points][seg<0 ? reverse(r[:segments][-seg]) : r[:segments][seg]]
-    append!(rp,real.(s))
-    append!(ip,imag.(s))
-  end
-  rp,ip
-end
-
-function _loops(r,v)
-  rp=Float64[]
-  ip=Float64[]
-  for l in r[:loops][v]
-    nrp,nip=_segs(r,l)
-    append!(rp,nrp)
-    append!(ip,nip)
-  end
-  rp,ip
-end
 #-------------------- ApproxMonodromy ----------------------------
 # for each point of a find closest point in b
 # Complain if the result is not a bijection between a and b of if
@@ -970,7 +968,7 @@ function ApproxFollowMonodromy(r,segno,pr)
     P=Pol(r.curve(y=next))
     nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
     if isnothing(nextzeros) ||
-      (closeto(1+maximum(abs.(nextzeros-prevzeros)),1) && step>1//16)
+      (someclose(1+maximum(abs.(nextzeros-prevzeros)),1) && step>1//16)
       rejected=true
     else
       dm=map(i->minimum(abs.(prevzeros[i]-prevzeros[j] for j in 1:n if j!=i)),
@@ -1357,8 +1355,8 @@ function LBraidToWord(v1, v2, B)
         println("======================================")
         println("==    Nontrivial braiding ",rpad(res,10),"==")
         println("======================================")
-#       print("v1:=[",join(gg.(v1),","),"];\n")
-#       print("v2:=[",join(gg.(v2),","),"];\n")
+#       print("v1:=",gap(v1),";\n")
+#       print("v2:=",gap(v2),";\n")
       else println("==    Nontrivial braiding ",rpad(res,10),"==")
       end
     end
@@ -1484,11 +1482,11 @@ function DBVKQuotient(r)
   F/rels
 end
 
-gg(x)="Complex(evalf(\"$(real(x))\"),evalf(\"$(imag(x))\"))"
 VKCURVE[:showInsideSegments]=true
 VKCURVE[:showBraiding]=true
 VKCURVE[:showNewton]=true
 
+gg(x)="Complex(evalf(\"$(real(x))\"),evalf(\"$(imag(x))\"))"
 data=Dict()
 
 @Mvp x,y,z,t
@@ -1506,3 +1504,34 @@ data[34]=
 13608525//50841945969352380915996169*x^4*y^2-2606867429323404078970327//
 1675017448527954334139901265590107596081497211494411528*x^6+
 3269025273548225517660538475128200000//390195840687434028022928452202401489*y^6
+#---------plotting
+function _segs(r,v)
+  rp=Float64[]
+  ip=Float64[]
+  for seg in v
+    s=r[:points][seg<0 ? reverse(r[:segments][-seg]) : r[:segments][seg]]
+    append!(rp,real.(s))
+    append!(ip,imag.(s))
+  end
+  rp,ip
+end
+
+function _loops(r,v)
+  rp=Float64[]
+  ip=Float64[]
+  for l in r[:loops][v]
+    nrp,nip=_segs(r,l)
+    append!(rp,nrp)
+    append!(ip,nip)
+  end
+  rp,ip
+end
+
+function plotloops(r,v)
+ colors=[:black,:green,:blue,:red,:yellow,:cyan,:magenta]
+ plt=lineplot(_loops(r,v[1])...,color=:black)
+ for i in 2:length(v)
+   lineplot!(plt,_loops(r,v[i])...,color=colors[i])
+ end
+ plt
+end

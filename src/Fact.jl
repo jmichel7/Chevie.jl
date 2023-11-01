@@ -76,7 +76,7 @@ function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   LP=map(Pol{Int},LP) # convert factors <LP> back to the integers
     # return the chosen prime
   info("#I  choosing prime ", P, " with ", length(LP), " factors")
-  info("#I  possible degrees: ", deg)
+  info("#I  possible degrees: ", sort!(deg))
   (isIrreducible=false, prime=P, factors=LP,  degrees=deg)
 end
 
@@ -215,15 +215,15 @@ julia> factor(Pol(:q)^24-1)
 (q-1) * (q²-q+1) * (q⁴-q²+1) * (q⁸-q⁴+1) * (q⁴+1) * (q²+1) * (q+1) * (q²+q+1)
 ```
 """
-function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
+function Primes.factor(f0::Pol{T})where T<:Union{Integer,Rational}
   info("#I  starting integer factorization: ", etime())
-  if iszero(f)
+  fact=Primes.Factorization{typeof(f0)}()
+  if iszero(f0)
     info("#I  f is zero")
-    return []
+    return fact
   end
-  fact=Primes.Factorization{typeof(f)}()
-  d=denominator(f)
-  f=numerator(f)
+  d=denominator(f0)
+  f=numerator(f0)
   v=valuation(f)
   f=shift(f,-v)
   if v>0 fact[Pol()]+=v end
@@ -244,39 +244,30 @@ function Primes.factor(f::Pol{T})where T<:Union{Integer,Rational}
     # make <f> integral, primitive and square free
   g=gcd(f, derivative(f))
   q=exactdiv(f,g)
-# @show q
   q*=sign(q[end])
   info("#I  factorizing polynomial of degree ", degree(q))
-    # and factorize <q>
   if degree(q)<2
     info("#I  <f> is a linear power")
     fact[q]=1
   else
     if valuation(q)>0
-#     error("this should not happen")
-      fact[Pol()]+=1
-      shift(q,-1)
+      fact[Pol()+shft]+=1
+      q=shift(q,-1)
     end
-    for p in factorSQF(q) fact[p]+=1 end
+    for p in factorSQF(q) fact[p(Pol()+shft)]+=1 end
   end
   for r in keys(fact) # find multiple factors
     if 0<degree(g) && degree(g)>=degree(r)
       while 0<degree(g) && iszero(rem(g//1,r))
-#       @show g,r
-        fact[r]+=1
+        fact[r(Pol()+shft)]+=1
         g=exactdiv(g,r)
       end
     end
   end
-    # reshift
-  if shft!=0
-    info("#I shifting zeros back")
-    t=promote_type(keytype(fact),typeof(shft))
-    fact=Primes.Factorization{t}((t(p(Pol()+(p==Pol() ? 0 : shft)))=>m for (p,m) in fact)...)
-  end
   if d!=1 
     push!(fact,Pol(1//d)=>1)
   end
+  if prod(fact)!=f0 error() end
   fact
 end
 
