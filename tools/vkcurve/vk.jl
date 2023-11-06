@@ -168,8 +168,6 @@ function PrepareCurve(curve::Mvp)
   r
 end
 
-complexpol(p::Pol)=Pol(Complex{Float64}.(p.c),p.v)
-
 """
 `VKCURVE.Discy(r)`
 
@@ -215,14 +213,12 @@ function Discy(r)
 # @show r.discyFactored
 end
 
-complexmvp(p::Mvp)=Mvp(ModuleElt(m=>Complex{Float64}(c) for (m,c) in p.d))
-
 function GetDiscyRoots(r)
   if VKCURVE[:showRoots] println("Computing roots of discriminant...") end
-  if degree(r.curveVerticalPart)==0 r.roots=Complex{Float64}[]
-  else r.roots=Complex{Float64}.(SeparateRoots(r.curveVerticalPart, 1000))
+  r.roots=vcat(map(p->SeparateRoots(p,1000),r.discyFactored)...)
+  if degree(r.curveVerticalPart)>0
+    prepend!(r.roots,SeparateRoots(r.curveVerticalPart, 1000))
   end
-  append!(r.roots,vcat(map(p->SeparateRoots(p,1000),r.discyFactored)...))
 end
 
 function Braids(r)
@@ -383,6 +379,27 @@ function FinishFundamentalGroup(r)
   Finish(r)
 end
 
+# simplest fraction approximating t closer than prec
+function simp(t0::Real,prec=10^-15)
+  t=t0
+  a=BigInt[]
+  k=BigInt[1,0]
+  h=BigInt[0,1]
+  while abs(h[end]//k[end]-t0)>prec
+   n=floor(BigInt,t)
+   push!(a,n)
+   push!(h,n*h[end]+h[end-1])
+   push!(k,n*k[end]+k[end-1])
+   t=1/(t-n)
+  end
+  h[end]//k[end]
+end
+
+simp(t::Complex,prec=10^-15)=simp(real(t),prec)+im*simp(imag(t),prec)
+
+#simp(t::Complex{<:AbstractFloat},prec)=t
+#simp(t::AbstractFloat,prec)=t
+
 #---------------------- root-finding ----------------------------------
 """
 `NewtonRoot(p::Pol,initial,precision;showall=false,show=false,lim=800)`
@@ -437,6 +454,30 @@ function NewtonRoot(p::Pol,z,precision;showall=VKCURVE[:showallnewton],
   end
 end
 
+function NewtonRoot2(p::Pol,z,precision;showall=VKCURVE[:showallnewton],
+                          show=VKCURVE[:showNewton],lim=VKCURVE[:NewtonLim])
+  deriv=derivative(p)
+  for cnt in 1:lim
+    a=p(z)
+    b=deriv(z)
+    c=iszero(b) ? a : a/b
+    err=abs(c)
+    if iszero(err) err=(precision/100)/(degree(p)+1) end
+    if err>precision err=precision end
+    z=simp(z-c,precision/100/(degree(p)+1)/2)
+    if showall println(cnt,": ",z) end
+    if err<=(precision/100)/(degree(p)+1)
+      if show print(cnt,":") end
+      return (z,err)
+    end
+  end
+  if show
+    println("\n****** Non-Convergent Newton after ", lim," iterations ******")
+    @show p,z,precision
+    return nothing
+  end
+end
+
 """
 'SeparateRootsInitialGuess(p, v, safety)'
 
@@ -466,14 +507,14 @@ julia> SeparateRootsInitialGuess(p,[1+im,2+im],1000)
 function SeparateRootsInitialGuess(p, v, safety)
   if degree(p)==1 return [-p[0]/p[1]] end
   radv=nearest_pair(v)[1]/safety/2
-  res=map(e->NewtonRoot(p,e,radv),v)
-  if !any(isnothing,res) && nearest_pair(v)[1]/2>=maximum(last.(res))
+  res=map(e->NewtonRoot2(p,e,radv),v)
+  if !any(isnothing,res) && nearest_pair(first.(res))[1]/safety/2>maximum(last.(res))
     return first.(res)
   end
-  @show p,v,safety
-  println("dispersal required=",nearest_pair(first.(res))[1]/safety/2)
-  println("obtained=",maximum(last.(res)))
-  error()
+  print("dispersal required=",nearest_pair(first.(res))[1]/safety/2)
+  println(" obtained=",maximum(last.(res)))
+  println(join(v[nearest_pair(first.(res))[2]]," and ")," lie in the same attraction basin")
+  return nothing
 end
 
 """
@@ -509,16 +550,18 @@ function SeparateRoots(p,safety)
   if degree(p)<1 return empty(p.c)
   elseif degree(p)==1 return [-p[0]/p[1]]
   end
-  p/=p[end]
-  e=Complex{Float64}(E(7))
+  p//=p[end]
+# e=complex(E(7))
+  e=big(simp(complex(E(7))))
   v=nothing
   cnt = 0
   while isnothing(v) && cnt<2*(degree(p)+1)
     if VKCURVE[:showNewton] && cnt>0
       println("****** ", cnt, " guess failed for p degree ", degree(p))
     end
-    v=NewtonRoot(p,e,safety*10.0^-(degree(p)+4))
-    e*=5/4*Complex{Float64}(E(2*(degree(p)+1)))
+    v=NewtonRoot2(p,e,(1/safety)*10.0^(-degree(p)-4))
+    e*=simp(complex(5//4*E(2*(degree(p)+1))))
+#   e*=complex(5//4*E(2*(degree(p)+1)))
     cnt+=1
   end
   if cnt>=2*(degree(p)+1) error("no good initial guess") end
@@ -553,7 +596,7 @@ julia> FindRoots(Pol()^3-1,10^-5)
   1.0 - 1.232595164407831e-32im
  -0.5 + 0.8660254037844387im
 
-julia> map(x->x^3,ans)
+julia> float.(ans.^3)
 3-element Vector{ComplexF64}:
  0.9999999999999998 - 1.1102230246251565e-16im
                 1.0 - 3.697785493223493e-32im
@@ -562,16 +605,16 @@ julia> map(x->x^3,ans)
 function FindRoots(p,prec)
   subtractroot(p,r)=divrem(p,Pol([-r,1]))[1]
   if degree(p)<1 return empty(p.c)
-  elseif degree(p)==1 return [-p[0]/p[1]]
+  elseif degree(p)==1 return [-p[0]//p[1]]
   end
-  e=Complex{Float64}(E(7))
+  e=big(simp(complex(E(7))))
   v=nothing
   while isnothing(v)
-    v=NewtonRoot(p,e,10.0^(-degree(p)-1))
-    e*=Complex{Float64}(E(degree(p)+1))
+    v=NewtonRoot2(p,e,10.0^(-degree(p)-1))
+    e*=simp(complex(E(degree(p)+1)))
   end
    v=vcat([v[1]],FindRoots(subtractroot(p,v[1]),prec))
-   map(e->NewtonRoot(p,e,prec)[1],v)
+   map(e->NewtonRoot2(p,e,prec)[1],v)
 end
 
 #------------------ Loops --------------------------------------------
@@ -615,8 +658,8 @@ end
 
 # value at z of an equation of the line (x,y)
 function lineq(x, y, z)
-  if someclose(real(x),real(y))
-    if someclose(imag(x),imag(y)) error("Undefined line\n")
+  if real(x)==real(y)
+    if imag(x)==imag(y) error("Undefined line\n")
     else return real(z)-real(x)
     end
   else
@@ -626,7 +669,7 @@ end
 
 # mediatrix of segment (x,y) of length abs2(x-y) on each side of segment
 function mediatrix(x, y)
-  if someclose(x,y) error("Undefined mediatrix") end
+  if x==y error("Undefined mediatrix") end
   (x+y)/2 .+[im,-im].*(x-y)
 end
 
@@ -635,19 +678,19 @@ crossing(v1,v2)=crossing(v1...,v2...)
 # Computes the intersection of lines (x1,x2) and (y1,y2)
 # returns nothing if the lines are parallel or elements of a pair are too close
 function crossing(x1,x2,y1,y2)
-  if someclose(x1,x2) || someclose(y1,y2) return nothing end
-  if !someclose(real(x1),real(x2))
+  if x1==x2 || y1==y2 return nothing end
+  if !(real(x1)==real(x2))
     λx=(imag(x1)-imag(x2))/(real(x1)-real(x2))
     μx=-λx*real(x1)+imag(x1)
-    if !someclose(real(y1),real(y2))
+    if !(real(y1)==real(y2))
       λy=(imag(y1)-imag(y2))/(real(y1)-real(y2))
       μy=-λy*real(y1)+imag(y1)
-      if someclose(λx,λy) return nothing end
+      if λx==λy return nothing end
       resr=(μy-μx)/(λx-λy)
-      resi=λx*resr+μx
-      return Complex(resr, resi)
+      res=resr+(λx*resr+μx)*im
+      return res
     else
-      E3=Complex{Float64}(E(3))
+      E3=simp(complex(E(3)))
       res=crossing(E3*x1, E3*x2, E3*y1, E3*y2)
       if isnothing(res) return nothing end
       return res/E3
@@ -702,9 +745,9 @@ The output is a named tuple with fields
 function convert_loops(ll)
   println("rawloops:",length.(ll))
   points=unique(vcat(ll...))
-  points=points[filter(i->!any(closeto(points[i]),points[1:i-1]),eachindex(points))]
+  points=points[filter(i->!any(==(points[i]),points[1:i-1]),eachindex(points))]
   points=sort(points,by=x->(imag(x),real(x)))
-  np(p)=findfirst(closeto(p),points)
+  np(p)=findfirst(==(p),points)
   loops=map(l->np.(l),ll)
   loops=shrink.(loops)
   loops=map(l->map(i->l[i-1:i],2:length(l)),loops)
@@ -745,7 +788,7 @@ julia> LoopsAroundPunctures([0])
 """
 function LoopsAroundPunctures(originalroots)
 # tol=first(nearest_pair(originalroots))
-  roots=originalroots
+  roots=originalroots*(1+0im)
   n=length(roots)
   if n==1 return [roots[1].+[1,im,-1,-im,1]] end
   average=sum(roots)/n
@@ -754,7 +797,7 @@ function LoopsAroundPunctures(originalroots)
              cycorder=empty(roots),circle=empty(roots),
              witness=empty(roots),path=empty(roots),handle=empty(roots),
              loop=empty(roots)),roots)
-  err=filter(x->closeto(roots[x]...),combinations(eachindex(roots),2))
+  err=filter(x->==(roots[x]...),combinations(eachindex(roots),2))
   if length(err)>0 error("roots too close ",err) end
   iy(y)=findfirst(==(y),roots)
   sy(y)=ys[iy(y)]
@@ -824,7 +867,6 @@ function LoopsAroundPunctures(originalroots)
     k=length(y.path)
     if k>1
       circleorigin=(roots[yi]+y.path[k-1])/2
-#     k=findfirst(x->closeto(x,circleorigin),y.circle)
       k=findfirst(==(circleorigin),y.circle)
       y.circle.=circshift(y.circle,1-k)
     end
@@ -833,7 +875,6 @@ function LoopsAroundPunctures(originalroots)
     k=length(y.path)
     append!(y.handle,vcat(map(1:k-1)do i
       l=sy(y.path[i]).circle
-#     l[1:findfirst(x->closeto(x,(y.path[i]+y.path[i+1])/2),l)]
       l[1:findfirst(==((y.path[i]+y.path[i+1])/2),l)]
      end...))
     append!(y.loop,vcat(y.handle, y.circle, reverse(y.handle)))
@@ -1063,9 +1104,9 @@ Base.setindex!(p::Pol{T},x::T,i::Integer) where T=p.c[i+1-p.v]=x
 # otherwise returns 0
 # [third input and second output is an adaptive factor to
 #  accelerate the computation]
-function Sturm(pp::Pol, time_, adapt::Integer;pr=print)
+function Sturm(pp::Pol, tm, adapt::Integer;pr=print)
   q=Pol()
-  pol=pp((1-q)*time_+q)
+  pol=pp((1-q)*tm+q)
   if pol[0]<=0
     print("*****",Float32(pol[0]))
     return [0, 0]
@@ -1083,18 +1124,19 @@ function Sturm(pp::Pol, time_, adapt::Integer;pr=print)
   pr(m)
   if m==adapt && adapt>0
     if pol(3t//2)>0
-      if pol(2t)>0 res=[(1-2t)*time_+2t, adapt-1]
-      else res=[(1-3t//2)*time_+3t//2, adapt-1]
+      if pol(2t)>0 res=[(1-2t)*tm+2t, adapt-1]
+      else res=[(1-3t//2)*tm+3t//2, adapt-1]
       end
-    else res=[(1-t)*time_+t, adapt]
+    else res=[(1-t)*tm+t, adapt]
     end
-  else res=[(1-t)*time_+t, m]
+  else res=[(1-t)*tm+t, m]
   end
   res
 end
 
 Base.real(p::Pol)=Pol(real.(p.c),p.v)
 Base.imag(p::Pol)=Pol(imag.(p.c),p.v)
+Base.abs2(p::Pol)=real(p)^2+imag(p)^2
 
 """
 'FollowMonodromy(<r>,<segno>,<print>)'
@@ -1180,7 +1222,7 @@ function FollowMonodromy(r,seg,sPrint)
   if length(v)==1 return res end
   d=length(r.zeros[1])
   t=Mvp(:t)
-  time=big(0)
+  tm=big(0)
   pt=p(;y=r.points[b]*t+r.points[a]*(1-t))
   dpdxt=dpdx(;y=r.points[b]*t+r.points[a]*(1-t))
   RR=fill(big(0.0),d)
@@ -1194,7 +1236,7 @@ function FollowMonodromy(r,seg,sPrint)
     steps+=1
 #   if steps>540 error() end
     iPrint("<$seg/",length(r.segments),">",lpad(steps,5))
-    iPrint(" time=",lpad(time,11),"   ")
+    iPrint(" time=",lpad(tm,11),"   ")
     for k in 1:d, l in k+1:d
       dist[k,k]=dist[l,k]=dist[k,l]=abs2((v[k]-v[l])*big(1))
     end
@@ -1202,37 +1244,37 @@ function FollowMonodromy(r,seg,sPrint)
     for k in 1:d
       Rk=minimum(dist[k,:])/4
       z=v[k]
-      if protected[k]>time && Rk>=RR[k]
+      if protected[k]>tm && Rk>=RR[k]
         iPrint(". ")
-      elseif protected[k]>time
+      elseif protected[k]>tm
         if adapt[k]+2<maximum(adapt) Rk/=2 end
         iPrint("R")
-        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], time, adapt[k])
-        if s>time protected[k]=binlowevalf(s,time)
+        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], tm, adapt[k])
+        if s>tm protected[k]=binlowevalf(s,tm)
         else iPrint("How bizarre...")
 #         @show Rk,protdpdx[k],protp[k]
-#         @show Rk*protdpdx[k]-protp[k], time, adapt[k]
+#         @show Rk*protdpdx[k]-protp[k], tm, adapt[k]
         end
         RR[k]=Rk
       else
         iPrint("?")
         cptz=Pol(pt(;x=z))
 #       @show pt, z,cptz
-        protp[k]=d^2*(real(cptz)^2+imag(cptz)^2)
+        protp[k]=d^2*abs2(cptz)
         cdpdxtz=Pol(dpdxt(;x=z))
-        protdpdx[k]=real(cdpdxtz)^2+imag(cdpdxtz)^2
-        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], time, adapt[k])
-        if s>time protected[k]=binlowevalf(s,time)
-        else error("Something's wrong...")
+        protdpdx[k]=abs2(cdpdxtz)
+        s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], tm, adapt[k])
+        if s>tm protected[k]=binlowevalf(s,tm)
+        else error("Something's wrong...s=",s,"≤time=",tm)
 #         @show R[k],protdpdx[k],protp[k]
-#         @show R[k]*protdpdx[k]-protp[k], time, adapt[k]
+#         @show R[k]*protdpdx[k]-protp[k], tm, adapt[k]
         end
         RR[k]=Rk
       end
     end
     allowed=minimum(protected)
-    time=allowed
-    py=Pol(p(;y=r.points[a]*(1-time)+r.points[b]*time))
+    tm=allowed
+    py=Pol(p(;y=r.points[a]*(1-tm)+r.points[b]*tm))
     iPrint("\n")
     newv=map(1:d)do k
       if protected[k]>allowed v[k]
@@ -1241,7 +1283,7 @@ function FollowMonodromy(r,seg,sPrint)
     end
     res*=LBraidToWord(v, newv, B)
     v=newv
-    if time==1 break end
+    if tm==1 break end
   end
   sPrint("# The following braid was computed by FollowMonodromy in $steps steps.\n")
   res*LBraidToWord(v, myfit(v, r.zeros[b]), B)
