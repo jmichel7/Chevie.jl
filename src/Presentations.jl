@@ -226,6 +226,16 @@ function mon(w::AbsWord)
   first(w.d[1])
 end
 
+function Base.getindex(w::AbsWord,i::Integer)
+  for (s,n) in w.d
+    if i>abs(n) i-=abs(n)
+    elseif n<0 return inv(AbsWord(s))
+    else return AbsWord(s)
+    end
+  end
+  error("index out of bounds")
+end
+
 #-------------------------- FpGroups -----------------------------
 struct FpGroup <: Group{AbsWord}
   gens::Vector{AbsWord}
@@ -352,7 +362,7 @@ function Base.sort!(T::TietzeStruct;level=1)
   T.lengths[1:numrels].=T.lengths[p];resize!(T.lengths,numrels)
   T.flags[1:numrels].=T.flags[p];resize!(T.flags,numrels)
   T.numrels=numrels
-  T.total=sum(length,T.relators)
+  T.total=sum(length,T.relators;init=0)
 end
 
 @GapObj struct Presentation

@@ -342,7 +342,7 @@ end
 toL(m)=collect(eachrow(m)) # to Gap
 
 if VERSION.minor>=9
-toM(l)=stack(l;dims=1)
+toM(l)=isempty(l) ? Array{eltype(eltype(l))}(undef,0,1) : stack(l;dims=1)
 else
 toM(l)=isempty(l) ? Array{eltype(eltype(l))}(undef,0,1) : permutedims(reduce(hcat,l))
 end
