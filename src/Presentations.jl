@@ -229,13 +229,14 @@ end
 function Base.getindex(w::AbsWord,i::Integer)
   for (s,n) in w.d
     if i>abs(n) i-=abs(n)
-    elseif n<0 return inv(AbsWord(s))
-    else return AbsWord(s)
+    elseif n<0 return s=>-1
+    else return s=>1
     end
   end
   error("index out of bounds")
 end
 
+Base.getindex(w::AbsWord,i::AbstractVector{<:Integer})=AbsWord(getindex.(Ref(w),i))
 #-------------------------- FpGroups -----------------------------
 struct FpGroup <: Group{AbsWord}
   gens::Vector{AbsWord}
@@ -258,14 +259,27 @@ end
 
 # Tietze word from AbsWord
 function Groups.word(G::FpGroup,w::AbsWord)
-  res=Int[]
+  res=Vector{Int}(undef,length(w))
+  x=1
   for (s,m) in w.d
-   p=findfirst(==(AbsWord(s)),gens(G))
-   if isnothing(p) error(w," is not a word for ",G) end
-   append!(res,fill(m<0 ? -p : p,abs(m)))
+    p=findfirst(x->x.d[1][1]==s,gens(G))
+    if isnothing(p) error(w," is not a word for ",G) end
+    for i in 1:abs(m) 
+      res[x]=m<0 ? -p : p
+      x+=1
+    end
   end
   res
 end
+
+function Groups.elements(F::FpGroup,i)
+  l1=map(x->x.d[1],gens(F))
+  l=map(x->x[1]=>-x[2],l1)
+  l=vcat(l,l1)
+  res=AbsWord.(collect.(Iterators.product(fill(l,i)...)))
+  filter(x->length(x)==i,res)
+end
+
 #--------------------------  Tietze words and structs -------------
 """
 `TietzeWord(word::AbsWord, generators::Vector{AbsWord})`

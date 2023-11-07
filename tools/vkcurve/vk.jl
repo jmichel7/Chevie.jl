@@ -1,193 +1,156 @@
 """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
-%A  curvintr.tex      VKCURVE documentation    David Bessis,  Jean Michel
-%%
-%Y  Copyright (C) 2001-2002  University  Paris VII.
-%%
-%%  This  file  introduces the VKCURVE package.
-%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 The  main function of the VKCURVE  package computes the fundamental group
-of  the  complement  of  a  complex  algebraic  curve  in  $\C^2$, using an
-implementation  of the Van Kampen method  (see for example \cite{C73} for a
+of  the  complement  of  a  complex  algebraic  curve  in  `ℂ^2`, using an
+implementation  of the Van Kampen method  (see for example cite{C73} for a
 clear and modernized account of this method).
 
-|    gap> FundamentalGroup(x^2-y^3);
-    #I  there are 2 generators and 1 relator of total length 6
-    1: bab=aba
-    
-    gap> FundamentalGroup((x+y)*(x-y)*(x+2*y));
-    #I  there are 3 generators and 2 relators of total length 12
-    1: cab=abc
-    2: bca=abc|
+```julia-repl
+julia> FundamentalGroup(x^2-y^3)
+Presentation: 2 generators, 1 relator, total length 6
+1: bab=aba
 
-The  input is  a  polynomial in  the  two variables  'x'  and 'y',  with
-rational  coefficients.  Though  approximate calculations  are  used  at
-various places, they are controlled and the final result is exact.
+julia> FundamentalGroup((x+y)*(x-y)*(x+2*y))
+Presentation: 3 generators, 2 relators, total length 12
+1: abc=bca
+2: cab=abc
+```
+The input is a polynomial (an `Mvp`) in the two variables `x` and `y`, with
+rational  coefficients. Though approximate calculations are used at various
+places, they are controlled and the final result is exact. The computations
+use  `Rational{BigInt}` or `Complex{Rational{BigInt}}`  since the precision
+given  by floats in unsufficient. It might  be possible to use intervals of
+bigfloats  to make  faster computations,  but it  would ake the programming
+more difficult.
 
-The output is a  record which  contains lots  of information  about the
+The output is a  `struct` which  contains lots  of information  about the
 computation, including a presentation of the computed fundamental group,
-which is what is displayed when printing the record.
+which is what is displayed when printing it.
 
-Our  motivation   for  writing  this   package  was  to   find  explicit
-presentations for  generalized braid groups attached  to certain complex
-reflection groups. Though presentations were known for almost all cases,
-six exceptional  cases were  missing (in the  notations of  Shephard and
-Todd, these  cases are $G_{24}$, $G_{27}$,  $G_{29}$, $G_{31}$, $G_{33}$
-and $G_{34}$).  Since the a  priori existence of nice  presentations for
-braid groups was proved in \cite{B01}, it was upsetting not to know them
-explicitly. In the absence of any good grip on the geometry of these six
-examples, brute force  was a way to  get an answer. Using  \VKCURVE , we
-have  obtained  presentations for  all of them.
+Our  motivation  for  writing  this  package  in  2002 was to find explicit
+presentations  for  generalized  braid  groups  attached to certain complex
+reflection  groups. Though presentations  were known for  almost all cases,
+six  exceptional cases were missing (in the notations of Shephard and Todd,
+these  cases are `G₂₄`, `G₂₇`, `G₂₉`, `G₃₁`,  `G₃₃` and `G₃₄`). Since the a
+priori  existence  of  nice  presentations  for  braid groups was proved in
+cite{B01},  it was upsetting not to know them explicitly. In the absence of
+any  good grip on the geometry of these six examples, brute force was a way
+to get an answer. Using VKCURVE , we have obtained presentations for all of
+them.
 
-This package was developed thanks to computer resources of the Institut
-de Math\accent 19  ematiques de Jussieu in Paris. We  thank the computer
-support team,  especially Jo\accent 127  el Marchand, for  the stability
-and the efficiency of the working environment.
+The  GAP  package  ported  here  to  Julia was developed thanks to computer
+resources  of the Institut  de Mathématiques de  Jussieu in Paris. We thank
+the  computer support team, especially Joël Marchand, for the stability and
+the efficiency of the working environment.
 
-We have tried to design this package with the novice \GAP\ user in mind.
-The only steps required to use it are
-\begin{itemize}
-\item Run \GAP 3 (the package is not compatible with \GAP 4).
-\item  Make  sure  the  packages   \CHEVIE\  and  \VKCURVE\  are  loaded
-(beware   that  we   require   the  development   version  of   \CHEVIE,
-'http\://www.math.jussieu.fr/\~{}jmichel/chevie.html' and not the one in
-the \GAP.3.3.4 distribution)
+for the Julia novice to use this package:
 
-\item Use the function 'FundamentalGroup',  as demonstrated in the above
+  - Use the function 'FundamentalGroup',  as demonstrated in the above
 examples.
 
-\end{itemize}
 If  you are  not interested  in  the details  of the  algorithm, and  if
 'FundamentalGroup' gives you satisfactory  answers in a reasonable time,
 then you do not need to read this manual any further.
-
-\bigskip
-
-We  use our  own  package  for multivariate  polynomials  which is  more
-effective, for  our purposes, than  the default  in \GAP 3  (see 'Mvp').
-When \VKCURVE\ is  loaded, the variables 'x' and 'y'  are pre-defined as
-'Mvp's; one can  also use \GAP\ polynomials (which will  be converted to
-'Mvp's).
-
-The  implementation uses 'Decimal' numbers, 'Complex' numbers and braids as
-implemented  in  the  (development  version  of  the)  package  \CHEVIE, so
-\VKCURVE\ is dependent on this package.
 
 To implement  the algorithms, we  needed to write  auxiliary facilities,
 for instance find  zeros of complex polynomials, or  work with piecewise
 linear  braids,  which  may  be  useful  on  their  own.  These  various
 facilities are documented in this manual.
 
-Before discussing  our actual  implementation, let  us give  an informal
-summary of the mathematical background. Our strategy is adapted from the
-one originally  described in the  1930\'s by Van  Kampen. Let $C$  be an
-affine  algebraic curve,  given as  the  set of  zeros in  $\C^2$ of  a
-non-zero  reduced  polynomial $P(x,y)$.  The  problem  is to  compute  a
-presentation of the fundamental group of  $\C^2 - C$. Consider $P$ as a
-polynomial in $x$, with coefficients in the ring of polynomials in $y$
-$$P= \alpha_0(y)x^n +  \alpha_1(y) x^{n-1}  + \dots +  \alpha_{n-1}(y) x
-+  \alpha_n(y),$$  where the  $\alpha_i$  are  polynomials in  $y$.  Let
-$\Delta(y)$ be the discriminant of $P$ or, in other words, the resultant
-of  $P$  and $\frac{\partial  P}{\partial  x}$.  Since $P$  is  reduced,
-$\Delta$ is non-zero. For a generic  value of $y$, the polynomial in <x>
-given by $P(x,y)$ has $n$ distinct roots.
-When $y=y_j$, with $j$ in $1,\dots,d$,
-we are in exactly one of
-the following situations\:\ either $P(x,y_j)=0$
-(we then say that $y_j$ is bad),
-or $P(x,y_j)$ has a number of roots in $x$ strictly smaller than
-$n$.
-Fix $y_0$  in $\C  - \{y_1,\dots,y_d\}$.  Consider the  projection $p\:
-\C^2  \rightarrow \C,  (x,y) \mapsto  y$.  It restricts  to a  locally
-trivial  fibration with  base  space $B=  \C  - \{y_1,\dots,y_d\}$  and
-fibers homeomorphic  to the  complex plane with  $n$ points  removed. We
-denote by  $E$ the  total space  $p^{-1}(B)$ and by  $F$ the  fiber over
-$y_0$. The fundamental  group of $F$ is isomorphic to  the free group on
-$n$ generators.  Let $\gamma_1,\dots,\gamma_d$  be loops in  the pointed
-space  $(B,y_0)$ representing  a generating  system for  $\pi_1(B,y_0)$.
-By  trivializing  the pullback  of  $p$  along  $\gamma_i$, one  gets  a
-(well-defined up to isotopy) homeomorphism  of $F$, and a (well-defined)
-automorphism  $\phi_i$  of  the  fundamental group  of  $F$,  identified
-with  the  free  group  $F_n$  by the  choice  of  a  generating  system
-$f_1,\dots,f_n$. An effective way of  computing $\phi_i$ is by following
-the solutions in $x$ of $P(x,y)=0$,  when $y$ moves along $\phi_i$. This
-defines a loop in  the space of configuration of $n$  points in a plane,
-hence an element  $b_i$ of the braid group $B_n$  (via an identification
-of $B_n$  with the fundamental  group of this configuration  space). Let
-$\phi$ be the Hurwitz action of $B_n$  on $F_n$. All choices can be made
-in such a way that $\phi_i=\phi(b_i)$. The theorem of Van Kampen asserts
-that, if there are no bad  roots of the discriminant, a presentation for
-the fundamental group of $\C^2 -  C$ is $$\< f_1,\dots,f_n \mid \forall
-i,j,  \phi_i(f_j)=f_j >  $$ A  variant  of the  above presentation  (see
-'VKQuotient') can be used to deal with bad roots of the discriminant.
+Before  discussing  our  actual  implementation,  let  us  give an informal
+summary  of the mathematical  background. Our strategy  is adapted from the
+one  originally described in the 1930's by Van Kampen. Let `C` be an affine
+algebraic  curve, given as the set of  zeros in `ℂ^2` of a non-zero reduced
+polynomial  `P(x,y)`.  The  problem  is  to  compute  a presentation of the
+fundamental  group of `ℂ^2 - C`. Consider  `P` as a polynomial in `x`, with
+coefficients  in the ring  of polynomials in  `y`, that is `P=α₀(y)xⁿ+α₁(y)
+xⁿ⁻¹+…+αₙ₋₁(y)x+αₙ(y)`,  where the `αᵢ` are  polynomials in `y`. Let `Δ(y)`
+be  the discriminant of  `P` or, in  other words, the  resultant of `P` and
+`∂P/∂x`. Since `P` is reduced, `Δ` is non-zero. For a generic value of `y`,
+the  polynomial  in  `x`  given  by  `P(x,y)`  has `n` distinct roots. When
+`y=yⱼ`,  with  `j`  in  `1,…,d`,  we  are  in  exactly one of the following
+situations: either `P(x,yⱼ)=0` (we then say that `yⱼ` is bad), or `P(x,yⱼ)`
+has  a  number  of  roots  in  `x`  strictly  smaller than `n`. Fix `y₀` in
+`ℂ-{y₁,…,y_d}`.  Consider  the  projection  `p:  ℂ^2  →  ℂ,  (x,y) ↦ y`. It
+restricts  to  a  locally  trivial  fibration  with  base  space  `B=  ℂ  -
+{y₁,…,y_d}`  and fibers homeomorphic  to the complex  plane with `n` points
+removed.  We denote by  `E` the total  space `p⁻¹(B)` and  by `F` the fiber
+over  `y₀`. The fundamental group of `F` is isomorphic to the free group on
+`n`  generators.  Let  `γ₁,…,γ_d`  be  loops  in the pointed space `(B,y₀)`
+representing  a  generating  system  for  `π₁(B,y₀)`.  By  trivializing the
+pullback  of  `p`  along  `γᵢ`,  one  gets  a  (well-defined up to isotopy)
+homeomorphism  of  `F`,  and  a  (well-defined)  automorphism  `φᵢ`  of the
+fundamental group of `F`, identified with the free group `Fₙ` by the choice
+of  a generating system `f₁,…,fₙ`. An effective way of computing `φᵢ` is by
+following  the solutions in  `x` of `P(x,y)=0`,  when `y` moves along `φᵢ`.
+This defines a loop in the space of configuration of `n` points in a plane,
+hence  an element `bᵢ`  of the braid  group `Bₙ` (via  an identification of
+`Bₙ`  with the fundamental  group of this  configuration space). Let `φ` be
+the  Hurwitz action of `Bₙ` on `Fₙ`. All  choices can be made in such a way
+that  `φᵢ=φ(bᵢ)`. The theorem of  Van Kampen asserts that,  if there are no
+bad  roots of the discriminant, a presentation for the fundamental group of
+`ℂ^2  - C`  is ``⟨f₁,…,fₙ  ∣∀ i,j,  φᵢ(fⱼ)=fⱼ⟩ ``.  A variant  of the above
+presentation  (see 'VKQuotient') can be used to  deal with bad roots of the
+discriminant.
 
 This algorithm is implemented in the following way.
 
-\begin{itemize}
-\item As input,  we have a polynomial $P$. The  polynomial is reduced if
-it was not.
+  - As input, we have a polynomial `P`. The polynomial is reduced if it was
+    not.
 
-\item The discriminant $\Delta$ of $P$  with respect to $x$ is computed.
-It is a polynomial in $y$.
+  - The discriminant `Δ` of `P`  with respect to `x` is computed.  It is a
+    polynomial in `y`.
 
-\item  The  roots  of  $\Delta$  are  approximated,  via  the  following
-procedure. First, we reduce  $\Delta$ and get $\Delta_{red}$ (generating
-the   radical  of   the  ideal   generated  by   $\Delta$).  The   roots
-$\{y_1,\dots,y_d\}$ of  $\Delta_{red}$ are separated  by 'SeparateRoots'
-(which implements Newton\'s method).
+  - The  roots  of  `Δ`  are  approximated,  via  the  following procedure.
+    First,  we reduce `Δ` and get  `Δ_{red}` (generating the radical of the
+    ideal  generated  by  `Δ`).  The  roots  `{y₁,…,y_d}`  of `Δ_{red}` are
+    separated by 'SeparateRoots' (which implements Newton's method).
 
-\item Loops  around these roots are  computed by 'LoopsAroundPunctures'.
-This function first computes some sort of honeycomb, consisting of a set
-$S$  of  affine  segments,  isolating  the $y_i$.  Since  it  makes  the
-computation of  the monodromy  more effective, each  inner segment  is a
-fragment of the mediatrix of two roots of $\Delta$. Then a vertex of one
-the segments is  chosen as a basepoint, and the  function returns a list
-of lists of  oriented segments in $S$\:\ each list  of segment encodes a
-piecewise linear loop $\gamma_i$ circling one of $y_i$.
+-  Loops around  these roots  are computed  by 'LoopsAroundPunctures'. This
+function  first computes some sort of honeycomb, consisting of a set `S` of
+affine  segments, isolating the `yᵢ`. Since it makes the computation of the
+monodromy more effective, each inner segment is a fragment of the mediatrix
+of  two roots  of `Δ`.  Then a  vertex of  one the  segments is chosen as a
+basepoint, and the function returns a list of lists of oriented segments in
+`S`: each list of segment encodes a piecewise linear loop `γᵢ` circling one
+of `yᵢ`.
 
-\item For each  segment in $S$, we compute the  monodromy braid obtained
-by  following  the  solutions  in  $x$  of  $P(x,y)=0$  when  $y$  moves
-along  the segment.  By default,  this  monodromy braid  is computed  by
-'FollowMonodromy'. The  strategy is to compute  a piecewise-linear braid
-approximating the  actual monodromy geometric braid.  The approximations
-are controlled. The piecewise-linear  braid is constructed step-by-step,
-by computations of linear pieces. As soon as new piece is constructed, it
-is converted into an element  of $B_n$ and multiplied; therefore, though
-the  braid  may  consist  of  a huge  number  of  pieces,  the  function
-'FollowMonodromy' works with constant memory. The packages also contains
-a  variant  function  'ApproxFollowMonodromy', which  runs  faster,  but
-without guarantee on the result (see below).
+-  For each  segment in  `S`, we  compute the  monodromy braid  obtained by
+following  the  solutions  in  `x`  of  `P(x,y)=0` when `y` moves along the
+segment. By default, this monodromy braid is computed by 'FollowMonodromy'.
+The  strategy  is  to  compute  a  piecewise-linear braid approximating the
+actual  monodromy geometric  braid. The  approximations are controlled. The
+piecewise-linear  braid  is  constructed  step-by-step,  by computations of
+linear pieces. As soon as new piece is constructed, it is converted into an
+element of `Bₙ` and multiplied; therefore, though the braid may consist of
+a huge number of pieces, the function 'FollowMonodromy' works with constant
+memory. The packages also contains a variant function
+'ApproxFollowMonodromy',  which runs  faster, but  without guarantee on the
+result (see below).
 
-\item The monodromy  braids $b_i$ corresponding to  the loops $\gamma_i$
-are  obtained  by  multiplying  the corresponding  monodromy  braids  of
-segments. The action of these elements  of $B_n$ on the free group $F_n$
-is  computed  by 'BnActsOnFn'  and  the  resulting presentation  of  the
-fundamental group is computed by 'VKQuotient'. It happens for some large
-problems that  the whole fundamental  group process fails  here, because
-the braids $b_i$ obtained are too long and the computation of the action
-on $F_n$ requires thus too much memory.  We have been able to solve such
-problems  when they  occur by  calling on  the $b_i$  at this  stage our
-function 'ShrinkBraidGeneratingSet'  which finds smaller  generators for
-the subgroup of $B_n$ generated by the $b_i$ (see the description in the
-third chapter). This  function is called automatically at  this stage if
-'VKCURVE.shrinkBraid' is set to 'true' (the default for this variable is
-'false').
+- The monodromy braids `bᵢ` corresponding to the loops `γᵢ` are obtained by
+multiplying  the corresponding monodromy braids  of segments. The action of
+these elements of `Bₙ` on the free group `Fₙ` is computed by 'hurwitz'
+and  the resulting  presentation of  the fundamental  group is  computed by
+'VKQuotient'. It happens for some large problems that the whole fundamental
+group process fails here, because the braids `bᵢ` obtained are too long and
+the  computation of the action  on `Fₙ` requires thus  too much memory. We
+have  been able to  solve such problems  when they occur  by calling on the
+`bᵢ`  at  this  stage  our  function 'ShrinkBraidGeneratingSet' which finds
+smaller generators for the subgroup of `Bₙ` generated by the `bᵢ` (see the
+description in the third chapter). This function is called automatically at
+this  stage if 'VKCURVE.shrinkBraid' is set to 'true' (the default for this
+variable is 'false').
 
-\item Finally,  the presentation is simplified  by 'ShrinkPresentation'.
-This  function is  a heuristic  adaptation and  refinement of  the basic
-\GAP\ functions for simplifying presentations. It is non-deterministic.
+-  Finally, the  presentation is  simplified by  'ShrinkPresentation'. This
+function  is  a  heuristic  adaptation  and  refinement  of  the  basic GAP
+functions for simplifying presentations. It is non-deterministic.
 
-\end{itemize}
-
-From the algorithmic  point of view, memory should not  be an issue, but
-the procedure may  take a lot of  CPU time (the critical  part being the
-computation of the monodromy braids by 'FollowMonodromy'). For instance,
-an empirical  study with the  curves $x^2-y^n$ suggests that  the needed
-time grows  exponentially with  $n$. Two solutions  are offered  to deal
-with curves for which the computation time becomes unreasonable.
+From  the algorithmic point of view, memory should not be an issue, but the
+procedure  may  take  a  lot  of  CPU  time  (the  critical  part being the
+computation of the monodromy braids by 'FollowMonodromy'). For instance, an
+empirical  study with  the curves  `x^2-y^n` suggests  that the needed time
+grows exponentially with `n`. Two solutions are offered to deal with curves
+for which the computation time becomes unreasonable.
 
 A   global  variable  'VKCURVE.monodromyApprox'  controls  which  monodromy
 function  is used.  The default  value of  this variable  is 'false', which
@@ -199,160 +162,6 @@ while  'VKCURVE.monodromyApprox'  is  set  to  'true'  are  not  certified.
 However,  though  it  is  likely  that  there  exists  examples  for  which
 'ApproxFollowMonodromy'  actually returns incorrect  answers, we still have
 not seen one.
-
-The second way of dealing with  difficult examples is to parallelize the
-computation. Since  the computations  of the  monodromy braids  for each
-segment  are  independent,  they  can  be  performed  simultaneously  on
-different computers. The functions 'PrepareFundamentalGroup', 'Segments'
-and   'FinishFundamentalGroup'  provide   basic  support   for  parallel
-computing.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\Section{FundamentalGroup}
-\index{FundamentalGroup}
-
-'FundamentalGroup(<curve> [, <printlevel>])'
-
-<curve> should be an 'Mvp' in <x>  and <y>, or a \GAP\ polynomial in two
-variables (which means a polynomial in a variable which is assumed to be
-'y' over the polynomial ring $\Q[x]$) representing an equation $f(x,y)$
-for a curve  in $\C^2$. The coefficients should  be rationals, gaussian
-rationals or 'Complex' rationals. The result  is a record with a certain
-number of fields which record steps in the computation described in this
-introduction\:
-
-|    gap> r:=FundamentalGroup(x^2-y^3);
-    #I  there are 2 generators and 1 relator of total length 6
-    1: bab=aba
-    
-    gap> RecFields(r);
-    [ "curve", "discy", "roots", "dispersal", "points", "segments", "loops",
-      "zeros", "B", "monodromy", "basepoint", "dispersal", "braids", 
-      "presentation","operations" ]
-    gap> r.curve;
-    x^2-y^3
-    gap> r.discy;
-    X(Rationals)
-    gap> r.roots;
-    [ 0 ]
-    gap> r.points;
-    [ -I, -1, 1, I ]
-    gap> r.segments;
-    [ [ 1, 2 ], [ 1, 3 ], [ 2, 4 ], [ 3, 4 ] ]
-    gap> r.loops;
-    [ [ 4, -3, -1, 2 ] ]
-    gap> r.zeros;
-    [ [ 707106781187/1000000000000+707106781187/1000000000000I,
-       -707106781187/1000000000000-707106781187/1000000000000I ],
-      [ I, -I ], [ 1, -1 ],
-      [ -707106781187/1000000000000+707106781187/1000000000000I,
-      707106781187/1000000000000-707106781187/1000000000000I ] ]
-    gap> r.monodromy;
-    [ (w0)^-1, w0, , w0 ]
-    gap> r.braids;
-    [ w0.w0.w0 ]
-    gap> DisplayPresentation(r.presentation);
-    1: bab=aba|
-
-Here 'r.curve' records the  entered equation, 'r.discy' its discriminant
-with  respect  to  <x>,  'r.roots'   the  roots  of  this  discriminant,
-'r.points',  'r.segments' and  'r.loops'  describes  loops around  these
-zeros  as  explained  in   the  documentation  of  'LoopsAroundPunctures';
-'r.zeros'  records the  zeros of  $f(x,y_i)$  when $y_i$  runs over  the
-various 'r.points';  'r.monodromy' records  the monodromy along  each of
-'r.segments', and 'r.braids' is the resulting monodromy along the loops.
-Finally 'r.presentation'  records the  resulting presentation  (which is
-what is printed by default when 'r' is printed).
-
-The second optional argument triggers  the display of information on the
-progress of the  computation. It is recommended to  set the <printlevel>
-at 1 or 2  when the computation seems to take a  long time without doing
-anything. <printlevel> set  at 0 is the default and  prints nothing; set
-at 1 it shows which segment is  currently active, and set at 2 it traces
-the computation inside each segment.
-
-|    gap> FundamentalGroup(x^2-y^3,1);
-    # There are 4 segments in 1 loops
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    monodromy[1]:=B(-1);
-    # segment 1/4 Time=0sec
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    monodromy[2]:=B(1);
-    # segment 2/4 Time=0sec
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    monodromy[3]:=B();
-    # segment 3/4 Time=0sec
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    monodromy[4]:=B(1);
-    # segment 4/4 Time=0sec
-    # Computing monodromy braids
-    # loop[1]=w0.w0.w0
-    #I  there are 2 generators and 1 relator of total length 6
-    1: bab=aba|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\Section{PrepareFundamentalGroup}
-\index{PrepareFundamentalGroup}
-
-'PrepareFundamentalGroup(<curve>, <name>)'
-
-'VKCURVE.Segments(<name>[,<range>])'
-
-'FinishFundamentalGroup(<r>)'
-\index{FinishFundamentalGroup}
-
-These  functions provide  a means  of distributing  a fundamental  group
-computation over  several machines.  The basic strategy  is to  write to
-a  file  the  startup-information  necessary to  compute  the  monodromy
-along  a  segment,  in  the   form  of  a  partially-filled  version  of
-the  record returned  by  'FundamentalGroup'. Then  the monodromy  along
-each  segment can  be  done in  a separate  process,  writing again  the
-result  to files.  These  results  are then  gathered  and processed  by
-'FinishFundamentalGroup'. The whole process is illustrated in an example
-below.  The  extra argument  <name>  to  'PrepareFundamentalGroup' is  a
-prefix used to name intermediate files. One does first \:
-
-|    gap> PrepareFundamentalGroup(x^2-y^3,"a2");
-        ----------------------------------
-    Data saved in a2.tmp
-    You can now compute segments 1 to 4
-    in different GAP sessions by doing in each of them:
-        a2:=rec(name:="a2");
-        VKCURVE.Segments(a2,[1..4]);
-    (or some other range depending on the session)
-    Then when all files a2.xx have been computed finish by
-        a2:=rec(name:="a2");
-        FinishFundamentalGroup(a2);|
-
-Then  one can  compute in  separate  sessions the  monodromy along  each
-segment.  The second  argument  of 'Segments'  tells  which segments  to
-compute in the current session (the  default is all). An example of such
-sessions may be\:
-
-|    gap> a2:=rec(name:="a2");
-    rec(
-      name := "a2" )
-    gap> VKCURVE.Segments(a2,[2]);
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    a2.monodromy[2]:=a2.B(1);
-    # segment 2/4 Time=0.1sec
-    gap> a2:=rec(name:="a2");
-    rec(
-      name := "a2" )
-    gap> VKCURVE.Segments(a2,[1,3,4]);
-    # The following braid was computed by FollowMonodromy in 8 steps.
-    a2.monodromy[2]:=a2.B(1);
-    # segment 2/4 Time=0.1sec|
-
-When all segments have been computed the final session looks like:
-
-|    gap> a2:=rec(name:="a2");
-    rec(
-      name := "a2" )
-    gap> FinishFundamentalGroup(a2);
-    1: bab=aba|
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
 #------------------- utilities -------------------------------
 """
@@ -388,7 +197,7 @@ VKCURVE=Dict(
 :date=>[2009,3],
 :homepage=>"http://webusers.imj-prg.fr/~jean.michel/vkcurve.html",
 :copyright=>
-"(C) David Bessis, Jean Michel -- compute Pi_1 of hypersurface complements",
+"(C) David Bessis, Jean Michel -- compute Pi₁ of hypersurface complements",
 :monodromyApprox=>false,
 :showallnewton=>false,
 :NewtonLim=>800,
@@ -467,9 +276,8 @@ function Loops(r)
 # and round points to m/100
 end
 
-
 """
-`VKCURVE.Discy(r)`
+`Discy(r)`
 
 `r`  should be a record with field `r.curve`, a quadratfrei `Mvp` in `x,y`.
 The discriminant of this curve with respect to `x` (a polynomial in `y`) is
@@ -564,7 +372,107 @@ function TrivialCase(r)
   r
 end
 
-# curve --  an Mvp in x and y describing a curve in complex^2
+"""
+'FundamentalGroup(<curve> [, <printlevel>])'
+
+<curve> should be an 'Mvp' in <x>  and <y>, or a GAP polynomial in two
+variables (which means a polynomial in a variable which is assumed to be
+'y' over the polynomial ring `ℚ[x]`) representing an equation `f(x,y)`
+for a curve  in `ℂ^2`. The coefficients should  be rationals, gaussian
+rationals or 'Complex' rationals. The result  is a record with a certain
+number of fields which record steps in the computation described in this
+introduction:
+
+```julia-repl
+julia> @Mvp x,y; @Pol y
+
+julia> r=FundamentalGroup(x^2-y^3)
+Presentation: 2 generators, 1 relator, total length 6
+1: bab=aba
+
+julia> propertynames(r)
+(:curve, :ismonic, :prop, :rawPresentation, :B, :basepoint, :dispersal, :monodromy, :discyFactored, :segments, :braids, :roots, :nonVerticalPart, :discy, :zeros, :curveVerticalPart, :points, :loops, :presentation)
+
+julia> r.curve # the given equation
+Mvp{Int64}: x²-y³
+
+julia> r.discy # its discriminant wrt x
+Pol{Rational{Int64}}: (1//1)y
+
+julia> r.roots  # roots of the discriminant
+1-element Vector{Rational{Int64}}:
+ 0//1
+
+julia> r.points
+4-element Vector{Complex{Rational{Int64}}}:
+  0//1 - 1//1*im
+ -1//1 + 0//1*im
+  1//1 + 0//1*im
+  0//1 + 1//1*im
+
+julia> r.segments
+4-element Vector{Vector{Int64}}:
+ [1, 2]
+ [1, 3]
+ [2, 4]
+ [3, 4]
+
+julia> r.loops
+1-element Vector{Vector{Int64}}:
+ [4, -3, -1, 2]
+
+julia> r.zeros # zeroes of curve(y=pt) when pt runs over r.points
+4-element Vector{Vector{Complex{Rational{BigInt}}}}:
+ [2378//3363 + 2378//3363*im, -2378//3363 - 2378//3363*im]
+ [0//1 + 1//1*im, 0//1 - 1//1*im]
+ [1//1 + 0//1*im, -1//1 + 0//1*im]
+ [-2378//3363 + 2378//3363*im, 2378//3363 - 2378//3363*im]
+
+julia> r.monodromy # monodromy around each r.segment
+4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
+ (Δ)⁻¹
+ Δ
+ .
+ Δ
+
+julia> r.braids # monodromy around each r.loop
+1-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
+ Δ³
+
+julia> display_balanced(r.presentation) # printing of r by default
+1: bab=aba
+```
+
+'r.points',  'r.segments' and  'r.loops'  describes  loops around  these
+zeros  as  explained  in   the  documentation  of  'LoopsAroundPunctures';
+
+The second optional argument triggers  the display of information on the
+progress of the  computation. It is recommended to  set the <printlevel>
+at 1 or 2  when the computation seems to take a  long time without doing
+anything. <printlevel> set  at 0 is the default and  prints nothing; set
+at 1 it shows which segment is  currently active, and set at 2 it traces
+the computation inside each segment.
+
+julia> FundamentalGroup(x^2-y^3,printlevel=1);
+# There are 4 segments in 1 loops
+# The following braid was computed by FollowMonodromy in 8 steps.
+monodromy[1]=B(-1)
+#segment 1/4 Time==0.00495sec
+# The following braid was computed by FollowMonodromy in 8 steps.
+monodromy[2]=B(1)
+#segment 2/4 Time==0.00481sec
+# The following braid was computed by FollowMonodromy in 8 steps.
+monodromy[3]=B()
+#segment 3/4 Time==0.00403sec
+# The following braid was computed by FollowMonodromy in 8 steps.
+monodromy[4]=B(1)
+#segment 4/4 Time==0.00392sec
+# Computing monodromy braids
+loops=[
+r.B(1,1,1),
+]
+Presentation: 2 generators, 1 relator, total length 6
+"""
 function FundamentalGroup(curve::Mvp;printlevel=0,abort=false)
   VKCURVE[:showSingularProj]=VKCURVE[:showBraiding]=VKCURVE[:showLoops]=
   VKCURVE[:showAction]=VKCURVE[:showInsideSegments]=VKCURVE[:showWorst]=
@@ -1152,7 +1060,7 @@ approx(x::Complex)=round(Complex{Float64}(x);sigdigits=3)
 'ApproxFollowMonodromy(<r>,<segno>,<pr>)'
 
 This function  computes an approximation  of the monodromy braid  of the
-solution in `x`  of an equation `P(x,y)=0` along  a segment `[y_0,y_1]`.
+solution in `x`  of an equation `P(x,y)=0` along  a segment `[y₀,y₁]`.
 It is called  by 'FundamentalGroup', once for each of  the segments. The
 first  argument is  a  global record,  similar to  the  one produced  by
 'FundamentalGroup'  (see the  documentation of  this function)  but only
@@ -1209,10 +1117,10 @@ monodromy[15]=[2]
 
 Here at each  step the following information is  displayed: first, how
 many iterations of  the Newton method were necessary to  compute each of
-the 3  roots of the current  polynomial `f(x,y_0)` if we  are looking at
-the point `y_0` of the segment.  Then, which segment we are dealing with
+the 3  roots of the current  polynomial `f(x,y₀)` if we  are looking at
+the point `y₀` of the segment.  Then, which segment we are dealing with
 (here the  15th of  16 in  all). Then the  minimum distance  between two
-roots of  `f(x,y_0)` (used in our  heuristic). Then the current  step in
+roots of  `f(x,y₀)` (used in our  heuristic). Then the current  step in
 fractions of the length of the segment  we are looking at, and the total
 fraction of the segment we have  done. Finally, the decimal logarithm of
 the absolute  value of the discriminant  at the current point  (used in
@@ -1285,7 +1193,7 @@ function ApproxFollowMonodromy(r,segno)
   res*LBraidToWord(prevzeros,fit(nextzeros,r.zeros[q]),r.B)
 end
 #-------------------- Monodromy ----------------------------
-# ceil(-log2(p)) for 0<p<1
+# ceil(-log2(p)) ifor 0<p<1
 function Intlog2(p)
   k=0
   q=p
@@ -1304,12 +1212,12 @@ function binlowevalf(a, time)
   a>=0 ? b//2^k : (b-1)//2^k
 end
 
-# truncated iteration of the Newton method
+# one step of the Newton method
 function mynewton(p,z)
   a=p(z)
   b=derivative(p)(z)
   if iszero(b) c=a
-    print("NewtonError\n")
+    println("NewtonError")
   else c=a/b
   end
   err=degree(p)*abs(c)
@@ -1341,7 +1249,7 @@ Base.setindex!(p::Pol{T},x::T,i::Integer) where T=p.c[i+1-p.v]=x
 # otherwise returns 0
 # [third input and second output is an adaptive factor to
 #  accelerate the computation]
-function Sturm(pp::Pol, tm, adapt::Integer;pr=print)
+function Sturm(pp::Pol, tm, adapt::Integer)
   q=Pol()
   pol=pp((1-q)*tm+q)
   if pol[0]<=0
@@ -1358,7 +1266,7 @@ function Sturm(pp::Pol, tm, adapt::Integer;pr=print)
     t//=2
     m+=1
   end
-  pr(m)
+  if VKCURVE[:showInsideSegments] print(m) end
   if m==adapt && adapt>0
     if pol(3t//2)>0
       if pol(2t)>0 res=[(1-2t)*tm+2t, adapt-1]
@@ -1388,16 +1296,14 @@ function formattm(tm,l)
 end 
 
 """
-'FollowMonodromy(<r>,<segno>,<print>)'
+'FollowMonodromy(<r>,<segno>)'
 This function computes the monodromy braid  of the solution in `x` of an
-equation  `P(x,y)=0`  along  a  segment `[y_0,y_1]`.  It  is  called  by
+equation  `P(x,y)=0`  along  a  segment `[y₀,y₁]`.  It  is  called  by
 'FundamentalGroup', once for each of the segments. The first argument is
 a global record, similar to  the one produced by 'FundamentalGroup' (see
 the  documentation of  this function)  but only  containing intermediate
 information.  The second  argument is  the  position of  the segment  in
-'r.segments'. The third argument is  a print function, determined by the
-printlevel  set by  the user  (typically, by  calling 'FundamentalGroup'
-with a second argument).
+'r.segments'. 
 
 The function returns an element of the ambient braid group 'r.B'.
 
@@ -1405,8 +1311,7 @@ This function has no reason to be  called directly by the user, so we do
 not illustrate its  behavior. Instead, we explain what  is displayed on
 screen when the user sets the printlevel to `2`.
 
-What is quoted below is an excerpt of what is displayed on screen
-during the execution of
+What is quoted below is an excerpt of what is printed during the execution of
 |    gap>  FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);
 <1/16>    1 time=0           ?2?1?3
 <1/16>    2 time=0.2         R2. ?3
@@ -1450,15 +1355,15 @@ sub-computations.
 
 As  some strings  are moving,  it  happens that  their real  projections
 cross. When such a crossing occurs, it is detected and the corresponding
-element of `B_n` is displayed on screen ('Nontrivial braiding ='...) The
-monodromy braid is the product of these elements of `B_n`, multiplied in
+element of `Bₙ` is displayed on screen ('Nontrivial braiding ='...) The
+monodromy braid is the product of these elements of `Bₙ`, multiplied in
 the order in which they occur.
 """
+function FollowMonodromy(r,seg)
 # Exact computation of the monodromy braid along a segment
 # r: global VKCURVE record
 # seg: segment number
 # sprint: Print function (to screen, to file, or none)
-function FollowMonodromy(r,seg)
   iPrint=VKCURVE[:showInsideSegments] ? print : function(arg...) end
   p=r.curve
   dpdx=derivative(r.curve,:x)
@@ -1540,7 +1445,7 @@ function FollowMonodromy(r,seg)
 end
 
 #------------------- Compute PLBraid ----------------------------------
-# Deals with "star" linear braids, those with associated permutation w_0
+# Deals with "star" linear braids, those with associated permutation w₀
 function starbraid(y, offset, B)
   n=length(y)
   if n==1 return B() end
@@ -1646,9 +1551,9 @@ function LBraidToWord(v1, v2, B)
 end
 #----------------------- Presentation -------------------------------
 """
-'VKQuotient(braids)'
+`VKQuotient(braids)`
 
-The  input `braid` is a list of braids `b₁,…,bᵣ`, living in the braid group
+The  input `braids` is a list `b₁,…,bᵣ`, living in the braid group
 on `n` strings. Each `bᵢ` defines by Hurwitz action an automorphism `φᵢ` of
 the free group `Fₙ`. The function returns the group defined by the abstract
 presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ >``
@@ -1679,16 +1584,13 @@ julia> display_balanced(p)
 """
 function VKQuotient(braids)
   F=FpGroup(Symbol.('a'.+(0:ngens(braids[1].M.W)))...)
-  f=gens(F)
-  F/reduce(vcat,map(b->hurwitz(f,b).*inv.(f),braids))
+  F/reduce(vcat,map(b->hurwitz(gens(F),b).*inv.(gens(F)),braids))
 end
 
-# A variant of the previous function.
+# A variant of VKQuotient
 # See arXiv:math.GR/0301327 for more mathematical details.
 # Input: global VKCURVE record
 # Output: the quotient, encoded as an FpGroup
-############################################################
-# Printing controlled by VKCURVE.showAction
 function DBVKQuotient(r)
   # get the true monodromy braids and the Hurwitz action basic data
   n=ngens(r.braids[1].M.W)+1
@@ -1705,7 +1607,7 @@ function DBVKQuotient(r)
     ifbase=aut(fbase)
     conjugator=one(F)
     while length(ifbase)>1
-      x=ifbase[1]
+      x=ifbase[1:1]
       ifbase=ifbase^x
       conjugator*=x
     end
