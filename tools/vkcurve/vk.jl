@@ -1,30 +1,42 @@
 """
-The  main function of the VKCURVE  package computes the fundamental group
-of  the  complement  of  a  complex  algebraic  curve  in  `ℂ^2`, using an
-implementation  of the Van Kampen method  (see for example cite{C73} for a
-clear and modernized account of this method).
+This is a port to Julia of the GAP3 package VKcurve written by David Bessis
+and Jean Michel in 2002.
+
+The  main function of the VKcurve package computes the fundamental group of
+the   complement  of   a  complex   algebraic  curve   in  `ℂ²`,  using  an
+implementation  of the Van  Kampen method (see  for example
+
+D. Cheniot. "Une démonstration du théorème de   Zariski sur les sections hyperplanes d'une hypersurface projective et du   théorème de Van Kampen sur le groupe fondamental du   complémentaire d'une courbe projective plane."
+Compositio Math., 27:141--158, 1973.
+
+for  a clear and modernized account of this method). Here is an example for
+curves given by the zeroes of two-variable polynomials in `x` and `y`.
 
 ```julia-repl
-julia> FundamentalGroup(x^2-y^3)
+julia> using VKcurve
+
+julia> @Mvp x,y
+
+julia> fundamental_group(x^2-y^3)
 Presentation: 2 generators, 1 relator, total length 6
 1: bab=aba
 
-julia> FundamentalGroup((x+y)*(x-y)*(x+2*y))
+julia> fundamental_group((x+y)*(x-y)*(x+2*y))
 Presentation: 3 generators, 2 relators, total length 12
 1: abc=bca
 2: cab=abc
 ```
-The input is a polynomial (an `Mvp`) in the two variables `x` and `y`, with
-rational  coefficients. Though approximate calculations are used at various
-places, they are controlled and the final result is exact. The computations
-use  `Rational{BigInt}` or `Complex{Rational{BigInt}}`  since the precision
-given  by floats in unsufficient. It might  be possible to use intervals of
-bigfloats  to make  faster computations,  but it  would ake the programming
-more difficult.
+Here  we define the variables and then  give the curves as argument. Though
+approximate  calculations are used  at various places,  they are controlled
+and  the final result is exact  (technically speaking, the computations use
+`Rational{BigInt}` or `Complex{Rational{BigInt}}` since the precision given
+by  floats  in  unsufficient.  It  might  be  possible  to use intervals of
+bigfloats  to make faster  computations, but it  would make the programming
+more difficult).
 
 The output is a  `struct` which  contains lots  of information  about the
 computation, including a presentation of the computed fundamental group,
-which is what is displayed when printing it.
+which is what is displayed by default when printing it.
 
 Our  motivation  for  writing  this  package  in  2002 was to find explicit
 presentations  for  generalized  braid  groups  attached to certain complex
@@ -32,65 +44,59 @@ reflection  groups. Though presentations  were known for  almost all cases,
 six  exceptional cases were missing (in the notations of Shephard and Todd,
 these  cases are `G₂₄`, `G₂₇`, `G₂₉`, `G₃₁`,  `G₃₃` and `G₃₄`). Since the a
 priori  existence  of  nice  presentations  for  braid groups was proved in
-cite{B01},  it was upsetting not to know them explicitly. In the absence of
-any  good grip on the geometry of these six examples, brute force was a way
-to get an answer. Using VKCURVE , we have obtained presentations for all of
-them.
 
-The  GAP  package  ported  here  to  Julia was developed thanks to computer
-resources  of the Institut  de Mathématiques de  Jussieu in Paris. We thank
-the  computer support team, especially Joël Marchand, for the stability and
-the efficiency of the working environment.
+D. Bessis. "Zariski theorems and diagrams for braid groups.",
+Invent. Math. 145:487--507, 2001
 
-for the Julia novice to use this package:
+it  was upsetting not to  know them explicitly. In  the absence of any good
+grip on the geometry of these six examples, brute force was a way to get an
+answer. Using VKcurve, we have obtained presentations for all of them (they
+have been confirmed by less computational methods since).
 
-  - Use the function 'FundamentalGroup',  as demonstrated in the above
-examples.
+If  you  are  not  interested  in  the  details  of  the  algorithm, and if
+'fundamental_group' as in the above examples gives you satisfactory answers
+in a reasonable time, then you do not need to read this manual any further.
 
-If  you are  not interested  in  the details  of the  algorithm, and  if
-'FundamentalGroup' gives you satisfactory  answers in a reasonable time,
-then you do not need to read this manual any further.
-
-To implement  the algorithms, we  needed to write  auxiliary facilities,
-for instance find  zeros of complex polynomials, or  work with piecewise
-linear  braids,  which  may  be  useful  on  their  own.  These  various
-facilities are documented in this manual.
+To  implement the algorithms, we needed  to write auxiliary facilities, for
+instance  find  `Complex{Rational}`  approximations  of  zeros  of  complex
+polynomials,  or work with piecewise linear  braids, which may be useful on
+their own. These various facilities are documented in this manual.
 
 Before  discussing  our  actual  implementation,  let  us  give an informal
 summary  of the mathematical  background. Our strategy  is adapted from the
 one  originally described in the 1930's by Van Kampen. Let `C` be an affine
 algebraic  curve, given as the set of  zeros in `ℂ^2` of a non-zero reduced
 polynomial  `P(x,y)`.  The  problem  is  to  compute  a presentation of the
-fundamental  group of `ℂ^2 - C`. Consider  `P` as a polynomial in `x`, with
+fundamental  group of  `ℂ^2-C`. Consider  `P` as  a polynomial in `x`, with
 coefficients  in the ring  of polynomials in  `y`, that is `P=α₀(y)xⁿ+α₁(y)
-xⁿ⁻¹+…+αₙ₋₁(y)x+αₙ(y)`,  where the `αᵢ` are  polynomials in `y`. Let `Δ(y)`
-be  the discriminant of  `P` or, in  other words, the  resultant of `P` and
-`∂P/∂x`. Since `P` is reduced, `Δ` is non-zero. For a generic value of `y`,
-the  polynomial  in  `x`  given  by  `P(x,y)`  has `n` distinct roots. When
-`y=yⱼ`,  with  `j`  in  `1,…,d`,  we  are  in  exactly one of the following
-situations: either `P(x,yⱼ)=0` (we then say that `yⱼ` is bad), or `P(x,yⱼ)`
-has  a  number  of  roots  in  `x`  strictly  smaller than `n`. Fix `y₀` in
-`ℂ-{y₁,…,y_d}`.  Consider  the  projection  `p:  ℂ^2  →  ℂ,  (x,y) ↦ y`. It
-restricts  to  a  locally  trivial  fibration  with  base  space  `B=  ℂ  -
-{y₁,…,y_d}`  and fibers homeomorphic  to the complex  plane with `n` points
-removed.  We denote by  `E` the total  space `p⁻¹(B)` and  by `F` the fiber
-over  `y₀`. The fundamental group of `F` is isomorphic to the free group on
-`n`  generators.  Let  `γ₁,…,γ_d`  be  loops  in the pointed space `(B,y₀)`
-representing  a  generating  system  for  `π₁(B,y₀)`.  By  trivializing the
-pullback  of  `p`  along  `γᵢ`,  one  gets  a  (well-defined up to isotopy)
-homeomorphism  of  `F`,  and  a  (well-defined)  automorphism  `φᵢ`  of the
-fundamental group of `F`, identified with the free group `Fₙ` by the choice
-of  a generating system `f₁,…,fₙ`. An effective way of computing `φᵢ` is by
-following  the solutions in  `x` of `P(x,y)=0`,  when `y` moves along `φᵢ`.
-This defines a loop in the space of configuration of `n` points in a plane,
-hence  an element `bᵢ`  of the braid  group `Bₙ` (via  an identification of
-`Bₙ`  with the fundamental  group of this  configuration space). Let `φ` be
-the  Hurwitz action of `Bₙ` on `Fₙ`. All  choices can be made in such a way
-that  `φᵢ=φ(bᵢ)`. The theorem of  Van Kampen asserts that,  if there are no
-bad  roots of the discriminant, a presentation for the fundamental group of
-`ℂ^2  - C`  is ``⟨f₁,…,fₙ  ∣∀ i,j,  φᵢ(fⱼ)=fⱼ⟩ ``.  A variant  of the above
-presentation  (see 'VKQuotient') can be used to  deal with bad roots of the
-discriminant.
+xⁿ⁻¹+…+αₙ₋₁(y)x+αₙ(y)`, where the `αᵢ∈ℂ[y]`. Let `Δ(y)` be the discriminant
+of  `P` or, in other words, the resultant  of `P` and `∂P/∂x`. Since `P` is
+reduced,  `Δ` is non-zero. Let `y₁,…,y_d` be the roots of the corresponding
+reduced polynomial `Δ_{red}`. For a generic value of `y`, the polynomial in
+`x`  given by  `P(x,y)` has  `n` distinct  roots. When  `y=yⱼ`, with `j` in
+`1,…,d`,  we  are  in  exactly  one  of  the  following  situations: either
+`P(x,yⱼ)=0`  (we then say that  `yⱼ` is bad), or  `P(x,yⱼ)` has a number of
+roots  in  `x`  strictly  smaller  than  `n`.  Fix  `y₀` in `ℂ-{y₁,…,y_d}`.
+Consider  the projection `p:  ℂ²→ ℂ, (x,y)↦  y`. It restricts  to a locally
+trivial  fibration with base space `B=ℂ-{y₁,…,y_d}` and fibers homeomorphic
+to  the complex plane with  `n` points removed. We  denote by `E` the total
+space `p⁻¹(B)` and by `F` the fiber over `y₀`. The fundamental group of `F`
+is  isomorphic to the free group on `n` generators. Let `γ₁,…,γ_d` be loops
+in  the  pointed  space  `(B,y₀)`  representing  a  generating  system  for
+`π₁(B,y₀)`.  By trivializing  the pullback  of `p`  along `γᵢ`,  one gets a
+(well-defined  up to  isotopy) homeomorphism  of `F`,  and a (well-defined)
+automorphism `φᵢ` of the fundamental group of `F`, identified with the free
+group `Fₙ` by the choice of a generating system `f₁,…,fₙ`. An effective way
+of  computing `φᵢ` is by following the solutions in `x` of `P(x,y)=0`, when
+`y`  moves along `φᵢ`. This defines a loop in the space of configuration of
+`n`  points in a plane, hence an element  `bᵢ` of the braid group `Bₙ` (via
+an  identification of `Bₙ` with the fundamental group of this configuration
+space).  Let `φ` be the Hurwitz action of  `Bₙ` on `Fₙ`. All choices can be
+made in such a way that `φᵢ=φ(bᵢ)`. The theorem of Van Kampen asserts that,
+if  there are  no bad  roots of  the discriminant,  a presentation  for the
+fundamental  group of  `ℂ^2-C` is  `⟨f₁,…,fₙ∣∀i,j,φᵢ(fⱼ)=fⱼ⟩`. A variant of
+the  above presentation  (see 'VKquotient')  can be  used to  deal with bad
+roots of the discriminant.
 
 This algorithm is implemented in the following way.
 
@@ -103,73 +109,74 @@ This algorithm is implemented in the following way.
   - The  roots  of  `Δ`  are  approximated,  via  the  following procedure.
     First,  we reduce `Δ` and get  `Δ_{red}` (generating the radical of the
     ideal  generated  by  `Δ`).  The  roots  `{y₁,…,y_d}`  of `Δ_{red}` are
-    separated by 'SeparateRoots' (which implements Newton's method).
+    separated by 'separate_roots' (which uses Newton's method).
 
--  Loops around  these roots  are computed  by 'LoopsAroundPunctures'. This
-function  first computes some sort of honeycomb, consisting of a set `S` of
-affine  segments, isolating the `yᵢ`. Since it makes the computation of the
-monodromy more effective, each inner segment is a fragment of the mediatrix
-of  two roots  of `Δ`.  Then a  vertex of  one the  segments is chosen as a
-basepoint, and the function returns a list of lists of oriented segments in
-`S`: each list of segment encodes a piecewise linear loop `γᵢ` circling one
-of `yᵢ`.
+  - Loops around  these roots  are computed  by 'loops_around_punctures'.
+    This  function first computes  some sort of  honeycomb, consisting of a
+    set  `S` of  affine segments,  isolating the  `yᵢ`. Since  it makes the
+    computation  of the monodromy  more effective, each  inner segment is a
+    fragment of the mediatrix of two roots of `Δ`. Then a vertex of one the
+    segments  is chosen as a basepoint, and  the function returns a list of
+    lists  of  oriented  segments  in  `S`:  each list of segment encodes a
+    piecewise linear loop `γᵢ` circling one of `yᵢ`.
 
--  For each  segment in  `S`, we  compute the  monodromy braid  obtained by
-following  the  solutions  in  `x`  of  `P(x,y)=0` when `y` moves along the
-segment. By default, this monodromy braid is computed by 'FollowMonodromy'.
-The  strategy  is  to  compute  a  piecewise-linear braid approximating the
-actual  monodromy geometric  braid. The  approximations are controlled. The
-piecewise-linear  braid  is  constructed  step-by-step,  by computations of
-linear pieces. As soon as new piece is constructed, it is converted into an
-element of `Bₙ` and multiplied; therefore, though the braid may consist of
-a huge number of pieces, the function 'FollowMonodromy' works with constant
-memory. The packages also contains a variant function
-'ApproxFollowMonodromy',  which runs  faster, but  without guarantee on the
-result (see below).
+  - For each  segment in  `S`, we  compute the  monodromy braid  obtained by
+    following  the solutions in `x` of  `P(x,y)=0` when `y` moves along the
+    segment. By default, this monodromy braid is computed by
+    `follow_monodromy`. The strategy is to compute a piecewise-linear braid
+    approximating  the actual monodromy geometric braid. The approximations
+    are controlled. The piecewise-linear braid is constructed step-by-step,
+    by  computations of linear pieces. As soon as new piece is constructed,
+    it  is converted  into an  element of  `Bₙ` and  multiplied; therefore,
+    though  the braid may consist of a  huge number of pieces, the function
+    `follow_monodromy`  works  with  constant  memory.  The  packages  also
+    contains  a  variant  function  `approx_follow_monodromy`,  which  runs
+    faster, but without guarantee on the result (see below).
 
-- The monodromy braids `bᵢ` corresponding to the loops `γᵢ` are obtained by
-multiplying  the corresponding monodromy braids  of segments. The action of
-these elements of `Bₙ` on the free group `Fₙ` is computed by 'hurwitz'
-and  the resulting  presentation of  the fundamental  group is  computed by
-'VKQuotient'. It happens for some large problems that the whole fundamental
-group process fails here, because the braids `bᵢ` obtained are too long and
-the  computation of the action  on `Fₙ` requires thus  too much memory. We
-have  been able to  solve such problems  when they occur  by calling on the
-`bᵢ`  at  this  stage  our  function 'ShrinkBraidGeneratingSet' which finds
-smaller generators for the subgroup of `Bₙ` generated by the `bᵢ` (see the
-description in the third chapter). This function is called automatically at
-this  stage if 'VKCURVE.shrinkBraid' is set to 'true' (the default for this
-variable is 'false').
+  - The monodromy braids `bᵢ` corresponding to the loops `γᵢ` are obtained
+    by  multiplying  the  corresponding  monodromy  braids of segments. The
+    action  of these elements of `Bₙ` on the free group `Fₙ` is computed by
+    'hurwitz'  and the resulting  presentation of the  fundamental group is
+    computed  by 'VKquotient'. It happens for  some large problems that the
+    whole  fundamental group  process fails  here, because  the braids `bᵢ`
+    obtained  are  too  long  and  the  computation  of  the action on `Fₙ`
+    requires thus too much memory. We have been able to solve such problems
+    when  they occur  by calling  on the  `bᵢ` at  this stage  our function
+    'shrink'  which  finds  smaller  generators  for  the  subgroup of `Bₙ`
+    generated  by the `bᵢ`  (see the description  in `Gapjm.Garside`). This
+    function is called automatically at this stage if 'VK.shrinkBraid'
+    is set to 'true' (the default for this variable is 'false').
 
--  Finally, the  presentation is  simplified by  'ShrinkPresentation'. This
-function  is  a  heuristic  adaptation  and  refinement  of  the  basic GAP
-functions for simplifying presentations. It is non-deterministic.
+  - Finally, the  presentation is  simplified by  'simplify'. This function
+    is  a heuristic  adaptation and  refinement of  the basic functions for
+    simplifying presentations. It is non-deterministic.
 
 From  the algorithmic point of view, memory should not be an issue, but the
 procedure  may  take  a  lot  of  CPU  time  (the  critical  part being the
-computation of the monodromy braids by 'FollowMonodromy'). For instance, an
-empirical  study with  the curves  `x^2-y^n` suggests  that the needed time
+computation  of the monodromy braids  by 'follow_monodromy'). For instance,
+an  empirical study with  the curves `x²-yⁿ`  suggests that the needed time
 grows exponentially with `n`. Two solutions are offered to deal with curves
 for which the computation time becomes unreasonable.
 
-A   global  variable  'VKCURVE.monodromyApprox'  controls  which  monodromy
-function  is used.  The default  value of  this variable  is 'false', which
-means  that 'FollowMonodromy' will be  used. If the variable  is set by the
-user  to  'true'  then  the  function  'ApproxFollowMonodromy' will be used
-instead.   This  function  runs  faster  than  'FollowMonodromy',  but  the
+A  global  variable  `VK.approx_monodromy`  controls  which  monodromy
+function  is used.  The default  value of  this variable  is `false`, which
+means  that `follow_monodromy` will be used. If  the variable is set by the
+user  to `true`  then the  function `approx_follow_monodromy`  will be used
+instead.  This  function  runs  faster  than  `follow_monodromy`,  but  the
 approximations  are no longer  controlled. Therefore presentations obtained
-while  'VKCURVE.monodromyApprox'  is  set  to  'true'  are  not  certified.
+while  `VK.approx_monodromy`  is  set  to  'true'  are  not certified.
 However,  though  it  is  likely  that  there  exists  examples  for  which
-'ApproxFollowMonodromy'  actually returns incorrect  answers, we still have
+`approx_follow_monodromy` actually returns incorrect answers, we still have
 not seen one.
 """
-#------------------- utilities -------------------------------
+#module VKcurve
+using Gapjm
 """
 `nearest_pair(v::Vector{<:Complex})`
 
 returns  a pair whose first element is the minimum distance (in the complex
 plane)  between two elements  of `v`, and  the second is  a pair of indices
-`[i,j]` such that `v[i]`, `v[j]` achieves this minimum.
+`[i,j]` such that `v[i],v[j]` achieves this minimum.
 
 julia> nearest_pair([1+im,0,1])
 1=>[1,3]
@@ -186,31 +193,32 @@ function dist_seg(z,a,b)
   z-=a
   r=abs(b)
   z*=r/b
-# @show z,b
-  real(z)<0 ? abs(z) : real(z)>r ? abs(z-r) : imag(z)>0 ? imag(z) : -imag(z)
+  rz,iz=reim(z)
+  rz<0 ? abs(z) : rz>r ? abs(z-r) : iz>0 ? iz : -iz
 end
 
 #---------------------- global functions --------------------------
-VKCURVE=Dict(
+@GapObj struct VKopt end
+const VK=VKopt(Dict(
 :name=>"vkcurve",
 :version=>"2.0",
 :date=>[2009,3],
 :homepage=>"http://webusers.imj-prg.fr/~jean.michel/vkcurve.html",
 :copyright=>
 "(C) David Bessis, Jean Michel -- compute Pi₁ of hypersurface complements",
-:monodromyApprox=>false,
+:approx_monodromy=>false,
 :showallnewton=>false,
 :NewtonLim=>800,
 :AdaptivityFactor=>10,
 :shrinkBraid=>false,
-:mvp=>1)
+:mvp=>1))
 
-@GapObj struct VK{T}
+@GapObj struct VKrec{T}
   curve::Mvp{T,Int}
   ismonic::Bool
 end
 
-function Base.show(io::IO,r::VK)
+function Base.show(io::IO,r::VKrec)
   if haskey(r,:presentation) display_balanced(r.presentation)
   else xdisplay(r.prop)
   end
@@ -247,11 +255,11 @@ function Loops(r)
     r.segments=map(x->indexin(x,uniquePoints), r.segments)
     r.basepoint=findfirst(==(r.basepoint),uniquePoints)
   end
-  if VKCURVE[:showSegments]
+  if VK.showSegments
     println("# There are ",length(r.segments)," segments in ",
             length(r.loops)," loops")
   end
-  if VKCURVE[:showWorst]
+  if VK.showWorst
     l=map(enumerate(r.segments))do (i,s)
       m,ixm=findmin(dist_seg.(r.roots, r.points[s[1]], r.points[s[2]]))
       (m,i,ixm)
@@ -260,16 +268,15 @@ function Loops(r)
     print("worst segments:\n")
     for i in 1:min(5,length(l))
       d,s,s1=l[i]
-      println("segment ",s,"==",r.segments[s]," dist to ",s1,"-th root is ",d)
+      println("segment ",s,"==",r.segments[s]," dist to ",s1,"-th root is ",approx(d))
     end
   end
-# find the minimum distance m between two roots
   if length(r.roots)>1
-    m=nearest_pair(r.roots)
-    if VKCURVE[:showRoots]
-      print("\nMinimum distance==",m[1]," between roots ",m[2][1]," and ",m[2][2]," of discriminant\n")
+    d,p=nearest_pair(r.roots) # find the minimum distance between two roots
+    if VK.showRoots
+      println("\nMinimum distance==",d," between roots ",join(p," and ")," of discriminant")
     end
-    r.dispersal=m[1]
+    r.dispersal=d
   else
     r.dispersal=1/1000
   end
@@ -283,8 +290,8 @@ end
 The discriminant of this curve with respect to `x` (a polynomial in `y`) is
 computed. First, the curve is split in
   - `r.curveVerticalPart`: gcd(coefficients(r.curve,:x)) (an Mvp in y).
-  - `r.nonVerticalPart`:   curve/curveVerticalPart
-Then `r.discy=discriminant(r.nonVerticalPart)` (a `Pol`) is computed. 
+  - `r.nonVerticalPart`:   r.curve/r.curveVerticalPart
+Then `r.discy=discriminant(Pol(r.nonVerticalPart,:x))` is computed. 
 Its   quadratfrei  part  is  computed,  stripped  of  factors  common  with
 `r.curveVerticalPart` and then factored (if possible which for now means it
 is  a  polynomial  over  the  rationals),  and  its  factors  are stored in
@@ -292,7 +299,7 @@ is  a  polynomial  over  the  rationals),  and  its  factors  are stored in
 """
 function Discy(r)
   r.curveVerticalPart=gcd(Pol.(values(coefficients(r.curve,:x))))
-  if VKCURVE[:showRoots] && degree(r.curveVerticalPart)>0
+  if VK.showRoots && degree(r.curveVerticalPart)>0
     println("Curve has ",degree(r.curveVerticalPart)," linear factors in y")
   end
   r.nonVerticalPart=exactdiv(r.curve,r.curveVerticalPart(Mvp(:y)))
@@ -301,11 +308,11 @@ function Discy(r)
   if iszero(d)
     error("Discriminant is 0 but ", r.curve," should be quadratfrei")
   end
-  if VKCURVE[:showRoots] print("Discriminant has ",degree(d)," roots, ") end
+  if VK.showRoots print("Discriminant has ",degree(d)," roots, ") end
   d=exactdiv(d,gcd(d,derivative(d)))
-  if VKCURVE[:showRoots] println(" of which ", degree(d), " are distinct") end
+  if VK.showRoots println(" of which ", degree(d), " are distinct") end
   common=gcd(d,r.curveVerticalPart)
-  if VKCURVE[:showRoots] && degree(common)>0
+  if VK.showRoots && degree(common)>0
     println(" and of which ",degree(common)," are roots of linear factors")
   end
   d=exactdiv(d,common)
@@ -314,31 +321,9 @@ function Discy(r)
   if eltype(coefficients(d))<:Union{Complex{<:Rational},Rational}
     r.discyFactored=factor(r.discy)
     if r.discyFactored isa Tuple r.discyFactored=r.discyFactored[1] end
-    r.discyFactored=collect(keys(r.discyFactored))
+    r.discyFactored=collect(keys(r.discyFactored)) # no multiplicities
   else
     r.discyFactored=[d]
-  end
-# @show r.discyFactored
-end
-
-function Braids(r)
-  pr=VKCURVE[:showgetbraid] ? println : function(x...)end
-  pr("# Computing monodromy braids")
-  r.braids=empty([r.B()])
-  pr("loops=[")
-  for i in eachindex(r.loops)
-    l=filter(s->!(r.monodromy[s]!==nothing),abs.(r.loops[i]))
-    if length(l)>0 pr("# loop[$i] missing segments ",l)
-    else
-      bb=prod(s->s<0 ? r.monodromy[-s]^-1 : r.monodromy[s],r.loops[i])
-      pr("r.",bb,",")
-      push!(r.braids, bb)
-    end
-  end
-  pr("]")
-  if VKCURVE[:shrinkBraid] && r.ismonic
-    r.rawBraids=r.braids
-    r.braids=shrink(r.braids)
   end
 end
 
@@ -353,7 +338,7 @@ function SearchHorizontal(r) # Searching for a good horizontal
   end
   section=exactdiv(section,gcd(section,r.curveVerticalPart))
   println("Curve is not monic in x -- Trivializing along horizontal line x == ", height)
-  r1=VK(r.curve*(Mvp(:x)-height),false,Dict{Symbol,Any}()) # is it monic?
+  r1=VKrec(r.curve*(Mvp(:x)-height),false,Dict{Symbol,Any}()) # is it monic?
   r1.height=height
   r1.input=r.curve
   if haskey(r,:name) r1.name=r.name end
@@ -363,7 +348,7 @@ function SearchHorizontal(r) # Searching for a good horizontal
   r1.trueroots=r.roots
   r1.verticallines=r.roots[1:degree(r.curveVerticalPart)]
   r1.roots=copy(r1.trueroots)
-  append!(r1.roots,SeparateRoots(section,1000))
+  append!(r1.roots,separate_roots(section,1000))
   r1
 end
 
@@ -373,20 +358,17 @@ function TrivialCase(r)
 end
 
 """
-'FundamentalGroup(<curve> [, <printlevel>])'
+`fundamental_group(curve::Mvp; printlevel=0)`
 
-<curve> should be an 'Mvp' in <x>  and <y>, or a GAP polynomial in two
-variables (which means a polynomial in a variable which is assumed to be
-'y' over the polynomial ring `ℚ[x]`) representing an equation `f(x,y)`
-for a curve  in `ℂ^2`. The coefficients should  be rationals, gaussian
-rationals or 'Complex' rationals. The result  is a record with a certain
-number of fields which record steps in the computation described in this
-introduction:
+`curve` should be an `Mvp` in `x` and `y` representing an equation `f(x,y)`
+for  a  curve  in  `ℂ²`.  The  coefficients should be rationals or gaussian
+rationals.  The result is  a record with  a certain number  of fields which
+record steps in the computation described in this introduction:
 
 ```julia-repl
 julia> @Mvp x,y; @Pol y
 
-julia> r=FundamentalGroup(x^2-y^3)
+julia> r=fundamental_group(x^2-y^3)
 Presentation: 2 generators, 1 relator, total length 6
 1: bab=aba
 
@@ -403,7 +385,7 @@ julia> r.roots  # roots of the discriminant
 1-element Vector{Rational{Int64}}:
  0//1
 
-julia> r.points
+julia> r.points # for points, segments and loops see loops_around_punctures
 4-element Vector{Complex{Rational{Int64}}}:
   0//1 - 1//1*im
  -1//1 + 0//1*im
@@ -442,29 +424,25 @@ julia> r.braids # monodromy around each r.loop
 julia> display_balanced(r.presentation) # printing of r by default
 1: bab=aba
 ```
-
-'r.points',  'r.segments' and  'r.loops'  describes  loops around  these
-zeros  as  explained  in   the  documentation  of  'LoopsAroundPunctures';
-
 The second optional argument triggers  the display of information on the
-progress of the  computation. It is recommended to  set the <printlevel>
+progress of the  computation. It is recommended to  set the `printlevel`
 at 1 or 2  when the computation seems to take a  long time without doing
-anything. <printlevel> set  at 0 is the default and  prints nothing; set
+anything. `printlevel` set  at 0 is the default and  prints nothing; set
 at 1 it shows which segment is  currently active, and set at 2 it traces
 the computation inside each segment.
-
-julia> FundamentalGroup(x^2-y^3,printlevel=1);
+```julia-repl
+julia> fundamental_group(x^2-y^3,printlevel=1);
 # There are 4 segments in 1 loops
-# The following braid was computed by FollowMonodromy in 8 steps.
+# The following braid was computed by follow_monodromy in 8 steps.
 monodromy[1]=B(-1)
 #segment 1/4 Time==0.00495sec
-# The following braid was computed by FollowMonodromy in 8 steps.
+# The following braid was computed by follow_monodromy in 8 steps.
 monodromy[2]=B(1)
 #segment 2/4 Time==0.00481sec
-# The following braid was computed by FollowMonodromy in 8 steps.
+# The following braid was computed by follow_monodromy in 8 steps.
 monodromy[3]=B()
 #segment 3/4 Time==0.00403sec
-# The following braid was computed by FollowMonodromy in 8 steps.
+# The following braid was computed by follow_monodromy in 8 steps.
 monodromy[4]=B(1)
 #segment 4/4 Time==0.00392sec
 # Computing monodromy braids
@@ -472,12 +450,13 @@ loops=[
 r.B(1,1,1),
 ]
 Presentation: 2 generators, 1 relator, total length 6
+```
 """
-function FundamentalGroup(curve::Mvp;printlevel=0,abort=false)
-  VKCURVE[:showSingularProj]=VKCURVE[:showBraiding]=VKCURVE[:showLoops]=
-  VKCURVE[:showAction]=VKCURVE[:showInsideSegments]=VKCURVE[:showWorst]=
-  VKCURVE[:showZeros]=VKCURVE[:showNewton]=VKCURVE[:showRoots]=printlevel>=2
-  VKCURVE[:showSegments]=VKCURVE[:showgetbraid]=printlevel>=1
+function fundamental_group(curve::Mvp;printlevel=0,abort=false)
+  VK.showSingularProj=VK.showBraiding=VK.showLoops=
+  VK.showAction=VK.showInsideSegments=VK.showWorst=
+  VK.showZeros=VK.showNewton=VK.showRoots=printlevel>=2
+  VK.showSegments=VK.showgetbraid=printlevel>=1
   if !issubset(variables(curve),[:x,:y])
     error(curve," should be an Mvp in x,y")
   end
@@ -487,34 +466,34 @@ function FundamentalGroup(curve::Mvp;printlevel=0,abort=false)
     curve=exactdiv(curve,d)
   end
 #  record with fields .curve and .ismonic if the curve is monic in x
-  r=VK(curve,degree(Pol(curve,:x)[end])==0,Dict{Symbol,Any}())
+  r=VKrec(curve,degree(Pol(curve,:x)[end])==0,Dict{Symbol,Any}())
 #  we should make coefficients(curve) in  Complex{Rational}
   Discy(r);
-  if VKCURVE[:showRoots] println("Computing roots of discriminant...") end
-  r.roots=vcat(map(p->SeparateRoots(p,1000),r.discyFactored)...)
+  if VK.showRoots println("Computing roots of discriminant...") end
+  r.roots=vcat(map(p->separate_roots(p,1000),r.discyFactored)...)
   if degree(r.curveVerticalPart)>0
-    prepend!(r.roots,SeparateRoots(r.curveVerticalPart, 1000))
+    prepend!(r.roots,separate_roots(r.curveVerticalPart, 1000))
   end
   if isempty(r.roots) return TrivialCase(r) end
   if !r.ismonic r=SearchHorizontal(r) end
-  loops=convert_loops(LoopsAroundPunctures(r.roots))
+  loops=convert_loops(loops_around_punctures(r.roots))
   merge!(r.prop,pairs(loops))
   Loops(r)
   #------------------compute r.zeros[i]=zeros of r.curve(y=r.points[i])
-  if VKCURVE[:showRoots]
+  if VK.showRoots
     println("Computing zeros of curve at the ",length(r.points)," segment extremities...")
   end
   mins=Tuple{Float64,Int}[]
   r.zeros=map(1:length(r.points))do i
-    if VKCURVE[:showZeros] print("<",i,"/",length(r.points),">") end
-    zz=SeparateRoots(Pol(r.curve(y=r.points[i])), 10^4)
+    if VK.showZeros print("<",i,"/",length(r.points),">") end
+    zz=separate_roots(Pol(r.curve(y=r.points[i])), 10^4)
     if length(zz)>1
       m=nearest_pair(zz); push!(mins,(m[1],i))
-      if VKCURVE[:showZeros] println(" d==",approx(m[1])," for ",m[2]) end
+      if VK.showZeros println(" d==",approx(m[1])," for ",m[2]) end
     end
     zz
   end
-  if VKCURVE[:showWorst] && length(r.zeros[1])>1
+  if VK.showWorst && length(r.zeros[1])>1
     sort!(mins)
     println("worst points:")
     for m in mins[1:min(5,length(mins))]
@@ -527,17 +506,37 @@ function FundamentalGroup(curve::Mvp;printlevel=0,abort=false)
   r.monodromy=fill(r.B(),length(r.segments))
   for segno in eachindex(r.segments)
     tm=time()
-    r.monodromy[segno]=(VKCURVE[:monodromyApprox] ?
-                    ApproxFollowMonodromy : FollowMonodromy)(r, segno)
+    r.monodromy[segno]=(VK.approx_monodromy ?
+                    approx_follow_monodromy : follow_monodromy)(r, segno)
     tm=time()-tm
-    if VKCURVE[:showSegments]
+    if VK.showSegments
       println("monodromy[$segno]=",r.monodromy[segno])
       println("#segment $segno/",length(r.segments)," Time==",approx(tm),"sec")
     end
   end
-  Braids(r)
-  if r.ismonic F=VKQuotient(r.braids)
-  else F=DBVKQuotient(r)
+#---------------------- braids --------------------------
+  if VK.showgetbraid println("# Computing monodromy braids") end
+  r.braids=empty([r.B()])
+  if VK.showgetbraid println("loops=[") end
+  for i in eachindex(r.loops)
+    l=filter(s->!(r.monodromy[s]!==nothing),abs.(r.loops[i]))
+    if length(l)>0 
+      if VK.showgetbraid println("# loop[$i] missing segments ",l) end
+    else
+      bb=prod(s->s<0 ? r.monodromy[-s]^-1 : r.monodromy[s],r.loops[i])
+      if VK.showgetbraid println("r.",bb,",") end
+      push!(r.braids, bb)
+    end
+  end
+  if VK.showgetbraid println("]") end
+#---------------------- end braids --------------------------
+  if r.ismonic 
+    if VK.shrinkBraid
+      r.rawBraids=r.braids
+      r.braids=shrink(r.braids)
+    end
+    F=VKquotient(r.braids)
+  else F=DBVKquotient(r)
   end
   r.presentation=Presentation(F)
   r.rawPresentation=Presentation(F)
@@ -566,21 +565,22 @@ simp(t::Complex,prec=10^-15)=simp(real(t),prec)+im*simp(imag(t),prec)
 
 #---------------------- root-finding ----------------------------------
 """
-`NewtonRoot(p::Pol,initial,precision;showall=false,show=false,lim=800)`
+`NewtonRoot(p::Pol,initial_guess,precision;showall=false,show=false,lim=800)`
 
-Here `p` is a complex polynomial. The function computes an approximation to a
-root of `p`, guaranteed of distance closer than `precision` to
-an  actual root. The first approximation used is `initial`. If `initial` is
-in  the  attraction  basin  of  a  root  of  `p`,  the  one approximated. A
-possibility  is that  the Newton  method starting  from `initial`  does not
-converge  (the  number  of  iterations  after  which  this  is  decided  is
-controlled  by  `lim`);  then  the  function returns `nothing`.
-Otherwise  the function returns  a pair: the  approximation found, and an
-upper  bound of the distance between that approximation and an actual root.
-The point of returning
-an upper bound is that it is usually better than the asked-for `precision`.
-For the precision estimate a good reference is cite{HSS01}.
+Here   `p`  is   a  polynomial   with  `Rational`   or  `Complex{Rational}`
+coefficients.  The function  computes an  approximation to  a root  of `p`,
+guaranteed of distance closer than `precision` to an actual root. The first
+approximation  used is `initial`.  A possibility is  that the Newton method
+starting  from `initial` does not converge  (the number of iterations after
+which  this is decided  is controlled by  `lim`); then the function returns
+`nothing`.  Otherwise the function returns a pair: the approximation found,
+and an upper bound on the distance between that approximation and an actual
+root.  The point of returning  an upper bound is  that it is usually better
+than the asked-for `precision`. For the precision estimate a good reference
+is
 
+J.  Hubbard, D. Schleicher,  and S. Sutherland.  "How to find  all roots of
+complex polynomials by Newton's method.", Invent. Math. 146:1--33, 2001.
 ```julia-repl
 julia> p=Pol([1,0,1])
 Pol{Int64}: x²+1
@@ -595,8 +595,8 @@ julia> NewtonRoot(p,1,10^-7;show=true)
 p=x²+1 initial=-1.0 prec=1.0000000000000004e-7
 ```
 """
-function NewtonRoot(p::Pol,z,precision;showall=VKCURVE[:showallnewton],
-                          show=VKCURVE[:showNewton],lim=VKCURVE[:NewtonLim])
+function NewtonRoot(p::Pol,z,precision;showall=VK.showallnewton,
+                          show=VK.showNewton,lim=VK.NewtonLim)
   deriv=derivative(p)
   for cnt in 1:lim
     a=p(z)
@@ -620,7 +620,7 @@ function NewtonRoot(p::Pol,z,precision;showall=VKCURVE[:showallnewton],
 end
 
 """
-'SeparateRootsInitialGuess(p, v, safety)'
+'separate_roots_initial_guess(p::Pol, v, safety)'
 
 Here  `p` is a complex  polynomial, and `v` is  a list of approximations to
 roots  of `p` which should lie in different attraction basins for Newton' s
@@ -630,22 +630,22 @@ whose attraction basin the corresponding element of `v` lies), such that if
 `d`  is the minimum distance  between two elements of  `l`, then there is a
 root  of `p` within radius  `d/(2*safety)` of any element  of `l`. When the
 elements  of  `v`  do  not  lie  in  different  attraction basins (which is
-necessarily the case if `p` has multiple roots), 'false' is returned.
+necessarily the case if `p` has multiple roots), `nothing` is returned.
 
 ```julia-repl
 julia> p=Pol([1,0,1])
 Pol{Int64}: x²+1
 
-julia> SeparateRootsInitialGuess(p,[1+im,1-im],10^5)
+julia> separate_roots_initial_guess(p,[1+im,1-im],10^5)
 2-element Vector{ComplexF64}:
  8.463737877036721e-23 + 1.0im
  8.463737877036721e-23 - 1.0im
 
-julia> SeparateRootsInitialGuess(p,[1+im,2+im],1000)
+julia> separate_roots_initial_guess(p,[1+im,2+im],1000)
     # 1+im and 2+im in same attraction basins
 ```
 """
-function SeparateRootsInitialGuess(p, v, safety)
+function separate_roots_initial_guess(p, v, safety)
   if degree(p)==1 return [-p[0]/p[1]] end
   radv=nearest_pair(v)[1]/safety/2
   res=map(e->NewtonRoot(p,e,radv),v)
@@ -653,13 +653,12 @@ function SeparateRootsInitialGuess(p, v, safety)
     return first.(res)
   end
   print("dispersal required=",nearest_pair(first.(res))[1]/safety/2)
-  println(" obtained=",maximum(last.(res)))
+  println(" obtained=",approx(maximum(last.(res))))
   println(join(v[nearest_pair(first.(res))[2]]," and ")," lie in the same attraction basin")
-  return nothing
 end
 
 """
-'SeparateRoots(<p>, <safety>)'
+'separate_roots(<p>, <safety>)'
 
 Here  `p` is  a complex  polynomial. The  result is  a list  `l` of complex
 numbers  representing approximations to the roots  of `p`, such that if `d`
@@ -671,21 +670,21 @@ possible when `p` has multiple roots, in which case `nothing` is returned.
 julia> @Pol q
 Pol{Int64}: q
 
-julia> SeparateRoots(q^2+1,100)
+julia> separate_roots(q^2+1,100)
 2-element Vector{ComplexF64}:
   2.3541814200656927e-43 + 1.0im
  -2.3541814200656927e-43 - 1.0im
 
-julia> SeparateRoots((q-1)^2,100)
+julia> separate_roots((q-1)^2,100)
 
-julia> SeparateRoots(q^3-1,100)
+julia> separate_roots(q^3-1,100)
 3-element Vector{ComplexF64}:
  -0.5 - 0.8660254037844386im
   1.0 - 1.232595164407831e-32im
  -0.5 + 0.8660254037844387im
 ```
 """
-function SeparateRoots(p,safety)
+function separate_roots(p,safety)
   subtractroot(p,r)=divrem(p,Pol([-r,1]))[1]
   if p isa Mvp p=Pol(p) end
   if degree(p)<1 return empty(p.c)
@@ -697,7 +696,7 @@ function SeparateRoots(p,safety)
   v=nothing
   cnt = 0
   while isnothing(v) && cnt<2*(degree(p)+1)
-    if VKCURVE[:showNewton] && cnt>0
+    if VK.showNewton && cnt>0
       println("****** ", cnt, " guess failed for p degree ", degree(p))
     end
     v=NewtonRoot(p,e,(1/safety)*10.0^(-degree(p)-4))
@@ -707,30 +706,28 @@ function SeparateRoots(p,safety)
   end
   if cnt>=2*(degree(p)+1) error("no good initial guess") end
   v=[v[1]]
-  append!(v,SeparateRoots(subtractroot(p,v[1]), safety))
-  safety==0 ? v : SeparateRootsInitialGuess(p, v, safety)
+  append!(v,separate_roots(subtractroot(p,v[1]), safety))
+  safety==0 ? v : separate_roots_initial_guess(p, v, safety)
 end
 
 """
-'FindRoots(<p>, <approx>)'
+`FindRoots(p::Pol, <approx>)`
 
-<p>  should be a univariate 'Mvp'  with cyclotomic or 'Complex' rational or
-decimal  coefficients or  a list  of cyclotomics  or 'Complex' rationals or
-decimals  which represents  the coefficients  of a  complex polynomial. The
-function  returns  'Complex'  rational  approximations  to the roots of <p>
-which  are  better  than  <approx>  (a  positive rational). Contrary to the
-functions  'SeparateRoots', etc... described in  the previous chapter, this
-function handles quite well polynomials with multiple roots. We rely on the
+`p`  should have rational or  `Complex{Rational} coefficients. The function
+returns  'Complex' rational  approximations to  the roots  of `p` which are
+better  than  `approx`  (a  positive  rational).  Contrary to the functions
+`separate_roots`,  etc... described in the  previous chapter, this function
+handles  quite  well  polynomials  with  multiple  roots.  We  rely  on the
 algorithms explained in detail in cite{HSS01}.
 
 ```julia-repl
 julia> FindRoots((Pol()-1)^5,1/5000)
-5-element Vector{ComplexF64}:
- 1.0009973168670234 - 6.753516026574732e-9im
- 1.0004572203796391 - 0.00033436001135679156im
-  0.999029224439348 + 5.075797152907413e-12im
-  0.999723670720127 - 0.0008487747754577878im
- 1.0007950023584915 - 0.0005779801979057327im
+5-element Vector{Complex{Rational{BigInt}}}:
+ 1//1 + 0//1*im
+ 1//1 + 0//1*im
+ 1//1 + 0//1*im
+ 1//1 + 0//1*im
+ 1//1 - 1//4837347*im
 
 julia> FindRoots(Pol()^3-1,10^-5)
 3-element Vector{Complex{Rational{BigInt}}}:
@@ -738,7 +735,7 @@ julia> FindRoots(Pol()^3-1,10^-5)
   1//1 + 0//1*im
  -1//2 + 16296//18817*im
 
-julia> approx.(ans.^3)
+julia> round.(Complex{Float64}.(ans.^3);sigdigits=3)
 3-element Vector{ComplexF64}:
  1.0 - 1.83e-9im
  1.0 + 0.0im
@@ -819,7 +816,7 @@ end
 crossing(v1,v2)=crossing(v1...,v2...)
 
 # Computes the intersection of lines (x1,x2) and (y1,y2)
-# returns nothing if the lines are parallel or elements of a pair are too close
+# returns nothing if the lines are parallel or a pair is a single
 function crossing(x1,x2,y1,y2)
   if x1==x2 || y1==y2 return nothing end
   if !(real(x1)==real(x2))
@@ -867,6 +864,8 @@ function Garside.shrink(l)local k
 end
 
 """
+`convert_loops(ll)`
+
 The  input is a list  of loops, each a  list of complex numbers representing
 the vertices of the loop.
 
@@ -908,28 +907,27 @@ function Box(l)
    Complex(maxr+2+(maxi-mini)/2, (maxi+mini)/2)]
 end
 
-# Guarantees on LoopsAroundPunctures:
-# For a set Z of zeroes and z in Z, let R(z):=1/2 dist(z,Z-z).
-# The  input of  LoopsAroundPunctures is  a set  Z of approximate zeroes of
-# r.discy such that for any z one of the zeroes is closer than R(z)/S where
-# S is a global constant of the program (in practice we may take S=100).
-# Let  d=inf_{z in  Z}(R(z)); we  return points  with denominator  10^-k or
-# 10^-k<d/S'  (in practive we take S'=100) and  such that the distance of a
-# segment to a zero of r.discy is guaranteed >= d-d/S'-d/S
-
 """
-'LoopsAroundPunctures(points)'
+'loops_around_punctures(points)'
 
 `points`  should be complex numbers. The function computes piecewise-linear
 loops representing generators of the fundamental group of `ℂ -{points}`.
 
 ```julia-repl
-julia> LoopsAroundPunctures([0])
+julia> loops_around_punctures([0])
 1-element Vector{Vector{Complex{Int64}}}:
  [1 + 0im, 0 + 1im, -1 + 0im, 0 - 1im, 1 + 0im]
 ```
+# Guarantees on loops_around_punctures:
+# For a set Z of zeroes and z in Z, let R(z):=1/2 dist(z,Z-z).
+# The  input of  loops_around_punctures is  a set  Z of approximate zeroes of
+# r.discy such that for any z one of the zeroes is closer than R(z)/S where
+# S is a global constant of the program (in practice we may take S=100).
+# Let  d=inf_{z in  Z}(R(z)); we  return points  with denominator  10^-k or
+# 10^-k<d/S'  (in practive we take S'=100) and  such that the distance of a
+# segment to a zero of r.discy is guaranteed >= d-d/S'-d/S
 """
-function LoopsAroundPunctures(originalroots)
+function loops_around_punctures(originalroots)
 # tol=first(nearest_pair(originalroots))
   roots=originalroots*(1+0im)
   n=length(roots)
@@ -948,7 +946,7 @@ function LoopsAroundPunctures(originalroots)
     append!(y.neighbours,iy.(neighbours(roots, roots[yi])))
     push!(y.friends,yi)
   end
-  if VKCURVE[:showLoops] println("neighbours computed") end
+  if VK.showLoops println("neighbours computed") end
   for (yi,y) in enumerate(ys)
     for z in y.neighbours
       if !(z in y.friends)
@@ -997,7 +995,7 @@ function LoopsAroundPunctures(originalroots)
       end
     end
   end
-  if VKCURVE[:showLoops] println("circles computed") end
+  if VK.showLoops println("circles computed") end
 
   function boundpaths(path, i) # y must be an element of ys
     if !isempty(ys[i].path) return end
@@ -1057,30 +1055,30 @@ approx(x::Real)=round(Float64(x);sigdigits=3)
 approx(x::Complex)=round(Complex{Float64}(x);sigdigits=3)
 
 """
-'ApproxFollowMonodromy(<r>,<segno>,<pr>)'
+`approx_follow_monodromy(<r>,<segno>,<pr>)`
 
 This function  computes an approximation  of the monodromy braid  of the
 solution in `x`  of an equation `P(x,y)=0` along  a segment `[y₀,y₁]`.
-It is called  by 'FundamentalGroup', once for each of  the segments. The
+It is called  by 'fundamental_group', once for each of  the segments. The
 first  argument is  a  global record,  similar to  the  one produced  by
-'FundamentalGroup'  (see the  documentation of  this function)  but only
+'fundamental_group'  (see the  documentation of  this function)  but only
 containing intermediate information. The second argument is the position
 of the segment in 'r.segments'. The  third argument is a print function,
 determined  by the  printlevel set  by the  user (typically,  by calling
-'FundamentalGroup' with a second argument).
+'fundamental_group' with a second argument).
 
-Contrary to 'FollowMonodromy',  'ApproxFollowMonodromy' does not control
+Contrary to 'follow_monodromy',  'approx_follow_monodromy' does not control
 the approximations; it just uses a  heuristic for how much to move along
 the segment  between linear braid  computations, and this  heuristic may
 possibly fail. However,  we have not yet found an  example for which the
 result is actually incorrect, and thus the existence is justified by the
 fact that  for some difficult  computations, it is sometimes  many times
-faster  than 'FollowMonodromy'.  We illustrate  its typical  output when
+faster  than 'follow_monodromy'.  We illustrate  its typical  output when
 <printlevel> is 2.
 
-|   VKCURVE.monodromyApprox:=true;
+|   VK.approx_monodromy=true
 julia-rep1```
-julia> FundamentalGroup((x+3*y)*(x+y-1)*(x-y);printlevel=2)
+julia> fundamental_group((x+3*y)*(x+y-1)*(x-y);printlevel=2)
 
   ....
 
@@ -1130,8 +1128,8 @@ should  halve the  step  ('***rejected')  or that  we  may double  it
 
 The function returns an element of the ambient braid group 'r.B'.
 """
-function ApproxFollowMonodromy(r,segno)
-  if VKCURVE[:showInsideSegments] ipr=print
+function approx_follow_monodromy(r,segno)
+  if VK.showInsideSegments ipr=print
   else ipr=function(x...)end
   end
   p,q=r.segments[segno]
@@ -1150,7 +1148,7 @@ function ApproxFollowMonodromy(r,segno)
   while true
     next=prev+step*v
     P=Pol(r.curve(y=next))
-    nextzeros=SeparateRootsInitialGuess(P, prevzeros, 100)
+    nextzeros=separate_roots_initial_guess(P, prevzeros, 100)
     if isnothing(nextzeros) ||
       (iszero(maximum(abs.(nextzeros-prevzeros))) && step>1//16)
       rejected=true
@@ -1162,7 +1160,7 @@ function ApproxFollowMonodromy(r,segno)
          " step=$step total=$total logdisc=",normdisc(r.discyFactored,next))
       end
       dn=abs.(prevzeros-nextzeros)
-      rejected=any(dm.<VKCURVE[:AdaptivityFactor].*dn)
+      rejected=any(dm.<VK.AdaptivityFactor.*dn)
       if !rejected && mdm<mindm mindm=mdm end
     end
     if rejected
@@ -1171,7 +1169,7 @@ function ApproxFollowMonodromy(r,segno)
       if step<minstep minstep=step end
     else
       total+=step
-      if all(dm.>2 .*VKCURVE[:AdaptivityFactor] .*dn) && total+step!=1
+      if all(dm.>2 .*VK.AdaptivityFactor.*dn) && total+step!=1
         step*=2
         ipr(" ***up")
       end
@@ -1185,10 +1183,10 @@ function ApproxFollowMonodromy(r,segno)
     if total+step>1 step=1-total end
     if total==1 break end
   end
-  if VKCURVE[:showSegments]
+  if VK.showSegments
     println("# Minimal distance=", approx(mindm))
     println("# Minimal step=", minstep, "=", approx(v*minstep))
-    println("# Adaptivity=", VKCURVE[:AdaptivityFactor])
+    println("# Adaptivity=", VK.AdaptivityFactor)
   end
   res*LBraidToWord(prevzeros,fit(nextzeros,r.zeros[q]),r.B)
 end
@@ -1266,7 +1264,7 @@ function Sturm(pp::Pol, tm, adapt::Integer)
     t//=2
     m+=1
   end
-  if VKCURVE[:showInsideSegments] print(m) end
+  if VK.showInsideSegments print(m) end
   if m==adapt && adapt>0
     if pol(3t//2)>0
       if pol(2t)>0 res=[(1-2t)*tm+2t, adapt-1]
@@ -1296,23 +1294,25 @@ function formattm(tm,l)
 end 
 
 """
-'FollowMonodromy(<r>,<segno>)'
-This function computes the monodromy braid  of the solution in `x` of an
-equation  `P(x,y)=0`  along  a  segment `[y₀,y₁]`.  It  is  called  by
-'FundamentalGroup', once for each of the segments. The first argument is
-a global record, similar to  the one produced by 'FundamentalGroup' (see
-the  documentation of  this function)  but only  containing intermediate
-information.  The second  argument is  the  position of  the segment  in
-'r.segments'. 
+`follow_monodromy(r,segno)`
+This  function computes the  monodromy braid of  the solution in  `x` of an
+equation   `P(x,y)=0`  along   a  segment   `[y₀,y₁]`.  It   is  called  by
+`fundamental_group`, once for each of the segments. The first argument is a
+global  record, similar to the one produced by `fundamental_group` (see the
+documentation   of   this   function)   but  only  containing  intermediate
+information.  The  second  argument  is  the  position  of  the  segment in
+`r.segments`.
 
-The function returns an element of the ambient braid group 'r.B'.
+The function returns an element of the ambient braid group `r.B`.
 
-This function has no reason to be  called directly by the user, so we do
-not illustrate its  behavior. Instead, we explain what  is displayed on
-screen when the user sets the printlevel to `2`.
+This function has no reason to be called directly by the user, so we do not
+illustrate  its behavior. Instead,  we explain what  is displayed on screen
+when the user sets the printlevel to `2`.
 
 What is quoted below is an excerpt of what is printed during the execution of
-|    gap>  FundamentalGroup((x+3*y)*(x+y-1)*(x-y),2);
+```julia_repl
+julia> fundamental_group((x+3*y)*(x+y-1)*(x-y),printlevel=2)
+......
 <1/16>    1 time=0           ?2?1?3
 <1/16>    2 time=0.2         R2. ?3
 <1/16>    3 time=0.48        R2. ?2
@@ -1324,11 +1324,12 @@ What is quoted below is an excerpt of what is printed during the execution of
 <1/16>    6 time=0.bc        R1. ?1
 <1/16>    7 time=0.d8        . ?0. 
 <1/16>    8 time=0.dc        ?1R0?1
-# The following braid was computed by FollowMonodromy in 8 steps.
-monodromy[1]=[2]
-# segment 1/16 Time==0.0048370361328125sec
+# The following braid was computed by follow_monodromy in 8 steps.
+monodromy[1]=B(2)
+#segment 1/16 Time==0.0536sec
+```
 
-'FollowMonodromy' computes  its results by subdividing  the segment into
+`follow_monodromy` computes  its results by subdividing  the segment into
 smaller  subsegments  on which  the  approximations  are controlled.  It
 starts at one  end and moves subsegment after subsegment.  A new line is
 displayed at each step.
@@ -1338,33 +1339,33 @@ above, the function  is computing the monodromy along  the first segment
 (out  of  `16`).  This  gives  a  rough  indication  of  the  time  left
 before  completion of  the total  procedure.  The second  column is  the
 number of  iterations so  far (number of  subsegments). In  our example,
-'FollowMonodromy'  had to  cut the  segment into  `8` subsegments.  Each
+`follow_monodromy`  had to  cut the  segment into  `8` subsegments.  Each
 subsegment has its own length. The cumulative length at a given step, as
 a  fraction of  the  total length  of the  segment,  is displayed  after
-'time='.  This  gives  a  rough  indication  of  the  time  left  before
+`time=`.  This  gives  a  rough  indication  of  the  time  left  before
 completion  of the  computation of  the monodromy  of this  segment. The
 segment is completed when this fraction reaches `1`.
 
 The last column has to do with the piecewise-linear approximation of the
 geometric monodromy  braid. It is  subdivided into sub-columns  for each
 string. In  the example above,  there are  three strings. At  each step,
-some strings are fixed (they are  indicated by '. ' in the corresponding
-column). A symbol like 'R5' or '?3' indicates that the string is moving.
+some strings are fixed (they are  indicated by `. ` in the corresponding
+column). A symbol like `R5` or `?3` indicates that the string is moving.
 The exact meaning of the symbol has to do with the complexity of certain
 sub-computations.
 
 As  some strings  are moving,  it  happens that  their real  projections
 cross. When such a crossing occurs, it is detected and the corresponding
-element of `Bₙ` is displayed on screen ('Nontrivial braiding ='...) The
+element of `Bₙ` is displayed on screen (`Nontrivial braiding =`...) The
 monodromy braid is the product of these elements of `Bₙ`, multiplied in
 the order in which they occur.
 """
-function FollowMonodromy(r,seg)
+function follow_monodromy(r,seg)
 # Exact computation of the monodromy braid along a segment
-# r: global VKCURVE record
+# r: global VK record
 # seg: segment number
 # sprint: Print function (to screen, to file, or none)
-  iPrint=VKCURVE[:showInsideSegments] ? print : function(arg...) end
+  iPrint=VK.showInsideSegments ? print : function(arg...) end
   p=r.curve
   dpdx=derivative(r.curve,:x)
   a,b=r.segments[seg]
@@ -1438,8 +1439,8 @@ function FollowMonodromy(r,seg)
     v=newv
     if tm==1 break end
   end
-  if VKCURVE[:showSegments]
-    println("# The following braid was computed by FollowMonodromy in $steps steps.")
+  if VK.showSegments
+    println("# The following braid was computed by follow_monodromy in $steps steps.")
   end
   res*LBraidToWord(v, myfit(v, r.zeros[b]), B)
 end
@@ -1469,7 +1470,7 @@ function desingularized(v1, v2)
 end
 
 """
-'LBraidToWord(v1,v2,B)'
+`LBraidToWord(v1,v2,B)`
 
 This function converts  the linear braid joining the points in `v1` to the
 corresponding ones in `v2` into an element of the braid group.
@@ -1493,17 +1494,17 @@ defines a unique element of `B`. When some real parts are equal, we apply a
 lexicographical  desingularization, corresponding to a rotation of `v1` and
 `v2` by an arbitrary small positive angle.
 """
-# two printlevel control fields: VKCURVE.showSingularProj
-#				 VKCURVE.showBraiding
+function LBraidToWord(v1, v2, B)
+# two printlevel control fields: VK.showSingularProj
+#				 VK.showBraiding
 # Deals with linear braids
 # 1) singular real projections are identified
 # 2) calls starbraid for each
-function LBraidToWord(v1, v2, B)
   n=length(v1)
   x1,y1=reim(v1)
   x2,y2=reim(v2)
   if length(Set(x1))<length(x1) || length(Set(x2))<length(x2)
-    if VKCURVE[:showSingularProj]
+    if VK.showSingularProj
       println("WARNING: singular projection(resolved)")
     end
     return LBraidToWord(desingularized(v1, v2)..., B)
@@ -1535,9 +1536,9 @@ function LBraidToWord(v1, v2, B)
     end
     u=t
   end
-  if VKCURVE[:showBraiding]
+  if VK.showBraiding
    if !isempty(tcrit)
-      if VKCURVE[:showInsideSegments]
+      if VK.showInsideSegments
         println("======================================")
         println("==    Nontrivial braiding ",rpad(res,10),"==")
         println("======================================")
@@ -1551,7 +1552,7 @@ function LBraidToWord(v1, v2, B)
 end
 #----------------------- Presentation -------------------------------
 """
-`VKQuotient(braids)`
+`VKquotient(braids)`
 
 The  input `braids` is a list `b₁,…,bᵣ`, living in the braid group
 on `n` strings. Each `bᵢ` defines by Hurwitz action an automorphism `φᵢ` of
@@ -1562,7 +1563,7 @@ presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ >``
 julia> B=BraidMonoid(coxsym(3))
 BraidMonoid(𝔖 ₃)
 
-julia> g=VKQuotient([B(1,1,1),B(2)])
+julia> g=VKquotient([B(1,1,1),B(2)])
 FreeGroup(a,b,c)/[b⁻¹a⁻¹baba⁻¹,b⁻¹a⁻¹b⁻¹aba,.,.,cb⁻¹,c⁻¹b]
 
 julia> p=Presentation(g)
@@ -1582,16 +1583,16 @@ julia> display_balanced(p)
 1: bab=aba
 ```
 """
-function VKQuotient(braids)
+function VKquotient(braids)
   F=FpGroup(Symbol.('a'.+(0:ngens(braids[1].M.W)))...)
   F/reduce(vcat,map(b->hurwitz(gens(F),b).*inv.(gens(F)),braids))
 end
 
-# A variant of VKQuotient
+# A variant of VKquotient
 # See arXiv:math.GR/0301327 for more mathematical details.
-# Input: global VKCURVE record
+# Input: global VK record
 # Output: the quotient, encoded as an FpGroup
-function DBVKQuotient(r)
+function DBVKquotient(r)
   # get the true monodromy braids and the Hurwitz action basic data
   n=ngens(r.braids[1].M.W)+1
   F=FpGroup(Symbol.('a'.+(0:n+length(r.verticallines)-1))...)
@@ -1621,14 +1622,10 @@ function DBVKQuotient(r)
   F/rels
 end
 
-VKCURVE[:showInsideSegments]=true
-VKCURVE[:showBraiding]=true
-VKCURVE[:showNewton]=false
-
 gg(x)="Complex(evalf(\"$(real(x))\"),evalf(\"$(imag(x))\"))"
 data=Dict()
 
-@Mvp x,y,z,t
+x=Mvp(:x);y=Mvp(:y);z=Mvp(:z);t=Mvp(:t)
 data[23]=discriminant(crg(23))(x,y,z)(;x=1,z=x)
 data[24]=discriminant(crg(24))(x,y,z)(;x=1,z=x)
 data[27]=discriminant(crg(27))(x,y,z)(;x=1,z=x)
@@ -1674,3 +1671,5 @@ function plotloops(r,v)
  end
  plt
 end
+
+#end
