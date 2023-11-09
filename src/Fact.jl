@@ -264,10 +264,10 @@ function Primes.factor(f0::Pol{T})where T<:Union{Integer,Rational}
       end
     end
   end
-  if d!=1 
-    push!(fact,Pol(1//d)=>1)
+  if !isone(d) || !isone(g)
+    push!(fact,g//d=>1)
   end
-  if prod(fact)!=f0 error() end
+  if prod(fact)!=f0 error(fact) end
   fact
 end
 

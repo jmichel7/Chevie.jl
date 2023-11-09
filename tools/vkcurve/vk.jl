@@ -13,7 +13,7 @@ for  a clear and modernized account of this method). Here is an example for
 curves given by the zeroes of two-variable polynomials in `x` and `y`.
 
 ```julia-repl
-julia> using VKcurve
+julia> using Gapjm, VKcurve
 
 julia> @Mvp x,y
 
@@ -171,6 +171,7 @@ not seen one.
 """
 #module VKcurve
 using Gapjm
+# export VK
 """
 `nearest_pair(v::Vector{<:Complex})`
 
@@ -199,24 +200,21 @@ end
 
 #---------------------- global functions --------------------------
 @GapObj struct VKopt end
-const VK=VKopt(Dict(
-:name=>"vkcurve",
-:version=>"2.0",
-:date=>[2009,3],
-:homepage=>"http://webusers.imj-prg.fr/~jean.michel/vkcurve.html",
-:copyright=>
-"(C) David Bessis, Jean Michel -- compute Pi₁ of hypersurface complements",
-:approx_monodromy=>false,
-:showallnewton=>false,
-:NewtonLim=>800,
-:AdaptivityFactor=>10,
-:shrinkBraid=>false,
-:mvp=>1))
+const VK=VKopt(Dict{Symbol,Any}())
+VK.name="vkcurve"
+VK.version="2.0"
+VK.date=[2009,3]
+VK.homepage="http://webusers.imj-prg.fr/~jean.michel/vkcurve.html"
+VK.copyright=
+"(C) David Bessis, Jean Michel -- compute Π₁ of hypersurface complements"
+VK.approx_monodromy=false
+VK.showallnewton=false
+VK.NewtonLim=800
+VK.AdaptivityFactor=10
+VK.shrinkBraid=false
+VK.mvp=1
 
-@GapObj struct VKrec{T}
-  curve::Mvp{T,Int}
-  ismonic::Bool
-end
+@GapObj struct VKrec end
 
 function Base.show(io::IO,r::VKrec)
   if haskey(r,:presentation) display_balanced(r.presentation)
@@ -260,37 +258,38 @@ function Loops(r)
             length(r.loops)," loops")
   end
   if VK.showWorst
-    l=map(enumerate(r.segments))do (i,s)
-      m,ixm=findmin(dist_seg.(r.roots, r.points[s[1]], r.points[s[2]]))
+    l=sort!(map(enumerate(r.segments))do (i,s)
+      m,ixm=findmin(dist_seg.(r.roots, r.points[s]...))
       (m,i,ixm)
-    end
-    sort!(l)
+    end)
     print("worst segments:\n")
-    for i in 1:min(5,length(l))
-      d,s,s1=l[i]
-      println("segment ",s,"==",r.segments[s]," dist to ",s1,"-th root is ",approx(d))
+    for (d,s,s1) in l[1:min(5,length(l))]
+      println("segment ",s,"==",join(r.segments[s]," -- "),
+              " dist to ",s1,"-th root is ",approx(d))
     end
   end
-  if length(r.roots)>1
-    d,p=nearest_pair(r.roots) # find the minimum distance between two roots
-    if VK.showRoots
-      println("\nMinimum distance==",d," between roots ",join(p," and ")," of discriminant")
-    end
-    r.dispersal=d
+  if length(r.roots)==1 r.dispersal=1/1000
   else
-    r.dispersal=1/1000
+    r.dispersal,p=nearest_pair(r.roots) # find minimum distance between 2 roots
+    if VK.showRoots
+      println("Minimum distance==",approx(r.dispersal)," between roots ",
+              join(p," and ")," of discriminant")
+    end
   end
 # and round points to m/100
 end
+
+#pirating to make gcd of complex work
+Base.gcd(a::Vector{<:Complex{<:Rational{<:Integer}}})=one(a[1])
+Base.gcd(a::Complex{<:Rational{<:Integer}},b::Complex{<:Rational{<:Integer}})=one(a)
 
 """
 `Discy(r)`
 
 `r`  should be a record with field `r.curve`, a quadratfrei `Mvp` in `x,y`.
 The discriminant of this curve with respect to `x` (a polynomial in `y`) is
-computed. First, the curve is split in
-  - `r.curveVerticalPart`: gcd(coefficients(r.curve,:x)) (an Mvp in y).
-  - `r.nonVerticalPart`:   r.curve/r.curveVerticalPart
+computed. `r.curveVerticalPart` is the gcd(coefficients(r.curve),:x)
+`r.nonVerticalPart`=r.curve/r.curveVerticalPart
 Then `r.discy=discriminant(Pol(r.nonVerticalPart,:x))` is computed. 
 Its   quadratfrei  part  is  computed,  stripped  of  factors  common  with
 `r.curveVerticalPart` and then factored (if possible which for now means it
@@ -298,12 +297,7 @@ is  a  polynomial  over  the  rationals),  and  its  factors  are stored in
 `r.discyFactored` as a list of `Mvp` in `x`.
 """
 function Discy(r)
-  r.curveVerticalPart=gcd(Pol.(values(coefficients(r.curve,:x))))
-  if VK.showRoots && degree(r.curveVerticalPart)>0
-    println("Curve has ",degree(r.curveVerticalPart)," linear factors in y")
-  end
   r.nonVerticalPart=exactdiv(r.curve,r.curveVerticalPart(Mvp(:y)))
-  # discriminant wrto x of r.nonVerticalPart
   d=Pol(discriminant(Pol(r.nonVerticalPart,:x)))
   if iszero(d)
     error("Discriminant is 0 but ", r.curve," should be quadratfrei")
@@ -318,38 +312,11 @@ function Discy(r)
   d=exactdiv(d,common)
   d//=d[end]
   r.discy=d
-  if eltype(coefficients(d))<:Union{Complex{<:Rational},Rational}
-    r.discyFactored=factor(r.discy)
-    if r.discyFactored isa Tuple r.discyFactored=r.discyFactored[1] end
-    r.discyFactored=collect(keys(r.discyFactored)) # no multiplicities
+  if eltype(coefficients(d))<:Rational{<:Integer}
+    r.discyFactored=collect(keys(factor(r.discy))) # no multiplicities
   else
     r.discyFactored=[d]
   end
-end
-
-function SearchHorizontal(r) # Searching for a good horizontal
-  height=9
-  while true
-    height+=1
-    section=Pol(r.curve(x=height))
-    section=exactdiv(section,gcd(derivative(section), section))
-    if degree(section)==degree(r.curve,:y) &&
-       degree(gcd(r.discy,section))==0 break end
-  end
-  section=exactdiv(section,gcd(section,r.curveVerticalPart))
-  println("Curve is not monic in x -- Trivializing along horizontal line x == ", height)
-  r1=VKrec(r.curve*(Mvp(:x)-height),false,Dict{Symbol,Any}()) # is it monic?
-  r1.height=height
-  r1.input=r.curve
-  if haskey(r,:name) r1.name=r.name end
-  Discy(r1)
-# set trueroots  to roots  of Discy  which do  not correspond only to
-# intersections of the curve with the chosen horizontal
-  r1.trueroots=r.roots
-  r1.verticallines=r.roots[1:degree(r.curveVerticalPart)]
-  r1.roots=copy(r1.trueroots)
-  append!(r1.roots,separate_roots(section,1000))
-  r1
 end
 
 function TrivialCase(r)
@@ -452,11 +419,15 @@ r.B(1,1,1),
 Presentation: 2 generators, 1 relator, total length 6
 ```
 """
-function fundamental_group(curve::Mvp;printlevel=0,abort=false)
-  VK.showSingularProj=VK.showBraiding=VK.showLoops=
-  VK.showAction=VK.showInsideSegments=VK.showWorst=
-  VK.showZeros=VK.showNewton=VK.showRoots=printlevel>=2
-  VK.showSegments=VK.showgetbraid=printlevel>=1
+function fundamental_group(curve::Mvp;printlevel=0,abort=0)
+  r=VKrec(Dict{Symbol,Any}())
+  if printlevel>=0
+    VK.showSingularProj=VK.showBraiding=VK.showLoops=
+    VK.showAction=VK.showInsideSegments=VK.showWorst=
+    VK.showZeros=VK.showRoots=printlevel>=2
+    VK.showSegments=VK.showgetbraid=printlevel>=1
+    VK.showNewton=printlevel>=3
+  end
   if !issubset(variables(curve),[:x,:y])
     error(curve," should be an Mvp in x,y")
   end
@@ -466,19 +437,50 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=false)
     curve=exactdiv(curve,d)
   end
 #  record with fields .curve and .ismonic if the curve is monic in x
-  r=VKrec(curve,degree(Pol(curve,:x)[end])==0,Dict{Symbol,Any}())
+  r.curve=curve
+  r.ismonic=degree(Pol(curve,:x)[end])==0
 #  we should make coefficients(curve) in  Complex{Rational}
+# r.curveVerticalPart: gcd(coefficients(r.curve,:x)) (an Mvp in y).
+  r.curveVerticalPart=gcd(Pol.(values(coefficients(r.curve,:x))))
+  if VK.showRoots && degree(r.curveVerticalPart)>0
+    println("Curve has ",degree(r.curveVerticalPart)," linear factors in y")
+  end
   Discy(r);
   if VK.showRoots println("Computing roots of discriminant...") end
   r.roots=vcat(map(p->separate_roots(p,1000),r.discyFactored)...)
-  if degree(r.curveVerticalPart)>0
+  r.verticallines=degree(r.curveVerticalPart)
+  if r.verticallines>0
     prepend!(r.roots,separate_roots(r.curveVerticalPart, 1000))
   end
   if isempty(r.roots) return TrivialCase(r) end
-  if !r.ismonic r=SearchHorizontal(r) end
+  if abort==1 return r end
+#---------------- Searching for a good horizontal --------------------------
+  if !r.ismonic 
+    height=9
+    while true
+      height+=1
+      section=Pol(r.curve(x=height))
+      section=exactdiv(section,gcd(derivative(section), section))
+      if degree(section)==degree(r.curve,:y) &&
+         degree(gcd(r.discy,section))==0 break end
+    end
+    section=exactdiv(section,gcd(section,r.curveVerticalPart))
+    print("Curve is not monic in x -- ")
+    println("Trivializing along horizontal line x == ", height)
+    r.curve*=Mvp(:x)-height
+    r.height=height
+    Discy(r)
+# set trueroots to roots of Discy  which are not just
+# intersections of the curve with the chosen horizontal
+    r.trueroots=r.roots
+    r.roots=vcat(r.roots,separate_roots(section,1000))
+  end
+#---------------- good horizontal found ------------------------
+  if abort==2 return r end
   loops=convert_loops(loops_around_punctures(r.roots))
   merge!(r.prop,pairs(loops))
   Loops(r)
+  if abort==3 return r end
   #------------------compute r.zeros[i]=zeros of r.curve(y=r.points[i])
   if VK.showRoots
     println("Computing zeros of curve at the ",length(r.points)," segment extremities...")
@@ -546,13 +548,13 @@ end
 
 #---------------------- simp ----------------------------------
 # simplest fraction approximating t closer than prec
-function simp(t0::Real,prec=10^-15)
+function simp(t0::Real;prec=10^-15,type=BigInt)
   t=t0
-  a=BigInt[]
-  k=BigInt[1,0]
-  h=BigInt[0,1]
+  a=type[]
+  k=type[1,0]
+  h=type[0,1]
   while abs(h[end]//k[end]-t0)>prec
-   n=floor(BigInt,t)
+   n=floor(type,t)
    push!(a,n)
    push!(h,n*h[end]+h[end-1])
    push!(k,n*k[end]+k[end-1])
@@ -561,7 +563,7 @@ function simp(t0::Real,prec=10^-15)
   h[end]//k[end]
 end
 
-simp(t::Complex,prec=10^-15)=simp(real(t),prec)+im*simp(imag(t),prec)
+simp(t::Complex;prec=10^-15)=simp(real(t);prec)+im*simp(imag(t);prec)
 
 #---------------------- root-finding ----------------------------------
 """
@@ -605,7 +607,7 @@ function NewtonRoot(p::Pol,z,precision;showall=VK.showallnewton,
     err=abs(c)
     if iszero(err) err=(precision/100)/(degree(p)+1) end
     if err>precision err=precision end
-    z=simp(z-c,precision/100/(degree(p)+1)/2)
+    z=simp(z-c,prec=precision/100/(degree(p)+1)/2)
     if showall println(cnt,": ",z) end
     if err<=(precision/100)/(degree(p)+1)
       if show print(cnt,":") end
@@ -1222,7 +1224,7 @@ function mynewton(p,z)
   if err==0 prec=1
   else prec=max(0,ceil(Int,-log10(err)))+2
   end
-  simp(z-c,(1//10)^(prec+1))
+  simp(z-c,prec=(1//10)^(prec+1))
 end
 
 # for each point of a find closest point in b
@@ -1595,7 +1597,7 @@ end
 function DBVKquotient(r)
   # get the true monodromy braids and the Hurwitz action basic data
   n=ngens(r.braids[1].M.W)+1
-  F=FpGroup(Symbol.('a'.+(0:n+length(r.verticallines)-1))...)
+  F=FpGroup(Symbol.('a'.+(0:n+r.verticallines-1))...)
 # above the basepoint for the loops, locate the position of the string
 # corresponding to the trivializing horizontal line
   bzero=r.zeros[r.basepoint]
@@ -1615,7 +1617,7 @@ function DBVKquotient(r)
 # Replacing aut by  correctaut:= Conj(conjugator)*aut
     conj=Hom(F, F, gens(F).^Ref(conjugator))
     correctaut=x->conj(aut(x))
-    g=i>length(r.verticallines) ? one(F) : F(i+n)
+    g=i>r.verticallines ? one(F) : F(i+n)
     append!(rels, map(f->correctaut(f)*g*inv(g*f), gens(F)[1:n]))
   end
   push!(rels, fbase)
