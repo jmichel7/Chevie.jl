@@ -222,63 +222,6 @@ function Base.show(io::IO,r::VKrec)
   end
 end
 
-# Loops(r)
-#  r should be a record with the fields
-#    .roots   -- roots of the curve discriminant
-#    .ismonic -- tells if the discriminant is monic in x
-#  the function computes the following fields describing loops around the
-#  .roots around from a basepoint:
-#
-#  .loops --  a list of loops, each described by a list of indices in r.segments
-#             (a negative index tells to follow the reverse segment)
-#  .segments -- oriented segments represented as a pair of indices in r.points.
-#  .points -- a list of points stored a complex decimal numbers.
-#  .basepoint -- holds the chosen basepoint
-#
-function Loops(r)
-# here we  have loops around the  'true' roots and around  the 'extra'
-# roots setdiff(r.roots,r.trueroots). We get rid of the extra loops
-# and the associated segments and points, first saving the basepoint.
-# (its location is known now, and maybe not later? J.M.)
-  p=r.loops[1][1]
-  r.basepoint=p<0 ? last(r.segments[-p]) : first(r.segments[p])
-  if !r.ismonic
-    r.loops=r.loops[sort(indexin(r.trueroots,r.roots))]
-    segmentNumbers=sort(union(map(x->abs.(x),r.loops)...))
-    r.segments=r.segments[segmentNumbers]
-    r.loops=map(x->map(y->y<0 ? -findfirst(==(-y),segmentNumbers) :
-                    findfirst(==(y),segmentNumbers), x),r.loops)
-    uniquePoints=sort(union(r.segments...))
-    r.points=r.points[uniquePoints]
-    r.segments=map(x->indexin(x,uniquePoints), r.segments)
-    r.basepoint=findfirst(==(r.basepoint),uniquePoints)
-  end
-  if VK.showSegments
-    println("# There are ",length(r.segments)," segments in ",
-            length(r.loops)," loops")
-  end
-  if VK.showWorst
-    l=sort!(map(enumerate(r.segments))do (i,s)
-      m,ixm=findmin(dist_seg.(r.roots, r.points[s]...))
-      (m,i,ixm)
-    end)
-    print("worst segments:\n")
-    for (d,s,s1) in l[1:min(5,length(l))]
-      println("segment ",s,"==",join(r.segments[s]," -- "),
-              " dist to ",s1,"-th root is ",approx(d))
-    end
-  end
-  if length(r.roots)==1 r.dispersal=1/1000
-  else
-    r.dispersal,p=nearest_pair(r.roots) # find minimum distance between 2 roots
-    if VK.showRoots
-      println("Minimum distance==",approx(r.dispersal)," between roots ",
-              join(p," and ")," of discriminant")
-    end
-  end
-# and round points to m/100
-end
-
 #pirating to make gcd of complex work
 Base.gcd(a::Vector{<:Complex{<:Rational{<:Integer}}})=one(a[1])
 Base.gcd(a::Complex{<:Rational{<:Integer}},b::Complex{<:Rational{<:Integer}})=one(a)
@@ -431,6 +374,11 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
   if !issubset(variables(curve),[:x,:y])
     error(curve," should be an Mvp in x,y")
   end
+  curve*=big(1)//1 # we need arbitrary-precision rationals
+  if !(eltype(curve)<:Complex{<:Rational{<:Integer}} ||
+       eltype(curve)<:Rational{<:Integer})
+    error("curve coefficients must be complex or real rationals or integers")
+  end
   d=gcd(curve, derivative(curve,:x))
   if degree(d,:x)>0
     xprintln("**** Warning: curve is not quadratfrei: dividing by ", d)
@@ -472,14 +420,43 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
     Discy(r)
 # set trueroots to roots of Discy  which are not just
 # intersections of the curve with the chosen horizontal
-    r.trueroots=r.roots
+    r.trueroots=length(r.roots)
     r.roots=vcat(r.roots,separate_roots(section,1000))
   end
 #---------------- good horizontal found ------------------------
   if abort==2 return r end
-  loops=convert_loops(loops_around_punctures(r.roots))
+  if r.ismonic
+    loops=convert_loops(loops_around_punctures(r.roots))
+  else
+    loops=convert_loops(loops_around_punctures(r.roots)[1:r.trueroots])
+  end
   merge!(r.prop,pairs(loops))
-  Loops(r)
+  p=r.loops[1][1]
+  r.basepoint=p<0 ? last(r.segments[-p]) : first(r.segments[p])
+  if VK.showSegments
+    println("# There are ",length(r.segments)," segments in ",
+            length(r.loops)," loops")
+  end
+  if VK.showWorst
+    l=sort!(map(enumerate(r.segments))do (i,s)
+      m,ixm=findmin(dist_seg.(r.roots, r.points[s]...))
+      (m,i,ixm)
+    end)
+    print("worst segments:\n")
+    for (d,s,s1) in l[1:min(5,length(l))]
+      println("segment ",lpad(s,2),": ",join(lpad.(r.segments[s],2)," to "),
+              " distance to ",ordinal(s1)," root is ",approx(d))
+    end
+  end
+  if length(r.roots)==1 r.dispersal=1/1000
+  else
+    r.dispersal,p=nearest_pair(r.roots) # find minimum distance between 2 roots
+    if VK.showRoots
+      println("Minimum distance==",approx(r.dispersal)," between roots ",
+              join(p," and ")," of discriminant")
+    end
+  end
+# and round points to m/100
   if abort==3 return r end
   #------------------compute r.zeros[i]=zeros of r.curve(y=r.points[i])
   if VK.showRoots
@@ -487,11 +464,12 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
   end
   mins=Tuple{Float64,Int}[]
   r.zeros=map(1:length(r.points))do i
-    if VK.showZeros print("<",i,"/",length(r.points),">") end
+    if VK.showZeros print("point ",i,"/",length(r.points)," ") end
     zz=separate_roots(Pol(r.curve(y=r.points[i])), 10^4)
     if length(zz)>1
       m=nearest_pair(zz); push!(mins,(m[1],i))
-      if VK.showZeros println(" d==",approx(m[1])," for ",m[2]) end
+      if VK.showZeros println(" minimal distance ",approx(m[1]),
+                              " between roots ",join(m[2]," and ")) end
     end
     zz
   end
@@ -503,17 +481,20 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
     end
   end
   if isempty(r.zeros[1]) return TrivialCase(r) end
+  if abort==4 return r end
 #---------------------- zeros computed -------------------------------
   r.B=BraidMonoid(coxsym(length(r.zeros[1])))
   r.monodromy=fill(r.B(),length(r.segments))
   for segno in eachindex(r.segments)
-    tm=time()
+    if VK.showSegments
+      r.tm=time()
+      if VK.approx_monodromy print("# approx_") else print("# ") end
+      print("follow_monodromy(segment $segno/",length(r.segments),") ")
+    end
     r.monodromy[segno]=(VK.approx_monodromy ?
                     approx_follow_monodromy : follow_monodromy)(r, segno)
-    tm=time()-tm
     if VK.showSegments
-      println("monodromy[$segno]=",r.monodromy[segno])
-      println("#segment $segno/",length(r.segments)," Time==",approx(tm),"sec")
+      println(r.monodromy[segno])
     end
   end
 #---------------------- braids --------------------------
@@ -660,7 +641,7 @@ function separate_roots_initial_guess(p, v, safety)
 end
 
 """
-'separate_roots(<p>, <safety>)'
+`separate_roots(p::Pol, safety)`
 
 Here  `p` is  a complex  polynomial. The  result is  a list  `l` of complex
 numbers  representing approximations to the roots  of `p`, such that if `d`
@@ -881,9 +862,7 @@ The output is a named tuple with fields
     opposed orientation of the segment is taken.
 """
 function convert_loops(ll)
-  points=unique(vcat(ll...))
-  points=points[filter(i->!any(==(points[i]),points[1:i-1]),eachindex(points))]
-  points=sort(points,by=x->(imag(x),real(x)))
+  points=sort(unique(vcat(ll...)),by=x->(imag(x),real(x)))
   np(p)=findfirst(==(p),points)
   loops=map(l->np.(l),ll)
   loops=shrink.(loops)
@@ -1053,7 +1032,7 @@ function normdisc(d, p)
 end
 
 # keep only 3 significant digits of x
-approx(x::Real)=round(Float64(x);sigdigits=3)
+approx(x::Real)=lpad(round(Float64(x);sigdigits=3),4)
 approx(x::Complex)=round(Complex{Float64}(x);sigdigits=3)
 
 """
@@ -1253,7 +1232,7 @@ function Sturm(pp::Pol, tm, adapt::Integer)
   q=Pol()
   pol=pp((1-q)*tm+q)
   if pol[0]<=0
-    print("*****",Float32(pol[0]))
+    println("\n!!!Sturm Pol(p)=",Float32(pol[0]),"<0")
     return [0, 0]
   end
   k=1
@@ -1391,7 +1370,7 @@ function follow_monodromy(r,seg)
   while true
     steps+=1
 #   if steps>540 error() end
-    iPrint("<$seg/",length(r.segments),">",lpad(steps,5))
+    iPrint("segment $seg/",length(r.segments)," step ",lpad(steps,3))
     iPrint(" time=",formattm(tm,9),"   ")
     for k in 1:d, l in k+1:d
       dist[k,k]=dist[l,k]=dist[k,l]=abs2((v[k]-v[l])*big(1))
@@ -1442,7 +1421,7 @@ function follow_monodromy(r,seg)
     if tm==1 break end
   end
   if VK.showSegments
-    println("# The following braid was computed by follow_monodromy in $steps steps.")
+    print("in ",lpad(steps,3)," steps/ ",lpad(approx(time()-r.tm),6),"sec got ")
   end
   res*LBraidToWord(v, myfit(v, r.zeros[b]), B)
 end
