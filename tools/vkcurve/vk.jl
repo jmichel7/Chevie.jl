@@ -201,18 +201,11 @@ end
 #---------------------- global functions --------------------------
 @GapObj struct VKopt end
 const VK=VKopt(Dict{Symbol,Any}())
-VK.name="vkcurve"
-VK.version="2.0"
-VK.date=[2009,3]
-VK.homepage="http://webusers.imj-prg.fr/~jean.michel/vkcurve.html"
-VK.copyright=
-"(C) David Bessis, Jean Michel -- compute Π₁ of hypersurface complements"
 VK.approx_monodromy=false
 VK.showallnewton=false
 VK.NewtonLim=800
 VK.AdaptivityFactor=10
-VK.shrinkBraid=false
-VK.mvp=1
+VK.shrinkBraid=true
 
 @GapObj struct VKrec end
 
@@ -226,21 +219,9 @@ end
 Base.gcd(a::Vector{<:Complex{<:Rational{<:Integer}}})=one(a[1])
 Base.gcd(a::Complex{<:Rational{<:Integer}},b::Complex{<:Rational{<:Integer}})=one(a)
 
-"""
-`Discy(r)`
-
-`r`  should be a record with field `r.curve`, a quadratfrei `Mvp` in `x,y`.
-The discriminant of this curve with respect to `x` (a polynomial in `y`) is
-computed. `r.curveVerticalPart` is the gcd(coefficients(r.curve),:x)
-`r.nonVerticalPart`=r.curve/r.curveVerticalPart
-Then `r.discy=discriminant(Pol(r.nonVerticalPart,:x))` is computed. 
-Its   quadratfrei  part  is  computed,  stripped  of  factors  common  with
-`r.curveVerticalPart` and then factored (if possible which for now means it
-is  a  polynomial  over  the  rationals),  and  its  factors  are stored in
-`r.discyFactored` as a list of `Mvp` in `x`.
-"""
+# Here `r.curve` us assumed a quadratfrei `Mvp` in `x,y` with coefficients
+# in `x` of gcd .verticalPart, quotient nonVerticalPart
 function Discy(r)
-  r.nonVerticalPart=exactdiv(r.curve,r.curveVerticalPart(Mvp(:y)))
   d=Pol(discriminant(Pol(r.nonVerticalPart,:x)))
   if iszero(d)
     error("Discriminant is 0 but ", r.curve," should be quadratfrei")
@@ -257,7 +238,7 @@ function Discy(r)
   r.discy=d
   if eltype(coefficients(d))<:Rational{<:Integer}
     r.discyFactored=collect(keys(factor(r.discy))) # no multiplicities
-  else
+  else # presumably complex coefficients
     r.discyFactored=[d]
   end
 end
@@ -343,22 +324,14 @@ the computation inside each segment.
 ```julia-repl
 julia> fundamental_group(x^2-y^3,printlevel=1);
 # There are 4 segments in 1 loops
-# The following braid was computed by follow_monodromy in 8 steps.
-monodromy[1]=B(-1)
-#segment 1/4 Time==0.00495sec
-# The following braid was computed by follow_monodromy in 8 steps.
-monodromy[2]=B(1)
-#segment 2/4 Time==0.00481sec
-# The following braid was computed by follow_monodromy in 8 steps.
-monodromy[3]=B()
-#segment 3/4 Time==0.00403sec
-# The following braid was computed by follow_monodromy in 8 steps.
-monodromy[4]=B(1)
-#segment 4/4 Time==0.00392sec
-# Computing monodromy braids
-loops=[
-r.B(1,1,1),
-]
+# follow_monodromy along segment 1/4  in   8 steps/  0.012sec got B(-1)
+# follow_monodromy along segment 2/4  in   8 steps/ 0.00752sec got B(1)
+# follow_monodromy along segment 3/4  in   8 steps/ 0.00557sec got B()
+# follow_monodromy along segment 4/4  in   8 steps/ 0.00457sec got B(1)
+# Computing monodromy braids along loops
+[r.B(1,1,1),]
+#I total length 3 maximal length 3
+
 Presentation: 2 generators, 1 relator, total length 6
 ```
 """
@@ -393,6 +366,7 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
   if VK.showRoots && degree(r.curveVerticalPart)>0
     println("Curve has ",degree(r.curveVerticalPart)," linear factors in y")
   end
+  r.nonVerticalPart=exactdiv(r.curve,r.curveVerticalPart(Mvp(:y)))
   Discy(r);
   if VK.showRoots println("Computing roots of discriminant...") end
   r.roots=vcat(map(p->separate_roots(p,1000),r.discyFactored)...)
@@ -415,6 +389,7 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
     section=exactdiv(section,gcd(section,r.curveVerticalPart))
     print("Curve is not monic in x -- ")
     println("Trivializing along horizontal line x == ", height)
+    r.nonVerticalPart*=Mvp(:x)-height
     r.curve*=Mvp(:x)-height
     r.height=height
     Discy(r)
@@ -484,30 +459,29 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
   if abort==4 return r end
 #---------------------- zeros computed -------------------------------
   r.B=BraidMonoid(coxsym(length(r.zeros[1])))
-  r.monodromy=fill(r.B(),length(r.segments))
-  for segno in eachindex(r.segments)
-    if VK.showSegments
-      r.tm=time()
-      if VK.approx_monodromy print("# approx_") else print("# ") end
-      print("follow_monodromy(segment $segno/",length(r.segments),") ")
-    end
-    r.monodromy[segno]=(VK.approx_monodromy ?
+  r.monodromy=map(eachindex(r.segments))do segno
+    tm=time()
+    b,steps=(VK.approx_monodromy ?
                     approx_follow_monodromy : follow_monodromy)(r, segno)
     if VK.showSegments
-      println(r.monodromy[segno])
+      if VK.approx_monodromy print("# approx_") else print("# ") end
+      print("follow_monodromy along segment $segno/",length(r.segments)," ")
+      println(" in ",lpad(steps,3)," steps/ ",
+              lpad(approx(time()-tm),6),"sec got ",b,)
     end
+    b
   end
 #---------------------- braids --------------------------
-  if VK.showgetbraid println("# Computing monodromy braids") end
+  if VK.showgetbraid println("# Computing monodromy braids along loops") end
   r.braids=empty([r.B()])
-  if VK.showgetbraid println("loops=[") end
+  if VK.showgetbraid print("[") end
   for i in eachindex(r.loops)
     l=filter(s->!(r.monodromy[s]!==nothing),abs.(r.loops[i]))
     if length(l)>0 
       if VK.showgetbraid println("# loop[$i] missing segments ",l) end
     else
       bb=prod(s->s<0 ? r.monodromy[-s]^-1 : r.monodromy[s],r.loops[i])
-      if VK.showgetbraid println("r.",bb,",") end
+      if VK.showgetbraid print("r.",bb,",") end
       push!(r.braids, bb)
     end
   end
@@ -519,7 +493,12 @@ function fundamental_group(curve::Mvp;printlevel=0,abort=0)
       r.braids=shrink(r.braids)
     end
     F=VKquotient(r.braids)
-  else F=DBVKquotient(r)
+  else 
+    if VK.shrinkBraid
+      r.rawBraids=r.braids
+      r.braids=vcat(r.braids[1:r.verticallines],shrink(r.braids[r.verticallines+1:end]))
+    end
+    F=DBVKquotient(r)
   end
   r.presentation=Presentation(F)
   r.rawPresentation=Presentation(F)
@@ -569,9 +548,7 @@ julia> p=Pol([1,0,1])
 Pol{Int64}: x²+1
 
 julia> NewtonRoot(p,1+im,10^-7)
-2-element Vector{ComplexF64}:
-  8.463737877036721e-23 + 1.0im
- 1.8468154345305913e-11 + 0.0im
+(0//1 + 1//1*im, 3.3333333333333337e-10)
 
 julia> NewtonRoot(p,1,10^-7;show=true)
 ****** Non-Convergent Newton after 800 iterations ******
@@ -620,12 +597,12 @@ julia> p=Pol([1,0,1])
 Pol{Int64}: x²+1
 
 julia> separate_roots_initial_guess(p,[1+im,1-im],10^5)
-2-element Vector{ComplexF64}:
- 8.463737877036721e-23 + 1.0im
- 8.463737877036721e-23 - 1.0im
+2-element Vector{Complex{Rational{BigInt}}}:
+ 0//1 + 1//1*im
+ 0//1 - 1//1*im
 
 julia> separate_roots_initial_guess(p,[1+im,2+im],1000)
-    # 1+im and 2+im in same attraction basins
+1 + 1im and 2 + 1im lie in the same attraction basin
 ```
 """
 function separate_roots_initial_guess(p, v, safety)
@@ -654,17 +631,17 @@ julia> @Pol q
 Pol{Int64}: q
 
 julia> separate_roots(q^2+1,100)
-2-element Vector{ComplexF64}:
-  2.3541814200656927e-43 + 1.0im
- -2.3541814200656927e-43 - 1.0im
+2-element Vector{Complex{Rational{BigInt}}}:
+ 0//1 + 1//1*im
+ 0//1 - 1//1*im
 
 julia> separate_roots((q-1)^2,100)
 
 julia> separate_roots(q^3-1,100)
-3-element Vector{ComplexF64}:
- -0.5 - 0.8660254037844386im
-  1.0 - 1.232595164407831e-32im
- -0.5 + 0.8660254037844387im
+3-element Vector{Complex{Rational{BigInt}}}:
+ -1//2 - 181//209*im
+  1//1 + 0//1*im
+ -1//2 + 181//209*im
 ```
 """
 function separate_roots(p,safety)
@@ -694,7 +671,7 @@ function separate_roots(p,safety)
 end
 
 """
-`FindRoots(p::Pol, <approx>)`
+`FindRoots(p::Pol, approx)`
 
 `p`  should have rational or  `Complex{Rational} coefficients. The function
 returns  'Complex' rational  approximations to  the roots  of `p` which are
@@ -710,7 +687,7 @@ julia> FindRoots((Pol()-1)^5,1/5000)
  1//1 + 0//1*im
  1//1 + 0//1*im
  1//1 + 0//1*im
- 1//1 - 1//4837347*im
+ 1//1 + 0//1*im
 
 julia> FindRoots(Pol()^3-1,10^-5)
 3-element Vector{Complex{Rational{BigInt}}}:
@@ -1057,8 +1034,9 @@ fact that  for some difficult  computations, it is sometimes  many times
 faster  than 'follow_monodromy'.  We illustrate  its typical  output when
 <printlevel> is 2.
 
-|   VK.approx_monodromy=true
 julia-rep1```
+julia> VK.approx_monodromy=true
+
 julia> fundamental_group((x+3*y)*(x+y-1)*(x-y);printlevel=2)
 
   ....
@@ -1156,7 +1134,7 @@ function approx_follow_monodromy(r,segno)
       end
       ipr("\n")
       if total != 1
-        res*=LBraidToWord(prevzeros, nextzeros, r.B)
+        res*=PLbraid2braid(prevzeros, nextzeros, r.B)
         prevzeros=nextzeros
       end
       prev=next
@@ -1169,10 +1147,10 @@ function approx_follow_monodromy(r,segno)
     println("# Minimal step=", minstep, "=", approx(v*minstep))
     println("# Adaptivity=", VK.AdaptivityFactor)
   end
-  res*LBraidToWord(prevzeros,fit(nextzeros,r.zeros[q]),r.B)
+  res*PLbraid2braid(prevzeros,fit(nextzeros,r.zeros[q]),r.B),step
 end
 #-------------------- Monodromy ----------------------------
-# ceil(-log2(p)) ifor 0<p<1
+# ceil(-log2(p)) for 0<p<1
 function Intlog2(p)
   k=0
   q=p
@@ -1188,7 +1166,7 @@ end
 function binlowevalf(a, time)
   k=Intlog2(a-time)+3
   b=floor(Int,a*2^k)
-  a>=0 ? b//2^k : (b-1)//2^k
+  (a>=0 ? b : b-1)//2^k
 end
 
 # one step of the Newton method
@@ -1232,8 +1210,9 @@ function Sturm(pp::Pol, tm, adapt::Integer)
   q=Pol()
   pol=pp((1-q)*tm+q)
   if pol[0]<=0
-    println("\n!!!Sturm Pol(p)=",Float32(pol[0]),"<0")
-    return [0, 0]
+   println("\n!!!Sturm tm=$tm pp(tm)=",Float32(pp(tm)),"<0")
+    @show typeof(pp),typeof(tm)
+    return 0, 0
   end
   k=1
   while k<degree(pol) && pol[k]>=0 k+=1 end
@@ -1248,14 +1227,13 @@ function Sturm(pp::Pol, tm, adapt::Integer)
   if VK.showInsideSegments print(m) end
   if m==adapt && adapt>0
     if pol(3t//2)>0
-      if pol(2t)>0 res=[(1-2t)*tm+2t, adapt-1]
-      else res=[(1-3t//2)*tm+3t//2, adapt-1]
+      if pol(2t)>0 (1-2t)*tm+2t, adapt-1
+      else (1-3t//2)*tm+3t//2, adapt-1
       end
-    else res=[(1-t)*tm+t, adapt]
+    else (1-t)*tm+t, adapt
     end
-  else res=[(1-t)*tm+t, m]
+  else (1-t)*tm+t, m
   end
-  res
 end
 
 Base.real(p::Pol)=Pol(real.(p.c),p.v)
@@ -1278,10 +1256,9 @@ end
 `follow_monodromy(r,segno)`
 This  function computes the  monodromy braid of  the solution in  `x` of an
 equation   `P(x,y)=0`  along   a  segment   `[y₀,y₁]`.  It   is  called  by
-`fundamental_group`, once for each of the segments. The first argument is a
-global  record, similar to the one produced by `fundamental_group` (see the
-documentation   of   this   function)   but  only  containing  intermediate
-information.  The  second  argument  is  the  position  of  the  segment in
+`fundamental_group`  for  each  segment  in  turn.  The first argument is a
+global    record   containing   intermediate   information   copmputed   by
+`fundamental_group`.  The second  argument is  the index  of the segment in
 `r.segments`.
 
 The function returns an element of the ambient braid group `r.B`.
@@ -1294,58 +1271,48 @@ What is quoted below is an excerpt of what is printed during the execution of
 ```julia_repl
 julia> fundamental_group((x+3*y)*(x+y-1)*(x-y),printlevel=2)
 ......
-<1/16>    1 time=0           ?2?1?3
-<1/16>    2 time=0.2         R2. ?3
-<1/16>    3 time=0.48        R2. ?2
-<1/16>    4 time=0.74        ?2R1?2
-<1/16>    5 time=0.94        R1. ?2
+segment 1/16 step   1 time=0           ?2?1?3
+segment 1/16 step   2 time=0.2         R2. ?3
+segment 1/16 step   3 time=0.48        R2. ?2
+segment 1/16 step   4 time=0.74        ?2R1?2
+segment 1/16 step   5 time=0.94        R1. ?2
 ======================================
 ==    Nontrivial braiding B(2)      ==
 ======================================
-<1/16>    6 time=0.bc        R1. ?1
-<1/16>    7 time=0.d8        . ?0. 
-<1/16>    8 time=0.dc        ?1R0?1
-# The following braid was computed by follow_monodromy in 8 steps.
-monodromy[1]=B(2)
-#segment 1/16 Time==0.0536sec
+segment 1/16 step   6 time=0.bc        R1. ?1
+segment 1/16 step   7 time=0.d8        . ?0. 
+segment 1/16 step   8 time=0.dc        ?1R0?1
+# follow_monodromy(segment 1/16) in   8 steps/ 0.0209sec got B(2)
 ```
+`follow_monodromy`  computes its  results by  subdividing the  segment into
+smaller  subsegments on which the  approximations are controlled. It starts
+at  one end and moves subsegment after  subsegment. A new line is displayed
+at each step.
 
-`follow_monodromy` computes  its results by subdividing  the segment into
-smaller  subsegments  on which  the  approximations  are controlled.  It
-starts at one  end and moves subsegment after subsegment.  A new line is
-displayed at each step.
+The  first column indicates which segment  is studied. The second column is
+the  number of iterations  so far (number  of subsegments). In our example,
+`follow_monodromy`  had  to  cut  the  segment  into  `8` subsegments. Each
+subsegment  has its own length. The cumulative length at a given step, as a
+fraction  of the total  length of the  segment, is displayed after `time=`.
+This  gives a rough  indication of the  time left before  completion of the
+computation of the monodromy of this segment. The segment is completed when
+this fraction reaches `1`.
 
-The  first column  indicates which  segment is  studied. In  the example
-above, the function  is computing the monodromy along  the first segment
-(out  of  `16`).  This  gives  a  rough  indication  of  the  time  left
-before  completion of  the total  procedure.  The second  column is  the
-number of  iterations so  far (number of  subsegments). In  our example,
-`follow_monodromy`  had to  cut the  segment into  `8` subsegments.  Each
-subsegment has its own length. The cumulative length at a given step, as
-a  fraction of  the  total length  of the  segment,  is displayed  after
-`time=`.  This  gives  a  rough  indication  of  the  time  left  before
-completion  of the  computation of  the monodromy  of this  segment. The
-segment is completed when this fraction reaches `1`.
-
-The last column has to do with the piecewise-linear approximation of the
-geometric monodromy  braid. It is  subdivided into sub-columns  for each
-string. In  the example above,  there are  three strings. At  each step,
-some strings are fixed (they are  indicated by `. ` in the corresponding
-column). A symbol like `R5` or `?3` indicates that the string is moving.
-The exact meaning of the symbol has to do with the complexity of certain
+The  last column has  to do with  the piecewise-linear approximation of the
+geometric  monodromy  braid.  It  is  subdivided  into sub-columns for each
+string.  In the example above, there are  three strings. At each step, some
+strings are fixed (they are indicated by `. ` in the corresponding column).
+A  symbol like `R5` or `?3` indicates  that the string is moving. The exact
+meaning   of  the  symbol  has  to   do  with  the  complexity  of  certain
 sub-computations.
 
-As  some strings  are moving,  it  happens that  their real  projections
-cross. When such a crossing occurs, it is detected and the corresponding
-element of `Bₙ` is displayed on screen (`Nontrivial braiding =`...) The
-monodromy braid is the product of these elements of `Bₙ`, multiplied in
-the order in which they occur.
+As  some strings are moving, it  happens that their real projections cross.
+When  such a crossing occurs, it  is detected and the corresponding element
+of  `Bₙ` is displayed on screen  (`Nontrivial braiding =`...) The monodromy
+braid  is the product of these elements of `Bₙ`, multiplied in the order in
+which they occur.
 """
 function follow_monodromy(r,seg)
-# Exact computation of the monodromy braid along a segment
-# r: global VK record
-# seg: segment number
-# sprint: Print function (to screen, to file, or none)
   iPrint=VK.showInsideSegments ? print : function(arg...) end
   p=r.curve
   dpdx=derivative(r.curve,:x)
@@ -1360,13 +1327,13 @@ function follow_monodromy(r,seg)
   tm=big(0)
   pt=p(;y=r.points[b]*t+r.points[a]*(1-t))
   dpdxt=dpdx(;y=r.points[b]*t+r.points[a]*(1-t))
-  RR=fill(big(0.0),d)
+  RR=fill(big(0//1),d)
   adapt=fill(0,d)
   protected=fill(0//1,d)
   protp=map(i->zero(Pol(real(v[1]))),1:d)
   protdpdx=map(i->zero(Pol(real(v[1]))),1:d)
   steps=0
-  dist=fill(big(0.0),d,d)
+  dist=fill(big(0//1),d,d)
   while true
     steps+=1
 #   if steps>540 error() end
@@ -1386,7 +1353,7 @@ function follow_monodromy(r,seg)
         iPrint("R")
         s,adapt[k]=Sturm(Rk*protdpdx[k]-protp[k], tm, adapt[k])
         if s>tm protected[k]=binlowevalf(s,tm)
-        else iPrint("How bizarre...")
+        else println("How bizarre...")
 #         @show Rk,protdpdx[k],protp[k]
 #         @show Rk*protdpdx[k]-protp[k], tm, adapt[k]
         end
@@ -1416,14 +1383,11 @@ function follow_monodromy(r,seg)
       else mynewton(py,v[k])
       end
     end
-    res*=LBraidToWord(v, newv, B)
+    res*=PLbraid2braid(v, newv, B)
     v=newv
     if tm==1 break end
   end
-  if VK.showSegments
-    print("in ",lpad(steps,3)," steps/ ",lpad(approx(time()-r.tm),6),"sec got ")
-  end
-  res*LBraidToWord(v, myfit(v, r.zeros[b]), B)
+  res*PLbraid2braid(v, myfit(v, r.zeros[b]), B),steps
 end
 
 #------------------- Compute PLBraid ----------------------------------
@@ -1451,7 +1415,7 @@ function desingularized(v1, v2)
 end
 
 """
-`LBraidToWord(v1,v2,B)`
+`PLbraid2braid(v1,v2,B)`
 
 This function converts  the linear braid joining the points in `v1` to the
 corresponding ones in `v2` into an element of the braid group.
@@ -1460,10 +1424,9 @@ corresponding ones in `v2` into an element of the braid group.
 julia> B=BraidMonoid(coxsym(3))
 BraidMonoid(𝔖 ₃)
 
-julia> LBraidToWord([1+im,2+im,3+im],[2+im,1+2im,4-6im],B)
+julia> PLbraid2braid([1+im,2+im,3+im],[2+im,1+2im,4-6im],B)
 1
 ```
-
 The lists `v1` and `v2` must have the same length, say `n`. Then `B` should
 be  `BraidMonoid(coxsym(n))`, the braid group  on `n` strings. The elements
 of  `v1` (resp. `v2`)  should be `n`  distinct complex rational numbers. We
@@ -1475,7 +1438,7 @@ defines a unique element of `B`. When some real parts are equal, we apply a
 lexicographical  desingularization, corresponding to a rotation of `v1` and
 `v2` by an arbitrary small positive angle.
 """
-function LBraidToWord(v1, v2, B)
+function PLbraid2braid(v1, v2, B)
 # two printlevel control fields: VK.showSingularProj
 #				 VK.showBraiding
 # Deals with linear braids
@@ -1488,7 +1451,7 @@ function LBraidToWord(v1, v2, B)
     if VK.showSingularProj
       println("WARNING: singular projection(resolved)")
     end
-    return LBraidToWord(desingularized(v1, v2)..., B)
+    return PLbraid2braid(desingularized(v1, v2)..., B)
   end
   q=sortPerm(x1)
   crit=empty(x1)
@@ -1535,8 +1498,8 @@ end
 """
 `VKquotient(braids)`
 
-The  input `braids` is a list `b₁,…,bᵣ`, living in the braid group
-on `n` strings. Each `bᵢ` defines by Hurwitz action an automorphism `φᵢ` of
+The  input `braids` is a list `b₁,…,bn`, living in the braid group
+on `m` strings. Each `bᵢ` defines by Hurwitz action an automorphism `φᵢ` of
 the free group `Fₙ`. The function returns the group defined by the abstract
 presentation: ``< f₁,…,fₙ ∣ ∀ i,j φᵢ(fⱼ)=fⱼ >``
 
