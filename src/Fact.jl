@@ -631,8 +631,8 @@ function OneFactorBound(f)
   n=degree(f)
   if n>=3
     # Single factor bound of Beauzamy, Trevisan and Wang (1993)
-      return numerator(floor(10912//10000*(ApproximateRoot(2^n,2)//
-             ApproximateRoot(n^3,8)*ApproximateRoot(BombieriNorm(f),2))))+1
+    return numerator(floor(10912//10000*(ApproximateRoot(big(2)^n,2)//
+        ApproximateRoot(n^3,8)*ApproximateRoot(BombieriNorm(f),2))))+1
   else
     # Mignotte's single factor bound
     d=div(n,2)
