@@ -205,7 +205,7 @@ VK.approx_monodromy=false
 VK.showallnewton=false
 VK.NewtonLim=800
 VK.AdaptivityFactor=10
-VK.shrinkBraid=true
+VK.shrinkBraid=false
 
 @GapObj struct VKrec end
 

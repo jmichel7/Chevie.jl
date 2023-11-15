@@ -1317,8 +1317,7 @@ the parameter P.lengthLimit.
 """
 function EliminateGen(P::Presentation, num::Int)
   T=P.tietze
-# spacelimit=P.lengthLimit
-  spacelimit=T.total+P.factor
+  spacelimit=T.total+P.lengthLimit
   T.modified=false
   if !(num in 1:T.numgens)
     error("EliminateGen: second argument is not a valid generator number")
@@ -1383,8 +1382,7 @@ P.lengthLimit.
 """
 function EliminateGen1(P::Presentation)
   T=P.tietze
-# spacelimit=P.lengthLimit
-  spacelimit=T.total+P.factor
+  spacelimit=T.total+P.lengthLimit
   occTotals,occRelNums,occMultiplicities=Occurrences(T)
   modified=false
   num=0
@@ -3340,37 +3338,32 @@ julia> display_balanced(p)
 function Shrink(g::Presentation,lim=1000)
   T=g.tietze
   if isempty(T.relators) return end
-  rot(tt,i)=tt[i]=circshift(tt[i],-1)
+  rot(i)=g.tietze.relators[i]=circshift(g.tietze.relators[i],-1)
   function test()
     if prod(filter(!iszero,big.(T.lengths)))<lim
-      v=fill(0,T.numrels)
+      tt=g.tietze.relators
+      v=fill(0,length(tt))
       if length(v)==0 return false end
       while true
-        before=[T.numrels,T.total]
+        before=[length(tt),sum(length,tt)]
         j=length(v)
-        while v[j]==T.lengths[j]-1
-          rot(T.relators,j)
+        while v[j]==length(tt[j])-1
+          rot(tt,j)
           v[j]=0
           j-=1
           if j==0 return false end
         end
-        rot(T.relators,j)
+        rot(tt,j)
         v[j]+=1
         GoGo(g)
-        if [T.numrels,T.total]<before return true end
+        tt=g.tietze.relators
+        if [length(tt),sum(length,tt)]<before return true end
       end
     else
       for k in 1:lim
         tt=g.tietze.relators
-    #   i=rand(1:sum(length,tt))
-    #   j=1
-    #   while i>length(tt[j])
-    #     i-=length(tt[j])
-    #     j+=1
-    #   end
         before=[length(tt),sum(length,tt)]
-     #  rot(j)
-        rot(tt,rand(1:length(tt)))
+        rot(rand(eachindex(tt)))
         GoGo(g)
         tt=g.tietze.relators
         if [length(tt),sum(length,tt)]<before return true end
@@ -3590,4 +3583,17 @@ function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
   p
 end
 
+using ..Gapjm:gap, Gapjm
+
+function Gapjm.gap(p::Presentation)
+  t=p.tietze
+  s="F:=FreeGroup($(t.numgens));\n"
+  s*="F.relators:=["
+  s*=join(map(t.relators)do r
+      join(map(r)do i
+        i>0 ? string("F.",i) : string("F.",-i,"^-1")
+      end,"*")
+          end,",")*"];\n"
+  s*"PresentationFpGroup(F);\n"
+end
 end
