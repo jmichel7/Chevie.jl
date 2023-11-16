@@ -2358,6 +2358,7 @@ function doreplace(w1,w2,pos1,pos2,l)
   l1=length(w1)
   compl=subword(w1,pos1>0 ? mod(1-pos1,l1)-l1 : mod1(-pos1+1,l1),l1-l)
   vcat(compl,subword(w2,pos2+l,length(w2)-l))
+  circshift(vcat(compl,subword(w2,pos2+l,length(w2)-l)),pos2-1)
 end
 
 alphab(rel)=String(map(i->i>0 ? Char(i+96) : uppercase(Char(-i+96)),rel))
@@ -2368,9 +2369,9 @@ end
 
 # search from i-th relator, hashing subwords until j-th
 function SearchC(T::TietzeStruct,i,j,equal=false)
-  #@show i,j,equal
+  @show i,j,equal
   rels=T.relators
-# println("SearchC(",join(pr.(rels[i:j]),","),",",equal,")")
+  println("SearchC(",join(alphab.(rels[i:j],Ref(T.generators)),","),",",equal,")")
   len=length(rels[i])
   if !equal l=div(len,2)+1;lmin=len-len&1;lmax=lmin+1
   elseif isodd(len) error("searchequal and odd length")
@@ -2393,14 +2394,14 @@ function SearchC(T::TietzeStruct,i,j,equal=false)
         (pos1,pos2,w)=(hh[p1][2],hk[p2][2],hh[p1][3])
         (maxmatch(rels[w],pos1,rel,pos2,T),w,k)
       end
-#     @show hk
-      (pos1,pos2,l1),w,k=hk[argmax(map(x->x[1][3],hk))]
-#     if l1<l println("!!!!hash",hk)
+      @show hk
+      (pos1,pos2,l1),w,k=hk[argmax(map(x->(x[1][3],-x[1][2]),hk))]
+#     if l1<l println("!!!!hash",hk) end
       if l1<l error("!")
       else
-#       print("$k:",alphab(rel),"+(",alphab(rels[w]),")$pos1:$pos2($l1)")
+        print("$k:",alphab(rel),"+$w:(",alphab(rels[w]),")$pos1:$pos2($l1)")
         rel=doreplace(rels[w],rel,pos1,pos2,l1)
-#       print("=>",alphab(rel))
+        println("=>",alphab(rel))
       end
       rel=reduceword(rel,T)
 #     println("=>",alphab(rel))
@@ -2592,9 +2593,10 @@ function SearchEqual(P::Presentation)
       while k<=T.numrels && length(rels[k])<leng k+=1 end
       if k>T.numrels j=lastj end
       if i<=j
+        display_balanced(P,true)
         altered=SearchC(T, i, j, true)
         if !isempty(altered)
-          debug(P,3,"SearchCeq($i,$j) altered=",length(altered))
+          debug(P,3,"SearchCeq($i,$j) altered=",altered)
           T.flags[altered].=1
           modified=true
         end
