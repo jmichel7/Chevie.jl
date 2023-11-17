@@ -314,7 +314,7 @@ function TietzeWord(w::AbsWord,gens::Vector{AbsWord})
   res
 end
 
-mutable struct Tietze
+@GapObj mutable struct Presentation
   generators::Vector{AbsWord} # copy of initial gens
   inverses::Vector{Int}
   relators::Vector{Vector{Int}}
@@ -322,303 +322,12 @@ mutable struct Tietze
   modified::Bool
   numredunds::Int
 end
+# possible fields: tietze, nextFree, eliminationsLimit,
+# expandLimit, generatorsLimit, lengthLimit, loopLimit, debug,
+# saveLimit, searchSimultaneous, protected, status
 
-Base.getindex(T::Tietze,i)=T.inverses[length(T.generators)+1-i]
-Base.setindex!(T::Tietze,j,i)=T.inverses[length(T.generators)+1-i]=j
-using ..Gapjm: toM, showtable
-function showinverses(T::Tietze)
- m=toM([map(i->T[i],eachindex(T.generators)),map(i->T[-i],eachindex(T.generators))])
-  showtable(rio(),m;row_labels=["i","-i"],col_labels=string.(T.generators))
-end
-
-# reduce cyclically a Tietze word
-function reduceword(w::Vector{Int};cyclically=false)
-  i=1;
-  res=Int[]
-  for j in eachindex(w)
-    if isempty(res) || res[end]!=-w[j] if w[j]!=0 push!(res,w[j]) end
-    else pop!(res)
-    end
-  end
-  b=1;e=length(res)
-  if cyclically while b<e && res[b]==-res[e] b+=1;e-=1 end end
-  res[b:e]
-end
-   
-# reduce cyclically a Tietze word using the table of inverses
-function reduceword(w::Vector{Int},T::Tietze)
-  i=1;
-  res=Int[]
-  for j in eachindex(w)
-    if T[w[j]]==0 continue end
-    if isempty(res) || T[res[end]]!=T[-w[j]] push!(res,T[w[j]])
-    else pop!(res)
-    end
-  end
-  b=1;e=length(res)
-  while b<e && T[res[b]]==T[-res[e]] b+=1;e-=1 end
-  res[b:e]
-end
-
-# sorts by length relators and remove duplicates and empty ones
-function Base.sort!(T::Tietze;level=1)
-  if isempty(T.relators) return end
-  p=sortperm(T.relators,by=length)
-  p=unique(i->T.relators[i],p)
-  if isempty(T.relators[p[1]]) p=p[2:end] end
-  if p==eachindex(T.relators) return end
-  if level>=3 println("#sort! the relators") end
-  numrels=length(p)
-  T.relators[1:numrels].=T.relators[p];resize!(T.relators,numrels)
-  T.flags[1:numrels].=T.flags[p];resize!(T.flags,numrels)
-end
-
-@GapObj struct Presentation
-end
-# possible fields: tietze, operations, components,
-# nextFree, identity, eliminationsLimit, expandLimit, generatorsLimit,
-# lengthLimit, loopLimit, printLevel, saveLimit, searchSimultaneous,
-# protected
-
-Base.sort!(P::Presentation)=sort!(P.tietze;level=P.printLevel)
-
-function debug(P,i,arg...)
-  if P.printLevel>=i println("#",arg...) end
-end
-
-"""
-`PrintStatus(P::Presentation)`
-
-updates  and prints  the current  status of  a presentation  `P`, i.e., the
-number  of generators, the number of relators,  and the total length of all
-relators.
-
-The  printing is suppressed if  none of the three  values has changed since
-the last call.
-"""
-function PrintStatus(P::Presentation,level=0)
-  if P.printLevel<level return end
-  T=P.tietze
-  status=[length(T.generators)-T.numredunds, length(T.relators), sum(length,T.relators)]
-  if !haskey(P,:status) || status!=P.status
-    P.status=status
-    show(stdout,P)
-    println()
-  end
-end
-
-function Base.show(io::IO, p::Presentation)
-  print(io,"Presentation")
-  if haskey(p,:name) print(io," ",p.name) end
-  T=p.tietze
-  print(io,": ",plural(length(T.generators)-T.numredunds,"generator"),
-        ", ",plural(length(T.relators),"relator"),", total length ",
-        sum(length,T.relators))
-end
-
-"""
-`AbsWord(word, generators)`
-
-Tranforms Tietze word `word` to an absword, using given generators `gens`.
-
-```julia-repl
-julia> AbsWord([-1,-2,1,-3,-3],AbsWord.([:a,:b,:c]))
-a⁻¹b⁻¹ac⁻²
-```
-"""
-AbsWord(tz::Vector{Int},gens::Vector{AbsWord})=AbsWord(tz,mon.(gens))
-AbsWord(tz::Vector{Int},ss::Vector{Symbol})=AbsWord(map(i->ss[abs(i)]=>sign(i),tz))
-
-(P::Presentation)(l::Int...)=AbsWord(collect(l),P.tietze.generators)
-
-"""
-`AddGenerator( P[, generator])`
-
-`AddGenerator` adds a new generator to the list of generators.
-
-If you don't specify a second argument, then  `AddGenerator` will define
-a  new  abstract  generator  `_xi`  and save  it  in a  new  component
-`P.i` of  the  given  presentation  where  `i`  is the  least
-positive  integer which  has  not  yet  been used as a  generator number.
-Though this  new generator will be printed as `_xi`,  you will have to
-use the external variable `P.i` if you want to access it.
-
-If you  specify a second  argument, then `generator` must be  an abstract
-generator which does  not yet occur in the presentation.   `AddGenerator`
-will add it to the presentation and save  it in a new component `P.i`
-in the same way as described for `_xi` above.
-"""
-function AddGenerator(P::Presentation,gen=nothing)
-  Check(P)
-  T=P.tietze
-  gens=T.generators
-  if gen===nothing
-    gen=NewGenerator(P)
-    debug(P,1,"AddGenerator  new generator is ", gen)
-  else
-    if !(gen isa AbsWord && length(gen)==1)
-      error("second argument must be an abstract generator")
-    end
-    if gen in gens || inv(gen) in gens
-      println("#I generator ",gen," is already in the presentation")
-      return
-    end
-    new=P.nextFree
-    while Symbol(new) in keys(P.prop) new+=1 end
-    P.nextFree=new+1
-    push!(gens,gen)
-    P[Symbol(string(new))]=gen
-    push!(P.components,new)
-    T.inverses=vcat([length(T.generators)],T.inverses, [-length(T.generators)])
-  end
-  tracing(P,false)
-  T.modified=true
-end
-
-"""
-NewGenerator(presentation) . . . . . . . . .  adds a new generator
-
-`NewGenerator`  defines a  new  abstract generator  and adds it  to the
-given presentation.
-
-Let  i  be the smallest positive integer  which has not yet been used  as
-a generator number  and for which no component  T.i  exists so far in the
-given  presentation  T,  say.  A new abstract generator  _xi  is defined
-and then added as component  T.i  to the given presentation.
-
-Warning:  `NewGenerator`  is  an  internal  subroutine  of  the  Tietze
-routines.  You should not call it.  Instead, you should call the function
-`AddGenerator`, if needed.
-"""
-function NewGenerator(P::Presentation)
-  T=P.tietze
-  numgens=length(T.generators)
-  new=P.nextFree
-  recfields=keys(P.prop)
-  while Symbol(new) in recfields new+=1 end
-  P.nextFree=new+1
-  string=Symbol("_x",new)
-  gen=AbsWord(string)
-  P.prop[string]=gen
-  numgens=numgens+1
-  push!(T.generators,gen)
-  push!(P.components,new)
-  T.inverses=vcat([numgens], T.inverses, [-numgens])
-  gen
-end
-
-"""
-`AddRelator(P::Presentation, word::AbsWord)`
-
-adds  the word `word` to the list of  relators.  `word` must
-be a word in the generators of the given presentation.
-"""
-function AddRelator(P::Presentation, word::AbsWord)
-  Check(P)
-  debug(P,3,"AddRelator adding ", word)
-  T=P.tietze
-  rel=reduceword(TietzeWord(word,T.generators);cyclically=true)
-  if !isempty(rel)
-    push!(T.relators,rel)
-    push!(T.flags,1)
-    T.modified=true
-  end
-  tracing(P,false)
-end
-
-"""
-HandleLength1Or2Relators(presentation) . . . handle short relators
-
-`HandleLength1Or2Relators`  searches  for  relators  of  length  1 or 2 and
-performs suitable Tietze transformations for each of them:
-
-Generators occurring in relators of length 1 are eliminated.
-
-Generators  occurring  in  square  relators  of  length  2 are marked to be
-involutions.
-
-If  a  relator  of  length  2  involves  two different generators, then the
-generator  with the larger  number is substituted  by the other  one in all
-relators and finally eliminated from the set of generators.
-"""
-function HandleLength1Or2Relators(P::Presentation)
-  debug(P,3,"Handle length 1 or 2 relators")
-  T=P.tietze
-  gens=T.generators
-  rels=T.relators
-  done=false
-  while !done
-    done=true
-    i=0
-    while i<length(T.relators)
-      i+=1
-      lg=length(rels[i])
-      if 0<lg<=2 && T.flags[i]<=2
-        rep1=T[rels[i][1]]
-        if lg==1
-          rep1=abs(rep1)
-          if rep1>P.protected
-            if T[rep1]==rep1 T.numredunds+=1 end
-            T[rep1]=T[-rep1]=0
-            debug(P,2,"Handle12 eliminating ",gens[rep1]," redund=",T.numredunds)
-            UpdateGeneratorImages(P, rep1, Int[])
-            done=false
-          end
-        else
-          rep2=T[rels[i][2]]
-          if abs(rep2)<abs(rep1) rep1,rep2=rep2,rep1 end
-          if rep1<0 rep1,rep2=(-rep1,-rep2) end
-          if rep1==0 # already eliminated
-            rep2=abs(rep2)
-            if rep2>P.protected
-              if T[rep2]==rep2 T.numredunds+=1 end
-              T[rep2]=T[-rep2]=0
-              debug(P,2,"Handle12 eliminating ",gens[rep2]," redund=",T.numredunds)
-              UpdateGeneratorImages(P, rep2, Int[])
-              done=false
-            end
-          elseif rep1!=-rep2  # otherwise not reduced
-            if rep1!=rep2 # not an involution
-              if T[rep2]==T[-rep2] && T[-rep1]<0 # rep2^2=1 => rep1^2=1
-                push!(rels,[rep1, rep1])
-                push!(T.flags,1)
-              end
-              if abs(rep2)>P.protected
-                if T[rep2]==rep2 T.numredunds+=1 end
-                T[rep2]=T[-rep1];T[-rep2]=rep1
-                if haskey(P,:imagesOldGens) || P.printLevel>=2
-                  if rep2>0 rep1=T[-rep1] end
-                  debug(P,2,"Handle12 eliminating ",gens[abs(rep2)],"=",
-                      alphab([rep1],T.generators)," redund=",T.numredunds)
-                  UpdateGeneratorImages(P,abs(rep2),[rep1])
-                end
-                done=false
-              end
-            elseif T[-rep1]<0  # an involution not yet detected
-              rels[i]=[rep1,rep1]
-              T.flags[i]=3
-              T[-rep1]=rep1
-              done=false
-            end
-          end
-        end
-      end
-    end
-    if !done
-      for i in eachindex(T.generators)
-        if T[i]!=i T[i],T[-i]=T[T[i]],T[-T[i]] end
-      end
-#     showinverses(T)
-# the next loop is FunTzReplaceGens
-      for i in eachindex(T.relators)
-       if length(T.relators[i])==2 && T.flags[i]==3 && abs(T[T.relators[i][1]])== abs(T.relators[i][1])continue end#don't remove involutions
-        T.relators[i]=reduceword(T.relators[i],T)
-        T.flags[i]=1
-      end
-    end
-  end
-  if T.numredunds>0 RemoveGenerators(P) end
-end
+" `relators(P::Presentation)` relators of `P` as `AbsWord`s. "
+relators(P::Presentation)=AbsWord.(P.relators,Ref(P.generators))
 
 """
 `FpGroup(P::Presentation)`
@@ -626,13 +335,10 @@ end
 returns the finitely presented group defined  by the presentation `P`.
 """
 function FpGroup(P::Presentation)
-  debug(P,3,"I  converting the Tietze presentation to a group")
-  Check(P)
-  T=P.tietze
-  if T.numredunds>0 RemoveGenerators(P) end
-  sort!(T)
-  gens=deepcopy(T.generators)
-  G=FpGroup(gens,map(i->AbsWord(i,gens),T.relators))
+  debug(P,3,"# converting presentation to FpGroup")
+  if P.numredunds>0 RemoveGenerators(P) end
+  sort!(P)
+  G=FpGroup(deepcopy(P.generators),relators(P))
   if haskey(P, :imagesOldGens)
     G.imagesOldGens=deepcopy(P.imagesOldGens)
   end
@@ -654,26 +360,19 @@ function Presentation(ggens::Vector{AbsWord},grels::Vector{AbsWord},printlevel::
     push!(rels,rel)
     total+=length(rel)
   end
-# T=Tietze(numgens,deepcopy(ggens),numgens:-1:-numgens,rels,fill(1,numrels),false, 0)
-  T=Tietze(deepcopy(ggens),numgens:-1:-numgens,rels,fill(1,numrels),false, 0)
-  P=Presentation(Dict{Symbol,Any}())
-# P.generators=T.generators
-  P.tietze=T
-  P.components=collect(1:numgens)
-  for i in 1:numgens setproperty!(P,Symbol(i),ggens[i]) end
+  P=Presentation(deepcopy(ggens),numgens:-1:-numgens,rels,fill(1,numrels),
+                 false, 0, Dict{Symbol,Any}())
   P.nextFree=numgens+1
-  P.identity=one(AbsWord)
   P.eliminationsLimit=100
   P.expandLimit=150
   P.generatorsLimit=0
-  P.factor=100
-  P.lengthLimit=100000000 # infinity
-  P.loopLimit=100000000 # infinity
-  P.printLevel=printlevel
+  P.lengthLimit=0 # infinity
+  P.loopLimit=0 # infinity
+  P.debug=printlevel
   P.saveLimit=10
   P.searchSimultaneous=20
   PrintStatus(P,2)
-  P.protected=length(T.generators);HandleLength1Or2Relators(P);P.protected=0
+  P.protected=length(P.generators);HandleLength1Or2Relators(P);P.protected=0
   sort!(P)
   PrintStatus(P,2)
   P
@@ -683,7 +382,8 @@ function Presentation(v::Vector{Vector{Int}})
   gens=Set{Int}()
   for r in v, x in r push!(gens,abs(x)) end
   if length(gens)!=maximum(gens) error("hummm!") end
-  vars=map(i->Symbol("x",stringind(rio(),i)),1:maximum(gens))
+  vars=length(gens)<=26 ? Symbol.('a':'a'+25) :
+      map(i->Symbol("x",stringind(rio(),i)),1:maximum(gens))
   Presentation(AbsWord.(vars),map(r->AbsWord(r,vars),v))
 end
   
@@ -713,6 +413,394 @@ function Presentation(s::String;level=1)
   atoms=length(l)==1 ? unique(l[1]) : union(map(x->first.(x.d),rels)...)
   sort!(atoms)
   Presentation(AbsWord.(atoms),rels,level)
+end
+
+Base.getindex(T::Presentation,i)=T.inverses[length(T.generators)+1-i]
+Base.setindex!(T::Presentation,j,i)=T.inverses[length(T.generators)+1-i]=j
+using ..Gapjm: toM, showtable
+function showinverses(T::Presentation)
+ m=toM([map(i->T[i],eachindex(T.generators)),map(i->T[-i],eachindex(T.generators))])
+  showtable(rio(),m;row_labels=["i","-i"],col_labels=string.(T.generators))
+end
+
+# reduce cyclically a Tietze word
+function reduceword(w::Vector{Int};cyclically=false)
+  i=1;
+  res=Int[]
+  for j in eachindex(w)
+    if isempty(res) || res[end]!=-w[j] if w[j]!=0 push!(res,w[j]) end
+    else pop!(res)
+    end
+  end
+  b=1;e=length(res)
+  if cyclically while b<e && res[b]==-res[e] b+=1;e-=1 end end
+  res[b:e]
+end
+   
+# reduce cyclically a Tietze word using the table of inverses
+function reduceword(w::Vector{Int},T::Presentation)
+  i=1;
+  res=Int[]
+  for j in eachindex(w)
+    if T[w[j]]==0 continue end
+    if isempty(res) || T[res[end]]!=T[-w[j]] push!(res,T[w[j]])
+    else pop!(res)
+    end
+  end
+  b=1;e=length(res)
+  while b<e && T[res[b]]==T[-res[e]] b+=1;e-=1 end
+  res[b:e]
+end
+
+# sorts by length relators and remove duplicates and empty ones
+function Base.sort!(T::Presentation)
+  if isempty(T.relators) return end
+  p=sortperm(T.relators,by=length)
+  p=unique(i->T.relators[i],p)
+  if isempty(T.relators[p[1]]) p=p[2:end] end
+  if p==eachindex(T.relators) return end
+  if T.debug>=3 println("#sort! the relators") end
+  numrels=length(p)
+  T.relators[1:numrels].=T.relators[p];resize!(T.relators,numrels)
+  T.flags[1:numrels].=T.flags[p];resize!(T.flags,numrels)
+end
+
+function debug(P,i,arg...)
+  if P.debug>=i println("#",arg...) end
+end
+
+"""
+`PrintStatus(P::Presentation)`
+
+updates  and prints  the current  status of  a presentation  `P`, i.e., the
+number  of generators, the number of relators,  and the total length of all
+relators.
+
+The  printing is suppressed if  none of the three  values has changed since
+the last call.
+"""
+function PrintStatus(P::Presentation,level=0)
+  if P.debug<level return end
+  status=[length(P.generators)-P.numredunds, length(P.relators), sum(length,P.relators)]
+  if !haskey(P,:status) || status!=P.status
+    P.status=status
+    show(stdout,P)
+    println()
+  end
+end
+
+function Base.show(io::IO, p::Presentation)
+  print(io,"Presentation")
+  if haskey(p,:name) print(io," ",p.name) end
+  print(io,": ",plural(length(p.generators)-p.numredunds,"generator"),
+        ", ",plural(length(p.relators),"relator"),", total length ",
+        sum(length,p.relators))
+end
+
+function Base.dump(T::Presentation)
+  println("modified=",T.modified," numredunds=",T.numredunds)
+  showinverses(T)
+  for i in eachindex(T.relators)
+    println("$i: ",alphab(T.relators[i],T.generators)," (",T.flags[i],")")
+  end
+end
+
+function display_balanced(T,dumb=false)
+  f(i,w)=vcat(w,w)[i:i+div(length(w),2)-1]
+  used=Set{Int}();for x in T.relators, y in x push!(used,abs(y)) end
+  if length(T.generators)>length(used)
+   print("There are ",length(T.generators)-length(used)," free generators\n")
+  end
+  for (i,w) in enumerate(T.relators)
+    lw=length(w)
+    if isodd(lw) || dumb println(i, ": ", alphab(w,T.generators), "=1")
+    elseif lw>0
+      m=argmax(map(i->count(>(0), f(i,w)), 1:lw))
+      println("$i: ",alphab(f(m,w),T.generators),"=",alphab(-reverse(f(m+div(lw,2),w)),T.generators))
+    end
+  end
+end
+
+"""
+`Print(P[,list])`
+
+`Print` provides a  kind of  *fast print out* for a presentation `P`.
+
+Remember that in order to speed up the Tietze transformation routines, each
+relator  in  a  presentation  `P`  is  internally  represented by a list of
+positive  or negative  generator numbers,  i.e., each  factor of the proper
+{GAP}  word  is  represented  by  the  position number of the corresponding
+generator  with  respect  to  the  current  list  of  generators, or by the
+respective  negative number,  if the  factor is  the inverse of a generator
+which  is  not  known  to  be  an  involution.  In contrast to the commands
+`relators`  and `PrintGenerators` described  above, `Print` does not
+convert these lists back to the corresponding {GAP} words.
+
+`Print`  prints the current  list of generators,  and then for each relator
+its  length  and  its  internal  representation  as  a  list of positive or
+negative generator numbers.
+
+If a list `list` has been specified as second argument, then it is expected
+to  be a list of the position numbers of the relators to be printed. `list`
+need  not be  sorted and  may contain  duplicate elements. The relators are
+printed  in  the  order  in  which  and  as often as their numbers occur in
+`list`.  Position  numbers  out  of  range  (with  respect  to  the list of
+relators) will be ignored.
+"""
+function Print(T::Presentation,list=eachindex(T.relators))
+  if isempty(T.generators) print("#I there are no generators\n")
+  else println("#I generators: ", T.generators)
+  end
+  println("#I inverses: ", T.inverses)
+  if isempty(T.relators) print("#I  there are no relators\n");return end
+  for i in list
+    if i in eachindex(T.relators)
+      print("#I $i. ",length(T.relators[i]),"  [",join(T.relators[i],","),"]")
+      if T.flags[i]!=1 print(" (",T.flags[i],")") end
+      println()
+    end
+  end
+end
+
+"""
+`PrintGenerators(P[,list])`
+
+prints the current list of generators of a presentation
+`P`,  providing  for  each  generator  its  name,  the  total number of its
+occurrences  in the  relators, and,  if that  generator is  known to  be an
+involution, an appropriate message.
+
+a second argument `list` of generator indices prints only those generators.
+"""
+function PrintGenerators(T::Presentation,list::AbstractVector{Int}=eachindex(T.generators))
+  gens=T.generators
+  numgens=length(gens)
+  if numgens==0 println("#I  there are no generators");return end
+  if isempty(list) list=[0] end
+  leng=length(list)
+  _min=max(minimum(list),1)
+  _max=min(maximum(list),numgens)
+  if _min==_max
+    occur=Occurrences(T, _max)
+    num=occur[1]
+    print("#I ", _max,". ",gens[_max]," ",plural(num,"occurrence"))
+    if T[-_max]>0 print(" involution") end
+    println()
+  elseif _min<_max
+    occur=Occurrences(T)
+    for i in list
+      if 1<=i<=numgens
+        num=occur[1][i]
+        print("#I ", i, ". ", gens[i], " ",plural(num,"occurrence"))
+        if T[-i]>0 print(" involution") end
+        println()
+      end
+    end
+  end
+end
+
+"""
+`PrintPairs(P,n=10)`
+
+shows  the  `n`  most  frequently  occurring squarefree relator subwords of
+length  2 them together with their numbers of occurrences. A value `n=0` is
+interpreted as `infinity`.
+
+This  list is  a useful  piece of  information in  the context of using the
+`Substitute` command.
+"""
+function PrintPairs(P::Presentation,n::Integer=10)
+  for (m,(num,i,j,k)) in enumerate(MostFrequentPairs(P,n))
+    geni=P.generators[i];if k>1 geni=inv(geni) end
+    genj=P.generators[j];if isodd(k) genj=inv(genj) end
+    xprintln("#I $m. ",plural(num,"occurrence")," of ",geni*genj)
+  end
+end
+
+"""
+`AbsWord(word, generators)`
+
+Tranforms Tietze word `word` to an absword, using given generators `gens`.
+
+```julia-repl
+julia> AbsWord([-1,-2,1,-3,-3],AbsWord.([:a,:b,:c]))
+a⁻¹b⁻¹ac⁻²
+```
+"""
+AbsWord(tz::Vector{Int},gens::Vector{AbsWord})=AbsWord(tz,mon.(gens))
+AbsWord(tz::Vector{Int},ss::Vector{Symbol})=AbsWord(map(i->ss[abs(i)]=>sign(i),tz))
+
+(P::Presentation)(l::Int...)=AbsWord(collect(l),P.generators)
+
+"""
+`AddGenerator( P[, generator])`
+
+`AddGenerator` adds a new generator to the list of generators.
+
+If  you don't specify a second  argument, then `AddGenerator` will define a
+new  abstract generator `_xi` where `i` is the least positive integer which
+has not yet been used as a generator number. Though this new generator will
+be  printed as `_xi`, you  will have to use  the external variable `P.i` if
+you want to access it.
+
+If  you specify  a second  argument, then  `generator` must  be an abstract
+generator which does not yet occur in the presentation. `AddGenerator` will
+add it to the presentation.
+"""
+function AddGenerator(P::Presentation,gen=nothing)
+  Check(P)
+  if gen===nothing
+    gen=NewGenerator(P)
+    debug(P,1,"AddGenerator  new generator is ", gen)
+  else
+    if !(gen isa AbsWord && length(gen)==1)
+      error("second argument must be an abstract generator")
+    end
+    if gen in P.generators || inv(gen) in P.generators
+      println("#I generator ",gen," is already in the presentation")
+      return
+    end
+    push!(P.generators,gen)
+    P.inverses=vcat([length(P.generators)],P.inverses, [-length(P.generators)])
+  end
+  tracing(P,false)
+  P.modified=true
+end
+
+"""
+NewGenerator(P::Presentation)
+
+defines a new abstract generator and adds it to `P`.
+
+Let i be the smallest positive integer for which the generator `_xi` is not
+a  generator of  `P`. A  new abstract  generator `_xi`  is defined and then
+added to `P.generators`.
+
+Warning:  `NewGenerator`  is  an  internal  subroutine  of  the  Tietze
+routines.  You should not call it.  Instead, you should call the function
+`AddGenerator`, if needed.
+"""
+function NewGenerator(P::Presentation)
+  new=P.nextFree
+  while true
+    gen=AbsWord(Symbol("_x",new))
+    if gen in P.generators new+=1;continue end
+  end
+  P.nextFree=new+1
+  push!(P.generators,gen)
+  P.inverses=vcat([length(P.generators)],P.inverses,[-length(P.generators)])
+  gen
+end
+
+"""
+`AddRelator(P::Presentation, word::AbsWord)`
+
+adds  the word `word` to the list of  relators.  `word` must
+be a word in the generators of the given presentation.
+"""
+function AddRelator(P::Presentation, word::AbsWord)
+  Check(P)
+  debug(P,3,"AddRelator adding ", word)
+  rel=reduceword(TietzeWord(word,P.generators);cyclically=true)
+  if !isempty(rel)
+    push!(P.relators,rel)
+    push!(P.flags,1)
+    P.modified=true
+  end
+  tracing(P,false)
+end
+
+"""
+HandleLength1Or2Relators(presentation) . . . handle short relators
+
+`HandleLength1Or2Relators`  searches  for  relators  of  length  1 or 2 and
+performs suitable Tietze transformations for each of them:
+
+Generators occurring in relators of length 1 are eliminated.
+
+Generators  occurring  in  square  relators  of  length  2 are marked to be
+involutions.
+
+If  a  relator  of  length  2  involves  two different generators, then the
+generator  with the larger  number is substituted  by the other  one in all
+relators and finally eliminated from the set of generators.
+"""
+function HandleLength1Or2Relators(T::Presentation)
+  debug(T,3,"Handle length 1 or 2 relators")
+  gens=T.generators
+  rels=T.relators
+  done=false
+  while !done
+    done=true
+    i=0
+    while i<length(T.relators)
+      i+=1
+      lg=length(rels[i])
+      if 0<lg<=2 && T.flags[i]<=2
+        rep1=T[rels[i][1]]
+        if lg==1
+          rep1=abs(rep1)
+          if rep1>T.protected
+            if T[rep1]==rep1 T.numredunds+=1 end
+            T[rep1]=T[-rep1]=0
+            debug(T,2,"Handle12 eliminating ",gens[rep1]," redund=",T.numredunds)
+            UpdateGeneratorImages(T, rep1, Int[])
+            done=false
+          end
+        else
+          rep2=T[rels[i][2]]
+          if abs(rep2)<abs(rep1) rep1,rep2=rep2,rep1 end
+          if rep1<0 rep1,rep2=(-rep1,-rep2) end
+          if rep1==0 # already eliminated
+            rep2=abs(rep2)
+            if rep2>T.protected
+              if T[rep2]==rep2 T.numredunds+=1 end
+              T[rep2]=T[-rep2]=0
+              debug(T,2,"Handle12 eliminating ",gens[rep2]," redund=",T.numredunds)
+              UpdateGeneratorImages(T, rep2, Int[])
+              done=false
+            end
+          elseif rep1!=-rep2  # otherwise not reduced
+            if rep1!=rep2 # not an involution
+              if T[rep2]==T[-rep2] && T[-rep1]<0 # rep2^2=1 => rep1^2=1
+                push!(rels,[rep1, rep1])
+                push!(T.flags,1)
+              end
+              if abs(rep2)>T.protected
+                if T[rep2]==rep2 T.numredunds+=1 end
+                T[rep2]=T[-rep1];T[-rep2]=rep1
+                if haskey(T,:imagesOldGens) || T.debug>=2
+                  if rep2>0 rep1=T[-rep1] end
+                  debug(T,2,"Handle12 eliminating ",gens[abs(rep2)],"=",
+                      alphab([rep1],T.generators)," redund=",T.numredunds)
+                  UpdateGeneratorImages(T,abs(rep2),[rep1])
+                end
+                done=false
+              end
+            elseif T[-rep1]<0  # an involution not yet detected
+              rels[i]=[rep1,rep1]
+              T.flags[i]=3
+              T[-rep1]=rep1
+              done=false
+            end
+          end
+        end
+      end
+    end
+    if !done
+      for i in eachindex(T.generators)
+        if T[i]!=i T[i],T[-i]=T[T[i]],T[-T[i]] end
+      end
+#     showinverses(T)
+# the next loop is FunTzReplaceGens
+      for i in eachindex(T.relators)
+       if length(T.relators[i])==2 && T.flags[i]==3 && abs(T[T.relators[i][1]])== abs(T.relators[i][1])continue end#don't remove involutions
+        T.relators[i]=reduceword(T.relators[i],T)
+        T.flags[i]=1
+      end
+    end
+  end
+  if T.numredunds>0 RemoveGenerators(T) end
 end
 
 """
@@ -1141,7 +1229,7 @@ function PresentationViaCosetTable(G,arg...)
   P.generatorsLimit=ngens
   GoGo(P)
   P.generatorsLimit=0
-  P.printLevel=1
+  P.debug=1
   return P
 end
 
@@ -1151,12 +1239,10 @@ end
 `RemoveRelator`  removes the `n`th relator and  then resorts the  list of
 relators in the given presentation `P`.
 """
-function RemoveRelator(P::Presentation, n)
-  Check(P)
-  T=P.tietze
+function RemoveRelator(T::Presentation, n)
   if !(n in eachindex(T.relators)) error("relator number out of range") end
   rels=T.relators
-  debug(P,3,"RemoveRelator removing $n-th relator")
+  debug(T,3,"RemoveRelator removing $n-th relator")
   leng=length(T.relators[n])
   if leng==2 && rels[n][1]==rels[n][2]
     num=rels[n][1]
@@ -1164,9 +1250,9 @@ function RemoveRelator(P::Presentation, n)
     if T[-num]==num T[-num]=-num end
   end
   rels[n]=Int[]
-  sort!(P)
-  PrintStatus(P,2)
-  tracing(P,false)
+  sort!(T)
+  PrintStatus(T,2)
+  tracing(T,false)
 end
 
 """
@@ -1223,11 +1309,10 @@ end
 checks some fields of the  given presentation to be consistent.
 """
 function Check(P::Presentation)
-  T=P.tietze
-  if length(T.inverses)!=2*length(T.generators)+1
-    error("inconsistent generator inverses")
+  if length(P.inverses)!=2*length(P.generators)+1
+    error("inconsistent inverses")
   end
-  if length(T.flags)!=length(T.relators) error("inconsistent relators") end
+  if length(P.flags)!=length(P.relators) error("inconsistent relators") end
 end
 
 """
@@ -1257,7 +1342,7 @@ tries  to   eliminate   up  to   `n`  generators.  Note  that  the  calls
 function Eliminate(T::Presentation,n=nothing)
   debug(T,3,"Eliminate n=$n")
   Check(T)
-  tietze=T.tietze
+  tietze=T
   gennum=0
   if n===nothing n=1
   elseif !(n isa Integer)
@@ -1285,8 +1370,7 @@ function Eliminate(T::Presentation,n=nothing)
 end
 
 # substitute gen by w
-function SubstituteGen(P::Presentation, gen, w)
-  T=P.tietze
+function SubstituteGen(T::Presentation, gen, w)
   iw=-reverse(w)
   for i in eachindex(T.relators)
     res=Int[]
@@ -1302,7 +1386,7 @@ function SubstituteGen(P::Presentation, gen, w)
     else T.relators[i]=reduceword(res,T)
     end
   end
-  UpdateGeneratorImages(P, abs(gen), gen<0 ? iw : w)
+  UpdateGeneratorImages(T, abs(gen), gen<0 ? iw : w)
 end
 
 """
@@ -1312,34 +1396,33 @@ EliminateGen( presentation,n) . . . eliminates the nth generator
 if possible, i. e. if that generator can be isolated  in some appropriate
 Tietze relator.  However,  the elimination  will not be  performed if the
 resulting total length of the relators cannot be guaranteed to not exceed
-the parameter P.lengthLimit.
+the parameter P.lengthLimit (if !=0).
 """
 function EliminateGen(P::Presentation, num::Int)
-  T=P.tietze
-  spacelimit=sum(length,T.relators)+P.lengthLimit
-  T.modified=false
-  if !(num in eachindex(T.generators))
+  spacelimit=sum(length,P.relators)+P.lengthLimit
+  P.modified=false
+  if !(num in eachindex(P.generators))
     error("EliminateGen: second argument is not a valid generator number")
   end
-  occTotal,occRelNum,occMult=Occurrences(T, num)
+  occTotal,occRelNum,occMult=Occurrences(P, num)
   if occMult==1
-    length=length(T.relators[occRelNum])
+    length=length(P.relators[occRelNum])
     space=(occTotal-1)*(length-1)-length
-    if sum(length,T.relators)+space>spacelimit return end
+    if P.lengthLimit!=0 && sum(length,P.relators)+space>spacelimit return end
     gen=num
-    rel=T.relators[occRelNum]
+    rel=P.relators[occRelNum]
     pos=findfirst(==(gen),rel)
     if pos===nothing
       gen=-gen
       pos=findfirst(==(gen),rel)
     end
     word=vcat(rel[pos+1:end],rel[1:pos-1])
-    debug(P,2,"EliminateGen eliminating ", T.generators[num], "=",
-         let a=gen>0 ? -reverse(word) : word;  alphab(word,T.generators) end)
+    debug(P,2,"EliminateGen eliminating ", P.generators[num], "=",
+         let a=gen>0 ? -reverse(word) : word;  alphab(word,P.generators) end)
     SubstituteGen(P,-gen, word)
-    T[num]=0
-    T.numredunds+=1
-    T.modified=true
+    P[num]=0
+    P.numredunds+=1
+    P.modified=true
   end
 end
 
@@ -1347,7 +1430,7 @@ end
 # 1: nb. occurences of each generator
 # 2: n0 of a relator of minimal length where occurs with minimal >0 multiplicity
 # 3: the corresponding multiplicity
-function Occurrences(T::Tietze,gen=0)
+function Occurrences(T::Presentation,gen=0)
   occ=fill(0,length(T.generators))
   min=fill(0,length(T.generators))
   mult=fill(0,length(T.generators))
@@ -1377,16 +1460,15 @@ one of them is chosen  for which the product of the length of its minimal
 defining word  and the  number of its  occurrences  is minimal.  However,
 the elimination  will not be performed  if the resulting  total length of
 the  relators   cannot  be  guaranteed   to  not  exceed   the  parameter
-P.lengthLimit.
+P.lengthLimit (if !=0).
 """
-function EliminateGen1(P::Presentation)
-  T=P.tietze
-  spacelimit=sum(length,T.relators)+P.lengthLimit
+function EliminateGen1(T::Presentation)
+  spacelimit=sum(length,T.relators)+T.lengthLimit
   occTotals,occRelNums,occMultiplicities=Occurrences(T)
   modified=false
   num=0
   space=0
-  for i in P.protected+1:length(T.generators)
+  for i in T.protected+1:length(T.generators)
     if occMultiplicities[i]==1
       total=occTotals[i]
       len=length(T.relators[occRelNums[i]])
@@ -1397,7 +1479,7 @@ function EliminateGen1(P::Presentation)
       end
     end
   end
-  if num>0 && sum(length,T.relators)+space<=spacelimit
+  if num>0 && (T.lengthLimit==0 || sum(length,T.relators)+space<=spacelimit)
     gen=num
     occRelNum=occRelNums[num]
     rel=T.relators[occRelNum]
@@ -1407,12 +1489,12 @@ function EliminateGen1(P::Presentation)
       gen=-gen
       pos=findfirst(==(gen),rel)
     end
-#   display_balanced(P)
+#   display_balanced(T)
 #   @show rel
     word=vcat(rel[pos+1:end],rel[1:pos-1])
-    debug(P,2,"EliminateGen1 eliminating ",T.generators[num],"=",
+    debug(T,2,"EliminateGen1 eliminating ",T.generators[num],"=",
       let a=gen>0 ? -reverse(word) : word;  alphab(word,T.generators) end)
-    SubstituteGen(P, -gen, word)
+    SubstituteGen(T, -gen, word)
     T[num]=0
     T.numredunds+=1
     modified=true
@@ -1423,14 +1505,11 @@ end
 """
 EliminateGens(presentation)  .  Eliminates generators
 
-`EliminateGens`  repeatedly eliminates generators from the presentation
-of the given group until at least one  of  the  following  conditions  is
-violated:
+`EliminateGens`  repeatedly eliminates generators  from the presentation of
+the given group until one of the following conditions is violated:
 
-(1) The  current  number of  generators  is greater  than  the  parameter
-    T.generatorsLimit.
-(2) The   number   of   generators   eliminated   so  far  is  less  than
-    the parameter T.eliminationsLimit.
+(1) The  current  number of  generators  is greater than T.generatorsLimit.
+(2) The number of generators eliminated so far is less than T.eliminationsLimit.
 (3) The  total length of the relators  has not yet grown  to a percentage
     greater than the parameter T.expandLimit.
 (4) The  next  elimination  will  not  extend the total length to a value
@@ -1439,34 +1518,32 @@ violated:
 the function will not eliminate any protected generators.
 """
 function EliminateGens(P::Presentation)
-  Check(P)
   debug(P,3,"EliminateGens eliminating generators")
-  T=P.tietze
   redundantsLimit=5
   maxnum=P.eliminationsLimit
-  bound=sum(length,T.relators)*P.expandLimit//100
+  bound=sum(length,P.relators)*P.expandLimit//100
   modified=false
-  T.modified=true
+  P.modified=true
   num=0
-  while T.modified && num<maxnum && sum(length,T.relators)<=bound &&
-   length(T.generators)-T.numredunds>P.generatorsLimit
+  while P.modified && num<maxnum && sum(length,P.relators)<=bound &&
+   length(P.generators)-P.numredunds>P.generatorsLimit
     EliminateGen1(P)
-#   print("a ");PrintStatus(P);@show T.flags
-    if T.numredunds==redundantsLimit 
+#   print("a ");PrintStatus(P);@show P.flags
+    if P.numredunds==redundantsLimit 
       RemoveGenerators(P)
-#     print("b ");PrintStatus(P);@show T.flags
+#     print("b ");PrintStatus(P);@show P.flags
     end
-    modified=modified || T.modified
+    modified=modified || P.modified
     num+=1
   end
-  T.modified=modified
-  if T.numredunds>0 
+  P.modified=modified
+  if P.numredunds>0 
     RemoveGenerators(P)
-#   print("c ");PrintStatus(P);@show T.flags
+#   print("c ");PrintStatus(P);@show P.flags
   end
   if modified
     HandleLength1Or2Relators(P)
-#   print("d ");PrintStatus(P);@show T.flags
+#   print("d ");PrintStatus(P);@show P.flags
     sort!(P)
     PrintStatus(P,2)
   end
@@ -1488,8 +1565,7 @@ product  of the form `a^s  b^t` with `s` prime  to `n`. For each such pair,
 """
 function FindCyclicJoins(P::Presentation)
   debug(P,3,"FindCyclicJoins searching for cyclic joins")
-  Check(P)
-  T=P.tietze
+  T=P
   T.modified=false
   newstart=true
   while newstart
@@ -1592,9 +1668,8 @@ GeneratorExponents(presentation) . . . list of generator exponents
 `GeneratorExponents`  tries to find exponents for the Tietze generators
 and return them in a list parallel to the list of the generators.
 """
-function GeneratorExponents(P::Presentation)
-  debug(P,3,"GeneratorExponents find generator exponents")
-  T=P.tietze
+function GeneratorExponents(T::Presentation)
+  debug(T,3,"GeneratorExponents find generator exponents")
   rels=T.relators
   exponents=fill(0,length(T.generators))
   for i in eachindex(rels)
@@ -1689,7 +1764,7 @@ As an example  we  compute  a presentation of a  subgroup of index 408 in
     gap> P.primaryGeneratorWords;
     [ b, a*b*a ]
     gap> P.protected := 2;;
-    gap> P.printLevel := 2;;
+    gap> P.debug := 2;;
     gap> simplify( P );
     &I  eliminating _x7 = _x5
     &I  eliminating _x5 = _x4
@@ -1718,34 +1793,32 @@ used to  that  name from the *go* option of the ANU Tietze transformation
 stand-alone program or from the *go* command in SPAS.
 
 If "silent" is specified as true, then the printing of the status line by
-`Go` in case of T.printLevel=1 is suppressed.
+`Go` in case of T.debug=1 is suppressed.
 """
 function Go(P::Presentation,silent=false)
-  printstatus=P.printLevel==1 && !silent
+  printstatus=P.debug==1 && !silent
   Check(P)
-  T=P.tietze
   Search(P)
-  looplimit=P.loopLimit
   count=0
-  while count<looplimit && !all(isempty,T.relators)
+  while (P.loopLimit==0 || count<P.loopLimit) && !all(isempty,P.relators)
 #   println("Go loop")
     SearchEqual(P)
-#   @show T.flags
-    if T.modified Search(P) end
-#   @show T.flags
+#   @show P.flags
+    if P.modified Search(P) end
+#   @show P.flags
     EliminateGens(P)
 #   print("before search");dump(P)
-    if T.modified
+    if P.modified
       Search(P)
       count+=1
-    else count=looplimit
     end
 #   print("after search");dump(P)
     if printstatus print("#");PrintStatus(P) end
+    if !P.modified break end
   end
-  if !all(isempty,T.relators)
+  if !all(isempty,P.relators)
     FindCyclicJoins(P)
-    if T.modified Search(P) end
+    if P.modified Search(P) end
     if printstatus print("#");PrintStatus(P) end
   end
   P
@@ -1760,23 +1833,22 @@ number of relators nor the total length of all relators have changed during
 five consecutive calls of `Go`.
 """
 function GoGo(T::Presentation)
-  tietze=T.tietze
-  numgens=length(tietze.generators)
-  numrels=length(tietze.relators)
-  total=sum(length,tietze.relators)
-  silentGo=T.printLevel==1
+  numgens=length(T.generators)
+  numrels=length(T.relators)
+  total=sum(length,T.relators)
+  silentGo=T.debug==1
   count=0
   while count<5
     Go(T, silentGo)
     count+=1
-    if silentGo && (length(tietze.generators)<numgens || length(tietze.relators)<numrels)
+    if silentGo && (length(T.generators)<numgens || length(T.relators)<numrels)
         PrintStatus(T)
     end
-    if length(tietze.generators)<numgens || length(tietze.relators)<numrels || 
-      sum(length,tietze.relators)<total
-      numgens=length(tietze.generators)
-      numrels=length(tietze.relators)
-      total=sum(length,tietze.relators)
+    if length(T.generators)<numgens || length(T.relators)<numrels || 
+      sum(length,T.relators)<total
+      numgens=length(T.generators)
+      numrels=length(T.relators)
+      total=sum(length,T.relators)
       count=0
     end
   end
@@ -1785,24 +1857,18 @@ function GoGo(T::Presentation)
 end
 
 """
-MostFrequentPairs(presentation, n) ....  occurrences of pairs
-
-`MostFrequentPairs`  returns a list  describing the  n  most frequently
-occurring relator subwords of the form  g1*g2,  where  g1  and  g2 are
-different generators or their inverses. n=0 interpreted as infinity
+OccurrencesPairs(T::Presentation,gen)
+counts occurrences of pairs gen,geni or their inverses (where 0<gen<geni)
+circularly in the relators or their inverses
+returns a 4×numgens matrix; each line is zero until gen+1
+the first line  counts the occurrences of (gen,geni)
+the second             the occurrences of (gen,-geni)
+the third              the occurrences of (-gen,geni)
+the last               the occurrences of (-gen,-geni)
 """
-function MostFrequentPairs(P::Presentation, nmax::Int)
-  if nmax<0 error("second argument must be≥0") end
-# counts occurrences of pairs gen,geni or their inverses (where 0<gen<geni)
-# circularly in the relators or their inverses
-# returns a (4,numgens) matrix; each line is zero until gen+1
-# the first line  counts the occurrences of (gen,geni)
-# the second             the occurrences of (gen,-geni)
-# the third              the occurrences of (-gen,geni)
-# the last               the occurrences of (-gen,-geni)
-function OccurrencesPairs(T::Tietze,gen)
+function OccurrencesPairs(T::Presentation,gen)
   res=fill(0,4,length(T.generators))
-  for rel in T.relators, i in 1:length(rel)
+  for rel in T.relators, i in eachindex(rel)
     if rel[i]==gen add=0
     elseif rel[i]==-gen add=2
     else continue
@@ -1818,7 +1884,16 @@ function OccurrencesPairs(T::Tietze,gen)
   end
   res
 end
-  T=P.tietze
+
+"""
+MostFrequentPairs(presentation, n) ....  occurrences of pairs
+
+`MostFrequentPairs`  returns a list  describing the  n  most frequently
+occurring relator subwords of the form  g1*g2,  where  g1  and  g2 are
+different generators or their inverses. n=0 interpreted as infinity
+"""
+function MostFrequentPairs(T::Presentation, nmax::Int)
+  if nmax<0 error("second argument must be≥0") end
   gens=T.generators
   numgens=length(T.generators)
   pairs=Vector{Int}[]
@@ -1850,95 +1925,13 @@ end
       end
       if nmax!=0 && n>nmax 
         sort!(pairs,rev=true)
-        pairs=pairs[1:nmax]
+        resize!(pairs,nmax)
         n=nmax
       end
     end
     sort!(pairs,rev=true)
   end
-  return pairs
-end
-
-"""
-`Print(P[,list])`
-
-`Print` provides a  kind of  *fast print out* for a presentation `P`.
-
-Remember that in order to speed up the Tietze transformation routines, each
-relator  in  a  presentation  `P`  is  internally  represented by a list of
-positive  or negative  generator numbers,  i.e., each  factor of the proper
-{GAP}  word  is  represented  by  the  position number of the corresponding
-generator  with  respect  to  the  current  list  of  generators, or by the
-respective  negative number,  if the  factor is  the inverse of a generator
-which  is  not  known  to  be  an  involution.  In contrast to the commands
-`relators`  and `PrintPresentation` described  above, `Print` does not
-convert these lists back to the corresponding {GAP} words.
-
-`Print`  prints the current  list of generators,  and then for each relator
-its  length  and  its  internal  representation  as  a  list of positive or
-negative generator numbers.
-
-If a list `list` has been specified as second argument, then it is expected
-to  be a list of the position numbers of the relators to be printed. `list`
-need  not be  sorted and  may contain  duplicate elements. The relators are
-printed  in  the  order  in  which  and  as often as their numbers occur in
-`list`.  Position  numbers  out  of  range  (with  respect  to  the list of
-relators) will be ignored.
-"""
-function Print(P::Presentation,list=eachindex(P.tietze.relators))
-  Check(P)
-  T=P.tietze
-  if isempty(T.generators) print("#I there are no generators\n")
-  else print("#I generators: ", T.generators, "\n")
-  end
-  print("#I inverses: ", T.inverses, "\n")
-  if isempty(T.relators) print("#I  there are no relators\n");return end
-  for i in list
-    if i in eachindex(P.tietze.relators)
-      print("#I $i. ",length(T.relators[i]),"  [",join(T.relators[i],","),"]")
-      if T.flags[i]!=1 print(" (",T.flags[i],")") end
-      println()
-    end
-  end
-end
-
-"""
-`PrintGenerators(P[,list])`
-
-prints the current list of generators of a presentation
-`P`,  providing  for  each  generator  its  name,  the  total number of its
-occurrences  in the  relators, and,  if that  generator is  known to  be an
-involution, an appropriate message.
-
-a second argument `list` of generator indices prints only those generators.
-"""
-function PrintGenerators(P::Presentation,list::AbstractVector{Int}=eachindex(P.tietze.generators))
-  Check(P)
-  T=P.tietze
-  gens=T.generators
-  numgens=length(T.generators)
-  if numgens==0 print("#I  there are no generators\n");return end
-  if isempty(list) list=[0] end
-  leng=length(list)
-  _min=max(minimum(list),1)
-  _max=min(maximum(list),numgens)
-  if _min==_max
-    occur=Occurrences(T, _max)
-    num=occur[1]
-    print("#I ", _max,". ",gens[_max]," ",plural(num,"occurrence"))
-    if T[-_max]>0 print(" involution") end
-    println()
-  elseif _min<_max
-    occur=Occurrences(T)
-    for i in list
-      if 1<=i<=numgens
-        num=occur[1][i]
-        print("#I ", i, ". ", gens[i], " ",plural(num,"occurrence"))
-        if T[-i]>0 print(" involution") end
-        println()
-      end
-    end
-  end
+  pairs
 end
 
 """
@@ -1961,103 +1954,94 @@ presentation `P`.
 The Tietze options have the following meaning.
 
 `protected`: 
-        The first  `P.protected`  generators in a presentation  `P` are
-        protected from  being  eliminated  by the  Tietze transformations
-        functions.   There  are  only   two  exceptions:   The  option
-        `P.protected`     is     ignored      by     the      functions
-        `Eliminate(P,gen)` and  `Substitute(P,n,eliminate)`
-        because they explicitly specify  the generator  to be eliminated.
-        The default value of `protected` is 0.
+  The  first `P.protected` generators  in a presentation  `P` are protected
+  from  being eliminated by the Tietze transformations functions. There are
+  only two exceptions: The option `P.protected` is ignored by the functions
+  `Eliminate(P,gen)` and `Substitute(P,n,eliminate)`    because   they
+  explicitly  specify the generator to be  eliminated. The default value of
+  `protected` is 0.
 
 `eliminationsLimit`: 
-        Whenever the elimination  phase of  the `Go` command is entered
-        for  a  presentation  `P`,   then  it   will  eliminate  at  most
-        `P.eliminationsLimit` generators (except for further ones which
-        have  turned  out  to   be  trivial).  Hence  you  may  use   the
-        `eliminationsLimit` parameter as a break criterion for the `Go`
-        command.  Note, however, that it  is ignored by the `Eliminate`
-        command. The default value of `eliminationsLimit` is 100.
+  Whenever  the  elimination  phase  of  the  `Go` command is entered for a
+  presentation  `P`, then  it will  eliminate at most `P.eliminationsLimit`
+  generators (except for further ones which have turned out to be trivial).
+  Hence  you may use the `eliminationsLimit` parameter as a break criterion
+  for  the  `Go`  command.  Note,  however,  that  it  is  ignored  by  the
+  `Eliminate` command. The default value of `eliminationsLimit` is 100.
 
 `expandLimit`: 
-        Whenever the routine for eliminating  more than  1  generators is
-        called for a presentation `P` by the `Eliminate` command or the
-        elimination phase of the `Go` command, then it saves the  given
-        total  length of the  relators,  and  subsequently it checks  the
-        current total length against  its value before  each elimination.
-        If the total length  has increased to more than `P.expandLimit`
-        per cent of its original value, then the  routine returns instead
-        of   eliminating  another  generator.   Hence  you  may  use  the
-        `expandLimit` parameter  as a  break  criterion  for  the  `Go`
-        command. The default value of `expandLimit` is 150.
+  Whenever the routine for eliminating more than 1 generators is called for
+  a presentation `P` by the `Eliminate` command or the elimination phase of
+  the  `Go` command, then it saves the  given total length of the relators,
+  and  subsequently it  checks the  current total  length against its value
+  before  each elimination. If the total  length has increased to more than
+  `P.expandLimit`  per cent of its original value, then the routine returns
+  instead   of  eliminating  another  generator.  Hence  you  may  use  the
+  `expandLimit`  parameter as a  break criterion for  the `Go` command. The
+  default value of `expandLimit` is 150.
 
 `generatorsLimit`: 
-        Whenever the elimination  phase of the  `Go` command is entered
-        for  a  presentation  `P`  with  `n`  generators,  then  it  will
-        eliminate at most `n-P.generatorsLimit`  generators (except
-        for generators which turn out to  be trivial).  Hence you may use
-        the  `generatorsLimit`  parameter  as  a break  criterion for the
-        `Go` command. The default value of `generatorsLimit` is 0.
+  Whenever  the  elimination  phase  of  the  `Go` command is entered for a
+  presentation  `P` with  `n` generators,  then it  will eliminate  at most
+  `n-P.generatorsLimit` generators (except for generators which turn out to
+  be trivial). Hence you may use the `generatorsLimit` parameter as a break
+  criterion for the `Go` command. The default `generatorsLimit` is 0.
 
 `lengthLimit`: 
-        The  Tietze  transformation  commands  will  never  eliminate   a
-        generator of a presentation  `P`,  if  they  cannot  exclude  the
-        possibility  that  the  resulting total  length  of  the relators
-        exceeds  the value of  `P.lengthLimit`.  The default  value  of
-        `lengthLimit` is `infinity`.
+  The  Tietze transformation commands will never eliminate a generator of a
+  presentation  `P`,  if  they  cannot  exclude  the  possibility  that the
+  resulting   total   length   of   the   relators  exceeds  the  value  of
+  `P.lengthLimit`. The default value of `lengthLimit` is `infinity`.
 
 `loopLimit`: 
-        Whenever the `Go`  command  is called  for a  presentation `P`,
-        then  it  will  loop  over  at  most `P.loopLimit` of its basic
-        steps.  Hence you  may  use the  `loopLimit` parameter as a break
-        criterion  for   the  `Go`   command.  The   default  value  of
-        `loopLimit` is `infinity`.
+  Whenever  the `Go` command is called for a presentation `P`, then it will
+  loop over at most `P.loopLimit` of its basic steps. Hence you may use the
+  `loopLimit`  parameter as  a break  criterion for  the `Go`  command. The
+  default value of `loopLimit` is `infinity`.
 
-`printLevel`: 
-        Whenever   Tietze  transformation  commands  are  called  for   a
-        presentation `P` with  `P.printLevel`  `=  0`,  they  will  not
-        provide any output except for error messages. If `P.printLevel`
-        `=  1`, they will display some  reasonable amount of output which
-        allows you to watch the progress of the computation and to decide
-        about your next commands. In the case `P.printLevel` `= 2`, you
-        will  get  a much more  generous amount  of output.  Finally,  if
-        `P.printLevel` `= 3`, various messages on internal details will
-        be added. The default value of `printLevel` is 1.
+`debug`: 
+  Whenever Tietze transformation commands are called for a presentation `P`
+  with  `P.debug` `= 0`, they will not  provide any output except for error
+  messages. If `P.debug` `= 1`, they will display some reasonable amount of
+  output  which allows you to watch the  progress of the computation and to
+  decide  about your next commands.  In the case `P.debug`  `= 2`, you will
+  get  a much more generous amount of  output. Finally, if `P.debug` `= 3`,
+  various  messages on internal details will be added. The default value of
+  `debug` is 1.
 
 `saveLimit`: 
-        Whenever the  `Search` command has finished its main loop  over
-        all relators of a presentation `P`, then it checks whether during
-        this loop the total length of the relators has been reduced by at
-        least  `P.saveLimit`  per  cent.  If  this is  the  case,  then
-        `Search` repeats its procedure instead of returning.  Hence you
-        may use the `saveLimit` parameter  as a  break  criterion for the
-        `Search` command  and, in  particular,  for the search phase of
-        the `Go` command. The default value of `saveLimit` is 10.
+  Whenever  the  `Search`  command  has  finished  its  main  loop over all
+  relators  of a presentation `P`, then  it checks whether during this loop
+  the   total  length  of  the  relators  has  been  reduced  by  at  least
+  `P.saveLimit`  per cent. If  this is the  case, then `Search` repeats its
+  procedure  instead  of  returning.  Hence  you  may  use  the `saveLimit`
+  parameter  as  a  break  criterion  for  the  `Search`  command  and,  in
+  particular,  for the search phase of  the `Go` command. The default value
+  of `saveLimit` is 10.
 
 `searchSimultaneous`: 
-        Whenever the `Search`  or the `SearchEqual` command is called
-        for  a  presentation  `P`,  then it is  allowed  to handle  up to
-        `P.searchSimultaneously` short relators simultaneously (see for
-        the description of the `Search` command for more details).  The
-        choice of this parameter may heavily influence the performance as
-        well  as  the result of the  `Search`  and  the `SearchEqual`
-        commands and  hence also  of  the  search  phase  of  the  `Go`
-        command. The default value of `searchSimultaneous` is 20.
+  Whenever  the  `Search`  or  the  `SearchEqual`  command  is called for a
+  presentation `P`, then it is allowed to handle up to `searchSimultaneous`
+  short  relators simultaneously (see  for the description  of the `Search`
+  command  for  more  details).  The  choice  of this parameter may heavily
+  influence  the performance as well as the  result of the `Search` and the
+  `SearchEqual`  commands and  hence also  of the  search phase of the `Go`
+  command. The default value of `searchSimultaneous` is 20.
 
-As soon as  a presentation has been defined, you  may
-alter any of its Tietze option parameters at any time by just assigning a
-new value to the respective component.
+As soon as a presentation has been defined, you may alter any of its Tietze
+option  parameters  at  any  time  by  just  assigning  a  new value to the
+respective component.
 
-To demonstrate  the  effect of the `eliminationsLimit` parameter, we will
-give  an example in which we handle a subgroup of index 240 in a group of
-order 40320  given by  a presentation  due  to B.~H.  Neumann.   First we
-construct a presentation of the subgroup, and  then  we  apply  to it the
-`GoGo`   command  for  different   values  of  the  `eliminationsLimit`
-parameter (including the default value 100).  In  fact, we also alter the
-`printLevel` parameter, but this  is only done in order to suppress  most
-of  the output.   In all  cases the  resulting  presentations  cannot  be
-improved any more by applying the `GoGo`  command again, i.e., they are
-the best results which we can get without substituting new generators.
-
+To  demonstrate the  effect of  the `eliminationsLimit`  parameter, we will
+give  an example in which we  handle a subgroup of index  240 in a group of
+order  40320  given  by  a  presentation  due  to  B.~H.  Neumann. First we
+construct  a presentation  of the  subgroup, and  then we  apply to  it the
+`GoGo`  command for  different values  of the `eliminationsLimit` parameter
+(including  the  default  value  100).  In  fact, we also alter the `debug`
+parameter,  but this is only done in  order to suppress most of the output.
+In  all cases  the resulting  presentations cannot  be improved any more by
+applying the `GoGo` command again, i.e., they are the best results which we
+can get without substituting new generators.
 ```julia-rep1
     gap> F3 := FreeGroup( "a", "b", "c" );;
     gap> G := F3 / [ F3.1^3, F3.2^3, F3.3^3, (F3.1*F3.2)^5,
@@ -2067,41 +2051,41 @@ the best results which we can get without substituting new generators.
     gap> H := Subgroup( G, [ G.1, G.3 ] );;
     gap> P := PresentationSubgroup( G, H );
     << presentation with 224 gens and 593 rels of total length 2769 >>
-    gap> for i in [ 28, 29, 30, 94, 100 ] do
-    >       Pi := Copy( P );
-    >       Pi.eliminationsLimit := i;
-    >       Print( "&I  eliminationsLimit set to ", i, "\n" );
-    >       Pi.printLevel := 0;
-    >       GoGo( Pi );
-    >       print( Pi );
-    >    od;
-    &I  eliminationsLimit set to 28
-    &I  there are 2 generators and 95 relators of total length 10817
-    &I  eliminationsLimit set to 29
-    &I  there are 2 generators and 5 relators of total length 35
-    &I  eliminationsLimit set to 30
-    &I  there are 3 generators and 98 relators of total length 2928
-    &I  eliminationsLimit set to 94
-    &I  there are 4 generators and 78 relators of total length 1667
-    &I  eliminationsLimit set to 100
-    &I  there are 3 generators and 90 relators of total length 3289 |
+    julia> for i in [ 28, 29, 30, 94, 100 ]
+    Pi=deepcopy(P)
+    Pi.eliminationsLimit=i
+    println("# eliminationsLimit set to ",i)
+      Pi.debug=0
+      Presentations.GoGo(Pi)
+      print(Pi)
+    end
+    #  eliminationsLimit set to 28
+    #  there are 2 generators and 95 relators of total length 10817
+    #  eliminationsLimit set to 29
+    #  there are 2 generators and 5 relators of total length 35
+    #  eliminationsLimit set to 30
+    #  there are 3 generators and 98 relators of total length 2928
+    #  eliminationsLimit set to 94
+    #  there are 4 generators and 78 relators of total length 1667
+    #  eliminationsLimit set to 100
+    #  there are 3 generators and 90 relators of total length 3289 |
 ```
 
-Similarly,  we  demonstrate the influence of the `saveLimit` parameter by
-just continuing the  preceding example  for some  different values of the
-`saveLimit` parameter  (including  its  default  value  10),  but without
-changing the `eliminationsLimit`  parameter which keeps its default value
+Similarly,  we demonstrate  the influence  of the  `saveLimit` parameter by
+just  continuing the  preceding example  for some  different values  of the
+`saveLimit`  parameter  (including  its  default  value  10),  but  without
+changing  the `eliminationsLimit`  parameter which  keeps its default value
 100.
 
 ```julia-rep1
-    gap> for i in [ 9, 10, 11, 12, 15 ] do
-    >       Pi := Copy( P );
-    >       Pi.saveLimit := i;
-    >       Print( "&I  saveLimit set to ", i, "\n" );
-    >       Pi.printLevel := 0;
-    >       GoGo( Pi );
-    >       print( Pi );
-    >    od;
+    julia> for i in [ 9, 10, 11, 12, 15 ]
+       Pi=deepcopy(P)
+       Pi.saveLimit=i
+       println("# saveLimit set to ",i)
+       Pi.debug=0
+       GoGo(Pi)
+       print(Pi)
+    end
     &I  saveLimit set to 9
     &I  there are 3 generators and 97 relators of total length 5545
     &I  saveLimit set to 10
@@ -2114,66 +2098,14 @@ changing the `eliminationsLimit`  parameter which keeps its default value
     &I  there are 3 generators and 143 relators of total length 18326 |
 ```
 """
-function PrintOptions(T::Presentation)
-OptionNames=[:eliminationsLimit,:expandLimit,:generatorsLimit,:lengthLimit,
-               :loopLimit,:printLevel,:saveLimit,:searchSimultaneous]
-  len=0
-  for nam in keys(T.prop)
-    if nam in OptionNames
-      if len<length(string(nam)) len=length(string(nam)) end
-      lst=nam
-    end
+function PrintOptions(P::Presentation)
+  names=[:eliminationsLimit,:expandLimit,:generatorsLimit,:lengthLimit,
+         :loopLimit,:debug,:saveLimit,:searchSimultaneous]
+  lst=sort(collect(intersect(keys(P.prop),names)))
+  len=maximum(length.(string.(lst)))
+  foreach(lst)do nam
+    println(rpad(nam,len),"= ",getproperty(P,nam))
   end
-  print("rec(\n",
-    join(map(filter(nam->nam in OptionNames,collect(keys(T.prop))))do nam
-    string("  ",nam," "^(len+1-length(string(nam))),"= ",getproperty(T,nam))
-  end,",\n")," )")
-end
-
-"""
-`PrintPairs(P[,n=10])`
-
-`PrintPairs` determines  in  the  given presentation  `P`  the `n` most
-frequently occurring squarefree relator subwords  of length  2 and prints
-them together with their numbers of  occurrences.
-A value `n=0` is interpreted as `infinity`.
-
-This  list is a  useful piece of information  in the context of using the
-`Substitute` command described above.
-"""
-function PrintPairs(P::Presentation,n::Integer=10)
-  Check(P)
-  for (m,(num,i,j,k)) in enumerate(MostFrequentPairs(P,n))
-    geni=P.tietze.generators[i];if k>1 geni=inv(geni) end
-    genj=P.tietze.generators[j];if isodd(k) genj=inv(genj) end
-    xprintln("#I $m. ",plural(num,"occurrence")," of ",geni,"*",genj)
-  end
-end
-
-"""
-`PrintPresentation(P)`
-
-`PrintPresentation` prints the current lists of generators and relators
-and the current state of a presentation `P`.
-"""
-function PrintPresentation(T::Presentation)
-  Check(T)
-  print("#I  generators:\n")
-  PrintGenerators(T)
-  print("#I  relators:\n")
-  println(relators(T))
-  print(T)
-end
-
-"""
-`relators(P::Presentation)`
-
-prints the list of relators of `P`.
-"""
-function relators(P::Presentation)
-  Check(P)
-  T=P.tietze
-  map(i->AbsWord(T.relators[i],T.generators),eachindex(T.relators))
 end
 
 """
@@ -2181,52 +2113,48 @@ end
 
 deletes  the redundant  Tietze generators  and renumbers  the non-redundant
 ones  accordingly. The  redundant generators  are assumed  to be  marked in
-`T.inverses` by an entry `T[i]!=i`.
+`P.inverses` by an entry `P[i]!=i`.
 """
 function RemoveGenerators(P::Presentation)
   debug(P,3,"RemoveGenerators renumbering the Tietze generators")
-  T=P.tietze
-  redunds=T.numredunds
+  redunds=P.numredunds
   if redunds==0 return end
-  comps=P.components
-  gens=T.generators
-  numgens=length(T.generators)
+  gens=P.generators
+  numgens=length(P.generators)
   j=0
-# @show j,T.inverses, T.numredunds
+# @show j,P.inverses, P.numredunds
   for i in 1:numgens
-    if T[i]==i
+    if P[i]==i
       j+=1
       if j<i
-        comps[j]=comps[i]
-        T[i]=j
-        if T[-i]>0 T[-i]=j else T[-i]=-j end
+        P[i]=j
+        if P[-i]>0 P[-i]=j else P[-i]=-j end
       end
     else
-      delete!(P.prop,Symbol(comps[i]))
-      T[i]=0
-      T[-i]=0
+      P[i]=0
+      P[-i]=0
     end
   end
-# @show j,T.inverses
+# @show j,P.inverses
   if j!=numgens-redunds
     error("j=$j numgens=$numgens redunds=$redunds. You should never get here.\n")
   end
-# @show j, T.inverses, numgens
-  for rel in T.relators, i in eachindex(rel) rel[i]=T[rel[i]] end
+# @show j, P.inverses, numgens
+  for rel in P.relators, i in eachindex(rel) rel[i]=P[rel[i]] end
   if haskey(P, :imagesOldGens)
     for i in 1:length(P.imagesOldGens)
       image=P.imagesOldGens[i]
       newim=Int[]
-      for j=1:length(image) push!(newim, T[image[j]]) end
+      for j=1:length(image) push!(newim, P[image[j]]) end
       P.imagesOldGens[i]=reduceword(newim)
     end
   end
   for i in 1:numgens
-    j=T[i]
+    j=P[i]
     if j<i && j>0
       gens[j]=gens[i]
-      T[j]=j
-      T[-j]=T[-i]
+      P[j]=j
+      P[-j]=P[-i]
       if haskey(P, :preImagesNewGens)
           P.preImagesNewGens[j]=P.preImagesNewGens[i]
       end
@@ -2235,11 +2163,10 @@ function RemoveGenerators(P::Presentation)
   j=numgens
   numgens1=numgens+1
   numgens-=redunds
-  T.inverses=T.inverses[numgens1-numgens:numgens1+numgens]
-  resize!(T.generators,numgens)
-  resize!(P.components,numgens)
+  P.inverses=P.inverses[numgens1-numgens:numgens1+numgens]
+  resize!(P.generators,numgens)
   if haskey(P, :preImagesNewGens) resize!(P.preImagesNewGens,numgens) end
-  T.numredunds=0
+  P.numredunds=0
 end
 
 # hash of cyclic subword of relator w starting at i and of length l
@@ -2323,7 +2250,7 @@ function alphab(rel,gens)
 end
 
 # search from i-th relator, hashing subwords until j-th
-function SearchC(T::Tietze,i,j,equal=false)
+function SearchC(T::Presentation,i,j,equal=false)
 # @show i,j,equal
   rels=T.relators
 # println("SearchC(",join(alphab.(rels[i:j],Ref(T.generators)),","),",",equal,")")
@@ -2442,7 +2369,7 @@ The default value of `P.searchSimultaneous` is 20.
 function Search(P::Presentation)
   debug(P,3,"Search subwords")
   Check(P)
-  T=P.tietze
+  T=P
   rels=T.relators
   T.modified=false
   save=P.saveLimit//100
@@ -2523,7 +2450,7 @@ The loop over the relators is executed exactly once.
 function SearchEqual(P::Presentation)
   debug(P,3,"SearchEqual length subwords")
   Check(P)
-  T=P.tietze
+  T=P
   simultanlimit=P.searchSimultaneous
   sort!(P)
   rels=T.relators
@@ -2790,19 +2717,15 @@ a copy of a presentation and to restart from it  again if you want
 to try an alternative strategy.  
 """
 function Substitute(P::Presentation,n::Int=1,elim::Int=0)
-  Check(P)
   if !(0<=elim<=2) error("last argument must be 0, 1, or 2") end
-  T=P.tietze
-  numgens=length(T.generators)
-  if numgens<2 return end
+  T=P
+  if length(T.generators)<2 return end
   pairs=MostFrequentPairs(P, n)
   if length(pairs)<n
-    debug(P,1,"Substitute nbpairs is out of range")
+    debug(P,1,"Substitute nbpairs $n is out of range")
     return
   end
-  i=pairs[n][2]
-  j=pairs[n][3]
-  k=pairs[n][4]
+  m,i,j,k=pairs[n]
   if k>1 i=T[-i] end
   if isodd(k) j=T[-j] end
   pair=[i, j]
@@ -2811,10 +2734,10 @@ function Substitute(P::Presentation,n::Int=1,elim::Int=0)
   debug(P,1,"Substitute new generator ",gen," defined by ", word)
   AddRelator(P,inv(gen)*word)
   UpdateGeneratorImages(P, pair)
-  printlevel=P.printLevel;P.printLevel=0;Search(P);
-  P.printLevel=2
+  printlevel=P.debug;P.debug=0;Search(P);
+  P.debug=2
   if elim>0 EliminateGen(P, abs(pair[elim])) else EliminateGen1(P) end
-  P.printLevel=printlevel
+  P.debug=printlevel
   if T.modified Search(P) end
   if T.numredunds>0 RemoveGenerators(P) end
   PrintStatus(P,1)
@@ -2832,10 +2755,9 @@ substitutes the product `ab`  as  a new generator, and then it eliminates
 the generators `a` and `b`.
 """
 function SubstituteCyclicJoins(P::Presentation)
-  Check(P)
   debug(P,3,"SubstituteCyclicJoins")
   exponents=GeneratorExponents(P)
-  T=P.tietze
+  T=P
   T.modified=false
   if Sum(exponents)==0 return end
   sort!(P)
@@ -2860,10 +2782,10 @@ function SubstituteCyclicJoins(P::Presentation)
         AddRelator(P, gens[num2]*gen^-exp1)
         UpdateGeneratorImages(P, [num1, num2])
         gen2=gens[num2]
-        printlevel=P.printLevel;P.printLevel=2
+        printlevel=P.debug;P.debug=2
         Eliminate(P, gens[num1]);num2=findfirst(==(gen2),gens)
         Eliminate(P, gens[num2])
-        P.printLevel=printlevel
+        P.debug=printlevel
         numgens=length(T.generators)
         numrels=length(T.relators)
         T.modified=true
@@ -2925,6 +2847,29 @@ Example.
     PerfectGroup(960,1)
     gap> P := Presentation( G );
     << presentation with 6 gens and 21 rels of total length 84 >>
+P=Presentation("
+1: a=A
+2: e=E
+3: f=F
+4: c=C
+5: d=D
+6: bbb=1
+7: fc=CF
+8: dc=CD
+9: fe=EF
+10: ec=CE
+11: da=AF
+12: ed=DE
+13: fd=DF
+14: ca=AE
+15: ea=AC
+16: fa=AD
+17: fb=bE
+18: Bcbfd=1
+19: Bebfe=1
+20: Bdbfedc=1
+21: babab=ABABA
+")
     gap> P.generators;
     [ a, b, s, t, u, v ]
     gap> GoGo( P );
@@ -2948,7 +2893,7 @@ Example.
 """
 function Substitute(P::Presentation,word::Union{Vector{Int},AbsWord},arg...)
   Check(P)
-  gens=P.tietze.generators
+  gens=P.generators
   if word isa Vector
     tzword=reduceword(word)
     word=AbsWord(tzword, gens)
@@ -2960,12 +2905,12 @@ function Substitute(P::Presentation,word::Union{Vector{Int},AbsWord},arg...)
     images=P.imagesOldGens
     delete!(P,:imagesOldGens)
   end
-  if narg==1
-    gen=AbstractGenerator(arg[1])
+  if length(arg)==1
+    gen=AbsWord(arg[1])
     AddGenerator(P, gen)
   else
     AddGenerator(P)
-    gen=P.tietze.generators[end]
+    gen=P.generators[end]
   end
   debug(P,1,"Substitute new generator ", gen," defined by ", word)
   AddRelator(P,inv(gen)*word)
@@ -3019,9 +2964,9 @@ function tracing(P::Presentation,stop=false)
     delete!(P, :oldGenerators)
     debug(P,1,"terminated tracing generator images")
   else
-    P.oldGenerators=deepcopy(P.tietze.generators)
-    P.imagesOldGens=map(i->[i],eachindex(P.tietze.generators))
-    P.preImagesNewGens=map(i->[i],eachindex(P.tietze.generators))
+    P.oldGenerators=deepcopy(P.generators)
+    P.imagesOldGens=map(i->[i],eachindex(P.generators))
+    P.preImagesNewGens=map(i->[i],eachindex(P.generators))
     debug(P,1,"started tracing generator images")
   end
 end
@@ -3157,12 +3102,12 @@ function images(P::Presentation)
   end
   if haskey(P,:preImagesNewGens)
     println("current generators in terms of the old ones:")
-    for i in eachindex(P.tietze.generators) xprintln("  ",P.tietze.generators[i],"=",
+    for i in eachindex(P.generators) xprintln("  ",P.generators[i],"=",
            AbsWord(P.preImagesNewGens[i],P.oldGenerators)) end
   end
   println("old generators in terms of the current ones:")
   for i in eachindex(P.oldGenerators) xprintln("  ",P.oldGenerators[i],"=",
-         AbsWord(P.imagesOldGens[i],P.tietze.generators))
+         AbsWord(P.imagesOldGens[i],P.generators))
   end
 end
 
@@ -3176,31 +3121,28 @@ T according to the given sort list L.
 function RenumberGenerators(P::Presentation, L::AbstractVector)
   debug(P,3,"RenumberGenerators")
   RemoveGenerators(P)
-  T=P.tietze
+  T=P
   numgens=length(T.generators)
   if sort(L)!=1:numgens
     error("<L> must determine a permutation of the generator numbers")
   end
   perm=inv(Perm(L))
   invsort=vec(perm)
-  comps=P.components
   gens=T.generators
   rels=T.relators
   numrels=length(T.relators)
-  oldcomps=deepcopy(comps)
   oldgens=deepcopy(gens)
   oldinvs=copy(T.inverses)
   new=copy(T.inverses)
-  println("gens==",gens,"\ncomps==",comps,"\ninvs==",T.inverses,"\nrels==",rels)
+  println("gens==",gens,"\ninvs==",T.inverses,"\nrels==",rels)
   for i in 1:numgens
     j=L[i]
     gens[i]=oldgens[j]
-    comps[i]=oldcomps[j]
     if oldinvs[numgens+1+j]==j T[-i]=i else T[-i]=-i end
     new[numgens+1+i]=invsort[i]
     new[numgens+1-i]=-invsort[i]
   end
-  println("gens==",gens,"\ncomps==",comps,"\ninvs==",T.inverses,"\nnew==",new)
+  println("gens==",gens,"\ninvs==",T.inverses,"\nnew==",new)
   for i in 1:numrels
       rels[i]=map(j->new[numgens+1+j], rels[i])
   end
@@ -3280,12 +3222,12 @@ julia> display_balanced(p)
 ```
 """
 function simplify(g::Presentation,lim=1000)
-  T=g.tietze
+  T=g
   if isempty(T.relators) return end
-  rot(i)=g.tietze.relators[i]=circshift(g.tietze.relators[i],-1)
+  rot(i)=g.relators[i]=circshift(g.relators[i],-1)
   function test()
     if prod(filter(!iszero,big.(length.(T.relators))))<lim
-      tt=g.tietze.relators
+      tt=g.relators
       v=fill(0,length(tt))
       if length(v)==0 return false end
       while true
@@ -3300,54 +3242,22 @@ function simplify(g::Presentation,lim=1000)
         rot(tt,j)
         v[j]+=1
         GoGo(g)
-        tt=g.tietze.relators
+        tt=g.relators
         if [length(tt),sum(length,tt)]<before return true end
       end
     else
       for k in 1:lim
-        tt=g.tietze.relators
+        tt=g.relators
         before=[length(tt),sum(length,tt)]
         rot(rand(eachindex(tt)))
         GoGo(g)
-        tt=g.tietze.relators
+        tt=g.relators
         if [length(tt),sum(length,tt)]<before return true end
       end
     end
     return false
   end
   while test() end
-end
-
-function invertcase(s::String)
-  String(map(collect(s))do x
-    if isuppercase(x) lowercase(x) else uppercase(x) end
-  end)
-end
-
-Base.dump(P::Presentation)=(Check(P);dump(P.tietze))
-function Base.dump(T::Tietze)
-  println("modified=",T.modified," numredunds=",T.numredunds)
-  showinverses(T)
-  for i in eachindex(T.relators)
-    println("$i: ",alphab(T.relators[i],T.generators)," (",T.flags[i],")")
-  end
-end
-
-function display_balanced(g,dumb=false)
-  T=g.tietze
-  f(i,w)=vcat(w,w)[i:i+div(length(w),2)-1]
-  used=Set{Int}();for x in T.relators, y in x push!(used,abs(y)) end
-  if length(T.generators)>length(used)
-   print("There are ",length(T.generators)-length(used)," free generators\n")
-  end
-  for (i,w) in enumerate(T.relators)
-    lw=length(w)
-    if isodd(lw) || dumb println(i, ": ", alphab(w,T.generators), "=1")
-    elseif lw>0
-      m=argmax(map(i->count(>(0), f(i,w)), 1:lw))
-      println("$i: ",alphab(f(m,w),T.generators),"=",alphab(-reverse(f(m+div(lw,2),w)),T.generators))
-    end
-  end
 end
 
 """
@@ -3476,10 +3386,10 @@ julia> display_balanced(p)
 ```
 """
 function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
-  perf(p)=[length(p.tietze.relators), sum(length,p.tietze.relators)]
+  perf(p)=[length(p.relators), sum(length,p.relators)]
   function triples(p)
     res=Vector{Int}[]
-    for v in p.tietze.relators, i in 1:length(v)-2
+    for v in p.relators, i in 1:length(v)-2
       if v[i]==-v[i+2]
         if v[i+1]>0 push!(res,v[i:i+2])
         else        push!(res,-reverse(v[i:i+2]))
@@ -3493,12 +3403,12 @@ function tryconjugate(p::Presentation,tp=[0,0];info=[0,0])
     sort!(res,by=x->perf(x[2]))
   end
   p=deepcopy(p)
-  simplify(p,100)
+  GoGo(p)
   if iszero(tp) tp=perf(p) end
   p1=[]
   for c in triples(p)
     print(alphab(c),"=> ")
-    n=deepcopy(p);SubstituteGen(n,c[2],[-c[1],c[2],-c[3]]);simplify(n,100)
+    n=deepcopy(p);SubstituteGen(n,c[2],[-c[1],c[2],-c[3]]);GoGo(n)
     if perf(n)<=info
       println("# ",alphab(c)," gives rels/len ", perf(n))
       display_balanced(n)
@@ -3529,7 +3439,7 @@ end
 using ..Gapjm:gap, Gapjm
 
 function Gapjm.gap(p::Presentation)
-  t=p.tietze
+  t=p
   s="F:=FreeGroup($(length(t.generators)));\n"
   s*="F.relators:=["
   s*=join(map(t.relators)do r
