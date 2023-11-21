@@ -44,7 +44,7 @@ julia> relators(P)
 ```
 
 ```julia-rep1
-julia> Presentations.PrintGenerators(P)
+julia> Presentations.show_generators(P)
 #I 1. a 10 occurrences involution
 #I 2. b 20 occurrences
 
@@ -75,7 +75,8 @@ end
 using PermGroups
 using Combinat: tally
 export AbsWord, @AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
-       tryconjugate, simplify, relators, display_balanced, tracing, images
+       tryconjugate, simplify, relators, display_balanced, tracing, images,
+       show_generators
 
 """
 # Changing Presentations
@@ -129,7 +130,7 @@ be used to determine and to display the images or preimages of the involved
 generators under the isomorphism which is defined by the sequence of Tietze
 transformations which are applied to a presentation.
 
-The  functions, `PrintPairs`, and `PrintOptions`,  can be useful. There are
+The  functions, `show_pairs`, and `PrintOptions`,  can be useful. There are
 also  the  *Tietze  options*:  parameters  which  essentially influence the
 performance  of the  functions mentioned  above; they  are not specified as
 arguments of function calls. Instead, they are stored in the presentation.
@@ -138,10 +139,10 @@ plural(n,w)=string(n)*" "*w*(n==1 ? "" : "s")
 
 #------------------ Abstract Words ----------------------------------
 """
-An  `AbsWord` is an abstract word in  some generators, that is a product of
-some  of  these  generators  raised  to  positive  or  negative powers. The
-generators are indexed by `Symbols` in the julia implementation (as a
-`Vector{Pair{Symbol,Int}}`)
+An  `AbsWord` represents an  element of the  free group on some generators.
+The  generators  are  indexed  by  `Symbols`.  For  example  the  `Absword`
+representing `a³b⁻²a` is represented internally as
+`[:a => 3, :b => -2, :a => 1]`
 """
 struct AbsWord 
   d::Vector{Pair{Symbol,Int}}
@@ -165,7 +166,7 @@ struct AbsWord
 end
 
 """
-A positive `AbsWord` is obtained by giving `Symbols` as arguments
+A positive `AbsWord` may be obtained by giving `Symbols` as arguments
 ```julia-repl
 julia> AbsWord(:b,:a,:a,:b)
 ba²b
@@ -222,7 +223,7 @@ Base.:(==)(a::AbsWord,b::AbsWord)=a.d==b.d
 
 "returns symbol for an AbsWord of length 1"
 function mon(w::AbsWord)
-  if length(w.d)!=1 || last(w.d[1])!=1 error("not generator") end
+  if length(w.d)!=1 || last(w.d[1])!=1 error("not a generator") end
   first(w.d[1])
 end
 
@@ -350,17 +351,10 @@ end
 
 Presentation(s::Vector{Symbol},r,pl=1)=Presentation(AbsWord.(s),r,pl)
 
-function Presentation(ggens::Vector{AbsWord},grels::Vector{AbsWord},printlevel::Int=1)
-  numgens=length(ggens)
-  numrels=length(grels)
-  rels=Vector{Int}[]
-  total=0
-  for i in grels
-    rel=reduceword(TietzeWord(i,ggens);cyclically=true)
-    push!(rels,rel)
-    total+=length(rel)
-  end
-  P=Presentation(deepcopy(ggens),numgens:-1:-numgens,rels,fill(1,numrels),
+function Presentation(gens::Vector{AbsWord},grels::Vector{AbsWord},debug::Int=1)
+  numgens=length(gens)
+  rels=map(w->reduceword(TietzeWord(w,gens);cyclically=true),grels)
+  P=Presentation(deepcopy(gens),numgens:-1:-numgens,rels,fill(1,length(rels)),
                  false, 0, Dict{Symbol,Any}())
   P.nextFree=numgens+1
   P.eliminationsLimit=100
@@ -368,7 +362,7 @@ function Presentation(ggens::Vector{AbsWord},grels::Vector{AbsWord},printlevel::
   P.generatorsLimit=0
   P.lengthLimit=0 # infinity
   P.loopLimit=0 # infinity
-  P.debug=printlevel
+  P.debug=debug
   P.saveLimit=10
   P.searchSimultaneous=20
   PrintStatus(P,2)
@@ -417,11 +411,6 @@ end
 
 Base.getindex(T::Presentation,i)=T.inverses[length(T.generators)+1-i]
 Base.setindex!(T::Presentation,j,i)=T.inverses[length(T.generators)+1-i]=j
-using ..Gapjm: toM, showtable
-function showinverses(T::Presentation)
- m=toM([map(i->T[i],eachindex(T.generators)),map(i->T[-i],eachindex(T.generators))])
-  showtable(rio(),m;row_labels=["i","-i"],col_labels=string.(T.generators))
-end
 
 # reduce cyclically a Tietze word
 function reduceword(w::Vector{Int};cyclically=false)
@@ -499,7 +488,11 @@ end
 
 function Base.dump(T::Presentation)
   println("modified=",T.modified," numredunds=",T.numredunds)
-  showinverses(T)
+  println(T.generators)
+  l=filter(i->T[-i]!=-T[i],eachindex(T.generators))
+  l1=filter(i->T[-i]==T[i],l)
+  if length(l1)>0 println("involutions:",T.generators[l1])end
+  if l1!=l display(stack(map(i->[T.generators[i],T[i],T[-i]],l))) end
   for i in eachindex(T.relators)
     println("$i: ",alphab(T.relators[i],T.generators)," (",T.flags[i],")")
   end
@@ -522,94 +515,33 @@ function display_balanced(T,dumb=false)
 end
 
 """
-`Print(P[,list])`
+`show_generators(P,list=eachindex(P.generators))`
 
-`Print` provides a  kind of  *fast print out* for a presentation `P`.
-
-Remember that in order to speed up the Tietze transformation routines, each
-relator  in  a  presentation  `P`  is  internally  represented by a list of
-positive  or negative  generator numbers,  i.e., each  factor of the proper
-{GAP}  word  is  represented  by  the  position number of the corresponding
-generator  with  respect  to  the  current  list  of  generators, or by the
-respective  negative number,  if the  factor is  the inverse of a generator
-which  is  not  known  to  be  an  involution.  In contrast to the commands
-`relators`  and `PrintGenerators` described  above, `Print` does not
-convert these lists back to the corresponding {GAP} words.
-
-`Print`  prints the current  list of generators,  and then for each relator
-its  length  and  its  internal  representation  as  a  list of positive or
-negative generator numbers.
-
-If a list `list` has been specified as second argument, then it is expected
-to  be a list of the position numbers of the relators to be printed. `list`
-need  not be  sorted and  may contain  duplicate elements. The relators are
-printed  in  the  order  in  which  and  as often as their numbers occur in
-`list`.  Position  numbers  out  of  range  (with  respect  to  the list of
-relators) will be ignored.
+prints  the generators of `P` with the total number of their occurrences in
+the  relators, and notes involutions. A  second `list` argument prints only
+those generators.
 """
-function Print(T::Presentation,list=eachindex(T.relators))
-  if isempty(T.generators) print("#I there are no generators\n")
-  else println("#I generators: ", T.generators)
-  end
-  println("#I inverses: ", T.inverses)
-  if isempty(T.relators) print("#I  there are no relators\n");return end
-  for i in list
-    if i in eachindex(T.relators)
-      print("#I $i. ",length(T.relators[i]),"  [",join(T.relators[i],","),"]")
-      if T.flags[i]!=1 print(" (",T.flags[i],")") end
-      println()
-    end
-  end
-end
-
-"""
-`PrintGenerators(P[,list])`
-
-prints the current list of generators of a presentation
-`P`,  providing  for  each  generator  its  name,  the  total number of its
-occurrences  in the  relators, and,  if that  generator is  known to  be an
-involution, an appropriate message.
-
-a second argument `list` of generator indices prints only those generators.
-"""
-function PrintGenerators(T::Presentation,list::AbstractVector{Int}=eachindex(T.generators))
+function show_generators(T::Presentation,list=eachindex(T.generators))
   gens=T.generators
-  numgens=length(gens)
-  if numgens==0 println("#I  there are no generators");return end
-  if isempty(list) list=[0] end
-  leng=length(list)
-  _min=max(minimum(list),1)
-  _max=min(maximum(list),numgens)
-  if _min==_max
-    occur=Occurrences(T, _max)
-    num=occur[1]
-    print("#I ", _max,". ",gens[_max]," ",plural(num,"occurrence"))
-    if T[-_max]>0 print(" involution") end
+  if isempty(gens) println("#I  there are no generators");return end
+  occur=Occurrences(T)
+  if list isa Integer list=[list] end
+  for i in list
+    print("#I ", i, ". ", gens[i], " ",plural(occur[1][i],"occurrence"))
+    if T[-i]>0 print(" involution") end
     println()
-  elseif _min<_max
-    occur=Occurrences(T)
-    for i in list
-      if 1<=i<=numgens
-        num=occur[1][i]
-        print("#I ", i, ". ", gens[i], " ",plural(num,"occurrence"))
-        if T[-i]>0 print(" involution") end
-        println()
-      end
-    end
   end
 end
 
 """
-`PrintPairs(P,n=10)`
+`show_pairs(P,n=10)`
 
 shows  the  `n`  most  frequently  occurring squarefree relator subwords of
-length  2 them together with their numbers of occurrences. A value `n=0` is
-interpreted as `infinity`.
+length 2 with their number of occurrences.`n=0` is interpreted as infinity.
 
-This  list is  a useful  piece of  information in  the context of using the
-`Substitute` command.
+This  is  useful  information  in  the context of the `Substitute` command.
 """
-function PrintPairs(P::Presentation,n::Integer=10)
+function show_pairs(P::Presentation,n::Integer=10)
   for (m,(num,i,j,k)) in enumerate(MostFrequentPairs(P,n))
     geni=P.generators[i];if k>1 geni=inv(geni) end
     genj=P.generators[j];if isodd(k) genj=inv(genj) end
@@ -791,7 +723,6 @@ function HandleLength1Or2Relators(T::Presentation)
       for i in eachindex(T.generators)
         if T[i]!=i T[i],T[-i]=T[T[i]],T[-T[i]] end
       end
-#     showinverses(T)
 # the next loop is FunTzReplaceGens
       for i in eachindex(T.relators)
        if length(T.relators[i])==2 && T.flags[i]==3 && abs(T[T.relators[i][1]])== abs(T.relators[i][1])continue end#don't remove involutions
@@ -1428,19 +1359,19 @@ end
 
 # returns 3 vectors:
 # 1: nb. occurences of each generator
-# 2: n0 of a relator of minimal length where occurs with minimal >0 multiplicity
+# 2: n0 of a relator of minimal length where occurs with minimal>0 multiplicity
 # 3: the corresponding multiplicity
-function Occurrences(T::Presentation,gen=0)
+function Occurrences(T::Presentation)
   occ=fill(0,length(T.generators))
   min=fill(0,length(T.generators))
   mult=fill(0,length(T.generators))
   for j in eachindex(T.relators)
-   lococc=fill(0,length(T.generators))
+    lococc=fill(0,length(T.generators))
     for i in T.relators[j] lococc[abs(i)]+=1 end
     occ+=lococc
     for i in eachindex(T.generators)
       if lococc[i]>0
-       if mult[i]==0 || lococc[i]<mult[i] || 
+      if mult[i]==0 || lococc[i]<mult[i] || 
         (lococc[i]==mult[i] && length(T.relators[j])<length(T.relators[min[i]]))
           min[i]=j
           mult[i]=lococc[i]
@@ -1448,8 +1379,10 @@ function Occurrences(T::Presentation,gen=0)
       end
     end
   end
-  gen==0 ? [occ,min,mult] : [occ[gen],min[gen],mult[gen]]
+  [occ,min,mult]
 end
+
+Occurrences(T::Presentation,gen)=getindex.(Occurrences(T),gen)
 
 """
 EliminateGen1(presentation)  . . . . . . .  eliminates a generator
@@ -1463,27 +1396,25 @@ the  relators   cannot  be  guaranteed   to  not  exceed   the  parameter
 P.lengthLimit (if !=0).
 """
 function EliminateGen1(T::Presentation)
-  spacelimit=sum(length,T.relators)+T.lengthLimit
-  occTotals,occRelNums,occMultiplicities=Occurrences(T)
+  occTotals,occRelNo,occMultiplicities=Occurrences(T)
   modified=false
   num=0
   space=0
   for i in T.protected+1:length(T.generators)
     if occMultiplicities[i]==1
-      total=occTotals[i]
-      len=length(T.relators[occRelNums[i]])
-      ispace=(total-1)*(len-1)-len
+      len=length(T.relators[occRelNo[i]])
+      ispace=(occTotals[i]-1)*(len-1)-len
       if num==0 || ispace<=space
         num=i
         space=ispace
       end
     end
   end
-  if num>0 && (T.lengthLimit==0 || sum(length,T.relators)+space<=spacelimit)
+  if num>0 && (T.lengthLimit==0 || space<=T.lengthLimit)
     gen=num
-    occRelNum=occRelNums[num]
-    rel=T.relators[occRelNum]
-    len=length(T.relators[occRelNum])
+    occRelNo=occRelNo[num]
+    rel=T.relators[occRelNo]
+    len=length(T.relators[occRelNo])
     pos=findfirst(==(gen),rel)
     if pos===nothing
       gen=-gen
@@ -1503,29 +1434,28 @@ function EliminateGen1(T::Presentation)
 end
 
 """
-EliminateGens(presentation)  .  Eliminates generators
+EliminateGens(P::presentation)
 
 `EliminateGens`  repeatedly eliminates generators  from the presentation of
 the given group until one of the following conditions is violated:
 
-(1) The  current  number of  generators  is greater than T.generatorsLimit.
-(2) The number of generators eliminated so far is less than T.eliminationsLimit.
+(1) The  current  number of  generators  is greater than P.generatorsLimit.
+(2) The number of generators eliminated so far is less than P.eliminationsLimit.
 (3) The  total length of the relators  has not yet grown  to a percentage
-    greater than the parameter T.expandLimit.
+    greater than the parameter P.expandLimit.
 (4) The  next  elimination  will  not  extend the total length to a value
-    greater than the parameter T.lengthLimit.
+    greater than the parameter P.lengthLimit.
 
 the function will not eliminate any protected generators.
 """
 function EliminateGens(P::Presentation)
   debug(P,3,"EliminateGens eliminating generators")
   redundantsLimit=5
-  maxnum=P.eliminationsLimit
   bound=sum(length,P.relators)*P.expandLimit//100
   modified=false
   P.modified=true
   num=0
-  while P.modified && num<maxnum && sum(length,P.relators)<=bound &&
+  while P.modified && num<P.eliminationsLimit && sum(length,P.relators)<=bound &&
    length(P.generators)-P.numredunds>P.generatorsLimit
     EliminateGen1(P)
 #   print("a ");PrintStatus(P);@show P.flags
@@ -1569,7 +1499,7 @@ function FindCyclicJoins(P::Presentation)
   T.modified=false
   newstart=true
   while newstart
-    exponents=GeneratorExponents(P)
+    exponents=find_exponents(P)
     if iszero(exponents) return end
     newstart=false
     gens=T.generators
@@ -1660,30 +1590,6 @@ function FindCyclicJoins(P::Presentation)
     sort!(P)
     PrintStatus(P,1)
   end
-end
-
-"""
-GeneratorExponents(presentation) . . . list of generator exponents
-
-`GeneratorExponents`  tries to find exponents for the Tietze generators
-and return them in a list parallel to the list of the generators.
-"""
-function GeneratorExponents(T::Presentation)
-  debug(T,3,"GeneratorExponents find generator exponents")
-  rels=T.relators
-  exponents=fill(0,length(T.generators))
-  for i in eachindex(rels)
-    if isempty(rels[i]) || !allequal(rels[i]) continue end
-    if rels[i][1]<0 rels[i]=-rels[i] end
-    num=rels[i][1]
-    exponents[num]=exp=gcd(exponents[num], length(T.relators[i]))
-    if exp<length(T.relators[i])
-      rels[i]=fill(num,exp)
-      T.flags[i]=1
-      T.modified=true
-    end
-  end
-  exponents
 end
 
 """
@@ -2131,8 +2037,7 @@ function RemoveGenerators(P::Presentation)
         if P[-i]>0 P[-i]=j else P[-i]=-j end
       end
     else
-      P[i]=0
-      P[-i]=0
+      P[i]=P[-i]=0
     end
   end
 # @show j,P.inverses
@@ -2538,7 +2443,7 @@ presentation.
 In order to decide which arguments might be appropriate for the next call
 of `Substitute`, often it  is helpful to print out a  list of the  most
 frequently occurring squarefree  relator subwords of  length 2.  You  may
-use the `PrintPairs` command described below to do this.
+use the `show_pairs` command described below to do this.
 
 As an example we handle a subgroup of index 266 in the Janko group `J₁`.
 
@@ -2646,7 +2551,7 @@ As an example we handle a subgroup of index 266 in the Janko group `J₁`.
     &I  eliminating _x28 = _x6*_x23^-1
     gap> & GAP cannot substitute a new generator without extending the
     gap> & total length, so we have to explicitly ask for it
-    gap> PrintPairs( P );
+    gap> show_pairs( P );
     &I  1.  504  occurrences of  _x6 * _x23^-1
     &I  2.  504  occurrences of  _x6^-1 * _x23
     &I  3.  448  occurrences of  _x6 * _x23
@@ -2672,7 +2577,7 @@ As an example we handle a subgroup of index 266 in the Janko group `J₁`.
     &I  there are 2 generators and 13 relators of total length 141
     &I  there are 2 generators and 12 relators of total length 121
     &I  there are 2 generators and 10 relators of total length 101
-    gap> PrintPairs( P );
+    gap> show_pairs( P );
     &I  1.  19  occurrences of  _x23 * _x30^-1
     &I  2.  19  occurrences of  _x23^-1 * _x30
     &I  3.  14  occurrences of  _x23 * _x30
@@ -2744,6 +2649,29 @@ function Substitute(P::Presentation,n::Int=1,elim::Int=0)
 end
 
 """
+`find_exponents(presentation)`  tries  to  find  exponents  for  the Tietze
+generators  and  returns them  in  a  list  parallel  to  the  list  of the
+generators.
+"""
+function find_exponents(T::Presentation)
+  debug(T,3,"find generator exponents")
+  rels=T.relators
+  exponents=fill(0,length(T.generators))
+  for i in eachindex(rels)
+    if isempty(rels[i]) || !allequal(rels[i]) continue end
+    if rels[i][1]<0 rels[i]=-rels[i] end
+    num=rels[i][1]
+    exponents[num]=exp=gcd(exponents[num], length(rels[i]))
+    if exp<length(rels[i])
+      rels[i]=fill(num,exp)
+      T.flags[i]=1
+      T.modified=true
+    end
+  end
+  exponents
+end
+
+"""
 `SubstituteCyclicJoins(presentation)`
 
 `SubstituteCyclicJoins`    performs   Tietze   transformations   on   a
@@ -2756,45 +2684,38 @@ the generators `a` and `b`.
 """
 function SubstituteCyclicJoins(P::Presentation)
   debug(P,3,"SubstituteCyclicJoins")
-  exponents=GeneratorExponents(P)
-  T=P
-  T.modified=false
-  if Sum(exponents)==0 return end
+  exponents=find_exponents(P)
+  P.modified=false
+  if iszero(exponents) return end
   sort!(P)
-  gens=T.generators
-  numgens=length(T.generators)
-  rels=T.relators
-  numrels=length(T.relators)
+  gens=P.generators
+  rels=P.relators
   i=1
-  while i <= numrels && length(T.relators[i])<= 4
+  while i<=length(P.relators) && length(P.relators[i])<=4
     rel=rels[i]
-    if length(T.relators[i])==4 && (rel[1]==T[-rel[3]] && rel[2]==T[-rel[4]])
+    if length(P.relators[i])==4 && rel[1]==P[-rel[3]] && rel[2]==P[-rel[4]]
       num1=abs(rel[1])
       exp1=exponents[num1]
       num2=abs(rel[2])
       exp2=exponents[num2]
-      if exp1>0 && (exp2>0 && gcd(exp1, exp2)==1)
+      if exp1>0 && exp2>0 && gcd(exp1, exp2)==1
         gen=NewGenerator(P)
-        numgens=length(T.generators)
-        debug(P,1,"I  substituting new generator ",gen," defined by ",
-                gens[num1]*gens[num2])
-        AddRelator(P, gens[num1]*gen^-exp2)
-        AddRelator(P, gens[num2]*gen^-exp1)
-        UpdateGeneratorImages(P, [num1, num2])
         gen2=gens[num2]
-        printlevel=P.debug;P.debug=2
-        Eliminate(P, gens[num1]);num2=findfirst(==(gen2),gens)
-        Eliminate(P, gens[num2])
-        P.debug=printlevel
-        numgens=length(T.generators)
-        numrels=length(T.relators)
-        T.modified=true
+        debug(P,1,"I substituting new generator ",gen," defined by ",
+                gens[num1]*gen2)
+        AddRelator(P, gens[num1]/gen^exp2)
+        AddRelator(P, gen2/gen^exp1)
+        UpdateGeneratorImages(P,[num1, num2])
+        debug=P.debug;P.debug=2;
+        Eliminate(P,gens[num1]);Eliminate(P,gen2);
+        P.debug=debug
+        P.modified=true
         i=0
       end
     end
     i+=1
   end
-  if T.modified
+  if P.modified
     HandleLength1Or2Relators(P)
     sort!(P)
     PrintStatus(P,1)
@@ -2875,7 +2796,7 @@ P=Presentation("
     gap> GoGo( P );
     &I  there are 3 generators and 10 relators of total length 81
     &I  there are 3 generators and 10 relators of total length 80
-    gap> PrintGenerators( P );
+    gap> show_generators( P );
     &I  1.  a   31 occurrences   involution
     &I  2.  b   26 occurrences
     &I  3.  t   23 occurrences   involution
@@ -2886,7 +2807,7 @@ P=Presentation("
     &I  there are 4 generators and 11 relators of total length 83
     gap> Go(P);
     &I  there are 3 generators and 10 relators of total length 74
-    gap> PrintGenerators( P );
+    gap> show_generators( P );
     &I  1.  a   23 occurrences   involution
     &I  2.  t   23 occurrences   involution
     &I  3.  ab   28 occurrences |
@@ -3112,39 +3033,35 @@ function images(P::Presentation)
 end
 
 """
-RenumberGenerators( presentation, sort list ) . . . . Renumber the
-             generators of T according to L
+RenumberGenerators( presentation, sort list )
 
-`RenumberGenerators` renumbers the generators of the given presentation
-T according to the given sort list L.
+renumbers the generators of the given presentation
+according to the given sort list.
 """
 function RenumberGenerators(P::Presentation, L::AbstractVector)
   debug(P,3,"RenumberGenerators")
   RemoveGenerators(P)
-  T=P
-  numgens=length(T.generators)
+  numgens=length(P.generators)
   if sort(L)!=1:numgens
     error("<L> must determine a permutation of the generator numbers")
   end
-  perm=inv(Perm(L))
-  invsort=vec(perm)
-  gens=T.generators
-  rels=T.relators
-  numrels=length(T.relators)
+  invsort=invperm(L)
+  gens=P.generators
+  rels=P.relators
   oldgens=deepcopy(gens)
-  oldinvs=copy(T.inverses)
-  new=copy(T.inverses)
-  println("gens==",gens,"\ninvs==",T.inverses,"\nrels==",rels)
+  oldinvs=copy(P.inverses)
+  new=copy(P.inverses)
+  println("gens==",gens,"\ninvs==",P.inverses,"\nrels==",rels)
   for i in 1:numgens
     j=L[i]
     gens[i]=oldgens[j]
-    if oldinvs[numgens+1+j]==j T[-i]=i else T[-i]=-i end
+    if oldinvs[numgens+1+j]==j P[-i]=i else P[-i]=-i end
     new[numgens+1+i]=invsort[i]
     new[numgens+1-i]=-invsort[i]
   end
-  println("gens==",gens,"\ninvs==",T.inverses,"\nnew==",new)
-  for i in 1:numrels
-      rels[i]=map(j->new[numgens+1+j], rels[i])
+  println("gens==",gens,"\ninvs==",P.inverses,"\nnew==",new)
+  for rel in P.relators
+    for i in eachindex(rel) rel[i]=new[numgens+1+rel[i]] end
   end
   println("rels==", rels)
   if haskey(P, :imagesOldGens)
@@ -3152,7 +3069,7 @@ function RenumberGenerators(P::Presentation, L::AbstractVector)
     for i in 1:length(P.imagesOldGens)
       P.imagesOldGens[i]=map(j->new[numgens+1+j],P.imagesOldGens[i])
     end
-    P.preImagesNewGens=permute(P.preImagesNewGens, perm)
+    permute!(P.preImagesNewGens, L)
     println("renumbered to")
     images(P)
   end
@@ -3270,12 +3187,12 @@ replace  the second generator by its  conjugate by the first, and  `"Aba"`
 means replace it by its conjugate by the inverse of the first.
 
 ```julia-rep1
-julia> Presentations.display_balanced(P)
+julia> display_balanced(P)
 1: dabcd=abcda
 2: dabcdb=cabcda
 3: bcdabcd=dabcdbc
 
-julia> Presentations.display_balanced(conjugate(P,"Cdc"))
+julia> display_balanced(conjugate(P,"Cdc"))
 << presentation with 4 generators, 3 relators of total length 36>>
 1: dcabdc=cabdca
 2: abdcab=cabdca
@@ -3283,11 +3200,20 @@ julia> Presentations.display_balanced(conjugate(P,"Cdc"))
 ```
 """
 function conjugate(p::Presentation, s)
-  minmaj="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  l=map(l->findfirst(==(l),minmaj),collect(s))
-  l=map(x->x>26 ? 26-x : x,l)
-  if length(l)!=3 || l[1]!=-l[3] error("should be conjugate like abA") end
-  p=deepcopy(p);SubstituteGen(p,l[2],l)
+  if !(s isa Vector{<:Integer})
+    l=string.(mon.(p.generators))
+    if !all(l)do ss
+      if length(ss)!=1 return false end
+      if !('a'<=ss[1]<='z') return false end
+      true
+    end
+    error("not all gens in a-z") end
+    minmaj=vcat(map(x->x[1],l),map(x->uppercase(x[1]),l))
+    s=map(c->findfirst(==(c),minmaj),collect(s))
+    s=map(x->x>length(l) ? length(l)-x : x,s)
+  end
+  if length(s)!=3 || s[1]!=-s[3] error("should be conjugate like abA") end
+  p=deepcopy(p);SubstituteGen(p,s[2],s)
   simplify(p, 100)
   p
 end
