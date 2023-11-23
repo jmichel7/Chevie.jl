@@ -373,11 +373,10 @@ function Presentation(gens::Vector{AbsWord},grels::Vector{AbsWord},debug::Int=1)
 end
 
 function Presentation(v::Vector{Vector{Int}})
-  gens=Set{Int}()
-  for r in v, x in r push!(gens,abs(x)) end
+  gens=sort(unique(abs(x) for r in v for x in r))
   if length(gens)!=maximum(gens) error("hummm!") end
-  vars=length(gens)<=26 ? Symbol.('a':'a'+25) :
-      map(i->Symbol("x",stringind(rio(),i)),1:maximum(gens))
+  vars=length(gens)<=26 ? Symbol.('a':'a'+length(gens)-1) :
+      map(i->Symbol("x",stringind(rio(),i)),1:length(gens))
   Presentation(AbsWord.(vars),map(r->AbsWord(r,vars),v))
 end
   
@@ -470,7 +469,8 @@ the last call.
 """
 function PrintStatus(P::Presentation,level=0)
   if P.debug<level return end
-  status=[length(P.generators)-P.numredunds, length(P.relators), sum(length,P.relators)]
+  status=[length(P.generators)-P.numredunds, length(P.relators), 
+          sum(length,P.relators;init=0)]
   if !haskey(P,:status) || status!=P.status
     P.status=status
     show(stdout,P)
@@ -483,7 +483,7 @@ function Base.show(io::IO, p::Presentation)
   if haskey(p,:name) print(io," ",p.name) end
   print(io,": ",plural(length(p.generators)-p.numredunds,"generator"),
         ", ",plural(length(p.relators),"relator"),", total length ",
-        sum(length,p.relators))
+        sum(length,p.relators;init=0))
 end
 
 function Base.dump(T::Presentation)
@@ -1751,10 +1751,10 @@ function GoGo(T::Presentation)
         PrintStatus(T)
     end
     if length(T.generators)<numgens || length(T.relators)<numrels || 
-      sum(length,T.relators)<total
+      sum(length,T.relators;init=0)<total
       numgens=length(T.generators)
       numrels=length(T.relators)
-      total=sum(length,T.relators)
+      total=sum(length,T.relators;init=0)
       count=0
     end
   end
@@ -2278,7 +2278,7 @@ function Search(P::Presentation)
   rels=T.relators
   T.modified=false
   save=P.saveLimit//100
-  while sum(length,T.relators)>0
+  while sum(length,T.relators;init=0)>0
     sort!(P)
     modified=false
     oldtotal=sum(length,T.relators)
@@ -3168,7 +3168,7 @@ function simplify(P::Presentation,lim=1000)
         rot(tt,rand(eachindex(tt)))
         GoGo(P)
         tt=P.relators
-        if [length(tt),sum(length,tt)]<before return true end
+        if [length(tt),sum(length,tt;init=0)]<before return true end
       end
     end
     return false
