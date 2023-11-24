@@ -527,14 +527,8 @@ W(s₁,s₂,…,sₙ,sₙ₋₁,…,s₁)`.
 julia> W=coxgroup(:A,3)
 A₃
 
-julia> inversions(W,W(1,2,1))
-3-element Vector{Int64}:
- 1
- 2
- 4
-
 julia> inversions(W,[2,1,2])
-3-element Vector{Int16}:
+3-element Vector{Int64}:
  2
  4
  1
@@ -707,7 +701,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
  PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
  PermRoot.central_action, 
- Perms.reflection_length, Perms.largest_moved_point
+ Perms.reflection_length, Perms.last_moved
 
  PermRoot.refls(W::FC)=refls(W.G)
 

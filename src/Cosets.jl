@@ -725,7 +725,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
     t=refltype(W)
     c=map(x->indices(x),t)
     phires=Perm(action.(Ref(W),eachindex(roots(W)),WF.phi))
-    map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c))))do c
+    map(orbits(Perm(sort.(c),map(i->sort(i.^phires),c)),eachindex(c)))do c
       o=deepcopy(t[c])
       J=indices(o[1])
       twist=Perm(J,J.^(phires^length(c)))
@@ -1092,7 +1092,7 @@ function PermRoot.refltype(WF::PRC)
       subgens=map(x->refls(W,x.indices),t)
       c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
     end
-    c=orbits(inv(c))
+    c=orbits(inv(c),eachindex(t))
     prr=roots(parent(W))
     function scals(rr,img)
       map(ratio,prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])

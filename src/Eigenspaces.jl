@@ -479,7 +479,7 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
       res[:simpleCoroots]=ncr
       push!(res[:relativeIndices], l.index)
       push!(res[:parentMap], l.parentMap)
-      R.prop=res
+      empty!(R.prop);merge!(R.prop,res)
       R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
       return R
     end
