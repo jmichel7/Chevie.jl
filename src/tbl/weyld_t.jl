@@ -340,8 +340,7 @@ chevieset(:D, :gensMODA,Dict(4=>[[perm"(1,2)(7,8)", perm"(3,4)(5,6)", perm"(2,3)
     [[56], [12, nothing, 24], [6, nothing, 28], [2, 4, nothing, nothing, 18], [1, nothing, 3, nothing, nothing, nothing, 14]]]))
 
 chevieset(:D, :ClassParameter, function (n, w)
-  x=prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm())
-  res=cycletype(x,n)
+  res=cycletype(prod(i->i==1 ? SPerm(1,-2) : SPerm(i-1,i),w;init=SPerm()),n)
   if isempty(res[2]) && all(iseven, res[1])
   # for classes with '+' or '-' we use the cycle type for the
   # permutation representation on the cosets of the parabolic

@@ -277,8 +277,8 @@ const ChevieDict=Dict(
 "PermutationOnClasses"=>"on_classes",
 "PermutationOnCharacters"=>"on_chars",
 "PermutationOnUnipotents"=>"on_unipotents",
-"Permuted(v,p)"=>"permute(v,p)",
-"PermutedByCols(m,p)"=>"permute(m,p;dims=2)",
+"Permuted(v,p)"=>"invpermute(v,p)",
+"PermutedByCols(m,p)"=>"invpermute(m,p;dims=2)",
 #PoincarePolynomial
 "Poset"=>"Poset",
 "Position(l,x)"=>"findfirst(==(x),l)",

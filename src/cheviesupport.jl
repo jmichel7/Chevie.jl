@@ -120,9 +120,9 @@ function Inherit(a,b,c)
 end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
-OnMatrices(a::Vector{<:Vector},b::Perm)=permute(permute.(a,b),b)
+OnMatrices(a::Vector{<:Vector},b::Perm)=invpermute(invpermute.(a,b),b)
 const PartitionTupleToString=string_partition_tuple
-Permuted(x,p)=permute(x,p)
+Permuted(x,p)=invpermute(x,p)
 function PermListList(l1,l2)
   l1=improve_type(l1)
   l2=improve_type(l2)

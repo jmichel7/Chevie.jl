@@ -894,9 +894,9 @@ chevieset(:G4_22, :Ennola, function (ST,)
                 f[:ennola] = f[:special]
             end
             if f[:ennola] > 0
-                p = SPerm(b, b[f[:ennola]] * b)
+                p = SPerm(b[f[:ennola]] * b, b)
             else
-                p = SPerm(b, -(b[-(f[:ennola])]) * b)
+                p = SPerm(-(b[-(f[:ennola])]) * b, b)
             end
             res[f[:charNumbers]] = Permuted(f[:charNumbers], p)
         end

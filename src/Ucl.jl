@@ -1270,9 +1270,9 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   l=vcat(getproperty.(pieces,:locsys)...)
   p=inv(sortPerm(l))
   res=XTable(Dict(
-    :scalar=>transpose(permute(cat(greenpieces...,dims=(1,2)),p)),
+    :scalar=>transpose(invpermute(cat(greenpieces...,dims=(1,2)),p)),
     :uc=>uc,
-    :Y=>permute(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
+    :Y=>invpermute(cat(getproperty.(pieces,:L)...,dims=(1,2)),p,dims=(1,2)),
     :relgroups=>getindex.(uc.springerseries,:relgroup),
     :q=>q,
     :class=>classes))
@@ -1280,7 +1280,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
-    res.classes=permute(l,p)
+    res.classes=invpermute(l,p)
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au
       b=filter(j->res.classes[j][1]==i,eachindex(res.classes))
@@ -1292,7 +1292,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
     end
     res.scalar=improve_type(res.scalar)
   else
-    res.locsys=permute(l,p)
+    res.locsys=invpermute(l,p)
   end
   res
 end

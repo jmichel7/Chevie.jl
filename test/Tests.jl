@@ -953,14 +953,14 @@ function EigenAndDegHecke(s)
   end
   d1=exponent(d)//gcd(order(d),gcd(degrees((W))))
   i=position_regular_class(W,d1) # this class represents F
-  omegachi=map(x->scalar(value(x[i]//x[1],:q=>1)),eachrow(permute(ct,p,dims=1)))
+  omegachi=map(x->scalar(value(x[i]//x[1],:q=>1)),eachrow(invpermute(ct,p,dims=1)))
   frac=degree.(central_monomials(H)).*d1
   om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
   if omegachi!=om2 
     omegachi=om2
     ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
   end
-  ss=CycPol.(permute(schur_elements(H),p))
+  ss=CycPol.(invpermute(schur_elements(H),p))
   ss=map(x->degree(s)//x,ss)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
   zeta=Cyc(Root1(;r=d1)^frac[charinfo(W)[:positionId]])
@@ -1292,9 +1292,9 @@ function Tfamilies(W,i;hard=false)
     elseif haskey(f,:cospecial) && f.special!=f.cospecial
       ChevieErr("\n.cospecial=$(f.cospecial) should be $special\n")
     end
-    check(conj(ud)==permute(ud,ps),"ud*=ud^p")
+    check(conj(ud)==invpermute(ud,ps),"ud*=ud^p")
     if real!==nothing && real!=false
-      check(permute(f.eigenvalues,real/f.perm)==f.eigenvalues,"eig*=eig^perm")
+      check(invpermute(f.eigenvalues,real/f.perm)==f.eigenvalues,"eig*=eig^perm")
     end
     if hard
       if S==Sbar print("\n|  S real")
@@ -1318,7 +1318,7 @@ function Tfamilies(W,i;hard=false)
   end
   check(!(0 in S[special]),"not 0 in S[special]")
   check(S*permutedims(Sbar)==Id,"S unitary")
-  if wreal P=permute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
+  if wreal P=invpermute(Id,f.perm);check(S*P==P*S,"[S,P]=1") end
   if haskey(f,:sh)
     check((O*permutedims(fourier(f))*inv(Sh//1)*fourier(f))^2==Id,"(O⋅ᵗS⋅Sh⁻¹⋅S)²=1")
   else 
@@ -1406,7 +1406,7 @@ function Tcurtisduality(W)
   ud=degrees(ud,q)[ud.harishChandra[1][:charNumbers]]
   p=detPerm(W)
   N=sum(degrees(W).-1)
-  cmpvec(permute(ud,p),map(x->q^N*x(q^-1),ud);
+  cmpvec(invpermute(ud,p),map(x->q^N*x(q^-1),ud);
          na="ud sign permuted",nb="computed Curtis dual ud")
 end
 

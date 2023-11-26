@@ -260,8 +260,8 @@ PermutationMat(p,dim)                       Matrix(p,dim)
 PermutationOnCharacters                     on_chars
 PermutationOnClasses                        on_classes
 PermutationOnUnipotents                     on_unipotents
-Permuted(v,p)                               permute(v,p)
-PermutedByCols(m,p)                         permute(m,p;dims=2)
+Permuted(v,p)                               invpermute(v,p)
+PermutedByCols(m,p)                         invpermute(m,p;dims=2)
 Poset                                       Poset
 Position(l,x)                               findfirst(==(x),l)
 PositionCartesian                           cart2lin

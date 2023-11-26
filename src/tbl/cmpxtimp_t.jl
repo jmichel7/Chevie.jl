@@ -14,7 +14,7 @@ chevieset(:timp, :ReducedInRightCoset, function (W, phi)
   m1perm=perm"(1,4)(2,8)(3,13)(5,22)(6,14)(7,10)(9,17)(11,25)(12,33)(15,42)
 (16,18)(19,37)(20,35)(21,24)(23,29)(26,38)(27,46)(28,30)(31,40)(32,39)(34,45)
 (36,54)(41,43)(44,49)(47,50)(48,52)(51,53)" # effect of -1 on roots
-  m1perm=mappingPerm(inclusion(W),permute(inclusion(W),m1perm))
+  m1perm=mappingPerm(inclusion(W),invpermute(inclusion(W),m1perm))
   g=PermX(W,reflrep(W,phi)*reflrep(W,m1perm))
   if g in W return (gen=inclusion(W,1:3),phi=inv(g)*phi) end
   # quads of roots which have the same CartanMat and are representatives of 

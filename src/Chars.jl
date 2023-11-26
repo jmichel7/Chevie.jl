@@ -436,7 +436,7 @@ function schur_functor(A,la)
     isempty(x) ? r[1]^0 : prod(r[x]) end
   f=j->prod(factorial,last.(tally(j)))
   basis=multisets(axes(A,1),n) 
-  M=sum(x->kron(rep(x),toM(map(function(i)i=permute(i,x)
+  M=sum(x->kron(rep(x),toM(map(function(i)i=invpermute(i,x)
   return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
 # Print(Length(M),"=>");
   M=M[filter(i->!all(iszero,M[i,:]),axes(M,1)),:]
@@ -1173,7 +1173,7 @@ julia> on_chars(Group(WF),WF.phi)
 """
 function on_chars(W,aut)
   ct=CharTable(W).irr
-  inv(Perm(ct,permute(ct,on_classes(W, aut),dims=2),dims=1))
+  inv(Perm(ct,invpermute(ct,on_classes(W, aut),dims=2),dims=1))
 end
 
 """

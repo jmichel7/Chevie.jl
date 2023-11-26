@@ -97,7 +97,7 @@ function BaseBruhat(W)
     end
     InfoChevie("No of base elements = ",length(mins),"\n")
     p=sortPerm(map(i->length(W,i),mins))
-    base=permute(mins,inv(p))
+    base=invpermute(mins,inv(p))
     InfoChevie("#I Calculating incidence matrix...")
     incidence=Dict{Vector{Int},BitVector}()
     for w in elements(W)

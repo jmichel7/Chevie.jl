@@ -1235,7 +1235,7 @@ function on_unipotents(W,aut)
   if length(unique(eachcol(t)))<size(t,2)
     error("Rw + eigen + principal series cannot disambiguate\n")
   end
-  t1=permute(t[1:end-1,:],on_classes(W, aut),dims=1)
+  t1=invpermute(t[1:end-1,:],on_classes(W, aut),dims=1)
   l[n]=l[n].^inv(on_chars(W,aut))
   t1=vcat(t1,transpose(l))
   Perm(t,t1,dims=2)
@@ -1243,7 +1243,7 @@ end
 
 function Cosets.Frobenius(x::UniChar, phi)
   W=x.group
-  UniChar(W,permute(x.v,inv(on_unipotents(W,phi))))
+  UniChar(W,invpermute(x.v,inv(on_unipotents(W,phi))))
 end
 
 cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,E(d))

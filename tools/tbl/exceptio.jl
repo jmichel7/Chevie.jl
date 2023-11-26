@@ -197,9 +197,9 @@ chevieset(["E7", "E8", "F4", "2F4", "G2", "3D4", "H3", "H4", "G24", "G25", "G26"
                                 f[:ennola] = f[:special]
                             end
                             if f[:ennola] > 0
-                                p = SPerm(b, b[f[:ennola]] * b)
+                                p = SPerm(b[f[:ennola]] * b, b)
                             else
-                                p = SPerm(b, -(b[-(f[:ennola])]) * b)
+                                p = SPerm(-(b[-(f[:ennola])]) * b, b)
                             end
                         end
                     else

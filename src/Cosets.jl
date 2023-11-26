@@ -1105,10 +1105,10 @@ function PermRoot.refltype(WF::PRC)
         u=Perm(subgens[orb[next]],subgens[orb[i]].^WF.phi)
         tn=t[orb[next]]
         ti=t[orb[i]]
-        if i!=length(orb)  tn.indices=permute(tn.indices,u)
+        if i!=length(orb)  tn.indices=invpermute(tn.indices,u)
           scal=scals(ti.indices,tn.indices)
         else to.twist=u
-          scal=scals(ti.indices,permute(tn.indices,inv(u)))
+          scal=scals(ti.indices,invpermute(tn.indices,inv(u)))
         end
         if any(isnothing,scal) || !allequal(scal)
           if ti.series==:B && ti.rank==2
@@ -1149,7 +1149,7 @@ function PermRoot.refltype(WF::PRC)
             subgens[orb[next]]=refls(W,tn.indices)
             scal=scals(ti.indices,tn.indices)
           else to.twist=u
-            scal=scals(ti.indices,permute(tn.indices,inv(u)))
+            scal=scals(ti.indices,invpermute(tn.indices,inv(u)))
           end
           #println(" scal after:$scal")
           if !allequal(scal) error(" scal after:$scal")

@@ -161,7 +161,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
     b=basis(A)
     res=Tuple{Int,SPerm{Int16}}[]
     for i in eachindex(b)
-      p=SPerm(b,b[i]*b)
+      p=SPerm(b[i]*b,b)
       if p!==nothing
         if all(j->j^p in poss[j],eachindex(b)) push!(res,(i,p)) end
         p=SPerm(-p.d)
@@ -175,7 +175,7 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   l=cartesian(l...)[1]
   res=fill(0,length(uc[:a]))
   for (i,p) in pairs(l)
-    res[ff[i].charNumbers]=permute(ff[i].charNumbers,p)
+    res[ff[i].charNumbers]=invpermute(ff[i].charNumbers,p)
   end
   SPerm(res)
 end
@@ -1071,7 +1071,7 @@ function paramcyclic(s::Series)
   end
   p=inv(Perm(sortperm(r)))
   for i in [:mC, :charNumbers, :eigen, :span, :eps, :dims, :permutable]
-    setproperty!(s,i,permute(getproperty(s,i),p))
+    setproperty!(s,i,invpermute(getproperty(s,i),p))
   end
   s.translation=filter(t->
        s.eigen==map(i->Cyc(predeigen(i,mod(i+t,e(s)))),1:e(s)),0:e(s)-1)
@@ -1231,8 +1231,8 @@ function RelativeSeries(s)
     ChevieErr(s.Hecke, " wrong set of SchurElements")
     return res
   end
-  s.charNumbers=permute(s.charNumbers,p)
-  if haskey(s,:span) s.span=permute(s.span,p) end
+  s.charNumbers=invpermute(s.charNumbers,p)
+  if haskey(s,:span) s.span=invpermute(s.span,p) end
   aA=map(x->E(order(s.d)^2,valuation(x)+degree(x)),u1)
   p=position_regular_class(WGL,s.d)
   if p == false && length(WGL)==1 p=1 end

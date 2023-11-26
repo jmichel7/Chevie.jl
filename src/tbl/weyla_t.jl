@@ -34,7 +34,7 @@ end)
 chevieset(:A,:FakeDegree,(n,p,q)->fegsymbol([βset(p)])(q))
 
 chevieset(:A, :ClassParameter, function(n,w)
-  cycletype(prod(i->Perm(i,i+1),w;init=Perm());domain=1:n+1,trivial=true)
+  cycletype(prod(i->Perm(i,i+1),w;init=Perm()),1:n+1)
 end)
 
 chevieset(:A, :KLeftCellRepresentatives,function(n)
