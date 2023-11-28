@@ -1647,7 +1647,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   # root values.
 
 # println("# roots: ")
-  gens_=map(x->Int[],matgens)
+  gens_=map(x->T1[],matgens)
   newroots=true
   while newroots
     newroots=false
@@ -1670,7 +1670,7 @@ function PRG(r::AbstractVector{<:AbstractVector},
   end
   coroots_=Vector{eltype(cr)}(undef,length(roots_))
   coroots_[eachindex(cr)].=cr
-  W=PRG(Perm{T1}.(gens_),Perm{T1}(),matgens,roots_,coroots_,Dict{Symbol,Any}())
+  W=PRG(Perms.Perm_.(gens_),Perm{T1}(),matgens,roots_,coroots_,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=indices(t)

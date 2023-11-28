@@ -44,13 +44,13 @@ function Perms.Perm(perm::GapObj)
         addr = ccall((:ADDR_PERM2, GAP.libgap), Ptr{UInt16}, (Any,), perm)
         vec = Vector{UInt16}(undef, deg)
         copyto!(vec, unsafe_wrap(Array, addr, deg))
-        Perm(Perms.Idef.(vec.+1))
+        Perms.Perm_(Perms.Idef.(vec.+1))
     elseif GAP.TNUM_OBJ(perm) == GAP.T_PERM4
         deg = ccall((:DEG_PERM4, GAP.libgap), Cuint, (Any,), perm)
         addr = ccall((:ADDR_PERM4, GAP.libgap), Ptr{UInt16}, (Any,), perm)
         vec = Vector{UInt32}(undef, deg)
         copyto!(vec, unsafe_wrap(Array, addr, deg))
-        Perm(Perms.Idef.(vec.+1))
+        Perms.Perm_(Perms.Idef.(vec.+1))
     else
         error("<perm> is not a GAP permutation")
     end
