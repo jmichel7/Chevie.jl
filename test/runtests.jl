@@ -636,6 +636,8 @@ end
 @test mytest("Presentations.jl","G=F/[a^2,b^7,comm(a,a^b),comm(a,a^(b^2))*inv(b^a)]","FreeGroup(a,b)/[a²,b⁷,a⁻¹b⁻¹a⁻¹bab⁻¹ab,a⁻¹b⁻²a⁻¹b²ab⁻²ab²a⁻¹b⁻¹a]")
 @test mytest("Presentations.jl","P=Presentation(G)","Presentation: 2 generators, 4 relators, total length 30")
 @test mytest("Presentations.jl","relators(P)","4-element Vector{AbsWord}:\n a²\n b⁷\n ab⁻¹abab⁻¹ab\n b⁻²ab²ab⁻²ab²ab⁻¹")
+@test mytest("Presentations.jl","w=AbsWord([:a => 3, :b => -2, :a => 1])","a³b⁻²a")
+@test mytest("Presentations.jl","w*AbsWord([:a=>-1,:b=>1])","a³b⁻¹")
 @test mytest("Presentations.jl","AbsWord(:b,:a,:a,:b)","ba²b")
 @test mytest("Presentations.jl","F=FpGroup(:a,:b,:c)","FreeGroup(a,b,c)")
 @test mytest("Presentations.jl","Presentations.TietzeWord(comm(F(1),F(2))*inv(F(3)^2*F(2)),gens(F))","5-element Vector{Int64}:\n -1\n -2\n  1\n -3\n -3")

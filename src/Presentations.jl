@@ -1,30 +1,19 @@
 """
-This is a port of some GAP3/VkCurve functionality on presentations and
-finitely presented groups.
+This  is a  port of  some GAP3/VkCurve  functionality on *presentations* of
+*finitely presented groups*.
 
-*finitely  presented groups*  are distinguished  from *group presentations*
-which  are objects of their own. The  reason is that when a presentation is
-changed  (e.g. simplified)  by Tietze  transformations, new  generators and
-relators are introduced; thus all words in a finitely presented group would
-also have to be changed if such a Tietze transformation were applied to the
-group. Therefore, it is better to work separately with the presentation and
-reflect only carefully the changes on the group.
+We  have defined just enough functionality  on finitely presented groups so
+that  presentations  can  be  translated  to  finitely presented groups and
+vice-versa. The focus is on presentations, the goal being to simplify them.
 
-In order to speed up the algorithms, the relators in a presentation are not
-represented  by `AbsWord`s, but by lists  of positive or negative generator
-numbers which we call *Tietze words*.
-
-We  now  describe  the  available  functions;  for more information look at
-individual  docstrings. The functions `Presentation` and `FpGroup` create a
-presentation from a finitely presented group or, vice versa.
-
-Since  it could be large, by default a presentation is printed as a summary
-of  the number of generators, the number  of relators, and the total length
-of  all  relators.  We  illustrate  below  functions  displaying  more of a
-presentation.
+The  elements of finitely presented groups are `AbsWord` or abstract words,
+representing elements of a free group. In order to speed up the algorithms,
+the   relators  in  a  presentation   are  not  represented  internally  by
+`AbsWord`s, but by lists of positive or negative generator numbers which we
+call *Tietze words*.
 
 ```julia-repl
-julia> @AbsWord a,b
+julia> @AbsWord a,b # same as a=AbsWord(:a);b=AbsWord(:b)
 
 julia> F=FpGroup([a,b])
 FreeGroup(a,b)
@@ -32,7 +21,7 @@ FreeGroup(a,b)
 julia> G=F/[a^2,b^7,comm(a,a^b),comm(a,a^(b^2))*inv(b^a)]
 FreeGroup(a,b)/[a²,b⁷,a⁻¹b⁻¹a⁻¹bab⁻¹ab,a⁻¹b⁻²a⁻¹b²ab⁻²ab²a⁻¹b⁻¹a]
 
-julia> P=Presentation(G)
+julia> P=Presentation(G) # by default give a summary
 Presentation: 2 generators, 4 relators, total length 30
 
 julia> relators(P)
@@ -44,22 +33,86 @@ julia> relators(P)
 ```
 
 ```julia-rep1
-julia> Presentations.show_generators(P)
-#I 1. a 10 occurrences involution
-#I 2. b 20 occurrences
+julia> showgens(P)
+1. a 10 occurrences involution
+2. b 20 occurrences
 
-julia> Presentations.display_balanced(P)
+julia> dump(P) # here in relators inverses are represented by capitalizing
+# F relator
+1:3 aa
+2:0 bbbbbbb
+3:0 aBabaBab
+4:0 abbaBBabbaBBB
+gens=AbsWord[a, b] involutions:AbsWord[a] modified=false numredunds=0
+
+julia> display_balanced(P)
 1: a=A
 2: bbbbbbb=1
 3: aBab=BAbA
 4: BBabbaBBabbaB=1
 ```
 
-for more information look at the help strings of 
-AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
-       tryconjugate, simplify, relators, display_balanced
+The  functions `Presentation`  and `FpGroup`  create a  presentation from a
+finitely presented group and vice versa.
+
+for  more  information  look  at  the  help  strings  of `AbsWord, FpGroup,
+Presentation,     relators,    display_balanced,    simplify,    conjugate,
+tryconjugate`. 
+
+A  minimal thing to add to this package so it would be a reasonable package
+for finitely preented groups is the Coxeter-Todd algorithm.
 """
 module Presentations
+## Changing Presentations
+#
+#The  functions `AddGenerator`, `AddRelator`, `RemoveRelator` can be used to
+#change a presentation. In general, they will change the isomorphism type of
+#the  group defined  by the  presentation, hence,  though they are sometimes
+#used  as subroutines by Tietze transformations functions like `Substitute`,
+#they do *not* perform Tietze transformations themselves.
+#
+## Tietze Transformations
+#
+#The  functions described in this section can be used to modify a
+#group presentation by Tietze transformations.
+#
+#In  general, the aim of such modifications  will be to *simplify* the given
+#presentation,  i.e., to reduce  the number of  generators and the number of
+#relators  without increasing too much the  sum of all relator lengths which
+#we  will  call  the  *total  length*  of the presentation. Depending on the
+#concrete presentation under investigation one may end up with a nice, short
+#presentation   or  with  a   very  huge  one.
+#
+#There  is no way  to find the  shortest presentation which  can be obtained
+#from  a given  one. Therefore,  what we  offer are  some lower-level Tietze
+#transformation   functions  and,  in  addition,  a  heuristic  higher-level
+#function   (which  of  course   cannot  be  the   optimal  choice  for  all
+#presentations).
+#
+#The design of these functions follows closely the concept of the ANU Tietze
+#transformation  program designed by George Havas cite{Hav69} which has been
+#available  from Canberra since 1977 in a stand-alone version implemented by
+#Peter   Kenne  and  James  Richardson  and   later  on  revised  by  Edmund
+#F.~Robertson (see cite{HKRR84}, cite{Rob88}).
+#
+#The  higher-level  function  is  `simplify`.  The lower-level functions are
+#`Eliminate`, `Search`, `SearchEqual`, and `FindCyclicJoins`.
+#
+#Some  of  these  functions  may  eliminate  generators,  but  they  do *not*
+#introduce  new generators. However,  sometimes you will  need to substitute
+#certain  words as  new generators  in order  to improve  your presentation.
+#Therefore  there are the  functions `Substitute` and `SubstituteCyclicJoins`
+#which introduce new generators.
+#
+#Finally  the functions `tracing`  and `images` can
+#be used to determine and to display the images or preimages of the involved
+#generators under the isomorphism which is defined by the sequence of Tietze
+#transformations which are applied to a presentation.
+#
+#The  functions, `show_pairs`, and `PrintOptions`,  can be useful. There are
+#also  the  *Tietze  options*:  parameters  which  essentially influence the
+#performance  of the  functions mentioned  above; they  are not specified as
+#arguments of function calls. Instead, they are stored in the presentation.
 using ..Util: xprintln, fromTeX, rio
 function stringind(io::IO,n::Integer)
   if get(io,:TeX,false) 
@@ -76,65 +129,8 @@ using PermGroups
 using Combinat: tally
 export AbsWord, @AbsWord, Presentation, FpGroup, Go, GoGo, conjugate, 
        tryconjugate, simplify, relators, display_balanced, tracing, images,
-       show_generators
+       showgens
 
-"""
-# Changing Presentations
-
-The  functions `AddGenerator`, `AddRelator`, `RemoveRelator` can be used to
-change a presentation. In general, they will change the isomorphism type of
-the  group defined  by the  presentation, hence,  though they are sometimes
-used  as subroutines by Tietze transformations functions like `Substitute`,
-they do *not* perform Tietze transformations themselves.
-
-# Group Presentations
-
-The function `PresentationViaCosetTable`  can be used  to compute a
-presentation for a concrete (e.,g. permutation or matrix) group.
-
-# Tietze Transformations
-
-The  functions described in this section can be used to modify a
-group presentation by Tietze transformations.
-
-In  general, the aim of such modifications  will be to *simplify* the given
-presentation,  i.e., to reduce  the number of  generators and the number of
-relators  without increasing too much the  sum of all relator lengths which
-we  will  call  the  *total  length*  of the presentation. Depending on the
-concrete presentation under investigation one may end up with a nice, short
-presentation   or  with  a   very  huge  one.
-
-There  is no way  to find the  shortest presentation which  can be obtained
-from  a given  one. Therefore,  what we  offer are  some lower-level Tietze
-transformation   functions  and,  in  addition,  a  heuristic  higher-level
-function   (which  of  course   cannot  be  the   optimal  choice  for  all
-presentations).
-
-The design of these functions follows closely the concept of the ANU Tietze
-transformation  program designed by George Havas cite{Hav69} which has been
-available  from Canberra since 1977 in a stand-alone version implemented by
-Peter   Kenne  and  James  Richardson  and   later  on  revised  by  Edmund
-F.~Robertson (see cite{HKRR84}, cite{Rob88}).
-
-The  higher-level  function  is  `simplify`.  The lower-level functions are
-`Eliminate`, `Search`, `SearchEqual`, and `FindCyclicJoins`.
-
-Some  of  these  functions  may  eliminate  generators,  but  they  do *not*
-introduce  new generators. However,  sometimes you will  need to substitute
-certain  words as  new generators  in order  to improve  your presentation.
-Therefore  there are the  functions `Substitute` and `SubstituteCyclicJoins`
-which introduce new generators.
-
-Finally  the functions `tracing`  and `images` can
-be used to determine and to display the images or preimages of the involved
-generators under the isomorphism which is defined by the sequence of Tietze
-transformations which are applied to a presentation.
-
-The  functions, `show_pairs`, and `PrintOptions`,  can be useful. There are
-also  the  *Tietze  options*:  parameters  which  essentially influence the
-performance  of the  functions mentioned  above; they  are not specified as
-arguments of function calls. Instead, they are stored in the presentation.
-"""
 plural(n,w)=string(n)*" "*w*(n==1 ? "" : "s")
 
 #------------------ Abstract Words ----------------------------------
@@ -142,7 +138,20 @@ plural(n,w)=string(n)*" "*w*(n==1 ? "" : "s")
 An  `AbsWord` represents an  element of the  free group on some generators.
 The  generators  are  indexed  by  `Symbols`.  For  example  the  `Absword`
 representing `a³b⁻²a` is represented internally as
-`[:a => 3, :b => -2, :a => 1]`
+`[:a => 3, :b => -2, :a => 1]`. The mulitiplcation follows the group rule:
+```julia-repl
+julia> w=AbsWord([:a => 3, :b => -2, :a => 1])
+a³b⁻²a
+
+julia> w*AbsWord([:a=>-1,:b=>1])
+a³b⁻¹
+
+```
+A positive `AbsWord` may be obtained by giving `Symbols` as arguments
+```julia-repl
+julia> AbsWord(:b,:a,:a,:b)
+ba²b
+```
 """
 struct AbsWord 
   d::Vector{Pair{Symbol,Int}}
@@ -165,16 +174,9 @@ struct AbsWord
   end
 end
 
-"""
-A positive `AbsWord` may be obtained by giving `Symbols` as arguments
-```julia-repl
-julia> AbsWord(:b,:a,:a,:b)
-ba²b
-```
-"""
 AbsWord(x::Symbol...)=AbsWord([s=>1 for s in x])
 
-"`@AbsWord x,y,z` defines the variables `x,y,z` to be `AbsWord`s"
+"`@AbsWord x,y` is the same as `x=AbsWord(:x);y=AbsWord(y)`"
 macro AbsWord(t) 
   if t isa Expr
     for v in t.args
@@ -381,17 +383,17 @@ function Presentation(v::Vector{Vector{Int}})
 end
   
 """
-`Presentation( G::FpGroup[, printlevel])`
+`Presentation( G::FpGroup[, debug=1])`
 
-`Presentation` returns a presentation containing a copy of the presentation
-of the given finitely presented group `G` on the same set of generators.
+returns  the  presentation  corresponding  to  the given finitely presented
+group `G`.
 
-The  optional `printlevel` parameter  can be used  to restrict or to extend
-the  amount of output provided by Tietze transformation functions when being
+The  optional `debug` parameter  can be used  to restrict or  to extend the
+amount  of output  provided by  Tietze transformation  functions when being
 applied  to the created  presentation. The default  value 1 is designed for
 interactive  use and implies  explicit messages to  be displayed by most of
-these  functions. A  `printlevel` value  of 0  will suppress these messages,
-whereas a `printlevel` value of 2 will enforce some additional output.
+these functions. A `debug` value of 0 will suppress these messages, whereas
+a `debug` value of 2 will enforce some additional output.
 """
 Presentation(G::FpGroup,printlevel::Integer=1)=Presentation(G.gens,G.rels)
 
@@ -487,15 +489,16 @@ function Base.show(io::IO, p::Presentation)
 end
 
 function Base.dump(T::Presentation)
-  println("modified=",T.modified," numredunds=",T.numredunds)
-  println(T.generators)
   l=filter(i->T[-i]!=-T[i],eachindex(T.generators))
   l1=filter(i->T[-i]==T[i],l)
-  if length(l1)>0 println("involutions:",T.generators[l1])end
-  if l1!=l display(stack(map(i->[T.generators[i],T[i],T[-i]],l))) end
+  println("# F relator")
   for i in eachindex(T.relators)
-    println("$i: ",alphab(T.relators[i],T.generators)," (",T.flags[i],")")
+    println("$i:",T.flags[i]," ",alphab(T.relators[i],T.generators))
   end
+  print("gens=",T.generators)
+  if length(l1)>0 print(" involutions:",T.generators[l1])end
+  println(" modified=",T.modified," numredunds=",T.numredunds)
+  if l1!=l display(stack(map(i->[T.generators[i],T[i],T[-i]],l))) end
 end
 
 function display_balanced(T,dumb=false)
@@ -515,19 +518,19 @@ function display_balanced(T,dumb=false)
 end
 
 """
-`show_generators(P,list=eachindex(P.generators))`
+`showgens(P,list=eachindex(P.generators))`
 
 prints  the generators of `P` with the total number of their occurrences in
 the  relators, and notes involutions. A  second `list` argument prints only
 those generators.
 """
-function show_generators(T::Presentation,list=eachindex(T.generators))
+function showgens(T::Presentation,list=eachindex(T.generators))
   gens=T.generators
   if isempty(gens) println("#I  there are no generators");return end
   occur=Occurrences(T)
   if list isa Integer list=[list] end
   for i in list
-    print("#I ", i, ". ", gens[i], " ",plural(occur[1][i],"occurrence"))
+    print(i, ". ", gens[i], " ",plural(occur[1][i],"occurrence"))
     if T[-i]>0 print(" involution") end
     println()
   end
@@ -2768,6 +2771,7 @@ Example.
     PerfectGroup(960,1)
     gap> P := Presentation( G );
     << presentation with 6 gens and 21 rels of total length 84 >>
+```julia-rep1
 P=Presentation("
 1: a=A
 2: e=E
@@ -2791,26 +2795,44 @@ P=Presentation("
 20: Bdbfedc=1
 21: babab=ABABA
 ")
-    gap> P.generators;
-    [ a, b, s, t, u, v ]
-    gap> GoGo( P );
-    &I  there are 3 generators and 10 relators of total length 81
-    &I  there are 3 generators and 10 relators of total length 80
-    gap> show_generators( P );
-    &I  1.  a   31 occurrences   involution
-    &I  2.  b   26 occurrences
-    &I  3.  t   23 occurrences   involution
-    gap> a := P.generators[1];;
-    gap> b := P.generators[2];;
-    gap> Substitute( P, a*b, "ab" );
-    &I  substituting new generator ab defined by a*b
-    &I  there are 4 generators and 11 relators of total length 83
-    gap> Go(P);
-    &I  there are 3 generators and 10 relators of total length 74
-    gap> show_generators( P );
-    &I  1.  a   23 occurrences   involution
-    &I  2.  t   23 occurrences   involution
-    &I  3.  ab   28 occurrences |
+julia> P.generators
+6-element Vector{AbsWord}:
+ a
+ b
+ c
+ d
+ e
+ f
+julia> Presentations.GoGo(P)
+Presentation: 3 generators, 10 relators, total length 81
+Presentation: 3 generators, 10 relators, total length 80
+Presentation: 3 generators, 10 relators, total length 80
+
+julia> showgens(P)
+1. a 31 occurrences involution
+2. b 26 occurrences
+3. d 23 occurrences involution
+
+julia> a,b=P.generators[1:2]
+2-element Vector{AbsWord}:
+ a
+ b
+
+julia> Presentations.Substitute( P, a*b, :ab )
+#started tracing generator images
+#Substitute new generator ab defined by ab
+#started tracing generator images
+Presentation: 4 generators, 11 relators, total length 83
+
+julia> Presentations.Go(P)
+#Presentation: 3 generators, 10 relators, total length 74
+#Presentation: 3 generators, 10 relators, total length 74
+
+julia> Presentations.showgens(P)
+1. a 25 occurrences involution
+2. d 23 occurrences involution
+3. ab 26 occurrences
+```
 """
 function Substitute(P::Presentation,word::Union{Vector{Int},AbsWord},arg...)
   Check(P)
@@ -3078,15 +3100,14 @@ end
 """
 `simplify(p [,tries])`
 
-This  is our  own program  to simplify  group presentations.  We have found
-heuristics  which  make  it  somewhat  more  efficient  than GAP' s program
-`GoGo`, but the algorithm depends on random numbers so is not reproducible.
-The  main idea  is to  rotate relators  between calls  to GAP functions. By
-default  1000 such rotations are tried (unless the presentation is so small
-that less rotations exhaust all possible ones), but the actual number tried
-can  be controlled  by giving  a second  parameter `tries` to the function.
-Another  useful tool to deal with presentations is `tryconjugate` described
-in the utility functions.
+simplify  the  presentation  `p`.  We  have  found heuristics which make it
+somewhat  efficient, but the algorithm depends  on random numbers so is not
+reproducible.  The main  idea is  to rotate  relators between  calls to the
+basic  `Presentations.Go` function. By default 100 such rotations are tried
+(unless  the  presentation  is  so  small  that  less rotations exhaust all
+possible  ones), but the actual number tried  can be controlled by giving a
+second  parameter `tries` to the function. Another useful tool to deal with
+presentations is `tryconjugate`.
 
 ```julia-rep1
 julia> display_balanced(p)
@@ -3117,28 +3138,30 @@ Presentation: 4 generators, 17 relators, total length 264
 Presentation: 4 generators, 16 relators, total length 256
 Presentation: 4 generators, 15 relators, total length 244
 Presentation: 4 generators, 15 relators, total length 240
-Presentation: 4 generators, 15 relators, total length 204
-Presentation: 4 generators, 15 relators, total length 198
-Presentation: 4 generators, 14 relators, total length 184
+Presentation: 4 generators, 15 relators, total length 226
+Presentation: 4 generators, 15 relators, total length 196
+Presentation: 4 generators, 15 relators, total length 178
+Presentation: 4 generators, 15 relators, total length 172
+Presentation: 4 generators, 14 relators, total length 158
 
 julia> display_balanced(p)
 1: ab=ba
 2: dbd=bdb
 3: bcb=cbc
 4: cac=aca
-5: adca=cadc
+5: adAc=cadA
 6: dcdc=cdcd
 7: adad=dada
-8: dCbdBc=bdcDBd
+8: CdBcbd=bCdBcb
 9: adcDad=dcDadc
 10: dcdadc=adcdad
-11: dcabdcbda=adbcbadcb
-12: cbDadcbad=bDadcbadc
-13: bdcaDCbdBcADb=daDbADcabdcAD
-14: CbdabdcDbbdCbDDadBCb=abdcabdcBCADBdAcbDad
+11: cbdcbdc=dcbdcbd
+12: dcbadcbda=adcbcadcb
+13: cbCDadcab=DadcbadcD
+14: caDCbdBcADbda=bDBaDbADcbadc
 ```
 """
-function simplify(P::Presentation,lim=1000)
+function simplify(P::Presentation,lim=100)
   if isempty(P.relators) return end
   rot(tt,i)=tt[i]=circshift(tt[i],-1)
   function test()

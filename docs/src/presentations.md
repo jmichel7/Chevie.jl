@@ -9,6 +9,7 @@ AbsWord
 FpGroup
 Presentation(::FpGroup)
 relators
+showgens
 simplify
 conjugate
 tryconjugate

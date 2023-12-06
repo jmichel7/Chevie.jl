@@ -913,7 +913,7 @@ function Base.show(io::IO,t::ClassInfo)
 end
 
 function limitto(s,sz)
-  if length(s)<sz || sz==1 return s end
+  if length(s)<sz || sz<=1 return s end
   s[1:prevind(s,sz-1)]*"…"
 end
 
