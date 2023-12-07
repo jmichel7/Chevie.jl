@@ -567,7 +567,8 @@ end
 """
 `simple_reps(W)`
 
-for each root, the index of the first simple root conjugate to it
+for  each root, the index  of the first simple  root conjugate to it (it is
+the index of a generator of `W`).
 """
 function simple_reps(W::PermRootGroup) # fills .simple_conjugating and .refls
   get!(W,:simple_reps)do
@@ -592,7 +593,8 @@ end
 """
 `simple_reps(W,i)`
 
-the  smallest index  of a root in the same `W`-orbit as the `i`-th root.
+the  smallest index of a root in the  same `W`-orbit as the `i`-th root (it
+is the index of a generator of `W`).
 """
 simple_reps(W,i)=simple_reps(W)[i]
 
@@ -619,8 +621,7 @@ refls(W,i::AbstractVector)=map(j->refls(W,j),i)
 `simple_conjugating(W::ComplexReflectionGroup)`
 
 For each index `i` of a root, an element `w∈ W` such that
-`restriction(W,inclusion(W,simple_reps(W,i))^w)==i`
-(or `action(W,simple_reps(W,i))==i`). 
+`action(W,simple_reps(W,i),w)==i`. 
 """
 simple_conjugating(W::PermRootGroup{T,T1}) where{T,T1}=getp(simple_reps,W,:simple_conjugating)::Vector{Perm{T1}}
 
@@ -635,8 +636,7 @@ unique_refls(W)=getp(simple_reps,W,:unique_refls)::Vector{Int}
 """
 `simple_conjugating(W,i)`
 
-an element `w∈ W` such that `restriction(W,inclusion(W,simple_reps(W,i))^w)==i`
-(or `action(W,simple_reps(W,i))==i`). In particular
+an element `w∈ W` such that `action(W,simple_reps(W,i),w)==i`. In particular
 `W(simple_reps(W,i))^simple_conjugating(W,i)==refls(W,i)`.
 """
 simple_conjugating(W::PermRootGroup,i)=simple_conjugating(W)[i]
@@ -664,6 +664,7 @@ If invertible, the matrix `C` determines this representation since then the
 only  on  the  `i`-th  row,  where  the  corresponding  row of `C` has been
 subtracted.
 
+In general `cartan(W)==simplecoroots(W)*permutedims(simpleroots(W))`.
 ```julia-repl
 julia> W=coxgroup(:A,3)
 A₃
@@ -1040,7 +1041,7 @@ end
 `reflection_character(W::ComplexReflectionGroup,w)` or `reflchar`
 
 Returns  the trace  of the  element `w`  of `W`  as an  endomorphism of the
-vector space `V` on which `W` acts. This is the same as `tr(reflrep(W,w))`.
+vector space `V` on which `W` acts.
 
 ```julia-repl
 julia> W=coxgroup(:B,3)
@@ -1057,8 +1058,7 @@ const reflchar=reflection_character
 """
 `reflection_character(W::ComplexReflectionGroup)` or `reflchar`
 
-Returns   the  reflection   character  of   `W`.  This   is  the   same  as
-`map(c->reflchar(W,c),class-reps(W))`.  When `W` is irreducible, it is also
+Returns  the reflection  character of  `W`. When  `W` is irreducible, it is
 `CharTable(W).irr[charinfo(W).extRefl[2]]`.
 
 ```julia-repl
@@ -1473,15 +1473,17 @@ function parabolic_reps(W::PermRootGroup,s)
 end
 
 """
-`reflection_representation(W,w)`  or `reflrep(W,w)`
+`reflection_representation(W::ComplexReflectionGroup,w)` or `reflrep(W,w)`
 
-Let  `W` be a  finite reflection group  on the space  `V` and let  `w` be a
-permutation  of the roots of `W`. The function `reflrep` returns the matrix
-of  `w` acting on `V`  (recall that matrices operate  *from the right* on a
-vector  space in `Gapjm`).  This is the  linear transformation of `V` which
-acts  trivially on the orthogonal of the coroots and has same effect as `w`
-on the simple roots. The function makes sense more generally for an element
-of the normalizer of `W` in the whole permutation group of the roots.
+Let  `V` be the space on  which `W` acts as a  reflection group and let `w∈
+W`,  represented  as  a  permutation  of  the roots. The function `reflrep`
+returns the matrix of `w` acting on `V` (recall that matrices operate *from
+the right* on a vector space in `Gapjm`). This is the linear transformation
+of  `V` which acts trivially on the  orthogonal of the coroots and has same
+effect  as `w` on the simple roots. The function makes sense more generally
+for  a permutation  of the  roots induced  by an  element of  `GL(V)` which
+stabilizes the roots (thus in particular normalizes `W`); thus it works for
+reflection cosets.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
@@ -1746,17 +1748,15 @@ end
 """
 `reflection_representation(W::ComplexReflectionGroup)` or `reflrep(W)`
 
-returns  the  list  of  `reflrep(W,x)`  for  `x`  in `gens(W)`, that is the
-generators of `W` as matrices.
+returns  `reflrep.(Ref(W),gens(W))`,  that  is  the  generators  of  `W` as
+matrices.
 """
 reflection_representation(W::PRG)=W.matgens
 
 """
 `reflection_representation(W,i::Integer)`  or `reflrep(W,i)`
 
-for `i∈ 1:ngens(W)` same as but faster than `reflrep(W,W(i))`.
-For  `ngens(W)<i≤nref(W)`  returns  the  matrix  for  the  i-th  reflection
-`refls(W,i)` of `W`.
+the matrix for the distinguished reflection around the `i`-th root of `W`.
 """
 reflection_representation(W::PRG,i::Integer)=i<=ngens(W) ? W.matgens[i] : reflrep(W,refls(W,i))
 
@@ -1797,8 +1797,10 @@ simplecoroots(W::PRSG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(coroots(parent(W),i
 
 The elements of a `PermRootGroup` permute the roots of `parent(W)`, that is
 are  permutations on `1:nref(parent(W))`.  The function `action` translates
-this action of `p∈ W` to `1:nref(W)`. Thus
-`action(W,i,p)==restriction(W,inclusion(W,i)^p)`.
+this  action of `p∈  W` to `1:nref(W)`.  For a reflection  subgroup we have
+`action(W,i,p)==restriction(W,inclusion(W,i)^p)`  and  for  a  parent group
+`action(W,i,p)==i^p`.  The first formula is always valid since for a parent
+group `restriction(W)==inclusion(W)==1:nref(W)`.
 """
 action(W::PRSG,i,p)=restriction(W,inclusion(W,i)^p)
 
@@ -2054,19 +2056,19 @@ julia> @Mvp x,y,z
 
 julia> i=invariants(W);
 
-julia> i[1](x,y)
-Mvp{Int64}: -2x²+2xy-2y²
-
-julia> i[2](x,y)
-Mvp{Int64}: 6x²y-6xy²
+julia> map(f->f(x,y),i)
+2-element Vector{Mvp{Int64, Int64}}:
+ -2x²+2xy-2y²
+ 6x²y-6xy²
 
 julia> W=complex_reflection_group(24)
 G₂₄
 
-julia> i=invariants(W)[1];
-
-julia> p=i(x,y,z)
+julia> p=invariants(W)[1](x,y,z);
 Mvp{Rational{Int64}}: (14//1)x⁴+(-12//1)x²y²+(-42//1)x²yz+(21//2)x²z²+(18//7)y⁴+(-6//1)y³z+(-9//2)y²z²+(-21//8)z⁴
+
+julia> map(v->^(v,reflrep(W,1);vars=[:x,:y,:z]),(x,y,z))
+((1//2)x+(3√-7/14)y, (-√-7/2)x+(-1//2)y, z)
 
 julia> p^reflrep(W,1)-p
 Mvp{Cyc{Rational{Int64}}}: 0

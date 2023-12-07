@@ -2105,7 +2105,7 @@ julia> display_balanced(p)
 3: cbc=bcb
 ```
 """
-function Presentations.Presentation(M::GarsideMonoid)
+function GroupPresentations.Presentation(M::GarsideMonoid)
   F=FpGroup(map(i->Symbol("x",i),eachindex(M.atoms))...)
   rels=AbsWord[]
   for i in eachindex(M.atoms)

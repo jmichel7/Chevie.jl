@@ -62,7 +62,7 @@ tryconjugate`.
 A  minimal thing to add to this package so it would be a reasonable package
 for finitely preented groups is the Coxeter-Todd algorithm.
 """
-module Presentations
+module GroupPresentations
 ## Changing Presentations
 #
 #The  functions `AddGenerator`, `AddRelator`, `RemoveRelator` can be used to
@@ -295,7 +295,7 @@ corresponding (reduced) Tietze word.
 julia> F=FpGroup(:a,:b,:c)
 FreeGroup(a,b,c)
 
-julia> Presentations.TietzeWord(comm(F(1),F(2))*inv(F(3)^2*F(2)),gens(F))
+julia> GroupPresentations.TietzeWord(comm(F(1),F(2))*inv(F(3)^2*F(2)),gens(F))
 5-element Vector{Int64}:
  -1
  -2
@@ -1965,7 +1965,7 @@ can get without substituting new generators.
     Pi.eliminationsLimit=i
     println("# eliminationsLimit set to ",i)
       Pi.debug=0
-      Presentations.GoGo(Pi)
+      GroupPresentations.GoGo(Pi)
       print(Pi)
     end
     #  eliminationsLimit set to 28
@@ -2803,7 +2803,7 @@ julia> P.generators
  d
  e
  f
-julia> Presentations.GoGo(P)
+julia> GroupPresentations.GoGo(P)
 Presentation: 3 generators, 10 relators, total length 81
 Presentation: 3 generators, 10 relators, total length 80
 Presentation: 3 generators, 10 relators, total length 80
@@ -2818,17 +2818,17 @@ julia> a,b=P.generators[1:2]
  a
  b
 
-julia> Presentations.Substitute( P, a*b, :ab )
+julia> GroupPresentations.Substitute( P, a*b, :ab )
 #started tracing generator images
 #Substitute new generator ab defined by ab
 #started tracing generator images
 Presentation: 4 generators, 11 relators, total length 83
 
-julia> Presentations.Go(P)
+julia> GroupPresentations.Go(P)
 #Presentation: 3 generators, 10 relators, total length 74
 #Presentation: 3 generators, 10 relators, total length 74
 
-julia> Presentations.showgens(P)
+julia> showgens(P)
 1. a 25 occurrences involution
 2. d 23 occurrences involution
 3. ab 26 occurrences
@@ -3004,7 +3004,7 @@ julia> P=Presentation("
 ") 
 Presentation: 6 generators, 21 relators, total length 84
 julia> tracing(P)
-julia> Presentations.Go(P)
+julia> GroupPresentations.Go(P)
 Presentation: 3 generators, 10 relators, total length 81
 
 julia> P.imagesOldGens
@@ -3024,7 +3024,7 @@ julia> P.preImagesNewGens
 ```
 
 ```julia-rep1
-julia> Presentations.images(P)
+julia> GroupPresentations.images(P)
 current generators in terms of the old ones:
   a=a
   b=b
@@ -3103,7 +3103,7 @@ end
 simplify  the  presentation  `p`.  We  have  found heuristics which make it
 somewhat  efficient, but the algorithm depends  on random numbers so is not
 reproducible.  The main  idea is  to rotate  relators between  calls to the
-basic  `Presentations.Go` function. By default 100 such rotations are tried
+basic  `GroupPresentations.Go` function. By default 100 such rotations are tried
 (unless  the  presentation  is  so  small  that  less rotations exhaust all
 possible  ones), but the actual number tried  can be controlled by giving a
 second  parameter `tries` to the function. Another useful tool to deal with

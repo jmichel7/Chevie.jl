@@ -363,10 +363,10 @@ julia> W=crg(8);
 julia> r=reflections(W)[7]
 Reflection(G₈,1,-1)
 
-julia> r==Reflection(W,1,-1) # construct with group, root number, eigenvalue
+julia> r==Reflection(W,1,-1) # specify r with root number and eigenvalue
 true
 
-julia> Reflection(W,1) # omitting the eigenvalue gets the distinguished refl.
+julia> Reflection(W,1) # specify with root number gets distinguished reflection
 Reflection(G₈,1,ζ₄)
 
 julia> r.eigen # the non-trival eigenvalue, as a Root1

@@ -1,9 +1,9 @@
-# Presentations
+# GroupPresentations
 ```@index
 Pages=["presentations.md"]
 ```
 ```@docs
-Presentations
+GroupPresentations
 AbsWord
 @AbsWord
 FpGroup

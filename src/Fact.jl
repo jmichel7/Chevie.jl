@@ -215,7 +215,7 @@ julia> factor(Pol(:q)^24-1)
 (q-1) * (q²-q+1) * (q⁴-q²+1) * (q⁸-q⁴+1) * (q⁴+1) * (q²+1) * (q+1) * (q²+q+1)
 ```
 """
-function Primes.factor(f0::Pol{T})where T<:Union{Integer,Rational}
+function Primes.factor(f0::Pol{T})where T<:Union{Integer,Rational{<:Integer}}
   info("#I  starting integer factorization: ", etime())
   fact=Primes.Factorization{typeof(f0)}()
   if iszero(f0)

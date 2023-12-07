@@ -46,10 +46,11 @@ other terms, `Gapjm` is a meta-package for the following packages:
   * [GenLinearAlgebra](https://github.com/jmichel7/GenLinearAlgebra.jl) (linear algebra on any field/ring)
   * [FinitePosets](https://github.com/jmichel7/FinitePosets.jl) (finite posets)
   * [FiniteFields](https://github.com/jmichel7/FiniteFields.jl) (finite fields)
+  * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose several packages)
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * presentations of groups, and groups defined by generators and relations (module [`Presentations`](@ref))
+  * presentations of groups, and groups defined by generators and relations (module [`GroupPresentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
@@ -116,7 +117,7 @@ include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
-include("Presentations.jl");@reexport using .Presentations
+include("GroupPresentations.jl");@reexport using .GroupPresentations
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl

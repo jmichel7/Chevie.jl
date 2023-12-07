@@ -6,10 +6,10 @@ Gapjm
 # Extensions to Laurent and Puiseux polynomials
 ```@docs
 FFfac
-factor(::Pol{FFE{p}}where p, F)
+FFfac.factor(::Pol{FFE{p}}, Any) where p
 Fact
-Fact.factor(f::Pol{var"#s162"} where var"#s162"<:Union{Integer, Rational})
-factor(p::Mvp{T, N}) where {T, N}
+Fact.factor(::Pol{T}) where T<:Union{Integer, Rational{<:Integer}}
+factor(::Mvp{T, N}) where {T, N}
 ```
 # Extensions to groups
 ```@docs
