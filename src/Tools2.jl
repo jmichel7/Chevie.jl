@@ -16,6 +16,7 @@ using ..Chars: CharTable
 using ..Tools: improve_type
 using ..Gapjm: Gapjm, root, gap, Cyc, conductor
 using ..Util: toL
+using GroupPresentations: Presentation
 
 #----------------------------------------------------------------------
 """
@@ -200,6 +201,18 @@ function Gapjm.gap(p::CycPol) # export positive CycPols to GAP3
   if any(<(0),values(p.v)) error("non-positive") end
   res=string("CycPol([",gap(p.coeff),",",p.valuation,",")
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"])"
+end
+
+function Gapjm.gap(p::Presentation)
+  t=p
+  s="F:=FreeGroup($(length(t.generators)));\n"
+  s*="F.relators:=["
+  s*=join(map(t.relators)do r
+      join(map(r)do i
+        i>0 ? string("F.",i) : string("F.",-i,"^-1")
+      end,"*")
+          end,",")*"];\n"
+  s*"PresentationFpGroup(F);\n"
 end
 
 end

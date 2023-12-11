@@ -47,10 +47,10 @@ other terms, `Gapjm` is a meta-package for the following packages:
   * [FinitePosets](https://github.com/jmichel7/FinitePosets.jl) (finite posets)
   * [FiniteFields](https://github.com/jmichel7/FiniteFields.jl) (finite fields)
   * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose several packages)
+  * [GroupPresentations](https://github.com/jmichel7/GroupPresentations.jl) (presentations of groups, and groups defined by generators and relations)
 Look  at the  documentation of  the above  packages to  see how  to use the
 corresponding  features. I have implemented  some more infrastructure which
 sits currently in `Gapjm` but may become eventually separate packages:
-  * presentations of groups, and groups defined by generators and relations (module [`GroupPresentations`](@ref))
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
@@ -110,6 +110,7 @@ using UsingMerge
 @reexport using CycPols: stringprime
 @reexport using GenLinearAlgebra
 @reexport using FinitePosets
+@reexport using GroupPresentations
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
 include("Util.jl");@reexport using .Util
@@ -117,7 +118,6 @@ include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
-include("GroupPresentations.jl");@reexport using .GroupPresentations
 include("PermRoot.jl");@reexport using .PermRoot
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl

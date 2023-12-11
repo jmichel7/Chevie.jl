@@ -12,8 +12,7 @@ pages=[
 "index.md",
 "Infrastructure"=>[
 "symbols.md",
-"nf.md",
-"presentations.md"],
+"nf.md"],
 "Reflection groups"=>[
 "permroot.md",
 "coxgroups.md",
