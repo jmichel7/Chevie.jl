@@ -328,7 +328,7 @@ julia> root(Pi,4)
 ```
 """
 module Garside
-using ..Gapjm
+using ..Chevie
 export BraidMonoid, shrink, α, δad, DualBraidMonoid, conjcat, fraction,
 centralizer_gens, preferred_prefix, left_divisors, right_divisors, Category,
 endomorphisms, image, leftgcd, leftgcdc, rightgcd, rightgcdc,

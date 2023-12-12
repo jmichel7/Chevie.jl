@@ -200,7 +200,7 @@ export two_tree, rootdatum, torus, istorus, derived_datum,
  relative_group, rootlengths, highest_short_root, badprimes,
  ComplexReflectionGroup
 
-using ..Gapjm
+using ..Chevie
 #------------------------ Cartan matrices ----------------------------------
 
 """

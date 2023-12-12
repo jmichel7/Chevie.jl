@@ -1,7 +1,7 @@
-using Documenter, Gapjm
+using Documenter, Chevie
 
-makedocs(sitename="Gapjm.jl documentation",
-         modules=[Gapjm],
+makedocs(sitename="Chevie.jl documentation",
+         modules=[Chevie],
            format = Documenter.HTML(
         # Use clean URLs, unless built as a "local" build
         prettyurls = !("local" in ARGS),

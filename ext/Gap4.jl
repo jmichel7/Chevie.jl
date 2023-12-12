@@ -1,8 +1,8 @@
 module Gap4
 
-#println("loading Gap4 extension to Gapjm")
+#println("loading Gap4 extension to Chevie")
 
-using GAP, Gapjm, Reexport
+using GAP, Chevie, Reexport
 #@reexport using GAP
 
 function GAP.Obj(g::Group)

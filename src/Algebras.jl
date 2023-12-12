@@ -2,7 +2,7 @@
 This is a port of the GAP3 package Algebras by Cédric Bonnafé.
 """
 module Algebras
-using ..Gapjm
+using ..Chevie
 export FiniteDimAlgebra, coefftype, AlgebraElt, basis, idempotents,
        involution, isassociative, SubAlgebra, TwoSidedIdeal, 
        loewylength, radicalpower, centralidempotents,

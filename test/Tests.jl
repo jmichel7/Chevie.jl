@@ -1,6 +1,6 @@
 # defines RG()
 module Tests
-using Gapjm
+using Chevie
 
 const test=Dict{Symbol,@NamedTuple{fn::Function, applicable::Function,
                                    comment::String}}()
@@ -349,7 +349,7 @@ test[:powermaps]=(fn=Tpowermaps, applicable=W->false,
 
 #---------------- test: positionclasses ------------------------
 function Tpositionclasses(W)
-  cl=map(x->Gapjm.position_class(W,x),classreps(W))
+  cl=map(x->Chevie.position_class(W,x),classreps(W))
   if cl!=1:length(cl) error("classes") end
 end
 

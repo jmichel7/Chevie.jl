@@ -221,7 +221,7 @@ export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   nref, number_of_reflections,
   coxnum, coxeter_number,
   indices
-using ..Gapjm
+using ..Chevie
 
 """
 `coroot(r,λ=-1)`
@@ -1478,7 +1478,7 @@ end
 Let  `V` be the space on  which `W` acts as a  reflection group and let `w∈
 W`,  represented  as  a  permutation  of  the roots. The function `reflrep`
 returns the matrix of `w` acting on `V` (recall that matrices operate *from
-the right* on a vector space in `Gapjm`). This is the linear transformation
+the right* on a vector space in `Chevie`). This is the linear transformation
 of  `V` which acts trivially on the  orthogonal of the coroots and has same
 effect  as `w` on the simple roots. The function makes sense more generally
 for  a permutation  of the  roots induced  by an  element of  `GL(V)` which

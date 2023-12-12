@@ -1,5 +1,5 @@
 "generates a runtests.jl from julia-repl docstrings in file arguments"
-function gentests(ff::Vector{String};module_="Gapjm")
+function gentests(ff::Vector{String};module_="Chevie")
   open("runtests.jl","w")do io
     write(io,
 """

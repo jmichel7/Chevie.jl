@@ -240,7 +240,7 @@ corresponding to the 2-dimensional character of ``A(u)=A₂``.
 """
 module Ucl
 
-using ..Gapjm
+using ..Chevie
 
 export UnipotentClasses, UnipotentClass, UnipotentClassOps, ICCTable, XTable,
  GreenTable, UnipotentValues, induced_linear_form, special_pieces, name,

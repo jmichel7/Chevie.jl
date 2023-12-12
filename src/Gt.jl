@@ -1,5 +1,5 @@
 module Gt
-using ..Gapjm
+using ..Chevie
 export RationalUnipotentClasses, closed_subsystems, ClassTypes
 
 function RationalUnipotentClasses(WF, p=0)

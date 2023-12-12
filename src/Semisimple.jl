@@ -179,7 +179,7 @@ reflection  part.  Here  it  is  printed  as  a  coset  ``C_𝐆 ⁰(s)ϕ`` whic
 generates ``C_𝐆 (s)``.
 """
 module Semisimple
-using ..Gapjm
+using ..Chevie
 export algebraic_center, SubTorus, weightinfo, fundamental_group, isisolated,
 SemisimpleElement, ss, torsion_subgroup, quasi_isolated_reps,
 structure_rational_points_connected_centre, 
@@ -301,7 +301,7 @@ end
 Base.hash(a::SemisimpleElement, h::UInt)=hash(a.v, h)
 Base.:(==)(a::SemisimpleElement, b::SemisimpleElement)=a.v==b.v
 
-Gapjm.order(a::SemisimpleElement{Root1})=lcm(order.(a.v))
+Chevie.order(a::SemisimpleElement{Root1})=lcm(order.(a.v))
 
 struct SubTorus{T<:Integer}
   gens::Matrix{T}
@@ -334,7 +334,7 @@ julia> SubTorus(W,[1 2 3 4;2 3 4 1;3 4 1 2])
 ERROR: not a pure sublattice
 Stacktrace:
  [1] error(::String) at ./error.jl:33
- [2] Gapjm.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Matrix{Int64}) at /home/jmichel/julia/Gapjm.jl/src/Weyl.jl:1082
+ [2] Chevie.Weyl.SubTorus(::FiniteCoxeterGroup{Perm{Int16},Int64}, ::Matrix{Int64}) at /home/jmichel/julia/Chevie.jl/src/Weyl.jl:1082
  [3] top-level scope at REPL[25]:1
 ```
 """
@@ -346,7 +346,7 @@ end
 
 Base.show(io::IO,T::SubTorus)=print(io,"SubTorus(",T.group,",",T.gens,")")
 
-Gapjm.rank(T::SubTorus)=size(T.gens,1)
+Chevie.rank(T::SubTorus)=size(T.gens,1)
 
 function Base.in(s::SemisimpleElement{Root1},T::SubTorus)
   x=solutionmat(vcat(T.gens,T.complement),map(x->x.r,s.v))

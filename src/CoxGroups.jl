@@ -147,7 +147,7 @@ export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
   coxeter_group, coxgroup,
   standard_parabolic_class, inversions, degrees, FiniteCoxeterGroup
 
-using ..Gapjm
+using ..Chevie
 #-------------------------- Coxeter groups
 abstract type CoxeterGroup{T}<:Group{T} end
 
@@ -1004,7 +1004,6 @@ end
   n::Int
 end
 
-Base.iterate(W::CoxHyp,r...)=iterate(W.G,r...)
 Groups.gens(W::CoxHyp)=gens(W.G)
 
 """

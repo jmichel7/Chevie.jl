@@ -25,7 +25,7 @@ next need them.
 """
 module Murphy
 
-using ..Gapjm
+using ..Chevie
 export Murphybasis, Spechtmodel
 
 function QuantumInteger(q,n)

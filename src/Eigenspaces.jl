@@ -73,7 +73,7 @@ module Eigenspaces
 export relative_degrees, regular_eigenvalues,
   position_regular_class, eigenspace_projector, relative_root, split_levis
 
-using ..Gapjm
+using ..Chevie
 """
 `relative_degrees(WF,ζ::Root1=1)`
 

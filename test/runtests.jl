@@ -1,5 +1,5 @@
 # auto-generated tests from julia-repl docstrings
-using Test, Gapjm
+using Test, Chevie
 function mytest(file::String,cmd::String,man::String)
   println(file," ",cmd)
   exec=repr(MIME("text/plain"),eval(Meta.parse(cmd)),context=:limit=>true)
@@ -16,7 +16,7 @@ function mytest(file::String,cmd::String,man::String)
   end
   exec==man
 end
-@testset verbose = true "Gapjm" begin
+@testset verbose = true "Chevie" begin
 @testset "Algebras.jl" begin
 @test mytest("Algebras.jl","G=symmetric_group(5)","Group((1,2),(2,3),(3,4),(4,5))")
 @test mytest("Algebras.jl","Algebras.pprimesections(G,2)","3-element Vector{Vector{Int64}}:\n [1, 2, 4, 5]\n [3, 6]\n [7]")
@@ -286,8 +286,8 @@ end
 @test mytest("Families.jl","W=complex_reflection_group(4)","G₄")
 @test mytest("Families.jl","uc=UnipotentCharacters(W);f=uc.families[4];","nothing")
 @test mytest("Families.jl","A=fusion_algebra(fourier(f),1)","Fusion Algebra dim.5")
-@test mytest("Families.jl","b=basis(A)","5-element Vector{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:\n B₁\n B₂\n B₃\n B₄\n B₅")
-@test mytest("Families.jl","b*permutedims(b)","5×5 Matrix{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
+@test mytest("Families.jl","b=basis(A)","5-element Vector{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:\n B₁\n B₂\n B₃\n B₄\n B₅")
+@test mytest("Families.jl","b*permutedims(b)","5×5 Matrix{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
 @test mytest("Families.jl","CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
 end
 @testset "Garside.jl" begin
@@ -506,7 +506,7 @@ end
 @test mytest("HeckeAlgebras.jl","factorized_schur_element(H,[[2,5]])","-x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)")
 @test mytest("HeckeAlgebras.jl","W=complex_reflection_group(4)","G₄")
 @test mytest("HeckeAlgebras.jl","@Mvp x,y; H=hecke(W,[[1,x,y]])","hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])")
-@test mytest("HeckeAlgebras.jl","factorized_schur_elements(H)","7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:\n x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)\n Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)\n -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)\n -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)\n -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)\n x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)\n x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)")
+@test mytest("HeckeAlgebras.jl","factorized_schur_elements(H)","7-element Vector{Chevie.HeckeAlgebras.FactSchur}:\n x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)\n Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)\n -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)\n -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)\n -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)\n x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)\n x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)")
 @test mytest("HeckeAlgebras.jl","WF=rootdatum(:u,3)","u₃")
 @test mytest("HeckeAlgebras.jl","HF=hecke(WF,Pol(:v)^2;rootpara=Pol())","hecke(u₃,v²,rootpara=v)")
 @test mytest("HeckeAlgebras.jl","CharTable(HF)","CharTable(hecke(u₃,v²,rootpara=v))\n   │ 111 21  3\n───┼───────────\n111│  -1  1 -1\n21 │-2v³  .  v\n3  │  v⁶  1 v²")
@@ -570,7 +570,7 @@ end
 @test mytest("Nf.jl","K=NF(root(5))","NF(5,-1₅)")
 @test mytest("Nf.jl","conductor(K)","5")
 @test mytest("Nf.jl","E(5)+E(5,-1) in NF(root(5))","true")
-@test mytest("Nf.jl","elements(galois(F))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
+@test mytest("Nf.jl","elements(galois(F))","4-element Vector{Chevie.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
 @test mytest("Nf.jl","NF(root(3),root(5))","NF(60,-11₆₀,-1₆₀)")
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [8₂₄]\n [11₂₄, -7₂₄]\n [-8₂₄]")
 @test mytest("Nf.jl","Nf.LenstraBase(24,Group([Mod(19,24)]),Group([Mod(19,24),Mod(5,24)]))","4-element Vector{Vector{Mod{UInt64}}}:\n [1₂₄, -5₂₄]\n [5₂₄, -1₂₄]\n [8₂₄]\n [-8₂₄]")
@@ -582,9 +582,9 @@ end
 @test mytest("Nf.jl","root(5)^s","Cyc{Int64}: -√5")
 @test mytest("Nf.jl","K=CF(5)","CF(5)")
 @test mytest("Nf.jl","F=NF(root(5))","NF(5,-1₅)")
-@test mytest("Nf.jl","galois(K)","Group(Gapjm.Nf.NFAut[Aut(CF(5),2₅)])")
-@test mytest("Nf.jl","elements(galois(K))","4-element Vector{Gapjm.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
-@test mytest("Nf.jl","elements(galois(F))","2-element Vector{Gapjm.Nf.NFAut}:\n Aut(NF(5,-1₅),1₅)\n Aut(NF(5,-1₅),2₅)")
+@test mytest("Nf.jl","galois(K)","Group(Chevie.Nf.NFAut[Aut(CF(5),2₅)])")
+@test mytest("Nf.jl","elements(galois(K))","4-element Vector{Chevie.Nf.NFAut}:\n Aut(CF(5),1₅)\n Aut(CF(5),2₅)\n Aut(CF(5),-1₅)\n Aut(CF(5),-2₅)")
+@test mytest("Nf.jl","elements(galois(F))","2-element Vector{Chevie.Nf.NFAut}:\n Aut(NF(5,-1₅),1₅)\n Aut(NF(5,-1₅),2₅)")
 end
 @testset "PermRoot.jl" begin
 @test mytest("PermRoot.jl","W=complex_reflection_group(4)","G₄")

@@ -109,7 +109,7 @@ julia> cuspidal_data(W,E(3,2))
 ```
 """
 module dSeries
-using ..Gapjm
+using ..Chevie
 export Series, ennola
 
 function SpetsEnnola(t::TypeIrred;sperm=true)
@@ -671,7 +671,7 @@ function Weyl.relative_group(s::Series)
     if length(L) == 1
       sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
       if sz>100000 println("*** class too big ($sz) calling GAP.centralizer")
-         N=Gapjm.Gap4.centralizer(N,s.levi.phi)
+         N=Chevie.Gap4.centralizer(N,s.levi.phi)
       else
          N=centralizer(N, s.levi.phi)
       end

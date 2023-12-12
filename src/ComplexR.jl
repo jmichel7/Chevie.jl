@@ -1,5 +1,5 @@
 module ComplexR
-using ..Gapjm
+using ..Chevie
 export complex_reflection_group, crg, diagram, degrees, codegrees,
   Reflection, reflections, isdistinguished, 
   hyperplane, hyperplane_orbits, hyperplane_orbit, simple_rep,
@@ -7,7 +7,7 @@ export complex_reflection_group, crg, diagram, degrees, codegrees,
 
 @forward Weyl.FC.G hyperplane_orbits,  codegrees,  degrees
 
-Gapjm.roots(t::TypeIrred)=
+Chevie.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
 
 function PermRoot.coroots(t::TypeIrred)

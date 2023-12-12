@@ -14,7 +14,7 @@ using LinearAlgebra: tr
 using GenLinearAlgebra: solutionmat, independent_rows, charpoly
 using ..Chars: CharTable
 using ..Tools: improve_type
-using ..Gapjm: Gapjm, root, gap, Cyc, conductor
+using ..Chevie: Chevie, root, gap, Cyc, conductor
 using ..Util: toL
 using GroupPresentations: Presentation
 
@@ -135,11 +135,11 @@ function CycPol(x::Mvp)
 end
 
 #-------------------- define function to backport to gap3 some values
-Gapjm.gap(p::Rational)=string(numerator(p),"/",denominator(p))
+Chevie.gap(p::Rational)=string(numerator(p),"/",denominator(p))
 
-Gapjm.gap(p::Integer)=string(p)
+Chevie.gap(p::Integer)=string(p)
 
-function Gapjm.gap(p::Cyc)
+function Chevie.gap(p::Cyc)
   res=join(map(pairs(p.d)) do (deg,v)
     den=denominator(v)
     v=numerator(v) 
@@ -160,11 +160,11 @@ function Gapjm.gap(p::Cyc)
   res
 end
 
-Gapjm.gap(v::AbstractVector)="["*join(gap.(v),",")*"]"
+Chevie.gap(v::AbstractVector)="["*join(gap.(v),",")*"]"
 
-Gapjm.gap(m::AbstractMatrix)=gap(toL(m))
+Chevie.gap(m::AbstractMatrix)=gap(toL(m))
 
-function Gapjm.gap(p::Pol)
+function Chevie.gap(p::Pol)
   if iszero(p) return "0*q" end
   l=filter(x->x[2]!=0,collect(pairs(p.c)))
   prod(map(degree(p):-1:valuation(p))do d
@@ -180,9 +180,9 @@ function Gapjm.gap(p::Pol)
   end)
 end
 
-Gapjm.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
+Chevie.gap(m::Monomial)=join([string(v)*(p==1 ? "" : string("^",p)) for (v,p) in m.d],"*")
 
-function Gapjm.gap(p::Mvp)
+function Chevie.gap(p::Mvp)
   res=join(map(collect(p.d))do (k,c)
     c=bracket_if_needed(gap(c))
     kk=gap(k)
@@ -194,16 +194,16 @@ function Gapjm.gap(p::Mvp)
   isempty(res) ? "0" : res
 end
 
-Gapjm.gap(f::Float64)="evalf(\"$f\")"
-Gapjm.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"
+Chevie.gap(f::Float64)="evalf(\"$f\")"
+Chevie.gap(f::Complex{Float64})="Complex("*gap(real(f))*","*gap(imag(f))*")"
 
-function Gapjm.gap(p::CycPol) # export positive CycPols to GAP3
+function Chevie.gap(p::CycPol) # export positive CycPols to GAP3
   if any(<(0),values(p.v)) error("non-positive") end
   res=string("CycPol([",gap(p.coeff),",",p.valuation,",")
   res*join(map(x->join(map(gap,fill(x[1].r,x[2])),","),pairs(p.v)),",")*"])"
 end
 
-function Gapjm.gap(p::Presentation)
+function Chevie.gap(p::Presentation)
   t=p
   s="F:=FreeGroup($(length(t.generators)));\n"
   s*="F.relators:=["

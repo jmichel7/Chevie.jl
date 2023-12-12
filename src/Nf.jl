@@ -29,7 +29,7 @@ in  the galois group  of `F`. Above  `NF(5,-1₅)` represents the subfield of
 
 ```julia-repl
 julia> elements(galois(F))
-4-element Vector{Gapjm.Nf.NFAut}:
+4-element Vector{Chevie.Nf.NFAut}:
  Aut(CF(5),1₅)
  Aut(CF(5),2₅)
  Aut(CF(5),-1₅)
@@ -48,7 +48,7 @@ NF(60,-11₆₀,-1₆₀)
 module Nf
 export NF, CF, Aut
 using Primes
-using ..Gapjm
+using ..Chevie
 """
 `LenstraBase(n,stab,supergroup)`
 
@@ -360,17 +360,17 @@ julia> F=NF(root(5))
 NF(5,-1₅)
 
 julia> galois(K)
-Group(Gapjm.Nf.NFAut[Aut(CF(5),2₅)])
+Group(Chevie.Nf.NFAut[Aut(CF(5),2₅)])
 
 julia> elements(galois(K))
-4-element Vector{Gapjm.Nf.NFAut}:
+4-element Vector{Chevie.Nf.NFAut}:
  Aut(CF(5),1₅)
  Aut(CF(5),2₅)
  Aut(CF(5),-1₅)
  Aut(CF(5),-2₅)
 
 julia> elements(galois(F))
-2-element Vector{Gapjm.Nf.NFAut}:
+2-element Vector{Chevie.Nf.NFAut}:
  Aut(NF(5,-1₅),1₅)
  Aut(NF(5,-1₅),2₅)
 ```julia-repl

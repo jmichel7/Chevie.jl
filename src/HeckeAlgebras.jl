@@ -212,7 +212,7 @@ end;
 ```
 """
 module HeckeAlgebras
-using ..Gapjm
+using ..Chevie
 export HeckeElt, Tbasis, central_monomials, hecke, HeckeAlgebra, HeckeTElt,
   rootpara, equalpara, class_polynomials, char_values, schur_elements,
   schur_element, isrepresentation, alt, HeckeCoset,
@@ -1366,7 +1366,7 @@ julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
 hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> factorized_schur_elements(H)
-7-element Vector{Gapjm.HeckeAlgebras.FactSchur}:
+7-element Vector{Chevie.HeckeAlgebras.FactSchur}:
  x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)
  Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
  -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)

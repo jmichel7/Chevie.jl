@@ -288,7 +288,7 @@ julia> spets(W,Perm(1,2))
 ERROR: matrix F must preserve the roots
 Stacktrace:
  [1] error(::String) at ./error.jl:33
- [2] spets(::Gapjm.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}, ::Matrix{Int64}) at /home/jmichel/julia/Gapjm/src/Cosets.jl:241 (repeats 2 times)
+ [2] spets(::Chevie.Weyl.FCG{Int16,Int64,PRG{Int64,Int16}}, ::Matrix{Int64}) at /home/jmichel/julia/Chevie/src/Cosets.jl:241 (repeats 2 times)
  [3] top-level scope at REPL[19]:1
 
 julia> W=coxgroup(:Bsym,2)
@@ -361,7 +361,7 @@ julia> twistings(W,[2,4])
 """
 module Cosets
 
-using ..Gapjm
+using ..Chevie
 export twistings, spets, Frobenius, Spets, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
   CoxeterCoset, twisted_power

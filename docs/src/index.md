@@ -1,6 +1,6 @@
-# Gapjm
+# Chevie
 ```@docs
-Gapjm
+Chevie
 ```
 
 # Extensions to Laurent and Puiseux polynomials

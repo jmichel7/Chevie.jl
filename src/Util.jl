@@ -4,7 +4,7 @@ code.  Maybe some  of them  exist in  some Julia  module I am not aware of;
 please tell me.
 """
 module Util
-using ..Gapjm: stringexp, stringprime
+using ..Chevie: stringexp, stringprime
 
 export @forward 
 export showtable, ordinal, fromTeX, printTeX, joindigits, cut, rio, xprint, 

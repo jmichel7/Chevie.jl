@@ -70,7 +70,7 @@ julia> isisolated.(Ref(WF),l)
 """
 module Sscoset
 
-using ..Gapjm
+using ..Chevie
 
 # IsSpecial(WF,c) c is an orbit of WF.phi on roots(Group(WF))
 # return true iff c is special in the sense of Digne-Michel
@@ -80,7 +80,7 @@ function IsSpecial(WF::Spets,c)
   roots(W,c[1])+roots(W,c[1+div(length(c),2)]) in roots(W)
 end
 
-function Gapjm.order(m::Matrix)
+function Chevie.order(m::Matrix)
   o=1
   while m^o!=one(m) o+=1 end
   o

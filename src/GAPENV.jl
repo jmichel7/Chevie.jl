@@ -5,7 +5,7 @@ GAP3  semantics and defining  quite a few  other GAP3 functions, then loads
 the Chevie database in that environment.
 """
 module GAPENV
-using ..Gapjm
+using ..Chevie
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 

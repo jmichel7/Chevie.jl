@@ -153,7 +153,7 @@ end;
 module KL
 export KLPol, Cpbasis, Cbasis, LeftCell, left_cells, character, Lusztigaw, 
  LusztigAw, AsymptoticAlgebra, Wgraph
-using ..Gapjm
+using ..Chevie
 
 """
  `critical_pair(W, y, w)` returns the critical pair z≤w associated to y≤w

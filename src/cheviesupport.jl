@@ -245,7 +245,7 @@ end
 #
 #```julia-rep1
 #julia> a=[GAPENV.Unknown(),GAPENV.Unknown()]
-#2-element Vector{Gapjm.GAPENV.Unknown}:
+#2-element Vector{Chevie.GAPENV.Unknown}:
 # ?
 # ?
 #

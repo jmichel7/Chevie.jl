@@ -234,7 +234,7 @@ G₄   │10        -q⁴Φ₁²Φ₃/2      0    -1  ζ₆∧-1
 """
 module Uch
 
-using ..Gapjm
+using ..Chevie
 
 export UnipotentCharacters, FixRelativeType, UniChar,
 almostChar, DLChar, DLLefschetz, lusztig_induce, lusztig_restrict, cuspidal,
@@ -788,7 +788,7 @@ julia> degrees(uc)
  (1//3)q⁵+(-2//3)q³+(1//3)q
 ```
 """
-function Gapjm.degrees(uc::UnipotentCharacters,q=Pol())
+function Chevie.degrees(uc::UnipotentCharacters,q=Pol())
   if !haskey(uc,:degrees) uc.degrees=Dict{Any,Any}() end
   d=uc.degrees
   if haskey(d,q) return d[q] end

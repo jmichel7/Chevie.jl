@@ -1,5 +1,5 @@
 module Lusztig 
-using ..Gapjm
+using ..Chevie
 export lusztig_induction_table, hc_induction_table, 
        harish_chandra_induction_table
 """

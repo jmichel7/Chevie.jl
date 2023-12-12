@@ -70,7 +70,7 @@ export family_imprimitive, Family, drinfeld_double,
  FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality,
  special, cospecial, fourier
 
-using ..Gapjm
+using ..Chevie
 
 @GapObj struct Family end
 
@@ -985,7 +985,7 @@ julia> A=fusion_algebra(fourier(f),1)
 Fusion Algebra dim.5
 
 julia> b=basis(A)
-5-element Vector{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:
+5-element Vector{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:
  B₁
  B₂
  B₃
@@ -993,7 +993,7 @@ julia> b=basis(A)
  B₅
 
 julia> b*permutedims(b)
-5×5 Matrix{AlgebraElt{Gapjm.Families.FusionAlgebra, Int64}}:
+5×5 Matrix{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:
  B₁  B₂      B₃      B₄        B₅
  B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
  B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂

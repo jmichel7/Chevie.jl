@@ -1,5 +1,5 @@
 # this contains simple functions but which need
-# several of the self-contained structural packages of Gapjm
+# several of the self-contained structural packages of Chevie
 module Tools
 export abelian_gens, abelian_invariants, improve_type
 using LinearAlgebra:LinearAlgebra, exactdiv
@@ -13,7 +13,7 @@ using MatInt: smith_transforms
 using CyclotomicNumbers: Cyc, conductor, Root1
 using ..FiniteFields: FiniteFields, FFE, Z
 using ..Modulo: Mod
-using ..Gapjm: Gapjm, order
+using ..Chevie: Chevie, order
 
 #------------------ improve_type
 best_eltype(m)=reduce(promote_type,best_type.(m))
@@ -174,7 +174,7 @@ function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
   if all(x->x in G,gens(H)) return H end
   if min(length(G),length(H))>104000 
     println("*** too large intersect($G,$H) -- calling Gap4.intersect") 
-    return Gapjm.Gap4.intersect(G,H)
+    return Chevie.Gap4.intersect(G,H)
   end
   if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
   else res=Group(filter(x->x in G,elements(H)))

@@ -393,7 +393,7 @@ regular element for the highest reflection degree).
 """
 module Chars
 
-using ..Gapjm
+using ..Chevie
 
 export charinfo, classinfo, fakedegree, fakedegrees, CharTable, representation,
   WGraphToRepresentation, DualWGraph, WGraph2Representation, charnames,
