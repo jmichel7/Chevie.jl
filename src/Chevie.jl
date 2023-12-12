@@ -127,7 +127,7 @@ include("Chars.jl");@reexport using .Chars
 include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
-include("Chevie.jl");@reexport using .Chevie
+include("InitChevie.jl");@reexport using .InitChevie
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside
