@@ -71,7 +71,7 @@ function generic_decomposition_matrix(W,d::Integer)
 end
 
 function generic_decomposition_matrix(t::TypeIrred,d::Integer)
-  field=string(Chevie.field(t)...)
+  field=string(InitChevie.field(t)...)
   if haskey(t,:orbit)
     if length(t.orbit)>2 
       error("orbits of F should not be of size ",length(t.orbit))

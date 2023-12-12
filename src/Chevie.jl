@@ -26,7 +26,7 @@ To update later to the latest version, do
 (@v1.7) pkg> update Chevie
 ```
 
-This package requires julia 1.6 or later. 
+This package requires julia 1.8 or later. 
 
 I  have implemented the  GAP functionality (infrastructure)  needed to make
 Chevie  work.  I  have  already  registered  most of this infrastructure as

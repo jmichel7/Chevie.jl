@@ -2064,7 +2064,7 @@ julia> map(f->f(x,y),i)
 julia> W=complex_reflection_group(24)
 G₂₄
 
-julia> p=invariants(W)[1](x,y,z);
+julia> p=invariants(W)[1](x,y,z)
 Mvp{Rational{Int64}}: (14//1)x⁴+(-12//1)x²y²+(-42//1)x²yz+(21//2)x²z²+(18//7)y⁴+(-6//1)y³z+(-9//2)y²z²+(-21//8)z⁴
 
 julia> map(v->^(v,reflrep(W,1);vars=[:x,:y,:z]),(x,y,z))
