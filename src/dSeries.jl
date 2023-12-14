@@ -569,7 +569,7 @@ function LaurentPolynomials.degree(s::Series)
   get!(s,:degree) do
     deg=exactdiv(conj(generic_sign(s.spets))*generic_order(s.spets,Pol()),
     conj(generic_sign(s.levi))*generic_order(s.levi,Pol()))
-    CycPol(shift(deg,-deg.v))*Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
+    CycPol(shift(deg,-deg.v))*CycPoldegrees(UnipotentCharacters(s.levi))[s.cuspidal]
   end
 end
 
@@ -697,10 +697,10 @@ function Weyl.relative_group(s::Series)
       end
     end
   end
-  eig=Uch.eigen(UnipotentCharacters(s.levi))
+  eig=eigen(UnipotentCharacters(s.levi))
   inds=filter(i->eig[i]==eig[s.cuspidal],eachindex(eig))
   if length(inds)>1
-    ud=Uch.CycPolUnipotentDegrees(s.levi)
+    ud=CycPoldegrees(UnipotentCharacters(s.levi))
     inds=filter(i->ud[i]==ud[s.cuspidal],inds)
     if length(inds)>1
       c=length(N)
@@ -861,9 +861,9 @@ e(s::Series)=getp(relative_group,s,:e)
 
 function RLG(s::Series)
   get!(s,:RLG) do
-  RLG=lusztig_induce(s.spets, UniChar(s.levi, s.cuspidal))
+  RLG=lusztig_induce(s.spets, unichar(s.levi, s.cuspidal))
   if isnothing(RLG) && isone(s.levi.phi)
-    RLG=Uch.hc_induce(s.spets, UniChar(s.levi,s.cuspidal))
+    RLG=Uch.hc_induce(s.spets, unichar(s.levi,s.cuspidal))
   end
   if isnothing(RLG) ChevieErr(s, ":RLG failed\n")
   elseif degree(s)!=CycPol(degree(RLG))
@@ -875,7 +875,7 @@ end
 
 function canfromdeg(s::Series)
   ad=count(!isone,relative_degrees(s.levi, s.d))
-  ud=Uch.CycPolUnipotentDegrees(s.spets)
+  ud=CycPoldegrees(UnipotentCharacters(s.spets))
   cand=filter(i->ad==valuation(ud[i],s.d),1:length(ud))
 # now use that S_φ(q)=ε_φ Deg(RLG(λ))/Deg(γ_φ)
   cand=map(c->Dict(:charNumbers=>c,:sch=>degree(s)//ud[c]),cand)
@@ -919,10 +919,10 @@ function Chars.charnumbers(s::Series)
     return charNumbers
   end
   cand=canfromdeg(s)
-  ud=Uch.CycPolUnipotentDegrees(s.spets)
-  eig=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
+  ud=CycPoldegrees(uc)
+  eig=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   eig*=map(i->E(order(s.d)^2,i),1:order(s.d)^2)
-  cand=filter(c->Uch.eigen(UnipotentCharacters(s.spets))[c[:charNumbers]] in eig,cand)
+  cand=filter(c->eigen(UnipotentCharacters(s.spets))[c[:charNumbers]] in eig,cand)
   if length(cand)<length(WGLdims(s))
     ChevieErr(s,": not enough left with predicted eigenvalues in ",Root1.(eig),"\n")
     return nothing
@@ -944,7 +944,7 @@ function Chars.charnumbers(s::Series)
     s.charNumbers
   end
   if length(cand)==length(WGLdims(s)) return check() end
-  ud=foo(:dims).*Uch.CycPolUnipotentDegrees(s.spets)[foo(:charNumbers)].*foo(:eps)
+  ud=foo(:dims).*CycPoldegrees(uc)[foo(:charNumbers)].*foo(:eps)
   t=maximum(degree.(ud))
   function c(p)
     pp=p(Pol())
@@ -980,10 +980,10 @@ function Chars.charnumbers(s::Series)
     InfoChevie("# Warning: using Mackey with tori for ", s, "\n")
     i=fusion_conjugacy_classes(s.levi, s.spets)
     c=CharTable(s.spets).centralizers[i].//CharTable(s.levi).centralizers
-    t=Uch.DLCharTable(s.levi)[:,s.cuspidal].*c
+    t=dlCharTable(s.levi)[:,s.cuspidal].*c
     t=map(k->sum(t[filter(j->i[j]==k,eachindex(i))]),
                        1:nconjugacy_classes(s.spets))
-    c=Uch.DLCharTable(s.spets)
+    c=dlCharTable(s.spets)
     v=filter(a->c[:,foo(:charNumbers,a)]*(foo(:dims,a).*foo(:eps,a))==t,v)
   end
   if length(v)>1
@@ -1009,10 +1009,10 @@ function paramcyclic(s::Series)
   if isnothing(charnumbers(s)) return nothing end
   if e(s)==1 return (s.Hecke=hecke(relative_group(s))) end
   uc=UnipotentCharacters(s.spets)
-  Schur=Uch.CycPolUnipotentDegrees(s.spets)[charnumbers(s)]
+  Schur=CycPoldegrees(uc)[charnumbers(s)]
   Schur=map(x->degree(s)//Schur[x]*eps(s)[x],1:e(s))
-  s.eigen=Uch.eigen(uc)[charnumbers(s)]
-  LFrob=Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
+  s.eigen=eigen(uc)[charnumbers(s)]
+  LFrob=eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   m=degrees(Group(s.spets))
   s.delta=lcm(map(x->order(Root1(x[2])),filter(x->x[1]!=1,degrees(s.spets))))
   rr(j,i)=(i-1)//e(s)-mC(s)[j]*s.d.r
@@ -1219,9 +1219,9 @@ function RelativeSeries(s)
     return res
   end
   u1=map(x->degree(s)//CycPol(x), u1)
-  degcusp=Uch.CycPolUnipotentDegrees(s.levi)[s.cuspidal]
+  degcusp=CycPoldegrees(UnipotentCharacters(s.levi))[s.cuspidal]
   ud=map(x->x*sign(Int((x//degcusp)(Cyc(s.d)))),
-                Uch.CycPolUnipotentDegrees(s.spets)[charnumbers(s)])
+         CycPoldegrees(UnipotentCharacters(s.spets))[charnumbers(s)])
   p=Perm(u1,ud)
 # the permutation should also take in account eigenvalues
   if isnothing(p)
@@ -1238,7 +1238,7 @@ function RelativeSeries(s)
   if p == false && length(WGL)==1 p=1 end
   o=map(x->x[p]//x[1], eachrow(CharTable(WGL).irr))
   s.predictedEigen=map(i->aA[i]*o[i], 1:length(o)) *
-    Uch.eigen(UnipotentCharacters(s.levi))[s.cuspidal]
+    eigen(UnipotentCharacters(s.levi))[s.cuspidal]
   return res
 end
 

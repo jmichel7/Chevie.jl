@@ -183,7 +183,7 @@ G₂
 julia> T=spets(reflection_subgroup(W,Int[]),W(1,2))
 G₂₍₎=Φ₆
 
-julia> u=UniChar(T,1)
+julia> u=unipotent_character(T,1)
 [G₂₍₎=Φ₆]:<Id>
 ```
 
@@ -199,7 +199,7 @@ associated to the Coxeter torus:
 julia> lusztig_induce(W,u)
 [G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
 
-julia> v=DLChar(W,[1,2])
+julia> v=deligne_lusztig_character(W,[1,2])
 [G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
 
 julia> degree(v)
@@ -236,9 +236,12 @@ module Uch
 
 using ..Chevie
 
-export UnipotentCharacters, FixRelativeType, UniChar,
-almostChar, DLChar, DLLefschetz, lusztig_induce, lusztig_restrict, cuspidal,
-cuspidal_data, CycPolUnipotentDegrees, on_unipotents, almostcharnames
+export UnipotentCharacters, FixRelativeType, UniChar, unichar, 
+       unipotent_character, almostchar, almost_character, dlchar, dlCharTable,
+       deligne_lusztigCharTable,
+       deligne_lusztig_character, dllefschetz, deligne_lusztig_lefschetz,
+       lusztig_induce, lusztig_restrict, cuspidal, cuspidal_data,
+       CycPoldegrees, on_unipotents, almostcharnames
 
 @GapObj struct UnipotentCharacters
   harishChandra::Vector{Dict{Symbol,Any}}
@@ -795,6 +798,32 @@ function Chevie.degrees(uc::UnipotentCharacters,q=Pol())
   d[q]=fourier(uc)'*fakedegrees(uc,q)
 end
 
+"""
+`CycPoldegrees(uc::UnipotentCharacters)`
+
+Taking  advantage that  the degrees  of unipotent  characters of the finite
+reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
+`W`  are products  of cyclotomic  polynomials, this  function returns these
+degrees as a list of `CycPol`s. It is faster than  `CycPol.(degrees(uc))`.
+
+```julia-repl
+julia> W=coxgroup(:G,2)
+G₂
+
+julia> CycPoldegrees(UnipotentCharacters(W))
+10-element Vector{CycPol{Rational{Int64}}}:
+ 1
+ q⁶
+ qΦ₃Φ₆/3
+ qΦ₃Φ₆/3
+ qΦ₂²Φ₃/6
+ qΦ₂²Φ₆/2
+ qΦ₁²Φ₃/2
+ qΦ₁²Φ₆/6
+ qΦ₁²Φ₂²/3
+ qΦ₁²Φ₂²/3
+```
+"""
 function CycPoldegrees(uc::UnipotentCharacters)
   get!(uc,:cycpoldegrees) do
     CycPol.(degrees(uc))
@@ -842,34 +871,6 @@ function FixRelativeType(t)
   end
 end
 
-"""
-`CycPolUnipotentDegrees(W)`
-
-Taking  advantage that  the degrees  of unipotent  characters of the finite
-reductive group (or Spetses) with Weyl group (or Spetsial reflection group)
-`W`  are products  of cyclotomic  polynomials, this  function returns these
-degrees as a list of `CycPol`s.
-
-```julia-repl
-julia> W=coxgroup(:G,2)
-G₂
-
-julia> CycPolUnipotentDegrees(W)
-10-element Vector{CycPol{Rational{Int64}}}:
- 1
- q⁶
- qΦ₃Φ₆/3
- qΦ₃Φ₆/3
- qΦ₂²Φ₃/6
- qΦ₂²Φ₆/2
- qΦ₁²Φ₃/2
- qΦ₁²Φ₆/6
- qΦ₁²Φ₂²/3
- qΦ₁²Φ₂²/3
-```
-"""
-CycPolUnipotentDegrees(W)=CycPoldegrees(UnipotentCharacters(W))
-
 #-------------------------- UniChars -------------------------------
 struct UniChar{T,C}
   group::T
@@ -877,32 +878,32 @@ struct UniChar{T,C}
 end
 
 """
-`UniChar(W,l)`
+`unipotent_character(W,l)` or `unichar(W,l)`
 
 Constructs  an object representing the unipotent character specified by `l`
 of  the algebraic  group associated  to the  Coxeter group or Coxeter coset
 specified  by `W`. There are 3 possibilities  for `l`: if it is an integer,
 the  `l`-th unipotent character of `W` is  returned. If it is a string, the
-unipotent  character of `W` whose name is `l` is returned. Finally, `l` can
-be  a  list  of  length  the  number  of unipotent characters of `W`, which
-specifies the coefficient to give to each.
+unipotent  character of `W` whose name is  `l` is returned (where the names
+are as given by `charnames(UnipotentCharacters(W))`). Finally, `l` can be a
+list  of length the number of  unipotent characters of `W`, which specifies
+the coefficient to give to each unipotent character.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> u=UniChar(W,7)
+julia> u=unichar(W,7)
 [G₂]:<G₂[-1]>
 
-julia> v=UniChar(W,"G2[E3]")
+julia> v=unichar(W,"G2[E3]")
 [G₂]:<G₂[ζ₃]>
 
-julia> w=UniChar(W,[1,0,0,-1,0,0,2,0,0,1])
+julia> w=unichar(W,[1,0,0,-1,0,0,2,0,0,1])
 [G₂]:<φ₁‚₀>-<φ″₁‚₃>+2<G₂[-1]>+<G₂[ζ₃²]>
 
-julia> UniChar(W,fourier(UnipotentCharacters(W))[3,:])
+julia> unichar(W,fourier(UnipotentCharacters(W))[3,:])
 [G₂]:2//3<φ′₁‚₃>-1//3<φ″₁‚₃>+1//3<φ₂‚₁>+1//3<G₂[1]>-1//3<G₂[ζ₃]>-1//3<G₂[ζ₃²]>
-
 ```
 The  last line shows  the almost character  associated to the 3rd unipotent
 character of `W`.
@@ -910,6 +911,19 @@ character of `W`.
 some limited arithmetic is available on unipotent characters:
 
 ```julia-repl
+julia> coefficients(u) # so that u==unichar(W,coefficients(u))
+10-element Vector{Int64}:
+ 0
+ 0
+ 0
+ 0
+ 0
+ 0
+ 1
+ 0
+ 0
+ 0
+
 julia> w-2u
 [G₂]:<φ₁‚₀>-<φ″₁‚₃>+<G₂[ζ₃²]>
 
@@ -920,18 +934,20 @@ julia> degree(w)
 Pol{Int64}: q⁵-q⁴-q³-q²+q+1
 ```
 """
-function UniChar(W,v::Int)
+function unipotent_character(W,v::Int)
   r=zeros(Int,length(UnipotentCharacters(W)))
   r[v] = 1
   UniChar(W,r)
 end
 
-function UniChar(W,v::String)
-  n=charnames(stdout,UnipotentCharacters(W))
-  UniChar(W,findfirst(==(v),n))
-end
+const unichar=unipotent_character
 
-UniChar(W,v::AbstractVector)=UniChar(W,collect(v))
+unichar(W,v::String)=
+  unichar(W,findfirst(==(v),charnames(UnipotentCharacters(W))))
+
+unichar(W,v::AbstractVector)=UniChar(W,collect(v))
+
+LaurentPolynomials.coefficients(r::UniChar)=r.v
 
 """
 `Base.show(io::IO,w::UniChar)`
@@ -956,6 +972,10 @@ julia> xdisplay(w;compact=false)
 ```
 """
 function Base.show(io::IO,r::UniChar)
+  if !hasdecor(io)
+    print(io,"unichar(",r.group,",",coefficients(r),")")
+    return
+  end
   print(io,"[",r.group,"]:")
   res=""
   s=charnames(io,UnipotentCharacters(r.group))
@@ -975,11 +995,11 @@ function Base.show(io::IO,r::UniChar)
         res*=n
       end
      elseif !iszero(c) || !get(io,:nozero,false)
-      res *= "\n"* rpad(n,m)* repr(c;context=io)
+      res*="\n"*rpad(n,m)*repr(c;context=io)
     end
   end
-  if length(res) == 0 res = "0" end
-  if res[1] == '+' res = res[2:end] end
+  if isempty(res) res="0" end
+  if res[1]=='+' res=res[2:end] end
   print(io,res)
 end
 
@@ -988,6 +1008,7 @@ Base.:-(u1::UniChar,u2::UniChar)=UniChar(u1.group,u1.v-u2.v)
 Base.:*(u1::UniChar,u2::UniChar)=sum(u1.v .* conj.(u2.v))
 Base.:*(u1::UniChar,a)=UniChar(u1.group,u1.v .* a)
 Base.:*(a,u1::UniChar)=u1*a
+Base.:(==)(u1::UniChar,u2::UniChar)=u1.group==u2.group && u1.v==u2.v
 
 LaurentPolynomials.degree(u::UniChar,q=Pol(:q))=improve_type(sum(u.v .*
                                      degrees(UnipotentCharacters(u.group),q)))
@@ -1010,19 +1031,19 @@ G₂
 julia> T=subspets(WF,Int[],W(1))
 G₂₍₎=Φ₁Φ₂
 
-julia> u=UniChar(T,1)
+julia> u=unichar(T,1)
 [G₂₍₎=Φ₁Φ₂]:<Id>
 
 julia> lusztig_induce(WF,u)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
-julia> DLChar(W,W(1))
+julia> dlchar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 ```
 """
 function lusztig_induce(WF, u)
   t=lusztig_induction_table(u.group, WF)
-  if !isnothing(t) UniChar(WF, improve_type(t.scalar*u.v)) end
+  if !isnothing(t) unichar(WF, improve_type(t.scalar*u.v)) end
 end
 
 """
@@ -1043,7 +1064,7 @@ G₂
 julia> T=subspets(WF,Int[],W(1))
 G₂₍₎=Φ₁Φ₂
 
-julia> u=DLChar(W,W(1))
+julia> u=dlchar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
 julia> lusztig_restrict(T,u)
@@ -1056,25 +1077,44 @@ julia> lusztig_restrict(T,u)
 [G₂₍₎=Φ₁Φ₂]:0
 ```
 """
-lusztig_restrict(HF,u)=UniChar(HF,improve_type(transpose(
+lusztig_restrict(HF,u)=unichar(HF,improve_type(transpose(
                             lusztig_induction_table(HF,u.group).scalar)*u.v))
 
 harish_chandra_induce(WF,u)=
-   UniChar(WF,improve_type(hc_induction_table(u.group,WF).scalar*u.v))
+   unichar(WF,improve_type(hc_induction_table(u.group,WF).scalar*u.v))
 const hc_induce=harish_chandra_induce
 
-harish_chandra_restrict(HF,u)=UniChar(HF,improve_type(u.v*hc_induction_table(HF,u.group).scalar))
+harish_chandra_restrict(HF,u)=unichar(HF,improve_type(u.v*hc_induction_table(HF,u.group).scalar))
 const hc_restrict=harish_chandra_restrict
 
-function DLCharTable(W)
+"""
+`deligne_lusztigCharTable(W)` or `dlCharTable(W)`
+
+for  each conjugacy class of `W`, gives the decomposition of `R_{T_w}^G` in
+unipotent characters.
+
+```julia-repl
+julia> dlCharTable(W)
+6×10 Matrix{Int64}:
+ 1   1   1   1   2   2   0   0   0   0
+ 1  -1   1  -1   0   0   0   0   0   0
+ 1  -1  -1   1   0   0   0   0   0   0
+ 1   1   0   0  -1   0   1   0   1   1
+ 1   1   0   0   0  -1   0   1  -1  -1
+ 1   1  -1  -1   0   0  -2  -2   0   0
+```
+"""
+function deligne_lusztigCharTable(W)
   get!(W,:rwTable)do
     uc=UnipotentCharacters(W)
     improve_type(CharTable(W).irr'*fourier(uc)[charnumbers(uc.almostHarishChandra[1]),:])
   end
 end
 
+const dlCharTable=deligne_lusztigCharTable
+
 """
-`DLChar(W,w)`
+`deligne_lusztig_character(W,w)` or `dlchar(W,w)`
 
 This  function returns the Deligne-Lusztig character  ``R_𝐓 ^𝐆 (1)`` of the
 algebraic  group `𝐆 ` associated to the Coxeter group or Coxeter coset `W`.
@@ -1087,27 +1127,28 @@ represents the class (or `ϕ`-class) of `w`.
 julia> W=coxgroup(:G,2)
 G₂
 
-julia> DLChar(W,3)
+julia> dlchar(W,3)
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
-julia> DLChar(W,W(1))
+julia> dlchar(W,W(1))
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
-julia> DLChar(W,[1])
+julia> dlchar(W,[1])
 [G₂]:<φ₁‚₀>-<φ₁‚₆>-<φ′₁‚₃>+<φ″₁‚₃>
 
-julia> DLChar(W,[1,2])
+julia> dlchar(W,[1,2])
 [G₂]:<φ₁‚₀>+<φ₁‚₆>-<φ₂‚₁>+<G₂[-1]>+<G₂[ζ₃]>+<G₂[ζ₃²]>
 ```
 """
-DLChar(W,i::Int)=UniChar(W,DLCharTable(W)[i,:])
+deligne_lusztig_character(W,i::Int)=unichar(W,dlCharTable(W)[i,:])
+const dlchar=deligne_lusztig_character
 
-DLChar(W,w::Perm)=DLChar(W,position_class(W,w))
+dlchar(W,w::Perm)=dlchar(W,position_class(W,w))
 
-DLChar(W,w::Vector{Int})=DLChar(W,W(w...))
+dlchar(W,w::Vector{Int})=dlchar(W,W(w...))
 
 """
-`almostChar(W,i)`
+`almost_character(W,i)` or `almostchar(W,i)`
 
 This  function  returns  the  `i`-th  almost  unipotent  character  of  the
 algebraic  group 𝐆 associated to the Coxeter group or Coxeter coset `W`. If
@@ -1120,36 +1161,42 @@ coset) of `w`.
 julia> W=coxgroup(:B,2)
 B₂
 
-julia> almostChar(W,3)
+julia> almostchar(W,3)
 [B₂]:<.11>
 
-julia> almostChar(W,1)
+julia> almostchar(W,1)
 [B₂]:1//2<11.>+1//2<1.1>-1//2<.2>-1//2<B₂>
 ```
 """
-almostChar=function(W,i)
+almost_character=function(W,i)
   ct=CharTable(W)
-  dl=DLChar.(Ref(W),1:length(ct.charnames))
+  dl=dlchar.(Ref(W),1:length(ct.charnames))
   sum(ct.irr[i,:] .* classes(ct).//length(W).*dl)
 end
 
+const almostchar=almost_character
+
 """
-`DLLefschetz(h)`
+`deligne_lusztig_lefschetz(h,m=0)` or `dllefschetz(h,m=0)`
 
 Here `h` is an element of a Hecke algebra associated to a Coxeter group `W`
-which  itself  is  associated  to  an  algebraic  group `𝐆 `. By results of
-Digne-Michel,  for ``g∈ 𝐆 ^F``,  the number of fixed  points of `Fᵐ` on the
-Deligne-Lusztig variety associated to the element `wϕ` of the Coxeter coset
-`Wϕ`, have for `m` sufficiently divisible, the form ``∑_φ
-φ_{(qᵐ)}(T_wϕ)R_φ(g)``  where `φ`  runs over  the irreducible characters of
-``Wϕ``,  where  ``R_φ``  is  the  corresponding almost character, and where
-``φ_{(qᵐ)}``  is a  character value  of the  Hecke algebra ``H (Wϕ,qᵐ)`` of
-``Wϕ``  with  parameter  `qᵐ`.  This  expression  is  called the *Lefschetz
-character*  of  the  Deligne-Lusztig  variety.  If  we  consider `qᵐ` as an
-indeterminate  `x`, it can  be seen as  a sum of  unipotent characters with
-coefficients character values of the generic Hecke algebra ``H (Wϕ,x)``.
+or  Coxeter coset `Wϕ` which itself is  associated to an algebraic group `𝐆
+`.  By [DigneMichel1985](biblio.htm#DM85),  for ``g∈  𝐆^F``, the  number of
+fixed  points  of  `Fᵐ`  on  the  Deligne-Lusztig variety associated to the
+element `wϕ∈Wϕ`, have for `m` divisible by a sufficently large integer `d`,
+the  form ``∑_φ φ_{(qᵐ)}(T_wϕ)R_φ(g)`` where  `φ` runs over the irreducible
+characters  of ``Wϕ``, where ``R_φ`` is the corresponding almost character,
+and   where  ``φ_{(qᵐ)}``  is  a  character  value  of  the  Hecke  algebra
+``H(Wϕ,qᵐ)``  of ``Wϕ`` with parameter `qᵐ`.  This expression is called the
+*Lefschetz  character* of the Deligne-Lusztig  variety. If we consider `qᵐ`
+as  an indeterminate `x`, it  can be seen as  a sum of unipotent characters
+with   coefficients  character   values  of   the  generic   Hecke  algebra
+``H(Wϕ,x)``.  A  more  complicated  formula  involving  the  eigenvalues of
+Frobenius  attached to  unipotent characters  applies for  `m` not prime to
+`d`.  The function  returns this  formula when  a second parameter `m≠0` is
+given.
 
-The  function 'DLLefschetz' takes  as argument a  Hecke element and returns
+The  function 'dllefschetz' takes  as argument a  Hecke element and returns
 the  corresponding Lefschetz character. This is defined on the whole of the
 Hecke  algebra by linearity.  The Lefschetz character  of various varieties
 related   to   Deligne-Lusztig   varieties,   like   their  completions  or
@@ -1165,10 +1212,10 @@ hecke(A₂,q)
 
 julia> T=Tbasis(H);
 
-julia> DLLefschetz(T(1,2))
+julia> dllefschetz(T(1,2))
 [A₂]:<111>-q<21>+q²<3>
 
-julia> DLLefschetz((T(1)+T())*(T(2)+T()))
+julia> dllefschetz((T(1)+T())*(T(2)+T()))
 [A₂]:q<21>+(q²+2q+1)<3>
 ```
 
@@ -1181,29 +1228,36 @@ We now show an example with a coset (corresponding to the unitary group).
 julia> H=hecke(spets(W,Perm(1,2)),Pol(:q)^2)
 hecke(²A₂,q²)
 
-julia> T=Tbasis(H);DLLefschetz(T(1))
+julia> T=Tbasis(H);dllefschetz(T(1))
 [²A₂]:-<11>-q<²A₂>+q²<2>
 ```
+Finally,  there is a second form `dllefschetz(H::HeckeAlgebra,w,i=0)` where
+the  arguments are a Hecke algebra and an  element of `w`. This may be used
+for  Spetses where we know the column of the `CharTable` of `H` for `w` but
+not other columns of the spetsial Hecke algebra charcater table.
 """
-function DLLefschetz(h,i=0)
+function deligne_lusztig_lefschetz(h,i=0)
   W=h.H.W
   uc=UnipotentCharacters(W)
   uniform=charnumbers(uc.almostHarishChandra[1])
-  UniChar(W,improve_type((char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
+  unichar(W,improve_type((char_values(h)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
-function DLLefschetz(H::HeckeAlgebra,w,i=0)
+const dllefschetz=deligne_lusztig_lefschetz
+
+function dllefschetz(H::HeckeAlgebra,w,i=0)
   W=H.W
   uc=UnipotentCharacters(W)
   uniform=charnumbers(uc.almostHarishChandra[1])
-  UniChar(W,improve_type((char_values(H,w)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
+  unichar(W,improve_type((char_values(H,w)'*fourier(uc)[uniform,:])[1,:].*eigen(uc).^i))
 end
 
-function DLLefschetzTable(H)
+function dllefschetzTable(H,i=0)
   WF=H.W
   t=CharTable(H).irr
   uc=UnipotentCharacters(WF)
-  improve_type(t'*fourier(uc)[charnumbers(uc.almostHarishChandra[1]),:])
+  improve_type(t'*fourier(uc)[charnumbers(uc.almostHarishChandra[1]),:]*
+               Diagonal(Cyc.(eigen(uc)))^i)
 end
 
 """
@@ -1226,7 +1280,7 @@ julia> on_unipotents(Group(WF),WF.phi)
 """
 function on_unipotents(W,aut)
   uc=UnipotentCharacters(W)
-  t=DLCharTable(W)
+  t=dlCharTable(W)
   t=vcat(t,transpose(eigen(uc)))
   l=fill(0,length(uc))
   n=charnumbers(uc.harishChandra[1])
@@ -1243,7 +1297,7 @@ end
 
 function Cosets.Frobenius(x::UniChar, phi)
   W=x.group
-  UniChar(W,invpermute(x.v,inv(on_unipotents(W,phi))))
+  unichar(W,invpermute(x.v,inv(on_unipotents(W,phi))))
 end
 
 cuspidal(uc::UnipotentCharacters,d::Integer)=cuspidal(uc,E(d))
@@ -1291,9 +1345,8 @@ julia> cuspidal(UnipotentCharacters(complex_reflection_group(4)),3)
 """
 function cuspidal(uc::UnipotentCharacters,d=E(1))
   if length(uc)==1 return [1] end
-  WF=spets(uc)
-  ud=CycPolUnipotentDegrees(WF)
-  ad=count(!isone,relative_degrees(WF,d))
+  ud=CycPoldegrees(uc)
+  ad=count(!isone,relative_degrees(spets(uc),d))
   filter(i->ad==valuation(ud[i],d),eachindex(ud))
 end
 

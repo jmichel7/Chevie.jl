@@ -1,7 +1,7 @@
 name = "Chevie"
 uuid = "367f69f0-ca63-11e8-2372-438b29340c1b"
 authors = ["Jean Michel <jean.michel@imj-prg.fr>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Combinat = "a6b051d1-fc4b-4ede-b53e-347fa9fb9a74"

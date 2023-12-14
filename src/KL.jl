@@ -980,7 +980,7 @@ julia> l=Lusztigaw(W,W(1))
  1
  1
 
-julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
+julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 [G₂]:<φ′₁‚₃>+<φ₂‚₁>+<φ₂‚₂>
 ```
 """
@@ -1011,7 +1011,7 @@ julia> l=LusztigAw(W,W(1))
  1
  1
 
-julia> sum(l.*map(i->almostChar(W,i),eachindex(l)))
+julia> sum(l.*map(i->almostchar(W,i),eachindex(l)))
 [G₂]:<φ″₁‚₃>+<φ₂‚₁>+<φ₂‚₂>
 ```
 """

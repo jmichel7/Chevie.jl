@@ -813,7 +813,7 @@ D₄
 julia> WF=spets(W,Perm(1,2,4))
 ³D₄
 
-julia> u=UniChar(W,2)
+julia> u=unichar(W,2)
 [D₄]:<11->
 
 julia> F=Frobenius(WF);F(u)
