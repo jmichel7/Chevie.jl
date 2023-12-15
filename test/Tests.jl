@@ -285,7 +285,7 @@ function Tlusztiginduction(WF,L)
   index*=q^-index.v
   index*=generic_sign(L)//generic_sign(WF)
   pred=hd.*index
-  ind=map(x->UniChar(WF,x),eachcol(t.scalar))
+  ind=map(x->unichar(WF,x),eachcol(t.scalar))
   for j in 1:length(hd)
     if pred[j]!=degree(ind[j])
      xprintln("!!  R_",L,"^",WF,"(",charnames(uh)[j],")=",ind[j])
@@ -296,7 +296,7 @@ function Tlusztiginduction(WF,L)
   f=fusion_conjugacy_classes(L,WF)
 #  Check Mackey with Tori
   c=map((a,b)->a//b,CharTable(WF).centralizers[f],CharTable(L).centralizers)
-  u=Uch.DLCharTable(L)
+  u=dlCharTable(L)
   rhs=toM(map(1:nconjugacy_classes(WF))do i
     l=findall(==(i),f)
     return isempty(l) ? u[1,:].*0 : sum(j->u[j,:].*c[j],l)
@@ -305,10 +305,10 @@ function Tlusztiginduction(WF,L)
                        :uNames=>charnames(UnipotentCharacters(L);TeX=true),
                        :gNames=>map(x->x.name,conjugacy_classes(WF)))
   m=copy(rhs)
-  m[:scalar]=Uch.DLCharTable(WF)*t.scalar
+  m[:scalar]=dlCharTable(WF)*t.scalar
   if m[:scalar]!=rhs[:scalar] error("tables differ",m[:scalar],rhs[:scalar]) end
   # Check transitivity with RTL
-  if Uch.DLCharTable(L)*permutedims(t.scalar)!=Uch.DLCharTable(WF)[f,:]
+  if dlCharTable(L)*permutedims(t.scalar)!=dlCharTable(WF)[f,:]
      error("transitivity with RTL")
   end
 end
@@ -880,7 +880,7 @@ function THCdegrees(W,i,rel=false)
   index*=CycPol(1,-valuation(index))
   n=hw[:cuspidalName]
   if n=="" n="." end
-  cusp=CycPolUnipotentDegrees(L)[Lusztig.FindCuspidalInLevi(n,L)]
+  cusp=CycPoldegrees(UnipotentCharacters(L))[Lusztig.FindCuspidalInLevi(n,L)]
   InfoChevie("  #HC_",L,"(cusp=",fromTeX(rio(),n),":",cusp,")[G:L]=",index,"\n")
   R=reflection_group(hw[:relativeType]...)
 # check parameters of relative algebra by the formula
@@ -902,7 +902,7 @@ function THCdegrees(W,i,rel=false)
   if isempty(hw[:parameterExponents]) den=1
   else den=lcm(denominator.(vcat(hw[:parameterExponents]...)))
   end
-  ud=CycPolUnipotentDegrees(W)
+  ud=CycPoldegrees(uw)
   reldeg=map(x->subs(cusp*index//x,Pol()^den),ud[hw[:charNumbers]])
   H=Uch.relative_hecke(uw,i,Mvp(:x)^den)
   InfoChevie("   Relative ",R,"\n");
@@ -1183,8 +1183,8 @@ test[:invariants]=(fn=Tinvariants,
 #---------------- test: classical ud fd  ------------------------
 
 function Tudfdimprimitive(W)
-  ud=CycPolUnipotentDegrees(W)
   uc=UnipotentCharacters(W)
+  ud=CycPoldegrees(uc)
   cs=first.(uc.charSymbols)
   vud=gendeg_symbol.(cs)
   for i in eachindex(cs)
@@ -1253,7 +1253,7 @@ function Tfamilies(W,i;hard=false)
   ps=SPerm(Sbar,S;dims=1)
   if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
   wreal=haskey(f,:perm)
-  if !haskey(f,:sh) && wreal!=all(>(0),vec(ps))
+  if !haskey(f,:sh) && wreal!=all(>(0),perm(ps))
     ChevieErr("weakly real=",wreal," but ps=",ps,"\n")
   end
   if wreal # S^2 is perm
@@ -1264,7 +1264,7 @@ function Tfamilies(W,i;hard=false)
   if hard print("[",v,"] ...\n| ") end
   inds=1:length(f.eigenvalues)
   if @isdefined W
-    ud=CycPolUnipotentDegrees(W)[f.charNumbers]
+    ud=CycPoldegrees(uc)[f.charNumbers]
     a=unique(valuation.(ud))
     A=unique(degree.(ud))
     if length(a)!=1 || length(A)!=1 ChevieErr("a or A not constant");
@@ -1384,7 +1384,7 @@ function TdegsHCInduce(W,J)
   uL=UnipotentCharacters(L)
   pred=degrees(uL,q)*index
   tbl=hc_induction_table(L,W)
-  ind=map(x->UniChar(W,x),eachcol(tbl.scalar))
+  ind=map(x->unichar(W,x),eachcol(tbl.scalar))
   inddeg=improve_type(degree.(ind))
   if pred!=inddeg
     nh=charnames(uL)
