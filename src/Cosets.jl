@@ -985,7 +985,7 @@ function spets(W::PermRootGroup,F::Matrix)
     end
   end
   if length(unique(perm))<length(perm) return false end
-  w=eltype(W)(perm)
+  w=Perm(eltype(one(W)).(perm))
   if isnothing(w) error("matrix F must preserve the roots") end
   res=PRC(w,F,W,Dict{Symbol,Any}(:scalars=>scalars))
 end

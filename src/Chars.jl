@@ -1130,7 +1130,11 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
   end
 end
 
-CharTable(W::Group)=error("to have CharTable for PermGroup do 'using GAP'")
+function CharTable(W::Group)
+  get!(W,:chartable)do
+    error("to have CharTable for PermGroup do 'using GAP'")
+  end
+end
 
 function classes(ct::CharTable)
   get!(ct,:classes)do
