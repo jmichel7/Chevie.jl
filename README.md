@@ -68,11 +68,4 @@ its  code is "strange".  When the need  to maintain the  `GAP3` and `Julia`
 versions  simultaneously subsides,  I will  do a  proper translation of the
 data library, which should give an additional speed boost.
 
-This package requires julia 1.8 or later. 
-This  is  my  effort  porting  GAP  code  to Julia, specifically the Chevie
-package  of GAP3. I started this project at the end of 2018 and it is still
-in  flux so the  package is not  yet registered. If  you see anything to be
-improved  in this  package, please  contact me  or make  an issue or a pull
-request in the GitHub repository.
-
-This package requires julia 1.8 or later.
+This package requires julia 1.9 or later. 

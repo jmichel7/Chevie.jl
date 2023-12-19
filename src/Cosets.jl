@@ -707,7 +707,7 @@ end
 function PermRoot.generic_order(WF::Spets,q)
   if rank(Group(WF))==0 return one(q) end
   generic_sign(WF)*q^sum(x->x[1]+1,codegrees(WF))*
-      prod(p->1-q^p[1]*conj(p[2]),degrees(WF))
+    prod(((d,e),)->1-q^d*conj(e),degrees(WF))
 end
 
 function PhiOnDiscriminant(WF)
