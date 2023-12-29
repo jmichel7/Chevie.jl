@@ -29,7 +29,7 @@ julia> W=rootdatum("3D4")
 ³D₄
 
 julia> l=cuspidal_data(W,3)
-2-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:
+2-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:
  (levi = ³D₄, cuspidal = 8, d = ζ₃)
  (levi = ³D₄₍₎=Φ₃², cuspidal = 1, d = ζ₃)
 
@@ -63,7 +63,7 @@ julia> W=complex_reflection_group(4)
 G₄
 
 julia> l=cuspidal_data(W,3)
-5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:
  (levi = G₄, cuspidal = 3, d = ζ₃)
  (levi = G₄, cuspidal = 6, d = ζ₃)
  (levi = G₄, cuspidal = 7, d = ζ₃)
@@ -100,7 +100,7 @@ with:
 
 ```julia-repl
 julia> cuspidal_data(W,E(3,2))
-5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:
  (levi = G₄, cuspidal = 2, d = ζ₃²)
  (levi = G₄, cuspidal = 5, d = ζ₃²)
  (levi = G₄, cuspidal = 7, d = ζ₃²)

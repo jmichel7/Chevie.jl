@@ -24,28 +24,29 @@ chevieset(:I, :CharInfo, function(m)
   res[:charparams]=charparams
   res[:b]=map(x->x[2], charparams)
   res[:B]=map(phi->phi[1]==1 ? phi[2] : m-phi[2], charparams)
-  charSymbols=map(1:div(m-1,2))do l
-    S=map(i->[0],1:m)
-    S[1]=[1]
-    S[l+1]=[1]
-    S
-  end
-  v=map(x->[0],1:m);v[m]=[1,2];pushfirst!(charSymbols,v)
+  charSymbols=[] # need type Any for m even
+  push!(charSymbols,map(i->i==m ? [2] : [0],1:m))
   if iseven(m)
-    v=map(x->[0],1:m);v[m]=[1];v[m1]=[1];pushfirst!(charSymbols,v)
-    pushfirst!(charSymbols,copy(v))
+    v=vcat(map(i->i==m1 ? [1] : [0],1:m1),[2,0])
+    push!(charSymbols,v)
+    v=copy(v);v[m1+2]=1;push!(charSymbols,v)
   end
-  v=map(x->[0,1],1:m);v[m]=[2];pushfirst!(charSymbols,v)
+  push!(charSymbols,map(i->i==m ? [1,2] : [0,1],1:m))
+  append!(charSymbols,map(1:div(m-1,2))do l
+    map(i->i==1 ? [1] : i==l+1 ? [1] : [0],1:m)
+  end)
   res[:charSymbols]=charSymbols
+  # malleParams are the partitiontuples for the symbols
   res[:malleParams]=map(x->map(partβ,x),charSymbols)
   if iseven(m)
     res[:malleParams]=convert.(Vector{Any},res[:malleParams])
-    res[:malleParams][2]=push!(res[:malleParams][2][1:m1],1)
-    res[:malleParams][3]=push!(res[:malleParams][3][1:m1],-1)
+    res[:malleParams][2]=append!(res[:malleParams][2][1:m1],[2,0])
+    res[:malleParams][3]=append!(res[:malleParams][3][1:m1],[2,1])
   end
   return res
 end)
 
+# parameters for cuspidal symbols
 chevieset(:I, :SymbolToParameter, function (S)
   if S[1]!=[0,1] || !any(isempty,S) return false end
   if isodd(length(S)) S=reverse(S) end

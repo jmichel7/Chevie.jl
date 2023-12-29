@@ -129,8 +129,4 @@ function contr(s)
 end
 export contr
 roundtrip(x)=x==eval(Meta.parse(repr(x))) # for debugging purposes
-using Requires
-function __init__()
-  @require GAP="c863536a-3901-11e9-33e7-d5cd0df7b904" (include("../ext/Gap4.jl");using .Gap4)
-end
 end

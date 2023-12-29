@@ -1164,11 +1164,15 @@ julia> HeckeAlgebras.expand(p)
 Mvp{Cyc{Rational{Int64}},Rational{Int64}}: -x³y+x³+x²y²-2x²+x²y⁻¹-xy³+2xy-xy⁻¹+y³-2y²+1+x⁻¹y²-x⁻¹y
 ```julia-repl
 """
-struct FactSchur
+mutable struct FactSchur
   factor::Mvp{Cyc{Rational{Int}},Rational{Int}}
   vcyc::Vector{NamedTuple{(:pol,:monomial),
          Tuple{CycPol{Int},Mvp{Cyc{Rational{Int}},Rational{Int}}}}}
 end
+
+Base.getindex(x::FactSchur,s::Symbol)=s==:factor ? x.factor : x.vcyc
+Base.setindex!(x::FactSchur,v,s::Symbol)=
+  if s==:factor x.factor=v else x.vcyc=v end
 
 function Base.show(io::IO,x::FactSchur)
  if !(get(io,:TeX,false)||get(io,:limit,false))

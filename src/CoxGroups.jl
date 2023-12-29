@@ -851,10 +851,12 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 # derive  it  from  CoxeterGroup  and  represent  the  other inheritance by
 # composition.  Thus, implementations  of FiniteCoxeterGroups  have a field
 # .G, a PermGroup, to which we forward the following methods.
-@forward FiniteCoxeterGroup.G Base.iterate, Base.one, Base.hash,
+@forward FiniteCoxeterGroup.G Base.iterate, Base.one,
  Groups.gens, Groups.conjugacy_classes,
- PermGroups.classreps, PermGroups.orbits, PermGroups.orbit,
- PermGroups.transporting_element
+ PermGroups.classreps, PermGroups.orbits, PermGroups.transporting_element
+
+ Base.hash(W::FiniteCoxeterGroup,i::UInt64)=hash(W.G,i)
+ PermGroups.orbit(W::FiniteCoxeterGroup,p,F::Function)=orbit(W.G,p,F)
  PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
 Base.isfinite(W::FiniteCoxeterGroup)=true

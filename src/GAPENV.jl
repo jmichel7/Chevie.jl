@@ -30,7 +30,7 @@ const tbl=[
 ("piled data for H₃","coxh3"), 
 ("piled data for H₄","coxh4"), 
 ("piled data for I₂(e)","coxi"), 
-("lated data for I₂(e)","coxi_t"), 
+("lated data for I₂(e)","coxi_t"),
 ("piled data for ²I₂(e)","cox2i"), 
 ("piled data for Aₙ","weyla"), 
 ("lated data for Aₙ","weyla_t"), 
@@ -63,7 +63,7 @@ const tbl_t=[
 ("lated data for Bₙ and Cₙ","weylbc_t"), 
 ("lated data for ²Aₙ","weyl2a_t"), 
 ("lated data for ²Dₙ","weyl2d_t"), 
-("lated data for E₈","weyle8_t")]
+("lated data for E₈","weyle8_t")] 
 foreach(tbl_t) do (e,f)
   print("reading trans",rpad(e,36))
   t=@elapsed include(string("tbl/",f,".jl"))

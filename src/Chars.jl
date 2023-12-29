@@ -420,12 +420,12 @@ julia> m=cartan(:A,3)
 
 julia> schur_functor(m,[2,2])
 6×6 Matrix{Rational{Int64}}:
-   9//1   -6//1    4//1   3//2   -2//1    1//1
- -12//1   16//1  -16//1  -4//1    8//1   -4//1
-   4//1   -8//1   16//1   2//1   -8//1    4//1
-  12//1  -16//1   16//1  10//1  -16//1   12//1
-  -4//1    8//1  -16//1  -4//1   16//1  -12//1
-   1//1   -2//1    4//1   3//2   -6//1    9//1
+   9   -6    4  3//2   -2    1
+ -12   16  -16  -4      8   -4
+   4   -8   16   2     -8    4
+  12  -16   16  10    -16   12
+  -4    8  -16  -4     16  -12
+   1   -2    4  3//2   -6    9
 ```julia-repl
 """
 function schur_functor(A,la)
@@ -1132,7 +1132,7 @@ end
 
 function CharTable(W::Group)
   get!(W,:chartable)do
-    error("to have CharTable for PermGroup do 'using GAP'")
+    error("to have CharTable(s) for arbitrary PermGroup(s) do 'using GAP'")
   end
 end
 

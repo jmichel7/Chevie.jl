@@ -191,7 +191,7 @@ julia> U=UnipotentGroup(coxgroup(:G,2))
 UnipotentGroup(G₂)
 
 julia> U.special
-10-element Vector{NamedTuple{(:r, :s, :rs, :N, :comm), Tuple{Int64, Int64, Int64, Int64, Vector{NTuple{4, Int64}}}}}:
+10-element Vector{@NamedTuple{r::Int64, s::Int64, rs::Int64, N::Int64, comm::Vector{NTuple{4, Int64}}}}:
  (r = 1, s = 2, rs = 3, N = 1, comm = [(1, 1, 3, 1), (1, 2, 4, -1), (1, 3, 5, 1), (2, 3, 6, 2)])
  (r = 2, s = 3, rs = 4, N = 2, comm = [(1, 1, 4, 2), (2, 1, 5, 3), (1, 2, 6, -3)])
  (r = 2, s = 4, rs = 5, N = 3, comm = [(1, 1, 5, 3)])

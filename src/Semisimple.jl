@@ -561,7 +561,7 @@ Dict{Symbol, Array} with 7 entries:
   :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]
   :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
   :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]
-  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0//1, 0//1],…
+  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0, 0], [0, 0…
   :AdjointFundamentalGroup => [(1,12,2), (4,14)]
 ```
 """
@@ -758,7 +758,7 @@ Base.show(io::IO,W::Affine)=print(io,refltype(W))
 PermRoot.refltype(W::Affine)=W.refltype
 
 @forward Affine.G Base.length, Base.one,
- Groups.gens, Groups.ngens, PermGroups.reduced,
+ Groups.gens, Groups.ngens, #PermGroups.reduced,
  Groups.word, Garside.BraidMonoid,
  KL.KLPol, FinitePosets.Poset, CoxGroups.isleftdescent,
  CoxGroups.bruhatless, CoxGroups.coxmat,

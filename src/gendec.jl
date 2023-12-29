@@ -42,7 +42,7 @@ julia> generic_decomposition_matrix(W,10)
 
 The matrix itself is stored in the field `.scalar` of the returned `struct`.
 """
-function generic_decomposition_matrix(W,d::Integer)
+function generic_decomposition_matrix(W::Union{ComplexReflectionGroup,Spets},d::Integer)
   mm=generic_decomposition_matrix.(refltype(W),d)
   if nothing in mm return nothing end
   names=join.(cartesian(getfield.(mm,:ordinary)...),"\\otimes ")

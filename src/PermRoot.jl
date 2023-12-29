@@ -325,10 +325,10 @@ named tuple with four fields:
 
 ```julia-repl
 julia> asreflection([-1 0 0;1 1 0;0 0 1])
-(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isunitary = false)
+(root = [2, 0, 0], coroot = Rational{Int64}[1, -1//2, 0], eig = -1, isunitary = false)
 
 julia> asreflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
-(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isunitary = false)
+(root = [1, 0, 0], coroot = Rational{Int64}[2, -1, 0], eig = -1, isunitary = false)
 ```
 """
 function asreflection(m::AbstractMatrix,r::AbstractVector)

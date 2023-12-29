@@ -305,7 +305,7 @@ julia> W=coxgroup(:B,2)
 B₂
 
 julia> hyperplane_orbits(W)
-2-element Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}:
+2-element Vector{@NamedTuple{s::Int64, cl_s::Vector{Int64}, order::Int64, N_s::Int64, det_s::Vector{Int64}}}:
  (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])
  (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])
 ```

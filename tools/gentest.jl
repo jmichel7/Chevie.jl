@@ -11,15 +11,15 @@ function mytest(file::String,cmd::String,man::String)
   if endswith(cmd,";") exec="nothing" 
   else exec=replace(exec,r"\\s*\$"m=>"")
        exec=replace(exec,r"\\s*\$"s=>"")
+       exec=replace(exec,r"^\\s*"=>"")
   end
-  if exec!=man 
-    i=1
-    while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
-      i=nextind(exec,i)
-    end
-    print("exec=\$(repr(exec[i:end]))\\nmanl=\$(repr(man[i:end]))\\n")
+  if exec==man return true end
+  i=1
+  while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
+    i=nextind(exec,i)
   end
-  exec==man
+  print("exec=\$(repr(exec[i:end]))\\nmanl=\$(repr(man[i:end]))\\n")
+  return false
 end
 @testset verbose = true "$module_" begin
 """
@@ -31,7 +31,7 @@ end
           if !('"' in t)  t=replace(t,"\\\\"=>"\\") end # hack
           e,i=Meta.parse(t,1)
           cmd=t[1:i-1]
-          cmd=replace(cmd,r"\s*(#.*)?$"=>"") # replace final comment
+          cmd=replace(cmd,r"\s*(#.*)?(\n\s*)?$"=>"") # replace final comment
           man=t[i:end]
 #         if !('"' in man)  man=replace(man,"\\\\"=>"\\") end # hack
           man=replace(man,r"\s*$"m=>"")

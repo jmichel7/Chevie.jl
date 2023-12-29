@@ -69,9 +69,9 @@ function gapclassreps(g::PermGroup)
   mapgap(Perm∘GAP.Globals.Representative,GAP.Globals.ConjugacyClasses(gg))
 end
 
-function Groups.classreps(g::Group)
+function Groups.classreps(g::PermGroup)
   get!(g,:classreps)do
-    if g isa PermGroup && length(g)>10000 gapclassreps(g)
+    if length(g)>10000 gapclassreps(g)
     else map(c->c.representative,conjugacy_classes(g))
     end
   end
@@ -89,7 +89,7 @@ function Chars.CharTable(ct::GapObj)
   Chars.CharTable(irr,cn,n,sz,s,Dict{Symbol,Any}(:name=>id))
 end
 
-function Chars.CharTable(g::Group)
+function Chars.CharTable(g::PermGroup)
   gg=GAP.Obj(g)
   # in case :classreps not computed using gapclassreps
   gc=gapclassreps(g)

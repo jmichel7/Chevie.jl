@@ -116,7 +116,7 @@ function VcycSchurElement(para,r,data=nothing)
 end
 
 """
-`Symbols(n,d)`
+`BDSymbols(n,d)`
     
 returns  2-symbols of defect `d` and rank `n` (for Weyl types B,C,D,2D). If
 `d==0`  the symbols with  equal entries are  returned twice, represented as

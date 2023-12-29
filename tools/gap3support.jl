@@ -4,10 +4,11 @@ Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
 ApplyFunc(f,x)=f(x...)
 CollectBy(v,f)=collectby(f,v)
+Concatenation(b...)=vcat(b...)
 Concatenation(a::String...)=prod(a)
-Concatenation(a::AbstractVector{<:AbstractVector})=vcat(collect.(a)...)
-Concatenation(a::AbstractVector{String})=prod(a)
-Concatenation(b...)=reduce(vcat,b)
+function Concatenation(a::AbstractVector)
+  all(x->x isa AbstractVector,a) ? vcat(a...) : prod(a)
+end
 ConcatenationString(s...)=prod(s)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Difference(a,b)=sort(setdiff(a,b))

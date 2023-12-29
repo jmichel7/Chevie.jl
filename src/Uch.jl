@@ -779,8 +779,8 @@ julia> uc=UnipotentCharacters(W);
 
 julia> degrees(uc)
 10-element Vector{Pol{Rational{Int64}}}:
- 1//1
- (1//1)q⁶
+ 1
+ q⁶
  (1//3)q⁵+(1//3)q³+(1//3)q
  (1//3)q⁵+(1//3)q³+(1//3)q
  (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q
@@ -1369,7 +1369,7 @@ data for all eigenvalues of elements of `W` is returned.
 
 ```julia-repl
 julia> cuspidal_data(coxgroup(:F,4),1)
-9-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:
+9-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:
  (levi = F₄, cuspidal = 31, d = 1)
  (levi = F₄, cuspidal = 32, d = 1)
  (levi = F₄, cuspidal = 33, d = 1)
@@ -1381,7 +1381,7 @@ julia> cuspidal_data(coxgroup(:F,4),1)
  (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)
 
 julia> cuspidal_data(complex_reflection_group(4),3)
-5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:
+5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:
  (levi = G₄, cuspidal = 3, d = ζ₃)
  (levi = G₄, cuspidal = 6, d = ζ₃)
  (levi = G₄, cuspidal = 7, d = ζ₃)

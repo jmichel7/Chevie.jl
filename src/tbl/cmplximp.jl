@@ -776,6 +776,10 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
             else
                 m = p
             end
+            if para[1] != para[2]
+                InfoChevie("# FactorizedSchurElements(H(G(", p, ",", q, ",", r, "),", para, ") not implemented\n")
+                return false
+            end
             F = ((CHEVIE[:imp])[:FactorizedSchurElement])(p, 1, r, phi, Concatenation([map((i->begin
                                         E(p, i)
                                     end), 0:p - 1)], para[2:length(para)]), [])
@@ -805,7 +809,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, root)
             F[:factor] = p // (q * m) * F[:factor]
             return F
         else
-            ((CHEVIE[:compat])[:InfoChevie])("# FactorizedSchurElements(H(G(", p, ",", q, ",", r, "),", para, ") not implemented\n")
+            InfoChevie("# FactorizedSchurElements(H(G(", p, ",", q, ",", r, "),", para, ") not implemented\n")
             return false
         end
     end)

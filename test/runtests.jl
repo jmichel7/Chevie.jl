@@ -6,15 +6,15 @@ function mytest(file::String,cmd::String,man::String)
   if endswith(cmd,";") exec="nothing" 
   else exec=replace(exec,r"\s*$"m=>"")
        exec=replace(exec,r"\s*$"s=>"")
+       exec=replace(exec,r"^\s*"=>"")
   end
-  if exec!=man 
-    i=1
-    while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
-      i=nextind(exec,i)
-    end
-    print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
+  if exec==man return true end
+  i=1
+  while i<=lastindex(exec) && i<=lastindex(man) && exec[i]==man[i]
+    i=nextind(exec,i)
   end
-  exec==man
+  print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
+  return false
 end
 @testset verbose = true "Chevie" begin
 @testset "Algebras.jl" begin
@@ -36,7 +36,7 @@ end
 @test mytest("Chars.jl","ct.charnames","6-element Vector{String}:\n \"\\\\phi_{1,0}\"\n \"\\\\phi_{1,6}\"\n \"\\\\phi_{1,3}'\"\n \"\\\\phi_{1,3}''\"\n \"\\\\phi_{2,1}\"\n \"\\\\phi_{2,2}\"")
 @test mytest("Chars.jl","ct.classnames","6-element Vector{String}:\n \"A_0\"\n \"\\\\tilde A_1\"\n \"A_1\"\n \"G_2\"\n \"A_2\"\n \"A_1+\\\\tilde A_1\"")
 @test mytest("Chars.jl","m=cartan(:A,3)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
-@test mytest("Chars.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9//1   -6//1    4//1   3//2   -2//1    1//1\n -12//1   16//1  -16//1  -4//1    8//1   -4//1\n   4//1   -8//1   16//1   2//1   -8//1    4//1\n  12//1  -16//1   16//1  10//1  -16//1   12//1\n  -4//1    8//1  -16//1  -4//1   16//1  -12//1\n   1//1   -2//1    4//1   3//2   -6//1    9//1")
+@test mytest("Chars.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9   -6    4  3//2   -2    1\n -12   16  -16  -4      8   -4\n   4   -8   16   2     -8    4\n  12  -16   16  10    -16   12\n  -4    8  -16  -4     16  -12\n   1   -2    4  3//2   -6    9")
 @test mytest("Chars.jl","Chars.fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))","Pol{Cyc{Int64}}: q²+q")
 @test mytest("Chars.jl","fakedegrees(coxgroup(:A,2),Pol(:q))","3-element Vector{Pol{Int64}}:\n q³\n q²+q\n 1")
 @test mytest("Chars.jl","charinfo(coxgroup(:G,2)).charparams","6-element Vector{Vector{Vector{Int64}}}:\n [[1, 0]]\n [[1, 6]]\n [[1, 3, 1]]\n [[1, 3, 2]]\n [[2, 1]]\n [[2, 2]]")
@@ -92,7 +92,7 @@ end
 @test mytest("ComplexR.jl","W=complex_reflection_group(4)","G₄")
 @test mytest("ComplexR.jl","codegrees(W)","2-element Vector{Int64}:\n 0\n 2")
 @test mytest("ComplexR.jl","W=coxgroup(:B,2)","B₂")
-@test mytest("ComplexR.jl","hyperplane_orbits(W)","2-element Vector{NamedTuple{(:s, :cl_s, :order, :N_s, :det_s), Tuple{Int64, Vector{Int64}, Int64, Int64, Vector{Int64}}}}:\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])")
+@test mytest("ComplexR.jl","hyperplane_orbits(W)","2-element Vector{@NamedTuple{s::Int64, cl_s::Vector{Int64}, order::Int64, N_s::Int64, det_s::Vector{Int64}}}:\n (s = 1, cl_s = [2], order = 2, N_s = 2, det_s = [5])\n (s = 2, cl_s = [4], order = 2, N_s = 2, det_s = [1])")
 @test mytest("ComplexR.jl","W=crg(8);","nothing")
 @test mytest("ComplexR.jl","r=reflections(W)[7]","Reflection(G₈,1,-1)")
 @test mytest("ComplexR.jl","r==Reflection(W,1,-1)","true")
@@ -578,10 +578,10 @@ end
 @test mytest("PermRoot.jl","degrees(W)","2-element Vector{Int64}:\n 4\n 6")
 @test mytest("PermRoot.jl","fakedegrees(W,Pol(:x))","7-element Vector{Pol{Int64}}:\n 1\n x⁴\n x⁸\n x⁷+x⁵\n x⁵+x³\n x³+x\n x⁶+x⁴+x²")
 @test mytest("PermRoot.jl","reflectionMatrix([1,0,-E(3,2)])","3×3 Matrix{Cyc{Rational{Int64}}}:\n  0  0  ζ₃²\n  0  1    0\n ζ₃  0    0")
-@test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1//1, -1//2, 0//1], eig = -1, isunitary = false)")
-@test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2//1, -1//1, 0//1], eig = -1, isunitary = false)")
-@test mytest("PermRoot.jl","diagram(coxgroup(:E,8))","    O 2\n    ￨\nO—O—O—O—O—O—O E₈\n1 3 4 5 6 7 8")
-@test mytest("PermRoot.jl","diagram(crg(33))","      3       G₃₃\n     /^\\\n1———2———4———5 423423==342342")
+@test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1])","(root = [2, 0, 0], coroot = Rational{Int64}[1, -1//2, 0], eig = -1, isunitary = false)")
+@test mytest("PermRoot.jl","asreflection([-1 0 0;1 1 0;0 0 1],[1,0,0])","(root = [1, 0, 0], coroot = Rational{Int64}[2, -1, 0], eig = -1, isunitary = false)")
+@test mytest("PermRoot.jl","diagram(coxgroup(:E,8))","O 2\n    ￨\nO—O—O—O—O—O—O E₈\n1 3 4 5 6 7 8")
+@test mytest("PermRoot.jl","diagram(crg(33))","3       G₃₃\n     /^\\\n1———2———4———5 423423==342342")
 @test mytest("PermRoot.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("PermRoot.jl","cartan(W)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("PermRoot.jl","rank(complex_reflection_group(31))","4")
@@ -656,13 +656,13 @@ end
 @test mytest("Semisimple.jl","C=algebraic_center(L)","(Z0 = SubTorus(A₃₍₁₃₎=A₁×A₁Φ₁,[1 2 1]), AZ = Group(SemisimpleElement{Root1}[<1,1,-1>]), descAZ = [[1, 2]], ZD = Group(SemisimpleElement{Root1}[<-1,1,1>, <1,1,-1>]))")
 @test mytest("Semisimple.jl","T=torsion_subgroup(C.Z0,3)","Group(SemisimpleElement{Root1}[<ζ₃,ζ₃²,ζ₃>])")
 @test mytest("Semisimple.jl","sort(elements(T))","3-element Vector{SemisimpleElement{Root1}}:\n <1,1,1>\n <ζ₃,ζ₃²,ζ₃>\n <ζ₃²,ζ₃,ζ₃²>")
-@test mytest("Semisimple.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Array} with 7 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]\n  :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0//1, 0//1],…\n  :AdjointFundamentalGroup => [(1,12,2), (4,14)]")
+@test mytest("Semisimple.jl","weightinfo(coxgroup(:A,2)*coxgroup(:B,2))","Dict{Symbol, Array} with 7 entries:\n  :moduli                  => [3, 2]\n  :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]\n  :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]\n  :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]\n  :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]\n  :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0, 0], [0, 0…\n  :AdjointFundamentalGroup => [(1,12,2), (4,14)]")
 @test mytest("Semisimple.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Semisimple.jl","fundamental_group(W)","Group((1,12,3,2))")
 @test mytest("Semisimple.jl","W=rootdatum(:sl,4)","sl₄")
 @test mytest("Semisimple.jl","fundamental_group(W)","Group(Perm{Int16}[])")
 @test mytest("Semisimple.jl","W=affine(coxgroup(:A,4))","Ã₄")
-@test mytest("Semisimple.jl","diagram(W)","       ————5————\n      /         \\\nÃ₄   1———2———3———4")
+@test mytest("Semisimple.jl","diagram(W)","————5————\n      /         \\\nÃ₄   1———2———3———4")
 @test mytest("Semisimple.jl","G=coxgroup(:A,3)","A₃")
 @test mytest("Semisimple.jl","s=ss(G,[0,1//2,0])","SemisimpleElement{Root1}: <1,-1,1>")
 @test mytest("Semisimple.jl","centralizer(G,s)","A₃₍₁₃₎=(A₁A₁)Φ₂")
@@ -758,7 +758,7 @@ end
 @test mytest("Uch.jl","uc=UnipotentCharacters(W)","UnipotentCharacters(B₂)\n  γ│n₀ Deg(γ) Feg   Symbol Fr(γ) label\n───┼───────────────────────────────────\n11.│ 1  qΦ₄/2  q²   (12,0)     1   +,-\n1.1│ 2 qΦ₂²/2 qΦ₄   (02,1)     1   +,+\n.11│ 3     q⁴  q⁴ (012,12)     1\n2. │ 4      1   1     (2,)     1\n.2 │ 5  qΦ₄/2  q²   (01,2)     1   -,+\nB₂ │ 6 qΦ₁²/2   0   (012,)    -1   -,-")
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")
 @test mytest("Uch.jl","uc=UnipotentCharacters(W);","nothing")
-@test mytest("Uch.jl","degrees(uc)","10-element Vector{Pol{Rational{Int64}}}:\n 1//1\n (1//1)q⁶\n (1//3)q⁵+(1//3)q³+(1//3)q\n (1//3)q⁵+(1//3)q³+(1//3)q\n (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q\n (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q\n (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q\n (1//6)q⁵+(-1//2)q⁴+(2//3)q³+(-1//2)q²+(1//6)q\n (1//3)q⁵+(-2//3)q³+(1//3)q\n (1//3)q⁵+(-2//3)q³+(1//3)q")
+@test mytest("Uch.jl","degrees(uc)","10-element Vector{Pol{Rational{Int64}}}:\n 1\n q⁶\n (1//3)q⁵+(1//3)q³+(1//3)q\n (1//3)q⁵+(1//3)q³+(1//3)q\n (1//6)q⁵+(1//2)q⁴+(2//3)q³+(1//2)q²+(1//6)q\n (1//2)q⁵+(1//2)q⁴+(1//2)q²+(1//2)q\n (1//2)q⁵+(-1//2)q⁴+(-1//2)q²+(1//2)q\n (1//6)q⁵+(-1//2)q⁴+(2//3)q³+(-1//2)q²+(1//6)q\n (1//3)q⁵+(-2//3)q³+(1//3)q\n (1//3)q⁵+(-2//3)q³+(1//3)q")
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")
 @test mytest("Uch.jl","CycPoldegrees(UnipotentCharacters(W))","10-element Vector{CycPol{Rational{Int64}}}:\n 1\n q⁶\n qΦ₃Φ₆/3\n qΦ₃Φ₆/3\n qΦ₂²Φ₃/6\n qΦ₂²Φ₆/2\n qΦ₁²Φ₃/2\n qΦ₁²Φ₆/6\n qΦ₁²Φ₂²/3\n qΦ₁²Φ₂²/3")
 @test mytest("Uch.jl","W=coxgroup(:G,2)","G₂")
@@ -805,8 +805,8 @@ end
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(W))","1-element Vector{Int64}:\n 14")
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(W),6)","8-element Vector{Int64}:\n  1\n  2\n  6\n  7\n  8\n  9\n 10\n 12")
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(complex_reflection_group(4)),3)","4-element Vector{Int64}:\n  3\n  6\n  7\n 10")
-@test mytest("Uch.jl","cuspidal_data(coxgroup(:F,4),1)","9-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:\n (levi = F₄, cuspidal = 31, d = 1)\n (levi = F₄, cuspidal = 32, d = 1)\n (levi = F₄, cuspidal = 33, d = 1)\n (levi = F₄, cuspidal = 34, d = 1)\n (levi = F₄, cuspidal = 35, d = 1)\n (levi = F₄, cuspidal = 36, d = 1)\n (levi = F₄, cuspidal = 37, d = 1)\n (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)\n (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)")
-@test mytest("Uch.jl","cuspidal_data(complex_reflection_group(4),3)","5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
+@test mytest("Uch.jl","cuspidal_data(coxgroup(:F,4),1)","9-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:\n (levi = F₄, cuspidal = 31, d = 1)\n (levi = F₄, cuspidal = 32, d = 1)\n (levi = F₄, cuspidal = 33, d = 1)\n (levi = F₄, cuspidal = 34, d = 1)\n (levi = F₄, cuspidal = 35, d = 1)\n (levi = F₄, cuspidal = 36, d = 1)\n (levi = F₄, cuspidal = 37, d = 1)\n (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)\n (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)")
+@test mytest("Uch.jl","cuspidal_data(complex_reflection_group(4),3)","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
 end
 @testset "Ucl.jl" begin
 @test mytest("Ucl.jl","UnipotentClasses(rootdatum(:sl,4))","UnipotentClasses(sl₄)\n1111<211<22<31<4\n   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³) A₁(A₃₍₁₃₎=A₁×A₁Φ₁)/-1 .(A₃)/ζ₄\n────┼──────────────────────────────────────────────────────────────────────\n4   │222   0 222         q³.Z₄          1:4                  -1:2    ζ₄:Id\n31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31\n22  │020   2 2.2      q⁴.A₁.Z₂         2:22                 11:11\n211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211\n1111│000   6 ...            A₃      Id:1111\n   u│.(A₃)/ζ₄³\n────┼──────────\n4   │   ζ₄³:Id\n31  │\n22  │\n211 │\n1111│")
@@ -864,7 +864,7 @@ end
 @test mytest("Urad.jl","u^s","u1(ζ₃x)u3(2ζ₃y)")
 @test mytest("Urad.jl","u^U(2)","u1(x)u3(x+y)u4(-x-2y)u5(x+3y)u6(x²+3xy+3y²)")
 @test mytest("Urad.jl","U=UnipotentGroup(coxgroup(:G,2))","UnipotentGroup(G₂)")
-@test mytest("Urad.jl","U.special","10-element Vector{NamedTuple{(:r, :s, :rs, :N, :comm), Tuple{Int64, Int64, Int64, Int64, Vector{NTuple{4, Int64}}}}}:\n (r = 1, s = 2, rs = 3, N = 1, comm = [(1, 1, 3, 1), (1, 2, 4, -1), (1, 3, 5, 1), (2, 3, 6, 2)])\n (r = 2, s = 3, rs = 4, N = 2, comm = [(1, 1, 4, 2), (2, 1, 5, 3), (1, 2, 6, -3)])\n (r = 2, s = 4, rs = 5, N = 3, comm = [(1, 1, 5, 3)])\n (r = 1, s = 5, rs = 6, N = 1, comm = [(1, 1, 6, 1)])\n (r = 3, s = 4, rs = 6, N = 3, comm = [(1, 1, 6, 3)])\n (r = 2, s = 1, rs = 3, N = -1, comm = [(1, 1, 3, -1), (2, 1, 4, -1), (3, 1, 5, -1), (3, 2, 6, -1)])\n (r = 3, s = 2, rs = 4, N = -2, comm = [(1, 1, 4, -2), (2, 1, 6, -3), (1, 2, 5, 3)])\n (r = 4, s = 2, rs = 5, N = -3, comm = [(1, 1, 5, -3)])\n (r = 5, s = 1, rs = 6, N = -1, comm = [(1, 1, 6, -1)])\n (r = 4, s = 3, rs = 6, N = -3, comm = [(1, 1, 6, -3)])")
+@test mytest("Urad.jl","U.special","10-element Vector{@NamedTuple{r::Int64, s::Int64, rs::Int64, N::Int64, comm::Vector{NTuple{4, Int64}}}}:\n (r = 1, s = 2, rs = 3, N = 1, comm = [(1, 1, 3, 1), (1, 2, 4, -1), (1, 3, 5, 1), (2, 3, 6, 2)])\n (r = 2, s = 3, rs = 4, N = 2, comm = [(1, 1, 4, 2), (2, 1, 5, 3), (1, 2, 6, -3)])\n (r = 2, s = 4, rs = 5, N = 3, comm = [(1, 1, 5, 3)])\n (r = 1, s = 5, rs = 6, N = 1, comm = [(1, 1, 6, 1)])\n (r = 3, s = 4, rs = 6, N = 3, comm = [(1, 1, 6, 3)])\n (r = 2, s = 1, rs = 3, N = -1, comm = [(1, 1, 3, -1), (2, 1, 4, -1), (3, 1, 5, -1), (3, 2, 6, -1)])\n (r = 3, s = 2, rs = 4, N = -2, comm = [(1, 1, 4, -2), (2, 1, 6, -3), (1, 2, 5, 3)])\n (r = 4, s = 2, rs = 5, N = -3, comm = [(1, 1, 5, -3)])\n (r = 5, s = 1, rs = 6, N = -1, comm = [(1, 1, 6, -1)])\n (r = 4, s = 3, rs = 6, N = -3, comm = [(1, 1, 6, -3)])")
 @test mytest("Urad.jl","U=UnipotentGroup(coxgroup(:G,2))","UnipotentGroup(G₂)")
 @test mytest("Urad.jl","l=reorder(U,[2=>4,1=>2])","6-element Vector{Pair{Int64, Int64}}:\n 1 => 2\n 2 => 4\n 3 => -8\n 4 => 32\n 5 => -128\n 6 => 512")
 @test mytest("Urad.jl","reorder(U,l,6:-1:1)","2-element Vector{Pair{Int64, Int64}}:\n 2 => 4\n 1 => 2")
@@ -940,12 +940,12 @@ end
 end
 @testset "dSeries.jl" begin
 @test mytest("dSeries.jl","W=rootdatum(\"3D4\")","³D₄")
-@test mytest("dSeries.jl","l=cuspidal_data(W,3)","2-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, Int64, Root1}}}:\n (levi = ³D₄, cuspidal = 8, d = ζ₃)\n (levi = ³D₄₍₎=Φ₃², cuspidal = 1, d = ζ₃)")
+@test mytest("dSeries.jl","l=cuspidal_data(W,3)","2-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:\n (levi = ³D₄, cuspidal = 8, d = ζ₃)\n (levi = ³D₄₍₎=Φ₃², cuspidal = 1, d = ζ₃)")
 @test mytest("dSeries.jl","Series(W,l[2]...)","ζ₃-series R^³D₄_{³D₄₍₎=Φ₃²}(λ==Id)  H_G(L,λ)==hecke(G₄,Vector{Mvp{Cyc{Int64}, Int64}}[[ζ₃q², ζ₃, ζ₃q]])\n │    γᵩ    φ  ε family #\n─┼────────────────────────\n1│  φ₁‚₀ φ₁‚₀  1        1\n2│  φ₁‚₆ φ₁‚₄  1        2\n3│  φ₂‚₂ φ₁‚₈ -1        5\n6│ φ″₁‚₃ φ₂‚₅  1        4\n5│ φ′₁‚₃ φ₂‚₃ -1        3\n7│  φ₂‚₁ φ₂‚₁ -1        5\n4│³D₄[1] φ₃‚₂  1        5")
 @test mytest("dSeries.jl","W=complex_reflection_group(4)","G₄")
-@test mytest("dSeries.jl","l=cuspidal_data(W,3)","5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
+@test mytest("dSeries.jl","l=cuspidal_data(W,3)","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
 @test mytest("dSeries.jl","Series(W,l[5]...)","ζ₃-series R^G₄_{G₄₍₎=Φ₁Φ′₃}(λ==Id)  W_G(L,λ)==Z₆\n │   γᵩ φ(mod 3)  ε parameter family #\n─┼─────────────────────────────────────\n1│ φ₁‚₀        1  1      ζ₃q²        1\n5│ φ₂‚₃       ζ₆  1      -ζ₃q        2\n2│ φ₁‚₄       ζ₃ -1        ζ₃        4\n8│ Z₃:2       -1 -1     -ζ₃²q        2\n9│Z₃:11      ζ₃² -1       ζ₃²        4\n4│ φ₂‚₅      ζ₆⁵ -1       -ζ₃        4")
-@test mytest("dSeries.jl","cuspidal_data(W,E(3,2))","5-element Vector{NamedTuple{(:levi, :cuspidal, :d), Tuple{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, Int64, Root1}}}:\n (levi = G₄, cuspidal = 2, d = ζ₃²)\n (levi = G₄, cuspidal = 5, d = ζ₃²)\n (levi = G₄, cuspidal = 7, d = ζ₃²)\n (levi = G₄, cuspidal = 10, d = ζ₃²)\n (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1, d = ζ₃²)")
+@test mytest("dSeries.jl","cuspidal_data(W,E(3,2))","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 2, d = ζ₃²)\n (levi = G₄, cuspidal = 5, d = ζ₃²)\n (levi = G₄, cuspidal = 7, d = ζ₃²)\n (levi = G₄, cuspidal = 10, d = ζ₃²)\n (levi = G₄₍₎=Φ₁Φ″₃, cuspidal = 1, d = ζ₃²)")
 @test mytest("dSeries.jl","dSeries.ennola(rootdatum(\"3D4\"))","SPerm{Int64}: (3,-4)(5,-5)(6,-6)(7,-8)")
 @test mytest("dSeries.jl","dSeries.ennola(complex_reflection_group(14))","SPerm{Int64}: (2,43,-14,16,41,34)(3,35,40,18,-11,42)(4,-37,25,-17,-26,-36)(5,-6,-79)(7,-7)(8,-74)(9,-73)(10,-52,13,31,-50,29)(12,53,15,32,-51,-30)(19,71,70,21,67,68,20,69,72)(22,-39,27,-33,-28,-38)(23,24,-66,-23,-24,66)(44,46,49,-44,-46,-49)(45,48,47,-45,-48,-47)(54,-63,-55,-57,62,-56)(58,-65,-59,-61,64,-60)(75,-77)(76,-76)(78,-78)")
 @test mytest("dSeries.jl","W=complex_reflection_group(4)","G₄")
