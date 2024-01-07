@@ -253,40 +253,31 @@ chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
         end
     end)
 chevieset(:imp, :ClassInfo, function (p, q, r)
-        local res, times, trans, I, i, j, a, S
+        local res, times, trans, I, i, j, a, S, e1
         times(e, o) = begin
                 return Concatenation(map((x->begin
                                     o
                                 end), 1:e))
             end
-        if [q, r] == [2, 2] && !(haskey(CHEVIE, :othermethod))
+        if r == 2 && (p != q && mod(q, 2) == 0)
+            e1 = q // 2
             res = Dict{Symbol, Any}(:classtext => [], :classparams => [], :classnames => [])
             for i = 0:p - 1
                 for j = 0:div((p - i) - 1, 2)
-                    push!(res[:classparams], Concatenation(fill(0, max(0, (1 + j) - 1)) + 1, fill(0, max(0, (1 + i) - 1))))
-                    push!(res[:classtext], Concatenation(fill(0, max(0, (1 + j) - 1)) + 1, times(i, [1, 2, 3])))
-                    push!(res[:classnames], string(Concatenation(times(j, "1"), times(i, "z"))))
+                    if mod(j + i, e1) == 0
+                        push!(res[:classparams], Concatenation(times(j, [1]), times(i, [0])))
+                        push!(res[:classtext], Concatenation(times((j + i) // e1, [1]), times(i, [2, 3])))
+                        push!(res[:classnames], string(Concatenation(times((j + i) // e1, "1"), times(mod(i, e1), "23"), times(div(i, e1), "z"))))
+                    end
                 end
             end
             for j = [2, 3]
-                for i = 0:div(p, 2) - 1
-                    push!(res[:classparams], Concatenation([j], fill(0, max(0, (1 + i) - 1))))
-                    push!(res[:classtext], Concatenation([j], times(i, [1, 2, 3])))
-                    push!(res[:classnames], string(Concatenation(string(j), times(i, "z"))))
+                for i = 0:e1 - 0:p // 2 - e1
+                    push!(res[:classparams], Concatenation([j], times(i, [0])))
+                    push!(res[:classtext], Concatenation([j], times(i // e1, [1]), times(i, [2, 3])))
+                    push!(res[:classnames], string(Concatenation(string(j), times(i // e1, "z"))))
                 end
             end
-            res[:malle] = []
-            for a = 0:p - 1
-                res[:malle] = Append(res[:malle], map((m->begin
-                                    [3, a, m]
-                                end), 0:div((p - a) - 1, 2)))
-            end
-            res[:malle] = Append(res[:malle], map((m->begin
-                                [1, m]
-                            end), 0:div(p, 2) - 1))
-            res[:malle] = Append(res[:malle], map((m->begin
-                                [2, m]
-                            end), 0:div(p, 2) - 1))
             res[:orders] = map(function (c,)
                         if length(c) > 0 && c[1] in [2, 3]
                             return Lcm(2, div(p, gcd(count((x->begin
@@ -302,7 +293,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     end, res[:classparams])
             res[:classes] = map(function (c,)
                         if length(c) > 0 && c[1] in [2, 3]
-                            return div(p, q)
+                            return div(p, 2)
                         elseif 1 in c
                             return 2
                         else
@@ -1030,12 +1021,12 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
                                         end), para[1])
                             X = Concatenation(map((i->begin
                                                 E(div(q, 2), i) * X
-                                            end), 1:div(q, 2)))
+                                            end), 0:div(q, 2) - 1))
                         else
                             X = para[1]
                         end
                         X = X[S[[3, 4]]]
-                        v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(e, (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
+                        v = S[2] * GetRoot(Product(X) * Product(Y) * Product(T) * E(div(p, 2), (2 - S[3]) - S[4]), 2) * E(p, (S[3] + S[4]) - 2)
                         d = 1 + Sum(X) * 0 + Sum(Y) * 0 + Sum(T) * 0
                         return [(d * [[X[1], Sum(Y, (y->begin
                                                                 1 // y

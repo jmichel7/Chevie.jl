@@ -493,7 +493,7 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 function fakedegrees(W,q=Pol();recompute=false)
   if !recompute
     res=improve_type(map(p->fakedegree(W,p,q),charinfo(W).charparams))
-    if !any(isnothing,res) return res end
+    if !any(isnothing,res) && !all(iszero,res) return res end
   end
   # recompute from general principles
   InfoChevie("# recomputing fakedegrees for ",W,"\n")

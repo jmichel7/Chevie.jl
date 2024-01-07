@@ -614,6 +614,7 @@ function Tcharparams(W)
   db=map(x->[x(1),valuation(x)],fd)
   n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
+    if length(l[1])>=4 return end
     nm=map(Util.TeXstrip∘GAPENV.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
   elseif n[1] in "EFGH" && length(n)<4
@@ -1206,6 +1207,7 @@ end
 
 test[:udfdimprimitive]=(fn=Tudfdimprimitive,
   applicable=function(W)
+    if !isspetsial(W) return false end
     n=refltype(W)
     if length(n)>1 return false
     elseif length(n)==0 return true end

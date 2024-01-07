@@ -229,10 +229,13 @@ information   about  it  necessary  to  compute  the  function  Delta  in
     end
     res[:irreducibles]=map(x->map(y->entry(y,x),partition_tuples(r,p)),
                            map(x->βset.(x),partition_tuples(r,p)))
-  elseif [q,r]==[2,2] && !haskey(CHEVIE,:othermethod)
+  elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
     Z,X,Y=para[1:3]
+    e1=div(q,2)
+    Z=root.(Z,e1)
+    Z=vcat(map(i->Z.*E(e1,i),0:e1-1)...)
     ci=chevieget(:imp, :CharInfo)(p, q, r)
     function entry2(char, class)
       char=ci[:malle][findfirst(==(char),ci[:charparams])]
@@ -241,7 +244,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
         return Product(class, i->iszero(i) ? prod(w) : w[i])
       else
         w=char[2]*root(X[1]*X[2]*Y[1]*Y[2]*Z[char[3]]*Z[char[4]]*
-          E(div(p,q),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
+          E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
         class=map(i->count(==(i),class), 0:3)
         if class[2]>0 char=sum(x->x^class[2],Z[char[[3,4]]])
         elseif class[3]>0 char=sum(X)
