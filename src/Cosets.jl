@@ -398,7 +398,7 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
   if isone(WF.phi) return twisting_elements(Group(WF),J) end
   W=Group(WF)
   iJ=inclusion(W,J)
-  h=transporting_elt(W,sort(iJ.^WF.phi),sort(iJ),onsets)
+  h=transporting_elt(W,onsets(iJ,WF.phi),sort(iJ),onsets)
   if isnothing(h)
     println("\n# no subspets for ",J)
     return eltype(W)[]

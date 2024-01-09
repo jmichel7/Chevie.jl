@@ -1290,7 +1290,7 @@ end
 
 function Base.lcm(l::FactSchur...)
   v=collectby(x->x.monomial,vcat(map(x->x.vcyc,l)...))
-  FactSchur(1,map(x->(pol=lcm(map(y->y.pol,x)...),monomial=x[1].monomial),v))
+  FactSchur(1,map(x->(pol=lcm(map(y->y.pol,x)),monomial=x[1].monomial),v))
 end
 
 # para=vcat along Hplanes(parameters of Hecke algebra)

@@ -367,7 +367,7 @@ function split_levis(WF,d::Root1,ad)
       if isnothing(P) P=Perm() end
       J=inclusiongens(H).^P
       if P!=Perm() || J!=inclusiongens(H)
-         HF=subspets(WF,J,HF.phi^P/WF.phi)
+        HF=subspets(WF,restriction(W,J),HF.phi^P/WF.phi)
       end
       push!(res, HF)
     end
