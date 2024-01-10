@@ -705,15 +705,22 @@ chevieset(:imp, :SchurData, function (p, q, r, phi)
         end
     end)
 chevieset(:imp, :SchurElement, function (p, q, r, phi, para, root)
-        local m
+        local m, Z, e1
         if r == 1
             return VcycSchurElement(Concatenation(para[1], [0]), ((CHEVIE[:imp])[:SchurModel])(p, q, r, phi))
         elseif p == 1
             return VcycSchurElement([0, -((para[1])[1]) // (para[1])[2]], ((CHEVIE[:imp])[:SchurModel])(p, q, r, phi))
         elseif q == 1
             return VcycSchurElement(Concatenation(para[1], [-((para[2])[1]) // (para[2])[2]]), ((CHEVIE[:imp])[:SchurModel])(p, q, r, phi))
-        elseif [q, r] == [2, 2]
-            return VcycSchurElement(Concatenation(para[[2, 3, 1]]), ((CHEVIE[:imp])[:SchurModel])(p, q, r, phi), ((CHEVIE[:imp])[:SchurData])(p, q, r, phi))
+        elseif r == 2 && mod(q, 2) == 0
+            e1 = div(q, 2)
+            Z = map((x->begin
+                            GetRoot(x, e1)
+                        end), para[1])
+            Z = Concatenation(map((j->begin
+                                Z * E(e1, j)
+                            end), 0:e1 - 1))
+            return VcycSchurElement(Concatenation(para[2], para[3], Z), ((CHEVIE[:imp])[:SchurModel])(p, 2, r, phi), ((CHEVIE[:imp])[:SchurData])(p, 2, r, phi)) // e1
         elseif p == q
             if IsInt(phi[length(phi)])
                 m = length(phi) - 2

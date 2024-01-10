@@ -78,8 +78,8 @@ end
 #   [nothing] or [.root=vecmonomial] or [.rootUnity]  
 #   vcyc= a list of pairs [vecmonomial, cyclotomic polynomial index]
 #   rootCoeff=  a constant by which multiply .root before taking root
-#  vecmonomial=vector of powers for elts of para (plus possibly
-#     the power to which to raise root or rootUnity)
+#  where vecmonomial=vector of powers for elts of para (plus possibly
+#     the power to which to raise .root or .rootUnity)
 #  schur data describes the Schur element in its Galois orbit : it has fields
 #   order: in which order to take the variables
 #   rootPower: by which E(root)^i multiply .root

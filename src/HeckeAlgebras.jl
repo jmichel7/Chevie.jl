@@ -1135,13 +1135,13 @@ A  `FactSchur` representing  a Schur  element of  the form  `M∏ᵩφ(Mᵩ)` (s
 [`factorized_schur_element`](@ref))  is  a  `struct`  with a field `factor`
 which  holds the  monomial `M`,  and a  field `vcyc`  which holds a list of
 `NamedTuples`  describing each  factor `Mᵩ`  in the  product. An element of
-`vcyc`  representing  a  term  `φ(Mᵩ)`  is  itself  a  `struct` with fields
+`vcyc`  representing a  term `φ(Mᵩ)`  is itself  a `NamedTuple` with fields
 `monomial` holding `Mᵩ` (as an `Mvp` with a single term), and a field `pol`
 holding a `CycPol` (see `CycPol`) representing `φ`.
 
-A few operations are implemented for `FactSchur`, like `*, lcm`. They can be
-evaluated partially or completely keeping as much as possible the factored
-form.
+A  few operations are implemented for  `FactSchur`, like `*, lcm`. They can
+be  evaluated  partially  or  completely  keeping  as  much as possible the
+factored form.
 
 ```julia-repl
 julia> @Mvp x,y; W=crg(4); H=hecke(W,[[1,x,y]])
@@ -1180,7 +1180,7 @@ function Base.show(io::IO,x::FactSchur)
    return
  end
  v=map(x.vcyc) do l
-    if get(io,:Maple,false)
+    if get(io,:Maple,false) || degree(l.pol)==1
       "("*repr(l.pol(l.monomial);context=io)*")"
     else
       repr(l.pol;context=io)*"("*repr(l.monomial;context=io)*")"

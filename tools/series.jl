@@ -1,72 +1,69 @@
 function findfractionalpowers(W)
   if length(gens(W))==0 return [0] end
   uc=UnipotentCharacters(W)
-  uc[:fractions]=fill(nothing,length(uc))
-  reasons = map(x->[], 1:length(uc))
-  for h in uc[:harishChandra]
-    if length(h.levi)!=length(gens(W))
-      L=reflection_subgroup(W, h.levi)
-      cusp=FindCuspidalInLevi(h[:cuspidalName], L)
+  uc.fractions=Union{Rational{Int},Nothing}[]
+  append!(uc.fractions,fill(nothing,length(uc)))
+  reasons=map(x->[], 1:length(uc))
+  for h in uc.harishChandra
+    if length(h[:levi])!=ngens(W)
+      L=reflection_subgroup(W, h[:levi])
+      cusp=Lusztig.FindCuspidalInLevi(h[:cuspidalName], L)
       n=findfractionalpowers(L)
       if !isnothing(n[cusp])
-        uc[:fractions][h[:charNumbers]]=h[:charNumbers]*0+n[cusp]
-        for i in h[:charNumbers] push!(reasons[i], joindigits(h.levi)) end
+        uc.fractions[h[:charNumbers]].=n[cusp]
+        for i in h[:charNumbers] push!(reasons[i], joindigits(h[:levi])) end
       end
     end
   end
   sers=Series(W;proper=true)
-  map(Hecke, sers)
-  sers=gapSet(filter(x->haskey(x, :mC) && iscyclic(x),sers))
+  sers=unique(filter(x->haskey(x, :mC) && iscyclic(x),sers))
   while !isempty(sers)
     for s in sers
-      p = findfirst(i->uc.fractions[i]!==nothing,charNumbers(s))
+      p = findfirst(i->uc.fractions[i]!==nothing,charnumbers(s))
       if isnothing(p) print("reticent series", s, "\n")
       else
-        frac = mC(s)[p]*e(s)*s.d
-        fix = modZ(uc[:fractions][charNumbers(s)[p]]-frac)
-        if fix != 0
-            print(" **** Badly normalized series ", s, " adding ", fix, "\n")
-        end
-        print("\n", s, "==>")
-        for i in 1:e(s)
-          cn=charNumbers(s)[i]
+        frac=dSeries.mC(s)[p]*dSeries.e(s)*s.d.r
+        fix=modZ(uc.fractions[charnumbers(s)[p]]-frac)
+        if fix!=0 println(" **** Badly normalized series ",s," adding ",fix) end
+        print(rio(),"\n", s, "==>")
+        for i in 1:dSeries.e(s)
+          cn=charnumbers(s)[i]
           print(cn,".c")
-          frac = modZ(mC(s)[i] * e(s) * s.d + fix)
-          if isnothing(uc[:fractions][cn]) push!(reasons[cn], s.d)
-            uc[:fractions][cn] = frac
-          elseif uc[:fractions][cn] != frac
-            print("Failed! ",cn, "==", TeXStrip(uc[:TeXCharNames][cn]),
+          frac = modZ(dSeries.mC(s)[i]*dSeries.e(s)*s.d.r+fix)
+          if isnothing(uc.fractions[cn]) push!(reasons[cn], s.d.r)
+            uc.fractions[cn]=frac
+          elseif uc.fractions[cn]!=frac
+           println(rio(),"Failed! ",cn, "==", charnames(uc)[cn],
                  " in ", s, "\n     where mC modZ==", frac, "\n
-                 conflicts with ", reasons[cn], "\n")
-          else push!(reasons[cn], s.d)
+                 conflicts with ", reasons[cn])
+          else push!(reasons[cn],s.d.r)
           end
         end
-        sers = Difference(sers, [s])
+        sers = setdiff(sers, [s])
       end
     end
   end
-  for i = uc[:harishChandra]
+  for i=uc.harishChandra
     if length(i[:charNumbers])>1
-      print(Format([uc[:fractions][i[:charNumbers]], 
-                    map(length, reasons[i[:charNumbers]])]), "\n")
+      println(uc.fractions[i[:charNumbers]],length.(reasons[i[:charNumbers]]))
     else
-      print(uc[:fractions][i[:charNumbers][1]],reasons[i[:charNumbers][1]],"\n")
+      println(uc.fractions[i[:charNumbers][1]],reasons[i[:charNumbers][1]])
     end
-    p=gapSet(uc[:fractions][i[:charNumbers]])
-    if haskey(i, :qEigen)
+    p=sort(unique(uc.fractions[i[:charNumbers]]))
+    if haskey(i,:qEigen)
       if p!=[i[:qEigen]]
-        if p == [nothing]
-          print("!!!!!!!!!!!! for ", i[:charNumbers], 
-                " qEigen should be nothing is ", i[:qEigen], "\n")
+        if p==[nothing]
+          println("!!!!!!!!!!!! for ", i[:charNumbers], 
+                " qEigen should be nothing is ", i[:qEigen])
         else
-          error("for HCseries $i of ",ReflectionName(W)," qEigen should be ",p)
-          uc[:fractions][i[:charNumbers]] = i[:qEigen]+0*i[:charNumbers]
+          error("for HCseries $i of ",W," qEigen should be ",p)
+          uc.fractions[i[:charNumbers]]=i[:qEigen].+i[:charNumbers]
         end
       end
-    elseif p!=[0] print("!!!!!!!!!!!!!! qEigen unbound should be ", p, "\n")
+    elseif p!=[0] println("!!!!!!!!!!!!!! qEigen unbound should be ",p)
     end
   end
-  return uc[:fractions]
+  uc.fractions
 end
 
 # series of d-regular element w
@@ -93,52 +90,47 @@ function CheckMaximalPairs(W)
 end
 
 function Checkzegen(W)
-  l = Series(W;proper=true)
-  print("with no Hecke:",filter(s->isnothing(Hecke(s)),l),"\n")
-  print("    center==",OrderCenter(W),"\n")
-  l=Filtered(l, (s->begin haskey(s, :Hecke) end))
-  uc = UnipotentCharacters(W)
-  aA = uc[:a] + uc[:A]
+  l=Series(W;proper=true)
+  println(rio(),"with no Hecke:",filter(s->!haskey(s,:Hecke),l))
+  println("    center==",gcd(degrees(W)))
+  l=filter(s->haskey(s,:Hecke),l)
+  uc=UnipotentCharacters(W)
+  aA=uc.a+uc.A
   for s in l
-      e = gete(s[:Hecke])
-      z = OrderCenter(relative_group(s))
-      ucL = UnipotentCharacters(s.levi)
-      aAL = ucL[:A] + ucL[:a]
-      aAL = aAL[s.cuspidal]
-      print(s, "\n")
-      print(FormatTable([modZ.((aA[charNumbers(s)]-aAL)//z),
-                         modZ.(aA[charNumbers(s)]//z), modZ.(1 .//e)], 
+    e=gete(s[:Hecke])
+    z=OrderCenter(relative_group(s))
+    ucL=UnipotentCharacters(s.levi)
+    aAL=(ucL.A.+ucL.a)[s.cuspidal]
+    println(s)
+    print(FormatTable([modZ.((aA[charNumbers(s)]-aAL)//z),
+                       modZ.(aA[charNumbers(s)]//z), modZ.(1 .//e)], 
    Dict{Symbol, Any}(:rowLabels => ["(aA-aAL)/z", "aA/z", "local Hecke irr"])))
   end
 end
 
 # checks minimal polynomials for Cyclotomic hecke algebras
 function CheckRatCyc(s)
-  if !(haskey(s, :Hecke)) return SPrint(FormatTeX(s), " Hecke not bound") end
-  l = CollectBy(((s[:Hecke])[:parameter])[1], degree)
-  fact = map((x->begin Product(x, (y->begin Mvp("T") - y end)) end), l)
-  F = FieldOfDefinition(Group(s.spets))
+  if !haskey(s,:Hecke) error(" Hecke not bound") end
+  l=collectby(degree,hecke(s).para[1])
+  fact=map(x->prod(y->Mvp(:T)-y,x),l)
+  F=NF(cartan(Group(s.spets))...)
+  fact,F
 end
 
 function CheckRatSer(arg...)
-  W = ApplyFunc(crg, arg)
-  s = Series(W;proper=true)
-  s = Filtered(s, (x->begin x.spets != x.levi end))
-  c = Join(map(CheckRatCyc, s), "\\hfill\\break\n")
-  return c
+  W=crg(arg...)
+  s=Series(W;proper=true)
+  s=filter(x->x.spets!=x.levi,s)
+  join(map(CheckRatCyc,s), "\\hfill\\break\n")
 end
 
 function CheckPiGPiL(n)
-  W = crg(n)
-  s = Series(W;proper=true)
-  map(Hecke, s)
-  s = Filtered(s, (ser->iscyclic(ser) && ser.principal))
-  D0 = (s->begin Sum(ReflectionDegrees(Group(s.spets)) +
-                  ReflectionCoDegrees(Group(s.spets))) -
-              Sum(ReflectionDegrees(Group(s.levi)) +
-                  ReflectionCoDegrees(Group(s.levi)))
-          end)
-  return map((x->begin D0(x) // e(x) end), s)
+  W=crg(n)
+  s=Series(W;proper=true)
+  s=filter(ser->iscyclic(ser) && ser.principal,s)
+  D0(s)=sum(degrees(Group(s.spets))+codegrees(Group(s.spets)))-
+        sum(degrees(Group(s.levi))+codegrees(Group(s.levi)))
+  map(x->D0(x)//dSeries.e(x),s)
 end
 
 function Checkdovere(n)
@@ -202,20 +194,18 @@ function EigenspaceNumbers(W)
 end
 
 # nrconjecture: si kd est le multiple maximum de d tq
-# RelativeDegrees(W,kd)<>[], alors
-# Length(RelativeDegrees(W,d))=Length(RelativeDegrees(W,kd))*Phi(kd)/Phi(d)
+# !isempty(relative_degrees(W,kd)), alors
+# length(relative_degrees(W,d))=length(relative_wegrees(W,kd))*Phi(kd)/Phi(d)
 function nrconjecture(W)
   e=setdiff(EigenspaceNumbers(W), regular_eigenvalues(W))
   e=filter(x->!(x[1] in r),e)
   for d in e
     f = filter(x->mod(x,d)==0,r)
-    if length(f)>0
-        print("**** failed: ", ReflectionName(W), d, f, "\n")
-    end
+    if length(f)>0 println(rio(),"**** failed: ",W, d, f) end
     p = First(reverse(e), (i->begin mod(i[1], d) == 0 end))
-    if p != d
+    if p!=d
       if length(RelativeDegrees(W,d))*Primes.totient(d)!=p[2]*Primes.totient(p[1])
-          print("**** failed: ", ReflectionName(W), p, d, "\n")
+        println(rio(),"**** failed: ",W, p, d)
       end
     end
   end
