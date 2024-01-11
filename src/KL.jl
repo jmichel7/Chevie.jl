@@ -417,8 +417,10 @@ Cbasis(h::HeckeTElt)=toKL(h,HeckeCElt,maximum)
 
 function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
   W=H.W
-  cdict=get!(()->Dict{P,HeckeTElt{HeckeAlgebra{C,P,TW},C,P}}(one(W)=>one(H)),H,
-           Symbol("C'->T"))::Dict{P,HeckeTElt{HeckeAlgebra{C,P,TW},C,P}}
+  if !isempty(rootpara(H)) un=one(inv(rootpara(H)[1])) else un=1 end
+  cdict=get!(H,Symbol("C'->T"))do
+    Dict(one(W)=>one(H)*un)
+  end
   if haskey(cdict,w) return cdict[w] end
   T=Tbasis(H)
   if equalpara(H)

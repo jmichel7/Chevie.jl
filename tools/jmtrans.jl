@@ -35,7 +35,7 @@ const exclu=Dict(
  "LowestPowerFakeDegrees"=>["G4_22"],
  "PowerMaps"=>["imp"],
  "PrintDiagram"=>["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22",
-                 "G24","G25","G26","G27","G29","G31","G32","G33","G34"],
+            "G24","G25","G26","G27","G29","G31","G32","G33","G34","imp"],
  "ReducedInRightCoset"=>["timp"],
  "ReflectionCoDegrees"=>["imp"],
  "Representation"=>["2D"],

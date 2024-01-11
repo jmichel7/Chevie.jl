@@ -208,7 +208,7 @@ module PermRoot
 
 export PermRootGroup, PRG, PRSG, reflection_subgroup, simple_reps, roots,
   simple_conjugating, refls, unique_refls, asreflection, reflectionMatrix,
-  Diagram, diagram, refltype, cartan, independent_roots, inclusion, 
+  refltype, cartan, independent_roots, inclusion, 
   inclusiongens, restriction, coroot, TypeIrred, 
   refleigen, reflection_eigenvalues,
   reflchar, reflection_character,
@@ -435,56 +435,6 @@ function Base.show(io::IO, t::TypeIrred)
   end
 end
 
-struct Diagram
-  t::TypeIrred
-end
-
-Base.show(io::IO,::MIME"text/plain",v::Vector{Diagram})=show(io,v)
-
-Base.show(io::IO,v::Vector{Diagram})=join(io,v,"\n")
-
-function Base.show(io::IO,d::Diagram)
-  if !(get(io,:limit,false)|| get(io,:TeX,false))
-    print(io,"Diagram(",d.t,")")
-    return
-  end
-  t=d.t
-  if haskey(t,:orbit)
-    act=length(t.orbit)>1
-    if act
-      println(io,"ϕ permutes the next ",length(t.orbit)," components")
-    end
-    if !isone(t.twist)
-     println(io,"ϕ",act ? "^$(length(t.orbit))" : "",
-      " acts as ",t.twist^mappingPerm(t.orbit[1].indices,1:rank(t.orbit[1])),
-      " on the component below")
-    end
-    show(io,Diagram.(t.orbit))
-    return
-  end
-  series=t.series::Symbol
-  if series!=:ST show(io,d,Val(series))
-  elseif haskey(t,:ST) show(io,d,Val(Symbol("G",t.ST)))
-  else getchev(t,:PrintDiagram,t.indices,"G$(t.p),$(t.q),$(rank(t))")
-  end
-end
-
-"""
-`diagram(W)` diagram of finite reflection group `W`
-```julia-repl
-julia> diagram(coxgroup(:E,8))
-    O 2
-    ￨
-O—O—O—O—O—O—O E₈
-1 3 4 5 6 7 8
-
-julia> diagram(crg(33))
-      3       G₃₃
-     /^\\
-1———2———4———5 423423==342342
-```
-"""
-diagram(W)=Diagram.(refltype(W))
 #---------------------------------------------------------------------------
 """
 `PermRootGroup`   is  the  type  of  reflection  groups  represented  as  a

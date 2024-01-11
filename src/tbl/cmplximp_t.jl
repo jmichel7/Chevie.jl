@@ -232,7 +232,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
-    Z,X,Y=para[1:3]
+    Z,X,Y=para
     e1=div(q,2)
     Z=root.(Z,e1)
     Z=vcat(map(i->Z.*E(e1,i),0:e1-1)...)
@@ -241,7 +241,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
       char=ci[:malle][findfirst(==(char),ci[:charparams])]
       if char[1] == 1
         w=[Z[char[4]],X[char[2]],Y[char[3]]]
-        return Product(class, i->iszero(i) ? prod(w) : w[i])
+        return prod(i->iszero(i) ? prod(w) : w[i],class;init=1)
       else
         w=char[2]*root(X[1]*X[2]*Y[1]*Y[2]*Z[char[3]]*Z[char[4]]*
           E(div(p,2),2-char[3]-char[4]))*E(p,char[3]+char[4]-2)
@@ -254,8 +254,8 @@ information   about  it  necessary  to  compute  the  function  Delta  in
         return w^class[1]*char
       end
     end
-    res[:irreducibles] = map(char->
-      map(class->entry2(char, class), cl[:classparams]), ci[:charparams])
+    res[:irreducibles]=[entry2.(Ref(char),cl[:classparams]) for
+                          char in ci[:charparams]]
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
@@ -278,7 +278,7 @@ chevieset(:imp, :CharTable, function (p, q, r)
   get!(impchartableDict,(p,q,r))do
   oo=denominator.(chevieget(:imp,:EigenvaluesGeneratingReflections)(p,q,r))
   chevieget(:imp, :HeckeCharTable)(p,q,r,
-                                   map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
+     map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
   end
 end)
 

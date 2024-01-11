@@ -1148,7 +1148,7 @@ julia> @Mvp x,y; W=crg(4); H=hecke(W,[[1,x,y]])
 hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> p=factorized_schur_element(H,[[2,5]])
--x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
+-x⁻¹y(xy+1)(x-1)Φ₆(xy⁻¹)(y-1)
 
 julia> q=p(;x=E(3)) # partial evaluation
 ζ₃²√-3y⁻¹Φ₁Φ₂Φ′₆²(y)
@@ -1337,7 +1337,7 @@ julia> @Mvp x,y; H=hecke(W,[[1,x,y]])
 hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> factorized_schur_element(H,[[2,5]])
--x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
+-x⁻¹y(xy+1)(x-1)Φ₆(xy⁻¹)(y-1)
 ```
 """
 function factorized_schur_element(H::HeckeAlgebra,phi)
@@ -1371,13 +1371,13 @@ hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])
 
 julia> factorized_schur_elements(H)
 7-element Vector{Chevie.HeckeAlgebras.FactSchur}:
- x⁻⁴y⁻⁴Φ₂(xy)Φ₁Φ₆(x)Φ₁Φ₆(y)
- Φ₂(x²y⁻¹)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
- -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)Φ₂(xy⁻²)Φ₁Φ₆(y)
- -x⁻¹yΦ₂(xy)Φ₁(x)Φ₆(xy⁻¹)Φ₁(y)
- -x⁻⁴yΦ₂(x²y⁻¹)Φ₁(x)Φ₁(xy⁻¹)Φ₆(y)
- x⁻¹y⁻¹Φ₆(x)Φ₁(xy⁻¹)Φ₂(xy⁻²)Φ₁(y)
- x⁻²yΦ₂(x²y⁻¹)Φ₂(xy)Φ₂(xy⁻²)
+ x⁻⁴y⁻⁴(xy+1)Φ₁Φ₆(x)Φ₁Φ₆(y)
+ (x²y⁻¹+1)Φ₁Φ₆(x)Φ₁Φ₆(xy⁻¹)
+ -x⁻⁴y⁵Φ₁Φ₆(xy⁻¹)(xy⁻²+1)Φ₁Φ₆(y)
+ -x⁻¹y(xy+1)(x-1)Φ₆(xy⁻¹)(y-1)
+ -x⁻⁴y(x²y⁻¹+1)(x-1)(xy⁻¹-1)Φ₆(y)
+ x⁻¹y⁻¹Φ₆(x)(xy⁻¹-1)(xy⁻²+1)(y-1)
+ x⁻²y(x²y⁻¹+1)(xy+1)(xy⁻²+1)
 ```
 """
 factorized_schur_elements(H::HeckeAlgebra)=

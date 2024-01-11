@@ -99,6 +99,7 @@ include("Nf.jl");@reexport using .Nf
 include("Tools.jl");@reexport using .Tools
 include("Fact.jl");@reexport using .Fact
 include("PermRoot.jl");@reexport using .PermRoot
+include("Diagrams.jl");@reexport using .Diagrams
 include("CoxGroups.jl");@reexport using .CoxGroups
 include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
