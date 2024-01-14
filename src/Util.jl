@@ -267,9 +267,11 @@ function ordinal(n)
   str
 end
 
-function joindigits(l,delim="()";always=false,sep=",")
-  big=any(l.>=10)
-  s=big ? join(l,sep) : join(l)
+joindigits(l,d...;k...)=joindigits(Vector{Int}(l),d...;k...)
+
+function joindigits(l::AbstractVector{Int},delim="()";always=false,sep=",")
+  big=any(>=(10),l)
+  s=big ? join(l,sep) : String('0'.+l)
   (big || always)&& !isempty(delim) ? delim[1]*s*delim[2] : s
 end
 

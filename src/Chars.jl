@@ -455,14 +455,15 @@ character  of parameter φ (see  `charinfo(W).charparams`) of the reflection
 group `W`, evaluated at `q` .
 
 ```julia-repl
-julia> Chars.fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
+julia> fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
 Pol{Cyc{Int64}}: q²+q
 ```
 """
 function fakedegree(W,p,q=Pol())
   typ=refltype(W)
   if isempty(typ) return one(q) end
-  prod(map((t,p)->fakedegree(t,p,q),typ,p))
+# prod(map((t,p)->fakedegree(t,p,q),typ,p))
+  prod(fakedegree.(typ,p,q))
 end
 
 function fakedegree(t::TypeIrred,p,q=Pol())
@@ -473,7 +474,7 @@ function fakedegree(t::TypeIrred,p,q=Pol())
 end
 
 """
-`fakedegrees(W , q=Pol())`
+`fakedegrees(W, q=Pol())`
 
 returns  a list holding the fake degrees of the reflection group `W` on the
 vector  space `V`, evaluated at `q`. These are the graded multiplicities of
@@ -838,6 +839,7 @@ function classinfo(t::TypeIrred)
   if haskey(cl,:classes) cl[:classes]=Int.(cl[:classes]) end
   if haskey(cl,:centralizers) cl[:centralizers]=Int.(cl[:centralizers]) end
   cl[:classnames]=String.(cl[:classnames])
+  if !haskey(cl,:classparams) cl[:classparams]=cl[:classtext] end
   ClassInfo(cl)
 end
 
@@ -924,18 +926,18 @@ function showperiodic(io::IO,v::Vector{Int})
   while i<=length(v)
     for p in 2:div(length(v)-i+1,2)
 #     @show i,p
-      if v[i:i+p-1]!=v[i+p:i+2p-1] continue end
+      if (@view v[i:i+p-1])!=(@view v[i+p:i+2p-1]) continue end
       c=2
-      while i+(c+1)*p-1<=length(v) && v[i:i+p-1]==v[i+c*p:i+(c+1)*p-1] c+=1 end
+      while i+(c+1)*p-1<=length(v) && (@view v[i:i+p-1])==(@view v[i+c*p:i+(c+1)*p-1]) c+=1 end
       if c==2 && p==2 continue end
-      res*=string(joindigits(v[prev:i-1]),"(",joindigits(v[i:i+p-1]),")",stringexp(io,c))
+      res*=string(joindigits(@view v[prev:i-1]),"(",joindigits(@view v[i:i+p-1]),")",stringexp(io,c))
       i+=c*p-1;prev=i+1
 #     @show i,c,p,res,prev
       break
     end
     i+=1
   end
-  res*=joindigits(v[prev:end])
+  res*=joindigits(@view v[prev:end])
 end
 
 function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
@@ -949,7 +951,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   sz+=max(maximum(length.(t[end])),4)+1
   for (key,tkey) in [(:classes,:length),(:orders,:order)]
     if haskey(ci,key) && ci[key]!=false
-      push!(t,fromTeX.(Ref(io),string.(ci[key])))
+      push!(t,string.(ci[key]))
       push!(cl,string(tkey))
       sz+=max(maximum(length.(t[end])),length(cl[end]))+1
     end
@@ -1081,6 +1083,7 @@ function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt)
     return CharTable(hcat(1),["Id"],["1"],[1],1,Dict{Symbol,Any}(:name=>"."))
   end
+  if length(ctt)==1 return ctt[1] end
   charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
@@ -1122,7 +1125,7 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
   get!(W,:chartable)do
     t=refltype(W)
     ct=isempty(t) ? 
-      CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
+      CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
       prod(CharTable.(t;opt...))
     ct.name=repr(W;context=:TeX=>true)
     ct.repr="CharTable($W)"
@@ -1208,12 +1211,12 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   if any(isnothing,mm) error("no representation for ",W) end
   if W isa Spets
     FF=map(x->x[:F],mm)
-    if !(FF[1] isa Matrix) FF=map(toM,FF) end
+    if !(FF[1] isa AbstractMatrix) FF=map(toM,FF) end
     F=length(FF)==1 ? FF[1] : kron(FF...)
     mm=map(x->x[:gens],mm)
   end
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
-  mm=improve_type.(mm*1)
+  if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm*1) end
   n=length(tt)
   if n==1 reps=mm[1] 
   else reps=vcat(map(1:n) do i
@@ -1244,6 +1247,7 @@ julia> representations(coxgroup(:B,2))
 """
 representations(W::Union{Hastype,FiniteCoxeterGroup})=representation.(Ref(W),1:nconjugacy_classes(W))
 
+using SparseArrays
 """
 `WGraphToRepresentation(coxrank::Integer,graph,v)`
 
@@ -1255,8 +1259,8 @@ C^2`  attach `μ(x,y)∈ K` where `K` is  the field of definition of `W`; this
 defines  a  representation  of  the  Hecke  algebra with parameters `v` and
 `-v⁻¹` on a space with basis ``{e_y}_{y∈ C}`` by:
 
-``T_s(e_y)=-e_y`` if `s∈ I(y)` and otherwise
-``T_s(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ``.
+``Tₛ(e_y)=-e_y`` if `s∈ I(y)` and otherwise
+``Tₛ(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ``.
 
 The  `W`-graphs are  stored in  a compact  format to  save space.  They are
 represented as a pair.
@@ -1285,7 +1289,7 @@ julia> g=Wgraph(W,3)
  [[2], [1, 2], [1, 3], [1, 3], [2, 3]]
  [[-1, [[1, 3], [2, 4], [3, 5], [4, 5]]]]
 
-julia> toM.(WGraphToRepresentation(3,g,Pol(:x)))
+julia> WGraphToRepresentation(3,g,Pol(:x))
 3-element Vector{Matrix{Pol{Int64}}}:
  [x² 0 … 0 0; 0 -1 … 0 0; … ; 0 0 … -1 -x; 0 0 … 0 x²]
  [-1 0 … 0 0; 0 -1 … -x 0; … ; 0 0 … x² 0; 0 0 … -x -1]
@@ -1310,8 +1314,15 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
     end
   end
   prom(gr[2])
-  S=map(i->Matrix{T}(I,dim,dim)*v^2,1:rk)
-  for j in 1:dim for i in V[j] S[i][j,j]=-one(v) end end
+  T=promote_type(T,typeof(v))
+  S=map(i->spzeros(T,dim,dim),1:rk)
+  for j in 1:dim 
+    for i in 1:rk
+      if i in V[j] S[i][j,j]=-one(v) 
+      else         S[i][j,j]=v^2
+      end
+    end
+  end
   for i in gr[2]
     if i[1] isa Vector mu=i[1] else mu=[i[1],i[1]] end
     for l in i[2]
@@ -1322,7 +1333,8 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
       end
     end
   end
-  toL.(S)
+  density=sum(nnz.(S))/(rk*dim^2)
+  density>0.2 ? Array.(S) : S
 end
 
 ############################################################################

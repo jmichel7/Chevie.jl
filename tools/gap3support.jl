@@ -4,8 +4,12 @@ Append(a::String,b::String)=a*b
 Append(a::String,b::Vector{Char})=a*String(b)
 ApplyFunc(f,x)=f(x...)
 CollectBy(v,f)=collectby(f,v)
-Concatenation(b...)=vcat(b...)
-Concatenation(a::String,b...)=a*prod(filter(!isempty,b);init="")
+function Concatenation(b...)
+  b1=filter(!isempty,b)
+  if isempty(b1) return b[1] end
+  if b1[1] isa String return prod(b1) end
+  vcat(b1...)
+end
 function Concatenation(a::AbstractVector)
   all(x->x isa AbstractVector,a) ? vcat(a...) : prod(a)
 end

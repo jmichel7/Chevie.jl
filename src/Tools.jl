@@ -169,17 +169,13 @@ function abelian_invariants(G::Group)
   order.(abelian_gens(G))
 end
 
-function Base.intersect(G::PermGroup, H::PermGroup) # horrible implementation
-  if all(x->x in H,gens(G)) return G end
-  if all(x->x in G,gens(H)) return H end
-  if min(length(G),length(H))>104000 
+function Base.intersect(G::PermGroup, H::PermGroup)
+  if min(length(G),length(H))<=104000 
+    invoke(Base.intersect,Tuple{Group,Group},G,H) # horrible implementation
+  else
     println("*** too large intersect($G,$H) -- calling Gap4.intersect") 
-    return Chevie.Gap4.intersect(G,H)
+    intersect(Val(:GAP),G,H)
   end
-  if length(G)<length(H) res=Group(filter(x->x in H,elements(G)))
-  else res=Group(filter(x->x in G,elements(H)))
-  end
-  Groups.weedgens(res)
 end
 
 end

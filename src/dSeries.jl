@@ -671,9 +671,9 @@ function Weyl.relative_group(s::Series)
     if length(L) == 1
       sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
       if sz>100000 println("*** class too big ($sz) calling GAP.centralizer")
-         N=Chevie.Gap4.centralizer(N,s.levi.phi)
+        N=centralizer(Val(:GAP),N,s.levi.phi)
       else
-         N=centralizer(N, s.levi.phi)
+        N=centralizer(N,s.levi.phi)
       end
     elseif s.spets isa Cosets.CoxeterCoset
       N=Group(map(x->reduced(Group(s.levi), x),gens(N)))

@@ -524,18 +524,13 @@ function Chars.representation(H::HeckeAlgebra,i::Integer)
   if isempty(dims) return Matrix{Int}[] end
   tt=refltype(H.W)
   rp=haskey(H,:rootpara) ? rootpara(H) : fill(nothing,length(H.para))
-  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.para,rp,j),tt,
+  mm=map((t,j)->getchev(t,:HeckeRepresentation,H.para[t.indices],rp,j),tt,
                                                     lin2cart(dims,i))
   if any(==(false),mm) return nothing end
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
-  mm=improve_type.(mm)
+  if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm) end
   n=length(tt)
-  if n==1
-    m=mm[1]
-    density=sum(count.(!iszero,m))/length(m)/prod(size(m[1]))
-    if density<0.1 m=sparse.(m) end
-    return m
-  end
+  if n==1 return mm[1] end
   vcat(map(1:n) do i
      map(mm[i]) do m
        kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
@@ -667,8 +662,8 @@ function Chars.WGraphToRepresentation(H::HeckeAlgebra,gr::Vector)
   if !equalpara(H)
     error("cell representations for unequal parameters not yet implemented")
   end
-  S=toM.(-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
-                                              rootpara(H)[1]//H.para[1][2]))
+  S=-H.para[1][2]*WGraphToRepresentation(length(H.para),gr,
+                                         rootpara(H)[1]//H.para[1][2])
   if !isrepresentation(H,S;verbose=true) error() end
   improve_type(S)
 end
@@ -1473,7 +1468,7 @@ function Chars.representation(H::HeckeCoset,i::Int)
   tt=refltype(H.W)
   rp=haskey(H.H,:rootpara) ? rootpara(H.H) : fill(nothing,length(H.H.para))
   mm=map(tt,lin2cart(dims,i)) do t,j
-    r=getchev(t,:HeckeRepresentation,H.H.para,rp,j)
+    r=getchev(t,:HeckeRepresentation,H.H.para[t.orbit[1].indices],rp,j)
     if r==false return nothing
     elseif r isa Vector
       if !(r[1] isa Matrix) r=toM.(r) end
@@ -1511,7 +1506,7 @@ hecke(²B₂,x²,rootpara=x)
 julia> representations(H)
 3-element Vector{NamedTuple{(:gens, :F)}}:
  (gens = Matrix{Pol{Int64}}[[x²;;], [x²;;]], F = [1;;])
- (gens = Matrix{Pol{Int64}}[[-1;;], [-1;;]], F = [1;;])
+ (gens = [[-1;;], [-1;;]], F = [1;;])
  (gens = Matrix{Pol{Cyc{Int64}}}[[-1 0; √2x x²], [x² √2x; 0 -1]], F = [0 -1; -1 0])
 ```
 """

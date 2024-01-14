@@ -100,14 +100,14 @@ function Chars.CharTable(g::PermGroup)
   ct
 end
 
-function centralizer(g::PermGroup,p::Perm)
+function Groups.centralizer(::Val{:GAP},g::PermGroup,p::Perm)
   gg=GAP.Obj(g)
   pp=GAP.Obj(p)
   c=GAP.Globals.Centralizer(gg,pp)
   Group(Perm.(GAP.Globals.GeneratorsOfGroup(c)))
 end
 
-function intersect(g1::PermGroup,g2::PermGroup)
+function Groups.intersect(::Val{:GAP},g1::PermGroup,g2::PermGroup)
   gg1=GAP.Obj(g1)
   gg2=GAP.Obj(g2)
   gg=GAP.Globals.Intersection(gg1,gg2)

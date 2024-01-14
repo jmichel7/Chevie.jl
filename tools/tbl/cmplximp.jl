@@ -180,7 +180,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
                     if mod(j + i, e1) == 0
                         push!(res[:classparams], Concatenation(times(j, [1]), times(i, [0])))
                         push!(res[:classtext], Concatenation(times((j + i) // e1, [1]), times(i, [2, 3])))
-                        push!(res[:classnames], string(Concatenation(times((j + i) // e1, "1"), times(mod(i, e1), "23"), times(div(i, e1), "z"))))
+                        push!(res[:classnames], string(Concatenation(times((j + i) // e1 - div(i, e1), "1"), times(mod(i, e1), "23"), times(div(i, e1), "z"))))
                     end
                 end
             end

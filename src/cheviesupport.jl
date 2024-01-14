@@ -53,20 +53,15 @@ Base.getindex(a::Symbol,i::Int)=string(a)[i]
 
 Base.push!(a::String,b::Char)=a*b
 # ---------------- other extensions --------------------------------------
-Base.:*(a::AbstractArray,b::Pol)=a .* b
-Base.:*(a::AbstractArray,b::Frac)=a .* b
-Base.:*(a::AbstractArray,b::Mvp)=a .* b
-Base.:*(a::Pol,b::AbstractArray)=a .* b
-Base.:*(a::Frac,b::AbstractArray)=a .* b
-Base.:*(a::Mvp,b::AbstractArray)=a .* b
+Base.:*(a::AbstractArray,b::Union{Pol,Mvp})=isone(b) ? a : a .* b
+Base.:*(a::AbstractArray,b::Frac)=isone(b) ? a : a .* b
+Base.:*(a::Union{Pol,Mvp},b::AbstractArray)=isone(a) ? b : a .* b
+Base.:*(a::Frac,b::AbstractArray)=isone(a) ? b : a .* b
 Base.:*(W1::Spets,W2::FiniteCoxeterGroup)=Cosets.extprod(W1,spets(W2))
 Base.:*(W1::FiniteCoxeterGroup,W2::Spets)=Cosets.extprod(spets(W1),W2)
-Base.:+(a::AbstractArray,b::Pol)=a .+ b
-Base.:+(a::AbstractArray,b::Mvp)=a .+ b
-Base.:/(a::AbstractArray,b::Pol)=a ./ b
-Base.:/(a::AbstractArray,b::Mvp)=a ./ b
-Base.://(a::AbstractArray,b::Pol)=a .// b
-Base.://(a::AbstractArray,b::Mvp)=a .// b
+Base.:+(a::AbstractArray,b::Union{Pol,Mvp})=a .+ b
+Base.:/(a::AbstractArray,b::Union{Pol,Mvp})=a ./ b
+Base.://(a::AbstractArray,b::Union{Pol,Mvp})=a .// b
 Base.:^(a::Cyc,b::Rational)=a^Int(b)
 Base.:^(f::Family,n::Int)=galois(f,n)
 FinitePosets.Poset(m::Vector{Vector{Bool}})=Poset(CPoset(toM(m)))
