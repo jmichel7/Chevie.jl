@@ -73,7 +73,7 @@ end
 istableau(t)=all(x->x==sort(unique(x)),t) && 
              all(x->x==sort(unique(x)),conjugate_tableau(t))
 
-shortTableau(t)=join(map(join,t),"/")
+shortTableau(t)=join(map(joindigits,t),"/")
 
 #------------------The Murphy basis code proper---------------------
 """

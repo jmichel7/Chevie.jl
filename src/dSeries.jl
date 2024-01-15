@@ -670,8 +670,13 @@ function Weyl.relative_group(s::Series)
   if !isone(s.levi.phi)
     if length(L) == 1
       sz=length(conjugacy_classes(WF)[position_class(WF,s.levi.phi)])
-      if sz>100000 println("*** class too big ($sz) calling GAP.centralizer")
-        N=centralizer(Val(:GAP),N,s.levi.phi)
+      if sz>100000 
+        m=Base.get_extension(Chevie,:Gap4)
+        if isnothing(m)
+          error("*** class too big ($sz>100000)\n",
+           "need Gap4.centralizer; do 'using GAP' to make extension available") 
+        end
+        N=m.centralizer(N,s.levi.phi)
       else
         N=centralizer(N,s.levi.phi)
       end

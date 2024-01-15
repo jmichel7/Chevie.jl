@@ -7,9 +7,11 @@ export complex_reflection_group, crg, diagram, degrees, codegrees,
 
 @forward Weyl.FC.G hyperplane_orbits,  codegrees,  degrees
 
+# roots for the adjoint group
 Chevie.roots(t::TypeIrred)=
  t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
 
+# coroots for the adjoint group
 function PermRoot.coroots(t::TypeIrred)
   if t.series==:ST
     cr=getchev(t,:GeneratingCoRoots)
@@ -189,14 +191,13 @@ end
 function degrees(t::TypeIrred)
   if !haskey(t,:orbit) return getchev(t,:ReflectionDegrees) end
   d=getchev(t.orbit[1],:ReflectionDegrees)
-# Let   t.scalar=[s₁,…,sᵣ],  where  r=length(t.orbit)  and  let  p  be  the
-# PhiFactor   of  t.twist  associated  to   the  reflection  degree  dᵢ  of
+# Let t.scalar=[s₁,…,sᵣ], where r=length(t.orbit) and ζ=prod(t.scalar). let
+# p  be the PhiFactor of t.twist associated  to the reflection degree dᵢ of
 # t.orbit[1].   If   G0   is   the   Spets  described  by  t.orbit[1],  and
-# G1:=Ennola(Product(t.scalar),G0)  then G is isomorphic  to the descent of
-# scalars  of G1. According to spets 1.5, a Phifactor of Ennola(zeta,G0) is
-# ζ^dᵢ  times that of G0; and by spets 1.5 or [Digne-Michel, parabolic A.1]
-# those  of an a-descent of scalars are  ζₐʲζᵢ^{1/a} (all the a-th roots of
-# ζᵢ).
+# G1:=Ennola(ζ,G0)  then G is  isomorphic to the  descent of scalars of G1.
+# According to spets 1.5, a Phifactor of Ennola(ζ,G0) is ζ^dᵢ times that of
+# G0;  and  by  spets  1.5  or  [Digne-Michel,  parabolic  A.1] those of an
+# a-descent of scalars are ζₐʲζᵢ^{1/a} (all the a-th roots of ζᵢ).
   if order(t.twist)>1
    f=getchev(t,:PhiFactors)
    if isnothing(f) return nothing end
@@ -277,8 +278,6 @@ function codegrees(W::Spets)
     collect(zip(vcat(fill(-1,length(a)),first.(b)),vcat(a,last.(b))))
   end::Vector{Tuple{Int,Cyc{Int}}}
 end
-
-nr_conjugacy_classes(W)=prod(getchev(W,:NrConjugacyClasses))
 
 """
 `hyperplane_orbits(W::ComplexReflectionGroup)`

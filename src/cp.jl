@@ -1,3 +1,4 @@
+# The Corran-Picantin monoid as an interval monoid by G. Neaime
 @GapObj struct CPMonoid{T}<:GarsideMonoid{T}
   e::Int
   n::Int

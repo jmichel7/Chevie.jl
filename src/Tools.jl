@@ -173,8 +173,12 @@ function Base.intersect(G::PermGroup, H::PermGroup)
   if min(length(G),length(H))<=104000 
     invoke(Base.intersect,Tuple{Group,Group},G,H) # horrible implementation
   else
-    println("*** too large intersect($G,$H) -- calling Gap4.intersect") 
-    intersect(Val(:GAP),G,H)
+    m=Base.get_extension(Chevie,:Gap4)
+    if isnothing(m)
+       error("*** too large intersect($G,$H)\n",
+           "need Gap4.intersect; do 'using GAP' to make extension available") 
+    end
+    m.intersect(G,H)
   end
 end
 
