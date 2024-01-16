@@ -37,7 +37,7 @@ chevieset(:I, :CharInfo, function(m)
   end)
   res[:charSymbols]=charSymbols
   # malleParams are the partitiontuples for the symbols
-  res[:malleParams]=map(x->map(partβ,x),charSymbols)
+  res[:malleParams]=map(x->map(partβ,fullsymbol(x)),charSymbols)
   if iseven(m)
     res[:malleParams]=convert.(Vector{Any},res[:malleParams])
     res[:malleParams][2]=append!(res[:malleParams][2][1:m1],[2,0])

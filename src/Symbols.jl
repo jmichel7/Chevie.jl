@@ -158,18 +158,12 @@ julia> βset([3,3,1])
 ```
 """
 function βset(p,s=0)
-# shorter code if we don't care about allocations:
-#  p=vcat(p,fill(0,s))
-#  reverse(p).+(0:length(p)-1)
-  if !iszero(s)
-    q=fill(0,length(p)+s)
-    @inbounds for i in eachindex(p) q[i]=p[i] end
-  else q=p
-  end
-  if isempty(q) return q end
-  p=collect(0:length(q)-1)
-  @inbounds for i in eachindex(p) p[i]+=q[1+length(q)-i] end
-  p
+#  simpler code if we don't care about allocations:
+#  p=prepend!(fill(0,s),p); reverse!(p).+(0:length(p)-1)
+  res=Vector{Int}(undef,s+length(p))
+@inbounds  for i in 1:s res[i]=i-1 end
+@inbounds  for i in eachindex(p) res[s+i]=s+i-1+p[end-i+1] end
+  res
 end
 
 """
@@ -182,7 +176,7 @@ julia> partβ([0,4,5])
  3
 ```
 """
-partβ(β)=filter(!iszero,reverse(β.-(0:length(β)-1)))
+partβ(β)=filter!(!iszero,reverse!(β.-(0:length(β)-1)))
 
 """
 `symbol_partition_tuple(p, s)` symbol of shape `s` for partition tuple `p`.
@@ -201,19 +195,19 @@ uses  the  unipotent  symbol  for  a  character  of the principal series of
 `G(e,e,r)`).
 
 ```julia-repl
-julia> symbol_partition_tuple([[1,2],[1]],1)
+julia> symbol_partition_tuple([[2,1],[1]],1)
 2-element Vector{Vector{Int64}}:
- [2, 2]
+ [1, 3]
  [1]
 
-julia> symbol_partition_tuple([[1,2],[1]],0)
+julia> symbol_partition_tuple([[2,1],[1]],0)
 2-element Vector{Vector{Int64}}:
- [2, 2]
+ [1, 3]
  [0, 2]
 
-julia> symbol_partition_tuple([[1,2],[1]],-1)
+julia> symbol_partition_tuple([[2,1],[1]],-1)
 2-element Vector{Vector{Int64}}:
- [2, 2]
+ [1, 3]
  [0, 1, 3]
 ```
 """
