@@ -402,9 +402,10 @@ function toKL(h::HeckeTElt,klbasis,index::Function)
   H=h.H
   res=klbasis(zero(h.d),H)
   while !iszero(h)
-    l=length.(Ref(H.W),keys(h.d))
-    l=findall(==(index(l)),l)
-    tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) for (w,c) in h.d.d[l];check=false),H)
+    l=length.(Ref(H.W),keys(h))
+    i=index(l)
+    tmp=klbasis(ModuleElt(w=>c*rootpara(H,w) 
+                       for (w,c) in h.d.d[findall(==(i),l)];check=false),H)
     res+=tmp
     h-=Tbasis(H,tmp)
   end
@@ -431,7 +432,7 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
     else
       res=getCp(H,s)*getCp(H,s*w)
       tmp=zero(H)
-      for (e,coef) in res.d
+      for (e,coef) in res
         if e!=w tmp+=positive_part(coef*rootpara(H,e))*getCp(H,e) end
       end
       res-=tmp
@@ -447,7 +448,7 @@ function getCp(H::HeckeAlgebra{C,P,TW},w::P)where {P,C,TW}
       if x!=z coeff[i]=f(z)*inv(f(x))*coeff[findfirst(==(z),elm)]
       else
         coeff[i]=-negative_part(sum(j->
-          bar(qx*inv(T(inv(elm[j]))).d[x])*coeff[j],1:i-1))*inv(qx)
+          bar(qx*inv(T(inv(elm[j])))[x])*coeff[j],1:i-1))*inv(qx)
       end
     end
     res=HeckeTElt(ModuleElt(Pair.(elm,coeff)),H)
@@ -496,10 +497,10 @@ negative  part of ``∑_{x<y≤w} R_{x,y} P_{y,w}``  which allows to compute it
 by  induction on `l(w)-l(x)`. The code is based on GAP3/Chevie code of Jean
 Michel and François Digne (1999).
 """
-HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h.d)
+HeckeAlgebras.Tbasis(h::HeckeCpElt)=sum(getCp(h.H,e)*c for (e,c) in h)
 
 function HeckeAlgebras.Tbasis(h::HeckeCElt)
-  sum(h.d)do (e,c)
+  sum(h)do (e,c)
     alt(getCp(h.H,e))*c*(-1)^length(h.H.W,e)
   end
 end
@@ -1117,7 +1118,7 @@ function AsymptoticAlgebra(W,i)
     ly=length(W,y)
     sc=map(e)do z
       c=T(Cp(w0*z^-1))
-      s=(-1)^length(W,z)*sum(p->c.d[w0*p[1]]*p[2]*(-1)^length(W,p[1]),F.d)
+      s=(-1)^length(W,z)*sum(((p,coef),)->c[w0*p]*coef*(-1)^length(W,p),F)
       # println("deg=",[valuation(s),degree(s)]," pdeg=",a+lx+ly-nref(W))
       findfirst(==(z^-1),e)=>s[a+lx+ly-nref(W)]
     end

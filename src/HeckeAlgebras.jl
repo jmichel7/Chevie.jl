@@ -192,6 +192,45 @@ char_values,     class_polynomials,    schur_elements,    isrepresentation,
 factorized_schur_elements`,  and  at  the  methods  for  Hecke  algebras of
 `CharTable, representations, reflrep`.
 
+Taking  apart  Hecke  elements  is  done  with  the  functions  `getindex`,
+`setindex!`, `keys`, `values`, `iterate`.
+
+```julia-repl
+julia> H=hecke(W,Pol(:q))
+hecke(A₂,q)
+
+julia> T=Tbasis(H);
+
+julia> h=T(1,2)^2
+qT₂₁+(q-1)T₁₂₁
+
+julia> length(h) # h has 2 terms
+2
+
+julia> h[W(2,1)] # coefficient of W(2,1)
+Pol{Int64}: q
+
+julia> collect(h) # pairs perm=>coeff
+2-element Vector{Any}:
+  (1,2,6)(3,4,5) => q
+ (1,5)(2,4)(3,6) => q-1
+
+julia> collect(values(h)) # the coefficients
+2-element Vector{Pol{Int64}}:
+ q
+ q-1
+
+julia> collect(keys(h)) # the corresponding Perms
+2-element Vector{Perm{Int16}}:
+ (1,2,6)(3,4,5)
+ (1,5)(2,4)(3,6)
+
+julia> h[W(2,1)]=Pol(3)
+Pol{Int64}: 3
+
+julia> h
+3T₂₁+(q-1)T₁₂₁
+```
 finally, benchmarks on julia 1.8
 ```benchmark
 julia> function test_w0(n)
@@ -723,6 +762,12 @@ Base.zero(h::HeckeElt)=clone(h,zero(h.d))
 Base.iszero(h::HeckeElt)=iszero(h.d)
 Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
 Base.copy(h::HeckeElt)=clone(h,h.d)
+Base.getindex(a::HeckeElt{TH,C,P},p::P) where {TH,C,P}=a.d[p]
+Base.setindex!(a::HeckeElt{TH,C,P},c::C,p::P) where {TH,C,P}=setindex!(a.d,c,p)
+Base.iterate(a::HeckeElt,s...)=iterate(a.d,s...)
+Base.length(a::HeckeElt)=length(a.d)
+Base.keys(a::HeckeElt)=keys(a.d)
+Base.values(a::HeckeElt)=values(a.d)
 
 # HeckeElts are scalars for broadcasting
 Base.broadcastable(h::HeckeElt)=Ref(h)
@@ -876,18 +921,25 @@ function Base.:*(a::HeckeTElt, b::HeckeTElt)
 end
 
 function Base.inv(a::HeckeTElt)
-  if !(a.H.W isa CoxeterGroup) error("only implemented for Coxeter groups") end
-  if length(a.d)!=1 error("can only invert single T(w)") end
-  w,coeff=first(a.d)
   H=a.H
+  W=H.W
+  if !(W isa CoxeterGroup) error("only implemented for Coxeter groups") end
+  if length(a)!=1 error("can only invert single T(w)") end
+  w,coeff=first(a)
+  l=word(W,w)
+  if isempty(l) return inv(coeff)*one(H) end
+  if length(l)==1 
+    i=only(l)
+    s=sum(H.para[i]);p=inv(coeff)*inv(prod(H.para[i]))
+    return p*clone(a,ModuleElt(W()=>s,W(i)=>-one(s)))
+  end
+  d=div(length(l),2)
   T=Tbasis(H)
-  l=reverse(word(H.W,w))
-  if isempty(l) return inv(coeff)*T() end
-  inv(coeff)*prod(i->inv(prod(H.para[i]))*(T()*sum(H.para[i])-T(i)),l)
+  inv(T(W(l[d+1:end]...)))*inv(T(W(l[1:d]...)))
 end
 
 Cosets.Frobenius(x::HeckeElt,phi)=
-     clone(x,MM(Frobenius(k,phi)=>v for (k,v) in x.d))
+     clone(x,MM(Frobenius(k,phi)=>v for (k,v) in x))
 
 """
 `alt(a::HeckeTElt)`
@@ -909,7 +961,7 @@ q⁻²T.+(q⁻²-q⁻³)T₁+(q⁻³-q⁻⁴)T₁₂₁
 """
 function alt(a::HeckeTElt)
   clone(a,MM(isone(w) ? w=>bar(c) : w=>prod(prod(inv.(a.H.para[i]))
-                for i in word(a.H.W,w))* bar(c) for (w,c) in a.d;check=false))
+                for i in word(a.H.W,w))* bar(c) for (w,c) in a;check=false))
 end
 
 """
@@ -917,7 +969,7 @@ end
 
 the anti-involution on the Hecke algebra defined by ``T_w↦ T_{inv(w)}``.
 """
-Garside.α(h::HeckeTElt)=HeckeTElt(MM(inv(p)=>c for (p,c) in h.d),h.H)
+Garside.α(h::HeckeTElt)=clone(h,MM(inv(p)=>c for (p,c) in h))
 
 """
 `class_polynomials(h::HeckeElt)`

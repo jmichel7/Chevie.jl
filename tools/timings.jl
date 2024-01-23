@@ -15,8 +15,7 @@ using BenchmarkTools: @btime
 #1.10.0 141.801 ms (1776195 allocations: 132.71 MiB)
 function test_w0(n)
   W=coxsym(n+1)
-  Tw0=Tbasis(hecke(W,Pol([1],1)))(longest(W))^2
-  length(Tw0.d)
+  length(Tbasis(hecke(W,Pol()))(longest(W))^2)
 end
 # GAP3 is 0.93s
 #test_w0:=function(n)local W,T,H,q,w02;
