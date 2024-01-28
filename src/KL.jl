@@ -398,7 +398,8 @@ Cbasis(H::HeckeAlgebra,h::HeckeElt)=Cbasis(h)
 # coefficient on  T_w equal  to rootpara(H,w)^-1.  The transition  matrix is
 # lower triangular for the C and  C' bases, and upper triangular for the
 # D and D' bases which is what index(maximum or minimum) is for.
-function toKL(h::HeckeTElt,klbasis,index::Function)
+# klbasis is usually a functor, not a function
+function toKL(h::HeckeTElt,klbasis,index)
   H=h.H
   res=klbasis(zero(h.d),H)
   while !iszero(h)

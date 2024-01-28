@@ -1003,14 +1003,9 @@ function Groups.position_class(W::Hastype,w)
   l=PermGroups.positions_class(W,w)
   if length(l)==1 return only(l)
   elseif verbose println("ambiguity: ",l) end
-  p=eigmat(reflrep(W,w))
-  l=filter(x->eigen(conjugacy_classes(W)[x])==p,l)
-  if length(l)==1 return only(l) end
-  # doit type by type
-  ncl=length.(conjugacy_classes(W)[l])
-  if any(>(10000),ncl)
-    println("!! computing classes of cardinal ",ncl)
-  end
+# p=eigmat(reflrep(W,w))
+# l=filter(x->eigen(conjugacy_classes(W)[x])==p,l)
+# if length(l)==1 return only(l) end
   l[findfirst(c->w in c,conjugacy_classes(W)[l])]
 end
 

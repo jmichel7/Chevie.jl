@@ -386,6 +386,8 @@ function hecke(W::Group,para::Vector{<:Vector{C}};rootpara::Vector=C[])where C
   end
   d=Dict{Symbol,Any}(:equal=>allequal(para))
   if !isempty(rootpara) d[:rootpara]=rootpara end
+  p=findfirst(i->length(para[i])!=order(W(i)),eachindex(para))
+  if !isnothing(p) error("parameter no. $p should be of length ",order(W(p))) end
   HeckeAlgebra(W,para,d)
 end
 
@@ -764,7 +766,7 @@ Base.:(==)(a::HeckeElt,b::HeckeElt)=a.H===b.H && a.d==b.d
 Base.copy(h::HeckeElt)=clone(h,h.d)
 Base.getindex(a::HeckeElt{TH,C,P},p::P) where {TH,C,P}=a.d[p]
 Base.setindex!(a::HeckeElt{TH,C,P},c::C,p::P) where {TH,C,P}=setindex!(a.d,c,p)
-Base.iterate(a::HeckeElt,s...)=iterate(a.d,s...)
+@inline Base.iterate(a::HeckeElt,s...)=iterate(a.d,s...)
 Base.length(a::HeckeElt)=length(a.d)
 Base.keys(a::HeckeElt)=keys(a.d)
 Base.values(a::HeckeElt)=values(a.d)
