@@ -165,9 +165,9 @@ end
 @test mytest("Cosets.jl","diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O D₄\n3 1 2")
 @test mytest("Cosets.jl","spets(\"3G422\")","³G₄‚₂‚₂")
 @test mytest("Cosets.jl","spets(\"2G5\")","²G₅")
-@test mytest("Cosets.jl","spets(\"3G333\")","³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
-@test mytest("Cosets.jl","spets(\"3pG333\")","³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
-@test mytest("Cosets.jl","spets(\"4G333\")","⁴G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎")
+@test mytest("Cosets.jl","spets(\"3G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
+@test mytest("Cosets.jl","spets(\"3pG333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
+@test mytest("Cosets.jl","spets(\"4G333\")","G₃‚₃‚₃₍₂‚₁₂‚₁₁‚₁₆‚₅₃‚₁₀‚₄₃‚₃₆₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₃₂‚₁₆‚₃₆‚₃₀‚₁₀₎")
 end
 @testset "CoxGroups.jl" begin
 @test mytest("CoxGroups.jl","W=coxsym(4)","𝔖 ₄")

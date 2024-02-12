@@ -380,7 +380,7 @@ function graph_automorphisms(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   H=reflection_subgroup(W,J)
   if !isparabolic(W,H)
     iJ=inclusion(W,J)
-    return stabilizer(W.G,sort(iJ),onsets)
+    return stabilizer(W,sort(iJ),onsets)
   end
   if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
   else p=standard_parabolic(W,H); H=H^p
@@ -942,9 +942,9 @@ function spets(W::PermRootGroup,w::Perm;NC=false)
   res
 end
 
-function spets(W::PermRootGroup,F::Matrix)
+function spets(W::PermRootGroup,F::Matrix;NC=false)
   w=PermX(W,F)
-  if !isnothing(w) return spets(W,w) end
+  if !isnothing(w) return spets(W,w;NC) end
 # if W isa PRSG error("that's all for subgroups") end
 # check if there exists a permutation perm and for each W-orbit of roots O 
 # a scalar l_O such that W.roots{O}*WF.F0Mat=l_O*W.roots{OnTuples(O,perm)}
@@ -1001,39 +1001,40 @@ julia> spets("2G5")
 ²G₅
 
 julia> spets("3G333")
-³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
 
 julia> spets("3pG333")
-³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
+G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎
 
 julia> spets("4G333")
-⁴G₃‚₃‚₃₍₁‚₂‚₃‚₁₂₎
+G₃‚₃‚₃₍₂‚₁₂‚₁₁‚₁₆‚₅₃‚₁₀‚₄₃‚₃₆₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₃₂‚₁₆‚₃₆‚₃₀‚₁₀₎
 ```
 """
-function spets(s::String)
+function spets(s::String;NC=false)
   if s=="3G422" 
     W=PRG([2 (root(3)-1)E(3);2 (-1+root(3))E(3,2);2 root(3)-1].//1,
      [(3+root(3))//2 root(3)E(3,2);(3+root(3))//2 root(3)E(3);(3+root(3))//2 root(3)].//3)
-    return spets(W,reflrep(W,Perm(1,2,3)))
-   elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
+    return spets(W,reflrep(W,Perm(1,2,3));NC)
+  elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
     W=PRG([[(-E(3)-2E(3,2))*(-3+root(6))//3,E(3)],
            [(-E(3)-2E(3,2))*(3-root(6))//3, E(3)]],
           [[E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6],
            [-E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6]])
-    return spets(W,[-1 0;0 1])
+    return spets(W,[-1 0;0 1];NC)
   elseif s=="3G333" 
-    W=crg(3,3,3);return spets(W,reflrep(W,Perm(1,2,44)))
+    W=crg(3,3,3);return spets(reflection_subgroup(W,1:3),reflrep(W,Perm(1,2,44));NC)
   elseif s=="3pG333" 
-    W=crg(3,3,3);return spets(W,reflrep(W,Perm(1,44,2)))
+    W=crg(3,3,3);return spets(reflection_subgroup(W,1:3),reflrep(W,Perm(1,44,2));NC)
   elseif s=="4G333" 
     W=crg(3,3,3)
-    return spets(W,perm"(1,44,32,37)(2,12,16,53)(3,50,30,15)
+    return spets(reflection_subgroup(W,1:3),
+    perm"(1,44,32,37)(2,12,16,53)(3,50,30,15)
     ( 4,49,39,19)( 5, 9, 6,48)( 7,41,54,25)( 8,33,18,51)(10,43,36,11)
-    (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)")
+    (13,47,28,42)(14,52,22,17)(21,46,38,31)(24,27,26,40)";NC)
   elseif s=="3G422" 
     W=PRG([[2,(-1+root(3))*E(3)],[2,(-1+root(3))*E(3,2)],[2,(-1+root(3))]],
 [[(3+root(3))//2,root(3)*E(3,2)],[(3+root(3))//2,root(3)*E(3)],[(3+root(3))//2,root(3)]]//3)
-    return spets(W,[1 0;0 E(3)])
+    return spets(W,[1 0;0 E(3)];NC)
   else error("argument should be 2G5, 3G422, 3G333, 3pG333 or 4G333")
   end
 end
@@ -1077,7 +1078,7 @@ function PermRoot.refltype(WF::PRC)
           c=restriction(W,c.gen)
           a.indices=c
           a.subgroup=reflection_subgroup(W,c;NC=true)
-          WF.W=reflection_subgroup(W,vcat(map(x->x.indices,t)...);NC=true)
+          WF.W=reflection_subgroup(W,indices(t);NC=true)
           W=WF.W
           if order(WF.phi) in [3,6] G333=[1,2,3,44]
           elseif order(WF.phi)==4  G333=[1,2,3,32,16,36,30,10]
@@ -1327,10 +1328,10 @@ rootdata[:gpin]=function(r)
 end
 rootdata[:E6]=()->coxgroup(:E,6)
 rootdata[:E7]=()->coxgroup(:E,7)
-rootdata[:CE6]=()->rootdatum([1 2 -1 0 0 0 0;0 0 -2 -1 0 0 0;
-     0 -1 2 -1 0 0 0;-1 0 0 2 -1 0 0;1 0 0 -1 2 -1 0;0 0 0 0 -1 2 0],
-      [0 1 0 0 0 0 0;3 -2 -1 0 -2 -1 -1;3 -2 0 0 -2 -1 -1;
-       0 0 0 1 0 0 0;0 0 0 0 1 0 0;0 0 0 0 0 1 0])
+rootdata[:CE6]=()->rootdatum([2 0 -1 0 0 0 1;0 2 0 -1 0 0 0;-1 0 2 -1 0 0 -1;
+       0 -1 -1 2 -1 0 0;0 0 0 -1 2 -1 1;0 0 0 0 -1 2 -1],id(7)[1:6,:])
+rootdata[Symbol("2CE6")]=()->spets(rootdatum(:CE6),[0 0 0 0 0 1 0;0 1 0 0 0 0 0;
+     0 0 0 0 1 0 0;0 0 0 1 0 0 0;0 0 1 0 0 0 0;1 0 0 0 0 0 0;0 0 0 0 0 0 -1])
 rootdata[:CE7]=()->rootdatum([0 2 -1 0 0 0 0 0;1 0 0 -1 0 0 0 0;
    0 -1 2 -1 0 0 0 0;-1 0 -1 2 -1 0 0 0;1 0 0 -1 2 -1 0 0;
    -1 0 0 0 -1 2 -1 0;1 0 0 0 0 -1 2 0],
