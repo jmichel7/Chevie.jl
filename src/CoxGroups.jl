@@ -853,12 +853,14 @@ abstract type FiniteCoxeterGroup{T} <: CoxeterGroup{T} end
 # .G, a PermGroup, to which we forward the following methods.
 @forward FiniteCoxeterGroup.G Base.iterate, Base.one,
  Groups.gens, Groups.conjugacy_classes,
- PermGroups.classreps, PermGroups.orbits 
+ PermGroups.classreps
 
 Groups.transporting_elt(W::FiniteCoxeterGroup,x,y,F::Function)=
   transporting_elt(W.G,x,y,F)
 Base.hash(W::FiniteCoxeterGroup,i::UInt64)=hash(W.G,i)
 PermGroups.orbit(W::FiniteCoxeterGroup,p,F::Function)=orbit(W.G,p,F)
+PermGroups.orbits(W::FiniteCoxeterGroup,v,F::Function=^)=orbits(W.G,v,F)
+PermGroups.orbits(W::FiniteCoxeterGroup)=orbits(W.G)
 PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
 Base.isfinite(W::FiniteCoxeterGroup)=true

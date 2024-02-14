@@ -23,9 +23,12 @@ In other words, `Chevie` is a meta-package for the following packages:
   * [FiniteFields](https://github.com/jmichel7/FiniteFields.jl) (finite fields)
   * [GroupPresentations](https://github.com/jmichel7/GroupPresentations.jl) (presentations of groups, and groups defined by generators and relations)
   * [UsingMerge](https://github.com/jmichel7/UsingMerge.jl) (Automatically compose several packages)
+
 Have  a look at the  documentation of the above  packages to see how to use
-their   features.  I  have  implemented  some  other  infrastructure  which
-currently resides in `Chevie` but may eventually become separate packages:
+their   features.  
+
+I  have implemented  some other  infrastructure which  currently resides in
+`Chevie` but may eventually become separate packages:
 
   * factorizing polynomials over finite fields (module [`FFfac`](@ref))
   * factorizing polynomials over the rationals (module [`Fact`](@ref))
@@ -40,16 +43,18 @@ and I am sure it could be optimised better than I did. Comments on code and
 design  are welcome. For functions that are too inefficient or difficult to
 implement (such as character tables of arbitrary groups), `Chevie` uses the
 `GAP`  package  as  an  extension.  This  means  that if you have the `GAP`
-package installed, `Chevie` will automatically call GAP4 to implement these
-functions.  The code  in this  package is  often 10  times faster  than the
-equivalent GAP3 Chevie code (after the maddeningly long compilation time on
-the first run --- Julia's TTFP).
+package  installed,  `Chevie`  will  automatically  call `GAP` to implement
+these functions. 
 
-The  `Chevie`  package  currently  contains  about  95%  of the GAP3/Chevie
-functionality,  ported from  Gap3. If  you are  a user  of GAP3/Chevie, the
-`gap`  function  can  help  you  to  find  the  equivalent functionality in
-`Chevie.jl`  to a  Gap3 function:  it takes  a string  and gives  you Julia
-translations of functions in Gap3 that match that string.
+Functions  in the  `Chevie.jl` package  are often  10 times faster than the
+equivalent functions in GAP3/Chevie (after the maddeningly long compilation
+time on the first run --- Julia's TTFP).
+
+The  `Chevie`  package  currently  contains  about  95%  of the GAP3 Chevie
+functionality.  If you  are a  user of  GAP3/Chevie, the `gap` function can
+help  you to  find the  equivalent functionality  in `Chevie.jl`  to a Gap3
+function:  it takes a string and  gives you Julia translations of functions
+in Gap3 that match that string.
 
 ```julia-rep1
 julia> gap("words")
@@ -65,7 +70,7 @@ its  code is "strange".  When the need  to maintain the  `GAP3` and `Julia`
 versions  simultaneously subsides,  I will  do a  proper translation of the
 data library, which should give an additional speed boost.
 
-This package requires julia 1.8 or later. 
+`Chevie.jl` requires julia 1.8 or later. 
 """
 module Chevie
 #--------------------- external packages ----------------------------------

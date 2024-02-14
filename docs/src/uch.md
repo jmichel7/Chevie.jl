@@ -20,6 +20,7 @@ lusztig_induction_table
 Families
 Family
 galois(f::Family,p::Int)
+PermGroups.invpermute(f::Family,p::Perm)
 conj(f::Family)
 fourier
 drinfeld_double

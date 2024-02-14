@@ -253,7 +253,7 @@ function Tlusztiginduction(WF)
   end
 end
 test[:lusztiginduction]=(fn=Tlusztiginduction, 
-   applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
+   applicable=W->isspetsial(W) && W!=crg(34),
    comment="check it is computable and verifies mackey with tori")
 
 function Tlusztiginduction(WF,J::AbstractVector{<:Integer})
@@ -334,7 +334,7 @@ test[:chartable]=(fn=Tchartable, applicable=W->!(W isa Spets),
 function Tpowermaps(W)
   cl=classreps(W)
   p=classinfo(W)[:powermap]
-  for i in echindex(p)
+  for i in eachindex(p)
     if isdefine(p,i) cmap=map(x->position_class(W,x^i),cl)
       if cmap!=p[i]
         ChevieErr(i,"-th power map is ",p[i],"\nshould be:",cmap,"\n")
@@ -529,6 +529,11 @@ end
 # McNinch - Sommers (inspired by Marie Roth)
 function TAu(W)
   l=map(x->reflection_subgroup(W,x),sscentralizer_reps(W))
+  function autW(H)
+    get!(H,:autW)do
+      Cosets.graph_automorphisms(W,inclusiongens(H))
+    end
+  end
   for (nu,u) in enumerate(UnipotentClasses(W).classes)
     res=map(l)do H
       uc=UnipotentClasses(H).classes
@@ -548,13 +553,12 @@ function TAu(W)
         error("!!!!!",length(e),"=>",length(Torbits(ac.Z0,e)))
       end
       ab=abelian_invariants(ac.AZ)
-      auts=Cosets.graph_automorphisms(W,inclusiongens(H))
       function classmod(s,e)
         p=findfirst(x->(x/s) in ac.Z0,e)
         if isnothing(p) error("for ",H) end
         e[p]
       end
-      o=orbits(auts,e,(s,g)->classmod(s^g,e))
+      o=orbits(autW(H),e,(s,g)->classmod(s^g,e))
       j=joindigits(length.(o))
       o=map(x->filter(y->(y in e) && length(centralizer(q,y).group)==length(H),x),o)
       j*="=>"*joindigits(length.(o))
@@ -1160,7 +1164,7 @@ function Tfeginduce(W,J)
   end
 end
 
-test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(33) && W!=crg(34), 
+test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(34), 
                   comment="check fakedegrees induce")
 
 #---------------- test: invariants ------------------------
@@ -1395,8 +1399,7 @@ function TdegsHCInduce(W,J)
   end
 end
 
-test[:degsHCinduce]=(fn=TdegsHCInduce,
-                     applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
+test[:degsHCinduce]=(fn=TdegsHCInduce,applicable=W->isspetsial(W) && W!=crg(34),
   comment="unidegs are consistent with HC induction from split levis")
 
 #------------------------- Curtis duality -----------------------------
@@ -1472,8 +1475,7 @@ function TalmostHC(W)
   end
 end
 
-test[:almostHC]=(fn=TalmostHC,
-                 applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
+test[:almostHC]=(fn=TalmostHC,applicable=W->isspetsial(W) && W!=crg(34),
                  comment="almostHC series")
 
 #------------------------- sum squares -----------------------------

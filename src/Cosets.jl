@@ -379,8 +379,7 @@ function graph_automorphisms(W::FiniteCoxeterGroup,J::AbstractVector{<:Integer})
   if isempty(J) return W end
   H=reflection_subgroup(W,J)
   if !isparabolic(W,H)
-    iJ=inclusion(W,J)
-    return stabilizer(W,sort(iJ),onsets)
+    return stabilizer(W.G,sort(inclusiongens(H)),onsets)
   end
   if issubset(inclusiongens(H),1:ngens(W)) p=one(W)
   else p=standard_parabolic(W,H); H=H^p

@@ -1,5 +1,7 @@
 """
 Factoring polynomials over finite fields
+
+see `factor`.
 """
 module FFfac
 

@@ -77,8 +77,15 @@ function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
   numerator(res)
 end
 
-#------------- p-adic valuation
-"valuation(c::Integer,p::Integer) p-adic valuation of c"
+"""
+`valuation(c::Union{Integer,Rational{<:Integer},p::Integer)` 
+`p`-adic  valuation of `c` (largest  power of `p` which  divides `c`; for a
+`Rational`, valuation of the numerator minus that of the denominator).
+```julia-repl
+julia> valuation.(24,(2,3,5))
+(3, 1, 0)
+```
+"""
 function LaurentPolynomials.valuation(c::Integer,p::Integer)
   if iszero(c) error("first argument should not be zero") end
   e=0
