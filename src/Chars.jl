@@ -998,15 +998,19 @@ function Base.show(io::IO,C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   end
 end
 
-const verbose=false
-function Groups.position_class(W::Hastype,w)
+function Groups.position_class(W::Hastype,w;verbose=false)
   l=PermGroups.positions_class(W,w)
   if length(l)==1 return only(l)
   elseif verbose println("ambiguity: ",l) end
 # p=eigmat(reflrep(W,w))
 # l=filter(x->eigen(conjugacy_classes(W)[x])==p,l)
 # if length(l)==1 return only(l) end
-  l[findfirst(c->w in c,conjugacy_classes(W)[l])]
+  p=findfirst(c->w in c,conjugacy_classes(W)[l])
+  if isnothing(p)
+    @show w
+    error()
+  end
+  l[p]
 end
 
 function Perms.reflength(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}

@@ -656,6 +656,13 @@ function Weyl.relative_group(s::Series)
   WF=s.spets
   W=Group(WF)
   L=Group(s.levi)
+  if W==L
+    WGL=coxgroup()
+    WGL.reflists=Vector{Int}[]
+    s.WGLdims=[1]
+    s.e=1
+    return WGL
+  end
   if isone(projector(s)) #central series
     WGL=deepcopy(W)
     WGL.parentMap=gens(WGL)
@@ -664,7 +671,8 @@ function Weyl.relative_group(s::Series)
     s.e=length(WGL)
     return WGL
   end
-  if W isa FiniteCoxeterGroup N=normalizer(W.G, L.G)
+  if W isa FiniteCoxeterGroup 
+    N=Group(vcat(gens(graph_automorphisms(W,inclusiongens(L))),gens(L)))
   else N=normalizer(W, L)
   end
   if !isone(s.levi.phi)
