@@ -353,23 +353,27 @@ end
 end
 
 @doc """
-`Reflection`  is a `struct`  representing a reflection  `r` in a reflection
-group `W`. The fields are `W`, the index of a root for `r`, the non-trivial
-eigenvalue of `r`, and a word for `r` in the generating reflections of `W`.
+`Reflection` is a `struct` representing a reflection in a reflection group.
 ```julia-repl
 julia> W=crg(8);
 
-julia> r=reflections(W)[7]
+julia> r=reflections(W)[7] # shows (r.W,r.rootno,r.eigen)
 Reflection(G₈,1,-1)
 
-julia> r==Reflection(W,1,-1) # specify r with root number and eigenvalue
-true
-
-julia> Reflection(W,1) # specify with root number gets distinguished reflection
-Reflection(G₈,1,ζ₄)
+julia> r.rootno # r is a reflection for the first root
+1
 
 julia> r.eigen # the non-trival eigenvalue, as a Root1
 Root1: -1
+
+julia> r.W # the group of which r is a reflection
+G₈
+
+julia> r==Reflection(W,1,-1) # specify r with .rootno and .eigen
+true
+
+julia> Reflection(W,1) # specify with .rootno gets the distinguished reflection
+Reflection(G₈,1,ζ₄)
 
 julia> root(r)
 2-element Vector{Cyc{Rational{Int64}}}:
@@ -411,7 +415,7 @@ julia> position_class(r) # the index of the conjugacy class of r in W
 julia> simple_rep(r) # smallest root index affording a conjugate reflection
 1
 
-julia> word(r) # a word in the generators for r
+julia> word(r) # a word in the generators of r.W for r
 2-element Vector{Int64}:
  1
  1
@@ -491,10 +495,10 @@ function Reflection(W::ComplexReflectionGroup,i::Integer)
 end
 
 """
-`reflections(W)`  the list of  all reflections of  the reflection group `W`
-(including  the  non-distinguished  ones),  given as a `Vector{Reflection}`
-(see   [`Reflection`](@ref)).   `reflections(W)[1:nhyp(W)]`   contains  the
-distinguished reflections.
+`reflections(W)`   a  `Vector{Reflection}`   of  all   reflections  of  the
+reflection   group   `W`   (including   the   non-distinguished  ones;  see
+[`Reflection`](@ref)).  `reflections(W)[1:nhyp(W)]`  are  the distinguished
+reflections.
 
 ```julia-repl
 julia> W=crg(4)

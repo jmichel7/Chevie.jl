@@ -47,6 +47,7 @@ end
 #1.8   496.321 ms (11302897 allocations: 557.72 MiB)
 #1.9.3 415.639 ms (11303721 allocations: 557.64 MiB)
 #1.10.0 372.338 ms (4046122 allocations: 336.15 MiB) # inline iterator
+#1.10.1 260.093 ms (4043780 allocations: 336.00 MiB)
 test_PermGroup(n::Int)=length(collect(symmetric_group(n)))
 # GAP3 test_PermGroup(10);; takes 0.54s
 #test_PermGroup:=n->Length(Elements(Group(List([1..n-1],i->(i,i+1)),())));

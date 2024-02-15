@@ -339,7 +339,8 @@ function split_levis(WF,d::Root1,ad)
   if WF isa Spets W=WF.W
   else W=WF; WF=spets(W)
   end
-  if iszero(ad) return [WF] end
+# if iszero(ad) return [WF] end
+  if iszero(ad) return [subspets(WF,1:semisimplerank(WF),Perm())] end
   refs=unique_refls(W)
   eig=refleigen(WF)
   cl=filter(j->count(==(d),eig[j])==ad,1:length(eig))

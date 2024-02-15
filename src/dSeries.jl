@@ -251,27 +251,6 @@ function factorset(s)
   end
 end
 
-function unionsorted(a,b)
-  if !issorted(a) || !issorted(b) error() end
-  la=length(a)
-  lb=length(b)
-  res=empty(a)
-  res=similar(a,la+lb)
-  ai=bi=1
-  ri=0
-@inbounds while ai<=la || bi<=lb
-  if     ai>la res[ri+=1]=b[bi]; bi+=1
-  elseif bi>lb res[ri+=1]=a[ai]; ai+=1
-    else c=cmp(a[ai],b[bi])
-      if     c>0 res[ri+=1]=b[bi]; bi+=1
-      elseif c<0 res[ri+=1]=a[ai]; ai+=1
-      else res[ri+=1]=a[ai]; ai+=1; bi+=1
-      end
-    end
-  end
-  resize!(res,ri)
-end
-
 const LIMSubsetsSum=10
 # l is a matrix and S a list length size(l,1).
 # Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
@@ -326,16 +305,16 @@ function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector)
       elseif length(p.sols)==1 push!(solved,p.pos)
       end
       if sum(length,p.sols)>0
-       good=unionsorted(good,intersect(p.sols...)) #lines part of any solution
-        bad=unionsorted(bad,setdiff(p.cand, union(p.sols)))#part of no solution
+       good=union_sorted(good,intersect(p.sols...)) #lines part of any solution
+        bad=union_sorted(bad,setdiff(p.cand, union(p.sols)))#part of no solution
       else
-        bad=unionsorted(bad,p.cand) #part of no solution
+        bad=union_sorted(bad,p.cand) #part of no solution
       end
     end
     nonsolved=setdiff(nonsolved, solved)
     if length(good)+length(bad)>0 #progress
       return map(r->vcat(good, r), inner(S-vec(sum(l[good,:];dims=1)), 
-      unionsorted(s,good),setdiff(t,unionsorted(good,bad)),nonsolved,sievev(good,v),factor))
+      union_sorted(s,good),setdiff(t,union_sorted(good,bad)),nonsolved,sievev(good,v),factor))
     end
     res=Vector{Int}[]
     p=argmax(x->length(x.cand),ll)
@@ -348,8 +327,8 @@ function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector)
       bad=setdiff(p.cand, sol)
       if isempty(intersect(good, bad))
          append!(res, map(r->vcat(good,r),
-       inner(S-vec(sum(l[good,:];dims=1)),unionsorted(s, good),
-        setdiff(t, unionsorted(good, bad)), nonsolved, sievev(good, v),
+       inner(S-vec(sum(l[good,:];dims=1)),union_sorted(s, good),
+        setdiff(t, union_sorted(good, bad)), nonsolved, sievev(good, v),
         string(factor, ":", f))))
       end
       f-=1
@@ -672,7 +651,8 @@ function Weyl.relative_group(s::Series)
     return WGL
   end
   if W isa FiniteCoxeterGroup 
-    N=Group(vcat(gens(graph_automorphisms(W,inclusiongens(L))),gens(L)))
+    N1=graph_automorphisms(W,inclusiongens(L))
+    N=Group(vcat(gens(N1),gens(L)))
   else N=normalizer(W, L)
   end
   if !isone(s.levi.phi)
@@ -684,13 +664,12 @@ function Weyl.relative_group(s::Series)
           error("*** class too big ($sz>100000)\n",
            "need Gap4.centralizer; do 'using GAP' to make extension available") 
         end
-        N=m.centralizer(N,s.levi.phi)
+        @time N=m.centralizer(N,s.levi.phi)
       else
         N=centralizer(N,s.levi.phi)
       end
     elseif s.spets isa Cosets.CoxeterCoset
-      N=Group(map(x->reduced(Group(s.levi), x),gens(N)))
-      N=centralizer(N, s.levi.phi)
+      N=centralizer(N1,s.levi.phi)
       N=Group(vcat(gens(N),gens(Group(s.levi))))
     else #   N:=Stabilizer(N,s.levi); # is shorter but slower...
       NF=centralizer(N, s.levi.phi)
@@ -1202,12 +1181,11 @@ function RelativeSeries(s)
     #   println("R=",R," l=",l," s.element/R.phi=",s.element/R.phi)
     p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r;NC=true)
     p.orbit=simple_reps(WGL)[i]
-    r=unique_refls(WGL)
+    r=reflections(WGL)[1:nhyp(WGL)]
     if gens(WGL)==WGL.parentMap
-      r=filter(x->refls(WGL,x) in Group(p.spets),r)
+      r=filter(x->Perm(x) in Group(p.spets),r)
     else
-      w=map(x->word(WGL,refls(WGL,x)), r)
-      w=map(x->prod(WGL.parentMap[x]), w)
+      w=map(x->prod(WGL.parentMap[word(x)]), r)
 #     xprint(w,"\n")
       r=r[map(w)do x
           g=Group(p.spets)
@@ -1216,7 +1194,7 @@ function RelativeSeries(s)
           end
          end]
     end
-    p.WGL=reflection_subgroup(WGL, r)
+    p.WGL=reflection_subgroup(WGL, map(x->x.rootno,r))
     p.WGLdims=CharTable(relative_group(p)).irr[:,1]
     p.e=length(p.WGL)
     return p
