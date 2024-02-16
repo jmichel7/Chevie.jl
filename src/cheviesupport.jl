@@ -227,7 +227,7 @@ FactorizedSchurElementsOps=Dict{Symbol,Any}(
           map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
 
 function exceptioCharName(para)
-  res=string("\\phi_{",para[1],",",para[2],"}")
+  res="\\phi_{"*string(para[1])*","*string(para[2])*"}"
   if length(para)==3 res*="'"^para[3] end
   res
 end
