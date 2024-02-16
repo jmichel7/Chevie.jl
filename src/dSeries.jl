@@ -225,8 +225,8 @@ function ennola(W)
   ennola(t[1])
 end
 
-# s is a Set of tuples. Return E_1,...,E_n such that
-# s=vcat.(cartesian(E_1,...,E_n))
+# s is a vector of tuples. Return a vector of vectors E_1,...,E_n such that
+# s=Tuple.(cartesian(E_1,...,E_n))
 # Assumes all E_i but possibly one are of size 2
 function factorset(s)
   if isempty(s[1]) return s[1] end
@@ -251,12 +251,11 @@ function factorset(s)
   end
 end
 
-const LIMSubsetsSum=10
 # l is a matrix and S a list length size(l,1).
 # Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
 # In  addition, lv is a vector of  length size(l,1), v is a sub-multiset of
 # lv and P should satisfy tally(lv[P])=tally(v).
-function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector)
+function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
 # println("S=$S;l=$l;v=$v;lv=$lv")
   function sievev(good::Vector{Int}, v)
     v=copy(v)
@@ -293,8 +292,8 @@ function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector)
     end
     ll=map(i->(pos=i,cand=filter(j->l[j,i]!=0,t),sols=Vector{Int}[]),nonsolved)
     sort!(ll,by=x->length(x.cand))
-    if length(ll[1].cand)>LIMSubsetsSum ll=[ll[1]]
-    else ll=filter(x->length(x.cand)<=LIMSubsetsSum,ll)
+    if length(ll[1].cand)>lim ll=[ll[1]]
+    else ll=filter(x->length(x.cand)<=lim,ll)
     end
     solved=Int[]
     good=Int[]

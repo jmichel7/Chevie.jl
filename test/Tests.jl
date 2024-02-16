@@ -2,8 +2,7 @@
 module Tests
 using Chevie
 
-const test=Dict{Symbol,@NamedTuple{fn::Function, applicable::Function,
-                                   comment::String}}()
+const test=Dict{Symbol,@NamedTuple{applicable::Function,comment::String}}()
 
 curtest::Symbol=:no
 curW=coxgroup()
@@ -42,6 +41,13 @@ twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
 all_ex=vcat(cox_ex,spets_ex,nspets,twisted)
 sort!(all_ex,by=nconjugacy_classes)
 
+function tests()
+  for (s,t) in sort(collect(test),by=first)
+    print(rpad(s,20),": ")
+    printstyled(t.comment,"\n";color=:green)
+  end
+end
+  
 "RG(s) regression test for test s (keys(test) shows available tests)"
 function RG(s::Symbol;log=false)
   if log 
@@ -53,7 +59,7 @@ function RG(s::Symbol;log=false)
   for W in all_ex if t.applicable(W) 
     global curW=W
     printstyled(rio(),s,"(",W,")";bold=true,color=:magenta)
-@time  t.fn(W) 
+    @time getfield(Tests,Symbol(:T,s))(W) 
   end end
   if log close(curio) end
 end
@@ -70,7 +76,7 @@ function RG(W;log=false)
     global curtest=s
     if t.applicable(W) 
       printstyled(i,"/",length(test),"  ",s,": ",t.comment,"\n";color=:green)
-      t.fn(W) 
+      getfield(Tests,Symbol(:T,s))(W) 
     end 
   end
   if log close(curio) end
@@ -78,6 +84,12 @@ end
 
 RG(v::Vector;log=false)=for W in v RG(W;log=log) end
 RG(;log=false)=RG(all_ex;log=log)
+
+function RG(s::Symbol,W)
+  t=test[s]
+  printstyled(s,": ",t.comment,"\n";color=:green)
+  @time getfield(Tests,Symbol(:T,s))(W) 
+end
 
 # compares lists a and b (whose descriptions are strings na and nb)
 function cmpvec(a,b;na="a",nb="b")
@@ -232,7 +244,7 @@ function Trepresentations(W,l=Int[])
   end
 end
 
-test[:representations]=(fn=Trepresentations, 
+test[:representations]=(
    applicable=function(W)
      if nconjugacy_classes(W)>=55 return false end
      t=refltype(W)
@@ -252,7 +264,7 @@ function Tlusztiginduction(WF)
     Tlusztiginduction(WF,J)
   end
 end
-test[:lusztiginduction]=(fn=Tlusztiginduction, 
+test[:lusztiginduction]=(
    applicable=W->isspetsial(W) && W!=crg(34),
    comment="check it is computable and verifies mackey with tori")
 
@@ -326,7 +338,7 @@ function Tchartable(W)
   end
 end
 
-test[:chartable]=(fn=Tchartable, applicable=W->!(W isa Spets),
+test[:chartable]=(applicable=W->!(W isa Spets),
    comment="check it agrees with GAP chartable-for-PermGroup")
 
 #----------------test: powermaps ------------------------
@@ -343,9 +355,9 @@ function Tpowermaps(W)
   end
 end
 
-test[:powermaps]=(fn=Tpowermaps, applicable=W->false,
-#test[:powermaps]=(fn=Tpowermaps, applicable=W->!(W isa Spets),
-                  comment="check powermaps")
+test[:powermaps]=(applicable=W->false,
+#test[:powermaps]=(applicable=W->!(W isa Spets),
+                  comment="recompute powermaps")
 
 #---------------- test: positionclasses ------------------------
 function Tpositionclasses(W)
@@ -353,8 +365,7 @@ function Tpositionclasses(W)
   if cl!=1:length(cl) error("classes") end
 end
 
-test[:positionclasses]=(fn=Tpositionclasses, applicable=W->true,
-   comment="check classreps")
+test[:positionclasses]=(applicable=W->true, comment="check classreps give all positions")
 
 #---------------- test: unipotentclasses ------------------------
 function Tunipotentclasses(W,p=nothing)
@@ -468,7 +479,7 @@ function Tunipotentclasses(W,p=nothing)
   end
 end
 
-test[:unipotentclasses]=(fn=Tunipotentclasses, applicable=isrootdatum,
+test[:unipotentclasses]=(applicable=isrootdatum,
    comment="dimBu from DR, from b, with < ; BalaCarter, dimred")
 
 #---------------- test: unipotentcentralizers ------------------------
@@ -505,7 +516,7 @@ function Tunipotentcentralizers(W,p=0)
   end
 end
 
-test[:unipotentcentralizers]=(fn=Tunipotentcentralizers,applicable=isrootdatum,
+test[:unipotentcentralizers]=(applicable=isrootdatum,
                          comment="info on them agrees with ICCTable")
 
 #---------------- test: Au ------------------------
@@ -585,7 +596,7 @@ function TAu(W)
   println()
 end
 
-test[:Au]=(fn=TAu,applicable=isweylgroup,
+test[:Au]=(applicable=isweylgroup,
       comment="nconjugacyclasses(Au) agrees with NcNinch-Sommers")
 #---------------- test: nrssclasses ------------------------
 # Check classtypes gives nrclasses (for simply connected groups)
@@ -601,7 +612,7 @@ function Tnsemisimple(WF)
    end
 end
 
-test[:nsemisimple]=(fn=Tnsemisimple,applicable=W->isweylgroup(W) && 
+test[:nsemisimple]=(applicable=W->isweylgroup(W) && 
                     length(fundamental_group(W))==1 && length(W)<10^8,
            comment="classtypes gives nr. semisimple classes")
 #---------------- test: charparams ------------------------
@@ -863,7 +874,7 @@ function Tcharparams(W)
   end
 end
 
-test[:charparams]=(fn=Tcharparams, applicable=W->W isa Group,
+test[:charparams]=(applicable=W->W isa Group,
    comment="check them for consistency with Michel/Thiel rules")
 
 #---------------- test: HCdegrees ------------------------
@@ -923,7 +934,7 @@ function THCdegrees(W,i,rel=false)
   end
 end
 
-test[:HCdegrees]=(fn=THCdegrees, applicable=isspetsial,
+test[:HCdegrees]=(applicable=isspetsial,
   comment="gendegs from relative Hecke algebras of 1-HC cuspidals")
 
 # EigenAndDegHecke(s) 
@@ -1016,8 +1027,7 @@ function Tseries(W,arg...)
   l
 end
 
-test[:series]=(fn=Tseries,
-               applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
+test[:series]=(applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
                comment="check d-HC series")
 
 #---------------- test: extrefl ------------------------
@@ -1046,7 +1056,7 @@ function Textrefl(W)
   checkfield(:positionId,extRefl[1])
 end
 
-test[:extrefl]=(fn=Textrefl,applicable=x->x isa Group,comment="check")
+test[:extrefl]=(applicable=x->x isa Group,comment="check")
 
 #---------------- test: degrees ------------------------
 """
@@ -1125,8 +1135,7 @@ function Tdegrees(W)
   end
 end
 
-test[:degrees]=(fn=Tdegrees,applicable=x->true, 
-                comment="check reflection degrees")
+test[:degrees]=(applicable=x->true, comment="recompute them")
 
 #---------------- test: fakedegrees ------------------------
 
@@ -1139,7 +1148,7 @@ function Tfeg(W)
   cmpvec(degree.(fd),charinfo(W).B;na="computed B",nb="charinfo B")
 end
 
-test[:feg]=(fn=Tfeg,applicable=x->true, comment="check fakedegrees")
+test[:feg]=(applicable=x->true, comment="recompute fakedegrees")
 
 #---------------- test: fakedegrees induce ------------------------
 
@@ -1164,8 +1173,7 @@ function Tfeginduce(W,J)
   end
 end
 
-test[:feginduce]=(fn=Tfeginduce,applicable=W->W!=crg(34), 
-                  comment="check fakedegrees induce")
+test[:feginduce]=(applicable=W->W!=crg(34), comment="check fakedegrees induce")
 
 #---------------- test: invariants ------------------------
 
@@ -1181,7 +1189,7 @@ function Tinvariants(W)
   if !isempty(ii) InfoChevie("\n") end
 end
 
-test[:invariants]=(fn=Tinvariants,
+test[:invariants]=(
   applicable=W->!(W isa Spets) && length(W)<14400, # H4 first painful client
                    comment="check")
 
@@ -1209,8 +1217,7 @@ function Tudfdimprimitive(W)
   end
 end
 
-test[:udfdimprimitive]=(fn=Tudfdimprimitive,
-  applicable=function(W)
+test[:udfdimprimitive]=(applicable=function(W)
     if !isspetsial(W) return false end
     n=refltype(W)
     if length(n)>1 return false
@@ -1372,14 +1379,14 @@ function Tfamilies(W,i;hard=false)
   InfoChevie("\n")
 end
 
-test[:families]=(fn=Tfamilies,applicable=isspetsial,comment="testing")
+test[:families]=(applicable=isspetsial,comment="testing")
 #------------------------- HCinduce gendegs -----------------------------
 
-function TdegsHCInduce(W)
-  for J in parabolic_reps(W) TdegsHCInduce(W,J) end
+function TdegsHCinduce(W)
+  for J in parabolic_reps(W) TdegsHCinduce(W,J) end
 end
 
-function TdegsHCInduce(W,J)
+function TdegsHCinduce(W,J)
   q=Pol()
   if W isa Spets L=subspets(W,J)
   else L=reflection_subgroup(W,J)
@@ -1399,7 +1406,7 @@ function TdegsHCInduce(W,J)
   end
 end
 
-test[:degsHCinduce]=(fn=TdegsHCInduce,applicable=W->isspetsial(W) && W!=crg(34),
+test[:degsHCinduce]=(applicable=W->isspetsial(W) && W!=crg(34),
   comment="unidegs are consistent with HC induction from split levis")
 
 #------------------------- Curtis duality -----------------------------
@@ -1415,7 +1422,7 @@ function Tcurtisduality(W)
          na="ud sign permuted",nb="computed Curtis dual ud")
 end
 
-test[:curtisduality]=(fn=Tcurtisduality,applicable=
+test[:curtisduality]=(applicable=
   W->!(W isa Spets) && all(x->order(x)==2,gens(W)) && isspetsial(W),
   comment="check degrees of Curtis duals")
 
@@ -1475,7 +1482,7 @@ function TalmostHC(W)
   end
 end
 
-test[:almostHC]=(fn=TalmostHC,applicable=W->isspetsial(W) && W!=crg(34),
+test[:almostHC]=(applicable=W->isspetsial(W) && W!=crg(34),
                  comment="almostHC series")
 
 #------------------------- sum squares -----------------------------
@@ -1489,7 +1496,7 @@ function Tsumsquares(W)
   end
 end
 
-test[:sumsquares]=(fn=Tsumsquares,applicable=isspetsial,
+test[:sumsquares]=(applicable=isspetsial,
    comment="of fakedegrees and unipotent degrees coincide")
 
 #------------------------- aA -----------------------------
@@ -1506,7 +1513,7 @@ function TaA(W)
   end
 end
 
-test[:aA]=(fn=TaA,applicable=isspetsial,comment="check them from unipotent degrees")
+test[:aA]=(applicable=isspetsial,comment="recompute them from unipotent degrees")
 
 #------------------------- eigen -----------------------------
 # check eigenvalues in families agree with those in HC series
@@ -1526,7 +1533,7 @@ function Teigen(W)
   end
 end
 
-test[:eigen]=(fn=Teigen,applicable=isspetsial,
+test[:eigen]=(applicable=isspetsial,
               comment="check they agree between HC series and families")
 
 #------------------------- qeigen -----------------------------
@@ -1550,7 +1557,7 @@ function Tqeigen(W)
   end
 end
 
-test[:qeigen]=(fn=Tqeigen,applicable=isspetsial,comment="qeigen")
+test[:qeigen]=(applicable=isspetsial,comment="recompute qeigen")
 
 #------------------------- braidrel -----------------------------
 
@@ -1581,14 +1588,14 @@ function Tbraidrel(W,r=braid_relations(W))
   for rel in r check_relation(gens(W),rel;f=ChevieErr) end
 end
 
-test[:braidrel]=(fn=Tbraidrel,applicable=W->!(W isa Spets),comment=
-"W satisfies braid relations of type t")
+test[:braidrel]=(applicable=W->!(W isa Spets),comment=
+"W of type t satisfies braid relations of type t")
 
 #------------------------- root system -----------------------------
 
 # Check that all elements of the list of vectors l have coefficients
 #  in the ring R when expressed as linear combinations of l{indices}
-function rootsystem(W)
+function Trootsystem(W)
   function integrality(l,indices,R)
     rb=map(r->solutionmat(toM(l[indices]),r),l)
     all(y->!isnothing(y) &&(y in R),vcat(rb...))
@@ -1627,10 +1634,11 @@ function rootsystem(W)
     ChevieErr("not a root system") end
 end
 
-test[:rootsystem]=(fn=rootsystem,applicable=W->!(W isa Spets),comment=
+test[:rootsystem]=(applicable=W->!(W isa Spets),comment=
  "W.roots is a distinguished root system in the sense of BCM")
  
-function galoisauts(W)
+#------------------------- galois auts -----------------------------
+function Tgaloisauts(W)
   k=NF(vcat(map(vec,reflrep(W))...))
   Wk=NF(vec(cartan(W)))
   if k!=Wk ChevieErr("k_W=",Wk," but matrices over ",k,"\n") end
@@ -1647,20 +1655,8 @@ function galoisauts(W)
   end
 end
 
-test[:galoisauts]=(fn=galoisauts,applicable=W->!(W isa Spets),comment=
+test[:galoisauts]=(applicable=W->!(W isa Spets),comment=
              "check that reflrep(W) is globally invariant by Gal(k_W/Q)")
-
-#function frombraidrel(W)
-#  n=nbgens(W)
-#  F=FreeGroup(n)
-#  r=List(BraidRelations(W),x->List(x,y->Product(y,z->F.(z))))
-#  r=List(r,x->x[1]/x[2])
-#  Append(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
-#  Size(W)=Size(F/r)
-#end
-#W->not IsSpets(W) and Size(W)<64000,
-#"check that the finitely presented group defined by the",
-#" braid and order relations has the expected Size");
 
 #------------------------- very good classreps -----------------------------
 
@@ -1693,8 +1689,7 @@ function Tclassreps(W)
   end
 end
 
-test[:classreps]=(fn=Tclassreps,applicable=W->(W isa CoxeterGroup) ||
-                  W isa CoxeterCoset, 
+test[:classreps]=(applicable=W->W isa Union{CoxeterGroup,CoxeterCoset}, 
    comment= "check they are very good in the sense of Geck-Michel")
 
 #------------------------- minuscule weights -----------------------------
@@ -1722,7 +1717,7 @@ function Tminusculeweights(W)
   if l!=w[:minusculeWeights] ChevieErr("minuscule weights") end
 end
 
-test[:minusculeweights]=(fn=Tminusculeweights,applicable=isweylgroup,
+test[:minusculeweights]=(applicable=isweylgroup,
   comment="are coeffs 1 of highest coroot on simple coroots")
 
 #------------------------- CharTable(3D4) -----------------------------
@@ -1748,14 +1743,13 @@ function Thecke3d4(triality)
    na="charTable(Hecke(3D4))",nb="computed by subgroup induction");
 end
 
-test[:hecke3d4]=(fn=Thecke3d4,
-  applicable=function(W)
+test[:hecke3d4]=(applicable=function(W)
     t=refltype(W)
     if length(t)!=1 return false end
     t=only(t)
     haskey(t,:orbit) && t.orbit[1].series==:D && order(t.twist)==3
   end,
-    comment="3d4")
+  comment="check CharTable(Hecke(3d4))")
 
 #------------------------- G4_22indexclasses -----------------------------
 
@@ -1781,15 +1775,14 @@ function TG4_22index(W)
   end
 end
 
-test[:G4_22index]=(fn=TG4_22index,applicable=
-function(W)t=refltype(W)
+test[:G4_22index]=(applicable=function(W)t=refltype(W)
   length(t)==1 && haskey(t[1],:ST) && t[1].ST in 4:22
  end, comment="Check classinfo(W).indexclasses for W in G₄-G₂₂")
 
 #------------------------- Opdam -----------------------------
 
 # c_\chi in Gordon-Griffeth
-function coxeter_number(W,i)
+function oldcoxnum(W,i)
   cl=length.(conjugacy_classes(W))
   if cl==[1] return 0 end
   ct=CharTable(W).irr
@@ -1799,8 +1792,8 @@ end
 
 function Thgal(W)
   ct=CharTable(W).irr
-  complex=Perm(ct,conj(ct);dims=1)
-  x=Mvp(:x)
+  conjPerm=Perm(ct,conj(ct);dims=1)
+  x=Pol()
   d=degrees(W)
   z=isempty(d) ? 1 : gcd(d)
   H=hecke(W,x^z)
@@ -1809,7 +1802,7 @@ function Thgal(W)
     ChevieErr("CharTable(",H,") has ",count(ismissing,ct)," unknowns\n")
     return
   end
-  gal=z==1 ? Perm() : Perm(ct,map(u->u(;x=x*E(z)),ct))
+  gal=z==1 ? Perm() : Perm(ct,map(u->u(x*E(z)),ct))
   fd=fakedegrees(W,x)
   ci=charinfo(W)
   if haskey(ci,:hgal) hgal=ci[:hgal] else hgal=Perm() end
@@ -1818,13 +1811,15 @@ function Thgal(W)
   end
   # following test is [Malle, Rationality... Theorem 6.5]
   for i in 1:nconjugacy_classes(W)
-    if fd[i^(hgal*complex)]!=x^coxeter_number(W,i)*fd[i](x=x^-1)
+    if oldcoxnum(W,i)!=coxnum(W,i) ChevieErr("coxnum($i) differs") end
+    if fd[i^(hgal*conjPerm)]!=x^coxnum(W,i)*fd[i](x^-1)
       ChevieErr("hgal wrong for ",i,"\n")
     end
   end
 end
 
-test[:hgal]=(fn=Thgal,applicable=W->!(W isa Spets),comment="Opdam")
+test[:hgal]=(applicable=W->!(W isa Spets) && length(refltype(W))==1,
+             comment="recompute Opdam involution")
 
 #------------------------- ParameterExponents -----------------------------
 # check that the parameter exponents of the relative hecke algebras
@@ -1904,9 +1899,9 @@ function Tparameterexponents(W,i)
   end
 end
 
-test[:parameterexponents]=(fn=Tparameterexponents,
+test[:parameterexponents]=(
   applicable=W->isspetsial(W) && W!=crg(33) && W!=crg(34),
-  comment="of rel. Hecke algebras agree with cyclic formula")
+  comment="of rel. Hecke algebras agree with cyclic formula for Schur")
 
 #------------------------- discriminant -----------------------------
 
@@ -1935,7 +1930,21 @@ function Tdiscriminant(W)
   if r*last(first(j.d))!=j*last(first(r.d)) ChevieErr("disagrees\n") end
 end
 
-test[:discriminant]=(fn=Tdiscriminant,
+test[:discriminant]=(
   applicable=W->!(W isa Spets) && length(W)<1152, # F4 first painful clientend
   comment="agrees with hyperplane product")
+
+#----------------------- tests not translated from GAP3 ---------------------
+#function frombraidrel(W)
+#  n=nbgens(W)
+#  F=FreeGroup(n)
+#  r=List(BraidRelations(W),x->List(x,y->Product(y,z->F.(z))))
+#  r=List(r,x->x[1]/x[2])
+#  Append(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
+#  Size(W)=Size(F/r)
+#end
+#W->not IsSpets(W) and Size(W)<64000,
+#"check that the finitely presented group defined by the",
+#" braid and order relations has the expected Size");
+
 end

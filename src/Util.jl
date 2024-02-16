@@ -5,6 +5,7 @@ please tell me.
 """
 module Util
 using ..Chevie: stringexp, stringprime
+using PermGroups: @GapObj
 
 export @forward 
 export showtable, ordinal, fromTeX, printTeX, joindigits, cut, rio, xprint, 
@@ -141,52 +142,19 @@ function printTeX(io::IO,s...)
   print(io,fromTeX(io,res))
 end
 
-"""
-`showtable(io, table::AbstractMatrix; options )`
+@GapObj struct Table
+  m::Matrix
+end
 
-General  routine to format a table. The  following options can be passed as
-properties of the `io` or as keywords.
+Table(m;kw...)=Table(m,Dict(kw...))
 
-  - `row_labels`         labels for rows (default `axes(table,1)`)
-  - `rows_label`         label for first column (column of row labels)
-  - `col_labels`         labels for other columns
-  - `rowseps`            line numbers after which to put a separator
-  - `rows`               show only these rows
-  - `cols`               show only these columns
-  - `TeX`                give LaTeX output (useful in Jupyter or Pluto)
-  - `column_repartition` display in vertical pieces of sizes indicated
-    (default if not `TeX`: take in account `displaysize(io,2)`)
-  - align                alignment of column (default 'c':centered)
-
-```julia-rep1
-julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];
-
-julia> showtable(stdout,m)
-1│1 2 3 4
-2│5 6 7 8
-3│9 1 2 3
-4│4 5 6 7
-
-julia> labels=["x","y","z","t"];
-
-julia> showtable(stdout,m;cols=2:4,col_labels=labels,rowseps=[0,2,4])
- │y z t
-─┼──────
-1│2 3 4
-2│6 7 8
-─┼──────
-3│1 2 3
-4│5 6 7
-─┴──────
-```
-"""
-function showtable(io::IO,t::AbstractMatrix; opt...)
-  io=IOContext(io,opt...)
+function Base.show(io::IO,t::Table)
+  io=IOContext(io,t.prop...)
   strip(x)=fromTeX(io,x)
-  rows=get(io,:rows,axes(t,1))
-  cols=get(io,:cols,axes(t,2))
-  row_labels=(strip.(get(io,:row_labels,string.(axes(t,1)))))[rows]
-  t=t[rows,cols]
+  rows=get(io,:rows,axes(t.m,1))
+  cols=get(io,:cols,axes(t.m,2))
+  row_labels=(strip.(get(io,:row_labels,string.(axes(t.m,1)))))[rows]
+  t=t.m[rows,cols]
   col_labels=get(io,:col_labels,nothing)
   if col_labels!=nothing col_labels=(strip.(col_labels))[cols] end
   rows_label=strip(get(io,:rows_label,""))
@@ -252,6 +220,49 @@ function showtable(io::IO,t::AbstractMatrix; opt...)
     if ci[end]!=length(cols_widths) print(io,"\n") end
     if TeX println(io,"\\end{array}\n\$\$") end
   end
+end
+
+"""
+`showtable(io, table::AbstractMatrix; options )`
+
+General  routine to format a table. The  following options can be passed as
+properties of the `io` or as keywords.
+
+  - `row_labels`         labels for rows (default `axes(table,1)`)
+  - `rows_label`         label for first column (column of row labels)
+  - `col_labels`         labels for other columns
+  - `rowseps`            line numbers after which to put a separator
+  - `rows`               show only these rows
+  - `cols`               show only these columns
+  - `TeX`                give LaTeX output (useful in Jupyter or Pluto)
+  - `column_repartition` display in vertical pieces of sizes indicated
+    (default if not `TeX`: take in account `displaysize(io,2)`)
+  - align                alignment of column (default 'c':centered)
+
+```julia-rep1
+julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];
+
+julia> showtable(stdout,m)
+1│1 2 3 4
+2│5 6 7 8
+3│9 1 2 3
+4│4 5 6 7
+
+julia> labels=["x","y","z","t"];
+
+julia> showtable(stdout,m;cols=2:4,col_labels=labels,rowseps=[0,2,4])
+ │y z t
+─┼──────
+1│2 3 4
+2│6 7 8
+─┼──────
+3│1 2 3
+4│5 6 7
+─┴──────
+```
+"""
+function showtable(io::IO,t::AbstractMatrix; opt...)
+  show(io,Table(t;opt...))
 end
 
 showtable(t::AbstractMatrix;opt...)=showtable(stdout,t;opt...)
