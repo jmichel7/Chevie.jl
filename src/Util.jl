@@ -150,7 +150,7 @@ Table(m;kw...)=Table(m,Dict(kw...))
 
 function Base.show(io::IO,t::Table)
   io=IOContext(io,t.prop...)
-  strip(x)=fromTeX(io,x)
+  strip(x)=x isa String ? fromTeX(io,x) : repr(x,context=io)
   rows=get(io,:rows,axes(t.m,1))
   cols=get(io,:cols,axes(t.m,2))
   row_labels=(strip.(get(io,:row_labels,string.(axes(t.m,1)))))[rows]
@@ -161,7 +161,8 @@ function Base.show(io::IO,t::Table)
   rowseps=get(io,:rowseps,col_labels!=nothing ? [0] : Int[])
   column_repartition=get(io,:column_repartition,nothing)
   align=get(io,:align,'c')
-  t=map(x->x isa String ? x : repr(x; context=io),t)
+  dotzero=get(io,:dotzero,false)
+  t=map(x->(!ismissing(x) && x==0 && dotzero) ? "." : strip(x),t)
   TeX=get(io,:TeX,false)
   cols_widths=map(i->maximum(textwidth.(t[:,i])),axes(t,2))
   if !isnothing(col_labels)
@@ -229,15 +230,16 @@ General  routine to format a table. The  following options can be passed as
 properties of the `io` or as keywords.
 
   - `row_labels`         labels for rows (default `axes(table,1)`)
-  - `rows_label`         label for first column (column of row labels)
-  - `col_labels`         labels for other columns
+  - `rows_label`         label for first column of row labels (default none)
+  - `col_labels`         labels for other columns (default none)
   - `rowseps`            line numbers after which to put a separator
-  - `rows`               show only these rows
-  - `cols`               show only these columns
+  - `rows`               show only these rows (default all rows)
+  - `cols`               show only these columns (default all columns)
   - `TeX`                give LaTeX output (useful in Jupyter or Pluto)
   - `column_repartition` display in vertical pieces of sizes indicated
-    (default if not `TeX`: take in account `displaysize(io,2)`)
-  - align                alignment of column (default 'c':centered)
+    (useful for `TeX`: otherwise take in account `displaysize(io,2)`)
+  - align                alignment of columns (in "lcr"; default 'c':centered)
+  - dotzero              replace '0' by '.' in table (default false)
 
 ```julia-rep1
 julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];

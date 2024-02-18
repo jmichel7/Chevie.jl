@@ -33,13 +33,13 @@ Drinfeld double of 𝔖 ₃, Lusztig′s version
    label│eigen
 ────────┼─────────────────────────────────────────────────────
 (1,1)   │    1 1//6  1//2  1//3  1//3  1//6  1//2  1//3  1//3
-(g₂,1)  │    1 1//2  1//2     0     0 -1//2 -1//2     0     0
-(g₃,1)  │    1 1//3     0  2//3 -1//3  1//3     0 -1//3 -1//3
-(1,ρ)   │    1 1//3     0 -1//3  2//3  1//3     0 -1//3 -1//3
+(g₂,1)  │    1 1//2  1//2     .     . -1//2 -1//2     .     .
+(g₃,1)  │    1 1//3     .  2//3 -1//3  1//3     . -1//3 -1//3
+(1,ρ)   │    1 1//3     . -1//3  2//3  1//3     . -1//3 -1//3
 (1,ε)   │    1 1//6 -1//2  1//3  1//3  1//6 -1//2  1//3  1//3
-(g₂,ε)  │   -1 1//2 -1//2     0     0 -1//2  1//2     0     0
-(g₃,ζ₃) │   ζ₃ 1//3     0 -1//3 -1//3  1//3     0  2//3 -1//3
-(g₃,ζ₃²)│  ζ₃² 1//3     0 -1//3 -1//3  1//3     0 -1//3  2//3
+(g₂,ε)  │   -1 1//2 -1//2     .     . -1//2  1//2     .     .
+(g₃,ζ₃) │   ζ₃ 1//3     . -1//3 -1//3  1//3     .  2//3 -1//3
+(g₃,ζ₃²)│  ζ₃² 1//3     . -1//3 -1//3  1//3     . -1//3  2//3
 
 julia> charnames(uc)[uc.families[1].charNumbers]
 8-element Vector{String}:
@@ -934,17 +934,17 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
     printTeX(io,f.explanation,"\n")
   end
   row_labels=haskey(f,:charLabels) ? f.charLabels : string.(1:length(f))
-  t=[repr.(f.eigenvalues;context=io)]
+  t=[Cyc{Rational{Int}}.(f.eigenvalues)]
   col_labels=TeX ? ["\\Omega"] : ["eigen"]
   if haskey(f,:signs)
-    push!(t,string.(f.signs))
+    push!(t,f.signs)
     push!(col_labels,"\\mbox{signs}")
   end
-  append!(t,toL(map(y->repr(y;context=io),Cyc.(fourier(f)))))
+  append!(t,toL(fourier(f)))
   if maximum(length.(row_labels))<=4 append!(col_labels,row_labels)
   else append!(col_labels,map(x->" ",row_labels))
   end
-  showtable(io,permutedims(toM(t));row_labels,col_labels,rows_label="\\mbox{label}")
+  showtable(io,permutedims(toM(t));row_labels,col_labels,rows_label="\\mbox{label}",dotzero=get(io,:dotzero,true))
 end
 
 #------------------------ Fusion algebras -------------------------------

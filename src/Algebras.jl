@@ -259,6 +259,7 @@ function Base.show(io::IO,I::TwoSidedIdeal)
  print(io,"])")
 end
 
+Groups.gens(I::TwoSidedIdeal)=basis(I)
 basis(I::TwoSidedIdeal)=I.basis
 Weyl.dim(I::TwoSidedIdeal)=length(basis(I))
 #------------------------------------------------------------------------
@@ -327,7 +328,7 @@ function PermRoot.cartan(A::FiniteDimAlgebra)
   end
   rows=joindigits.(rows[vcat(A.blocks...)])
   m=map(e->iszero(e) ? "." : repr(e),A.cartan)
-  showtable(rio(),m,row_labels=rows)
+  Util.Table(m,row_labels=rows)
 end
 
 #------------------------- SubAlgebra -------------------------
@@ -378,6 +379,7 @@ function Quaternions(a::T=-1,b::T=-1)where T
             [2=>1] [1=>a]  [4=>1] [3=>-1];
             [3=>1] [4=>-1] [1=>b] [2=>-b];
             [4=>1] [3=>-a] [2=>b] [1=>-a*b]]
+  multable=map(x->[x],multable)
   A=Quaternions(multable,Dict{Symbol,Any}())
   A.a=a;A.b=b
   A.isabelian=false
@@ -480,7 +482,7 @@ function PolynomialQuotientAlgebra(p::Pol{T})where T
     filter(x->x[2]!=0,map(Pair,1:degree(r)+1,r[0:end]))
   end
   basismult(i,j)=class(Pol([1],i+j-2))
-  A=PolynomialQuotientAlgebra(p,sort(tally(factor(p)),by=x->degree(x[1])),
+  A=PolynomialQuotientAlgebra(p,sort(collect(factor(p)),by=x->degree(x[1])),
                                      LaurentPolynomials.varname[],
            [basismult(i,j) for i in 1:d, j in 1:d],Dict{Symbol,Any}())
   A.showbasis=(io::IO,i)->fromTeX(io,i==1 ? "⋅1" :
@@ -515,8 +517,7 @@ function Chars.CharTable(A::PolynomialQuotientAlgebra)
     for i in 1:deg  mat[i,deg]=-coefs[i] end
     for j in 1:dim(A) irr[j,k]=tr(mat^(j-1)) end
   end
-  showtable(irr,col_labels=map(x->repr(x;context=rio()),factors),
-            row_labels=map(i->A.showbasis(rio(),i),1:dim(A)))
+  Util.Table(irr,col_labels=factors,row_labels=basis(A))
 end
 
 function PermRoot.radical(A::PolynomialQuotientAlgebra)
@@ -766,9 +767,7 @@ function Base.show(io::IO,ct::SolomonCharTable)
   print(io,"CharTable(",ct.A,")")
   if !hasdecor(io) return end
   println(io)
-  rows=map(w->joindigits(w),ct.rows)
-  irr=map(e->iszero(e) ? "." : repr(e),ct.irr)
-  showtable(io,irr,row_labels=rows)
+  showtable(io,ct.irr,row_labels=joindigits.(ct.rows),dotzero=true)
 end
 
 function Chars.CharTable(A::SolomonAlgebra)

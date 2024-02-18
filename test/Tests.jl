@@ -72,11 +72,12 @@ function RG(W;log=false)
   printstyled(rio(),"Tests for W=",W," -------------------------------\n";
             bold=true,color=:magenta)
   global curW=W
-  @time for (i,(s,t)) in enumerate(sort(collect(test),by=first))
+  for (i,(s,t)) in enumerate(sort(collect(test),by=first))
+# @time for (i,(s,t)) in enumerate(sort(collect(test),by=first))
     global curtest=s
     if t.applicable(W) 
       printstyled(i,"/",length(test),"  ",s,": ",t.comment,"\n";color=:green)
-      getfield(Tests,Symbol(:T,s))(W) 
+@time    getfield(Tests,Symbol(:T,s))(W) 
     end 
   end
   if log close(curio) end
@@ -237,8 +238,8 @@ function Trepresentations(W,l=Int[])
 	pos=zip(ct[i],traces_words_mats(gr,cl))
 	f=findall(x->x[1]!=x[2],pos)
 #pos=List(pos,x->List(x,FormatGAP))
-        ChevieErr(sprint(x->showtable(x,row_labels=f,
-           column_labels=["is","should be"]),pos[f];context=:limit=>true))
+        ChevieErr(Util.Table(x,row_labels=f,
+           column_labels=["is","should be"]),pos[f])
       end
     end
   end
@@ -1769,9 +1770,9 @@ function TG4_22index(W)
   end
   if a!=b || b!=c
     a=hcat(filter(x->length(unique(x))>1,collect(eachcol(toM([a,b,c]))))...)
-    showtable(stdout,a[[2,3],:];
-      row_labels=[string("fusion to ",repr(O;context=rio())),"classtext"],
-      col_labels=string.(a[1,:]),rows_label="indexclasses")
+    ChevieErr(Util.Table(a[[2,3],:];
+      row_labels=["fusion to "*repr(O;context=rio()),"classtext"],
+      col_labels=string.(a[1,:]),rows_label="indexclasses"))
   end
 end
 

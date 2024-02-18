@@ -223,12 +223,12 @@ julia> t=ICCTable(uc)
 Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂
       │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1
 ──────┼──────────────────────────────
-Xφ₁‚₀ │ 1          0      1  1  1  1
-Xφ′₁‚₃│ 0          1      0  1  0 q²
-Xφ₂‚₁ │ 0          0      1  1  1 Φ₈
-Xφ₂‚₂ │ 0          0      0  1  1 Φ₄
-Xφ″₁‚₃│ 0          0      0  0  1  1
-Xφ₁‚₆ │ 0          0      0  0  0  1
+Xφ₁‚₀ │ 1          .      1  1  1  1
+Xφ′₁‚₃│ .          1      .  1  . q²
+Xφ₂‚₁ │ .          .      1  1  1 Φ₈
+Xφ₂‚₂ │ .          .      .  1  1 Φ₄
+Xφ″₁‚₃│ .          .      .  .  1  1
+Xφ₁‚₆ │ .          .      .  .  .  1
 ```
 
 Here  the row labels  and the column  labels show the  two ways of indexing
@@ -1033,20 +1033,20 @@ Coefficients of Xᵪ on Yᵩ for series L=A₃₍₎=Φ₁³ W_G(L)=A₃
      │4 31 22 211 1111
 ─────┼─────────────────
 X4   │1  1  1   1    1
-X31  │0  1  1  Φ₂   Φ₃
-X22  │0  0  1   1   Φ₄
-X211 │0  0  0   1   Φ₃
-X1111│0  0  0   0    1
+X31  │.  1  1  Φ₂   Φ₃
+X22  │.  .  1   1   Φ₄
+X211 │.  .  .   1   Φ₃
+X1111│.  .  .   .    1
 ```
 In  the  above  the  multiplicities  are  given  as  products of cyclotomic
 polynomials  to display them  more compactly. However  the format of such a
 table can be controlled more precisely.
 
 For  instance,  one  can  ask  to  not  display  the entries as products of
-cyclotomic polynomials:
+cyclotomic polynomials and not display the zeroes as '.'
 
 ```julia-rep1
-julia> xdisplay(t;cycpol=false)
+julia> xdisplay(t;cycpol=false,dotzero=false)
 Coefficients of Xᵪ on Yᵩ for A3
      │4 31 22 211   1111
 ─────┼───────────────────
@@ -1067,18 +1067,18 @@ relative Weyl group of the given Springer series):
 julia> uc=UnipotentClasses(coxgroup(:F,4));
 julia> t=ICCTable(uc);
 julia> sh=[13,24,22,18,14,9,11,19];
-julia> show(IOContext(stdout,:rows=>sh,:cols=>sh,:limit=>true),t);
-Coefficients of Xᵪ on Yᵩ for F₄
+julia> xdisplay(t,rows=sh,cols=sh)
+Coefficients of Xᵪ on Yᵩ for series L=F₄₍₎=Φ₁⁴ W_G(L)=F₄
       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾
 ──────┼─────────────────────────────────────────────
-Xφ₉‚₁₀│    1  0  0     0     0      0  0          0
-Xφ″₈‚₉│    1  1  0     0     0      0  0          0
-Xφ′₈‚₉│    1  0  1     0     0      0  0          0
-Xφ″₄‚₇│    1  1  0     1     0      0  0          0
-Xφ′₆‚₆│   Φ₄  1  1     1     1      0  0          0
-Xφ₄‚₈ │   q²  0  0     0     0      1  0          0
-Xφ″₉‚₆│   Φ₄ Φ₄  0     1     0      0  1          0
-Xφ′₄‚₇│   q²  0 Φ₄     0     1      0  0          1
+Xφ₉‚₁₀│    1  .  .     .     .      .  .          .
+Xφ″₈‚₉│    1  1  .     .     .      .  .          .
+Xφ′₈‚₉│    1  .  1     .     .      .  .          .
+Xφ″₄‚₇│    1  1  .     1     .      .  .          .
+Xφ′₆‚₆│   Φ₄  1  1     1     1      .  .          .
+Xφ₄‚₈ │   q²  .  .     .     .      1  .          .
+Xφ″₉‚₆│   Φ₄ Φ₄  .     1     .      .  1          .
+Xφ′₄‚₇│   q²  . Φ₄     .     1      .  .          1
 ```
 
 The   function  'ICCTable'  returns  an   object  with  various  pieces  of
@@ -1166,7 +1166,8 @@ function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
   row_labels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
-  showtable(io,transpose(tbl);row_labels=row_labels,col_labels=col_labels)
+  showtable(io,transpose(tbl);row_labels=row_labels,col_labels=col_labels,
+            dotzero=get(io,:dotzero,true))
 end
 
 @GapObj struct XTable end
@@ -1191,13 +1192,13 @@ julia> XTable(UnipotentClasses(W))
 Values of character sheaves X̃ᵪ on local systems φ
       X̃ᵪ|φ│   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂
 ──────────┼────────────────────────────────────────────
-X_φ₁‚₀^G₂ │   1  1  1           0          0      1  1
-X_φ₁‚₆^G₂ │  q⁶  0  0           0          0      0  0
-X_φ′₁‚₃^G₂│  q³  0  q           0          q      0  0
-X_φ″₁‚₃^G₂│  q³ q³  0           0          0      0  0
-X_φ₂‚₁^G₂ │ qΦ₈  q  q           0          0      q  0
-X_φ₂‚₂^G₂ │q²Φ₄ q² q²           0          0      0  0
-X_Id^.    │   0  0  0          q²          0      0  0
+X_φ₁‚₀^G₂ │   1  1  1           .          .      1  1
+X_φ₁‚₆^G₂ │  q⁶  .  .           .          .      .  .
+X_φ′₁‚₃^G₂│  q³  .  q           .          q      .  .
+X_φ″₁‚₃^G₂│  q³ q³  .           .          .      .  .
+X_φ₂‚₁^G₂ │ qΦ₈  q  q           .          .      q  .
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²           .          .      .  .
+X_Id^.    │   .  .  .          q²          .      .  .
 ```
 
 The functions `X̃` in the first column are decorated by putting as an
@@ -1209,39 +1210,39 @@ Values of character sheaves X̃ᵪ on unipotent classes
   X̃ᵪ|class│   1 A₁ Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
 ──────────┼──────────────────────────────────────────
 X_φ₁‚₀^G₂ │   1  1  1      1          1         1  1
-X_φ₁‚₆^G₂ │  q⁶  0  0      0          0         0  0
-X_φ′₁‚₃^G₂│  q³  0  q     2q          0        -q  0
-X_φ″₁‚₃^G₂│  q³ q³  0      0          0         0  0
-X_φ₂‚₁^G₂ │ qΦ₈  q  q      q          q         q  0
-X_φ₂‚₂^G₂ │q²Φ₄ q² q²      0          0         0  0
-X_Id^.    │   0  0  0     q²        -q²        q²  0
+X_φ₁‚₆^G₂ │  q⁶  .  .      .          .         .  .
+X_φ′₁‚₃^G₂│  q³  .  q     2q          .        -q  .
+X_φ″₁‚₃^G₂│  q³ q³  .      .          .         .  .
+X_φ₂‚₁^G₂ │ qΦ₈  q  q      q          q         q  .
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²      .          .         .  .
+X_Id^.    │   .  .  .     q²        -q²        q²  .
 
 julia> XTable(UnipotentClasses(W,2))
 Values of character sheaves X̃ᵪ on local systems φ
       X̃ᵪ|φ│   1 A₁ Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂⁽¹¹⁾ G₂
 ──────────┼───────────────────────────────────────────────────
-X_φ₁‚₀^G₂ │   1  1  1           0          0      1      0  1
-X_φ₁‚₆^G₂ │  q⁶  0  0           0          0      0      0  0
-X_φ′₁‚₃^G₂│  q³  0  q           0          q      0      0  0
-X_φ″₁‚₃^G₂│  q³ q³  0           0          0      0      0  0
-X_φ₂‚₁^G₂ │ qΦ₈  q  q           0          0      q      0  0
-X_φ₂‚₂^G₂ │q²Φ₄ q² q²           0          0      0      0  0
-X_Id^.    │   0  0  0          q²          0      0      0  0
-X_Id^.    │   0  0  0           0          0      0      q  0
+X_φ₁‚₀^G₂ │   1  1  1           .          .      1      .  1
+X_φ₁‚₆^G₂ │  q⁶  .  .           .          .      .      .  .
+X_φ′₁‚₃^G₂│  q³  .  q           .          q      .      .  .
+X_φ″₁‚₃^G₂│  q³ q³  .           .          .      .      .  .
+X_φ₂‚₁^G₂ │ qΦ₈  q  q           .          .      q      .  .
+X_φ₂‚₂^G₂ │q²Φ₄ q² q²           .          .      .      .  .
+X_Id^.    │   .  .  .          q²          .      .      .  .
+X_Id^.    │   .  .  .           .          .      .      q  .
 
 julia> XTable(UnipotentClasses(rootdatum(:sl,4)))
 Values of character sheaves X̃ᵪ on local systems φ
     X̃ᵪ|φ│1111 211 22⁽¹¹⁾ 22 31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)
 ────────┼─────────────────────────────────────────────
-X₁₁₁₁^A₃│  q⁶   0      0  0  0 0      0     0       0
-X₂₁₁^A₃ │q³Φ₃  q³      0  0  0 0      0     0       0
-X₂₂^A₃  │q²Φ₄  q²      0 q²  0 0      0     0       0
-X₃₁^A₃  │ qΦ₃ qΦ₂      0  q  q 0      0     0       0
-X₄^A₃   │   1   1      0  1  1 1      0     0       0
-X₁₁^A₁  │   0   0     q³  0  0 0      0     0       0
-X₂^A₁   │   0   0     q²  0  0 0      0     q       0
-X_Id^.  │   0   0      0  0  0 0   q³⁄₂     0       0
-X_Id^.  │   0   0      0  0  0 0      0     0    q³⁄₂
+X₁₁₁₁^A₃│  q⁶   .      .  .  . .      .     .       .
+X₂₁₁^A₃ │q³Φ₃  q³      .  .  . .      .     .       .
+X₂₂^A₃  │q²Φ₄  q²      . q²  . .      .     .       .
+X₃₁^A₃  │ qΦ₃ qΦ₂      .  q  q .      .     .       .
+X₄^A₃   │   1   1      .  1  1 1      .     .       .
+X₁₁^A₁  │   .   .     q³  .  . .      .     .       .
+X₂^A₁   │   .   .     q²  .  . .      .     q       .
+X_Id^.  │   .   .      .  .  . .   q³⁄₂     .       .
+X_Id^.  │   .   .      .  .  . .      .     .    q³⁄₂
 ```
 
 A  side effect  of calling  `XTable` with  `classes=true` is to compute the
@@ -1319,7 +1320,7 @@ function Base.show(io::IO,::MIME"text/plain",x::XTable)
   end
   tbl=x.scalar
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  showtable(io,tbl;row_labels,col_labels,rows_label)
+  showtable(io,tbl;row_labels,col_labels,rows_label,dotzero=get(io,:dotzero,true))
 end
 
 @GapObj struct GreenTable end
@@ -1346,13 +1347,13 @@ julia> GreenTable(UnipotentClasses(W))
 Values of Green functions Q_wF on local systems φ
    Qᴵ_wF|φ│        1     A₁       Ã₁ G₂(a₁)⁽¹¹¹⁾ G₂(a₁)⁽²¹⁾ G₂(a₁) G₂
 ──────────┼───────────────────────────────────────────────────────────
-Q_A₀^G₂   │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂           0          q   2q+1  1
-Q_Ã₁^G₂   │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂           0          q      1  1
-Q_A₁^G₂   │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁           0         -q      1  1
-Q_G₂^G₂   │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂           0         -q     Φ₂  1
-Q_A₂^G₂   │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂           0          q    -Φ₁  1
-Q_A₁+Ã₁^G₂│  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁           0         -q  -2q+1  1
-Q_^.      │        0      0        0          q²          0      0  0
+Q_A₀^G₂   │  Φ₂²Φ₃Φ₆   Φ₂Φ₃ (2q+1)Φ₂           .          q   2q+1  1
+Q_Ã₁^G₂   │-Φ₁Φ₂Φ₃Φ₆  -Φ₁Φ₃       Φ₂           .          q      1  1
+Q_A₁^G₂   │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁           .         -q      1  1
+Q_G₂^G₂   │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂           .         -q     Φ₂  1
+Q_A₂^G₂   │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂           .          q    -Φ₁  1
+Q_A₁+Ã₁^G₂│  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁           .         -q  -2q+1  1
+Q_^.      │        .      .        .          q²          .      .  .
 ```
 
 The  functions ``Q_{wF}`` depend only on the conjugacy class of `wF`, so in
@@ -1370,21 +1371,21 @@ Q_A₁^G₂    │-Φ₁Φ₂Φ₃Φ₆   Φ₂Φ₆      -Φ₁  -2q+1         
 Q_G₂^G₂    │ Φ₁²Φ₂²Φ₃ -Φ₁Φ₂²    -Φ₁Φ₂    -Φ₁         Φ₂      2q+1  1
 Q_A₂^G₂    │ Φ₁²Φ₂²Φ₆  Φ₁²Φ₂    -Φ₁Φ₂     Φ₂        -Φ₁     -2q+1  1
 Q_A₁+Ã₁^G₂ │  Φ₁²Φ₃Φ₆  -Φ₁Φ₆ (2q-1)Φ₁  -4q+1      -2q+1       -Φ₁  1
-Q_^.       │        0      0        0     q²        -q²        q²  0
+Q_^.       │        .      .        .     q²        -q²        q²  .
 
 julia> GreenTable(UnipotentClasses(rootdatum(:sl,4)))
 Values of Green functions Q_wF on local systems φ
  Qᴵ_wF|φ│     1111          211 22⁽¹¹⁾       22   31 4 4^(ζ₄) 4⁽⁻¹⁾ 4^(ζ₄³)
 ────────┼───────────────────────────────────────────────────────────────────
-Q₁₁₁₁^A₃│  Φ₂²Φ₃Φ₄ (3q²+2q+1)Φ₂      0 (2q+1)Φ₂ 3q+1 1      0     0       0
-Q₂₁₁^A₃ │-Φ₁Φ₂Φ₃Φ₄   -q³+q²+q+1      0       Φ₂   Φ₂ 1      0     0       0
-Q₂₂^A₃  │  Φ₁²Φ₃Φ₄        -Φ₁Φ₄      0  2q²-q+1  -Φ₁ 1      0     0       0
-Q₃₁^A₃  │ Φ₁²Φ₂²Φ₄        -Φ₁Φ₂      0    -Φ₁Φ₂    1 1      0     0       0
-Q₄^A₃   │ -Φ₁³Φ₂Φ₃        Φ₁²Φ₂      0      -Φ₁  -Φ₁ 1      0     0       0
-Q₁₁^A₁  │        0            0   q²Φ₂        0    0 0      0     q       0
-Q₂^A₁   │        0            0  -q²Φ₁        0    0 0      0     q       0
-Q_^.    │        0            0      0        0    0 0   q³⁄₂     0       0
-Q_^.    │        0            0      0        0    0 0      0     0    q³⁄₂
+Q₁₁₁₁^A₃│  Φ₂²Φ₃Φ₄ (3q²+2q+1)Φ₂      . (2q+1)Φ₂ 3q+1 1      .     .       .
+Q₂₁₁^A₃ │-Φ₁Φ₂Φ₃Φ₄   -q³+q²+q+1      .       Φ₂   Φ₂ 1      .     .       .
+Q₂₂^A₃  │  Φ₁²Φ₃Φ₄        -Φ₁Φ₄      .  2q²-q+1  -Φ₁ 1      .     .       .
+Q₃₁^A₃  │ Φ₁²Φ₂²Φ₄        -Φ₁Φ₂      .    -Φ₁Φ₂    1 1      .     .       .
+Q₄^A₃   │ -Φ₁³Φ₂Φ₃        Φ₁²Φ₂      .      -Φ₁  -Φ₁ 1      .     .       .
+Q₁₁^A₁  │        .            .   q²Φ₂        .    . .      .     q       .
+Q₂^A₁   │        .            .  -q²Φ₁        .    . .      .     q       .
+Q_^.    │        .            .      .        .    . .   q³⁄₂     .       .
+Q_^.    │        .            .      .        .    . .      .     .    q³⁄₂
 ```
 """
 function GreenTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
@@ -1424,7 +1425,7 @@ function Base.show(io::IO,::MIME"text/plain",x::GreenTable)
   end
   tbl=x.scalar
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  showtable(io,tbl;row_labels,col_labels,rows_label)
+  showtable(io,tbl;row_labels,col_labels,rows_label,dotzero=get(io,:dotzero,true))
 end
 
 @GapObj struct ValuesTable end
@@ -1447,15 +1448,15 @@ Values of unipotent characters for G₂ on unipotent classes
        │        1          A₁     Ã₁   G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
 ───────┼──────────────────────────────────────────────────────────────
 φ₁‚₀   │        1           1      1        1          1         1  1
-φ₁‚₆   │       q⁶           0      0        0          0         0  0
-φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3      q (q+5)q/3     -qΦ₁/3     qΦ₁/3  0
-φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
-φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  qΦ₂/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  0
-φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2  qΦ₂/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  0
-G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2 -qΦ₁/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  0
-G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 -qΦ₁/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  0
-G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
-G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      0    qΦ₁/3     -qΦ₁/3  (q+2)q/3  0
+φ₁‚₆   │       q⁶           .      .        .          .         .  .
+φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3      q (q+5)q/3     -qΦ₁/3     qΦ₁/3  .
+φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .
+φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  qΦ₂/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  .
+φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2  qΦ₂/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  .
+G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2 -qΦ₁/2   -qΦ₁/2      qΦ₂/2    -qΦ₁/2  .
+G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 -qΦ₁/2 (q+5)q/6     -qΦ₁/6     qΦ₁/6  .
+G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .
+G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3      .    qΦ₁/3     -qΦ₁/3  (q+2)q/3  .
 
 
 julia> UnipotentValues(UnipotentClasses(W,3);classes=true)
@@ -1463,12 +1464,12 @@ Values of unipotent characters for G₂ on unipotent classes
        │        1          A₁         Ã₁ G₂(a₁) G₂(a₁)₍₂₎    G₂       G₂_(ζ₃)
 ───────┼──────────────────────────────────────────────────────────────────────
 φ₁‚₀   │        1           1          1      1         1     1             1
-φ₁‚₆   │       q⁶           0          0      0         0     0             0
+φ₁‚₆   │       q⁶           .          .      .         .     .             .
 φ′₁‚₃  │  qΦ₃Φ₆/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3
 φ″₁‚₃  │  qΦ₃Φ₆/3  (2q²+1)q/3        q/3  qΦ₂/3    -qΦ₁/3 -2q/3           q/3
 φ₂‚₁   │ qΦ₂²Φ₃/6 (2q+1)qΦ₂/6  (3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3
-φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2      qΦ₂/2 -qΦ₁/2     qΦ₂/2     0             0
-G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2     -qΦ₁/2 -qΦ₁/2     qΦ₂/2     0             0
+φ₂‚₂   │ qΦ₂²Φ₆/2       qΦ₂/2      qΦ₂/2 -qΦ₁/2     qΦ₂/2     .             .
+G₂[-1] │ qΦ₁²Φ₃/2      -qΦ₁/2     -qΦ₁/2 -qΦ₁/2     qΦ₂/2     .             .
 G₂[1]  │ qΦ₁²Φ₆/6 (2q-1)qΦ₁/6 (-3q+1)q/6  qΦ₂/6    -qΦ₁/6  2q/3          -q/3
 G₂[ζ₃] │qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3 (-ζ₃+2ζ₃²)q/3
 G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ₁/3   q/3  (2ζ₃-ζ₃²)q/3
@@ -1476,12 +1477,12 @@ G₂[ζ₃²]│qΦ₁²Φ₂²/3    -qΦ₁Φ₂/3        q/3  qΦ₂/3    -qΦ
        │     G₂_(ζ₃²)       (Ã₁)₃
 ───────┼──────────────────────────
 φ₁‚₀   │            1           1
-φ₁‚₆   │            0           0
+φ₁‚₆   │            .           .
 φ′₁‚₃  │          q/3  (2q²+1)q/3
 φ″₁‚₃  │          q/3    -qΦ₁Φ₂/3
 φ₂‚₁   │         -q/3 (2q+1)qΦ₂/6
-φ₂‚₂   │            0       qΦ₂/2
-G₂[-1] │            0      -qΦ₁/2
+φ₂‚₂   │            .       qΦ₂/2
+G₂[-1] │            .      -qΦ₁/2
 G₂[1]  │         -q/3 (2q-1)qΦ₁/6
 G₂[ζ₃] │ (2ζ₃-ζ₃²)q/3    -qΦ₁Φ₂/3
 G₂[ζ₃²]│(-ζ₃+2ζ₃²)q/3    -qΦ₁Φ₂/3
@@ -1517,7 +1518,7 @@ function Base.show(io::IO,::MIME"text/plain",x::ValuesTable)
   row_labels=charnames(TeX(io),UnipotentCharacters(x.uc.spets))
   tbl=improve_type(x.scalar)
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  showtable(io,tbl;row_labels,col_labels)
+  showtable(io,tbl;row_labels,col_labels,dotzero=get(io,:dotzero,true))
 end
 
 @GapObj struct TwoVarGreenTable end

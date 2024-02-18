@@ -862,6 +862,7 @@ PermGroups.orbit(W::FiniteCoxeterGroup,p,F::Function)=orbit(W.G,p,F)
 PermGroups.orbits(W::FiniteCoxeterGroup,v,F::Function=^)=orbits(W.G,v,F)
 PermGroups.orbits(W::FiniteCoxeterGroup)=orbits(W.G)
 PermGroups.stabilizer(W::FiniteCoxeterGroup,p,F::Function)=stabilizer(W.G,p,F)
+PermGroups.stabilizer(W::FiniteCoxeterGroup,p,::typeof(ontuples))=stabilizer(W.G,p,ontuples)
 
 Base.isfinite(W::FiniteCoxeterGroup)=true
 #--------------------- CoxSym ---------------------------------

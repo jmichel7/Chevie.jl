@@ -71,7 +71,7 @@ end
 
 function Groups.classreps(g::PermGroup)
   get!(g,:classreps)do
-    if length(g)>10000 gapclassreps(g)
+    if length(g)>19000 gapclassreps(g)
     else map(c->c.representative,conjugacy_classes(g))
     end
   end

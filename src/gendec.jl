@@ -114,9 +114,8 @@ end
 
 function Base.show(io::IO,::MIME"text/plain",m::ΦDecMat)
   println(io,m)
-  scal=map(e->(!ismissing(e) && iszero(e)) ? "." : TeX(io,e),m.scalar)
-  row_labels=charnames(io,UnipotentCharacters(m.W))
-  showtable(io,scal;row_labels,col_labels=m.colnames,rows=m.order)
+  showtable(io,m.scalar;row_labels=charnames(io,UnipotentCharacters(m.W)),
+    col_labels=m.colnames,rows=m.order,dotzero=true)
 end
 
 struct InducedDecompositionMatrix{T}
@@ -180,9 +179,8 @@ end
 
 function Base.show(io::IO,::MIME"text/plain",m::InducedDecompositionMatrix)
   println(io,m)
-  scal=map(e->(!ismissing(e) && iszero(e)) ? "." : TeX(io,e),m.scalar)
-  row_labels=charnames(io,UnipotentCharacters(m.W))
   order=sort(axes(m.scalar,1),
-              by=i->maximum(findall(!iszero,m.scalar[i,:]);init=0))
-  showtable(io,scal;row_labels,col_labels=m.colnames,rows=order)
+    by=i->maximum(findall(!iszero,m.scalar[i,:]);init=0))
+  showtable(io,m.scalar;row_labels=charnames(io,UnipotentCharacters(m.W)),
+    col_labels=m.colnames,rows=order,dotzero=true)
 end

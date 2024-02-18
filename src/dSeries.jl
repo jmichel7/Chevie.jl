@@ -620,7 +620,7 @@ function format(io::IO,s::Series)
   end
   m=permutedims(toM(m))
   println(io)
-  showtable(io,m;row_labels=string.(charnumbers(s)),col_labels)
+  showtable(io,m;row_labels=charnumbers(s),col_labels)
 end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)

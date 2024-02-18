@@ -493,8 +493,14 @@ julia> fakedegrees(coxgroup(:A,2),Pol(:q))
 """
 function fakedegrees(W,q=Pol();recompute=false)
   if !recompute
-    res=improve_type(map(p->fakedegree(W,p,q),charinfo(W).charparams))
-    if !any(isnothing,res) && !all(iszero,res) return res end
+    res=get!(W,:fakedegrees)do
+      improve_type(map(p->fakedegree(W,p,Pol()),charinfo(W).charparams))
+    end
+    if !any(isnothing,res) && !all(iszero,res) 
+      if q==Pol() return res
+      else return map(x->x(q),res)
+      end
+    end
   end
   # recompute from general principles
   InfoChevie("# recomputing fakedegrees for ",W,"\n")
@@ -1066,8 +1072,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", ct::CharTable)
   println(io,ct)
-  irr=map(e->iszero(e) ? "." : repr(e;context=io),ct.irr)
-  showtable(io,irr,row_labels=ct.charnames,col_labels=ct.classnames)
+  showtable(io,ct.irr,row_labels=ct.charnames,col_labels=ct.classnames,dotzero=true)
 end
 
 function CharTable(t::TypeIrred;opt...)
@@ -1120,7 +1125,7 @@ CharTable(³D₄)
 1.21 │ .  2    -2     .  .     2     -2
 ```
 """
-function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
+function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)
   get!(W,:chartable)do
     t=refltype(W)
     ct=isempty(t) ? 
@@ -1129,7 +1134,7 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)::CharTable
     ct.name=repr(W;context=:TeX=>true)
     ct.repr="CharTable($W)"
     ct
-  end
+  end::CharTable
 end
 
 function CharTable(W::Group)
@@ -1587,8 +1592,7 @@ end
 
 function Base.show(io::IO,::MIME"text/plain",t::InductionTable)
   println(io,t)
-  scal=map(e->iszero(e) ? "." : TeX(io,e),t.scalar)
-  showtable(io,scal;row_labels=t.gcharnames,col_labels=t.ucharnames)
+  showtable(io,t.scalar;row_labels=t.gcharnames,col_labels=t.ucharnames,dotzero=true)
 end
 
 """
