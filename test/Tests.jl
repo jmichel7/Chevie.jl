@@ -957,13 +957,15 @@ function EigenAndDegHecke(s)
   xprintln("H=",H)
   ct=CharTable(H).irr
   ct1=0 .+CharTable(W).irr
+  n=axes(ct1,1)
   if !any(ismissing,ct)
    ct2=improve_type(scalar.(value.(ct,Ref(:q=>zeta))))
+   good=axes(ct2,2)
   else
-   ct2=ct
+   ct2=copy(ct1)
+   good=filter(i->!any(ismissing,ct[:,i]),n)
+   ct2[:,good]=improve_type(scalar.(value.(ct[:,good],Ref(:q=>zeta))))
   end
-  n=axes(ct2,1)
-  good=filter(i->!any(ismissing,ct2[:,i]),n)
   p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
   if !isone(p) println("***** perm=",p) 
     if iscyclic(W) ChevieErr("should not have perm")end 

@@ -903,7 +903,10 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF));NC=fal
   end
   phi=reduced(R,phi)
   if !(phi isa Perm) phi=phi.phi end
-  RF=spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}(:parent=>WF))
+  if isone(phi) RF=spets(R)
+  else RF=spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}())
+  end
+  RF.parent=WF
   # perhaps no parent?
   if !NC refltype(RF) end
   RF

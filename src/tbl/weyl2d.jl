@@ -45,7 +45,7 @@ chevieset(Symbol("2D"), :CharParams, (n->begin
             filter(chevieget(Symbol("2D"), :IsPreferred), (chevieget(:B, :CharParams))(n))
         end))
 chevieset(Symbol("2D"), :CharInfo, function (n,)
-        local res, resparams
+        local res, resparams, f
         res = Dict{Symbol, Any}(:charparams => (chevieget(Symbol("2D"), :CharParams))(n))
         res[:extRefl] = map((i->begin
                         [fill(0, max(0, (1 + i) - 1)) + 1, [n - i]]
@@ -64,6 +64,11 @@ chevieset(Symbol("2D"), :CharInfo, function (n,)
                     end), res[:charparams])
         res[:nrGroupClasses] = length(resparams)
         res[:charnames] = map(PartitionTupleToString, res[:charparams])
+        f = map((c->begin
+                        fegsymbol(symbol_partition_tuple(c, 0), 1)
+                    end), res[:charparams])
+        res[:b] = map(valuation, f)
+        res[:B] = map(degree, f)
         return res
     end)
 chevieset(Symbol("2D"), :FakeDegree, function (n, c, q)

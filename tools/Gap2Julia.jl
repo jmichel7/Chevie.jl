@@ -188,6 +188,7 @@ ftrans=Dict{Symbol,Symbol}(
   :Symbols=>:BDSymbols,
   :Tableaux=>:tableaux,
   :Torus=>:torus,
+  :Valuation=>:valuation,
   :Twistings=>:twistings,
 )
 

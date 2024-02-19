@@ -1074,9 +1074,15 @@ the parent group.
 """
 function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
 # contrary to GAP3, I is indices in W and not parent(W)
-  inclusion=sort!(vcat(orbits(refls(W,I),I)...))
-  N=div(length(inclusion),2)
-  if !all(<=(ngens(W)),I) I=simpleroots_subsystem(W,inclusion[1:N]) end
+  if !all(<=(ngens(W)),I) 
+    inclusion=sort!(vcat(orbits(refls(W,I),I)...))
+    inclusion=inclusion[1:div(length(inclusion),2)]
+    I=simpleroots_subsystem(W,inclusion)
+  end
+  if !haskey(W,:reflection_subgroups) 
+    W.reflection_subgroups=Dict{Vector{Int},FCSG}()
+  end
+  get!(W.reflection_subgroups,I)do
   C=cartan(W,I)
   rootdec=isempty(C) ? empty(W.rootdec) : roots(C)
   rootdec=vcat(rootdec,-rootdec)
@@ -1103,7 +1109,8 @@ function PermRoot.reflection_subgroup(W::FCG,I::AbstractVector{<:Integer})
   if isempty(inclusion) prop[:rank]=PermRoot.rank(W) end
   gens=isempty(I) ? eltype(W)[] : refls(W,I)
   G=PRSG(gens,one(W.G),inclusion,restriction,W.G,prop)
-  FCSG(G,rootdec,N,W,Dict{Symbol,Any}())
+  FCSG(G,rootdec,div(length(inclusion),2),W,Dict{Symbol,Any}())
+  end
 end
 
 PermRoot.reflection_subgroup(W::FCSG,I::AbstractVector{<:Integer})=
