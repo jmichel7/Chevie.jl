@@ -84,7 +84,7 @@ using UsingMerge
 @reexport using Primes: factor, eachfactor, divisors
 @reexport using OrderedCollections: OrderedDict
 # careful: use very little of LinearAlgebra
-@reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss
+@reexport using LinearAlgebra: diag, tr, I, Diagonal, exactdiv, det_bareiss, dot
 @reexport using PermGroups
 @reexport using SignedPerms
 @usingmerge verbose=true reexport CyclotomicNumbers

@@ -561,16 +561,17 @@ julia> map(N->with_inversions(W,N),combinations(1:nref(W)))
 ```
 """
 function with_inversions(W::FC,N)
-  w=one(W)
-  n=N
+  w=copy(one(W))
+  n=copy(N)
   while !isempty(n)
-    p=findfirst(x->x>0 && x<=ngens(W),n)
+    p=findfirst(<=(ngens(W)),n)
     if p===nothing return nothing end
     r=refls(W,n[p])
-    n=action.(Ref(W),setdiff(n,[n[p]]),r)
-    w=r*w
+    deleteat!(n,p)
+    n.=action.(Ref(W),n,r)
+    Perms.mul!(w,r)
   end
-  w^-1
+  w
 end
 
 """
@@ -699,7 +700,7 @@ Base.:(==)(W::FiniteCoxeterGroup,W1::FiniteCoxeterGroup)=W.G==W1.G
  PermRoot.refleigen, PermRoot.reflrep, PermRoot.refltype, PermRoot.restriction,
  PermRoot.simplecoroots,
  PermRoot.simple_conjugating, PermRoot.simple_reps, PermRoot.simpleroots,
- PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX,
+ PermRoot.unique_refls, PermRoot.torus_order, PermRoot.baseX, PermRoot.invbaseX,
  PermRoot.central_action, 
  Perms.reflection_length, Perms.last_moved
 

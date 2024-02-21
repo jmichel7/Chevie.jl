@@ -361,15 +361,13 @@ The  example above shows that the class containing the regular class of the
 Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
 """
 function induced_linear_form(W,K,h)
-# print("W=$W K=$K h=$h");
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
-  h=vcat(h,zeros(Int,rank(W)-semisimplerank(K)))
-  h=Int.(inv(Rational.(PermRoot.baseX(K.G)))*h)
-  r=parent(W).G.roots[inclusion(W)]
-  v=toM(r[1:W.N])*h
-  w=with_inversions(W,filter(i->v[i]<0,1:W.N))
-  map(i->sum(r[i].*h),restriction.(Ref(W),
-        inclusion.(Ref(W),eachindex(gens(W))).^(w^-1)))
+  h=vcat(h,fill(0,rank(W)-semisimplerank(K)))
+  h=Int.(invbaseX(K)*h)
+  r=roots(W)
+  v=dot.(view(r,1:W.N),Ref(h))
+  w=inv(with_inversions(W,findall(<(0),v)))
+  dot.(view(r,action.(Ref(W),eachindex(gens(W)),w)),Ref(h))
 end
 
 """
