@@ -122,9 +122,8 @@ end
 """
 `eigmat(m::Matrix)` eigenvalues of finite order of `m`, as a `Vector{Root1}`
 """
-function eigmat(m::Matrix)
-  l=[fill(e,m) for (e,m) in CycPol(Pol(charpoly(m))).v]
-  if isempty(l) Root1[] else vcat(l...) end
+function eigmat(M::Matrix)
+  [Root1(;r=e) for (e,m) in CycPol(Pol(charpoly(M))).v for i in 1:m]
 end
 
 "`CycPol(x::Mvp)` converts univariate `Mvp` `x` to a `CycPol`"

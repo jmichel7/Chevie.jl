@@ -73,6 +73,7 @@ using ..Combinat: arrangements, partition_tuples, collectby
 using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, subs
 using LaurentPolynomials
+using ModuleElts:ModuleElt
 export shiftβ, βset, partβ, symbol_partition_tuple,
 valuation_gendeg_symbol,      degree_gendeg_symbol,      degree_fegsymbol,
 valuation_fegsymbol,   defectsymbol,   fullsymbol,   ranksymbol,  symbols,
@@ -500,6 +501,22 @@ julia> stringsymbol.(symbols(3,3,0)) # unipotent characters of G(3,3,3)
 """
 symbols(e,r,c=1,def=0)=vcat(map(s->symbolsshape(r,s),shapesSymbols(e,r,c,def))...)
 
+# for S β-numbers ∏(x^{ei}-x^{ej}) for i>j, i,j∈S
+function Δ(S,e) 
+  l=length(S)
+  if l<2 return one(CycPol) end
+  v=sum(e*S[i] for i in 1:l for j in i+1:l)
+  p=[k//(e*(S[j]-S[i])) for i in 1:l for j in i+1:l for k in 0:e*(S[j]-S[i])-1]
+  CycPol(1,v,ModuleElt(p.=>1))
+end
+
+# for S β-numbers ∏(x^{eh}-1) for l in S for h in 1:l
+function Θ(S,e) 
+  if iszero(sum(S)) return one(CycPol) end
+  p=[i//(e*h) for l in S for h in 1:l for i in 0:e*h-1]
+  CycPol(1,0,ModuleElt(p.=>1))
+end
+
 """
 `fegsymbol(S,p=0)`
 
@@ -520,22 +537,13 @@ function fegsymbol(s,p=0) # See Mal95, 2.11 and 5.7
   e=length(s)
   r=ranksymbol(s)
   ep=E(e,p)
-  function delta(S)
-    l=length(S)
-    if l<2 return one(CycPol) end
-    prod(CycPol(Pol([1],e*S[j])-Pol([1],e*S[i])) for i in 1:l for j in i+1:l)
-  end
-  function theta(S)
-    if iszero(sum(S)) return one(CycPol) end
-    prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
-  end
   if !allequal(length.(s[2:end])) return zero(CycPol) end
   d=defectsymbol(s)
-  if d==1 res=theta([r])
-  elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-Pol(ep))
+  if d==1 res=Θ([r],e)
+  elseif d==0 res=Θ([r-1],e)*CycPol(Pol([1],r)-Pol(ep))
   else return zero(CycPol)
   end
-  res*=prod(S->delta(S)//theta(S),s)
+  res*=prod(S->Δ(S,e)//Θ(S,e),s)
   res//=CycPol(1,sum([div(x*(x-1),2) for x in e.*(1:div(sum(length,s),e)-1).+d%2]))
   if d==1 res*=CycPol(1,sum((0:e-1).*map(sum,s)))
   else
@@ -548,7 +556,7 @@ function fegsymbol(s,p=0) # See Mal95, 2.11 and 5.7
   if r==2 && (e>2 && ep==E(e))
     res=subs(res,Pol([E(2e)],1))//E(2e,degree(res))
   end
-  return res
+  res
 end
 
 """
@@ -578,14 +586,10 @@ function gendeg_symbol(S)
   m=div(sum(sh),e)
   d=sum(sh)% e
   defect=(binomial(e,2)*m-transpose(sh)*(0:e-1))%e
-  function theta(S)
-    if iszero(sum(S)) return one(CycPol) end
-    prod(CycPol(Pol([1],e*h)-Pol(1)) for l in S for h in 1:l)
-  end
 
   # initialize with the q'-part of the group order
-  if d==1 res=theta([r])
-  elseif d==0 res=theta([r-1])*CycPol(Pol([1],r)-E(e,defect))
+  if d==1 res=Θ([r],e)
+  elseif d==0 res=Θ([r-1],e)*CycPol(Pol([1],r)-E(e,defect))
   end
 
   res*=(-1)^(sum((0:e-1).*binomial.(sh,2)))*
@@ -593,7 +597,7 @@ function gendeg_symbol(S)
     filter(m->i<j || degree(m)<degree(l),
            map(l->Pol([E(e,j)],l),S[j+1])));init=one(CycPol)),
            map(l->Pol([E(e,i)],l),S[i+1]));init=one(CycPol)),i:e-1),0:e-1)//
-     (prod(theta,S)*(E(4)^binomial(e-1,2)*root(e)^e)^m
+    (prod(x->Θ(x,e),S)*(E(4)^binomial(e-1,2)*root(e)^e)^m
       *CycPol(1,sum(map(x->binomial(x,2),e.*(1:m-1).+d))))
 
   # Dudas' sign change

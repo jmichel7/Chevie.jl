@@ -186,14 +186,14 @@ julia> CycPol([3,-5,6,3//7])
 function CycPols.CycPol(v::AbstractVector)
   coeff=v[1]
   valuation=convert(Int,v[2])
-  vv=Pair{Root1,Int}[]
+  vv=Pair{Rational{Int},Int}[]
   v1=convert.(Rational{Int},v[3:end])
   for i in v1
     if denominator(i)==1
       k=convert(Int,i)
-      for j in prime_residues(k) push!(vv,E(k,j)=>1) end
+      for j in prime_residues(k) push!(vv,j//k=>1) end
     else
-      push!(vv,Root1(;r=i)=>1)
+      push!(vv,i=>1)
     end
   end
   CycPol(coeff,valuation,ModuleElt(vv))

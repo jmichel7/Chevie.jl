@@ -1065,7 +1065,7 @@ function refleigen(t::TypeIrred)
   ct=CharTable(t).irr[charinfo(t).extRefl,:]
   v=map(i->Pol([(-1)^i],i),size(ct,1)-1:-1:0)
   l=CycPol.(vec(transpose(v)*ct))
-  ll=map(p->vcat(map(((r,c),)->fill(r,c),p.v.d)...),l)
+  ll=map(p->[Root1(;r=e) for (e,m) in p.v for i in 1:m],l)
   if haskey(t,:scalar) ll.*=Root1(prod(t.scalar)) end
   ll
 end
