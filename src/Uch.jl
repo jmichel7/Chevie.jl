@@ -693,7 +693,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
     m=hcat(m,almost)
     push!(col_labels,"almostch")
   end
-  LaurentPolynomials.varname[]=:q
+  io=IOContext(io,:varname=>:q)
   cycpol=get(io,:cycpol,true)
   m=hcat(m,repr.(cycpol ? CycPoldegrees(uc) : degrees(uc);context=io))
   push!(col_labels,"\\mbox{Deg}(\\gamma)")

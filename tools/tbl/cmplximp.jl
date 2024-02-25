@@ -353,19 +353,13 @@ chevieset(:imp, :ClassName, function (p,)
             error()
         end
     end)
-chevieset(:imp, :CharInfo, function (de, e, r)
-        local d, ct, res, t, tt, s, fd
-        res = Dict{Symbol, Any}()
-        d = div(de, e)
+chevieset(:imp, :CharParams, function (de, e, r)
+        local t, tt, s, charparams, d
         if e == 1
-            res[:charparams] = partition_tuples(r, de)
-            s = fill(0, max(0, (1 + d) - 1))
-            s[1] = 1
-            res[:charSymbols] = map((x->begin
-                            symbol_partition_tuple(x, s)
-                        end), res[:charparams])
+            return partition_tuples(r, de)
         else
-            res[:charparams] = []
+            charparams = []
+            d = div(de, e)
             for t = partition_tuples(r, de)
                 tt = map((i->begin
                                 circshift(t, i)
@@ -373,16 +367,30 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                 if t == Minimum(tt)
                     s = Position(tt, t)
                     if s == e
-                        push!(res[:charparams], t)
+                        push!(charparams, t)
                     else
                         t = t[1:s * d]
                         s = div(e, s)
-                        res[:charparams] = Append(res[:charparams], map((i->begin
+                        charparams = Append(charparams, map((i->begin
                                             Concatenation(t, [s, i])
                                         end), 0:s - 1))
                     end
                 end
             end
+            return charparams
+        end
+    end)
+chevieset(:imp, :CharInfo, function (de, e, r)
+        local d, ct, res, t, tt, s, fd
+        res = Dict{Symbol, Any}(:charparams => (chevieget(:imp, :CharParams))(de, e, r))
+        d = div(de, e)
+        if e == 1
+            s = fill(0, max(0, (1 + d) - 1))
+            s[1] = 1
+            res[:charSymbols] = map((x->begin
+                            symbol_partition_tuple(x, s)
+                        end), res[:charparams])
+        else
             if d == 1
                 res[:charSymbols] = map((x->begin
                                 symbol_partition_tuple(x, 0)

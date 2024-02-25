@@ -483,7 +483,7 @@ function PolynomialQuotientAlgebra(p::Pol{T})where T
   end
   basismult(i,j)=class(Pol([1],i+j-2))
   A=PolynomialQuotientAlgebra(p,sort(collect(factor(p)),by=x->degree(x[1])),
-                                     LaurentPolynomials.varname[],
+                                     LaurentPolynomials.varname,
            [basismult(i,j) for i in 1:d, j in 1:d],Dict{Symbol,Any}())
   A.showbasis=(io::IO,i)->fromTeX(io,i==1 ? "⋅1" :
                            string(A.var)*(i==2 ? "" : string("^{",i-1,"}")))

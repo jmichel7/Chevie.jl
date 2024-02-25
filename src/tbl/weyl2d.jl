@@ -44,6 +44,16 @@ chevieset(Symbol("2D"), :IsPreferred, function (pp,)
 chevieset(Symbol("2D"), :CharParams, (n->begin
             filter(chevieget(Symbol("2D"), :IsPreferred), (chevieget(:B, :CharParams))(n))
         end))
+Defect0to2(ST) = begin
+        local a
+        a = Minimum(SymmetricDifference(ST[1], ST[2]))
+        ST = [SymmetricDifference(ST[1], [a]), SymmetricDifference(ST[2], [a])]
+        if length(ST[1]) > length(ST[2])
+            return ST
+        else
+            return reverse(ST)
+        end
+    end
 chevieset(Symbol("2D"), :CharInfo, function (n,)
         local res, resparams, f
         res = Dict{Symbol, Any}(:charparams => (chevieget(Symbol("2D"), :CharParams))(n))
@@ -56,7 +66,7 @@ chevieset(Symbol("2D"), :CharInfo, function (n,)
                                     y == x || y == reverse(x)
                                 end))
                     end), res[:extRefl])
-        resparams = ((chevieget(:D, :CharInfo))(n))[:charparams]
+        resparams = (chevieget(:imp, :CharParams))(2, 2, n)
         res[:charRestrictions] = map((x->begin
                         PositionProperty(resparams, (y->begin
                                     y == x || y == reverse(x)
@@ -69,6 +79,11 @@ chevieset(Symbol("2D"), :CharInfo, function (n,)
                     end), res[:charparams])
         res[:b] = map(valuation, f)
         res[:B] = map(degree, f)
+        res[:charSymbols] = map((c->begin
+                        Defect0to2(symbol_partition_tuple(c, 0))
+                    end), res[:charparams])
+        res[:a] = map(valuation_gendeg_symbol, res[:charSymbols])
+        res[:A] = map(degree_gendeg_symbol, res[:charSymbols])
         return res
     end)
 chevieset(Symbol("2D"), :FakeDegree, function (n, c, q)
@@ -81,7 +96,7 @@ chevieset(Symbol("2D"), :PhiFactors, function (n,)
         return res
     end)
 chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
-        local symbols, uc, n, i, d, s, r, f, z, Defect0to2
+        local symbols, uc, n, i, d, s, r, f, z
         uc = Dict{Symbol, Any}(:harishChandra => [], :charSymbols => [], :almostHarishChandra => [])
         for d = 4 * (0:div(RootInt(rank) - 1, 2)) + 2
             r = div(d ^ 2, 4)
@@ -129,16 +144,6 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
                                 symbol_partition_tuple(x, 0)
                             end), (chevieget(Symbol("2D"), :CharParams))(rank))
             end
-            Defect0to2(ST) = begin
-                    local a
-                    a = Minimum(SymmetricDifference(ST[1], ST[2]))
-                    ST = [SymmetricDifference(ST[1], [a]), SymmetricDifference(ST[2], [a])]
-                    if length(ST[1]) > length(ST[2])
-                        return ST
-                    else
-                        return reverse(ST)
-                    end
-                end
             s[:charNumbers] = map((s->begin
                             Position(uc[:charSymbols], Defect0to2(s))
                         end), symbols)

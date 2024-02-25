@@ -71,7 +71,8 @@ const ok2=[
  :((CHEVIE.families).F42),
  :((CHEVIE.families).G4),
  :((CHEVIE.families).X2),
- :PartitionTwoCoreQuotient
+ :PartitionTwoCoreQuotient,
+ :Defect0to2
 ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)

@@ -36,6 +36,8 @@ chevieset(:I, :CharInfo, function(m)
     map(i->i==1 ? [1] : i==l+1 ? [1] : [0],1:m)
   end)
   res[:charSymbols]=charSymbols
+  res[:A]=degree_gendeg_symbol.(charSymbols)
+  res[:a]=valuation_gendeg_symbol.(charSymbols)
   # malleParams are the partitiontuples for the symbols
   res[:malleParams]=map(x->map(partβ,fullsymbol(x)),charSymbols)
   if iseven(m)

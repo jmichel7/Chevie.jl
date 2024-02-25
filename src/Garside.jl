@@ -256,7 +256,7 @@ julia> centralizer_gens(b)
  21.1
  4
 
-julia> C=conjcat(b;ss=:ss)
+julia> C=conjcat(b;ss=Val(:ss))
 category with 10 objects and 32 generating maps
 
 julia> C.obj
@@ -1754,7 +1754,7 @@ function from(C::Category{TO,TM},o,o1)where {TO,TM}
 end
 
 # returns atoms from a in F-twisted s-conjugacy category
-function AtomicMaps(a,s::Symbol=:sc,F::Function=(x,y=1)->x)
+function AtomicMaps(a,::Val{s}=Val(:sc),F::Function=(x,y=1)->x)where s
   M=a.M
   res=typeof(a)[]
   for i in eachindex(M.atoms)
@@ -1887,14 +1887,14 @@ end
 minc(a,x,F::Function=(x,y=1)->x)=minc(a,x,Val(:sc),F)
 
 """
-`conjcat(b[,F];ss=:sc)`
+`conjcat(b[,F];ss=Val(:sc))`
 
 returns  the conjugacy category  of the summit  set of `b`  of the required
 type.
   - By default,  computes the  category of  sliding circuits  of `b`.
-  - If `ss==:ss`,  computes  the  super  summit  set.
-  - If `ss==:cyc`, computes the cyclic  conjugacy category.
-  - If `ss==:inf` computes the category of all conjugate elements with
+  - If `ss==Val(:ss)`,  computes  the  super  summit  set.
+  - If `ss==Val(:cyc)`, computes the cyclic  conjugacy category.
+  - If `ss==Val(:inf)` computes the category of all conjugate elements with
     same `Inf` as `b`.
 
 If  an argument  `F` is  given it  should be  the Frobenius of a Reflection
@@ -1924,7 +1924,7 @@ category with 2 objects and 4 generating maps
 ```
 
 ```julia-repl
-julia> conjcat(w;ss=:ss).obj
+julia> conjcat(w;ss=Val(:ss)).obj
 4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  13243
@@ -1932,13 +1932,13 @@ julia> conjcat(w;ss=:ss).obj
  21324
 ```
 """
-function conjcat(b,F::Function=(x,y=1)->x;ss::Symbol=:sc)
-  if ss==:sc || ss==:ss b=representativeSC(b,F).circuit[1] end
+function conjcat(b,F::Function=(x,y=1)->x;ss=Val(:sc))
+  if ss==Val(:sc) || ss==Val(:ss) b=representativeSC(b,F).circuit[1] end
   Category(x->AtomicMaps(x,ss,F),b;action=(b,m)->^(b,m,F))
 end
 
 """
-conjugating_elt(b,b₁[,F];ss=:sc)
+conjugating_elt(b,b₁[,F];ss=Val(:sc))
 
 `b`  and `b₁` should  be elements of  the same Garside  group. The function
 returns  `a` such that `b^a=b₁` if such exists, and `nothing` otherwise. If
@@ -1964,7 +1964,7 @@ julia> b1=B(1,4,3,2,2,2)
 julia> conjugating_elt(b,b1)
 (134312.23)⁻¹
 
-julia> c=conjugating_elt(b,b1;ss=:cyc)
+julia> c=conjugating_elt(b,b1;ss=Val(:cyc))
 232.2
 
 julia> b^c
@@ -1985,8 +1985,8 @@ julia> ^(b,B(1,2,4,3,1,2),F)
 343123
 ```
 """
-function conjugating_elt(b,c,F::Function=(x,y=1)->x;ss::Symbol=:sc)
-  if ss==:sc || ss==:ss
+function conjugating_elt(b,c,F::Function=(x,y=1)->x;ss=Val(:sc))
+  if ss==Val(:sc) || ss==Val(:ss)
     bconj=representativeSC(b,F)
     cconj=representativeSC(c,F)
     b=bconj.circuit[1]
@@ -2016,12 +2016,12 @@ function conjugating_elt(b,c,F::Function=(x,y=1)->x;ss::Symbol=:sc)
 end
 
 """
-`centralizer_gens(b[,F];ss=:sc)`
+`centralizer_gens(b[,F];ss=Val(:sc))`
 
 a  list of generators of the centralizer of `b`. The computation is done by
 computing  the  endomorphisms  of  the  object  `b`  in the category of its
 sliding  circuits. If an argument `ss` is given, the computation is done in
-the corresponding category --- see `conjcat`.
+the corresponding category --- see [`conjcat`](@ref).
 
 If  an argument  `F` is  given it  should be  an automorphism  of the braid
 monoid,  like the Frobenius of a reflection coset attached to `b.M.W`; then
@@ -2056,7 +2056,7 @@ julia> shrink(cc)
  34.43
  (3243)⁻¹13243
 
-julia> centralizer_gens(w;ss=:cyc)
+julia> centralizer_gens(w;ss=Val(:cyc))
 Set{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
   4
 
@@ -2068,14 +2068,14 @@ julia> centralizer_gens(w,F)
  312343123
 ```
 """
-function centralizer_gens(b,F::Function=(x,y=1)->x;ss::Symbol=:sc)
-  if ss==:ss || ss==:sc
+function centralizer_gens(b,F::Function=(x,y=1)->x;ss=Val(:sc))
+ if ss==Val(:ss) || ss==Val(:sc)
     b=representativeSC(b,F)
     a=b.conj
     b=b.circuit[1]
-    Ref(a).*endomorphisms(conjcat(b,F;ss=ss),1).*Ref(a^-1)
+    Ref(a).*endomorphisms(conjcat(b,F;ss),1).*Ref(a^-1)
   else
-    endomorphisms(conjcat(b,F;ss=ss),1)
+    endomorphisms(conjcat(b,F;ss),1)
   end
 end
 

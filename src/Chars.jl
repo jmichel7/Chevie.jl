@@ -535,6 +535,7 @@ function charinfo(t::TypeIrred)
   if isnothing(c.a)
     uc=getchev(t,:UnipotentCharacters)
     if !isnothing(uc) && uc!=false
+#     printstyled(rio(),"using UniChars\n";color=:red)
       if haskey(uc,:almostHarishChandra)
         c.a=uc[:a][charnumbers(uc[:almostHarishChandra][1])]
         c.A=uc[:A][charnumbers(uc[:almostHarishChandra][1])]
