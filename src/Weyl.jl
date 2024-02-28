@@ -748,10 +748,12 @@ function Base.show(io::IO,t::Type{FCG{T,T1}})where {T,T1}
 end
 
 @inline CoxGroups.nref(W::FCG)=W.N
+
+# several functions on finite coxeter groups depend on the fact that
+# isleftdescent is defined for all i in 1:nref(W), for example length and
+# inversions
 CoxGroups.isleftdescent(W::FCG,w,i::Integer)=i^w>W.N
 CoxGroups.isrightdescent(W::FCG,w,i::Integer)=preimage(i,w)>W.N
-# the next is good also:
-#CoxGroups.isleftdescent(W::FCG,w,i::Int)=action(W,i,w)>nref(W)
 
 """
 `coxeter_group(type,rank[,bond];sc=false)` (or `coxgroup`)

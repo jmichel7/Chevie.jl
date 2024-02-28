@@ -1048,7 +1048,9 @@ PermRoot.refltype(W::CoxHyp)=[TypeIrred(Dict(:series=>:B,
 
 CoxGroups.nref(W::CoxHyp)=ngens(W)^2
 
-CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i^w<(i-1)^w
+CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i<=rank(W) ? i^w<(i-1)^w : length(W,refls(W)[i]*w)<length(W,w)
+
+Base.length(W::CoxHyp,w)=length(word(W,w))
 
 PermRoot.rank(W::CoxHyp)=W.n
 CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
