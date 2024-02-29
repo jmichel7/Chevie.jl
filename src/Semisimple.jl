@@ -22,7 +22,7 @@ lines  are the simple coroots in the basis  of `Y` dual to the chosen basis
 of  `X`. The duality pairing between `X` and `Y` is the canonical one, that
 is   the  pairing  between  vectors   `x∈  X`  and  `y∈   Y`  is  given  by
 `transpose(x)*y`. Thus, we must have the relation
-`simpleroots(W)*transpose(simplecoroots(W))=cartan(W)`.
+`simplecoroots(W)*permutedims(simpleroots(W))=cartan(W)`.
 
 We  get that  by a  the function  `rootdatum`, whose  arguments are the two
 matrices `simpleroots(W)` and `simplecoroots(W)` described above. The roots

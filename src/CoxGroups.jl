@@ -1008,6 +1008,7 @@ end
 
 @GapObj struct CoxHyp{T} <: FiniteCoxeterGroup{SPerm{T}}
   G::SPermGroup{T}
+  roots::Vector{Tuple{T,T}}
   n::Int
 end
 
@@ -1034,7 +1035,13 @@ julia> elements(coxhyp(2))
 ```
 """
 function coxeter_hyperoctaedral_group(n::Int)
-  CoxHyp{Int8}(hyperoctaedral_group(n),n,Dict{Symbol,Any}())
+  roots=Tuple{Int8,Int8}[(1,-1)]
+  append!(roots,map(i->(i-1,i),2:n))
+  append!(roots,map(i->(i,-i),2:n))
+  for i in 2:n-1 append!(roots,map(j->(j,j+i),1:n-i)) end
+  for i in 1:n-1 append!(roots,map(j->(j,-j-i),1:n-i)) end
+  append!(roots,roots)
+  CoxHyp{Int8}(hyperoctaedral_group(n),roots,n,Dict{Symbol,Any}())
 end
 
 const coxhyp=coxeter_hyperoctaedral_group
@@ -1050,6 +1057,15 @@ CoxGroups.nref(W::CoxHyp)=ngens(W)^2
 
 CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i<=rank(W) ? i^w<(i-1)^w : length(W,refls(W)[i]*w)<length(W,w)
 
+function i2(W::CoxHyp,w,i)
+  a,b=W.roots[i]
+  aw,bw=(a,b).^w
+  if a==-b return aw<0 end
+  if b>0 aw=-aw else bw=-bw end
+  !( (aw>0 && bw>0) || (aw*bw<0 && max(aw,bw)>-min(aw,bw)))
+end
+ii2(W::CoxHyp,w)=filter(i->i2(W,w,i),1:rank(W)^2)
+
 Base.length(W::CoxHyp,w)=length(word(W,w))
 
 PermRoot.rank(W::CoxHyp)=W.n
@@ -1058,19 +1074,8 @@ PermRoot.inclusiongens(W::CoxHyp)=1:W.n
 
 function PermRoot.refls(W::CoxHyp{T})where T
   get!(W,:refls)do
-    refs=vcat(gens(W),map(i->SPerm{Int8}(i,-i),2:rank(W)))
-    sreps=vcat([1],fill(2,ngens(W)-1),fill(1,rank(W)-1))
-    for i in 2:rank(W)-1 
-       append!(refs,map(j->SPerm{Int8}(j,j+i),1:rank(W)-i))
-       append!(sreps,fill(2,rank(W)-i))
-    end
-    for i in 1:rank(W)-1 
-      append!(refs,map(j->SPerm{Int8}(j,-j-i),1:rank(W)-i))
-      append!(sreps,fill(2,rank(W)-i))
-    end
-    append!(refs,refs)
-    append!(sreps,sreps)
-    W.simple_reps=sreps
+    refs=map(t->SPerm{T}(t...),W.roots)
+    W.simple_reps=map(x->x[1]==-x[2] ? 1 : 2,W.roots)
     W.unique_refls=collect(1:nref(W))
     refs
   end::Vector{SPerm{T}}
@@ -1098,7 +1103,8 @@ is defined only for `I=1:m` for `m≤ngens(W)`.
 """
 function PermRoot.reflection_subgroup(W::CoxHyp,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end
-  CoxHyp(Group(gens(W)[I]),length(I),Dict{Symbol,Any}())
+  CoxHyp(Group(gens(W)[I]),filter(t->abs(t[2]!=rank(W)),W.roots),
+                                    length(I),Dict{Symbol,Any}())
 end
 #------------------------ MatCox ------------------------------
 
