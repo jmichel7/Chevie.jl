@@ -1046,27 +1046,27 @@ end
 
 const coxhyp=coxeter_hyperoctaedral_group
 
-Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(rank(W)))")
+Base.show(io::IO, W::CoxHyp)=print(io,"coxhyp($(W.n))")
 
 PermRoot.action(W::CoxHyp,i,p)=abs(i^p)
 
 PermRoot.refltype(W::CoxHyp)=[TypeIrred(Dict(:series=>:B,
-                                         :indices=>collect(1:rank(W))))]
+                                         :indices=>collect(1:W.n)))]
 
-CoxGroups.nref(W::CoxHyp)=ngens(W)^2
+CoxGroups.nref(W::CoxHyp)=length(W.roots)
 
-CoxGroups.isleftdescent(W::CoxHyp,w,i)= i==1 ? i^w<0 : i<=rank(W) ? i^w<(i-1)^w : length(W,refls(W)[i]*w)<length(W,w)
-
-function i2(W::CoxHyp,w,i)
+# use that "roots" correspond to roots of so_{2n+1}. 
+# If eᵢ are the basis vectors (i,-i) <-> eᵢ, (i,j) <-> eⱼ-eᵢ, (i,-j) <-> eᵢ+eⱼ
+function CoxGroups.isleftdescent(W::CoxHyp,w,i)
   a,b=W.roots[i]
-  aw,bw=(a,b).^w
+  aw=a^w
   if a==-b return aw<0 end
+  bw=b^w
   if b>0 aw=-aw else bw=-bw end
-  !( (aw>0 && bw>0) || (aw*bw<0 && max(aw,bw)>-min(aw,bw)))
+  if aw>0 && bw>0 return false end
+  if aw<0 && bw<0 return true end
+  max(aw,bw)<-min(aw,bw)
 end
-ii2(W::CoxHyp,w)=filter(i->i2(W,w,i),1:rank(W)^2)
-
-Base.length(W::CoxHyp,w)=length(word(W,w))
 
 PermRoot.rank(W::CoxHyp)=W.n
 CoxGroups.maxpara(W::CoxHyp)=1:W.n-1
@@ -1082,6 +1082,7 @@ function PermRoot.refls(W::CoxHyp{T})where T
 end
 
 PermRoot.simple_reps(W::CoxHyp)=getp(refls,W,:simple_reps)
+PermRoot.unique_refls(W::CoxHyp)=getp(refls,W,:unique_refls)
 
 function Perms.reflength(W::CoxHyp,w)
   sym=nsym=0
@@ -1093,8 +1094,9 @@ function Perms.reflength(W::CoxHyp,w)
   div(sym,2)+nsym
 end
 
-PermRoot.reflrep(W::CoxHyp,w::SPerm)=Matrix(w,rank(W))
-PermRoot.reflrep(W::CoxHyp,i::Integer)=Matrix(W(i),rank(W))
+PermRoot.reflrep(W::CoxHyp,w::SPerm)=Matrix(w,W.n)
+PermRoot.reflrep(W::CoxHyp,i::Integer)=
+  reflrep(W,i<=ngens(W) ? gens(W)[i] : refls(W)[i])
 PermRoot.reflrep(W::CoxHyp)=reflrep.(Ref(W),1:ngens(W))
 
 """
@@ -1103,9 +1105,10 @@ is defined only for `I=1:m` for `m≤ngens(W)`.
 """
 function PermRoot.reflection_subgroup(W::CoxHyp,I::AbstractVector{Int})
   if I!=1:length(I) error(I," should be 1:n for some n") end
-  CoxHyp(Group(gens(W)[I]),filter(t->abs(t[2]!=rank(W)),W.roots),
+  CoxHyp(Group(gens(W)[I]),filter(t->abs(t[2]!=W.n),W.roots),
                                     length(I),Dict{Symbol,Any}())
 end
+PermRoot.cartan(W::CoxHyp)=cartan(:B,W.n)
 #------------------------ MatCox ------------------------------
 
 @GapObj struct MatCox{T}<:CoxeterGroup{Matrix{T}}

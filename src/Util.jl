@@ -75,7 +75,8 @@ const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", 
   "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ", "sigma"=>"σ", "theta"=>"θ", 
   "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧", "hfill"=>" ",
-  "zeta"=>"ζ", "rtimes"=>"⋊ ","backslash"=>"\\","sqrt"=>"√")
+  "zeta"=>"ζ", "rtimes"=>"⋊ ","backslash"=>"\\","sqrt"=>"√",
+  "sum"=>"Σ", "cap"=>"∩", "mu"=>"μ")
 
 # defs below are necessary since constant folding is not good enough
 const r1=Regex("_[$subchars]")
@@ -337,20 +338,21 @@ cut(s;k...)=cut(stdout,s;k...)
 
 TeXs(x;p...)=repr("text/plain",x;context=IOContext(stdout,:TeX=>true,p...))
 
-function TeX(x;p...)
+function TeX(y...;p...)
   s=tempname(".")
   open("$s.tex","w")do f
     println(f,"\\documentclass{article}")
     println(f,"\\usepackage{amsmath}")
     println(f,"\\usepackage{amssymb}")
     println(f,"\\begin{document}")
-    print(f,TeXs(x;p...))
+    for x in y print(f,x isa String ? x : TeXs(x;p...)) end
     println(f,"\\end{document}")
   end
   run(`latex $s.tex`)
   run(`xdvi -expert -s 5 $s.dvi`)
   run(`rm $s.tex $s.aux $s.log $s.dvi`)
 end
+TeX(y::Tuple;p...)=TeX(y...;p...)
 
 #--------------------------- Chevie compatibility--------------------------
 toL(m)=collect(eachrow(m)) # to Gap

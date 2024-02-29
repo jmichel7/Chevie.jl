@@ -758,7 +758,8 @@ CoxGroups.isrightdescent(W::FCG,w,i::Integer)=preimage(i,w)>W.N
 """
 `coxeter_group(type,rank[,bond];sc=false)` (or `coxgroup`)
 
-This is equivalent to `rootdatum(cartan(type,rank[,bond]))`.
+If `C=cartan(type,rank[,bond])`, this is equivalent to `rootdatum(C)`.
+If `sc=true` this is equivalent to `rootdatum(permutedims(C),one(C))`.
 
 The  resulting object `W`, a  `FiniteCoxeterGroup`, has an additional entry
 compared to a `PermRootGroup`.
@@ -777,9 +778,7 @@ simple_conjugating,  reflrep,  simpleroots,  simplecoroots,  PermX, cartan,
 inclusion, restriction, action, rank, semisimplerank`
 
 In terms of root data, this function returns the adjoint root datum of Weyl
-group  `W`.  If  `sc=true`  it  returns  the  simply  connected root datum,
-equivalent  to `rootdatum(id,cartan(type,rank[,bond]))`  where `id`  is the
-identity matrix of size `rank`.
+group  `W`.  If  `sc=true`  it  returns  the  simply  connected root datum.
 ```julia_repl
 julia> W=coxgroup(:G,2)
 G₂
