@@ -56,6 +56,7 @@ chevieset(:G2, :CharInfo, function ()
         res[:spaltenstein] = ["1", "\\varepsilon", "\\varepsilon_l", "\\varepsilon_c", "\\theta'", "\\theta''"]
         res[:lusztig] = ["1", "\\varepsilon", "\\varepsilon'", "\\varepsilon''", "\\theta'", "\\theta''"]
         res[:charnames] = map(exceptioCharName, res[:charparams])
+        res[:charSymbols] = [[[0], [0], [0], [0], [0], [2]], [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [1, 2]], [[0], [0], [1], 2, 0], [[0], [0], [1], 2, 1], [[0], [0], [0], [0], [1], [1]], [[0], [0], [0], [1], [0], [1]]]
         return res
     end)
 chevieset(:G2, :ClassNames, ["A_0", "\\tilde A_1", "A_1", "G_2", "A_2", "A_1+\\tilde A_1"])

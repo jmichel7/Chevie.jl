@@ -579,19 +579,15 @@ cartfields(p,f)=cartesian(getindex.(p,f)...)
 `charinfo(W)`
 
 returns   information  about  the  irreducible  characters  of  the  finite
-reflection group or Spets `W`. The result has the following entry:
+reflection group or Spets `W`. The result is an object with various entries
+describing  properties of  the irreducible  characters of  `W`. This object
+prints  at the  Repl or  in Pluto  or Jupyter  as a table synthesizing most
+information. 
 
-`.charparams`:  contains  parameters  for  the  irreducible  characters  as
-described  in the helpstring for `Chars`. The parameters are lists with one
-component  for each irreducible component of  `W` (as given by `refltype`).
-For  an irreducible component which is  an imprimitive reflection group the
-component  of the `charparam` is a  list of partitions (partitions for type
-`:A`,  double partitions  for type  `:B`), and  for a primitive irreducible
-group it is a list `[d,e]` where `d` is the degree of the character and `e`
-is  the  smallest  symmetric  power  of  the  character  of  the reflection
-representation  which contains the given character as a component (the same
-as  `b` below). In  addition, there is  an ordinal number  if more than one
-character shares the same `[d,e]`.
+A  field not in the table is  `.charparams`: it contains parameters for the
+irreducible  characters. A parameter is a lists with one component for each
+irreducible  component of `W` (as given  by `refltype`). For an irreducible
+component see the helpstring for `Chars` for what are the parameters.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2)).charparams
@@ -603,38 +599,32 @@ julia> charinfo(coxgroup(:G,2)).charparams
  [[2, 1]]
  [[2, 2]]
 ```
-when  you print a `charinfo` at the Repl  or in Pluto or Jupyter, you get a
-table synthesizing the information.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))
-n0│ name ext b B a A spaltenstein lusztig
-──┼───────────────────────────────────────
-1 │ φ₁‚₀  Id 0 0 0 0            1       1
-2 │ φ₁‚₆ det 6 6 6 6            ε       ε
-3 │φ′₁‚₃     3 3 1 5           εₗ      ε′
-4 │φ″₁‚₃     3 3 1 5          ε_c      ε″
-5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′
-6 │ φ₂‚₂     2 4 1 5           θ″      θ″
+n0│ name ext b B a A spaltenstein lusztig              symbol
+──┼───────────────────────────────────────────────────────────
+1 │ φ₁‚₀  Id 0 0 0 0            1       1       (0,0,0,0,0,2)
+2 │ φ₁‚₆ det 6 6 6 6            ε       ε (01,01,01,01,01,12)
+3 │φ′₁‚₃     3 3 1 5           εₗ      ε′            (0,0,1+)
+4 │φ″₁‚₃     3 3 1 5          ε_c      ε″            (0,0,1-)
+5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′       (0,0,0,0,1,1)
+6 │ φ₂‚₂     2 4 1 5           θ″      θ″       (0,0,0,1,0,1)
 ```
-
-the  column `name`  reflects the  field `.charnames`,  a name computed from
-`.charparams`. This is the same as `charnames(io,W)` where here `io` being
-the Repl has the property `:limit` on.
+In  the table printed  at the Repl,  the columns reflect  various fields of
+`charinfo`.  The  column  `name`  reflects  the  field `.charnames`, a name
+computed  from `.charparams`. This  is the same  as `charnames(io,W)` where
+here `io` being the Repl has the property `:limit` true.
 
 The   column   `ext`   shows   the   exterior   powers  of  the  reflection
-representation.   If  `W`  is  not  irreducible,  only  two  of  these  are
-irreducible  thus shown:  `Id` corresponds  to the  field `.positionId` and
-shows  which  is  the  trivial  character.  `det`  corresponds to the field
-`.positionDet`  and shows the determinant character (for Coxeter groups the
-sign  character);  it  is  the  highest  non-trivial  exterior power if the
-reflection representation.
-
-The  characters marked `Λⁱ` are the `i`-th exterior power of the reflection
-representation.  They are only present if `W` is irreducible, in which case
-thye  are irreducible characters by a  thoerem of Steinberg. They are given
-by  the  field  `.extRefl`  whose  `i+1`-th  element  is  the  index of the
-character `Λⁱ`.
+representation.  It corresponds  to the  field `.extrefl`  which is present
+only  if `W`  is irreducible.  Otherwise, only  two items  are shown in the
+column:  `Id` corresponds to the field  `.positionId` and shows the trivial
+character.  `det`  corresponds  to  the  field `.positionDet` and shows the
+determinant  character (for Coxeter groups the sign character). When `W` is
+irreducible,  the characters marked  `Λⁱ` are the  `i`-th exterior power of
+the  reflection  representation.  They  are  irreducible  by  a  theorem of
+Steinberg.
 
 The  column  `b`  shows  the  field  `.b`  listing  for  each character the
 valuation  of the fake degree, and the column `B` shows the field `.B`, the
@@ -661,6 +651,14 @@ given by Spaltenstein.
 for `G(de,e,2)` even `e` and `d>1`, the column `malle` gives the parameters
 for the characters used in [Malle1996](biblio.htm#Mal96).
 
+If  `W`  is  irreducible  spetsial  and  imprimitive,  the  column 'symbol`
+(corresponding  to the field  `.charSymbols`) shows the  symbol attached to
+the corresponding unipotent caracter.
+
+If  `W  isa  Spets`,  the  column  `restr.`  (corresponding  to  the  field
+`.charRestrictions`)  gives the  number of  the corresponding  character of
+`Group(W)`.
+
 Finally,  the  field  `.hgal`  contains  the  permutation of the characters
 resulting  from a Galois  action on the  characters of `H=hecke(W,Pol()^e)`
 where  `e` is the order of  the center of `W`. `H`  splits by taking `v` an
@@ -668,7 +666,6 @@ where  `e` is the order of  the center of `W`. `H`  splits by taking `v` an
 Galois action `v->E(e)*v` (`charinfo` does not have the key `:hgal` if this
 permutation   is  trivial).  `.hgal*conj`,  where  `conj`  is  the  complex
 conjugaison, is the Opdam involution.
-
 ```julia-repl
 julia> charinfo(complex_reflection_group(24))
 n0│ name ext  b  B  a  A
@@ -856,26 +853,14 @@ Groups.nconjugacy_classes(t::TypeIrred)=getchev(t,:NrConjugacyClasses)
 `classinfo(W)`
 
 returns  information about the  conjugacy classes of  the finite reflection
-group or Spets `W`. The result has attributes:
+group or Spets `W`. The result is an object with various entries describing
+properties  of the conjugacy classes of `W`. This object prints at the Repl
+or in Pluto or Jupyter as a table synthesizing most information.
 
-  - `.classtext`:  contains words in  the generators describing 
-    representatives  of  each  conjugacy  class.  Each  word  is  a list of
-    integers  where the generator `W(i)` is represented by the integer `i`.
-    For finite Coxeter groups, it is the same as
-    `map(x->word(W,representative(x)),conjugacyclasses(W))`,  and each such
-    representative  is of  minimal length  in its  conjugacy class and is a
-    "very good" element in the sense of [GeckMichel1997](biblio.htm#GM97).
-
-  - `.classparams`:  The  elements  of  this  list  are  tuples  which have
-    one  component for each irreducible  component of `W`. These components
-    for  the  infinite  series,  contain  partitions  or  partition  tuples
-    describing  the  class  (see  the  introduction).  For  the exceptional
-    Coxeter   groups  they   contain  Carter's   admissible  diagrams,  see
-    [Carter1972](biblio.htm#Car72).   For  exceptional  complex  reflection
-    groups they contain in general the same information as in classtext.
-
-  - `.classnames`:  Contains strings describing the conjugacy classes, made
-    out of the information in `:classparams`.
+A  field not in the table  is `.classparams`, containing parameters for the
+conjugacy  classes. Each parameter is a  vector which has one component for
+each  irreducible  component  of  `W`.  For  what  is  the parameter in the
+irreducible case, see the helpstring of `Chars`.
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
 n0│name length order word
@@ -884,8 +869,20 @@ n0│name length order word
 2 │  21      3     2    1
 3 │   3      2     3   12
 ```
-
-See also the introduction of this section.
+The table contains the columns:
+  - `name`, corresponding to the field `.classnames`:  strings describing the
+    conjugacy classes, made out of the information in `:classparams`.
+  - `length`, corresponding to the field `.classes`, is the number of elements
+    in the conjugacy class.
+  - `order`, corresponding to the field `.orders`, is the order of elements
+    in the conjugacy class.
+  - `word`, corresponding to the field `.classtext`, describes a word in
+    the  generators for the  representatives of each  conjugacy class. Each
+    word is a list of integers where the generator `W(i)` is represented by
+    the  integer  `i`.  For  finite  Coxeter  groups,  it  is  the  same as
+    `word.(Ref(W),classreps(W))`,   and  each  such  representative  is  of
+    minimal  length in its conjugacy class and  is a "very good" element in
+    the sense of [GeckMichel1997](biblio.htm#GM97).
 """
 function classinfo(W)
   get!(W,:classinfo)do
@@ -974,7 +971,6 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   push!(t,limitto.(showperiodic.(io,ci.classtext),displaysize(io)[2]-sz-2))
   push!(cl,"word")
   showtable(io,permutedims(string.(toM(t)));row_labels=string.(1:n),col_labels=cl,rows_label="n0")
-  if haskey(ci,:hgal) println(io,"hgal=",ci.hgal) end
 end
 
 const Hastype=Union{PermRootGroup,Spets,CoxSym,CoxHyp}

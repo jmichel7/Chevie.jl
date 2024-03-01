@@ -118,23 +118,9 @@ chevieset(:B, :LowestPowerFakeDegree, function (p,)
         end
         return (2res + Sum(pp[2])) - (m * (m - 1) * (4m + 1)) // 6
     end)
-chevieset(:B, :CharInfo, function (n,)
-        local res
-        res = Dict{Symbol, Any}(:charparams => partition_tuples(n, 2))
-        res[:charnames] = map(PartitionTupleToString, res[:charparams])
-        res[:extRefl] = Concatenation(map((i->begin
-                            Position(res[:charparams], [[n - i], fill(0, max(0, (1 + i) - 1)) + 1])
-                        end), 0:n - 1), [Position(res[:charparams], [[], fill(0, max(0, (1 + n) - 1)) + 1])])
-        res[:a] = map((p->begin
-                        valuation_gendeg_symbol(symbol_partition_tuple(p, 1))
-                    end), res[:charparams])
-        res[:A] = map((p->begin
-                        degree_gendeg_symbol(symbol_partition_tuple(p, 1))
-                    end), res[:charparams])
-        res[:b] = map(chevieget(:B, :LowestPowerFakeDegree), res[:charparams])
-        res[:B] = (res[:a] + res[:A]) - res[:b]
-        return res
-    end)
+chevieset(:B, :CharInfo, (n->begin
+            (chevieget(:imp, :CharInfo))(2, 1, n)
+        end))
 chevieset(:B, :PoincarePolynomial, function (n, para)
         local q1, q2
         q1 = -((para[1])[1]) // (para[1])[2]
