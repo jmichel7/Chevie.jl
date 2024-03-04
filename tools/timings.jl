@@ -61,8 +61,7 @@ test_PermGroup(n::Int)=length(collect(symmetric_group(n)))
 #1.8   466.815 ms (3012044 allocations: 957.88 MiB)
 #1.8.5 562.096 ms (2977130 allocations: 956.99 MiB)
 #1.9.0 649.148 ms (2949678 allocations: 949.10 MiB)
-#1.10β2 542.353 ms (2947233 allocations: 949.10 MiB)
-#1.10.0 841.001 ms (2947233 allocations: 948.39 MiB)
+#1.10.2 545.551 ms (2947076 allocations: 948.37 MiB)
 test_elm()=length(elements(coxgroup(:E,7)))
 # GAP3 1.8sec
 
@@ -75,7 +74,7 @@ test_elm()=length(elements(coxgroup(:E,7)))
 #1.8.5 1.271 s (13530143 allocations: 2.30 GiB)
 #1.9.3 1.346 s (13132355 allocations: 2.27 GiB)
 #1.10β2 1.148 s (13127738 allocations: 2.27 GiB)
-#1.10.0 1.359 s (13491189 allocations: 2.32 GiB)
+#1.10.2 1.407 s (16680467 allocations: 2.42 GiB)
 function test_kl(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -121,7 +120,7 @@ function test_kl2(W)
   el=elements(W)
   maximum(degree(KLPol(W,x,y)) for x in el, y in el)
 end
-# GAP3 takes 40 for F4
+# GAP3 takes 40s for F4
 #test_kl2:=function(W)local el; el:=Elements(W);
 #  return Maximum(List(el,x->Maximum(List(el,y->Length(KazhdanLusztigPolynomial(W,x,y))))));
 #end;
@@ -202,3 +201,13 @@ end
 #1.10.0 149.729 μs (3620 allocations: 243.48 KiB)
 # GAP3 invert Mvp matrix 5.8ms
 # [[x+y,x-y],[x+1,y+1]]^-1;
+
+#@btime CycPols.p(Pol())
+#1.8.5 254.158 μs (5626 allocations: 416.19 KiB)
+#@btime CycPols.p(1)
+#1.8.5 5.140 μs (101 allocations: 19.88 KiB)
+u=CycPols.p(Pol())
+#@btime u(1)
+#1.8.5 24.669 μs (553 allocations: 41.91 KiB)
+#@btime CycPol(u)
+#1.8.5 4.749 ms (92895 allocations: 7.35 MiB)

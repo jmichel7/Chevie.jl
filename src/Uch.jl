@@ -665,10 +665,16 @@ function UnipotentCharacters(WF::Spets)
     if haskey(res,a) res[a]=sum.(res[a]) end
   end
 
-
   res[:spets]=WF
   UnipotentCharacters(hh,ah,ff,res)
   end
+end
+
+function Chars.fakedegrees(uc::UnipotentCharacters)
+  f=fakedegrees(spets(uc),Pol())
+  fd=fill(zero(f[1]),length(uc))
+  fd[uc.almostHarishChandra[1][:charNumbers]]=f
+  fd
 end
 
 function Base.show(io::IO,::MIME"text/html", uc::UnipotentCharacters)
@@ -728,17 +734,6 @@ Cosets.spets(uc::UnipotentCharacters)=uc.spets
 
 Base.length(uc::UnipotentCharacters)=length(uc.charParams)
 
-function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
-  if !haskey(uc,:fakedegrees) uc.fakedegrees=Dict{Any,Any}() end
-  d=uc.fakedegrees
-  if haskey(d,q) return d[q] end
-  f=fakedegrees(spets(uc),q)
-  if isa(q,Pol) f=improve_type(f) end
-  fd=fill(zero(f[1]),length(uc))
-  fd[uc.almostHarishChandra[1][:charNumbers]]=f
-  d[q]=fd
-end
-
 "`fourier(uc::UnipotentCharacters)` the Lusztig Fourier matrix for `uc`."
 function Families.fourier(uc::UnipotentCharacters)
   get!(uc,:fourier)do
@@ -795,7 +790,8 @@ function Chevie.degrees(uc::UnipotentCharacters,q=Pol())
   if !haskey(uc,:degrees) uc.degrees=Dict{Any,Any}() end
   d=uc.degrees
   if haskey(d,q) return d[q] end
-  d[q]=fourier(uc)'*fakedegrees(uc,q)
+  v=uc.almostHarishChandra[1][:charNumbers]
+  d[q]=improve_type(fourier(uc)[v,:]')*fakedegrees(spets(uc),q)
 end
 
 """

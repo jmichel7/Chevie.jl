@@ -770,8 +770,7 @@ function Tcharparams(W)
     end
     if !isempty(rule) InfoChevie("#I applied  rules ",
              join(map(x->join(x,"x"),tally(rule)),","),"\n");end
-    perm=prod(filter(x->x!=true,bad))
-    if perm==1 perm=Perm() end
+    perm=prod(filter(x->x!=true,bad);init=Perm())
     ddb=ddb[map(==(true),bad)]
   end
   if @isdefined l 
@@ -842,7 +841,7 @@ function Tcharparams(W)
     check("phi30,10",v->fakdeghighterms(v[1],Pol()^50+Pol()^46))
     check("phi45,8",v->intensor(v[2],"phi4,1","phi20,7"))
     check("phi45,12",v->issign(v[1],"phi45,8'"))
-  elseif n=="G₃" 
+  elseif n=="G₃₃" 
     check("phi10,8",v->fakdeghighterms(v[1],Pol()^28+Pol()^26))
     check("phi10,17",v->issign(v[1],"phi10,8'"))
     check("phi40,5",v->fakdeghighterms(v[1],Pol()^31+Pol()^29+2*Pol()^27))
@@ -860,7 +859,7 @@ function Tcharparams(W)
     check("phi840,13",v->isconj(v[1],"phi840,11"))
     check("phi840,23",v->isconj(v[1],"phi840,19"))
   elseif n in ["G₆","G₈","G₉","G₁₀","G₁₁","G₁₃","G₁₄","G₁₅","G₁₆","G₁₇",
-    "G₁₈","G₁₉","G₂₀","G₂₁","G₂₅","G₂₆","G₃₂"] 
+    "G₁₈","G₁₉","G₂₀","G₂₁","G₂₅","G₂₆","G₃₂","H₃","E₆","E₇","E₈"] 
     rules()
   else println("not applicable: ",n); return
   end
@@ -901,8 +900,8 @@ function THCdegrees(W,i,rel=false)
   InfoChevie("  #HC_",L,"(cusp=",fromTeX(rio(),n),":",cusp,")[G:L]=",index,"\n")
   R=reflection_group(hw[:relativeType]...)
 # check parameters of relative algebra by the formula
-# u_{s,j}=ζ_s^j  q^(([a+A]_ρ_{det_s^j}-[a+A]_ρ_{\Id})/order#class(s)
-# where ρ_χ is the unip. char corresp. to χ in relative group
+# uₛ,ⱼ=ζₛʲ  q^(([a+A]_ρ_{detₛʲ}-[a+A]_ρ_{\Id})/order#class(s)
+# where ρₓ is the unip. char corresp. to χ in relative group
   aA=map(x->uw.a[x]+uw.A[x],hw[:charNumbers])
   para=map(hyperplane_orbits(R))do h
     l=map(i->(aA[i]-aA[charinfo(R)[:positionId]])//h.order//h.N_s,h.det_s)
@@ -929,7 +928,7 @@ function THCdegrees(W,i,rel=false)
     return false
   end
   sch=CycPol.(sch)
-  cmpvec(sch,reldeg;na=string("Schur(",repr(R;context=rio()),")"),nb="ud")
+  cmpvec(sch,reldeg;na=string("Schur(",repr(H;context=rio()),")"),nb="ud")
   if rel reldeg
   else  Ref(subs(cusp*index,Pol()^den)).//(sch*1//1)
   end
@@ -976,8 +975,8 @@ function EigenAndDegHecke(s)
   frac=degree.(central_monomials(H)).*d1
   om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
   if omegachi!=om2 
-    omegachi=om2
     ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
+    omegachi=om2
   end
   ss=CycPol.(invpermute(schur_elements(H),p))
   ss=map(x->degree(s)//x,ss)
@@ -1286,7 +1285,7 @@ function Tfamilies(W,i;hard=false)
     if length(a)!=1 || length(A)!=1 ChevieErr("a or A not constant");
     else a=a[1];A=A[1]
     end
-    fd=fakedegrees(uc,Pol())[f.charNumbers]
+    fd=fakedegrees(uc)[f.charNumbers]
     special=findall(==(a),valuation.(fd))
     cospecial=findall(==(A),degree.(fd))
     if length(special)!=1 || length(cospecial)!=1
@@ -1493,10 +1492,9 @@ test[:almostHC]=(applicable=W->isspetsial(W) && W!=crg(34),
 # normsquares of unipotent degrees
 function Tsumsquares(W)
   q=Pol()
-  if sum(x->x^2,fakedegrees(W,q))!=
-     sum(x->x*conj(x),degrees(UnipotentCharacters(W),q))
-    ChevieErr("fails\n")
-  end
+  d=degrees(UnipotentCharacters(W),q)
+  f=fakedegrees(W,q)
+  if f'*f!=d'*d ChevieErr("fails\n") end
 end
 
 test[:sumsquares]=(applicable=isspetsial,
