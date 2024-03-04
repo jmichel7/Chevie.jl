@@ -296,8 +296,8 @@ of  the fakedegree of `φ₃₀,₁₀'` are  `q⁵⁰+q⁴⁶` while for `φ₃
 `q⁵⁰+2q⁴⁶`.
 
 -  For `G₃₃`:
-The  terms of  maximal degree  of the  fakedegree of `φ₁₀,₈'` are `q²⁸+q²⁶`
-while  for `φ₁₀,₈'` they are `q²⁸+q²⁴`. The  terms of maximal degree of the
+The two terms of maximal degree of the fakedegree of `φ₁₀,₈'` are `q²⁸+q²⁶`
+while  for `φ₁₀,₈″` they are `q²⁸+q²⁴`. The  terms of maximal degree of the
 fakedegree   of  `φ₄₀,₅'`  are  `q³¹+q²⁹`   while  for  `φ₄₀,₅″`  they  are
 `q³¹+2q²⁹`.  The character  `φ₁₀,₁₇'` is  tensored by  sign of `φ₁₀,₈'` and
 `φ₄₀,₁₄'` is tensored by sign of `φ₄₀,₅'`.
@@ -327,7 +327,7 @@ We  let `W=complex_reflection_group(5)`,  so the  generators are  `W(1)` and
 The  character `φ₁,₄'` (resp. `φ₁,₁₂'`, `φ₂,₃'`) takes the value `1` (resp.
 `ζ₃`,  `-ζ₃`)  on  `W(1)`.  The  character  `φ₁,₈″` is complex conjugate to
 `φ₁,₁₆`,  and the character  `φ₁,₈'` is complex  conjugate to `φ₁,₄'` . The
-character  `φ₂,₅″` is complex  conjugate to `φ₂,₁`;  `φ₂,₅'` take the value
+character  `φ₂,₅″` is complex conjugate to  `φ₂,₁`; `φ₂,₅'` takes the value
 `-1` on `W(1)`. The character `φ₂,₇'` is complex conjugate to `φ₂,₅'`.
 
 -  For `G₇`:
@@ -585,9 +585,9 @@ prints  at the  Repl or  in Pluto  or Jupyter  as a table synthesizing most
 information. 
 
 A  field not in the table is  `.charparams`: it contains parameters for the
-irreducible  characters. A parameter is a lists with one component for each
+irreducible  characters.  A  parameter  is  a  list  with one item for each
 irreducible  component of `W` (as given  by `refltype`). For an irreducible
-component see the helpstring for `Chars` for what are the parameters.
+`W` see the helpstring for `Chars` for what are the parameters.
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2)).charparams
@@ -719,14 +719,14 @@ function charinfo(W)
       res.nrGroupClasses=prod(i->p[i].nrGroupClasses^length(t[i].orbit),
                                                           eachindex(t))
     end
-    res.charnames=map(l->join(l,","),cartfields(p,:charnames))
+    res.charnames=join.(cartfields(p,:charnames),",")
     for f in [:positionId, :positionDet]
       if all(d->haskey(d,f),p)
         res.prop[f]=cart2lin(map(x->length(x.charparams),p),getindex.(p,f))
       end
     end
     for f in [:b, :B, :a, :A]
-      if all(d->haskey(d,f),p) res.prop[f]=improve_type(map(sum,cartfields(p,f))) end
+      if all(d->haskey(d,f),p) res.prop[f]=improve_type(sum.(cartfields(p,f))) end
     end
     if !haskey(res,:b) || !haskey(res,:B)
        P=fakedegrees(W;recompute=true)
@@ -858,9 +858,10 @@ properties  of the conjugacy classes of `W`. This object prints at the Repl
 or in Pluto or Jupyter as a table synthesizing most information.
 
 A  field not in the table  is `.classparams`, containing parameters for the
-conjugacy  classes. Each parameter is a  vector which has one component for
-each  irreducible  component  of  `W`.  For  what  is  the parameter in the
-irreducible case, see the helpstring of `Chars`.
+conjugacy  classes. Each parameter is a vector  which has one item for each
+irreducible   component  of  `W`.  For  what  are  the  parameters  for  an
+irreducible `W`, see the helpstring of `Chars`.
+
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
 n0│name length order word
