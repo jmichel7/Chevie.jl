@@ -1,5 +1,5 @@
 function findfractionalpowers(W)
-  if length(gens(W))==0 return [0] end
+  if isempty(gens(W)) return [0] end
   uc=UnipotentCharacters(W)
   uc.fractions=Union{Rational{Int},Nothing}[]
   append!(uc.fractions,fill(nothing,length(uc)))
@@ -74,54 +74,103 @@ function PrincipalSeries(W, d)
 end
 
 function CheckMaximalPairs(W)
-  divs=sort(unique(conductor.(refleigen(W))))
-  res = map(d->PrincipalSeries(W, d), divs)
+  res=map(d->PrincipalSeries(W, d), EigenspaceNumbers(W))
   for s in res
-    e = elements(s.levi)
+    e=elements(s.levi)
     any(function(x)
       local Z
-      Z = centralizer(Group(s.spets), x)
-      Z = Group(vcat(gens(Z), gens(Group(s.levi))))
-      if length(Z) != length(relative_group(s)) * length(s.levi) error() end
+      Z=centralizer(Group(s.spets), x)
+      Z=Group(vcat(gens(Z), gens(Group(s.levi))))
+      if length(Z)!=length(relative_group(s))*length(s.levi) error() end
       return true
     end, e)
   end
   res
 end
 
-function Checkzegen(W)
-  l=Series(W;proper=true)
-  println(rio(),"with no Hecke:",filter(s->!haskey(s,:Hecke),l))
-  println("    center==",gcd(degrees(W)))
-  l=filter(s->haskey(s,:Hecke),l)
-  uc=UnipotentCharacters(W)
-  aA=uc.a+uc.A
-  for s in l
-    e=gete(s[:Hecke])
-    z=OrderCenter(relative_group(s))
-    ucL=UnipotentCharacters(s.levi)
-    aAL=(ucL.A.+ucL.a)[s.cuspidal]
-    println(s)
-    print(FormatTable([modZ.((aA[charNumbers(s)]-aAL)//z),
-                       modZ.(aA[charNumbers(s)]//z), modZ.(1 .//e)], 
-   Dict{Symbol, Any}(:rowLabels => ["(aA-aAL)/z", "aA/z", "local Hecke irr"])))
+Chevie.coefftype(p::Mvp{T1,T2}) where{T1,T2} = T2
+
+# find the specialization of Mvp parameters leading to group algebra
+# assume each parameter is the power of a single variable
+function SpecializationToGroup(H)
+  vcat(unique(vcat(map(H.para)do p
+    e=length(p)
+    res=Pair{Symbol,coefftype(p[1])}[]
+    for i in 1:e
+      v=scalar(p[i])
+      if !isnothing(v)
+        if v!=E(e,i-1) error(v," is not ",E(e,i-1)) end
+        continue
+      end
+      if length(p[i])!=1 || length(first(monomials(p[i])))!=1
+       error(repr(p[i],context=rio())," is not a power of a variable")
+      end
+      push!(res,variables(p[i])[1]=>root(E(e,i-1),degree(p[i])))
+    end
+    res
+  end))...)
+end
+
+# get central characters without having to know Chartable
+# for algebras above group algebra
+function HeckeCentralCharacters(H)
+  W=H.W
+  z=length(center(W))
+  v=map(m->root(m,z),central_monomials(H))
+  v1=CharTable(W).irr[:,position_regular_class(W,z)]
+  v2=CharTable(W).irr[:,position_class(W,one(W))]
+  map((x,y,z)->x*y//z//value(x,SpecializationToGroup(H)...),v,v1,v2)
+end
+
+# for an algebra with single parameter q, find for each character φ 
+# an e such that φ takes values in ℂ[q^{1/e}]
+function gete(H)
+  function fp(p)
+    if coefftype(p)==Int || iszero(p) return 1 end
+    lcm(denominator.(vcat(map(x->modZ.(powers(x)),monomials(p))...)))
+  end
+  ct=CharTable(H)
+  if !isnothing(ct) map(x->lcm(fp.(x)),eachrow(ct.irr))
+  else fp.(HeckeCentralCharacters( H ))
   end
 end
 
-# checks minimal polynomials for Cyclotomic hecke algebras
-function CheckRatCyc(s)
-  if !haskey(s,:Hecke) error(" Hecke not bound") end
-  l=collectby(degree,hecke(s).para[1])
-  fact=map(x->prod(y->Mvp(:T)-y,x),l)
-  F=NF(cartan(Group(s.spets))...)
-  fact,F
+function Checkzegen(W)
+  l1=Series(W;proper=true)
+  l=filter(s->haskey(s,:Hecke),l1)
+  println(rio(),"with no Hecke:",setdiff(l1,l))
+  println("    center==",gcd(degrees(W)))
+  uc=UnipotentCharacters(W)
+  aA=uc.a+uc.A
+  srat(x)=denominator(x)==1 ? numerator(x) : x
+  for s in l
+    xprintln(s)
+    e=gete(hecke(s))
+    z=gcd(degrees(relative_group(s)))
+    ucL=UnipotentCharacters(s.levi)
+    aAL=(ucL.A.+ucL.a)[s.cuspidal]
+    showtable(srat.(toM([modZ.((aA[charnumbers(s)].-aAL)//z),
+                         modZ.(aA[charnumbers(s)]//z), modZ.(1 .//e)])), 
+     row_labels=["(aA-aAL)/z", "aA/z", "local Hecke irr"])
+  end
 end
 
-function CheckRatSer(arg...)
-  W=crg(arg...)
-  s=Series(W;proper=true)
-  s=filter(x->x.spets!=x.levi,s)
-  join(map(CheckRatCyc,s), "\\hfill\\break\n")
+# minimal polynomials for Cyclotomic hecke algebras of series s
+function ratser(s)
+  map(x->prod(y->Mvp(:T)-y,x),collectby(degree,hecke(s).para[1]))
+end
+
+function Checkratser(W)
+  ss=Series(W;proper=true)
+  F=NF(cartan(Group(ss[1].spets))...)
+  xprintln("F=",F)
+  for s in ss
+    if isnothing(hecke(s)) continue end
+    p=ratser(s)
+    F1=NF(F.gens...,s.d)
+    p=filter(x->any(y->!(y in F1),coefficients(x)),p)
+    if !isempty(p) printstyled(rio(),s.d,": ",p;color=:red) end
+  end
 end
 
 function CheckPiGPiL(n)
@@ -136,17 +185,15 @@ end
 function Checkdovere(n)
   W=crg(n)
   s=Series(W;proper=true)
-  map(Hecke,s)
   s=filter(ser->iscyclic(ser) && ser.principal,s)
-  filter(x->e(x)//x.d>2,s)
+  filter(x->x.e>2*order(x.d),s)
 end
 
 function CheckxiL(n)
   W=crg(n)
   l=Series(W;proper=true)
-  map(Hecke,l)
   l=filter(s->iscyclic(s) && s.principal,l)
-  filter(x->!isone(Root1(PhiOnDiscriminant(x.levi))^x.d),l)
+  filter(x->!iszero(modZ(Root1(PhiOnDiscriminant(x.levi)).r*x.d.r)),l)
 end
 
 # check formula for product parameters
@@ -186,11 +233,13 @@ function cent(W)
 end
 
 function EigenspaceNumbers(W)
-  d = degrees(W)
-  if !(W isa Spets) return union(divisors.(d)...) end
-  e=map(p->lcm(p[1],conductor(Root1(p[2]))),d)
-  e=union(divisors.(e))
-  filter(x->any(p->E(x,p[1])==p[2],d),e)
+  d=degrees(W)
+  if W isa Spets 
+    e=map(p->lcm(p[1],conductor(Root1(p[2]))),d)
+    e=sort(union(divisors.(e)))
+    filter(x->any(p->E(x,p[1])==p[2],d),e)
+  else sort(union(divisors.(d)...))
+  end
 end
 
 # nrconjecture: si kd est le multiple maximum de d tq
