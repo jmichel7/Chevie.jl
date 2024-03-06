@@ -201,11 +201,10 @@ function CheckCoN(i)
   W=crg(i)
   l=Series(W;proper=true)
   l=filter(x->length(x.levi)==1,l)
-  map(Hecke, l)
-  l=filter(x->haskey(x.prop,:Hecke),l)
+  l=filter(x->haskey(x,:Hecke),l)
   map(l)do s
-   m=DeterminantMat(reflrep(W, s.prop[:element]))
-    sg=(-1)^sum(degrees(relative_group(s))-1)
+    m=det_bareiss(reflrep(W, s.element))
+    sg=(-1)^sum(degrees(relative_group(s)).-1)
     if length(hyperplane_orbits(relative_group(s)))>1 false
     else m*sg*prod(s.Hecke.para[1])^hyperplane_orbits(relative_group(s))[1].N_s
     end

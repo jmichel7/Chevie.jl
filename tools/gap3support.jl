@@ -1,3 +1,5 @@
+# Julia implementation of some GAP3 functions
+#--------------------------------------------
 using Primes: totient # translation of Phi
 Append(a::Vector,b::AbstractVector)=vcat(a,b)
 Append(a::String,b::String)=a*b

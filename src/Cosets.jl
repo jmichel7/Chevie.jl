@@ -906,8 +906,7 @@ function subspets(WF::Spets,I::AbstractVector{<:Integer},w=one(Group(WF));NC=fal
   if isone(phi) RF=spets(R)
   else RF=spets(phi,reflrep(WF,phi),R,Dict{Symbol,Any}())
   end
-  RF.parent=WF
-  # perhaps no parent?
+  if R!==W RF.parent=WF end
   if !NC refltype(RF) end
   RF
 end

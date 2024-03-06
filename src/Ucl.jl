@@ -237,6 +237,21 @@ and  the column labels give the class and the name of the local system as a
 character  of `A(u)`: for instance, `G2(a1)` is the trivial local system of
 the  class `G2(a1)`, while  `G2(a1)(21)` is the  local system on that class
 corresponding to the 2-dimensional character of ``A(u)=A₂``.
+
+The  data on unipotent classes for  arbitrary reductive groups are obtained
+as  follows. The  data for  a quasi-simple  simply connected group `𝔾` have
+been entered by hand for each type. In such a group to each Springer series
+is  attached a character of `A(Z)`, the  group of components of the center.
+For  any reductive group `𝔾'`  of the same type  with center `Z'` the group
+`A(Z')` is a quotient of the group `A(Z)`. The Springer series for `𝔾'` are
+those  such  that  the  corresponding  character  of `A(Z)` factors through
+`A(Z')`   (for  computing  `A(Z')`   see  [`algebraic_center`](@ref)).  The
+geometric  unipotent classes of  `𝔾` and `𝔾'`  are in bijection.  For `u` a
+unipotent  element  of  `𝔾'`  (which  we  can  consider also as a unipotent
+element  of `𝔾`) the group  `A₁=A(u)` in `𝔾'` is  a quotient of `A=A(u)` in
+`𝔾`  that we can  compute as follows:  the Springer correspondence for `𝔾'`
+tells us which characters of `A` survive in `𝔾'`. Then `A'` is the quotient
+of `A` by the common kernel of these characters.
 """
 module Ucl
 
@@ -980,7 +995,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
      push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")
   end
   if get(io,:springer,true)
-   append!(col_labels,
+    append!(col_labels,
       map(function (ss,)
         res=string(repr(ss[:relgroup];context=io),"(",
           repr(subspets(WF,ss[:levi]);context=io),")")
