@@ -221,13 +221,12 @@ chevieset(:A, :UnipotentClasses, function (n, p)
             cl[:dynkin] = map((i->begin
                             p[i + 1] - p[i]
                         end), 1:length(p) - 1)
-            cl[:red] = []
-            p = 1
-            for j = tally(cl[:parameter])
-                cl[:red] = Append(cl[:red], p:(p + j[2]) - 2)
-                p = p + j[2]
+            cl[:red] = CoxeterGroup()
+            p = tally(cl[:parameter])
+            for j = p
+                cl[:red] = cl[:red] * CoxeterGroup("A", j[2] - 1)
             end
-            cl[:red] = ReflectionSubgroup(CoxeterGroup("A", p - 2), cl[:red])
+            cl[:red] = cl[:red] * torus(length(p) - 1)
             cl[:AuAction] = ExtendedReflectionGroup(cl[:red], [IdentityMat(rank(cl[:red]))])
             cl[:rep] = partition2parab(cl[:parameter])
             if d == 2

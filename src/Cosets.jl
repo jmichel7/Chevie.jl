@@ -772,15 +772,17 @@ function Base.show(io::IO, WF::Spets)
     print(io,"spets(",W,",",WF.phi,")")
     return
   end
-  if haskey(WF,:parent)
-    n=inclusion(WF,indices(refltype(WF)))
-    if n!=eachindex(gens(Group(WF.parent)))
-      printTeX(io,"{",WF.parent,"}_{"*joindigits(n;always=true)*"}=")
-    end
-  elseif isdefined(W,:parent)
-    n=inclusion(W,indices(refltype(WF)))
-    if n!=eachindex(gens(W.parent))
-      printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
+  if get(io,:parent,true)
+    if haskey(WF,:parent)
+      n=inclusion(WF,indices(refltype(WF)))
+      if n!=eachindex(gens(Group(WF.parent)))
+        printTeX(io,"{",WF.parent,"}_{"*joindigits(n;always=true)*"}=")
+      end
+    elseif isdefined(W,:parent)
+      n=inclusion(W,indices(refltype(WF)))
+      if n!=eachindex(gens(W.parent))
+        printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
+      end
     end
   end
   show(io,refltype(WF))

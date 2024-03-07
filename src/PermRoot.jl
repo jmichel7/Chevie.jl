@@ -1846,7 +1846,7 @@ function Base.show(io::IO, W::PRSG)
     return
   end
   n=inclusion(W,indices(refltype(W)))
-  if n!=eachindex(gens(W.parent))
+  if n!=eachindex(gens(W.parent)) && get(io,:parent,true)
     printTeX(io,"{",W.parent,"}_{"*joindigits(n;always=true)*"}=")
   end
   show(io,refltype(W))

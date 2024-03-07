@@ -103,21 +103,13 @@ We illustrate these computations on some examples:
 julia> UnipotentClasses(rootdatum(:sl,4))
 UnipotentClasses(sl₄)
 1111<211<22<31<4
-   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³) A₁(A₃₍₁₃₎=A₁×A₁Φ₁)/-1 .(A₃)/ζ₄
-────┼──────────────────────────────────────────────────────────────────────
-4   │222   0 222         q³.Z₄          1:4                  -1:2    ζ₄:Id
-31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31                               
-22  │020   2 2.2      q⁴.A₁.Z₂         2:22                 11:11         
-211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211                               
-1111│000   6 ...            A₃      Id:1111
-
-   u│.(A₃)/ζ₄³
-────┼──────────
-4   │   ζ₄³:Id
-31  │         
-22  │         
-211 │         
-1111│         
+   u│D-R dBu B-C     C(u) A₃(Φ₁³) A₁(A₁×A₁Φ₁)/-1 .(A₃)/ζ₄ .(A₃)/ζ₄³
+────┼───────────────────────────────────────────────────────────────
+4   │222   0 222    q³.Z₄     1:4           -1:2    ζ₄:Id    ζ₄³:Id
+31  │202   1 22.    q⁴.Φ₁   Id:31
+22  │020   2 2.2 q⁴.A₁.Z₂    2:22          11:11
+211 │101   3 2..  q⁵.A₁Φ₁  Id:211
+1111│000   6 ...       A₃ Id:1111
 
 ```
 
@@ -166,13 +158,13 @@ table for the adjoint group:
 julia> UnipotentClasses(coxgroup(:A,3))
 UnipotentClasses(A₃)
 1111<211<22<31<4
-   u│D-R dBu B-C          C(u) A₃(A₃₍₎=Φ₁³)
-────┼───────────────────────────────────────
-4   │222   0 222            q³         Id:4
-31  │202   1 22.    q⁴.A₁₍₎=Φ₁        Id:31
-22  │020   2 2.2         q⁴.A₁        Id:22
-211 │101   3 2.. q⁵.A₂₍₁₎=A₁Φ₁       Id:211
-1111│000   6 ...            A₃      Id:1111
+   u│D-R dBu B-C    C(u) A₃(Φ₁³)
+────┼────────────────────────────
+4   │222   0 222      q³    Id:4
+31  │202   1 22.   q⁴.Φ₁   Id:31
+22  │020   2 2.2   q⁴.A₁   Id:22
+211 │101   3 2.. q⁵.A₁Φ₁  Id:211
+1111│000   6 ...      A₃ Id:1111
 ```
 
 Here is another example:
@@ -181,13 +173,13 @@ Here is another example:
 julia> UnipotentClasses(coxgroup(:G,2))
 UnipotentClasses(G₂)
 1<A₁<Ã₁<G₂(a₁)<G₂
-     u│D-R dBu B-C  C(u)    G₂(G₂₍₎=Φ₁²)  .(G₂)
+     u│D-R dBu B-C  C(u)         G₂(Φ₁²)  .(G₂)
 ──────┼─────────────────────────────────────────
-G₂    │ 22   0  22    q²         Id:φ₁‚₀       
+G₂    │ 22   0  22    q²         Id:φ₁‚₀
 G₂(a₁)│ 20   1  20 q⁴.S₃ 21:φ′₁‚₃ 3:φ₂‚₁ 111:Id
-Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂       
-A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃       
-1     │ 00   6  ..    G₂         Id:φ₁‚₆       
+Ã₁    │ 01   2  .2 q³.A₁         Id:φ₂‚₂
+A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃
+1     │ 00   6  ..    G₂         Id:φ₁‚₆
 ```
 
 which illustrates that on class `G₂(a₁)` there are two local systems in the
@@ -204,14 +196,14 @@ second argument to the function `UnipotentClasses`:
 julia> UnipotentClasses(coxgroup(:G,2),3)
 UnipotentClasses(G₂,3)
 1<A₁,(Ã₁)₃<Ã₁<G₂(a₁)<G₂
-     u│dBu B-C  C(u) G₂(G₂₍₎=Φ₁²) .(G₂) .(G₂)  .(G₂)
-──────┼──────────────────────────────────────────────
-G₂    │  0  22 q².Z₃       1:φ₁‚₀       ζ₃:Id ζ₃²:Id
-G₂(a₁)│  1  20 q⁴.Z₂       2:φ₂‚₁ 11:Id             
-Ã₁    │  2  .2    q⁶      Id:φ₂‚₂                   
-A₁    │  3  2. q⁵.A₁     Id:φ″₁‚₃                   
-(Ã₁)₃ │  3  ?? q⁵.A₁     Id:φ′₁‚₃                   
-1     │  6  ..    G₂      Id:φ₁‚₆
+     u│dBu B-C  C(u)  G₂(Φ₁²) .(G₂) .(G₂)  .(G₂)
+──────┼──────────────────────────────────────────
+G₂    │  0  22 q².Z₃   1:φ₁‚₀       ζ₃:Id ζ₃²:Id
+G₂(a₁)│  1  20 q⁴.Z₂   2:φ₂‚₁ 11:Id
+Ã₁    │  2  .2    q⁶  Id:φ₂‚₂
+A₁    │  3  2. q⁵.A₁ Id:φ″₁‚₃
+(Ã₁)₃ │  3  ?? q⁵.A₁ Id:φ′₁‚₃
+1     │  6  ..    G₂  Id:φ₁‚₆
 ```
 
 The  function `ICCTable` gives the  transition matrix between the functions
@@ -386,7 +378,7 @@ function induced_linear_form(W,K,h)
 end
 
 """
-`distinguished_parabolics(W)` 
+`distinguished_parabolics(W)`
 
 the  list  of  distinguished  parabolic  subgroups  of  `W` in the sense of
 Richardson,  each  given  as  the  list  of  the corresponding indices. The
@@ -502,7 +494,7 @@ function QuotientAu(Au,chars)
       end
     elseif ReflectionName(Au)=="A₁×B₂" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
-    elseif ReflectionName(Au)=="A₂×A₁×A₁" && length(k)==2 && 
+    elseif ReflectionName(Au)=="A₂×A₁×A₁" && length(k)==2 &&
       longest(reflection_subgroup(Au,[3,4])) in k
       return finish(coxgroup(:A,2)*coxgroup(:A,1),[[1],[2],[3],[3]])
     end
@@ -758,7 +750,7 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
                          sum(map(x->x.dimBu,v)),Dict{Symbol,Any}())
         u.Au=prod(x->x.Au,v)
         if all(x->haskey(x,:dimred),v)
-          u.dimred=sum(x->x.dimred,v)+rank(W)-semisimplerank(W) 
+          u.dimred=sum(x->x.dimred,v)+rank(W)-semisimplerank(W)
         end
         if all(x->haskey(x,:dimunip),v)
           u.dimunip=sum(x->x.dimunip,v) end
@@ -808,9 +800,9 @@ function UnipotentClasses(W::Union{FiniteCoxeterGroup,CoxeterCoset},p=0)
   end
   springerseries=map(cartesian(map(x->x.springerseries,uc)...)) do v
 #   if isempty(v) return Dict(:Z=>[],:levi=>[],:locsys=>[[1,1]])
-    if length(v)==1 
+    if length(v)==1
       if !isempty(l)
-        v[1]=deepcopy(v[1]); v[1][:levi]=l[1][v[1][:levi]]; 
+        v[1]=deepcopy(v[1]); v[1][:levi]=l[1][v[1][:levi]];
       end
       return v[1]
     end
@@ -998,7 +990,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
     append!(col_labels,
       map(function (ss,)
         res=string(repr(ss[:relgroup];context=io),"(",
-          repr(subspets(WF,ss[:levi]);context=io),")")
+          repr(subspets(WF,ss[:levi]);context=IOContext(io,:parent=>false)),")")
         if !all(isone,ss[:Z])
           res*=string("/", join(map(q->repr(q;context=io),ss[:Z]),","))
         end
@@ -1326,7 +1318,7 @@ function Base.show(io::IO,::MIME"text/plain",x::XTable)
     rows_label*="class"
     print(io," unipotent classes\n")
     col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
-  else 
+  else
     rows_label*=fromTeX(io,"\\phi")
     printTeX(io," local systems \$\\phi\$\n")
     col_labels=map(p->name(TeX(io,locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
@@ -1508,7 +1500,7 @@ function UnipotentValues(uc;q=Mvp(:q),classes=false)
   m=Vector{eltype(f[1])}[]
   for (i,ss) in pairs(uc.springerseries)
    if i==1 append!(m,f[charnumbers(uw.harishChandra[1])])
-    elseif !haskey(ss,:hc) error("not implemented") 
+    elseif !haskey(ss,:hc) error("not implemented")
     elseif ss[:hc]==0 append!(m,map(i->zero(f[1]),eachindex(ss[:locsys])))
     else append!(m,f[charnumbers(uw.harishChandra[ss[:hc]])])
     end
@@ -1524,7 +1516,7 @@ function Base.show(io::IO,::MIME"text/plain",x::ValuesTable)
   if x.class
     println(io,"unipotent classes")
     col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
-  else 
+  else
     col_labels=map(p->name(TeX(io;locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
     println(io,"local systems")
   end
