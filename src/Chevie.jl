@@ -70,7 +70,29 @@ its  code is "strange".  When the need  to maintain the  `GAP3` and `Julia`
 versions  simultaneously subsides,  I will  do a  proper translation of the
 data library, which should give an additional speed boost.
 
-`Chevie.jl` requires julia 1.8 or later. 
+### Installing
+
+This is a registered package that can be installed/upgraded in the standard
+way.  For Julia newbies,  we will remind  you what this  is. To install, do
+this at the REPL command line:
+
+  *  enter package mode with ]
+  *  do the command
+```
+(@v1.10) pkg> add Chevie
+```
+- exit package mode with backspace and then do
+```
+julia> using Chevie
+```
+and you are set up. For first help, type "?Chevie".
+
+To update later to the latest version, do
+
+```
+(@v1.10) pkg> update
+```
+`Chevie.jl` requires julia 1.10 or later. 
 """
 module Chevie
 #--------------------- external packages ----------------------------------
