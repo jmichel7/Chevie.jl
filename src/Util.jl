@@ -342,8 +342,7 @@ function TeX(y...;p...)
   s=tempname(".")
   open("$s.tex","w")do f
     println(f,"\\documentclass{article}")
-    println(f,"\\usepackage{amsmath}")
-    println(f,"\\usepackage{amssymb}")
+    println(f,"\\usepackage{amsmath,amssymb,relsize}")
     println(f,"\\begin{document}")
     for x in y print(f,x isa String ? x : TeXs(x;p...)) end
     println(f,"\\end{document}")

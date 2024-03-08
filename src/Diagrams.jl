@@ -74,18 +74,25 @@ function cd(i)
 end
 node="O"
 
-nnode(i)="\\kern-2pt\\mathop\\bigcirc\\limits_{"*i*"}\\kern-2pt"
+rule(d,w,h)=string("\\rule[",d,"pt]{",w,"pt}{",h,"pt}\n")
+script(i)=string("{\\scriptstyle ",i,"}")
+rlap(s)="\\rlap{"*s*"}"
+nnode(i)=string("\\kern-2pt\\mathop\\bigcirc\\limits_{",i,"}\\kern-2pt")
 ncnode(o,i)=string("\\kern-2pt\\mathop\\bigcirc\\limits_{",i,
-                   "}\\kern-8.6pt{\\scriptstyle",o,"}\\kern 2.3pt")
-barr(n)=string("\\rule[2pt]{",n,"pt}{1pt}")
-dbarr(n)=string("\\rlap{\\rule[3pt]{",n,"pt}{1pt}}\\rule[1pt]{",n,"pt}{1pt}")
-tbarr(n)=string("\\rlap{\\rule[4pt]{",n,"pt}{1pt}}\\rlap{\\rule[2pt]{",n,
-                "pt}{1pt}}\\rule[0pt]{",n,"pt}{1pt}")
+                   "}\\kern-8.6pt",script(o),"\\kern 2.3pt\n")
+barr(n)=rule(2,n,1)
+dbarr(n)=rlap(rule(3,n,1))*rule(1,n,1)
+tbarr(n)=rlap(rule(4,n,1))*rlap(barr(n))*rule(0,n,1)
 
-vertbar(x,y)="\\kern1.5pt\\rlap{\\hbox{\$"*nnode(x)*"\$}}\n"*
-   "\\rlap{\\kern2.6pt\\rule[6.6pt]{1pt}{10.8pt}}\n"*
-   "\\rlap{\\raise19.4pt\\hbox{\$\\kern-2pt\\bigcirc\\scriptstyle "*y*"\$}}\n"*
-   "\\kern8pt"
+raise(n,s)=string("\\raise",n,"pt\\hbox{\$",s,"\$}")
+
+vertbar(x,y)="\\kern1.5pt"*rlap("\\hbox{\$"*nnode(x)*"\$}")*"\n"*
+    rlap("\\kern2.6pt"*rule(6.6,1,10.8))*"\n"*
+    rlap(raise(19.4,"\\kern-2pt\\bigcirc"*script(y)))*"\n"*"\\kern8pt"
+
+cnode(i)=string("{\\kern-0.4pt\\bigcirc\\kern-7pt",script(i),"\\kern3.6pt}\n")
+larger(s)="\\mathlarger{"*s*"}"
+larger(s,i)=i==0 ? larger(s) : larger(larger(s,i-1))
 
 function getlind(d)
   t=d.t
@@ -102,10 +109,9 @@ function Base.show(io::IO,d::Diagram,::Val{:A})
     println(io,"\$\$",nnode(ind[1]))
     for i in 2:length(l) println(io,barr(10),nnode(ind[i])) end
     println(io,"\$\$")
-    return
+  else join(io,node.*hbar.^l[1:end-1]);print(io,node);println(io," ",d.t)
+    join(io,ind," ")
   end
-  join(io,node.*hbar.^l[1:end-1]);print(io,node);println(io," ",d.t)
-  join(io,ind," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:B})
@@ -113,24 +119,23 @@ function Base.show(io::IO,d::Diagram,::Val{:B})
   c=d.t.cartanType
   if get(io,:TeX,false)
     println(io,"\$\$",nnode(ind[1]))
-    if c==2 println(io,"\\rlap{\\raise5pt\\hbox{\$\\leftarrow\$}}",dbarr(10))
-    elseif c==1 println(io,"\\rlap{\\raise5pt\\hbox{\$\\rightarrow\$}}",dbarr(10))
+    if c==2 println(io,rlap(raise(5,"\\leftarrow")),dbarr(10))
+    elseif c==1 println(io,rlap(raise(5,"\\rightarrow")),dbarr(10))
     elseif c==root(2) println(io,dbarr(10))
     else error("not implemented")
     end
     println(io,nnode(ind[2]))
     for i in 3:length(l) println(io,barr(10),nnode(ind[i])) end
     println(io,"\$\$")
-    return
+  else print(io,node)
+    if c==2 l1=max(l[1],2);print(io,rdarrow(l1))
+    elseif c==1 l1=max(l[1],2);print(io,ldarrow(l1))
+    elseif c==root(2) l1=max(l[1],2);print(io,dbar^l1)
+    else xprint(io,"=",c,"="); l1=length(repr(c;context=rio()))+2
+    end
+    join(io,node.*hbar.^l[2:end-1]);println(io,node," ",d.t)
+    print(io,rpad(ind[1],l1+1));join(io,ind[2:end]," ")
   end
-  print(io,node)
-  if c==2 l1=max(l[1],2);print(io,rdarrow(l1))
-  elseif c==1 l1=max(l[1],2);print(io,ldarrow(l1))
-  elseif c==root(2) l1=max(l[1],2);print(io,dbar^l1)
-  else xprint(io,"=",c,"="); l1=length(repr(c;context=rio()))+2
-  end
-  join(io,node.*hbar.^l[2:end-1]);println(io,node," ",d.t)
-  print(io,rpad(ind[1],l1+1));join(io,ind[2:end]," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:D})
@@ -140,13 +145,12 @@ function Base.show(io::IO,d::Diagram,::Val{:D})
     println(io,vertbar(ind[3],ind[2]))
     for i in 4:length(l) println(io,barr(10),nnode(ind[i])) end
     println(io,"\$\$")
-    return
+  else println(io," "^(l[1]+1),node," $(ind[2])")
+    println(io," "^(l[1]+1),vbar)
+    print(io,node,map(l->hbar^l*node,l[[1;3:end-1]])...)
+    println(io," ",d.t)
+    join(io,ind[[1;3:end]]," ")
   end
-  println(io," "^(l[1]+1),node," $(ind[2])")
-  println(io," "^(l[1]+1),vbar)
-  print(io,node,map(l->hbar^l*node,l[[1;3:end-1]])...)
-  println(io," ",d.t)
-  join(io,ind[[1;3:end]]," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:E})
@@ -157,36 +161,34 @@ function Base.show(io::IO,d::Diagram,::Val{:E})
     println(io,vertbar(ind[4],ind[2]))
     for i in 5:length(l) println(io,barr(10),nnode(ind[i])) end
     println(io,"\$\$")
-    return
+  else println(io," "^(2+l[1]+l[3]),node," $(ind[2])")
+    println(io," "^(2+l[1]+l[3]),vbar)
+    print(io,node,map(l->hbar^l*node,l[[1;3:end-1]])...)
+    println(io," ",d.t)
+    join(io,ind[[1;3:end]]," ")
   end
-  println(io," "^(2+l[1]+l[3]),node," $(ind[2])")
-  println(io," "^(2+l[1]+l[3]),vbar)
-  print(io,node,map(l->hbar^l*node,l[[1;3:end-1]])...)
-  println(io," ",d.t)
-  join(io,ind[[1;3:end]]," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:F})
   l,ind=getlind(d)
   c=d.t.cartanType
   if get(io,:TeX,false)
-     println(io,"\$\$",nnode(ind[1]))
-     println(io,barr(10),nnode(ind[2]))
-     if c==1 println(io,"\\rlap{\\raise5pt\\hbox{\$\\rightarrow\$}}",dbarr(10))
-     elseif c==root(2) println(io,dbarr(10))
-     else error("not implemented")
-     end
-     println(io,nnode(ind[3]))
-     println(io,barr(10),nnode(ind[4]))
-     println(io,"\$\$")
-    return
+    println(io,"\$\$",nnode(ind[1]))
+    println(io,barr(10),nnode(ind[2]))
+    if c==1 println(io,rlap(raise(5,"\\rightarrow")),dbarr(10))
+    elseif c==root(2) println(io,dbarr(10))
+    else error("not implemented")
+    end
+    println(io,nnode(ind[3]))
+    println(io,barr(10),nnode(ind[4]))
+    println(io,"\$\$")
+  else print(io,node,hbar^l[1],node)
+    if c==1 l1=max(l[2],2);print(io,ldarrow(l1))
+    else l1=max(l[2],1);print(io,dbar^l1)
+    end
+    println(io,node,hbar^l[3],node," ",d.t)
+    print(io,ind[1]," ",rpad(ind[2],l1+1),ind[3]," ",ind[4])
   end
-  print(io,node,hbar^l[1],node)
-  if c==1 l1=max(l[2],2);print(io,ldarrow(l1))
-  else l1=max(l[2],1);print(io,dbar^l1)
-  end
-  println(io,node,hbar^l[3],node," ",d.t)
-  print(io,ind[1]," ",rpad(ind[2],l1+1),ind[3]," ",ind[4])
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G})
@@ -194,55 +196,52 @@ function Base.show(io::IO,d::Diagram,::Val{:G})
   c=d.t.cartanType
   if get(io,:TeX,false)
     println(io,"\$\$",nnode(ind[1]))
-    if c==3 println(io,"\\rlap{\\raise5pt\\hbox{\$\\leftarrow\$}}",tbarr(10))
-    elseif c==1 println(io,"\\rlap{\\raise5pt\\hbox{\$\\rightarrow\$}}",tbarr(10))
+    if c==1 println(io,rlap(raise(5,"\\rightarrow")),tbarr(10))
     elseif c==root(3) println(io,dbarr(10))
     else error("not implemented")
     end
     println(io,nnode(ind[2]),"\$\$")
-    return
+  else
+    if c==1 print(io,node,tarrow(max(l[1],2)))
+    else print(io,node,tbar(max(l[1],2)))
+    end
+    println(io,node," ",d.t)
+    print(io,ind[1]," "^max(3-l[1],1),ind[2])
   end
-  if c==1 print(io,node,tarrow(max(l[1],2)))
-  else print(io,node,tbar(max(l[1],2)))
-  end
-  println(io,node," ",d.t)
-  print(io,ind[1]," "^max(3-l[1],1),ind[2])
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:H})
   l,ind=getlind(d)
   if get(io,:TeX,false)
     println(io,"\$\$",nnode(ind[1]))
-    println(io,"\\rlap{\\kern3pt\\raise2pt\\hbox{\${}^5\$}}",barr(10))
+    println(io,rlap("\\kern3pt"*raise(6,script(5))),barr(10))
     println(io,nnode(ind[2]))
     for i in 3:length(l) println(io,barr(10),nnode(ind[i])) end
     println(io,"\$\$")
-    return
+  else println(io," "^l[1],"₅")
+    println(io,map(i->node*hbar^l[i],1:length(l)-1)...,node," ",d.t)
+    join(io,ind," ")
   end
-  println(io," "^l[1],"₅")
-  println(io,map(i->node*hbar^l[i],1:length(l)-1)...,node," ",d.t)
-  join(io,ind," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:I})
   l,ind=getlind(d)
   if get(io,:TeX,false)
     println(io,"\$\$",nnode(ind[1]))
-    println(io,"\\rlap{\\kern3pt\\raise2pt\\hbox{\${}^{",d.t.bond,"}\$}}")
+    println(io,rlap("\\kern3pt"*raise(6,script(d.t.bond))))
     println(io,barr(10),nnode(ind[2]))
     println(io,"\$\$")
-    return
+  else println(io," "^l[1],d.t.bond)
+    println(io,node,hbar^l[1],node)
+    join(io,ind," ")
   end
-  println(io," "^l[1],d.t.bond)
-  println(io,node,hbar^l[1],node)
-  join(io,ind," ")
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G4})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(3,ind[1]))
-    println(io,barr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(3,ind[1]))
+    print(io,barr(10),ncnode(3,ind[2]),"\$\$")
   else println(io,cd(3),hbar^2,cd(3),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -250,8 +249,8 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G5})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(3,ind[1]))
-    println(io,dbarr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(3,ind[1]))
+    print(io,dbarr(10),ncnode(3,ind[2]),"\$\$")
   else println(io,cd(3),dbar^2,cd(3),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -259,25 +258,33 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G6})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(2,ind[1]))
-    println(io,tbarr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(2,ind[1]))
+    print(io,tbarr(10),ncnode(3,ind[2]),"\$\$")
   else println(io,cd(2),tbar(2),cd(3),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G7})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^2,cd(3),ind[2]," ",d.t);
-  println(io," ","/3\\")
-  println(io,cd(2),hbar^2,cd(3))
-  print(io,ind[1]," "^3,ind[3]," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",script(ind[1]),cnode(2))
+    print(io,"\\kern-2.5pt",raise(-3,larger("\\bigcirc",5)),"\n\\kern-5pt",
+          rlap(raise(11,cnode(3)*script(ind[2]))),
+          raise(-10,cnode(3)*script(ind[3])),"\$\$")
+  else println(io," "^2,cd(3),ind[2]," ",d.t);
+    println(io," ","/3\\")
+    println(io,cd(2),hbar^2,cd(3))
+    print(io,ind[1]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  print(io," ",f(1,2,3),"=", f(2,3,1),"=",f(3,1,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G8})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(4,ind[1]))
-    println(io,barr(10),ncnode(4,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(4,ind[1]))
+    print(io,barr(10),ncnode(4,ind[2]),"\$\$")
   else println(io,cd(4),hbar^2,cd(4),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -285,8 +292,8 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G9})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(2,ind[1]))
-    println(io,tbarr(10),ncnode(4,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(2,ind[1]))
+    print(io,tbarr(10),ncnode(4,ind[2]),"\$\$")
   else println(io,cd(2),tbar(2),cd(4),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -294,17 +301,25 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G10})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(3,ind[1]))
-    println(io,dbarr(10),ncnode(4,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(3,ind[1]))
+    print(io,dbarr(10),ncnode(4,ind[2]),"\$\$")
   else println(io,cd(3),dbar^2,cd(4),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G11})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^2,cd(3),ind[2]," ",d.t);println(io," /3\\");
-  println(io,cd(2),hbar^2,cd(4))
-  print(io,ind[1]," "^3,ind[3]," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",script(ind[1]),cnode(2))
+    print(io,"\\kern-2.5pt",raise(-3,larger("\\bigcirc",5)),"\\kern-5pt\n",
+          rlap(raise(11,cnode(3)*script(ind[2]))),
+          raise(-10,cnode(4)*script(ind[3])),"\$\$")
+  else println(io," "^2,cd(3),ind[2]," ",d.t);println(io," /3\\");
+    println(io,cd(2),hbar^2,cd(4))
+    print(io,ind[1]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  print(io," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G12})
@@ -325,9 +340,9 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G14})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(2,ind[1]))
-    println(io,"\\rlap{\\kern3pt\\raise2pt\\hbox{\${}^8\$}}")
-    println(io,barr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(2,ind[1]))
+    print(io,rlap("\\kern3pt"*raise(6,script(8))))
+    print(io,barr(10),ncnode(3,ind[2]),"\$\$")
   else
     println(io,"  ₈");println(io,cd(2),hbar,cd(3),d.t)
     print(io,ind[1]," "^2,ind[2])
@@ -345,8 +360,8 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G16})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(5,ind[1]))
-    println(io,barr(10),ncnode(5,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(5,ind[1]))
+    print(io,barr(10),ncnode(5,ind[2]),"\$\$")
   else println(io,cd(5),hbar^2,cd(5),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -354,8 +369,8 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G17})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(2,ind[1]))
-    println(io,tbarr(10),ncnode(5,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(2,ind[1]))
+    print(io,tbarr(10),ncnode(5,ind[2]),"\$\$")
   else println(io,cd(2),tbar(2),cd(5),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
@@ -363,25 +378,33 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G18})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(3,ind[1]))
-    println(io,dbarr(10),ncnode(5,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(3,ind[1]))
+    print(io,dbarr(10),ncnode(5,ind[2]),"\$\$")
   else println(io,cd(3),dbar^2,cd(5),d.t);print(io,ind[1]," "^3,ind[2])
   end
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G19})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^2,cd(3),ind[2]," ",d.t);println(io," /3\\");
-  println(io,cd(2),hbar^2,cd(5))
-  print(io,ind[1]," "^3,ind[3]," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",script(ind[1]),cnode(2))
+    print(io,"\\kern-2.5pt",raise(-3,larger("\\bigcirc",5)),"\\kern-5pt\n",
+          rlap(raise(11,cnode(3)*script(ind[2]))),
+          raise(-10,cnode(5)*script(ind[3])),"\$\$")
+  else println(io," "^2,cd(3),ind[2]," ",d.t);println(io," /3\\");
+    println(io,cd(2),hbar^2,cd(5))
+    print(io,ind[1]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  print(io," ",f(1,2,3),"=",f(2,3,1),"=",f(3,1,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G20})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(3,ind[1]))
-    println(io,"\\rlap{\\kern3pt\\raise2pt\\hbox{\${}^5\$}}")
-    println(io,barr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(3,ind[1]))
+    print(io,rlap("\\kern3pt"*raise(6,script(5))))
+    print(io,barr(10),ncnode(3,ind[2]),"\$\$")
   else println(io,"  ₅");println(io,cd(3),hbar,cd(3),d.t)
     print(io,ind[1]," "^2,ind[2])
   end
@@ -390,9 +413,9 @@ end
 function Base.show(io::IO,d::Diagram,::Val{:G21})
   l,ind=getlind(d)
   if get(io,:TeX,false)
-    println(io,"\$\$",ncnode(2,ind[1]))
-    println(io,"\\rlap{\\kern3pt\\raise2pt\\hbox{\${}^{10}\$}}")
-    println(io,barr(10),ncnode(3,ind[2]),"\$\$")
+    print(io,"\$\$",ncnode(2,ind[1]))
+    print(io,rlap("\\kern3pt"*raise(6,script(10))))
+    print(io,barr(10),ncnode(3,ind[2]),"\$\$")
   else println(io,"  ₁₀");
     println(io,cd(2),hbar^2,cd(3),d.t);print(io,ind[1]," "^3,ind[2])
   end
@@ -406,12 +429,20 @@ function Base.show(io::IO,d::Diagram,::Val{:G22})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G24})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io,"  ",cd(2),ind[1]," ",d.t)
-  println(io," / \\")
-  print(io,cd(2),dbar^2,cd(2))
-  println(io,"  ",f(2,3,1,2,3,1,2,3,1),"==",f(3,2,3,1,2,3,1,2,3))
-  print(io,ind[2]," "^3,ind[3])
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",ncnode(2,ind[2]),dbarr(14),ncnode(2,ind[3]))
+    print(io,"\\kern-26.2pt",raise(8.5,"\\diagup"),"\\kern -3.1pt")
+    print(io,raise(16.7,cnode(2)*rlap("\$"*script(ind[1])*"\$")))
+    print(io,"\\kern -2.5pt",raise(8,"\\diagdown"))
+    print(io,"\$\$")
+  else println(io,"  ",cd(2),ind[1]," ",d.t)
+    println(io," / \\")
+    println(io,cd(2),dbar^2,cd(2))
+    print(io,ind[2]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",f(2,3,1,2,3,1,2,3,1),"=",f(3,2,3,1,2,3,1,2,3))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G25})
@@ -437,21 +468,39 @@ function Base.show(io::IO,d::Diagram,::Val{:G26})
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G27})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io,"  ",cd(2),ind[1]," ",d.t)
-  println(io, " / \\")
-  print(io,cd(2),dbar^2,cd(2))
-  println(io,"  ",f(3,2,3,1,2,3,1,2,3,1,2,3),"==",f(2,3,1,2,3,1,2,3,1,2,3,2))
-  print(io,ind[2]," "^3,ind[3])
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",ncnode(2,ind[2]),dbarr(14),ncnode(2,ind[3]))
+    print(io,"\\kern-26.2pt",raise(8.5,"\\diagup"),"\\kern -3.1pt")
+    print(io,raise(16.7,cnode(2)*rlap("\$"*script(ind[1])*"\$")))
+    print(io,"\\kern -2.5pt",raise(8,"\\diagdown"))
+    print(io,"\$\$")
+  else println(io,"  ",cd(2),ind[1]," ",d.t)
+    println(io, " / \\")
+    println(io,cd(2),dbar^2,cd(2))
+    print(io,ind[2]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",f(3,2,3,1,2,3,1,2,3,1,2,3),"=",f(2,3,1,2,3,1,2,3,1,2,3,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G29})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^6,cd(2),f(4)," "^2,d.t)
-  println(io,"     /\u2016\\")
-  print(io,cd(2),hbar^2,cd(2),dbar^2,cd(2))
-  println(io,"  ",f(4, 3, 2, 4, 3, 2),"==",f(3, 2, 4, 3, 2, 4))
-  print(io,f(1)," "^3,f(2)," "^3,f(3))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    print(io,"\$\$",ncnode(2,ind[1]),barr(10),ncnode(2,ind[2]))
+    print(io,rlap("\\kern2pt"*raise(5,"\\leftarrow")))
+    print(io,rlap("\\kern 6pt"*rule(10,1,5)*"\\kern 1pt"*rule(10,1,5)))
+    print(io,dbarr(14),ncnode(2,ind[3]))
+    print(io,"\\kern-27pt",raise(9,"\\diagup"))
+    print(io,"\\kern -2pt",raise(17,cnode(2)*rlap(raise(2,"\\kern 1pt"*script(4)))))
+    print(io,"\\kern -2pt",raise(9,"\\diagdown"),"\$\$")
+  else println(io," "^6,cd(2),ind[4]," "^2,d.t)
+    println(io,"     /\u2016\\")
+    println(io,cd(2),hbar^2,cd(2),dbar^2,cd(2))
+    print(io,ind[1]," "^3,ind[2]," "^3,ind[3])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",f(4, 3, 2, 4, 3, 2),"=",f(3, 2, 4, 3, 2, 4))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G31})
@@ -475,20 +524,38 @@ function Base.show(io::IO,d::Diagram,::Val{:G32})
   end
 end
 
+trianglerel(a,b,c)=string(ncnode(2,a),barr(14),"\\kern-12pt",
+    raise(7.5,"\\underleftarrow"*script(6)),
+    "\\kern 2pt\n",ncnode(2,b),"\\kern-27pt",raise(9,"\\diagup"),
+    "\\kern -2pt\n",raise(16.5,cnode(2)*rlap(raise(2,"\\kern 1pt"*script(c)))),
+    "\\kern -2pt\n",raise(9,"\\diagdown"),"\\kern3pt")
+
 function Base.show(io::IO,d::Diagram,::Val{:G33})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^4, f(3)," ",cd(2)," "^6,d.t)
-  println(io," "^5,"/^\\")
-  println(io,(cd(2)*hbar^2)^3,cd(2),"  ",f(4,2,3,4,2,3),"==",f(3,4,2,3,4,2))
-  print(io,f(1)," "^3,f(2)," "^3,f(4)," "^3,f(5))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    println(io,"\$\$",ncnode(2,1),barr(10),trianglerel(ind[2],ind[3],ind[4]))
+    println(io,barr(10),ncnode(2,5),"\$\$")
+  else println(io," "^4, ind[3]," ",cd(2)," "^6,d.t)
+    println(io," "^5,"/^\\")
+    println(io,(cd(2)*hbar^2)^3,cd(2))
+    print(io,ind[1]," "^3,ind[2]," "^3,ind[4]," "^3,ind[5])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  println(io,"  ",f(4,2,3,4,2,3),"=",f(3,4,2,3,4,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{:G34})
-  l,ind=getlind(d);f(arg...)=join(ind[collect(arg)])
-  println(io," "^4, f(3)," ",cd(2)," "^10,d.t)
-  println(io," "^5,"/^\\")
-  println(io,(cd(2)*hbar^2)^4,cd(2)," ",f(4,2,3,4,2,3),"==",f(3,4,2,3,4,2))
-  print(io,f(1)," "^3,f(2)," "^3,f(4)," "^3,f(5)," "^3,f(6))
+  l,ind=getlind(d)
+  if get(io,:TeX,false)
+    println(io,"\$\$",ncnode(2,1),barr(10),trianglerel(ind[2],ind[3],ind[4]))
+    println(io,barr(10),ncnode(2,5),barr(10),ncnode(2,6),"\$\$")
+  else println(io," "^4, ind[3]," ",cd(2)," "^10,d.t)
+    println(io," "^5,"/^\\")
+    println(io,(cd(2)*hbar^2)^4,cd(2))
+    print(io,ind[1]," "^3,ind[2]," "^3,ind[4]," "^3,ind[5]," "^3,ind[6])
+  end
+  f(arg...)=join(ind[collect(arg)])
+  print(io," ",f(4,2,3,4,2,3),"=",f(3,4,2,3,4,2))
 end
 
 function Base.show(io::IO,d::Diagram,::Val{Symbol("A",Char(0x00303))})
