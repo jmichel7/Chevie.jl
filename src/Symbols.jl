@@ -68,7 +68,7 @@ parametrize  local  systems  on  unipotent  classes for classical reductive
 groups.
 """
 module Symbols
-using ..Util: joindigits
+using ..Format: joindigits
 using ..Combinat: arrangements, partition_tuples, collectby
 using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, subs

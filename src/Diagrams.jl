@@ -138,7 +138,7 @@ function Base.show(io::IO,d::Diagram,::Val{:B})
     if c==2 print(io,rlap(raise(5,"\\leftarrow")),dbarr(10))
     elseif c==1 print(io,rlap(raise(5,"\\rightarrow")),dbarr(10))
     elseif c==root(2) print(io,dbarr(10))
-    else print(io,rlap(raise(5,script(repr(c,context=io)))),dbarr(10))
+    else print(io,rlap(raise(5,script(xrepr(io,c)))),dbarr(10))
     end
     println(io,nnode(ind[2]))
     for i in 3:length(l) println(io,barr(10),nnode(ind[i])) end
@@ -147,7 +147,7 @@ function Base.show(io::IO,d::Diagram,::Val{:B})
     if c==2 l1=max(l[1],2);print(io,rdarrow(l1))
     elseif c==1 l1=max(l[1],2);print(io,ldarrow(l1))
     elseif c==root(2) l1=max(l[1],2);print(io,dbar^l1)
-    else print(io,"=",c,"="); l1=length(repr(c;context=rio()))+2
+    else print(io,"=",c,"="); l1=length(xrepr(rio(),c))+2
     end
     join(io,node.*hbar.^l[2:end-1]);println(io,node," ",d.t)
     print(io,rpad(ind[1],l1+1));join(io,ind[2:end]," ")
@@ -194,7 +194,7 @@ function Base.show(io::IO,d::Diagram,::Val{:F})
     print(io,barr(10),nnode(ind[2]))
     if c==1 print(io,rlap(raise(5,"\\rightarrow")),dbarr(10))
     elseif c==root(2) print(io,dbarr(10))
-    else print(io,rlap(raise(5,script(repr(c,context=io)))),dbarr(10))
+    else print(io,rlap(raise(5,script(xrepr(io,c)))),dbarr(10))
     end
     print(io,nnode(ind[3]))
     print(io,barr(10),nnode(ind[4]))

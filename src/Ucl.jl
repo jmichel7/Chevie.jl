@@ -22,16 +22,31 @@ class:
 The  Dynkin-Richarson diagram is  attached to a  nilpotent element ``e`` of
 the  Lie algebra  ``𝔤``. By  the Jacobson-Morozov  theorem there  exists an
 ``𝔰𝔩₂`` subalgebra of ``𝔤`` containing ``e`` as the element
-``\\begin{pmatrix}1&0\\\\0&1  \\end{pmatrix}``.  Let  ``𝐒``  be  the  torus
+``\\begin{pmatrix}0&1\\\\0&0  \\end{pmatrix}``.  Let  ``𝐒``  be  the  torus
 ``\\begin{pmatrix}h&0\\\\0&h^{-1} \\end{pmatrix}`` of ``SL₂`` and let ``𝐓``
 be  a  maximal  torus  containing  ``𝐒``,  so  that ``𝐒`` is the image of a
 one-parameter   subgroup  ``σ∈  Y(𝐓)``.  Consider  the  root  decomposition
-``𝔤=∑_{α∈Σ}𝔤_α``  given by ``𝐓``; then ``α↦⟨σ,α⟩`` defines a linear form on
-``Σ``,  determined by its value on simple roots. It is possible to choose a
-system  of simple roots  ``Π`` so that  ``⟨σ,α⟩≥ 0`` for  ``α∈Π``, and then
-``⟨σ,α⟩∈{0,1,2}`` for any ``α∈Π``. The Dynkin diagram of ``Π`` decorated by
-these  values ``0,1,2`` is  called the Dynkin-Richardson  diagram of ``e``,
-and in good characteristic is a complete invariant of its ``𝔤``-orbit.
+``𝔤=∑_{α∈Φ}𝔤_α``  given by ``𝐓`` and the  root system `Φ`; then ``α↦⟨σ,α⟩``
+defines  a linear form  on ``Φ``, determined  by its value  on simple roots
+`Π`.  It is possible to choose a  system of simple roots such that ``⟨σ,α⟩≥
+0``  for ``α∈Π``,  and then  ``⟨σ,α⟩∈{0,1,2}`` for  any ``α∈Π``. The Dynkin
+diagram  of  ``Π``  decorated  by  these  values  ``0,1,2``  is  called the
+Dynkin-Richardson  diagram  of  ``e``,  and  in  good  characteristic  is a
+complete invariant of its ``𝔤``-orbit.
+
+Another  classification of unipotent  elements was given  by Bala-Carter. A
+standard  parabolic subgroup `𝐏` of `𝐆`  parameterised by a subset `I⊂Π` is
+*distinguished*  if the linear form `σ` taking the value `2` for `α∈ I` and
+`0` for other simple roots satisfies `2n₀+semisimplerank(𝐆)=n₂`, where `nᵢ`
+is  the number  of roots  in `Φ`  where `σ`  takes the  value `i`.  Given a
+distinguished  parabolic `𝐏`,  there is  a unique  unipotent class which is
+dense  in the  unipotent radical  of `𝐏`.  This class  has the  linear form
+described  by the  Dynkin-Richardson diagram  equal to  `σ`. Such unipotent
+classes  are called *distinguished*.  The theorem of  Bala-Carter says that
+every  unipotent class is  distinguished in the  smallest Levi subgroup `𝐋`
+which  contains  it,  and  that  such  pairs  of  `𝐋` and the distinguished
+parabolic  `𝐏`  of  `𝐋`  taken  up  to  `𝐆`-conjugacy are in bijection with
+unipotent classes of `𝐆`.
 
 Let  ``ℬ`` be  the variety  of all  Borel subgroups  and let  ``ℬᵤ`` be the
 subvariety  of Borel subgroups  containing the unipotent  element `u`. Then
@@ -40,25 +55,26 @@ can  be computed from  the Dynkin-Richardson diagram:  the dimension of the
 class of `u` is the number of roots `α` such that ``⟨σ,α⟩∉{0,1}``.
 
 We   describe  now  the  Springer  correspondence.  Indecomposable  locally
-constant  ``𝐆``-equivariant sheaves  on ``C``,  called *local systems*, are
-parameterized   by  irreducible  characters  of  ``A(u)``.  The  *ordinary*
-Springer  correspondence is  a bijection  between irreducible characters of
-the  Weyl group and a large subset  of the local systems which contains all
-trivial  local  systems  (those  parameterized  by the trivial character of
-``A(u)``  for  each  ``u``).  More  generally,  the  *generalized* Springer
-correspondence   associates  to   each  local   system  a   (unique  up  to
-``𝐆``-conjugacy)  *cuspidal pair* of  a Levi subgroup  ``𝐋`` of ``𝐆`` and a
-*cuspidal*  local system on an unipotent class  of ``𝐋``, such that the set
-of  local systems associated  to a given  cuspidal pair is parameterized by
-the characters of the relative Weyl group ``W_𝐆 (𝐋):=N_𝐆 (𝐋)/𝐋``. There are
-only few cuspidal pairs.
+constant  ``𝐆``-equivariant  sheaves  on  a  unipotent  class ``C``, called
+*local  systems*, are  parameterised by  irreducible characters of ``A(u)``
+for  `u∈ C`. The *ordinary* Springer  correspondence is a bijection between
+irreducible  characters of the Weyl  group and a large  subset of the local
+systems  which contains all  trivial local systems  (those parameterised by
+the  trivial character  of ``A(u)``  for each  ``u``). More  generally, the
+*generalized*  Springer correspondence  associates to  each local  system a
+(unique  up to ``𝐆``-conjugacy) *cuspidal pair* of a Levi subgroup ``𝐋`` of
+``𝐆``  and a *cuspidal* local  system on an unipotent  class of ``𝐋``, such
+that  the  set  of  local  systems  associated  to a given cuspidal pair is
+parameterised  by the characters of the  relative Weyl group ``W_𝐆 (𝐋):=N_𝐆
+(𝐋)/𝐋``.  There are only few cuspidal pairs  (at most one in each dimension
+for classical groups).
 
 The  Springer correspondence gives information on the character values of a
 finite  reductive groups  as follows:  assume that  ``k`` is  the algebraic
 closure  of a finite field ``𝔽_q`` and that ``F`` is the Frobenius attached
 to  an ``𝔽_q``-structure of  ``𝐆``. Let ``C``  be an ``F``-stable unipotent
 class  and let ``u∈ C^F``; we call ``C`` the *geometric class* of ``u`` and
-the ``𝐆^F``-classes inside ``C^F`` are parameterized by the ``F``-conjugacy
+the ``𝐆^F``-classes inside ``C^F`` are parameterised by the ``F``-conjugacy
 classes  of ``A(u)``, denoted ``H¹(F,A(u))`` (most  of the time we can find
 ``u`` such that ``F`` acts trivially on ``A(u)`` and ``H¹(F,A(u))`` is then
 just the conjugacy classes). To an ``F``-stable character ``φ`` of ``A(u)``
@@ -66,7 +82,7 @@ we  associate  the  *characteristic  function*  of  the corresponding local
 system (actually associated to an extension ``φ̃`` of ``φ`` to ``A(u).F``);
 it  is a class function  ``Y_{u,φ}`` on ``𝐆^F`` which  can be normalized so
 that:  ``Y_{u,φ}(u₁)=φ̃(cF)`` if ``u₁`` is geometrically conjugate to ``u``
-and  its ``𝐆^F``-class is parameterized by the ``F``-conjugacy class ``cF``
+and  its ``𝐆^F``-class is parameterised by the ``F``-conjugacy class ``cF``
 of  ``A(u)``, otherwise ``Y_{u,φ}(u₁)=0``. If  the pair ``u,φ`` corresponds
 via  the Springer correspondence to the character ``χ`` of ``W_𝐆(𝐋)``, then
 ``Y_{u,φ}``  is also  denoted ``Yᵪ``.  There is  another important class of
@@ -83,21 +99,52 @@ are  integer polynomials in ``q`` and  ``Yᵪ`` are attached to local systems
 on classes lying in ``C̄``.
 
 Lusztig   and  Shoji  have  given  an   algorithm  to  compute  the  matrix
-``P_{ψ,χ}``,   which  is  implemented  in  Chevie.  The  relationship  with
-characters   of  ``𝐆(𝔽_q)``,  taking  to  simplify  the  ordinary  Springer
+``P_{ψ,χ}``,  which is implemented in Chevie. The relation to characters of
+``𝐆(𝔽_q)``,    considering   for    simplicity   the    ordinary   Springer
 correspondence,  is that the  restriction to the  unipotent elements of the
 almost  character ``R_χ`` is equal to  ``q^{bᵪ} Xᵪ``, where ``bᵪ`` is ``dim
 ℬᵤ``  for an element `u` of  the class `C` such that  the support of `χ` is
-``C̄``.  The restriction of  the Deligne-Lusztig characters  ``R_w`` to the
-unipotents  are called  the *Green  functions* and  can also be computed by
-Chevie.  The values of  all unipotent characters  on unipotent elements can
-also  be  computed  in  principle  by  applying Lusztig's Fourier transform
-matrix (see the section on the Fourier matrix) but there is a difficulty in
-that  the ``Xᵪ`` must be first multiplied  by some roots of unity which are
-not  known in all cases (and when  known may depend on the congruence class
-of ``q`` modulo some small primes).
+``C̄``.  The restrictions of the Deligne-Lusztig characters ``R_w`` for `w∈
+W`  on the  unipotents are  called the  *Green functions*  and can  also be
+computed  by Chevie.  The values  of all  unipotent characters on unipotent
+elements  can also be  computed in principle  by applying Lusztig's Fourier
+transform  matrix (see the  section on the  Fourier matrix) but  there is a
+difficulty  in that the  ``Xᵪ`` must first  be multiplied by  some roots of
+unity  which are not known  in all cases (and  when known may depend on the
+congruence class of ``q`` modulo some small primes).
 
-We illustrate these computations on some examples:
+Finally,  we  describe  how  unipotent  classes  of `𝐆` are parametrised in
+various   quasisimple  groups.   In  classical   types,  the   classes  are
+parametrised by partitions corresponding to the Jordan form in the standard
+representation. Thus,
+  - for `Aₙ` we have partitions of `n+1`.
+  - for  `B_n` we have partitions of `2n+1`  where even parts occur an even
+    number  of times. In characteristic  2, types B and  C are isogenous so
+    have the same classification; thus see the next paragraph.
+  - for  `C_n` we  have partitions  of `2n`  where odd  parts occur an even
+    number  of times. In characteristic 2,  there are `2ᵏ` classes attached
+    to  a partition where  `k` is the  number of even  parts which occur an
+    even number of times.
+  - for  `D_n` we have partitions of `2n`  where even parts occur an even
+    number  of times,  excepted there  are two  classes when  all parts are
+    even.  In characteristic 2, we have  partitions of `2n` where odd parts
+    occur  an  even  number  of  times,  excepted  there are `2ᵏ+δ` classes
+    attached  to a partition  where `k` is  the number of  even parts which
+    occur an even number of times, and `δ` is 2 when all parts are even and
+    0 otherwise.
+In  exceptional  groups,  the  names  of  the  classes are derived from the
+Bala-Carter classification. The name for a class parametrised by `(𝐋,𝐏)` is
+of  the form `l(p)`  where `l` is  the name of  `𝐋` and `(p)` is present if
+there  is more than one distinguished  parabolic in `𝐋` and describes which
+one  it  is.  Before  the  classification  of  Bala-Carter  was universally
+adopted,  Shoji and Mizuno used a  different scheme where sometimes a class
+was  parametrised by a reductive  subgroup of maximal rank  which was not a
+Levi.  These  older  labels  can  be  obtained  instead  by giving the `IO`
+property  `:shoji=>true` or  `:mizuno=>true`. In  a bad characteristic `p`,
+there  are extra classes. Each of them is associated to a class `c` in good
+characteristic and is named `(c)ₚ`.
+
+We illustrate the above descriptions on some examples:
 
 ```julia-repl
 julia> UnipotentClasses(rootdatum(:sl,4))
@@ -184,9 +231,12 @@ A₁    │ 10   3  2. q⁵.A₁        Id:φ″₁‚₃
 
 which illustrates that on class `G₂(a₁)` there are two local systems in the
 principal  series of  the Springer  correspondence, and  a further cuspidal
-local system. Also, from the `B-C` column, we see that that class is not in
-a  proper Levi,  in which  case the  Bala-Carter diagram coincides with the
-Dynkin-Richardson diagram.
+local system. It also illustrates how we display in general the Bala-Carter
+classification.  If a class is attached to `(𝐋,𝐏)` then the simple roots in
+the  complement of `𝐋` have  a `.`. Those in  `𝐋` have a `0`  or a `2`, the
+`2`s  characterizing  `𝐏`.  So,  from  the  `B-C`  column, we see that that
+`G₂(a₁)`  is not in  a proper Levi,  in which case  the Bala-Carter diagram
+coincides with the Dynkin-Richardson diagram.
 
 The  characteristics 2 and  3 are not  good for `G2`.  To get the unipotent
 classes  and the Springer correspondence in bad characteristic, one gives a
@@ -221,6 +271,31 @@ Xφ₂‚₁ │ .          .      1  1  1 Φ₈
 Xφ₂‚₂ │ .          .      .  1  1 Φ₄
 Xφ″₁‚₃│ .          .      .  .  1  1
 Xφ₁‚₆ │ .          .      .  .  .  1
+```
+
+An example which illustrates how to get the `shoji` names of classes
+```julia-rep1
+julia> uc=UnipotentClasses(coxgroup(:F,4));
+
+julia> uc.classes[10:end]
+7-element Vector{UnipotentClass}:
+ UnipotentClass(C₃(a₁))
+ UnipotentClass(F₄(a₃))
+ UnipotentClass(C₃)
+ UnipotentClass(B₃)
+ UnipotentClass(F₄(a₂))
+ UnipotentClass(F₄(a₁))
+ UnipotentClass(F₄)
+
+julia> xdisplay(uc.classes[10:end],shoji=true)
+7-element Vector{UnipotentClass}:
+ UnipotentClass(A₁+B₂)
+ UnipotentClass(A₃+Ã₁)
+ UnipotentClass(C₃)
+ UnipotentClass(B₃)
+ UnipotentClass(C₃+A₁)
+ UnipotentClass(B₄)
+ UnipotentClass(F₄)
 ```
 
 Here  the row labels  and the column  labels show the  two ways of indexing
@@ -879,7 +954,6 @@ end
 
 function showcentralizer(io::IO,u)
   c=""
-  io=IOContext(io,:parent=>false)
   function AuName(u)
     if length(u.Au)==1 return "" end
     res=haskey(u,:AuAction) ||
@@ -1020,7 +1094,7 @@ end
 This function gives the table of decompositions of the functions ``X_ι`` in
 terms  of the functions ``Y_ι``. Here `ι` is a `𝐆`-equivariant local system
 on  the  class  `C`  of  a  unipotent  element  `u`. Such a local system is
-parametrized  by the pair  `(u,ϕ)` of `u`  and a character  of the group of
+parametrised  by the pair  `(u,ϕ)` of `u`  and a character  of the group of
 components   `A(u)`   of   ``C_𝐆   (u)``.   The  function  ``Y_ι``  is  the
 characteristic   function  of  this   local  system  and   ``X_ι``  is  the
 characteristic   function  of  the  corresponding  intersection  cohomology

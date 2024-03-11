@@ -1078,7 +1078,7 @@ function CharTable(t::TypeIrred;opt...)
   irr=toM(improve_type(ct[:irreducibles]))
   CharTable(irr,charnames(t;opt...),classnames(t;opt...),
             improve_type(ct[:centralizers]),ct[:size],
-            Dict{Symbol,Any}(:name=>repr(t;context=:TeX=>true)))
+            Dict{Symbol,Any}(:name=>xrepr(t;TeX=true)))
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
@@ -1129,7 +1129,7 @@ function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)
     ct=isempty(t) ? 
       CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
       prod(CharTable.(t;opt...))
-    ct.name=repr(W;context=:TeX=>true)
+    ct.name=xrepr(W;TeX=true)
     ct.repr="CharTable($W)"
     ct
   end::CharTable

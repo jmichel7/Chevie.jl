@@ -328,7 +328,7 @@ function PermRoot.cartan(A::FiniteDimAlgebra)
   end
   rows=joindigits.(rows[vcat(A.blocks...)])
   m=map(e->iszero(e) ? "." : repr(e),A.cartan)
-  Util.Table(m,row_labels=rows)
+  Format.Table(m,row_labels=rows)
 end
 
 #------------------------- SubAlgebra -------------------------
@@ -517,7 +517,7 @@ function Chars.CharTable(A::PolynomialQuotientAlgebra)
     for i in 1:deg  mat[i,deg]=-coefs[i] end
     for j in 1:dim(A) irr[j,k]=tr(mat^(j-1)) end
   end
-  Util.Table(irr,col_labels=factors,row_labels=basis(A))
+  Format.Table(irr,col_labels=factors,row_labels=basis(A))
 end
 
 function PermRoot.radical(A::PolynomialQuotientAlgebra)

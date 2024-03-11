@@ -1099,7 +1099,7 @@ function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
   end
   t=repr(t;context)
   if !limit && !TeX
-    t=Util.TeXstrip(t)
+    t=Format.TeXstrip(t)
     t=replace(t,"^"=>"")
   end
   t

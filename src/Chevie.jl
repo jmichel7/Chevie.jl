@@ -120,6 +120,7 @@ using UsingMerge
 @reexport using GroupPresentations
 #--------------------- internal modules -----------------------------------
 include("../docs/src/cheviedict.jl");export gap
+include("Format.jl");@reexport using .Format
 include("Util.jl");@reexport using .Util
 include("FFfac.jl");@reexport using .FFfac
 include("Nf.jl");@reexport using .Nf
