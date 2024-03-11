@@ -923,9 +923,13 @@ function refltype(W::PermRootGroup)
   get!(W,:refltype)do
     map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;NC=true)
+      CR=cartan(R)
       d=TypeIrred(type_irred(R))
       C=cartan(d)
-      if C==cartan(R) indices=I
+      if C==CR indices=I
+        if d.series!=:ST
+          d=TypeIrred(Weyl.type_fincox_cartan(CR))
+        end
       else
         good=findgoodcartan(R,eachindex(gens(R)),C)
         if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end

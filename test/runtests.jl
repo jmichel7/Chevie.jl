@@ -237,7 +237,7 @@ end
 end
 @testset "Diagrams.jl" begin
 @test mytest("Diagrams.jl","diagram(coxgroup(:E,8))","O 2\n    ￨\nO—O—O—O—O—O—O E₈\n1 3 4 5 6 7 8")
-@test mytest("Diagrams.jl","diagram(crg(33))","3 ②       G₃₃\n     /^\\\n② ——② ——② ——②   423423==342342\n1   2   4   5")
+@test mytest("Diagrams.jl","diagram(crg(33))","3 ②       G₃₃\n     /^\\\n② ——② ——② ——②\n1   2   4   5     423423=342342")
 end
 @testset "Eigenspaces.jl" begin
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")

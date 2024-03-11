@@ -51,16 +51,13 @@ end)
 chevieset(Symbol("2A"), :UnipotentClasses, function (r, p)
   uc=deepcopy(chevieget(:A, :UnipotentClasses)(r, p))
   for c in uc[:classes]
-    t=parent(c[:red])
-    if length(refltype(t))>1 error() end
-    if length(refltype(t))==0 || rank(t)==1 WF=spets(parent(c[:red]))
-    else WF=spets(parent(c[:red]),prod(i->Perm(i,rank(t)+1-i),1:div(rank(t),2)))
+    t=refltype(c[:red])
+    if isempty(t) m=reflrep(c[:red],one(c[:red]))
+    else m=reflrep(c[:red],Perm(vcat(map(x->reverse(indices(x)),t)...)))
     end
-    t=twistings(WF,inclusiongens(c[:red]))
-    m=map(x->refleigen(x,position_class(x,x())),t)
-    m=map(x->count(y->y==E(2),x),m)
-    p=findmax(m)[2]
-    c[:red]=spets(c[:red],t[p].F)
+    p=tally(c[:parameter])
+    for i in 1:length(p)-1 m[end+1-i,end+1-i]=-1 end
+    c[:red]=spets(c[:red],m)
   end
   uc
 end)

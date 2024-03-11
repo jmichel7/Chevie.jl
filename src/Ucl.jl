@@ -879,6 +879,7 @@ end
 
 function showcentralizer(io::IO,u)
   c=""
+  io=IOContext(io,:parent=>false)
   function AuName(u)
     if length(u.Au)==1 return "" end
     res=haskey(u,:AuAction) ||
