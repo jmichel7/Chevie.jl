@@ -25,6 +25,11 @@ eigmat
 ```@docs
 Util
 @forward
+```
+
+# Formatting facilities
+```@docs
+Format
 showtable
 cut
 ```

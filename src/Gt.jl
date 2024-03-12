@@ -254,7 +254,7 @@ function Base.show(io::IO,r::ClassTypes)
   function nc(p)
     p=Mvp(p)
     d=lcm(denominator.(values(p.d)))
-    p=bracket_if_needed(repr(improve_type(p*d);context=io))
+    p=bracket_if_needed(xrepr(io,improve_type(p*d)))
     d==1 ? p : string(p,"/",d)
   end
   classes=get(io,:nClasses,false)
@@ -278,7 +278,7 @@ function Base.show(io::IO,r::ClassTypes)
         end
         push!(v,Ucl.nameclass(merge(c.class.prop,Dict(:name=>c.class.name)),
                               merge(io.dict,Dict(:class=>c.AuNo))))
-        push!(v,repr(x.cent//c.card,context=io))
+        push!(v,xrepr(io,x.cent//c.card))
         push!(t,v)
       end
     end
@@ -287,7 +287,7 @@ function Base.show(io::IO,r::ClassTypes)
     row_labels=map(x->TeX(io,x.CGs),r.ss)
     t=[]
     if classes push!(t,nc.(nconjugacy_classes(r))) end
-    push!(t,map(x->repr(x.cent;context=io),r.ss))
+    push!(t,map(x->xrepr(io,x.cent),r.ss))
     push!(col_labels,"|C_G(s)|")
     t=permutedims(toM(t))
   end

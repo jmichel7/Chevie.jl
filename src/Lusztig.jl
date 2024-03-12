@@ -206,10 +206,10 @@ function LusztigInductionPieces(LF,WF)
 #     ReflectionName(LFGL)
 #     ReflectionName(WFGL)
     end
-    lu=repr(LF;context=:TeX=>true)
-    lg=repr(WF;context=:TeX=>true)
-    lfgl=repr(LFGL;context=:TeX=>true)
-    wfgl=repr(WFGL;context=:TeX=>true)
+    lu=xrepr(LF;TeX=true)
+    lg=xrepr(WF;TeX=true)
+    lfgl=xrepr(LFGL;TeX=true)
+    wfgl=xrepr(WFGL;TeX=true)
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(induction_table(LFGL,WFGL).scalar),
                    almostcharnames(rio(TeX=true),uW)[charnumbers(ser)],
@@ -266,8 +266,8 @@ function lusztig_induction_table(LF,WF;check=true)
   uW=UnipotentCharacters(WF)
   uL=UnipotentCharacters(LF)
   if isnothing(uL)||isnothing(uW) return nothing end
-  lu=repr(LF;context=:TeX=>true)
-  lg=repr(WF;context=:TeX=>true)
+  lu=xrepr(LF;TeX=true)
+  lg=xrepr(WF;TeX=true)
   res=InductionTable(fill(0,length(uW),length(uL)),
                      charnames(uW;TeX=true), charnames(uL;TeX=true),
     "Lusztig induction from \$$lu\$ to \$$lg\$",
@@ -328,8 +328,8 @@ function harish_chandra_induction_table(HF, WF)
   if !(HF isa Spets) HF=spets(HF) end
   uh=UnipotentCharacters(HF)
   H=Group(HF)
-  lu=repr(HF;context=:TeX=>true)
-  lg=repr(WF;context=:TeX=>true)
+  lu=xrepr(HF;TeX=true)
+  lg=xrepr(WF;TeX=true)
   res = InductionTable(fill(0, length(uw),length(uh)),
     charnames(uw;TeX=true), charnames(uh;TeX=true),
     "Harish-Chandra induction from \$$lu\$ to \$$lg\$",
@@ -384,8 +384,8 @@ function harish_chandra_induction_table(HF, WF)
       end
       Hi = getHi()
     end
-    lu=repr(Hi;context=:TeX=>true)
-    lg=repr(Wi;context=:TeX=>true)
+    lu=xrepr(Hi;TeX=true)
+    lg=xrepr(Wi;TeX=true)
     piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],

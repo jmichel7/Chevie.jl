@@ -316,7 +316,7 @@ function Perms.invpermute(f::Family,p::Perm)
   for n in [:fourierMat,:mellin]
     if haskey(f,n) setproperty!(f,n,invpermute(getproperty(f,n),p;dims=(1,2))) end
   end
-  f.explanation="Permuted("*repr(p;context=:TeX=>true)*","*f.explanation*")"
+  f.explanation="Permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
   f
 end
 
@@ -388,8 +388,8 @@ chevieset(:families,:X,function(p)
     Family(Dict(:name=>"R_{\\bbZ/$p}^{\\wedge 2}",
          :explanation=>"DoubleTaft($p)",
          :charSymbols=>ss,
-         :charLabels=>map(s->repr(E(p,s[1]),context=:TeX=>true)*
-             "\\!\\wedge\\!"*repr(E(p,s[2]),context=:TeX=>true),ss),
+         :charLabels=>map(s->xrepr(E(p,s[1]),TeX=true)*
+             "\\!\\wedge\\!"*xrepr(E(p,s[2]),TeX=true),ss),
     :eigenvalues=>map(s->E(p,prod(s)),ss),
     :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
     :cospecial=>p-1))
@@ -418,7 +418,7 @@ end
 chevieset(:families,:ExtPowCyclic,function(e,n)
   g=Family(Dict{Symbol,Any}())
   g.charSymbols=combinations(0:e-1,n)
-  g.charLabels=map(s->join(map(x->repr(E(e,x),context=:TeX=>true),s),
+  g.charLabels=map(s->join(map(x->xrepr(E(e,x),TeX=true),s),
                            "\\!\\wedge\\!"), g.charSymbols)
   if iszero(e%2) g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(2*e,i*i+e*i),0:e-1))
   else           g.eigenvalues=Cyc.(E(24,e-1)*map(i->E(e,div(i*i+e*i,2)),0:e-1))
@@ -1072,7 +1072,7 @@ function Chars.CharTable(A::FusionAlgebra)
   labels=string.(1:dim(A))
   centralizers=fill(dim(A),dim(A))
   CharTable(irr,A.charnames,A.classnames,centralizers,
-         dim(A),Dict{Symbol,Any}(:name=>repr(A;context=:TeX=>true)))
+         dim(A),Dict{Symbol,Any}(:name=>xrepr(A;TeX=true)))
 end
 
 function Algebras.involution(e::AlgebraElt{FusionAlgebra})

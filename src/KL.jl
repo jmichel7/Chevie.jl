@@ -1149,7 +1149,7 @@ Groups.isabelian(A::AsymptoticAlgebra)=false
 function Chars.CharTable(A::AsymptoticAlgebra)
   centralizers=fill(dim(A),dim(A))
   CharTable(A.irr,A.charnames,A.classnames,centralizers,
-            dim(A),Dict{Symbol,Any}(:name=>repr(A;context=:TeX=>true)))
+            dim(A),Dict{Symbol,Any}(:name=>xrepr(A;TeX=true)))
 end
 
 end

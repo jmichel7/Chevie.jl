@@ -142,7 +142,7 @@ element   in  the  left-greedy  normal  from  by  setting  the  `IOContext`
 `:greedy=>true`; with the same `w` as above we have:
 
 ```julia-repl
-julia> repr(w^-1,context=IOContext(stdout,:greedy=>true,:limit=>true))
+julia> xrepr(w^-1,greedy=true,limit=true)
 "Δ⁻¹.232432"
 ```
 By default,  `repr` gives   `w`  back   in  a   form  which   after  assigning

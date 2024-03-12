@@ -68,7 +68,7 @@ parametrize  local  systems  on  unipotent  classes for classical reductive
 groups.
 """
 module Symbols
-using ..Format: joindigits
+using ..Format: joindigits, rio, xrepr
 using ..Combinat: arrangements, partition_tuples, collectby
 using ..CyclotomicNumbers: E
 using ..CycPols: CycPol, subs
@@ -116,7 +116,7 @@ julia> string_partition_tuple.(d)
 """
 function string_partition_tuple(n,a=Dict())
   if n[end] isa Vector return join(joindigits.(n),".") end
-  r=repr(E(n[end-1],n[end]),context=:limit=>true)
+  r=xrepr(rio(),E(n[end-1],n[end]))
   if r=="1" r="+" end
   if r=="-1" r="-" end
   join(joindigits.(n[1:end-2]),".")*r
@@ -365,7 +365,7 @@ function stringsymbol(io,S)
   if S[end] isa AbstractVector "("*join(joindigits.(S),",")*")"
   else
     v=E(S[end-1],S[end])
-    n= v==1 ? "+" : v==-1 ? "-" : repr(v;context=io)
+    n= v==1 ? "+" : v==-1 ? "-" : xrepr(io,v)
     "("*join(joindigits.(S[1:end-2]),",")*"$n)"
   end
 end

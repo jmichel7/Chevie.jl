@@ -701,16 +701,16 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   end
   io=IOContext(io,:varname=>:q)
   cycpol=get(io,:cycpol,true)
-  m=hcat(m,repr.(cycpol ? CycPoldegrees(uc) : degrees(uc);context=io))
+  m=hcat(m,xrepr.(io,cycpol ? CycPoldegrees(uc) : degrees(uc)))
   push!(col_labels,"\\mbox{Deg}(\\gamma)")
   feg=fakedegrees(uc)
-  m=hcat(m,repr.(cycpol ? CycPol.(feg) : feg; context=io))
+  m=hcat(m,xrepr.(io,cycpol ? CycPol.(feg) : feg))
   push!(col_labels,"\\mbox{Feg}")
   if haskey(uc,:charSymbols) && (uc.charSymbols!=uc.charParams)
     m=hcat(m,map(x->stringsymbol(io,x[1]),uc.charSymbols))
     push!(col_labels,"\\mbox{Symbol}")
   end
-  m=hcat(m,repr.(eigen(uc); context=io))
+  m=hcat(m,xrepr.(io,eigen(uc)))
   push!(col_labels,"\\mbox{Fr}(\\gamma)")
   m=hcat(m,fromTeX.(Ref(io),labels(uc)))
   push!(col_labels,"\\mbox{label}")
@@ -983,7 +983,7 @@ function Base.show(io::IO,r::UniChar)
         if isone(c) res*= "+"
         elseif isone(-c) res*="-"
         else
-          c=repr(c;context=io)
+          c=xrepr(io,c)
           if occursin(r".[+-]",c) c = "("* c* ")" end
           if !(c[1] in "+-") res*="+" end
           res*=c
@@ -991,7 +991,7 @@ function Base.show(io::IO,r::UniChar)
         res*=n
       end
      elseif !iszero(c) || !get(io,:nozero,false)
-      res*="\n"*rpad(n,m)*repr(c;context=io)
+      res*="\n"*rpad(n,m)*xrepr(io,c)
     end
   end
   if isempty(res) res="0" end

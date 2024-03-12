@@ -201,9 +201,9 @@ end
 #-------------------------------------------------------------------------
 #  dummy translations of GAP3 functions
 Format(x)=string(x)
-FormatTeX(x)=repr(x,context=:TeX=>true)
+FormatTeX(x)=xrepr(x,TeX=true)
 FormatGAP(x)=replace(repr(x)," "=>"")
-Format(x,opt)=repr(x;context=IOContext(stdout,opt...))
+Format(x,opt)=xrepr(x;opt...)
 
 function ReadChv(s) end
 GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)

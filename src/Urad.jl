@@ -79,7 +79,7 @@ u1(x₁)u2(x₂)u3(x₃)u4(x₄)u5(x₅)u6(x₆)u7(x₇)u8(x₈)
 ```
 
 ```julia-rep1
-julia> cut(repr(u^16;context=rio(root=true)),before="u",width=60)
+julia> cut(xrepr(u^16;limit=true,root=true),before="u",width=60)
 u₂₂₃₄₃₂₁₀(x₁²x₂²x₃³x₄⁴x₅³x₆²x₇)
 u₁₂₃₄₃₂₁₁(x₁x₂²x₃³x₄⁴x₅³x₆²x₇x₈)
 u₁₂₂₄₃₂₂₁(x₁x₂²x₃²x₄⁴x₅³x₆²x₇²x₈)

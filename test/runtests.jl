@@ -304,7 +304,7 @@ end
 @test mytest("Garside.jl","word(α(w^3))","9-element Vector{Int64}:\n 1\n 2\n 1\n 3\n 2\n 1\n 4\n 3\n 2")
 @test mytest("Garside.jl","w^4","Δ.232432")
 @test mytest("Garside.jl","inv(w)","(1234)⁻¹")
-@test mytest("Garside.jl","repr(w^-1,context=IOContext(stdout,:greedy=>true,:limit=>true))","\"Δ⁻¹.232432\"")
+@test mytest("Garside.jl","xrepr(w^-1,greedy=true,limit=true)","\"Δ⁻¹.232432\"")
 @test mytest("Garside.jl","repr(w)","\"B(1,2,3,4)\"")
 @test mytest("Garside.jl","repr(w^3)","\"B(1,2,1,3,2,1,4,3,2,3,4,3)\"")
 @test mytest("Garside.jl","repr(w^-1)","\"B(-4,-3,-2,-1)\"")

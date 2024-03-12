@@ -493,7 +493,6 @@ function BalaCarterLabels(W)
   end...)
 end
 
-ReflectionName(W)=repr(W,context=(:limit=>true))
 # QuotientAu(Au,chars): chars is a list of indices of characters of Au.
 # If  k is the common kernel of chars, QuotientAu returns a
 # Dict(Au=>Au/k,
@@ -567,15 +566,15 @@ function QuotientAu(Au,chars)
 	t[p].p/=length(k)
         return finish(ReflectionGroup(t...),map(x->[x],eachindex(gens(Au))))
       end
-    elseif ReflectionName(Au)=="A₁×B₂" && length(k)==2 && longest(Au) in k
+     elseif xrepr(rio(),Au)=="A₁×B₂" && length(k)==2 && longest(Au) in k
       return finish(coxgroup(:B,2),[[1,2,1,2],[1],[2]])
-    elseif ReflectionName(Au)=="A₂×A₁×A₁" && length(k)==2 &&
+     elseif xrepr(rio(),Au)=="A₂×A₁×A₁" && length(k)==2 &&
       longest(reflection_subgroup(Au,[3,4])) in k
       return finish(coxgroup(:A,2)*coxgroup(:A,1),[[1],[2],[3],[3]])
     end
   end
-# Print(" Au=",ReflectionName(Au)," sub=",map(e.Get,gens(k)),"\n");
-  error("not implemented ",ReflectionName(Au),chars)
+  # Print(" Au=",xrepr(rio(),Au)," sub=",map(e.Get,gens(k)),"\n");
+  error("not implemented ",xrepr(rio(),Au),chars)
 # q:=Au/k; f:=FusionConjugacyClasses(Au,q); Print(" quot=",q," fusion=",f,"\n");
 # return rec(Au:=Au,chars:=chars);
 end
@@ -967,22 +966,22 @@ function showcentralizer(io::IO,u)
     if rank(u.red)>0
       c*="."
       if all(isone,u.AuAction.F0s)
-        c*=repr(u.red;context=io)*AuName(u)
+        c*=xrepr(io,u.red)*AuName(u)
       elseif length(u.Au)==1 ||
          length(u.Au)==length(Group(u.AuAction.phis...))
         if length(u.Au)==1 || isone(u.red.phi)
-          c*=repr(u.AuAction;context=io)
+          c*=xrepr(io,u.AuAction)
         else
-          c*="["*repr(u.red;context=io)*"]"*repr(u.AuAction;context=io)
+          c*="["*xrepr(io,u.red)*"]"*xrepr(io,u.AuAction)
         end
       else
-        c*=repr(u.AuAction;context=io)*AuName(u)
+        c*=xrepr(io,u.AuAction)*AuName(u)
       end
     else
       c*=AuName(u)
     end
   elseif haskey(u,:red)
-    n=repr(u.red;context=io)
+    n=xrepr(io,u.red)
     if n!="." c*="."*n end
     c*=AuName(u)
   else
@@ -1064,10 +1063,10 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
   if get(io,:springer,true)
     append!(col_labels,
       map(function (ss,)
-        res=string(repr(ss[:relgroup];context=io),"(",
-          repr(subspets(WF,ss[:levi]);context=IOContext(io,:parent=>false)),")")
+        res=string(xrepr(io,ss[:relgroup]),"(",
+          xrepr(io,subspets(WF,ss[:levi]);parent=false),")")
         if !all(isone,ss[:Z])
-          res*=string("/", join(map(q->repr(q;context=io),ss[:Z]),","))
+          res*=string("/", join(map(q->xrepr(io,q),ss[:Z]),","))
         end
         return res
     end, sp))

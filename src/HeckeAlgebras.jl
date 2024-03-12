@@ -507,7 +507,7 @@ function Chars.CharTable(H::HeckeAlgebra;opt...)
       end
       ct=prod(cts)
     end
-    ct.name=repr(H;context=:TeX=>true)
+    ct.name=xrepr(H;TeX=true)
     ct.group=H
     ct
   end::CharTable
@@ -1230,15 +1230,15 @@ function Base.show(io::IO,x::FactSchur)
  end
  v=map(x.vcyc) do l
     if get(io,:Maple,false) || degree(l.pol)==1
-      "("*repr(l.pol(l.monomial);context=io)*")"
+      "("*xrepr(io,l.pol(l.monomial))*")"
     else
-      repr(l.pol;context=io)*"("*repr(l.monomial;context=io)*")"
+      xrepr(io,l.pol)*"("*xrepr(io,l.monomial)*")"
     end
   end
   if get(io,:GAP,false) || get(io,:Maple,false) v=join(v,"*")
   else v=join(v,"")
   end
-  c=repr(x.factor;context=io)
+  c=xrepr(io,x.factor)
   if length(v)>0 && degree(x.factor)==0 c=format_coefficient(c) end
   print(io,c,v)
 end
@@ -1510,7 +1510,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
          Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
     ct=prod(cts)
-    ct.name=repr(H;context=:TeX=>true)
+    ct.name=xrepr(H;TeX=true)
     ct.group=H
     ct
   end::CharTable

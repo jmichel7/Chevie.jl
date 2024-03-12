@@ -964,7 +964,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::ClassInfo)
   if haskey(ci,:refleigen)
     m=toM(ci.refleigen)
     for i in axes(m,2)
-      push!(t,repr.(m[:,i];context=io))
+      push!(t,xrepr.(io,m[:,i]))
       push!(cl,i==size(m,2) ? "eig" : "")
       sz+=max(maximum(length.(t[end])),length(cl[end]))+1
     end

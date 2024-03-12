@@ -61,7 +61,7 @@ xprintln(x...;p...)=println(rio(;p...),x...)
 "`xdisplay(x...;p...)` is like `display` but uses the enriched io `rio(;p...)`"
 xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 xrepr(x;p...)=repr(x;context=IOContext(stdout,p...))
-xrepr(io::IO,x)=repr(x;context=io)
+xrepr(io::IO,x;p...)=repr(x;context=IOContext(io,p...))
 function hdisplay(x;p...) # what is the idea?
   Docs.HTML()do io
     show(IOContext(io,p...),"text/html",x)

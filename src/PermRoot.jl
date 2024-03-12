@@ -385,22 +385,22 @@ function Base.show(io::IO, t::TypeIrred)
           if t.cartanType==1 s=:C
           elseif t.cartanType==2 s=:B
           elseif t.cartanType==root(2) s=:Bsym
-          else s=Symbol("B(",repr(t.cartanType;context=io),")")
+          else s=Symbol("B(",xrepr(io,t.cartanType),")")
           end
         elseif s==:F
           if t.cartanType==1 s=:F
           elseif t.cartanType==root(2) s=:Fsym
-          else s=Symbol("F(",repr(t.cartanType;context=io),")")
+          else s=Symbol("F(",xrepr(io,t.cartanType),")")
           end
         elseif s==:G
           if t.cartanType==1 s=:G
           elseif t.cartanType==root(3) s=:Gsym
-          else s=Symbol("G(",repr(t.cartanType;context=io),")")
+          else s=Symbol("G(",xrepr(io,t.cartanType),")")
           end
         elseif s==:I
           if t.cartanType==1 s=:I
           elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym
-          else s=Symbol("I(",repr(t.cartanType;context=io),")")
+          else s=Symbol("I(",xrepr(io,t.cartanType),")")
           end
         end
       end
@@ -1132,7 +1132,7 @@ Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
 function Base.show(io::IO, t::AbstractVector{<:TypeIrred})
   r=0
   n=join(map(t)do t
-    n=repr(t; context=io)
+    n=xrepr(io,t)
     inds=indices(t)
     if isnothing(inds) n*="?"
     elseif inds!=r .+eachindex(inds) && hasdecor(io)

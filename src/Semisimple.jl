@@ -1093,6 +1093,7 @@ function semisimple_centralizer_representatives(W,p=0)
 end
 
 const sscentralizer_reps=semisimple_centralizer_representatives
+
 function isomorphism_type(t::TypeIrred;TeX=false,limit=false)
   if !limit && !TeX context=(:TeX=>true,:limit=>false)
   else context=(:TeX=>TeX,:limit=>limit)
