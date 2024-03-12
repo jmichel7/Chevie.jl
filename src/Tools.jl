@@ -2,8 +2,6 @@
 # several of the self-contained structural packages of Chevie
 module Tools
 export abelian_gens, abelian_invariants, improve_type
-using LinearAlgebra:LinearAlgebra, exactdiv
-using UsingMerge
 using ModuleElts
 using PuiseuxPolynomials
 using Combinat: tally
@@ -66,16 +64,6 @@ end
 #function LaurentPolynomials.Frac(a::Mvp{<:Cyc{<:Rational},Int},b::Mvp{<:Cyc{<:Rational},Int};k...)
 #  Frac(numerator(a)*denominator(b),numerator(b)*denominator(a);k...)
 #end
-
-#------------- extend to Cyc exactdiv
-LinearAlgebra.exactdiv(c::Cyc{<:Integer},b::Integer)=Cyc(conductor(c),
-                                                         exactdiv(c.d,b))
-
-function LinearAlgebra.exactdiv(a::Cyc{<:Integer},b::Cyc{<:Integer})
-  res=a//b
-  if denominator(res)>1 error(b," does not exactly divide ",a) end
-  numerator(res)
-end
 
 """
 `valuation(c::Union{Integer,Rational{<:Integer},p::Integer)` 

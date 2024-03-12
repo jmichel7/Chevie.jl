@@ -30,8 +30,8 @@ their   features.
 I  have implemented  some other  infrastructure which  currently resides in
 `Chevie` but may eventually become separate packages:
 
-  * factorizing polynomials over finite fields (module [`FFfac`](@ref))
-  * factorizing polynomials over the rationals (module [`Fact`](@ref))
+  * factorizing polynomials over finite fields (module `FFfac`)
+  * factorizing polynomials over the rationals (module `Fact`)
   * Number fields which are subfields of the Cyclotomics (module [`Nf`](@ref))
 
 For permutation groups I have often replaced GAP's sophisticated algorithms

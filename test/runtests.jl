@@ -296,6 +296,18 @@ end
 @test mytest("Families.jl","b*permutedims(b)","5×5 Matrix{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:\n B₁  B₂      B₃      B₄        B₅\n B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃\n B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂\n B₄  B₂-B₃   -B₂+B₃  B₁+B₄-B₅  -B₄\n B₅  B₃      B₂      -B₄       B₁")
 @test mytest("Families.jl","CharTable(A)","CharTable(Fusion Algebra dim.5)\n │1    2    3  4  5\n─┼──────────────────\n1│1  √-3 -√-3  2 -1\n2│1    1    1  .  1\n3│1   -1   -1  .  1\n4│1    .    . -1 -1\n5│1 -√-3  √-3  2 -1")
 end
+@testset "Format.jl" begin
+@test mytest("Format.jl","s=\"E_6[\\\\zeta_3]:\\\\phi_{1,6}\"","\"E_6[\\\\zeta_3]:\\\\phi_{1,6}\"")
+@test mytest("Format.jl","fromTeX(rio(),s)","\"E₆[ζ₃]:φ₁‚₆\"")
+@test mytest("Format.jl","fromTeX(stdout,s)","\"E6[E3]:phi1,6\"")
+@test mytest("Format.jl","ordinal(201)","\"201st\"")
+@test mytest("Format.jl","ordinal(202)","\"202nd\"")
+@test mytest("Format.jl","ordinal(203)","\"203rd\"")
+@test mytest("Format.jl","ordinal(204)","\"204th\"")
+@test mytest("Format.jl","joindigits([1,9,3,5])","\"1935\"")
+@test mytest("Format.jl","joindigits([1,10,3,5])","\"(1,10,3,5)\"")
+@test mytest("Format.jl","joindigits([1,10,3,5],\"[]\";sep=\"-\")","\"[1-10-3-5]\"")
+end
 @testset "Garside.jl" begin
 @test mytest("Garside.jl","W=coxgroup(:A,4)","A₄")
 @test mytest("Garside.jl","B=BraidMonoid(W)","BraidMonoid(A₄)")

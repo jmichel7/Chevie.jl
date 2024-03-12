@@ -3,33 +3,32 @@
 Chevie
 ```
 
-# Extensions to Laurent and Puiseux polynomials
+Chevie uses its rich total infrastructure to provide extensions to
+several of its infrastructure packages.
+
+#### Extensions to Laurent and Puiseux polynomials
 ```@docs
-FFfac
 FFfac.factor(::Pol{FFE{p}}, Any) where p
-Fact
 Fact.factor(::Pol{T}) where T<:Union{Integer, Rational{<:Integer}}
 factor(::Mvp{T, N}) where {T, N}
 ```
-# Extensions to groups
+#### Arithmetic and finite fields
+```@docs
+LaurentPolynomials.valuation(::Integer,::Integer)
+FiniteFields.FFE{p}(Cyc)where p
+```
+
+#### Extensions to groups
 ```@docs
 abelian_gens
 abelian_invariants
 Combinat.blocks(::Group,::Integer)
 ```
-# Extensions to linear algebra
+#### Extensions to linear algebra
 ```@docs
 eigmat
 ```
-# Utilities
+#### Useful macros
 ```@docs
-Util
 @forward
-```
-
-# Formatting facilities
-```@docs
-Format
-showtable
-cut
 ```

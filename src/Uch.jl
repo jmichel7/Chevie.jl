@@ -716,7 +716,7 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
   push!(col_labels,"\\mbox{label}")
   if get(io,:byfamily,false)
     rows=vcat(map(x->x[:charNumbers],uc.families)...)
-    rowseps=pushfirst!(reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)),0)
+    row_seps=pushfirst!(reduce((x,y)->vcat(x,[x[end]+y]),length.(uc.families)),0)
     for f in uc.families
       if special(f)==1 && cospecial(f)==special(f) continue end
       row_labels[f.charNumbers[special(f)]]*="^{s}"
@@ -725,9 +725,9 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentCharacters)
     end
   else
     rows=get(io,:rows,1:length(uc))
-    rowseps=get(io,:rowseps,[0])
+    row_seps=get(io,:row_seps,[0])
   end
-  showtable(io,m;row_labels,rows,rows_label="\\gamma",rowseps,col_labels)
+  showtable(io,m;row_labels,rows,rows_label="\\gamma",row_seps,col_labels)
 end
 
 Cosets.spets(uc::UnipotentCharacters)=uc.spets
