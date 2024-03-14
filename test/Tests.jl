@@ -238,7 +238,7 @@ function Trepresentations(W,l=Int[])
 	pos=zip(ct[i],traces_words_mats(gr,cl))
 	f=findall(x->x[1]!=x[2],pos)
 #pos=List(pos,x->List(x,FormatGAP))
-        ChevieErr(Util.Table(x,row_labels=f,
+        ChevieErr(Format.Table(x,row_labels=f,
            column_labels=["is","should be"]),pos[f])
       end
     end
@@ -631,7 +631,7 @@ function Tcharparams(W)
   n=repr(W;context=rio())
   if haskey(charinfo(W),:malle) l=charinfo(W)[:malle]
     if length(l[1])>=4 return end
-    nm=map(Util.TeXstrip∘GAPENV.exceptioCharName,l)
+    nm=map(Format.TeXstrip∘GAPENV.exceptioCharName,l)
     nm=map(x->replace(x,r"[{}]"=>""),nm)
   elseif n[1] in "EFGH" && length(n)<4
     l=filter(x->x[2]>1,tally(charinfo(W)[:charparams]))
@@ -1263,7 +1263,7 @@ function Tfamilies(W,i;hard=false)
   Id=one(S)
   tS=permutedims(S)
   v*="#$(size(S,1))"
-  if haskey(f,:name) v*="("*Util.unicodeTeX(f.name)*")" end
+  if haskey(f,:name) v*="("*Format.unicodeTeX(f.name)*")" end
   InfoChevie("  # family ",v)
   ps=SPerm(Sbar,S;dims=1)
   if isnothing(ps) ChevieErr("S* is not ps(S)\n| ") end
@@ -1770,7 +1770,7 @@ function TG4_22index(W)
   end
   if a!=b || b!=c
     a=hcat(filter(x->length(unique(x))>1,collect(eachcol(toM([a,b,c]))))...)
-    ChevieErr(Util.Table(a[[2,3],:];
+    ChevieErr(Format.Table(a[[2,3],:];
       row_labels=["fusion to "*repr(O;context=rio()),"classtext"],
       col_labels=string.(a[1,:]),rows_label="indexclasses"))
   end

@@ -15,4 +15,5 @@ printTeX
 showtable
 joindigits
 cut
+ordinal
 ```

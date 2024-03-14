@@ -895,7 +895,7 @@ function classinfo(W)
     if length(tmp)==1 res=copy(tmp[1].prop)
     else res=Dict{Symbol, Any}() end
     res[:classtext]=map(x->reduce(vcat,x),cartfields(tmp,:classtext))
-    res[:classnames]=map(join,cartfields(tmp,:classnames))
+    res[:classnames]=map(x->join(x,","),cartfields(tmp,:classnames))
     if all(haskey.(tmp,:classparams))
       res[:classparams]=cartfields(tmp,:classparams)
     end

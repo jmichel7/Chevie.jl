@@ -286,13 +286,13 @@ end
 HeckeAlgebras.rootpara(H::HeckeAlgebra,x)=equalpara(H) ?  rootpara(H)[1]^length(H.W,x) : prod(rootpara(H)[word(H.W,x)])
 
 struct HeckeCpElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,P,C}
-  d::ModuleElt{P,C} # has better merge performance than Dict
+  d::ModuleElt{P,C}
   H::TH
 end
 HeckeAlgebras.clone(h::HeckeCpElt,d)=HeckeCpElt(d,h.H)
 
 struct HeckeCElt{TH<:HeckeAlgebra,C,P}<:HeckeElt{TH,C,P}
-  d::ModuleElt{P,C} # has better merge performance than Dict
+  d::ModuleElt{P,C}
   H::TH
 end
 HeckeAlgebras.clone(h::HeckeCElt,d)=HeckeCElt(d,h.H)

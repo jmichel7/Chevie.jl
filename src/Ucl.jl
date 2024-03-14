@@ -1259,9 +1259,14 @@ This  function presents  in a  different way  the information obtained from
 the  class of `u` and `Z(𝐋 )` is the center of Levi subgroup on which lives
 the cuspidal local system attached to the local system `(u,ϕ)`.
 
-Then  `XTable` gives the decomposition of the functions ``X̃_{u,ϕ}`` on local
-systems,  by  default.  If  `classes==true`,  it  gives  the  values of the
-functions ``X̃_{u,ϕ}`` on unipotent classes.
+Then  `XTable(uc)` gives the decomposition of the functions ``X̃_{u,ϕ}`` on
+local   systems.  `t=XTable(uc,classes==true)`  gives  the  values  of  the
+functions   ``X̃_{u,ϕ}``   on   unipotent   classes.   A   side  effect  of
+`classes=true`  is  to  compute  the  cardinal  of  the unipotent conjugacy
+classes,  avalaible in `t.cardClass`; in this case displaying `t` will show
+the  cardinal  of  the  centralizers  of  unipotent  elements, available in
+`t.centClass`.
+
 
 ```julia-repl
 julia> W=coxgroup(:G,2)
@@ -1286,15 +1291,17 @@ exponent the relative groups ``W_𝐆 (𝐋)``.
 ```julia-repl
 julia> XTable(UnipotentClasses(W);classes=true)
 Values of character sheaves X̃ᵪ on unipotent classes
-  X̃ᵪ|class│   1 A₁ Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
-──────────┼──────────────────────────────────────────
-X_φ₁‚₀^G₂ │   1  1  1      1          1         1  1
-X_φ₁‚₆^G₂ │  q⁶  .  .      .          .         .  .
-X_φ′₁‚₃^G₂│  q³  .  q     2q          .        -q  .
-X_φ″₁‚₃^G₂│  q³ q³  .      .          .         .  .
-X_φ₂‚₁^G₂ │ qΦ₈  q  q      q          q         q  .
-X_φ₂‚₂^G₂ │q²Φ₄ q² q²      .          .         .  .
-X_Id^.    │   .  .  .     q²        -q²        q²  .
+  X̃ᵪ|class│           1     A₁     Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂
+──────────┼──────────────────────────────────────────────────────────
+X_φ₁‚₀^G₂ │           1      1      1      1          1         1  1 
+X_φ₁‚₆^G₂ │          q⁶      .      .      .          .         .  . 
+X_φ′₁‚₃^G₂│          q³      .      q     2q          .        -q  . 
+X_φ″₁‚₃^G₂│          q³     q³      .      .          .         .  . 
+X_φ₂‚₁^G₂ │         qΦ₈      q      q      q          q         q  . 
+X_φ₂‚₂^G₂ │        q²Φ₄     q²     q²      .          .         .  . 
+X_Id^.    │           .      .      .     q²        -q²        q²  . 
+──────────┼──────────────────────────────────────────────────────────
+|C_𝐆(u)|  │q⁶Φ₁²Φ₂²Φ₃Φ₆ q⁶Φ₁Φ₂ q⁴Φ₁Φ₂    6q⁴        2q⁴       3q⁴ q² 
 
 julia> XTable(UnipotentClasses(W,2))
 Values of character sheaves X̃ᵪ on local systems φ
@@ -1323,23 +1330,6 @@ X₂^A₁   │   .   .     q²  .  . .      .     q       .
 X_Id^.  │   .   .      .  .  . .   q³⁄₂     .       .
 X_Id^.  │   .   .      .  .  . .      .     .    q³⁄₂
 ```
-
-A  side effect  of calling  `XTable` with  `classes=true` is to compute the
-cardinal of the unipotent conjugacy classes:
-
-```julia-repl
-julia> t=XTable(UnipotentClasses(coxgroup(:G,2));classes=true);
-
-julia> CycPol.(t.cardClass)
-7-element Vector{CycPol{Cyc{Rational{Int64}}}}:
- 1
- Φ₁Φ₂Φ₃Φ₆
- q²Φ₁Φ₂Φ₃Φ₆
- q²Φ₁²Φ₂²Φ₃Φ₆/6
- q²Φ₁²Φ₂²Φ₃Φ₆/2
- q²Φ₁²Φ₂²Φ₃Φ₆/3
- q⁴Φ₁²Φ₂²Φ₃Φ₆
-```
 """
 function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
 # println("here uc=",uc)
@@ -1360,6 +1350,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
+    res.cardCent=zeros(eltype(res.scalar),length(l))*1//1
     res.classes=invpermute(l,p)
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au
@@ -1369,6 +1360,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
       res.cardClass[b]=res.Y[[b[charinfo(Au).positionId]],b]*CharTable(Au).irr
       res.cardClass[b]=map((x,y)->x*y//length(Au),
                            res.cardClass[b],length.(conjugacy_classes(Au)))
+      res.cardCent[b]=generic_order(uc.spets)(q).//res.cardClass[b]
     end
     res.scalar=improve_type(res.scalar)
   else
@@ -1388,18 +1380,23 @@ function Base.show(io::IO,::MIME"text/plain",x::XTable)
   row_labels=vcat(map(g->map(n->"X_{"*n*"}^{"*TeX(io,g)*"}",
                              charnames(TeX(io),g)),x.relgroups)...)
   rows_label="\\tilde X_\\chi|"
+  tbl=x.scalar
   if x.class
     rows_label*="class"
     print(io," unipotent classes\n")
     col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
+    tbl=vcat(tbl,permutedims(x.cardCent))
+    push!(row_labels,"|C_{𝐆}(u)|")
+    row_seps=[0,size(tbl,1)-1]
   else
     rows_label*=fromTeX(io,"\\phi")
     printTeX(io," local systems \$\\phi\$\n")
     col_labels=map(p->name(TeX(io,locsys=p[2]),x.uc.classes[p[1]]),x.locsys)
+    row_seps=[0]
   end
-  tbl=x.scalar
   if get(io,:cycpol,true) tbl=CycPol.(tbl) end
-  showtable(io,tbl;row_labels,col_labels,rows_label,dotzero=get(io,:dotzero,true))
+  dotzero=get(io,:dotzero,true)
+  showtable(io,tbl;row_labels,col_labels,rows_label,dotzero,row_seps)
 end
 
 @GapObj struct GreenTable end
@@ -1509,9 +1506,6 @@ end
 
 @GapObj struct ValuesTable end
 
-# values of unipotent characters
-# UnipotentValues(uc[,opt]) values on unipotent classes (opt.classes bound)
-# or local systems (opt.classes unbound)
 """
 `UnipotentValues(uc,classes=false)`
 

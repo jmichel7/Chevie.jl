@@ -800,7 +800,7 @@ Base.:^(a::HeckeElt, n::Integer)=n>=0 ? Base.power_by_squaring(a,n) :
 const MM=ModuleElt # HModuleElt is 3 times slower
 
 struct HeckeTElt{TH,C,P}<:HeckeElt{TH,C,P}
-  d::MM{P,C} # has better merge performance than Dict
+  d::MM{P,C}
   H::TH
 end
 
@@ -1572,7 +1572,7 @@ function isrepresentation(H::HeckeCoset,r)
 end
 
 struct HeckeTCElt{TH<:HeckeCoset,C,P}<:HeckeElt{TH,C,P}
-  d::MM{P,C} # has better merge performance than Dict
+  d::MM{P,C}
   H::TH
 end
 
