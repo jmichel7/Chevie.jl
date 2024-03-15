@@ -29,15 +29,17 @@ julia> generic_decomposition_matrix(W,13)
 ```julia-repl
 julia> generic_decomposition_matrix(W,10)
 Φ₁₀-decomposition matrix for psu₅
-      │ps 21 ps ps ps 2111 11111
-──────┼──────────────────────────
-2.    │ 1  .  .  .  .    .     .
-²A₂:2 │ .  1  .  .  .    .     .
-11.   │ .  .  1  .  .    .     .
-1.1   │ 1  .  .  1  .    .     .
-.2    │ .  .  .  .  1    .     .
-²A₂:11│ .  1  .  .  .    1     .
-.11   │ .  .  .  1  .    .     1
+┌──────┬─────────────────────────┐
+│      │ps 21 ps ps ps 2111 11111│
+├──────┼─────────────────────────┤
+│2.    │ 1  .  .  .  .    .     .│
+│²A₂:2 │ .  1  .  .  .    .     .│
+│11.   │ .  .  1  .  .    .     .│
+│1.1   │ 1  .  .  1  .    .     .│
+│.2    │ .  .  .  .  1    .     .│
+│²A₂:11│ .  1  .  .  .    1     .│
+│.11   │ .  .  .  1  .    .     1│
+└──────┴─────────────────────────┘
 ```
 
 The matrix itself is stored in the field `.scalar` of the returned `struct`.
@@ -142,19 +144,21 @@ psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁
 julia> InducedDecompositionMatrix(L,W,6)
 Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆
 
-    │ps ps A₂
-────┼─────────
-²A₅ │ .  .  .
-.3  │ 1  .  .
-3.  │ 1  .  .
-.21 │ 1  1  .
-1.2 │ 2  1  .
-21. │ 1  1  .
-2.1 │ 2  1  .
-.111│ .  1  1
-111.│ .  1  1
-1.11│ 1  2  1
-11.1│ 1  2  1
+┌────┬────────┐
+│    │ps ps A₂│
+├────┼────────┤
+│²A₅ │ .  .  .│
+│.3  │ 1  .  .│
+│3.  │ 1  .  .│
+│.21 │ 1  1  .│
+│1.2 │ 2  1  .│
+│21. │ 1  1  .│
+│2.1 │ 2  1  .│
+│.111│ .  1  1│
+│111.│ .  1  1│
+│1.11│ 1  2  1│
+│11.1│ 1  2  1│
+└────┴────────┘
 ```
 The matrix itself is stored in the field `.scalar` of the returned `struct`.
 """

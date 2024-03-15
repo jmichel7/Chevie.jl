@@ -299,11 +299,13 @@ julia> WF=spets(W,Perm(1,2))
 
 julia> CharTable(WF)
 CharTable(²Bsym₂)
-   │    1 121
-───┼──────────
-2. │1   1   1
-.11│1  -1  -1
-1.1│. -√2  √2
+┌───┬─────────┐
+│   │    1 121│
+├───┼─────────┤
+│2. │1   1   1│
+│.11│1  -1  -1│
+│1.1│. -√2  √2│
+└───┴─────────┘
 ```
 
 A *subcoset* `Hwϕ` of `Wϕ` is given by a reflection subgroup `H` of `W` and

@@ -72,7 +72,7 @@ module Format
 using ..Chevie: stringexp, stringprime
 using PermGroups: @GapObj
 export showtable, ordinal, fromTeX, printTeX, joindigits, cut, rio, xprint, 
-  xprintln, xdisplay, xrepr, TeX, TeXs, hasdecor
+  xprintln, xdisplay, hdisplay, xrepr, TeX, TeXs, hasdecor
 #----------------------- Formatting -----------------------------------------
 # print with attributes...
 hasdecor(io::IO)=get(io,:TeX,false)||get(io,:limit,false)
@@ -93,7 +93,7 @@ xdisplay(x;p...)=display(TextDisplay(rio(;p...)),x)
 xrepr(x;p...)=repr(x;context=IOContext(stdout,p...))
 "`xrepr(io,x;p...)` is `repr` using as context `io` enriched by `p...`"
 xrepr(io::IO,x;p...)=repr(x;context=IOContext(io,p...))
-function hdisplay(x;p...) # what is the idea?
+function hdisplay(x;p...) # for use in IJulia, Pluto
   Docs.HTML()do io
     show(IOContext(io,p...),"text/html",x)
   end
@@ -209,10 +209,20 @@ function Base.show(io::IO,t::Table)
   col_labels=get(io,:col_labels,nothing)
   if col_labels!=nothing col_labels=(strip.(col_labels)) end
   rows_label=strip(get(io,:rows_label,""))
-  row_seps=get(io,:row_seps,col_labels!=nothing ? [0] : Int[])
-  col_seps=get(io,:col_seps,[0])
+  row_seps=get(io,:row_seps,[-1,0,rows[end]])
+  col_seps=get(io,:col_seps,[-1,0,cols[end]])
   column_repartition=get(io,:column_repartition,nothing)
   align=get(io,:align,'r')
+  if align isa Char align='l'*align^size(t,2) 
+  elseif '|' in align
+    if col_seps!=[-1,0,size(t,2)] error("two ways to specify col_seps") end
+    col_seps=findall(==('|'),align).-1
+    col_seps.-=1:length(col_seps)
+    align=replace(align,"|"=>"")
+  end
+  if length(align)!=size(t,2)+1
+    error("align=$align should be of length ",size(t,2)+1)
+  end
   dotzero=get(io,:dotzero,false)
   t=map(x->(!ismissing(x) && x==0 && dotzero) ? "." : strip(x),t)
   TeX=get(io,:TeX,false)
@@ -225,6 +235,9 @@ function Base.show(io::IO,t::Table)
   function hline(ci;last=false,first=false)
     if TeX println(io,"\\hline")
     else 
+      if -1 in col_seps 
+        print(io,first ? "\u250C" : last ? "\u2514" : "\u251C")
+      end
       for i in vcat([0],ci)
         print(io,"\u2500"^(i==0 ? labwidth : cols_widths[i]))
         if i in col_seps
@@ -239,51 +252,51 @@ function Base.show(io::IO,t::Table)
       println(io)
     end
   end
-  function cut(l,max) # cut Integer list l in parts of sum<max
-    res=Int[];len=0;n=0
-    for i in l len+=i
-      if len>=max
-        if n==0 push!(res,1);n=0;len=0
-        else push!(res,n);n=1;len=i
-        end
-      else n+=1
-      end
-    end
-    push!(res,n)
-  end
   if isnothing(column_repartition)
      if TeX column_repartition=[length(cols)]
-     else column_repartition=cut(1 .+cols_widths[cols],displaysize(io)[2]-labwidth-1)
+     else column_repartition=cut(cols_widths[cols].+1,displaysize(io)[2]-labwidth-1)
      end
   end
-  seen=0
-  alignf(c)=c=='l' ? rpad : c=='r' ? lpad : cpad
-  for k in column_repartition
-    ci=cols[seen.+(1:k)]
-    seen+=k
-    if TeX println(io,"\$\$\n\\begin{array}{l|",
-                  align isa String ? align[ci] : align^length(ci),"}") end
+  alignf(i)=align[i+1]=='l' ? rpad : align[i+1]=='r' ? lpad : cpad
+  col0=(-1 in row_seps) && !isnothing(col_labels)
+  ranges=map((x,y)->cols[y:y+x-1],column_repartition,
+             pushfirst!(cumsum(column_repartition)[1:end-1].+1,1))
+  for ci in ranges
+    if TeX 
+      alignt=-1 in col_seps ? '|' : ""
+      for i in vcat([0],ci)
+        alignt*=align[i+1]
+        if i in col_seps alignt*='|' end
+      end
+      println(io,"\$\$\n\\begin{array}{$alignt}")
+      if col0 println(io,"\\hline") end
+    end
     if !isnothing(col_labels)
       if TeX
         println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
       else 
+        if -1 in row_seps && !isnothing(col_labels)
+          hline(ci,first=true)
+        end
+        if -1 in col_seps print(io,col0 ? "\u2502" : " ") end
         for i in vcat([0],ci)
-          if i==0 print(io,rpad(rows_label,labwidth))
+          if i==0 print(io,alignf(i)(rows_label,labwidth))
           else print(io,col_labels[i])
           end
-          print(io,i in col_seps ? "\u2502" : " ")
+          print(io,(i in col_seps)&& col0 ? "\u2502" : " ")
         end
         println(io)
       end
     end
-    if 0 in row_seps hline(ci;first=isnothing(col_labels)) end
+    if 0 in row_seps hline(ci;first=!col0) end
     for l in rows
       if TeX
         println(io,row_labels[l],"&",join(t[l,ci],"&"),"\\\\")
       else
+        if -1 in col_seps print(io,"\u2502") end
         for i in vcat([0],ci)
-          if i==0 print(io,rpad(row_labels[l],labwidth))
-          else print(io,alignf(align isa String ? align[i] : align)(t[l,i],cols_widths[i]))
+          if i==0 print(io,alignf(i)(row_labels[l],labwidth))
+          else print(io,alignf(i)(t[l,i],cols_widths[i]))
           end
           print(io,i in col_seps ? "\u2502" : " ")
         end
@@ -302,46 +315,70 @@ end
 General  routine to format a table at  the REPL, or in `IJulia` or `Pluto`.
 The elements of `table` and any of the labels in the keywords can be of any
 type  and are formatted in the context  of `io`, excepted that a string `s`
-is are formatted by `fromTeX(io,s)`. The following options can be passed as
+is  formatted by  `fromTeX(io,s)`. The  following options  can be passed as
 properties of the `io` or as keywords.
 
   - `row_labels`: labels for rows. A `Vector{Any}` (can be strings),
     default `axes(table,1)`
   - `rows_label`: label for first column of row labels (default none)
   - `col_labels`: labels for other columns (default none)
-  - `row_seps`: line numbers after which to put a separator. A `Vector{<:Integer}`, 
-    default `[0]` if there are `col_labels` otherwise `Int[]`.
-  - `rows`: show only these rows. A `Vector{<:Integer}`, default `axes(table,1)`
-  - `cols`: show only these columns. A `Vector{<:Integer}`, 
-    default `axes(table,1)`
-  - `TeX`: default `false`. If true, give LaTeX output (useful in to give
+  - `align`:  a character in "lcr": alignment of columns (default 'r'); then
+    all columns will be aligned as given except the `rows_labels` which will
+    always be aligned left. Or if `align` is a string it should be of length
+    `1+size(table,2)` where the first character is the alignment of the
+    `row_labels`.
+  - `row_seps`: line numbers after which to put a separator.
+    A number of `i` means before `i`-th line of the table. So `0` is at the
+    top  of  the  table,  `-1`  is  before the `col_labels`. The default is
+    `[-1,0,size(table,1)]`.
+  - `col_seps`: column numbers after which to put a separator.
+    A  number of `i` means before `i`-th column  of the table. So `0` is at
+    the  left of the table, `-1` is before the `row_labels`. The default is
+    `[-1,0,size(table,2)]`.  Alternately the `col_seps`  can be given using
+    an  `align` string in  LaTeX style `|r|llll|`.  They should be given by
+    only one of the two ways.
+  - `rows`: show only these rows. Default all rows: `axes(table,1)`
+  - `cols`: show only these columns. Default all columns: `axes(table,1)`
+  - `TeX`: default `false`. If true, give LaTeX output (useful to give
     nicer output in Jupyter or Pluto)
   - `column_repartition`: a `Vector{<:Integer}`. Display in vertical pieces of
-    sizes indicated (useful for `TeX`: otherwise the pieces printed take in
-    account `displaysize(io,2)`)
-  - `align`:  a character in "lcr": alignment of columns (default 'r')
-  - `dotzero`: if `true` replace a '0' by '.' in the table (default false)
+    sizes indicated (useful for `TeX`: otherwise the column_repartition is
+    automatically computed taking in account `displaysize(io,2)`).
+  - `dotzero`: if `true` replace a '0' by '.' in the table (default false).
 
 ```julia-rep1
-julia> m=[1 2 3 4;5 6 7 8;9 1 2 3;4 5 6 7];
+julia> m=reshape(1:10:120,3,4)
+3×4 reshape(::StepRange{Int64, Int64}, 3, 4) with eltype Int64:
+  1  31  61   91
+ 11  41  71  101
+ 21  51  81  111
 
 julia> showtable(m)
-1│1 2 3 4
-2│5 6 7 8
-3│9 1 2 3
-4│4 5 6 7
+┌─┬────────────┐
+│1│ 1 31 61  91│
+│2│11 41 71 101│
+│3│21 51 81 111│
+└─┴────────────┘
 
 julia> labels=["x","y","z","t"];
 
-julia> showtable(m;cols=2:4,col_labels=labels,row_seps=[0,2,4])
- │y z t
-─┼──────
-1│2 3 4
-2│6 7 8
-─┼──────
-3│1 2 3
-4│5 6 7
-─┴──────
+julia> showtable(m;cols=2:4,col_labels=labels,row_seps=[0,2,3])
+    y  z   t 
+┌─┬─────────┐
+│1│31 61  91│
+│2│41 71 101│
+├─┼─────────┤
+│3│51 81 111│
+└─┴─────────┘
+
+julia> showtable(m;col_labels=labels,rows_label="N",align="|r|ll|ll|")
+┌─┬─────┬──────┐
+│N│ x  y│ z   t│
+├─┼─────┼──────┤
+│1│1  31│61 91 │
+│2│11 41│71 101│
+│3│21 51│81 111│
+└─┴─────┴──────┘
 ```
 """
 function showtable(io::IO,t::AbstractMatrix; opt...)
@@ -404,6 +441,20 @@ function joindigits(l::AbstractVector{Int},delim="()";always=false,sep=",")
   (big || always)&& !isempty(delim) ? delim[1]*s*delim[2] : s
 end
 
+# cut Integer list l in segments of sum<max. Result is list of segment lengths
+function cut(l::AbstractVector{<:Integer},max)
+  res=Int[];len=0;n=0
+  for i in l len+=i
+    if len>=max
+      if n==0 push!(res,1);n=0;len=0
+      else push!(res,n);n=1;len=i
+      end
+    else n+=1
+    end
+  end
+  push!(res,n)
+end
+
 """
  `cut(io::IO=stdout,string;width=displaysize(io)[2]-2,after=",",before="")`
 
@@ -419,7 +470,7 @@ julia> cut(string(collect(1:50)))
  41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
 ```
 """
-function cut(io::IO,s;width=displaysize(stdout)[2]-2,after=",",before="")
+function cut(io::IO,s::AbstractString;width=displaysize(stdout)[2]-2,after=",",before="")
   a=split(s,"\n")
   if a[end]=="" a=a[1:end-1] end
   for s in a
@@ -450,7 +501,7 @@ function cut(io::IO,s;width=displaysize(stdout)[2]-2,after=",",before="")
   end
 end
 
-cut(s;k...)=cut(stdout,s;k...)
+cut(s::AbstractString;k...)=cut(stdout,s;k...)
 
 TeXs(x;p...)=repr("text/plain",x;context=IOContext(stdout,:TeX=>true,p...))
 

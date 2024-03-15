@@ -35,27 +35,31 @@ A₃
 
 julia> CharTable(W)
 CharTable(A₃)
-    │1111 211 22 31  4
-────┼──────────────────
-1111│   1  -1  1  1 -1
-211 │   3  -1 -1  .  1
-22  │   2   .  2 -1  .
-31  │   3   1 -1  . -1
-4   │   1   1  1  1  1
+┌────┬─────────────────┐
+│    │1111 211 22 31  4│
+├────┼─────────────────┤
+│1111│   1  -1  1  1 -1│
+│211 │   3  -1 -1  .  1│
+│22  │   2   .  2 -1  .│
+│31  │   3   1 -1  . -1│
+│4   │   1   1  1  1  1│
+└────┴─────────────────┘
 
 julia> W=coxgroup(:G,2)
 G₂
 
 julia> ct=CharTable(W)
 CharTable(G₂)
-     │A₀ Ã₁ A₁ G₂ A₂ A₁+Ã₁
-─────┼─────────────────────
-φ₁‚₀ │ 1  1  1  1  1     1
-φ₁‚₆ │ 1 -1 -1  1  1     1
-φ′₁‚₃│ 1  1 -1 -1  1    -1
-φ″₁‚₃│ 1 -1  1 -1  1    -1
-φ₂‚₁ │ 2  .  .  1 -1    -2
-φ₂‚₂ │ 2  .  . -1 -1     2
+┌─────┬────────────────────┐
+│     │A₀ Ã₁ A₁ G₂ A₂ A₁+Ã₁│
+├─────┼────────────────────┤
+│φ₁‚₀ │ 1  1  1  1  1     1│
+│φ₁‚₆ │ 1 -1 -1  1  1     1│
+│φ′₁‚₃│ 1  1 -1 -1  1    -1│
+│φ″₁‚₃│ 1 -1  1 -1  1    -1│
+│φ₂‚₁ │ 2  .  .  1 -1    -2│
+│φ₂‚₂ │ 2  .  . -1 -1     2│
+└─────┴────────────────────┘
 
 julia> ct.charnames
 6-element Vector{String}:
@@ -435,7 +439,7 @@ function schur_functor(A,la)
   rep=function(x)x=word(S,x)
     isempty(x) ? r[1]^0 : prod(r[x]) end
   f=j->prod(factorial,last.(tally(j)))
-  basis=multisets(axes(A,1),n) 
+  basis=multisets(axes(A,1),n)
   M=sum(x->kron(rep(x),toM(map(function(i)i=invpermute(i,x)
   return map(j->prod(k->A[i[k],j[k]],1:n),basis)//f(i) end,basis))),elements(S))
 # Print(Length(M),"=>");
@@ -496,7 +500,7 @@ function fakedegrees(W,q=Pol();recompute=false)
     res=get!(W,:fakedegrees)do
       improve_type(map(p->fakedegree(W,p,Pol()),charinfo(W).charparams))
     end
-    if !any(isnothing,res) && !all(iszero,res) 
+    if !any(isnothing,res) && !all(iszero,res)
       if q==Pol() return res
       else return map(x->x(q),res)
       end
@@ -556,8 +560,8 @@ function charinfo(t::TypeIrred)
     end
   end
   for f in [:a,:A,:b,:B]
-    if haskey(c,f) 
-      if isnothing(c[f]) || c[f]==false delete!(c.prop,f) 
+    if haskey(c,f)
+      if isnothing(c[f]) || c[f]==false delete!(c.prop,f)
       else c.prop[f]=improve_type(c[f]) end
     end
   end
@@ -582,7 +586,7 @@ returns   information  about  the  irreducible  characters  of  the  finite
 reflection group or Spets `W`. The result is an object with various entries
 describing  properties of  the irreducible  characters of  `W`. This object
 prints  at the  Repl or  in Pluto  or Jupyter  as a table synthesizing most
-information. 
+information.
 
 A  field not in the table is  `.charparams`: it contains parameters for the
 irreducible  characters.  A  parameter  is  a  list  with one item for each
@@ -602,14 +606,16 @@ julia> charinfo(coxgroup(:G,2)).charparams
 
 ```julia-repl
 julia> charinfo(coxgroup(:G,2))
-n0│ name ext b B a A spaltenstein lusztig              symbol
-──┼───────────────────────────────────────────────────────────
-1 │ φ₁‚₀  Id 0 0 0 0            1       1       (0,0,0,0,0,2)
-2 │ φ₁‚₆ det 6 6 6 6            ε       ε (01,01,01,01,01,12)
-3 │φ′₁‚₃     3 3 1 5           εₗ      ε′            (0,0,1+)
-4 │φ″₁‚₃     3 3 1 5          ε_c      ε″            (0,0,1-)
-5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′       (0,0,0,0,1,1)
-6 │ φ₂‚₂     2 4 1 5           θ″      θ″       (0,0,0,1,0,1)
+┌──┬──────────────────────────────────────────────────────────┐
+│n0│ name ext b B a A spaltenstein lusztig              symbol│
+├──┼──────────────────────────────────────────────────────────┤
+│1 │ φ₁‚₀  Id 0 0 0 0            1       1       (0,0,0,0,0,2)│
+│2 │ φ₁‚₆ det 6 6 6 6            ε       ε (01,01,01,01,01,12)│
+│3 │φ′₁‚₃     3 3 1 5           εₗ      ε′            (0,0,1+)│
+│4 │φ″₁‚₃     3 3 1 5          ε_c      ε″            (0,0,1-)│
+│5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′       (0,0,0,0,1,1)│
+│6 │ φ₂‚₂     2 4 1 5           θ″      θ″       (0,0,0,1,0,1)│
+└──┴──────────────────────────────────────────────────────────┘
 ```
 In  the table printed  at the Repl,  the columns reflect  various fields of
 `charinfo`.  The  column  `name`  reflects  the  field `.charnames`, a name
@@ -668,20 +674,22 @@ permutation   is  trivial).  `.hgal*conj`,  where  `conj`  is  the  complex
 conjugaison, is the Opdam involution.
 ```julia-repl
 julia> charinfo(complex_reflection_group(24))
-n0│ name ext  b  B  a  A
-──┼──────────────────────
-1 │ φ₁‚₀  Id  0  0  0  0
-2 │φ₁‚₂₁ det 21 21 21 21
-3 │ φ₃‚₈      8 18  8 20
-4 │ φ₃‚₁  Λ¹  1 11  1 13
-5 │φ₃‚₁₀  Λ² 10 20  8 20
-6 │ φ₃‚₃      3 13  1 13
-7 │ φ₆‚₂      2 12  1 13
-8 │ φ₆‚₉      9 19  8 20
-9 │ φ₇‚₆      6 18  6 18
-10│ φ₇‚₃      3 15  3 15
-11│ φ₈‚₄      4 16  4 17
-12│ φ₈‚₅      5 17  4 17
+┌──┬─────────────────────┐
+│n0│ name ext  b  B  a  A│
+├──┼─────────────────────┤
+│1 │ φ₁‚₀  Id  0  0  0  0│
+│2 │φ₁‚₂₁ det 21 21 21 21│
+│3 │ φ₃‚₈      8 18  8 20│
+│4 │ φ₃‚₁  Λ¹  1 11  1 13│
+│5 │φ₃‚₁₀  Λ² 10 20  8 20│
+│6 │ φ₃‚₃      3 13  1 13│
+│7 │ φ₆‚₂      2 12  1 13│
+│8 │ φ₆‚₉      9 19  8 20│
+│9 │ φ₇‚₆      6 18  6 18│
+│10│ φ₇‚₃      3 15  3 15│
+│11│ φ₈‚₄      4 16  4 17│
+│12│ φ₈‚₅      5 17  4 17│
+└──┴─────────────────────┘
 hgal=(11,12)
 ```
 """
@@ -760,7 +768,7 @@ function Base.show(io::IO, ::MIME"text/plain", ci::CharInfo)
   ext=fill("",n)
   if haskey(ci,:extRefl)
     ext[ci.extRefl[[1,end]]]=["Id","det"]
-    for (i,j) in pairs(ci.extRefl[2:end-1]) 
+    for (i,j) in pairs(ci.extRefl[2:end-1])
       ext[j]=fromTeX(io,"\\Lambda^$i")
     end
   else ext[ci.positionId]="Id";ext[ci.positionDet]="det"
@@ -864,11 +872,13 @@ irreducible `W`, see the helpstring of `Chars`.
 
 ```julia-repl
 julia> classinfo(coxgroup(:A,2))
-n0│name length order word
-──┼───────────────────────
-1 │ 111      1     1    .
-2 │  21      3     2    1
-3 │   3      2     3   12
+┌──┬──────────────────────┐
+│n0│name length order word│
+├──┼──────────────────────┤
+│1 │ 111      1     1    .│
+│2 │  21      3     2    1│
+│3 │   3      2     3   12│
+└──┴──────────────────────┘
 ```
 The table contains the columns:
   - `name`, corresponding to the field `.classnames`:  strings describing the
@@ -1029,7 +1039,7 @@ function eigen(C::ConjugacyClass{T,TW})where{T,TW<:Hastype}
   get!(C,:eigen)do
     t=refltype(C.G)
     if !any(x->haskey(x,:orbit) && (length(x.orbit)>1 || order(x.twist)>1 ||
-       (haskey(x,:scalar) && !all(isone,x.scalar))),t) 
+       (haskey(x,:scalar) && !all(isone,x.scalar))),t)
       l=refleigen(C.G)
       for (i,C1) in enumerate(conjugacy_classes(C.G))
         C1.eigen=l[i]
@@ -1062,7 +1072,7 @@ function Base.show(io::IO, ::MIME"text/html", ct::CharTable)
 end
 
 function Base.show(io::IO,t::CharTable)
-  if hasdecor(io) || !haskey(t,:repr) 
+  if hasdecor(io) || !haskey(t,:repr)
     printTeX(io,"CharTable(\$",haskey(t,:name) ? t.name : "?","\$)")
   else  print(io,t.repr)
   end
@@ -1112,21 +1122,23 @@ julia> W=spets(coxgroup(:D,4),Perm(1,2,4))
 
 julia> CharTable(W)
 CharTable(³D₄)
-     │C₃ Ã₂ C₃+A₁ Ã₂+A₁ F₄ Ã₂+A₂ F₄(a₁)
-─────┼──────────────────────────────────
-.4   │ 1  1     1     1  1     1      1
-.1111│-1  1     1    -1  1     1      1
-.22  │ .  2     2     . -1    -1     -1
-11.2 │ .  .     .     . -1     3      3
-1.3  │ 1  1    -1    -1  .    -2      2
-1.111│-1  1    -1     1  .    -2      2
-1.21 │ .  2    -2     .  .     2     -2
+┌─────┬─────────────────────────────────┐
+│     │C₃ Ã₂ C₃+A₁ Ã₂+A₁ F₄ Ã₂+A₂ F₄(a₁)│
+├─────┼─────────────────────────────────┤
+│.4   │ 1  1     1     1  1     1      1│
+│.1111│-1  1     1    -1  1     1      1│
+│.22  │ .  2     2     . -1    -1     -1│
+│11.2 │ .  .     .     . -1     3      3│
+│1.3  │ 1  1    -1    -1  .    -2      2│
+│1.111│-1  1    -1     1  .    -2      2│
+│1.21 │ .  2    -2     .  .     2     -2│
+└─────┴─────────────────────────────────┘
 ```
 """
 function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)
   get!(W,:chartable)do
     t=refltype(W)
-    ct=isempty(t) ? 
+    ct=isempty(t) ?
       CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
       prod(CharTable.(t;opt...))
     ct.name=xrepr(W;TeX=true)
@@ -1153,7 +1165,7 @@ function scalarproduct(ct::CharTable,c1::AbstractVector,c2::AbstractVector;exact
 end
 
 """
-`decompose(ct::CharTable,c::Vector;exact=true)` 
+`decompose(ct::CharTable,c::Vector;exact=true)`
 
 decompose  class function `c` (given by its values on conjugacy classes) on
 irreducible  characters as  given by  `CharTable` `ct`.  By default  `c` is
@@ -1220,7 +1232,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
   if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm*1) end
   n=length(tt)
-  if n==1 reps=mm[1] 
+  if n==1 reps=mm[1]
   else reps=vcat(map(1:n) do i
            map(mm[i]) do m
              kron(map(j->j==i ? m : mm[j][1]^0,1:n)...)
@@ -1270,7 +1282,7 @@ represented as a pair.
     Its  elements are either a set `I(x)`,  or an integer `n` specifying to
     repeat the previous element `n` more times.
 
-  - The  second element is a list which  specifies `μ`. 
+  - The  second element is a list which  specifies `μ`.
 
 We   first   describe   the   `μ`-list   for   symmetric  `W`-graphs  (when
 `μ(x,y)=μ(y,x)`).  There is one  element of the  `μ`-list for each non-zero
@@ -1310,7 +1322,7 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   dim=length(V)
   T=Int
   function prom(a)
-    if a isa Vector 
+    if a isa Vector
       for u in a prom(u) end
     else T=promote_type(T,typeof(a))
     end
@@ -1318,9 +1330,9 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   prom(gr[2])
   T=promote_type(T,typeof(v))
   S=map(i->spzeros(T,dim,dim),1:rk)
-  for j in 1:dim 
+  for j in 1:dim
     for i in 1:rk
-      if i in V[j] S[i][j,j]=-one(v) 
+      if i in V[j] S[i][j,j]=-one(v)
       else         S[i][j,j]=v^2
       end
     end
@@ -1513,15 +1525,17 @@ Group([(1,2),(2,3),(3,4)])
 julia> u=Group( [ Perm(1,2), Perm(3,4) ])
 Group([(1,2),(3,4)])
 
-julia> induction_table(u,g)  #     needs Gap4
-Induction table from Group([(1,2),(3,4)]) to Group([(1,2),(2,3),(3,4)])
-   │X.1 X.2 X.3 X.4
-───┼────────────────
-X.1│  .   1   .   .
-X.2│  .   1   1   1
-X.3│  1   1   .   .
-X.4│  1   .   1   1
-X.5│  1   .   .   .
+julia> induction_table(u,g)  #     needs "using GAP"
+Induction table from Group((1,2),(3,4)) to Group((1,2),(2,3),(3,4))
+┌───┬───────────────┐
+│   │X.1 X.2 X.3 X.4│
+├───┼───────────────┤
+│X.1│  .   1   .   .│
+│X.2│  .   1   1   1│
+│X.3│  1   1   .   .│
+│X.4│  1   .   1   1│
+│X.5│  1   .   .   .│
+└───┴───────────────┘
 ```
 
 ```julia-repl
@@ -1533,29 +1547,33 @@ G₂₍₁₅₎=A₂
 
 julia> t=induction_table(u,g)
 Induction table from G₂₍₁₅₎=A₂ to G₂
-     │111 21 3
-─────┼─────────
-φ₁‚₀ │  .  . 1
-φ₁‚₆ │  1  . .
-φ′₁‚₃│  1  . .
-φ″₁‚₃│  .  . 1
-φ₂‚₁ │  .  1 .
-φ₂‚₂ │  .  1 .
+┌─────┬────────┐
+│     │111 21 3│
+├─────┼────────┤
+│φ₁‚₀ │  .  . 1│
+│φ₁‚₆ │  1  . .│
+│φ′₁‚₃│  1  . .│
+│φ″₁‚₃│  .  . 1│
+│φ₂‚₁ │  .  1 .│
+│φ₂‚₂ │  .  1 .│
+└─────┴────────┘
 ```
 
-using an `IOContext` allows to transmit attributes to the table format method
+`IO` attributes can be transmitted to the table format method
 
 ```julia-rep1
-julia> xprint(t;rows=[5],cols=[3,2])
-Induction table
-    │3 21
-────┼─────
-φ₂‚₁│.  1
+julia> xdisplay(t;rows=[5],cols=[3,2])
+Induction table from G₂₍₁₅₎=A₂ to G₂
+┌─────┬────┐
+│     │3 21│
+├─────┼────┤
+│φ₂‚₁ │.  1│
+└─────┴────┘
 ```
 
-It is also possible to TeX induction tables with an `IOContext` of `TeX=true`.
+It is also possible to TeX induction tables with `xdisplay(t;TeX=true)`.
 
-##  This function also works for Spets (Reflection Cosets)
+`induction_table` also works for spets (reflection cosets).
 """
 function induction_table(u,g)
   tu=CharTable(u)
@@ -1611,21 +1629,23 @@ D₄₍₁₃₎=A₂Φ₁²
 
 julia> j_induction_table(H,W)
 j-induction table from D₄₍₁₃₎=A₂Φ₁² to D₄
-     │111 21 3
-─────┼─────────
-11+  │  .  . .
-11-  │  .  . .
-1.111│  .  . .
-.1111│  .  . .
-11.2 │  .  . .
-1.21 │  1  . .
-.211 │  .  . .
-2+   │  .  . .
-2-   │  .  . .
-.22  │  .  . .
-1.3  │  .  1 .
-.31  │  .  . .
-.4   │  .  . 1
+┌─────┬────────┐
+│     │111 21 3│
+├─────┼────────┤
+│11+  │  .  . .│
+│11-  │  .  . .│
+│1.111│  .  . .│
+│.1111│  .  . .│
+│11.2 │  .  . .│
+│1.21 │  1  . .│
+│.211 │  .  . .│
+│2+   │  .  . .│
+│2-   │  .  . .│
+│.22  │  .  . .│
+│1.3  │  .  1 .│
+│.31  │  .  . .│
+│.4   │  .  . 1│
+└─────┴────────┘
 ```
 """
 function j_induction_table(u,g)
@@ -1659,21 +1679,23 @@ D₄₍₁₃₎=A₂Φ₁²
 
 julia> J_induction_table(H,W)
 J-induction table from D₄₍₁₃₎=A₂Φ₁² to D₄
-     │111 21 3
-─────┼─────────
-11+  │  .  . .
-11-  │  .  . .
-1.111│  .  . .
-.1111│  .  . .
-11.2 │  1  . .
-1.21 │  1  . .
-.211 │  .  . .
-2+   │  .  . .
-2-   │  .  . .
-.22  │  .  . .
-1.3  │  .  1 .
-.31  │  .  . .
-.4   │  .  . 1
+┌─────┬────────┐
+│     │111 21 3│
+├─────┼────────┤
+│11+  │  .  . .│
+│11-  │  .  . .│
+│1.111│  .  . .│
+│.1111│  .  . .│
+│11.2 │  1  . .│
+│1.21 │  1  . .│
+│.211 │  .  . .│
+│2+   │  .  . .│
+│2-   │  .  . .│
+│.22  │  .  . .│
+│1.3  │  .  1 .│
+│.31  │  .  . .│
+│.4   │  .  . 1│
+└─────┴────────┘
 ```
 """
 function J_induction_table(u,g)
@@ -1715,10 +1737,10 @@ function LaurentPolynomials.discriminant(W::Group)
   else error("not implemented for non-irreducible ",W)
   end
 end
-  
+
 function decomposition_matrix(t::TypeIrred,p)
   m=getchev(t,:DecompositionMatrix,p)
-  if m==false 
+  if m==false
     error("decomposition_matrix(",t,",",p,") not implemented")
   end
   n=getchev(t,:NrConjugacyClasses)
@@ -1726,7 +1748,7 @@ function decomposition_matrix(t::TypeIrred,p)
   res=cat(map(x->toM(x[2]),m)...;dims=(1,2))
   res[sortperm(vcat(first.(m)...)),:]
 end
-  
+
 """
 `decomposition_matrix(W,p)`
 

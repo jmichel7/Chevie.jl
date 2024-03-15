@@ -11,63 +11,74 @@ julia&gt; closed_subsystems(W)
 1 5&lt;6
 1 5&lt;5
 2 6&lt;2&lt;∅
-3 5&lt;3&lt;∅</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/625fc32099bc8bfd0a001fe259e496293acb0412/src/Gt.jl#L43-L69">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Chevie.Gt.ClassTypes" href="#Chevie.Gt.ClassTypes"><code>Chevie.Gt.ClassTypes</code></a> — <span class="docstring-category">Type</span></header><section><div><p><code>ClassTypes(G[,p])</code></p><p><code>G</code>  should be a root  datum or a twisted  root datum representing a finite reductive  group <span>$𝐆 ^F$</span> and  <code>p</code> should be a  prime. The function returns the class types of <code>G</code> in characteristic <code>p</code> (in good characteristic if <code>p</code> is  omitted). Two elements  of <span>$𝐆 ^F$</span>  have the same  class type if their centralizers  are  conjugate.  If  <code>su</code>  is  the Jordan decomposition of an element  <code>x</code>, the class type of <code>x</code> is  determined by the class type of its semisimple part <code>s</code> and the unipotent class of <code>u</code> in <span>$C_𝐆 (s)$</span>.</p><p>The   function  <code>ClassTypes</code>  is  presently  only  implemented  for  simply connected  groups, where  <span>$C_𝐆 (s)$</span>  is connected.  This section is a bit experimental and may change in the future.</p><p><code>ClassTypes</code>  returns a  <code>struct</code> which  contains a  list of classtypes for semisimple  elements,  which  are  represented  by  <code>subspets</code>  and contain additionnaly information on the unipotent classes of <span>$C_𝐆 (s)$</span>.</p><p>Let us give some examples:</p><pre><code class="language-julia-repl hljs">julia&gt; t=ClassTypes(rootdatum(:sl,3))
+3 5&lt;3&lt;∅</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/29765436fe22458f85d1c0bf8e55b0130784a075/src/Gt.jl#L43-L69">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Chevie.Gt.ClassTypes" href="#Chevie.Gt.ClassTypes"><code>Chevie.Gt.ClassTypes</code></a> — <span class="docstring-category">Type</span></header><section><div><p><code>ClassTypes(G[,p])</code></p><p><code>G</code>  should be a root  datum or a twisted  root datum representing a finite reductive  group <span>$𝐆 ^F$</span> and  <code>p</code> should be a  prime. The function returns the class types of <code>G</code> in characteristic <code>p</code> (in good characteristic if <code>p</code> is  omitted). Two elements  of <span>$𝐆 ^F$</span>  have the same  class type if their centralizers  are  conjugate.  If  <code>su</code>  is  the Jordan decomposition of an element  <code>x</code>, the class type of <code>x</code> is  determined by the class type of its semisimple part <code>s</code> and the unipotent class of <code>u</code> in <span>$C_𝐆 (s)$</span>.</p><p>The   function  <code>ClassTypes</code>  is  presently  only  implemented  for  simply connected  groups, where  <span>$C_𝐆 (s)$</span>  is connected.  This section is a bit experimental and may change in the future.</p><p><code>ClassTypes</code>  returns a  <code>struct</code> which  contains a  list of classtypes for semisimple  elements,  which  are  represented  by  <code>subspets</code>  and contain additionnaly information on the unipotent classes of <span>$C_𝐆 (s)$</span>.</p><p>Let us give some examples:</p><pre><code class="language-julia-repl hljs">julia&gt; t=ClassTypes(rootdatum(:sl,3))
 ClassTypes(A₂,good characteristic)
-    C_G(s)│ |C_G(s)|
-──────────┼──────────
-A₂₍₎=Φ₁²  │      Φ₁²
-A₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂
-A₂₍₎=Φ₃   │       Φ₃
-A₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂
-A₂        │q³Φ₁²Φ₂Φ₃</code></pre><p>By   default,  only  information  about  semisimple  centralizer  types  is returned:   the type, and its generic order.</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t;unip=true)
+┌──────────┬─────────┐
+│C_G(s)    │ |C_G(s)|│
+├──────────┼─────────┤
+│A₂₍₎=Φ₁²  │      Φ₁²│
+│A₂₍₎=Φ₁Φ₂ │     Φ₁Φ₂│
+│A₂₍₎=Φ₃   │       Φ₃│
+│A₂₍₁₎=A₁Φ₁│   qΦ₁²Φ₂│
+│A₂        │q³Φ₁²Φ₂Φ₃│
+└──────────┴─────────┘</code></pre><p>By   default,  only  information  about  semisimple  centralizer  types  is returned:   the type, and its generic order.</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t;unip=true)
 ClassTypes(A₂,good characteristic)
-    C_G(s)│    u |C_G(su)|
-──────────┼────────────────
-A₂₍₎=Φ₁²  │    1       Φ₁²
-A₂₍₎=Φ₁Φ₂ │    1      Φ₁Φ₂
-A₂₍₎=Φ₃   │    1        Φ₃
-A₂₍₁₎=A₁Φ₁│   11    qΦ₁²Φ₂
-          │    2       qΦ₁
-A₂        │  111 q³Φ₁²Φ₂Φ₃
-          │   21      q³Φ₁
-          │    3       3q²
-          │ 3_ζ₃       3q²
-          │3_ζ₃²       3q²</code></pre><p>Here  we  have  displayed  information  on  unipotent  classes,  with their centralizer.</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t;nClasses=true)
+┌──────────┬───────────────┐
+│C_G(s)    │    u |C_G(su)|│
+├──────────┼───────────────┤
+│A₂₍₎=Φ₁²  │    1       Φ₁²│
+│A₂₍₎=Φ₁Φ₂ │    1      Φ₁Φ₂│
+│A₂₍₎=Φ₃   │    1        Φ₃│
+│A₂₍₁₎=A₁Φ₁│   11    qΦ₁²Φ₂│
+│          │    2       qΦ₁│
+│A₂        │  111 q³Φ₁²Φ₂Φ₃│
+│          │   21      q³Φ₁│
+│          │    3       3q²│
+│          │ 3_ζ₃       3q²│
+│          │3_ζ₃²       3q²│
+└──────────┴───────────────┘</code></pre><p>Here  we  have  displayed  information  on  unipotent  classes,  with their centralizer.</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t;nClasses=true)
 ClassTypes(A₂,good characteristic)
-    C_G(s)│       nClasses  |C_G(s)|
-──────────┼──────────────────────────
-A₂₍₎=.Φ₁² │(q²-5q+2q₃+4)/6       Φ₁²
-A₂₍₎=.Φ₁Φ₂│       (q²-q)/2      Φ₁Φ₂
-A₂₍₎=.Φ₃  │  (q²+q-q₃+1)/3        Φ₃
-A₂₍₁₎=A₁Φ₁│       (q-q₃-1)    qΦ₁²Φ₂
-A₂        │             q₃ q³Φ₁²Φ₂Φ₃</code></pre><p>Here  we have added information on how many semisimple conjugacy classes of <code>𝐆  ^F</code> have a given type. The  answer in general involves variables of the form <code>qₐ</code> which represent <code>gcd(q-1,a)</code>.</p><p>Finally an example in bad characteristic:</p><pre><code class="language-julia-rep1 hljs">julia&gt; t=ClassTypes(coxgroup(:G,2),2);xdisplay(t;nClasses=true)
+┌──────────┬─────────────────────────┐
+│C_G(s)    │       nClasses  |C_G(s)|│
+├──────────┼─────────────────────────┤
+│A₂₍₎=Φ₁²  │(q²-5q+2q₃+4)/6       Φ₁²│
+│A₂₍₎=Φ₁Φ₂ │       (q²-q)/2      Φ₁Φ₂│
+│A₂₍₎=Φ₃   │  (q²+q-q₃+1)/3        Φ₃│
+│A₂₍₁₎=A₁Φ₁│       (q-q₃-1)    qΦ₁²Φ₂│
+│A₂        │             q₃ q³Φ₁²Φ₂Φ₃│
+└──────────┴─────────────────────────┘</code></pre><p>Here  we have added information on how many semisimple conjugacy classes of <code>𝐆  ^F</code> have a given type. The  answer in general involves variables of the form <code>qₐ</code> which represent <code>gcd(q-1,a)</code>.</p><p>Finally an example in bad characteristic:</p><pre><code class="language-julia-rep1 hljs">julia&gt; t=ClassTypes(coxgroup(:G,2),2);xdisplay(t;nClasses=true)
 ClassTypes(G₂,char. 2)
-    C_G(s)│         nClasses     |C_G(s)|
-──────────┼───────────────────────────────
-G₂₍₎=.Φ₁² │(q²-8q+2q₃+10)/12          Φ₁²
-G₂₍₎=.Φ₁Φ₂│        (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=.Φ₁Φ₂│        (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=.Φ₆  │    (q²-q-q₃+1)/6           Φ₆
-G₂₍₎=.Φ₃  │    (q²+q-q₃+1)/6           Φ₃
-G₂₍₎=.Φ₂² │ (q²-4q+2q₃-2)/12          Φ₂²
-G₂₍₁₎=A₁Φ₂│       (q-q₃+1)/2       qΦ₁Φ₂²
-G₂₍₁₎=A₁Φ₁│       (q-q₃-1)/2       qΦ₁²Φ₂
-G₂₍₂₎=Ã₁Φ₂│              q/2       qΦ₁Φ₂²
-G₂₍₂₎=Ã₁Φ₁│          (q-2)/2       qΦ₁²Φ₂
-G₂        │                1 q⁶Φ₁²Φ₂²Φ₃Φ₆
-G₂₍₁₅₎=²A₂│         (q₃-1)/2    q³Φ₁Φ₂²Φ₆
-G₂₍₁₅₎=A₂ │         (q₃-1)/2    q³Φ₁²Φ₂Φ₃</code></pre><p>We  notice that if <code>q</code> is  a power of <code>2</code> such  that <code>q≡2 (mod 3)</code>, so that <code>q₃=1</code>,  some class types do not exist. We can see what happens by giving a specific value to <code>q₃</code>:</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t(;q_3=1);nClasses=true)
+ClassTypes(G₂,char. 2)
+┌──────────┬──────────────────────────────┐
+│C_G(s)    │         nClasses     |C_G(s)|│
+├──────────┼──────────────────────────────┤
+│G₂₍₎=Φ₁²  │(q²-8q+2q₃+10)/12          Φ₁²│
+│G₂₍₎=Φ₁Φ₂ │        (q²-2q)/4         Φ₁Φ₂│
+│G₂₍₎=Φ₁Φ₂ │        (q²-2q)/4         Φ₁Φ₂│
+│G₂₍₎=Φ₆   │    (q²-q-q₃+1)/6           Φ₆│
+│G₂₍₎=Φ₃   │    (q²+q-q₃+1)/6           Φ₃│
+│G₂₍₎=Φ₂²  │ (q²-4q+2q₃-2)/12          Φ₂²│
+│G₂₍₁₎=A₁Φ₁│       (q-q₃-1)/2       qΦ₁²Φ₂│
+│G₂₍₁₎=A₁Φ₂│       (q-q₃+1)/2       qΦ₁Φ₂²│
+│G₂₍₂₎=Ã₁Φ₁│          (q-2)/2       qΦ₁²Φ₂│
+│G₂₍₂₎=Ã₁Φ₂│              q/2       qΦ₁Φ₂²│
+│G₂        │                1 q⁶Φ₁²Φ₂²Φ₃Φ₆│
+│G₂₍₁₅₎=A₂ │         (q₃-1)/2    q³Φ₁²Φ₂Φ₃│
+│G₂₍₁₅₎=²A₂│         (q₃-1)/2    q³Φ₁Φ₂²Φ₆│
+└──────────┴──────────────────────────────┘</code></pre><p>We  notice that if <code>q</code> is  a power of <code>2</code> such  that <code>q≡2 (mod 3)</code>, so that <code>q₃=1</code>,  some class types do not exist. We can see what happens by giving a specific value to <code>q₃</code>:</p><pre><code class="language-julia-rep1 hljs">julia&gt; xdisplay(t(;q_3=1);nClasses=true)
 ClassTypes(G₂,char. 2) q₃=1
-    C_G(s)│     nClasses     |C_G(s)|
-──────────┼───────────────────────────
-G₂₍₎=Φ₁²  │(q²-8q+12)/12          Φ₁²
-G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂
-G₂₍₎=Φ₆   │     (q²-q)/6           Φ₆
-G₂₍₎=Φ₃   │     (q²+q)/6           Φ₃
-G₂₍₎=Φ₂²  │   (q²-4q)/12          Φ₂²
-G₂₍₁₎=A₁Φ₁│      (q-2)/2       qΦ₁²Φ₂
-G₂₍₁₎=A₁Φ₂│          q/2       qΦ₁Φ₂²
-G₂₍₂₎=Ã₁Φ₁│      (q-2)/2       qΦ₁²Φ₂
-G₂₍₂₎=Ã₁Φ₂│          q/2       qΦ₁Φ₂²
-G₂        │            1 q⁶Φ₁²Φ₂²Φ₃Φ₆</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/625fc32099bc8bfd0a001fe259e496293acb0412/src/Gt.jl#L122-L233">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="uch.html">« Unipotent characters</a><a class="docs-footer-nextpage" href="eigen.html">Eigenspaces »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 15 March 2024 01:00">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+┌──────────┬──────────────────────────┐
+│C_G(s)    │     nClasses     |C_G(s)|│
+├──────────┼──────────────────────────┤
+│G₂₍₎=Φ₁²  │(q²-8q+12)/12          Φ₁²│
+│G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂│
+│G₂₍₎=Φ₁Φ₂ │    (q²-2q)/4         Φ₁Φ₂│
+│G₂₍₎=Φ₆   │     (q²-q)/6           Φ₆│
+│G₂₍₎=Φ₃   │     (q²+q)/6           Φ₃│
+│G₂₍₎=Φ₂²  │   (q²-4q)/12          Φ₂²│
+│G₂₍₁₎=A₁Φ₁│      (q-2)/2       qΦ₁²Φ₂│
+│G₂₍₁₎=A₁Φ₂│          q/2       qΦ₁Φ₂²│
+│G₂₍₂₎=Ã₁Φ₁│      (q-2)/2       qΦ₁²Φ₂│
+│G₂₍₂₎=Ã₁Φ₂│          q/2       qΦ₁Φ₂²│
+│G₂        │            1 q⁶Φ₁²Φ₂²Φ₃Φ₆│
+└──────────┴──────────────────────────┘</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/jmichel7/Chevie.jl/blob/29765436fe22458f85d1c0bf8e55b0130784a075/src/Gt.jl#L122-L244">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="uch.html">« Unipotent characters</a><a class="docs-footer-nextpage" href="eigen.html">Eigenspaces »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 15 March 2024 18:01">Friday 15 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
