@@ -106,13 +106,13 @@ const sup=Dict(zip(supchars,
 const subchars  ="-0123456789,+()=aehijklmnoprstuvxβγρφχ."
 const sub=Dict(zip(subchars,
                  "₋₀₁₂₃₄₅₆₇₈₉‚₊₍₎₌ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ̣."))
-const TeXmacros=Dict("bbZ"=>"ℤ", "beta"=>"β", "chi"=>"χ", "delta"=>"δ",
+const TeXmacros=Dict("beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "Delta"=>"Δ","gamma"=>"γ", "iota"=>"ι", "lambda"=>"λ", "Lambda"=>"Λ",
   "nu"=>"ν", "otimes"=>"⊗ ", "par"=>"\n", "phi"=>"φ", "varphi"=>"φ", 
   "Phi"=>"Φ", "psi"=>"ψ", "rho"=>"ρ", "sigma"=>"σ", "theta"=>"θ", 
   "times"=>"×", "varepsilon"=>"ε", "wedge"=>"∧", "hfill"=>" ",
   "zeta"=>"ζ", "rtimes"=>"⋊ ","backslash"=>"\\","sqrt"=>"√",
-  "sum"=>"Σ", "cap"=>"∩", "mu"=>"μ")
+  "sum"=>"Σ", "cap"=>"∩", "mu"=>"μ", "dim"=>"dim")
 
 # defs below are necessary since constant folding is not good enough
 const r1=Regex("_[$subchars]")
@@ -133,7 +133,10 @@ function unicodeTeX(s::String)
   s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>
     t->stringexp(rio(),Rational(parse.(Int,split(t[9:end-2],"}{"))...)))
   s=replace(s,r"\\#"=>"#")
-  s=replace(s,r"\\mathfrak  *S"=>"\U1D516 ")
+  s=replace(s,r"\\mathfrak  *S"=>"𝔖 ")
+  s=replace(s,r"\\mathbb  *Z"=>"ℤ")
+  s=replace(s,r"\\cal  *B"=>"ℬ ")
+  s=replace(s,r"\\bf *([A-Z])"=>t->String([t[end]+0x1D400-0x41]))
   s=replace(s,r6=>t->prod(string(x,'\U0305') for x in t[11:end-1]))
   s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
   s=replace(s,r"\$"=>"")
@@ -207,6 +210,7 @@ function Base.show(io::IO,t::Table)
   if col_labels!=nothing col_labels=(strip.(col_labels)) end
   rows_label=strip(get(io,:rows_label,""))
   row_seps=get(io,:row_seps,col_labels!=nothing ? [0] : Int[])
+  col_seps=get(io,:col_seps,[0])
   column_repartition=get(io,:column_repartition,nothing)
   align=get(io,:align,'r')
   dotzero=get(io,:dotzero,false)
@@ -218,15 +222,21 @@ function Base.show(io::IO,t::Table)
     if !TeX col_labels=map(lpad,col_labels,cols_widths) end
   end
   labwidth=max(textwidth(rows_label),maximum(textwidth.(row_labels)))
-  if !TeX
-    rows_label=lpad(rows_label,labwidth)
-    row_labels=rpad.(row_labels,labwidth)
-  end
   function hline(ci;last=false,first=false)
     if TeX println(io,"\\hline")
-    else
-    print(io,"\u2500"^labwidth,first ? "\u252C" : last ? "\u2534" : "\u253C")
-    print(io,"\u2500"^sum(cols_widths[ci].+1),"\n")
+    else 
+      for i in vcat([0],ci)
+        print(io,"\u2500"^(i==0 ? labwidth : cols_widths[i]))
+        if i in col_seps
+          if i==ci[end] && ci[end] in col_seps
+               print(io,first ? "\u2510" : last ? "\u2518" : "\u2524")
+          else print(io,first ? "\u252C" : last ? "\u2534" : "\u253C")
+          end
+        else
+          print(io,"\u2500")
+        end
+      end
+      println(io)
     end
   end
   function cut(l,max) # cut Integer list l in parts of sum<max
@@ -256,7 +266,14 @@ function Base.show(io::IO,t::Table)
     if !isnothing(col_labels)
       if TeX
         println(io,rows_label,"&",join(col_labels[ci],"&"),"\\\\")
-      else println(io,rows_label,"\u2502",join(col_labels[ci]," "))
+      else 
+        for i in vcat([0],ci)
+          if i==0 print(io,rpad(rows_label,labwidth))
+          else print(io,col_labels[i])
+          end
+          print(io,i in col_seps ? "\u2502" : " ")
+        end
+        println(io)
       end
     end
     if 0 in row_seps hline(ci;first=isnothing(col_labels)) end
@@ -264,11 +281,15 @@ function Base.show(io::IO,t::Table)
       if TeX
         println(io,row_labels[l],"&",join(t[l,ci],"&"),"\\\\")
       else
-        println(io,row_labels[l],"\u2502",join(map(ci)do i
-       (align isa String ? alignf(align[i]) : alignf(align))(t[l,i],cols_widths[i])*" "
-      end))
+        for i in vcat([0],ci)
+          if i==0 print(io,rpad(row_labels[l],labwidth))
+          else print(io,alignf(align isa String ? align[i] : align)(t[l,i],cols_widths[i]))
+          end
+          print(io,i in col_seps ? "\u2502" : " ")
+        end
+        println(io)
       end
-      if l in row_seps hline(ci,last=l==size(t,1)) end
+      if l in row_seps hline(ci,last=l==rows[end]) end
     end
     if ci[end]!=length(cols_widths) print(io,"\n") end
     if TeX println(io,"\\end{array}\n\$\$") end

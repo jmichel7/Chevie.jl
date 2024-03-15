@@ -54,14 +54,14 @@ subvariety  of Borel subgroups  containing the unipotent  element `u`. Then
 can  be computed from  the Dynkin-Richardson diagram:  the dimension of the
 class of `u` is the number of roots `α` such that ``⟨σ,α⟩∉{0,1}``.
 
-We   describe  now  the  Springer  correspondence.  Indecomposable  locally
+We   now  describe  the  Springer  correspondence.  Indecomposable  locally
 constant  ``𝐆``-equivariant  sheaves  on  a  unipotent  class ``C``, called
 *local  systems*, are  parameterised by  irreducible characters of ``A(u)``
 for  `u∈ C`. The *ordinary* Springer  correspondence is a bijection between
 irreducible  characters of the Weyl  group and a large  subset of the local
-systems  which contains all  trivial local systems  (those parameterised by
-the  trivial character  of ``A(u)``  for each  ``u``). More  generally, the
-*generalized*  Springer correspondence  associates to  each local  system a
+systems  containing all trivial  local systems (those  parameterised by the
+trivial  character  of  ``A(u)``  for  each  ``u``).  More  generally,  the
+*generalised*  Springer correspondence  associates to  each local  system a
 (unique  up to ``𝐆``-conjugacy) *cuspidal pair* of a Levi subgroup ``𝐋`` of
 ``𝐆``  and a *cuspidal* local  system on an unipotent  class of ``𝐋``, such
 that  the  set  of  local  systems  associated  to a given cuspidal pair is
@@ -113,10 +113,11 @@ difficulty  in that the  ``Xᵪ`` must first  be multiplied by  some roots of
 unity  which are not known  in all cases (and  when known may depend on the
 congruence class of ``q`` modulo some small primes).
 
-Finally,  we  describe  how  unipotent  classes  of `𝐆` are parametrised in
+Finally,  we describe  how unipotent  classes of  `𝐆` are  parameterised in
 various   quasisimple  groups.   In  classical   types,  the   classes  are
 parametrised by partitions corresponding to the Jordan form in the standard
 representation. Thus,
+
   - for `Aₙ` we have partitions of `n+1`.
   - for  `B_n` we have partitions of `2n+1`  where even parts occur an even
     number  of times. In characteristic  2, types B and  C are isogenous so
@@ -159,23 +160,22 @@ UnipotentClasses(sl₄)
 1111│000   6 ...       A₃ Id:1111
 
 ```
-
-The  first column in the table gives the name of the unipotent class, which
-here  is  a  partition  describing  the  Jordan  form. The partial order on
-unipotent  classes given by Zariski closure  is given before the table. The
-column   `D-R`,   displayed   only   in   good  characteristic,  gives  the
+The first column of the table gives the name of the unipotent class, here a
+partition  describing  the  Jordan  form.  The  partial  order on unipotent
+classes  given by  Zariski closure  is given  before the  table. The column
+`D-R`,   which   is   only   shown   in   good  characteristic,  gives  the
 Dynkin-Richardson  diagram  for  each  class;  the  column  `dBu` gives the
 dimension  of the variety  ``ℬ ᵤ``. The  column `B-C` gives the Bala-Carter
-classification  of ``u``, that is in the  case of ``sl₄`` it displays ``u``
-as  a regular unipotent in a  Levi subgroup by giving the Dynkin-Richardson
-diagram  of a regular  unipotent (all 2's)  at entries corresponding to the
-Levi  and `.` at  entries which do  not correspond to  the Levi. The column
-`C(u)`  describes the group  ``C_𝐆(u)``: a power  ``qᵈ`` describes that the
-unipotent  radical of ``C_𝐆(u)`` has  dimension ``d`` (thus ``qᵈ`` rational
-points);  then follows a  description of the  reductive part of the neutral
-component  of ``C_𝐆(u)``,  given by  the name  of its  root datum.  Then if
-``C_𝐆(u)``  is not  connected, the  description of  ``A(u)`` is given using
-another  vocabulary: a  cyclic group  of order  4 is  given as  `Z4`, and a
+classification of ``u``, that is in the case of ``sl₄`` it shows ``u`` as a
+regular  unipotent  in  a  Levi  subgroup  by  giving the Dynkin-Richardson
+diagram  of a regular unipotent (all  2's) for the entries corresponding to
+the  Levi and `.` for the entries  which not corresponding to the Levi. The
+column `C(u)` describes the group ``C_𝐆(u)``: a power ``qᵈ`` describes that
+the  unipotent  radical  of  ``C_𝐆(u)``  has  dimension  ``d`` (thus ``qᵈ``
+rational  points); then follows a description  of the reductive part of the
+neutral  component of ``C_𝐆(u)``, given by the name of its root datum. Then
+if  ``C_𝐆(u)`` is not connected, the description of ``A(u)`` is given using
+a  different vocabulary: a cyclic group of order  4 is given as `Z4`, and a
 symmetric group on 3 points would be given as `S3`.
 
 For  instance, the first class `4`  has ``C_𝐆(u)^0`` unipotent of dimension
@@ -398,15 +398,17 @@ const UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 """
 `induced_linear_form(W, K, h)`
 
-This routine can be used to find the Richardson-Dynkin diagram of the class
-in  the algebraic  group `𝐆`  which contains  a given  unipotent class of a
-reductive subgroup of maximum rank `𝐒` of `𝐆`.
+This routine can be used to find the class in the algebraic group `𝐆` which
+contains  a given unipotent  class of a  reductive subgroup of maximum rank
+`𝐊` of `𝐆`.
 
-It  takes a linear  form on the  roots of `K`,  defined by its value on the
-simple  roots (these values  can define a  Dynkin-Richardson diagram); then
-extends  this linear form to  the roots of `𝐆`  by `0` on the orthogonal of
-the  roots of `K`; and finally conjugates  the resulting form by an element
-of the Weyl group so that it takes positive values on the simple roots.
+The  argument `h` is a linear form on  the roots of `𝐊`, given by its value
+on  the simple roots; this  linear form is extended  to the roots of `𝐆` by
+`0`  on the orthogonal of the roots  of `K`; and finally the resulting form
+is  conjugated by an  element of the  Weyl group so  that it takes positive
+values on the simple roots. If the initial form describes a
+Dynkin-Richardson   diagram   for   `𝐊`,   the   result   will  describe  a
+Dynkin-Richardson diagram for `𝐆`.
 
 ```julia-repl
 julia> W=coxgroup(:F,4)
@@ -424,23 +426,18 @@ julia> induced_linear_form(W,H,[2,2])
 
 julia> uc=UnipotentClasses(W);
 
-julia> uc.classes[4].prop
-Dict{Symbol, Any} with 8 entries:
-  :dynkin     => [0, 1, 0, 0]
-  :dimred     => 6
-  :red        => A₁×A₁
-  :Au         => .
-  :balacarter => [1, 3]
-  :rep        => [1, 3]
-  :dimunip    => 18
-  :AuAction   => A₁×A₁
+julia> uc.classes[4].dynkin
+4-element Vector{Int64}:
+ 0
+ 1
+ 0
+ 0
 
 julia> uc.classes[4]
 UnipotentClass(A₁+Ã₁)
 ```
-
 The  example above shows that the class containing the regular class of the
-Levi subgroup of type `A₁× Ã₁` is the class |A1+~A1|.
+Levi subgroup of type `A₁×Ã₁` is the class `A₁+Ã₁`.
 """
 function induced_linear_form(W,K,h)
   if semisimplerank(K)==0 return fill(0,semisimplerank(W)) end
@@ -1050,16 +1047,10 @@ function Base.show(io::IO,::MIME"text/plain",uc::UnipotentClasses)
     res
   end
   col_labels= String[]
-  if iszero(uc.p)
-   push!(col_labels,TeX ? "\\mbox{D-R}" : "D-R")
-  end
-    push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dBu")
-  if get(io,:balaCarter,true)
-     push!(col_labels, TeX ? "\\mbox{B-C}" : "B-C")
-  end
-  if get(io,:centralizer,true)
-     push!(col_labels, TeX ? "C_{\\bf G}(u)" : "C(u)")
-  end
+  if iszero(uc.p) push!(col_labels,"\\mbox{D-R}") end
+  push!(col_labels, TeX ? "\\dim{\\cal B}_u" : "dℬ ᵤ")
+  if get(io,:balaCarter,true) push!(col_labels, "\\mbox{B-C}") end
+  if get(io,:centralizer,true) push!(col_labels, "C_{\\bf G}(u)") end
   if get(io,:springer,true)
     append!(col_labels,
       map(function (ss,)

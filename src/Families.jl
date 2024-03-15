@@ -336,7 +336,7 @@ chevieset(:families,Symbol("C'1"),
 
 chevieset(:families,:C2,
   Family(Dict(:group=>"C2", :name=>"C_2",
-  :explanation=>"Drinfeld double D(\\bbZ/2)",
+  :explanation=>"Drinfeld double \$D(\\mathbb Z/2)\$",
   :charLabels=>["(1,1)", "(g_2,1)", "(1,\\varepsilon)", "(g_2,\\varepsilon)"],
   :fourierMat=>1//2*[1 1 1 1;1 1 -1 -1;1 -1 1 -1;1 -1 -1 1],
   :eigenvalues=>[1,1,1,-1],
@@ -385,7 +385,7 @@ chevieset(:families,:S3,
 
 chevieset(:families,:X,function(p)
     ss=combinations(0:p-1,2)
-    Family(Dict(:name=>"R_{\\bbZ/$p}^{\\wedge 2}",
+    Family(Dict(:name=>"R_{\\mathbb Z/$p}^{\\wedge 2}",
          :explanation=>"DoubleTaft($p)",
          :charSymbols=>ss,
          :charLabels=>map(s->xrepr(E(p,s[1]),TeX=true)*
@@ -425,7 +425,7 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   end
   g.eigenvalues=diag(exterior_power(cat(g.eigenvalues...;dims=(1,2)),n))
   g.fourierMat=exterior_power([E(e,i*j) for i in 0:e-1, j in 0:e-1]//root(e),n)
-  g.name="R(\\bbZ/$e)"
+  g.name="R(\\mathbb Z/$e)"
   g.explanation="character ring of Z/$e"
   if n>1 g.name*="^{\\wedge $n}"
     g.explanation=ordinal(n)*" exterior power "*g.explanation
