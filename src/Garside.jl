@@ -1619,9 +1619,13 @@ function Base.show(io::IO,C::Category)
   if get(io,:graph,false) println(io);showgraph(io,C) end
 end
 
-# constructs a category from an initial object o and a function
-# atomsfrom which given object o returns atoms from o as "maps" m such
-# that the target object is action(o,m)
+"""
+`Category(atomsfrom::Function,o;action::Function=^)`
+
+constructs   a  category  from  an  initial   object  `o`  and  a  function
+`atomsfrom(o)`  which given object `o` returns atoms from `o` as "maps" `m`
+such that the target object is `action(o,m)`
+"""
 function Category(atomsfrom::Function,o;action::Function=^)
   TM=eltype(atomsfrom(o))
   C=Category([o],[Pair{TM,Int}[]])
@@ -1910,21 +1914,21 @@ julia> w=BraidMonoid(W)(4,3,3,2,1)
 julia> C=conjcat(w)
 category with 2 objects and 4 generating maps
 
-julia> C.obj
+julia> C.obj # the (sliding circuits) summit set
 2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  21324
 ```
 
 ```julia-rep1
-julia> xprint(C;graph=true)
+julia> xprint(C;graph=true)   # show the conjugations among the summit set
 category with 2 objects and 4 generating maps
      32143      21343      21324      13214
 32143────→ 32143────→ 21324────→ 21324────→ 32143
 ```
 
 ```julia-repl
-julia> conjcat(w;ss=Val(:ss)).obj
+julia> conjcat(w;ss=Val(:ss)).obj # the super summit set
 4-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
  32143
  13243

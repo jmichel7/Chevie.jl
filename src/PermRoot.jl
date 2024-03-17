@@ -855,13 +855,13 @@ function fixCartan(H,C,p)
     for j in i:-1:1
       if CH[i,j]!=C[i,j]
         if CH[i,j]==0 || (j in seen) return nothing end
-          r=C[i,j]//CH[i,j]
-          r=findfirst(==(roots(H,p[j])*r),roots(H))
-          if r===nothing return nothing end
-          p=copy(p)
-          p[j]=r
-          return fixCartan(H,C,p)
-        end
+        r=C[i,j]//CH[i,j]
+        r=findfirst(==(roots(H,p[j])*r),roots(H))
+        if r===nothing return nothing end
+        p=copy(p)
+        p[j]=r
+        return fixCartan(H,C,p)
+      end
       if C[i,j]!=0 push!(seen,j) end
     end
   end
@@ -921,15 +921,14 @@ end
 
 function refltype(W::PermRootGroup)
   get!(W,:refltype)do
+    if isempty(gens(W)) return TypeIrred[] end
     map(diagblocks(cartan(W))) do I
       R=I==eachindex(gens(W)) ? W : reflection_subgroup(W,I;NC=true)
       CR=cartan(R)
       d=TypeIrred(type_irred(R))
       C=cartan(d)
       if C==CR indices=I
-        if d.series!=:ST
-          d=TypeIrred(Weyl.type_fincox_cartan(CR))
-        end
+        if d.series!=:ST d=Weyl.type_fincox_cartan(CR) end
       else
         good=findgoodcartan(R,eachindex(gens(R)),C)
         if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end
@@ -942,9 +941,7 @@ function refltype(W::PermRootGroup)
               if !isnothing(better) good=better[1] end
             end
           end
-          if d.series!=:ST
-            d=TypeIrred(Weyl.type_fincox_cartan(cartan(R,good)))
-          end
+          if d.series!=:ST d=Weyl.type_fincox_cartan(cartan(R,good)) end
         end
         indices=inclusion(R,W,good)
       end
@@ -1083,9 +1080,9 @@ reflection_eigenvalues(W,i)=refleigen(W)[i] # not faster this way...
 This  function returns the  number of eigenvalues  of `w` in the reflection
 representation  which are not equal to 1.  For a finite Coxeter group, this
 is  equal to the  reflection length of  `w`, that is  the minimum number of
-reflections  of which  `w` is  a product.  This also  holds in general in a
-well-generated  complex reflection group  if `w` divides  a Coxeter element
-for the reflection length.
+reflections  of which `w`  is a product.  This also holds  in general for a
+well-generated  complex reflection group if  `w` divides for the reflection
+length a Coxeter element.
 
 ```julia-repl
 julia> W=coxgroup(:A,4)

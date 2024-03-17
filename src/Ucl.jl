@@ -480,11 +480,10 @@ julia> distinguished_parabolics(W)
 """
 function distinguished_parabolics(W)
   filter(combinations(eachindex(gens(W)))) do J
-    if isempty(J) return true end
-    p=fill(1,semisimplerank(W))
-    p[J]=fill(0,length(J))
-    p=toM(W.rootdec[1:W.N])*p
-    2*count(iszero,p)+semisimplerank(W)==count(isone,p)
+    p=fill(1,ngens(W))
+    p[J].=0
+    p=dot.(view(W.rootdec,1:nref(W)),Ref(p))
+    2*count(iszero,p)+ngens(W)==count(isone,p)
   end
 end
 

@@ -660,7 +660,7 @@ inversions(W::CoxeterGroup,w)=filter(x->isleftdescent(W,w,x),1:nref(W))
 # assumes isleftdescent works for all reflections
 
 function parabolic_category(W,I::AbstractVector{<:Integer})
-   Category(collect(sort(I));action=(J,e)->sort(action.(Ref(W),J,e)))do J
+   Category(sort(I);action=(J,e)->sort!(action.(Ref(W),J,e)))do J
     map(setdiff(1:ngens(W),J)) do i
       longest(W,J)*longest(W,push!(copy(J),i))
     end
@@ -689,14 +689,14 @@ standard_parabolic_class(W,I::Vector{Int})=parabolic_category(W,I).obj
 
 # representatives of parabolic classes
 function PermRoot.parabolic_reps(W::CoxeterGroup,s)
-  l=collect(combinations(1:ngens(W),s))
-  orbits=[]
+  l=combinations(1:ngens(W),s)
+  res=Vector{Int}[]
   while !isempty(l)
-    o=standard_parabolic_class(W,l[1])
-    push!(orbits,o)
+    o=standard_parabolic_class(W,first(l))
+    push!(res,first(o))
     l=setdiff(l,o)
   end
-  first.(orbits)
+  res
 end
 
 """

@@ -396,61 +396,60 @@ two_tree=function(m::AbstractMatrix)
   (line[p],sort([line[p-1:-1:1],line[p+1:l],line[l+1:r]], by=length)...)
 end
 
-" (series,rank,indices,cartantype,bond) for an irreducible Cartan matrix"
+" TypeIrred or nothing for an irreducible Cartan matrix"
 function type_fincox_cartan(m::AbstractMatrix)
   rank=size(m,1)
+  if !all(==(2),diag(m)) return nothing end
   s=two_tree(m)
   if isnothing(s) return nothing end
-  t=Dict{Symbol,Any}(:rank=>rank)
+  t=TypeIrred(Dict{Symbol,Any}(:rank=>rank))
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
-    if length(b2)==1 t[:series]=:D
-      t[:indices]=[b1;b2;vertex;b3]::Vector{Int}
-    else t[:series]=:E
-      t[:indices]=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
+    if length(b2)==1 t.series=:D
+      t.indices=[b1;b2;vertex;b3]::Vector{Int}
+    else t.series=:E
+      t.indices=[b2[2];b1[1];b2[1];vertex;b3]::Vector{Int}
     end
   else  # types A,B,C,F,G,H,I
     l=i->m[s[i],s[i+1]]
     r=i->m[s[i+1],s[i]]
-    function rev() s=s[end:-1:1] end
-    if rank==1 t[:series]=:A
+    if rank==1 t.series=:A
     elseif rank==2
-#     println("l(1)=",l(1)," r(1)=",r(1))
-      if l(1)*r(1)==1 t[:series]=:A
-      elseif l(1)*r(1)==2 t[:series]=:B
-        if l(1)==-1 rev() end # B2 preferred to C2
-        t[:cartanType]=-l(1)
-      elseif l(1)*r(1)==3 t[:series]=:G
-        if r(1)==-1 rev() end
-        t[:cartanType]=-l(1)
-      else n=conductor(l(1)*r(1))
-        if r(1)==-1 rev() end
-        if l(1)*r(1)==2+E(n)+E(n,-1) bond=n else bond=2n end
-        t[:series]=:I
-        if bond%2==0 t[:cartanType]=-l(1) end
-        t[:bond]=bond
+      bond=l(1)*r(1)
+      if bond==1 t.series=:A
+      elseif bond==2 t.series=:B
+        if l(1)==-1 reverse!(s) end # B2 preferred to C2
+        t.cartanType=-l(1)
+      elseif bond==3 t.series=:G
+        if r(1)==-1 reverse!(s) end
+        t.cartanType=-l(1)
+      else n=conductor(bond)
+        if r(1)==-1 reverse!(s) end
+        if bond==2+E(n)+E(n,-1) bond=n else bond=2n end
+        t.series=:I
+        if bond%2==0 t.cartanType=-l(1) end
+        t.bond=bond
       end
     else
-      if l(rank-1)*r(rank-1)!=1 rev() end
+      if l(rank-1)*r(rank-1)!=1 reverse!(s) end
       if l(1)*r(1)==1
-        if l(2)*r(2)==1 t[:series]=:A
-        else t[:series]=:F
-          if r(2)==-1 rev() end
-          t[:cartanType]=-l(2)
+        if l(2)*r(2)==1 t.series=:A
+        else t.series=:F
+          if r(2)==-1 reverse!(s) end
+          t.cartanType=-l(2)
         end
       else n=conductor(l(1)*r(1))
-        if n==5 t[:series]=:H
-        else t[:series]=:B
-          t[:cartanType]=-l(1)
+        if n==5 t.series=:H
+        else t.series=:B
+          t.cartanType=-l(1)
         end
       end
     end
-    t[:indices]=s::Vector{Int}
+    t.indices=s::Vector{Int}
   end
 # println("t=$t")
-# println("indices=",t[:indices]," cartan=",cartan(t)," m=$m")
-  if cartan(t)!=m[t[:indices],t[:indices]] return nothing end  # countercheck
-  t
+# println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
+  if cartan(t)==m[t.indices,t.indices] return t end  # countercheck
 end
 
 """
@@ -462,8 +461,8 @@ function type_cartan(m::AbstractMatrix)
   map(diagblocks(m)) do I
     t=type_fincox_cartan(m[I,I])
     if isnothing(t) return nothing end
-    t[:indices]=I[t[:indices]]
-    TypeIrred(t)
+    t[:indices].=I[t[:indices]]
+    t
   end
 end
 
@@ -607,7 +606,7 @@ function standard_parabolic(W::FC,I::AbstractVector{<:Integer})
   if isempty(I) return Perm() end
   b=W.rootdec[I]
   heads=map(x->findfirst(!iszero,x),toL(rowspace(toM(b))))
-  b=vcat(W.rootdec[setdiff(1:semisimplerank(W),heads)],b)
+  b=vcat(W.rootdec[setdiff(1:ngens(W),heads)],b)
   # complete basis of <roots(W,I)> with part of S to make basis
   l=map(eachrow(toM(W.rootdec[1:W.N])*inv(toM(b).*1//1)))do v
    for x in v
@@ -848,16 +847,14 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   C=cr*transpose(rr) # Cartan matrix
   rootdec=roots(C) # difference with PermRootGroup is order of roots here
   N=length(rootdec)
-  if isempty(rr) G=PRG(size(rr,2))
+  if isempty(rr) G=PRG(size(rr,2)) # a torus
   else
   r=Ref(transpose(rr)).*rootdec
   r=vcat(r,-r)
   rootdec=vcat(rootdec,-rootdec)
   mats=map(reflectionMatrix,eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
-  pr=sortPerm(r)
-  gens=map(M->sortPerm(Ref(transpose(M)).*r)\pr,mats)
-  rank=size(C,1)
+  gens=map(M->sortPerm(Ref(transpose(M)).*r),mats).\sortPerm(r)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)
   G=PRG(gens,one(gens[1]),mats,r,coroots,
