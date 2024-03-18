@@ -632,7 +632,21 @@ function cartan(W::PermRootGroup{T,T1})where {T,T1}
   end
 end
 
-cartan(t::TypeIrred)=improve_type(toM(getchev(t,:CartanMat)))
+function cartan(t::TypeIrred)
+  if t.series==:ST return improve_type(toM(getchev(t,:CartanMat))) end
+  C=cartan(t.series,rank(t),haskey(t,:bond) ? t.bond : 0)
+  if haskey(t,:cartanType) ct=t.cartanType
+    T=promote_type(typeof(ct),eltype(C))
+    if T!=eltype(C) C=convert.(T,C) end
+    if     t.series==:B C[1,2]=-ct;C[2,1]=-2//ct
+    elseif t.series==:G C[1,2]=-ct;C[2,1]=-3//ct
+    elseif t.series==:F C[2,3]=-ct;C[3,2]=-2//ct
+    elseif t.series==:I C[1,2]=-ct;C[2,1]=(-2-E(t.bond)-E(t.bond,-1))/ct
+    end
+  end
+  improve_type(C)
+end
+
 cartan(W::PermRootGroup,I)=[cartan(W,i,j) for i in I, j in I]
 
 """

@@ -327,20 +327,6 @@ function PermRoot.cartan(t::Symbol,r::Integer,b::Integer=0)
   end
 end
 
-function PermRoot.cartan(t::Dict{Symbol,Any})
-  C=cartan(t[:series],length(t[:indices]),haskey(t,:bond) ? t[:bond] : 0)
-  if haskey(t,:cartanType) ct=t[:cartanType]
-    T=promote_type(typeof(ct),eltype(C))
-    if T!=eltype(C) C=convert.(T,C) end
-    if     t[:series]==:B C[1,2]=-ct;C[2,1]=-2//ct
-    elseif t[:series]==:G C[1,2]=-ct;C[2,1]=-3//ct
-    elseif t[:series]==:F C[2,3]=-ct;C[3,2]=-2//ct
-    elseif t[:series]==:I C[1,2]=-ct;C[2,1]=(-2-E(t[:bond])-E(t[:bond],-1))/ct
-    end
-  end
-  improve_type(C)
-end
-
 """
 `coxeter_matrix(type, rank [,bond])` or `coxmat`
 
