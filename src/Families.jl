@@ -178,6 +178,8 @@ function fourier(f::Family;lusztig=true)
   m
 end
 
+Chars.charnumbers(f::Family)=Chars.charnumbers(f.prop)
+
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
 
 function Base.merge!(f::Family,d::Dict)

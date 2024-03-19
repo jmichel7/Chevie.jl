@@ -196,7 +196,8 @@ is  in `W`),  `deg γ(zq)`  is equal  to `±deg  γ'(q)` for another unipotent
 character  `γ'`; `±γ'` is called the  Ennola transform of `γ`. The function
 returns  the  permutation-with-signs  done  by  `ennola`  on  the unipotent
 degrees (as a permutation-with signs of
-`1:length(UnipotentCharacters(W))`). The argument `W` must be irreducible.
+`1:length(UnipotentCharacters(W))`). It is currently implemented only for
+irreducible `W`.
 
 The  permutation-with-signs is not uniquely determined by the degrees since
 two  of them may  be equal, but  is uniquely determined  by some additional
@@ -210,7 +211,6 @@ julia> dSeries.ennola(complex_reflection_group(14))
 SPerm{Int64}: (2,43,-14,16,41,34)(3,35,40,18,-11,42)(4,-37,25,-17,-26,-36)(5,-6,-79)(7,-7)(8,-74)(9,-73)(10,-52,13,31,-50,29)(12,53,15,32,-51,-30)(19,71,70,21,67,68,20,69,72)(22,-39,27,-33,-28,-38)(23,24,-66,-23,-24,66)(44,46,49,-44,-46,-49)(45,48,47,-45,-48,-47)(54,-63,-55,-57,62,-56)(58,-65,-59,-61,64,-60)(75,-77)(76,-76)(78,-78)
 
 ```
-
 The  last example  shows that  it may  happen that  the order of `z`-Ennola
 (here 18) is greater than the order of `z` (here 6); this is related to the
 presence  of irrationalities in  the character table  of the spetsial Hecke
@@ -224,9 +224,19 @@ function ennola(t::TypeIrred)
 end
 
 function ennola(W)
-  t=refltype(W)
-  if length(t)>1 error(W," should be irreducible") end
-  ennola(t[1])
+  get!(W,:ennola)do
+    t=refltype(W)
+    if isempty(t) return SPerm() end
+    if length(t)>1 error(W,": only implemented for irreducible groups") end
+    ennola(t[1])
+  end
+end
+
+function ennola(W,xi)
+  z=gcd(degrees(W))
+  if !isone(xi^z) error(xi,"^$z!=1") end
+  o=Int(Root1(xi).r*z)
+  ennola(W)^o
 end
 
 # s is a vector of tuples. Return a vector of vectors E_1,...,E_n such that

@@ -7,7 +7,8 @@ using Chairmarks
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
 
 #julia> @b test_w0(6)
-#1.10.2 13.557 ms (182390 allocs: 12.982 MiB)
+#1.10.2  13.557 ms (182390 allocs: 12.982 MiB)
+#1.11.α2 11.671 ms (237323 allocs: 13.295 MiB)
 function test_w0(n)
   W=coxsym(n+1)
   Tbasis(hecke(W,Pol()))(longest(W))^2
@@ -20,7 +21,8 @@ end;
 """
 
 #julia> @b CyclotomicNumbers.testmat(9)^2 seconds=2
-#1.10.2 44.561 ms (286780 allocs: 49.168 MiB)
+#1.10.2  44.561 ms (286780 allocs: 49.168 MiB)
+#1.11.α2 34.639 ms (349995 allocs: 48.217 MiB)
 #
 #testmat(9)^2 in GAP3 85ms in GAP4 60ms
 """
@@ -30,15 +32,18 @@ end;
 """
 
 #julia> @b collect(symmetric_group(10)) seconds=4
-#1.10.2 267.295 ms (4043780 allocs: 336.001 MiB)
+#1.10.2  267.295 ms (4043780 allocs: 336.001 MiB)
+#1.11.α2 189.171 ms (8083258 allocs: 335.999 MiB)
 #Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.56s
 
 #julia> @b elements(coxgroup(:E,6))
-#1.10.2 4.282 ms (61016 allocs: 12.435 MiB)
+#1.10.2  4.282 ms (61016 allocs: 12.435 MiB)
+#1.11.α2 3.473 ms (118243 allocs: 13.182 MiB)
 #Elements(CoxeterGroup("E",6));; #GAP3 15.5ms
 
 #julia> @b test_kl(coxgroup(:A,4))
-#1.10.2 6.281 ms (155259 allocs: 9.243 MiB)
+#1.10.2  6.281 ms (155259 allocs: 9.243 MiB)
+#1.11.α2 5.558 ms (205790 allocs: 8.980 MiB)
 function test_kl(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -55,7 +60,8 @@ end;
 """
 
 #julia> @b test_kl1(coxgroup(:A,4))
-#1.10.2 24.752 ms (403416 allocs: 43.278 MiB)
+#1.10.2  24.752 ms (403416 allocs: 43.278 MiB)
+#1.11.α2 22.338 ms (702082 allocs: 42.648 MiB)
 function test_kl1(W)
   q=Pol([1],1)
   H=hecke(W,q^2,rootpara=q)
@@ -71,7 +77,8 @@ end;
 """
 
 #julia> @b test_kl2(coxgroup(:A,4))
-#1.10.0 4.753 ms (87989 allocs: 7.199 MiB)
+#1.10.0  4.753 ms (87989 allocs: 7.199 MiB)
+#1.11.α2 3.689 ms (164592 allocs: 6.844 MiB)
 function test_kl2(W)
   el=elements(W)
   maximum(degree(KLPol(W,x,y)) for x in el, y in el)
@@ -93,6 +100,7 @@ end;
 #1.8.5 248.055 μs (6433 allocations: 502.81 KiB)
 #1.9.0 250.546 μs (6254 allocations: 517.97 KiB)
 #1.10.2 283.471 μs (6200 allocs: 517.859 KiB)
+#1.11.α2 230.321 μs (10200 allocs: 576.328 KiB)
 function test_b(W)
   B=BraidMonoid(W)
   b=B(-4,-3,-2,-15,-14,-13,-10,-11,-12,-7,-2,-12,-11,-10,-7,-8,-9,-6,-7,-8,-2,
@@ -112,7 +120,8 @@ end;
 
 # for r>13 needs BigInt
 #julia> @b test_hm(BigInt,35) seconds=1
-#1.10.2 44.782 ms (1795662 allocs: 57.618 MiB)
+#1.10.2  44.782 ms (1795662 allocs: 57.618 MiB)
+#1.11.α2 48.393 ms (1795664 allocs: 57.618 MiB)
 function test_hm(rtype,rank)
   m=[rtype(1)//(n+m) for n in 1:rank, m in 1:rank]
   one(m)==m*inv(m)
@@ -126,7 +135,8 @@ end;
 """
 
 #julia> @b PuiseuxPolynomials.fateman(7)
-#1.10.2 16.581 ms (112808 allocs: 29.657 MiB)
+#1.10.2  16.581 ms (112808 allocs: 29.657 MiB)
+#1.11.α2 16.026 ms (225638 allocs: 29.637 MiB)
 # GAP3: fateman(7) takes 722ms
 """
 fateman:=function(n)local p;
@@ -142,6 +152,7 @@ end;
 #1.8   23.273 μs (621 allocations: 43.44 KiB)
 #1.9.3 25.877 μs (662 allocations: 46.00 KiB)
 #1.10.2 19.351 μs (429 allocs: 28.969 KiB)
+#1.11.α2 15.460 μs (819 allocs: 29.016 KiB)
 
 # @b ((x,y)=Mvp.(:x,:y);inv(Frac.([x+y x-y;x+1 y+1])))
 #1.6.3 187.233 μs (3941 allocations: 291.50 KiB)
@@ -149,19 +160,25 @@ end;
 #1.8.5 137.125 μs (3102 allocations: 216.19 KiB)
 #1.9.0 128.179 μs (2937 allocations: 210.86 KiB)
 #1.10.2 161.356 μs (3631 allocs: 243.984 KiB)
+#1.11.α2 122.602 μs (4994 allocs: 223.609 KiB)
 # GAP3 invert Mvp matrix 3.9ms
 # [[x+y,x-y],[x+1,y+1]]^-1;
 
 #@b CycPols.p(Pol()) #GAP3 1.25 ms
 #1.8.5   254.158 μs (5626 allocations: 416.19 KiB)
-##1.10.2 272.889 μs (5241 allocs: 394.234 KiB)
+#1.10.2  272.889 μs (5241 allocs: 394.234 KiB)
+#1.11.α2 224.240 μs (7381 allocs: 379.156 KiB)
+
 #@b CycPols.p(1) #GAP3 142μs
 #1.8.5   5.140 μs (101 allocations: 19.88 KiB)
-##1.10.2 6.535 μs (101.75 allocs: 21.156 KiB)
+#1.10.2  6.535 μs (101.75 allocs: 21.156 KiB)
+#1.11.α2 5.819 μs (151 allocs: 21.012 KiB)
 u=CycPols.p(Pol());
 #@b u _(1) #GAP3 40μs
-#1.8.5  24.669 μs (553 allocations: 41.91 KiB)
-#1.10.2 28.299 μs (553 allocs: 41.906 KiB)
+#1.8.5   24.669 μs (553 allocations: 41.91 KiB)
+#1.10.2  28.299 μs (553 allocs: 41.906 KiB)
+#1.11.α2 23.535 μs (828 allocs: 41.375 KiB)
 #@b u CycPol(_) #GAP3 8.2ms
 #1.8.5   4.749 ms (92895 allocations: 7.35 MiB)
-##1.10.2 5.084 ms (87045 allocs: 6.861 MiB)
+#1.10.2  5.084 ms (87045 allocs: 6.861 MiB)
+#1.11.α2 4.049 ms (114941 allocs: 6.531 MiB)

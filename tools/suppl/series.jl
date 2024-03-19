@@ -74,7 +74,7 @@ function PrincipalSeries(W, d)
 end
 
 function CheckMaximalPairs(W)
-  res=map(d->PrincipalSeries(W, d), EigenspaceNumbers(W))
+  res=map(d->PrincipalSeries(W, d), eigenorders(W))
   for s in res
     e=elements(s.levi)
     any(function(x)
@@ -231,11 +231,12 @@ function cent(W)
   for x in sort(res) xprintln(x[1]," ",x[2]) end
 end
 
-function EigenspaceNumbers(W)
+# possible orders of eigenvalues of w∈ W in reflrep
+function eigenorders(W)
   d=degrees(W)
   if W isa Spets 
     e=map(p->lcm(p[1],conductor(Root1(p[2]))),d)
-    e=sort(union(divisors.(e)))
+    e=sort(union(divisors.(union(e...))...))
     filter(x->any(p->E(x,p[1])==p[2],d),e)
   else sort(union(divisors.(d)...))
   end
@@ -245,7 +246,7 @@ end
 # !isempty(relative_degrees(W,kd)), alors
 # length(relative_degrees(W,d))=length(relative_wegrees(W,kd))*Phi(kd)/Phi(d)
 function nrconjecture(W)
-  e=setdiff(EigenspaceNumbers(W), regular_eigenvalues(W))
+  e=setdiff(eigenorders(W), regular_eigenvalues(W))
   e=filter(x->!(x[1] in r),e)
   for d in e
     f = filter(x->mod(x,d)==0,r)

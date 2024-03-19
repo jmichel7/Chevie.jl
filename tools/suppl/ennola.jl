@@ -16,37 +16,46 @@
 # Frob(Ennola_xi(U))/Frob(U)=omegachi(E(z))^-xi E(z^2)^(xi^2*(a+A))E_λ^xi
 
 
-struct Ennola
-  prop::Dict{Symbol,Any}
+@GapObj struct Ennola
 end
 
-Base.getindex(f::Ennola,k)=f.prop[k]
-#Base.haskey(f::Ennola,k)=haskey(f.prop,k)
-Base.setindex!(f::Ennola,v,k)=setindex!(f.prop,v,k)
+# positions-with-sign in l where o or -o appears
+positionssgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
+
+# EnnolaBete[i]: possible action of ξ-Ennola on i-th family
+# list of possible destinations for each char, taking just degree in account
+function EnnolaBete(W,i,j)
+  uc=UnipotentCharacters(W)
+  fd=fakedegrees(uc)
+  f=uc.families[i]
+  m=fourier(f)
+  ud=CycPol.(m'*fd[f.charNumbers])
+  ξ=E(gcd(degrees(W)),-j)
+  map(p->positionssgn(ud,subs(p,Pol([ξ],1))),ud)
+end
 
 function Ennola(W)
   uc=UnipotentCharacters(W)
   e=Ennola(Dict{Symbol,Any}(:W =>W))
-  e[:scalars]=Vector{Vector{Cyc{Int}}}(undef,length(uc.harishChandra))
-  e[:scalars][1]=[1]
-  e[:z]=ordercenter(W)
-  e[:families]=map(i->Dict{Symbol,Any}(:poss=>map(j->EnnolaBE(W,i,j),
-                                          1:e[:z]-1)),1:length(uc.families))
-  e[:hc]=map(n->findfirst(h->n in h[:charNumbers],uc.harishChandra),1:length(uc))
+  e.scalars=Vector{Vector{Cyc{Int}}}(undef,length(uc.harishChandra))
+  e.scalars[1]=[1]
+  e.z=gcd(degrees(W))
+  e.families=map(i->(poss=map(j->EnnolaBete(W,i,j),1:e.z-1),),1:length(uc.families))
+  e.hc=map(n->findfirst(h->n in h[:charNumbers],uc.harishChandra),1:length(uc))
   e
 end
 
-#function Base.show(io::IO,e::Ennola)
-#  println(io,"Ennola scalars for cuspidals of ",e[:W])
-#  rowlab=map(h->fromTeX(io,h[:cuspidalName]),
-#                    UnipotentCharacters(e[:W]).harishChandra)
-#  format(io,map(x->[x],e[:scalars]),rows_label="Name",row_labels=rowlab,
-#        col_labels=[1//e[:z]])
-#end
+function Base.show(io::IO,e::Ennola)
+  println(io,"Ennola scalars for cuspidals of ",e.W)
+  rowlab=map(h->fromTeX(io,h[:cuspidalName]),
+                    UnipotentCharacters(e.W).harishChandra)
+  showtable(io,reshape(e.scalars,length(rowlab),1),rows_label="Name",row_labels=rowlab,
+        col_labels=[1//e.z])
+end
 
 # Ennola for i-th family as an Ls
 function PossToLs(e::Ennola, i, xi)
-  r=deepcopy(e[:families][i][:poss][xi])
+  r=deepcopy(e.families[i].poss[xi])
   if prod(length,r)>1000000 return end
   function gg(l, poss)
     local x, res
@@ -63,9 +72,20 @@ function PossToLs(e::Ennola, i, xi)
   return gg(Int[], r)
 end
 
+# List of ω_χ(ξ) for character sheaves (ρ,χ)
+function OmegaChi(uc)
+  fd=fill(Pol(0),length(uc))
+  for h in uc.harishChandra
+   fd[charnumbers(h)]=
+    fakedegrees(reflection_group(Uch.maketype.(h[:relativeType])), Pol())
+  end
+  ξ=E(gcd(degrees(Group(uc.spets))),-1)
+  map(f->f(ξ)//f(1),fd)
+end
+
 # if Ennola_xi(U_i)=U_j returns deduced En(λ)^xi for cuspidal of U_i
 function EigenEnnola(W, i, j, xi)
-  z = ordercenter(W)
+ z = gcd(degrees(W))
   uw = UnipotentCharacters(W)
   (OmegaChi(uw)[i]^-xi*E(z^2,xi^2*(uw.prop[:a][i]+uw.prop[:A][i]))*eigen(uw)[i])//eigen(uw)[j]
 end
@@ -79,34 +99,35 @@ end
 
 # in e set xi-ennola scalar of cuspidal corresp. to charno to be in scal
 function SetScal(e::Ennola, scal, charno, xi)
-  k=e[:hc][charno]
-  if xi==1 && !isassigned(e[:scalars],k) e[:scalars][k] = scal
+  k=e.hc[charno]
+  if xi==1 && !isassigned(e.scalars,k)
+    e.scalars[k]=scal
   else
-    n=filter(x->x^xi in scal,e[:scalars][k])
-    if e[:scalars][k]!=n
-      InfoChevie("\n   # ",xi,"-Ennola scalars[",k,"] ",e[:scalars][k],"->",n)
+    n=filter(x->x^xi in scal,e.scalars[k])
+    if e.scalars[k]!=n
+      InfoChevie("\n   # ",xi,"-Ennola scalars[",k,"] ",e.scalars[k],"->",n)
     end
-    e[:scalars][k] = n
+    e.scalars[k] = n
   end
 end
 
 function GetScal(e::Ennola, charno, xi)
-  unique(sort(map(x->x^xi,e[:scalars][e[:hc][charno]])))
+  unique(sort(map(x->x^xi,e.scalars[e.hc[charno]])))
 end
 
 # restrict ennola-scalars from frobenius eigenvalues using
 # knowledge on ennola-ps and
 # En(\lambda)^k=EigenEnnola(W,i,j,k) if Ennola_xi(U_i)=U_j
 function ScalarsFromFrob(e::Ennola)
-  W=e[:W]
+  W=e.W
   uc=UnipotentCharacters(W).families
-  z=ordercenter(W)
-  for i in 1:length(e[:families])
+  z=gcd(degrees(W))
+  for i in 1:length(e.families)
     f=uc[i][:charNumbers]
     for xi in 1:z-1
       for j in 1:length(f)
         SetScal(e,unique(sort(map(x->EigenEnnola(W, f[j], f[abs(x)],xi),
-                                  e[:families][i][:poss][xi][j]))), f[j], xi)
+                                  e.families[i].poss[xi][j]))), f[j], xi)
       end
     end
   end
@@ -114,11 +135,11 @@ end
 
 # get info on ennola-ps from ennola-scalars and frobenius-eigenvalues
 function PossFromScal(e::Ennola)
-  W = e[:W]
-  for i in 1:length(e[:families])
-    f = UnipotentCharacters(W).families[i][:charNumbers]
+  W = e.W
+  for i in 1:length(e.families)
+    f = UnipotentCharacters(W).families[i].charNumbers
     for xi in 1:e[:z]-1
-      r=e[:families][i][:poss][xi]
+      r=e.families[i].poss[xi]
       for j in 1:length(f)
         s=GetScal(e, f[j], xi)
         l=filter(n->EigenEnnola(W,f[j],f[abs(r[j][n])],xi) in s,1:length(r[j]))
@@ -134,20 +155,20 @@ end
 
 # ScalarsFromFourier(e,fno[,fourierMat)
 function ScalarsFromFourier(e::Ennola,fno,F=nothing)
-  uc=UnipotentCharacters(e[:W])
+  uc=UnipotentCharacters(e.W)
   f =uc.families[fno]
-  o =OmegaChi(uc)[f[:charNumbers]]
+  o =OmegaChi(uc)[f.charNumbers]
   if isnothing(F)
-    F=f[:fourierMat]
-    if haskey(f,:lusztig) && f[:lusztig]
-      F=^(F,Perm(conj.(f[:eigenvalues]), f[:eigenvalues]);dims=1)
+    F=f.fourierMat
+    if haskey(f,:lusztig) && f.lusztig
+      F=^(F,Perm(conj.(f.eigenvalues), f.eigenvalues);dims=1)
     end
   end
   F=conj.(F)
   n=size(F,1)
-  for xi in 1:e[:z]-1
-    poss=e[:families][fno][:poss][xi]
-    es=map(n->GetScal(e, n, xi), f[:charNumbers])
+  for xi in 1:e.z-1
+    poss=e.families[fno].poss[xi]
+    es=map(n->GetScal(e, n, xi), f.charNumbers)
     F1=hcat(map((x,y)->x.*y^xi, eachcol(F),o)...)
     for m in 1:n
       poss[m]=filter(poss[m])do j
@@ -170,7 +191,7 @@ function ScalarsFromFourier(e::Ennola,fno,F=nothing)
         j = poss[m][1]
         l = filter(k->F[m,k]!=0,1:n)
         for k in l
-          SetScal(e,[(sign(j)*F[abs(j),k])//F1[m,k]],f[:charNumbers][k],xi)
+          SetScal(e,[(sign(j)*F[abs(j),k])//F1[m,k]],f.charNumbers[k],xi)
         end
       end
     end
@@ -187,7 +208,7 @@ function EnnolafromFusion(W,i,poss=nothing)
   res=vcat(map(function(x)
     local p
     p=SPerm(b,Ref(x).*b)
-    if !isnothing(p) return [p, SPerm(-vec(p))]
+    if !isnothing(p) return [p, SPerm(-perm(p))]
     else return SPerm[]
     end
   end, b)...)
@@ -195,7 +216,7 @@ function EnnolafromFusion(W,i,poss=nothing)
     error(" not  expected")
     return res
   end
-  res=map(p->filter(x->all(j->vec(x)[j] in p[j],1:length(vec(x))),res), poss)
+  res=map(p->filter(x->all(j->perm(x)[j] in p[j],1:length(perm(x))),res), poss)
   good=filter(i->length(res[i])>0,1:length(res))
   if length(good) == 0 error("**** no solution for family ", i) end
   res[good[1]]
@@ -203,7 +224,7 @@ end
 
 function ennola(W)
   if haskey(W.prop,:ennola) return W.prop[:ennola] end
-  if ordercenter(W)==1
+  if gcd(degrees(W))==1
     print("W has trivial center!\n")
     return false
   end
@@ -214,29 +235,29 @@ function ennola(W)
   fam=uc.families
   for i in 1:length(fam) ScalarsFromFourier(e, i) end
   PossFromScal(e)
-  ff=filter(i->any(j->length(j)>1,e[:scalars][e[:hc][fam[i][:charNumbers]]]),
+  ff=filter(i->any(j->length(j)>1,e.scalars[e.hc[fam[i].charNumbers]]),
             1:length(fam))
   le=map(s->Ennola(Dict{Symbol, Any}(:W=>e[:W],:z=>e[:z],
-     :families=>deepcopy(e[:families]),:scalars=>map(x->[x],s),:hc=>e[:hc])),
+     :families=>deepcopy(e.families),:scalars=>map(x->[x],s),:hc=>e[:hc])),
            cartesian(e[:scalars]...))
   le = filter(e-> all(i->ScalarsFromFourier(e, i), ff) ,le)
-  W.prop[:ennola] = map(le)do e
+  W.ennola = map(le)do e
     local res, f
     res=Dict{Symbol, Any}(:scalars=>map(x->x[1],e[:scalars]))
-    res[:fls]=map(enumerate(e[:families]))do (i, r)
+    res[:fls]=map(enumerate(e.families))do (i, r)
       local p
-      p=EnnolafromFusion(W, i, r[:poss])
+      p=EnnolafromFusion(W, i, r.poss)
       if length(p)==0 error("AAAAA") end
       if length(p)>1 InfoChevie("   # ",length(p)," sols in family ",i,"\n") end
-      r[:poss]=p
+ #    r.poss.=p
       return p[1]
     end
     res[:ls]=prod(i->res[:fls][i]^mappingPerm(1:length(fam[i]),
                                       fam[i][:charNumbers]),1:length(fam))
-    res[:allscal]=diag(Matrix(res[:ls])^fourier(uc))
+    res[:allscal]=diag(conj(fourier(uc))*Matrix(res[:ls])*fourier(uc))
     res
   end
-  W.prop[:ennola]
+  W.ennola
 end
 
 # convert family-wise ennola ps to global perm
@@ -244,116 +265,11 @@ function famEn2En(W, e)
   uc=UnipotentCharacters(W)
   res=fill(0,length(uc))
   for (f,p) in zip(uc.families,e)
-    res[f[:charNumbers]]=f[:charNumbers]^p
+    res[f.charNumbers]=f.charNumbers^p
   end
   res
 end
 
-# Twist a subspets by xi, an element of the center of the (untwisted) parent
-function EnnolaTwist(HF, xi)
-  H=Group(HF)
-  W=parent(H)
-  w=classreps(W)[position_regular_class(W, Root1(xi))]
-  subspets(parent(HF),inclusiongens(H),w*HF.phi)
-end
-
-# Predict what should be lusztig_induction_table(HF,WF) by Ennola-twisting that
-# of EnnolaTwist(HF,xi^-1);
-function PredictRLGByEnnola(HF, WF, xi)
-  function GlobalEnnolaLs(W, xi)
-    o = AsRootOfUnity(xi) * ordercenter(W)
-    return famEn2En(W, map(x->x^o,ennola(W)[1][:ps]))
-  end
-  tHF=EnnolaTwist(HF,inv(xi))
-  H=Group(tHF)
-  t=lusztig_induction_table(tHF,WF).scalar
-  if xi ^ ordercenter(H) == 1
-      ps = GlobalEnnolaLs(H, xi)
-      t = Permuted(TransposedMat(t), PermList(map(abs, ps)) ^ -1)
-      t = TransposedMat(map((x->begin sign(ps[x]) * t[x] end), 1:length(t)))
-  end
-  ps = GlobalEnnolaLs(Group(WF), xi)
-  t = Permuted(t, PermList(map(abs, ps)) ^ -1)
-  map(x->sign(ps[x])*t[x],1:length(t))
-end
-
-function CheckRLGByEnnola(HF, WF, xi)
-  H =Group(HF)
-  t =PredictRLGByEnnola(HF, WF, xi)
-  fW=fourier(UnipotentCharacters(WF))
-  fH=fourierinverse(UnipotentCharacters(HF))
-  t =fW*t*fH
-  pieces = lusztig_induction_table(HF, WF, true)
-  print("Checking ", pieces, "\n")
-  pieces = pieces[:pieces]
-  for i in 1:length(pieces)
-    p = pieces[i]
-    p[:ns] = t[p[:wnum]][p[:hnum]]
-    t[p[:wnum]][p[:hnum]]=0*t[p[:wnum]][p[:hnum]]
-    s = ProportionalityCoefficient(vcat(p[:scalar]...), vcat(p[:ns]...))
-    if s!=false
-      if s!=1 print("got piece[", i, "] upto ", s, "\n") end
-    else
-      r = TransposedMat(p[:scalar])
-      p[:ns] = TransposedMat(p[:ns])
-      r=map(i->ProportionalityCoefficient(r[i],p[:ns][i]), 1:length(r))
-      if any(x->x==false,r) error("extensions not proportional", r) end
-      print(" *** piece no.", i, " of ", length(pieces), " ***\n")
-      print((p[:head])(p, Dict{Symbol, Any}()))
-      j = Filtered(1:length(r), (i->begin r[i] != 1 end))
-      for k in j
-        print("char. ",k,"==",p[:charSubgroup][k]," of ",p[:u]," extension differs by ",r[k],"\n")
-      end
-    end
-  end
-  if gapSet(Concatenation(t))!=[0] error("CheckRLGByEnnola") end
-end
-
-# Check that an inner Ennola E_xi sends RLG to RE_xi(L)E_xi(G)
-function CheckEnnolaRLG(W)
-  function twist(HF, w)
-    local r
-    r=Group(HF)[:rootInclusion][Group(HF)[:generatingReflections]]
-    return SubSpets(HF[:parent], r, w*HF[:phi])
-  end
-  WF = Spets(W)
-  c = ordercenter(W)
-  l = Concatenation(map(x->twistings(W,x), ProperParabolics(W)))
-  e = ennola(W)[1][:ps]
-  uc = map(x->x[:charNumbers],UnipotentCharacters(W).families)
-  ps = []
-  for p in 1:length(uc)
-    ps[uc[p]]=map(x->sign(x)*uc[p][abs(x)],e[p])
-  end
-  for xi in 1:c-1
-    for p in Filtered(x->x[1]>=x[2],map(x->[x, EnnolaTwist(x, E(c, xi))],l))
-      HF = p[1]
-      HFxi = p[2]
-      n = ReflectionName(HF)
-      nxi = ReflectionName(HFxi)
-      e = ennola(Group(HF))[1][:ps]
-      uc = map(x->x[:charNumbers], UnipotentCharacters(Group(HF)).families)
-      psH = []
-      for i in 1:length(uc)
-        psH[uc[i]] = map(x->sign(x)*uc[i][abs(x)], e[i])
-      end
-      t = TransposedMat(lusztig_induction_table(HF, WF)[:scalar])
-      t = Permuted(t, PermList(map(abs, psH)) ^ -1)
-      t = TransposedMat(map(x->sign(psH[x])*t[x], 1:length(t)))
-      t = Permuted(t, PermList(map(abs, ps))^-1)
-      t = map(x->sign(ps[x])*t[x],1:length(t))
-      txi = lusztig_induction_table(HFxi, WF)
-      if txi[:scalar] != t
-        p = deepcopy(txi)
-        p[:scalar] = t
-        CHEVIE[:Check][:EqTables](p, txi)
-        error("CheckEnnolaRLG")
-      else
-        xprint(E(c,xi),":",HF,"==>",HFxi," OK!\n")
-      end
-    end
-  end
-end
 
 # The Fourier matrix F times unipotent  degrees are the fake degrees. If
 # p=Ennola-Permutation  and e=Ennola-scalars  on character  sheaves then
@@ -364,7 +280,7 @@ end
 # Return false if some incompatibility discovered
 function scalpred(xi, i, W, p, e, M)
   uc = UnipotentCharacters(W)
-  f = uc[:families][i]
+  f = uc.families[i]
   n = length(f[:charNumbers])
   e = copy(e)
   for j in 1:n
@@ -396,7 +312,7 @@ function relennolaxi(xi, M, p)
         om = (M[:Valueat](abs(p[om]),j)*sign(p[om]))//M[:Valueat](om, j)
         SetScal(M[:ennola], [ComplexConjugate(om)//
             OmegaChi(uc)[f[:charNumbers][j]]^xi], f[:charNumbers][j], xi)
-      else xprint(" cannot determine ", E(ordercenter(W),xi),"-scalar for ",
+      else xprint(" cannot determine ", E(gcd(degees(W),xi)),"-scalar for ",
         TeXStrip(uc[:TeXCharNames][f[:charNumbers][j]]),"\n")
       end
     else om=ComplexConjugate(val[1]*OmegaChi(uc)[f[:charNumbers][j]]^xi)
@@ -436,7 +352,7 @@ function relconj(arg...,)
   M = arg[3]
   print("conj... ")
   uc = UnipotentCharacters(W)
-  f = (uc[:families])[i]
+  f = uc.families[i]
   n = length(f[:charNumbers])
   if length(arg) < 4
 # possibilities for the effect of complex conjugation on ith family
@@ -538,7 +454,7 @@ end
 function initdetfam(W, fno)
   uc = UnipotentCharacters(W)
   q = X(Cyclotomics)
-  f = (uc[:families])[fno]
+  f = uc.families[fno]
   n = length(f[:charNumbers])
   M = LinSys((n * (n + 1)) // 2)
   M[:n] = n
@@ -579,14 +495,14 @@ function ennoladetfam(arg...,)
   if length(arg) > 1 e = arg[2] end
   while true
       oldknown = newknown
-      z = ordercenter(M[:W])
+      z = gcd(degrees(M[:W]))
       v = 1:z - 1
       SortParallel(map((x->begin OrderMod(x, z) end), v), v)
       for i = reverse(v)
           if IsBound(e) p = e ^ i
           else p = map(function (p,)
                           if length(p) == 1 return p[1] else return false end
-                      end, ((((M[:ennola])[:families])[M[:fno]])[:poss])[i])
+                      end, ((M[:ennola].families[M[:fno]])[:poss])[i])
           end
           print("Ennola ", Format(E(z, i)), " diagonal on CS==>")
           if !(relennolaxi(i, M, p)) return false end
@@ -612,7 +528,7 @@ function detfam(arg...,)
   M[:error] = length(arg) < 3
   uc = UnipotentCharacters(W)
   q = X(Cyclotomics)
-  f = (uc[:families])[fno]
+  f = uc.families[fno]
   O = Eigenvalues(f)
   fd = (FakeDegrees(uc, q))[f[:charNumbers]]
   ud = (UnipotentDegrees(W, q))[f[:charNumbers]]
@@ -682,7 +598,7 @@ function ratios(M, p)
 end
 
 function tryratio(W, fno, M, p, pos, ratio)
-  f = ((UnipotentCharacters(W))[:families])[fno]
+  f = UnipotentCharacters(W).families[fno]
   oldratios = ratios(M, p)
   newratios = copy(oldratios)
   newratios[pos] = ratio
@@ -895,9 +811,9 @@ function tryfam(W, fno, f)
   uc.families[fno][:fourierMat] = f[:fourierMat]
   uc.families[fno][:eigenvalues] = f[:eigenvalues]
   delete!(uc, :eigenvalues)
-  for i = 1:length(((uc[:families])[fno])[:charNumbers])
-      h = PositionProperty(uc[:harishChandra], (h->begin
-         (((uc[:families])[fno])[:charNumbers])[i] in h[:charNumbers]end))
+  for i in 1:length(uc.families[fno])
+      h = PositionProperty(uc[:harishChandra], h->
+         uc.families[fno].charNumbers[i] in h[:charNumbers])
       ((uc[:harishChandra])[h])[:eigenvalue] = (f[:eigenvalues])[i]
   end
   return W
