@@ -32,7 +32,7 @@ spets_ex=vcat(
   [crg(3,1,2), crg(3,3,3), crg(3,3,4), crg(4,4,3)])
 
 twisted=[rootdatum(:psu,3), rootdatum(Symbol("2B2")), rootdatum(Symbol("2G2")),
-  rootdatum(Symbol("2I"),5), rootdatum(Symbol("2I"),8), rootdatum(:psu,4),
+  rootdatum(Symbol("2I2"),5), rootdatum(Symbol("2I2"),8), rootdatum(:psu,4),
   rootdatum(Symbol("3D4")), rootdatum(:psu,5), rootdatum(Symbol("pso-"),8),
   rootdatum(:psu,6), rootdatum(Symbol("2F4")), rootdatum(:psu,7),
   rootdatum(Symbol("pso-"),10), rootdatum(Symbol("2E6")), rootdatum(:psu,8),
@@ -948,32 +948,31 @@ test[:HCdegrees]=(applicable=isspetsial,
 #   eig:=rootUnity part of Eigenvalue of Frobenius
 #   frac:= fractional power in q-part of Eigenvalue of Frobenius
 function EigenAndDegHecke(s)
-  FractionToRoot(x)=E(denominator(x),numerator(x))
   H=hecke(s)
   d=s.d
   zeta=Cyc(d)
   W=H.W
   xprintln("H=",H)
   ct=CharTable(H).irr
-  ct1=0 .+CharTable(W).irr
+  ct1=CharTable(W).irr
   n=axes(ct1,1)
   if !any(ismissing,ct)
-   ct2=improve_type(scalar.(value.(ct,Ref(:q=>zeta))))
-   good=axes(ct2,2)
+    ct2=improve_type(scalar.(value.(ct,Ref(:q=>zeta))))
+    good=axes(ct2,2)
   else
-   ct2=copy(ct1)
-   good=filter(i->!any(ismissing,ct[:,i]),n)
-   ct2[:,good]=improve_type(scalar.(value.(ct[:,good],Ref(:q=>zeta))))
+    ct2=copy(ct1)
+    good=filter(i->!any(ismissing,ct[:,i]),n)
+    ct2[:,good]=improve_type(scalar.(value.(ct[:,good],Ref(:q=>zeta))))
   end
   p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
   if !isone(p) println("***** perm=",p) 
     if iscyclic(W) ChevieErr("should not have perm")end 
   end
-  d1=exponent(d)//gcd(order(d),gcd(degrees((W))))
+  d1=exponent(d)//gcd(order(d),gcd(degrees(W)))
   i=position_regular_class(W,d1) # this class represents F
   omegachi=map(x->scalar(value(x[i]//x[1],:q=>1)),eachrow(invpermute(ct,p,dims=1)))
   frac=degree.(central_monomials(H)).*d1
-  om2=map((o,p)->o*d^-p,map(x->x[i]//x[1],eachrow(ct1)),frac)
+  om2=ct1[:,i].//ct1[:,1].*d.^-frac
   if omegachi!=om2 
     ChevieErr(word(conjugacy_classes(W)[i]),"^",1//d1," not equal to π(",W,")\n")
     omegachi=om2
@@ -981,7 +980,7 @@ function EigenAndDegHecke(s)
   ss=CycPol.(invpermute(schur_elements(H),p))
   ss=map(x->degree(s)//x,ss)
 # omegachi*=Eigenvalues(UnipotentCharacters(s.levi))[s.cuspidal]
-  zeta=Cyc(Root1(;r=d1)^frac[charinfo(W)[:positionId]])
+  zeta=Cyc(Root1(;r=d1)^frac[charinfo(W).positionId])
   if haskey(s,:delta) && s.delta!=1 && iscyclic(W)
     omegachi=map(i->Root1(;r=s.d.r*s.e*s.delta*
               ((i-1)//s.e-dSeries.mC(s)[i]*s.d.r)),1:s.e)

@@ -461,8 +461,8 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
     merge!(R.prop,res)
     R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
 #   InfoChevie("W_",W,"(L_",res[:callarg],")==",R,"<",join(R.prop[:relativeIndices]),">")
-    printTeX(rio(),"W_",W,"(L_{",res[:callarg],"})==",R,
-                  "<",joindigits(R.relativeIndices),">\n")
+    # printTeX(rio(),"W_",W,"(L_{",res[:callarg],"})==",R,
+    #             "<",joindigits(R.relativeIndices),">\n")
     return R
   end
   printTeX(rio(),"# warning: W_",W,"(L_{",res[:callarg],"})",":size ",N,

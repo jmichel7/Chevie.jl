@@ -1202,7 +1202,7 @@ Weyl.rootdatum(t::String,r::Int...)=rootdatum(Symbol(t),r...)
 `rootdatum(type::String or Symbol[,dimension or bond::Integer])` root datum
 from type. The known types are
 
-`2B2, 2E6, 2E6sc, 2F4, 2G2, 2I, 3D4, 3D4sc, 3gpin8, CE6, CE7, E6, E6sc, E7,
+`2B2, 2E6, 2E6sc, 2F4, 2G2, 2I2, 3D4, 3D4sc, 3gpin8, CE6, CE7, E6, E6sc, E7,
 E7sc, E8, F4, G2, cso, csp, gl, gpin, gpin-, halfspin, pgl, pso, pso-, psp,
 psu,  ree, sl, slmod, so, so-, sp,  spin, spin-, su, suzuki, tgl, triality,
 u`
@@ -1210,10 +1210,10 @@ u`
 function Weyl.rootdatum(t::Symbol,r::Int...)
    if haskey(rootdata,t) 
      res=rootdata[t](r...) 
-     n=string(t)
      res.callname="rootdatum("*repr(t)
      if !isempty(r) res.callname*=","*join(r,",") end
      res.callname*=")"
+     n=string(t)
      sc=endswith(n,"sc")
      if sc n=n[1:end-2] end
      pre=match(r"^[0-9]+",n)
@@ -1224,11 +1224,15 @@ function Weyl.rootdatum(t::Symbol,r::Int...)
      if !isnothing(mid) res.TeXcallname*=mid.match end
      las=match(r"[0-9]+$",n)
      if !isnothing(las) res.TeXcallname*="_{"*las.match*"}" end
-     if !isempty(r) res.TeXcallname*="_{"*join(r,",")*"}" end
+     if !isempty(r) 
+       if mid.match=="I" res.TeXcallname*="("*join(r,",")*")"
+       else res.TeXcallname*="_{"*join(r,",")*"}"
+       end
+     end
      if sc res.TeXcallname*="sc" end
      return res
    end
-   error("Unknown root datum $(repr(t)). Known types are:\n",
+   error("Unknown root datum $t. Known types are:\n",
          sprint(cut,join(sort(collect(keys(rootdata))),", ")))
 end
 
@@ -1366,7 +1370,7 @@ end
 rootdata[Symbol("so-")]=r->spets(rootdatum(:so,r),Perm(1,2))
 rootdata[Symbol("pso-")]=r->spets(rootdatum(:pso,r),Perm(1,2))
 rootdata[Symbol("spin-")]=r->spets(rootdatum(:spin,r),Perm(1,2))
-rootdata[Symbol("2I")]=e->spets(coxgroup(:Isym,2,e),Perm(1,2))
+rootdata[Symbol("2I2")]=e->spets(coxgroup(:Isym,2,e),Perm(1,2))
 rootdata[:suzuki]=()->spets(coxgroup(:Bsym,2),Perm(1,2))
 rootdata[Symbol("2B2")]=()->rootdatum(:suzuki)
 rootdata[:ree]=()->spets(coxgroup(:Gsym,2),Perm(1,2))

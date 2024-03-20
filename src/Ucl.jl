@@ -703,7 +703,7 @@ julia> uc.classes
  UnipotentClass(4)
 ```
 The  `show`  function  for  unipotent  classes  accepts  all the options of
-`formatTable`  and  of  `charnames`.  Giving  the  option  `mizuno`  (resp.
+`showtable`  and  of  `charnames`.  Giving  the  option  `mizuno`  (resp.
 `shoji`)  uses  the  names  given  by  Mizuno  (resp.  Shoji) for unipotent
 classes.  Moreover,  there  is  also  an  option  `fourier` which gives the
 Springer  correspondence tensored with the  sign character of each relative
@@ -1140,7 +1140,7 @@ Coefficients of Xᵪ on Yᵩ for A3
 └─────┴──────────────────┘
 ```
 
-Since `show` uses the function `format` for tables, all the options of this
+Since  `show`  uses  the  function  `showtable`,  all  the  options of this
 function  are  also  available.  We  can  use  this to restrict the entries
 displayed  to a  given sublist  of the  rows and  columns (here the indices
 correspond  to the number  in Chevie of  the corresponding character of the

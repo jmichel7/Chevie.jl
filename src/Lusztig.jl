@@ -46,7 +46,7 @@ function FindCuspidalInLevi(n,HF)
   cusp
 end
 
-ChevieErr(x...)=println("*****ERROR: ",x...)
+ChevieErr(x...)=printstyled(rio(),"Error: ",x...;color=:red)
 # l is a list of vectors each of length n. FindIntSol returns roots of unity
 # x_i such that l[i]*[1,x2,..xn] is an integer for each i.
 function FindIntSol(l)
@@ -203,8 +203,6 @@ function LusztigInductionPieces(LF,WF)
 #     LFGL=subspets(WFGL,restriction(WFGL,rh),w)
       LFGL=subspets(WFGL,Vector{Int}(rh),w)
 #     xprintln("LFGL=",LFGL)
-#     ReflectionName(LFGL)
-#     ReflectionName(WFGL)
     end
     lu=xrepr(LF;TeX=true)
     lg=xrepr(WF;TeX=true)
@@ -279,7 +277,6 @@ function lusztig_induction_table(LF,WF;check=true)
 #       x[:u][:phi]*x[:g][:phi]^-1])
 # if haskey(res, :scalar) return res end
   res.pieces=LusztigInductionPieces(LF,WF)
-  if res.pieces==false return nothing end
   fL=fourier(uL)
   hh=uL.almostHarishChandra
   fWinv=fourier(uW)'
@@ -304,11 +301,11 @@ function lusztig_induction_table(LF,WF;check=true)
     return ret(smap)
   end
   scalars=FindIntSol(unique(toL(hcat(vec.(maps)...))))
-  if scalars == false return ret(scalars) end
-  if length(scalars) > 1
+  if scalars==false return ret(scalars) end
+  if length(scalars)>1
     ChevieErr("#I WARNING: ambiguity in scalars:", scalars, "\n")
   end
-  scalars = scalars[1]
+  scalars=scalars[1]
   if any(x->x isa Mvp, scalars) error() end
   if any(!isone,scalars)
     res.scalars=scalars
@@ -317,8 +314,8 @@ function lusztig_induction_table(LF,WF;check=true)
     end
   end
   scalars=sum(i->maps[i]*scalars[i],1:length(scalars))
-  if LF.phi==WF.phi && !all(>=(0), Flat(scalars))
-      ChevieErr("non-positive RLG for untwisted L")
+  if LF.phi==WF.phi && !all(>=(0),scalars)
+    ChevieErr("non-positive RLG for untwisted L")
   end
   return ret(scalars)
 end
