@@ -185,36 +185,42 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
 end
 
 """
-`ennola(W)`
+`ennola(W[,z1])`
 
 Let  `W` be an irreducible spetsial reflection  group or coset, and `z` the
-generator  of the  center of  `W`, viewed  as a  root of  unity. A property
-checked case-by case is that, for a unipotent character `γ` with polynomial
-generic  degree `deg γ(q)`  of the spets  attached to `W`  (this spets is a
-finite  reductive group, for `W` a Weyl group, in which case `z=-1` if `-1`
-is  in `W`),  `deg γ(zq)`  is equal  to `±deg  γ'(q)` for another unipotent
-character  `γ'`; `±γ'` is called the  Ennola transform of `γ`. The function
-returns  the  permutation-with-signs  done  by  `ennola`  on  the unipotent
-degrees (as a permutation-with signs of
-`1:length(UnipotentCharacters(W))`). It is currently implemented only for
-irreducible `W`.
+generator  of the center of `W`, viewed as  a root of unity. Let `𝔾` be the
+spets  attached to  `W`. A  property checked  case-by case  is that,  for a
+unipotent  character `γ` of `𝔾` with polynomial generic degree `deg γ(q)` ,
+`deg  γ(zq)` is equal to `±deg γ'(q)` for another unipotent character `γ'`;
+`±γ'`  is called  the Ennola  transform of  `γ`. For  `W` a Weyl group, the
+spets  `𝔾` is a finite reductive group, in  which case `z=-1` if `-1` is in
+`W`  and `z=1` otherwise.  The function returns  the signed permutation `e`
+done by `ennola` on the unipotent degrees (as an `SPerm` of
+`1:length(UnipotentCharacters(W))`).
 
-The  permutation-with-signs is not uniquely determined by the degrees since
-two  of them may  be equal, but  is uniquely determined  by some additional
-axioms that we do not recall here.
+The `SPerm` `e` is not uniquely determined by the degrees since two of them
+may  be equal, but is uniquely determined by some additional axioms that we
+do not recall here (they include a description of the Ennola-permutation in
+terms of the fusion algebras attached to each Lusztig family).
+
+If  a second argument  `z1` is given,  it should be  a power of `z` and the
+corresponding power of `e` is returned.
 
 ```julia-repl
-julia> dSeries.ennola(rootdatum("3D4"))
+julia> ennola(rootdatum("3D4"))
 SPerm{Int64}: (3,-4)(5,-5)(6,-6)(7,-8)
 
-julia> dSeries.ennola(complex_reflection_group(14))
+julia> ennola(complex_reflection_group(14))
 SPerm{Int64}: (2,43,-14,16,41,34)(3,35,40,18,-11,42)(4,-37,25,-17,-26,-36)(5,-6,-79)(7,-7)(8,-74)(9,-73)(10,-52,13,31,-50,29)(12,53,15,32,-51,-30)(19,71,70,21,67,68,20,69,72)(22,-39,27,-33,-28,-38)(23,24,-66,-23,-24,66)(44,46,49,-44,-46,-49)(45,48,47,-45,-48,-47)(54,-63,-55,-57,62,-56)(58,-65,-59,-61,64,-60)(75,-77)(76,-76)(78,-78)
 
 ```
-The  last example  shows that  it may  happen that  the order of `z`-Ennola
+The  above example shows  that it may  happen that the  order of `z`-Ennola
 (here 18) is greater than the order of `z` (here 6); this is related to the
-presence  of irrationalities in  the character table  of the spetsial Hecke
-algebra of `W`.
+presence  of irrationalities  `q⅓` in  the character  table of the spetsial
+Hecke algebra of `W`.
+
+For a non-irreducible group, `z`-ennola is defined if `z` can be considered
+an element of the the centre of each irreducible component.
 """
 function ennola(t::TypeIrred)
   res=getchev(t,:Ennola)
@@ -225,10 +231,18 @@ end
 
 function ennola(W)
   get!(W,:ennola)do
-    t=refltype(W)
-    if isempty(t) return SPerm() end
-    if length(t)>1 error(W,": only implemented for irreducible groups") end
-    ennola(t[1])
+    tt=refltype(W)
+    if isempty(tt) return SPerm() end
+    if length(tt)==1 return ennola(tt[1]) end
+    zz=map(tt)do t
+      if haskey(t,:orbit) gcd(first.(degrees(t))) else gcd(degrees(t)) end
+    end
+    z=gcd(zz)
+    ee=map((t,z1)->SpetsEnnola(t)^div(z1,z),tt,zz)
+    l=cartesian(map(e->1:length(e.d),ee)...)
+    p=Perm(l,map(x->map((y,e)->y^Perm(e),x,ee),l))
+    sgn=map(x->prod(map((y,e)->sign(y^e),x,ee)),l)
+    SPerm(p.d .*sgn)
   end
 end
 

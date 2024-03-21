@@ -435,7 +435,7 @@ function type_fincox_cartan(m::AbstractMatrix)
   end
 # println("t=$t")
 # println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
-  if cartan(t)==m[t.indices,t.indices] return t end  # countercheck
+  if cartan(t)==m return t end  # countercheck
 end
 
 """

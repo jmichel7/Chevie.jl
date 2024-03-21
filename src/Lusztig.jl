@@ -385,6 +385,7 @@ function harish_chandra_induction_table(HF, WF)
     end
     lu=xrepr(Hi;TeX=true)
     lg=xrepr(Wi;TeX=true)
+    @show Hi, Wi
     piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],

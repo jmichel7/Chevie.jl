@@ -354,7 +354,7 @@ Base.copy(t::TypeIrred)=TypeIrred(copy(t.prop))
 
 indices(t::TypeIrred)=haskey(t,:indices) ? t.indices : haskey(t,:orbit) ?
 isempty(t.orbit) ? Int[] : length(t.orbit)==1 ? t.orbit[1].indices :
-vcat(getproperty.(t.orbit,:indices)...) : nothing
+vcat(getproperty.(t.orbit,:indices)...) : haskey(t,:rank) ? (1:t.rank) : nothing
 
 indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : vcat(indices.(t)...)
 
@@ -638,12 +638,11 @@ function cartan(t::TypeIrred)
   if haskey(t,:cartanType) ct=t.cartanType
     T=promote_type(typeof(ct),eltype(C))
     if T!=eltype(C) C=convert.(T,C) end
-    if     t.series==:B C[1,2]=-ct;C[2,1]=-2//ct
-    elseif t.series==:G C[1,2]=-ct;C[2,1]=-3//ct
-    elseif t.series==:F C[2,3]=-ct;C[3,2]=-2//ct
-    elseif t.series==:I C[1,2]=-ct;C[2,1]=(-2-E(t.bond)-E(t.bond,-1))/ct
+    if     t.series in (:B,:G,:I) C[2,1]*=-C[1,2]//ct; C[1,2]=-ct
+    elseif t.series==:F C[3,2]*=-C[2,3]//ct; C[2,3]=-ct
     end
   end
+  if indices(t)!=1:rank(t) C=C[sortperm(indices(t)),sortperm(indices(t))] end
   improve_type(C)
 end
 
