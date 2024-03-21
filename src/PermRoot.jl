@@ -632,7 +632,7 @@ function cartan(W::PermRootGroup{T,T1})where {T,T1}
   end
 end
 
-function cartan(t::TypeIrred)
+function cartan(t::TypeIrred;permute=false)
   if t.series==:ST return improve_type(toM(getchev(t,:CartanMat))) end
   C=cartan(t.series,rank(t),haskey(t,:bond) ? t.bond : 0)
   if haskey(t,:cartanType) ct=t.cartanType
@@ -642,7 +642,9 @@ function cartan(t::TypeIrred)
     elseif t.series==:F C[3,2]*=-C[2,3]//ct; C[2,3]=-ct
     end
   end
-  if indices(t)!=1:rank(t) C=C[sortperm(indices(t)),sortperm(indices(t))] end
+  if indices(t)!=1:rank(t) && permute
+    C=C[sortperm(indices(t)),sortperm(indices(t))]
+  end
   improve_type(C)
 end
 

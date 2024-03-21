@@ -161,9 +161,7 @@ function LusztigInductionPieces(LF,WF)
   uW=UnipotentCharacters(WF)
   hw=uW.almostHarishChandra
   map(uL.almostHarishChandra) do h
-#   xprintln("LF=",LF," ",
-#     map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-#     h[:relativeType]))
+#   xprintln("LF=",LF," ",indices(h[:relativeType]))
     (ser,op)=FindSeriesInParent(h,LF,WF,hw)
     if W isa CoxeterGroup
       WFGL=relative_coset(WF,inclusion(L,W,h[:levi]))
@@ -176,8 +174,7 @@ function LusztigInductionPieces(LF,WF)
                     WGL.MappingFromNormalizer(LF.phi*WF.phi^-1))
     else
       cL=reflection_subgroup(W,ser[:levi]) # cL^op is in LF
-      Jb=vcat(map(x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) :
-                  x.indices,ser[:relativeType])...)
+      Jb=indices(ser[:relativeType])
       WFGL=relative_coset(WF,ser[:levi],Jb)
       WGL=Group(WFGL)
       if !haskey(WGL,:MappingFromNormalizer) 
@@ -185,9 +182,7 @@ function LusztigInductionPieces(LF,WF)
         @show ser[:levi]
         error("hahah!") 
       end
-      rh=map(x->action(W,x,op),inclusion(L,W,vcat(map(
-       x->haskey(x,:orbit) ? vcat(map(y->y.indices,x.orbit)...) : x.indices,
-       h[:relativeType])...)))
+      rh=map(x->action(W,x,op),inclusion(L,W,indices(h[:relativeType])))
 #     xprintln("rh=",rh," op=",op)
       w=WGL.MappingFromNormalizer((LF.phi^op)*WF.phi^-1)
       if w==false error("Could not compute MappingFromNormalizer\n") end
@@ -321,6 +316,7 @@ function lusztig_induction_table(LF,WF;check=true)
 end
 
 function harish_chandra_induction_table(HF, WF)
+# xprintln("HF=",HF," WF=",WF)
   if !(WF isa Spets) WF=spets(WF) end
   uw=UnipotentCharacters(WF)
   W=Group(WF)
@@ -338,8 +334,7 @@ function harish_chandra_induction_table(HF, WF)
 # if haskey(res, :scalar) return res end
   res.pieces=map(uh.harishChandra)do h
     ser,op = FindSeriesInParent(h, HF, WF, uw.harishChandra)
-    Jb = vcat(map(x->x.indices, ser[:relativeType])...)
-#   println("Jb=$Jb")
+    Jb=indices(ser[:relativeType])
     if Group(WF) isa CoxeterGroup
       if isempty(ser[:relativeType]) Wi=coxgroup()
       else Wi=rootdatum(cat(cartan.(ser[:relativeType])...;dims=(1,2)))
@@ -352,10 +347,12 @@ function harish_chandra_induction_table(HF, WF)
         Hi=reflection_subgroup(Wi,rh[1])
       else
         Hi=reflection_subgroup(Wi,
-             map(x->Int(findfirst(y->x in orbit(WF.phi,y),Jb)), 
-        inclusion(H,W,vcat(map(x->x.indices,h[:relativeType])...))))
+           convert(Vector{Int},map(x->findfirst(y->x in orbit(WF.phi,y),Jb), 
+                      inclusion(H,W,indices(h[:relativeType])))))
       end
     else
+      Jb=indices(ser[:relativeType])
+#   @show Jb
       L = reflection_subgroup(W, ser[:levi])
       Wi = relative_group(W, ser[:levi], Jb)
       if false
@@ -385,7 +382,6 @@ function harish_chandra_induction_table(HF, WF)
     end
     lu=xrepr(Hi;TeX=true)
     lg=xrepr(Wi;TeX=true)
-    @show Hi, Wi
     piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],

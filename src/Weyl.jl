@@ -141,7 +141,7 @@ by `1:N`, and the negative roots by `N+1:2N`.
 If a single matrix argument is given to `rootdatum` it is taken as `cr` and
 `r`  is taken  to be  the identity  matrix; we  get thus  a particular root
 system  where the  roots are  the canonical  basis of `V`. For convenience,
-`rootdatum(cartan(t))` can be simplified to `coxgroup(t)`.
+`rootdatum(cartan(t...))` can be simplified to `coxgroup(t...)`.
 
 ```julia-repl
 julia> W=coxgroup(:D,4) # same as rootdatum(cartan(:D,4))
@@ -435,7 +435,7 @@ function type_fincox_cartan(m::AbstractMatrix)
   end
 # println("t=$t")
 # println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
-  if cartan(t)==m return t end  # countercheck
+  if cartan(t,permute=true)==m return t end  # countercheck
 end
 
 """

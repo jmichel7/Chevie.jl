@@ -4,7 +4,7 @@ export RationalUnipotentClasses, closed_subsystems, ClassTypes
 
 function RationalUnipotentClasses(WF, p=0)
   u=UnipotentClasses(WF, p)
-  t=Ucl.XTable(u;classes=true)
+  t=XTable(u;classes=true)
   map(i->(card=CycPol(t.cardClass[i]), class=u.classes[t.classes[i][1]], 
           classno=t.classes[i][1], AuNo=t.classes[i][2]), eachindex(t.classes))
 end

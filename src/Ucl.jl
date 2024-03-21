@@ -1269,7 +1269,7 @@ Then  `XTable(uc)` gives the decomposition of the functions ``X̃_{u,ϕ}`` on
 local   systems.  `t=XTable(uc,classes==true)`  gives  the  values  of  the
 functions   ``X̃_{u,ϕ}``   on   unipotent   classes.   A   side  effect  of
 `classes=true`  is  to  compute  the  cardinal  of  the unipotent conjugacy
-classes,  avalaible in `t.cardClass`; in this case displaying `t` will show
+classes,  available in `t.cardClass`; in this case displaying `t` will show
 the  cardinal  of  the  centralizers  of  unipotent  elements, available in
 `t.centClass`.
 
