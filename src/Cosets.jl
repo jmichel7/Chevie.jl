@@ -867,7 +867,7 @@ end
 function relative_coset(WF::CoxeterCoset,J)
 # Print("CoxeterCosetOps.RelativeCoset ",WF,J," called \n");
   res=relative_group(Group(WF),J)
-  spets(res,Perm(res.parentMap,res.parentMap.^WF.phi))
+  spets(res,Perm(res.toparent,res.toparent.^WF.phi))
 end
 #-------------- subcoset ---------------------------------
 """
@@ -1051,8 +1051,8 @@ function relative_coset(WF::Spets,J=Int[],a...)
   L=reflection_subgroup(W,J)
   res=spets(R,central_action(L,reflrep(L,WF.phi)))
   if isempty(J)
-    Group(res).MappingFromNormalizer=R.MappingFromNormalizer
-# else Group(res).MappingFromNormalizer:=function(x)Error("MappingFromNormalizer failed");return false;end;
+    Group(res).fromparent=R.fromparent
+# else Group(res).fromparent:=function(x)Error("fromparent failed");return false;end;
   end
   res
 end

@@ -168,24 +168,24 @@ function LusztigInductionPieces(LF,WF)
       classreps(WFGL)
       WGL=Group(WFGL)
       LFGL=relative_coset(LF,h[:levi])
-      w=Group(LFGL).relativeIndices
+      w=Group(LFGL).relative_indices
       LFGL=subspets(WFGL,Int.(indexin(inclusion(L,w),
-                                      inclusion(W,WGL.relativeIndices))),
-                    WGL.MappingFromNormalizer(LF.phi*WF.phi^-1))
+                                      inclusion(W,WGL.relative_indices))),
+                    WGL.fromparent(LF.phi*WF.phi^-1))
     else
       cL=reflection_subgroup(W,ser[:levi]) # cL^op is in LF
       Jb=indices(ser[:relativeType])
       WFGL=relative_coset(WF,ser[:levi],Jb)
       WGL=Group(WFGL)
-      if !haskey(WGL,:MappingFromNormalizer) 
+      if !haskey(WGL,:fromparent) 
         @show WF, Jb
         @show ser[:levi]
         error("hahah!") 
       end
       rh=map(x->action(W,x,op),inclusion(L,W,indices(h[:relativeType])))
 #     xprintln("rh=",rh," op=",op)
-      w=WGL.MappingFromNormalizer((LF.phi^op)*WF.phi^-1)
-      if w==false error("Could not compute MappingFromNormalizer\n") end
+      w=WGL.fromparent((LF.phi^op)*WF.phi^-1)
+      if w==false error("Could not compute fromparent\n") end
       rh=map(rh)do x
         r=relative_root(W,cL,x)
         pr=PermX(WGL,reflectionMatrix(r.root,r.coroot))

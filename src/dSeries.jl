@@ -655,7 +655,7 @@ end
 
 ChevieErr(x...)=xprint("!!!!!!! ",x...)
 
-#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains parentMap
+#  .WGL         W_𝔾 (𝕃,λ) as a relgroup, contains toparent
 #  (lifting reflections to elts of W) and reflists (lifting a generator s to
 #   reflections of the parabolic 𝕄  of W such that W_𝕄 (𝕃,λ)=<s>)
 #  .WGLdims     irr dims of WGL
@@ -673,7 +673,7 @@ function Weyl.relative_group(s::Series)
   end
   if isone(projector(s)) #central series
     WGL=deepcopy(W)
-    WGL.parentMap=gens(WGL)
+    WGL.toparent=gens(WGL)
     WGL.reflists=map(x->[x],inclusiongens(W))
     s.WGLdims=CharTable(WGL).irr[:,1]
     s.e=length(WGL)
@@ -808,7 +808,7 @@ function Weyl.relative_group(s::Series)
       reflist=Vtoglobal.(reflrep(WGL))
       reflist=map(h->rrefs[findfirst(rr->hplane(rr[1])==h,rrefs)], reflist)
       WGL.reflists = map(getreflection, reflist)
-      WGL.parentMap = map(x->x[:hom], WGL.reflists)
+      WGL.toparent = map(x->x[:hom], WGL.reflists)
       WGL.reflists = map(x->x[:refs], WGL.reflists)
       s.WGLdims=CharTable(WGL).irr[:,1]
       s.e=length(WGL)
@@ -1211,10 +1211,10 @@ function RelativeSeries(s)
     p=Series(R,subspets(R,restriction(R,l),s.element/R.phi),s.cuspidal,s.d.r;NC=true)
     p.orbit=simple_reps(WGL)[i]
     r=reflections(WGL)[1:nhyp(WGL)]
-    if gens(WGL)==WGL.parentMap
+    if gens(WGL)==WGL.toparent
       r=filter(x->Perm(x) in Group(p.spets),r)
     else
-      w=map(x->prod(WGL.parentMap[word(x)]), r)
+      w=map(x->prod(WGL.toparent[word(x)]), r)
 #     xprint(w,"\n")
       r=r[map(w)do x
           g=Group(p.spets)

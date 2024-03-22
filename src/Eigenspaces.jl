@@ -67,7 +67,8 @@ eigenspace_projector,
 position_regular_class,
 split_levis,
 cuspidal`
-in this module allow to explore these situations.
+in this module and the functions in the module `dSeries`
+allow to explore these situations.
 """
 module Eigenspaces
 export relative_degrees, regular_eigenvalues,
@@ -166,7 +167,7 @@ Let  `WF` be a reflection group or a  reflection coset and `ζ` be a root of
 unity  such that some element of `WF` has a non-trivial `ζ`-eigenspace. The
 function   returns  the   index  of   a  conjugacy   class  of  `WF`  whose
 `ζ`-eigenspace  is  maximal  (amongst  all  `ζ `-eigenspaces of elements of
-`W`).  If not element of `WF` has a non-trivial `ζ`-eigenspace the function
+`W`).  If no element of `WF`  has a non-trivial `ζ`-eigenspace the function
 returns `nothing`.
 
 The  eigenvalue `ζ` can also  be specified by giving  an integer `d` (which
@@ -236,48 +237,13 @@ function eigenspace_projector(W,w,d::Root1)
 end
 
 """
-`relative_root(W,L,i)`
-
-return 'action' of refls(W,i)∉ L on X(Z_L)
-a namedtuple with root, coroot, eigenvalue, index=i and parentMap
-"""
-function relative_root(W,L,i)
-# xprintln("W=",W," i=",i," L=",L)
-  N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
-  if length(N)==length(L) error("N(L)==L") end
-  F=N/L
-# xprintln(abelian_gens(elements(F)))
-  if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
-  d=length(F)
-# println("d=$d ",order.(elements(F)))
-  for rc in filter(x->order(x)==d,elements(F))
-    m=central_action(L,reflrep(L,rc.phi))
-    r=asreflection(m)
-    if r===nothing error("not a reflection --- This should not happen") end
-#   println("rc=$rc")
-    if r.eig==E(d)
-      rc=filter(c->central_action(L,reflrep(L,c))==m,classreps(N))
-#     println("rc=$rc")
-      c=unique!(sort(map(x->position_class(W,x),rc)))
-      m=maximum(map(x->count(isone,x),refleigen(W)[c]))
-      m=filter(x->count(isone,refleigen(W)[x])==m,c)
-      m=filter(x->position_class(W,x) in m,rc)
-      if any(x->order(x)==d,m)  m=filter(x->order(x)==d,m) end
-      return (root=r.root,coroot=r.coroot,eigenvalue=r.eig,index=i,
-              parentMap=m[1])
-    end
-  end
-  error("no root found for reflection along root ",i,"\n")
-end
-
-"""
 `split_levis(WF,ζ::Root1=1[,ad])`
 
 Let  `WF`  be  a  reflection  group  or  a  reflection  coset.  If `W` is a
 reflection group it is treated as the trivial coset 'Spets(W)'.
 A  *Levi*  is  a  subcoset  of  the  form `W₁F₁` where `W₁` is a *parabolic
 subgroup* of `W`, that is the centralizer of some subspace of `V`, and `F₁∈
-WF`.
+WF` normalizes `W₁`.
 
 Let `ζ` be a root of unity. `split_levis` returns a list of representatives
 of  conjugacy classes  of `ζ`-split  Levis of  `W`. A  `ζ`-split Levi  is a
@@ -418,6 +384,41 @@ function Weyl.standard_parabolic(W::PermRootGroup, H)
   return nothing
 end
 
+"""
+`relative_root(W,L,i)`
+
+return 'action' of refls(W,i)∉ L on X(Z_L)
+a namedtuple with root, coroot, eigenvalue, index=i and toparent in W
+"""
+function relative_root(W,L,i)
+# xprintln("W=",W," i=",i," L=",L)
+  N=normalizer(reflection_subgroup(W,vcat(inclusiongens(L,W),[i])),L)
+  if length(N)==length(L) error("N(L)==L") end
+  F=N/L
+# xprintln(abelian_gens(elements(F)))
+  if  !iscyclic(F)  error("in theory N/L expected to be cyclic") end
+  d=length(F)
+# println("d=$d ",order.(elements(F)))
+  for rc in filter(x->order(x)==d,elements(F))
+    m=central_action(L,reflrep(L,rc.phi))
+    r=asreflection(m)
+    if r===nothing error("not a reflection --- This should not happen") end
+#   println("rc=$rc")
+    if r.eig==E(d)
+      rc=filter(c->central_action(L,reflrep(L,c))==m,classreps(N))
+#     println("rc=$rc")
+      c=unique!(sort(map(x->position_class(W,x),rc)))
+      m=maximum(map(x->count(isone,x),refleigen(W)[c]))
+      m=filter(x->count(isone,refleigen(W)[x])==m,c)
+      m=filter(x->position_class(W,x) in m,rc)
+      if any(x->order(x)==d,m)  m=filter(x->order(x)==d,m) end
+      return (root=r.root,coroot=r.coroot,eigenvalue=r.eig,index=i,
+              toparent=m[1])
+    end
+  end
+  error("no root found for reflection along root ",i,"\n")
+end
+
 function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
 # println("relative_group: W=$W J=$J indices=$indices")
   res = Dict{Symbol, Any}(:callarg => joindigits(J))
@@ -426,30 +427,30 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
 # if length(keys(res))>1 return res end
   L=reflection_subgroup(W, J)
   if length(J)==0
-    W.MappingFromNormalizer=w->PermX(W,central_action(L, reflrep(L,w)))
-    W.relativeIndices=eachindex(gens(W))
+    W.fromparent=w->PermX(W,central_action(L, reflrep(L,w)))
+    W.relative_indices=eachindex(gens(W))
     return W
   end
   if indices==false
     indices=filter(x->!(refls(W, x) in L),eachindex(gens(W)))
   end
   if sort(inclusion(L))==sort(inclusion(W))
-    res[:relativeIndices]=Int[]
-    res[:MappingFromNormalizer]=w->Perm()
+    res[:relative_indices]=Int[]
+    res[:fromparent]=w->Perm()
     res[:rank]=0
     return PRG(Perm{Int16}[],one(W),Matrix{Int}[],Vector{Int}[],Vector{Int}[],res)
   end
-  res[:roots] = []
-  res[:simpleCoroots] = []
-  res[:relativeIndices] = []
-  res[:parentMap] = []
+  res[:roots]=empty(roots(W))
+  res[:simpleCoroots]=empty(roots(W))
+  res[:relative_indices]=Int[]
+  res[:toparent]=empty(gens(W))
   for R in filter(!isnothing,map(r->relative_root(W,L,r),indices))
     p=findfirst(==(R.root),res[:roots])
     if p===nothing || p!=findfirst(==(R.coroot),res[:simpleCoroots])
       push!(res[:roots], R.root)
       push!(res[:simpleCoroots], R.coroot)
-      push!(res[:relativeIndices], R.index)
-      push!(res[:parentMap], R.parentMap)
+      push!(res[:relative_indices], R.index)
+      push!(res[:toparent], R.toparent)
     end
   end
   N=length(normalizer(W,L))//length(L)
@@ -459,10 +460,10 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
   R=PRG(res[:roots], res[:simpleCoroots])
   if N==length(R)
     merge!(R.prop,res)
-    R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
-#   InfoChevie("W_",W,"(L_",res[:callarg],")==",R,"<",join(R.prop[:relativeIndices]),">")
+    R.fromparent=w->PermX(R, central_action(L, reflrep(L,w)))
+#   InfoChevie("W_",W,"(L_",res[:callarg],")==",R,"<",join(R.prop[:relative_indices]),">")
     # printTeX(rio(),"W_",W,"(L_{",res[:callarg],"})==",R,
-    #             "<",joindigits(R.relativeIndices),">\n")
+    #             "<",joindigits(R.relative_indices),">\n")
     return R
   end
   printTeX(rio(),"# warning: W_",W,"(L_{",res[:callarg],"})",":size ",N,
@@ -479,10 +480,10 @@ function Weyl.relative_group(W,J::Vector{<:Integer},indices=false)
     if N==length(R)
       res[:roots]=nr
       res[:simpleCoroots]=ncr
-      push!(res[:relativeIndices], l.index)
-      push!(res[:parentMap], l.parentMap)
+      push!(res[:relative_indices], l.index)
+      push!(res[:toparent], l.toparent)
       empty!(R.prop);merge!(R.prop,res)
-      R.MappingFromNormalizer=w->PermX(R, central_action(L, reflrep(L,w)))
+      R.fromparent=w->PermX(R, central_action(L, reflrep(L,w)))
       return R
     end
   end

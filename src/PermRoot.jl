@@ -352,13 +352,21 @@ end
 
 Base.copy(t::TypeIrred)=TypeIrred(copy(t.prop))
 
-indices(t::TypeIrred)=haskey(t,:indices) ? t.indices : haskey(t,:orbit) ?
-isempty(t.orbit) ? Int[] : length(t.orbit)==1 ? t.orbit[1].indices :
-vcat(getproperty.(t.orbit,:indices)...) : haskey(t,:rank) ? (1:t.rank) : nothing
+function indices(t::TypeIrred)::Vector{Int}
+  if haskey(t,:indices) t.indices
+  elseif haskey(t,:orbit) 
+    o=t.orbit::Vector{TypeIrred}
+    if isempty(o)  Int[] 
+    elseif length(o)==1 o[1].indices
+    else vcat(indices.(o)...)
+    end
+  elseif haskey(t,:rank) 1:t.rank
+  end
+end
 
-indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : vcat(indices.(t)...)
+indices(t::Vector{TypeIrred})=isempty(t) ? Int[] : length(t)==1 ? indices(t[1]) : vcat(indices.(t)...)
 
-function rank(t::TypeIrred)
+function rank(t::TypeIrred)::Int
   if haskey(t,:rank) return t.rank end
   i=indices(t)
   if i!==nothing return length(i) end
@@ -1645,10 +1653,10 @@ function PRG(r::AbstractVector{<:AbstractVector},
     if sort(l)!=eachindex(l)
       InfoChevie("# changing gens to <",join(l,","),"> for ",
                                              t,"<",ngens(W)," refs>\n")
-      save=haskey(W,:MappingFromNormalizer)
-      if save n=W.MappingFromNormalizer end
+      save=haskey(W,:fromparent)
+      if save n=W.fromparent end
       W=PRG(roots(W,l),coroots(W,l))
-      if save W.MappingFromNormalizer=n end
+      if save W.fromparent=n end
     end
   end
   W
@@ -1841,10 +1849,10 @@ function reflection_subgroup(W::PRG,I::AbstractVector;NC=false)
   if sort(l)!=eachindex(gens(H))
     InfoChevie("# changing inclusiongens to <",join(inclusion(H,l),
       ","),"> for ",t,"<",length(inclusion(H))," refs>\n")
-    save=haskey(H,:MappingFromNormalizer)
-    if save n=H.MappingFromNormalizer end
+    save=haskey(H,:fromparent)
+    if save n=H.fromparent end
     H=reflection_subgroup(W,inclusion(H,l);NC=true)
-    if save H.MappingFromNormalizer=n end
+    if save H.fromparent=n end
     for tt in t tt.indices=map(x->findfirst(==(x),l),tt.indices) end
   end
   H.refltype=t

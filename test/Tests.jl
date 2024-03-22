@@ -1447,9 +1447,9 @@ function TalmostHC(W::Spets)
       if hh.series!=tt.series
           ChevieErr("series do not match: is ",hh.series,
                    " should be ",tt.series,"\n") end
-      if hh.indices!=Group(r).relativeIndices[tt.indices]
+      if hh.indices!=Group(r).relative_indices[tt.indices]
         ChevieErr("indices do not match: are ",hh.indices,
-                 " should be ",Group(r).relativeIndices[tt.indices],"\n") end
+                 " should be ",Group(r).relative_indices[tt.indices],"\n") end
     end
   end
 end
@@ -1471,13 +1471,13 @@ function TalmostHC(W)
       if !haskey(tt,:indices)
         ChevieErr("could not find indices (expected ",
                   h[:relativeType][i].orbit[1].indices,")")
-      elseif maximum(tt.indices)>length(r.relativeIndices)
+      elseif maximum(tt.indices)>length(r.relative_indices)
         ChevieErr("use non-simple roots:",tt.indices," of ",r,
-            "<",join(r.relativeIndices,","),">\n")
-      elseif h[:relativeType][i].orbit[1].indices!=r.relativeIndices[tt.indices]
+            "<",join(r.relative_indices,","),">\n")
+      elseif h[:relativeType][i].orbit[1].indices!=r.relative_indices[tt.indices]
         ChevieErr("stored indices are ",
                 h[:relativeType][i].orbit[1].indices,
-               " should be ",r.relativeIndices[tt.indices],"\n")
+               " should be ",r.relative_indices[tt.indices],"\n")
       end
     end
   end
@@ -1837,9 +1837,9 @@ function Tparameterexponents(W,i)
   if W isa Spets I=map(x->orbit(W.phi,x),I)
   else 
     G=relative_group(W,h[:levi])
-    if haskey(G,:relativeIndices) && G.relativeIndices[indices(refltype(G))]!=I 
+    if haskey(G,:relative_indices) && G.relative_indices[indices(refltype(G))]!=I 
       ChevieErr("indices computed=",
-        joindigits(G.relativeIndices[indices(refltype(G))]),
+        joindigits(G.relative_indices[indices(refltype(G))]),
         " stored=",joindigits(I),"\n");
     end
     I=map(x->[x],I)

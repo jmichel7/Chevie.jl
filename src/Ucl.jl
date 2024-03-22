@@ -1639,18 +1639,17 @@ function TwoVarGreen(W,L)
     RG=relative_coset(W,inclusion(L,s[:levi]))
     RLF=relative_coset(L,s[:levi])
     RL=Group(RLF)
-    l=map(x->findfirst(==(x),Group(RG).relativeIndices),
-      inclusion(L,RL.relativeIndices))
+    l=map(x->findfirst(==(x),Group(RG).relative_indices),
+      inclusion(L,RL.relative_indices))
     if nothing in l error("not implemented") end
-    RLF=subspets(RG,convert(Vector{Int},l),
-                Group(RG).MappingFromNormalizer(L.phi))
+    RLF=subspets(RG,convert(Vector{Int},l),Group(RG).fromparent(L.phi))
     RL=Group(RLF)
     f=fusion_conjugacy_classes(RLF,RG)
     cl=classreps(RLF)
     d=map(cl)do w
       pw=word(RLF,w)
       if isempty(pw) pw=L.phi
-      else pw=prod(Group(RG).parentMap[pw])*L.phi
+      else pw=prod(Group(RG).toparent[pw])*L.phi
       end
       Lo=subspets(L,Int.(s[:levi]),pw/L.phi)
       r=map(last,filter(x->isone(first(x)),degrees(Lo)))
