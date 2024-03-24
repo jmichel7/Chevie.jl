@@ -528,7 +528,7 @@ end
 charnumbers(d::Dict)=d[:charNumbers]
 
 function charinfo(t::TypeIrred)
-  c=CharInfo(deepcopy(getchev(t,:CharInfo)))
+  c=CharInfo(copy(getchev(t,:CharInfo)))
   c.positionId=c.extRefl[1]
   c.positionDet=c.extRefl[end]
   if !haskey(c,:charnames) error("charnames(",t,") missing") end
@@ -1086,16 +1086,16 @@ end
 function CharTable(t::TypeIrred;opt...)
   ct=getchev(t,:CharTable)
   irr=toM(improve_type(ct[:irreducibles]))
-  CharTable(irr,charnames(t;opt...),classnames(t;opt...),
+  CharTable(irr,charnames(t;opt...,TeX=true),classnames(t;opt...,TeX=true),
             improve_type(ct[:centralizers]),ct[:size],
             Dict{Symbol,Any}(:name=>xrepr(t;TeX=true)))
 end
 
 function Base.prod(ctt::Vector{<:CharTable})
   if isempty(ctt)
-    return CharTable(hcat(1),["Id"],["1"],[1],1,Dict{Symbol,Any}(:name=>"."))
+    return CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}(:name=>"."))
+  elseif length(ctt)==1 return ctt[1]
   end
-  if length(ctt)==1 return ctt[1] end
   charnames=join.(cartesian(getfield.(ctt,:charnames)...),",")
   classnames=join.(cartesian(getfield.(ctt,:classnames)...),",")
   centralizers=prod.(cartesian(getfield.(ctt,:centralizers)...))
@@ -1138,11 +1138,9 @@ CharTable(³D₄)
 function CharTable(W::Union{Hastype,FiniteCoxeterGroup};opt...)
   get!(W,:chartable)do
     t=refltype(W)
-    ct=isempty(t) ?
-      CharTable(hcat(1),["Id"],["."],[1],1,Dict{Symbol,Any}()) :
-      prod(CharTable.(t;opt...))
+    ct=isempty(t) ? prod(CharTable[]) : prod(CharTable.(t;opt...))
     ct.name=xrepr(W;TeX=true)
-    ct.repr="CharTable($W)"
+    ct.repr=string("CharTable(",W,")")
     ct
   end::CharTable
 end
@@ -1457,15 +1455,31 @@ The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
 function charnames(io::IO,W::Union{Group,Coset})
-  if applicable(refltype,W) cn=charnames(io,charinfo(W))
-  else cn=CharTable(W).charnames
+  if applicable(refltype,W) charnames(io,refltype(W))
+  else fromTeX.(Ref(io),CharTable(W).charnames)
+  end
+end
+
+charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
+
+charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
+
+function charnames(io::IO,t::TypeIrred)
+  ci=getchev(t,:CharInfo)
+  cn=ci[:charnames]
+  for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
+    if get(io,k,false) && haskey(ci,k) cn=string.(ci[k]) end
   end
   fromTeX.(Ref(io),cn)
 end
 
-charnames(t::TypeIrred;opt...)=charnames(IOContext(stdout,opt...),t)
-charnames(io::IO,t::TypeIrred)=charnames(io,charinfo(t))
-charnames(W;opt...)=charnames(IOContext(stdout,opt...),W)
+function charnames(io::IO,tt::Vector{TypeIrred})
+  if isempty(tt) return ["Id"] end
+  cn=map(t->charnames(io,t),tt)
+  if length(cn)==1 cn[1]
+  else map(x->join(x,fromTeX(io,"\\otimes ")),cartesian(cn...))
+  end
+end
 
 """
 `classnames(W;options...)`

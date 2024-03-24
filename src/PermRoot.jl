@@ -1151,18 +1151,16 @@ Base.show(io::IO,::MIME"text/plain",v::Vector{TypeIrred})=show(io,v)
 
 function Base.show(io::IO, t::AbstractVector{<:TypeIrred})
   r=0
-  n=join(map(t)do t
+  join(io,map(t)do t
     n=xrepr(io,t)
     inds=indices(t)
     if isnothing(inds) n*="?"
-    elseif inds!=r .+eachindex(inds) && hasdecor(io)
-      n="{"*n*"}"*"_{"*joindigits(inds;always=true)*"}"
+    elseif inds!=r.+eachindex(inds) && hasdecor(io)
+      n=fromTeX(io,"{"*n*"}"*"_{"*joindigits(inds;always=true)*"}")
     end
     r+=rank(t)
     n
-   end,hasdecor(io) ? "\\times{}" : "*")
-  n=fromTeX(io,n)
-  print(io,n)
+   end,hasdecor(io) ? fromTeX(io,"\\times{}") : "*")
 end
 
 function showtorus(io::IO,W)

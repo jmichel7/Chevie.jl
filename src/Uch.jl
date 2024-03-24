@@ -285,14 +285,11 @@ function SerNames(io::IO,sers)
     tt=ser[:relativeType]
     if !(tt isa Vector) tt=[tt] end
     n=fromTeX(io,ser[:cuspidalName])
-    if isempty(tt) res[charnumbers(ser)]=[n]
-    else
-      nn=map(t->charnames(io,t),tt)
-      nn=map(x->join(x,"\\otimes "),cartesian(nn...))
-      nn=map(x->fromTeX(io,x),nn)
+    if isempty(tt) nn=[n]
+    else nn=charnames(io,tt)
       if !isempty(ser[:levi]) nn=map(x->string(n,":",x),nn) end
-      res[charnumbers(ser)]=nn
     end
+    res[charnumbers(ser)]=nn
   end
   res
 end

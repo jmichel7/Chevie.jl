@@ -497,17 +497,16 @@ CharTable(hecke(G₄,q))
 function Chars.CharTable(H::HeckeAlgebra;opt...)
   get!(H,:chartable)do
     W=H.W
-    if isempty(refltype(W))
-      ct=CharTable(fill(1,1,1),["Id"],["."],[1],1,Dict{Symbol,Any}())
+    if isempty(refltype(W)) ct=prod(CharTable[])
     else
-      cts=map(refltype(W))do t
+      ct=prod(map(refltype(W))do t
         ct=getchev(t,:HeckeCharTable,H.para[t.indices], haskey(H,:rootpara) ?
                  rootpara(H)[t.indices] : fill(nothing,length(H.para)))
-        CharTable(improve_type(toM(ct[:irreducibles])),charnames(t;opt...),
-             string.(classnames(t;opt...)),Int.(ct[:centralizers]),
+        CharTable(improve_type(toM(ct[:irreducibles])),
+                  charnames(t;opt...,TeX=true),
+             string.(classnames(t;opt...,TeX=true)),Int.(ct[:centralizers]),
              Int(ct[:centralizers][1]),Dict{Symbol,Any}())
-      end
-      ct=prod(cts)
+      end)
     end
     ct.name=xrepr(H;TeX=true)
     ct.group=H
@@ -1177,8 +1176,8 @@ julia> CycPol.(s)
  q⁻²Φ₂²Φ₄
 ```
 """
-schur_elements(H::HeckeAlgebra)=map(p->schur_element(H,p),
-                                    charinfo(H.W).charparams)
+schur_elements(H::HeckeAlgebra)=
+   map(p->schur_element(H,p), charinfo(H.W).charparams)
 
 #----------------------- Factorized Schur elements
 """
@@ -1507,7 +1506,7 @@ function Chars.CharTable(H::HeckeCoset;opt...)
       ct=getchev(t,:HeckeCharTable,H.H.para[inds], haskey(H.H,:rootpara) ?
                rootpara(H.H)[inds] : fill(nothing,length(H.H.para)))
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
-      else                     names=charnames(t;opt...)
+      else                     names=charnames(t;opt...,TeX=true)
       end
       CharTable(improve_type(toM(ct[:irreducibles])),names,
          ct[:classnames],Int.(ct[:centralizers]),length(W),
