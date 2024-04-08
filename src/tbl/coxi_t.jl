@@ -20,7 +20,7 @@ chevieset(:I, :CharInfo, function(m)
   end
   push!(charparams,[1,m])
   append!(charparams,map(i->[2,i],1:div(m-1,2)))
-  res[:charnames]=exceptioCharName.(charparams)
+  res[:charnames]=GAPENV.exceptioCharName.(charparams)
   res[:charparams]=charparams
   res[:b]=map(x->x[2], charparams)
   res[:B]=map(phi->phi[1]==1 ? phi[2] : m-phi[2], charparams)

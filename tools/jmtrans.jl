@@ -9,15 +9,14 @@ const src=[
 "coxh3", "coxh4", "coxi", "weyla", "weylbc", "weyld", "weyl2d",
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
 "weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "exceptio",
-"weyl2a", 
-"cmplximp",
-"cmpxtimp"] 
+"weyl2a", "cmplximp", "cmpxtimp"] 
 
-# functions whose translation does not work so they are hand-translated
-# to files xxx_t.jl in tbl. The useful code from compat3 is in Chevie.jl
+# functions hand-translated to files xxx_t.jl in tbl (because the transpiled
+# version does not work, or is too slow).
+# The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
  "CartanMat"=>["B","D","G25","G26","G29","G31","G32","G34"],
- "CharInfo"=>["I"],
+ "CharInfo"=>["I","imp"],
  "CharName"=>["timp"],
  "CharTable"=>["A","2A","B","D","2D","G31","G34","imp"],
  "ClassParameter"=>["A","2A","B","2D","D","H4"],

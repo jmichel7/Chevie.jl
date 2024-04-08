@@ -256,7 +256,7 @@ imprimitive family
 └─────┴──────────────────────────────┘
 
 julia> galois(f,-1)
-Family(overline 0011,[4, 3, 2])
+Family(conj(0011),[4, 3, 2])
 conj(imprimitive family)
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│
@@ -273,16 +273,15 @@ function CyclotomicNumbers.galois(f::Family,p::Int)
   f.eigenvalues=galois.(f.eigenvalues,p)
   if haskey(f,:sh) f.sh=galois.(f.sh,p) end
   if haskey(f,:name)
-    f.name=p==-1 ? "overline "*f.name : "Gal("*string(p)*","*f.name*")"
+    f.name=p==-1 ? "conj("*f.name*")" : "galois($(f.name),$p)"
   end
   if haskey(f,:explanation)
-    f.explanation=p==-1 ? "conj("*f.explanation*")" :
-    "GaloisCyc("*string(p)*","*f.explanation*")"
+  f.explanation=p==-1 ? "conj($(f.explanation))" : "galois($(f.explanation),$p)"
   end
   f
 end
 
-"`conj(f::Family)`:   is    a    synonym    for 'galois(f,-1)'."
+"`conj(f::Family)`: is a synonym for 'galois(f,-1)'."
 Base.conj(f::Family)=galois(f,-1)
 
 """
@@ -752,6 +751,46 @@ julia> Families.ndrinfeld_double(complex_reflection_group(5))
 ```
 """
 ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
+
+# drinfeld double of a Frobenius group of order 20 (for G29)
+chevieset(:families,:F20,function()
+  g4=Perm(2,4,5,3);g5=Perm(1,2,3,4,5)
+  f20=Group(g5,g4)
+  f20.classreps=[Perm(),g4^3,g4,g4^2,g5]
+  f20.chartable=CharTable(
+    [1 1 1 1 1;1 -1 -1 1 1;1 -E(4) E(4) -1 1;1 E(4) -E(4) -1 1;4 0 0 0 -1],
+    ["1","-1","i","-i","\\rho"],["1","g_4^3","g_4","g_2","g_5"],
+    [20,4,4,4,5],20,Dict{Symbol,Any}(:name=>"F20"))
+  f20.name="F20"
+  drinfeld_double(f20)
+end)
+
+# drinfeld double of a Frobenius group of order 42 (for G34)
+chevieset(:families,:F42,function()
+  g7=Perm(1,2,3,4,5,6,7);g6=Perm(2,6,5,7,3,4)
+  f42=Group(g7,g6)
+  f42.classreps=[Perm(),g6^4,g6^5,g6^2,g6,g6^3,g7]
+  f42.chartable=CharTable(
+  [1      1       1      1       1  1  1;
+   1      1      -1      1      -1 -1  1;
+   1 E(3)^2   -E(3)   E(3) -E(3)^2 -1  1;
+   1   E(3) -E(3)^2 E(3)^2   -E(3) -1  1;
+   1 E(3)^2    E(3)   E(3)  E(3)^2  1  1;
+   1   E(3)  E(3)^2 E(3)^2    E(3)  1  1;
+   6      0       0      0       0  0 -1],
+  ["1","-1","-\\zeta_3^2","-\\zeta_3","\\zeta_3^2","\\zeta_3","\\rho"],
+  ["1","g_6^4","g_6^5","g_6^2","g_6","g_6^3","g_7"],
+  [ 42, 6, 6, 6, 6, 6, 7],42,Dict{Symbol,Any}(:name=>"F42"))
+  drinfeld_double(f42)
+end)
+
+# drinfeld double of G4 (for G32)
+chevieset(:families,:G4,function()
+  g4=crg(4)
+  classinfo(g4)
+  g4.classinfo.classnames=["1","z","g_4","g_6","g_6^4","g_6^2","g_6^5"]
+  drinfeld_double(g4;pivotal=(g4(1,2)^3,[E(3),E(3)]))
+end)
 
 """
 `family_imprimitive(S)`

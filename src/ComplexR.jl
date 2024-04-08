@@ -134,7 +134,11 @@ function degrees(W::ComplexReflectionGroup)
   end::Vector{Int}
 end
 
-torusfactors(WF::Spets)=eigmat(central_action(Group(WF),WF.F))
+function torusfactors(WF::Spets)
+  get!(WF,:torusfactors)do
+    eigmat(central_action(Group(WF),WF.F))
+  end::Vector{Root1}
+end
 
 """
 `degrees(WF::Spets)`
@@ -179,12 +183,10 @@ julia> degrees(HF)
 """
 function degrees(W::Spets)
   get!(W,:degrees)do
-    a=torusfactors(W) 
     if isempty(refltype(W)) b=Tuple{Int,Cyc{Int}}[]
     else b=vcat(degrees.(refltype(W))...) 
     end
-    # separate/recombine for promotions to work
-    collect(zip(vcat(fill(1,length(a)),first.(b)),vcat(a,last.(b))))
+    vcat(map(x->(1,Cyc(x)),torusfactors(W)),b)
   end::Vector{Tuple{Int,Cyc{Int}}}
 end
 

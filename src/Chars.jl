@@ -577,7 +577,7 @@ function charinfo(t::TypeIrred)
   c
 end
 
-cartfields(p,f)=cartesian(getindex.(p,f)...)
+cartfields(p,f)=if length(p)==1 map(x->[x],getindex(p[1],f)) else cartesian(getindex.(p,f)...) end
 
 """
 `charinfo(W)`
@@ -727,7 +727,7 @@ function charinfo(W)
       res.nrGroupClasses=prod(i->p[i].nrGroupClasses^length(t[i].orbit),
                                                           eachindex(t))
     end
-    res.charnames=join.(cartfields(p,:charnames),",")
+    if length(p)>1 res.charnames=join.(cartfields(p,:charnames),",") end
     for f in [:positionId, :positionDet]
       if all(d->haskey(d,f),p)
         res.prop[f]=cart2lin(map(x->length(x.charparams),p),getindex.(p,f))
@@ -749,6 +749,8 @@ function charinfo(W)
     res
   end::CharInfo
 end
+
+charinfo(W::Weyl.FC)=charinfo(W.G)
 
 function Base.show(io::IO, ::MIME"text/html", ci::CharInfo)
   show(IOContext(io,:TeX=>true), "text/plain",ci)
@@ -1398,8 +1400,10 @@ function charnames(io::IO,c::CharInfo)
   for k in [:spaltenstein, :frame, :malle, :kondo, :gp, :lusztig, :carter]
     if get(io,k,false) && haskey(c,k) cn=string.(c[k]) end
   end
-  cn
+  fromTeX.(Ref(io),cn)
 end
+
+charnames(io::IO,W::Weyl.FC)=charnames(io,W.G)
 
 """
 `charnames(ComplexReflectionGroup or Spets;options...)`
@@ -1455,7 +1459,7 @@ The  last two  commands show  the character  names used by Spaltenstein and
 Lusztig when describing the Springer correspondence.
 """
 function charnames(io::IO,W::Union{Group,Coset})
-  if applicable(refltype,W) charnames(io,refltype(W))
+  if applicable(refltype,W) charnames(io,charinfo(W))
   else fromTeX.(Ref(io),CharTable(W).charnames)
   end
 end

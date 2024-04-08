@@ -133,10 +133,10 @@ include("Weyl.jl");@reexport using .Weyl
 include("Cosets.jl");@reexport using .Cosets
 include("ComplexR.jl");@reexport using .ComplexR
 include("Chars.jl");@reexport using .Chars
-include("Symbols.jl");@reexport using .Symbols
 include("Tools2.jl");@reexport using .Tools2
 include("Algebras.jl");@reexport using .Algebras
 include("InitChevie.jl");@reexport using .InitChevie
+include("Symbols.jl");@reexport using .Symbols
 include("Lusztig.jl");@reexport using .Lusztig
 include("Eigenspaces.jl");@reexport using .Eigenspaces
 include("Garside.jl");@reexport using .Garside

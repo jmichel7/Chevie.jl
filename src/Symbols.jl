@@ -114,9 +114,9 @@ julia> string_partition_tuple.(d)
  ".3"
 ```
 """
-function string_partition_tuple(n,a=Dict())
+function string_partition_tuple(n;opt...)
   if n[end] isa Vector return join(joindigits.(n),".") end
-  r=xrepr(rio(),E(n[end-1],n[end]))
+  r=xrepr(E(n[end-1],n[end]);opt...)
   if r=="1" r="+" end
   if r=="-1" r="-" end
   join(joindigits.(n[1:end-2]),".")*r
@@ -214,9 +214,8 @@ julia> symbol_partition_tuple([[2,1],[1]],-1)
 """
 function symbol_partition_tuple(p,S)
   if p[end] isa Number
-    l=1:length(p)-2
-    return vcat(symbol_partition_tuple(p[l],S isa Integer ? S : S[l]),
-                         p[end-1:end])
+    return vcat(symbol_partition_tuple(p[1:end-2],
+              S isa Integer ? S : S[1:length(p)-2]), p[end-1:end])
   end
   if S isa Integer
     if S<0 s=fill(-S,length(p));s[1]=0
@@ -231,7 +230,7 @@ end
 
 function fullsymbol(S)::Vector{Vector{Int}}
   if isempty(S) || S[end] isa AbstractVector return S end
-  reduce(vcat,map(i->map(copy,S[1:end-2]),1:S[end-1]))
+  repeat(S[1:end-2],S[end-1])
 end
 
 """
@@ -319,18 +318,17 @@ julia> degree_fegsymbol([[1,5,6],[1,2]])
 """
 function degree_fegsymbol(s)
   s=fullsymbol(s)
-  e=length(s)
   d=defectsymbol(s)
-  if !(d in [0,1]) return -1 end
+  if d!=0 && d!=1 return -1 end
   r=ranksymbol(s)
+  e=length(s)
   if d==1 res=div(e*r*(r+1),2)
   else    res=div(e*r*(r-1),2)+r
   end
-  res+=e*sum(S->transpose(S)*(0:length(S)-1)-sum(l->div(l*(l+1),2),S),
-               filter(!isempty,s))
-  gamma=i->sum(mod.(i.+(0:e-1),e).*map(sum,s))
+  res+=e*sum(S->transpose(S)*(0:length(S)-1)-sum(l->div(l*(l+1),2),S;init=0),s)
+  gamma=i->sum(j->mod(i+j,e)*sum(s[j+1]),0:e-1)
   if d==1 res+=gamma(0)
-  else res+=maximum(gamma.(0:e-1))
+  else res+=maximum(gamma(i) for i in 0:e-1)
   end
   res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2)))
 end
@@ -349,12 +347,12 @@ julia> valuation_fegsymbol([[1,5,6],[1,2]])
 function valuation_fegsymbol(s)
   s=fullsymbol(s)
   d=defectsymbol(s)
-  if !(d in [0,1]) return -1 end
+  if d!=0 && d!=1 return -1 end
   e=length(s)
-  res=e*sum(S->transpose(S)*(length(S)-1:-1:0),filter(!isempty,s))
-  gamma=i->sum(mod.(i.+(0:e-1),e).*map(sum,s))
+  res=e*sum(S->transpose(S)*(length(S)-1:-1:0),s)
+  gamma=i->sum(j->mod(i+j,e)*sum(s[j+1]),0:e-1)
   if d==1 res+=gamma(0)
-  else res+=minimum(gamma.(0:e-1))
+  else res+=minimum(gamma(i) for i in 0:e-1)
   end
   res-sum(map(x->div(x*(x-1),2),e*(1:div(sum(length,s),e)-1).+mod(d,2)))
 end
@@ -767,4 +765,48 @@ end
 showxsp(r)=println("(symbol=",string_partition_tuple(r.symbol),
     ", sp=",string_partition_tuple(r.sp),", dimBu=",r.dimBu,", Au=",r.Au,")")
 
+using ..InitChevie: chevieget
+"""
+`BDSymbols(n,d)`
+    
+returns  2-symbols of defect `d` and rank `n` (for Weyl types B,C,D,2D). If
+`d==0`  the symbols with  equal entries are  returned twice, represented as
+the  first entry, followed by the repetition factor 2 and an ordinal number
+0 or 1, so that `BDSymbols(n, 0)` is a set of parameters for the characters
+of the Weyl group of type `Dₙ`.
+
+```julia-repl
+julia> BDSymbols(2,1)
+5-element Vector{Vector{Vector{Int64}}}:
+ [[1, 2], [0]]
+ [[0, 2], [1]]
+ [[0, 1, 2], [1, 2]]
+ [[2], []]
+ [[0, 1], [2]]
+
+julia> BDSymbols(4,0)
+13-element Vector{Vector}:
+ Any[[1, 2], 2, 0]
+ Any[[1, 2], 2, 1]
+ [[0, 1, 3], [1, 2, 3]]
+ [[0, 1, 2, 3], [1, 2, 3, 4]]
+ [[1, 2], [0, 3]]
+ [[0, 2], [1, 3]]
+ [[0, 1, 2], [1, 2, 4]]
+ Any[[2], 2, 0]
+ Any[[2], 2, 1]
+ [[0, 1], [2, 3]]
+ [[1], [3]]
+ [[0, 1], [1, 4]]
+ [[0], [4]]
+```
+"""
+function BDSymbols(n,d)
+  n-=div(d^2,4)
+  if n<0 return Vector{Vector{Int}}[] end
+  if d>0 return map(x->symbol_partition_tuple(x,d),partition_tuples(n,2)) end
+   return map(chevieget(:D,:symbolcharparam),
+              chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
+end
+export BDSymbols
 end

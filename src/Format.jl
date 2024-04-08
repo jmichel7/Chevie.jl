@@ -115,37 +115,41 @@ const TeXmacros=Dict("beta"=>"β", "chi"=>"χ", "delta"=>"δ",
   "sum"=>"Σ", "cap"=>"∩", "mu"=>"μ", "dim"=>"dim")
 
 # defs below are necessary since constant folding is not good enough
-const r1=Regex("_[$subchars]")
-const r2=Regex("(_\\{[$subchars]*\\})('*)")
-const r3=Regex("_\\{[$subchars]*\\}")
-const r4=Regex("\\^[$supchars]")
-const r5=Regex("\\^\\{[$supchars]*\\}")
-const r6=Regex("\\\\overline{([0-9]*)}")
+const r1=Regex("_[$subchars]")=>t->sub[t[2]]
+const r2=Regex("(_\\{[$subchars]*\\})('*)")=>s"\2\1"
+const r3=Regex("_\\{[$subchars]*\\}")=>t->map(x->sub[x],t[3:end-1])
+const r4=Regex("\\^[$supchars]")=>t->sup[t[2]]
+const r5=Regex("\\^\\{[$supchars]*\\}")=>t->map(x->sup[x],t[3:end-1])
 
 #strip TeX formatting from  a string, using unicode characters to approximate
 function unicodeTeX(s::String)
-  if all(x->x in 'a':'z' || x in 'A':'Z' || x in '0':'9',s) return s end
-  s=replace(s,r"\\tilde ([A-Z])"=>s"\1\U303")
-  s=replace(s,r"\\tilde *(\\[a-zA-Z]*)"=>s"\1\U303")
+  if !any(ispunct,s) return s end
+  s=replace(s,r"\\([a-zA-Z]+) *"=>function(t)
+    mac=rstrip(t[2:end])
+    if haskey(TeXmacros,mac) TeXmacros[mac]
+    else t
+    end
+  end)
+  s=replace(s,r"\\tilde *(\w)"=>s"\1\U303")
   s=replace(s,r"\\hfill\\break"=>"\n")
   s=replace(s,r"\\(h|m)box{([^}]*)}"=>s"\2")
   s=replace(s,r"\\!"=>"")
-  s=replace(s,r"\^\{\\frac\{([-0-9]*)\}\{([0-9]*)\}\}"=>
+  s=replace(s,r"\^\{\\frac\{(-?\d*)\}\{(\d*)\}\}"=>
     t->stringexp(rio(),Rational(parse.(Int,split(t[9:end-2],"}{"))...)))
   s=replace(s,r"\\#"=>"#")
   s=replace(s,r"\\mathfrak  *S"=>"𝔖 ")
   s=replace(s,r"\\mathbb  *Z"=>"ℤ")
   s=replace(s,r"\\cal  *B"=>"ℬ ")
-  s=replace(s,r"\\bf *([A-Z])"=>t->String([t[end]+0x1D400-0x41]))
-  s=replace(s,r6=>t->prod(string(x,'\U0305') for x in t[11:end-1]))
-  s=replace(s,r"\\([a-zA-Z]+) *"=>t->TeXmacros[rstrip(t[2:end])])
+  s=replace(s,r"\\bf *(\w)"=>t->String([t[end]+0x1D400-0x41]))
+  s=replace(s,r"\\overline{(\d*)}"=>
+                  t->prod(string(x,'\U0305') for x in t[11:end-1]))
   s=replace(s,r"\$"=>"")
   s=replace(s,r"{}"=>"")
-  s=replace(s,r1=>t->sub[t[2]])
-  s=replace(s,r2=>s"\2\1")
-  s=replace(s,r3=>t->map(x->sub[x],t[3:end-1]))
-  s=replace(s,r4=>t->sup[t[2]])
-  s=replace(s,r5=>t->map(x->sup[x],t[3:end-1]))
+  s=replace(s,r2)
+  s=replace(s,r1)
+  s=replace(s,r3)
+  s=replace(s,r4)
+  s=replace(s,r5)
   s=replace(s,r"''*"=>t->stringprime(rio(),length(t)))
 # s=replace(s,r"\{([^}]*)\}"=>s"\1")
   s=replace(s,r"^\{([^}{,]*)\}"=>s"\1")
@@ -154,25 +158,22 @@ function unicodeTeX(s::String)
   s
 end
 
-function TeXstrip(n::String) # plain ASCII rendering of TeX code
-  n=replace(n,r"\\tilde *"=>"~")
-# n=replace(n,r"[_{}$]"=>"") next line faster
-  n=String(filter(x->!(x in "_{}\$"),collect(n)))
-  n=replace(n,r"\\phi"=>"phi")
-  n=replace(n,r"\\zeta"=>"E")
-  n=replace(n,r"\bi\b"=>"I")
-  n=replace(n,r"\\mathfrak *"=>"")
+# plain ASCII rendering of TeX code encountered in Chevie
+function TeXstrip(n::AbstractString) 
+  n=replace(n,r"\\tilde *"=>"~","\\phi"=>"phi","\\zeta"=>"E",
+   r"\\mathfrak *"=>"",r"\bi\b"=>"I")
+  String(filter!(x->!(x in "_{}\$"),collect(n)))#replace(n,r"[_{}$]"=>"") slower
 end
 
-"formTeX to document"
-function fromTeX(io::IO,n::String)
+"fromTeX to document"
+function fromTeX(io::IO,n::AbstractString)
   if     get(io,:TeX,false) n 
   elseif get(io,:limit,false) unicodeTeX(n) 
   else   TeXstrip(n)
   end
 end
 
-fromTeX(n::String;opt...)=fromTeX(IOContext(stdout,opt...),n)
+fromTeX(n::AbstractString;opt...)=fromTeX(IOContext(stdout,opt...),n)
 
 TeX(io::IO;k...)=IOContext(io,:TeX=>true,pairs(k)...)
 TeX(io::IO,x)=repr(x;context=TeX(io))

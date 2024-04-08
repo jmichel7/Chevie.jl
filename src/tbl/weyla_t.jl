@@ -13,6 +13,7 @@ function(n,pp) res=k=1;last=0
   end
   res
 end])
+export CharTableSymmetric
 
 chevieset(:A,:CharTable,function(n)
   ct=chevieget(:imp,:CharTable)(1,1,n+1)

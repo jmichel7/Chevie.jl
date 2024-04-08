@@ -61,8 +61,8 @@ chevieset(:D,:CycPolPoincarePolynomial,n->CycPol(Pol()^n-1)*
           prod(i->CycPol(Pol()^2i-1),1:n-1)//CycPol(Pol()-1)^n)
 
 chevieset(:D, :SchurElement, function (n, phi, para, sqrtparam)
-  Value(chevieget(:D, :CycPolPoincarePolynomial)(n)//
-        chevieget(:D, :CycPolGenericDegree)(phi), -para[1][1]//para[1][2])
+  (chevieget(:D, :CycPolPoincarePolynomial)(n)//
+   chevieget(:D, :CycPolGenericDegree)(phi))(-para[1][1]//para[1][2])
 end)
 
 # References for unipotent classes:
@@ -82,10 +82,10 @@ chevieset(:D,:UnipotentClasses,function(n,char)
                      if x[:defect]==defectsymbol(s[:symbol]))
     if s.sp in [[Int[],[1]],[Int[],Int[]]] p=1
     elseif s.sp==[[1], Int[]] p=2
-    else p=findfirst(==([s.sp]),CharParams(ss[:relgroup]))
+    else p=findfirst(==([s.sp]),charinfo(ss[:relgroup]).charparams)
     end
     ss[:locsys][p]=[i,findfirst(==(map(x->x ? [1,1] : [2],s.Au)),
-                                                  CharParams(cc[:Au]))]
+                                           charinfo(cc[:Au]).charparams)]
   end
   function partition2DR(part)
     p=sort(reduce(vcat,map(x->1-x:2:x-1, part)))
@@ -135,7 +135,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     end
   end
   l=union(map(c->map(x->[defectsymbol(x.symbol),
-                         sum(sum,fullsymbol(x.sp))],c),ss))
+                         sum(sum,fullsymbol(x.sp))],c),ss)...)
   sort!(l, by=x->[abs(x[1]), -sign(x[1])])
   uc = Dict{Symbol, Any}(:classes => [], :springerSeries => map(function(d)
       res = Dict{Symbol, Any}(:defect=>d[1], :levi=>1:n-d[2])
@@ -276,7 +276,7 @@ chevieset(:D,:UnipotentClasses,function(n,char)
     ss=first(x for x in uc[:springerSeries] if f(x))
     if s in [[Int[], [1]], [Int[], Int[]]] p = 1
     elseif s == [[1], Int[]] p = 2
-    else p = findfirst(==([s]),CharParams(ss[:relgroup]))
+    else p = findfirst(==([s]),charinfo(ss[:relgroup]).charparams)
     end
     ss[:locsys][p] = [i, k]
   end
@@ -356,7 +356,7 @@ chevieset(:D, :ClassParameter, function (n, w)
       H=map(a->CycleStructurePerm(prod(Dgens[a])), H)
       u=[Dgens,H[1:2:length(H)], H[2:2:length(H)]]
     end
-    tmp=CycleStructurePerm(prod(u[1][w]))
+    tmp=GAPENV.CycleStructurePerm(prod(u[1][w]))
     if tmp in u[2] && !(tmp in u[3]) res=[res[1],'+']
     elseif !(tmp in u[2]) && tmp in u[3] res=[res[1],'-']
     end

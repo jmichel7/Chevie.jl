@@ -14,7 +14,15 @@ using ..Modulo: Mod
 using ..Chevie: Chevie, order
 
 #------------------ improve_type
-best_eltype(m)=reduce(promote_type,best_type.(m))
+function best_eltype(m)
+  if isempty(m) 
+    if eltype(m)<:Rational{<:Integer} Int
+    elseif eltype(m)<:Cyc{<:Rational{<:Integer}} Cyc{Int}
+    else eltype(m)
+    end
+  else reduce(promote_type,best_type.(m))
+  end
+end
 best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
 best_eltype(p::Mvp)=iszero(p) ? Int : best_eltype(values(p.d))
 best_type(x)=typeof(x)
@@ -22,7 +30,7 @@ best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : conductor(x)==1 ?
   best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
 best_type(x::Cyc{T}) where T<:Integer=conductor(x)==1 ? T : typeof(x)
 best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
-best_type(m::AbstractArray{T,N}) where {T,N}=isempty(m) ? typeof(m) : Array{best_eltype(m),N}
+best_type(m::AbstractArray{T,N}) where {T,N}=Array{best_eltype(m),N}
 best_type(p::Pol)=Pol{best_eltype(p)}
 best_type(x::BigInt)= typemin(Int)<=x<=typemax(Int) ? Int : BigInt
 best_type(x::Root1)= order(x)<=2 ? Int : Root1

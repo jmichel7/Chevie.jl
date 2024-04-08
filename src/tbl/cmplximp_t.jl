@@ -308,7 +308,7 @@ function ImprimitiveCuspidalName(S)
         p=Dict("212010"=>"-1","221001"=>"1",
                "211200"=>"\\zeta^2","220110"=>"\\zeta_3")
         "G_2[$(p[s])]"
-      else "I_2($d)"*FormatGAP(chevieget(:I,:SymbolToParameter)(S))
+      else "I_2($d)["*join(chevieget(:I,:SymbolToParameter)(S),",")*"]"
       end
     elseif r==3 && d==3 "G_{3,3,3}[\\zeta_3"* (s=="300" ? "" : "^2")*"]"
     elseif r==3 && d==4 "G_{4,4,3}["*"\\zeta_4"*(s=="3010" ? "" : "^3")*"]"
@@ -316,6 +316,7 @@ function ImprimitiveCuspidalName(S)
     end
   end
 end
+export ImprimitiveCuspidalName
 
 function MakeFamilyImprimitive(S, uc)
   symbn0=x->findfirst(==(x),uc[:charSymbols])
@@ -327,6 +328,7 @@ function MakeFamilyImprimitive(S, uc)
   # if length(diagblocks(fourier(r)))>1 error() end
   r
 end
+export MakeFamilyImprimitive
 
 chevieset(:imp, :Invariants, function (p, q, r)
   map(1:r)do i
@@ -335,4 +337,83 @@ chevieset(:imp, :Invariants, function (p, q, r)
       function(arg...) sum(a->prod(collect(arg[a]))^p,arrangements(1:r,i)) end
     end
   end
+end)
+
+chevieset(:imp, :CharInfo, function (de, e, r)
+  res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :CharParams)(de, e, r))
+  d = div(de, e)
+  if e==1
+    s = fill(0,d)
+    s[1] = 1
+    res[:charSymbols]=map(x->symbol_partition_tuple(x,s),res[:charparams])
+  else
+    if d==1
+      res[:charSymbols]=map(x->symbol_partition_tuple(x,0),res[:charparams])
+    end
+    if d>1 && iseven(e) && r==2
+      res[:malle]=map(res[:charparams])do t
+        local pos, de
+        if t[length(t)] isa Number
+          if t[length(t)]==0 return [1, 2, 1, findfirst(==([1]),t)]
+          else return [1, 1, 2, findfirst(==([1]),t)]
+          end
+        else
+          de=div(length(t),2)
+          pos=filter(i->length(t[i])>0,1:length(t))
+          if length(pos) == 1
+            if t[pos[1]] == [2] return [1, 1, 1, pos[1] - de]
+            else return [1, 2, 2, pos[1] - de]
+            end
+          elseif pos[1] <= de return [2, -1, pos[1], pos[2] - de]
+          else return [2, 1, pos[2] - de, pos[1] - de]
+          end
+        end
+      end
+    elseif [de, e, r] == [3, 3, 3]
+      res[:malle]=[[2,3,2],[2,3,3],[2,3,1],[3,4],[3,5],[1,9],[3,2],[3,1],[2,3,4],[1,0]]
+    elseif [de, e, r] == [3, 3, 4]
+      res[:malle]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],[6,5,2],[8,4],[8,5],[6,5,1],[3,9],[6,2],[2,6],[4,2],[4,1],[3,3],[1,0]]
+    elseif [de, e, r] == [3, 3, 5]
+      res[:malle]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],[30,7,1],[40,6],[30,7,2],[10,11],[15,10],[20,9],[20,8],[15,11],[10,12],[4,18],[30,4],[20,5],[10,8],[10,7],[20,6],[5,12],[20,3],[10,6],[15,4],[15,5],[10,5],[6,9],[10,3],[10,2],[5,6],[5,2],[5,1],[4,3],[1,0]]
+    elseif [de, e, r] == [4, 4, 3]
+      res[:malle]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],[3,2,1],[3,2,2],[3,1],[2,4],[1,0]]
+    end
+  end
+  t=map(r:-1:0)do i
+    v=map(x->Int[],1:max(de,2))
+    if i>0 v[1]=[i] end
+    v[2]=fill(1,r-i)
+    v
+  end
+  if e>1
+    t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t)
+  end
+  res[:extRefl]=map(v->findfirst(==(v),res[:charparams]),t)
+  if e==1 || d==1
+    res[:A]=degree_gendeg_symbol.(res[:charSymbols])
+    res[:a]=valuation_gendeg_symbol.(res[:charSymbols])
+    res[:B]=degree_fegsymbol.(res[:charSymbols])
+    res[:b]=valuation_fegsymbol.(res[:charSymbols])
+  end
+  if e>1 && d>1
+    res[:hgal]=GAPENV.PermListList(res[:charparams], map(res[:charparams])do s
+      s=copy(s)
+      if !(s[end] isa Vector)
+        t=div(length(s)-2,d)
+        s[1:d:d*t-d+1]=circshift(s[1:d:d*t-d+1],1)
+        s[1:end-2]=minimum(map(i->circshift(s[1:end-2],i*d),1:t))
+        return s
+      end
+      s[1:d:d*e-d+1]=circshift(s[1:d:d*e-d+1],1)
+      minimum(map(i->circshift(s,i*d),1:e))
+    end)
+  end
+  res[:charnames]=map(res[:charparams])do s
+      if (s[end] isa Vector) && sum(sum,s)==1
+        xrepr(E(length(s), findfirst(==([1]),s)-1),TeX=true)
+      else
+        string_partition_tuple(s;TeX=true)
+      end
+    end
+  res
 end)

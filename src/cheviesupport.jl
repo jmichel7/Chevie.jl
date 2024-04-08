@@ -116,7 +116,7 @@ end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 LongestCoxeterWord(W)=word(W,longest(W))
 OnMatrices(a::Vector{<:Vector},b::Perm)=invpermute(invpermute.(a,b),b)
-const PartitionTupleToString=string_partition_tuple
+const PartitionTupleToString(s,d=Dict())=string_partition_tuple(s;d...)
 Permuted(x,p)=invpermute(x,p)
 function PermListList(l1,l2)
   l1=improve_type(l1)

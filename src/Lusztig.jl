@@ -201,15 +201,14 @@ function LusztigInductionPieces(LF,WF)
     end
     lu=xrepr(LF;TeX=true)
     lg=xrepr(WF;TeX=true)
-    lfgl=xrepr(LFGL;TeX=true)
-    wfgl=xrepr(WFGL;TeX=true)
+    ind="("*joindigits(h[:levi])*","*h[:cuspidalName]*")"
 #   println(ser[:relativeType],h[:relativeType])
     InductionTable(conj.(induction_table(LFGL,WFGL).scalar),
                    almostcharnames(rio(TeX=true),uW)[charnumbers(ser)],
                    almostcharnames(rio(TeX=true),uL)[charnumbers(h)],
                    isempty(h[:levi]) ? "piece from \$$lu\$ to \$$lg\$" :
-     "piece from \$W_{$lu}($(join(h[:levi])),$(h[:cuspidalName]))\$=$lfgl"*
-     "to \$W_{$lg}($(join(h[:levi])),$(h[:cuspidalName]))\$=$wfgl",
+     "piece from \$W_{$lu}$ind\$="*xrepr(LFGL;TeX=true)*
+     "to \$W_{$lg}$ind\$="*xrepr(WFGL;TeX=true),
     Dict{Symbol,Any}(:repr=>"piece($(repr(LF)),$(repr(WF)))",
                      :wnum=>charnumbers(ser), :hnum=>charnumbers(h)))
   end

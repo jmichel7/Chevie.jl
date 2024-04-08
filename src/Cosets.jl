@@ -788,7 +788,7 @@ function Base.show(io::IO, WF::Spets)
     end
   end
   show(io,refltype(WF))
-  t=CycPol(Pol(charpoly(central_action(W,WF.F))))
+  t=CycPol(1,0,ModuleElt(map(x->x.r,torusfactors(WF)).=>1))
   if !isone(t) show(io,t) 
   elseif isempty(refltype(WF)) print(io,".")
   end

@@ -36,6 +36,7 @@ function G4_22FetchIndexChars(ST, para)
     chevieget(:G4_22, :HeckeCharTable)(ST, para, [])[:indexchars]
   end
 end
+export G4_22FetchIndexChars
 
 #  This function is a helper for char. tables of Hecke algebras G4--G22
 #  c is a vector, e an integer vector same length
@@ -52,6 +53,7 @@ function G4_22Helper(c, e, x, n, p)
   res[nz]=map(i->c[i]*rt^div(e[i],r), nz)
   res
 end
+export G4_22Helper
 
 # tests if res=Chartable(Hecke(G_ST,res[:parameter])) is correct
 # where rows=irrs for generic group (G7, G11 or G19)
@@ -99,6 +101,7 @@ function G4_22Test(res,rows,i)
   end
   G4_22IndexChars_dict[ST][res[:parameter]]=l
 end
+export G4_22Test
 
 #----------------- next 2 here to reduce compiling time
 const GeneratingRoots4_22=
