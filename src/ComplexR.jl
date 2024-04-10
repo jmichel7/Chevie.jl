@@ -8,20 +8,20 @@ export complex_reflection_group, crg, diagram, degrees, codegrees,
 @forward Weyl.FC.G hyperplane_orbits,  codegrees,  degrees
 
 # roots for the adjoint group
-Chevie.roots(t::TypeIrred)=
- t.series==:ST ? getchev(t,:GeneratingRoots) : collect(eachrow(one(cartan(t))))
+PermRoot.simpleroots(t::TypeIrred)=
+  t.series==:ST ? toM(getchev(t,:GeneratingRoots)) : one(cartan(t))
 
 # coroots for the adjoint group
-function PermRoot.coroots(t::TypeIrred)
+function PermRoot.simplecoroots(t::TypeIrred)
   if t.series==:ST
     cr=getchev(t,:GeneratingCoRoots)
     if isnothing(cr)
       r=getchev(t,:GeneratingRoots)
       cr=coroot.(r,E.(ordergens(t)))
     end
-    return map(x->convert.(Cyc{Rational{Int}},x),cr)
+    toM(map(x->convert.(Cyc{Rational{Int}},x),cr))
+  else cartan(t)
   end
-  toL(cartan(t))
 end
 
 """
@@ -50,21 +50,21 @@ julia> W*coxgroup(:A,2) # how to make a non-irreducible group
 G₄×A₂
 
 julia> complex_reflection_group(1,1,3) # another way to enter A₂
-A₂
+gl₃
 
 julia> crg(4) # there is also a short alias
 G₄
 ```
 """
-function complex_reflection_group(i::Int)
+function complex_reflection_group(i::Integer)
   if i==23     coxgroup(:H,3)
   elseif i==28 coxgroup(:F,4)
   elseif i==30 coxgroup(:H,4)
   elseif i==35 coxgroup(:E,6)
   elseif i==36 coxgroup(:E,7)
   elseif i==37 coxgroup(:E,8)
-  else t=TypeIrred(Dict(:series=>:ST,:ST=>i))
-    PRG(roots(t),coroots(t))
+  else t=TypeIrred(Dict(:series=>:ST,:ST=>Int(i)))
+    PRG(simpleroots(t),simplecoroots(t))
   end
 end
 
@@ -72,14 +72,12 @@ function complex_reflection_group(p,q,r)
   if !iszero(p%q) || p<=0 || r<=0 || (r==1 && q!=1)
    error("complex_reflection_group(p,q,r) must satisfy: q|p, r>0, and r=1 => q=1")
   end
-  if p==1 return coxgroup(:A,r-1)
-  elseif p==2
-    if q==2 return coxgroup(:D,r)
-    else return coxgroup(:B,r) end
+  if p==1 return r==1 ? coxgroup() : rootdatum(:gl,r)
+  elseif p==2 return rootdatum(:so,q==2 ? 2r : 2r+1)
   elseif p==q && r==2 return coxgroup(:I,2,p)
   end
   t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
-  PRG(roots(t),coroots(t))
+  PRG(simpleroots(t),simplecoroots(t))
 end
 
 const crg=complex_reflection_group
@@ -93,7 +91,7 @@ function reflection_group(t::TypeIrred)
                                         refltype(W)),-1)...))*t.twist))
     else spets(W,t.twist)
     end
-  elseif t.series==:ST PRG(roots(t),coroots(t))
+  elseif t.series==:ST PRG(simpleroots(t),simplecoroots(t))
   else C=cartan(t)
     all(isreal,C) ? rootdatum(C) : PRG(one(C),C)
   end

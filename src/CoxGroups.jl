@@ -15,12 +15,13 @@ relations describing the order of the product of two elements of `S`.
 A   Coxeter   group   has   a   natural   representation,  its  *reflection
 representation*, on a real vector space `V` of dimension `length(S)` (which
 is  the  *Coxeter  rank*  of  W),  where  each  element  of  `S`  acts as a
-reflection; the faithfulness of this representation in the main argument to
-prove  that the order  of `st` is  exactly `m(s,t)`. This representation is
-defined as follows on a space `V` with basis `{eₛ}` for `s∈ S`. The *cartan
-matrix*  associated to the  Coxeter matrix `m(s,t)`  is the matrix `C` with
-entries  `C(s,t)=-2cos(π/m(s,t))`; we  set `C(s,t)=-2`  if `m(s,t)=∞`. Then
-the action of `s∈ S` on `V` is given by `s(eₜ)=eₜ-C(s,t)eₛ`.
+reflection;  the faithfulness of this representation (a theorem of Tits) is
+the main argument to prove that the order of `st` is exactly `m(s,t)`. This
+representation  is defined as follows on a  space `V` with basis `{eₛ}` for
+`s∈  S`. The *cartan  matrix* associated to  the Coxeter matrix `m(s,t)` is
+the matrix `C` with entries `C(s,t)=-2cos(π/m(s,t))`; we set `C(s,t)=-2` if
+`m(s,t)=∞`. Then the action of `s∈ S` on `V` is given by
+`s(eₜ)=eₜ-C(s,t)eₛ`.
 
 Thus, Coxeter groups are  real reflection groups.  The converse need not be
 true  if the set of reflecting  hyperplanes has bad topological properties,
@@ -459,8 +460,8 @@ end
 `bruhatless(W, x, y)`
 
 whether `x≤y` in the Bruhat order, for `x,y∈ W`. We have `x≤y` if a reduced
-expression  for `x`  can be  extracted from  one for  `w`). See  [(5.9) and
-(5.10) Humphreys1990](biblio.htm#Hum90) for properties of the Bruhat order.
+expression for `x` can be extracted from one for `w`. See [(5.9) and (5.10)
+Humphreys1990](biblio.htm#Hum90) for properties of the Bruhat order.
 
 ```julia-repl
 julia> W=coxgroup(:H,3)

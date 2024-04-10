@@ -495,18 +495,18 @@ julia> charnames(uc;TeX=true)
 ```
 
 One  can control  the display  of unipotent  characters in  various ways by
-`IOContext`  properties. In the display, the row labels are the nems of the
-unipotent characters. Then the following column numbers display:
+`IOContext` properties. In the display, the row labels are the names of the
+unipotent characters. The possible columns are numbered as follows:
 
-    1: The index of the character in the list of unipotent characters.
-    2: The degree of the unipotent character.
-    3: The degree of the corresponding almost character.
-    4: for classical groups, the symbol attached to the unipotent character.
-    5: The eigenvalue of Frobenius attached to the unipotent character.
-    6: The parameter the character has in its Lusztig family.
+  1. The index of the character in the list of unipotent characters.
+  2. The degree of the unipotent character.
+  3. The degree of the corresponding almost character.
+  4. for imprimitive groups, the symbol attached to the unipotent character.
+  5. The eigenvalue of Frobenius attached to the unipotent character.
+  6. The parameter the character has in its Lusztig family.
 
 Which  columns  are  displayed  can  be  controlled by the property `:cols`
-(default [2,3,5,6]).
+(default [2,3,5,6] and 4 when applicable).
 
 In  addition if  ':byfamily=true', the  characters are  displayed family by
 family  instead  of  in  index  order.  Finally,  the properties `rows` and

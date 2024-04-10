@@ -86,16 +86,6 @@ chevieset(:imp, :ReflectionName, function (arg...,)
         end
         return n
     end)
-chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
-        local res
-        res = fill(0, max(0, (1 + r) - 1)) + 1 // 2
-        if q == 1
-            res[1] = 1 // p
-        elseif q != p
-            res = Concatenation([q // p], res)
-        end
-        return res
-    end)
 chevieset(:imp, :CartanMat, function (p, q, r)
         local rt, rbar, e
         rt = (chevieget(:imp, :GeneratingRoots))(p, q, r)

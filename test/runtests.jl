@@ -78,7 +78,7 @@ end
 @test mytest("ComplexR.jl","degrees(G)","2-element Vector{Int64}:\n 4\n 6")
 @test mytest("ComplexR.jl","length(G)","24")
 @test mytest("ComplexR.jl","W*coxgroup(:A,2)","G₄×A₂")
-@test mytest("ComplexR.jl","complex_reflection_group(1,1,3)","A₂")
+@test mytest("ComplexR.jl","complex_reflection_group(1,1,3)","gl₃")
 @test mytest("ComplexR.jl","crg(4)","G₄")
 @test mytest("ComplexR.jl","W=complex_reflection_group(30)","H₄")
 @test mytest("ComplexR.jl","degrees(W)","4-element Vector{Int64}:\n  2\n 12\n 20\n 30")
@@ -745,7 +745,7 @@ end
 @test mytest("Symbols.jl","fegsymbol([[1,5,6],[1,2]])","q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂")
 @test mytest("Symbols.jl","gendeg_symbol([[1,2],[1,5,6]])","q¹³Φ₅Φ₆Φ₇Φ₈²Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂/2")
 @test mytest("Symbols.jl","BDSymbols(2,1)","5-element Vector{Vector{Vector{Int64}}}:\n [[1, 2], [0]]\n [[0, 2], [1]]\n [[0, 1, 2], [1, 2]]\n [[2], []]\n [[0, 1], [2]]")
-@test mytest("Symbols.jl","BDSymbols(4,0)","13-element Vector{Vector{T} where T}:\n Any[[1, 2], 2, 0]\n Any[[1, 2], 2, 1]\n [[0, 1, 3], [1, 2, 3]]\n [[0, 1, 2, 3], [1, 2, 3, 4]]\n [[1, 2], [0, 3]]\n [[0, 2], [1, 3]]\n [[0, 1, 2], [1, 2, 4]]\n Any[[2], 2, 0]\n Any[[2], 2, 1]\n [[0, 1], [2, 3]]\n [[1], [3]]\n [[0, 1], [1, 4]]\n [[0], [4]]")
+@test mytest("Symbols.jl","BDSymbols(4,0)","13-element Vector{Vector}:\n Any[[1, 2], 2, 0]\n Any[[1, 2], 2, 1]\n [[0, 1, 3], [1, 2, 3]]\n [[0, 1, 2, 3], [1, 2, 3, 4]]\n [[1, 2], [0, 3]]\n [[0, 2], [1, 3]]\n [[0, 1, 2], [1, 2, 4]]\n Any[[2], 2, 0]\n Any[[2], 2, 1]\n [[0, 1], [2, 3]]\n [[1], [3]]\n [[0, 1], [1, 4]]\n [[0], [4]]")
 end
 @testset "Tools.jl" begin
 @test mytest("Tools.jl","valuation.(24,(2,3,5))","(3, 1, 0)")

@@ -44,9 +44,6 @@ inv(m::Vector)=toL(inv(toM(m)*E(1)//1))
 length(a...)=Base.length(a...)
 length(a::Symbol)=length(string(a))
 
-union(a...)=Base.union(a...)
-union(v::Vector)=union(v...)
-
 # for some reason getindex is special, reverting to plain pirating
 Base.getindex(s::String,a::Vector{Any})=getindex(s,Int.(a))
 Base.getindex(a::Symbol,i::Int)=string(a)[i]

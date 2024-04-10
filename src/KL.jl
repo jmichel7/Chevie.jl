@@ -41,7 +41,7 @@ with reduced expression `w=s₁…sₙ` we define ``q_w∈ Γ⁺`` by
 
 We  define the bar involution on `ℋ `  by linearity: on `ℤ[Γ]` we define it
 by  ``\\overline{∑_{γ∈ Γ}a_γγ}= ∑_{γ∈ Γ} a_γ γ⁻¹`` and we extend it to `ℋ `
-by  ``\\overline T_s=T_s^{-1}``  (equivalently `\\overline t_s=t_s^{-1}``).
+by  ``\\overline T_s=T_s^{-1}`` (equivalently ``\\overline t_s=t_s^{-1}``).
 Then the Kazhdan-Lusztig basis ``C^′_w`` is defined as the only basis of `ℋ
 `  stable by  the bar  involution and  congruent to  ``t_w`` modulo ``∑_{w∈
 W}Γ⁻.t_w``.
@@ -56,13 +56,13 @@ truncation:  ``τ_≤\\nu ∑_{γ∈  Γ} a_γγ=  ∑_{γ≤\\nu}a_γγ``; the 
 thus on decreasing `x` for the Bruhat order and starts at ``P_{w,w}=1``. We
 have then ``C^′_w=∑_y q_w^{-1/2} P_{y,w}T_y``.
 
-The  Chevie code  for the  Kazhdan-Lusztig bases  `C`, `D` and their primed
-versions,  was originally  written by  Andrew Mathas  around 1994, who also
-contributed  to  the  design  of  the programs dealing with Kazhdan-Lusztig
-bases. He also implemented some other bases, such as the Murphy basis which
-we  also implement. The code for the case of unequal parameters was written
-around  1999 by F.Digne  and J.Michel. The  other Kazhdan-Lusztig bases are
-computed in terms of the `C′` basis.
+The  Chevie code  for the  Kazhdan-Lusztig bases  `C`, `D`, `C'`, `D'`, was
+originally  written by Andrew  Mathas around 1994,  who also contributed to
+the  design of bases  of Iwahori-Hecke algebras  and implemented some other
+bases,  such as the Murphy basis. Our code evolved from that code. The code
+for  the case of unequal parameters was  written around 1999 by F.Digne and
+J.Michel.  The Kazhdan-Lusztig  bases are  computed starting  from the `C′`
+basis.
 
 When  the `ℤ[Γ]` is a  Laurent polynomial ring the  bar operation is taking
 the  inverse of  the variables,  and truncation  is keeping terms of degree

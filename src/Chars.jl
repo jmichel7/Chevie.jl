@@ -260,7 +260,7 @@ Finally,  the characters  of degree `2`  for type  `I₂(m)` are  ordered as
 follows.  The matrix representations affording the characters of degree `2`
 are given by:
 `` ρ_j : s₁s₂ ↦
-\\begin{pmatrix}E(m)^j&0\\\\0&E(m)^{-j}\\end{pmatrix},
+\\begin{pmatrix}\\zeta_m^j&0\\\\0&\\zeta_m^{-j}\\end{pmatrix},
  s₁↦\\begin{pmatrix}0&1\\\\1&0\\end{pmatrix},``
 where  `1 ≤ j ≤  ⌊(m-1)/2⌋`. The reflection representation
 is  `ρ₁`. The  characters in  the table  are ordered by listing

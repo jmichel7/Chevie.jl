@@ -2,6 +2,16 @@
 # (C) 1998 - 2011  Gunter Malle and  Jean Michel
 # data about imprimitive complex reflection groups
 
+chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
+  res=fill(1//2,r)
+  if q == 1
+    res[1]=1//p
+    res
+  elseif q!=p pushfirst!(res,q//p)
+  else res
+  end
+end)
+
 chevieset(:imp,:PowerMaps,function(p,q,r)
   if q!=1
     InfoChevie("# power maps not implemented for G($p,$q,$r)\n")
@@ -27,7 +37,8 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
 end)
 
 chevieset(:imp,:GeneratingRoots,function(p,q,r)
-  if q==1 roots=[vcat([1],fill(0,r-1))]
+  if q==1 
+    roots=[vcat([1],fill(0,r-1))]
   else
     if q!=p roots=[vcat([Cyc(1)],fill(0,r-1))] end
     v=vcat([-E(p),1],fill(0,r-2))

@@ -14,9 +14,9 @@ chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
 
 chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->
   function()
-    C=chevieget(t, :CartanMat)
-    r=roots(C)*C
-    map(d->function(arg...)sum(a->sum(arg.*a)^d,r) end, 
+    C=toM(chevieget(t, :CartanMat))
+    r=toM(roots(C))*C
+    map(d->function(arg...)sum(a->sum(arg.*a)^d,eachrow(r)) end, 
         chevieget(t, :ReflectionDegrees))
   end
 )

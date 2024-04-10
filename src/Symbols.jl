@@ -230,7 +230,8 @@ end
 
 function fullsymbol(S)::Vector{Vector{Int}}
   if isempty(S) || S[end] isa AbstractVector return S end
-  repeat(S[1:end-2],S[end-1])
+  vcat((copy.(S[1:end-2]) for i in 1:S[end-1])...) # until fix tableaux
+#  repeat(S[1:end-2],S[end-1])
 end
 
 """
@@ -802,11 +803,12 @@ julia> BDSymbols(4,0)
 ```
 """
 function BDSymbols(n,d)
-  n-=div(d^2,4)
-  if n<0 return Vector{Vector{Int}}[] end
-  if d>0 return map(x->symbol_partition_tuple(x,d),partition_tuples(n,2)) end
-   return map(chevieget(:D,:symbolcharparam),
-              chevieget(:imp,:CharInfo)(2,2,n)[:charparams])
+# order differs from Symbols.symbolsshape(n,[d,0]) for d=0
+  if d<0 error() end
+  if n<div(d^2,4) return Vector{Vector{Int}}[] end
+  if d>0 return Symbols.symbolsshape(n,[d,0]) end
+  map(x->symbol_partition_tuple(x,d),
+         chevieget(:imp,:CharInfo)(2,2,n-=div(d^2,4))[:charparams])
 end
 export BDSymbols
 end

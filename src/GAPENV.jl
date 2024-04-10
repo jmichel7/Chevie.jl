@@ -1,6 +1,6 @@
 """
 The  module GAPENV creates a GAP3-like environment by extending locally the
-base  functions `*, +, -, ^, isless, copy, //, inv, length, union` to their
+base  functions `*, +, -, ^, isless, copy, //, inv, length` to their
 GAP3  semantics and defining  quite a few  other GAP3 functions, then loads
 the Chevie database in that environment.
 """

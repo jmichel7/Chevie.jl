@@ -104,10 +104,10 @@ properties:
     may be realized as a reflection group over `K`.
 
   -  The Cartan matrix `rᵛ(r')` where `r` and `r'` runs over the roots and
-   coroots  for the generating reflections has  entries in the ring `ℤₖ` of
-   integers  of  `K`,  and  the  other  roots  (resp.  coroots)  are linear
-   combinations with coefficients in `ℤₖ`  of a linearly independent subset
-   of them.
+    coroots  for the generating reflections has entries in the ring `ℤₖ` of
+    integers  of  `K`,  and  the  other  roots  (resp.  coroots) are linear
+    combinations with coefficients in `ℤₖ` of a linearly independent subset
+    of them.
 
 It  turns out that all representations of `W` are defined over the field of
 definition `K` (see. [Benard1976](biblio.htm#Ben76) and D.~Bessis' thesis).
