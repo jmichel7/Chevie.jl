@@ -403,25 +403,27 @@ end
 
 PermRoot.nref(W::CoxeterGroup)=length(W,longest(W))
 
-const Wtype=Vector{Int8}
+const wordtype=Vector{Int8}
 function Groups.words(W::CoxeterGroup{T}, l::Integer)where T
   if !isfinite(W) return word.(Ref(W),elements(W,l)) end
-  ww=get!(()->OrderedDict(0=>[Wtype([])]),W,:words)::OrderedDict{Int,Vector{Wtype}}
+  ww=get!(W,:words)do
+    OrderedDict(0=>[wordtype([])])
+  end::OrderedDict{Int,Vector{wordtype}}
   if haskey(ww,l) return ww[l] end
   if ngens(W)==1
     if l!=1 return Vector{Int}[]
     else return [[1]]
     end
   end
-  H=get!(()->reflection_subgroup(W,maxpara(W)),W,:maxpara)::CoxeterGroup{T}
-  rc=get!(()->[[Wtype([])]],W,:rcwords)::Vector{Vector{Wtype}}
+  H=get!(()->reflection_subgroup(W,maxpara(W))::CoxeterGroup{T},W,:maxpara)
+  rc=get!(()->[[wordtype([])]]::Vector{Vector{wordtype}},W,:rcwords)
   while length(rc)<=l
     new=reducedfrom(H,W,(x->W(x...)).(rc[end]))
     if isempty(new) break
-    else push!(rc,Wtype.(word.(Ref(W),new)))
+    else push!(rc,wordtype.(word.(Ref(W),new)))
     end
   end
-  ww[l]=Wtype([])
+  ww[l]=wordtype([])
   d=inclusiongens(H)
   for i in max(0,l+1-length(rc)):l
     e=words(H,i)

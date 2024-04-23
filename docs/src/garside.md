@@ -28,6 +28,8 @@ PermGroups.elements(::Garside.LocallyGarsideMonoid,::Integer)
 image
 conjugating_elt
 centralizer_gens
+Category
+Category(::Function,::Any)
 conjcat
 endomorphisms
 Presentation(::GarsideMonoid)

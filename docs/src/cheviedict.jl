@@ -1,4 +1,4 @@
-const ChevieDict=Dict(
+ChevieDict::Dict{String,String}=Dict(
 "AbelianGenerators"=>"abelian_gens",
 "AbelianInvariants"=>"abelian_invariants",
 "Affine"=>"affine",

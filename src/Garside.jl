@@ -234,7 +234,8 @@ super  summit set, and then solve conjugacy  within that set. This can also
 be  used to compute the centralizer of an element: if we consider the super
 summit   set  as  the  objects  of  a  category  whose  morphisms  are  the
 conjugations   by  simple  elements,  the   centralizer  is  given  by  the
-endomorphisms of the given object.
+endomorphisms  of  the  given  object.  For  the  implementation  of finite
+categories we use, see the docstrings of `Category` and `endomorphisms`.
 
 We illustrate this on an example:
 ```julia-repl
@@ -1607,10 +1608,34 @@ function (B::BraidMonoid)(b::GarsideElt{T,<:DualBraidMonoid})where T
 end
 
 #----------------------------------------------------------------------------
-struct Category{TO,TM} # TO type of objs TM type of maps
+"""
+`Category{TO,TM}` is the type of a finite category whose objects are of type
+`TO` and maps of type `TM`.  It is represented as a `struct` with two fields:
+
+  - `obj::Vector{TO}` the objects
+  - `atoms::Vector{Vector{Pair{TM,Int}}}` a vector representing the atoms
+    (generators) of the category. It is such that `atoms[i]` is a `Vector` of 
+    pairs `m=>j` representing a map `m` from `obj[i]` to `obj[j]`. If the julia
+    objects of tyep `TM` belong to a monoid, a general map can be represented
+    as a triple `(i,m,j)` where `m` is of type `TM` representing a map from
+    `obj[i]` to `obj[j]`.
+
+A category is graphically shown by giving the `:graph` io property:
+```julia-rep1
+julia> W=coxsym(4);M=BraidMonoid(W)
+BraidMonoid(𝔖 ₄)
+
+julia> xprint(conjcat(M(1,1,2,2,3));graph=true)
+category with 4 objects and 8 generating maps
+      1232       12       213       213       213       32 
+213.32―――➔ 12.213―➔ 213.12――➔ 12.213――➔ 213.32――➔ 32.213―➔ 213.32
+      1321       213 
+213.12―――➔ 32.213――➔ 213.12
+```
+"""
+struct Category{TO,TM}
   obj::Vector{TO}
   atoms::Vector{Vector{Pair{TM,Int}}}
-  # atoms[i] is a list of (m=>j): map m from obj[i] to obj[j]
 end
 
 function Base.show(io::IO,C::Category)
@@ -1624,7 +1649,33 @@ end
 
 constructs   a  category  from  an  initial   object  `o`  and  a  function
 `atomsfrom(o)`  which given object `o` returns atoms from `o` as "maps" `m`
-such that the target object is `action(o,m)`
+such that the target object is `action(o,m)`.
+
+As an example we construct a Garside category associated to the braid group
+of `G₃₁`.
+
+```julia-repl
+julia> W=coxgroup(:E,8);M=DualBraidMonoid(W)
+DualBraidMonoid(E₈,c=[1, 4, 6, 8, 3, 2, 5, 7])
+
+julia> s4=left_divisors(M,M.δ,4); # simples of length 4
+
+julia> s=M(s4[findfirst(x->x*δad(M,x,8)==M.δ,s4)])
+(1 8 17 35)
+
+julia> "the right-lcms of the `δⁱ`-orbits on `leftdescents(b)`"
+       function satoms(b,i)
+         M=b.M
+         ld=M.atoms[leftdescents(b)]
+         di=Perm(ld,δad.(Ref(M),ld,i))
+         if isnothing(di) error(b," is not δ^\$i-stable") end
+         map(o->M(rightlcm(M,ld[o]...)),orbits(di,eachindex(ld)))
+       end
+satoms
+
+julia> Category(x->satoms(x,15),s;action=(o,m)->inv(m)*o*δad(m,8))
+category with 88 objects and 660 generating maps
+```
 """
 function Category(atomsfrom::Function,o;action::Function=^)
   TM=eltype(atomsfrom(o))
@@ -1696,6 +1747,15 @@ end
 """
 `endomorphisms(C::Category,o)`
 returns generators of the endomorphisms of `C.obj[o]`
+```julia-repl
+julia> W=coxsym(4);M=BraidMonoid(W)
+BraidMonoid(𝔖 ₄)
+
+julia> endomorphisms(conjcat(M(1,1,2,2,3)),1)
+2-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, CoxSym{Int16}}}}:
+ 213.1232
+ 12.213
+```
 """
 function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
   paths=[Tuple{Int,Int}[] for i in eachindex(C.obj)]
@@ -1733,7 +1793,7 @@ function endomorphisms(C::Category{TO,TM},o)where {TO,TM}
       end
     end
   end
-  gens
+  collect(gens)
 end
 
 # return one map in C from o to o1 or nothing if none exists
@@ -2061,8 +2121,8 @@ julia> shrink(cc)
  (3243)⁻¹13243
 
 julia> centralizer_gens(w;ss=Val(:cyc))
-Set{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}} with 1 element:
-  4
+1-element Vector{GarsideElt{Perm{Int16}, BraidMonoid{Perm{Int16}, FiniteCoxeterGroup{Perm{Int16},Int64}}}}:
+ 4
 
 julia> F=Frobenius(spets(W,Perm(1,2,4)));
 

@@ -164,21 +164,21 @@ end;
 # GAP3 invert Mvp matrix 3.9ms
 # [[x+y,x-y],[x+1,y+1]]^-1;
 
-#@b CycPols.p(Pol()) #GAP3 1.25 ms
+# @b CycPols.p(Pol()) #GAP3 1.25 ms
 #1.8.5   254.158 μs (5626 allocations: 416.19 KiB)
 #1.10.2  272.889 μs (5241 allocs: 394.234 KiB)
 #1.11.α2 224.240 μs (7381 allocs: 379.156 KiB)
 
-#@b CycPols.p(1) #GAP3 142μs
+# @b CycPols.p(1) #GAP3 142μs
 #1.8.5   5.140 μs (101 allocations: 19.88 KiB)
 #1.10.2  6.535 μs (101.75 allocs: 21.156 KiB)
 #1.11.α2 5.819 μs (151 allocs: 21.012 KiB)
 u=CycPols.p(Pol());
-#@b u _(1) #GAP3 40μs
+# @b u _(1) #GAP3 40μs
 #1.8.5   24.669 μs (553 allocations: 41.91 KiB)
 #1.10.2  28.299 μs (553 allocs: 41.906 KiB)
 #1.11.α2 23.535 μs (828 allocs: 41.375 KiB)
-#@b u CycPol(_) #GAP3 8.2ms
+# @b u CycPol(_) #GAP3 8.2ms
 #1.8.5   4.749 ms (92895 allocations: 7.35 MiB)
 #1.10.2  5.084 ms (87045 allocs: 6.861 MiB)
 #1.11.α2 4.049 ms (114941 allocs: 6.531 MiB)

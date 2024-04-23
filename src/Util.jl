@@ -7,9 +7,9 @@ module Util
 export InfoChevie, ds
 
 using ..Format: xprint, xprintln
-const info=Ref(true)
+info::Bool=true
 function InfoChevie(a...)
-  if Util.info[] xprint(a...) end
+  if Util.info xprint(a...) end
 end
 
 function ds(s;types=false) # "dump struct"; not recursive like dump
