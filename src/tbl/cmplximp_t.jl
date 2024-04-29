@@ -150,7 +150,7 @@ information   about  it  necessary   to  compute  the   function  Delta  in
 [Halverson-Ram] 2.17. These named tuples have the following fields:
    area       total area
    cc         number of connected components (hooks)
-   hooklength Sum of hooklengths of individual hooks (the # of rows -1 of the
+   hooklength sum of hooklengths of individual hooks (the # of rows -1 of the
                   hook, equal to startpos-endpos)
    DC         the list of all dull corners, represented by a pair:
                 which βlist they come from, axial position
@@ -364,16 +364,23 @@ chevieset(:imp, :CharInfo, function (de, e, r)
                                     [3,2],[3,1],[2,3,4],[1,0]]
       elseif [e,r]==[3,4] res[:malle]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],
          [6,5,2],[8,4],[8,5],[6,5,1],[3,9],[6,2],[2,6],[4,2],[4,1],[3,3],[1,0]]
+# here the labeling is defined by phi_{6,5}' being the one which appears
+# in the tensor square of the reflection representation phi_{4,1}
       elseif [e,r]==[3,5]
         res[:malle]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],
           [30,7,1],[40,6],[30,7,2],[10,11],[15,10],[20,9],[20,8],[15,11],
           [10,12],[4,18],[30,4],[20,5],[10,8],[10,7],[20,6],[5,12],[20,3],
           [10,6],[15,4],[15,5],[10,5],[6,9],[10,3],[10,2],[5,6],[5,2],[5,1],
           [4,3],[1,0]]
+# here the labeling is defined by phi_{30,7}'' being the one which appears
+# in the tensor 4th power of the reflection representation phi_{5,1}
       elseif [e,r]==[4, 3] res[:malle]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],
                                         [3,2,1],[3,2,2],[3,1],[2,4],[1,0]]
+# here the labeling is defined by phi_{3,2}'' being the complex
+# conjugate of phi_{3,1} and phi_{3,6}'' the complex conjugate of phi_{3,5}
       end
     elseif iseven(e) && r==2
+# .malle: indexing of chars as in Malle's paper on rank 2 cyclotomic algebras.
       res[:malle]=map(res[:charparams])do t
         local pos, de
         if t[length(t)] isa Number
@@ -400,9 +407,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
     v[2]=fill(1,r-i)
     v
   end
-  if e>1
-    t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t)
-  end
+  if e>1 t=map(v->minimum(map(i->circshift(v,i*d),1:e)),t) end
   res[:extRefl]=map(v->findfirst(==(v),res[:charparams]),t)
   if e==1 || d==1
     res[:A]=degree_gendeg_symbol.(res[:charSymbols])
@@ -431,4 +436,153 @@ chevieset(:imp, :CharInfo, function (de, e, r)
       end
     end
   res
+end)
+
+chevieset(:imp, :ClassInfo, function (p, q, r)
+  if r==2 && p!=q && iseven(q)
+    e1=div(q,2)
+# if s,t,u generate G(p,2,2) then s':=s^e1,t,u generate G(p,q,2)
+# z:=stu generates Z(G(p,2,2)) and z':=z^e1 generates Z(G(p,q,2))
+# relations for G(p,2,2) are stu=tus=ust
+# relations for G(p,q,2) are s'tu=tus' and [z',u]=1
+    res=Dict{Symbol, Any}(:classtext=>[],:classparams=>[],:classnames=>[])
+    for i in 0:p-1
+      for j in 0:div(p-i-1,2)
+        if mod(j+i,e1)==0
+          push!(res[:classparams],vcat(fill(1,j),fill(0,i)))
+          push!(res[:classtext],vcat(fill(1,div(j+i,e1)), repeat([2,3],i)))
+          push!(res[:classnames],"1"^(div(j+i,e1)-div(i,e1))*"23"^(mod(i,e1))*
+                "z"^div(i,e1))
+        end
+      end
+    end
+    for j in 2:3
+     for i in 0:e1:div(p,2)-e1
+        push!(res[:classparams], pushfirst!(fill(0,i),j))
+        push!(res[:classtext], vcat([j], fill(1,div(i,e1)),repeat([2,3],i)))
+        push!(res[:classnames], string(j,"z"^div(i,e1)))
+      end
+    end
+    res[:orders] = map(res[:classparams])do c
+      if length(c)>0 && c[1] in [2,3]
+        lcm(2, div(p,gcd(count(iszero,c),p)))
+      else
+        lcm(div(p,gcd(count(iszero,c),p)),div(div(p,2),gcd(count(==(1),c), div(p, 2))))
+      end
+    end
+    res[:classes]=map(res[:classparams])do c
+          if length(c)>0 && c[1] in [2, 3] div(p, 2)
+          elseif 1 in c 2
+          else 1
+          end
+    end
+    return res
+  elseif q==1
+    cp=partition_tuples(r,p)
+    res=Dict{Symbol,Any}(:classparams=>cp)
+    res[:classtext]=map(cp)do S
+      S=vcat(map(i->map(t->[t,i-1],S[i]),1:p)...)
+      sort!(S,by=a->[a[1],-a[2]])
+      l=0
+      w=Int[]
+      for d in S
+        append!(w,repeat(vcat(l+1:-1:2,1:l+1),d[2]))
+      	# non-reduced word because this is the one used by Halverson-Ram
+	# for characters of the Hecke algebra (see HeckeCharTable).
+        append!(w,l+2:l+d[1])
+        l+=d[1]
+      end
+      w
+    end
+    res[:classnames]=chevieget(:imp,:ClassName).(cp)
+    res[:orders]=map(cp)do m
+      lcm(map(i->if length(m[i])==0 1
+                 else lcm(div.(m[i]*p,gcd(i-1,p)))
+                 end, eachindex(m)))
+    end
+    res[:centralizers]=map(cp)do m
+      p^sum(length,m)*prod(map(pp->prod(y->factorial(y[2])*y[1]^y[2],
+                                        tally(pp);init=1),m))
+    end
+    res[:classes]=map(x->div(p^r*factorial(r), x),res[:centralizers])
+    return res
+  else
+  # According  to Hugues  ``On  decompositions  in complex  imprimitive 
+  # reflection groups'' Indagationes 88 (1985) 207--219:                
+  #
+  # Let l=(S_0,..,S_{p-1}) be  a p-partition of r specifying  a class C 
+  # of G(p,1,r) as  in the above code;  C is in G(p,q,r)  iff q divides 
+  # sumᵢ i*|Sᵢ|;  C splits  in d  classes for  the largest  d|q which 
+  # divides all parts  of all Sᵢ and  such that |Sᵢ|=0 if  d does not 
+  # divide i;  if w is in  C and t  is the first generator  of G(p,1,r) 
+  # then t^i w t^-i for i in [0..d-1] are representatives of classes of 
+  # G(p,q,r) which meet C.  
+    function trans(w)
+    # translate words  in G(p,1,r) into  words of G(p,q,r); use  that if
+    # t,s2 (resp. s1,s2)  are the first 2 generators  of G(p,1,r) (resp.
+    # G(p,p,r)) then  s1=s2^t thus  s2^(t^i)= (s1s2)^i  s2 [the  first 3
+    # generators of G(p,q,r) are t^q,s1,s2].
+      local d, res, l, i, add, word
+      d=0
+      res=Int[]
+      word(l,i)=map(j->1+mod(j,2),i.+(l:-1:1))
+      function add(a)
+        l=length(res)
+        if l>0 && res[end]==a pop!(res)
+        elseif p==q && a in [1,2] && l>=q && res[l-q+1:l]==word(q,3-a)
+          res=vcat(res[1:l-q], word(q-1,3-a))
+        else
+          push!(res, a)
+        end
+      end
+      for l in w
+        if l==1 d+=1
+        elseif l!=2 add(l)
+        else
+          d=mod(d, p)
+          if d==0 add(2)
+          else for i in 1:p-d-1 add(1);add(2) end
+            add(1)
+          end
+        end
+      end
+      d=mod(d, p)
+      if mod(d, q)!=0 error()
+      elseif d!=0 res=vcat(res.+1,fill(1,div(d,q)))
+      elseif p!=q res.+=1
+      end
+      res
+    end
+    I=chevieget(:imp, :ClassInfo)(p, 1, r)
+    res=Dict{Symbol, Any}(:classtext=>Vector{Int}[],:classparams=>[],
+      :classnames=>String[],:orders=>Int[],:centralizers=>Int[])
+    for i in findall(S->mod(dot(length.(S),0:p-1),q)==0,I[:classparams])
+      S=I[:classparams][i]
+      a=vcat(S...)
+      push!(a, q)
+      append!(a,findall(!isempty,S).-1)
+      a=gcd(a...)# number of pieces the class splits
+      for j in 0:a-1
+        push!(res[:classtext], trans(vcat(fill(1,j),I[:classtext][i],fill(1,max(0,p-j)))))
+        if a>1 push!(res[:classparams], vcat(S,[div(p*j,a)]))
+        else push!(res[:classparams], S)
+        end
+        push!(res[:orders], I[:orders][i])
+        push!(res[:centralizers], div(I[:centralizers][i]*a, q))
+      end
+    end
+    res[:classes]=div.(res[:centralizers][1], res[:centralizers])
+    res[:classnames]=map(chevieget(:imp, :ClassName), res[:classparams])
+    return res
+  end
+end)
+chevieset(:imp, :ClassName, function(p)
+  if all(x->x isa Vector, p)
+    if sum(sum,p)==1 xrepr(E(length(p),findfirst(==([1]),p)-1);TeX=true)
+    else string_partition_tuple(p)
+    end
+  elseif all(x->x isa Integer,p) joindigits(p)
+  elseif all(i->p[i] isa Vector,1:length(p)-1) && p[end] isa Integer
+    string_partition_tuple(vcat(p[1:end-1], [length(p)-1, p[end]]);TeX=true)
+  end
 end)
