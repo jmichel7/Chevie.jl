@@ -4,7 +4,7 @@
 
 chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
   res=fill(1//2,r)
-  if q == 1
+  if q==1
     res[1]=1//p
     res
   elseif q!=p pushfirst!(res,q//p)
@@ -79,8 +79,8 @@ function hooksβ(S,s)
       if S[k]>i+s break end
       z=pushfirst!(S[j+1:k-1],i)
       zi=filter(i->z[i]-z[i-1]>1,2:length(z))
-      push!(res,Hook(S[k]-i,k,j+1,view(z,zi).-e,
-                 view(z,push!(zi.-1,length(z))).+(1-e)))
+      push!(res,Hook(S[k]-i,k,j+1,map(i->z[i]-e,zi),
+                push!(map(i->z[i-1]+1-e,zi),z[end]+1-e)))
     end
   end
   res
@@ -138,16 +138,16 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
 # according to [Halverson-Ram]
     merge!(res,cl)
-    T=NamedTuple{(:area,:cc,:hooklength,:DC,:SC,:stripped),
-       Tuple{Int,Int,Int,Vector{Pair{Int,Int}},Vector{Pair{Int,Int}},
-       Vector{Vector{Int}}}}
-    StripsCache=Dict{Pair{Vector{Vector{Int}},Int},Any}()
+    T=@NamedTuple{area::Int64, cc::Int64, hooklength::Int64, 
+         DC::Vector{Pair{Int64, Int64}}, SC::Vector{Pair{Int64, Int64}},
+         stripped::Vector{Vector{Int64}}}
+    StripsCache=Dict{Pair{Vector{Vector{Int}},Int},Vector{T}}()
 """
-Strips(S,s)  returns the list  of collections of  broken border strips of
-total  area equal to  s coming from  the various βlists  in the symbol S.
-Each  collection is represented by named tuple containing the statistical
-information   about  it  necessary  to  compute  the  function  Delta  in
-[Halverson-Ram] 2.17. These tuples have the following fields:
+Strips(S,s)  returns the  list of  collections of  broken border  strips of
+total  area equal to s coming from the various βlists in the symbol S. Each
+collection  is  represented  by  a  named  tuple containing the statistical
+information   about  it  necessary   to  compute  the   function  Delta  in
+[Halverson-Ram] 2.17. These named tuples have the following fields:
    area       total area
    cc         number of connected components (hooks)
    hooklength Sum of hooklengths of individual hooks (the # of rows -1 of the
@@ -238,8 +238,8 @@ information   about  it  necessary  to  compute  the  function  Delta  in
         f1*f2
       end
     end
-    res[:irreducibles]=map(x->map(y->entry(y,x),partition_tuples(r,p)),
-                           map(x->βset.(x),partition_tuples(r,p)))
+    pts=partition_tuples(r,p)
+    res[:irreducibles]=[entry.(pts,Ref(x)) for x in map(y->βset.(y),pts)]
   elseif r==2 && p!=q && iseven(q)
     res[:classes]=cl[:classes]
     res[:orders]=cl[:orders]
@@ -266,7 +266,7 @@ information   about  it  necessary  to  compute  the  function  Delta  in
       end
     end
     res[:irreducibles]=[entry2.(Ref(char),cl[:classparams]) for
-                          char in ci[:charparams]]
+                                     char in ci[:charparams]]
   else
     res[:classnames]=cl[:classnames]
     res[:orders]=cl[:orders]
@@ -279,17 +279,17 @@ information   about  it  necessary  to  compute  the  function  Delta  in
   res[:centralizers]=map(x->div(res[:size],x), res[:classes])
   res[:parameter]=para
   c=one(prod(prod,para))
-  res[:irreducibles]=map(x->map(y->y*c,x),res[:irreducibles])
+  res[:irreducibles]=improve_type(map(x->map(y->y*c,x),res[:irreducibles]))
   res
 end)
 
-const impchartableDict=Dict{Tuple{Int,Int,Int},Any}()
+const impchartableCache=Dict{Tuple{Int,Int,Int},Any}()
 
 chevieset(:imp, :CharTable, function (p, q, r)
-  get!(impchartableDict,(p,q,r))do
+  get!(impchartableCache,(p,q,r))do
   oo=denominator.(chevieget(:imp,:EigenvaluesGeneratingReflections)(p,q,r))
   chevieget(:imp, :HeckeCharTable)(p,q,r,
-     map(o->o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
+            map(o->o==1 ? [1] : o==2 ? [1,-1] : E.(o,0:o-1),oo),[])
   end
 end)
 
@@ -352,16 +352,28 @@ end)
 
 chevieset(:imp, :CharInfo, function (de, e, r)
   res=Dict{Symbol,Any}(:charparams=>chevieget(:imp, :CharParams)(de, e, r))
-  d = div(de, e)
+  d=div(de,e)
   if e==1
-    s = fill(0,d)
-    s[1] = 1
-    res[:charSymbols]=map(x->symbol_partition_tuple(x,s),res[:charparams])
+    s=fill(0,d)
+    s[1]=1
+    res[:charSymbols]=symbol_partition_tuple.(res[:charparams],Ref(s))
   else
     if d==1
-      res[:charSymbols]=map(x->symbol_partition_tuple(x,0),res[:charparams])
-    end
-    if d>1 && iseven(e) && r==2
+      res[:charSymbols]=symbol_partition_tuple.(res[:charparams],0)
+      if [e,r]==[3, 3] res[:malle]=[[2,3,2],[2,3,3],[2,3,1],[3,4],[3,5],[1,9],
+                                    [3,2],[3,1],[2,3,4],[1,0]]
+      elseif [e,r]==[3,4] res[:malle]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],
+         [6,5,2],[8,4],[8,5],[6,5,1],[3,9],[6,2],[2,6],[4,2],[4,1],[3,3],[1,0]]
+      elseif [e,r]==[3,5]
+        res[:malle]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],
+          [30,7,1],[40,6],[30,7,2],[10,11],[15,10],[20,9],[20,8],[15,11],
+          [10,12],[4,18],[30,4],[20,5],[10,8],[10,7],[20,6],[5,12],[20,3],
+          [10,6],[15,4],[15,5],[10,5],[6,9],[10,3],[10,2],[5,6],[5,2],[5,1],
+          [4,3],[1,0]]
+      elseif [e,r]==[4, 3] res[:malle]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],
+                                        [3,2,1],[3,2,2],[3,1],[2,4],[1,0]]
+      end
+    elseif iseven(e) && r==2
       res[:malle]=map(res[:charparams])do t
         local pos, de
         if t[length(t)] isa Number
@@ -372,22 +384,14 @@ chevieset(:imp, :CharInfo, function (de, e, r)
           de=div(length(t),2)
           pos=filter(i->length(t[i])>0,1:length(t))
           if length(pos) == 1
-            if t[pos[1]] == [2] return [1, 1, 1, pos[1] - de]
-            else return [1, 2, 2, pos[1] - de]
+            if t[pos[1]] == [2] return [1, 1, 1, pos[1]-de]
+            else return [1, 2, 2, pos[1]-de]
             end
-          elseif pos[1] <= de return [2, -1, pos[1], pos[2] - de]
-          else return [2, 1, pos[2] - de, pos[1] - de]
+          elseif pos[1] <= de return [2, -1, pos[1], pos[2]-de]
+          else return [2, 1, pos[2]-de, pos[1]-de]
           end
         end
       end
-    elseif [de, e, r] == [3, 3, 3]
-      res[:malle]=[[2,3,2],[2,3,3],[2,3,1],[3,4],[3,5],[1,9],[3,2],[3,1],[2,3,4],[1,0]]
-    elseif [de, e, r] == [3, 3, 4]
-      res[:malle]=[[12,6],[4,10],[6,8],[4,11],[1,18],[12,3],[6,5,2],[8,4],[8,5],[6,5,1],[3,9],[6,2],[2,6],[4,2],[4,1],[3,3],[1,0]]
-    elseif [de, e, r] == [3, 3, 5]
-      res[:malle]=[[30,10],[20,12],[5,19],[10,14],[10,15],[5,20],[1,30],[30,7,1],[40,6],[30,7,2],[10,11],[15,10],[20,9],[20,8],[15,11],[10,12],[4,18],[30,4],[20,5],[10,8],[10,7],[20,6],[5,12],[20,3],[10,6],[15,4],[15,5],[10,5],[6,9],[10,3],[10,2],[5,6],[5,2],[5,1],[4,3],[1,0]]
-    elseif [de, e, r] == [4, 4, 3]
-      res[:malle]=[[6,3],[3,6,1],[3,5],[3,6,2],[1,12],[3,2,1],[3,2,2],[3,1],[2,4],[1,0]]
     end
   end
   t=map(r:-1:0)do i

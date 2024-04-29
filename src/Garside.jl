@@ -1616,7 +1616,7 @@ end
   - `atoms::Vector{Vector{Pair{TM,Int}}}` a vector representing the atoms
     (generators) of the category. It is such that `atoms[i]` is a `Vector` of 
     pairs `m=>j` representing a map `m` from `obj[i]` to `obj[j]`. If the julia
-    objects of tyep `TM` belong to a monoid, a general map can be represented
+    objects of type `TM` belong to a monoid, a general map can be represented
     as a triple `(i,m,j)` where `m` is of type `TM` representing a map from
     `obj[i]` to `obj[j]`.
 
@@ -1652,7 +1652,9 @@ constructs   a  category  from  an  initial   object  `o`  and  a  function
 such that the target object is `action(o,m)`.
 
 As an example we construct a Garside category associated to the braid group
-of `G₃₁`.
+of  `G₃₁`, realized as the  centralizer of a 4th  root of `δ³⁰` in the dual
+braid  monoid of `E₈`; that is the fixed points of `δad¹⁵` in the 2-divided
+category.
 
 ```julia-repl
 julia> W=coxgroup(:E,8);M=DualBraidMonoid(W)
@@ -1660,7 +1662,7 @@ DualBraidMonoid(E₈,c=[1, 4, 6, 8, 3, 2, 5, 7])
 
 julia> s4=left_divisors(M,M.δ,4); # simples of length 4
 
-julia> s=M(s4[findfirst(x->x*δad(M,x,8)==M.δ,s4)])
+julia> s=M(s4[findfirst(x->x*δad(M,x,8)==M.δ,s4)])#an object of 2-divided cat
 (1 8 17 35)
 
 julia> "the right-lcms of the `δⁱ`-orbits on `leftdescents(b)`"

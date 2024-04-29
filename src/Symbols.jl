@@ -230,8 +230,7 @@ end
 
 function fullsymbol(S)::Vector{Vector{Int}}
   if isempty(S) || S[end] isa AbstractVector return S end
-  vcat((copy.(S[1:end-2]) for i in 1:S[end-1])...) # until fix tableaux
-#  repeat(S[1:end-2],S[end-1])
+  repeat(S[1:end-2],S[end-1])
 end
 
 """

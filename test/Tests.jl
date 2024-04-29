@@ -98,14 +98,14 @@ function cmpvec(a,b;na="a",nb="b")
   if length(a)!=length(b)
     ChevieErr("length($na)=",length(a)," while length($nb)=",length(b),"\n")
   end
-  if -a==b ChevieErr("$na=-$nn\n");return end
+  if -a==b ChevieErr("$na=-$nb\n");return end
   pa=Perm(a,b)
   if pa!==nothing ChevieErr("$na=$nb^",pa,"\n");return end
   pa=Perm(a,-b)
   if pa!==nothing ChevieErr("$na=-$nb^",pa,"\n");return end
   for j in eachindex(a)
     if a[j]==b[j] continue end
-    if a[j]==-b[j] ChevieErr(a[j],"=-",b[j],"\n");continue end
+    if a[j]==-b[j] ChevieErr("$na[$j]=-$nb[$j]\n");continue end
     t=findall(==(a[j]),b)
     if length(t)>0 ChevieErr(a[j]," found at ",t,"\n");continue end
     t=findall(==(-a[j]),b)
@@ -1402,7 +1402,7 @@ function TdegsHCinduce(W,J)
   inddeg=improve_type(degree.(ind))
   if pred!=inddeg
     nh=charnames(uL)
-    ChevieErr("Relgroups:",tbl.pieces)
+    ChevieErr("Relgroups:",tbl.pieces,": ")
     cmpvec(pred,inddeg;na="udLevi*index",nb="viahc_induction_table")
   end
 end
