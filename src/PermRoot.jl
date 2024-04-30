@@ -1606,13 +1606,13 @@ end
 `PRG(roots,coroots)` complex reflection group with given roots and coroots
 """
 function PRG(r::AbstractVector{<:AbstractVector},
-             cr::AbstractVector{<:AbstractVector};NC=false,T1=Int16)
+             cr::AbstractVector{<:AbstractVector};NC=false,T1=Perms.Idef)
 # println("r=",r,"\ncr=",cr)
   if isempty(r) error("should call torus instead") end
   matgens=map(reflectionMatrix,r,cr)
   T=eltype(matgens[1])  # promotion of r and cr types
-  roots_=map(x->convert.(T,x),r)
-  cr=map(x->convert.(T,x),cr)
+  r=convert.(Vector{T},r)
+  cr=convert.(Vector{T},cr)
 
   # the following section is quite subtle: it has the (essential -- this is
   # what  allows  to  construct  reflexion  subgroups  in a consistent way)
@@ -1626,25 +1626,25 @@ function PRG(r::AbstractVector{<:AbstractVector},
   while newroots
     newroots=false
     for (j,refl) in pairs(gens_)
-      lr=length(roots_)
+      lr=length(r)
       if length(refl)<lr
-      for y in eachrow(toM(roots_[length(refl)+1:end])*matgens[j])
-        p=findfirst(==(y),roots_)
+      for y in eachrow(toM(r[length(refl)+1:end])*matgens[j])
+        p=findfirst(==(y),r)
 	if p===nothing || p>lr
-          push!(roots_,y)
-#         println("j=$j roots_[$(length(refl)+1)...] ",length(roots_),":",y)
+          push!(r,y)
+#         println("j=$j r[$(length(refl)+1)...] ",length(r),":",y)
           newroots=true
-          push!(refl,length(roots_))
+          push!(refl,length(r))
         else push!(refl,p)
 	end
       end
       end
     end
-#   println(" ",length(roots_))
+#   println(" ",length(r))
   end
-  coroots_=Vector{eltype(cr)}(undef,length(roots_))
+  coroots_=Vector{eltype(cr)}(undef,length(r))
   coroots_[eachindex(cr)].=cr
-  W=PRG(Perms.Perm_.(gens_),Perm{T1}(),matgens,roots_,coroots_,Dict{Symbol,Any}())
+  W=PRG(Perms.Perm_.(gens_),Perm{T1}(),matgens,r,coroots_,Dict{Symbol,Any}())
   if !NC
     t=refltype(W)
     l=indices(t)
@@ -1662,8 +1662,8 @@ end
 
 PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 
-PRG(i::Integer;T1=Int16)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],Vector{Int}[],
-                    Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
+PRG(i::Integer;T1=Perms.Idef)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],
+                 Vector{Int}[],Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 """
 `radical(G)`
 

@@ -1,8 +1,8 @@
 """
 Garside  monoids are a general class  of monoids whose most famous examples
-are  the braid and dual braid monoids.  They have groups of fractions which
-in both examples are the braid group. Here we implement braid groups in the
-framework of a general implementation of Garside monoids and groups.
+are  the braid and dual braid monoids. They have groups of fractions, which
+in both examples is the braid group. Here we implement braid groups as part
+of a general implementation of Garside monoids and groups.
 
 To  define Garside monoids we  introduce some vocabulary about divisibility
 in  monoids. A *left-divisor*  of `x` is  a `d` such  that there exists `y`
@@ -39,7 +39,7 @@ divisible  by  finitely  many  simples  (but  the  number of simples can be
 infinite).  The most important  example is the  Artin monoid of an infinite
 Coxeter  group. It is not known whether  these monoids embed in their group
 of  fractions (although this  has been proved  for Artin monoids of Coxeter
-groups  by Paris  [Paris01](biblio.htm#Paris01)) and  thus computing in the
+groups  by Paris [Paris01](biblio.htm#Paris01)), and  thus computing in the
 monoid  does  not  help  for  computing  in  the  group; only the monoid is
 implemented here for these cases.
 
@@ -54,14 +54,13 @@ were   exhibited   for   braid   monoids   of  Coxeter  groups  by  Deligne
   2. Let `M` be a Garside monoid with Garside element `Δ` and group of fractions `G`. Then for any `x∈  G`, for large enough `i` we have `Δⁱx∈ M`.
 
 A  consequence of 1. is that every element has a canonical decomposition as
-a  product of  simples, called  its left-greedy  normal form.  If we define
-`ω(x)` by `x=α(x)ω(x)`, then the normal form of `x` is
-`α(x)α(ω(x))α(ω^2(x))…`  We use  the normal  form to  represent elements of
-`M`,  and when `M` is Garside we use 2. to represent elements of `G`: given
-`x∈  G` we  compute the  smallest power  `i` such  that `Δⁱ  x∈ M`,  and we
-represent `x` by the pair `(i,Δ⁻ⁱx)`. We are thus reduced to the case where
-`x∈  M`, not divisible  by `Δ`, where  we represent `x`  by the sequence of
-simples that make up its normal form.
+a product of simples, its *left-greedy* normal form. If we define `ω(x)` by
+`x=α(x)ω(x)`, then the normal form of `x` is `α(x)α(ω(x))α(ω^2(x))…` We use
+the  normal form to represent  elements of `M`, and  when `M` is Garside we
+use  2. to represent elements of `G`:  given `x∈ G` we compute the smallest
+power `i` such that `Δⁱ x∈ M`, and we represent `x` by the pair `(i,Δ⁻ⁱx)`.
+We  are thus reduced to the case where  `x∈ M`, not divisible by `Δ`, where
+we represent `x` by the sequence of simples that make up its normal form.
 
 We  now describe Artin-Tits braid monoids. Let `(W,S)` be a Coxeter system,
 that is `W` has presentation
@@ -93,8 +92,8 @@ not fixed by any non-identity element of `S`; however, we will not use this
 here.
 
 We  implement in general only  monoids which have a  finite number of atoms
-(there  an implementation following the work of François Digne for the dual
-braid monoid of the affine Coxeter group `W(Ãₙ)`).
+(the  package `AffineA` implements,  following the work  of François Digne,
+the dual braid monoid of the affine Coxeter group `W(Ãₙ)`).
 
 Given a Coxeter group `W`,
 ```julia-repl
@@ -106,7 +105,7 @@ BraidMonoid(A₄)
 ```
 constructs  the associated braid monoid, and  then, used as a function, `B`
 constructs  elements of the braid monoid (or group when `W` is finite) from
-a list of generators:
+a list of generators indices given as arguments:
 
 ```julia-repl
 julia> w=B(1,2,3,4) # represents 𝐬₁𝐬₂𝐬₃𝐬₄
@@ -158,22 +157,22 @@ julia> repr(w^3)
 julia> repr(w^-1)
 "B(-4,-3,-2,-1)"
 ```
-In  general elements of a  Garside monoid are displayed  as a list of their
-constituting atoms.
+In  general elements  of a  Garside monoid  are displayed  as a list of the
+indices of their constituting atoms.
 
-We  now describe the dual braid monoid.  For that, we first define interval
+We  will  now  describe  the  dual  braid  monoid. First we define interval
 monoids.  Given a group `W` and a set `S` of generators of `W` as a monoid,
-we  define the `S`-length `l_S(w)` as the minimum number of elements of `S`
-needed  to write `w`. We  then define left-divisors  of `x` as the `d` such
-that  there exists `y` with `x=dy`  and `l_S(d)+l_S(y)=l_S(x)`. We say that
-`w∈ W` is balanced if its set of left and right-divisors coincide; in which
-case  we  denote  this  set  by  `[1,w]`,  an  "interval"  for the poset of
-`S`-divisibility.  We say that `w`  is Garside for the  `S`-length if it is
-balanced  and `[1,w]` is a  lattice (where upper and  lower bounds are lcms
-and gcds), which generates `W`. Then we have the theorem:
+we  define the  length `l_S(w)`  as the  minimum number  of elements of `S`
+needed  to write `w`.  We then define  left-divisors of `x`  as those `d∈W`
+such  that there exists `y` with  `x=dy` and `l_S(d)+l_S(y)=l_S(x)`. We say
+that  `w∈ W` is balanced if its set of left and right divisors coincide; in
+this  case we denote  this set by  `[1,w]`, an *interval*  for the poset of
+`S`-divisibility.  We say that `w`  is Garside for `l_S`  if it is balanced
+and  `[1,w]` is a lattice (where upper and lower bounds are lcms and gcds),
+which generates `W`. Then we have the theorem:
 
-Suppose  `w`  is  Garside  for  the  `S`-length.  Then  the monoid `M` with
-generators  `[1,w]` and relations  `xy=z` whenever `xy=z`  holds in `W` and
+Suppose  `w` is Garside for the `l_S`.  Then the monoid `M` with generators
+`[1,w]`   and   relations   `xy=z`   whenever   `xy=z`  holds  in  `W`  and
 `l_S(x)+l_S(y)=l_S(z)`, is a Garside monoid, with simples `[1,w]` and atoms
 `S`. It is called the interval monoid defined by the interval `[1,w]`.
 
@@ -1017,7 +1016,7 @@ head(x::LocallyGarsideElt)=x[1]
 `α(b::LocallyGarsideElt)`
 
 returns as a Garside element  the first term in  the normal form of  `b`
-(`b[1]` or returns this term as a simple).
+(`b[1]` returns this term as a simple).
 
 ```julia-repl
 julia> W=coxgroup(:A,3)
@@ -1053,7 +1052,7 @@ function α(b::LocallyGarsideElt,I::AbstractVector)
   i=1
   while i<=length(I)
     if isleftdescent(b,I[i])
-      s=M(I[i])
+      s=M.atoms[I[i]]
       res*=s
       b=s\b
       i=1
