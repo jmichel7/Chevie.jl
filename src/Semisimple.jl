@@ -960,7 +960,7 @@ julia> structure_rational_points_connected_centre.(l,3)
  [4, 8]
  [26]
  [40]
-```julia-repl
+```
 """
 function structure_rational_points_connected_centre(MF,q)
   if MF isa Spets M=Group(MF)

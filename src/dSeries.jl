@@ -558,7 +558,7 @@ julia> dSeries.eps(s)
 
 julia> relative_group(s)
 G₆‚₁‚₁
-```julia-repl
+```
 """
 function Series(WF, levi, cuspidal, d;NC=false)
   if d isa Int && d>0 d=1//d end

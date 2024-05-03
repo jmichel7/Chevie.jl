@@ -405,7 +405,7 @@ julia> ordinal(203)
 
 julia> ordinal(204)
 "204th"
-```julia-repl
+```
 """
 function ordinal(n::Integer)
   str=repr(n)

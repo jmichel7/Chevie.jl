@@ -461,10 +461,12 @@ end
 """
 `distinguished_parabolics(W)`
 
-the  list  of  distinguished  parabolic  subgroups  of  `W` in the sense of
-Richardson,  each  given  as  the  list  of  the corresponding indices. The
+the  list of distinguished standard parabolic subgroups of `W` as defined by
+Richardson,  each  given  as  a  list of the corresponding indices. The
 distinguished  unipotent  conjugacy  classes  of  `W`  consist of the dense
-unipotent orbit in the unipotent radical of such a parabolic.
+unipotent  orbit in  the unipotent  radical of  such a  parabolic subgroup.
+Their  Dynkin-Richardson  diagram  contains  a  0  at  the  indices  of the
+parabolic subgroup, otherwise a 2.
 
 ```julia-repl
 julia> W=coxgroup(:F,4)
@@ -1297,7 +1299,7 @@ The functions `X̃` in the first column are decorated by putting as an
 exponent the relative groups ``W_𝐆 (𝐋)``.
 
 ```julia-repl
-julia> XTable(UnipotentClasses(W);classes=true)
+julia> t=XTable(UnipotentClasses(W);classes=true)
 Values of character sheaves X̃ᵪ on unipotent classes
 ┌──────────┬─────────────────────────────────────────────────────────┐
 │X̃ᵪ|class  │           1     A₁     Ã₁ G₂(a₁) G₂(a₁)₍₂₁₎ G₂(a₁)₍₃₎ G₂│
@@ -1364,7 +1366,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   if classes
     res.scalar*=E(1)
     res.cardClass=zeros(eltype(res.scalar),length(l))*1//1
-    res.cardCent=zeros(eltype(res.scalar),length(l))*1//1
+    res.centClass=zeros(eltype(res.scalar),length(l))*1//1
     res.classes=invpermute(l,p)
     for i in eachindex(uc.classes)
       Au=uc.classes[i].Au
@@ -1374,7 +1376,7 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
       res.cardClass[b]=res.Y[[b[charinfo(Au).positionId]],b]*CharTable(Au).irr
       res.cardClass[b]=map((x,y)->x*y//length(Au),
                            res.cardClass[b],length.(conjugacy_classes(Au)))
-      res.cardCent[b]=generic_order(uc.spets)(q).//res.cardClass[b]
+      res.centClass[b]=generic_order(uc.spets)(q).//res.cardClass[b]
     end
     res.scalar=improve_type(res.scalar)
   else
@@ -1382,6 +1384,8 @@ function XTable(uc::UnipotentClasses;q=Mvp(:q),classes=false)
   end
   res
 end
+#@test haskey(t,:centClass)
+#@test haskey(t,:cardClass)
 
 function Base.show(io::IO, ::MIME"text/html", x::XTable)
   show(IOContext(io,:TeX=>true),"text/plain",x)
@@ -1399,7 +1403,7 @@ function Base.show(io::IO,::MIME"text/plain",x::XTable)
     rows_label*="class"
     print(io," unipotent classes\n")
     col_labels=map(p->name(TeX(io;class=p[2]),x.uc.classes[p[1]]),x.classes)
-    tbl=vcat(tbl,permutedims(x.cardCent))
+    tbl=vcat(tbl,permutedims(x.centClass))
     push!(row_labels,"|C_{𝐆}(u)|")
     row_seps=[-1,0,size(tbl,1)-1,size(tbl,1)]
   else
@@ -1690,19 +1694,19 @@ end
 """
 'special_pieces(<uc>)'
 
-The  special  pieces  forme  a  partition  of  the  unipotent  variety of a
-reductive  group `𝐆` which was defined  the first time in [Spaltenstein1982
-chap.  III](biblio.htm#spalt82)  as  the  fibers  of  `d^2`, where `d` is a
-"duality  map". Another definition is as the  set of classes in the Zariski
-closure  of a special class  and not in the  Zariski closure of any smaller
-special  class, where  a special  class in  the support  of the  image of a
-special character by the Springer correspondence.
+The special pieces form a partition of the unipotent variety of a reductive
+group   `𝐆`   which   was   first   defined   in   [Spaltenstein1982  chap.
+III](biblio.htm#spalt82)  as the fibres  of `d^2`, where  `d` is a "duality
+map". Another definition is as the set of classes in the Zariski closure of
+a  special class  and not  in the  Zariski closure  of any  smaller special
+class,  where a  special class  is the  support of  the image  of a special
+character by the Springer correspondence.
 
 Each  piece is a union of unipotent  conjugacy classes so is represented in
 Chevie  as a  list of  class numbers.  Thus the  list of  special pieces is
 returned  as  a  list  of  lists  of  class  numbers. The list is sorted by
 increasing  piece dimension, while each piece is sorted by decreasing class
-dimension, so the special class is listed first.
+dimension, so that the special class is listed first.
 
 ```julia-repl
 julia> W=coxgroup(:G,2)

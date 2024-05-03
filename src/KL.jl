@@ -186,7 +186,7 @@ Pol{Int64}: x³+1
 
 julia> KLPol(W,cr,w)
 Pol{Int64}: x³+1
-```julia-repl
+```
 
 """
 function critical_pair(W::CoxeterGroup,y,w)

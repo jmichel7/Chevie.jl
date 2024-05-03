@@ -430,7 +430,7 @@ julia> schur_functor(m,[2,2])
   12  -16   16  10    -16   12
   -4    8  -16  -4     16  -12
    1   -2    4  3//2   -6    9
-```julia-repl
+```
 """
 function schur_functor(A,la)
   n=sum(la)

@@ -373,7 +373,7 @@ julia> elements(galois(F))
 2-element Vector{Chevie.Nf.NFAut}:
  Aut(NF(5,-1₅),1₅)
  Aut(NF(5,-1₅),2₅)
-```julia-repl
+```
 """
 function CyclotomicNumbers.galois(F::NumberField)
   c=conductor(F)

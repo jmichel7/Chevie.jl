@@ -1212,7 +1212,7 @@ In contrast, the next operation expands `p` to an `Mvp`:
 ```julia-repl
 julia> HeckeAlgebras.expand(p)
 Mvp{Cyc{Rational{Int64}},Rational{Int64}}: -x³y+x³+x²y²-2x²+x²y⁻¹-xy³+2xy-xy⁻¹+y³-2y²+1+x⁻¹y²-x⁻¹y
-```julia-repl
+```
 """
 mutable struct FactSchur
   factor::Mvp{Cyc{Rational{Int}},Rational{Int}}
