@@ -840,7 +840,8 @@ function rootdatum(rr::AbstractMatrix,cr::AbstractMatrix)
   rootdec=vcat(rootdec,-rootdec)
   mats=map(reflectionMatrix,eachrow(rr),eachrow(cr)) # reflrep
   # permutations of the roots effected by mats
-  gens=map(M->sortPerm(Ref(transpose(M)).*r),mats).\sortPerm(r)
+# gens=map(M->sortPerm(Ref(transpose(M)).*r),mats).\sortPerm(r)
+  gens=map(M->Perm(Vector{Perms.Idef}(indexin(Ref(transpose(M)).*r,r))),mats)
   coroots=Vector{Vector{eltype(cr)}}(undef,length(r))
   coroots[axes(cr,1)].=eachrow(cr)
   G=PRG(gens,one(gens[1]),mats,r,coroots,

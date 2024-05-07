@@ -50,14 +50,14 @@ export toL, toM # convert Gap matrices <-> Julia matrices
 toL(m)=collect(eachrow(m)) # to Gap
 toM(l)=isempty(l) ? Array{eltype(eltype(l))}(undef,0,1) : stack(l;dims=1)
 
-# The following functions should be eventually evicted by adopting Julia
+# The following functions should be eventually obsoleted by adopting Julia
 # order for products.
 
 export cartesian, cart2lin, lin2cart
 """
 `cartesian(a::AbstractVector...)`
 
-A variation on ``Iterators.product` which gives the same result as GAP's
+A variation on `Iterators.product` which gives the same result as GAP's
 `Cartesian`. `reverse` is done twice to get the same order as GAP.
 """
 function cartesian(a::AbstractVector...)

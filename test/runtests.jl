@@ -1011,6 +1011,4 @@ end
 @test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
 @test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n┌────┬────────┐\n│    │ps ps A₂│\n├────┼────────┤\n│²A₅ │ .  .  .│\n│.3  │ 1  .  .│\n│3.  │ 1  .  .│\n│.21 │ 1  1  .│\n│1.2 │ 2  1  .│\n│21. │ 1  1  .│\n│2.1 │ 2  1  .│\n│.111│ .  1  1│\n│111.│ .  1  1│\n│1.11│ 1  2  1│\n│11.1│ 1  2  1│\n└────┴────────┘")
 end
-@testset "runtests.jl" begin
-end
 end
