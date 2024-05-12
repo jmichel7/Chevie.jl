@@ -786,6 +786,30 @@ function Perms.reflength(W::Affine,w)
 end
 
 #-----------------------------------------------------
+# returns w,s1 such that s1 in alcove and s1^w==s
+function to_alcove(s::SemisimpleElement{Root1})
+  W=s.W
+  w=one(W)
+  i=0
+  l=map(x->x.r,s.v)
+  while i<=ngens(W)
+    if i==0 
+      if dot(l,roots(W,nref(W)))>1
+        l-=(dot(l,roots(W,nref(W)))-1)*coroots(W,nref(W))
+        w*=refls(W,nref(W))
+        continue
+      end
+    elseif dot(l,roots(W,i))<0
+      l-=dot(l,roots(W,i))*coroots(W,i)
+      w*=W(i)
+      i=0
+      continue
+    end
+    i+=1
+  end
+  w,ss(W,l)
+end
+
 """
 `centralizer(W,s::SemisimpleElement)`
 
@@ -815,7 +839,8 @@ function Groups.centralizer(W::Group,s::SemisimpleElement)
   end
   p=filter(i->isone(s^roots(W,i)),1:nref(W))
   W0s=reflection_subgroup(W,p)
-  l=map(x->reduced(W0s,x),filter(w->s==s^w,elements(totalW)))
+  w,s0=to_alcove(s)
+  l=map(x->reduced(W0s,x),filter(w->s0==s0^w,elements(totalW)).^inv(w))
   N=Group(abelian_gens(l))
   if rank(W)!=semisimplerank(W)
     N=Group(reflrep.(Ref(W),isempty(gens(N)) ? [one(W)] : gens(N)))
