@@ -555,10 +555,11 @@ with the following keys:
 
 ```julia-repl
 julia> weightinfo(coxgroup(:A,2)*coxgroup(:B,2))
-Dict{Symbol, Array} with 7 entries:
+Dict{Symbol, Array} with 8 entries:
   :moduli                  => [3, 2]
   :minusculeWeights        => [[1, 3], [1], [2, 3], [2], [3]]
   :decompositions          => [[2, 1], [2, 0], [1, 1], [1, 0], [0, 1]]
+  :highestroot             => [5, 7]
   :chosenAdaptedBasis      => [1 -1 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
   :minusculeCoweights      => [[1, 4], [1], [2, 4], [2], [4]]
   :CenterSimplyConnected   => Vector{Rational{Int64}}[[1//3, 2//3, 0, 0], [0, 0…
@@ -610,6 +611,7 @@ function weightinfo(W)
       M[t.indices,t.indices]=r[:chosenAdaptedBasis]
     end
     r[:csi]=Array.(toL(r[:csi]))
+    r[:highestroot]=last(findmax(x->sum(x[indices(t)]),W.rootdec))
     r
   end
   res=Dict(:minusculeWeights=>cartesian(map(
@@ -623,7 +625,8 @@ function weightinfo(W)
 # mod the root lattice
     :CenterSimplyConnected=>reduce(vcat,getindex.(l,:csi)),
     :AdjointFundamentalGroup=>reduce(vcat,getindex.(l,:ww)),
-    :chosenAdaptedBasis=>M)
+    :chosenAdaptedBasis=>M,
+    :highestroot=>map(x->x[:highestroot],l))
   n=1:length(res[:decompositions])-1
   res[:minusculeWeights]=map(x->filter(!iszero,x),res[:minusculeWeights][n])
   res[:minusculeCoweights]=map(x->filter(!iszero,x),res[:minusculeCoweights][n])
@@ -786,7 +789,8 @@ function Perms.reflength(W::Affine,w)
 end
 
 #-----------------------------------------------------
-# returns w,s1 such that s1 in alcove and s1^w==s
+# returns w,s1 such that s1 is in the fundamental alcove of the affine
+# Weyl group and s1^w==s
 function to_alcove(s::SemisimpleElement{Root1})
   W=s.W
   w=one(W)
@@ -794,10 +798,12 @@ function to_alcove(s::SemisimpleElement{Root1})
   l=map(x->x.r,s.v)
   while i<=ngens(W)
     if i==0 
-      if dot(l,roots(W,nref(W)))>1
-        l-=(dot(l,roots(W,nref(W)))-1)*coroots(W,nref(W))
-        w*=refls(W,nref(W))
-        continue
+      for j in weightinfo(W)[:highestroot]
+        if dot(l,roots(W,j))>1
+          l-=(dot(l,roots(W,j))-1)*coroots(W,j)
+          w*=refls(W,j)
+          continue
+        end
       end
     elseif dot(l,roots(W,i))<0
       l-=dot(l,roots(W,i))*coroots(W,i)
