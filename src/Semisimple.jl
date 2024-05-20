@@ -589,6 +589,7 @@ function weightinfo(W)
          :minusculeCoweights=>Vector{Int}[],
          :decompositions=>Vector{Vector{Int}}[],
          :moduli=>Int[],
+         :highestroot=>Int[],
          :CenterSimplyConnected=>Vector{Rational{Int}}[],
          :AdjointFundamentalGroup=>eltype(W)[]
         )

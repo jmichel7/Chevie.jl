@@ -398,9 +398,11 @@ involution(h::AlgebraElt{<:Quaternions})=
 
 LinearAlgebra.norm(h::AlgebraElt{<:Quaternions})=h*involution(h)
 #----------------------- 0-Hecke -----------------------------------
+#@GapObj struct ZeroHecke{TE,TW<:CoxeterGroup{TE}}<:FiniteDimAlgebra{Int}
 @GapObj struct ZeroHecke{TE,TW<:CoxeterGroup{TE},T}<:FiniteDimAlgebra{T}
   W::TW
   e::Vector{TE}
+  u::T
 end
 
 Base.show(io::IO,A::ZeroHecke)=
@@ -425,9 +427,9 @@ end
 Groups.gens(A::ZeroHecke)=basis.(Ref(A),2:ngens(A.W)+1)
 
 # 0-Hecke algebra of W with parameters 0,1
-function ZeroHecke(W::CoxeterGroup)
+function ZeroHecke(W::CoxeterGroup,T=Int)
   e=elements(W);# we use they are stored by increasing CoxeterLength
-  A=ZeroHecke(W,e,Dict{Symbol,Any}())
+  A=ZeroHecke(W,e,one(T),Dict{Symbol,Any}())
   A.isabelian=false
   A.showbasis=(io::IO,i)->fromTeX(io,string("T_{",joindigits(word(A.W,A.e[i])),"}"))
   A
@@ -437,7 +439,7 @@ function PermRoot.radical(A::ZeroHecke)
   get!(A,:radical)do
     c=groupby(x->unique!(sort!(word(A.W,A.e[x]))),eachindex(A.e))
     l=filter(x->length(x)>1,collect(values(c)))
-    TwoSidedIdeal(A,vcat(map(i->map(j->basis(A,i[1])-basis(A,j),i[2:end]),l)...))
+    twosided_ideal(A,vcat(map(i->map(j->basis(A,i[1])-basis(A,j),i[2:end]),l)...))
   end
 end
 
