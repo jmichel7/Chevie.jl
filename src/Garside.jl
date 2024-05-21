@@ -600,7 +600,7 @@ isrightascent(M::GarsideMonoid,x,i)=isleftdescent(M,rightcomplδ(M,x),i)
 `δad(M::GarsideMonoid,x,i=1)`
 
 returns the image of the simple `x` by the `i`-th power of the automorphism
-induced by conjugation by `M.δ`.
+induced by conjugation by `M.δ` (that is `x^(M.δ^i)`).
 """
 function δad(M::GarsideMonoid,x,i::Integer=1)
   if IntervalStyle(M)==Interval() #horrible: has to know interval exists
