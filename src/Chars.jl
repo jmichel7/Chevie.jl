@@ -1266,21 +1266,21 @@ using SparseArrays
 `WGraphToRepresentation(coxrank::Integer,graph,v)`
 
 We  store some  representations of  one-parameter Iwahori-Hecke algebras as
-`W`-graphs.  For  a  Coxeter  system  `(W,S)`  where `coxrank=length(S)`, a
-`W`-graph  is defined by  a set of  vertices `C` with  a function `I` which
-attaches  to `x∈ C` a subset `I(x)⊂  S`, and *edge labels* which to `(x,y)∈
-C^2`  attach `μ(x,y)∈ K` where `K` is  the field of definition of `W`; this
-defines  a  representation  of  the  Hecke  algebra with parameters `v` and
-`-v⁻¹` on a space with basis ``{e_y}_{y∈ C}`` by:
+`W`-graphs.  For a Coxeter system `(W,S)`, a  `W`-graph is defined by a set
+of  vertices `C`  with a  function `I`  which attaches  to `x∈  C` a subset
+`I(x)⊂ S`, and *edge labels* which to `(x,y)∈ C^2` attach `μ(x,y)∈ K` where
+`K` is the field of definition of `W`; this defines a representation of the
+Hecke  algebra  with  parameters  `v`  and  `-v⁻¹`  on  a  space with basis
+``{e_y}_{y∈ C}`` by:
 
 ``Tₛ(e_y)=-e_y`` if `s∈ I(y)` and otherwise
 ``Tₛ(e_y)=v^2 e_y+∑_{x∣s∈ I(x)} vμ(x,y)eₓ``.
 
 The  `W`-graphs are  stored in  a compact  format to  save space.  They are
 represented as a pair.
-  - The  first element is a list describing `C`.
-    Its  elements are either a set `I(x)`,  or an integer `n` specifying to
-    repeat the previous element `n` more times.
+  - The  first element is a list describing `C`. Its  elements are either a
+    vector   `I(x)`  of  indices  in  `eachindex(S)`,  or  an  integer  `n`
+    specifying to repeat the previous element `n` more times.
 
   - The  second element is a list which  specifies `μ`.
 
@@ -1313,13 +1313,13 @@ julia> WGraphToRepresentation(3,g,Pol(:x))
 function WGraphToRepresentation(rk::Integer,gr::Vector,v)
 # Jean Michel june/december 2003 from  code/data of Geck, Marin, Alvis,
 # Naruse, Howlett,Yin)
-  V=Vector{Int}[]
+  I=Vector{Int}[]
   for S in gr[1]
-    if S isa Integer append!(V,map(i->V[end],1:S))
-    else push!(V,S)
+    if S isa Integer append!(I,fill(I[end],S))
+    else push!(I,S)
     end
   end
-  dim=length(V)
+  dim=length(I)
   T=Int
   function prom(a)
     if a isa Vector
@@ -1328,11 +1328,12 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
     end
   end
   prom(gr[2])
+  v=improve_type(v)
   T=promote_type(T,typeof(v))
   S=map(i->spzeros(T,dim,dim),1:rk)
   for j in 1:dim
     for i in 1:rk
-      if i in V[j] S[i][j,j]=-one(v)
+      if i in I[j] S[i][j,j]=-one(v)
       else         S[i][j,j]=v^2
       end
     end
@@ -1342,8 +1343,8 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
     for l in i[2]
       x=l[1]
       for y in l[2:end]
-        for j in setdiff(V[y],V[x]) S[j][y,x]=mu[2]*v end
-        for j in setdiff(V[x],V[y]) S[j][x,y]=mu[1]*v end
+        for j in I[y] if !(j in I[x]) S[j][y,x]=mu[2]*v end  end
+        for j in I[x] if !(j in I[y]) S[j][x,y]=mu[1]*v end  end
       end
     end
   end
