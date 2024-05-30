@@ -93,24 +93,24 @@ function RG(s::Symbol,W)
 end
 
 # compares lists a and b (whose descriptions are strings na and nb)
-function cmpvec(a,b;na="a",nb="b")
+function cmpvec(a,b;na="a",nb="b",pr=ChevieErr)
   if a==b return end
   if length(a)!=length(b)
-    ChevieErr("length($na)=",length(a)," while length($nb)=",length(b),"\n")
+    pr("length($na)=",length(a)," while length($nb)=",length(b),"\n")
   end
-  if -a==b ChevieErr("$na=-$nb\n");return end
+  if -a==b pr("$na=-$nb\n");return end
   pa=Perm(a,b)
-  if pa!==nothing ChevieErr("$na=$nb^",pa,"\n");return end
+  if pa!==nothing pr("$na=$nb^",pa,"\n");return end
   pa=Perm(a,-b)
-  if pa!==nothing ChevieErr("$na=-$nb^",pa,"\n");return end
+  if pa!==nothing pr("$na=-$nb^",pa,"\n");return end
   for j in eachindex(a)
     if a[j]==b[j] continue end
-    if a[j]==-b[j] ChevieErr("$na[$j]=-$nb[$j]\n");continue end
+    if a[j]==-b[j] pr("$na[$j]=-$nb[$j]\n");continue end
     t=findall(==(a[j]),b)
-    if length(t)>0 ChevieErr(a[j]," found at ",t,"\n");continue end
+    if length(t)>0 pr(a[j]," found at ",t,"\n");continue end
     t=findall(==(-a[j]),b)
-    if length(t)>0 ChevieErr("-",a[j]," found at ",t,"\n");continue end
-    ChevieErr(na,"[$j]=",a[j]," not found\n")
+    if length(t)>0 pr("-",a[j]," found at ",t,"\n");continue end
+    pr(na,"[$j]=",a[j]," not found\n")
   end
 end
 

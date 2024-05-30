@@ -56,6 +56,8 @@ function Perms.Perm(perm::GapObj)
     end
 end
 
+#@test perm=GAP.evalstr("(1,2,3)(4,5)");perm==Gap.obj(Perm(perm))
+
 mapgap(f,gv)=map(f,GAP.gap_to_julia(gv;recursive=false))
 fromgap(g)=improve_type(GAP.gap_to_julia(g))
 
