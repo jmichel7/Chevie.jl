@@ -268,10 +268,10 @@ The  function `ICCTable` gives the  transition matrix between the functions
 
 ```julia-repl
 julia> uc=UnipotentClasses(coxgroup(:G,2));
-julia> t=ICCTable(uc)
+julia> t=ICCTable(uc;q=Pol(:q))
 Coefficients of Xᵪ on Yᵩ for series L=G₂₍₎=Φ₁² W_G(L)=G₂
 ┌──────┬─────────────────────────────┐
-│      │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1│
+│X\\Y   │G₂ G₂(a₁)⁽²¹⁾ G₂(a₁) Ã₁ A₁  1│
 ├──────┼─────────────────────────────┤
 │Xφ₁‚₀ │ 1          .      1  1  1  1│
 │Xφ′₁‚₃│ .          1      .  1  . q²│
@@ -383,7 +383,10 @@ function nameclass(u::Dict,opt=Dict{Symbol,Any}())
   n=fromTeX(n;opt...)
   if haskey(opt,:locsys) && opt[:locsys]!=charinfo(u[:Au]).positionId
     cl="("*charnames(u[:Au];opt...)[opt[:locsys]]*")"
-    n*="^{$cl}"
+    if haskey(opt,:noclass_nontrivial) && opt[:noclass_nontrivial]
+      n="{}^{$cl}"
+    else n*="^{$cl}"
+    end
     n=fromTeX(n;opt...)
   elseif haskey(opt,:class) && opt[:class]!=position_class(u[:Au],one(u[:Au]))
     cl=conjugacy_classes(u[:Au])[opt[:class]].name
@@ -1112,7 +1115,7 @@ multiplicities  are graded,  and are  given as  polynomials in one variable
 julia> uc=UnipotentClasses(coxgroup(:A,3));t=ICCTable(uc)
 Coefficients of Xᵪ on Yᵩ for series L=A₃₍₎=Φ₁³ W_G(L)=A₃
 ┌─────┬────────────────┐
-│     │4 31 22 211 1111│
+│X\\Y  │4 31 22 211 1111│
 ├─────┼────────────────┤
 │X4   │1  1  1   1    1│
 │X31  │.  1  1  Φ₂   Φ₃│
@@ -1132,7 +1135,7 @@ cyclotomic polynomials and not display the zeroes as '.'
 julia> xdisplay(t;cycpol=false,dotzero=false)
 Coefficients of Xᵪ on Yᵩ for A3
 ┌─────┬──────────────────┐
-│     │4 31 22 211   1111│
+│X\\Y  │4 31 22 211   1111│
 ├─────┼──────────────────┤
 │X4   │1  1  1   1      1│
 │X31  │0  1  1 q+1 q²+q+1│
@@ -1155,7 +1158,7 @@ julia> sh=[13,24,22,18,14,9,11,19];
 julia> xdisplay(t,rows=sh,cols=sh)
 Coefficients of Xᵪ on Yᵩ for series L=F₄₍₎=Φ₁⁴ W_G(L)=F₄
 ┌───────┬────────────────────────────────────────────┐
-│       │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾│
+│X\\Y    │A₁+Ã₁ A₂ Ã₂ A₂+Ã₁ Ã₂+A₁ B₂⁽¹¹⁾ B₂ C₃(a₁)⁽¹¹⁾│
 ├───────┼────────────────────────────────────────────┤
 │Xφ₉‚₁₀ │    1  .  .     .     .      .  .          .│
 │Xφ″₈‚₉ │    1  1  .     .     .      .  .          .│
@@ -1167,6 +1170,8 @@ Coefficients of Xᵪ on Yᵩ for series L=F₄₍₎=Φ₁⁴ W_G(L)=F₄
 │Xφ′₄‚₇ │   q²  . Φ₄     .     1      .  .          1│
 └───────┴────────────────────────────────────────────┘
 ```
+The  `ìo` option `rowlocsys=true`  will display local  systems also for the
+row labels.
 
 The   function  'ICCTable'  returns  an   object  with  various  pieces  of
 information which can help further computations.
@@ -1243,7 +1248,6 @@ Base.show(io::IO,x::ICCTable)=print(io,"ICCTable(",x.uc,",",x.series,")")
 
 function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
  printTeX(io,"Coefficients of \$X_\\chi\$ on \$Y_\\phi\$ for series \$L=",x.levi,"\$ \$W_G(L)=",x.relgroup,"\$\n")
-  TeX=get(io,:TeX,false)
   if get(io,:cols,false)==false && get(io,:rows,false)==false
     rows=collect(eachindex(x.dimBu))
     sort!(rows,by=i->[x.dimBu[i],x.locsys[i]])
@@ -1252,8 +1256,8 @@ function Base.show(io::IO,::MIME"text/plain",x::ICCTable)
   tbl=get(io,:cycpol,true) ? map(CycPol,x.scalar) : x.scalar
   col_labels=map(((c,s),)->name(IOContext(io,:locsys=>s),x.uc.classes[c]),
                   x.locsys)
-  if get(io,:rowclasses,false) row_labels=col_labels
-  else row_labels=map(x->TeX ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
+  if get(io,:rowlocsys,false) row_labels=col_labels
+  else row_labels=map(x->get(io,:TeX,false) ? "X_{$x}" : "X$x",charnames(io,x.relgroup))
   end
   showtable(io,transpose(tbl);row_labels=row_labels,col_labels=col_labels,
     rows_label="X\\Y", dotzero=get(io,:dotzero,true))

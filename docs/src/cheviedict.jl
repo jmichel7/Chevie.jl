@@ -313,6 +313,7 @@ ChevieDict::Dict{String,String}=Dict(
 "RadicalPower"=>"radicalpower",
 "Rank"=>"rank",
 "RankSymbol"=>"ranksymbol",
+"RecFields"=>"propertynames",
 "ReducedCoxeterWord(W,w)"=>"word(W,W(w...))",
 "ReducedExpressions(W,w)"=>"words(W,w)",
 "ReducedInRightCoset(W,w)"=>"reduced(W,w)",

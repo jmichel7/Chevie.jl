@@ -1492,14 +1492,21 @@ end
 IntervalStyle(M::DualBraidMonoid)=Interval()
 
 """
-`DualBraidMonoid(W;c=...)`
+`DualBraidMonoid(W;c=xxx)`
 
 `W`  should be a well generated complex  reflection group and `c` a Coxeter
-element of `W`, which should be a `Vector{Int}` specifying `W(c...)`. If no
-`c`  is given a particular  one is chosen for  Coxeter groups by making the
-product of elements in a partition of the Coxeter diagram in two sets where
-in  each set elements commute pairwise;  for a complex reflection group the
-representative stored in the Coxeter class is used.
+element  of `W`, given as a  word (a `Vector{Int}`) specifiying the element
+`W(c...)`. 
+
+If  no `c`  is given  a particular  one is  chosen (what the notation `xxx`
+above tries to convey).
+
+For  `Ẁ` a Coxeter  groups the Coxeter  diagram is partitioned  in two sets
+where  in each set reflections commute pairwise;  `c` is the product of the
+product of the reflections in each set.
+
+For  a complex  reflection group  the representative  stored in the Coxeter
+class is used for `c`.
 
 The function returns the dual braid monoid determined by `W` and `c`
 

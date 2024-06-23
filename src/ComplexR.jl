@@ -442,6 +442,8 @@ function Base.Matrix(r::Reflection)
   end
 end
 
+Perms.order(r::Reflection)=order(r.eigen) 
+
 simple_rep(r::Reflection)=simple_reps(r.W)[r.rootno]
 
 Base.exponent(r::Reflection)=Int(r.eigen.r*ordergens(r.W)[simple_rep(r)])
