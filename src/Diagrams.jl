@@ -367,7 +367,8 @@ function Base.show(io::IO,d::Diagram,::Val{:G13})
               "\$\$")
   else println(io,"  ",cd(2),ind[1]," ",d.t)
     println(io," / \\")
-    print(io,cd(2),hbar^2,cd(2))
+    println(io,cd(2),hbar^2,cd(2))
+    print(io,ind[2]," "^3,ind[3])
   end
   showrel(io,d,1,2)
 end
@@ -561,7 +562,7 @@ function Base.show(io::IO,d::Diagram,::Val{:G31})
     kern(-9),barr(19.5),ncnode(2,ind[5]),
     kern(-22),raise(16,ncnode(2,ind[3])),
     kern(-1),raise(8,"\\diagdown"),"\$\$")
-  else print(io,prod(map((i,j)->i*" "^(4-j),ind[[4,2,5]],l[[4,2,5]])))
+  else println(io,prod(map((i,j)->i*" "^(4-j),ind[[4,2,5]],l[[4,2,5]])))
     println(io,cd(2),hbar^2, cd(2),hbar^2, cd(2)," "^2,d.t)
     println(io," \\ /3\\ /")
     println(io," "^2,cd(2),hbar^2,cd(2))
