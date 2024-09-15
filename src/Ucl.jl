@@ -1,11 +1,12 @@
 """
 This  module gives information  about the unipotent  conjugacy classes of a
-connected  reductive  group  over  an  algebraically  closed field `k`, and
-various  invariants attached to  them. The unipotent  classes depend on the
-characteristic of `k`; their classification differs when the characteristic
-is  not *good*  (that is,  when it  divides one  of the coefficients of the
-highest  root).  In  good  characteristic,  the  unipotent  classes  are in
-bijection with nilpotent orbits on the Lie algebra.
+connected  reductive group `𝐆` over an  algebraically closed field `k`, and
+various  invariants attached to them, like the Springer correspondence. The
+unipotent classes depend on the characteristic of `k`; their classification
+differs when the characteristic is not *good* (that is, when it divides one
+of  the  coefficients  of  the  highest  root  of  one  of  the irreducible
+components). In good characteristic, the unipotent classes are in bijection
+with nilpotent orbits on the Lie algebra `𝔤` of `𝐆`.
 
 We  give  the  following  information  for  a unipotent element `u` of each
 class:
@@ -32,27 +33,29 @@ defines  a linear form  on ``Φ``, determined  by its value  on simple roots
 0``  for ``α∈Π``,  and then  ``⟨σ,α⟩∈{0,1,2}`` for  any ``α∈Π``. The Dynkin
 diagram  of  ``Π``  decorated  by  these  values  ``0,1,2``  is  called the
 Dynkin-Richardson  diagram  of  ``e``,  and  in  good  characteristic  is a
-complete invariant of its ``𝔤``-orbit.
+complete  invariant  of  the  ``𝔤``-orbit  of  ``e``. The Dynkin-Richardson
+diagrams thus classify unipotent classes of `𝐆` in good characteristic.
 
-Another  classification of unipotent  elements was given  by Bala-Carter. A
-standard  parabolic subgroup `𝐏` of `𝐆`  parameterised by a subset `I⊂Π` is
-*distinguished*  if the linear form `σ` taking the value `2` for `α∈ I` and
-`0` for other simple roots satisfies `2n₀+semisimplerank(𝐆)=n₂`, where `nᵢ`
-is  the number  of roots  in `Φ`  where `σ`  takes the  value `i`.  Given a
-distinguished  parabolic `𝐏`,  there is  a unique  unipotent class which is
-dense  in the  unipotent radical  of `𝐏`.  This class  has the  linear form
-described  by the  Dynkin-Richardson diagram  equal to  `σ`. Such unipotent
-classes  are called *distinguished*.  The theorem of  Bala-Carter says that
-every  unipotent class is  distinguished in the  smallest Levi subgroup `𝐋`
-which  contains  it,  and  that  such  pairs  of  `𝐋` and the distinguished
-parabolic  `𝐏`  of  `𝐋`  taken  up  to  `𝐆`-conjugacy are in bijection with
-unipotent classes of `𝐆`.
+Another classification of unipotent classes was given by Bala and Carter. A
+standard  parabolic subgroup `𝐏`  of `𝐆` associated  to the subset `I⊂Π` of
+the simple roots is *distinguished* if the linear form `σ` taking the value
+`2` on `α∈ I` and `0` on other simple roots satisfies
+`2n₀+semisimplerank(𝐆)=n₂`,  where `nᵢ` is the number of roots in `Φ` where
+`σ`  takes the value `i`.  Given a distinguished parabolic  `𝐏`, there is a
+unique  unipotent class which is dense in the unipotent radical of `𝐏`. For
+this  class, the linear form described  by the Dynkin-Richardson diagram is
+equal  to  `σ`.  Such  unipotent  classes  are  called *distinguished*. The
+theorem  of Bala-Carter says that every unipotent class is distinguished in
+the  smallest Levi subgroup `𝐋`  which contains it, and  that such pairs of
+`𝐋`  and the distinguished  parabolic `𝐏` of  `𝐋` taken up to `𝐆`-conjugacy
+are in bijection with unipotent classes of `𝐆`.
 
 Let  ``ℬ`` be  the variety  of all  Borel subgroups  and let  ``ℬᵤ`` be the
 subvariety  of Borel subgroups  containing the unipotent  element `u`. Then
 ``dim C_𝐆(u)=rank 𝐆 + 2 dim ℬ_u`` and in good characteristic this dimension
-can  be computed from  the Dynkin-Richardson diagram:  the dimension of the
-class of `u` is the number of roots `α` such that ``⟨σ,α⟩∉{0,1}``.
+can  be computed from  linear form `σ`  associated to the Dynkin-Richardson
+diagram:  the dimension of the class of `u` is the number of roots `α` such
+that ``⟨σ,α⟩∉{0,1}``.
 
 We   now  describe  the  Springer  correspondence.  Indecomposable  locally
 constant  ``𝐆``-equivariant  sheaves  on  a  unipotent  class ``C``, called
@@ -62,12 +65,13 @@ irreducible  characters of the Weyl  group and a large  subset of the local
 systems  containing all trivial  local systems (those  parameterised by the
 trivial  character  of  ``A(u)``  for  each  ``u``).  More  generally,  the
 *generalised*  Springer correspondence  associates to  each local  system a
-(unique  up to ``𝐆``-conjugacy) *cuspidal pair* of a Levi subgroup ``𝐋`` of
-``𝐆``  and a *cuspidal* local  system on an unipotent  class of ``𝐋``, such
-that  the  set  of  local  systems  associated  to a given cuspidal pair is
-parameterised  by the characters of the  relative Weyl group ``W_𝐆 (𝐋):=N_𝐆
-(𝐋)/𝐋``.  There are only few cuspidal pairs  (at most one in each dimension
-for classical groups).
+(unique  up to ``𝐆``-conjugacy) *cuspidal datum*,  a Levi subgroup ``𝐋`` of
+``𝐆``  and a *cuspidal* local system on  an unipotent class of ``𝐋``, and a
+character of the relative Weyl group ``W_𝐆 (𝐋):=N_𝐆 (𝐋)/𝐋``. There are only
+few  cuspidal local  systems (at  most one  in each dimension for classical
+groups).  The ordinary  Springer correspondence  is the  special case where
+``𝐋``  is a maximal torus, the cuspidal  local system the trivial system of
+the identity element, and ``W_𝐆 (𝐋)=W``, the Weyl group.
 
 The  Springer correspondence gives information on the character values of a
 finite  reductive groups  as follows:  assume that  ``k`` is  the algebraic
@@ -76,7 +80,7 @@ to  an ``𝔽_q``-structure of  ``𝐆``. Let ``C``  be an ``F``-stable unipoten
 class  and let ``u∈ C^F``; we call ``C`` the *geometric class* of ``u`` and
 the ``𝐆^F``-classes inside ``C^F`` are parameterised by the ``F``-conjugacy
 classes  of ``A(u)``, denoted ``H¹(F,A(u))`` (most  of the time we can find
-``u`` such that ``F`` acts trivially on ``A(u)`` and ``H¹(F,A(u))`` is then
+``u∈ C`` such that ``F`` acts trivially on ``A(u)`` and ``H¹(F,A(u))`` is then
 just the conjugacy classes). To an ``F``-stable character ``φ`` of ``A(u)``
 we  associate  the  *characteristic  function*  of  the corresponding local
 system (actually associated to an extension ``φ̃`` of ``φ`` to ``A(u).F``);
@@ -94,7 +98,7 @@ taking  the alternating trace of the Frobenius  acting on the stalks of the
 cohomology  sheaves. If ``Y_ψ``  is the characteristic  function of a local
 system,  the  characteristic  function  of  the  corresponding intersection
 cohomology  complex is  denoted by  ``X_ψ``. This  function is supported on
-``C̄``,  and Lusztig has shown that ``X_ψ=∑ᵩ P_{ψ,χ} Yᵪ`` where ``P_{ψ,χ}``
+``C̄``,  and Lusztig has shown that ``X_ψ=∑_χ P_{ψ,χ} Yᵪ`` where ``P_{ψ,χ}``
 are  integer polynomials in ``q`` and  ``Yᵪ`` are attached to local systems
 on classes lying in ``C̄``.
 
