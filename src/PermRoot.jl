@@ -891,6 +891,8 @@ function fixCartan(H,C,p)
   return [r,p]
 end
 
+# find roots p in inclusion(H) with cartan(H,p) equal to C^(diagonal matrix D)
+# returns [p, diagonal of D]
 function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
   # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
@@ -898,7 +900,7 @@ function findgensDiagCartan2(H,C)
     local r,c,cc,n
     if length(l)==size(C,1) return (l,d) end
     n=length(l)+1
-    for r in filter(i->cartan(H,i,i)==C[n,n],eachindex(roots(H)))
+    for r in Iterators.filter(i->cartan(H,i,i)==C[n,n],eachindex(roots(H)))
       cc=vcat(map(i->f(d[i]*C[i,n],cartan(H,l[i],r)),1:n-1),
               map(i->f(d[i]*cartan(H,r,l[i]),C[n,i]),1:n-1))
       cc=setdiff(cc,[0])
@@ -912,9 +914,9 @@ function findgensDiagCartan2(H,C)
   return complete(Int[],eltype(C)[])
 end
 
-# find other roots with same reflection in inclusion(H) with cartan equal to
-# C^diagonal matrix
-# returns [sublist, coeffs of corresp. diagonal matrix]
+# find other roots p' in inclusion(H) with same reflections as p 
+# with cartan(H,p') equal to C^(diagonal matrix D)
+# returns [p', diagonal of D]
 function findgensDiagCartan(H,C,p)
   CH=cartan(H,p)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
@@ -1214,7 +1216,7 @@ end
 
 # returns as a matrix a basis of X formed of a basis of the root lattice
 # followed by a basis of the orthogonal of the coroots
-function baseX(W::PermRootGroup{T,T1})where{T,T1}
+function baseX(W::PermRootGroup{T})where T
   get!(W,:baseX) do
     if istorus(W) return one(zeros(T,rank(W),rank(W))) end
     ir=independent_roots(W)
@@ -1674,16 +1676,17 @@ radical of the root datum `G`.
 radical(W::PermRootGroup)=PRG(rank(W)-semisimplerank(W))
 
 "`roots(W::PermRootGroup)` the roots of `W`"
-@inline roots(W::PRG)=W.roots
+roots(W::PRG)=W.roots
 "`roots(W::PermRootGroup,i)` same as `roots(W)[i]`"
-@inline roots(W::PRG,i)=W.roots[i]
+roots(W::PRG,i)=W.roots[i]
 """
 `simpleroots(W::ComplexReflectionGroup)`  the  simple  roots  of `W` (those
 corresponding to `gens(W)`) as a matrix (each root is a row)
 """
 simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens(W))))
 "`coroots(W)` the list of coroots of `W` (listed in the same order as the roots)"
-@inline coroots(W::PRG)=W.coroots
+coroots(W::PRG)=all(i->isassigned(W.coroots,i),eachindex(W.coroots)) ? 
+    W.coroots : coroots(W,eachindex(W.coroots))
 """
 `simplecoroots(W::ComplexReflectionGroup)` the simple coroots of `W` (those
 `corresponding to gens(W)`) as a matrix (each coroot is a row)
@@ -1706,7 +1709,8 @@ function coroots(W::PRG,i::Integer)
 end
 
 coroots(W::PRG,I::AbstractVector{<:Integer})=isempty(I) ? empty(W.coroots) : 
-  map(i->coroots(W,i),I)
+  [coroots(W,i) for i in I]
+# map(i->coroots(W,i),I) #is much slower
 
 function Base.:*(W::PRG,V::PRG)
   if rank(W)==0 return V
@@ -1760,10 +1764,10 @@ restriction(W::PRSG,i)=W.restriction[i]
 @inline roots(W::PRSG)=roots(parent(W),inclusion(W))
 @inline roots(W::PRSG,i)=roots(parent(W),inclusion(W,i))
 simpleroots(W::PRSG)=toM(roots(parent(W),inclusiongens(W)))
-@inline coroots(W::PRSG)=coroots(parent(W),inclusion(W))
-@inline coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
+coroots(W::PRSG)=coroots(parent(W),inclusion(W))
+coroots(W::PRSG,i)=coroots(parent(W),inclusion(W,i))
 simplecoroots(W::PRSG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(coroots(parent(W),inclusiongens(W)))
-@inline Base.parent(W::PRSG)=W.parent
+Base.parent(W::PRSG)=W.parent
 """
 `action(W::PermRootGroup,i::Integer,p::Perm)`
 
