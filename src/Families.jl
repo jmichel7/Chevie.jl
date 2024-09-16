@@ -652,8 +652,13 @@ Lusztig′sDrinfeld double D(coxsym(3))
 │(3,ζ₃²)│  ζ₃²  1//3 -1//3 1//3     .     . -1//3 -1//3  2//3│
 └───────┴────────────────────────────────────────────────────┘
 ```
+
+The  keyword `pivotal`  describes the  pivotal structure  as a tuple of the
+pivotal  element and the vector  of values of the  pivotal character on the
+generators of `g`.
 """
 function drinfeld_double(g;lu=false,pivotal=nothing)
+# pivotal=(pivotal element, value of pivotal char on gens(g))
   res=Family(Dict{Symbol,Any}(:group=> g))
   res.classinfo=map(classreps(g), classnames(g;TeX=true))do c,n
     r=Dict{Symbol, Any}(:elt => c,:name => n)

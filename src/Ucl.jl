@@ -412,19 +412,18 @@ end
 const UnipotentClassOps=Dict{Symbol,Any}(:Name=>nameclass)
 
 """
-`induced_linear_form(W, K, h)`
+`induced_linear_form(W, H, h)`
 
-This routine can be used to find the class in the algebraic group `𝐆` which
-contains  a given unipotent  class of a  reductive subgroup of maximum rank
-`𝐊` of `𝐆`.
+This routine can be used to find the unipotent class in the reductive group
+with  Weyl group `W` which contains a  given unipotent class of a reductive
+subgroup of maximum rank represented by the reflection subgroup `H` of `W`.
 
-The  argument `h` is a linear form on  the roots of `𝐊`, given by its value
-on  the simple roots; this  linear form is extended  to the roots of `𝐆` by
-`0`  on the orthogonal of the roots  of `K`; and finally the resulting form
-is  conjugated by an  element of the  Weyl group so  that it takes positive
-values on the simple roots. If the initial form describes a
-Dynkin-Richardson   diagram   for   `𝐊`,   the   result   will  describe  a
-Dynkin-Richardson diagram for `𝐆`.
+The  argument `h` is a linear form on  the roots of `H`, given by its value
+on  the simple roots; this  linear form is extended  to the roots of `W` by
+`0`  on the orthogonal of the roots  of `H`; and finally the resulting form
+is  conjugated by an element of `W` so that it takes positive values on the
+simple roots. If the initial form describes a Dynkin-Richardson diagram for
+`H`, the result will describe a Dynkin-Richardson diagram for `W`.
 
 ```julia-repl
 julia> W=coxgroup(:F,4)

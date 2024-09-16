@@ -680,8 +680,8 @@ function UnipotentCharacters(WF::Spets)
   end
 end
 
-function Chars.fakedegrees(uc::UnipotentCharacters)
-  f=fakedegrees(spets(uc),Pol())
+function Chars.fakedegrees(uc::UnipotentCharacters,q=Pol())
+  f=fakedegrees(spets(uc),q)
   fd=fill(zero(f[1]),length(uc))
   fd[uc.almostHarishChandra[1][:charNumbers]]=f
   fd

@@ -1225,7 +1225,7 @@ function baseX(W::PermRootGroup{T})where T
       for v in eachrow(u) v.*=lcm(denominator.(v)...) end
     end
     vcat(toM(roots(W,ir)),improve_type(u))
-  end
+  end::Matrix{T}
 end
 
 function invbaseX(W::PermRootGroup)
@@ -1683,7 +1683,7 @@ roots(W::PRG,i)=W.roots[i]
 `simpleroots(W::ComplexReflectionGroup)`  the  simple  roots  of `W` (those
 corresponding to `gens(W)`) as a matrix (each root is a row)
 """
-simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(roots(W,eachindex(gens(W))))
+simpleroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(view(W.roots,eachindex(gens(W))))
 "`coroots(W)` the list of coroots of `W` (listed in the same order as the roots)"
 coroots(W::PRG)=all(i->isassigned(W.coroots,i),eachindex(W.coroots)) ? 
     W.coroots : coroots(W,eachindex(W.coroots))
@@ -1691,7 +1691,7 @@ coroots(W::PRG)=all(i->isassigned(W.coroots,i),eachindex(W.coroots)) ?
 `simplecoroots(W::ComplexReflectionGroup)` the simple coroots of `W` (those
 `corresponding to gens(W)`) as a matrix (each coroot is a row)
 """
-simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(W.coroots[eachindex(gens(W))])
+simplecoroots(W::PRG)=ngens(W)==0 ? fill(0,0,rank(W)) : toM(view(W.coroots,eachindex(gens(W))))
 inclusion(W::PRG,i::Integer)=i
 inclusion(W::PRG,i::AbstractVector)=collect(i) # we do not want ranges
 inclusion(W::PRG)=inclusion(W,eachindex(W.roots))
@@ -1700,12 +1700,12 @@ Base.parent(W::PRG)=W
 action(W::PRG,i,p)=i^p
 
 "`coroots(W,i)` same as but better than `coroots(W)[i]`"
-function coroots(W::PRG,i::Integer)
+function coroots(W::PRG{T},i::Integer)where T
   if isassigned(W.coroots,i) return W.coroots[i] end
   j=findfirst(!iszero,roots(W,i))
   m=reflrep(W,i)
   m=one(m)-m
-  W.coroots[i]=improve_type(m[:,j].//roots(W,i)[j])
+  W.coroots[i]=T.(m[:,j].//roots(W,i)[j])::Vector{T}
 end
 
 coroots(W::PRG,I::AbstractVector{<:Integer})=isempty(I) ? empty(W.coroots) : 
