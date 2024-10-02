@@ -232,13 +232,14 @@ cartanmats[:a]=cartanmats[:A]=function(r)
   end
   m
 end
-cartanmats[:b]=cartanmats[:B]=function(r)
+cartanmats[:b]=cartanmats[:B]=function(r,cartanType=2)
   m=cartanmats[:A](r)
-  if r>1 m[1,2]=-2 end
+  if r>1 
+    if cartanType==2 m[1,2]=-2 
+    else m=typeof(cartanType//1).(m);m[1,2]=-cartanType;m[2,1]=-2//cartanType
+    end
+  end
   m
-end
-cartanmats[:isym]=cartanmats[:Isym]=function(b)
-  [2 -E(2*b)-E(2*b,-1);-E(2*b)-E(2*b,-1) 2]
 end
 cartanmats[:bsym]=cartanmats[:Bsym]=function(r)
   m=Cyc.(cartanmats[:A](r))
@@ -261,10 +262,12 @@ cartanmats[:e]=cartanmats[:E]=function(r)
   u=1:min(r,4); m[u,u]=[2 0 -1 0; 0 2 0 -1;-1 0 2 -1;0 -1 -1 2][u,u]
   m
 end
-cartanmats[:f]=cartanmats[:F]=function(r)
+cartanmats[:f]=cartanmats[:F]=function(r,cartanType=1)
   if r!=4 error("type :F is defined only for rank 4") end
   m=cartanmats[:A](r)
-  m[3,2]=-2
+  if cartanType==1 m[3,2]=-2 
+  else m=typeof(cartanType//1).(m);m[3,2]=-2//cartanType;m[2,3]=-cartanType
+  end
   m
 end
 cartanmats[:fsym]=cartanmats[:Fsym]=function(r)
@@ -273,10 +276,12 @@ cartanmats[:fsym]=cartanmats[:Fsym]=function(r)
   m[3,2]=m[2,3]=-root(2)
   m
 end
-cartanmats[:g]=cartanmats[:G]=function(r)
+cartanmats[:g]=cartanmats[:G]=function(r,cartanType=1)
   if r!=2 error("type :G is defined only for rank 2") end
   m=cartanmats[:A](r)
-  m[2,1]=-3
+  if cartanType==1 m[2,1]=-3
+  else m=typeof(cartanType//1).(m);m[1,2]=-cartanType;m[2,1]=-3//cartanType
+  end
   m
 end
 cartanmats[:gsym]=cartanmats[:Gsym]=r->cartanmats[:Isym](6)
@@ -286,9 +291,18 @@ cartanmats[:h]=cartanmats[:H]=function(r)
   m[1:2,1:2]=cartanmats[:Isym](5)
   m
 end
-cartanmats[:i]=cartanmats[:I]=function(b)
-  res=b%2==0 ? [2 (b==2 ? 0 : -1);-2-E(b)-E(b,-1) 2] : cartanmats[:Isym](b)
-  (b<5 || b==6) ? Int.(res) : res
+cartanmats[:isym]=cartanmats[:Isym]=function(bond)
+  c=improve_type(-E(2*bond)-E(2*bond,-1))
+  [2 c;c 2]
+end
+cartanmats[:i]=cartanmats[:I]=function(r,bond,cartanType=1)
+  if r!=2 error("$r should be 2") end
+  if isodd(bond) cartanmats[:Isym](bond)
+  elseif bond==2 
+    [2 0;0 2]
+  else 
+    improve_type([2 -cartanType;(-2-E(bond)-E(bond,-1))//cartanType 2])
+  end
 end
 """
 `cartan(type, rank [,bond])`
@@ -320,8 +334,8 @@ julia> cartan(:Bsym,2)
  -√2    2
 ```
 """
-function PermRoot.cartan(t::Symbol,r::Integer,b::Integer=0)
-  if haskey(cartanmats,t) b==0 ? cartanmats[t](r) : cartanmats[t](b)
+function PermRoot.cartan(t::Symbol,r::Integer,args::Number...)
+  if haskey(cartanmats,t) cartanmats[t](r,args...)
   else error("Unknown Cartan type $(repr(t)). Known types are:\n",
              join(sort(repr.(collect(keys(cartanmats)))),", "))
   end
@@ -405,10 +419,10 @@ function type_fincox_cartan(m::AbstractMatrix)
       if bond==1 t.series=:A
       elseif bond==2 t.series=:B
         if l(1)==-1 reverse!(s) end # B2 preferred to C2
-        t.cartanType=-l(1)
+        t.cartanType=improve_type(-l(1))
       elseif bond==3 t.series=:G
         if r(1)==-1 reverse!(s) end
-        t.cartanType=-l(1)
+        t.cartanType=improve_type(-l(1))
       else n=conductor(bond)
         if r(1)==-1 reverse!(s) end
         if bond==2+E(n)+E(n,-1) bond=n else bond=2n end
@@ -422,17 +436,18 @@ function type_fincox_cartan(m::AbstractMatrix)
         if l(2)*r(2)==1 t.series=:A
         else t.series=:F
           if r(2)==-1 reverse!(s) end
-          t.cartanType=-l(2)
+          t.cartanType=improve_type(-l(2))
         end
       else n=conductor(l(1)*r(1))
         if n==5 t.series=:H
         else t.series=:B
-          t.cartanType=-l(1)
+          t.cartanType=improve_type(-l(1))
         end
       end
     end
     t.indices=s::Vector{Int}
   end
+  return t
 # println("t=$t")
 # println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
   if cartan(t,permute=true)==m return t end  # countercheck
@@ -797,8 +812,8 @@ julia> reflrep(W)
  [1 3; 0 -1]
 ```
 """
-CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Int=0;sc=false)=iszero(r) ? coxgroup() :
-sc ? rootdatum(permutedims(cartan(t,r,b)),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b))
+CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Int...;sc=false)=iszero(r) ? coxgroup() :
+sc ? rootdatum(permutedims(cartan(t,r,b...)),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b...))
 
 """
 `rootdatum(C::AbstractMatrix)`  adjoint root datum  from Cartan matrix `C`.

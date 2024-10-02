@@ -348,7 +348,7 @@ function asreflection(m::AbstractMatrix)
   if !isnothing(r) asreflection(m,rr[r,:]) end
 end
 #------------------------------------------------------------------------
-@GapObj struct TypeIrred end
+@GapObj mutable struct TypeIrred end
 
 Base.copy(t::TypeIrred)=TypeIrred(copy(t.prop))
 
@@ -642,18 +642,15 @@ end
 
 function cartan(t::TypeIrred;permute=false)
   if t.series==:ST return improve_type(toM(getchev(t,:CartanMat))) end
-  C=cartan(t.series,rank(t),haskey(t,:bond) ? t.bond : 0)
-  if haskey(t,:cartanType) ct=t.cartanType
-    T=promote_type(typeof(ct),eltype(C))
-    if T!=eltype(C) C=convert.(T,C) end
-    if     t.series in (:B,:G,:I) C[2,1]*=-C[1,2]//ct; C[1,2]=-ct
-    elseif t.series==:F C[3,2]*=-C[2,3]//ct; C[2,3]=-ct
-    end
+  C=haskey(t,:bond) ? haskey(t,:cartanType) ? 
+     cartan(t.series,rank(t),t.bond,t.cartanType) : 
+     cartan(t.series,rank(t),t.bond) : 
+     haskey(t,:cartanType) ? cartan(t.series,rank(t),t.cartanType) : 
+     cartan(t.series,rank(t))
+  if permute && indices(t)!=1:rank(t)
+    p=sortperm(indices(t));C=C[p,p]
   end
-  if indices(t)!=1:rank(t) && permute
-    C=C[sortperm(indices(t)),sortperm(indices(t))]
-  end
-  improve_type(C)
+  C
 end
 
 cartan(W::PermRootGroup,I)=[cartan(W,i,j) for i in I, j in I]

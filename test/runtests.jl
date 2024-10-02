@@ -750,6 +750,7 @@ end
 @test mytest("Symbols.jl","defectsymbol([[1,5,6],[1,2]])","1")
 @test mytest("Symbols.jl","degree_fegsymbol([[1,5,6],[1,2]])","88")
 @test mytest("Symbols.jl","valuation_fegsymbol([[1,5,6],[1,2]])","16")
+@test mytest("Symbols.jl","stringsymbol.(rio(),symbols(3,3,0))","12-element Vector{String}:\n \"(1+)\"\n \"(1ζ₃)\"\n \"(1ζ₃²)\"\n \"(01,12,02)\"\n \"(01,02,12)\"\n \"(012,012,123)\"\n \"(0,1,2)\"\n \"(0,2,1)\"\n \"(01,01,13)\"\n \"(0,0,3)\"\n \"(012,,)\"\n \"(012,012,)\"")
 @test mytest("Symbols.jl","stringsymbol.(symbols(3,2))","14-element Vector{String}:\n \"(12,0,0)\"\n \"(02,1,0)\"\n \"(02,0,1)\"\n \"(012,12,01)\"\n \"(01,1,1)\"\n \"(012,01,12)\"\n \"(2,,)\"\n \"(01,2,0)\"\n \"(01,0,2)\"\n \"(1,012,012)\"\n \"(,02,01)\"\n \"(,01,02)\"\n \"(0,,012)\"\n \"(0,012,)\"")
 @test mytest("Symbols.jl","stringsymbol.(symbols(3,3,0))","12-element Vector{String}:\n \"(1+)\"\n \"(1E(3))\"\n \"(1E(3,2))\"\n \"(01,12,02)\"\n \"(01,02,12)\"\n \"(012,012,123)\"\n \"(0,1,2)\"\n \"(0,2,1)\"\n \"(01,01,13)\"\n \"(0,0,3)\"\n \"(012,,)\"\n \"(012,012,)\"")
 @test mytest("Symbols.jl","fegsymbol([[1,5,6],[1,2]])","q¹⁶Φ₅Φ₇Φ₈Φ₉Φ₁₀Φ₁₁Φ₁₄Φ₁₆Φ₁₈Φ₂₀Φ₂₂")
