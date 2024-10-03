@@ -243,7 +243,7 @@ cartanmats[:b]=cartanmats[:B]=function(r,cartanType=2)
 end
 cartanmats[:bsym]=cartanmats[:Bsym]=function(r)
   m=Cyc.(cartanmats[:A](r))
-  m[1:2,1:2]=cartanmats[:Isym](4)
+  m[1:2,1:2]=cartanmats[:Isym](2,4)
   m
 end
 cartanmats[:c]=cartanmats[:C]=function(r)
@@ -284,20 +284,20 @@ cartanmats[:g]=cartanmats[:G]=function(r,cartanType=1)
   end
   m
 end
-cartanmats[:gsym]=cartanmats[:Gsym]=r->cartanmats[:Isym](6)
+cartanmats[:gsym]=cartanmats[:Gsym]=r->cartanmats[:Isym](2,6)
 cartanmats[:h]=cartanmats[:H]=function(r)
   if r>4 error("type :H is defined only for rank ≤4") end
   m=Cyc.(cartanmats[:A](r))
-  m[1:2,1:2]=cartanmats[:Isym](5)
+  m[1:2,1:2]=cartanmats[:Isym](2,5)
   m
 end
-cartanmats[:isym]=cartanmats[:Isym]=function(bond)
+cartanmats[:isym]=cartanmats[:Isym]=function(r,bond)
   c=improve_type(-E(2*bond)-E(2*bond,-1))
   [2 c;c 2]
 end
 cartanmats[:i]=cartanmats[:I]=function(r,bond,cartanType=1)
   if r!=2 error("$r should be 2") end
-  if isodd(bond) cartanmats[:Isym](bond)
+  if isodd(bond) cartanmats[:Isym](2,bond)
   elseif bond==2 
     [2 0;0 2]
   else 

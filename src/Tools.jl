@@ -8,30 +8,30 @@ using Combinat: tally
 using PermGroups: Group, Groups, gens, word, PermGroup, elements,
          minimal_words, isabelian
 using MatInt: smith_transforms
-using CyclotomicNumbers: Cyc, conductor, Root1
+using CyclotomicNumbers: Cyc, conductor, Root1, num
 using ..FiniteFields: FiniteFields, FFE, Z
 using ..Modulo: Mod
 using ..Chevie: Chevie, order
 
 #------------------ improve_type
-function best_eltype(m)
-  if isempty(m) 
-    if eltype(m)<:Rational{<:Integer} Int
-    elseif eltype(m)<:Cyc{<:Rational{<:Integer}} Cyc{Int}
-    else eltype(m)
-    end
+best_empty(::Type{T})where T = T<:Rational{<:Integer} ? Int : 
+  T<:Cyc{<:Rational{<:Integer}} ? Cyc{Int} : T
+
+function best_eltype(m::AbstractArray)
+  if isempty(m) best_empty(eltype(m))
   else reduce(promote_type,best_type.(m))
   end
 end
-best_eltype(p::Pol)=iszero(p) ? Int : best_eltype(p.c)
-best_eltype(p::Mvp)=iszero(p) ? Int : best_eltype(values(p.d))
+
+best_eltype(m)=reduce(promote_type,best_type.(m)) # an iterator?
+
 best_type(x)=typeof(x)
-best_type(x::Cyc{Rational{T}}) where T=iszero(x) ? Int : conductor(x)==1 ? 
-  best_type(Rational(x)) : denominator(x)==1 ?  Cyc{T} : typeof(x)
-best_type(x::Cyc{T}) where T<:Integer=conductor(x)==1 ? T : typeof(x)
-best_type(x::Rational)= denominator(x)==1 ? typeof(numerator(x)) : typeof(x)
+best_type(x::Cyc{T}) where T=conductor(x)==1 ? best_type(num(x)) : 
+  Cyc{best_eltype(values(x.d))}
+best_type(x::Rational)= isinteger(x) ? best_type(numerator(x)) : 
+  Rational{promote_type(best_type(numerator(x)),best_type(denominator(x)))}
 best_type(m::AbstractArray{T,N}) where {T,N}=Array{best_eltype(m),N}
-best_type(p::Pol)=Pol{best_eltype(p)}
+best_type(p::Pol)=Pol{best_eltype(p.c)}
 best_type(x::BigInt)= typemin(Int)<=x<=typemax(Int) ? Int : BigInt
 best_type(x::Root1)= order(x)<=2 ? Int : Root1
 function best_type(q::Frac)
@@ -43,9 +43,9 @@ end
 best_type(q::Frac{Pol{Rational{T}}}) where T=Frac{Pol{T}}
 best_type(q::Frac{Mvp{Rational{T}}}) where T=Frac{Mvp{T}}
 function best_type(p::Mvp{T,N}) where {T,N}
-  if iszero(p) return  Mvp{Int,Int} end
+  if iszero(p) return  Mvp{best_empty(T),Int} end
   n=all(m->all(isinteger,powers(m)),monomials(p)) ? Int : N
-  Mvp{best_eltype(p),n}
+  Mvp{best_eltype(values(p.d)),n}
 end
 
 function improve_type(m)
