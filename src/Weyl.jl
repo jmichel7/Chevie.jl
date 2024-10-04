@@ -447,7 +447,6 @@ function type_fincox_cartan(m::AbstractMatrix)
     end
     t.indices=s::Vector{Int}
   end
-  return t
 # println("t=$t")
 # println("indices=",t.indices]," cartan=",cartan(t)," m=$m")
   if cartan(t,permute=true)==m return t end  # countercheck
