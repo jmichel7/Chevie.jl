@@ -749,7 +749,7 @@ function Weyl.relative_group(s::Series)
   else
     WGL=N/Group(gens(L)) # while problem with G333 not solved
   end
-  V=lnullspace(projector(s)-one(projector(s)))#The E(d)-eigenspace
+  V=lnullspace(projector(s)-I)#The E(d)-eigenspace
   m=vcat(V,lnullspace(projector(s)))^-1
   # V∩ fix(r) for r a reflection in W. The result is a rowspace
   hplane(r)=intersect_rowspace(hyperplane(r),V)

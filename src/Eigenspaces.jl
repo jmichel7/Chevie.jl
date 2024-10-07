@@ -228,11 +228,10 @@ julia> GenLinearAlgebra.rank(p)
 eigenspace_projector(W,w,d::Integer=1)=eigenspace_projector(W,w,E(d))
 eigenspace_projector(W,w,d::Rational)=eigenspace_projector(W,w,Root1(;r=d))
 function eigenspace_projector(W,w,d::Root1)
-  c=refleigen(W)[position_class(W,w)]
-  c=Cyc.(filter(x->x!=d,c))
+  c=filter(!=(d),refleigen(W)[position_class(W,w)])
   f=reflrep(W,w)
-  if length(c)==0 one(f)
-  else prod(x->f-one(f)*x,c)//prod(x->Cyc(d)-x,c)
+  if isempty(c) one(f)
+  else prod(x->f-I*x,c)//prod(x->d-x,c)
   end
 end
 
@@ -314,14 +313,13 @@ function split_levis(WF,d::Root1,ad)
   while length(cl)>0
     w=classreps(WF)[cl[1]]
     if rank(W)==0 V=fill(0,0,0)
-    else m=reflrep(WF,w)
-      V=lnullspace(m-Cyc(d)*one(m))
+    else V=lnullspace(reflrep(WF,w)-d*I)
     end
-    I=filter(r->iszero(V*coroots(W,r)),refs)
-#   println("I=$I\nphi=",w/WF.phi)
-    HF=subspets(WF, I, w/WF.phi)
+    J=filter(r->iszero(V*coroots(W,r)),refs)
+#   println("J=$J\nphi=",w/WF.phi)
+    HF=subspets(WF, J, w/WF.phi)
     if isnothing(HF)
-      error("subspets($WF,",I,",class#",cl[1],") failed")
+      error("subspets($WF,",J,",class#",cl[1],") failed")
     else
       f=intersect(fusion_conjugacy_classes(HF, WF), cl)
       if isempty(f)

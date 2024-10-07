@@ -276,10 +276,7 @@ As  we see in the last lines, in  Julia a matrix operates from the right on
 the  vector space `V`  of row vectors  and from the  left on the dual space
 `Vᵛ` of column vectors.
 """
-function reflectionMatrix(root::AbstractVector,coroot::AbstractVector)
-  m=coroot*transpose(root)
-  one(m)-m
-end
+reflectionMatrix(r::AbstractVector,cr::AbstractVector)=I-cr*transpose(r)
 
 """
 `reflectionMatrix(r, ζ=-1)`
@@ -296,10 +293,7 @@ julia> reflectionMatrix([1,0,-E(3,2)])
  ζ₃  0    0
 ```
 """
-function reflectionMatrix(r::AbstractVector,l::Number=-1)
-  m=(1-l)*transpose(r*r')//(r'*r)
-  one(m)-m
-end
+reflectionMatrix(r::AbstractVector,l::Number=-1)=I-(1-l)*transpose(r*r')//(r'*r)
 
 """
 `asreflection(s::Matrix [,r::AbstractVector])`
@@ -332,7 +326,7 @@ julia> asreflection([-1 0 0;1 1 0;0 0 1],[1,0,0])
 ```
 """
 function asreflection(m::AbstractMatrix,r::AbstractVector)
-  rr=one(m)-m
+  rr=I-m
   rc=map(j->ratio(rr[j,:],r),axes(m,1))
   zeta=ratio(transpose(m)*r,r)
   if isnothing(zeta) return end
@@ -343,7 +337,7 @@ function asreflection(m::AbstractMatrix,r::AbstractVector)
 end
 
 function asreflection(m::AbstractMatrix)
-  rr=one(m)-m
+  rr=I-m
   r=findfirst(!iszero,eachrow(rr))
   if !isnothing(r) asreflection(m,rr[r,:]) end
 end
@@ -1700,8 +1694,7 @@ action(W::PRG,i,p)=i^p
 function coroots(W::PRG{T},i::Integer)where T
   if isassigned(W.coroots,i) return W.coroots[i] end
   j=findfirst(!iszero,roots(W,i))
-  m=reflrep(W,i)
-  m=one(m)-m
+  m=I-reflrep(W,i)
   W.coroots[i]=T.(m[:,j].//roots(W,i)[j])::Vector{T}
 end
 

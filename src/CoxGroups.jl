@@ -490,7 +490,7 @@ julia> word.(Ref(W),b)
 ```
 """
 function bruhatless(W::CoxeterGroup,x,y)
-  if x==one(W) return true end
+  if isone(x) return true end
   d=length(W,y)-length(W,x)
   while d>0
     i=firstleftdescent(W,y)
@@ -528,7 +528,7 @@ julia> bruhatless(W,Perm(1,3))
 see also [`Poset`](@ref) for Coxeter groups.
 """
 function bruhatless(W::CoxeterGroup,w)
-  if w==one(W) return [[w]] end
+  if isone(w) return [[w]] end
   i=firstleftdescent(W,w)
   s=W(i)
   res=bruhatless(W,s*w)
@@ -573,7 +573,7 @@ julia> Poset(W,W(1,3))
 ```
 """
 function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
-  if w==one(W)
+  if isone(w)
     p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
