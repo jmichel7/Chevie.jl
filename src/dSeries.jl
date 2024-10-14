@@ -126,14 +126,14 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
   fd[charnumbers(l[1])]=fakedegrees(reflection_group(t),Pol())
 
   # positions-with-sign in l where o or -o appears
-  positionssgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
+  findallsgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
 
   # EnnolaBete[i]: possible action of ξ-Ennola on i-th family
   # list of possible destinations for each char, taking just degree in account
   EnnolaBete=map(ff)do f
     m=f.fourierMat;if !(m isa Matrix) m=toM(m) end
     ud=CycPol.(m'*fd[f.charNumbers])
-    map(p->positionssgn(ud,subs(p,Pol([ξ],1))),ud)
+    map(p->findallsgn(ud,subs(p,Pol([ξ],1))),ud)
   end
 
   for h in uc[:harishChandra] 

@@ -7,6 +7,7 @@ using Chairmarks
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
 
 #julia> @b test_w0(6)
+#1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
 #1.10.3  11.648 ms (182389 allocs: 12.981 MiB)
 #1.11.rc 11.671 ms (237323 allocs: 13.295 MiB)
 function test_w0(n)
@@ -21,8 +22,9 @@ end;
 """
 
 #julia> @b CyclotomicNumbers.testmat(9)^2 seconds=2
-#1.10.3  42.501 ms (286780 allocs: 49.168 MiB)
-#1.11.rc 34.639 ms (349995 allocs: 48.217 MiB)
+#1.9.4  51.760 ms (286779 allocs: 49.168 MiB)
+#1.10.3 42.501 ms (286780 allocs: 49.168 MiB)
+#1.11.0 34.639 ms (347334 allocs: 47.080 MiB)
 #
 #testmat(9)^2 in GAP3 85ms in GAP4 60ms
 """
@@ -37,8 +39,9 @@ end;
 #Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.56s
 
 #julia> @b elements(coxgroup(:E,6))
-#1.10.3  4.092 ms (60997 allocs: 12.434 MiB)
-#1.11.rc 3.473 ms (118212 allocs: 13.208 MiB)
+#1.9.4  7.724 ms (61129 allocs: 12.447 MiB)
+#1.10.3 4.092 ms (60997 allocs: 12.434 MiB)
+#1.11.0 3.531 ms (118188 allocs: 13.205 MiB)
 #Elements(CoxeterGroup("E",6));; #GAP3 15.5ms
 
 #julia> @b test_kl(coxgroup(:A,4))
@@ -100,7 +103,7 @@ end;
 #1.8.5  248.055 μs (6433 allocations: 502.81 KiB)
 #1.9.0  250.546 μs (6254 allocations: 517.97 KiB)
 #1.10.3 264.118 μs (6200 allocs: 517.859 KiB)
-#1.11.rc 230.321 μs (10200 allocs: 576.328 KiB)
+#1.11.0 230.321 μs (10200 allocs: 576.328 KiB)
 function test_b(W)
   B=BraidMonoid(W)
   b=B(-4,-3,-2,-15,-14,-13,-10,-11,-12,-7,-2,-12,-11,-10,-7,-8,-9,-6,-7,-8,-2,
@@ -120,8 +123,9 @@ end;
 
 # for r>13 needs BigInt
 #julia> @b test_hm(BigInt,35) seconds=1
-#1.10.3  42.886 ms (1795660 allocs: 57.618 MiB)
-#1.11.rc 48.393 ms (1795664 allocs: 57.618 MiB)
+#1.9.4  43.756 ms (1780874 allocs: 57.071 MiB)
+#1.10.3 42.886 ms (1795660 allocs: 57.618 MiB)
+#1.11.0 44.514 ms (1795664 allocs: 57.618 MiB)
 function test_hm(rtype,rank)
   m=[rtype(1)//(n+m) for n in 1:rank, m in 1:rank]
   one(m)==m*inv(m)

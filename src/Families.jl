@@ -985,7 +985,8 @@ function Base.show(io::IO,f::Family)
   if hasdecor(io) || !haskey(f,:group)
     name=haskey(f,:name) ? f.name : "???"
     printTeX(io,"Family(\$",name,"\$")
-  else print(io,"Family(",repr(f.group))
+  else 
+    print(io,"Family(",haskey(f,:name) ? f.name : repr(f.group))
     if !haskey(f,:charNumbers) print(io,")"); return end
   end
   if haskey(f,:charNumbers) print(io,",",f.charNumbers,")")
