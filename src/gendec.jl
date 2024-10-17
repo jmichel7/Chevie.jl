@@ -87,7 +87,7 @@ function generic_decomposition_matrix(t::TypeIrred,d::Integer)
     return (ordinary=n,hc_series=n,
           decmat=Int.(eachindex(n) .== eachindex(n)'),condition="",origin="")
   end
-  mat=GenericDecMats.generic_decomposition_matrix(field*"d$d")
+  mat=GenericDecMats.generic_decomposition_matrix(field*"d$d",:Chevie)
   if isnothing(mat)
     l=filter(startswith(field),
                   GenericDecMats.generic_decomposition_matrices_names())

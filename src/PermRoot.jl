@@ -1442,13 +1442,14 @@ end
 
 Let  `V` be the space on  which `W` acts as a  reflection group and let `w∈
 W`,  represented  as  a  permutation  of  the roots. The function `reflrep`
-returns the matrix of `w` acting on `V` (recall that matrices operate *from
-the right* on a vector space in `Chevie`). This is the linear transformation
-of  `V` which acts trivially on the  orthogonal of the coroots and has same
-effect  as `w` on the simple roots. The function makes sense more generally
-for  a permutation  of the  roots induced  by an  element of  `GL(V)` which
-stabilizes the roots (thus in particular normalizes `W`); thus it works for
-reflection cosets.
+returns  the matrix of `w` acting on  `V` (*from the right* on the elements
+of  `V` seen as  row vectors by  our conventions in  `Chevie`). This is the
+linear  transformation of `V` which acts trivially on the orthogonal of the
+coroots  and has same effect as `w` on the simple roots. The function makes
+sense  more generally for a permutation of  the roots induced by an element
+of  `GL(V)` which stabilizes the roots (thus in particular normalizes `W`);
+thus  it works for reflection cosets.  For a `rootdatum` corresponding to a
+coset `Wσ` we get the action of `Wσ` on `X(𝐓)`.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
@@ -1480,12 +1481,16 @@ const reflrep=reflection_representation
 """
 `YMatrix(W,w)`
 
-Let  `W` be a  finite reflection group  on the space  `V` and let `w` be an
-element of `W`. The function `YMatrix` returns the matrix of `w` acting on the
-dual  of `V`. This  is the linear  transformation of this  space which acts
-trivially  on the orthogonal of the roots and has same effect as `w` on the
-simple  coroots. The function makes sense  more generally for an element of
-the normalizer of `W` in the whole permutation group of the coroots.
+Let  `W` be a finite reflection group on  the space `V` and let `w∈ W`. The
+function  `YMatrix` returns the  matrix of `w`  acting on the  dual `V*` of
+`V`.  This is the linear transformation of `V*` which acts trivially on the
+orthogonal  of the roots and has same  effect as `w` on the simple coroots.
+The function makes sense more generally for an element of the normalizer of
+`W`  in the whole permutation group of the coroots. The resulting matrix is
+the  transposed  of  the  matrix  `reflrep(W,w)`,  which,  according to our
+conventions  acts on the right (on the row vectors representing elements of
+the  dual of `V`). For  a `rootdatum` corresponding to  a coset `Wσ` we get
+the action of `Wσ` on `Y(𝐓)`.
 
 ```julia-repl
 julia> W=reflection_subgroup(rootdatum("E7sc"),1:6)
