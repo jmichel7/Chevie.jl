@@ -359,26 +359,19 @@ chevieset(:families,:C2,
   :mellin=>[[1,1,0,0],[1,-1,0,0],[0,0,1,1],[0,0,1,-1]],
   :mellinLabels=>["(1,1)","(1,g2)","(g2,1)","(g2,g2)"])))
 
-chevieset(:families,Symbol("C'2"),
-  Family(Dict(:group=>"C2",:name=>"C'_2",
-  :explanation=>"TwistedDrinfeldDouble(Z/2)",
-  :charLabels=>["(1,1)",  "(1,\\varepsilon)", "(g_2,1)","(g_2,\\varepsilon)"],
-  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 1 -1;-1 1 -1 1],
+chevieset(:families,:LTQZ2,
+          Family(Dict(:group=>Group(Perm(1,2)),:cocycle=>-1,:pivotal=>(1,-1),
+  :explanation=>"Lusztig's TwistedDrinfeldDouble(Z/2)",
+  :charparams=>[[1,1],[1,-1],[-1,E(4)],[-1,-E(4)]],
+  :charLabels=>[ "(1,1)","(1,-1)","(-1,\\zeta_4)","(-1,-\\zeta_4)"],
+  :bar=>[1,1],:defect=>1,
+  :fourierMat=>[[1,1,-1,-1],[1,1,1,1],[-1,1,1,-1],[-1,1,-1,1]]//2,
   :eigenvalues=>[1,1,E(4),-E(4)],
-  :qEigen=>[0,0,1,1]//2,
+  :name=>"LusztigTwistedDrinfeldDoubleCyclic(2,-1,[1,-1])",
+  :explanation=>"LusztigTwistedDrinfeldDoubleCyclic(2,-1,[1,-1])",
+  :qEigen=>[ 0, 0, 1/2, 1/2 ],
   :perm=>Perm(3,4),
-  :lusztig=>true, # does not satisfy (ST)^3=1 but (SPT)^3=1
-  :cospecial=>2)))
-
-chevieset(:families,Symbol("C'\"2"),
-  Family(Dict(:group=>"C2", :name=>"C'''_2",
-  :explanation=>"TwistedDrinfeldDouble(Z/2)'",
-  :charLabels=>["(1,1)", "(1,\\varepsilon)", "(g_2,1)", "(g_2,\\varepsilon)"],
-  :fourierMat=>1//2*[1 1 -1 -1;1 1 1 1;-1 1 -1 1;-1 1 1 -1],
-  :eigenvalues=>[1,1,E(4),-E(4)],
-  :qEigen=>[0,0,1,1]//2,
-  :perm=>Perm(3,4),
-  :cospecial=>2)))
+  :lusztig=>true)))# does not satisfy (ST)^3=1 but (SPT)^3=1
 
 chevieset(:families,:S3,
   Family(Dict(:group=>"S3", :name=>"D(\\mathfrak S_3)",
@@ -459,12 +452,6 @@ f.eigenvalues.//=f.eigenvalues[2]
 f.special=2
 f.qEigen=[1,0,1,0].//2
 chevieset(:families,:Z4,f)
-
-f=chevieget(:families,:ExtPowCyclic)(9,1)
-f.perm=perm"(2,9)(3,8)(4,7)(5,6)"
-f.qEigen=[0,2,1,0,2,1,0,2,1].//3
-#if f.eigenvalues!=map(i->E(9)^(5*i^2),0:8) error() end
-chevieset(:families,:Z9,f)
 end
 
 chevieset(:families,:QZ,function(n,pivotal=nothing)
@@ -796,6 +783,73 @@ chevieset(:families,:G4,function()
   g4.classinfo.classnames=["1","z","g_4","g_6","g_6^4","g_6^2","g_6^5"]
   drinfeld_double(g4;pivotal=(g4(1,2)^3,[E(3),E(3)]))
 end)
+
+"""
+`TwistedDrinfeldDoubleCyclic(n,ζ,piv=[1,1])`
+
+compute  the modular  data of  the category  of modules  over the twisted
+Drinfeld double of a cyclic group G of order n
+
+arguments are `(n,ζ,piv=[1,1])`, where `n` is the order of the group,
+`ζ`  is the value of the 3-cocycle on `(ζₙ,ζₙⁿ⁻¹,ζₙⁿ⁻¹)` and  `piv` is
+a pivotal structure different form the usual one (on vector spaces)
+
+The result is a `GapObj` with fields:
+   .group: the group
+   .cocycle: `ζ`, the value of the 3-cocycle on the element `(ζₙ,ζₙ,ζₙⁿ⁻¹)`
+   .pivotal: a pair `[k,alpha]` where the 2-cocycle associated with `k` is a
+     coboundary  (an  integer  in  `0:n-1`),  and alpha the corresponding
+     1-cocycle  (a n^2-th root of unity)  (for the cyclic group, the Schur
+     multiplier  is trivial,  therefore these  pairs correspond exactly to
+     simple objects of the category)
+   .charparams: labels of lines of the fourier matrix by
+     pairs [x,chi]: elt of  G, projective character of G for the
+     corresponding cocycle 
+   .special is the position of the special line (here 1 where (x,chi)=(1,1) is)
+   .eigenvalues are the eigenvalues chi(x)/chi(1) 
+     (inverse of the T-matrix of the category)
+   .fourierMat is the Fourier matrix (renormalized S-matrix)
+  .bar  is  the  object  \\overline{1}  needed  to renormalise the S-matrix
+    (related to the non sphericity of the pivotal structure)
+
+ In general, we have the relation `(ST)³=τ id`, where the explicit value
+ of `τ` can be computed using Gauss sums.
+"""
+function TwistedDrinfeldDoubleCyclic(n,ζ,pivotal=[1,1])
+  ζ=Root1(ζ)
+  piv1e,piv2=Root1.(pivotal)
+  piv1=Int(Root1(piv1e).r*n)
+  piv=(piv1,piv2)
+  G=crg(n,1,1)
+  res=Family(Dict(:group=>G))
+  res.cocycle=ζ
+  # 3-cocycle associated to ζ: (a,b,c)->ζ^(a*(b+c)^quo), where 0<=a,b,c<n
+  ω(a,b,c)=ζ^(mod(a,n)*div(mod(b,n)+mod(c,n),n))
+  θ(g,a,b)=ω(g,a,b)*inv(ω(a,g,b))*ω(a,b,g) #θ_g(a,b)
+  γ(g,a,b)=ω(a,b,g)*inv(ω(a,g,b))*ω(g,a,b) #γ_g(a,b)
+  simple=map(i->map(j->(i,root(prod(k->θ(i,1,k),1:n-1),n)*E(n,j)),0:n-1),0:n-1)
+  # if a is a representation with cocycle θᵢ then 
+  # 1=a(n)=θₐ(1,n-1)⁻¹a(1)a(n-1)=…=θₐ(1,n-1)⁻¹*θₐ(1,n-2)⁻¹…θₐ(1,1)⁻¹a(1)^n 
+  simple=vcat(simple...)
+  if !(piv in simple) return end
+  #if the given pivotal structure is not of the expected form, we bail out
+  res.pivotal=(piv1e,piv2)
+  res.charparams=[(E(n,i1),i2) for (i1,i2) in simple]
+  res.charLabels=map(x->xrepr(x;TeX=true),res.charparams)
+  res.bar=(E(n,-2piv1), inv(piv2^2*γ(1,piv1,-piv1)*γ(1,piv1,-2piv1)))
+  res.fourierMat=[piv2^i1*piv2^j1*i2^piv1*j2^piv1*i2^j1*j2^i1 
+                  for (i1,i2) in simple, (j1,j2) in simple]//(n*piv2^(-2piv1))
+  res.eigenvalues=[piv2^i1*i2^piv1*i2^i1 for (i1,i2) in simple]
+  res.defect=sum(res.eigenvalues)//n*piv2^(-2piv1)
+  res.name="TwistedDrinfeldDouble(ℤ/$n,"*xrepr(ζ;TeX=true)
+  res.qEigen=map(x->conj(x[1]).r,res.charparams)
+  if piv!=(0,1) res.name*=","*xrepr(res.pivotal;TeX=true) end
+  res.name*=")"
+  res.perm=Perm(Int.(res.fourierMat^2*(1:n^2)))
+  res
+end
+
+chevieset(:families,:TQZ,TwistedDrinfeldDoubleCyclic)
 
 """
 `family_imprimitive(S)`

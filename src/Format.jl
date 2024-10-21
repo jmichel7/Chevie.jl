@@ -262,6 +262,7 @@ function Base.show(io::IO,t::Table)
   col0=(-1 in row_seps) && !isnothing(col_labels)
   ranges=map((x,y)->cols[y:y+x-1],column_repartition,
              pushfirst!(cumsum(column_repartition)[1:end-1].+1,1))
+  append!(col_seps,cumsum(column_repartition)[1:end-1])
   for ci in ranges
     if TeX 
       alignt=-1 in col_seps ? '|' : ""
