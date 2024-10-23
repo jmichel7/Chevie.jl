@@ -69,8 +69,8 @@ this construction.
 module Families
 
 export family_imprimitive, Family, drinfeld_double, 
- FamiliesClassical, SubFamilyij, ndrinfeld_double, fusion_algebra, duality,
- special, cospecial, fourier
+       twisted_drinfeld_double_cyclic, FamiliesClassical, SubFamilyij, 
+       ndrinfeld_double, fusion_algebra, duality, special, cospecial, fourier
 
 using ..Chevie
 
@@ -322,16 +322,18 @@ Permuted((1,2,3),imprimitive family)
 """
 function Perms.invpermute(f::Family,p::Perm)
   f=Family(copy(f.prop))
-  for n in [:x,:chi,:perm,:special,:cospecial]
+  for n in [:x,:chi,:perm,:special,:cospecial,:ennola]
     if haskey(f,n) setproperty!(f,n,getproperty(f,n)^p) end
   end
-  for n in [:charNumbers,:eigenvalues,:mellinLabels,:charLabels,:unpdeg,:fakdeg]
+  for n in [:charNumbers,:eigenvalues,:mellinLabels,:charLabels,:unpdeg,:fakdeg,    :qEigen,:signs]
     if haskey(f,n) setproperty!(f,n,invpermute(getproperty(f,n),p)) end
   end
   for n in [:fourierMat,:mellin]
-    if haskey(f,n) setproperty!(f,n,invpermute(getproperty(f,n),p;dims=(1,2))) end
+    if haskey(f,n) setproperty!(f,n,onmats(getproperty(f,n),p)) end
   end
-  f.explanation="Permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
+  if haskey(f,:explanation)
+    f.explanation="Permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
+  end
   f
 end
 
@@ -361,14 +363,13 @@ chevieset(:families,:C2,
 
 chevieset(:families,:LTQZ2,
           Family(Dict(:group=>Group(Perm(1,2)),:cocycle=>-1,:pivotal=>(1,-1),
-  :explanation=>"Lusztig's TwistedDrinfeldDouble(Z/2)",
   :charparams=>[[1,1],[1,-1],[-1,E(4)],[-1,-E(4)]],
   :charLabels=>[ "(1,1)","(1,-1)","(-1,\\zeta_4)","(-1,-\\zeta_4)"],
   :bar=>[1,1],:defect=>1,
   :fourierMat=>[[1,1,-1,-1],[1,1,1,1],[-1,1,1,-1],[-1,1,-1,1]]//2,
   :eigenvalues=>[1,1,E(4),-E(4)],
-  :name=>"LusztigTwistedDrinfeldDoubleCyclic(2,-1,[1,-1])",
-  :explanation=>"LusztigTwistedDrinfeldDoubleCyclic(2,-1,[1,-1])",
+  :name=>"LTQZ2",
+  :explanation=>"Lusztig's twisted_drinfeld_double_cyclic(2,-1,[1,-1])",
   :qEigen=>[ 0, 0, 1/2, 1/2 ],
   :perm=>Perm(3,4),
   :lusztig=>true)))# does not satisfy (ST)^3=1 but (SPT)^3=1
@@ -785,7 +786,7 @@ chevieset(:families,:G4,function()
 end)
 
 """
-`TwistedDrinfeldDoubleCyclic(n,ζ,piv=[1,1])`
+`twisted_drinfeld_double_cyclic(n,ζ,piv=[1,1])`
 
 compute  the modular  data of  the category  of modules  over the twisted
 Drinfeld double of a cyclic group G of order n
@@ -815,7 +816,7 @@ The result is a `GapObj` with fields:
  In general, we have the relation `(ST)³=τ id`, where the explicit value
  of `τ` can be computed using Gauss sums.
 """
-function TwistedDrinfeldDoubleCyclic(n,ζ,pivotal=[1,1])
+function twisted_drinfeld_double_cyclic(n,ζ,pivotal=[1,1])
   ζ=Root1(ζ)
   piv1e,piv2=Root1.(pivotal)
   piv1=Int(Root1(piv1e).r*n)
@@ -841,7 +842,7 @@ function TwistedDrinfeldDoubleCyclic(n,ζ,pivotal=[1,1])
                   for (i1,i2) in simple, (j1,j2) in simple]//(n*piv2^(-2piv1))
   res.eigenvalues=[piv2^i1*i2^piv1*i2^i1 for (i1,i2) in simple]
   res.defect=sum(res.eigenvalues)//n*piv2^(-2piv1)
-  res.name="TwistedDrinfeldDouble(ℤ/$n,"*xrepr(ζ;TeX=true)
+  res.name="twisted_drinfeld_double_cyclic($n,"*xrepr(ζ;TeX=true)
   res.qEigen=map(x->conj(x[1]).r,res.charparams)
   if piv!=(0,1) res.name*=","*xrepr(res.pivotal;TeX=true) end
   res.name*=")"
@@ -849,7 +850,7 @@ function TwistedDrinfeldDoubleCyclic(n,ζ,pivotal=[1,1])
   res
 end
 
-chevieset(:families,:TQZ,TwistedDrinfeldDoubleCyclic)
+chevieset(:families,:TQZ,twisted_drinfeld_double_cyclic)
 
 """
 `family_imprimitive(S)`
@@ -1043,9 +1044,17 @@ function Base.show(io::IO,f::Family)
     print(io,"Family(",haskey(f,:name) ? f.name : repr(f.group))
     if !haskey(f,:charNumbers) print(io,")"); return end
   end
-  if haskey(f,:charNumbers) print(io,",",f.charNumbers,")")
-  else print(io,",",length(f),")")
+  if haskey(f,:charNumbers) print(io,",",f.charNumbers)
+  else print(io,",",length(f))
   end
+  if haskey(f,:cospecial) || haskey(f,:ennola) || (haskey(f,:signs) && !all(>(0),f.signs))
+    d=Dict{Symbol,Any}()
+    if haskey(f,:cospecial) d[:cospecial]=f.cospecial end
+    if haskey(f,:ennola) d[:ennola]=f.ennola end
+    if haskey(f,:signs) && !all(>(0),f.signs) d[:signs]=f.signs end
+    print(io,",",d)
+  end
+  print(io,")")
 end
 
 function Base.show(io::IO,::MIME"text/plain",f::Family)

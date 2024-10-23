@@ -24,7 +24,7 @@ positionssgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
 
 # EnnolaBete[i]: possible action of ξ-Ennola on i-th family
 # list of possible destinations for each char, taking just degree in account
-function EnnolaBete(W,i,j)
+function EnnolaBete(W,i,j=1)
   uc=UnipotentCharacters(W)
   fd=fakedegrees(uc)
   f=uc.families[i]
@@ -49,13 +49,14 @@ function Base.show(io::IO,e::Ennola)
   println(io,"Ennola scalars for cuspidals of ",e.W)
   rowlab=map(h->fromTeX(io,h[:cuspidalName]),
                     UnipotentCharacters(e.W).harishChandra)
-  showtable(io,reshape(e.scalars,length(rowlab),1),rows_label="Name",row_labels=rowlab,
-        col_labels=[1//e.z])
+  showtable(io,reshape(e.scalars,length(rowlab),1),rows_label="Name",
+            row_labels=rowlab,col_labels=[1//e.z])
 end
 
 # Ennola for i-th family as an Ls
-function PossToLs(e::Ennola, i, xi)
-  r=deepcopy(e.families[i].poss[xi])
+PossToLs(e::Ennola, i, xi)=PossToLs(deepcopy(e.families[i].poss[xi]))
+
+function PossToLs(r::Vector{Vector{Int}})
   if prod(length,r)>1000000 return end
   function gg(l, poss)
     local x, res
@@ -202,8 +203,9 @@ end
 # EnnolafromFusion(W,i[,poss])
 # possibilities of Ennola from fusion algebra. If poss given
 # tries to fit with poss.
-function EnnolafromFusion(W,i,poss=nothing)
-  A=fusion_algebra(UnipotentCharacters(W).families[i])
+function EnnolafromFusion(W,i,poss=EnnolaBete(W,i))
+  f=UnipotentCharacters(W).families[i]
+  A=fusion_algebra(f)
   b=basis(A)
   res=vcat(map(function(x)
     local p
@@ -212,14 +214,9 @@ function EnnolafromFusion(W,i,poss=nothing)
     else return SPerm[]
     end
   end, b)...)
-  if isnothing(poss)
-    error(" not  expected")
-    return res
-  end
-  res=map(p->filter(x->all(j->perm(x)[j] in p[j],1:length(perm(x))),res), poss)
-  good=filter(i->length(res[i])>0,1:length(res))
-  if length(good) == 0 error("**** no solution for family ", i) end
-  res[good[1]]
+  res=filter(x->all(((j,k),)->k in poss[j],enumerate(perm(x))),res)
+  if length(res) == 0 error("**** no solution for family ", i) end
+  res
 end
 
 function ennola(W)
