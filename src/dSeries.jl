@@ -185,26 +185,26 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
 end
 
 """
-`ennola(W[,z1])`
+`ennola(W[,z=E(gcd(degrees(W)))])`
 
 Let  `W` be an irreducible spetsial reflection  group or coset, and `z` the
-generator  of the center of `W`, viewed as  a root of unity. Let `𝔾` be the
-spets  attached to  `W`. A  property checked  case-by case  is that,  for a
-unipotent  character `γ` of `𝔾` with polynomial generic degree `deg γ(q)` ,
-`deg  γ(zq)` is equal to `±deg γ'(q)` for another unipotent character `γ'`;
-`±γ'`  is called  the Ennola  transform of  `γ`. For  `W` a Weyl group, the
-spets  `𝔾` is a finite reductive group, in  which case `z=-1` if `-1` is in
-`W`  and `z=1` otherwise.  The function returns  the signed permutation `e`
-done by `ennola` on the unipotent degrees (as an `SPerm` of
-`1:length(UnipotentCharacters(W))`).
+generator of the center of `W`, viewed as the root of unity
+`E(gcd(degrees(W)))])`.  Let `𝔾` be  the spets attached  to `W`. A property
+checked  case-by case is  that, for a  unipotent character `γ`  of `𝔾` with
+polynomial generic degree `deg γ(q)` , `deg γ(zq)` is equal to `±deg γ'(q)`
+for  another unipotent character `γ'`; `±γ'` is called the Ennola transform
+of `γ`. For `W` a Weyl group, the spets `𝔾` is a finite reductive group, in
+which  case `z=-1`  if `-1`  is in  `W` and  `z=1` otherwise.  The function
+returns  the  signed  permutation  `e`  done  by  `ennola` on the unipotent
+degrees (as an `SPerm` of `1:length(UnipotentCharacters(W))`).
 
-The `SPerm` `e` is not uniquely determined by the degrees since two of them
+The `SPerm` `e` is not uniquely determined by the degrees since two degrees
 may  be equal, but is uniquely determined by some additional axioms that we
 do not recall here (they include a description of the Ennola-permutation in
 terms of the fusion algebras attached to each Lusztig family).
 
-If  a second argument  `z1` is given,  it should be  a power of `z` and the
-corresponding power of `e` is returned.
+If  a second argument `z` is given, it should be a power of the default `z`
+and the corresponding power of `e` is returned.
 
 ```julia-repl
 julia> ennola(rootdatum("3D4"))

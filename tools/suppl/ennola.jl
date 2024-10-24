@@ -24,7 +24,7 @@ positionssgn(l,o)=vcat(findall(==(o),l),-findall(==(-o),l))
 
 # EnnolaBete[i]: possible action of ξ-Ennola on i-th family
 # list of possible destinations for each char, taking just degree in account
-function EnnolaBete(W,i,j=1)
+function EnnolaBete(W,i,j=-1)
   uc=UnipotentCharacters(W)
   fd=fakedegrees(uc)
   f=uc.families[i]
@@ -214,12 +214,28 @@ function EnnolafromFusion(W,i,poss=EnnolaBete(W,i))
     else return SPerm[]
     end
   end, b)...)
+  s=ennola(W)
   res=filter(x->all(((j,k),)->k in poss[j],enumerate(perm(x))),res)
   if length(res) == 0 error("**** no solution for family ", i) end
-  res
+  res=map(x->f.special^x,res)
+  if f.charNumbers[f.special]^s>0 u=findfirst(==(f.charNumbers[f.special]^s),f.charNumbers)
+  else u=-findfirst(==(-f.charNumbers[f.special]^s),f.charNumbers)
+  end
+  if haskey(f,:ennola)
+    if !(f.ennola in res) println("Family $i:f.ennola=",f.ennola," but computed ",res," s=$u")
+    elseif length(res)>1 println("Family $i:f.ennola=",f.ennola," res=",res," s=$u")
+    end
+  elseif res!=[1] println("Family $i:no ennola but found ",res)
+  end
 end
 
-function ennola(W)
+function EnnolafromFusion(W)
+  for i in 1:length(UnipotentCharacters(W).families)
+    EnnolafromFusion(W,i)
+  end
+end
+
+function ennola2(W)
   if haskey(W.prop,:ennola) return W.prop[:ennola] end
   if gcd(degrees(W))==1
     print("W has trivial center!\n")
