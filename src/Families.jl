@@ -291,7 +291,7 @@ Base.conj(f::Family)=galois(f,-1)
 """
 
 """
-`invpermute(f::Family, p::Perm)`
+`invpermute(f::Family, p::Union{Perm,SPerm})`
 
 returns  a copy of  `f` with the  Fourier matrix, eigenvalues of Frobenius,
 `:charLabels…` invpermuted by `p`.
@@ -320,10 +320,18 @@ Permuted((1,2,3),imprimitive family)
 └─────┴──────────────────────────────┘
 ```
 """
-function Perms.invpermute(f::Family,p::Perm)
+function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
   f=Family(copy(f.prop))
-  for n in [:x,:chi,:perm,:special,:cospecial,:ennola]
+  if p isa SPerm && !all(==(1),signs(p))
+    if haskey(f,:signs) f.signs.*=signs(p) else f.signs=signs(p) end
+    f.fourierMat=Diagonal(signs(p))*f.fourierMat*Diagonal(signs(p))
+    p=Perm(p)
+  end
+  for n in [:x,:chi,:perm,:special,:cospecial]
     if haskey(f,n) setproperty!(f,n,getproperty(f,n)^p) end
+  end
+  for n in [:ennola]
+    if haskey(f,n) setproperty!(f,n,getproperty(f,n)^SPerm(p)) end
   end
   for n in [:charNumbers,:eigenvalues,:mellinLabels,:charLabels,:unpdeg,:fakdeg,    :qEigen,:signs]
     if haskey(f,n) setproperty!(f,n,invpermute(getproperty(f,n),p)) end
