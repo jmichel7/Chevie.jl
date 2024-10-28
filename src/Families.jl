@@ -337,7 +337,11 @@ function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
     if haskey(f,n) setproperty!(f,n,invpermute(getproperty(f,n),p)) end
   end
   for n in [:fourierMat,:mellin]
-    if haskey(f,n) setproperty!(f,n,onmats(getproperty(f,n),p)) end
+    if haskey(f,n) 
+      m=getproperty(f,n)
+      if !(m isa AbstractMatrix) m=toM(m) end
+      setproperty!(f,n,onmats(m,p))
+    end
   end
   if haskey(f,:explanation)
     f.explanation="Permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
@@ -701,7 +705,9 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     res.explanation=""
   end
   res.name*="drinfeld_double($g"
-  if pivotal!==nothing res.name*=";pivotal=$pivotal" end
+  if pivotal!==nothing  && !(isone(pivotal[1]) && all(isone,pivotal[2]))
+    res.name*=";pivotal=$pivotal" 
+  end
   res.name*=")"
   res.explanation*="Drinfeld double D($g)"
   res.mellin=cat(map(r->
