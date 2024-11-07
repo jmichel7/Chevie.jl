@@ -79,10 +79,10 @@ Weyl.dim(A::FiniteDimAlgebra)=error("not implemented in general")
 
 idempotents(A::FiniteDimAlgebra)=error("not implemented in general")
 
-struct AlgebraHom
-  source::FiniteDimAlgebra
-  target::FiniteDimAlgebra
-  images::Vector
+struct AlgebraHom{TA<:FiniteDimAlgebra,TB<:FiniteDimAlgebra}
+  source::TA
+  target::TB
+  images::Vector{<:AlgebraElt{TB}}
 end
 
 (H::AlgebraHom)(h::AlgebraElt)=sum(H.images[k]*c for (k,c) in h.d)

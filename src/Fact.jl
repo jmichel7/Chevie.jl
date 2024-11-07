@@ -131,8 +131,8 @@ end
 #F  ApproximateRoot(r,e,f=10) . . approximate e-th root of r
 ##  with a denominator of 'f' digits.
 function ApproximateRoot(r,e=2,f=10)
-  RootInt(x,e)=Integer(floor(x^(1/e)))
-  x=big(RootInt(numerator(r), e)//RootInt(denominator(r), e))
+  RootInt(x,e)=e==2 ? isqrt(x) : floor(typeof(x),x^(1/e))
+  x=RootInt(numerator(r),e)//RootInt(denominator(r),e)
   if iszero(x) return x end
   nf=r
   c=0
@@ -267,7 +267,7 @@ function Primes.factor(f0::Pol{T})where T<:Union{Integer,Rational{<:Integer}}
   if !isone(d) || !isone(g)
     push!(fact,g//d=>1)
   end
-  if prod(fact)!=f0 error(fact) end
+  if prod(fact)!=f0 && prod(fact)!=-f0 error(fact) end
   fact
 end
 
@@ -632,7 +632,7 @@ function OneFactorBound(f)
   if n>=3
     # Single factor bound of Beauzamy, Trevisan and Wang (1993)
     return numerator(floor(10912//10000*(ApproximateRoot(big(2)^n,2)//
-        ApproximateRoot(n^3,8)*ApproximateRoot(BombieriNorm(f),2))))+1
+      ApproximateRoot(big(n)^3,8)*ApproximateRoot(BombieriNorm(f),2))))+1
   else
     # Mignotte's single factor bound
     d=div(n,2)
