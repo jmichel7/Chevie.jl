@@ -723,8 +723,8 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
   end, res.classinfo)...)
   res.fourierMat=inv(res.mellin)*one(res.mellin)[p,:]*res.mellin
   res.special=findfirst(==("(1,1)"),res.charLabels)
-  if !isnothing(pivotal)
-    pivelm,pivchar=pivotal
+  if pivotal!==nothing  && !(isone(pivotal[1]) && all(isone,pivotal[2]))
+    pivelm,pivchar=res.pivotal=pivotal
     ct=res.classinfo[1][:chars]
     p=Diagonal(Cyc.(vcat(map(cp->map(ch->prod(pivchar[word(g,cp[:elt])])*
       ch[position_class(cp[:centralizer],pivelm)]//ch[1],eachrow(cp[:chars])),

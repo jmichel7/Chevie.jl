@@ -1314,9 +1314,9 @@ end
 rootdata[:halfspin]=function(r)
   if !iszero(r%4) error("halfspin groups only exist in dimension 4r") end
   r=div(r,2)
-  R=id(r)
-  R[r,:]=vcat([-div(r,2),1-div(r,2)],2-r:1:-2,[2])
-  rootdatum(R,Int.(cartan(:D,r)*transpose(inv(Rational.(R)))))
+  R=cartan(:D,r)
+  R[:,r].=0;R[1,r]=1
+  rootdatum(Int.(transpose(inv(Rational.(R))*cartan(:D,r))),R)
 end
 rootdata[:gpin]=function(r)
   d=div(r,2)
