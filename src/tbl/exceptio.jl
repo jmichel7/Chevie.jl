@@ -191,7 +191,7 @@ chevieset(["E7", "E8", "F4", "2F4", "G2", "3D4", "H3", "H4", "G24", "G25", "G26"
                         if IsList(f[:ennola])
                             p = SPerm(f[:ennola])
                         else
-                            A = fusion_algebra(f)
+                            A = Zbasedring(f)
                             b = basis(A)
                             if !(haskey(f, :ennola))
                                 f[:ennola] = f[:special]

@@ -1,4 +1,4 @@
-chevieset(:G31, :CharTable, function()
+chevieset(:G31, :CharTable, let
   res=chevieget(:G31, :HeckeCharTable)(map(x->[1,-1],1:4),[])
   res[:identifier]=res[:name]="G31"
   res[:galomorphisms] = Group(perm"(7,9)(8,12)(13,17)(15,16)(19,21)(20,23)(25,27)(26,28)(31,32)(35,37)(38,40)(42,45)(43,44)(46,49)(51,52)(54,55)(57,58)")

@@ -23,12 +23,12 @@ julia> uc=UnipotentCharacters(W);
 
 julia> uc.families
 3-element Vector{Family}:
- Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
+ Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10],ennola=-5)
  Family(C₁,[1])
  Family(C₁,[2])
 
 julia> uc.families[1]
-Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
+Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10],ennola=-5)
 Drinfeld double of 𝔖 ₃, Lusztig′s version
 ┌────────┬────────────────────────────────────────────────────┐
 │label   │eigen                                               │
@@ -70,7 +70,9 @@ module Families
 
 export family_imprimitive, Family, drinfeld_double, 
        twisted_drinfeld_double_cyclic, FamiliesClassical, SubFamilyij, 
-       ndrinfeld_double, fusion_algebra, duality, special, cospecial, fourier
+       ndrinfeld_double, 
+       Zbasedring, fusion_algebra, # obsolete
+       duality, special, cospecial, fourier
 
 using ..Chevie
 
@@ -82,7 +84,9 @@ Family(f::Family)=f
 
 function getf(s::String)
   f=chevieget(:families,Symbol(s))
-  (f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
+  f=(f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
+  f.CHEVIE=s
+  f
 end
 
 """
@@ -120,8 +124,8 @@ Drinfeld double D(ℤ/2)
 │(g₂,ε)│   -1 1//2 -1//2 -1//2  1//2│
 └──────┴────────────────────────────┘
 
-julia> Family("C2",4:7,Dict(:signs=>[1,-1,1,-1]))
-Family(C₂,4:7)
+julia> Family("C2",4:7;signs=[1,-1,1,-1])
+Family(C₂,4:7,signs=[1, -1, 1, -1])
 Drinfeld double D(ℤ/2)
 ┌──────┬──────────────────────────────────┐
 │label │eigen signs                       │
@@ -133,10 +137,11 @@ Drinfeld double D(ℤ/2)
 └──────┴──────────────────────────────────┘
 ```
 """
-function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
+function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
   f=getf(s)
   f.charNumbers=v
   merge!(f,d)
+  merge!(f,Dict(opt))
 end
 
 function Family(s::String,d::Dict=Dict{Symbol,Any}())
@@ -144,9 +149,10 @@ function Family(s::String,d::Dict=Dict{Symbol,Any}())
   merge!(f,d)
 end
 
-function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}())
+function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
   f.charNumbers=v
   merge!(f,d)
+  merge!(f,Dict(opt))
 end
 
 function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}())
@@ -164,11 +170,15 @@ cospecial(f::Family)=Int(get!(()->special(f),f,:cospecial))
 "`length(f::Family)`: how many characters are in the family."
 Base.length(f::Family)=length(eigen(f))
 
+"`signs(f::Family)`: the signs of the family."
 SignedPerms.signs(f::Family)=get!(()->fill(1,length(f)),f,:signs)::Vector{Int}
 
+"`eigen(f::Family)`: the Frobenius eigenvalues of the characters of the family."
 PermRoot.eigen(f::Family)=f.eigenvalues
 
-"`fourier(f::Family`: returns the Fourier matrix for the family `f`."
+qeigen(f::Family)=haskey(f,:qEigen) ? f.qEigen : zeros(Rational{Int},length(f))
+
+"`fourier(f::Family)`: the Fourier matrix of the family."
 function fourier(f::Family;lusztig=true)
   m=f.fourierMat
   if m isa Vector m=improve_type(toM(m)) end
@@ -178,6 +188,7 @@ function fourier(f::Family;lusztig=true)
   m
 end
 
+"`charnumbers(f::Family)`: the indices of the unipotent characters of the family."
 Chars.charnumbers(f::Family)=Chars.charnumbers(f.prop)
 
 Base.convert(::Type{Dict{Symbol,Any}},f::Family)=f.prop
@@ -202,7 +213,6 @@ Fourier  matrix is the Kronecker  product of the matrices  for <f> and <g>,
 and the eigenvalues of Frobenius are the pairwise products.
 """
 function Base.:*(f::Family,g::Family)
-# println(f,"*",g)
   arg=(f,g)
   for ff in arg
     if !haskey(ff,:charLabels) ff.charLabels=map(string,1:length(ff)) end
@@ -230,10 +240,7 @@ function Base.:*(f::Family,g::Family)
   if all(x->haskey(x,:lusztig) || length(x)==1,arg)
     res.lusztig=true
   end
-  if any(haskey.(arg,:qEigen))
-    res.qEigen=map(sum,cartesian(map(f->
-      haskey(f,:qEigen) ? f.qEigen : zeros(Int,length(f)),arg)...))
-  end
+  if any(haskey.(arg,:qEigen)) res.qEigen=sum.(cartesian(qeigen.(arg)...)) end
   res
 end
 
@@ -245,7 +252,7 @@ Frobenius of the family.
 
 ```julia-repl
 julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
-Family(0011,[4, 3, 2])
+Family(0011,[4, 3, 2],cospecial=2)
 imprimitive family
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│
@@ -256,7 +263,7 @@ imprimitive family
 └─────┴──────────────────────────────┘
 
 julia> galois(f,-1)
-Family(conj(0011),[4, 3, 2])
+Family(conj(0011),[4, 3, 2],cospecial=2)
 conj(imprimitive family)
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│
@@ -298,7 +305,7 @@ returns  a copy of  `f` with the  Fourier matrix, eigenvalues of Frobenius,
 
 ```julia-repl
 julia> f=UnipotentCharacters(complex_reflection_group(3,1,1)).families[2]
-Family(0011,[4, 3, 2])
+Family(0011,[4, 3, 2],cospecial=2)
 imprimitive family
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│
@@ -309,7 +316,7 @@ imprimitive family
 └─────┴──────────────────────────────┘
 
 julia> invpermute(f,Perm(1,2,3))
-Family(0011,[2, 4, 3])
+Family(0011,[2, 4, 3],cospecial=3)
 Permuted((1,2,3),imprimitive family)
 ┌─────┬──────────────────────────────┐
 │label│eigen        3      1        2│
@@ -406,14 +413,15 @@ chevieset(:families,:S3,
 
 chevieset(:families,:X,function(p)
     ss=combinations(0:p-1,2)
-    Family(Dict(:name=>"R_{\\mathbb Z/$p}^{\\wedge 2}",
-         :explanation=>"DoubleTaft($p)",
+    Family(Dict(
+         :explanation=>"DoubleTaft($p): R_{\\mathbb Z/$p}^{\\wedge 2}",
          :charSymbols=>ss,
          :charLabels=>map(s->xrepr(E(p,s[1]),TeX=true)*
              "\\!\\wedge\\!"*xrepr(E(p,s[2]),TeX=true),ss),
     :eigenvalues=>map(s->E(p,prod(s)),ss),
     :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
-    :cospecial=>p-1))
+    :cospecial=>p-1,
+    :name=>"CHEVIE[:families][:X]($p)"))
    end)
 
 function SubFamily(f::Family,ind,scal,label)
@@ -577,9 +585,9 @@ the  basis of Mellin transforms  is given by `(x,y)↦(y⁻¹,x)`. Equivalently,
 the formula ``S_{ρ,ρ'}`` differs from the formula for ``S₀_{ρ,ρ'}`` in that
 there  is no complex conjugation  of `χ₁`; thus the  matrix `S` is equal to
 `S₀` multiplied on the right by the permutation matrix which corresponds to
-`(x,φ)↦(x,φ)`.  The advantage of the matrix `S` over `S₀` is that the pair
-`S,T`  satisfies directly the axioms for a fusion algebra (see below); also
-the matrix `S` is symmetric, while `S₀` is Hermitian.
+`(x,φ)↦(x,φ)`.  The advantage of the matrix `S`  over `S₀` is that the pair
+`S,T`  satisfies directly the axioms for  fusion data (see below); also the
+matrix `S` is symmetric, while `S₀` is Hermitian.
 
 Thus there are two variants of 'drinfeld_double`:
 
@@ -1051,11 +1059,11 @@ function Base.show(io::IO, ::MIME"text/html",f::Family)
 end
 
 function Base.show(io::IO,f::Family)
-  if hasdecor(io) || !haskey(f,:group)
+  if hasdecor(io) # || !haskey(f,:group)
     name=haskey(f,:name) ? f.name : "???"
     printTeX(io,"Family(\$",name,"\$")
-  else 
-    print(io,"Family(",haskey(f,:name) ? f.name : repr(f.group))
+  else print(io,"Family(",haskey(f,:CHEVIE) ? repr(f.CHEVIE) :
+          haskey(f,:name) ? f.name : repr(f.group))
     if !haskey(f,:charNumbers) print(io,")"); return end
   end
   if haskey(f,:charNumbers) print(io,",",f.charNumbers)
@@ -1066,7 +1074,7 @@ function Base.show(io::IO,f::Family)
     if haskey(f,:cospecial) d[:cospecial]=f.cospecial end
     if haskey(f,:ennola) d[:ennola]=f.ennola end
     if haskey(f,:signs) && !all(>(0),f.signs) d[:signs]=f.signs end
-    print(io,",",d)
+    for k in keys(d) print(io,",$k=",d[k]) end
   end
   print(io,")")
 end
@@ -1093,17 +1101,18 @@ function Base.show(io::IO,::MIME"text/plain",f::Family)
   showtable(io,permutedims(toM(t));row_labels,col_labels,rows_label="\\mbox{label}",dotzero=get(io,:dotzero,true))
 end
 
-#------------------------ Fusion algebras -------------------------------
-@GapObj struct FusionAlgebra<:FiniteDimAlgebra{Int}
+#------------------------ Z-based rings -------------------------------
+@GapObj struct ZBasedRing<:FiniteDimAlgebra{Int}
   fourier::Matrix
   special::Int
   involution::SPerm{Int16}
   duality::SPerm{Int16}
   multable::Matrix{Vector{Pair{Int,Int}}}
+  positive::Bool
 end
 
 """
-`fusion_algebra(f::Family)` or `fusion_algebra(S,special=1)`
+`Zbasedring(f::Family)` or `Zbasedring(S,special=1)`
 
 All  the Fourier matrices `S` in Chevie are unitary, that is `S⁻¹=conj(S)`,
 and  have a  *special* line  `s` (the  line of  index `s=special(f)`  for a
@@ -1127,11 +1136,11 @@ G₄
 
 julia> uc=UnipotentCharacters(W);f=uc.families[4];
 
-julia> A=fusion_algebra(fourier(f),1)
-Fusion Algebra dim.5
+julia> A=Zbasedring(fourier(f),1)
+ℤ-based ring dim.5
 
 julia> b=basis(A)
-5-element Vector{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:
+5-element Vector{AlgebraElt{Chevie.Families.ZBasedRing, Int64}}:
  B₁
  B₂
  B₃
@@ -1139,7 +1148,7 @@ julia> b=basis(A)
  B₅
 
 julia> b*permutedims(b)
-5×5 Matrix{AlgebraElt{Chevie.Families.FusionAlgebra, Int64}}:
+5×5 Matrix{AlgebraElt{Chevie.Families.ZBasedRing, Int64}}:
  B₁  B₂      B₃      B₄        B₅
  B₂  -B₄+B₅  B₁+B₄   B₂-B₃     B₃
  B₃  B₁+B₄   -B₄+B₅  -B₂+B₃    B₂
@@ -1147,7 +1156,7 @@ julia> b*permutedims(b)
  B₅  B₃      B₂      -B₄       B₁
 
 julia> CharTable(A)
-CharTable(Fusion Algebra dim.5)
+CharTable(ℤ-based ring dim.5)
 ┌─┬─────────────────┐
 │ │1    2    3  4  5│
 ├─┼─────────────────┤
@@ -1159,7 +1168,7 @@ CharTable(Fusion Algebra dim.5)
 └─┴─────────────────┘
 ```
 """
-function fusion_algebra(S::Matrix,special::Int=1;opt...)
+function Zbasedring(S::Matrix,special::Int=1;opt...)
   involution=SPerm(S,conj.(S);dims=1)
   if isnothing(involution) error("complex conjugacy is not SPerm(rows)") end
   if order(involution)>2 error("complex conjugacy is of order 4") end
@@ -1175,14 +1184,13 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
     multable[i,j]=filter(x->x[2]!=0,map(Pair,1:d,s*(S[i,:].*S[j,:]))) 
   end
   for i in 1:d, j in i+1:d multable[i,j]=multable[j,i] end
-  if d>1 && all(r->all(p->p[2]>0,r),multable)
-    InfoChevie("# Algebra dim. ",d,": positive structure constants\n");
-  end
   if !all(r->all(p->isinteger(p[2]),r),multable)
       error("structure constants are not integral")
   else multable=map(r->[k=>Int(i) for (k,i) in r],multable)
   end
-  A=FusionAlgebra(S,special,involution,duality,multable,Dict{Symbol,Any}())
+  positive=all(r->all(p->p[2]>0,r),multable)
+  A=ZBasedRing(S,special,involution,duality,multable,positive,
+                   Dict{Symbol,Any}())
   d=map(ratio,eachcol(irr),eachcol(S)) # d=inv.(S[special,:]) ?
   if nothing in d  error() end
   A.cDim=d[special]^2
@@ -1193,27 +1201,36 @@ function fusion_algebra(S::Matrix,special::Int=1;opt...)
   A
 end
 
-Base.one(A::FusionAlgebra)=basis(A,A.special)
+function fusion_algebra(S::Matrix,special::Int=1;opt...)
+  println("fusion_algebra is obsolete: use Zbasedring")
+  Zbasedring(S,special;opt...)
+end
 
-function fusion_algebra(f::Family)
-  get!(f,:fusion_algebra)do
-  fusion_algebra(fourier(f),special(f);charnames=f.charLabels,classnames=f.charLabels)
+Base.one(A::ZBasedRing)=basis(A,A.special)
+
+function Zbasedring(f::Family)
+  get!(f,:Zbasedring)do
+  Zbasedring(fourier(f),special(f);charnames=f.charLabels,classnames=f.charLabels)
   end
 end
 
-Weyl.dim(A::FusionAlgebra)=size(A.fourier,1)
+Weyl.dim(A::ZBasedRing)=size(A.fourier,1)
 
-Base.show(io::IO,A::FusionAlgebra)=print(io,"Fusion Algebra dim.",dim(A))
+function Base.show(io::IO,A::ZBasedRing)
+  if A.positive print(io,"based ring dim.",dim(A))
+  else print(io,"ℤ-based ring dim.",dim(A))
+  end
+end
 
-function Algebras.idempotents(A::FusionAlgebra)
+function Algebras.idempotents(A::ZBasedRing)
   get!(A,:idempotents)do
     Diagonal(A.fourier[A.special,:])*A.fourier'*basis(A)
   end
 end
 
-Groups.isabelian(A::FusionAlgebra)=true
+Groups.isabelian(A::ZBasedRing)=true
 
-function Chars.CharTable(A::FusionAlgebra)
+function Chars.CharTable(A::ZBasedRing)
   irr=improve_type([ratio(coefficients(b*e),coefficients(e))
        for e in idempotents(A), b in basis(A)])
   if irr!=A.irr error() end
@@ -1223,12 +1240,12 @@ function Chars.CharTable(A::FusionAlgebra)
          dim(A),Dict{Symbol,Any}(:name=>xrepr(A;TeX=true)))
 end
 
-function Algebras.involution(e::AlgebraElt{FusionAlgebra})
+function Algebras.involution(e::AlgebraElt{ZBasedRing})
   p=e.A.involution
   AlgebraElt(e.A,ModuleElt([Int(abs(b^p))=>c*sign(b^p) for (b,c) in e.d]))
 end
 
-function duality(e::AlgebraElt{FusionAlgebra})
+function duality(e::AlgebraElt{ZBasedRing})
   p=e.A.duality
   AlgebraElt(e.A,ModuleElt([Int(abs(b^p))=>c*sign(b^p) for (b,c) in e.d]))
 end

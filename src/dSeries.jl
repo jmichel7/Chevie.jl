@@ -158,10 +158,10 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
     e
   end
 
-  l=map(eachindex(ff),ff)do i,f
+  l=map(enumerate(ff))do (i,f)
     poss=EnnolaBete[i]
     if prod(length,poss)>1 poss=EnnolaBE(f,poss) end
-    A=fusion_algebra(f)
+    A=Zbasedring(f)
     b=basis(A)
     res=Tuple{Int,SPerm{Int16}}[]
     for i in eachindex(b)
@@ -171,6 +171,10 @@ function SpetsEnnola(t::TypeIrred;sperm=true)
         p=SPerm(-p.d)
         if all(j->j^p in poss[j],eachindex(b)) push!(res,(-i,p)) end
       end
+    end
+    if length(res)>1
+      InfoChevie("# for family no.$i of $t choosing one of ",length(res),
+             " possibilities for Ennola\n")
     end
     res
   end
@@ -201,7 +205,7 @@ degrees (as an `SPerm` of `1:length(UnipotentCharacters(W))`).
 The `SPerm` `e` is not uniquely determined by the degrees since two degrees
 may  be equal, but is uniquely determined by some additional axioms that we
 do not recall here (they include a description of the Ennola-permutation in
-terms of the fusion algebras attached to each Lusztig family).
+terms of the Z-based rings attached to each Lusztig family).
 
 If  a second argument `z` is given, it should be a power of the default `z`
 and the corresponding power of `e` is returned.

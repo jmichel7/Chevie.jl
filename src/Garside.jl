@@ -33,15 +33,14 @@ We  also implement *locally Garside* monoids,  which are monoids where lcms
 do  not always exist, but  exist if any common  multiple exists; the set of
 simples is then not defined by a Garside element, but by the condition that
 they  contain the atoms and are closed  under lcms and taking divisors (see
-[BDM01](biblio.htm#BDM01)); since this is not ensured by the existence of a
-Garside  element,  one  has  to  add  the  condition  that  each element is
+[BDM01](biblio.htm#BDM01));  we  keep  the  condition  that each element is
 divisible  by  finitely  many  simples  (but  the  number of simples can be
 infinite).  The most important  example is the  Artin monoid of an infinite
-Coxeter  group. It is not known whether  these monoids embed in their group
-of  fractions (although this  has been proved  for Artin monoids of Coxeter
-groups  by Paris [Paris01](biblio.htm#Paris01)), and  thus computing in the
-monoid  does  not  help  for  computing  in  the  group; only the monoid is
-implemented here for these cases.
+Coxeter  group. It  is not  known whether  locally Garside monoids embed in
+their  group of fractions (although this  has been proved for Artin monoids
+of   Coxeter  groups  by  Paris  [Paris01](biblio.htm#Paris01)),  and  thus
+computing  in the monoid does not help for computing in the group; only the
+monoid is implemented here for these cases.
 
 What allows computing with Garside and locally Garside monoids, and Garside
 groups,  is the fact  that they admit  normal forms ---  these normal forms

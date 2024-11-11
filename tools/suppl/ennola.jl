@@ -12,9 +12,8 @@
 #
 # For  a split Spetses,  cuspidal character sheaves  correspond to cuspidal
 # unipotent characters; if U∈ Uch(G) has cuspidal data
-# χ∈ Irr(W_G(L,λ)) then we have
-# Frob(Ennola_xi(U))/Frob(U)=omegachi(E(z))^-xi E(z^2)^(xi^2*(a+A))E_λ^xi
-
+# φ∈ Irr(W_G(L,λ)) then we have
+# Frob(Ennola_xi(U))/Frob(U)=omegaφ(E(z))^-xi E(z^2)^(xi^2*(a+A)(U))E_λ^xi
 
 @GapObj struct Ennola
 end
@@ -85,10 +84,10 @@ function OmegaChi(uc)
 end
 
 # if Ennola_xi(U_i)=U_j returns deduced En(λ)^xi for cuspidal of U_i
-function EigenEnnola(W, i, j, xi)
- z = gcd(degrees(W))
-  uw = UnipotentCharacters(W)
-  (OmegaChi(uw)[i]^-xi*E(z^2,xi^2*(uw.prop[:a][i]+uw.prop[:A][i]))*eigen(uw)[i])//eigen(uw)[j]
+function EigenEnnola(W,i,j,xi=1)
+  z=gcd(degrees(W))
+  uw=UnipotentCharacters(W)
+  (OmegaChi(uw)[i]^-xi*E(z^2,xi^2*(uw.a[i]+uw.A[i]))*eigen(uw)[i])//eigen(uw)[j]
 end
 
 function tw(W, j)
@@ -205,7 +204,7 @@ end
 # tries to fit with poss.
 function EnnolafromFusion(W,i,poss=EnnolaBete(W,i))
   f=UnipotentCharacters(W).families[i]
-  A=fusion_algebra(f)
+  A=Zbasedring(f)
   b=basis(A)
   res=vcat(map(function(x)
     local p
@@ -835,7 +834,7 @@ end
 function qennola(W,i)
   poss=EnnolaBE(W,i,1)
   f=UnipotentCharacters(W).families[i]
-  A=fusion_algebra(f)
+  A=Zbasedring(f)
   b=basis(A)
   res=vcat(map(function(x)
     local p

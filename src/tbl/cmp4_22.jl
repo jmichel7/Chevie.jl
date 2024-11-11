@@ -821,7 +821,7 @@ chevieset(:G4_22, :Ennola, function (ST,)
         end
         res = uc[:a] * 0
         for f = uc[:families]
-            A = fusion_algebra(f)
+            A = Zbasedring(f)
             b = basis(A)
             if !(haskey(f, :ennola))
                 f[:ennola] = f[:special]

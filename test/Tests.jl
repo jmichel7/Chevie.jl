@@ -1231,11 +1231,11 @@ test[:udfdimprimitive]=(applicable=function(W)
   end,
 comment="unideg and feg of imprimitive Spets agree with formulae")
 
-#---------------- test: families ------------------------
+#---------------- Tfamilies ------------------------
 # test that a family satisfies Lusztig's "exotic fourier transform" properties.
-# Families(W) or 
-# Families(W,famno) or
-# Families(family record [,opt])
+# Tfamilies(W;opt) or 
+# Tfamilies(W,famno;opt)
+# [disappeared] or Families(family record;opt)
 # option: hard:=show details
 
 function Tfamilies(W;hard=false)
@@ -1247,7 +1247,6 @@ function Tfamilies(W,i;hard=false)
   uc=UnipotentCharacters(W)
   f=uc.families[i]
   v=" "*repr(W;context=rio())*".$i"
-# else f:=arg[1]; arg:=arg{[2..Length(arg)]};v:=""; fi;
   if length(f.eigenvalues)==1 return end # nothing interesting to test
   function check(a,msg)
     if !a InfoChevie("\n");ChevieErr("failed:",msg,"\n| ");
@@ -1544,9 +1543,7 @@ function Tqeigen(W)
   e=Uch.qeigen(uc)
   for i in eachindex(uc.families)
     f=uc.families[i]
-    if haskey(f,:qEigen) q=f.qEigen
-    else q=fill(0,length(f))
-    end
+    q=Families.qeigen(f)
     for j in 1:length(f)
       n=f.charNumbers[j]
       if e[n]!=q[j] ChevieErr("HCfamily ",i,"#",j,":",

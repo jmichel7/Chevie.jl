@@ -30,5 +30,5 @@ FamiliesClassical
 *(f::Family, g::Family)
 special
 cospecial
-fusion_algebra
+Zbasedring
 ```

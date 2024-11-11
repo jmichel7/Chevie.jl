@@ -160,7 +160,7 @@ family by asking
 
 ```julia-repl
 julia> uc.families[1]
-Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10])
+Family(D(𝔖 ₃),[5, 6, 4, 3, 8, 7, 9, 10],ennola=-5)
 Drinfeld double of 𝔖 ₃, Lusztig′s version
 ┌────────┬────────────────────────────────────────────────────┐
 │label   │eigen                                               │
@@ -757,7 +757,7 @@ function Families.fourier(uc::UnipotentCharacters)
   end
 end
 
-function qeigen(uc::UnipotentCharacters)
+function Families.qeigen(uc::UnipotentCharacters)
   get!(uc,:qeigen)do
     res=zeros(Rational{Int},length(uc))
     for f in uc.harishChandra
