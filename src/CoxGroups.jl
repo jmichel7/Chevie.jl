@@ -878,7 +878,7 @@ end
 
 """
 `coxeter_symmetric_group(n::Integer)` or `coxeter_symmetric_group(m:n)` or
-`coxsym`
+`coxsym(n)` or `coxsym(m:n)`
 
 The  symmetric group on the  letters `1:n` (or if  a `m≤n` is given, on the
 letters  `m:n`)  as  a  Coxeter  group.  The  Coxeter  generators  are  the
@@ -937,7 +937,11 @@ PermRoot.refltype(W::CoxSym)=get!(W,:refltype)do
 end
 
 PermRoot.inclusiongens(W::CoxSym)=W.d
-Groups.classreps(W::CoxSym)=map(x->W(x...),classinfo(W).classtext)
+function Groups.classreps(W::CoxSym)
+  get!(W,:classreps)do
+    map(x->W(x...),classinfo(W).classtext)
+   end::Vector{eltype(W)}
+end
 Perms.reflength(W::CoxSym,a)=reflength(a)
 PermRoot.nref(W::CoxSym)=length(W.inversions)
 function PermRoot.simple_reps(W::CoxSym)
@@ -948,8 +952,8 @@ function PermRoot.simple_reps(W::CoxSym)
 end
 PermRoot.refls(W::CoxSym)=W.refls
 PermRoot.rank(W::CoxSym)=ngens(W)+1
-PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,rank(W))
-PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),rank(W))
+PermRoot.reflrep(W::CoxSym,w::Perm)=Matrix(w,W.d.stop)
+PermRoot.reflrep(W::CoxSym,i::Integer)=Matrix(W(i),W.d.stop)
 PermRoot.reflrep(W::CoxSym)=reflrep.(Ref(W),1:ngens(W))
 
 """
@@ -966,10 +970,7 @@ julia> isleftdescent(W,Perm(1,2),1)
 true
 ```
 """
-function isleftdescent(W::CoxSym,w,i::Integer)
- j,k=W.inversions[i]
- j^w>k^w
-end
+isleftdescent(W::CoxSym,w,i::Integer)= >(W.inversions[i].^w...)
 
 """
 `isrightdescent(W::CoxeterGroup,w,i::Integer)`
@@ -985,10 +986,7 @@ julia> isrightdescent(W,Perm(1,2),1)
 true
 ```
 """
-function isrightdescent(W::CoxSym,w,i::Integer)
- j,k=W.inversions[i]
- preimage(j,w)>preimage(k,w)
-end
+isrightdescent(W::CoxSym,w,i::Integer)= >(preimage.(W.inversions[i],w)...)
 
 """
 `cartan(W::CoxeterGroup)`  The Cartan matrix of `W`.
@@ -1000,10 +998,11 @@ PermRoot.cartan(W::CoxSym)=cartan(:A,ngens(W))
 """
 `reflection_subgroup(W::CoxSym,I)`
 
-The only reflection subgroups defined for `coxsym(n)` are for `I=1:m` for `m≤n`
+The  only reflection subgroups defined for  `coxsym(n)` are for `I=a:b` for
+`1≤a≤b≤n`
 """
 function PermRoot.reflection_subgroup(W::CoxSym,I::AbstractVector{Int})
-  if sort(I)!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
+  if I!=minimum(I):maximum(I) error(I," should be a:b for some a,b") end
   if W.d.start+maximum(I)>W.d.stop error("range too large") end
   coxsym(W.d.start.+(minimum(I)-1:maximum(I)),W.d.stop)
 end

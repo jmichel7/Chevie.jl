@@ -39,7 +39,7 @@ macro forward(ex, fs)
   fdefs=map(fs.args)do ff
       f= esc(ff)
       quote
-        @inline ($f)(a::($T),args...)=($f)(a.$field,args...)
+        ($f)(a::($T),args...)=($f)(a.$field,args...)
       end
   end
   Expr(:block, fdefs...)

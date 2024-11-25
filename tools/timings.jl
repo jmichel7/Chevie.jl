@@ -6,14 +6,11 @@ using Chairmarks
 #1.9.3 51s (2.26M alloc: 150MiB, 0.10% gc, 1.59% compilation 78% recompilation)
 #1.10.2 40.6s (4.00M alloc: 301 MiB, 0.19% gc, 3.12% compilation 9% recompilation)
 
-#julia> @b test_w0(6)
+#julia> @b test_w0(coxsym(7))
 #1.9.4   10.091 ms (182390 allocs: 12.981 MiB)
 #1.10.3  11.648 ms (182389 allocs: 12.981 MiB)
 #1.11.rc 11.671 ms (237323 allocs: 13.295 MiB)
-function test_w0(n)
-  W=coxsym(n+1)
-  Tbasis(hecke(W,Pol()))(longest(W))^2
-end
+test_w0(W)=Tbasis(hecke(W,Pol()))(longest(W))^2
 """
 test_w0:=function(n)local W,T,H,q,w02; # GAP3 takes 84ms
   W:=CoxeterGroup("A",n);q:=X(Rationals);H:=Hecke(W,q);T:=Basis(H,"T");
