@@ -139,10 +139,10 @@ julia> W=rootdatum(:psu,6)
 psu₆
 
 julia> L=reflection_subgroup(W,[1,2,4,5])
-psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁
+psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁
 
 julia> InducedDecompositionMatrix(L,W,6)
-Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆
+Induced Φ₆-decomposition matrix from psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆
 
 ┌────┬────────┐
 │    │ps ps A₂│

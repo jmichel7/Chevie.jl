@@ -7,7 +7,8 @@ function mytest(file::String,cmd::String,man::String)
   exec=replace(exec,r"\s*$"m=>""); exec=replace(exec,r"\s*$"s=>"")
   exec=replace(exec,r"^\s*"=>"")
   if exec==man return true end
-  i=findfirst(i->i<=lastindex(man) && exec[i]!=man[i],collect(eachindex(exec)))
+  inds=collect(eachindex(exec))
+  i=inds[findfirst(i->i<=lastindex(man) && exec[i]!=man[i],inds)]
   print("exec=$(repr(exec[i:end]))\nmanl=$(repr(man[i:end]))\n")
   false
 end
@@ -132,7 +133,7 @@ end
 @test mytest("Cosets.jl","W=coxgroup(:E,6)","E₆")
 @test mytest("Cosets.jl","WF=spets(W,Perm(1,6)*Perm(3,5))","²E₆")
 @test mytest("Cosets.jl","twistings(W,2:5)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n E₆₍₂₃₄₅₎=D₄Φ₁²\n E₆₍₂₃₄₅₎=³D₄Φ₃\n E₆₍₂₃₄₅₎=²D₄Φ₁Φ₂")
-@test mytest("Cosets.jl","twistings(WF,2:5)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n ²E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂\n ²E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆\n ²E₆₍₂₃₄₅₎=D₄Φ₂²")
+@test mytest("Cosets.jl","twistings(WF,2:5)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n ²E₆₍₂₃₄₅₎=²D₄₍₁₄₃₂₎Φ₁Φ₂\n ²E₆₍₂₃₄₅₎=³D₄₍₁₄₃₂₎Φ₆\n ²E₆₍₂₃₄₅₎=D₄Φ₂²")
 @test mytest("Cosets.jl","W=coxgroup(:D,4)","D₄")
 @test mytest("Cosets.jl","graph_automorphisms(refltype(W*W))","Group((1,5)(2,6)(3,7)(4,8),(1,2),(1,4))")
 @test mytest("Cosets.jl","twistings(coxgroup(:A,3)*coxgroup(:A,3))","8-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:\n A₃×A₃\n A₃×²A₃\n ²A₃×A₃\n ²A₃×²A₃\n (A₃A₃)\n ²(A₃A₃)\n ²(A₃A₃)₍₁₂₃₆₅₄₎\n (A₃A₃)₍₁₂₃₆₅₄₎")
@@ -141,7 +142,7 @@ end
 @test mytest("Cosets.jl","twistings(W)","2-element Vector{Spets{FiniteCoxeterGroup{Perm{Int16},Int64}}}:\n D₄\n ²D₄")
 @test mytest("Cosets.jl","W=rootdatum(:gl,3)","gl₃")
 @test mytest("Cosets.jl","gu3=spets(W,-reflrep(W,W()))","²A₂Φ₂")
-@test mytest("Cosets.jl","F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])","F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎")
+@test mytest("Cosets.jl","F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])","F₄₍₁‚₂‚₉‚₁₆₎=D₄₍₃₂₁₄₎")
 @test mytest("Cosets.jl","spets(D4,[1 0 0 0;0 1 2 0;0 0 0 1;0 0 -1 -1])","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
 @test mytest("Cosets.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("Cosets.jl","spets(W,Perm(1,3))","²A₃")
@@ -160,7 +161,7 @@ end
 @test mytest("Cosets.jl","F(1)","4")
 @test mytest("Cosets.jl","WF=spets(coxgroup(:F,4))","F₄")
 @test mytest("Cosets.jl","w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],ontuples);","nothing")
-@test mytest("Cosets.jl","LF=subspets(WF,[1,2,9,16],w)","F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎")
+@test mytest("Cosets.jl","LF=subspets(WF,[1,2,9,16],w)","F₄₍₁‚₂‚₉‚₁₆₎=³D₄₍₃₄₁₂₎")
 @test mytest("Cosets.jl","diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O D₄\n3 1 2")
 @test mytest("Cosets.jl","spets(\"3G422\")","³G₄‚₂‚₂")
 @test mytest("Cosets.jl","spets(\"2G5\")","²G₅")
@@ -257,7 +258,7 @@ end
 @test mytest("Eigenspaces.jl","W=spets(coxgroup(:D,4),Perm(1,2,4))","³D₄")
 @test mytest("Eigenspaces.jl","split_levis(W,3)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n ³D₄\n ³D₄₍₁₃₎=A₂Φ₃\n ³D₄₍₎=Φ₃²")
 @test mytest("Eigenspaces.jl","W=coxgroup(:E,8)","E₈")
-@test mytest("Eigenspaces.jl","split_levis(W,4,2)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
+@test mytest("Eigenspaces.jl","split_levis(W,4,2)","3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:\n E₈₍₃₄₂₅₎=D₄₍₁₃₂₄₎Φ₄²\n E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²\n E₈₍₃₅₆₁₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²")
 @test mytest("Eigenspaces.jl","split_levis(complex_reflection_group(5))","4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:\n G₅\n G₅₍₁₎=G₃‚₁‚₁Φ₁\n G₅₍₂₎=G₃‚₁‚₁Φ₁\n G₅₍₎=Φ₁²")
 end
 @testset "FFfac.jl" begin
@@ -621,6 +622,9 @@ end
 @test mytest("PermRoot.jl","W=coxgroup(:A,3)","A₃")
 @test mytest("PermRoot.jl","cartan(W)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("PermRoot.jl","rank(complex_reflection_group(31))","4")
+@test mytest("PermRoot.jl","W=coxgroup(:D,3)","A₃₍₁₃₂₎")
+@test mytest("PermRoot.jl","t=refltype(W)[1]","A₃")
+@test mytest("PermRoot.jl","t.indices","3-element Vector{Int64}:\n 1\n 3\n 2")
 @test mytest("PermRoot.jl","bipartite_decomposition(coxgroup(:E,8))","([1, 4, 6, 8], [3, 2, 5, 7])")
 @test mytest("PermRoot.jl","W=coxgroup(:B,3)","B₃")
 @test mytest("PermRoot.jl","reflchar(W,longest(W))","-3")
@@ -845,7 +849,7 @@ end
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(W))","1-element Vector{Int64}:\n 14")
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(W),6)","8-element Vector{Int64}:\n  1\n  2\n  6\n  7\n  8\n  9\n 10\n 12")
 @test mytest("Uch.jl","cuspidal(UnipotentCharacters(complex_reflection_group(4)),3)","4-element Vector{Int64}:\n  3\n  6\n  7\n 10")
-@test mytest("Uch.jl","cuspidal_data(coxgroup(:F,4),1)","9-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:\n (levi = F₄, cuspidal = 31, d = 1)\n (levi = F₄, cuspidal = 32, d = 1)\n (levi = F₄, cuspidal = 33, d = 1)\n (levi = F₄, cuspidal = 34, d = 1)\n (levi = F₄, cuspidal = 35, d = 1)\n (levi = F₄, cuspidal = 36, d = 1)\n (levi = F₄, cuspidal = 37, d = 1)\n (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)\n (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)")
+@test mytest("Uch.jl","cuspidal_data(coxgroup(:F,4),1)","9-element Vector{@NamedTuple{levi::Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}, cuspidal::Int64, d::Root1}}:\n (levi = F₄, cuspidal = 31, d = 1)\n (levi = F₄, cuspidal = 32, d = 1)\n (levi = F₄, cuspidal = 33, d = 1)\n (levi = F₄, cuspidal = 34, d = 1)\n (levi = F₄, cuspidal = 35, d = 1)\n (levi = F₄, cuspidal = 36, d = 1)\n (levi = F₄, cuspidal = 37, d = 1)\n (levi = F₄₍₂₃₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)\n (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)")
 @test mytest("Uch.jl","cuspidal_data(complex_reflection_group(4),3)","5-element Vector{@NamedTuple{levi::Spets{PRSG{Cyc{Rational{Int64}}, Int16}}, cuspidal::Int64, d::Root1}}:\n (levi = G₄, cuspidal = 3, d = ζ₃)\n (levi = G₄, cuspidal = 6, d = ζ₃)\n (levi = G₄, cuspidal = 7, d = ζ₃)\n (levi = G₄, cuspidal = 10, d = ζ₃)\n (levi = G₄₍₎=Φ₁Φ′₃, cuspidal = 1, d = ζ₃)")
 end
 @testset "Ucl.jl" begin
@@ -944,11 +948,11 @@ end
 @test mytest("Weyl.jl","W=coxgroup(:A,2)","A₂")
 @test mytest("Weyl.jl","map(N->with_inversions(W,N),combinations(1:nref(W)))","8-element Vector{Union{Nothing, Perm{Int16}}}:\n ()\n (1,4)(2,3)(5,6)\n (1,3)(2,5)(4,6)\n nothing\n nothing\n (1,6,2)(3,5,4)\n (1,2,6)(3,4,5)\n (1,5)(2,4)(3,6)")
 @test mytest("Weyl.jl","W=coxgroup(:E,6)","E₆")
-@test mytest("Weyl.jl","R=reflection_subgroup(W,[20,30,19,22])","E₆₍₁₉‚₁‚₉‚₂₀₎=A₄₍₃₁₂₄₎Φ₁²")
+@test mytest("Weyl.jl","R=reflection_subgroup(W,[20,30,19,22])","E₆₍₁‚₉‚₁₉‚₂₀₎=A₄₍₃₁₂₄₎Φ₁²")
 @test mytest("Weyl.jl","p=standard_parabolic(W,R)","(1,4,49,12,10)(2,54,62,3,19)(5,17,43,60,9)(6,21,34,36,20)(7,24,45,41,53)(8,65,50,15,22)(11,32,31,27,28)(13,48,46,37,40)(14,51,58,44,29)(16,23,35,33,30)(18,26,39,55,38)(42,57,70,72,56)(47,68,67,63,64)(52,59,71,69,66)")
 @test mytest("Weyl.jl","p==standard_parabolic(W,[19,1,9,20])","true")
 @test mytest("Weyl.jl","reflection_subgroup(W,[20,30,19,22].^p)","E₆₍₂₄₅₆₎=A₄Φ₁²")
-@test mytest("Weyl.jl","R=reflection_subgroup(W,[1,2,3,5,6,35])","E₆₍₁‚₃‚₂‚₃₅‚₅‚₆₎=A₂₍₁₃₎×A₂₍₂₆₎×A₂₍₄₅₎")
+@test mytest("Weyl.jl","R=reflection_subgroup(W,[1,2,3,5,6,35])","E₆₍₁‚₂‚₃‚₅‚₆‚₃₅₎=A₂₍₁₃₎×A₂₍₂₆₎×A₂₍₄₅₎")
 @test mytest("Weyl.jl","standard_parabolic(W,R)","nothing")
 @test mytest("Weyl.jl","W=coxgroup(:E,8)","E₈")
 @test mytest("Weyl.jl","badprimes(W)","3-element Vector{Int64}:\n 2\n 3\n 5")
@@ -1009,7 +1013,7 @@ end
 @test mytest("gendec.jl","W=rootdatum(:psu,5)","psu₅")
 @test mytest("gendec.jl","generic_decomposition_matrix(W,10)","Φ₁₀-decomposition matrix for psu₅\n┌──────┬─────────────────────────┐\n│      │ps 21 ps ps ps 2111 11111│\n├──────┼─────────────────────────┤\n│2.    │ 1  .  .  .  .    .     .│\n│²A₂:2 │ .  1  .  .  .    .     .│\n│11.   │ .  .  1  .  .    .     .│\n│1.1   │ 1  .  .  1  .    .     .│\n│.2    │ .  .  .  .  1    .     .│\n│²A₂:11│ .  1  .  .  .    1     .│\n│.11   │ .  .  .  1  .    .     1│\n└──────┴─────────────────────────┘")
 @test mytest("gendec.jl","W=rootdatum(:psu,6)","psu₆")
-@test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
-@test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₅₄₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n┌────┬────────┐\n│    │ps ps A₂│\n├────┼────────┤\n│²A₅ │ .  .  .│\n│.3  │ 1  .  .│\n│3.  │ 1  .  .│\n│.21 │ 1  1  .│\n│1.2 │ 2  1  .│\n│21. │ 1  1  .│\n│2.1 │ 2  1  .│\n│.111│ .  1  1│\n│111.│ .  1  1│\n│1.11│ 1  2  1│\n│11.1│ 1  2  1│\n└────┴────────┘")
+@test mytest("gendec.jl","L=reflection_subgroup(W,[1,2,4,5])","psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁")
+@test mytest("gendec.jl","InducedDecompositionMatrix(L,W,6)","Induced Φ₆-decomposition matrix from psu₆₍₁₂₄₅₎=(A₂A₂)₍₁₂₄₃₎Φ₁ to psu₆\n┌────┬────────┐\n│    │ps ps A₂│\n├────┼────────┤\n│²A₅ │ .  .  .│\n│.3  │ 1  .  .│\n│3.  │ 1  .  .│\n│.21 │ 1  1  .│\n│1.2 │ 2  1  .│\n│21. │ 1  1  .│\n│2.1 │ 2  1  .│\n│.111│ .  1  1│\n│111.│ .  1  1│\n│1.11│ 1  2  1│\n│11.1│ 1  2  1│\n└────┴────────┘")
 end
 end

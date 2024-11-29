@@ -9,6 +9,9 @@ reflectionMatrix
 PermRootGroup
 complex_reflection_group
 PRG
+TypeIrred
+TypeIrred(::PermRootGroup)
+refltype
 rank
 semisimplerank
 number_of_reflections
@@ -20,6 +23,8 @@ coroots
 coroot
 simpleroots
 simplecoroots
+baseX
+independent_roots
 cartan(::PermRootGroup)
 cartan(::PermRootGroup,i,j)
 refls
@@ -51,7 +56,9 @@ generic_order
 torus_order
 reflection_subgroup(::PRG,::AbstractVector)
 inclusion
+inclusiongens
 restriction
+action
 standard_parabolic(::PermRootGroup,::Any)
 parabolic_reps
 parabolic_closure

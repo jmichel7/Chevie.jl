@@ -284,9 +284,9 @@ E₈
 
 julia> split_levis(W,4,2)
 3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
- E₈₍₃₂₄₅₎=D₄₍₁₃₂₄₎Φ₄²
+ E₈₍₃₄₂₅₎=D₄₍₁₃₂₄₎Φ₄²
  E₈₍₅₇₂₃₎=(A₁A₁)×(A₁A₁)Φ₄²
- E₈₍₃₁₅₆₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
+ E₈₍₃₅₆₁₎=²(A₂A₂)₍₁₄₂₃₎Φ₄²
 
 julia> split_levis(complex_reflection_group(5))
 4-element Vector{Spets{PRSG{Cyc{Rational{Int64}}, Int16}}}:

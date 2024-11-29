@@ -1383,7 +1383,7 @@ julia> cuspidal_data(coxgroup(:F,4),1)
  (levi = F₄, cuspidal = 35, d = 1)
  (levi = F₄, cuspidal = 36, d = 1)
  (levi = F₄, cuspidal = 37, d = 1)
- (levi = F₄₍₃₂₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)
+ (levi = F₄₍₂₃₎=B₂₍₂₁₎Φ₁², cuspidal = 6, d = 1)
  (levi = F₄₍₎=Φ₁⁴, cuspidal = 1, d = 1)
 
 julia> cuspidal_data(complex_reflection_group(4),3)

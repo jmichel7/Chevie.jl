@@ -411,8 +411,8 @@ function twisting_elements(WF::CoxeterCoset,J::AbstractVector{<:Integer})
 end
 
 Groups.Group(WF::Spets)=WF.W
-@forward Spets.W PermRoot.inclusion, PermRoot.restriction,
-  PermRoot.semisimplerank, PermRoot.rank
+@forward Spets.W PermRoot.inclusion, PermRoot.restriction, 
+  PermRoot.inclusiongens, PermRoot.semisimplerank, PermRoot.rank
 
 Weyl.dimension(WF::CoxeterCoset)=dimension(WF.W)
 
@@ -449,8 +449,8 @@ julia> twistings(W,2:5)
 
 julia> twistings(WF,2:5)
 3-element Vector{Spets{FiniteCoxeterSubGroup{Perm{Int16},Int64}}}:
- ²E₆₍₂₅₄₃₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
- ²E₆₍₂₅₄₃₎=³D₄₍₁₄₃₂₎Φ₆
+ ²E₆₍₂₃₄₅₎=²D₄₍₁₄₃₂₎Φ₁Φ₂
+ ²E₆₍₂₃₄₅₎=³D₄₍₁₄₃₂₎Φ₆
  ²E₆₍₂₃₄₅₎=D₄Φ₂²
 ```
 """
@@ -609,7 +609,7 @@ julia> gu3=spets(W,-reflrep(W,W()))
 ²A₂Φ₂
 
 julia> F4=coxgroup(:F,4);D4=reflection_subgroup(F4,[1,2,16,48])
-F₄₍₉‚₂‚₁‚₁₆₎=D₄₍₃₂₁₄₎
+F₄₍₁‚₂‚₉‚₁₆₎=D₄₍₃₂₁₄₎
 
 julia> spets(D4,[1 0 0 0;0 1 2 0;0 0 0 1;0 0 -1 -1])
 F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
@@ -776,7 +776,8 @@ function Base.show(io::IO, WF::Spets)
   end
   if get(io,:parent,true)
     if haskey(WF,:parent)
-      n=inclusion(WF,indices(refltype(WF)))
+#     n=inclusion(WF,indices(refltype(WF)))
+      n=inclusiongens(WF)
       if n!=eachindex(gens(Group(WF.parent)))
         printTeX(io,"{",WF.parent,"}_{"*joindigits(n;always=true)*"}=")
       end
@@ -885,7 +886,7 @@ F₄
 julia> w=transporting_elt(Group(WF),[1,2,9,16],[1,9,16,2],ontuples);
 
 julia> LF=subspets(WF,[1,2,9,16],w)
-F₄₍₉‚₁₆‚₁‚₂₎=³D₄₍₃₄₁₂₎
+F₄₍₁‚₂‚₉‚₁₆₎=³D₄₍₃₄₁₂₎
 
 julia> diagram(LF)
 ϕ acts as (2,3,4) on the component below
