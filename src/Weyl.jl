@@ -402,7 +402,7 @@ function type_fincox_cartan(m::AbstractMatrix)
   if !all(==(2),diag(m)) return nothing end
   s=two_tree(m)
   if isnothing(s) return nothing end
-  t=TypeIrred(Dict{Symbol,Any}(:rank=>rank))
+  t=TypeIrred(;rank)
   if s isa Tuple # types D,E
     (vertex,b1,b2,b3)=s
     if length(b2)==1 t.series=:D

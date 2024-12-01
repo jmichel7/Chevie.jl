@@ -740,7 +740,7 @@ function PermRoot.refltype(WF::CoxeterCoset)::Vector{TypeIrred}
         end
       end
       for i in 2:length(c) o[i].indices=indices(o[i-1]).^phires end
-      TypeIrred(Dict(:orbit=>o,:twist=>twist))
+      TypeIrred(;orbit=o,twist)
     end
   end
 end
@@ -1071,7 +1071,7 @@ function PermRoot.refltype(WF::PRC)
     W=Group(WF)
     t=deepcopy(refltype(W))
     if isone(WF.phi)
-      return map(x->TypeIrred(Dict(:orbit=>[x],:twist=>Perm())),t)
+      return map(x->TypeIrred(orbit=[x],twist=Perm()),t)
     end
     subgens=map(x->refls(W,x.indices),t)
     c=Perm(map(x->sort(x.^WF.phi),subgens),map(sort,subgens))
@@ -1105,7 +1105,7 @@ function PermRoot.refltype(WF::PRC)
       map(ratio,prr[inclusion(W,rr).^WF.phi],prr[inclusion(W,img)])
     end
     typ=map(c) do orb
-      to=TypeIrred(Dict{Symbol,Any}(:orbit=>map(copy,t[orb])))
+      to=TypeIrred(orbit=map(copy,t[orb]))
       scalar=Cyc{Rational{Int}}[]
       for i in eachindex(orb)
         next=i==length(orb) ? 1 : i+1

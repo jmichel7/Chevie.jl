@@ -1540,7 +1540,7 @@ test[:eigen]=(applicable=isspetsial,
 
 function Tqeigen(W)
   uc=UnipotentCharacters(W)
-  e=Uch.qeigen(uc)
+  e=Families.qeigen(uc)
   for i in eachindex(uc.families)
     f=uc.families[i]
     q=Families.qeigen(f)

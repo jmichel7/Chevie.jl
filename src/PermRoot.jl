@@ -762,7 +762,7 @@ prim=[
   de=filter(x->o==max(2,x.d),de) #  here we have length(de)<=2
   ST=filter(i->r==prim[i].r && s==prim[i].s && o==prim[i].o,eachindex(prim))
 # if isempty(de) && length(ST)==1 # shortcut
-#   return Dict(:series=>:ST, :ST=>only(ST), :rank=> r)
+#   return TypeIrred(series=:ST, ST=only(ST), rank=r)
 # end
   h=div(sum(order,refls(W,unique_refls(W))),r) # Coxeter number
   if length(de)>1
@@ -787,8 +787,8 @@ prim=[
   if d.d==2 && d.e==1 return TypeIrred(series=:B,rank=r) end
   if d.d==1 && d.e==2 return TypeIrred(series=:D,rank=r) end
   if d.d==1 && r==2
-    if d.e==4 return TypeIrred(series=>:B, rank=2)
-    elseif d.e==6 return TypeIrred(series=>:G, rank=2)
+    if d.e==4 return TypeIrred(series=:B, rank=2)
+    elseif d.e==6 return TypeIrred(series=:G, rank=2)
     else return TypeIrred(series=:I, rank=2, bond=d.e)
     end
   end
@@ -877,7 +877,7 @@ function findgoodcartan(H,g,C)
   return find(Int[],g)
 end
 
-# try to make indecomposable cartan(H,p) like C by rotating roots
+# try to make cartan(H,p) like C by rotating roots (both indecomposable)
 function fixCartan(H,C,p)
   CH=cartan(H,p)
   r=Weyl.type_fincox_cartan(CH)
@@ -980,6 +980,7 @@ julia> t.indices
 ```
 """
 function refltype(W::PermRootGroup)
+  verbose=false
   get!(W,:refltype)do
     if isempty(gens(W)) return TypeIrred[] end
     map(diagblocks(cartan(W))) do I
@@ -987,25 +988,30 @@ function refltype(W::PermRootGroup)
       CR=cartan(R)
       d=TypeIrred(R)
       C=cartan(d)
-      if C==CR indices=I
+      if C==CR 
         if d.series!=:ST d=Weyl.type_fincox_cartan(CR) end
-      else
-        good=findgoodcartan(R,eachindex(gens(R)),C)
-        if isnothing(good) good=findgoodcartan(R,eachindex(roots(R)),C) end
-        if isnothing(good) good=findgoodgens(R,unique_refls(R),d)
-          better=fixCartan(R,C,good)
-          if !isnothing(better) good=better[2]
-          else better=findgensDiagCartan(R,C,good)
-            if !isnothing(better) good=better[1]
-            else better=findgensDiagCartan2(R,C)
-              if !isnothing(better) good=better[1] end
-            end
-          end
-          if d.series!=:ST d=Weyl.type_fincox_cartan(cartan(R,good)) end
-        end
-        indices=inclusion(R,W,good)
+        d.indices=I
+        return d
       end
-      d.indices=indices
+      if verbose print("#1") end
+      good=findgoodcartan(R,eachindex(gens(R)),C)
+      if !isnothing(good) d.indices=inclusion(R,W,good); return d end
+      if verbose print("#2") end
+      good=findgoodcartan(R,eachindex(roots(R)),C)
+      if !isnothing(good) d.indices=inclusion(R,W,good); return d end
+      if verbose print("#3") end
+      good=findgoodgens(R,unique_refls(R),d)
+      better=fixCartan(R,C,good)
+      if !isnothing(better) d.indices=inclusion(R,W,better[2]); return d end
+      better=findgensDiagCartan(R,C,good)
+      if verbose print("#4") end
+      if !isnothing(better) good=better[1]
+      else better=findgensDiagCartan2(R,C)
+        if verbose print("#5") end
+        if !isnothing(better) good=better[1] end
+      end
+      if d.series!=:ST d=Weyl.type_fincox_cartan(cartan(R,good)) end
+      d.indices=inclusion(R,W,good)
       d
     end
   end::Vector{TypeIrred}
@@ -1729,7 +1735,7 @@ end
 PRG(a::Matrix,b::Matrix;k...)=PRG(toL(a),toL(b);k...)
 
 PRG(i::Integer;T1=Perms.Idef)=PRG(Perm{T1}[],Perm{T1}(),Matrix{Int}[],
-                 Vector{Int}[],Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
+          Vector{Int}[],Vector{Int}[],Dict{Symbol,Any}(:rank=>i))
 """
 `radical(G::ComplexReflectionGroup)`
 

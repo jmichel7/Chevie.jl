@@ -63,7 +63,7 @@ function complex_reflection_group(i::Integer)
   elseif i==35 coxgroup(:E,6)
   elseif i==36 coxgroup(:E,7)
   elseif i==37 coxgroup(:E,8)
-  else t=TypeIrred(Dict(:series=>:ST,:ST=>Int(i)))
+  else t=TypeIrred(series=:ST,ST=Int(i))
     PRG(simpleroots(t),simplecoroots(t))
   end
 end
@@ -76,7 +76,7 @@ function complex_reflection_group(p,q,r)
   elseif p==2 return rootdatum(:so,q==2 ? 2r : 2r+1)
   elseif p==q && r==2 return coxgroup(:I,2,p)
   end
-  t=TypeIrred(Dict(:series=>:ST,:p=>p,:q=>q,:rank=>r))
+  t=TypeIrred(;series=:ST,p,q,rank=r)
   PRG(simpleroots(t),simplecoroots(t))
 end
 
