@@ -386,48 +386,68 @@ function Base.show(io::IO, t::TypeIrred)
   if haskey(t,:series)
     s=t.series
     if s==:ST
-      if haskey(t,:ST)
-        n=hasdecor(io) ? sub("G",t.ST) : "crg($(t.ST))"
+      if hasdecor(io)
+        n="G"
+        if haskey(t,:cartanType)
+          n*="("*xrepr(io,t.cartanType)*")"
+        end
+      else n="crg"
+      end
+      if hasdecor(io)
+        if haskey(t,:ST) n=sub(n,t.ST)
+        else n*="_{$(t.p),$(t.q),$(t.rank)}"
+        end
       else
-        n=hasdecor(io) ? "G_{$(t.p),$(t.q),$(t.rank)}" :
-                         "crg($(t.p),$(t.q),$(t.rank))"
+        if haskey(t,:ST) n*="($(t.ST)"
+        else n*="($(t.p),$(t.q),$(t.rank)"
+        end
+        if haskey(t,:cartanType)
+          n*=","*xrepr(io,t.cartanType)*")"
+        end
       end
     else
       r=rank(t)
+      ct=1
       if haskey(t,:cartanType)
         if s==:B
           if t.cartanType==1 s=:C
           elseif t.cartanType==2 s=:B
           elseif t.cartanType==root(2) s=:Bsym
-          else s=Symbol("B(",xrepr(io,t.cartanType),")")
+          else ct=t.cartanType
           end
         elseif s==:F
           if t.cartanType==1 s=:F
           elseif t.cartanType==root(2) s=:Fsym
-          else s=Symbol("F(",xrepr(io,t.cartanType),")")
+          else ct=t.cartanType
           end
         elseif s==:G
           if t.cartanType==1 s=:G
           elseif t.cartanType==root(3) s=:Gsym
-          else s=Symbol("G(",xrepr(io,t.cartanType),")")
+          else ct=t.cartanType
           end
         elseif s==:I
           if t.cartanType==1 s=:I
           elseif t.cartanType==E(2*t.bond)+E(2*t.bond,-1) s=:Isym
-          else s=Symbol("I(",xrepr(io,t.cartanType),")")
+          else ct=t.cartanType
           end
         end
       end
-      if haskey(t,:bond)
-        b=t.bond
-        n=hasdecor(io) ? sub(s,r)*"($b)" : "coxgroup(:$s,$r,$b)"
-      elseif haskey(t,:short)
-        n=hasdecor(io) ? "\\tilde "*sub(s,r) : "coxgroup(:$s,$r)"
+      if hasdecor(io)
+        if ct!=1 s=Symbol(s,"(",xrepr(io,t.cartanType),")") end
+        if haskey(t,:bond) n=sub(s,r)*"($(t.bond))"
+        elseif haskey(t,:short) n="\\tilde "*sub(s,r)
+        else n=sub(s,r)
+        end
       else
-        n=hasdecor(io) ? sub(s,r) : "coxgroup(:$s,$r)"
+        if haskey(t,:bond) n="coxgroup(:$s,$r,$(t.bond)"
+        else n="coxgroup(:$s,$r"
+        end
+        if ct!=1 n*=","*xrepr(io,t.cartanType)*")"
+        else n*=")"
+        end
       end
     end
-    printTeX(io,n)
+    if hasdecor(io) printTeX(io,n) else print(io,n) end
   else
     o=order(t.twist)
     if hasdecor(io)
@@ -877,11 +897,13 @@ function findgoodcartan(H,g,C)
   return find(Int[],g)
 end
 
-# try to make cartan(H,p) like C by rotating roots (both indecomposable)
+# try to make cartan(H,p) like C by changing p rotating roots (C indecomposable)
 function fixCartan(H,C,p)
   CH=cartan(H,p)
   r=Weyl.type_fincox_cartan(CH)
-  if !isnothing(r) return [r,p] end
+  if !isnothing(r) return (r,p) end
+  d=diagconj_elt(C,CH)
+ #if isnothing(d) error("raté") end
   seen=[size(CH,1)]
   for i in size(CH,1):-1:1
   # go reverse for better luck in type B?
@@ -898,7 +920,7 @@ function fixCartan(H,C,p)
       if C[i,j]!=0 push!(seen,j) end
     end
   end
-  return [r,p]
+  (r,p)
 end
 
 # find roots p in inclusion(H) with cartan(H,p) equal to C^(diagonal matrix D)
@@ -1002,13 +1024,24 @@ function refltype(W::PermRootGroup)
       if verbose print("#3") end
       good=findgoodgens(R,unique_refls(R),d)
       better=fixCartan(R,C,good)
-      if !isnothing(better) d.indices=inclusion(R,W,better[2]); return d end
+      if !isnothing(better) 
+        if !isnothing(better[1]) d=better[1] end
+        d.indices=inclusion(R,W,better[2]); return d
+      end
       better=findgensDiagCartan(R,C,good)
       if verbose print("#4") end
       if !isnothing(better) good=better[1]
+        rd=diagconj_elt(C,cartan(R,good))
+        if length(rd)==2 && isone(rd[1])
+          d.cartanType=improve_type(rd[2])
+        end
       else better=findgensDiagCartan2(R,C)
         if verbose print("#5") end
-        if !isnothing(better) good=better[1] end
+        if !isnothing(better) good=better[1] 
+          if length(better[2])==2 && isone(better[2][1])
+            d.cartanType=improve_type(better[2][2])
+          end
+        end
       end
       if d.series!=:ST d=Weyl.type_fincox_cartan(cartan(R,good)) end
       d.indices=inclusion(R,W,good)

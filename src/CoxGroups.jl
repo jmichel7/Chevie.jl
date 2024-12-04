@@ -490,14 +490,13 @@ julia> word.(Ref(W),b)
 ```
 """
 function bruhatless(W::CoxeterGroup,x,y)
-  if isone(x) return true end
-  d=length(W,y)-length(W,x)
+  lx=length(W,x)
+  d=length(W,y)-lx
   while d>0
+    if iszero(lx) return true end
     i=firstleftdescent(W,y)
     s=W(i)
-    if isleftdescent(W,x,i)
-      if x==s return true end
-      x=s*x
+    if isleftdescent(W,x,i) x=s*x;lx-=1
     else d-=1
     end
     y=s*y

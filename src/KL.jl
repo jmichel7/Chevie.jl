@@ -3,16 +3,12 @@
 #
 #   julia> left_cells(coxgroup(:B,5));
 #
-# takes `1` second cpu time on a 3Ghz computer. The computation of all
-# Kazhdan-Lusztig  polynomials  for  type  `F₄`  takes  a bit more than~`5`
-# seconds.   Computing  the  Bruhat   order  is  a   bottleneck  for  these
+# takes `1` second cpu time on a 3Ghz computer.
+# Computing  the  Bruhat   order  is  a   bottleneck  for  these
 # computations; they can be speeded up by a factor of two if one does:
 #
-#|    gap> ReadChv("contr/brbase");
-#    gap> BaseBruhat(W);;|
-#
-# after  which the computation of the Bruhat  order will be speeded up by a
-# large factor.
+#    julia> include("contr/brbase")
+#    julia> BaseBruhat(W);|
 #
 # However,  Alvis' computation  of the  Kazhdan--Lusztig polynomials of the
 # Coxeter group of type `H_4` with this package will still take many hours.

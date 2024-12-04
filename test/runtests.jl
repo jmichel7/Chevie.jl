@@ -115,8 +115,8 @@ end
 end
 @testset "Cosets.jl" begin
 @test mytest("Cosets.jl","W=complex_reflection_group(14)","G₁₄")
-@test mytest("Cosets.jl","R=reflection_subgroup(W,[2,4])","G₁₄₍₂₄₎=G₅")
-@test mytest("Cosets.jl","RF=spets(R,W(1))","G₁₄₍₂₄₎=²G₅")
+@test mytest("Cosets.jl","R=reflection_subgroup(W,[2,4])","G₁₄₍₂₄₎=G(-ζ₃²√-2)₅")
+@test mytest("Cosets.jl","RF=spets(R,W(1))","G₁₄₍₂₄₎=²G(-ζ₃²√-2)₅")
 @test mytest("Cosets.jl","degrees(RF)","2-element Vector{Tuple{Int64, Cyc{Int64}}}:\n (6, 1)\n (12, -1)")
 @test mytest("Cosets.jl","W=coxgroup(:B,2)","B₂")
 @test mytest("Cosets.jl","W=coxgroup(:Bsym,2)","Bsym₂")
@@ -164,7 +164,7 @@ end
 @test mytest("Cosets.jl","LF=subspets(WF,[1,2,9,16],w)","F₄₍₁‚₂‚₉‚₁₆₎=³D₄₍₃₄₁₂₎")
 @test mytest("Cosets.jl","diagram(LF)","ϕ acts as (2,3,4) on the component below\n  O 4\n  ￨\nO—O—O D₄\n3 1 2")
 @test mytest("Cosets.jl","spets(\"3G422\")","³G₄‚₂‚₂")
-@test mytest("Cosets.jl","spets(\"2G5\")","²G₅")
+@test mytest("Cosets.jl","spets(\"2G5\")","²G(ζ₃²√-2)₅")
 @test mytest("Cosets.jl","spets(\"3G333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
 @test mytest("Cosets.jl","spets(\"3pG333\")","G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎")
 @test mytest("Cosets.jl","spets(\"4G333\")","G₃‚₃‚₃₍₂‚₁₂‚₁₁‚₁₆‚₅₃‚₁₀‚₄₃‚₃₆₎=⁴G₃‚₃‚₃₍₁‚₂‚₃‚₃₂‚₁₆‚₃₆‚₃₀‚₁₀₎")

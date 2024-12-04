@@ -108,25 +108,7 @@ function BaseBruhat(W)
   end
 end
 
-function CoxGroups.bruhatless(W,x,y)
-  if x==one(W) return true end
-  d=length(W,y)-length(W,x)
-  if haskey(W,:bruhatincidence)
-    println("hello")
-    if d<0 return false end
-    iy=W.bruhatincidence[inclusiongens(W).^y]
-    ix=W.bruhatincidence[inclusiongens(W).^x]
-    return iy==iy.|ix
-  end
-  while d>0
-    i=firstleftdescent(W,y)
-    s=W(i)
-    if isleftdescent(W,x,i)
-      if x==s return true end
-      x=s*x
-    else d-=1
-    end
-    y=s*y
-  end
-  return x==y
+function CoxGroups.bruhatless(W::CoxeterGroup,x,y)
+  iy=W.bruhatincidence[inclusiongens(W).^y]
+  iy==iy.|W.bruhatincidence[inclusiongens(W).^x]
 end

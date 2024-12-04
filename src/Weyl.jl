@@ -427,7 +427,7 @@ function type_fincox_cartan(m::AbstractMatrix)
         if r(1)==-1 reverse!(s) end
         if bond==2+E(n)+E(n,-1) bond=n else bond=2n end
         t.series=:I
-        if bond%2==0 t.cartanType=-l(1) end
+        if bond%2==0 t.cartanType=improve_type(-l(1)) end
         t.bond=bond
       end
     else

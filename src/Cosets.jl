@@ -167,10 +167,10 @@ julia> W=complex_reflection_group(14)
 G₁₄
 
 julia> R=reflection_subgroup(W,[2,4])
-G₁₄₍₂₄₎=G₅
+G₁₄₍₂₄₎=G(-ζ₃²√-2)₅
 
-julia> RF=spets(R,W(1)) # should be ²G₅(√6)
-G₁₄₍₂₄₎=²G₅
+julia> RF=spets(R,W(1))
+G₁₄₍₂₄₎=²G(-ζ₃²√-2)₅
 ```
 
 ```julia-rep1
@@ -1004,7 +1004,7 @@ julia> spets("3G422")
 ³G₄‚₂‚₂
 
 julia> spets("2G5")
-²G₅
+²G(ζ₃²√-2)₅
 
 julia> spets("3G333")
 G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎=³G₃‚₃‚₃₍₁‚₂‚₃‚₄₄₎

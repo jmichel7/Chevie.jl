@@ -12,8 +12,8 @@ using Chairmarks
 #1.11.rc 11.671 ms (237323 allocs: 13.295 MiB)
 test_w0(W)=Tbasis(hecke(W,Pol()))(longest(W))^2
 """
-test_w0:=function(n)local W,T,H,q,w02; # GAP3 takes 84ms
-  W:=CoxeterGroup("A",n);q:=X(Rationals);H:=Hecke(W,q);T:=Basis(H,"T");
+test_w0:=function(n)local W,T,H,q,w02; # GAP3 takes 75ms for n=7
+  W:=CoxeterGroupSymmetricGroup(n);q:=X(Rationals);H:=Hecke(W,q);T:=Basis(H,"T");
   w02:=T(LongestCoxeterWord(W))^2;return Length(w02.elm);
 end;
 """
@@ -23,7 +23,7 @@ end;
 #1.10.3 42.501 ms (286780 allocs: 49.168 MiB)
 #1.11.0 34.639 ms (347334 allocs: 47.080 MiB)
 #
-#testmat(9)^2 in GAP3 85ms in GAP4 60ms
+#testmat(9)^2 in GAP3 35ms in GAP4 60ms
 """
 testmat:=function(p)local ss;ss:=Combinations([0..p-1],2);
   return List(ss,i->List(ss,j->(E(p)^(i*Reversed(j))-E(p)^(i*j))/p));
@@ -33,7 +33,7 @@ end;
 #julia> @b collect(symmetric_group(10)) seconds=4
 #1.10.3  240.491 ms (4043780 allocs: 336.001 MiB)
 #1.11.rc 189.171 ms (8083258 allocs: 335.999 MiB)
-#Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.56s
+#Elements(Group(List([1..9],i->(i,i+1)),()));; GAP3 takes 0.53s
 
 #julia> @b elements(coxgroup(:E,6))
 #1.9.4  7.724 ms (61129 allocs: 12.447 MiB)
@@ -51,7 +51,7 @@ function test_kl(W)
   T=Tbasis(H)
   [T(C(w)) for w in elements(W)]
 end
-# GAP3 takes 57ms for A4
+# GAP3 takes 49ms for A4
 """
 test_kl:=function(W)local q,H,T,C;
   q:=X(Rationals);H:=Hecke(W,q^2,q);T:=Basis(H,"T");C:=Basis(H,"C'");
@@ -68,7 +68,7 @@ function test_kl1(W)
   C=Cpbasis(H)
   (C(longest(W))^2).d
 end
-# GAP3: 247ms for A4
+# GAP3: 220ms for A4
 """
 test_kl1:=function(W)local q,H,T,C;
   q:=X(Rationals);H:=Hecke(W,q^2,q);C:=Basis(H,"C'");
@@ -83,7 +83,7 @@ function test_kl2(W)
   el=elements(W)
   maximum(degree(KLPol(W,x,y)) for x in el, y in el)
 end
-# GAP3 takes 57ms for A4
+# GAP3 takes 51ms for A4
 """
 test_kl2:=function(W)local el; el:=Elements(W);
   return Maximum(List(el,x->Maximum(List(el,y->Length(KazhdanLusztigPolynomial(W,x,y))))));
@@ -107,7 +107,7 @@ function test_b(W)
       -3,-4,-5,-6,7,6,5,4,3,2,8,7,6,9,8,7,10,11,12,2,7,12,11,10,13,14,15,2,3,4)
   b^4
 end
-# GAP3 takes 3.8 ms
+# GAP3 takes 3ms
 """
 test_b:=function()local b,B;
   B:=Braid(CoxeterGroupSymmetricGroup(21));
@@ -127,7 +127,7 @@ function test_hm(rtype,rank)
   m=[rtype(1)//(n+m) for n in 1:rank, m in 1:rank]
   one(m)==m*inv(m)
 end
-# GAP3 for r=35 takes 32ms and GAP4 19ms
+# GAP3 for r=35 takes 16ms and GAP4 19ms
 """
 test_hm:=function(r)
   r:=List([1..r],n->List([1..r],m->1/(n+m)));
@@ -138,7 +138,7 @@ end;
 #julia> @b PuiseuxPolynomials.fateman(7)
 #1.10.3  15.031 ms (112807 allocs: 29.657 MiB)
 #1.11.rc 14.864 ms (225638 allocs: 29.637 MiB)
-# GAP3: fateman(7) takes 722ms
+# GAP3: fateman(7) takes 570ms
 """
 fateman:=function(n)local p;
   p:=(1+Mvp("x")+Mvp("y")+Mvp("z")+Mvp("t"))^n;
@@ -162,7 +162,7 @@ end;
 #1.9.0 128.179 μs (2937 allocations: 210.86 KiB)
 #1.10.3 153.370 μs (3631 allocs: 243.969 KiB)
 #1.11.rc 122.602 μs (4994 allocs: 223.609 KiB)
-# [[x+y,x-y],[x+1,y+1]]^-1; # GAP3 3.9ms
+# [[x+y,x-y],[x+1,y+1]]^-1; # GAP3 3.1ms
 
 # @b CycPols.p(Pol()) #GAP3 1.25 ms
 #1.8.5   254.158 μs (5626 allocations: 416.19 KiB)
