@@ -811,7 +811,7 @@ julia> reflrep(W)
  [1 3; 0 -1]
 ```
 """
-CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Int...;sc=false)=iszero(r) ? coxgroup() :
+CoxGroups.coxeter_group(t::Symbol,r::Int=0,b::Number...;sc=false)=iszero(r) ? coxgroup() :
 sc ? rootdatum(permutedims(cartan(t,r,b...)),Matrix{Int}(I,r,r)) : rootdatum(cartan(t,r,b...))
 
 """

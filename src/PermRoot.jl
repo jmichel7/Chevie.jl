@@ -401,8 +401,8 @@ function Base.show(io::IO, t::TypeIrred)
         if haskey(t,:ST) n*="($(t.ST)"
         else n*="($(t.p),$(t.q),$(t.rank)"
         end
-        if haskey(t,:cartanType)
-          n*=","*xrepr(io,t.cartanType)*")"
+        if haskey(t,:cartanType) n*=","*xrepr(io,t.cartanType)*")"
+        else n*=")"
         end
       end
     else
@@ -964,10 +964,10 @@ function findgensDiagCartan(H,C,p)
     cc=unique.(cc)
     if any(x->length(x)>1,cc) return nothing end
     cc=only.(cc)
-    best=findfirst(==(1),cc)
+    best=findfirst(==(d[n-1]),cc)
     if !isnothing(best)
       p[n]=l[best]
-      d[n]=1
+      d[n]=d[n-1]
     else
       d[n]=cc[1]
       p[n]=l[1]
@@ -1032,9 +1032,10 @@ function refltype(W::PermRootGroup)
       if verbose print("#4") end
       if !isnothing(better) good=better[1]
         rd=diagconj_elt(C,cartan(R,good))
-        if length(rd)==2 && isone(rd[1])
-          d.cartanType=improve_type(rd[2])
-        end
+        if rd[1]!=1 error("hah non") end
+        if !allequal(rd[2:end])
+        println("##### Warning: cartantypes for ",d,"=",rd[3:end].//rd[2]) end
+        d.cartanType=improve_type(rd[2])
       else better=findgensDiagCartan2(R,C)
         if verbose print("#5") end
         if !isnothing(better) good=better[1] 
