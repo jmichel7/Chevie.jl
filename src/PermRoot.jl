@@ -352,6 +352,13 @@ It has the properties:
   - `.ST` for a primitive group with `.series==:ST`, holding the Shepard-Todd number
   - `.p` and `.q` for an imprimitive group with `.series==:ST`, holding `.p=de`
     and `.q=e` for `G(de,e,r)`.
+
+a  `TypeIrred` may  also contain  information specifying  a possible Cartan
+matrix  for  the  given  type.  When  there  are  two  conjugacy classes of
+generators, if present `.cartanType` contains the ratio of the root lengths
+compared  to the standard cartan matrix for  that type (that is, the Cartan
+matrix is conjugate to the standard Cartan matrix by
+`Diagonal([1,…,1,c,…,c])` where `c=.cartanType`.
 """ TypeIrred
 
 TypeIrred(;kw...)=TypeIrred(Dict(kw...))
@@ -927,7 +934,7 @@ end
 # returns [p, diagonal of D]
 function findgensDiagCartan2(H,C)
   f(x,y)=y==0 ? (x==0 ? 0 : nothing) : x//y
-  # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
+  # here CartanMat(H,l) is conjugate by Diagonal(d) to beginning of C
   function complete(l,d)
     local r,c,cc,n
     if length(l)==size(C,1) return (l,d) end
@@ -955,7 +962,7 @@ function findgensDiagCartan(H,C,p)
   d=zeros(eltype(CH),size(CH,1))
   d[1]=1
   for n in 2:size(C,1)
-  # here CartanMat(H,l) is conjugate by DiagonalMat(d) to beginning of C
+  # here CartanMat(H,l) is conjugate by Diagonal(d) to beginning of C
     l=filter(i->ratio(roots(H,p[n]),roots(H,i))!==nothing,eachindex(roots(H)))
     cc=map(r->vcat(map(i->f(d[i]*C[i,n],cartan(H,p[i],r)),1:n-1),
                    map(i->f(d[i]*cartan(H,r,p[i]),C[n,i]),1:n-1)),l)
