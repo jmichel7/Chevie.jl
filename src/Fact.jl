@@ -1,5 +1,7 @@
 """
-Factoring polynomials over the rationals
+Factoring polynomials over the rationals:
+
+`factor(f::Pol{<:Union{Integer,Rational{<:Integer}}})`
 """
 module Fact
 import Primes: Primes, nextprime, factor
@@ -10,21 +12,19 @@ using ..Modulo: Modulo, Mod
 using ..Combinat: Combinat, combinations, npartitions
 using ..Tools: improve_type
 
-const verbose=Ref(false)
+verbose::Bool=false
 function info(x...)
- if verbose[] println(x...) end
+ if verbose println(x...) end
 end
 
-const ltime=Ref(0.0)
-
+ltime::Float64=0.0
 function etime()
   newt=time()
-  d=newt-ltime[]
-  ltime[]=newt
-  string(round(d;digits=5),"s")
+  string(round(newt-ltime;digits=5),"s")
+  global ltime=newt
 end
 
-##  f must be squarefree and f[0]!=0.  We test 3 "small" and 2 "big" primes.
+#  f must be squarefree and f[0]!=0.  We test 3 "small" and 2 "big" primes.
 function FactorsModPrime(f::Pol{<:Union{Integer,Rational}})
   min=degree(f)+1 # set minimal number of factors to the degree of <f>
   lc=f[end]
@@ -118,7 +118,7 @@ function factorSQF(f::Pol{<:Union{Integer,Rational}})
   return fac
 end
 
-#F  ApproxRational:  approximate r with a <=s-digits denominator
+# approximate r with a <=s-digits denominator
 function ApproxRational(r, s)
   n=numerator(r)
   d=denominator(r)
@@ -128,8 +128,7 @@ function ApproxRational(r, s)
   div(n,u)//div(d,u)
 end
 
-#F  ApproximateRoot(r,e,f=10) . . approximate e-th root of r
-##  with a denominator of 'f' digits.
+# approximate e-th root of r with a denominator of 'f' digits.
 function ApproximateRoot(r,e=2,f=10)
   RootInt(x,e)=e==2 ? isqrt(x) : floor(typeof(x),x^(1/e))
   x=RootInt(numerator(r),e)//RootInt(denominator(r),e)
@@ -150,15 +149,14 @@ function ApproximateRoot(r,e=2,f=10)
   x
 end
 
-#F  BombieriNorm(pol) . . . . . . . . . . . . compute weighted Norm [pol]_2
+# compute weighted Norm [pol]_2
 function BombieriNorm(f)
   n=big(degree(f))
   f*=big(1)
   ApproximateRoot(sum(i->abs(f[i])^2//binomial(n,i),0:degree(f)))
 end
 
-#F  MinimizeBombieriNorm(pol) . . . . . . . minimize weighted Norm [pol]_2
-##                                            by shifting roots
+# minimize weighted Norm [pol]_2 by shifting roots
 function MinimizeBombieriNorm(f::Pol)
   # this stepwidth should be corrected
 # step=1//denominator(f)
@@ -426,8 +424,7 @@ function SquareHensel(f::Pol{<:Union{Integer,Rational}}, t)
   return res
 end
 
-#F  TrialQuotient(<f>,<g>,<b>)  . . . . . . f/g if coeffbounds are given by b
-##
+# f/g if coeffbounds are given by b
 function TrialQuotient(f::Pol{T},g,b)where T
 # @show f,g,b
   CoeffAbs(p::Pol)=maximum(abs.(numerator.(p.c)))
@@ -484,7 +481,7 @@ function TrialQuotient(f::Pol{T},g,b)where T
   Pol(q,val)
 end
 
-#F  TryCombinations( <f>, ... )  . . . . . . . . . . . . . . . .  try factors
+# try factors of f
 function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs=nothing)
 # xprintln("lc=",lc," p=",p," alldegs=",alldegs," bounds=",bounds," split=",split)
 # for u in l xprintln("***=",u) end
@@ -649,10 +646,7 @@ function BeauzamyBound(f)
   643038/1000000*ApproximateRoot(3^n,2)/ApproximateRoot(n,2)*BombieriNorm(f)))
 end
 
-#############################################################################
-##
-#F  ApproxRootBound(f) Numerical approximation of RootBound (better, but
-##  may fail)
+# Numerical approximation of RootBound (better, but may fail)
 function ApproxRootBound(f::Pol{<:Rational})
   x=Pol()*one(f[0])
   f=shift(f,-f.v)
@@ -711,7 +705,7 @@ function ApproxRootBound(f::Pol{<:Rational})
   1/app+1/20
 end
 
-#F  RootBound(f) . . . . bound for absolute value of (complex) roots of f
+# bound for absolute value of (complex) roots of f
 function RootBound(f)
   # valuation gives only 0 as zero, this can be neglected
   if f.v>0 f=shift(f,-f.v) end
@@ -748,9 +742,9 @@ function RootBound(f)
   a
 end
 
-#F  HenselBound(<pol>,[<minpol>,<den>]) . . . Bounds for Factor coefficients
-##    if the computation takes place over an algebraic extension, then
-##    minpol and denominator must be given
+#  HenselBound(<pol>,[<minpol>,<den>]) . . . Bounds for Factor coefficients
+#    if the computation takes place over an algebraic extension, then
+#    minpol and denominator must be given
 function HenselBound(pol,arg...)
   if length(arg)>0
     n,d=arg
@@ -807,8 +801,8 @@ function HenselBound(pol,arg...)
     end
     if n>1
     # algebraic Extension case
-    # finally we have to bound (again) the coefficients of \alpha when
-    # writing the coefficients of the factor as \sum c_i/d\alpha^i.
+    # finally we have to bound (again) the coefficients of α when
+    # writing the coefficients of the factor as ∑c_i/dα^i.
       w=Int(d*w*factorial(n)//RootRat(abs(dis))*nalpha^((n*(n-1))//2))+1
     end
     Integer(floor(w))+1
