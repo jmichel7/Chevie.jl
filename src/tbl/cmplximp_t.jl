@@ -4,12 +4,10 @@
 
 chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
   res=fill(1//2,r)
-  if q==1
-    res[1]=1//p
-    res
+  if q==1 res[1]=1//p
   elseif q!=p pushfirst!(res,q//p)
-  else res
   end
+  res
 end)
 
 chevieset(:imp,:PowerMaps,function(p,q,r)
@@ -38,14 +36,14 @@ end)
 
 chevieset(:imp,:GeneratingRoots,function(p,q,r)
   if q==1 
-    roots=[vcat([1],fill(0,r-1))]
+    roots=[map(i->i==1 ? 1 : 0,1:r)]
   else
-    if q!=p roots=[vcat([Cyc(1)],fill(0,r-1))] end
+    if q!=p roots=[map(i->i==1 ? Cyc(1) : Cyc(0),1:r)] end
     v=vcat([-E(p),1],fill(0,r-2))
-    if r==2 && q>1 && q%2==1 v*=E(p) end
+    if r==2 && q>1 && isodd(q) v*=E(p) end
     if q==p roots=[v] else push!(roots, v) end
   end
-  append!(roots,map(i->vcat(fill(0,i-2),[-1;1],fill(0,r-i)),2:r))
+  append!(roots,map(i->map(j->j==i-1 ? -1 : j==i ? 1 : 0,1:r),2:r))
 end)
 
 # see page 172 of Halverson and Ram,

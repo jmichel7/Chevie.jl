@@ -232,6 +232,7 @@ end
 @test mytest("CoxGroups.jl","isrightdescent(W,Perm(1,2),1)","true")
 @test mytest("CoxGroups.jl","elements(coxhyp(2))","8-element Vector{SPerm{Int8}}:\n ()\n (1,2)\n (1,-1)\n (1,2,-1,-2)\n (1,-2,-1,2)\n (2,-2)\n (1,-2)\n (1,-1)(2,-2)")
 @test mytest("CoxGroups.jl","W=coxgroup([2 -2;-2 2])","coxeter_group([2 -2; -2 2])")
+@test mytest("CoxGroups.jl","gens(W)","2-element Vector{Matrix{Int64}}:\n [-1 0; 2 1]\n [1 2; 0 -1]")
 end
 @testset "Diagrams.jl" begin
 @test mytest("Diagrams.jl","diagram(coxgroup(:E,8))","O 2\n    ￨\nO—O—O—O—O—O—O E₈\n1 3 4 5 6 7 8")
