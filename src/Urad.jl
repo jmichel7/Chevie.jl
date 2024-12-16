@@ -11,7 +11,9 @@ gives a canonical form to display elements and to compare them.
 
 The  computations use the Steinberg relations between root subgroups, which
 come from the choice of a Chevalley basis of the Lie algebra. The reference
-we  follow is [Carter1972, chapters 4 to 6](biblio.htm#Car72b).
+we  follow is [Carter1972,  chapters 4 to  6](biblio.htm#Car72b), but it is
+possible  to use another  choice of Chevalley  basis, see the documentation
+for `UnipotentGroup`.
 
 We  start with  a root  datum specified  by a  Weyl group  `W` and  build a
 `struct  UnipotentGroup`  which  contains  information  about  the  maximal
@@ -173,8 +175,8 @@ by
 
 Where  `ir+js` runs over the positive  integral combinations of `r` and `s`
 which  are roots,  taken in  lexicographic order  on `(i,j)`. The constants
-`Cᵣₛᵢⱼ`  are computed from  the constants `Nᵣₛ`,  see Carter1972, bottom of
-page 61 and top of page 76.
+`Cᵣₛᵢⱼ`  are computed from the constants  `Nᵣₛ`, see [Carter1972, bottom of
+page 61 and top of page 76](biblio.htm#Car72b).
 
 The fields of `struct Unipotent Group` are:
 
@@ -236,10 +238,12 @@ Base.:^(u::UnipotentElement,v::UnipotentElement)=inv(v)*u*v
 
 Base.:(==)(u::UnipotentElement,v::UnipotentElement)=u.U==v.U && u.list==v.list
 
+Base.copy(u::UnipotentElement)=UnipotentElement(u.U,copy(u.list))
+
 Base.hash(u::UnipotentElement,h::UInt)=hash(u.list,h)
-function Base.:^(u::UnipotentElement,v::SemisimpleElement)
+
+Base.:^(u::UnipotentElement,v::SemisimpleElement)=
   UnipotentElement(u.U,map(((r,c),)->r=>v^roots(u.U.W,r)*c,u.list))
-end
 
 n⁰(W,r)=findfirst(==(r),roots(W))
 
@@ -350,11 +354,11 @@ If  the keyword `order` is given it is  a total order on the positive roots
 used to normalize unipotent elements.
 
 By  default the structure constants `Nᵣₛ`  are computed using the method of
-Carter72 from extraspecial pairs. Another set of structure constants can be
-given  by given for the keyword `chevalley`  a `Dict` associating to a pair
-`(r,s)`  of  root  indices  some  object  `p`  such  that `first(p)` is the
-corresponding  `N_{r,s}`. Here is  an example of  using different constants
-from `ChevLie`.
+[Carter1972](biblio.htm#Car72b)  from  extraspecial  pairs.  Another set of
+structure  constants can be specified by giving for the keyword `chevalley`
+a `Dict` associating to a pair `(r,s)` of root indices some object `p` such
+that `first(p)` is the corresponding `N_{r,s}`. Here is an example of using
+different constants from the package `ChevLie` of Meinolf Geck.
 ```julia-rep1
 julia> W=coxgroup(:G,2)
 G₂
