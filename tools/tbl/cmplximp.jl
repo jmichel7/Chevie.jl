@@ -890,9 +890,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
                 (uc[:families])[4] = Family(((CHEVIE[:families])[:X])(3), [4, 5, 12], Dict{Symbol, Any}(:signs => [1, 1, -1]))
                 uc[:curtis] = [1, 2, 3, 7, 8, 10, 4, 5, 9, 6, -12, -11]
             elseif [p, q, r] == [3, 3, 4]
-                (uc[:families])[2] = Family(((CHEVIE[:families])[:X])(3), [2, 4, 23], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[6] = Family(((CHEVIE[:families])[:QZ])(3), [13, 9, 8, 10, 19, 22, 7, 21, 20], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, -1, 1, -1, -1, 1], :special => 3, :cospecial => 2))
-                (uc[:families])[9] = Family(conj(((CHEVIE[:families])[:X])(3)), [15, 14, 18], Dict{Symbol, Any}(:signs => [1, 1, -1]))
+                uc[:families] = map((x->begin
+                                MakeFamilyImprimitive((uc[:charSymbols])[x[:charNumbers]], uc)
+                            end), uc[:families])
             elseif [p, q, r] == [3, 3, 5]
                 (uc[:families])[3] = Family(((CHEVIE[:families])[:X])(3), [3, 6, 51], Dict{Symbol, Any}(:signs => [1, 1, -1]))
                 (uc[:families])[4] = Family(((CHEVIE[:families])[:X])(3), [4, 5, 54], Dict{Symbol, Any}(:signs => [1, 1, -1]))

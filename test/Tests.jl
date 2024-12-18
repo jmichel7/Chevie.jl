@@ -1524,9 +1524,11 @@ function Teigen(W)
     f=uc.harishChandra[i]
     for j in eachindex(f[:charNumbers])
       n=f[:charNumbers][j]
+      famno=findfirst(f->n in charnumbers(f),uc.families)
       if e[n]!=f[:eigenvalue]
-        ChevieErr("HCfamily ",i,"#",j,":",charnames(uc;TeX=true)[n],"=",n,
-         " eigen from fam.=",e[n]," but from HC=",f[:eigenvalue],"\n")
+        ChevieErr("n⁰ $n=",charnames(uc;TeX=true)[n],
+                   " from HCfamily ",i,"#",j,":eig=",f[:eigenvalue],
+                   " but from fam.$famno:eig=",e[n],"\n")
       end
     end
   end
