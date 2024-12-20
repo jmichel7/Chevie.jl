@@ -674,7 +674,8 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
     zg=centralizer(g, c)
     if iscyclic(zg) 
       o=length(zg)
-      zg=Group(elements(zg)[findfirst(x->order(x)==o && x^div(o,order(c))==c,elements(zg))])
+      zg=Group(elements(zg)[findfirst(x->order(x)==o,elements(zg))])
+#     zg=Group(elements(zg)[findfirst(x->order(x)==o && x^div(o,order(c))==c,elements(zg))])
       zg.classreps=map(i->zg(1)^i,0:o-1)
       r[:charNames]=map(i->sprint(show,E(o)^i;context=:TeX=>true),0:o-1)
       r[:chars]=[E(o)^(i*j) for i in 0:o-1, j in 0:o-1]
@@ -752,6 +753,64 @@ function drinfeld_double(g;lu=false,pivotal=nothing)
 end
 
 drinfeld_double(g,d::Dict)=drinfeld_double(g;d...)
+
+function drinold(g;lu=false)
+  res=Family(Dict{Symbol,Any}(:group=> g))
+  res.classinfo=map(classreps(g), classnames(g))do c,n
+    r=Dict{Symbol, Any}(:elt => c,:name => n)
+    if isone(c) r[:name]="1" end
+    r[:centralizer]=centralizer(g, c)
+    r[:centelms]=classreps(r[:centralizer])
+    t=CharTable(r[:centralizer])
+#   println("t=$t")
+    r[:charNames]=charnames(r[:centralizer]; TeX=true)
+    r[:names]=t.classnames
+    r[:names][findfirst(isone,r[:centelms])]="1"
+    r[:chars]=t.irr
+    r[:charNames][findfirst(x->all(isone,x),r[:chars])]="1"
+    r[:centralizers]=t.centralizers
+    r
+  end
+  res.charLabels=vcat(
+      map(r->map(c->"($(r[:name]),$c)",r[:charNames]),res.classinfo)...)
+  if isabelian(g)
+    for r in res.classinfo
+      r[:names]=map(x->res.classinfo[findfirst(s->s[:elt]==x,
+                                           res.classinfo)][:name],r[:centelms])
+    end
+  end
+  res.eigenvalues=vcat(map(r->
+    r[:chars][:,position_class(r[:centralizer],r[:elt])].//
+    r[:chars][:,position_class(r[:centralizer],one(g))],res.classinfo)...)
+  if lu
+    res.name="L"
+    res.explanation="Lusztig's"
+  else
+    res.name=""
+    res.explanation=""
+  end
+  res.name*="D($g)"
+  res.explanation*="DrinfeldDouble($g)"
+  res.mellin=cat(map(r->
+          conj(toM(map(x->x.//r[:centralizers],eachrow(r[:chars]))))^-1,
+    res.classinfo)...,dims=(1,2))
+  res.mellinLabels=reduce(vcat,map(x->map(y->"($(x[:name]),$y)",x[:names]),res.classinfo))
+  res.xy=reduce(vcat,map(r->map(y->[r[:elt],y], r[:centelms]),res.classinfo))
+  p=vcat(map(r->map(r[:centelms])do y
+    r1=res.classinfo[position_class(g, y^-1)]
+    el=transporting_elt(g, y^-1, r1[:elt])
+    findfirst(==([r1[:elt],r1[:centelms][position_class(r1[:centralizer],
+                                             r[:elt]^el)]]),res[:xy])
+  end, res.classinfo)...)
+  delete!(res.prop, :classinfo)
+  res.fourierMat=inv(res.mellin)*one(res.mellin)[p,:]*res.mellin
+  if lu
+    res.perm=Perm(conj(res.mellin),res.mellin;dims=2)
+    res.fourierMat=permute(res.fourierMat, res.perm,dims=1)
+  end
+  res.special=findfirst(==("(1,1)"),res.charLabels)
+  Family(res)
+end
 
 """
 `ndrinfeld_double(g)`
@@ -894,12 +953,12 @@ imprimitive family
 └─────┴──────────────────────────────┘
 ```
 """
-function family_imprimitive(S)
+family_imprimitive(S)=family_imprimitive(sort(vcat(S...)),length(S))
+
+function family_imprimitive(ct,e)
 # we follow G. Malle, "Unipotente Grade...", J. Algebra 177 (1995)
 # §4 for G(e,1,n) and §6 for G(e,e,n).
 # Initial writing  GM 26.10.2000 accelerated JM 10.08.2011
-  e=length(S)
-  ct=sort(vcat(S...))
   Scoll=tally(ct)
   d=length(ct)%e
   if !(d in [0,1])

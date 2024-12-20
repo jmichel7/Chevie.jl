@@ -328,9 +328,14 @@ end
 export ImprimitiveCuspidalName
 
 function MakeFamilyImprimitive(S, uc)
+ if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
+  S=fullsymbol(S[1])
+  MakeFamilyImprimitive(sort(vcat(S...)),length(S),uc)
+end
+
+function MakeFamilyImprimitive(ct::Vector{<:Integer},e,uc)
   symbn0=x->findfirst(==(x),uc[:charSymbols])
-  if length(S)==1 return Family("C1", symbn0.(S)) end
-  r=family_imprimitive(fullsymbol(S[1]))
+  r=family_imprimitive(ct,e)
   r.charNumbers=symbn0.(r.symbols)
   r.special= findfirst(x->uc[:a][x]==uc[:b][x],r.charNumbers)
   r.cospecial= findfirst(x->uc[:A][x]==uc[:B][x],r.charNumbers)

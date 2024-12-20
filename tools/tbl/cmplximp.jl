@@ -885,40 +885,11 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
             uc[:B] = fill(0, max(0, (1 + length(uc[:charSymbols])) - 1))
             (uc[:b])[((uc[:harishChandra])[1])[:charNumbers]] = ci[:b]
             (uc[:B])[((uc[:harishChandra])[1])[:charNumbers]] = ci[:B]
+            uc[:families] = map((x->begin
+                            MakeFamilyImprimitive((uc[:charSymbols])[x[:charNumbers]], uc)
+                        end), uc[:families])
             if [p, q, r] == [3, 3, 3]
-                (uc[:families])[6] = Family(conj(((CHEVIE[:families])[:X])(3)), [8, 7, 11], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[4] = Family(((CHEVIE[:families])[:X])(3), [4, 5, 12], Dict{Symbol, Any}(:signs => [1, 1, -1]))
                 uc[:curtis] = [1, 2, 3, 7, 8, 10, 4, 5, 9, 6, -12, -11]
-            elseif [p, q, r] == [3, 3, 4]
-                uc[:families] = map((x->begin
-                                MakeFamilyImprimitive((uc[:charSymbols])[x[:charNumbers]], uc)
-                            end), uc[:families])
-            elseif [p, q, r] == [3, 3, 5]
-                (uc[:families])[3] = Family(((CHEVIE[:families])[:X])(3), [3, 6, 51], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[4] = Family(((CHEVIE[:families])[:X])(3), [4, 5, 54], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[6] = Family(((CHEVIE[:families])[:QZ])(3), [9, 10, 8, 21, 44, 46, 20, 49, 45], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, 1, 1, -1, -1]))
-                (uc[:families])[7] = Family(((CHEVIE[:families])[:QZ])(3), [23, 11, 16, 12, 42, 50, 15, 48, 40], Dict{Symbol, Any}(:signs => [1, -1, -1, 1, 1, 1, 1, -1, -1], :special => 4, :cospecial => 7))
-                (uc[:families])[8] = Family(conj(((CHEVIE[:families])[:X])(3)), [14, 13, 41], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[11] = Family(((CHEVIE[:families])[:X])(3), [19, 22, 47], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[13] = Family(((CHEVIE[:families])[:QZ])(3), [32, 27, 26, 28, 38, 53, 25, 52, 39], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, -1, 1, -1, -1, 1], :special => 3, :cospecial => 2))
-                (uc[:families])[15] = Family(conj(((CHEVIE[:families])[:X])(3)), [31, 30, 37], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-                (uc[:families])[16] = Family(conj(((CHEVIE[:families])[:X])(3)), [34, 33, 43], Dict{Symbol, Any}(:signs => [1, 1, -1]))
-            elseif [p, q, r] == [4, 4, 3]
-                (uc[:families])[2] = Family(((CHEVIE[:families])[:X])(4), [3, 2, 4, 14, 16, 13], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, -1, -1]))
-                (uc[:families])[4] = Family(conj(((CHEVIE[:families])[:X])(4)), [8, 6, 7, 12, 15, 11], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, -1, -1]))
-                uc[:curtis] = [1, 6, 7, 8, 10, 2, 3, 4, 9, 5, 14, 13, 12, 11, -16, -15]
-            elseif [p, q, r] == [4, 4, 4]
-                (uc[:families])[5] = Family(((CHEVIE[:families])[:X])(4), [5, 8, 9, 46, 53, 47], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, -1, 1]))
-                (uc[:families])[6] = Family("C2", [12, 7, 6, 42])
-                (uc[:families])[7] = Family(((CHEVIE[:families])[:X])(4), [13, 10, 11, 41, 55, 43], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, -1], :special => 3, :cospecial => 1))
-                (uc[:families])[9] = Family(((CHEVIE[:families])[:QZ])(4), [18, 21, 28, 22, 23, 49, 39, 54, 56, 40, 15, 36, 19, 52, 37, 51], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, -1, -1], :special => 2, :cospecial => 4))
-                (uc[:families])[10] = Family(conj(((CHEVIE[:families])[:X])(4)), [16, 17, 20, 38, 50, 34], Dict{Symbol, Any}(:signs => [1, 1, 1, -1, 1, 1], :special => 3, :cospecial => 1))
-                (uc[:families])[12] = Family("C2", [27, 26, 25, 35])
-                (uc[:families])[13] = Family(conj(((CHEVIE[:families])[:X])(4)), [30, 29, 31, 44, 48, 45], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, -1], :special => 3, :cospecial => 1))
-            else
-                uc[:families] = map((x->begin
-                                MakeFamilyImprimitive((uc[:charSymbols])[x[:charNumbers]], uc)
-                            end), uc[:families])
             end
             return uc
         end
