@@ -328,20 +328,16 @@ end
 export ImprimitiveCuspidalName
 
 function MakeFamilyImprimitive(S, uc)
- if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
-  S=fullsymbol(S[1])
-  MakeFamilyImprimitive(sort(vcat(S...)),length(S),uc)
+  if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
+  MakeFamilyImprimitive(sort(vcat(fullsymbol(S[1])...)),uc[:charSymbols])
 end
 
-function MakeFamilyImprimitive(ct::Vector{<:Integer},e,uc)
-  symbn0=x->findfirst(==(x),uc[:charSymbols])
-  r=family_imprimitive(ct,e)
-  r.charNumbers=symbn0.(r.symbols)
-  r.special= findfirst(x->uc[:a][x]==uc[:b][x],r.charNumbers)
-  r.cospecial= findfirst(x->uc[:A][x]==uc[:B][x],r.charNumbers)
-  # if length(diagblocks(fourier(r)))>1 error() end
+function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
+  r=family_imprimitive(ct,length(charsymbols[1]))
+  r.charNumbers=map(x->findfirst(==(x),charsymbols),r.symbols)
   r
 end
+
 export MakeFamilyImprimitive
 
 chevieset(:imp, :Invariants, function (p, q, r)
