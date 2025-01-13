@@ -358,8 +358,9 @@ following information
   * `.parameter` A parameter describing `C`. Sometimes the same as `.name`; a partition describing the Jordan form, for classical groups.
   * `.dimBu` The dimension of the variety of Borel subgroups containing `u`.
 
-For some types there is a field `.mizuno` or `.shoji` giving alternate names
-used in the literature.
+For  some  classes  in  types  `E₆,  E₇,  E₈`  there  is  a field `.mizuno`
+containing the names given by Mizuno for some classes, and for some classes
+in type `F₄` a field `.shoji` containing the names given by Shoji.
 
 A  `UnipotentClass` contains also some of  the following information (all of
 it for some types and some characteristics but sometimes much less)
@@ -472,12 +473,14 @@ end
 """
 `distinguished_parabolics(W)`
 
-the  list of distinguished standard parabolic subgroups of `W` as defined by
-Richardson,  each  given  as  a  list of the corresponding indices. The
-distinguished  unipotent  conjugacy  classes  of  `W`  consist of the dense
-unipotent  orbit in  the unipotent  radical of  such a  parabolic subgroup.
-Their  Dynkin-Richardson  diagram  contains  a  0  at  the  indices  of the
-parabolic subgroup, otherwise a 2.
+the  list of distinguished (in the  sense of Richardson) standard parabolic
+subgroups `W_I` of `W`, each given by the list `I` of indices in the simple
+reflections. The distinguished unipotent conjugacy classes of the reductive
+group  `𝐆` with Weyl group `W` consist of  the dense unipotent orbit in the
+unipotent  radical of a  parabolic subgroup `𝐏_I`  of `𝐆` associated with a
+distinguished  `W_I`.  Their  Dynkin-Richardson  diagram  contains  a  0 at
+indices  `I` and a 2 in other entries. If `𝐏_I=𝐋𝐔` is a Levi decomposition,
+`𝐏_I` is distinguished iff `dim 𝐋∩𝐆'=dim 𝐔/𝐔'`.
 
 ```julia-repl
 julia> W=coxgroup(:F,4)
@@ -511,14 +514,19 @@ function BalaCarterLabels(W)
   end...)
 end
 
-# QuotientAu(Au,chars): chars is a list of indices of characters of Au.
-# If  k is the common kernel of chars, QuotientAu returns a
-# Dict(Au=>Au/k,
-#      chars=>index of chars as characters of Au/k,
-#      gens=>words in Au preimages of generators of Au/k)
-# Since  we have problems with quotient groups, we are forced to program an
-# ad  hoc solution which works only  for Au actually occuring for unipotent
-# classes of a reductive group G.
+"""
+`QuotientAu(Au,chars)` 
+
+`chars` is a list of indices of characters of `Au`.
+If  `k` is the common kernel of `chars`, `QuotientAu` returns a `NamedTuple`
+`(Au=>Au/k,
+  chars=>`index of chars in `Irr(Au/k),
+  gens=>words` in `gens(Au)` preimages of `gens(Au/k))`
+
+Since we have problems with quotient groups, we are forced to program an ad
+hoc  solution which  works only  for `Au`  actually occuring  for unipotent
+classes of a reductive group `G`.
+"""
 function QuotientAu(Au,chars)
   AbGens=function(g)
     res=empty(gens(g))
@@ -544,22 +552,22 @@ function QuotientAu(Au,chars)
     ctu=CharTable(Au).irr
     cth=CharTable(q).irr
     ch(c)=map(j->ctu[c,findfirst(==(j),fusion)],1:nconjugacy_classes(q))
-    return Dict(:Au=>q,
-      :chars=>map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
-      :gens=>map(x->word(Au,elements(Au)[findfirst(y->h(y)==x,elements(Au))]),gens(q)))
+    return (Au=q,
+      chars=map(c->findfirst(i->cth[i,:]==ch(c),axes(cth,1)),chars),
+      gens=map(x->word(Au,elements(Au)[findfirst(y->h(y)==x,elements(Au))]),gens(q)))
   end
   Z=n->crg(n,1,1)
 # println("Au=$Au chars=$chars")
   ct=transpose(CharTable(Au).irr[chars,:])
-  cl=filter(i->ct[i,:]==ct[1,:],axes(ct,1))
+  cl=filter(i->(@view ct[i,:])==(@view ct[1,:]),axes(ct,1))
 # println("ct=$ct cl=$cl")
-  if length(cl)==1 return Dict(:Au=>Au,:chars=>chars,
-                              :gens=>map(x->[x],eachindex(gens(Au)))) end
+  if length(cl)==1 return (Au=Au,chars=chars,
+                              gens=map(x->[x],eachindex(gens(Au)))) end
   ct=transpose(toM(unique!(sort(toL(ct)))))
 # println("ct=$ct")
 # k=Subgroup(Au,filter(x->position_class(Au,x) in cl,elements(Au)))
   k=Group(filter(x->position_class(Au,x) in cl,elements(Au)))
-  if length(k)==length(Au) return Dict(:Au=>coxgroup(),:chars=>[1],:gens=>[])
+  if length(k)==length(Au) return (Au=coxgroup(),chars=[1],gens=[])
   end
 # println("Au=$Au k=$k")
   if semisimplerank(Au)==1 return finish(Z(div(length(Au),length(k))),[[1]])
@@ -611,24 +619,24 @@ function AdjustAu!(classes,springerseries)
 #     Print("class ",i,"=",classes[i].name," ",[Au,chars],"=>",f,"\n");
 #   fi;
 #   print(u.name,":");ds(u.AuAction)
-    u.Au=f[:Au]
+    u.Au=f.Au
     if haskey(u,:AuAction)
       R=u.AuAction.group
       if rank(R)==0
-        u.AuAction=ExtendedCox(R,[fill(0,0,0) for x in f[:gens]])
+        u.AuAction=ExtendedCox(R,[fill(0,0,0) for x in f.gens])
       else
-       if isempty(f[:gens]) F0s=[reflrep(R,R())]
-       else F0s=map(x->prod(u.AuAction.F0s[x]),f[:gens])
+       if isempty(f.gens) F0s=[reflrep(R,R())]
+       else F0s=map(x->prod(u.AuAction.F0s[x]),f.gens)
        end
        u.AuAction=ExtendedCox(R,F0s)
       end
-#     u.AuAction.phis=map(x->prod(u.AuAction.phis[x]),f[:gens])
+#     u.AuAction.phis=map(x->prod(u.AuAction.phis[x]),f.gens)
     end
     k=1
     for j in eachindex(l)
       springerseries[j][:locsys]=copy(springerseries[j][:locsys])
       for s in l[j]
-        springerseries[j][:locsys][s][2]=f[:chars][k]
+        springerseries[j][:locsys][s][2]=f.chars[k]
         k+=1
       end
     end
@@ -638,11 +646,11 @@ end
 """
 `UnipotentClasses(W[,p])`
 
-`W`  should  be  a  `CoxeterGroup`  record  for a Weyl group or `RootDatum`
-describing a reductive algebraic group `𝐆`. The function returns a record
-containing   information   about   the   unipotent   classes  of  `𝐆`  in
-characteristic   `p`  (if   omitted,  `p`   is  assumed   to  be  any  good
-characteristic for `𝐆`). This contains the following fields:
+`W` should be a `FiniteCoxeterGroup` record for a Weyl group or `rootdatum`
+describing  a reductive algebraic group `𝐆`.  The function returns a record
+containing information about the unipotent classes of `𝐆` in characteristic
+`p`  (if omitted, `p`  is assumed to  be any good  characteristic for `𝐆`).
+This contains the following fields:
 
 `group`: a pointer to `W`
 
@@ -654,33 +662,12 @@ induced   on   unipotent   classes   by   the  closure  relation.  That  is
 `.orderclasses[i]`  is the list of `j` such that ``C̄ⱼ⊋ C̄ᵢ``  and  there  is
 no  class  ``Cₖ``  such  that ``C̄ⱼ⊋ C̄ₖ⊋ C̄ᵢ``.
 
-`classes`:  a  list  of  records  holding information for each unipotent
-class (see below).
+`classes`:  a list of records holding information for each unipotent class.
+See  the  help  for  [`UnipotentClass`](@ref)  for  a  description of these
+records.
 
 `springerseries`:  a list of records, each  of which describes a Springer
 series  of `𝐆`.
-
-The  records  describing  individual  unipotent  classes have the following
-fields:
-
-`name`: the name of the unipotent class.
-
-`parameter`:  a parameter  describing the  class (for  example, a partition
-describing the Jordan form, for classical groups).
-
-`Au`: the group `A(u)`.
-
-`dynkin`:  present in good characteristic; contains the Dynkin-Richardson
-diagram,  given  as  a  list  of  0,1,2  describing  the coefficient on the
-corresponding simple root.
-
-`red`:  the reductive part of ``C_𝐆(u)``.
-
-`dimBu`:  the dimension of the variety `𝓑ᵤ`.
-
-The  records for classes contain additional  fields for certain groups: for
-instance,  the names given to classes by Mizuno in `E₆, E₇, E₈` or by Shoji
-in `F₄`. See the help for `UnipotentClass` for more details.
 
 The  records  describing  individual  Springer  series  have  the following
 fields:
