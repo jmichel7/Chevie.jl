@@ -510,6 +510,7 @@ end
 @test mytest("HeckeAlgebras.jl","H=hecke(complex_reflection_group(4),Pol(:q))","hecke(G₄,q)")
 @test mytest("HeckeAlgebras.jl","s=schur_elements(H)","7-element Vector{Pol{Cyc{Rational{Int64}}}}:\n q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1\n 2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴\n -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴\n 2+2q⁻¹+4q⁻²+2q⁻³+2q⁻⁴\n ζ₃²√-3q³+(3-√-3)q²+3q+3+√-3-ζ₃√-3q⁻¹\n -ζ₃√-3q³+(3+√-3)q²+3q+3-√-3+ζ₃²√-3q⁻¹\n q²+2q+2+2q⁻¹+q⁻²")
 @test mytest("HeckeAlgebras.jl","CycPol.(s)","7-element Vector{CycPol{Cyc{Rational{Int64}}}}:\n Φ₂²Φ₃Φ₄Φ₆\n 2√-3q⁻⁴Φ₂²Φ′₃Φ′₆\n -2√-3q⁻⁴Φ₂²Φ″₃Φ″₆\n 2q⁻⁴Φ₃Φ₄\n ζ₃²√-3q⁻¹Φ₂²Φ′₃Φ″₆\n -ζ₃√-3q⁻¹Φ₂²Φ″₃Φ′₆\n q⁻²Φ₂²Φ₄")
+@test H=hecke(coxgroup(:I,2,8),[Mvp(:x)^2,Mvp(:y)^2]);transpose(CharTable(H).irr)*inv.(schur_elements(H))==[1,0,0,0,0,0,0]
 @test mytest("HeckeAlgebras.jl","@Mvp x,y; W=crg(4); H=hecke(W,[[1,x,y]])","hecke(G₄,Vector{Mvp{Int64, Int64}}[[1, x, y]])")
 @test mytest("HeckeAlgebras.jl","p=factorized_schur_element(H,[[2,5]])","-x⁻¹y(xy+1)(x-1)Φ₆(xy⁻¹)(y-1)")
 @test mytest("HeckeAlgebras.jl","q=p(;x=E(3))","ζ₃²√-3y⁻¹Φ₁Φ₂Φ′₆²(y)")

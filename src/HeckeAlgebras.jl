@@ -1156,7 +1156,7 @@ julia> H=hecke(complex_reflection_group(4),Pol(:q))
 hecke(G₄,q)
 
 julia> s=schur_elements(H)
-7-element Vector{Pol{Cyc{Rational{Int64}}}}:
+7-element Vector{Pol{Cyc{Int64}}}:
  q⁸+2q⁷+3q⁶+4q⁵+4q⁴+4q³+3q²+2q+1
  2√-3+(6+4√-3)q⁻¹+12q⁻²+(6-4√-3)q⁻³-2√-3q⁻⁴
  -2√-3+(6-4√-3)q⁻¹+12q⁻²+(6+4√-3)q⁻³+2√-3q⁻⁴
@@ -1166,7 +1166,7 @@ julia> s=schur_elements(H)
  q²+2q+2+2q⁻¹+q⁻²
 
 julia> CycPol.(s)
-7-element Vector{CycPol{Cyc{Rational{Int64}}}}:
+7-element Vector{CycPol{Cyc{Int64}}}:
  Φ₂²Φ₃Φ₄Φ₆
  2√-3q⁻⁴Φ₂²Φ′₃Φ′₆
  -2√-3q⁻⁴Φ₂²Φ″₃Φ″₆
@@ -1177,7 +1177,9 @@ julia> CycPol.(s)
 ```
 """
 schur_elements(H::HeckeAlgebra)=
-   map(p->schur_element(H,p), charinfo(H.W).charparams)
+  improve_type(map(p->schur_element(H,p), charinfo(H.W).charparams))
+
+#@test (H=hecke(coxgroup(:I,2,8),[Mvp(:x)^2,Mvp(:y)^2]);transpose(CharTable(H).irr)*inv.(schur_elements(H))==[1,0,0,0,0,0,0])
 
 #----------------------- Factorized Schur elements
 """

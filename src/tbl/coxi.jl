@@ -253,7 +253,7 @@ chevieset(:I, :SchurElement, function (m, phi, para, rootpara)
                 e = (Sum(0:m2 - 1, (i->begin
                                         (u // v) ^ i
                                     end)) * (u + 1) * (v + 1)) // v
-                if phi[3] == "'"
+                if phi[3] == 1
                     return e
                 else
                     return (v // u) ^ m2 * e

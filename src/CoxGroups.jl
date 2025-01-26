@@ -139,10 +139,9 @@ permutation group, given its type.
 """
 module CoxGroups
 
-export bruhatless, CoxeterGroup, firstleftdescent, leftdescents,
+export bruhatless, bruhatPoset, CoxeterGroup, firstleftdescent, leftdescents,
   isleftdescent, isrightdescent,
-  longest, braid_relations, 
-  coxeter_matrix, coxmat, 
+  longest, braid_relations, coxmat, 
   coxeter_symmetric_group, coxsym, CoxSym,
   coxeter_hyperoctaedral_group, coxhyp, CoxHyp,
   coxeter_group, coxgroup,
@@ -524,7 +523,7 @@ julia> bruhatless(W,Perm(1,3))
  [(1,3)]
 ```
 
-see also [`Poset`](@ref) for Coxeter groups.
+see also [`bruhatPoset`](@ref) for Coxeter groups.
 """
 function bruhatless(W::CoxeterGroup,w)
   if isone(w) return [[w]] end
@@ -538,7 +537,7 @@ function bruhatless(W::CoxeterGroup,w)
 end
 
 """
-`Poset(W::CoxeterGroup,w=longest(W))`
+`bruhatPoset(W::CoxeterGroup,w=longest(W))`
 
 returns  as a poset the Bruhat interval `[1,w]`of `W`. If `w` is not given,
 the whole Bruhat Poset of `W` is returned (`W` must then be finite).
@@ -547,7 +546,7 @@ the whole Bruhat Poset of `W` is returned (`W` must then be finite).
 julia> W=coxsym(3)
 𝔖 ₃
 
-julia> Poset(W)
+julia> bruhatPoset(W)
 .<1,2<21,12<121
 ```
 The  above  poset  is  constructed  efficiently  by  constructing the Hasse
@@ -567,16 +566,16 @@ julia> p
 julia> W=coxsym(4)
 𝔖 ₄
 
-julia> Poset(W,W(1,3))
+julia> bruhatPoset(W,W(1,3))
 .<3,1<13
 ```
 """
-function FinitePosets.Poset(W::CoxeterGroup,w=longest(W))
+function bruhatPoset(W::CoxeterGroup,w=longest(W))
   if isone(w)
     p=Poset(CPoset([Int[]]),[w],Dict(:action=>map(x->[0],gens(W)), :W=>W))
   else
   s=firstleftdescent(W,w)
-  p=Poset(W,W(s)*w)
+  p=bruhatPoset(W,W(s)*w)
   l=length(p)
   # action: the Cayley graph: for generator i, action[i][w]=sw
   # where w and sw are represented by their index in :elements
@@ -721,7 +720,7 @@ julia> coxmat(C)
  2  3  1
 ```
 """
-function coxeter_matrix(m::AbstractMatrix)
+function FinitePosets.coxeter_matrix(m::AbstractMatrix)
   function find(c)
     if c in 0:4 return [2,3,4,6,0][Int(c)+1] end
     x=conductor(c)
@@ -756,9 +755,9 @@ julia> coxmat(W)
  2  3  1
 ```
 """
-coxeter_matrix(W::CoxeterGroup)=coxeter_matrix(cartan(W))
+FinitePosets.coxeter_matrix(W::CoxeterGroup)=coxeter_matrix(cartan(W))
 
-const coxmat=coxeter_matrix
+const coxmat=FinitePosets.coxeter_matrix
 
 """
 `braid_relations(W)`
