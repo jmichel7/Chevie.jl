@@ -19,6 +19,7 @@ lusztig_restrict
 lusztig_induction_table
 Families
 Family
+Chars.charnumbers(::Family)
 galois(f::Family,p::Int)
 PermGroups.invpermute(f::Family,p::Perm)
 conj(f::Family)

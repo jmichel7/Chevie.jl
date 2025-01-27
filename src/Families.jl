@@ -888,7 +888,7 @@ containing `S`.
 
 ```julia-repl
 julia> family_imprimitive([[0,1],[1],[0]])
-Family(0011,3)
+Family(0011,3,cospecial=2)
 imprimitive family
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│

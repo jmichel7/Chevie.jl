@@ -3,9 +3,12 @@ The dictionary from GAP3/Chevie is as follows:
 ```
 AbelianGenerators                           abelian_gens
 AbelianInvariants                           abelian_invariants
+Add                                         push!
 Affine                                      affine
 AlgebraicCentre                             algebraic_center
-AlmostCharacter                             AlmostChar
+AlmostCharacter                             almost_character or almostchar
+Append                                      append!
+ApplyFunc(f,l)                              f(l...)
 Arrangements                                arrangements
 AsFraction                                  fraction
 AsReflection                                reflection
@@ -26,7 +29,7 @@ BraidMonoid                                 BraidMonoid
 BraidRelations                              braid_relations
 BrieskornNormalForm                         Brieskorn_normal_form
 Bruhat                                      bruhatless
-BruhatPoset                                 Poset
+BruhatPoset                                 bruhatPoset
 BruhatSmaller                               bruhatless
 CartanMat("A",5)                            cartan(:A,5)
 CartanMatFromCoxeterMatrix                  cartan
@@ -84,15 +87,15 @@ CyclotomicPolynomial(R,i)                   cyclotomic_polynomial(i)
 CycPol                                      CycPol
 CycPolFakeDegreeSymbol                      fegsymbol
 CycPolGenericDegreeSymbol                   gendeg_symbol
-CycPolUnipotentDegrees                      CycPolUnipotentDegrees
+CycPolUnipotentDegrees(W)                   CycPoldegrees(UnipotentCharacters(W))
 DecomposedMat                               diagblocks
 DefectSymbol                                defectsymbol
 Degree(p)                                   degree(p)
 DegreeFFE                                   degree
-DeligneLusztigCharacter                     DLChar
-DeligneLusztigLefschetz                     DLLeftschetz
+DeligneLusztigCharacter                     deligne_lusztig_character or dlchar
+DeligneLusztigLefschetz                     deligne_lusztig_leftschetz or dlleftschetz
 DescribeInvolution                          describe_involution
-DetPerm(W)                                  vec(detPerm(W))
+DetPerm(W)                                  perm(detPerm(W))
 DiaconisGraham                              diaconis_graham
 DiagonalMat                                 Diagonal or cat
 DiagonalOfMat                               diag
@@ -119,15 +122,18 @@ FakeDegrees                                 fakedegrees
 FamiliesClassical                           FamiliesClassical
 Family                                      Family
 FamilyImprimitive                           family_imprimitive
+Filtered(l,f)                               filter(f,l)
 FiniteCoxeterTypeFromCartanMat(m)           type_cartan(m)
 FirstLeftDescending(W,w)                    firstleftdescent(W,w)
+ForAll(l::list,f::function)                 all(f,l)
+ForAny(l::list,f::function)                 any(f,l)
 ForEachCoxeterWord(W,f)                     for w in W f(word(W,w)) end
 ForEachElement(W,f)                         for w in W f(w) end
 FormatTable                                 showtable
 Frobenius                                   Frobenius
 FullSymbol                                  fullsymbol
 FundamentalGroup                            fundamental_group
-FusionAlgebra                               fusion_algebra
+FusionAlgebra                               Zbasedring
 FusionConjugacyClasses                      fusion_conjugacy_classes
 GaloisCyc                                   galois
 GarsideAlpha                                α
@@ -155,7 +161,7 @@ HyperplaneOrbits                            hyperplane_orbits
 ICCTable                                    ICCTable
 Idempotents                                 idempotents
 Incidence                                   incidence
-IndependentLines                            independent_lines
+IndependentLines                            independent_rows
 IndependentRoots                            independent_roots
 InducedLinearForm                           induced_linear_form
 InductionTable                              induction_table
@@ -174,9 +180,9 @@ IsCycPol(p)                                 p isa CycPol
 IsFamily(f)                                 f isa Family
 IsFFE(x)                                    x isa FFE
 IsIsolated                                  isisolated
-IsJoinLattice                               isjoin_lattice
+IsJoinLattice                               is_join_semilattice
 IsLeftDescending(W,w,i)                     isleftdescent(W,w,i)
-IsMeetLattice                               ismeet_lattice
+IsMeetLattice                               is_meet_semilattice
 IsomorphismType                             isomorphism_type
 IsParabolic                                 isparabolic
 IsSubset(a,b)                               issubset(b,a)
@@ -186,7 +192,7 @@ jInductionTable                             j_induction_table
 Join                                        join
 KazhdanLusztigPolynomial                    KLPol
 KroneckerProduct                            kron
-LargestMovedPoint                           largest_moved_point
+LargestMovedPoint                           last_moved
 last                                        ans
 LcmPartitions                               lcm_partitions
 LeadingCoefficient(p)                       p[end]
@@ -199,8 +205,10 @@ LeftLcm                                     leftlcm
 Length(W.generators)                        ngens(W) or number_of_generators(W)
 LinearExtension                             linear_extension
 List(ConjugacyClasses(G),Representative)    classreps(G) or class_representatives(G)
+List(l,f)                                   map(f,l)
+List(l::list,f::function)                   map(f,l)
 ListBlist(a,b)                              a[b]
-ListPerm(p)                                 vec(p)
+ListPerm(p)                                 perm(p)
 LoewyLength                                 loewylength
 LogFFE                                      log
 LongestCoxeterElement(W)                    longest(W)
@@ -217,10 +225,13 @@ LusztigRestriction                          lusztig_restrict
 M.LeftLcmSimples(x...)                      leftlcm(M,...)
 M.RightLcmSimples(x...)                     rightlcm(M,...)
 M.ToOrdinary(i)                             B(M,i)
+M::GarsideMonoid.delta                      M.δ
 MappingPermListList                         mappingPerm
 MatStab                                     stab_onmats
 MatXPerm(W,p)                               reflection_representation(W,p) or reflrep
 MatYPerm                                    YMatrix
+Maximum                                     max or maximum
+Minimum                                     min or minimum
 Mod1                                        modZ
 MovedPoints                                 support
 Mvp("x")                                    Mvp(:x)
@@ -234,6 +245,7 @@ NrPartitionTuples                           npartition_tuples
 NrRestrictedPartitions                      npartitions
 NullMat(m[,n])                              zeros(Int,m,m) resp. zeros(Int,m,n)
 NullspaceIntMat                             lnullspaceInt
+Number(l,f)                                 count(f,l)
 OnFamily(f,p::Int)                          galois(f,p)
 OnFamily(f,p::Perm)                         f^p
 OnMatrices                                  onmats
@@ -250,6 +262,7 @@ Partition                                   partition
 Partitions                                  partitions
 PartitionsSet                               partitions
 PartitionTuples                             partition_tuples
+PartitionTupleToString                      string_partition_tuple
 PermCosetsSubgroup(H,W)                     D=vcat(reduced(H,W)...);map(s->Perm(reduced.(Ref(H),D.*s),D),gens(W))
 PermList(v)                                 Perm(v)
 PermListList(l1,l2)                         Perm(l1,l2)
@@ -264,8 +277,7 @@ Permuted(v,p)                               invpermute(v,p)
 PermutedByCols(m,p)                         invpermute(m,p;dims=2)
 Poset                                       Poset
 Position(l,x)                               findfirst(==(x),l)
-PositionCartesian                           cart2lin
-PositionCartesian(a,b)                      LinearIndices(reverse(Tuple(a)))[CartesianIndices(Tuple(b))]
+PositionCartesian(a,b)                      cart2lin(a,b)=LinearIndices(reverse(Tuple(a)))[reverse(b)...]
 PositionClass                               position_class
 PositionDet                                 charinfo(W).positionDet
 PositionId                                  charinfo(W).positionId
@@ -284,6 +296,7 @@ Radical                                     radical
 RadicalPower                                radicalpower
 Rank                                        rank
 RankSymbol                                  ranksymbol
+RecFields                                   propertynames
 ReducedCoxeterWord(W,w)                     word(W,W(w...))
 ReducedExpressions(W,w)                     words(W,w)
 ReducedInRightCoset(W,w)                    reduced(W,w)
@@ -336,16 +349,20 @@ SignedPerm                                  SPerm
 SignedPermListList                          SPerm
 SignedPermMatMat(M,N)                       SPerm(M,N;dims=(1,2))
 Size(W)                                     length(W)
-SmallestMovedPoint                          smallest_moved_point
+SmallestMovedPoint                          first_moved
 SmithNormalFormIntegerMat                   smith
 SmithNormalFormIntegerMatTransforms(m)      smith_transforms(m)
 SolutionIntMat                              solutionmatInt
 SolutionMat                                 solutionmat
+Sort                                        sort!
+SortBy(l,f)                                 sort!(l,by=f)
 SortingPerm(a)                              inv(sortPerm(a))
 SortParallel(a,b)                           b=b[sortperm(a)];sort!(a)
 SpecialPieces                               special_pieces
 Spets                                       spets
+Split                                       split
 SplitLevis                                  split_levis
+Sprint                                      string
 Stabilizer                                  stabilizer
 StandardParabolic                           standard_parabolic
 StandardParabolicClass                      standard_parabolic_class
@@ -354,7 +371,7 @@ SubSpets                                    subspets
 SubTorus                                    SubTorus
 Sum                                         sum
 SumIntersectionMat(m,n)                     (rowspace(vcat(m,n)),intersect_rowspace(m,n))
-Symbols                                     HasType.BDSymbols
+Symbols                                     BDSymbols
 SymbolsDefect(e,r,def,ct)                   symbols(e,r,ct,def)
 SymmetricDifference                         symdiff
 SymmetricPower                              symmetric_power
@@ -371,7 +388,7 @@ TriangulizeMat                              echelon!
 Twistings                                   twistings
 TwoTree(m)                                  twotree(m)
 UnipotentAbelianPart                        abelianpart
-UnipotentCharacter                          UniChar
+UnipotentCharacter                          unipotent_character or unichar
 UnipotentCharacters                         UnipotentCharacters
 UnipotentClasses                            UnipotentClasses
 UnipotentDecompose                          decompose
@@ -380,6 +397,7 @@ UnipotentGroup                              UnipotentGroup
 UnorderedTuples                             multisets
 Valuation(p)                                valuation(p)
 Value(p,x)                                  p(x)
+ValuePol                                    evalpoly
 W.generators                                gens(W) or generators(W)
 W.matgens                                   reflection_representation(W) or reflrep
 W.matgens[i]                                reflection_representation(W,i) or reflrep
@@ -397,4 +415,5 @@ W.simpleRoots                               simpleroots(W)
 WeightInfo                                  weightinfo
 WGraph                                      Wgraph
 WGraphToRepresentation                      WGraphToRepresentation
+Zip(a1,..,an,f)                             map(f,a1,...,an)
 ```

@@ -22,8 +22,8 @@ BraidMonoid
 DualBraidMonoid
 hurwitz
 fraction
-word(::Garside.GarsideMonoid,w)
-word(::Garside.GarsideElt)
+PermGroups.word(::Garside.LocallyGarsideMonoid,::Any)
+PermGroups.word(::Garside.GarsideElt)
 PermGroups.elements(::Garside.LocallyGarsideMonoid,::Integer)
 image
 conjugating_elt

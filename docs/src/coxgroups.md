@@ -25,5 +25,5 @@ reflection_subgroup(::CoxHyp,::AbstractVector{Int})
 reduced
 standard_parabolic_class
 coxeter_group(::AbstractMatrix)
-Poset(::CoxeterGroup,w=longest(W))
+bruhatPoset(::CoxeterGroup,w=longest(W))
 ```
