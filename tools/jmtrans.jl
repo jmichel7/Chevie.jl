@@ -15,6 +15,7 @@ const src=[
 # version does not work, or is too slow).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
+ "BraidRelations"=>["G4_22"],
  "CartanMat"=>["B","D","G25","G26","G29","G31","G32","G34"],
  "CharInfo"=>["I","imp","G4_22"],
  "CharName"=>["timp"],
@@ -23,7 +24,8 @@ const exclu=Dict(
  "ClassName"=>["imp"],
  "ClassParameter"=>["A","2A","B","2D","D","H4"],
  "Discriminant"=>["H4"],
- "EigenvaluesGeneratingReflections"=>["imp"],
+ "EigenvaluesGeneratingReflections"=>["imp","G4_22"],
+ "Embed"=>["G4_22"],
  "FakeDegree"=>["2A","G4_22"],
  "FactorizedSchurElement"=>["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"],
  "GeneratingRoots"=>["imp","G4_22"],
@@ -39,11 +41,13 @@ const exclu=Dict(
  "PrintDiagram"=>["A","B","D","E6","E7","E8","F4","G2","H3","H4","I","G4_22",
             "G24","G25","G26","G27","G29","G31","G32","G33","G34","imp"],
  "ReducedInRightCoset"=>["timp"],
+ "ReflectionDegrees"=>["G4_22"],
  "ReflectionCoDegrees"=>["imp"],
  "Representation"=>["2D"],
  "SchurElement"=>["D","G31"],
  "SymbolToParameter"=>["I"],
  "sparseFakeDegrees"=>["G4_22"],
+ "UnipotentCharacters"=>["G4_22"],
  "UnipotentClasses"=>["2A","2D","B","D"],
  "WGraph"=>["E8"])
 
