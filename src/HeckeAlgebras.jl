@@ -604,7 +604,7 @@ function isrepresentation(H::HeckeAlgebra,t;verbose=false)
 #   bug in sparsearrays: q*one(m) is of type Any for SparseMatrix m
   myone(m,q)=m isa AbstractMatrix ? Diagonal(fill(q,size(m,1))) : q*one(m)
   for i in eachindex(gens(W))
-    if !iszero(prod(q->t[i]-myone(t[i],q),H.para[i]))
+    if !iszero(prod(q->t[i]-myone(t[i],q+0),H.para[i]))
       if !verbose return false end
       println("Error in ",ordinal(i)," parameter relation");
       res=false

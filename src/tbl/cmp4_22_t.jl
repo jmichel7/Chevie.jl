@@ -38,7 +38,6 @@ function G4_22FetchIndexChars(ST, para)
 end
 export G4_22FetchIndexChars
 
-#----------------- next 2 here to reduce compiling time
 const GeneratingRoots4_22=
 [[[0,-2E(3)-E(3,2)],[2E(3,2),E(3,2)]],  # 4
  [[0,(3-root(-3))//2],[-1,1]],  # 4
@@ -268,15 +267,16 @@ const sparseFakeDegrees4_22=
  [[0],[30],[11,19],[13,17],[1,29],[7,23],[2,10,18],[6,10,14],[12,20,28],
   [16,20,24],[3,11,19,27],[6,14,18,22],[9,13,17,21],[8,12,16,24],[4,8,12,16,20],
   [10,14,18,22,26],[7,11,15,15,19,23],[5,9,13,17,21,25]]]
-
 chevieset(:G4_22, :sparseFakeDegrees,ST->sparseFakeDegrees4_22[ST-3])
+
 chevieset(:G4_22, :FakeDegree, function (ST, phi, q)
   f=sparseFakeDegrees4_22[ST-3][findfirst(==(phi),
                       chevieget(:G4_22,:CharInfo)(ST)[:charparams])]
   sum(q.^f)
 end)
+
 chevieset(:G4_22, :LowestPowerFakeDegrees,ST->
-        first.(chevieget(:G4_22, :sparseFakeDegrees)(ST)))
+          first.(sparseFakeDegrees4_22[ST-3]))
 
 chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
 # The code is based on the paper by G. Malle
@@ -520,7 +520,7 @@ const CharInfo4_22=[
 chevieset(:G4_22, :CharInfo, function(ST)
   res=CharInfo4_22[ST-3]
   res[:b]=map(x->x[2],res[:charparams])
-  res[:charnames]=map(GAPENV.exceptioCharName, res[:charparams])
+  res[:charnames]=GAPENV.exceptioCharName.(res[:charparams])
   res
 end)
 
@@ -588,14 +588,14 @@ CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
 0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6) -2*root(6) 2*root(6);
 0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6);
 -4 -4 -4 -4 -2 -2 2 2 2*root(6) 2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
--4 -4 -4 -4 -2 -2 2 2 -2*root(6) -2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -(root(6)) -(root(6)) -(root(6)) -(root(6));
+-4 -4 -4 -4 -2 -2 2 2 -2*root(6) -2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -root(6) -root(6) -root(6) -root(6);
 4 4 -4 -4 2 2 -2 -2 -2*root(6) -2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
-4 4 -4 -4 2 2 -2 -2 2*root(6) 2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -(root(6)) -(root(6)) -(root(6)) -(root(6));
-0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) 2*root(6) -2*root(6) root(6) -(root(6)) root(6) -(root(6)) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
-0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) -2*root(6) 2*root(6) root(6) -(root(6)) root(6) -(root(6)) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
-0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) -2*root(6) 2*root(6) root(6) -(root(6)) root(6) -(root(6)) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3);
-0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) 2*root(6) -2*root(6) root(6) -(root(6)) root(6) -(root(6)) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3)],
-:eigenvalues=>[E(3,2),E(3,2),E(3,2),-(E(3,2)),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
+4 4 -4 -4 2 2 -2 -2 2*root(6) 2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -root(6) -root(6) -root(6) -root(6);
+0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) 2*root(6) -2*root(6) root(6) -root(6) root(6) -root(6) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
+0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) -2*root(6) 2*root(6) root(6) -root(6) root(6) -root(6) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
+0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) -2*root(6) 2*root(6) root(6) -root(6) root(6) -root(6) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3);
+0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) 2*root(6) -2*root(6) root(6) -root(6) root(6) -root(6) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3)],
+:eigenvalues=>[E(3,2),E(3,2),E(3,2),-E(3,2),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
                E(4),-E(4),-E(4),E(4)], 
 :charLabels=>string.(1:18),:special=>12,:cospecial=>12,:name=>"X_{18}",
 :explanation =>"mysteryG14")
@@ -885,126 +885,94 @@ const Rep4_22=[(X,Y,Z)->[[X;;],[Y;;],[Z;;]],
   end, 
   function(X,Y,Z,rt) x1,x2=X; y1,y2,y3=Y; z1,z2,z3,z4,z5=Z
     r=root(x1^3*x2^2*y1*y2^2*y3^2*prod(Z),5)*E(5,rt)
-        [[[x2 + x1, 0, 0, 0, x1], [0, x2 + x1, 0, x2, 0], [0, 0, x1, 0, 0],
-[0,  -x1, 0, 0, 0], [-x2, 0, 0, 0, 0]], [[0, 0, 0, 0, -r // (z5 * x2)], [0,
-0, 0, (-r // z4) // x1, x2], [0, 0, (r // z3) // x1, (x2 * y2 * y3 * z2) //
-r  - r // (x1 * z4), x2], [0, (r // z2) // x2, (x1 * x2 * y1 * y2 * y3 * z1
-*  z4 * z5 * ((x1 * (y3 + y2)) // r -  1 // z3)) // r ^ 2 - r // (z2 * x2),
-((y2 + y3) - r // (z3 * x1)) + (x1 * x2 * z1 * z5 * y1 * y2 * y3) // r ^ 2,
-(-(x1 ^ 2) * x2 ^ 2 * y1 * y2 * y3 * z4 * z5 * z1) // r ^ 3], [(r // z1) //
-x1,  ((r ^ 2 * (1 // (z4 * z2) + 1 //  (z1 * z5))) // (x1 * x2 ^ 2) - (y2 *
-y3)  // x2) - (x1 * y1 * y2 * y3 * z3) // (r * x2), (-(r ^ 3) // (x1 * x2 *
-z2  * z4) + z3 * x1 * y1 * y2 * y3) * ((1 // (r * x2) + r // (x1 ^ 2 * x2 *
-z3  ^ 2 * y2 * y3)) - (1 // y3 + 1 // y2) // (x1 * x2 * z3)), (y1 * y2 * y3
-* (z2 + (z1 * z5) // z4)) // r - (r * (r + y1 * z3 * x1)) // (z3 * x1 ^ 2 *
-z4  * x2), (y1 + y2 + y3) - (z1 * z5 *  x1 * x2 * y1 * y2 * y3) // r ^ 2]],
-[[z1,  ((x1 * y2 * y3 * z1 * z2) // (r  * x2) + (((((r ^ 3 // x1) // z4) //
-x2  ^ 3) //  y3) // z5)  // y2) -  (r * (z2  // z5 +  z1 // z4)) // x2 ^ 2,
-(((((-r  * z3) // x2 ^ 2) // z5 - z1 //  x2 * (y3 + y2)) + (x1 // x2 * z3 *
-z1  * y2 * y3) // r) - (x1 * y1 * y2 * y3 * z1 * z2 * z4) // r ^ 2) + (x1 ^
-2  * y1 * y2 * y3 * z1 *  z2 * z3 * z4 * (y3 + y2))  // r ^ 3 + (r * z1) //
-(x1  * x2 * z3), ((((y2 * y3 * (x2 * z1 *  z2 + x1 * z1 * (z2 + z3) + (x1 *
-z2  * z3 * z4) // z5)) // x2)  // r + ((y1 * y2 * y3  * z1 * z2 * z3 * x1 *
-(x2  + x1)) // x2) // r ^ 2) -  (y2 ^ 2 * y3 ^ 2 * z1  * z2 * z3 * x1 ^ 2 *
-z4)  // r ^ 3) - (r * ((z2 + z3) // (z5 * x2) + z1 // (z4 * x2) + z2 // (z5
-*  x1) + z1 // (z4 * x1))) // x2, ((z1 *  (x2 + x1)) // x2 + (x1 ^ 2 * z2 *
-z3  * z4 * y2 * y3) // r ^ 2) - (r * (1 // y1 + 1 // y2 + 1 // y3)) // x2],
-[0,  z2, (z3 + (x1 * x2 ^ 2 * y1 * y2 * y3 * z1 * z2 * z4 * z5) // r ^ 3) -
-(r  * (1 // y3 + 1 // y2)) // x1, (((x2 * z2) // x1 + z3 + z2) - (x1 * x2 *
-z2  * z3 * z4 * y2 * y3) // r ^ 2) - (r * (1 // y3 + 1 // y2)) // x1, -(r ^
-2) // (x1 * z1 * y1 * y2 * y3)], [0, 0, z3, -(r ^ 3) // (x1 ^ 2 * x2 * z1 *
-z5  * y1 * y2 * y3) + z3, -(r ^ 2) //  (x1 * z1 * y1 * y2 * y3)], [0, 0, 0,
-z4, (z4 * x1 * x2 * z5) // r], [0, 0, 0, 0, z5]]] end,
+ [[x2+x1 0 0 0 x1;0 x2+x1 0 x2 0;0 0 x1 0 0;0 -x1 0 0 0;-x2 0 0 0 0],
+  [0 0 0 0 -r//(z5*x2);0 0 0 -r//z4//x1 x2;
+   0 0 r//z3//x1 (x2*y2*y3*z2)//r-r//(x1*z4) x2;
+   0 r//z2//x2 x1*x2*y1*y2*y3*z1*z4*z5*(x1*(y3+y2)//r-1//z3)//r^2-
+    r//(z2*x2) y2+y3-r//(z3*x1)+x1*x2*z1*z5*y1*y2*y3//r^2 -x1^2*x2^2*
+    y1*y2*y3*z4*z5*z1//r^3;
+   r//z1//x1 r^2*(1//(z4*z2)+1//(z1*z5))//(x1*x2^2)-(y2*y3)//x2-
+    (x1*y1*y2*y3*z3)//(r*x2) (-r^3//(x1*x2*z2*z4)+z3*x1*y1*y2*y3)*
+    (1//(r*x2)+r//(x1^2*x2*z3^2*y2*y3)-(1//y3+1//y2)//(x1*x2*z3)) y1*
+    y2*y3*(z2+z1*z5//z4)//r-r*(r+y1*z3*x1)//(z3*x1^2*z4*x2) y1+
+    y2+y3-z1*z5*x1*x2*y1*y2*y3//r^2],
+  [z1 (x1*y2*y3*z1*z2)//(r*x2)+r^3//x1//z4//x2^3//y3//z5//y2-r*(z2//z5+z1//z4)//
+   x2^2 -r*z3//x2^2//z5-z1//x2*(y3+y2)+x1//x2*z3*z1*y2*y3//r-x1*y1*y2*y3*z1*
+   z2*z4//r^2+x1^2*y1*y2*y3*z1*z2*z3*z4*(y3+y2)//r^3+r*z1//(x1*x2*z3) y2*
+   y3*(x2*z1*z2+x1*z1*(z2+z3)+x1*z2*z3*z4//z5)//x2//r+
+   y1*y2*y3*z1*z2*z3*x1*(x2+x1)//x2//r^2-y2^2*y3^2*z1*z2*z3*x1^2*z4//r^3-
+    r*((z2+z3)//(z5*x2)+z1//(z4*x2)+z2//(z5*x1)+z1//(z4*x1))//x2 z1*
+    (x2+x1)//x2+x1^2*z2*z3*z4*y2*y3//r^2-r*(1//y1+1//y2+1//y3)//x2;
+   0 z2 z3+x1*x2^2*y1*y2*y3*z1*z2*z4*z5//r^3-r*(1//y3+1//y2)//x1 x2*
+   z2//x1+z3+z2-x1*x2*z2*z3*z4*y2*y3//r^2-r*(1//y3+1//y2)//x1 -r^2//
+   (x1*z1*y1*y2*y3);
+   0 0 z3 -r^3//(x1^2*x2*z1*z5*y1*y2*y3)+z3 -r^2//(x1*z1*y1*y2*y3);
+   0 0 0 z4 z4*x1*x2*z5//r;0 0 0 0 z5]]
+  end,
   function(X,Y,Z,rt)x1,x2=X;y1,y2,y3=Y;z1,z2,z3,z4,z5=Z
     r=root((x1*x2)^3*(y1*y2*y3)^2*prod(Z[[1,2,3,4,5,5]]),6)*E(6,rt)
     a=1 # representation  has one free parameter
-    r^0*[[[x1 + x2, 0, 0, 0,
-0,  x2 * x1], [0, x1 + x2,  0, 0, x2 * x1, 0], [0,  0, x1 + x2, x2 * x1, 0,
-0], [0, 0, -1, 0, 0, 0], [0, -1, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0]], [[0, 0,
-0,  0, 0, -1 // z5 * r], [0, 0, 0, 0, -1 // z4 * r, ((-1 // a) // r ^ 2) //
-z4],  [0, 0, 0, -1 // z5 * r, z4 - z5, (-1 // a) // r ^ 3 * z5], [0, 0, ((r
-//  z3) // x2) // x1, (x1 * x2 * y1 * y2  * y3 * (z2 * z5 + z4 * z1) - a //
-(z4  * z5 ^ 2)) // r ^ 2,  (-x1 * x2 * y1 * y2 *  y3 * z1 * z4 * z5 * (z4 -
-z5)  + a // z5) // r ^ 3, (((((((1 // y1)  // y2) // y3) // x1 ^ 2) // x2 ^
-2) // z2) // z3) // a], [0, ((1 // z2 * r) // x2) // x1, (-((y1 * y3 + y2 *
-y3 + y1 * y2)) * x1 * x2 * z1 * z5 ^ 2 * z4 * y1 * y2 * y3) // a + (((z5 //
-x2) // x1 * (y3 + y2 + y1) * r ^ 4) // z3) // a + (((r ^ 2 * y1 * y2 * y3 *
-z5  * (z4 * z3 * z1 - z2 ^ 2 * z5)) // a) // z2) // z3 + ((((((r ^ 2 * (-z3
-+ z2)) // z4) // z5) // x1) // x2) // z2) // z3, ((-z5 * (y1 * y3 + y2 * y3
-+  y1 * y2) * r ^ 3) // a + (((r * (z2 *  z4 * x2 * x1 * z5 ^ 3 * y3 * y2 *
-y1 - a) * (y3 + y2 + y1)) // a) // z4) // z5 + (((x1 * x2) ^ 2 * (y1 * y2 *
-y3)  ^ 2 * z5 ^ 2 * (z1 * z4 * z3 - z5 * z2 ^ 2)) // r) // a + (((x1 * x2 *
-y1  * y2 * y3 * (z4 * z1 + 2 * z5 * z2)) // r) // z4) // z5) - ((a // r) //
-z4  ^ 2) // z5 ^ 3, ((y3 + y2 + y1) - (x1 * x2 * y1 * y2 * y3 * ((z4 * z1 +
-z2 * z5) - z1 * z5)) // r ^ 2) + ((a // r ^ 2) // z4) // z5 ^ 2, (((((((((r
-//  y1) // y2) // y3) // x1  ^ 2) // x2 ^ 2) //  z2) // z3) // a) // z4) //
-z5],  [((r // z1) // x2) // x1, (-((x1 * x2) ^ 2) * (y1 * y2 * y3) ^ 2 * z3
-*  z4 * z5 * (((-z2 * z5 +  z2 * z4) - z4 * z1) +  z1 * z5) * a) // r ^ 2 -
-((x1 * y1 * y2 * y3 * x2 * z3 * a ^ 2) // r ^ 2) // z5, ((-((y1 * y3 + y2 *
-y3  + y1 * y2)) * (x1 * x2 * y1 * y2 *  y3 * z1 * z4 * z5 ^ 2 * (z4 - z5) -
-a)  * r ^ 3) // z5 + (z4 - z5) * x1 ^ 2 * x2 ^ 2 * y1 ^ 2 * y2 ^ 2 * y3 ^ 2
-* z5 ^ 2 * z2 * z1 * z4 * (y3 + y2 + y1) * r) - (((x1 * x2 * y1 * y2 * y3 *
-(((x1 * x2) ^ 2 * (y1 * y2 * y3) ^ 2 * z1 * z4 ^ 2 * z5 ^ 4 * ((z5 * z2 ^ 2
-*  z4 + (z5 - z4) * z1 * z3 * z4) - z5 ^  2 * z2 ^ 2) + x1 * x2 * y1 * y2 *
-y3  * z4 * z5 ^ 2 * a * ((2 * z4 * z1 * z3 - z5 * z1 * z3) + z5 * z2 * z1 +
-z5 * z2 * z3)) - z3 * a ^ 2)) // r) // z5 ^ 2) // z4, (((-((z4 - z5)) * (y1
-*  y3 + y2 * y3 + y1 * y2) * x1 ^ 3 * x2 ^ 3 * z1 * z5 ^ 2 * z4 * z3 * z2 *
-y1  ^ 2 * y2 ^ 2 * y3 ^ 2 + (((y3 + y2 + y1) * (x1 * x2 * y1 * y2 * y3 * z2
-* z4 * z5 ^ 2 * (z4 - z5) + a) * r ^ 4) // z5) // z4) - r ^ 2 * (x1 * x2) ^
-2 * (y1 * y2 * y3) ^ 2 * z5 * ((-z1 * z3 * z4 ^ 2 + z4 * z2 ^ 2 * z5 + z5 *
-z1  * z4 * z3) - z5 ^ 2 * z2 ^ 2)) - ((r ^ 2 * a * x1 * x2 * y1 * y2 * y3 *
-(((z4  * z3 + z4 * z1) - z2 * z4) + 2 * z5 * z2)) // z4) // z5) + ((r ^ 2 *
-a  ^ 2) // z4 ^ 2) // z5  ^ 3, -x1 * x2 * y1 *  y2 * y3 * (z2 - z1) * (z4 -
-z5)  * a * r - ((a ^  2 * r) // z5 ^ 2)  // z4, ((((((((-1 // z3) // z4) //
-z2)  // y1) // y2) // y3) // z5)  // x1 ^ 2) // x2 ^ 2  * r ^ 4 + y1 + y3 +
-y2]],  [[z1, ((z2 - z1) * (z4 - z5) * a * r ^ 3) // z5 + (((((((a ^ 2 * r ^
-3) // x1) // y1) // y2) // y3) // x2) // z5 ^ 3) // z4, ((x2 ^ 2 * x1 ^ 2 *
-y2  * y3 * z5 * y1 * (z4 - z5) * (y1 *  y3 + y2 * y3 + y1 * y2) * z1 * z4 *
-z3 * z2 * r ^ 2 - (y3 + y2 + y1) * x1 ^ 2 * x2 ^ 2 * y1 * y2 * y3 * z2 * z3
-* (x1 * x2 * y1 * y2 * y3 * z2 * z4 * z5 ^ 2 * (-z5 + z4) + a) * z1) + x1 *
-x2 * y1 * y2 * y3 * (z4 - z5) * (z2 ^ 2 * z5 - z1 * z4 * z3) * r ^ 4 + (a *
-(((z3 + z1) - z2) + (2 * z5 * z2) // z4) * r ^ 4) // z5 ^ 2) - (((((((a ^ 2
-* r ^ 4) // x1) // x2) // y1) // y2) // y3) // z4 ^ 2) // z5 ^ 4, ((-((y3 +
-y2 + y1)) * (x1 + x2) * x1 ^ 2 * x2 ^ 2 * y1 * y2 * y3 * z2 * z3 * (x1 * x2
-*  y1 * y2 * y3 * z2 * z4 * z5 ^ 2 * (-z5 + z4) + a) * z1 - (y1 * y3 + y2 *
-y3  + y1 * y2) * (x1 * x2 * z1 * z4 * (z4 - z5) - (((a // y1) // y2) // y3)
-//  z5 ^ 2) * r ^ 5) + ((x1 * x2 * y1 * y2 * y3 * (z5 - z4) * (z1 * z4 * z3
--  z5 * z2 ^ 2) + ((a * (((z4 * z3 + z4 * z1) - z2 * z4) + 2 * z5 * z2)) //
-z4)  // z5 ^ 2) - ((((((a ^ 2 // x1) // x2) // y1) // y2) // y3) // z4 ^ 2)
-// z5 ^ 4) * (x1 + x2) * r ^ 4 + x2 ^ 2 * x1 ^ 2 * y1 * y2 * y3 * z5 * z2 *
-z1  * z4 * (z4 - z5) * (y3 + y2 + y1) * r ^ 3 + x2 ^ 2 * x1 ^ 2 * y1 * y2 *
-y3  * z5 * z2 * z1 * z4 * z3 * (z4 -  z5) * (y1 * y3 + y2 * y3 + y1 * y2) *
-(x1  + x2) * r ^ 2) - ((r * x1 * x2 * (((x1 * x2 * y1 * y2 * y3) ^ 2 * z1 *
-z4  ^ 2 * z5 ^ 4 * (z1 * z3 * z4 - z5 * z2 ^ 2) * (z5 - z4) + a * x1 * x2 *
-y1 * y2 * y3 * z4 * z5 ^ 2 * ((2 * z4 * z1 * z3 - z5 * z1 * z3) + z5 * z2 *
-z1  + z5 * z2 * z3)) - z3  * a ^ 2)) // z4) // z5  ^ 3, (x1 + x2) * (((z1 -
-z2) * (z5 - z4)) // z5 + ((((((a // x1) // y1) // y2) // y3) // x2) // z5 ^
-3) // z4) * r ^ 3 * a - (x1 * x2 * z3 * (x1 * x2 * y1 * y2 * y3 * z4 * z5 ^
-2 * (z1 - z2) * (z5 - z4) + a) * a) // z5 ^ 2, (((-((y1 * y3 + y2 * y3 + y1
-*  y2)) * r) // y1) // y2) // y3 + z1 * (x1 + x2) + (x1 ^ 2 * x2 ^ 2 * y1 *
-y2  * y3 * z2 * z5 * z4 * z3) // r ^ 3], [0, z2, (((((((y1 * y3 + y2 * y3 +
-y1 * y2) // x2) // x1 * r ^ 5) // y1) // y2) // y3) // a - (z5 * z2 * (y3 +
-y2  + y1) * r ^ 3) // a) + r * ((x1 *  x2 * y1 * y2 * y3 * z5 * (-z4 * z3 *
-z1  + z2 ^ 2 * z5)) // a + ((z3 - z2) // z5) // z4), (((-z2 * z5 * (y3 + y2
-+  y1) * (x1 + x2) * r ^ 3) // a - r ^ 2 * ((z4 * x1 * x2 * z5 * z1) // a -
-((((1 // y1) // y2) // y3) // z4) // z5) * (y1 * y3 + y2 * y3 + y1 * y2)) +
-(((r  * ((x1 * x2 * y1 * y2 * y3 * z4 *  z5 ^ 2 * (-z4 * z3 * z1 + z2 ^ 2 *
-z5)  + a * z3) - a * z2) * (x1 + x2)) // a) // z5) // z4 + (x2 ^ 2 * x1 ^ 2
-*  z2 * y1 * y2 * y3 * z5 ^ 2 * z1 * z4 * (y3 + y2 + y1)) // a + ((x2 ^ 2 *
-x1  ^ 2 * z2 * z3 * y1 * y2 * y3 * z5  ^ 2 * z1 * z4 * (y1 * y3 + y2 * y3 +
-y1  * y2) * (x1 + x2)) // a) // r) - (x1 * x2 * ((((x1 * x2 * y1 * y2 * y3)
-^  2 * z1 * z4 * z5 ^ 2 * (-z1 * z3 *  z4 + z5 * z2 ^ 2)) // a + (x1 * x2 *
-y1  * y2 * y3 * z3 * (2 * z4 * z1 + z5 * z2)) // z4) - ((z3 * a) // z4 ^ 2)
-//  z5 ^ 2)) // r ^ 2, ((((-((y1 * y3 +  y2 * y3 + y1 * y2)) * r) // y1) //
-y2)  // y3 + z2 * (x1 + x2)) - (((x1 * x2  * z3 * (x1 * x2 * y1 * y2 * y3 *
-z4  * z5 ^ 2 * ((-z4 * z1  + z2 * z4) - z2 * z5)  + a)) // r ^ 3) // z4) //
-z5, (((((((1 // x1) // x2) // y1) // y2) // y3) // a) // z1) // z4], [0, 0,
-z3,  z3 * (x1 + x2) - (((x1 * x2 * z3 * (x1 * x2 * y1 * y2 * y3 * z4 * z5 ^
-2  * (z2 * z5 + z4 * z1) - a)) // r ^ 3) // z4) // z5, (-x1 * x2 * z3 * (x1
-*  x2 * y1  * y2 *  y3 * z2  * z4 *  z5 ^ 2  * (-z5 +  z4) + a))  // r ^ 4,
-(((((((z5  // z1) // r) // x2) // x1) // y1) // y2) // y3) // a], [0, 0, 0,
-z5,  ((z4 - z5) * z4) // r * z5, (-(z5 ^ 2) // r ^ 4) // a * z4], [0, 0, 0,
-0, z4, (-1 // a) // r ^ 3 * z5], [0, 0, 0, 0, 0, z5]]]
+   map(toM, r^0*[[[x1+x2,0,0,0,0,x2*x1],[0,x1+x2,0,0,x2*x1,0],
+  [0,0,x1+x2,x2*x1,0,0],[0,0,-1,0,0,0],[0,-1,0,0,0,0],[-1,0,0,0,0,0]],
+  [[0, 0, 0, 0, 0, -1//z5*r], [0, 0, 0, 0, -1//z4*r,-1//a//r^2//z4],
+  [0, 0, 0, -1//z5*r, z4-z5, -1//a//r^3*z5],
+  [0,0,r//z3//x2//x1,(x1*x2*y1*y2*y3*(z2*z5+z4*z1)-a//(z4*z5^2))//r^2,
+  (-x1*x2*y1*y2*y3*z1*z4*z5*(z4-z5)+a//z5)//r^3,1//y1//y2//y3//x1^2//x2^2//z2//z3//a],
+  [0,1//z2*r//x2//x1,-(y1*y3+y2*y3+y1*y2)*x1*x2*z1*z5^2*z4*y1*y2*y3//a
+   +z5//x2//x1*(y3+y2+y1)*r^4//z3//a+r^2*y1*y2*y3*z5*(z4*z3*z1-z2^2*z5)//a//z2//z3
+   +r^2*(-z3+z2)//z4//z5//x1//x2//z2//z3,-z5*(y1*y3+y2*y3+y1*y2)*r^3//a
+   +r*(z2*z4*x2*x1*z5^3*y3*y2*y1-a)*(y3+y2+y1)//a//z4//z5
+  +(x1*x2)^2*(y1*y2*y3)^2*z5^2*(z1*z4*z3-z5*z2^2)//r//a
+  +x1*x2*y1*y2*y3*(z4*z1+2*z5*z2)//r//z4//z5-a//r//z4^2//z5^3,
+  y3+y2+y1-x1*x2*y1*y2*y3*(z4*z1+z2*z5-z1*z5)//r^2+a//r^2//z4//z5^2,
+  r//y1//y2//y3//x1^2//x2^2//z2//z3//a//z4//z5],
+  [r//z1//x2//x1,
+  -(x1*x2)^2*(y1*y2*y3)^2*z3*z4*z5*(-z2*z5+z2*z4-z4*z1+z1*z5)*a//r^2
+  -x1*y1*y2*y3*x2*z3*a^2//r^2//z5,
+  -(y1*y3+y2*y3+y1*y2)*(x1*x2*y1*y2*y3*z1*z4*z5^2*(z4-z5)-a)*r^3//z5
+  +(z4-z5)*x1^2*x2^2*y1^2*y2^2*y3^2*z5^2*z2*z1*z4*(y3+y2+y1)*r
+  -x1*x2*y1*y2*y3*((x1*x2)^2*(y1*y2*y3)^2*z1*z4^2*z5^4*(z5*z2^2*z4+(z5-z4)*z1*z3*z4
+  -z5^2*z2^2)
+  +x1*x2*y1*y2*y3*z4*z5^2*a*(2*z4*z1*z3-z5*z1*z3+z5*z2*z1+z5*z2*z3)-z3*a^2)//r//z5^2//z4,
+  -(z4-z5)*(y1*y3+y2*y3+y1*y2)*x1^3*x2^3*z1*z5^2*z4*z3*z2*y1^2*y2^2*y3^2
+  +(y3+y2+y1)*(x1*x2*y1*y2*y3*z2*z4*z5^2*(z4-z5)+a)*r^4//z5//z4
+  -r^2*(x1*x2)^2*(y1*y2*y3)^2*z5*(-z1*z3*z4^2+z4*z2^2*z5+z5*z1*z4*z3-z5^2*z2^2)
+  -r^2*a*x1*x2*y1*y2*y3*(z4*z3+z4*z1-z2*z4+2*z5*z2)//z4//z5+r^2*a^2//z4^2//z5^3,
+  -x1*x2*y1*y2*y3*(z2-z1)*(z4-z5)*a*r-a^2*r//z5^2//z4,
+  -1//z3//z4//z2//y1//y2//y3//z5//x1^2//x2^2*r^4+y1+y3+y2]],
+  [[z1,(z2-z1)*(z4-z5)*a*r^3//z5+a^2*r^3//x1//y1//y2//y3//x2//z5^3//z4,
+  x2^2*x1^2*y2*y3*z5*y1*(z4-z5)*(y1*y3+y2*y3+y1*y2)*z1*z4*z3*z2*r^2
+  -(y3+y2+y1)*x1^2*x2^2*y1*y2*y3*z2*z3*(x1*x2*y1*y2*y3*z2*z4*z5^2*(-z5+z4)+a)*z1
+  +x1*x2*y1*y2*y3*(z4-z5)*(z2^2*z5-z1*z4*z3)*r^4
+  +a*(z3+z1-z2+2*z5*z2//z4)*r^4//z5^2-a^2*r^4//x1//x2//y1//y2//y3//z4^2//z5^4,
+  -(y3+y2+y1)*(x1+x2)*x1^2*x2^2*y1*y2*y3*z2*z3*(x1*x2*y1*y2*y3*z2*z4*z5^2*(-z5+z4)+a)*z1
+  -(y1*y3+y2*y3+y1*y2)*(x1*x2*z1*z4*(z4-z5)-a//y1//y2//y3//z5^2)*r^5
+  +(x1*x2*y1*y2*y3*(z5-z4)*(z1*z4*z3-z5*z2^2)+a*(z4*z3+z4*z1-z2*z4+2*z5*z2)//z4//z5^2
+  -a^2//x1//x2//y1//y2//y3//z4^2//z5^4)*(x1+x2)*r^4
+  +x2^2*x1^2*y1*y2*y3*z5*z2*z1*z4*(z4-z5)*(y3+y2+y1)*r^3
+  +x2^2*x1^2*y1*y2*y3*z5*z2*z1*z4*z3*(z4-z5)*(y1*y3+y2*y3+y1*y2)*(x1+x2)*r^2
+  -r*x1*x2*((x1*x2*y1*y2*y3)^2*z1*z4^2*z5^4*(z1*z3*z4-z5*z2^2)*(z5-z4)
+  +a*x1*x2*y1*y2*y3*z4*z5^2*(2*z4*z1*z3-z5*z1*z3+z5*z2*z1+z5*z2*z3)-z3*a^2)//z4//z5^3,
+  (x1+x2)*((z1-z2)*(z5-z4)//z5+a//x1//y1//y2//y3//x2//z5^3//z4)*r^3*a
+  -x1*x2*z3*(x1*x2*y1*y2*y3*z4*z5^2*(z1-z2)*(z5-z4)+a)*a//z5^2,
+ -(y1*y3+y2*y3+y1*y2)*r//y1//y2//y3+z1*(x1+x2)+x1^2*x2^2*y1*y2*y3*z2*z5*z4*z3//r^3],
+  [0, z2,
+  (y1*y3+y2*y3+y1*y2)//x2//x1*r^5//y1//y2//y3//a-z5*z2*(y3+y2+y1)*r^3//a+
+  r*(x1*x2*y1*y2*y3*z5*(-z4*z3*z1+z2^2*z5)//a+(z3-z2)//z5//z4),
+  -z2*z5*(y3+y2+y1)*(x1+x2)*r^3//a
+  -r^2*(z4*x1*x2*z5*z1//a-1//y1//y2//y3//z4//z5)*(y1*y3+y2*y3+y1*y2)
+  +r*(x1*x2*y1*y2*y3*z4*z5^2*(-z4*z3*z1+z2^2*z5)+a*z3-a*z2)*(x1+x2)//a//z5//z4
+  +x2^2*x1^2*z2*y1*y2*y3*z5^2*z1*z4*(y3+y2+y1)//a
+  +x2^2*x1^2*z2*z3*y1*y2*y3*z5^2*z1*z4*(y1*y3+y2*y3+y1*y2)*(x1+x2)//a//r
+  -x1*x2*((x1*x2*y1*y2*y3)^2*z1*z4*z5^2*(-z1*z3*z4+z5*z2^2)//a
+  +x1*x2*y1*y2*y3*z3*(2*z4*z1+z5*z2)//z4-z3*a//z4^2//z5^2)//r^2,
+  -(y1*y3+y2*y3+y1*y2)*r//y1//y2//y3+z2*(x1+x2)
+  -x1*x2*z3*(x1*x2*y1*y2*y3*z4*z5^2*(-z4*z1+z2*z4-z2*z5)+a)//r^3//z4//z5,
+  1//x1//x2//y1//y2//y3//a//z1//z4],
+ [0,0,z3,z3*(x1+x2)-x1*x2*z3*(x1*x2*y1*y2*y3*z4*z5^2*(z2*z5+z4*z1)-a)//r^3//z4//z5,
+ -x1*x2*z3*(x1*x2*y1*y2*y3*z2*z4*z5^2*(-z5+z4)+a)//r^4,z5//z1//r//x2//x1//y1//y2//y3//a],
+  [0, 0, 0, z5, (z4-z5)*z4//r*z5,-z5^2//r^4//a*z4],
+  [0, 0, 0, 0, z4, -1//a//r^3*z5],[0, 0, 0, 0, 0, z5]]])
   end]
 
 chevieset(:G4_22, :GetParams, function (ST, para)
@@ -1012,12 +980,12 @@ chevieset(:G4_22, :GetParams, function (ST, para)
     p=root.(p)
     vcat(p, -p)
   end
-  if     ST==4 return [[1,-1], E.(3,0:2), para[1]]
-  elseif ST==5 return [[1,-1], para[1], para[2]]
-  elseif ST==6 return [para[1], E.(3,0:2), para[2]]
-  elseif ST==7 return para
-  elseif ST==8 return [[1,-1], E.(3,0:2), para[1]]
-  elseif ST==9 return [para[1], E.(3,0:2), para[2]]
+  if     ST==4  return [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==5  return [[1,-1], para[1], para[2]]
+  elseif ST==6  return [para[1], E.(3,0:2), para[2]]
+  elseif ST==7  return para
+  elseif ST==8  return [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==9  return [para[1], E.(3,0:2), para[2]]
   elseif ST==10 return [[1,-1], para[1], para[2]]
   elseif ST==11 return para
   elseif ST==12 return [para[1], E.(3,0:2), E.(4,0:3)]
@@ -1034,56 +1002,56 @@ chevieset(:G4_22, :GetParams, function (ST, para)
   end
 end)
 
-chevieset(:G4_22, :HeckeRepresentation, function(ST,para,root,i)
+Base.isfinite(x::Mvp)=true
+
+chevieset(:G4_22, :HeckeRepresentation, function(ST,para,roots,i)
   X,Y,Z=chevieget(:G4_22,:GetParams)(ST,para)
-  function rep(char) local r, dim
+  function rep(char)
     drop(l,i)=deleteat!(collect(l),i)
-    dim = char[1]
+    dim=char[1]
     r = Rep4_22[dim]
-    if dim == 1 return r(X[char[2]], Y[char[3]], Z[char[4]])
-    elseif dim == 2
+    if dim==1 return r(X[char[2]], Y[char[3]], Z[char[4]])
+    elseif dim==2
       if ST in 4:7
         Z = drop(Z, char[4]);z1,z2=Z
-        if ST == 4 return [[[0,-Z2],[Z1,0]],[[0,0],[0,0]],[[Z2,Z2],[0,Z1]]]
-        else return r(X, drop(Y, char[3]), Z, char[2])
+        if ST==4 return [[0 -z2;z1 0],[0 0;0 0],[z2 z2;0 z1]]
+        else r(X, drop(Y, char[3]), Z, char[2])
         end
-      else return r(X, drop(Y, char[3]), Z[(combinations(1:length(Z), 2))[char[4]]], char[2])
+      else r(X,drop(Y,char[3]),Z[combinations(1:length(Z),2)[char[4]]],char[2])
       end
     elseif dim==3
-        X=X[[char[3],3-char[3]]]
-        if ST==4
-          [[[0, 0, 1], [0, -1, 0], [1, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[Z[1], -1, Z[2]], [0, Z[2], -((Z[3] * Z[1] + Z[2] ^ 2))], [0, 0, Z[3]]]]
-        elseif ST == 6
-          [[[X[2], 0, 0], [(-(X[2]) * Z[3] - X[1] * Z[1]) - X[1] * Z[2], X[1], 0], [X[2] * Z[3] * Z[1] - X[1] * Z[2] ^ 2, 0, X[1]]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[Z[3], 1, 0], [0, Z[1], 1], [0, 0, Z[2]]]]
-        elseif ST in [5, 7] r(X, Y, Z, char[2])
-        elseif ST in 8:15 return r(X, Y, drop(Z, char[4]), char[2])
-        else return r(X, Y, Z[(combinations(1:5, 3))[char[4]]], char[2])
-        end
-    elseif dim == 4
-        Y = vcat(drop(Y, char[3]), [Y[char[3]]])
-        if ST in 8:15 return r(X, Y, Z, char[2])
-        else return r(X, Y, drop(Z, char[4]), char[2])
-        end
-    elseif dim == 5
+      X=X[[char[3],3-char[3]]]
+      if ST==4
+        z1,z2,z3=Z
+        [[0 0 1;0 -1 0;1 0 0],[0 0 0;0 0 0;0 0 0],
+         [z1 -1 z2;0 z2 -z3*z1-z2^2;0 0 z3]]
+      elseif ST==6
+        z1,z2,z3=Z;x1,x2=X
+        [[x2 0 0;-x2*z3-x1*z1-x1*z2 x1 0;x2*z3*z1-x1*z2^2 0 x1],
+         [0 0 0;0 0 0;0 0 0],[z3 1 0;0 z1 1;0 0 z2]]
+      elseif ST in [5,7] r(X, Y, Z, char[2])
+      elseif ST in 8:15 return r(X, Y, drop(Z, char[4]), char[2])
+      else return r(X, Y, Z[combinations(1:5,3)[char[4]]], char[2])
+      end
+    elseif dim==4
+      Y=vcat(drop(Y, char[3]), [Y[char[3]]])
+      if ST in 8:15 return r(X, Y, Z, char[2])
+      else return r(X, Y, drop(Z, char[4]), char[2])
+      end
+    elseif dim==5
       r(X[[char[3],3-char[3]]],vcat([Y[char[4]]],drop(Y,char[4])),Z,char[2])
     elseif dim==6
       r(X,Y,vcat(drop(Z,char[3]),[Z[char[3]]]),char[2])
     end
   end
-  ci = G4_22FetchIndexChars(ST, para)[i]
-# m=map(x->x.+0*prod(prod,para),rep(chevieget(:G4_22,:paramchars)(ST)[ci]))
+  ci=G4_22FetchIndexChars(ST, para)[i]
   m=rep(chevieget(:G4_22,:paramchars)(ST)[ci])
-  ApplyWord(w,l)=prod(map(i->i>0 ? l[i] : inv(l[-i]),w))
-  map(x->ApplyWord(x,m),chevieget(:G4_22,:Embed)(ST))
+  m=map(x->x.+0*prod(prod,para),m)
+  map(w->prod(map(i->i>0 ? m[i] : inv(m[-i]//1),w)),chevieget(:G4_22,:Embed)(ST))
 end)
 
-chevieset(:G4_22, :Representation, function (ST, i)
-        local para
-        para = (chevieget(:G4_22, :EigenvaluesGeneratingReflections))(ST)
-        para = map((x->begin
-                        map((j->begin
-                                    E(1 // x, j)
-                                end), 0:1 // x - 1)
-                    end), para)
-        return (chevieget(:G4_22, :HeckeRepresentation))(ST, para, [], i)
-    end)
+chevieset(:G4_22,:Representation,function(ST,i)
+  para=denominator.(chevieget(:G4_22,:EigenvaluesGeneratingReflections)(ST))
+  para=map(x->E.(x,0:x-1),para)
+  chevieget(:G4_22,:HeckeRepresentation)(ST,para,[],i)
+end)
