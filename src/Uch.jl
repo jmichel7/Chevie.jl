@@ -583,7 +583,7 @@ function UnipotentCharacters(WF::Spets)
     end
     ser[:charNumbers]=cartesian(charnumbers.(sers)...)
     ser[:cuspidalName]=join(map(x->x[:cuspidalName]=="" ? "Id" :
-                                     x[:cuspidalName], sers),"\\otimes ")
+                                   x[:cuspidalName], sers),"\\otimes ")
     ser
   end
 

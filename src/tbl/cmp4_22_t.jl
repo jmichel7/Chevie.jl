@@ -33,7 +33,7 @@ function G4_22FetchIndexChars(ST, para)
     return chevieget(:G4_22, :CharInfo)(ST)[:indexchars]
   end
   get!(G4_22IndexChars_dict[ST],para)do
-    chevieget(:G4_22, :HeckeCharTable)(ST, para, [])[:indexchars]
+    chevieget(:G4_22, :HeckeCharTable)(ST, para,[])[:indexchars]
   end
 end
 export G4_22FetchIndexChars
@@ -561,225 +561,208 @@ const Embed4_22=[[[1,3,-1],[3]],[[2],[3]],[[1],[3]],[[1],[2],[3]],
   [[2],[3]],[[1],[2],[3]],[[2],[1,2,-1]],[[1],[2]],[[1],[2,1,-2],[-2,1,2]]]
 chevieset(:G4_22, :Embed,ST->Embed4_22[ST-3])
 
-function cuspidal14(charnum,eig,arg...)
-  n="G_{14}"
-  if !isempty(arg) && (arg[1] isa Integer) n*="^"*string(arg[1]) end
-  n*="["*xrepr(eig,TeX=true)*"]"
-  res=Dict{Symbol, Any}(
-    :relativeType=>Dict{Symbol,Any}(:series=>"A",:indices=>Int[],:rank=>0), 
+# make a cuspidal harish-chandra series record
+function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
+  n="G_{"*string(n)*"}"
+  if no!=0 n*="^"*string(no) end
+  if E4 && eig==E(4) n*="[i]"
+  elseif E4 && eig==E(4,3) n*="[-i]"
+  else n*="["*xrepr(eig,TeX=true)*"]"
+  end
+  res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0), 
     :levi=>1:2,:parameterExponents=>Int[],:charNumbers=>[charnum], 
     :eigenvalue=>eig,:cuspidalName=>n)
-  if !isempty(arg) && !(arg[end] isa Integer) res[:qEigen]=arg[end] end
+  if qeig!=0 res[:qEigen]=qeig end
   res
 end
 
+CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24* 
+[4 -4 4 -4 -4 -4 -4 -4 0 0 -4 -4 4 4 0 0 0 0;
+-4 4 4 -4 4 4 4 4 0 0 -4 -4 4 4 0 0 0 0;
+4 4 4 4 -4 -4 4 4 0 0 -4 -4 -4 -4 0 0 0 0;
+-4 -4 4 4 4 4 -4 -4 0 0 -4 -4 -4 -4 0 0 0 0;
+-4 4 -4 4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 -2 -2 2 2 2*root(-3) -2*root(-3) 2*root(-3) -2*root(-3);
+-4 4 -4 4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 -2 -2 2 2 -2*root(-3) 2*root(-3) -2*root(-3) 2*root(-3);
+-4 4 4 -4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 2 2 -2 -2 -2*root(-3) 2*root(-3) -2*root(-3) 2*root(-3);
+-4 4 4 -4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 2 2 -2 -2 2*root(-3) -2*root(-3) 2*root(-3) -2*root(-3);
+0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6) -2*root(6) 2*root(6);
+0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6);
+-4 -4 -4 -4 -2 -2 2 2 2*root(6) 2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
+-4 -4 -4 -4 -2 -2 2 2 -2*root(6) -2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -(root(6)) -(root(6)) -(root(6)) -(root(6));
+4 4 -4 -4 2 2 -2 -2 -2*root(6) -2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
+4 4 -4 -4 2 2 -2 -2 2*root(6) 2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -(root(6)) -(root(6)) -(root(6)) -(root(6));
+0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) 2*root(6) -2*root(6) root(6) -(root(6)) root(6) -(root(6)) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
+0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) -2*root(6) 2*root(6) root(6) -(root(6)) root(6) -(root(6)) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
+0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) -2*root(6) 2*root(6) root(6) -(root(6)) root(6) -(root(6)) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3);
+0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) 2*root(6) -2*root(6) root(6) -(root(6)) root(6) -(root(6)) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3)],
+:eigenvalues=>[E(3,2),E(3,2),E(3,2),-(E(3,2)),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
+               E(4),-E(4),-E(4),E(4)], 
+:charLabels=>string.(1:18),:special=>12,:cospecial=>12,:name=>"X_{18}",
+:explanation =>"mysteryG14")
+
 UnipotentCharacters4_22=[
-Dict{Symbol,  Any}(:harishChandra  =>  [Dict{Symbol,  Any}(:relativeType =>
-Dict{Symbol,  Any}(:series => "ST", :indices => 1:2, :rank => 2, :ST => 4),
-:levi   =>  [],  :parameterExponents  =>   [1,  1],  :charNumbers  =>  1:7,
-:eigenvalue  => 1, :cuspidalName => ""), Dict{Symbol, Any}(:relativeType =>
-Dict{Symbol,  Any}(:series => "A",  :indices => [2],  :rank => 1), :levi =>
-[1],  :parameterExponents =>  [3], :charNumbers  => [9,  8], :eigenvalue =>
-E(3,  2), :cuspidalName => ImprimitiveCuspidalName([[],  [0, 1], [0, 1]])),
-Dict{Symbol,   Any}(:relativeType  =>  Dict{Symbol,  Any}(:series  =>  "A",
-:indices  =>  [],  :rank  =>  0),  :levi => 1:2, :parameterExponents => [],
-:charNumbers   =>  [10],  :eigenvalue  =>  -1,  :cuspidalName  =>  "G_4")],
-:families  => [Family("C1",  [1]), Family(((CHEVIE[:families])[:X])(3), [6,
-5,   8],  Dict{Symbol,  Any}(:signs  =>  [1,   1,  -1],  :ennola  =>  -1)),
-Family("C1",  [7]), Family("X5", [2, 4, 10, 9, 3], Dict{Symbol, Any}(:signs
-=>  [1, 1, -1, -1, 1], :ennola => -5))], :a  => [0, 4, 4, 4, 1, 1, 2, 1, 4,
-4], :A => [0, 8, 8, 8, 5, 5, 6, 5, 8, 8]),
-Dict{Symbol,  Any}(:harishChandra  =>  [Dict{Symbol,  Any}(:relativeType =>
-Dict{Symbol,  Any}(:series => "ST", :indices => 1:2, :rank => 2, :ST => 6),
-:levi => [], :parameterExponents => [1, 1], :charNumbers => [1, 2, 3, 4, 5,
-6,  12, 10, 8, 11,  7, 9, 13, 14],  :eigenvalue => 1, :cuspidalName => ""),
-Dict{Symbol,  Any}(:relativeType  =>  Dict{Symbol,  Any}(:series  =>  "ST",
-:indices  =>  [1],  :rank  =>  1,  :p  =>  4,  :q  =>  1),  :levi  =>  [2],
-:parameterExponents  => [[3, 3,  0, 3]], :charNumbers  => [15, 17, 31, 16],
-:eigenvalue  => E(3, 2),  :cuspidalName => ImprimitiveCuspidalName([[], [0,
-1], [0, 1]])), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series
-=>  "A", :indices => [], :rank =>  0), :levi => 1:2, :parameterExponents =>
-[],  :charNumbers  =>  [18],  :eigenvalue  =>  -E(3,2), :cuspidalName =>
-"G_6[-\\zeta_3^2]"),   Dict{Symbol,   Any}(:relativeType   =>  Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents => [], :charNumbers => [19], :eigenvalue => -E(3,2),
-:cuspidalName  => "G_6^2[-\\zeta_3^2]"), Dict{Symbol, Any}(:relativeType =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [],  :charNumbers => [20],  :eigenvalue => -1,
-:cuspidalName    =>   "G_6[-1]"),    Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [],  :charNumbers => [21],  :eigenvalue => -1,
-:cuspidalName   =>   "G_6^2[-1]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [],  :charNumbers => [22],  :eigenvalue => -1,
-:cuspidalName   =>   "G_6^3[-1]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [],  :charNumbers => [23],  :eigenvalue => -1,
-:cuspidalName   =>   "G_6^4[-1]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [], :charNumbers => [24], :eigenvalue => E(4),
-:cuspidalName => "G_6[i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents  =>  [],  :charNumbers  =>  [25],  :eigenvalue => E(4),
-:cuspidalName    =>   "G_6^2[i]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2, :parameterExponents => [], :charNumbers => [26], :eigenvalue => -E(4),
-:cuspidalName    =>   "G_6[-i]"),    Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2, :parameterExponents => [], :charNumbers => [27], :eigenvalue => -E(4),
-:cuspidalName   =>   "G_6^2[-i]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [], :charNumbers => [28], :eigenvalue => E(12,
-5), :cuspidalName => "G_6[\\zeta_{12}^5]"), Dict{Symbol, Any}(:relativeType
-=>  Dict{Symbol, Any}(:series => "A", :indices => [], :rank => 0), :levi =>
-1:2,  :parameterExponents => [], :charNumbers  => [29], :eigenvalue => E(8,
-3),  :qEigen => 1  // 2, :cuspidalName  => "G_6[\\zeta_8^3]"), Dict{Symbol,
-Any}(:relativeType  => Dict{Symbol,  Any}(:series =>  "A", :indices  => [],
-:rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [30],
-:eigenvalue => E(8, 7), :qEigen => 1 // 2, :cuspidalName =>
-"G_6[\\zeta_8^7]")], :families => [Family("C1", [1]),
-Family(conj(SubFamilyij(((CHEVIE[:families])[:X])(12), 1, 3, (3 + root(-3))
-// 2)), [7, 13, 8, 2, 27, 21, 24, 18, 15, 19, 10, 25, 22, 3, 9, 17, 28, 20,
-4,  26, 16, 23], Dict{Symbol, Any}(:signs => [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1,  1, 1, -1, -1,  1, -1, 1, -1,  -1, -1, 1], :cospecial  => 11, :ennola =>
--22)),  Family("C1",  [14]),  Family("Z4",  [29,  12, 30, 11], Dict{Symbol,
-Any}(:signs => [-1, 1, 1, -1], :ennola => -3)),
-Family(((CHEVIE[:families])[:X])(3),  [5, 6,  31], Dict{Symbol, Any}(:signs
-=>  [1, 1, -1], :ennola => -1))], :a => [0, 1, 1, 1, 10, 10, 1, 1, 1, 1, 5,
-5, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 10], :A => [0, 11,
-11, 11, 14, 14, 11, 11, 11, 11, 13, 13, 11, 12, 11, 11, 11, 11, 11, 11, 11,
-11, 11, 11, 11, 11, 11, 11, 13, 13, 14]),
-Dict{Symbol,  Any}(:harishChandra  =>  [Dict{Symbol,  Any}(:relativeType =>
-Dict{Symbol,  Any}(:series => "ST", :indices => 1:2, :rank => 2, :ST => 8),
-:levi => [], :parameterExponents => [1, 1], :charNumbers => [1, 2, 3, 4, 5,
-6, 7, 8, 9, 10, 14, 13, 12, 11, 16, 15], :eigenvalue => 1, :cuspidalName =>
-""),  Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series => "ST",
-:indices  =>  [2],  :rank  =>  1,  :p  =>  4,  :q  =>  1),  :levi  =>  [1],
-:parameterExponents  => [[3, 0,  0, 2]], :charNumbers  => [17, 27, 25, 22],
-:eigenvalue  => -1, :cuspidalName  => ImprimitiveCuspidalName([[0], [0, 1],
-[0, 1], []])), Dict{Symbol, Any}(:relativeType => Dict{Symbol, Any}(:series
-=>  "ST", :indices =>  [2], :rank =>  1, :p =>  4, :q =>  1), :levi => [1],
-:parameterExponents  => [[3, 0,  2, 0]], :charNumbers  => [18, 29, 21, 30],
-:eigenvalue => -E(4), :cuspidalName => ImprimitiveCuspidalName([[], [0, 1],
-[0],   [0,   1]])),   Dict{Symbol,   Any}(:relativeType   =>   Dict{Symbol,
-Any}(:series => "ST", :indices => [2], :rank => 1, :p => 4, :q => 1), :levi
-=> [1], :parameterExponents => [[3, 2, 0, 0]], :charNumbers => [19, 20, 26,
-28],  :eigenvalue => -1, :cuspidalName => ImprimitiveCuspidalName([[0], [],
-[0,   1],  [0,  1]])),   Dict{Symbol,  Any}(:relativeType  =>  Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents  => [], :charNumbers  => [23], :eigenvalue  => E(8, 3),
-:qEigen  =>  1  //  2,  :cuspidalName  =>  "G_8[\\zeta_8^3]"), Dict{Symbol,
-Any}(:relativeType  => Dict{Symbol,  Any}(:series =>  "A", :indices  => [],
-:rank => 0), :levi => 1:2, :parameterExponents => [], :charNumbers => [24],
-:eigenvalue => E(8, 7), :qEigen => 1 // 2, :cuspidalName =>
-"G_8[\\zeta_8^7]"),   Dict{Symbol,   Any}(:relativeType   =>   Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents   =>  [],  :charNumbers  =>  [31],  :eigenvalue  =>  1,
-:cuspidalName => "G_8[1]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents  =>  [],  :charNumbers  =>  [32],  :eigenvalue => E(4),
-:cuspidalName => "G_8[i]"), Dict{Symbol, Any}(:relativeType => Dict{Symbol,
-Any}(:series   =>  "A",  :indices  =>  [],  :rank  =>  0),  :levi  =>  1:2,
-:parameterExponents  =>  [],  :charNumbers  =>  [33],  :eigenvalue => E(4),
-:cuspidalName    =>   "G_8^2[i]"),   Dict{Symbol,   Any}(:relativeType   =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2,  :parameterExponents => [], :charNumbers => [34], :eigenvalue => E(3),
-:cuspidalName   =>  "G_8[\\zeta_3]"),  Dict{Symbol,  Any}(:relativeType  =>
-Dict{Symbol,  Any}(:series =>  "A", :indices  => [],  :rank => 0), :levi =>
-1:2, :parameterExponents => [], :charNumbers => [35], :eigenvalue => E(3) ^
-2,  :cuspidalName => "G_8[\\zeta_3^2]")],  :families => [Family("C1", [1]),
-Family(((CHEVIE[:families])[:X])(4),  [5, 6,  7, 17,  18, 19], Dict{Symbol,
-Any}(:signs => [1, 1, 1, -1, -1, -1], :ennola => 4)),
-Family(((CHEVIE[:families])[:X])(4), [11, 12, 13, 20, 21, 22], Dict{Symbol,
-Any}(:signs  => [1, 1, 1,  -1, -1, -1], :ennola  => -6)), Family("Z4", [23,
-15,  24, 16], Dict{Symbol, Any}(:signs  => [-1, 1, 1,  -1], :ennola => 1)),
-Family(Dict{Symbol,  Any}(:fourierMat => [[-1,  -1, 3, -3I,  3I, 1, 3, -3I,
--3I,  -3, 3, 3I, 3I, 1, -3I, -3I, 4, 4], [-1, -1, 3, 3I, -3I, 1, 3, 3I, 3I,
--3,  3, -3I, -3I, 1, 3I, 3I,  4, 4], [3, 3, 3, -3,  -3, 3, 3, 3, -3, 3, -3,
--3,  3, 3, -3, 3, 0, 0], [-3I, 3I, -3, 3, 3, 3, 3, 3, -3, -3I, -3I, 3I, 3I,
--3,  3I, 3I, 0, 0], [3I, -3I, -3, 3, 3,  3, 3, 3, -3, 3I, 3I, -3I, -3I, -3,
--3I, -3I, 0, 0], [1, 1, 3, 3, 3, -1, 3, -3, 3, -3, 3, -3, 3, -1, -3, 3, -4,
--4],  [3, 3, 3, 3, 3, 3, 3, -3, 3, 3, -3, 3, -3, 3, 3, -3, 0, 0], [-3I, 3I,
-3,  3, 3, -3, -3, 3, -3, -3I, -3I,  -3I, -3I, 3, -3I, -3I, 0, 0], [-3I, 3I,
--3,  -3, -3, 3, 3, -3, 3, -3I, -3I, -3I, -3I, -3, -3I, -3I, 0, 0], [-3, -3,
-3, -3I, 3I, -3, 3, -3I, -3I, 3, -3, -3I, -3I, -3, 3I, 3I, 0, 0], [3, 3, -3,
--3I,  3I, 3, -3, -3I, -3I, -3, 3, -3I, -3I, 3, 3I, 3I, 0, 0], [3I, -3I, -3,
-3I,  -3I, -3, 3, -3I, -3I,  -3I, -3I, -3, 3, 3,  3, -3, 0, 0], [3I, -3I, 3,
-3I,  -3I, 3, -3, -3I, -3I, -3I, -3I, 3, -3, -3, -3, 3, 0, 0], [1, 1, 3, -3,
--3,  -1, 3, 3, -3, -3, 3, 3, -3, -1, 3, -3, -4, -4], [-3I, 3I, -3, 3I, -3I,
--3,  3, -3I, -3I, 3I, 3I, 3, -3, 3, -3,  3, 0, 0], [-3I, 3I, 3, 3I, -3I, 3,
--3, -3I, -3I, 3I, 3I, -3, 3, -3, 3, -3, 0, 0], [4, 4, 0, 0, 0, -4, 0, 0, 0,
-0,  0, 0, 0, -4, 0, 0, -4, 8], [4, 4, 0, 0, 0, -4, 0, 0, 0, 0, 0, 0, 0, -4,
-0,  0, 8, -4]] // 12, :eigenvalues => [1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1,
-                                       -E(4),  -E(4), 1, E(4), E(4), E(3), E(3,2)], :name => "?18", :explanation
-=>  "mystery G8", :special => 1, :cospecial =>  2, :ennola => 6), [2, 4, 3,
-8,  10, 9, 14,  25, 26, 27,  28, 29, 30,  31, 32, 33, 34, 35], Dict{Symbol,
-Any}(:signs  => [1, 1,  1, 1, 1,  1, 1, 1,  1, 1, 1,  -1, -1, 1, -1, 1, -1,
--1]))],  :a => [0, 6, 6, 6, 1, 1, 1, 6, 6, 6, 2, 2, 2, 6, 3, 3, 1, 1, 1, 2,
-2, 2, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6], :A => [0, 18, 18, 18, 11, 11,
-11, 18, 18, 18, 14, 14, 14, 18, 15, 15, 11, 11, 11, 14, 14, 14, 15, 15, 18,
-18, 18, 18, 18, 18, 18, 18, 18, 18, 18]),
-Dict{Symbol,  Any}(:harishChandra  =>  [Dict{Symbol,  Any}(:relativeType =>
-Dict{Symbol, Any}(:series => "ST", :indices => 1:2, :rank => 2, :ST => 14),
-:levi => [], :parameterExponents => [1, 1], :charNumbers => [1, 2, 3, 4, 5,
-6,  8, 7, 9, 12, 11, 10,  15, 14, 13, 16, 20, 18,  21, 17, 19, 22, 23, 24],
-:eigenvalue  => 1, :cuspidalName => ""), Dict{Symbol, Any}(:relativeType =>
-Dict{Symbol, Any}(:series => "ST", :indices => [1], :rank => 1, :p => 6, :q
-=>  1),  :levi  =>  [2],  :parameterExponents  =>  [[3,  4,  4,  0, 4, 4]],
-:charNumbers  =>  [66,  26,  27,  79,  28,  25],  :eigenvalue  => E(3,2),
-:cuspidalName   =>   ImprimitiveCuspidalName([[],   [0,   1],   [0,  1]])),
-cuspidal14(34, 1), cuspidal14(35, 1, 2), cuspidal14(29, -1), cuspidal14(30, -1, 2),
-cuspidal14(31, -1, 3), cuspidal14(32, -1, 4), cuspidal14(33, -1, 5), cuspidal14(73,
--1,  6), cuspidal14(74,  -1, 7),  cuspidal14(40, E(3)),  cuspidal14(41, E(3), 2),
-cuspidal14(42,  E(3),  3),  cuspidal14(43,  E(3),  4),  cuspidal14(50,  E(3), 5),
-cuspidal14(51,  E(3), 6), cuspidal14(36, E(3,2)), cuspidal14(37, E(3,2), 2),
-cuspidal14(52,  -E(3)), cuspidal14(53,  -E(3), 2),  cuspidal14(38, -E(3,2)),
-cuspidal14(39,  -E(3,2), 2), cuspidal14(54, -E(4)), cuspidal14(55, -E(4), 2),
-cuspidal14(56,   E(4),  3),   cuspidal14(57,  E(4),   4),  cuspidal14(58,  E(4)),
-cuspidal14(59,  E(4),  2),  cuspidal14(60,  -E(4),  3), cuspidal14(61, -E(4), 4),
-cuspidal14(46,  E(8)),  cuspidal14(47,  E(8,  3),  2),  cuspidal14(48,  E(8, 3)),
-cuspidal14(49, E(8), 2), cuspidal14(69, E(9, 5), 1 // 3), cuspidal14(70, E(9, 5),
-2,  2 // 3), cuspidal14(71, E(9,  8), 1 // 3), cuspidal14(72,  E(9, 8), 2, 2 //
-3),  cuspidal14(67,  E(9,  2),  1  //  3),  cuspidal14(68, E(9, 2), 2, 2 // 3),
-cuspidal14(62,  E(12)), cuspidal14(63,  E(12, 7),  2), cuspidal14(64,  E(12, 7)),
-cuspidal14(65,  E(12), 2), cuspidal14(75, E(16, 5), 1 // 2), cuspidal14(77, E(16,
-13),  1 // 2), cuspidal14(78, E(16, 15), 1 // 2), cuspidal14(76, E(16, 7), 1 //
-2),  cuspidal14(44,  E(24,  11)),  cuspidal14(45,  E(24,  17))],  :families  =>
-[Family("C1",     [1]),     Family(conj(((CHEVIE[:families])[:X])(3))     *
-Family("G14"),  [26, 37, 28, 39, 14, 3, 34, 18, 46, 48, 15, 13, 30, 29, 59,
-60,  55, 56, 25, 36, 27, 38, 2, 11, 16, 35, 49, 47, 12, 10, 32, 31, 58, 61,
-54,  57, 4, 17, 22, 33, 41, 40, 43, 42, 44, 45, 51, 50, 53, 52, 64, 65, 62,
-63],  Dict{Symbol, Any}(:signs => [-1,  1, -1, 1, -1,  1, 1, 1, -1, -1, -1,
--1,  -1, 1, -1, 1, -1, 1, -1, -1, -1,  -1, -1, 1, -1, -1, -1, -1, 1, 1, -1,
--1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1],
-:ennola   =>  32)),  Family(((CHEVIE[:families])[:X])(3),   [23,  24,  66],
-Dict{Symbol, Any}(:signs => [1, 1, -1], :ennola => 2)),
-Family(((CHEVIE[:families])[:TQZ])(3,  E(3, 2)),  [19, 20,  21, 68, 70, 72,
-67,   71,  69],  Dict{Symbol,   Any}(:cospecial  =>  2,   :ennola  =>  8)),
-Family(Dict{Symbol,   Any}(:fourierMat  =>  onmats(
-[1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
- 1 1 2 1 1 root(-2) root(-2) root(-2) root(-2);
- 2 2 0 -2 -2 0 0 0 0;
- 1 1 -2 1 1 -root(-2) root(-2) -root(-2) root(-2);
- 1 1 -2 1 1 root(-2) -root(-2) root(-2) -root(-2);
- -root(-2) root(-2) 0 -root(-2) root(-2) 0 -2*E(4) 0 2*E(4);
- -root(-2) root(-2) 0 root(-2) -root(-2) -2*E(4) 0 2*E(4) 0;
- -root(-2) root(-2) 0 -root(-2) root(-2) 0 2*E(4) 0 -2*E(4);
- -root(-2) root(-2) 0 root(-2) -root(-2) 2*E(4) 0 -2*E(4) 0]//4,
-perm"(4,5)"),:explanation=>"everythingtoexplain",
-:eigenvalues  => [1, 1, 1, -1, -1, E(16, 5), E(16, 7), -E(16, 5), -E(16,
-7)],  :qEigen => [0, 0, 0, 0, 0, 1 // 2, 1 // 2, 1 // 2, 1 // 2], :special
-=> 2, :ennola => -4), [8, 9, 7, 73, 74, 75, 76, 77, 78]),
-Family(((CHEVIE[:families])[:X])(3),  [5, 6,  79], Dict{Symbol, Any}(:signs
-=>  [1, 1, -1], :ennola => -2))], :a => [0, 1, 1, 1, 20, 20, 9, 9, 9, 1, 1,
-1,  1, 1, 1, 1, 1, 1, 6, 6, 6, 1, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1,  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1,  1, 1, 1, 5, 6, 6, 6, 6, 6, 6, 9,  9, 9, 9, 9, 9, 20], :A => [0, 23, 23,
-23, 28, 28, 27, 27, 27, 23, 23, 23, 23, 23, 23, 23, 23, 23, 26, 26, 26, 23,
-25, 25, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-23,  23, 23, 23, 23,  25, 26, 26, 26,  26, 26, 26, 27,  27, 27, 27, 27, 27,
-28])]
+Dict{Symbol,Any}(:harishChandra=>[
+  Dict(:relativeType=>TypeIrred(series=:ST,indices=1:2,rank=2,ST=4),
+    :levi=>Int[],:parameterExponents=>[1,1],:charNumbers=>1:7,
+    :eigenvalue=>1,:cuspidalName=>""), 
+  Dict(:relativeType=>Dict(:series=>"A",:indices=>[2],:rank=>1),
+    :levi=>[1],:parameterExponents=>[3],:charNumbers=>[9,8],:eigenvalue=>E(3,2),
+    :cuspidalName=>ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
+  Dict(:relativeType=>TypeIrred(;series=:A,indices=Int[],rank=0),
+    :levi=>1:2,:parameterExponents=>Int[],:charNumbers=>[10],:eigenvalue=>-1,
+    :cuspidalName=>"G_4")],
+  :families=>[
+    Family("C1",[1]),
+    Family(CHEVIE[:families][:X](3),[6,5,8],Dict(:signs=>[1,1,-1],:ennola=>-1)),
+    Family("C1",[7]),
+    Family("X5",[2,4,10,9,3],Dict(:signs=>[1,1,-1,-1,1],:ennola=>-5))], 
+  :a=>[0,4,4,4,1,1,2,1,4,4],:A=>[0,8,8,8,5,5,6,5,8,8]),
+Dict{Symbol,Any}(:harishChandra=>[
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>1:2,:rank=>2,:ST=>6),
+    :levi=>Int[],:parameterExponents=>[1,1],
+    :charNumbers=>[1,2,3,4,5,6,12,10,8,11,7,9,13,14],
+    :eigenvalue=>1,:cuspidalName=>""),
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>[1],:rank=>1,:p=>4,:q=>1),
+    :levi=>[2],:parameterExponents=>[[3,3,0,3]],:charNumbers=>[15,17,31,16],
+    :eigenvalue=>E(3,2),
+    :cuspidalName=>ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
+  mkcuspidal(6,18,-E(3,2)), mkcuspidal(6,19,-E(3,2);no=2), mkcuspidal(6,20,-1),
+  mkcuspidal(6,21,-1;no=2), mkcuspidal(6,22,-1;no=3), mkcuspidal(6,23,-1;no=4),
+  mkcuspidal(6,24,E(4);E4=true), mkcuspidal(6,25,E(4);no=2,E4=true),
+  mkcuspidal(6,26,E(4,3);E4=true), mkcuspidal(6,27,E(4,3);no=2,E4=true),
+  mkcuspidal(6,28,E(12,5)),mkcuspidal(6,29,E(8,3);qeig=1//2),
+  mkcuspidal(6,30,E(8,7);qeig=1//2)],
+  :families => [Family("C1", [1]),
+    Family(conj(SubFamilyij(CHEVIE[:families][:X](12),1,3,(3+root(-3))//2)),
+      [7,13,8,2,27,21,24,18,15,19,10,25,22,3,9,17,28,20,4,26,16,23],
+      Dict(:signs=>[1,1,1,1,1,1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,-1,-1,1],
+      :cospecial=>11,:ennola=>-22)),
+    Family("C1",[14]),
+    Family("Z4",[29,12,30,11],Dict(:signs=>[-1,1,1,-1],:ennola=>-3)),
+  Family(CHEVIE[:families][:X](3),[5,6,31],Dict(:signs=>[1,1,-1],:ennola=>-1))],
+  :a=>[0,1,1,1,10,10,1,1,1,1,5,5,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,10], 
+  :A=>[0,11,11,11,14,14,11,11,11,11,13,13,11,12,11,11,11,11,11,11,11,11,11,11,
+       11,11,11,11,13,13,14]),
+Dict{Symbol,Any}(:harishChandra=>[
+  Dict(:relativeType =>Dict(:series=>"ST",:indices=>1:2,:rank=>2,:ST=>8),
+    :levi=>Int[],:parameterExponents=>[1,1],
+    :charNumbers=>[1,2,3,4,5,6,7,8,9,10,14,13,12,11,16,15],:eigenvalue=>1,
+    :cuspidalName=>""),
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>[2],:rank=>1,:p=>4,:q=>1),
+    :levi=>[1],:parameterExponents=>[[3,0,0,2]],:charNumbers=>[17, 27, 25, 22],
+    :eigenvalue=>-1,
+    :cuspidalName=>ImprimitiveCuspidalName([[0],[0,1],[0,1],Int[]])),
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>[2],:rank=>1,:p=>4,:q=>1),
+    :levi=>[1],:parameterExponents=>[[3,0,2,0]],:charNumbers=>[18,29,21,30],
+    :eigenvalue=>-E(4),
+    :cuspidalName => ImprimitiveCuspidalName([Int[],[0,1],[0],[0,1]])),
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>[2],:rank=>1,:p=>4,:q=>1),
+    :levi=>[1],:parameterExponents=>[[3,2,0,0]],:charNumbers=>[19,20,26,28],
+    :eigenvalue=>-1,
+    :cuspidalName => ImprimitiveCuspidalName([[0],Int[],[0,1],[0,1]])),
+  mkcuspidal(8,23,E(8,3);qeig=1//2), mkcuspidal(8,24,E(8,7);qeig=1//2),
+  mkcuspidal(8,31,1), mkcuspidal(8,32,E(4);E4=true),
+  mkcuspidal(8,33,E(4);no=2,E4=true),
+  mkcuspidal(8,34,E(3)), mkcuspidal(8,35,E(3,2))],
+  :families=>[Family("C1", [1]),
+    Family(CHEVIE[:families][:X](4),[5,6,7,17,18,19], 
+           Dict(:signs=>[1,1,1,-1,-1,-1],:ennola=>4)),
+    Family(CHEVIE[:families][:X](4),[11,12,13,20,21,22],
+           Dict(:signs=>[1,1,1,-1,-1,-1],:ennola=>-6)), 
+    Family("Z4",[23,15,24,16],Dict(:signs=>[-1,1,1,-1],:ennola=>1)),
+    Family(Dict(:fourierMat=>[
+-1 -1 3 -3E(4) 3E(4) 1 3 -3E(4) -3E(4) -3 3 3E(4) 3E(4) 1 -3E(4) -3E(4) 4 4;
+-1 -1 3 3E(4) -3E(4) 1 3 3E(4) 3E(4) -3 3 -3E(4) -3E(4) 1 3E(4) 3E(4) 4 4;
+3 3 3 -3 -3 3 3 3 -3 3 -3 -3 3 3 -3 3 0 0;
+-3E(4) 3E(4) -3 3 3 3 3 3 -3 -3E(4) -3E(4) 3E(4) 3E(4) -3 3E(4) 3E(4) 0 0;
+3E(4) -3E(4) -3 3 3 3 3 3 -3 3E(4) 3E(4) -3E(4) -3E(4) -3 -3E(4) -3E(4) 0 0;
+1 1 3 3 3 -1 3 -3 3 -3 3 -3 3 -1 -3 3 -4 -4;
+3 3 3 3 3 3 3 -3 3 3 -3 3 -3 3 3 -3 0 0;
+-3E(4) 3E(4) 3 3 3 -3 -3 3 -3 -3E(4) -3E(4) -3E(4) -3E(4) 3 -3E(4) -3E(4) 0 0;
+-3E(4) 3E(4) -3 -3 -3 3 3 -3 3 -3E(4) -3E(4) -3E(4) -3E(4) -3 -3E(4) -3E(4) 0 0;
+-3 -3 3 -3E(4) 3E(4) -3 3 -3E(4) -3E(4) 3 -3 -3E(4) -3E(4) -3 3E(4) 3E(4) 0 0;
+3 3 -3 -3E(4) 3E(4) 3 -3 -3E(4) -3E(4) -3 3 -3E(4) -3E(4) 3 3E(4) 3E(4) 0 0;
+3E(4) -3E(4) -3 3E(4) -3E(4) -3 3 -3E(4) -3E(4) -3E(4) -3E(4) -3 3 3 3 -3 0 0;
+3E(4) -3E(4) 3 3E(4) -3E(4) 3 -3 -3E(4) -3E(4) -3E(4) -3E(4) 3 -3 -3 -3 3 0 0;
+1 1 3 -3 -3 -1 3 3 -3 -3 3 3 -3 -1 3 -3 -4 -4;
+-3E(4) 3E(4) -3 3E(4) -3E(4) -3 3 -3E(4) -3E(4) 3E(4) 3E(4) 3 -3 3 -3 3 0 0;
+-3E(4) 3E(4) 3 3E(4) -3E(4) 3 -3 -3E(4) -3E(4) 3E(4) 3E(4) -3 3 -3 3 -3 0 0;
+4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 -4 8;
+4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 8 -4]//12,
+  :eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
+  :name=>"?18",:explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6),
+  [2, 4, 3, 8,  10, 9, 14,  25, 26, 27,  28, 29, 30,  31, 32, 33, 34, 35],
+  Dict(:signs=>[1,1,1,1,1,1,1,1,1,1,1,-1,-1,1,-1,1,-1,-1]))],
+  :a=>[0,6,6,6,1,1,1,6,6,6,2,2,2,6,3,3,1,1,1,2,2,2,3,3,6,6,6,6,6,6,6,6,6,6,6],
+  :A=>[0,18,18,18,11,11,11,18,18,18,14,14,14,18,15,15,11,11,11,14,14,14,15,15,
+       18,18,18,18,18,18,18,18,18,18,18]),
+Dict{Symbol,Any}(:harishChandra=>[
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>1:2,:rank=>2,:ST=>14),
+    :levi=>Int[],:parameterExponents=>[1,1],
+ :charNumbers=>[1,2,3,4,5,6,8,7,9,12,11,10,15,14,13,16,20,18,21,17,19,22,23,24],
+    :eigenvalue=>1,:cuspidalName=>""),
+  Dict(:relativeType=>Dict(:series=>"ST",:indices=>[1],:rank=>1,:p=>6,:q=>1),
+    :levi=>[2],:parameterExponents=>[[3,4,4,0,4,4]],
+    :charNumbers=>[66,26,27,79,28,25],:eigenvalue=>E(3,2),
+    :cuspidalName=>ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
+mkcuspidal(14,34,1),mkcuspidal(14,35,1;no=2),mkcuspidal(14,29,-1),
+mkcuspidal(14,30,-1;no=2),mkcuspidal(14,31,-1;no=3),mkcuspidal(14,32,-1;no=4),
+mkcuspidal(14,33,-1;no=5),mkcuspidal(14,73,-1;no=6),mkcuspidal(14,74,-1;no=7),
+mkcuspidal(14,40,E(3)),mkcuspidal(14,41,E(3);no=2),mkcuspidal(14,42,E(3);no=3),
+mkcuspidal(14,43,E(3);no=4),mkcuspidal(14,50,E(3);no=5),
+mkcuspidal(14,51,E(3);no=6),mkcuspidal(14,36,E(3,2)),
+mkcuspidal(14,37,E(3,2);no=2),mkcuspidal(14,52,-E(3)),
+mkcuspidal(14,53,-E(3);no=2),mkcuspidal(14,38,-E(3,2)),
+mkcuspidal(14,39,-E(3,2);no=2),mkcuspidal(14,54,-E(4)),
+mkcuspidal(14,55,-E(4);no=2),mkcuspidal(14,56,E(4);no=3),
+mkcuspidal(14,57,E(4);no=4),mkcuspidal(14,58,E(4)),
+mkcuspidal(14,59,E(4);no=2),mkcuspidal(14,60,-E(4);no=3),
+mkcuspidal(14,61,-E(4);no=4),mkcuspidal(14,46,E(8)),
+mkcuspidal(14,47,E(8,3);no=2),mkcuspidal(14,48,E(8,3)),
+mkcuspidal(14,49,E(8);no=2),mkcuspidal(14,69,E(9,5);qeig=1//3),
+mkcuspidal(14,70,E(9,5);no=2,qeig=2//3),mkcuspidal(14,71,E(9,8);qeig=1//3),
+mkcuspidal(14,72,E(9,8);no=2,qeig=2//3),mkcuspidal(14,67,E(9,2);qeig=1//3),
+mkcuspidal(14,68,E(9,2);no=2,qeig=2//3),mkcuspidal(14,62,E(12)),
+mkcuspidal(14,63,E(12,7);no=2),mkcuspidal(14,64,E(12,7)),
+mkcuspidal(14,65,E(12);no=2),mkcuspidal(14,75,E(16,5);qeig=1//2),
+mkcuspidal(14,77,E(16,13);qeig=1//2),mkcuspidal(14,78,E(16,15);qeig=1//2),
+mkcuspidal(14,76,E(16,7);qeig=1//2),mkcuspidal(14,44,E(24,11)),
+mkcuspidal(14,45,E(24,17))],
+  :families=>[
+    Family("C1",[1]),
+    Family(conj(CHEVIE[:families][:X](3))*
+      Family("G14"),[26,37,28,39,14,3,34,18,46,48,15,13,30,29,59,60,55,56,25,
+        36,27,38,2,11,16,35,49,47,12,10,32,31,58,61,54,57,4,17,22,33,41,40,43,
+        42,44,45,51,50,53,52,64,65,62,63],
+      Dict(:signs=>[-1,1,-1,1,-1,1,1,1,-1,-1,-1,-1,-1,1,-1,1,-1,1,-1,-1,-1,-1,
+   -1,1,-1,-1,-1,-1,1,1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,1,1,1,-1,1,1,1,1],
+      :ennola=>32)),
+  Family(CHEVIE[:families][:X](3),[23,24,66],Dict(:signs=>[1,1,-1],:ennola=>2)),
+  Family(CHEVIE[:families][:TQZ](3,E(3,2)),[19,20,21,68,70,72,67,71,69],
+    Dict{Symbol,Any}(:cospecial=>2,:ennola=>8)),
+  Family(Dict{Symbol,Any}(:fourierMat=>onmats(
+  [1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
+   1 1 2 1 1 root(-2) root(-2) root(-2) root(-2);
+   2 2 0 -2 -2 0 0 0 0;
+   1 1 -2 1 1 -root(-2) root(-2) -root(-2) root(-2);
+   1 1 -2 1 1 root(-2) -root(-2) root(-2) -root(-2);
+   -root(-2) root(-2) 0 -root(-2) root(-2) 0 -2*E(4) 0 2*E(4);
+   -root(-2) root(-2) 0 root(-2) -root(-2) -2*E(4) 0 2*E(4) 0;
+   -root(-2) root(-2) 0 -root(-2) root(-2) 0 2*E(4) 0 -2*E(4);
+   -root(-2) root(-2) 0 root(-2) -root(-2) 2*E(4) 0 -2*E(4) 0]//4,
+     perm"(4,5)"),:explanation=>"everythingtoexplain",
+   :eigenvalues=>[1,1,1,-1,-1,E(16,5),E(16,7),-E(16,5),-E(16,7)],
+   :qEigen=>[0,0,0,0,0,1//2,1//2,1//2,1//2],:special=>2,:ennola=>-4),
+         # ennola could be -5
+         [8, 9, 7, 73, 74, 75, 76, 77, 78]),
+  Family(CHEVIE[:families][:X](3),[5,6,79],Dict(:signs=>[1,1,-1],:ennola=>-2))],
+  :a=>[0,1,1,1,20,20,9,9,9,1,1,1,1,1,1,1,1,1,6,6,6,1,5,5,1,1,1,1,1,1,1,1,1,1,1,
+       1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,6,6,6,6,6,
+       6,9,9,9,9,9,9,20],
+  :A=>[0,23,23,23,28,28,27,27,27,23,23,23,23,23,23,23,23,23,26,26,26,23,25,25,
+       23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,
+       23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,25,26,26,26,26,26,26,
+       27,27,27,27,27,27,28])]
 
 chevieset(:G4_22, :UnipotentCharacters, function(ST)
   p=findfirst(==(ST),[4,6,8,14])
@@ -787,3 +770,320 @@ chevieset(:G4_22, :UnipotentCharacters, function(ST)
   else return UnipotentCharacters4_22[p]
   end
   end)
+
+const Invariants4_22=[ 
+  [(x,y)->x^4-8*x*y^3,
+   (x,y)->x^6+20*x^3*y^3-8*y^6],
+  [(x,y)->x^6+20*x^3*y^3-8*y^6,
+   (x,y)->3*x^3*y^9+3*x^6*y^6+x^9*y^3+y^12],
+  [(x,y)->8*x*y^3+x^4,
+   (x,y)->-3*x^3*y^9+3*x^6*y^6-x^9*y^3+y^12],
+  [(x,y)->x^10*y^2-2*x^6*y^6+x^2*y^10,
+   (x,y)->x^12-33*x^8*y^4-33*x^4*y^8+y^12],
+  [(x,y)->14*x^4*y^4+x^8+y^8,
+   (x,y)->-33*x^4*y^8-33*x^8*y^4+x^12+y^12],
+  [(x,y)->56*x^4*y^4+16*x^8+y^8,
+   (x,y)->x^4*y^20-16*x^8*y^16+96*x^12*y^12-256*x^16*y^8+256*x^20*y^4],
+  [(x,y)->x^12-88*x^9*y^3-704*x^3*y^9-64*y^12,
+   (x,y)->-512*x^3*y^21-1344*x^6*y^18-984*x^9*y^15-7*x^12*y^12+
+          123*x^15*y^9-21*x^18*y^6+x^21*y^3],
+  [(x,y)->x^24+4048*x^18*y^6+20240*x^15*y^9+122544*x^12*y^12-
+          161920*x^9*y^15+259072*x^6*y^18+4096*y^24,
+   (x,y)->x^21*y^3-21*x^18*y^6+123*x^15*y^9-7*x^12*y^12
+          -984*x^9*y^15-1344*x^6*y^18-512*x^3*y^21],
+  [(x,y)->x^6+10*x^4*y^2-20*x^2*y^4-8*y^6,
+   (x,y)->3*x^8-56*x^6*y^2-56*x^4*y^4-224*x^2*y^6+48*y^8],
+  [(x,y)->14*x^4*y^4+x^8+y^8,
+   (x,y)->x^2*y^10-2*x^6*y^6+x^10*y^2],
+  [(x,y)->-5*x^2*y^4-5*x^4*y^2+x^6+y^6,
+   (x,y)->81*x^2*y^22+198*x^4*y^20+1309*x^6*y^18+264*x^8*y^16+
+          2706*x^10*y^14-9116*x^12*y^12+2706*x^14*y^10+264*x^16*y^8+
+          1309*x^18*y^6+198*x^20*y^4+81*x^22*y^2],
+  [(x,y)->x^12+40*x^9*y^3+384*x^6*y^6-320*x^3*y^9+64*y^12,
+   (x,y)->512*x^3*y^21+1344*x^6*y^18+984*x^9*y^15+7*x^12*y^12-
+            123*x^15*y^9+21*x^18*y^6-x^21*y^3],
+  [(x,y)->228*x^5*y^15+494*x^10*y^10-228*x^15*y^5+x^20+y^20,
+   (x,y)->-522*x^5*y^25-10005*x^10*y^20-10005*x^20*y^10+522*x^25*y^5+x^30+y^30],
+  [(x,y)->228*x^5*y^15+494*x^10*y^10-228*x^15*y^5+x^20+y^20,
+   (x,y)->-6*x^5*y^55+330*x^10*y^50-7230*x^15*y^45+78540*x^20*y^40-
+          417510*x^25*y^35+808566*x^30*y^30+417510*x^35*y^25+78540*x^40*y^20+
+          7230*x^45*y^15+330*x^50*y^10+6*x^55*y^5],
+  [(x,y)->-522*x^5*y^25-10005*x^10*y^20-10005*x^20*y^10+522*x^25*y^5+x^30+y^30,
+   (x,y)->6*x^5*y^55-330*x^10*y^50+7230*x^15*y^45-78540*x^20*y^40+
+          417510*x^25*y^35-808566*x^30*y^30-417510*x^35*y^25-78540*x^40*y^20-
+          7230*x^45*y^15-330*x^50*y^10-6*x^55*y^5],
+  [(x,y)->-x^5*y^55+55*x^10*y^50-1205*x^15*y^45+13090*x^20*y^40-69585*x^25*y^35+
+          134761*x^30*y^30+69585*x^35*y^25+13090*x^40*y^20+1205*x^45*y^15+
+          55*x^50*y^10+x^55*y^5,
+   (x,y)->-180*x^5*y^55+204954*x^10*y^50+11486340*x^15*y^45+88770255*x^20*y^40+
+          70567704*x^25*y^35+83221580*x^30*y^30-70567704*x^35*y^25+
+          88770255*x^40*y^20-11486340*x^45*y^15+204954*x^50*y^10+180*x^55*y^5+
+          x^60+y^60],
+  [(x,y)->34375*x^3*y^9-4125*x^6*y^6-275*x^9*y^3+x^12+15625*y^12,
+   (x,y)->(5*y^2+x^2)*(25*y^4-5*y^2*x^2+x^4)*(25*y^4-50*y^3*x-30*y^2*x^2+
+          10*y*x^3+x^4)*(625*y^8+1250*y^7*x+3250*y^6*x^2-1000*y^5*x^3+
+          1375*y^4*x^4+200*y^3*x^5+130*y^2*x^6-10*y*x^7+x^8)*(50*y^4+50*y^3*x+
+          15*y^2*x^2-10*y*x^3+2*x^4)*(2500*y^8-2500*y^7*x+1750*y^6*x^2-
+          1750*y^5*x^3+625*y^4*x^4+350*y^3*x^5+70*y^2*x^6+20*y*x^7+4*x^8)],
+  [(x,y)->34375*x^3*y^9-4125*x^6*y^6-275*x^9*y^3+x^12+15625*y^12,
+   (x,y)->-x^3*y^3*(5*y^2-5*x*y+2*x^2)^3*
+     (25*y^4+25*y^3*x+15*y^2*x^2+10*y*x^3+4*x^4)^3*(-5*y^2+5*x*y+x^2)^3*
+     (25*y^4+25*y^3*x+30*y^2*x^2-5*y*x^3+x^4)^3*(10*y^2+5*x*y+x^2)^3*
+     (100*y^4-50*y^3*x+15*y^2*x^2-5*y*x^3+x^4)^3],
+  [(x,y)->-x*y^11+11*x^6*y^6+x^11*y,
+   (x,y)->228*x^5*y^15+494*x^10*y^10-228*x^15*y^5+x^20+y^20]]
+
+chevieset(:G4_22, :Invariants,ST->Invariants4_22[ST-3])
+
+const Discriminant4_22=[
+  (t1,t2)->-t2^2+t1^3,
+  (t1,t2)->64*t2^2-t1^2*t2,
+  (t1,t2)->64*t2^2+t1^3*t2,
+  (t1,t2)->t2^2*t1+108*t1^3,
+  (t1,t2)->-t2^2+t1^3,
+  (t1,t2)->t1^3*t2-432*t2^2,
+  (t1,t2)->256*t2^2+t1^2*t2,
+  (t1,t2)->96*t1*t2^2-t1^2*t2+14080*t2^3,
+  (t1,t2)->t2^3-27*t1^4,
+  (t1,t2)->108*t2^3-t1^3*t2,
+  (t1,t2)->16*t2^2+27*t1^4*t2,
+  (t1,t2)->256*t1*t2^2+t1^3*t2,
+  (t1,t2)->t2^2-t1^3,
+  (t1,t2)->288*t2^2+t1^3*t2,
+  (t1,t2)->288*t2^2+t1^2*t2,
+  (t1,t2)->t1*t2^2-746496*t1^3,
+  (t1,t2)->t2^2-64*t1^5,
+  (t1,t2)->625*t2^2-64*t1^5*t2,
+  (t1,t2)->t2^3+1728*t1^5]
+
+chevieset(:G4_22,:Discriminant,ST->Discriminant4_22[ST-3])
+
+const Rep4_22=[(X,Y,Z)->[[X;;],[Y;;],[Z;;]], 
+  function(X,Y,Z,rt) x1,x2=X
+    r=(-1)^rt*root(prod(X)*prod(Y)*prod(Z))
+    [[x1 sum(x->1//x,Y)-sum(Z)*x2//r;0 x2],
+     [sum(Y) 1//x1;-prod(Y)*x1 0], 
+     [0 -r//prod(Y)//prod(X);r sum(Z)]]
+  end, 
+  function(X,Y,Z,rt) x1,x2=X;z1=Z[1]
+    r=E(3,rt)*root(x1^2*x2*prod(Y)*prod(Z),3)
+    a=sum(Y)*r//x1-prod(Y)*sum(y->1//y,Y)*z1+prod(Y)*(x1*z1^2-x2*prod(Z)//z1)//r
+    [[x1 0 -prod(Z)*sum(z->1//z,Z)*x2*x1//z1+(sum(Y)*r^2//prod(Y))//z1;
+      0 x1 a//prod(Y)//z1*r^2;0 0 x2], 
+     [sum(Y)-r//x1//z1 1//z1 r;a r//x1//z1 0;-prod(Y)*x1*z1//r^2 0 0], 
+     [0 0 -x1*prod(Z)//z1;0 z1 0;1//x1 -1//r sum(Z)-z1]]
+  end,
+  function(X,Y,Z,rt)x1,x2=X;y1,y2,y3=Y
+    r=root((x1*x2*y1)^2*y2*y3*prod(Z),4)*E(4,rt)
+    a=y2*x1*x2*y1*prod(Z)*sum(x->1//x,Z)-r^2*sum(Z)
+    b=x1*x2*y1*prod(Z)*(y3+y2)-r^2*sum(x->prod(Z[x]),combinations(1:4,2))
+    [[x1 0 x1*a-(x1*x2*y1*b)//r x1*(1+y1//y3)-(r*sum(x->1//x,Z))//y3;
+      0 x1 1//y1+1//y2 -x2//r^3;0 0 x2 0;0 0 0 x2],
+     [y3+y1 x1*y1*y2*a y1*a y1;0 y1+y2 1//x1 0;0 -x1*y1*y2 0 0;-y3 0 0 0],
+     [0 0 0 -r//(y3*x2);0 0 -r//(y2*x1*x2*y1) 0;0 r 0 1//r^2;
+      r//(x1*y1) -r*a b sum(Z)]]
+  end, 
+  function(X,Y,Z,rt) x1,x2=X; y1,y2,y3=Y; z1,z2,z3,z4,z5=Z
+    r=root(x1^3*x2^2*y1*y2^2*y3^2*prod(Z),5)*E(5,rt)
+        [[[x2 + x1, 0, 0, 0, x1], [0, x2 + x1, 0, x2, 0], [0, 0, x1, 0, 0],
+[0,  -x1, 0, 0, 0], [-x2, 0, 0, 0, 0]], [[0, 0, 0, 0, -r // (z5 * x2)], [0,
+0, 0, (-r // z4) // x1, x2], [0, 0, (r // z3) // x1, (x2 * y2 * y3 * z2) //
+r  - r // (x1 * z4), x2], [0, (r // z2) // x2, (x1 * x2 * y1 * y2 * y3 * z1
+*  z4 * z5 * ((x1 * (y3 + y2)) // r -  1 // z3)) // r ^ 2 - r // (z2 * x2),
+((y2 + y3) - r // (z3 * x1)) + (x1 * x2 * z1 * z5 * y1 * y2 * y3) // r ^ 2,
+(-(x1 ^ 2) * x2 ^ 2 * y1 * y2 * y3 * z4 * z5 * z1) // r ^ 3], [(r // z1) //
+x1,  ((r ^ 2 * (1 // (z4 * z2) + 1 //  (z1 * z5))) // (x1 * x2 ^ 2) - (y2 *
+y3)  // x2) - (x1 * y1 * y2 * y3 * z3) // (r * x2), (-(r ^ 3) // (x1 * x2 *
+z2  * z4) + z3 * x1 * y1 * y2 * y3) * ((1 // (r * x2) + r // (x1 ^ 2 * x2 *
+z3  ^ 2 * y2 * y3)) - (1 // y3 + 1 // y2) // (x1 * x2 * z3)), (y1 * y2 * y3
+* (z2 + (z1 * z5) // z4)) // r - (r * (r + y1 * z3 * x1)) // (z3 * x1 ^ 2 *
+z4  * x2), (y1 + y2 + y3) - (z1 * z5 *  x1 * x2 * y1 * y2 * y3) // r ^ 2]],
+[[z1,  ((x1 * y2 * y3 * z1 * z2) // (r  * x2) + (((((r ^ 3 // x1) // z4) //
+x2  ^ 3) //  y3) // z5)  // y2) -  (r * (z2  // z5 +  z1 // z4)) // x2 ^ 2,
+(((((-r  * z3) // x2 ^ 2) // z5 - z1 //  x2 * (y3 + y2)) + (x1 // x2 * z3 *
+z1  * y2 * y3) // r) - (x1 * y1 * y2 * y3 * z1 * z2 * z4) // r ^ 2) + (x1 ^
+2  * y1 * y2 * y3 * z1 *  z2 * z3 * z4 * (y3 + y2))  // r ^ 3 + (r * z1) //
+(x1  * x2 * z3), ((((y2 * y3 * (x2 * z1 *  z2 + x1 * z1 * (z2 + z3) + (x1 *
+z2  * z3 * z4) // z5)) // x2)  // r + ((y1 * y2 * y3  * z1 * z2 * z3 * x1 *
+(x2  + x1)) // x2) // r ^ 2) -  (y2 ^ 2 * y3 ^ 2 * z1  * z2 * z3 * x1 ^ 2 *
+z4)  // r ^ 3) - (r * ((z2 + z3) // (z5 * x2) + z1 // (z4 * x2) + z2 // (z5
+*  x1) + z1 // (z4 * x1))) // x2, ((z1 *  (x2 + x1)) // x2 + (x1 ^ 2 * z2 *
+z3  * z4 * y2 * y3) // r ^ 2) - (r * (1 // y1 + 1 // y2 + 1 // y3)) // x2],
+[0,  z2, (z3 + (x1 * x2 ^ 2 * y1 * y2 * y3 * z1 * z2 * z4 * z5) // r ^ 3) -
+(r  * (1 // y3 + 1 // y2)) // x1, (((x2 * z2) // x1 + z3 + z2) - (x1 * x2 *
+z2  * z3 * z4 * y2 * y3) // r ^ 2) - (r * (1 // y3 + 1 // y2)) // x1, -(r ^
+2) // (x1 * z1 * y1 * y2 * y3)], [0, 0, z3, -(r ^ 3) // (x1 ^ 2 * x2 * z1 *
+z5  * y1 * y2 * y3) + z3, -(r ^ 2) //  (x1 * z1 * y1 * y2 * y3)], [0, 0, 0,
+z4, (z4 * x1 * x2 * z5) // r], [0, 0, 0, 0, z5]]] end,
+  function(X,Y,Z,rt)x1,x2=X;y1,y2,y3=Y;z1,z2,z3,z4,z5=Z
+    r=root((x1*x2)^3*(y1*y2*y3)^2*prod(Z[[1,2,3,4,5,5]]),6)*E(6,rt)
+    a=1 # representation  has one free parameter
+    r^0*[[[x1 + x2, 0, 0, 0,
+0,  x2 * x1], [0, x1 + x2,  0, 0, x2 * x1, 0], [0,  0, x1 + x2, x2 * x1, 0,
+0], [0, 0, -1, 0, 0, 0], [0, -1, 0, 0, 0, 0], [-1, 0, 0, 0, 0, 0]], [[0, 0,
+0,  0, 0, -1 // z5 * r], [0, 0, 0, 0, -1 // z4 * r, ((-1 // a) // r ^ 2) //
+z4],  [0, 0, 0, -1 // z5 * r, z4 - z5, (-1 // a) // r ^ 3 * z5], [0, 0, ((r
+//  z3) // x2) // x1, (x1 * x2 * y1 * y2  * y3 * (z2 * z5 + z4 * z1) - a //
+(z4  * z5 ^ 2)) // r ^ 2,  (-x1 * x2 * y1 * y2 *  y3 * z1 * z4 * z5 * (z4 -
+z5)  + a // z5) // r ^ 3, (((((((1 // y1)  // y2) // y3) // x1 ^ 2) // x2 ^
+2) // z2) // z3) // a], [0, ((1 // z2 * r) // x2) // x1, (-((y1 * y3 + y2 *
+y3 + y1 * y2)) * x1 * x2 * z1 * z5 ^ 2 * z4 * y1 * y2 * y3) // a + (((z5 //
+x2) // x1 * (y3 + y2 + y1) * r ^ 4) // z3) // a + (((r ^ 2 * y1 * y2 * y3 *
+z5  * (z4 * z3 * z1 - z2 ^ 2 * z5)) // a) // z2) // z3 + ((((((r ^ 2 * (-z3
++ z2)) // z4) // z5) // x1) // x2) // z2) // z3, ((-z5 * (y1 * y3 + y2 * y3
++  y1 * y2) * r ^ 3) // a + (((r * (z2 *  z4 * x2 * x1 * z5 ^ 3 * y3 * y2 *
+y1 - a) * (y3 + y2 + y1)) // a) // z4) // z5 + (((x1 * x2) ^ 2 * (y1 * y2 *
+y3)  ^ 2 * z5 ^ 2 * (z1 * z4 * z3 - z5 * z2 ^ 2)) // r) // a + (((x1 * x2 *
+y1  * y2 * y3 * (z4 * z1 + 2 * z5 * z2)) // r) // z4) // z5) - ((a // r) //
+z4  ^ 2) // z5 ^ 3, ((y3 + y2 + y1) - (x1 * x2 * y1 * y2 * y3 * ((z4 * z1 +
+z2 * z5) - z1 * z5)) // r ^ 2) + ((a // r ^ 2) // z4) // z5 ^ 2, (((((((((r
+//  y1) // y2) // y3) // x1  ^ 2) // x2 ^ 2) //  z2) // z3) // a) // z4) //
+z5],  [((r // z1) // x2) // x1, (-((x1 * x2) ^ 2) * (y1 * y2 * y3) ^ 2 * z3
+*  z4 * z5 * (((-z2 * z5 +  z2 * z4) - z4 * z1) +  z1 * z5) * a) // r ^ 2 -
+((x1 * y1 * y2 * y3 * x2 * z3 * a ^ 2) // r ^ 2) // z5, ((-((y1 * y3 + y2 *
+y3  + y1 * y2)) * (x1 * x2 * y1 * y2 *  y3 * z1 * z4 * z5 ^ 2 * (z4 - z5) -
+a)  * r ^ 3) // z5 + (z4 - z5) * x1 ^ 2 * x2 ^ 2 * y1 ^ 2 * y2 ^ 2 * y3 ^ 2
+* z5 ^ 2 * z2 * z1 * z4 * (y3 + y2 + y1) * r) - (((x1 * x2 * y1 * y2 * y3 *
+(((x1 * x2) ^ 2 * (y1 * y2 * y3) ^ 2 * z1 * z4 ^ 2 * z5 ^ 4 * ((z5 * z2 ^ 2
+*  z4 + (z5 - z4) * z1 * z3 * z4) - z5 ^  2 * z2 ^ 2) + x1 * x2 * y1 * y2 *
+y3  * z4 * z5 ^ 2 * a * ((2 * z4 * z1 * z3 - z5 * z1 * z3) + z5 * z2 * z1 +
+z5 * z2 * z3)) - z3 * a ^ 2)) // r) // z5 ^ 2) // z4, (((-((z4 - z5)) * (y1
+*  y3 + y2 * y3 + y1 * y2) * x1 ^ 3 * x2 ^ 3 * z1 * z5 ^ 2 * z4 * z3 * z2 *
+y1  ^ 2 * y2 ^ 2 * y3 ^ 2 + (((y3 + y2 + y1) * (x1 * x2 * y1 * y2 * y3 * z2
+* z4 * z5 ^ 2 * (z4 - z5) + a) * r ^ 4) // z5) // z4) - r ^ 2 * (x1 * x2) ^
+2 * (y1 * y2 * y3) ^ 2 * z5 * ((-z1 * z3 * z4 ^ 2 + z4 * z2 ^ 2 * z5 + z5 *
+z1  * z4 * z3) - z5 ^ 2 * z2 ^ 2)) - ((r ^ 2 * a * x1 * x2 * y1 * y2 * y3 *
+(((z4  * z3 + z4 * z1) - z2 * z4) + 2 * z5 * z2)) // z4) // z5) + ((r ^ 2 *
+a  ^ 2) // z4 ^ 2) // z5  ^ 3, -x1 * x2 * y1 *  y2 * y3 * (z2 - z1) * (z4 -
+z5)  * a * r - ((a ^  2 * r) // z5 ^ 2)  // z4, ((((((((-1 // z3) // z4) //
+z2)  // y1) // y2) // y3) // z5)  // x1 ^ 2) // x2 ^ 2  * r ^ 4 + y1 + y3 +
+y2]],  [[z1, ((z2 - z1) * (z4 - z5) * a * r ^ 3) // z5 + (((((((a ^ 2 * r ^
+3) // x1) // y1) // y2) // y3) // x2) // z5 ^ 3) // z4, ((x2 ^ 2 * x1 ^ 2 *
+y2  * y3 * z5 * y1 * (z4 - z5) * (y1 *  y3 + y2 * y3 + y1 * y2) * z1 * z4 *
+z3 * z2 * r ^ 2 - (y3 + y2 + y1) * x1 ^ 2 * x2 ^ 2 * y1 * y2 * y3 * z2 * z3
+* (x1 * x2 * y1 * y2 * y3 * z2 * z4 * z5 ^ 2 * (-z5 + z4) + a) * z1) + x1 *
+x2 * y1 * y2 * y3 * (z4 - z5) * (z2 ^ 2 * z5 - z1 * z4 * z3) * r ^ 4 + (a *
+(((z3 + z1) - z2) + (2 * z5 * z2) // z4) * r ^ 4) // z5 ^ 2) - (((((((a ^ 2
+* r ^ 4) // x1) // x2) // y1) // y2) // y3) // z4 ^ 2) // z5 ^ 4, ((-((y3 +
+y2 + y1)) * (x1 + x2) * x1 ^ 2 * x2 ^ 2 * y1 * y2 * y3 * z2 * z3 * (x1 * x2
+*  y1 * y2 * y3 * z2 * z4 * z5 ^ 2 * (-z5 + z4) + a) * z1 - (y1 * y3 + y2 *
+y3  + y1 * y2) * (x1 * x2 * z1 * z4 * (z4 - z5) - (((a // y1) // y2) // y3)
+//  z5 ^ 2) * r ^ 5) + ((x1 * x2 * y1 * y2 * y3 * (z5 - z4) * (z1 * z4 * z3
+-  z5 * z2 ^ 2) + ((a * (((z4 * z3 + z4 * z1) - z2 * z4) + 2 * z5 * z2)) //
+z4)  // z5 ^ 2) - ((((((a ^ 2 // x1) // x2) // y1) // y2) // y3) // z4 ^ 2)
+// z5 ^ 4) * (x1 + x2) * r ^ 4 + x2 ^ 2 * x1 ^ 2 * y1 * y2 * y3 * z5 * z2 *
+z1  * z4 * (z4 - z5) * (y3 + y2 + y1) * r ^ 3 + x2 ^ 2 * x1 ^ 2 * y1 * y2 *
+y3  * z5 * z2 * z1 * z4 * z3 * (z4 -  z5) * (y1 * y3 + y2 * y3 + y1 * y2) *
+(x1  + x2) * r ^ 2) - ((r * x1 * x2 * (((x1 * x2 * y1 * y2 * y3) ^ 2 * z1 *
+z4  ^ 2 * z5 ^ 4 * (z1 * z3 * z4 - z5 * z2 ^ 2) * (z5 - z4) + a * x1 * x2 *
+y1 * y2 * y3 * z4 * z5 ^ 2 * ((2 * z4 * z1 * z3 - z5 * z1 * z3) + z5 * z2 *
+z1  + z5 * z2 * z3)) - z3  * a ^ 2)) // z4) // z5  ^ 3, (x1 + x2) * (((z1 -
+z2) * (z5 - z4)) // z5 + ((((((a // x1) // y1) // y2) // y3) // x2) // z5 ^
+3) // z4) * r ^ 3 * a - (x1 * x2 * z3 * (x1 * x2 * y1 * y2 * y3 * z4 * z5 ^
+2 * (z1 - z2) * (z5 - z4) + a) * a) // z5 ^ 2, (((-((y1 * y3 + y2 * y3 + y1
+*  y2)) * r) // y1) // y2) // y3 + z1 * (x1 + x2) + (x1 ^ 2 * x2 ^ 2 * y1 *
+y2  * y3 * z2 * z5 * z4 * z3) // r ^ 3], [0, z2, (((((((y1 * y3 + y2 * y3 +
+y1 * y2) // x2) // x1 * r ^ 5) // y1) // y2) // y3) // a - (z5 * z2 * (y3 +
+y2  + y1) * r ^ 3) // a) + r * ((x1 *  x2 * y1 * y2 * y3 * z5 * (-z4 * z3 *
+z1  + z2 ^ 2 * z5)) // a + ((z3 - z2) // z5) // z4), (((-z2 * z5 * (y3 + y2
++  y1) * (x1 + x2) * r ^ 3) // a - r ^ 2 * ((z4 * x1 * x2 * z5 * z1) // a -
+((((1 // y1) // y2) // y3) // z4) // z5) * (y1 * y3 + y2 * y3 + y1 * y2)) +
+(((r  * ((x1 * x2 * y1 * y2 * y3 * z4 *  z5 ^ 2 * (-z4 * z3 * z1 + z2 ^ 2 *
+z5)  + a * z3) - a * z2) * (x1 + x2)) // a) // z5) // z4 + (x2 ^ 2 * x1 ^ 2
+*  z2 * y1 * y2 * y3 * z5 ^ 2 * z1 * z4 * (y3 + y2 + y1)) // a + ((x2 ^ 2 *
+x1  ^ 2 * z2 * z3 * y1 * y2 * y3 * z5  ^ 2 * z1 * z4 * (y1 * y3 + y2 * y3 +
+y1  * y2) * (x1 + x2)) // a) // r) - (x1 * x2 * ((((x1 * x2 * y1 * y2 * y3)
+^  2 * z1 * z4 * z5 ^ 2 * (-z1 * z3 *  z4 + z5 * z2 ^ 2)) // a + (x1 * x2 *
+y1  * y2 * y3 * z3 * (2 * z4 * z1 + z5 * z2)) // z4) - ((z3 * a) // z4 ^ 2)
+//  z5 ^ 2)) // r ^ 2, ((((-((y1 * y3 +  y2 * y3 + y1 * y2)) * r) // y1) //
+y2)  // y3 + z2 * (x1 + x2)) - (((x1 * x2  * z3 * (x1 * x2 * y1 * y2 * y3 *
+z4  * z5 ^ 2 * ((-z4 * z1  + z2 * z4) - z2 * z5)  + a)) // r ^ 3) // z4) //
+z5, (((((((1 // x1) // x2) // y1) // y2) // y3) // a) // z1) // z4], [0, 0,
+z3,  z3 * (x1 + x2) - (((x1 * x2 * z3 * (x1 * x2 * y1 * y2 * y3 * z4 * z5 ^
+2  * (z2 * z5 + z4 * z1) - a)) // r ^ 3) // z4) // z5, (-x1 * x2 * z3 * (x1
+*  x2 * y1  * y2 *  y3 * z2  * z4 *  z5 ^ 2  * (-z5 +  z4) + a))  // r ^ 4,
+(((((((z5  // z1) // r) // x2) // x1) // y1) // y2) // y3) // a], [0, 0, 0,
+z5,  ((z4 - z5) * z4) // r * z5, (-(z5 ^ 2) // r ^ 4) // a * z4], [0, 0, 0,
+0, z4, (-1 // a) // r ^ 3 * z5], [0, 0, 0, 0, 0, z5]]]
+  end]
+
+chevieset(:G4_22, :GetParams, function (ST, para)
+  function f(p)
+    p=root.(p)
+    vcat(p, -p)
+  end
+  if     ST==4 return [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==5 return [[1,-1], para[1], para[2]]
+  elseif ST==6 return [para[1], E.(3,0:2), para[2]]
+  elseif ST==7 return para
+  elseif ST==8 return [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==9 return [para[1], E.(3,0:2), para[2]]
+  elseif ST==10 return [[1,-1], para[1], para[2]]
+  elseif ST==11 return para
+  elseif ST==12 return [para[1], E.(3,0:2), E.(4,0:3)]
+  elseif ST==13 return [para[2], E.(3,0:2), f(para[1])]
+  elseif ST==14 return [para[1], para[2], E.(4,0:3)]
+  elseif ST==15 return [para[1], para[2], f(para[3])]
+  elseif ST==16 return [[1,-1], E.(3,0:2), para[1]]
+  elseif ST==17 return [para[1], E.(3,0:2), para[2]]
+  elseif ST==18 return [[1,-1], para[1], para[2]]
+  elseif ST==19 return para
+  elseif ST==20 return [[1,-1], para[1],E.(5,0:4)]
+  elseif ST==21 return [para[1], para[2],E.(5,0:4)]
+  elseif ST==22 return [para[1],E.(3,0:2),E.(5,0:4)]
+  end
+end)
+
+chevieset(:G4_22, :HeckeRepresentation, function(ST,para,root,i)
+  X,Y,Z=chevieget(:G4_22,:GetParams)(ST,para)
+  function rep(char) local r, dim
+    drop(l,i)=deleteat!(collect(l),i)
+    dim = char[1]
+    r = Rep4_22[dim]
+    if dim == 1 return r(X[char[2]], Y[char[3]], Z[char[4]])
+    elseif dim == 2
+      if ST in 4:7
+        Z = drop(Z, char[4]);z1,z2=Z
+        if ST == 4 return [[[0,-Z2],[Z1,0]],[[0,0],[0,0]],[[Z2,Z2],[0,Z1]]]
+        else return r(X, drop(Y, char[3]), Z, char[2])
+        end
+      else return r(X, drop(Y, char[3]), Z[(combinations(1:length(Z), 2))[char[4]]], char[2])
+      end
+    elseif dim==3
+        X=X[[char[3],3-char[3]]]
+        if ST==4
+          [[[0, 0, 1], [0, -1, 0], [1, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[Z[1], -1, Z[2]], [0, Z[2], -((Z[3] * Z[1] + Z[2] ^ 2))], [0, 0, Z[3]]]]
+        elseif ST == 6
+          [[[X[2], 0, 0], [(-(X[2]) * Z[3] - X[1] * Z[1]) - X[1] * Z[2], X[1], 0], [X[2] * Z[3] * Z[1] - X[1] * Z[2] ^ 2, 0, X[1]]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[Z[3], 1, 0], [0, Z[1], 1], [0, 0, Z[2]]]]
+        elseif ST in [5, 7] r(X, Y, Z, char[2])
+        elseif ST in 8:15 return r(X, Y, drop(Z, char[4]), char[2])
+        else return r(X, Y, Z[(combinations(1:5, 3))[char[4]]], char[2])
+        end
+    elseif dim == 4
+        Y = vcat(drop(Y, char[3]), [Y[char[3]]])
+        if ST in 8:15 return r(X, Y, Z, char[2])
+        else return r(X, Y, drop(Z, char[4]), char[2])
+        end
+    elseif dim == 5
+      r(X[[char[3],3-char[3]]],vcat([Y[char[4]]],drop(Y,char[4])),Z,char[2])
+    elseif dim==6
+      r(X,Y,vcat(drop(Z,char[3]),[Z[char[3]]]),char[2])
+    end
+  end
+  ci = G4_22FetchIndexChars(ST, para)[i]
+# m=map(x->x.+0*prod(prod,para),rep(chevieget(:G4_22,:paramchars)(ST)[ci]))
+  m=rep(chevieget(:G4_22,:paramchars)(ST)[ci])
+  ApplyWord(w,l)=prod(map(i->i>0 ? l[i] : inv(l[-i]),w))
+  map(x->ApplyWord(x,m),chevieget(:G4_22,:Embed)(ST))
+end)
+
+chevieset(:G4_22, :Representation, function (ST, i)
+        local para
+        para = (chevieget(:G4_22, :EigenvaluesGeneratingReflections))(ST)
+        para = map((x->begin
+                        map((j->begin
+                                    E(1 // x, j)
+                                end), 0:1 // x - 1)
+                    end), para)
+        return (chevieget(:G4_22, :HeckeRepresentation))(ST, para, [], i)
+    end)
