@@ -460,7 +460,7 @@ group `W`, evaluated at `q` .
 
 ```julia-repl
 julia> fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))
-Pol{Cyc{Int64}}: q²+q
+Pol{Int64}: q²+q
 ```
 """
 function fakedegree(W,p,q=Pol())

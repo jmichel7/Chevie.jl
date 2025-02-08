@@ -1022,10 +1022,10 @@ function spets(s::String;NC=false)
      [(3+root(3))//2 root(3)E(3,2);(3+root(3))//2 root(3)E(3);(3+root(3))//2 root(3)].//3)
     return spets(W,reflrep(W,Perm(1,2,3));NC)
   elseif s=="2G5"  # reflection_subgroup(G14,[10,52])
-    W=PRG([[(-E(3)-2E(3,2))*(-3+root(6))//3,E(3)],
-           [(-E(3)-2E(3,2))*(3-root(6))//3, E(3)]],
-          [[E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6],
-           [-E(3)//2,(-E(3)-2E(3,2))*(-3-root(6))//6]])
+    W=PRG([(-E(3)-2E(3,2))*(-3+root(6))//3 E(3);
+           (-E(3)-2E(3,2))*(3-root(6))//3 E(3)],
+          [E(3)//2 (-E(3)-2E(3,2))*(-3-root(6))//6;
+           -E(3)//2 (-E(3)-2E(3,2))*(-3-root(6))//6])
     return spets(W,[-1 0;0 1];NC)
   elseif s=="3G333" 
     W=crg(3,3,3);return spets(reflection_subgroup(W,1:3),reflrep(W,Perm(1,2,44));NC)

@@ -679,7 +679,10 @@ function cartan(W::PermRootGroup{T,T1})where {T,T1}
 end
 
 function cartan(t::TypeIrred;permute=false)
-  if t.series==:ST return improve_type(toM(getchev(t,:CartanMat))) end
+  if t.series==:ST 
+    m=getchev(t,:CartanMat)
+    if !(m isa Matrix) m=toM(m) end
+    return improve_type(m) end
   C=haskey(t,:bond) ? haskey(t,:cartanType) ? 
      cartan(t.series,rank(t),t.bond,t.cartanType) : 
      cartan(t.series,rank(t),t.bond) : 

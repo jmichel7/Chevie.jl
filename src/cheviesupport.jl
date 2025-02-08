@@ -99,7 +99,6 @@ function DiagonalMat(v...)
   toL(R)
 end
 DiagonalMat(v::Vector)=DiagonalMat(v...)
-Drop(a,i::Int)=deleteat!(collect(a),i) # a AbstractVector ot Tuple
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Factors(n)=reduce(vcat,fill(k,v) for (k,v) in factor(n))
@@ -127,7 +126,6 @@ SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
-SymbolsDefect(a,b,c,d)=symbols(a,b,d)
 function TeXBracket(s)
   s=string(s)
   length(s)==1  ? s : "{"*s*"}"
@@ -143,19 +141,23 @@ end
 function Replace(s,p...)
 # print("Replace s=$s p=$p")
   for (src,tgt) in (p[i]=>p[i+1] for i in 1:2:length(p))
+    if s isa String 
+      s=replace(s,src=>tgt)
+      continue
+    end
+    res=empty(s)
     i=0
     while i+length(src)<=length(s)
-     if src==s[i+(1:length(src))]
-        if tgt isa String
-          s=s[1:i]*tgt*s[i+length(src)+1:end]
-        else
-          s=vcat(s[1:i],tgt,s[i+length(src)+1:end])
-        end
-        i+=length(tgt)
+      if @views src==s[i+1:i+length(src)]
+        append!(res,tgt)
+        i+=length(src)
       else
+        push!(res,s[i+1])
         i+=1
       end
     end
+    @views append!(res,s[i+1:end])
+    s=res
   end
 # println("=>",s)
   s

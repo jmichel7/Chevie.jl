@@ -33,7 +33,7 @@ end
 @test mytest("Chars.jl","ct.classnames","6-element Vector{String}:\n \"A_0\"\n \"\\\\tilde A_1\"\n \"A_1\"\n \"G_2\"\n \"A_2\"\n \"A_1+\\\\tilde A_1\"")
 @test mytest("Chars.jl","m=cartan(:A,3)","3×3 Matrix{Int64}:\n  2  -1   0\n -1   2  -1\n  0  -1   2")
 @test mytest("Chars.jl","schur_functor(m,[2,2])","6×6 Matrix{Rational{Int64}}:\n   9   -6    4  3//2   -2    1\n -12   16  -16  -4      8   -4\n   4   -8   16   2     -8    4\n  12  -16   16  10    -16   12\n  -4    8  -16  -4     16  -12\n   1   -2    4  3//2   -6    9")
-@test mytest("Chars.jl","fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))","Pol{Cyc{Int64}}: q²+q")
+@test mytest("Chars.jl","fakedegree(coxgroup(:A,2),[[2,1]],Pol(:q))","Pol{Int64}: q²+q")
 @test mytest("Chars.jl","fakedegrees(coxgroup(:A,2),Pol(:q))","3-element Vector{Pol{Int64}}:\n q³\n q²+q\n 1")
 @test mytest("Chars.jl","charinfo(coxgroup(:G,2)).charparams","6-element Vector{Vector{Vector{Int64}}}:\n [[1, 0]]\n [[1, 6]]\n [[1, 3, 1]]\n [[1, 3, 2]]\n [[2, 1]]\n [[2, 2]]")
 @test mytest("Chars.jl","charinfo(coxgroup(:G,2))","┌──┬──────────────────────────────────────────────────────────┐\n│n0│ name ext b B a A spaltenstein lusztig              symbol│\n├──┼──────────────────────────────────────────────────────────┤\n│1 │ φ₁‚₀  Id 0 0 0 0            1       1       (0,0,0,0,0,2)│\n│2 │ φ₁‚₆ det 6 6 6 6            ε       ε (01,01,01,01,01,12)│\n│3 │φ′₁‚₃     3 3 1 5           εₗ      ε′            (0,0,1+)│\n│4 │φ″₁‚₃     3 3 1 5          ε_c      ε″            (0,0,1-)│\n│5 │ φ₂‚₁  Λ¹ 1 5 1 5           θ′      θ′       (0,0,0,0,1,1)│\n│6 │ φ₂‚₂     2 4 1 5           θ″      θ″       (0,0,0,1,0,1)│\n└──┴──────────────────────────────────────────────────────────┘")

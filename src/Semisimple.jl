@@ -194,7 +194,7 @@ end
 
 Groups.gens(W::ExtendedCox)=vcat(gens(W.group),W.phis)
 
-function ExtendedCox(W::FiniteCoxeterGroup{T},F0s::Vector{<:Matrix})where T
+function ExtendedCox(W::FiniteCoxeterGroup{T},F0s::Vector{<:AbstractMatrix})where T
   if isempty(F0s) return ExtendedCox(W,[reflrep(W,W())],[one(W.G)]) end
   ExtendedCox(W,F0s,isempty(F0s) ? T[] : map(F->PermX(W.G,F),F0s))
 end
@@ -224,12 +224,12 @@ function Base.show(io::IO,W::ExtendedCox)
   end
 end
 
-ExtendedReflectionGroup(W,mats::AbstractVector{Matrix{Int}})=ExtendedCox(W,mats)
-ExtendedReflectionGroup(W,mats::Matrix{Int})=ExtendedCox(W,[mats])
-ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractVector{Int}})=ExtendedCox(W,[toM(mats)])
-ExtendedReflectionGroup(W)=ExtendedReflectionGroup(W,Matrix{Int}[])
+ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractMatrix{<:Integer}})=ExtendedCox(W,mats)
+ExtendedReflectionGroup(W,mats::AbstractMatrix{<:Integer})=ExtendedCox(W,[mats])
+ExtendedReflectionGroup(W,mats::AbstractVector{<:AbstractVector{<:Integer}})=ExtendedCox(W,[toM(mats)])
+ExtendedReflectionGroup(W)=ExtendedReflectionGroup(W,AbstractMatrix{<:Integer}[])
 
-function ExtendedReflectionGroup(W,mats::Vector{Vector{Vector{Int}}})
+function ExtendedReflectionGroup(W,mats::Vector{<:Vector{<:Vector{<:Integer}}})
   if isempty(mats)  ExtendedCox(W,empty([fill(0,0,0)]))
   elseif isempty(mats[1]) ExtendedCox(W,fill(fill(0,0,0),length(mats)))
   else ExtendedCox(W,toM.(mats))

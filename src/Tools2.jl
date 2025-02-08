@@ -18,6 +18,8 @@ using ..Chevie: Chevie, root, gap, Cyc, conductor
 using ..Util: toL
 using GroupPresentations: Presentation
 
+Base.isfinite(x::Mvp)=true # backport to PuiseuxPolynomials
+
 #----------------------------------------------------------------------
 """
 `blocks(G::Group,p::Integer)`
@@ -55,8 +57,8 @@ julia> blocks(W,7)
 function Combinat.blocks(G::Group,p::Integer)
   T=CharTable(G)
   l=length(T.charnames)
-  classes=map(c->div(T.centralizers[1],c),T.centralizers)
-  v=map(chi->map(j->FFE{p}(classes[j]*chi[j]//chi[1]),1:l),eachrow(T.irr))
+  classes=div.(T.centralizers[1],T.centralizers)
+  v=map(chi->map((cl,ch)->FFE{p}(cl*ch//chi[1]),classes,chi),eachrow(T.irr))
   sort(collectby(improve_type(v),1:l))
 end
 

@@ -2,12 +2,123 @@
 # (C) 1998 - 2011  Gunter Malle and  Jean Michel
 # data about imprimitive complex reflection groups
 
+chevieset(:imp, :SemisimpleRank,(p,q,r)->r)
+
 chevieset(:imp, :EigenvaluesGeneratingReflections, function (p, q, r)
   res=fill(1//2,r)
   if q==1 res[1]=1//p
   elseif q!=p pushfirst!(res,q//p)
   end
   res
+end)
+
+chevieset(:imp,:GeneratingRoots,function(p,q,r)
+  if q==1 
+    roots=[map(i->i==1 ? 1 : 0,1:r)]
+  else
+    if q!=p roots=[map(i->i==1 ? Cyc(1) : Cyc(0),1:r)] end
+    v=vcat([-E(p),1],fill(0,r-2))
+    if r==2 && q>1 && isodd(q) v*=E(p) end
+    if q==p roots=[v] else push!(roots, v) end
+  end
+  append!(roots,map(i->map(j->j==i-1 ? -1 : j==i ? 1 : 0,1:r),2:r))
+end)
+
+chevieset(:imp, :BraidRelations, function (p, q, r)
+  function b(i,j,o)
+    p(i,j)=map(k->i*mod(k,2)+j*mod(1-k,2),1:o)
+    [p(i,j),p(j,i)]
+  end
+  res=Vector{Vector{Int}}[]
+  if q==1
+    if r>=2
+      if p==1 push!(res, b(1, 2, 3))
+      else push!(res, b(1, 2, 4))
+      end
+    end
+    append!(res,map(i->b(i,i-1,3),3:r))
+    for i in 3:r append!(res,map(j->b(i,j,2),1:i-2)) end
+  elseif p==q
+    push!(res,b(1,2,p))
+    if r>=3
+      append!(res,[[[1,2,3,1,2,3],[3,1,2,3,1,2]],b(1,3,3),b(2,3,3)])
+    end
+    append!(res,map(i->b(i,i-1,3),4:r))
+    for i in 4:r append!(res,map(j->b(i,j,2),1:i-2)) end
+  else
+    push!(res,[[1,2,3],[2,3,1]])
+    i=b(2,3,q-1)
+    push!(res,[vcat([1,2],i[2]),vcat([3,1],i[1])])
+    if r>=3
+      if q!=2 push!(res,[[2,3,4,2,3,4],[4,2,3,4,2,3]]) end
+      append!(res,[b(2,4,3),b(3,4,3),b(1,4,2)])
+    end
+    append!(res,map(i->b(i,i-1,3),5:r+1))
+    for i in 5:r+1 append!(res,map(j->b(i,j,2),1:i-2)) end
+  end
+  res
+end)
+
+chevieset(:imp, :Size, (p,q,r)->div(p^r*factorial(r),q))
+
+chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
+  if [q,r]==[2,2] div(p*(p+6),4)
+  elseif q==1 npartition_tuples(r,p)
+  else length(chevieget(:imp,:ClassInfo)(p,q,r)[:classtext])
+  end
+end)
+
+chevieset(:imp, :ReflectionName, function (p,q,r,option,arg...)
+  @show p,q,r,option
+  if r==1 && q==1
+    if haskey(option, :TeX) return string("Z_{",p,"}")
+    else return string("Z",p)
+    end
+  end
+  if haskey(option, :TeX) n=string("G_{",join([p,q,r],","),"}")
+  else n=string("G",joindigits([p,q,r]))
+  end
+  if length(arg)>0 n*=string("(",xrepr(arg[1];option),")") end
+  n
+end)
+
+chevieset(:imp, :CartanMat, function (p, q, r)
+  rt=chevieget(:imp, :GeneratingRoots)(p,q,r)
+  rbar=conj(rt)
+  e=chevieget(:imp, :EigenvaluesGeneratingReflections)(p, q, r)
+  e=1 .-map(x->E(denominator(x),numerator(x)),e)
+  e=map(i->(e[i]*rbar[i])//sum(rbar[i].*rt[i]),1:length(e))
+  map(x->map(y->sum(x.*y),rt),e)
+end)
+
+chevieset(:imp, :ReflectionDegrees,(p, q, r)->vcat(p*(1:r-1),div(r*p,q)))
+
+chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
+  res=collect(p*(0:r-1))
+  if p==q && p>=2 && r>2 res[r]-=r end
+  res
+end)
+
+chevieset(:imp, :ParabolicRepresentatives, function (p, q, r, s)
+  if q==1
+    if p==1
+      if s==0 return [Int[]] end
+      return map(j->vcat(map(k->(sum(j[1:k-1])+k-1).+(1:j[k]),1:length(j))...),
+                    vcat(map(i->partitions(s,i),1:r+1-s)...))
+    else return vcat(map(i->map(j->vcat(1:i,i+1 .+j), 
+        chevieget(:imp, :ParabolicRepresentatives)(1,1,r-i-1,s-i)),0:s)...)
+    end
+  elseif r==2
+    if q==2
+      return [[Int[]], [[1], [2], [3]], [1:3]][s + 1]
+    elseif p==q
+      if iseven(p) return [[Int[]], [[1], [2]], [[1, 2]]][s + 1]
+      else         return [[Int[]], [[1]], [[1, 2]]][s + 1]
+      end
+    else return false
+    end
+  else return false
+  end
 end)
 
 chevieset(:imp,:PowerMaps,function(p,q,r)
@@ -34,16 +145,22 @@ chevieset(:imp,:PowerMaps,function(p,q,r)
   res
 end)
 
-chevieset(:imp,:GeneratingRoots,function(p,q,r)
-  if q==1 
-    roots=[map(i->i==1 ? 1 : 0,1:r)]
-  else
-    if q!=p roots=[map(i->i==1 ? Cyc(1) : Cyc(0),1:r)] end
-    v=vcat([-E(p),1],fill(0,r-2))
-    if r==2 && q>1 && isodd(q) v*=E(p) end
-    if q==p roots=[v] else push!(roots, v) end
+chevieset(:imp, :CharParams, function (de, e, r)
+  if e==1 return partition_tuples(r,de) end
+  charparams=[]
+  d = div(de, e)
+  for t in partition_tuples(r,de)
+    tt=map(i->circshift(t,i),(1:e).*d)
+    if t==minimum(tt)
+      s=findfirst(==(t),tt)
+      if s==e push!(charparams, t)
+      else t=t[1:s*d]
+        s=div(e,s)
+        append!(charparams,map(i->vcat(t,[s,i]),0:s-1))
+      end
+    end
   end
-  append!(roots,map(i->map(j->j==i-1 ? -1 : j==i ? 1 : 0,1:r),2:r))
+  charparams
 end)
 
 # see page 172 of Halverson and Ram,
@@ -291,10 +408,29 @@ chevieset(:imp, :CharTable, function (p, q, r)
   end
 end)
 
-chevieset(:imp, :ReflectionCoDegrees, function (p, q, r)
-  res=collect(p*(0:r-1))
-  if p==q && p>=2 && r>2 res[r]-=r end
-  res
+chevieset(:imp, :LowestPowerFakeDegrees, function (p, q, r)
+  if q==1 || p==q error("should not be called") end
+  return false
+end)
+
+chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
+  if q==1 || p==q error("should not be called") end
+  return false
+end)
+
+chevieset(:imp, :CharSymbols, function (p, q, r)
+  if q == 1 return symbols(p, r, 1)
+  elseif q==p return symbols(p, r, 0)
+  else return false
+  end
+end)
+
+chevieset(:imp, :FakeDegree, function (p, q, r, c, v)
+  if q==1 c=fegsymbol(symbol_partition_tuple(c,1))
+  elseif q==p c=fegsymbol(symbol_partition_tuple(c,fill(0,p)))
+  else return false
+  end
+  c(v)
 end)
 
 # JM 30/11/2000 we have to decide how to represent cuspidals of imprimitive
