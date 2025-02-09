@@ -711,6 +711,7 @@ chevieset(:imp, :ClassInfo, function (p, q, r)
     return res
   end
 end)
+
 chevieset(:imp, :ClassName, function(p)
   if all(x->x isa Vector, p)
     if sum(sum,p)==1 xrepr(E(length(p),findfirst(==([1]),p)-1);TeX=true)
@@ -719,5 +720,195 @@ chevieset(:imp, :ClassName, function(p)
   elseif all(x->x isa Integer,p) joindigits(p)
   elseif all(i->p[i] isa Vector,1:length(p)-1) && p[end] isa Integer
     string_partition_tuple(vcat(p[1:end-1], [length(p)-1, p[end]]);TeX=true)
+  end
+end)
+
+chevieset(:imp, :SchurModel, function (p, q, r, phi)
+  if q==1 # cf. Chlouveraki, arxiv 1101.1465
+    function GenHooks(l,m)
+      if isempty(l) return [] end
+      m=conjugate_partition(m)
+      append!(m,fill(0,max(0,l[1]-length(m))))
+      m=(1 .+m).-(1:length(m))
+      vcat(map(i->(l[i]-i).+m[1:l[i]],1:length(l))...)
+    end
+    res=Dict(:coeff=>(-1)^(r*(p-1)),:factor=>fill(0,p),:vcyc=>[])
+    l=vcat(phi...)
+    sort!(l)
+    push!(res[:factor],sum(((1:length(l)).-length(l)).*l))
+    for s in 1:p
+      for t in 1:p
+        for h in GenHooks(phi[s], phi[t])
+          v = fill(0, max(0, (1 + p) - 1))
+          if s != t
+            v[[s, t]] = [1, -1]
+            push!(v, h)
+            push!(res[:vcyc], [v, 1])
+          else
+            push!(v, 1)
+            for d in divisors(h)
+              if d>1 push!(res[:vcyc], [v, d]) end
+            end
+          end
+        end
+      end
+    end
+    return res
+  elseif [q, r] == [2, 2]
+    ci = chevieget(:imp, :CharInfo)(p, q, r)
+    phi = ci[:malle][findfirst(==(phi),ci[:charparams])]
+    p2 = div(p, 2)
+    if phi[1] == 1
+      res = Dict{Symbol, Any}(:coeff => 1, :factor => fill(0, max(0, (1 + (4 + p2)) - 1)), :vcyc => [])
+      for l in [[1, -1, 0, 0], [0, 0, 1, -1]]
+        append!(l,fill(0,p2))
+        push!(res[:vcyc],[l,1])
+      end
+      for i in 2:p2
+        for l in [[0, 0, 0, 0, 1], [1, -1, 1, -1, 1]]
+          append!(l,fill(0,p2-1))
+          l[4+i]=-1
+          push!(res[:vcyc],[l,1])
+        end
+      end
+    else
+     res=Dict(:coeff=>-2,:factor=>fill(0,4+p2),:vcyc=>[],:root=>fill(0//1,4+p2))
+      res[:rootCoeff]=E(p2,2-phi[3]-phi[4])
+      res[:root][1:6] = [1, 1, 1, 1, 1, 1] // 2
+      for i in 3:p2
+        for j in [1, 2]
+          l=fill(0,4+p2)
+          l[4+[j,i]]=[1,-1]
+          push!(res[:vcyc], [l,1])
+        end
+      end
+      if haskey(CHEVIE, :old)
+        for l in [[0,-1,0,-1,-1,0],[0,-1,-1,0,-1,0],[-1,0,-1,0,-1,0],
+                  [-1,0,0,-1,-1,0]]
+          append!(l,fill(0,max(0,p2-2)))
+          push!(l,1)
+          push!(res[:vcyc],[l,1])
+        end
+      else
+        for l in [[0,-1,0,-1,-1,0],[0,-1,-1,0,0,-1],[-1,0,-1,0,-1,0],
+                  [-1,0,0,-1,0,-1]]
+          append!(l,fill(0,max(0,p2-2)))
+          push!(l,1)
+          push!(res[:vcyc],[l,1])
+        end
+      end
+    end
+    return res
+  else
+    error("not implemented")
+  end
+end)
+
+chevieset(:imp, :SchurData, function (p, q, r, phi)
+  if [q, r] == [2, 2]
+    ci=chevieget(:imp, :CharInfo)(p, q, r)
+    phi=ci[:malle][findfirst(==(phi),ci[:charparams])]
+    if phi[1]==1
+      res=Dict(:order=>[phi[2],3-phi[2],2+phi[3],5-phi[3],4+phi[4]])
+      append!(res[:order], 4 .+setdiff(1:div(p,2),[phi[4]]))
+    else
+      res=Dict{Symbol,Any}(:order => [1, 2, 3, 4, 4 + phi[3], 4 + phi[4]])
+      append!(res[:order],4 .+setdiff(1:div(p,2),phi[[3,4]]))
+      res[:rootPower]=phi[2]*E(p,phi[3]+phi[4]-2)
+    end
+    return res
+  else
+    error("not implemented")
+  end
+end)
+
+chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
+  if r==1
+    VcycSchurElement(vcat(para[1],[0]),CHEVIE[:imp][:SchurModel](p,q,r,phi))
+  elseif p==1
+    VcycSchurElement([0,-para[1][1]//para[1][2]],
+                     CHEVIE[:imp][:SchurModel](p,q,r,phi))
+  elseif q==1
+    VcycSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
+                     CHEVIE[:imp][:SchurModel](p,q,r,phi))
+  elseif r==2 && mod(q,2)==0
+    e1=div(q,2)
+    Z=map(x->root(x,e1),para[1])
+    Z=vcat(map(j->Z*E(e1,j),0:e1-1)...)
+    VcycSchurElement(vcat(para[2],para[3],Z),
+                     CHEVIE[:imp][:SchurModel](p,2,r,phi),
+                     CHEVIE[:imp][:SchurData](p,2,r,phi))//e1
+  elseif p==q
+    if phi[end] isa Integer
+      m=length(phi)-2
+      phi=fullsymbol(phi)
+    else
+      m=p
+    end
+    CHEVIE[:imp][:SchurElement](p,1,r,phi,vcat([E.(p,0:p-1)],para[2:end]),[])//m
+  elseif para[2]==para[3]
+    if phi[end] isa Integer
+      m=length(phi)-2
+      phi=fullsymbol(phi)
+    else
+      m=p
+    end
+    if para[1]==map(i->E(p//q,i-1),1:p//q)
+      para=[E.(p,0:p-1),para[2]]
+    else
+      para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
+    end
+    p//q*CHEVIE[:imp][:SchurElement](p,1,r,phi,para,[])//m
+  else
+    CHEVIE[:compat][:InfoChevie]("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+    false
+  end
+end)
+
+chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
+  if r==1
+    VFactorSchurElement(vcat(para[1],[0]),CHEVIE[:imp][:SchurModel](p,q,r,phi))
+  elseif p == 1
+    VFactorSchurElement([0,-para[1][1]//para[1][2]],
+                       CHEVIE[:imp][:SchurModel](p, q, r, phi))
+  elseif q == 1
+    VFactorSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
+                       CHEVIE[:imp][:SchurModel](p, q, r, phi))
+  elseif [q,r]==[2,2]
+    VFactorSchurElement(vcat(para[[2,3,1]]...),
+    CHEVIE[:imp][:SchurModel](p,q,r,phi),CHEVIE[:imp][:SchurData](p,q,r,phi))
+  elseif p == q
+    if phi[end] isa Integer
+      m=length(phi) - 2
+      phi=fullsymbol(phi)
+    else
+      m=p
+    end
+    if para[1]!=para[2]
+      InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+      false
+    end
+    F=CHEVIE[:imp][:FactorizedSchurElement](p,1,r,phi,vcat([E.(p,0:p-1)],
+                                                           para[2:end]), [])
+    F[:factor]//=m
+    F
+  elseif para[2] == para[3]
+    if phi[end] isa Integer
+      m=length(phi)-2
+      phi=fullsymbol(phi)
+    else
+      m=p
+    end
+    if para[1]==map(i->E(p//q,i-1),1:p//q)
+      para=[E.(i,0:p-1),para[2]]
+    else
+      para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
+    end
+    F=CHEVIE[:imp][:FactorizedSchurElement](p,1,r,phi,para,[])
+    F[:factor]=p//(q*m)*F[:factor]
+    F
+  else
+    InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+    false
   end
 end)
