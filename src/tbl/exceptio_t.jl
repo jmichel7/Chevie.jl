@@ -5,7 +5,7 @@
 # an addition
 chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
 
-chevieset(["G25","G26","G29","G31","G32","G34"],:CartanMat,
+chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat,
   function(t)
     r=chevieget(t,:GeneratingRoots)
     eig=map(x->Root1(;r=x),chevieget(t,:EigenvaluesGeneratingReflections))
@@ -51,8 +51,6 @@ export ExpandRep
   The point of this routine is to avoid unnecessary root extractions
   during evaluation (e.g., if pol has no terms of odd degree and n=2,
   then no root extraction is necessary).
-
- this was in lib/util.g but is used only here
 """
 function EvalPolRoot(pol::Pol,x,n,p)
 # println("pol=",pol,"\nx=",x,"\nn=",n,"\np=",p)
@@ -68,22 +66,30 @@ function EvalPolRoot(pol::Pol,x,n,p)
   pol(root(x,div(n,r))*p^r)
 end
 
-#  VcycSchurElement(para,r(schur model)[,data(schur data)])
-#
-#  This function computes the Schur elements for G4-22,  G25-26, G28, G32
-#  according to the data computed by M. Chlouveraki.
-#  para is the list of parameters of the algebra.
-#  schur model describes the shape of the Schur element: it has the fields
-#   .factor=(possibly fractional) vecmonomial
-#   .coeff= a constant
-#   [nothing] or [.root=vecmonomial] or [.rootUnity]  
-#   vcyc= a list of pairs [vecmonomial, cyclotomic polynomial index]
-#   rootCoeff=  a constant by which multiply .root before taking root
-#  where vecmonomial=vector of powers for elts of para (plus possibly
-#     the power to which to raise .root or .rootUnity)
-#  schur data describes the Schur element in its Galois orbit : it has fields
-#   order: in which order to take the variables
-#   rootPower: by which E(root)^i multiply .root
+"""
+`VcycSchurElement(para,r[,data])``
+
+This function computes the Schur elements for G4-22,  G25-26, G28, G32 and
+imprimitive groups according to the data computed by Maria Chlouveraki.
+  - `para` are vcat(the parameters of some Hecke algebra).
+  - `r` is a *schur model* and data is some *schur data*.
+a schur model describes the shape of the Schur element: it has the fields
+  - `.factor` a (possibly fractional) *vecmonomial* coefficient
+  - `.coeff` a constant coefficient
+  - one or none of `.root` (a vecmonomial) or `.rootUnity`  
+  - `vcyc` a vector of [vecmonomial, cyclotomic polynomial index]
+  - `rootCoeff`  a constant by which multiply .root before taking root
+
+a vecmonomial is a vector of powers for variables in `para` (plus if of length
+`length(para)+1`, the power to which to raise `.root` or `.rootUnity`)
+
+a schur data describes the Schur element in its Galois orbit : it has fields
+  - `order` in which order to take the variables (para)
+  - `rootPower` by which `Root1` multiply `.root`
+
+During computation the result is evaluated as a Pol in .root in order to
+use EvalPolRoot at the end.
+"""
 function VcycSchurElement(para,r,data=nothing)
 # println("para=",para,"\nr=",r,"\ndata=",data)
   n=length(para)
@@ -101,11 +107,11 @@ function VcycSchurElement(para,r,data=nothing)
       if length(mon)==n+1 tt*=(r[:rootUnity]^data[:rootUnityPower])^mon[n+1] end
       Pol([cyclotomic_polynomial(pol)(tt)],0)
     elseif haskey(r, :root)
-     if length(mon)==n return Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
-     else return cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
-     end
+      if length(mon)==n Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
+      else cyclotomic_polynomial(pol)(Pol([monomial(mon)],mon[n+1]))
+      end
     else 
-     Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
+      Pol([cyclotomic_polynomial(pol)(monomial(mon))],0)
     end
   end
   res*=prod(term.(r[:vcyc]))

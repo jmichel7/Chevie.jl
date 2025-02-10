@@ -36,6 +36,11 @@ function chevieset(t::Vector{String},w::Symbol,f::Function)
   for s in t chevieset(Symbol(s),w,f(s)) end
 end
 
+function chevieset(t::Vector{Symbol},w::Symbol,f::Function)
+# println(join(t,",")," $w")
+  for s in t chevieset(s,w,f(s)) end
+end
+
 function field(t::TypeIrred)
   get!(t,:field)do
   if haskey(t,:orbit)
