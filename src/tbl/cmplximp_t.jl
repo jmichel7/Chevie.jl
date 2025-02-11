@@ -421,7 +421,7 @@ chevieset(:imp, :HighestPowerFakeDegrees, function (p, q, r)
 end)
 
 chevieset(:imp, :CharSymbols, function (p, q, r)
-  if q == 1 return symbols(p, r, 1)
+  if q==1 return symbols(p,r,1)
   elseif q==p return symbols(p, r, 0)
   else return false
   end
@@ -464,19 +464,6 @@ function ImprimitiveCuspidalName(S)
   end
 end
 export ImprimitiveCuspidalName
-
-function MakeFamilyImprimitive(S, uc)
-  if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
-  MakeFamilyImprimitive(sort(vcat(fullsymbol(S[1])...)),uc[:charSymbols])
-end
-
-function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
-  r=family_imprimitive(ct,length(charsymbols[1]))
-  r.charNumbers=map(x->findfirst(==(x),charsymbols),r.symbols)
-  r
-end
-
-export MakeFamilyImprimitive
 
 chevieset(:imp, :Invariants, function (p, q, r)
   map(1:r)do i
@@ -1970,50 +1957,47 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       [[-1 0 0;-1 x 0;-1 0 x],[x -2x 0;0 -1 0;0 E(4)-1 x],[x 0 -x;0 x (-E(4)-1)//2*x;0 0 -1]],
       [[-1 0;-1 x],[-1 0;-1 x],[x -x;0 -1]],[[x;;],[x;;],[x;;]]]
     return -para[2][2]*r[i]
+  elseif q==1
+    S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
+    if r>1 Q=-para[2][1]//para[2][2]
+    else Q=0
+    end
+    function pos(t,i)
+      for j in 1:length(t), k in 1:length(t[j])
+        l=findfirst(==(i),t[j][k])
+        if !isnothing(l) return [j,k,l] end
+      end
+    end
+    ct(p)=para[1][p[1]]*(Q//1)^(p[3]-p[2])
+    T=tableaux(S)
+    return vcat([Diagonal(map(S->ct(pos(S,1)),T))], 
+    map(2:r)do i
+      map(enumerate(T))do (j,t)
+        a=pos(t,i);b=pos(t,i-1)
+        t=map(l->map(copy,l),t)
+        t[a[1]][a[2]][a[3]]=i-1;t[b[1]][b[2]][b[3]]=i #exchange i,i-1
+        if para[2][1]==-para[2][2]
+          if a[1]==b[1] tll=para[2][1]//(a[3]+b[2]-a[2]-b[3])
+          else tll=0
+          end
+        else tll=sum(para[2])//(1-ct(b)//ct(a))
+        end
+        v=fill(0,length(T))//1*tll
+        v[j]=tll
+        pp=findfirst(==(t),T)
+        if !isnothing(pp) v[pp]=tll-para[2][2] end
+        v
+      end
+    end)*prod(prod,para)^0
   else
     S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
-    function p1rRep() local p
-      if r>1 Q=-para[2][1]//para[2][2]
-      else Q=0
-      end
-      function pos(t,i)
-        for j in 1:length(t), k in 1:length(t[j])
-          l=findfirst(==(i),t[j][k])
-          if !isnothing(l) return [j,k,l] end
-        end
-      end
-      ct(p)=para[1][p[1]]*(Q//1)^(p[3]-p[2])
-      T=tableaux(S)
-      return vcat([Diagonal(map(S->ct(pos(S,1)),T))], 
-        map(2:r)do i
-          map(1:length(T))do j
-            S=T[j]
-            a=pos(S,i)
-            b=pos(S,i-1)
-            S=map(a->map(copy, a), S)
-            S[a[1]][a[2]][a[3]]=i-1
-            S[b[1]][b[2]][b[3]]=i
-            if para[2][1]==-para[2][2]
-                if a[1]==b[1] tll=para[2][1]//(a[3]+b[2]-a[2]-b[3])
-                else tll=0
-                end
-            else tll=sum(para[2])//(1-ct(b)//ct(a))
-            end
-            v=fill(0,length(T))//1*tll
-            v[j]=tll
-            p=findfirst(==(S),T)
-            if !isnothing(p) v[p]=tll-para[2][2] end
-            v
-          end
-        end)*prod(prod,para)^0
-      end
-    if q==1 return p1rRep()
-    elseif p==q para=[E.(p,0:p-1),para[1]]
+    if p==q para=[E.(p,0:p-1),para[1]]
     else e=div(p, q)
       if mod(q,2)==0 && r==2
         S=chevieget(:imp, :CharInfo)(p, q, r)[:malle][i]
         if S[1]==1
-          return [[[para[1][1+mod(S[4]-1,e)]]],[[para[2][S[2]]]], [[para[3][S[3]]]]]
+          return [[para[1][1+mod(S[4]-1,e)];;],[para[2][S[2]];;],
+                  [para[3][S[3]];;]]
         else
           Y=para[2]
           T=para[3]
@@ -2031,7 +2015,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       end
       if para[2]!=para[3] error("should not happen") end
       if para[1]==E.(e,0:e-1) para=[E.(p,0:p-1),para[2]]
-      else para=[vcat(transpose(toM(map(i->map(j->E(q,j),0:q-1)*root(i,q),para[1])))), para[2]]
+      else para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]], para[2]]
       end
     end
     extra=false
@@ -2040,25 +2024,159 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       d=length(S)-2
       S=fullsymbol(S)
     end
-    v=p1rRep()
-    v[2:end]=map(toM,v[2:end])
-    if p==q 
-      v=vcat([inv(v[1])*v[2]*v[1]],v[2:end])
+    p1=length(para[1])
+    v=chevieget(:imp,:HeckeRepresentation)(p1,1,r,para,[],
+      findfirst(==(S),chevieget(:imp,:CharInfo)(p1,1,r)[:charparams]))
+    v=map(v)do m 
+      (m isa AbstractMatrix) ? m : toM(m)
+    end
+    if p==q v=vcat([inv(v[1])*v[2]*v[1]],v[2:end])
     elseif q>1 v=vcat([v[1]^q,inv(v[1])*v[2]*v[1]],v[2:end])
     end
-    if extra != false
-      m=Perm(T,map(S->S[vcat(d+1:p,1:d)],T))
-      m=orbits(m,1:length(T))
-      l=map(i->extra^i,0:-1:1-p//d)
-      m1=map(x->x[1],m)
-      map(x->map(c->l*map(y->y[m1],x[c]),m),v)
-    else
-      v
-    end
+    if extra==false return v end
+    T=tableaux(S)
+    m=Perm(T,map(S->S[vcat(d+1:p,1:d)],T))
+    m=orbits(m,1:length(T))
+    l=map(i->extra^i,0:-1:1-p//d)
+    m1=first.(m)
+    map(x->toM(map(c->sum(l.*map(y->y[m1],x[c])),m)),map(toL,v))
   end
 end)
 
 chevieset(:imp, :Representation, function (p, q, r, i)
   o=denominator.(chevieget(:imp, :EigenvaluesGeneratingReflections)(p,q,r))
   chevieget(:imp, :HeckeRepresentation)(p,q,r,map(x->E.(x,0:x-1),o),[],i)
+end)
+
+function MakeFamilyImprimitive(S, uc)
+  if length(S)==1 return Family("C1",[findfirst(==(S[1]),uc[:charSymbols])]) end
+  MakeFamilyImprimitive(sort(vcat(fullsymbol(S[1])...)),uc[:charSymbols])
+end
+
+function MakeFamilyImprimitive(ct::Vector{<:Integer},charsymbols)
+  r=family_imprimitive(ct,length(charsymbols[1]))
+  r.charNumbers=map(x->findfirst(==(x),charsymbols),r.symbols)
+  r
+end
+
+chevieset(:imp, :UnipotentCharacters, function (p, q, r)
+  if !(q in [1,p]) return false end
+  uc=Dict{Symbol, Any}(:charSymbols=>chevieget(:imp, :CharSymbols)(p, q, r))
+  csy=uc[:charSymbols]
+  uc[:a]=valuation_gendeg_symbol.(csy)
+  uc[:A]=degree_gendeg_symbol.(csy)
+  ci=chevieget(:imp, :CharInfo)(p,q,r)
+  if q==1
+    cusp=unique(sort(map(S->length.(S).-minimum(length.(S)),csy)))
+    cusp=map(x->map(y->0:y-1,x),cusp)
+    sort!(cusp,by=ranksymbol)
+    uc[:harishChandra]=map(cusp)do c
+      cr=ranksymbol(c)
+      res=Dict{Symbol, Any}(:levi=>1:cr)
+      res[:parameterExponents]=cr<r ? length.(c) : Int[]
+      append!(res[:parameterExponents],fill(1,max(0,r-cr-1)))
+      if r==cr
+        res[:relativeType]=TypeIrred(;series=:A,indices=Int[],rank=0)
+      else
+        res[:relativeType]=TypeIrred(;series=:ST,indices=1+cr:r,rank=r-cr,p,q=1)
+      end
+      res[:eigenvalue]=E(24,-2*(p^2-1)*div(sum(length,c),p))*
+            E(2p,sum(i->-(i^2+p*i)*length(c[i+1]),0:p-1))
+      res[:charNumbers]=map(x->
+       findfirst(==(symbol_partition_tuple(x,length.(c))),csy),
+       map(x->partβ.(x),chevieget(:imp,:CharSymbols)(p,1,r-cr)[1:length(partition_tuples(r-cr,p))]))
+      res[:cuspidalName]=ImprimitiveCuspidalName(c)
+      return res
+    end
+    uc[:b]=uc[:a]*0
+    uc[:B]=uc[:a]*0
+    uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
+    uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
+    uc[:families]=map(y->MakeFamilyImprimitive(y,uc),
+      collectby(x->tally(vcat(x...)),csy))
+    sort!(uc[:families],by=x->x[:charNumbers])
+    for f in uc[:families] f[:fourierMat]=toM(f[:fourierMat]) end
+    if r==1
+      l=map(function (S)
+        p=findfirst(==(Int[]),S)
+        if isnothing(p) return 1 else return (-1)^p end
+      end, csy[uc[:families][2][:charNumbers]])
+      uc[:families][2][:fourierMat]=Diagonal(l)*uc[:families][2][:fourierMat]*Diagonal(l)
+      uc[:cyclicparam]=map(csy)do s
+        if count(x->x==1,vcat(s...))==1 return [1] end
+        s=map(copy,s)
+        l=findfirst(p->1 in p,s)
+        s[l]=Int[]
+        return [findfirst(p->1 in p,s)-1,l-1]
+      end
+    elseif r==2 && p==3
+      d=Diagonal([-1,1,1])
+      uc[:families][4][:fourierMat]=d*uc[:families][4][:fourierMat]*d
+      d=Diagonal([1,-1,-1,1,1,1,1,1,1])
+      uc[:families][1][:fourierMat]=d*uc[:families][1][:fourierMat]*d
+    end
+    return uc
+  elseif p==q
+    uc[:families]=[]
+    for f in collectby(i->tally(vcat(fullsymbol(csy[i])...)),1:length(csy))
+      if length(unique(fullsymbol.(csy[f])))>1
+        push!(uc[:families],Dict{Symbol,Any}(:charNumbers=>f))
+      else
+        append!(uc[:families],map(x->Family("C1", [x]),f))
+      end
+    end
+    sort!(uc[:families],by=x->x[:charNumbers])
+    uc[:harishChandra]=map(l->Dict{Symbol,Any}(:charNumbers=>l),
+      collectby(function(i)
+       s=fullsymbol((csy)[i])
+       l=length.(s)
+       return [sum(x->sum(partβ(x)),s),l.-minimum(l)]
+    end,1:length(csy)))
+    sort!(uc[:harishChandra],by=x->x[:charNumbers])
+    extra=[]
+    for f in uc[:harishChandra]
+      addextra = false
+      s=fullsymbol(csy[f[:charNumbers][1]])
+      l=r-sum(x->sum(partβ(x)),s)
+      f[:levi]=1:l
+      s=map(length,s)
+      s.-=minimum(s)
+      f[:eigenvalue]=E(24,-2*(p^2-1)*div(sum(s),p))*
+           E(2p,sum(i->-(i^2+p*i)*s[i+1],0:p-1))
+      if l==r
+        f[:relativeType]=Dict{Symbol, Any}(:series=>"A",:indices=>Int[],:rank=>0)
+        f[:parameterExponents]=Int[]
+        if length(f[:charNumbers])==2 addextra=true end
+      elseif l == 0
+        f[:relativeType]=Dict{Symbol, Any}(:series=>"ST",:indices=>1:r,:rank=>r,:p=>p,:q=>q)
+        f[:parameterExponents]=fill(1,r)
+      else
+        f[:relativeType]=Dict{Symbol, Any}(:series=>"ST",:indices=>l+1:r,:rank=>r-l,:p=>p,:q=>1)
+        f[:parameterExponents]=vcat([s],fill(0,max(0,r-l-1)) + 1)
+      end
+      s=map(x->0:x-1,s)
+      f[:cuspidalName]=ImprimitiveCuspidalName(s)
+      if addextra
+        s = deepcopy(f[:charNumbers])
+        f[:charNumbers]=s[[1]]
+        f = deepcopy(f)
+        f[:charNumbers]=s[[2]]
+        push!(f[:cuspidalName], '2')
+        push!(extra, f)
+      end
+    end
+    append!(uc[:harishChandra], extra)
+    for f in uc[:families]
+     pp(i)=findfirst(s->i in s[:charNumbers],uc[:harishChandra])
+     f[:eigenvalues]=map(i->uc[:harishChandra][pp(i)][:eigenvalue],f[:charNumbers])
+    end
+    uc[:b]=fill(0,length(csy))
+    uc[:B]=fill(0,length(csy))
+    uc[:b][uc[:harishChandra][1][:charNumbers]]=ci[:b]
+    uc[:B][uc[:harishChandra][1][:charNumbers]]=ci[:B]
+    uc[:families]=map(x->MakeFamilyImprimitive(csy[x[:charNumbers]],uc),uc[:families])
+    if [p,q,r]==[3,3,3] uc[:curtis]=[1,2,3,7,8,10,4,5,9,6,-12,-11]
+    end
+    return uc
+  end
 end)

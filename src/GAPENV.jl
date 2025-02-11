@@ -9,7 +9,7 @@ using ..Chevie
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
-const tbl=[("G(de,e,n)","cmplximp"), ("G₂₄","cmplxg24"), 
+const tbl=[("G₂₄","cmplxg24"), 
 ("G₂₅","cmplxg25"), ("G₂₆","cmplxg26"), ("G₂₇","cmplxg27"), ("G₂₉","cmplxg29"),
 ("G₃₁","cmplxg31"), ("G₃₂","cmplxg32"), ("G₃₃","cmplxg33"), 
 ("ᵗG(e,e,n)","cmpxtimp"), ("G₃₄","cmplxg34"), ("H₃","coxh3"), ("H₄","coxh4"), 
