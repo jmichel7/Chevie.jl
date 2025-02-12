@@ -3,7 +3,7 @@
 # data common to several (but not all) types of reflection groups
 
 # an addition
-chevieset(["A","B","D"],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
+chevieset([:A,:B,:D],:EigenvaluesGeneratingReflections,t->r->fill(1//2,r))
 
 chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat,
   function(t)
@@ -12,7 +12,7 @@ chevieset([:G25,:G26,:G29,:G31,:G32,:G34],:CartanMat,
     toL(toM(coroot.(r,eig))*transpose(toM(r)))
   end)
 
-chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->
+chevieset([:E7, :E8, :H3, :H4], :Invariants, t->
   function()
     C=toM(chevieget(t, :CartanMat))
     r=toM(roots(C))*C
@@ -21,7 +21,7 @@ chevieset(["E7", "E8", "H3", "H4"], :Invariants, t->
   end
 )
 
-chevieset(["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"], 
+chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
   :FactorizedSchurElement, t->function(ch,para,arg...)
    c=chevieget(t,:CycPolSchurElements)[findfirst(==(ch),chevieget(t,:CharInfo)()[:charparams])]
    q=-para[1][1]//para[1][2]
@@ -30,6 +30,41 @@ chevieset(["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"],
    HeckeAlgebras.simplify(res)
  end
 )
+
+chevieset(["G24","G25","G26","G27","G29","G31","G32","G33","G34","H3","H4","2E6","2F4","3D4","E6","E7","E8","F4","G2"],:IrredInfo,function(t)
+  ci=chevieget(t,:CharInfo)()
+  map((x,y)->Dict{Symbol,Any}(:charparam=>x,:charname=>y),ci[:charparams],ci[:charnames])
+end)
+
+chevieset(["G24", "G25", "G27", "G29", "G31", "G32", "G33", "G34", "E6", "E7", "E8", "2E6", "2F4", "3D4", "H3", "H4"], :ReflectionName, t->
+function(option)
+  i=["G24","G25","G27","G29","G31","G32","G33","G34","E6","E7","E8","2E6","2F4","3D4","H3","H4"]
+  o=["G_{24}","G_{25}","G_{27}","G_{29}","G_{31}","G_{32}","G_{33}","G_{34}","E_6","E_7","E_8","{}^2E_6","{}^2F_4","{}^3D_4","H_3","H_4"]
+  haskey(option,:TeX) ? o[findfirst(==(t),i)] : t
+end)
+
+chevieset(["D", "2A", "2D"],:ReflectionName,t->
+  function (r, option)
+    i=["D", "2A", "2D"]
+    o=["D", "{}^2A", "{}^2D"]
+    if haskey(option, :arg) string(t, ",", r)
+    elseif haskey(option,:TeX)
+     string(o[findfirst(==(t),i)],"_",r<10 ? string(r) : string("{",r,"}"))
+    else string(t, r)
+    end
+end)
+
+chevieset(["3D4", "E6", "2E6", "E7", "E8", "F4", "2F4", "G2", "H3", "H4"], :CharTable, t-> function ()
+  rank=t[end]-'0'
+  res=chevieget(t, :HeckeCharTable)(map(x->[1,-1],1:rank),map(x->1,1:rank))
+  CHEVIE[:compat][:ChangeIdentifier](res,string("W(",t,")"))
+  res
+end)
+
+chevieset([:G24,:G27,:G29,:G33,:G34,:H3,:H4,:E6,:E7,:E8],:PoincarePolynomial,t->
+function (q)
+  prod(x->sum(y->(-q[1][1]//q[1][2])^y,0:x-1),chevieget(t,:ReflectionDegrees))
+end)
 
 function ExpandRep(r, d, l) # decompress representation of r gens of dim d
   T=reduce(promote_type,typeof.(first.(l)))

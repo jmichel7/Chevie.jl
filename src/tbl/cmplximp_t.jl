@@ -1,4 +1,4 @@
-# Hand-translated part of chevie/tbl/cmplximp.g 
+# Hand-translated from chevie/tbl/cmplximp.g 
 # (C) 1998 - 2011  Gunter Malle and  Jean Michel
 # data about imprimitive complex reflection groups
 
@@ -251,7 +251,8 @@ chevieset(:imp, :HeckeCharTable, function (p, q, r, para, rootpara)
     res[:irreducibles]=map(i->map(j->para[1][i]^j,0:p-1),1:p)
   elseif q==1
 # character table of the Hecke algebra of G(p,1,r) parameters v and [q,-1]
-# according to [Halverson-Ram]
+# according to [Halverson-Ram]"Characters of Iwahori-Hecke algebras of G(r,p,n)"
+# Canadian Journal of math. 50 (1998) 167--192
     merge!(res,cl)
     T=@NamedTuple{area::Int64, cc::Int64, hooklength::Int64, 
          DC::Vector{Pair{Int64, Int64}}, SC::Vector{Pair{Int64, Int64}},
@@ -1958,6 +1959,8 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
       [[-1 0;-1 x],[-1 0;-1 x],[x -x;0 -1]],[[x;;],[x;;],[x;;]]]
     return -para[2][2]*r[i]
   elseif q==1
+    # Model of Ariki,  Halverson-Ram for reps of G(p,1,r): 
+    # needs rational fractions if the parameters are indeterminates
     S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
     if r>1 Q=-para[2][1]//para[2][2]
     else Q=0
@@ -2110,7 +2113,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
         return [findfirst(p->1 in p,s)-1,l-1]
       end
     elseif r==2 && p==3
-      d=Diagonal([-1,1,1])
+      d=Diagonal([-1,1,1]) #Dudas' sign change
       uc[:families][4][:fourierMat]=d*uc[:families][4][:fourierMat]*d
       d=Diagonal([1,-1,-1,1,1,1,1,1,1])
       uc[:families][1][:fourierMat]=d*uc[:families][1][:fourierMat]*d

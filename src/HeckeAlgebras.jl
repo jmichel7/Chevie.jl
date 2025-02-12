@@ -915,6 +915,7 @@ function innermul(W::PermRootGroup,a,b)
     HeckeTElt(MM(h.d),a.H)
   end
 end
+# implement also inverse see cmplximp.g/H.inverse
 
 function Base.:*(a::HeckeTElt, b::HeckeTElt)
   if iszero(a) return a end
