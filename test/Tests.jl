@@ -232,14 +232,14 @@ function Trepresentations(W,l=Int[])
       if r isa NamedTuple println();continue end # for now... Should be fixed
       pos=findrepresentation(O,gr,true)
       if pos==i println("found")
-      elseif !isnothing(pos) 
+      elseif pos!=false 
          ChevieErr("repr. ",i," character found at ",pos,"\n")
       else ChevieErr("character does not match\n")
-	pos=zip(ct[i],traces_words_mats(gr,cl))
+        pos=collect(zip(ct[i,:],traces_words_mats(gr,classinfo(W).classtext)))
 	f=findall(x->x[1]!=x[2],pos)
 #pos=List(pos,x->List(x,FormatGAP))
-        ChevieErr(Format.Table(x,row_labels=f,
-           column_labels=["is","should be"]),pos[f])
+        ChevieErr(Format.Table(toM(pos[f]),row_labels=f,
+           col_labels=["is","should be"]))
       end
     end
   end
@@ -1754,8 +1754,8 @@ test[:hecke3d4]=(applicable=function(W)
 
 function TG4_22index(W)
   t=refltype(W)[1]
-  O=crg(getchev(t,:Generic))
-  e=getchev(t,:Embed)
+  O=crg(Chevie.G4_22Generic(t.ST))
+  e=Chevie.Embed4_22[t.ST-3]
   c=map(c->vcat(map(x->e[x],c)...),word.(conjugacy_classes(W)))
   c=map(x->position_class(O,O(x...)),c)
   l=map(x->findfirst(i->refls(O,i)==O(x...),eachindex(roots(O))),e)
@@ -1890,7 +1890,7 @@ function Tparameterexponents(W,i)
           ChevieErr("not monomial")
         elseif h[:parameterExponents][i]!=valuation(ud)
           ChevieErr(L,": wrong parameter ",
-            h.parameterExponents[i]," instead of ",valuation(ud),"\n");
+            h[:parameterExponents][i]," instead of ",valuation(ud),"\n");
         end
 #         Ok("=",ud.valuation);
       end

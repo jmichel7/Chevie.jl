@@ -5,9 +5,8 @@ using ..Chevie
 export CHEVIE, chevieget, chevieset, getchev
 
 const CHEVIE=Dict{Symbol,Any}(
- :compat=>Dict(:MakeCharacterTable=>x->x,
-               :ChangeIdentifier=>function(tbl,n)tbl[:identifier]=n end),
- :info=>false
+  :compat=>Dict{Symbol,Any}(:MakeCharacterTable=>x->x),
+  :info=>false
 )
 
 CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)

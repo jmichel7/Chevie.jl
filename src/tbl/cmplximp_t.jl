@@ -1974,7 +1974,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     ct(p)=para[1][p[1]]*(Q//1)^(p[3]-p[2])
     T=tableaux(S)
     return vcat([Diagonal(map(S->ct(pos(S,1)),T))], 
-    map(2:r)do i
+    map(toM,map(2:r)do i
       map(enumerate(T))do (j,t)
         a=pos(t,i);b=pos(t,i-1)
         t=map(l->map(copy,l),t)
@@ -1991,7 +1991,7 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
         if !isnothing(pp) v[pp]=tll-para[2][2] end
         v
       end
-    end)*prod(prod,para)^0
+     end)*prod(prod,para)^0)
   else
     S=chevieget(:imp, :CharInfo)(p, q, r)[:charparams][i]
     if p==q para=[E.(p,0:p-1),para[1]]
@@ -2033,8 +2033,8 @@ chevieset(:imp, :HeckeRepresentation, function (p, q, r, para, rootpara, i)
     v=map(v)do m 
       (m isa AbstractMatrix) ? m : toM(m)
     end
-    if p==q v=vcat([inv(v[1])*v[2]*v[1]],v[2:end])
-    elseif q>1 v=vcat([v[1]^q,inv(v[1])*v[2]*v[1]],v[2:end])
+    if p==q v=vcat([inv(v[1]//1)*v[2]*v[1]],v[2:end])
+    elseif q>1 v=vcat([v[1]^q,inv(v[1]//1)*v[2]*v[1]],v[2:end])
     end
     if extra==false return v end
     T=tableaux(S)
@@ -2076,7 +2076,7 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     uc[:harishChandra]=map(cusp)do c
       cr=ranksymbol(c)
       res=Dict{Symbol, Any}(:levi=>1:cr)
-      res[:parameterExponents]=cr<r ? length.(c) : Int[]
+      res[:parameterExponents]=cr<r ? Any[length.(c)] : []
       append!(res[:parameterExponents],fill(1,max(0,r-cr-1)))
       if r==cr
         res[:relativeType]=TypeIrred(;series=:A,indices=Int[],rank=0)
@@ -2147,15 +2147,15 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
       f[:eigenvalue]=E(24,-2*(p^2-1)*div(sum(s),p))*
            E(2p,sum(i->-(i^2+p*i)*s[i+1],0:p-1))
       if l==r
-        f[:relativeType]=Dict{Symbol, Any}(:series=>"A",:indices=>Int[],:rank=>0)
+        f[:relativeType]=TypeIrred(;series=:A,indices=Int[],rank=0)
         f[:parameterExponents]=Int[]
         if length(f[:charNumbers])==2 addextra=true end
       elseif l == 0
-        f[:relativeType]=Dict{Symbol, Any}(:series=>"ST",:indices=>1:r,:rank=>r,:p=>p,:q=>q)
+        f[:relativeType]=TypeIrred(;series=:ST,indices=1:r,rank=r,p,q)
         f[:parameterExponents]=fill(1,r)
       else
-        f[:relativeType]=Dict{Symbol, Any}(:series=>"ST",:indices=>l+1:r,:rank=>r-l,:p=>p,:q=>1)
-        f[:parameterExponents]=vcat([s],fill(0,max(0,r-l-1)) + 1)
+        f[:relativeType]=TypeIrred(;series=:ST,indices=l+1:r,rank=r-l,p,q=1)
+        f[:parameterExponents]=vcat([s],fill(1,max(0,r-l-1)))
       end
       s=map(x->0:x-1,s)
       f[:cuspidalName]=ImprimitiveCuspidalName(s)

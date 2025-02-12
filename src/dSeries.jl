@@ -1236,7 +1236,7 @@ function RelativeSeries(s)
   p=getHecke.(res)
   if nothing in p return res end
   s.Hecke=hecke(WGL,improve_type(p))
-# xprint("Hecke=",s.Hecke,"\n")
+  #xprint("Hecke=",s.Hecke,"\n")
   u1=schur_elements(s.Hecke)//1
   if any(x->any(y->!all(isinteger, values(y.d)), keys(x.d)),u1)
     ChevieErr(s.Hecke, " fractional: wrong set of SchurElements")

@@ -8,26 +8,23 @@ const src=[
 "cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
 "coxh3", "coxh4", "coxi", "weylbc", "weyld", "weyl2d",
 "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
-"weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "exceptio",
-"weyl2a", "cmplximp", "cmpxtimp"] 
+"weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "weyl2a", "cmpxtimp"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
- "CartanMat"=>["B","D","G25","G26","G29","G31","G32","G34"],
+ "CartanMat"=>["B","D"],
  "CharInfo"=>["I"],
  "CharName"=>["timp"],
  "CharTable"=>["2A","B","D","2D","G31","G34"],
  "ClassParameter"=>["2A","B","2D","D","H4"],
  "Discriminant"=>["H4"],
  "FakeDegree"=>["2A"],
- "FactorizedSchurElement"=>["G24","G27","G29","G33","G34","E6","E7","E8","H3","H4"],
  "gensMODA"=>["D"],
  "HeckeCharTable"=>["2A","2D","B","D"],
  "HeckeRepresentation"=>["2D"],
  "Hk"=>["B","D"],
- "Invariants"=>["E7", "E8", "H3", "H4"],
  "PrintDiagram"=>["B","D","E6","E7","E8","F4","G2","H3","H4","I",
             "G24","G25","G26","G27","G29","G31","G32","G33","G34"],
  "ReducedInRightCoset"=>["timp"],

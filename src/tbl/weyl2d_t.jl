@@ -68,7 +68,7 @@ chevieset(Symbol("2D"), :HeckeRepresentation, function(n,para,sqpara,i)
    param=chevieget(Symbol("2D"),:CharInfo)(n)[:charparams][i]
    bno=findfirst(==(param),chevieget(:B,:CharInfo)(n)[:charparams])
    parab=copy(para);parab[1]=[1,-1]
-   r=toM.(chevieget(:B,:HeckeRepresentation)(n,parab,[],bno))
+   r=chevieget(:B,:HeckeRepresentation)(n,parab,[],bno)
    if all(x->x==[1,-1],para) u=r[1] else u=inv(r[1]*1//1) end
    (gens=pushfirst!(r[2:end],r[1]*r[2]*u),F=r[1])
 end)
