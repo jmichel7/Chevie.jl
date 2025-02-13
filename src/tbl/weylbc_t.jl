@@ -171,7 +171,7 @@ chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
   for d in (0:div(-1+GAPENV.RootInt(1+4rank,2),2)).*2 .+1
     r=div(d^2-1,4)
     s=Dict{Symbol, Any}()
-    s[:relativeType]=TypeIrred(;series=(rank==r+1 ? :A : :B),indices=1+r:rank,rank=rank-r)
+    s[:relativeType]=TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r)
     s[:levi]=1:r
     s[:eigenvalue]=(-1)^div(d+1,4)
     s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
