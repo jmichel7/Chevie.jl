@@ -23,6 +23,7 @@ chevieset([:E7, :E8, :H3, :H4], :Invariants, t->
 
 chevieset([:G24,:G27,:G29,:G33,:G34,:E6,:E7,:E8,:H3,:H4], 
   :FactorizedSchurElement, t->function(phi,para,arg...)
+#arg= [phi,q] for G24--G34, [phi,q,rootparam] for E6--H4
    i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
    c=chevieget(t,:CycPolSchurElements)[i]
    q=-para[1][1]//para[1][2]
@@ -93,7 +94,7 @@ chevieset([:H4, :E7, :E8, :G31], :FakeDegree,t->
 function(phi, q)
   i=findfirst(==(phi),chevieget(t,:CharInfo)()[:charparams])
   f=chevieget(t,:cycpolfakedegrees)[i]
-  res=f[1] isa AbstractVector ? evalpol(q^2,f[1]) : f[1]
+  res=f[1] isa AbstractVector ? evalpoly(q^2,f[1]) : f[1]
   f=copy(f)
   f[1]=1
   res*CycPol(f)(q)
@@ -144,7 +145,7 @@ function (phi,para,arg...)
   Y=vcat(para[chevieget(t,:HyperplaneRepresentatives)]...)
   ci=chevieget(t,:SchurData)[i]
   VFactorSchurElement(Y,chevieget(t,:SchurModels)[Symbol(ci[:name])],ci,
-                      arg[3:end])
+                      arg[3:end]...)
 end)
 
 chevieset([:F4,:G25,:G26,:G32],:SchurElement,t->

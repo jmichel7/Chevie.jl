@@ -20,9 +20,192 @@ chevieset(:B, :CartanMat, function(n,ct=2)
   improve_type(a)
 end)
 
+chevieset(:B, :ReflectionName, function(r,option,cartantype=2)
+  bracket(r)=r>=10 ? "{"*string(r)*"}" : string(r)
+  if cartantype==2
+    if haskey(option,:TeX)
+      if haskey(option,:Au) "D_8"
+      else string("B_",bracket(r))
+      end
+    elseif haskey(option,:Au) "D8"
+    elseif haskey(option,:arg) string("\"B\",",r)
+    else string("B",r)
+    end
+  elseif cartantype==1
+    if haskey(option,:TeX) string("C_",bracket(r))
+    elseif haskey(option,:arg) string("\"C\",", r)
+    else string("C", r)
+    end
+  elseif cartantype==root(2)
+    if haskey(option,:TeX) string("B^{\\hbox{sym}}_",bracket(r))
+    elseif haskey(option,:arg) string("\"Bsym\",",r)
+    else string("Bsym",r)
+    end
+  elseif haskey(option,:TeX)
+    string("B^?_",bracket(r),"(",xrepr(cartantype;option...),")")
+  elseif haskey(option,:arg) string("\"B?\",", r, ",", cartantype)
+  else string("B?",r,"(",xrepr(cartantype),")")
+  end
+end)
+
+chevieset(:B,:GeneratingRoots, function(l,type_)
+  rts=map(i->fill(0,l),1:l)
+  for i in 1:l-1 rts[i][i:i+1]=[1,-1] end
+  rts[l][l]=2//type_
+  rts[l:-1:1]
+end)
+
+chevieset(:B,:ParabolicRepresentatives,(l,s)->
+  chevieget(:imp, :ParabolicRepresentatives)(2, 1, l, s))
+
+chevieset(:B,:ReflectionDegrees,n->2:2:2n)
+
+chevieset(:B,:Size,(r,arg...)->2^r*factorial(r))
+
+chevieset(:B,:NrConjugacyClasses,(r,arg...)->npartition_tuples(r,2))
+
+chevieset(:B,:WeightInfo,function(n,type_)
+  M=Array(Int.(I(n)))
+  if type_ == 2
+    Dict{Symbol, Any}(:minusculeWeights => [1], :minusculeCoweights => [n], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+  else
+    for i in 1:n-1
+      M[i,n]=-mod(n+i-1,2)
+    end
+    Dict{Symbol, Any}(:minusculeWeights => [n], :minusculeCoweights => [1], :decompositions => [[1]], :moduli => [2], :chosenAdaptedBasis => M)
+  end
+end)
+
+# returns a very good representative in the sense of [Geck-Michel]
+chevieset(:B,:WordClass, function(pi)
+  w=Int[]
+  i=1
+  for l in reverse(pi[2])
+    append!(w,i:-1:2)
+    append!(w,1:i+l-1)
+    i+=l
+  end
+  for l in pi[1]
+    r=mod(l, 2)
+    append!(w,i.+vcat(1:2:l-1-r,2:2:l+r-2))
+    i+=l
+  end
+  w
+end)
+
+chevieset(:B,:ClassInfo, function(n)
+  res=chevieget(:imp,:ClassInfo)(2,1,n)
+  res[:classtext]=map(chevieget(:B,:WordClass),res[:classparams])
+  res[:classes]=div.(res[:centralizers][1],res[:centralizers])
+  res
+end)
+
+chevieset(:B,:CharParams,n->partition_tuples(n,2))
+
+chevieset(:B,:LowestPowerFakeDegree,function(p)
+  pp=symbol_partition_tuple(p,1)
+  m=length(pp[2])
+  res=dot(pp[1],m:-1:0)
+  if !isempty(pp[2]) res+=dot(pp[2],m-1:-1:0) end
+  2res+sum(pp[2])-div(m*(m-1)*(4m+1),6)
+end)
+
+chevieset(:B,:CharInfo,n->chevieget(:imp, :CharInfo)(2,1,n))
+
+chevieset(:B,:PoincarePolynomial,function(n,para)
+  q1=-para[1][1]//para[1][2]
+  q2=-para[2][1]//para[2][2]
+  prod(i->(q2^i*q1+1)*sum(k->q2^k,0:i),0:n-1)
+end)
+
 chevieset(:B,:CharTable,n->chevieget(:imp,:CharTable)(2,1,n))
 
 chevieset(:B,:HeckeCharTable,(n,para,root)->chevieget(:imp,:HeckeCharTable)(2,1,n,para,root))
+
+chevieset(:B,:SchurElement,(arg...)->
+  chevieget(:imp, :SchurElement)(2,1,arg[1],arg[2],arg[3],[]))
+
+chevieset(:B,:FactorizedSchurElement,(arg...)->
+  chevieget(:imp, :FactorizedSchurElement)(2, 1, arg[1], arg[2], arg[3], []))
+
+chevieset(:B,:HeckeRepresentation,(arg...)->
+  chevieget(:imp, :HeckeRepresentation)(2, 1, arg[1], arg[2], [], arg[4]))
+
+chevieset(:B,:Representation,(n,i)->
+  chevieget(:imp, :Representation)(2, 1, n, i))
+
+chevieset(:B,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c,1))(q))
+
+chevieset(:B, :DecompositionMatrix, function (l, p)
+        local pp, dd, pt, decS
+        decS = (i->begin
+                    MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
+                end)
+        pp = map(partitions, 0:l)
+        pt = partition_tuples(l, 2)
+        if p == 2
+            return [[1:length(pt), map(function (p,)
+                                    p = LittlewoodRichardsonRule(p[1], p[2])
+                                    return map(function (x,)
+                                                if x in p
+                                                    return 1
+                                                else
+                                                    return 0
+                                                end
+                                            end, pp[l + 1])
+                                end, pt) * decS(l)]]
+        else
+            dd = Concatenation([[[1]], [[1]]], map(decS, 2:l))
+            return map((i->begin
+                            [map((x->begin
+                                            Position(pt, x)
+                                        end), cartesian(pp[i + 1], pp[(l + 1) - i])), map((x->begin
+                                            map(Product, cartesian(x))
+                                        end), cartesian(dd[i + 1], dd[(l + 1) - i]))]
+                        end), 0:l)
+        end
+    end)
+
+chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
+  uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
+  for d in (0:div(-1+GAPENV.RootInt(1+4rank,2),2)).*2 .+1
+    r=div(d^2-1,4)
+    s=Dict{Symbol, Any}()
+    s[:relativeType]=TypeIrred(;series=(rank==r+1 ? :A : :B),indices=1+r:rank,rank=rank-r)
+    s[:levi]=1:r
+    s[:eigenvalue]=(-1)^div(d+1,4)
+    s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
+    s[:cuspidalName]=string("B_{",r,"}")
+    if r<10 s[:cuspidalName]=string("B_",r)end
+    push!(uc[:harishChandra], s)
+    symbols = BDSymbols(rank, d)
+    s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])
+    FixRelativeType(s)
+    append!(uc[:charSymbols],symbols)
+  end
+  uc[:harishChandra][1][:cuspidalName] = ""
+  uc[:a]=valuation_gendeg_symbol.(uc[:charSymbols])
+  uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
+  uc[:families]=FamiliesClassical(uc[:charSymbols])
+  if typ==1 uc[:harishChandra][1][:relativeType][:cartanType]=1 end
+  uc
+end)
+
+chevieset(:B, :Ennola, function(n)
+  uc=chevieget(:B,:UnipotentCharacters)(n)
+  l=uc[:charSymbols]
+  SPerm(map(1:length(l))do i
+    s=EnnolaSymbol(l[i])
+    if length(s[1])<length(s[2]) s=s[[2,1]] end
+    findfirst(==(s),l)*(-1)^uc[:A][i]
+  end)
+end)
+
+chevieset(:B,:Invariants,function(n,type_)
+  m=fill(1,n);m[1]=2//type_
+  m=Diagonal(m)*toM(chevieget(:imp,:GeneratingRoots)(2,1,n))
+  map(f->(arg...)->f(transpose(collect(arg))*m...),CHEVIE[:imp][:Invariants](2,1,n))
+end)
 
 # References:
 # [Lu]   G.Lusztig,   Character   sheaves   on   disconnected   groups,  II

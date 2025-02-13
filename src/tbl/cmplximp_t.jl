@@ -466,7 +466,7 @@ function ImprimitiveCuspidalName(S)
 end
 export ImprimitiveCuspidalName
 
-chevieset(:imp, :Invariants, function (p, q, r)
+chevieset(:imp, :Invariants, function(p,q,r)
   map(1:r)do i
     if i==r function(arg...)prod(arg)^div(p,q) end
     else
@@ -768,7 +768,7 @@ chevieset(:imp, :SchurModel, function (p, q, r, phi)
       for i in 3:p2
         for j in [1, 2]
           l=fill(0,4+p2)
-          l[4+[j,i]]=[1,-1]
+          l[[4+j,4+i]]=[1,-1]
           push!(res[:vcyc], [l,1])
         end
       end
@@ -876,7 +876,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
     end
     if para[1]!=para[2]
       InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
-      false
+      return false
     end
     F=CHEVIE[:imp][:FactorizedSchurElement](p,1,r,phi,vcat([E.(p,0:p-1)],
                                                            para[2:end]), [])
@@ -2098,7 +2098,9 @@ chevieset(:imp, :UnipotentCharacters, function (p, q, r)
     uc[:families]=map(y->MakeFamilyImprimitive(y,uc),
       collectby(x->tally(vcat(x...)),csy))
     sort!(uc[:families],by=x->x[:charNumbers])
-    for f in uc[:families] f[:fourierMat]=toM(f[:fourierMat]) end
+    for f in uc[:families] 
+      if !(f.fourierMat isa Matrix) f[:fourierMat]=toM(f[:fourierMat]) end
+    end
     if r==1
       l=map(function (S)
         p=findfirst(==(Int[]),S)

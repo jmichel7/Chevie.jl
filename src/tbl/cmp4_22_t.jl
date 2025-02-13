@@ -1722,9 +1722,9 @@ chevieset(:G4_22, :SchurData, function (ST)
         3:5,5 .+combinations(1:5,3)[char[4]],
         5 .+setdiff(1:5,combinations(1:5,3)[char[4]])),:rootPower=>E(3,char[2]))
       elseif char[1]==4 Dict(:order=>vcat([1,2],makefirst(3:5,char[3]),
-        drop(6:10,char[4]),[5 .+char[4]]),:rootPower=>E(4,char[2]))
+        drop(6:10,char[4]),[5+char[4]]),:rootPower=>E(4,char[2]))
       elseif char[1]==5 Dict(:order=>vcat(makefirst([1,2],char[3]),
-        drop(3:5, char[4]), [2 + char[4]], 6:10), :rootPower => E(5, char[2]))
+        drop(3:5, char[4]),[2+char[4]], 6:10), :rootPower => E(5, char[2]))
       elseif char[1]==6 Dict(:order=>vcat([1,2],3:5,makefirst(6:10, char[3])),
         :rootPower=>E(6,char[2]))
       end
