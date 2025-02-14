@@ -176,7 +176,6 @@ chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
     s[:eigenvalue]=(-1)^div(d+1,4)
     s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
     s[:cuspidalName]=string("B_{",r,"}")
-    if r<10 s[:cuspidalName]=string("B_",r)end
     push!(uc[:harishChandra], s)
     symbols = BDSymbols(rank, d)
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])

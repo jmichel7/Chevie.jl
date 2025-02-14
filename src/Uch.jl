@@ -863,15 +863,17 @@ series of classical groups
 """
 function FixRelativeType(t)
   d=t[:relativeType]
-  if d[:series]=="B" || d[:series]==:B
+  if d[:series] in ("B",:B)
     if d[:rank]==1
       if d isa TypeIrred d.series=:A
       else d[:series]=:A
       end
-      t[:charNumbers]=reverse(t[:charNumbers]) # map B1->A1
+      t[:charNumbers]=collect(t[:charNumbers])
+      reverse!(view(t[:charNumbers],1:2)) # map B1->A1
     elseif d[:rank]==2 && haskey(d,:cartanType) && d[:cartanType]==1
-      d[:cartanType]=2
-      d[:indices]=reverse(collect(d[:indices]))
+      if d isa TypeIrred d.cartanType=2;d.indices=reverse(collect(d.indices))
+      else d[:cartanType]=2;d[:indices]=reverse(collect(d[:indices]))
+      end
       reverse!(view(t[:charNumbers],[1,5])) # map C2->B2
       if haskey(t,:parameterExponents) reverse!(t[:parameterExponents]) end
     end

@@ -50,8 +50,7 @@ function(r,option)
   i=[:D,Symbol("2A"),Symbol("2D")]
   o=["D","{}^2A","{}^2D"]
   if haskey(option, :arg) string(t, ",", r)
-  elseif haskey(option,:TeX)
-    o[findfirst(==(t),i)]*"_"*(r<10 ? string(r) : "{"*string(r)*"}")
+  elseif haskey(option,:TeX) o[findfirst(==(t),i)]*GAPENV.TeXIndex(r)
   else string(t, r)
   end
 end)

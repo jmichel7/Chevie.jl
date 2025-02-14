@@ -69,7 +69,6 @@ chevieset(:imp, :NrConjugacyClasses, function (p, q, r)
 end)
 
 chevieset(:imp, :ReflectionName, function (p,q,r,option,arg...)
-  @show p,q,r,option
   if r==1 && q==1
     if haskey(option, :TeX) return string("Z_{",p,"}")
     else return string("Z",p)

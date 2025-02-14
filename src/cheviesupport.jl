@@ -126,9 +126,9 @@ SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
-function TeXBracket(s)
+function TeXIndex(s)
   s=string(s)
-  length(s)==1  ? s : "{"*s*"}"
+  length(s)==1  ? "_"*s : "_{"*s*"}"
 end
 Weyl.torus(m::Vector{<:Vector})=torus(toM(m))
 Value(p,v)=p(v)

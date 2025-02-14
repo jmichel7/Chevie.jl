@@ -171,6 +171,7 @@ ChevieDict::Dict{String,String}=Dict(
 "HyperplaneOrbits"=>"hyperplane_orbits",
 "ICCTable"=>"ICCTable",
 "Idempotents"=>"idempotents",
+"IdentityMat(nn)"=>"Matrix(1I,n,n)",
 "Incidence"=>"incidence",
 "IndependentLines"=>"independent_rows",
 "IndependentRoots"=>"independent_roots",

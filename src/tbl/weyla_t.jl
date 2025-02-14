@@ -10,7 +10,7 @@ chevieset(:A, :ReflectionName, function(r,option)
   if haskey(option, :arg) return string("\"A\",", r)
   elseif haskey(option, :TeX)
       if haskey(option, :Au) return ["Z_2", "S_3", "S_4", "S_5"][r]
-      else return string("A_",TeXBracket(r))
+      else return string("A",GAPENV.TeXIndex(r))
       end
   elseif haskey(option, :Au) return ["Z2", "S3", "S4", "S5"][r]
   else return string("A", r)

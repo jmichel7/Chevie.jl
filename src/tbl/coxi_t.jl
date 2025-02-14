@@ -328,7 +328,7 @@ chevieset(:I, :UnipotentCharacters, function(e)
   append!(uc[:harishChandra],map(x->Dict{Symbol, Any}(:relativeType=>
     TypeIrred(;series=:A,indices=[],rank=0), 
     :parameterExponents=>[],:levi=>[1,2],:eigenvalue=>E(e,-prod(cusp[x])),
-    :cuspidalName=>string("I_2(",e,")",repr(cusp[x])),
+    :cuspidalName=>string("I_2(",e,")[",join(cusp[x],","),"]"),
     :charNumbers=>[x+f+2]),1:length(cusp)))
   uc[:families] = [Family(CHEVIE[:families][:Dihedral](e),
    (1:length(cusp)+f).+2),Family("C1", [1]), Family("C1", [2])]

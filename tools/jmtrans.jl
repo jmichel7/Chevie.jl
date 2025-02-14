@@ -6,29 +6,25 @@ using .Gap2Julia
 const src=[ 
 "cmplxg24", "cmplxg25", "cmplxg26", 
 "cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
-"coxh3", "coxh4", "weyld", "weyl2d", "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
-"weyle6", "weyle7", "weyle8", "weylf4", "weylg2", "weyl2a", "cmpxtimp"] 
+"coxh3", "coxh4", "weyl2d", "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
+"weyle6", "weyle7", "weyle8", "weylf4", "cmpxtimp"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
- "CartanMat"=>["D"],
  "CharName"=>["timp"],
- "CharTable"=>["2A","D","2D","G31","G34"],
- "ClassParameter"=>["2A","2D","D","H4"],
+ "CharTable"=>["2D","G31","G34"],
+ "ClassParameter"=>["2D","H4"],
  "Discriminant"=>["H4"],
- "FakeDegree"=>["2A"],
- "gensMODA"=>["D"],
- "HeckeCharTable"=>["2A","2D","D"],
+ "HeckeCharTable"=>["2D"],
  "HeckeRepresentation"=>["2D"],
- "Hk"=>["D"],
- "PrintDiagram"=>["D","E6","E7","E8","F4","G2","H3","H4",
+ "PrintDiagram"=>["E6","E7","E8","F4","G2","H3","H4",
             "G24","G25","G26","G27","G29","G31","G32","G33","G34"],
  "ReducedInRightCoset"=>["timp"],
  "Representation"=>["2D"],
- "SchurElement"=>["D","G31"],
- "UnipotentClasses"=>["2A","2D","D"],
+ "SchurElement"=>["G31"],
+ "UnipotentClasses"=>["2D"],
  "WGraph"=>["E8"])
 
 function exclude(e)

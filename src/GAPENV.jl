@@ -13,10 +13,9 @@ const tbl=[("G₂₄","cmplxg24"),
 ("G₂₅","cmplxg25"), ("G₂₆","cmplxg26"), ("G₂₇","cmplxg27"), ("G₂₉","cmplxg29"),
 ("G₃₁","cmplxg31"), ("G₃₂","cmplxg32"), ("G₃₃","cmplxg33"), 
 ("ᵗG(e,e,n)","cmpxtimp"), ("G₃₄","cmplxg34"), ("H₃","coxh3"), ("H₄","coxh4"), 
-("²I₂(e)","cox2i"), ("²Aₙ","weyl2a"),
-("Dₙ","weyld"), ("²Dₙ","weyl2d"), ("³D₄","weyl3d4"), 
+("²I₂(e)","cox2i"), ("²Dₙ","weyl2d"), ("³D₄","weyl3d4"), 
 ("E₆","weyle6"), ("²E₆","weyl2e6"), ("E₇","weyle7"), ("E₈","weyle8"),
-("F₄","weylf4"), ("²F₄","weyl2f4"), ("G₂","weylg2")]
+("F₄","weylf4"), ("²F₄","weyl2f4")]
 println("reading transpiled data:")
 foreach(tbl)do (e,f)
   print("for ",rpad(e,16))
@@ -28,8 +27,8 @@ end
 const tbl_t=[("G(de,e,n)","cmplximp_t"),("G₄-G₂₂","cmp4_22_t"),
   ("G₃₁","cmplxg31_t"), ("G₃₄","cmplxg34_t"), ("ᵗG(e,e,n)","cmpxtimp_t"),
   ("Aₙ","weyla_t"), ("Bₙ and Cₙ","weylbc_t"), ("Dₙ","weyld_t"),
-  ("²Aₙ","weyl2a_t"), ("²Dₙ","weyl2d_t"), ("E₈","weyle8_t"), ("I₂(e)","coxi_t"),
-("several groups","exceptio_t")]
+  ("²Aₙ","weyl2a_t"), ("²Dₙ","weyl2d_t"), ("E₈","weyle8_t"), ("G₂","weylg2_t"),
+  ("I₂(e)","coxi_t"), ("several groups","exceptio_t")]
 println("reading translated data:")
 foreach(tbl_t) do (e,f)
   print("for ",rpad(e,16))

@@ -4,6 +4,93 @@
 
 chevieset(:D,:CartanMat,n->toL(cartan(:D,n)))
 
+chevieset(:D, :Size,(rk,arg...)->2^(rk-1)*factorial(rk))
+
+chevieset(:D, :GeneratingRoots, function (l)
+  rts=Vector{Int}[]
+  for i in 1:l-1
+    r=fill(0,l)
+    r[i:i+1]=[1,-1]
+    push!(rts, r)
+  end
+  r=fill(0,l)
+  r[l-1:l]=[1,1]
+  push!(rts,r)
+  reverse(rts)
+end)
+
+chevieset(:D, :ReflectionDegrees,n->vcat(2:2:2n-2,n))
+
+chevieset(:D, :WeightInfo,function(n)
+  M=Matrix(1I,n,n)
+  if isodd(n)
+    for i in 3:n-1 M[i,n]=-mod(i-2,2) end
+    M[1,2]=-1
+    for i in 3:n M[i,2]=-2*mod(i-2,2) end
+    Dict{Symbol, Any}(:minusculeWeights=>[1,2,n],:decompositions=>[[3],[1],[2]],
+                      :moduli=>[4],:chosenAdaptedBasis=>M)
+  else
+    for i in 4:n-1 M[i,n]=-mod(i-3,2) end
+    M[1,2]=M[1,n]=-1
+    Dict{Symbol, Any}(:minusculeWeights=>[1,2,n],
+   :decompositions=>[[1, 1],[1,0], [0,1]],:moduli=>[2,2],:chosenAdaptedBasis=>M)
+  end
+end)
+
+chevieset(:D, :ParabolicRepresentatives,(l, s)->
+  chevieget(:imp, :ParabolicRepresentatives)(2,2,l,s))
+
+chevieset(:D, :WordsClassRepresentatives,function(n,param=partition_tuples(n,2))
+  res=Vector{Int}[]
+  for pi in param
+    if ((pi[2] isa AbstractVector) && isodd(length(pi[2]))) || pi[2]=='-'
+      continue
+    end
+    w=Int[]
+    i=1
+    if pi[2]!='+'
+      for l in reverse(pi[2])
+        if i==1 append!(w,2:l)
+        else
+          append!(w,i:-1:3)
+          append!(w,1:i+l-1)
+        end
+        i+=l
+      end
+    end
+    for l in pi[1]
+      r=mod(l,2)
+      append!(w,i.+vcat(1:2:l-1-r, 2:2:l+r-2))
+      i+=l
+    end
+    if !isempty(w) && w[1]==2 w[1]=1 end # cosmetics for lexicographics.
+    # classes are labelled with '+', if they have representatives
+    # in parabolic subgroup of type A_{l-1}, given by {1,3,4,..}
+    if (isempty(pi[2]) || pi[2]=='+') && all(iseven,pi[1])
+      push!(res,w)
+      w=copy(w)
+      w[1]=2
+    end
+    push!(res, w)
+  end
+  res
+end)
+
+chevieset(:D, :ClassInfo, function (n)
+  res=chevieget(:imp,:ClassInfo)(2,2,n)
+  res[:classparams]=map(x->x[end] isa Number ? [x[1],x[end]==0 ? '+' : '-'] : x,
+                        res[:classparams])
+  res[:classtext]=chevieget(:D,:WordsClassRepresentatives)(n,res[:classparams])
+  res
+end)
+
+chevieset(:D, :NrConjugacyClasses,n->
+  if isodd(n) div(npartition_tuples(n,2),2)
+  else div(npartition_tuples(n,2)+3*npartitions(div(n,2)),2)
+end)
+
+chevieset(:D, :CharInfo, n->chevieget(:imp, :CharInfo)(2, 2, n))
+
 #  If l is even then some of the classes  and restrictions split into two
 #  classes or  characters, respectively. Their  values  are given by  the
 #  character  values    for W(B_l) and   those  for  the  symmetric group
@@ -60,9 +147,87 @@ chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
 chevieset(:D,:CycPolPoincarePolynomial,n->CycPol(Pol()^n-1)*
           prod(i->CycPol(Pol()^2i-1),1:n-1)//CycPol(Pol()-1)^n)
 
-chevieset(:D, :SchurElement, function (n, phi, para, sqrtparam)
+chevieset(:D,:SchurElement, function (n, phi, para, sqrtparam)
   (chevieget(:D, :CycPolPoincarePolynomial)(n)//
    chevieget(:D, :CycPolGenericDegree)(phi))(-para[1][1]//para[1][2])
+end)
+
+chevieset(:D,:FactorizedSchurElement, function (n,p,arg...)
+  if p[2] in "+-" p = [p[1], p[1]] end
+  chevieget(:imp, :FactorizedSchurElement)(2, 2, n, p, arg[1], [])
+end)
+
+chevieset(:D,:HeckeRepresentation, function (n,para,rt,i,arg...)
+  p=chevieget(:D, :CharInfo)(n)[:charparams][i]
+  if p[end]==0 i+=1
+  elseif p[end]==1 i-=1
+  end
+  chevieget(:imp, :HeckeRepresentation)(2, 2, n, para, [], i)
+end)
+
+chevieset(:D,:Representation, function (n, i)
+  p=chevieget(:D, :CharInfo)(n)[:charparams][i]
+  if p[end]==0 i+=1
+  elseif p[end]==1 i-=1
+  end
+  return chevieget(:imp, :Representation)(2, 2, n, i)
+end)
+
+chevieset(:D,:PoincarePolynomial, function (n, para)
+  q=-para[1][1]//para[1][2]
+  sum(k->q^k,0:n-1)*prod(i->(q^i+1)*sum(k->q^k,0:i-1),1:n-1)
+end)
+
+chevieset(:D,:symbolcharparam,c->symbol_partition_tuple(c,0))
+
+chevieset(:D,:Invariants, function(n)
+  m=toM(chevieget(:imp,:GeneratingRoots)(2,2,n))
+  return map(f->function(arg...)
+              return f((transpose(collect(arg))*m)...)
+                  end,CHEVIE[:imp][:Invariants](2, 2, n))
+end)
+
+chevieset(:D,:CycPolGenericDegree,c->gendeg_symbol(symbol_partition_tuple(c,0)))
+
+chevieset(:D,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c, 0))(q))
+
+chevieset(:D,:UnipotentCharacters,function(rank)
+  uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
+  for d in 0:4:4*GAPENV.RootInt(div(rank,4),2)
+    r=div(d^2,4)
+    s=Dict{Symbol, Any}(:relativeType=> 
+      TypeIrred(;series=:B,indices=1+r:rank,rank=rank-r),:levi=>1:r,
+      :eigenvalue=>(-1)^div(d+1,4), 
+      :parameterExponents=>vcat(d,fill(1,max(0, rank-1-r))))
+    s[:cuspidalName] = string("D",GAPENV.TeXIndex(r))
+    if d==0
+      s[:relativeType].series=:D
+      s[:cuspidalName]=""
+      s[:parameterExponents][1]=1
+    end
+    push!(uc[:harishChandra], s)
+    symbols=BDSymbols(rank,d)
+    s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])
+    FixRelativeType(s)
+    append!(uc[:charSymbols],symbols)
+  end
+  uc[:a]=valuation_gendeg_symbol.(uc[:charSymbols])
+  uc[:A]=degree_gendeg_symbol.(uc[:charSymbols])
+  uc[:families]=FamiliesClassical(uc[:charSymbols])
+  uc
+end)
+
+chevieset(:D,:Ennola,function(n)
+  if isodd(n) return SPerm() end
+  uc=chevieget(:D,:UnipotentCharacters)(n)
+  l=uc[:charSymbols]
+  SPerm(map(function(i)
+    if !(l[i][2] isa AbstractVector) return i*(-1)^uc[:A][i] end
+    s=EnnolaSymbol(l[i])
+    p=findfirst(==(s),l)
+    if isnothing(p) p=findfirst(==(reverse(s)),l) end
+    p*(-1)^uc[:A][i]
+  end, 1:length(l)))
 end)
 
 # References for unipotent classes:
@@ -319,6 +484,8 @@ end
   uc
 end)
 
+# Used by 'ClassParamD' for distinguishing classes with '+' or '-' in label;
+# precomputed for D_n with n=4,6,8
 chevieset(:D, :gensMODA,Dict(4=>[[perm"(1,2)(7,8)", perm"(3,4)(5,6)", perm"(2,3)(6,7)", perm"(3,5)(4,6)"],[[4],[nothing, nothing, 2]], [[2], [1, nothing, 1]]],
 6=>[[perm"(1,2)(8,11)(12,14)(15,17)(16,18)(19,21)(22,25)(31,32)", 
      perm"(3,4)(5,6)(7,9)(10,13)(20,23)(24,26)(27,28)(29,30)", 
