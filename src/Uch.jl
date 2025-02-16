@@ -398,7 +398,7 @@ characters.  This is itself a list of records, one for each pair `(𝐋,λ)` of
 a  Levi  of  an  `F`-stable  parabolic  subgroup  and  a cuspidal unipotent
 character of ``𝐋^F``. These records themselves have the following fields:
 
-`:levi`: a list 'l' such that `𝐋` corresponds to 'ReflectionSubgroup(W,l)'.
+`:levi`: a list 'l' such that `𝐋` corresponds to 'reflection_subgroup(W,l)'.
 
 `:cuspidalName`: the name of the unipotent cuspidal character `lambda`.
 

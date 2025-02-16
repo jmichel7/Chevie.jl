@@ -814,20 +814,20 @@ end)
 
 chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
   if r==1
-    VcycSchurElement(vcat(para[1],[0]),CHEVIE[:imp][:SchurModel](p,q,r,phi))
+   VcycSchurElement(vcat(para[1],[0]),chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif p==1
     VcycSchurElement([0,-para[1][1]//para[1][2]],
-                     CHEVIE[:imp][:SchurModel](p,q,r,phi))
+                     chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif q==1
     VcycSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
-                     CHEVIE[:imp][:SchurModel](p,q,r,phi))
+                     chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif r==2 && mod(q,2)==0
     e1=div(q,2)
     Z=map(x->root(x,e1),para[1])
     Z=vcat(map(j->Z*E(e1,j),0:e1-1)...)
     VcycSchurElement(vcat(para[2],para[3],Z),
-                     CHEVIE[:imp][:SchurModel](p,2,r,phi),
-                     CHEVIE[:imp][:SchurData](p,2,r,phi))//e1
+                     chevieget(:imp,:SchurModel)(p,2,r,phi),
+                     chevieget(:imp,:SchurData)(p,2,r,phi))//e1
   elseif p==q
     if phi[end] isa Integer
       m=length(phi)-2
@@ -835,7 +835,7 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
     else
       m=p
     end
-    CHEVIE[:imp][:SchurElement](p,1,r,phi,vcat([E.(p,0:p-1)],para[2:end]),[])//m
+    chevieget(:imp,:SchurElement)(p,1,r,phi,vcat([E.(p,0:p-1)],para[2:end]),[])//m
   elseif para[2]==para[3]
     if phi[end] isa Integer
       m=length(phi)-2
@@ -848,25 +848,25 @@ chevieset(:imp, :SchurElement, function (p, q, r, phi, para, rt)
     else
       para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
     end
-    p//q*CHEVIE[:imp][:SchurElement](p,1,r,phi,para,[])//m
+    p//q*chevieget(:imp,:SchurElement)(p,1,r,phi,para,[])//m
   else
-    CHEVIE[:compat][:InfoChevie]("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
+    chevieget(:compat,:InfoChevie)("# SchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
     false
   end
 end)
 
 chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
   if r==1
-    VFactorSchurElement(vcat(para[1],[0]),CHEVIE[:imp][:SchurModel](p,q,r,phi))
+   VFactorSchurElement(vcat(para[1],[0]),chevieget(:imp,:SchurModel)(p,q,r,phi))
   elseif p == 1
     VFactorSchurElement([0,-para[1][1]//para[1][2]],
-                       CHEVIE[:imp][:SchurModel](p, q, r, phi))
+                      chevieget(:imp,:SchurModel)(p, q, r, phi))
   elseif q == 1
     VFactorSchurElement(vcat(para[1],[-para[2][1]//para[2][2]]),
-                       CHEVIE[:imp][:SchurModel](p, q, r, phi))
+                        chevieget(:imp,:SchurModel)(p, q, r, phi))
   elseif [q,r]==[2,2]
     VFactorSchurElement(vcat(para[[2,3,1]]...),
-    CHEVIE[:imp][:SchurModel](p,q,r,phi),CHEVIE[:imp][:SchurData](p,q,r,phi))
+   chevieget(:imp,:SchurModel)(p,q,r,phi),chevieget(:imp,:SchurData)(p,q,r,phi))
   elseif p == q
     if phi[end] isa Integer
       m=length(phi) - 2
@@ -878,7 +878,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
       InfoChevie("# FactorizedSchurElements(H(G(",p,",",q,",",r,"),",para,") not implemented\n")
       return false
     end
-    F=CHEVIE[:imp][:FactorizedSchurElement](p,1,r,phi,vcat([E.(p,0:p-1)],
+    F=chevieget(:imp,:FactorizedSchurElement)(p,1,r,phi,vcat([E.(p,0:p-1)],
                                                            para[2:end]), [])
     F[:factor]//=m
     F
@@ -894,7 +894,7 @@ chevieset(:imp, :FactorizedSchurElement, function (p, q, r, phi, para, rt)
     else
       para=[[E(q,j)*root(i,q) for j in 0:q-1 for i in para[1]],para[2]]
     end
-    F=CHEVIE[:imp][:FactorizedSchurElement](p,1,r,phi,para,[])
+    F=chevieget(:imp,:FactorizedSchurElement)(p,1,r,phi,para,[])
     F[:factor]=p//(q*m)*F[:factor]
     F
   else

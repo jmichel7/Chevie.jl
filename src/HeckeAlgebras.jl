@@ -470,7 +470,7 @@ end
 `CharTable(H::HeckeAlgebra or HeckeCoset)`
 
 returns  the `CharTable` of the Hecke algebra `H`. For the primitive groups
-`G₃₁,  G₃₂,  G₃₄`  there  are  `Unknown()` entries corresponding to missing
+`G₃₁,  G₃₂,  G₃₄`  there  are  `missing` entries corresponding to missing
 representations   (see  [`representation`](@ref)).   The  columns   of  the
 `CharTable`  are labelled  by `classnames(H.W)`  and contain  the character
 values for the corresponding element given by `classreps(H.W)`.
@@ -740,20 +740,22 @@ julia> central_monomials(H)
  q¹⁵
 ```
 """
-function central_monomials(H::HeckeAlgebra)
+central_monomials(H::HeckeAlgebra)=
+  central_monomials.(Ref(H),1:nconjugacy_classes(H.W))
+
+function central_monomials(H::HeckeAlgebra,i)
 # Cf. BrMi, 4.16 for the formula used
   W=H.W
   v=hyperplane_orbits(W)
-  map(eachrow(CharTable(W).irr)) do irr
-    dim=Int(irr[1])
-    prod(v)do C
-      q=H.para[restriction(W)[C.s]]
-      m=Int.(map(0:C.order-1)do j
-       (dim+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
-      end)
-      E.(dim,-C.N_s*sum(m.*(0:C.order-1)))*
-          prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
-    end
+  irr=CharTable(W).irr[i,:]
+  dim=Int(irr[1])
+  prod(v)do C
+    q=H.para[restriction(W)[C.s]]
+    m=Int.(map(0:C.order-1)do j
+     (dim+sum(l->irr[C.cl_s[l]]*E(C.order,-j*l),1:C.order-1))//C.order
+    end)
+    E.(dim,-C.N_s*sum(m.*(0:C.order-1)))*
+        prod(j->q[j]^Int(C.N_s*C.order*m[j]//irr[1]),1:C.order)
   end
 end
 
@@ -1107,7 +1109,7 @@ known.  Such an expression in the generators  will be called a *known* word
 (the  list of known words  is obtained by `word.(conjugacy_classes(W))`. If
 the  word `v` is known, the computation is quick using the character table.
 If  not,  the  function  computes  the  trace  of  `Tᵥ` in each irreducible
-representation.   The   values   returned   are   `Unknown()`  for  missing
+representation.   The   values   returned   are   `missing`  for  missing
 representations (see `representation`).
 ```julia-repl
 julia> W=crg(4)

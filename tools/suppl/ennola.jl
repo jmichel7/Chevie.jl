@@ -379,7 +379,7 @@ function relconj(arg...,)
               if iszero((m[i])[j] - 1)
                   for k in 1:n
                       if k == i p[i] = [j]
-                      else p[k] = Difference(p[k], [j])
+                      else p[k] = setdiff(p[k], [j])
                       end
                   end
               end
@@ -389,7 +389,7 @@ function relconj(arg...,)
   end
   print("possconj==", p, "\n")
   for i in 1:n
-      for j in Difference(1:n, map(abs, p[i]))
+      for j in setdiff(1:n, map(abs, p[i]))
           v = map((k->begin (M[:Valueat])(k, j) end), 1:n)
           if all((x->begin x != false end), v)
               Makerel(M, map((k->begin [(M[:at])(i, k), v[k]] end), 1:n), 0)
@@ -416,7 +416,7 @@ function relpol(M, vp, vq)
           if i < p[:valuation] || i > degree(p) return 0 end
           return (p[:coefficients])[(i - p[:valuation]) + 1]
       end
-  max = maximum(map(degree, Concatenation(vp, vq)))
+  max = maximum(map(degree, vcat(vp, vq)))
   for i in 1:M[:n]
       for k in 0:max
           if !(relprod(M, map((p->begin coeff(p, k)
@@ -680,7 +680,7 @@ function detfrob2(M)
       end
     end
     for i = Filtered(M[:known], (x->begin x <= n end))
-      for j = Difference(1:n, M[:known])
+      for j = setdiff(1:n, M[:known])
         if !(Makerelandconj(M, Concatenation(map((k->begin
               [k, ((M[:S])[i])[k] * ((M[:S])[k])[j]]
            end), 1:n), [[j + n, -(ComplexConjugate(Value(M, i))) * ComplexConjugate(((M[:S])[i])[j])]]), 0))
@@ -806,7 +806,7 @@ function repsEnnola(W, fno, e)
   p = DistinctCartesian(p)
   p = Filtered(p, (x->begin length(Intersection(x, -x)) == 0 end))
   p = Orbits(ambig(W, fno), map(SPerm, p))
-  orbits = map((o->begin map((ps->begin Permuted(1:n, ps) end), o) end), p)
+  orbits = map((o->begin map((ps->begin invpermute(1:n, ps) end), o) end), p)
   p = map((x->begin (x[:ls])[fno] end), e)
   n = gapSet(map(ps->PositionProperty(orbits, (y->begin ps in y end)), p))
   if length(n) != 1 error("theory") end

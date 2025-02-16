@@ -57,7 +57,7 @@ chevieset(Symbol("3D4"), :HeckeCharTable, function (param, sqrtparam)
     :irredinfo => chevieget(Symbol("3D4"), :IrredInfo))
   merge!(tbl,chevieget(Symbol("3D4"),:ClassInfo)())
   tbl[:centralizers]=div.(tbl[:size],tbl[:classes])
-  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, param)
+  chevieget(:compat,:AdjustHeckeCharTable)(tbl, param)
   tbl
 end)
 

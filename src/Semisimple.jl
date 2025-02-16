@@ -780,12 +780,12 @@ Base.isfinite(W::Affine)=false
 function Perms.reflength(W::Affine,w)
   W0=W.W
   r=W0.semisimpleRank
-  Id=vcat(Matrix{Int}(I,r,r),fill(0,r)')
+  Id=vcat(Matrix(1I,r,r),fill(0,r)')
   mov=map(v->AffineRootAction(W,w,v)-v,eachrow(Id))
   l=push!(map(i->refls(W0,i),eachindex(gens(W0))),refls(W0,nref(W0)))
   p=reflength(W0,prod(l[word(W,w)]))
-  dimw=Minimum(List(Filtered(ParabolicSubgroups(W0),
-      x->RankMat(Concatenation(mov,roots(W0,x)))==Length(x)),Length))
+  dimw=minimum(map(length,filter(x->RankMat(vcat(mov,roots(W0,x)))==length(x),
+                      ParabolicSubgroups(W0))))
   2*dimw-p
 end
 

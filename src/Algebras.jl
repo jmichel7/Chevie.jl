@@ -454,7 +454,7 @@ end
 #    else return Product(mot,i->A.basis[Position(A.mots,[i])]);
 #    fi;
 #  end;
-#  A.radical:=TwoSidedIdeal(A,Concatenation(A.radical));
+#  A.radical:=TwoSidedIdeal(A,vcat(A.radical...));
 #  A.radicalpowers:=[A.radical];
 #  A.embedding:=function(g) return A.basis[Position(e,g)];end;
 
@@ -476,7 +476,7 @@ Base.show(io::IO,A::PolynomialQuotientAlgebra)=
     print(io,eltype(A.p.c),"[",A.var,"]/",A.p)
 
 function PolynomialQuotientAlgebra(p::Pol{T})where T
-#  A.string:=r->SPrint("Class(",Sum(r.coefficients, i-> i[1]*q^(i[2]-1)),")");
+#  A.string:=r->string("Class(",sum(i->i[1]*q^(i[2]-1),r.coefficients),")");
   d=degree(p)
   function class(r::Pol)
     r*=one(p)
@@ -611,7 +611,7 @@ end
 #  G:=A.group;
 #  e:=Idempotents(GrothendieckRing(G));
 #  c:=PositionClass(G,G.identity);
-#  res:=Sum(e{First(pprimesections(G,A.field.char),i->c in i)});
+#  res:=sum(e{First(pprimesections(G,A.field.char),i->c in i)});
 #  return AlgebraElement(A,List(res.coefficients,i-> 
 #    [A.field.one*Numerator(i[1])/Denominator(i[1]),i[2]]));
 #end;
@@ -781,12 +781,12 @@ function Chars.CharTable(A::SolomonAlgebra)
   SolomonCharTable(A,irr,map(w->word(W,w),cox),Dict{Symbol,Any}())
 #  res.columns[Length(res.columns)]:=["0"];
 #  res.basistraces:=List([1..Length(res.irreducibles)],function(ii)local r;
-#    r:=Concatenation(List([1..Length(W.solomon.conjugacy)],
+#    r:=vcat(List([1..Length(W.solomon.conjugacy)],
 #      i->List(W.solomon.conjugacy[i], j-> [j,res.irreducibles[ii][i]])));
 #    Sort(r); return List(r,i->i[2]);end);
 #  if A.field.char=0 then return res;fi;
 #  irr:=CyclotomicModP(res.irreducibles,A.field.char);
-#  inc:=CollectBy([1..Length(irr)],irr);Sort(inc);
+#  inc:=collectby(irr,eachindex(irr));Sort(inc);
 #  res.rows:=List(inc, i-> res.rows[i[1]]);
 #  res.irreducibles:=List(inc, i-> irr[i[1]]);
 #  res.basistraces:=CyclotomicModP(res.basistraces,A.field.char);
@@ -805,7 +805,7 @@ function injection(A::SolomonAlgebra{T})where T
   end
 # else
 #   X:=List(W.generalizedsolomon.subgroups, i-> 
-#     Sum(ReducedRightCosetRepresentatives(W, i),i-> B.embedding(i^-1)));
+#     sum(i-> B.embedding(i^-1),ReducedRightCosetRepresentatives(W, i)));
 # fi;
   AlgebraHom(A,B,X)
 end
@@ -1015,7 +1015,7 @@ end
 #  mat:=List(irr, i-> 0);
 #  for i in x.coefficients do 
 #    if A.type="Solomon algebra" then 
-#      WI:=ReflectionSubgroup(W,W.solomon.subsets[i[2]]);
+#      WI:=reflection_subgroup(W,W.solomon.subsets[i[2]]);
 #    elif A.type="Generalized Solomon algebra" then 
 #      WI:=W.generalizedsolomon.subgroups[i[2]];
 #    fi;

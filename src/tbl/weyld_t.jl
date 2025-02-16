@@ -136,10 +136,10 @@ function chard(n,q)
 end
    tbl[:irreducibles]=chard(n,q)
    tbl[:size]=prod(chevieget(:D,:ReflectionDegrees)(n))
-#  tbl[:irredinfo]=List(CHEVIE.R("CharInfo","D")(n).charparams,p->
+#  tbl[:irredinfo]=List(chevieget(:D,:CharInfo)(n).charparams,p->
 #     rec(charparam:=p,charname:=string_partition_tuple(p)));
    merge!(tbl,ci)
-   CHEVIE[:compat][:AdjustHeckeCharTable](tbl,para);
+   chevieget(:compat,:AdjustHeckeCharTable)(tbl,para);
    tbl
   end)
 chevieset(:D,:CharTable,n->chevieget(:D,:HeckeCharTable)(n,fill([1,-1],n),[]))
@@ -184,7 +184,7 @@ chevieset(:D,:Invariants, function(n)
   m=toM(chevieget(:imp,:GeneratingRoots)(2,2,n))
   return map(f->function(arg...)
               return f((transpose(collect(arg))*m)...)
-                  end,CHEVIE[:imp][:Invariants](2, 2, n))
+             end,chevieget(:imp,:Invariants)(2, 2, n))
 end)
 
 chevieset(:D,:CycPolGenericDegree,c->gendeg_symbol(symbol_partition_tuple(c,0)))

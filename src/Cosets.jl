@@ -629,7 +629,7 @@ julia> spets(W,Perm(1,3))
 ²A₃
 ```
 """
-function spets(W::FiniteCoxeterGroup{Perm{T}},F::Matrix) where{T}
+function spets(W::FiniteCoxeterGroup{Perm{T}},F::AbstractMatrix) where{T}
   perm=PermX(W.G,F)
   if isnothing(perm) error("matrix F must preserve the roots") end
   phi=reduced(W,perm)
@@ -950,12 +950,12 @@ function spets(W::PermRootGroup,w::Perm;NC=false)
   res
 end
 
-function spets(W::PermRootGroup,F::Matrix;NC=false)
+function spets(W::PermRootGroup,F::AbstractMatrix;NC=false)
   w=PermX(W,F)
   if !isnothing(w) return spets(W,w;NC) end
 # if W isa PRSG error("that's all for subgroups") end
 # check if there exists a permutation perm and for each W-orbit of roots O 
-# a scalar l_O such that W.roots{O}*WF.F0Mat=l_O*W.roots{OnTuples(O,perm)}
+# a scalar l_O such that (roots(W,O)*WF.F0Mat=l_O*roots(W,O.^perm)
   t=collectby(j->simple_reps(W)[j],eachindex(gens(W)))
   s=map(t)do inds
     scal=map(inds)do y
@@ -1235,7 +1235,7 @@ function Weyl.rootdatum(t::Symbol,r::Int...)
      if sc res.TeXcallname*="sc" end
      return res
    end
-   error("Unknown root datum $t. Known types are:\n",
+   error("unknown root datum $t. Known types are:\n",
          sprint(cut,join(sort(collect(keys(rootdata))),", ")))
 end
 

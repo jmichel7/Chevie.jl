@@ -130,7 +130,7 @@ chevieset(:I, :HeckeCharTable, function (m, para, rootpara)
    :parameter=>[u,v],:powermap=>[],:irreducibles=>ct*v^0)
   merge!(tbl, cl)
   tbl[:centralizers]= div.(tbl[:size],tbl[:classes])
-  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, para)
+  chevieget(:compat,:AdjustHeckeCharTable)(tbl, para)
   tbl
 end)
 

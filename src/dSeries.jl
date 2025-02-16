@@ -287,7 +287,7 @@ end
 # Find subsets P of axes(l,1) such that sum(l[P,:];dims=1)=S.
 # In  addition, lv is a vector of  length size(l,1), v is a sub-multiset of
 # lv and P should satisfy tally(lv[P])=tally(v).
-function SubsetsSum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
+function Subsets_sum(S, l::AbstractMatrix, v::Vector, lv::Vector;lim=10)
 # println("S=$S;l=$l;v=$v;lv=$lv")
   function sievev(good::Vector{Int}, v)
     v=copy(v)
@@ -892,7 +892,7 @@ function RLG(s::Series)
   end
   if isnothing(RLG) ChevieErr(s, ":RLG failed\n")
   elseif degree(s)!=CycPol(degree(RLG))
-    ChevieErr(s,":Deg RLG!=Sum(eps[i]*ud[i])\n")
+    ChevieErr(s,":Deg RLG!=sum(eps[i]*ud[i])\n")
   end
   RLG
   end
@@ -975,7 +975,7 @@ function Chars.charnumbers(s::Series)
     pp=p(Pol())
     vcat(fill(0,pp.v),pp.c,fill(0,max(0,t-degree(p))))
   end
-  v = SubsetsSum(improve_type(c(degree(s))), improve_type(toM(map(c, ud))),
+  v = Subsets_sum(improve_type(c(degree(s))), improve_type(toM(map(c, ud))),
                  improve_type(WGLdims(s)), improve_type(foo(:dims)))
   InfoChevie("# ", length(v), " found\n")
   if length(v)>10000
@@ -1110,7 +1110,7 @@ function paramcyclic(s::Series)
     quality=map(x->conductor(collect(values(prod(y->Mvp(:x)-y,x).d))),quality)
     quality=1 .+s.translation[filter(i->quality[i]==minimum(quality),eachindex(quality))]
     if isempty(quality) quality=[1] end
-    m=GAPENV.Rotations(mC(s))
+    m=circshift.(Ref(mC(s)),length(mC(s)):-1:1)
     m=findfirst(==(maximum(m[quality])),m)
     m=circshift(1:e(s),m-1)
     for i in [:mC,:charNumbers,:eigen,:span,:eps,:dims,:permutable]

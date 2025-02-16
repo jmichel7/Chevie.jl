@@ -336,7 +336,7 @@ julia> cartan(:Bsym,2)
 """
 function PermRoot.cartan(t::Symbol,r::Integer,args::Number...)
   if haskey(cartanmats,t) cartanmats[t](r,args...)
-  else error("Unknown Cartan type $(repr(t)). Known types are:\n",
+  else error("unknown Cartan type $(repr(t)). Known types are:\n",
              join(sort(repr.(collect(keys(cartanmats)))),", "))
   end
 end

@@ -210,6 +210,7 @@ function findrepresentation(W,gr,check=false)
   end
 end
 
+Base.numerator(p::Mvp)=p*denominator(p)
 function Trepresentations(W,l=Int[])
   O=W
   if (W isa HeckeAlgebra) || (W isa HeckeCoset)
@@ -221,7 +222,7 @@ function Trepresentations(W,l=Int[])
   ct=CharTable(O).irr
   if isempty(l) l=1:length(cl) end
   for i in l
-    InfoChevie("# Representation n⁰$i")
+   InfoChevie("# Representation n⁰$i/$(length(cl))")
     gr=representation(O,i)
     if gr==false println("=false")
     else
@@ -234,9 +235,10 @@ function Trepresentations(W,l=Int[])
       if pos==i println("found")
       elseif pos!=false 
          ChevieErr("repr. ",i," character found at ",pos,"\n")
-      else ChevieErr("character does not match\n")
+      else 
         pos=collect(zip(ct[i,:],traces_words_mats(gr,classinfo(W).classtext)))
-	f=findall(x->x[1]!=x[2],pos)
+	f=findall(x->x[2]!=x[1],pos)
+        ChevieErr("character does not match\n")
         ChevieErr(Format.Table(toM(pos[f]),row_labels=f,
            col_labels=["is","should be"]))
       end

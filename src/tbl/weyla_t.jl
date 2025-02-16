@@ -90,8 +90,8 @@ chevieset(:A, :ClassParameter, function(n,w)
 end)
 
 chevieset(:A, :WeightInfo, function(n)
-  M=GAPENV.IdentityMat(n)
-  for i in 1:n-1 M[i][n]=-i end
+  M=Matrix(1I,n,n)
+  for i in 1:n-1 M[i,n]=-i end
   Dict{Symbol, Any}(:minusculeWeights => 1:n, 
     :decompositions=>map(i->[n+1-i],1:n),:moduli=>[n+1],:chosenAdaptedBasis=>M)
 end)

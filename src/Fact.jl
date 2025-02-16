@@ -500,7 +500,7 @@ function TryCombinations(f,lc,l,p,alldegs,bounds,split;onlydegs=nothing,stopdegs
    # factors of larger than half remaining degree we will find as final cofactor
     degf=degree(f)
     degs=filter(i->2i<=degf,alldegs)
-    if !isnothing(onlydegs) degs=Intersection(degs, onlydegs) end
+    if !isnothing(onlydegs) degs=intersect(degs, onlydegs) end
     if act in sel
     # search all combinations of length step+1 containing the act-th
     # factor, that are allowed
@@ -758,7 +758,7 @@ function HenselBound(pol,arg...)
       a=[]
       for i in pol[:coefficients]
         if IsRat(i) push!(a, abs(i))
-        else push!(a, Sum(i[:coefficients], abs)*nalpha)
+        else push!(a, sum(abs,i[:coefficients])*nalpha)
         end
       end
       a=-a

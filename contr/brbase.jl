@@ -10,9 +10,9 @@
 # If one is only interested in the set of bi-grassmannians and the set of
 # base  elements  (especially  for  large  groups),  one  should  use the
 # commands:
-#             gap> W := CoxeterGroup( \"F\", 4 );       # for example
-#             gap> bg := bi_grassmannians( W );
-#             gap> base := FindBaseBruhat( W, bg );
+#             julia>W=coxgroup(:F,4)       # for example
+#             julia>bg=bi_grassmannians(W)
+#             julia>base=FindBaseBruhat(W,bg)
 #
 # written MG, SK, Oct 1996
 ############################################################################

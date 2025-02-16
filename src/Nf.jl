@@ -417,8 +417,8 @@ function NF(N::Integer,stab::Group{<:Mod})
   zumb=CyclotomicNumbers.zumbroich_basis(N)
   lenst=LenstraBase(N,H1,stab)
   
-  # We want 'Sublist(CoeffsCyc(z,N),F.coeffslist) = Coefficients(F,z)'
-  # ( and   'Coefficients( F, z ) * F.base = z' )
+  # We want 'CoeffsCyc(z,N)[F.coeffslist]=Coefficients(F,z)'
+  # ( and   'Coefficients(F,z)*F.base=z' )
   # with respect to the standard Lenstra base.
 
   if length(H1)!=length(stab) # let 'a' act on 'lenst' to get the right base

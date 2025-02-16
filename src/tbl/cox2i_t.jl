@@ -91,7 +91,7 @@ chevieset(Symbol("2I"), :HeckeCharTable, function (m, param, sqrtparam)
                     ci[:charparams], ci[:charnames]))
   merge!(tbl, cl)
   tbl[:centralizers]=div.(tbl[:size],cl[:classes])
-  CHEVIE[:compat][:AdjustHeckeCharTable](tbl, param)
+  chevieget(:compat,:AdjustHeckeCharTable)(tbl, param)
   tbl
 end)
 

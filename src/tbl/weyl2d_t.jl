@@ -123,7 +123,7 @@ function (l,param,rootparam)
   tbl[:irreducibles]=toL(transpose(toM(map(x->char_values(
    Tbasis(hecke(coxgroup(:B,l),q))(vcat([1],GAPENV.Replace(x,[1],[1,2,1]))...),
    toM(hi[:irreducibles][chr])),tbl[:classtext]))))
-   CHEVIE[:compat][:AdjustHeckeCharTable](tbl,param)
+  chevieget(:compat,:AdjustHeckeCharTable)(tbl,param)
   tbl
 end)
 

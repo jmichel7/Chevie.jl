@@ -5,8 +5,8 @@ using .Gap2Julia
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
 const src=[ 
 "cmplxg24", "cmplxg25", "cmplxg26", "cmplxg27", "cmplxg29", "cmplxg31",
-"cmplxg32", "cmplxg33", "cmplxg34", "coxh3", "coxh4", "weyl2e6", "weyl2f4",
-"weyle6", "weyle7", "weyle8", "cmpxtimp"] 
+"cmplxg32", "cmplxg33", "cmplxg34", "coxh4", "weyle6", "weyle7",
+"weyle8", "cmpxtimp"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).

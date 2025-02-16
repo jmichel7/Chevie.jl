@@ -101,7 +101,6 @@ end
 DiagonalMat(v::Vector)=DiagonalMat(v...)
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
-const HeckeCentralMonomials=central_monomials
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end
@@ -109,7 +108,6 @@ function Inherit(a,b,c)
 end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
 const PartitionTupleToString(s,d=Dict())=string_partition_tuple(s;d...)
-Permuted(x,p)=invpermute(x,p)
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
