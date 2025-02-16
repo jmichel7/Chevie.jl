@@ -319,7 +319,7 @@ imprimitive family
 
 julia> invpermute(f,Perm(1,2,3))
 Family(0011,[2, 4, 3],cospecial=3)
-Permuted((1,2,3),imprimitive family)
+permuted((1,2,3),imprimitive family)
 ┌─────┬──────────────────────────────┐
 │label│eigen        3      1        2│
 ├─────┼──────────────────────────────┤
@@ -353,7 +353,7 @@ function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
     end
   end
   if haskey(f,:explanation)
-    f.explanation="Permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
+    f.explanation="permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
   end
   f
 end

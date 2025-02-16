@@ -540,7 +540,7 @@ chevieset(:imp, :CharInfo, function (de, e, r)
     res[:b]=valuation_fegsymbol.(res[:charSymbols])
   end
   if e>1 && d>1
-    res[:hgal]=GAPENV.PermListList(res[:charparams], map(res[:charparams])do s
+    galp=map(res[:charparams])do s
       s=copy(s)
       if !(s[end] isa Vector)
         t=div(length(s)-2,d)
@@ -550,7 +550,8 @@ chevieset(:imp, :CharInfo, function (de, e, r)
       end
       s[1:d:d*e-d+1]=circshift(s[1:d:d*e-d+1],1)
       minimum(map(i->circshift(s,i*d),1:e))
-    end)
+    end
+    res[:hgal]=Perm(string.(res[:charparams]),string.(galp)) #horrible hack
   end
   res[:charnames]=map(res[:charparams])do s
       if (s[end] isa Vector) && sum(sum,s)==1

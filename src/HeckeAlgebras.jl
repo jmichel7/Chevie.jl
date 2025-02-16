@@ -1511,7 +1511,9 @@ function Chars.CharTable(H::HeckeCoset;opt...)
       if haskey(ct,:irredinfo) names=getindex.(ct[:irredinfo],:charname)
       else                     names=charnames(t;opt...,TeX=true)
       end
-      CharTable(improve_type(toM(ct[:irreducibles])),names,
+      if ct[:irreducibles] isa Matrix irr=ct[:irreducibles] 
+      else irr=toM(ct[:irreducibles]) end
+      CharTable(improve_type(irr),names,
          ct[:classnames],Int.(ct[:centralizers]),length(W),
          Dict{Symbol,Any}(:name=>ct[:identifier]))
     end
@@ -1534,10 +1536,11 @@ function Chars.representation(H::HeckeCoset,i::Int)
       if !(r[1] isa Matrix) r=toM.(r) end
       r=improve_type(r)
       (gens=r,F=one(r[1]))
-    else
+    elseif r isa Dict
       if !(r[:gens][1] isa Matrix) r1=toM.(r[:gens]) else r1=r[:gens] end
       if !(r[:F] isa Matrix) F=toM(r[:F]) else F=r[:F] end
       (gens=improve_type(r1),F=improve_type(F))
+    else r
     end
   end
   if any(isnothing,mm) return nothing end

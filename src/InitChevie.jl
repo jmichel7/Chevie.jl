@@ -14,7 +14,12 @@ CHEVIE[:compat][:AdjustHeckeCharTable]=function(tbl,param)
   param=improve_type(param)
   for i in r 
     f=prod(-last.(param[tbl[:classtext][i]]))
-    for j in r tbl[:irreducibles][j][i]*=f end
+    for j in r 
+      if tbl[:irreducibles] isa Matrix
+        tbl[:irreducibles][j,i]*=f
+      else tbl[:irreducibles][j][i]*=f
+      end
+    end
   end
 end
 

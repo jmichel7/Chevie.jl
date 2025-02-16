@@ -42,8 +42,6 @@ end)
 
 chevieset(Symbol("2A"),:NrConjugacyClasses,n->npartitions(n+1))
 
-chevieset(Symbol("2A"),:CharParams,n->partitions(n+1))
-
 chevieset(Symbol("2A"),:CharInfo,n->chevieget(:A,:CharInfo)(n))
 
 chevieset(Symbol("2A"),:PhiFactors,n->map(x->(-1)^x,2:n+1))
@@ -117,7 +115,7 @@ end)
 # [LuB, 4.4, 4.16, 4.19]
 chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
   uc=chevieget(:A,:UnipotentCharacters)(l)
-  uc[:charSymbols] = map(i->[i],chevieget(:A,:CharParams)(l))
+  uc[:charSymbols] = map(i->[i],partitions(l+1))
   uc[:almostHarishChandra] = uc[:harishChandra]
   uc[:almostHarishChandra][1][:relativeType]=
   TypeIrred(;orbit=[TypeIrred(;series=:A,indices=1:l,rank=l)],
@@ -141,7 +139,7 @@ chevieset(Symbol("2A"), :UnipotentCharacters, function (l,)
       end
       # see Fong/Srinivasan for this map
       s[:charNumbers]=map(a->findfirst(==([PartitionTwoCoreQuotient(d, a)]),
-        uc[:charSymbols]),chevieget(:B,:CharParams)(r))
+              uc[:charSymbols]),partition_tuples(r,2))
       FixRelativeType(s)
       push!(uc[:harishChandra],s)
     end

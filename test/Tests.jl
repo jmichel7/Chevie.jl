@@ -140,13 +140,13 @@ function cmptables(t1,t2;nz=false,both=false,opt...)
   if isempty(r) InfoChevie("Tables agree!\n");return end
   p=Perm(t[1][r,:],t[2][r,:],dims=1)
   if p!==nothing 
-    ChevieErr("Permuted lines:\n",join(map(x->join(x,"->"),
-      permutedims([row_labels[1][r],Permuted(row_labels[1][r],p)])),"\n"),"\n")
+    ChevieErr("permuted lines:\n",join(map(x->join(x,"->"),
+      permutedims([row_labels[1][r],invpermute(row_labels[1][r],p)])),"\n"),"\n")
     return
   end
   p=Perm(t[1],t[2],dims=2)
   if p!==nothing
-    ChevieErr("Permuted columns:\n",
+    ChevieErr("permuted columns:\n",
            join(map(c->join(opt[:col_labels][c],"->"),cycles(p))," "),"\n")
     return
   end
@@ -237,7 +237,6 @@ function Trepresentations(W,l=Int[])
       else ChevieErr("character does not match\n")
         pos=collect(zip(ct[i,:],traces_words_mats(gr,classinfo(W).classtext)))
 	f=findall(x->x[1]!=x[2],pos)
-#pos=List(pos,x->List(x,FormatGAP))
         ChevieErr(Format.Table(toM(pos[f]),row_labels=f,
            col_labels=["is","should be"]))
       end
@@ -964,7 +963,7 @@ function EigenAndDegHecke(s)
     good=filter(i->!any(ismissing,ct[:,i]),n)
     ct2[:,good]=improve_type(scalar.(value.(ct[:,good],Ref(:q=>zeta))))
   end
-  p=Perm(ct1[:,good],ct2[:,good],dims=1) #Permuted(ct,p) specializes
+  p=Perm(ct1[:,good],ct2[:,good],dims=1) #permuted(ct,p) specializes
   if !isone(p) println("***** perm=",p) 
     if iscyclic(W) ChevieErr("should not have perm")end 
   end

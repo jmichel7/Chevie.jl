@@ -368,6 +368,8 @@ export twistings, spets, Frobenius, Spets, subspets,
   relative_coset, generic_sign, PhiOnDiscriminant, graph_automorphisms,
   CoxeterCoset, twisted_power
 
+Base.rand(G::Coset)=rand(Group(G))*G.phi # put into Groups
+
 abstract type Spets{T,TW}<:NormalCoset{T,TW} end
 
 abstract type CoxeterCoset{T,TW}<:Spets{T,TW} end
@@ -976,7 +978,7 @@ function spets(W::PermRootGroup,F::Matrix;NC=false)
     [l,map(x->x.ind[findfirst(==(l),x.scal)],scal)]
   end
   if false in s
-    ChevieErr("Spets(",W,",F=",FormatGAP(F),
+    ChevieErr("Spets(",W,",F=",F,
     " must normalize set of roots of parent up to scalars.\n")
     return false
   end

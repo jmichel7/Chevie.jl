@@ -4,27 +4,22 @@ using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
 const src=[ 
-"cmplxg24", "cmplxg25", "cmplxg26", 
-"cmplxg27", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", 
-"coxh3", "coxh4", "weyl2d", "cox2i", "weyl2e6", "weyl2f4", "weyl3d4",
-"weyle6", "weyle7", "weyle8", "weylf4", "cmpxtimp"] 
+"cmplxg24", "cmplxg25", "cmplxg26", "cmplxg27", "cmplxg29", "cmplxg31",
+"cmplxg32", "cmplxg33", "cmplxg34", "coxh3", "coxh4", "weyl2e6", "weyl2f4",
+"weyle6", "weyle7", "weyle8", "cmpxtimp"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
  "CharName"=>["timp"],
- "CharTable"=>["2D","G31","G34"],
- "ClassParameter"=>["2D","H4"],
+ "CharTable"=>["G31","G34"],
+ "ClassParameter"=>["H4"],
  "Discriminant"=>["H4"],
- "HeckeCharTable"=>["2D"],
- "HeckeRepresentation"=>["2D"],
  "PrintDiagram"=>["E6","E7","E8","F4","G2","H3","H4",
             "G24","G25","G26","G27","G29","G31","G32","G33","G34"],
  "ReducedInRightCoset"=>["timp"],
- "Representation"=>["2D"],
  "SchurElement"=>["G31"],
- "UnipotentClasses"=>["2D"],
  "WGraph"=>["E8"])
 
 function exclude(e)
@@ -40,20 +35,16 @@ const ok=[:(CHEVIE.AddData),
     :(CHEVIE.IndirectAddData)
    ]
 
-# other translated functions. Not translated (put in tbl/exceptio_t.jl):
-# EvalPolRoot, VcycSchurElement, ImprimitiveCuspidalName, BDSymbols
+# other translated functions.
 const ok2=[
  :(CHEVIE.families.HS4),
  :(CHEVIE.families.S5), 
- :(CHEVIE.families.S4),
  :(CHEVIE.families.F20),
  :(CHEVIE.families.Y6),
  :(CHEVIE.families.X7),
  :(CHEVIE.families.F42),
  :(CHEVIE.families.G4),
- :(CHEVIE.families.X2),
- :PartitionTwoCoreQuotient,
- :Defect0to2
+ :(CHEVIE.families.X2)
 ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)

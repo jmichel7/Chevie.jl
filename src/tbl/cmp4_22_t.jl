@@ -2067,5 +2067,5 @@ chevieset(Symbol("2G5"),:CharTable,function()
       [1,-E(3),-E(3,2),-E(3),E(3,2),-1,-E(3,2),-1,E(3)],
       [1,-E(3,2),-E(3),-E(3,2),E(3),-1,-E(3),-1,E(3,2)],
       [1,-1,-1,-1,1,-1,-1,-1,1]])
-  CHEVIE[:compat][:MakeCharacterTable](res)
+  res
 end)

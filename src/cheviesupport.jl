@@ -67,17 +67,10 @@ PermRoot.roots(C::Vector{<:Vector})=roots(toM(C))
 Product(a::AbstractVector{<:AbstractVector{<:AbstractVector}})=
 toL(prod(toM.(a)))
 # translations of GAP3 functions for the Chevie library
-function ApplyWord(w,gens)
-   if isempty(w) return one(gens[1]) end
-   l=map(i->i>0 ? toM(gens[i]) : toM(inv(gens[-i])),w)
-   toL(prod(l))
-end
 CartanMat(s,a...)=cartan(Symbol(s),a...)
 CharParams(W)=charinfo(W).charparams
-CharRepresentationWords(mats,words)=traces_words_mats(toM.(mats),words)
 Concatenation(a::Vector,b::Tuple)=vcat(a,improve_type(collect(b)))
 CoxeterGroup()=coxgroup()
-CyclePermInt(p::Perm,i::Integer)=orbit(p,i)
 function CycleStructurePerm(p::Perm)
   if isone(p) return Int[] end
   t=cycletype(p)
@@ -85,6 +78,13 @@ function CycleStructurePerm(p::Perm)
   resize!(res,t[1]-1)
   res.=nothing
   for (k,v) in tally(t) res[k-1]=v end
+  res
+end
+function decode(c)
+  res=Pair{Int,Int}[]
+  for (i,m) in enumerate(c)
+    if !isnothing(m) push!(res,i+1=>m) end
+  end
   res
 end
 function DiagonalMat(v...)
@@ -101,29 +101,17 @@ end
 DiagonalMat(v::Vector)=DiagonalMat(v...)
 EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
-Factors(n)=reduce(vcat,fill(k,v) for (k,v) in factor(n))
 const HeckeCentralMonomials=central_monomials
-function Ignore() end
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end
   a
 end
 KroneckerProduct(a,b)=toL(kron(toM(a),toM(b)))
-LongestCoxeterWord(W)=word(W,longest(W))
-OnMatrices(a::Vector{<:Vector},b::Perm)=invpermute(invpermute.(a,b),b)
 const PartitionTupleToString(s,d=Dict())=string_partition_tuple(s;d...)
 Permuted(x,p)=invpermute(x,p)
-function PermListList(l1,l2)
-  l1=improve_type(l1)
-  l2=improve_type(l2)
-  p1=sortperm(l1;lt=isless)
-  p2=sortperm(l2;lt=isless)
-  if view(l1,p1)==view(l2,p2) Perm(p2)\Perm(p1) end
-end
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
-SymmetricDifference(x,y)=sort(symdiff(x,y))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
 StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
 function TeXIndex(s)
@@ -131,7 +119,6 @@ function TeXIndex(s)
   length(s)==1  ? "_"*s : "_{"*s*"}"
 end
 Weyl.torus(m::Vector{<:Vector})=torus(toM(m))
-Value(p,v)=p(v)
 function CoxeterGroup(S::String,s...)
  res=coxgroup(Symbol(S),Int(s[1])) 
  for i in 2:2:length(s) res*=coxgroup(Symbol(s[i]),Int(s[i+1])) end
@@ -162,9 +149,6 @@ function Replace(s,p...)
 # println("=>",s)
   s
 end
-
-ChevieIndeterminate(a::Vector{<:Number})=one(Pol)
-ChevieIndeterminate(a::Vector{<:Pol})=Mvp(:x)
 
 """
 `CycPol(v::AbstractVector)`
@@ -201,10 +185,8 @@ end
 #  dummy translations of GAP3 functions
 Format(x)=string(x)
 FormatTeX(x)=xrepr(x,TeX=true)
-FormatGAP(x)=replace(repr(x)," "=>"")
 Format(x,opt)=xrepr(x;opt...)
 
-function ReadChv(s) end
 GetRoot(x::Cyc,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Integer,n::Number=2,msg...)=root(x,n)
 GetRoot(x::Pol,n::Number=2,msg...)=root(x,n)
@@ -218,8 +200,6 @@ end
 Unbind(x)=x
 #-------------------------------------------------------------------------
 Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))
-
-FamilyOps=Dict()
 
 FactorizedSchurElementsOps=Dict{Symbol,Any}(
 :Simplify=>r->HeckeAlgebras.simplify(HeckeAlgebras.FactSchur(r[:factor],

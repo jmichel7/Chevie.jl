@@ -21,28 +21,27 @@ chevieset(:B, :CartanMat, function(n,ct=2)
 end)
 
 chevieset(:B, :ReflectionName, function(r,option,cartantype=2)
-  bracket(r)=r>=10 ? "{"*string(r)*"}" : string(r)
   if cartantype==2
     if haskey(option,:TeX)
       if haskey(option,:Au) "D_8"
-      else string("B_",bracket(r))
+      else string("B",GAPENV.TeXIndex(r))
       end
     elseif haskey(option,:Au) "D8"
     elseif haskey(option,:arg) string("\"B\",",r)
     else string("B",r)
     end
   elseif cartantype==1
-    if haskey(option,:TeX) string("C_",bracket(r))
+    if haskey(option,:TeX) string("C",GAPENV.TeXIndex(r))
     elseif haskey(option,:arg) string("\"C\",", r)
     else string("C", r)
     end
   elseif cartantype==root(2)
-    if haskey(option,:TeX) string("B^{\\hbox{sym}}_",bracket(r))
+    if haskey(option,:TeX) string("B^{\\hbox{sym}}",GAPENV.TeXIndex(r))
     elseif haskey(option,:arg) string("\"Bsym\",",r)
     else string("Bsym",r)
     end
   elseif haskey(option,:TeX)
-    string("B^?_",bracket(r),"(",xrepr(cartantype;option...),")")
+    string("B^?_",GAPENV.TeXIndex(r),"(",xrepr(cartantype;option...),")")
   elseif haskey(option,:arg) string("\"B?\",", r, ",", cartantype)
   else string("B?",r,"(",xrepr(cartantype),")")
   end
@@ -100,8 +99,6 @@ chevieset(:B,:ClassInfo, function(n)
   res
 end)
 
-chevieset(:B,:CharParams,n->partition_tuples(n,2))
-
 chevieset(:B,:LowestPowerFakeDegree,function(p)
   pp=symbol_partition_tuple(p,1)
   m=length(pp[2])
@@ -137,34 +134,21 @@ chevieset(:B,:Representation,(n,i)->
 chevieset(:B,:FakeDegree,(n,c,q)->fegsymbol(symbol_partition_tuple(c,1))(q))
 
 chevieset(:B, :DecompositionMatrix, function (l, p)
-        local pp, dd, pt, decS
-        decS = (i->begin
-                    MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
-                end)
-        pp = map(partitions, 0:l)
-        pt = partition_tuples(l, 2)
-        if p == 2
-            return [[1:length(pt), map(function (p,)
-                                    p = LittlewoodRichardsonRule(p[1], p[2])
-                                    return map(function (x,)
-                                                if x in p
-                                                    return 1
-                                                else
-                                                    return 0
-                                                end
-                                            end, pp[l + 1])
-                                end, pt) * decS(l)]]
-        else
-            dd = Concatenation([[[1]], [[1]]], map(decS, 2:l))
-            return map((i->begin
-                            [map((x->begin
-                                            Position(pt, x)
-                                        end), cartesian(pp[i + 1], pp[(l + 1) - i])), map((x->begin
-                                            map(Product, cartesian(x))
-                                        end), cartesian(dd[i + 1], dd[(l + 1) - i]))]
-                        end), 0:l)
-        end
-    end)
+  decS(i)= MatrixDecompositionMatrix(DecompositionMatrix(Specht(p, p), i))
+  pp=map(partitions, 0:l)
+  pt=partition_tuples(l, 2)
+  if p==2
+   [[1:length(pt), map(pt)do p
+     p = LittlewoodRichardsonRule(p[1], p[2])
+     map(x->x in p,pp[l+1]) end *decS(l)]]
+  else
+    dd=vcat([[[1]],[[1]]],decS.(2:l))
+    map(0:l)do i
+     [map(x->Position(pt, x), cartesian(pp[i+1], pp[l+1-i])),
+      map(x->prod.(cartesian(x)), cartesian(dd[i+1],dd[l+1-i]))]
+    end
+  end
+end)
 
 chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
   uc=Dict{Symbol, Any}(:harishChandra=>[],:charSymbols=>[])
@@ -175,7 +159,7 @@ chevieset(:B, :UnipotentCharacters,function(rank,typ=2)
     s[:levi]=1:r
     s[:eigenvalue]=(-1)^div(d+1,4)
     s[:parameterExponents]=vcat([d],fill(1,max(0,rank-1-r)))
-    s[:cuspidalName]=string("B_{",r,"}")
+    s[:cuspidalName]=string("B",GAPENV.TeXIndex(r))
     push!(uc[:harishChandra], s)
     symbols = BDSymbols(rank, d)
     s[:charNumbers]=(1:length(symbols)).+length(uc[:charSymbols])

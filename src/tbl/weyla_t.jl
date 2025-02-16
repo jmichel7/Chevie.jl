@@ -96,8 +96,6 @@ chevieset(:A, :WeightInfo, function(n)
     :decompositions=>map(i->[n+1-i],1:n),:moduli=>[n+1],:chosenAdaptedBasis=>M)
 end)
 
-chevieset(:A,:CharParams,n->partitions(n+1))
-
 chevieset(:A,:LowestPowerFakeDegree,p->dot(p,0:length(p)-1))
 
 chevieset(:A, :HighestPowerFakeDegree,p->binomial(sum(p),2)-
@@ -153,7 +151,7 @@ chevieset(:A, :FakeDegree, function (n, p, q)
 end)
 
 chevieset(:A, :KLeftCellRepresentatives,function(n)
-  pp=chevieget(:A,:CharParams)(n)
+  pp=partitions(n+1)
   function f(i)
     i=prod(j->Perm(j,j+1),word(W,i);init=Perm())
     p=length.(robinson_schensted((1:n+1).^i)[1])
