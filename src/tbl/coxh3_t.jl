@@ -10,7 +10,7 @@ chevieset(:H3, :GeneratingRoots, function ()
   [[a,-1,a-1],[-a,1,a-1],[1,a-1,-a]]//2
 end)
 
-# The Galois-invariant model is CoxeterGroup(roots,coroots) given below
+# The Galois-invariant model is PRG(roots,coroots) given below
 chevieset(:H3, :InvariantModel, Dict{Symbol, Any}(
   :Aut=>[[1,2,1,2,3,2,1,2,1],[3],[2]],
   :roots=>[[(5-root(5))//2,-root(5),-1+root(5)],[-2root(5),1,0],[2root(5),1,0]],

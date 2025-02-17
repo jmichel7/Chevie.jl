@@ -162,7 +162,7 @@ end
 #  if not IsBound(H.tltot) then
 #    W:=H.group;
 #    l:=Filtered(Elements(W),x->IsFullyCommutative(W,x));
-#    SortParallel(List(l,x->CoxeterLength(W,x)),l);
+#    sort!(l,by=x->length(W,x))
 #    t:=Basis(H,"t"); tl:=Basis(H,"tl");
 #    H.elts:=l;
 #    M:=List(List(l,x->tl(t(x))),x->List(l,y->Coefficient(x,y)));

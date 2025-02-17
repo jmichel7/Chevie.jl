@@ -99,7 +99,6 @@ function DiagonalMat(v...)
   toL(R)
 end
 DiagonalMat(v::Vector)=DiagonalMat(v...)
-EltWord(W,x)=W(x...)
 ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)

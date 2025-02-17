@@ -509,7 +509,7 @@ function ennoladetfam(arg...,)
       oldknown = newknown
       z = gcd(degrees(M[:W]))
       v = 1:z - 1
-      SortParallel(map((x->begin OrderMod(x, z) end), v), v)
+      sort!(v,by=x->OrderMod(x,z))
       for i = reverse(v)
           if IsBound(e) p = e ^ i
           else p = map(function (p,)
@@ -576,7 +576,7 @@ function newratios(M, p)
                  Filtered(g, (x->begin IsMonomial(x[2]) && IsScal(x[1]) end)))
       pos2 = map((x->begin x[1] // x[2] end), Filtered(g, (x->begin
                           IsMonomial(x[1]) && IsScal(x[2]) end)))
-      letter = Intersection(map(x->x[:elm][1][:elm][1],pos1),
+      letter = intersect(map(x->x[:elm][1][:elm][1],pos1),
                             map((x->begin (((x[:elm])[1])[:elm])[1] end), pos2))
       if length(letter) > 0
         pos1 = First(pos1, (x->begin ((x[:elm][1])[:elm])[1] == letter[1] end))
@@ -804,7 +804,7 @@ function repsEnnola(W, fno, e)
   p = EnnolaBete(W, fno, 1)
   n = length(p)
   p = DistinctCartesian(p)
-  p = Filtered(p, (x->begin length(Intersection(x, -x)) == 0 end))
+  p = Filtered(p, (x->begin length(intersect(x, -x)) == 0 end))
   p = Orbits(ambig(W, fno), map(SPerm, p))
   orbits = map((o->begin map((ps->begin invpermute(1:n, ps) end), o) end), p)
   p = map((x->begin (x[:ls])[fno] end), e)
