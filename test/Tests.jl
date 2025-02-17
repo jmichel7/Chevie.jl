@@ -53,6 +53,9 @@ function RG(s::Symbol;log=false)
   if log 
     global curio=open("log",create=true,write=true,append=true)
   end
+  if !haskey(test,s)
+    error("test $s unknown. Known tests are ",collect(keys(test)))
+  end
   t=test[s]
   global curtest=s
   println("testing ",s,"\n",t.comment)
@@ -1180,9 +1183,9 @@ test[:feginduce]=(applicable=W->W!=crg(34), comment="check fakedegrees induce")
 #---------------- test: invariants ------------------------
 
 function Tinvariants(W)
-  ii=invariants(W)
   vars=map(i->Symbol("x",i),1:rank(W))
-  ii=map(f->f(Mvp.(vars)...),ii)*Int128(1)
+  mvars=Mvp.(vars)*Int128(1)
+  ii=map(f->f(mvars...),invariants(W))
   if !isempty(ii) InfoChevie("  #") end
   for i in eachindex(ii), j in eachindex(gens(W))
     InfoChevie("W.",j,"*I",i,",")
@@ -1191,9 +1194,9 @@ function Tinvariants(W)
   if !isempty(ii) InfoChevie("\n") end
 end
 
-test[:invariants]=(
-  applicable=W->!(W isa Spets) && length(W)<14400, # H4 first painful client
-                   comment="check")
+test[:invariants]=(applicable=W->!(W isa Spets) && length(W)<51840,
+ # G33 first painful client
+ comment="check")
 
 #---------------- test: classical ud fd  ------------------------
 

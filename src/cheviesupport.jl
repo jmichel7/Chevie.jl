@@ -111,7 +111,7 @@ const PartitionTupleToString(s,d=Dict())=string_partition_tuple(s;d...)
 ReflectionSubgroup(W,I::AbstractVector)=reflection_subgroup(W,convert(Vector{Int},I))
 SchurFunctor(m,p)=toL(schur_functor(toM(m),p))
 SymmetricPower(m,n)=SchurFunctor(m,[n])
-StringToDigits(s)=map(y->Position("01234567890", y), collect(s)).-1
+StringToDigits(s)=collect(s).-'0'
 function TeXIndex(s)
   s=string(s)
   length(s)==1  ? "_"*s : "_{"*s*"}"
