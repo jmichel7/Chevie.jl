@@ -217,7 +217,7 @@ Dict{Symbol, Any}(
  :families => Family[Family("C1",[1]),
    Family("X7",[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
    Family("C1",[10],ennola=-1),
-   Family(twisted_drinfeld_double_cyclic(2,-1,(1, -1)),[11, 12, 18, 17],
+   Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17],
      ennola=-4,cospecial=2),
    Family("C1",[9]), 
    conj(Family("X7",[3, 5, 8, 19, 20, 21, 22],ennola=-2,cospecial=2)),

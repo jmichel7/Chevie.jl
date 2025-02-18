@@ -84,10 +84,13 @@ Base.:(==)(f::Family,g::Family)=f.prop==g.prop
 
 Family(f::Family)=f
 
-function getf(s::String)
-  f=chevieget(:families,Symbol(s))
+getf(s::String)=getf(Symbol(s))
+
+function getf(s::Symbol)
+  f=chevieget(:families,s)
+  if f isa Function return f end
   f=(f isa Dict) ? Family(deepcopy(f)) : Family(deepcopy(f.prop))
-  f.CHEVIE=s
+  f.printname="Family("*repr(s)*")"
   f
 end
 
@@ -139,26 +142,28 @@ Drinfeld double D(ℤ/2)
 └──────┴──────────────────────────────────┘
 ```
 """
-function Family(s::String,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
+function Family(s::Union{String,Symbol},v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
   f=getf(s)
   f.charNumbers=v
   merge!(f,d)
   merge!(f,Dict(opt))
 end
 
-function Family(s::String,d::Dict=Dict{Symbol,Any}())
+function Family(s::Union{String,Symbol},d::Dict=Dict{Symbol,Any}())
   f=getf(s)
+  if isempty(d) && f isa Function return f end
   merge!(f,d)
 end
 
 function Family(f::Family,v::AbstractVector,d::Dict=Dict{Symbol,Any}();opt...)
+  f=Family(copy(f.prop))
   f.charNumbers=v
   merge!(f,d)
   merge!(f,Dict(opt))
 end
 
 function Family(f::Dict{Symbol,Any},v::AbstractVector,d::Dict=Dict{Symbol,Any}())
-  f=Family(f)
+  f=Family(copy(f))
   f.charNumbers=v
   merge!(f,d)
 end
@@ -201,9 +206,7 @@ function Base.merge!(f::Family,d::Dict)
   if !haskey(f,:charLabels) f.charLabels=map(string,1:length(f)) end
   if haskey(d,:signs)
     signs=d[:signs]
-    m=f.fourierMat
-    for i in axes(m,1), j in axes(m,2) m[i,j]*=signs[i]*signs[j] end
-    f.fourierMat=m
+    f.fourierMat=Diagonal(signs)*f.fourierMat*Diagonal(signs)
     if haskey(f,:perm) && -1 in f.fourierMat^2 delete!(f.prop,:perm) end
   end
   f
@@ -224,6 +227,7 @@ function Base.:*(f::Family,g::Family)
   res.fourierMat=kron(getproperty.(arg,:fourierMat)...)
   res.eigenvalues=map(prod,cartesian(getproperty.(arg,:eigenvalues)...))
   res.name=join(getproperty.(arg,:name),"\\otimes ")
+  res.printname=join(getproperty.(arg,:printname),"*")
   res.explanation="Tensor("*join(map(x->haskey(x,:explanation) ?
                                      x.explanation : "??",arg),",")*")"
   if all(haskey.(arg,:charNumbers))
@@ -283,6 +287,9 @@ function CyclotomicNumbers.galois(f::Family,p::Int)
   if haskey(f,:sh) f.sh=galois.(f.sh,p) end
   if haskey(f,:name)
     f.name=p==-1 ? "conj("*f.name*")" : "galois($(f.name),$p)"
+  end
+  if haskey(f,:printname)
+    f.printname=p==-1 ? "conj("*f.printname*")" : "galois($(f.printname),$p)"
   end
   if haskey(f,:explanation)
   f.explanation=p==-1 ? "conj($(f.explanation))" : "galois($(f.explanation),$p)"
@@ -355,6 +362,9 @@ function Perms.invpermute(f::Family,p::Union{Perm,SPerm})
   if haskey(f,:explanation)
     f.explanation="permuted("*xrepr(p;TeX=true)*","*f.explanation*")"
   end
+  if haskey(f,:printname)
+    f.printname="invpermute("*f.printname*")"
+  end
   f
 end
 
@@ -423,7 +433,8 @@ chevieset(:families,:X,function(p)
     :eigenvalues=>map(s->E(p,prod(s)),ss),
     :fourierMat=>[(E(p,transpose(i)*reverse(j))-E(p,transpose(i)*j))//p for i in ss,j in ss],
     :cospecial=>p-1,
-    :name=>"CHEVIE[:families][:X]($p)"))
+    :printname=>"Family(:X)($p)",
+    :name=>"Family(:X)($p)"))
    end)
 
 function SubFamily(f::Family,ind,scal,label)
@@ -443,6 +454,7 @@ end
 function SubFamilyij(f::Family,i,j,scal)
   g=SubFamily(f,(f,k)->sum(f.charSymbols[k])%j==i,scal,join([i,j]))
   g.explanation="subfamily(sum(charsymbols)mod $j=$i of $(f.explanation))"
+  g.printname="SubFamilyij($(f.printname),$i,$j,$scal)"
   g
 end
 
@@ -461,19 +473,23 @@ chevieset(:families,:ExtPowCyclic,function(e,n)
   if n>1 g.name*="^{\\wedge $n}"
     g.explanation=ordinal(n)*" exterior power "*g.explanation
   end
+  g.printname="Family(:ExtPowCyclic)($e,$n)"
   g.eigenvalues=g.eigenvalues.//g.eigenvalues[1]
   g
 end)
 
 let f=SubFamilyij(chevieget(:families,:X)(6),1,3,1-E(3))
 f.cospecial=5
+f.printname="Family(:X5)"
 chevieset(:families,:X5,f)
+end
 
-f=chevieget(:families,:ExtPowCyclic)(4,1)
+let f=chevieget(:families,:ExtPowCyclic)(4,1)
 f.fourierMat.*=-E(4)
 f.eigenvalues.//=f.eigenvalues[2]
 f.special=2
 f.qEigen=[1,0,1,0].//2
+f.printname="Family(:Z4)"
 chevieset(:families,:Z4,f)
 end
 
@@ -486,7 +502,9 @@ chevieset(:families,:QZ,function(n,pivotal=nothing)
 # res.charLabels=[sprint(print,"(",E(n,x),",",E(n,c),")";context=rio(TeX=true))
 #                   for (x,c) in pairs]
 # res
-  drinfeld_double(crg(n,1,1);pivotal=isnothing(pivotal) ? nothing : Tuple(pivotal))
+  f=drinfeld_double(crg(n,1,1);pivotal=isnothing(pivotal) ? nothing : Tuple(pivotal))
+  f.printname=("Family(:QZ)($n"*(isnothing(pivotal) ? "" : ",$pivotal")*")")
+  f
 end)
 
 # The big family f of dihedral groups. For e=5 occurs in H3, H4
@@ -507,6 +525,7 @@ chevieset(:families,:Dihedral,function(e)
   f.charLabels=map(repr,nc)
   f.name="0"^(e-2)*"11"
   f.explanation="Dihedral($e) family"
+  f.printname="Family(:Dihedral)($e)"
   if iseven(e)
     f.fourierMat=map(nc)do i
       map(nc)do j
@@ -775,22 +794,24 @@ ndrinfeld_double(g)=sum(c->length(classreps(centralizer(g,c))),classreps(g))
 # drinfeld double of a Frobenius group of order 20 (for G29)
 chevieset(:families,:F20,function()
   g4=Perm(2,4,5,3);g5=Perm(1,2,3,4,5)
-  f20=Group(g5,g4)
-  f20.classreps=[Perm(),g4^3,g4,g4^2,g5]
-  f20.chartable=CharTable(
+  f=Group(g5,g4)
+  f.classreps=[Perm(),g4^3,g4,g4^2,g5]
+  f.chartable=CharTable(
     [1 1 1 1 1;1 -1 -1 1 1;1 -E(4) E(4) -1 1;1 E(4) -E(4) -1 1;4 0 0 0 -1],
     ["1","-1","i","-i","\\rho"],["1","g_4^3","g_4","g_2","g_5"],
     [20,4,4,4,5],20,Dict{Symbol,Any}(:name=>"F20"))
-  f20.name="F20"
-  drinfeld_double(f20)
+  f.name="F20"
+  f=drinfeld_double(f)
+  f.printname="Family(:F20)()"
+  f
 end)
 
 # drinfeld double of a Frobenius group of order 42 (for G34)
 chevieset(:families,:F42,function()
   g7=Perm(1,2,3,4,5,6,7);g6=Perm(2,6,5,7,3,4)
-  f42=Group(g7,g6)
-  f42.classreps=[Perm(),g6^4,g6^5,g6^2,g6,g6^3,g7]
-  f42.chartable=CharTable(
+  f=Group(g7,g6)
+  f.classreps=[Perm(),g6^4,g6^5,g6^2,g6,g6^3,g7]
+  f.chartable=CharTable(
   [1      1       1      1       1  1  1;
    1      1      -1      1      -1 -1  1;
    1 E(3)^2   -E(3)   E(3) -E(3)^2 -1  1;
@@ -801,7 +822,9 @@ chevieset(:families,:F42,function()
   ["1","-1","-\\zeta_3^2","-\\zeta_3","\\zeta_3^2","\\zeta_3","\\rho"],
   ["1","g_6^4","g_6^5","g_6^2","g_6","g_6^3","g_7"],
   [ 42, 6, 6, 6, 6, 6, 7],42,Dict{Symbol,Any}(:name=>"F42"))
-  drinfeld_double(f42)
+  f=drinfeld_double(f)
+  f.printname="Family(:F42)()"
+  f
 end)
 
 # drinfeld double of G4 (for G32)
@@ -843,7 +866,7 @@ The result is a `GapObj` with fields:
  In general, we have the relation `(ST)³=τ id`, where the explicit value
  of `τ` can be computed using Gauss sums.
 """
-function twisted_drinfeld_double_cyclic(n,ζ,pivotal=[1,1])
+function twisted_drinfeld_double_cyclic(n,ζ,pivotal=(1,1))
   ζ=Root1(ζ)
   piv1e,piv2=Root1.(pivotal)
   piv1=Int(Root1(piv1e).r*n)
@@ -874,6 +897,7 @@ function twisted_drinfeld_double_cyclic(n,ζ,pivotal=[1,1])
   if piv!=(0,1) res.name*=","*xrepr(res.pivotal;TeX=true) end
   res.name*=")"
   res.perm=Perm(Int.(res.fourierMat^2*(1:n^2)))
+  res.printname="Family(:TQZ)($n,$ζ"*(piv!=(0,1) ? ",$(res.pivotal)" : "")*")"
   res
 end
 
@@ -992,6 +1016,7 @@ function family_imprimitive(ct,e)
    :fourierMat=>mat,
    :eigenvalues=>frobs,
    :name=>joindigits(ct),
+   :printname=>"family_imprimitive($ct,$e)",
    :explanation=>"imprimitive family",
    :charLabels=>string.(1:length(symbs)), # should be improved
    :size=>length(symbs)))
@@ -1070,14 +1095,14 @@ function Base.show(io::IO,f::Family)
   if hasdecor(io) # || !haskey(f,:group)
     name=haskey(f,:name) ? f.name : "???"
     printTeX(io,"Family(\$",name,"\$")
-  else print(io,"Family(",haskey(f,:CHEVIE) ? repr(f.CHEVIE) :
-          haskey(f,:name) ? f.name : repr(f.group))
+  else 
+    print(io,"Family(",haskey(f,:printname) ? f.printname :
+       haskey(f,:name) ? f.name : repr(f.group))
     if !haskey(f,:charNumbers) print(io,")"); return end
   end
-  if haskey(f,:charNumbers) print(io,",",f.charNumbers)
-  else print(io,",",length(f))
-  end
-  if haskey(f,:cospecial) || haskey(f,:ennola) || (haskey(f,:signs) && !all(>(0),f.signs))
+  if haskey(f,:charNumbers) print(io,",",f.charNumbers) end
+  if haskey(f,:cospecial) || haskey(f,:ennola) || 
+     (haskey(f,:signs) && !all(>(0),f.signs))
     d=Dict{Symbol,Any}()
     if haskey(f,:cospecial) d[:cospecial]=f.cospecial end
     if haskey(f,:ennola) d[:ennola]=f.ennola end
