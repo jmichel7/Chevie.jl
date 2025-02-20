@@ -1,4 +1,4 @@
-# Data about the complex reflection groups with Shephard-Todd numbers 4--22 
+# Data about the complex reflection groups with Shephard-Todd numbers 4--22
 # Translated from chevie/tbl/cmp4_22.g
 # (C) 1998 - 2025  Gunter Malle & Jean Michel
 #
@@ -47,15 +47,15 @@ const GeneratingRoots4_22=
  [[(2-root(2))//2,-1],[0,1-E(4)]],  # 9
  [[0,-2E(3)-E(3,2)],[-1+root(3),1]],  # 10
  [[(3+root(6))//3,E(3)root(6)//6],[0,root(-2)//2], # 11
-  [(3-root(3))*(1-E(4))//6,(1-E(4))root(3)//6]],  
+  [(3-root(3))*(1-E(4))//6,(1-E(4))root(3)//6]],
  [[root(-2),-1-root(-2)],[-root(-2),-1+root(-2)],[0, 2]],  # 12
  [[0,1],[2-root(2),root(2)]//2,[1-root(2),-E(4)]//(E(4)-1)], # 13
  [[0,2],[-2E(3,2)-1-root(-2),-1]], # 14
  [[E(24,22)-E(24,19)+2E(24,17)+E(24,16)-E(24,14)+E(24,8)+E(24), # 15
-   -E(24,16)+E(24,11)-E(24,8)],[0,-2E(3)-E(3,2)],[-1+root(3),1]], 
+   -E(24,16)+E(24,11)-E(24,8)],[0,-2E(3)-E(3,2)],[-1+root(3),1]],
  [[0,1],[(2*E(5,4)+3*E(5))//root(5)-1,(E(5)-E(5,3))//root(5)]], # 16
  [[(E(20,17)-E(20,13))//root(5), # 17
-   (E(20,16)-E(20,12)-E(20,9)-E(20,8)+E(20,4)+E(20))//root(5)],[0,1]], 
+   (E(20,16)-E(20,12)-E(20,9)-E(20,8)+E(20,4)+E(20))//root(5)],[0,1]],
  [[1,E(15,14)+E(15,13)+E(15,11)+E(15)],[0,E(5,4)-E(5)]], # 18
  [[1,E(20)-E(20,8)-E(20,9)-E(20,12)],[1,E(15)+E(15,11)+E(15,13)+E(15,14)],
   [0,-E(20)+E(20,9)]], # 19
@@ -721,7 +721,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
   c35=combinations(1:5, 3)
   c=prod(prod,para)
 # for c a vector, e an integer vector same length returns c.*(E(n,p)*x^(1/n)).^e
-# The point is to avoid unnecessary root extractions in case 
+# The point is to avoid unnecessary root extractions in case
 # gcd(n,gcd(e[findall(!=(0),c)]))>1
   function evaluate(c, e, x, n, p)
     r=n
@@ -767,7 +767,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       end
       push!(l,l[4].^2)
     end
-    evaluate(Iterators.map(class->sum(l[class[1]]), classes), 
+    evaluate(Iterators.map(class->sum(l[class[1]]), classes),
              Iterators.map(c->c[2],classes),prod(prod,l[2:4]),char[1],char[2])
   end
 # tests if res=Chartable(Hecke(G_ST,res[:parameter])) is correct
@@ -784,7 +784,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       ic=G4_22IndexChars_dict[ST][res[:parameter]]
       res[:irreducibles]=rows[ic]
       if ic!=i
-        println("*** WARNING: choice of character restrictions from ", T(ST), 
+        println("*** WARNING: choice of character restrictions from ", T(ST),
           " for this specialization does not agree with group CharTable")
         if !CHEVIE[:CheckIndexChars]
           print("Try again with CHEVIE[:CheckIndexChars]=true\n")
@@ -800,7 +800,7 @@ chevieset(:G4_22,:HeckeCharTable,function(ST,para,rt) # rt is not yet used
       if length(Set(l))!=length(res[:classes])
         error("specialization not semi-simple")
       end
-      xprintln("*** WARNING: bad choice of char. restrictions from ",T(ST), 
+      xprintln("*** WARNING: bad choice of char. restrictions from ",T(ST),
                " for H(G$ST,",HeckeAlgebras.simplify_para(res[:parameter]),")")
       if !CHEVIE[:CheckIndexChars]
         print("Try again with CHEVIE[:CheckIndexChars]=true\n")
@@ -1222,42 +1222,49 @@ chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
 
 # make a cuspidal harish-chandra series record
 function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
-  n="G_{"*string(n)*"}"
-  if no!=0 n*="^"*string(no) end
-  if E4 && eig==E(4) n*="[i]"
-  elseif E4 && eig==E(4,3) n*="[-i]"
-  else n*="["*xrepr(eig,TeX=true)*"]"
+  if n==28 name="F_4"
+  else name="G_{"*string(n)*"}"
   end
-  res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0), 
-    :levi=>1:2,:parameterExponents=>Int[],:charNumbers=>[charnum], 
-    :eigenvalue=>eig,:cuspidalName=>n)
+  if no!=0 name*="^"*string(no) end
+  if E4 && eig==E(4) name*="[i]"
+  elseif E4 && eig==E(4,3) name*="[-i]"
+  else name*="["*xrepr(eig,TeX=true)*"]"
+  end
+  res=Dict(:relativeType=>TypeIrred(series=:A,indices=Int[],rank=0),
+    :parameterExponents=>Int[],:charNumbers=>[charnum],
+    :eigenvalue=>eig,:cuspidalName=>name)
+  if n<=22 res[:levi]=1:2
+  elseif n<=27 res[:levi]=1:3
+  else res[:levi]=1:4 end
   if qeig!=0 res[:qEigen]=qeig end
   res
 end
 
-CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24* 
+let r3=root(-3), r6=root(6), r2=root(-2)
+CHEVIE[:families][:G14]=Dict(:fourierMat=>root(-3)//24*
 [4 -4 4 -4 -4 -4 -4 -4 0 0 -4 -4 4 4 0 0 0 0;
 -4 4 4 -4 4 4 4 4 0 0 -4 -4 4 4 0 0 0 0;
 4 4 4 4 -4 -4 4 4 0 0 -4 -4 -4 -4 0 0 0 0;
 -4 -4 4 4 4 4 -4 -4 0 0 -4 -4 -4 -4 0 0 0 0;
--4 4 -4 4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 -2 -2 2 2 2*root(-3) -2*root(-3) 2*root(-3) -2*root(-3);
--4 4 -4 4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 -2 -2 2 2 -2*root(-3) 2*root(-3) -2*root(-3) 2*root(-3);
--4 4 4 -4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 2 2 -2 -2 -2*root(-3) 2*root(-3) -2*root(-3) 2*root(-3);
--4 4 4 -4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 2 2 -2 -2 2*root(-3) -2*root(-3) 2*root(-3) -2*root(-3);
-0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6) -2*root(6) 2*root(6);
-0 0 0 0 0 0 0 0 0 0 2*root(6) -2*root(6) -2*root(6) 2*root(6) -2*root(6) 2*root(6) 2*root(6) -2*root(6);
--4 -4 -4 -4 -2 -2 2 2 2*root(6) 2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
--4 -4 -4 -4 -2 -2 2 2 -2*root(6) -2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -root(6) -root(6) -root(6) -root(6);
-4 4 -4 -4 2 2 -2 -2 -2*root(6) -2*root(6) -2+root(6) -2-root(6) -2+root(6) -2-root(6) root(6) root(6) root(6) root(6);
-4 4 -4 -4 2 2 -2 -2 2*root(6) 2*root(6) -2-root(6) -2+root(6) -2-root(6) -2+root(6) -root(6) -root(6) -root(6) -root(6);
-0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) 2*root(6) -2*root(6) root(6) -root(6) root(6) -root(6) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
-0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) -2*root(6) 2*root(6) root(6) -root(6) root(6) -root(6) (2+root(-2))*root(-3) (2+root(-2))*root(-3) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3);
-0 0 0 0 2*root(-3) -2*root(-3) -2*root(-3) 2*root(-3) -2*root(6) 2*root(6) root(6) -root(6) root(6) -root(6) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3);
-0 0 0 0 -2*root(-3) 2*root(-3) 2*root(-3) -2*root(-3) 2*root(6) -2*root(6) root(6) -root(6) root(6) -root(6) (-2+root(-2))*root(-3) (-2+root(-2))*root(-3) (2+root(-2))*root(-3) (2+root(-2))*root(-3)],
+-4 4 -4 4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 -2 -2 2 2 2*r3 -2*r3 2*r3 -2*r3;
+-4 4 -4 4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 -2 -2 2 2 -2*r3 2*r3 -2*r3 2*r3;
+-4 4 4 -4 4*E(3,2) 4*E(3) 4*E(3,2) 4*E(3) 0 0 2 2 -2 -2 -2*r3 2*r3 -2*r3 2*r3;
+-4 4 4 -4 4*E(3) 4*E(3,2) 4*E(3) 4*E(3,2) 0 0 2 2 -2 -2 2*r3 -2*r3 2*r3 -2*r3;
+0 0 0 0 0 0 0 0 0 0 2*r6 -2*r6 -2*r6 2*r6 2*r6 -2*r6 -2*r6 2*r6;
+0 0 0 0 0 0 0 0 0 0 2*r6 -2*r6 -2*r6 2*r6 -2*r6 2*r6 2*r6 -2*r6;
+-4 -4 -4 -4 -2 -2 2 2 2*r6 2*r6 -2+r6 -2-r6 -2+r6 -2-r6 r6 r6 r6 r6;
+-4 -4 -4 -4 -2 -2 2 2 -2*r6 -2*r6 -2-r6 -2+r6 -2-r6 -2+r6 -r6 -r6 -r6 -r6;
+4 4 -4 -4 2 2 -2 -2 -2*r6 -2*r6 -2+r6 -2-r6 -2+r6 -2-r6 r6 r6 r6 r6;
+4 4 -4 -4 2 2 -2 -2 2*r6 2*r6 -2-r6 -2+r6 -2-r6 -2+r6 -r6 -r6 -r6 -r6;
+0 0 0 0 2*r3 -2*r3 -2*r3 2*r3 2*r6 -2*r6 r6 -r6 r6 -r6 (2+r2)*r3 (2+r2)*r3 (-2+r2)*r3 (-2+r2)*r3;
+0 0 0 0 -2*r3 2*r3 2*r3 -2*r3 -2*r6 2*r6 r6 -r6 r6 -r6 (2+r2)*r3 (2+r2)*r3 (-2+r2)*r3 (-2+r2)*r3;
+0 0 0 0 2*r3 -2*r3 -2*r3 2*r3 -2*r6 2*r6 r6 -r6 r6 -r6 (-2+r2)*r3 (-2+r2)*r3 (2+r2)*r3 (2+r2)*r3;
+0 0 0 0 -2*r3 2*r3 2*r3 -2*r3 2*r6 -2*r6 r6 -r6 r6 -r6 (-2+r2)*r3 (-2+r2)*r3 (2+r2)*r3 (2+r2)*r3],
 :eigenvalues=>[E(3,2),E(3,2),E(3,2),-E(3,2),1,1,1,1,E(8),E(8,3),1,1,-1,-1,
-               E(4),-E(4),-E(4),E(4)], 
+               E(4),-E(4),-E(4),E(4)],
 :charLabels=>string.(1:18),:special=>12,:cospecial=>12,:name=>"X_{18}",
 :explanation =>"mysteryG14")
+end
 
 CHEVIE[:families][:X18]=Dict(:name=>"X18",:fourierMat=>[
 -1 -1 3 -3E(4) 3E(4) 1 3 -3E(4) -3E(4) -3 3 3E(4) 3E(4) 1 -3E(4) -3E(4) 4 4;
@@ -1278,8 +1285,8 @@ CHEVIE[:families][:X18]=Dict(:name=>"X18",:fourierMat=>[
 -3E(4) 3E(4) 3 3E(4) -3E(4) 3 -3 -3E(4) -3E(4) 3E(4) 3E(4) -3 3 -3 3 -3 0 0;
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 -4 8;
 4 4 0 0 0 -4 0 0 0 0 0 0 0 -4 0 0 8 -4]//12,
-  :eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
-  :explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6)
+:eigenvalues=>[1,1,1,1,1,1,1,-1,-1,-1,-1,-E(4),-E(4),1,E(4),E(4),E(3),E(3,2)],
+:explanation=>"mystery G8",:special=>1,:cospecial=>2,:ennola=>6)
 
 CHEVIE[:families][:X8]=Dict(:name=>"X8",:fourierMat=>onmats(
 [1 1 2 1 1 -root(-2) -root(-2) -root(-2) -root(-2);
@@ -1291,16 +1298,16 @@ CHEVIE[:families][:X8]=Dict(:name=>"X8",:fourierMat=>onmats(
 -root(-2) root(-2) 0 root(-2) -root(-2) -2*E(4) 0 2*E(4) 0;
 -root(-2) root(-2) 0 -root(-2) root(-2) 0 2*E(4) 0 -2*E(4);
 -root(-2) root(-2) 0 root(-2) -root(-2) 2*E(4) 0 -2*E(4) 0]//4,
-  perm"(4,5)"),:explanation=>"everythingtoexplain",
+  perm"(4,5)"),:explanation=>"another mysteryG14",
 :eigenvalues=>[1,1,1,-1,-1,E(16,5),E(16,7),-E(16,5),-E(16,7)],
 :qEigen=>[0,0,0,0,0,1//2,1//2,1//2,1//2],:special=>2,
 :ennola=>-4) # ennola could be -5
-         
+
 UnipotentCharacters4_22=[
 Dict{Symbol,Any}(:harishChandra=>[
   Dict(:relativeType=>TypeIrred(series=:ST,indices=1:2,rank=2,ST=4),
     :levi=>Int[],:parameterExponents=>[1,1],:charNumbers=>1:7,
-    :eigenvalue=>1,:cuspidalName=>""), 
+    :eigenvalue=>1,:cuspidalName=>""),
   Dict(:relativeType=>Dict(:series=>"A",:indices=>[2],:rank=>1),
     :levi=>[1],:parameterExponents=>[3],:charNumbers=>[9,8],:eigenvalue=>E(3,2),
     :cuspidalName=>ImprimitiveCuspidalName([Int[],[0,1],[0,1]])),
@@ -1311,7 +1318,7 @@ Dict{Symbol,Any}(:harishChandra=>[
     Family("C1",[1]),
     Family(CHEVIE[:families][:X](3),[6,5,8],Dict(:signs=>[1,1,-1],:ennola=>-1)),
     Family("C1",[7]),
-    Family("X5",[2,4,10,9,3],Dict(:signs=>[1,1,-1,-1,1],:ennola=>-5))], 
+    Family("X5",[2,4,10,9,3],Dict(:signs=>[1,1,-1,-1,1],:ennola=>-5))],
   :a=>[0,4,4,4,1,1,2,1,4,4],:A=>[0,8,8,8,5,5,6,5,8,8]),
 Dict{Symbol,Any}(:harishChandra=>[
   Dict(:relativeType=>Dict(:series=>"ST",:indices=>1:2,:rank=>2,:ST=>6),
@@ -1336,7 +1343,7 @@ Dict{Symbol,Any}(:harishChandra=>[
     Family("C1",[14]),
     Family("Z4",[29,12,30,11],Dict(:signs=>[-1,1,1,-1],:ennola=>-3)),
   Family(CHEVIE[:families][:X](3),[5,6,31],Dict(:signs=>[1,1,-1],:ennola=>-1))],
-  :a=>[0,1,1,1,10,10,1,1,1,1,5,5,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,10], 
+  :a=>[0,1,1,1,10,10,1,1,1,1,5,5,1,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,10],
   :A=>[0,11,11,11,14,14,11,11,11,11,13,13,11,12,11,11,11,11,11,11,11,11,11,11,
        11,11,11,11,13,13,14]),
 Dict{Symbol,Any}(:harishChandra=>[
@@ -1361,10 +1368,10 @@ Dict{Symbol,Any}(:harishChandra=>[
   mkcuspidal(8,33,E(4);no=2,E4=true),
   mkcuspidal(8,34,E(3)), mkcuspidal(8,35,E(3,2))],
   :families=>[Family("C1", [1]),
-    Family(CHEVIE[:families][:X](4),[5,6,7,17,18,19], 
+    Family(CHEVIE[:families][:X](4),[5,6,7,17,18,19],
            Dict(:signs=>[1,1,1,-1,-1,-1],:ennola=>4)),
     Family(CHEVIE[:families][:X](4),[11,12,13,20,21,22],
-           Dict(:signs=>[1,1,1,-1,-1,-1],:ennola=>-6)), 
+           Dict(:signs=>[1,1,1,-1,-1,-1],:ennola=>-6)),
     Family("Z4",[23,15,24,16],Dict(:signs=>[-1,1,1,-1],:ennola=>1)),
     Family("X18",
   [2, 4, 3, 8,  10, 9, 14,  25, 26, 27,  28, 29, 30,  31, 32, 33, 34, 35],
@@ -1433,7 +1440,7 @@ chevieset(:G4_22, :UnipotentCharacters, function(ST)
   end
   end)
 
-const Invariants4_22=[ 
+const Invariants4_22=[
   [(x,y)->x^4-8*x*y^3,
    (x,y)->x^6+20*x^3*y^3-8*y^6],
   [(x,y)->x^6+20*x^3*y^3-8*y^6,
@@ -1521,19 +1528,19 @@ const Discriminant4_22=[
 chevieset(:G4_22,:Discriminant,ST->Discriminant4_22[ST-3])
 
 # for these models for G7,G11,G19 see Malle-Michel
-const Rep4_22=[(X,Y,Z)->[[X;;],[Y;;],[Z;;]], 
+const Rep4_22=[(X,Y,Z)->[[X;;],[Y;;],[Z;;]],
   function(X,Y,Z,rt) x1,x2=X
     r=(-1)^rt*root(prod(X)*prod(Y)*prod(Z))
     [[x1 sum(x->1//x,Y)-sum(Z)*x2//r;0 x2],
-     [sum(Y) 1//x1;-prod(Y)*x1 0], 
+     [sum(Y) 1//x1;-prod(Y)*x1 0],
      [0 -r//prod(Y)//prod(X);r sum(Z)]]
-  end, 
+  end,
   function(X,Y,Z,rt) x1,x2=X;z1=Z[1]
     r=E(3,rt)*root(x1^2*x2*prod(Y)*prod(Z),3)
     a=sum(Y)*r//x1-prod(Y)*sum(y->1//y,Y)*z1+prod(Y)*(x1*z1^2-x2*prod(Z)//z1)//r
     [[x1 0 -prod(Z)*sum(z->1//z,Z)*x2*x1//z1+(sum(Y)*r^2//prod(Y))//z1;
-      0 x1 a//prod(Y)//z1*r^2;0 0 x2], 
-     [sum(Y)-r//x1//z1 1//z1 r;a r//x1//z1 0;-prod(Y)*x1*z1//r^2 0 0], 
+      0 x1 a//prod(Y)//z1*r^2;0 0 x2],
+     [sum(Y)-r//x1//z1 1//z1 r;a r//x1//z1 0;-prod(Y)*x1*z1//r^2 0 0],
      [0 0 -x1*prod(Z)//z1;0 z1 0;1//x1 -1//r sum(Z)-z1]]
   end,
   function(X,Y,Z,rt)x1,x2=X;y1,y2,y3=Y # computed JM 10/2005
@@ -1545,7 +1552,7 @@ const Rep4_22=[(X,Y,Z)->[[X;;],[Y;;],[Z;;]],
      [y3+y1 x1*y1*y2*a y1*a y1;0 y1+y2 1//x1 0;0 -x1*y1*y2 0 0;-y3 0 0 0],
      [0 0 0 -r//(y3*x2);0 0 -r//(y2*x1*x2*y1) 0;0 r 0 1//r^2;
       r//(x1*y1) -r*a b sum(Z)]]
-  end, 
+  end,
   function(X,Y,Z,rt) x1,x2=X; y1,y2,y3=Y; z1,z2,z3,z4,z5=Z # computed JM 10/2005
     r=root(x1^3*x2^2*y1*y2^2*y3^2*prod(Z),5)*E(5,rt)
  [[x2+x1 0 0 0 x1;0 x2+x1 0 x2 0;0 0 x1 0 0;0 -x1 0 0 0;-x2 0 0 0 0],
@@ -1708,7 +1715,7 @@ chevieset(:G4_22, :SchurData, function (ST)
       if char[1]==1 Dict(:order=>vcat(makefirst([1,2],char[2]),
         makefirst(3:5,char[3]),makefirst(6:9,char[4])))
       elseif char[1]==2 Dict(:order=>vcat([1,2],makefirst(3:5,char[3]),
-        5 .+combinations(1:4,2)[char[4]], 
+        5 .+combinations(1:4,2)[char[4]],
         5 .+setdiff(1:4,combinations(1:4,2)[char[4]])),:rootPower=>(-1)^char[2])
       elseif char[1]==3 Dict(:order=>vcat(makefirst([1,2],char[3]),
         3:5, makefirst(6:9,char[4])),:rootPower=>E(3,char[2]))
@@ -1718,7 +1725,7 @@ chevieset(:G4_22, :SchurData, function (ST)
     elseif ST in 8:22
       if char[1]==1 Dict(:order=>vcat(makefirst([1,2],char[2]),
         makefirst(3:5, char[3]), makefirst(6:10, char[4])))
-      elseif char[1]==2 Dict(:order=>vcat([1,2],2 .+drop(1:3,char[3]), 
+      elseif char[1]==2 Dict(:order=>vcat([1,2],2 .+drop(1:3,char[3]),
         [2+char[3]], 5 .+ combinations(1:5,2)[char[4]],
         5 .+setdiff(1:5,combinations(1:5,2)[char[4]])),:rootPower=>(-1)^char[2])
       elseif char[1]==3 Dict(:order=>vcat(makefirst([1, 2],char[3]),

@@ -212,6 +212,7 @@ chevieset(Symbol("2D"), :UnipotentCharacters, function (rank,)
     res[:name]=vcat(f.Z1,f.Z2,f.Z2)
     sort!(res[:name])
     res[:name]=joindigits(res[:name])
+    res[:printname]=res[:name]
     res[:explanation]="classical family"
     res[:perm]=Perm()
     res[:size]=length(res[:charNumbers])

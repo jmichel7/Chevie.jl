@@ -189,7 +189,7 @@ function Groups.centralizer(WF::Spets,t::SemisimpleElement{Root1})
   else C=torus(size(WF.Xs,1))
   end
 # C[:operations][:ReflectionFromName] = function (W, x)
-#         return Position(W.rootInclusion, x)
+#         return findfirst(==(x),inclusion(W))
 #     end
   p=solutionmat(WF.X_s,WF.Xs)
 # transfer matrix on X^σ to X_σ

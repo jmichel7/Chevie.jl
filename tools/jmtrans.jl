@@ -4,7 +4,7 @@ using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
 const src=[ 
-"cmplxg26", "cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34",
+"cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34",
 "coxh4", "weyle7", "weyle8"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
@@ -14,7 +14,7 @@ const exclu=Dict(
  "CharTable"=>["G31","G34"],
  "ClassParameter"=>["H4"],
  "Discriminant"=>["H4"],
- "PrintDiagram"=>["E7","E8","H4","G26","G27","G29","G31","G32","G33","G34"],
+ "PrintDiagram"=>["E7","E8","H4","G29","G31","G32","G33","G34"],
  "SchurElement"=>["G31"],
  "WGraph"=>["E8"])
 
@@ -36,9 +36,7 @@ const ok2=[
  :(CHEVIE.families.HS4),
  :(CHEVIE.families.S5), 
  :(CHEVIE.families.F20),
- :(CHEVIE.families.Y6),
  :(CHEVIE.families.F42),
- :(CHEVIE.families.X49),
  :(CHEVIE.families.G4)
 ]
 

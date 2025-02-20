@@ -20,7 +20,7 @@ chevieset(:G25,:NrConjugacyClasses, 24)
 chevieset(:G25,:ParabolicRepresentatives,s->
      [[Int[]], [[1]], [[1, 2], [1, 3]], [1:3]][s + 1])
 
-# Position in classes of G26
+# position in classes of G26
 # [1,4,7,8,11,13,15,17,19,21,24,27,28,29,32,34,36,37,39,40,42,43,45,47]
 chevieset(:G25, :ClassNames, [".", "cc", "31", "3131", "12231223", "1223", "d",
   "dd", "z", "zz", "2231223", "d1", "1", "131", "3221223221", "11", "1122",
@@ -100,7 +100,7 @@ chevieset(:G25, :HeckeCharTable, function (para, root)
     -J*u*v*w*(((2*w^3+2*v^3)-3*u*v*w)+2*u^3),-u*v*w,-J*u*v*w,-(J^2)*u^5*v^5*w^5]
   merge!(res, chevieget(:G25, :ClassInfo))
   res[:centralizers]=div.(res[:order],res[:classes])
-  # Position in chars of G26
+  # position in chars of G26
 # [1,3,4,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47]
   res[:irreducibles]=[f10(u),f10(w),f10(v),f23(v,w,u),f23(u,v,w),f23(u,w,v),
   [3,3*u^2*v^2*w^2,u^2+v^2+w^2,u^4+v^4+w^4,u^4*v^4+u^4*w^4+v^4*w^4,
@@ -231,33 +231,32 @@ Dict{Symbol, Any}(:a => [0, 12, 12, 12, 2, 2, 4, 4, 1, 12, 4, 1, 12, 4, 8, 2,
  Dict(:parameterExponents => [[0, 4, 4]], :cuspidalName => "G_4",
  :charNumbers => [42, 34, 35], :relativeType => Dict{Symbol, Any}(:p => 3,
  :series => "ST", :indices => [3], :rank => 1, :q => 1), :eigenvalue => -1,
- :levi => 1:2), Dict(:parameterExponents => Any[],
- :cuspidalName => "G_{25}[-\\zeta_3]", :charNumbers => [36],
- :relativeType => Dict{Symbol, Any}(:series => "A", :indices => Any[],
- :rank => 0), :eigenvalue => Cyc{Int64}(-E(3)), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{25}[\\zeta_3]",
- :charNumbers => [37], :relativeType => Dict{Symbol, Any}(:series => "A",
- :indices => Any[], :rank => 0), :eigenvalue => E(3), :levi => 1:3)],
- :families => Family[Family(Family(:C1),[1]), Family(Family(:X)(3),[12, 9,
- 25],signs=[1, 1, -1],ennola=-2,cospecial=2), Family(Family(:QZ)(3,
-Any[perm"()", Root1[E(3)]]),[16, 19, 20, 28, 26, 6, 27, 5, 29],signs=[1, 1, 1,
- 1, -1, 1, 1, 1, 1],ennola=4,cospecial=2), Family(Family(:X)(6),[17, 23, 7,
- 24, 14, 32, 34, 30, 36, 8, 37, 31, 11, 35, 33],signs=[1, 1, 1, 1, 1, 1, -1,
- -1, 1, -1, 1, -1, 1, 1, -1],ennola=-15,cospecial=5), Family(Family(:X)(3),
-[22, 21, 38],signs=[1, 1, -1],ennola=1,cospecial=2), Family(Family(:X)(3),[15,
- 18, 39],signs=[1, 1, -1],ennola=-3,cospecial=2),
- Family(SubFamilyij(Family(:ExtPowCyclic)(6,3),1,2,root(-2)),
+ :levi => 1:2), 
+ mkcuspidal(25,36,-E(3)),
+ mkcuspidal(25,37,E(3))],
+ :families => Family[Family(Family(:C1),[1]), 
+   Family(Family(:X)(3),[12, 9, 25],signs=[1, 1, -1],ennola=-2,cospecial=2),
+   Family(Family(:QZ)(3, [perm"()", [E(3)]]),[16, 19, 20, 28, 26, 6, 27, 5, 29],
+          signs=[1, 1, 1, 1, -1, 1, 1, 1, 1],ennola=4,cospecial=2), 
+   Family(Family(:X)(6),[17,23,7,24,14, 32, 34, 30, 36, 8, 37, 31, 11, 35, 33],
+          signs=[1,1,1,1,1,1,-1,-1,1,-1,1,-1,1,1,-1],ennola=-15,cospecial=5),
+   Family(Family(:X)(3), [22, 21, 38],signs=[1, 1, -1],ennola=1,cospecial=2),
+   Family(Family(:X)(3),[15, 18, 39],signs=[1, 1, -1],ennola=-3,cospecial=2),
+   Family(SubFamilyij(Family(:ExtPowCyclic)(6,3),1,2,root(-2)),
         [3, 13, 40, 10, 41, 2, 43, 42, 4, 44],
-signs=[1, 1, 1, 1, -1, 1, -1, 1, -1, -1],ennola=-9,cospecial=6)], :A => [0,
+        signs=[1, 1, 1, 1, -1, 1, -1, 1, -1, -1],ennola=-9,cospecial=6)],
+ :A => [0,
  24, 24, 24, 16, 16, 20, 20, 11, 24, 20, 11, 24, 20, 22, 16, 20, 22, 16, 16,
  21, 21, 20, 20, 11, 16, 16, 16, 16, 20, 20, 20, 20, 20, 20, 20, 20, 21, 22,
  24, 24, 24, 24, 24]))
 end
 
 chevieset(:G25, :Invariants, [
-  (x1, x2, x3)->-10*x1^3*x2^3-10*x1^3*x3^3-10*x2^3*x3^3+x1^6+x2^6+x3^6,
-  (x1, x2, x3)->-x1^3*x2^6+x1^3*x3^6-x2^3*x3^6+x1^6*x2^3-x1^6*x3^3+x2^6*x3^3,
-  (x1, x2, x3)->2*x1^3*x2^3*x3^6+2*x1^3*x2^6*x3^3+x1^3*x2^9+x1^3*x3^9+x2^3*x3^9+2*x1^6*x2^3*x3^3-4*x1^6*x2^6-4*x1^6*x3^6-4*x2^6*x3^6+x1^9*x2^3+x1^9*x3^3+x2^9*x3^3])
+  (x1,x2,x3)->-10*x1^3*x2^3-10*x1^3*x3^3-10*x2^3*x3^3+x1^6+x2^6+x3^6,
+  (x1,x2,x3)->-x1^3*x2^6+x1^3*x3^6-x2^3*x3^6+x1^6*x2^3-x1^6*x3^3+x2^6*x3^3,
+  (x1,x2,x3)->2*x1^3*x2^3*x3^6+2*x1^3*x2^6*x3^3+x1^3*x2^9+x1^3*x3^9+x2^3*x3^9+
+  2*x1^6*x2^3*x3^3-4*x1^6*x2^6-4*x1^6*x3^6-4*x2^6*x3^6+x1^9*x2^3+x1^9*x3^3+
+  x2^9*x3^3])
 
 chevieset(:G25, :Discriminant, function ()
   (t1, t2, t3)->36*t1*t2^2*t3-t1^2*t3^2-32*t3^3+t1^3*t2^2+108*t2^4

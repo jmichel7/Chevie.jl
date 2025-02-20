@@ -188,32 +188,14 @@ Dict{Symbol, Any}(
  Dict(:parameterExponents => [7], :cuspidalName => "B_2", :charNumbers => [19,
  13], :relativeType =>
  TypeIrred(;series=:A,indices=[1],rank=1), :eigenvalue => -1, :levi => [2, 3]),
- Dict(:qEigen => 1//2,
- :parameterExponents => Any[], :cuspidalName => "G_{24}[i]",
- :charNumbers => [17], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0), :eigenvalue => E(4), :levi => 1:3),
- Dict(:qEigen => 1//2, :parameterExponents => Any[],
- :cuspidalName => "G_{24}[-i]", :charNumbers => [18],
- :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0), :eigenvalue=>-E(4), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7^3]",
- :charNumbers => [20], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=>E(7,3), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7^5]",
- :charNumbers => [21], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=> E(7,5), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7^6]",
- :charNumbers => [22], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=>E(7,6), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7^4]",
- :charNumbers => [14], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=>E(7,4), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7^2]",
- :charNumbers => [15], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=>E(7,2), :levi => 1:3),
- Dict(:parameterExponents => Any[], :cuspidalName => "G_{24}[\\zeta_7]",
- :charNumbers => [16], :relativeType =>
- TypeIrred(;series=:A,indices=Int[],rank=0),:eigenvalue=> E(7), :levi => 1:3)],
+ mkcuspidal(24,17,E(4);qeig=1//2,E4=true),
+ mkcuspidal(24,18,E(4,3);qeig=1//2,E4=true),
+ mkcuspidal(24,20,E(7,3)),
+ mkcuspidal(24,21,E(7,5)),
+ mkcuspidal(24,22,E(7,6)),
+ mkcuspidal(24,14,E(7,4)),
+ mkcuspidal(24,15,E(7,2)),
+ mkcuspidal(24,16,E(7))],
  :families => Family[Family("C1",[1]),
    Family("X7",[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
    Family("C1",[10],ennola=-1),

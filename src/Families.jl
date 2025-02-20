@@ -118,7 +118,7 @@ unipotent degrees.
 
 ```julia-repl
 julia> Family("C2")
-Family(C₂,4)
+Family(C₂)
 Drinfeld double D(ℤ/2)
 ┌──────┬────────────────────────────┐
 │label │eigen                       │
@@ -227,6 +227,7 @@ function Base.:*(f::Family,g::Family)
   res.fourierMat=kron(getproperty.(arg,:fourierMat)...)
   res.eigenvalues=map(prod,cartesian(getproperty.(arg,:eigenvalues)...))
   res.name=join(getproperty.(arg,:name),"\\otimes ")
+  #xprint("arg=",arg,"\n")
   res.printname=join(getproperty.(arg,:printname),"*")
   res.explanation="Tensor("*join(map(x->haskey(x,:explanation) ?
                                      x.explanation : "??",arg),",")*")"
@@ -912,7 +913,7 @@ containing `S`.
 
 ```julia-repl
 julia> family_imprimitive([[0,1],[1],[0]])
-Family(0011,3,cospecial=2)
+Family(0011,cospecial=2)
 imprimitive family
 ┌─────┬──────────────────────────────┐
 │label│eigen      1        2        3│
@@ -1080,6 +1081,7 @@ function FamiliesClassical(sym)
       f.special=findfirst(x->all(y->y in "+,",x),f.charLabels)
     end
     f.name=joindigits(f.content)
+    f.printname=f.name
     f.explanation="classical family"
     f.perm=Perm()
     f.size=length(f.charNumbers)

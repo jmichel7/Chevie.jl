@@ -221,11 +221,9 @@ chevieset(Symbol("2E6"), :FakeDegree, function (p, q)
 end)
 
 chevieset(Symbol("2E6"), :ClassParameter, function (w,)
-  if isempty(w) return " " end
-  x=prod(chevieget(Symbol("2E6"),:generators)[w])*
-         chevieget(Symbol("2E6"),:phi)
-         chevieget(Symbol("2E6"),:ClassNames)[findfirst(==(tally(classtype(x))),
-             chevieget(Symbol("2E6"),:cyclestructure))]
+  x=prod(chevieget("2E6",:generators)[w],init=Perm())*chevieget("2E6",:phi)
+  chevieget("2E6",:ClassNames)[findfirst(==(tally(classtype(x))),
+                               chevieget("2E6",:cyclestructure))]
 end)
 
 if false

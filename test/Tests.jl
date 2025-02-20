@@ -780,8 +780,8 @@ function Tcharparams(W)
   if @isdefined l 
     if db!=map(x->x[1:2],l)
     ChevieErr("disagree with (χ(1),b_χ)\n")
-    PrintArray(Filtered(TransposedMat([db,List(l,x->x[1:2])]),x->x[1]!=x[2]))
-    Error()
+    display(toM(filter(x->x[1]!=x[2],collect(zip(db,map(x->x[1:2],l))))))
+    error()
     end
   end
   perm=Perm()
@@ -1943,7 +1943,7 @@ test[:discriminant]=(
 #  F=FreeGroup(n)
 #  r=List(BraidRelations(W),x->List(x,y->Product(y,z->F.(z))))
 #  r=List(r,x->x[1]/x[2])
-#  Append(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
+#  append!(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
 #  Size(W)=Size(F/r)
 #end
 #W->not IsSpets(W) and Size(W)<64000,

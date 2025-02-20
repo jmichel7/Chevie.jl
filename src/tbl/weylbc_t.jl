@@ -144,7 +144,7 @@ chevieset(:B, :DecompositionMatrix, function (l, p)
   else
     dd=vcat([[[1]],[[1]]],decS.(2:l))
     map(0:l)do i
-     [map(x->Position(pt, x), cartesian(pp[i+1], pp[l+1-i])),
+     [map(x->findfirst(==(x),pt), cartesian(pp[i+1], pp[l+1-i])),
       map(x->prod.(cartesian(x)), cartesian(dd[i+1],dd[l+1-i]))]
     end
   end
