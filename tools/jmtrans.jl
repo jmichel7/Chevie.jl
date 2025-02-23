@@ -4,8 +4,7 @@ using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
 const src=[ 
-"cmplxg29", "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34",
-"coxh4", "weyle7", "weyle8"] 
+ "cmplxg31", "cmplxg32", "cmplxg33", "cmplxg34", "coxh4", "weyle7", "weyle8"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
@@ -35,7 +34,6 @@ const ok=[:(CHEVIE.AddData),
 const ok2=[
  :(CHEVIE.families.HS4),
  :(CHEVIE.families.S5), 
- :(CHEVIE.families.F20),
  :(CHEVIE.families.F42),
  :(CHEVIE.families.G4)
 ]

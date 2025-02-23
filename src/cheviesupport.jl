@@ -99,7 +99,11 @@ function DiagonalMat(v...)
   toL(R)
 end
 DiagonalMat(v::Vector)=DiagonalMat(v...)
-ExteriorPower(m,i)=toL(exterior_power(toM(m),i))
+function ExteriorPower(m,i)
+  if m isa Matrix exterior_power(m,i)
+  else toL(exterior_power(toM(m),i))
+  end
+end
 Inherit(a,b)=merge!(a,b)
 function Inherit(a,b,c)
   for k in c a[Symbol(k)]=b[Symbol(k)] end

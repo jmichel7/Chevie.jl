@@ -82,9 +82,6 @@ end)
 
 chevieset(Symbol("2F4"), :PhiFactors, [1, -1, 1, -1])
 
-chevieset(Symbol("2F4"), :Representation,i->
-  chevieget(Symbol("2F4"), :HeckeRepresentation)(fill([1,-1],4),[1,1,1,1],i))
-
 chevieset(Symbol("2F4"), :HeckeRepresentation, function (para, rootpara, i)
   if rootpara[1]!==nothing v=rootpara[1]*para[1][2]
   else v=root(-para[1][1]//para[1][2])

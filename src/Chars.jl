@@ -1354,6 +1354,13 @@ function WGraphToRepresentation(rk::Integer,gr::Vector,v)
   density>0.2 ? Array.(S) : S
 end
 
+# the next function returns the dual W-graph of gr (for an Hecke algebra of
+# rank rk). A dual W-graph corresponds to a Curtis Dual representation.
+function DualWGraph(rk,gr)
+  [map(x->x isa Integer ? x : setdiff(1:rk,x),gr[1]),
+   map(((x,y),)->x isa Vector ? [-reverse(x),y] : [-x,y],gr[2])]
+end
+
 ############################################################################
 # How to interpret W-graphs for complex reflection groups with one orbit of
 # reflections, for hecke(W,[vars]).
@@ -1361,41 +1368,37 @@ end
 function WGraph2Representation(a,vars)
 # println("a=$a vars=$vars")
   nodes=a[1]
-  pos=function(n,j)
+  varno=function(n,j) # a function from 1:ngens(W) to eachindex(vars)
     if n[1] isa Vector p=findfirst(x->j in x,n)
       if isnothing(p) p=length(vars) end
-    elseif j in n p=1
-    else p=2 end
+    else p=(j in n) ? 1 : 2
+    end
     p
   end
   flat(l)=l[1] isa Vector ? flat(reduce(vcat,l)) : l
-  rk=maximum(Int.(flat(nodes))) # number of generators
+  rk=maximum(Int.(flat(nodes))) # ngens(W)
   dim=length(nodes)
-  R=map(j->map(k->vars[pos(nodes[k],j)]+0,1:dim),1:rk)
+  R=map(j->map(k->vars[varno(nodes[k],j)],1:dim),1:rk)
   R=Array.(Diagonal.(R))
   R=map(x->x.+0*E(1)//1,R)
 # println("R=$(typeof(R))$R")
   for r in a[2]
 #   println("r=$r")
     for k in [3,4]
-    if r[k] isa Vector
-      for j in 2:2:length(r[k]) R[Int(r[k][j-1])][r[k-2],r[5-k]]=r[k][j] end
-    else
-      r2=Int.(r[1:2])
-      j=filter(i->pos(nodes[r2[k-2]],i)<pos(nodes[r2[5-k]],i),1:rk)
-      for i in j R[i][r2[k-2],r2[5-k]]=r[k] end
-    end
+      i1=Int(r[k-2]);i2=Int(r[5-k])
+      if r[k] isa Vector
+        for j in 2:2:length(r[k]) R[Int(r[k][j-1])][i1,i2]=r[k][j] end
+      else
+        for i in 1:rk
+          if varno(nodes[i1],i)<varno(nodes[i2],i)
+            R[i][i1,i2]=r[k]
+          end
+        end
+      end
     end
   end
 # println("R=$(typeof(R))$R")
-  toL.(R)
-end
-
-# the next function returns the dual W-graph of gr (for an Hecke algebra of
-# rank rk). A dual W-graph corresponds to a Curtis Dual representation.
-function DualWGraph(rk,gr)
-  [map(x->x isa Integer ? x : setdiff(1:rk,x),gr[1]),
-   map(((x,y),)->x isa Vector ? [-reverse(x),y] : [-x,y],gr[2])]
+  R
 end
 
 function charnames(io::IO,c::CharInfo)

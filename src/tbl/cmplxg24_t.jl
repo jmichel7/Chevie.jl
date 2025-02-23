@@ -122,49 +122,39 @@ chevieset(:G24, :CharTable, function ()
 end)
 
 chevieset(:G24, :HeckeRepresentation, function (para, roots, i)
-  p=para[1][2]
-  r=para[1][1]
   f1(r)=map(x->[r;;],1:3)
-  f3(p,r,a)=toM.(WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
-            [1,3,p,-r],[2,3,r*(1-a)//2,-p*(a+1)//2]]],[p,r])*p^0*r^0)
-  f7(p,r)=toM.(WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],
+  f3(p,r,a)=WGraph2Representation([[[2,3],[1,2],[1,3]],[[1,2,p,-r],
+            [1,3,p,-r],[2,3,r*(1-a)//2,-p*(a+1)//2]]],[p,r])*p^0*r^0
+  f7(p,r)=WGraph2Representation([[[2,3],[2,3],[1,3],[1,3],[1,2],[1,2]],
     [[1,4,r,-p],[1,5,r,-p],[2,3,r,-p],[2,6,p,-r],[3,5,-p,0],[3,6,-2p,r],
-     [4,5,r,0],[4,6,2r,0]]],[r,p])*p^0*r^0)
-  f9(r,p)=toM.(WGraph2Representation([[[1],[1,2],[1,3],[2],[2],[3],[3]],
+     [4,5,r,0],[4,6,2r,0]]],[r,p])*p^0*r^0
+  f9(r,p)=WGraph2Representation([[[1],[1,2],[1,3],[2],[2],[3],[3]],
    [[1,2,0,-r],[1,3,0,p],[1,4,p,-r],[1,5,0,-r],[1,6,-p,r],[2,5,-p,0],[2,7,-p,r],
     [3,4,-p,0],[3,5,p,-r],[3,6,p,0],[3,7,p,0],[4,6,0,-p],[4,7,-r,p],[5,6,-r,p],
-    [5,7,-r,0]]], [p,r])*p^0*r^0)
+    [5,7,-r,0]]], [p,r])*p^0*r^0
   function f11(x, y, e)
     v=e*root(-x*y)
-    [[0 0 0 0 0 0 0 -x;
-      0 x+y 0 0 y 0 0 0;
-      0 0 x -v*y+x*y 0 0 -x^2 0;
-      0 0 0 y 0 0 0 0;
-      0 -x 0 0 0 0 0 0;
-      0 0 0 x 0 x -v-y 0;
-      0 0 0 0 0 0 y 0;
-      y 0 0 0 0 0 0 x+y], 
-     [x 0 0 v 0 0 0 -y;
-      0 x 0 v x 0 0 0;
-      0 0 x+y 0 0 0 -x*y 0;
-      0 0 0 y 0 0 0 0;
-      0 0 0 0 y 0 0 0;
-      0 0 -1 x -v x x v;
-      0 0 1 0 0 0 0 0;
-      0 0 0 0 0 0 0 y], 
-     [y 0 0 0 0 0 0 0;
-      0 x 0 0 x 0 -v 0;
-      -x*y 0 x 0 -v*y v*y v*y-x*y-x^2 0;
-      0 0 0 x 0 -y -v-y 0;
-      0 0 0 0 y 0 0 0;
-      0 0 0 0 0 y 0 0;
-      0 0 0 0 0 0 y 0;
-      x 0 0 0 0 0 x x]]
-   end
-   rep=[(f1, r), (f1, p), (f3, p, r, root(-7)), (f3, r, p, root(-7)),
-        (f3, p, r, -root(-7)), (f3, r, p, -root(-7)), (f7, p, r),
-        (f7, r, p), (f9, p, r), (f9, r, p), (f11, p, r, 1), (f11, p, r, -1)]
-   map(x->x.+0*prod(para[1]),rep[i][1](rep[i][2:end]...))
+    expandrep(3,8,Tuple{typeof(v),Vector{Int64}}[(-v*y,[105]),(-v*y+x*y,
+      [79]),(v*y,[129]),(v*y-x^2-x*y, [153]), (-v, [113, 150]), (-v-y, [156,
+      160]),(v,[74,77, 185]), (-x^2, [151]), (-x*y, [9, 152]), (-x, [37, 169]),
+      (x,[2,24,29,30, 55, 57, 84, 88, 89, 101, 102, 136, 137, 161, 168, 192]),
+      (x+y,[28,56,190]),(-y, [132, 170]), (y, [3, 22, 82, 83, 100, 110, 111,
+      138, 163, 165, 191]), (-1, [65]), (1, [68])])
+  end
+  r,p=para[1]
+  if     i==1  f1(r)
+  elseif i==2  f1(p)
+  elseif i==3  f3(p, r, root(-7))
+  elseif i==4  f3(r, p, root(-7))
+  elseif i==5  f3(p, r, -root(-7))
+  elseif i==6  f3(r, p, -root(-7))
+  elseif i==7  f7(p, r)
+  elseif i==8  f7(r, p)
+  elseif i==9  f9(p, r)
+  elseif i==10 f9(r, p)
+  elseif i==11 f11(p, r, 1)
+  elseif i==12 f11(p, r, -1)
+  end
 end)
 
 (CHEVIE[:families])[:X7] = Dict{Symbol, Any}(:name => "X7", :fourierMat =>
@@ -197,13 +187,12 @@ Dict{Symbol, Any}(
  mkcuspidal(24,15,E(7,2)),
  mkcuspidal(24,16,E(7))],
  :families => Family[Family("C1",[1]),
-   Family("X7",[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
-   Family("C1",[10],ennola=-1),
-   Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17],
-     ennola=-4,cospecial=2),
-   Family("C1",[9]), 
-   conj(Family("X7",[3, 5, 8, 19, 20, 21, 22],ennola=-2,cospecial=2)),
-   Family("C1",[2],ennola=-1)],
+   Family(:X7,[4, 6, 7, 13, 14, 15, 16],ennola=2,cospecial=2),
+   Family(:C1,[10],ennola=-1),
+   Family(Family(:TQZ)(2,-1,(1, -1)),[11, 12, 18, 17],ennola=-4,cospecial=2),
+   Family(:C1,[9]), 
+   conj(Family(:X7,[3, 5, 8, 19, 20, 21, 22],ennola=-2,cospecial=2)),
+   Family(:C1,[2],ennola=-1)],
  :curtis=>[2,1,6,5,4,3,8,7,10,9,12,11,19,-20,-21,-22,-18,-17,13,-14,-15,-16],
  :A=>[0,21,20,13,20,13,13,20,18,15,17,17,13,13,13,13,17,17,20,20,20,20]))
 

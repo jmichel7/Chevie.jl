@@ -16,12 +16,14 @@ function Concatenation(a::AbstractVector)
   all(x->x isa AbstractVector,a) ? vcat(a...) : prod(a)
 end
 ConcatenationString(s...)=prod(s)
+CyclePermInt(p,i)=orbit(p,i)
 DiagonalOfMat(m)=[m[i,i] for i in axes(m,1)]
 Difference(a,b)=sort(setdiff(a,b))
 function Position(a::Vector,b)
   x=findfirst(isequal(b),a)
   isnothing(x) ? false : x
 end
+Factors(n)=reduce(vcat,fill(k,v) for (k,v) in factor(n))
 First(a,b)=a[findfirst(b,a)]::eltype(a)
 Flat(v)=collect(Iterators.flatten(v))
 gapSet(v)=unique!(sort(v)) # set is transpiled to gapSet
@@ -38,6 +40,7 @@ Lcm(a::Vector)=lcm(Int.(a))
 Minimum(a::Number,x...)=min(a,x...)
 Minimum(v::AbstractVector)=minimum(v)
 NullMat(i,j=i)=[zeros(Int,j) for k in 1:i]
+OnMatrices(a::Vector{<:Vector},b::Perm)=invpermute(invpermute.(a,b),b)
 OnTuples(a,b)=a.^b
 function pad(s, i::Int)
   if i>0 return lpad(string(s),i)
@@ -45,6 +48,14 @@ function pad(s, i::Int)
   end
 end
 pad(s::String)=s
+function PermListList(l1,l2)
+  l1=improve_type(l1)
+  l2=improve_type(l2)
+  p1=sortperm(l1;lt=isless)
+  p2=sortperm(l2;lt=isless)
+  if view(l1,p1)==view(l2,p2) Perm(p2)\Perm(p1) end
+end
+Permuted(x,p)=invpermute(x,p)
 function Position(a::String,b::String)
   x=findfirst(b,a)
   isnothing(x) ? false : x.start
@@ -75,5 +86,7 @@ SPrint=string
 Sublist(a::Vector, b::AbstractVector)=a[b]
 Sum(v::AbstractVector)=sum(v)
 Sum(v::AbstractVector,f)=isempty(v) ? 0 : sum(f,v)
+SymmetricDifference(x,y)=sort(symdiff(x,y))
 TransposedMat(l::Vector{<:Vector})=collect.(zip(l...))
+Value(p,v)=p(v)
 ValuePol(v,c)=isempty(v) ? 0 : evalpoly(c,v)

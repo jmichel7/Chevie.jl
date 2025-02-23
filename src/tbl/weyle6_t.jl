@@ -351,9 +351,6 @@ chevieset(:E6, :HeckeRepresentation, function (param, sqrtparam, i)
   -param[1][2]*WGraphToRepresentation(6,chevieget(:E6,:WGraph)(i),v)
 end)
 
-chevieset(:E6, :Representation,i->
-  chevieget(:E6,:HeckeRepresentation)(fill([1,-1],6),fill(1,6),i))
-
 chevieset(:E6, :DecompositionMatrix, function (p,)
   if p==2
    [[vcat(1:21,24:25), 

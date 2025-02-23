@@ -69,7 +69,19 @@ function(q)
   prod(x->sum(y->(-q[1][1]//q[1][2])^y,0:x-1),chevieget(t,:ReflectionDegrees))
 end)
 
-chevieset([:G24,:G25,:G26,:G27,:G29],:Representation,t->
+chevieset([:E6,:F4,:G2,:H3,:G24,:G27,:G29],:Representation,t->
+function(i)
+  rk=length(chevieget(t,:GeneratingRoots))
+  chevieget(t,:HeckeRepresentation)(fill([1,-1],rk),fill(1,rk),i)
+end)
+
+chevieset(["3D4","2E6","2F4"],:Representation,t->
+function(i)
+  rk=t[end]-'0'
+  chevieget(t,:HeckeRepresentation)(fill([1,-1],rk),fill(1,rk),i)
+end)
+
+chevieset([:G25,:G26],:Representation,t->
 function(i)
   para=denominator.(chevieget(t,:EigenvaluesGeneratingReflections))
   chevieget(t,:HeckeRepresentation)(map(x->E.(x,0:x-1),para),[],i)
@@ -182,17 +194,31 @@ function (arg...)
   SPerm(res)
 end)
 
-function ExpandRep(r, d, l) # decompress representation of r gens of dim d
+function ExpandRep(r,d,l) # decompress representation of r gens of dim d
   T=reduce(promote_type,typeof.(first.(l)))
-  m=map(i->map(j->fill(zero(T),d),1:d), 1:r)
+  m=map(i->fill(zero(T),d,d), 1:r)
   for v in l
     for k in @view v[2:end]
       q,i=divrem(Int(k),d^2)
       q1,r1=divrem(i,d)
-      m[q+1][q1+1][r1+1]=v[1]
+      m[q+1][q1+1,r1+1]=v[1]
     end
   end
-  return m
+  m
+end
+function expandrep(r,d,l)
+  T=reduce(promote_type,typeof.(first.(l)))
+  m=fill(zero(T),d*d*r)
+  for v in l, k in v[2]
+    m[Int(k)]=v[1]
+  end
+  eachslice(reshape(m,r,d,d),dims=1)
+end
+function compactrep(r)
+  r=stack(r,dims=1)
+  v=collectby(r,eachindex(r))
+  v=filter(x->!iszero(r[x[1]]),v)
+  (size(r,1),size(r,2),map(x->(r[x[1]],x),v))
 end
 export ExpandRep
 

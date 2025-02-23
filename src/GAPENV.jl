@@ -9,7 +9,7 @@ using ..Chevie
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
-const tbl=[ ("G₂₉","cmplxg29"),("G₃₁","cmplxg31"), ("G₃₂","cmplxg32"),
+const tbl=[ ("G₃₁","cmplxg31"), ("G₃₂","cmplxg32"),
            ("G₃₃","cmplxg33"),("G₃₄","cmplxg34"), ("H₄","coxh4"), 
            ("E₇","weyle7"), ("E₈","weyle8")]
 println("reading transpiled data:")
@@ -22,7 +22,7 @@ end
 #-- translations are loaded outside of GAPENV since they don't need it --
 const tbl_t=[("G(de,e,n)","cmplximp_t"),("G₄-G₂₂","cmp4_22_t"),
   ("G₂₄","cmplxg24_t"),("G₂₅","cmplxg25_t"),("G₂₆","cmplxg26_t"),
-  ("G₂₇","cmplxg27_t"), ("G₃₁","cmplxg31_t"),
+  ("G₂₇","cmplxg27_t"),("G₂₉","cmplxg29_t"), ("G₃₁","cmplxg31_t"),
   ("G₃₄","cmplxg34_t"), ("ᵗG(e,e,n)","cmpxtimp_t"),
   ("Aₙ","weyla_t"), ("Bₙ and Cₙ","weylbc_t"),("Dₙ","weyld_t"),
   ("³D₄","weyl3d4_t"), ("²Aₙ","weyl2a_t"), ("²Dₙ","weyl2d_t"),

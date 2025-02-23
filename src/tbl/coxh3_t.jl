@@ -120,9 +120,6 @@ chevieset(:H3, :HeckeCharTable, function (param, sqrtparam)
   tbl
 end)
 
-chevieset(:H3,:Representation,i->
-  chevieget(:H3,:HeckeRepresentation)([[1,-1],[1,-1],[1,-1]],[1,1,1],i))
-
 # W-graphs given by Ivan Marin. see ?WGraphToRepresentation for the format.
 chevieset(:H3, :WGraphs, 
   [[[[1,2,3]],[]],1, 

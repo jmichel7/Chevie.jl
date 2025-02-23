@@ -113,9 +113,6 @@ chevieset(:G2, :HeckeRepresentation, function (para, sqrtpara, i)
   end
 end)
 
-chevieset(:G2, :Representation, i->
-  chevieget(:G2, :HeckeRepresentation)([[1, -1], [1, -1]], [1, 1], i))
-
 chevieset(:G2, :PoincarePolynomial, function (param,)
   u=-param[1][1]//param[1][2]
   v=-param[2][1]//param[2][2]

@@ -1,5 +1,6 @@
 #  tbl/cmplxg25.jl      CHEVIE library          Gunter Malle and Jean Michel
 #  Copyright (C) 1998-  The CHEVIE Team
+
 chevieset(:G25,:GeneratingRoots, [[0, 0, -1],
                                    -(2*E(3,2)+1)//3*[1, 1, 1],
                                    [0, 1, 0]])
@@ -118,6 +119,7 @@ chevieset(:G25, :CharTable, function ()
   chevieget(:G25, :HeckeCharTable)([[1, E(3), E(3, 2)]], [])
 end)
 
+
 chevieset(:G25, :sparseFakeDegrees, [[1, 0], [1, 24], [1, 12], [1, 15, 1, 21],
   [1, 3, 1, 9], [1, 9, 1, 15], [1, 6, 1, 12, 1, 18], [1, 5, 1, 8, 1, 11],
   [1, 5, 1, 8, 1, 11], [1, 17, 1, 20, 1, 23], [1, 13, 1, 16, 1, 19], 
@@ -176,9 +178,6 @@ chevieset(:G25, :SchurData, [
   Dict{Symbol, Any}(:name => "f9_7", :order => [1, 2, 3], :rootUnityPower=>2)])
 
 chevieset(:G25, :HeckeRepresentation, function (para, root, i)
-  u=para[1][1]
-  v=para[1][2]
-  w=para[1][3]
   f1=u->[[u;;], [u;;], [u;;]]
   f2(v,w)=WGraph2Representation([[[1, 3], [2]], [[1, 2, -1, v * w]]], [w, v])
   f31(u,v)=WGraph2Representation([[[1],[2],[3]],[[1,2,u,-v],[2,3,-v,u]]],[u,v])
@@ -197,23 +196,42 @@ chevieset(:G25, :HeckeRepresentation, function (para, root, i)
   f9(u,v,w,a)=WGraph2Representation([[[[2],[]],[[],[1,2,3]],[[1],[3]],
     [[1,3],[]],[[2],[1]],[[1],[2]],[[2],[3]],[[3],[2]],[[3],[1]]],
     [[1,2,-1,u*w+v^2],[1,3,v,[1,v,3,0]],[1,4,-a*v,0],[1,5,0,a^2*u-v],
-     [1,6,0,a^2*u],[1,7,0,a^2*u-v],[1,8,0,-(a^2)*u],[1,9,v,[1,0,3,v]],
-     [2,3,-u*w-v^2,1],[2,4,-u*w+a*v^2,0],[2,5,-(a^2)*v*w,0],[2,7,-(a^2)*v*w,0],
-     [2,9,-u*w-v^2,1],[3,4,0,u+a^2*v],[3,5,0,u],[3,6,-(a^2)*w,a*v],[3,7,w,0],
+     [1,6,0,a^2*u],[1,7,0,a^2*u-v],[1,8,0,-a^2*u],[1,9,v,[1,0,3,v]],
+     [2,3,-u*w-v^2,1],[2,4,-u*w+a*v^2,0],[2,5,-a^2*v*w,0],[2,7,-a^2*v*w,0],
+     [2,9,-u*w-v^2,1],[3,4,0,u+a^2*v],[3,5,0,u],[3,6,-a^2*w,a*v],[3,7,w,0],
      [4,5,[1,0,3,-w],u],[4,6,-a*w,0],[4,7,[1,-w,3,0],u],[4,8,a*w,0],
      [4,9,u+a^2*v,0],[5,6,-u,v],[5,9,0,w],[7,8,u,-v],[7,9,u,0],
      [8,9,-a*v,a^2*w]]],[u,v,w])
-  rep=[[f1,u],[f1,w],[f1,v],[f2,v,w],[f2,u,v],[f2,u,w],[f32,u,v,w],[f31,u,v],
-       [f31,w,u],[f31,v,w],[f31,u,w],[f31,v,u],[f31,w,v],[f6,v,u,w],[f6,u,w,v],
-       [f6,w,v,u],[f6,w,u,v],[f6,u,v,w],[f6,v,w,u],[f8,u,v,w],[f8,w,u,v],
-       [f8,v,w,u],[f9,u,v,w,E(3)],[f9,u,v,w,E(3,2)]]
-  u=rep[i][1](rep[i][2:end]...)
-  if !(u[1] isa Matrix) u=toM.(u) end
-  u.*prod(para[1])^0
+  u,v,w=para[1]
+  if     i==1 f1(u)
+  elseif i==2 f1(w)
+  elseif i==3 f1(v)
+  elseif i==4 f2(v,w) 
+  elseif i==5 f2(u,v)
+  elseif i==6 f2(u,w) 
+  elseif i==7 f32(u,v,w)
+  elseif i==8 f31(u,v)
+  elseif i==9 f31(w,u)
+  elseif i==10 f31(v,w) 
+  elseif i==11 f31(u,w) 
+  elseif i==12 f31(v,u) 
+  elseif i==13 f31(w,v) 
+  elseif i==14 f6(v,u,w) 
+  elseif i==15 f6(u,w,v)
+  elseif i==16 f6(w,v,u)  
+  elseif i==17 f6(w,u,v)  
+  elseif i==18 f6(u,v,w)  
+  elseif i==19 f6(v,w,u)  
+  elseif i==20 f8(u,v,w)  
+  elseif i==21 f8(w,u,v)
+  elseif i==22 f8(v,w,u)  
+  elseif i==23 f9(u,v,w,E(3))  
+  elseif i==24 f9(u,v,w,E(3,2))
+  end
 end)
 
 let Z3=ImprimitiveCuspidalName([Int[],[0,1],[0,1]])
-chevieset(:G25, :UnipotentCharacters,
+ chevieset(:G25, :UnipotentCharacters,
 Dict{Symbol, Any}(:a => [0, 12, 12, 12, 2, 2, 4, 4, 1, 12, 4, 1, 12, 4, 8, 2,
  4, 8, 2, 2, 6, 6, 4, 4, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 4, 4, 4, 6, 8, 12, 12,
  12, 12, 12], :harishChandra => Dict{Symbol,
@@ -234,14 +252,14 @@ Dict{Symbol, Any}(:a => [0, 12, 12, 12, 2, 2, 4, 4, 1, 12, 4, 1, 12, 4, 8, 2,
  :levi => 1:2), 
  mkcuspidal(25,36,-E(3)),
  mkcuspidal(25,37,E(3))],
- :families => Family[Family(Family(:C1),[1]), 
-   Family(Family(:X)(3),[12, 9, 25],signs=[1, 1, -1],ennola=-2,cospecial=2),
+ :families => Family[Family(:C1,[1]), 
+   Family(Family(:X)(3),[12, 9, 25],signs=[1, 1, -1],ennola=-2),
    Family(Family(:QZ)(3, [perm"()", [E(3)]]),[16, 19, 20, 28, 26, 6, 27, 5, 29],
           signs=[1, 1, 1, 1, -1, 1, 1, 1, 1],ennola=4,cospecial=2), 
    Family(Family(:X)(6),[17,23,7,24,14, 32, 34, 30, 36, 8, 37, 31, 11, 35, 33],
-          signs=[1,1,1,1,1,1,-1,-1,1,-1,1,-1,1,1,-1],ennola=-15,cospecial=5),
-   Family(Family(:X)(3), [22, 21, 38],signs=[1, 1, -1],ennola=1,cospecial=2),
-   Family(Family(:X)(3),[15, 18, 39],signs=[1, 1, -1],ennola=-3,cospecial=2),
+          signs=[1,1,1,1,1,1,-1,-1,1,-1,1,-1,1,1,-1],ennola=-15),
+   Family(Family(:X)(3), [22, 21, 38],signs=[1, 1, -1],ennola=1),
+   Family(Family(:X)(3),[15, 18, 39],signs=[1, 1, -1],ennola=-3),
    Family(SubFamilyij(Family(:ExtPowCyclic)(6,3),1,2,root(-2)),
         [3, 13, 40, 10, 41, 2, 43, 42, 4, 44],
         signs=[1, 1, 1, 1, -1, 1, -1, 1, -1, -1],ennola=-9,cospecial=6)],

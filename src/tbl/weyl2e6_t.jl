@@ -282,9 +282,6 @@ chevieset(Symbol("2E6"),:HeckeRepresentation,function(param,sqrtparam,i)
     (-1)^chevieget(Symbol("2E6"),:CharInfo)()[:a][i])
 end)
 
-chevieset(Symbol("2E6"), :Representation,i->
-  chevieget(Symbol("2E6"),:HeckeRepresentation)(fill([1,-1],6),fill(1,6),i))
-
 chevieset(Symbol("2E6"),:PhiFactors, [1, -1, 1, 1, -1, 1])
 
 chevieset(Symbol("2E6"), :UnipotentCharacters,

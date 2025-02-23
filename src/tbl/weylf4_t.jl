@@ -22,9 +22,9 @@ chevieset(:F4, :ReflectionName, function(opt,cartantype=0)
     elseif haskey(opt, :arg) "\"Fsym\",4"
     else "Fsym4"
     end
-  elseif haskey(opt,:TeX) string("F_4(", Format(cartantype^2//2,opt),")")
-  elseif haskey(opt,:arg) string("\"F\",4,",Format(cartantype^2//2,opt))
-  else string("F4(",Format(cartantype^2//2),")")
+  elseif haskey(opt,:TeX) string("F_4(", xrepr(cartantype^2//2,opt),")")
+  elseif haskey(opt,:arg) string("\"F\",4,",xrepr(cartantype^2//2,opt))
+  else string("F4(",repr(cartantype^2//2),")")
   end
 end)
 
@@ -193,8 +193,8 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
                      f6(u,v),dual(f8),f8(u,v),
   [4,4*u^6*v^6,v^2+v^2*u^2+u^2+1,-2u,-2*v^3*u^2,4*v^3*u^3,-2v,-2*v^2*u^3,
    v^4*u^4,v^2*u^2,u*v,2u-2,-2*v^3+2*v^3*u^3,v-u*v,v-u*v,0,2v-2,
-   2*v^3*u^3-2*u^3,-u*v+u,-u*v+u,0,((u*v-v)+1)-u,((u*v-v)+1)-u,
-   ((-(v^4)*u^3+v^4*u^4)-v^3*u^4)+v^3*u^3,0],
+   2*v^3*u^3-2*u^3,-u*v+u,-u*v+u,0,u*v-v+1-u,u*v-v+1-u,
+   -v^4*u^3+v^4*u^4-v^3*u^4+v^3*u^3,0],
   dual(f13),f11(u,v),dual(f11),f13(u,v),
   [6,6*u^6*v^6,(u^2-4*u*v)+v^2,(1-2u)+u^2,(v^2*u^2+v^4*u^2)-2*v^3*u^2,
    2*v^3*u^3,(1+v^2)-2v,(v^2*u^2-2*v^2*u^3)+v^2*u^4,3*v^4*u^4,3*v^2*u^2,
@@ -214,11 +214,11 @@ chevieset(:F4, :HeckeCharTable, function (param, sqrtparam)
    (((u^2*v-u^2)-2*u*v)+2u+v)-1,0,-2*u*v^2+2*u*v,((3-3u)-3v)+3*u*v,
    ((u*v-v)+1)-u,((-(v^4)*u^3+v^4*u^4)-v^3*u^4)+v^3*u^3,0],
   dual(f20),f18(u,v),dual(f18),f20(u,v),dual(f22),f22(u,v),dual(f24),f24(u,v),
-  [16,-16*u^6*v^6,((2+2*v^2*u^2)-8*u*v)+2*v^2+2*u^2,-6u+2*u^2+2,v
-   ^4*u^2+v^2*u^2,0,(2*v^2-6v)+2,v^2*u^4+v^2*u^2,-2*v^4*u^4,2*v^2*u^2,0
-   ,-8+8u,v^2*(u-1)*(((2*u^2*v-3u)-3*u*v^2)+2*u*v+2v),
-   ((((u*v^2-3*u*v)-v^2)+3v)-1)+u,v-u*v,2*u*v-2*u^2*v,-8+8v,-
-   (u^2)*(v-1)*(((-2*u*v^2+3*u^2*v+3v)-2*u*v)-2u),((u^2-3u)+1)*(v-1),
+  [16,-16*u^6*v^6,2+2*v^2*u^2-8*u*v+2*v^2+2*u^2,-6u+2*u^2+2,v
+   ^4*u^2+v^2*u^2,0,2*v^2-6v+2,v^2*u^4+v^2*u^2,-2*v^4*u^4,2*v^2*u^2,0,
+   -8+8u,v^2*(u-1)*(2*u^2*v-3u-3*u*v^2+2*u*v+2v),
+   u*v^2-3*u*v-v^2+3v-1+u,v-u*v,2*u*v-2*u^2*v,-8+8v,
+   -(u^2)*(v-1)*(-2*u*v^2+3*u^2*v+3v-2*u*v-2u),(u^2-3u+1)*(v-1),
    -u*v+u,-2*u*v*(v-1),4*(v-1)*(u-1),2*(v-1)*(u-1),0,0]]*u^0*v^0
   tbl[:irredinfo] = chevieget(:F4, :IrredInfo)
   chevieget(:compat,:AdjustHeckeCharTable)(tbl,param)
@@ -275,9 +275,6 @@ chevieset(:F4, :SchurData, [
   Dict(:name=>"f8_3s",:order=>[1,2,3,4]),Dict(:name=>"f8_3s",:order=>[2,1,3,4]),
   Dict(:name=>"f8_3s",:order=>[3,4,1,2]),Dict(:name=>"f8_3s",:order=>[4,3,1,2]),
   Dict(:name=>"f16_5",:order=>[1,2,3,4])]); 
-
-chevieset(:F4, :Representation,i->
-  chevieget(:F4,:HeckeRepresentation)(map(x->[1,-1],1:4),[1,1,1,1],i))
 
 # They are F-equivariant for 2F4 for F-invariant representations.
 chevieset(:F4, :WGraphs, 
