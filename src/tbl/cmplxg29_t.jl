@@ -1,8 +1,14 @@
+# tbl/cmplxg29.jl      CHEVIE library           Gunter Malle and Jean Michel
+# Copyright (C) 1998-  The CHEVIE Team
+
+# of interest is the alternate presentation of the braid group
 chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
 :gens => [[1], [-4, 2, 4], [3], [4]], 
 :rels => [[[1, 2, 1], [2, 1, 2]], [[2, 4, 2], [4, 2, 4]],
      [[3, 4, 3], [4, 3, 4]], [[2, 3, 2], [3, 2, 3]], [[1, 3], [3, 1]],
      [[1, 4], [4, 1]], [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
+# Our G29 is equal to ReflectionSubgroup(G31,[234,13,3,5])
+# This is also the subgroup which leaves invariant the Phi1 of Maschke
 
 chevieset(:G29, :GeneratingRoots, [[0, 0, 0, -2], 
                                    [-E(4), E(4), 1, 1],
@@ -51,6 +57,13 @@ chevieset(:G29, :CharInfo, function ()
     [15, 4, 1], [15, 4, 2], [15, 12, 1], [15, 12, 2], [16, 15], [16, 5],
     [16, 13], [16, 3], [20, 6], [20, 10], [20, 9], [20, 5], [20, 11], [20, 7],
     [24, 6], [24, 9], [24, 7], [30, 8]],
+# here the labelling is as follows: phi_15,4'' occurs in the tensor product
+# of phi_{4,1} and phi_{4,3}.
+# The tensor by sign of phi_{15,4}'' is phi_{15,12}''.
+# phi_{6,10}' occurs in the permutation representation on the parabolic
+# A_3=ReflectionSubgroup(W,[1,2,4])
+# phi_{6,10}''' occurs in the tensor square of the phi_{4,1}, and
+# phi_{6,10''''} is the complex conjugate.
    :hgal => perm"(24,26)(25,27)", :extRefl => [1, 5, 14, 8, 2])
   res[:b]=map(x->x[2], res[:charparams])
   res[:charnames] = GAPENV.exceptioCharName.(res[:charparams])
@@ -102,6 +115,19 @@ chevieset(:G29,:sparseFakeDegrees,[[1,0],[1,40],[1,4,1,8,1,12,1,16],
 
 LaurentPolynomials.root(f::Frac)=root(numerator(f))//root(denominator(f))
 
+# Computed JM oct. 2005. Completed 18th column nov. 2012 using:
+# The  representative  w=3123cc  of  18th  class satisfies w^2=z2323 in BW,
+# which  can be  checked by  adding this  relation to the presentation then
+# simplifying. The eigenvalues of w^2 for missing lines are
+#28[ 6 x  -q^13,  8 x   q^13, 2 x  -q^11, 4 x  -q^15 ]
+#30[ 4 x  Iq^11, 10 x -Iq^11, 4 x   Iq^9, 2 x  Iq^13 ]
+#34[ 4 x  -q^12, 16 x   q^12, 2 x  -q^10, 2 x  -q^14 ]
+#35[ 8 x  Iq^12, 12 x -Iq^12, 2 x  Iq^10, 2 x  Iq^14 ]
+#37[ 8 x   q^12, 16 x  -q^12, 3 x   q^10, 3 x   q^14 ]
+# For rationality reasons the character has to vanish on w for 28,30,35 and
+# has to be an integral multiple of q^6 for 34 so by specialization is 0.
+# It has to be aq^6+bq^5+cq^7 for 37. By specialization a+b+c=2.
+# By Schur relations a=0 and b=1.
 chevieset(:G29, :HeckeCharTable, function (para, rt)
   q=-para[1][1]//para[1][2]
   r,p=para[1]
@@ -226,6 +252,7 @@ chevieset(:G29, :CharTable, function ()
   res
 end)
 
+# Completed JM dec. 2014 using Marin-Pfeiffer
 chevieset(:G29, :HeckeRepresentation, function (para, rt, i)
   f1(x)=[[x;;],[x;;],[x;;],[x;;]]
   f3(x,y)=WGraph2Representation([[[1,2,3],[1,2,4],[1,3,4],[2,3,4]],
@@ -755,23 +782,36 @@ chevieset(:G29, :UnipotentCharacters,
   mkcuspidal(29,65,E(8,7);qeig=1//2)], 
   :families => [Family("C1", [1]), 
   Family(conj(Family(:X)(4)),[5,3,7,39,40,38],signs=[1,1,1,1,-1,-1],ennola=3),
+  #JM 24/2/2003 changed signs of 40 to fit with G443
   Family(:C1,[17],ennola=-1),
   Family(conj(Family(:Z4)),[42, 27, 41, 25],signs=[1, -1, -1, 1],ennola=-3),
   Family(Family(:C2),[21, 9, 19, 43],ennola=2),
   Family(:C1, [20]), 
   Family(Family(:X)(4),[31,28,33,45,46,44],signs=[1,1,1,1,-1,-1],ennola=-3), 
+  #JM 24/2/2003 changed signs of 40 to fit with G443
+  Family(:C1,[17],ennola=-1),
   Family(Family(:F20)(),[34,55,15,14,13,35,52,48,51,36,53,47,54,37,49,11,50,12,
  56,57,58,59],signs=[1,1,-1,-1,1,1,-1,1,-1,1,1,1,1,1,1,1,1,1,1,1,1,1],ennola=4),
+  #JM 24/2/2003 changed signs of 51..54 to fit with G443 and exchanged 14
+  # and 15 to make generic degrees fit with Malle's "On degrees..."
   Family(conj(Family(:X)(4)),[30,29,32,61,62,60],signs=[1,1,1,1,-1,-1],
          ennola=4),
+  #JM 24/2/2003 changed signs of 40 to fit with G443
+  Family(:C1,[17],ennola=-1),
   Family(:C1, [22]), 
   Family(:C2, [23, 10, 18, 63], ennola=2), 
   Family(Family(:Z4),[64, 26, 65, 24],signs=[-1, 1, 1, -1],ennola=-3),
   Family(:C1, [16], ennola=-1), 
   Family(Family(:X)(4),[6,4,8,67,68,66],signs=[1,1,1,1,-1,-1],ennola=-4), 
+  #JM 24/2/2003 changed signs of 40 to fit with G443
+  Family(:C1,[17],ennola=-1),
   Family(:C1, [2])], 
   :a => [0, 40, 1, 21, 1, 21, 1, 21, 4, 12, 6, 6, 6, 6, 6, 18, 2, 12, 4, 4, 4, 12, 12, 13, 3, 13, 3, 5, 9, 9, 5, 9, 5, 6, 6, 6, 6, 1, 1, 1, 3, 3, 4, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 9, 9, 9, 12, 13, 13, 21, 21, 21], :A => [0, 40, 19, 39, 19, 39, 19, 39, 28, 36, 34, 34, 34, 34, 34, 38, 22, 36, 28, 28, 28, 36, 36, 37, 27, 37, 27, 31, 35, 35, 31, 35, 31, 34, 34, 34, 34, 19, 19, 19, 27, 27, 28, 31, 31, 31, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 36, 37, 37, 39, 39, 39]))
 
+# The first invariant (cf. Orlik and Terao) is Φ₁ of Maschke.
+# Then we choose for F8 (-1/20736)det(Hessian(Φ₁))=(4*F8-Φ₁²)/3.
+# We do not choose F12 but the simpler ((Φ₁³-3*Φ₁*F8)/2+F12)/108.
+# As for G31 we do not choose F20 but the simpler (F20-F8*F12)/1296.
 chevieset(:G29, :Invariants, [
   function(x1,x2,x3,x4) -6*x1^2*x2^2-6*x1^2*x3^2-6*x1^2*x4^2-6*x2^2*x3^2-
     6*x2^2*x4^2-6*x3^2*x4^2+x1^4+x2^4+x3^4+x4^4 end,
