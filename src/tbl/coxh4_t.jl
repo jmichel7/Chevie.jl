@@ -67,7 +67,7 @@ chevieset(:H4, :ClassInfo, function ()
     :orders => [1, 2, 5, 2, 3, 10, 10, 6, 4, 5, 30, 6, 10, 20, 15, 10, 12, 10, 10, 2, 10, 15, 20, 6, 6, 5, 5, 30, 4, 10, 10, 3, 5, 2],
     :classes => [1, 60, 144, 450, 400, 720, 720, 1200, 1800, 144, 480, 1200, 720, 720, 480, 720, 1200, 24, 288, 60, 144, 480, 720, 40, 400, 24, 288, 480, 60, 24, 144, 40, 24, 1])
   res[:classnames]=joindigits.(chevieget(:H4, :words))
-  res[:classnames]=map(x->Replace(x, "0", "c"),res[:classnames])
+  res[:classnames]=map(x->replace(x, "0"=>"c"),res[:classnames])
   res[:classnames][1]="."
   res[:classparams]=res[:classnames]
   res

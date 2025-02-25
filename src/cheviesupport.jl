@@ -80,7 +80,7 @@ function CycleStructurePerm(p::Perm)
   for (k,v) in tally(t) res[k-1]=v end
   res
 end
-function decode(c)
+function Csp2cycletype(c)
   res=Pair{Int,Int}[]
   for (i,m) in enumerate(c)
     if !isnothing(m) push!(res,i+1=>m) end

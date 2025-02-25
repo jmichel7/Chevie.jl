@@ -10,7 +10,7 @@ include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
 const tbl=[ ("G₃₁","cmplxg31"), ("G₃₂","cmplxg32"), ("G₃₃","cmplxg33"),
-           ("G₃₄","cmplxg34"), ("E₇","weyle7"), ("E₈","weyle8")]
+           ("G₃₄","cmplxg34"),  ("E₈","weyle8")]
 println("reading transpiled data:")
 foreach(tbl)do (e,f)
   print("for ",rpad(e,16))
@@ -25,7 +25,7 @@ const tbl_t=[("G(de,e,n)","cmplximp_t"),("G₄-G₂₂","cmp4_22_t"),
   ("G₃₄","cmplxg34_t"), ("ᵗG(e,e,n)","cmpxtimp_t"),
   ("Aₙ","weyla_t"), ("Bₙ and Cₙ","weylbc_t"),("Dₙ","weyld_t"),
   ("³D₄","weyl3d4_t"), ("²Aₙ","weyl2a_t"), ("²Dₙ","weyl2d_t"),
-  ("E₆","weyle6_t"),("²E₆","weyl2e6_t"),
+  ("E₆","weyle6_t"),("²E₆","weyl2e6_t"),("E₇","weyle7_t"),
   ("E₈","weyle8_t"), ("F₄","weylf4_t"), ("²F₄","weyl2f4_t"),
   ("G₂","weylg2_t"), ("H₃","coxh3_t"),("H₄","coxh4_t"), 
   ("I₂(e)","coxi_t"), ("²I₂(e)","cox2i_t"),("several groups","exceptio_t")]

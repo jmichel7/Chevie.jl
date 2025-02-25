@@ -1223,6 +1223,8 @@ chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
 # make a cuspidal harish-chandra series record
 function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
   if n==28 name="F_4"
+  elseif n==30 name="H_4"
+  elseif n>=36 name="E_"*string(n-19)
   else name="G_{"*string(n)*"}"
   end
   if no!=0 name*="^"*string(no) end
@@ -1235,7 +1237,12 @@ function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
     :eigenvalue=>eig,:cuspidalName=>name)
   if n<=22 res[:levi]=1:2
   elseif n<=27 res[:levi]=1:3
-  else res[:levi]=1:4 end
+  elseif n<=32 res[:levi]=1:4
+  elseif n<=33 res[:levi]=1:5
+  elseif n<=35 res[:levi]=1:6
+  elseif n<=36 res[:levi]=1:7
+  else res[:levi]=1:8
+  end
   if qeig!=0 res[:qEigen]=qeig end
   res
 end
