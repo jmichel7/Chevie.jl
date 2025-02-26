@@ -2252,18 +2252,65 @@ chevieset(:G31, :HeckeRepresentation, function (para, rt, i)
     3208,3400, 3431, 3645, 5486, 5682, 6641, 6837, 7797, 8007, 8480, 9148, 9576,
     9633, 9645, 9867]), (1, [1132, 4561, 4613, 4807, 6192, 7083, 7780, 7841,
     7998, 8911, 9618, 10119]), (x^-1*y, [7097])])
-  rep=[[f1,x],[f1,y],[f6,y,x,1],[f6,x,y,-1],[f6,y,x,-1],[f6,x,y,1],[f7,x,y],
-      [f7,y,x],[f9,x,y],[f9,y,x],[f11,x,y,-1],[f11,x,y,1],[f14,y,x],[f14,x,y],
-      [f16,y,x],[f16,x,y],[f19,x,y,1],[f19,y,x,1],[f19,x,y,-1],[f19,y,x,-1],
-      [f21,x,y],[f21,y,x],[f23,x,y],[f23,y,x],[f25,x,y],[f26,x,y],[f27,x,y,-1],
-      [f27,y,x,1],[f27,x,y,1],[f27,y,x,-1],[f31,x,y,1],[f31,y,x,1],[f31,x,y,-1],
-      [f31,y,x,-1],[f35,x,y,-1],[f35,x,y,1],[f37,x,y],[f37,y,x],nothing,nothing,
-      nothing,[f42,x,y,1],[f42,y,x,1],[f42,x,y,-1],[f42,y,x,-1],[f46,x,y],
-      [f46,y,x],[f48,x,y,-1],[f48,x,y,1],nothing,nothing,nothing,nothing,
-      [f54,x,y],[f54,y,x],[f56,x,y],[f56,y,x],nothing,nothing]
-  if rep[i]!== nothing
-    rep[i][1](rep[i][2:end]...)
-  else false
+  if i==1 f1(x)
+  elseif i==2  f1(y)
+  elseif i==3  f6(y,x,1)
+  elseif i==4  f6(x,y,-1)
+  elseif i==5  f6(y,x,-1)
+  elseif i==6  f6(x,y,1)
+  elseif i==7  f7(x,y)
+  elseif i==8  f7(y,x)
+  elseif i==9  f9(x,y)
+  elseif i==10 f9(y,x)
+  elseif i==11 f11(x,y,-1)
+  elseif i==12 f11(x,y,1)
+  elseif i==13 f14(y,x)
+  elseif i==14 f14(x,y)
+  elseif i==15 f16(y,x)
+  elseif i==16 f16(x,y)
+  elseif i==17 f19(x,y,1)
+  elseif i==18 f19(y,x,1)
+  elseif i==19 f19(x,y,-1)
+  elseif i==20 f19(y,x,-1)
+  elseif i==21 f21(x,y)
+  elseif i==22 f21(y,x)
+  elseif i==23 f23(x,y)
+  elseif i==24 f23(y,x)
+  elseif i==25 f25(x,y)
+  elseif i==26 f26(x,y)
+  elseif i==27 f27(x,y,-1)
+  elseif i==28 f27(y,x,1)
+  elseif i==29 f27(x,y,1)
+  elseif i==30 f27(y,x,-1)
+  elseif i==31 f31(x,y,1)
+  elseif i==32 f31(y,x,1)
+  elseif i==33 f31(x,y,-1)
+  elseif i==34 f31(y,x,-1)
+  elseif i==35 f35(x,y,-1)
+  elseif i==36 f35(x,y,1)
+  elseif i==37 f37(x,y)
+  elseif i==38 f37(y,x)
+  elseif i==39 false
+  elseif i==40 false
+  elseif i==41 false
+  elseif i==42 f42(x,y,1)
+  elseif i==43 f42(y,x,1)
+  elseif i==44 f42(x,y,-1)
+  elseif i==45 f42(y,x,-1)
+  elseif i==46 f46(x,y)
+  elseif i==47 f46(y,x)
+  elseif i==48 f48(x,y,-1)
+  elseif i==49 f48(x,y,1)
+  elseif i==50 false
+  elseif i==51 false
+  elseif i==52 false
+  elseif i==53 false
+  elseif i==54 f54(x,y)
+  elseif i==55 f54(y,x)
+  elseif i==56 f56(x,y)
+  elseif i==57 f56(y,x)
+  elseif i==58 false
+  elseif i==59 false
   end
 end)
 

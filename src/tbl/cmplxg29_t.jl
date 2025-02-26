@@ -7,8 +7,8 @@ chevieset(:G29, :AltPres, [Dict{Symbol, Any}(
 :rels => [[[1, 2, 1], [2, 1, 2]], [[2, 4, 2], [4, 2, 4]],
      [[3, 4, 3], [4, 3, 4]], [[2, 3, 2], [3, 2, 3]], [[1, 3], [3, 1]],
      [[1, 4], [4, 1]], [[4, 2, 3, 4, 2, 3, 4, 2], [3, 4, 2, 3, 4, 2, 3, 4]]])])
-# Our G29 is equal to ReflectionSubgroup(G31,[234,13,3,5])
-# This is also the subgroup which leaves invariant the Phi1 of Maschke
+# Our G29 is equal to reflection_subgroup(G31,[234,13,3,5])
+# This is also the subgroup which leaves invariant the Φ₁ of Maschke
 
 chevieset(:G29, :GeneratingRoots, [[0, 0, 0, -2], 
                                    [-E(4), E(4), 1, 1],
@@ -61,7 +61,7 @@ chevieset(:G29, :CharInfo, function ()
 # of phi_{4,1} and phi_{4,3}.
 # The tensor by sign of phi_{15,4}'' is phi_{15,12}''.
 # phi_{6,10}' occurs in the permutation representation on the parabolic
-# A_3=ReflectionSubgroup(W,[1,2,4])
+# A_3=reflection_subgroup(W,[1,2,4])
 # phi_{6,10}''' occurs in the tensor square of the phi_{4,1}, and
 # phi_{6,10''''} is the complex conjugate.
    :hgal => perm"(24,26)(25,27)", :extRefl => [1, 5, 14, 8, 2])
