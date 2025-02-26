@@ -227,7 +227,7 @@ function Trepresentations(W,l=Int[])
   for i in l
    InfoChevie("# Representation n⁰$i/$(length(cl))")
     gr=representation(O,i)
-    if gr==false println("=false")
+    if gr==false || gr===nothing println("=$gr")
     else
       r=gr
       if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1],1) :

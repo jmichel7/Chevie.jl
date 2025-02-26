@@ -202,10 +202,6 @@ Unbind(x)=x
 #-------------------------------------------------------------------------
 Cosets.spets(W::FiniteCoxeterGroup,v::Vector)=spets(W,toM(v))
 
-FactorizedSchurElementsOps=Dict{Symbol,Any}(
-:Simplify=>r->HeckeAlgebras.simplify(HeckeAlgebras.FactSchur(r[:factor],
-          map(x->(pol=x[:pol], monomial=Mvp(x[:monomial])), r[:vcyc]))))
-
 function exceptioCharName(para)
   res="\\phi_{"*string(para[1])*","*string(para[2])*"}"
   if length(para)==3 res*="'"^para[3] end
