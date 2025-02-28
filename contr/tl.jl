@@ -88,7 +88,7 @@ function Base.:*(x::TLTElt{P,C},y::TLTElt{P,C})where {P,C}
                 coeff=q*c
               elseif cartan(W,s,r)==-3
                 Q=H.parameter[simple_reps(W,r)]
-                coeff=(q+Q+GetRoot(q*Q))*c
+                coeff=(q+Q+root(q*Q))*c
               else coeff=H.x*c
               end
               push!(temp1,w=>coeff)
@@ -146,7 +146,7 @@ end
 #  W:=Group(H);
 #  if not IsBound(H.elts) then H.elts:=[W.identity]; fi;
 #  if not IsBound(H.Tinv) then H.Tinv:=[Basis(H,"t")()];fi;
-#  p:=Position(H.elts,w);
+#  p:=findfirst(==(w),H.elts);
 #  if p=false then Add(H.elts,w);p:=Length(H.elts);fi;
 #  if not IsBound(H.Tinv[p]) then
 #    i:=FirstLeftDescending(W,w);
@@ -180,16 +180,16 @@ end
 #  tl:=function(x) local W,tl;
 #    tl:=Basis(x.TL,"tl");
 #    W:=x.TL.group;
-#    return Sum([1..Length(x.coeff)],function(i)
+#    return sum(function(i)
 #      if x.elm[i]=() then return x.coeff[i]*tl();
-#      else return x.coeff[i]*Product(CoxeterWord(W,x.elm[i]),j->tl(j)-tl());
+#      else return x.coeff[i]*prod(j->tl(j)-tl(),CoxeterWord(W,x.elm[i]));
 #      fi;
-#    end);
+#    end,[1..Length(x.coeff)]);
 #  end,
 #  t:=function(x) local tl,H,M;H:=x.TL;tl:=Basis(H,"tl");M:=Matrixtltot(H);
-#    return Sum([1..Length(x.coeff)],i->x.coeff[i]*TLEltOps.Normalize(
+#    return sum(i->x.coeff[i]*TLEltOps.Normalize(
 #     TLEltOps.MakeRec(H,"t",ShallowCopy(H.elts),
-#        ShallowCopy(M[Position(H.elts,x.elm[i])]))));
+#        ShallowCopy(M[findfirst(==(x.elm[i]),H.elts)]))),[1..Length(x.coeff)]);
 #  end,
 #  inverse:=function(h)
 #   if Length(h.elm)<>1 then Error("inverse implemented only for single t_w");fi;

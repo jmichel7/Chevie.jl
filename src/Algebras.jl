@@ -450,13 +450,13 @@ end
 #    elif IsInt(arg[1]) then mot:=Digits(arg[1]);
 #    else mot:=CoxeterWord(W,arg[1]);
 #    fi;
-#    if mot=[] then return A.basis[Position(A.mots,[])];
-#    else return Product(mot,i->A.basis[Position(A.mots,[i])]);
+#    if mot=[] then return A.basis[findfirst(isempty,A.mots)];
+#    else return prod(i->A.basis[findfirst(==([i]),A.mots)],mot);
 #    fi;
 #  end;
 #  A.radical:=TwoSidedIdeal(A,vcat(A.radical...));
 #  A.radicalpowers:=[A.radical];
-#  A.embedding:=function(g) return A.basis[Position(e,g)];end;
+#  A.embedding:=function(g) return A.basis[findfirst(==(g),e)];end;
 
 #------------------------  T[q]/p(q)----------------------------------------
 ## The function A.class sends a polynomial to its image in A
@@ -610,7 +610,7 @@ end
 #GrothendieckRingOps.PrincipalIdempotent:=function(A)local G,e,c,res;
 #  G:=A.group;
 #  e:=Idempotents(GrothendieckRing(G));
-#  c:=PositionClass(G,G.identity);
+#  c:=position_class(G,G.identity);
 #  res:=sum(e{First(pprimesections(G,A.field.char),i->c in i)});
 #  return AlgebraElement(A,List(res.coefficients,i-> 
 #    [A.field.one*Numerator(i[1])/Denominator(i[1]),i[2]]));
@@ -655,7 +655,7 @@ end
 #    Error("Cannot compute CharTable in positive characteristic");
 #  fi;
 #  A.charTable:=CharTable(A.group);
-#  conj:=List(Elements(A.group),i->PositionClass(A.group,i));
+#  conj:=List(Elements(A.group),i->position_class(A.group,i));
 #  A.charTable.basistraces:=List(A.charTable.irreducibles,chi->chi{conj});
 #  A.charTable.Print:=function(table)Display(table);end;
 #  return A.charTable; 

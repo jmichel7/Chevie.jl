@@ -1224,7 +1224,7 @@ chevieset(:G4_22, :ReflectionDegrees,ST->ReflectionDegrees4_22[ST-3])
 function mkcuspidal(n,charnum,eig;no=0,qeig=0,E4=false)
   if n==28 name="F_4"
   elseif n==30 name="H_4"
-  elseif n>=36 name="E_"*string(n-19)
+  elseif n>=36 name="E_"*string(n-29)
   else name="G_{"*string(n)*"}"
   end
   if no!=0 name*="^"*string(no) end

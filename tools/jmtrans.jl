@@ -3,15 +3,14 @@ include("Gap2Julia.jl")
 using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
-const src=[ "cmplxg32", "cmplxg33", "cmplxg34", "weyle8"] 
+const src=[ "cmplxg32", "cmplxg33", "cmplxg34"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
  "CharTable"=>["G34"],
- "PrintDiagram"=>["E8","G32","G33","G34"],
- "WGraph"=>["E8"])
+ "PrintDiagram"=>["G32","G33","G34"])
 
 function exclude(e)
   if !haskey(exclu,e.args[2]) return false end

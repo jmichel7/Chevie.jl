@@ -1941,7 +1941,7 @@ test[:discriminant]=(
 #function frombraidrel(W)
 #  n=nbgens(W)
 #  F=FreeGroup(n)
-#  r=List(BraidRelations(W),x->List(x,y->Product(y,z->F.(z))))
+#  r=List(BraidRelations(W),x->List(x,y->prod(z->F.(z),y)))
 #  r=List(r,x->x[1]/x[2])
 #  append!(r,List([1..n],i->F.(i)^OrderPerm(W.(i))))
 #  Size(W)=Size(F/r)

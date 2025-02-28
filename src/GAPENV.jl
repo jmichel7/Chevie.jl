@@ -9,8 +9,7 @@ using ..Chevie
 include("../tools/gap3support.jl")
 include("cheviesupport.jl")
 
-const tbl=[("G₃₂","cmplxg32"), ("G₃₃","cmplxg33"),
-           ("G₃₄","cmplxg34"),  ("E₈","weyle8")]
+const tbl=[("G₃₂","cmplxg32"), ("G₃₃","cmplxg33"), ("G₃₄","cmplxg34")]
 println("reading transpiled data:")
 foreach(tbl)do (e,f)
   print("for ",rpad(e,16))

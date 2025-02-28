@@ -398,7 +398,7 @@ function relconj(arg...,)
   end
 end
 
-# add to M relations expressing M=TransposedMat(m)
+# add to M relations expressing M=transpose(m)
 function relsym(M)
   for i in 1:M[:n]
       for j in 1:i - 1
@@ -447,14 +447,14 @@ end
 
 function fromunitary(M)
   n=sq(M)
-  return gapSet(Concatenation(n*conj.(n)-IdentityMat(length(n))))
+  return gapSet(vcat(n*conj.(n)-Matrix(1I,length(n),length(n))))
 end
 
 function CheckMagrees(M)
   if M[:error] != true return end
   f = UnipotentCharacters(M[:W]).families[M[:fno]]
   four = f[:fourierMat]
-  checkMagrees(M, Concatenation(map(i->four[i][1:i],1:M[:n])),function(p)
+  checkMagrees(M, vcat(map(i->four[i][1:i],1:M[:n])),function(p)
 #inverse of at: [i,j] from linear position
       local i, j
       i=First(1:p, (i->begin (i*(i+1))//2>=p end))
@@ -471,7 +471,7 @@ function initdetfam(W, fno)
   M = LinSys((n * (n + 1)) // 2)
   M[:n] = n
 # linear position of element [i][j] in symmetric matrix represented linearly
-  M[:varnames] = Concatenation(map(i->map(j->SPrint("x", i, "_", j),1:i), 1:n))
+  M[:varnames] = vcat(map(i->map(j->string("x", i, "_", j),1:i), 1:n))
   M[:at] = function (i, j)
           if i >= j return (i * (i - 1)) // 2 + j
           else return (j * (j - 1)) // 2 + i
@@ -484,12 +484,12 @@ function initdetfam(W, fno)
   M[:sqdisp] = function (M,)
           local z
           if length(M[:relations]) != 0
-              z = TransposedMat(sq(M))
+              z = transpose(sq(M))
               z = map((x->begin map(Format, x) end), z)
               push!(z, (CharNames(uc))[f[:charNumbers]])
           end
           if IsBound(z) && length(z) < 15
-              print(Format(TransposedMat(z)), "\n")
+              print(Format(transpose(z)), "\n")
           else
               print(Format((CharNames(uc))[f[:charNumbers]]), "\n")
           end
@@ -581,7 +581,7 @@ function newratios(M, p)
       if length(letter) > 0
         pos1 = First(pos1, (x->begin ((x[:elm][1])[:elm])[1] == letter[1] end))
         pos2 = First(pos2, (x->begin ((x[:elm][1])[:elm])[1] == letter[1] end))
-        val = GetRoot((pos2[:coeff])[1] // (pos1[:coeff])[1], 2)
+        val = root((pos2[:coeff])[1] // (pos1[:coeff])[1])
         push!(res, [j, val, -val])
       end
     end
@@ -681,7 +681,7 @@ function detfrob2(M)
     end
     for i = Filtered(M[:known], (x->begin x <= n end))
       for j = setdiff(1:n, M[:known])
-        if !(Makerelandconj(M, Concatenation(map((k->begin
+        if !(Makerelandconj(M, vcat(map((k->begin
               [k, ((M[:S])[i])[k] * ((M[:S])[k])[j]]
            end), 1:n), [[j + n, -(ComplexConjugate(Value(M, i))) * ComplexConjugate(((M[:S])[i])[j])]]), 0))
             return false
@@ -708,13 +708,12 @@ function detfrob(arg...,)
   if length(arg) == 2 S = f[:fourierMat] else S = arg[3] end
   n = length(f[:charNumbers])
   M = LinSys(2n)
-  hc = map((x->begin PositionProperty(uc[:harishChandra], (h->begin
-                              x in h[:charNumbers] end)) end), f[:charNumbers])
+  hc=map(x->findfirst(h->x in h[:charNumbers],uc[:harishChandra]),f[:charNumbers])
   M[:known] = Filtered(1:n, (i->begin
                   uc[:harishChandra][hc[i]][:relativeType]!=[] end))
   M[:values]=map(i->uc[:harishChandra][hc[i]][:eigenvalue], M[:known])
-  M[:known] = Concatenation(M[:known], M[:known] + n)
-  M[:values] = Concatenation(M[:values], ComplexConjugate(M[:values]))
+  M[:known] = vcat(M[:known], M[:known] + n)
+  M[:values] = vcat(M[:values], ComplexConjugate(M[:values]))
 # relations coming from Shintani principal series
 # si p= indices de la serie principale alors (Sbar*T*ud){p}=ud{p}
   print("Shintani principal series==>\n")
@@ -733,7 +732,7 @@ function detfrob(arg...,)
   end
   M[:S] = S
   if length(arg) == 2
-      checkMagrees(M, Concatenation(f[:eigenvalues], ComplexConjugate(f[:eigenvalues])))
+      checkMagrees(M, vcat(f[:eigenvalues], ComplexConjugate(f[:eigenvalues])))
   end
   return M
 end
@@ -750,8 +749,7 @@ function Frob(M)
         v = map(ScalMvp, e)
         if all((x->begin x == 1 end), v) return t end
         if any((x->begin x != false && x != 1 end), v) return false end
-        i = PositionProperty(e, (x->begin
-              length(x[:elm]) == 1 && length(((x[:elm])[1])[:elm]) != 0 end))
+        i=findfirst(x->length(x[:elm])==1 && length(x[:elm][1][:elm])!=0,e)
         if i == false return t end
         e = e[i]
         v = (((e[:elm])[1])[:elm])[1]
@@ -761,8 +759,8 @@ function Frob(M)
   res = Values(M)
   n = length(res) // 2
   res = [res[1:n], res[n + (1:n)]] * Mvp("a") ^ 0
-  t = map(FactorizeQuadraticForm, gapSet(map((x->begin Product(x) - 1
-                      end), TransposedMat(res))))
+  t = map(FactorizeQuadraticForm, gapSet(map((x->begin prod(x) - 1
+                      end), transpose(res))))
   t = Filtered(t, (x->begin x != false end))
   t = map((x->begin map(solve, x) end), t)
   t = map(gapSet, cartesian(t))
@@ -771,7 +769,7 @@ function Frob(M)
   print("t==", t, "\n")
   if length(t) == 0 return res
   else
-    res=map(x->map(a->map(b->Value(b, Concatenation(x)), a), res), t)
+    res=map(x->map(a->map(b->Value(b, vcat(x)), a), res), t)
   end
   return Filtered(map(optimize, res), (x->begin x != false end))
 end
@@ -781,7 +779,7 @@ function ambig(W, fno)
   uc = UnipotentCharacters(W)
   f = uc.families[fno]
   ud = CycPolUnipotentDegrees(W)
-  p = map((x->begin Position(ud, ud[x]) end), f[:charNumbers])
+  p = map((x->begin findfirst(==(ud[x]),ud) end), f[:charNumbers])
   pp = map(x->x[1], Filtered(tally(p), (x->begin x[2] > 1 end)))
   res = []
   n = length(f[:charNumbers])
@@ -790,7 +788,7 @@ function ambig(W, fno)
     print(q, "==", CharNames(uc)[f[:charNumbers][q]], "\n")
     push!(res, q)
   end
-  Group(Concatenation(map(q->
+  Group(vcat(map(q->
      map(i->(Perm(q[i],q[i+1]))(n+q[i],n+q[i+1]),1:length(q)-1),res)),Perm())
 end
 
@@ -808,11 +806,11 @@ function repsEnnola(W, fno, e)
   p = Orbits(ambig(W, fno), map(SPerm, p))
   orbits = map((o->begin map((ps->begin invpermute(1:n, ps) end), o) end), p)
   p = map((x->begin (x[:ls])[fno] end), e)
-  n = gapSet(map(ps->PositionProperty(orbits, (y->begin ps in y end)), p))
+  n = gapSet(map(ps->findfirst((y->begin ps in y end),orbits), p))
   if length(n) != 1 error("theory") end
   print("All possibilities occuring in W.ennola fall in orbit ",n[1],"\n")
   res = map((x->begin x[1] end), orbits)
-  for n in p res[PositionProperty(orbits, (y->(n in y;)))] = n end
+  for n in p res[findfirst( (y->(n in y;)),orbits)] = n end
   return res
 end
 
@@ -824,8 +822,8 @@ function tryfam(W, fno, f)
   uc.families[fno][:eigenvalues] = f[:eigenvalues]
   delete!(uc, :eigenvalues)
   for i in 1:length(uc.families[fno])
-      h = PositionProperty(uc[:harishChandra], h->
-         uc.families[fno].charNumbers[i] in h[:charNumbers])
+      h=findfirst( h->
+         uc.families[fno].charNumbers[i] in h[:charNumbers],uc[:harishChandra])
       ((uc[:harishChandra])[h])[:eigenvalue] = (f[:eigenvalues])[i]
   end
   return W
