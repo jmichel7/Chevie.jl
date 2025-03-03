@@ -230,7 +230,7 @@ function Trepresentations(W,l=Int[])
     if gr==false || gr===nothing println("=$gr")
     else
       r=gr
-      if !isempty(r) print(" dim:",(r isa Vector) ? size(r[1],1) :
+      if !isempty(r) print(" dim:",(r isa AbstractVector) ? size(r[1],1) :
                           size(r.gens[1],1),"...") end
       if !isrepresentation(H,r) ChevieErr(i," is not a representation") end
       if r isa NamedTuple println();continue end # for now... Should be fixed

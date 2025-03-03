@@ -3,14 +3,15 @@ include("Gap2Julia.jl")
 using .Gap2Julia
 
 # files translated from Chevie's tbl directory. compat3 and cmp4_22 are not
-const src=[ "cmplxg32", "cmplxg33", "cmplxg34"] 
+const src=[ "cmplxg34"] 
 
 # functions hand-translated to files xxx_t.jl in tbl (because the transpiled
 # version does not work, or is too slow, or I had time to translate).
 # The useful code from compat3 is in Chevie.jl
 const exclu=Dict(
- "CharTable"=>["G34"],
- "PrintDiagram"=>["G32","G33","G34"])
+# "CharTable"=>["G34"],
+# "PrintDiagram"=>["G32","G33","G34"]
+)
 
 function exclude(e)
   if !haskey(exclu,e.args[2]) return false end
@@ -27,9 +28,9 @@ const ok=[:(CHEVIE.AddData),
 
 # other translated functions.
 const ok2=[
- :(CHEVIE.families.S5), 
+# :(CHEVIE.families.S5), 
  :(CHEVIE.families.F42),
- :(CHEVIE.families.G4)
+# :(CHEVIE.families.G4)
 ]
 
 readf(f)=Gap2Julia.myparse(read(homedir()*"/gap3-dev/pkg/chevie/"*f,String),false)

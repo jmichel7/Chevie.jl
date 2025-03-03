@@ -1232,7 +1232,7 @@ function representation(W::Union{Hastype,FiniteCoxeterGroup},i::Integer)
     mm=map(x->x[:gens],mm)
   end
   if !(mm[1][1] isa AbstractMatrix) mm=map(x->toM.(x),mm) end
-  if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm*1) end
+# if !all(m->m isa Vector{<:SparseMatrixCSC},mm) mm=improve_type.(mm*1) end
   n=length(tt)
   if n==1 reps=mm[1]
   else reps=vcat(map(1:n) do i

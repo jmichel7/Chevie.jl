@@ -212,7 +212,7 @@ function expandrep(r,d,l)
   for v in l, k in v[2]
     m[Int(k)]=v[1]
   end
-  eachslice(reshape(m,r,d,d),dims=1)
+  Matrix.(eachslice(reshape(m,r,d,d),dims=1))
 end
 function compactrep(r)
   r=stack(r,dims=1)
