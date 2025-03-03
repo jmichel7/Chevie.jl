@@ -384,7 +384,7 @@ function harish_chandra_induction_table(HF, WF)
     piece = InductionTable(induction_table(Hi, Wi).scalar, 
                            charnames(uw;TeX=true)[charnumbers(ser)], 
                            charnames(uh;TeX=true)[charnumbers(h)],
-    "Harish-Chandra Induction piece from \$$lu\$ to \$$lg\$",
+    "HCInduction piece from \$$lu\$ to \$$lg\$",
     Dict{Symbol,Any}())
     res.scalar[charnumbers(ser),charnumbers(h)]=piece.scalar
     piece

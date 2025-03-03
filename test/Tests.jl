@@ -104,8 +104,8 @@ function cmpvec(a,b;na="a",nb="b",pr=ChevieErr)
   if -a==b pr("$na=-$nb\n");return end
   pa=Perm(a,b)
   if pa!==nothing pr("$na=$nb^",pa,"\n");return end
-  pa=Perm(a,-b)
-  if pa!==nothing pr("$na=-$nb^",pa,"\n");return end
+  pa=SPerm(a,b)
+  if pa!==nothing pr("$na=$nb^",pa,"\n");return end
   for j in eachindex(a)
     if a[j]==b[j] continue end
     if a[j]==-b[j] pr("$na[$j]=-$nb[$j]\n");continue end
@@ -1405,8 +1405,11 @@ function TdegsHCinduce(W,J)
   inddeg=improve_type(degree.(ind))
   if pred!=inddeg
     nh=charnames(uL)
-    ChevieErr("Relgroups:",tbl.pieces,": ")
-    cmpvec(pred,inddeg;na="udLevi*index",nb="viahc_induction_table")
+    ChevieErr("Relgroups:\n")
+    for p in tbl.pieces
+      ChevieErr(p,"=>",join(indexin(p.ucharnames,tbl.ucharnames)," "),"\n")
+    end
+    cmpvec(pred,inddeg;na="udLevi*index",nb="via hc_induction_table")
   end
 end
 
@@ -1519,20 +1522,27 @@ end
 test[:aA]=(applicable=isspetsial,comment="recompute them from unipotent degrees")
 
 #------------------------- eigen -----------------------------
-# check eigenvalues in families agree with those in HC series
+# check eigenvalues/qEigen in families agree with those in HC series
 
 function Teigen(W)
   uc=UnipotentCharacters(W)
   e=eigen(uc)
-  for i in eachindex(uc.harishChandra)
-    f=uc.harishChandra[i]
-    for j in eachindex(f[:charNumbers])
-      n=f[:charNumbers][j]
+  for (i,h) in enumerate(uc.harishChandra)
+    for (j,n) in enumerate(h[:charNumbers])
       famno=findfirst(f->n in charnumbers(f),uc.families)
-      if e[n]!=f[:eigenvalue]
+      fam=uc.families[famno]
+      if e[n]!=h[:eigenvalue]
         ChevieErr("n⁰ $n=",charnames(uc;TeX=true)[n],
-                   " from HCfamily ",i,"#",j,":eig=",f[:eigenvalue],
+                   " from HCfamily ",i,"#",j,":eig=",h[:eigenvalue],
                    " but from fam.$famno:eig=",e[n],"\n")
+      end
+      if haskey(h,:qEigen) && h[:qEigen]!=0
+        no=findfirst(==(n),fam.charNumbers)
+        if fam.qEigen[no]!=h[:qEigen]
+          ChevieErr("n⁰ $n=",charnames(uc;TeX=true)[n],
+                   " from HCfamily ",i,"#",j,":qeig=",h[:qEigen],
+                   " but from fam.$famno:qeig=",fam.qEigen[no],"\n")
+        end
       end
     end
   end

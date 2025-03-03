@@ -2509,27 +2509,24 @@ chevieset(:G33, :Representation,i->
   chevieget(:G33, :HeckeRepresentation)(fill([1,-1],5),[],i))
 
 chevieset(:G33, :UnipotentCharacters, function ()
-  Dict{Symbol, Any}(:harishChandra=>[Dict{Symbol, Any}(:relativeType=>
-    TypeIrred(;series=:ST,indices=1:5,rank=5,ST=33), :levi => [],
-    :parameterExponents => [1, 1, 1, 1, 1], :charNumbers => 1:40,
+  Dict{Symbol, Any}(:harishChandra=>[
+    Dict(:relativeType=>TypeIrred(;series=:ST,indices=1:5,rank=5,ST=33),
+    :levi => [], :parameterExponents => [1, 1, 1, 1, 1], :charNumbers => 1:40,
     :eigenvalue => 1, :cuspidalName => ""), 
-  Dict{Symbol, Any}(:relativeType=>
-    TypeIrred(;series=:ST,indices=[1,5],rank=2,ST=4),:levi => 2:4,
-    :parameterExponents => [3, 3], :charNumbers => [41, 58, 57, 59, 43, 44, 51],
+  Dict(:relativeType=>TypeIrred(;series=:ST,indices=[1,5],rank=2,ST=4),
+    :levi=>2:4,:parameterExponents=>[3,3],:charNumbers=>[41,58,57,59,43,44,51],
     :eigenvalue => E(3), :cuspidalName => "G_{3,3,3}[\\zeta_3]"), 
-  Dict{Symbol, Any}(:relativeType=>
-    TypeIrred(;series=:ST,indices=[1,5],rank=2,ST=4), :levi => 2:4,
-    :parameterExponents => [[3, 3, 0], [3, 3, 0]],
+  Dict(:relativeType=>TypeIrred(;series=:ST,indices=[1,5],rank=2,ST=4),
+    :levi => 2:4, :parameterExponents => [[3, 3, 0], [3, 3, 0]],
     :charNumbers => [46, 45, 64, 55, 56, 47, 54], :eigenvalue => E(3) ^ 2,
     :cuspidalName => "G_{3,3,3}[\\zeta_3^2]"), 
-  Dict{Symbol, Any}(:relativeType => 
-    TypeIrred(;series=:ST,indices=[4],rank=1,p=6,q=1), :levi => [1, 2, 3, 209],
-    :parameterExponents=>[[5,4,1,0,1,4]],:charNumbers=>[42,49,60,63,61,48],
-    :eigenvalue => -1, :cuspidalName => "D_4"), 
+  Dict(:relativeType=>TypeIrred(;series=:ST,indices=[4],rank=1,p=6,q=1),
+    :levi=>[1,2,3,209],:parameterExponents=>[[5,4,1,0,1,4]],
+    :charNumbers=>[42,49,60,63,61,48],:eigenvalue=>-1,:cuspidalName => "D_4"), 
   mkcuspidal(33,52,E(4);E4=true,qeig=1//2),
   mkcuspidal(33,53,-E(4);E4=true,qeig=1//2),
   mkcuspidal(33,62,-E(3)),
-  mkcuspidal(33,62,-E(3,2))], 
+  mkcuspidal(33,50,-E(3,2))], 
  :families => [Family(:C1, [1]), 
    Family(conj(Family(:X)(3)),[4, 6, 41],signs=[1, 1, -1],ennola=-1), 
    Family(:C1, [15]), 
